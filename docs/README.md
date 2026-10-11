@@ -47,6 +47,19 @@ The GUI package is built from the local source using Buildroot's
 `X6200_GUI_OVERRIDE_SRCDIR` mechanism; the build skill documents the exact Docker
 commands.
 
+## Keeping these in sync
+
+These files are mirrored from the build workspace, where the firmware project lives
+(the workspace also holds `AetherX6200Buildroot/` and the generated `images/`). After
+editing any document there, publish it with:
+
+```bash
+cp docs/*.md x6200_gui/docs/
+git -C x6200_gui add docs
+git -C x6200_gui commit -m "docs: update"
+git -C x6200_gui push fork lu2dsx/x6200-rom
+```
+
 ## License
 
 The GUI and these documents follow the project license (LGPL-2.1-or-later for the GUI
