@@ -13,6 +13,9 @@
 #include "spectrum.h"
 #include "util.h"
 
+#include <math.h>
+#include <stdio.h>
+
 #define NUM_ITEMS   7
 #define METER_PEAK_HOLD 1500
 #define METER_PEAK_SPEED 20
@@ -52,12 +55,141 @@ static void on_bool_value_change(Subject *subj, void *user_data) {
     *(bool*)user_data = subject_get_int(subj);
 }
 
+/* --- Needle S-meter (Settings > Display: "S-meter needle") ----------------
+ * A dial whose pivot sits below the box, so only the top of the arc shows:
+ * S1..S9 take 70% of the arc, +20/+40 the rest (the red zone of a real meter,
+ * drawn thicker). Idea and geometry from the X6100 firmware by IU1WXY,
+ * adapted to this GUI's palette and fonts. */
+
+#define NEEDLE_A0     (-32)         /* degrees from vertical, left end */
+#define NEEDLE_A1     32
+#define NEEDLE_S9_U   0.7f          /* fraction of the arc used by S1..S9 */
+
+static float needle_u(float db) {
+    float u = db <= S9 ? (db - S1) / (float)(S9 - S1) * NEEDLE_S9_U
+                       : NEEDLE_S9_U + (db - S9) / (float)(S9_40 - S9) * (1.0f - NEEDLE_S9_U);
+
+    return LV_CLAMP(0.0f, u, 1.0f);
+}
+
+static lv_point_t needle_pt(lv_point_t c, float a_deg, lv_coord_t r) {
+    float      a = a_deg * (float)M_PI / 180.0f;
+    lv_point_t p = { c.x + (lv_coord_t)lroundf(r * sinf(a)),
+                     c.y - (lv_coord_t)lroundf(r * cosf(a)) };
+
+    return p;
+}
+
+static void needle_label(lv_draw_ctx_t *draw_ctx, lv_draw_label_dsc_t *dsc,
+                         lv_point_t c, float a, lv_coord_t r, const char *txt) {
+    lv_point_t sz;
+    lv_point_t l = needle_pt(c, a, r);
+    lv_area_t  area;
+
+    lv_txt_get_size(&sz, txt, dsc->font, 0, 0, LV_COORD_MAX, 0);
+
+    area.x1 = l.x - sz.x / 2;
+    area.y1 = l.y - sz.y / 2;
+    area.x2 = area.x1 + sz.x;
+    area.y2 = area.y1 + sz.y;
+
+    lv_draw_label(draw_ctx, dsc, &area, txt, NULL);
+}
+
+static void needle_draw(lv_obj_t *obj, lv_draw_ctx_t *draw_ctx) {
+    lv_coord_t          w = lv_obj_get_width(obj);
+    lv_coord_t          r = w * 76 / 100;      /* wide and flat: 198 px on a 260 px box */
+    lv_point_t          c = { obj->coords.x1 + w / 2, obj->coords.y1 + 24 + r };
+    lv_draw_arc_dsc_t   arc_dsc;
+    lv_draw_line_dsc_t  line_dsc;
+    lv_draw_label_dsc_t label_dsc;
+    float               span = NEEDLE_A1 - NEEDLE_A0;
+
+    /* LVGL arcs: 0 degrees at 3 o'clock, clockwise; straight up is 270 */
+    lv_draw_arc_dsc_init(&arc_dsc);
+    arc_dsc.color = lv_color_hex(0xAAAAAA);
+    arc_dsc.width = 2;
+    lv_draw_arc(draw_ctx, &arc_dsc, &c, r, 270 + NEEDLE_A0,
+                270 + NEEDLE_A0 + (int)(span * NEEDLE_S9_U));
+
+    arc_dsc.color = lv_color_hex(0xAA0000);
+    arc_dsc.width = 5;
+    lv_draw_arc(draw_ctx, &arc_dsc, &c, r + 2, 270 + NEEDLE_A0 + (int)(span * NEEDLE_S9_U),
+                270 + NEEDLE_A1);
+
+    lv_draw_line_dsc_init(&line_dsc);
+    lv_draw_label_dsc_init(&label_dsc);
+    label_dsc.font = &sony_16;
+
+    /* S1..S9: a tick per unit, longer tick and a number on the odd ones */
+    for (int s = 1; s <= 9; s++) {
+        float      a   = NEEDLE_A0 + span * needle_u(S1 + (s - 1) * (S9 - S1) / 9.0f);
+        bool       big = (s % 2) != 0;
+        lv_point_t p1  = needle_pt(c, a, r);
+        lv_point_t p2  = needle_pt(c, a, r - (big ? 9 : 5));
+
+        line_dsc.color = lv_color_hex(0xAAAAAA);
+        line_dsc.width = big ? 2 : 1;
+        lv_draw_line(draw_ctx, &line_dsc, &p1, &p2);
+
+        if (big) {
+            char txt[4];
+
+            snprintf(txt, sizeof(txt), s == 1 ? "S1" : "%d", s);
+            label_dsc.color = lv_color_white();
+            needle_label(draw_ctx, &label_dsc, c, a, r + 13, txt);
+        }
+    }
+
+    /* S9 +10..+40: the red zone */
+    for (int d = 10; d <= 40; d += 10) {
+        float      a   = NEEDLE_A0 + span * needle_u(S9 + d);
+        bool       big = (d % 20) == 0;
+        lv_point_t p1  = needle_pt(c, a, r + 2);
+        lv_point_t p2  = needle_pt(c, a, r - (big ? 10 : 6));
+
+        line_dsc.color = lv_color_hex(0xAA0000);
+        line_dsc.width = big ? 2 : 1;
+        lv_draw_line(draw_ctx, &line_dsc, &p1, &p2);
+
+        if (big) {
+            char txt[4];
+
+            snprintf(txt, sizeof(txt), "+%d", d);
+            label_dsc.color = lv_color_hex(0xAAAA00);
+            needle_label(draw_ctx, &label_dsc, c, a, r + 14, txt);
+        }
+    }
+
+    /* The current value, under the dial */
+    char txt[8];
+
+    snprintf(txt, sizeof(txt), "%d", (int)meter_db);
+
+    label_dsc.font  = &sony_18;
+    label_dsc.color = lv_color_white();
+    needle_label(draw_ctx, &label_dsc, c, 0.0f, r - 30, txt);
+
+    /* The needle, from the pivot to just past the arc */
+    lv_point_t tip = needle_pt(c, NEEDLE_A0 + span * needle_u(meter_db), r + 2);
+
+    line_dsc.color     = lv_color_white();
+    line_dsc.width     = 2;
+    line_dsc.round_end = 1;
+    lv_draw_line(draw_ctx, &line_dsc, &c, &tip);
+}
+
 static void meter_draw_cb(lv_event_t * e) {
     lv_obj_t            *obj = lv_event_get_target(e);
     lv_draw_ctx_t       *draw_ctx = lv_event_get_draw_ctx(e);
     lv_draw_rect_dsc_t  rect_dsc;
     lv_draw_label_dsc_t label_dsc;
     lv_area_t           area;
+
+    if (params.smeter_needle.x) {
+        needle_draw(obj, draw_ctx);
+        return;
+    }
 
     lv_coord_t x1 = obj->coords.x1 + 7;
     lv_coord_t y1 = obj->coords.y1 + 17;

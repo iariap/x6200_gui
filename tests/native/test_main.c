@@ -38,11 +38,13 @@ void test_check_close(float got, float want, float tol, const char *expr, const 
 void test_adaptive_tuning(void);
 void test_audio_enhancement(void);
 void test_ft8_udp(void);
+void test_update_check(void);
 
 int main(void) {
     test_adaptive_tuning();
     test_audio_enhancement();
     test_ft8_udp();
+    test_update_check();
 
     printf("%d comprobaciones, %d fallos\n", tests_run, tests_failed);
 

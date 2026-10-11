@@ -52,6 +52,7 @@ params_t params = {
     .mag_freq               = { .x = true,  .name = "mag_freq",                 .voice = "Magnification of frequency" },
     .mag_info               = { .x = true,  .name = "mag_info",                 .voice = "Magnification of info" },
     .mag_alc                = { .x = true,  .name = "mag_alc",                  .voice = "Magnification of A L C" },
+    .smeter_needle          = { .x = false, .name = "smeter_needle",            .voice = "S meter needle" },
     .clock_view             = CLOCK_TIME_POWER,
     .clock_time_timeout     = 5,
     .clock_power_timeout    = 3,
@@ -286,6 +287,7 @@ static bool params_load() {
         if (params_load_bool(&params.mag_freq, name, i)) continue;
         if (params_load_bool(&params.mag_info, name, i)) continue;
         if (params_load_bool(&params.mag_alc, name, i)) continue;
+        if (params_load_bool(&params.smeter_needle, name, i)) continue;
         if (params_load_bool(&params.spectrum_auto_min, name, i)) continue;
         if (params_load_bool(&params.spectrum_auto_max, name, i)) continue;
         if (params_load_bool(&params.waterfall_auto_min, name, i)) continue;
@@ -428,6 +430,7 @@ static void params_save() {
     params_save_bool(&params.mag_freq);
     params_save_bool(&params.mag_info);
     params_save_bool(&params.mag_alc);
+    params_save_bool(&params.smeter_needle);
     params_save_bool(&params.spectrum_auto_min);
     params_save_bool(&params.spectrum_auto_max);
     params_save_bool(&params.waterfall_auto_min);

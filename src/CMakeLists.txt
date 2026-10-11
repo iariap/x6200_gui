@@ -15,6 +15,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     dialog_msg_voice.c dialog_recorder.c dialog_qth.c dialog_callsign.c
     textarea_window.c cw_encoder.c buttons.cpp vol.c recorder.c
     cw_tune_ui.c adif.c qso_log.c scheduler.cpp
+    update_check.c
     dialog_wifi.c wifi.cpp controls.cpp usb_devices.cpp
     dialog_eq.cpp dialog_about.c
     adaptive_tuning.c

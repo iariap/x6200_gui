@@ -9,6 +9,7 @@
 #include "adaptive_tuning.h"
 #include "lvgl/lvgl.h"
 #include <math.h>
+#include <stdlib.h>
 
 adaptive_tuning_state_t g_adaptive_tuning = {0};
 

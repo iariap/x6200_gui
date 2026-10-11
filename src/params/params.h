@@ -118,6 +118,7 @@ typedef struct {
     params_bool_t       mag_freq;
     params_bool_t       mag_info;
     params_bool_t       mag_alc;
+    params_bool_t       smeter_needle;          /* analog needle instead of bars */
     clock_view_t        clock_view;
     uint8_t             clock_time_timeout;     /* seconds */
     uint8_t             clock_power_timeout;    /* seconds */

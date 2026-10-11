@@ -20,6 +20,7 @@ They are mirrored from the project workspace, where the firmware is built.
 | [AUDIO_ENHANCEMENT_IMPLEMENTATION_PLAN.md](AUDIO_ENHANCEMENT_IMPLEMENTATION_PLAN.md) | EN | Original implementation plan (partially aspirational; see the guide for the current state) |
 | [RELEASE_NOTES_2026-10-11.md](RELEASE_NOTES_2026-10-11.md) | EN | What the first published SD image contains, hashes, install steps and caveats |
 | [FT8_UDP.md](FT8_UDP.md) | ES | WSJT-X compatible UDP broadcaster: config file, GridTracker/JTAlert usage, implementation notes and tests |
+| [NEW_FEATURES.md](NEW_FEATURES.md) | ES | Running log of the features ported from the X6100 firmware: status, usage and tests |
 
 ## Downloads
 

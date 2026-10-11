@@ -26,6 +26,8 @@
 #include "params/params.h"
 #include "audio.h"
 #include "audio_enhancement.h"
+#include "update_check.h"
+#include "msg.h"
 #include "cw.h"
 #include "pannel.h"
 #include "cat.h"
@@ -50,6 +52,11 @@ static lv_disp_draw_buf_t   disp_buf;
 static lv_disp_drv_t        disp_drv;
 
 void * tick_thread (void *args);
+
+/* Runs on the update-check thread; msg_schedule_* queues it for the UI loop. */
+static void update_check_notify(const char *version) {
+    msg_schedule_text_fmt("Firmware %s available", version);
+}
 
 int main(void) {
     lv_init();
@@ -137,6 +144,10 @@ int main(void) {
 #else
     lv_scr_load(main_obj);
 #endif
+
+    /* New release alert: waits for the WiFi in its own thread and then posts a
+     * message if the published version is newer than VERSION. */
+    update_check_start(VERSION, update_check_notify);
 
     int64_t next_loop_time, sleep_time, loop_start_time;
     while (1) {
