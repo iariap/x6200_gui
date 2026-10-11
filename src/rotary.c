@@ -14,6 +14,7 @@
 #include "rotary.h"
 #include "keyboard.h"
 #include "backlight.h"
+#include "adaptive_tuning.h"
 
 static int32_t remain_diff = 0;
 static lv_indev_state_t prev_state;
@@ -30,16 +31,27 @@ static void rotary_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
             if (in.type == EV_REL) {
                 diff += in.value;
                 send = true;
+                
+                // Adaptive tuning: record event with timestamp
+                uint32_t now = lv_tick_get();
+                adaptive_tuning_add_event(&g_adaptive_tuning, in.value, now);
             }
         }
 
         if (send) {
             backlight_tick();
+            
+            // Update adaptive tuning calculations
+            adaptive_tuning_update(&g_adaptive_tuning);
 
             if (rotary->left[0] == 0 && rotary->right[0] == 0) {
-                int32_t *diff_copy = (int32_t *) malloc(sizeof(int32_t));
-                *diff_copy = diff;
-                lv_event_send(lv_scr_act(), EVENT_ROTARY, (void *) diff_copy);
+                // Send enhanced rotary event with multiplier info
+                rotary_event_enhanced_t *enhanced = (rotary_event_enhanced_t *)malloc(sizeof(rotary_event_enhanced_t));
+                enhanced->raw_diff = diff;
+                enhanced->multiplier = g_adaptive_tuning.current_multiplier;
+                // effective_step will be calculated by receiver based on current freq step
+                enhanced->effective_step = 0; 
+                lv_event_send(lv_scr_act(), EVENT_ROTARY_ENHANCED, (void *)enhanced);
             } else {
                 data->continue_reading = 1;
                 remain_diff = diff;

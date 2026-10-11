@@ -18,8 +18,10 @@
 #include "events.h"
 #include "keyboard.h"
 #include "clock.h"
-#include "voice.h"
+#include "voice_stub.h"
 #include "audio.h"
+#include "audio_enhancement.h"
+#include "waterfall.h"
 #include "main.h"
 
 #include <sys/time.h>
@@ -150,6 +152,20 @@ static lv_obj_t * dropdown_uint8_custom_cb(lv_obj_t *parent, params_uint8_t *var
 
 static lv_obj_t * dropdown_uint8(lv_obj_t *parent, params_uint8_t *var, const char *options) {
     return dropdown_uint8_custom_cb(parent, var, options, uint8_dropdown_update_cb);
+}
+
+static void audio_enh_update_cb(lv_event_t * e) {
+    lv_obj_t        *obj = lv_event_get_target(e);
+    params_uint8_t  *var = lv_event_get_user_data(e);
+
+    params_uint8_set(var, lv_dropdown_get_selected(obj));
+    audio_enh_preset_load((audio_enh_preset_t) var->x);
+}
+
+static void waterfall_battery_update_cb(lv_event_t * e) {
+    lv_obj_t *obj = lv_event_get_target(e);
+
+    waterfall_set_battery_mode(lv_obj_has_state(obj, LV_STATE_CHECKED));
 }
 
 static void slider_with_text(lv_obj_t *cell, int32_t val, int32_t min, int32_t max, size_t width, char *fmt, lv_event_cb_t event_cb) {
@@ -700,10 +716,10 @@ static action_items_t long_action_items[] = {
     { .label = " APP RTTY ", .action = ACTION_APP_RTTY },
     { .label = " APP FT8 ", .action = ACTION_APP_FT8 },
     { .label = " APP SWR Scan ", .action = ACTION_APP_SWRSCAN },
-    { .label = " APP GPS ", .action = ACTION_APP_GPS },
     { .label = " APP Settings", .action = ACTION_APP_SETTINGS },
     { .label = " APP Recorder", .action = ACTION_APP_RECORDER },
     { .label = " QTH Grid", .action = ACTION_APP_QTH },
+    { .label = " About ", .action = ACTION_APP_ABOUT },
     { .label = NULL, .action = ACTION_NONE }
 };
 
@@ -966,6 +982,30 @@ static uint8_t make_audio_gain(uint8_t row) {
     lv_obj_center(cell);
 
     slider_with_text(cell, params.rec_gain_db_f.x, -10, 10, SMALL_3 - 30 - 65, "%.1f", rec_gain_update_cb);
+
+    return row + 1;
+}
+
+/* Audio enhancement (AF leveler / NR presets, see docs/AUDIO_ENHANCEMENT_GUIDE.md) */
+
+static uint8_t make_audio_enh(uint8_t row) {
+    lv_obj_t    *obj;
+    uint8_t     col = 0;
+
+    row_dsc[row] = 54;
+
+    obj = lv_label_create(grid);
+
+    lv_label_set_text(obj, "Audio enhance");
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    obj = dropdown_uint8_custom_cb(grid, &params.audio_enh_preset,
+                                   " Off \n CW weak \n SSB voice \n AM broadcast \n Digital",
+                                   audio_enh_update_cb);
+
+    lv_obj_set_size(obj, SMALL_6, 56);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_center(obj);
 
     return row + 1;
 }
@@ -1245,6 +1285,34 @@ static uint8_t make_waterfall_smooth_scroll(uint8_t row) {
     return row + 1;
 }
 
+static uint8_t make_waterfall_battery(uint8_t row) {
+    lv_obj_t    *obj;
+    uint8_t     col = 0;
+
+    row_dsc[row] = 54;
+
+    obj = lv_label_create(grid);
+
+    lv_label_set_text(obj, "Waterfall battery mode");
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    obj = lv_obj_create(grid);
+
+    lv_obj_set_size(obj, SMALL_3, 56);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_center(obj);
+
+    obj = switch_bool(obj, &params.waterfall_battery);
+
+    lv_obj_add_event_cb(obj, waterfall_battery_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    lv_obj_set_width(obj, SMALL_3 - 30);
+
+    return row + 1;
+}
+
 static void sp_mode_update_cb(lv_event_t * e) {
     lv_obj_t *obj = lv_event_get_target(e);
 
@@ -1384,6 +1452,7 @@ static void construct_cb(lv_obj_t *parent) {
 
     row = make_delimiter(row);
     row = make_audio_gain(row);
+    row = make_audio_enh(row);
 
     row = make_delimiter(row);
     row = make_voice(row);
@@ -1394,6 +1463,7 @@ static void construct_cb(lv_obj_t *parent) {
     row = make_delimiter(row);
     row = make_waterfall_line_zoom(row);
     row = make_waterfall_smooth_scroll(row);
+    row = make_waterfall_battery(row);
 
     row = make_delimiter(row);
     row = make_sp_mode(row);

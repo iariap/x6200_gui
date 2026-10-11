@@ -22,3 +22,4 @@ void waterfall_update_max(float db);
 void waterfall_update_min(float db);
 void waterfall_refresh_reset();
 void waterfall_refresh_period_set(uint8_t k);
+void waterfall_set_battery_mode(bool enabled);

@@ -21,7 +21,7 @@ extern "C" {
     #include "msg.h"
     #include "pannel.h"
     #include "params/params.h"
-    #include "voice.h"
+    #include "voice_stub.h"
     #include "pubsub_ids.h"
     #include "cfg/mode.h"
 }
@@ -321,7 +321,6 @@ static button_item_t btn_eq = make_app_btn("Eq", ACTION_APP_EQ);
 static button_item_t btn_rtty = make_app_btn("RTTY", ACTION_APP_RTTY);
 static button_item_t btn_ft8  = make_app_btn("FT8", ACTION_APP_FT8);
 static button_item_t btn_swr  = make_app_btn("SWR\nScan", ACTION_APP_SWRSCAN);
-static button_item_t btn_gps  = make_app_btn("GPS", ACTION_APP_GPS);
 
 static button_item_t btn_rec      = make_app_btn("Recorder", ACTION_APP_RECORDER);
 static button_item_t btn_qth      = make_action_btn("QTH", ACTION_APP_QTH);
@@ -453,7 +452,7 @@ static button_item_t btn_app_p2 = make_page_btn("(APP 2:3)", "Application|page 2
 static button_item_t btn_app_p3 = make_page_btn("(APP 3:3)", "Application|page 3");
 
 static buttons_page_t page_app_1 = {
-    {&btn_app_p1, &btn_rtty, &btn_ft8, &btn_swr, &btn_gps}
+    {&btn_app_p1, &btn_rtty, &btn_ft8, &btn_swr, NULL}
 };
 static buttons_page_t page_app_2 = {
     {&btn_app_p2, &btn_rec, &btn_qth, &btn_callsign, &btn_settings}

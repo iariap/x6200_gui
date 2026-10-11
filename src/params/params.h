@@ -15,7 +15,7 @@
 #include <ft8lib/constants.h>
 #include "../radio.h"
 #include "../clock.h"
-#include "../voice.h"
+#include "../voice_stub.h"
 #include "common.h"
 #include "types.h"
 #include "../cfg/cfg.h"
@@ -41,13 +41,13 @@ typedef enum {
     ACTION_APP_RTTY = 100,
     ACTION_APP_FT8,
     ACTION_APP_SWRSCAN,
-    ACTION_APP_GPS,
     ACTION_APP_SETTINGS,
     ACTION_APP_RECORDER,
     ACTION_APP_QTH,
     ACTION_APP_CALLSIGN,
     ACTION_APP_WIFI,
     ACTION_APP_EQ,
+    ACTION_APP_ABOUT,
 } press_action_t;
 
 typedef enum {
@@ -114,6 +114,7 @@ typedef struct {
     params_bool_t       waterfall_smooth_scroll;
     params_bool_t       waterfall_center_line;
     params_bool_t       waterfall_zoom;
+    params_bool_t       waterfall_battery;      /* skip 3 of 4 waterfall frames */
     params_bool_t       mag_freq;
     params_bool_t       mag_info;
     params_bool_t       mag_alc;
@@ -167,6 +168,10 @@ typedef struct {
 
     params_float_t      play_gain_db_f;
     params_float_t      rec_gain_db_f;
+
+    /* Audio enhancement */
+
+    params_uint8_t      audio_enh_preset;
 
     /* Voice */
 

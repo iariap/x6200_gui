@@ -25,13 +25,13 @@
 #include "keypad.h"
 #include "params/params.h"
 #include "audio.h"
+#include "audio_enhancement.h"
 #include "cw.h"
 #include "pannel.h"
 #include "cat.h"
 #include "rtty.h"
 #include "backlight.h"
 #include "events.h"
-#include "gps.h"
 #include "mfk.h"
 #include "vol.h"
 #include "qso_log.h"
@@ -101,6 +101,7 @@ int main(void) {
     mfk_inner->right[ROT_MFK_INNER_INVERSE_MODE] = LV_KEY_UP;
 
     params_init();
+    audio_enh_preset_load((audio_enh_preset_t) params.audio_enh_preset.x);
     audio_set_play_vol(params.play_gain_db_f.x);
     audio_set_rec_vol(params.rec_gain_db_f.x);
     mfk_change_mode(0);
@@ -109,6 +110,7 @@ int main(void) {
 
     dsp_init();
     lv_obj_t *main_obj = main_screen();
+    waterfall_set_battery_mode(params.waterfall_battery.x);
 
     cw_init();
     rtty_init();
@@ -120,7 +122,6 @@ int main(void) {
     backlight_init();
     cat_init();
     // pannel_visible();
-    gps_init();
     if (!qso_log_init()) {
         LV_LOG_ERROR("Can't init QSO log");
     }

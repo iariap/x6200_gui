@@ -37,19 +37,20 @@
 #include "dialog_msg_voice.h"
 #include "dialog_swrscan.h"
 #include "dialog_ft8.h"
-#include "dialog_gps.h"
 #include "dialog_qth.h"
 #include "dialog_recorder.h"
 #include "dialog_callsign.h"
 #include "dialog_wifi.h"
 #include "dialog_eq.h"
+#include "dialog_about.h"
 #include "backlight.h"
 #include "buttons.h"
 #include "recorder.h"
-#include "voice.h"
+#include "voice_stub.h"
 #include "pubsub_ids.h"
 #include "cfg/mode.h"
 #include "cfg/memory.h"
+#include "adaptive_tuning.h"
 
 #include <unistd.h>
 #include <stdint.h>
@@ -71,6 +72,8 @@ static lv_obj_t     *msg;
 static lv_obj_t     *msg_tiny;
 static lv_obj_t     *meter;
 static lv_obj_t     *tx_info;
+static lv_obj_t     *tuning_multiplier_label;
+static lv_timer_t   *multiplier_hide_timer;
 
 static void freq_shift(int16_t diff);
 static void next_freq_step(bool up);
@@ -142,11 +145,6 @@ void main_screen_start_app(press_action_t app_action) {
         case ACTION_APP_FT8:
             dialog_construct(dialog_ft8, obj);
             voice_say_text_fmt("FT8 window");
-            break;
-
-        case ACTION_APP_GPS:
-            dialog_construct(dialog_gps, obj);
-            voice_say_text_fmt("GPS window");
             break;
 
         case ACTION_APP_RECORDER:
@@ -226,7 +224,6 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_RTTY:
         case ACTION_APP_FT8:
         case ACTION_APP_SWRSCAN:
-        case ACTION_APP_GPS:
         case ACTION_APP_SETTINGS:
         case ACTION_APP_RECORDER:
         case ACTION_APP_WIFI:
@@ -241,6 +238,10 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_CALLSIGN:
             dialog_construct(dialog_callsign, obj);
             voice_say_text_fmt("Callsign window");
+            break;
+
+        case ACTION_APP_ABOUT:
+            dialog_construct(dialog_about, obj);
             break;
     }
 }
@@ -823,12 +824,80 @@ static void freq_shift(int16_t diff) {
     voice_say_freq(freq);
 }
 
-static void main_screen_rotary_cb(lv_event_t * e) {
-    int32_t *diff = (int32_t *) lv_event_get_param(e);
+static void update_tuning_multiplier_display(float multiplier) {
+    if (!tuning_multiplier_label) return;
+    
+    // Update text
+    lv_label_set_text_fmt(tuning_multiplier_label, "x%.1f", multiplier);
+    
+    // Update color based on range
+    lv_color_t color;
+    if (multiplier < 1.0f) {
+        color = lv_color_hex(0x4488FF);  // Blue - fine
+    } else if (multiplier < 2.0f) {
+        color = lv_color_white();         // White - normal
+    } else if (multiplier < 10.0f) {
+        color = lv_color_hex(0xFFCC00);   // Yellow - fast
+    } else {
+        color = lv_color_hex(0xFF4444);   // Red - scan
+    }
+    lv_obj_set_style_text_color(tuning_multiplier_label, color, 0);
+    lv_obj_clear_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
+    
+    // Reset hide timer
+    if (multiplier_hide_timer) {
+        lv_timer_reset(multiplier_hide_timer);
+        lv_timer_resume(multiplier_hide_timer);
+    }
+}
 
-    freq_shift(*diff);
-    dialog_rotary(*diff);
-    free(diff);
+static void hide_multiplier_cb(lv_timer_t *timer) {
+    if (tuning_multiplier_label) {
+        lv_obj_add_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+/* The adaptive multiplier is gated by the user "Freq acceleration" setting so
+ * that it keeps its original meaning: none = 1x (no acceleration),
+ * lite = up to 10x, strong = up to 100x (band scanning). */
+_Static_assert(FREQ_ACCEL_NONE == ADAPTIVE_ACCEL_NONE &&
+               FREQ_ACCEL_LITE == ADAPTIVE_ACCEL_LITE &&
+               FREQ_ACCEL_STRONG == ADAPTIVE_ACCEL_STRONG,
+               "freq_accel_t must match adaptive_accel_t");
+
+static void main_screen_rotary_enhanced_cb(lv_event_t * e) {
+    rotary_event_enhanced_t *enhanced = (rotary_event_enhanced_t *)lv_event_get_param(e);
+    float multiplier = adaptive_multiplier_gate(enhanced->multiplier,
+                                                (adaptive_accel_t) params.freq_accel.x);
+    
+    if (!subject_get_int(freq_lock)) {
+        int32_t freq = subject_get_int(cfg_cur.fg_freq);
+        int32_t base_step = subject_get_int(cfg_cur.freq_step);
+        
+        // Calculate adaptive step using the multiplier
+        int32_t adaptive_step = (int32_t)(base_step * multiplier);
+
+        if (adaptive_step < 1) {
+            adaptive_step = 1;
+        }
+        
+        int32_t df = enhanced->raw_diff * adaptive_step;
+
+        /* align_int() takes a uint16_t grid, so for very large scan steps keep
+         * the normal step grid instead of overflowing a cast. */
+        uint16_t grid = (adaptive_step <= 65535) ? (uint16_t)adaptive_step : (uint16_t)base_step;
+        
+        // Apply frequency change (range limits are handled by the cfg subjects)
+        freq = align_int(freq + df, grid);
+        
+        subject_set_int(cfg_cur.fg_freq, freq);
+    }
+    
+    // Update multiplier display
+    update_tuning_multiplier_display(multiplier);
+    
+    dialog_rotary(enhanced->raw_diff);
+    free(enhanced);
 }
 
 static void spectrum_key_cb(lv_event_t * e) {
@@ -1022,7 +1091,7 @@ lv_obj_t * main_screen() {
 
     obj = lv_obj_create(NULL);
 
-    lv_obj_add_event_cb(obj, main_screen_rotary_cb, EVENT_ROTARY, NULL);
+    lv_obj_add_event_cb(obj, main_screen_rotary_enhanced_cb, EVENT_ROTARY_ENHANCED, NULL);
     lv_obj_add_event_cb(obj, main_screen_keypad_cb, EVENT_KEYPAD, NULL);
     lv_obj_add_event_cb(obj, main_screen_hkey_cb, EVENT_HKEY, NULL);
     lv_obj_add_event_cb(obj, main_screen_radio_cb, EVENT_RADIO_TX, NULL);
@@ -1086,6 +1155,20 @@ lv_obj_t * main_screen() {
 
     meter = meter_init(obj);
     tx_info = tx_info_init(obj);
+    
+    // Tuning multiplier display (adaptive tuning)
+    tuning_multiplier_label = lv_label_create(obj);
+    lv_obj_set_style_text_font(tuning_multiplier_label, &sony_16, 0);
+    lv_obj_align(tuning_multiplier_label, LV_ALIGN_TOP_RIGHT, -10, 10);
+    lv_label_set_text(tuning_multiplier_label, "x1.0");
+    lv_obj_add_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
+    
+    // Hide timer for multiplier display
+    multiplier_hide_timer = lv_timer_create(hide_multiplier_cb, 2000, NULL);
+    lv_timer_pause(multiplier_hide_timer);
+    
+    // Initialize adaptive tuning
+    adaptive_tuning_init(&g_adaptive_tuning);
 
     cw_tune_init(obj);
 

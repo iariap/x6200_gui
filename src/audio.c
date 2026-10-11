@@ -23,6 +23,7 @@
 #include "meter.h"
 #include "dsp.h"
 #include "params/params.h"
+#include "audio_enhancement.h"
 
 #define AUDIO_RATE_MS   100
 
@@ -50,6 +51,10 @@ static void read_callback(pa_stream *s, size_t nbytes, void *udata) {
     int16_t *buf = NULL;
 
     pa_stream_peek(s, (const void**) &buf, &nbytes);
+    
+    // Apply audio enhancement processing
+    audio_enh_process(buf, nbytes / 2);
+    
     dsp_put_audio_samples(nbytes / 2, buf);
     pa_stream_drop(s);
 }
@@ -78,6 +83,7 @@ static void mixer_setup() {
 
 void audio_init() {
     mixer_setup();
+    audio_enh_init();
     mloop = pa_threaded_mainloop_new();
     pa_threaded_mainloop_start(mloop);
 

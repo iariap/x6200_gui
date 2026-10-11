@@ -8,14 +8,16 @@ target_sources(${PROJECT_NAME} PUBLIC
     hkey.c clock.c info.c
     meter.c band_info.c tx_info.c
     audio.c mfk.cpp cw.cpp cw_decoder.c pannel.c
-    rtty.c screenshot.c backlight.c gps.c cat.cpp
+    rtty.c screenshot.c backlight.c cat.cpp
     dialog.c dialog_settings.c dialog_swrscan.c
-    dialog_ft8.c dialog_freq.c dialog_gps.c dialog_msg_cw.c
+    dialog_ft8.c dialog_freq.c dialog_msg_cw.c
     dialog_msg_voice.c dialog_recorder.c dialog_qth.c dialog_callsign.c
     textarea_window.c cw_encoder.c buttons.cpp vol.c recorder.c
-    voice.cpp cw_tune_ui.c adif.c qso_log.c scheduler.cpp
+    cw_tune_ui.c adif.c qso_log.c scheduler.cpp
     dialog_wifi.c wifi.cpp controls.cpp usb_devices.cpp
-    dialog_eq.cpp
+    dialog_eq.cpp dialog_about.c
+    adaptive_tuning.c
+    audio_enhancement.c
 )
 
 add_subdirectory(fonts)
@@ -26,7 +28,6 @@ add_subdirectory(qth)
 add_subdirectory(cfg)
 
 include_directories(utf8)
-include_directories(${CMAKE_SYSROOT}/usr/include/RHVoice/)
 include_directories(${CMAKE_SYSROOT}/usr/include/ft8lib/)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -34,7 +35,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
 pkg_check_modules(deps REQUIRED IMPORTED_TARGET
-    libnm dbus-glib-1 sqlite3 libpng libgps sndfile libudev libpulse libpulse-simple alsa
+    libnm dbus-glib-1 sqlite3 libpng sndfile libudev libpulse libpulse-simple alsa speexdsp
 )
 
 
@@ -45,7 +46,6 @@ Threads::Threads
 lvgl lvgl::drivers
 aether_x6200_control
 liquid
-RHVoice RHVoice_core RHVoice_audio
 ft8
 )
 

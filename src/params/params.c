@@ -48,6 +48,7 @@ params_t params = {
     .waterfall_smooth_scroll= { .x = false,  .name = "waterfall_smooth_scroll",  .voice = "Waterfall smooth scroll"},
     .waterfall_center_line  = { .x = true,  .name = "waterfall_center_line",    .voice = "Waterfall center line"},
     .waterfall_zoom         = { .x = true,  .name = "waterfall_zoom",           .voice = "Waterfall zoom"},
+    .waterfall_battery      = { .x = false, .name = "waterfall_battery",        .voice = "Waterfall battery mode"},
     .mag_freq               = { .x = true,  .name = "mag_freq",                 .voice = "Magnification of frequency" },
     .mag_info               = { .x = true,  .name = "mag_info",                 .voice = "Magnification of info" },
     .mag_alc                = { .x = true,  .name = "mag_alc",                  .voice = "Magnification of A L C" },
@@ -106,6 +107,8 @@ params_t params = {
 
     .play_gain_db_f         = { .x = 0.0f, .name = "play_gain_db_f"},
     .rec_gain_db_f          = { .x = 0.0f, .name = "rec_gain_db_f"},
+
+    .audio_enh_preset       = { .x = 0, .max = 4, .name = "audio_enh_preset", .voice = "Audio enhancement" },
 
     .voice_mode             = { .x = VOICE_LCD,                                 .name = "voice_mode" },
     .voice_lang             = { .x = 0,   .min = 0,  .max = (VOICES_NUM - 1),   .name = "voice_lang" },
@@ -278,6 +281,7 @@ static bool params_load() {
 
         if (params_load_float(&params.play_gain_db_f, name, f)) continue;
         if (params_load_float(&params.rec_gain_db_f, name, f)) continue;
+        if (params_load_uint8(&params.audio_enh_preset, name, i)) continue;
 
         if (params_load_bool(&params.mag_freq, name, i)) continue;
         if (params_load_bool(&params.mag_info, name, i)) continue;
@@ -289,6 +293,7 @@ static bool params_load() {
         if (params_load_bool(&params.waterfall_smooth_scroll, name, i)) continue;
         if (params_load_bool(&params.waterfall_center_line, name, i)) continue;
         if (params_load_bool(&params.waterfall_zoom, name, i)) continue;
+        if (params_load_bool(&params.waterfall_battery, name, i)) continue;
         if (params_load_bool(&params.spmode, name, i)) continue;
         if (params_load_bool(&params.ft8_auto, name, i)) continue;
         if (params_load_float(&params.ft8_output_gain_offset, name, f)) continue;
@@ -409,6 +414,7 @@ static void params_save() {
 
     params_save_float(&params.play_gain_db_f);
     params_save_float(&params.rec_gain_db_f);
+    params_save_uint8(&params.audio_enh_preset);
 
     params_save_uint8(&params.voice_mode);
     params_save_uint8(&params.voice_lang);
@@ -429,6 +435,7 @@ static void params_save() {
     params_save_bool(&params.waterfall_smooth_scroll);
     params_save_bool(&params.waterfall_center_line);
     params_save_bool(&params.waterfall_zoom);
+    params_save_bool(&params.waterfall_battery);
     params_save_bool(&params.spmode);
     params_save_bool(&params.ft8_auto);
     params_save_float(&params.ft8_output_gain_offset);

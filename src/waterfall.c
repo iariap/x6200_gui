@@ -229,6 +229,11 @@ void waterfall_refresh_period_set(uint8_t k) {
     refresh_period = k;
 }
 
+void waterfall_set_battery_mode(bool enabled) {
+    /* In battery mode, skip 3 out of 4 frames (75% reduction) */
+    refresh_period = enabled ? 4 : 1;
+}
+
 static void redraw_cb(lv_event_t * e) {
     int32_t src_x_offset;
     int16_t src_y, src_x0, dst_y, dst_x;
