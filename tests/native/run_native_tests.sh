@@ -1,0 +1,55 @@
+#!/bin/sh
+#
+# Native (host) unit tests for the modules fixed in the 2026-10-11 ROM revision.
+# No network, no Catch2, no target hardware: LVGL/liquid/Speex are stubbed.
+#
+# Usage: tests/native/run_native_tests.sh [output-dir]
+#
+# Sanitizers are used when the toolchain runtime is available; otherwise the
+# script falls back to plain compilation plus GCC's static analyzer.
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+set -e
+
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+SRC="$DIR/../../src"
+OUT="${1:-$DIR/build}"
+CC="${CC:-gcc}"
+
+mkdir -p "$OUT"
+
+BASEFLAGS="-std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter"
+SAN="-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover"
+
+SOURCES="$SRC/adaptive_tuning.c $SRC/audio_enhancement.c \
+$DIR/stubs/stubs.c $DIR/test_main.c \
+$DIR/test_adaptive_tuning.c $DIR/test_audio_enhancement.c"
+
+echo "== compilador: $($CC --version | head -1) =="
+
+# Detect sanitizer runtime support (some hosts ship the compiler without libasan).
+if echo 'int main(void){return 0;}' | $CC -x c - $SAN -o "$OUT/.san_probe" >/dev/null 2>&1; then
+    SAN_OK=yes
+    echo "== sanitizers: ASan + UBSan =="
+else
+    SAN_OK=no
+    echo "== sanitizers: NO disponibles en este toolchain (se omite) =="
+fi
+
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$DIR/stubs" -I"$SRC" $SOURCES -lm -o "$OUT/native_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$DIR/stubs" -I"$SRC" $SOURCES -lm -o "$OUT/native_tests"
+fi
+
+echo "== analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$DIR/stubs" -I"$SRC" -c "$SRC/adaptive_tuning.c" -o "$OUT/adaptive_tuning.o" || true
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$DIR/stubs" -I"$SRC" -c "$SRC/audio_enhancement.c" -o "$OUT/audio_enhancement.o" || true
+
+echo "== ejecutando =="
+"$OUT/native_tests"

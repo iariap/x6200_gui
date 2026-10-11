@@ -1,0 +1,113 @@
+/*
+ * Stub implementations for the host/ARM unit tests (see docs/TESTING.md).
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+#include <stdint.h>
+#include <stdlib.h>
+
+#include "lvgl/lvgl.h"
+#include "liquid/liquid.h"
+#include "speex/speex_preprocess.h"
+
+/* ---------------- LVGL ---------------- */
+
+static uint32_t test_tick = 0;
+
+uint32_t lv_tick_get(void) {
+    return test_tick;
+}
+
+void test_tick_set(uint32_t ms) {
+    test_tick = ms;
+}
+
+void test_tick_advance(uint32_t ms) {
+    test_tick += ms;
+}
+
+/* ---------------- liquid-dsp (pass-through notch) ---------------- */
+
+struct firfilt_rrrf_s {
+    float last;
+};
+
+firfilt_rrrf firfilt_rrrf_create_notch(unsigned int m, float As, float f0) {
+    (void) m;
+    (void) As;
+    (void) f0;
+
+    return calloc(1, sizeof(struct firfilt_rrrf_s));
+}
+
+void firfilt_rrrf_destroy(firfilt_rrrf q) {
+    free(q);
+}
+
+void firfilt_rrrf_push(firfilt_rrrf q, float x) {
+    q->last = x;
+}
+
+void firfilt_rrrf_execute(firfilt_rrrf q, float *y) {
+    *y = q->last;
+}
+
+/* ---------------- SpeexDSP preprocessor ---------------- */
+
+struct SpeexPreprocessState_ {
+    int frame_size;
+    int denoise;
+    int noise_suppress;
+};
+
+static int speex_frames_processed = 0;
+
+SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sampling_rate) {
+    (void) sampling_rate;
+
+    SpeexPreprocessState *st = calloc(1, sizeof(*st));
+
+    if (st) {
+        st->frame_size = frame_size;
+    }
+
+    return st;
+}
+
+void speex_preprocess_state_destroy(SpeexPreprocessState *st) {
+    free(st);
+}
+
+int speex_preprocess_ctl(SpeexPreprocessState *st, int request, void *ptr) {
+    if (!st || !ptr) {
+        return -1;
+    }
+
+    if (request == SPEEX_PREPROCESS_SET_DENOISE) {
+        st->denoise = *(int *) ptr;
+    } else if (request == SPEEX_PREPROCESS_SET_NOISE_SUPPRESS) {
+        st->noise_suppress = *(int *) ptr;
+    }
+
+    return 0;
+}
+
+int speex_preprocess_run(SpeexPreprocessState *st, int16_t *x) {
+    if (!st) {
+        return 0;
+    }
+
+    /* Deterministic: attenuate 6 dB so tests can detect that it ran. */
+    for (int i = 0; i < st->frame_size; i++) {
+        x[i] = (int16_t) (x[i] / 2);
+    }
+
+    speex_frames_processed++;
+
+    return 1;
+}
+
+int test_speex_frames(void) {
+    return speex_frames_processed;
+}
