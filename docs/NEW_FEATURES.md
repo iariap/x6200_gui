@@ -8,8 +8,8 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | Decodificados FT8/FT4 por **UDP** (GridTracker, JTAlert) | ✅ 2026-10-11 | [FT8_UDP.md](FT8_UDP.md) |
 | **Aviso de nueva versión** | ✅ 2026-10-11 | §2 de este documento |
 | **Aguja de S-meter** | ✅ 2026-10-11 | §3 |
+| **Band plan IARU** sobre el waterfall | ✅ 2026-10-11 | §4 |
 | Temas JSON | ⏳ pendiente | — |
-| Band plan IARU sobre el waterfall | ⏳ pendiente | — |
 | Grabación de pantalla (AVI) | ⏳ pendiente | — |
 | Bluetooth CAT / auriculares / teclado | ⏳ pendiente | — |
 | wfview (la radio como IC-705 en red) | ⏳ pendiente | — |
@@ -73,3 +73,28 @@ indicando el nivel actual, con el valor en dB debajo.
 - Es un parámetro persistido (`smeter_needle`), así que queda guardado en `/mnt/params.db`.
 - **Sin verificar visualmente**: no tenemos pantalla en el banco de pruebas; la geometría
   sigue la del original, pero conviene mirarla en la radio y ajustar si hace falta.
+
+---
+
+## 4. Band plan IARU
+
+Una **franja fina sobre la parte baja del espectro**, alineada con la fila de frecuencia, que
+muestra qué es cada tramo del span visible (IARU Región 1, 160 m a 6 m):
+
+| Color | Significado |
+|---|---|
+| Azul | CW |
+| Verde | Modos digitales |
+| Gris | Todos los modos / SSB |
+| Ámbar | Balizas |
+
+- `Ajustes → Band plan` la prende/apaga (persistido como `band_plan`); por defecto **encendida**.
+- Sigue el mismo span que las etiquetas de frecuencia, así que se mueve con el dial y con el
+  ancho del espectro. Los segmentos se recortan al borde y las etiquetas ("CW", "DIG", "BCN",
+  "SSB") solo se dibujan si entran en el hueco; si no, queda solo el color.
+- 24 segmentos simultáneos como máximo (un span muy ancho puede mostrar varias bandas juntas).
+- La tabla de frecuencias y la geometría están separadas del dibujo (`band_plan_data.c`, sin
+  LVGL) para poder testearlas: **72 comprobaciones** cubren el mapeo a píxeles, el recorte, los
+  spans anchos, fuera de banda y los casos degenerados.
+- Los colores en el X6100 salen del sistema de temas; acá son fijos hasta que portemos los
+  temas JSON.

@@ -51,6 +51,7 @@
 #include "cfg/mode.h"
 #include "cfg/memory.h"
 #include "adaptive_tuning.h"
+#include "band_plan.h"
 
 #include <unistd.h>
 #include <stdint.h>
@@ -1143,6 +1144,10 @@ lv_obj_t * main_screen() {
     lv_obj_set_y(waterfall, y);
     waterfall_set_height(480 - y);
 
+    /* IARU band plan strip: at the bottom of the spectrum, lined up with the
+     * frequency row (created after the waterfall so it stays on top). */
+    band_plan_init(obj, spectrum_height - BAND_PLAN_H);
+
     buttons_init(obj);
     buttons_load_page(&buttons_page_vol_1);
 
@@ -1257,4 +1262,7 @@ static void update_freq_boundaries(Subject *subj, void *user_data) {
 
     split_freq(f + half_width, &mhz, &khz, &hz);
     lv_label_set_text_fmt(freq[2], "#%03X %i.%03i", color, mhz, khz);
+
+    /* The band plan strip follows the same span as the frequency labels */
+    band_plan_update(f, (int32_t) half_width);
 }

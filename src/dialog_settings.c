@@ -22,6 +22,7 @@
 #include "audio.h"
 #include "audio_enhancement.h"
 #include "waterfall.h"
+#include "band_plan.h"
 #include "main.h"
 
 #include <sys/time.h>
@@ -640,6 +641,41 @@ static uint8_t make_smeter(uint8_t row) {
     lv_obj_center(obj);
 
     obj = switch_bool(obj, &params.smeter_needle);
+
+    lv_obj_set_width(obj, SMALL_3 - 30);
+
+    return row + 1;
+}
+
+static void band_plan_refresh_cb(lv_event_t * e) {
+    (void) e;
+
+    /* The parameter itself is handled by switch_bool(); here we only redraw. */
+    band_plan_refresh();
+}
+
+static uint8_t make_band_plan(uint8_t row) {
+    lv_obj_t    *obj;
+    uint8_t     col = 0;
+
+    row_dsc[row] = 54;
+
+    obj = lv_label_create(grid);
+
+    lv_label_set_text(obj, "Band plan");
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    obj = lv_obj_create(grid);
+
+    lv_obj_set_size(obj, SMALL_3, 56);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_center(obj);
+
+    obj = switch_bool(obj, &params.band_plan);
+
+    lv_obj_add_event_cb(obj, band_plan_refresh_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     lv_obj_set_width(obj, SMALL_3 - 30);
 
@@ -1467,6 +1503,7 @@ static void construct_cb(lv_obj_t *parent) {
     row = make_delimiter(row);
     row = make_mag(row);
     row = make_smeter(row);
+    row = make_band_plan(row);
 
     row = make_delimiter(row);
     row = make_clock(row);
