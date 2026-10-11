@@ -22,9 +22,9 @@ mkdir -p "$OUT"
 BASEFLAGS="-std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter"
 SAN="-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover"
 
-SOURCES="$SRC/adaptive_tuning.c $SRC/audio_enhancement.c \
+SOURCES="$SRC/adaptive_tuning.c $SRC/audio_enhancement.c $SRC/ft8_udp.c \
 $DIR/stubs/stubs.c $DIR/test_main.c \
-$DIR/test_adaptive_tuning.c $DIR/test_audio_enhancement.c"
+$DIR/test_adaptive_tuning.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c"
 
 echo "== compilador: $($CC --version | head -1) =="
 
@@ -46,10 +46,10 @@ else
 fi
 
 echo "== analisis estatico (gcc -fanalyzer) =="
-# shellcheck disable=SC2086
-$CC $BASEFLAGS -fanalyzer -I"$DIR/stubs" -I"$SRC" -c "$SRC/adaptive_tuning.c" -o "$OUT/adaptive_tuning.o" || true
-# shellcheck disable=SC2086
-$CC $BASEFLAGS -fanalyzer -I"$DIR/stubs" -I"$SRC" -c "$SRC/audio_enhancement.c" -o "$OUT/audio_enhancement.o" || true
+for f in adaptive_tuning audio_enhancement ft8_udp; do
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -fanalyzer -I"$DIR/stubs" -I"$SRC" -c "$SRC/$f.c" -o "$OUT/$f.o" || true
+done
 
 echo "== ejecutando =="
 "$OUT/native_tests"

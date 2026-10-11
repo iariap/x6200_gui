@@ -37,6 +37,7 @@
 #include "adif.h"
 #include "qso_log.h"
 #include "scheduler.h"
+#include "ft8_udp.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -200,6 +201,81 @@ static dialog_t dialog = {
 
 dialog_t *dialog_ft8 = &dialog;
 
+/* ---- WSJT-X datagrams over UDP (ft8_udp.c, ported from the X6100 firmware) ----
+ * GridTracker, JTAlert, Log4OM and friends listen on UDP 2237. Status is sent
+ * whenever something they display changes (RX/TX, audio offset, dial frequency,
+ * station worked) and with every heartbeat: one 250 ms timer compares and sends.
+ * Configuration lives in /mnt/ft8_udp.conf (created with defaults on first run). */
+
+#define UDP_POLL_MS         250
+#define UDP_HEARTBEAT_POLLS 60      /* 15 s, as WSJT-X */
+
+static lv_timer_t *udp_timer;
+static uint32_t    udp_polls;
+static int         udp_last_state = -1;
+static int32_t     udp_last_df    = -1;
+static int64_t     udp_last_freq  = -1;
+static char        udp_last_dx[16];
+
+static const char *udp_mode_str(void) {
+    return params.ft8_protocol == FTX_PROTOCOL_FT8 ? "FT8" : "FT4";
+}
+
+/* The station being worked: the pending TX message starts with it
+ * ("DXCALL MYCALL ..."), but a CQ message does not identify a station yet. */
+static void udp_current_dx_call(char *out, size_t out_sz) {
+    size_t i = 0;
+
+    while (tx_msg.msg[i] && tx_msg.msg[i] != ' ' && i < out_sz - 1) {
+        out[i] = tx_msg.msg[i];
+        i++;
+    }
+
+    out[i] = '\0';
+
+    if (strcmp(out, "CQ") == 0) {
+        out[0] = '\0';
+    }
+}
+
+static void udp_status_send(void) {
+    char     dx_call[16];
+    int32_t  freq = subject_get_int(cfg_cur.fg_freq);
+    uint32_t df   = params.ft8_tx_freq.x;
+
+    udp_current_dx_call(dx_call, sizeof(dx_call));
+
+    ft8_udp_send_status((uint64_t)freq, udp_mode_str(), params.callsign.x, params.qth.x,
+                        dx_call, df, df, state == TX_PROCESS, state != TX_PROCESS);
+
+    udp_last_state = (int)state;
+    udp_last_df    = (int32_t)df;
+    udp_last_freq  = (int64_t)freq;
+
+    snprintf(udp_last_dx, sizeof(udp_last_dx), "%s", dx_call);
+}
+
+static void udp_timer_cb(lv_timer_t *t) {
+    char    dx_call[16];
+    int32_t freq = subject_get_int(cfg_cur.fg_freq);
+
+    (void)t;
+
+    if (++udp_polls >= UDP_HEARTBEAT_POLLS) {
+        udp_polls = 0;
+        ft8_udp_send_heartbeat();
+        udp_status_send();
+        return;
+    }
+
+    udp_current_dx_call(dx_call, sizeof(dx_call));
+
+    if ((int)state != udp_last_state || (int32_t)params.ft8_tx_freq.x != udp_last_df ||
+        (int64_t)freq != udp_last_freq || strcmp(dx_call, udp_last_dx) != 0) {
+        udp_status_send();
+    }
+}
+
 static void save_qso(const char *remote_callsign, const char *remote_grid, const int r_snr, const int s_snr) {
     time_t now = time(NULL);
 
@@ -217,6 +293,11 @@ static void save_qso(const char *remote_callsign, const char *remote_grid, const
 
     // Save QSO to sqlite log
     qso_log_record_save(qso);
+
+    /* To WSJT-X listeners (GridTracker, JTAlert...): structured QSO + ADIF */
+    ft8_udp_log_qso(now, qso.remote_call, remote_grid, (uint64_t)subject_get_int(cfg_cur.fg_freq),
+                    udp_mode_str(), s_snr, r_snr, (int)subject_get_float(cfg.pwr.val),
+                    params.callsign.x, params.qth.x);
 
     msg_schedule_text_fmt("QSO saved");
     lv_finder_clear_cursor(finder);
@@ -476,6 +557,14 @@ static void destruct_cb() {
     keyboard_close();
     worker_done();
 
+    /* After the decoder thread, which also sends datagrams */
+    if (udp_timer) {
+        lv_timer_del(udp_timer);
+        udp_timer = NULL;
+    }
+
+    ft8_udp_deinit();
+
     firdecim_crcf_destroy(decim);
     free(audio_buf);
 
@@ -703,6 +792,14 @@ static void construct_cb(lv_obj_t *parent) {
 
     /* Logger */
     ft8_log = adif_log_init("/mnt/ft_log.adi");
+
+    /* WSJT-X datagrams over UDP (GridTracker, JTAlert...): /mnt/ft8_udp.conf */
+    ft8_udp_init();
+    udp_polls      = 0;
+    udp_last_state = -1;
+    ft8_udp_send_heartbeat();
+    udp_status_send();
+    udp_timer = lv_timer_create(udp_timer_cb, UDP_POLL_MS, NULL);
 
     if (subject_get_float(cfg.pwr.val) > MAX_PWR) {
         radio_set_pwr(MAX_PWR);
@@ -1189,6 +1286,10 @@ static void add_rx_text(int16_t snr, const char * text, slot_info_t *s_info, flo
 
 static void received_message_cb(const char *text, int snr, float freq_hz, float time_sec, void *user_data) {
     slot_info_t *s_info = (slot_info_t *)user_data;
+
+    /* To WSJT-X listeners first (decoder thread; the socket is non-blocking) */
+    ft8_udp_send_decode(true, udp_mode_str(), text, snr, time_sec, (uint32_t)(freq_hz + 0.5f));
+
     add_rx_text(snr, text, s_info, freq_hz, time_sec);
 }
 

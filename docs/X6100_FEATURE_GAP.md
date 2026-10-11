@@ -58,7 +58,7 @@ para modos que nunca se portaron.
 | *Spot snap* (el VFO se detiene en el spot al girar despacio) | ✅ | ❌ |
 | 5 servidores en paralelo + pota.app, sin duplicados | ✅ | ❌ |
 | País/bandera desde `cty.dat` (trabajo de SP2KMO) | ✅ | ❌ |
-| Decodificados por **UDP** para GridTracker/JTAlert | ✅ | ❌ |
+| Decodificados por **UDP** para GridTracker/JTAlert | ✅ | ✅ **desde 2026-10-11** ([FT8_UDP.md](FT8_UDP.md)) |
 | Mapa de QSO en FT8/JS8 | ✅ | ❌ |
 
 ### 2.3 Field Ops (SOTA / POTA) — pensado para QRP portátil
@@ -139,7 +139,7 @@ Para que la comparación no sea engañosa:
 
 | Prioridad | Feature | Valor | Esfuerzo | Notas |
 |---|---|---|---|---|
-| 1 | UDP de decodificados (GridTracker/JTAlert) + aviso de actualización + aguja S-meter | alto/inmediato | bajo | módulos chicos y aislados |
+| 1 | ~~UDP de decodificados (GridTracker/JTAlert)~~ **hecho** · queda: aviso de actualización + aguja S-meter | alto/inmediato | bajo | el UDP salió del port del X6100 (IU1WXY) con tests |
 | 2 | Temas JSON + band plan IARU sobre el waterfall | alto visual | bajo-medio | no toca DSP |
 | 3 | DX Cluster (spots + columna + spot snap) | muy alto | medio | necesita red y UI; el webserver ya existe |
 | 4 | Grabación de pantalla (AVI) | medio | medio | `avi_writer.c` + captura |
