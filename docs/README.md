@@ -18,6 +18,19 @@ They are mirrored from the project workspace, where the firmware is built.
 | [UPSTREAM_REBASE_PLAN.md](UPSTREAM_REBASE_PLAN.md) | ES | Upstream status and versions, how to rebase this fork, and how to mitigate the pending risks |
 | [AUDIO_ENHANCEMENT_GUIDE.md](AUDIO_ENHANCEMENT_GUIDE.md) | EN | Audio enhancement module (notch API, SpeexDSP NR, AF leveler, presets) and its current status |
 | [AUDIO_ENHANCEMENT_IMPLEMENTATION_PLAN.md](AUDIO_ENHANCEMENT_IMPLEMENTATION_PLAN.md) | EN | Original implementation plan (partially aspirational; see the guide for the current state) |
+| [RELEASE_NOTES_2026-10-11.md](RELEASE_NOTES_2026-10-11.md) | EN | What the first published SD image contains, hashes, install steps and caveats |
+
+## Downloads
+
+Prebuilt SD-card images are published as GitHub Releases (the image is ~545 MB, over
+GitHub's 100 MB file limit, so it is not committed to the repository):
+
+| Release | Image | Size | SHA256 |
+|---|---|---|---|
+| [lu2dsx-2026-10-11](https://github.com/iariap/x6200_gui/releases/tag/lu2dsx-2026-10-11) (beta) | `x6200_20261011_201456.img` | 545 MB | `d944fb9faff77603ec4d5c9c9812c66af31a2e99952ba09356301bdd6c545ea9` |
+
+Read [RELEASE_NOTES_2026-10-11.md](RELEASE_NOTES_2026-10-11.md) first: it lists what is
+included, how to write the card, and the OEM base-firmware version caveat.
 
 ## Project layout
 
@@ -31,9 +44,8 @@ images/                        generated SD-card images (sdcard.img, rootfs.tar)
 ```
 
 The SD-card image itself is **not** in this repository (it is ~545 MB and GitHub's
-file limit is 100 MB). Build it with the instructions in
-[UPSTREAM_REBASE_PLAN.md](UPSTREAM_REBASE_PLAN.md) and the build skill, or attach it
-to a GitHub Release (release assets allow up to 2 GB).
+file limit is 100 MB): see [Downloads](#downloads) above or build it with the
+instructions in [UPSTREAM_REBASE_PLAN.md](UPSTREAM_REBASE_PLAN.md) and the build skill.
 
 ## Building
 
