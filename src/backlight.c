@@ -16,7 +16,7 @@
 #include "lvgl/lvgl.h"
 #include "backlight.h"
 #include "util.h"
-#include "voice.h"
+#include "voice_stub.h"
 
 static int          power;
 static int          brightness;

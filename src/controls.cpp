@@ -4,7 +4,7 @@
 extern "C" {
 #include "cfg/cfg.h"
 #include "msg.h"
-#include "voice.h"
+#include "voice_stub.h"
 }
 
 static inline bool toggle_subj(Subject *subj);

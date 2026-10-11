@@ -9,7 +9,7 @@
 
 #include "util.hpp"
 #include "cw.h"
-#include "voice.h"
+#include "voice_stub.h"
 #include "dsp.h"
 
 #include <vector>
