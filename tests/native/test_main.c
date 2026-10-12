@@ -24,6 +24,7 @@ void test_theme(void);
 void test_keyboard(void);
 void test_bt_devices(void);
 void test_dxcc(void);
+void test_flags(void);
 
 int main(void) {
     test_adaptive_tuning();
@@ -39,6 +40,7 @@ int main(void) {
     test_keyboard();
     test_bt_devices();
     test_dxcc();
+    test_flags();
 
     printf("%d comprobaciones, %d fallos\n", tests_run, tests_failed);
 

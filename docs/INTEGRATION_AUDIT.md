@@ -49,7 +49,7 @@ modo CW) y la **grabación** (acción propia).
 | **SSTV** | `APP SSTV` | `rootfs/usr/share/x6200/sstv/{tx_pics,tx_text}` (10 archivos) | 🧪 los 7 modos, correlación 0,92–0,98 |
 | **WeFax** | `APP WeFax` | nada extra | 🧪 300/300 líneas, correlación 0,995 |
 | **JS8** | `APP JS8` | `third-party/js8core` (GPLv3), `world_map`, `cty.dat`, `js8_map` | 🧪 **la suite del X6100 pasa entera: 1994 aserciones en 88 casos** |
-| **FT8/FT4** | `APP FT8` | red (opcional, para UDP); `cty.dat` para el país | 🧪 UDP contra un receptor real en el host; 🧪 países del `cty.dat` real (test nativo) |
+| **FT8/FT4** | `APP FT8` | red (opcional, para UDP); `cty.dat` y las banderas (`flags_data.h`) | 🧪 UDP contra un receptor real; 🧪 países del `cty.dat` real y la conversión de color de las banderas (tests nativos) |
 
 Alineado/inclinación de **WeFax**: se ajustan con los botones de la app (`Align`, `Tilt`, `Fix`)
 y se guardan en `cfg.wefax_align/tilt` ✅. Lo que **no** está portado es la **perilla** (el

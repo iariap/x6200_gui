@@ -36,6 +36,7 @@
 #include "ft8/worker.h"
 #include "adif.h"
 #include "dxcc.h"
+#include "flags.h"
 #include "qso_log.h"
 #include "scheduler.h"
 #include "ft8_udp.h"
@@ -92,6 +93,7 @@ typedef enum {
 typedef struct {
     ft8_cell_type_t cell_type;
     int16_t         dist;
+    int16_t         flag;       /* country flag of the station, -1 none */
     bool            odd;
     ftx_msg_meta_t  meta;
     char            text[64];
@@ -462,6 +464,26 @@ static void table_draw_part_begin_cb(lv_event_t * e) {
         uint32_t    col = dsc->id - row * lv_table_get_col_cnt(obj);
         cell_data_t *cell_data = lv_table_get_cell_user_data(obj, row, col);
 
+        /* The country flag sits in the row's left padding */
+        if (cell_data && cell_data->flag >= 0) {
+            const lv_img_dsc_t *img = flags_image(cell_data->flag);
+
+            if (img && dsc->draw_ctx) {
+                lv_area_t a = *dsc->draw_area;
+
+                a.x1 += 4;
+                a.x2  = a.x1 + img->header.w - 1;
+                a.y1  = (a.y1 + a.y2) / 2 - img->header.h / 2;
+                a.y2  = a.y1 + img->header.h - 1;
+
+                lv_draw_img_dsc_t img_dsc;
+
+                lv_draw_img_dsc_init(&img_dsc);
+                img_dsc.opa = LV_OPA_COVER;
+                dsc->draw_ctx->draw_img(dsc->draw_ctx, &img_dsc, &a, img);
+            }
+        }
+
         dsc->rect_dsc->bg_opa = LV_OPA_50;
 
         if (cell_data == NULL) {
@@ -781,7 +803,7 @@ static void construct_cb(lv_obj_t *parent) {
     lv_obj_set_style_text_color(table, lv_color_hex(0xC0C0C0), LV_PART_ITEMS);
     lv_obj_set_style_pad_top(table, 3, LV_PART_ITEMS);
     lv_obj_set_style_pad_bottom(table, 3, LV_PART_ITEMS);
-    lv_obj_set_style_pad_left(table, 5, LV_PART_ITEMS);
+    lv_obj_set_style_pad_left(table, 26, LV_PART_ITEMS);   /* room for the flag */
     lv_obj_set_style_pad_right(table, 0, LV_PART_ITEMS);
 
     lv_table_set_cell_value(table, 0, 0, "Wait sync");
@@ -1318,6 +1340,22 @@ static void add_rx_text(int16_t snr, const char * text, slot_info_t *s_info, flo
     strncpy(cell_data.text, text, sizeof(cell_data.text) - 1);
     cell_data.meta = meta;
     cell_data.odd = s_info->odd;
+
+    /* The country, for the flag next to the row */
+    cell_data.flag = -1;
+
+    {
+        const char *cty_name = NULL;
+        const char *cty_pfx  = NULL;
+
+        if (dxcc_lookup(meta.call_de, &cty_name, &cty_pfx) && cty_pfx) {
+            int idx = -1;
+
+            if (flags_index_of_prefix(cty_pfx, &idx)) {
+                cell_data.flag = (int16_t) idx;
+            }
+        }
+    }
     if (params.qth.x[0] != 0) {
         if (strlen(meta.grid) > 0) {
             double lat, lon;

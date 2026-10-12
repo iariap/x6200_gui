@@ -1333,8 +1333,25 @@ vacía no resuelven.
 452 comprobaciones, 0 fallos
 ```
 
-### Lo que queda
+### Y ahora también la bandera
 
-Las **banderas** de país en las filas de FT8: su dibujo vive en el layout de filas de su fork
-(imágenes por fila), que nuestro diálogo no tiene; requeriría rehacer el render de la tabla. El
-país ya está resuelto, así que cuando se encare es sólo pintarlo.
+Las filas de FT8 muestran la **bandera del país** a la izquierda del mensaje:
+
+- `flags_data.h` es el header generado del X6100 (16×12 desde flagcdn.com, dominio público,
+  indexado por el prefijo primario de `cty.dat` de AD1C, códigos ISO de k0swe/dxcc-json bajo MIT).
+  Está en **RGB888**; LVGL dibuja **RGB565**, así que `flags.c` convierte cada bandera la primera
+  vez que se pide y guarda el descriptor (≈77 KB en total, sólo las usadas).
+- La tabla es de **una sola columna** (el mensaje ocupa todo el ancho), así que la bandera se pinta
+  en el **hueco del padding izquierdo**, que se agrandó a 26 px: no se superpone con el texto.
+- El índice de la bandera sale del país ya resuelto (`dxcc_lookup` → `flags_index_of_prefix`), así
+  que no hay una segunda tabla de países.
+
+**Test**: la conversión de color es lógica pura y se prueba en el host
+(`tests/native/test_flags.c`): los extremos (negro, blanco, rojo, verde, azul), que los bits bajos
+se **truncan** y no se redondean, un verde real de las banderas, y la tabla de prefijos (que `LU`
+existe, que un prefijo inexistente no se inventa y que el mismo prefijo da siempre la misma
+bandera).
+
+```
+469 comprobaciones, 0 fallos
+```
