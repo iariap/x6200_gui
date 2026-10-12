@@ -4,6 +4,7 @@
 #
 #   tests/run_all_tests.sh [--quick]
 #
+#   config        the cfg struct is fully initialised (a missing field kills the GUI)
 #   host          the native suite (401 assertions, no container)
 #   wspr/sstv     codec round trips against the X6100's own test tools
 #   wefax/navtex
@@ -42,6 +43,10 @@ run() {
         fail=$((fail + 1))
     fi
 }
+
+# Chequeo estatico barato: si la struct cfg queda sin inicializar, la GUI se muere antes
+# de dibujar (paso con cwt_level y cwt_group y la radio quedo en el logo de arranque).
+run config python3 "$DIR/check_cfg_fills.py" "$GUI"
 
 run host sh "$DIR/native/run_native_tests.sh"
 run wspr sh "$DIR/native/run_wspr_tests.sh"
