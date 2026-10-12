@@ -124,19 +124,32 @@ int main(void) {
     mfk = encoder_init("/dev/input/event3");
     mfk_inner = rotary_init("/dev/input/event4");
 
-    vol->left[ROT_VOL_EDIT_MODE] = KEY_VOL_LEFT_EDIT;
-    vol->right[ROT_VOL_EDIT_MODE] = KEY_VOL_RIGHT_EDIT;
+    /* Los tres pueden devolver NULL: rotary_init() y encoder_init() lo hacen si no
+     * pueden abrir el dispositivo (y el equipo puede numerarlos distinto). Antes se los
+     * desreferenciaba igual, y la GUI se moría acá mismo, antes de params_init y sin
+     * haber dibujado nunca: era el logo eterno en la pantalla del equipo. Sin perilla se
+     * sigue andando; las teclas del panel siguen funcionando. */
+    if (vol != NULL) {
+        vol->left[ROT_VOL_EDIT_MODE] = KEY_VOL_LEFT_EDIT;
+        vol->right[ROT_VOL_EDIT_MODE] = KEY_VOL_RIGHT_EDIT;
 
-    vol->left[ROT_VOL_SELECT_MODE] = KEY_VOL_LEFT_SELECT;
-    vol->right[ROT_VOL_SELECT_MODE] = KEY_VOL_RIGHT_SELECT;
+        vol->left[ROT_VOL_SELECT_MODE] = KEY_VOL_LEFT_SELECT;
+        vol->right[ROT_VOL_SELECT_MODE] = KEY_VOL_RIGHT_SELECT;
+    } else {
+        LV_LOG_ERROR("Sin encoder de volumen (/dev/input/event2): se sigue sin el");
+    }
 
-    // Usual navigation - left -> up key
-    mfk_inner->left[ROT_MFK_INNER_DEFAULT_MODE] = LV_KEY_UP;
-    mfk_inner->right[ROT_MFK_INNER_DEFAULT_MODE] = LV_KEY_DOWN;
+    if (mfk_inner != NULL) {
+        // Usual navigation - left -> up key
+        mfk_inner->left[ROT_MFK_INNER_DEFAULT_MODE] = LV_KEY_UP;
+        mfk_inner->right[ROT_MFK_INNER_DEFAULT_MODE] = LV_KEY_DOWN;
 
-    // EQ navigation - left -> down key (decrease)
-    mfk_inner->left[ROT_MFK_INNER_INVERSE_MODE] = LV_KEY_DOWN;
-    mfk_inner->right[ROT_MFK_INNER_INVERSE_MODE] = LV_KEY_UP;
+        // EQ navigation - left -> down key (decrease)
+        mfk_inner->left[ROT_MFK_INNER_INVERSE_MODE] = LV_KEY_DOWN;
+        mfk_inner->right[ROT_MFK_INNER_INVERSE_MODE] = LV_KEY_UP;
+    } else {
+        LV_LOG_ERROR("Sin encoder interno del MFK (/dev/input/event4): se sigue sin el");
+    }
 
     params_init();
     audio_enh_preset_load((audio_enh_preset_t) params.audio_enh_preset.x);

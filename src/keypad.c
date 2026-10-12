@@ -56,7 +56,9 @@ static void keypad_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
                 /* Rotary MFK */
 
                 case BTN_TRIGGER_HAPPY27:
-                    mfk->pressed = (in.value != 0);
+                    if (mfk != NULL) {
+                        mfk->pressed = (in.value != 0);
+                    }
                     return;
 
                 /* Front side */

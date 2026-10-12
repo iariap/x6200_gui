@@ -1771,7 +1771,9 @@ static uint8_t make_delimiter(uint8_t row) {
 }
 
 static void construct_cb(lv_obj_t *parent) {
-    mfk_inner->mode = ROT_MFK_INNER_INVERSE_MODE;
+    if (mfk_inner != NULL) {
+        mfk_inner->mode = ROT_MFK_INNER_INVERSE_MODE;
+    }
 
     dialog.obj = dialog_init(parent);
 

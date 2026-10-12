@@ -19,6 +19,13 @@
 static vol_mode_t   vol_mode = VOL_VOL;
 
 void vol_update(int16_t diff, bool voice) {
+    /* Sin encoder de volumen (rotary_init() devolvió NULL porque el dispositivo no está
+     * o el equipo lo numera distinto) no hay nada que mostrar ni que cambiar: antes esta
+     * función lo desreferenciaba y la GUI se moría acá, justo después de params_init. */
+    if (vol == NULL) {
+        return;
+    }
+
     int32_t     x;
     float       f;
     char        *s;

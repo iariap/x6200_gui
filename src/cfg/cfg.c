@@ -82,9 +82,7 @@ int cfg_init(sqlite3 *db) {
     cfg_transverter_init(db);
     cfg_memory_init(db);
     cfg_digital_modes_init(db);
-
     bind_observers();
-
     pthread_t thread;
     pthread_create(&thread, NULL, params_save_thread, NULL);
     pthread_detach(thread);
@@ -180,6 +178,14 @@ static void on_sql_level_change(Subject *subj, void *user_data) {
 void init_items(cfg_item_t *cfg_arr, uint32_t count, int (*load)(struct cfg_item_t *item),
                 int (*save)(struct cfg_item_t *item)) {
     for (size_t i = 0; i < count; i++) {
+        /* La struct config se recorre como arreglo de cfg_item_t: si un campo quedó sin
+         * fill_cfg_item(), sus punteros son NULL y tocarlos mata el proceso (pasaba con
+         * cwt_level y cwt_group, olvidados al agregarlos). Se saltea. */
+        if (cfg_arr[i].db_name == NULL || cfg_arr[i].val == NULL) {
+            LV_LOG_WARN("Item de config sin inicializar (indice %zu): se saltea", i);
+            continue;
+        }
+
         cfg_arr[i].load       = load;
         cfg_arr[i].save       = save;
         cfg_arr[i].dirty      = malloc(sizeof(*cfg_arr[i].dirty));
@@ -194,6 +200,10 @@ void init_items(cfg_item_t *cfg_arr, uint32_t count, int (*load)(struct cfg_item
 int load_items_from_db(cfg_item_t *cfg_arr, uint32_t count) {
     int rc;
     for (size_t i = 0; i < count; i++) {
+        if (cfg_arr[i].db_name == NULL || cfg_arr[i].val == NULL || cfg_arr[i].dirty == NULL) {
+            continue;
+        }
+
         cfg_arr[i].dirty->val = ITEM_STATE_LOADING;
         rc = cfg_arr[i].load(&cfg_arr[i]);
         if (rc != 0) {
@@ -313,6 +323,8 @@ static int init_params_cfg(sqlite3 *db) {
     fill_cfg_item(&cfg.iambic_mode, subject_create_int(x6200_iambic_a), "iambic_mode");
     fill_cfg_item(&cfg.key_vol, subject_create_int(10), "key_vol");
     fill_cfg_item(&cfg.key_train, subject_create_int(false), "key_train");
+    fill_cfg_item(&cfg.cwt_level, subject_create_int(5), "cwt_level");
+    fill_cfg_item(&cfg.cwt_group, subject_create_int(1), "cwt_group");
     fill_cfg_item(&cfg.qsk_time, subject_create_int(100), "qsk_time");
     fill_cfg_item_float(&cfg.key_ratio, subject_create_float(3.0f), 0.1f, "key_ratio");
 

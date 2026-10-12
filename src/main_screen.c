@@ -1096,7 +1096,7 @@ static void spectrum_key_cb(lv_event_t * e) {
             break;
 
         case LV_KEY_ESC:
-            if (!dialog_is_run()) {
+            if (!dialog_is_run() && vol != NULL) {
                 switch (vol->mode) {
                     case ROT_VOL_EDIT_MODE:
                         vol->mode = ROT_VOL_SELECT_MODE;

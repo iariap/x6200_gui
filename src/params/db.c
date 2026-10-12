@@ -41,7 +41,6 @@ bool database_init() {
     }
 
     rc = sqlite3_prepare_v2(db, "INSERT INTO params(name, val) VALUES(?, ?)", -1, &insert_stmt, 0);
-
     if (rc != SQLITE_OK) {
         LV_LOG_ERROR("Can't prepare insert statement for params");
         return false;
