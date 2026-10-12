@@ -159,14 +159,21 @@ Un equipo a batería no debería tener timers ni hilos girando de gusto. Revisad
 
 ## 4. Deuda de integración conocida
 
-- **CAT con UART no disponible** (encontrado con la validación por socket de la ronda 51): si
-  `cat_init()` no puede abrir `/dev/ttyS2` sólo lo registra y **sigue** con `fd = -1` (o con el
-  descriptor ya cerrado si falla `tcsetattr`), crea la conexión y arranca el hilo del CAT, que
-  termina escribiendo sobre ese descriptor (`Error during writing message`) y matando el proceso.
-  Se dispara al abrir una app que conmuta el USB a CAT (FT8). El arreglo tiene que cubrir **también
-  el camino de envío** (`cat_send`/la cola), no sólo el `init`: el primer intento (salir del init
-  sin más) dejó `conn` en NULL y el envío crasheaba al arrancar, así que se revirtió. En la radio el
-  UART normalmente existe, así que no se vio todavía.
+- **CAT con UART no disponible** (encontrado con la validación por socket): si `cat_init()` no puede
+  abrir `/dev/ttyS2` sólo lo registraba y **seguía** con `fd = -1` (o con el descriptor ya cerrado si
+  fallaba `tcsetattr`), creaba la conexión y arrancaba el hilo del CAT, que terminaba escribiendo
+  sobre ese descriptor y matando el proceso. **Arreglado**: si el UART no queda en condiciones, se
+  avisa y se sale sin conexión ni hilo (`cat.cpp`); el camino de arranque se validó con el UART
+  ausente (dibuja, sigue viva, 0 crashes).
+- **Sujetos NULL en los getters** (encontrado abriendo apps en la reproducción): `subject_get_int()`
+  y compañía hacían `static_cast<SubjectT*>(subj)->get()` sin mirar si `subj` era NULL, y el proceso
+  moría. **Arreglado**: los tres getters avisan (con el offset del llamador, para ubicarlo con
+  `addr2line`) y devuelven un valor neutro. En el arranque no aparecen; sí al abrir apps, que es
+  donde queda trabajo.
+- **Crash al abrir apps** (en curso): además del sujeto NULL ya cubierto, queda otro que salta a un
+  puntero inválido (PC basura) al abrir una app con el UART ausente. Se persigue con
+  `depurar-por-red.sh` (bucle por SSH, sin regrabar) y `diagnostico-por-red.sh`.
+
 
 
 - **Perilla** de alineado/inclinación de WeFax y **perilla con hilo propio**: no portadas.

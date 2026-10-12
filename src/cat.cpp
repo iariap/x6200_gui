@@ -998,23 +998,21 @@ void cat_init() {
 
     int fd = open("/dev/ttyS2", O_RDWR | O_NONBLOCK | O_NOCTTY);
 
-    if (fd > 0) {
-        struct termios attr;
+    if (fd < 0) {
+        LV_LOG_ERROR("CAT: no se pudo abrir /dev/ttyS2: la GUI sigue, sin CAT");
+        return;
+    }
 
-        tcgetattr(fd, &attr);
+    struct termios attr;
 
-        cfsetispeed(&attr, B19200);
-        cfsetospeed(&attr, B19200);
-        // cfsetispeed(&attr, B115200);
-        // cfsetospeed(&attr, B115200);
-        cfmakeraw(&attr);
+    cfsetispeed(&attr, B19200);
+    cfsetospeed(&attr, B19200);
+    cfmakeraw(&attr);
 
-        if (tcsetattr(fd, 0, &attr) < 0) {
-            close(fd);
-            LV_LOG_ERROR("UART set speed");
-        }
-    } else {
-        LV_LOG_ERROR("UART open");
+    if (tcsetattr(fd, 0, &attr) < 0) {
+        LV_LOG_ERROR("CAT: no se pudo configurar el UART: la GUI sigue, sin CAT");
+        close(fd);
+        return;
     }
 
     conn = new Connection(fd);
