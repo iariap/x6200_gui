@@ -35,7 +35,7 @@ Cada feature portada tiene su detalle, configuración y tests en
 | WSPR | ✅ | §9 |
 | NavTex | ✅ | §10 |
 | SSTV | ✅ | §11 |
-| WeFax | 🔶 | §12 — falta la perilla de alineado/inclinación |
+| WeFax | ✅ | §12 y §38 — incluida la perilla de alineado/inclinación |
 | JS8 | ✅ | §16 |
 | Cluster DX | ✅ | §14 y §27 — con la columna en la pantalla principal |
 | Field Ops SOTA/POTA | ✅ | §15 y §20 — incluye el CQ de voz |
@@ -75,7 +75,7 @@ parte de esa diferencia:
 | **JS8** (4 velocidades, inbox, mensajes guardados, APRS/status, mapa) | ✅ | ✅ | motor + app; **la suite del X6100 pasa entera** (1994 aserciones) |
 | **WSPR** RX + TX (baliza aleatoria, subida a WSPRnet) | ✅ | ✅ | motor + app + 11 frecuencias en la base |
 | **SSTV** RX + TX (VIS, modo auto, dibujo línea a línea) | ✅ | ✅ | 7 modos, verificado con su loopback |
-| **WeFax** RX + TX | ✅ | 🔶 | códec y app ✅, con alineado/inclinación por **botones** (se guardan en `cfg.wefax_*`); falta la **perilla** (su registro `CTRL_*` no está portado) |
+| **WeFax** RX + TX | ✅ | ✅ | códec y app ✅; el alineado/inclinación anda por **botones** y por la **perilla** (registro de controles portado, [NEW_FEATURES.md](NEW_FEATURES.md) §38) — falta el visto bueno en la radio |
 | **NavTex** RX (lista de estaciones, guarda mensajes) | ✅ | ✅ | SITOR-B con FEC, verificado |
 | **CW Keyboard** (teclado USB/BT que telegrafía) | ✅ | ✅ | app portada ([NEW_FEATURES.md](NEW_FEATURES.md) §21), con los mensajes CW guardados y control remoto; en **CW** la velocidad que muestra es la configurada, no la medida como en el X6100 |
 | **CW Trainer** | ✅ | ✅ | entrenador de prefijos de indicativos ([NEW_FEATURES.md](NEW_FEATURES.md) §23) |

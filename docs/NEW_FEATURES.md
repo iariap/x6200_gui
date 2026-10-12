@@ -1610,3 +1610,30 @@ Con el capturador de señales mejorado: registra el **PC**, la **base de carga**
 `r5 = 0xe9a624` mostró que se escribía en `base + 0xa9a624`; `readelf` ubicó esa dirección dentro
 de `.data.rel.ro`, `readelf -s` dijo qué fuentes estaban ahí (dos), y el patrón del `#if`
 explicó por qué se habían escapado.
+
+---
+
+## 38. El registro de controles de las apps (la perilla de WeFax)
+
+El X6100 tiene un **registro de controles** (`controls.cpp`): la app "toma" un control con
+`mfk_set_ctrl(CTRL_X)` y los giros del MFK pasan a mover ESE control, no el parámetro del MFK de
+la pantalla principal.
+
+En este port faltaba, y el diálogo de WeFax lo tapaba de la peor manera: al activar Align o Tilt
+llamaba a `mfk_update(±8 / ±2 / +1)`, que es el **manejador del MFK de la pantalla principal**
+(nivel de espectro, decimación de FFT, velocidad CW...). O sea que girar la perilla del WeFax
+**movía otra cosa** y el fax no se alineaba nunca. El campo `encoder_allowed` de los botones
+estaba, pero nadie lo leía.
+
+Portado, con el alcance que este port necesita (dos controles):
+
+- **`controls_ids.h`**: los ids (`CTRL_WEFAX_ALIGN`, `CTRL_WEFAX_TILT`), un header mínimo que
+  también usan los tests.
+- **`controls_step.c`**: el paso y los topes del X6100 (`-1300..1300` y `-400..400`), sin
+  dependencias, para poder probarlo en el host.
+- **`controls_encoder.c`**: aplica el giro sobre la configuración (`cfg_wefax_align`/`tilt`).
+- **`dialog_wefax.c`**: los cuatro sitios que llamaban a `mfk_update()` ahora llaman a
+  `controls_encoder_update()`.
+
+`tests/native/test_controls.c` cubre el paso, los topes y que un control desconocido no cambie
+nada: las comprobaciones del host pasaron de 476 a 488.

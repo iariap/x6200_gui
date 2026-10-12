@@ -2166,11 +2166,11 @@ static void key_cb(lv_event_t *e)
                 fax_browser_render_image();
                 fax_browser_update_modified_state();
             } else if (align_mfk_active) {
-                mfk_update(-8, false);
+                controls_encoder_update(CTRL_WEFAX_ALIGN, -8);
                 buttons_refresh(&btn_align);
                 rerender_preview();
             } else if (tilt_mfk_active) {
-                mfk_update(-2, false);
+                controls_encoder_update(CTRL_WEFAX_TILT, -2);
                 buttons_refresh(&btn_tilt);
                 rerender_preview();
             }
@@ -2190,11 +2190,11 @@ static void key_cb(lv_event_t *e)
                 fax_browser_render_image();
                 fax_browser_update_modified_state();
             } else if (align_mfk_active) {
-                mfk_update(+8, false);
+                controls_encoder_update(CTRL_WEFAX_ALIGN, +8);
                 buttons_refresh(&btn_align);
                 rerender_preview();
             } else if (tilt_mfk_active) {
-                mfk_update(+1, false);
+                controls_encoder_update(CTRL_WEFAX_TILT, +1);
                 buttons_refresh(&btn_tilt);
                 rerender_preview();
             }

@@ -21,6 +21,7 @@ void test_wfview(void);
 void test_cluster(void);
 void test_field(void);
 void test_theme(void);
+void test_controls(void);
 void test_keyboard(void);
 void test_bt_devices(void);
 void test_dxcc(void);
@@ -37,6 +38,7 @@ int main(void) {
     test_cluster();
     test_field();
     test_theme();
+    test_controls();
     test_keyboard();
     test_bt_devices();
     test_dxcc();
