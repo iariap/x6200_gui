@@ -1416,3 +1416,55 @@ Los otros dos encoders (volumen y MFK interno, `event2`/`event4`) siguen con el 
 
 **Falta probarlo en la radio**: la sintonía es la interacción más usada y es lo único que valida
 este cambio.
+
+---
+
+## 34. Por qué la imagen no arrancaba (y el arreglo)
+
+La imagen quedaba en el **logo de arranque** en el equipo. La causa salió de la traza que
+quedó en la tarjeta instrumentada:
+
+1. la GUI **no se colgaba en el arranque del sistema**: los 23 scripts corren en orden y
+   terminan (~10 s ✓, verificado también en un chroot con QEMU ✓), el kernel monta la raíz
+   y la partición DATA se recrea **sin formatear** ✓ (los datos del usuario quedan ✓);
+2. la GUI arrancaba **una sola vez** ✓ (los procesos que aparecían eran los `amixer` hijos
+   del mixer ✓), registraba `main: Display: fbdev` ✓ —o sea, el display estaba bien— y
+   **nunca** llegaba a abrir `/dev/input/event*` ni `/mnt/params.db` ✗;
+3. se quedaba en `audio_init()`, en esta espera:
+
+```c
+pa_context_connect(ctx, NULL, 0, NULL);
+while (PA_CONTEXT_READY != pa_context_get_state(ctx))  {
+    pa_threaded_mainloop_wait(mloop);      /* sin límite */
+}
+```
+
+   Si el contexto de PulseAudio pasa a **FAILED**, esa espera **no termina nunca** ✗.
+4. ¿Y por qué fallaba? El log del arranque lo dice:
+
+```
+pulseaudio[284]: [pulseaudio] main.c: Failed to find user 'pulse'.
+```
+
+   `S50pulseaudio` lo arranca en **modo sistema** (`--system`), que necesita el usuario
+   `pulse` — y la imagen **no lo tenía** ✗. Sin daemon, el cliente queda FAILED ✗ y la GUI
+   se quedaba esperando **antes de dibujar** ✗. Y sin PulseAudio tampoco había **audio**:
+   WSPR, SSTV, la grabación y el CQ de voz dependen de él ✗.
+
+### Los dos arreglos
+
+- **La GUI nunca espera para siempre**: si el contexto no es bueno, avisa y sigue **sin
+  audio** ✓. Además, las funciones que usan los objetos de PulseAudio (`audio_play`,
+  `audio_play_wait`, `audio_play_en`, `record_monitor_setup`) chequean el estado primero ✓.
+- **El usuario `pulse` se crea** en `post-build.sh` del árbol de Buildroot ✓ (aditivo y
+  versionado ✓): así el daemon arranca de verdad y hay audio ✓.
+- De paso, `mixer_setup()` (diez `amixer` + ALSA) corre en su propio hilo ✓ y los elementos
+  del mixer se chequean contra NULL ✓, porque ALSA **aborta el proceso** si el elemento no
+  existe ✓.
+
+### Cómo se verificó sin la radio
+
+Con la reproducción en chroot (raíz de la imagen + **framebuffer falso** por `LD_PRELOAD` +
+el `params.db` del usuario): antes se colgaba en esa espera ✗; ahora registra
+`pulseaudio no disponible (Connection refused): la GUI sigue, pero sin audio` ✓ y sigue con
+el resto del arranque ✓.
