@@ -183,6 +183,14 @@ static void add_atu_net_to_cache(int32_t freq, uint32_t network) {
     if (atu_network_cache_size >= atu_network_cache_allocated) {
         atu_network_cache_allocated += 10;
         atu_network_cache = realloc(atu_network_cache, sizeof(*atu_network_cache) * atu_network_cache_allocated);
+
+    if (atu_network_cache == NULL) {
+        /* Sin memoria no hay dónde guardar la red: antes quedaba NULL y la escritura
+         * siguiente mataba el proceso (visto al cambiar de banda desde el control remoto). */
+        LV_LOG_ERROR("ATU: no se pudo agrandar la caché, no se guarda la red (la GUI sigue)");
+        atu_network_cache_allocated = 0;
+        return;
+    }
     }
     atu_network_cache[atu_network_cache_size].freq    = freq;
     atu_network_cache[atu_network_cache_size].network = network;

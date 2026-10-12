@@ -335,9 +335,26 @@ uint32_t cfg_band_read_all_bands(band_info_t **results, int32_t *cap) {
 
         if (rc == SQLITE_ROW) {
             if (i >= *cap) {
-                *cap *= 2;
-                *results = realloc(*results, sizeof(**results) * *cap);
+                /* Con *cap en 0, duplicarlo lo deja en 0 y realloc(ptr, 0) libera y devuelve
+                 * NULL: la escritura siguiente caía en NULL + 0x2c y mataba el proceso (se
+                 * veía al cambiar de banda desde el control remoto, que lee todas las bandas).
+                 * Además el realloc hay que mirarlo. */
+                uint32_t     nueva = *cap ? *cap * 2 : 8;
+                band_info_t *tmp   = realloc(*results, sizeof(**results) * nueva);
+
+                if (tmp == NULL) {
+                    LV_LOG_ERROR("No se pudo agrandar la lista de bandas (%u): se corta", nueva);
+                    break;
+                }
+
+                *results = tmp;
+                *cap     = nueva;
             }
+
+            if (*results == NULL) {
+                break;
+            }
+
             (*results)[i].id         = sqlite3_column_int(stmt, 0);
             (*results)[i].name       = strdup(sqlite3_column_text(stmt, 1));
             (*results)[i].start_freq = sqlite3_column_int(stmt, 2);

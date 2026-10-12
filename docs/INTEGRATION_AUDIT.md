@@ -171,12 +171,14 @@ Un equipo a batería no debería tener timers ni hilos girando de gusto. Revisad
   `addr2line`) y devuelven un valor neutro. En el arranque no aparecen; sí al abrir apps, que es
   donde queda trabajo.
 - **Cambiar de banda por control remoto** (encontrado con `tests/e2e_chroot.sh`): `{"cmd":"band","val":1}`
-  crashea en `cfg_atu_save_network`, en la instrucción `ldr r0, [r5, #0x2c]` seguida de
-  `bl subject_set_int`: se escribe un subject a través de un **puntero de estructura NULL** (la
-  dirección que falla es `0x2c`, o sea base NULL + 0x2c). Los guardas de las sentencias SQL, de la
-  caché y de los subjects `atu_network.*` están puestos; **falta identificar `r5`** (una corrida
-  más con el capturador, que ya traduce PC y offset). Mientras tanto, desde el web o la app del
-  teléfono conviene **no cambiar de banda**: es el comando que lo dispara.
+  crasheaba en `cfg_band_read_all_bands`, en la instrucción `str r0, [sl, r5]` (dirección que falla:
+  `0x2c`, o sea base NULL). **Arreglado**: el arreglo de bandas crecía con `*cap *= 2`, y con `*cap`
+  en 0 eso lo deja en 0, así que `realloc(ptr, 0)` liberaba y devolvía NULL y la escritura siguiente
+  caía en NULL + 0x2c. Ahora el primer bloque reserva 8 y el `realloc` se mira. Verificado: cambiar
+  de banda tres veces por el socket remoto deja la GUI viva y sin crashes.
+  > Ojo con las atribuciones: las dos primeras veces se culpó al guardado del ATU porque `addr2line`
+  > resolvía contra un binario viejo. La dirección hay que resolverla **contra el binario que
+  > crasheó** (mismo build), o se persigue el camino equivocado.
 - **Crash al abrir apps** (en curso): además del sujeto NULL ya cubierto, queda otro que salta a un
   puntero inválido (PC basura) al abrir una app con el UART ausente. Se persigue con
   `depurar-por-red.sh` (bucle por SSH, sin regrabar) y `diagnostico-por-red.sh`.
