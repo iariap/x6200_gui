@@ -1,13 +1,12 @@
 # X6200 LU2DSX ROM — features del X6100 (pre-release)
 
-> ✅ **Probado en el equipo.** La ROM arranca en la radio, dibuja y controla el equipo.
-> El bug que la dejaba en el logo (el índice de fuente del menú corría el valor y aplicaba
-> DejaVu, cuya tabla mataba la GUI al arrancar) está corregido y verificado con los ajustes
-> reales del equipo.
+> ⚠️ **NO PUBLICAR TODAVÍA / DO NOT PUBLISH YET.** La ROM **arranca y funciona en el equipo**
+> (verificado por el usuario), pero la **migración no está terminada**: falta cerrar los puntos
+> pendientes (DejaVu/Arial, la perilla de WeFax y las verificaciones que solo se hacen en la
+> radio). Los sha256 están en `SHA256SUMS`.
 >
-> _Tested on the radio: it boots, draws and controls the rig. The bug that kept it at the boot
-> logo (the font dropdown index was off by one and applied DejaVu, whose table killed the GUI
-> on start) is fixed and verified with the radio's own settings._
+> _Not ready to publish: the ROM boots and runs on the radio, but the migration is not finished
+> yet. Checksums are in `SHA256SUMS`._
 
 ## Qué trae
 
