@@ -6,6 +6,17 @@
 
 ---
 
+## 0b. Después de esto: el programa de port (2026-10-12)
+
+Sobre esa ROM corregida se hizo el **programa de port** del firmware del X6100 de IU1WXY: 18
+features (modos digitales, cluster, Field Ops, temas, Bluetooth, wfview, web configurator con
+control remoto, etc.). El detalle, el estado de cada una y lo que falta están en
+[`NEW_FEATURES.md`](NEW_FEATURES.md), [`X6100_FEATURE_GAP.md`](X6100_FEATURE_GAP.md) y
+[`INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md). Este informe se conserva como la auditoría de la
+ROM de la primera fase.
+
+---
+
 ## 0. Actualización 2026-10-11 — correcciones aplicadas y ROM nueva
 
 Los hallazgos de este informe **fueron corregidos en el código y la imagen se regeneró**. Las secciones 1–7 que siguen documentan la auditoría original (builds hasta `035043`) y se conservan como evidencia.

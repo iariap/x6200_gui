@@ -1,8 +1,10 @@
 # X6200 LU2DSX ROM — tanda de features del X6100 (2026-10-11)
 
 Segundo prerelease de esta ROM. Trae **todo el programa de port** desde el firmware del X6100 de
-[IU1WXY](https://github.com/IU1WXY/X6100-IU1WXY): 18 features, cada una documentada, compilada
-para el equipo, verificada en la imagen y con tests donde se puede correr sin radio.
+[IU1WXY](https://github.com/IU1WXY/X6100-IU1WXY): las 18 features de la lista, más los extras que
+salieron en el camino (la app de **Status**, la app de **dispositivos Bluetooth** y la **columna de
+spots** en la pantalla principal). Cada una documentada, compilada para el equipo, verificada en la
+imagen y con tests donde se puede correr sin radio.
 
 **Versión del firmware**: `v0.1.2-lu2dsx` (base upstream v0.1.2 + este trabajo).
 
@@ -29,11 +31,14 @@ para el equipo, verificada en la imagen y con tests donde se puede correr sin ra
 | 17 | **WeFax** | Fax meteorológico con modo Auto |
 | 18 | **JS8** | Motor y app completos |
 | + | **Temas JSON** | 6 temas incluidos + temas propios en `/mnt/themes`; **toda la UI** los sigue (la GUI se reinicia al cambiar de tema) |
+| + | **App Status** | Adaptador Bluetooth y su transporte, nivel de TX, espacio en `/mnt`, wfview, dirección de la web y estado del aviso de versión |
 
 Todo se abre desde **Ajustes → acciones de pulsación larga**: elegí la acción y asignala a un
-botón. Están WSPR, NavTex, SSTV, WeFax, JS8, Cluster, Field Ops, CW Keyboard y Theme (más las
-que ya tenía el equipo). El mensaje de voz de Field Ops se graba y se emite desde la app, y todo
-se configura también desde el navegador.
+botón. Están **WSPR, NavTex, SSTV, WeFax, JS8, Cluster, Field Ops, CW Keyboard, CW Trainer,
+Bluetooth, Status y Theme** (más las que ya tenía el equipo), y en Ajustes también están la aguja
+del S-meter, el band plan, la columna del cluster, la familia de fuente y el encendido/discoverable
+del Bluetooth. El CQ de voz de Field Ops se graba y se emite desde la app, y todo se configura
+también desde el navegador.
 
 ## Verificación
 

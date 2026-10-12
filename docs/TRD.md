@@ -1,11 +1,15 @@
 # Technical Reference Document (TRD)
 # X6200 Firmware Optimization Project
 
+> **Estado actual (2026-10-12):** este TRD describe el proyecto de optimización original. Todo lo
+> que se incorporó después del firmware del X6100 está en
+> [`NEW_FEATURES.md`](NEW_FEATURES.md) y [`INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md).
+
 ## Document Information
 - **Project:** X6200 QRP Ham Radio Firmware Optimization
-- **Version:** 2.0-opt
+- **Version:** v0.1.2-lu2dsx (la del firmware; antes decía "2.0-opt")
 - **Author:** LU2DSX
-- **Date:** February 2026
+- **Date:** February 2026, actualizado 2026-10-12
 - **License:** LGPL-2.1-or-later
 
 ## Executive Summary
