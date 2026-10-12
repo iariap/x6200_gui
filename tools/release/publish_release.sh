@@ -2,7 +2,7 @@
 #
 # Publish the release, after checking everything it needs:
 #
-#   tools/release/publish_release.sh <tag> <version> [--publish]
+#   tools/release/publish_release.sh <tag> <version> [--publish|--draft]
 #
 # Checks, in order:
 #   1. the image, the update tarball and SHA256SUMS are there and the checksums match;
@@ -11,9 +11,10 @@
 #   4. the test suite passes (--quick: without the slow JS8 run);
 #   5. the release notes exist.
 #
-# Without --publish it stops after the checks and prints the command it would run, so
-# the release can be rehearsed. With --publish it creates the tag and the release with
-# the three assets. Everything is a pre-release: this ROM is in beta.
+# Without arguments it stops after the checks and prints the command it would run, so the
+# release can be rehearsed. With --draft it uploads the three assets as a draft (nothing
+# public, no tag) and with --publish it publishes: if a draft with that tag is already
+# there it just flips it. Everything is a pre-release: this ROM is in beta.
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
@@ -65,7 +66,7 @@ echo "==> suite de tests"
     tail -20 /tmp/publish_tests.log >&2; exit 1; }
 grep -E "OK, .* fallos" /tmp/publish_tests.log | tail -1
 
-if [ "$MODE" != "--publish" ]; then
+if [ "$MODE" != "--publish" ] && [ "$MODE" != "--draft" ]; then
     echo
     echo "==> todo listo. Para publicarlo:"
     echo
@@ -77,14 +78,28 @@ if [ "$MODE" != "--publish" ]; then
     exit 0
 fi
 
-echo "==> creando el tag $TAG"
-git -C "$GUI" tag -f "$TAG" -m "X6200 LU2DSX ROM $VER"
-git -C "$GUI" push -f fork "$TAG"
+# A draft release may already be there (it is the way to have the assets uploaded
+# before deciding to publish): then publishing is just flipping it.
+if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+    echo "==> el release ya existe (borrador): publicándolo"
+    gh release edit "$TAG" --repo "$REPO" --draft=false --prerelease \
+        --title "X6200 LU2DSX ROM $VER" --notes-file "$NOTES"
+else
+    echo "==> creando el tag $TAG"
+    git -C "$GUI" tag -f "$TAG" -m "X6200 LU2DSX ROM $VER"
+    git -C "$GUI" push -f fork "$TAG"
 
-echo "==> publicando"
-gh release create "$TAG" --repo "$REPO" --prerelease \
-    --title "X6200 LU2DSX ROM $VER" --notes-file "$NOTES" \
-    "$IMG" "$TGZ" "$IMAGES/SHA256SUMS"
+    echo "==> publicando"
+    gh release create "$TAG" --repo "$REPO" --prerelease \
+        --title "X6200 LU2DSX ROM $VER" --notes-file "$NOTES" \
+        "$IMG" "$TGZ" "$IMAGES/SHA256SUMS"
+fi
+
+# With --draft: create it as a draft instead (the assets uploaded, nothing public)
+if [ "$MODE" = "--draft" ]; then
+    echo "==> borrador: los assets quedan subidos y sin publicar"
+    gh release edit "$TAG" --repo "$REPO" --draft=true
+fi
 
 echo "==> listo"
 gh release view "$TAG" --repo "$REPO" --json tagName,assets \
