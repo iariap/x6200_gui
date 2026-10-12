@@ -11,8 +11,8 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **Band plan IARU** sobre el waterfall | ✅ 2026-10-11 | §4 |
 | **Grabación de pantalla** (AVI) | ✅ 2026-10-11 | §5 |
 | **Bluetooth: CAT (SPP) y auriculares A2DP** | ✅ 2026-10-11 | §6 |
+| **wfview**: la radio como IC-705 en red | ✅ 2026-10-11 | §7 |
 | Temas JSON | ⏳ pendiente | — |
-| wfview (la radio como IC-705 en red) | ⏳ pendiente | — |
 | Web configurator ampliado (HTTPS, remotas, backup) | ⏳ pendiente | — |
 | Field Ops SOTA/POTA | ⏳ pendiente | — |
 | Modos digitales: WSPR, SSTV, JS8, WeFax, NavTex | ⏳ pendiente | — |
@@ -197,3 +197,56 @@ btaudio-ctl boot | monitor     # lo usa btcat-setup y un monitor de fondo
   `/etc/pulse/system.pa.d/` (nuestro `system.pa` incluye ese directorio).
 - **Requiere probar en la radio**: qué transporte usa el chip (USB o UART) se confirma con
   `hciconfig -a` y `dmesg | grep -i blue`; el pairing real, con `bluetoothctl`.
+
+---
+
+## 7. wfview: la radio como IC-705 en la red
+
+El equipo se anuncia y se comporta como un **IC-705** con el protocolo LAN de Icom, así que se
+puede manejar con **wfview** (u otro cliente compatible) desde una PC en la misma red.
+
+- Puertos: **control 50001, CI-V 50002, audio 50003** (UDP).
+- El **CAT se comparte** con el UART: los clientes de red entran al mismo motor de CAT por un
+  mutex, y las tramas *transceive* (cambios de frecuencia) se copian a la red además del UART.
+- El audio de RX se transmite con `pa_simple` tomando la misma fuente de PulseAudio que usa la GUI.
+- Configuración en `/mnt/wfview.conf`:
+
+```
+enabled=1
+user=x6200
+pass=<tu clave>
+```
+
+  `Ajustes → wfview server` prende y apaga el servicio (usa ese mismo archivo, así que la GUI y
+  el futuro web configurator coinciden); las credenciales se editan en el archivo.
+  `$WFVIEW_CONF` permite apuntar a otro archivo (lo usan los tests).
+
+**Cambios que hice sobre el original** (y por qué):
+
+- Los hilos ahora **duermen más cuando el servicio está apagado** (poll de 1 s en vez de 100 ms,
+  sin keepalives, y el de audio 300 ms en vez de 50 ms): el X6100 mantiene el ritmo de 10 Hz
+  siempre. Es la regla de batería del proyecto.
+- Ajusté la truncación de las credenciales leídas del archivo (el `snprintf` original podía
+  truncar en silencio).
+- Expuse `wfview_server_passcode()` (la codificación de clave de Icom) para poder testear el
+  handshake y para el futuro web configurator.
+
+### Tests
+
+`tests/native/test_wfview.c` compila el **servidor real** en el host (con stubs de CAT y
+PulseAudio) y habla el protocolo por UDP en loopback:
+
+- Defaults y persistencia del archivo de configuración (encender lo reescribe).
+- Los tres puertos quedan escuchando (un segundo `bind` falla con `EADDRINUSE`).
+- Handshake: *are you there* (→ 0x04), *are you ready* (→ 0x06) y *ping* (eco del secuencia).
+- **Login aceptado y rechazado**: con las credenciales correctas la respuesta trae código 0 y
+  `wfview_server_client()` devuelve el nombre del cliente; con la clave mal, código de error y
+  ningún cliente.
+- **Puente CI-V**: una trama del cliente llega al motor de CAT y su respuesta vuelve al cliente.
+- ***Transceive***: el *sink* que el servidor instala en el CAT entrega las tramas espontáneas a
+  la red.
+
+Son 37 comprobaciones nuevas (280 en total, 0 fallos).
+
+**Requiere probar con hardware**: la latencia del audio y el comportamiento con un cliente real
+(wfview) en la red.

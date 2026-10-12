@@ -28,6 +28,7 @@
 #include "audio_enhancement.h"
 #include "update_check.h"
 #include "screen_rec.h"
+#include "wfview_server.h"
 #include "msg.h"
 #include "cw.h"
 #include "pannel.h"
@@ -151,6 +152,9 @@ int main(void) {
     /* New release alert: waits for the WiFi in its own thread and then posts a
      * message if the published version is newer than VERSION. */
     update_check_start(VERSION, update_check_notify);
+
+    /* Icom LAN (wfview) server: no-op unless enabled in /mnt/wfview.conf */
+    wfview_server_init();
 
     int64_t next_loop_time, sleep_time, loop_start_time;
     while (1) {

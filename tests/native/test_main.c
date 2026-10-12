@@ -41,6 +41,7 @@ void test_ft8_udp(void);
 void test_update_check(void);
 void test_band_plan(void);
 void test_avi_writer(void);
+void test_wfview(void);
 
 int main(void) {
     test_adaptive_tuning();
@@ -49,6 +50,7 @@ int main(void) {
     test_update_check();
     test_band_plan();
     test_avi_writer();
+    test_wfview();
 
     printf("%d comprobaciones, %d fallos\n", tests_run, tests_failed);
 

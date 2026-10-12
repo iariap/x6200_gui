@@ -23,6 +23,7 @@
 #include "audio_enhancement.h"
 #include "waterfall.h"
 #include "band_plan.h"
+#include "wfview_server.h"
 #include "main.h"
 
 #include <sys/time.h>
@@ -676,6 +677,47 @@ static uint8_t make_band_plan(uint8_t row) {
     obj = switch_bool(obj, &params.band_plan);
 
     lv_obj_add_event_cb(obj, band_plan_refresh_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    lv_obj_set_width(obj, SMALL_3 - 30);
+
+    return row + 1;
+}
+
+static void wfview_update_cb(lv_event_t * e) {
+    lv_obj_t *obj = lv_event_get_target(e);
+
+    wfview_server_set_enabled(lv_obj_has_state(obj, LV_STATE_CHECKED));
+}
+
+static uint8_t make_wfview(uint8_t row) {
+    lv_obj_t    *obj;
+    uint8_t     col = 0;
+
+    row_dsc[row] = 54;
+
+    obj = lv_label_create(grid);
+
+    lv_label_set_text(obj, "wfview server");
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    obj = lv_obj_create(grid);
+
+    lv_obj_set_size(obj, SMALL_3, 56);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_center(obj);
+
+    /* The switch mirrors /mnt/wfview.conf (enabled=), which the web
+     * configurator can also rewrite; credentials live in that file. */
+    obj = lv_switch_create(obj);
+    dialog_item(&dialog, obj);
+    lv_obj_center(obj);
+    lv_obj_add_event_cb(obj, wfview_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    if (wfview_server_get_enabled()) {
+        lv_obj_add_state(obj, LV_STATE_CHECKED);
+    }
 
     lv_obj_set_width(obj, SMALL_3 - 30);
 
@@ -1505,6 +1547,7 @@ static void construct_cb(lv_obj_t *parent) {
     row = make_mag(row);
     row = make_smeter(row);
     row = make_band_plan(row);
+    row = make_wfview(row);
 
     row = make_delimiter(row);
     row = make_clock(row);
