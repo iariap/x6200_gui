@@ -8,6 +8,11 @@
 
 #pragma once
 
+/* Dialog area: the 800x480 screen the ported apps were laid out for */
+#ifndef DIALOG_H
+#define DIALOG_H            372
+#endif
+
 #include "params/params.h"
 
 #include <unistd.h>

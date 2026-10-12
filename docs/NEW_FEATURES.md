@@ -14,9 +14,10 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **wfview**: la radio como IC-705 en red | ✅ 2026-10-11 | §7 |
 | **Web configurator ampliado** (+HTTPS) | ✅ 2026-10-11 | §8 |
 | **WSPR completo**: motor + UI (spots, banda, TX, subida) | ✅ 2026-10-11 | §9 |
+| **NavTex**: decodificador SITOR-B + app | ✅ 2026-10-11 | §10 |
 | Temas JSON | ⏳ pendiente | — |
 | Field Ops SOTA/POTA | ⏳ pendiente | — |
-| Modos digitales: WSPR ✅, SSTV, JS8, WeFax, NavTex | 🔶 en curso | §9 |
+| Modos digitales: WSPR ✅, NavTex ✅, SSTV, WeFax, JS8 | 🔶 en curso | §9-10 |
 | DRM/KMS + perilla con hilo propio | ⏳ pendiente | — |
 
 Todo lo portado mantiene la licencia LGPL-2.1-or-later y la atribución al autor original
@@ -416,3 +417,51 @@ resto de las pantallas.
 
 **Estado**: el motor (RX/TX de audio, codificación y decodificación) está portado, testeado y en
 la imagen; la UI queda para la próxima tanda, empezando por los shims de la tabla de arriba.
+
+---
+
+## 10. NavTex (SITOR-B)
+
+El receptor de NavTex completo: decodificador SITOR-B con FEC, presentación de mensajes y
+guardado, más la lista de frecuencias.
+
+### Qué se portó
+
+- `src/navtex/`: el decodificador (`decoder.cpp`, `navtex_rx.cpp` con el demodulador FSK a
+ 100 baudios y ±85 Hz, la tabla CCIR 476, el *phasing* y la FEC de SITOR-B) y `fftfilt.cxx` con
+  `gfft.h` (la FFT que usa).
+- `src/freq_list.{c,h}`: la lista de frecuencias en pantalla, **compartida con SSTV y WeFax** —
+  portarla habilita los tres.
+- `src/dialog_navtex.c`: la app (mensajes recibidos, estación, tipo, hora, guardado en
+  `/mnt/navtex`, y los controles de la barra inferior).
+- Se abre desde **acciones de pulsación larga → `NavTex`**.
+
+### Adaptaciones
+
+- El callback de audio: nuestro DSP entrega banda base **compleja** y el decodificador trabaja
+  sobre audio real, así que un adaptador toma la parte real en bloques de 2048 (el mismo patrón
+  que WSPR).
+- `theme.c/h`: se sumaron los roles `TC_near_bg` y `TC_warn`.
+- `freq_list.c` usa el enum de modos con los nombres viejos (`x6100_mode_*`): quedaron como
+  alias de los nuestros en `cfg/cfg_api.h`, junto con `cparam_i_set` y `remote_text`.
+- `DIALOG_H` se movió a `styles.h` (como en el X6100) para que lo vean todos los archivos
+  portados, no solo los que incluyen `app_frame.h`.
+
+### Test: el loopback del X6100, portado
+
+`tests/native/run_navtex_tests.sh` compila el **códec real** con
+`tests/native/test_navtex_loopback.cpp` (el loopback del X6100, adaptado): sintetiza una
+transmisión SITOR-B completa —CCIR 476, cada carácter dos veces a 5 posiciones, *phasing*
+alpha/rep, FSK continuo a 100 baudios con ruido— y la decodifica.
+
+```
+SNR +20.0 dB, 1 = mark: OK    "ZCZC FA01|TEST MESSAGE FROM X6200 ROM 123 456|NNNN|"
+SNR +10.0 dB, 1 = mark: OK
+SNR  +5.0 dB, 1 = mark: OK
+polarity: a 1 bit is the mark (higher frequency)
+all OK
+```
+
+También verifica **cuál polaridad** toma el decodificador (un bit 1 = frecuencia alta) y corre
+sin fallas a +20, +10 y +5 dB de SNR. A 0 dB —el borde de SITOR-B— muestra los errores de
+carácter pero no cuenta como fallo, igual que en el original.

@@ -38,11 +38,25 @@ static inline void cfg_api_int_set(const cfg_item_t *item, int32_t v) {
     subject_set_int(item->val, v);
 }
 
+/* The control library renamed its enum from x6100_* to x6200_*; the ported
+ * app code still spells the old names */
+#define x6100_mode_lsb      x6200_mode_lsb
+#define x6100_mode_usb      x6200_mode_usb
+#define x6100_mode_lsb_dig  x6200_mode_lsb_dig
+#define x6100_mode_usb_dig  x6200_mode_usb_dig
+#define x6100_mode_cw       x6200_mode_cw
+#define x6100_mode_cwr      x6200_mode_cwr
+#define x6100_mode_am       x6200_mode_am
+#define x6100_mode_sam      x6200_mode_sam
+#define x6100_mode_nfm      x6200_mode_nfm
+#define x6100_mode_wfm      x6200_mode_wfm
+
 /* The X6100 renamed the subject accessors and the parameter getters */
 #define subject_i_create(v)     subject_create_int((int32_t) (v))
 #define subject_i_get(subj)     subject_get_int(subj)
 #define subject_i_set(subj, v)  subject_set_int((subj), (v))
 #define cparam_i_get(subj)      subject_get_int(subj)
+#define cparam_i_set(subj, v)   subject_set_int((subj), (v))
 #define subject_subscribe_delayed(subj, fn, ud) subject_add_delayed_observer((subj), (fn), (ud))
 
 #define param_i_get(item)       cfg_api_int_get(item)

@@ -18,6 +18,7 @@ extern "C" {
 
 /* The X6100 apps call this with a JSON object; nothing to publish yet */
 #define remote_event(...) ((void) 0)
+#define remote_text(...)  ((void) 0)
 
 static inline int remote_state(char *buf, size_t size) {
     (void) buf;

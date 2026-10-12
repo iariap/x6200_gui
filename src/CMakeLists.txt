@@ -24,6 +24,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     wspr/wspr.c wspr/wsprnet.c
     theme.c app_frame.c freq_strip.c station.c tx_level.c
     tx_player.c dialog_wspr.c cluster/spots.c gps.c
+    freq_list.c dialog_navtex.c navtex/decoder.cpp navtex/navtex_rx.cpp navtex/fftfilt.cxx
 )
 
 add_subdirectory(fonts)

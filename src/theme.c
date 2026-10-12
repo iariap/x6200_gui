@@ -65,6 +65,8 @@ static const theme_entry_t colors[] = {
     { TC_tx,                 0xff5a3c },
     { TC_text_faint,         0x5a5f66 },
     { TC_err,                0xff5a3c },
+    { TC_near_bg,            0x262a31 },
+    { TC_warn,               0xffd040 },
     { TC_ok,                 0x5dcaa5 },
     { TC_ok_bar,             0x5dcaa5 },
     { TC_sel_bg,             0x5dcaa5 },

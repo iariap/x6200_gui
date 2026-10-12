@@ -37,7 +37,7 @@ typedef enum {
     TC_popup, TC_popup_border,
     TC_panel, TC_frame,
     TC_track, TC_ok, TC_ok_bar,
-    TC_accent, TC_tx, TC_text_faint, TC_err,
+    TC_accent, TC_tx, TC_text_faint, TC_err, TC_near_bg, TC_warn,
     TC_sel_bg, TC_sel_border, TC_sel_text,
     TC_num
 } theme_color_t;
