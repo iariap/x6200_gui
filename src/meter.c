@@ -7,6 +7,7 @@
  */
 
 #include "meter.h"
+#include "theme.h"
 #include "styles.h"
 #include "events.h"
 #include "params/params.h"
@@ -107,12 +108,12 @@ static void needle_draw(lv_obj_t *obj, lv_draw_ctx_t *draw_ctx) {
 
     /* LVGL arcs: 0 degrees at 3 o'clock, clockwise; straight up is 270 */
     lv_draw_arc_dsc_init(&arc_dsc);
-    arc_dsc.color = lv_color_hex(0xAAAAAA);
+    arc_dsc.color = lv_color_hex(theme_hex(TC_meter_bar));
     arc_dsc.width = 2;
     lv_draw_arc(draw_ctx, &arc_dsc, &c, r, 270 + NEEDLE_A0,
                 270 + NEEDLE_A0 + (int)(span * NEEDLE_S9_U));
 
-    arc_dsc.color = lv_color_hex(0xAA0000);
+    arc_dsc.color = lv_color_hex(theme_hex(TC_meter_over));
     arc_dsc.width = 5;
     lv_draw_arc(draw_ctx, &arc_dsc, &c, r + 2, 270 + NEEDLE_A0 + (int)(span * NEEDLE_S9_U),
                 270 + NEEDLE_A1);
@@ -128,7 +129,7 @@ static void needle_draw(lv_obj_t *obj, lv_draw_ctx_t *draw_ctx) {
         lv_point_t p1  = needle_pt(c, a, r);
         lv_point_t p2  = needle_pt(c, a, r - (big ? 9 : 5));
 
-        line_dsc.color = lv_color_hex(0xAAAAAA);
+        line_dsc.color = lv_color_hex(theme_hex(TC_meter_bar));
         line_dsc.width = big ? 2 : 1;
         lv_draw_line(draw_ctx, &line_dsc, &p1, &p2);
 
@@ -148,7 +149,7 @@ static void needle_draw(lv_obj_t *obj, lv_draw_ctx_t *draw_ctx) {
         lv_point_t p1  = needle_pt(c, a, r + 2);
         lv_point_t p2  = needle_pt(c, a, r - (big ? 10 : 6));
 
-        line_dsc.color = lv_color_hex(0xAA0000);
+        line_dsc.color = lv_color_hex(theme_hex(TC_meter_over));
         line_dsc.width = big ? 2 : 1;
         lv_draw_line(draw_ctx, &line_dsc, &p1, &p2);
 
@@ -156,7 +157,7 @@ static void needle_draw(lv_obj_t *obj, lv_draw_ctx_t *draw_ctx) {
             char txt[4];
 
             snprintf(txt, sizeof(txt), "+%d", d);
-            label_dsc.color = lv_color_hex(0xAAAA00);
+            label_dsc.color = lv_color_hex(theme_hex(TC_meter_low));
             needle_label(draw_ctx, &label_dsc, c, a, r + 14, txt);
         }
     }
@@ -218,13 +219,13 @@ static void meter_draw_cb(lv_event_t * e) {
 
     for (uint16_t i = 0; i < count; i++) {
         if (db <= noise_level) {
-            rect_dsc.bg_color = lv_color_hex(0x777777);
+            rect_dsc.bg_color = lv_color_hex(theme_hex(TC_meter_weak));
         } else if (db <= -73) {
-            rect_dsc.bg_color = lv_color_hex(0xAAAAAA);
+            rect_dsc.bg_color = lv_color_hex(theme_hex(TC_meter_bar));
         } else if (db <= -53) {
-            rect_dsc.bg_color = lv_color_hex(0xAAAA00);
+            rect_dsc.bg_color = lv_color_hex(theme_hex(TC_meter_low));
         } else {
-            rect_dsc.bg_color = lv_color_hex(0xAA0000);
+            rect_dsc.bg_color = lv_color_hex(theme_hex(TC_meter_over));
         }
         area.x1 = x1 + 30 + i * slice_w - slice_w / 2 + slice_spacing / 2;
         area.x2 = area.x1 + slice_w - slice_spacing;
@@ -239,7 +240,7 @@ static void meter_draw_cb(lv_event_t * e) {
         area.x1 = x1 + 30  - slice_w / 2 + slice_w * ((meter_peak - min_db) / slice_db);
         area.x2 = area.x1 + slice_w - slice_spacing;
         rect_dsc.bg_opa = LV_OPA_50;
-        rect_dsc.bg_color = lv_color_hex(0xAAAAAA);
+        rect_dsc.bg_color = lv_color_hex(theme_hex(TC_meter_bar));
         lv_draw_rect(draw_ctx, &rect_dsc, &area);
     }
 

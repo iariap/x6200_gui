@@ -7,6 +7,7 @@
  */
 
 #include "spectrum.h"
+#include "theme.h"
 
 #include "dsp.h"
 #include "events.h"
@@ -92,12 +93,12 @@ static void spectrum_draw_cb(lv_event_t *e) {
 
     lv_draw_line_dsc_init(&main_line_dsc);
 
-    main_line_dsc.color = lv_color_hex(0xAAAAAA);
+    main_line_dsc.color = lv_color_hex(theme_hex(TC_text_dim));
     main_line_dsc.width = 1;
 
     lv_draw_line_dsc_init(&peak_line_dsc);
 
-    peak_line_dsc.color = lv_color_hex(0x555555);
+    peak_line_dsc.color = lv_color_hex(theme_hex(TC_text_mute));
     peak_line_dsc.width = 1;
 
     lv_coord_t x1 = obj->coords.x1;
@@ -253,7 +254,7 @@ static void spectrum_draw_cb(lv_event_t *e) {
     main_b.y = y1 + h;
 
     if (recorder_is_on()) {
-        main_line_dsc.color = lv_color_hex(0xFF0000);
+        main_line_dsc.color = lv_color_hex(theme_hex(TC_tx));
     } else if (cur_mode == x6200_mode_cw || cur_mode == x6200_mode_cwr) {
         // Hide LO line on CW
         main_line_dsc.opa = LV_OPA_0;

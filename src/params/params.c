@@ -407,6 +407,12 @@ static void params_save_str(params_str_t *var) {
     }
 }
 
+static void params_save();
+
+void params_flush() {
+    params_save();
+}
+
 static void params_save() {
     if (!sql_query_exec("BEGIN")) {
         return;

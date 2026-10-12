@@ -1211,3 +1211,34 @@ sola en el spot más cercano a la frecuencia actual.
   sintoniza con `dialog_cluster_tune_spot()`.
 - El ajuste nuevo (`cfg.cluster_column`) va en `cfg`, no en `params`, así que su interruptor en
   Ajustes es propio y no un `switch_bool()`.
+
+---
+
+## 28. La pantalla principal sigue el tema
+
+Hasta acá los temas solo cambiaban los diálogos de las apps portadas: la pantalla principal (barra,
+botones, espectro, waterfall, S-meter) usaba colores fijos. Ahora **también la sigue**.
+
+### Qué se cambió
+
+Veinte colores fijos de la UI principal, ahora roles del tema:
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Fondo de la pantalla (modos Simple y Legacy) | `0x27313a` / `0x0040A0` | `TC(bg)` |
+| Fondo y borde del espectro y del waterfall | negro / `0xAAAAAA` | `TC(bg)` / `TC(panel_border)` |
+| LED del botón activo y botón deshabilitado | `0x00FF00` / `0x101010` | `TC(btn_mark_active)` / `TC(text_mute)` |
+| **S-meter** (arco, aguja, marcas, barra, rojo) | 4 grises/rojos fijos | `TC(meter_bar)`, `TC(meter_over)`, `TC(meter_low)`, `TC(meter_weak)` |
+| Traza del espectro, picos y TX | `0xAAAAAA` / `0x555555` / `0xFF0000` | `TC(text_dim)`, `TC(text_mute)`, `TC(tx)` |
+| Línea del medio del waterfall | `0xAAAAAA` | `TC(panel_border)` |
+| Colores de velocidad de sintonía (fina/rápida/scan) | azul/amarillo/rojo fijos | `TC(info)`, `TC(warn)`, `TC(err)` |
+
+Y si el tema trae **su propia paleta de waterfall** (los JSON la pueden definir), la usa; si no,
+quedan las dos de siempre (Simple/Legacy).
+
+### Aplicar el tema
+
+Los estilos se arman **una vez al arrancar**, así que al elegir un tema la GUI **se reinicia sola**
+(el aviso dice "restarting" y el `x6200_daemon` la vuelve a levantar). Es exactamente lo que hace
+el X6100: "the GUI saves and restarts at once". Para eso expuse `params_flush()`, que guarda los
+parámetros cambiados en el momento en vez de esperar al guardado periódico.

@@ -39,7 +39,7 @@ Cada feature portada tiene su detalle, configuración y tests en
 | JS8 | ✅ | §16 |
 | Cluster DX | ✅ | §14 y §27 — con la columna en la pantalla principal |
 | Field Ops SOTA/POTA | ✅ | §15 y §20 — incluye el CQ de voz |
-| Temas JSON | 🔶 | §17 — apps sí; falta la pantalla principal |
+| Temas JSON | ✅ | §17 y §28 — apps **y** pantalla principal |
 
 ---
 
@@ -111,7 +111,7 @@ parte de esa diferencia:
 
 | Función | X6100 | X6200 | Estado / qué falta |
 |---|---|---|---|
-| **Temas JSON** (8 temas, incluidos "outdoor") | ✅ | 🔶 | motor completo + **6 temas** y JSON propios ✅; la **pantalla principal** sigue con estilos fijos (428 referencias de color en 42 archivos) |
+| **Temas JSON** (8 temas, incluidos "outdoor") | ✅ | ✅ | motor completo + **6 temas** y JSON propios, y **también la pantalla principal** ([NEW_FEATURES.md](NEW_FEATURES.md) §28); al cambiar de tema la GUI se reinicia, como en el X6100 |
 | Aguja de S-meter dibujada | ✅ | ✅ | Ajustes → S-meter needle (por tema, como el original) |
 | **Band plan IARU** sobre el espectro | ✅ | ✅ | Ajustes → Band plan |
 | **Grabación de pantalla** AVI | ✅ | ✅ | los dos graban **video MJPEG + audio de RX** (el análisis inicial decía "incluye tu voz en TX": su propio `screen_rec.c` dice "Screen + RX audio recorder", así que no era una diferencia) |
@@ -185,7 +185,6 @@ Para que la comparación no sea engañosa:
 
 Por orden de valor:
 
-3. **Temas en la pantalla principal**: llevar las 428 referencias de color al sistema de temas.
 4. **Perilla de alineado/inclinación de WeFax**: requiere portar el registro de controles
    (`CTRL_*` + `mfk_set_ctrl`, ~500 líneas de `controls.cpp`).
 5. **Banderas de país en FT8** (el header generado por `tools/flags_gen.py`). Ojo: el

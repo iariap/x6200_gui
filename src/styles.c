@@ -7,6 +7,7 @@
  */
 
 #include "styles.h"
+#include "theme.h"
 
 #define PATH "A:/dev/shm/"
 
@@ -123,9 +124,9 @@ void styles_init(themes_t theme) {
     lv_style_init(&background_style);
 
     lv_style_init(&spectrum_style);
-    lv_style_set_bg_color(&spectrum_style, lv_color_hex(0x000000));
+    lv_style_set_bg_color(&spectrum_style, lv_color_hex(theme_hex(TC_bg)));
     lv_style_set_bg_opa(&spectrum_style, LV_OPA_COVER);
-    lv_style_set_border_color(&spectrum_style, lv_color_hex(0xAAAAAA));
+    lv_style_set_border_color(&spectrum_style, lv_color_hex(theme_hex(TC_panel_border)));
     lv_style_set_border_width(&spectrum_style, 0);
     lv_style_set_radius(&spectrum_style, 0);
     lv_style_set_width(&spectrum_style, 800);
@@ -148,8 +149,8 @@ void styles_init(themes_t theme) {
     lv_style_set_text_align(&freq_main_style, LV_TEXT_ALIGN_CENTER);
 
     lv_style_init(&waterfall_style);
-    lv_style_set_bg_color(&waterfall_style, lv_color_hex(0x000000));
-    lv_style_set_border_color(&waterfall_style, lv_color_hex(0xAAAAAA));
+    lv_style_set_bg_color(&waterfall_style, lv_color_hex(theme_hex(TC_bg)));
+    lv_style_set_border_color(&waterfall_style, lv_color_hex(theme_hex(TC_panel_border)));
     lv_style_set_border_width(&waterfall_style, 0);
     lv_style_set_radius(&waterfall_style, 0);
     lv_style_set_clip_corner(&waterfall_style, true);
@@ -166,13 +167,13 @@ void styles_init(themes_t theme) {
     lv_style_set_bg_opa(&btn_style, LV_OPA_0);
 
     lv_style_init(&btn_active_style);
-    lv_style_set_bg_img_recolor(&btn_active_style, lv_color_hex(0x00FF00));
+    lv_style_set_bg_img_recolor(&btn_active_style, lv_color_hex(theme_hex(TC_btn_mark_active)));
     lv_style_set_bg_img_recolor_opa(&btn_active_style, LV_OPA_20);
 
     lv_style_init(&btn_disabled_style);
-    lv_style_set_bg_img_recolor(&btn_disabled_style, lv_color_hex(0x000000));
+    lv_style_set_bg_img_recolor(&btn_disabled_style, lv_color_hex(theme_hex(TC_bg)));
     lv_style_set_bg_img_recolor_opa(&btn_disabled_style, LV_OPA_20);
-    lv_style_set_text_color(&btn_disabled_style, lv_color_hex(0x101010));
+    lv_style_set_text_color(&btn_disabled_style, lv_color_hex(theme_hex(TC_text_mute)));
 
     /* Message style */
     lv_style_init(&msg_style);
@@ -309,9 +310,11 @@ void styles_set_theme(themes_t theme) {
 }
 
 static void setup_theme_legacy() {
-    wf_palette = wf_palette_legacy;
+    /* The theme may bring its own waterfall palette (the JSON ones do) */
+    wf_palette = theme_shape.waterfall_n > 0 ? theme_waterfall() : wf_palette_legacy;
 
-    bg_color = lv_color_hex(0x0040A0);
+    /* The background follows the theme (JSON themes, NEW_FEATURES 17/28) */
+    bg_color = lv_color_hex(theme_hex(TC_bg));
     lv_style_set_bg_color(&background_style, bg_color);
 
     lv_style_set_bg_img_src(&btn_style, PATH "images/btn.bin");
@@ -341,9 +344,9 @@ static void setup_theme_legacy() {
 }
 
 static void setup_theme_simple() {
-    wf_palette = wf_palette_gauss;
+    wf_palette = theme_shape.waterfall_n > 0 ? theme_waterfall() : wf_palette_gauss;
 
-    bg_color = lv_color_hex(0x27313a);
+    bg_color = lv_color_hex(theme_hex(TC_bg));
     lv_style_set_bg_color(&background_style, bg_color);
 
     lv_style_set_bg_img_src(&btn_style, PATH "images/btn_dark.bin");

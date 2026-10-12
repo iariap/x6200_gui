@@ -28,7 +28,7 @@ para el equipo, verificada en la imagen y con tests donde se puede correr sin ra
 | 16 | **SSTV** | 7 modos, RX y TX, con galería |
 | 17 | **WeFax** | Fax meteorológico con modo Auto |
 | 18 | **JS8** | Motor y app completos |
-| + | **Temas JSON** | 6 temas incluidos + temas propios en `/mnt/themes` |
+| + | **Temas JSON** | 6 temas incluidos + temas propios en `/mnt/themes`; **toda la UI** los sigue (la GUI se reinicia al cambiar de tema) |
 
 Todo se abre desde **Ajustes → acciones de pulsación larga**: elegí la acción y asignala a un
 botón. Están WSPR, NavTex, SSTV, WeFax, JS8, Cluster, Field Ops, CW Keyboard y Theme (más las
@@ -92,8 +92,6 @@ probar en el equipo) está en [`docs/INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md
 - **Bluetooth**: todo desde la radio (encendido, discoverable, lista de dispositivos, vincular, conectar, audio a los auriculares y el *passkey* de los teclados). La consola (`btaudio-ctl`) sigue disponible.
 - **Perilla de alineado/inclinación de WeFax**: su registro `CTRL_*` no está portado; los valores
   se ajustan desde los parámetros.
-- **UI principal con temas**: los diálogos de apps siguen el tema; la pantalla principal
-  (barra, botones, espectro) todavía usa los estilos fijos.
 - **WeFax**: falta la perilla de alineado/inclinación (su registro de controles no está portado);
   esos valores se ajustan desde los parámetros.
 - El *snake* del firmware original (un huevo de pascua) no está en esta ROM.

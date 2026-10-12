@@ -295,6 +295,9 @@ extern params_t params;
 
 void params_init();
 
+/* Writes the changed parameters now (the saver also runs on its own timer) */
+void params_flush();
+
 void params_bool_set(params_bool_t *var, bool x);
 void params_uint8_set(params_uint8_t *var, uint8_t x);
 void params_uint16_set(params_uint16_t *var, uint16_t x);

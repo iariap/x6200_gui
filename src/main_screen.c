@@ -129,6 +129,13 @@ static void next_freq_step(bool up) {
     voice_say_text_fmt("Frequency step %i herz", new_step);
 }
 
+/* The theme applies when the windows are built: restart so it is taken */
+static void restart_cb(lv_timer_t *t) {
+    (void) t;
+
+    exit(0);
+}
+
 static void apps_disable() {
     dialog_destruct();
 
@@ -288,9 +295,20 @@ void main_screen_action(press_action_t action) {
                 const char *next = names[(cur + 1) % n];
 
                 params_str_set(&params.theme_name, next);
-                theme_init(next);
-                fonts_apply(theme_shape.font >= 0 ? theme_shape.font : (params.font.x <= 3 ? params.font.x : 0));
-                msg_update_text_fmt("Theme: %s", next);
+                params_flush();
+
+                /* Every window takes its colours when it is built, so the GUI
+                 * restarts to apply the theme, exactly as the X6100 does (the
+                 * x6200_daemon starts it again). */
+                msg_update_text_fmt("Theme: %s - restarting", next);
+
+                lv_timer_t *restart = lv_timer_create(restart_cb, 1200, NULL);
+
+                if (restart) {
+                    lv_timer_set_repeat_count(restart, 1);
+                } else {
+                    exit(0);
+                }
             }
             break;
         }
@@ -924,13 +942,13 @@ static void update_tuning_multiplier_display(float multiplier) {
     // Update color based on range
     lv_color_t color;
     if (multiplier < 1.0f) {
-        color = lv_color_hex(0x4488FF);  // Blue - fine
+        color = lv_color_hex(theme_hex(TC_info));  // Blue - fine
     } else if (multiplier < 2.0f) {
         color = lv_color_white();         // White - normal
     } else if (multiplier < 10.0f) {
-        color = lv_color_hex(0xFFCC00);   // Yellow - fast
+        color = lv_color_hex(theme_hex(TC_warn));   // Yellow - fast
     } else {
-        color = lv_color_hex(0xFF4444);   // Red - scan
+        color = lv_color_hex(theme_hex(TC_err));   // Red - scan
     }
     lv_obj_set_style_text_color(tuning_multiplier_label, color, 0);
     lv_obj_clear_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);

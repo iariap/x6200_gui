@@ -75,7 +75,7 @@ desde la web usaba un indicativo vacío. Ahora leen `X6200_*` y el *User-Agent* 
 |---|---|---|---|
 | **Aguja de S-meter** | Ajustes → interruptor `S-meter needle` | — | 📄 en Ajustes y en el binario (no verificable sin ver el panel) |
 | **Band plan IARU** | Ajustes → interruptor `Band plan` | `band_plan_data.c` | 🧪 datos del plan (test nativo); 🔌 aspecto en pantalla |
-| **Temas JSON** | acción `Theme`; temas propios en `/mnt/themes` | `/usr/share/x6200/themes` (12 archivos) → se copian a `/mnt/themes` al arrancar | 🧪 carga de temas incluidos, JSON propio, fallback y lista (test nativo) |
+| **Temas JSON** | acción `Theme`; temas propios en `/mnt/themes` | `/usr/share/x6200/themes` (12 archivos) → se copian a `/mnt/themes` al arrancar | 🧪 carga de temas incluidos, JSON propio, fallback y lista (test nativo); 🧪 la pantalla principal usa los roles del tema (§28) y la GUI se reinicia al cambiarlo |
 | **Fuente** | Ajustes → `Font` (Sony/Roboto/DejaVu/Arial) | se aplica **en el próximo arranque** (igual que el X6100: `fonts_apply()` corre una vez) | 📄 en Ajustes |
 | **Grabación de pantalla** | acción `Screen rec` | `/mnt/screenrec` | 🧪 escritor AVI; 🔌 grabación real |
 | **Aviso de versión** | automático al arrancar | `/mnt/update_check.conf` (¿activado?, fuente), red | 🧪 parseo de versiones y comparación |
@@ -132,8 +132,6 @@ JSON, el *rollover* del teclado y el formato WAV contra la libsndfile del target
 
 ## 4. Deuda de integración conocida
 
-- **Temas en la pantalla principal**: los diálogos de apps siguen el tema; la barra, botones,
-  espectro y waterfall usan estilos fijos.
 - **Perilla** de alineado/inclinación de WeFax y **perilla con hilo propio**: no portadas.
 - **CW Trainer**: la única app del X6100 que no está.
 - **Banderas de país en FT8**: falta el header generado por `tools/flags_gen.py` (el `cty.dat` que la imagen instala todavía no lo usa nadie).
