@@ -21,6 +21,11 @@ extern "C" {
 
 void cw_init();
 
+/* The keying speed in WPM. The X6100 reports the speed it is actually sending;
+ * this GUI keeps the one set in the configuration, which is what the CW
+ * keyboard app shows. */
+int cw_get_wpm(void);
+
 void cw_put_audio_samples(unsigned int n, cfloat *samples);
 void cw_put_audio_int_samples(unsigned int n, int16_t *samples);
 

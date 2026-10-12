@@ -48,6 +48,7 @@ typedef enum {
     ACTION_APP_CLUSTER,
     ACTION_APP_FIELD,
     ACTION_APP_JS8,
+    ACTION_APP_CW_KBD,
     ACTION_THEME,
     ACTION_APP_SWRSCAN,
     ACTION_APP_SETTINGS,
@@ -300,6 +301,11 @@ void params_str_set(params_str_t *var, const char *x);
 void params_float_set(params_float_t *var, float x);
 
 uint8_t params_uint8_change(params_uint8_t *var, int16_t df);
+
+#define PARAMS_MSG_CW_LEN 65
+
+/* The saved CW messages, for the CW keyboard app */
+int  params_msg_cw_list(char (*out)[PARAMS_MSG_CW_LEN], int max);
 
 void params_msg_cw_load();
 void params_msg_cw_new(const char *val);

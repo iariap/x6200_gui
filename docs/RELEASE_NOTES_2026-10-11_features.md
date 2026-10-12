@@ -17,7 +17,7 @@ para el equipo, verificada en la imagen y con tests donde se puede correr sin ra
 | 5 | **Grabación de pantalla** | AVI MJPEG + audio de RX en `/mnt/screenrec` |
 | 6 | **Bluetooth CAT** | Puente SPP con pty sobre el UART de CAT (`btcat`) |
 | 7 | **Bluetooth auriculares** | A2DP con loopback y `btaudio-ctl` |
-| 8 | **Teclados USB/Bluetooth** | Descubrimiento dinámico y *rollover* |
+| 8 | **Teclados USB/Bluetooth** | Descubrimiento dinámico, *rollover* y la app **CW Keyboard** (telegrafiar escribiendo) |
 | 9 | **wfview** | La radio como IC-705 en la red (Icom LAN) |
 | 10 | **Web configurator ampliado** | 15 páginas + HTTPS, gestor de todo el equipo |
 | 11 | **Control remoto en vivo** | La página `/remote` maneja la radio en tiempo real |
@@ -77,7 +77,7 @@ Estas cosas dependen del hardware y quedan como chequeos pendientes:
   falta el *spot snap* (que el VFO se detenga en un spot girando despacio).
 - **WeFax**: falta la perilla de alineado/inclinación (su registro de controles no está portado);
   esos valores se ajustan desde los parámetros.
-- El **teclado CW** y el *snake* del firmware original no están en esta ROM.
+- El **CW Trainer** (entrenador de oído) y el *snake* del firmware original no están en esta ROM.
 
 ## Instalación
 

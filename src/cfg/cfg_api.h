@@ -23,6 +23,9 @@ extern "C" {
 #define cfg_bg_freq         (cfg_cur.bg_freq)
 #define cfg_cur_mode        (cfg_cur.mode)
 #define cfg_pwr             (&cfg.pwr)
+#define cfg_key_speed       (&cfg.key_speed)
+#define cfg_cw_decoder      (&cfg.cw_decoder)
+
 #define cfg_tx_filter_low   (&cfg.tx_filter_low)
 #define cfg_tx_filter_high  (&cfg.tx_filter_high)
 #define cfg_cur_filter_low  (cfg_cur.filter.low)

@@ -28,7 +28,7 @@ Cada feature portada tiene su detalle, configuración y tests en
 | Grabación de pantalla | ✅ | §5 — video MJPEG + audio de RX |
 | Bluetooth CAT | ✅ | §6 |
 | Auriculares Bluetooth | 🔶 | §6 — loopback + A2DP; falta la UI |
-| Teclados USB/Bluetooth | 🔶 | §18 — entrada ✅; falta la UI de pairing |
+| Teclados USB/Bluetooth | 🔶 | §18 — entrada ✅ y app **CW Keyboard** ✅; falta la UI de pairing |
 | wfview | ✅ | §7 |
 | Web configurator ampliado | ✅ | §8 — 15 páginas + HTTPS |
 | Control remoto en vivo | ✅ | §19 — sin control remoto de FT8 |
@@ -52,7 +52,7 @@ parte de esa diferencia:
 | Métrica | X6100 (IU1WXY v0.117) | X6200 (al empezar) | X6200 (hoy) |
 |---|---|---|---|
 | Líneas en `src/` (solo raíz) | ~69.900 en 193 archivos | ~22.100 en 122 archivos | **~51.700 en 180 archivos** |
-| Apps (`ACTION_APP_*`) | 21 | 10 | **17** |
+| Apps (`ACTION_APP_*`) | 21 | 10 | **18** |
 | Módulos de `src/` | 12 | 5 | **13** (`wspr`, `cluster`, `navtex`, `sstv`, `wefax`, `field`, `js8` + los 6 de base) |
 | Base | requiere `x6100_base_patch` r13+ para varias funciones | baseband propio (`libaether_x6200_control`) | igual |
 | Estado | "todo beta, primer release" (según su README) | port estable de R1CBU | + este programa de port |
@@ -78,7 +78,7 @@ en lugar del menú de apps.
 | **SSTV** RX + TX (VIS, modo auto, dibujo línea a línea) | ✅ | ✅ | 7 modos, verificado con su loopback |
 | **WeFax** RX + TX | ✅ | 🔶 | códec y app ✅; **la perilla de alineado/inclinación** no (su registro `CTRL_*` no está portado) |
 | **NavTex** RX (lista de estaciones, guarda mensajes) | ✅ | ✅ | SITOR-B con FEC, verificado |
-| **CW Keyboard** (teclado USB/BT que telegrafía) | ✅ | ❌ | la **entrada** de teclados sí está (NEW_FEATURES §18), pero no la app que telegrafía |
+| **CW Keyboard** (teclado USB/BT que telegrafía) | ✅ | ✅ | app portada ([NEW_FEATURES.md](NEW_FEATURES.md) §21), con los mensajes CW guardados y control remoto; en **CW** la velocidad que muestra es la configurada, no la medida como en el X6100 |
 | **CW Trainer** | ✅ | ❌ | pendiente |
 | Selector de apps/modos (**MODES**) | ✅ | ❌ | acá las apps se abren desde acciones de pulsación larga |
 | **RTTY** | ✅ | ✅ | — |
@@ -194,7 +194,7 @@ Por orden de valor:
 4. **Columna de spots del cluster** en la pantalla principal (`cluster_column.c`) y **spot snap**.
 6. **Control remoto de FT8** por la web: faltan los enganches `dialog_ft8_remote()/state()` en
    nuestro diálogo FT8 (upstream). Las otras seis apps sí responden.
-7. **CW Keyboard** (la app que telegrafía con el teclado) y **CW Trainer**.
+7. **CW Trainer** (el entrenador de oído): es la única app del X6100 que queda sin portar.
 8. **Banderas** de país en el cluster (assets de `tools/flags_gen.py`).
 9. **DRM/KMS + perilla con hilo propio**: mejora de base, riesgo de hardware.
 10. **TX Cal / CESSB / filtro TX**: depende del baseband; en el X6200 no hay comandos.
@@ -207,8 +207,7 @@ para grabaciones/logs y mensajes de voz.
 
 ## 6. Resumen en una frase
 
-El X6100 de IU1WXY sigue teniendo cosas que acá no hay —la app de **CW Keyboard** y el
-**CW Trainer**, la **columna de spots** con su *spot snap*, los **temas en la pantalla
+El X6100 de IU1WXY sigue teniendo cosas que acá no hay —el **CW Trainer**, la **columna de spots** con su *spot snap*, los **temas en la pantalla
 principal**, **DRM/KMS** y **TX Cal/CESSB**— pero tras este programa de port el X6200 cubre
 **los cinco modos digitales, el cluster, Field Ops, los temas, la grabación, Bluetooth, wfview
 y el web configurator con control remoto**, que era el grueso de la diferencia. Lo que queda

@@ -39,6 +39,7 @@ extern "C" {
     #include "cJSON.h"
     #include "cfg/cfg_api.h"
     #include "dialog.h"
+    #include "dialog_cw_kbd.h"
     #include "cw_tune_ui.h"
     #include "dialog_field.h"
     #include "dialog_ft8.h"
@@ -130,6 +131,11 @@ static const struct {
     void      (*fn)(const char *cmd, int32_t val, const char *text);
     int32_t     min, max, stop;
 } app_cmds[] = {
+    {"cw_send",     "CW",     dialog_cw_kbd_remote, 1, 0,         INT32_MAX},   /* also while keying */
+    {"cw_stop",     "CW",     dialog_cw_kbd_remote, 1, 0,         INT32_MAX},
+    {"cw_wpm",      "CW",     dialog_cw_kbd_remote, 5, 60,        INT32_MIN},
+    {"cw_dec",      "CW",     dialog_cw_kbd_remote, 0, 1,         INT32_MIN},
+
     {"js8_send",    "JS8",    dialog_js8_remote,    1, 0,         INT32_MIN},
     {"js8_cq",      "JS8",    dialog_js8_remote,    1, 0,         INT32_MIN},
     {"js8_hb",      "JS8",    dialog_js8_remote,    1, 0,         INT32_MIN},
@@ -162,7 +168,7 @@ static const struct {
     const char *app;
     int       (*fn)(char *buf, size_t size);
 } app_states[] = {
-    {"JS8", dialog_js8_remote_state},     {"WSPR", dialog_wspr_remote_state},
+    {"CW", dialog_cw_kbd_remote_state},  {"JS8", dialog_js8_remote_state},     {"WSPR", dialog_wspr_remote_state},
     {"SSTV", dialog_sstv_remote_state}, {"WeFax", dialog_wefax_remote_state}, {"NavTex", dialog_navtex_remote_state},
     
     {"Field", dialog_field_remote_state},
@@ -272,9 +278,9 @@ static bool app_open(size_t i) {
 }
 
 static void open_app(int32_t app) {
-    static const press_action_t actions[] = {ACTION_NONE,     ACTION_APP_FT8,   ACTION_APP_FT8,    ACTION_APP_JS8,
-                                             ACTION_APP_WSPR, ACTION_APP_SSTV,  ACTION_APP_WEFAX,  ACTION_APP_NAVTEX,
-                                             ACTION_APP_RTTY, ACTION_NONE,      ACTION_APP_FIELD,  ACTION_NONE};
+    static const press_action_t actions[] = {ACTION_NONE,     ACTION_APP_FT8,     ACTION_APP_FT8,   ACTION_APP_JS8,
+                                             ACTION_APP_WSPR, ACTION_APP_SSTV,    ACTION_APP_WEFAX, ACTION_APP_NAVTEX,
+                                             ACTION_APP_RTTY, ACTION_APP_CW_KBD,  ACTION_APP_FIELD, ACTION_NONE};
     const char *cur = current_app();
 
     if (!app) {
@@ -288,8 +294,12 @@ static void open_app(int32_t app) {
         cfg_sm.p_ft8_protocol.set(app == 2 ? FTX_PROTOCOL_FT4 : FTX_PROTOCOL_FT8);
     main_screen_start_app(actions[app]);
 
-    /* SSTV, WeFax and NavTex need SSB audio; the CW keyboard's own mode juggling
-     * is not ported (that app is not in this build). */
+    /* CW: the frequency and mode go back when it closes, like the radio's own apps */
+    if (actions[app] == ACTION_APP_CW_KBD)
+        dialog_restore_radio_on_close();
+
+    /* The apps that need SSB for their audio (SSTV, WeFax, NavTex) get it; the CW
+     * keyboard needs CW. */
     int32_t mode = cfg_sm.cp_cur_mode.get();
     bool    cw   = mode == x6100_mode_cw || mode == x6100_mode_cwr;
 
@@ -297,7 +307,9 @@ static void open_app(int32_t app) {
         return;
     int32_t to = -1;
 
-    if (cw && (actions[app] == ACTION_APP_SSTV || actions[app] == ACTION_APP_WEFAX || actions[app] == ACTION_APP_NAVTEX))
+    if (actions[app] == ACTION_APP_CW_KBD && !cw)
+        to = x6100_mode_cw;
+    else if (cw && (actions[app] == ACTION_APP_SSTV || actions[app] == ACTION_APP_WEFAX || actions[app] == ACTION_APP_NAVTEX))
         to = x6100_mode_usb;
     if (to >= 0) {
         cfg_sm.cp_cur_mode.set(to);

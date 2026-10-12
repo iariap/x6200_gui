@@ -159,6 +159,16 @@ void cw_encoder_send(const char *text, bool beacon) {
     pthread_create(&thread, &attr, endecode_thread, NULL);
 }
 
+/* How many characters of the message in progress have gone out already */
+int cw_encoder_sent() {
+    return state == CW_ENCODER_IDLE || !current_msg ? 0 : (int) (current_char - current_msg);
+}
+
 cw_encoder_state_t cw_encoder_state() {
     return state;
+}
+
+/* See the note in cw.h: the configured speed */
+int cw_get_wpm() {
+    return subject_get_int(cfg.key_speed.val);
 }

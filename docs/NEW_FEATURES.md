@@ -22,7 +22,7 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **Field Ops** SOTA/POTA: referencias, log ADIF y RBN | ✅ incluye el **CQ de voz** | §15 |
 | **JS8** (motor + app completa) | ✅ | §16 |
 | **Temas JSON** (motor, 6 temas y temas propios) | 🔶 los diálogos de apps siguen el tema; la pantalla principal no | §17 |
-| **Teclados USB/Bluetooth** (detección y *rollover*) | 🔶 entrada ✅; falta la UI de pairing | §18 |
+| **Teclados USB/Bluetooth** (detección y *rollover*) | 🔶 entrada ✅ y app **CW Keyboard** ✅ (§21); falta la UI de pairing | §18 |
 | **Control remoto en vivo** (socket para la página `/remote`) | ✅ sin control remoto de FT8 | §19 |
 | **DRM/KMS** + perilla con hilo propio | ❌ pendiente | [X6100_FEATURE_GAP.md](X6100_FEATURE_GAP.md) §5 |
 
@@ -975,3 +975,43 @@ corta lo que está sonando; mantener `CQ` ajusta el nivel.
 
 **Falta probarlo en el equipo**: el nivel de micrófono y el audio emitido son cosas que no se
 pueden verificar sin la radio.
+
+---
+
+## 21. CW Keyboard: telegrafiar con el teclado
+
+La app que le da sentido al soporte de teclados de §18: se escribe en la pantalla y la radio
+**telegrafía** lo que se escribe, con el codificador de CW que ya tenía la GUI.
+
+### Qué se portó
+
+- `dialog_cw_kbd.c/h` (470 líneas) del X6100, con la pantalla de texto, el envío en vivo, los
+  **mensajes CW guardados** (los mismos que edita Ajustes, ahora con una lista para elegirlos) y
+  el indicador de progreso.
+- Se abre desde **Ajustes → acciones de pulsación larga → `CW Keyboard`**.
+- Al abrirla **pone el modo en CW** (si no estaba bloqueado) y al cerrarla **devuelve la
+  frecuencia y el modo** anteriores, que es el comportamiento del original.
+- **Control remoto**: la app responde por la web (`cw_send`, `cw_stop`, `cw_wpm`, `cw_dec`) y
+  publica su estado, así que la página `/remote` puede telegrafiar por vos.
+
+### Lo que hizo falta del lado de nuestra GUI
+
+- `params_msg_cw_list()`: la API para enumerar los mensajes CW guardados (el X6100 la tiene; la
+  nuestra sólo tenía cargar/crear/editar/borrar). Es la misma consulta que el original
+  (`SELECT val FROM msg_cw ORDER BY id`) y la tabla tiene el mismo esquema que la suya.
+- `cw_encoder_sent()`: cuántos caracteres del mensaje en curso ya salieron (para el progreso).
+- `cw_get_wpm()`: la velocidad de telegrafía. **Diferencia documentada**: el X6100 informa la
+  velocidad que está *mandando* (la mide); la nuestra devuelve la **configurada**, que es la que
+  la app muestra.
+- Restauré en el servidor remoto los cuatro comandos de CW y su estado, que había sacado cuando
+  la app no existía.
+
+### Verificación
+
+- Compila limpio para ARM y la app queda en el binario.
+- La consulta de la lista de mensajes se probó contra la **base de datos real de la imagen**
+  (`params.default.db`): la tabla `msg_cw` existe con el mismo esquema que el X6100 y la consulta
+  corre sin error.
+- **Falta probarlo en el equipo**: la telegrafía real necesita la radio (y un teclado vinculado).
+
+**Sigue pendiente**: el **CW Trainer** (el entrenador de oído), que es otra app aparte.

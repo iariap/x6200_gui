@@ -610,6 +610,25 @@ void params_msg_cw_load() {
     sqlite3_finalize(stmt);
 }
 
+int params_msg_cw_list(char (*out)[PARAMS_MSG_CW_LEN], int max) {
+    sqlite3_stmt *stmt;
+    int           n = 0;
+
+    if (sqlite3_prepare_v2(db, "SELECT val FROM msg_cw ORDER BY id", -1, &stmt, 0) != SQLITE_OK) {
+        return 0;
+    }
+
+    while (n < max && sqlite3_step(stmt) == SQLITE_ROW) {
+        const char *val = (const char *) sqlite3_column_text(stmt, 0);
+
+        snprintf(out[n++], PARAMS_MSG_CW_LEN, "%s", val ? val : "");
+    }
+
+    sqlite3_finalize(stmt);
+
+    return n;
+}
+
 void params_msg_cw_new(const char *val) {
     sqlite3_stmt    *stmt;
     int             rc;
