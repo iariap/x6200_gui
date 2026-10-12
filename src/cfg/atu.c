@@ -79,6 +79,22 @@ int cfg_atu_save_network(uint32_t network) {
         return -1;
     }
 
+    /* La caché la llena la carga del ATU: sin ella find_atu_for_freq() la recorre y el
+     * proceso muere. Pasa cuando se cambia de banda desde el control remoto antes de que el
+     * ATU tenga datos. */
+    if (atu_network_cache == NULL || atu_network_cache_size == 0) {
+        LV_LOG_WARN("ATU: sin redes cargadas, no se guarda la red (la GUI sigue)");
+        return -1;
+    }
+
+    /* Los dos subjects del ATU los crea cfg_atu_init: si no están, escribir la red termina en
+     * un subject_set_int sobre un puntero NULL (fue lo que se vio al cambiar de banda desde el
+     * control remoto: la carga de [r5+0x2c] falló con dirección 0x2c). */
+    if (atu_network.loaded == NULL || atu_network.network == NULL) {
+        LV_LOG_ERROR("ATU: sin subjects inicializados, no se guarda la red (la GUI sigue)");
+        return -1;
+    }
+
     int32_t ant_id = subject_get_int(cfg.ant_id.val);
     int32_t freq   = subject_get_int(cfg_cur.fg_freq);
 
@@ -87,7 +103,7 @@ int cfg_atu_save_network(uint32_t network) {
     sqlite3_stmt *stmt;
     int32_t       atu_pos = find_atu_for_freq(freq);
     pthread_mutex_lock(&write_mutex);
-    if (atu_pos >= 0 && (size_t) atu_pos < sizeof(atu_network_cache) / sizeof(atu_network_cache[0])) {
+    if (atu_pos >= 0 && (uint32_t) atu_pos < atu_network_cache_size) {
         stmt = update_stmt;
         rc = sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, ":prev_freq"), atu_network_cache[atu_pos].freq);
         if (rc != SQLITE_OK) {
