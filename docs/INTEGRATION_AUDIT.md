@@ -75,6 +75,7 @@ desde la web usaba un indicativo vacío. Ahora leen `X6200_*` y el *User-Agent* 
 |---|---|---|---|
 | **Aguja de S-meter** | Ajustes → interruptor `S-meter needle` | — | 📄 en Ajustes y en el binario (no verificable sin ver el panel) |
 | **Band plan IARU** | Ajustes → interruptor `Band plan` | `band_plan_data.c` | 🧪 datos del plan (test nativo); 🔌 aspecto en pantalla |
+| **DRM/KMS** | `/mnt/use_drm` o `X6200_DRM=1` (por defecto fbdev) | kernel con `CONFIG_DRM_SUN4I` + panel, `libdrm`, backend en `lv_drivers` | 📄 compila y enlaza; 🔌 **hay que probarlo en el equipo** |
 | **Temas JSON** | acción `Theme`; temas propios en `/mnt/themes` | `/usr/share/x6200/themes` (12 archivos) → se copian a `/mnt/themes` al arrancar | 🧪 carga de temas incluidos, JSON propio, fallback y lista (test nativo); 🧪 la pantalla principal usa los roles del tema (§28) y la GUI se reinicia al cambiarlo |
 | **Fuente** | Ajustes → `Font` (Sony/Roboto/DejaVu/Arial) | se aplica **en el próximo arranque** (igual que el X6100: `fonts_apply()` corre una vez) | 📄 en Ajustes |
 | **Grabación de pantalla** | acción `Screen rec` | `/mnt/screenrec` | 🧪 escritor AVI; 🔌 grabación real |
@@ -130,7 +131,7 @@ estado del aviso de versión ([NEW_FEATURES.md](NEW_FEATURES.md) §29).
 5. **Pantalla**: aspecto de la aguja de S-meter y del band plan; temas en la pantalla principal
    (que sigue con estilos fijos, ver `X6100_FEATURE_GAP.md`).
 6. **Web remote** (`/remote`) de punta a punta con la radio andando.
-7. **DRM/KMS**: el equipo sigue con `fbdev`.
+7. **DRM/KMS**: probar el camino DRM creando `/mnt/use_drm` (por defecto sigue `fbdev`).
 8. **Espacio en `/mnt`**: lo comparten grabación de pantalla, logs, imágenes RX y mensajes de voz.
 
 ---

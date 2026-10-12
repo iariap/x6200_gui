@@ -8,6 +8,10 @@
 
 #include "lvgl/lvgl.h"
 #include "lv_drivers/display/fbdev.h"
+#include "lv_drivers/display/drm.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <time.h>
@@ -67,7 +71,27 @@ int main(void) {
     lv_init();
     // lv_png_init();
 
-    fbdev_init();
+    /* The kernel has DRM (CONFIG_DRM_SUN4I plus the panel driver) and lv_drivers
+     * brings the backend, but an unverified display engine can leave the screen
+     * black: DRM is used only when it is asked for, by creating /mnt/use_drm or
+     * with X6200_DRM=1. Otherwise fbdev, as always. docs/NEW_FEATURES.md §32. */
+    bool use_drm = access("/mnt/use_drm", F_OK) == 0;
+
+    if (!use_drm) {
+        const char *env = getenv("X6200_DRM");
+
+        use_drm = env && env[0] && strcmp(env, "0") != 0;
+    }
+
+    if (use_drm && drm_init()) {
+        LV_LOG_USER("Display: DRM/KMS");
+        screen_rec_out = drm_flush;             /* the recorder keeps capturing */
+        fclose(fopen("/tmp/x6200_gui.drm", "w"));
+    } else {
+        unlink("/tmp/x6200_gui.drm");
+        LV_LOG_USER("Display: fbdev");
+        fbdev_init();
+    }
     audio_init();
     event_init();
     usb_devices_monitor_init();

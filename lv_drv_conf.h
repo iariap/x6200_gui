@@ -339,11 +339,11 @@
  *  DRM/KMS device (/dev/dri/cardX)
  *-----------------------------------------*/
 #ifndef USE_DRM
-#  define USE_DRM           0
+#  define USE_DRM           1       /* compiled in; used only when asked for at run time */
 #endif
 
 #if USE_DRM
-#  define DRM_CARD          "/dev/dri/card1"
+#  define DRM_CARD          "/dev/dri/card0"   /* the sun4i DRM */
 #  define DRM_CONNECTOR_ID  -1	/* -1 for the first connected one */
 #endif
 

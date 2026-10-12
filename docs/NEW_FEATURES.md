@@ -1355,3 +1355,32 @@ bandera).
 ```
 469 comprobaciones, 0 fallos
 ```
+
+---
+
+## 32. DRM/KMS: disponible y **opt-in**
+
+El motor de video del X6100 es DRM/KMS; el nuestro usaba `fbdev`. Investigando si la plataforma lo
+permite, la respuesta es **sí**:
+
+- el kernel ya trae `CONFIG_DRM=y`, `CONFIG_DRM_SUN4I=y` y el driver del panel
+  (`CONFIG_DRM_PANEL_JINGLITAI_JLT4013A=y`) — comprobado en el `.config` del kernel construido;
+- `lv_drivers` trae el backend (`display/drm.c`, 658 líneas) y nuestro grabador **ya esperaba**
+  este caso: su `screen_rec_out` es un puntero con `fbdev_flush` por defecto, y con DRM pasa a
+  `drm_flush` (su diseño, para que la grabación siga capturando la pantalla);
+- hizo falta `libdrm` (agregado al defconfig ✓) y sus flags de compilación para el subproyecto
+  `lv_drivers` (el header `xf86drm.h` incluye `drm.h`, que vive en `usr/include/libdrm`).
+
+### Por qué queda apagado por defecto
+
+Cambiar el motor de video es lo único de todo el port que **no se puede verificar sin la radio**, y
+si el camino DRM inicializara "bien" pero dibujara mal, la pantalla quedaría negra. Así que:
+
+- **Por defecto sigue `fbdev`**, exactamente como antes.
+- Para probarlo: crear `/mnt/use_drm` (o arrancar con `X6200_DRM=1`). El log dice
+  `Display: DRM/KMS` o `Display: fbdev`.
+- Para volver: **borrar `/mnt/use_drm`** y reiniciar (no hace falta regrabar nada).
+- Si `drm_init()` falla (por ejemplo no hay `/dev/dri/card0`), cae solo a `fbdev`.
+
+Cuando se valide en el equipo, alcanza con dejarlo por defecto; hasta entonces, el camino probado
+es el de siempre.

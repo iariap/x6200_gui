@@ -116,8 +116,8 @@ parte de esa diferencia:
 | **Band plan IARU** sobre el espectro | ✅ | ✅ | Ajustes → Band plan |
 | **Grabación de pantalla** AVI | ✅ | ✅ | los dos graban **video MJPEG + audio de RX** (el análisis inicial decía "incluye tu voz en TX": su propio `screen_rec.c` dice "Screen + RX audio recorder", así que no era una diferencia) |
 | Aviso de firmware nuevo al arrancar | ✅ | ✅ | sin telemetría |
-| **Motor de video DRM/KMS** | ✅ | ❌ | el X6200 usa `fbdev`; cambiarlo es un riesgo de hardware (ver §4) |
-| Perilla principal con cada detent en su propio hilo (menos latencia) | ✅ | ❌ | `rotary.c` clásico |
+| **Motor de video DRM/KMS** | ✅ | 🔶 | **portado y disponible** ([NEW_FEATURES.md](NEW_FEATURES.md) §32): el kernel tiene DRM y el driver del panel, y el backend está en la GUI; queda **apagado por defecto** hasta validarlo en el equipo |
+| Perilla principal con cada detent en su propio hilo (menos latencia) | ✅ | ❌ | `rotary.c` clásico (su registro de controles) |
 | CW tune indicator | ✅ | ✅ | `cw_tune_ui.c` |
 
 ### 2.5 Conectividad
@@ -187,7 +187,7 @@ Por orden de valor:
 
 4. **Perilla de alineado/inclinación de WeFax**: requiere portar el registro de controles
    (`CTRL_*` + `mfk_set_ctrl`, ~500 líneas de `controls.cpp`).
-7. **DRM/KMS + perilla con hilo propio**: mejora de base, riesgo de hardware.
+7. **Perilla con hilo propio**: depende de portar su registro de controles.
 8. **TX Cal / CESSB / filtro TX**: depende del baseband; en el X6200 no hay comandos.
 
 El detalle de cómo se llega a cada feature, de qué depende y qué se probó está en

@@ -42,6 +42,7 @@
 #include "styles.h"
 #include "lvgl/lvgl.h"
 #include "lv_drivers/display/fbdev.h"
+#include "lv_drivers/display/drm.h"
 
 #define SCREEN_REC_FPS      8
 #define SCREEN_REC_QUALITY  70

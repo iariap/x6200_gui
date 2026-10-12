@@ -52,9 +52,13 @@ pkg_check_modules(deps REQUIRED IMPORTED_TARGET
     libnm dbus-glib-1 sqlite3 libpng sndfile libudev libpulse libpulse-simple alsa speexdsp
 )
 
+# The DRM/KMS display path (lv_drivers/display/drm.c) needs libdrm
+pkg_check_modules(drm REQUIRED IMPORTED_TARGET libdrm)
+
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
 PkgConfig::deps
+PkgConfig::drm
 FT8 QTH
 Threads::Threads
 lvgl lvgl::drivers
