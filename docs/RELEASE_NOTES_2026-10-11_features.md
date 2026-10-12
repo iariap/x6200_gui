@@ -1,5 +1,12 @@
 # X6200 LU2DSX ROM — tanda de features del X6100 (2026-10-11)
 
+> ⚠️ **NO PUBLICAR TODAVÍA / DO NOT PUBLISH YET.** La imagen de este release **no arranca** en el
+> equipo: queda en el logo de arranque (en diagnóstico, ver más abajo). El tgz y los checksums son
+> válidos, pero la imagen no. Se saca este aviso cuando esté resuelto y probado.
+>
+> The image in this release **does not boot** on the radio: it stays at the boot logo (being
+> diagnosed). The tarball and checksums are fine; the image is not.
+
 Segundo prerelease de esta ROM. Trae **todo el programa de port** desde el firmware del X6100 de
 [IU1WXY](https://github.com/IU1WXY/X6100-IU1WXY): las 18 features de la lista, más los extras que
 salieron en el camino (la app de **Status**, la app de **dispositivos Bluetooth** y la **columna de
