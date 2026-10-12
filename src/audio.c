@@ -180,18 +180,25 @@ int audio_play(int16_t *samples_buf, size_t samples) {
     }
 
 
-    while (true) {
-        size_t size;
+    /* Espera a que haya lugar, despertando con el mainloop en vez de cada milisegundo
+     * (eso eran mil despertares por segundo) y con un tope: si el stream se cayó, se
+     * avisa y se descarta el bloque en lugar de quedarse pegado. */
+    bool     hay_lugar = false;
+    uint64_t limite    = pa_rtclock_now() + 2000000;      /* 2 s */
 
-        pa_threaded_mainloop_lock(mloop);
-        size = pa_stream_writable_size(play_stm);
-        pa_threaded_mainloop_unlock(mloop);
-
-        if (size >= (samples * 2)) {
+    pa_threaded_mainloop_lock(mloop);
+    while (pa_rtclock_now() < limite) {
+        if (pa_stream_writable_size(play_stm) >= (samples * 2)) {
+            hay_lugar = true;
             break;
         }
+        pa_threaded_mainloop_wait(mloop);
+    }
+    pa_threaded_mainloop_unlock(mloop);
 
-        usleep(1000);
+    if (!hay_lugar) {
+        LV_LOG_WARN("El stream de reproducción no acepta datos: se descarta el bloque");
+        return 0;
     }
 
     pa_threaded_mainloop_lock(mloop);
@@ -218,17 +225,28 @@ void audio_play_wait() {
     op = pa_stream_drain(play_stm, NULL, NULL);
     pa_threaded_mainloop_unlock(mloop);
 
-    while (true) {
-        pa_threaded_mainloop_lock(mloop);
+    if (op == NULL) {
+        LV_LOG_WARN("No se pudo drenar el stream de reproducción");
+        return;
+    }
+
+    /* Lo mismo: se espera el fin del drenaje con el mainloop y con tope. */
+    uint64_t limite = pa_rtclock_now() + 2000000;         /* 2 s */
+
+    pa_threaded_mainloop_lock(mloop);
+    while (pa_rtclock_now() < limite) {
         r = pa_operation_get_state(op);
-        pa_threaded_mainloop_unlock(mloop);
 
         if (r == PA_OPERATION_DONE || r == PA_OPERATION_CANCELLED) {
             break;
         }
-
-        usleep(1000);
+        if (r == PA_OPERATION_RUNNING) {
+            pa_threaded_mainloop_wait(mloop);
+        } else {
+            break;
+        }
     }
+    pa_threaded_mainloop_unlock(mloop);
 
     pa_operation_unref(op);
 }

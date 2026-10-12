@@ -144,6 +144,11 @@ Para probarlo en el equipo hay un checklist ordenado:
 
 Un equipo a batería no debería tener timers ni hilos girando de gusto. Revisado:
 
+- Los dos bucles de espera del **audio** (`audio_play` y `audio_play_wait`) esperaban con
+  `usleep(1000)` **sin tope**, o sea **mil despertares por segundo** mientras se reproduce, y
+  sin chequear si el stream seguía vivo. Ahora esperan con el mainloop de PulseAudio (despierta
+  cuando hay lugar o termina el drenaje) y con un tope de 2 s: menos consumo y no se cuelgan si
+  el stream se cae.
 - La **columna del cluster** tenía un timer de 250 ms que corría **siempre** (aunque la función
   estuviera apagada): ahora se pausa cuando no se usa y se reanuda al activarla o mostrarla.
 - **wfview** ya estaba bien: sus dos hilos usan `poll` con espera (100 ms con el servidor

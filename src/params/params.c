@@ -554,9 +554,11 @@ void params_init() {
     if (database_init()) {
         cfg_init(db);
         if (!params_load()) {
-            LV_LOG_ERROR("Load params");
-            sqlite3_close(db);
-            db = NULL;
+            /* No se cierra la base ni se deja `db` en NULL: los statements que se
+             * preparan más abajo se arman sobre ella (y sobre NULL quedan en NULL, que
+             * después se usan sin chequear: comportamiento indefinido). Lo que falte
+             * queda en su valor por defecto. */
+            LV_LOG_ERROR("Load params: se sigue con los valores por defecto");
         }
 
         if (rc != SQLITE_OK) {
