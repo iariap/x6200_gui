@@ -7,6 +7,7 @@
  */
 
 #include "lvgl/lvgl.h"
+#include "input_dev.h"
 #include "lv_drivers/display/fbdev.h"
 #include "lv_drivers/display/drm.h"
 #include <stdio.h>
@@ -118,11 +119,16 @@ int main(void) {
     keypad_init("/dev/input/event0");
     keypad_init("/dev/input/event4");
 
-    rotary_main_init("/dev/input/event1");
+    /* El device tree nombra los cuatro encoders rotary0..rotary3 y esos nombres son
+     * estables, pero el número de eventN depende del orden de sondeo (un USB que se
+     * enumere antes los corre). Se buscan por nombre y, si no aparecen, se usa la ruta de
+     * siempre. rotary0 = perilla principal, rotary1 = volumen, rotary2 = MFK,
+     * rotary3 = MFK interno (los dos últimos son los de steps-per-period = 2). */
+    rotary_main_init(input_dev_by_name("rotary0", "/dev/input/event1"));
 
-    vol = rotary_init("/dev/input/event2");
-    mfk = encoder_init("/dev/input/event3");
-    mfk_inner = rotary_init("/dev/input/event4");
+    vol       = rotary_init(input_dev_by_name("rotary1", "/dev/input/event2"));
+    mfk       = encoder_init(input_dev_by_name("rotary2", "/dev/input/event3"));
+    mfk_inner = rotary_init(input_dev_by_name("rotary3", "/dev/input/event4"));
 
     /* Los tres pueden devolver NULL: rotary_init() y encoder_init() lo hacen si no
      * pueden abrir el dispositivo (y el equipo puede numerarlos distinto). Antes se los
