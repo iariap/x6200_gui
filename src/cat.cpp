@@ -27,6 +27,7 @@ extern "C" {
     #include "meter.h"
     #include "params/params.h"
     #include "radio.h"
+#include "gpio_safe.h"
     #include "scheduler.h"
     #include "spectrum.h"
     #include "waterfall.h"
@@ -993,7 +994,7 @@ static void cat_thread() {
 
 void cat_init() {
     /* UART */
-    x6200_gpio_set(x6200_pin_usb, 1); /* USB -> CAT */
+    gpio_safe_set(x6200_pin_usb, 1); /* USB -> CAT */
 
     int fd = open("/dev/ttyS2", O_RDWR | O_NONBLOCK | O_NOCTTY);
 

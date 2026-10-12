@@ -15,6 +15,7 @@
 
 #include "lvgl/lvgl.h"
 #include "backlight.h"
+#include "gpio_safe.h"
 #include "util.h"
 #include "voice_stub.h"
 
@@ -26,7 +27,7 @@ static lv_timer_t   *timer = NULL;
 
 static void backlight_timer(lv_timer_t *t) {
     backlight_set_brightness(params.brightness_idle);
-    x6200_gpio_set(x6200_pin_light, params.brightness_buttons == BUTTONS_LIGHT ? 1 : 0);
+    gpio_safe_set(x6200_pin_light, params.brightness_buttons == BUTTONS_LIGHT ? 1 : 0);
     timer = NULL;
 }
 
@@ -65,7 +66,7 @@ void backlight_tick() {
         lv_timer_set_repeat_count(timer, 1);
 
         backlight_set_brightness(params.brightness_normal);
-        x6200_gpio_set(x6200_pin_light, params.brightness_buttons == BUTTONS_DARK ? 0 : 1);
+        gpio_safe_set(x6200_pin_light, params.brightness_buttons == BUTTONS_DARK ? 0 : 1);
     }
 }
 
@@ -88,14 +89,14 @@ void backlight_set_buttons(buttons_light_t value) {
     params.brightness_buttons = value;
     params_unlock(&params.dirty.brightness_buttons);
 
-    x6200_gpio_set(x6200_pin_light, value == BUTTONS_DARK ? 0 : 1);
+    gpio_safe_set(x6200_pin_light, value == BUTTONS_DARK ? 0 : 1);
 }
 
 void backlight_switch() {
     if (on) {
         set_power(false);
         set_brightness(9);
-        x6200_gpio_set(x6200_pin_light, 0);
+        gpio_safe_set(x6200_pin_light, 0);
 
         on = false;
         voice_say_text_fmt("Display off");
@@ -104,7 +105,7 @@ void backlight_switch() {
         lv_disp_enable_invalidation(lv_disp_get_default(), true);
         set_power(true);
         set_brightness(params.brightness_normal);
-        x6200_gpio_set(x6200_pin_light, params.brightness_buttons == BUTTONS_DARK ? 0 : 1);
+        gpio_safe_set(x6200_pin_light, params.brightness_buttons == BUTTONS_DARK ? 0 : 1);
 
         voice_say_text_fmt("Display on");
         on = true;

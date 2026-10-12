@@ -6,6 +6,7 @@
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
 #include "radio.h"
+#include "gpio_safe.h"
 
 #include "cfg/atu.h"
 #include "cfg/transverter.h"
@@ -357,23 +358,33 @@ static void on_change_cur_sql_level(Subject *subj, void *user_data) {
 }
 
 void radio_bb_reset() {
-    x6200_gpio_set(x6200_pin_bb_reset, 1);
+    gpio_safe_set(x6200_pin_bb_reset, 1);
     usleep(100000);
-    x6200_gpio_set(x6200_pin_bb_reset, 0);
+    gpio_safe_set(x6200_pin_bb_reset, 0);
 }
 
 void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
-    if (!x6200_gpio_init())
-        return;
+    /* El GPIO se inicializa antes que esto (gpio_safe_prepare, en main), así que acá no
+     * se vuelve a pedir. Y el reintento del control tiene tope: antes era un bucle
+     * infinito en el hilo principal, así que si la BASE no respondía la GUI no dibujaba
+     * nunca. Ahora, si no aparece, se sigue sin radio y se avisa. */
+    for (int intento = 0; intento < 30; intento++) {
+        if (x6200_control_init()) {
+            break;
+        }
 
-    while (!x6200_control_init()) {
-        usleep(100000);
+        if (intento == 29) {
+            LV_LOG_ERROR("La BASE no respondió: la GUI sigue sin control de la radio");
+            return;
+        }
+
+        usleep(500000);
     }
 
     if (!x6200_flow_init())
         return;
 
-    x6200_gpio_set(x6200_pin_morse_key, 1);     /* Morse key off */
+    gpio_safe_set(x6200_pin_morse_key, 1);     /* Morse key off */
 
     notify_tx = tx_cb;
     notify_rx = rx_cb;
@@ -768,5 +779,5 @@ void radio_set_line_out(uint8_t d) {
 }
 
 void radio_set_morse_key(bool on) {
-    x6200_gpio_set(x6200_pin_morse_key, on ? 0 : 1);
+    gpio_safe_set(x6200_pin_morse_key, on ? 0 : 1);
 }

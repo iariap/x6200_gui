@@ -8,6 +8,7 @@
 
 #include "lvgl/lvgl.h"
 #include "input_dev.h"
+#include "gpio_safe.h"
 #include "lv_drivers/display/fbdev.h"
 #include "lv_drivers/display/drm.h"
 #include <stdio.h>
@@ -185,6 +186,10 @@ int main(void) {
 
     cw_init();
     rtty_init();
+    /* Antes de todo lo que toca el GPIO (backlight, wifi, CAT): si esto falla, los usos
+     * se saltean en lugar de desreferenciar NULL y matar la GUI. */
+    gpio_safe_prepare();
+
     radio_init(
         &main_screen_notify_tx,
         &main_screen_notify_rx

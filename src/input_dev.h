@@ -11,9 +11,17 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Devuelve la ruta del primer /dev/input/event* cuyo nombre (EVIOCGNAME) sea `name`.
  * Si no encuentra ninguno, devuelve `fallback` (que puede ser NULL o la ruta de siempre).
  * El buffer devuelto es estatico: usarlo antes de la proxima llamada.
  */
 char * input_dev_by_name(const char *name, const char *fallback);
+
+#ifdef __cplusplus
+}
+#endif

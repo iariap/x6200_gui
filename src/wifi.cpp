@@ -8,6 +8,7 @@
 
 
 #include "wifi.h"
+#include "gpio_safe.h"
 #include "cfg/cfg.h"
 
 extern "C" {
@@ -91,7 +92,7 @@ void wifi_power_setup() {
 void wifi_power_on() {
     LV_LOG_USER("Power on wifi/bt");
     params_bool_set(&params.wifi_enabled, true);
-    x6200_gpio_set(x6200_pin_wifi, 0);
+    gpio_safe_set(x6200_pin_wifi, 0);
     if (!device) {
         set_status(WIFI_STARTING);
     }
@@ -105,7 +106,7 @@ void wifi_power_off() {
         device = NULL;
     }
     params_bool_set(&params.wifi_enabled, false);
-    x6200_gpio_set(x6200_pin_wifi, 1);
+    gpio_safe_set(x6200_pin_wifi, 1);
     if (scan_timer) {
         lv_timer_del(scan_timer);
         scan_timer = NULL;
