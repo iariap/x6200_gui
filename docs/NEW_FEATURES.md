@@ -1524,3 +1524,52 @@ dibujar**: de ahí el logo eterno. Determinista e independiente de la base de da
 | Esperas de audio con `usleep(1000)` sin tope | mil despertares por segundo y cuelgue si el stream se cae ✗ |
 | Encoders NULL (`vol`, `mfk`, `mfk_inner`) | desreferenciados en el arranque, en el EQ y en varios diálogos ✗ |
 | Encoders por número de `eventN` fijo | si un USB se enumera antes, las perillas quedan muertas ✗ → ahora se buscan **por nombre** (`rotary0`..`rotary3` del device tree ✓) |
+
+---
+
+## 36. El control remoto no hacía nada, y cómo se encontró
+
+Otro hallazgo salido de perseguir un crash de la reproducción, y probablemente el más silencioso
+de todos: **el control remoto no cambiaba nada**. No fallaba con un error: simplemente no hacía
+efecto.
+
+### La causa
+
+```cpp
+SettingsManager cfg_sm;            // global: se construye antes de main()
+...
+Param subject_param(Subject *s) {
+    return Param(subject_reader(s), subject_writer(s));   // captura el puntero
+}
+```
+
+`cfg_sm` es un **global**, así que su constructor corre **antes** de que la carga de la
+configuración cree los subjects `cfg_cur.*`. `subject_param()` guardaba esos punteros en el
+momento de construir, cuando todavía eran NULL: todos los `cp_*` (frecuencia, modo, banda,
+filtros, AGC, atenuador, preamplificador) quedaron apuntando a NULL **para toda la vida del
+proceso**. Leerlos devolvía el valor neutro y **escribirlos era un no-op silencioso**, así que la
+página `/remote` del web configurator y la app del teléfono no podían cambiar nada.
+
+### El arreglo
+
+`SettingsManager::init_live()` rehace ese mapeo **una vez que los subjects existen**, y `cfg_init`
+lo llama después de `cfg_band_params_init` y `cfg_mode_params_init`. Como `cfg.c` es C y no puede
+llamar a un método de C++, hay un puente `extern "C" void cfg_sm_init_live(void)`.
+
+### Los otros dos que aparecieron detrás
+
+- **`table_draw_part_begin_cb`** (`dialog_ft8.c`) llamaba a `dsc->draw_ctx->draw_img` sin mirarlo.
+  LVGL deja ese puntero en NULL en algunos contextos de dibujo y la llamada **mataba la GUI** al
+  redibujar la tabla del FT8 (se veía al cambiar de modo). Ahora se avisa una vez y se sigue: la
+  bandera no se dibuja, la GUI no muere.
+- **Los setters** (`subject_set_int/uint64/float`) tenían la misma desreferencia que los getters:
+  ahora avisan y vuelven.
+
+### Cómo se encontró (la técnica que sirve para lo que venga)
+
+1. el barrido de apps por el **socket del servidor remoto** (`{"cmd":"app","text":"FT8"}`) con el
+   progreso escrito a un **archivo** que sobrevive a la muerte del contenedor;
+2. el capturador de crashes registrando el **PC** y el **link register**: si el fallo es un salto a
+   NULL (`PC: (nil)`), `lr` es el sitio de la llamada, y como el binario es PIE se traduce con
+   `addr2line` descontando la base de carga;
+3. eso dio `table_draw_part_begin_cb`, y de ahí salió el resto.
