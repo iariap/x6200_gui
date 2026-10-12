@@ -94,7 +94,7 @@ parte de esa diferencia:
 | **Spot snap** (sintonizar un spot) | ✅ | ✅ | **tocando la fila** en la columna (§27); su versión con la perilla necesita su registro de controles |
 | Decodificados por **UDP** para GridTracker/JTAlert | ✅ | ✅ | [FT8_UDP.md](FT8_UDP.md) |
 | Mapa de QSO | ✅ | 🔶 | **JS8 sí** (`js8_map.c` + mapa mundial); FT8 no (nuestro diálogo FT8 es el upstream) |
-| Banderas de país en **FT8** | ✅ | ❌ | pendiente (header `flags.h` con las banderas embebidas) |
+| Banderas de país en **FT8** | ✅ | 🔶 | el **país** ya se resuelve con `cty.dat` y se muestra al arrancar el QSO ([NEW_FEATURES.md](NEW_FEATURES.md) §31); falta **dibujar la bandera**, que en su fork vive en su layout de filas |
 
 ### 2.3 Field Ops (SOTA / POTA)
 
@@ -187,8 +187,8 @@ Por orden de valor:
 
 4. **Perilla de alineado/inclinación de WeFax**: requiere portar el registro de controles
    (`CTRL_*` + `mfk_set_ctrl`, ~500 líneas de `controls.cpp`).
-5. **Banderas de país en FT8** (el header generado por `tools/flags_gen.py`). Ojo: el
-   `cty.dat` que la imagen instala hoy **no lo usa nadie**; queda para esa feature.
+5. **Dibujar** la bandera de país en las filas de FT8 (el header generado por
+   `tools/flags_gen.py`): el país ya se resuelve y se muestra (§31), falta el render.
 7. **DRM/KMS + perilla con hilo propio**: mejora de base, riesgo de hardware.
 8. **TX Cal / CESSB / filtro TX**: depende del baseband; en el X6200 no hay comandos.
 

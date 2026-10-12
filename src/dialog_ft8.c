@@ -35,6 +35,7 @@
 #include <ft8lib/message.h>
 #include "ft8/worker.h"
 #include "adif.h"
+#include "dxcc.h"
 #include "qso_log.h"
 #include "scheduler.h"
 #include "ft8_udp.h"
@@ -1035,7 +1036,16 @@ static void start_qso(cell_data_t *cell_data) {
         tx_time_slot = !cell_data->odd;
         tx_enabled   = true;
         reload_buttons();
-        add_info("Start QSO with %s", cell_data->meta.call_de);
+
+        /* The country, from the cty.dat that ships in the image */
+        const char *cty_name = NULL;
+        const char *cty_pfx  = NULL;
+
+        if (dxcc_lookup(cell_data->meta.call_de, &cty_name, &cty_pfx) && cty_name) {
+            add_info("Start QSO with %s (%s)", cell_data->meta.call_de, cty_name);
+        } else {
+            add_info("Start QSO with %s", cell_data->meta.call_de);
+        }
         msg_schedule_text_fmt("Next TX: %s", tx_msg.msg);
     } else {
         msg_schedule_text_fmt("Invalid message");

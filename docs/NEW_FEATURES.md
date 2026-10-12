@@ -1292,3 +1292,44 @@ reales que conviene registrar:
 
 El análisis ahora corre limpio sobre la lista de módulos, y la suite sigue igual: **437
 comprobaciones del host**, más las de códec, la de JS8 y las 19 páginas del web configurator.
+
+---
+
+## 31. Resolvedor de países (cty.dat) y el país al arrancar un QSO
+
+La imagen distribuía `cty.dat` (343 KB, AD1C) desde el port de Field Ops, pero **no lo leía
+nadie**: era peso muerto. Ahora se usa.
+
+### Qué se portó
+
+- `dxcc.c/h` del X6100 (400 líneas): parsea `cty.dat` al primer uso, arma la lista de entidades y
+  de alias (prefijos y llamados exactos, los que en el archivo van con `=`), y resuelve
+  `dxcc_lookup(indicativo, &país, &prefijo)`.
+- En **FT8**, al arrancar un QSO el aviso ahora dice el país: `Start QSO with LU1WXY (Argentina)`.
+- Se respeta `$CTY_PATH` para apuntar a otro archivo (lo usan los tests).
+
+### Detalles que aparecieron al probarlo
+
+- El parser **normaliza algunos nombres**: `United States` sale como `USA` y `Fed. Rep. of
+  Germany` como `Germany`. Los tests esperan eso, no lo que dice el archivo.
+- El **prefijo primario** de una entidad es el que se devuelve, pero para *matchear* valen los
+  alias listados: un indicativo que empiece con el prefijo primario y no esté en la lista no
+  resuelve. Por eso el test no usa un archivo inventado: corre contra el **mismo `cty.dat` que
+  ship la imagen**.
+- `ZZ` es de **Brasil** (no es un prefijo libre, como suponía mi primer caso negativo).
+
+### Tests
+
+`tests/native/test_dxcc.c` corre contra el `cty.dat` real (el runner lo pasa por `CTY_PATH`):
+Argentina, USA, Japón, Alemania y España salen bien, y un prefijo inexistente (`QQ`) y la cadena
+vacía no resuelven.
+
+```
+452 comprobaciones, 0 fallos
+```
+
+### Lo que queda
+
+Las **banderas** de país en las filas de FT8: su dibujo vive en el layout de filas de su fork
+(imágenes por fila), que nuestro diálogo no tiene; requeriría rehacer el render de la tabla. El
+país ya está resuelto, así que cuando se encare es sólo pintarlo.

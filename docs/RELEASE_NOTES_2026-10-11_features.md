@@ -12,7 +12,7 @@ imagen y con tests donde se puede correr sin radio.
 
 | # | Feature | Detalle |
 |---|---|---|
-| 1 | **Decodificados FT8/FT4 por UDP** | Compatible con GridTracker/JTAlert (WSJT-X schema 3) |
+| 1 | **Decodificados FT8/FT4 por UDP** | Compatible con GridTracker/JTAlert (WSJT-X schema 3); y el **país** de cada estación desde `cty.dat` |
 | 2 | **Aviso de nueva versión** | Consulta la última release y avisa al arrancar (sin telemetría) |
 | 3 | **Aguja de S-meter** | Dial analógico en Ajustes, además de las barras |
 | 4 | **Band plan IARU** | Franja de colores sobre el espectro (160 m a 6 m) |
