@@ -48,6 +48,7 @@ typedef enum {
     ACTION_APP_CLUSTER,
     ACTION_APP_FIELD,
     ACTION_APP_JS8,
+    ACTION_THEME,
     ACTION_APP_SWRSCAN,
     ACTION_APP_SETTINGS,
     ACTION_APP_RECORDER,
@@ -219,6 +220,8 @@ typedef struct {
     /* Theme */
 
     params_uint8_t       theme;
+    params_str_t         theme_name;     /* X6100-style theme: IU1WXY, Legacy, ... or a JSON file */
+    params_uint8_t       font;           /* family: see fonts/font_select.h */
 
     /* durty flags */
 

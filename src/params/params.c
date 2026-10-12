@@ -142,6 +142,8 @@ params_t params = {
     .wifi_enabled           = { .x = false, .name="wifi_enabled" },
 
     .theme                  = { .x = THEME_SIMPLE, .name="theme"},
+    .theme_name             = { .x = "IU1WXY", .max_len = sizeof(params.theme_name.x) - 1, .name="theme_name"},
+    .font                   = { .x = 255, .min = 0, .max = 3, .name="font"},
 };
 
 static sqlite3_stmt     *write_mode_stmt;
@@ -361,6 +363,8 @@ static bool params_load() {
         if (params_load_str(&params.callsign, name, t)) continue;
         if (params_load_bool(&params.wifi_enabled, name, i)) continue;
         if (params_load_uint8(&params.theme, name, i)) continue;
+        if (params_load_str(&params.theme_name, name, i)) continue;
+        if (params_load_uint8(&params.font, name, i)) continue;
     }
 
     sqlite3_finalize(stmt);
@@ -518,6 +522,8 @@ static void params_save() {
     params_save_str(&params.callsign);
     params_save_bool(&params.wifi_enabled);
     params_save_uint8(&params.theme);
+    params_save_str(&params.theme_name);
+    params_save_uint8(&params.font);
 
     sql_query_exec("COMMIT");
 }

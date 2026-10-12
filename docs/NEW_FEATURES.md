@@ -20,7 +20,8 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **Cluster DX**: spots, filtros, alertas y app | ✅ 2026-10-11 | §14 |
 | **Field Ops** SOTA/POTA: referencias, log ADIF y RBN | ✅ 2026-10-11 | §15 |
 | **JS8** (motor + app completa) | ✅ 2026-10-11 | §16 |
-| Temas JSON | ⏳ pendiente | — |
+| **Temas JSON** (motor, temas incluidos y selección) | ✅ 2026-10-11 | §17 |
+| ~~Temas JSON~~ | ✅ 2026-10-11 | §17 |
 | ~~Field Ops SOTA/POTA~~ | ✅ 2026-10-11 | §15 |
 | Modos digitales: WSPR ✅, NavTex ✅, SSTV ✅, WeFax ✅, JS8 ✅ | ✅ completo | §9-16 |
 | DRM/KMS + perilla con hilo propio | ⏳ pendiente | — |
@@ -773,3 +774,54 @@ alertas y las velocidades.
 Detalle del armado: `js8core` y `src/js8` **ambos** tienen un `resampler.cpp`, así que el runner
 compila cada uno en su propio directorio para que no se pisen los `.o` (el primer intento falló
 justamente por eso).
+
+---
+
+## 17. Temas JSON
+
+El sistema de temas completo: **6 temas incluidos** (IU1WXY, Legacy, Outdoor, Classic,
+Outdoor-Negative, VISION), temas **JSON propios** en `/mnt/themes`, imágenes por superficie
+(PNG reescalado) y la elección desde la radio.
+
+### Qué se portó
+
+- **`theme.c/h` del X6100, tal cual**: carga de temas por nombre (built-in o JSON con `cJSON`),
+  tabla de **128 roles de color** con cuatro variantes cada uno, formas por tema (radios, bordes,
+  gradientes, tipografía, paleta del waterfall), y las funciones de superficie (`theme_image()`
+  con *slicing*/bilineal y `theme_png()`).
+- **`cJSON.c/h`** vendorizado: reemplaza el stub que había usado para los diálogos que publican al
+  control remoto (misma API, así que los diálogos portados siguen igual).
+- **Assets**: el tema `RS` (10 PNG) y dos temas de ejemplo (`Holo.json`, `Material 3.json`) en
+  `/usr/share/x6200/themes`, y al arrancar se copian a `/mnt/themes` una sola vez (igual que el
+  X6100: lo que ya está no se pisa).
+- **Selección**: acción de pulsación larga **`Theme`**, que recorre `theme_list()` y aplica el
+  elegido (se guarda en `theme_name`).
+
+### Lo que esto habilita
+
+Los diálogos de apps que venimos portando (WSPR, NavTex, SSTV, WeFax, JS8, Cluster, Field Ops)
+**ya usaban `TC(rol)`** a través del shim que escribí en su momento; al reemplazar el shim por el
+motor real, esos diálogos pasan a **seguir el tema elegido** — incluidos los colores de las filas
+de spots y los de las bandas del band plan.
+
+**Pendiente y documentado**: la **UI principal** (barra superior, botones, espectro, waterfall)
+sigue usando los estilos fijos de esta GUI (428 referencias de color en 42 archivos). Llevarla al
+sistema de temas es un refactor aparte y sin verificación visual posible acá.
+
+### Test
+
+`tests/native/test_theme.c` corre en el **host** (theme.c sólo necesita unos pocos tipos de LVGL,
+que el stub del test provee, y libpng):
+
+- Los temas incluidos: init por nombre, paletas distintas entre temas, y que un nombre
+  desconocido **cae al tema por defecto** en vez de quedar en basura.
+- `theme_list()`: los incluidos (nota: `Legacy` queda fuera de la lista a propósito; se puede
+  elegir por nombre).
+- Un **tema JSON propio**: se escribe en un directorio temporal (con `$THEMES_DIR`), se carga, y
+  se verifican los colores que define, que los que **no** define conservan el valor del tema base,
+  que las formas (`radius`) se aplican, y que aparece en la lista.
+- La paleta del waterfall siempre existe.
+
+```
+376 comprobaciones, 0 fallos
+```

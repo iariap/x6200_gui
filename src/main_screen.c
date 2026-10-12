@@ -60,6 +60,7 @@
 #include "dialog_cluster.h"
 #include "dialog_field.h"
 #include "dialog_js8.h"
+#include "theme.h"
 
 #include <unistd.h>
 #include <stdint.h>
@@ -254,6 +255,28 @@ void main_screen_action(press_action_t action) {
             subject_set_int(cfg.nr.val, b);
             msg_update_text_fmt("#FFFFFF NR: %s", b ? "On" : "Off");
             break;
+
+        case ACTION_THEME: {
+            char names[16][32];
+            int  n = theme_list(names, 16);
+            int  cur = 0;
+
+            for (int i = 0; i < n; i++) {
+                if (strcmp(names[i], params.theme_name.x) == 0) {
+                    cur = i;
+                }
+            }
+
+            if (n > 0) {
+                const char *next = names[(cur + 1) % n];
+
+                params_str_set(&params.theme_name, next);
+                theme_init(next);
+                fonts_apply(theme_shape.font >= 0 ? theme_shape.font : (params.font.x <= 3 ? params.font.x : 0));
+                msg_update_text_fmt("Theme: %s", next);
+            }
+            break;
+        }
 
         case ACTION_NB_TOGGLE:
             b = subject_get_int(cfg.nb.val);

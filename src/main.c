@@ -16,6 +16,8 @@
 #include "main.h"
 #include "main_screen.h"
 #include "styles.h"
+#include "theme.h"
+#include "fonts/font_select.h"
 #include "radio.h"
 #include "dsp.h"
 #include "util.h"
@@ -117,6 +119,20 @@ int main(void) {
     audio_set_rec_vol(params.rec_gain_db_f.x);
     mfk_change_mode(0);
     vol_change_mode(0);
+    /* Bundled themes to the DATA partition once; one already there is never
+     * overwritten (same as the X6100) */
+    if (system("mkdir -p /mnt/themes; for t in /usr/share/x6200/themes/*; do "
+               "[ -e \"/mnt/themes/${t##*/}\" ] || cp -r \"$t\" /mnt/themes/; done") != 0) {
+        LV_LOG_WARN("Bundled themes not copied to /mnt/themes");
+    }
+
+    theme_init(params.theme_name.x);    /* an unknown one falls back to IU1WXY */
+    fonts_apply(theme_shape.font >= 0 ? theme_shape.font : (params.font.x <= 3 ? params.font.x : 0));
+
+    if (theme_shape.vision) {
+        fonts_scale(VISION_FONT_STEPS);
+    }
+
     styles_init(params.theme.x);
 
     dsp_init();
