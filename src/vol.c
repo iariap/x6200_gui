@@ -242,7 +242,11 @@ void vol_change_mode(int16_t dir) {
 
 void vol_set_mode(vol_mode_t mode) {
     vol_mode = mode;
-    vol->mode = ROT_VOL_EDIT_MODE;
+
+    /* Sin encoder (rotary_init devolvió NULL) no hay nada que marcar. */
+    if (vol != NULL) {
+        vol->mode = ROT_VOL_EDIT_MODE;
+    }
 }
 
 vol_mode_t vol_get_mode(void) {
