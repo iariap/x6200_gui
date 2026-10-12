@@ -133,8 +133,51 @@ static void test_json_theme(void) {
     rmdir(DIR);
 }
 
+/* Los temas que vienen con la ROM (rootfs/usr/share/x6200/themes) tienen que cargar todos y
+ * aparecer en el listado: si no, no llegan al menú del equipo aunque estén en la imagen.
+ * El RS además trae sus propias imágenes (los PNG al lado del JSON). */
+static void test_shipped(void) {
+    const char *dir = getenv("X6200_SHIPPED_THEMES");
+
+    if (dir == NULL || *dir == 0) {
+        return;                     /* el runner no los pasó: nada que comprobar */
+    }
+
+    setenv("THEMES_DIR_SHIPPED", dir, 1);
+    setenv("THEMES_DIR", "/tmp/test_themes_sin_usuario", 1);     /* sin temas del usuario */
+
+    static const char *const esperados[] = {"Holo", "Material 3", "RS"};
+    char names[32][32];
+    int  n = theme_list(names, 32);
+
+    for (size_t k = 0; k < sizeof(esperados) / sizeof(*esperados); k++) {
+        bool en_lista = false;
+
+        for (int i = 0; i < n; i++) {
+            if (strcmp(names[i], esperados[k]) == 0) {
+                en_lista = true;
+            }
+        }
+
+        CHECK(en_lista);                        /* está en el listado */
+
+        theme_init(esperados[k]);               /* y se carga */
+        theme_init(esperados[k]);               /* dos veces no rompe */
+
+        CHECK(theme_hex(TC_bg) <= 0xffffffu);   /* se puede leer una rol */
+    }
+
+    /* El RS trae imágenes propias: si no se leen, sus botones quedan sin piel. */
+    theme_init("RS");
+    CHECK(theme_image(TI_btn, 100, 40) != NULL);
+
+    unsetenv("THEMES_DIR_SHIPPED");
+}
+
 void test_theme(void) {
     test_builtins();
     test_list();
     test_json_theme();
+    test_shipped();
 }
+

@@ -57,4 +57,6 @@ done
 echo "== ejecutando =="
 # The country lookup test reads the cty.dat the image ships, the same file
 export CTY_PATH="${CTY_PATH:-$SRC/../rootfs/usr/share/x6200/cty.dat}"
+# Los temas que vienen con la ROM: el test comprueba que carguen todos (ver test_theme.c).
+export X6200_SHIPPED_THEMES="${X6200_SHIPPED_THEMES:-$SRC/../rootfs/usr/share/x6200/themes}"
 "$OUT/native_tests"

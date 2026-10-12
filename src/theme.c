@@ -28,6 +28,22 @@ static const char *themes_dir(void) {
     return p && *p ? p : THEMES_DIR;
 }
 
+/* Los temas que vienen con la ROM (Holo, Material 3 y RS, con sus imágenes). Se buscan en
+ * los dos directorios: el de DATA primero, así un tema del usuario con el mismo nombre gana. */
+#ifndef THEMES_DIR_SHIPPED
+#define THEMES_DIR_SHIPPED "/usr/share/x6200/themes"
+#endif
+
+static const char *themes_dir_shipped(void) {
+    const char *p = getenv("THEMES_DIR_SHIPPED");
+
+    return p && *p ? p : THEMES_DIR_SHIPPED;
+}
+
+static const char *themes_dir_n(int i) {
+    return i == 0 ? themes_dir() : themes_dir_shipped();
+}
+
 enum { B_IU1WXY, B_LEGACY, B_OUTDOOR, B_CLASSIC, B_OUTDOOR_NEG, B_VISION, B_COUNT };
 
 static const char *const builtin_names[B_COUNT] = {"IU1WXY", "Legacy", "Outdoor", "Classic", "Outdoor-Negative",
@@ -200,20 +216,32 @@ static bool load_file(const char *name) {
     char  path[600], dir[600];
     FILE *f;
 
-    if (snprintf(dir, sizeof(dir), "%s", themes_dir()) >= (int) sizeof(dir) ||
-        snprintf(path, sizeof(path), "%s/%s.json", themes_dir(), name) >= (int) sizeof(path)) {
-        return false;       /* the path does not fit: not a theme we can read */
-    }
+    f = NULL;
+    dir[0] = 0;
 
-    f = fopen(path, "r");
+    for (int di = 0; di < 2 && !f; di++) {
+        const char *base = themes_dir_n(di);
 
-    if (!f) {
-        if (snprintf(dir, sizeof(dir), "%s/%s", themes_dir(), name) >= (int) sizeof(dir) ||
-            snprintf(path, sizeof(path), "%s/theme.json", dir) >= (int) sizeof(path)) {
-            return false;
+        if (snprintf(path, sizeof(path), "%s/%s.json", base, name) >= (int) sizeof(path)) {
+            return false;       /* the path does not fit: not a theme we can read */
         }
 
         f = fopen(path, "r");
+
+        if (!f) {
+            if (snprintf(dir, sizeof(dir), "%s/%s", base, name) >= (int) sizeof(dir) ||
+                snprintf(path, sizeof(path), "%s/theme.json", dir) >= (int) sizeof(path)) {
+                return false;
+            }
+
+            f = fopen(path, "r");
+
+            if (f) {
+                continue;       /* found in a folder: dir is the folder */
+            }
+
+            snprintf(dir, sizeof(dir), "%s", base);     /* found as <name>.json: dir is base */
+        }
     }
     if (!f) return false;
     fseek(f, 0, SEEK_END);
@@ -466,22 +494,49 @@ int theme_list(char names[][32], int max) {
     for (int i = 0; i < B_COUNT && n < max; i++) {
         if (i != B_LEGACY) snprintf(names[n++], 32, "%s", builtin_names[i]);
     }
-    d = opendir(themes_dir());
-    while (d && (e = readdir(d)) && n < max) {
-        size_t len = strlen(e->d_name);
-        char   path[600];
+    /* Los del usuario (DATA) primero y después los que vienen con la ROM: un nombre
+     * repetido se lista una sola vez y el archivo del usuario es el que se carga. */
+    for (int di = 0; di < 2; di++) {
+        const char *base = themes_dir_n(di);
 
-        if (len > 5 && len < 32 + 5 && !strcmp(e->d_name + len - 5, ".json")) {
-            snprintf(names[n], 32, "%.*s", (int)(len - 5), e->d_name);
-            n++;
-        } else if (e->d_name[0] != '.' && len < 32) {   /* a folder with theme.json */
-            if (snprintf(path, sizeof(path), "%s/%s/theme.json", themes_dir(), e->d_name) >= (int) sizeof(path)) {
+        d = opendir(base);
+
+        while (d && (e = readdir(d)) && n < max) {
+            size_t len = strlen(e->d_name);
+            char   path[600];
+            char   nuevo[32];
+            int    repetido = 0;
+
+            if (len > 5 && len < 32 + 5 && !strcmp(e->d_name + len - 5, ".json")) {
+                snprintf(nuevo, sizeof(nuevo), "%.*s", (int)(len - 5), e->d_name);
+            } else if (e->d_name[0] != '.' && len < 32) {   /* a folder with theme.json */
+                if (snprintf(path, sizeof(path), "%s/%s/theme.json", base, e->d_name) >= (int) sizeof(path)) {
+                    continue;
+                }
+
+                if (access(path, R_OK) != 0) {
+                    continue;
+                }
+
+                snprintf(nuevo, sizeof(nuevo), "%.*s", (int) sizeof(nuevo) - 1, e->d_name);
+            } else {
                 continue;
             }
 
-            if (access(path, R_OK) == 0) snprintf(names[n++], 32, "%.*s", (int) sizeof(names[0]) - 1, e->d_name);
+            for (int i = 0; i < n; i++) {
+                if (strcmp(names[i], nuevo) == 0) {
+                    repetido = 1;
+                    break;
+                }
+            }
+
+            if (!repetido) {
+                snprintf(names[n++], 32, "%s", nuevo);
+            }
         }
+
+        if (d) closedir(d);
     }
-    if (d) closedir(d);
+
     return n;
 }
