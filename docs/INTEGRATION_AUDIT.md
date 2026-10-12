@@ -121,6 +121,9 @@ Antes de recurrir a la consola: **la app `APP Status`** muestra el adaptador Blu
 transporte, el nivel de TX, el espacio en `/mnt`, wfview, la dirección del web configurator y el
 estado del aviso de versión ([NEW_FEATURES.md](NEW_FEATURES.md) §29).
 
+Para probarlo en el equipo hay un checklist ordenado:
+[`HARDWARE_TEST_GUIDE.md`](HARDWARE_TEST_GUIDE.md).
+
 **Necesita la radio (🔌):**
 
 1. **Bluetooth**: qué transporte usa el chip (`hciconfig -a`, `dmesg | grep -i blue`) y los

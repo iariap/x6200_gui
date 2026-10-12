@@ -40,6 +40,9 @@ del S-meter, el band plan, la columna del cluster, la familia de fuente y el enc
 del Bluetooth. El CQ de voz de Field Ops se graba y se emite desde la app, y todo se configura
 también desde el navegador.
 
+Para probarlo en la radio: [`HARDWARE_TEST_GUIDE.md`](HARDWARE_TEST_GUIDE.md) (checklist por
+feature, cómo se llega a cada una y qué datos sirven si algo falla).
+
 ## Verificación
 
 Todo se corre con un comando y queda resumido:

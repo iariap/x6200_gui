@@ -30,6 +30,9 @@ El detalle de cada una, cómo se usa y qué le falta está en
 [`docs/X6100_FEATURE_GAP.md`](docs/X6100_FEATURE_GAP.md), y cómo se llega a cada cosa y qué se
 probó sin radio, en [`docs/INTEGRATION_AUDIT.md`](docs/INTEGRATION_AUDIT.md).
 
+Antes de probarlo en la radio, [`docs/HARDWARE_TEST_GUIDE.md`](docs/HARDWARE_TEST_GUIDE.md) tiene el
+checklist: cómo se llega a cada feature, qué debería pasar y qué datos sirven si algo falla.
+
 ## Instalar
 
 Las releases de esta rama están en
