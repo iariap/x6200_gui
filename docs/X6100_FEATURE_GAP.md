@@ -51,8 +51,8 @@ parte de esa diferencia:
 
 | Métrica | X6100 (IU1WXY v0.117) | X6200 (al empezar) | X6200 (hoy) |
 |---|---|---|---|
-| Líneas en `src/` (solo raíz) | ~69.900 en 193 archivos | ~22.100 en 122 archivos | **~51.700 en 180 archivos** |
-| Apps (`ACTION_APP_*`) | 21 | 10 | **19** |
+| Líneas en `src/` (solo raíz) | ~69.900 en 193 archivos | ~22.100 en 122 archivos | **~63.600 en 202 archivos** |
+| Apps (`ACTION_APP_*`) | 21 | 10 | **21** |
 | Módulos de `src/` | 12 | 5 | **13** (`wspr`, `cluster`, `navtex`, `sstv`, `wefax`, `field`, `js8` + los 6 de base) |
 | Base | requiere `x6100_base_patch` r13+ para varias funciones | baseband propio (`libaether_x6200_control`) | igual |
 | Estado | "todo beta, primer release" (según su README) | port estable de R1CBU | + este programa de port |
@@ -111,7 +111,7 @@ parte de esa diferencia:
 
 | Función | X6100 | X6200 | Estado / qué falta |
 |---|---|---|---|
-| **Temas JSON** (8 temas, incluidos "outdoor") | ✅ | ✅ | motor completo + **6 temas** y JSON propios, y **también la pantalla principal** ([NEW_FEATURES.md](NEW_FEATURES.md) §28); al cambiar de tema la GUI se reinicia, como en el X6100 |
+| **Temas JSON** (8 temas, incluidos "outdoor") | ✅ | ✅ | motor completo + **6 incorporados** (IU1WXY, Classic, Outdoor, Outdoor-Negative, Legacy oculto y VISION) + **3 migrados del X6100** (Holo, Material 3 y RS con sus PNG), y **también la pantalla principal** ([NEW_FEATURES.md](NEW_FEATURES.md) §28, [THEMES.md](THEMES.md)); los de la ROM se buscan en `/usr/share/x6200/themes` además de `/mnt/themes` (el del usuario gana), con test nativo; al cambiar de tema la GUI se reinicia, como en el X6100 |
 | Aguja de S-meter dibujada | ✅ | ✅ | Ajustes → S-meter needle (por tema, como el original) |
 | **Band plan IARU** sobre el espectro | ✅ | ✅ | Ajustes → Band plan |
 | **Grabación de pantalla** AVI | ✅ | ✅ | los dos graban **video MJPEG + audio de RX** (el análisis inicial decía "incluye tu voz en TX": su propio `screen_rec.c` dice "Screen + RX audio recorder", así que no era una diferencia) |
@@ -185,9 +185,19 @@ Para que la comparación no sea engañosa:
 
 Por orden de valor:
 
-4. **Perilla de alineado/inclinación de WeFax**: requiere portar el registro de controles
-   (`CTRL_*` + `mfk_set_ctrl`, ~500 líneas de `controls.cpp`).
-8. **TX Cal / CESSB / filtro TX**: depende del baseband; en el X6200 no hay comandos.
+1. **Probar en el equipo**: es la última puerta. La ROM arranca y dibuja en la reproducción
+   (sin radio, sin audio, sin encoders y sin GPIO), pero falta el visto bueno en la radio: es lo
+   que habilita publicar el release.
+2. **WeFax**: la perilla de alineado/inclinación necesita portar el registro de controles
+   (`CTRL_*` + `mfk_set_ctrl`, ~500 líneas de `controls.cpp`); los ajustes ya funcionan por botones.
+3. **Crash del camino de comandos de apps** (visto en la reproducción, falta atribuirlo en el
+   equipo): al abrir una app con el UART de CAT ausente salta una llamada a puntero NULL después
+   de cargar los parámetros de banda. El sujeto NULL que lo acompañaba ya está cubierto. Se
+   persigue con `depurar-por-red.sh` (bucle por SSH, sin regrabar) y `diagnostico-por-red.sh`.
+4. **Auriculares Bluetooth**: el motor y la app están, falta la UI de selección de salida.
+5. **TX Cal / CESSB / filtro TX**: depende del baseband del X6100; el X6200 no expone esos comandos.
+6. **DRM/KMS**: portado y disponible, apagado por defecto hasta validarlo en el equipo.
+7. **App Android X6100 Link**: la app compañera no existe; el protocolo del socket sí está.
 
 El detalle de cómo se llega a cada feature, de qué depende y qué se probó está en
 [INTEGRATION_AUDIT.md](INTEGRATION_AUDIT.md), que también lista la deuda de integración.
