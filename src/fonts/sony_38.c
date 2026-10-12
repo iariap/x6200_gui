@@ -2142,7 +2142,9 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
  *----------------*/
 
 /*Initialize a public general font descriptor*/
-#if LV_VERSION_CHECK(8, 0, 0)
+#if 0   /* forzado: sony_N tiene que quedar en RAM, fonts_apply() copia
+         * la fuente alternativa dentro de la struct (con LVGL 8 salia const,
+         * en .rodata, y la escritura mataba la GUI) */
 const lv_font_t sony_38 = {
 #else
 lv_font_t sony_38 = {

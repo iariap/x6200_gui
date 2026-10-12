@@ -172,7 +172,17 @@ int main(void) {
     }
 
     theme_init(params.theme_name.x);    /* an unknown one falls back to IU1WXY */
-    fonts_apply(theme_shape.font >= 0 ? theme_shape.font : (params.font.x <= 3 ? params.font.x : 0));
+    /* Ojo con los índices: el desplegable de Ajustes ofrece
+     * "Sony Sketch, Roboto, DejaVu, Arial" (0..3), pero fonts_apply() usa
+     * FONT_ROBOTO/FONT_DEJAVU/FONT_ARIAL (0..2). Pasando el valor crudo, elegir "Roboto"
+     * aplicaba DejaVu: la copia de esa tabla mataba la GUI al reiniciar y el equipo quedaba
+     * en el logo. Con 0 (Sony Sketch) no se toca nada, que es la fuente propia del equipo.
+     * El tema, en cambio, ya habla en el idioma de fonts_apply(). */
+    if (theme_shape.font >= 0) {
+        fonts_apply((uint8_t) theme_shape.font);
+    } else if (params.font.x > 0) {
+        fonts_apply((uint8_t) (params.font.x - 1));
+    }
 
     if (theme_shape.vision) {
         fonts_scale(VISION_FONT_STEPS);
