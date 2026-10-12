@@ -65,6 +65,12 @@ typedef enum {
     /* Agregadas al final: los valores de las existentes no se mueven (estan guardados en la
      * configuracion de cada equipo). */
     ACTION_APP_GPS,
+    ACTION_ATT_TOGGLE,
+    ACTION_PRE_TOGGLE,
+    ACTION_ATU_TOGGLE,
+    ACTION_ATU_TUNE,
+    ACTION_WF_MODE,
+    ACTION_APP_BANDS,
 } press_action_t;
 
 typedef enum {

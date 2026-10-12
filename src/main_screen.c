@@ -64,7 +64,9 @@
 #include "dialog_cw_trainer.h"
 #include "dialog_bt.h"
 #include "dialog_status.h"
+#include "controls.h"
 #include "dialog_gps.h"
+#include "dialog_bands.h"
 #include "cluster_column.h"
 #include "theme.h"
 #include "fonts/font_select.h"
@@ -269,6 +271,33 @@ void main_screen_action(press_action_t action) {
 
         case ACTION_VOICE_MODE:
             voice_change_mode();
+            break;
+
+        /* Las funciones ya existian; faltaba poder asignarlas a un boton (como en el X6100) */
+        case ACTION_ATT_TOGGLE:
+            controls_toggle_att(NULL);
+            msg_update_text_fmt("#%06X ATT: %s", theme_hex(TC_text),
+                                subject_get_int(cfg_cur.att) ? "On" : "Off");
+            break;
+
+        case ACTION_PRE_TOGGLE:
+            controls_toggle_pre(NULL);
+            msg_update_text_fmt("#%06X PRE: %s", theme_hex(TC_text),
+                                subject_get_int(cfg_cur.pre) ? "On" : "Off");
+            break;
+
+        case ACTION_ATU_TOGGLE:
+            toggle_atu_enabled();
+            msg_update_text_fmt("#%06X ATU: %s", theme_hex(TC_text),
+                                subject_get_int(cfg.atu_enabled.val) ? "On" : "Off");
+            break;
+
+        case ACTION_ATU_TUNE:
+            radio_start_atu();
+            break;
+
+        case ACTION_APP_BANDS:
+            dialog_construct(dialog_bands, obj);
             break;
 
         case ACTION_BAT_INFO:

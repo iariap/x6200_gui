@@ -47,6 +47,7 @@ run() {
 # Chequeo estatico barato: si la struct cfg queda sin inicializar, la GUI se muere antes
 # de dibujar (paso con cwt_level y cwt_group y la radio quedo en el logo de arranque).
 run config python3 "$DIR/check_cfg_fills.py" "$GUI"
+python3 "$DIR/check_actions.py" || fallos=$((fallos+1))
 
 run host sh "$DIR/native/run_native_tests.sh"
 run wspr sh "$DIR/native/run_wspr_tests.sh"
