@@ -86,9 +86,8 @@ Subject *subject_create_float(float val) {
 /* Un subject NULL no se puede leer: antes se desreferenciaba y el proceso moría (se veía al
  * abrir apps que leen un subject que no quedó inicializado). Ahora se avisa -con quién llamó,
  * para poder arreglar la causa- y se devuelve un valor neutro. */
-static void avisa_subject_nulo(const char *cual) {
+static void avisa_subject_nulo(const char *cual, void *llamador) {
     Dl_info info;
-    void   *llamador = __builtin_return_address(0);
 
     if (llamador != NULL && dladdr(llamador, &info)) {
         /* dli_sname sólo está para símbolos dinámicos; los estáticos no aparecen, así que
@@ -104,7 +103,7 @@ static void avisa_subject_nulo(const char *cual) {
 
 int32_t subject_get_int(Subject *subj) {
     if (subj == NULL) {
-        avisa_subject_nulo("subject_get_int");
+        avisa_subject_nulo("subject_get_int", __builtin_return_address(0));
         return 0;
     }
 
@@ -113,7 +112,7 @@ int32_t subject_get_int(Subject *subj) {
 
 uint64_t subject_get_uint64(Subject *subj) {
     if (subj == NULL) {
-        avisa_subject_nulo("subject_get_uint64");
+        avisa_subject_nulo("subject_get_uint64", __builtin_return_address(0));
         return 0;
     }
 
@@ -122,7 +121,7 @@ uint64_t subject_get_uint64(Subject *subj) {
 
 float subject_get_float(Subject *subj) {
     if (subj == NULL) {
-        avisa_subject_nulo("subject_get_float");
+        avisa_subject_nulo("subject_get_float", __builtin_return_address(0));
         return 0;
     }
 
