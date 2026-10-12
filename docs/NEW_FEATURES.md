@@ -1468,3 +1468,59 @@ Con la reproducción en chroot (raíz de la imagen + **framebuffer falso** por `
 el `params.db` del usuario): antes se colgaba en esa espera ✗; ahora registra
 `pulseaudio no disponible (Connection refused): la GUI sigue, pero sin audio` ✓ y sigue con
 el resto del arranque ✓.
+
+---
+
+## 35. El crash que dejaba la radio en el logo (y cómo se encontró)
+
+El hallazgo más importante de este port: **la primera imagen no arrancaba**. Quedaba en el logo
+del equipo y el daemon reiniciaba la GUI en bucle (38 intentos, uno cada dos segundos ✓, todos
+con el mismo log ✓). Lo que costó encontrarlo y lo que quedó como red de seguridad:
+
+### La causa
+
+`init_params_cfg()` recorre **toda** la struct `cfg` como si fuera un arreglo de `cfg_item_t`:
+
+```c
+cfg_item_t *cfg_arr  = (cfg_item_t *)&cfg;
+uint32_t    cfg_size = sizeof(cfg) / sizeof(*cfg_arr);
+init_items(cfg_arr, cfg_size, ...);      /* subject_add_observer(cfg_arr[i].val, ...) */
+```
+
+Es un truco que exige que **todos** los campos estén inicializados. La struct tiene 69 y yo
+inicializaba 67: faltaban **`cwt_level` y `cwt_group`** (los parámetros del CW Trainer que agregué).
+En el slot 68 `val` es NULL, `subject_add_observer(NULL, ...)` y **el proceso muere antes de
+dibujar**: de ahí el logo eterno. Determinista e independiente de la base de datos del usuario
+(comprobado con la de fábrica también).
+
+### Cómo se encontró (sin la radio)
+
+1. la traza de la tarjeta instrumentada mostró que la GUI arrancaba **una sola vez** y moría
+   después de `/mnt/params.db`, sin llegar a abrir los `/dev/input/event*`;
+2. con la **reproducción en chroot** (raíz de la imagen + framebuffer falso + el `params.db` del
+   usuario) el crash se reproducía igual;
+3. **marcas de progreso** temporales acotaron el crash a `init_params_cfg`, y de ahí salió la
+   comparación entre los campos de la struct y los `fill_cfg_item()`;
+4. para ver más allá hizo falta una **biblioteca de trazas** por `LD_PRELOAD` (log sin buffer +
+   cada `open` de `/dev` y `/mnt` + cada hilo) y un **capturador de señales** que deja el PC del
+   fallo para traducirlo con `addr2line`.
+
+### Los arreglos
+
+- **`cwt_level` y `cwt_group`** se inicializan ✓ (`cwt_group` desde 1, su rango ✓).
+- El recorrido **saltea** los ítems sin inicializar ✓: un campo nuevo sin su `fill_cfg_item()` ya
+  no puede matar la GUI ✓.
+- `tests/check_cfg_fills.py` lo comprueba **en la suite** ✓: compara, en orden, los campos de
+  `cfg_t` con las inicializaciones ✓ y falla si no coinciden ✓ (probado contra el código roto:
+  señala exactamente los dos que faltaban ✓).
+
+### Los arreglos del mismo tipo que aparecieron en el camino
+
+| Qué | Síntoma |
+|---|---|
+| `pa_context_connect` sin límite de espera | la GUI esperaba para siempre un contexto FAILED (pulseaudio no arrancaba porque **faltaba el usuario `pulse`** ✗) |
+| Usuario `pulse` ausente en la imagen | sin daemon no hay audio: WSPR, SSTV, grabación y CQ de voz ✗ |
+| Mixer de ALSA sin chequear retornos ni NULL | aborto del proceso si el elemento no existe ✗ |
+| Esperas de audio con `usleep(1000)` sin tope | mil despertares por segundo y cuelgue si el stream se cae ✗ |
+| Encoders NULL (`vol`, `mfk`, `mfk_inner`) | desreferenciados en el arranque, en el EQ y en varios diálogos ✗ |
+| Encoders por número de `eventN` fijo | si un USB se enumera antes, las perillas quedan muertas ✗ → ahora se buscan **por nombre** (`rotary0`..`rotary3` del device tree ✓) |
