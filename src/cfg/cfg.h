@@ -28,6 +28,9 @@ typedef struct {
     cfg_item_t fft_dec;
 
     /* WSPR (digital modes) */
+    cfg_item_t cluster_all_bands;   /* DX cluster: spots of every band */
+    cfg_item_t cluster_order;       /* DX cluster: spot order */
+
     cfg_item_t wefax_align;     /* WeFax image alignment */
     cfg_item_t wefax_tilt;      /* WeFax skew */
 

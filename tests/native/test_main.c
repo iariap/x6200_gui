@@ -18,6 +18,7 @@ void test_update_check(void);
 void test_band_plan(void);
 void test_avi_writer(void);
 void test_wfview(void);
+void test_cluster(void);
 
 int main(void) {
     test_adaptive_tuning();
@@ -27,6 +28,7 @@ int main(void) {
     test_band_plan();
     test_avi_writer();
     test_wfview();
+    test_cluster();
 
     printf("%d comprobaciones, %d fallos\n", tests_run, tests_failed);
 

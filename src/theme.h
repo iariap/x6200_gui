@@ -38,6 +38,7 @@ typedef enum {
     TC_panel, TC_frame,
     TC_track, TC_ok, TC_ok_bar,
     TC_accent, TC_tx, TC_text_faint, TC_err, TC_near_bg, TC_warn,
+    TC_alert, TC_alert_bg, TC_alert_text, TC_alert_box, TC_vfo, TC_vfo_bg, TC_new, TC_veil,
     TC_sel_bg, TC_sel_border, TC_sel_text,
     TC_num
 } theme_color_t;
@@ -70,6 +71,9 @@ typedef struct {
     uint8_t  waterfall_table;
     uint8_t  waterfall_steps;
 } theme_shape_t;
+
+/* VISION: every font this many sizes up (the ported dialogs read it) */
+#define VISION_FONT_STEPS 3
 
 extern theme_shape_t theme_shape;
 

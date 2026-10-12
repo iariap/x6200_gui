@@ -26,6 +26,8 @@ extern "C" {
 #define cfg_band_split      (cfg_cur.band->split.val)
 
 /* WSPR settings (persisted in the params table) */
+#define cfg_cluster_all_bands (&cfg.cluster_all_bands)
+#define cfg_cluster_order   (&cfg.cluster_order)
 #define cfg_wefax_align     (&cfg.wefax_align)
 #define cfg_wefax_tilt      (&cfg.wefax_tilt)
 #define cfg_wspr_tx_freq    (&cfg.wspr_tx_freq)
@@ -42,6 +44,7 @@ static inline void cfg_api_int_set(const cfg_item_t *item, int32_t v) {
 
 /* The control library renamed its enum from x6100_* to x6200_*; the ported
  * app code still spells the old names */
+#define x6100_mode_t        x6200_mode_t
 #define x6100_mode_lsb      x6200_mode_lsb
 #define x6100_mode_usb      x6200_mode_usb
 #define x6100_mode_lsb_dig  x6200_mode_lsb_dig

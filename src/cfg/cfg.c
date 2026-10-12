@@ -290,6 +290,8 @@ static int init_params_cfg(sqlite3 *db) {
     fill_cfg_item(&cfg.fft_dec, subject_create_int(0), "fft_dec");
 
     /* WSPR: 1500 Hz is the centre of the 200 Hz WSPR window */
+    fill_cfg_item(&cfg.cluster_all_bands, subject_create_int(0), "cluster_all_bands");
+    fill_cfg_item(&cfg.cluster_order, subject_create_int(0), "cluster_order");
     fill_cfg_item(&cfg.wefax_align, subject_create_int(0), "wefax_align");
     fill_cfg_item(&cfg.wefax_tilt, subject_create_int(0), "wefax_tilt");
     fill_cfg_item(&cfg.wspr_tx_freq, subject_create_int(1500), "wspr_tx_freq");

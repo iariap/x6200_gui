@@ -17,6 +17,7 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **NavTex**: decodificador SITOR-B + app | ✅ 2026-10-11 | §10 |
 | **SSTV**: 7 modos (RX/TX), app y assets | ✅ 2026-10-11 | §11 |
 | **WeFax**: fax meteorológico (RX/TX, Auto) | ✅ 2026-10-11 | §12 |
+| **Cluster DX**: spots, filtros, alertas y app | ✅ 2026-10-11 | §14 |
 | Temas JSON | ⏳ pendiente | — |
 | Field Ops SOTA/POTA | ⏳ pendiente | — |
 | Modos digitales: WSPR ✅, NavTex ✅, SSTV ✅, WeFax ✅, JS8 (plan) | 🔶 en curso | §9-13 |
@@ -603,3 +604,57 @@ verde (build de nuevo en 0 errores).
 `src/js8` (adaptando `cfg_api`/`app_frame`/`freq_list`/`tx_player`, que ya están) → el diálogo
 (con la lección del framework de botones ya resuelta) → verificar con `js8_wavgen` y el WAV de
 prueba.
+
+---
+
+## 14. Cluster DX
+
+El cliente de cluster completo: conexión al servidor, parseo de spots, filtros por banda y
+modo, alertas, y la app con la tabla de spots.
+
+### Qué se portó
+
+- `src/cluster/spots.c/h`: el parseo de las líneas del cluster (formato `DX de`, filas `sh/dx`
+  con fecha, la lista de 300 spots con expiración por antigüedad, el mapeo banda/modo y la
+  detección de modo por el comentario) y `client.c/h` con la conexión.
+- `src/dialog_cluster.c` (~1.000 líneas): la app, con la tabla, los filtros, las alertas y el
+  cambio de banda/modo al tocar un spot.
+- Se abre desde **acciones de pulsación larga → `Cluster`**.
+- **Reemplaza mi stub de bandas**: ahora `cluster_band_name()`/`cluster_band_of()` son los
+  reales, así que la tira de frecuencia de las apps muestra la banda de verdad.
+- Se sumaron los roles de tema que usa (`TC_alert*`, `TC_vfo*`, `TC_new`, `TC_veil`) y los
+  ajustes `cluster_all_bands` y `cluster_order`.
+
+### Fuentes: `font_select` y las familias alternativas
+
+El diálogo usa `fonts/font_select.h`, que es el **cambio de familia de fuente en runtime** del
+X6100 (mantiene los `sony_N` y les copia el contenido de arial/dejavu/roboto antes de armar la
+UI). Portarlo requería esas familias, así que copié las **51 fuentes alternativas** (5,6 MB) y
+agregué `fonts_apply()`/`fonts_scale()`/`font_down()`; el tema puede elegir familia como en el
+original.
+
+### Boost y los headers de desarrollo (172 MB)
+
+Para JS8 hacía falta Boost, que agregué al defconfig (`BR2_PACKAGE_BOOST=y`, sin librerías: sólo
+headers al sysroot). Pero Buildroot **también copia los headers al target**: 172 MB de cabeceras
+de C++ que la radio nunca lee. Agregué un **post-build script** (`board/X6200/post-build.sh`) que
+borra `/usr/include` del rootfs y los `.la`; el runtime no necesita nada de eso.
+
+### Test: los casos del X6100, portados
+
+`tests/native/test_cluster.c` es la versión en C de `tests/test_cluster.cpp` (8 casos) y corre en
+el **host** (el parser no depende de LVGL):
+
+- Líneas `DX de` (frecuencia, indicativo, spotter, comentario, minuto UTC) y nodos `-#`.
+- Filas `sh/dx` con fecha → marca de tiempo UTC exacta; spots en vivo → sin fecha.
+- Seis tipos de línea que **no** son spots (WWV, login, resumen del día…) y deben rechazarse.
+- El almacén: orden por hora (más viejo primero, como llega el listado), reemplazo del mismo
+  indicativo en la misma frecuencia, que un spot viejo **no** pise al nuevo, y el tope de 300.
+- Antigüedad y expiración (incluyendo el cruce de medianoche) y el mapeo banda/nombre/modo.
+
+```
+330 comprobaciones, 0 fallos
+```
+
+El test encontró dos supuestos míos equivocados: el orden del almacén (es más viejo primero, no
+más nuevo) y que `cluster_band_name(-1)` devuelve cadena vacía, no `NULL`.

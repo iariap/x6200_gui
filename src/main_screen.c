@@ -57,6 +57,7 @@
 #include "dialog_navtex.h"
 #include "dialog_sstv.h"
 #include "dialog_wefax.h"
+#include "dialog_cluster.h"
 
 #include <unistd.h>
 #include <stdint.h>
@@ -169,6 +170,10 @@ void main_screen_start_app(press_action_t app_action) {
             dialog_construct(dialog_wefax, obj);
             break;
 
+        case ACTION_APP_CLUSTER:
+            dialog_construct(dialog_cluster, obj);
+            break;
+
         case ACTION_APP_RECORDER:
             dialog_construct(dialog_recorder, obj);
             voice_say_text_fmt("Audio recorder window");
@@ -255,6 +260,7 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_NAVTEX:
         case ACTION_APP_SSTV:
         case ACTION_APP_WEFAX:
+        case ACTION_APP_CLUSTER:
         case ACTION_APP_RECORDER:
         case ACTION_APP_WIFI:
             main_screen_start_app(action);
