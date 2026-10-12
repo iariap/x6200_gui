@@ -25,13 +25,14 @@ char * input_dev_by_name(const char *name, const char *fallback) {
     struct dirent *e;
 
     if (name == NULL) {
-        return fallback;
+        /* los llamadores sólo leen la ruta (open), no la escriben */
+        return (char *) fallback;
     }
 
     d = opendir(DEV_DIR);
 
     if (d == NULL) {
-        return fallback;
+        return (char *) fallback;
     }
 
     while ((e = readdir(d)) != NULL) {
@@ -66,5 +67,5 @@ char * input_dev_by_name(const char *name, const char *fallback) {
     closedir(d);
     LV_LOG_WARN("No encontre '%s' entre los /dev/input/event*: uso %s", name,
                 fallback ? fallback : "(nada)");
-    return fallback;
+    return (char *) fallback;
 }
