@@ -131,6 +131,14 @@ static const struct {
     void      (*fn)(const char *cmd, int32_t val, const char *text);
     int32_t     min, max, stop;
 } app_cmds[] = {
+    {"ft8_cq",      "FT",     dialog_ft8_remote,    0, 1,         1},
+    {"ft8_stop",    "FT",     dialog_ft8_remote,    0, 1,         1},
+    {"ft8_auto",    "FT",     dialog_ft8_remote,    0, 1,         INT32_MIN},
+    {"ft8_hold",    "FT",     dialog_ft8_remote,    0, 1,         INT32_MIN},
+    {"ft8_txfreq",  "FT",     dialog_ft8_remote,    200, 2900,    INT32_MIN},
+    {"ft8_reply",   "FT",     dialog_ft8_remote,    0, INT32_MAX, INT32_MIN},
+    {"app_base",    "FT",     dialog_ft8_remote,    0, 1,         INT32_MIN},
+
     {"cw_send",     "CW",     dialog_cw_kbd_remote, 1, 0,         INT32_MAX},   /* also while keying */
     {"cw_stop",     "CW",     dialog_cw_kbd_remote, 1, 0,         INT32_MAX},
     {"cw_wpm",      "CW",     dialog_cw_kbd_remote, 5, 60,        INT32_MIN},
@@ -168,7 +176,7 @@ static const struct {
     const char *app;
     int       (*fn)(char *buf, size_t size);
 } app_states[] = {
-    {"CW", dialog_cw_kbd_remote_state},  {"JS8", dialog_js8_remote_state},     {"WSPR", dialog_wspr_remote_state},
+    {"FT", dialog_ft8_remote_state},     {"CW", dialog_cw_kbd_remote_state},  {"JS8", dialog_js8_remote_state},     {"WSPR", dialog_wspr_remote_state},
     {"SSTV", dialog_sstv_remote_state}, {"WeFax", dialog_wefax_remote_state}, {"NavTex", dialog_navtex_remote_state},
     
     {"Field", dialog_field_remote_state},

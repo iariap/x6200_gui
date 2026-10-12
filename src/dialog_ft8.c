@@ -107,6 +107,33 @@ typedef struct {
 static ft8_state_t          state = RX_PROCESS;
 static bool                 tx_enabled=true;
 static bool                 cq_enabled=false;
+
+/* --- Remote control (the web /remote page) --------------------------------
+ * The server sends ft8_cq, ft8_stop, ft8_auto, ft8_hold, ft8_txfreq and
+ * ft8_reply. A reply has to name a decoded message, so the last ones are kept
+ * with an id (the same scheme as the X6100). */
+#define REMOTE_RX_N 64
+
+static struct {
+    int32_t        id;
+    bool           odd;
+    ftx_msg_meta_t meta;
+} remote_rx[REMOTE_RX_N];
+static int32_t         remote_rx_id;
+static pthread_mutex_t remote_rx_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+static void remote_rx_event(bool odd, const ftx_msg_meta_t *meta) {
+    pthread_mutex_lock(&remote_rx_mutex);
+    int32_t id = ++remote_rx_id;
+
+    remote_rx[id % REMOTE_RX_N].id   = id;
+    remote_rx[id % REMOTE_RX_N].odd  = odd;
+    remote_rx[id % REMOTE_RX_N].meta = *meta;
+    pthread_mutex_unlock(&remote_rx_mutex);
+}
+
+static void start_qso(cell_data_t *cell_data);
+
 static bool                 tx_time_slot;
 
 static ftx_tx_msg_t         tx_msg;
@@ -993,39 +1020,49 @@ static void load_page(struct button_item_t *btn) {
     reload_buttons();
 }
 
+/* Start a QSO with a decoded message: the row press and the remote server's
+ * ft8_reply both come through here */
+static void start_qso(cell_data_t *cell_data) {
+    ftx_qso_processor_start_qso(qso_processor, &cell_data->meta, &tx_msg);
+
+    if (strlen(tx_msg.msg) > 0) {
+        lv_finder_set_cursor(finder, cell_data->meta.freq_hz);
+
+        if (!subject_get_int(cfg.ft8_hold_freq.val)) {
+            set_freq(cell_data->meta.freq_hz);
+        }
+
+        tx_time_slot = !cell_data->odd;
+        tx_enabled   = true;
+        reload_buttons();
+        add_info("Start QSO with %s", cell_data->meta.call_de);
+        msg_schedule_text_fmt("Next TX: %s", tx_msg.msg);
+    } else {
+        msg_schedule_text_fmt("Invalid message");
+        tx_call_off();
+    }
+}
 static void cell_press_cb(lv_event_t * e) {
     if (state == TX_PROCESS) {
         tx_call_off();
+
+        return;
+    }
+
+    uint16_t row;
+    uint16_t col;
+
+    lv_table_get_selected_cell(table, &row, &col);
+
+    cell_data_t *cell_data = lv_table_get_cell_user_data(table, row, col);
+
+    if ((cell_data == NULL) ||
+        (cell_data->cell_type == CELL_TX_MSG) ||
+        (cell_data->cell_type == CELL_RX_INFO)
+    ) {
+        msg_schedule_text_fmt("What should I do about it?");
     } else {
-        uint16_t     row;
-        uint16_t     col;
-
-        lv_table_get_selected_cell(table, &row, &col);
-
-        cell_data_t  *cell_data = lv_table_get_cell_user_data(table, row, col);
-
-        if ((cell_data == NULL) ||
-            (cell_data->cell_type == CELL_TX_MSG) ||
-            (cell_data->cell_type == CELL_RX_INFO)
-        ) {
-            msg_schedule_text_fmt("What should I do about it?");
-        } else {
-            ftx_qso_processor_start_qso(qso_processor, &cell_data->meta, &tx_msg);
-            if (strlen(tx_msg.msg) > 0) {
-                lv_finder_set_cursor(finder, cell_data->meta.freq_hz);
-                if (!subject_get_int(cfg.ft8_hold_freq.val)) {
-                    set_freq(cell_data->meta.freq_hz);
-                }
-                tx_time_slot = !cell_data->odd;
-                tx_enabled = true;
-                reload_buttons();
-                add_info("Start QSO with %s", cell_data->meta.call_de);
-                msg_schedule_text_fmt("Next TX: %s", tx_msg.msg);
-            } else {
-                msg_schedule_text_fmt("Invalid message");
-                tx_call_off();
-            }
-        }
+        start_qso(cell_data);
     }
 }
 
@@ -1229,6 +1266,7 @@ static void add_rx_text(int16_t snr, const char * text, slot_info_t *s_info, flo
     ftx_msg_meta_t meta;
     meta.freq_hz = freq_hz;
     meta.time_sec = time_sec;
+    remote_rx_event(s_info->odd, &meta);
     char * old_msg = strdup(tx_msg.msg);
     ftx_qso_processor_add_rx_text(qso_processor, text, snr, &meta, &tx_msg);
 
@@ -1380,4 +1418,60 @@ static void * decode_thread(void *arg) {
     }
 
     return NULL;
+}
+
+/* --- Remote control: the commands the server sends ----------------------- */
+
+void dialog_ft8_remote(const char *cmd, int32_t val, const char *text) {
+    (void) text;
+
+    if (!strcmp(cmd, "ft8_cq")) {
+        if ((val != 0) != cq_enabled) {
+            tx_cq_en_dis_cb(NULL);
+        }
+    } else if (!strcmp(cmd, "ft8_stop")) {
+        tx_call_off();
+        cq_enabled     = false;
+        tx_msg.msg[0]  = '\0';
+    } else if (!strcmp(cmd, "ft8_auto")) {
+        if ((val != 0) != params.ft8_auto.x) {
+            mode_auto_cb(NULL);
+        }
+    } else if (!strcmp(cmd, "ft8_hold")) {
+        if ((val != 0) != (subject_get_int(cfg.ft8_hold_freq.val) != 0)) {
+            hold_tx_freq_cb(NULL);
+        }
+    } else if (!strcmp(cmd, "ft8_txfreq")) {
+        set_freq(limit(val, filter_low,
+                       filter_high - (params.ft8_protocol == FTX_PROTOCOL_FT8 ? FT8_WIDTH_HZ : FT4_WIDTH_HZ)));
+    } else if (!strcmp(cmd, "ft8_reply")) {
+        cell_data_t cd = { .cell_type = CELL_RX_MSG };
+        bool        found;
+
+        pthread_mutex_lock(&remote_rx_mutex);
+        found = remote_rx[val % REMOTE_RX_N].id == val;
+
+        if (found) {
+            cd.odd  = remote_rx[val % REMOTE_RX_N].odd;
+            cd.meta = remote_rx[val % REMOTE_RX_N].meta;
+        }
+
+        pthread_mutex_unlock(&remote_rx_mutex);
+
+        if (found) {
+            start_qso(&cd);
+        } else {
+            msg_update_text_fmt("FT8: that message is too old");
+        }
+    } else if (!strcmp(cmd, "app_base")) {
+        load_band(0);
+    }
+}
+
+int dialog_ft8_remote_state(char *buf, size_t size) {
+    return snprintf(buf, size,
+                    "{\"cq\":%i,\"txen\":%i,\"txing\":%i,\"auto\":%i,\"hold\":%i,\"txfreq\":%i,\"base\":%i}",
+                    cq_enabled ? 1 : 0, tx_enabled ? 1 : 0, state == TX_PROCESS,
+                    params.ft8_auto.x, subject_get_int(cfg.ft8_hold_freq.val) != 0,
+                    params.ft8_tx_freq.x, (int) cfg_digital_freq_get());
 }

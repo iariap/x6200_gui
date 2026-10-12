@@ -89,12 +89,12 @@ parte de esa diferencia:
 |---|---|---|---|
 | Spots, filtros (modo, banda, todas las bandas), orden, alertas | ✅ | ✅ | app completa, con tests portados de su suite |
 | 5 servidores en paralelo + pota.app, sin duplicados | ✅ | ✅ | `cluster/client.c` |
-| País desde `cty.dat` | ✅ | ✅ | resolución de país en el parser |
-| **Banderas** de país | ✅ | ❌ | faltan los assets generados por `tools/flags_gen.py` |
+| País/banderas de cada spot | ❌ | ❌ | **ninguno de los dos** los muestra en el cluster: en su firmware las banderas (16x12 RGB embebidas, generadas por `tools/flags_gen.py`) están en el diálogo **FT8**, no en el cluster |
 | **Columna lateral** de spots en la pantalla principal | ✅ | ❌ | `cluster_column.c` no está portado: los spots se ven en el diálogo |
 | **Spot snap** (el VFO se detiene en el spot girando despacio) | ✅ | ❌ | vive en el manejo de perilla de su `main_screen.c` |
 | Decodificados por **UDP** para GridTracker/JTAlert | ✅ | ✅ | [FT8_UDP.md](FT8_UDP.md) |
 | Mapa de QSO | ✅ | 🔶 | **JS8 sí** (`js8_map.c` + mapa mundial); FT8 no (nuestro diálogo FT8 es el upstream) |
+| Banderas de país en **FT8** | ✅ | ❌ | pendiente (header `flags.h` con las banderas embebidas) |
 
 ### 2.3 Field Ops (SOTA / POTA)
 
@@ -130,7 +130,7 @@ parte de esa diferencia:
 | **Teclados BT** | ✅ | 🔶 | descubrimiento dinámico y *rollover* ✅; **falta la UI de pairing** |
 | Pairings respaldados en `/mnt` y restaurados al boot | ✅ | ✅ | `S39btpairings` |
 | **Web configurator**: Bands, Digital modes, Cluster, wfview, Memories, Remote, Backup, Gallery, Field, Files, Time, Logs, CW messages, Channels + **HTTPS** | ✅ 12 | ✅ **15** | HTTP + HTTPS con certificado autofirmado; tests de las 19 páginas |
-| **Control remoto en vivo** (página `/remote`) | ✅ | ✅ | socket `/tmp/x6200_remote.sock`, ~60 comandos; **sin FT8** (ver §5) |
+| **Control remoto en vivo** (página `/remote`) | ✅ | ✅ | socket `/tmp/x6200_remote.sock`, ~65 comandos, **todas las apps** (FT8 incluido) |
 | App Android **X6100 Link** | ✅ | ❌ | la app compañera no existe; el protocolo del socket sí está |
 
 ### 2.6 Configuración de radio y sistema
@@ -191,9 +191,8 @@ Por orden de valor:
 3. **Temas en la pantalla principal**: llevar las 428 referencias de color al sistema de temas.
 4. **Perilla de alineado/inclinación de WeFax**: requiere portar el registro de controles
    (`CTRL_*` + `mfk_set_ctrl`, ~500 líneas de `controls.cpp`).
-5. **Control remoto de FT8** por la web: faltan los enganches `dialog_ft8_remote()/state()` en
-   nuestro diálogo FT8 (upstream). Las otras seis apps sí responden.
-6. **Banderas** de país en el cluster (assets de `tools/flags_gen.py`).
+5. **Banderas de país en FT8** (el header generado por `tools/flags_gen.py`). Ojo: el
+   `cty.dat` que la imagen instala hoy **no lo usa nadie**; queda para esa feature.
 7. **DRM/KMS + perilla con hilo propio**: mejora de base, riesgo de hardware.
 8. **TX Cal / CESSB / filtro TX**: depende del baseband; en el X6200 no hay comandos.
 

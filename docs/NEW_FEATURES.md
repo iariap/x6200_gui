@@ -1077,3 +1077,36 @@ paleta o el teclado.
 Con esto **no queda ninguna app del X6100 sin portar** (la única que no está es *Snake*, que es
 un huevo de pascua, y el selector `MODES`, que acá se reemplaza por las acciones de pulsación
 larga).
+
+---
+
+## 24. Control remoto de FT8
+
+Con esto el servidor remoto cubre **todas** las apps: FT8 era la única que faltaba porque su
+diálogo en el X6100 es un fork con enganches propios. La adaptación fue más simple de lo que
+parecía: nuestro diálogo FT8 ya tenía todo lo que la API necesita (`cq_enabled`, `tx_cq_en_dis_cb`,
+`tx_call_off`, `tx_msg`, `mode_auto_cb`, `hold_tx_freq_cb`, `filter_low/high`).
+
+### Comandos
+
+| Comando | Para qué |
+|---|---|
+| `ft8_cq` | activa/desactiva CQ |
+| `ft8_stop` | corta la transmisión y limpia el mensaje |
+| `ft8_auto` | modo automático |
+| `ft8_hold` | retener la frecuencia de TX |
+| `ft8_txfreq` | frecuencia de audio de TX (200–2900 Hz) |
+| `ft8_reply <id>` | **contesta un mensaje decodificado** |
+| `app_base` | carga la banda de la app |
+
+Además publica su estado en JSON (`cq`, `txen`, `txing`, `auto`, `hold`, `txfreq`, `base`) para la
+página `/remote`.
+
+### Cómo se resuelve `ft8_reply`
+
+Para contestar un mensaje decodificado hay que identificarlo, así que se guardan los **últimos 64**
+decodificados con un id y su metadata (igual que el X6100). Se registran en el camino de RX
+(`add_rx_text`), con mutex porque el decodificador corre en otro hilo.
+
+De paso unifiqué el arranque de QSO en `start_qso()`: lo usaban el toque en la fila y ahora también
+el control remoto, en vez de tener dos copias de la misma lógica.

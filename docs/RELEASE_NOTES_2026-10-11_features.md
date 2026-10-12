@@ -20,7 +20,7 @@ para el equipo, verificada en la imagen y con tests donde se puede correr sin ra
 | 8 | **Teclados USB/Bluetooth** | Descubrimiento dinámico, *rollover*, la app **CW Keyboard** (telegrafiar escribiendo) y el **CW Trainer** (entrenador de prefijos) |
 | 9 | **wfview** | La radio como IC-705 en la red (Icom LAN) |
 | 10 | **Web configurator ampliado** | 15 páginas + HTTPS, gestor de todo el equipo |
-| 11 | **Control remoto en vivo** | La página `/remote` maneja la radio en tiempo real |
+| 11 | **Control remoto en vivo** | La página `/remote` maneja la radio en tiempo real, con **todas** las apps |
 | 12 | **Field Ops SOTA/POTA** | Referencias, log ADIF, feed RBN y **CQ de voz** (graba el CQ y lo emite en SSB) |
 | 13 | **Cluster DX** | Spots, filtros y alertas |
 | 14 | **WSPR** | Motor y app completos (RX/TX, subida a WSPRnet) |
@@ -71,8 +71,6 @@ probar en el equipo) está en [`docs/INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md
 
 ## Limitaciones conocidas (documentadas en `docs/NEW_FEATURES.md`)
 
-- Control remoto de **FT8** por la web: nuestro diálogo FT8 es el upstream y no tiene los
-  enganches del suyo (las otras seis apps sí).
 - **UI de pairing Bluetooth**: hoy se vincula por consola (`bluetoothctl`/`btaudio-ctl`).
 - **Perilla de alineado/inclinación de WeFax**: su registro `CTRL_*` no está portado; los valores
   se ajustan desde los parámetros.

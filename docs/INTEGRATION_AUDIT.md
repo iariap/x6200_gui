@@ -85,7 +85,7 @@ desde la web usaba un indicativo vacío. Ahora leen `X6200_*` y el *User-Agent* 
 | Feature | Cómo se llega | Depende de | Verificación |
 |---|---|---|---|
 | **wfview** | Ajustes → interruptor; `/mnt/wfview.conf` | puertos 50001-50003 | 🧪 protocolo completo (handshake, login, CI-V) con sockets reales |
-| **Control remoto (web)** | página `/remote` | socket `/tmp/x6200_remote.sock` | 📄 en el binario; 🔌 punta a punta con la radio |
+| **Control remoto (web)** | página `/remote` | socket `/tmp/x6200_remote.sock`, ~65 comandos de **todas** las apps (FT8 incluido) | 🧪 protocolo y comandos en el binario; 🔌 punta a punta con la radio |
 | **Web configurator** | `http://<ip>/` y `https://<ip>/` | `S96webserver` + paquete `x6100-webserver` | 🧪 19 páginas/endpoints contra la base real |
 | **Bluetooth CAT** | consola: `btcat-setup`, `btcat-ctl` | `S94btcat`, `/etc/default/btcat` | 📄 scripts y servicio en la imagen; 🔌 adaptador y pairing |
 | **Auriculares BT** | consola: `btaudio-ctl` | política de PulseAudio | 📄 en la imagen; 🔌 audio real |
@@ -138,8 +138,7 @@ JSON, el *rollover* del teclado y el formato WAV contra la libsndfile del target
   espectro y waterfall usan estilos fijos.
 - **Perilla** de alineado/inclinación de WeFax y **perilla con hilo propio**: no portadas.
 - **CW Trainer**: la única app del X6100 que no está.
-- **Banderas** de país en el cluster: faltan los assets de `tools/flags_gen.py`.
-- **Control remoto de FT8**: faltan los enganches en nuestro diálogo FT8 (las otras apps sí).
+- **Banderas de país en FT8**: falta el header generado por `tools/flags_gen.py` (el `cty.dat` que la imagen instala todavía no lo usa nadie).
 - **TX Cal / CESSB**: la librería del X6200 no expone esos comandos.
 
 **Limpiado en esta auditoría**: ocho parámetros que había agregado (`wspr_tx_*`, `wspr_upload`,
