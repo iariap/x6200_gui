@@ -159,6 +159,16 @@ Un equipo a batería no debería tener timers ni hilos girando de gusto. Revisad
 
 ## 4. Deuda de integración conocida
 
+- **CAT con UART no disponible** (encontrado con la validación por socket de la ronda 51): si
+  `cat_init()` no puede abrir `/dev/ttyS2` sólo lo registra y **sigue** con `fd = -1` (o con el
+  descriptor ya cerrado si falla `tcsetattr`), crea la conexión y arranca el hilo del CAT, que
+  termina escribiendo sobre ese descriptor (`Error during writing message`) y matando el proceso.
+  Se dispara al abrir una app que conmuta el USB a CAT (FT8). El arreglo tiene que cubrir **también
+  el camino de envío** (`cat_send`/la cola), no sólo el `init`: el primer intento (salir del init
+  sin más) dejó `conn` en NULL y el envío crasheaba al arrancar, así que se revirtió. En la radio el
+  UART normalmente existe, así que no se vio todavía.
+
+
 - **Perilla** de alineado/inclinación de WeFax y **perilla con hilo propio**: no portadas.
 - **CW Trainer**: la única app del X6100 que no está.
 - **Banderas de país en FT8**: falta el header generado por `tools/flags_gen.py` (el `cty.dat` que la imagen instala todavía no lo usa nadie).
