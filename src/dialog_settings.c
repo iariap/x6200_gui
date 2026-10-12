@@ -880,7 +880,9 @@ static action_items_t long_action_items[] = {
     { .label = " PRE ", .action = ACTION_PRE_TOGGLE },
     { .label = " ATU ", .action = ACTION_ATU_TOGGLE },
     { .label = " ATU tune ", .action = ACTION_ATU_TUNE },
-    { .label = " WF mode ", .action = ACTION_WF_MODE },
+    /* "WF mode" (waterfall fijo/centrado) todavia NO esta portado: el equipo no tiene ese
+     * parametro y su waterfall.c es otra version. La accion existe para cuando se porte,
+     * pero no se ofrece, para no dejar un boton que no hace nada (lo vigila check_actions.py). */
     { .label = " APP Bands ", .action = ACTION_APP_BANDS },
     { .label = " Battery info ", .action = ACTION_BAT_INFO },
     { .label = " APP RTTY ", .action = ACTION_APP_RTTY },
