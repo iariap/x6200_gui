@@ -359,9 +359,29 @@ amalgamado, así que un `grep` del nombre literal no los encuentra. Restaurado.
 Para que el test se pueda correr en cualquier lado, el `Dockerfile` del arnés ahora compila e
 instala **liquid-dsp 1.4.0** (la misma versión que usa la imagen).
 
-### Lo que falta de WSPR
+### Lo que falta de WSPR: la UI, y qué exige
 
-La **UI**: `dialog_wspr.c` (tabla de spots, selección de banda, controles de TX, subida
-automática) y la infraestructura compartida por todos los diálogos de apps del X6100
-(`app_frame`, `freq_strip`, `tx_player`), que es la misma que necesitan SSTV, WeFax, NavTex y
-JS8 — por eso conviene portarla de una vez en la próxima tanda.
+La UI es `dialog_wspr.c` (tabla de spots, banda, controles de TX y subida automática) más la
+infraestructura que comparten los cinco diálogos de apps (`app_frame`, `freq_strip`,
+`tx_level`, `tx_player`, `station`). Hice el relevamiento completo y esto es lo que hay:
+
+**Lo que se adapta con shims chicos** (ya identificado, cada uno de pocas líneas):
+
+| Falta en nuestro árbol | Solución |
+|---|---|
+| Sistema de temas (`theme.h`, `TC(rol)`, `theme_shape`) | Shim que devuelve la paleta fija por rol; el código portado no se toca. Cuando se porten los temas JSON, el shim se reemplaza solo |
+| `cfg/cfg_api.h` (estado de radio como `cfg_*` + `param_i_get`) | Shim sobre nuestro `cfg_cur` (`fg_freq`, `bg_freq`, `mode`, `pwr`) y los ajustes de WSPR nuevos en `cfg_t` |
+| `cluster/spots.h` (nombre de banda en la tira de frecuencia) | Tabla IARU R1 local; el cluster no está portado |
+| `remote_server.h` (publicar estado al control remoto web) | No-ops documentados; el servidor remoto es otra feature pendiente |
+| `tx_level.c` (control de excitación con ALC) | Es puro y chico: se porta directo |
+| `x6100_control_get_base_ver().rev` en `tx_player` | Nuestra lib solo expone la cadena de versión: queda un valor conservador **a validar en la radio** |
+
+**El bloqueante real: el framework de botones.** `dialog_wspr.c` usa el API `button_data_t`
+(páginas de botones de apps) que el X6100 introdujo y aplicó a **18+ diálogos**, incluidos los
+que ya tenemos (FT8, mensajes, SWR scan, grabador, WiFi, Ajustes). Portarlo implicaría
+refactorizar toda nuestra UI; el camino elegido es **reescribir la capa de botones del diálogo
+de WSPR contra nuestro API de botones**, que es una fracción del trabajo y sin riesgo para el
+resto de las pantallas.
+
+**Estado**: el motor (RX/TX de audio, codificación y decodificación) está portado, testeado y en
+la imagen; la UI queda para la próxima tanda, empezando por los shims de la tabla de arriba.
