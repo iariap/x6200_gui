@@ -44,6 +44,21 @@ Lo que sigue necesitando la radio (🔌) está listado en
 [`INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md) §3.
 
 
+### Publicar un release
+
+```bash
+cd x6200_gui
+tools/release/make_release_assets.sh <imagen.img> <versión>   # arma imagen + tgz + SHA256SUMS
+tools/release/publish_release.sh <tag> <versión>              # ensayo: verifica y muestra el comando
+tools/release/publish_release.sh <tag> <versión> --publish    # publica
+```
+
+El segundo **verifica antes de publicar**: que existan los tres artefactos y que los checksums
+coincidan, que el tgz de actualización traiga **el mismo binario GUI** que la imagen (así una
+actualización en el lugar instala exactamente lo que instala la imagen), que el árbol esté limpio y
+pusheado, que la suite pase y que las notas del release existan. Sin `--publish` se detiene después
+de las verificaciones y **muestra el comando que ejecutaría**, así se puede ensayar.
+
 ### Análisis estático
 
 El arnés corre además `gcc -fanalyzer` sobre los módulos que compilan con los *stubs* del host
