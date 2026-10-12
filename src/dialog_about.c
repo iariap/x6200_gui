@@ -7,6 +7,7 @@
  */
 
 #include "dialog_about.h"
+#include "main.h"
 
 #include "dialog.h"
 #include "styles.h"
@@ -14,7 +15,8 @@
 #include "keyboard.h"
 #include "main_screen.h"
 
-#define APP_VERSION "2.0-opt"
+/* The firmware version, from main.h: it used to be a hardcoded "2.0-opt" */
+#define APP_VERSION VERSION
 
 static void construct_cb(lv_obj_t *parent);
 static void destruct_cb();

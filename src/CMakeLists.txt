@@ -29,7 +29,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     dialog_wefax.c wefax/decoder.c wefax/encoder.c
     cluster/client.c cluster/spots.c dialog_cluster.c fonts/font_select.c
     kbd_rollover.c knobs.c remote_server.cpp cfg/db.cpp cfg/settings_manager.cpp cfg/cxx_bridge.c dialog_field.c field/refs.c field/flog.c field/rbn.c field/bands.c dialog_bands.c
-    dialog_js8.c js8_map.c dialog_cw_kbd.c panel.cpp dialog_cw_trainer.c bt_devices.c dialog_bt.c cluster_column.c
+    dialog_js8.c js8_map.c dialog_cw_kbd.c panel.cpp dialog_cw_trainer.c bt_devices.c dialog_bt.c cluster_column.c dialog_status.c
 )
 
 add_subdirectory(fonts)

@@ -74,7 +74,10 @@ datos, dependencias resueltas).
 
 ## Lo que falta verificar en el equipo
 
-Estas cosas dependen del hardware y quedan como chequeos pendientes:
+Estas cosas dependen del hardware y quedan como chequeos pendientes. La app **`APP Status`**
+(Ajustes → acciones de pulsación larga) muestra casi todas: adaptador Bluetooth y su transporte,
+nivel de TX, espacio en `/mnt`, wfview, la dirección del web configurator y el estado del aviso de
+versión:
 
 1. **Bluetooth**: qué transporte usa el chip (`hciconfig -a`, `dmesg | grep -i blue`), y el
    pairing real de CAT y auriculares.

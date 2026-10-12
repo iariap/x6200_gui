@@ -1242,3 +1242,30 @@ Los estilos se arman **una vez al arrancar**, así que al elegir un tema la GUI 
 (el aviso dice "restarting" y el `x6200_daemon` la vuelve a levantar). Es exactamente lo que hace
 el X6100: "the GUI saves and restarts at once". Para eso expuse `params_flush()`, que guarda los
 parámetros cambiados en el momento en vez de esperar al guardado periódico.
+
+---
+
+## 29. App Status: lo que no se puede verificar sin la radio, en pantalla
+
+Los chequeos que quedaron pendientes para el equipo (transporte del Bluetooth, nivel de TX,
+espacio en `/mnt`…) necesitaban comandos por consola. Ahora hay una app que los muestra:
+
+| Fila | De dónde sale | Para qué chequeo sirve |
+|---|---|---|
+| **GUI** | `VERSION` del firmware | confirmar qué ROM está corriendo |
+| **Kernel** | `/proc/sys/kernel/osrelease` | — |
+| **Bluetooth** | ¿existe `/sys/class/bluetooth/hci0`? + qué módulo `hci` está cargado (`btusb` = USB, `hci_uart` = UART) | **el transporte del adaptador**, que era el dato que faltaba |
+| **Pairings** | `/mnt/backups/bluetooth.tgz` con su fecha | si el respaldo de vinculaciones está hecho |
+| **TX level** | `tx_player_base_gain_offset()` | el **nivel de excitación** que dejé conservador y hay que validar |
+| **/mnt** | `statvfs("/mnt")` | el **espacio libre** de la partición DATA |
+| **wfview** | `enabled=` de `/mnt/wfview.conf` | si el servidor está habilitado |
+| **Web** | IP de `wifi_get_ipaddr()` + si hay certificado en `/mnt/https` | la dirección para entrar, y si HTTPS está listo |
+| **Update** | `enabled=` de `/mnt/update_check.conf` | si el aviso de versión está activo |
+
+Se abre desde **Ajustes → acciones de pulsación larga → `APP Status`**.
+
+### Y un arreglo
+
+El diálogo **About** mostraba `Version 2.0-opt`, un literal que no tenía nada que ver con el
+firmware: ahora muestra la versión real (`main.h`), la misma que compara el aviso de actualización
+y la que aparece en el release.

@@ -78,13 +78,14 @@ desde la web usaba un indicativo vacío. Ahora leen `X6200_*` y el *User-Agent* 
 | **Temas JSON** | acción `Theme`; temas propios en `/mnt/themes` | `/usr/share/x6200/themes` (12 archivos) → se copian a `/mnt/themes` al arrancar | 🧪 carga de temas incluidos, JSON propio, fallback y lista (test nativo); 🧪 la pantalla principal usa los roles del tema (§28) y la GUI se reinicia al cambiarlo |
 | **Fuente** | Ajustes → `Font` (Sony/Roboto/DejaVu/Arial) | se aplica **en el próximo arranque** (igual que el X6100: `fonts_apply()` corre una vez) | 📄 en Ajustes |
 | **Grabación de pantalla** | acción `Screen rec` | `/mnt/screenrec` | 🧪 escritor AVI; 🔌 grabación real |
-| **Aviso de versión** | automático al arrancar | `/mnt/update_check.conf` (¿activado?, fuente), red | 🧪 parseo de versiones y comparación |
+| **Aviso de versión** | automático al arrancar; su estado se ve en `APP Status` | `/mnt/update_check.conf` (¿activado?, fuente), red | 🧪 parseo de versiones y comparación |
 
 ### 2.4 Conectividad
 
 | Feature | Cómo se llega | Depende de | Verificación |
 |---|---|---|---|
 | **wfview** | Ajustes → interruptor; `/mnt/wfview.conf` | puertos 50001-50003 | 🧪 protocolo completo (handshake, login, CI-V) con sockets reales |
+| **Status** | `APP Status` | `/proc`, `/sys`, `/mnt`, `statvfs` | 📄 los datos se leen en la radio (es justamente para eso) |
 | **Control remoto (web)** | página `/remote` | socket `/tmp/x6200_remote.sock`, ~65 comandos de **todas** las apps (FT8 incluido) | 🧪 protocolo y comandos en el binario; 🔌 punta a punta con la radio |
 | **Web configurator** | `http://<ip>/` y `https://<ip>/` | `S96webserver` + paquete `x6100-webserver` | 🧪 19 páginas/endpoints contra la base real |
 | **Bluetooth CAT** | Ajustes → `Bluetooth` y `Discoverable (CAT)`; consola: `btcat-setup`, `btcat-ctl` | `S94btcat`, `/etc/default/btcat`, `/mnt/btcat.conf` | 📄 filas en Ajustes y scripts en la imagen; 🔌 adaptador y pairing |
@@ -113,6 +114,10 @@ desde la web usaba un indicativo vacío. Ahora leen `X6200_*` y el *User-Agent* 
 contra las herramientas del propio X6100 (WSPR, NavTex, SSTV, WeFax), la suite completa de JS8,
 las 19 páginas del web configurator, el protocolo de wfview con sockets reales, la carga de temas
 JSON, el *rollover* del teclado y el formato WAV contra la libsndfile del target.
+
+Antes de recurrir a la consola: **la app `APP Status`** muestra el adaptador Bluetooth y su
+transporte, el nivel de TX, el espacio en `/mnt`, wfview, la dirección del web configurator y el
+estado del aviso de versión ([NEW_FEATURES.md](NEW_FEATURES.md) §29).
 
 **Necesita la radio (🔌):**
 
