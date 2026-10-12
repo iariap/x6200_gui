@@ -59,7 +59,7 @@ registro de controles `CTRL_*` del X6100): 🔌 para probar los botones en la ra
 
 | Feature | Cómo se llega | Depende de | Verificación |
 |---|---|---|---|
-| **Cluster DX** | `APP Cluster` | red; `cty.dat`; 5 servidores + pota.app | 🧪 50+ comprobaciones con la suite portada de ellos |
+| **Cluster DX** | `APP Cluster`; la **columna** en la pantalla principal (Ajustes → `Cluster column`) | red; 5 servidores + pota.app | 🧪 50+ comprobaciones con la suite portada de ellos; la columna se toca para sintonizar |
 | **Field Ops** | `APP Field Ops` | `x6200-field`, `x6200-pota-spots`, 8 iconos, `cty.dat`, red; variables `X6200_*` | 🧪 32 comprobaciones (referencias, ADIF, bandas) y la consulta a la base |
 | **CQ de voz** (Field Ops) | `Rec CQ` / `CQ` en la página 2 | `/mnt/msg` (WAV), micrófono | 🧪 WAV contra la libsndfile del target (el MP3 no era posible); 🔌 nivel de micrófono y audio emitido |
 | **CW Keyboard** | `APP CW Keyboard` | teclado vinculado; `msg_cw` en la base | 🧪 consulta a la base real; 🔌 telegrafía real |
@@ -132,7 +132,6 @@ JSON, el *rollover* del teclado y el formato WAV contra la libsndfile del target
 
 ## 4. Deuda de integración conocida
 
-- **Columna de spots** del cluster en la pantalla principal y **spot snap**: no portados.
 - **Temas en la pantalla principal**: los diálogos de apps siguen el tema; la barra, botones,
   espectro y waterfall usan estilos fijos.
 - **Perilla** de alineado/inclinación de WeFax y **perilla con hilo propio**: no portadas.

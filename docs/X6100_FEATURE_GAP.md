@@ -37,7 +37,7 @@ Cada feature portada tiene su detalle, configuración y tests en
 | SSTV | ✅ | §11 |
 | WeFax | 🔶 | §12 — falta la perilla de alineado/inclinación |
 | JS8 | ✅ | §16 |
-| Cluster DX | 🔶 | §14 — sin la columna en la pantalla principal |
+| Cluster DX | ✅ | §14 y §27 — con la columna en la pantalla principal |
 | Field Ops SOTA/POTA | ✅ | §15 y §20 — incluye el CQ de voz |
 | Temas JSON | 🔶 | §17 — apps sí; falta la pantalla principal |
 
@@ -90,8 +90,8 @@ parte de esa diferencia:
 | Spots, filtros (modo, banda, todas las bandas), orden, alertas | ✅ | ✅ | app completa, con tests portados de su suite |
 | 5 servidores en paralelo + pota.app, sin duplicados | ✅ | ✅ | `cluster/client.c` |
 | País/banderas de cada spot | ❌ | ❌ | **ninguno de los dos** los muestra en el cluster: en su firmware las banderas (16x12 RGB embebidas, generadas por `tools/flags_gen.py`) están en el diálogo **FT8**, no en el cluster |
-| **Columna lateral** de spots en la pantalla principal | ✅ | ❌ | `cluster_column.c` no está portado: los spots se ven en el diálogo |
-| **Spot snap** (el VFO se detiene en el spot girando despacio) | ✅ | ❌ | vive en el manejo de perilla de su `main_screen.c` |
+| **Columna lateral** de spots en la pantalla principal | ✅ | ✅ | portada ([NEW_FEATURES.md](NEW_FEATURES.md) §27), apagada por defecto y con **sintonía al toque** (su recorrido con la perilla necesita el registro de controles que no está) |
+| **Spot snap** (sintonizar un spot) | ✅ | ✅ | **tocando la fila** en la columna (§27); su versión con la perilla necesita su registro de controles |
 | Decodificados por **UDP** para GridTracker/JTAlert | ✅ | ✅ | [FT8_UDP.md](FT8_UDP.md) |
 | Mapa de QSO | ✅ | 🔶 | **JS8 sí** (`js8_map.c` + mapa mundial); FT8 no (nuestro diálogo FT8 es el upstream) |
 | Banderas de país en **FT8** | ✅ | ❌ | pendiente (header `flags.h` con las banderas embebidas) |
@@ -185,7 +185,6 @@ Para que la comparación no sea engañosa:
 
 Por orden de valor:
 
-2. **Columna de spots del cluster** en la pantalla principal (`cluster_column.c`) y **spot snap**.
 3. **Temas en la pantalla principal**: llevar las 428 referencias de color al sistema de temas.
 4. **Perilla de alineado/inclinación de WeFax**: requiere portar el registro de controles
    (`CTRL_*` + `mfk_set_ctrl`, ~500 líneas de `controls.cpp`).

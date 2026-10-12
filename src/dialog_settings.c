@@ -26,6 +26,7 @@
 #include "audio_enhancement.h"
 #include "waterfall.h"
 #include "band_plan.h"
+#include "cluster_column.h"
 #include "wfview_server.h"
 #include "main.h"
 
@@ -1721,6 +1722,44 @@ static uint8_t make_bluetooth(uint8_t row) {
     return row + 1;
 }
 
+/* The cluster column is a cfg item, not one of the params_* types */
+static void cluster_column_update_cb(lv_event_t * e) {
+    lv_obj_t *obj = lv_event_get_target(e);
+
+    subject_set_int(cfg.cluster_column.val, lv_obj_has_state(obj, LV_STATE_CHECKED) ? 1 : 0);
+    cluster_column_refresh();
+}
+
+static uint8_t make_cluster_column(uint8_t row) {
+    lv_obj_t *obj;
+    uint8_t   col = 0;
+
+    row_dsc[row] = 54;
+
+    obj = lv_label_create(grid);
+    lv_label_set_text(obj, "Cluster column");
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    obj = lv_obj_create(grid);
+    lv_obj_set_size(obj, SMALL_3, 54);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_center(obj);
+
+    obj = lv_switch_create(obj);
+    lv_obj_set_width(obj, SMALL_3 - 30);
+    lv_obj_center(obj);
+
+    if (subject_get_int(cfg.cluster_column.val)) {
+        lv_obj_add_state(obj, LV_STATE_CHECKED);
+    }
+
+    lv_obj_add_event_cb(obj, cluster_column_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    return row + 1;
+}
+
 static uint8_t make_delimiter(uint8_t row) {
     row_dsc[row] = 10;
 
@@ -1800,6 +1839,7 @@ static void construct_cb(lv_obj_t *parent) {
     row = make_delimiter(row);
     row = make_theme(row);
     row = make_bluetooth(row);
+    row = make_cluster_column(row);
     row = make_font(row);
 
     row = make_delimiter(row);

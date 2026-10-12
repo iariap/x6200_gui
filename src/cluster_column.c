@@ -31,6 +31,8 @@ typedef struct {
 
 static lv_obj_t      *box, *hl, *title;
 static row_t          rows[POOL];
+static int            row_spot[POOL];   /* which band[] entry each visible row shows, -1 empty */
+
 static cluster_spot_t spots[CLUSTER_MAX_SPOTS];
 static int            spots_n;
 static uint32_t       spots_gen;
@@ -45,6 +47,8 @@ static int            band_n;
 static bool           active;                   /* MFK item "Cluster" */
 static bool           has_sel;
 static bool           hidden;                   /* cluster_column_hide(): a game over the waterfall */
+
+
 static cluster_spot_t sel;                      /* highlighted spot, kept by call + freq */
 
 /* Outdoor themes: the whole column in the text colour, the colours fade in the sun */
@@ -60,6 +64,20 @@ static uint32_t age_color(uint16_t age) {
 }
 
 /* Mode the spot tunes to (as the Cluster app does) */
+/* Tapping a row tunes to that spot: the X6100 moves the selection with its MFK;
+ * this GUI has a touchscreen, so a tap does it (documented in NEW_FEATURES). */
+static void row_press_cb(lv_event_t *e) {
+    int k = (int) (intptr_t) lv_event_get_user_data(e);
+
+    if (k < 0 || k >= POOL || row_spot[k] < 0 || row_spot[k] >= band_n) {
+        return;
+    }
+
+    sel     = band[row_spot[k]];
+    has_sel = true;
+    cluster_column_tune();
+}
+
 static void set_mode(lv_obj_t *l, const cluster_spot_t *s) {
     static const char     *name[]  = { "CW", "LSB", "USB", "DIG", "AM", "FM" };
     static const theme_color_t color[] = { TC_warn, TC_vfo, TC_vfo, TC_digi, TC_text_value, TC_text_value };
@@ -198,15 +216,18 @@ static void redraw(void) {
 
             if (idx >= n) {
                 show_row(&rows[k], false);
+                row_spot[k] = -1;
                 continue;
             }
             if (idx == si) {
                 lv_obj_set_y(hl, TITLE_H + k * ROW_H);
             }
             show_spot(&rows[k], &band[idx], idx == si, flt, now);
+                row_spot[k] = idx;
         }
         for (int k = fit; k < POOL; k++) {
             show_row(&rows[k], false);
+                row_spot[k] = -1;
         }
         return;
     }
@@ -221,6 +242,7 @@ static void redraw(void) {
         }
         if (idx < 0 || idx > n) {
             show_row(r, false);
+        row_spot[k] = -1;
         } else if (idx == m) {
             char buf[32];
 
@@ -236,11 +258,19 @@ static void redraw(void) {
             lv_obj_add_flag(r->mode, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(r->age, LV_OBJ_FLAG_HIDDEN);
         } else {
-            show_spot(r, &band[idx < m ? idx : idx - 1], idx == base && si >= 0, flt, now);
+            /* the marker row (idx == m) has no spot: no tap target either */
+            if (idx != m) {
+                show_spot(r, &band[idx < m ? idx : idx - 1], idx == base && si >= 0, flt, now);
+                row_spot[k] = idx < m ? idx : idx - 1;
+            } else {
+                show_row(r, false);
+                row_spot[k] = -1;
+            }
         }
     }
     for (int k = fit; k < POOL; k++) {
         show_row(&rows[k], false);
+                row_spot[k] = -1;
     }
 }
 
@@ -374,6 +404,13 @@ void cluster_column_init(lv_obj_t *parent, lv_coord_t y) {
         rows[i].freq = cell(box, 4, FREQ_W, ry, LV_TEXT_ALIGN_LEFT, theme_hex(TC_text_value), NF(22));
         rows[i].call = cell(box, 72, 99, ry + 2, LV_TEXT_ALIGN_LEFT, theme_hex(TC_text), NF(20));
         lv_label_set_long_mode(rows[i].call, LV_LABEL_LONG_DOT);   /* a long call ends in dots, clear of the mode */
+
+        /* Tap targets: the call and the frequency of each row */
+        lv_obj_add_flag(rows[i].call, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_flag(rows[i].freq, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_event_cb(rows[i].call, row_press_cb, LV_EVENT_CLICKED, (void *) (intptr_t) i);
+        lv_obj_add_event_cb(rows[i].freq, row_press_cb, LV_EVENT_CLICKED, (void *) (intptr_t) i);
+        row_spot[i] = -1;
         rows[i].mode = cell(box, 173, 32, ry + 3, LV_TEXT_ALIGN_LEFT, theme_hex(TC_text), NF(18));
         rows[i].age  = cell(box, 207, 32, ry + 3, LV_TEXT_ALIGN_RIGHT, theme_hex(TC_text), NF(18));
     }

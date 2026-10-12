@@ -36,6 +36,7 @@ typedef struct {
 
     cfg_item_t cluster_all_bands;   /* DX cluster: spots of every band */
     cfg_item_t cluster_order;       /* DX cluster: spot order */
+    cfg_item_t cluster_column;      /* DX cluster: spots over the waterfall */
 
     cfg_item_t wefax_align;     /* WeFax image alignment */
     cfg_item_t wefax_tilt;      /* WeFax skew */

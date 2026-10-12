@@ -12,6 +12,7 @@
 
 #include "styles.h"
 #include "main_screen.h"
+#include "cluster_column.h"
 #include "keyboard.h"
 #include "events.h"
 #include "waterfall.h"
@@ -42,6 +43,7 @@ void dialog_construct(dialog_t *dialog, lv_obj_t *parent) {
     if (dialog && !dialog->run) {
         waterfall_refresh_period_set(2);
         main_screen_keys_enable(false);
+        cluster_column_hide(true);      /* an app draws over the waterfall */
 
         if (dialog->restore_radio) {
             cfg_memory_save(MEM_BACKUP_ID);
@@ -68,6 +70,7 @@ void dialog_destruct() {
         }
 
         waterfall_refresh_reset();
+        cluster_column_hide(false);
         current_dialog->run = false;
 
         if (current_dialog->destruct_cb) {

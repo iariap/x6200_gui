@@ -63,6 +63,7 @@
 #include "dialog_cw_kbd.h"
 #include "dialog_cw_trainer.h"
 #include "dialog_bt.h"
+#include "cluster_column.h"
 #include "theme.h"
 #include "fonts/font_select.h"
 
@@ -1236,6 +1237,10 @@ lv_obj_t * main_screen() {
     /* IARU band plan strip: at the bottom of the spectrum, lined up with the
      * frequency row (created after the waterfall so it stays on top). */
     band_plan_init(obj, spectrum_height - BAND_PLAN_H);
+
+    /* DX cluster spots down the right edge (Settings -> Cluster column) */
+    cluster_column_init(obj, y);
+    cluster_column_layout(y);
 
     buttons_init(obj);
     buttons_load_page(&buttons_page_vol_1);

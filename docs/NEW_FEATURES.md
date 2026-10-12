@@ -1174,3 +1174,40 @@ el caso de más dispositivos que los que entran en la lista.
 ```
 437 comprobaciones, 0 fallos
 ```
+
+---
+
+## 27. Columna de spots del cluster (con sintonía al toque)
+
+Los spots del DX Cluster ahora se pueden ver **sobre el waterfall**, en la pantalla principal, sin
+abrir la app: una columna en el borde derecho con frecuencia, indicativo, modo y antigüedad, con
+las alertas coloreadas y el spot seleccionado resaltado.
+
+### Cómo se usa
+
+- Se prende en **Ajustes → `Cluster column`** (por defecto **apagada**, así que no cambia nada si
+  no la querés).
+- Muestra los spots de la **banda actual** (o de todas, según el filtro del cluster) y respeta el
+  orden elegido en la app (por frecuencia o por hora) y las alertas.
+- **Tocar una fila sintoniza ese spot** (el *spot snap* del X6100). Mientras una app está abierta
+  la columna se esconde sola, para no taparle el waterfall.
+
+### Diferencias con el X6100 (documentadas)
+
+En su firmware la columna se activa desde el ítem **CLUSTER del menú MFK**, se recorre con la
+perilla y el *snap* es una pulsación larga del MFK. Esta GUI **no tiene ese registro de controles**
+(el `controls.cpp`/`mfk.cpp` de su fork), así que la adapté a la pantalla táctil: se prende desde
+Ajustes y **se toca la fila** para sintonizar. No hay recorrido con perilla: la lista se centra
+sola en el spot más cercano a la frecuencia actual.
+
+### Implementación
+
+- `cluster_column.c/h` del X6100 (382 líneas), con el enganche en la pantalla principal
+  (`cluster_column_init/layout` después del waterfall y del band plan) y el `hide()` mientras hay
+  una app abierta.
+- A la selección por toque la implementé yo: cada fila visible guarda **a qué spot corresponde**
+  (`row_spot[k]`), así el toque no depende de cuentas de índices sobre las filas dibujadas —que en
+  el orden por frecuencia incluyen la fila del marcador del VFO—. Al tocar, se selecciona y se
+  sintoniza con `dialog_cluster_tune_spot()`.
+- El ajuste nuevo (`cfg.cluster_column`) va en `cfg`, no en `params`, así que su interruptor en
+  Ajustes es propio y no un `switch_bool()`.

@@ -22,7 +22,7 @@ para el equipo, verificada en la imagen y con tests donde se puede correr sin ra
 | 10 | **Web configurator ampliado** | 15 páginas + HTTPS, gestor de todo el equipo |
 | 11 | **Control remoto en vivo** | La página `/remote` maneja la radio en tiempo real, con **todas** las apps |
 | 12 | **Field Ops SOTA/POTA** | Referencias, log ADIF, feed RBN y **CQ de voz** (graba el CQ y lo emite en SSB) |
-| 13 | **Cluster DX** | Spots, filtros y alertas |
+| 13 | **Cluster DX** | Spots, filtros y alertas, más la **columna en la pantalla principal** (se toca un spot y sintoniza) |
 | 14 | **WSPR** | Motor y app completos (RX/TX, subida a WSPRnet) |
 | 15 | **NavTex** | Decodificador SITOR-B con FEC |
 | 16 | **SSTV** | 7 modos, RX y TX, con galería |
@@ -94,8 +94,6 @@ probar en el equipo) está en [`docs/INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md
   se ajustan desde los parámetros.
 - **UI principal con temas**: los diálogos de apps siguen el tema; la pantalla principal
   (barra, botones, espectro) todavía usa los estilos fijos.
-- **Cluster**: los spots están en la app, pero **no** como columna en la pantalla principal, y
-  falta el *spot snap* (que el VFO se detenga en un spot girando despacio).
 - **WeFax**: falta la perilla de alineado/inclinación (su registro de controles no está portado);
   esos valores se ajustan desde los parámetros.
 - El *snake* del firmware original (un huevo de pascua) no está en esta ROM.
