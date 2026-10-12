@@ -40,6 +40,7 @@ SettingsManager cfg_sm;
  * crear los subjects cfg_cur.* para que el mapeo de cfg_sm deje de apuntar a NULL. */
 extern "C" void cfg_sm_init_live(void) {
     cfg_sm.init_live();
+    cfg_sm.check_live();
 }
 
 SettingsManager::SettingsManager() {
@@ -96,4 +97,29 @@ int32_t SettingsManager::current_band_id() const {
 
 bool SettingsManager::is_valid_hw_freq(int32_t f) const {
     return x6200_bridge_radio_check_freq(f);
+}
+
+/* Los Param de estado vivo tienen que quedar con un subject de verdad: si alguno queda en
+ * NULL, leer devuelve el valor neutro y escribir no hace nada, que es exactamente el bug que
+ * dejaba al control remoto sin efecto y sin ningún error a la vista. */
+void SettingsManager::check_live(void) {
+    struct { const char *nombre; const Subject *s; } vivos[] = {
+        {"frecuencia VFO A", cfg_cur.fg_freq}, {"frecuencia VFO B", cfg_cur.bg_freq},
+        {"modo", cfg_cur.mode},                {"AGC", cfg_cur.agc},
+        {"atenuador", cfg_cur.att},            {"preamplificador", cfg_cur.pre},
+        {"ancho de filtro", cfg_cur.filter.bw}, {"filtro bajo", cfg_cur.filter.low},
+        {"filtro alto", cfg_cur.filter.high},  {"offset de LO", cfg_cur.lo_offset},
+    };
+    int faltan = 0;
+
+    for (size_t i = 0; i < sizeof(vivos) / sizeof(*vivos); i++) {
+        if (vivos[i].s == NULL) {
+            LV_LOG_ERROR("Sin subject de %s: el control remoto no podrá cambiarlo", vivos[i].nombre);
+            faltan++;
+        }
+    }
+
+    if (faltan == 0) {
+        LV_LOG_USER("Estado vivo de cfg_sm enlazado (%zu parámetros)", sizeof(vivos) / sizeof(*vivos));
+    }
 }

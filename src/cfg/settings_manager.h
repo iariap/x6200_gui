@@ -85,6 +85,10 @@ public:
      * mapeo del constructor los deja en NULL. Se rehace cuando ya existen. */
     void init_live(void);
 
+    /* Avisa si algún parámetro de estado vivo quedó apuntando a un subject NULL: eso hacía
+     * que el control remoto no hiciera nada, en silencio. */
+    void check_live(void);
+
     /* Persisted parameters */
     Param p_volume, p_squelch, p_rfgain, p_pwr, p_nb, p_nb_level, p_nb_width;
     Param p_nr, p_nr_level, p_band_id, p_band_current_vfo, p_band_if_shift;
