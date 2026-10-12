@@ -12,8 +12,8 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **Grabación de pantalla** (AVI) | ✅ 2026-10-11 | §5 |
 | **Bluetooth: CAT (SPP) y auriculares A2DP** | ✅ 2026-10-11 | §6 |
 | **wfview**: la radio como IC-705 en red | ✅ 2026-10-11 | §7 |
+| **Web configurator ampliado** (+HTTPS) | ✅ 2026-10-11 | §8 |
 | Temas JSON | ⏳ pendiente | — |
-| Web configurator ampliado (HTTPS, remotas, backup) | ⏳ pendiente | — |
 | Field Ops SOTA/POTA | ⏳ pendiente | — |
 | Modos digitales: WSPR, SSTV, JS8, WeFax, NavTex | ⏳ pendiente | — |
 | DRM/KMS + perilla con hilo propio | ⏳ pendiente | — |
@@ -250,3 +250,59 @@ Son 37 comprobaciones nuevas (280 en total, 0 fallos).
 
 **Requiere probar con hardware**: la latencia del audio y el comportamiento con un cliente real
 (wfview) en la red.
+
+---
+
+## 8. Web configurator ampliado (con HTTPS)
+
+El navegador web de la radio pasa de 6 a **15 páginas + API JSON**. Es el webserver extendido
+del X6100 de IU1WXY, que a su vez es un fork del `x6100_webserver` de Georgy Dyuldin — el mismo
+que ya traíamos en su versión upstream, así que **el esquema de base es idéntico**
+(`bands`, `band_params`, `digital_modes`, `memory`, `msg_cw`, `params`, `transverter`).
+
+Páginas: índice, **bandas**, **modos digitales**, **memorias y canales**, **mensajes de CW**,
+**cluster DX**, **servidor wfview**, **Field Ops**, **logs** (con export ADIF), **navegador de
+archivos**, **galería**, **backup/restore**, **fecha/hora (NTP)** y **control remoto**.
+
+### Repo propio y adaptaciones
+
+El fork vive en **[iariap/x6200_webserver](https://github.com/iariap/x6200_webserver)** y el
+paquete de buildroot lo trae fijado a un commit. Cambios sobre el original:
+
+- Identidad visible: títulos, pie, nombres de backup/export de log, sujeto del certificado
+  autofirmado (`CN=x6200`, `DNS=x6200`) y credenciales por defecto del servidor wfview.
+- Rutas propias: `/tmp/x6200_remote.sock` (control remoto en vivo) y `x6200-field`
+  (+ `X6200_FIELD_DIR`/`X6200_CALL`) para Field Ops.
+- El módulo Python conserva el nombre `x6100_webserver` (imports, script y arranque) para no
+  romper la integración con la imagen.
+
+### HTTPS
+
+`S96webserver` ahora arranca también **HTTPS en el puerto 443** con un certificado autofirmado
+que se genera con `openssl` en `/mnt/https` (persiste en la partición DATA). Para eso agregué
+`BR2_PACKAGE_OPENSSL=y` + `BR2_PACKAGE_LIBOPENSSL_BIN=y` al defconfig: la librería ya estaba,
+faltaba el binario. Si la generación falla, el servidor sigue en HTTP.
+
+### Tests
+
+`tests/run_pages_test.py` del fork arranca **la app real** con la base de datos que la imagen
+distribuye (`/usr/share/x6200/params.default.db`) y pide las **19 páginas/endpoints**:
+
+```
+19 comprobaciones, 0 fallos
+```
+
+Cubre las 14 páginas, 3 endpoints JSON, el CSS estático y que ninguna página se caiga cuando su
+subsistema todavía no está (el control remoto en vivo, el cluster y Field Ops se dibujan con
+estado vacío/deshabilitado). El test encontró dos rutas mal supuestas por mí (`/files/` con
+barra final y que los canales se sirven por `/api/channels`, no como página) y me obligó a
+inyectar el shim de Python 3.11 para `bottle-sqlite` del wheel de PyPI (la imagen ya lo trae
+parcheado por buildroot, así que ahí funciona sin shim).
+
+### Lo que todavía no funciona en el navegador
+
+- **Control remoto en vivo** (página `/remote`): depende de `remote_server.cpp` de la GUI
+  (40 KB: socket, eventos, audio y video), que es una feature aparte todavía pendiente.
+- **Field Ops** (`/field`) y **cluster** (`/cluster`): las páginas renderizan, pero los
+  subsistemas (`x6200-field`, configuración del cluster) todavía no están portados.
+- **CW trainer**: la página lo usa el firmware del X6100; acá no existe ese módulo.
