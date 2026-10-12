@@ -66,6 +66,9 @@ Estas cosas dependen del hardware y quedan como chequeos pendientes:
 4. **DRM/KMS**: el equipo sigue con fbdev; el camino DRM del X6100 necesita probarse en hardware.
 5. **Espacio en `/mnt`**: la grabación de pantalla, los logs, las imágenes RX y los mensajes de voz lo comparten.
 
+El detalle de cómo se llega a cada feature, de qué depende y qué se probó (y qué queda para
+probar en el equipo) está en [`docs/INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md).
+
 ## Limitaciones conocidas (documentadas en `docs/NEW_FEATURES.md`)
 
 - Control remoto de **FT8** por la web: nuestro diálogo FT8 es el upstream y no tiene los

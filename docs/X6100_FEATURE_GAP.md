@@ -76,7 +76,7 @@ en lugar del menú de apps.
 | **JS8** (4 velocidades, inbox, mensajes guardados, APRS/status, mapa) | ✅ | ✅ | motor + app; **la suite del X6100 pasa entera** (1994 aserciones) |
 | **WSPR** RX + TX (baliza aleatoria, subida a WSPRnet) | ✅ | ✅ | motor + app + 11 frecuencias en la base |
 | **SSTV** RX + TX (VIS, modo auto, dibujo línea a línea) | ✅ | ✅ | 7 modos, verificado con su loopback |
-| **WeFax** RX + TX | ✅ | 🔶 | códec y app ✅; **la perilla de alineado/inclinación** no (su registro `CTRL_*` no está portado) |
+| **WeFax** RX + TX | ✅ | 🔶 | códec y app ✅, con alineado/inclinación por **botones** (se guardan en `cfg.wefax_*`); falta la **perilla** (su registro `CTRL_*` no está portado) |
 | **NavTex** RX (lista de estaciones, guarda mensajes) | ✅ | ✅ | SITOR-B con FEC, verificado |
 | **CW Keyboard** (teclado USB/BT que telegrafía) | ✅ | ✅ | app portada ([NEW_FEATURES.md](NEW_FEATURES.md) §21), con los mensajes CW guardados y control remoto; en **CW** la velocidad que muestra es la configurada, no la medida como en el X6100 |
 | **CW Trainer** | ✅ | ❌ | pendiente |
@@ -198,6 +198,9 @@ Por orden de valor:
 8. **Banderas** de país en el cluster (assets de `tools/flags_gen.py`).
 9. **DRM/KMS + perilla con hilo propio**: mejora de base, riesgo de hardware.
 10. **TX Cal / CESSB / filtro TX**: depende del baseband; en el X6200 no hay comandos.
+
+El detalle de cómo se llega a cada feature, de qué depende y qué se probó está en
+[INTEGRATION_AUDIT.md](INTEGRATION_AUDIT.md), que también lista la deuda de integración.
 
 Chequeos que solo se pueden hacer **en el equipo**: transporte Bluetooth real, nivel de
 excitación de TX, **nivel de micrófono y audio emitido del CQ de voz**, DRM, y espacio en `/mnt`

@@ -12,6 +12,7 @@
 #include "lvgl/lvgl.h"
 #include "dialog.h"
 #include "styles.h"
+#include "msg.h"
 #include "params/params.h"
 #include "backlight.h"
 #include "radio.h"
@@ -1516,6 +1517,32 @@ static uint8_t make_theme(uint8_t row) {
     return row + 1;
 }
 
+/* The font family is swapped once at start (fonts_apply()), like the X6100 */
+static void font_update_cb(lv_event_t * e) {
+    uint8_dropdown_update_cb(e);
+    msg_update_text_fmt("Font: from the next start");
+}
+
+static uint8_t make_font(uint8_t row) {
+    lv_obj_t    *obj;
+    uint8_t     col = 0;
+
+    row_dsc[row] = 54;
+
+    obj = lv_label_create(grid);
+
+    lv_label_set_text(obj, "Font");
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    obj = dropdown_uint8_custom_cb(grid, &params.font, " Sony Sketch \n Roboto \n DejaVu \n Arial", font_update_cb);
+
+    lv_obj_set_size(obj, SMALL_6, 56);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_center(obj);
+
+    return row + 1;
+}
+
 static uint8_t make_delimiter(uint8_t row) {
     row_dsc[row] = 10;
 
@@ -1594,6 +1621,7 @@ static void construct_cb(lv_obj_t *parent) {
 
     row = make_delimiter(row);
     row = make_theme(row);
+    row = make_font(row);
 
     row = make_delimiter(row);
 
