@@ -46,7 +46,7 @@
 #include "backlight.h"
 #include "buttons.h"
 #include "recorder.h"
-#include "voice_stub.h"
+#include "voice.h"
 #include "pubsub_ids.h"
 #include "cfg/mode.h"
 #include "cfg/memory.h"

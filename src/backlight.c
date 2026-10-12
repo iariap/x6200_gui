@@ -17,7 +17,7 @@
 #include "backlight.h"
 #include "gpio_safe.h"
 #include "util.h"
-#include "voice_stub.h"
+#include "voice.h"
 
 static int          power;
 static int          brightness;

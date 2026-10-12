@@ -104,7 +104,7 @@ parte de esa diferencia:
 | Referencias offline (parks/summits), actualizables desde la web | ✅ | ✅ | `x6200-field` + `/api/field` del web configurator |
 | `CQ SOTA/POTA` en **CW** | ✅ | ✅ | botón CQ + `cw_encoder` |
 | **CQ de voz** | ✅ | ✅ | grabación y emisión (PTT) por la API `msg_voice_*`, portada en NEW_FEATURES §20; en **WAV** porque la libsndfile de la imagen no trae MPEG |
-| Anuncios de voz del equipo (**"Voice mode"**) | ✅ | ❌ | **no portado**: en esta ROM `voice_stub.h` deja las 12 funciones de voz como no-ops (decisión del firmware base, por consumo), así que el desplegable Off/When LCD off/Always y la acción "Voice mode" **no hacen nada**. El módulo del X6100 no está en `.x6100_ref`, así que no se puede copiar: habría que generar los audios |
+| Anuncios de voz del equipo (**"Voice mode"**) | ✅ | ✅ | **portado con TTS** ([NEW_FEATURES.md](NEW_FEATURES.md) §39): `espeak` en español, en un hilo propio, respetando Off/When LCD off/Always y **sin hablar durante la transmisión**; el X6100 usaba su propio módulo (que no está en `.x6100_ref`), acá se reimplementó |
 | Log de activación ADIF + **subida a QRZ Logbook** | ✅ | ✅ | `x6200-field qrz-upload` |
 | **Self-spot a pota.app** y a los clusters DX, con confirmación | ✅ | ✅ | `cluster_client_send_spot()` + doble pulsación de confirmación |
 

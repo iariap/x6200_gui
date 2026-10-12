@@ -15,7 +15,7 @@
 #include <ft8lib/constants.h>
 #include "../radio.h"
 #include "../clock.h"
-#include "../voice_stub.h"
+#include "../voice.h"
 #include "common.h"
 #include "types.h"
 #include "../cfg/cfg.h"

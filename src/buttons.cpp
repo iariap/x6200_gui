@@ -21,7 +21,7 @@ extern "C" {
     #include "msg.h"
     #include "pannel.h"
     #include "params/params.h"
-    #include "voice_stub.h"
+    #include "voice.h"
     #include "pubsub_ids.h"
     #include "cfg/mode.h"
 }

@@ -21,7 +21,7 @@
 #include "events.h"
 #include "keyboard.h"
 #include "clock.h"
-#include "voice_stub.h"
+#include "voice.h"
 #include "audio.h"
 #include "audio_enhancement.h"
 #include "waterfall.h"

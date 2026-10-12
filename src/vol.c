@@ -12,7 +12,7 @@
 #include "radio.h"
 #include "main.h"
 #include "params/params.h"
-#include "voice_stub.h"
+#include "voice.h"
 #include "util.h"
 #include "cfg/mode.h"
 

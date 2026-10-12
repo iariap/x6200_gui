@@ -1637,3 +1637,29 @@ Portado, con el alcance que este port necesita (dos controles):
 
 `tests/native/test_controls.c` cubre el paso, los topes y que un control desconocido no cambie
 nada: las comprobaciones del host pasaron de 476 a 488.
+
+---
+
+## 39. Anuncios por voz (TTS con espeak)
+
+El firmware base traía `voice_stub.h`: las **12 funciones de voz como no-ops** ("*power-efficient
+builds without TTS*"), así que el desplegable **Voice mode** (Off / When LCD off / Always) y la
+acción del mismo nombre no hacían nada. Ahora hay TTS de verdad, con **espeak** (que ya venía en
+el árbol de buildroot, 23 KB de binario + los datos de idioma).
+
+- **`voice.h` / `voice.c`**: los mismos 12 nombres que el stub, así los **109 llamados** del
+  código no cambian. El texto se sintetiza en un **hilo propio con cola** (la GUI nunca espera) y
+  el hilo **duerme en una condición** cuando no hay nada que decir: en reposo no cuesta nada.
+- **Cómo habla**: `espeak --stdout` (por `fork` + `execv`, **sin shell**: el texto va por `stdin`)
+  escribe un WAV en `/tmp` y lo reproduce `aplay`.
+- **Dos guardas**: respeta el ajuste **Voice mode** (`voice_should_speak()`), y **no habla
+  mientras se transmite** (`radio_get_state() == RADIO_TX`), para que no salga al aire.
+- **Español**: los textos de la GUI están en inglés, así que `voice_text.c` traduce por
+  **palabras** con un diccionario (alcanza con las palabras de las 119 cadenas, no con las
+  frases). Las frecuencias se **deletrean dígito por dígito** ("7 punto 1 7 0, megahertz"), que
+  es lo que se entiende al oído.
+- **Prueba sin radio**: `X6200_VOICE_TEST="texto"` dice esa frase al arrancar. Verificado en la
+  reproducción: el log muestra la frase y `aplay` intenta abrir el audio (falla sólo porque el
+  chroot no tiene placa de sonido).
+- **Tests**: `tests/native/test_voice.c` cubre las tres formas del ajuste, una frecuencia y el
+  diccionario, sin arrastrar el motor.

@@ -12,7 +12,7 @@
 #include "radio.h"
 #include "util.h"
 #include "backlight.h"
-#include "voice_stub.h"
+#include "voice.h"
 #include "msg.h"
 
 #include <time.h>

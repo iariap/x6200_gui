@@ -23,6 +23,7 @@
 #include "main_screen.h"
 #include "styles.h"
 #include "theme.h"
+#include "voice.h"
 #include "remote_server.h"
 #include "fonts/font_select.h"
 #include "radio.h"
@@ -170,6 +171,8 @@ int main(void) {
                "[ -e \"/mnt/themes/${t##*/}\" ] || cp -r \"$t\" /mnt/themes/; done") != 0) {
         LV_LOG_WARN("Bundled themes not copied to /mnt/themes");
     }
+    voice_selftest();     /* X6200_VOICE_TEST="texto" dice la frase y sale */
+
 
     theme_init(params.theme_name.x);    /* an unknown one falls back to IU1WXY */
     /* Ojo con los índices: el desplegable de Ajustes ofrece
