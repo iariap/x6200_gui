@@ -25,12 +25,13 @@ extern dialog_t *dialog_msg_voice;
 msg_voice_state_t dialog_msg_voice_get_state();
 void dialog_msg_voice_put_audio_samples(size_t nsamples, int16_t *samples);
 
-/* The X6100 fork exposes the voice messages to the Field Ops app. That refactor
- * is not ported, so those buttons are inert: the voice message dialog itself
- * (long-press action "MSG") works as in this GUI. */
+/* Named messages, as the Field Ops app uses them: record "CQ SOTA", check that
+ * it exists, and send it in SSB. The files are WAV in /mnt/msg and show up in
+ * the voice message dialog (long-press action "MSG") as any other one. */
 bool msg_voice_rec_toggle(const char *name);
 bool msg_voice_exists(const char *name);
 bool msg_voice_send_toggle(const char *name);
 
-/* Inert as well: this GUI has no periodic voice poll */
+/* Stops a recording that ran past the limit; called from the main loop and
+ * when an app closes, so a recording is never left open */
 void msg_voice_poll(bool closing);

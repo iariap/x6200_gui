@@ -38,7 +38,7 @@ Cada feature portada tiene su detalle, configuración y tests en
 | WeFax | 🔶 | §12 — falta la perilla de alineado/inclinación |
 | JS8 | ✅ | §16 |
 | Cluster DX | 🔶 | §14 — sin la columna en la pantalla principal |
-| Field Ops SOTA/POTA | 🔶 | §15 — el CQ de voz no funciona |
+| Field Ops SOTA/POTA | ✅ | §15 y §20 — incluye el CQ de voz |
 | Temas JSON | 🔶 | §17 — apps sí; falta la pantalla principal |
 
 ---
@@ -104,7 +104,7 @@ en lugar del menú de apps.
 | Páginas de la app (S-meter, CQ, QSO, tiempo; Bands; Log) | ✅ | ✅ | `dialog_field.c` portado |
 | Referencias offline (parks/summits), actualizables desde la web | ✅ | ✅ | `x6200-field` + `/api/field` del web configurator |
 | `CQ SOTA/POTA` en **CW** | ✅ | ✅ | botón CQ + `cw_encoder` |
-| **CQ de voz** | ✅ | 🔶 | el botón está, pero el API de mensajes de voz de su fork no se portó (son no-ops): grabar/emitir no hacen nada |
+| **CQ de voz** | ✅ | ✅ | grabación y emisión (PTT) por la API `msg_voice_*`, portada en NEW_FEATURES §20; en **WAV** porque la libsndfile de la imagen no trae MPEG |
 | Log de activación ADIF + **subida a QRZ Logbook** | ✅ | ✅ | `x6200-field qrz-upload` |
 | **Self-spot a pota.app** y a los clusters DX, con confirmación | ✅ | ✅ | `cluster_client_send_spot()` + doble pulsación de confirmación |
 
@@ -192,7 +192,6 @@ Por orden de valor:
    (`CTRL_*` + `mfk_set_ctrl`, ~500 líneas de `controls.cpp`).
 3. **Temas en la pantalla principal**: llevar las 428 referencias de color al sistema de temas.
 4. **Columna de spots del cluster** en la pantalla principal (`cluster_column.c`) y **spot snap**.
-5. **CQ de voz en Field Ops**: portar el refactor de mensajes de voz de su fork.
 6. **Control remoto de FT8** por la web: faltan los enganches `dialog_ft8_remote()/state()` en
    nuestro diálogo FT8 (upstream). Las otras seis apps sí responden.
 7. **CW Keyboard** (la app que telegrafía con el teclado) y **CW Trainer**.
@@ -201,14 +200,15 @@ Por orden de valor:
 10. **TX Cal / CESSB / filtro TX**: depende del baseband; en el X6200 no hay comandos.
 
 Chequeos que solo se pueden hacer **en el equipo**: transporte Bluetooth real, nivel de
-excitación de TX, DRM, y espacio en `/mnt` para grabaciones/logs.
+excitación de TX, **nivel de micrófono y audio emitido del CQ de voz**, DRM, y espacio en `/mnt`
+para grabaciones/logs y mensajes de voz.
 
 ---
 
 ## 6. Resumen en una frase
 
 El X6100 de IU1WXY sigue teniendo cosas que acá no hay —la app de **CW Keyboard** y el
-**CW Trainer**, la **columna de spots**, el **CQ de voz**, los **temas en la pantalla
+**CW Trainer**, la **columna de spots** con su *spot snap*, los **temas en la pantalla
 principal**, **DRM/KMS** y **TX Cal/CESSB**— pero tras este programa de port el X6200 cubre
 **los cinco modos digitales, el cluster, Field Ops, los temas, la grabación, Bluetooth, wfview
 y el web configurator con control remoto**, que era el grueso de la diferencia. Lo que queda

@@ -19,7 +19,7 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **SSTV**: 7 modos (RX/TX), app y assets | ✅ | §11 |
 | **WeFax**: fax meteorológico (RX/TX, Auto) | 🔶 falta la perilla de alineado/inclinación | §12 |
 | **Cluster DX**: spots, filtros, alertas y app | 🔶 falta la columna en la pantalla principal y el *spot snap* | §14 |
-| **Field Ops** SOTA/POTA: referencias, log ADIF y RBN | 🔶 el **CQ de voz** no funciona (API de voz no portado) | §15 |
+| **Field Ops** SOTA/POTA: referencias, log ADIF y RBN | ✅ incluye el **CQ de voz** | §15 |
 | **JS8** (motor + app completa) | ✅ | §16 |
 | **Temas JSON** (motor, 6 temas y temas propios) | 🔶 los diálogos de apps siguen el tema; la pantalla principal no | §17 |
 | **Teclados USB/Bluetooth** (detección y *rollover*) | 🔶 entrada ✅; falta la UI de pairing | §18 |
@@ -921,3 +921,57 @@ Compila limpio para ARM y el binario lleva el socket configurado
 (`/tmp/x6200_remote.sock`), que es el que espera la página `/remote` del web configurator. **La
 prueba de punta a punta necesita la radio** (el servidor arranca con la GUI y habla con el
 navegador), así que queda como verificación de hardware pendiente.
+
+---
+
+## 20. CQ de voz (mensajes de voz para Field Ops)
+
+Con esto se cierra el último hueco funcional de Field Ops: la activación **en SSB**, donde se
+graba el CQ una vez y la radio lo emite sola (con PTT), que es como se activa un parque o un
+pico cuando no se quiere estar hablando todo el rato.
+
+### Qué faltaba
+
+El diálogo de mensajes de voz ya estaba portado (graba, lista, reproduce, y su botón *Send*
+transmite con PTT), pero la **API con la que Field Ops lo usa** —`msg_voice_rec_toggle()`,
+`msg_voice_exists()`, `msg_voice_send_toggle()`, `msg_voice_poll()`— había quedado inerte en el
+port, así que los botones *Rec CQ* y *CQ* no hacían nada.
+
+### La causa de fondo: MP3 no se podía ni escribir ni leer
+
+El módulo original graba **MP3** (`SF_FORMAT_MPEG`). La libsndfile de esta imagen
+(**1.2.0**) está compilada **sin soporte MPEG** (le falta libmp3lame), así que `sf_open()` para
+escribir fallaba y el módulo entero quedaba muerto — incluido el botón *Rec* del propio diálogo,
+que ya existía.
+
+Comprobado contra la libsndfile del target, corriendo el binario ARM:
+
+```
+WAV  OK
+MP3  File contains data in an unimplemented format.
+round-trip: 200 muestras, o[5]=500 (esperado 500)
+```
+
+Se pasó a **WAV PCM 16 bits** (11025 Hz mono): no necesita dependencias nuevas y evita el coste
+de CPU del codificador, que en un equipo a batería importa. Los mensajes viven en `/mnt/msg` y
+aparecen en el diálogo de mensajes de voz como cualquier otro.
+
+### Cómo se usa
+
+En **Field Ops → página 2**: `Rec CQ` graba (el nombre es `CQ SOTA` o `CQ POTA` según el
+programa; máximo 60 s, como el original), y después `CQ` lo emite en SSB. Una segunda pulsación
+corta lo que está sonando; mantener `CQ` ajusta el nivel.
+
+### Implementación
+
+- `msg_voice_rec_toggle()` graba con nombre fijo (o para si ya estaba grabando).
+- `msg_voice_send_toggle()` lanza el envío en un hilo: **PTT + reproducción**, el mismo camino
+  que el botón *Send* del diálogo (no el de los modos digitales, que colorea la señal con su
+  tono de 1325 Hz), y baja PTT al terminar o al abortar.
+- `msg_voice_poll()` corta la grabación pasados los 60 s o al cerrar la app, para no dejar nunca
+  una grabación abierta ni el PTT puesto.
+- La grabación del diálogo y la de Field Ops comparten `create_file()`/`play_file()` (que además
+  quedó como un único camino de reproducción, en vez de dos copias).
+
+**Falta probarlo en el equipo**: el nivel de micrófono y el audio emitido son cosas que no se
+pueden verificar sin la radio.

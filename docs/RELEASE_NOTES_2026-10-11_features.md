@@ -21,7 +21,7 @@ para el equipo, verificada en la imagen y con tests donde se puede correr sin ra
 | 9 | **wfview** | La radio como IC-705 en la red (Icom LAN) |
 | 10 | **Web configurator ampliado** | 15 páginas + HTTPS, gestor de todo el equipo |
 | 11 | **Control remoto en vivo** | La página `/remote` maneja la radio en tiempo real |
-| 12 | **Field Ops SOTA/POTA** | Referencias, log ADIF y feed RBN |
+| 12 | **Field Ops SOTA/POTA** | Referencias, log ADIF, feed RBN y **CQ de voz** (graba el CQ y lo emite en SSB) |
 | 13 | **Cluster DX** | Spots, filtros y alertas |
 | 14 | **WSPR** | Motor y app completos (RX/TX, subida a WSPRnet) |
 | 15 | **NavTex** | Decodificador SITOR-B con FEC |
@@ -60,8 +60,9 @@ Estas cosas dependen del hardware y quedan como chequeos pendientes:
    pairing real de CAT y auriculares.
 2. **Audio de TX**: el nivel de excitación de los modos digitales (el X6200 no expone la revisión
    de la base como el X6100, así que quedó un valor conservador).
-3. **DRM/KMS**: el equipo sigue con fbdev; el camino DRM del X6100 necesita probarse en hardware.
-4. **Espacio en `/mnt`**: la grabación de pantalla, los logs y las imágenes RX lo comparten.
+3. **CQ de voz** (Field Ops): el nivel de micrófono y el audio emitido en SSB.
+4. **DRM/KMS**: el equipo sigue con fbdev; el camino DRM del X6100 necesita probarse en hardware.
+5. **Espacio en `/mnt`**: la grabación de pantalla, los logs, las imágenes RX y los mensajes de voz lo comparten.
 
 ## Limitaciones conocidas (documentadas en `docs/NEW_FEATURES.md`)
 
@@ -74,8 +75,6 @@ Estas cosas dependen del hardware y quedan como chequeos pendientes:
   (barra, botones, espectro) todavía usa los estilos fijos.
 - **Cluster**: los spots están en la app, pero **no** como columna en la pantalla principal, y
   falta el *spot snap* (que el VFO se detenga en un spot girando despacio).
-- **Field Ops**: el **CQ de voz** en SSB no funciona (el API de mensajes de voz de su fork no se
-  portó; el de CW sí).
 - **WeFax**: falta la perilla de alineado/inclinación (su registro de controles no está portado);
   esos valores se ajustan desde los parámetros.
 - El **teclado CW** y el *snake* del firmware original no están en esta ROM.
