@@ -14,6 +14,7 @@
 #include <stdio.h>
 
 #include "styles.h"
+#include "theme.h"
 #include "msg.h"
 #include "params/params.h"
 #include "backlight.h"
@@ -143,12 +144,24 @@ static void uint8_dropdown_update_cb(lv_event_t * e) {
     params_uint8_set(var, lv_dropdown_get_selected(obj));
 }
 
-static void theme_update_cb(lv_event_t * e) {
-    lv_obj_t        *obj = lv_event_get_target(e);
-    params_uint8_t  *var = lv_event_get_user_data(e);
+/* Los temas se aplican al arrancar: cada ventana toma sus colores cuando se construye, asi que
+ * se guarda el nombre y la GUI se reinicia (el x6200_daemon la vuelve a lanzar), igual que el
+ * X6100. La lista sale de theme_list(): los incorporados mas los JSON de /mnt/themes. */
+static void restart_cb(lv_timer_t *t) {
+    (void) t;
+    exit(0);        /* el x6200_daemon la vuelve a lanzar con el tema nuevo */
+}
 
-    params_uint8_set(var, lv_dropdown_get_selected(obj));
-    styles_set_theme(var->x);
+static void theme_update_cb(lv_event_t * e) {
+    char name[32];
+
+    lv_dropdown_get_selected_str(lv_event_get_target(e), name, sizeof(name));
+    params_str_set(&params.theme_name, name);
+    params_flush();
+    msg_update_text_fmt("Theme: %s - restarting", name);
+
+    lv_timer_t *restart = lv_timer_create(restart_cb, 1200, NULL);
+    lv_timer_set_repeat_count(restart, 1);
 }
 
 /* Shared create */
@@ -1563,7 +1576,36 @@ static uint8_t make_theme(uint8_t row) {
     lv_label_set_text(obj, "Theme");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
-    obj = dropdown_uint8_custom_cb(grid, &params.theme, " Simple \n Legacy", theme_update_cb);
+    /* La lista real de temas (incorporados + los JSON), no las dos opciones viejas */
+    {
+        char        names[16][32];
+        char        opciones[16 * 34];
+        int         n     = theme_list(names, 16);
+        int         sel   = 0;
+        size_t      usado = 0;
+
+        opciones[0] = 0;
+
+        for (int i = 0; i < n; i++) {
+            int escrito = snprintf(opciones + usado, sizeof(opciones) - usado, "%s%s",
+                                   i ? "\n" : "", names[i]);
+
+            if (escrito < 0 || (size_t) escrito >= sizeof(opciones) - usado) {
+                break;
+            }
+
+            usado += (size_t) escrito;
+
+            if (strcasecmp(names[i], params.theme_name.x) == 0) {
+                sel = i;
+            }
+        }
+
+        obj = lv_dropdown_create(grid);
+        lv_dropdown_set_options(obj, opciones);
+        lv_dropdown_set_selected(obj, sel);
+        lv_obj_add_event_cb(obj, theme_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    }
 
     lv_obj_set_size(obj, SMALL_6, 56);
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
