@@ -85,8 +85,24 @@ static void mixer_setup() {
     audio_set_play_vol(0.0f);
 }
 
-void audio_init() {
+static void * mixer_setup_thread(void *arg) {
     mixer_setup();
+    return NULL;
+}
+
+void audio_init() {
+    /* Los diez `amixer` y el mixer de ALSA de mixer_setup() pueden tardar, trabarse, o
+     * abortar el proceso si el elemento no existe -y todo eso pasaba antes del primer
+     * dibujo, con la pantalla quedándose en el logo del equipo-. Va en su propio hilo:
+     * la GUI dibuja siempre y los niveles se aplican cuando se pueden. */
+    pthread_t mixer_thread;
+
+    if (pthread_create(&mixer_thread, NULL, mixer_setup_thread, NULL) == 0) {
+        pthread_detach(mixer_thread);
+    } else {
+        LV_LOG_WARN("No se pudo lanzar el hilo del mixer");
+    }
+
     audio_enh_init();
     mloop = pa_threaded_mainloop_new();
     pa_threaded_mainloop_start(mloop);
@@ -256,6 +272,14 @@ float audio_set_play_vol(float db) {
     snd_mixer_selem_id_set_name(sid, selem_name);
     snd_mixer_elem_t* elem = snd_mixer_find_selem(handle, sid);
 
+    /* Si el elemento no existe (p.ej. el mixer de "default" es el de pulseaudio y no
+     * expone los del codec), ALSA aborta el proceso con una aserción. */
+    if (elem == NULL) {
+        LV_LOG_WARN("No hay elemento '%s' en el mixer: se deja el volumen como estaba", selem_name);
+        snd_mixer_close(handle);
+        return db;
+    }
+
     snd_mixer_selem_set_playback_dB_all(elem, (long)(db * 100.0f), 0);
     long db_long;
     snd_mixer_selem_get_playback_dB(elem, SND_MIXER_SCHN_MONO, &db_long);
@@ -278,6 +302,12 @@ float audio_set_rec_vol(float db) {
     snd_mixer_selem_id_set_index(sid, 0);
     snd_mixer_selem_id_set_name(sid, selem_name);
     snd_mixer_elem_t* elem = snd_mixer_find_selem(handle, sid);
+
+    if (elem == NULL) {
+        LV_LOG_WARN("No hay elemento '%s' en el mixer: se deja el volumen como estaba", selem_name);
+        snd_mixer_close(handle);
+        return db;
+    }
 
     snd_mixer_selem_set_capture_dB_all(elem, (long)(db * 100.0f), 0);
     long db_long;
