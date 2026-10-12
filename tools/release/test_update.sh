@@ -46,6 +46,13 @@ echo "SOY LA VERSION VIEJA" > "$T/target/usr/sbin/x6200_gui"
 chmod 755 "$T/target/usr/sbin/x6200_gui"
 MARCADO=$(sha256sum "$T/target/usr/sbin/x6200_gui" | cut -d' ' -f1)
 
+REPO=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+OVERLAY=$REPO/tools/release/update-overlay
+if [ -d "$OVERLAY" ] && [ -n "$(find "$OVERLAY" -type f 2>/dev/null)" ]; then
+    echo "==> (prueba) instalando el S02update del overlay ($OVERLAY), como haría el tgz"
+    tar -cf - -C "$OVERLAY" . | tar -xf - -C "$T/target"
+fi
+
 echo "==> poniendo el tgz en /mnt del destino"
 cp "$TGZ" "$T/target/mnt/"
 

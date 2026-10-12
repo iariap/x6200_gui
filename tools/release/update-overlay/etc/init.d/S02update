@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# Aplica la actualización en el lugar que deja el firmware en la partición DATA.
+#
+# Este S02update es el del firmware base con un solo cambio, de LU2DSX: el backup de
+# los archivos que se van a reemplazar. El original lo hace con
+#
+#     zcat $i | tar -tf - | xargs tar -cvf - | gzip > /mnt/backup_...
+#
+# y xargs parte la lista en varios `tar` que escriben todos al mismo stdout: el
+# resultado son varios archivos tar concatenados y sólo se puede leer el primero (en
+# una actualización típica, ~700 de 5313 archivos). Acá la lista va a un archivo
+# temporal y se arma UN solo tar, así el backup sirve para volver atrás de verdad.
+#
+# El resto del comportamiento es igual: busca /mnt/x6200_r1cbu_*.tgz, lo descomprime
+# sobre / y lo borra.
+#
+# Este archivo viaja dentro del tgz de actualización (tools/release/update-overlay),
+# no en la imagen, así que se instala al aplicar una actualización.
+#
+start() {
+    cd /
+
+    for i in /mnt/x6200_r1cbu_*.tgz; do
+        [ ! -f "$i" ] && continue
+
+        echo "Creating backup from $i"
+
+        LIST=/tmp/update_list.$$
+
+        if zcat "$i" | tar -tf - > "$LIST" 2>/dev/null; then
+            # Un solo archivo tar. Si falla, la actualización sigue igual.
+            if tar -cf - -C / -T "$LIST" 2>/dev/null | gzip > "/mnt/backup_$(basename "$i")"; then
+                echo "Backup kept in /mnt/backup_$(basename "$i")"
+                sync
+            else
+                echo "Backup failed, continuing with the update"
+            fi
+        else
+            echo "Could not read the update, skipping"
+            rm -f "$LIST"
+            continue
+        fi
+
+        rm -f "$LIST"
+
+        echo "Update from $i"
+        zcat "$i" | tar -xf -
+        rm "$i"
+    done
+}
+
+case "$1" in
+    start)
+        start;;
+    stop)
+        ;;
+    *)
+        echo "Usage: $0 {start}"
+    exit 1
+esac

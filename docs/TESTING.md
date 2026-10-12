@@ -75,11 +75,20 @@ traiga lo reemplazado y que el tgz se haya aplicado):
 sudo x6200_gui/tools/release/test_update.sh [rootfs.tar] [actualización.tgz]
 ```
 
-**Ojo con el backup que hace el firmware**: usa
+**El backup**: el `S02update` del firmware base lo hace con
 `zcat $i | tar -tf - | xargs tar -cvf - | gzip > /mnt/backup_...`, y `xargs` parte la lista en
 varios `tar` que escriben al mismo stdout: el resultado son varios archivos tar concatenados, de
-los que sólo se puede leer el primero (~700 de 5313 archivos). Es del firmware base, no de este
-port. Para volver atrás de verdad, la imagen anterior de la release.
+los que sólo se puede leer el primero (~700 de 5313 archivos), así que no sirve para volver atrás.
+
+Por eso **el tgz lleva su propio `S02update`** (`tools/release/update-overlay/etc/init.d/`): la
+lista va a un archivo temporal y se arma **un solo** tar, con lo que el backup queda completo y
+legible (verificado con esta prueba: 5313 entradas y el archivo reemplazado adentro). Se instala al
+aplicar una actualización, no está en la imagen: una tarjeta recién grabada usa el script del
+firmware en su primera actualización y a partir de ahí el corregido. Si el backup llegara a fallar,
+la actualización sigue igual.
+
+En resumen: para volver atrás de una tarjeta recién grabada, la imagen de la release anterior; con
+el script corregido instalado, `/mnt/backup_x6200_r1cbu_*.tgz`.
 
 **El tgz lleva sólo archivos y enlaces**: ni `./` ni entradas de directorio. No es un capricho, el
 `S02update` del firmware hace el backup así:

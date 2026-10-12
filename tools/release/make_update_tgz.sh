@@ -9,6 +9,9 @@
 # esos bits, y el tgz los llevaría mal: una actualización en el lugar rompería esos
 # binarios. Como root se preservan dueño y permisos exactos.
 #
+# Aplica además tools/release/update-overlay sobre el rootfs antes de empaquetar: son
+# archivos que este port corrige y que sólo tienen que llegar por la actualización.
+#
 # Por qué el tgz lleva SOLO archivos y enlaces (ni "./" ni entradas de directorio):
 # el S02update del firmware hace el backup así:
 #
@@ -38,6 +41,16 @@ trap 'rm -rf "$TMP"' EXIT
 
 echo "==> extrayendo el rootfs"
 tar -xf "$ROOTFS" -C "$TMP"
+
+# Archivos que este port corrige y que viajan en la actualización (por ejemplo el
+# S02update con el backup arreglado). No van en la imagen a propósito: ver el propio
+# script y docs/TESTING.md.
+OVERLAY="$(dirname "$0")/update-overlay"
+if [ -d "$OVERLAY" ] && [ -n "$(find "$OVERLAY" -type f 2>/dev/null)" ]; then
+    echo "==> aplicando el overlay de la actualización"
+    tar -cf - -C "$OVERLAY" . | tar -xf - -C "$TMP"
+    ( cd "$OVERLAY" && find . -type f | sed 's|^\./|    |' )
+fi
 
 echo "==> armando la lista (solo archivos y enlaces, sin ./ ni directorios)"
 ( cd "$TMP" && find . \( -type f -o -type l \) -print0 | sed -z 's|^\./||' | sort -z > "$TMP.list" )
