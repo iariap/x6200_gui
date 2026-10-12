@@ -1,171 +1,74 @@
-# X6200 LU2DSX ROM — tanda de features del X6100 (2026-10-11)
+# X6200 LU2DSX ROM — features del X6100 (pre-release)
 
-> ⚠️ **NO PUBLICAR TODAVÍA / DO NOT PUBLISH YET.** La imagen de este release **no arranca** en el
-> equipo: queda en el logo de arranque (en diagnóstico, ver más abajo). El tgz y los checksums son
-> válidos, pero la imagen no. Se saca este aviso cuando esté resuelto y probado.
+> ⚠️ **NO PUBLICAR TODAVÍA / DO NOT PUBLISH YET.** La ROM está lista y verificada en la
+> reproducción (arranca, dibuja y no se cae), pero **falta la prueba en el equipo**: es la
+> última puerta antes de publicar. Los sha256 están en `SHA256SUMS`.
 >
-> The image in this release **does not boot** on the radio: it stays at the boot logo (being
-> diagnosed). The tarball and checksums are fine; the image is not.
+> _Not ready to publish: the ROM is built and verified in the reproduction, but the on-radio
+> test is still pending. Checksums are in `SHA256SUMS`._
 
-Segundo prerelease de esta ROM. Trae **todo el programa de port** desde el firmware del X6100 de
-[IU1WXY](https://github.com/IU1WXY/X6100-IU1WXY): las 18 features de la lista, más los extras que
-salieron en el camino (la app de **Status**, la app de **dispositivos Bluetooth** y la **columna de
-spots** en la pantalla principal). Cada una documentada, compilada para el equipo, verificada en la
-imagen y con tests donde se puede correr sin radio.
+## Qué trae
 
-**Versión del firmware**: `v0.1.2-lu2dsx` (base upstream v0.1.2 + este trabajo).
+El **programa de port** desde el firmware del X6100 de [IU1WXY](https://github.com/IU1WXY/X6100-IU1WXY):
+las features de la lista, más los extras que aparecieron en el camino.
 
-## Qué se incorporó
-
-| # | Feature | Detalle |
-|---|---|---|
-| 1 | **Decodificados FT8/FT4 por UDP** | Compatible con GridTracker/JTAlert (WSJT-X schema 3); con el **país y la bandera** de cada estación (`cty.dat`) |
-| 2 | **Aviso de nueva versión** | Consulta la última release y avisa al arrancar (sin telemetría) |
-| 3 | **Aguja de S-meter** | Dial analógico en Ajustes, además de las barras |
-| 4 | **Band plan IARU** | Franja de colores sobre el espectro (160 m a 6 m) |
-| 5 | **Grabación de pantalla** | AVI MJPEG + audio de RX en `/mnt/screenrec` |
-| 6 | **Bluetooth CAT** | Puente SPP con pty sobre el UART de CAT (`btcat`) |
-| 7 | **Bluetooth auriculares** | A2DP con loopback y `btaudio-ctl` |
-| 8 | **Teclados USB/Bluetooth** | Descubrimiento dinámico, *rollover*, la app **CW Keyboard**, el **CW Trainer** y la app de **dispositivos Bluetooth** (listar/escanear/vincular + passkey) |
-| 9 | **wfview** | La radio como IC-705 en la red (Icom LAN) |
-| 10 | **Web configurator ampliado** | 15 páginas + HTTPS, gestor de todo el equipo |
-| 11 | **Control remoto en vivo** | La página `/remote` maneja la radio en tiempo real, con **todas** las apps |
-| 12 | **Field Ops SOTA/POTA** | Referencias, log ADIF, feed RBN y **CQ de voz** (graba el CQ y lo emite en SSB) |
-| 13 | **Cluster DX** | Spots, filtros y alertas, más la **columna en la pantalla principal** (se toca un spot y sintoniza) |
-| 14 | **WSPR** | Motor y app completos (RX/TX, subida a WSPRnet) |
-| 15 | **NavTex** | Decodificador SITOR-B con FEC |
-| 16 | **SSTV** | 7 modos, RX y TX, con galería |
-| 17 | **WeFax** | Fax meteorológico con modo Auto |
-| 18 | **JS8** | Motor y app completos |
-| + | **Temas JSON** | 6 temas incluidos + temas propios en `/mnt/themes`; **toda la UI** los sigue (la GUI se reinicia al cambiar de tema) |
-| + | **App Status** | Adaptador Bluetooth y su transporte, nivel de TX, espacio en `/mnt`, wfview, dirección de la web y estado del aviso de versión |
-
-Todo se abre desde **Ajustes → acciones de pulsación larga**: elegí la acción y asignala a un
-botón. Están **WSPR, NavTex, SSTV, WeFax, JS8, Cluster, Field Ops, CW Keyboard, CW Trainer,
-Bluetooth, Status y Theme** (más las que ya tenía el equipo), y en Ajustes también están la aguja
-del S-meter, el band plan, la columna del cluster, la familia de fuente y el encendido/discoverable
-del Bluetooth. El CQ de voz de Field Ops se graba y se emite desde la app, y todo se configura
-también desde el navegador.
-
-Para probarlo en la radio: [`HARDWARE_TEST_GUIDE.md`](HARDWARE_TEST_GUIDE.md) (checklist por
-feature, cómo se llega a cada una y qué datos sirven si algo falla).
-
-## Verificación
-
-Todo se corre con un comando y queda resumido:
-
-```bash
-cd x6200_gui && tests/run_all_tests.sh      # --quick omite la suite de JS8
-```
-
-Lo que se puede probar **sin la radio**, y se probó:
-
-- **401 comprobaciones** en el arnés nativo del host: aguja/band plan/AVI, UDP, aviso de versión,
-  wfview (protocolo por UDP real), cluster, Field Ops, temas JSON, teclado, y el motor de WSPR
-  (`tests/native/run_native_tests.sh`).
-- **Round-trips de códecs** con las herramientas del propio X6100:
-  - WSPR: 158 comprobaciones, decodifica a −20 y −25 dB de SNR.
-  - SSTV: los **7 modos**, correlación 0,92–0,98.
-  - WeFax: 300/300 líneas, correlación 0,995.
-  - NavTex: OK a +20, +10 y +5 dB.
-- **Suite completa de JS8** del X6100 contra nuestro port: **1994 aserciones en 88 casos**.
-- **Web configurator**: las 19 páginas/endpoints contra la base de datos real.
-- **Protocolo de wfview**: handshake, login aceptado/rechazado, puente CI-V.
-
-Corrida completa al cierre de esta tanda:
-
-| Suite | Resultado |
+| Área | Estado |
 |---|---|
-| Arnés nativo (host) | **401 comprobaciones, 0 fallos** |
-| WSPR (round-trip) | **158 comprobaciones, 0 fallos** |
-| SSTV (7 modos) | **all OK** |
-| WeFax (300/300 líneas) | **PASS** |
-| NavTex (SITOR-B) | **all OK** |
-| JS8 (suite del X6100) | **1994 aserciones en 88 casos** |
-| Web configurator (19 páginas) | **19 comprobaciones, 0 fallos** |
+| Aviso de firmware nuevo (sin telemetría) | ✅ |
+| Aguja de S-meter (por tema) | ✅ |
+| **Temas**: 6 incorporados (IU1WXY, Classic, Outdoor, Outdoor-Negative, Legacy, VISION) + 3 migrados del X6100 (Holo, Material 3, RS con sus imágenes) | ✅ |
+| Band plan IARU sobre el espectro | ✅ |
+| Grabación de pantalla (video MJPEG + audio de RX) | ✅ |
+| Bluetooth: CAT (hasta 3 clientes), auriculares A2DP, teclados | ✅ |
+| wfview (la radio como IC-705 en red) | ✅ |
+| Web configurator ampliado: 15 páginas + HTTPS + control remoto en vivo | ✅ |
+| Field Ops SOTA/POTA (referencias, log ADIF, subida a QRZ, self-spot, CQ de voz) | ✅ |
+| Modos digitales: WSPR, SSTV, JS8, WeFax, NavTex, CW Keyboard y CW Trainer | ✅ |
 
-Cada imagen se verificó con `e2fsck` y contra el contenido esperado (binarios, assets, base de
-datos, dependencias resueltas).
+**21 apps** (las mismas que el X6100), **63.600 líneas** en `src/` y **8 suites de tests**
+nativas (host 476 comprobaciones, WSPR 158, SSTV, WeFax, NavTex, JS8 1994, webserver 19 y el
+chequeo de la estructura de configuración).
 
-## Lo que falta verificar en el equipo
+## El arranque: qué estaba mal y cómo se encontró
 
-Estas cosas dependen del hardware y quedan como chequeos pendientes. La app **`APP Status`**
-(Ajustes → acciones de pulsación larga) muestra casi todas: adaptador Bluetooth y su transporte,
-nivel de TX, espacio en `/mnt`, wfview, la dirección del web configurator y el estado del aviso de
-versión:
+La primera imagen **no arrancaba**: quedaba en el logo. Fueron ocho fallos encadenados, todos
+del port, todos en el camino del arranque, y ninguno visible sin mirar adentro:
 
-1. **Bluetooth**: qué transporte usa el chip (`hciconfig -a`, `dmesg | grep -i blue`), y el
-   pairing real de CAT y auriculares.
-2. **Audio de TX**: el nivel de excitación de los modos digitales (el X6200 no expone la revisión
-   de la base como el X6100, así que quedó un valor conservador).
-3. **CQ de voz** (Field Ops): el nivel de micrófono y el audio emitido en SSB.
-4. **DRM/KMS**: el equipo sigue con fbdev; el camino DRM del X6100 necesita probarse en hardware.
-5. **Espacio en `/mnt`**: la grabación de pantalla, los logs, las imágenes RX y los mensajes de voz lo comparten.
-
-El detalle de cómo se llega a cada feature, de qué depende y qué se probó (y qué queda para
-probar en el equipo) está en [`docs/INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md).
-
-## Limitaciones conocidas (documentadas en `docs/NEW_FEATURES.md`)
-
-- **Bluetooth**: todo desde la radio (encendido, discoverable, lista de dispositivos, vincular, conectar, audio a los auriculares y el *passkey* de los teclados). La consola (`btaudio-ctl`) sigue disponible.
-- **Perilla de alineado/inclinación de WeFax**: su registro `CTRL_*` no está portado; los valores
-  se ajustan desde los parámetros.
-- **WeFax**: falta la perilla de alineado/inclinación (su registro de controles no está portado);
-  esos valores se ajustan desde los parámetros.
-- El *snake* del firmware original (un huevo de pascua) no está en esta ROM.
-
-## Instalación
-
-El release trae **dos artefactos**:
-
-| Archivo | Para qué |
+| Qué | Síntoma |
 |---|---|
-| `x6200_<fecha>.img` | imagen completa para grabar en la microSD |
-| `x6200_r1cbu_<versión>.tgz` | **actualización en el lugar** (no toca tus datos) |
-| `SHA256SUMS` | para verificar las descargas |
+| Dos campos de configuración (`cwt_level`, `cwt_group`) sin inicializar | la GUI moría antes del primer dibujo: la struct se recorre como arreglo y el campo faltante llegaba con punteros NULL |
+| Falta el usuario `pulse` en la imagen | pulseaudio no arrancaba y la GUI esperaba para siempre un contexto que nunca llegaba |
+| Esperas de audio sin tope y `pa_stream_drain` sin chequear | cuelgue con el stream caído |
+| Mixer de ALSA sin chequear retornos ni NULL | aborto si el elemento no existe |
+| Encoders (`vol`, `mfk`, `mfk_inner`) desreferenciados sin guarda | crash al abrir el EQ, o sin las perillas presentes |
+| GPIO sin reservar (`x6200_gpio_init` falla) | llamada a un puntero NULL: crash al arrancar |
+| Reintento de la BASE sin límite | la GUI no dibujaba nunca si la radio no respondía |
+| `cfg_sm` global construido antes de que existan los subjects | **el control remoto no hacía nada**, en silencio |
 
-### 1. Actualización en el lugar (recomendada: no toca tus datos)
+Todo arreglado y verificado. La técnica que los encontró: una **reproducción en chroot** (raíz
+de la imagen + framebuffer falso + la base del usuario), una **biblioteca de trazas** por
+`LD_PRELOAD`, un **capturador de señales que traduce el PC y el link register** con `addr2line`,
+y manejar la GUI **por su propio socket de control remoto** para abrir cada app.
 
-El equipo ya sabe actualizarse solo: `S02update` busca `x6200_r1cbu_*.tgz` en la partición DATA
-(`/mnt`), hace un backup y lo descomprime sobre la raíz. Entonces:
+## Cómo se instala
 
-1. Copiá `x6200_r1cbu_v0.1.2-lu2dsx.tgz` a `/mnt` (por SSH o sacando la SD).
-2. Reiniciá la radio y esperá: el firmware hace el backup y aplica la actualización.
-3. La configuración, los logs, los temas de `/mnt/themes`, las grabaciones y los mensajes de voz
-   **quedan como estaban**.
+**Sin regrabar (recomendado):** copiar `x6200_r1cbu_v0.1.2-lu2dsx.tgz` a la raíz de la
+partición **DATA** de la tarjeta y encender. `S02update` lo aplica al principio del arranque,
+**antes** de que se lance la GUI, y respalda lo que reemplaza en `/mnt/backup_*.tgz`. Conserva
+`/mnt` completo (ajustes, memorias, logs, temas, grabaciones).
 
-Ojo: este camino **no** actualiza el kernel ni u-boot (van en la partición BOOT); los
-módulos del kernel sí. Dejá **~150 MB libres** en DATA: antes de aplicar, el firmware respalda en
-`/mnt/backup_x6200_r1cbu_*.tgz` los archivos que va a reemplazar. Este tgz **trae su propio
-`S02update`**, con el backup arreglado: el del firmware base lo arma con `xargs`, que parte la lista
-en varios `tar` concatenados de los que sólo se puede leer el primero (~700 de 5313 archivos). Con el
-corregido el backup queda completo y sirve para volver atrás de verdad. Se instala al aplicar la
-actualización; una tarjeta recién grabada usa el del firmware en su primera actualización.
+**Imagen completa:** grabar `x6200_*.img` con `dd` en la tarjeta. Se pierde lo que haya en la
+partición DATA.
 
-### 2. Imagen completa en la microSD
+## Limitaciones conocidas
 
-```bash
-sudo dd if=x6200_<fecha>.img of=/dev/sdX bs=4M status=progress conv=fsync
-```
+- **WeFax**: el alineado y la inclinación se ajustan por botones; la perilla necesita portar el
+  registro de controles del X6100.
+- **TX Cal / CESSB / filtro TX**: dependen del baseband del X6100; el X6200 no expone esos comandos.
+- **DRM/KMS**: portado y disponible, apagado por defecto hasta validarlo en el equipo.
+- **App Android X6100 Link**: no existe; el protocolo del socket de control remoto sí está.
+- El mapa de QSO está en JS8, no en FT8.
 
-⚠️ Grabar la imagen recrea las particiones: **respaldá `/mnt`** antes (ahí viven tus ajustes,
-logs, temas y grabaciones).
+## Qué falta
 
-### Verificar lo que bajaste
-
-```bash
-sha256sum -c SHA256SUMS
-```
-
-## Repositorios
-
-- Firmware: [iariap/x6200_gui](https://github.com/iariap/x6200_gui) (rama `lu2dsx/x6200-rom`)
-- Buildroot: [iariap/AetherX6200Buildroot](https://github.com/iariap/AetherX6200Buildroot) (rama `lu2dsx/x6200-rom`)
-- Web configurator: [iariap/x6200_webserver](https://github.com/iariap/x6200_webserver)
-- Documentación del port: [`docs/NEW_FEATURES.md`](NEW_FEATURES.md),
-  [`docs/X6100_FEATURE_GAP.md`](X6100_FEATURE_GAP.md),
-  [`docs/X6100_REPO_INDEX.md`](X6100_REPO_INDEX.md)
-
-Créditos: las features portadas vienen del firmware del **X6100 de IU1WXY** (LGPL-2.1-or-later) y
-de los proyectos que él usa (js8core de JS8Call-improved, wsprd de K1JT, liquid-dsp, etc.), con
-su atribución en cada archivo.
+La prueba en el equipo. Cuando pase, se saca el aviso y se publica.
