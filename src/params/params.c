@@ -363,7 +363,7 @@ static bool params_load() {
         if (params_load_str(&params.callsign, name, t)) continue;
         if (params_load_bool(&params.wifi_enabled, name, i)) continue;
         if (params_load_uint8(&params.theme, name, i)) continue;
-        if (params_load_str(&params.theme_name, name, i)) continue;
+        if (params_load_str(&params.theme_name, name, t)) continue;
         if (params_load_uint8(&params.font, name, i)) continue;
     }
 

@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,3 +27,7 @@ typedef int16_t          lv_coord_t;
 typedef struct { uint8_t blue, green, red, alpha; } lv_color32_t;
 typedef struct { struct { uint32_t cf : 5; uint32_t always_zero : 3; uint32_t reserved : 2; uint32_t w : 11; uint32_t h : 11; } header; uint32_t data_size; const void *data; } lv_img_dsc_t;
 #define LV_IMG_CF_TRUE_COLOR_ALPHA 5
+
+/* Input device data (kbd_rollover.c) */
+typedef enum { LV_INDEV_STATE_RELEASED = 0, LV_INDEV_STATE_PRESSED = 1 } lv_indev_state_t;
+typedef struct { uint32_t key; lv_indev_state_t state; bool continue_reading; } lv_indev_data_t;

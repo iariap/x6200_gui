@@ -61,6 +61,7 @@
 #include "dialog_field.h"
 #include "dialog_js8.h"
 #include "theme.h"
+#include "fonts/font_select.h"
 
 #include <unistd.h>
 #include <stdint.h>

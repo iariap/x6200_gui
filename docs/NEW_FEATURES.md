@@ -21,7 +21,9 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **Field Ops** SOTA/POTA: referencias, log ADIF y RBN | ✅ 2026-10-11 | §15 |
 | **JS8** (motor + app completa) | ✅ 2026-10-11 | §16 |
 | **Temas JSON** (motor, temas incluidos y selección) | ✅ 2026-10-11 | §17 |
+| **Teclados USB/Bluetooth** (detección y *rollover*) | ✅ 2026-10-11 | §18 |
 | ~~Temas JSON~~ | ✅ 2026-10-11 | §17 |
+| ~~Teclado Bluetooth~~ | ✅ 2026-10-11 (entrada; falta la UI de pairing) | §18 |
 | ~~Field Ops SOTA/POTA~~ | ✅ 2026-10-11 | §15 |
 | Modos digitales: WSPR ✅, NavTex ✅, SSTV ✅, WeFax ✅, JS8 ✅ | ✅ completo | §9-16 |
 | DRM/KMS + perilla con hilo propio | ⏳ pendiente | — |
@@ -825,3 +827,45 @@ que el stub del test provee, y libpng):
 ```
 376 comprobaciones, 0 fallos
 ```
+
+---
+
+## 18. Teclados USB y Bluetooth
+
+El soporte de entrada para teclados externos (USB y Bluetooth, que en Linux aparecen igual como
+dispositivos de entrada).
+
+### Qué se portó
+
+- **`keyboard.c` del X6100**: busca el teclado primero por `/dev/input/by-path/*-kbd` y, si no
+  encuentra, **cae a `/dev/input/event*`** comprobando que el dispositivo *parezca* un teclado (la
+  fila superior de letras Q..P y la barra espaciadora). Eso es lo que hace que un **teclado
+  Bluetooth** funcione, porque no siempre aparece con el nombre `-kbd` en `by-path`.
+- **Identidad del dispositivo** (`kbd_rdev`/`kbd_ino`) y un **re-escaneo temporizado**: el evento
+  "USB conectado" puede llegar **antes** de que exista el nodo del teclado (el arreglo de
+  randal007 en el X6100).
+- **`kbd_rollover.c/h`**: cuando una tecla baja antes de que se suelte la anterior, el *rollover*
+  convierte eso en los pares press/release que LVGL espera (y así el teclado no manda "ab" cuando
+  se escribió "a" y después "b").
+
+### Test
+
+`kbd_rollover.c` es lógica pura sobre un callback de fuente, así que
+`tests/native/test_keyboard.c` lo maneja con una **fuente falsa** en el host:
+
+- Una tecla: press, release y la repetición del último estado cuando no hay nada nuevo
+  (`continue_reading = false`).
+- ***Rollover***: con A sostenida y B bajando, primero se reporta el release de A y el press de B
+  en la lectura siguiente.
+- **Auto-repeat** del kernel: se ignora (LVGL repite por su cuenta).
+- Teclas sin carácter (Shift/Ctrl, `key == 0`) se saltean.
+- Un release de una tecla que no es la sostenida no se confunde con ella.
+
+```
+401 comprobaciones, 0 fallos
+```
+
+**Pendiente**: la **UI de pairing** en Ajustes (el X6100 tiene su sección de Bluetooth en
+Wireless). Hoy la vinculación se hace con `bluetoothctl`/`btaudio-ctl` por consola — los scripts
+ya dejan el adaptador listo — y el teclado empieza a andar en cuanto el sistema lo ve como
+dispositivo de entrada.
