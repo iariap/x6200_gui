@@ -19,8 +19,12 @@ They are mirrored from the project workspace, where the firmware is built.
 | [AUDIO_ENHANCEMENT_GUIDE.md](AUDIO_ENHANCEMENT_GUIDE.md) | EN | Audio enhancement module (notch API, SpeexDSP NR, AF leveler, presets) and its current status |
 | [AUDIO_ENHANCEMENT_IMPLEMENTATION_PLAN.md](AUDIO_ENHANCEMENT_IMPLEMENTATION_PLAN.md) | EN | Original implementation plan (partially aspirational; see the guide for the current state) |
 | [RELEASE_NOTES_2026-10-11.md](RELEASE_NOTES_2026-10-11.md) | EN | What the first published SD image contains, hashes, install steps and caveats |
+| [RELEASE_NOTES_2026-10-11_features.md](RELEASE_NOTES_2026-10-11_features.md) | ES | Notes for the port release: the 18 features plus the extras, verification, both install paths (in-place update included), pending hardware checks and known limitations |
 | [FT8_UDP.md](FT8_UDP.md) | ES | WSJT-X compatible UDP broadcaster: config file, GridTracker/JTAlert usage, implementation notes and tests |
-| [NEW_FEATURES.md](NEW_FEATURES.md) | ES | Running log of the features ported from the X6100 firmware: status, usage and tests |
+| [NEW_FEATURES.md](NEW_FEATURES.md) | ES | Running log of the features ported from the X6100 firmware: status, usage and tests (33 sections) |
+| [INTEGRATION_AUDIT.md](INTEGRATION_AUDIT.md) | ES | How each feature is reached, what it depends on, what was verified without the radio and what still needs it, plus the consumption review and the integration debt |
+| [IMAGE_INVENTORY.md](IMAGE_INVENTORY.md) | ES | What the published image really carries, checked on the artifact: binaries, assets, database rows, what is compiled in, and the update tarball |
+| [HARDWARE_TEST_GUIDE.md](HARDWARE_TEST_GUIDE.md) | ES | Checklist to test it on the radio: how to reach each feature, what to expect, how to report a problem (log paths, dmesg, `APP Status`) |
 | [UI_HARNESS.md](UI_HARNESS.md) | ES | Rendering the real GUI on a PC without the radio: the X6100 harness, why it is not drop-in, and the adaptation plan |
 | [X6100_REPO_INDEX.md](X6100_REPO_INDEX.md) | ES | Catalogue of everything in IU1WXY's X6100 repo and what each piece is for in this port |
 | [RESOURCE_USAGE.md](RESOURCE_USAGE.md) | ES | Measured RAM/CPU cost of the Python web configurator and the 128 MB CMA pool reserved for an unused GPU |
@@ -28,14 +32,19 @@ They are mirrored from the project workspace, where the firmware is built.
 ## Downloads
 
 Prebuilt SD-card images are published as GitHub Releases (the image is ~545 MB, over
-GitHub's 100 MB file limit, so it is not committed to the repository):
+GitHub's 100 MB file limit, so it is not committed to the repository). Each release ships
+three files: the SD image, the **in-place update** `x6200_r1cbu_<version>.tgz` (which
+`S02update` applies from `/mnt`, keeping settings, logs, themes and recordings) and a
+`SHA256SUMS`.
 
-| Release | Image | Size | SHA256 |
-|---|---|---|---|
-| [lu2dsx-2026-10-11](https://github.com/iariap/x6200_gui/releases/tag/lu2dsx-2026-10-11) (beta) | `x6200_20261011_201456.img` | 545 MB | `d944fb9faff77603ec4d5c9c9812c66af31a2e99952ba09356301bdd6c545ea9` |
+| Release | Image | Notes |
+|---|---|---|
+| `lu2dsx-2026-10-12` (draft, being tested on the radio) | `x6200_20261012_013612.img` | The port: all the X6100 features. sha256 `8d9868da4804b9c7c30b87680986306034becb11a244c1c69ec2f27111975ad7` |
+| [lu2dsx-2026-10-11](https://github.com/iariap/x6200_gui/releases/tag/lu2dsx-2026-10-11) (beta) | `x6200_20261011_201456.img` | First published image. sha256 `d944fb9faff77603ec4d5c9c9812c66af31a2e99952ba09356301bdd6c545ea9` |
 
-Read [RELEASE_NOTES_2026-10-11.md](RELEASE_NOTES_2026-10-11.md) first: it lists what is
-included, how to write the card, and the OEM base-firmware version caveat.
+For the port release read [RELEASE_NOTES_2026-10-11_features.md](RELEASE_NOTES_2026-10-11_features.md)
+(what it carries, how to install either way, what still needs the radio); to test it on the
+radio, [HARDWARE_TEST_GUIDE.md](HARDWARE_TEST_GUIDE.md).
 
 ## Project layout
 
@@ -55,10 +64,11 @@ instructions in [UPSTREAM_REBASE_PLAN.md](UPSTREAM_REBASE_PLAN.md) and the build
 ## Building
 
 ```bash
-git clone https://github.com/iariap/AetherX6200Buildroot
-git clone https://github.com/iariap/x6200_gui
-# see the build skill: Docker + buildroot, GUI package rebuilt with the local source
+git clone -b lu2dsx/x6200-rom https://github.com/iariap/AetherX6200Buildroot
+git clone -b lu2dsx/x6200-rom https://github.com/iariap/x6200_gui
 ```
+
+See [../README.md](../README.md) for the full build steps and the branch's features.
 
 The GUI package is built from the local source using Buildroot's
 `X6200_GUI_OVERRIDE_SRCDIR` mechanism; the build skill documents the exact Docker
