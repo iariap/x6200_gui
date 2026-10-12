@@ -80,6 +80,11 @@ class SettingsManager {
 public:
     SettingsManager();
 
+    /* Los parámetros de estado vivo (cp_*) apuntan a subjects cfg_cur.* que se crean al
+     * cargar la configuración, después de este constructor: como cfg_sm es un global, el
+     * mapeo del constructor los deja en NULL. Se rehace cuando ya existen. */
+    void init_live(void);
+
     /* Persisted parameters */
     Param p_volume, p_squelch, p_rfgain, p_pwr, p_nb, p_nb_level, p_nb_width;
     Param p_nr, p_nr_level, p_band_id, p_band_current_vfo, p_band_if_shift;

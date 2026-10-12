@@ -36,6 +36,12 @@ Param subject_param(Subject *s) {
 
 SettingsManager cfg_sm;
 
+/* Puente para C: cfg.c es C y no puede llamar a un método de la clase. Se usa después de
+ * crear los subjects cfg_cur.* para que el mapeo de cfg_sm deje de apuntar a NULL. */
+extern "C" void cfg_sm_init_live(void) {
+    cfg_sm.init_live();
+}
+
 SettingsManager::SettingsManager() {
     p_volume     = item_param(&cfg.vol);
     p_squelch    = item_param(&cfg.sql);
@@ -63,7 +69,15 @@ SettingsManager::SettingsManager() {
     p_band_current_vfo = Param([this]() { return band_vfo_; }, [this](int32_t v) { band_vfo_ = v; });
     p_band_if_shift    = Param([this]() { return band_if_shift_; }, [this](int32_t v) { band_if_shift_ = v; });
 
-    /* Live state */
+    /* Live state: ver init_live() - acá cfg_cur.* todavía no existe */
+    init_live();
+}
+
+/* Los subjects de estado vivo los crea la carga de la configuración (cfg_band_params_init y
+ * cfg_mode_params_init), que corre después de este constructor: hay que volver a mapearlos
+ * una vez creados, si no los Param quedan con el subject NULL y el control remoto -y todo lo
+ * que use cfg_sm.cp_*- no hace nada. */
+void SettingsManager::init_live(void) {
     cp_fg_freq = subject_param(cfg_cur.fg_freq);
     cp_bg_freq = subject_param(cfg_cur.bg_freq);
     cp_cur_mode = subject_param(cfg_cur.mode);

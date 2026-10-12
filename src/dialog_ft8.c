@@ -468,7 +468,20 @@ static void table_draw_part_begin_cb(lv_event_t * e) {
         if (cell_data && cell_data->flag >= 0) {
             const lv_img_dsc_t *img = flags_image(cell_data->flag);
 
-            if (img && dsc->draw_ctx) {
+            /* draw_img puede faltar en el contexto de dibujo (LVGL lo deja en NULL para
+             * algunas pantallas): llamarlo igual mataba la GUI al redibujar la tabla, así
+             * que se avisa una vez y se sigue sin la bandera. */
+            if (dsc->draw_ctx && dsc->draw_ctx->draw_img == NULL) {
+                static bool avisado;
+
+                if (!avisado) {
+                    avisado = true;
+                    LV_LOG_WARN("El contexto de dibujo no tiene draw_img: las banderas no se "
+                                "dibujan (la GUI sigue)");
+                }
+            }
+
+            if (img && dsc->draw_ctx && dsc->draw_ctx->draw_img) {
                 lv_area_t a = *dsc->draw_area;
 
                 a.x1 += 4;

@@ -1,3 +1,5 @@
+extern void cfg_sm_init_live(void);       /* settings_manager.cpp */
+
 #include "cfg.private.h"
 
 #include "atu.private.h"
@@ -70,6 +72,10 @@ int cfg_init(sqlite3 *db) {
     cfg_cur.band = &cfg_band;
 
     cfg_mode_params_init(db);
+
+    /* Ya existen los subjects cfg_cur.*: rehacer el mapeo de cfg_sm (ver init_live, en
+     * settings_manager.cpp; el puente está porque este archivo es C). */
+    cfg_sm_init_live();
     // rc = init_mode_cfg(db);
     // if (rc != 0) {
     //     LV_LOG_ERROR("Error during loading mode params");

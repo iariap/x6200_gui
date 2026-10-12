@@ -129,6 +129,11 @@ float subject_get_float(Subject *subj) {
 }
 
 void subject_set_int(Subject *subj, int32_t val) {
+    if (subj == NULL) {
+        avisa_subject_nulo("subject_set_int", __builtin_return_address(0));
+        return;
+    }
+
     if (subj->dtype() == DTYPE_INT) {
         static_cast<SubjectT<int32_t>*>(subj)->set(val);
     } else {
@@ -136,6 +141,11 @@ void subject_set_int(Subject *subj, int32_t val) {
     }
 }
 void subject_set_uint64(Subject *subj, uint64_t val) {
+    if (subj == NULL) {
+        avisa_subject_nulo("subject_set_uint64", __builtin_return_address(0));
+        return;
+    }
+
     if (subj->dtype() == DTYPE_UINT64) {
         static_cast<SubjectT<uint64_t>*>(subj)->set(val);
     } else {
@@ -144,6 +154,11 @@ void subject_set_uint64(Subject *subj, uint64_t val) {
 }
 
 void subject_set_float(Subject *subj, float val) {
+    if (subj == NULL) {
+        avisa_subject_nulo("subject_set_float", __builtin_return_address(0));
+        return;
+    }
+
     if (subj->dtype() == DTYPE_FLOAT) {
         static_cast<SubjectT<float>*>(subj)->set(val);
     } else {
