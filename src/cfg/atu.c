@@ -70,6 +70,15 @@ void cfg_atu_init(sqlite3 *database) {
 
 int cfg_atu_save_network(uint32_t network) {
     int     rc;
+
+    /* Sin las sentencias preparadas (cfg_atu_init no corrió, o falló) sqlite3_bind_int recibe
+     * un puntero NULL y el proceso muere: cambiar de banda desde el control remoto hacía
+     * exactamente eso. Se avisa y no se guarda. */
+    if (insert_stmt == NULL || update_stmt == NULL) {
+        LV_LOG_ERROR("ATU: sin sentencias preparadas, no se guarda la red (la GUI sigue)");
+        return -1;
+    }
+
     int32_t ant_id = subject_get_int(cfg.ant_id.val);
     int32_t freq   = subject_get_int(cfg_cur.fg_freq);
 
@@ -78,7 +87,7 @@ int cfg_atu_save_network(uint32_t network) {
     sqlite3_stmt *stmt;
     int32_t       atu_pos = find_atu_for_freq(freq);
     pthread_mutex_lock(&write_mutex);
-    if (atu_pos >= 0) {
+    if (atu_pos >= 0 && (size_t) atu_pos < sizeof(atu_network_cache) / sizeof(atu_network_cache[0])) {
         stmt = update_stmt;
         rc = sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, ":prev_freq"), atu_network_cache[atu_pos].freq);
         if (rc != SQLITE_OK) {
