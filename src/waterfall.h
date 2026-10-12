@@ -23,3 +23,6 @@ void waterfall_update_min(float db);
 void waterfall_refresh_reset();
 void waterfall_refresh_period_set(uint8_t k);
 void waterfall_set_battery_mode(bool enabled);
+
+/* The levels the waterfall is drawing with, for the remote scope */
+void waterfall_get_levels(bool tx, float *min, float *max);

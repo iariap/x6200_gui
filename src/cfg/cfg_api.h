@@ -50,6 +50,11 @@ static inline void cfg_api_int_set(const cfg_item_t *item, int32_t v) {
 
 /* The control library renamed its enum from x6100_* to x6200_*; the ported
  * app code still spells the old names */
+#define x6100_agc_t         x6200_agc_t
+#define x6100_agc_off       x6200_agc_off
+#define x6100_agc_slow      x6200_agc_slow
+#define x6100_agc_fast      x6200_agc_fast
+#define x6100_agc_auto      x6200_agc_auto
 #define x6100_mode_t        x6200_mode_t
 #define x6100_mode_lsb      x6200_mode_lsb
 #define x6100_mode_usb      x6200_mode_usb

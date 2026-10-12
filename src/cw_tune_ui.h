@@ -15,3 +15,7 @@ void cw_tune_init(lv_obj_t * parent);
 // bool cw_tune_toggle(int16_t diff);
 
 void cw_tune_set_freq(float hz);
+
+/* The X6100 remembers the last CW tuning tone and the remote server offers it.
+ * This GUI does not keep it, so the answer is always "nothing recent". */
+bool cw_tune_recent(int32_t *hz);

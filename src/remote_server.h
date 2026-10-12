@@ -1,31 +1,41 @@
 /*
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  Xiegu X6200 LVGL GUI - live remote control (not ported yet).
+ *  Xiegu X6100 LVGL GUI
  *
- *  The X6100 apps publish their state to the web Remote page through this
- *  socket. Until the remote server is ported these are no-ops, so the ported
- *  app dialogs work unchanged and the Remote page shows the radio offline.
+ *  Web remote: local control socket for the webserver (/remote page)
  */
 
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
+
+#include "cJSON.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* The X6100 apps call this with a JSON object; nothing to publish yet */
-#define remote_event(...) ((void) 0)
-#define remote_text(...)  ((void) 0)
+void remote_server_init();
 
-static inline int remote_state(char *buf, size_t size) {
-    (void) buf;
-    (void) size;
+/* A web client or X6100 Link follows the state (any thread) */
+bool remote_subscribed();
 
-    return 0;
-}
+/* An event ({"t":...}) for the subscribed web clients. Any thread; takes o and frees it. */
+void remote_event(cJSON *o);
+
+/* Decoded text of type ("rtty_text"...) for the subscribed web clients, batched into
+ * {"t":type,"text":...} at a newline, 300 ms or 200 characters. Any thread; nothing without subscribers. */
+void remote_text(const char *type, const char *s, size_t n);
+
+/* Band by metres (40, 20...): the last of its sub-bands used, else the lowest, at its last
+ * frequency and mode. LVGL thread. Also the mic number keys (main_screen.c). */
+void remote_set_band(int32_t m);
+
+/* Waterfall PSD (dB) from the DSP, sent to the subscribed web clients (~10 fps) */
+void remote_scope_data(const float *psd_db, size_t n, uint32_t center_hz, uint32_t width_hz, bool tx);
 
 #ifdef __cplusplus
 }

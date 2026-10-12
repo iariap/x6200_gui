@@ -129,3 +129,10 @@ static void update_visibility(Subject *subj, void *user_data) {
     }
 
 }
+
+/* See the note in cw_tune_ui.h */
+bool cw_tune_recent(int32_t *hz) {
+    (void) hz;
+
+    return false;
+}

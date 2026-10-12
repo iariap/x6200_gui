@@ -1359,6 +1359,24 @@ bool main_screen_mode_locked(void) {
     return mode_lock;
 }
 
+bool main_screen_band_locked(void) {
+    return false;
+}
+
+void main_screen_agc_next(void) {
+    x6200_agc_t agc = (x6200_agc_t) subject_get_int(cfg_cur.agc);
+
+    switch (agc) {
+        case x6200_agc_off:  agc = x6200_agc_slow; break;
+        case x6200_agc_slow: agc = x6200_agc_fast; break;
+        case x6200_agc_fast: agc = x6200_agc_auto; break;
+        default:             agc = x6200_agc_off;  break;
+    }
+
+    subject_set_int(cfg_cur.agc, agc);
+    msg_tiny_set_text_fmt("AGC: %s", cfg_mode_agc_label(agc));
+}
+
 /* The X6100 has an encoder state machine (edit/select per control); this GUI's
  * vol/mfk modules keep the mode and apply the turning directly, so these map to
  * the closest behaviour available. */

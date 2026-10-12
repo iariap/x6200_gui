@@ -7,6 +7,8 @@
  */
 
 #include "dialog.h"
+#include "cfg/memory.h"
+#include "cfg/subjects.h"
 
 #include "styles.h"
 #include "main_screen.h"
@@ -17,10 +19,34 @@
 static lv_obj_t     *obj;
 static dialog_t     *current_dialog = NULL;
 
+/* The X6100 saves the radio state in a scratch memory slot when an app that
+ * changes it opens (or when dialog_restore_radio_on_close() asks), and puts it
+ * back when the app closes. */
+static bool    restore_mem;
+static int32_t restore_mode = -1;   /* the mode before an app changed it */
+static int32_t forced_mode;
+
+void dialog_restore_mode_on_close(int32_t mode, int32_t forced) {
+    restore_mode = mode;
+    forced_mode  = forced;
+}
+
+void dialog_restore_radio_on_close(void) {
+    if (current_dialog && current_dialog->run && !current_dialog->restore_radio) {
+        cfg_memory_save(MEM_BACKUP_ID);
+        restore_mem = true;
+    }
+}
+
 void dialog_construct(dialog_t *dialog, lv_obj_t *parent) {
     if (dialog && !dialog->run) {
         waterfall_refresh_period_set(2);
         main_screen_keys_enable(false);
+
+        if (dialog->restore_radio) {
+            cfg_memory_save(MEM_BACKUP_ID);
+        }
+
         dialog->prev_page = buttons_get_cur_page();
         buttons_unload_page();
         if (dialog->btn_page) {
@@ -36,6 +62,11 @@ void dialog_construct(dialog_t *dialog, lv_obj_t *parent) {
 
 void dialog_destruct() {
     if (current_dialog && current_dialog->run) {
+        if (current_dialog->restore_radio || restore_mem) {
+            cfg_memory_load(MEM_BACKUP_ID);
+            restore_mem = false;
+        }
+
         waterfall_refresh_reset();
         current_dialog->run = false;
 
@@ -52,6 +83,15 @@ void dialog_destruct() {
         }
         main_screen_keys_enable(true);
         current_dialog = NULL;
+    }
+
+    if (restore_mode >= 0) {
+        /* Unless the mode was changed again meanwhile */
+        if (subject_get_int(cfg_cur.mode) == forced_mode) {
+            subject_set_int(cfg_cur.mode, restore_mode);
+        }
+
+        restore_mode = -1;
     }
 }
 

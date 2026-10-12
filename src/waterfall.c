@@ -300,3 +300,11 @@ static void on_grid_max_change(Subject *subj, void *user_data) {
 static void on_fft_width_changed(Subject *subj, void *user_data) {
     width_hz = subject_get_int(subj);
 }
+
+/* The levels the waterfall is drawing with (the remote scope scales to them) */
+void waterfall_get_levels(bool tx, float *min, float *max) {
+    (void) tx;
+
+    if (min) { *min = grid_min; }
+    if (max) { *max = grid_max; }
+}

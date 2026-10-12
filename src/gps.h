@@ -19,6 +19,11 @@ extern "C" {
 bool gps_last_fix(double *lat, double *lon, int *age_s);
 bool gps_phone_fix(double *lat, double *lon, int *age_s);
 
+/* The position a phone or the web configurator sends (the QTH falls back to
+ * it when the radio has no GPS). */
+void gps_phone_set(double lat, double lon);
+void gps_phone_clear(void);
+
 #ifdef __cplusplus
 }
 #endif

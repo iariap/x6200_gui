@@ -22,6 +22,7 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **JS8** (motor + app completa) | ✅ 2026-10-11 | §16 |
 | **Temas JSON** (motor, temas incluidos y selección) | ✅ 2026-10-11 | §17 |
 | **Teclados USB/Bluetooth** (detección y *rollover*) | ✅ 2026-10-11 | §18 |
+| **Control remoto en vivo** (socket para la página `/remote`) | ✅ 2026-10-11 | §19 |
 | ~~Temas JSON~~ | ✅ 2026-10-11 | §17 |
 | ~~Teclado Bluetooth~~ | ✅ 2026-10-11 (entrada; falta la UI de pairing) | §18 |
 | ~~Field Ops SOTA/POTA~~ | ✅ 2026-10-11 | §15 |
@@ -869,3 +870,50 @@ dispositivos de entrada).
 Wireless). Hoy la vinculación se hace con `bluetoothctl`/`btaudio-ctl` por consola — los scripts
 ya dejan el adaptador listo — y el teclado empieza a andar en cuanto el sistema lo ve como
 dispositivo de entrada.
+
+---
+
+## 19. Control remoto en vivo (página `/remote` del navegador)
+
+El servidor de control que faltaba para que la página `/remote` del web configurator deje de
+mostrar la radio como desconectada: un **socket UNIX** (`/tmp/x6200_remote.sock`) por el que
+pasan objetos JSON, uno por línea, con ~60 comandos (banda, modo, frecuencia, filtros, AGC, ATT,
+PRE, volumen, squelch, NB/NR, PTT, CW, y los comandos de cada app abierta) y eventos hacia el
+navegador, además del **alcance** (el espectro) y el audio.
+
+### Qué se portó y cómo
+
+- `remote_server.cpp/h` del X6100 (1.055 líneas) con el mismo protocolo y el mismo formato de
+  eventos, apuntando a `/tmp/x6200_remote.sock` (el que ya usa nuestro fork del webserver).
+- **Adaptador `cfg_sm`**: el módulo lee y escribe la radio a través del `SettingsManager` del
+  X6100 (`cfg_sm.p_xxx.get()/set()`, `cp_xxx`, `current_band_id()`, `is_valid_hw_freq()`).
+  Escribí `cfg/settings_manager.{h,cpp}` como capa de compatibilidad sobre nuestro `cfg`,
+  `cfg_cur` y `params` (25 miembros), y `cfg/db.h/.cpp` con la `BandsTable` sobre nuestro
+  `cfg_band_read_all_bands()`.
+- Un **puente en C** (`cfg/cxx_bridge.c`): las cabeceras de esta GUI no tienen guardas
+  `extern "C"`, así que los dos símbolos que el shim necesita se exponen con funciones puente en
+  vez de redeclararlos (C++ no puede enlazarlos directo).
+- Los diálogos portados (WSPR, SSTV, WeFax, NavTex, JS8, Field Ops, Cluster) **publican ahora
+  eventos de verdad**: antes llamaban a los no-ops que había dejado como marcador.
+- **Restauración del estado de radio**: implementé `dialog_restore_radio_on_close()` y
+  `dialog_restore_mode_on_close()` (que necesitaba este servidor) sobre `cfg_memory_save/load`
+  en el slot de respaldo que ya tenía esta GUI. Con eso se cierra el pendiente que venía
+  documentado en WSPR/WeFax/JS8: al cerrar esas apps la frecuencia y el modo vuelven solos.
+
+### Diferencias con el original (documentadas)
+
+- **Sin control remoto de FT8**: nuestro diálogo FT8 es el upstream y no tiene los enganches
+  `dialog_ft8_remote()/state()` de su fork (son ~100 líneas con una tabla de mensajes RX). Las
+  otras seis apps sí responden a comandos.
+- No están las apps que este ROM no tiene: **teclado CW** y el huevo de pascua *Snake* (sus
+  entradas salieron del servidor); `RTTY` sí queda.
+- La radio no expone por su librería de control el **RF gain** ni el **IF shift** de banda: esos
+  comandos guardan el valor en memoria y responden, pero no cambian nada en el equipo.
+- `cw_tune_recent()` (la última sintonización de CW) no se guarda en esta GUI: responde "nada".
+
+### Verificación
+
+Compila limpio para ARM y el binario lleva el socket configurado
+(`/tmp/x6200_remote.sock`), que es el que espera la página `/remote` del web configurator. **La
+prueba de punta a punta necesita la radio** (el servidor arranca con la GUI y habla con el
+navegador), así que queda como verificación de hardware pendiente.

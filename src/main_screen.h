@@ -40,6 +40,11 @@ void main_screen_close_app(void);
 bool main_screen_freq_locked(void);
 bool main_screen_mode_locked(void);
 
+/* Band lock: this GUI has none, so the remote server's band commands always go
+ * through. The AGC one cycles the AGC the way the main screen does. */
+bool main_screen_band_locked(void);
+void main_screen_agc_next(void);
+
 /* Encoder helpers the ported apps call, mapped to this GUI's vol/mfk model */
 void main_screen_mfk(int dir);
 void main_screen_vol_press(void);

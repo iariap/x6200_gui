@@ -17,6 +17,7 @@
 #include "main_screen.h"
 #include "styles.h"
 #include "theme.h"
+#include "remote_server.h"
 #include "fonts/font_select.h"
 #include "radio.h"
 #include "dsp.h"
@@ -171,6 +172,9 @@ int main(void) {
 
     /* Icom LAN (wfview) server: no-op unless enabled in /mnt/wfview.conf */
     wfview_server_init();
+
+    /* Web remote: control socket for the /remote page (UNIX socket) */
+    remote_server_init();
 
     int64_t next_loop_time, sleep_time, loop_start_time;
     while (1) {
