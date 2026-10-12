@@ -312,10 +312,20 @@ float audio_set_play_vol(float db) {
     const char *card = "default";
     const char *selem_name = "AIF1 DA0";
 
-    snd_mixer_open(&handle, 0);
-    snd_mixer_attach(handle, card);
-    snd_mixer_selem_register(handle, NULL, NULL);
-    snd_mixer_load(handle);
+    /* Los retornos se checan: si la tarjeta no está (o el mixer no se puede abrir),
+     * seguir con el handle es usar memoria sin inicializar. Antes se llamaba a
+     * snd_mixer_attach con lo que hubiera quedado en `handle`. */
+    if (snd_mixer_open(&handle, 0) < 0 || handle == NULL) {
+        LV_LOG_WARN("No se pudo abrir el mixer (%s)", card);
+        return db;
+    }
+    if (snd_mixer_attach(handle, card) < 0 ||
+        snd_mixer_selem_register(handle, NULL, NULL) < 0 ||
+        snd_mixer_load(handle) < 0) {
+        LV_LOG_WARN("No se pudo preparar el mixer de '%s'", card);
+        snd_mixer_close(handle);
+        return db;
+    }
 
     snd_mixer_selem_id_alloca(&sid);
     snd_mixer_selem_id_set_index(sid, 0);
@@ -343,10 +353,20 @@ float audio_set_rec_vol(float db) {
     const char *card = "default";
     const char *selem_name = "ADC";
 
-    snd_mixer_open(&handle, 0);
-    snd_mixer_attach(handle, card);
-    snd_mixer_selem_register(handle, NULL, NULL);
-    snd_mixer_load(handle);
+    /* Los retornos se checan: si la tarjeta no está (o el mixer no se puede abrir),
+     * seguir con el handle es usar memoria sin inicializar. Antes se llamaba a
+     * snd_mixer_attach con lo que hubiera quedado en `handle`. */
+    if (snd_mixer_open(&handle, 0) < 0 || handle == NULL) {
+        LV_LOG_WARN("No se pudo abrir el mixer (%s)", card);
+        return db;
+    }
+    if (snd_mixer_attach(handle, card) < 0 ||
+        snd_mixer_selem_register(handle, NULL, NULL) < 0 ||
+        snd_mixer_load(handle) < 0) {
+        LV_LOG_WARN("No se pudo preparar el mixer de '%s'", card);
+        snd_mixer_close(handle);
+        return db;
+    }
 
     snd_mixer_selem_id_alloca(&sid);
     snd_mixer_selem_id_set_index(sid, 0);
