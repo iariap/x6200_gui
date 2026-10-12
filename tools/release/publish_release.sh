@@ -50,7 +50,7 @@ TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 dd if="$IMG" of="$TMP/rootfs.ext4" bs=1M skip=33 count=512 status=none
 7z e -y -o"$TMP" "$TMP/rootfs.ext4" usr/sbin/x6200_gui >/dev/null
-tar -xzf "$TGZ" -C "$TMP" ./usr/sbin/x6200_gui
+tar -xzf "$TGZ" -C "$TMP" usr/sbin/x6200_gui
 cmp "$TMP/x6200_gui" "$TMP/usr/sbin/x6200_gui"
 echo "    mismo binario"
 

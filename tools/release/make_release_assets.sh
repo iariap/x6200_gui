@@ -9,6 +9,7 @@
 #   x6200_<date>.img              the SD image, as built
 #   x6200_r1cbu_<version>.tgz     the in-place update: what S02update() looks for
 #                                 on the DATA partition (/mnt) and unpacks over /
+#                                 (built by make_update_tgz.sh, which needs root)
 #   SHA256SUMS                    both of the above
 #
 # and verifies: the image's root filesystem is clean (e2fsck), the update tarball
@@ -17,6 +18,8 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 set -e
+
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
 IMG=${1:?usage: make_release_assets.sh <image.img> <version> [out_dir]}
 VER=${2:?usage: make_release_assets.sh <image.img> <version> [out_dir]}
@@ -50,17 +53,22 @@ if [ -z "$ROOTFS" ]; then
     echo "no rootfs tar next to the image" >&2
     exit 1
 fi
-gzip -9 -c "$ROOTFS" > "$OUT/x6200_r1cbu_$VER.tgz"
+# make_update_tgz.sh arma el tgz en la forma que el S02update del firmware necesita
+# (solo archivos: ver el comentario de ese script) y hay que correrlo como root para
+# preservar los bits setuid del rootfs.
+"$HERE/make_update_tgz.sh" "$ROOTFS" "$OUT/x6200_r1cbu_$VER.tgz"
 
 echo "==> verificando la actualización"
-tar -tzf "$OUT/x6200_r1cbu_$VER.tgz" | grep -qx "./usr/sbin/x6200_gui"
-tar -xzf "$OUT/x6200_r1cbu_$VER.tgz" -C "$TMP" ./usr/sbin/x6200_gui ./etc/init.d/
+# El tgz lleva solo archivos (ver make_update_tgz.sh), asi que se extraen por nombre
+tar -tzf "$OUT/x6200_r1cbu_$VER.tgz" | grep -qx "usr/sbin/x6200_gui"
+tar -tzf "$OUT/x6200_r1cbu_$VER.tgz" | grep -q "^etc/init.d/S02update$"
+tar -xzf "$OUT/x6200_r1cbu_$VER.tgz" -C "$TMP" usr/sbin/x6200_gui etc/init.d/S02update
 if ! cmp -s "$TMP/img/x6200_gui" "$TMP/usr/sbin/x6200_gui"; then
     echo "the update tarball does not carry the same GUI binary as the image" >&2
     exit 1
 fi
 echo "    mismo binario GUI que la imagen"
-echo "    scripts de arranque: $(ls "$TMP/etc/init.d" | wc -l)"
+echo "    S02update (el que aplica la actualización) está dentro"
 
 cp -n "$IMG" "$OUT/$(basename "$IMG")" 2>/dev/null || true
 ( cd "$OUT" && sha256sum "$(basename "$IMG")" "x6200_r1cbu_$VER.tgz" > SHA256SUMS )
