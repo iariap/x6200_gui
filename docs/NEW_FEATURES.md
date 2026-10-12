@@ -19,7 +19,7 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **WeFax**: fax meteorológico (RX/TX, Auto) | ✅ 2026-10-11 | §12 |
 | Temas JSON | ⏳ pendiente | — |
 | Field Ops SOTA/POTA | ⏳ pendiente | — |
-| Modos digitales: WSPR ✅, NavTex ✅, SSTV ✅, WeFax ✅, JS8 | 🔶 en curso | §9-12 |
+| Modos digitales: WSPR ✅, NavTex ✅, SSTV ✅, WeFax ✅, JS8 (plan) | 🔶 en curso | §9-13 |
 | DRM/KMS + perilla con hilo propio | ⏳ pendiente | — |
 
 Todo lo portado mantiene la licencia LGPL-2.1-or-later y la atribución al autor original
@@ -575,3 +575,31 @@ PASS
 
 Verifica la detección de APT de arranque y parada, la confirmación del fax, la alineación de
 phasing y que la imagen vuelve completa: **300 de 300 líneas con correlación 0,995**.
+
+---
+
+## 13. JS8: qué necesita (relevado)
+
+Último modo digital que queda. Es, por lejos, el port más grande, así que lo relevé antes de
+comprometer una ronda:
+
+| Pieza | Tamaño | Notas |
+|---|---|---|
+| `third-party/js8core/` | 380 archivos, **156.565 líneas** | El módem y protocolo JS8, vendorizado por ellos desde `JS8Call-improved/Android-port`, commit `1f8d390a…` (2026-09-23), **GPLv3**, C++20 |
+| `src/js8/` | 4.711 líneas | Alertas, ensamblador de mensajes, autorrespuesta, clasificación, comandos, dirigidos, inbox, RX |
+| `src/dialog_js8.c` | 5.413 líneas | La app |
+| `tools/js8_wavgen` + `test-audio/js8_test.wav` | — | Generador de WAV y audio de prueba para verificar sin radio |
+
+**El bloqueante es una dependencia**: `js8core` incluye `<boost/crc.hpp>`, o sea necesita
+**Boost**, que nuestra imagen no tiene. Hay que agregar el paquete de buildroot
+(`BR2_PACKAGE_BOOST`) y reconstruir; recién entonces la librería compila.
+
+**Verificado en esta ronda**: copié `js8core` a nuestro árbol, lo puse en el build y **compiló
+hasta la dependencia de Boost** (`legacy_decoder.cpp:30: boost/crc.hpp: No such file`). Después
+lo reverti para no dejar 21 MB de código vendorizado sin poder construir y mantener la imagen
+verde (build de nuevo en 0 errores).
+
+**Plan para la próxima ronda**: agregar Boost al defconfig → construir `js8core` → portar
+`src/js8` (adaptando `cfg_api`/`app_frame`/`freq_list`/`tx_player`, que ya están) → el diálogo
+(con la lección del framework de botones ya resuelta) → verificar con `js8_wavgen` y el WAV de
+prueba.
