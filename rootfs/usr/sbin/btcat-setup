@@ -1,0 +1,22 @@
+#!/bin/sh
+# Ported from the X6100 firmware by IU1WXY (LGPL-2.1-or-later).
+# Configure adapter for SPP CAT: power, name, SDP record, pairing agent
+BTCAT_BT=yes
+BTCAT_DISCOVERABLE=yes
+BTCAT_ALIAS="X6200"
+[ -r /etc/default/btcat ] && . /etc/default/btcat
+[ -r /mnt/btcat.conf ] && . /mnt/btcat.conf
+
+for i in $(seq 1 30); do hciconfig hci0 >/dev/null 2>&1 && break; sleep 1; done
+for i in $(seq 1 15); do [ -S /var/run/sdp ] && break; sleep 1; done
+
+bluetoothctl system-alias "$BTCAT_ALIAS"
+bluetoothctl pairable on
+sdptool add --channel=1 SP
+pidof bt-agent >/dev/null || bt-agent -c NoInputNoOutput -d
+
+/usr/sbin/btcat-ctl apply
+# headphones: keep A2DP + RX loopback, connect the "Connect at startup" ones
+/usr/sbin/btaudio-ctl boot &
+touch /tmp/btcat-setup.done
+echo "btcat-setup done"

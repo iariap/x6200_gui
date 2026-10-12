@@ -89,9 +89,9 @@ para modos que nunca se portaron.
 | Función | X6100 | X6200 |
 |---|---|---|
 | **wfview server** (la radio aparece como un IC-705 en red) | ✅ | ❌ |
-| **Bluetooth CAT** (hasta 3 clientes simultáneos) | ✅ | ❌ |
-| **Auriculares BT** A2DP (volumen propio, mute del parlante) | ✅ | ⚠️ parcial: `bluez-alsa` está en el rootfs, falta la UI y el loopback de PulseAudio |
-| **Teclados BT** (para el CW Keyboard) | ✅ | ❌ |
+| **Bluetooth CAT** (hasta 3 clientes simultáneos) | ✅ | ✅ **desde 2026-10-11** ([NEW_FEATURES.md](NEW_FEATURES.md) §6) |
+| **Auriculares BT** A2DP (volumen propio, mute del parlante) | ✅ | ✅ **loopback + A2DP desde 2026-10-11** (falta la UI) |
+| **Teclados BT** (para el CW Keyboard) | ✅ | ❌ (los scripts lo detectan, falta el camino evdev dinámico en la GUI) |
 | **Web configurator**: 12 páginas (Bands, Digital modes, Cluster, wfview, Memories, Remote con espectro/waterfall y audio RX, Backup, Gallery, Field, Files, Time), HTTP+**HTTPS** | ✅ | ⚠️ tiene webserver (Bands, Digital modes, Files, Time) sin HTTPS ni control remoto |
 | App Android **X6100 Link** (control total + PTT) | ✅ | ❌ |
 | Bluetooth CAT / pairings respaldados en `/mnt` y restaurados al boot | ✅ | ❌ |

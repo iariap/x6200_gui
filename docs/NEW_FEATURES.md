@@ -10,8 +10,8 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **Aguja de S-meter** | ✅ 2026-10-11 | §3 |
 | **Band plan IARU** sobre el waterfall | ✅ 2026-10-11 | §4 |
 | **Grabación de pantalla** (AVI) | ✅ 2026-10-11 | §5 |
+| **Bluetooth: CAT (SPP) y auriculares A2DP** | ✅ 2026-10-11 | §6 |
 | Temas JSON | ⏳ pendiente | — |
-| Bluetooth CAT / auriculares / teclado | ⏳ pendiente | — |
 | wfview (la radio como IC-705 en red) | ⏳ pendiente | — |
 | Web configurator ampliado (HTTPS, remotas, backup) | ⏳ pendiente | — |
 | Field Ops SOTA/POTA | ⏳ pendiente | — |
@@ -126,3 +126,74 @@ grabar y lo baja al terminar; esta GUI lo deja en manos del ajuste `MONI` del us
 Tests: `tests/native/test_avi_writer.c` escribe un AVI real con cuadros y audio falsos y valida
 la estructura RIFF (`RIFF`/`AVI `/`hdrl`/`strl`/`MJPG`/`auds`/`movi`/`00dc`/`01wb`/`idx1`), el
 tamaño de RIFF y que abrir en una ruta inválida falle limpiamente.
+
+---
+
+## 6. Bluetooth: CAT por SPP y auriculares A2DP
+
+Portado del X6100 de IU1WXY (scripts + `btcat.c`, LGPL). **Todo el soporte que hacía falta
+ya estaba en la imagen**: los módulos de PulseAudio para Bluetooth, `bluez5-utils`
+(`bluetoothctl`, `btattach`, `hciattach`) y los drivers USB `btusb`+`btrtl`.
+
+### Kernel
+
+Se agregó el transporte **HCI por UART**, que faltaba:
+
+```
+CONFIG_BT_HCIUART=m + H4, 3WIRE, INTEL, BCM, RTL
+```
+
+Así el equipo funciona con el chip en USB (lo que ya cubrían `btusb`/`btrtl`) **o** en un
+UART (Realtek/Broadcom/Intel), que era el hueco. `RFCOMM` y `HIDP` ya estaban.
+
+### Bluetooth CAT: `btcat`
+
+`/usr/sbin/btcat` abre el UART de CAT real (`/dev/ttyS2`), crea una **pty y monta su slave
+sobre `/dev/ttyS2`**, y escucha en RFCOMM canal 1 (SPP). Así la GUI (sin cambios) habla con
+`btcat` en lugar del UART, y se multiplexan los clientes USB y Bluetooth: una consulta por vez
+a la GUI, respuesta al que preguntó, y los *transceive* (dst=0x00) a todos.
+
+- `S94btcat` lo arranca antes de `S95gui` (espera a que el bind-mount esté listo) y
+  `btcat-setup` configura el adaptador: alias, `pairable`, registro SDP y agente de pairing.
+- Ajustes: `/etc/default/btcat` (valores por defecto) y `/mnt/btcat.conf` (estado en runtime,
+  sobrevive al reflash porque vive en la partición DATA).
+- `btcat-ctl` permite ver/editar esa configuración y el estado.
+- Sirve para apps de teléfono tipo **FT8CN** que manejan la radio por CAT sobre Bluetooth.
+
+### Auriculares A2DP: `btaudio-ctl`
+
+- `/etc/pulse/system.pa.d/btaudio.pa` fija la política: **solo A2DP** (nada de HFP/HSP, que en
+  esta familia de equipos no da audio y además corta el WiFi), sin *auto-switch* de perfil y
+  **sin** loopear a TX el audio de un teléfono que se conecta como fuente A2DP.
+- `btaudio-ctl` (253 líneas, adaptado) maneja todo desde consola:
+
+```
+btaudio-ctl list | scan | pair MAC | connect|disconnect|remove MAC
+btaudio-ctl rx on|off          # loopback del audio de RX a los auriculares
+btaudio-ctl volume 0..100 | mute on|off
+btaudio-ctl autoconnect MAC on|off
+btaudio-ctl boot | monitor     # lo usa btcat-setup y un monitor de fondo
+```
+
+- El audio llega por `module-loopback source=alsa_input.platform-sound.stereo-fallback
+  sink=bluez_sink.<MAC>.a2dp_sink` (la misma fuente PulseAudio que ya usa la GUI).
+- Las vinculaciones se respaldan en `/mnt/backups/bluetooth.tgz` y `S39btpairings` las
+  restaura antes de que arranque `bluetoothd`, así una imagen nueva no las olvida.
+
+### Lo que NO se portó (queda pendiente)
+
+- **UI de Bluetooth en Ajustes → Wireless**: en el X6100 el pairing y todos estos ajustes se
+  manejan desde la GUI. Acá los scripts funcionan por consola/SSH (y `btcat-setup` ya deja el
+  adaptador listo al arrancar), pero todavía no hay pantalla de pairing.
+- **Teclado Bluetooth**: los scripts lo detectan y lo reportan como rol `kbd`, pero la GUI abre
+  dispositivos de entrada fijos (`/dev/input/event0/4`) y no tiene el camino dinámico de evdev
+  que el X6100 sí tiene. Requiere ese trabajo en la GUI.
+
+### Verificación
+
+- `hci_uart.ko` y `rfcomm.ko` presentes en la imagen; `btcat` compilado e instalado en
+  `/usr/sbin/btcat`.
+- Scripts validados con `sh -n`, y el fragmento de PulseAudio cae en
+  `/etc/pulse/system.pa.d/` (nuestro `system.pa` incluye ese directorio).
+- **Requiere probar en la radio**: qué transporte usa el chip (USB o UART) se confirma con
+  `hciconfig -a` y `dmesg | grep -i blue`; el pairing real, con `bluetoothctl`.
