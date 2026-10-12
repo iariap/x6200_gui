@@ -21,6 +21,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     dialog_eq.cpp dialog_about.c
     adaptive_tuning.c
     audio_enhancement.c
+    wspr/wspr.c wspr/wsprnet.c
 )
 
 add_subdirectory(fonts)
@@ -28,6 +29,7 @@ add_subdirectory(ft8)
 add_subdirectory(widgets)
 add_subdirectory(params)
 add_subdirectory(qth)
+add_subdirectory(wspr)
 add_subdirectory(cfg)
 
 include_directories(utf8)

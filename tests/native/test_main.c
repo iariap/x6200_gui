@@ -8,32 +8,8 @@
 
 #include "test_framework.h"
 
-int tests_run = 0;
-int tests_failed = 0;
 
-void test_check(bool ok, const char *expr, const char *file, int line) {
-    tests_run++;
 
-    if (!ok) {
-        tests_failed++;
-        printf("FALLO %s:%d: %s\n", file, line, expr);
-    }
-}
-
-void test_check_close(float got, float want, float tol, const char *expr, const char *file, int line) {
-    float diff = got - want;
-
-    if (diff < 0.0f) {
-        diff = -diff;
-    }
-
-    tests_run++;
-
-    if (diff > tol) {
-        tests_failed++;
-        printf("FALLO %s:%d: %s (got %.4f, want %.4f +-%.4f)\n", file, line, expr, got, want, tol);
-    }
-}
 
 void test_adaptive_tuning(void);
 void test_audio_enhancement(void);

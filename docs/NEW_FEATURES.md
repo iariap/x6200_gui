@@ -13,9 +13,10 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **Bluetooth: CAT (SPP) y auriculares A2DP** | ✅ 2026-10-11 | §6 |
 | **wfview**: la radio como IC-705 en red | ✅ 2026-10-11 | §7 |
 | **Web configurator ampliado** (+HTTPS) | ✅ 2026-10-11 | §8 |
+| **WSPR**: motor de decodificación (encoder, baseband, decoder) | ✅ 2026-10-11 | §9 |
 | Temas JSON | ⏳ pendiente | — |
 | Field Ops SOTA/POTA | ⏳ pendiente | — |
-| Modos digitales: WSPR, SSTV, JS8, WeFax, NavTex | ⏳ pendiente | — |
+| Modos digitales: WSPR (motor ✅, UI ⏳), SSTV, JS8, WeFax, NavTex | 🔶 en curso | §9 |
 | DRM/KMS + perilla con hilo propio | ⏳ pendiente | — |
 
 Todo lo portado mantiene la licencia LGPL-2.1-or-later y la atribución al autor original
@@ -306,3 +307,61 @@ parcheado por buildroot, así que ahí funciona sin shim).
 - **Field Ops** (`/field`) y **cluster** (`/cluster`): las páginas renderizan, pero los
   subsistemas (`x6200-field`, configuración del cluster) todavía no están portados.
 - **CW trainer**: la página lo usa el firmware del X6100; acá no existe ese módulo.
+
+---
+
+## 9. WSPR: motor de decodificación
+
+Primera pieza de los modos digitales, y la más grande de las que se pueden verificar **sin
+radio**: el motor completo de WSPR.
+
+### Qué se portó
+
+- `src/wspr/wspr.c/h`: codificador de mensajes tipo 1, sintetizador 4-FSK, **grabador de
+  banda base** (NCO + remuestreador de liquid-dsp, de 11.025 kHz de audio a los 375 Hz de I/Q) y
+  el pegamento con el decodificador.
+- `src/wspr/wsprd/` (K1JT): el motor de decodificación (sync, demodulación, Fano, tablas),
+  vendorizado con su licencia y su `UPSTREAM.md`. Es **código C autocontenido**: solo necesita
+  FFT en float (`libfftw3f`), que la imagen ya traía.
+- `src/wspr/wsprnet.c`: formateo y envío de spots a WSPRnet (sockets propios, sin libcurl).
+
+### El test: round-trip completo
+
+`tests/native/test_wspr.c` hace el camino entero —**codificar → sintetizar audio → banda base →
+decodificar**— y lo corre en el contenedor del arnés (necesita `libfftw3f` y `liquid-dsp`, que
+ahora quedan instalados en `x6200-uiharness`):
+
+```
+spot: IU1WXY JN35 37 dBm, 14097130.0 Hz, snr -20, dt 0.07
+158 comprobaciones, 0 fallos
+```
+
+Cubre:
+
+- Round-trip a **−20 dB** de SNR: el spot decodificado tiene el indicativo, el locator, la
+  potencia y la **frecuencia exacta** (dial 14.0956 MHz + 1530 Hz de audio).
+- Segundo round-trip con otro indicativo y **−25 dB**.
+- **Solo ruido: 0 spots** (no inventa decodificaciones).
+- Mapeo de potencia a los 19 niveles que WSPR puede transmitir, monotonía, y el recorte por
+  debajo de 1 mW.
+- Límites del codificador: los indicativos compuestos (`DL/IU1WXY`) no entran en un mensaje
+  tipo 1; locators completos sí, medios no.
+- El grabador de banda base: cuánto acumula, que no desborda con más de un ciclo y que el
+  `reset` lo vacía.
+
+### Detalle de la investigación
+
+Perdí un rato con "declaraciones implícitas" de liquid hasta darme cuenta de que **yo mismo
+había borrado el `#include <liquid/liquid.h>`** creyendo que no se usaba: los nombres
+(`nco_crcf_mix_down`, `msresamp_crcf_execute`) están detrás de macros de *mangling* del header
+amalgamado, así que un `grep` del nombre literal no los encuentra. Restaurado.
+
+Para que el test se pueda correr en cualquier lado, el `Dockerfile` del arnés ahora compila e
+instala **liquid-dsp 1.4.0** (la misma versión que usa la imagen).
+
+### Lo que falta de WSPR
+
+La **UI**: `dialog_wspr.c` (tabla de spots, selección de banda, controles de TX, subida
+automática) y la infraestructura compartida por todos los diálogos de apps del X6100
+(`app_frame`, `freq_strip`, `tx_player`), que es la misma que necesitan SSTV, WeFax, NavTex y
+JS8 — por eso conviene portarla de una vez en la próxima tanda.

@@ -8,3 +8,10 @@ RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq 
         libsqlite3-dev sqlite3 \
         autoconf automake libtool \
     && rm -rf /var/lib/apt/lists/*
+
+# liquid-dsp 1.4.0: the WSPR baseband recorder (NCO + resampler) and the
+# waterfall use it, so the host tests need the real library, not a stub.
+RUN git clone -q --depth 1 --branch v1.4.0 https://github.com/jgaeddert/liquid-dsp /tmp/liquid-dsp \
+    && cd /tmp/liquid-dsp && ./bootstrap.sh >/dev/null && ./configure --prefix=/usr/local >/dev/null \
+    && make -j"$(nproc)" >/dev/null && make install >/dev/null && ldconfig \
+    && rm -rf /tmp/liquid-dsp
