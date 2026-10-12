@@ -27,11 +27,11 @@ Cada feature portada tiene su detalle, configuración y tests en
 | Band plan IARU | ✅ | §4 |
 | Grabación de pantalla | ✅ | §5 — video MJPEG + audio de RX |
 | Bluetooth CAT | ✅ | §6 |
-| Auriculares Bluetooth | 🔶 | §6 — loopback + A2DP; falta la UI |
+| Auriculares Bluetooth | ✅ | §6 y §25/§26 — loopback + A2DP y la app de dispositivos (listar, vincular, conectar y enrutar el RX), con la política de PulseAudio |
 | Teclados USB/Bluetooth | ✅ | §18 entrada, §21 CW Keyboard y §26 app de dispositivos |
 | wfview | ✅ | §7 |
 | Web configurator ampliado | ✅ | §8 — 15 páginas + HTTPS |
-| Control remoto en vivo | ✅ | §19 — sin control remoto de FT8 |
+| Control remoto en vivo | ✅ | §19 — socket con ~65 comandos, las apps incluido FT8 (`ft8_cq`, `ft8_stop`, `ft8_auto`, `ft8_hold`) |
 | WSPR | ✅ | §9 |
 | NavTex | ✅ | §10 |
 | SSTV | ✅ | §11 |
