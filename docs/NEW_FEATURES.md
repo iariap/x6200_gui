@@ -1033,3 +1033,47 @@ del firmware original que tampoco estaban en la lista (**Callsign, WiFi, EQ**).
 Verificado en el binario: cada etiqueta nueva está presente y las nueve acciones están manejadas
 en `main_screen.c`. El ajuste de la **aguja de S-meter** y el **band plan** ya estaban en Ajustes
 como interruptores, así que esos dos sí eran alcanzables.
+
+---
+
+## 23. CW Trainer: entrenador de CW
+
+La última app del X6100 que faltaba. Es un entrenador de **prefijos de indicativos**: arma
+indicativos al azar a partir de 55 prefijos reales (`IU1`, `IK2`, `DL#`, `EA8`, `LU#`, `JA#`,
+`K#`…) según el **nivel** (de 1 a 5) y los emite en CW con el codificador de la GUI, para que
+los copies de oído.
+
+- **Escuchar** (RX): la app emite el grupo; el texto sale **decodificado** en pantalla para que
+  te corrijas, y podés **repetirlo**.
+- **Telegrafiar** (TX): también podés picar el grupo con la paleta y ver si el decodificador
+  entendió lo que mandaste.
+- **Grupo**: cambia entre 5 conjuntos de prefijos. **Nivel**: largo del indicativo.
+- Respeta el modo de práctica del equipo (`cfg.key_train`): si está apagado, no emite (te lo dice).
+- Se abre desde **Ajustes → acciones de pulsación larga → `APP CW Trainer`**.
+
+### Lo que hizo falta portar
+
+- `dialog_cw_trainer.c/h` (1.257 líneas) y `panel.cpp/h` (222 líneas, el panel de texto que usa;
+  lo incluí con nuestro `pannel_style`).
+- Tres enganches en el módulo de CW, **todos apagados por defecto** para no cambiar el
+  comportamiento normal:
+  - `cw_trainer_set(bool)`: hace que el DSP de CW corra aunque el decodificador esté apagado
+    (la app necesita decodificar lo que ella misma emite).
+  - `cw_decoder_set_sink(texto, wpm)`: el texto decodificado va al entrenador en vez del panel;
+    si no hay sink, sigue yendo al panel **y ahora también al control remoto** (`cw_text`), así
+    que la página `/remote` muestra el CW decodificado.
+  - `cw_encoder_require_train(bool)`: cuando el entrenador lo pide, la llave no cierra si el
+    modo de práctica del equipo está apagado.
+- Dos ajustes nuevos en `cfg` (`cwt_level`, `cwt_group`) que sólo usa esta app.
+- `rtty.h` tenía funciones sin guardas `extern "C"`, lo que rompía a los archivos C++ que las
+  llaman (`panel.cpp`): se agregaron.
+
+### Verificación
+
+Compila limpio para ARM y la app queda en el binario con sus 19 apps. **Falta probarlo en el
+equipo**: el entrenamiento real necesita la radio (que emite el CW) y, para la parte de TX, una
+paleta o el teclado.
+
+Con esto **no queda ninguna app del X6100 sin portar** (la única que no está es *Snake*, que es
+un huevo de pascua, y el selector `MODES`, que acá se reemplaza por las acciones de pulsación
+larga).

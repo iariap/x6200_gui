@@ -67,6 +67,7 @@ static float   cw_decoder_noise_beta;
 static float   cw_decoder_snr;
 static float   cw_decoder_snr_gist;
 static bool    cw_decoder;
+static bool                 trainer = false;
 static bool    cw_tune;
 
 static pthread_mutex_t  cw_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -76,6 +77,10 @@ static void dds_dec_init();
 static void on_key_tone_change(Subject *subj, void *user_data);
 static void on_val_float_change(Subject *subj, void *user_data);
 static void on_val_bool_change(Subject *subj, void *user_data);
+
+void cw_trainer_set(bool on) {
+    trainer = on;
+}
 
 void cw_init() {
     cfg.key_tone.val->subscribe(on_key_tone_change)->notify();
@@ -208,7 +213,7 @@ void cw_put_audio_samples(unsigned int n, cfloat *samples) {
     if (!ready) {
         return;
     }
-    if ((!cw_decoder) && (!cw_tune)) {
+    if ((!cw_decoder) && (!cw_tune) && (!trainer)) {
         return;
     }
     cfloat sample;

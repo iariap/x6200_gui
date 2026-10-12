@@ -70,6 +70,9 @@ extern lv_style_t   panel_bottom_style;
 extern lv_style_t   pannel_style;
 #define panel_style pannel_style    /* the X6100 spelling */
 
+/* The decoded-text panel's info line; this GUI has no separate style for it */
+#define panel_info_style pannel_style
+
 extern lv_style_t   dialog_style;
 extern lv_style_t   dialog_item_style;
 extern lv_style_t   dialog_item_focus_style;

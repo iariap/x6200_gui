@@ -19,3 +19,7 @@ extern cw_characters_t cw_characters[];
 
 void cw_decoder_init();
 void cw_decoder_signal(bool on, float ms);
+
+/* Where the decoded text goes: the panel by default, the CW trainer when it sets
+ * a sink (docs/NEW_FEATURES.md) */
+void cw_decoder_set_sink(void (*text)(const char *), void (*wpm)(int));

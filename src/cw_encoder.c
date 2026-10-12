@@ -6,6 +6,7 @@
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
 #include "cw_encoder.h"
+#include "cfg/cfg_api.h"
 
 #include "cw_decoder.h"
 #include "params/params.h"
@@ -46,6 +47,23 @@ static uint8_t get_morse(char *str, char **morse) {
     return 0;
 }
 
+static bool need_train;
+
+void cw_encoder_require_train(bool on) {
+    need_train = on;
+}
+
+/* Closes the key; with the train requirement and no train, it does not key */
+static bool key_down(void) {
+    if (need_train && !param_i_get(cfg_key_train)) {
+        return false;
+    }
+
+    radio_set_morse_key(true);
+
+    return true;
+}
+
 static void send_morse(char *str, time_t dit_nsec, time_t dah_nsec) {
     struct timespec t;
     t.tv_sec = 0;
@@ -53,16 +71,18 @@ static void send_morse(char *str, time_t dit_nsec, time_t dah_nsec) {
         switch (*str) {
             case '.':
                 t.tv_nsec = dit_nsec;
-                radio_set_morse_key(true);
-                nanosleep(&t, NULL);
-                radio_set_morse_key(false);
+                if (key_down()) {
+                    nanosleep(&t, NULL);
+                    radio_set_morse_key(false);
+                }
                 break;
 
             case '-':
                 t.tv_nsec = dah_nsec;
-                radio_set_morse_key(true);
-                nanosleep(&t, NULL);
-                radio_set_morse_key(false);
+                if (key_down()) {
+                    nanosleep(&t, NULL);
+                    radio_set_morse_key(false);
+                }
                 break;
 
             default:

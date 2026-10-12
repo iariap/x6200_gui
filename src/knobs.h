@@ -19,6 +19,10 @@ extern "C" {
 
 bool knobs_visible(void);
 
+/* The X6100 hides the knob labels while a dialog is open. This GUI's dialogs
+ * cover that area, so there is nothing to hide: accepted and ignored. */
+void knobs_display(bool on);
+
 /* What VOL (vol true) or MFK controls: its name, its value as text, a level
  * 0..1 (-1 when it has no scale) and whether turning it changes the value
  * (false: it chooses the control). */

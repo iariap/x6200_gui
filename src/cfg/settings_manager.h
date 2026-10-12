@@ -18,10 +18,14 @@
 #include <cstdint>
 #include <functional>
 
+#include "subjects.h"
+
 class Param {
 public:
     Param() = default;
     Param(std::function<int32_t()> get, std::function<void(int32_t)> set) : get_(get), set_(set) {}
+    Param(Subject *subject, std::function<int32_t()> get, std::function<void(int32_t)> set)
+        : subject_(subject), get_(get), set_(set) {}
 
     int32_t get() const { return get_ ? get_() : value_; }
     float   getf() const { return getf_ ? getf_() : (float) get(); }
@@ -43,12 +47,28 @@ public:
         }
     }
 
+    /* The ported panel subscribes with a delay (the settings manager's own
+     * scheduling); our subjects offer the same through subscribe_delayed() */
+    void subscribe_delayed(void (*fn)(Subject *, void *), void *user_data) {
+        if (subject_) {
+            subject_add_delayed_observer(subject_, fn, user_data);
+        }
+    }
+
+    void subscribe_delayed_and_notify(void (*fn)(Subject *, void *), void *user_data) {
+        if (subject_) {
+            subject_add_delayed_observer(subject_, fn, user_data);
+            fn(subject_, user_data);
+        }
+    }
+
     void tief(std::function<float()> g, std::function<void(float)> s) {
         getf_ = g;
         setf_ = s;
     }
 
 private:
+    Subject                       *subject_ = nullptr;
     std::function<int32_t()>       get_;
     std::function<void(int32_t)>   set_;
     std::function<float()>         getf_;
@@ -63,7 +83,7 @@ public:
     /* Persisted parameters */
     Param p_volume, p_squelch, p_rfgain, p_pwr, p_nb, p_nb_level, p_nb_width;
     Param p_nr, p_nr_level, p_band_id, p_band_current_vfo, p_band_if_shift;
-    Param p_ft8_protocol;
+    Param p_ft8_protocol, p_cw_decoder;
 
     /* Live (computed) state */
     Param cp_fg_freq, cp_bg_freq, cp_cur_mode, cp_cur_agc, cp_cur_att, cp_cur_pre;

@@ -99,3 +99,8 @@ bool knobs_info(bool vol, const char **name, char *val, size_t size, float *leve
 
     return true;
 }
+
+/* See the note in knobs.h */
+void knobs_display(bool on) {
+    (void) on;
+}

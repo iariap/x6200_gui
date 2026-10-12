@@ -11,9 +11,13 @@
 #include <math.h>
 #include "lvgl/lvgl.h"
 #include "cw_decoder.h"
+#include "remote_server.h"
 #include "pannel.h"
 
 #define HIST_SIZE       10
+
+static void (*sink_text)(const char *);
+static void (*sink_wpm)(int);
 
 static uint32_t debounce_factor = 15;
 static uint32_t thr_mean = 139;
@@ -128,7 +132,12 @@ void cw_decoder_init() {
 }
 
 static void cw_decoder_ans(const char *ans) {
-    pannel_add_text(ans);
+    if (sink_text) {
+        sink_text(ans);
+    } else {
+        pannel_add_text(ans);
+        remote_text("cw_text", ans, strlen(ans));
+    }
 }
 
 static void cw_decoder_wpm(uint16_t wpm) {
@@ -302,3 +311,7 @@ void cw_decoder_signal(bool on, float ms) {
     }
 }
 
+void cw_decoder_set_sink(void (*text)(const char *), void (*wpm)(int)) {
+    sink_text = text;
+    sink_wpm  = wpm;
+}

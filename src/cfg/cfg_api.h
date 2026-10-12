@@ -23,6 +23,10 @@ extern "C" {
 #define cfg_bg_freq         (cfg_cur.bg_freq)
 #define cfg_cur_mode        (cfg_cur.mode)
 #define cfg_pwr             (&cfg.pwr)
+#define cfg_key_train       (&cfg.key_train)
+#define cfg_cwt_level       (&cfg.cwt_level)
+#define cfg_cwt_group       (&cfg.cwt_group)
+
 #define cfg_key_speed       (&cfg.key_speed)
 #define cfg_cw_decoder      (&cfg.cw_decoder)
 

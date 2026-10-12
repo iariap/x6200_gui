@@ -55,6 +55,8 @@ typedef struct {
     cfg_item_t iambic_mode;
     cfg_item_t key_vol;
     cfg_item_t key_train;
+    cfg_item_t cwt_level;          /* CW trainer: how many characters */
+    cfg_item_t cwt_group;          /* CW trainer: which character set */
     cfg_item_t qsk_time;
     cfg_item_t key_ratio;
 

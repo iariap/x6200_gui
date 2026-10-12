@@ -25,3 +25,7 @@ cw_encoder_state_t cw_encoder_state();
 
 /* Characters of the message in progress already sent */
 int cw_encoder_sent();
+
+/* The trainer keys through the radio's own practice mode: with this on, keying
+ * stops unless cfg.key_train is set. */
+void cw_encoder_require_train(bool on);

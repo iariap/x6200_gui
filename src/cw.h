@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <stdbool.h>
+
 #include "helpers.h"
 
 
@@ -25,6 +27,10 @@ void cw_init();
  * this GUI keeps the one set in the configuration, which is what the CW
  * keyboard app shows. */
 int cw_get_wpm(void);
+
+/* The CW trainer app decodes what the radio is keying: with this on, the CW DSP
+ * runs even when the decoder setting is off. */
+void cw_trainer_set(bool on);
 
 void cw_put_audio_samples(unsigned int n, cfloat *samples);
 void cw_put_audio_int_samples(unsigned int n, int16_t *samples);

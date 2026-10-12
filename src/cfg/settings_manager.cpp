@@ -52,6 +52,8 @@ SettingsManager::SettingsManager() {
     p_pwr.tief([this]() { return subject_get_float(cfg.pwr.val); },
                [this](float v) { subject_set_float(cfg.pwr.val, v); });
 
+    p_cw_decoder = item_param(&cfg.cw_decoder);
+
     /* Our FT8 protocol lives in params, not in a subject */
     p_ft8_protocol = Param([this]() { return (int32_t) params.ft8_protocol; },
                            [this](int32_t v) { params.ft8_protocol = (ftx_protocol_t) v; });
