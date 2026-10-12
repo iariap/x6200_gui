@@ -51,7 +51,7 @@ Lo que sigue necesitando la radio (🔌) está listado en
 
 ```bash
 cd x6200_gui
-tools/release/make_release_assets.sh <imagen.img> <versión>   # arma imagen + tgz + SHA256SUMS
+sudo tools/release/make_release_assets.sh <imagen.img> <versión>   # imagen + tgz + SHA256SUMS
 tools/release/publish_release.sh <tag> <versión>              # ensayo: verifica y muestra el comando
 tools/release/publish_release.sh <tag> <versión> --publish    # publica
 ```
@@ -61,6 +61,24 @@ coincidan, que el tgz de actualización traiga **el mismo binario GUI** que la i
 actualización en el lugar instala exactamente lo que instala la imagen), que el árbol esté limpio y
 pusheado, que la suite pase y que las notas del release existan. Sin `--publish` se detiene después
 de las verificaciones y **muestra el comando que ejecutaría**, así se puede ensayar.
+
+**El tgz de actualización necesita root** (`sudo`), porque el rootfs trae cinco archivos setuid
+(`busybox`, `mount`, `umount`, `dbus-daemon-launch-helper`, `ssh-keysign`) y hay que preservarlos:
+extrayéndolo como usuario común se pierden y una actualización en el lugar rompería esos binarios.
+`tools/release/make_update_tgz.sh` lo arma y lo comprueba.
+
+**El tgz lleva sólo archivos y enlaces**: ni `./` ni entradas de directorio. No es un capricho, el
+`S02update` del firmware hace el backup así:
+
+```sh
+zcat $i | tar -tf - | xargs tar -cvf - | gzip > /mnt/backup_...
+```
+
+Con una entrada `./` ese `tar` recibe `./` y archiva el sistema **entero** —incluido `/mnt`, donde
+está escribiendo el backup—. Con sólo archivos, el backup contiene exactamente los archivos que se
+reemplazan (5313 entradas, 0 directorios). Verificado extrayendo el tgz con el **busybox de la
+imagen**: extrae, crea las carpetas que falten, conserva dueño, permisos y los cinco setuid, y deja
+un binario GUI idéntico al de la imagen.
 
 ### Análisis estático
 
