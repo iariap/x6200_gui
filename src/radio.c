@@ -702,9 +702,10 @@ void radio_set_ptt(bool tx) {
     WITH_RADIO_LOCK(x6200_control_ptt_set(tx));
 }
 
-// void radio_set_modem(bool tx) {
-//     WITH_RADIO_LOCK(x6200_control_modem_set(tx));
-// }
+/* Digital modes: modem mode while a frame is transmitted */
+void radio_set_modem(bool tx) {
+    WITH_RADIO_LOCK(x6200_control_modem_set(tx));
+}
 
 int16_t radio_change_rit(int16_t d) {
     if (d == 0) {

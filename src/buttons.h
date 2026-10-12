@@ -29,6 +29,9 @@ typedef enum {
 } btn_type_t;
 
 typedef struct button_item_t {
+    /* Fields the ported X6100 app dialogs set (see button_data_t below) */
+    bool                   mark;
+    bool                   disabled;
     btn_type_t type;
     union {
         const char *label;
@@ -51,6 +54,10 @@ typedef struct buttons_page_t {
 } buttons_page_t;
 
 typedef buttons_page_t *buttons_group_t[];
+
+/* The X6100 firmware renamed button_item_t to button_data_t when it added the
+ * app button pages; the layout is the same, so the ported dialogs use theirs */
+typedef button_item_t button_data_t;
 
 extern buttons_page_t buttons_page_vol_1;
 

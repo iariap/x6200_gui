@@ -53,6 +53,7 @@
 #include "adaptive_tuning.h"
 #include "band_plan.h"
 #include "screen_rec.h"
+#include "dialog_wspr.h"
 
 #include <unistd.h>
 #include <stdint.h>
@@ -149,6 +150,10 @@ void main_screen_start_app(press_action_t app_action) {
             voice_say_text_fmt("FT8 window");
             break;
 
+        case ACTION_APP_WSPR:
+            dialog_construct(dialog_wspr, obj);
+            break;
+
         case ACTION_APP_RECORDER:
             dialog_construct(dialog_recorder, obj);
             voice_say_text_fmt("Audio recorder window");
@@ -231,6 +236,7 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_FT8:
         case ACTION_APP_SWRSCAN:
         case ACTION_APP_SETTINGS:
+        case ACTION_APP_WSPR:
         case ACTION_APP_RECORDER:
         case ACTION_APP_WIFI:
             main_screen_start_app(action);

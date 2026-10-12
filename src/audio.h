@@ -14,6 +14,9 @@
 #define AUDIO_PLAY_RATE     (44100)
 #define AUDIO_CAPTURE_RATE  (44100)
 
+/* Decimation of the audio the DSP hands to the apps: 11025 Hz */
+#define AUDIO_DECIM         (4)
+
 void audio_init();
 int audio_play(int16_t *buf, size_t samples);
 void audio_play_wait();

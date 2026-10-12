@@ -12,6 +12,7 @@ static sqlite3_stmt   *get_closest_stmt;
 static sqlite3_stmt   *get_prev_stmt;
 static pthread_mutex_t read_mutex  = PTHREAD_MUTEX_INITIALIZER;
 
+static int32_t last_freq;
 static char *label = NULL;
 
 
@@ -90,6 +91,7 @@ bool cfg_digital_load(int8_t dir, cfg_digital_type_t type) {
     if (rc != 0) {
         return false;
     }
+    last_freq = freq;
     subject_set_int(cfg_cur.fg_freq, freq);
     subject_set_int(cfg_cur.mode, mode);
     return true;
@@ -97,4 +99,8 @@ bool cfg_digital_load(int8_t dir, cfg_digital_type_t type) {
 
 char *cfg_digital_label_get() {
     return label;
+}
+
+int32_t cfg_digital_freq_get(void) {
+    return last_freq;
 }

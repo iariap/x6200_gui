@@ -289,6 +289,11 @@ static int init_params_cfg(sqlite3 *db) {
 
     fill_cfg_item(&cfg.fft_dec, subject_create_int(0), "fft_dec");
 
+    /* WSPR: 1500 Hz is the centre of the 200 Hz WSPR window */
+    fill_cfg_item(&cfg.wspr_tx_freq, subject_create_int(1500), "wspr_tx_freq");
+    fill_cfg_item(&cfg.wspr_tx_pct, subject_create_int(20), "wspr_tx_pct");
+    fill_cfg_item(&cfg.wspr_upload, subject_create_int(1), "wspr_upload");
+
     fill_cfg_item(&cfg.key_tone   , subject_create_int(700), "key_tone");
     fill_cfg_item(&cfg.band_id    , subject_create_int(5), "band");
     fill_cfg_item(&cfg.ant_id     , subject_create_int(1), "ant");

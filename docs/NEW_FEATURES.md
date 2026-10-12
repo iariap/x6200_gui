@@ -13,10 +13,10 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **Bluetooth: CAT (SPP) y auriculares A2DP** | ✅ 2026-10-11 | §6 |
 | **wfview**: la radio como IC-705 en red | ✅ 2026-10-11 | §7 |
 | **Web configurator ampliado** (+HTTPS) | ✅ 2026-10-11 | §8 |
-| **WSPR**: motor de decodificación (encoder, baseband, decoder) | ✅ 2026-10-11 | §9 |
+| **WSPR completo**: motor + UI (spots, banda, TX, subida) | ✅ 2026-10-11 | §9 |
 | Temas JSON | ⏳ pendiente | — |
 | Field Ops SOTA/POTA | ⏳ pendiente | — |
-| Modos digitales: WSPR (motor ✅, UI ⏳), SSTV, JS8, WeFax, NavTex | 🔶 en curso | §9 |
+| Modos digitales: WSPR ✅, SSTV, JS8, WeFax, NavTex | 🔶 en curso | §9 |
 | DRM/KMS + perilla con hilo propio | ⏳ pendiente | — |
 
 Todo lo portado mantiene la licencia LGPL-2.1-or-later y la atribución al autor original
@@ -359,7 +359,38 @@ amalgamado, así que un `grep` del nombre literal no los encuentra. Restaurado.
 Para que el test se pueda correr en cualquier lado, el `Dockerfile` del arnés ahora compila e
 instala **liquid-dsp 1.4.0** (la misma versión que usa la imagen).
 
-### Lo que falta de WSPR: la UI, y qué exige
+### La UI: portada completa
+
+El diálogo (`dialog_wspr.c`) quedó integrado: tabla de spots, selección de banda y modo digital,
+control de TX (ciclo de transmisión, siguiente slot, subida a WSPRnet) y el estado en la línea
+inferior. Se abre desde las **acciones de pulsación larga → `WSPR`** (no tenemos las páginas de
+botones de apps del X6100, así que se entra por donde entran las demás apps nuestras).
+
+Para que compile y funcione hubo que resolver la lista de diferencias que había relevado:
+
+| Diferencia | Solución aplicada |
+|---|---|
+| Sistema de temas (`TC(rol)`, `theme_shape`) | `theme.c/h`: shim con la paleta por rol del tema por defecto del X6100. **No afecta** nuestras pantallas |
+| `cfg/cfg_api.h` (`cfg_*`, `param_i_get`, `cparam_i_get`, `subject_i_*`) | Shim sobre `cfg_cur`/`cfg`, con los accesores con los nombres del X6100 |
+| Ajustes de WSPR (`cfg_wspr_tx_freq/tx_pct/upload`) | Tres `cfg_item_t` nuevos persistidos en la tabla `params` |
+| `cluster/spots.h` | Tabla IARU R1 local (`cluster/spots.c`): el cluster no está portado, pero la tira muestra la banda |
+| `remote_server.h` | No-ops documentados: el control remoto en vivo es otra feature pendiente |
+| `tx_level.c` | Portado tal cual (control de excitación con ALC) |
+| `x6100_control_get_base_ver().rev` | Nuestra lib solo da el string de versión: valor conservador (r3) **a validar en la radio** |
+| `button_data_t` | Es nuestro `button_item_t` renombrado: alias + dos campos (`mark`, `disabled`) en nuestro struct |
+| `.subj` (suyo `Subject*`, nuestro `Subject**`) | Adaptadas las 3 asignaciones del diálogo |
+| `AUDIO_DECIM` | Definido en `audio.h` (44100/4 = **11025 Hz**, la tasa que los modos digitales esperan) |
+| Callback de audio (`float*` vs nuestros `cfloat*`) | Adaptador que toma la parte real en bloques de 2048 |
+| `gps_last_fix`/`gps_phone_fix` | `gps.c/h` stub: este ROM no tiene GPS, el locator sale del QTH guardado |
+| `dsp_set_spectrum_enabled`/`waterfall_enabled` | Aceptadas y sin efecto: nuestras apps son diálogos sobre la pantalla principal |
+| `radio_set_modem` | Estaba escrita y comentada en nuestro `radio.c`: activada |
+| `CFG_DIG_TYPE_WSPR` + frecuencias | Agregado al enum y **11 frecuencias WSPR** a la semilla `sql/digital_modes.csv` |
+
+**Pendiente y documentado**: `dialog.restore_radio` se acepta pero todavía no restaura
+frecuencia/modo al cerrar (el mecanismo del X6100 es aparte), y el nivel de excitación de TX
+necesita validación en la radio.
+
+### Lo que exigió (relevamiento)
 
 La UI es `dialog_wspr.c` (tabla de spots, banda, controles de TX y subida automática) más la
 infraestructura que comparten los cinco diálogos de apps (`app_frame`, `freq_strip`,

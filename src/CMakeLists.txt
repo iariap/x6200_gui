@@ -22,6 +22,8 @@ target_sources(${PROJECT_NAME} PUBLIC
     adaptive_tuning.c
     audio_enhancement.c
     wspr/wspr.c wspr/wsprnet.c
+    theme.c app_frame.c freq_strip.c station.c tx_level.c
+    tx_player.c dialog_wspr.c cluster/spots.c gps.c
 )
 
 add_subdirectory(fonts)

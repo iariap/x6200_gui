@@ -285,3 +285,13 @@ static void dsp_update_min_max(float *data_buf, uint16_t size) {
     spectrum_update_max(max);
     waterfall_update_max(max);
 }
+
+/* Accepted for the ported app code; an app is a full dialog over the main
+ * screen here, so there is nothing to hide (see dsp.h). */
+extern "C" void dsp_set_spectrum_enabled(bool enabled) {
+    (void) enabled;
+}
+
+extern "C" void dsp_set_waterfall_enabled(bool enabled) {
+    (void) enabled;
+}
