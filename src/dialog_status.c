@@ -211,8 +211,6 @@ static void construct_cb(lv_obj_t *parent) {
     }
 
     /* Update check */
-    char src[96];
-
     if (conf_get("/mnt/update_check.conf", "enabled", enabled, sizeof(enabled))) {
         add_row("#%06x Update# %s (check-source)", theme_hex(TC_text_dim),
                 strcmp(enabled, "off") ? "on" : "off");
@@ -220,7 +218,6 @@ static void construct_cb(lv_obj_t *parent) {
         add_row("#%06x Update# on (default)", theme_hex(TC_text_dim));
     }
 
-    (void) src;
 }
 
 static void destruct_cb(void) {

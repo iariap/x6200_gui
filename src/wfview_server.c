@@ -523,10 +523,23 @@ void wfview_server_init() {
         pt->port   = 50001 + i;
         pt->my_id  = rand() | 1;
         pt->fd     = socket(AF_INET, SOCK_DGRAM, 0);
+
+        if (pt->fd < 0) {
+            LV_LOG_ERROR("wfview: socket for port %u failed", pt->port);
+
+            return;     /* nothing was opened for this one */
+        }
         pthread_mutex_init(&pt->lock, NULL);
         struct sockaddr_in addr = {.sin_family = AF_INET, .sin_port = htons(pt->port), .sin_addr.s_addr = INADDR_ANY};
         if (bind(pt->fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
             LV_LOG_ERROR("wfview: bind %u failed", pt->port);
+
+            /* The server will not run: close what is already open */
+            for (int j = 0; j <= i; j++) {
+                close(ports[j].fd);
+                ports[j].fd = -1;
+            }
+
             return;
         }
     }

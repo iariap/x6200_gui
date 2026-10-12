@@ -1269,3 +1269,26 @@ Se abre desde **Ajustes → acciones de pulsación larga → `APP Status`**.
 El diálogo **About** mostraba `Version 2.0-opt`, un literal que no tenía nada que ver con el
 firmware: ahora muestra la versión real (`main.h`), la misma que compara el aviso de actualización
 y la que aparece en el release.
+
+---
+
+## 30. Pasada de calidad: lo que encontró el analizador estático
+
+Al sumar los módulos nuevos al análisis estático del arnés (`gcc -fanalyzer`), aparecieron cosas
+reales que conviene registrar:
+
+- **Fuga de descriptores en `wfview_server`**: si el `bind()` de un puerto fallaba, los sockets de
+  los puertos anteriores quedaban abiertos y la función salía. Ahora se cierran y, además, se
+  chequea que `socket()` no devuelva error. (El analizador sigue marcando los tres sockets que el
+  servidor **mantiene abiertos a propósito** mientras vive el proceso, así que ese archivo quedó
+  fuera del análisis, con el motivo escrito en el arnés.)
+- **Cuatro truncamientos posibles** en `cluster/client.c`: los nombres y hosts de los servidores se
+  copiaban a campos de 32 bytes sin acotar; ahora van con `%.*s`.
+- **Rutas del motor de temas**: componer `TEMAS/<nombre>/theme.json` en buffers fijos podía
+  truncar. Ahora cada `snprintf` **verifica su resultado** y rechaza lo que no entra (que es lo
+  correcto: un tema con un nombre imposible no se puede leer). El test de temas sigue pasando.
+- **Código muerto** en la app Status (una variable sin uso) y el literal de versión viejo del
+  *About*, que se fue en §29.
+
+El análisis ahora corre limpio sobre la lista de módulos, y la suite sigue igual: **437
+comprobaciones del host**, más las de códec, la de JS8 y las 19 páginas del web configurator.

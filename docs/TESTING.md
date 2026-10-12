@@ -43,6 +43,16 @@ La parte del webserver usa el python **del target** (ARM, vía binfmt) porque es
 Lo que sigue necesitando la radio (🔌) está listado en
 [`INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md) §3.
 
+
+### Análisis estático
+
+El arnés corre además `gcc -fanalyzer` sobre los módulos que compilan con los *stubs* del host
+(`adaptive_tuning`, `audio_enhancement`, `ft8_udp`, `update_check`, `band_plan_data`, `avi_writer`,
+`bt_devices`, `kbd_rollover`). **`wfview_server` queda afuera a propósito**: abre los tres sockets
+del servidor y los mantiene mientras vive el proceso, y el verificador de fugas de descriptores lo
+lee como una fuga. Ese análisis encontró una fuga real y cuatro truncamientos posibles (ver
+`NEW_FEATURES.md` §30).
+
 ---
 
 ## Nivel 2: tests unitarios nativos

@@ -99,7 +99,7 @@ theme_shape_t        theme_shape;
 static const char *const image_names[TI_COUNT] = {"bg", "btn", "btn_active", "btn_off", "btn_page", "bar", "strip", "dialog", "mark", "mark_active"};
 
 static struct {
-    char    path[300];
+    char path[600];
     int16_t slice[4];       /* left, top, right, bottom */
 } images[TI_COUNT];
 
@@ -183,7 +183,10 @@ static void get_images(const cJSON *root, const char *dir) {
             fprintf(stderr, "Theme: bad image %s\n", j->string);
             continue;
         }
-        snprintf(images[i].path, sizeof(images[i].path), "%s/%s", dir, file);
+        if (snprintf(images[i].path, sizeof(images[i].path), "%s/%s", dir, file) >=
+            (int) sizeof(images[i].path)) {
+            continue;       /* too long a path: skip this image */
+        }
         for (int k = 0; k < 4; k++) {
             const cJSON *v = cJSON_GetArrayItem(sl, k);
             images[i].slice[k] = cJSON_IsNumber(v) ? v->valueint : 0;
@@ -194,15 +197,22 @@ static void get_images(const cJSON *root, const char *dir) {
 /* A theme file, THEMES_DIR/<name>.json or THEMES_DIR/<name>/theme.json (a
  * folder with its images): a base theme with the colours and shapes it sets */
 static bool load_file(const char *name) {
-    char  path[256], dir[256];
+    char  path[600], dir[600];
     FILE *f;
 
-    snprintf(dir, sizeof(dir), "%s", themes_dir());
-    snprintf(path, sizeof(path), "%s/%s.json", themes_dir(), name);
+    if (snprintf(dir, sizeof(dir), "%s", themes_dir()) >= (int) sizeof(dir) ||
+        snprintf(path, sizeof(path), "%s/%s.json", themes_dir(), name) >= (int) sizeof(path)) {
+        return false;       /* the path does not fit: not a theme we can read */
+    }
+
     f = fopen(path, "r");
+
     if (!f) {
-        snprintf(dir, sizeof(dir), "%s/%s", themes_dir(), name);
-        snprintf(path, sizeof(path), "%s/theme.json", dir);
+        if (snprintf(dir, sizeof(dir), "%s/%s", themes_dir(), name) >= (int) sizeof(dir) ||
+            snprintf(path, sizeof(path), "%s/theme.json", dir) >= (int) sizeof(path)) {
+            return false;
+        }
+
         f = fopen(path, "r");
     }
     if (!f) return false;
@@ -377,7 +387,7 @@ const lv_img_dsc_t *theme_image(theme_image_t img, lv_coord_t w, lv_coord_t h) {
 
 const lv_img_dsc_t *theme_png(const char *path) {
     static struct {
-        char         path[96];
+        char path[600];
         lv_img_dsc_t dsc;
     } pngs[24];
     static int n;
@@ -459,14 +469,17 @@ int theme_list(char names[][32], int max) {
     d = opendir(themes_dir());
     while (d && (e = readdir(d)) && n < max) {
         size_t len = strlen(e->d_name);
-        char   path[300];
+        char   path[600];
 
         if (len > 5 && len < 32 + 5 && !strcmp(e->d_name + len - 5, ".json")) {
             snprintf(names[n], 32, "%.*s", (int)(len - 5), e->d_name);
             n++;
         } else if (e->d_name[0] != '.' && len < 32) {   /* a folder with theme.json */
-            snprintf(path, sizeof(path), "%s/%s/theme.json", themes_dir(), e->d_name);
-            if (access(path, R_OK) == 0) snprintf(names[n++], 32, "%s", e->d_name);
+            if (snprintf(path, sizeof(path), "%s/%s/theme.json", themes_dir(), e->d_name) >= (int) sizeof(path)) {
+                continue;
+            }
+
+            if (access(path, R_OK) == 0) snprintf(names[n++], 32, "%.*s", (int) sizeof(names[0]) - 1, e->d_name);
         }
     }
     if (d) closedir(d);

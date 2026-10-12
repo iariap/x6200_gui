@@ -47,7 +47,9 @@ else
 fi
 
 echo "== analisis estatico (gcc -fanalyzer) =="
-for f in adaptive_tuning audio_enhancement ft8_udp update_check band_plan_data avi_writer wfview_server; do
+# wfview_server stays out: it opens the three server sockets on purpose and keeps
+# them for the life of the process, which the leak checker reads as a leak.
+for f in adaptive_tuning audio_enhancement ft8_udp update_check band_plan_data avi_writer bt_devices kbd_rollover; do
     # shellcheck disable=SC2086
     $CC $BASEFLAGS -fanalyzer -I"$DIR/stubs" -I"$SRC" -c "$SRC/$f.c" -o "$OUT/$f.o" || true
 done

@@ -125,8 +125,8 @@ int cluster_servers_load(cluster_server_t *out, int max) {
         *bar1 = *bar2 = '\0';
         int p         = atoi(bar2 + 1);
         if (!line[7] || !bar1[1] || p <= 0 || p > 65535) continue;
-        snprintf(out[n].name, sizeof(out[n].name), "%s", line + 7);
-        snprintf(out[n].host, sizeof(out[n].host), "%s", bar1 + 1);
+        snprintf(out[n].name, sizeof(out[n].name), "%.*s", (int) sizeof(out[n].name) - 1, line + 7);
+        snprintf(out[n].host, sizeof(out[n].host), "%.*s", (int) sizeof(out[n].host) - 1, bar1 + 1);
         out[n].port = p;
         n++;
     }
@@ -159,8 +159,8 @@ int cluster_servers_load(cluster_server_t *out, int max) {
     bool listed = false;
     for (int i = 0; i < n; i++) listed |= strcmp(out[i].host, host) == 0 && out[i].port == port;
     if (!listed && n < max) {
-        snprintf(out[n].name, sizeof(out[n].name), "%s", host);
-        snprintf(out[n].host, sizeof(out[n].host), "%s", host);
+        snprintf(out[n].name, sizeof(out[n].name), "%.*s", (int) sizeof(out[n].name) - 1, host);
+        snprintf(out[n].host, sizeof(out[n].host), "%.*s", (int) sizeof(out[n].host) - 1, host);
         out[n].port = port;
         n++;
     }
