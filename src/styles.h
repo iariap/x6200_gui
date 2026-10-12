@@ -13,6 +13,11 @@
 #define DIALOG_H            372
 #endif
 
+/* Tallest dialog area: for static buffers (as in the X6100) */
+#ifndef DIALOG_H_MAX
+#define DIALOG_H_MAX        372
+#endif
+
 #include "params/params.h"
 
 #include <unistd.h>

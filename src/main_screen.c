@@ -55,6 +55,7 @@
 #include "screen_rec.h"
 #include "dialog_wspr.h"
 #include "dialog_navtex.h"
+#include "dialog_sstv.h"
 
 #include <unistd.h>
 #include <stdint.h>
@@ -159,6 +160,10 @@ void main_screen_start_app(press_action_t app_action) {
             dialog_construct(dialog_navtex, obj);
             break;
 
+        case ACTION_APP_SSTV:
+            dialog_construct(dialog_sstv, obj);
+            break;
+
         case ACTION_APP_RECORDER:
             dialog_construct(dialog_recorder, obj);
             voice_say_text_fmt("Audio recorder window");
@@ -243,6 +248,7 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_SETTINGS:
         case ACTION_APP_WSPR:
         case ACTION_APP_NAVTEX:
+        case ACTION_APP_SSTV:
         case ACTION_APP_RECORDER:
         case ACTION_APP_WIFI:
             main_screen_start_app(action);

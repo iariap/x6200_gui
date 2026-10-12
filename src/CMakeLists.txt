@@ -25,6 +25,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     theme.c app_frame.c freq_strip.c station.c tx_level.c
     tx_player.c dialog_wspr.c cluster/spots.c gps.c
     freq_list.c dialog_navtex.c navtex/decoder.cpp navtex/navtex_rx.cpp navtex/fftfilt.cxx
+    dialog_sstv.c sstv/decoder.c sstv/encoder.c sstv/linesync.c sstv/preview.c sstv/vis.c
 )
 
 add_subdirectory(fonts)

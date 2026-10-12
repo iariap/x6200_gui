@@ -44,7 +44,10 @@ typedef struct button_item_t {
     struct buttons_page_t *next;
     struct buttons_page_t *prev;
     int32_t                data;
-    lv_obj_t              *label_obj;
+    union {
+        lv_obj_t          *label_obj;   /* this GUI's name for it */
+        lv_obj_t          *disp_btn;    /* the X6100 name the ported dialogs use */
+    };
     Subject               **subj;
     Observer              *observer;
 } button_item_t;

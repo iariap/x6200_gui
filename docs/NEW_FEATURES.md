@@ -15,9 +15,10 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **Web configurator ampliado** (+HTTPS) | ✅ 2026-10-11 | §8 |
 | **WSPR completo**: motor + UI (spots, banda, TX, subida) | ✅ 2026-10-11 | §9 |
 | **NavTex**: decodificador SITOR-B + app | ✅ 2026-10-11 | §10 |
+| **SSTV**: 7 modos (RX/TX), app y assets | ✅ 2026-10-11 | §11 |
 | Temas JSON | ⏳ pendiente | — |
 | Field Ops SOTA/POTA | ⏳ pendiente | — |
-| Modos digitales: WSPR ✅, NavTex ✅, SSTV, WeFax, JS8 | 🔶 en curso | §9-10 |
+| Modos digitales: WSPR ✅, NavTex ✅, SSTV ✅, WeFax, JS8 | 🔶 en curso | §9-11 |
 | DRM/KMS + perilla con hilo propio | ⏳ pendiente | — |
 
 Todo lo portado mantiene la licencia LGPL-2.1-or-later y la atribución al autor original
@@ -465,3 +466,54 @@ all OK
 También verifica **cuál polaridad** toma el decodificador (un bit 1 = frecuencia alta) y corre
 sin fallas a +20, +10 y +5 dB de SNR. A 0 dB —el borde de SITOR-B— muestra los errores de
 carácter pero no cuenta como fallo, igual que en el original.
+
+---
+
+## 11. SSTV (7 modos, RX y TX)
+
+El modo de imagen lenta completo: recepción con detección de VIS, transmisión de imágenes y
+texto, y la app con la previsualización.
+
+### Qué se portó
+
+- `src/sstv/`: `encoder.c`, `decoder.c`, `linesync.c`, `vis.c` y `preview.c` — **Robot 8 BW, Robot
+  36, Robot 72, Martin M1/M2 y Scottie S1/S2**, con la sincronización de línea, la detección de
+  VIS y el generador de previsualización PNG.
+- `src/dialog_sstv.c` (~4.100 líneas): la app, con la galería de imágenes TX, las plantillas de
+  texto, el modo TEST (sin RF), el progreso y el guardado de las RX.
+- **Assets**: las 4 imágenes y las 6 plantillas de texto del X6100, en
+  `/usr/share/x6200/sstv/{tx_pics,tx_text}` (el diálogo trabaja sobre `/mnt/sstv`, que es del
+  usuario; estos son los de fábrica).
+- Se abre desde **acciones de pulsación larga → `SSTV`**.
+
+### Adaptaciones
+
+- `disp_btn`: en su fork el botón expone el objeto de la etiqueta con ese nombre; en el nuestro
+  se llama `label_obj`. En vez de renombrar nuestro API, los dos nombres son ahora una **unión
+  anónima** en `button_item_t`, así los diálogos portados y nuestro `buttons.cpp` siguen igual.
+- `DIALOG_H_MAX` agregado a `styles.h` (para los buffers estáticos del diálogo).
+- El botón compartido `btn_dig_pwr` (de las páginas de apps del X6100) queda vacío en la página
+  donde aparecía.
+- Los bloques que publicaban el estado por `cJSON` al control remoto en vivo se reemplazaron por
+  un comentario: ese servidor todavía no está portado, así que no hay nada que publicar.
+
+### Test: el loopback del X6100, portado
+
+`tests/native/run_sstv_tests.sh` compila el **códec real** con
+`tests/native/test_sstv_loopback.c` (el loopback del X6100): codifica una imagen de prueba en
+**cada modo**, le agrega ruido, la decodifica por el mismo camino que la app (VIS + el decoder en
+RAM) y compara con la original.
+
+```
+Robot 8 BW  VIS   2 160x120, 120 rows, luma correlation 0.920, mean error 10.6: OK
+Robot 36    VIS   8 320x240, 240 rows, luma correlation 0.959, mean error  6.9: OK
+Robot 72    VIS  12 320x240, 240 rows, luma correlation 0.975, mean error  5.5: OK
+Martin M1   VIS  44 320x256, 256 rows, luma correlation 0.974, mean error  4.5: OK
+Martin M2   VIS  40 320x256, 256 rows, luma correlation 0.939, mean error  7.6: OK
+Scottie S1  VIS  60 320x256, 256 rows, luma correlation 0.982, mean error  3.7: OK
+Scottie S2  VIS  56 320x256, 256 rows, luma correlation 0.956, mean error  5.9: OK
+all OK
+```
+
+Los 7 modos pasan, con correlación de luminancia entre 0,92 y 0,98. Necesita `libpng` y
+`libsndfile` (ambas ya en la imagen y en el contenedor del arnés).
