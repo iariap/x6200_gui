@@ -97,7 +97,7 @@ desde la web usaba un indicativo vacío. Ahora leen `X6200_*` y el *User-Agent* 
 | Servicio | Para qué | Nota |
 |---|---|---|
 | `S01create_data` | crea la partición `DATA` en `/mnt` | del firmware original |
-| `S02update` | aplica actualizaciones desde la SD | del firmware original |
+| `S02update` | aplica actualizaciones desde la SD: busca `x6200_r1cbu_*.tgz` en `/mnt` y lo descomprime sobre `/` | del firmware original; el release publica ese tgz (lo arma `tools/release/make_release_assets.sh`) |
 | `S03tune_cache` | caché de sintonía | del firmware original |
 | `S04restore_backup_config` | restaura la configuración respaldada | del firmware original |
 | `S39btpairings` | restaura los pairings de Bluetooth | portado del X6100 |

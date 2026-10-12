@@ -86,8 +86,40 @@ probar en el equipo) está en [`docs/INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md
 
 ## Instalación
 
-Grabar la imagen en una microSD (el equipo arranca de la SD) o actualizar el rootfs. La partición
-`DATA` con las configuraciones, logs, temas y grabaciones **se conserva**.
+El release trae **dos artefactos**:
+
+| Archivo | Para qué |
+|---|---|
+| `x6200_<fecha>.img` | imagen completa para grabar en la microSD |
+| `x6200_r1cbu_<versión>.tgz` | **actualización en el lugar** (no toca tus datos) |
+| `SHA256SUMS` | para verificar las descargas |
+
+### 1. Actualización en el lugar (recomendada: no toca tus datos)
+
+El equipo ya sabe actualizarse solo: `S02update` busca `x6200_r1cbu_*.tgz` en la partición DATA
+(`/mnt`), hace un backup y lo descomprime sobre la raíz. Entonces:
+
+1. Copiá `x6200_r1cbu_v0.1.2-lu2dsx.tgz` a `/mnt` (por SSH o sacando la SD).
+2. Reiniciá la radio y esperá: el firmware hace el backup y aplica la actualización.
+3. La configuración, los logs, los temas de `/mnt/themes`, las grabaciones y los mensajes de voz
+   **quedan como estaban**.
+
+Ojo: este camino **no** actualiza el kernel ni u-boot (esos van en la imagen).
+
+### 2. Imagen completa en la microSD
+
+```bash
+sudo dd if=x6200_<fecha>.img of=/dev/sdX bs=4M status=progress conv=fsync
+```
+
+⚠️ Grabar la imagen recrea las particiones: **respaldá `/mnt`** antes (ahí viven tus ajustes,
+logs, temas y grabaciones).
+
+### Verificar lo que bajaste
+
+```bash
+sha256sum -c SHA256SUMS
+```
 
 ## Repositorios
 
