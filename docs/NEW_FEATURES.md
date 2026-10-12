@@ -1663,3 +1663,22 @@ el árbol de buildroot, 23 KB de binario + los datos de idioma).
   chroot no tiene placa de sonido).
 - **Tests**: `tests/native/test_voice.c` cubre las tres formas del ajuste, una frecuencia y el
   diccionario, sin arrastrar el motor.
+
+---
+
+## 40. La app de posición (GPS)
+
+El X6100 tiene una app GPS (`dialog_gps.c`) que muestra satélites, fijación, fecha/hora,
+latitud, longitud y la grilla QTH. El **X6200 no tiene receptor GPS**: no hay nodo en el device
+tree y el firmware base sacó `gpsd`. Por eso la app se portó **adaptada** y dice la verdad:
+
+- la **fuente** es el **teléfono o el configurador web**, que mandan la posición por el socket de
+  control remoto (`{"cmd":"location","text":"-34.60,-58.38"}` → `gps_phone_set()`); el campo
+  *Position source* lo muestra tal cual, y con "None: this radio has no GPS" cuando no hay nada;
+- las filas son **Fijación** (Phone/Internal/None), **Edad** ("12 s", "2 min", "1 h 5 min"),
+  **Fecha y hora** (del reloj del equipo, que lo pone el NTP: no hay RTC), **Latitud**,
+  **Longitud** y **QTH Grid**;
+- `gps_format.c` formatea las coordenadas como se leen en radio (`45 07.4074'N`) y la antigüedad;
+  no tiene dependencias, así que `tests/native/test_gps_format.c` lo cubre en el host;
+- se abre desde **Ajustes → acciones** ("APP GPS") y también por el control remoto
+  (`{"cmd":"app","text":"GPS"}`), que es como se verificó: abre, dibuja y no se cae.

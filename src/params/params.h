@@ -61,6 +61,10 @@ typedef enum {
     ACTION_APP_WIFI,
     ACTION_APP_EQ,
     ACTION_APP_ABOUT,
+
+    /* Agregadas al final: los valores de las existentes no se mueven (estan guardados en la
+     * configuracion de cada equipo). */
+    ACTION_APP_GPS,
 } press_action_t;
 
 typedef enum {

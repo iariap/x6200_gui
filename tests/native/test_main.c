@@ -23,6 +23,7 @@ void test_field(void);
 void test_theme(void);
 void test_controls(void);
 void test_voice(void);
+void test_gps_format(void);
 void test_keyboard(void);
 void test_bt_devices(void);
 void test_dxcc(void);
@@ -41,6 +42,7 @@ int main(void) {
     test_theme();
     test_controls();
     test_voice();
+    test_gps_format();
     test_keyboard();
     test_bt_devices();
     test_dxcc();

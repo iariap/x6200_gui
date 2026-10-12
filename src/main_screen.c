@@ -64,6 +64,7 @@
 #include "dialog_cw_trainer.h"
 #include "dialog_bt.h"
 #include "dialog_status.h"
+#include "dialog_gps.h"
 #include "cluster_column.h"
 #include "theme.h"
 #include "fonts/font_select.h"
@@ -208,6 +209,10 @@ void main_screen_start_app(press_action_t app_action) {
 
         case ACTION_APP_BT:
             dialog_construct(dialog_bt, obj);
+            break;
+
+        case ACTION_APP_GPS:
+            dialog_construct(dialog_gps, obj);
             break;
 
         case ACTION_APP_STATUS:

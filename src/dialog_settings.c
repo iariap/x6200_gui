@@ -840,6 +840,7 @@ static action_items_t long_action_items[] = {
     { .label = " APP JS8", .action = ACTION_APP_JS8 },
     { .label = " APP Cluster", .action = ACTION_APP_CLUSTER },
     { .label = " APP Field Ops", .action = ACTION_APP_FIELD },
+    { .label = " APP GPS", .action = ACTION_APP_GPS },
     { .label = " APP CW Keyboard", .action = ACTION_APP_CW_KBD },
     { .label = " APP CW Trainer", .action = ACTION_APP_CWTRAINER },
     { .label = " APP Bluetooth", .action = ACTION_APP_BT },
