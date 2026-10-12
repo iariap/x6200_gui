@@ -78,7 +78,7 @@ para modos que nunca se portaron.
 | Motor de video **DRM/KMS** (del upstream) | ✅ | ❌ (usa `fbdev`) |
 | **Temas JSON** (8 temas, incluidos "outdoor"; aguja de S-meter por tema) | ✅ | solo Simple/Legacy |
 | Aguja de S-meter dibujada | ✅ | ✅ **desde 2026-10-11** (Ajustes → S-meter needle) |
-| **Grabación de pantalla** AVI (incluye tu voz en TX) | ✅ | ❌ |
+| **Grabación de pantalla** AVI (incluye tu voz en TX) | ✅ | ✅ **video+audio de RX desde 2026-10-11** ([NEW_FEATURES.md](NEW_FEATURES.md) §5) |
 | Aviso de firmware nuevo al arrancar | ✅ | ✅ **desde 2026-10-11** ([NEW_FEATURES.md](NEW_FEATURES.md) §2) |
 | **Band plan IARU** sobre el waterfall, escala/lista de frecuencias | ✅ | ✅ **band plan desde 2026-10-11** ([NEW_FEATURES.md](NEW_FEATURES.md) §4) |
 | Perilla principal con cada detent temporizado en su propio hilo (menos latencia) | ✅ | ❌ (`rotary.c` clásico) |

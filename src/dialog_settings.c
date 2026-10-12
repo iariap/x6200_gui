@@ -771,6 +771,7 @@ typedef struct {
 static action_items_t long_action_items[] = {
     { .label = " None ", .action = ACTION_NONE },
     { .label = " Screenshot ", .action = ACTION_SCREENSHOT },
+    { .label = " Screen rec ", .action = ACTION_SCREEN_REC },
     { .label = " Recorder on/off ", .action = ACTION_RECORDER },
     { .label = " Mute ", .action = ACTION_MUTE },
     { .label = " Voice mode ", .action = ACTION_VOICE_MODE },

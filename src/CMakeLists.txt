@@ -16,6 +16,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     textarea_window.c cw_encoder.c buttons.cpp vol.c recorder.c
     cw_tune_ui.c adif.c qso_log.c scheduler.cpp
     update_check.c band_plan.c band_plan_data.c
+    screen_rec.c avi_writer.c
     dialog_wifi.c wifi.cpp controls.cpp usb_devices.cpp
     dialog_eq.cpp dialog_about.c
     adaptive_tuning.c
@@ -49,6 +50,7 @@ lvgl lvgl::drivers
 aether_x6200_control
 liquid
 ft8
+jpeg
 )
 
 # target_compile_options(${PROJECT_NAME} PRIVATE -g -fno-omit-frame-pointer -fasynchronous-unwind-tables)

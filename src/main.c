@@ -27,6 +27,7 @@
 #include "audio.h"
 #include "audio_enhancement.h"
 #include "update_check.h"
+#include "screen_rec.h"
 #include "msg.h"
 #include "cw.h"
 #include "pannel.h"
@@ -71,7 +72,9 @@ int main(void) {
     lv_disp_drv_init(&disp_drv);
 
     disp_drv.draw_buf   = &disp_buf;
-    disp_drv.flush_cb   = fbdev_flush;
+    /* screen_rec_flush copies the frame while recording and then draws it
+     * through screen_rec_out (fbdev_flush by default) */
+    disp_drv.flush_cb   = screen_rec_flush;
     disp_drv.hor_res    = 480;
     disp_drv.ver_res    = 800;
     disp_drv.sw_rotate  = 1;

@@ -52,6 +52,7 @@
 #include "cfg/memory.h"
 #include "adaptive_tuning.h"
 #include "band_plan.h"
+#include "screen_rec.h"
 
 #include <unistd.h>
 #include <stdint.h>
@@ -176,6 +177,10 @@ void main_screen_action(press_action_t action) {
 
         case ACTION_SCREENSHOT:
             screenshot_take();
+            break;
+
+        case ACTION_SCREEN_REC:
+            screen_rec_toggle();
             break;
 
         case ACTION_RECORDER:

@@ -24,6 +24,7 @@
 #include "dsp.h"
 #include "params/params.h"
 #include "audio_enhancement.h"
+#include "screen_rec.h"
 
 #define AUDIO_RATE_MS   100
 
@@ -54,6 +55,9 @@ static void read_callback(pa_stream *s, size_t nbytes, void *udata) {
     
     // Apply audio enhancement processing
     audio_enh_process(buf, nbytes / 2);
+
+    // Screen recorder: keeps the RX audio next to the video frames
+    screen_rec_put_audio_samples(nbytes / 2, buf);
     
     dsp_put_audio_samples(nbytes / 2, buf);
     pa_stream_drop(s);

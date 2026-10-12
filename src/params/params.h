@@ -29,6 +29,7 @@ typedef enum {
 typedef enum {
     ACTION_NONE = 0,
     ACTION_SCREENSHOT,
+    ACTION_SCREEN_REC,
     ACTION_RECORDER,
     ACTION_MUTE,
     ACTION_STEP_UP,

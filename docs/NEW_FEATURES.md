@@ -9,8 +9,8 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **Aviso de nueva versión** | ✅ 2026-10-11 | §2 de este documento |
 | **Aguja de S-meter** | ✅ 2026-10-11 | §3 |
 | **Band plan IARU** sobre el waterfall | ✅ 2026-10-11 | §4 |
+| **Grabación de pantalla** (AVI) | ✅ 2026-10-11 | §5 |
 | Temas JSON | ⏳ pendiente | — |
-| Grabación de pantalla (AVI) | ⏳ pendiente | — |
 | Bluetooth CAT / auriculares / teclado | ⏳ pendiente | — |
 | wfview (la radio como IC-705 en red) | ⏳ pendiente | — |
 | Web configurator ampliado (HTTPS, remotas, backup) | ⏳ pendiente | — |
@@ -98,3 +98,31 @@ muestra qué es cada tramo del span visible (IARU Región 1, 160 m a 6 m):
   spans anchos, fuera de banda y los casos degenerados.
 - Los colores en el X6100 salen del sistema de temas; acá son fijos hasta que portemos los
   temas JSON.
+
+---
+
+## 5. Grabación de pantalla
+
+Graba la pantalla **y el audio de RX** en un archivo AVI (MJPEG + PCM mono) en la partición
+`DATA`:
+
+```
+/mnt/screenrec/screen-YYYYMMDD-HHMMSS.avi
+```
+
+- Se prende/apaga desde la acción **Screen rec** (Ajustes → acciones de pulsación larga, junto
+  a `Screenshot`). Mientras graba se ve un indicador con un punto rojo.
+- 8 fps, calidad JPEG 70, audio de captura a 44,1 kHz en el mismo AVI, con índice `idx1` para
+  que se pueda buscar/adelantar en cualquier reproductor.
+- Antes de arrancar verifica que queden al menos 50 MB libres; si el disco se llena corta sola y
+  avisa. También cierra el archivo al apagar (`atexit`).
+- La captura se engancha en el `flush_cb` de la pantalla: mientras graba guarda una copia del
+  cuadro y después lo dibuja por el camino normal (fbdev). No agrega trabajo cuando está apagada.
+
+**No portado del original**: el camino DRM/KMS (acá la pantalla es fbdev), los colores del tema
+(usa la paleta fija) y el "monitor mientras graba" — el X6100 sube el nivel del monitor al
+grabar y lo baja al terminar; esta GUI lo deja en manos del ajuste `MONI` del usuario.
+
+Tests: `tests/native/test_avi_writer.c` escribe un AVI real con cuadros y audio falsos y valida
+la estructura RIFF (`RIFF`/`AVI `/`hdrl`/`strl`/`MJPG`/`auds`/`movi`/`00dc`/`01wb`/`idx1`), el
+tamaño de RIFF y que abrir en una ruta inválida falle limpiamente.

@@ -22,9 +22,9 @@ mkdir -p "$OUT"
 BASEFLAGS="-std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter"
 SAN="-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover"
 
-SOURCES="$SRC/adaptive_tuning.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c \
+SOURCES="$SRC/adaptive_tuning.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c \
 $DIR/stubs/stubs.c $DIR/test_main.c \
-$DIR/test_adaptive_tuning.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c \
+$DIR/test_adaptive_tuning.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c \
 $DIR/test_update_check.c"
 
 echo "== compilador: $($CC --version | head -1) =="
@@ -47,7 +47,7 @@ else
 fi
 
 echo "== analisis estatico (gcc -fanalyzer) =="
-for f in adaptive_tuning audio_enhancement ft8_udp update_check band_plan_data; do
+for f in adaptive_tuning audio_enhancement ft8_udp update_check band_plan_data avi_writer; do
     # shellcheck disable=SC2086
     $CC $BASEFLAGS -fanalyzer -I"$DIR/stubs" -I"$SRC" -c "$SRC/$f.c" -o "$OUT/$f.o" || true
 done
