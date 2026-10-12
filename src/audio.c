@@ -28,6 +28,7 @@
 
 #define AUDIO_RATE_MS   100
 
+static bool                  audio_up = false;     /* pulseaudio en condiciones */
 static pa_threaded_mainloop *mloop;
 static pa_mainloop_api      *mlapi;
 static pa_context           *ctx;
@@ -115,9 +116,25 @@ void audio_init() {
     pa_context_connect(ctx, NULL, 0, NULL);
     pa_threaded_mainloop_unlock(mloop);
 
-    while (PA_CONTEXT_READY != pa_context_get_state(ctx))  {
+    /* Si pulseaudio no está -por ejemplo arrancado en modo sistema sin el usuario
+     * `pulse`, que es lo que pasaba en la radio- el contexto pasa a FAILED. Esta
+     * espera no terminaba nunca: la GUI se quedaba en el logo del equipo sin dibujar.
+     * Ahora se corta, avisa y la GUI sigue andando, sin audio. */
+    while (true) {
+        pa_context_state_t st = pa_context_get_state(ctx);
+
+        if (st == PA_CONTEXT_READY) {
+            break;
+        }
+        if (!PA_CONTEXT_IS_GOOD(st)) {
+            LV_LOG_WARN("pulseaudio no disponible (%s): la GUI sigue, pero sin audio",
+                        pa_strerror(pa_context_errno(ctx)));
+            return;
+        }
         pa_threaded_mainloop_wait(mloop);
     }
+
+    audio_up = true;
 
     LV_LOG_USER("Conected");
 
@@ -158,6 +175,11 @@ void audio_init() {
 }
 
 int audio_play(int16_t *samples_buf, size_t samples) {
+    if (!audio_up || play_stm == NULL) {
+        return 0;
+    }
+
+
     while (true) {
         size_t size;
 
@@ -184,6 +206,11 @@ int audio_play(int16_t *samples_buf, size_t samples) {
 }
 
 void audio_play_wait() {
+    if (!audio_up || play_stm == NULL) {
+        return;
+    }
+
+
     pa_operation *op;
     int r;
 
@@ -245,6 +272,11 @@ void audio_gain_db_transition(int16_t *buf, size_t samples, float gain1, float g
 }
 
 void audio_play_en(bool on) {
+    if (!audio_up || play_stm == NULL) {
+        return;
+    }
+
+
     if (on) {
         x6200_control_hmic_set(0);
         x6200_control_imic_set(0);
@@ -338,6 +370,11 @@ static void monitor_cb(pa_stream *stream, size_t length, void *udata) {
 
 
 static void record_monitor_setup() {
+    if (!audio_up || ctx == NULL) {
+        return;
+    }
+
+
 
     pa_sample_spec  spec = {
         .format = PA_SAMPLE_S16NE,
