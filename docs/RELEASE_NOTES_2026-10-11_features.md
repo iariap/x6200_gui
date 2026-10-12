@@ -127,7 +127,9 @@ El equipo ya sabe actualizarse solo: `S02update` busca `x6200_r1cbu_*.tgz` en la
 3. La configuración, los logs, los temas de `/mnt/themes`, las grabaciones y los mensajes de voz
    **quedan como estaban**.
 
-Ojo: este camino **no** actualiza el kernel ni u-boot (esos van en la imagen).
+Ojo: este camino **no** actualiza el kernel ni u-boot (van en la partición BOOT); los
+módulos del kernel sí. Dejá **~150 MB libres** en DATA: antes de aplicar, el firmware respalda en
+`/mnt/backup_x6200_r1cbu_*.tgz` los archivos que va a reemplazar.
 
 ### 2. Imagen completa en la microSD
 

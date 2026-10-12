@@ -46,7 +46,9 @@ Las releases de esta rama están en
 3. La configuración, los logs, los temas, las grabaciones y los mensajes de voz quedan como
    estaban.
 
-Ojo: este camino no actualiza el kernel ni u-boot (esos van en la imagen).
+Ojo: este camino no actualiza el kernel ni u-boot (van en la partición BOOT); los módulos
+sí. El firmware respalda antes en `/mnt/backup_x6200_r1cbu_*.tgz` lo que va a reemplazar, así que
+dejá ~150 MB libres en DATA.
 
 **Imagen completa**: bajá el `x6200_<fecha>.img` y grabalo en la microSD con balenaEtcher o Rufus.
 Insertá la tarjeta y encendé. Grabar la imagen recrea las particiones: **respaldá `/mnt`** antes.
