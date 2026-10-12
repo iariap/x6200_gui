@@ -32,19 +32,13 @@ void fonts_apply(uint8_t choice) {
     if (applied || (choice != FONT_ROBOTO && choice != FONT_DEJAVU && choice != FONT_ARIAL)) return;
     applied = true;
 
-    /* La copia de la fuente alternativa dentro de sony_N (que es lo que hace que el resto del
-     * código siga usando &sony_N) se probó y funciona con Roboto, pero con DejaVu y Arial
-     * termina escribiendo en una dirección inválida y mata la GUI en el arranque: el equipo se
-     * queda en el logo. Hasta encontrar la causa, esas dos se quedan con la fuente Sony, que es
-     * la que dibuja bien. */
-    if (choice != FONT_ROBOTO) {
-        LV_LOG_WARN("La fuente alternativa %s no se aplica todavía (se usa la del equipo); "
-                    "con ella la GUI moría al arrancar",
-                    choice == FONT_DEJAVU ? "DejaVu" : "Arial");
-        return;
-    }
+    /* La copia de la fuente alternativa dentro de sony_N: la copia en sí está bien (las
+     * tablas tienen el mismo tamaño, salidas de SIZES()) y funciona con las tres alternativas
+     * una vez que sony_N quedó en RAM (ver los #if 0 de sony_*.c: con LVGL 8 salían const, en
+     * .rodata, y escribir ahí mataba la GUI). */
+    const lv_font_t *const *alt = choice == FONT_ROBOTO ? roboto : choice == FONT_DEJAVU ? dejavu : arial;
 
-    const lv_font_t *const *alt = roboto;
+
 
     for (unsigned i = 0; i < N_FONTS; i++) {
         orig[i] = *sony[i];

@@ -1810,7 +1810,9 @@ static lv_font_fmt_txt_dsc_t font_dsc = {
  *----------------*/
 
 /*Initialize a public general font descriptor*/
-#if LVGL_VERSION_MAJOR >= 8
+#if 0   /* forzado: sony_N tiene que quedar en RAM; fonts_apply() copia la fuente
+         * alternativa dentro de la struct y con LVGL 8 salia const, en .data.rel.ro
+         * (solo lectura): esa escritura mataba la GUI al arrancar */
 const lv_font_t sony_30 = {
 #else
 lv_font_t sony_30 = {

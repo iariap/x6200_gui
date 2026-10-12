@@ -1573,3 +1573,40 @@ llamar a un método de C++, hay un puente `extern "C" void cfg_sm_init_live(void
    NULL (`PC: (nil)`), `lr` es el sitio de la llamada, y como el binario es PIE se traduce con
    `addr2line` descontando la base de carga;
 3. eso dio `table_draw_part_begin_cb`, y de ahí salió el resto.
+
+---
+
+## 37. El bug que dejaba la radio en el logo: el índice de fuente, y las fuentes `const`
+
+Fue el fallo más caro de todo el port porque **no se veía desde el código**: la GUI moría antes
+del primer frame, el daemon la relanzaba en bucle y la pantalla se quedaba con el logo.
+
+### La causa
+
+```c
+/* Ajustes -> Display -> INTERFACE -> Font ofrece: Sony Sketch, Roboto, DejaVu, Arial (0..3) */
+obj = dropdown_uint8_custom_cb(grid, &params.font, " Sony Sketch \n Roboto \n DejaVu \n Arial", ...);
+```
+
+y el valor se pasaba **crudo** a `fonts_apply()`, cuyo enum es
+`FONT_SONY, FONT_ROBOTO, FONT_DEJAVU, FONT_ARIAL` (0..3) — así que elegir **"Roboto"** (`font = 1`)
+aplicaba **DejaVu**. Con `font = 0` funcionaba **de casualidad** (aplicaba Roboto), y por eso el
+equipo arrancaba recién salido de fábrica y moría cuando alguien tocaba la fuente.
+
+### Y detrás había un segundo bug
+
+`fonts_apply()` copia la fuente alternativa **dentro** de cada `sony_N`
+(`*sony[i] = *alt[i];`), porque el resto del código usa `&sony_N`. Pero con LVGL 8 esas fuentes
+se generan **`const`** (en `.data.rel.ro`, sólo lectura) y la copia moría ahí. Fueron **20**
+archivos de fuentes; los dos últimos (`sony_20.c` y `sony_30.c`) usan
+`#if LVGL_VERSION_MAJOR >= 8` en lugar de `LV_VERSION_CHECK`, y se escaparon de los dos primeros
+intentos — con una verificación mía que también los salteaba. Ahora las 20 quedan en `.data`
+(escribibles) y las cuatro opciones de fuente andan.
+
+### Cómo se encontró
+
+Con el capturador de señales mejorado: registra el **PC**, la **base de carga**, el **offset para
+`addr2line`**, la **dirección que falló** y los **registros**. El fallo en `0xe9a624` con
+`r5 = 0xe9a624` mostró que se escribía en `base + 0xa9a624`; `readelf` ubicó esa dirección dentro
+de `.data.rel.ro`, `readelf -s` dijo qué fuentes estaban ahí (dos), y el patrón del `#if`
+explicó por qué se habían escapado.
