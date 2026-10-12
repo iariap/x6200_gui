@@ -26,6 +26,8 @@ extern "C" {
 #define cfg_band_split      (cfg_cur.band->split.val)
 
 /* WSPR settings (persisted in the params table) */
+#define cfg_wefax_align     (&cfg.wefax_align)
+#define cfg_wefax_tilt      (&cfg.wefax_tilt)
 #define cfg_wspr_tx_freq    (&cfg.wspr_tx_freq)
 #define cfg_wspr_tx_pct     (&cfg.wspr_tx_pct)
 #define cfg_wspr_upload     (&cfg.wspr_upload)

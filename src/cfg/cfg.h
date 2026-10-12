@@ -28,6 +28,9 @@ typedef struct {
     cfg_item_t fft_dec;
 
     /* WSPR (digital modes) */
+    cfg_item_t wefax_align;     /* WeFax image alignment */
+    cfg_item_t wefax_tilt;      /* WeFax skew */
+
     cfg_item_t wspr_tx_freq;    /* audio offset of the transmission */
     cfg_item_t wspr_tx_pct;     /* TX duty cycle, per cent of the cycles */
     cfg_item_t wspr_upload;     /* upload spots to WSPRnet */

@@ -56,6 +56,7 @@
 #include "dialog_wspr.h"
 #include "dialog_navtex.h"
 #include "dialog_sstv.h"
+#include "dialog_wefax.h"
 
 #include <unistd.h>
 #include <stdint.h>
@@ -164,6 +165,10 @@ void main_screen_start_app(press_action_t app_action) {
             dialog_construct(dialog_sstv, obj);
             break;
 
+        case ACTION_APP_WEFAX:
+            dialog_construct(dialog_wefax, obj);
+            break;
+
         case ACTION_APP_RECORDER:
             dialog_construct(dialog_recorder, obj);
             voice_say_text_fmt("Audio recorder window");
@@ -249,6 +254,7 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_WSPR:
         case ACTION_APP_NAVTEX:
         case ACTION_APP_SSTV:
+        case ACTION_APP_WEFAX:
         case ACTION_APP_RECORDER:
         case ACTION_APP_WIFI:
             main_screen_start_app(action);
@@ -1288,4 +1294,12 @@ static void update_freq_boundaries(Subject *subj, void *user_data) {
 
     /* The band plan strip follows the same span as the frequency labels */
     band_plan_update(f, (int32_t) half_width);
+}
+
+/* Accepted for the ported app dialogs: without the channels dialog there is no
+ * overlay to draw, so the name is shown as a message. */
+void channel_overlay_show(const char *name) {
+    if (name && *name) {
+        msg_schedule_text_fmt("%s", name);
+    }
 }

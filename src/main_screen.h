@@ -30,6 +30,10 @@ void main_screen_start_app(press_action_t page_app);
 void main_screen_action(press_action_t action);
 
 void main_screen_lock_freq(bool lock);
+
+/* The X6100 apps show the channel/station name in a panel over the screen.
+ * The channels dialog is not ported; it is shown as a message instead. */
+void channel_overlay_show(const char *name);
 void main_screen_lock_band(bool lock);
 void main_screen_lock_mode(bool lock);
 void main_screen_lock_ab(bool lock);

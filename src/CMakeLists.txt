@@ -26,6 +26,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     tx_player.c dialog_wspr.c cluster/spots.c gps.c
     freq_list.c dialog_navtex.c navtex/decoder.cpp navtex/navtex_rx.cpp navtex/fftfilt.cxx
     dialog_sstv.c sstv/decoder.c sstv/encoder.c sstv/linesync.c sstv/preview.c sstv/vis.c
+    dialog_wefax.c wefax/decoder.c wefax/encoder.c
 )
 
 add_subdirectory(fonts)

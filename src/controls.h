@@ -7,6 +7,13 @@ extern "C" {
 #endif
 
 
+/* Encoder-control ids of the X6100 apps. The registry itself is not ported yet
+ * (see docs/NEW_FEATURES.md): the ids exist so the ported dialogs compile. */
+enum {
+    CTRL_WEFAX_ALIGN = 100,
+    CTRL_WEFAX_TILT,
+};
+
 void controls_toggle_agc_hang(button_item_t *btn);
 void controls_toggle_key_train(button_item_t *btn);
 void controls_toggle_key_iambic_mode(button_item_t *btn);

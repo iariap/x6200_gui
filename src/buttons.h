@@ -43,7 +43,13 @@ typedef struct button_item_t {
     // next/prev page
     struct buttons_page_t *next;
     struct buttons_page_t *prev;
-    int32_t                data;
+    union {
+        int32_t            data;        /* this GUI's name for it */
+        int32_t            ctrl;        /* the X6100 name the ported dialogs use */
+    };
+    /* The X6100 lets the encoder change the value of the focused app button
+     * (WeFax align/tilt); accepted here, the registry is not ported yet */
+    bool                   encoder_allowed;
     union {
         lv_obj_t          *label_obj;   /* this GUI's name for it */
         lv_obj_t          *disp_btn;    /* the X6100 name the ported dialogs use */

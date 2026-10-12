@@ -9,6 +9,10 @@
 #pragma once
 
 /* Dialog area: the 800x480 screen the ported apps were laid out for */
+#ifndef DIALOG_Y
+#define DIALOG_Y            108     /* below the top bar */
+#endif
+
 #ifndef DIALOG_H
 #define DIALOG_H            372
 #endif
@@ -60,6 +64,7 @@ extern lv_style_t   panel_top_style;
 extern lv_style_t   panel_mid_style;
 extern lv_style_t   panel_bottom_style;
 extern lv_style_t   pannel_style;
+#define panel_style pannel_style    /* the X6100 spelling */
 
 extern lv_style_t   dialog_style;
 extern lv_style_t   dialog_item_style;

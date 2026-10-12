@@ -773,3 +773,8 @@ template <typename T> static T loop_items(std::vector<T> items, T cur, bool next
     id = (id + len + (next ? 1 : -1)) % len;
     return items[id];
 }
+
+/* Accepted for the ported app dialogs; see the note in mfk.h */
+extern "C" void mfk_set_ctrl(int ctrl) {
+    (void) ctrl;
+}

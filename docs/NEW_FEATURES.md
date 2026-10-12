@@ -16,9 +16,10 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **WSPR completo**: motor + UI (spots, banda, TX, subida) | ✅ 2026-10-11 | §9 |
 | **NavTex**: decodificador SITOR-B + app | ✅ 2026-10-11 | §10 |
 | **SSTV**: 7 modos (RX/TX), app y assets | ✅ 2026-10-11 | §11 |
+| **WeFax**: fax meteorológico (RX/TX, Auto) | ✅ 2026-10-11 | §12 |
 | Temas JSON | ⏳ pendiente | — |
 | Field Ops SOTA/POTA | ⏳ pendiente | — |
-| Modos digitales: WSPR ✅, NavTex ✅, SSTV ✅, WeFax, JS8 | 🔶 en curso | §9-11 |
+| Modos digitales: WSPR ✅, NavTex ✅, SSTV ✅, WeFax ✅, JS8 | 🔶 en curso | §9-12 |
 | DRM/KMS + perilla con hilo propio | ⏳ pendiente | — |
 
 Todo lo portado mantiene la licencia LGPL-2.1-or-later y la atribución al autor original
@@ -517,3 +518,60 @@ all OK
 
 Los 7 modos pasan, con correlación de luminancia entre 0,92 y 0,98. Necesita `libpng` y
 `libsndfile` (ambas ya en la imagen y en el contenedor del arnés).
+
+---
+
+## 12. WeFax (fax meteorológico, RX y TX)
+
+El receptor/transmisor de fax: codificación y decodificación **Auto** (detección de APT de
+arranque y parada, alineación de *phasing*, polaridad y velocidad de línea), más la app con la
+previsualización y el guardado.
+
+### Qué se portó
+
+- `src/wefax/{encoder,decoder}.c`: el códec (APT, IOC 576, alineación de phasing, ajuste de
+  inclinación) con modo Auto, que es el que usa la app.
+- `src/dialog_wefax.c` (~4.300 líneas): la app, con previsualización, TEST (sin RF), progreso y
+  guardado en `/mnt/wefax`.
+- Se abre desde **acciones de pulsación larga → `WeFax`**.
+
+### Adaptaciones
+
+- `button_data_t` ganó los campos de su framework de perilla: `ctrl` (unión anónima con nuestro
+  `data`) y `encoder_allowed`. Los ids `CTRL_WEFAX_ALIGN/TILT` existen en `controls.h`.
+- `DIALOG_Y` agregado a `styles.h` y alias `panel_style` → `pannel_style` (así se llama en
+  nuestro árbol).
+- Ajustes nuevos: `wefax_align` y `wefax_tilt`, persistidos como los de WSPR.
+- `mfk_update()` en nuestro árbol lleva un segundo argumento (`voice`): adaptadas las 4 llamadas.
+- Bloques `cJSON` del control remoto en vivo reemplazados por un comentario (ese servidor no está
+  portado).
+- **Adaptador de audio** (parte real de nuestra banda base compleja) igual que en los otros
+  modos. De paso corregí el mismo problema en SSTV, donde lo había dejado como *warning*: en
+  runtime el decodificador habría recibido punteros del tipo equivocado.
+
+### Pendiente y documentado
+
+El **control por perilla** del alineado/inclinación (el registro `CTRL_*` + `mfk_set_ctrl` de su
+fork, 512 líneas de `controls.cpp`) no está portado: los botones muestran los valores y existen
+los ajustes, pero la perilla todavía no los mueve. `channel_overlay_show()` (el panel de canales
+del X6100) se resuelve mostrando el nombre como mensaje, porque el diálogo de canales tampoco
+está portado.
+
+### Test: el loopback del X6100, portado
+
+`tests/native/run_wefax_tests.sh` compila el **códec real** con
+`tests/native/test_wefax_loopback.c`: codifica una imagen en la tasa de reproducción de la
+radio, la decima a la del decodificador y la decodifica **en modo Auto**, como hace la app.
+
+```
+WEFAX AUTO: APT START DETECTED - provisional fax (300.0 Hz, line=0.996)
+WEFAX AUTO: FAX CONFIRMED
+WEFAX AUTO: PHASING aligned - pulse at x=1731..11 (width 90 px, 5/5 groups agree)
+WEFAX AUTO: APT STOP DETECTED (432.0 Hz, line=0.859)
+start generations 1, confirmed 1, stop 1, rows kept 393
+phasing pulse at column 0, picture from kept row 58, 300 of 300 lines, correlation 0.9953, mean abs error 1.8
+PASS
+```
+
+Verifica la detección de APT de arranque y parada, la confirmación del fax, la alineación de
+phasing y que la imagen vuelve completa: **300 de 300 líneas con correlación 0,995**.

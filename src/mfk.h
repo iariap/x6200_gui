@@ -82,6 +82,11 @@ typedef enum {
 extern mfk_state_t  mfk_state;
 
 void mfk_update(int16_t diff, bool voice);
+
+/* The X6100 puts the encoder into EDIT mode on one of the app buttons
+ * (WeFax align/tilt). The control registry is not ported yet, so the call is
+ * accepted and ignored: the values are still adjustable through params. */
+void mfk_set_ctrl(int ctrl);
 void mfk_change_mode(int16_t dir);
 void mfk_set_mode(mfk_mode_t mode);
 

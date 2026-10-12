@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <complex.h>
 #include <math.h>
 #include <time.h>
 #include <sys/stat.h>
@@ -86,7 +87,10 @@ static void delete_picture_cb(button_data_t *data);
 static void page_1_cb(button_data_t *data);
 static void page_2_cb(button_data_t *data);
 static void page_3_cb(button_data_t *data);
-static void audio_cb(unsigned int n, float *samples);
+#define AUDIO_CB_CHUNK  2048
+
+static void audio_float(unsigned int n, const float *samples);
+static void audio_cb(unsigned int n, cfloat *samples);
 static void tx_ui_cb(button_data_t *data);
 static void tx_picture_selector_build(void);
 static void tx_picture_selector_destroy(void);
@@ -3786,7 +3790,23 @@ static void start_cb(button_data_t *data)
     set_receiver_ui_listening();
 }
 
-static void audio_cb(unsigned int n, float *samples)
+/* Our dsp hands the apps complex baseband; the decoder wants real audio */
+static void audio_cb(unsigned int n, cfloat *samples)
+{
+    static float real[AUDIO_CB_CHUNK];
+
+    for (unsigned int off = 0; off < n; off += AUDIO_CB_CHUNK) {
+        unsigned int chunk = LV_MIN(n - off, (unsigned int) AUDIO_CB_CHUNK);
+
+        for (unsigned int k = 0; k < chunk; k++) {
+            real[k] = crealf(samples[off + k]);
+        }
+
+        audio_float(chunk, real);
+    }
+}
+
+static void audio_float(unsigned int n, const float *samples)
 {
     if ((!live_enabled && !cont_capturing) || !samples || n==0 || test_running) return;
     pthread_mutex_lock(&live_mutex);
