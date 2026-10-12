@@ -86,6 +86,7 @@ desde la web usaba un indicativo vacío. Ahora leen `X6200_*` y el *User-Agent* 
 | Feature | Cómo se llega | Depende de | Verificación |
 |---|---|---|---|
 | **wfview** | Ajustes → interruptor; `/mnt/wfview.conf` | puertos 50001-50003 | 🧪 protocolo completo (handshake, login, CI-V) con sockets reales |
+| **Perilla principal** | automática (`/dev/input/event1`, en su hilo) | — | 📄 compila; 🔌 **probar que la sintonía responda igual o mejor** |
 | **Status** | `APP Status` | `/proc`, `/sys`, `/mnt`, `statvfs` | 📄 los datos se leen en la radio (es justamente para eso) |
 | **Control remoto (web)** | página `/remote` | socket `/tmp/x6200_remote.sock`, ~65 comandos de **todas** las apps (FT8 incluido) | 🧪 protocolo y comandos en el binario; 🔌 punta a punta con la radio |
 | **Web configurator** | `http://<ip>/` y `https://<ip>/` | `S96webserver` + paquete `x6100-webserver` | 🧪 19 páginas/endpoints contra la base real |

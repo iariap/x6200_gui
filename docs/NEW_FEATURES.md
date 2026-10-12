@@ -1384,3 +1384,35 @@ si el camino DRM inicializara "bien" pero dibujara mal, la pantalla quedaría ne
 
 Cuando se valide en el equipo, alcanza con dejarlo por defecto; hasta entonces, el camino probado
 es el de siempre.
+
+---
+
+## 33. Perilla principal con hilo propio (latencia de sintonía)
+
+Era el último pendiente de "base" y resultó **acotado**: el `rotary.c` del X6100 (193 líneas) es
+autocontenido — no arrastra su registro de controles, que era lo que me frenaba.
+
+### Qué arregla
+
+Su comentario lo dice: *"so the speed (ms per detent) does not depend on how busy the GUI loop
+is"* (arreglo `upstream ae2af22`). Con la perilla leída desde el bucle de la GUI, el tiempo entre
+detents incluye lo que el bucle estaba haciendo: si la GUI está ocupada, la **velocidad medida es
+falsa** y con ella el *adaptive tuning*. Ahora:
+
+- un **hilo** lee `/dev/input/event1` con `poll`, marca cada detent con su tiempo y lo encola;
+- la GUI toma todo lo encolado como **un evento por cuadro** (los detents sumados, el tiempo por
+  detent promediado ✓), y un **cambio de dirección corta el lote**;
+- si la cola se llena, se descartan detents (la GUI está trabada igual).
+
+### Cómo convive con nuestro *adaptive tuning*
+
+El suyo manda el tiempo en el evento (`rotary_data_t {diff, dt}`); el nuestro mantiene un
+historial de eventos, uno por detent. Para no cambiarle la semántica, el lote **se desempaca**: se
+agrega una entrada por detent, fechada hacia atrás con el tiempo por detent que midió el hilo, así
+la velocidad que calcula es la real. El evento que se manda a la GUI sigue siendo el nuestro
+(`EVENT_ROTARY_ENHANCED`, con el multiplicador), así que el resto del camino no cambia.
+
+Los otros dos encoders (volumen y MFK interno, `event2`/`event4`) siguen con el camino clásico.
+
+**Falta probarlo en la radio**: la sintonía es la interacción más usada y es lo único que valida
+este cambio.
