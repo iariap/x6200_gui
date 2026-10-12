@@ -67,6 +67,20 @@ de las verificaciones y **muestra el comando que ejecutaría**, así se puede en
 extrayéndolo como usuario común se pierden y una actualización en el lugar rompería esos binarios.
 `tools/release/make_update_tgz.sh` lo arma y lo comprueba.
 
+Hay una prueba del camino completo, que corre el `S02update` **real** de la imagen dentro de un
+chroot sobre una copia del rootfs (marca un archivo, aplica el tgz, y comprueba que el backup
+traiga lo reemplazado y que el tgz se haya aplicado):
+
+```bash
+sudo x6200_gui/tools/release/test_update.sh [rootfs.tar] [actualización.tgz]
+```
+
+**Ojo con el backup que hace el firmware**: usa
+`zcat $i | tar -tf - | xargs tar -cvf - | gzip > /mnt/backup_...`, y `xargs` parte la lista en
+varios `tar` que escriben al mismo stdout: el resultado son varios archivos tar concatenados, de
+los que sólo se puede leer el primero (~700 de 5313 archivos). Es del firmware base, no de este
+port. Para volver atrás de verdad, la imagen anterior de la release.
+
 **El tgz lleva sólo archivos y enlaces**: ni `./` ni entradas de directorio. No es un capricho, el
 `S02update` del firmware hace el backup así:
 

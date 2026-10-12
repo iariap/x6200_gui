@@ -129,7 +129,9 @@ El equipo ya sabe actualizarse solo: `S02update` busca `x6200_r1cbu_*.tgz` en la
 
 Ojo: este camino **no** actualiza el kernel ni u-boot (van en la partición BOOT); los
 módulos del kernel sí. Dejá **~150 MB libres** en DATA: antes de aplicar, el firmware respalda en
-`/mnt/backup_x6200_r1cbu_*.tgz` los archivos que va a reemplazar.
+`/mnt/backup_x6200_r1cbu_*.tgz` los archivos que va a reemplazar. Ese backup automático es
+**parcial** (el firmware lo arma con `xargs`, que parte la lista en varios `tar` concatenados y sólo
+el primero se puede leer). Para volver atrás, usá la imagen de la release anterior.
 
 ### 2. Imagen completa en la microSD
 
