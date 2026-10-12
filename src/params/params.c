@@ -90,6 +90,24 @@ params_t params = {
 
     .ft8_show_all           = true,
     .ft8_protocol           = FTX_PROTOCOL_FT8,
+    /* JS8 (same defaults as the X6100 firmware) */
+    .js8_tx_freq            = { .x = 1500,      .name = "js8_tx_freq" },
+    .js8_hold_offset        = { .x = false,     .name = "js8_hold_offset" },
+    .js8_auto               = { .x = false,     .name = "js8_auto" },
+    .js8_hb                 = { .x = false,     .name = "js8_hb" },
+    .js8_hb_ack             = { .x = false,     .name = "js8_hb_ack" },
+    .js8_relay              = { .x = true,      .name = "js8_relay" },
+    .js8_hb_interval        = { .x = 30,        .name = "js8_hb_interval" },
+    .js8_cq_interval        = { .x = 1,         .name = "js8_cq_interval" },
+    .js8_log_prompt         = { .x = true,      .name = "js8_log_prompt" },
+    .js8_log_activation     = { .x = 0, .min = 0, .max = 2, .name = "js8_log_activation" },
+    .js8_alerts             = { .x = 7, .min = 0, .max = 31, .name = "js8_alerts" },
+    .js8_speed              = { .x = 0, .min = 0, .max = 3, .name = "js8_speed" },
+    .js8_rx_all             = { .x = true,      .name = "js8_rx_all" },
+    .js8_ghostnet           = { .x = false,     .name = "js8_ghostnet" },
+    .js8_custom_on          = { .x = false,     .name = "js8_custom_on" },
+    .js8_custom_hz          = { .x = 0,         .name = "js8_custom_hz" },
+
     .ft8_tx_freq            = { .x = 1325,      .name = "ft8_tx_freq" },
     .ft8_auto               = { .x = true,      .name = "ft8_auto" },
     .ft8_output_gain_offset = { .x = 0.0f,      .name = "ft8_output_gain_offset" },
@@ -143,6 +161,15 @@ static bool params_load_bool(params_bool_t *var, const char *name, const int32_t
 }
 
 static bool params_load_uint8(params_uint8_t *var, const char *name, const int32_t x) {
+    if (strcmp(name, var->name) == 0) {
+        var->x = x;
+        return true;
+    }
+
+    return false;
+}
+
+static bool params_load_int32(params_int32_t *var, const char *name, const int32_t x) {
     if (strcmp(name, var->name) == 0) {
         var->x = x;
         return true;
@@ -310,6 +337,23 @@ static bool params_load() {
         if (params_load_uint8(&params.voice_volume, name, i)) continue;
         if (params_load_uint8(&params.freq_accel, name, i)) continue;
 
+        if (params_load_uint16(&params.js8_tx_freq, name, i)) continue;
+        if (params_load_bool(&params.js8_hold_offset, name, i)) continue;
+        if (params_load_bool(&params.js8_auto, name, i)) continue;
+        if (params_load_bool(&params.js8_hb, name, i)) continue;
+        if (params_load_bool(&params.js8_hb_ack, name, i)) continue;
+        if (params_load_bool(&params.js8_relay, name, i)) continue;
+        if (params_load_uint16(&params.js8_hb_interval, name, i)) continue;
+        if (params_load_uint16(&params.js8_cq_interval, name, i)) continue;
+        if (params_load_bool(&params.js8_log_prompt, name, i)) continue;
+        if (params_load_uint8(&params.js8_log_activation, name, i)) continue;
+        if (params_load_uint8(&params.js8_alerts, name, i)) continue;
+        if (params_load_uint8(&params.js8_speed, name, i)) continue;
+        if (params_load_bool(&params.js8_rx_all, name, i)) continue;
+        if (params_load_bool(&params.js8_ghostnet, name, i)) continue;
+        if (params_load_bool(&params.js8_custom_on, name, i)) continue;
+        if (params_load_int32(&params.js8_custom_hz, name, i)) continue;
+
         if (params_load_uint16(&params.ft8_tx_freq, name, i)) continue;
 
         if (params_load_str(&params.qth, name, t)) continue;
@@ -336,6 +380,12 @@ static void params_save_uint8(params_uint8_t *var) {
 }
 
 static void params_save_uint16(params_uint16_t *var) {
+    if (var->dirty) {
+        params_write_int(var->name, var->x, &var->dirty);
+    }
+}
+
+static void params_save_int32(params_int32_t *var) {
     if (var->dirty) {
         params_write_int(var->name, var->x, &var->dirty);
     }
@@ -426,6 +476,23 @@ static void params_save() {
     params_save_uint8(&params.voice_pitch);
     params_save_uint8(&params.voice_volume);
     params_save_uint8(&params.freq_accel);
+
+    params_save_uint16(&params.js8_tx_freq);
+    params_save_bool(&params.js8_hold_offset);
+    params_save_bool(&params.js8_auto);
+    params_save_bool(&params.js8_hb);
+    params_save_bool(&params.js8_hb_ack);
+    params_save_bool(&params.js8_relay);
+    params_save_uint16(&params.js8_hb_interval);
+    params_save_uint16(&params.js8_cq_interval);
+    params_save_bool(&params.js8_log_prompt);
+    params_save_uint8(&params.js8_log_activation);
+    params_save_uint8(&params.js8_alerts);
+    params_save_uint8(&params.js8_speed);
+    params_save_bool(&params.js8_rx_all);
+    params_save_bool(&params.js8_ghostnet);
+    params_save_bool(&params.js8_custom_on);
+    params_save_int32(&params.js8_custom_hz);
 
     params_save_uint16(&params.ft8_tx_freq);
 
@@ -606,6 +673,16 @@ void params_uint8_set(params_uint8_t *var, uint8_t x) {
 }
 
 void params_uint16_set(params_uint16_t *var, uint16_t x) {
+    params_lock();
+    var->x = x;
+    params_unlock(&var->dirty);
+
+    if (var->voice) {
+        voice_say_int(var->voice, var->x);
+    }
+}
+
+void params_int32_set(params_int32_t *var, int32_t x) {
     params_lock();
     var->x = x;
     params_unlock(&var->dirty);

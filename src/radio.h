@@ -72,6 +72,16 @@ void radio_poweroff();
 void radio_set_ptt(bool tx);
 void radio_set_modem(bool tx);
 
+/* The X6200 control library has no TX filter or RX DSP on/off command (the
+ * X6100 one did). The JS8 app asks for both; they are accepted and ignored so
+ * the app works with the radio's own filter settings. */
+void radio_set_tx_filter(uint16_t low, uint16_t high);
+void radio_set_rx_dsp_off(bool off);
+
+/* The app asks for the speaker to follow the transmission; this GUI drives the
+ * playback volume itself, so the call is accepted and ignored. */
+void radio_speaker_play(bool on);
+
 
 int16_t radio_change_xit(int16_t d);
 int16_t radio_change_rit(int16_t d);

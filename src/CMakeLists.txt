@@ -29,6 +29,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     dialog_wefax.c wefax/decoder.c wefax/encoder.c
     cluster/client.c cluster/spots.c dialog_cluster.c fonts/font_select.c
     knobs.c dialog_field.c field/refs.c field/flog.c field/rbn.c field/bands.c dialog_bands.c
+    dialog_js8.c js8_map.c
 )
 
 add_subdirectory(fonts)
@@ -37,6 +38,7 @@ add_subdirectory(widgets)
 add_subdirectory(params)
 add_subdirectory(qth)
 add_subdirectory(wspr)
+add_subdirectory(js8)
 add_subdirectory(cfg)
 
 include_directories(utf8)

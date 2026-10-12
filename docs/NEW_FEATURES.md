@@ -19,9 +19,10 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **WeFax**: fax meteorológico (RX/TX, Auto) | ✅ 2026-10-11 | §12 |
 | **Cluster DX**: spots, filtros, alertas y app | ✅ 2026-10-11 | §14 |
 | **Field Ops** SOTA/POTA: referencias, log ADIF y RBN | ✅ 2026-10-11 | §15 |
+| **JS8** (motor + app completa) | ✅ 2026-10-11 | §16 |
 | Temas JSON | ⏳ pendiente | — |
 | ~~Field Ops SOTA/POTA~~ | ✅ 2026-10-11 | §15 |
-| Modos digitales: WSPR ✅, NavTex ✅, SSTV ✅, WeFax ✅, JS8 (plan) | 🔶 en curso | §9-13 |
+| Modos digitales: WSPR ✅, NavTex ✅, SSTV ✅, WeFax ✅, JS8 ✅ | ✅ completo | §9-16 |
 | DRM/KMS + perilla con hilo propio | ⏳ pendiente | — |
 
 Todo lo portado mantiene la licencia LGPL-2.1-or-later y la atribución al autor original
@@ -716,3 +717,59 @@ dependen de LVGL, así que corre en el **host**:
 ```
 362 comprobaciones, 0 fallos
 ```
+
+---
+
+## 16. JS8 (motor y app)
+
+El último modo digital, y el más grande. Queda completo: motor, app y la **suite de tests del
+X6100 pasando entera**.
+
+### Qué se portó
+
+- `third-party/js8core/`: el módem y protocolo JS8 (380 archivos, C++20, Eigen y CRCpp
+  vendorizados) desde `JS8Call-improved/Android-port`, commit `1f8d390a`, GPLv3.
+- `src/js8/` (19 archivos): resampler, velocidades, render, ensamblador de mensajes, clasificación,
+  dirigidos, receptor, WAV, TX, comandos, estaciones, autorrespuesta, log de QSO, inbox, alertas,
+  macros y la capa `js8_rx`/`js8_ops` que usa la app.
+- `src/dialog_js8.c` (~5.400 líneas) y `src/js8_map.c` (el mapa de estaciones), con el mapa
+  mundial (`world_map.h`).
+- Se abre desde **acciones de pulsación larga → `JS8`**.
+
+### Adaptaciones
+
+- **cJSON**: en vez de reescribir a mano los bloques que publican al control remoto en vivo (que
+  no está portado), agregué `cJSON.h` como **stub con la misma forma** (no-ops): los diálogos
+  quedan legibles y el día que se porte el servidor remoto se reemplaza por el cJSON real.
+- **Parámetros**: 16 ajustes nuevos de JS8 (`js8_auto`, `js8_hb`, `js8_speed`, `js8_alerts`,
+  `js8_custom_hz`…) con los mismos valores por defecto que el X6100. Eso necesitó un *loader* y
+  *saver* de `int32` que nuestro sistema de params no tenía (`params_load_int32`,
+  `params_save_int32`, `params_int32_set`).
+- **Roles de tema de las filas** de spots (`TC(row_heard)`, `TC(row_tx)`, `TC(row_to_me)`…), los
+  filtros del `cfg` (`cfg_cur_filter_low/high` sobre nuestro `cfg_cur.filter`) y los ajustes
+  `tx_filter_low/high`.
+- **Lo que la lib del X6200 no expone**, documentado como aceptado-y-ignorado:
+  `radio_set_tx_filter()` y `radio_set_rx_dsp_off()` (el X6200Control no tiene comandos de filtro
+  de TX ni de apagado del DSP de RX) y `radio_speaker_play()`. Sí implementé de verdad
+  `keypad_set_long_time()` (nuestro keypad ahora usa esa variable).
+- Mismo **adaptador de audio** que los otros modos (parte real de nuestra banda base compleja).
+
+### Test: la suite del X6100, entera
+
+`tests/native/run_js8_tests.sh` compila `tests/test_js8.cpp` (2.756 líneas, Catch2) contra nuestro
+`src/js8` y el `js8core` vendorizado, dentro del contenedor del arnés (que ahora trae **Catch2
+3.5.2** y los headers de **Boost**):
+
+```
+All tests passed (1994 assertions in 88 test cases)
+```
+
+Cubre la compresión/descompresión JSC, el resampler 11025→12000 Hz (longitud, tonos en banda y
+supresión de imágenes que caerían dentro de la banda JS8), el renderizado y reensamblado de
+tramas de JS8Call, todos los caracteres imprimibles, los comandos del gateway APRS, los frames
+compuestos, el ensamblador de texto multiparte, la clasificación, el log de QSO, el inbox, las
+alertas y las velocidades.
+
+Detalle del armado: `js8core` y `src/js8` **ambos** tienen un `resampler.cpp`, así que el runner
+compila cada uno en su propio directorio para que no se pisen los `.o` (el primer intento falló
+justamente por eso).

@@ -702,6 +702,20 @@ void radio_set_ptt(bool tx) {
     WITH_RADIO_LOCK(x6200_control_ptt_set(tx));
 }
 
+/* Accepted for the ported JS8 app; see the note in radio.h */
+void radio_set_tx_filter(uint16_t low, uint16_t high) {
+    (void) low;
+    (void) high;
+}
+
+void radio_set_rx_dsp_off(bool off) {
+    (void) off;
+}
+
+void radio_speaker_play(bool on) {
+    (void) on;
+}
+
 /* Digital modes: modem mode while a frame is transmitted */
 void radio_set_modem(bool tx) {
     WITH_RADIO_LOCK(x6200_control_modem_set(tx));

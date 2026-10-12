@@ -19,6 +19,13 @@
 
 #define KEYPAD_LONG_TIME 1000
 
+static uint32_t long_time = KEYPAD_LONG_TIME;
+
+/* The JS8 app changes how long a press must last */
+void keypad_set_long_time(uint32_t ms) {
+    long_time = ms ? ms : KEYPAD_LONG_TIME;
+}
+
 static event_keypad_t   event;
 static lv_timer_t       *timer = NULL;
 
@@ -156,7 +163,7 @@ static void keypad_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
                 event.state = KEYPAD_PRESS;
                 lv_event_send(lv_scr_act(), EVENT_KEYPAD, (void*) &event);
 
-                timer = lv_timer_create(keypad_timer, KEYPAD_LONG_TIME, NULL);
+                timer = lv_timer_create(keypad_timer, long_time, NULL);
                 lv_timer_set_repeat_count(timer, 1);
             } else {
                 if (event.state == KEYPAD_PRESS) {
@@ -194,7 +201,7 @@ keypad_t * keypad_init(char *dev_name) {
     keypad->indev_drv.type = LV_INDEV_TYPE_KEYPAD;
     keypad->indev_drv.read_cb = keypad_input_read;
     keypad->indev_drv.user_data = keypad;
-    keypad->indev_drv.long_press_time = 1000;
+    keypad->indev_drv.long_press_time = long_time;
 
     keypad->indev = lv_indev_drv_register(&keypad->indev_drv);
 

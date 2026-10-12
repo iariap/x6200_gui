@@ -59,6 +59,7 @@
 #include "dialog_wefax.h"
 #include "dialog_cluster.h"
 #include "dialog_field.h"
+#include "dialog_js8.h"
 
 #include <unistd.h>
 #include <stdint.h>
@@ -179,6 +180,10 @@ void main_screen_start_app(press_action_t app_action) {
             dialog_construct(dialog_field, obj);
             break;
 
+        case ACTION_APP_JS8:
+            dialog_construct(dialog_js8, obj);
+            break;
+
         case ACTION_APP_RECORDER:
             dialog_construct(dialog_recorder, obj);
             voice_say_text_fmt("Audio recorder window");
@@ -267,6 +272,7 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_WEFAX:
         case ACTION_APP_CLUSTER:
         case ACTION_APP_FIELD:
+        case ACTION_APP_JS8:
         case ACTION_APP_RECORDER:
         case ACTION_APP_WIFI:
             main_screen_start_app(action);

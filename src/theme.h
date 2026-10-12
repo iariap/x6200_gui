@@ -40,6 +40,9 @@ typedef enum {
     TC_accent, TC_tx, TC_text_faint, TC_err, TC_near_bg, TC_warn,
     TC_alert, TC_alert_bg, TC_alert_text, TC_alert_box, TC_vfo, TC_vfo_bg, TC_new, TC_veil,
     TC_info, TC_chip, TC_btn_mark, TC_panel_border,
+    TC_accent_soft, TC_action, TC_focus_bg, TC_list, TC_title_text, TC_tx_bg, TC_warn_bg,
+    TC_row, TC_row_alert, TC_row_heard, TC_row_tx, TC_row_to_me, TC_row_cq, TC_row_group,
+    TC_row_sel_bar, TC_row_alert_text,
     TC_sel_bg, TC_sel_border, TC_sel_text,
     TC_num
 } theme_color_t;

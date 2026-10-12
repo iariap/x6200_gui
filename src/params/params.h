@@ -47,6 +47,7 @@ typedef enum {
     ACTION_APP_WEFAX,
     ACTION_APP_CLUSTER,
     ACTION_APP_FIELD,
+    ACTION_APP_JS8,
     ACTION_APP_SWRSCAN,
     ACTION_APP_SETTINGS,
     ACTION_APP_RECORDER,
@@ -150,6 +151,24 @@ typedef struct {
 
     bool                ft8_show_all;
     ftx_protocol_t      ft8_protocol;
+    /* JS8 */
+    params_uint16_t     js8_tx_freq;
+    params_bool_t       js8_hold_offset;
+    params_bool_t       js8_auto;
+    params_bool_t       js8_hb;
+    params_bool_t       js8_hb_ack;
+    params_bool_t       js8_relay;
+    params_uint16_t     js8_hb_interval;
+    params_uint16_t     js8_cq_interval;
+    params_bool_t       js8_log_prompt;
+    params_uint8_t      js8_log_activation;
+    params_uint8_t      js8_alerts;
+    params_uint8_t      js8_speed;
+    params_bool_t       js8_rx_all;
+    params_bool_t       js8_ghostnet;
+    params_bool_t       js8_custom_on;
+    params_int32_t      js8_custom_hz;
+
     params_uint16_t     ft8_tx_freq;
     params_bool_t       ft8_auto;
     params_str_t        ft8_cq_modifier;
@@ -273,6 +292,7 @@ void params_init();
 void params_bool_set(params_bool_t *var, bool x);
 void params_uint8_set(params_uint8_t *var, uint8_t x);
 void params_uint16_set(params_uint16_t *var, uint16_t x);
+void params_int32_set(params_int32_t *var, int32_t x);
 void params_str_set(params_str_t *var, const char *x);
 void params_float_set(params_float_t *var, float x);
 
