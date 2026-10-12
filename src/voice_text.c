@@ -9,6 +9,72 @@
 #include <stdio.h>
 #include <string.h>
 
+/* Los WAV de espeak son PCM 16 bits; se busca el bloque "data" y se listo. */
+bool voice_wav_pcm(const unsigned char *wav, size_t n, size_t *off, size_t *len, unsigned *rate) {
+    if (wav == NULL || n < 44 || off == NULL || len == NULL || rate == NULL) {
+        return false;
+    }
+
+    if (memcmp(wav, "RIFF", 4) != 0 || memcmp(wav + 8, "WAVE", 4) != 0) {
+        return false;
+    }
+
+    size_t   pos = 12;
+    unsigned canales = 1, bits = 16, sr = 22050;
+    bool     hay_formato = false;
+
+    while (pos + 8 <= n) {
+        const unsigned char *id  = wav + pos;
+        uint32_t             tam = (uint32_t) wav[pos + 4] | ((uint32_t) wav[pos + 5] << 8) |
+                                   ((uint32_t) wav[pos + 6] << 16) | ((uint32_t) wav[pos + 7] << 24);
+
+        if (memcmp(id, "fmt ", 4) == 0 && tam >= 16 && pos + 8 + 16 <= n) {
+            const unsigned char *f = wav + pos + 8;
+
+            canales = (unsigned) (f[2] | (f[3] << 8));
+            sr      = (unsigned) (f[4] | (f[5] << 8) | ((unsigned) f[6] << 16) | ((unsigned) f[7] << 24));
+            bits    = (unsigned) (f[14] | (f[15] << 8));
+            hay_formato = true;
+        } else if (memcmp(id, "data", 4) == 0) {
+            if (!hay_formato || bits != 16) {
+                return false;       /* sólo se maneja PCM de 16 bits */
+            }
+
+            size_t disponible = n - (pos + 8);
+
+            *off  = pos + 8;
+            *len  = tam < disponible ? (size_t) tam : disponible;
+            *rate = sr;
+            (void) canales;
+            return *len > 0;
+        }
+
+        pos += 8 + tam + (tam & 1);     /* los bloques van alineados a 2 */
+    }
+
+    return false;
+}
+
+size_t voice_resample(const int16_t *in, size_t n_in, unsigned rate_in, int16_t *out, size_t out_max, unsigned rate_out) {
+    size_t escritas = 0;
+
+    if (in == NULL || out == NULL || n_in == 0 || rate_in == 0 || rate_out == 0) {
+        return 0;
+    }
+
+    for (size_t i = 0; i < n_in && escritas < out_max; i++) {
+        /* Cuántas muestras de salida caen en esta de entrada */
+        size_t desde = ((uint64_t) i * rate_out) / rate_in;
+        size_t hasta = ((uint64_t) (i + 1) * rate_out) / rate_in;
+
+        for (size_t k = desde; k < hasta && escritas < out_max; k++) {
+            out[escritas++] = in[i];
+        }
+    }
+
+    return escritas;
+}
+
 bool voice_should_speak(int mode, bool lcd_on) {
     switch (mode) {
         case VOICE_MODE_ALWAYS:

@@ -12,6 +12,7 @@
 #include "voice.h"
 #include "voice_text.h"
 
+#include "audio.h"
 #include "backlight.h"
 #include "params/params.h"
 #include "radio.h"
@@ -36,10 +37,17 @@ static pthread_mutex_t mux = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  hay = PTHREAD_COND_INITIALIZER;
 static pthread_t       hilo;
 static bool            hilo_listo;
+static bool            despierta;      /* la GUI termino de arrancar: recien ahi se habla */
 static const char     *idioma = "es";
 
 /* ¿Corresponde hablar ahora? (ajuste + pantalla + transmisión) */
 static bool puede_hablar(void) {
+    if (!despierta) {
+        /* Al arrancar la pantalla principal anuncia varias cosas (las llamadas ya estaban en el
+         * codigo, mudas por el stub): no se dicen hasta que la GUI esta en pie. */
+        return false;
+    }
+
     if (!voice_should_speak(params.voice_mode.x, backlight_is_on())) {
         return false;
     }
@@ -52,72 +60,118 @@ static bool puede_hablar(void) {
     return true;
 }
 
-/* Corre espeak y después aplay. Sin shell: el texto va por stdin. */
+/* Sintetiza y lo manda al MISMO stream de la GUI (audio_play), que es el que ya usa el audio
+ * de FT8/JS8 y anda en la radio. Nada de aplay: la GUI tiene tomada la placa.
+ *
+ * espeak escribe un WAV de 16 bits a 22050 Hz; se saca el bloque de datos, se remuestrea a la
+ * frecuencia del stream y se escribe en trozos: audio_play() espera a que haya lugar y con
+ * bloques grandes nunca lo encuentra (ver el comentario de dialog_js8.c). */
 static void sintetizar_y_reproducir(const char *texto, bool forzar) {
-    char  wav[] = "/tmp/voice_XXXXXX";
-    int   fd    = mkstemp(wav);
-    char *argv_espeak[] = {"espeak", "-v", (char *) idioma, "--stdout", NULL};
+    char  archivo[] = "/tmp/voice_txt_XXXXXX";
+    int   fd;
+    int   tubo[2];
     pid_t pid;
+    char  arg_lang[8];
+    char *argv_espeak[] = {"espeak", "-v", arg_lang, "-f", archivo, "--stdout", NULL};
+
+    if (!forzar && !puede_hablar()) {
+        return;
+    }
+
+    fd = mkstemp(archivo);
 
     if (fd < 0) {
         return;
     }
 
-    if (!forzar && !puede_hablar()) {
+    if (write(fd, texto, strlen(texto)) < 0) {
         close(fd);
-        unlink(wav);
+        unlink(archivo);
         return;
     }
+
+    close(fd);
+
+    if (pipe(tubo) != 0) {
+        unlink(archivo);
+        return;
+    }
+
+    snprintf(arg_lang, sizeof(arg_lang), "%s", idioma);
 
     pid = fork();
 
     if (pid == 0) {
-        int entrada[2];
-
-        if (pipe(entrada) != 0) {
-            _exit(1);
-        }
-
-        dup2(fd, STDOUT_FILENO);
-        dup2(entrada[0], STDIN_FILENO);
-        close(fd);
-        close(entrada[0]);
-        close(entrada[1]);
+        dup2(tubo[1], STDOUT_FILENO);
+        close(tubo[0]);
+        close(tubo[1]);
         execv("/usr/bin/espeak", argv_espeak);
         _exit(127);
     }
 
-    if (pid > 0) {
-        /* el texto va por stdin: no hay shell ni comillas que escapar */
-        FILE *f = fdopen(fd, "w");
+    close(tubo[1]);
 
-        if (f != NULL) {
-            fputs(texto, f);
-            fclose(f);
-        } else {
-            close(fd);
+    /* Leer todo el WAV. El texto va por un archivo, asi que no hay baile con stdin. */
+    size_t         cap = 1 << 20;
+    size_t         n   = 0;
+    unsigned char *buf = malloc(cap);
+
+    if (buf != NULL) {
+        ssize_t r;
+
+        while ((r = read(tubo[0], buf + n, cap - n)) > 0) {
+            n += (size_t) r;
+
+            if (n == cap) {
+                unsigned char *nuevo = realloc(buf, cap * 2);
+
+                if (nuevo == NULL) {
+                    break;
+                }
+
+                buf = nuevo;
+                cap *= 2;
+            }
         }
-
-        waitpid(pid, NULL, 0);
-        close(fd);
-
-        pid_t play = fork();
-
-        if (play == 0) {
-            char *argv_aplay[] = {"aplay", "-q", wav, NULL};
-
-            execv("/usr/bin/aplay", argv_aplay);
-            _exit(127);
-        }
-
-        if (play > 0) {
-            waitpid(play, NULL, 0);
-        }
-    } else {
-        close(fd);
     }
 
-    unlink(wav);
+    close(tubo[0]);
+    waitpid(pid, NULL, 0);
+    unlink(archivo);
+
+    if (buf != NULL && n > 44) {
+        size_t   off = 0, len = 0;
+        unsigned rate = 0;
+
+        if (voice_wav_pcm(buf, n, &off, &len, &rate) && rate > 0) {
+            size_t   muestras    = len / 2;
+            size_t   salida_max  = (size_t) ((uint64_t) muestras * AUDIO_PLAY_RATE / rate) + 8;
+            int16_t *pcm         = malloc(salida_max * sizeof(int16_t));
+
+            if (pcm != NULL) {
+                size_t escritas = voice_resample((const int16_t *) (buf + off), muestras, rate,
+                                                 pcm, salida_max, AUDIO_PLAY_RATE);
+
+                /* En trozos: un bloque grande no encuentra lugar en el stream */
+                for (size_t at = 0; at < escritas; at += 2048) {
+                    size_t parte = escritas - at > 2048 ? 2048 : escritas - at;
+
+                    if (audio_play(pcm + at, parte) < 0) {
+                        break;
+                    }
+                }
+
+                if (escritas > 0) {
+                    audio_play_wait();
+                }
+
+                LV_LOG_USER("Voz: %zu muestras a %i Hz (%u -> %i)", escritas, AUDIO_PLAY_RATE, rate, AUDIO_PLAY_RATE);
+                free(pcm);
+            }
+        }
+    }
+
+    free(buf);
 }
 
 static void *hilo_voz(void *arg) {
@@ -179,6 +233,10 @@ void voice_selftest(void) {
         LV_LOG_USER("Prueba de voz: \"%s\"", texto);
         sintetizar_y_reproducir(texto, true);
     }
+}
+
+void voice_ready(void) {
+    despierta = true;
 }
 
 void voice_sure(void) {

@@ -1682,3 +1682,39 @@ tree y el firmware base sacó `gpsd`. Por eso la app se portó **adaptada** y di
   no tiene dependencias, así que `tests/native/test_gps_format.c` lo cubre en el host;
 - se abre desde **Ajustes → acciones** ("APP GPS") y también por el control remoto
   (`{"cmd":"app","text":"GPS"}`), que es como se verificó: abre, dibuja y no se cae.
+
+### 39.1 Por qué al principio no se oía nada (y cómo se verificó)
+
+La primera versión reproducía el WAV con **`aplay`**, y en la radio eso **no puede funcionar**: la
+GUI tiene tomada la placa de sonido por su propio stream. El log del equipo lo mostró apenas se
+probó:
+
+```
+audio_init: Conected
+audio_play: pa_stream_write() failed: No such entity
+```
+
+El arreglo fue mandar el audio por **`audio_play()`**, que es el stream de la GUI (el mismo que ya
+usa el audio de FT8/JS8 y que **sí** suena en la radio), en trozos de 2048 muestras como hace
+`dialog_js8.c`. espeak entrega 22050 Hz y el stream es de 44100 Hz, así que se **duplica cada
+muestra** (`voice_resample()`), que para esa relación es exacto.
+
+Además, **Ajustes no llamaba a la voz ni una vez** (y la referencia del X6100 tampoco), así que
+cambiar una opción no decía nada. Ahora los cuatro callbacks comunes de `dialog_settings.c`
+(`bool_update_cb`, `uint8_dropdown_update_cb`, `uint8_spinbox_update_cb` y el del tema) anuncian
+el **nombre del ajuste y su valor**, y si no encuentran la etiqueta dicen sólo el valor (queda en
+el log).
+
+**Verificación hecha en el chasis** (no en la radio): con pulseaudio en modo sistema y un **sink
+nulo llamado como el dispositivo que pide la GUI**
+(`alsa_output.platform-sound.stereo-fallback`), la GUI diciendo una frase deja:
+
+```
+State: RUNNING                                     <- el sink despertó porque le llegó audio
+sink-input: s16le 1ch 44100Hz                      <- el stream de la GUI, mono 44.1k
+escrituras fallidas: 0
+```
+
+También se corrigió que al arrancar decía cuatro frases: las llamadas de voz de la pantalla
+principal ya existían (mudas por el stub) y ahora suenan; `voice_ready()` las habilita recién
+cuando la GUI está en pie.

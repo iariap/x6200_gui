@@ -238,6 +238,8 @@ int main(void) {
     remote_server_init();
 
     int64_t next_loop_time, sleep_time, loop_start_time;
+    voice_ready();        /* la GUI ya esta en pie: desde aca la voz anuncia */
+
     while (1) {
         loop_start_time = get_time();
         observer_delayed_notify_all();

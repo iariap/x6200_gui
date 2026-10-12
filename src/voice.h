@@ -35,6 +35,9 @@ typedef enum {
 
 void voice_sure(void);
 
+/* La GUI ya esta en pie: desde aca la voz puede hablar (ver voice.c) */
+void voice_ready(void);
+
 /* Dice $X6200_VOICE_TEST al arrancar (diagnóstico) */
 void voice_selftest(void);
 void voice_change_mode(void);

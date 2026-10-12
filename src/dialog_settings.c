@@ -65,6 +65,10 @@ static lv_obj_t     *hour;
 static lv_obj_t     *min;
 static lv_obj_t     *sec;
 
+/* Anuncia un ajuste: el nombre es la etiqueta de la celda (el primer hijo) y el valor lo pasa
+ * quien llama. El diccionario de voice_text.c traduce el nombre al espanol. */
+static void anunciar_ajuste(lv_obj_t *widget, const char *valor);
+
 static void construct_cb(lv_obj_t *parent);
 static void key_cb(lv_event_t * e);
 
@@ -80,9 +84,43 @@ dialog_t            *dialog_settings = &dialog;
 
 /* Shared update */
 
+static void anunciar_ajuste(lv_obj_t *widget, const char *valor) {
+    lv_obj_t *celda = widget != NULL ? lv_obj_get_parent(widget) : NULL;
+    lv_obj_t *nombre = NULL;
+
+    if (valor == NULL) {
+        return;
+    }
+
+    /* El nombre del ajuste es una etiqueta de la celda; se busca entre los hijos en lugar de
+     * suponer el indice, porque el orden cambia segun el widget. */
+    if (celda != NULL) {
+        for (uint32_t i = 0; i < 8 && nombre == NULL; i++) {
+            lv_obj_t *hijo = lv_obj_get_child(celda, i);
+
+            if (hijo == NULL) {
+                break;
+            }
+
+            if (hijo != widget && lv_obj_get_class(hijo) == &lv_label_class) {
+                nombre = hijo;
+            }
+        }
+    }
+
+    if (nombre != NULL) {
+        voice_say_text_fmt("%s: %s", lv_label_get_text(nombre), valor);
+    } else {
+        /* Sin nombre igual se dice el valor: mejor eso que nada */
+        LV_LOG_USER("Ajuste sin etiqueta, se anuncia solo el valor: %s", valor);
+        voice_say_text_fmt("%s", valor);
+    }
+}
+
 static void bool_update_cb(lv_event_t * e) {
     lv_obj_t        *obj = lv_event_get_target(e);
     params_bool_t   *var = lv_event_get_user_data(e);
+    anunciar_ajuste(obj, lv_obj_has_state(obj, LV_STATE_CHECKED) ? "on" : "off");
 
     params_bool_set(var, lv_obj_has_state(obj, LV_STATE_CHECKED));
 }
@@ -90,6 +128,9 @@ static void bool_update_cb(lv_event_t * e) {
 static void uint8_spinbox_update_cb(lv_event_t * e) {
     lv_obj_t        *obj = lv_event_get_target(e);
     params_uint8_t  *var = lv_event_get_user_data(e);
+    char valor[16];
+    snprintf(valor, sizeof(valor), "%i", (int) lv_spinbox_get_value(obj));
+    anunciar_ajuste(obj, valor);
 
     params_uint8_set(var, lv_spinbox_get_value(obj));
 }
@@ -97,6 +138,7 @@ static void uint8_spinbox_update_cb(lv_event_t * e) {
 static void uint8_dropdown_update_cb(lv_event_t * e) {
     lv_obj_t        *obj = lv_event_get_target(e);
     params_uint8_t  *var = lv_event_get_user_data(e);
+    anunciar_ajuste(obj, lv_dropdown_get_text(obj));
 
     params_uint8_set(var, lv_dropdown_get_selected(obj));
 }

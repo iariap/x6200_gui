@@ -29,6 +29,14 @@ bool voice_should_speak(int mode, bool lcd_on);
  * entiende en una radio. */
 void voice_freq_text(uint64_t hz, char *buf, size_t n);
 
+/* Saca el bloque de datos PCM (16 bits con signo) de un WAV en memoria. Devuelve el
+ * desplazamiento y el largo en bytes, y la frecuencia de muestreo. */
+bool voice_wav_pcm(const unsigned char *wav, size_t n, size_t *off, size_t *len, unsigned *rate);
+
+/* Remuestrea PCM de 16 bits con signo (lineal). Para 22050 -> 44100 sale la muestra duplicada,
+ * que es exacto. Devuelve cuántas muestras escribió. */
+size_t voice_resample(const int16_t *in, size_t n_in, unsigned rate_in, int16_t *out, size_t out_max, unsigned rate_out);
+
 /* Traduce los textos de la GUI (inglés) al español con un diccionario de palabras. Lo que no
  * está en el diccionario se deja como vino. */
 void voice_translate(const char *in, char *buf, size_t n);
