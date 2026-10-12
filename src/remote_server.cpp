@@ -20,6 +20,7 @@
  */
 
 #include "remote_server.h"
+#include "cluster/client.h"
 
 #include "cfg/db.h"
 #include "cfg/settings_manager.h"
@@ -707,6 +708,14 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
             return "Invalid position";
         cmd->id = CMD_LOCATION;
         return NULL;
+    }
+
+    /* Diagnostico: meter una linea del cluster como si viniera de la red. Sirve para probar las
+     * marcas de spots (y el enganche al sintonizar) sin depender del servidor.
+     *   {"cmd":"cluster_feed","text":"DX de LU1ABC:  14074.0  LU2DSX   FT8"} */
+    if (!strcmp(name, "cluster_feed")) {
+        cluster_client_feed_line(cmd->text);
+        return "ok";
     }
     if (!strcmp(name, "qso_log")) {
         if (!cmd->text[0])

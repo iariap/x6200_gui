@@ -67,6 +67,7 @@
 #include "controls.h"
 #include "dialog_gps.h"
 #include "dialog_bands.h"
+#include "spot_marks.h"
 #include "cluster_column.h"
 #include "theme.h"
 #include "fonts/font_select.h"
@@ -1285,12 +1286,19 @@ lv_obj_t * main_screen() {
 
     y += freq_height;
 
+    /* Franja de spots del cluster arriba del waterfall (X6100): se reserva su alto */
+    lv_coord_t spots_y = y;
+
+    y += SPOT_MARKS_H;
+
     waterfall = waterfall_init(obj);
 
     waterfall_min_max_reset();
 
     lv_obj_set_y(waterfall, y);
     waterfall_set_height(480 - y);
+
+    spot_marks_init(obj, spots_y, spots_y + 4);
 
     /* IARU band plan strip: at the bottom of the spectrum, lined up with the
      * frequency row (created after the waterfall so it stays on top). */

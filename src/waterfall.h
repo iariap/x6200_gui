@@ -26,3 +26,6 @@ void waterfall_set_battery_mode(bool enabled);
 
 /* The levels the waterfall is drawing with, for the remote scope */
 void waterfall_get_levels(bool tx, float *min, float *max);
+
+/* Vista actual del waterfall (centro y mitad del ancho) */
+void waterfall_view(int32_t *center, int32_t *half);

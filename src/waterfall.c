@@ -70,6 +70,17 @@ static void on_grid_max_change(Subject *subj, void *user_data);
 static void on_fft_width_changed(Subject *subj, void *user_data);
 
 
+/* La vista actual (centro y mitad del ancho), para las marcas de spots */
+void waterfall_view(int32_t *center, int32_t *half) {
+    if (center != NULL) {
+        *center = wf_center_freq;
+    }
+
+    if (half != NULL) {
+        *half = width_hz / 2;
+    }
+}
+
 lv_obj_t * waterfall_init(lv_obj_t * parent) {
     subject_add_observer_and_call(cfg_cur.fg_freq, on_fg_freq_change, NULL);
     wf_center_freq = radio_center_freq;
