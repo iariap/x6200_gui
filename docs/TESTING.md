@@ -29,7 +29,7 @@ Corre y resume, dejando el log de cada suite en `/tmp/<nombre>.log`:
 
 | Suite | Qué cubre | Resultado |
 |---|---|---|
-| `host` | arnés nativo: aguja/band plan/AVI, UDP de FT8, aviso de versión, wfview (UDP real), cluster, Field Ops, temas JSON, teclado, WSPR | **401 comprobaciones, 0 fallos** |
+| `host` | arnés nativo: aguja/band plan/AVI, UDP de FT8, aviso de versión, wfview (UDP real), cluster, Field Ops, temas JSON, teclado, Bluetooth, países y banderas, WSPR | **469 comprobaciones, 0 fallos** |
 | `wspr` | round-trip del motor con la herramienta del X6100 (decodifica a −20 y −25 dB) | **158 comprobaciones, 0 fallos** |
 | `sstv` | los 7 modos, correlación 0,92–0,98 | **all OK** |
 | `wefax` | 300/300 líneas, correlación 0,995 | **PASS** |
@@ -39,6 +39,9 @@ Corre y resume, dejando el log de cada suite en `/tmp/<nombre>.log`:
 
 La parte del webserver usa el python **del target** (ARM, vía binfmt) porque es el que trae
 `bottle`; el runner lo omite si no encuentra el checkout o la imagen de build.
+
+Qué lleva exactamente la imagen que se publica (verificado sobre el artefacto, no sobre el
+árbol de compilación) está en [`IMAGE_INVENTORY.md`](IMAGE_INVENTORY.md).
 
 Lo que sigue necesitando la radio (🔌) está listado en
 [`INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md) §3.
