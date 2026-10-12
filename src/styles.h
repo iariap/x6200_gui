@@ -9,6 +9,10 @@
 #pragma once
 
 /* Dialog area: the 800x480 screen the ported apps were laid out for */
+#ifndef BUTTONS_H
+#define BUTTONS_H           58      /* bottom button bar */
+#endif
+
 #ifndef DIALOG_Y
 #define DIALOG_Y            108     /* below the top bar */
 #endif

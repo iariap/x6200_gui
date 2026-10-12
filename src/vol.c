@@ -237,3 +237,12 @@ void vol_set_mode(vol_mode_t mode) {
     vol_mode = mode;
     vol->mode = ROT_VOL_EDIT_MODE;
 }
+
+vol_mode_t vol_get_mode(void) {
+    return vol_mode;
+}
+
+/* See vol.h: choosing the control is what this GUI calls changing the mode */
+void vol_change_ctrl(int16_t dir) {
+    vol_change_mode(dir);
+}

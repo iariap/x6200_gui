@@ -24,3 +24,13 @@ extern dialog_t *dialog_msg_voice;
 
 msg_voice_state_t dialog_msg_voice_get_state();
 void dialog_msg_voice_put_audio_samples(size_t nsamples, int16_t *samples);
+
+/* The X6100 fork exposes the voice messages to the Field Ops app. That refactor
+ * is not ported, so those buttons are inert: the voice message dialog itself
+ * (long-press action "MSG") works as in this GUI. */
+bool msg_voice_rec_toggle(const char *name);
+bool msg_voice_exists(const char *name);
+bool msg_voice_send_toggle(const char *name);
+
+/* Inert as well: this GUI has no periodic voice poll */
+void msg_voice_poll(bool closing);

@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+# The current POTA activator spots from pota.app, one a line for the DX cluster client
+# (src/cluster/client.c): freq_hz|activator|spotter|comment|HHMM (UTC). Nothing on any error.
+import json
+import urllib.request
+
+try:
+    req = urllib.request.Request("https://api.pota.app/spot/activator", headers={"User-Agent": "X6100-IU1WXY"})
+    spots = json.load(urllib.request.urlopen(req, timeout=20))
+except Exception:
+    spots = []
+
+
+def clean(text):
+    return str(text or "").replace("|", " ").replace("\n", " ").strip()
+
+
+for s in spots:
+    try:
+        hz = int(round(float(s["frequency"]) * 1000))
+        hhmm = s["spotTime"][11:16].replace(":", "")
+        comment = " ".join(x for x in ("POTA", clean(s.get("reference")), clean(s.get("mode"))) if x)
+        print("%d|%s|%s|%s|%s" % (hz, clean(s["activator"]), clean(s.get("spotter")), comment, hhmm))
+    except (KeyError, TypeError, ValueError):
+        pass

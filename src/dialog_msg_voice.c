@@ -621,3 +621,27 @@ void dialog_msg_voice_put_audio_samples(size_t nsamples, int16_t *samples) {
     meter_update(peak, 0.25f);
     sf_write_short(file, samples, nsamples);
 }
+
+/* Inert: see the note in dialog_msg_voice.h */
+bool msg_voice_rec_toggle(const char *name) {
+    (void) name;
+
+    return false;
+}
+
+bool msg_voice_exists(const char *name) {
+    (void) name;
+
+    return false;
+}
+
+bool msg_voice_send_toggle(const char *name) {
+    (void) name;
+
+    return false;
+}
+
+/* Inert: see the note in dialog_msg_voice.h */
+void msg_voice_poll(bool closing) {
+    (void) closing;
+}

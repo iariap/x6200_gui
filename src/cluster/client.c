@@ -339,7 +339,7 @@ static void filter_line(cluster_filter_t *f, char *line) {
         int v      = atoi(line + 8);
         f->max_age = (uint16_t)(v > 0 && v < 1440 ? v : 0);
     } else if (strncmp(line, "skip_spotters=", 14) == 0) {
-        snprintf(f->skip, sizeof(f->skip), "%s", line + 14);
+        snprintf(f->skip, sizeof(f->skip), "%.*s", (int) sizeof(f->skip) - 1, line + 14);
     } else if (strncmp(line, "alert_popup=", 12) == 0) {
         f->popup = atoi(line + 12) != 0;
     } else if (strncmp(line, "alert_beep=", 11) == 0) {
@@ -352,7 +352,7 @@ static void filter_line(cluster_filter_t *f, char *line) {
         char *pat     = trim(line + 6);
         if (!*pat || strlen(pat) >= sizeof(f->alerts[0].pattern)) return;
         cluster_alert_t *a = &f->alerts[f->alert_count++];
-        snprintf(a->pattern, sizeof(a->pattern), "%s", pat);
+        snprintf(a->pattern, sizeof(a->pattern), "%.*s", (int) sizeof(a->pattern) - 1, pat);
         a->bands = parse_bands(bar1 + 1);
         a->mode  = mode_bit(trim(bar2 + 1));
     }

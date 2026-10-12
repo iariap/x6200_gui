@@ -18,8 +18,9 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **SSTV**: 7 modos (RX/TX), app y assets | ✅ 2026-10-11 | §11 |
 | **WeFax**: fax meteorológico (RX/TX, Auto) | ✅ 2026-10-11 | §12 |
 | **Cluster DX**: spots, filtros, alertas y app | ✅ 2026-10-11 | §14 |
+| **Field Ops** SOTA/POTA: referencias, log ADIF y RBN | ✅ 2026-10-11 | §15 |
 | Temas JSON | ⏳ pendiente | — |
-| Field Ops SOTA/POTA | ⏳ pendiente | — |
+| ~~Field Ops SOTA/POTA~~ | ✅ 2026-10-11 | §15 |
 | Modos digitales: WSPR ✅, NavTex ✅, SSTV ✅, WeFax ✅, JS8 (plan) | 🔶 en curso | §9-13 |
 | DRM/KMS + perilla con hilo propio | ⏳ pendiente | — |
 
@@ -658,3 +659,60 @@ el **host** (el parser no depende de LVGL):
 
 El test encontró dos supuestos míos equivocados: el orden del almacén (es más viejo primero, no
 más nuevo) y que `cluster_band_name(-1)` devuelve cadena vacía, no `NULL`.
+
+---
+
+## 15. Field Ops (SOTA/POTA)
+
+La app de operación en el campo: referencias SOTA/POTA cercanas, log ADIF de la activación y
+el feed RBN de "quién me escucha".
+
+### Qué se portó
+
+- `src/field/{refs,flog,rbn,bands}.c`: búsqueda de referencias por cercanía y por código
+  (con `cty.dat`), escritura/lectura del log ADIF (incluye los campos que completa la consulta
+  QRZ del teléfono) y el cliente RBN con el estado de actividad por banda.
+- `src/dialog_field.c` (~1.900 líneas) y `src/dialog_bands.c`: la app y el editor de bandas,
+  con sus *chips* de estado y el mapa de spots.
+- **Assets y scripts**: los 8 iconos, `cty.dat` (343 KB) y los helpers `x6200-field` +
+  `x6200-pota-spots` (adaptados de `x6100-*`), que son los que usan tanto la app como el web
+  configurator (`/api/field`).
+- Se abre desde **acciones de pulsación larga → `Field Ops`**.
+
+### Adaptaciones
+
+- **`knobs_info()`**: la app dibuja sus propias etiquetas de perilla. En vez de portar su módulo
+  `knobs.cpp` (que pertenece al refactor de controles), escribí `knobs.c/h` como vista de sólo
+  lectura sobre nuestros `vol.c`/`mfk.cpp`, con dos getters nuevos (`vol_get_mode()`,
+  `mfk_get_mode()`).
+- **`theme_png()`**: implementado con libpng y una caché (los iconos son PNG); la API de tema
+  del X6100 queda así un poco más completa.
+- **Perillas**: `main_screen_mfk()`, `main_screen_vol_press()`, `vol_change_ctrl()` y
+  `vol_update(diff, voice)` mapeados a nuestro modelo de vol/mfk, y `main_screen_close_app()`,
+  `main_screen_freq_locked()`, `main_screen_mode_locked()` implementados de verdad sobre el
+  estado de la pantalla principal.
+- **Mensajes de voz**: `msg_voice_rec_toggle/exists/send_toggle/poll` quedan como no-ops
+  documentados (el refactor de mensajes de voz de su fork no está portado); el diálogo de
+  mensajes de voz que ya teníamos sigue funcionando.
+- Ajustes nuevos `field_boot` y `voice_msg_gain`, y los roles de tema que usa la app
+  (`TC_info`, `TC_chip`, `TC_btn_mark`, `TC_panel_border`).
+- De paso, acoté dos `snprintf` de `cluster/client.c` que podían truncar en silencio las líneas
+  de filtros.
+
+### Test: los casos del X6100, portados
+
+`tests/native/test_field.c` es la versión en C de `tests/test_field.cpp`; refs, log y bandas no
+dependen de LVGL, así que corre en el **host**:
+
+- Referencias: cercanía ordenada por distancia (con `km` y altitud/puntos de la SOTA), búsqueda
+  por código **sin distinguir mayúsculas**, y archivo inexistente como error (`-1`).
+- ADIF: la línea exacta (`<CALL>`, `<QSO_DATE>`, `<TIME_ON>`, `<BAND>`, `<FREQ>`, `<MODE>`,
+  `<MY_SOTA_REF>`, `<eor>`), que los campos desconocidos **no** se escriban, y que la consulta
+  QRZ complete nombre/QTH/locator/país.
+- El log: alta de dos QSO, lectura en orden con los tiempos correctos y dos registros ADIF en el
+  archivo.
+- Bandas: nombre de banda por frecuencia, frecuencia de banda para CW y las palabras de nivel.
+
+```
+362 comprobaciones, 0 fallos
+```

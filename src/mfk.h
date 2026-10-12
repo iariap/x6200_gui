@@ -90,6 +90,9 @@ void mfk_set_ctrl(int ctrl);
 void mfk_change_mode(int16_t dir);
 void mfk_set_mode(mfk_mode_t mode);
 
+/* The mode the encoder is on (the apps draw their own knob tags) */
+mfk_mode_t mfk_get_mode(void);
+
 #ifdef __cplusplus
 }
 #endif

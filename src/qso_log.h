@@ -35,6 +35,7 @@ typedef enum {
     MODE_FM,
     MODE_CW,
     MODE_FT8,
+    MODE_JS8,
     MODE_FT4,
     MODE_RTTY,
 } qso_log_mode_t;

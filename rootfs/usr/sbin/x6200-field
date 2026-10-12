@@ -1,0 +1,261 @@
+#!/usr/bin/env python3
+# Field Ops (POTA/SOTA) helper for the GUI and the web server.
+# Every command prints one line on stdout: "ok ..." or "error <reason>", exit 0/1.
+#
+#   x6200-field update                      parks and summits -> <dir>/refs.tsv, "ok <parks> <summits>"
+#   x6200-field pota-spot --call C --freq-khz F --ref R --mode M [--comments T]
+#   x6200-field qrz-upload FILE.adi         "ok <sent> <dup>"
+#
+# <dir> is /mnt/field (env X6200_FIELD_DIR). refs.tsv, tab separated, no header:
+#   P ref name lat lon "" ""     and     S ref name lat lon alt_m points
+
+import argparse
+import csv
+import fcntl
+import http.client
+import io
+import json
+import os
+import re
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+from datetime import date, datetime
+
+FIELD_DIR = os.environ.get("X6200_FIELD_DIR", "/mnt/field")
+POTA_CSV = "https://pota.app/all_parks_ext.csv"
+SOTA_CSV = "https://storage.sota.org.uk/summitslist.csv"
+POTA_API = os.environ.get("X6100_POTA_API", "https://api.pota.app")
+QRZ_API = os.environ.get("X6100_QRZ_API", "https://logbook.qrz.com/api")
+TIMEOUT = 30
+user_agent = "X6100-IU1WXY/unknown"
+
+
+class Fail(Exception):
+    pass
+
+
+def one_line(text, n=80):
+    return " ".join(str(text).split())[:n]
+
+
+def open_url(url, data=None, headers=None):
+    """Binary response stream; caller closes it."""
+    req = urllib.request.Request(url, data=data, headers=dict(headers or {}, **{"User-Agent": user_agent}))
+    return urllib.request.urlopen(req, timeout=TIMEOUT)
+
+
+def text_lines(stream):
+    return io.TextIOWrapper(stream, encoding="utf-8-sig", errors="replace", newline="")
+
+
+def clean(s):
+    return re.sub(r"[\t\r\n]+", " ", s).strip()
+
+
+def coord(lat, lon):
+    return f"{float(lat):.5f}\t{float(lon):.5f}"
+
+
+def write_parks(stream, out):
+    n = 0
+    for row in csv.DictReader(text_lines(stream)):
+        if row.get("active") != "1":
+            continue
+        try:
+            out.write(f"P\t{clean(row['reference'])}\t{clean(row['name'])}\t{coord(row['latitude'], row['longitude'])}\t\t\n")
+        except (KeyError, TypeError, ValueError):
+            continue
+        n += 1
+    return n
+
+
+def sota_date(s):
+    return datetime.strptime(s.strip()[:10], "%d/%m/%Y").date()
+
+
+def sota_valid(valid_from, valid_to, today):
+    """ValidTo is the last valid day."""
+    try:
+        return sota_date(valid_from) <= today <= sota_date(valid_to)
+    except ValueError:
+        return False
+
+
+def write_summits(stream, out, today):
+    lines = text_lines(stream)
+    lines.readline()   # title line
+    n = 0
+    for row in csv.DictReader(lines):
+        if not sota_valid(row.get("ValidFrom") or "", row.get("ValidTo") or "", today):
+            continue
+        try:
+            out.write(f"S\t{clean(row['SummitCode'])}\t{clean(row['SummitName'])}\t{coord(row['Latitude'], row['Longitude'])}"
+                      f"\t{int(float(row['AltM']))}\t{int(float(row['Points']))}\n")
+        except (KeyError, TypeError, ValueError):
+            continue
+        n += 1
+    return n
+
+
+def keep_old(path, kind, out):
+    """Copy the lines of one kind from the previous refs.tsv."""
+    n = 0
+    try:
+        with open(path, encoding="utf-8", errors="replace", newline="\n") as f:
+            for line in f:
+                if line.startswith(kind + "\t"):
+                    out.write(line)
+                    n += 1
+    except OSError:
+        pass
+    return n
+
+
+def cmd_update(args):
+    os.makedirs(FIELD_DIR, exist_ok=True)
+    # One update at a time (the radio and the web page can both start one)
+    lock = open(os.path.join(FIELD_DIR, ".update.lock"), "w")
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        raise Fail("already updating")
+    path = os.path.join(FIELD_DIR, "refs.tsv")
+    tmp = path + ".tmp"
+    errors = []
+    counts = []
+    try:
+        with open(tmp, "w", encoding="utf-8", newline="\n") as out:
+            for kind, url, parse in (("P", POTA_CSV, write_parks),
+                                     ("S", SOTA_CSV, lambda s, o: write_summits(s, o, date.today()))):
+                start = out.tell()
+                try:
+                    with open_url(url) as stream:
+                        n = parse(stream, out)
+                    if n == 0:
+                        raise Fail("empty list")
+                except (Fail, OSError, ValueError, csv.Error, http.client.HTTPException) as e:
+                    errors.append(f"{'parks' if kind == 'P' else 'summits'}: {one_line(getattr(e, 'reason', e), 50)}")
+                    out.seek(start)
+                    out.truncate()
+                    n = keep_old(path, kind, out)
+                counts.append(n)
+        if len(errors) == 2:
+            raise Fail("; ".join(errors))
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+    return f"ok {counts[0]} {counts[1]}"
+
+
+def post(url, body, content_type):
+    """(HTTP code, body text)"""
+    try:
+        with open_url(url, body.encode(), {"Content-Type": content_type}) as r:
+            return r.status, r.read(65536).decode("utf-8", "replace")
+    except urllib.error.HTTPError as e:
+        return e.code, e.read(65536).decode("utf-8", "replace")
+    except (OSError, http.client.HTTPException) as e:   # URLError, timeout
+        raise Fail(one_line(getattr(e, "reason", e)))
+
+
+def cmd_pota_spot(args):
+    call = (args.call or "").strip().upper()
+    ref = args.ref.strip().upper()
+    mode = args.mode.strip().upper()
+    if not re.fullmatch(r"[A-Z0-9/]{3,20}", call):
+        raise Fail("bad callsign")
+    if not re.fullmatch(r"[A-Z0-9]{1,4}-\d{4,5}", ref):
+        raise Fail("bad reference")
+    try:
+        float(args.freq_khz)
+    except ValueError:
+        raise Fail("bad frequency")
+    body = json.dumps({"activator": call, "spotter": call, "frequency": args.freq_khz.strip(), "reference": ref,
+                       "mode": mode, "source": "X6100-IU1WXY", "comments": args.comments})
+    code, text = post(POTA_API.rstrip("/") + "/spot", body, "application/json")
+    if code not in (200, 201):
+        raise Fail(f"HTTP {code} {one_line(text, 60)}")
+    return "ok"
+
+
+def read_qrz_key():
+    try:
+        with open(os.path.join(FIELD_DIR, "qrz.conf"), errors="replace") as f:
+            for line in f:
+                key, sep, val = line.strip().partition("=")
+                if sep and key.strip() == "key" and val.strip():
+                    return val.strip()
+    except OSError:
+        pass
+    raise Fail("no QRZ key")
+
+
+def adif_records(text):
+    m = re.search(r"<eoh>", text, re.I)
+    if m:
+        text = text[m.end():]
+    recs = [r.strip() for r in re.split(r"<eor>", text, flags=re.I)]
+    return [r for r in recs if "<" in r]
+
+
+def cmd_qrz_upload(args):
+    key = read_qrz_key()
+    try:
+        with open(args.file, encoding="utf-8", errors="replace") as f:
+            records = adif_records(f.read())
+    except OSError as e:
+        raise Fail(one_line(e.strerror or e))
+    sent = dup = 0
+    for rec in records:
+        body = urllib.parse.urlencode({"KEY": key, "ACTION": "INSERT", "ADIF": rec + "<eor>"})
+        code, text = post(QRZ_API, body, "application/x-www-form-urlencoded")
+        if code != 200:
+            raise Fail(f"HTTP {code} after {sent} sent")
+        res = dict(urllib.parse.parse_qsl(text.strip(), keep_blank_values=True))
+        if res.get("RESULT") == "OK":
+            sent += 1
+        elif "duplicate" in res.get("REASON", "").lower():
+            dup += 1
+        else:
+            raise Fail(f"QRZ {one_line(res.get('REASON') or res.get('RESULT') or text, 60)} after {sent} sent")
+    return f"ok {sent} {dup}"
+
+
+class Parser(argparse.ArgumentParser):
+    def error(self, message):
+        raise Fail(one_line(message))
+
+
+def main(argv):
+    global user_agent
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--call", default=os.environ.get("X6200_CALL", ""))
+    parser = Parser(prog="x6200-field")
+    sub = parser.add_subparsers(dest="cmd", required=True, parser_class=Parser)
+    sub.add_parser("update", parents=[common]).set_defaults(func=cmd_update)
+    p = sub.add_parser("pota-spot", parents=[common])
+    p.add_argument("--freq-khz", required=True)
+    p.add_argument("--ref", required=True)
+    p.add_argument("--mode", required=True)
+    p.add_argument("--comments", default="")
+    p.set_defaults(func=cmd_pota_spot)
+    p = sub.add_parser("qrz-upload", parents=[common])
+    p.add_argument("file")
+    p.set_defaults(func=cmd_qrz_upload)
+    try:
+        args = parser.parse_args(argv)
+        user_agent = f"X6100-IU1WXY/{args.call.strip().upper() or 'unknown'}"
+        print(args.func(args))
+        return 0
+    except Fail as e:
+        print(f"error {e}")
+    except Exception as e:
+        print(f"error {one_line(e) or type(e).__name__}")
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

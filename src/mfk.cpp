@@ -757,6 +757,10 @@ void mfk_change_mode(int16_t dir) {
     mfk_update(0, true);
 }
 
+extern "C" mfk_mode_t mfk_get_mode(void) {
+    return mfk_mode;
+}
+
 void mfk_set_mode(mfk_mode_t mode) {
     mfk_mode = mode;
     mfk_state = MFK_STATE_EDIT;

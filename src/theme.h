@@ -39,6 +39,7 @@ typedef enum {
     TC_track, TC_ok, TC_ok_bar,
     TC_accent, TC_tx, TC_text_faint, TC_err, TC_near_bg, TC_warn,
     TC_alert, TC_alert_bg, TC_alert_text, TC_alert_box, TC_vfo, TC_vfo_bg, TC_new, TC_veil,
+    TC_info, TC_chip, TC_btn_mark, TC_panel_border,
     TC_sel_bg, TC_sel_border, TC_sel_text,
     TC_num
 } theme_color_t;
@@ -74,6 +75,10 @@ typedef struct {
 
 /* VISION: every font this many sizes up (the ported dialogs read it) */
 #define VISION_FONT_STEPS 3
+
+/* A PNG file as it is (icons), loaded once and kept; NULL when it can't be
+ * read. The X6100 theme API; this GUI has no theme images yet. */
+const lv_img_dsc_t *theme_png(const char *path);
 
 extern theme_shape_t theme_shape;
 

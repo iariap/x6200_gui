@@ -58,6 +58,7 @@
 #include "dialog_sstv.h"
 #include "dialog_wefax.h"
 #include "dialog_cluster.h"
+#include "dialog_field.h"
 
 #include <unistd.h>
 #include <stdint.h>
@@ -174,6 +175,10 @@ void main_screen_start_app(press_action_t app_action) {
             dialog_construct(dialog_cluster, obj);
             break;
 
+        case ACTION_APP_FIELD:
+            dialog_construct(dialog_field, obj);
+            break;
+
         case ACTION_APP_RECORDER:
             dialog_construct(dialog_recorder, obj);
             voice_say_text_fmt("Audio recorder window");
@@ -261,6 +266,7 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_SSTV:
         case ACTION_APP_WEFAX:
         case ACTION_APP_CLUSTER:
+        case ACTION_APP_FIELD:
         case ACTION_APP_RECORDER:
         case ACTION_APP_WIFI:
             main_screen_start_app(action);
@@ -1308,4 +1314,32 @@ void channel_overlay_show(const char *name) {
     if (name && *name) {
         msg_schedule_text_fmt("%s", name);
     }
+}
+
+/* The ported app dialogs call this to close themselves */
+void main_screen_close_app(void) {
+    dialog_destruct();
+}
+
+bool main_screen_freq_locked(void) {
+    return subject_get_int(freq_lock);
+}
+
+bool main_screen_mode_locked(void) {
+    return mode_lock;
+}
+
+/* The X6100 has an encoder state machine (edit/select per control); this GUI's
+ * vol/mfk modules keep the mode and apply the turning directly, so these map to
+ * the closest behaviour available. */
+void main_screen_mfk(int dir) {
+    if (dir) {
+        mfk_change_mode(dir);
+    } else {
+        mfk_update(0, false);
+    }
+}
+
+void main_screen_vol_press(void) {
+    vol_change_mode(1);
 }

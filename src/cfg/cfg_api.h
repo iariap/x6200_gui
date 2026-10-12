@@ -26,6 +26,8 @@ extern "C" {
 #define cfg_band_split      (cfg_cur.band->split.val)
 
 /* WSPR settings (persisted in the params table) */
+#define cfg_field_boot      (&cfg.field_boot)
+#define cfg_voice_msg_gain  (&cfg.voice_msg_gain)
 #define cfg_cluster_all_bands (&cfg.cluster_all_bands)
 #define cfg_cluster_order   (&cfg.cluster_order)
 #define cfg_wefax_align     (&cfg.wefax_align)

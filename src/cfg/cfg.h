@@ -28,6 +28,9 @@ typedef struct {
     cfg_item_t fft_dec;
 
     /* WSPR (digital modes) */
+    cfg_item_t field_boot;         /* Field Ops: start the RBN feed at boot */
+    cfg_item_t voice_msg_gain;     /* voice messages: playback gain */
+
     cfg_item_t cluster_all_bands;   /* DX cluster: spots of every band */
     cfg_item_t cluster_order;       /* DX cluster: spot order */
 
