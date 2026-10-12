@@ -25,6 +25,8 @@ las features de la lista, más los extras que aparecieron en el camino.
 | Web configurator ampliado: 15 páginas + HTTPS + control remoto en vivo | ✅ |
 | Field Ops SOTA/POTA (referencias, log ADIF, subida a QRZ, self-spot, CQ de voz) | ✅ |
 | Modos digitales: WSPR, SSTV, JS8, WeFax, NavTex, CW Keyboard y CW Trainer | ✅ |
+| **Anuncios por voz (TTS)** | ✅ — espeak en español, respetando Off/When LCD off/Always y sin hablar al aire |
+| **App de posición (GPS)** | ✅ — adaptada: sin receptor en el equipo, la posición la manda el teléfono/el web |
 
 **21 apps** (las mismas que el X6100), **63.600 líneas** en `src/` y **8 suites de tests**
 nativas (host 476 comprobaciones, WSPR 158, SSTV, WeFax, NavTex, JS8 1994, webserver 19 y el

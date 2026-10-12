@@ -31,6 +31,7 @@ Cada feature portada tiene su detalle, configuración y tests en
 | Teclados USB/Bluetooth | ✅ | §18 entrada, §21 CW Keyboard y §26 app de dispositivos |
 | wfview | ✅ | §7 |
 | Web configurator ampliado | ✅ | §8 — 15 páginas + HTTPS |
+| App de posición (**GPS**) | ✅ | §40 — adaptada: el X6200 **no tiene receptor**, la posición la manda el teléfono/el web por el socket |
 | Control remoto en vivo | ✅ | §19 — socket con ~65 comandos, las apps incluido FT8 (`ft8_cq`, `ft8_stop`, `ft8_auto`, `ft8_hold`) |
 | WSPR | ✅ | §9 |
 | NavTex | ✅ | §10 |
