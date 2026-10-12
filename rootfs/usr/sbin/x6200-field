@@ -26,10 +26,10 @@ from datetime import date, datetime
 FIELD_DIR = os.environ.get("X6200_FIELD_DIR", "/mnt/field")
 POTA_CSV = "https://pota.app/all_parks_ext.csv"
 SOTA_CSV = "https://storage.sota.org.uk/summitslist.csv"
-POTA_API = os.environ.get("X6100_POTA_API", "https://api.pota.app")
-QRZ_API = os.environ.get("X6100_QRZ_API", "https://logbook.qrz.com/api")
+POTA_API = os.environ.get("X6200_POTA_API", "https://api.pota.app")
+QRZ_API = os.environ.get("X6200_QRZ_API", "https://logbook.qrz.com/api")
 TIMEOUT = 30
-user_agent = "X6100-IU1WXY/unknown"
+user_agent = "X6200-LU2DSX/unknown"
 
 
 class Fail(Exception):
@@ -174,7 +174,7 @@ def cmd_pota_spot(args):
     except ValueError:
         raise Fail("bad frequency")
     body = json.dumps({"activator": call, "spotter": call, "frequency": args.freq_khz.strip(), "reference": ref,
-                       "mode": mode, "source": "X6100-IU1WXY", "comments": args.comments})
+                       "mode": mode, "source": "X6200-LU2DSX", "comments": args.comments})
     code, text = post(POTA_API.rstrip("/") + "/spot", body, "application/json")
     if code not in (200, 201):
         raise Fail(f"HTTP {code} {one_line(text, 60)}")
@@ -247,7 +247,7 @@ def main(argv):
     p.set_defaults(func=cmd_qrz_upload)
     try:
         args = parser.parse_args(argv)
-        user_agent = f"X6100-IU1WXY/{args.call.strip().upper() or 'unknown'}"
+        user_agent = f"X6200-LU2DSX/{args.call.strip().upper() or 'unknown'}"
         print(args.func(args))
         return 0
     except Fail as e:

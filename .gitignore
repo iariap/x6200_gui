@@ -56,3 +56,6 @@ images/*.png
 CMakeCache.txt
 CMakeFiles/
 tests/native/build/
+
+# Python bytecode from the helper scripts
+__pycache__/

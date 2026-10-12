@@ -5,29 +5,29 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 
 | Feature | Estado | Dónde |
 |---|---|---|
-| Decodificados FT8/FT4 por **UDP** (GridTracker, JTAlert) | ✅ 2026-10-11 | [FT8_UDP.md](FT8_UDP.md) |
-| **Aviso de nueva versión** | ✅ 2026-10-11 | §2 de este documento |
-| **Aguja de S-meter** | ✅ 2026-10-11 | §3 |
-| **Band plan IARU** sobre el waterfall | ✅ 2026-10-11 | §4 |
-| **Grabación de pantalla** (AVI) | ✅ 2026-10-11 | §5 |
-| **Bluetooth: CAT (SPP) y auriculares A2DP** | ✅ 2026-10-11 | §6 |
-| **wfview**: la radio como IC-705 en red | ✅ 2026-10-11 | §7 |
-| **Web configurator ampliado** (+HTTPS) | ✅ 2026-10-11 | §8 |
-| **WSPR completo**: motor + UI (spots, banda, TX, subida) | ✅ 2026-10-11 | §9 |
-| **NavTex**: decodificador SITOR-B + app | ✅ 2026-10-11 | §10 |
-| **SSTV**: 7 modos (RX/TX), app y assets | ✅ 2026-10-11 | §11 |
-| **WeFax**: fax meteorológico (RX/TX, Auto) | ✅ 2026-10-11 | §12 |
-| **Cluster DX**: spots, filtros, alertas y app | ✅ 2026-10-11 | §14 |
-| **Field Ops** SOTA/POTA: referencias, log ADIF y RBN | ✅ 2026-10-11 | §15 |
-| **JS8** (motor + app completa) | ✅ 2026-10-11 | §16 |
-| **Temas JSON** (motor, temas incluidos y selección) | ✅ 2026-10-11 | §17 |
-| **Teclados USB/Bluetooth** (detección y *rollover*) | ✅ 2026-10-11 | §18 |
-| **Control remoto en vivo** (socket para la página `/remote`) | ✅ 2026-10-11 | §19 |
-| ~~Temas JSON~~ | ✅ 2026-10-11 | §17 |
-| ~~Teclado Bluetooth~~ | ✅ 2026-10-11 (entrada; falta la UI de pairing) | §18 |
-| ~~Field Ops SOTA/POTA~~ | ✅ 2026-10-11 | §15 |
-| Modos digitales: WSPR ✅, NavTex ✅, SSTV ✅, WeFax ✅, JS8 ✅ | ✅ completo | §9-16 |
-| DRM/KMS + perilla con hilo propio | ⏳ pendiente | — |
+| Decodificados FT8/FT4 por **UDP** (GridTracker, JTAlert) | ✅ | [FT8_UDP.md](FT8_UDP.md) |
+| **Aviso de nueva versión** | ✅ | §2 |
+| **Aguja de S-meter** | ✅ | §3 |
+| **Band plan IARU** sobre el waterfall | ✅ | §4 |
+| **Grabación de pantalla** (AVI: video MJPEG + audio de RX) | ✅ | §5 |
+| **Bluetooth CAT** (SPP, hasta 3 clientes) | ✅ | §6 |
+| **Bluetooth auriculares** (A2DP + loopback) | 🔶 funciona por consola (`btaudio-ctl`); falta la UI | §6 |
+| **wfview**: la radio como IC-705 en red | ✅ | §7 |
+| **Web configurator ampliado** (15 páginas + HTTPS) | ✅ | §8 |
+| **WSPR completo**: motor + UI (spots, banda, TX, subida) | ✅ | §9 |
+| **NavTex**: decodificador SITOR-B + app | ✅ | §10 |
+| **SSTV**: 7 modos (RX/TX), app y assets | ✅ | §11 |
+| **WeFax**: fax meteorológico (RX/TX, Auto) | 🔶 falta la perilla de alineado/inclinación | §12 |
+| **Cluster DX**: spots, filtros, alertas y app | 🔶 falta la columna en la pantalla principal y el *spot snap* | §14 |
+| **Field Ops** SOTA/POTA: referencias, log ADIF y RBN | 🔶 el **CQ de voz** no funciona (API de voz no portado) | §15 |
+| **JS8** (motor + app completa) | ✅ | §16 |
+| **Temas JSON** (motor, 6 temas y temas propios) | 🔶 los diálogos de apps siguen el tema; la pantalla principal no | §17 |
+| **Teclados USB/Bluetooth** (detección y *rollover*) | 🔶 entrada ✅; falta la UI de pairing | §18 |
+| **Control remoto en vivo** (socket para la página `/remote`) | ✅ sin control remoto de FT8 | §19 |
+| **DRM/KMS** + perilla con hilo propio | ❌ pendiente | [X6100_FEATURE_GAP.md](X6100_FEATURE_GAP.md) §5 |
+
+**Leyenda:** ✅ hecho · 🔶 parcial (dice qué falta) · ❌ pendiente. El detalle de cada pendiente y de
+cada parcial está en [X6100_FEATURE_GAP.md](X6100_FEATURE_GAP.md) §5.
 
 Todo lo portado mantiene la licencia LGPL-2.1-or-later y la atribución al autor original
 en el código.
@@ -586,6 +586,10 @@ phasing y que la imagen vuelve completa: **300 de 300 líneas con correlación 0
 ---
 
 ## 13. JS8: qué necesita (relevado)
+
+> **Nota:** este apartado es el relevamiento previo a implementarlo. JS8 quedó **implementado**
+> más abajo, en §16, y su suite de tests del X6100 pasa entera. Se deja como registro de lo que
+> hizo falta.
 
 Último modo digital que queda. Es, por lejos, el port más grande, así que lo relevé antes de
 comprometer una ronda:

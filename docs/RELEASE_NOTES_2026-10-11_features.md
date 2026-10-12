@@ -72,6 +72,12 @@ Estas cosas dependen del hardware y quedan como chequeos pendientes:
   se ajustan desde los parámetros.
 - **UI principal con temas**: los diálogos de apps siguen el tema; la pantalla principal
   (barra, botones, espectro) todavía usa los estilos fijos.
+- **Cluster**: los spots están en la app, pero **no** como columna en la pantalla principal, y
+  falta el *spot snap* (que el VFO se detenga en un spot girando despacio).
+- **Field Ops**: el **CQ de voz** en SSB no funciona (el API de mensajes de voz de su fork no se
+  portó; el de CW sí).
+- **WeFax**: falta la perilla de alineado/inclinación (su registro de controles no está portado);
+  esos valores se ajustan desde los parámetros.
 - El **teclado CW** y el *snake* del firmware original no están en esta ROM.
 
 ## Instalación

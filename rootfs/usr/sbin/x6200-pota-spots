@@ -5,7 +5,7 @@ import json
 import urllib.request
 
 try:
-    req = urllib.request.Request("https://api.pota.app/spot/activator", headers={"User-Agent": "X6100-IU1WXY"})
+    req = urllib.request.Request("https://api.pota.app/spot/activator", headers={"User-Agent": "X6200-LU2DSX"})
     spots = json.load(urllib.request.urlopen(req, timeout=20))
 except Exception:
     spots = []
