@@ -37,6 +37,12 @@ se configura también desde el navegador.
 
 ## Verificación
 
+Todo se corre con un comando y queda resumido:
+
+```bash
+cd x6200_gui && tests/run_all_tests.sh      # --quick omite la suite de JS8
+```
+
 Lo que se puede probar **sin la radio**, y se probó:
 
 - **401 comprobaciones** en el arnés nativo del host: aguja/band plan/AVI, UDP, aviso de versión,
@@ -50,6 +56,18 @@ Lo que se puede probar **sin la radio**, y se probó:
 - **Suite completa de JS8** del X6100 contra nuestro port: **1994 aserciones en 88 casos**.
 - **Web configurator**: las 19 páginas/endpoints contra la base de datos real.
 - **Protocolo de wfview**: handshake, login aceptado/rechazado, puente CI-V.
+
+Corrida completa al cierre de esta tanda:
+
+| Suite | Resultado |
+|---|---|
+| Arnés nativo (host) | **401 comprobaciones, 0 fallos** |
+| WSPR (round-trip) | **158 comprobaciones, 0 fallos** |
+| SSTV (7 modos) | **all OK** |
+| WeFax (300/300 líneas) | **PASS** |
+| NavTex (SITOR-B) | **all OK** |
+| JS8 (suite del X6100) | **1994 aserciones en 88 casos** |
+| Web configurator (19 páginas) | **19 comprobaciones, 0 fallos** |
 
 Cada imagen se verificó con `e2fsck` y contra el contenido esperado (binarios, assets, base de
 datos, dependencias resueltas).

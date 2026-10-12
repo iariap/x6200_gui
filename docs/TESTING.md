@@ -1,6 +1,6 @@
 # Cómo probar el firmware X6200 sin el equipo físico
 
-Documento de la revisión de ROM del 2026-10-11. Complementa a [`ROM_REVIEW.md`](ROM_REVIEW.md) (auditoría de la imagen) y [`TRD.md`](TRD.md) (detalle técnico).
+Documento de la revisión de ROM del 2026-10-11, actualizado con el estado del programa de port. Complementa a [`ROM_REVIEW.md`](ROM_REVIEW.md) (auditoría de la imagen) y [`TRD.md`](TRD.md) (detalle técnico).
 
 ## Resumen: qué se puede y qué no
 
@@ -13,6 +13,35 @@ Documento de la revisión de ROM del 2026-10-11. Complementa a [`ROM_REVIEW.md`]
 | 5. Arranque completo (QEMU system) | Kernel, init, servicios, ausencia de crashes del rootfs | No | 🔜 factible, no ejecutado |
 | 6. Simulador LVGL en el escritorio | UI real (About, Ajustes, waterfall, timers) con clics y screenshots | No | 🔜 requiere portar la app a un target "sim" |
 | — | Consumo real, RF, audio, LCD/táctil, térmica, cat (serial) | **Sí** | ❌ imposible sin equipo |
+
+
+---
+
+## Estado actual (2026-10-12): todo en un comando
+
+```bash
+cd x6200_gui
+tests/run_all_tests.sh            # todo
+tests/run_all_tests.sh --quick    # sin la suite de JS8 (que es la más lenta)
+```
+
+Corre y resume, dejando el log de cada suite en `/tmp/<nombre>.log`:
+
+| Suite | Qué cubre | Resultado |
+|---|---|---|
+| `host` | arnés nativo: aguja/band plan/AVI, UDP de FT8, aviso de versión, wfview (UDP real), cluster, Field Ops, temas JSON, teclado, WSPR | **401 comprobaciones, 0 fallos** |
+| `wspr` | round-trip del motor con la herramienta del X6100 (decodifica a −20 y −25 dB) | **158 comprobaciones, 0 fallos** |
+| `sstv` | los 7 modos, correlación 0,92–0,98 | **all OK** |
+| `wefax` | 300/300 líneas, correlación 0,995 | **PASS** |
+| `navtex` | SITOR-B a +10 y +5 dB (el caso de 0 dB es informativo) | **all OK** |
+| `js8` | **la suite completa del X6100** contra nuestro port | **1994 aserciones en 88 casos** |
+| `webserver` | las 19 páginas/endpoints del web configurator, con el python del propio equipo | **19 comprobaciones, 0 fallos** |
+
+La parte del webserver usa el python **del target** (ARM, vía binfmt) porque es el que trae
+`bottle`; el runner lo omite si no encuentra el checkout o la imagen de build.
+
+Lo que sigue necesitando la radio (🔌) está listado en
+[`INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md) §3.
 
 ---
 
