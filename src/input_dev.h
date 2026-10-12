@@ -16,4 +16,4 @@
  * Si no encuentra ninguno, devuelve `fallback` (que puede ser NULL o la ruta de siempre).
  * El buffer devuelto es estatico: usarlo antes de la proxima llamada.
  */
-const char * input_dev_by_name(const char *name, const char *fallback);
+char * input_dev_by_name(const char *name, const char *fallback);

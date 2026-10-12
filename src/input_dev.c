@@ -19,7 +19,7 @@
 #define DEV_DIR     "/dev/input"
 #define NAME_MAX_DE 64
 
-const char * input_dev_by_name(const char *name, const char *fallback) {
+char * input_dev_by_name(const char *name, const char *fallback) {
     static char ruta[64];
     DIR        *d;
     struct dirent *e;
