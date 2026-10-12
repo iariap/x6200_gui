@@ -22,6 +22,7 @@ They are mirrored from the project workspace, where the firmware is built.
 | [FT8_UDP.md](FT8_UDP.md) | ES | WSJT-X compatible UDP broadcaster: config file, GridTracker/JTAlert usage, implementation notes and tests |
 | [NEW_FEATURES.md](NEW_FEATURES.md) | ES | Running log of the features ported from the X6100 firmware: status, usage and tests |
 | [UI_HARNESS.md](UI_HARNESS.md) | ES | Rendering the real GUI on a PC without the radio: the X6100 harness, why it is not drop-in, and the adaptation plan |
+| [X6100_REPO_INDEX.md](X6100_REPO_INDEX.md) | ES | Catalogue of everything in IU1WXY's X6100 repo and what each piece is for in this port |
 
 ## Downloads
 
