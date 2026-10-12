@@ -1718,3 +1718,37 @@ escrituras fallidas: 0
 También se corrigió que al arrancar decía cuatro frases: las llamadas de voz de la pantalla
 principal ya existían (mudas por el stub) y ahora suenan; `voice_ready()` las habilita recién
 cuando la GUI está en pie.
+
+---
+
+## 41. Marcas de los spots del cluster sobre el waterfall
+
+El X6100 dibuja los spots del cluster que pasan los filtros como una etiqueta con el indicativo
+y una línea hasta su frecuencia, en dos filas escalonadas arriba del waterfall. Este port tenía
+sólo la columna de la derecha.
+
+Portado de `spot_marks.c` (277 líneas) con cuatro adaptaciones:
+
+- colores: el tema de este port no tiene `TC_spot`/`TC_alert`, así que los spots van con
+  `TC(ok)` (el cian del original: *"Cyan on the waterfall"*) y las alertas con `TC(err)` (su rosa);
+- sin `cfg_cluster_spots_wf`: si el cluster no tiene spots, no se dibuja nada;
+- la vista (centro y ancho) sale de un `waterfall_view()` nuevo, porque este waterfall guarda su
+  centro y su ancho adentro;
+- el envío al control remoto sólo ocurre si hay spots o cambiaron: no gasta batería avisando de
+  nada.
+
+**Verificado en el banco** (`captura-banco.sh` + `{"cmd":"cluster_feed",...}` para inyectar
+líneas): con cuatro spots, se dibuja `RA0ABC` en cian con su línea hasta 7074.0 dentro del ancho
+visible (7.035–7.083) y **no** se dibujan los que quedan fuera (`EA3DEF` en 7010.0 y los dos de
+14 MHz), que es lo correcto. Sin crashes.
+
+Ojo con el formato de las líneas del cluster: el parser exige la hora `HHMMZ` (lo que la red
+siempre manda), y sin ella la línea se descarta en silencio.
+
+### Herramientas de banco que quedaron
+
+- **`captura-banco.sh`**: corre la GUI en la reproducción y convierte el framebuffer falso
+  (480x800 a 32 bits) en un PNG. Es la forma de **ver** un cambio antes de grabarlo en la
+  tarjeta.
+- **`{"cmd":"cluster_feed","text":"<linea>"}`**: mete una línea del cluster sin servidor.
+- **`X6200_VOICE_TEST="texto"`**: dice una frase por voz al arrancar.
