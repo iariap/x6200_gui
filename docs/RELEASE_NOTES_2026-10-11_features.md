@@ -17,7 +17,7 @@ para el equipo, verificada en la imagen y con tests donde se puede correr sin ra
 | 5 | **Grabación de pantalla** | AVI MJPEG + audio de RX en `/mnt/screenrec` |
 | 6 | **Bluetooth CAT** | Puente SPP con pty sobre el UART de CAT (`btcat`) |
 | 7 | **Bluetooth auriculares** | A2DP con loopback y `btaudio-ctl` |
-| 8 | **Teclados USB/Bluetooth** | Descubrimiento dinámico, *rollover*, la app **CW Keyboard** (telegrafiar escribiendo) y el **CW Trainer** (entrenador de prefijos) |
+| 8 | **Teclados USB/Bluetooth** | Descubrimiento dinámico, *rollover*, la app **CW Keyboard**, el **CW Trainer** y la app de **dispositivos Bluetooth** (listar/escanear/vincular + passkey) |
 | 9 | **wfview** | La radio como IC-705 en la red (Icom LAN) |
 | 10 | **Web configurator ampliado** | 15 páginas + HTTPS, gestor de todo el equipo |
 | 11 | **Control remoto en vivo** | La página `/remote` maneja la radio en tiempo real, con **todas** las apps |
@@ -89,7 +89,7 @@ probar en el equipo) está en [`docs/INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md
 
 ## Limitaciones conocidas (documentadas en `docs/NEW_FEATURES.md`)
 
-- **Lista de dispositivos Bluetooth** en Ajustes: el encendido y el *discoverable* están en la GUI, pero para vincular auriculares o un teclado se usa `btaudio-ctl` por consola.
+- **Bluetooth**: todo desde la radio (encendido, discoverable, lista de dispositivos, vincular, conectar, audio a los auriculares y el *passkey* de los teclados). La consola (`btaudio-ctl`) sigue disponible.
 - **Perilla de alineado/inclinación de WeFax**: su registro `CTRL_*` no está portado; los valores
   se ajustan desde los parámetros.
 - **UI principal con temas**: los diálogos de apps siguen el tema; la pantalla principal

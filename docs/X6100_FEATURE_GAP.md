@@ -28,7 +28,7 @@ Cada feature portada tiene su detalle, configuración y tests en
 | Grabación de pantalla | ✅ | §5 — video MJPEG + audio de RX |
 | Bluetooth CAT | ✅ | §6 |
 | Auriculares Bluetooth | 🔶 | §6 — loopback + A2DP; falta la UI |
-| Teclados USB/Bluetooth | 🔶 | §18 — entrada ✅ y app **CW Keyboard** ✅; falta la UI de pairing |
+| Teclados USB/Bluetooth | ✅ | §18 entrada, §21 CW Keyboard y §26 app de dispositivos |
 | wfview | ✅ | §7 |
 | Web configurator ampliado | ✅ | §8 — 15 páginas + HTTPS |
 | Control remoto en vivo | ✅ | §19 — sin control remoto de FT8 |
@@ -125,9 +125,9 @@ parte de esa diferencia:
 | Función | X6100 | X6200 | Estado / qué falta |
 |---|---|---|---|
 | **wfview server** (la radio como IC-705 en red) | ✅ | ✅ | puertos 50001-50003, con tests de protocolo |
-| **Bluetooth CAT** (hasta 3 clientes) | ✅ | ✅ | `btcat` (pty sobre el UART de CAT + SPP) |
-| **Auriculares BT** A2DP | ✅ | 🔶 | `btaudio-ctl` + política de PulseAudio ✅; Ajustes tiene encendido y discoverable ✅; **falta la lista de dispositivos** |
-| **Teclados BT** | ✅ | 🔶 | descubrimiento dinámico y *rollover* ✅; **falta la UI de pairing** |
+| **Bluetooth CAT** (hasta 3 clientes) | ✅ | ✅ | `btcat` (pty sobre el UART de CAT + SPP) + encendido y discoverable en Ajustes (§25) |
+| **Auriculares BT** A2DP | ✅ | ✅ | app de dispositivos (listar, scan, vincular, conectar, RX a los auriculares y passkey) + política de PulseAudio ([NEW_FEATURES.md](NEW_FEATURES.md) §25 y §26) |
+| **Teclados BT** | ✅ | ✅ | descubrimiento dinámico y *rollover* ✅; la app de dispositivos muestra el **passkey** para vincularlos |
 | Pairings respaldados en `/mnt` y restaurados al boot | ✅ | ✅ | `S39btpairings` |
 | **Web configurator**: Bands, Digital modes, Cluster, wfview, Memories, Remote, Backup, Gallery, Field, Files, Time, Logs, CW messages, Channels + **HTTPS** | ✅ 12 | ✅ **15** | HTTP + HTTPS con certificado autofirmado; tests de las 19 páginas |
 | **Control remoto en vivo** (página `/remote`) | ✅ | ✅ | socket `/tmp/x6200_remote.sock`, ~65 comandos, **todas las apps** (FT8 incluido) |
@@ -185,11 +185,6 @@ Para que la comparación no sea engañosa:
 
 Por orden de valor:
 
-1. **Lista de dispositivos Bluetooth** en Ajustes (scan, pairing, *connected* y el **passkey**
-   para teclados): su sección son ~200 líneas más su mini-framework de filas (`wl_row_t`,
-   `wl_pill`, `run_async`), que también usa su página de WiFi. Los interruptores de **encendido**,
-   **discoverable** y el **cargador** ya están portados ([NEW_FEATURES.md](NEW_FEATURES.md) §25);
-   el pairing de dispositivos se hace con `btaudio-ctl` desde la consola.
 2. **Columna de spots del cluster** en la pantalla principal (`cluster_column.c`) y **spot snap**.
 3. **Temas en la pantalla principal**: llevar las 428 referencias de color al sistema de temas.
 4. **Perilla de alineado/inclinación de WeFax**: requiere portar el registro de controles

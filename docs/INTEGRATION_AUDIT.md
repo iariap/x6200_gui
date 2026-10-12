@@ -88,8 +88,8 @@ desde la web usaba un indicativo vacío. Ahora leen `X6200_*` y el *User-Agent* 
 | **Control remoto (web)** | página `/remote` | socket `/tmp/x6200_remote.sock`, ~65 comandos de **todas** las apps (FT8 incluido) | 🧪 protocolo y comandos en el binario; 🔌 punta a punta con la radio |
 | **Web configurator** | `http://<ip>/` y `https://<ip>/` | `S96webserver` + paquete `x6100-webserver` | 🧪 19 páginas/endpoints contra la base real |
 | **Bluetooth CAT** | Ajustes → `Bluetooth` y `Discoverable (CAT)`; consola: `btcat-setup`, `btcat-ctl` | `S94btcat`, `/etc/default/btcat`, `/mnt/btcat.conf` | 📄 filas en Ajustes y scripts en la imagen; 🔌 adaptador y pairing |
-| **Auriculares BT** | consola: `btaudio-ctl` (scan/pair/connect/rx) | política de PulseAudio | 📄 en la imagen; 🔌 audio real |
-| **Teclados BT/USB** | automático (evdev) | — | 🧪 *rollover* con 5 casos; 🔌 teclado real |
+| **Auriculares BT** | app `APP Bluetooth` (lista, scan, vincular, conectar, RX) y `btaudio-ctl` por consola | política de PulseAudio, `/tmp/bt_passkey` | 🧪 parseo de la salida del script (test nativo); 🔌 audio real |
+| **Teclados BT/USB** | automático (evdev); el **passkey** se muestra en la app de Bluetooth | — | 🧪 *rollover* con 5 casos; 🔌 teclado real |
 | **Pairings** | automático | `S39btpairings`, `/mnt` | 📄 servicio en la imagen |
 
 ### 2.5 Sistema
@@ -132,7 +132,6 @@ JSON, el *rollover* del teclado y el formato WAV contra la libsndfile del target
 
 ## 4. Deuda de integración conocida
 
-- **Lista de dispositivos Bluetooth** en Ajustes (scan, pairing, passkey): falta su mini-framework `wl_*`; los interruptores de encendido y discoverable ya están.
 - **Columna de spots** del cluster en la pantalla principal y **spot snap**: no portados.
 - **Temas en la pantalla principal**: los diálogos de apps siguen el tema; la barra, botones,
   espectro y waterfall usan estilos fijos.

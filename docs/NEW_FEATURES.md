@@ -1135,3 +1135,42 @@ sobre `btaudio-ctl`. Son ~200 líneas más un mini-framework de filas (`wl_row_t
 `run_async`) que también usa su página de WiFi. **Es el único pedazo de la UI de Bluetooth que
 falta**; mientras tanto, `btaudio-ctl` hace lo mismo desde la consola (`scan`, `pair MAC`,
 `connect MAC`, `rx on`).
+
+---
+
+## 26. App de dispositivos Bluetooth
+
+Con esto Bluetooth queda completo **desde la radio**: se listan los dispositivos, se escanea, se
+vincula y se maneja el audio de los auriculares sin consola.
+
+### Cómo funciona
+
+- **Lista**: `btaudio-ctl list` trae los dispositivos vinculados con su rol (auriculares, teclado,
+  CAT), si están conectados y si reconectan solos. La tabla muestra **nombre, rol y estado**; si el
+  dispositivo todavía no tiene nombre, muestra la MAC (es normal: `bluetoothctl` sólo le pone alias
+  cuando lo conoce).
+- **Tocar una fila** hace lo que corresponde: si no está vinculado, **vincula**; si está vinculado
+  pero desconectado, **conecta**; si está conectado, **desconecta**.
+- **Scan** (15 s) busca auriculares y teclados nuevos y los agrega a la lista como `new`.
+- **RX to HP** y **Speaker** prenden/apagan el audio a los auriculares y el silencio del parlante,
+  con el estado real leído del script.
+- **Passkey**: mientras se vincula un teclado, se lee `/tmp/bt_passkey` y la app dice **qué código
+  hay que tipear en el teclado**.
+- Se abre desde **Ajustes → acciones de pulsación larga → `APP Bluetooth`**.
+
+El script **no se llama desde el hilo de la UI** (bluetoothd puede tardar): se lanza aparte y deja
+su salida en `/tmp/bt_ui_*.txt`; un timer lee esos archivos, y sólo redibuja cuando el contenido
+cambió. Los comandos que no imprimen nada se encadenan con un `list` para que el archivo quede
+siempre con la lista fresca.
+
+### Tests
+
+El parseo vive en `src/bt_devices.c`, sin LVGL, y se prueba en el host
+(`tests/native/test_bt_devices.c`): la lista real del script, los dispositivos **sin nombre** (que
+son la mayoría al principio), los recién descubiertos por `scan`, la línea de estado de los
+auriculares (HP/RX/MUTE), un **mensaje de error** del script (que no debe parecer un dispositivo) y
+el caso de más dispositivos que los que entran en la lista.
+
+```
+437 comprobaciones, 0 fallos
+```

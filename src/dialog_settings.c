@@ -841,6 +841,7 @@ static action_items_t long_action_items[] = {
     { .label = " APP Field Ops", .action = ACTION_APP_FIELD },
     { .label = " APP CW Keyboard", .action = ACTION_APP_CW_KBD },
     { .label = " APP CW Trainer", .action = ACTION_APP_CWTRAINER },
+    { .label = " APP Bluetooth", .action = ACTION_APP_BT },
     { .label = " Theme", .action = ACTION_THEME },
     { .label = NULL, .action = ACTION_NONE }
 };

@@ -62,6 +62,7 @@
 #include "dialog_js8.h"
 #include "dialog_cw_kbd.h"
 #include "dialog_cw_trainer.h"
+#include "dialog_bt.h"
 #include "theme.h"
 #include "fonts/font_select.h"
 
@@ -196,6 +197,10 @@ void main_screen_start_app(press_action_t app_action) {
             dialog_construct(dialog_cw_trainer, obj);
             break;
 
+        case ACTION_APP_BT:
+            dialog_construct(dialog_bt, obj);
+            break;
+
         case ACTION_APP_RECORDER:
             dialog_construct(dialog_recorder, obj);
             voice_say_text_fmt("Audio recorder window");
@@ -309,6 +314,7 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_JS8:
         case ACTION_APP_CW_KBD:
         case ACTION_APP_CWTRAINER:
+        case ACTION_APP_BT:
         case ACTION_APP_RECORDER:
         case ACTION_APP_WIFI:
             main_screen_start_app(action);
