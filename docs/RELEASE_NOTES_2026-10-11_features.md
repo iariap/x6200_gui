@@ -30,8 +30,10 @@ para el equipo, verificada en la imagen y con tests donde se puede correr sin ra
 | 18 | **JS8** | Motor y app completos |
 | + | **Temas JSON** | 6 temas incluidos + temas propios en `/mnt/themes` |
 
-Todo se abre desde **Ajustes → acciones de pulsación larga** (WSPR, NavTex, SSTV, WeFax, JS8,
-Cluster, Field Ops, Theme) y se configura desde el navegador.
+Todo se abre desde **Ajustes → acciones de pulsación larga**: elegí la acción y asignala a un
+botón. Están WSPR, NavTex, SSTV, WeFax, JS8, Cluster, Field Ops, CW Keyboard y Theme (más las
+que ya tenía el equipo). El mensaje de voz de Field Ops se graba y se emite desde la app, y todo
+se configura también desde el navegador.
 
 ## Verificación
 

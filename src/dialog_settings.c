@@ -819,12 +819,25 @@ static action_items_t long_action_items[] = {
     { .label = " Voice mode ", .action = ACTION_VOICE_MODE },
     { .label = " Battery info ", .action = ACTION_BAT_INFO },
     { .label = " APP RTTY ", .action = ACTION_APP_RTTY },
+    { .label = " APP Callsign", .action = ACTION_APP_CALLSIGN },
+    { .label = " APP WiFi", .action = ACTION_APP_WIFI },
+    { .label = " APP EQ", .action = ACTION_APP_EQ },
     { .label = " APP FT8 ", .action = ACTION_APP_FT8 },
     { .label = " APP SWR Scan ", .action = ACTION_APP_SWRSCAN },
     { .label = " APP Settings", .action = ACTION_APP_SETTINGS },
     { .label = " APP Recorder", .action = ACTION_APP_RECORDER },
     { .label = " QTH Grid", .action = ACTION_APP_QTH },
     { .label = " About ", .action = ACTION_APP_ABOUT },
+    /* Apps ported from the X6100 firmware (docs/NEW_FEATURES.md) */
+    { .label = " APP WSPR", .action = ACTION_APP_WSPR },
+    { .label = " APP NavTex", .action = ACTION_APP_NAVTEX },
+    { .label = " APP SSTV", .action = ACTION_APP_SSTV },
+    { .label = " APP WeFax", .action = ACTION_APP_WEFAX },
+    { .label = " APP JS8", .action = ACTION_APP_JS8 },
+    { .label = " APP Cluster", .action = ACTION_APP_CLUSTER },
+    { .label = " APP Field Ops", .action = ACTION_APP_FIELD },
+    { .label = " APP CW Keyboard", .action = ACTION_APP_CW_KBD },
+    { .label = " Theme", .action = ACTION_THEME },
     { .label = NULL, .action = ACTION_NONE }
 };
 

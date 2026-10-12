@@ -954,7 +954,7 @@ round-trip: 200 muestras, o[5]=500 (esperado 500)
 
 Se pasó a **WAV PCM 16 bits** (11025 Hz mono): no necesita dependencias nuevas y evita el coste
 de CPU del codificador, que en un equipo a batería importa. Los mensajes viven en `/mnt/msg` y
-aparecen en el diálogo de mensajes de voz como cualquier otro.
+aparecen en el diálogo de mensajes de voz como cualquier otro (que se abre con una **pulsación larga del botón de modo** en SSB/AM/NFM).
 
 ### Cómo se usa
 
@@ -1015,3 +1015,21 @@ La app que le da sentido al soporte de teclados de §18: se escribe en la pantal
 - **Falta probarlo en el equipo**: la telegrafía real necesita la radio (y un teclado vinculado).
 
 **Sigue pendiente**: el **CW Trainer** (el entrenador de oído), que es otra app aparte.
+
+---
+
+## 22. Cómo se abren las apps (y un bug que arreglamos acá)
+
+Todas las apps portadas se abren desde **Ajustes → acciones de pulsación larga**: se elige la
+acción y se le asigna a un botón. La lista es `long_action_items[]` en `dialog_settings.c`.
+
+**Bug encontrado y corregido:** las entradas de las apps portadas se habían escrito con otro
+formato de línea (`.label = " JS8 "` en vez de `.label = " APP RTTY "`), así que el texto
+**nunca entró en el array** y **ninguna de las apps nuevas era alcanzable** desde la interfaz,
+aunque el manejo de la acción sí estaba en `main_screen.c`. Se agregaron las nueve entradas
+(WSPR, NavTex, SSTV, WeFax, JS8, Cluster, Field Ops, CW Keyboard, Theme) y, de paso, tres apps
+del firmware original que tampoco estaban en la lista (**Callsign, WiFi, EQ**).
+
+Verificado en el binario: cada etiqueta nueva está presente y las nueve acciones están manejadas
+en `main_screen.c`. El ajuste de la **aguja de S-meter** y el **band plan** ya estaban en Ajustes
+como interruptores, así que esos dos sí eran alcanzables.
