@@ -122,3 +122,30 @@ WeFax (300/300 líneas), NavTex, **la suite completa de JS8 del X6100 (1994 aser
 casos)** y las 19 páginas del web configurator corren y pasan en verde
 ([`TESTING.md`](TESTING.md)). El inventario de lo que lleva la imagen está en
 [`IMAGE_INVENTORY.md`](IMAGE_INVENTORY.md).
+
+---
+
+## 7. Actualizar sin regrabar (recomendado para probar arreglos)
+
+La ROM sabe actualizarse sola: `S02update` corre **al principio del arranque** (S02), antes de
+que se lance la GUI, y aplica cualquier `x6200_r1cbu_*.tgz` que encuentre en la partición DATA
+(`/mnt`).
+
+1. Sacá la tarjeta de la radio y ponela en la PC.
+2. Abrí la partición **DATA** y copiá `x6200_r1cbu_v0.1.2-lu2dsx.tgz` a su raíz.
+3. Ponele la tarjeta a la radio y encendé.
+
+En ese arranque el firmware hace un backup de lo que reemplaza en `/mnt/backup_*.tgz` y
+descomprime el tgz sobre `/`. Como corre **antes** de la GUI, sirve incluso si la GUI de la
+versión anterior no arrancaba: el arreglo queda aplicado y **la GUI siguiente ya es la nueva**.
+
+Qué conserva y qué no:
+
+- **Conserva** `/mnt` completo: configuración, memorias, logs, temas, grabaciones y mensajes de
+  voz.
+- **No** toca el kernel ni u-boot (van en la partición BOOT); los módulos del kernel sí.
+- Deja **~150 MB** libres en DATA para el backup.
+- El tgz trae además un `S02update` corregido, así que a partir de esa actualización el backup
+  queda completo y legible.
+
+Para volver atrás: la imagen de la release anterior, por la vía de la imagen completa.
