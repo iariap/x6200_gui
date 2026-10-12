@@ -1211,6 +1211,11 @@ sola en el spot más cercano a la frecuencia actual.
   sintoniza con `dialog_cluster_tune_spot()`.
 - El ajuste nuevo (`cfg.cluster_column`) va en `cfg`, no en `params`, así que su interruptor en
   Ajustes es propio y no un `switch_bool()`.
+- **Consumo**: el timer de la columna (250 ms) **se pausa** cuando la columna está apagada u
+  oculta, y se reanuda cuando hace falta. Antes latía cuatro veces por segundo para siempre,
+  incluso con la función desactivada — justo lo que no conviene en un equipo a batería. Al
+  activarla también queda **un spot seleccionado** desde el principio, que es lo que el *snap*
+  necesita como blanco.
 
 ---
 

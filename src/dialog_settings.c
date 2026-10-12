@@ -1727,7 +1727,10 @@ static uint8_t make_bluetooth(uint8_t row) {
 static void cluster_column_update_cb(lv_event_t * e) {
     lv_obj_t *obj = lv_event_get_target(e);
 
-    subject_set_int(cfg.cluster_column.val, lv_obj_has_state(obj, LV_STATE_CHECKED) ? 1 : 0);
+    bool on = lv_obj_has_state(obj, LV_STATE_CHECKED) != 0;
+
+    subject_set_int(cfg.cluster_column.val, on ? 1 : 0);
+    cluster_column_set_active(on);      /* also pauses or resumes its timer */
     cluster_column_refresh();
 }
 

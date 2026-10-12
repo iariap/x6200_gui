@@ -135,6 +135,18 @@ estado del aviso de versión ([NEW_FEATURES.md](NEW_FEATURES.md) §29).
 
 ---
 
+## 3b. Consumo (lo que se revisó)
+
+Un equipo a batería no debería tener timers ni hilos girando de gusto. Revisado:
+
+- La **columna del cluster** tenía un timer de 250 ms que corría **siempre** (aunque la función
+  estuviera apagada): ahora se pausa cuando no se usa y se reanuda al activarla o mostrarla.
+- **wfview** ya estaba bien: sus dos hilos usan `poll` con espera (100 ms con el servidor
+  encendido, 1000 ms apagado) y `usleep` de 300 ms cuando no hay audio, sin bucles ocupados.
+- Las apps de **Bluetooth** y **Status** crean sus timers al abrirse y los destruyen al cerrarse.
+- El **grabador**, **WSPR/JS8/SSTV/WeFax/NavTex** y el resto corren sólo mientras su app está
+  abierta.
+
 ## 4. Deuda de integración conocida
 
 - **Perilla** de alineado/inclinación de WeFax y **perilla con hilo propio**: no portadas.

@@ -44,6 +44,7 @@ static int32_t        vfo;
 static uint16_t       sort_now;
 static cluster_spot_t band[CLUSTER_MAX_SPOTS];  /* the listed spots, by frequency or newest first */
 static int            band_n;
+static lv_timer_t    *timer;
 static bool           active;                   /* MFK item "Cluster" */
 static bool           has_sel;
 static bool           hidden;                   /* cluster_column_hide(): a game over the waterfall */
@@ -277,6 +278,14 @@ static void redraw(void) {
 /* 4 Hz, redraws only when the spots, the minute, the VFO or the view changed. Not at each
  * VFO step: its 64 labels laid out again at every step slowed tuning down */
 static void timer_cb(lv_timer_t *t) {
+    /* Off or hidden: nothing to draw, so stop waking up four times a second. The
+     * timer is resumed by set_active()/hide() when there is something to show. */
+    if (!box || !param_i_get(cfg_cluster_column) || hidden || !active) {
+        lv_timer_pause(t);
+
+        return;
+    }
+
     int      n   = cluster_client_snapshot(spots, CLUSTER_MAX_SPOTS, &spots_gen);
     uint16_t min = (time(NULL) / 60) % 1440;
 
@@ -297,11 +306,25 @@ static void timer_cb(lv_timer_t *t) {
 
 void cluster_column_hide(bool hide) {
     hidden = hide;
+
+    if (box && !hide && active && param_i_get(cfg_cluster_column) && timer) {
+        lv_timer_resume(timer);
+    }
+
     redraw();
 }
 
 void cluster_column_set_active(bool on) {
     active = on;
+
+    if (box && timer) {
+        if (on && param_i_get(cfg_cluster_column) && !hidden) {
+            lv_timer_resume(timer);
+        } else {
+            lv_timer_pause(timer);
+        }
+    }
+
     redraw();
 }
 
@@ -414,6 +437,10 @@ void cluster_column_init(lv_obj_t *parent, lv_coord_t y) {
         rows[i].mode = cell(box, 173, 32, ry + 3, LV_TEXT_ALIGN_LEFT, theme_hex(TC_text), NF(18));
         rows[i].age  = cell(box, 207, 32, ry + 3, LV_TEXT_ALIGN_RIGHT, theme_hex(TC_text), NF(18));
     }
-    lv_timer_create(timer_cb, 250, NULL);
-    timer_cb(NULL);
+    timer = lv_timer_create(timer_cb, 250, NULL);
+
+    /* The setting decides whether the column is on; a spot is selected from the
+     * start so tapping the column (the spot snap) has a target */
+    cluster_column_set_active(param_i_get(cfg_cluster_column) != 0);
+    timer_cb(timer);
 }
