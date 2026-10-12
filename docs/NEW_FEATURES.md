@@ -1110,3 +1110,28 @@ decodificados con un id y su metadata (igual que el X6100). Se registran en el c
 
 De paso unifiqué el arranque de QSO en `start_qso()`: lo usaban el toque en la fila y ahora también
 el control remoto, en vez de tener dos copias de la misma lógica.
+
+---
+
+## 25. Ajustes de Bluetooth (encendido, discoverable y cargador)
+
+La app de mensajes de voz y los scripts de Bluetooth ya estaban; lo que faltaba en la GUI eran las
+filas que el X6100 sí tiene en Ajustes. Portadas:
+
+| Fila | Qué hace |
+|---|---|
+| **Bluetooth** | prende/apaga el adaptador: corre `btcat-ctl bt on\|off` en un hilo aparte (no bloquea la UI) |
+| **Discoverable (CAT)** | hace visible la radio para el puente de CAT (`btcat-ctl discoverable on\|off`); queda **deshabilitada** cuando el Bluetooth está apagado |
+| **Charger** | Off / On / Shadow. En On carga mientras está encendida; **Shadow** carga al apagarla (ya lo manejaba `radio_poweroff()`); se aplica al instante con `radio_set_charger()` |
+
+Los dos interruptores **leen su estado real** de `/etc/default/btcat` y `/mnt/btcat.conf` (mismo
+esquema que el X6100), así que reflejan lo que hay, no un valor inventado.
+
+### Lo que sigue pendiente en Bluetooth
+
+Su Ajustes tiene además la **lista de dispositivos** con scan, pairing, el globito de
+*connected* y el **passkey** (el código que hay que tipear en un teclado para vincularlo), todo
+sobre `btaudio-ctl`. Son ~200 líneas más un mini-framework de filas (`wl_row_t`, `wl_pill`,
+`run_async`) que también usa su página de WiFi. **Es el único pedazo de la UI de Bluetooth que
+falta**; mientras tanto, `btaudio-ctl` hace lo mismo desde la consola (`scan`, `pair MAC`,
+`connect MAC`, `rx on`).

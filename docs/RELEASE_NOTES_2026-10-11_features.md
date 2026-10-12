@@ -71,7 +71,7 @@ probar en el equipo) está en [`docs/INTEGRATION_AUDIT.md`](INTEGRATION_AUDIT.md
 
 ## Limitaciones conocidas (documentadas en `docs/NEW_FEATURES.md`)
 
-- **UI de pairing Bluetooth**: hoy se vincula por consola (`bluetoothctl`/`btaudio-ctl`).
+- **Lista de dispositivos Bluetooth** en Ajustes: el encendido y el *discoverable* están en la GUI, pero para vincular auriculares o un teclado se usa `btaudio-ctl` por consola.
 - **Perilla de alineado/inclinación de WeFax**: su registro `CTRL_*` no está portado; los valores
   se ajustan desde los parámetros.
 - **UI principal con temas**: los diálogos de apps siguen el tema; la pantalla principal

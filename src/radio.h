@@ -72,6 +72,10 @@ void radio_poweroff();
 void radio_set_ptt(bool tx);
 void radio_set_modem(bool tx);
 
+/* The Settings "Charger" row: only On charges while running; Shadow charges when
+ * the radio is switched off (see radio_poweroff) */
+void radio_set_charger(radio_charger_t v);
+
 /* The X6200 control library has no TX filter or RX DSP on/off command (the
  * X6100 one did). The JS8 app asks for both; they are accepted and ignored so
  * the app works with the radio's own filter settings. */

@@ -11,6 +11,8 @@
 #include "cfg/transverter.h"
 #include "lvgl/lvgl.h"
 #include "dialog.h"
+#include <stdio.h>
+
 #include "styles.h"
 #include "msg.h"
 #include "params/params.h"
@@ -1544,6 +1546,180 @@ static uint8_t make_font(uint8_t row) {
     return row + 1;
 }
 
+/* --- Bluetooth (btcat) ----------------------------------------------------
+ * Pairing is done from the console with btaudio-ctl / btcat-setup, exactly as in
+ * the X6100; these are its power and discoverable switches, which run the same
+ * btcat-ctl the scripts use. */
+#define BTCAT_CTL   "/usr/sbin/btcat-ctl"
+
+static lv_obj_t *bt_visible_sw;
+
+static bool btcat_read(const char *key, bool def) {
+    static const char *const files[] = { "/etc/default/btcat", "/mnt/btcat.conf" };
+    size_t klen = strlen(key);
+    bool   val  = def;
+
+    for (unsigned i = 0; i < sizeof(files) / sizeof(files[0]); i++) {
+        FILE *fp = fopen(files[i], "r");
+
+        if (!fp) {
+            continue;
+        }
+
+        char line[128];
+
+        while (fgets(line, sizeof(line), fp)) {
+            if (strncmp(line, key, klen) == 0 && line[klen] == '=') {
+                const char *v = line + klen + 1;
+
+                if (*v == '"') {
+                    v++;
+                }
+
+                val = strncmp(v, "yes", 3) == 0;
+            }
+        }
+
+        fclose(fp);
+    }
+
+    return val;
+}
+
+static void *btcat_run_thread(void *arg) {
+    char *cmd = arg;
+
+    int rc = system(cmd);
+
+    (void) rc;
+    free(cmd);
+
+    return NULL;
+}
+
+/* btcat-ctl talks to bluetoothd: run it off the UI thread */
+static void btcat_run(const char *what, bool on) {
+    char *cmd = malloc(strlen(BTCAT_CTL) + strlen(what) + 24);
+
+    if (!cmd) {
+        return;
+    }
+
+    sprintf(cmd, "%s %s %s >/dev/null 2>&1", BTCAT_CTL, what, on ? "on" : "off");
+
+    pthread_t t;
+
+    if (pthread_create(&t, NULL, btcat_run_thread, cmd) == 0) {
+        pthread_detach(t);
+    } else {
+        free(cmd);
+    }
+}
+
+static void bt_power_update_cb(lv_event_t * e) {
+    lv_obj_t *obj = lv_event_get_target(e);
+    bool      on  = lv_obj_has_state(obj, LV_STATE_CHECKED);
+
+    btcat_run("bt", on);
+
+    if (bt_visible_sw) {
+        if (on) {
+            lv_obj_clear_state(bt_visible_sw, LV_STATE_DISABLED);
+        } else {
+            lv_obj_add_state(bt_visible_sw, LV_STATE_DISABLED);
+        }
+    }
+}
+
+static void bt_visible_update_cb(lv_event_t * e) {
+    lv_obj_t *obj = lv_event_get_target(e);
+
+    btcat_run("discoverable", lv_obj_has_state(obj, LV_STATE_CHECKED));
+}
+
+static void bt_visible_delete_cb(lv_event_t * e) {
+    (void) e;
+
+    bt_visible_sw = NULL;
+}
+
+/* params.charger is an enum, not a params_uint8_t: drive the dropdown by hand */
+static void charger_update_cb(lv_event_t * e) {
+    params.charger = (radio_charger_t) lv_dropdown_get_selected(lv_event_get_target(e));
+    params.dirty.charger = true;   /* saved by the params writer */
+    radio_set_charger(params.charger);
+}
+
+static lv_obj_t *bt_switch_cell(uint8_t row, bool state, lv_event_cb_t cb) {
+    lv_obj_t *obj = lv_obj_create(grid);
+
+    lv_obj_set_size(obj, SMALL_3, 54);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_center(obj);
+
+    obj = lv_switch_create(obj);
+    lv_obj_set_width(obj, SMALL_3 - 30);
+    lv_obj_center(obj);
+
+    if (state) {
+        lv_obj_add_state(obj, LV_STATE_CHECKED);
+    }
+
+    lv_obj_add_event_cb(obj, cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    return obj;
+}
+
+static uint8_t make_bluetooth(uint8_t row) {
+    lv_obj_t *obj;
+
+    /* Bluetooth on/off */
+    row_dsc[row] = 54;
+    obj = lv_label_create(grid);
+    lv_label_set_text(obj, "Bluetooth");
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    bool on = btcat_read("BTCAT_BT", true);
+
+    bt_switch_cell(row, on, bt_power_update_cb);
+
+    row++;
+
+    /* Discoverable (for the CAT bridge) */
+    row_dsc[row] = 54;
+    obj = lv_label_create(grid);
+    lv_label_set_text(obj, "Discoverable (CAT)");
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    bt_visible_sw = bt_switch_cell(row, btcat_read("BTCAT_DISCOVERABLE", true), bt_visible_update_cb);
+
+    if (!on) {
+        lv_obj_add_state(bt_visible_sw, LV_STATE_DISABLED);
+    }
+
+    lv_obj_add_event_cb(bt_visible_sw, bt_visible_delete_cb, LV_EVENT_DELETE, NULL);
+
+    row++;
+
+    /* Charger (their Settings keeps it next to Bluetooth) */
+    row_dsc[row] = 54;
+    obj = lv_label_create(grid);
+    lv_label_set_text(obj, "Charger");
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    obj = lv_dropdown_create(grid);
+    lv_dropdown_set_options(obj, " Off \n On \n Shadow");
+    lv_dropdown_set_selected(obj, params.charger);
+    lv_obj_set_size(obj, SMALL_6, 56);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_center(obj);
+    lv_obj_add_event_cb(obj, charger_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    return row + 1;
+}
+
 static uint8_t make_delimiter(uint8_t row) {
     row_dsc[row] = 10;
 
@@ -1622,6 +1798,7 @@ static void construct_cb(lv_obj_t *parent) {
 
     row = make_delimiter(row);
     row = make_theme(row);
+    row = make_bluetooth(row);
     row = make_font(row);
 
     row = make_delimiter(row);

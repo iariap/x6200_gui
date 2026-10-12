@@ -661,6 +661,10 @@ x6200_vfo_t radio_toggle_vfo() {
     return new_vfo;
 }
 
+void radio_set_charger(radio_charger_t v) {
+    WITH_RADIO_LOCK(x6200_control_charger_set(v == RADIO_CHARGER_ON));
+}
+
 void radio_poweroff() {
     if (params.charger == RADIO_CHARGER_SHADOW) {
         WITH_RADIO_LOCK(x6200_control_charger_set(true));
