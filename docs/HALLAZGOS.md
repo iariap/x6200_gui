@@ -1222,5 +1222,12 @@ MUTE yes                                                       <- altavoz en 0
 Ojo con el volumen: quedaba en **2%** (−97 dB, inaudible) de las pruebas con la perilla; se dejo en
 50% para poder escuchar.
 
+**Nota de proceso** (me paso y se ve en los md5): un `make` de imagen **sin** `make
+x6200-gui-rebuild` antes puede reusar el paquete ya instalado y dejar en la imagen el archivo
+**viejo** de `x6200_gui/rootfs/` (paso con `btaudio-ctl`: la imagen quedo con la version sin el
+lock y la radio con la nueva). El chequeo que lo detecta es comparar el contenido:
+`md5sum /b/target/<archivo>` contra el del repo, no solo el `x6200_gui`. Ahora la imagen
+`x6200_20261014_0400.img` tiene `btaudio-ctl faf89d7762e6` = el del repo, y la radio lo mismo.
+
 **Queda para el oido del usuario**: que el audio de recepcion suene en los Buds (el camino esta
 armado y medido: un loopback, el sink de ellos, 50%) y que el altavoz quede en silencio.
