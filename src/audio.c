@@ -125,15 +125,31 @@ void audio_init() {
 bool audio_wait_ready(unsigned timeout_ms) {
     uint64_t limite = pa_rtclock_now() + (uint64_t) timeout_ms * 1000;
 
-    while (!audio_up || play_stm == NULL) {
-        if (pa_rtclock_now() >= limite) {
-            return false;
+    /* No alcanza con que el contexto este arriba: hay que esperar a que el STREAM este READY.
+     * Medido el 13/10: con audio_up en true pero el stream todavia sin aceptar, la primera frase
+     * se descartaba entera ("al audio 0 de 73204"), porque audio_play() aguanta 2 s y despues
+     * tira el bloque. */
+    while (pa_rtclock_now() < limite) {
+        bool listo;
+
+        if (mloop != NULL) {
+            pa_threaded_mainloop_lock(mloop);
+        }
+
+        listo = audio_up && play_stm != NULL && pa_stream_get_state(play_stm) == PA_STREAM_READY;
+
+        if (mloop != NULL) {
+            pa_threaded_mainloop_unlock(mloop);
+        }
+
+        if (listo) {
+            return true;
         }
 
         usleep(20000);      /* 20 ms */
     }
 
-    return true;
+    return false;
 }
 
 void audio_init_sync(void) {
@@ -219,7 +235,8 @@ void audio_init_sync(void) {
     record_monitor_setup();
 }
 
-int audio_play(int16_t *samples_buf, size_t samples) {    if (!audio_up || play_stm == NULL) {
+int audio_play(int16_t *samples_buf, size_t samples) {
+    if (!audio_up || play_stm == NULL) {
         /* Todavia no hay stream (el audio arranca en un hilo): no entro nada, y se dice. */
         return -1;
     }

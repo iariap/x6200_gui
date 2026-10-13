@@ -167,6 +167,13 @@ corrida 3 -> exit=0  al audio 48742 de 48742
 corrida 4 -> exit=0  al audio 54132 de 54132
 ```
 
+**Segunda vuelta de la misma carrera** (13/10, más tarde): otra corrida volvió a dar
+`al audio 0 de 73204` con el stream ya "arriba". La causa: `audio_wait_ready()` esperaba a que el
+**contexto** estuviera listo (`audio_up`), no a que el **stream** estuviera `READY`; en el medio,
+`audio_play()` aguanta 2 s y descarta el bloque. Arreglado: ahora espera a
+`pa_stream_get_state(play_stm) == PA_STREAM_READY` (`src/audio.c`). **Medido después: 3 de 3**
+corridas con todas las muestras enviadas (45284, 49316 y 48742).
+
 **Diagnóstico de por qué habla o no** (log con `descartado`/`encolado`/`sintetizado`, en
 `/mnt/app_logs/voice.log`), ejemplo medido:
 
@@ -475,7 +482,10 @@ replaya antes de montarla. Medido en la radio:
   ```
 - **Apagado sucio** (forzado con `reboot -f`, que saltea el desmontaje, y también tras el apagado
   real del equipo): sí hay replay. **0,53 s** en el caso forzado con poco acumulado; **1,34 s**
-  (`2.659 → 4.001`) después del apagado real, con más cambios acumulados.
+  (`2.659 → 4.001`) después del apagado real, con más cambios acumulados; y **0,26 s**
+  (`2.645432 → 2.906826`, medido el 13/10) cuando el equipo se quedó **sin batería** — un corte de
+  energía de verdad, sin apagado ordenado. Moraleja del rango: el replay se paga, y cuánto tarda
+  depende de lo que se haya escrito desde el último commit del journal: **0,26 a 1,34 s**.
 
 **Corrección de lo que decía antes este registro** ✗: decía "en todos los arranques". No: con
 apagado ordenado no hay replay; el costo se paga en los arranques reales (el equipo se apaga con el
@@ -790,12 +800,33 @@ y la tecla APP del panel es `KEYPAD_APP` (`src/keypad.c:75`).
 1. **En la radio**: Ajustes → "Bluetooth" en On → "APP long press" → " APP Bluetooth " → mantener
    apretado APP → **Scan** → elegir el dispositivo. El pareo muestra un codigo y pide escribirlo con
    el teclado (`src/dialog_bt.c`, "Type %s and Enter on the keyboard").
-2. **Por consola** (no depende de la UI): `bluetoothctl scan on`, `pair <MAC>`, `trust <MAC>`,
-   `connect <MAC>`, y verificar el sink con `pactl list short sinks`.
+2. **Por consola** (es el camino que el propio firmware documenta): `btaudio-ctl`. Comandos, de su
+   encabezado: `list` (pareados y estado), `scan` (15 s), `pair MAC` (parear + confiar + conectar),
+   `connect|disconnect|remove MAC`, `autoconnect MAC on|off`, **`rx on|off`** (manda el audio de
+   recepcion a los auriculares por un loopback), `volume N`, `mute on|off`. Medido el 13/10 sin
+   auriculares: `btaudio-ctl list` → `HP 0 -1` / `RX yes` / `MUTE yes` (ninguno pareado) y
+   `/mnt/btaudio.conf` no existe todavia (van los valores por defecto).
+
+**El audio por Bluetooth ya existe y esta documentado en el codigo** (esto corrige lo que yo habia
+propuesto antes en esta seccion):
+
+- `rootfs/etc/pulse/system.pa.d/btaudio.pa` **desconecta a proposito** `module-switch-on-connect`:
+  *"Keep the default sink/source on the radio codec when a device connects"*, porque un celular que
+  se conecta para CAT entra tambien como fuente A2DP y desviaria el sink. Y deja
+  `module-bluetooth-policy auto_switch=0 a2dp_source=false`, y `module-bluetooth-discover
+  headset=ofono` (sin HFP/HSP: en esta familia SCO no da audio y tira el WiFi).
+- Por eso **no** hay que cargar `module-switch-on-connect` (lo intente y PA lo rechaza por duplicado:
+  *"should be loaded once at most"*, y termina descargandolo). El drop-in que habia agregado se
+  saco.
+- El audio de la GUI **no** puede seguir al sink por defecto: ese stream (`audio.c`, `play_stm`) es
+  el **mismo** que manda el audio de **TX del FT8/JS8**; si el default fuera los auriculares, la
+  transmision digital saldria por los auriculares en vez de por la radio. Se dejo el nombre fijo de
+  la placa, que es lo correcto.
+- Lo que si manda audio a los auriculares es el **loopback de `btaudio-ctl rx on`**, que toma el
+  audio de **recepcion** (`SOURCE=alsa_input.platform-sound.stereo-fallback`).
 
 **Propuestas** (no medidas, no son hallazgos): poner la app de BT tambien en el menu de apps (hoy
-solo se llega por un long press asignado), y que el audio de la GUI siga al sink por defecto de
-PulseAudio en vez de a un nombre fijo (`src/audio.c:37`
-`play_device = "alsa_output.platform-sound.stereo-fallback"`): con auriculares A2DP emparejados, el
-sonido seguiria saliendo por el camino que no suena. **Sin fundar** hasta probarlo con auriculares:
-al anexo A.
+solo se llega por un long press asignado); y, para que la **voz** (TTS) se oiga en los auriculares
+A2DP, darle a la voz un **stream propio** que apunte al sink A2DP cuando hay auriculares — no mover
+el stream compartido, por lo del audio de TX. **Sin fundar** hasta probarlo con auriculares: al
+anexo A.
