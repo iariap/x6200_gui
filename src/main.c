@@ -70,6 +70,27 @@ static void update_check_notify(const char *version) {
     msg_schedule_text_fmt("Firmware %s available", version);
 }
 
+/* Tiempo de arranque: cada etapa deja su marca en /mnt/app_logs/boot.log (particion DATA, se
+ * puede leer desde la PC). Sirve para saber QUE parte del arranque se lleva los segundos. */
+static void boot_mark(const char *etapa) {
+    double up = 0.0;
+    FILE  *f  = fopen("/proc/uptime", "r");
+
+    if (f != NULL) {
+        if (fscanf(f, "%lf", &up) != 1) {
+            up = 0.0;
+        }
+        fclose(f);
+    }
+
+    FILE *b = fopen("/mnt/app_logs/boot.log", "a");
+
+    if (b != NULL) {
+        fprintf(b, "  %-14s %.1f s de uptime\n", etapa, up);
+        fclose(b);
+    }
+}
+
 /* Tiempo de arranque: se anota cuando la GUI ya esta dibujando, para poder medir (boot.log) */
 static void boot_time_log(void) {
     double up = 0.0;
@@ -118,6 +139,7 @@ int main(void) {
         fbdev_init();
     }
     audio_init();
+    boot_mark("audio_init");
     event_init();
     usb_devices_monitor_init();
 
@@ -182,6 +204,7 @@ int main(void) {
     }
 
     params_init();
+    boot_mark("params_init");
     audio_enh_preset_load((audio_enh_preset_t) params.audio_enh_preset.x);
     audio_set_play_vol(params.play_gain_db_f.x);
     audio_set_rec_vol(params.rec_gain_db_f.x);
@@ -214,9 +237,11 @@ int main(void) {
     }
 
     styles_init(params.theme.x);
+    boot_mark("fuentes y estilos");
 
     dsp_init();
     lv_obj_t *main_obj = main_screen();
+    boot_mark("pantalla principal");
     waterfall_set_battery_mode(params.waterfall_battery.x);
 
     cw_init();
@@ -258,6 +283,7 @@ int main(void) {
 
     /* Web remote: control socket for the /remote page (UNIX socket) */
     remote_server_init();
+    boot_mark("control remoto");
 
     int64_t next_loop_time, sleep_time, loop_start_time;
     voice_ready();        /* la GUI ya esta en pie: desde aca la voz anuncia */
