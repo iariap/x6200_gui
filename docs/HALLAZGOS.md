@@ -518,7 +518,8 @@ Reparto, con lo medido:
   Ojo: los tramos marcados suman ~0,7 s, así que queda **~0,8-1,0 s sin marca** entre el último
   (`control remoto`) y el primer cuadro: es el dibujo de la pantalla.
 
-**Los scripts, script por script** (medido el 13/10 con `rcS` instrumentado; `boot_scripts.log`):
+**Los scripts, script por script** (medido el 13/10 con `rcS` instrumentado; `boot_scripts.log`,
+**dos arranques**: los números entre paréntesis son del segundo):
 
 ```
  3.23  +0.08  S01boot_time              5.51  +0.26  S30dbus
@@ -535,10 +536,11 @@ Reparto, con lo medido:
  5.22  +0.09  S20gui                  13.01  +3.18  S96webserver
 ```
 
-Se lee así: **antes de la GUI** (3,13 → 5,22) el 44% es `S10udev` (0,92 s) y el resto son doce
-scripts de 0,04-0,18 s; **mientras la GUI dibuja su primer cuadro** (5,22 → 6,9) corren en paralelo
-dbus, Bluetooth, red y NTP (~1,4 s de trabajo, medido); y los dos más caros (`S96webserver` 3,18 s y
-`S50pulseaudio` 2,12 s) vienen después.
+Se lee así: **antes de la GUI** (3,13 → 5,22 s; el segundo arranque 3,20 → 5,14) el 44-46% es
+`S10udev` (0,92 s / 0,89 s) y el resto son doce scripts de 0,04-0,18 s; **mientras la GUI dibuja su
+primer cuadro** (5,2 → 6,9) corren en paralelo dbus, Bluetooth, red y NTP (~1,4 s de trabajo,
+medido); y los dos más caros (`S96webserver` 3,18 s / 3,09 s y `S50pulseaudio` 2,12 s / 2,27 s)
+vienen después.
 
 **Lo que se probó y NO se sostuvo**: bajar la prioridad (`nice -n 19`) de los scripts posteriores a
 la GUI para no pelearle CPU mientras dibuja. Medido (una muestra por lado): `GUI lista` 6,9 → 6,7 s
