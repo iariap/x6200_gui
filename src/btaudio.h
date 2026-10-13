@@ -31,6 +31,11 @@ void btaudio_headphone_volume(int pct);
  * sonando). Usa el mute que ya tiene el equipo (radio_change_mute). */
 void btaudio_speaker_mute(bool on);
 
+/* Se llama desde el timer que ya mira el estado de BT (info.c): cuando los auriculares se
+ * conectan y BTAUDIO_MUTE esta en yes, deja el audio del equipo en 0; al desconectarse lo
+ * devuelve, pero solo si el mute lo habia puesto esto. */
+void btaudio_follow_state(void);
+
 #ifdef __cplusplus
 }
 #endif

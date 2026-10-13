@@ -8,6 +8,7 @@
 
 #include "info.h"
 
+#include "btaudio.h"
 #include "bt_state.h"
 #include "cfg/transverter.h"
 #include "cfg/mode.h"
@@ -242,6 +243,7 @@ static void bt_state_timer_cb(lv_timer_t *t) {
     (void) t;
 
     bt_state_show();
+    btaudio_follow_state();     /* el mute del altavoz con auriculares (BTAUDIO_MUTE) */
 }
 
 

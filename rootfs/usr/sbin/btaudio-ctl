@@ -49,13 +49,16 @@ name() { echo "$1" | sed -n 's/^[[:space:]]*Alias: //p' | head -n 1; }
 # Role from `bluetoothctl info`: hp = A2DP headphones, kbd = keyboard (CW
 # keyboard app), cat = phone/tablet (SPP)
 role() {
-	# a Low Energy keyboard may show no icon, only the HID services (HOGP 1812, HID 1124)
-	if echo "$1" | grep -q -e "Icon: input-keyboard" -e "00001812-" -e "00001124-"; then
-		echo kbd
-	elif echo "$1" | grep -q "Icon: audio-"; then
+	# El audio va PRIMERO: los auriculares con controles tactiles anuncian HID (HOGP 1812, HID
+	# 1124) ademas de A2DP, y mirando HID primero los Pixel Buds Pro 2 quedaban como "kbd"
+	# (medido el 13/10, docs/HALLAZGOS.md 25). 0000111f- = el equipo es fuente A2DP (un telefono),
+	# no auriculares.
+	if echo "$1" | grep -q "Icon: audio-"; then
 		echo hp
 	elif echo "$1" | grep -q "0000110b-" && ! echo "$1" | grep -q "0000111f-"; then
 		echo hp
+	elif echo "$1" | grep -q -e "Icon: input-keyboard" -e "00001812-" -e "00001124-"; then
+		echo kbd
 	else
 		echo cat
 	fi
@@ -169,23 +172,42 @@ pair() {
 	# KeyboardDisplay: a keyboard asks for a code to type on it (passkey or
 	# legacy PIN), written to /tmp/bt_passkey for the GUI; a confirmation is
 	# answered yes. Headphones pair without any of it, as before.
-	rm -f /tmp/bt_passkey /tmp/bt_pair.log
+	#
+	# Dos cosas que estaban mal y se vieron con los Pixel Buds (13/10):
+	# - la espera buscaba la MAC en el log, y bluez tambien la escribe al BORRAR el
+	#   device del cache ("[DEL] Device <mac>"), asi que se mandaba el pair antes de
+	#   tiempo y contestaba "Device ... not available";
+	# - si el equipo deja de anunciarse (se durmio o volvio al telefono) el pareo no
+	#   puede salir: por eso ahora se espera una aparicion POSITIVA en este scan y,
+	#   mientras siga apareciendo, se reintenta el pair.
+	rm -f /tmp/bt_passkey /tmp/bt_pair.log /tmp/bt_pair.ans
 	{
-		echo "agent off"; echo "agent KeyboardDisplay"; echo default-agent
+		echo "agent off"; sleep 1
+		echo "agent KeyboardDisplay"; sleep 1
+		echo default-agent; sleep 1
 		echo "scan on"
-		# the pair command is lost if the device was not seen yet: wait for it (30 s at most)
+		# esperar a que el equipo aparezca (NEW/CHG con su MAC) en ESTE scan
+		seen=0
 		for _ in $(seq 1 30); do
 			sleep 1
-			grep -q "$1" /tmp/bt_pair.log 2>/dev/null && break
+			if sed 's/\x1b\[[0-9;]*m//g' /tmp/bt_pair.log 2>/dev/null \
+				| grep -qE "(NEW|CHG)\] Device $1"; then seen=1; break; fi
 		done
 		sleep 1
-		echo "pair $1"
-		for _ in $(seq 1 40); do
-			sleep 1
-			code=$(sed 's/\x1b\[[0-9;]*m//g' /tmp/bt_pair.log 2>/dev/null | grep -o -E "(Passkey|PIN code):? *[0-9]+" | tail -1 | grep -o -E "[0-9]+$")
-			[ -n "$code" ] && [ ! -f /tmp/bt_passkey ] && echo "$code" > /tmp/bt_passkey
-			grep -q "Confirm passkey" /tmp/bt_pair.log 2>/dev/null && ! grep -q "^yes$" /tmp/bt_pair.ans 2>/dev/null && { echo yes; echo yes > /tmp/bt_pair.ans; }
-			bluetoothctl info "$1" 2>/dev/null | grep -q "Paired: yes" && break
+		# Si nunca aparecio, no hay nada que reintentar (medido: 84 s por un MAC que no
+		# existe); se intenta una vez por si bluez ya lo tenia en el cache.
+		intento=0
+		[ "$seen" = "1" ] && max=3 || max=1
+		while [ "$intento" -lt "$max" ]; do
+			intento=$((intento + 1))
+			echo "pair $1"
+			for _ in $(seq 1 15); do
+				sleep 1
+				code=$(sed 's/\x1b\[[0-9;]*m//g' /tmp/bt_pair.log 2>/dev/null | grep -o -E "(Passkey|PIN code):? *[0-9]+" | tail -1 | grep -o -E "[0-9]+$")
+				[ -n "$code" ] && [ ! -f /tmp/bt_passkey ] && echo "$code" > /tmp/bt_passkey
+				grep -q "Confirm passkey" /tmp/bt_pair.log 2>/dev/null && ! grep -q "^yes$" /tmp/bt_pair.ans 2>/dev/null && { echo yes; echo yes > /tmp/bt_pair.ans; }
+				bluetoothctl info "$1" 2>/dev/null | grep -q "Paired: yes" && break 2
+			done
 		done
 		echo "scan off"; echo quit
 	} | bluetoothctl > /tmp/bt_pair.log 2>&1
@@ -196,8 +218,6 @@ pair() {
 	connect "$1"
 }
 
-# /var/lib/bluetooth is on the rootfs, which a new image replaces: keep a copy
-# on /mnt (vfat, so as a tarball), restored at boot by S39btpairings.
 save_pairings() {
 	mkdir -p /mnt/backups
 	tar czf /mnt/backups/bluetooth.tgz -C / var/lib/bluetooth 2>/dev/null

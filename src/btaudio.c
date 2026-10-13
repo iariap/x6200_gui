@@ -95,11 +95,40 @@ void btaudio_headphone_volume(int pct) {
     btaudio_run("volume %i", pct);
 }
 
+/* El mute que puso esta politica (no el del usuario) */
+static bool mudo_por_bt = false;
+
+void btaudio_follow_state(void) {
+    static bool con_antes = false;
+
+    bool con  = bt_state_connected();
+    bool mudo = bt_state_mute();
+
+    if (con == con_antes) {
+        return;
+    }
+
+    con_antes = con;
+
+    if (con && mudo) {
+        if (!radio_is_muted()) {
+            radio_change_mute();
+            mudo_por_bt = true;
+            btaudio_log("auriculares conectados: altavoz a 0 (BTAUDIO_MUTE=yes)");
+        }
+    } else if (!con && mudo_por_bt) {
+        radio_change_mute();
+        mudo_por_bt = false;
+        btaudio_log("auriculares desconectados: altavoz de vuelta");
+    }
+}
+
 void btaudio_speaker_mute(bool on) {
     /* El equipo ya sabe mutearse (radio_change_mute apaga el volumen de recepcion): se usa eso en
      * vez de guardar y restaurar el volumen por aca. */
     if (on != radio_is_muted()) {
         radio_change_mute();
+        mudo_por_bt = on;
         btaudio_log("altavoz %s (mute del equipo)", on ? "apagado" : "encendido");
     }
 }

@@ -43,6 +43,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 22. [Aceleracion grafica: la GPU esta, no se usa](#22-aceleracion-grafica-la-gpu-esta-no-se-usa)
 23. [Bluetooth completo: desemparejar, auto-connect, volumen y mute](#23-bluetooth-completo-desemparejar-auto-connect-volumen-y-mute)
 24. [WCAG 2.1 en todos los temas, con chequeo automatico](#24-wcag-21-en-todos-los-temas-con-chequeo-automatico)
+25. [BT de punta a punta, con auriculares de verdad](#25-bt-de-punta-a-punta-con-auriculares-de-verdad)
 
 ---
 
@@ -1157,3 +1158,50 @@ sobrevive a reflashear), asi que ademas de reconstruir la imagen se copiaron los
 
 **Exenciones** (WCAG 1.4.3, deshabilitados; se miden y se informan): `track` 1.00, `icon_off` 1.04,
 `off` 1.09, `btn_off_text` 1.20, `text_mute` 1.73, `text_faint` 1.84, `switch_off` 2.81.
+
+---
+
+## 25. BT de punta a punta, con auriculares de verdad
+
+**Probado el 13/10 con los auriculares del usuario** (Pixel Buds Pro 2, `B8:7B:D4:17:C7:F3`),
+monitoreando la radio cada 6 s mientras el usuario probaba. La secuencia y lo que salio de cada
+paso:
+
+| Hora | Que paso | Evidencia |
+|---|---|---|
+| 22:34:37 | Scan: aparecen el TV y **los Buds** | `/tmp/bt_ui_scan.txt` con las dos lineas |
+| 22:35:06 | Toca la fila de los Buds (pair) | `/mnt/app_logs/bt.log`: `ui: btaudio-ctl pair B8:...` |
+| 22:35-22:36 | **El pareo falla** | `/tmp/bt_pair.log`: `Device ... not available` |
+| 22:41:58 | **Conectados** | sink `bluez_sink.B8_7B_D4_17_C7_F3.a2dp_sink`, `loop=1` |
+| 22:42:17-29 | El usuario mueve la perilla | `btaudio-ctl volume 50`, `43`, `2` en el log |
+
+**Tres defectos que solo se ven probando de verdad** (los tres arreglados):
+
+1. **El pareo fallaba por una espera mal escrita**: `pair()` esperaba "la MAC en el log", y bluez
+   tambien escribe la MAC cuando **borra** el device del cache (`[DEL] Device <mac>`), asi que
+   mandaba el `pair` antes de tiempo y contestaba `not available`. Ahora espera una aparicion
+   **positiva** (`NEW`/`CHG` con esa MAC) en **ese** scan y, mientras el equipo siga apareciendo,
+   **reintenta** el pareo hasta 3 veces. Si nunca aparece, falla limpio: medido, **84 s → 51 s**.
+2. **La app no decia nada si el pareo fallaba**: quedaba "Pairing..." para siempre. Ahora dice
+   `Pairing failed: put it in pairing mode and retry` o `Paired: use RX to HP to hear it`.
+3. **El rol estaba mal**: los auriculares con controles tactiles anuncian **HID (HOGP) ademas de
+   A2DP**, y `role()` miraba HID primero, asi que los Buds salian como `kbd` (la app los mostraba
+   como "keyboard" y `list` decia `HP 0`). Ahora el audio se mira antes que HID: `DEV <mac> 1 hp 0
+   Pablo's Pixel Buds Pro 2`.
+
+**Lo que quedo verificado con hardware real**: A2DP conectado, **loopback de RX a los auriculares
+cargado** (`loop=1`), y **la perilla de volumen moviendo el sink de los Buds** (los `volume 50/43/2`
+del log son del usuario girando la perilla, no de una prueba).
+
+**El mute del altavoz con auriculares** (lo que pide `BTAUDIO_MUTE="yes"`) se arreglo y se verifico
+en A/B con el archivo de estado que escribe el propio script (`/tmp/btaudio-hp`):
+
+```
+22-45-26 auriculares conectados: altavoz a 0 (BTAUDIO_MUTE=yes)
+22-45-30 auriculares desconectados: altavoz de vuelta
+```
+
+Y solo desmutea si el mute lo puso esto (no pisa un mute puesto a mano).
+
+**Queda para el oido del usuario**: que el audio de recepcion suene en los Buds (el camino esta
+armado y medido: el loopback existe y el sink es el de ellos) y que el altavoz quede en silencio.

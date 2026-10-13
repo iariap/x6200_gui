@@ -59,6 +59,12 @@ static char       last_text[4096];  /* to redraw only when it changed */
 
 static uint64_t   scan_until;
 
+/* MAC del pareo en curso y desde cuando: el script tarda hasta ~50 s y, si falla, deja
+ * "Pairing failed" en /tmp/bt_pair.log. Antes la app no decia nada y parecia que el boton no
+ * hacia nada (medido con los Pixel Buds: "Device ... not available" y la pantalla muda). */
+static char       pairing_mac[24];
+static uint64_t   pairing_since;
+
 static void refresh_cb(lv_timer_t *t);
 
 /* Los botones (definidos mas abajo): refresh_cb los refresca. */
@@ -318,6 +324,29 @@ static void refresh_cb(lv_timer_t *t) {
         buttons_refresh(&btn_auto);
     }
 
+    /* Resultado del pareo: quedo pareado, o el script se rindio */
+    if (pairing_mac[0] != '\0') {
+        bool paired = false;
+
+        for (int i = 0; i < shown.n; i++) {
+            if (!strcmp(shown.dev[i].mac, pairing_mac) && shown.dev[i].paired) {
+                paired = true;
+            }
+        }
+
+        if (paired) {
+            pairing_mac[0] = '\0';
+            lv_label_set_text(label_note, "Paired: use RX to HP to hear it");
+        } else if (get_time() - pairing_since > 5000) {
+            char paylog[4096];
+
+            if (read_file("/tmp/bt_pair.log", paylog, sizeof(paylog)) && strstr(paylog, "Pairing failed")) {
+                pairing_mac[0] = '\0';
+                lv_label_set_text(label_note, "Pairing failed: put it in pairing mode and retry");
+            }
+        }
+    }
+
     /* El scan es lo unico que el usuario no puede ver: mientras corre se muestra el tiempo que
      * falta y al terminar cuantos dispositivos encontro. Antes quedaba el cartel "Scanning (15
      * s)..." puesto y parecia que el boton no hacia nada. */
@@ -399,7 +428,9 @@ static void row_cb(lv_event_t *e) {
 
     if (!d->paired) {
         snprintf(cmd, sizeof(cmd), "pair %s", d->mac);
-        lv_label_set_text_fmt(label_note, "Pairing %s...", d->mac);
+        snprintf(pairing_mac, sizeof(pairing_mac), "%s", d->mac);
+        pairing_since = get_time();
+        lv_label_set_text(label_note, "Pairing... keep it in pairing mode");
     } else if (!d->connected) {
         snprintf(cmd, sizeof(cmd), "connect %s", d->mac);
         lv_label_set_text_fmt(label_note, "Connecting %s...", d->mac);
