@@ -892,8 +892,8 @@ chequeo y son 14 de esos 28: el chequeo tambien se corrigio.
   (`tools/remote/compila.sh` lo compila con el toolchain de buildroot.)
 - Captura del framebuffer por SSH (`dd if=/dev/fb0 bs=1920 count=800`, 480x800x32, rotada 270° como
   en el banco). Antes: etiquetas cortadas y contenido scrolleado (guardado como
-  `evidencia-radio/captura-radio-ultima.png`). Despues: etiquetas completas, `Day, Month, Year` con
-  **2026** entero y sin barra horizontal (`evidencia-radio/ajustes-100pct.png`).
+  `evidencia/captura-radio-ultima.png`). Despues: etiquetas completas, `Day, Month, Year` con
+  **2026** entero y sin barra horizontal (`evidencia/ajustes-100pct.png`).
 
 ---
 
@@ -924,7 +924,7 @@ lecturas de archivos chicos y un `access()`, y cubre tambien los cambios que hac
 fuera de la GUI.
 
 **Verificado** con capturas del framebuffer, los tres estados en la misma imagen
-(`evidencia-radio/bt-estados.png`):
+(`evidencia/bt-estados.png`):
 
 - `btcat-ctl bt off` → runa en **negro** (no se ve, igual que el WiFi apagado),
 - `btcat-ctl bt on` → runa **gris**,
@@ -955,7 +955,7 @@ podia alcanzar asignandosela a un long press (`dialog_settings.c:916`, " APP Blu
 **El scan: funciona, y se comprobo.** Con las pulsaciones del usuario quedaron los archivos:
 `/tmp/bt_ui_scan.txt` → `NEW 2C:1B:3A:0A:64:BE Living Room TV hp`, y `btaudio-ctl scan` a mano da
 **el mismo** dispositivo. O sea que el script corre y su resultado se muestra en la lista (captura
-`evidencia-radio/bt-app.png`: "Living Room TV" con `headphones` y `new`). No aparecian los
+`evidencia/bt-app.png`: "Living Room TV" con `headphones` y `new`). No aparecian los
 auriculares porque **no estaban en modo emparejamiento**: un scan solo ve lo que se anuncia.
 
 **Dos defectos de UX que si eran reales** (`dialog_bt.c`):
@@ -976,7 +976,7 @@ indicador. Mientras el scan corre, el boton Scan:
 
 Se probo sin manos con el comando **`{"cmd":"btn","val":N}`** que se agrego al control remoto
 (aprieta el boton N de la fila de abajo por el mismo camino que las teclas F). Capturas de los tres
-momentos en `evidencia-radio/scan-affordance.png`: reposo (`Scan`) → en curso (`Scan 13s` gris) →
+momentos en `evidencia/scan-affordance.png`: reposo (`Scan`) → en curso (`Scan 13s` gris) →
 terminado (`Scan` + "Scan done: nothing found").
 
 **Pendiente de probar** (necesita manos y auriculares): pulsar Scan con los auriculares en modo
@@ -1040,8 +1040,8 @@ twice and its bottom under the buttons"*.
   medido **no** tiene el problema: GPS, SSTV y CW muestran su linea de abajo completa.
 - `DIALOG_H_MAX` (372) queda como maximo para los buffers estaticos de SSTV/WeFax (sobra, no molesta).
 
-**Verificado con capturas del framebuffer** (`evidencia-radio/`): el estado del BT completo arriba
-de los botones (`bt-app.png`), y WeFax (`_wefax-final.png`) y SSTV (`_sstv-final.png`) con su linea
+**Verificado con capturas del framebuffer** (`evidencia/`): el estado del BT completo arriba
+de los botones (`bt-app.png`), y WeFax (`evidencia/wefax-final.png`) y SSTV (`evidencia/sstv-final.png`) con su linea
 de abajo visible y la fila de botones libre. Antes/despues de la misma franja en `verifica-abajo.png`.
 
 ---
@@ -1109,7 +1109,7 @@ despues de abrir, `dmesg` con 0 segfaults.
 - **Mute**: apretar el boton deja en `/mnt/app_logs/bt.log`
   `ui: btaudio-ctl mute on` + `altavoz apagado (mute del equipo)`.
 - **Auto sin dispositivo elegido**: no manda nada y avisa "Pick a paired device first".
-- Capturas de los botones y la nota: `evidencia-radio/bt-botones.png`.
+- Capturas de los botones y la nota: `evidencia/bt-botones.png`.
 
 **Para poder medir todo esto** se agrego `/mnt/app_logs/bt.log` (una linea por accion, como
 `boot.log` y `voice.log`) y dos comandos al control remoto: `{"cmd":"btn","val":N}` (aprieta el
@@ -1154,8 +1154,8 @@ claro) y se agregaron los dos pares al chequeo (paso de 115 a 117 pares).
 `check_actions.py` y `check_settings_focus.py` siguen OK; los 3 JSON parsean. Y en la radio: el
 tema activo es **"Material 3"**, que es un **JSON en `/mnt/themes/`** (la particion de datos
 sobrevive a reflashear), asi que ademas de reconstruir la imagen se copiaron los JSON arreglados a
-`/mnt/themes/`. Antes/despues de las pantallas en `evidencia-radio/comparacion-antes.png` y
-`comparacion-despues.png`: el tema queda igual, con los bordes y los textos secundarios mas claros.
+`/mnt/themes/`. Antes/despues de las pantallas en `evidencia/comparacion-antes.png` y
+`evidencia/comparacion-despues.png`: el tema queda igual, con los bordes y los textos secundarios mas claros.
 
 **Exenciones** (WCAG 1.4.3, deshabilitados; se miden y se informan): `track` 1.00, `icon_off` 1.04,
 `off` 1.09, `btn_off_text` 1.20, `text_mute` 1.73, `text_faint` 1.84, `switch_off` 2.81.
@@ -1240,7 +1240,7 @@ armado y medido: un loopback, el sink de ellos, 50%) y que el altavoz quede en s
 **Reportado por el usuario**: "la UI de BT tiene poco contraste entre los elementos de la lista y el
 texto (gris claro sobre blanco) eso no es WCAG".
 
-**Medido en la radio** (pixel a pixel de una captura del framebuffer): en la lista de dispositivos,
+**Medido en la radio** (pixel a pixel de una captura del framebuffer, `evidencia/bt-contraste.png`): en la lista de dispositivos,
 la fila normal daba **14.41:1** ✓ (texto `#e2e2e9` sobre el fondo del tema `#111318`), pero la
 **fila elegida** daba **3.68:1** ✗: fondo **`#F44336`** con el texto casi blanco.
 
