@@ -13,6 +13,10 @@ Convención usada abajo:
 - **código** — lo que dice un archivo del repo (verificable leyéndolo, con el archivo citado).
 - **sin fundar** — no es hallazgo: está en el anexo A.
 
+El chequeo automático (índice contra secciones, estimaciones fuera del anexo, secciones con números
+sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
+(`.agents/hallazgos-fundados/`, con `scripts/audita-hallazgos.sh`).
+
 Índice:
 
 1. [La GUI no tenía audio: `pulse` no estaba en el grupo `audio`](#1-la-gui-no-tenía-audio-pulse-no-estaba-en-el-grupo-audio)
@@ -30,6 +34,7 @@ Convención usada abajo:
 13. [Actualizar la radio por WiFi](#13-actualizar-la-radio-por-wifi)
 14. [La GUI se colgaba al mandar audio](#14-la-gui-se-colgaba-al-mandar-audio)
 15. [Anexo A: hipótesis sin fundar (no son hallazgos)](#anexo-a-hipótesis-sin-fundar-no-son-hallazgos)
+16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 
 ---
 
