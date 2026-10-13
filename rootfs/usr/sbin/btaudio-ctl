@@ -18,6 +18,7 @@
 CONF=/mnt/btaudio.conf
 STATE=/tmp/btaudio-hp
 PIDFILE=/tmp/btaudio-monitor.pid
+LOCK=/tmp/btaudio.lock
 LST=/tmp/btaudio-lst
 SOURCE=alsa_input.platform-sound.stereo-fallback
 BTAUDIO_RX=yes
@@ -80,6 +81,17 @@ apply_rx() {
 	sinks=$(hp_sinks)
 	if [ -n "$sinks" ]; then echo "$sinks" > $STATE; else rm -f $STATE; fi
 	if [ "$BTAUDIO_RX" = "yes" ]; then
+		# Red de seguridad: si igual quedo mas de un loopback al mismo sink, se deja uno.
+		seen=""
+		for id in $(pactl list short modules 2>/dev/null | awk '$2 == "module-loopback" {print $1}'); do
+			ss=$(pactl list short modules 2>/dev/null | awk -v i="$id" '$1 == i' | sed -n 's/.*sink=\(bluez_sink\.[^ ]*\).*/\1/p')
+			[ -z "$ss" ] && continue
+			case " $seen " in
+				*" $ss "*) pactl unload-module "$id" 2>/dev/null ;;
+				*) seen="$seen $ss" ;;
+			esac
+		done
+
 		for s in $sinks; do
 			pactl list short modules 2>/dev/null | grep -q "sink=$s " && continue
 			# Lowest radio-side latency, one reason per option:
@@ -118,7 +130,17 @@ short_lst() {
 	printf '%s\n' $set_lst > $LST
 }
 
-sync_audio() { force_a2dp; short_lst; apply_rx; }
+sync_audio() {
+	# Serializado con un lock de mkdir (atomico): dos llamadas a la vez (el "pactl subscribe" y
+	# el monitor del script) cargaban DOS loopbacks al mismo sink y la recepcion salia al doble
+	# (medido el 13/10 con los Pixel Buds: modulos 21 y 22 identicos).
+	[ -d $LOCK ] && return
+	mkdir $LOCK 2>/dev/null || return
+	force_a2dp
+	short_lst
+	apply_rx
+	rmdir $LOCK 2>/dev/null
+}
 
 list() {
 	for mac in $(devices); do

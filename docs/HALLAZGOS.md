@@ -1203,5 +1203,24 @@ en A/B con el archivo de estado que escribe el propio script (`/tmp/btaudio-hp`)
 
 Y solo desmutea si el mute lo puso esto (no pisa un mute puesto a mano).
 
+4. **Dos loopbacks al mismo sink** (el audio de recepcion salia **al doble**): `sync_audio` se llama
+   desde el manejador de `pactl subscribe` **y** desde el monitor del script, y si los dos corren a
+   la vez los dos ven "no hay loopback" y los dos lo cargan. Medido: modulos **21 y 22 identicos**
+   (`source=alsa_input... sink=bluez_sink.B8_7B...`). Arreglado con un lock de `mkdir` (atomico) en
+   `sync_audio` y una red de seguridad en `apply_rx` que deja **un solo loopback por sink**.
+   Verificado: `pactl list short modules | grep -c module-loopback` = **1**.
+
+**Estado con los auriculares del usuario conectados** (`btaudio-ctl list`):
+
+```
+DEV  B8:7B:D4:17:C7:F3  1  hp  0  Pablo's Pixel Buds Pro 2     <- conectado, rol corregido
+HP   1  50                                                     <- 1 auricular, volumen 50%
+RX   yes                                                       <- recepcion a los auriculares
+MUTE yes                                                       <- altavoz en 0
+```
+
+Ojo con el volumen: quedaba en **2%** (−97 dB, inaudible) de las pruebas con la perilla; se dejo en
+50% para poder escuchar.
+
 **Queda para el oido del usuario**: que el audio de recepcion suene en los Buds (el camino esta
-armado y medido: el loopback existe y el sink es el de ellos) y que el altavoz quede en silencio.
+armado y medido: un loopback, el sink de ellos, 50%) y que el altavoz quede en silencio.
