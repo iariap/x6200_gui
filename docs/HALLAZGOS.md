@@ -353,7 +353,19 @@ journal queda pendiente y hay que replayarlo en el próximo arranque.
 
 ## 12. Lo que queda del arranque, medido
 
-Reparto del arranque en frío (7,9-8,3 s con el arreglo de §10):
+Arranque en frío **final, medido en el equipo** (binario de la imagen, `GUI lista` = primer
+cuadro):
+
+```
+00:00:03  kernel listo: 3.12 s de uptime      ← kernel + journal ext4
+00:00:04  GUI arrancando: 4.54 s de uptime    ← scripts (1,42 s)
+  GUI inicio     5.6 s                        ← daemon + enlace dinámico (1,06 s)
+  audio_init     5.6 s  (+0.00 s)
+  ...
+GUI lista: 6.6 s                              ← la GUI entera: 1,0 s
+```
+
+Reparto:
 
 - **kernel ~2,7 s** hasta `udevd` (`dmesg`); dentro, el panel `JLT4013A` se lleva ~0,4 s.
 - **journal ext4 1,34 s** (§11).
@@ -361,12 +373,14 @@ Reparto del arranque en frío (7,9-8,3 s con el arreglo de §10):
   conviene volver a medir con una marca por script).
 - **daemon + enlace dinámico ~1 s**: el binario tiene **11,5 MB y no está stripped**, y enlaza
   **28 bibliotecas** (libnm/libgio/libglib, libfftw3f, liblvgl, libstdc++…). Leerlo desde la raíz
-  cuesta **0,47 s** con la caché vacía; la copia de assets que hacía el daemon, 0,24 s (§7).
+  cuesta **0,47 s** con la caché vacía; la copia de assets que hacía el daemon, 0,24 s (§7, ya
+  reemplazada por el bind mount en esta imagen).
   Ideas: precargar binario + bibliotecas en un hilo temprano (antes de que la GUI las necesite) y
   `strip` del binario para achicar la imagen.
-- **GUI ~2,1 s** (ya con el arreglo): `main()` hasta `audio_init` es **0,02 s** (¡el proceso entra
-  rapidísimo!); los tramos son `cw/rtty` 0,16 s, `radio` 0,21 s, `cat/qso_log` 0,07 s,
-  `db_init` 0,17 s, `fuentes y estilos` 0,04 s, `pantalla principal` 0,03 s y el primer cuadro.
+- **GUI ~1,0 s** (ya con el arreglo): `main()` hasta `audio_init` es **0,02 s** (¡el proceso entra
+  rapidísimo!); los tramos son `cw/rtty` 0,16-0,21 s, `radio` 0,21 s, `cat/qso_log` 0,07 s,
+  `db_init` 0,17-0,19 s, `fuentes y estilos` 0,04-0,08 s, `pantalla principal` 0,03-0,06 s y el
+  primer cuadro.
 
 ---
 
