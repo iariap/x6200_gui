@@ -603,13 +603,159 @@ verla siempre.</li>
 <li>Tocá un spot de la columna para sintonizarlo, o mirá las
 <strong>marcas</strong> sobre el waterfall.</li>
 </ol>
-<h3 id="wfview">7.5 wfview</h3>
+<h3 id="wfview-la-radio-como-ic-705-en-la-red">7.5 wfview: la radio como
+IC-705 en la red</h3>
+<p>El equipo se anuncia y responde el <strong>protocolo LAN de
+Icom</strong>, así que se comporta como un <strong>IC-705</strong> y se
+puede manejar con <strong>wfview</strong> desde la PC: el waterfall, el
+audio del receptor y el control de frecuencia y modo, todo por la
+red.</p>
+<p><strong>Qué habla</strong></p>
+<table>
+<thead>
+<tr>
+<th>Puerto</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>UDP 50001</strong></td>
+<td>Control (y el descubrimiento que hace wfview)</td>
+</tr>
+<tr>
+<td><strong>UDP 50002</strong></td>
+<td>CI-V (el CAT de la radio por red)</td>
+</tr>
+<tr>
+<td><strong>UDP 50003</strong></td>
+<td>Audio (LPCM 16 bits, mono)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Paso 1 — Preparar la radio</strong></p>
 <ol type="1">
-<li>Activá el servidor wfview en Ajustes.</li>
-<li>En la PC, abrí wfview y conectá a la IP del equipo.</li>
-<li>Vas a ver espectro, waterfall y audio del receptor, y podés cambiar
-frecuencia y modo desde la PC.</li>
+<li><p>Conectá el equipo a la <strong>misma red</strong> que la PC
+(Ajustes → WiFi).</p></li>
+<li><p>Anotá la <strong>IP</strong> del equipo (pantalla de estado, o la
+lista del router).</p></li>
+<li><p>Ajustes → <strong>wfview server</strong> → activar. Al activarlo
+se escribe su configuración en
+<strong><code>/mnt/wfview.conf</code></strong>:</p>
+<pre><code>enabled=1
+user=x6200
+pass=&lt;tu clave&gt;</code></pre></li>
+<li><p>Si querés, cambiá el <strong>usuario</strong> y la
+<strong>clave</strong> desde el <strong>configurador web</strong>
+(página de wfview); la clave se guarda <strong>hasheada</strong>, no en
+texto plano. Anotá lo que pongas: es lo que vas a cargar en
+wfview.</p></li>
 </ol>
+<p><strong>Paso 2 — Instalar wfview en la PC</strong></p>
+<p>Instalá wfview desde <a href="https://wfview.org">wfview.org</a> o el
+paquete de tu distribución. Sirve también cualquier cliente que hable el
+protocolo LAN de Icom.</p>
+<p><strong>Paso 3 — Registrar el equipo (el paso que
+importa)</strong></p>
+<ol type="1">
+<li><p>Abrí wfview y andá a <strong>Settings → Radios</strong>.</p></li>
+<li><p>wfview <strong>escanea la red</strong> y suele encontrar la radio
+sola: aparece listada como <strong>IC-705</strong> (es lo que emula el
+equipo). Tocá <strong>Connect</strong>.</p></li>
+<li><p>Si <strong>no aparece</strong> (hay routers que filtran el
+<em>broadcast</em> del descubrimiento), agregala a mano con
+<strong>Manual / Add</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Qué poner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Radio Name</strong></td>
+<td><code>X6200</code> (el que quieras)</td>
+</tr>
+<tr>
+<td><strong>IP Address</strong></td>
+<td>la IP del equipo (paso 1)</td>
+</tr>
+<tr>
+<td><strong>Control Port</strong></td>
+<td><code>50001</code></td>
+</tr>
+<tr>
+<td><strong>Username</strong></td>
+<td><code>x6200</code> (o el que hayas puesto en el conf)</td>
+</tr>
+<tr>
+<td><strong>Password</strong></td>
+<td>la clave del <code>wfview.conf</code></td>
+</tr>
+<tr>
+<td><strong>Model</strong></td>
+<td><strong>IC-705</strong></td>
+</tr>
+<tr>
+<td><strong>CI-V Address</strong></td>
+<td><code>A4</code> (la del IC-705)</td>
+</tr>
+</tbody>
+</table></li>
+<li><p><strong>Guárdala</strong>: queda <strong>registrada</strong> para
+las próximas veces, ya no hay que buscarla de nuevo.</p></li>
+</ol>
+<p><strong>Paso 4 — Usar</strong></p>
+<ol type="1">
+<li>Conectá. En la ventana principal vas a ver el <strong>espectro y el
+waterfall</strong>, y podés cambiar frecuencia y modo (el CAT viaja por
+red y se comparte con el UART: lo que cambies en la PC o en la radio se
+refleja en los dos lados).</li>
+<li>Elegí el dispositivo de <strong>audio</strong> de la PC para
+escuchar el receptor.</li>
+<li><strong>Un cliente a la vez</strong>: el servidor atiende una
+conexión.</li>
+</ol>
+<p><strong>Si algo no anda</strong></p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Síntoma</th>
+<th>Qué revisar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No aparece en la lista</td>
+<td>Que esté en la misma red y que el <strong>firewall</strong> de la PC
+no bloquee <strong>UDP 50001–50003</strong>. Si el router no deja pasar
+el <em>broadcast</em>, agregala a mano (paso 3.3)</td>
+</tr>
+<tr>
+<td>Conecta pero no suena</td>
+<td>El dispositivo de audio elegido en wfview</td>
+</tr>
+<tr>
+<td>No hay waterfall</td>
+<td>Que el espectro esté activado en el cliente</td>
+</tr>
+<tr>
+<td>Pide clave y no la sabés</td>
+<td>Mirá <code>/mnt/wfview.conf</code> (o volvé a ponerla desde el
+configurador web)</td>
+</tr>
+<tr>
+<td>Se corta</td>
+<td>Es UDP: usá WiFi con buena señal o cable, y evitá otras aplicaciones
+pesadas en el equipo</td>
+</tr>
+</tbody>
+</table>
 <h3 id="temas">7.6 Temas</h3>
 <p>Hay <strong>8</strong>: los incorporados (IU1WXY, Outdoor, Classic,
 Outdoor-Negative y Vision) y los del X6100 que van como archivos (Holo,

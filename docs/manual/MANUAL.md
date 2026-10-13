@@ -322,12 +322,79 @@ El equipo abre un socket en `/tmp/x6200_remote.sock` con unos 65 comandos.
 4. Activá la **columna** del clúster en Ajustes si querés verla siempre.
 5. Tocá un spot de la columna para sintonizarlo, o mirá las **marcas** sobre el waterfall.
 
-### 7.5 wfview
+### 7.5 wfview: la radio como IC-705 en la red
 
-1. Activá el servidor wfview en Ajustes.
-2. En la PC, abrí wfview y conectá a la IP del equipo.
-3. Vas a ver espectro, waterfall y audio del receptor, y podés cambiar frecuencia y modo desde
-   la PC.
+El equipo se anuncia y responde el **protocolo LAN de Icom**, así que se comporta como un
+**IC-705** y se puede manejar con **wfview** desde la PC: el waterfall, el audio del receptor y
+el control de frecuencia y modo, todo por la red.
+
+**Qué habla**
+
+| Puerto | Uso |
+|---|---|
+| **UDP 50001** | Control (y el descubrimiento que hace wfview) |
+| **UDP 50002** | CI-V (el CAT de la radio por red) |
+| **UDP 50003** | Audio (LPCM 16 bits, mono) |
+
+**Paso 1 — Preparar la radio**
+
+1. Conectá el equipo a la **misma red** que la PC (Ajustes → WiFi).
+2. Anotá la **IP** del equipo (pantalla de estado, o la lista del router).
+3. Ajustes → **wfview server** → activar. Al activarlo se escribe su configuración en
+   **`/mnt/wfview.conf`**:
+
+   ```
+   enabled=1
+   user=x6200
+   pass=<tu clave>
+   ```
+
+4. Si querés, cambiá el **usuario** y la **clave** desde el **configurador web** (página de
+   wfview); la clave se guarda **hasheada**, no en texto plano. Anotá lo que pongas: es lo que
+   vas a cargar en wfview.
+
+**Paso 2 — Instalar wfview en la PC**
+
+Instalá wfview desde [wfview.org](https://wfview.org) o el paquete de tu distribución. Sirve
+también cualquier cliente que hable el protocolo LAN de Icom.
+
+**Paso 3 — Registrar el equipo (el paso que importa)**
+
+1. Abrí wfview y andá a **Settings → Radios**.
+2. wfview **escanea la red** y suele encontrar la radio sola: aparece listada como **IC-705**
+   (es lo que emula el equipo). Tocá **Connect**.
+3. Si **no aparece** (hay routers que filtran el *broadcast* del descubrimiento), agregala a
+   mano con **Manual / Add**:
+
+   | Campo | Qué poner |
+   |---|---|
+   | **Radio Name** | `X6200` (el que quieras) |
+   | **IP Address** | la IP del equipo (paso 1) |
+   | **Control Port** | `50001` |
+   | **Username** | `x6200` (o el que hayas puesto en el conf) |
+   | **Password** | la clave del `wfview.conf` |
+   | **Model** | **IC-705** |
+   | **CI-V Address** | `A4` (la del IC-705) |
+
+4. **Guárdala**: queda **registrada** para las próximas veces, ya no hay que buscarla de nuevo.
+
+**Paso 4 — Usar**
+
+1. Conectá. En la ventana principal vas a ver el **espectro y el waterfall**, y podés cambiar
+   frecuencia y modo (el CAT viaja por red y se comparte con el UART: lo que cambies en la PC o
+   en la radio se refleja en los dos lados).
+2. Elegí el dispositivo de **audio** de la PC para escuchar el receptor.
+3. **Un cliente a la vez**: el servidor atiende una conexión.
+
+**Si algo no anda**
+
+| Síntoma | Qué revisar |
+|---|---|
+| No aparece en la lista | Que esté en la misma red y que el **firewall** de la PC no bloquee **UDP 50001–50003**. Si el router no deja pasar el *broadcast*, agregala a mano (paso 3.3) |
+| Conecta pero no suena | El dispositivo de audio elegido en wfview |
+| No hay waterfall | Que el espectro esté activado en el cliente |
+| Pide clave y no la sabés | Mirá `/mnt/wfview.conf` (o volvé a ponerla desde el configurador web) |
+| Se corta | Es UDP: usá WiFi con buena señal o cable, y evitá otras aplicaciones pesadas en el equipo |
 
 ### 7.6 Temas
 
