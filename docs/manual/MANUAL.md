@@ -1,278 +1,436 @@
 ---
-title: "Manual de uso — ROM LU2DSX para Xiegu X6200"
-subtitle: "Firmware con las funciones del X6100 de IU1WXY"
+title: "Manual del operador — ROM LU2DSX para Xiegu X6200"
+subtitle: "Con las funciones del X6100 de IU1WXY, explicadas para radioaficionados"
 author: "lu2dsx"
 lang: es
 ---
 
-# Manual de uso — ROM LU2DSX para Xiegu X6200
+# Manual del operador — ROM LU2DSX para Xiegu X6200
 
-Esta ROM parte del firmware del X6200 (GUI LVGL + Buildroot) y le agrega las funciones que el
-X6100 de IU1WXY tenía y la plataforma del X6200 permite. Está pensada para usarse **en el
-campo**: QRP, SOTA/POTA, digitales y CW.
+Esta ROM nace del firmware del X6200 (GUI LVGL + Buildroot) y le incorpora las funciones del
+X6100 de IU1WXY que la plataforma permite. La idea es tener **un QRP de campo completo**: los
+digitales, CW, el clúster, SOTA/POTA y todo lo que hace falta cuando estás en un cerro con una
+batería y un cable de 20 metros.
 
 ![La radio operando](img/radio-principal.png)
 
-## 1. Lo esencial
+**Lo que vas a encontrar acá:** el equipo con 8 temas, plan de banda IARU, S-meter con aguja,
+WFM, grabación, Bluetooth (CAT y auriculares), wfview, configurador web, control remoto desde el
+teléfono, FT8/FT4, WSPR, JS8, SSTV, WeFax, NavTex, RTTY, CW Keyboard y CW Trainer, clúster DX
+con spots sobre el waterfall, Field Ops (SOTA/POTA) y anuncios por voz en español.
 
-**Qué agrega, en una lista**
+## 1. Antes de empezar
 
-- Aviso de firmware nuevo, aguja de S-meter y plan de banda IARU.
-- Grabación de pantalla (video + audio de RX) y capturas.
-- Bluetooth: CAT, auriculares (A2DP) y teclados.
-- wfview, configurador web ampliado (15 páginas con HTTPS) y control remoto en vivo.
-- Modos digitales: FT8, FT4, WSPR, JS8, SSTV, WeFax y NavTex, con CW Keyboard y CW Trainer.
-- Field Ops (SOTA/POTA), clúster DX y la app de posición (GPS).
-- Temas: 8 disponibles, incluidos los del X6100 (Holo, Material 3, RS).
-- Anuncios por voz (TTS en español), con el ajuste *Voice mode*.
+**Lo que necesitás**
 
-**Qué necesitás**
+- La Xiegu X6200 y una **microSD**. Ojo: la microSD va **dentro del adaptador**; si no queda
+  bien asentada, la radio arranca su firmware interno y parece que "no bootea".
+- Una PC con cualquier herramienta de imágenes (para la instalación completa).
+- **Cargador**, si vas a actualizar en el lugar: si se corta a mitad, el equipo no arranca.
 
-- La radio Xiegu X6200 y una **microSD** (la que trae el equipo sirve). Ojo: la microSD va
-  **dentro del adaptador** — si no queda bien asentada, la radio arranca su firmware interno y
-  parece que "no bootea".
-- Una PC para grabar la imagen (Linux/Windows/macOS con cualquier herramienta de imágenes).
-- Opcional: cargador. **Para actualizar, siempre con el cargador puesto.**
+**Regla de oro:** todo lo tuyo vive en la partición **`DATA`** (`params.db` con los ajustes,
+`qso_log.db` con los contactos, `themes/`, `msg/`, `rec/` y `app_logs/`). **Esa partición nunca
+se toca al actualizar.** Igual, respaldala antes de cada actualización.
 
 ## 2. Instalación
 
-### 2.1 Desde cero (imagen completa)
+### 2.1 Instalación completa (imagen)
 
-1. **Respaldá tus datos.** Todo lo tuyo vive en la partición `DATA`: `params.db` (ajustes),
-   `qso_log.db` (contactos), `msg/` (mensajes de voz), `rec/` (grabaciones), `themes/` y las
-   capturas. Copiá esa partición a la PC **antes** de grabar.
-2. **Grabá la imagen.** Escribí el archivo `.img` en la microSD (con `dd`, balenaEtcher,
-   Raspberry Pi Imager o similar). La imagen trae 2 particiones: `BOOT` y `rootfs`.
-3. **Poné la tarjeta en la radio y encendé.** En el primer arranque la radio crea sola la
-   partición `DATA` (vfat, etiqueta `DATA`). Si ya tenía una partición DATA con formato FAT,
-   **la monta sin formatear**: tus datos sobreviven.
+1. **Respaldá `DATA`** a la PC.
+2. **Grabá el `.img`** en la microSD (`dd`, balenaEtcher, Raspberry Pi Imager). Trae dos
+   particiones: `BOOT` (arranque) y `rootfs` (el sistema).
+3. **Ponela en la radio y encendé.** En el primer arranque el equipo crea la partición `DATA`.
+   Si ya existe una `DATA` con formato FAT, la monta **sin formatear**: tus datos sobreviven.
 4. **Restaurá tus datos** en `DATA` y reiniciá.
 
-> **Importante:** la partición `DATA` nunca se toca al actualizar. Es lo que hace que tus
-> ajustes y tu log de QSO sigan ahí después de cada actualización.
+### 2.2 Actualización en el lugar
 
-### 2.2 Actualización en el lugar (sin regrabar)
+1. Copiá `x6200_r1cbu_<version>.tgz` a la raíz de `DATA`.
+2. **Con el cargador puesto**, encendé. El script `S02update` respalda (`backup_*.tgz`), aplica
+   la actualización y borra el tgz.
+3. Esperá a que termine y arranque.
 
-1. Copiá el archivo `x6200_r1cbu_<version>.tgz` a la raíz de la partición `DATA`.
-2. **Poné el cargador** y encendé. El script `S02update` hace un respaldo
-   (`backup_*.tgz`), aplica la actualización y borra el tgz.
-3. Esperá a que termine y arranque normalmente.
-
-> **Ojo:** si se corta la luz o la batería a mitad de la actualización, el sistema queda a
-> medias y **no arranca**. Por eso: cargador puesto, siempre. Si pasa, se recupera grabando la
-> imagen completa.
-
-## 3. Primer arranque
-
-La pantalla principal se lee de arriba hacia abajo:
+## 3. La pantalla principal
 
 ![Pantalla principal](img/00-principal.png)
 
-| Zona | Qué es |
+| Zona | Qué te dice |
 |---|---|
-| Arriba a la izquierda | VFO (`VFO-A`/`VFO-B`), modo (LSB/USB/CW/…), `AUTO`, `PRE` (preamplificador) y `ATU1` |
-| Arriba a la derecha | Hora (UTC) |
-| El arco | **S-meter**: de S1 a +40 dB, con la lectura en dBm |
-| La franja de colores | **Plan de banda IARU** (CW / DIG / ALL MODES) |
-| Los números grandes | Los bordes de la banda y la frecuencia actual (en el centro) |
-| La parte oscura | **Waterfall** (con las marcas de los spots del clúster) |
-| Los botones de abajo | Volumen, Squelch, RF gain, TX power y los botones de función |
+| Arriba a la izquierda | VFO (`VFO-A`/`VFO-B`), modo (LSB/USB/CW/CWR/AM/FM/DIG), `AUTO`, `PRE` (preamplificador) y `ATU1` |
+| Arriba a la derecha | Hora **UTC** |
+| El arco | **S-meter** de S1 a +40 dB, con la lectura en dBm |
+| La franja de colores | **Plan de banda IARU**: CW, DIG y ALL MODES, con los segmentos de la banda |
+| Los números grandes | Los extremos de la banda y, en el centro, la frecuencia del VFO |
+| La zona oscura | **Waterfall**; arriba, la franja con las **marcas de los spots** del clúster |
+| Los botones de abajo | Volumen, Squelch, RF gain, TX power y las páginas de botones de función |
 
-Debajo del waterfall está la **franja de spots**: los indicativos del clúster DX que caen
-dentro de lo que estás mirando, con una línea hasta su frecuencia.
+## 4. Los controles
 
-![Marcas de spots](img/spots.png)
+### 4.1 El dial (rueda grande)
 
-## 4. Lo básico
+Cambia la frecuencia del VFO activo y **anuncia la frecuencia por voz** si el modo de voz está
+activo. Con `Freq acceleration` activado, girando rápido salta más. El paso se cambia con las
+acciones *Step up* / *Step down* (o desde las páginas de botones).
 
-### Las tres ruedas
+### 4.2 La rueda de volumen (izquierda) — 12 modos
 
-- **Dial (grande, a la derecha):** frecuencia. Al girar, la radio dice la frecuencia por voz
-  (si el modo de voz está activo).
-- **Rueda de volumen (izquierda):** volumen de audio. También cambia de función con sus modos.
-- **MFK (abajo, al centro):** la rueda multifunción. Gira para cambiar el valor del modo
-  activo; apretá para cambiar de modo. Los modos son: nivel mínimo/máximo del espectro,
-  decimación de FFT, beta del espectro, peak hold, velocidad CW, modo CW, iambic, tono CW,
-  volumen CW, DNF, NB, NR, AGC, decodificador CW y más.
+Girala para el modo activo y apretala para cambiar de modo. Los modos son:
 
-### Botón de power
+| Modo | Qué ajusta |
+|---|---|
+| **VOL** | Volumen de audio |
+| **RFG** | RF gain del receptor |
+| **SQL** | Squelch |
+| **FILTER LOW / HIGH / BW** | Filtro de recepción: corte bajo, corte alto y ancho |
+| **PWR** | Potencia de transmisión |
+| **MIC / HMIC / IMIC** | Ganancia de micrófono: general, de mano y de línea |
+| **MONI** | Nivel del monitor (te escuchás en TX) |
+| **VOICE LANG** | Idioma de los anuncios (español / inglés) |
 
-- **Toque corto:** apaga **sólo la pantalla** (sigue operando).
+### 4.3 El MFK (rueda multifunción, abajo) — la perilla de todo
+
+Girala para cambiar el valor del modo activo, apretala para cambiar de modo. Los modos y sus
+parámetros:
+
+| Grupo | Modos del MFK |
+|---|---|
+| **Espectro** | Min level, Max level, FFT decimation, FFT width, Spectrum beta, Peak hold, Peak speed, Spectrum fill, Spectrum peak |
+| **Recepción** | DNF (center frequency, width), NB (level, width), NR (level), AGC (control, hang, knee level, slope level), ATT switcher, Antenna selector |
+| **CW** | CW key speed, CW key mode, Iambic mode, CW key tone, CW key volume, CW key QSK time, CW key ratio, CW key train, CW tune, CW decoder (SNR level, noise beta, peak beta) |
+| **Otros** | Comp (compresor de audio), Charger mode, Peak hold time |
+
+### 4.4 El botón de power
+
+- **Toque corto:** apaga **sólo la pantalla**. El equipo sigue operando; es lo que usa el ajuste
+  de voz *When LCD off* para hablarte sin encender nada.
 - **Pulsación larga:** apaga la radio.
 
-### El ATU
+### 4.5 El ATU
 
-1. Apretá `ATU` para habilitar el sintonizador (aparece `ATU1` arriba).
-2. Mantené apretado `ATU` (o usá la acción *ATU tune*) para que sintonice.
-3. El resultado queda guardado por banda y modo.
+1. Apretá `ATU` para habilitarlo (aparece `ATU1`).
+2. Mantené apretado `ATU` (o usá la acción *ATU tune*) para sintonizar; el equipo busca la mejor
+   red de adaptación.
+3. El resultado queda guardado por banda y modo, así que al volver no tenés que resintonizar.
 
-## 5. Las apps
+## 5. Ajustes: todos los parámetros
 
-Se abre con el botón `APP`, o asignando la acción a un botón desde Ajustes. Cerrá con la
-tecla de escape del teclado o apagando la app desde el control remoto.
+Se entra con la acción *APP Settings*. Las filas, por página:
 
-| App | Para qué |
-|---|---|
-| ![FT8](img/01-ft8.png) **FT8 / FT4** | Llamar CQ, contestar, ver los decodificados y subir a la nube. |
-| ![WSPR](img/02-wspr.png) **WSPR** | Reportar y escuchar balizas, con carga a WSPRnet. |
-| ![JS8](img/03-js8.png) **JS8** | Mensajería digital, con mapa y envío de posición. |
-| ![SSTV](img/04-sstv.png) **SSTV** | Recibir y transmitir imágenes. |
-| ![WeFax](img/05-wefax.png) **WeFax** | Facsímil meteorológico: alineado y inclinación con la **perilla**. |
-| ![NavTex](img/06-navtex.png) **NavTex** | Avisos marítimos. |
-| ![Clúster](img/07-cluster.png) **Clúster DX** | Spots, filtros y sintonía con un toque. |
-| ![GPS](img/08-gps.png) **Posición (GPS)** | Muestra de dónde viene la posición y la grilla QTH. |
-| ![Field](img/09-field.png) **Field Ops** | SOTA/POTA: referencias, log ADIF, self-spot y CQ de voz. |
-| ![RTTY](img/10-rtty.png) **RTTY** | Radioteletipo. |
-| ![CW](img/11-cw.png) **CW Keyboard / Trainer** | Transmitir con el teclado y practicar CW. |
+| Página | Parámetros | Para qué |
+|---|---|---|
+| **Reloj** | Day, Month, Year / Hour, Min, Sec | Hora UTC de los decodificados (también la ajusta el NTP si hay red) |
+| **Pantalla** | Timeout, Brightness / Buttons brightness / Clock view / S-meter needle / Band plan | Apagado automático, brillo de pantalla y de botones, vista del reloj, aguja del S-meter y plan de banda |
+| **Info** | Mag Freq, Info, ALC | Qué muestra cada zona de la barra superior |
+| **Audio** | Audio enhance / Speaker mode / Voice mode / Voice rate, pitch, volume | Realce de audio, modo del parlante, y los anuncios de voz con su velocidad, tono y volumen |
+| **Espectro** | Spectrum auto min, max / Waterfall auto min, max / Waterfall line, zoom / Waterfall smooth scroll / Waterfall battery mode | Ajuste automático de los niveles, líneas y zoom del waterfall, desplazamiento suave y modo de ahorro en batería |
+| **Operación** | Freq acceleration / Charger / Cluster column / Bluetooth / Discoverable (CAT) | Aceleración del dial, modo del cargador, columna del clúster, Bluetooth y visibilidad para CAT |
+| **Apariencia** | Theme / Font | Los **8 temas** y la familia de fuente (se aplican al reiniciar) |
+| **Servicios** | wfview server / Update check | Servidor wfview y aviso de firmware nuevo |
+| **Field Ops** | Referencias y log | Referencias SOTA/POTA y el log ADIF |
+| **Acciones** | Pantalla completa de acciones | Asignar acciones a los botones: Screenshot, Screen rec, Mute, Voice mode, Battery info, ATT, PRE, ATU, ATU tune, APP Bands y las demás apps |
 
-## 6. Guías avanzadas, paso a paso
+## 6. Las aplicaciones
 
-### 6.1 Control remoto desde el teléfono
+Se abre con el botón `APP` (o asignando la acción del app a un botón). En las capturas se ve el
+diálogo del app sobre la pantalla principal, tal como queda en el equipo.
 
-El equipo abre un socket en `/tmp/x6200_remote.sock` con unos 65 comandos. Desde la página
-`/remote` del configurador web podés abrir apps, cambiar banda, modo y frecuencia, y mandar tu
-posición para Field Ops.
+### 6.1 FT8 / FT4
 
-1. Conectá el equipo a tu red WiFi (Ajustes → WiFi).
-2. Averiguá la IP del equipo en la pantalla de estado.
-3. Abrí `http://<ip>/remote` en el teléfono.
-4. Para mandar la posición:
-   `{"cmd":"location","text":"-34.6037,-58.3816"}`.
+![FT8](img/01-ft8.png)
 
-**Diagnóstico útil:** `{"cmd":"app","text":"GPS"}` abre una app por nombre, y
-`{"cmd":"cluster_feed","text":"DX de LU1ABC:  14074.0  LU2DSX  FT8  2313Z GF05"}` inyecta un
-spot del clúster sin necesidad de servidor (la línea necesita la hora `HHMMZ`).
+El modo digital más usado: ciclos de 15 segundos, decodificado y transmisión automática o
+asistida. Sirve para hacer contactos con señales que no escucharías ni en sueños, con 5 W y un
+cable cualquiera.
 
-### 6.2 Configurador web
+**Cómo se usa:** elegí banda y modo `DIG`; poné tu **indicativo** en Ajustes (Callsign); abrí
+FT8 y elegí la frecuencia de llamada de la banda; para llamar CQ usá el botón de CQ, y para
+contestar tocá una fila de la lista de decodificados. El app arma la secuencia y transmite
+sola. Podés subir los decodificados por UDP a un programa de la PC (ver `docs/FT8_UDP.md`).
 
-1. Averiguá la IP del equipo.
-2. Abrí `https://<ip>/` (el certificado es autofirmado: aceptá la excepción).
-3. Tiene 15 páginas: estado, ajustes de RF, audio, clúster, digitales, temas, WiFi, Bluetooth,
+### 6.2 WSPR
+
+![WSPR](img/02-wspr.png)
+
+Baliza débil señal: transmite y escucha reportes de 2 minutos para ver hasta dónde llega tu
+señal con muy poca potencia. Es la mejor forma de probar una antena nueva.
+
+**Cómo se usa:** elegí el porcentaje de tiempo de TX (`wspr_txpct`) y la banda; el app transmite
+en los slots elegidos y decodifica el resto. Subí los spots a **WSPRnet** con tu indicativo y
+grilla; los reportes quedan en el log del app.
+
+### 6.3 JS8
+
+![JS8](img/03-js8.png)
+
+Mensajería digital de teclado a teclado, tolerante a señales flojas, con modos de velocidad
+normal, rápido y turbo. Sirve para pasar un mensaje corto o tu posición a otro colega.
+
+**Cómo se usa:** elegí el grupo de llamada y la banda, y escribí en el teclado; el app decodifica
+las estaciones que te responden y muestra el mapa de estaciones conocidas. Permite mandar tu
+**posición** (la toma del teléfono o del web) y guardar el QSO en el log.
+
+### 6.4 SSTV
+
+![SSTV](img/04-sstv.png)
+
+Imágenes por radio en modo analógico: mandás y recibís una foto dibujada línea por línea. Los
+modos más usados son R36 y R72 (los que se usan en 20 metros).
+
+**Cómo se usa:** abrí la app y elegí el modo (`R8BW`, `R36`, `R72`, `M1`, `M2`, `S1`, `S2`); para
+recibir, sólo dejá el receptor en la frecuencia y el app va dibujando la imagen; para transmitir,
+elegí la imagen y arrancá la TX (el app respeta el PTT). Las imágenes quedan guardadas en `DATA`.
+
+### 6.5 WeFax
+
+![WeFax](img/05-wefax.png)
+
+Facsímil meteorológico: las cartas que transmiten las estaciones de radiofax en HF. Se reciben
+en blanco y negro y se leen como un mapa del tiempo.
+
+**Cómo se usa:** elegí la frecuencia de la estación y el modo (blanco/negro o escala de grises),
+y esperá el comienzo de la carta; el app alinea la imagen. Con la **perilla del MFK** (o los
+botones *Align* y *Tilt*) corregís el **alineado** y la **inclinación**: girando se ve cómo se
+endereza la imagen; después guardás el PNG.
+
+### 6.6 NavTex
+
+![NavTex](img/06-navtex.png)
+
+Avisos marítimos en 518 kHz: meteorología, avisos a los navegantes y búsquedas. Es la versión en
+texto del radiofax y con muy poco ancho de banda.
+
+**Cómo se usa:** sintonizá la frecuencia de la estación y abrí el app; el texto decodificado
+aparece en pantalla y se guarda por estación. Es útil también en la costa para saber el estado
+del mar.
+
+### 6.7 Clúster DX
+
+![Clúster](img/07-cluster.png)
+
+Los spots de DX en vivo: qué estaciones están en el aire y en qué frecuencia. Es la herramienta
+de caza mayor, y con la columna y las marcas sobre el waterfall se convierte en un radar.
+
+**Cómo se usa:** configurá **servidor**, **puerto** y tu **indicativo** (el clúster lo pide para
+entrar), elegí los filtros (modos, bandas, actividad y antigüedad) y conectá. Los spots aparecen
+en la **columna** de la derecha: al tocar uno, el equipo **sintoniza** esa frecuencia y ajusta el
+modo. Las **marcas sobre el waterfall** muestran los que caen dentro del ancho que estás viendo.
+
+### 6.8 Posición (GPS)
+
+![GPS](img/08-gps.png)
+
+Muestra de dónde viene la posición y la grilla QTH, que es lo que Field Ops y JS8 necesitan para
+reportar dónde estás. El X6200 **no trae receptor GPS**: la posición la manda el teléfono o el
+configurador web.
+
+**Cómo se usa:** mandá la posición desde el teléfono (`{"cmd":"location","text":"-34.60,-58.38"}`)
+o desde el web. El app muestra la **fuente** (Phone / None), la **edad** del dato, la fecha y
+hora, latitud, longitud y la **grilla**; si no hay nada, lo dice tal cual en vez de inventar
+satélites.
+
+### 6.9 Field Ops (SOTA/POTA)
+
+![Field Ops](img/09-field.png)
+
+La app para salir al campo: referencias SOTA y POTA, log de contactos y self-spot. Está pensada
+para que en la cumbre no tengas que pelear con nada.
+
+**Cómo se usa:** elegí la **referencia** (la lista viene incluida, se puede usar sin internet),
+poné tu **indicativo**, y activá el **self-spot** para avisar a pota.app en qué frecuencia estás.
+Cada contacto se guarda en el log ADIF (exportable y subible a **QRZ**). El **CQ de voz** graba
+tu llamado una vez y lo emite por PTT cuando lo pedís.
+
+### 6.10 RTTY
+
+![RTTY](img/10-rtty.png)
+
+El digital clásico de los concursos: Baudot a 45 baudios, con shift de 170 Hz. Todavía se escucha
+en 40 y 20 metros y sigue siendo divertido de decodificar.
+
+**Cómo se usa:** elegí centro, shift y velocidad (`rtty_center`, `rtty_shift`, `rtty_rate`),
+escribí en el teclado y el app transmite; lo que llega se decodifica en pantalla. Es ideal para
+probar el filtro angosto del receptor.
+
+### 6.11 CW Keyboard y CW Trainer
+
+![CW](img/11-cw.png)
+
+Dos herramientas: el **CW Keyboard** para transmitir desde un teclado (USB o Bluetooth) sin
+manipulador, y el **CW Trainer** para practicar recepción a distintas velocidades.
+
+**Cómo se usa:** en el CW Keyboard escribís y el equipo transmite en CW con la velocidad, el tono
+y el peso que tengas configurados (`CW key speed`, `CW key tone`, `CW key ratio`); también
+decodifica lo que recibe. El **CW Trainer** genera grupos de caracteres para practicar, con
+dificultad creciente.
+
+### 6.12 Bandas
+
+![Bandas](img/13-bands.png)
+
+La vista de bandas: los límites de cada banda y los parámetros guardados por banda y modo. Sirve
+para moverse rápido entre bandas sin pasar por el dial.
+
+**Cómo se usa:** abrí la app y elegí la banda; el equipo cambia de banda manteniendo el modo y
+sus ajustes. Cada banda recuerda su última frecuencia, filtro y estado del ATU.
+
+### 6.13 Ajustes y las demás
+
+![Ajustes](img/12-settings.png)
+
+La app de **Ajustes** es la puerta a todo lo que vimos en la sección 5 (páginas de reloj,
+pantalla, audio, espectro, apariencia, servicios y la lista de **acciones** asignables). Además
+del FT8/FT4, WSPR, JS8, SSTV, WeFax, NavTex, Clúster, Field Ops, GPS, RTTY, CW y Bandas, el menú
+incluye las apps de estado del sistema, Bluetooth, WiFi, ecualizador, grabador, indicativo,
+QTH y el barrido de ROE.
+
+## 7. Guías avanzadas
+
+### 7.1 Control remoto desde el teléfono
+
+El equipo abre un socket en `/tmp/x6200_remote.sock` con unos 65 comandos.
+
+1. Conectá el equipo al WiFi (Ajustes → Bluetooth/WiFi) y averiguá la IP.
+2. Abrí `http://<ip>/remote` en el teléfono.
+3. Comandos útiles: `{"cmd":"app","text":"FT8"}` abre una app;
+   `{"cmd":"band","val":1}` cambia de banda; `{"cmd":"mode","val":1}` cambia el modo;
+   `{"cmd":"freq","val":14074000}` sintoniza;
+   `{"cmd":"location","text":"-34.6037,-58.3816"}` manda tu posición.
+4. Diagnóstico: `{"cmd":"cluster_feed","text":"DX de LU1ABC:  14074.0  LU2DSX  FT8  2313Z GF05"}`
+   inyecta un spot del clúster (la línea necesita la hora `HHMMZ`).
+
+### 7.2 Configurador web
+
+1. Averiguá la IP y abrí `https://<ip>/` (certificado autofirmado: aceptá la excepción).
+2. Tiene 15 páginas: estado, RF, audio, clúster, digitales, temas, WiFi, Bluetooth,
    actualizaciones y el control remoto.
 
-### 6.3 Bluetooth
+### 7.3 Bluetooth
 
-1. Ajustes → Bluetooth → activar.
-2. **CAT (control por SPP):** vinculá el equipo con la PC o el teléfono y elegí el puerto serie
-   que aparece. Usá 19200 8N1 (o lo que pida tu programa).
-3. **Auriculares (A2DP):** poné los auriculares en modo vinculación y buscalos desde la app de
-   dispositivos; después elegí la salida de audio.
-4. **Teclado:** vinculá un teclado Bluetooth o conectá uno USB; sirve para el CW Keyboard y para
+1. Ajustes → Bluetooth → activar. Marcá **Discoverable (CAT)** si vas a usarlo desde la PC.
+2. **CAT (SPP):** vinculá la PC y elegí el puerto serie que aparece (19200 8N1 o lo que pida tu
+   programa). Sirve para cualquier logger o programa CAT.
+3. **Auriculares (A2DP):** poné los auriculares en vinculación, buscalos en la app de
+   dispositivos y elegí la salida de audio; el RX sale por ahí.
+4. **Teclado:** vinculá un teclado Bluetooth o conectá uno USB; se usa en el CW Keyboard y para
    navegar los menús.
 
-### 6.4 Clúster DX, paso a paso
+### 7.4 El clúster, paso a paso
 
-1. Abrí la app **Clúster**.
-2. Configurá el **servidor** (host y puerto) y tu **indicativo** (el clúster lo pide para
-   entrar).
-3. Elegí los **filtros**: modos, bandas, actividad (CQ, etc.) y la antigüedad máxima.
-4. Con los spots en pantalla: la **columna** de la derecha lista los más nuevos; tocando uno,
-   el equipo **sintoniza** esa frecuencia.
-5. Las **marcas sobre el waterfall** muestran los spots que caen dentro del ancho que estás
-   viendo, con una línea hasta su frecuencia. Los que están fuera del ancho **no** se dibujan
-   (es lo correcto).
+1. Conseguí los datos del servidor (por ejemplo un nodo DXSpider) y tu indicativo.
+2. Abrí la app **Clúster** → configurá servidor, puerto e indicativo → conectá.
+3. Ajustá los **filtros**: modos, bandas, actividad y antigüedad máxima.
+4. Activá la **columna** del clúster en Ajustes si querés verla siempre.
+5. Tocá un spot de la columna para sintonizarlo, o mirá las **marcas** sobre el waterfall.
 
-### 6.5 wfview
+### 7.5 wfview
 
-1. Activá wfview en Ajustes (o desde el configurador web).
+1. Activá el servidor wfview en Ajustes.
 2. En la PC, abrí wfview y conectá a la IP del equipo.
-3. Vas a ver el espectro, el waterfall y el audio del receptor, y podés cambiar frecuencia y
-   modo desde la PC.
+3. Vas a ver espectro, waterfall y audio del receptor, y podés cambiar frecuencia y modo desde
+   la PC.
 
-### 6.6 Temas
+### 7.6 Temas
 
-Hay **8 temas**: los incorporados (IU1WXY, Outdoor, Classic, Outdoor-Negative y Vision) y los
-del X6100 que van como archivos (Holo, Material 3 y RS).
+Hay **8**: los incorporados (IU1WXY, Outdoor, Classic, Outdoor-Negative y Vision) y los del
+X6100 que van como archivos (Holo, Material 3 y RS).
 
-1. Ajustes → **Theme** → elegí uno de la lista.
-2. El equipo guarda la elección y **se reinicia** para aplicar los colores (lo hace solo el
-   daemon).
-3. Para **tu propio tema**: copiá un `.json` a `DATA/themes/` y va a aparecer en la lista (el
-   formato está en el archivo `Holo.json`). Un tema también puede ser una **carpeta** con un
-   `theme.json` adentro, como `RS/`.
+1. Ajustes → **Theme** → elegí uno; el equipo guarda y **se reinicia** para aplicar los colores.
+2. **Tu propio tema:** copiá un `.json` a `DATA/themes/` (tomá `Holo.json` como modelo) y aparece
+   en la lista. También puede ser una **carpeta** con un `theme.json` adentro, como `RS/`.
 
-**Si un tema no aparece:** revisá que el archivo esté en `DATA/themes/` y que su JSON sea
-válido. Un tema que no carga no rompe nada: el equipo usa el de siempre.
+### 7.7 Anuncios por voz (TTS en español)
 
-### 6.7 Anuncios por voz (TTS en español)
+1. Ajustes → **Voice mode** → **Off**, **When LCD off** o **Always**. *When LCD off* es lo más
+   cómodo en el campo: habla justo cuando no estás mirando la pantalla.
+2. Con la pantalla apagada, girando el dial o cambiando una opción te dice qué estás cambiando.
+3. **Nunca habla mientras transmitís**, para no salir al aire.
+4. Podés ajustar velocidad, tono y volumen en la misma página, y el idioma con el modo
+   **VOICE LANG** de la rueda de volumen.
 
-1. Ajustes → **Voice mode** → elegí **Off**, **When LCD off** o **Always**.
-   - *When LCD off* es el más cómodo en el campo y el que menos batería gasta: habla justo
-     cuando no estás mirando la pantalla.
-2. Cambiá algo (girá el dial, el volumen, una opción de Ajustes) y lo vas a oír en español.
-3. La voz **nunca habla mientras transmitís**, para no salir al aire.
+### 7.8 Field Ops con QRZ
 
-### 6.8 Field Ops (SOTA/POTA)
+1. Poné tu indicativo en Ajustes → Callsign.
+2. Abrí Field Ops, elegí la referencia SOTA o POTA y activá el self-spot.
+3. Cada QSO se guarda en `DATA/qso_log.db`; exportá el ADIF y subilo a QRZ con tu cuenta.
 
-1. Abrí la app **Field Ops**.
-2. Elegí la **referencia** (SOTA o POTA) de la lista offline.
-3. Configurá tu **indicativo** (Ajustes → Callsign) para el self-spot y la carga.
-4. **Self-spot:** con la referencia y el modo elegidos, el equipo avisa a pota.app.
-5. **Log ADIF:** cada contacto se guarda en `DATA/qso_log.db`; podés exportar y **subir a QRZ**
-   con tu cuenta.
-6. **CQ de voz:** grabá tu llamado una vez y el equipo lo emite por PTT cuando lo pedís (queda
-   en `DATA/msg/` en formato WAV).
+### 7.9 Grabación de pantalla y capturas
 
-### 6.9 Grabación de pantalla y capturas
+- **Captura:** acción *Screenshot* → un PNG en `DATA`.
+- **Grabación:** acción *Screen rec* → video MJPEG + **audio del receptor** en un AVI en `DATA`.
 
-- **Captura:** acción *Screenshot* (o desde Ajustes → acciones). Se guarda un PNG en `DATA`.
-- **Grabación:** acción *Screen rec*. Graba **video MJPEG + el audio del receptor** en un
-  archivo AVI en `DATA`. Empezá y terminá desde la misma acción.
+### 7.10 Motor de video DRM/KMS
 
-### 6.10 Motor de video DRM/KMS
+Está portado y **apagado por defecto**. Se activa creando `/mnt/use_drm` y reiniciando. Si algo
+no se ve bien, borralo y volvés al motor clásico.
 
-Está portado y **apagado por defecto**. Se activa creando el archivo `/mnt/use_drm` (o desde
-Ajustes si tu versión lo expone) y reiniciando. Si algo no se ve bien, borralo y volvés al
-motor clásico.
+### 7.11 Actualizaciones y SSH
 
-### 6.11 Actualizaciones y SSH
+- Aviso de firmware nuevo en la pantalla de estado (consulta GitHub; no manda datos tuyos).
+- **SSH**: usuario `root`. **Cambiá la contraseña** (la de fábrica es conocida). Los logs están
+  en `DATA/app_logs/x6200_log_*.txt` y se escriben al cerrar la GUI.
 
-- **Aviso de firmware nuevo:** el equipo consulta GitHub al arrancar (si hay red) y avisa en la
-  pantalla de estado. No manda ningún dato tuyo.
-- **SSH:** el equipo trae SSH habilitado con usuario `root`. **Cambiá la contraseña** — la de
-  fábrica es conocida. Desde ahí podés ver los logs en `DATA/app_logs/`.
-
-## 7. Solución de problemas
+## 8. Solución de problemas
 
 | Síntoma | Qué hacer |
 |---|---|
-| **Sólo se ve el logo y nunca arranca** | Casi siempre es la actualización cortada a mitad, o la microSD mal asentada en el adaptador. Sacá la tarjeta, revisá que la microSD esté a fondo, y si sigue: grabá la imagen completa. |
-| **La radio arranca el firmware viejo** | La tarjeta no está siendo leída: revisá el adaptador y el contacto de la microSD. |
+| **Sólo el logo y no arranca** | Casi siempre la actualización cortada a mitad o la microSD mal asentada. Revisá el adaptador; si sigue, grabá la imagen completa. |
+| **Arranca el firmware viejo** | La tarjeta no está siendo leída: revisá el adaptador y el contacto. |
 | **"No medium found" al grabar** | La microSD no está dentro del adaptador. |
-| **No se oyen los anuncios de voz** | Ajustes → Voice mode en *Off*; o estás transmitiendo (no habla al aire). |
-| **Un tema no aparece en la lista** | El archivo tiene que estar en `DATA/themes/` con el JSON válido. |
-| **El clúster no muestra spots** | Revisá servidor, indicativo y filtros. Si es un spot de prueba, la línea necesita la hora `HHMMZ`. |
-| **Falta espacio en `DATA`** | Borrá `rec/` y las capturas viejas; o `backup_*.tgz` de actualizaciones anteriores. |
-| **Un ajuste raro después de actualizar** | Los ajustes se guardan en `params.db`: podés restaurar el respaldo o borrarlo para volver a los valores de fábrica (perdés tus ajustes, no tu log de QSO). |
-| **Quiero ver qué pasó** | Los logs están en `DATA/app_logs/x6200_log_*.txt` (se escriben al cerrar la GUI). |
+| **No se oyen los anuncios** | *Voice mode* en Off, o estás transmitiendo. |
+| **Un tema no aparece** | Tiene que estar en `DATA/themes/` con el JSON válido. |
+| **El clúster no muestra spots** | Revisá servidor, indicativo y filtros; una línea de prueba necesita la hora `HHMMZ`. |
+| **Sin espacio en `DATA`** | Borrá `rec/`, capturas viejas o los `backup_*.tgz`. |
+| **Ajustes raros tras actualizar** | Restaurá el respaldo de `params.db` o borralo (perdés los ajustes, no el log). |
 
-## 8. Referencia
-
-### Layout de las particiones
+## 9. Referencia
 
 | Partición | Contenido |
 |---|---|
-| `BOOT` (32 MB, vfat, arrancable) | `zImage`, el device tree y `boot.scr` |
+| `BOOT` (32 MB, vfat, arrancable) | `zImage`, device tree y `boot.scr` |
 | `rootfs` (512 MB, ext4) | El sistema y la GUI |
-| `DATA` (vfat, etiqueta `DATA`) | **Tus datos**: ajustes, log de QSO, temas, mensajes, grabaciones y logs |
-
-### Archivos que te importan
+| `DATA` (vfat, etiqueta `DATA`) | **Tus datos**: ajustes, log, temas, mensajes, grabaciones y logs |
 
 | Archivo | Qué es |
 |---|---|
 | `DATA/params.db` | Todos los ajustes |
 | `DATA/qso_log.db` | El log de contactos |
-| `DATA/themes/` | Tus temas (JSON o carpeta con `theme.json`) |
+| `DATA/themes/` | Tus temas |
 | `DATA/msg/` | Mensajes de voz (WAV) para el CQ de voz |
-| `DATA/rec/` | Grabaciones de pantalla y capturas |
-| `DATA/app_logs/` | Logs de la GUI (se escriben al cerrar) |
-| `DATA/backup_*.tgz` | Respaldos que hace el actualizador |
+| `DATA/rec/` | Grabaciones y capturas |
+| `DATA/app_logs/` | Logs de la GUI |
 
-### Créditos
+## 9. Créditos
 
-- Firmware base del X6200 y buildroot: **iariap** (`x6200_gui`, `AetherX6200Buildroot`).
-- Las funciones portadas vienen del firmware del **X6100 de IU1WXY**.
-- Esta ROM: **lu2dsx**.
+Esta ROM es el trabajo de mucha gente, encadenado. En orden de abajo hacia arriba:
 
-> Documento generado a partir de `docs/NEW_FEATURES.md` y `docs/X6100_FEATURE_GAP.md`, con
-> capturas reales del firmware (banco de pruebas y equipo).
+| Quién | Qué aportó |
+|---|---|
+| **Xiegu** | El hardware X6200 y la documentación del CAT |
+| **Belousov Oleg (R1CBU)** | El firmware alternativo original (X6200 y X6100): la arquitectura, la GUI LVGL, el CAT, los modos digitales. La base de todo |
+| **Georgy Dyuldin (R2RFE)** — [gdyuldin](https://github.com/gdyuldin/x6200_gui) | El port del firmware de R1CBU al X6200 con buildroot |
+| **iariap** | El fork sobre el que está hecha esta ROM: [iariap/x6200_gui](https://github.com/iariap/x6200_gui) y [iariap/AetherX6200Buildroot](https://github.com/iariap/AetherX6200Buildroot) |
+| **IU1WXY** | El firmware del X6100 ([IU1WXY/X6100-IU1WXY](https://github.com/IU1WXY/X6100-IU1WXY)) del que se portaron las funciones: aviso de actualización, S-meter, plan de banda IARU, grabación de pantalla, Bluetooth (CAT, auriculares y teclados), wfview, configurador web, FT8/FT4, WSPR, JS8, SSTV, WeFax, NavTex, RTTY, CW Keyboard y Trainer, clúster DX, Field Ops, temas, GPS y los anuncios por voz |
+| **Adrian Grzeca (SQ5FOX)** | Aportes al firmware base |
+| **LU2DSX** | Esta ROM: el port de las funciones del X6100 al X6200, las correcciones y este manual |
+
+Y las bibliotecas y proyectos de software libre con los que se construye:
+
+| Proyecto | Para qué |
+|---|---|
+| **LVGL** | La biblioteca gráfica de toda la interfaz |
+| **Buildroot** | La compilación cruzada y el armado de la imagen |
+| **Dave Gamble y colaboradores (cJSON)** y **jansson** | JSON (clúster, temas, web, control remoto) |
+| **Equipo de wfview** | El protocolo y el cliente para controlar el equipo desde la PC |
+| **Jonathan Duddington y el equipo de espeak** | El sintetizador de voz de los anuncios |
+| **liquid-dsp**, **FFTW**, **GSL** | Procesamiento digital: espectro, modems y filtros |
+| **PulseAudio**, **ALSA**, **BlueZ / bluealsa**, **Speex**, **mpg123**, **LAME**, **libvorbis** | Audio y Bluetooth |
+| **OpenSSL**, **libcurl**, **NTP**, **NetworkManager**, **wpa_supplicant**, **OpenSSH** | Red, hora, seguridad y SSH |
+| **e2fsprogs**, **dosfstools**, **util-linux**, **parted** | Particiones y sistemas de archivos |
+| Y todos los demás paquetes de software libre del buildroot | Lo que hace que el equipo ande |
+
+**Licencias:** el firmware es **LGPL-2.1-or-later** (la GUI y los archivos portados conservan su
+atribución original en sus cabeceras); cada biblioteca mantiene la suya.
+
+
+> Documento generado desde `docs/NEW_FEATURES.md` y `docs/X6100_FEATURE_GAP.md`, con capturas
+> reales del firmware (banco de pruebas y equipo).
