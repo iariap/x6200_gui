@@ -35,6 +35,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 14. [La GUI se colgaba al mandar audio](#14-la-gui-se-colgaba-al-mandar-audio)
 15. [Anexo A: hipótesis sin fundar (no son hallazgos)](#anexo-a-hipótesis-sin-fundar-no-son-hallazgos)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
+17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 
 ---
 
@@ -763,3 +764,38 @@ solamente; y **0** para los 18 símbolos de la lista.
 4. Si las salidas de los generadores de `tools/` se regeneran en el build o están congeladas a mano.
 5. El comportamiento **en la radio** de lo no portado (IF shift, WF mode, decodificador CW nuevo).
 6. Si `pending_writes`/`storage_policy` tendrían impacto observable (desgaste, consumo).
+
+---
+
+## 17. La app de Bluetooth no esta en el menu (y donde esta cada cosa)
+
+**Sintoma**: no se encuentra donde conectar un dispositivo Bluetooth.
+
+**Que hay y donde** (evidencia por codigo, 13/10):
+
+| Que | Donde | Evidencia |
+|---|---|---|
+| Interruptor de Bluetooth y "Discoverable (CAT)" | En **Ajustes**, seccion "Bluetooth" (junto a "Charger") | `src/dialog_settings.c:1776` `make_bluetooth()`, que lee y escribe con `btcat-ctl bt on\|off` y `btcat-ctl discoverable on\|off` |
+| App de dispositivos: tabla, boton **Scan** (~15 s), pareo y conexion | `src/dialog_bt.c`, se abre con `ACTION_APP_BT` | `src/main_screen.c:213` → `dialog_construct(dialog_bt, obj)` |
+| Esa accion, en la UI, **solo** esta en la lista de long press | `src/dialog_settings.c:909` `{ " APP Bluetooth", ACTION_APP_BT }` dentro de `long_action_items[]` (`:872`) | `grep -rn 'ACTION_APP_BT' src/` da 4 lineas: `params.h:53` (el enum), `main_screen.c:213` y `:376` (los `case`), y `dialog_settings.c:909` (la lista) |
+| La app **no** esta en el menu de apps de la pantalla principal | `app_names[]` no la lista | `src/remote_server.cpp:123`: `off, FT8, FT4, JS8, WSPR, SSTV, WeFax, NavTex, RTTY, CW, Field, GPS, Bands, Settings` |
+
+O sea: para abrirla **desde la radio** hay que asignarla primero: Ajustes → **"APP long press"** →
+**" APP Bluetooth "** → y despues **mantener apretada la tecla APP** del panel. Las seis filas de
+asignacion son `"GEN/APP/KEY/MSG/DFN/DFL long press"` (`src/dialog_settings.c:955`, `make_long_action()`)
+y la tecla APP del panel es `KEYPAD_APP` (`src/keypad.c:75`).
+
+**Las dos vias para conectar**:
+
+1. **En la radio**: Ajustes → "Bluetooth" en On → "APP long press" → " APP Bluetooth " → mantener
+   apretado APP → **Scan** → elegir el dispositivo. El pareo muestra un codigo y pide escribirlo con
+   el teclado (`src/dialog_bt.c`, "Type %s and Enter on the keyboard").
+2. **Por consola** (no depende de la UI): `bluetoothctl scan on`, `pair <MAC>`, `trust <MAC>`,
+   `connect <MAC>`, y verificar el sink con `pactl list short sinks`.
+
+**Propuestas** (no medidas, no son hallazgos): poner la app de BT tambien en el menu de apps (hoy
+solo se llega por un long press asignado), y que el audio de la GUI siga al sink por defecto de
+PulseAudio en vez de a un nombre fijo (`src/audio.c:37`
+`play_device = "alsa_output.platform-sound.stereo-fallback"`): con auriculares A2DP emparejados, el
+sonido seguiria saliendo por el camino que no suena. **Sin fundar** hasta probarlo con auriculares:
+al anexo A.
