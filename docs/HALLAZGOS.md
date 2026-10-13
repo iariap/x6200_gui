@@ -14,6 +14,7 @@ y qué queda pendiente. La idea es no volver a perseguir lo mismo dos veces.
 7. [La copia de assets a /dev/shm](#7-la-copia-de-assets-a-devshm)
 8. [Herramientas de banco que quedaron](#8-herramientas-de-banco-que-quedaron)
 9. [Pendientes ordenados por valor](#9-pendientes-ordenados-por-valor)
+10. [`params_init`: los 2 segundos de la carga de parámetros](#10-params_init-los-2-segundos-de-la-carga-de-parámetros)
 
 ---
 
@@ -242,3 +243,30 @@ cargador lea directo de `/usr/share`.
    **modos**, `broadcast_db`, `freq_scale`, `sstv_resources`, waterfall fijo/centrado y Snake.
 6. **Imposibles / no aplicables**: TX Cal / CESSB / filtro TX (el baseband del X6200 no los
    expone) y la app Android "X6100 Link" (nunca se publicó; el protocolo del socket sí está).
+
+---
+
+## 10. `params_init`: los 2 segundos de la carga de parámetros
+
+Medido en el equipo: `params_init` es el **tramo más grande de la GUI** (2,0 s de sus 3,85 s).
+
+**Causa**: `cfg.c` → `load_items_from_db()` recorre todos los items de `cfg` y **cada uno hace su
+propia consulta** a SQLite (`cfg_params_load_item`). Son **cientos** de `prepare/step/finalize`
+contra la microSD.
+
+**Evidencia**: en los logs de la GUI aparece una línea por parámetro:
+```
+load_items_from_db: Can't load <nombre> (pk=0)
+cfg_params_load_item: No results for load <nombre>
+```
+Cientos de líneas seguidas = cientos de consultas.
+
+**Lo que ya está bien**: `params.c` lee la tabla entera en **una** consulta
+(`sqlite3_prepare_v2(db, "SELECT * FROM params", ...)` + un `while (sqlite3_step(...))`).
+
+**Arreglo propuesto**: que `cfg_params_load_item` consulte la **copia en memoria** que ya se cargó
+con esa única consulta, en vez de ir a SQLite por item. Debería llevar los 2,0 s a decenas de
+milisegundos.
+
+**Medición para verificar**: en `boot.log`, el tramo `audio_init → params_init` tiene que caer de
+2,0 s a casi cero.
