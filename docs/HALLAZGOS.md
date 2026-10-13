@@ -37,6 +37,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
+19. [Icono de Bluetooth en la barra de estado](#19-icono-de-bluetooth-en-la-barra-de-estado)
 
 ---
 
@@ -886,3 +887,39 @@ chequeo y son 14 de esos 28: el chequeo tambien se corrigio.
   en el banco). Antes: etiquetas cortadas y contenido scrolleado (guardado como
   `evidencia-radio/captura-radio-ultima.png`). Despues: etiquetas completas, `Day, Month, Year` con
   **2026** entero y sin barra horizontal (`evidencia-radio/ajustes-100pct.png`).
+
+---
+
+## 19. Icono de Bluetooth en la barra de estado
+
+**Pedido**: "no deberia ver algun icono en la home que el BT esta prendido, como veo con wifi?"
+
+**Hecho**: la barra (`src/info.c`) tiene ahora la runa de Bluetooth al lado del icono de WiFi, con
+los **mismos tres estados y el mismo criterio de color** que usa el WiFi: apagado = negro,
+prendido sin dispositivo = gris (`0x909090`) y con auriculares A2DP conectados = blanco.
+
+**De donde sale el estado** (`src/bt_state.c`, nuevo modulo): `BTCAT_BT` de `/etc/default/btcat` y
+`/mnt/btcat.conf` (los mismos archivos que escribe `btcat-ctl`, que es el que corre el switch de
+Ajustes), y la existencia de `/tmp/btaudio-hp`: `btaudio-ctl` lo escribe con los sinks A2DP cuando
+hay auriculares conectados y lo borra cuando no (`/usr/sbin/btaudio-ctl:78`). Ajustes paso a usar
+ese modulo compartido: antes tenia su propia copia del lector de esos dos archivos.
+
+**El glifo no estaba en la fuente.** `LV_SYMBOL_BLUETOOTH` (U+F293) **no** existe en `sony_20`: las
+fuentes del equipo se generaron con los simbolos que se usan y esa trae solo `f1e6`, `f1eb` (wifi) y
+`f240..f244` (bateria) — contado sobre `src/fonts/sony_20.c`. Por eso el simbolo salia como un
+**rectangulo vacio** (lo reporto el usuario). En vez de regenerar la fuente, la runa se **dibuja con
+`lv_line`**: un trazo de 7 puntos en 14x20 (`LV_USE_LINE` ya estaba habilitado), sin depender de
+ninguna fuente y tomando el color del estado.
+
+**Refresco**: un `lv_timer` de 2 s. No se avisa desde el hilo porque `btcat-ctl` corre en un hilo
+aparte y LVGL no es thread-safe; es el mismo patron que ya usa `dialog_bt.c` (700 ms). Cuesta dos
+lecturas de archivos chicos y un `access()`, y cubre tambien los cambios que hace `btaudio-ctl` por
+fuera de la GUI.
+
+**Verificado** con capturas del framebuffer, los tres estados en la misma imagen
+(`evidencia-radio/bt-estados.png`):
+
+- `btcat-ctl bt off` → runa en **negro** (no se ve, igual que el WiFi apagado),
+- `btcat-ctl bt on` → runa **gris**,
+- con `/tmp/btaudio-hp` creado a mano → runa **blanca** (el estado "con auriculares" se verifico
+  asi, creando el archivo que escribe `btaudio-ctl`; con auriculares de verdad queda por probar).

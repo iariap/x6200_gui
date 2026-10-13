@@ -21,6 +21,7 @@
 #include "radio.h"
 #include "events.h"
 #include "keyboard.h"
+#include "bt_state.h"
 #include "clock.h"
 #include "voice.h"
 #include "audio.h"
@@ -1661,37 +1662,6 @@ static uint8_t make_font(uint8_t row) {
 
 static lv_obj_t *bt_visible_sw;
 
-static bool btcat_read(const char *key, bool def) {
-    static const char *const files[] = { "/etc/default/btcat", "/mnt/btcat.conf" };
-    size_t klen = strlen(key);
-    bool   val  = def;
-
-    for (unsigned i = 0; i < sizeof(files) / sizeof(files[0]); i++) {
-        FILE *fp = fopen(files[i], "r");
-
-        if (!fp) {
-            continue;
-        }
-
-        char line[128];
-
-        while (fgets(line, sizeof(line), fp)) {
-            if (strncmp(line, key, klen) == 0 && line[klen] == '=') {
-                const char *v = line + klen + 1;
-
-                if (*v == '"') {
-                    v++;
-                }
-
-                val = strncmp(v, "yes", 3) == 0;
-            }
-        }
-
-        fclose(fp);
-    }
-
-    return val;
-}
 
 static void *btcat_run_thread(void *arg) {
     char *cmd = arg;
@@ -1792,7 +1762,7 @@ static uint8_t make_bluetooth(uint8_t row) {
     lv_label_set_text(obj, "Bluetooth");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
-    bool on = btcat_read("BTCAT_BT", true);
+    bool on = bt_state_on();
 
     bt_switch_cell(row, on, bt_power_update_cb);
 
@@ -1804,7 +1774,7 @@ static uint8_t make_bluetooth(uint8_t row) {
     lv_label_set_text(obj, "Discoverable (CAT)");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
-    bt_visible_sw = bt_switch_cell(row, btcat_read("BTCAT_DISCOVERABLE", true), bt_visible_update_cb);
+    bt_visible_sw = bt_switch_cell(row, bt_state_discoverable(), bt_visible_update_cb);
 
     if (!on) {
         lv_obj_add_state(bt_visible_sw, LV_STATE_DISABLED);

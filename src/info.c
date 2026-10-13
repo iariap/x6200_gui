@@ -8,6 +8,7 @@
 
 #include "info.h"
 
+#include "bt_state.h"
 #include "cfg/transverter.h"
 #include "cfg/mode.h"
 #include "styles.h"
@@ -30,6 +31,27 @@ static lv_obj_t     *obj;
 static lv_obj_t     *items[6];
 
 static Subject *mode_lock;
+
+/* Icono de Bluetooth de la barra (ver info_init). Se refresca con un timer de 2 s: btcat-ctl corre
+ * en un hilo y escribe la configuracion un rato despues, y ademas hay cambios que hace btaudio-ctl
+ * por fuera de la GUI. Cuesta dos archivos chicos y un access(), y es el mismo patron que ya usa
+ * dialog_bt.c (700 ms) porque LVGL no es thread-safe: no se puede avisar desde el hilo. */
+static lv_obj_t *bt_item;
+
+/* Runa del Bluetooth, en 14x20: un solo trazo de 7 puntos (el glifo LV_SYMBOL_BLUETOOTH no esta en
+ * las fuentes del equipo: sony_20 solo trae wifi y bateria, y salia un rectangulo vacio). */
+static lv_point_t bt_pts[] = {
+    {  7,  0 },
+    { 14,  5 },
+    {  0, 15 },
+    {  7, 20 },
+    { 14, 15 },
+    {  0,  5 },
+    {  7,  0 },
+};
+
+static void bt_state_show(void);
+static void bt_state_timer_cb(lv_timer_t *t);
 
 static void wifi_state_change_cb(void *s, lv_msg_t *m);
 
@@ -68,6 +90,23 @@ lv_obj_t * info_init(lv_obj_t * parent) {
     lv_label_set_text(items[INFO_PRE_ATT], "PRE/ATT");
     lv_label_set_text(items[INFO_WIFI], LV_SYMBOL_WIFI);
     lv_obj_set_style_text_color(items[INFO_WIFI], lv_color_hex(0x909090), 0);
+
+    /* Icono de Bluetooth, al lado del de WiFi: la celda es de 56 px, asi que el WiFi se corre a la
+     * mitad izquierda y el BT ocupa la derecha (el S-meter empieza justo al lado de la barra, no se
+     * puede agregar una columna). Tres estados, como el WiFi: apagado (negro), prendido sin
+     * auriculares (gris) y con auriculares A2DP conectados (blanco). Se refresca cada 2 s porque
+     * btcat-ctl escribe el estado en un hilo, con un retraso (docs/HALLAZGOS.md 19). */
+    lv_obj_set_size(items[INFO_WIFI], 28, 26);
+    lv_obj_set_style_text_align(items[INFO_WIFI], LV_TEXT_ALIGN_LEFT, 0);
+
+    bt_item = lv_line_create(obj);
+    lv_line_set_points(bt_item, bt_pts, 7);
+    lv_obj_set_style_line_width(bt_item, 2, 0);
+    lv_obj_set_style_line_rounded(bt_item, true, 0);
+    lv_obj_set_pos(bt_item, 2 * 58 + 15 + 28, 1 * 22 + 8);
+
+    bt_state_show();
+    lv_timer_create(bt_state_timer_cb, 2000, NULL);
 
     subject_add_delayed_observer(cfg_cur.band->vfo.val, vfo_label_update, NULL);
     subject_add_delayed_observer(cfg_cur.band->split.val, vfo_label_update, NULL);
@@ -179,6 +218,30 @@ static void wifi_state_change_cb(void *s, lv_msg_t *m) {
         break;
     }
     lv_obj_set_style_text_color(items[INFO_WIFI], color, 0);
+}
+
+/* Icono de Bluetooth: mismo criterio de colores que el WiFi (blanco = listo, gris = a medias,
+ * negro = apagado). Con auriculares A2DP conectados queda blanco. */
+static void bt_state_show(void) {
+    lv_color_t color;
+
+    if (!bt_state_on()) {
+        color = lv_color_black();
+    } else if (bt_state_connected()) {
+        color = lv_color_white();
+    } else {
+        color = lv_color_hex(0x909090);
+    }
+
+    if (bt_item != NULL) {
+        lv_obj_set_style_line_color(bt_item, color, 0);
+    }
+}
+
+static void bt_state_timer_cb(lv_timer_t *t) {
+    (void) t;
+
+    bt_state_show();
 }
 
 
