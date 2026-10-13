@@ -207,11 +207,16 @@ En el `boot.log` aparecen líneas de `S01boot_time` con `uptime` **grande** (376
 
 ## 7. La copia de assets a /dev/shm
 
-El daemon hacía `cp -R /usr/share/x6200/images /dev/shm/` **en cada arranque** (~1,7 s estimados).
-Se dejó **condicional** (`[ -d /dev/shm/images ] || cp ...`) pero **eso no alcanza** ✗:
-`/dev/shm` es **tmpfs** y se vacía en cada arranque → la condición nunca se cumple. El arreglo
-real es un **bind mount** (`mount --bind /usr/share/x6200/images /dev/shm/images`) o que el
-cargador lea directo de `/usr/share`.
+El daemon hacía `cp -R /usr/share/x6200/images /dev/shm/` **en cada arranque**. Se había dejado
+**condicional** (`[ -d /dev/shm/images ] || cp ...`) pero **eso no alcanza** ✗: `/dev/shm` es
+**tmpfs** y se vacía en cada arranque → la condición nunca se cumple.
+
+**Medido en el equipo** (no estimado): los assets son **4,4 MB en 16 archivos** y la copia a
+tmpfs cuesta **0,24 s**; además ocupa esos 4,4 MB de RAM.
+
+**Implementado**: el daemon engancha la carpeta con un **bind mount**
+(`mount --bind /usr/share/x6200/images /dev/shm/images`), que es instantáneo, y **cae a la
+copia** si el bind falla. El mountpoint lo asegura `S20gui` (que ya monta `/dev/shm`).
 
 ---
 
@@ -225,6 +230,20 @@ cargador lea directo de `/usr/share`.
   servidor. La línea necesita la hora `HHMMZ` (si falta, el parser la descarta en silencio).
 - **`X6200_VOICE_TEST="texto"`**: dice una frase por voz al arrancar, para probar el TTS sin UI.
 - **`DATA/app_logs/voice.log`** y **`boot.log`**: los diagnósticos de voz y arranque.
+- **`./tools/prueba-gui-en-radio.sh`**: copia la GUI recién compilada del volumen
+  `x6200-build-output` a la radio por SSH, la reinicia (el daemon la vuelve a levantar solo) y
+  muestra las marcas nuevas del `boot.log`. **Es el banco rápido**: mide el efecto de un cambio
+  en el equipo real en ~20 s, sin rehacer la tarjeta ni flashear.
+- **`./tools/mide-arranque-banco.sh`**: corre la GUI en el chroot del banco (sin radio, con QEMU
+  y pantalla falsa) y muestra el reparto por etapas. **Ojo**: en el banco los tramos de hardware
+  dan casi cero (los `event*` los resuelve el sistema de archivos del host) y `control remoto` se
+  estira ~15 s esperando a la radio, así que sirve para **atribución**, no para tiempos
+  absolutos. Los 2 s que se buscaban **no aparecían** en el banco.
+- **`boot_mark()`** (main.c, `util.h`): cada etapa deja su renglón en `boot.log` con el `uptime`
+  **y cuánto duró la etapa** (`(+0,16 s)`). Con eso se ubica un tramo lento sin adivinar. Las
+  marcas cubren: `GUI inicio`, `lv_init`, `display init`, `audio_init`, `eventos/usb`, `display`,
+  `keyboard`, `entradas`, `db_init`, `cfg:*`, `params_load`, `params_init`, `fuentes y estilos`,
+  `pantalla principal`, `cw/rtty`, `radio`, `cat/qso_log`, `wfview`, `control remoto`.
 - **SSH**: `sshpass -p 123 ssh -F /dev/null -o StrictHostKeyChecking=no -o
   PreferredAuthentications=password -o PubkeyAuthentication=no root@<ip>` (la opción `-F /dev/null`
   evita un problema de permisos de la config local de ssh; `addgroup` de busybox **crea** grupos,
@@ -234,39 +253,130 @@ cargador lea directo de `/usr/share`.
 
 ## 9. Pendientes ordenados por valor
 
-1. **Arranque**: `params_init` (2,0 s) y los scripts (3,81 s) — los dos grandes que quedan.
-2. **Pantalla de arranque** (logo + progreso): no baja el tiempo pero es lo que más **se siente**.
-3. **Auriculares Bluetooth**: el único camino viable para que se oiga la voz.
-4. **`post-build.sh`**: agregar `pulse` al grupo `audio` (hoy aplicado a mano) y el bind mount de
-   los assets.
-5. **Features que faltan de la migración**: app de **canales/memorias** (la más grande), app de
+1. **Arranque — el replay del journal del rootfs (1,34 s)**: ver §11. Es lo más grande que queda
+   y el único que necesita una decisión (rootfs read-only).
+2. **Arranque — leer el binario y las bibliotecas (~1 s)**: ver §12.
+3. **Arranque — los scripts (~1,4-3,8 s según el arranque)**: ver §12.
+4. **Pantalla de arranque** (logo + progreso): no baja el tiempo pero es lo que más **se siente**.
+5. **Auriculares Bluetooth**: el único camino viable para que se oiga la voz.
+6. **Features que faltan de la migración**: app de **canales/memorias** (la más grande), app de
    **modos**, `broadcast_db`, `freq_scale`, `sstv_resources`, waterfall fijo/centrado y Snake.
-6. **Imposibles / no aplicables**: TX Cal / CESSB / filtro TX (el baseband del X6200 no los
+7. **Imposibles / no aplicables**: TX Cal / CESSB / filtro TX (el baseband del X6200 no los
    expone) y la app Android "X6100 Link" (nunca se publicó; el protocolo del socket sí está).
 
 ---
 
-## 10. `params_init`: los 2 segundos de la carga de parámetros
+## 10. Los 2 segundos del arranque: **no** eran SQLite (hipótesis corregida y arreglada)
 
-Medido en el equipo: `params_init` es el **tramo más grande de la GUI** (2,0 s de sus 3,85 s).
+**Lo que se creía** (y estaba mal ✗): que `params_init` gastaba 2,0 s porque `load_items_from_db()`
+hacía **una consulta por item** (`cfg_params_load_item`) contra SQLite en la microSD.
 
-**Causa**: `cfg.c` → `load_items_from_db()` recorre todos los items de `cfg` y **cada uno hace su
-propia consulta** a SQLite (`cfg_params_load_item`). Son **cientos** de `prepare/step/finalize`
-contra la microSD.
+**Cómo se midió** (sin adivinar):
 
-**Evidencia**: en los logs de la GUI aparece una línea por parámetro:
+1. **SQLite, cronometrado**: la tabla `params` tiene **67 filas** y un **índice único por nombre**
+   (`sqlite_autoindex_params_1`). 67 consultas con `SELECT val FROM params WHERE name=?` tardan
+   **0,6 ms** en total. Los cientos de líneas del log eran **solo el log** ✗: su costo es escribir
+   texto, no consultar.
+2. **Marcas por etapa** (`boot_mark()`, §8): separaron el tramo `audio_init → params_init` en
+   pedazos y apareció el culpable.
+
+**La causa real**: **abrir un `/dev/input/eventN`** en este equipo. Las perillas (`rotary0..3`) y
+el teclado del panel (`matrix_keypad`) cuelgan del **bus RSB**, y su driver hace una transacción
+por apertura: **~50 ms cada una**. En el arranque la GUI abría **22 veces**:
+
+- `keyboard_init()` → `search_kbd_device()` probaba `has_letters()` (open + `EVIOCGBIT`) con
+  **cada** `/dev/input/event*` del equipo: **6 aperturas** → **0,60 s**.
+- `keypad_init()` ×2 (teclado del panel y encoder del MFK) + `input_dev_by_name()` ×4, que abría
+  los `event*` de a uno hasta encontrar el nombre buscado (**1+2+3+4 = 10 aperturas**) +
+  las perillas: **0,97 s**.
+
+**Medición en el equipo** (reinicio suave, mismas condiciones):
+
 ```
-load_items_from_db: Can't load <nombre> (pk=0)
-cfg_params_load_item: No results for load <nombre>
+keyboard        +0.60 s   ← 6 aperturas para buscar un teclado USB que no está
+entradas        +0.97 s   ← 16 aperturas para ubicar lo que sí está
+cfg:items       +0.01 s   ← SQLite: 0,01 s (la hipótesis vieja, descartada)
+params_init     +0.00 s
 ```
-Cientos de líneas seguidas = cientos de consultas.
 
-**Lo que ya está bien**: `params.c` lee la tabla entera en **una** consulta
-(`sqlite3_prepare_v2(db, "SELECT * FROM params", ...)` + un `while (sqlite3_step(...))`).
+**El arreglo** (sin cambiar qué dispositivos se abren, sólo cómo se los encuentra):
 
-**Arreglo propuesto**: que `cfg_params_load_item` consulte la **copia en memoria** que ya se cargó
-con esa única consulta, en vez de ir a SQLite por item. Debería llevar los 2,0 s a decenas de
-milisegundos.
+- `input_dev.c`: el nombre se lee de **sysfs** (`/sys/class/input/eventN/device/name`), que **no
+  abre** el dispositivo. Si sysfs no está, se cae al `EVIOCGNAME` de siempre.
+- `keyboard.c`: las capacidades se leen de
+  `/sys/class/input/eventN/device/capabilities/key` (mapa hexadecimal; la última palabra son los
+  bits 0..63) y se buscan las teclas `Q..P` + espacio. Tampoco abre. Validado contra un teclado
+  real (`AT Translated Set 2 keyboard` → detectado; sin falsos positivos en 16 dispositivos).
+- `main.c`: los dos teclados se buscan **por nombre** (`matrix_keypad`, `rotary3`) con la misma
+  búsqueda por sysfs, igual que ya se hacía con las perillas.
 
-**Medición para verificar**: en `boot.log`, el tramo `audio_init → params_init` tiene que caer de
-2,0 s a casi cero.
+**Verificación en la radio** (A/B con los dos binarios, mismo equipo y sesión):
+
+| | antes | después |
+|---|---|---|
+| `audio_init → params_init` | **2,0 s** | **0,2 s** |
+| GUI propia (`GUI arrancando → GUI lista`) | 3,69 s | **2,11 s** |
+| `GUI lista` (arranque total) | 9,2 s | **7,9 s** |
+
+Y los dispositivos abiertos quedan **idénticos** (`/proc/<pid>/fd`): `event0` (teclado del panel)
+×1, `event1..3` ×1, `event4` ×2 (teclado del MFK + perilla interna).
+
+---
+
+## 11. Los 1,34 s del journal ext4 del rootfs (pendiente, con opciones)
+
+`dmesg` muestra que **en todos los arranques** el rootfs pide replay del journal:
+
+```
+[    2.659459] EXT4-fs (mmcblk0p2): INFO: recovery required on readonly filesystem
+[    2.666858] EXT4-fs (mmcblk0p2): write access will be enabled during recovery
+[    4.001406] EXT4-fs (mmcblk0p2): recovery complete        ← 1,34 s
+```
+
+No es un caso raro: `dumpe2fs` muestra el feature `needs_recovery` y `Filesystem state: clean`
+sólo después del replay. El rootfs se monta **rw** y con sólo leer archivos (atime) ya queda
+sucio; al cortar la alimentación (o al `reboot` de busybox, que hace `sync` pero no desmonta) el
+journal queda pendiente y hay que replayarlo en el próximo arranque.
+
+**Opciones** (de mayor a menor beneficio/riesgo):
+
+1. **Montar el rootfs read-only** (`rootflags=ro` en la línea de comandos del kernel) + tmpfs o
+   bind de los pocos caminos que se escriben (perfiles de NetworkManager en
+   `/etc/NetworkManager/system-connections`, `/var`, `resolv.conf`). Elimina el replay **y** protege
+   la microSD. Es el arreglo correcto, pero hay que inventariar los que escriben y probarlo.
+2. **Sacar el journal** (`tune2fs -O ^has_journal`): no hay replay, pero un corte de luz deja el
+   rootfs sin recuperación automática → si se corrompe, hay que reflashear. **No** sin decisión.
+3. **No desmontar mal**: `umount -a -r` antes del apagado sirve para reboots por software, no para
+   el interruptor.
+
+---
+
+## 12. Lo que queda del arranque, medido
+
+Reparto del arranque en frío (7,9-8,3 s con el arreglo de §10):
+
+- **kernel ~2,7 s** hasta `udevd` (`dmesg`); dentro, el panel `JLT4013A` se lleva ~0,4 s.
+- **journal ext4 1,34 s** (§11).
+- **scripts ~1,4-3,8 s** entre `kernel listo` y `GUI arrancando` (varía mucho entre arranques;
+  conviene volver a medir con una marca por script).
+- **daemon + enlace dinámico ~1 s**: el binario tiene **11,5 MB y no está stripped**, y enlaza
+  **28 bibliotecas** (libnm/libgio/libglib, libfftw3f, liblvgl, libstdc++…). Leerlo desde la raíz
+  cuesta **0,47 s** con la caché vacía; la copia de assets que hacía el daemon, 0,24 s (§7).
+  Ideas: precargar binario + bibliotecas en un hilo temprano (antes de que la GUI las necesite) y
+  `strip` del binario para achicar la imagen.
+- **GUI ~2,1 s** (ya con el arreglo): `main()` hasta `audio_init` es **0,02 s** (¡el proceso entra
+  rapidísimo!); los tramos son `cw/rtty` 0,16 s, `radio` 0,21 s, `cat/qso_log` 0,07 s,
+  `db_init` 0,17 s, `fuentes y estilos` 0,04 s, `pantalla principal` 0,03 s y el primer cuadro.
+
+---
+
+## 13. Cómo se mide el arranque (para no volver a adivinar)
+
+- `boot_mark("etapa")` deja en `/mnt/app_logs/boot.log`: `uptime` **y** la duración de la etapa.
+- **Medir en la radio, no en el banco**: el banco (QEMU + fb falso) da 0,15 s donde la radio da
+  2,0 s, porque los `open()`/`ioctl()` de los `event*` ahí son del sistema de archivos del host.
+  El banco sirve para **ver** y para atribuir, no para tiempos.
+- **Reinicio suave ≠ arranque en frío** (§6): los deltas por etapa son iguales, así que el
+  reinicio suave alcanza para comparar un cambio; para el número final, reiniciar de verdad.
+- Un **A/B honesto** es con los dos binarios y el mismo equipo (los dos `md5` y el `boot.log`
+  completo en el reporte).

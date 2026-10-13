@@ -63,19 +63,23 @@ int cfg_init(sqlite3 *db) {
         LV_LOG_ERROR("Error during loading params");
         // return rc;
     }
+    boot_mark("cfg:items");
     // rc = init_band_cfg(db);
     // if (rc != 0) {
     //     LV_LOG_ERROR("Error during loading band params");
     //     return rc;
     // }
     cfg_band_params_init(db);
+    boot_mark("cfg:band");
     cfg_cur.band = &cfg_band;
 
     cfg_mode_params_init(db);
+    boot_mark("cfg:mode");
 
     /* Ya existen los subjects cfg_cur.*: rehacer el mapeo de cfg_sm (ver init_live, en
      * settings_manager.cpp; el puente está porque este archivo es C). */
     cfg_sm_init_live();
+    boot_mark("cfg:sm");
     // rc = init_mode_cfg(db);
     // if (rc != 0) {
     //     LV_LOG_ERROR("Error during loading mode params");
@@ -83,11 +87,15 @@ int cfg_init(sqlite3 *db) {
     // }
 
     cfg_atu_init(db);
+    boot_mark("cfg:atu");
     cfg_cur.atu = &atu_network;
 
     cfg_transverter_init(db);
+    boot_mark("cfg:transv");
     cfg_memory_init(db);
+    boot_mark("cfg:mem");
     cfg_digital_modes_init(db);
+    boot_mark("cfg:digi");
     bind_observers();
     pthread_t thread;
     pthread_create(&thread, NULL, params_save_thread, NULL);

@@ -25,6 +25,7 @@ void test_controls(void);
 void test_voice(void);
 void test_gps_format(void);
 void test_keyboard(void);
+void test_kbd_caps(void);
 void test_bt_devices(void);
 void test_dxcc(void);
 void test_flags(void);
@@ -44,6 +45,7 @@ int main(void) {
     test_voice();
     test_gps_format();
     test_keyboard();
+    test_kbd_caps();
     test_bt_devices();
     test_dxcc();
     test_flags();

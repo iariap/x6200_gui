@@ -23,6 +23,11 @@ extern "C" {
 uint64_t get_time();
 void get_time_str(char *str, size_t str_size);
 
+/* Marca de tiempo de arranque: cada etapa deja su renglon en /mnt/app_logs/boot.log con el
+ * uptime en segundos (implementada en main.c). La usan tambien params.c y cfg.c para medir
+ * por dentro el tramo mas lento del arranque. */
+void boot_mark(const char *etapa);
+
 void split_freq(int32_t freq, uint16_t *mhz, uint16_t *khz, uint16_t *hz);
 int32_t align_int(int32_t x, uint16_t step);
 uint64_t align_long(uint64_t x, uint16_t step);

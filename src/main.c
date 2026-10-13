@@ -72,7 +72,7 @@ static void update_check_notify(const char *version) {
 
 /* Tiempo de arranque: cada etapa deja su marca en /mnt/app_logs/boot.log (particion DATA, se
  * puede leer desde la PC). Sirve para saber QUE parte del arranque se lleva los segundos. */
-static void boot_mark(const char *etapa) {
+void boot_mark(const char *etapa) {
     double up = 0.0;
     FILE  *f  = fopen("/proc/uptime", "r");
 
@@ -83,10 +83,23 @@ static void boot_mark(const char *etapa) {
         fclose(f);
     }
 
+    /* Ademas del uptime, cuanto duro la etapa: es el numero que dice QUE trozo del arranque
+     * se lleva los segundos. El reloj monotono funciona tambien en el banco (chroot), donde
+     * no hay /proc/uptime. */
+    static uint64_t marca_anterior_ms = 0;
+    uint64_t        ahora_ms          = get_time();
+
+    if (marca_anterior_ms == 0) {
+        marca_anterior_ms = ahora_ms;
+    }
+
+    double etapa_s = (double) (ahora_ms - marca_anterior_ms) / 1000.0;
+    marca_anterior_ms = ahora_ms;
+
     FILE *b = fopen("/mnt/app_logs/boot.log", "a");
 
     if (b != NULL) {
-        fprintf(b, "  %-14s %.1f s de uptime\n", etapa, up);
+        fprintf(b, "  %-14s %.1f s de uptime  (+%.2f s)\n", etapa, up, etapa_s);
         fclose(b);
     }
 }
@@ -114,7 +127,9 @@ static void boot_time_log(void) {
 }
 
 int main(void) {
+    boot_mark("GUI inicio");
     lv_init();
+    boot_mark("lv_init");
     // lv_png_init();
 
     /* The kernel has DRM (CONFIG_DRM_SUN4I plus the panel driver) and lv_drivers
@@ -138,10 +153,12 @@ int main(void) {
         LV_LOG_USER("Display: fbdev");
         fbdev_init();
     }
+    boot_mark("display init");
     audio_init();
     boot_mark("audio_init");
     event_init();
     usb_devices_monitor_init();
+    boot_mark("eventos/usb");
 
     lv_disp_draw_buf_init(&disp_buf, buf, NULL, DISP_BUF_SIZE);
     lv_disp_drv_init(&disp_drv);
@@ -159,11 +176,17 @@ int main(void) {
 
     lv_disp_set_bg_color(lv_disp_get_default(), lv_color_black());
     lv_disp_set_bg_opa(lv_disp_get_default(), LV_OPA_COVER);
+    boot_mark("display");
 
     keyboard_init();
+    boot_mark("keyboard");
 
-    keypad_init("/dev/input/event0");
-    keypad_init("/dev/input/event4");
+    /* Igual que las perillas: los nombres del device tree son estables (matrix_keypad es el
+     * teclado del panel, rotary3 el encoder interno del MFK, que la GUI lee como teclado) y
+     * el numero de eventN depende del orden de sondeo. La busqueda por nombre lee sysfs, no
+     * abre el dispositivo, asi que no cuesta arranque. */
+    keypad_init(input_dev_by_name("matrix_keypad", "/dev/input/event0"));
+    keypad_init(input_dev_by_name("rotary3", "/dev/input/event4"));
 
     /* El device tree nombra los cuatro encoders rotary0..rotary3 y esos nombres son
      * estables, pero el número de eventN depende del orden de sondeo (un USB que se
@@ -203,6 +226,7 @@ int main(void) {
         LV_LOG_ERROR("Sin encoder interno del MFK (/dev/input/event4): se sigue sin el");
     }
 
+    boot_mark("entradas");
     params_init();
     boot_mark("params_init");
     audio_enh_preset_load((audio_enh_preset_t) params.audio_enh_preset.x);
@@ -246,6 +270,7 @@ int main(void) {
 
     cw_init();
     rtty_init();
+    boot_mark("cw/rtty");
     /* Antes de todo lo que toca el GPIO (backlight, wifi, CAT): si esto falla, los usos
      * se saltean en lugar de desreferenciar NULL y matar la GUI. */
     gpio_safe_prepare();
@@ -254,6 +279,7 @@ int main(void) {
         &main_screen_notify_tx,
         &main_screen_notify_rx
     );
+    boot_mark("radio");
     wifi_power_setup();
     backlight_init();
     cat_init();
@@ -262,6 +288,7 @@ int main(void) {
         LV_LOG_ERROR("Can't init QSO log");
     }
     qso_log_import_adif("/mnt/incoming_log.adi");
+    boot_mark("cat/qso_log");
 
     pthread_t thread;
     pthread_create(&thread, NULL, tick_thread, NULL);
@@ -280,6 +307,7 @@ int main(void) {
 
     /* Icom LAN (wfview) server: no-op unless enabled in /mnt/wfview.conf */
     wfview_server_init();
+    boot_mark("wfview");
 
     /* Web remote: control socket for the /remote page (UNIX socket) */
     remote_server_init();

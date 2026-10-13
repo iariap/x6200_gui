@@ -12,6 +12,7 @@
 #include "usb_devices.h"
 
 #include "kbd_rollover.h"
+#include "kbd_caps.h"
 #include "lv_drivers/indev/evdev.h"
 #include "lv_drivers/indev/xkb.h"
 
@@ -19,6 +20,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 
@@ -92,7 +95,15 @@ static char* search_kbd_device() {
     globfree(&globbuf);
     if (!found && glob("/dev/input/event*", 0, NULL, &globbuf) == 0) {
         for (size_t i = 0; i < globbuf.gl_pathc && !found; i++) {
-            if (has_letters(globbuf.gl_pathv[i])) {
+            /* Las capacidades se miran en sysfs, sin abrir el dispositivo (ver kbd_caps.c):
+             * probar cada /dev/input/event* con EVIOCGBIT costaba 0,60 s de arranque. */
+            int letras = kbd_caps_letras_de_dev(globbuf.gl_pathv[i]);
+
+            if (letras < 0) {
+                letras = has_letters(globbuf.gl_pathv[i]);   /* kernel sin sysfs */
+            }
+
+            if (letras) {
                 snprintf(path, sizeof(path), "%s", globbuf.gl_pathv[i]);
                 found = true;
             }

@@ -14,7 +14,8 @@ start() {
 	echo 0 > /sys/class/graphics/fbcon/cursor_blink
 	# Corre en S20: antes de la red, del NTP y del Bluetooth. La GUI solo necesita DATA,
 	# udev y el daemon de radio, asi que la pantalla aparece en segundos y lo lento sigue
-	# despues. El daemon copia los assets a /dev/shm: hay que asegurarlo.
+	# despues. El daemon engancha los assets en /dev/shm (bind mount): /dev/shm tiene que
+	# existir antes.
 	mkdir -p /dev/shm
 	mountpoint -q /dev/shm || mount -t tmpfs -o mode=1777 tmpfs /dev/shm 2>/dev/null || true
 	mkdir -p /mnt/app_logs

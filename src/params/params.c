@@ -552,7 +552,9 @@ static void * params_thread(void *arg) {
 void params_init() {
     int rc;
     if (database_init()) {
+        boot_mark("db_init");
         cfg_init(db);
+        boot_mark("cfg_init");
         if (!params_load()) {
             /* No se cierra la base ni se deja `db` en NULL: los statements que se
              * preparan más abajo se arman sobre ella (y sobre NULL quedan en NULL, que
@@ -560,6 +562,7 @@ void params_init() {
              * queda en su valor por defecto. */
             LV_LOG_ERROR("Load params: se sigue con los valores por defecto");
         }
+        boot_mark("params_load");
 
         if (rc != SQLITE_OK) {
             LV_LOG_ERROR("Prepare write");

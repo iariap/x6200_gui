@@ -194,6 +194,10 @@ keypad_t * keypad_init(char *dev_name) {
 
     fcntl(fd, F_SETFL, O_ASYNC | O_NONBLOCK);
 
+    /* Queda en el log que dispositivo se abrio: abrir uno de estos cuesta ~50 ms (estan en
+     * el bus RSB), asi que conviene saber cuales se estan abriendo y cuantos. */
+    LV_LOG_USER("Teclado del panel en %s", dev_name);
+
     keypad_t *keypad = malloc(sizeof(keypad_t));
 
     keypad->fd = fd;
