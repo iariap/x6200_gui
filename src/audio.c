@@ -99,8 +99,9 @@ static void * mixer_setup_thread(void *arg) {
 /* La conexion con PulseAudio -y la espera a que el contexto este listo- tardaba 1,7 s medidos
  * en la radio, y todo eso pasaba ANTES del primer dibujo: la pantalla se quedaba en el logo.
  * Ahora va en su propio hilo y la GUI dibuja de inmediato. Mientras el audio no este listo,
- * audio_play() devuelve 0 y no pasa nada: se pierden los primeros anuncios de voz, que es
- * bastante mejor que mirar el logo. */
+ * audio_play() devuelve -1 (no entro nada) y no pasa nada: se pierden los primeros anuncios de
+ * voz, que es bastante mejor que mirar el logo. Se devuelve -1 y no 0 porque el que llama cuenta
+ * lo que de verdad entro al stream (ver la voz): un 0 se leia como "se mando". */
 void audio_init_sync(void);      /* el cuerpo que ahora corre en un hilo */
 
 static void *audio_init_thread(void *arg) {
@@ -206,7 +207,8 @@ void audio_init_sync(void) {
 
 int audio_play(int16_t *samples_buf, size_t samples) {
     if (!audio_up || play_stm == NULL) {
-        return 0;
+        /* Todavia no hay stream (el audio arranca en un hilo): no entro nada, y se dice. */
+        return -1;
     }
 
     /* Ya se comprobó hace poco que no acepta: no hacer esperar a nadie (ver arriba). */
