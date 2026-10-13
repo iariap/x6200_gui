@@ -122,6 +122,20 @@ void audio_init() {
     }
 }
 
+bool audio_wait_ready(unsigned timeout_ms) {
+    uint64_t limite = pa_rtclock_now() + (uint64_t) timeout_ms * 1000;
+
+    while (!audio_up || play_stm == NULL) {
+        if (pa_rtclock_now() >= limite) {
+            return false;
+        }
+
+        usleep(20000);      /* 20 ms */
+    }
+
+    return true;
+}
+
 void audio_init_sync(void) {
     /* Los diez `amixer` y el mixer de ALSA de mixer_setup() pueden tardar, trabarse, o
      * abortar el proceso si el elemento no existe -y todo eso pasaba antes del primer
@@ -205,8 +219,7 @@ void audio_init_sync(void) {
     record_monitor_setup();
 }
 
-int audio_play(int16_t *samples_buf, size_t samples) {
-    if (!audio_up || play_stm == NULL) {
+int audio_play(int16_t *samples_buf, size_t samples) {    if (!audio_up || play_stm == NULL) {
         /* Todavia no hay stream (el audio arranca en un hilo): no entro nada, y se dice. */
         return -1;
     }

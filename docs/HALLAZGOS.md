@@ -138,6 +138,29 @@ sintetizado: 135484 muestras de 22050 Hz (reloj de la GUI: 44100 Hz); al audio 1
 
 Con el audio roto a propósito (§1), el mismo log dice la verdad al revés: `al audio 0 de 82736`.
 
+**Carrera que apareció al medir el binario de la imagen (13/10)** ✗: una corrida del diagnóstico
+reportó
+
+```
+sintetizado: 46178 muestras de 22050 Hz ...; al audio 0 de 46178 - NO SE ESCRIBIO NADA AL AUDIO
+```
+
+La causa: `audio_init()` conecta PulseAudio **en un hilo** (para no bloquear el primer dibujo, §3) y
+el diagnóstico hablaba **antes** de que el stream existiera, así que `audio_play()` salía por el
+`!audio_up`. Antes de este cambio de log eso se reportaba como "se mandó": era el mismo defecto de
+§2 visto desde el otro lado. **Arreglado**: `audio_wait_ready(5000)` (`src/audio.c`, declarada en
+`src/audio.h`) y, si el stream no llega en 5 s, el log lo dice (`prueba de voz: el stream de audio
+no estuvo listo en 5 s`).
+
+**Medido después del arreglo**, cuatro corridas seguidas del diagnóstico:
+
+```
+corrida 1 -> exit=0  al audio 45284 de 45284
+corrida 2 -> exit=0  al audio 49316 de 49316
+corrida 3 -> exit=0  al audio 48742 de 48742
+corrida 4 -> exit=0  al audio 54132 de 54132
+```
+
 **Diagnóstico de por qué habla o no** (log con `descartado`/`encolado`/`sintetizado`, en
 `/mnt/app_logs/voice.log`), ejemplo medido:
 

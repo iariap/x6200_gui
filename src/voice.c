@@ -276,6 +276,16 @@ bool voice_selftest(void) {
     }
 
     LV_LOG_USER("Prueba de voz: \"%s\"", texto);
+
+    /* El audio (y su stream de PulseAudio) arranca en un hilo: hay que esperarlo. Sin esto la
+     * prueba hablaba antes de que el stream existiera y no se mandaba nada, y el log lo daba por
+     * mandado (ver docs/HALLAZGOS.md 2). */
+    if (!audio_wait_ready(5000)) {
+        voz_log("prueba de voz: el stream de audio no estuvo listo en 5 s; no se mando nada");
+        LV_LOG_WARN("Prueba de voz: el stream de audio no estuvo listo en 5 s");
+        return true;
+    }
+
     sintetizar_y_reproducir(texto, true);
 
     return true;
