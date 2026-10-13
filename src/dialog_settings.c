@@ -1604,6 +1604,11 @@ static uint8_t make_theme(uint8_t row) {
         }
 
         obj = lv_dropdown_create(grid);
+
+        /* dialog_item() es lo que lo mete en el grupo de foco: sin esto el desplegable no se
+         * puede seleccionar desde Ajustes (los demas desplegables si lo llaman). */
+        dialog_item(&dialog, obj);
+
         lv_dropdown_set_options(obj, opciones);
         lv_dropdown_set_selected(obj, sel);
         lv_obj_add_event_cb(obj, theme_update_cb, LV_EVENT_VALUE_CHANGED, NULL);

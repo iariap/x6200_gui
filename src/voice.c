@@ -21,6 +21,7 @@
 
 #include <fcntl.h>
 #include <pthread.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,6 +42,25 @@ static bool            despierta;      /* la GUI termino de arrancar: recien ahi
 static const char     *idioma = "es";
 
 /* ¿Corresponde hablar ahora? (ajuste + pantalla + transmisión) */
+/* Diagnostico de la voz: se anota por que habla o por que no, y el resultado de mandarla al
+ * audio. Sin esto, "no se escucha nada" no dice donde se corta. Se lee en
+ * /mnt/app_logs/voice.log (queda en la particion DATA, se puede mirar desde la PC). */
+static void voz_log(const char *fmt, ...) {
+    FILE *f = fopen("/mnt/app_logs/voice.log", "a");
+
+    if (f == NULL) {
+        return;
+    }
+
+    va_list ap;
+
+    va_start(ap, fmt);
+    vfprintf(f, fmt, ap);
+    va_end(ap);
+    fputc('\n', f);
+    fclose(f);
+}
+
 static bool puede_hablar(void) {
     if (!despierta) {
         /* Al arrancar la pantalla principal anuncia varias cosas (las llamadas ya estaban en el
@@ -165,6 +185,10 @@ static void sintetizar_y_reproducir(const char *texto, bool forzar) {
                     audio_play_wait();
                 }
 
+                voz_log("sintetizado: %zu muestras de %u Hz (reloj de la GUI: %i Hz)%s",
+                        escritas, rate, AUDIO_PLAY_RATE,
+                        escritas == 0 ? " - NO SE ESCRIBIO NADA AL AUDIO" : "");
+
                 LV_LOG_USER("Voz: %zu muestras a %i Hz (%u -> %i)", escritas, AUDIO_PLAY_RATE, rate, AUDIO_PLAY_RATE);
                 free(pcm);
             }
@@ -205,8 +229,13 @@ static void encolar(const char *texto) {
     }
 
     if (!puede_hablar()) {
+        voz_log("descartado: modo=%i lcd=%i despierta=%i tx=%i [%s]",
+                params.voice_mode.x, backlight_is_on(), despierta,
+                radio_get_state() == RADIO_TX, texto);
         return;
     }
+
+    voz_log("encolado: modo=%i lcd=%i [%s]", params.voice_mode.x, backlight_is_on(), texto);
 
     if (!hilo_listo) {
         if (pthread_create(&hilo, NULL, hilo_voz, NULL) != 0) {
