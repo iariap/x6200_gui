@@ -218,6 +218,20 @@ tmpfs cuesta **0,24 s**; además ocupa esos 4,4 MB de RAM.
 (`mount --bind /usr/share/x6200/images /dev/shm/images`), que es instantáneo, y **cae a la
 copia** si el bind falla. El mountpoint lo asegura `S20gui` (que ya monta `/dev/shm`).
 
+**A/B en frío, misma radio, un arranque por estrategia** (daemon = desde `GUI arrancando` hasta
+`GUI inicio`):
+
+| | daemon | `/dev/shm` usado | `GUI lista` |
+|---|---|---|---|
+| bind mount | **0,76 s** | **0 kB** | **6,4 s** |
+| copia a tmpfs | 1,01 s | 4,5 MB | 6,8 s |
+
+El bind mount gana ~0,25 s y 4,4 MB de RAM, y las etapas de la GUI quedan igual
+(`fuentes y estilos` +0,08/+0,09, `pantalla principal` +0,07/+0,09). **Ojo con las conclusiones
+de una sola muestra**: en un arranque aislado `pantalla principal` había dado **+0,55 s** y
+parecía que leer las imágenes de la SD durante la GUI se comía la ganancia; con el A/B se vio que
+era ruido.
+
 ---
 
 ## 8. Herramientas de banco que quedaron
@@ -239,6 +253,10 @@ copia** si el bind falla. El mountpoint lo asegura `S20gui` (que ya monta `/dev/
   dan casi cero (los `event*` los resuelve el sistema de archivos del host) y `control remoto` se
   estira ~15 s esperando a la radio, así que sirve para **atribución**, no para tiempos
   absolutos. Los 2 s que se buscaban **no aparecían** en el banco.
+- **`./tools/verifica-radio.sh`**: por SSH contra la radio, comprueba lo que tiene que andar
+  después de un cambio (GUI corriendo, arranque del `boot.log`, assets por bind mount, los
+  dispositivos de entrada abiertos, `pulse` en el grupo `audio`, el sink real de PulseAudio y que
+  no haya señales de crash) y termina en `TODO OK` o con el número de fallas.
 - **`boot_mark()`** (main.c, `util.h`): cada etapa deja su renglón en `boot.log` con el `uptime`
   **y cuánto duró la etapa** (`(+0,16 s)`). Con eso se ubica un tramo lento sin adivinar. Las
   marcas cubren: `GUI inicio`, `lv_init`, `display init`, `audio_init`, `eventos/usb`, `display`,
@@ -394,3 +412,42 @@ Reparto:
   reinicio suave alcanza para comparar un cambio; para el número final, reiniciar de verdad.
 - Un **A/B honesto** es con los dos binarios y el mismo equipo (los dos `md5` y el `boot.log`
   completo en el reporte).
+
+---
+
+## 14. Actualizar la radio por WiFi (sin sacar la tarjeta)
+
+El rootfs de la radio es **ext4 con escritura** y hay root por SSH, así que un cambio se puede
+probar **sin grabar la tarjeta**: se copian los archivos que cambiaron, se reinicia y se verifica.
+El ciclo completo (usado con el arreglo de §10):
+
+```sh
+# 1) sacar los archivos nuevos de la imagen que se va a entregar
+docker run --rm --entrypoint "" -v x6200-build-output:/b x6200-buildroot \
+    cat /b/target/usr/sbin/x6200_daemon > x6200_daemon
+
+# 2) subirlos y dejarlos en su lugar
+sshpass -p 123 scp <opciones-ssh> x6200_daemon root@192.168.0.236:/tmp/
+ssh root@192.168.0.236 'cp /tmp/x6200_daemon /usr/sbin/ && chmod 755 ... && sync'
+
+# 3) reiniciar y verificar (el verificador dice TODO OK o las fallas)
+reboot; ./tools/verifica-radio.sh
+```
+
+**Ojo con dar por buena la tarjeta grabada**: al comparar la radio con la imagen nueva apareció
+que la tarjeta tenía `audio:x:29:` **sin `pulse`** — el arreglo que hace que PulseAudio cree el
+sink real (sin él, la voz y el audio de FT8 salen en silencio por `auto_null`, ver §4). La imagen
+nueva sí lo trae, y se puede comprobar **leyendo el sistema de archivos de la imagen** sin
+grabarla:
+
+```sh
+docker run --rm --entrypoint "" -v x6200-build-output:/b x6200-buildroot \
+    debugfs -R "cat /etc/group" /b/images/rootfs.ext4 | grep ^audio:
+# audio:x:29:pulse
+```
+
+Los `md5` de los tres archivos que importan (`x6200_gui`, `x6200_daemon`, `/etc/init.d/S20gui`)
+quedaron iguales a los de la imagen, y el arranque en frío verificado: `GUI lista` 6,2-6,4 s,
+`pulse` en el grupo `audio`, sink `alsa_output.platform-sound.stereo-fallback` y los seis
+dispositivos de entrada abiertos como siempre.
+
