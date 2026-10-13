@@ -1,0 +1,83 @@
+{
+  "name": "hallazgos-fundados",
+  "description": "Mantiene el registro de hallazgos fundados (x6200_gui/docs/HALLAZGOS.md): agregar con evidencia, auditar y mover al anexo lo que no se puede fundar",
+  "version": "1.0.0",
+  "author": "LU2DSX",
+
+  "triggers": [
+    "hallazgo",
+    "hallazgos",
+    "fundado",
+    "sin fundar",
+    "anexo de hipotesis",
+    "evidencia",
+    "registro",
+    "documentar hallazgo",
+    "actualizar HALLAZGOS.md"
+  ],
+
+  "files": {
+    "registro": "x6200_gui/docs/HALLAZGOS.md",
+    "skill": ".agents/hallazgos-fundados/SKILL.md",
+    "auditor": ".agents/hallazgos-fundados/scripts/audita-hallazgos.sh"
+  },
+
+  "regla": "todos los hallazgos deben estar fundados, si no se pueden fundar no debe ser un hallazgo",
+
+  "estados": {
+    "medido": "el comando y su salida pegada, o el numero con su origen y fecha",
+    "codigo": "el archivo (y la linea) que lo dice",
+    "sin_fundar": "no es hallazgo: va al anexo A con lo que haria falta para fundarlo"
+  },
+
+  "steps": [
+    {
+      "name": "auditar",
+      "description": "Busca problemas de estructura y afirmaciones sin respaldo",
+      "commands": [
+        "cd <repo>/x6200_gui",
+        ".agents/hallazgos-fundados/scripts/audita-hallazgos.sh docs/HALLAZGOS.md"
+      ],
+      "sale": "1 si el indice y las secciones no coinciden; con --estricto tambien si hay lineas para revisar"
+    },
+    {
+      "name": "fundar",
+      "description": "Antes de escribir un hallazgo: medirlo o citar el codigo; si no, al anexo A",
+      "commands": [
+        "sshpass -p 123 ssh -F /dev/null -o StrictHostKeyChecking=no -o PreferredAuthentications=password -o PubkeyAuthentication=no root@192.168.0.236 'tail -20 /mnt/app_logs/boot.log'",
+        "grep -rn '<simbolo>' x6200_gui/src | head"
+      ]
+    },
+    {
+      "name": "escribir",
+      "description": "Escribir a un temporal y mover, nunca redirigir sobre el registro",
+      "commands": [
+        "head -<linea-anterior> docs/HALLAZGOS.md > docs/.nuevo",
+        "cat >> docs/.nuevo   # la seccion nueva",
+        "wc -l docs/.nuevo && grep -q '^## ' docs/.nuevo && mv docs/.nuevo docs/HALLAZGOS.md"
+      ]
+    },
+    {
+      "name": "cerrar",
+      "description": "Actualizar el indice del principio si se agrego una seccion, correr tests y commitear",
+      "commands": [
+        "cd <repo>/x6200_gui && ./tests/native/run_native_tests.sh",
+        "git add -A && git commit -m 'Findings: <que se fundo>' && git push fork HEAD:lu2dsx/x6200-rom"
+      ]
+    }
+  ],
+
+  "verification": {
+    "estructura": "audita-hallazgos.sh termina con '0 problemas de estructura'",
+    "anexo": "cada 'sin fundar' del cuerpo apunta al anexo A con que haria falta para fundarlo",
+    "no_inventar": "ninguna estimacion queda presentada como medicion; las que hay dicen 'estimado' o 'no medido'"
+  },
+
+  "lessons": [
+    "medir en la radio, no en el banco (el banco da 0,15 s donde la radio da 2,0 s)",
+    "A/B honesto: los dos binarios, el mismo equipo, los dos md5 y el boot.log completo",
+    "no concluir con una sola muestra",
+    "el busybox de la radio no tiene timeout: usar 'cmd & p=$!; sleep N; kill -0 $p && kill $p'",
+    "al corregir una afirmacion caida, dejar escrito que decia y con que se refuto"
+  ]
+}
