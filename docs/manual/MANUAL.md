@@ -1,7 +1,7 @@
 ---
 title: "Manual del operador — ROM LU2DSX para Xiegu X6200"
 subtitle: "Con las funciones del X6100 de IU1WXY, explicadas para radioaficionados"
-author: "lu2dsx"
+author: "iariap (LU2DSX)"
 lang: es
 ---
 
@@ -475,10 +475,9 @@ Esta ROM es el trabajo de mucha gente, encadenado. En orden de abajo hacia arrib
 | **Xiegu** | El hardware X6200 y la documentación del CAT |
 | **Belousov Oleg (R1CBU)** | El firmware alternativo original (X6200 y X6100): la arquitectura, la GUI LVGL, el CAT, los modos digitales. La base de todo |
 | **Georgy Dyuldin (R2RFE)** — [gdyuldin](https://github.com/gdyuldin/x6200_gui) | El port del firmware de R1CBU al X6200 con buildroot |
-| **iariap** | El fork sobre el que está hecha esta ROM: [iariap/x6200_gui](https://github.com/iariap/x6200_gui) y [iariap/AetherX6200Buildroot](https://github.com/iariap/AetherX6200Buildroot) |
+| **iariap (LU2DSX)** | El fork base ([iariap/x6200_gui](https://github.com/iariap/x6200_gui) y [iariap/AetherX6200Buildroot](https://github.com/iariap/AetherX6200Buildroot)) **y esta ROM**: el port de las funciones del X6100 al X6200, las correcciones y este manual. *iariap* es la cuenta e *LU2DSX* la licencia, la misma persona |
 | **IU1WXY** | El firmware del X6100 ([IU1WXY/X6100-IU1WXY](https://github.com/IU1WXY/X6100-IU1WXY)) del que se portaron las funciones: aviso de actualización, S-meter, plan de banda IARU, grabación de pantalla, Bluetooth (CAT, auriculares y teclados), wfview, configurador web, FT8/FT4, WSPR, JS8, SSTV, WeFax, NavTex, RTTY, CW Keyboard y Trainer, clúster DX, Field Ops, temas, GPS y los anuncios por voz |
 | **Adrian Grzeca (SQ5FOX)** | Aportes al firmware base |
-| **LU2DSX** | Esta ROM: el port de las funciones del X6100 al X6200, las correcciones y este manual |
 
 Y las bibliotecas y proyectos de software libre con los que se construye:
 
