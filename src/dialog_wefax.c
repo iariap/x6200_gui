@@ -1029,7 +1029,7 @@ static void construct_cb(lv_obj_t *parent)
     lv_obj_set_size(
         dialog.obj,
         795,
-        DIALOG_H
+        DIALOG_BOX_H
     );
 
     lv_obj_align(dialog.obj, LV_ALIGN_TOP_MID, 0, DIALOG_Y);
@@ -1054,7 +1054,7 @@ static void construct_cb(lv_obj_t *parent)
      */
     fax_viewport = lv_obj_create(dialog.obj);
     lv_obj_remove_style_all(fax_viewport);
-    lv_obj_set_size(fax_viewport, 795, DIALOG_H);
+    lv_obj_set_size(fax_viewport, 795, DIALOG_BOX_H);
     lv_obj_center(fax_viewport);
     lv_obj_clear_flag(fax_viewport, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(fax_viewport, LV_OBJ_FLAG_CLICKABLE);
@@ -1120,7 +1120,7 @@ static void construct_cb(lv_obj_t *parent)
     lv_obj_add_style(fax_frame, &panel_style, 0);
     lv_obj_set_style_bg_img_src(fax_frame, NULL, LV_PART_MAIN);
 
-    lv_obj_set_size(fax_frame, 795, DIALOG_H);
+    lv_obj_set_size(fax_frame, 795, DIALOG_BOX_H);
     lv_obj_center(fax_frame);
 
     /*
@@ -1308,7 +1308,7 @@ static void apply_zoom_geometry(void)
             lv_obj_move_background(fax_frame);
         }
     } else {
-        lv_obj_set_size(dialog.obj, 795, DIALOG_H);
+        lv_obj_set_size(dialog.obj, 795, DIALOG_BOX_H);
         lv_obj_align(dialog.obj, LV_ALIGN_TOP_MID, 0, DIALOG_Y);
 
         /* Common app look: the dialog's own background, header, the fax

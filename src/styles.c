@@ -214,7 +214,7 @@ void styles_init(themes_t theme) {
     lv_style_set_text_color(&dialog_style, lv_color_white());
     lv_style_set_text_font(&dialog_style, &sony_36);
     lv_style_set_width(&dialog_style, 796);
-    lv_style_set_height(&dialog_style, 348);
+    lv_style_set_height(&dialog_style, DIALOG_BOX_H);
     lv_style_set_x(&dialog_style, 800 / 2 - (796 / 2));
     lv_style_set_y(&dialog_style, 66);
     lv_style_set_radius(&dialog_style, 0);

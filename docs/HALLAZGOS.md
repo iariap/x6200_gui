@@ -39,6 +39,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
 19. [Icono de Bluetooth en la barra de estado](#19-icono-de-bluetooth-en-la-barra-de-estado)
 20. [La app de Bluetooth: como se llega y el scan](#20-la-app-de-bluetooth-como-se-llega-y-el-scan)
+21. [Las constantes viejas del dialogo: texto tapado por los botones](#21-las-constantes-viejas-del-dialogo-texto-tapado-por-los-botones)
 
 ---
 
@@ -964,3 +965,54 @@ auriculares porque **no estaban en modo emparejamiento**: un scan solo ve lo que
 **Pendiente de probar** (necesita manos y auriculares): pulsar Scan con los auriculares en modo
 emparejamiento, elegirlos de la lista, parear (con el passkey si lo pide) y encender **RX to HP**
 para oir la recepcion en ellos.
+
+---
+
+## 21. Las constantes viejas del dialogo: texto tapado por los botones
+
+**Sintoma** (reportado por el usuario mirando una captura del registro): "me parece que hay texto
+tapado por los botones de abajo" — la linea de estado de la app de BT ("no headphones, RX off" y
+"Press a row to pair, connect or disconnect") quedaba media tapada por la fila de botones.
+
+**Medido.** La pantalla tiene 480 de alto, la fila de botones empieza en `480 - 62 = 418`
+(`buttons.cpp`: `btn_height = 62`) y `dialog_style` pone la caja del dialogo en y=66 con **348** de
+alto (`styles.c`) → 66 + 348 = **414**, 4 px arriba de los botones. Pero las constantes con las que
+los dialogos calculan "lo de abajo" eran otras dos:
+
+| Constante | Valor | Deberia ser | Consecuencia |
+|---|---|---|---|
+| `DIALOG_H` | 372 | 348 | lo apoyado en `DIALOG_H - X` cae **24 px** abajo |
+| `DIALOG_Y` | 108 | 66 | lo alineado con `DIALOG_Y` cae **42 px** abajo |
+
+`372` viene del comentario *"480 - top bar - buttons, as the ported apps expect"*: calculado cuando
+los botones median 42 px, no 62. Y `DIALOG_Y` decia "below the top bar" cuando la barra terminaba
+en 108; ahora termina en 66.
+
+**A quien le pegaba** (cada uno con su sintoma):
+
+- `dialog_bt.c` (el reportado): la tabla y las dos lineas de estado con `DIALOG_H - STATUS_H - 4` →
+  tapadas por los botones.
+- `dialog_wefax.c`: se dimensiona con `DIALOG_H` **y** se alinea con `DIALOG_Y` → 108 + 372 = 480:
+  la caja se comia la fila entera (en la captura se leian "Clear" y "Close" **por detras** del
+  previsualizador).
+- `dialog_sstv.c`: igual, `lv_obj_set_size(dialog.obj, 795, DIALOG_H)`.
+- `dialog_cluster.c` y `dialog_cw_kbd.c`: usan `DIALOG_H` para lo de abajo; medidos con captura sus
+  textos **se ven**, pero por pocos pixeles (al anexo A).
+
+**La trampa ya se habia pisado**: `freq_list.c:159` tiene un workaround con este comentario, en vez
+de arreglar la constante: *"inside an app's dialog (SSTV, NAVTEX), already at DIALOG_Y, it went down
+twice and its bottom under the buttons"*.
+
+**Arreglado** con la geometria real en un solo lugar:
+
+- `DIALOG_BOX_H` = **348** (nueva, el alto real de la caja), usada por `styles.c` en `dialog_style`
+  (asi el estilo y la constante no pueden divergir) y por los dialogos que se apoyan abajo:
+  `dialog_bt.c`, `dialog_sstv.c` y `dialog_wefax.c`.
+- `DIALOG_Y` = **66** (era 108).
+- `DIALOG_H` (372) se deja como estaba para el **marco de apps**, que tiene su propia geometria y
+  medido **no** tiene el problema: GPS, SSTV y CW muestran su linea de abajo completa.
+- `DIALOG_H_MAX` (372) queda como maximo para los buffers estaticos de SSTV/WeFax (sobra, no molesta).
+
+**Verificado con capturas del framebuffer** (`evidencia-radio/`): el estado del BT completo arriba
+de los botones (`bt-app.png`), y WeFax (`_wefax-final.png`) y SSTV (`_sstv-final.png`) con su linea
+de abajo visible y la fila de botones libre. Antes/despues de la misma franja en `verifica-abajo.png`.

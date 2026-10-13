@@ -13,12 +13,25 @@
 #define BUTTONS_H           58      /* bottom button bar */
 #endif
 
+/* Y del borde de arriba del area de dialogo: la barra de estado de arriba termina en 66 (de ahi
+ * arranca dialog_style). Estaba en 108, de la pantalla del X6100, y los dialogos que se alineaban
+ * con este valor (WeFax, SSTV) quedaban 42 px mas abajo con su ultima linea debajo de los botones
+ * (medido con capturas, docs/HALLAZGOS.md 21). */
 #ifndef DIALOG_Y
-#define DIALOG_Y            108     /* below the top bar */
+#define DIALOG_Y            66
 #endif
 
 #ifndef DIALOG_H
-#define DIALOG_H            372
+#define DIALOG_H            372     /* valor viejo: lo que asumen las apps (marco propio) */
+#endif
+
+/* Alto REAL de la caja de dialogo, el que usa dialog_style: la pantalla tiene 480, la barra de
+ * arriba termina en 66 y la fila de botones mide 62, asi que arriba de los botones hay 352 y la
+ * caja mide 348. DIALOG_H quedo en 372 de cuando los botones median 42: los dialogos que se
+ * apoyaban ahi calculaban 24 px de mas y su ultima linea quedaba debajo de los botones
+ * (medido con capturas, docs/HALLAZGOS.md 21). */
+#ifndef DIALOG_BOX_H
+#define DIALOG_BOX_H        348
 #endif
 
 /* Tallest dialog area: for static buffers (as in the X6100) */

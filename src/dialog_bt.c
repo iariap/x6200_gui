@@ -36,7 +36,7 @@
 #define HEADER_H        40
 #define STATUS_H        30
 #define TABLE_Y         (10 + HEADER_H)
-#define TABLE_H         (DIALOG_H - TABLE_Y - STATUS_H - 8)
+#define TABLE_H         (DIALOG_BOX_H - TABLE_Y - STATUS_H - 8)
 #define REFRESH_MS      700
 
 /* The dialog's font: one step down in the VISION theme, like the other dialogs */
@@ -403,14 +403,14 @@ static void construct_cb(lv_obj_t *parent) {
     lv_group_add_obj(keyboard_group, table);
 
     label_state = make_label(dialog.obj, TC(text_dim));
-    lv_obj_set_pos(label_state, 18, DIALOG_H - STATUS_H - 4);
+    lv_obj_set_pos(label_state, 18, DIALOG_BOX_H - STATUS_H - 4);
     lv_obj_set_width(label_state, 380);
     lv_label_set_text(label_state, "");
 
     label_note = make_label(dialog.obj, TC(text));
     lv_obj_set_width(label_note, 360);
     lv_obj_set_style_text_align(label_note, LV_TEXT_ALIGN_RIGHT, 0);
-    lv_obj_set_pos(label_note, DIALOG_W + 13 - 18 - 360, DIALOG_H - STATUS_H - 4);
+    lv_obj_set_pos(label_note, DIALOG_W + 13 - 18 - 360, DIALOG_BOX_H - STATUS_H - 4);
     lv_label_set_text(label_note, "Press a row to pair, connect or disconnect");
 
     shown.n  = 0;

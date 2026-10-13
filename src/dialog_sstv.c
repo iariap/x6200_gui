@@ -773,7 +773,7 @@ dialog_t *dialog_sstv = &dialog;
 static void construct_cb(lv_obj_t *parent)
 {
     dialog.obj = dialog_init(parent);
-    lv_obj_set_size(dialog.obj, 795, DIALOG_H);   /* at DIALOG_Y (dialog_style) */
+    lv_obj_set_size(dialog.obj, 795, DIALOG_BOX_H);   /* at DIALOG_Y (dialog_style) */
 
     /* Common app look: header, picture and state in the black body, status line */
     app_frame_create(&frame, dialog.obj);
