@@ -327,6 +327,22 @@ static button_item_t btn_qth      = make_action_btn("QTH", ACTION_APP_QTH);
 static button_item_t btn_callsign = make_action_btn("Callsign", ACTION_APP_CALLSIGN);
 static button_item_t btn_settings = make_app_btn("Settings", ACTION_APP_SETTINGS);
 
+/* Resto de las apps: estaban solo en la lista del long press (Ajustes), asi que no se
+ * encontraban. Ahora tienen boton en las paginas APP (docs/HALLAZGOS.md 29). */
+static button_item_t btn_js8        = make_app_btn("JS8", ACTION_APP_JS8);
+static button_item_t btn_wspr       = make_app_btn("WSPR", ACTION_APP_WSPR);
+static button_item_t btn_sstv       = make_app_btn("SSTV", ACTION_APP_SSTV);
+static button_item_t btn_wefax      = make_app_btn("WeFax", ACTION_APP_WEFAX);
+static button_item_t btn_navtex     = make_app_btn("NavTex", ACTION_APP_NAVTEX);
+static button_item_t btn_cluster    = make_app_btn("Cluster", ACTION_APP_CLUSTER);
+static button_item_t btn_field      = make_app_btn("Field\nOps", ACTION_APP_FIELD);
+static button_item_t btn_gps        = make_app_btn("GPS", ACTION_APP_GPS);
+static button_item_t btn_bands      = make_app_btn("Bands", ACTION_APP_BANDS);
+static button_item_t btn_cw_kbd     = make_app_btn("CW\nKbd", ACTION_APP_CW_KBD);
+static button_item_t btn_cw_trainer = make_app_btn("CW\nTrainer", ACTION_APP_CWTRAINER);
+static button_item_t btn_status     = make_app_btn("Status", ACTION_APP_STATUS);
+static button_item_t btn_about      = make_app_btn("About", ACTION_APP_ABOUT);
+
 static button_item_t  btn_wifi   = make_app_btn("WiFi", ACTION_APP_WIFI);
 /* El de Bluetooth va al lado del de WiFi: es la UX para elegir a que dispositivo emparejarse
  * (abre dialog_bt: escanear, lista de pareados y encontrados, parear, conectar/desconectar). */
@@ -449,19 +465,33 @@ static buttons_page_t page_dfl_1 = {
     {&btn_flt_low, &btn_flt_high, &btn_flt_bw, &btn_eq}
 };
 
-/* App pages */
-static button_item_t btn_app_p1 = make_page_btn("(APP 1:3)", "Application|page 1");
-static button_item_t btn_app_p2 = make_page_btn("(APP 2:3)", "Application|page 2");
-static button_item_t btn_app_p3 = make_page_btn("(APP 3:3)", "Application|page 3");
+/* App pages: TODAS las apps de main_screen_start_app tienen que estar aca (el chequeo
+ * tests/check_apps_menu.py lo verifica). El boton de pagina ocupa un lugar, asi que entran 4
+ * apps por pagina. */
+static button_item_t btn_app_p1 = make_page_btn("(APP 1:6)", "Application|page 1");
+static button_item_t btn_app_p2 = make_page_btn("(APP 2:6)", "Application|page 2");
+static button_item_t btn_app_p3 = make_page_btn("(APP 3:6)", "Application|page 3");
+static button_item_t btn_app_p4 = make_page_btn("(APP 4:6)", "Application|page 4");
+static button_item_t btn_app_p5 = make_page_btn("(APP 5:6)", "Application|page 5");
+static button_item_t btn_app_p6 = make_page_btn("(APP 6:6)", "Application|page 6");
 
-static buttons_page_t page_app_1 = {
-    {&btn_app_p1, &btn_rtty, &btn_ft8, &btn_swr, NULL}
+static buttons_page_t page_app_1 = {   /* modos digitales */
+    {&btn_app_p1, &btn_ft8, &btn_js8, &btn_wspr, &btn_rtty}
 };
-static buttons_page_t page_app_2 = {
-    {&btn_app_p2, &btn_rec, &btn_qth, &btn_callsign, &btn_settings}
+static buttons_page_t page_app_2 = {   /* imagen y avisos */
+    {&btn_app_p2, &btn_sstv, &btn_wefax, &btn_navtex, &btn_cluster}
 };
-static buttons_page_t page_app_3 = {
-    {&btn_app_p3, &btn_wifi, &btn_bt}
+static buttons_page_t page_app_3 = {   /* operacion de campo */
+    {&btn_app_p3, &btn_rec, &btn_field, &btn_gps, &btn_bands}
+};
+static buttons_page_t page_app_4 = {   /* herramientas */
+    {&btn_app_p4, &btn_cw_kbd, &btn_cw_trainer, &btn_eq, &btn_status}
+};
+static buttons_page_t page_app_5 = {   /* configuracion */
+    {&btn_app_p5, &btn_settings, &btn_callsign, &btn_qth, &btn_about}
+};
+static buttons_page_t page_app_6 = {   /* radio y red */
+    {&btn_app_p6, &btn_wifi, &btn_bt, &btn_swr}
 };
 
 /* RTTY */
@@ -486,6 +516,9 @@ buttons_group_t buttons_group_app = {
     &page_app_1,
     &page_app_2,
     &page_app_3,
+    &page_app_4,
+    &page_app_5,
+    &page_app_6,
 };
 
 buttons_group_t buttons_group_key = {

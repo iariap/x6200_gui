@@ -49,6 +49,7 @@ run() {
 run config python3 "$DIR/check_cfg_fills.py" "$GUI"
 python3 "$DIR/check_actions.py" || fallos=$((fallos+1))
 python3 "$DIR/check_settings_focus.py" || fallos=$((fallos+1))
+python3 "$DIR/check_apps_menu.py" || fallos=$((fallos+1))
 python3 "$DIR/check_wcag.py" || fallos=$((fallos+1))
 
 run host sh "$DIR/native/run_native_tests.sh"

@@ -47,6 +47,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 26. [Contraste en la lista de BT: el rojo que pinta LVGL](#26-contraste-en-la-lista-de-bt-el-rojo-que-pinta-lvgl)
 27. [Barrido WCAG de toda la UI: colores que pinta LVGL y colores a mano](#27-barrido-wcag-de-toda-la-ui-colores-que-pinta-lvgl-y-colores-a-mano)
 28. [WCAG: barra de estado, switch, slider y about](#28-wcag-barra-de-estado-switch-slider-y-about)
+29. [Todas las apps en el menu de apps](#29-todas-las-apps-en-el-menu-de-apps)
 
 ---
 
@@ -1379,3 +1380,40 @@ tests nativos (538) siguen OK.
 192.168.18.0/24 y la radio en 192.168.0.x: no responde al barrido ni por MAC), asi que las capturas
 de antes/despues de estos cuatro cambios y el despliegue de la imagen quedan para cuando vuelva a la
 red.
+
+---
+
+## 29. Todas las apps en el menu de apps
+
+**Reportado**: "revisa que todas las app esten en el menu de app, por ejemplo la de Field Ops no la
+veo".
+
+**Lo que habia**: el port tiene **23 apps** (`case ACTION_APP_*` en `main_screen_start_app`) y solo
+**9** tenian boton en las paginas APP (`page_app_1` = RTTY, FT8, SWR Scan; `page_app_2` = Recorder,
+QTH, Callsign, Settings; `page_app_3` = WiFi, BT). Las otras **14** —Field Ops, GPS, JS8, WSPR, SSTV,
+WeFax, NavTex, Cluster, CW Keyboard, CW Trainer, Status, Bands, Eq y **About**— solo se alcanzaban
+asignandolas a un **long press** desde Ajustes ("APP long press"), que es un camino escondido: de
+ahi la sensacion de que la app no existe. (About ni siquiera estaba en esa lista: 22 de 23.)
+
+**Arreglado**: las paginas APP pasaron de 3 a **6**, agrupadas por uso, y **las 23 apps** tienen
+boton. El boton de pagina ocupa un lugar de los 5 (`#define BUTTONS 5`), asi que entran 4 apps por
+pagina:
+
+| Pagina | Apps |
+|---|---|
+| **APP 1:6** | FT8, JS8, WSPR, RTTY (modos digitales) |
+| **APP 2:6** | SSTV, WeFax, NavTex, Cluster (imagen y avisos) |
+| **APP 3:6** | Recorder, **Field Ops**, GPS, Bands (operacion de campo) |
+| **APP 4:6** | CW Kbd, CW Trainer, Eq, Status (herramientas) |
+| **APP 5:6** | Settings, Callsign, QTH, About (configuracion) |
+| **APP 6:6** | WiFi, BT, SWR Scan (radio y red) |
+
+El rotulo del boton de pagina paso a `(APP n:6)` y el grupo `buttons_group_app` tiene las 6 (el
+ciclo lo hace solo: `(j + 1) % groups[i].size`). La lista del long press queda como estaba: es un
+camino extra, no el unico.
+
+**Chequeo nuevo**: `tests/check_apps_menu.py` (en `tests/run_all_tests.sh`) lee los `case
+ACTION_APP_*` de `main_screen.c`, lee los cuerpos de las `page_app_N` de `buttons.cpp`, resuelve cada
+`&btn_x` a la accion de su `make_app_btn`/`make_action_btn` y **falla si alguna app no esta en
+ninguna pagina** (tambien avisa si una pagina se pasa de `BUTTONS` y si una app aparece dos veces).
+Hoy: **23 apps, 23 en el menu, 6 paginas**.
