@@ -966,6 +966,16 @@ auriculares porque **no estaban en modo emparejamiento**: un scan solo ve lo que
 emparejamiento, elegirlos de la lista, parear (con el passkey si lo pide) y encender **RX to HP**
 para oir la recepcion en ellos.
 
+**Tipografia** (preguntado el 13/10: "la tipografia de la UX de BT es igual el resto?"). Si, y esta
+medido: la app usa la convencion de los dialogos de este port, `VF(22)` —`sony_22`, un paso menos
+solo en el tema VISION, la misma macro que `dialog_cluster.c:35`— para cabecera, tabla y lineas de
+estado; los botones de abajo salen del estilo global (`btn_style`, `sony_38`, el mismo de todos los
+dialogos); y las apps portadas usan el mismo tamano (SSTV/WeFax: `sony_22`/`sony_24`). Sobre las
+capturas, la tinta del titulo mide **14 px en BT y 13 px en WeFax/SSTV**, y la linea de estado **23 px
+contra 22**: la misma tipografia. El tema activo **no** es VISION (el S-meter esta en la barra de
+arriba y VISION lo pone en su propia fila, `theme.h:193`), que es el unico caso en el que BT bajaria
+un paso respecto de las apps portadas.
+
 ---
 
 ## 21. Las constantes viejas del dialogo: texto tapado por los botones
