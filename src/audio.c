@@ -91,7 +91,32 @@ static void * mixer_setup_thread(void *arg) {
     return NULL;
 }
 
+/* La conexion con PulseAudio -y la espera a que el contexto este listo- tardaba 1,7 s medidos
+ * en la radio, y todo eso pasaba ANTES del primer dibujo: la pantalla se quedaba en el logo.
+ * Ahora va en su propio hilo y la GUI dibuja de inmediato. Mientras el audio no este listo,
+ * audio_play() devuelve 0 y no pasa nada: se pierden los primeros anuncios de voz, que es
+ * bastante mejor que mirar el logo. */
+void audio_init_sync(void);      /* el cuerpo que ahora corre en un hilo */
+
+static void *audio_init_thread(void *arg) {
+    (void) arg;
+
+    audio_init_sync();
+    return NULL;
+}
+
 void audio_init() {
+    pthread_t t;
+
+    if (pthread_create(&t, NULL, audio_init_thread, NULL) == 0) {
+        pthread_detach(t);
+    } else {
+        LV_LOG_WARN("No se pudo lanzar el hilo del audio; se inicializa en el hilo principal");
+        audio_init_sync();
+    }
+}
+
+void audio_init_sync(void) {
     /* Los diez `amixer` y el mixer de ALSA de mixer_setup() pueden tardar, trabarse, o
      * abortar el proceso si el elemento no existe -y todo eso pasaba antes del primer
      * dibujo, con la pantalla quedándose en el logo del equipo-. Va en su propio hilo:
