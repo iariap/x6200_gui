@@ -386,9 +386,8 @@ Con los números **medidos**; lo que no tiene medición va al anexo A.
    de 11,5 MB desde la raíz 0,467 s.
 4. **Pantalla de arranque** (logo + progreso): no baja el tiempo, mejora lo que se percibe.
 5. **Auriculares Bluetooth**: candidato para que se oiga la voz; **no probado** (§1).
-6. **Features que faltan de la migración**: app de canales/memorias, app de modos, `broadcast_db`,
-   `freq_scale`, `sstv_resources`, waterfall fijo/centrado y Snake. El inventario del que sale esta
-   lista no está respaldado por un diff contra la base: al anexo A.
+6. **Features que faltan de la migración**: inventario **fundado** en §16, con el comando que lo
+   reproduce (archivo por archivo entre `.x6100_ref/src` y `x6200_gui/src`).
 
 ---
 
@@ -657,7 +656,7 @@ con lo que haría falta para fundarlas.
 | El botón de power "apaga por software y vuelve a correr el userspace" | No se verificó en el driver/script | Leer el driver/script del power |
 | El "6 esperas" de `S48sntp` y que "todo está listo en S11" | No se leyó el script ni se listó el arranque de scripts | Leer `S48sntp` y medir una marca por script |
 | ~~"Los 3,81 s de scripts son udev, `create_data`, `tune_cache` y el daemon"~~ | **Fundado el 13/10**: están en §12, script por script | — |
-| El inventario de features que faltan de la migración | No hay diff contra la base | Diff/`grep` contra `.x6100_ref` |
+| ~~El inventario de features que faltan de la migración~~ | **Fundado el 13/10**: está en §16, archivo por archivo y con el comando | — |
 | "TX Cal / CESSB / filtro TX son imposibles: el baseband no los expone" | Afirmación de hardware sin fuente | Documentación del baseband/SoC |
 | "La app Android X6100 Link nunca se publicó" | Sin fuente | Buscar la publicación / confirmar con el autor |
 | "El banco da 0,15 s por los `open()` del sistema de archivos del host" | La comparación es medida; **la explicación** no | Perfilar el banco (QEMU) |
@@ -667,3 +666,38 @@ con lo que haría falta para fundarlas.
 **Estimaciones explícitas** (dichas como tales, no son hallazgos): el "~20 s" del banco rápido y el
 "~3 s" del diagnóstico de voz no se cronometraron con precisión; y el "~1 s" de daemon + enlace
 dinámico es en realidad el tramo medido 0,76-1,06 s sin desglosar.
+
+---
+
+## 16. Inventario de lo que falta portar, con evidencia
+
+Comparación **archivo por archivo** entre la referencia del X6100 y este port (medido el 13/10):
+
+```sh
+# archivos de la referencia que NO están en el port
+for f in $(ls .x6100_ref/src); do [ -e x6200_gui/src/$f ] || echo "$f"; done
+```
+
+Eso da 22 nombres; sacando los que sólo cambiaron de lenguaje (el port los tiene en **C** donde la
+referencia los tenía en **C++**: `band_info`, `dialog_settings`, `knobs`, `vol`) y los directorios
+(`common/`, `cw_decoder/`), **lo que falta de verdad es**:
+
+| Feature | En la referencia | En el port |
+|---|---|---|
+| App de canales/memorias | `channels.c/.h`, `dialog_channels.c/.h` | no están |
+| App de modos | `dialog_modes.c/.h` | no está |
+| `broadcast_db` | `broadcast_db.c/.h` | no está |
+| `sstv_resources` | `sstv_resources.c/.h` | no está |
+| `freq_scale` | `freq_scale.c/.h` | no está |
+| Snake | `dialog_snake.c/.h` | no está (`grep -rn snake x6200_gui/src` → vacío) |
+| Waterfall fijo/centrado | `wf_mode` usado en `buttons.cpp` y `cfg/cfg_api.*` | `grep -rl wf_mode x6200_gui/src` → vacío |
+| Audio por Bluetooth | `btaudio.cpp/.h` | no está (el port tiene `bt_devices.c`, que es otra cosa) |
+
+Y al revés, lo que el port agrega y la referencia no tiene (esta ROM): `adaptive_tuning`,
+`audio_enhancement`, `band_plan_data`, `bt_devices`, `controls_step`, `dialog_about`, `dialog_bt`,
+`dialog_callsign`, `dialog_eq`, `dialog_status`, `flags`, `gps_format`, `input_dev`, `kbd_caps`,
+`voice`, `gpio_safe`, `goertzel`, `pannel`.
+
+Las aplicaciones del menú en el port (código: `src/remote_server.cpp`, `app_names[]`): `off`, FT8,
+FT4, JS8, WSPR, SSTV, WeFax, NavTex, RTTY, CW, Field, GPS, Bands, Settings. Snake no es una app: en
+la referencia es un diálogo.
