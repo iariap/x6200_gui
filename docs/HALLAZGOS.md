@@ -41,6 +41,8 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 20. [La app de Bluetooth: como se llega y el scan](#20-la-app-de-bluetooth-como-se-llega-y-el-scan)
 21. [Las constantes viejas del dialogo: texto tapado por los botones](#21-las-constantes-viejas-del-dialogo-texto-tapado-por-los-botones)
 22. [Aceleracion grafica: la GPU esta, no se usa](#22-aceleracion-grafica-la-gpu-esta-no-se-usa)
+23. [Bluetooth completo: desemparejar, auto-connect, volumen y mute](#23-bluetooth-completo-desemparejar-auto-connect-volumen-y-mute)
+24. [WCAG 2.1 en todos los temas, con chequeo automatico](#24-wcag-21-en-todos-los-temas-con-chequeo-automatico)
 
 ---
 
@@ -1074,3 +1076,84 @@ en pantalla. No esta medido cuanto de eso es el waterfall y cuanto el resto de l
 **lima** + EGL/GBM en el rootfs, y un renderer que use GLES. LVGL 8 -el que usa este port- **no**
 tiene backend GLES (LVGL 9 tiene `lv_opengles`), asi que no es una opcion de compilacion: es un
 cambio de arquitectura de dibujo. Sin fundar: al anexo A.
+
+---
+
+## 23. Bluetooth completo: desemparejar, auto-connect, volumen y mute
+
+**Pedido**: "implementalo y termina completamente todo lo relacionado a BT".
+
+La app tenia scan, list, pair, connect, disconnect, RX to HP y Speaker. Faltaba lo que el script
+(`/usr/sbin/btaudio-ctl`) ya sabia hacer y nadie llamaba. Los cuatro huecos, y que se hizo:
+
+| Hueco | Comando del script que no se usaba | Hecho |
+|---|---|---|
+| **Desemparejar** (elegir "a cual no") | `remove MAC` | boton **Auto** con **hold** = unpair (lo destructivo detras de un long press) |
+| **Auto-connect** por dispositivo | `autoconnect MAC on\|off` | boton **Auto**: pulsacion prende/apaga; el estado ya se parseaba (`DEV <mac> <connected> <role> <autoconnect> <name>`) |
+| **Volumen de los auriculares** | `volume N` | la perilla de volumen ahora tambien mueve el sink A2DP cuando hay auriculares |
+| **Silenciar el altavoz** | `mute on\|off` | se escribia el flag y **no pasaba nada**: ahora llama al mute del equipo (`radio_change_mute`) |
+
+**Y un bug propio, encontrado al verificar**: abrir la app **se llevaba la GUI puesta**. La causa:
+`auto_label()` (la etiqueta del boton nuevo) llama a `selected_device()` y el marco de botones pide
+esa etiqueta **antes** de que exista la tabla → `lv_table_get_selected_cell(NULL, ...)`. Se veia
+como "la app no abre y vuelve el home" (medido: el PID de `x6200_gui` cambiaba y `dmesg` con
+segfault). Arreglado con un `if (table == NULL) return NULL;` y verificado: PID igual antes y
+despues de abrir, `dmesg` con 0 segfaults.
+
+**Como se verifico** (sin auriculares de verdad, con los archivos de estado que escribe el script):
+
+- **Volumen, A/B**: sin `/tmp/btaudio-hp` (sin auriculares) cambiar el volumen **no** llama al
+  script; con el archivo presente, el log muestra `btaudio-ctl volume 55`. Es exactamente el A/B.
+- **Mute**: apretar el boton deja en `/mnt/app_logs/bt.log`
+  `ui: btaudio-ctl mute on` + `altavoz apagado (mute del equipo)`.
+- **Auto sin dispositivo elegido**: no manda nada y avisa "Pick a paired device first".
+- Capturas de los botones y la nota: `evidencia-radio/bt-botones.png`.
+
+**Para poder medir todo esto** se agrego `/mnt/app_logs/bt.log` (una linea por accion, como
+`boot.log` y `voice.log`) y dos comandos al control remoto: `{"cmd":"btn","val":N}` (aprieta el
+boton N de la fila de abajo, por el mismo camino que las teclas F) y `{"cmd":"vol","val":N}` (pasa
+por `radio_change_vol`, o sea por el mismo camino que la perilla).
+
+**Queda por probar con auriculares de verdad** (necesita hardware): parear, conectar, el passkey,
+el auto-connect y que el volumen suene. Lo que se puede fundar sin ellos esta fundado.
+
+---
+
+## 24. WCAG 2.1 en todos los temas, con chequeo automatico
+
+**Pedido**: "todos los colores deben ser WCAG 2.x" (y AGENTS.md ya decia "Use WCAG coloring", sin
+que nadie lo verificara).
+
+**Chequeo nuevo**: `tests/check_wcag.py` (enganchado en `tests/run_all_tests.sh`), Python 3 solo
+stdlib, con la formula oficial WCAG 2.1 (luminancia relativa sRGB y `(L1+0.05)/(L2+0.05)`). Lee las
+**4 paletas built-in** de `src/theme.h` (y valida que cada rol tenga sus 4 hex), los **temas JSON**
+de la imagen y reconstruye VISION y Outdoor-Negative como los arma `theme.c`. **115 pares
+fg-sobre-bg** (hoy 117), cada uno con el `archivo:linea` de donde sale; umbrales **4.5** (texto
+normal), **3.0** (texto grande y no-texto, WCAG 1.4.11) y las exenciones de 1.4.3 (deshabilitados)
+informadas pero no fatales.
+
+**Lo que encontro**: **65 fallas en 9 temas**. Las peores: `title_text` sobre `list` **1.51:1**
+(IU1WXY, Legacy), `card` sobre `bg` **1.45:1** (Legacy), `btn_border` sobre `btn` **1.16:1** (Holo),
+`btn_active_border` sobre `btn_active` **1.00:1** (VISION), `bar_border` sobre `bar` **2.25:1**
+(Classic). En el tema que usa la radio (**Material 3**) habia 1: `title_text`/`list` 1.59.
+
+**Arreglado** ajustando **solo la luminosidad** (mismo tono, HLS) y con margen chico sobre el
+umbral: 22 colores en `src/theme.h`, 5 en los overrides de `src/theme.c` (VISION y
+Outdoor-Negative), 6 en `Holo.json` y 9 en `RS/theme.json`. Los ratios vinculantes quedaron entre
+3.18 y 4.82 (los cambios estan listados con el hex viejo y el nuevo en el commit). `Material 3` no
+necesito cambios propios: **hereda** el `title_text` arreglado de IU1WXY.
+
+**Un caso que el chequeo no podia ver y se arreglo a mano**: `dialog_field.c` pintaba la fila
+seleccionada de los listados con **negro fijo** sobre `TC(ok)`/`TC(warn)` → 3.45:1 y 3.84:1 en
+Outdoor. Ahora usa `TC(panel)` (el color de fondo del tema: negro en los oscuros, blanco en el
+claro) y se agregaron los dos pares al chequeo (paso de 115 a 117 pares).
+
+**Verificado**: `tests/check_wcag.py` → **0 fallas** (9 temas, 117 pares, 808 OK, 144 exentos);
+`check_actions.py` y `check_settings_focus.py` siguen OK; los 3 JSON parsean. Y en la radio: el
+tema activo es **"Material 3"**, que es un **JSON en `/mnt/themes/`** (la particion de datos
+sobrevive a reflashear), asi que ademas de reconstruir la imagen se copiaron los JSON arreglados a
+`/mnt/themes/`. Antes/despues de las pantallas en `evidencia-radio/comparacion-antes.png` y
+`comparacion-despues.png`: el tema queda igual, con los bordes y los textos secundarios mas claros.
+
+**Exenciones** (WCAG 1.4.3, deshabilitados; se miden y se informan): `track` 1.00, `icon_off` 1.04,
+`off` 1.09, `btn_off_text` 1.20, `text_mute` 1.73, `text_faint` 1.84, `switch_off` 2.81.

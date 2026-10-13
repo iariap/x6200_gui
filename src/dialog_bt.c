@@ -11,6 +11,7 @@
 
 #include "dialog_bt.h"
 
+#include "btaudio.h"
 #include "bt_devices.h"
 #include "buttons.h"
 #include "fonts/font_select.h"
@@ -60,8 +61,9 @@ static uint64_t   scan_until;
 
 static void refresh_cb(lv_timer_t *t);
 
-/* El boton Scan (definido mas abajo): refresh_cb lo refresca mientras dura el scan. */
+/* Los botones (definidos mas abajo): refresh_cb los refresca. */
 static button_data_t btn_scan;
+static button_data_t btn_auto;
 
 /* Etiqueta del boton Scan: es el affordance de que el scan esta corriendo. El boton queda
  * resaltado (buttons_mark), bloqueado (buttons_disabled: buttons_press lo ignora) y con la cuenta
@@ -113,6 +115,8 @@ static void bt_run(const char *cmd, bool scanning) {
     }
 
     pthread_t t;
+
+    btaudio_log("ui: btaudio-ctl %s", scanning ? "scan (+list)" : cmd);
 
     if (pthread_create(&t, NULL, run_thread, line) == 0) {
         pthread_detach(t);
@@ -224,6 +228,75 @@ static void fill_table(bt_list_t *l) {
     lv_label_set_text(label_state, state);
 }
 
+static const bt_device_t *selected_device(void) {
+    uint16_t row;
+    uint16_t col;
+
+    /* El marco de botones pide la etiqueta de "Auto" al armar la pagina, y eso pasa antes de que
+     * exista la tabla: sin este chequeo, abrir la app se llevaba la GUI puesta (crash medido el
+     * 13/10: el home volvia solo y no habia log). */
+    if (table == NULL) {
+        return NULL;
+    }
+
+    lv_table_get_selected_cell(table, &row, &col);
+
+    if (row >= (uint16_t) shown.n) {
+        return NULL;
+    }
+
+    return &shown.dev[row];
+}
+
+/* Auto-connect por dispositivo: el script lo guarda por MAC (BTAUDIO_AUTOCONNECT) y btaudio-ctl
+ * boot lo usa para reconectar solo al arrancar. En el boton: pulsacion = prender/apagar, y el
+ * hold = desemparejar (remove), que es lo destructivo y por eso va detras del long press. */
+static const char *auto_label(void) {
+    const bt_device_t *d = selected_device();
+
+    if (d == NULL || !d->paired) {
+        return "Auto:\n--";
+    }
+
+    return d->autoconnect ? "Auto:\nOn" : "Auto:\nOff";
+}
+
+static void auto_cb(button_data_t *data) {
+    const bt_device_t *d = selected_device();
+
+    if (d == NULL || !d->paired) {
+        lv_label_set_text(label_note, "Pick a paired device first");
+        buttons_refresh(data);
+        return;
+    }
+
+    bool on = !d->autoconnect;
+
+    char cmd[64];
+    snprintf(cmd, sizeof(cmd), "autoconnect %s %s", d->mac, on ? "on" : "off");
+    bt_run(cmd, false);
+
+    lv_label_set_text_fmt(label_note, "Auto-connect %s for %s", on ? "on" : "off", d->name);
+    buttons_refresh(data);
+}
+
+static void unpair_cb(button_data_t *data) {
+    const bt_device_t *d = selected_device();
+
+    if (d == NULL || !d->paired) {
+        lv_label_set_text(label_note, "Pick a paired device first");
+        buttons_refresh(data);
+        return;
+    }
+
+    char cmd[64];
+    snprintf(cmd, sizeof(cmd), "remove %s", d->mac);
+    bt_run(cmd, false);
+
+    lv_label_set_text_fmt(label_note, "Unpairing %s...", d->name);
+    buttons_refresh(data);
+}
+
 static void refresh_cb(lv_timer_t *t) {
     (void) t;
 
@@ -242,6 +315,7 @@ static void refresh_cb(lv_timer_t *t) {
         snprintf(last_text, sizeof(last_text), "%s", text);
         bt_read_state(&shown);
         fill_table(&shown);
+        buttons_refresh(&btn_auto);
     }
 
     /* El scan es lo unico que el usuario no puede ver: mientras corre se muestra el tiempo que
@@ -344,8 +418,11 @@ static void rx_cb(button_data_t *data) {
 }
 
 static void mute_cb(button_data_t *data) {
-    bt_run(shown.mute ? "mute off" : "mute on", false);
-    lv_label_set_text_fmt(label_note, "Speaker muted: %s", shown.mute ? "off" : "on");
+    bool mute = !shown.mute;
+
+    bt_run(mute ? "mute on" : "mute off", false);
+    btaudio_speaker_mute(mute);         /* el flag por si solo no apagaba nada */
+    lv_label_set_text_fmt(label_note, "Speaker muted: %s", mute ? "on" : "off");
     buttons_refresh(data);
 }
 
@@ -366,10 +443,11 @@ static void close_cb(button_data_t *data) {
 static button_data_t btn_scan = { .type = BTN_TEXT_FN, .label_fn = scan_label, .press = scan_cb };
 static button_data_t btn_rx   = { .type = BTN_TEXT_FN, .label_fn = rx_label, .press = rx_cb };
 static button_data_t btn_mute = { .type = BTN_TEXT_FN, .label_fn = mute_label, .press = mute_cb };
+static button_data_t btn_auto  = { .type = BTN_TEXT_FN, .label_fn = auto_label, .press = auto_cb, .hold = unpair_cb };
 static button_data_t btn_close = { .type = BTN_TEXT, .label = "Close", .press = close_cb };
 
 static buttons_page_t btn_page = {
-    .items = {&btn_scan, &btn_rx, &btn_mute, NULL, &btn_close},
+    .items = {&btn_scan, &btn_rx, &btn_mute, &btn_auto, &btn_close},
 };
 
 /* --- dialog -------------------------------------------------------------- */
@@ -434,7 +512,7 @@ static void construct_cb(lv_obj_t *parent) {
     lv_obj_set_width(label_note, 360);
     lv_obj_set_style_text_align(label_note, LV_TEXT_ALIGN_RIGHT, 0);
     lv_obj_set_pos(label_note, DIALOG_W + 13 - 18 - 360, DIALOG_BOX_H - STATUS_H - 4);
-    lv_label_set_text(label_note, "Press a row to pair, connect or disconnect");
+    lv_label_set_text(label_note, "Row: pair/connect - Auto: hold to unpair");
 
     shown.n  = 0;
     last_text[0] = '\0';

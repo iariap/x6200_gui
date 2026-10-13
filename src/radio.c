@@ -6,6 +6,7 @@
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
 #include "radio.h"
+#include "btaudio.h"
 #include "gpio_safe.h"
 
 #include "cfg/atu.h"
@@ -537,9 +538,18 @@ uint16_t radio_change_vol(int16_t df) {
 
     if (new_val != vol) {
         subject_set_int(cfg.vol.val, new_val);
+
+        /* Con auriculares A2DP conectados la perilla tambien mueve el volumen de los auriculares
+         * (el sink de PulseAudio, via btaudio-ctl volume): si no, no habia forma de cambiarlo
+         * (docs/HALLAZGOS.md 23). */
+        btaudio_headphone_volume(new_val);
     };
 
     return new_val;
+}
+
+bool radio_is_muted() {
+    return mute;
 }
 
 void radio_change_mute() {

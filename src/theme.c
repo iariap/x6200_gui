@@ -59,9 +59,9 @@ static const struct {
     {TC_strip, 0x262a31},       {TC_strip_grad, 0x262a31},   {TC_strip_border, 0x5dcaa5},   {TC_dialog, 0x262a31},
     {TC_dialog_grad, 0x262a31}, {TC_dialog_border, 0x5dcaa5}, {TC_btn, 0x2a3038},           {TC_btn_grad, 0x2a3038},
     {TC_btn_border, 0x5dcaa5},  {TC_btn_text, 0xffffff},     {TC_btn_active, 0xff8a30},     {TC_btn_active_grad, 0xff8a30},
-    {TC_btn_active_border, 0xff8a30}, {TC_btn_active_text, 0x2a1200}, {TC_btn_page, 0x2a3038}, {TC_btn_page_text, 0xe6fff6},
+    {TC_btn_active_border, 0x8d3d00}, {TC_btn_active_text, 0x2a1200}, {TC_btn_page, 0x2a3038}, {TC_btn_page_text, 0xe6fff6},
     {TC_text, 0xffffff},        {TC_text_value, 0xffffff},   {TC_text_soft, 0xe6fff6},      {TC_text_head, 0x5dcaa5},
-    {TC_mode_text, 0x2a1200},   {TC_mode_bg, 0xff8a30},      {TC_mode_border, 0xff8a30},    {TC_pill_border, 0x5dcaa5},
+    {TC_mode_text, 0x2a1200},   {TC_mode_bg, 0xff8a30},      {TC_mode_border, 0x8d3d00},    {TC_pill_border, 0x5dcaa5},
     {TC_pill_off_text, 0x80868e}, {TC_focus, 0xff8a30},      {TC_focus_text, 0x2a1200},     {TC_meter_bar, 0x5dcaa5},
     {TC_meter_weak, 0x5dcaa5},  {TC_meter_low, 0x5dcaa5},    {TC_meter_high, 0xff5a3c},     {TC_meter_over, 0xffd040},
     {TC_popup, 0x262a31},       {TC_popup_border, 0x5dcaa5},
@@ -147,9 +147,17 @@ static void use_builtin(int b) {
     theme_shape = builtin_shapes[src];
     if (b == B_OUTDOOR_NEG) {
         for (int i = 0; i < TC_COUNT; i++) colors[i] = negative(colors[i]);
-        /* the yellow of the selection stays yellow: its text stays black */
-        colors[TC_sel_text]        = builtin_colors[B_OUTDOOR][TC_sel_text];
-        colors[TC_btn_active_text] = builtin_colors[B_OUTDOOR][TC_btn_active_text];
+        /* The yellow of the selection stays yellow: its text and its border stay black.
+         * negative() corre los tres canales lo mismo, asi que un color cuyo canal mas alto y
+         * el mas bajo ya suman 255 (el amarillo de la seleccion, el azul puro del VFO) no se
+         * invierte: esos roles se ajustan a mano para que el texto siga legible (WCAG). */
+        colors[TC_sel_text]          = builtin_colors[B_OUTDOOR][TC_sel_text];
+        colors[TC_btn_active_text]   = builtin_colors[B_OUTDOOR][TC_btn_active_text];
+        colors[TC_sel_border]        = builtin_colors[B_OUTDOOR][TC_sel_border];
+        colors[TC_btn_active_border] = builtin_colors[B_OUTDOOR][TC_btn_active_border];
+        colors[TC_near_bg]           = builtin_colors[B_OUTDOOR][TC_near_bg];
+        colors[TC_focus_bg]          = 0x877100;
+        colors[TC_vfo]               = 0x4574ff;
         for (int i = 0; i < theme_shape.waterfall_n; i++) theme_shape.waterfall[i] = negative(theme_shape.waterfall[i]);
     }
     if (b == B_VISION) {

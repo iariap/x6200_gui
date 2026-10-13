@@ -54,6 +54,7 @@ uint16_t radio_change_moni(int16_t df);
 bool radio_change_spmode(int16_t df);
 
 void radio_change_mute();
+bool radio_is_muted();
 
 void radio_set_pwr(float d);
 

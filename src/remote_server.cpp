@@ -105,7 +105,7 @@ typedef struct {
 typedef enum {
     CMD_FREQ, CMD_TUNE, CMD_MODE, CMD_BAND, CMD_PRE, CMD_ATT, CMD_AGC, CMD_NB, CMD_NR, CMD_RFGAIN, CMD_FILTER, CMD_PWR,
     CMD_NB_LEVEL, CMD_NB_WIDTH, CMD_NR_LEVEL, CMD_AGC_MODE, CMD_SQL,
-    CMD_APP, CMD_APP_CMD, CMD_LOCATION, CMD_QSO_LOG, CMD_BTN
+    CMD_APP, CMD_APP_CMD, CMD_LOCATION, CMD_QSO_LOG, CMD_BTN, CMD_VOL
 } cmd_id_t;
 
 typedef struct {
@@ -346,6 +346,11 @@ static void apply_cmd(void *arg) {
             break;
         case CMD_BTN:
             buttons_press(c->val, false);
+            break;
+        case CMD_VOL:
+            /* Por radio_change_vol (no por el subject) para pasar por el mismo camino que la
+             * perilla, que es donde se sincroniza el volumen de los auriculares */
+            radio_change_vol(c->val - subject_get_int(cfg.vol.val));
             break;
         case CMD_APP_CMD:
             if (app_open(c->app_cmd))
@@ -682,6 +687,7 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
     } ints[] = {
         /* Boton de la fila de abajo (0..4): deja probar los dialogos sin tocar la radio */
         {"btn", CMD_BTN, 0, 4},
+        {"vol", CMD_VOL, 0, 100},
         {"freq", CMD_FREQ, SettingsManager::HF_MIN_FREQ, 500000000},
         {"tune", CMD_TUNE, -10000, 10000},
         {"band", CMD_BAND, 1, 999},

@@ -57,3 +57,7 @@ bool bt_state_discoverable(void) {
 bool bt_state_connected(void) {
     return access("/tmp/btaudio-hp", F_OK) == 0;
 }
+
+bool bt_state_mute(void) {
+    return lee_clave("BTAUDIO_MUTE", true);
+}

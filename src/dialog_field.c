@@ -577,7 +577,10 @@ static void list_select(int k) {
 
         lv_obj_set_style_bg_color(row, st.screen == SCR_PROG && st.prog == 'P' ? TC(ok) : TC(warn), 0);
         lv_obj_set_style_bg_opa(row, on ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
-        lv_obj_set_style_text_color(row, on ? lv_color_black() : TC(text), 0);
+        /* TC(panel) es el color de fondo del tema (oscuro en los oscuros y blanco en el claro):
+         * el negro fijo quedaba por debajo de 4.5:1 sobre ok/warn (medido: 3.45 y 3.84 en
+         * Outdoor, docs/HALLAZGOS.md 24). */
+        lv_obj_set_style_text_color(row, on ? TC(panel) : TC(text), 0);
     }
     lv_obj_scroll_to_view(lv_obj_get_child(list, sel), LV_ANIM_OFF);
 }

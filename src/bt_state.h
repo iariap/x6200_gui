@@ -25,6 +25,10 @@ bool bt_state_discoverable(void);
  * hay y lo borra cuando no (ver /usr/sbin/btaudio-ctl). */
 bool bt_state_connected(void);
 
+/* BTAUDIO_MUTE del script: mientras hay auriculares conectados, la GUI tiene que dejar el audio
+ * del equipo en 0 para que no suene tambien el altavoz. */
+bool bt_state_mute(void);
+
 #ifdef __cplusplus
 }
 #endif

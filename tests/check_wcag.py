@@ -1,0 +1,502 @@
+#!/usr/bin/env python3
+"""Comprueba que los colores de los temas cumplan WCAG 2.1 (contraste).
+
+AGENTS.md dice "Use WCAG coloring" y hasta ahora no habia ningun chequeo: un
+tema podia dejar texto gris sobre fondo gris y nadie se enteraba. Este script
+lee las cuatro paletas incorporadas de src/theme.h, los tres temas JSON que van
+en la imagen (Holo, Material 3, RS) y los dos temas que se arman en src/theme.c
+(VISION y Outdoor-Negative), y mide cada par (color de texto sobre superficie)
+que el codigo realmente dibuja.
+
+No usa nada fuera de la stdlib: la formula es la de WCAG 2.1.
+
+Umbrales:
+  4.5:1  texto normal (WCAG 1.4.3, nivel AA)
+  3.0:1  texto grande (>= 24 px normal o >= 18.66 px bold) y no-texto:
+         bordes, anillos de foco y barras de estado (WCAG 1.4.11)
+
+Exenciones (WCAG 1.4.3, "disabled/incidental"): los colores apagados por
+diseno (boton deshabilitado, texto en cola, iconos apagados, rieles de barra)
+se informan con su ratio pero NO hacen fallar el chequeo. Son:
+  btn_off_text, text_mute, text_faint, icon_off, switch_off, off, track.
+
+Salida: la tabla de lo que no esta OK (fallas y exenciones) y un resumen por
+tema. Sale con 1 si hay alguna falla.
+
+Uso:
+  python3 tests/check_wcag.py [--all]     --all imprime tambien los pares OK.
+
+SPDX-License-Identifier: GPL-2.0-or-later
+"""
+
+import json
+import re
+import sys
+from pathlib import Path
+
+RAIZ = Path(__file__).resolve().parent.parent
+THEME_H = RAIZ / "src" / "theme.h"
+THEME_C = RAIZ / "src" / "theme.c"
+TEMAS_DIR = RAIZ / "rootfs" / "usr" / "share" / "x6200" / "themes"
+
+
+def temas_json():
+    """Los temas de la imagen: `<nombre>.json` y `<nombre>/theme.json` (el RS)."""
+    return sorted(TEMAS_DIR.glob("*.json")) + sorted(TEMAS_DIR.glob("*/theme.json"))
+
+fallos = []
+avisos = []
+
+# ---------------------------------------------------------------------------
+# Formula WCAG 2.1
+# ---------------------------------------------------------------------------
+
+
+def _canal(c):
+    """Normaliza un canal 0..255 a 0..1 y aplica la transferencia sRGB."""
+    c = c / 255.0
+    if c <= 0.03928:
+        return c / 12.92
+    return ((c + 0.055) / 1.055) ** 2.4
+
+
+def luminancia(hexval):
+    """Luminancia relativa WCAG de un 0xRRGGBB."""
+    r = (hexval >> 16) & 0xFF
+    g = (hexval >> 8) & 0xFF
+    b = hexval & 0xFF
+    return 0.2126 * _canal(r) + 0.7152 * _canal(g) + 0.0722 * _canal(b)
+
+
+def contraste(a, b):
+    """Ratio de contraste WCAG entre dos 0xRRGGBB, siempre >= 1."""
+    la, lb = luminancia(a), luminancia(b)
+    if la < lb:
+        la, lb = lb, la
+    return (la + 0.05) / (lb + 0.05)
+
+
+def negativo(c):
+    """Luminosidad invertida conservando tono: el negative() de src/theme.c."""
+    r, g, b = (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF
+    hi = max(r, g, b)
+    lo = min(r, g, b)
+    d = 255 - hi - lo
+    return ((r + d) & 0xFF) << 16 | ((g + d) & 0xFF) << 8 | ((b + d) & 0xFF)
+
+
+# ---------------------------------------------------------------------------
+# Lectura de las paletas
+# ---------------------------------------------------------------------------
+
+
+def leer_theme_h():
+    """Devuelve {rol: [4 hexes]} con la linea de cada rol.
+
+    Cada renglon de THEME_COLORS(X) es `X(rol, 0x..., 0x..., 0x..., 0x...)`:
+    cuatro paletas en orden IU1WXY, Legacy, Outdoor, Classic. Si un color no
+    tiene cuatro valores, es un error (TC_COUNT se genera de esta misma macro).
+    """
+    texto = THEME_H.read_text(errors="surrogateescape")
+    m = re.search(r"#define\s+THEME_COLORS\(X\)(.*?)typedef enum", texto, re.S)
+    if not m:
+        fallos.append("src/theme.h: no encontre la macro THEME_COLORS(X)")
+        return {}
+
+    colores = {}
+    for renglon in m.group(1).splitlines():
+        mm = re.match(
+            r"\s*X\(\s*([a-z_0-9]+)\s*,\s*(0x[0-9a-fA-F]{6})\s*,\s*(0x[0-9a-fA-F]{6})\s*,"
+            r"\s*(0x[0-9a-fA-F]{6})\s*,\s*(0x[0-9a-fA-F]{6})\s*\)",
+            renglon,
+        )
+        if not mm:
+            continue
+        rol = mm.group(1)
+        valores = [int(mm.group(i), 16) for i in range(2, 6)]
+        if len(valores) != 4:       # el regex ya lo garantiza: queda por claridad
+            fallos.append(f"src/theme.h: {rol} no tiene 4 valores")
+            continue
+        colores[rol] = valores
+
+    if not colores:
+        fallos.append("src/theme.h: no pude leer ningun color de THEME_COLORS")
+
+    # Toda entrada tiene que tener rol + 4 valores: si una linea X( no se pudo
+    # leer, o hay dos roles con el mismo nombre, el conteo no cierra.
+    entradas = [l for l in m.group(1).splitlines() if re.search(r"\bX\s*\(", l)]
+    if len(entradas) != len(colores):
+        fallos.append(
+            f"src/theme.h: {len(entradas)} entradas X( pero {len(colores)} roles con 4 valores"
+        )
+
+    # El enum sale de la misma macro, asi que TC_COUNT tiene que ser la cantidad
+    # de roles.
+    if not re.search(r"THEME_COLORS\(THEME_ENUM\)", texto):
+        fallos.append("src/theme.h: THEME_COLORS(THEME_ENUM) no esta: TC_COUNT quedaria en 0")
+    return colores
+
+
+def leer_vision():
+    """Overrides de VISION que estan en el array vision_colors de src/theme.c."""
+    texto = THEME_C.read_text(errors="surrogateescape")
+    m = re.search(r"vision_colors\[\]\s*=\s*\{(.*?)\};", texto, re.S)
+    if not m:
+        fallos.append("src/theme.c: no encontre el array vision_colors")
+        return {}
+    over = {}
+    for rol, valor in re.findall(r"\{\s*TC_([a-z_0-9]+)\s*,\s*(0x[0-9a-fA-F]{6})\s*\}", m.group(1)):
+        over[rol] = int(valor, 16)
+    return over
+
+
+def leer_formas():
+    """Forma de cada tema incorporado: las banderas que deciden que par existe.
+
+    Un borde de ancho 0 no se dibuja (no hay contraste que exigir); sin
+    gradiente no hay *_grad; sin mode_box el modo se escribe sobre la franja.
+    Estas son las mismas banderas de src/theme.c y de los JSON.
+    """
+    texto = THEME_C.read_text(errors="surrogateescape")
+    forma = {}
+    for acronimo in ("B_IU1WXY", "B_LEGACY", "B_OUTDOOR", "B_CLASSIC"):
+        m = re.search(r"\[" + acronimo + r"\]\s*=\s*\{(.*?)\}", texto, re.S)
+        if not m:
+            fallos.append(f"src/theme.c: no encontre la forma de {acronimo}")
+            continue
+        cuerpo = m.group(1)
+
+        def num(clave):
+            mm = re.search(r"\." + clave + r"\s*=\s*(-?\d+)", cuerpo)
+            return int(mm.group(1)) if mm else 0
+
+        def flag(clave):
+            mm = re.search(r"\." + clave + r"\s*=\s*(true|false)", cuerpo)
+            return mm is not None and mm.group(1) == "true"
+
+        forma[acronimo] = {
+            "border": num("border"),
+            "pill_border": num("pill_border"),
+            "btn_gradient": flag("btn_gradient"),
+            "box_gradient": flag("box_gradient"),
+            "mode_box": flag("mode_box"),
+        }
+    if set(forma) != {"B_IU1WXY", "B_LEGACY", "B_OUTDOOR", "B_CLASSIC"}:
+        return forma
+
+    # VISION se arma con IU1WXY y despues pisa la forma (theme.c:158-160).
+    forma["B_VISION"] = {
+        "border": 2, "pill_border": 2, "btn_gradient": False, "box_gradient": False, "mode_box": True,
+    }
+    # Outdoor-Negative usa la forma de Outdoor sin cambios (theme.c:147).
+    forma["B_OUTDOOR_NEG"] = dict(forma["B_OUTDOOR"])
+    return forma
+
+
+def armar_paletas(colores):
+    """Las nueve paletas que puede ver el usuario, con su forma, en orden de menu."""
+    formas = leer_formas()
+    acronimo = {
+        "IU1WXY": "B_IU1WXY", "Legacy": "B_LEGACY", "Outdoor": "B_OUTDOOR",
+        "Classic": "B_CLASSIC", "Outdoor-Negative": "B_OUTDOOR_NEG", "VISION": "B_VISION",
+    }
+    cuatro = ["IU1WXY", "Legacy", "Outdoor", "Classic"]
+    paletas, shapes = {}, {}
+    for i, nombre in enumerate(cuatro):
+        paletas[nombre] = {rol: v[i] for rol, v in colores.items()}
+        shapes[nombre] = dict(formas.get(acronimo[nombre], {}))
+
+    # Outdoor-Negative: Outdoor entero por negative(); los roles que negative() no
+    # puede invertir (amarillo de la seleccion, azul puro del VFO) quedan como en
+    # Outdoor o puestos a mano (theme.c:148-162).
+    neg = {rol: negativo(c) for rol, c in paletas["Outdoor"].items()}
+    for rol in ("sel_text", "btn_active_text", "sel_border", "btn_active_border", "near_bg"):
+        neg[rol] = paletas["Outdoor"][rol]
+    neg["focus_bg"] = 0x877100
+    neg["vfo"] = 0x4574ff
+    paletas["Outdoor-Negative"] = neg
+    shapes["Outdoor-Negative"] = dict(shapes["Outdoor"])
+
+    # VISION: parte de IU1WXY y pisa lo que dice vision_colors (theme.c:155-161).
+    vision = dict(paletas["IU1WXY"])
+    vision.update(leer_vision())
+    paletas["VISION"] = vision
+    shapes["VISION"] = dict(shapes["IU1WXY"], border=2, pill_border=2, btn_gradient=False, box_gradient=False, mode_box=True)
+
+    # JSON: base + colors por nombre de clave (el nombre del color sin TC_), y
+    # las banderas de forma que el archivo pise.
+    for ruta in temas_json():
+        if not ruta.exists():
+            fallos.append(f"falta el tema {ruta.relative_to(RAIZ)}")
+            continue
+        try:
+            datos = json.loads(ruta.read_text(errors="surrogateescape"))
+        except json.JSONDecodeError as e:
+            fallos.append(f"{ruta.relative_to(RAIZ)}: JSON invalido: {e}")
+            continue
+        base = datos.get("base", "IU1WXY")
+        if base not in paletas:
+            fallos.append(f"{ruta.relative_to(RAIZ)}: base desconocida {base!r}")
+            continue
+        nombre = ruta.stem if ruta.name != "theme.json" else ruta.parent.name
+        paleta = dict(paletas[base])
+        forma = dict(shapes[base])
+        for clave, valor in (datos.get("colors") or {}).items():
+            if clave not in colores:
+                fallos.append(f"{ruta.relative_to(RAIZ)}: color desconocido {clave!r} (no es un TC_)")
+                continue
+            if not isinstance(valor, str) or not re.fullmatch(r"#?[0-9a-fA-F]{6}", valor):
+                fallos.append(f"{ruta.relative_to(RAIZ)}: {clave} no es #rrggbb: {valor!r}")
+                continue
+            paleta[clave] = int(valor.lstrip("#"), 16)
+        for clave in ("border", "pill_border", "btn_gradient", "box_gradient", "mode_box"):
+            if clave in datos:
+                forma[clave] = datos[clave]
+        paletas[nombre], shapes[nombre] = paleta, forma
+
+    return paletas, shapes
+
+
+# ---------------------------------------------------------------------------
+# La tabla de pares (fg sobre bg) que el codigo dibuja de verdad
+# ---------------------------------------------------------------------------
+
+# Texto generico del tema: se dibuja sobre cualquier superficie de contenido.
+# Superficies de contenido: donde el codigo pone un fondo y encima una etiqueta.
+#   bg            styles.c:318/349 (fondo de pantalla), dialog_field.c:1805
+#   bar/bar_grad  dialog_field.c:1813-1827 (cabecera de FIELD)
+#   strip[/_grad] freq_strip.c:108/120 (franja de frecuencia)
+#   dialog[/_grad] app_frame.c:41 + app_frame.h:31-32 (cabecera y estado del app)
+#   panel         app_frame.c:52 + dialog_field.c:465/853
+#   list          dialog_js8.c:2729 + 2669
+#   row           dialog_js8.c:2667 + 2669
+#   popup         dialog_sstv.c:1808, dialog_cluster.c:959
+#   side          cluster_column.c:400 + 418/427/428/437
+#   chip          dialog_cw_kbd.c:164, dialog_field.c:900
+#   frame         dialog_wefax.c:1131
+# card queda afuera de la tabla de texto a proposito: es un borde (theme.h:52),
+# no una superficie de texto; se mide como no-texto mas abajo. Lo mismo
+# sel_bg/focus/btn*: su texto es sel_text/focus_text/btn*_text, no el generico.
+SUPERFICIES = [
+    "bg", "bar", "bar_grad", "strip", "strip_grad", "dialog", "dialog_grad",
+    "panel", "list", "row", "popup", "side", "chip", "frame",
+]
+TEXTOS = ["text", "text_value", "text_head", "text_dim"]
+
+# De donde sale cada rol de texto generico en el codigo.
+USO_TEXTO = {
+    "text": "dialog_field.c:534, dialog_cluster.c:254",
+    "text_value": "cluster_column.c:427, freq_list.c:145",
+    "text_head": "cluster_column.c:418, app_frame.h:31",
+    "text_dim": "app_frame.h:32, dialog_field.c:557, dialog_cluster.c:248",
+}
+
+# Requisitos de forma: un par solo existe si el tema dibuja esa superficie.
+# None = siempre. "border" = ancho de borde > 0. "box_gradient"/"btn_gradient"
+# = el tema usa el gradiente. "mode_box" = el modo va en su caja.
+# (fg, bg, umbral, requisito, archivo:linea de donde sale el par)
+PARES_ESPECIFICOS = [
+    # Seleccion, foco y botones: cada rol de texto tiene su superficie.
+    ("sel_text", "sel_bg", 4.5, None, "dialog_bands.c:87+194, dialog_sstv.c:1833+1840"),
+    ("sel_text", "near_bg", 4.5, None, "freq_list.c:31+134+144"),
+    ("focus_text", "focus", 4.5, None, "theme.h:53-54, styles.c:229-233"),
+    ("text", "focus_bg", 4.5, None, "dialog_js8.c:2668-2669"),
+    # Fila seleccionada de los listados: el texto va sobre TC(ok)/TC(warn)
+    ("panel", "ok", 4.5, None, "dialog_field.c:578-583"),
+    ("panel", "warn", 4.5, None, "dialog_field.c:578-583"),
+    ("btn_text", "btn", 4.5, None, "theme.h:37+40, styles.c:162"),
+    ("btn_text", "btn_grad", 4.5, "btn_gradient", "theme.h:38+40"),
+    ("btn_active_text", "btn_active", 4.5, None, "theme.h:41+44"),
+    ("btn_active_text", "btn_active_grad", 4.5, "btn_gradient", "theme.h:42+44"),
+    ("btn_page_text", "btn_page", 4.5, None, "theme.h:45-46"),
+    # Encabezados de lista y del modo (fuente grande en freq_strip.c:121).
+    ("title_text", "list", 4.5, None, "dialog_js8.c:3945"),
+    ("mode_text", "mode_bg", 3.0, "mode_box", "freq_strip.c:121+124 (sony_24/sony_36, grande)"),
+    ("mode_text", "strip", 3.0, "no_mode_box", "freq_strip.c:108+121 (sony_24/sony_36, grande)"),
+    ("mode_border", "mode_bg", 3.0, "mode_box", "freq_strip.c:124-126"),
+    ("mode_dig", "bar", 4.5, None, "info.c:256, theme.h:121 (info box)"),
+    # Estados sobre las superficies donde el codigo los escribe.
+    ("alert_text", "alert_bg", 4.5, None, "cluster_column.c:114+135"),
+    ("text", "alert_box", 4.5, None, "dialog_cluster.c:233+254"),
+    ("text_dim", "alert_box", 4.5, None, "dialog_cluster.c:233+248"),
+    ("text_value", "vfo_bg", 4.5, None, "cluster_column.c:114+129"),
+    ("vfo", "vfo_bg", 4.5, None, "cluster_column.c:114+254"),
+    ("vfo", "side", 4.5, None, "cluster_column.c:84+254+400"),
+    ("digi", "side", 4.5, None, "cluster_column.c:84+400"),
+    ("warn", "side", 4.5, None, "cluster_column.c:84+400"),
+    ("text_value", "side", 4.5, None, "cluster_column.c:84+427+400"),
+    ("new", "side", 4.5, None, "cluster_column.c:61+136+400"),
+    ("action", "row", 4.5, None, "dialog_js8.c:2667+2739"),
+    ("ok", "row", 4.5, None, "dialog_js8.c:2667+3957"),
+    ("info", "panel", 4.5, None, "dialog_field.c:148-151+850"),
+    ("ok", "panel", 4.5, None, "dialog_field.c:148+850"),
+    ("err", "panel", 4.5, None, "dialog_field.c:850+860"),
+    ("accent", "panel", 4.5, None, "js8_map.c:186+196"),
+    ("info", "bg", 4.5, None, "main_screen.c:986+994"),
+]
+
+# No-texto (WCAG 1.4.11): bordes, anillos y barras contra lo que tienen al lado.
+# Los bordes solo cuentan si el tema los dibuja (requisito "border").
+# (fg, bg, requisito, archivo:linea)
+PARES_NO_TEXTO = [
+    ("bar_border", "bar", "border", "theme.h:30, dialog_field.c:1813"),
+    ("strip_border", "strip", "border", "theme.h:33"),
+    ("dialog_border", "dialog", "border", "theme.h:36, app_frame.c:54"),
+    ("panel_border", "panel", "border", "theme.h:59, app_frame.c:52-54"),
+    ("btn_border", "btn", "border", "theme.h:39"),
+    ("btn_active_border", "btn_active", "border", "theme.h:43"),
+    ("popup_border", "popup", "border", "dialog_cluster.c:959-961"),
+    ("card", "bg", "border", "theme.h:52 (borde de las tarjetas de Ajustes)"),
+    ("control_border", "panel", "border", "theme.h:114 (sliders y toggles de Ajustes)"),
+    ("sel_border", "sel_bg", None, "freq_list.c:134-135, dialog_sstv.c:1833-1835"),
+    ("pill_border", "bar", "pill_border", "theme.h:126 (items del info box)"),
+    ("ok_bar", "track", None, "app_frame.c:36+65 (barra de la app)"),
+]
+
+# Exenciones por "disabled/incidental" (WCAG 1.4.3): se miden y se informan,
+# pero no hacen fallar. Son los colores apagados a proposito.
+EXENTOS = {"btn_off_text", "text_mute", "text_faint", "icon_off", "switch_off", "off", "track"}
+
+# Donde se ve cada color exento: se mide igual y se informa su peor ratio, pero
+# no hace fallar el chequeo (WCAG 1.4.3, texto deshabilitado o incidental).
+# (fg, bg, umbral, archivo:linea)
+PARES_EXENTOS = [
+    ("btn_off_text", "btn", 4.5, "theme.h:47 (boton deshabilitado)"),
+    ("btn_off_text", "btn_grad", 4.5, "theme.h:47"),
+    ("text_mute", "bg", 4.5, "theme.h:79, spectrum.c:101"),
+    ("text_mute", "bar", 4.5, "theme.h:79"),
+    ("text_mute", "panel", 4.5, "theme.h:79 (items grises)"),
+    ("text_mute", "list", 4.5, "theme.h:79, styles.c:176"),
+    ("text_mute", "side", 4.5, "cluster_column.c:64"),
+    ("text_faint", "panel", 4.5, "theme.h:80 (en cola, idle)"),
+    ("text_faint", "bg", 4.5, "dialog_wspr.c:464, js8_map.c"),
+    ("text_faint", "list", 4.5, "theme.h:80"),
+    ("icon_off", "bar", 3.0, "theme.h:112 (iconos apagados de la barra)"),
+    ("switch_off", "panel", 3.0, "theme.h:111 (switch de Ajustes apagado)"),
+    ("off", "panel", 3.0, "theme.h:110 (barras sin encender)"),
+    ("off", "bar", 3.0, "theme.h:110"),
+    ("track", "panel", 3.0, "theme.h:108, app_frame.c:36 (riel de la barra)"),
+    ("track", "bar", 3.0, "theme.h:108"),
+]
+
+
+def armar_pares():
+    pares = []
+    for fg in TEXTOS:
+        for bg in SUPERFICIES:
+            req = "box_gradient" if bg in ("strip_grad", "dialog_grad") else None
+            pares.append((fg, bg, 4.5, req, f"theme.h:{fg} sobre {bg}; uso: {USO_TEXTO[fg]}"))
+    for fg, bg, umbral, req, donde in PARES_ESPECIFICOS:
+        pares.append((fg, bg, umbral, req, donde))
+    for fg, bg, req, donde in PARES_NO_TEXTO:
+        pares.append((fg, bg, 3.0, req, donde))
+    for fg, bg, umbral, donde in PARES_EXENTOS:
+        pares.append((fg, bg, umbral, None, donde))
+    return pares
+
+
+def aplica(req, forma):
+    """Si ese par existe en un tema con esa forma."""
+    if req is None:
+        return True
+    if req == "border":
+        return forma.get("border", 0) > 0
+    if req == "no_mode_box":
+        return not forma.get("mode_box", False)
+    return bool(forma.get(req, False))
+
+
+# ---------------------------------------------------------------------------
+# Chequeo
+# ---------------------------------------------------------------------------
+
+
+def main():
+    imprimir_todo = "--all" in sys.argv[1:]
+
+    colores = leer_theme_h()
+    if not colores:
+        for f in fallos:
+            print("  FALLO:", f)
+        return 1
+
+    paletas, shapes = armar_paletas(colores)
+    pares = armar_pares()
+
+    print(f"  roles en src/theme.h: {len(colores)} (4 valores cada uno)")
+    print(f"  temas: {len(paletas)} | pares definidos: {len(pares)}")
+    print()
+
+    encabezado = f"  {'tema':<16} {'par (fg sobre bg)':<34} {'ratio':>6} {'min':>5}  resultado"
+    total_ok = total_falla = total_exento = 0
+    resumen = []
+    peores_exentos = {}     # (fg, bg) -> (peor ratio, tema)
+
+    for tema, paleta in paletas.items():
+        forma = shapes.get(tema, {})
+        filas = []
+        aplicables = 0
+        for fg, bg, umbral, req, donde in pares:
+            if not aplica(req, forma):
+                continue
+            if fg not in paleta or bg not in paleta:
+                fallos.append(f"{tema}: falta el rol {fg if fg not in paleta else bg}")
+                continue
+            aplicables += 1
+            ratio = contraste(paleta[fg], paleta[bg])
+            exento = fg in EXENTOS
+            ok = ratio >= umbral or exento
+            filas.append((ok, exento, ratio, umbral, fg, bg, donde))
+            if exento:
+                total_exento += 1
+                if (fg, bg) not in peores_exentos or ratio < peores_exentos[(fg, bg)][0]:
+                    peores_exentos[(fg, bg)] = (ratio, tema, donde)
+            elif ok:
+                total_ok += 1
+            else:
+                total_falla += 1
+        resumen.append((tema, aplicables))
+
+        mostrar = [f for f in filas if imprimir_todo or not f[0]]
+        if not mostrar:
+            print(f"  {tema:<16} sin fallas")
+            continue
+
+        print(f"  === {tema} ===")
+        print(encabezado)
+        for ok, exento, ratio, umbral, fg, bg, donde in sorted(mostrar, key=lambda f: f[2]):
+            if exento:
+                estado = "exento"
+            elif ok:
+                estado = "OK"
+            else:
+                estado = "FALLA"
+                fallos.append(f"{tema}: {fg} sobre {bg} = {ratio:.2f}:1 (< {umbral}) [{donde}]")
+            print(f"  {'':<16} {fg + ' sobre ' + bg:<34} {ratio:>6.2f} {umbral:>5.1f}  {estado}")
+        print()
+
+    if peores_exentos:
+        print("  === exenciones (WCAG 1.4.3: disabled/incidental, no fallan) ===")
+        for (fg, bg), (ratio, tema, donde) in sorted(peores_exentos.items(), key=lambda k: k[1][0]):
+            print(f"  {'':<16} {fg + ' sobre ' + bg:<34} {ratio:>6.2f}  peor en {tema}  [{donde}]")
+        print()
+
+    print("================ resumen ================")
+    for tema, n in resumen:
+        print(f"  {tema:<16} {n} pares aplicables")
+    print(f"  pares OK: {total_ok} | exentos: {total_exento} | FALLAS: {total_falla}")
+
+    if avisos:
+        for a in avisos:
+            print("  AVISO:", a)
+    if fallos:
+        for f in fallos:
+            print("  FALLO:", f)
+        return 1
+
+    print("  todos los pares cumplen WCAG 2.1 (AA)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

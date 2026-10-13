@@ -27,20 +27,20 @@ extern "C" {
     X(bg,                0x27313a, 0x0040a0, 0xffffff, 0x000000) /* screen background */ \
     X(bar,               0x3a3f47, 0x2a5aa0, 0xf2f2f2, 0x0e0e0e) /* top bar boxes: info, S-meter, clock */ \
     X(bar_grad,          0x23272d, 0x103060, 0xf2f2f2, 0x0e0e0e) \
-    X(bar_border,        0x777777, 0x8aa8d8, 0x000000, 0x4c4c4c) \
+    X(bar_border,        0x8d8d8d, 0x98b3dd, 0x000000, 0x636363) \
     X(strip,             0x1c2a38, 0x1a4078, 0xffffff, 0x000000) /* frequency strip */ \
     X(strip_grad,        0x101a24, 0x0c2448, 0xffffff, 0x000000) \
-    X(strip_border,      0x4a6a8a, 0x8aa8d8, 0x000000, 0x4c4c4c) \
+    X(strip_border,      0x54799d, 0x8aa8d8, 0x000000, 0x5d5d5d) \
     X(dialog,            0x49636f, 0x2a5aa0, 0xffffff, 0x101010) /* app windows */ \
     X(dialog_grad,       0x2c3a45, 0x103060, 0xffffff, 0x000000) \
-    X(dialog_border,     0xe0e4e8, 0x8aa8d8, 0x000000, 0x5a5a5a) \
+    X(dialog_border,     0xe0e4e8, 0x98b3dd, 0x000000, 0x646464) \
     X(btn,               0x0b1622, 0x0b1622, 0xe6e6e6, 0x5e5e5e) /* bottom buttons */ \
     X(btn_grad,          0x0b1622, 0x0b1622, 0xe6e6e6, 0x262626) \
-    X(btn_border,        0x99aaaa, 0x99aaaa, 0x000000, 0x8a8a8a) \
+    X(btn_border,        0x99aaaa, 0x99aaaa, 0x000000, 0xb6b6b6) \
     X(btn_text,          0xffffff, 0xffffff, 0x000000, 0xffffff) \
     X(btn_active,        0x2a220c, 0x2a220c, 0xffd400, 0x2f72d6) \
     X(btn_active_grad,   0x2a220c, 0x2a220c, 0xffd400, 0x123e86) \
-    X(btn_active_border, 0xffd24a, 0xffd24a, 0x000000, 0x9fd2ff) \
+    X(btn_active_border, 0xffd24a, 0xffd24a, 0x000000, 0xb0daff) \
     X(btn_active_text,   0xffffff, 0xffffff, 0x000000, 0xffffff) \
     X(btn_page,          0x16232f, 0x16232f, 0xc8c8c8, 0x2a2a2a) /* the page button, bottom left */ \
     X(btn_page_text,     0xccddee, 0xccddee, 0x000000, 0xb4b4b4) \
@@ -49,14 +49,14 @@ extern "C" {
     X(btn_mark,          0x66ff66, 0x66ff66, 0x008a00, 0xffa000) /* encoder mark on a button */ \
     X(btn_mark_assigned, 0x80ff80, 0x80ff80, 0x50b050, 0xffc060) \
     X(btn_mark_active,   0xff4040, 0xff4040, 0xff0000, 0xff3030) /* the control the encoder is on now */ \
-    X(card,              0x506070, 0x506070, 0x000000, 0x4c4c4c) /* Settings cards: border */ \
+    X(card,              0x697f94, 0x8799aa, 0x000000, 0x5d5d5d) /* Settings cards: border */ \
     X(focus,             0xffffff, 0xffffff, 0x0040d0, 0x2f72d6) /* focused control in Settings */ \
     X(focus_text,        0x000000, 0x000000, 0xffffff, 0xffffff) \
     X(edited,            0xffffff, 0xffffff, 0xff7000, 0xffa000) /* control being edited */ \
     \
     /* app content */ \
     X(panel,             0x000000, 0x000000, 0xffffff, 0x000000) /* content panels, lists, tables */ \
-    X(panel_border,      0x445566, 0x445566, 0x000000, 0x4c4c4c) \
+    X(panel_border,      0x4c5f71, 0x4c5f71, 0x000000, 0x5d5d5d) \
     X(list,              0x202020, 0x202020, 0xffffff, 0x0a0a0a) /* JS8 lists */ \
     X(row,               0x303030, 0x303030, 0xe4e4e4, 0x1c1c1c) /* alternate / header rows */ \
     X(popup,             0x0b1622, 0x0b1622, 0xffffff, 0x141414) /* menus and popups */ \
@@ -74,18 +74,18 @@ extern "C" {
     /* text */ \
     X(text,              0xffffff, 0xffffff, 0x000000, 0xffffff) \
     X(text_value,        0xd0e0f0, 0xd0e0f0, 0x000000, 0xe6e6e6) /* values, frequencies */ \
-    X(text_dim,          0x90a0b0, 0x90a0b0, 0x3a3a3a, 0xa0a0a0) /* hints, notes, secondary */ \
+    X(text_dim,          0xdae0e5, 0xd2d9df, 0x3a3a3a, 0xa0a0a0) /* hints, notes, secondary */ \
     X(text_soft,         0xbbbbbb, 0xbbbbbb, 0x4a4a4a, 0xb4b4b4) /* inactive knob / lock */ \
     X(text_mute,         0x808080, 0x808080, 0x5a5a5a, 0x787878) /* greyed items */ \
     X(text_faint,        0x607080, 0x607080, 0x6a6a6a, 0x5a5a5a) /* queued, idle */ \
     X(text_head,         0x90f0d0, 0x90f0d0, 0x0030a0, 0x40c8ff) /* app headers and titles */ \
     X(line,              0xaaaaaa, 0xaaaaaa, 0x303030, 0xa0a0a0) /* scales, axis lines */ \
-    X(action,            0xffc040, 0xffc040, 0xb04a00, 0xffa000) /* back / close / cancel items */ \
+    X(action,            0xffc040, 0xffc040, 0xa54500, 0xffa000) /* back / close / cancel items */ \
     \
     /* state */ \
-    X(ok,                0x88ff88, 0x88ff88, 0x007a00, 0x40e040) \
+    X(ok,                0x88ff88, 0x88ff88, 0x007300, 0x40e040) \
     X(ok_bg,             0x1f4a24, 0x1f4a24, 0xd6f5d6, 0x0c3010) \
-    X(ok_bar,            0x40c060, 0x40c060, 0x00a000, 0x30c040) /* progress bars */ \
+    X(ok_bar,            0x40c060, 0x40c060, 0x007400, 0x30c040) /* progress bars */ \
     X(warn,              0xffb040, 0xffb040, 0x9a5a00, 0xffa000) /* also CW */ \
     X(warn_bg,           0x4a3a10, 0x4a3a10, 0xfff0c0, 0x3a2800) \
     X(err,               0xff6060, 0xff6060, 0xd00000, 0xff4040) \
@@ -118,7 +118,7 @@ extern "C" {
     /* main screen */ \
     X(vfo_line,          0xff2020, 0xff2020, 0xe00000, 0xff2020) /* VFO line and filter band on spectrum / waterfall */ \
     X(spot,              0x40e8ff, 0x40e8ff, 0x000000, 0x40e8ff) /* cluster spots on the waterfall */ \
-    X(mode_dig,          0xff8080, 0xff8080, 0x5f0000, 0xff8080) /* digital mode name in the info box */ \
+    X(mode_dig,          0xff8e8e, 0xffcbcb, 0x5f0000, 0xff8080) /* digital mode name in the info box */ \
     X(mode_text,         0xff6060, 0xff6060, 0x770000, 0xff4040) /* mode next to the frequency */ \
     X(mode_bg,           0x5a4818, 0x5a4818, 0xe7d5a5, 0x1f5fbf) /* its box (theme_shape.mode_box) */ \
     X(mode_border,       0xffffff, 0xffffff, 0x000000, 0x9fd2ff) \
@@ -158,7 +158,7 @@ extern "C" {
     X(row_cq,            0x006000, 0x006000, 0x9fff9f, 0x006000) \
     X(row_group,         0x102a60, 0x102a60, 0x9fb9ef, 0x102a60) \
     X(row_sel_bar,       0x40ff40, 0x40ff40, 0x008f00, 0x40ff40) \
-    X(title_text,        0x1030a0, 0x1030a0, 0x0030a0, 0x1030a0) /* on a light title bar */ \
+    X(title_text,        0x6685f0, 0x6685f0, 0x0030a0, 0x5174ee) /* list title, on the list's own background */ \
     X(ft8_cq,            0x00dd00, 0x00dd00, 0x22ff22, 0x00b000) /* FT8 rows: CQ not worked */ \
     X(ft8_cq_worked,     0x2e5a00, 0x2e5a00, 0xd3ffa5, 0x2e5a00) \
     X(ft8_cq_same,       0x224400, 0x224400, 0xddffbb, 0x224400) /* worked in this mode */ \
