@@ -271,7 +271,8 @@ era ruido.
 
 ## 9. Pendientes ordenados por valor
 
-1. **Arranque — el replay del journal del rootfs (1,34 s)**: ver §11. Es lo más grande que queda
+1. **Arranque — el replay del journal del rootfs (0,5-1,3 s tras apagado sucio)**: ver §11. Es lo
+   más grande que queda
    y el único que necesita una decisión (rootfs read-only).
 2. **Arranque — leer el binario y las bibliotecas (~1 s)**: ver §12.
 3. **Arranque — los scripts (~1,4-3,8 s según el arranque)**: ver §12.
@@ -341,20 +342,31 @@ Y los dispositivos abiertos quedan **idénticos** (`/proc/<pid>/fd`): `event0` (
 
 ---
 
-## 11. Los 1,34 s del journal ext4 del rootfs (pendiente, con opciones)
+## 11. El replay del journal ext4 del rootfs (0,5-1,3 s, sólo tras apagado sucio)
 
-`dmesg` muestra que **en todos los arranques** el rootfs pide replay del journal:
+Cuando el rootfs queda **sucio** al apagarse, el kernel tiene que replayar el journal antes de
+montarlo (`dmesg`):
 
 ```
-[    2.659459] EXT4-fs (mmcblk0p2): INFO: recovery required on readonly filesystem
-[    2.666858] EXT4-fs (mmcblk0p2): write access will be enabled during recovery
-[    4.001406] EXT4-fs (mmcblk0p2): recovery complete        ← 1,34 s
+[    2.645998] EXT4-fs (mmcblk0p2): INFO: recovery required on readonly filesystem
+[    2.653387] EXT4-fs (mmcblk0p2): write access will be enabled during recovery
+[    3.175398] EXT4-fs (mmcblk0p2): recovery complete        ← 0,53 s
 ```
 
-No es un caso raro: `dumpe2fs` muestra el feature `needs_recovery` y `Filesystem state: clean`
-sólo después del replay. El rootfs se monta **rw** y con sólo leer archivos (atime) ya queda
-sucio; al cortar la alimentación (o al `reboot` de busybox, que hace `sync` pero no desmonta) el
-journal queda pendiente y hay que replayarlo en el próximo arranque.
+**Ojo: no pasa en todos los arranques** (corrección de lo que decía antes esta sección): medido
+en el equipo, con **cinco reinicios por software** no hubo replay ninguno —el `init` de busybox
+desmonta limpio en el apagado ordenado— y el kernel monta el rootfs directo a los ~2,9 s. El
+replay aparece sólo cuando el sistema de archivos quedó sucio, o sea al **cortar la alimentación
+con el interruptor** (o tras un reinicio forzado). Forzando un apagado sucio a propósito
+(`reboot -f`, que saltea el desmontaje) el replay tardó **0,53 s**; después del apagado real del
+equipo, con más cambios acumulados, había tardado **1,34 s** (`2.659 → 4.001`).
+
+En el uso normal el equipo se apaga con el interruptor, así que **ese costo se paga en los
+arranques reales**; el rango depende de cuánto se haya escrito desde el último commit del journal.
+
+**Qué no toca**: es la partición de la ROM (`/dev/mmcblk0p2`, la raíz). Los datos del usuario
+(`params.db`, el log de QSO, grabaciones, temas) están en **`/mnt` = DATA (vfat)**, que no tiene
+journal. Esto no es un riesgo para los datos.
 
 **Opciones** (de mayor a menor beneficio/riesgo):
 
@@ -386,7 +398,7 @@ GUI lista: 6.6 s                              ← la GUI entera: 1,0 s
 Reparto:
 
 - **kernel ~2,7 s** hasta `udevd` (`dmesg`); dentro, el panel `JLT4013A` se lleva ~0,4 s.
-- **journal ext4 1,34 s** (§11).
+- **journal ext4 0,5-1,3 s** (§11), sólo si el apagado anterior fue sucio (el interruptor).
 - **scripts ~1,4-3,8 s** entre `kernel listo` y `GUI arrancando` (varía mucho entre arranques;
   conviene volver a medir con una marca por script).
 - **daemon + enlace dinámico ~1 s**: el binario tiene **11,5 MB y no está stripped**, y enlaza
