@@ -959,8 +959,20 @@ auriculares porque **no estaban en modo emparejamiento**: un scan solo ve lo que
    el mismo archivo con `>`, asi que apretar varias veces dejaba **menos** resultados que apretar
    una. Ahora, mientras corre uno, otra pulsacion dice "Scan already running..." y no lanza nada.
 2. **Sin respuesta visible**: quedaba el cartel "Scanning (15 s)..." fijo. Ahora hay cuenta
-   regresiva ("Scanning (12 s)...") y al terminar dice **"Scan done: N device(s)"** o
-   **"Scan done: nothing found"**.
+   regresiva y al terminar dice **"Scan done: N device(s)"** o **"Scan done: nothing found"**.
+
+**Affordance de "esta escaneando"** (pedido el 13/10): ademas del texto, el **propio boton** es el
+indicador. Mientras el scan corre, el boton Scan:
+
+- cambia su etiqueta a la cuenta regresiva (**`Scan 13s`**, via `BTN_TEXT_FN` + `scan_label()`),
+- queda **gris y bloqueado** (`buttons_mark` + `buttons_disabled`; `buttons_press` ignora el press si
+  el boton esta `DISABLED`, `buttons.cpp:763`), asi que un segundo toque no lanza otro scan,
+- y al terminar vuelve solo a `Scan` y la nota pasa a mostrar el resultado.
+
+Se probo sin manos con el comando **`{"cmd":"btn","val":N}`** que se agrego al control remoto
+(aprieta el boton N de la fila de abajo por el mismo camino que las teclas F). Capturas de los tres
+momentos en `evidencia-radio/scan-affordance.png`: reposo (`Scan`) → en curso (`Scan 13s` gris) →
+terminado (`Scan` + "Scan done: nothing found").
 
 **Pendiente de probar** (necesita manos y auriculares): pulsar Scan con los auriculares en modo
 emparejamiento, elegirlos de la lista, parear (con el passkey si lo pide) y encender **RX to HP**

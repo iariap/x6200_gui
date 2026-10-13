@@ -60,6 +60,23 @@ static uint64_t   scan_until;
 
 static void refresh_cb(lv_timer_t *t);
 
+/* El boton Scan (definido mas abajo): refresh_cb lo refresca mientras dura el scan. */
+static button_data_t btn_scan;
+
+/* Etiqueta del boton Scan: es el affordance de que el scan esta corriendo. El boton queda
+ * resaltado (buttons_mark), bloqueado (buttons_disabled: buttons_press lo ignora) y con la cuenta
+ * regresiva, asi el usuario ve la operacion en curso sin mirar la linea de estado. */
+static const char *scan_label(void) {
+    static char buf[24];
+
+    if (scan_until != 0 && get_time() < scan_until) {
+        snprintf(buf, sizeof(buf), "Scan %llus", (unsigned long long) ((scan_until - get_time()) / 1000));
+        return buf;
+    }
+
+    return "Scan";
+}
+
 /* --- running the script -------------------------------------------------- */
 
 /* Runs "<a command>; btaudio-ctl list > BT_LIST_FILE" so the file always ends up
@@ -234,10 +251,13 @@ static void refresh_cb(lv_timer_t *t) {
         uint64_t now = get_time();
 
         if (now < scan_until) {
-            lv_label_set_text_fmt(label_note, "Scanning (%llu s)...",
-                                  (unsigned long long) ((scan_until - now) / 1000));
+            buttons_refresh(&btn_scan);     /* el boton lleva la cuenta regresiva */
         } else {
             scan_until = 0;
+
+            buttons_mark(&btn_scan, false);
+            buttons_disabled(&btn_scan, false);
+            buttons_refresh(&btn_scan);     /* vuelve a decir "Scan" */
 
             char scan[2048];
             int  n = 0;
@@ -283,7 +303,10 @@ static void scan_cb(button_data_t *data) {
 
     scan_until = get_time() + SCAN_MS + 1000;   /* el scan del script tarda 15 s */
     bt_run("scan", true);
-    lv_label_set_text(label_note, "Scanning (15 s)...");
+
+    buttons_mark(data, true);           /* resaltado: se ve que esta corriendo */
+    buttons_disabled(data, true);       /* bloqueado: no se puede lanzar otro */
+    lv_label_set_text(label_note, "Scanning...");
     buttons_refresh(data);
 }
 
@@ -340,7 +363,7 @@ static void close_cb(button_data_t *data) {
     dialog_destruct();
 }
 
-static button_data_t btn_scan = { .type = BTN_TEXT, .label = "Scan", .press = scan_cb };
+static button_data_t btn_scan = { .type = BTN_TEXT_FN, .label_fn = scan_label, .press = scan_cb };
 static button_data_t btn_rx   = { .type = BTN_TEXT_FN, .label_fn = rx_label, .press = rx_cb };
 static button_data_t btn_mute = { .type = BTN_TEXT_FN, .label_fn = mute_label, .press = mute_cb };
 static button_data_t btn_close = { .type = BTN_TEXT, .label = "Close", .press = close_cb };
