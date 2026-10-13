@@ -70,6 +70,28 @@ static void update_check_notify(const char *version) {
     msg_schedule_text_fmt("Firmware %s available", version);
 }
 
+/* Tiempo de arranque: se anota cuando la GUI ya esta dibujando, para poder medir (boot.log) */
+static void boot_time_log(void) {
+    double up = 0.0;
+    FILE  *f  = fopen("/proc/uptime", "r");
+
+    if (f != NULL) {
+        if (fscanf(f, "%lf", &up) != 1) {
+            up = 0.0;
+        }
+        fclose(f);
+    }
+
+    LV_LOG_USER("GUI lista: %.1f s de uptime", up);
+
+    FILE *b = fopen("/mnt/app_logs/boot.log", "a");
+
+    if (b != NULL) {
+        fprintf(b, "GUI lista: %.1f s\n", up);
+        fclose(b);
+    }
+}
+
 int main(void) {
     lv_init();
     // lv_png_init();
@@ -239,6 +261,7 @@ int main(void) {
 
     int64_t next_loop_time, sleep_time, loop_start_time;
     voice_ready();        /* la GUI ya esta en pie: desde aca la voz anuncia */
+    static bool boot_time_anotado = false;
 
     while (1) {
         loop_start_time = get_time();
@@ -246,6 +269,11 @@ int main(void) {
         event_obj_check();
         scheduler_work();
         next_loop_time = lv_timer_handler() + loop_start_time;
+
+        if (!boot_time_anotado) {
+            boot_time_anotado = true;
+            boot_time_log();
+        }
         sleep_time = next_loop_time - get_time();
         if (sleep_time > 0) {
             usleep(sleep_time * 1000);
