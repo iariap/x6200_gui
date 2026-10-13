@@ -40,6 +40,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 19. [Icono de Bluetooth en la barra de estado](#19-icono-de-bluetooth-en-la-barra-de-estado)
 20. [La app de Bluetooth: como se llega y el scan](#20-la-app-de-bluetooth-como-se-llega-y-el-scan)
 21. [Las constantes viejas del dialogo: texto tapado por los botones](#21-las-constantes-viejas-del-dialogo-texto-tapado-por-los-botones)
+22. [Aceleracion grafica: la GPU esta, no se usa](#22-aceleracion-grafica-la-gpu-esta-no-se-usa)
 
 ---
 
@@ -1038,3 +1039,38 @@ twice and its bottom under the buttons"*.
 **Verificado con capturas del framebuffer** (`evidencia-radio/`): el estado del BT completo arriba
 de los botones (`bt-app.png`), y WeFax (`_wefax-final.png`) y SSTV (`_sstv-final.png`) con su linea
 de abajo visible y la fila de botones libre. Antes/despues de la misma franja en `verifica-abajo.png`.
+
+---
+
+## 22. Aceleracion grafica: la GPU esta, no se usa
+
+**Preguntado el 13/10**: "tenemos aceleracion grafica activa en la radio?"
+
+**Respuesta: no. La GPU existe y el kernel la tiene andando, pero nadie la usa: la GUI dibuja por
+software.** Todo medido en la radio:
+
+| Que | Como se ve |
+|---|---|
+| GPU presente | `lima 1c40000.gpu: gp - mali400 version major 1 minor 1` (kernel, driver **lima**) |
+| Nodos DRM | `/dev/dri/card0`, `card1`, `renderD128`; `platform-1c40000.gpu-card` y `gpu-render` |
+| Nadie la usa | `fuser /dev/dri/card0` y `/dev/dri/renderD128` → **vacio**; el que tiene `/dev/fb0` es la GUI |
+| Sin userspace | `ls /usr/lib \| grep -iE "egl\|gles\|gbm\|mali"` → nada; el proceso de la GUI no mapea libEGL/libGLES/libmali (0 coincidencias en `/proc/<pid>/maps`) |
+| LVGL por software | `lv_conf.h`: `LV_USE_GPU_ARM2D 0`, `LV_USE_GPU_STM32_DMA2D 0`, `LV_USE_GPU_NXP_PXP 0`, …; y `LV_COLOR_DEPTH 32` |
+| Camino de dibujo | `screen_rec_flush()` copia con `memcpy` el buffer de LVGL y `screen_rec_out()` lo lleva al framebuffer |
+
+Lo unico que corre en hardware es el **controlador de display**: `/proc/fb` = `sun4i-drmdrmfb`
+(`sun4i-drm` + display engine), o sea el *scanout* (mostrar el cuadro ya dibujado) no cuesta CPU,
+pero **dibujarlo** si:
+
+```
+PID     USER  STAT  VSZ    %CPU  COMMAND
+5993    root  R     246m   20-25%  /usr/sbin/x6200_gui      (3 muestras, waterfall corriendo)
+```
+
+Un 20-25% de **un** core (la radio tiene 4, `grep -c processor /proc/cpuinfo` = 4), con el waterfall
+en pantalla. No esta medido cuanto de eso es el waterfall y cuanto el resto de la GUI: al anexo A.
+
+**Para tener aceleracion de verdad** haria falta, ademas de la GPU que ya esta: Mesa con el driver
+**lima** + EGL/GBM en el rootfs, y un renderer que use GLES. LVGL 8 -el que usa este port- **no**
+tiene backend GLES (LVGL 9 tiene `lv_opengles`), asi que no es una opcion de compilacion: es un
+cambio de arquitectura de dibujo. Sin fundar: al anexo A.
