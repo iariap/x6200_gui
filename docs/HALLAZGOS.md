@@ -46,6 +46,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 25. [BT de punta a punta, con auriculares de verdad](#25-bt-de-punta-a-punta-con-auriculares-de-verdad)
 26. [Contraste en la lista de BT: el rojo que pinta LVGL](#26-contraste-en-la-lista-de-bt-el-rojo-que-pinta-lvgl)
 27. [Barrido WCAG de toda la UI: colores que pinta LVGL y colores a mano](#27-barrido-wcag-de-toda-la-ui-colores-que-pinta-lvgl-y-colores-a-mano)
+28. [WCAG: barra de estado, switch, slider y about](#28-wcag-barra-de-estado-switch-slider-y-about)
 
 ---
 
@@ -1325,3 +1326,56 @@ CW, FT8, JS8, Recorder, WiFi, Bands) siguen dibujando bien, sin widgets rotos (`
   decodificar el bitmap, o de medirlo por muestreo de la captura).
 - `lv_label` en dialogos sin `remove_style_all`: el tema pinta `card` blanco con texto `#212121`;
   el proyecto casi siempre borra el estilo, pero no se verifico en runtime.
+
+---
+
+## 28. WCAG: barra de estado, switch, slider y about
+
+Cierra lo que §27 dejo pendiente por necesitar una decision de diseño. Todo medido, y las tres cosas
+que quedaban sin arreglar ahora cumplen.
+
+**Lo que se midio primero, en capturas de la radio** (pixel a pixel):
+
+| Elemento | Medido | |
+|---|---|---|
+| Info box: gris `#99A0A7` sobre las partes **blancas** del bitmap | **2.3:1** | ✗ |
+| Info box: rojo `#FF8080` sobre las partes blancas | **2.0:1** | ✗ |
+| Switch: riel de LVGL (`#E0E0E0`) contra el dialogo | **2.78:1** | ✗ |
+| Switch: perilla contra el riel | 3.12:1 | ✓ |
+| Slider: perilla contra el fondo | 7.47:1 | ✓ |
+
+El problema de fondo de la barra de estado: su fondo es un **bitmap** (`images/top_short*.bin`) con
+zonas claras y oscuras, asi que **ningun color de texto fijo** puede cumplir contra las dos.
+
+**Arreglado**:
+
+1. **Barra de estado** (`info.c`): cada item pinta ahora su celda con `TC(bar)` (el rol que el tema
+   define justamente para "top bar boxes: info, S-meter, clock") y usa roles para el texto
+   (`TC(text)`, `TC(text_dim)` para WiFi/BT y ATU apagado, `TC(text_mute)` para el modo bloqueado,
+   `TC(mode_dig)` para los modos digitales). El bitmap deja de importar: los pares quedan validados
+   por el chequeo en los 9 temas.
+2. **Switch y slider** (`styles.c`: `styles_switch_init()` / `styles_slider_init()`, aplicados en los
+   7 lugares de `dialog_settings.c`): la **pista** usa `TC(control_border)`, la **perilla**
+   `TC(panel)`, y **no hay relleno**: el estado lo indica la **posicion de la perilla**, que es como
+   WCAG evalua un switch (1.4.11 pide identificar el componente y su estado; la posicion es
+   informacion visual con contraste ≥3 contra la pista). Antes las tres partes las pintaba el tema
+   de LVGL.
+   Los valores de `control_border` se **calcularon** por tema (el gris mas discreto que da ≥3.1
+   contra el dialogo y el panel): IU1WXY `#b5b5b5`, Legacy `#aeaeae`, Outdoor `#929292`, Classic
+   `#626262`, Holo `#626262`, y RS `#6e6e6e` (**clave nueva** en su JSON: no la definia y heredaba
+   una que no cerraba contra su dialogo, 2.58:1).
+   Se probo primero un diseño con relleno (`text` sobre la pista) y **ningun gris lo cerraba** en
+   IU1WXY ni Legacy: el relleno blanco obliga a una pista clara y la pista clara no llega a 3:1
+   contra el blanco. Sacar el relleno es lo que hace que haya solucion en los 9 temas.
+3. **`dialog_about`**: `lv_color_white()` → `TC(text)`, `#AAAAAA` → `TC(text_dim)`, y el
+   "73 de LU2DSX" (que es **texto**, no un icono: 4.5) → `TC(text_head)`, que el chequeo ya validaba
+   contra `dialog`. El corazon `#FF4444` daba 2.15:1 en IU1WXY.
+
+**Verificado**: `check_wcag.py` → **0 fallas** (9 temas, **963 pares OK**, 153 exentos, 72
+informativos); compila sin errores ni warnings; `check_actions.py`, `check_settings_focus.py` y los
+tests nativos (538) siguen OK.
+
+**Pendiente de ver en pantalla**: la radio quedo en **otra subred** (la laptop esta en
+192.168.18.0/24 y la radio en 192.168.0.x: no responde al barrido ni por MAC), asi que las capturas
+de antes/despues de estos cuatro cambios y el despliegue de la imagen quedan para cuando vuelva a la
+red.

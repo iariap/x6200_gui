@@ -10,6 +10,7 @@
 #include "main.h"
 
 #include "dialog.h"
+#include "theme.h"
 #include "styles.h"
 #include "events.h"
 #include "keyboard.h"
@@ -53,28 +54,28 @@ static void construct_cb(lv_obj_t *parent) {
 
     // Title
     title_label = lv_label_create(cont);
-    lv_obj_set_style_text_color(title_label, lv_color_white(), 0);
+    lv_obj_set_style_text_color(title_label, TC(text), 0);
     lv_obj_set_style_text_font(title_label, &sony_44, 0);
     lv_label_set_text(title_label, "About");
     lv_obj_align(title_label, LV_ALIGN_TOP_MID, 0, 20);
 
     // Version
     version_label = lv_label_create(cont);
-    lv_obj_set_style_text_color(version_label, lv_color_hex(0xAAAAAA), 0);
+    lv_obj_set_style_text_color(version_label, TC(text_dim), 0);
     lv_obj_set_style_text_font(version_label, &sony_20, 0);
     lv_label_set_text_fmt(version_label, "Version %s", APP_VERSION);
     lv_obj_align(version_label, LV_ALIGN_CENTER, 0, -30);
 
     // Callsign
     heart_label = lv_label_create(cont);
-    lv_obj_set_style_text_color(heart_label, lv_color_hex(0xFF4444), 0);
+    lv_obj_set_style_text_color(heart_label, TC(text_head), 0);
     lv_obj_set_style_text_font(heart_label, &sony_24, 0);
     lv_label_set_text(heart_label, "73 de LU2DSX");
     lv_obj_align(heart_label, LV_ALIGN_CENTER, 0, 20);
 
     // Author text
     author_label = lv_label_create(cont);
-    lv_obj_set_style_text_color(author_label, lv_color_white(), 0);
+    lv_obj_set_style_text_color(author_label, TC(text), 0);
     lv_obj_set_style_text_font(author_label, &sony_18, 0);
     lv_label_set_text(author_label, "Made with love by LU2DSX");
     lv_obj_align(author_label, LV_ALIGN_CENTER, 0, 70);

@@ -111,7 +111,7 @@ extern "C" {
     X(switch_off,        0xe0e0e0, 0xe0e0e0, 0x9a9a9a, 0xe0e0e0) /* Settings switch, off */ \
     X(icon_off,          0x151515, 0x151515, 0x8c8c8c, 0x1a1a1a) /* top bar icons that are off */ \
     X(lock,              0xe0a030, 0xe0a030, 0xaf7103, 0xffa000) /* secured WiFi padlock */ \
-    X(control_border,    0x8a8a8a, 0x8a8a8a, 0x585858, 0x8a8a8a) /* Settings sliders, toggles */ \
+    X(control_border,    0xb5b5b5, 0xaeaeae, 0x929292, 0x626262) /* Settings sliders, toggles */ \
     X(toggle_on,         0x2196f3, 0x2196f3, 0x0062b0, 0x2f72d6) /* toggle on, level bars */ \
     X(toggle_focus,      0x7cc4ff, 0x7cc4ff, 0x003662, 0x9fd2ff) \
     \

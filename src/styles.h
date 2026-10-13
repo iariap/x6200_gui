@@ -116,3 +116,10 @@ extern lv_font_t    sony_60;
 void styles_init(themes_t theme);
 
 void styles_set_theme(themes_t theme);
+
+/* Los switches y sliders los pintaba el tema de LVGL (riel #E0E0E0, knob del color primario): el
+ * riel daba 2.78:1 contra el dialogo y en algunos temas el knob del slider quedaba igual que el
+ * relleno. Se pintan por partes con roles del tema, que el chequeo WCAG valida en los 9 temas
+ * (docs/HALLAZGOS.md 28). */
+void styles_switch_init(lv_obj_t *sw);
+void styles_slider_init(lv_obj_t *sl);

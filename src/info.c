@@ -9,6 +9,7 @@
 #include "info.h"
 
 #include "btaudio.h"
+#include "theme.h"
 #include "bt_state.h"
 #include "cfg/transverter.h"
 #include "cfg/mode.h"
@@ -81,7 +82,15 @@ lv_obj_t * info_init(lv_obj_t * parent) {
             lv_obj_set_pos(item, x * 58 + 15, y * 22 + 5);
             lv_obj_set_style_text_align(item, LV_TEXT_ALIGN_CENTER, 0);
 
-            lv_obj_set_style_text_color(item, lv_color_white(), 0);
+            /* El fondo de la barra es un bitmap (images/top_short*.bin) con zonas claras y oscuras,
+             * asi que un texto fijo no puede cumplir WCAG contra el: medido en una captura, el gris
+             * #99A0A7 y el rojo #FF8080 daban 2.3 y 2.0:1 sobre las partes blancas. Cada item pinta
+             * su celda con TC(bar) y el texto con los roles del tema, que el chequeo valida en los 9
+             * temas (docs/HALLAZGOS.md 28). */
+            lv_obj_set_style_bg_color(item, TC(bar), 0);
+            lv_obj_set_style_bg_opa(item, LV_OPA_COVER, 0);
+            lv_obj_set_style_radius(item, 3, 0);
+            lv_obj_set_style_text_color(item, TC(text), 0);
             lv_obj_set_size(item, 56, 26);
 
             items[index] = item;
@@ -90,7 +99,7 @@ lv_obj_t * info_init(lv_obj_t * parent) {
 
     lv_label_set_text(items[INFO_PRE_ATT], "PRE/ATT");
     lv_label_set_text(items[INFO_WIFI], LV_SYMBOL_WIFI);
-    lv_obj_set_style_text_color(items[INFO_WIFI], lv_color_hex(0x909090), 0);
+    lv_obj_set_style_text_color(items[INFO_WIFI], TC(text_dim), 0);
 
     /* Icono de Bluetooth, al lado del de WiFi: la celda es de 56 px, asi que el WiFi se corre a la
      * mitad izquierda y el BT ocupa la derecha (el S-meter empieza justo al lado de la barra, no se
@@ -227,11 +236,11 @@ static void bt_state_show(void) {
     lv_color_t color;
 
     if (!bt_state_on()) {
-        color = lv_color_black();
+        color = TC(icon_off);         /* apagado: exento (1.4.3) */
     } else if (bt_state_connected()) {
-        color = lv_color_white();
+        color = TC(text);
     } else {
-        color = lv_color_hex(0x909090);
+        color = TC(text_dim);
     }
 
     if (bt_item != NULL) {
@@ -255,11 +264,11 @@ static void mode_label_update(Subject *subj, void *user_data) {
     lv_label_set_text(items[INFO_MODE], info_params_mode_label_get());
     x6200_mode_t mode = subject_get_int(cfg_cur.mode);
     if ((mode == x6200_mode_lsb_dig) || (mode == x6200_mode_usb_dig)) {
-        lv_obj_set_style_text_color(items[INFO_MODE], lv_color_hex(COLOR_LIGHT_RED), 0);
+        lv_obj_set_style_text_color(items[INFO_MODE], TC(mode_dig), 0);
     } else if (subject_get_int(mode_lock)) {
-        lv_obj_set_style_text_color(items[INFO_MODE], lv_color_hex(0xAAAAAA), 0);
+        lv_obj_set_style_text_color(items[INFO_MODE], TC(text_mute), 0);
     } else {
-        lv_obj_set_style_text_color(items[INFO_MODE], lv_color_white(), 0);
+        lv_obj_set_style_text_color(items[INFO_MODE], TC(text), 0);
     }
 }
 
@@ -269,13 +278,13 @@ static void atu_label_update(Subject *subj, void * user_data) {
     int32_t freq = subject_get_int(cfg_cur.fg_freq);
 
     if (!subject_get_int(cfg.atu_enabled.val)) {
-        lv_obj_set_style_text_color(items[INFO_ATU], lv_color_white(), 0);
-        lv_obj_set_style_bg_color(items[INFO_ATU], lv_color_black(), 0);
-        lv_obj_set_style_bg_opa(items[INFO_ATU], LV_OPA_0, 0);
+        lv_obj_set_style_text_color(items[INFO_ATU], TC(text), 0);
+        lv_obj_set_style_bg_color(items[INFO_ATU], TC(bar), 0);
+        lv_obj_set_style_bg_opa(items[INFO_ATU], LV_OPA_COVER, 0);
     } else {
         if (cfg_transverter_get_shift(freq)) {
-            lv_obj_set_style_text_color(items[INFO_ATU], lv_color_hex(0xAAAAAA), 0);
-            lv_obj_set_style_bg_opa(items[INFO_ATU], LV_OPA_20, 0);
+            lv_obj_set_style_text_color(items[INFO_ATU], TC(text_dim), 0);
+            lv_obj_set_style_bg_opa(items[INFO_ATU], LV_OPA_TRANSP, 0);
         } else {
             lv_obj_set_style_text_color(items[INFO_ATU], subject_get_int(cfg_cur.atu->loaded) ? lv_color_black() : lv_color_hex(0xFF0000), 0);
             lv_obj_set_style_bg_opa(items[INFO_ATU], LV_OPA_50, 0);

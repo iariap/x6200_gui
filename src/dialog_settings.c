@@ -176,6 +176,7 @@ static void theme_update_cb(lv_event_t * e) {
 
 static lv_obj_t * switch_bool(lv_obj_t *parent, params_bool_t *var) {
     lv_obj_t *obj = lv_switch_create(parent);
+    styles_switch_init(obj);
 
     dialog_item(&dialog, obj);
 
@@ -240,6 +241,7 @@ static void waterfall_battery_update_cb(lv_event_t * e) {
 static void slider_with_text(lv_obj_t *cell, int32_t val, int32_t min, int32_t max, size_t width, char *fmt, lv_event_cb_t event_cb) {
     lv_obj_t *obj;
     obj = lv_slider_create(cell);
+    styles_slider_init(obj);
 
     dialog_item(&dialog, obj);
 
@@ -512,6 +514,7 @@ static uint8_t make_backlight(uint8_t row) {
     lv_obj_center(obj);
 
     obj = lv_slider_create(obj);
+    styles_slider_init(obj);
 
     dialog_item(&dialog, obj);
 
@@ -1755,6 +1758,7 @@ static lv_obj_t *bt_switch_cell(uint8_t row, bool state, lv_event_cb_t cb) {
     lv_obj_center(obj);
 
     obj = lv_switch_create(obj);
+    styles_switch_init(obj);
     lv_obj_set_width(obj, SMALL_3 - 30);
     lv_obj_center(obj);
 
@@ -1867,6 +1871,7 @@ static uint8_t make_cluster_column(uint8_t row) {
     lv_obj_center(obj);
 
     obj = lv_switch_create(obj);
+    styles_switch_init(obj);
     lv_obj_set_width(obj, SMALL_3 - 30);
     lv_obj_center(obj);
     dialog_item(&dialog, obj);      /* si no, no se puede cambiar con las teclas */

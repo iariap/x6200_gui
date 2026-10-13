@@ -124,9 +124,9 @@ void styles_init(themes_t theme) {
     lv_style_init(&background_style);
 
     lv_style_init(&spectrum_style);
-    lv_style_set_bg_color(&spectrum_style, lv_color_hex(theme_hex(TC_bg)));
+    lv_style_set_bg_color(&spectrum_style, TC(bg));
     lv_style_set_bg_opa(&spectrum_style, LV_OPA_COVER);
-    lv_style_set_border_color(&spectrum_style, lv_color_hex(theme_hex(TC_panel_border)));
+    lv_style_set_border_color(&spectrum_style, TC(panel_border));
     lv_style_set_border_width(&spectrum_style, 0);
     lv_style_set_radius(&spectrum_style, 0);
     lv_style_set_width(&spectrum_style, 800);
@@ -149,8 +149,8 @@ void styles_init(themes_t theme) {
     lv_style_set_text_align(&freq_main_style, LV_TEXT_ALIGN_CENTER);
 
     lv_style_init(&waterfall_style);
-    lv_style_set_bg_color(&waterfall_style, lv_color_hex(theme_hex(TC_bg)));
-    lv_style_set_border_color(&waterfall_style, lv_color_hex(theme_hex(TC_panel_border)));
+    lv_style_set_bg_color(&waterfall_style, TC(bg));
+    lv_style_set_border_color(&waterfall_style, TC(panel_border));
     lv_style_set_border_width(&waterfall_style, 0);
     lv_style_set_radius(&waterfall_style, 0);
     lv_style_set_clip_corner(&waterfall_style, true);
@@ -167,13 +167,13 @@ void styles_init(themes_t theme) {
     lv_style_set_bg_opa(&btn_style, LV_OPA_0);
 
     lv_style_init(&btn_active_style);
-    lv_style_set_bg_img_recolor(&btn_active_style, lv_color_hex(theme_hex(TC_btn_mark_active)));
+    lv_style_set_bg_img_recolor(&btn_active_style, TC(btn_mark_active));
     lv_style_set_bg_img_recolor_opa(&btn_active_style, LV_OPA_20);
 
     lv_style_init(&btn_disabled_style);
-    lv_style_set_bg_img_recolor(&btn_disabled_style, lv_color_hex(theme_hex(TC_bg)));
+    lv_style_set_bg_img_recolor(&btn_disabled_style, TC(bg));
     lv_style_set_bg_img_recolor_opa(&btn_disabled_style, LV_OPA_20);
-    lv_style_set_text_color(&btn_disabled_style, lv_color_hex(theme_hex(TC_text_mute)));
+    lv_style_set_text_color(&btn_disabled_style, TC(text_mute));
 
     /* Message style */
     lv_style_init(&msg_style);
@@ -297,6 +297,30 @@ void styles_init(themes_t theme) {
 
 }
 
+void styles_switch_init(lv_obj_t *sw) {
+    /* Pista / relleno / perilla con pares que el chequeo WCAG valida en los 9 temas: la pista usa
+     * control_border (el rol que el tema define para switches y sliders), el relleno el color de
+     * texto y la perilla el color de fondo, asi que la perilla se distingue del relleno y del
+     * fondo del dialogo. Antes lo pintaba el tema de LVGL (riel #E0E0E0 = 2.78:1 medido). */
+    lv_obj_set_style_bg_color(sw, TC(control_border), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(sw, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_border_width(sw, 0, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(sw, LV_OPA_TRANSP, LV_PART_INDICATOR);   /* sin relleno: el estado lo
+                                                                      * indica la posicion de la perilla */
+    lv_obj_set_style_bg_color(sw, TC(panel), LV_PART_KNOB);
+    lv_obj_set_style_bg_opa(sw, LV_OPA_COVER, LV_PART_KNOB);
+}
+
+void styles_slider_init(lv_obj_t *sl) {
+    lv_obj_set_style_bg_color(sl, TC(control_border), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(sl, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(sl, LV_OPA_TRANSP, LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(sl, TC(panel), LV_PART_KNOB);
+    lv_obj_set_style_bg_opa(sl, LV_OPA_COVER, LV_PART_KNOB);
+    lv_obj_set_style_border_width(sl, 2, LV_PART_KNOB);
+    lv_obj_set_style_border_color(sl, TC(control_border), LV_PART_KNOB);
+}
+
 void styles_set_theme(themes_t theme) {
     switch (theme) {
         case THEME_LEGACY:
@@ -314,7 +338,7 @@ static void setup_theme_legacy() {
     wf_palette = theme_shape.waterfall_n > 0 ? theme_waterfall() : wf_palette_legacy;
 
     /* The background follows the theme (JSON themes, NEW_FEATURES 17/28) */
-    bg_color = lv_color_hex(theme_hex(TC_bg));
+    bg_color = TC(bg);
     lv_style_set_bg_color(&background_style, bg_color);
 
     lv_style_set_bg_img_src(&btn_style, PATH "images/btn.bin");
@@ -346,7 +370,7 @@ static void setup_theme_legacy() {
 static void setup_theme_simple() {
     wf_palette = theme_shape.waterfall_n > 0 ? theme_waterfall() : wf_palette_gauss;
 
-    bg_color = lv_color_hex(theme_hex(TC_bg));
+    bg_color = TC(bg);
     lv_style_set_bg_color(&background_style, bg_color);
 
     lv_style_set_bg_img_src(&btn_style, PATH "images/btn_dark.bin");

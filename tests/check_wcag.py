@@ -350,6 +350,24 @@ PARES_ESPECIFICOS = [
     ("focus_text", "focus", 4.5, None, "theme.h:53-54, styles.c:229-233"),
     ("text", "focus_bg", 4.5, None, "dialog_js8.c:2668-2669"),
     # Fila seleccionada de los listados: el texto va sobre TC(ok)/TC(warn)
+    # Barra de estado de arriba: los items pintan su celda con TC(bar) y el texto con roles
+    # (info.c; antes se apoyaban en el bitmap top_short*.bin, que tiene partes blancas y hacia
+    # fallar el gris #99A0A7 y el rojo #FF8080 con 2.3 y 2.0:1)
+    ("text", "bar", 4.5, None, "info.c:84-90 (VFO, AGC, PRE/ATT, ATU, hora)"),
+    ("text_dim", "bar", 4.5, None, "info.c:93+277 (WiFi/BT y ATU apagado)"),
+    ("text_mute", "bar", 4.5, None, "info.c:260 (modo bloqueado)"),
+    ("mode_dig", "bar", 4.5, None, "info.c:258 (modo digital)"),
+    # Switch y slider de Ajustes: pintados por partes con roles (styles.c styles_switch_init/
+    # styles_slider_init, antes los pintaba LVGL con su tema: riel #E0E0E0 = 2.78:1)
+    # dialog_about con roles del tema
+    ("text", "dialog", 4.5, None, "dialog_about.c:56-77"),
+    ("text_dim", "dialog", 4.5, None, "dialog_about.c:63"),
+    ("text_head", "dialog", 4.5, None, "dialog_about.c:70 (73 de LU2DSX)"),
+    # Switch y slider de Ajustes: pista control_border, relleno text, perilla panel
+    # (styles.c styles_switch_init/styles_slider_init)
+    ("control_border", "dialog", 3.0, None, "styles.c:switch/slider (pista vs dialogo)"),
+    ("control_border", "panel", 3.0, None, "styles.c:switch/slider (pista vs panel)"),
+    ("panel", "control_border", 3.0, None, "styles.c:switch/slider (perilla vs pista)"),
     ("panel", "ok", 4.5, None, "dialog_field.c:578-583"),
     ("panel", "warn", 4.5, None, "dialog_field.c:578-583"),
     ("btn_text", "btn", 4.5, None, "theme.h:37+40, styles.c:162"),
