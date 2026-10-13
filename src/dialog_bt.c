@@ -19,6 +19,7 @@
 #include "msg.h"
 #include "styles.h"
 #include "theme.h"
+#include "util.h"
 
 #include <pthread.h>
 #include <stdio.h>
@@ -48,6 +49,14 @@ static lv_timer_t *timer;
 
 static bt_list_t  shown;            /* what the table is showing */
 static char       last_text[4096];  /* to redraw only when it changed */
+
+/* Hasta cuando corre el scan (get_time()), para no lanzar dos a la vez y para avisar del avance:
+ * cada pulsacion del boton arrancaba otro scan de 15 s y los dos escribian el mismo archivo, asi
+ * que el usuario, que apretaba varias veces, veia menos resultados que sin apretar (medido el
+ * 13/10: /tmp/bt_ui_scan.txt y "btaudio-ctl scan" a mano dan el mismo dispositivo). */
+#define SCAN_MS     15000
+
+static uint64_t   scan_until;
 
 static void refresh_cb(lv_timer_t *t);
 
@@ -218,6 +227,41 @@ static void refresh_cb(lv_timer_t *t) {
         fill_table(&shown);
     }
 
+    /* El scan es lo unico que el usuario no puede ver: mientras corre se muestra el tiempo que
+     * falta y al terminar cuantos dispositivos encontro. Antes quedaba el cartel "Scanning (15
+     * s)..." puesto y parecia que el boton no hacia nada. */
+    if (scan_until != 0) {
+        uint64_t now = get_time();
+
+        if (now < scan_until) {
+            lv_label_set_text_fmt(label_note, "Scanning (%llu s)...",
+                                  (unsigned long long) ((scan_until - now) / 1000));
+        } else {
+            scan_until = 0;
+
+            char scan[2048];
+            int  n = 0;
+
+            if (read_file(BT_SCAN_FILE, scan, sizeof(scan))) {
+                for (char *p = scan; *p != '\0'; p++) {
+                    if (*p == '\n' && p[1] != '\0' && p[1] != '\n') {
+                        n++;
+                    }
+                }
+
+                if (scan[0] != '\0' && scan[strlen(scan) - 1] != '\n') {
+                    n++;
+                }
+            }
+
+            if (n > 0) {
+                lv_label_set_text_fmt(label_note, "Scan done: %i device(s)", n);
+            } else {
+                lv_label_set_text(label_note, "Scan done: nothing found");
+            }
+        }
+    }
+
     /* While pairing, a keyboard asks for this code to be typed on it */
     char code[16];
 
@@ -230,6 +274,14 @@ static void refresh_cb(lv_timer_t *t) {
 /* --- actions ------------------------------------------------------------- */
 
 static void scan_cb(button_data_t *data) {
+    if (scan_until != 0 && get_time() < scan_until) {
+        /* Ya hay uno corriendo: no lanzar otro (se pisarian los resultados) */
+        lv_label_set_text(label_note, "Scan already running...");
+        buttons_refresh(data);
+        return;
+    }
+
+    scan_until = get_time() + SCAN_MS + 1000;   /* el scan del script tarda 15 s */
     bt_run("scan", true);
     lv_label_set_text(label_note, "Scanning (15 s)...");
     buttons_refresh(data);

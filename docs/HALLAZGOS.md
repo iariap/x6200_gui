@@ -38,6 +38,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
 19. [Icono de Bluetooth en la barra de estado](#19-icono-de-bluetooth-en-la-barra-de-estado)
+20. [La app de Bluetooth: como se llega y el scan](#20-la-app-de-bluetooth-como-se-llega-y-el-scan)
 
 ---
 
@@ -923,3 +924,43 @@ fuera de la GUI.
 - `btcat-ctl bt on` → runa **gris**,
 - con `/tmp/btaudio-hp` creado a mano → runa **blanca** (el estado "con auriculares" se verifico
   asi, creando el archivo que escribe `btaudio-ctl`; con auriculares de verdad queda por probar).
+
+---
+
+## 20. La app de Bluetooth: como se llega y el scan
+
+**Pedido**: "no deberia poder tener una UX dedicada a BT para poder seleccionar a que dispositivo me
+emparejo y a cual no? ... la UX deberia estar al lado de los settings de wifi", y despues "el boton
+de scan en BT hace algo? lo aprete varias veces y no escanea nada".
+
+**La app ya existia, estaba encerrada.** `src/dialog_bt.c` es la UX completa: escanea, lista los
+pareados y los encontrados (con `headphones` / `keyboard` / `new`), pareа, conecta y desconecta,
+muestra el passkey y tiene los botones de **RX to HP** y **Speaker**. Pero `ACTION_APP_BT` solo se
+podia alcanzar asignandosela a un long press (`dialog_settings.c:916`, " APP Bluetooth").
+
+**Donde se llega ahora** (las tres, a la misma app):
+
+| Entrada | Donde |
+|---|---|
+| **Boton "BT" al lado de "WiFi"** | pantalla principal, pagina **APP 3:3** (`buttons.cpp`: `make_app_btn("BT", ACTION_APP_BT)` en `page_app_3`) |
+| Fila **"Devices"** | Ajustes → Bluetooth → "Devices / Pair / connect..." |
+| Lista de apps del control remoto | `remote_server.cpp`: `{"cmd":"app","text":"BT"}` (tambien en la pagina /remote del webserver) |
+
+**El scan: funciona, y se comprobo.** Con las pulsaciones del usuario quedaron los archivos:
+`/tmp/bt_ui_scan.txt` → `NEW 2C:1B:3A:0A:64:BE Living Room TV hp`, y `btaudio-ctl scan` a mano da
+**el mismo** dispositivo. O sea que el script corre y su resultado se muestra en la lista (captura
+`evidencia-radio/bt-app.png`: "Living Room TV" con `headphones` y `new`). No aparecian los
+auriculares porque **no estaban en modo emparejamiento**: un scan solo ve lo que se anuncia.
+
+**Dos defectos de UX que si eran reales** (`dialog_bt.c`):
+
+1. **Scans superpuestos**: cada pulsacion lanzaba otro `btaudio-ctl scan` de 15 s y todos escribian
+   el mismo archivo con `>`, asi que apretar varias veces dejaba **menos** resultados que apretar
+   una. Ahora, mientras corre uno, otra pulsacion dice "Scan already running..." y no lanza nada.
+2. **Sin respuesta visible**: quedaba el cartel "Scanning (15 s)..." fijo. Ahora hay cuenta
+   regresiva ("Scanning (12 s)...") y al terminar dice **"Scan done: N device(s)"** o
+   **"Scan done: nothing found"**.
+
+**Pendiente de probar** (necesita manos y auriculares): pulsar Scan con los auriculares en modo
+emparejamiento, elegirlos de la lista, parear (con el passkey si lo pide) y encender **RX to HP**
+para oir la recepcion en ellos.

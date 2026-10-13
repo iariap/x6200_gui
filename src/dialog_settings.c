@@ -11,6 +11,7 @@
 #include "cfg/transverter.h"
 #include "lvgl/lvgl.h"
 #include "dialog.h"
+#include "main_screen.h"
 #include <stdio.h>
 
 #include "styles.h"
@@ -1720,6 +1721,23 @@ static void bt_visible_delete_cb(lv_event_t * e) {
     bt_visible_sw = NULL;
 }
 
+/* Abre la app de dispositivos Bluetooth (dialog_bt): ahi se escanea, se ve la lista de pareados y
+ * de encontrados, se elige a cual emparejarse, se conecta/desconecta y se muestra el passkey. Hasta
+ * ahora esa app solo se podia abrir asignandole ACTION_APP_BT a un long press (docs/HALLAZGOS.md 20);
+ * el propio encabezado de dialog_bt.c dice "Settings -> Bluetooth", asi que el lugar es este. Se
+ * activa tocando la fila o con ENTER/MFK sobre ella. */
+static void bt_devices_cb(lv_event_t * e) {
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        main_screen_start_app(ACTION_APP_BT);
+    } else if (code == LV_EVENT_KEY) {
+        if (*((uint32_t *) lv_event_get_param(e)) == LV_KEY_ENTER) {
+            main_screen_start_app(ACTION_APP_BT);
+        }
+    }
+}
+
 /* params.charger is an enum, not a params_uint8_t: drive the dropdown by hand */
 static void charger_update_cb(lv_event_t * e) {
     params.charger = (radio_charger_t) lv_dropdown_get_selected(lv_event_get_target(e));
@@ -1781,6 +1799,24 @@ static uint8_t make_bluetooth(uint8_t row) {
     }
 
     lv_obj_add_event_cb(bt_visible_sw, bt_visible_delete_cb, LV_EVENT_DELETE, NULL);
+
+    row++;
+
+    /* Devices: la UX para elegir a que dispositivo emparejarse (abre dialog_bt) */
+    row_dsc[row] = 54;
+    obj = lv_label_create(grid);
+    lv_label_set_text(obj, "Devices");
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    obj = lv_label_create(grid);
+    lv_label_set_text(obj, " Pair / connect... ");
+    lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_size(obj, SMALL_6, 56);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    dialog_item(&dialog, obj);
+    lv_obj_add_event_cb(obj, bt_devices_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(obj, bt_devices_cb, LV_EVENT_KEY, NULL);
 
     row++;
 
