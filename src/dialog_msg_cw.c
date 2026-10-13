@@ -14,6 +14,7 @@
 #include "dialog.h"
 #include "dialog_msg_cw.h"
 #include "styles.h"
+#include "theme.h"
 #include "params/params.h"
 #include "events.h"
 #include "util.h"
@@ -170,15 +171,18 @@ static void construct_cb(lv_obj_t *parent) {
     lv_obj_set_style_border_width(table, 0, LV_PART_ITEMS);
 
     lv_obj_set_style_bg_opa(table, LV_OPA_TRANSP, LV_PART_ITEMS);
-    lv_obj_set_style_text_color(table, lv_color_white(), LV_PART_ITEMS);
+    lv_obj_set_style_text_color(table, TC(text), LV_PART_ITEMS);
     lv_obj_set_style_pad_top(table, 5, LV_PART_ITEMS);
     lv_obj_set_style_pad_bottom(table, 5, LV_PART_ITEMS);
     lv_obj_set_style_pad_left(table, 0, LV_PART_ITEMS);
     lv_obj_set_style_pad_right(table, 0, LV_PART_ITEMS);
 
-    lv_obj_set_style_text_color(table, lv_color_black(), LV_PART_ITEMS | LV_STATE_EDITED);
-    lv_obj_set_style_bg_color(table, lv_color_white(), LV_PART_ITEMS | LV_STATE_EDITED);
-    lv_obj_set_style_bg_opa(table, 128, LV_PART_ITEMS | LV_STATE_EDITED);
+    lv_obj_set_style_text_color(table, TC(focus_text), LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_bg_color(table, TC(focus), LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_text_color(table, TC(sel_text), LV_PART_ITEMS | LV_STATE_EDITED);
+    lv_obj_set_style_bg_color(table, TC(sel_bg), LV_PART_ITEMS | LV_STATE_EDITED);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_EDITED);
 
     lv_obj_add_event_cb(table, key_cb, LV_EVENT_KEY, NULL);
     lv_group_add_obj(keyboard_group, table);

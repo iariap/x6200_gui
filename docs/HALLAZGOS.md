@@ -45,6 +45,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 24. [WCAG 2.1 en todos los temas, con chequeo automatico](#24-wcag-21-en-todos-los-temas-con-chequeo-automatico)
 25. [BT de punta a punta, con auriculares de verdad](#25-bt-de-punta-a-punta-con-auriculares-de-verdad)
 26. [Contraste en la lista de BT: el rojo que pinta LVGL](#26-contraste-en-la-lista-de-bt-el-rojo-que-pinta-lvgl)
+27. [Barrido WCAG de toda la UI: colores que pinta LVGL y colores a mano](#27-barrido-wcag-de-toda-la-ui-colores-que-pinta-lvgl-y-colores-a-mano)
 
 ---
 
@@ -1262,3 +1263,65 @@ quedaba casi blanco sobre blanco).
 **rol-sobre-rol del tema**, y este caso no es eso: el fondo lo pone LVGL por defecto y el texto el
 tema. Es la misma clase que el negro fijo de `dialog_field.c` (§24). Queda pedido y en curso un
 barrido de toda la UI para esa clase (colores de LVGL por defecto + colores a mano en el codigo).
+
+---
+
+## 27. Barrido WCAG de toda la UI: colores que pinta LVGL y colores a mano
+
+**Pedido**: "revisa toda la UI de la radio y ajusta lo que haga falta para que sea WCAG con
+contraste". Es la continuacion de §26: el chequeo validaba pares **rol-sobre-rol del tema**, y hay
+dos clases que no ve.
+
+**Clase 1 - widgets que LVGL pinta con SUS colores.** Mecanismo confirmado en
+`lvgl/src/widgets/lv_table.c:786-793` y `lvgl/src/widgets/lv_btnmatrix.c:749-780`: el estado se
+**falsifica solo para la celda/tecla activa** y el descriptor de dibujo se reconstruye desde el tema
+por defecto (colores compilados en `lv_hal_disp.c:216`: `lv_palette_main(BLUE/RED)`), pisando los
+`TC()` del proyecto. Pares que fallaban (medidos):
+
+| archivo | fg | bg real | ratio |
+|---|---|---|---|
+| `dialog_msg_cw.c:173` | `#ffffff` | `#ffffff` (items de LVGL) | **1.00** |
+| `dialog_msg_voice.c:474` | `#ffffff` | `#ffffff` | **1.00** |
+| `dialog_recorder.c:282` | `#ffffff` | `#ffffff` | **1.00** |
+| celda FOCUSED de `lv_table` | `TC(text)` `#e2e2e9` | `#F44336` compilado | **2.86** |
+| celda FOCUS_KEY | `#ffffff` | `#2196F3` compilado | **2.42-3.12** |
+| `dialog_ft8.c:816` | `#C0C0C0` | celdas al 50% | **2.33** |
+| `textarea_window.c:156` | `#2196F3` | `#2196F3` al 20% | **3.50** |
+| `dialog_settings.c:256,1908` | `#ffffff` | `#ffffff` (Outdoor) | **1.00** |
+
+**Clase 2 - colores a mano en el codigo**: `dialog_field.c:1098` (`lv_color_black()` sobre
+`TC(bg)`, **1.00** en Classic), `band_plan.c:93` (blanco sobre franjas literales `#33AA55`/`#CC8800`,
+**2.96**), `cw_tune_ui.c:45` (bloque activo `#FF8080` sobre el mismo brillo, **1.65**).
+
+**Arreglado** (usando siempre roles del tema, para que valga en los 9 temas):
+
+| Que | Antes | Despues |
+|---|---|---|
+| Las 3 tablas blancas (msg_cw, msg_voice, recorder) | 1.00 | **16.20-21.00** |
+| Las 11 tablas: celda elegida (FOCUS/FOCUS_KEY/EDITED) | 2.42-3.68 | **7.22** |
+| FT8 (texto y fondo de celdas) | 2.33-3.57 | **6.50** |
+| Teclado (textarea con foco) | 3.50 | **21.00** |
+| Chip VOL/MFK (`dialog_field.c`) | 1.00 | **21.00** |
+| Band plan (etiqueta elegida por luminancia WCAG) | 2.96 | **7.02-7.09** |
+| CW tune (borde por luminancia sobre el relleno) | 1.65 | **8.65** |
+| Ajustes (`lv_color_white()` → `TC(text)`) | 1.00 | **21.00** |
+
+**Verificado**: compila sin errores ni warnings; `check_wcag.py` → **0 fallas** (9 temas, **882
+pares OK**, 144 exentos, 72 informativos); `check_actions.py`, `check_settings_focus.py` y los tests
+nativos (538) siguen OK. Y en la radio: las **12 pantallas** (home, Ajustes, BT, GPS, SSTV, WeFax,
+CW, FT8, JS8, Recorder, WiFi, Bands) siguen dibujando bien, sin widgets rotos (`evidencia/`).
+
+**Lo que quedo SIN arreglar, con numeros** (hace falta una decision de diseño, no un `TC()`):
+
+- **Switch de Ajustes**: el riel lo pinta LVGL (`#E0E0E0`) y sobre el panel da **2.81** en Outdoor y
+  **1.31** en Holo; el rol `switch_off` tampoco cierra (2.81). El knob blanco sobre el indicador
+  azul: **1.72** en Material 3. Ningun rol existente cierra en los 9 temas (VISION 20.00 vs Holo
+  1.31), asi que hace falta un rol nuevo para el riel/knob.
+- **Slider (knob)**: LVGL lo pinta con el mismo `color_primary` que el indicador → **1.03** en
+  Material 3, 1.00 en IU1WXY: el knob no se distingue del relleno.
+- **Fondo de la barra de estado y de `dialog_about`**: es un **bitmap opaco**
+  (`images/top_short*.bin`), y los `.bin` no cierran con ninguna geometria/CF de LVGL, asi que los
+  `#909090`/`#AAAAAA` de `info.c` y `dialog_about.c` **no tienen ratio fundado** (a la espera de
+  decodificar el bitmap, o de medirlo por muestreo de la captura).
+- `lv_label` en dialogos sin `remove_style_all`: el tema pinta `card` blanco con texto `#212121`;
+  el proyecto casi siempre borra el estilo, pero no se verifico en runtime.

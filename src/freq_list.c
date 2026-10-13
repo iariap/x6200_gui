@@ -191,6 +191,11 @@ void freq_list_open(lv_obj_t *parent, const char *title, const freq_list_item_t 
     lv_obj_set_style_border_width(table, 0, LV_PART_ITEMS);
     lv_obj_set_style_text_font(table, &sony_22, LV_PART_ITEMS);
     lv_obj_set_style_text_color(table, TC(text), LV_PART_ITEMS);
+    lv_obj_set_style_bg_opa(table, LV_OPA_TRANSP, LV_PART_ITEMS);
+    lv_obj_set_style_bg_color(table, TC(panel), LV_PART_ITEMS);
+    lv_obj_set_style_bg_color(table, TC(sel_bg), LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_text_color(table, TC(sel_text), LV_PART_ITEMS | LV_STATE_FOCUSED);
     lv_obj_set_style_pad_ver(table, 4, LV_PART_ITEMS);
     lv_obj_set_style_pad_hor(table, 8, LV_PART_ITEMS);
     lv_table_set_col_cnt(table, 4);

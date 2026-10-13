@@ -76,6 +76,16 @@ def contraste(a, b):
     return (la + 0.05) / (lb + 0.05)
 
 
+def mezclar(fg, bg, opa):
+    """Compone fg sobre bg con alfa 0..255 (lo que hace LVGL al dibujar al 50%)."""
+    salida = []
+    for desp in (16, 8, 0):
+        f = (fg >> desp) & 0xFF
+        b = (bg >> desp) & 0xFF
+        salida.append((f * opa + b * (255 - opa)) // 255)
+    return (salida[0] << 16) | (salida[1] << 8) | salida[2]
+
+
 def negativo(c):
     """Luminosidad invertida conservando tono: el negative() de src/theme.c."""
     r, g, b = (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF
@@ -254,6 +264,12 @@ def armar_paletas(colores):
                 forma[clave] = datos[clave]
         paletas[nombre], shapes[nombre] = paleta, forma
 
+    # Cada paleta queda con los literales adentro: un par puede entonces ser
+    # rol-sobre-rol, hexadecimal-sobre-rol, etc. (Clase 2 del pedido).
+    for paleta in paletas.values():
+        for nombre, valor in LITERALES.items():
+            paleta[nombre] = valor
+
     return paletas, shapes
 
 
@@ -282,6 +298,38 @@ SUPERFICIES = [
     "panel", "list", "row", "popup", "side", "chip", "frame",
 ]
 TEXTOS = ["text", "text_value", "text_head", "text_dim"]
+
+# Colors that are NOT roles: literals the UI writes by hand (Clase 2) and the
+# colors the default LVGL theme compiles in (Clase 1). They are the same in the
+# nine themes, so what changes per theme is the surface each one lands on; the
+# table below only lists the pairs that really fail on some theme.
+#
+# Los de LVGL salen de libreria, no de IGNORE: `lv_conf.h` deja
+# LV_USE_THEME_DEFAULT=1 y LV_THEME_DEFAULT_DARK=0, y lv_hal_disp.c:216 crea el
+# tema con lv_palette_main(LV_PALETTE_BLUE/RED). De ahi:
+#   lvgl_item    bg_color_white    = LIGHT_COLOR_CARD = blanco (lv_theme_default.c:24,372)
+#   lvgl_focused bg_color_secondary= rojo #F44336 (LV_PALETTE_RED)
+#   lvgl_focuskey bg_color_primary = azul #2196F3 (LV_PALETTE_BLUE)
+LITERALES = {
+    "lvgl_item": 0xFFFFFF,
+    "lvgl_focused": 0xF44336,
+    "lvgl_focuskey": 0x2196F3,
+    "hex_ffffff": 0xFFFFFF,
+    "hex_000000": 0x000000,
+    "hex_3366cc": 0x3366CC,
+    "hex_33aa55": 0x33AA55,
+    "hex_888888": 0x888888,
+    "hex_cc8800": 0xCC8800,
+    "hex_7f7f7f": 0x7F7F7F,
+    "hex_80ff80": 0x80FF80,
+    "hex_ffff30": 0xFFFF30,
+    "hex_ff8080": 0xFF8080,
+    "hex_ff4444": 0xFF4444,
+    "hex_aaaaaa": 0xAAAAAA,
+    "hex_ff0000": 0xFF0000,
+    "hex_aa0000": 0xAA0000,
+    "hex_aaaa00": 0xAAAA00,
+}
 
 # De donde sale cada rol de texto generico en el codigo.
 USO_TEXTO = {
@@ -333,6 +381,50 @@ PARES_ESPECIFICOS = [
     ("err", "panel", 4.5, None, "dialog_field.c:850+860"),
     ("accent", "panel", 4.5, None, "js8_map.c:186+196"),
     ("info", "bg", 4.5, None, "main_screen.c:986+994"),
+
+    # --- Colores de LVGL que el proyecto NO pisaba (Clase 1) ---
+    # lv_table dibuja la celda activa con LV_STATE_FOCUSED/FOCUS_KEY/EDITED
+    # falsificado solo para esa celda (lvgl/src/widgets/lv_table.c:788-792) y el
+    # tema por defecto le pone SUS colores. Esos pares son los que se ven cuando
+    # la tabla no pisa el estado. Los literales de LVGL son los mismos en los
+    # nueve temas, asi que lo que cambia es el color de texto de cada tema.
+    ("text", "lvgl_item", 4.5, "solo:Outdoor", "dialog_msg_cw.c:173 (texto del tema sobre la celda de LVGL)"),
+    ("text_value", "lvgl_item", 4.5, "solo:Outdoor", "freq_list.c:145 (valor sobre la celda de LVGL)"),
+    ("text", "lvgl_focused", 4.5, None, "lv_table.c:790 + lv_theme_default.c:349 (celda elegida, rojo #F44336)"),
+    ("text_value", "lvgl_focused", 4.5, None, "lv_table.c:790 (valor sobre el rojo de LVGL)"),
+    ("text", "lvgl_focuskey", 4.5, None, "lv_table.c:791 + lv_theme_default.c:349 (celda con foco de teclado, azul #2196F3)"),
+    ("btn_text", "lvgl_focuskey", 4.5, None, "lv_keyboard: btnmatrix pinta la tecla con FOCUS_KEY (lv_btnmatrix.c:756)"),
+
+    # --- Colores a mano de la UI (Clase 2) ---
+    # band_plan.c:18: la etiqueta se elige por luminancia del color de la franja
+    # (band_plan.c:88-96), asi que se mide el que el codigo pone para cada una.
+    ("hex_000000", "hex_33aa55", 4.5, None, "band_plan.c:19+93 (etiqueta sobre el verde de DIG)"),
+    ("hex_000000", "hex_cc8800", 4.5, None, "band_plan.c:19+93 (etiqueta sobre el naranja de BCN)"),
+    ("hex_000000", "hex_888888", 4.5, None, "band_plan.c:19+93 (etiqueta sobre el gris de ALL MODES)"),
+    ("hex_ffffff", "hex_3366cc", 4.5, None, "band_plan.c:19+93 (etiqueta sobre el azul de CW)"),
+    # dialog_field.c:1098: la etiqueta del chip (VOL/MFK) va sobre el fondo del
+    # chip, que es TC(bg); con negro literal daba 1.00:1 en Classic.
+    ("text", "bg", 4.5, None, "dialog_field.c:1098 (etiqueta del chip sobre TC(bg))"),
+    # cw_tune_ui.c:45: los bloques van al 50% sobre el espectro, gris literal; el
+    # bloque activo usa COLOR_LIGHT_GREEN/YELLOW/RED (cw_tune_ui.c:40-42) y lleva
+    # borde negro o blanco elegido por luminancia (cw_tune_ui.c:96-105), asi que el
+    # par que manda es borde sobre relleno del bloque activo.
+    ("hex_000000", "hex_80ff80", 3.0, None, "cw_tune_ui.c:40+103 (borde del bloque afinado, verde)"),
+    ("hex_000000", "hex_ffff30", 3.0, None, "cw_tune_ui.c:41+103 (borde del bloque, amarillo)"),
+    ("hex_000000", "hex_ff8080", 3.0, None, "cw_tune_ui.c:42+103 (borde del bloque desentonado, rojo)"),
+]
+
+# Pares que se MIDEN pero no hacen fallar: el defecto existe en el color que
+# compila LVGL, pero el codigo ya pinta ese part/estado con los roles del tema
+# (asi que en la UI no se ve) y no se puede arreglar desde el proyecto. Se
+# informan para que quede el numero; si alguien saca el override, el par deja
+# de estar cubierto y hay que volver a mirarlo.
+# (fg, bg, umbral, requisito, archivo:linea)
+PARES_INFORMATIVOS = [
+    ("text", "lvgl_focused", 4.5, None, "tablas: el par del tema pisa el rojo #F44336 de LVGL"),
+    ("text_value", "lvgl_focused", 4.5, None, "tablas: idem para los valores"),
+    ("text", "lvgl_focuskey", 4.5, None, "tablas: el par del tema pisa el azul #2196F3 de LVGL"),
+    ("btn_text", "lvgl_focuskey", 4.5, None, "lv_keyboard: TC(focus)/TC(focus_text) pisan el azul de LVGL"),
 ]
 
 # No-texto (WCAG 1.4.11): bordes, anillos y barras contra lo que tienen al lado.
@@ -392,17 +484,25 @@ def armar_pares():
         pares.append((fg, bg, 3.0, req, donde))
     for fg, bg, umbral, donde in PARES_EXENTOS:
         pares.append((fg, bg, umbral, None, donde))
+    for fg, bg, umbral, req, donde in PARES_INFORMATIVOS:
+        pares.append((fg, bg, umbral, req, donde))
     return pares
 
 
-def aplica(req, forma):
-    """Si ese par existe en un tema con esa forma."""
+def aplica(req, forma, tema=None):
+    """Si ese par existe en un tema con esa forma.
+
+    Los requisitos son banderas de forma ("border", "btn_gradient", ...). Un
+    par que depende del TEMA y no de la forma se marca "solo:<tema>,<tema>".
+    """
     if req is None:
         return True
     if req == "border":
         return forma.get("border", 0) > 0
     if req == "no_mode_box":
         return not forma.get("mode_box", False)
+    if isinstance(req, str) and req.startswith("solo:"):
+        return tema in req[5:].split(",")
     return bool(forma.get(req, False))
 
 
@@ -428,16 +528,16 @@ def main():
     print()
 
     encabezado = f"  {'tema':<16} {'par (fg sobre bg)':<34} {'ratio':>6} {'min':>5}  resultado"
-    total_ok = total_falla = total_exento = 0
+    total_ok = total_falla = total_exento = total_info = 0
     resumen = []
-    peores_exentos = {}     # (fg, bg) -> (peor ratio, tema)
+    peores_exentos = {}     # (fg, bg) -> (peor ratio, tema, donde)
 
     for tema, paleta in paletas.items():
         forma = shapes.get(tema, {})
         filas = []
         aplicables = 0
         for fg, bg, umbral, req, donde in pares:
-            if not aplica(req, forma):
+            if not aplica(req, forma, tema):
                 continue
             if fg not in paleta or bg not in paleta:
                 fallos.append(f"{tema}: falta el rol {fg if fg not in paleta else bg}")
@@ -445,10 +545,14 @@ def main():
             aplicables += 1
             ratio = contraste(paleta[fg], paleta[bg])
             exento = fg in EXENTOS
-            ok = ratio >= umbral or exento
-            filas.append((ok, exento, ratio, umbral, fg, bg, donde))
-            if exento:
-                total_exento += 1
+            informativo = exento or any((fg, bg) == (f, b) for f, b, *_ in PARES_INFORMATIVOS)
+            ok = ratio >= umbral or informativo
+            filas.append((ok, informativo, ratio, umbral, fg, bg, donde))
+            if informativo:
+                if exento:
+                    total_exento += 1
+                else:
+                    total_info += 1
                 if (fg, bg) not in peores_exentos or ratio < peores_exentos[(fg, bg)][0]:
                     peores_exentos[(fg, bg)] = (ratio, tema, donde)
             elif ok:
@@ -464,9 +568,9 @@ def main():
 
         print(f"  === {tema} ===")
         print(encabezado)
-        for ok, exento, ratio, umbral, fg, bg, donde in sorted(mostrar, key=lambda f: f[2]):
-            if exento:
-                estado = "exento"
+        for ok, informativo, ratio, umbral, fg, bg, donde in sorted(mostrar, key=lambda f: f[2]):
+            if informativo:
+                estado = "exento" if fg in EXENTOS else "informa"
             elif ok:
                 estado = "OK"
             else:
@@ -476,7 +580,7 @@ def main():
         print()
 
     if peores_exentos:
-        print("  === exenciones (WCAG 1.4.3: disabled/incidental, no fallan) ===")
+        print("  === exenciones WCAG 1.4.3 y pares informativos (no fallan) ===")
         for (fg, bg), (ratio, tema, donde) in sorted(peores_exentos.items(), key=lambda k: k[1][0]):
             print(f"  {'':<16} {fg + ' sobre ' + bg:<34} {ratio:>6.2f}  peor en {tema}  [{donde}]")
         print()
@@ -484,7 +588,7 @@ def main():
     print("================ resumen ================")
     for tema, n in resumen:
         print(f"  {tema:<16} {n} pares aplicables")
-    print(f"  pares OK: {total_ok} | exentos: {total_exento} | FALLAS: {total_falla}")
+    print(f"  pares OK: {total_ok} | exentos: {total_exento} | informativos: {total_info} | FALLAS: {total_falla}")
 
     if avisos:
         for a in avisos:

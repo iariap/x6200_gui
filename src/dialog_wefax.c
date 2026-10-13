@@ -2807,6 +2807,12 @@ static void fax_browser_build(void)
         LV_PART_ITEMS
     );
 
+    lv_obj_set_style_bg_color(
+        fax_browser_table,
+        TC(panel),
+        LV_PART_ITEMS
+    );
+
     lv_obj_set_style_text_color(
         fax_browser_table,
         TC(text),

@@ -1850,6 +1850,13 @@ static lv_obj_t *tx_list_create(uint16_t rows)
     lv_obj_set_style_border_width(t, 0, LV_PART_ITEMS);
     lv_obj_set_style_text_font(t, &sony_22, LV_PART_ITEMS);
     lv_obj_set_style_text_color(t, TC(text), LV_PART_ITEMS);
+    /* Igual que en la tabla de BT: la celda elegida la pinta el tema de LVGL con SU rojo si el
+     * estado no lleva colores del tema (tx_list_draw_cb solo pinta la fila seleccionada). */
+    lv_obj_set_style_bg_opa(t, LV_OPA_TRANSP, LV_PART_ITEMS);
+    lv_obj_set_style_bg_color(t, TC(panel), LV_PART_ITEMS);
+    lv_obj_set_style_bg_color(t, TC(sel_bg), LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
+    lv_obj_set_style_bg_opa(t, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
+    lv_obj_set_style_text_color(t, TC(sel_text), LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
     lv_obj_set_style_pad_ver(t, 3, LV_PART_ITEMS);
     lv_obj_set_style_pad_left(t, 18, LV_PART_ITEMS);
     lv_table_set_col_cnt(t, 1);
@@ -3559,6 +3566,7 @@ static void sstv_browser_build(void)
     lv_obj_set_style_bg_opa(sstv_browser_table, LV_OPA_COVER, LV_PART_MAIN);
     lv_obj_set_style_border_width(sstv_browser_table, 0, LV_PART_ITEMS);
     lv_obj_set_style_bg_opa(sstv_browser_table, LV_OPA_TRANSP, LV_PART_ITEMS);
+    lv_obj_set_style_bg_color(sstv_browser_table, TC(panel), LV_PART_ITEMS);
     lv_obj_set_style_text_color(sstv_browser_table, TC(text),
                                 LV_PART_ITEMS);
     lv_obj_set_style_text_font(sstv_browser_table, &sony_24, LV_PART_ITEMS);

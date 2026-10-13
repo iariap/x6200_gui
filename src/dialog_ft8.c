@@ -14,6 +14,7 @@
 #include "lvgl/lvgl.h"
 #include "dialog.h"
 #include "styles.h"
+#include "theme.h"
 #include "params/params.h"
 #include "cfg/digital_modes.h"
 #include "radio.h"
@@ -807,13 +808,22 @@ static void construct_cb(lv_obj_t *parent) {
 
     lv_obj_set_style_border_width(table, 0, LV_PART_ITEMS);
 
-    lv_obj_set_style_bg_opa(table, 192, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(table, lv_color_black(), LV_PART_MAIN);
+    /* Fondo de la tabla con el rol del tema y opaco: las celdas se pintan al 50% sobre el
+     * (table_draw_part_begin_cb) y con el negro fijo que habia antes cada tema daba un fondo
+     * distinto al que el chequeo WCAG mide (docs/HALLAZGOS.md 26). */
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(table, TC(panel), LV_PART_MAIN);
     lv_obj_set_style_border_width(table, 1, LV_PART_MAIN);
-    lv_obj_set_style_border_color(table, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_border_color(table, TC(panel_border), LV_PART_MAIN);
     lv_obj_set_style_border_opa(table, 128, LV_PART_MAIN);
 
-    lv_obj_set_style_text_color(table, lv_color_hex(0xC0C0C0), LV_PART_ITEMS);
+    /* El texto lo pinta el rol del tema, no un gris a mano: sobre las celdas de color (CQ,
+     * to_me, TX) el #C0C0C0 daba 2.33:1 en Outdoor. */
+    lv_obj_set_style_text_color(table, TC(text), LV_PART_ITEMS);
+    lv_obj_set_style_bg_opa(table, LV_OPA_TRANSP, LV_PART_ITEMS);
+    lv_obj_set_style_bg_color(table, TC(sel_bg), LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_text_color(table, TC(sel_text), LV_PART_ITEMS | LV_STATE_FOCUSED);
     lv_obj_set_style_pad_top(table, 3, LV_PART_ITEMS);
     lv_obj_set_style_pad_bottom(table, 3, LV_PART_ITEMS);
     lv_obj_set_style_pad_left(table, 26, LV_PART_ITEMS);   /* room for the flag */

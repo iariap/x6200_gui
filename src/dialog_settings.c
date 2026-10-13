@@ -253,7 +253,7 @@ static void slider_with_text(lv_obj_t *cell, int32_t val, int32_t min, int32_t m
     lv_obj_set_user_data(slider_label, fmt);
     lv_label_set_text_fmt(slider_label, fmt, val);
     lv_obj_align(slider_label, LV_ALIGN_RIGHT_MID, 12, 0);
-    lv_obj_set_style_text_color(slider_label, lv_color_white(), 0);
+    lv_obj_set_style_text_color(slider_label, TC(text), 0);
 
     lv_obj_add_event_cb(obj, event_cb, LV_EVENT_VALUE_CHANGED, slider_label);
 }
@@ -1905,7 +1905,7 @@ static void construct_cb(lv_obj_t *parent) {
     lv_obj_set_size(grid, LV_PCT(100), 330);
     lv_obj_set_scroll_dir(grid, LV_DIR_VER);
     lv_obj_set_scroll_dir(dialog.obj, LV_DIR_VER);
-    lv_obj_set_style_text_color(grid, lv_color_white(), 0);
+    lv_obj_set_style_text_color(grid, TC(text), 0);
     lv_obj_set_style_bg_opa(grid, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_width(grid, 0, LV_PART_MAIN);
     lv_obj_set_style_pad_column(grid, SMALL_PAD, 0);

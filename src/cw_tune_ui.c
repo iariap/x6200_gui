@@ -8,11 +8,11 @@
 
 #include "cw_tune_ui.h"
 
+#include <math.h>
+
 #include "styles.h"
 #include "params/params.h"
 #include "pubsub_ids.h"
-
-#include <math.h>
 
 #define BLOCK_W 5
 #define SPACING 4
@@ -32,6 +32,21 @@ static lv_obj_t     *obj;
 
 static int8_t cur_freq=-100;
 
+/* Borde del bloque activo: blanco o negro, el que mas contraste tenga sobre el relleno.
+ * Mismo criterio y misma cuenta que band_plan.c (cruce de WCAG 2.1 en L = 0.179). */
+#define LUM_CORTE 0.18
+
+static float rel_lum(lv_color_t c)
+{
+    lv_color32_t c32 = { .full = lv_color_to32(c) };
+    float        v[3] = { c32.ch.red / 255.0f, c32.ch.green / 255.0f, c32.ch.blue / 255.0f };
+
+    for (int i = 0; i < 3; i++) {
+        v[i] = v[i] <= 0.03928f ? v[i] / 12.92f : powf((v[i] + 0.055f) / 1.055f, 2.4f);
+    }
+    return 0.2126f * v[0] + 0.7152f * v[1] + 0.0722f * v[2];
+}
+
 static void update_cb(lv_event_t * e);
 static void update_visibility(Subject *subj, void *user_data);
 
@@ -49,6 +64,11 @@ void cw_tune_init(lv_obj_t *parent)
     lv_draw_rect_dsc_init(&rect_active_dsc);
     rect_active_dsc.radius = 5;
     rect_active_dsc.bg_opa = LV_OPA_70;
+    /* El bloque activo lleva borde blanco o negro, el que mas contraste tenga sobre su propio
+     * relleno (el mismo criterio que band_plan.c): asi el bloque que marca el ajuste se distingue
+     * del resto en cualquier tema, que con el relleno solo daba 1.65:1 medido (docs/HALLAZGOS.md 26). */
+    rect_active_dsc.border_width = 2;
+    rect_active_dsc.border_opa = LV_OPA_COVER;
 
     obj = lv_obj_create(parent);
     lv_obj_set_height(obj, HEIGHT);
@@ -85,6 +105,8 @@ void cw_tune_set_freq(float hz) {
     } else {
         rect_active_dsc.bg_color = color_bad;
     }
+    rect_active_dsc.border_color = rel_lum(rect_active_dsc.bg_color) < LUM_CORTE ? lv_color_white()
+                                                                                 : lv_color_black();
     if (cur_freq != new_id){
         cur_freq = new_id;
         lv_event_send(obj, LV_EVENT_REFRESH, NULL);

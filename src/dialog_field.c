@@ -1095,7 +1095,7 @@ static void chip_create(knob_chip_t *c, const char *tag, lv_coord_t y) {
     lv_obj_set_style_border_width(c->box, 1, 0);
     lv_obj_set_style_radius(c->box, 6, 0);
     lv_obj_clear_flag(c->box, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
-    c->tag = label(c->box, VF(20), lv_color_black(), 4, 4, 0);
+    c->tag = label(c->box, VF(20), TC(text), 4, 4, 0);
     lv_label_set_text(c->tag, tag);
     lv_obj_set_style_bg_opa(c->tag, LV_OPA_COVER, 0);
     lv_obj_set_style_pad_hor(c->tag, 5, 0);

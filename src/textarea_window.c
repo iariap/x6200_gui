@@ -11,6 +11,7 @@
 #include "keyboard.h"
 #include "textarea_window.h"
 #include "styles.h"
+#include "theme.h"
 
 static lv_obj_t             *window = NULL;
 static lv_obj_t             *label = NULL;
@@ -153,7 +154,16 @@ lv_obj_t * textarea_window_open(textarea_window_cb_t ok, textarea_window_cb_t ca
         lv_obj_add_event_cb(keyboard, keyboard_cb, LV_EVENT_KEY, NULL);
 
         lv_obj_set_style_bg_color(keyboard, bg_color, LV_PART_MAIN);
+        /* La tecla con el foco la pinta lv_btnmatrix con LV_STATE_FOCUS_KEY (o PRESSED/EDITED),
+         * y el tema por defecto de LVGL la pintaba con SU azul y SU texto (bg_color_primary_muted:
+         * azul sobre azul, 3.5:1), no con el par del tema. El estado FOCUSED solo no alcanzaba. */
         lv_obj_add_style(keyboard, &dialog_item_focus_style, LV_STATE_FOCUSED | LV_PART_ITEMS);
+        lv_obj_set_style_bg_color(keyboard, TC(focus), LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
+        lv_obj_set_style_text_color(keyboard, TC(focus_text), LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
+        lv_obj_set_style_bg_color(keyboard, TC(focus), LV_PART_ITEMS | LV_STATE_PRESSED);
+        lv_obj_set_style_text_color(keyboard, TC(focus_text), LV_PART_ITEMS | LV_STATE_PRESSED);
+        lv_obj_set_style_bg_color(keyboard, TC(sel_bg), LV_PART_ITEMS | LV_STATE_EDITED);
+        lv_obj_set_style_text_color(keyboard, TC(sel_text), LV_PART_ITEMS | LV_STATE_EDITED);
 
         lv_group_add_obj(keyboard_group, keyboard);
     } else {

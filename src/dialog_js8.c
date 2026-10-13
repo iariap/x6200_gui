@@ -2062,6 +2062,13 @@ static void construct_cb(lv_obj_t *parent) {
     lv_table_set_col_cnt(table, 1);
     lv_table_set_col_width(table, 0, WIDTH - 2);
     lv_obj_set_style_border_width(table, 0, LV_PART_ITEMS);
+    /* La celda elegida la repinta el tema de LVGL con SU rojo si la tabla no la pinta: se fija el
+     * par del tema (el mismo de las otras listas) para los estados que puede tomar esa celda. */
+    lv_obj_set_style_bg_opa(table, LV_OPA_TRANSP, LV_PART_ITEMS);
+    lv_obj_set_style_bg_color(table, TC(panel), LV_PART_ITEMS);
+    lv_obj_set_style_bg_color(table, TC(sel_bg), LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_text_color(table, TC(sel_text), LV_PART_ITEMS | LV_STATE_FOCUSED);
     lv_obj_set_style_bg_opa(table, 150, LV_PART_MAIN); /* waterfall shows through */
     lv_obj_set_style_bg_color(table, TC(panel), LV_PART_MAIN);
     lv_obj_set_style_border_width(table, theme_shape.border, LV_PART_MAIN);

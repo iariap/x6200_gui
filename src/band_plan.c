@@ -9,12 +9,34 @@
 #include "params/params.h"
 #include "styles.h"
 
+#include <math.h>
 #include <stddef.h>
 #include <string.h>
 
 #define OPA LV_OPA_80       /* the spectrum shows through a little, labels stay readable */
 
-/* Strip colours and labels; the X6100 takes these from its theme */
+/* The X6100 takes these colours from its theme; here they are the strip's
+ * identity, so what moves is the label: black or white, whichever has more
+ * contrast on the segment.
+ *
+ * Crossover from WCAG 2.1: with c = L + 0.05, black gives c / 0.05 and white
+ * 1.05 / c, equal at c = sqrt(0.0525) = 0.2291, i.e. L = 0.179. Picking by
+ * that point the worst case is 4.58:1, so the label always meets AA (4.5:1)
+ * for normal text whatever the segment colour is. */
+#define LUM_CORTE 0.18
+
+static float rel_lum(lv_color_t c)
+{
+    lv_color32_t c32 = { .full = lv_color_to32(c) };
+    float        v[3] = { c32.ch.red / 255.0f, c32.ch.green / 255.0f, c32.ch.blue / 255.0f };
+
+    for (int i = 0; i < 3; i++) {
+        v[i] = v[i] <= 0.03928f ? v[i] / 12.92f : powf((v[i] + 0.055f) / 1.055f, 2.4f);
+    }
+    return 0.2126f * v[0] + 0.7152f * v[1] + 0.0722f * v[2];
+}
+
+/* The strip colours and labels; the X6100 takes these from its theme */
 static const uint32_t colors[] = { 0x3366CC, 0x33AA55, 0x888888, 0xCC8800 };
 static const char *const labels[][2] = {
     { "CW", NULL }, { "DIG", NULL }, { "ALL MODES / SSB", "SSB" }, { "BCN", NULL },
@@ -54,6 +76,12 @@ static void redraw(void) {
         lv_obj_set_x(s->box, vis[i].x);
         lv_obj_set_width(s->box, vis[i].w);
         lv_obj_set_style_bg_color(s->box, lv_color_hex(colors[vis[i].type]), 0);
+        /* Etiqueta en negro o blanco, el que mas contraste tenga sobre ESE color: el blanco fijo de
+         * antes daba 2.96:1 sobre el naranja de BCN y 2.99:1 sobre el verde de DIG (medido,
+         * docs/HALLAZGOS.md 26). */
+        lv_obj_set_style_text_color(s->label,
+                                    rel_lum(lv_color_hex(colors[vis[i].type])) < LUM_CORTE ? lv_color_white()
+                                                                                            : lv_color_black(), 0);
 
         for (int k = 0; k < 2 && labels[vis[i].type][k] && !text; k++) {
             const char *t = labels[vis[i].type][k];
