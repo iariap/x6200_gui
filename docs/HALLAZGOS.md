@@ -216,8 +216,7 @@ se conservó la captura**. Arreglado: la conexión con PulseAudio corre en un hi
 (`audio_init` → `audio_init_sync`) y hoy el tramo `audio_init` mide `+0,00 s`.
 
 **Sin fundar** (anexo A): el "6 esperas" de `S48sntp`; que la GUI "sólo necesita DATA, udev, el
-daemon y /dev/shm, todo listo en S11"; que los 3,81 s de scripts sean "udev, `create_data`,
-`tune_cache` y el daemon de radio" (no se midió script por script).
+daemon y /dev/shm, todo listo en S11". (La atribución de los scripts por fin está medida: §12.)
 
 ---
 
@@ -336,6 +335,9 @@ vio que era ruido (en el A/B: +0,07 y +0,09).
 
 ## 8. Herramientas y cómo se mide
 
+- **`/mnt/app_logs/boot_scripts.log`** + **`rootfs/etc/init.d/rcS` instrumentado**: el `rcS` (que
+  corre los scripts en orden) deja `inicio`/`fin` con el uptime de cada script, así se sabe cuánto
+  tarda cada uno (§12). La copia original de buildroot queda en `/etc/init.d/rcS.orig` en la radio.
 - **`boot_mark()`** (`src/main.c`, declarada en `src/util.h`): deja en `boot.log` el `uptime` **y
   cuánto duró la etapa**. Etapas cubiertas: `GUI inicio`, `lv_init`, `display init`, `audio_init`,
   `eventos/usb`, `display`, `keyboard`, `entradas`, `db_init`, `cfg:*`, `params_load`,
@@ -373,8 +375,10 @@ vio que era ruido (en el A/B: +0,07 y +0,09).
 
 Con los números **medidos**; lo que no tiene medición va al anexo A.
 
-1. **Scripts de arranque**: 1,4-3,8 s entre `kernel listo` y `GUI arrancando` (medido en varios
-   arranques). No está desglosado por script: falta una marca por script.
+1. **Scripts de arranque, ahora desglosados** (marca por script, ver §12): **2,09 s** desde el
+   primer script hasta lanzar la GUI (3,13 → 5,22 s), de los cuales **S10udev 0,92 s** y el resto
+   migajas de 0,04-0,18 s. Los dos scripts más caros (**S96webserver 3,18 s** y **S50pulseaudio
+   2,12 s**) corren *después* de lanzar la GUI, así que no retrasan el primer cuadro.
 2. **Replay del journal ext4**: 0,5-1,3 s medidos, sólo cuando el apagado anterior fue sucio (§11).
    La decisión pendiente es el rootfs read-only.
 3. **`GUI arrancando → GUI inicio` (daemon + enlace dinámico)**: 0,76-1,06 s medidos, sin desglosar.
@@ -501,7 +505,9 @@ Reparto, con lo medido:
   `5.02`. **Corrección**: antes decía "kernel ~2,7 s hasta `udevd`" y "el panel se lleva ~0,4 s":
   eran estimaciones; los valores medidos son los de arriba.
 - **Replay del journal: 0,5-1,3 s** si el apagado anterior fue sucio (§11).
-- **Scripts: 1,4-3,8 s** entre `kernel listo` y `GUI arrancando` (medido en varios arranques).
+- **Scripts: 2,09 s** desde el primer script hasta lanzar la GUI, **desglosado script por script**
+  (ver abajo). Antes decía "1,4-3,8 s sin desglosar": el rango sigue siendo el que se ve entre
+  arranques, pero ahora se sabe en qué se va.
 - **`GUI arrancando → GUI inicio`: 0,76-1,06 s** medidos, **sin desglosar** entre el daemon y el
   enlace dinámico. Medido aparte: leer el binario (11.538.740 bytes, **no** stripped —`file`— y
   **28** bibliotecas `NEEDED` —`readelf -d`—) desde la raíz cuesta 0,467 s con la caché vacía, y la
@@ -509,6 +515,35 @@ Reparto, con lo medido:
 - **GUI: 1,0-1,4 s** (ya con el arreglo de §10). `main()` hasta `audio_init` es 0,02 s. Tramos
   medidos: `cw/rtty` 0,16-0,21 s, `radio` 0,21 s, `cat/qso_log` 0,07 s, `db_init` 0,15-0,19 s,
   `fuentes y estilos` 0,04-0,09 s, `pantalla principal` 0,03-0,09 s (una vez 0,55 s: ruido, ver §7).
+  Ojo: los tramos marcados suman ~0,7 s, así que queda **~0,8-1,0 s sin marca** entre el último
+  (`control remoto`) y el primer cuadro: es el dibujo de la pantalla.
+
+**Los scripts, script por script** (medido el 13/10 con `rcS` instrumentado; `boot_scripts.log`):
+
+```
+ 3.23  +0.08  S01boot_time              5.51  +0.26  S30dbus
+ 3.43  +0.18  S01create_data           5.77  +0.23  S39btpairings
+ 3.57  +0.11  S01seedrng               5.89  +0.09  S40bluetoothd
+ 3.65  +0.06  S01syslogd               6.16  +0.24  S40network
+ 3.73  +0.05  S02klogd                 6.47  +0.27  S45network-manager
+ 3.83  +0.07  S02sysctl                6.66  +0.16  S48sntp
+ 3.90  +0.04  S02update                6.86  +0.16  S49ntp
+ 3.99  +0.06  S03tune_cache            7.00  +0.11  S50alsa
+ 4.08  +0.07  S04restore_backup_config  9.15  +2.12  S50pulseaudio
+ 5.03  +0.92  S10udev                  9.43  +0.25  S50sshd
+ 5.10  +0.05  S11radio_daemon          9.80  +0.34  S94btcat
+ 5.22  +0.09  S20gui                  13.01  +3.18  S96webserver
+```
+
+Se lee así: **antes de la GUI** (3,13 → 5,22) el 44% es `S10udev` (0,92 s) y el resto son doce
+scripts de 0,04-0,18 s; **mientras la GUI dibuja su primer cuadro** (5,22 → 6,9) corren en paralelo
+dbus, Bluetooth, red y NTP (~1,4 s de trabajo, medido); y los dos más caros (`S96webserver` 3,18 s y
+`S50pulseaudio` 2,12 s) vienen después.
+
+**Lo que se probó y NO se sostuvo**: bajar la prioridad (`nice -n 19`) de los scripts posteriores a
+la GUI para no pelearle CPU mientras dibuja. Medido (una muestra por lado): `GUI lista` 6,9 → 6,7 s
+(dentro del rango 6,6-7,2 s que se ve entre arranques) y los scripts secundarios terminando ~1 s más
+tarde. No alcanza: se dejó como estaba, y el comentario en `rcS` lo deja anotado.
 
 ---
 
@@ -613,13 +648,13 @@ con lo que haría falta para fundarlas.
 | "El audio de recepción sale por el DSP propio del equipo, no por el camino del SoC" | No hay medición ni esquema: sólo se sabe que la recepción se escucha y que la GUI no | Esquema del equipo o medir la señal en el DSP |
 | "No suena por el parlante porque el códec del SoC no está cableado a la salida" | Se midió que la cadena está configurada y que no suena; **el porqué** no | Documentación del códec/placa o medir la salida del códec |
 | "Es una limitación de plataforma, no del código" | Conclusión causal; podría haber un control de mezcla o una ruta no encontrada | Probar la cadena con un sink que consuma (A2DP) y con la GUI parada |
-| "Bluetooth A2DP es el único camino audible" | No se probó (los auriculares estaban descargados) | Conectar auriculares BT y medir |
+| "Bluetooth A2DP es el único camino audible" | No se probó: **medido** que el adaptador `hci0` está `UP` y `bluealsa` corre, pero `bluetoothctl devices` no lista **ningún** dispositivo emparejado, así que no hay sink A2DP que probar | Emparejar auriculares y medir |
 | El primer intento de `S02update` se cortó por un corte de energía | Es relato del usuario; no hay log | Log del intento / estado del equipo |
 | "La raíz quedó idéntica, verificada" tras el intento fallido | Se dice verificado pero no quedó el md5/diff | Guardar los md5 de la raíz antes/después |
 | El "~10 minutos" de espera del tgz | No se cronometró | Cronometrar una actualización por tgz |
 | El botón de power "apaga por software y vuelve a correr el userspace" | No se verificó en el driver/script | Leer el driver/script del power |
 | El "6 esperas" de `S48sntp` y que "todo está listo en S11" | No se leyó el script ni se listó el arranque de scripts | Leer `S48sntp` y medir una marca por script |
-| "Los 3,81 s de scripts son udev, `create_data`, `tune_cache` y el daemon" | Atribución sin medir cada script | Marca de tiempo por script |
+| ~~"Los 3,81 s de scripts son udev, `create_data`, `tune_cache` y el daemon"~~ | **Fundado el 13/10**: están en §12, script por script | — |
 | El inventario de features que faltan de la migración | No hay diff contra la base | Diff/`grep` contra `.x6100_ref` |
 | "TX Cal / CESSB / filtro TX son imposibles: el baseband no los expone" | Afirmación de hardware sin fuente | Documentación del baseband/SoC |
 | "La app Android X6100 Link nunca se publicó" | Sin fuente | Buscar la publicación / confirmar con el autor |
