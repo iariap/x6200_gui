@@ -38,8 +38,9 @@ void voice_sure(void);
 /* La GUI ya esta en pie: desde aca la voz puede hablar (ver voice.c) */
 void voice_ready(void);
 
-/* Dice $X6200_VOICE_TEST al arrancar (diagnóstico) */
-void voice_selftest(void);
+/* Dice $X6200_VOICE_TEST al arrancar (diagnóstico). Devuelve true si hizo la prueba, y en ese
+ * caso la GUI tiene que terminar: es un diagnóstico, no una forma de arrancar. */
+bool voice_selftest(void);
 void voice_change_mode(void);
 void voice_say_text_fmt(const char * fmt, ...);
 void voice_delay_say_text_fmt(const char * fmt, ...);

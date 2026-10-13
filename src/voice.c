@@ -173,23 +173,32 @@ static void sintetizar_y_reproducir(const char *texto, bool forzar) {
                                                  pcm, salida_max, AUDIO_PLAY_RATE);
 
                 /* En trozos: un bloque grande no encuentra lugar en el stream */
+                size_t enviadas = 0;
+
                 for (size_t at = 0; at < escritas; at += 2048) {
                     size_t parte = escritas - at > 2048 ? 2048 : escritas - at;
 
                     if (audio_play(pcm + at, parte) < 0) {
                         break;
                     }
+
+                    enviadas += parte;
                 }
 
-                if (escritas > 0) {
+                if (enviadas > 0) {
                     audio_play_wait();
                 }
 
-                voz_log("sintetizado: %zu muestras de %u Hz (reloj de la GUI: %i Hz)%s",
-                        escritas, rate, AUDIO_PLAY_RATE,
-                        escritas == 0 ? " - NO SE ESCRIBIO NADA AL AUDIO" : "");
+                /* Se anota lo que de verdad entró al stream: si el sink no consume, "no se
+                 * escucha nada" y el log tienen que decirlo, no dejarlo como si hubiera sonado. */
+                voz_log("sintetizado: %zu muestras de %u Hz (reloj de la GUI: %i Hz); "
+                        "al audio %zu de %zu%s%s",
+                        escritas, rate, AUDIO_PLAY_RATE, enviadas, escritas,
+                        enviadas == 0 ? " - NO SE ESCRIBIO NADA AL AUDIO" : "",
+                        (enviadas > 0 && enviadas < escritas) ? " - el stream se lleno y se corto" : "");
 
-                LV_LOG_USER("Voz: %zu muestras a %i Hz (%u -> %i)", escritas, AUDIO_PLAY_RATE, rate, AUDIO_PLAY_RATE);
+                LV_LOG_USER("Voz: %zu muestras a %i Hz (%u -> %i), al audio %zu",
+                            escritas, AUDIO_PLAY_RATE, rate, AUDIO_PLAY_RATE, enviadas);
                 free(pcm);
             }
         }
@@ -254,14 +263,22 @@ static void encolar(const char *texto) {
 }
 
 /* Prueba de voz sin pasar por la UI: con X6200_VOICE_TEST="texto" dice esa frase al arrancar.
- * La usan los scripts de diagnóstico y sirve para comprobar el TTS (y el audio) en el equipo. */
-void voice_selftest(void) {
+ * La usan los scripts de diagnóstico y sirve para comprobar el TTS (y el audio) en el equipo.
+ *
+ * Se llama ANTES de tocar la pantalla, la entrada, la radio y el WiFi, y devuelve true para que
+ * main() termine: así la prueba se puede correr con la GUI andando (no le pelea el framebuffer
+ * ni la red) y no queda una segunda GUI viva cuando el texto ya se dijo. */
+bool voice_selftest(void) {
     const char *texto = getenv("X6200_VOICE_TEST");
 
-    if (texto != NULL && *texto != 0) {
-        LV_LOG_USER("Prueba de voz: \"%s\"", texto);
-        sintetizar_y_reproducir(texto, true);
+    if (texto == NULL || *texto == 0) {
+        return false;
     }
+
+    LV_LOG_USER("Prueba de voz: \"%s\"", texto);
+    sintetizar_y_reproducir(texto, true);
+
+    return true;
 }
 
 void voice_ready(void) {

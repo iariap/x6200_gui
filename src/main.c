@@ -132,6 +132,16 @@ int main(void) {
     boot_mark("lv_init");
     // lv_png_init();
 
+    /* Diagnostico de voz (X6200_VOICE_TEST="texto"): dice la frase y termina. Va aca, antes de
+     * la pantalla, la entrada, la radio y el WiFi, para poder correrlo con la GUI andando sin
+     * pelearle el framebuffer ni la red. */
+    audio_init();
+    boot_mark("audio_init");
+
+    if (voice_selftest()) {
+        exit(0);
+    }
+
     /* The kernel has DRM (CONFIG_DRM_SUN4I plus the panel driver) and lv_drivers
      * brings the backend, but an unverified display engine can leave the screen
      * black: DRM is used only when it is asked for, by creating /mnt/use_drm or
@@ -154,8 +164,6 @@ int main(void) {
         fbdev_init();
     }
     boot_mark("display init");
-    audio_init();
-    boot_mark("audio_init");
     event_init();
     usb_devices_monitor_init();
     boot_mark("eventos/usb");
@@ -240,7 +248,6 @@ int main(void) {
                "[ -e \"/mnt/themes/${t##*/}\" ] || cp -r \"$t\" /mnt/themes/; done") != 0) {
         LV_LOG_WARN("Bundled themes not copied to /mnt/themes");
     }
-    voice_selftest();     /* X6200_VOICE_TEST="texto" dice la frase y sale */
 
 
     theme_init(params.theme_name.x);    /* an unknown one falls back to IU1WXY */

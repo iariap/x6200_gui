@@ -41,6 +41,11 @@ static char                 *capture_device = "alsa_input.platform-sound.stereo-
 
 static pa_stream            *monitor_stm = NULL;
 
+/* Cuando el stream de reproducción no acepta datos (el sink real no consume: ver HALLAZGOS),
+ * se anota hasta cuándo no insistir. Sin esto, cada bloque de audio de FT8/JS8/voz pagaría su
+ * propio tope de 2 s y el que manda audio se quedaría esperando minutos. */
+static uint64_t              play_sin_lugar_hasta = 0;
+
 static float                peak_db = -60.0f;
 
 static void record_monitor_setup();
@@ -204,10 +209,15 @@ int audio_play(int16_t *samples_buf, size_t samples) {
         return 0;
     }
 
+    /* Ya se comprobó hace poco que no acepta: no hacer esperar a nadie (ver arriba). */
+    if (play_sin_lugar_hasta != 0 && pa_rtclock_now() < play_sin_lugar_hasta) {
+        return -1;
+    }
 
-    /* Espera a que haya lugar, despertando con el mainloop en vez de cada milisegundo
-     * (eso eran mil despertares por segundo) y con un tope: si el stream se cayó, se
-     * avisa y se descarta el bloque en lugar de quedarse pegado. */
+    /* Espera a que haya lugar. NO se puede esperar al mainloop sin tope: si el stream no se
+     * destraba (pasa cuando el sink real no consume, ver HALLAZGOS), `pa_threaded_mainloop_wait()`
+     * no vuelve nunca y el tope de abajo jamás se evalúa: la GUI quedaba colgada en futex_wait.
+     * Se duerme 1 ms y se vuelve a preguntar, así el tope es de verdad. */
     bool     hay_lugar = false;
     uint64_t limite    = pa_rtclock_now() + 2000000;      /* 2 s */
 
@@ -217,14 +227,23 @@ int audio_play(int16_t *samples_buf, size_t samples) {
             hay_lugar = true;
             break;
         }
-        pa_threaded_mainloop_wait(mloop);
+
+        pa_threaded_mainloop_unlock(mloop);
+        usleep(1000);
+        pa_threaded_mainloop_lock(mloop);
     }
     pa_threaded_mainloop_unlock(mloop);
 
     if (!hay_lugar) {
+        /* -1 y no 0: el que llama (la voz, por ejemplo) tiene que poder cortar en vez de
+         * mandar bloque tras bloque que se descartan uno por uno. Y se recuerda por 5 s para
+         * que el resto de los bloques de la misma frase/transmisión no paguen el tope. */
+        play_sin_lugar_hasta = pa_rtclock_now() + 5000000;
         LV_LOG_WARN("El stream de reproducción no acepta datos: se descarta el bloque");
-        return 0;
+        return -1;
     }
+
+    play_sin_lugar_hasta = 0;
 
     pa_threaded_mainloop_lock(mloop);
     int res = pa_stream_write(play_stm, samples_buf, samples * 2, NULL, 0, PA_SEEK_RELATIVE);
@@ -255,7 +274,7 @@ void audio_play_wait() {
         return;
     }
 
-    /* Lo mismo: se espera el fin del drenaje con el mainloop y con tope. */
+    /* Lo mismo: el drenaje se espera con un tope real, no con un wait sin timeout. */
     uint64_t limite = pa_rtclock_now() + 2000000;         /* 2 s */
 
     pa_threaded_mainloop_lock(mloop);
@@ -266,7 +285,9 @@ void audio_play_wait() {
             break;
         }
         if (r == PA_OPERATION_RUNNING) {
-            pa_threaded_mainloop_wait(mloop);
+            pa_threaded_mainloop_unlock(mloop);
+            usleep(1000);
+            pa_threaded_mainloop_lock(mloop);
         } else {
             break;
         }

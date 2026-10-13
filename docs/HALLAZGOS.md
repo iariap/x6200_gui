@@ -451,3 +451,45 @@ quedaron iguales a los de la imagen, y el arranque en frío verificado: `GUI lis
 `pulse` en el grupo `audio`, sink `alsa_output.platform-sound.stereo-fallback` y los seis
 dispositivos de entrada abiertos como siempre.
 
+
+---
+
+## 15. La GUI se colgaba al mandar audio: el sink real acepta pero **no consume**
+
+Apareció al probar la voz de punta a punta **después** del arreglo del grupo `audio` (§4). El
+ciclo fue: el diagnóstico de voz dejó la GUI colgada, y el proceso quedó en `futex_wait_queue`
+mirando el hilo `threaded-ml` (el mainloop de PulseAudio, que estaba **vivo**, en `poll`).
+
+**Causa**: `audio_play()` y `audio_play_wait()` tenían un tope de 2 s, **pero esperaban con
+`pa_threaded_mainloop_wait()`, que no tiene timeout**: si el mainloop no avisa, el tope nunca se
+evalúa y la GUI se queda pegada. Y no avisa porque **el sink real no consume**: PulseAudio acepta
+las muestras en su buffer (por eso el log dice que entraron las 135484) y después
+`pa_stream_drain()` no termina nunca porque no hay nada que reproduzca del otro lado (el códec
+del SoC no está cableado a la salida, §4). Antes del arreglo del grupo esto no pasaba porque el
+sink era `auto_null`, que consume al instante: el bug quedó **tapado** por el otro bug.
+
+**Arreglo**:
+
+- Las dos esperas pasan a dormir 1 ms y volver a preguntar (con el tope de 2 s de verdad), así
+  el peor caso es 2 s y no "para siempre".
+- `audio_play()` devuelve **-1** cuando descarta un bloque, y anota `play_sin_lugar_hasta` por
+  **5 s**: sin eso, cada bloque de una frase o de una transmisión de FT8/JS8 pagaría sus 2 s.
+- La voz informa lo que **de verdad entró al stream**, no lo que se sintetizó:
+  `sintetizado: 135484 muestras … al audio 135484 de 135484`.
+
+**El diagnóstico de voz ahora es seguro**: `voice_selftest()` corre **antes** de la pantalla, la
+entrada, la radio y el WiFi, y devuelve `true` para que `main()` termine. Así se puede correr con
+la GUI andando (no le pelea el framebuffer ni la red) y no queda una segunda GUI viva:
+
+```sh
+X6200_VOICE_TEST="prueba de voz del x6200" /usr/sbin/x6200_gui; echo "exit=$?"
+# exit=0 en ~3 s, y en /mnt/app_logs/voice.log queda cuantas muestras entraron
+```
+
+**Ojo**: el `busybox` de esta imagen **no trae `timeout`** (el comando sale 127 y parece que el
+programa falló). Para acotar algo en la radio, usar el patrón de shell:
+`cmd & p=$!; sleep 20; kill -0 $p 2>/dev/null && kill $p`.
+
+**Estado honesto de la voz**: se sintetiza y se manda al sink real (verificado), pero el sink no
+consume → **sigue sin escucharse** por el parlante (limitación de hardware, §4). El único camino
+audible sigue siendo Bluetooth A2DP, que sí consume.
