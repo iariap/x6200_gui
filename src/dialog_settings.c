@@ -42,18 +42,24 @@
 
 static lv_obj_t     *grid;
 
-#define SMALL_PAD   5
+/* La grilla se comporta como una tabla de HTML al 100%: ocupa el ancho del dialog y la primera
+ * columna (las etiquetas) se queda con lo que sobra, asi que nunca desborda. Antes eran tamanos
+ * fijos de 57/5 con la grilla de 780 px de ancho -la pantalla del X6100, apaisada-, y en el X6200
+ * no entraba en el ancho del dialog: scrolleaba en horizontal y las etiquetas quedaban cortadas
+ * ("e (CAT)" en lugar de "Discoverable (CAT)"), justo en las filas del Bluetooth
+ * (docs/HALLAZGOS.md 18). El ancho por columna (45) sale de medir la captura: el spinbox del ano
+ * con 4 digitos ("2026") necesita 2 columnas de ese ancho para no cortarse. */
+#define SMALL_PAD   3
 
-#define SMALL_1     57
+#define SMALL_1     45
 #define SMALL_2     (SMALL_1 * 2 + SMALL_PAD * 1)
 #define SMALL_3     (SMALL_1 * 3 + SMALL_PAD * 2)
 #define SMALL_4     (SMALL_1 * 4 + SMALL_PAD * 3)
 #define SMALL_5     (SMALL_1 * 5 + SMALL_PAD * 4)
 #define SMALL_6     (SMALL_1 * 6 + SMALL_PAD * 5)
 
-#define SMALL_WIDTH 57
-
-static lv_coord_t   col_dsc[] = { 740 - (SMALL_1 + SMALL_PAD) * 6, SMALL_1, SMALL_1, SMALL_1, SMALL_1, SMALL_1, SMALL_1, LV_GRID_TEMPLATE_LAST };
+/* LV_GRID_FR(1) = la que se lleva el espacio libre (las etiquetas de la columna 0). */
+static lv_coord_t   col_dsc[] = { LV_GRID_FR(1), SMALL_1, SMALL_1, SMALL_1, SMALL_1, SMALL_1, SMALL_1, LV_GRID_TEMPLATE_LAST };
 static lv_coord_t   row_dsc[64] = { 1 };
 
 static time_t       now;
@@ -1764,6 +1770,10 @@ static lv_obj_t *bt_switch_cell(uint8_t row, bool state, lv_event_cb_t cb) {
     lv_obj_set_width(obj, SMALL_3 - 30);
     lv_obj_center(obj);
 
+    /* Sin esto el switch no entra en el grupo de foco y no hay forma de cambiarlo con las
+     * teclas ni con el MFK: era el caso de los dos del Bluetooth (docs/HALLAZGOS.md 18). */
+    dialog_item(&dialog, obj);
+
     if (state) {
         lv_obj_add_state(obj, LV_STATE_CHECKED);
     }
@@ -1816,6 +1826,7 @@ static uint8_t make_bluetooth(uint8_t row) {
     lv_obj_set_size(obj, SMALL_6, 56);
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_center(obj);
+    dialog_item(&dialog, obj);      /* si no, no se puede elegir con las teclas */
     lv_obj_add_event_cb(obj, charger_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     return row + 1;
@@ -1852,6 +1863,7 @@ static uint8_t make_cluster_column(uint8_t row) {
     obj = lv_switch_create(obj);
     lv_obj_set_width(obj, SMALL_3 - 30);
     lv_obj_center(obj);
+    dialog_item(&dialog, obj);      /* si no, no se puede cambiar con las teclas */
 
     if (subject_get_int(cfg.cluster_column.val)) {
         lv_obj_add_state(obj, LV_STATE_CHECKED);
@@ -1869,6 +1881,10 @@ static uint8_t make_delimiter(uint8_t row) {
 }
 
 static void construct_cb(lv_obj_t *parent) {
+    /* Cuantos items entran al grupo de foco: es la medida de "todo Ajustes se puede navegar".
+     * Un widget que no llama a dialog_item() no se puede ni alcanzar (ver docs/HALLAZGOS.md 18),
+     * asi que este numero queda en el log para poder compararlo. */
+    uint32_t items_antes = keyboard_group ? lv_group_get_obj_count(keyboard_group) : 0;
     if (mfk_inner != NULL) {
         mfk_inner->mode = ROT_MFK_INNER_INVERSE_MODE;
     }
@@ -1879,12 +1895,20 @@ static void construct_cb(lv_obj_t *parent) {
 
     lv_obj_set_layout(grid, LV_LAYOUT_GRID);
 
-    lv_obj_set_size(grid, 780, 330);
+    /* 100% del ancho del dialog y scroll SOLO vertical: no puede aparecer una barra horizontal. */
+    lv_obj_set_size(grid, LV_PCT(100), 330);
+    lv_obj_set_scroll_dir(grid, LV_DIR_VER);
+    lv_obj_set_scroll_dir(dialog.obj, LV_DIR_VER);
     lv_obj_set_style_text_color(grid, lv_color_white(), 0);
     lv_obj_set_style_bg_opa(grid, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_width(grid, 0, LV_PART_MAIN);
     lv_obj_set_style_pad_column(grid, SMALL_PAD, 0);
     lv_obj_set_style_pad_row(grid, 5, 0);
+    /* La barra de scroll se dibuja encima del contenido: se le reserva el lugar a la derecha, si no
+     * el ultimo campo de cada fila queda tapado (se leia "202" en vez de "2026", medido con una
+     * captura del framebuffer el 13/10). */
+    lv_obj_set_style_pad_right(grid, 14, 0);
+    lv_obj_set_style_width(grid, 7, LV_PART_SCROLLBAR);
 
     lv_obj_center(grid);
 
@@ -1953,6 +1977,9 @@ static void construct_cb(lv_obj_t *parent) {
 
     row_dsc[row] = LV_GRID_TEMPLATE_LAST;
     lv_obj_set_grid_dsc_array(grid, col_dsc, row_dsc);
+
+    LV_LOG_USER("Ajustes: %u items navegables (creados en esta apertura)", 
+                (unsigned) (keyboard_group ? lv_group_get_obj_count(keyboard_group) - items_antes : 0));
 }
 
 static void key_cb(lv_event_t * e) {

@@ -36,6 +36,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 15. [Anexo A: hipótesis sin fundar (no son hallazgos)](#anexo-a-hipótesis-sin-fundar-no-son-hallazgos)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
+18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
 
 ---
 
@@ -830,3 +831,58 @@ solo se llega por un long press asignado); y, para que la **voz** (TTS) se oiga 
 A2DP, darle a la voz un **stream propio** que apunte al sink A2DP cuando hay auriculares — no mover
 el stream compartido, por lo del audio de TX. **Sin fundar** hasta probarlo con auriculares: al
 anexo A.
+
+---
+
+## 18. Ajustes: widgets que no se podian ni alcanzar, y la grilla que no entraba
+
+**Sintoma** (reportado por el usuario): "asegurate que todas las opciones de Settings sean
+navegables. Por ejemplo bluetooth no lo es y no puedo cambiarlo". Las etiquetas de Ajustes, ademas,
+aparecian cortadas por la izquierda.
+
+**Hallazgo 1 — tres widgets nunca entraban al grupo de foco.** `dialog_item(&dialog, obj)`
+(`src/dialog.c`) es lo unico que mete un widget en `keyboard_group`: sin esa llamada no se puede ni
+llegar con las teclas ni cambiarlo. Faltaba en:
+
+| Widget | Donde | Consecuencia |
+|---|---|---|
+| los **dos switches del Bluetooth** ("Bluetooth" y "Discoverable (CAT)") | `bt_switch_cell()`, `dialog_settings.c:1754` | no se podia encender el Bluetooth |
+| el desplegable **"Charger"** | `make_bluetooth()`, `dialog_settings.c:1813` | no se podia elegir |
+| el switch de la **columna del cluster** | `make_cluster_column()`, `dialog_settings.c:1852` | no se podia cambiar |
+
+Arreglado: `dialog_item()` en los tres. Es la misma clase de defecto que el desplegable de temas
+(§5): **un widget que no se registra no existe para el usuario**.
+
+**Hallazgo 2 — la grilla no entraba en el dialog.** `col_dsc[]` y `lv_obj_set_size(grid, 780, 330)`
+venian con las medidas de la pantalla del X6100. El dialog **scrolleaba en horizontal** y, con
+`LV_OBJ_FLAG_SCROLL_ON_FOCUS` que agrega `dialog_item()`, al enfocar un widget de la derecha las
+etiquetas se corrian fuera de la pantalla: en la captura se leia `e (CAT)` en lugar de
+`Discoverable (CAT)`. Arreglado como **una tabla de HTML al 100%**:
+
+- `lv_obj_set_size(grid, LV_PCT(100), 330)` (ocupa el ancho del dialog),
+- la columna 0 pasa a `LV_GRID_FR(1)`: se lleva el espacio que sobra,
+- **scroll solo vertical** (`lv_obj_set_scroll_dir(grid, LV_DIR_VER)` y lo mismo en el dialog):
+  no puede aparecer una barra horizontal, pase lo que pase.
+
+**Hallazgo 3 — la barra de scroll tapaba el ultimo campo.** Con el ancho al 100%, el spinbox del ano
+se leia `202` en vez de `2026` (medido ampliando la captura): la barra se dibuja **encima** del
+contenido. Arreglado reservando 14 px a la derecha (`pad_right`) y dejando la barra en 7 px. Ademas
+la unidad de columna subio de 34 a **45**: el spinbox de 4 digitos necesita 2 columnas de ese ancho
+(el numero sale de medir la captura, no de estimarlo).
+
+**Chequeo automatico agregado**: `tests/check_settings_focus.py` (enganchado en
+`tests/run_all_tests.sh`) recorre `dialog_settings.c` y, por cada widget de foco creado
+(`dropdown`, `switch`, `slider` y **`spinbox`**), exige un `dialog_item(&dialog, ...)` en la misma
+funcion. Hoy: **28 creados, 28 registrados**. Los `spinbox` no estaban en la primera version del
+chequeo y son 14 de esos 28: el chequeo tambien se corrigio.
+
+**Como se verifico** (medido, no razonado):
+
+- Para poder mirar la pantalla sin tocar la radio se agrego **`tools/remote/x6200-remote`**: un
+  cliente del socket de control (`/tmp/x6200_remote.sock`) que manda una linea JSON. Medido:
+  `x6200-remote '{"cmd":"app","text":"Settings"}'` → `{"t":"ok"}` y Ajustes queda abierto.
+  (`tools/remote/compila.sh` lo compila con el toolchain de buildroot.)
+- Captura del framebuffer por SSH (`dd if=/dev/fb0 bs=1920 count=800`, 480x800x32, rotada 270° como
+  en el banco). Antes: etiquetas cortadas y contenido scrolleado (guardado como
+  `evidencia-radio/captura-radio-ultima.png`). Despues: etiquetas completas, `Day, Month, Year` con
+  **2026** entero y sin barra horizontal (`evidencia-radio/ajustes-100pct.png`).
