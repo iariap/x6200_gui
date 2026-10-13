@@ -528,7 +528,29 @@ static void construct_cb(lv_obj_t *parent) {
     lv_obj_set_style_pad_ver(table, 4, LV_PART_MAIN);
     lv_obj_set_style_border_width(table, 0, LV_PART_ITEMS);
     lv_obj_set_style_text_font(table, VF(22), LV_PART_ITEMS);
+
+    /* Las celdas de lv_table las pinta el tema con SU fondo claro, y el texto sale del color del
+     * tema: en el tema activo (Material 3, texto #e2e2e9) eso es casi blanco sobre blanco (medido
+     * el 13/10, docs/HALLAZGOS.md 26). Se pintan con los colores del tema: la celda normal deja ver
+     * el fondo de la tabla y la elegida usa el par sel_bg/sel_text, que el chequeo WCAG valida. */
+    lv_obj_set_style_bg_opa(table, LV_OPA_TRANSP, LV_PART_ITEMS);
     lv_obj_set_style_text_color(table, TC(text), LV_PART_ITEMS);
+    /* La celda elegida la dibuja lv_table con LV_STATE_FOCUSED (el state se falsifica solo para esa
+     * celda, lv_table.c:789) y el tema de LVGL la pintaba con su rojo #F44336: blanco sobre ese rojo
+     * = 3.68:1 (medido, docs/HALLAZGOS.md 26). Se usan los pares del tema en los cuatro estados que
+     * puede tomar esa celda. */
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_bg_color(table, TC(sel_bg), LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_text_color(table, TC(sel_text), LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_PRESSED);
+    lv_obj_set_style_bg_color(table, TC(sel_bg), LV_PART_ITEMS | LV_STATE_PRESSED);
+    lv_obj_set_style_text_color(table, TC(sel_text), LV_PART_ITEMS | LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
+    lv_obj_set_style_bg_color(table, TC(sel_bg), LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
+    lv_obj_set_style_text_color(table, TC(sel_text), LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_EDITED);
+    lv_obj_set_style_bg_color(table, TC(sel_bg), LV_PART_ITEMS | LV_STATE_EDITED);
+    lv_obj_set_style_text_color(table, TC(sel_text), LV_PART_ITEMS | LV_STATE_EDITED);
     lv_obj_set_style_pad_top(table, 6, LV_PART_ITEMS);
     lv_obj_set_style_pad_left(table, 5, LV_PART_ITEMS);
     lv_obj_add_event_cb(table, row_cb, LV_EVENT_CLICKED, NULL);

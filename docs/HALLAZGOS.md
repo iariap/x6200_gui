@@ -44,6 +44,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 23. [Bluetooth completo: desemparejar, auto-connect, volumen y mute](#23-bluetooth-completo-desemparejar-auto-connect-volumen-y-mute)
 24. [WCAG 2.1 en todos los temas, con chequeo automatico](#24-wcag-21-en-todos-los-temas-con-chequeo-automatico)
 25. [BT de punta a punta, con auriculares de verdad](#25-bt-de-punta-a-punta-con-auriculares-de-verdad)
+26. [Contraste en la lista de BT: el rojo que pinta LVGL](#26-contraste-en-la-lista-de-bt-el-rojo-que-pinta-lvgl)
 
 ---
 
@@ -1231,3 +1232,33 @@ lock y la radio con la nueva). El chequeo que lo detecta es comparar el contenid
 
 **Queda para el oido del usuario**: que el audio de recepcion suene en los Buds (el camino esta
 armado y medido: un loopback, el sink de ellos, 50%) y que el altavoz quede en silencio.
+
+---
+
+## 26. Contraste en la lista de BT: el rojo que pinta LVGL
+
+**Reportado por el usuario**: "la UI de BT tiene poco contraste entre los elementos de la lista y el
+texto (gris claro sobre blanco) eso no es WCAG".
+
+**Medido en la radio** (pixel a pixel de una captura del framebuffer): en la lista de dispositivos,
+la fila normal daba **14.41:1** ✓ (texto `#e2e2e9` sobre el fondo del tema `#111318`), pero la
+**fila elegida** daba **3.68:1** ✗: fondo **`#F44336`** con el texto casi blanco.
+
+**De donde salia ese rojo**: `#F44336` **no existe en el repo** (se busco: no esta en `src/` ni en
+los temas JSON). Lo pinta el **tema por defecto de LVGL**: `lv_table` dibuja la celda elegida con
+`LV_STATE_FOCUSED` **falsificado solo para esa celda**
+(`lvgl/src/widgets/lv_table.c:789`: `if(row == table->row_act && col == table->col_act) { ... if(obj->state & LV_STATE_FOCUSED) cell_state |= LV_STATE_FOCUSED; }`
+y despues `obj->state = cell_state` para pedir el descriptor de dibujo), y ese estado se pinta con
+el color de foco de LVGL, ignorando el tema de la aplicacion.
+
+**Arreglado** pintando esa celda con el par del tema en los **cuatro** estados que puede tomar
+(`LV_PART_ITEMS` con `FOCUSED`, `PRESSED`, `FOCUS_KEY` y `EDITED`) → `TC(sel_bg)` / `TC(sel_text)`.
+Medido despues: **7.22:1** ✓ (fondo `#284777`, texto `#d6e3ff`), y la fila normal sigue en 14.41:1 ✓.
+Ademas las celdas normales pasaron a fondo transparente (`LV_OPA_TRANSP`), asi que se ve el fondo de
+la tabla (el problema original: LVGL pintaba las celdas con su fondo claro y el texto del tema
+quedaba casi blanco sobre blanco).
+
+**La leccion general** (y por que el chequeo no lo veia): `tests/check_wcag.py` validaba pares
+**rol-sobre-rol del tema**, y este caso no es eso: el fondo lo pone LVGL por defecto y el texto el
+tema. Es la misma clase que el negro fijo de `dialog_field.c` (§24). Queda pedido y en curso un
+barrido de toda la UI para esa clase (colores de LVGL por defecto + colores a mano en el codigo).
