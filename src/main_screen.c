@@ -238,6 +238,17 @@ void main_screen_start_app(press_action_t app_action) {
             voice_say_text_fmt("EQ window");
             break;
 
+        case ACTION_APP_BANDS:
+            /* La app Bands entra por aca, como el resto: el boton del menu de apps
+             * (buttons.cpp, make_app_btn) y el long press de Ajustes llegan los dos
+             * a main_screen_start_app(), despues de apps_disable(). Antes esta
+             * accion se despachaba solo en main_screen_action() construyendo el
+             * dialogo sobre lo que estuviera abierto: el boton del menu (que llama
+             * a esta funcion) no hacia nada y por el long press la ventana anterior
+             * quedaba abierta y huerfana. */
+            dialog_construct(dialog_bands, obj);
+            break;
+
         default:
             break;
     }
@@ -296,10 +307,6 @@ void main_screen_action(press_action_t action) {
 
         case ACTION_ATU_TUNE:
             radio_start_atu();
-            break;
-
-        case ACTION_APP_BANDS:
-            dialog_construct(dialog_bands, obj);
             break;
 
         case ACTION_BAT_INFO:
@@ -378,6 +385,7 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_STATUS:
         case ACTION_APP_RECORDER:
         case ACTION_APP_WIFI:
+        case ACTION_APP_BANDS:
             main_screen_start_app(action);
             break;
 
