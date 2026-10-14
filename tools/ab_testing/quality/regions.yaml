@@ -1,0 +1,41 @@
+# Semantic regions of the 800x480 main screen, overlaid on the pixel diff.
+#
+# The rectangles come from the layout in `src/main_screen.c` (spectrum_height =
+# 480/3 = 160, freq_height = 36, SPOT_MARKS_H = 44, button bar = 62). Regions may
+# overlap: the S-meter sits inside the top-bar band and the multiplier sits on
+# top of the clock, and that overlap is the point — it is where defects show.
+#
+# Coordinates are [x, y, width, height].
+
+framebuffer:
+  width: 800
+  height: 480
+
+regions:
+  - name: barra_superior
+    rect: [0, 0, 800, 46]
+    description: "Barra superior (info.c: VFO, modo, AGC, PRE/ATT, ATU, WiFi/BT, reloj)"
+
+  - name: s_metro
+    rect: [230, 0, 340, 66]
+    description: "S-meter analogico (meter.c): arco, aguja y etiqueta en dB"
+
+  - name: espectro
+    rect: [0, 46, 800, 114]
+    description: "Espectro y franja del band plan IARU (spectrum.c, band_plan.c)"
+
+  - name: frecuencia
+    rect: [0, 160, 800, 36]
+    description: "Fila de frecuencia: extremos y frecuencia central (main_screen.c)"
+
+  - name: waterfall
+    rect: [0, 196, 800, 222]
+    description: "Franja de spots y cascada (waterfall.c, spot_marks.c)"
+
+  - name: botones
+    rect: [0, 418, 800, 62]
+    description: "Barra de botones inferior (buttons.cpp)"
+
+  - name: multiplicador
+    rect: [758, 8, 40, 16]
+    description: "Esquina superior derecha donde main_screen.c crea la etiqueta del multiplicador (oculta)"

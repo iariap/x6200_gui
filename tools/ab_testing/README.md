@@ -1,0 +1,136 @@
+# `x6200-ab` — A/B testing framework for the X6200 UI
+
+Host-side Python framework that drives the C UI harness (`tools/ui_harness`),
+compares two git revisions pixel by pixel, runs objective quality contracts and
+known-issue detectors, and turns all of it into a single verdict with evidence.
+It runs on the PC and **never ships in the firmware or the rootfs**.
+
+Spec: [`docs/AB_TESTING_PLAN.md`](../../docs/AB_TESTING_PLAN.md) (milestones 2–3)
+· Bitácora: [`docs/AB_TESTING.md`](../../docs/AB_TESTING.md).
+
+## What it does
+
+```text
+git revisions ─▶ isolated worktrees ─▶ Docker build ─▶ harness render ─▶ PNG + JSON
+      │                                                                     │
+      └──────────────────▶ pixel diff ▶ contracts ▶ known issues ◀──────────┘
+                                          │
+                                          ▼
+                        gates: Functional · Visual Regression · Quality Contract
+                               Performance · Hardware · Energy
+                                          │
+                                          ▼
+                       PASS / FAIL / BLOCKED / INCONCLUSIVE / REVIEW REQUIRED
+```
+
+Phases are separate modules, not one script:
+
+| Module | What it does |
+|---|---|
+| `revisions.py` | one git worktree per exact SHA, `lvgl` submodule pinned by gitlink, never touches the user's worktrees |
+| `builds.py` | compiles the harness in the `x6200-uiharness` image; a revision that does not build is BLOCKED, never a silently reused binary |
+| `scenarios.py` | parses the `.scn` fixtures and the suite |
+| `capture.py` | runs the harness per scenario → PNG + JSON (coverage, metrics, revision) |
+| `visual_diff.py` | Pillow/NumPy pixel diff: area, bounding boxes, per-region, `diff.png`, `overlay.png`, dimension mismatch |
+| `quality_config.py` | contracts, budgets and dated expected changes |
+| `contracts.py` | objective checks on the candidate alone (C of the plan) |
+| `known_issues.py` | detectors and the FIXED / UNCHANGED DEFECT / REGRESSION / NEW DEFECT classification |
+| `quality_gates.py` | the six gates and the profile that decides which are required |
+| `evaluator.py` | combines the gates into one verdict |
+| `reports.py` | `reports/<experiment-id>/` with MD, HTML, JSON, screenshots, diffs, metrics, logs |
+| `cli.py` | `capture` / `audit` / `compare` / `benchmark` / `report` / `evaluate` |
+
+## Setup
+
+```sh
+cd tools/ab_testing
+uv sync                       # Pillow, NumPy, PyYAML (+ pytest, ruff in the dev group)
+```
+
+The harness image must exist (see `tools/ui_harness/README.md`):
+
+```sh
+docker build -t x6200-uiharness tools/ui_harness
+```
+
+## Usage
+
+```sh
+# render every fixture of one revision
+uv run x6200-ab capture --revision <sha> --label base --out /tmp/captures
+
+# compare two revisions and write a report under tools/ab_testing/reports/
+uv run x6200-ab compare --a <sha> --b <branch> --experiment-id AB-0001
+
+# known-issue detectors on one revision (pixel-region level today)
+uv run x6200-ab audit --revision <sha>
+
+# render-cost repetitions (frame timing / FPS are not instrumented -> BLOCKED)
+uv run x6200-ab benchmark --revision <sha> --repeats 3
+
+# read back a verdict, and recheck it from results.json
+uv run x6200-ab report --experiment-id AB-0001
+uv run x6200-ab evaluate --results tools/ab_testing/reports/AB-0001/results.json
+```
+
+Exit codes (also in `--json` output): `0` PASS, `1` FAIL, `2` BLOCKED,
+`3` INCONCLUSIVE, `4` REVIEW REQUIRED.
+
+## Verdicts
+
+* **PASS** — every *required* gate passed. Pixel-identical A/B is a PASS, and a
+  change that only removes a known issue is a PASS marked *IMPROVEMENT*.
+* **FAIL** — a required gate failed (an unexplained visual change, a new defect,
+  a contract violation, a render-cost regression).
+* **BLOCKED** — the run could not produce its evidence (a revision that does not
+  build, no Docker image, the harness rejected a fixture).
+* **INCONCLUSIVE** — the evidence is incomplete (e.g. no scenario captured on
+  both sides).
+* **REVIEW REQUIRED** — a human decision is needed.
+
+`Hardware` and `Energy` are always **BLOCKED** on the host (no radio, no power
+meter) and never PASS by default. They are advisory: they are reported with
+their cause, but they do not turn a host-only PASS into a BLOCKED. The plan
+requires exactly this (rule 7: without a physical measurement, energy/hardware
+stay BLOCKED).
+
+## Quality files (`quality/`)
+
+* `regions.yaml` — semantic regions of the 800×480 screen (top bar, S-meter,
+  spectrum, frequency, waterfall, buttons, multiplier).
+* `contracts.yaml` — rules checked on the candidate alone: minimum content per
+  region, honest coverage levels, required declared components, and the dated
+  `expected_changes` list (the only way a change stops being a regression
+  without being a fix; each entry needs a reason, an author and an expiry).
+* `budgets.yaml` — thresholds fixed **before** a run (pixel tolerance, minimum
+  box size, render-cost deltas).
+* `known_issues.yaml` — recorded defects. An issue without a detector is
+  `unverified`: it never fails and never passes.
+
+## Known issues
+
+An issue is only trusted when the harness reproduces it. With a detector, the
+A→B comparison classifies it:
+
+| A | B | Classification |
+|---|---|---|
+| reproduced | absent | **FIXED** (an improvement) |
+| reproduced | reproduced | **UNCHANGED DEFECT** |
+| absent | reproduced (status `fixed`) | **REGRESSION** |
+| absent | reproduced (never seen) | **NEW DEFECT** |
+| absent | absent | not reproduced |
+
+Exclusions are scoped by fixture and region with a reason and an expiry date —
+never global, never permanent.
+
+## Tests
+
+```sh
+uv run ruff check .
+uv run pytest                 # unit tests (no Docker)
+uv run pytest -m e2e          # end-to-end: builds the real harness with Docker
+```
+
+The e2e suite reproduces the milestone gate with ephemeral revisions:
+A vs A → PASS (zero diff), A vs a deliberate regression → FAIL with `diff.png`
+and a bounding box, and a defective revision vs its fix → IMPROVEMENT (PASS).

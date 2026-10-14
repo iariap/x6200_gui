@@ -1,0 +1,37 @@
+# Quality contracts (the "C" of docs/AB_TESTING_PLAN.md): rules the candidate
+# must satisfy on its own, independent of the baseline. A pixel diff of zero is
+# not proof of quality; these rules are checked against B alone.
+#
+# Every check is derived from the capture PNG or the harness JSON, so it is
+# reproducible and does not need the device.
+
+# Minimum fraction of non-background pixels each screen region must keep. A
+# component that is missing, blanked or pushed off screen drops to ~0 here even
+# when the diff to A would look "small". Thresholds are deliberately coarse: the
+# question is "is there content", not "did it change".
+region_min_content:
+  barra_superior: 0.02
+  s_metro: 0.02
+  espectro: 0.02
+  frecuencia: 0.02
+  waterfall: 0.02
+  botones: 0.02
+
+coverage:
+  # The coverage table must stay honest (rule 1 of the plan): only these levels.
+  allowed_levels: [REAL, PARTIAL, SYNTHETIC, UNSUPPORTED]
+  # Components the main-screen fixtures must actually declare.
+  required_components:
+    - main_screen.c
+    - theme.c
+    - styles.c
+
+# A visual change stops being a regression only if it is a fix of a known issue
+# or is listed here. Each entry needs a reason, an author and an expiry date —
+# never a global, permanent exemption. Empty on purpose: nothing is expected.
+expected_changes: []
+
+# Changes confined to these regions are not auto-failed either: they are
+# reported as REVIEW REQUIRED, because "different" there needs a human eye (an
+# aesthetic change), not a machine verdict. Empty on purpose.
+review_regions: []
