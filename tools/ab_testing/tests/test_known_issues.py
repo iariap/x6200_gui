@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from helpers import blank_image, draw_box, make_capture, revision
-from x6200_ab.errors import ConfigError
+from helpers import blank_image, draw_box, inspection, make_capture, node, revision
+from x6200_ab.errors import ConfigError, HarnessError
 from x6200_ab.known_issues import (
     Detector,
     Exclusion,
@@ -84,6 +84,47 @@ def test_repo_known_issues_load(region_map: RegionMap) -> None:
     assert by_id["UI-001"].detector is not None
     # the repository seeds are recorded but not yet reproducible
     assert all(by_id[f"UI-00{i}"].detector is None for i in range(2, 9))
+    # UI-009 is the first reproduced firmware defect with a text detector
+    ui009 = by_id["UI-009"]
+    assert ui009.detector is not None
+    assert ui009.detector.kind == "leading_glyph_range"
+    assert ui009.detector.glyph_range == (0xF200, 0xF2FF)
+    assert ui009.status == "fixed"
+
+
+def _glyph_detector() -> Detector:
+    return Detector(
+        kind="leading_glyph_range",
+        region="reloj_potencia",
+        text_pattern=r"\d\.\dv\n",
+        glyph_range=(0xF200, 0xF2FF),
+    )
+
+
+def test_leading_glyph_detector_flags_ascii_prefix(tmp_path: Path, region_map: RegionMap) -> None:
+    """A battery-icon prefix passes; the uninitialized-pointer garbage does not."""
+    detector = _glyph_detector()
+    battery = make_capture(
+        tmp_path / "battery",
+        "home",
+        blank_image(),
+        inspection=inspection([node(cls="lv_label", text="\uf240 12.1v\n\uf1e6 13.8v")]),
+    )
+    garbage = make_capture(
+        tmp_path / "garbage",
+        "home",
+        blank_image(),
+        inspection=inspection([node(cls="lv_label", text="EHE 12.1v\n\uf1e6 13.8v")]),
+    )
+    assert evaluate_detector(detector, battery, region_map).reproduced is False
+    assert evaluate_detector(detector, garbage, region_map).reproduced is True
+
+
+def test_leading_glyph_detector_needs_the_inspection(tmp_path: Path, region_map: RegionMap) -> None:
+    """Without `--inspect` there is no text to read: BLOCKED, never a silent pass."""
+    capture = make_capture(tmp_path / "plain", "home", blank_image())
+    with pytest.raises(HarnessError, match="structural inspection"):
+        evaluate_detector(_glyph_detector(), capture, region_map)
 
 
 def test_unknown_region_is_rejected(tmp_path: Path, region_map: RegionMap) -> None:

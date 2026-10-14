@@ -378,6 +378,10 @@ def cmd_compare(args: argparse.Namespace) -> int:
             suite,
             context.workspace / "captures" / f"a-{revision_a.short_sha}",
             context.workspace / "logs",
+            # A needs the structural inspection too: the `leading_glyph_range`
+            # detectors read the label text from it, and the pixels stay
+            # byte-identical (`--inspect` never changes a rendered pixel).
+            inspect=True,
         )
         b_captures = capturer.capture_all(
             revision_b,

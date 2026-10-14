@@ -71,6 +71,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
     suite = ScenarioSuite.from_fixtures_dir(HARNESS_FIXTURES)
     assert suite.names == [
         "bench-render",
+        "home-bateria-externa",
         "home-frecuencia-extrema",
         "home-usb-20m",
         "main-bateria-baja",

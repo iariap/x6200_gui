@@ -1,0 +1,41 @@
+# home-bateria-externa: the firmware's main screen with an external supply
+# connected (13.8 V) and the battery at 12.1 V, charging. It is the same base as
+# home-usb-20m; the only difference is the supply state that pushes the power
+# clock past the firmware's 0..10 V battery mapping:
+#   (uint8_t)(v_bat * 10) = (uint8_t)(12.1 * 10) = 121, which no case of the
+#   `switch` in src/clock.c covers. It is the fixture that reproduces UI-009
+#   (the power-clock battery symbol was an uninitialized pointer, so the first
+#   glyph of the first line was memory, not a battery icon).
+# At the accepted toolchain (Ubuntu 24.04) the base renders the garbage text
+# "EHE 12.1v"; with another toolchain the same read is undefined (segfault).
+#
+# `charging true` tells the two lines apart from home-usb-20m: with the charger
+# on, the second line's icon is SYMBOL_PLUG_CHARGE instead of SYMBOL_PLUG.
+
+name home-bateria-externa
+screen main
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging true
+
+rxtx rx
