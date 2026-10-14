@@ -1,7 +1,8 @@
 /*
- * Native test for src/visual_policy.c (issue #14, UI-08 incremento 1).
+ * Native test for src/visual_policy.c (issue #14, UI-08 incrementos 1 y 2).
  *
- * El modulo es puro y sin dependencias, asi que se prueba directo, sin stubs:
+ * La evaluacion es pura y sin dependencias, asi que se prueba directo, sin
+ * stubs:
  *   - la matriz AUTO con hysteresis exacta en los DOS bordes de cada umbral
  *     (entrada vs salida, con el gap probado de ambos lados);
  *   - la fuente externa / carga que gana de inmediato, sin hysteresis;
@@ -10,8 +11,13 @@
  *   - las lecturas invalidas que se descartan sin tocar el estado;
  *   - series que cruzan un umbral y no flapan.
  *
+ * El wiring del incremento 2 (el perfil -> el modo Ahorro del waterfall) se
+ * prueba contra el stub que registra la llamada a waterfall_set_battery_mode
+ * (tests/native/stubs/stubs.c): cuantos llamados hubo y con que valor, sin el
+ * render ni el flujo de radio.
+ *
  * El test no lleva literales de umbral: usa los #define del header, que son el
- * contrato que el wiring del incremento 2 va a compartir.
+ * contrato que el wiring del incremento 2 comparte con el ROM y con el arnes.
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -21,6 +27,11 @@
 #include "test_framework.h"
 
 #include "visual_policy.h"
+
+/* Registro del stub de waterfall (tests/native/stubs/stubs.c). */
+void test_waterfall_battery_reset(void);
+bool test_waterfall_battery_mode(void);
+int  test_waterfall_battery_calls(void);
 
 /* Instante fijo; la muestra es fresca (age 0) salvo en los casos de stale,
  * donde se mueve last_valid_ms. */
@@ -284,4 +295,71 @@ void test_visual_policy(void) {
     CHECK(!r.changed);
     CHECK(!r.discarded);
     CHECK(r.profile == VP_QUALITY);
+
+    /* --- Wiring del incr. 2: el perfil -> el modo Ahorro del waterfall.
+     * ECO y CRITICAL fuerzan el ahorro; QUALITY y BALANCED lo devuelven al
+     * toggle del usuario. El stub registra cada llamada. --- */
+    {
+        static const struct {
+            visual_profile_t profile;
+            bool             forced;
+        } cases[] = {
+            { VP_QUALITY,  false },
+            { VP_BALANCED, false },
+            { VP_ECO,      true  },
+            { VP_CRITICAL, true  },
+        };
+
+        for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+            test_waterfall_battery_reset();
+            visual_policy_waterfall_apply(cases[i].profile, false);
+            CHECK(test_waterfall_battery_calls() == 1);
+            CHECK(test_waterfall_battery_mode() == cases[i].forced);
+
+            /* Con el toggle del usuario prendido el modo es true en todos los
+             * perfiles: el perfil no puede apagarlo. */
+            test_waterfall_battery_reset();
+            visual_policy_waterfall_apply(cases[i].profile, true);
+            CHECK(test_waterfall_battery_calls() == 1);
+            CHECK(test_waterfall_battery_mode());
+        }
+    }
+
+    /* De punta a punta con la evaluacion, con el toggle del usuario apagado:
+     * el que decide es el perfil. */
+    visual_policy_init(&state);
+    r = auto_vbat(&state, VP_BALANCED_EXIT_MV);        /* QUALITY */
+    CHECK(r.profile == VP_QUALITY);
+    test_waterfall_battery_reset();
+    visual_policy_waterfall_apply(r.profile, false);
+    CHECK(!test_waterfall_battery_mode());             /* manda el toggle */
+    visual_policy_waterfall_apply(r.profile, true);
+    CHECK(test_waterfall_battery_mode());              /* el toggle prendido vale */
+
+    r = auto_vbat(&state, VP_ECO_ENTER_MV);            /* ECO */
+    CHECK(r.profile == VP_ECO);
+    test_waterfall_battery_reset();
+    visual_policy_waterfall_apply(r.profile, false);
+    CHECK(test_waterfall_battery_calls() == 1);
+    CHECK(test_waterfall_battery_mode());              /* ECO fuerza el ahorro */
+
+    r = auto_vbat(&state, VP_ECO_EXIT_MV);             /* BALANCED */
+    CHECK(r.profile == VP_BALANCED);
+    test_waterfall_battery_reset();
+    visual_policy_waterfall_apply(r.profile, false);
+    CHECK(!test_waterfall_battery_mode());             /* vuelve el toggle */
+
+    r = auto_vbat(&state, VP_CRITICAL_ENTER_MV);       /* CRITICAL */
+    CHECK(r.profile == VP_CRITICAL);
+    test_waterfall_battery_reset();
+    visual_policy_waterfall_apply(r.profile, false);
+    CHECK(test_waterfall_battery_mode());              /* CRITICAL tambien ahorra */
+
+    /* El fixture del banco (main-natural-eco: 11.2 V sin fuente externa) tiene
+     * que caer en ECO, o el fixture deja de ejercer el wiring. El valor se
+     * escribe relativo al umbral (11.2 V = VP_ECO_ENTER_MV - 200 mV) para que
+     * mover la banda rompa este test en vez de dejar el fixture ciego. */
+    visual_policy_init(&state);
+    r = visual_policy_eval(&state, VP_ECO_ENTER_MV - 200u, 0, 76, false, NOW, NOW, VP_AUTO);
+    CHECK(r.profile == VP_ECO);
 }

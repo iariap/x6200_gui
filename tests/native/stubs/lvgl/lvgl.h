@@ -1,6 +1,7 @@
 /*
  * Minimal LVGL stub for the host/ARM unit tests.
- * Only the symbols used by adaptive_tuning.c and audio_enhancement.c.
+ * Only the symbols used by adaptive_tuning.c, audio_enhancement.c and the
+ * visual_policy.c wiring (waterfall.h needs lv_obj_t).
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -21,6 +22,9 @@ uint32_t lv_tick_get(void);
 #define LV_LOG_USER(fmt, ...)  do { } while (0)
 #define LV_LOG_INFO(fmt, ...)  do { } while (0)
 #define LV_LOG_TRACE(fmt, ...) do { } while (0)
+
+/* The object type waterfall.h names (the real one comes from LVGL on target). */
+typedef struct _lv_obj_t lv_obj_t;
 
 /* Types theme.c needs (the real ones come from LVGL on the target) */
 typedef int16_t          lv_coord_t;

@@ -79,6 +79,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "main-espectro-agua",
         "main-foco",
         "main-natural",
+        "main-natural-eco",
         "main-otro-tema",
         "main-tema-classic",
         "main-tema-holo",

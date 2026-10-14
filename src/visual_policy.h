@@ -3,16 +3,20 @@
  *
  *  Xiegu X6200 LVGL GUI - politica visual de bateria (issue #14, UI-08).
  *
- *  Modulo puro: no dibuja, no toca LVGL ni la radio, no tiene reloj propio.
- *  Traduce el estado del pack (voltaje, fuente externa, capacidad, bandera de
- *  carga) en un perfil visual con hysteresis, un fallback conservador para
- *  datos viejos y un override manual que congela el modo automatico.
+ *  Modulo casi puro: no dibuja, no toca la radio y no tiene reloj propio (el
+ *  instante entra como parametro). Traduce el estado del pack (voltaje, fuente
+ *  externa, capacidad, bandera de carga) en un perfil visual con hysteresis, un
+ *  fallback conservador para datos viejos y un override manual que congela el
+ *  modo automatico.
  *
- *  Es la primera pieza del manager de UI-08: el wiring (waterfall, spectrum,
- *  backlight) son los incrementos 2/3. Aca solo se declara la API: nada llama
- *  a estas funciones todavia, por eso el render no cambia.
+ *  Es la primera pieza del manager de UI-08. La evaluacion es pura y no depende
+ *  de nada; la unica salida al mundo es el wiring del incremento 2
+ *  (visual_policy_waterfall_apply), que lleva el perfil al modo Ahorro del
+ *  waterfall. El wiring del spectrum y del backlight son los incrementos 3/4.
  *
- *  Sin dependencias: lo cubren los tests nativos (test_visual_policy.c).
+ *  Lo cubre el test nativo (tests/native/test_visual_policy.c): la evaluacion
+ *  sin stubs, y el wiring contra el stub que registra la llamada a
+ *  waterfall_set_battery_mode (tests/native/stubs/stubs.c).
  */
 
 #pragma once
@@ -148,6 +152,33 @@ visual_policy_result_t visual_policy_eval(visual_policy_t *state,
                                           uint8_t batcap, bool charging,
                                           uint32_t last_valid_ms, uint32_t now_ms,
                                           visual_override_t override);
+
+/* ------------------------------------------------------------------------- *
+ * Wiring al primer consumidor (UI-08 incremento 2): el modo Ahorro del
+ * waterfall, que el firmware ya tiene como toggle de usuario
+ * (`params.waterfall_battery` -> `waterfall_set_battery_mode()`).
+ *
+ * El modulo sigue sin dibujar y sin leer params: su unica salida es esa
+ * funcion, y el toggle del usuario entra como parametro (el param NUNCA se
+ * escribe: el perfil solo toma el MODE runtime). El ROM (`radio.c`, en el
+ * mismo punto donde ya se publica el pack en `clock_update_power`) y el arnes
+ * (`screens.c`, con los valores del fixture) llaman a la MISMA funcion, asi
+ * que la decision del banco y la de la radio no pueden divergir; el test
+ * nativo la cubre entera contra un waterfall que registra la llamada.
+ *
+ * Llamar desde el hilo de LVGL: `radio.c` lo difiere por el scheduler (el
+ * mismo patron que `tx_info_update`, src/tx_info.c) y el arnes ya corre en un
+ * solo hilo.
+ * ------------------------------------------------------------------------- */
+
+/* Aplica un perfil ya evaluado al modo Ahorro del waterfall:
+ *
+ *   - ECO y CRITICAL lo fuerzan: el perfil manda sobre el toggle del usuario;
+ *   - QUALITY y BALANCED no fuerzan nada: vuelve el toggle del usuario.
+ *
+ * Idempotente y sin estado: el llamador decide cuando llamar (el ROM lo hace
+ * en la transicion del perfil, con `visual_policy_result_t.changed`). */
+void visual_policy_waterfall_apply(visual_profile_t profile, bool user_battery_mode);
 
 #ifdef __cplusplus
 }

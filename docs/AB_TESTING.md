@@ -1941,6 +1941,59 @@ queda en `tools/ab_testing/reports/AB-UI07-T2/`.
   band_info/middle_line), preexistente.
 
 
+## Wiring de la politica de bateria al waterfall (UI-08 incremento 2, issue #14) ✅
+
+La capa de politica del incremento 1 quedo sin llamadores a proposito: era pura y probada,
+pero nada la consumia. Este incremento la conecta a su primer consumidor real — el **modo
+Ahorro del waterfall** (`params.waterfall_battery` -> `waterfall_set_battery_mode()`, que ya
+existia como toggle del usuario) — sin tocar backlight (incr. 3) ni la UI de Ajustes (incr. 4)
+ni el DSP/RF.
+
+### Donde se conecta
+
+| camino | punto de conexion | conversion |
+|---|---|---|
+| ROM | `src/radio.c`, `radio_tick()`, en el mismo bloque que ya publica el pack en `clock_update_power()` (por paquete, cada ~11 lecturas) | los campos `vbat`/`vext` vienen en **decimas de voltio** (`clock.c` dibuja `v_bat*10` y `radio.c` convierte el mismo campo con `*0.1` a voltios), asi que **mV = campo x 100**: `121` -> 12.1 V -> 12100 mV |
+| arnes | `tools/ui_harness/src/screens.c`, `build_main()`, junto al mismo `clock_update_power(...)` de la fixture | la fixture da **voltios** (12.1), asi que **mV = V x 1000** (redondeado, `volts_to_mv()`) |
+
+Los dos llaman a la **misma** funcion, `visual_policy_waterfall_apply()` (`src/visual_policy.c`):
+ECO y CRITICAL fuerzan el ahorro; QUALITY y BALANCED devuelven el modo al toggle del usuario.
+El `params.waterfall_battery` **nunca se escribe** (el modulo no incluye `params.h`: el toggle
+entra como parametro, leido del lado de LVGL). En el ROM la aplicacion se **difiere por el
+scheduler** al hilo de LVGL (el mismo patron que `tx_info_update`, `src/tx_info.c`), porque
+`radio_tick()` corre en el hilo de la radio.
+
+### Declarado ANTES de correr (anti-cherry-pick)
+
+1. **`compare` A/B (A = tip base sin wiring, suite de A = 19 fixtures): 0 diffs.** El wiring
+   cambia el **modo runtime** de la cascada (`refresh_period = 4`), no su contenido: la
+   captura comun alimenta las 200 filas de una sola vez (`signal_gen_feed()`) y 200 es
+   multiplo de 4, asi que el ultimo redibujo de la cascada ocurre igual con la columna
+   entera cacheada -> mismo PNG, mismos `metrics.flushes`/`flushed_pixels`. La fixture nueva
+   (`main-natural-eco`) **no entra** en el `compare`: la suite sale de la revision A, que no
+   la tiene (mismo limite ya anotado en UI-07 incr. 2).
+2. **Anti-falso-verde de ese cero** (que el cero no sea "el wiring no hace nada"):
+   a) el test nativo asserta la tabla perfil -> modo contra el stub que registra
+   `waterfall_set_battery_mode`; b) `--bench-natural` mide la cadencia, que es donde el
+   ahorro existe; c) el pixel-diff entre `main-natural` (QUALITY) y `main-natural-eco` (ECO)
+   tiene que quedar **confinado al reloj de potencia** (que es lo unico que la fuente externa
+   cambia en los pixeles): la cascada tiene que ser pixel-identica entre los dos perfiles.
+3. **Cadencia natural por perfil** (mismo seed 13, 40 frames, 24 filas de cascada):
+   - **QUALITY** (`main-natural`, 12.1 V + 13.8 V de fuente externa): cascada **196000 px por
+     fila**, 23 rectangulos de cascada, totales **6745720 px** (el baseline del corpus UI-07).
+   - **ECO** (`main-natural-eco`, 11.2 V sin fuente externa): la cascada redibuja **1 de cada
+     4 frames** (filas 4, 8, 12, 16, 20, 24) -> ~**6** rectangulos de cascada en vez de 23, la
+     cadencia por fila cae a **196000/4 = 49000 px**, y los totales bajan a **~3.22-3.41 M px**
+     (16x132000 de espectro + 5-6x196000 de cascada + reloj/band-info/BT intactos). El
+     espectro, el reloj, el band-info y el icono BT tienen que dar **exactamente** los del
+     perfil QUALITY (sus timers no dependen del pack).
+4. **Determinismo**: 20 fixtures x 2 corridas, PNG sha256 identico en cada fixture; los 19
+   sha256 previos no se mueven por este cambio (el wiring no altera ningun otro pixel).
+
+Si la cascada no cae a ~1/4 (por ejemplo porque `refresh_period` no llegue a la captura, o
+porque el join de rectangulos de LVGL absorba el cambio), se documenta la investigacion con
+los datos: **no se fuerza el numero**.
+
 ## Pendientes
 
 - **UI-05 (Flex/Grid) sigue abierto**: el **incremento 1** fue la capa de tokens

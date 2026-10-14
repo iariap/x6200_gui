@@ -1,0 +1,48 @@
+# main-natural-eco: el fixture del banco natural con el pack en ECO (UI-08
+# incremento 2, issue #14).
+#
+# Es `main-natural` con la fuente externa quitada y el voltaje del pack bajado
+# a 11.2 V. La politica visual (src/visual_policy.h) evalua 11200 mV sin fuente
+# externa ni carga y entra en VP_ECO (entrada <= 11400 mV / salida >= 11900 mV,
+# medido en los tests nativos), asi que el modo Ahorro del waterfall
+# (`params.waterfall_battery` -> `waterfall_set_battery_mode(true)`) fuerza
+# `refresh_period = 4`: la cascada descarta 3 de cada 4 frames.
+#
+# Todo lo demas (seed 13, tema, frecuencias, smeter, `natural_frames 40`) es
+# identico a `main-natural`, asi que la unica diferencia que mide
+# `--bench-natural` entre los dos fixtures es la cadencia de la cascada. El
+# fixture existe justamente para eso: es el caso con bateria baja del wiring.
+#
+# El `battery_v` se eligio determinista y con margen: 11.2 V cae dentro de la
+# banda ECO (10.8 V < v <= 11.4 V), lejos de los dos bordes, y por debajo de
+# 12.3 V no queda en BALANCED. No es un valor "casi" de umbral.
+
+name main-natural-eco
+screen main
+
+seed 13
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 11.2
+external_v 0.0
+battery_cap 76
+charging false
+
+rxtx rx
+
+natural_frames 40

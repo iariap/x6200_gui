@@ -27,11 +27,20 @@
 #include "keyboard.h"
 #include "main_screen.h"
 #include "meter.h"
+#include "params/params.h"
 #include "signal_gen.h"
 #include "styles.h"
+#include "visual_policy.h"
 
 #include "mock_harness.h"
 #include "mock_radio.h"
+
+/* Voltios del fixture -> mV de la politica visual, redondeado: el binario de
+ * float daria 11199 para 11.2 V si se truncara. */
+static uint16_t volts_to_mv(float volts)
+{
+    return (uint16_t) (volts * 1000.0f + 0.5f);
+}
 
 static void build_main(const scenario_t *scenario)
 {
@@ -48,6 +57,24 @@ static void build_main(const scenario_t *scenario)
      * the battery the clock draws and the signal the needle points at. */
     clock_update_power(mock_radio.external_v, mock_radio.battery_v,
                        mock_radio.battery_cap, mock_radio.charging);
+
+    /* La politica visual (UI-08 incr. 2) sale del MISMO estado del pack que el
+     * reloj: asi el banco miente el perfil igual que la radio (el ROM lo hace
+     * en radio_tick, src/radio.c) y `--bench-natural` mide la cadencia que el
+     * modo Ahorro del waterfall impone. Una sola evaluacion, con muestra
+     * fresca (age 0): el fixture no tiene reloj. La aplicacion va por la misma
+     * funcion que el ROM usa. */
+    visual_policy_t        policy;
+    visual_policy_result_t visual;
+
+    visual_policy_init(&policy);
+    visual = visual_policy_eval(&policy,
+                                volts_to_mv(mock_radio.battery_v),
+                                volts_to_mv(mock_radio.external_v),
+                                mock_radio.battery_cap, mock_radio.charging,
+                                0u, 0u, VP_AUTO);
+    visual_policy_waterfall_apply(visual.profile, params.waterfall_battery.x);
+
     meter_update(mock_radio.smeter_db, 0.0f);
 
     /* Feed the components the FFT would: deterministic, seed-driven. */
