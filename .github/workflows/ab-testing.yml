@@ -1,0 +1,411 @@
+name: UI A/B testing harness
+
+# Host-side validation of the X6200 UI: functional tests, quality contracts,
+# A/B visual regression and the render benchmark. Everything here runs on the
+# runner — it never deploys, never touches a radio and never claims the Cortex-A7
+# performance or the battery life (those stay PENDING until a physical unit is
+# measured; see docs/AB_TESTING_PLAN.md milestone 7).
+#
+# Result rules (kept in the job summaries):
+#   - a functional failure or an objective regression FAILs the run;
+#   - an aesthetic change that needs a human is REVIEW REQUIRED and does not
+#     fail the run on its own;
+#   - an inconclusive benchmark is reported as such, never as a PASS.
+
+on:
+  pull_request:
+    paths:
+      - "tools/**"
+      - "src/**"
+      - "tests/**"
+      - ".github/workflows/ab-testing.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  HARNESS_IMAGE: x6200-uiharness
+
+jobs:
+  functional:
+    name: UI Functional Tests
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Python framework (ruff, format, ty, unit tests)
+        working-directory: tools/ab_testing
+        run: |
+          uv sync
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run ty check src tests
+          uv run pytest -m "not e2e"
+
+      - name: Repository static checks
+        run: |
+          python3 tests/check_cfg_fills.py
+          python3 tests/check_actions.py
+          python3 tests/check_settings_focus.py
+          python3 tests/check_apps_menu.py
+          python3 tests/check_wcag.py
+
+      - name: Native (host) unit tests
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libpng-dev
+          tests/native/run_native_tests.sh
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## UI Functional Tests"
+            echo ""
+            echo "- Job status: \`${{ job.status }}\`"
+            echo "- Python framework: ruff + ruff format + ty + pytest (unit)"
+            echo "- Static checks: check_cfg_fills, check_actions, check_settings_focus, check_apps_menu, check_wcag"
+            echo "- Native host tests: tests/native/run_native_tests.sh"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  contracts:
+    name: UI Quality Contracts
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build the harness image (from scratch, CI target)
+        run: |
+          docker build -t "$HARNESS_IMAGE" -t x6200-uiharness-ci --target ci tools/ui_harness
+
+      - name: Evaluate the quality contracts
+        working-directory: tools/ab_testing
+        run: |
+          uv sync
+          set -o pipefail
+          set +e
+          uv run x6200-ab contracts \
+            --revision "${{ github.event.pull_request.head.sha || github.sha }}" \
+            --repo "$GITHUB_WORKSPACE" \
+            --json | tee contracts.json
+          # The report step decides the job result from contracts.json.
+          exit 0
+
+      - name: Report the contracts and fail on a violation
+        if: always()
+        working-directory: tools/ab_testing
+        run: |
+          python3 - contracts.json <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, pathlib, sys
+          print("## UI Quality Contracts")
+          print()
+          path = pathlib.Path(sys.argv[1])
+          if not path.is_file():
+              print("- status: not evaluated (the check did not produce results)")
+              raise SystemExit(2)
+          data = json.loads(path.read_text())
+          print(f"- status: **{data.get('status')}** (exit {data.get('exit_code')})")
+          print(f"- revision: `{data.get('revision', '')}`")
+          print(f"- checks: {data.get('checks', 0)}; failures: {len(data.get('failures', []))}")
+          for failure in data.get("failures", []):
+              print(f"  - FAIL `{failure.get('rule')}` [{failure.get('fixture')}]: {failure.get('detail')}")
+          if data.get("status") == "FAIL":
+              raise SystemExit(1)
+          PY
+
+      - name: Upload contracts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-contracts
+          path: tools/ab_testing/contracts.json
+          if-no-files-found: warn
+
+  visual:
+    name: UI Visual Regression
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build the harness image (from scratch, CI target)
+        run: |
+          docker build -t "$HARNESS_IMAGE" -t x6200-uiharness-ci --target ci tools/ui_harness
+
+      - name: Resolve the baseline revision
+        id: baseline
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
+          if [ -n "$BASE" ] && git cat-file -e "$BASE:tools/ui_harness/CMakeLists.txt" 2>/dev/null; then
+            echo "has_harness=true" >> "$GITHUB_OUTPUT"
+            echo "sha=$BASE" >> "$GITHUB_OUTPUT"
+            echo "::notice::baseline is the PR base commit $BASE"
+          else
+            # First time the harness lands there is no baseline to regress
+            # against; comparing the candidate with itself reports PASS without
+            # inventing a change.
+            echo "has_harness=false" >> "$GITHUB_OUTPUT"
+            echo "sha=$HEAD" >> "$GITHUB_OUTPUT"
+            echo "::warning::base branch has no UI harness yet; comparing the PR head against itself"
+          fi
+
+      - name: A vs B visual comparison
+        working-directory: tools/ab_testing
+        run: |
+          uv sync
+          set -o pipefail
+          set +e
+          uv run x6200-ab compare \
+            --a "${{ steps.baseline.outputs.sha }}" \
+            --b "${{ github.event.pull_request.head.sha || github.sha }}" \
+            --repo "$GITHUB_WORKSPACE" \
+            --reports-dir "$GITHUB_WORKSPACE/reports" \
+            --experiment-id "AB-ci-visual" \
+            --json | tee visual.json
+          # The report step decides the job result from visual.json, so REVIEW
+          # REQUIRED and an unusable baseline do not fail the job by themselves.
+          exit 0
+
+      - name: Report the visual gates and fail on an objective regression
+        if: always()
+        working-directory: tools/ab_testing
+        run: |
+          python3 - visual.json <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, pathlib, sys
+          print("## UI Visual Regression (A vs B)")
+          print()
+          path = pathlib.Path(sys.argv[1])
+          if not path.is_file():
+              print("- status: not evaluated (the comparison did not produce results)")
+              raise SystemExit(2)
+          data = json.loads(path.read_text())
+          print(f"- verdict: **{data.get('status')}** (exit {data.get('exit_code')})")
+          print()
+          print("| Gate | Required | Status | Summary |")
+          print("|---|---|---|---|")
+          for gate in data.get("gates", []):
+              print(f"| {gate.get('gate')} | {gate.get('required')} | {gate.get('status')} | {gate.get('summary')} |")
+          failed = [g for g in data.get("gates", []) if g.get("required") and g.get("status") == "FAIL"]
+          blocked = [g for g in data.get("gates", []) if g.get("required") and g.get("status") == "BLOCKED"]
+          if failed:
+              print()
+              print("functional failure / objective regression — blocking:")
+              for gate in failed:
+                  print(f"  - {gate.get('gate')}: {gate.get('summary')}")
+              raise SystemExit(1)
+          if blocked:
+              print()
+              print(f"note: {len(blocked)} required gate(s) BLOCKED (see the report); not a regression")
+          PY
+
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-visual-regression
+          path: |
+            tools/ab_testing/visual.json
+            reports/AB-ci-visual
+          if-no-files-found: warn
+
+  performance:
+    name: UI Performance (render benchmark, host)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build the harness image (from scratch, CI target)
+        run: |
+          docker build -t "$HARNESS_IMAGE" -t x6200-uiharness-ci --target ci tools/ui_harness
+
+      - name: Resolve the baseline revision
+        id: baseline
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
+          if [ -n "$BASE" ] && git cat-file -e "$BASE:tools/ui_harness/src/bench_metrics.c" 2>/dev/null; then
+            echo "has_benchmark=true" >> "$GITHUB_OUTPUT"
+            echo "sha=$BASE" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_benchmark=false" >> "$GITHUB_OUTPUT"
+            echo "sha=$HEAD" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Benchmark A vs B (relative regression gate)
+        if: steps.baseline.outputs.has_benchmark == 'true'
+        working-directory: tools/ab_testing
+        run: |
+          uv sync
+          set -o pipefail
+          set +e
+          uv run x6200-ab benchmark \
+            --a "${{ steps.baseline.outputs.sha }}" \
+            --b "${{ github.event.pull_request.head.sha || github.sha }}" \
+            --repo "$GITHUB_WORKSPACE" \
+            --reports-dir "$GITHUB_WORKSPACE/reports" \
+            --experiment-id "BENCH-ci" \
+            --json | tee benchmark.json
+          # The report step fails the job only on a confirmed regression; an
+          # inconclusive sample is reported as such, not as a failure.
+          exit 0
+
+      - name: Benchmark of the PR head (measurement)
+        if: steps.baseline.outputs.has_benchmark != 'true'
+        working-directory: tools/ab_testing
+        run: |
+          uv sync
+          set -o pipefail
+          set +e
+          uv run x6200-ab benchmark \
+            --revision "${{ github.event.pull_request.head.sha || github.sha }}" \
+            --repo "$GITHUB_WORKSPACE" \
+            --reports-dir "$GITHUB_WORKSPACE/reports" \
+            --experiment-id "BENCH-ci" \
+            --json | tee benchmark.json
+          exit 0
+
+      - name: Benchmark self-test (a controlled regression must FAIL)
+        if: steps.baseline.outputs.has_benchmark != 'true'
+        working-directory: tools/ab_testing
+        run: |
+          X6200_AB_E2E_BASE="${{ github.event.pull_request.head.sha || github.sha }}" \
+          X6200_AB_E2E_REPORTS="$GITHUB_WORKSPACE/reports" \
+            uv run pytest -m e2e -k benchmark
+
+      - name: Report the benchmark and fail on a regression
+        if: always()
+        working-directory: tools/ab_testing
+        run: |
+          python3 - benchmark.json <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, pathlib, sys
+          print("## UI Performance (render benchmark, host)")
+          print()
+          print("> x86 host proxy (CLOCK_MONOTONIC): relative regression detection only; "
+                "not the Cortex-A7 frame budget nor battery life.")
+          print()
+          path = pathlib.Path(sys.argv[1])
+          if not path.is_file():
+              print("- status: not evaluated")
+              raise SystemExit(0)
+          data = json.loads(path.read_text())
+          print(f"- status: **{data.get('status')}** (exit {data.get('exit_code')})")
+          print(f"- kind: {data.get('kind')}")
+          print(f"- environment: {data.get('environment')}")
+          if data.get("comparisons"):
+              print()
+              print("| Scenario | Status | p95 A (ms) | p95 B (ms) | p95 Δ | flushes Δ |")
+              print("|---|---|---|---|---|---|")
+              for item in data["comparisons"]:
+                  a = item.get("a", {})
+                  b = item.get("b", {})
+                  print(f"| {item['scenario']} | {item['status']} | {a.get('render_p95_ms')} | "
+                        f"{b.get('render_p95_ms')} | {item.get('p95_delta_pct')}% | "
+                        f"{item.get('flushes_delta_pct')}% |")
+              for item in data["comparisons"]:
+                  for reason in item.get("reasons", []):
+                      print(f"  - {item['scenario']}: {reason}")
+          for item in data.get("measurements", []):
+              print()
+              print(f"- `{item['scenario']}`: frames={item['frames']} "
+                    f"p50={item['render_p50_ms']} p95={item['render_p95_ms']} "
+                    f"p99={item['render_p99_ms']} ms fps={item['fps']} "
+                    f"dispersion={item['dispersion_cv_pct']}% flushes={item['flushes_mean']} "
+                    f"rss={item.get('memory', {}).get('rss_bytes')} B")
+          if data.get("status") == "FAIL":
+              print()
+              print("render-cost regression — blocking")
+              raise SystemExit(1)
+          if data.get("status") == "INCONCLUSIVE":
+              print()
+              print("note: the sample was too variable to conclude; reported as INCONCLUSIVE, not PASS")
+          PY
+
+      - name: Upload the benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-performance
+          path: |
+            tools/ab_testing/benchmark.json
+            reports/BENCH-ci
+          if-no-files-found: warn
+
+  summary:
+    name: UI A/B Summary
+    runs-on: ubuntu-22.04
+    needs: [functional, contracts, visual, performance]
+    if: always()
+    steps:
+      - name: Download every result artifact
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Publish the combined summary
+        run: |
+          {
+            echo "## UI A/B harness — summary"
+            echo ""
+            echo "| Check | Result |"
+            echo "|---|---|"
+            echo "| UI Functional Tests | \`${{ needs.functional.result }}\` |"
+            echo "| UI Quality Contracts | \`${{ needs.contracts.result }}\` |"
+            echo "| UI Visual Regression | \`${{ needs.visual.result }}\` |"
+            echo "| UI Performance | \`${{ needs.performance.result }}\` |"
+            echo ""
+            echo "Rules: functional failures and objective regressions block; aesthetic changes"
+            echo "are REVIEW REQUIRED and do not block on their own; an inconclusive benchmark is"
+            echo "shown as such; a physical validation is never declared complete by a host workflow."
+            echo ""
+            echo "Hardware and Energy remain **PENDING**: no X6200 unit is attached (milestone 7)."
+            echo ""
+            echo "Artifacts (screenshots, diffs, reports, benchmark results):"
+            echo "\`ui-visual-regression\`, \`ui-contracts\`, \`ui-performance\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the combined evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-ab-summary
+          path: artifacts
+          if-no-files-found: warn
