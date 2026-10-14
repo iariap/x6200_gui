@@ -3,18 +3,19 @@
  *
  *  Xiegu X6200 LVGL GUI
  *
- *  Design tokens de layout (issue #10, UI-05 incremento 1).
+ *  Design tokens de layout (issue #10, UI-05).
  *
  *  Nombres de dominio para la geometria que hasta ahora eran literales sueltos
- *  en src/info.c (la barra de info de seis celdas, el nido de numeros magicos
- *  donde vivieron UI-011/UI-012). Es un refactor puro: cada token vale
- *  exactamente el literal al que reemplaza, asi que el render no cambia un
- *  pixel (lo verifica el gate A/B del arnes: `changed_pixels 0`).
+ *  en src/info.c (la barra de info, el nido de numeros magicos donde vivieron
+ *  UI-011/UI-012; incremento 1) y en src/main_screen.c (la fila de frecuencia
+ *  del dial, los labels `freq[]`; incremento 3). Es un refactor puro: cada
+ *  token vale exactamente el literal al que reemplaza, asi que el render no
+ *  cambia un pixel (lo verifica el gate A/B del arnes: `changed_pixels 0`).
  *
- *  Alcance de este incremento: solo la barra de info. El resto de las regiones
- *  (botones, band_plan, filas de Ajustes) sigue con sus literales hasta sus
- *  propios incrementos, y spectrum/waterfall/band_plan quedan fuera a proposito
- *  (son areas de dibujo fijo; el issue prohibe convertirlas a ciegas).
+ *  Fuera por ahora: el resto de las regiones (botones, band_plan, filas de
+ *  Ajustes) sigue con sus literales hasta sus propios incrementos, y
+ *  spectrum/waterfall/band_plan quedan fuera a proposito (son areas de dibujo
+ *  fijo; el issue prohibe convertirlas a ciegas).
  *
  *  Este header es la capa de constantes. Consumirlas desde el JSON de tema es
  *  el incremento siguiente, por eso aca no hay estado del tema ni logica: solo
@@ -60,3 +61,39 @@
  * VISION la celda del VFO baja un tamano desde aca (fix UI-012): el token nombra
  * la fuente que el fix EXP-2 tenia cableada. */
 #define UI_INFO_FONT            (&sony_20)
+
+/* ------------------------------------------------------------------------ *
+ * Fila de frecuencia del dial (src/main_screen.c): los tres labels `freq[]`.
+ *
+ * El extremo izquierdo y el derecho (150 px cada uno) son los numeros chicos
+ * de los bordes del dial; el central (500 px) es la frecuencia grande. Teselan
+ * el ancho fijo del panel (800 px, el 800x480 que fija el issue):
+ * 150 + 500 + 150 = 800, por eso el label central arranca en 150 y el derecho
+ * en 650. Las anchuras no son una decision de layout libre: son las de
+ * `freq_style` / `freq_main_style` (src/styles.c, fuera de este incremento), y
+ * las x salen de esas anchuras -- por eso el token nombra la relacion en vez de
+ * repetir el numero. No hay un pitch de columna: los tres anchos son distintos.
+ *
+ * La fila se apila debajo del espectro con el cursor `y` de main_screen.c
+ * (`y += spectrum_height` con `spectrum_height = 480 / 3`): su Y no es un
+ * literal sino el cursor del layout apilado, y el espectro queda fuera del
+ * issue, asi que este incremento no lo tokeniza. La "franja de frecuencia"
+ * (src/freq_strip.c) tampoco: es un strip flex con offsets por variante VISION
+ * y freq_strip_init() no lo monta ningun consumidor (no hay captura que lo
+ * verifique). */
+
+#define UI_FREQ_SCREEN_W        800     /* ancho fijo del panel */
+#define UI_FREQ_SIDE_W          150     /* ancho de cada extremo (freq_style) */
+#define UI_FREQ_MAIN_W          500     /* ancho del label central (freq_main_style) */
+#define UI_FREQ_ROW_H           36      /* alto de la fila (freq_style/freq_main_style) */
+
+/* Origen x de cada columna, tal como lo calcula la fuente. */
+#define UI_FREQ_LEFT_X          0
+#define UI_FREQ_CENTER_X        (UI_FREQ_SCREEN_W / 2 - UI_FREQ_MAIN_W / 2)     /* 150 */
+#define UI_FREQ_RIGHT_X         (UI_FREQ_SCREEN_W - UI_FREQ_SIDE_W)             /* 650 */
+
+/* La fila es una tesela: los dos extremos y el centro cubren el panel entero,
+ * sin hueco ni solape. Si un ancho cambia sin el otro, la fila deja de cubrir
+ * el ancho de la pantalla; el contrato se verifica en compilacion. */
+_Static_assert(2 * UI_FREQ_SIDE_W + UI_FREQ_MAIN_W == UI_FREQ_SCREEN_W,
+               "fila de frecuencia: extremos + centro deben teselar el panel");

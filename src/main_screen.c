@@ -9,6 +9,7 @@
 #include "main_screen.h"
 
 #include "styles.h"
+#include "ui_tokens.h"      /* la geometria de la fila de frecuencia (issue #10, UI-05) */
 #include "spectrum.h"
 #include "waterfall.h"
 #include "util.h"
@@ -78,7 +79,7 @@
 
 
 static uint16_t     spectrum_height = (480 / 3);
-static uint16_t     freq_height = 36;
+static uint16_t     freq_height = UI_FREQ_ROW_H;
 static lv_obj_t     *obj;
 static Subject      *freq_lock;
 static bool         mode_lock = false;
@@ -1268,19 +1269,19 @@ lv_obj_t * main_screen() {
 
     f = lv_label_create(obj);
     lv_obj_add_style(f, &freq_style, 0);
-    lv_obj_set_pos(f, 0, y);
+    lv_obj_set_pos(f, UI_FREQ_LEFT_X, y);
     lv_label_set_recolor(f, true);
     freq[0] = f;
 
     f = lv_label_create(obj);
     lv_obj_add_style(f, &freq_main_style, 0);
-    lv_obj_set_pos(f, 800/2 - 500/2, y);
+    lv_obj_set_pos(f, UI_FREQ_CENTER_X, y);
     lv_label_set_recolor(f, true);
     freq[1] = f;
 
     f = lv_label_create(obj);
     lv_obj_add_style(f, &freq_style, 0);
-    lv_obj_set_pos(f, 800 - 150, y);
+    lv_obj_set_pos(f, UI_FREQ_RIGHT_X, y);
     lv_label_set_recolor(f, true);
     freq[2] = f;
 

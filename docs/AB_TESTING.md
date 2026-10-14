@@ -995,14 +995,137 @@ Cambiando temporalmente el gap del contenedor (`lv_obj_set_style_pad_column(row,
 exactos. Prueba que la posición X de las celdas sale del flex (no de un
 `lv_obj_set_pos` residual) y que el arnés recompila `src/info.c`.
 
+## Tokens de la fila de frecuencia (UI-05 incremento 3, issue #10) ✅
+
+Tercer incremento del issue #10, sobre el tip del incremento 2 (`19aa618`): la
+**fila de frecuencia** de `src/main_screen.c` (los tres labels `freq[]`) sale de
+sus literales a la familia `UI_FREQ_*` de `src/ui_tokens.h`. Es un refactor puro
+como el incremento 1: cero cambio visual, verificado por el gate A/B.
+
+### Qué se tokenizó
+
+La fila son tres labels que **teselan** el ancho fijo del panel (800 px, el
+800×480 que fija el issue): el extremo izquierdo (150 px), la frecuencia central
+(500 px) y el extremo derecho (150 px). 150 + 500 + 150 = 800, por eso el centro
+arranca en 150 y el derecho en 650. Las anchuras no son una decisión de layout
+libre: son las de `freq_style` / `freq_main_style` (`src/styles.c`, fuera de este
+incremento), y las x salen de esas anchuras; por eso los tokens nombran la
+relación en vez de repetir el número.
+
+| token | valor | reemplaza en `main_screen.c` |
+|---|---|---|
+| `UI_FREQ_SCREEN_W` | `800` | el `800` de la aritmética de las x |
+| `UI_FREQ_SIDE_W` | `150` | el `150` de `800 - 150` (ancho de los extremos, `freq_style`) |
+| `UI_FREQ_MAIN_W` | `500` | el `500` de `800/2 - 500/2` (ancho del centro, `freq_main_style`) |
+| `UI_FREQ_ROW_H` | `36` | `static uint16_t freq_height = 36` |
+| `UI_FREQ_LEFT_X` | `0` | `lv_obj_set_pos(f, 0, y)` |
+| `UI_FREQ_CENTER_X` | `800/2 - 500/2` = `150` | `lv_obj_set_pos(f, 800/2 - 500/2, y)` |
+| `UI_FREQ_RIGHT_X` | `800 - 150` = `650` | `lv_obj_set_pos(f, 800 - 150, y)` |
+
+`UI_FREQ_CENTER_X` y `UI_FREQ_RIGHT_X` conservan **la expresión exacta** de la
+fuente (no una versión "más linda": el centro es el centro del panel menos media
+anchura del label central). Un `_Static_assert` en el header fija la relación de
+la tesela —`2*UI_FREQ_SIDE_W + UI_FREQ_MAIN_W == UI_FREQ_SCREEN_W`—; cambiando a
+mano `UI_FREQ_SCREEN_W` a 900, el build falla con
+`static assertion failed: "fila de frecuencia: extremos + centro deben teselar el panel"`.
+
+### Qué quedó NO-tokenizable (y por qué)
+
+- **El Y de la fila**: es el cursor del layout apilado de `main_screen()`
+  (`y += spectrum_height` con `spectrum_height = 480/3`), no un literal; el
+  espectro además es área que el issue prohíbe tokenizar. La fila no tiene un `y`
+  propio, así que no hay métrica estable que nombrar.
+- **`src/freq_strip.c`** (la "franja de frecuencia"): el issue y la spec la
+  nombran, pero **no es la geometría de la fila**. Los "números chicos de los
+  extremos del dial" son `freq[0]` / `freq[2]` de `main_screen.c` (arriba). El
+  `freq_strip.c` es otro componente: un strip `LV_FLEX_ROW` / `LV_FLEX_COLUMN`
+  cuyos offsets (14, −14, los gaps, el dot de 10×10) **dependen de la variante
+  VISION**, y su `freq_strip_init()` **no lo monta ningún consumidor del árbol**
+  (no aparece fuera de su propia definición y su declaración en el header):
+  ninguna de las 16 fixtures lo renderiza, así que un refactor ahí no lo podría
+  verificar el gate A/B — sería exactamente el "falso verde" que la verificación
+  de sensibilidad existe para evitar. Queda para cuando tenga captura.
+- **`freq_height` sigue siendo una variable mutable**: el token da el valor
+  inicial (`UI_FREQ_ROW_H`), no cambia el tipo ni el uso.
+- No hay un **pitch** de columna: los tres anchos son distintos (150/500/150), a
+  diferencia de la rejilla de la barra (paso 58). La spec lo pedía como si
+  existiera; no existe en la fuente.
+
+### Evidencia (host, 2026-10-14, `19aa618` → `644e55d`)
+
+```text
+$ tests/check_harness_determinism.sh          # 16 fixtures x2, hashes = los del tip 19aa618
+bench-render: 5ba21bea6dcd30cffeea0bf171f578ba3fb51c811e44aa22c875c5fc74378beb
+home-usb-20m: a656e0961a41c890bd6663a46dc3d36d2606df4f0b56eae126a88ac32bb974f9
+main-tema-vision: e5b176ed6a03a5b75100a403afb53e1094d6271bff61ff81e61348c2946a049d
+... (las 16 con el mismo sha256 que el tip previo)
+PASS: deterministic (identical PNGs for every fixture)
+
+$ cd tools/ab_testing && uv run x6200-ab compare --a 19aa618 --b HEAD --experiment-id AB-UI05-T3
+experiment AB-UI05-T3: PASS (exit 0)
+  Functional PASS · Visual Regression PASS (captures are pixel-identical to the baseline)
+  Quality Contract PASS (160 checks) · Performance PASS
+  Hardware BLOCKED · Energy BLOCKED (advisory: sin unidad física)
+  16/16 fixtures: changed_pixels 0
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts 644e55dfb1b6: PASS — 160 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited 644e55dfb1b6: 13 known issues — 0 reproduced, 11 unverified; structural
+inspection REAL over 1382 objects on 16 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab benchmark --a 19aa618 --b HEAD --experiment-id BENCH-UI05-T3
+benchmark 19aa6182d209 (A) vs 644e55dfb1b6 (B): PASS (exit 0)
+  16 escenarios: flushes 1.0 -> 1.0 y área 384000 -> 384000 px en los 16 (0.0%);
+  p95 entre -34.2% y +22.7% (dispersión del host, no costo: el trabajo de
+  redibujo es idéntico)
+
+$ uv run pytest -m "not e2e" -q            → 120 passed, 17 deselected
+$ uv run pytest -m e2e -k audit -q         → 3 passed
+$ tests/native/run_native_tests.sh         → 545 comprobaciones, 0 fallos + 7, 0 fallos
+repo static checks (cfg_fills/actions/settings_focus/apps_menu/app_handlers/wcag) → PASS
+```
+
+El `benchmark` host es ruidoso con esta carga (load ~3-5): una repetición del
+mismo A/B (`BENCH-UI05-T3-repeat`, commiteada al lado) **falló** en dos escenarios
+**distintos** con el mismo trabajo (flushes/área Δ 0.0%), y una corrida más salió
+INCONCLUSIVE por dispersión de A > 25%. Lo que decide el costo real —flushes y
+área redibujada— no cambió en ninguna corrida; el veredicto de p95 a este tamaño
+de muestra es ruido del host, como ya quedó anotado en `BENCH-UI04-EXP3-repeat`.
+
+### Verificación anti-falso-verde (que los tokens manejan el render)
+
+Cambiando a mano `UI_FREQ_LEFT_X` de 0 a 10, la fila se mueve: el sha de
+`home-usb-20m` pasa de `a656e096…` a `29ea36e0…` (el de las otras 15 también
+cambia, porque el extremo izquierdo está en todas las fixtures del main screen).
+Al revertir al token, los 16 sha256 vuelven exactos. Prueba que la geometría de la
+fila sale del token y que el arnés recompila `src/main_screen.c` desde el fuente
+montado. (Y el `_Static_assert` de la tesela, arriba, es el guard de la relación.)
+
+### Blast radius revisado
+
+`tools/ab_testing/tests/test_e2e.py` parchea `src/main_screen.c` por strings: el
+label del multiplicador (UI-001), la asignación de color del recolor
+(`theme_hex(subject_get_int(freq_lock) ? TC_text_soft : TC_text)`, ×2) y los dos
+formatos `"#%06X …"` del fix UI-010 (EXP-3). Los tres siguen intactos
+(`grep -cF`) y `pytest -m e2e -k audit` (3 tests) pasa sobre el nuevo tip: no se
+tocó ninguna de esas líneas ni la lógica de `freq_lock`. Las inyecciones
+estructurales (`_inject_structural_defects`) son todas de `src/info.c` y no se
+tocaron. El audit estructural sigue contando **1382 objetos**: este incremento no
+agrega nodos al árbol (solo cambia constantes de posición).
+
 ## Pendientes
 
 - **UI-05 (Flex/Grid) sigue abierto**: el **incremento 1** fue la capa de tokens
   + `src/info.c`; el **incremento 2** es la conversión de la barra de info a
-  `LV_FLEX_ROW`. Las otras regiones (botones, `band_plan`, filas de Ajustes) son
-  incrementos siguientes, y spectrum/waterfall/band_plan quedan afuera (áreas de
-  dibujo fijo: el issue prohíbe convertirlas a ciegas). Los tokens son constantes
-  por ahora; consumirlos desde el JSON de tema es otro PR.
+  `LV_FLEX_ROW`; el **incremento 3** tokeniza la fila de frecuencia
+  (`src/main_screen.c`) sin convertirla a flex (el flex de esa fila, con su markup
+  de recolor y tamaños mixtos, sería un incremento aparte, evaluado después). Las
+  otras regiones (botones, `band_plan`, filas de Ajustes) son incrementos
+  siguientes, y spectrum/waterfall/band_plan quedan afuera (áreas de dibujo fijo:
+  el issue prohíbe convertirlas a ciegas). Los tokens son constantes por ahora;
+  consumirlos desde el JSON de tema es otro PR.
 
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
   Hardware/Energy quedan BLOCKED/PENDING, nunca PASS por default.
