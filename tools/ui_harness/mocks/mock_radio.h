@@ -1,0 +1,51 @@
+/*
+ *  Explicit radio/hardware state for the host UI harness.
+ *
+ *  The GUI reads the radio state through radio.h, the cfg_cur/cfg subjects and
+ *  a few small modules (bt_state, btaudio, wifi, backlight). None of that is
+ *  available on the PC, so the harness owns a plain, explicit state instead:
+ *  the visual layout only depends on the values below, which the scenario
+ *  sets. No device, no network, no serial port is ever touched.
+ *
+ *  SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+#pragma once
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include <aether_radio/x6200_control/control.h>
+
+#include "radio.h"
+
+typedef struct {
+    /* What the scenario asks the "radio" to look like. */
+    uint64_t        frequency_hz;   /* VFO-A / active VFO */
+    uint64_t        tx_frequency_hz; /* split TX frequency */
+    uint64_t        fft_width_hz;   /* spectrum span */
+    x6200_mode_t    mode;
+    x6200_vfo_t     vfo;
+    bool            split;
+    x6200_agc_t     agc;
+    bool            att;
+    bool            pre;
+    bool            atu_enabled;
+    int32_t         ant;            /* 1..3 */
+    int32_t         smeter_db;      /* raw dB the S-meter draws */
+    float           battery_v;
+    float           external_v;
+    uint8_t         battery_cap;    /* per cent */
+    bool            charging;
+    radio_state_t   state;
+} mock_radio_state_t;
+
+extern mock_radio_state_t mock_radio;
+
+/* Sets mock_radio defaults and wires them into the cfg subjects. Called once
+ * by the harness before the scenario builds the screen. */
+void mock_radio_init(void);
+
+/* Pushes the current mock_radio values into the subjects (so the observers run
+ * as they would when the radio reports a change). */
+void mock_radio_apply(void);
