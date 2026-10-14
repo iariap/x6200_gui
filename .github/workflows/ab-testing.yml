@@ -18,6 +18,7 @@ on:
       - "tools/**"
       - "src/**"
       - "tests/**"
+      - "rootfs/usr/share/x6200/themes/**"
       - ".github/workflows/ab-testing.yml"
   workflow_dispatch:
 
@@ -50,6 +51,10 @@ jobs:
           uv run ty check src tests
           uv run pytest -m "not e2e"
 
+      - name: Theme files (static WCAG pairs, offline)
+        working-directory: tools/ab_testing
+        run: uv run x6200-ab themes
+
       - name: Repository static checks
         run: |
           python3 tests/check_cfg_fills.py
@@ -73,6 +78,7 @@ jobs:
             echo "- Job status: \`${{ job.status }}\`"
             echo "- Python framework: ruff + ruff format + ty + pytest (unit)"
             echo "- Static checks: check_cfg_fills, check_actions, check_settings_focus, check_apps_menu, check_wcag"
+            echo "- x6200-ab themes: static WCAG pairs over the shipped theme JSON files"
             echo "- Native host tests: tests/native/run_native_tests.sh"
           } >> "$GITHUB_STEP_SUMMARY"
 

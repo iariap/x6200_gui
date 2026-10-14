@@ -1,0 +1,69 @@
+# Pairs the *static* theme contract checks on the theme JSON files the ROM ships
+# (rootfs/usr/share/x6200/themes), i.e. the ones the user can pick in Settings.
+#
+# Why a separate table: the rendered typography_contrast contract only sees the
+# screens the harness opens. Settings is not one of them (dialog_settings.c drags
+# dialog_field.c and dozens of dependencies — UI-004), and its own pair — the
+# switch/slider rail TC(control_border) against the dialog and the panel — is
+# exactly the one UI-007 recorded as broken, with the value inherited from the
+# theme's `base` when the file did not define it. So the pairs below are the ones
+# that only exist on that screen, plus the text pairs of a dialog window.
+#
+# `where` is the code that draws the pair; `min_ratio` is the WCAG 2.1 threshold
+# (4.5 normal text, 3.0 large text / non-text). The roles are the names of
+# THEME_COLORS(X) in src/theme.h, the same keys the JSON `colors` object uses.
+#
+# Colours the UI dims on purpose are NOT listed here: WCAG 1.4.3 exempts disabled
+# and incidental content, so "below the threshold" is not a defect for
+# btn_off_text, text_mute, text_faint, icon_off, switch_off, off and track.
+# tests/check_wcag.py measures them and prints the ratios without failing; that
+# stays the place for them.
+
+pairs:
+  - fg: text
+    bg: dialog
+    min_ratio: 4.5
+    where: "dialog_field.c:534 (etiquetas de Ajustes y de los dialogos) + dialog_about.c:56-77"
+
+  - fg: text_dim
+    bg: dialog
+    min_ratio: 4.5
+    where: "app_frame.h:32, dialog_field.c:557 (notas y valores atenuados) + dialog_about.c:63"
+
+  - fg: text_head
+    bg: dialog
+    min_ratio: 4.5
+    where: "app_frame.h:31, dialog_field.c (encabezados de seccion)"
+
+  - fg: text
+    bg: panel
+    min_ratio: 4.5
+    where: "dialog_field.c:148-151 + 850 (valores sobre el panel de contenido)"
+
+  - fg: text_dim
+    bg: panel
+    min_ratio: 4.5
+    where: "dialog_field.c:557 (valores atenuados sobre el panel)"
+
+  - fg: text
+    bg: list
+    min_ratio: 4.5
+    where: "styles.c:240 (dialog_dropdown_list_style: las opciones de los desplegables de Ajustes)"
+
+  # El riel del switch/slider y la perilla (styles.c styles_switch_init /
+  # styles_slider_init, aplicados en los 7 lugares de dialog_settings.c). Es el
+  # par del hallazgo 28: 2.58:1 cuando el tema RS no definia control_border.
+  - fg: control_border
+    bg: dialog
+    min_ratio: 3.0
+    where: "styles.c styles_switch_init/styles_slider_init (riel contra el dialogo)"
+
+  - fg: control_border
+    bg: panel
+    min_ratio: 3.0
+    where: "styles.c styles_switch_init/styles_slider_init (riel contra el panel)"
+
+  - fg: panel
+    bg: control_border
+    min_ratio: 3.0
+    where: "styles.c styles_switch_init/styles_slider_init (perilla contra el riel)"

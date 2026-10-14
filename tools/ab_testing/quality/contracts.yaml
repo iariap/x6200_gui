@@ -59,5 +59,41 @@ review_regions: []
 
 # Scoped, dated waivers for structural findings: they name the rule and the
 # fixture (optionally one node `path`) and carry a reason, an author and an
-# expiry. Never global, never permanent. Empty on purpose: nothing is waived.
-exceptions: []
+# expiry. Never global, never permanent.
+#
+# These are the confirmed-but-open defects of the UI-03 audit (docs/UI_KNOWN_ISSUES.md,
+# UI-011..UI-013): the detector fires, the finding is a real one, and until the
+# fix lands in UI-04+ it must not turn every run red — exactly like UI-010 does
+# through the (region-scoped) exclusions of known_issues.yaml. A structural rule
+# cannot be excluded there, so the scoped waiver lives here. It expires on
+# 2027-03-31: if the defect is still there, the gate fails again and forces a
+# re-evaluation.
+exceptions:
+  - rule: typography_missing_glyph
+    fixture: main-tema-vision
+    reason: >
+      UI-011: con VISION, fonts_scale(VISION_FONT_STEPS) reemplaza sony_20 y
+      sony_30 — las dos unicas fuentes que traen los glifos de icono — por
+      tamanos ASCII, asi que el reloj y el icono de WiFi quedan en rectangulo
+      vacio. Defecto real, ya verificado con la fixture; el fix es de UI-04+.
+    author: ui03-audit-defectos
+    until: 2027-03-31
+
+  - rule: typography_text_overflow
+    fixture: main-tema-vision
+    reason: >
+      UI-012: la celda de 56x26 con posiciones fijas de src/info.c no escala con
+      las fuentes de VISION y `VFO-A` ya no entra. Verificado con la fixture; el
+      fix es de UI-04+.
+    author: ui03-audit-defectos
+    until: 2027-03-31
+
+  - rule: theme_name_fits_params
+    fixture: main-tema-outdoor-negative
+    reason: >
+      UI-013: theme_list() ofrece "Outdoor-Negative" pero params.theme_name
+      (params_str_t.x[16], 15 caracteres utiles) lo trunca, y theme_init() cae a
+      IU1WXY en silencio. Verificado con la fixture y con la medicion del JSON
+      (requested vs params_name); el fix es de UI-04+.
+    author: ui03-audit-defectos
+    until: 2027-03-31

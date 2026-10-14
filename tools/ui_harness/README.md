@@ -103,6 +103,14 @@ The JSON carries the scenario name/screen/seed, the git revision, the
 per-component coverage, the radio-call log from the mock, and the render metrics
 (flushes, flushed pixels, a framebuffer hash).
 
+It also carries a `theme` block — `requested` (the theme this capture rendered),
+`params_name` (what the firmware's own `params.theme_name` holds, read from the
+`params_str_t` the mock shares with the firmware), `params_max_chars` and
+`active`. The two names differ when the theme name does not survive the
+firmware's 16-byte parameter, which is what makes the theme resolution
+measurable instead of assumed (see the contract `theme_name_fits_params` in
+`tools/ab_testing`, and UI-013 in `docs/UI_KNOWN_ISSUES.md`).
+
 ## Structural inspection (`--inspect`)
 
 With `--inspect` the JSON gains an `inspection` block: the **live LVGL object
@@ -203,6 +211,10 @@ by setting `THEMES_DIR_SHIPPED` before `theme_init()`; an explicit
 `THEMES_DIR_SHIPPED` still wins. The theme's own font (Classic/RS name Arial) and
 VISION's `fonts_scale()` are applied exactly as the firmware's `main()` does.
 
+The name is kept whole by the scenario and handed to `theme_init()` as the
+firmware would (a name the firmware cannot store is the firmware's problem, not
+the fixture's: the JSON `theme` block shows both, see UI-013).
+
 | Fixture | What it shows |
 |---|---|
 | `home-usb-20m` | 20 m USB, S9, on battery: the plain main screen |
@@ -216,6 +228,7 @@ VISION's `fonts_scale()` are applied exactly as the firmware's `main()` does.
 | `dialog-about` | the real main screen with the real About window open over it (`dialog.c` + `dialog_about.c`) |
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
 | `main-tema-rs` | the same screen under the shipped "RS" JSON theme (with its images), for UI-007 |
+| `main-tema-vision` | the builtin "VISION" theme (every font three sizes up through `fonts_scale()`), for the icon-glyph and top-bar layout findings of UI-011/UI-012 |
 | `main-tema-outdoor-negative` | the dark pair of `main-otro-tema` (every colour run through `negative()`, `src/theme.c`) |
 | `main-tema-classic` | the builtin "Classic" theme (names the Arial family) |
 | `main-tema-holo` | the shipped "Holo" JSON theme (flat, no images) |

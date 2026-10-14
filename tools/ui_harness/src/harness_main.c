@@ -106,6 +106,27 @@ static void write_benchmark(FILE *f, const scenario_t *scenario)
     fprintf(f, "  }\n");
 }
 
+/* The theme of this capture, as the firmware would see it.
+ *
+ * `theme_list()` (src/theme.c) offers names up to 31 characters — the built-ins
+ * and the JSON files — but the choice travels to the next boot inside
+ * `params.theme_name`, a `params_str_t` whose `x[]` is 16 bytes
+ * (src/params/types.h). `requested` is the name this capture rendered (what the
+ * fixture asked for); `params_name` is what the firmware's own store holds, read
+ * from the `params_str_t` the mock shares with the firmware, so its capacity and
+ * its truncation are the firmware's. A name that does not survive the round trip
+ * makes `theme_init(params.theme_name.x)` (src/main.c) fall back to IU1WXY. */
+static void write_theme(FILE *f, const scenario_t *scenario)
+{
+    fprintf(f, "  \"theme\": {\n");
+    fprintf(f, "    \"requested\": \"%s\",\n",
+            scenario->theme[0] ? scenario->theme : params.theme_name.x);
+    fprintf(f, "    \"params_name\": \"%s\",\n", params.theme_name.x);
+    fprintf(f, "    \"params_max_chars\": %zu,\n", sizeof(params.theme_name.x) - 1);
+    fprintf(f, "    \"active\": \"%s\"\n", theme_shape.name);
+    fprintf(f, "  },\n");
+}
+
 static void write_json(const char *path, const char *png_path, const scenario_t *scenario,
                        bool inspect)
 {
@@ -126,6 +147,7 @@ static void write_json(const char *path, const char *png_path, const scenario_t 
     fprintf(f, "  \"revision\": \"%s\",\n", HARNESS_REVISION);
     fprintf(f, "  \"framebuffer\": { \"width\": %u, \"height\": %u },\n",
             display_width(), display_height());
+    write_theme(f, scenario);
     fprintf(f, "  \"virtual_time_ms\": %llu,\n",
             (unsigned long long) virtual_time_now_ms());
     fprintf(f, "  \"coverage\": [\n");

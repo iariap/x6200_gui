@@ -1,0 +1,277 @@
+{
+  "status": "PASS",
+  "exit_code": 0,
+  "revision": "7b66686fd209611d75a57df127f8e23f49657a6b",
+  "scenarios": [
+    "bench-render",
+    "dialog-about",
+    "home-bateria-externa",
+    "home-frecuencia-extrema",
+    "home-usb-20m",
+    "main-bateria-baja",
+    "main-espectro-agua",
+    "main-foco",
+    "main-otro-tema",
+    "main-tema-classic",
+    "main-tema-holo",
+    "main-tema-material-3",
+    "main-tema-outdoor-negative",
+    "main-tema-rs",
+    "main-tema-vision",
+    "main-tx-simulado"
+  ],
+  "instrumentation": {
+    "structural": true,
+    "source": "live LVGL object tree (ui_harness --inspect); no OCR",
+    "nodes_inspected": 1350
+  },
+  "reproduced": [],
+  "unverified": [
+    "UI-010",
+    "UI-011",
+    "UI-012",
+    "UI-013",
+    "UI-002",
+    "UI-003",
+    "UI-004",
+    "UI-005",
+    "UI-006",
+    "UI-007",
+    "UI-008"
+  ],
+  "issues": [
+    {
+      "id": "UI-001",
+      "title": "Etiqueta del multiplicador de tuning visible sobre la barra superior",
+      "reproduced": false,
+      "detail": "region `multiplicador` content 0.0000 <= 0.0500"
+    },
+    {
+      "id": "UI-009",
+      "title": "Reloj de potencia: simbolo de bateria con puntero sin inicializar (glifos basura)",
+      "reproduced": false,
+      "detail": "label '\\uf240 12.1v\\n\\ue55b 13.8v' starts with U+F240, inside U+F200..U+F2FF"
+    },
+    {
+      "id": "UI-010",
+      "title": "Tema Outdoor: franja de frecuencia invisible sobre fondo blanco",
+      "reproduced": null,
+      "detail": "unverified: no detector yet"
+    },
+    {
+      "id": "UI-011",
+      "title": "VISION: los iconos de la barra desaparecen (glifos ausentes en el reloj y en el WiFi)",
+      "reproduced": null,
+      "detail": "unverified: no detector yet"
+    },
+    {
+      "id": "UI-012",
+      "title": "VISION: la etiqueta VFO-A no entra en su celda de la barra (geometria fija)",
+      "reproduced": null,
+      "detail": "unverified: no detector yet"
+    },
+    {
+      "id": "UI-013",
+      "title": "params.theme_name (16 bytes) no puede guardar un nombre de tema que el menu ofrece: la eleccion se trunca y theme_init() cae a IU1WXY",
+      "reproduced": null,
+      "detail": "unverified: no detector yet"
+    },
+    {
+      "id": "UI-002",
+      "title": "Menu de apps: las apps solo vivian en el long-press de Ajustes",
+      "reproduced": null,
+      "detail": "unverified: no detector yet"
+    },
+    {
+      "id": "UI-003",
+      "title": "WCAG 2.1: pares texto/fondo por debajo de 4.5:1 o 3:1",
+      "reproduced": null,
+      "detail": "unverified: no detector yet"
+    },
+    {
+      "id": "UI-004",
+      "title": "Ajustes: widgets que no se podian alcanzar con el foco",
+      "reproduced": null,
+      "detail": "unverified: no detector yet"
+    },
+    {
+      "id": "UI-005",
+      "title": "Dialogo viejo: texto constante tapado por los botones",
+      "reproduced": null,
+      "detail": "unverified: no detector yet"
+    },
+    {
+      "id": "UI-006",
+      "title": "Icono BT: el glifo U+F293 no existe en sony_20 (rectangulo vacio)",
+      "reproduced": null,
+      "detail": "unverified: no detector yet"
+    },
+    {
+      "id": "UI-007",
+      "title": "Temas RS sin clave propia heredaban un color por debajo de 2.58:1",
+      "reproduced": null,
+      "detail": "unverified: no detector yet"
+    },
+    {
+      "id": "UI-008",
+      "title": "CMA: 128 MB reservados para GPU no usada (presupuesto del firmware)",
+      "reproduced": null,
+      "detail": "unverified: no detector yet"
+    }
+  ],
+  "structural_failures": 0,
+  "findings": [
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "bench-render",
+      "ok": true,
+      "detail": "theme 'Legacy' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "dialog-about",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "home-bateria-externa",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "home-frecuencia-extrema",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "home-usb-20m",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-bateria-baja",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-espectro-agua",
+      "ok": true,
+      "detail": "theme 'Legacy' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-foco",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-otro-tema",
+      "ok": true,
+      "detail": "theme 'Outdoor' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tema-classic",
+      "ok": true,
+      "detail": "theme 'Classic' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tema-holo",
+      "ok": true,
+      "detail": "theme 'Holo' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tema-material-3",
+      "ok": true,
+      "detail": "theme 'Material 3' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tema-outdoor-negative",
+      "ok": true,
+      "detail": "waived until 2027-03-31 by ui03-audit-defectos: UI-013: theme_list() ofrece \"Outdoor-Negative\" pero params.theme_name (params_str_t.x[16], 15 caracteres utiles) lo trunca, y theme_init() cae a IU1WXY en silencio. Verificado con la fixture y con la medicion del JSON (requested vs params_name); el fix es de UI-04+.\n (theme 'Outdoor-Negative' (16 chars) does not fit params.theme_name (15 chars): the store keeps 'Outdoor-Negativ' and theme_init() falls back to IU1WXY (src/main.c))",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tema-rs",
+      "ok": true,
+      "detail": "theme 'RS' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "typography_missing_glyph",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "waived until 2027-03-31 by ui03-audit-defectos: UI-011: con VISION, fonts_scale(VISION_FONT_STEPS) reemplaza sony_20 y sony_30 \u2014 las dos unicas fuentes que traen los glifos de icono \u2014 por tamanos ASCII, asi que el reloj y el icono de WiFi quedan en rectangulo vacio. Defecto real, ya verificado con la fixture; el fix es de UI-04+.\n (text '\\uf240 12.1v\\n\\uf1e6 13.8v' uses glyph(s) ['U+F240', 'U+F1E6'] missing from every font in the chain (LVGL draws a placeholder box))",
+      "path": "0/37",
+      "baseline_issue": null
+    },
+    {
+      "rule": "typography_text_overflow",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "waived until 2027-03-31 by ui03-audit-defectos: UI-012: la celda de 56x26 con posiciones fijas de src/info.c no escala con las fuentes de VISION y `VFO-A` ya no entra. Verificado con la fixture; el fix es de UI-04+.\n (text 'VFO-A' does not fit its 56x26 box (WRAP))",
+      "path": "0/38/0",
+      "baseline_issue": null
+    },
+    {
+      "rule": "typography_missing_glyph",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "waived until 2027-03-31 by ui03-audit-defectos: UI-011: con VISION, fonts_scale(VISION_FONT_STEPS) reemplaza sony_20 y sony_30 \u2014 las dos unicas fuentes que traen los glifos de icono \u2014 por tamanos ASCII, asi que el reloj y el icono de WiFi quedan en rectangulo vacio. Defecto real, ya verificado con la fixture; el fix es de UI-04+.\n (text '\\uf1eb' uses glyph(s) ['U+F1EB'] missing from every font in the chain (LVGL draws a placeholder box))",
+      "path": "0/38/5",
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "theme 'VISION' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tx-simulado",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    }
+  ]
+}

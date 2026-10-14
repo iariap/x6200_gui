@@ -44,6 +44,13 @@ from .reports import ReportMetadata, write_benchmark_report, write_report
 from .revisions import Revision, RevisionManager, find_repo
 from .scenarios import ScenarioSuite
 from .status import Status
+from .theme_files import (
+    BASE_PALETTES,
+    SHIPPED_THEMES_SUBDIR,
+    check_shipped_themes,
+    load_builtin_palettes,
+    load_theme_pairs,
+)
 from .visual_diff import DiffResult, compute_diff
 
 DEFAULT_REPORTS_SUBDIR = ("tools", "ab_testing", "reports")
@@ -130,6 +137,20 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--experiment-id", default=None)
     benchmark.add_argument("--reports-dir", default=None)
     benchmark.set_defaults(func=cmd_benchmark)
+
+    themes = sub.add_parser(
+        "themes",
+        help="static contrast over the shipped theme files (no capture, no Docker)",
+    )
+    themes.add_argument("--repo", default=None, help="repository root (default: cwd)")
+    themes.add_argument("--quality-dir", default=None, help="quality YAML directory")
+    themes.add_argument(
+        "--themes-dir",
+        default=None,
+        help="directory with the shipped theme files (default: rootfs/usr/share/x6200/themes)",
+    )
+    themes.add_argument("--json", action="store_true")
+    themes.set_defaults(func=cmd_themes)
 
     report = sub.add_parser("report", help="print an existing experiment's verdict")
     report.add_argument("--experiment-id", required=True)
@@ -366,6 +387,88 @@ def cmd_contracts(args: argparse.Namespace) -> int:
         return _emit(args, payload, text, status)
     finally:
         _teardown(context, manager)
+
+
+# --- themes ------------------------------------------------------------------
+
+
+def cmd_themes(args: argparse.Namespace) -> int:
+    """Static WCAG contrast over the theme files the ROM ships.
+
+    Offline by design: it reads `rootfs/usr/share/x6200/themes`, resolves each
+    file's `base` against the palettes of `src/theme.h` (the way `src/theme.c`
+    loads a theme) and measures the pairs `quality/theme_pairs.yaml` declares —
+    the Settings pairs the rendered contracts cannot reach. No capture, no
+    revision, no Docker: the verdict only depends on files in the repository.
+    """
+    repo = _resolve_repo(args)
+    quality_dir = (
+        Path(args.quality_dir).resolve() if args.quality_dir else _resolve_quality_dir(repo)
+    )
+    themes_dir = (
+        Path(args.themes_dir).resolve()
+        if getattr(args, "themes_dir", None)
+        else repo.joinpath(*SHIPPED_THEMES_SUBDIR)
+    )
+    pairs = load_theme_pairs(quality_dir / "theme_pairs.yaml")
+    palettes = load_builtin_palettes(repo / "src" / "theme.h")
+    reports = check_shipped_themes(themes_dir, pairs, palettes)
+
+    failures = [result for report in reports for result in report.failures]
+    errors = [report for report in reports if report.error is not None]
+    status = Status.FAIL if (failures or errors) else Status.PASS
+    checked = sum(len(report.results) for report in reports)
+    # Paths go out relative to the repository when they live inside it: the
+    # payload is an artifact (CI, a report), not a description of this machine.
+    themes_json = []
+    for report in reports:
+        entry = report.as_dict()
+        entry["path"] = _relative(Path(report.path), repo)
+        themes_json.append(entry)
+    payload = {
+        "status": status.value,
+        "exit_code": status.exit_code,
+        "themes_dir": _relative(themes_dir, repo),
+        "theme_roles": len(palettes[BASE_PALETTES[0]]),
+        "pairs": [pair.as_dict() for pair in pairs],
+        "themes": themes_json,
+        "pairs_checked": checked,
+        "failures": [result.as_dict() for result in failures],
+        "errors": [
+            {
+                "theme": report.name,
+                "path": _relative(Path(report.path), repo),
+                "error": report.error,
+            }
+            for report in errors
+        ],
+    }
+    lines = [
+        f"themes {status.value}: {len(reports)} shipped file(s) in "
+        f"{_relative(themes_dir, repo)}, {len(pairs)} pair(s) declared, "
+        f"{checked} pair(s) checked, {len(failures)} failure(s)"
+    ]
+    for report in reports:
+        header = f"  {report.name} ({_relative(Path(report.path), repo)}; base {report.base})"
+        if report.error is not None:
+            lines.append(f"{header}: {report.error}")
+            continue
+        inherited = f"{len(report.inherited)}/{len(palettes[BASE_PALETTES[0]])} roles from the base"
+        lines.append(f"{header}: {inherited}")
+        for result in report.results:
+            label = f"{result.pair.fg} on {result.pair.bg}"
+            lines.append(
+                f"    {'OK  ' if result.ok else 'FAIL'} {label:<30}"
+                f"{result.ratio:6.2f} >= {result.pair.min_ratio:4.1f}  {result.origin}"
+            )
+    return _emit(args, payload, "\n".join(lines), status)
+
+
+def _relative(path: Path, repo: Path) -> str:
+    try:
+        return str(path.relative_to(repo))
+    except ValueError:
+        return str(path)
 
 
 # --- compare -----------------------------------------------------------------

@@ -1,0 +1,36 @@
+# main-tema-vision: the real main screen under the builtin "VISION" theme (big
+# type for weak eyes: every font three sizes up through fonts_scale(), a low top
+# bar, a tall frequency strip, the S-meter on a row of its own). It is the theme
+# the icon-glyph and layout findings of the UI-03 audit need: the scaled fonts
+# are ASCII, so the labels that draw with sony_20/sony_30 lose the icon glyphs,
+# and the fixed 56x26 cells of the top bar no longer fit their text. Same radio
+# state as home-usb-20m, so the only variable is the theme.
+
+name main-tema-vision
+screen main
+
+theme VISION
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

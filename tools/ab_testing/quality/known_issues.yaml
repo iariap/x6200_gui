@@ -102,6 +102,92 @@ issues:
           como UNCHANGED DEFECT. Vence el 2027-03-31: si el tema no se corrigio,
           el gate vuelve a fallar y obliga a re-evaluar.
 
+  # --- Verified in the UI-03 audit: contract detectors, no pixel Detector. -----
+  # Their detector is a contract rule over a fixture (the harness JSON and the
+  # structural inspection), not one of the two pixel `detector:` kinds above, so
+  # the `detector:` block is absent and the note names the rule. Being open and
+  # evidenced they stay out of the gate the same way UI-010 does: a scoped,
+  # dated exception in contracts.yaml (structural findings are waived there, not
+  # in `exclusions`, which is region-scoped by construction).
+
+  - id: UI-011
+    title: "VISION: los iconos de la barra desaparecen (glifos ausentes en el reloj y en el WiFi)"
+    severity: major
+    fixture: main-tema-vision
+    region: barra_superior
+    status: verified
+    note: >
+      Con el tema VISION los glifos de icono de la barra dejan de existir: el
+      reloj de potencia dibuja un rectangulo vacio en lugar del simbolo de
+      bateria y el icono de WiFi desaparece. Causa: fonts_scale(VISION_FONT_STEPS)
+      (src/fonts/font_select.c) escala copiando la estructura entera de una fuente
+      sobre otra (*sony[i] = was[i + steps]), asi que el tamano que dibuja hereda
+      tambien la cobertura de glifos del tamano con el que se reemplaza. Solo
+      sony_20 y sony_30 traen los rangos de icono (su cmap llega hasta U+F244);
+      los demas son ASCII (32..126). Con steps=3 sony_20 pasa a ser sony_26 y
+      sony_30 pasa a ser sony_36, los dos ASCII: el reloj (src/clock.c:58 usa
+      sony_30) pierde U+F240/U+F1E6 y la celda de la barra (src/styles.c:259,
+      info_item_style con sony_20) pierde U+F1EB. El detector es el contrato
+      `typography_missing_glyph` sobre la fixture `main-tema-vision`: la
+      inspeccion estructural reporta los glifos ausentes de toda la cadena
+      (nunca OCR) y LVGL lo dice en su propio log ("glyph dsc. not found for
+      U+F240"). El fix es de UI-04+.
+    evidence:
+      - "tools/ui_harness/fixtures/main-tema-vision.scn"
+      - "src/fonts/font_select.c (fonts_scale) + src/fonts/sony_20.c, sony_30.c (cmap con iconos) contra sony_26.c, sony_36.c (solo 32..126)"
+      - "src/clock.c:53,58 + src/styles.c:259 (los tamanos que quedan sin glifos)"
+      - "tools/ab_testing/quality/contracts.yaml (excepcion scoped, vence 2027-03-31)"
+
+  - id: UI-012
+    title: "VISION: la etiqueta VFO-A no entra en su celda de la barra (geometria fija)"
+    severity: minor
+    fixture: main-tema-vision
+    region: barra_superior
+    status: verified
+    note: >
+      Bajo VISION el texto de la barra crece tres pasos de fuente pero la celda
+      no: src/info.c crea los items con posiciones y tamanos fijos
+      (lv_obj_set_pos(item, x * 58 + 15, y * 22 + 5) y lv_obj_set_size(item, 56,
+      26)) mientras la fuente sale de info_item_style (src/styles.c:259, sony_20,
+      que VISION escala a sony_26). `VFO-A` ya no entra y la inspeccion
+      estructural de la fixture `main-tema-vision` lo marca (text_overflow en el
+      label de 56x26, WRAP). Detector: el contrato `typography_text_overflow`.
+      El fix es de UI-04+.
+    evidence:
+      - "tools/ui_harness/fixtures/main-tema-vision.scn"
+      - "src/info.c (info_init: posiciones y 56x26 fijos) + src/styles.c:259 (info_item_style)"
+      - "tools/ab_testing/quality/contracts.yaml (excepcion scoped, vence 2027-03-31)"
+
+  - id: UI-013
+    title: "params.theme_name (16 bytes) no puede guardar un nombre de tema que el menu ofrece: la eleccion se trunca y theme_init() cae a IU1WXY"
+    severity: major
+    fixture: main-tema-outdoor-negative
+    status: verified
+    note: >
+      El menu de temas ofrece los nombres de theme_list() (src/theme.c), que
+      admite hasta 31 caracteres, pero la eleccion viaja al proximo arranque
+      dentro de params.theme_name, un params_str_t cuyo x[] son 16 bytes
+      (src/params/types.h). Elegir "Outdoor-Negative" (16 caracteres) en
+      Ajustes -> Display -> Theme (src/dialog_settings.c:280) guarda
+      "Outdoor-Negativ" porque params_str_set() copia sizeof(x) - 1 bytes
+      (src/params/params.c:741) y el `theme_init(params.theme_name.x)` de
+      src/main.c no lo encuentra: avisa por stderr y cae a IU1WXY sin decirlo
+      (src/theme.c:485). El mismo camino tiene el cambio de tema del long-press
+      (src/main_screen.c:337) y el desplegable pierde ademas la seleccion
+      actual, porque compara los nombres completos del menu contra el nombre
+      truncado (src/dialog_settings.c:1727). El detector es el contrato
+      `theme_name_fits_params`: el JSON de cada captura trae el `theme` que
+      se renderizo y el que el store del firmware contiene (el mock usa el
+      params_str_t real), y la fixture `main-tema-outdoor-negative` los separa.
+      El fix es de UI-04+ (mas ancho en params, o nombres que entren).
+    evidence:
+      - "tools/ui_harness/fixtures/main-tema-outdoor-negative.scn (JSON de la captura: requested 'Outdoor-Negative' vs params_name 'Outdoor-Negativ', params_max_chars 15)"
+      - "src/params/types.h (params_str_t.x[16]) + src/params/params.c:741, :145 (max_len 15)"
+      - "src/theme.c:497 (theme_list admite 31) + :485 (fallback silencioso a IU1WXY)"
+      - "src/dialog_settings.c:280,1727 + src/main_screen.c:337 (los dos caminos que guardan el nombre)"
+      - "tools/ui_harness/src/scenario.h:29-32 (el arnes pasa el nombre completo a theme_init(): el truncamiento es del firmware, y el JSON lo mide)"
+      - "tools/ab_testing/quality/contracts.yaml (excepcion scoped, vence 2027-03-31)"
+
   # --- Seeds from the repository history: recorded, not yet reproduced. -------
   # They stay unverified until the harness can reproduce them (pixel-region
   # detector today; structural inspection once the harness emits object bounds).
@@ -130,11 +216,16 @@ issues:
       ningun par por debajo de 4.5:1/3:1: las violaciones historicas ya estaban
       corregidas (hallazgo 24).
       VISION no entra todavia (sus fuentes escaladas muestran otros hallazgos).
+      Desde UI-03 los temas JSON que van en la imagen (Holo, Material 3, RS) pasan
+      ademas el chequeo ESTATICO nuevo `x6200-ab themes` con las parejas de
+      quality/theme_pairs.yaml, que resuelve la herencia del `base` como
+      src/theme.c.
       El verificador de la ROM (tests/check_wcag.py) sigue corriendo sobre las
       paletas y los JSON.
     evidence:
       - "docs/HALLAZGOS.md 24, 26, 27, 28"
       - "tests/check_wcag.py"
+      - "tools/ab_testing/quality/theme_pairs.yaml + tools/ab_testing/tests/test_theme_files.py"
       - "tools/ui_harness/fixtures/dialog-about.scn"
       - "tools/ui_harness/fixtures/main-tema-rs.scn, main-tema-outdoor-negative.scn, main-tema-classic.scn, main-tema-holo.scn, main-tema-material-3.scn"
       - "tools/ab_testing/reports/AB-e2e-structural/audit-base.json"
@@ -196,12 +287,18 @@ issues:
       encontrar pares por debajo del umbral en la pantalla principal. El par del
       hallazgo es el riel del switch (`control_border`, la clave que RS no definia
       y heredaba a 2.58:1 contra su dialogo) y solo aparece en Ajustes, no en la
-      pantalla principal; ademas el JSON ya trae la clave (hallazgo 28). Sigue
-      unverified hasta que exista una fixture de Ajustes.
+      pantalla principal; ademas el JSON ya trae la clave (hallazgo 28). Desde UI-03
+      el par esta cubierto ESTATICAMENTE por `x6200-ab themes` con las parejas de
+      quality/theme_pairs.yaml: resuelve la herencia del `base` como src/theme.c
+      (una prueba con el RS sin `control_border` mide 2.58:1 de nuevo, o sea el
+      detector funciona) y pasa en los 3 temas JSON que van en la imagen. Sigue
+      unverified hasta que exista una fixture de Ajustes: el detector no es una
+      captura, es el archivo del tema.
     evidence:
       - "docs/HALLAZGOS.md 28"
       - "docs/THEMES.md"
       - "tools/ui_harness/fixtures/main-tema-rs.scn"
+      - "tools/ab_testing/quality/theme_pairs.yaml + tools/ab_testing/tests/test_theme_files.py (RS sin la clave: 2.58:1)"
       - "tools/ab_testing/reports/AB-e2e-structural/audit-base.json"
 
   - id: UI-008

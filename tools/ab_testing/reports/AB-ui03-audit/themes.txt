@@ -1,0 +1,31 @@
+themes PASS: 3 shipped file(s) in rootfs/usr/share/x6200/themes, 9 pair(s) declared, 27 pair(s) checked, 0 failure(s)
+  Holo (rootfs/usr/share/x6200/themes/Holo.json; base IU1WXY): 38/128 roles from the base
+    OK   text on dialog                 19.03 >=  4.5  both roles set by the file
+    OK   text_dim on dialog              7.10 >=  4.5  both roles set by the file
+    OK   text_head on dialog             8.05 >=  4.5  both roles set by the file
+    OK   text on panel                  21.00 >=  4.5  both roles set by the file
+    OK   text_dim on panel               7.84 >=  4.5  both roles set by the file
+    OK   text on list                   19.80 >=  4.5  both roles set by the file
+    OK   control_border on dialog        3.12 >=  3.0  both roles set by the file
+    OK   control_border on panel         3.44 >=  3.0  both roles set by the file
+    OK   panel on control_border         3.44 >=  3.0  both roles set by the file
+  Material 3 (rootfs/usr/share/x6200/themes/Material 3.json; base IU1WXY): 33/128 roles from the base
+    OK   text on dialog                 12.68 >=  4.5  both roles set by the file
+    OK   text_dim on dialog              9.60 >=  4.5  both roles set by the file
+    OK   text_head on dialog             9.51 >=  4.5  both roles set by the file
+    OK   text on panel                  14.41 >=  4.5  both roles set by the file
+    OK   text_dim on panel              10.91 >=  4.5  both roles set by the file
+    OK   text on list                   13.26 >=  4.5  both roles set by the file
+    OK   control_border on dialog        5.14 >=  3.0  both roles set by the file
+    OK   control_border on panel         5.84 >=  3.0  both roles set by the file
+    OK   panel on control_border         5.84 >=  3.0  both roles set by the file
+  RS (rootfs/usr/share/x6200/themes/RS/theme.json; base Classic): 53/128 roles from the base
+    OK   text on dialog                 15.72 >=  4.5  both roles set by the file
+    OK   text_dim on dialog              5.25 >=  4.5  both roles set by the file
+    OK   text_head on dialog            15.72 >=  4.5  both roles set by the file
+    OK   text on panel                  21.00 >=  4.5  both roles set by the file
+    OK   text_dim on panel               7.01 >=  4.5  both roles set by the file
+    OK   text on list                   19.80 >=  4.5  both roles set by the file
+    OK   control_border on dialog        3.08 >=  3.0  both roles set by the file
+    OK   control_border on panel         4.12 >=  3.0  both roles set by the file
+    OK   panel on control_border         4.12 >=  3.0  both roles set by the file

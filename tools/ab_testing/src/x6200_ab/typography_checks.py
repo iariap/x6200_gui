@@ -20,6 +20,7 @@ The C harness measures the label text with LVGL's own font metrics
 from __future__ import annotations
 
 from .capture import Capture
+from .contrast import contrast_ratio
 from .findings import ContractFinding
 from .inspection import InspectionNode, effectively_hidden, inspection_of, iter_tree
 from .quality_config import TypographyRules
@@ -144,16 +145,4 @@ def _contrast_ratio(node: InspectionNode) -> float | None:
     """
     if node.bg_opa < 255 or node.bg_image or node.text_opa < 255:
         return None
-    return _ratio(_luminance(node.text_color), _luminance(node.bg_color))
-
-
-def _luminance(colour: str) -> float:
-    value = colour.lstrip("#")
-    channels = [int(value[i : i + 2], 16) / 255.0 for i in (0, 2, 4)]
-    linear = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
-    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
-
-
-def _ratio(a: float, b: float) -> float:
-    high, low = max(a, b), min(a, b)
-    return (high + 0.05) / (low + 0.05)
+    return contrast_ratio(node.text_color, node.bg_color)
