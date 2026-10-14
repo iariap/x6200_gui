@@ -292,7 +292,6 @@ def cmd_audit(args: argparse.Namespace) -> int:
             "reproduced": reproduced,
             "unverified": unverified,
             "issues": results,
-            "structural_checks": len(structural),
             "structural_failures": len(failures),
             "findings": [finding.as_dict() for finding in structural],
         }
@@ -300,7 +299,7 @@ def cmd_audit(args: argparse.Namespace) -> int:
             f"audited {revision.short_sha}: {len(results)} known issues — "
             f"{len(reproduced)} reproduced, {len(unverified)} unverified; "
             f"structural inspection REAL over {nodes} objects on {len(captures)} "
-            f"scenario(s): {len(structural)} checks, {len(failures)} finding(s)"
+            f"scenario(s): {len(failures)} structural finding(s)"
         )
         if failures:
             text += "\n" + "\n".join(

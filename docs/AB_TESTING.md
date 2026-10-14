@@ -240,12 +240,72 @@ PASS: deterministic (identical PNGs for every fixture)
 $ uv run pytest -m e2e            # 9 passed
 ```
 
+## Incremento — inspección estructural y contratos de layout/tipografía ✅
+
+Gate: `x6200-ab audit` deja de estar BLOCKED por falta de instrumentación, opera
+con la inspección **real** del árbol LVGL y detecta defectos estructurales
+deliberados.
+
+Entregado en `tools/ui_harness/` y `tools/ab_testing/`:
+
+- **`src/ui_inspector.c`**: con `--inspect` el arnés recorre el árbol de objetos
+  de la pantalla activa y emite al JSON, por nodo, el bounding box absoluto, el
+  recorte real que aplica el padre (`LV_OBJ_FLAG_OVERFLOW_VISIBLE`, como en
+  `lv_refr.c`), el box efectivamente visible, la visibilidad (`hidden`/opa), la
+  clase de widget, y para los labels el texto con la fuente y las métricas
+  **reales** (`lv_txt_get_size`), los colores de texto/fondo, y `missing_glyphs`
+  / `fallback_glyphs` resueltos con `lv_font_get_glyph_dsc` (`is_placeholder`,
+  `resolved_font`). La instrumentación va por flag: **no toca el camino del
+  benchmark ni cambia la captura normal** (el PNG es bit a bit idéntico; los
+  sha256 de `check_harness_determinism.sh` no cambian).
+- **`inspection.py` / `layout_checks.py` / `typography_checks.py`**, conectados a
+  `contracts.py` y a `quality_gates` (Quality Contract Gate). Reglas: elementos
+  que pintan algo y quedan fuera del viewport, cajas recortadas por el viewport o
+  un padre que clipea, cajas degeneradas (0/negativas) que pintan, dos textos
+  superpuestos, controles por debajo del target táctil mínimo (44 px, AGENTS.md);
+  textos que desbordan o se truncan, glifos ausentes de **toda** la cadena de
+  fuentes y pares texto/fondo por debajo de 4.5:1/3:1 (WCAG 2.1) cuando el fondo
+  es opaco. `contracts.yaml` gana las secciones `layout`, `typography` y
+  `exceptions` (waivers con fecha, acotados a regla+fixture, que no ocultan el
+  hallazgo).
+- **`audit`** captura con `--inspect`, reporta la instrumentación real
+  (`instrumentation.structural`, `nodes_inspected`) y falla con un finding
+  estructural que no esté waiveado. Acepta los alias `--ref` (por `--revision`)
+  y `--suite visual|all`.
+
+Evidencia (host, 2026-10-13, `X6200_AB_E2E_REPORTS=tools/ab_testing/reports uv
+run pytest -m e2e`: **11 passed**; audit guardado en
+[`tools/ab_testing/reports/AB-e2e-structural/`](../tools/ab_testing/reports/AB-e2e-structural/)):
+
+```text
+audit base       (home-usb-20m): PASS — 84 objetos inspeccionados, 0 findings
+audit regression (botones +30px): FAIL — 10 × layout_clipped
+                                  (lv_obj 0,448 160x62 cut to 160x32; labels ídem)
+audit structural (defecto       : FAIL — typography_text_overflow  ('VERYLONGMODENAME'
+                  deliberado)             en 56x26), typography_missing_glyph (U+F293)
+                                          y typography_contrast (1.00:1 < 4.50:1)
+```
+
+Determinismo (los hashes son los mismos que los aceptados en M1–M4):
+
+```text
+$ tests/check_harness_determinism.sh
+home-usb-20m: 14f380ff07444726b7df4765537e219dbe865a85a3643f7f7fb36df0303eeb3f
+... (todos idénticos a los de M1–M4)
+PASS: deterministic (identical PNGs for every fixture)
+```
+
+Las semillas de known issues se re-evaluaron con la instrumentación nueva: las 7
+siguen `unverified`, cada una con su motivo concreto (el contraste estructural y
+el detector de glifos ahora corren sobre la pantalla real y no encuentran
+violaciones). Ver [`docs/UI_KNOWN_ISSUES.md`](UI_KNOWN_ISSUES.md).
+
 ## Pendientes
 
-- **Inspección estructural** (cajas de objetos, glifos, overflow): el arnés
-  todavía no la emite, así que `audit` la reporta como instrumentación faltante.
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
   Hardware/Energy quedan BLOCKED/PENDING, nunca PASS por default.
+- **Fixtures de diálogos y apps** (Ajustes, menú de apps, about, cluster): sin
+  ellos las semillas UI-002/UI-004/UI-005 quedan `unverified`.
 - El comportamiento del reloj de energía del firmware depende de una variable
   local sin inicializar en `src/clock.c` (`show_time`); en `src/` no se toca.
   La imagen `ci` (Ubuntu 24.04, mismo toolchain que las capturas aceptadas)

@@ -2,8 +2,8 @@
 
 - Date: 2026-10-13
 - Profile: `host-ui`
-- A (baseline): `c3ce8fa5a7ce82c771c1fd544e557ee4d823bc66` (a)
-- B (candidate): `9a171d6be5976812894083c452b1fb61c1108218` (b)
+- A (baseline): `667fad4b2cf96e958464b88dd992ea496c063bc8` (a)
+- B (candidate): `052b5dda38b663b2754e44f55e38cb5bb2edded6` (b)
 - Scenarios: `home-usb-20m`
 
 ## Verdict: **FAIL** (exit 1)
@@ -12,7 +12,7 @@
 |---|---|---|---|
 | Functional | yes | PASS | 1 scenarios captured on both revisions |
 | Visual Regression | yes | FAIL | visual regressions vs the baseline |
-| Quality Contract | yes | PASS | 9 contract checks passed on the candidate |
+| Quality Contract | yes | FAIL | 1 contract(s) violated by the candidate |
 | Performance | yes | PASS | render-cost proxy within budget |
 | Hardware | no (advisory) | BLOCKED | no physical X6200 attached; hardware behaviour is not measured |
 | Energy | no (advisory) | BLOCKED | no power measurement; energy evidence must be physical |
@@ -50,7 +50,8 @@ Components declared below REAL (never written as REAL):
 
 ## Quality contracts
 
-9 contract checks, 0 failure(s).
+10 contract checks, 1 failure(s).
+- FAIL `layout_overlap` [home-usb-20m]: text labels overlap: '\x89EüH\x8bEè\x8b 12.1v\n\uf1e6 13.8v' at 591,0 and 'x1.0' at 762,10 (100% covered)
 
 ## Evidence
 

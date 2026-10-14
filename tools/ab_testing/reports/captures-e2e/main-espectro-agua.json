@@ -2,7 +2,7 @@
   "scenario": "main-espectro-agua",
   "screen": "main",
   "seed": 7,
-  "revision": "c3ce8fa5a7ce82c771c1fd544e557ee4d823bc66",
+  "revision": "667fad4b2cf96e958464b88dd992ea496c063bc8",
   "framebuffer": { "width": 800, "height": 480 },
   "virtual_time_ms": 2200,
   "coverage": [

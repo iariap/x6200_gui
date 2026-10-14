@@ -1,0 +1,24 @@
+diff --git a/src/info.c b/src/info.c
+index 73ea8f1..e10d4aa 100644
+--- a/src/info.c
++++ b/src/info.c
+@@ -98,8 +98,8 @@ lv_obj_t * info_init(lv_obj_t * parent) {
+         }
+ 
+     lv_label_set_text(items[INFO_PRE_ATT], "PRE/ATT");
+-    lv_label_set_text(items[INFO_WIFI], LV_SYMBOL_WIFI);
+-    lv_obj_set_style_text_color(items[INFO_WIFI], TC(text_dim), 0);
++    lv_label_set_text(items[INFO_WIFI], "\xEF\x8A\x93");
++    lv_obj_set_style_text_color(items[INFO_WIFI], TC(bar), 0);
+ 
+     /* Icono de Bluetooth, al lado del de WiFi: la celda es de 56 px, asi que el WiFi se corre a la
+      * mitad izquierda y el BT ocupa la derecha (el S-meter empieza justo al lado de la barra, no se
+@@ -261,7 +261,7 @@ static void vfo_label_update(Subject *subj, void * user_data) {
+ }
+ 
+ static void mode_label_update(Subject *subj, void *user_data) {
+-    lv_label_set_text(items[INFO_MODE], info_params_mode_label_get());
++    lv_label_set_text(items[INFO_MODE], "VERYLONGMODENAME");
+     x6200_mode_t mode = subject_get_int(cfg_cur.mode);
+     if ((mode == x6200_mode_lsb_dig) || (mode == x6200_mode_usb_dig)) {
+         lv_obj_set_style_text_color(items[INFO_MODE], TC(mode_dig), 0);

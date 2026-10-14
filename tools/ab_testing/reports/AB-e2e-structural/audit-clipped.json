@@ -1,0 +1,146 @@
+{
+  "exit_code": 1,
+  "findings": [
+    {
+      "detail": "lv_obj at 0,448 160x62 cut to 160x32 (lost 0x30)",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/29",
+      "rule": "layout_clipped"
+    },
+    {
+      "detail": "lv_label at 26,467 108x25 cut to 108x13 (lost 0x12)",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/29/0",
+      "rule": "layout_clipped"
+    },
+    {
+      "detail": "lv_obj at 160,448 160x62 cut to 160x32 (lost 0x30)",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/30",
+      "rule": "layout_clipped"
+    },
+    {
+      "detail": "lv_label at 193,454 95x50 cut to 95x26 (lost 0x24)",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/30/0",
+      "rule": "layout_clipped"
+    },
+    {
+      "detail": "lv_obj at 320,448 160x62 cut to 160x32 (lost 0x30)",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/31",
+      "rule": "layout_clipped"
+    },
+    {
+      "detail": "lv_label at 349,454 103x50 cut to 103x26 (lost 0x24)",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/31/0",
+      "rule": "layout_clipped"
+    },
+    {
+      "detail": "lv_obj at 480,448 160x62 cut to 160x32 (lost 0x30)",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/32",
+      "rule": "layout_clipped"
+    },
+    {
+      "detail": "lv_label at 510,454 101x50 cut to 101x26 (lost 0x24)",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/32/0",
+      "rule": "layout_clipped"
+    },
+    {
+      "detail": "lv_obj at 640,448 160x62 cut to 160x32 (lost 0x30)",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/33",
+      "rule": "layout_clipped"
+    },
+    {
+      "detail": "lv_label at 660,454 120x50 cut to 120x26 (lost 0x24)",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/33/0",
+      "rule": "layout_clipped"
+    }
+  ],
+  "instrumentation": {
+    "nodes_inspected": 84,
+    "source": "live LVGL object tree (ui_harness --inspect); no OCR",
+    "structural": true
+  },
+  "issues": [
+    {
+      "detail": "region `multiplicador` content 0.0000 <= 0.0500",
+      "id": "UI-001",
+      "reproduced": false,
+      "title": "Etiqueta del multiplicador de tuning visible sobre la barra superior"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-002",
+      "reproduced": null,
+      "title": "Menu de apps: las apps solo vivian en el long-press de Ajustes"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-003",
+      "reproduced": null,
+      "title": "WCAG 2.1: pares texto/fondo por debajo de 4.5:1 o 3:1"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-004",
+      "reproduced": null,
+      "title": "Ajustes: widgets que no se podian alcanzar con el foco"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-005",
+      "reproduced": null,
+      "title": "Dialogo viejo: texto constante tapado por los botones"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-006",
+      "reproduced": null,
+      "title": "Icono BT: el glifo U+F293 no existe en sony_20 (rectangulo vacio)"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-007",
+      "reproduced": null,
+      "title": "Temas RS sin clave propia heredaban un color por debajo de 2.58:1"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-008",
+      "reproduced": null,
+      "title": "CMA: 128 MB reservados para GPU no usada (presupuesto del firmware)"
+    }
+  ],
+  "reproduced": [],
+  "revision": "86e950cd7cf1b5fd4ea8bc73da755745bf110ef1",
+  "scenarios": [
+    "home-usb-20m"
+  ],
+  "status": "FAIL",
+  "structural_failures": 10,
+  "unverified": [
+    "UI-002",
+    "UI-003",
+    "UI-004",
+    "UI-005",
+    "UI-006",
+    "UI-007",
+    "UI-008"
+  ]
+}
