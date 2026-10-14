@@ -5,6 +5,12 @@
 # overlap: the S-meter sits inside the top-bar band and the multiplier sits on
 # top of the clock, and that overlap is the point — it is where defects show.
 #
+# The top band (`barra_superior`/`reloj_potencia`) reaches y=62, not 46: the
+# info cells are 56x26 at y5 and y27 (info.c) and the power clock is two lines,
+# which under VISION's scaled fonts (`fonts_scale`) is ~61 px tall. The old 46
+# was the non-scaled fit and left the second clock line / the WiFi cell inside
+# `espectro`, so a change there was reported outside its own region.
+#
 # Coordinates are [x, y, width, height].
 
 framebuffer:
@@ -13,7 +19,7 @@ framebuffer:
 
 regions:
   - name: barra_superior
-    rect: [0, 0, 800, 46]
+    rect: [0, 0, 800, 62]
     description: "Barra superior (info.c: VFO, modo, AGC, PRE/ATT, ATU, WiFi/BT, reloj)"
 
   - name: s_metro
@@ -41,5 +47,5 @@ regions:
     description: "Esquina superior derecha donde main_screen.c crea la etiqueta del multiplicador (oculta)"
 
   - name: reloj_potencia
-    rect: [591, 0, 209, 46]
+    rect: [591, 0, 209, 62]
     description: "Reloj de potencia (clock.c, CLOCK_POWER): simbolo de bateria y tensiones en la esquina superior derecha"

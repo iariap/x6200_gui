@@ -524,6 +524,79 @@ terminaría en el tema por defecto. Es un hallazgo real **fuera del alcance** de
 UI-02 (cobertura): el arnés usa el nombre completo para poder renderizar el tema y
 lo deja documentado para el triage del issue #8.
 
+## Fix real de firmware: UI-011 (iconos de VISION) — EXP-1 de UI-04 (issue #9) ✅
+
+Gate: el arnés reproduce el defecto fundado de la auditoría UI-03, el fix lo cierra y
+el A/B queda **PASS con el cambio confinado** a la barra superior y **15 fixtures
+byte-idénticas**.
+
+`src/fonts/font_select.c`, `fonts_scale()`: copiaba la struct entera de una fuente
+sobre otra (`*sony[i] = was[i + steps]`), así que el tamaño que dibuja heredaba la
+cobertura de glifos del tamaño con el que se reemplazaba. Solo `sony_20`/`sony_30`
+traen los rangos de icono (`cmap` hasta `U+F244`); con `VISION_FONT_STEPS = 3`
+`sony_30` (reloj) pasa a `sony_36` y `sony_20` (barra) a `sony_26`, ASCII, y el
+reloj y el icono de WiFi quedaban en rectángulo vacío (UI-011). El fix conserva en
+cada tamaño escalado **su fuente de origen como fallback**
+(`sony[i]->fallback = &was[i]`): el tamaño grande dibuja el texto y el tamaño
+original aporta los iconos; con una fuente alternativa, `was[i]` resuelve a su vez
+por su propia copia Sony. Un archivo, sin iconos ni paquetes de fuentes nuevos.
+
+- **Fixture**: `main-tema-vision` (agregada en UI-03). La hipótesis previa al
+  cambio: el diff se confina a `reloj_potencia`/`barra_superior`.
+- **Región corregida**: `quality/regions.yaml` — la banda superior llega a **y=62**
+  bajo VISION (el reloj son dos líneas del tamaño escalado, ~61 px; las celdas de
+  `info.c` hasta y=53), no a 46; con 46 la segunda línea del reloj y la celda del
+  WiFi caían dentro de `espectro` y el cambio se reportaba fuera de su región.
+  Igual que UI-009 agregó `reloj_potencia`, acá se corrige su altura.
+- **Cómo lo reproduce el arnés**: contrato `typography_missing_glyph` sobre
+  `main-tema-vision` (inspección estructural, sin OCR). En A (`b029907`) **FAIL** con
+  dos hallazgos (reloj `U+F240`/`U+F1E6`, WiFi `U+F1EB`); en B, **0 findings**. La
+  *excepción acotada* que lo waiveaba se **retiró en el mismo PR**.
+- **Sin detector de píxeles**: un glifo ausente deja su code point en el texto del
+  label, así que UI-011 no puede explicarse por `known_issues.yaml` como UI-001/009;
+  el cambio visual se declara como `expected_change` acotado y fechado
+  (`barra_superior`, hasta 2027-03-31) en `quality/contracts.yaml`.
+
+Evidencia (host, 2026-10-14, `b029907` → `c471ecb`):
+
+```text
+audit b029907 (A): FAIL — 2 × typography_missing_glyph [main-tema-vision]
+  text '\uf240 12.1v\n\uf1e6 13.8v' missing ['U+F240','U+F1E6']
+  text '\uf1eb'                      missing ['U+F1EB']
+audit c471ecb (B): PASS — 0 structural findings (1350 objetos, 16 fixtures)
+
+contracts c471ecb: PASS — 161 checks, 0 failure(s), 1 unchanged baseline defect(s)
+  UNCHANGED DEFECT region_min_content:frecuencia [main-otro-tema] (UI-010)
+
+compare AB-UI04-EXP1: PASS (exit 0)
+  Functional PASS · Visual Regression PASS · Quality Contract PASS · Performance PASS
+  Hardware BLOCKED · Energy BLOCKED (advisory: sin unidad física)
+  main-tema-vision: 1943 px cambiados (0.51%), TODO dentro de `barra_superior`
+                     (reloj U+F240/U+F1E6 + WiFi U+F1EB); 15 fixtures en 0 px
+```
+
+Los 161 contratos (antes 163) bajan exactamente los dos `typography_missing_glyph`
+que la excepción waiveaba y que el fix eliminó. Screenshots A/B y `diff`/`overlay`
+en [`tools/ab_testing/reports/AB-UI04-EXP1/`](../tools/ab_testing/reports/AB-UI04-EXP1/)
+(`a-`/`b-main-tema-vision.png`, `diffs/main-tema-vision-*.png`).
+
+Determinismo (mismos sha para cada fixture entre corridas; `main-tema-vision` es la
+única que cambia de contenido respecto de UI-03):
+
+```text
+tests/check_harness_determinism.sh   -> PASS (16 fixtures)
+main-tema-vision   UI-03 (A): d59e7cf8…   EXP-1 (B): abe5d57f…
+```
+
+`tests/native/run_native_tests.sh` PASS (538 + 7) y `uv run pytest -m "not e2e"` PASS
+(118). El fix no toca `src/clock.c` ni `src/info.c` (UI-012 es EXP-2).
+
+```text
+benchmark BENCH-UI04-EXP1: PASS (exit 0) — 16 escenarios, main-tema-vision p95 -9.6%
+  (una corrida previa con builds concurrentes dio INCONCLUSIVE por dispersión del
+  host >25%; en máquina ociosa el veredicto es PASS)
+```
+
 ## Pendientes
 
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
@@ -532,9 +605,11 @@ lo deja documentado para el triage del issue #8.
   About real ya está cubierto (`dialog-about`); Ajustes y los diálogos que
   arrastran `dialog_field`/audio/tabla siguen fuera, y con ellos las semillas
   UI-002/UI-004/UI-005 quedan `unverified`.
-- **Tema VISION y fuentes de usuario**: VISION no entra como fixture (su
-  `fonts_scale()` muestra hallazgos de tipografía para el issue #8) ni hay fixture
-  de fuente elegida por el usuario (Roboto/DejaVu/Arial).
+- **Tema VISION y fuentes de usuario**: VISION ya tiene fixture
+  (`main-tema-vision`, UI-03) y su defecto de glifos (**UI-011**) quedó **fixed** en
+  UI-04/EXP-1 (ver arriba); el overflow de `VFO-A` (**UI-012**) sigue abierto
+  (EXP-2 de UI-04). Sigue sin haber fixture de fuente elegida por el usuario
+  (Roboto/DejaVu/Arial).
 - El reloj de energía dependía de una variable local sin inicializar
   (`src/clock.c`, `show_time`): quedó corregido como **UI-009** con test nativo y
   caso A/B propio (ver la sección **UI-009** arriba). Las capturas aceptadas de
