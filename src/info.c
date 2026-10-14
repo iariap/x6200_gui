@@ -76,13 +76,34 @@ lv_obj_t * info_init(lv_obj_t * parent) {
 
     uint8_t index = 0;
 
-    for (uint8_t y = 0; y < UI_INFO_ROWS; y++)
+    for (uint8_t y = 0; y < UI_INFO_ROWS; y++) {
+        /* Una fila = un contenedor flex (LV_FLEX_ROW): el flex gobierna el eje X
+         * de las tres celdas y el gap sale de UI_INFO_CELL_GAP, en vez de sumar
+         * UI_INFO_COL_PITCH a mano por celda. El contenedor queda en el origen
+         * exacto de la fila (UI_INFO_ROW_PITCH), asi que las filas siguen
+         * solapandose 4 px (26 > 22) sin margenes negativos: el Y no lo toca el
+         * flex. Las celdas mantienen su tamano fijo (56x26): flex coloca, no
+         * redimensiona (ninguna lleva flex_grow). */
+        lv_obj_t *row = lv_obj_create(obj);
+
+        lv_obj_clear_flag(row, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_set_style_bg_opa(row, LV_OPA_TRANSP, 0);
+        lv_obj_set_style_radius(row, 0, 0);
+        lv_obj_set_style_border_width(row, 0, 0);
+        lv_obj_set_style_pad_all(row, 0, 0);
+        lv_obj_set_style_pad_column(row, UI_INFO_CELL_GAP, 0);
+        lv_obj_set_size(row,
+                        UI_INFO_COLS * UI_INFO_CELL_W + (UI_INFO_COLS - 1) * UI_INFO_CELL_GAP,
+                        UI_INFO_CELL_H);
+        lv_obj_set_pos(row, UI_INFO_ORIGIN_X, y * UI_INFO_ROW_PITCH + UI_INFO_ORIGIN_Y);
+        lv_obj_set_layout(row, LV_LAYOUT_FLEX);
+        lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+        lv_obj_set_flex_align(row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+
         for (uint8_t x = 0; x < UI_INFO_COLS; x++) {
-            lv_obj_t *item = lv_label_create(obj);
+            lv_obj_t *item = lv_label_create(row);
 
             lv_obj_add_style(item, &info_item_style, 0);
-            lv_obj_set_pos(item, x * UI_INFO_COL_PITCH + UI_INFO_ORIGIN_X,
-                           y * UI_INFO_ROW_PITCH + UI_INFO_ORIGIN_Y);
             lv_obj_set_style_text_align(item, LV_TEXT_ALIGN_CENTER, 0);
 
             /* El fondo de la barra es un bitmap (images/top_short*.bin) con zonas claras y oscuras,
@@ -99,6 +120,7 @@ lv_obj_t * info_init(lv_obj_t * parent) {
             items[index] = item;
             index++;
         }
+    }
 
     /* La celda del VFO es la unica que no entra cuando VISION escala las fuentes
      * (fonts_scale, tres pasos): las seis celdas siguen siendo las 56x26 fijas del
