@@ -135,7 +135,10 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
   reaparición es la misma: sin waiver, el contrato vuelve a fallar.
 - **Evidencia**: `tools/ab_testing/reports/AB-UI04-EXP3/` (screenshots A/B,
   `diff`/`overlay`, `results.json`); repro de A: contracts `FAIL
-  region_min_content:frecuencia [main-otro-tema]`.
+  region_min_content:frecuencia [main-otro-tema]`. Hash de determinismo del fixture:
+  `main-otro-tema` `65064bfa…` (A) → **`8592ccff…`** (B); el otro que se mueve es
+  `main-tema-material-3` `baa8a0ec…` → `7d3a1016…`, y las otras 14 fixtures conservan
+  su sha256 (ver `docs/AB_TESTING.md`, sección EXP-3).
 - **UI-011 (evaluada y plegada acá, no como entrada separada)**: el mismo tema
   muestra además la **cascada de ruido casi blanco sobre blanco** y las
   **etiquetas CW/DIG del strip del band plan**. Sigue como **observación**, no
