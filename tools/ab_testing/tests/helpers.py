@@ -12,6 +12,7 @@ from PIL import Image
 
 from x6200_ab.capture import Capture
 from x6200_ab.quality_config import (
+    BenchmarkBudget,
     Budgets,
     PerformanceBudget,
     QualityContracts,
@@ -123,6 +124,7 @@ def budgets(
     min_box_pixels: int = 4,
     max_flushed_pixels_delta_pct: float = 10.0,
     max_flushes_delta_pct: float = 20.0,
+    benchmark: BenchmarkBudget | None = None,
 ) -> Budgets:
     return Budgets(
         visual=VisualBudget(
@@ -133,5 +135,17 @@ def budgets(
         performance=PerformanceBudget(
             max_flushed_pixels_delta_pct=max_flushed_pixels_delta_pct,
             max_flushes_delta_pct=max_flushes_delta_pct,
+        ),
+        benchmark=benchmark
+        if benchmark is not None
+        else BenchmarkBudget(
+            warmup_frames=3,
+            repeats=5,
+            rounds=2,
+            min_frames=4,
+            max_dispersion_cv_pct=25.0,
+            max_p95_delta_pct=25.0,
+            max_flushes_delta_pct=20.0,
+            max_redrawn_area_delta_pct=20.0,
         ),
     )

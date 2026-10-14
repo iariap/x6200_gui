@@ -41,6 +41,10 @@ KNOWN_KEYS = frozenset(
         "battery_cap",
         "charging",
         "rxtx",
+        # Benchmark-only knobs (ignored outside `--bench`; never change a pixel).
+        "bench_warmup",
+        "bench_repeats",
+        "bench_redraw_passes",
     }
 )
 

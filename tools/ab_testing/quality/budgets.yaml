@@ -18,3 +18,23 @@ performance:
   # the candidate may not increase them beyond these budgets.
   max_flushed_pixels_delta_pct: 10.0
   max_flushes_delta_pct: 20.0
+
+benchmark:
+  # Real-clock render benchmark (CLOCK_MONOTONIC, still an x86 host proxy). The
+  # sampling plan is fixed here, before any run:
+  #   - warm-up frames are discarded (allocator/caches settle);
+  #   - each harness run measures this many frames;
+  #   - A and B alternate over this many rounds, so slow CI drift hits both;
+  #   - a side with fewer frames than `min_frames` is INCONCLUSIVE.
+  warmup_frames: 3
+  repeats: 5
+  rounds: 4
+  min_frames: 12
+  # A side whose coefficient of variation (stdev/mean) exceeds this is too
+  # variable to trust: the comparison is INCONCLUSIVE, never a PASS on noise.
+  max_dispersion_cv_pct: 25.0
+  # Relative budgets for the candidate. A controlled regression that triples the
+  # per-frame redraw work lands far above these; host noise stays well below.
+  max_p95_delta_pct: 25.0
+  max_flushes_delta_pct: 20.0
+  max_redrawn_area_delta_pct: 20.0

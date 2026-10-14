@@ -44,9 +44,29 @@ class PerformanceBudget:
 
 
 @dataclass(frozen=True)
+class BenchmarkBudget:
+    """Thresholds and sampling plan for the real-clock render benchmark.
+
+    The sampling plan (warm-up, measured frames per run, alternating rounds) is
+    part of the budget so a run cannot quietly reduce the sample to make a
+    regression disappear.
+    """
+
+    warmup_frames: int
+    repeats: int
+    rounds: int
+    min_frames: int
+    max_dispersion_cv_pct: float
+    max_p95_delta_pct: float
+    max_flushes_delta_pct: float
+    max_redrawn_area_delta_pct: float
+
+
+@dataclass(frozen=True)
 class Budgets:
     visual: VisualBudget
     performance: PerformanceBudget
+    benchmark: BenchmarkBudget
 
 
 @dataclass(frozen=True)
@@ -92,6 +112,7 @@ def load_budgets(path: Path) -> Budgets:
     data = read_yaml_mapping(path)
     visual = _mapping(data, "visual", path)
     performance = _mapping(data, "performance", path)
+    benchmark = _mapping(data, "benchmark", path)
     return Budgets(
         visual=VisualBudget(
             pixel_tolerance=as_int(visual, "pixel_tolerance", path),
@@ -103,6 +124,16 @@ def load_budgets(path: Path) -> Budgets:
                 performance, "max_flushed_pixels_delta_pct", path
             ),
             max_flushes_delta_pct=as_float(performance, "max_flushes_delta_pct", path),
+        ),
+        benchmark=BenchmarkBudget(
+            warmup_frames=as_int(benchmark, "warmup_frames", path),
+            repeats=as_int(benchmark, "repeats", path),
+            rounds=as_int(benchmark, "rounds", path),
+            min_frames=as_int(benchmark, "min_frames", path),
+            max_dispersion_cv_pct=as_float(benchmark, "max_dispersion_cv_pct", path),
+            max_p95_delta_pct=as_float(benchmark, "max_p95_delta_pct", path),
+            max_flushes_delta_pct=as_float(benchmark, "max_flushes_delta_pct", path),
+            max_redrawn_area_delta_pct=as_float(benchmark, "max_redrawn_area_delta_pct", path),
         ),
     )
 

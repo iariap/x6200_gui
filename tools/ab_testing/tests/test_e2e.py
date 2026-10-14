@@ -23,17 +23,19 @@ from x6200_ab.docker import HARNESS_IMAGE
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = "home-usb-20m"
+BENCH_FIXTURE = "bench-render"
 
 pytestmark = pytest.mark.e2e
 
 
 @dataclass(frozen=True)
 class Revisions:
-    """The base commit plus the two ephemeral ones the tests compare."""
+    """The base commit plus the ephemeral ones the tests compare."""
 
     base: str
     regression: str
     defect: str
+    bench_regression: str
     cache_dir: Path
 
 
@@ -102,6 +104,21 @@ def _show_multiplier_label(worktree: Path) -> None:
     path.write_text(text.replace(needle, "    /* abtest e2e: label left visible */"))
 
 
+def _raise_bench_cost(worktree: Path) -> None:
+    """Deliberate render regression: repaint the screen three times per frame.
+
+    `bench_redraw_passes` is a benchmark-only knob (it never changes the PNG):
+    the same screen is redrawn three times, so the frame's render time, flush
+    count and redrawn area all grow. This is the controlled cost regression the
+    benchmark has to detect.
+    """
+    path = worktree / "tools" / "ui_harness" / "fixtures" / f"{BENCH_FIXTURE}.scn"
+    text = path.read_text()
+    needle = "bench_redraw_passes 1"
+    assert needle in text
+    path.write_text(text.replace(needle, "bench_redraw_passes 3"))
+
+
 def _base_revision() -> str:
     """The commit the demo revisions are built from.
 
@@ -124,11 +141,29 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
     _seed_cache(cache_dir)
     regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar)
     defect = _ephemeral(REPO_ROOT, base, "defect", _show_multiplier_label)
-    _record_patches(base, {"regression": regression, "defect": defect})
+    bench_regression = _ephemeral(REPO_ROOT, base, "bench", _raise_bench_cost)
+    _record_patches(
+        base,
+        {"regression": regression, "defect": defect, "bench": bench_regression},
+    )
     try:
-        yield Revisions(base=base, regression=regression, defect=defect, cache_dir=cache_dir)
+        yield Revisions(
+            base=base,
+            regression=regression,
+            defect=defect,
+            bench_regression=bench_regression,
+            cache_dir=cache_dir,
+        )
     finally:
-        _git("-C", str(REPO_ROOT), "branch", "-D", "abtest/regression", "abtest/defect")
+        _git(
+            "-C",
+            str(REPO_ROOT),
+            "branch",
+            "-D",
+            "abtest/regression",
+            "abtest/defect",
+            "abtest/bench",
+        )
         _git("-C", str(REPO_ROOT), "worktree", "prune")
 
 
@@ -243,7 +278,7 @@ def test_regression_of_a_fixed_issue_is_a_regression(tmp_path: Path, revisions: 
     assert issue["classification"] == "REGRESSION"
 
 
-def test_all_six_fixtures_can_be_captured(tmp_path: Path, revisions: Revisions) -> None:
+def test_all_fixtures_can_be_captured(tmp_path: Path, revisions: Revisions) -> None:
     out = _reports_root(tmp_path) / "captures-e2e"
     code = main(
         [
@@ -262,8 +297,8 @@ def test_all_six_fixtures_can_be_captured(tmp_path: Path, revisions: Revisions) 
         ]
     )
     assert code == 0
-    assert len(sorted(out.glob("*.png"))) == 6
-    assert len(sorted(out.glob("*.json"))) == 6
+    assert len(sorted(out.glob("*.png"))) == 7
+    assert len(sorted(out.glob("*.json"))) == 7
 
 
 def _run(tmp_path: Path, revisions: Revisions, extra: list[str]) -> int:
@@ -295,16 +330,88 @@ def test_audit_reports_the_missing_instrumentation(
     assert "structural inspection" in payload["blocked_instrumentation"]
 
 
-def test_benchmark_is_blocked_without_frame_timing(
+def test_benchmark_measures_the_real_render_cost(
     tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
 ) -> None:
     code = _run(
         tmp_path,
         revisions,
-        ["benchmark", "--revision", revisions.base, "--scenario", FIXTURE, "--repeats", "2"],
+        [
+            "benchmark",
+            "--revision",
+            revisions.base,
+            "--scenario",
+            BENCH_FIXTURE,
+            "--repeats",
+            "5",
+            "--warmup",
+            "3",
+            "--rounds",
+            "3",
+        ],
     )
-    assert code == 2
+    assert code == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["status"] == "BLOCKED"
-    assert "timing" in payload["cause"]
-    assert payload["available"][FIXTURE], "the render counters we do have are reported"
+    assert payload["status"] == "PASS"
+    assert payload["kind"] == "benchmark-measurement"
+    measurement = payload["measurements"][0]
+    assert measurement["scenario"] == BENCH_FIXTURE
+    assert measurement["frames"] == 15
+    assert measurement["render_p50_ms"] > 0.0
+    assert measurement["render_p95_ms"] >= measurement["render_p50_ms"]
+    assert measurement["render_p99_ms"] >= measurement["render_p95_ms"]
+    assert measurement["fps"] > 0.0
+    assert measurement["flushes_mean"] >= 1.0
+    assert measurement["redrawn_area_mean"] > 0.0
+    assert measurement["memory"]["rss_bytes"] > 0
+
+
+def test_benchmark_detects_a_controlled_regression(
+    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
+) -> None:
+    """The milestone gate: a deliberate 3x redraw revision FAILs on p95."""
+    reports = _reports_root(tmp_path)
+    workspace = tmp_path / "ws-benchmark"
+    code = main(
+        [
+            "benchmark",
+            "--a",
+            revisions.base,
+            "--b",
+            revisions.bench_regression,
+            "--scenario",
+            BENCH_FIXTURE,
+            "--repeats",
+            "5",
+            "--warmup",
+            "3",
+            "--rounds",
+            "3",
+            "--repo",
+            str(REPO_ROOT),
+            "--reports-dir",
+            str(reports),
+            "--workspace",
+            str(workspace),
+            "--cache-dir",
+            str(revisions.cache_dir),
+            "--experiment-id",
+            "AB-e2e-benchmark",
+            "--json",
+        ]
+    )
+    assert code == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["status"] == "FAIL"
+    comparison = payload["comparisons"][0]
+    assert comparison["scenario"] == BENCH_FIXTURE
+    assert comparison["status"] == "FAIL"
+    assert comparison["p95_delta_pct"] > 100.0
+    assert comparison["b"]["render_p95_ms"] > comparison["a"]["render_p95_ms"]
+    assert comparison["b"]["flushes_mean"] > comparison["a"]["flushes_mean"]
+    assert any("p95 render" in reason for reason in comparison["reasons"])
+    results = reports / "AB-e2e-benchmark" / "results.json"
+    assert results.is_file()
+    stored = json.loads(results.read_text())
+    assert stored["status"] == "FAIL"
+    assert (reports / "AB-e2e-benchmark" / "report.md").is_file()
