@@ -21,6 +21,8 @@
 #include "cw.h"
 #include "pubsub_ids.h"
 #include "events.h"
+#include "scheduler.h"
+#include "visual_policy.h"
 
 #include <aether_radio/x6200_control/low/flow.h>
 #include <aether_radio/x6200_control/low/gpio.h>
@@ -47,6 +49,9 @@ static uint64_t         now_time;
 static uint64_t         prev_time;
 static uint64_t         idle_time;
 static bool             mute = false;
+
+/* Perfil visual del pack (UI-08 incr. 2). El estado lo toca solo este hilo. */
+static visual_policy_t  visual_policy;
 
 #define WITH_RADIO_LOCK(fn) radio_lock(); fn; radio_unlock();
 
@@ -97,6 +102,17 @@ static void process_power_key(bool val, uint64_t now) {
     prev_val = val;
 }
 
+/* Aplica el perfil ya evaluado al waterfall. Corre en el hilo de LVGL (lo
+ * encola radio_tick por el scheduler, el mismo patron que tx_info_update en
+ * src/tx_info.c, porque el waterfall no es de este hilo). El toggle del usuario
+ * se lee aca, del lado de LVGL, y el perfil solo lo respeta o lo fuerza: el
+ * parametro no se escribe nunca. */
+static void apply_visual_profile(void *arg) {
+    visual_profile_t profile = *(visual_profile_t *) arg;
+
+    visual_policy_waterfall_apply(profile, params.waterfall_battery.x);
+}
+
 bool radio_tick() {
 
     if (now_time < prev_time) {
@@ -117,6 +133,29 @@ bool radio_tick() {
         if (delay++ > 10) {
             delay = 0;
             clock_update_power(pack->vext * 0.1f, pack->vbat*0.1f, pack->batcap, pack->flag.charging);
+
+            /* UI-08 incr. 2: el mismo pack que alimenta el reloj alimenta el
+             * perfil visual. La politica espera mV y los campos vienen en
+             * decimas de voltio (clock.c dibuja v_bat*10 sobre el mismo campo
+             * que aca se convierte con *0.1), asi que mV = campo * 100: 121 ->
+             * 12.1 V -> 12100 mV. La muestra acaba de llegar (x6200_flow_read
+             * devolvio este paquete), asi que last_valid_ms = now_time y la
+             * antiguedad es 0: el fallback por datos viejos no aplica a este
+             * punto de conexion. Solo la transicion del perfil toca el
+             * waterfall; el valor de arranque lo puso main.c con el toggle del
+             * usuario. */
+            visual_policy_result_t visual = visual_policy_eval(&visual_policy,
+                                                               (uint16_t) pack->vbat * 100u,
+                                                               (uint16_t) pack->vext * 100u,
+                                                               pack->batcap,
+                                                               pack->flag.charging,
+                                                               (uint32_t) now_time,
+                                                               (uint32_t) now_time,
+                                                               VP_AUTO);
+
+            if (visual.changed) {
+                scheduler_put(apply_visual_profile, &visual.profile, sizeof(visual.profile));
+            }
         }
         // printf("sql_mute=%d sql_fm_mute=%d\n", pack->flag.sql_mute, pack->flag.sql_fm_mute);
         // printf("flags %08x\n", pack->flag);
@@ -365,6 +404,10 @@ void radio_bb_reset() {
 }
 
 void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
+    /* La politica visual arranca en QUALITY: el modo Ahorro del waterfall solo
+     * cambia si el pack lo pide (UI-08 incr. 2). */
+    visual_policy_init(&visual_policy);
+
     /* El GPIO se inicializa antes que esto (gpio_safe_prepare, en main), así que acá no
      * se vuelve a pedir. Y el reintento del control tiene tope: antes era un bucle
      * infinito en el hilo principal, así que si la BASE no respondía la GUI no dibujaba

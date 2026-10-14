@@ -111,3 +111,30 @@ int speex_preprocess_run(SpeexPreprocessState *st, int16_t *x) {
 int test_speex_frames(void) {
     return speex_frames_processed;
 }
+
+/* ---------------- waterfall: wiring de la politica visual ---------------- */
+
+/* src/visual_policy.c aplica el perfil al modo Ahorro del waterfall
+ * (UI-08 incr. 2). El test nativo no linkea waterfall.c, asi que este stub
+ * registra la ultima llamada (y cuantas hubo) para poder asertar la decision
+ * de la politica sin el render ni el flujo de radio. */
+static bool waterfall_battery_mode;
+static int  waterfall_battery_calls;
+
+void waterfall_set_battery_mode(bool enabled) {
+    waterfall_battery_mode = enabled;
+    waterfall_battery_calls++;
+}
+
+bool test_waterfall_battery_mode(void) {
+    return waterfall_battery_mode;
+}
+
+int test_waterfall_battery_calls(void) {
+    return waterfall_battery_calls;
+}
+
+void test_waterfall_battery_reset(void) {
+    waterfall_battery_mode = false;
+    waterfall_battery_calls = 0;
+}

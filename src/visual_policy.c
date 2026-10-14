@@ -1,16 +1,21 @@
 /*
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  Xiegu X6200 LVGL GUI - politica visual de bateria (UI-08 incr. 1).
+ *  Xiegu X6200 LVGL GUI - politica visual de bateria (UI-08 incr. 1 y 2).
  *
- *  Implementacion de visual_policy.h: modulo puro y sin dependencias. El test
- *  nativo (tests/native/test_visual_policy.c) lo cubre entero; el wiring de
- *  waterfall/spectrum/backlight llega en los incrementos 2/3.
+ *  Implementacion de visual_policy.h. La evaluacion es pura y sin
+ *  dependencias; el test nativo (tests/native/test_visual_policy.c) la cubre
+ *  entera. La unica salida al mundo es
+ *  visual_policy_waterfall_apply() (incr. 2), que aplica el perfil al modo
+ *  Ahorro del waterfall: por eso este archivo incluye waterfall.h, y el test
+ *  nativo compila contra el stub que registra esa llamada.
  */
 
 #include "visual_policy.h"
 
 #include <string.h>
+
+#include "waterfall.h"
 
 /* Umbral de entrada (bajando) y de salida (subiendo) por banda. QUALITY, la
  * mejor, no tiene umbral propio: es el resto, por eso va en VP_NO_THRESHOLD. */
@@ -140,4 +145,13 @@ visual_policy_result_t visual_policy_eval(visual_policy_t *state,
     result.changed = (profile != result.previous);
 
     return result;
+}
+
+void visual_policy_waterfall_apply(visual_profile_t profile, bool user_battery_mode) {
+    /* Los perfiles que ahorran trabajo en la cascada son ECO y CRITICAL: el
+     * perfil manda y el toggle del usuario queda intacto (el param no se toca).
+     * QUALITY y BALANCED no fuerzan nada: vale el toggle del usuario. */
+    bool saving = (profile == VP_ECO || profile == VP_CRITICAL);
+
+    waterfall_set_battery_mode(saving || user_battery_mode);
 }
