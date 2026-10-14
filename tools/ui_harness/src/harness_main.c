@@ -3,6 +3,8 @@
  *
  *  Usage: ui_harness --scenario <file> --png <out.png> --json <out.json>
  *                    [--bench [--warmup N] [--repeats N]] [--inspect]
+ *                    [--bench-natural [N]] [--natural-frames N]
+ *                    [--natural-static]
  *
  *  Builds a scenario from real firmware components on an 800x480 RAM
  *  framebuffer, advances the harness' virtual clock (no sleeps), writes the
@@ -20,6 +22,15 @@
  *  value back into the GUI, so the PNG of a scenario is the same with and
  *  without `--bench`.
  *
+ *  With `--bench-natural [N]` (or a fixture's `natural_frames N`) the harness
+ *  runs LVGL's natural loop for N frames of virtual time instead: no forced
+ *  invalidation, the spectrum/waterfall magnitudes driven frame by frame by the
+ *  deterministic generator on the radio's own cadence, and the JSON gains a
+ *  `natural` block with the invalidation of every frame (see natural_bench.h).
+ *  It is an extra mode: the `benchmark` block, the PNG path and the plain
+ *  capture are untouched. `--natural-static` runs the same loop without the
+ *  data drive (the delimitation control of tests/check_harness_natural.sh).
+ *
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
@@ -34,6 +45,7 @@
 #include "clock.h"
 #include "display.h"
 #include "events.h"
+#include "natural_bench.h"
 #include "params/params.h"
 #include "png_export.h"
 #include "render_metrics.h"
@@ -60,7 +72,8 @@ static void usage(const char *argv0)
 {
     fprintf(stderr,
             "usage: %s --scenario <file> --png <out.png> [--json <out.json>]\n"
-            "          [--bench [--warmup N] [--repeats N]] [--inspect]\n",
+            "          [--bench [--warmup N] [--repeats N]] [--inspect]\n"
+            "          [--bench-natural [N]] [--natural-frames N] [--natural-static]\n",
             argv0);
 }
 
@@ -180,9 +193,15 @@ static void write_json(const char *path, const char *png_path, const scenario_t 
             (unsigned long long) png_framebuffer_hash());
     fprintf(f, "    \"png_path\": \"%s\",\n", png_path);
     fprintf(f, "    \"png_bytes\": %ld\n", file_size(png_path));
-    fprintf(f, "  }%s\n", (bench_enabled() || inspect) ? "," : "");
+    fprintf(f, "  }%s\n", (bench_enabled() || natural_bench_enabled() || inspect) ? "," : "");
     if (bench_enabled()) {
         write_benchmark(f, scenario);
+        if (natural_bench_enabled() || inspect) {
+            fprintf(f, ",\n");
+        }
+    }
+    if (natural_bench_enabled()) {
+        natural_bench_write_json(f);
         if (inspect) {
             fprintf(f, ",\n");
         }
@@ -202,8 +221,11 @@ int main(int argc, char **argv)
     const char *json_path = NULL;
     bool        bench = false;
     bool        inspect = false;
+    bool        natural = false;
+    bool        natural_static = false;
     int         warmup_override = -1;
     int         repeats_override = -1;
+    int         natural_frames_override = -1;
 
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--scenario") && i + 1 < argc) {
@@ -216,6 +238,19 @@ int main(int argc, char **argv)
             bench = true;
         } else if (!strcmp(argv[i], "--inspect")) {
             inspect = true;
+        } else if (!strcmp(argv[i], "--bench-natural")) {
+            natural = true;
+            /* An explicit count may follow (`--bench-natural 60`); without it
+             * the fixture's `natural_frames` (or the default) decides. */
+            if (i + 1 < argc && argv[i + 1][0] != '-') {
+                natural_frames_override = (int) strtol(argv[++i], NULL, 10);
+            }
+        } else if (!strcmp(argv[i], "--natural-frames") && i + 1 < argc) {
+            natural = true;
+            natural_frames_override = (int) strtol(argv[++i], NULL, 10);
+        } else if (!strcmp(argv[i], "--natural-static")) {
+            natural = true;
+            natural_static = true;
         } else if (!strcmp(argv[i], "--warmup") && i + 1 < argc) {
             warmup_override = (int) strtol(argv[++i], NULL, 10);
         } else if (!strcmp(argv[i], "--repeats") && i + 1 < argc) {
@@ -235,6 +270,13 @@ int main(int argc, char **argv)
         return 2;
     }
 
+    /* A non-positive count is a typo, never a default: without a number the
+     * fixture's `natural_frames` (or the built-in default) decides. */
+    if (natural_frames_override == 0 || natural_frames_override < -1) {
+        fprintf(stderr, "ui_harness: --bench-natural needs a positive frame count\n");
+        return 2;
+    }
+
     mock_params_init();
     mock_cfg_init();
     mock_radio_init();
@@ -247,6 +289,7 @@ int main(int argc, char **argv)
     scenario.bench_warmup = SCENARIO_BENCH_WARMUP_DEFAULT;
     scenario.bench_repeats = SCENARIO_BENCH_REPEATS_DEFAULT;
     scenario.bench_redraw_passes = SCENARIO_BENCH_REDRAW_PASSES_DEFAULT;
+    scenario.natural_frames = NATURAL_BENCH_FRAMES_DEFAULT;
 
     if (!scenario_load(scenario_path, &scenario)) {
         return 1;
@@ -257,6 +300,9 @@ int main(int argc, char **argv)
     }
     if (repeats_override > 0) {
         scenario.bench_repeats = repeats_override;
+    }
+    if (natural_frames_override > 0) {
+        scenario.natural_frames = natural_frames_override;
     }
 
     virtual_time_reset(1000);
@@ -328,6 +374,15 @@ int main(int argc, char **argv)
         lv_refr_now(NULL);
     }
 
+    if (natural) {
+        /* The natural bench runs *after* the settled full repaint above (which
+         * is not measured), so every frame of the run only carries the work the
+         * real components trigger on their own timers. It never forces an
+         * invalidation and never calls lv_refr_now(). */
+        natural_bench_set_drive(!natural_static);
+        natural_bench_run(&scenario, scenario.natural_frames);
+    }
+
     if (!png_export(png_path)) {
         return 1;
     }
@@ -345,6 +400,11 @@ int main(int argc, char **argv)
         printf("ui_harness: benchmark frames=%zu (warmup=%d, repeats=%d, redraw_passes=%d)\n",
                bench_frame_count(), scenario.bench_warmup, scenario.bench_repeats,
                scenario.bench_redraw_passes);
+    }
+    if (natural_bench_enabled()) {
+        printf("ui_harness: natural frames=%d (frame_ms=%d, drive=%s)\n",
+               natural_bench_frame_count(), LV_DISP_DEF_REFR_PERIOD,
+               natural_bench_drive() ? "on" : "off");
     }
     return 0;
 }

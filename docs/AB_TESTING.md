@@ -1758,6 +1758,123 @@ y estable en las 18. Los reportes quedan en
 [`tools/ab_testing/reports/AB-UI07-T1/`](../tools/ab_testing/reports/AB-UI07-T1/),
 `BENCH-UI07-P1/`, `BENCH-UI07-T1/` y `BENCH-UI07-T1-repeat/`.
 
+## Modo bench natural: datos por frame e invalidación real (UI-07 incremento 2, issue #13) ✅
+
+El incremento 1 cerró con lo que faltaba **en el arnés** (no en `src/`): (1) un bench que
+no forzara `lv_obj_invalidate(lv_scr_act())` + `lv_refr_now()` sino que corrieran los
+timers/scheduler sobre el reloj virtual, y (2) fixtures con **datos por frame** (hoy
+`signal_gen_feed()` corre una sola vez, `screens.c:54`). Este incremento entrega los dos
+como **modo extra y adicional**: `--bench-natural`. El modo forzado (`--bench`), la
+captura, `compare`, `contracts` y `audit` conservan formato y números; los 18 fixtures
+existentes no se tocan.
+
+### Cómo se usa
+
+```sh
+# El loop natural de LVGL, N frames de tiempo virtual, datos por frame del
+# generador determinista (el fixture declara `natural_frames`, el CLI puede pisarlo):
+./ui_harness --scenario ../fixtures/main-natural.scn \
+    --png out/natural.png --json out/natural.json --bench-natural
+./ui_harness … --bench-natural 10          # override del conteo (el fixture dice 40)
+./ui_harness … --natural-frames 10         # lo mismo, forma larga
+./ui_harness … --bench-natural --natural-static   # control de delimitación (sin drive)
+```
+
+Un **frame natural** es un período de refresh de LVGL (`LV_DISP_DEF_REFR_PERIOD`, 30 ms de
+reloj virtual), `slice_ms = 10`. La señal sale del generador determinista que ya existía
+(`src/signal_gen.c`), ahora con dos entradas nuevas —`signal_gen_spectrum_frame(seed,
+frame)` y `signal_gen_waterfall_row(seed, row)`— que alimentan `spectrum_data()` y
+`waterfall_data()` con el mismo seed del fixture y filas que avanzan por frame: sin
+`rand()`, sin reloj, sin estado compartido. La cadencia espeja la del lazo de DSP del
+radio (`src/dsp.cpp`: `spectrum_fps_ms = 1000/15`, `waterfall_fps_ms = 1000/25`, condición
+`now - last > fps_ms`); el reloj invalida cada 500 ms por su propio timer
+(`src/clock.c`). El PNG y los `metrics` no cambian de formato: la sección nueva es
+`natural`.
+
+Salida real de un frame típico (de `reports/NATURAL-UI07-N1/natural.json`):
+
+```json
+{ "frame": 2, "virtual_end_ms": 2290, "refresh_cycles": 1,
+  "invalidated_px": 132000, "invalidated_rects": 1, "joined_px": 0,
+  "flushed_px": 132000, "flushes": 1, "rects_complete": true,
+  "rects": [[0, 0, 800, 165]] }
+```
+
+`invalidated_px` es lo que LVGL acumuló en su buffer de invalidación para el ciclo
+(`inv_areas`/`inv_p`, leído dentro del flush antes de que LVGL lo limpie: la misma traza
+que el incremento 1 usó como diagnóstico temporal), `joined_px` es lo que LVGL mergeó
+(para no contarlo dos veces) y `flushed_px`/`flushes` es lo que recibió el driver. Con el
+draw buffer full-screen del arnés, 1:1.
+
+### Checkpoints medidos y correlación con el perfil del incremento 1
+
+`main-natural` (seed 13, 40 frames = 1200 ms, `325ec32`, run x86):
+
+| región | rectángulo | px | veces / 40 frames | qué la invalida |
+|---|---|---|---|---|
+| espectro | `0,0 800x165` | **132000** | 16 | `spectrum_refresh()` (src/spectrum.c) |
+| cascada | `0,235 800x245` | **196000** | 23 | `refresh_waterfall()` (src/waterfall.c) |
+| reloj | `580,0 220x72` | **15840** | 1 | `show_time()` cada 500 ms (src/clock.c) |
+| band info | `0,241 800x34` | 27200 | 4 | fade del timer de 2 s (src/band_info.c) |
+| icono BT | `152,23 30x36` | 1080 | 1 | `bt_state_timer_cb`, timer de 2 s (src/info.c) |
+
+Los tres rectángulos del perfil del incr. 1 coinciden **exactos** (132000 px por trama de
+FFT, 196000 px por fila, 15840 px por tick de 500 ms). Los otros dos son de los timers de
+2 s del firmware, que solo disparan porque esta corrida llega a t > 3 s (la captura común
+avanza 1.2 s y no los ve; el trace del incr. 1 tampoco). **Ninguna otra región se
+invalida**: cada rectángulo de cada frame es uno de esos cinco, y eso lo asserta el gate.
+De los 40 frames, 37 tienen trabajo y 3 no (nada que refrescar): totales 6745720 px en 45
+rectángulos/45 flushes. Los conteos de drive (17 tramas de espectro, 24 filas de cascada)
+son los que produce una reimplementación independiente de la condición de `dsp_samples()`
+con los dos `fps` del radio sobre slices de 10 ms, y `metrics.flushes = 6 + 45`,
+`metrics.flushed_pixels = 1127680 + 6745720`: la captura settle conserva sus números y los
+frames naturales **suman** los propios.
+
+### Self-tests (el producto)
+
+`tests/check_harness_natural.sh` (corre el arnés en Docker, cuatro modos):
+
+| self-test | resultado |
+|---|---|
+| idempotencia: 2 corridas del natural con el mismo seed | PNG sha `8ec63121…` las dos veces (**idéntico**) y **todo** el JSON byte a byte igual (`cmp`) |
+| correlación con el perfil | espectro 132000 ×16, cascada 196000 ×23, reloj 15840 ×1 — exactos |
+| delimitación vs el drive (`--natural-static`) | 304760 px = **4.5%** de los 6745720: sin drive solo quedan reloj/BT/band-info → las áreas del perfil no pueden venir de otra cosa que del drive determinista |
+| los datos por frame llegan a pantalla | `framebuffer_fnv1a` del natural (`0x1cf41b099f85ece4`) ≠ del control (`0x6576db34a91c95f8`) |
+| modo forzado intacto | `--bench`: 3 frames × 1 flush × 384000 px, sin sección `natural`, mismo PNG que la captura común (`3986bc9a…`) |
+| override por CLI | `--bench-natural 10` corrió 10 frames (el fixture declara 40) |
+
+La evidencia cruda (4 JSON + PNG + hashes) queda en
+[`tools/ab_testing/reports/NATURAL-UI07-N1/`](../tools/ab_testing/reports/NATURAL-UI07-N1/),
+y `tools/ab_testing/tests/test_natural.py` corre el mismo chequeo en `pytest -m "not e2e"`
+sobre esa evidencia (no necesita Docker).
+
+### Cómo lo siguen #13/#14
+
+* **#13 (optimizar el costo de presentación)**: quedó el instrumento que faltaba. Ahora
+  una invalidación parcial en espectro/cascada es **host-demostrable**: se cambia `src/`
+  (por ejemplo invalidar por área en `spectrum_refresh()`), se corre `--bench-natural` en
+  A y B y se comparan las tres cosas que el incr. 1 no podía medir: `invalidated_px`
+  (trabajo de invalidación), `rects` (qué región exacta se redibuja) y el PNG (que los
+  datos por frame sí cambian los píxeles: la mitad del área ya **no** da un PNG idéntico,
+  el falso-verde del incr. 1 §4 desaparece).
+* **#14 y el resto del pipeline**: el modo es **extra**. `compare` sigue tomando los
+  fixtures de la revisión A (los 18), `contracts`/`audit` suman `main-natural` como un
+  fixture más (una captura común: 6 flushes/1127680 px, igual que `home-usb-20m`) y
+  `benchmark` no cambia. El formato del JSON solo **agrega** `natural`; ninguna clave
+  existente cambia de nombre ni de significado.
+* **Un fixture nuevo por experimento**: el drive es del modo, no del fixture, así que
+  alcanza con el fixture dedicado (o con `--natural-frames` sobre `home-usb-20m`).
+* **ARM/banco**: la cadencia real bajo carga, el costo del flush real y la energía siguen
+  siendo del pase de hardware (BLOCKED, sin radio). El arnés ahora reporta el trabajo
+  correcto; no puede afirmar el tiempo real del Cortex-A7.
+* Límites honestos del modo: los cinco rectángulos son de **este** fixture (tema por
+  defecto, sin peaks, seed 13); otro tema mueve las cajas del reloj/band-info (las fuentes
+  cambian la métrica). Y el aviso `_lv_inv_area: detected modifying dirty areas in render`
+  sigue apareciendo 1 vez por corrida en todos los modos (también en la captura común, con
+  PNGs byte-idénticos a la base): es del firmware (callback de `DRAW_POST_END` de
+  band_info/middle_line), preexistente.
+
+
 ## Pendientes
 
 - **UI-05 (Flex/Grid) sigue abierto**: el **incremento 1** fue la capa de tokens
@@ -1777,15 +1894,19 @@ y estable en las 18. Los reportes quedan en
   o se deja sólo en `tests/check_wcag.py`, y suman focus states / waterfall palettes.
   Sin hallazgos estáticos nuevos (ver la sección de UI-06 arriba).
 
-- **UI-07 (render) incremento 1 hecho — perfil, sin cambio de render** (sección
-  *Perfil del renderer*): el perfil **descarta** el candidato de invalidación parcial que
+- **UI-07 (render) incrementos 1-2 hechos**: el **incremento 1** fue el perfil
+  (sección *Perfil del renderer*) y **descartó** el candidato de invalidación parcial que
   suponía la spec (el full-frame de 384000 px lo fabrica el lazo del bench y los objetos
-  de espectro/cascada cambian enteros por actualización, así que no hay sub-región
-  correcta que invalidar). Si #13 sigue, el primer paso es del **arnés**, no de `src/`:
-  un modo de bench que mida la invalidación natural (hoy `--bench` invalida la pantalla)
-  y fixtures con datos por frame (hoy `signal_gen_feed` corre una vez,
-  `screens.c:54`). Hardware/Energy siguen **BLOCKED** (sin banco/radio): la cadencia y el
-  costo del flush real son del pase de hardware.
+  de espectro/cascada cambian enteros por actualización). El **incremento 2** (sección
+  *Modo bench natural*) entregó lo que el perfil pidió como paso siguiente, y todo del
+  **arnés**: `--bench-natural` mide la invalidación natural con **datos por frame**
+  deterministas (funciones nuevas de `src/signal_gen.c` sobre la cadencia de `src/dsp.cpp`)
+  y un fixture dedicado (`main-natural`), con el modo forzado y los 18 fixtures intactos.
+  Los incrementos siguientes de #13 ya tienen el instrumento: una optimización de
+  presentación de espectro/cascada se puede ahora medir en áreas (`invalidated_px`,
+  `rects`) **y** en píxeles (los datos por frame cambian el PNG, así que una invalidación
+  parcial rota sí cambia el render). Hardware/Energy siguen **BLOCKED** (sin banco/radio):
+  la cadencia real y el costo del flush real son del pase de hardware.
 
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
   Hardware/Energy quedan BLOCKED/PENDING, nunca PASS por default.

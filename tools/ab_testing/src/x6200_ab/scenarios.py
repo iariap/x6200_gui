@@ -45,6 +45,9 @@ KNOWN_KEYS = frozenset(
         "bench_warmup",
         "bench_repeats",
         "bench_redraw_passes",
+        # Natural-bench-only knob (ignored outside `--bench-natural`; never
+        # changes a pixel either).
+        "natural_frames",
     }
 )
 
