@@ -2251,6 +2251,12 @@ build: 70 warnings (los mismos de siempre + 2 de src/dialog_settings.c, upstream
 `BENCH-UI05-T3-repeat`, `BENCH-UI07-T1-repeat`; load average ~3.7). Las dos corridas quedan
 commiteadas lado a lado.
 
+El tip del cambio es `892fc7c`, que agrega una comprobación de que la fila que `settings-wfbat`
+afirma mostrar está a la vista (si el renglón de tabs del pie se reordena, el arnés corta en vez
+de capturar otro grupo): **no mueve un solo píxel**, así que el determinismo, `contracts`
+(230 chequeos) y `audit` (2306 objetos / 22 escenarios) dan los mismos números en el tip. Los
+reportes commiteados citan `63ecc87`, la revisión del código contra la que corrió el `compare`.
+
 El `compare` sigue tomando los fixtures de la **revisión A** (el límite ya anotado en UI-07
 incr. 2 y UI-08 incr. 2): A no tiene las fixtures nuevas, así que la cadena A/B no gana el caso
 nuevo. La afirmación del render de Ajustes la dan el determinismo, `contracts`/`audit` sobre
