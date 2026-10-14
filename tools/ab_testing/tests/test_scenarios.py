@@ -84,6 +84,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "main-tema-material-3",
         "main-tema-outdoor-negative",
         "main-tema-rs",
+        "main-tema-vision",
         "main-tx-simulado",
     ]
     # Every fixture builds one of the screens the harness knows; the theme
