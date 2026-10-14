@@ -70,6 +70,7 @@ def test_empty_suite_is_rejected(tmp_path: Path) -> None:
 def test_repo_fixtures_are_all_parsable() -> None:
     suite = ScenarioSuite.from_fixtures_dir(HARNESS_FIXTURES)
     assert suite.names == [
+        "app-bands",
         "bench-render",
         "dialog-about",
         "home-bateria-externa",
@@ -90,12 +91,23 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "main-tema-vision-cwr",
         "main-tema-vision-usbd",
         "main-tx-simulado",
+        "settings-bands",
         "settings-home",
         "settings-wfbat",
     ]
     # Every fixture builds one of the screens the harness knows; the theme
-    # fixtures still build `main`, only the dialog, focus and settings ones do not.
+    # fixtures still build `main`, only the dialog, focus, settings and app-menu
+    # ones do not.
     assert all(
-        scenario.screen in {"main", "dialog-about", "main-foco", "settings-home", "settings-wfbat"}
+        scenario.screen
+        in {
+            "main",
+            "dialog-about",
+            "main-foco",
+            "settings-home",
+            "settings-wfbat",
+            "settings-bands",
+            "app-bands",
+        }
         for scenario in suite.scenarios
     )
