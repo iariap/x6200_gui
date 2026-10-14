@@ -25,6 +25,7 @@ tools/ui_harness/
     virtual_time.c      deterministic tick: advance N ms, no sleeps
     render_metrics.c    flush count / flushed pixels
     bench_metrics.c     real-clock (CLOCK_MONOTONIC) frame timings + /proc memory
+    ui_inspector.c      structural inspection of the live LVGL object tree (--inspect)
     screens.c           scenario -> screen builder (calls the firmware's main_screen())
     scenario.c          scenario file parser (radio state, theme, seed)
     signal_gen.c        deterministic spectrum/waterfall magnitudes, seeded by the scenario
@@ -94,11 +95,54 @@ docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" \
       --json     out/home-usb-20m.json"
 ```
 
-CLI: `ui_harness --scenario <file> --png <out.png> [--json <out.json>] [--bench [--warmup N] [--repeats N]]`.
+CLI: `ui_harness --scenario <file> --png <out.png> [--json <out.json>] [--bench [--warmup N] [--repeats N]] [--inspect]`.
 
 The JSON carries the scenario name/screen/seed, the git revision, the
 per-component coverage, the radio-call log from the mock, and the render metrics
 (flushes, flushed pixels, a framebuffer hash).
+
+## Structural inspection (`--inspect`)
+
+With `--inspect` the JSON gains an `inspection` block: the **live LVGL object
+tree** of the rendered screen (`src/ui_inspector.c`). It is what the pixels alone
+cannot state, and it is measured, never guessed:
+
+```jsonc
+"inspection": {
+  "instrumented": true,
+  "viewport": { "width": 800, "height": 480 },
+  "nodes": [
+    {
+      "class": "lv_label", "x": 15, "y": 5, "w": 56, "h": 26,
+      "clip": { "x": 0, "y": 0, "w": 800, "h": 480 },   // effective clipping
+      "visible": { "x": 15, "y": 5, "w": 56, "h": 26 }, // box ∩ clip, null if off screen
+      "hidden": false, "opa": 255, "scrollable": true,
+      "text_color": "#FFFFFF", "text_opa": 255,
+      "bg_color": "#3A3F47", "bg_opa": 255, "bg_image": false,
+      "text": "VFO-A", "text_font": "sony_20", "long_mode": "WRAP",
+      "text_box": { "w": 56, "h": 16 },
+      "text_natural": { "w": 51, "h": 17 }, "text_wrapped_h": 17,
+      "text_overflow": false, "text_truncated": false,
+      "missing_glyphs": [], "fallback_glyphs": [],
+      "children": [ /* recursive */ ]
+    }
+  ]
+}
+```
+
+* `visible` is the object's own box intersected with the clipping of its
+  ancestors (a parent without `LV_OBJ_FLAG_OVERFLOW_VISIBLE` clips its children,
+  `lv_refr.c`); `null` when nothing of it lands on the screen.
+* Text sizes come from LVGL's own font metrics (`lv_txt_get_size`), with the
+  label's letter/line space and long mode. `text_overflow` and `text_truncated`
+  compare the text against the object's box; **no OCR** is involved.
+* `missing_glyphs` lists code points that are a placeholder in *every* font of
+  the chain (`lv_font_glyph_dsc_t.is_placeholder`); `fallback_glyphs` lists the
+  ones resolved in another font (`resolved_font`). The fallback is expected here:
+  the alternate fonts are ASCII-only and icons come from the Sony copy.
+* `--inspect` is only a flag on the JSON path: **it never changes a pixel**, so a
+  scenario's PNG is byte-identical with and without it, and the benchmark path is
+  untouched. `tests/check_harness_determinism.sh` still passes.
 
 ## Benchmark
 
