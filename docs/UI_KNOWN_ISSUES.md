@@ -154,18 +154,42 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
 
 - **Severidad**: minor.
 - **Fixture**: `main-tema-vision`, región `barra_superior`.
-- **Estado**: `verified` — defecto **preexistente** de la ROM, todavía **abierto**.
+- **Estado**: `fixed` (UI-04 / AB-UI04-EXP2; si vuelve a aparecer en B, es
+  `REGRESSION`). La excepción acotada de `quality/contracts.yaml` se **retiró en
+  el mismo cambio**: el hallazgo ya no existe.
 - **Síntoma**: con VISION el texto de la barra crece tres pasos de fuente y la
   celda **no**: `src/info.c` crea los items con posiciones y tamaños fijos
   (`lv_obj_set_pos(item, x * 58 + 15, y * 22 + 5)`, `lv_obj_set_size(item, 56,
   26)`) mientras la fuente sale de `info_item_style` (`src/styles.c:259`,
-  `sony_20`). `VFO-A` se desborda de la celda (la inspección reporta
-  `text_overflow` en el label de 56x26, modo WRAP).
+  `sony_20`, que VISION escala a `sony_26`). `VFO-A` pasa de **48 a 66 px** de
+  ancho: no entra en la celda, el WRAP la parte en dos líneas y la celda recorta
+  la segunda — en pantalla queda `VFO-` y el `A` no se ve. La inspección lo mide
+  (`text_overflow` en el label de 56x26, modo WRAP; `text_natural w=66` contra
+  `text_wrapped_h=40` en una caja de 26).
+- **Por qué sólo esa celda**: de las seis celdas de la barra, `VFO-A` es el texto
+  más largo; las otras cinco (`USB`, `AUTO`, `P/A`, `ATU1` y el icono de WiFi)
+  miden 44–56 px y **sí** entran con la fuente escalada, así que no hay motivo
+  para bajarlas.
+- **Fix en el código** (`src/info.c`, `info_init`): bajo `theme_shape.vision` la
+  celda del VFO vuelve al tamaño de los otros temas
+  (`font_down(&sony_20, VISION_FONT_STEPS)`), que rinde el `sony_20` de siempre
+  (medido: `51x17` dentro de la caja de 56x26) porque `fonts_scale()` reemplaza el
+  contenido del slot y `font_down()` devuelve el slot que conserva el tamaño
+  original. Es el mismo idioma que `NF()` en `src/cluster_column.c` para sus
+  columnas de ancho fijo, y la alternativa que este documento ya anotaba ("VISION
+  dibujar esa fila con el tamaño de siempre"). Los otros temas quedan
+  **byte-idénticos**: el cambio está detrás de `theme_shape.vision`. No se toca
+  `fonts_scale()` (el fix de UI-011), ni `src/clock.c`, ni las otras cinco celdas.
 - **Cómo lo reproduce el arnés**: el contrato `typography_text_overflow` sobre la
-  misma fixture, con la **misma excepción acotada** (regla + fixture, vence el
-  2027-03-31) que UI-011.
-- **Fix**: pendiente, UI-04+ (la geometría de la barra tendría que escalar con la
-  fuente, o VISION dibujar esa fila con el tamaño de siempre).
+  fixture `main-tema-vision` (la inspección real del árbol, nunca OCR). Sobre A
+  (`8512d86`, con la excepción retirada) falla exactamente con
+  `text 'VFO-A' does not fit its 56x26 box (WRAP)`; sobre B pasa (0 findings). El
+  cambio visual queda confinado a la **celda del VFO** dentro de `barra_superior`
+  y declarado como `expected_change` acotado en `quality/contracts.yaml`. Un
+  overflow en otra celda o en otro tema sigue fallando.
+- **Evidencia**: `tools/ab_testing/reports/AB-UI04-EXP2/` (screenshots A/B y
+  `diff`/`overlay`, `results.json`); audit de A: `FAIL
+  typography_text_overflow [main-tema-vision]`.
 
 ---
 
@@ -283,7 +307,7 @@ acotadas y con vencimiento, igual que UI-010.
 | UI-009 | Reloj de potencia: símbolo de batería sin inicializar | `fixed` | major | `leading_glyph_range` | `home-bateria-externa`; `AB-e2e-ui009` |
 | UI-010 | Tema Outdoor: franja de frecuencia invisible | `verified` (abierto) | critical | `region_min_content:frecuencia` | `main-otro-tema`; exclusión scoped hasta 2027-03-31 |
 | UI-011 | VISION: los iconos de la barra desaparecen | `fixed` (UI-04 / AB-UI04-EXP1) | major | `typography_missing_glyph` | `main-tema-vision`; `AB-UI04-EXP1`; excepción retirada |
-| UI-012 | VISION: `VFO-A` no entra en su celda | `verified` (abierto) | minor | `typography_text_overflow` | `main-tema-vision`; excepción scoped hasta 2027-03-31 |
+| UI-012 | VISION: `VFO-A` no entra en su celda | `fixed` (UI-04 / AB-UI04-EXP2) | minor | `typography_text_overflow` | `main-tema-vision`; `AB-UI04-EXP2`; excepción retirada |
 | UI-013 | `params.theme_name` no guarda un nombre que el menú ofrece | `verified` (abierto) | major | `theme_name_fits_params` | `main-tema-outdoor-negative`; excepción scoped hasta 2027-03-31 |
 
 **Orden propuesto para UI-04+** (severidad y alcance; lo aprueba el owner):
@@ -294,6 +318,8 @@ acotadas y con vencimiento, igual que UI-010.
 3. **UI-013** (major): una opción de Ajustes que se elige y no se aplica, con el
    desplegable mostrando además otra selección; el arreglo toca `params`/menú.
 4. **UI-012** (minor, VISION): consecuencia de la geometría fija de la barra.
+   **Hecho** en UI-04/EXP-2 (ver arriba): la celda del VFO vuelve al tamaño de los
+   otros temas bajo VISION, con la excepción retirada en el mismo cambio.
 5. **UI-004/UI-007** (habilitante): un fixture de Ajustes cierra la última clase de
    detección que falta para las semillas `unverified` (foco y contraste del riel).
 

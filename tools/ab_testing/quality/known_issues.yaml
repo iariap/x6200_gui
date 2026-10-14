@@ -149,20 +149,31 @@ issues:
     severity: minor
     fixture: main-tema-vision
     region: barra_superior
-    status: verified
+    status: fixed
     note: >
       Bajo VISION el texto de la barra crece tres pasos de fuente pero la celda
       no: src/info.c crea los items con posiciones y tamanos fijos
       (lv_obj_set_pos(item, x * 58 + 15, y * 22 + 5) y lv_obj_set_size(item, 56,
       26)) mientras la fuente sale de info_item_style (src/styles.c:259, sony_20,
-      que VISION escala a sony_26). `VFO-A` ya no entra y la inspeccion
-      estructural de la fixture `main-tema-vision` lo marca (text_overflow en el
-      label de 56x26, WRAP). Detector: el contrato `typography_text_overflow`.
-      El fix es de UI-04+.
+      que VISION escala a sony_26). `VFO-A` pasaba de 48 a 66 px de ancho, no
+      entraba en la celda y el WRAP la partia en dos lineas que la celda
+      recortaba: en pantalla quedaba "VFO-" (text_overflow en el label de 56x26,
+      WRAP). Detector: el contrato `typography_text_overflow`.
+      FIX (UI-04/AB-UI04-EXP2): bajo theme_shape.vision la celda del VFO vuelve
+      al tamano de los otros temas (`font_down(&sony_20, VISION_FONT_STEPS)`,
+      medido: 51x17 en la celda de 56x26), el mismo idioma que NF() de
+      src/cluster_column.c para sus columnas de ancho fijo y que la alternativa
+      que UI_KNOWN_ISSUES ya anotaba ("VISION dibujar esa fila con el tamano de
+      siempre"). Las otras cinco celdas entran con la fuente escalada y no se
+      tocan; los otros temas quedan byte-identicos porque el cambio esta detras
+      de theme_shape.vision. La excepcion acotada de contracts.yaml se retiro en
+      el mismo cambio: sin ella, una reaparicion vuelve a fallar la corrida.
     evidence:
       - "tools/ui_harness/fixtures/main-tema-vision.scn"
-      - "src/info.c (info_init: posiciones y 56x26 fijos) + src/styles.c:259 (info_item_style)"
-      - "tools/ab_testing/quality/contracts.yaml (excepcion scoped, vence 2027-03-31)"
+      - "src/info.c (info_init: items[INFO_VFO] usa font_down(&sony_20, VISION_FONT_STEPS) bajo theme_shape.vision) + src/styles.c:259 (info_item_style)"
+      - "audit 8512d86 sin la excepcion (A): FAIL typography_text_overflow [main-tema-vision] text 'VFO-A' does not fit its 56x26 box (WRAP); audit del fix: 0 findings"
+      - "tools/ab_testing/reports/AB-UI04-EXP2/ (screenshots A/B, diff, overlay, results.json)"
+      - "tools/ab_testing/quality/contracts.yaml (excepcion de UI-012 retirada en el mismo cambio; expected_change acotado a barra_superior)"
 
   - id: UI-013
     title: "params.theme_name (16 bytes) no puede guardar un nombre de tema que el menu ofrece: la eleccion se trunca y theme_init() cae a IU1WXY"

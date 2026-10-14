@@ -51,20 +51,36 @@ typography:
 # or is listed here. Each entry needs a reason, an author and an expiry date —
 # never a global, permanent exemption.
 #
-# AB-UI04-EXP1 (UI-011): restoring the icon glyph ranges of the scaled VISION
-# fonts redraws the power clock (region `reloj_potencia`, inside the top band)
-# and the top-bar WiFi icon, both within `barra_superior`. UI-011 is reproduced
-# by the structural rule `typography_missing_glyph`, not by a pixel detector (a
-# missing glyph still leaves its code point in the label text), so the fix
-# cannot be explained through known_issues.yaml the way UI-001/UI-009 are: the
-# region is declared here, scoped and dated like every other waiver.
+# Both entries below are top-bar fixes of VISION, each reproduced by a structural
+# rule (`typography_missing_glyph`, `typography_text_overflow`), not by a pixel
+# detector: the rule says *what* is wrong, never where the pixels move, so the fix
+# cannot be explained through known_issues.yaml the way UI-001/UI-009 are. The
+# region is declared here, scoped and dated like every other waiver. Several
+# entries may name the same region (the top band holds two fixes) and the gate
+# reads them as a set.
 expected_changes:
+  # AB-UI04-EXP1 (UI-011): restoring the icon glyph ranges of the scaled VISION
+  # fonts redraws the power clock (region `reloj_potencia`, inside the top band)
+  # and the top-bar WiFi icon, both within `barra_superior`.
   - region: barra_superior
     reason: >
       UI-011: fonts_scale() keeps the icon glyph ranges of the original slot as
       the fallback of the scaled font, so the VISION power clock and the top-bar
       icons come back. The only pixels that move are the restored glyphs inside
       the top bar; every other fixture stays byte-identical.
+    author: ui04-tipografia
+    until: 2027-03-31
+
+  # AB-UI04-EXP2 (UI-012): the VFO cell of the top bar goes back to the font size
+  # of the other themes, the only cell whose text did not fit the fixed 56x26 once
+  # fonts_scale() widened it.
+  - region: barra_superior
+    reason: >
+      UI-012: under VISION the VFO cell (src/info.c) draws with the font size of
+      the other themes, because `VFO-A` did not fit the fixed 56x26 cell of the
+      bar bitmap once fonts_scale() made it 66 px wide (it wrapped to a second
+      line the cell clipped). Only the VFO cell's glyphs change, still inside the
+      top bar; the other five cells and every other fixture stay byte-identical.
     author: ui04-tipografia
     until: 2027-03-31
 
@@ -77,24 +93,15 @@ review_regions: []
 # fixture (optionally one node `path`) and carry a reason, an author and an
 # expiry. Never global, never permanent.
 #
-# These are the confirmed-but-open defects of the UI-03 audit (docs/UI_KNOWN_ISSUES.md,
-# UI-012/UI-013 — the UI-011 one was withdrawn in UI-04/AB-UI04-EXP1 when its
-# fix landed): the detector fires, the finding is a real one, and until the
-# fix lands in UI-04+ it must not turn every run red — exactly like UI-010 does
-# through the (region-scoped) exclusions of known_issues.yaml. A structural rule
-# cannot be excluded there, so the scoped waiver lives here. It expires on
-# 2027-03-31: if the defect is still there, the gate fails again and forces a
-# re-evaluation.
+# The last confirmed-but-open defect of the UI-03 audit (docs/UI_KNOWN_ISSUES.md,
+# UI-013 — the UI-011 waiver was withdrawn in UI-04/AB-UI04-EXP1 and the UI-012 one
+# in UI-04/AB-UI04-EXP2, each when its fix landed): the detector fires, the finding
+# is a real one, and until the fix lands in UI-04+ it must not turn every run red —
+# exactly like UI-010 does through the (region-scoped) exclusions of
+# known_issues.yaml. A structural rule cannot be excluded there, so the scoped
+# waiver lives here. It expires on 2027-03-31: if the defect is still there, the
+# gate fails again and forces a re-evaluation.
 exceptions:
-  - rule: typography_text_overflow
-    fixture: main-tema-vision
-    reason: >
-      UI-012: la celda de 56x26 con posiciones fijas de src/info.c no escala con
-      las fuentes de VISION y `VFO-A` ya no entra. Verificado con la fixture; el
-      fix es de UI-04+.
-    author: ui03-audit-defectos
-    until: 2027-03-31
-
   - rule: theme_name_fits_params
     fixture: main-tema-outdoor-negative
     reason: >
