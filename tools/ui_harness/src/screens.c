@@ -58,12 +58,14 @@ static void build_main(const scenario_t *scenario)
     clock_update_power(mock_radio.external_v, mock_radio.battery_v,
                        mock_radio.battery_cap, mock_radio.charging);
 
-    /* La politica visual (UI-08 incr. 2) sale del MISMO estado del pack que el
-     * reloj: asi el banco miente el perfil igual que la radio (el ROM lo hace
+    /* La politica visual (UI-08 incr. 2 y 3) sale del MISMO estado del pack que
+     * el reloj: asi el banco miente el perfil igual que la radio (el ROM lo hace
      * en radio_tick, src/radio.c) y `--bench-natural` mide la cadencia que el
      * modo Ahorro del waterfall impone. Una sola evaluacion, con muestra
-     * fresca (age 0): el fixture no tiene reloj. La aplicacion va por la misma
-     * funcion que el ROM usa. */
+     * fresca (age 0): el fixture no tiene reloj. La aplicacion va por las mismas
+     * funciones que el ROM usa, incluido el recorte de brillo: en el arnes el
+     * backlight es un stub sin senal (mocks/mock_ui_deps.c), asi que el nivel no
+     * toca un solo pixel y el banco sigue siendo determinista. */
     visual_policy_t        policy;
     visual_policy_result_t visual;
 
@@ -74,6 +76,7 @@ static void build_main(const scenario_t *scenario)
                                 mock_radio.battery_cap, mock_radio.charging,
                                 0u, 0u, VP_AUTO);
     visual_policy_waterfall_apply(visual.profile, params.waterfall_battery.x);
+    visual_policy_brightness_apply(visual.profile, params.brightness_normal);
 
     meter_update(mock_radio.smeter_db, 0.0f);
 
