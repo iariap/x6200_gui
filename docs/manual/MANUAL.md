@@ -139,6 +139,8 @@ Se entra con la acción *APP Settings*. Las filas, por página:
 Se abre con el botón `APP` (o asignando la acción del app a un botón). En las capturas se ve el
 diálogo del app sobre la pantalla principal, tal como queda en el equipo.
 
+![Las páginas APP](img/00-app-pages.png)
+
 **Todas las apps están en las páginas APP.** Antes algunas sólo se podían alcanzar asignándolas a
 una pulsación larga desde Ajustes, así que no se encontraban (Field Ops era una). Ahora la **tecla
 APP** entra al grupo y el primer botón de abajo cambia de página: son **6**, con 4 apps cada una.
@@ -339,6 +341,8 @@ programa). Sirve para cualquier logger o programa CAT.
 
 **Auriculares (A2DP):** entrá con el botón **BT** (al lado de WiFi, página **APP 6:6**) o desde
 Ajustes → Bluetooth → **Devices**.
+
+![La app de Bluetooth](img/07-bt.png)
 
 1. Pulsá **Scan** (15 s). El botón queda gris con la cuenta regresiva (`Scan 13s`) para que veas que
    está trabajando, y al terminar dice `Scan done: N device(s)` o `Scan done: nothing found`.
