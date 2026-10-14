@@ -55,3 +55,11 @@ reescribe mientras la GUI vive (mtime 12:40 con reloj en 12:41), asi que desarma
 la GUI muerta o desde el codigo.
 
 Estado en que queda la radio al cerrar esta prueba: **en el bucle** (no se limpia reiniciando la GUI).
+
+
+## 2026-10-14 (mas tarde): acomodada con el workaround
+
+Con la GUI muerta se pusieron en 0 los tres params que arman el bucle (`cw_decoder`, `cw_tune`,
+`key_train`). Medido: **0 caidas en 180 s con el mismo PID** (antes ~5 en 150 s). La radio queda
+usable, con el decodificador y el entrenador CW desactivados. Volver a usar las apps CW rearma el
+bucle (medido con `CwTrainer`). Captura: `03-estable-sin-params-cw.png`.
