@@ -13,7 +13,8 @@ set -u
 IP=${1:-${RADIO_IP:-192.168.0.236}}
 BASE=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 SSH_OPTS=(-F /dev/null -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=8 -o LogLevel=ERROR -o PreferredAuthentications=password -o PubkeyAuthentication=no)
-LOG=${LOG:-/tmp/prueba-apps.log}
+LOG=${LOG:-$PWD/prueba-apps-$(date +%H%M%S).log}
+PERMANENCIA=${PERMANENCIA:-3}   # segundos que se deja cada app abierta
 APPS=${APPS:-"off FT8 FT4 JS8 WSPR SSTV WeFax NavTex RTTY CW Field GPS Bands Settings BT About Cluster CwTrainer Eq Status QTH Callsign Recorder WiFi"}
 
 SSH() { timeout 12 sshpass -p 123 ssh "${SSH_OPTS[@]}" "root@${IP}" "$@"; }
@@ -75,7 +76,7 @@ for a in $APPS; do
 
     p0=$(gui_pid); l0=$(logs_n)
     resp=$(orden "{\"cmd\":\"app\",\"text\":\"$a\"}")
-    sleep 3
+    sleep "$PERMANENCIA"
     u1=$(uptime_radio); p1=$(gui_pid); l1=$(logs_n)
     cierre=$(orden '{"cmd":"app","text":"off"}')
 

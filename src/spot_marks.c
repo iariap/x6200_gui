@@ -52,7 +52,26 @@ static uint16_t utc_now_min(void) {
     return (uint16_t)(tm.tm_hour * 60 + tm.tm_min);
 }
 
+/* Las marcas viven en la pantalla principal, pero el timer y el observador que las redibujan son
+ * globales: si la pantalla se destruye, los punteros de marks[] quedan colgados y el primer
+ * redibujado (1 s despues) mata la GUI en lv_obj_add_flag -> lv_obj_has_flag_any. Medido con el
+ * core y con el llamador instrumentado: era redraw() de este archivo (docs/HALLAZGOS.md 34). */
+static void parent_deleted_cb(lv_event_t *e) {
+    (void) e;
+
+    for (int i = 0; i < POOL; i++) {
+        marks[i].line  = NULL;
+        marks[i].label = NULL;
+    }
+
+    ready = false;
+}
+
 static void redraw(void) {
+    if (!ready) {
+        return;                     /* la pantalla no esta: las marcas ya no existen */
+    }
+
     int      n = 0;
     lv_coord_t end[ROWS][POOL];
     lv_coord_t start[ROWS][POOL];
@@ -254,6 +273,7 @@ void spot_marks_init(lv_obj_t *parent, lv_coord_t line_y, lv_coord_t tag_y) {
         marks[i].label = l;
     }
     ready = true;
+    lv_obj_add_event_cb(parent, parent_deleted_cb, LV_EVENT_DELETE, NULL);
     lv_timer_create(timer_cb, 1000, NULL);
     timer_cb(NULL);
 }

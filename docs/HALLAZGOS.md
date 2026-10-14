@@ -53,6 +53,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 32. [Algunas apps matan la GUI (y el equipo parece reiniciarse)](#32-algunas-apps-matan-la-gui-y-el-equipo-parece-reiniciarse)
 33. [Todos los botones de las apps tienen handler](#33-todos-los-botones-de-las-apps-tienen-handler)
 34. [El core dice donde muere CW Trainer y Status (y tres punteros colgados)](#34-el-core-dice-donde-muere-cw-trainer-y-status-y-tres-punteros-colgados)
+35. [Estado final de las apps que matan la GUI: que quedo arreglado y que falta](#35-estado-final-de-las-apps-que-matan-la-gui-que-quedo-arreglado-y-que-falta)
 
 ---
 
@@ -1665,3 +1666,47 @@ borrar el puntero nuevo cuando el viejo muere despues) y `update_visibility()` s
 `lv_obj_add_flag` no imprimio **ninguna** linea antes de morir (con `LV_USE_ASSERT_OBJ` en 0 un
 objeto invalido no avisa: por eso el crash es mudo), o revisar los otros observadores de
 `cfg_cur.mode` (`spectrum.c`, `tx_info.c`, `info.c`, `rtty.c`, `dialog_eq.cpp`).
+
+---
+
+## 35. Estado final de las apps que matan la GUI: que quedo arreglado y que falta
+
+**Lo que se midio con la instrumentacion de LVGL** (registrando objeto y llamador de la familia
+`lv_obj_add_flag` / `clear_flag` / `add_state` / `clear_state` y de `lv_obj_is_layout_positioned`,
+todo a un archivo propio con `fflush` para que no se pierda): las ultimas llamadas de la app antes
+de la muerte salen de **`redraw()` de `spot_marks.c`** y de **`redraw()` de `band_plan.c`**, y el
+crash cae adentro de LVGL recorriendo un objeto **liberado** en el layout flexivo (`flex_update` en
+el simbolo mas cercano). O sea: **use-after-free de un widget**, no un puntero NULL suelto.
+
+**Arreglado** (la clase entera: pools/objetos estaticos de la pantalla principal usados por
+observadores y timers **globales**, que sobreviven a la destruccion de la pantalla):
+
+| Archivo | Que se limpia |
+|---|---|
+| `spot_marks.c` | pool de marcas de spots (la redibuja un timer de 1 s) |
+| `band_plan.c` | los 15 segmentos del plan de banda |
+| `cw_tune_ui.c` | la UI de sintonia CW |
+| `pannel.c` | el panel del decodificador CW |
+| `dialog_field.c` / `dialog_bands.c` | los 4 botones que no tenian handler (§33) |
+
+Todos limpian su puntero con un handler de `LV_EVENT_DELETE` (comparando el target) y su
+`redraw`/`update` sale si el objeto ya no esta.
+
+**Descartado con datos, no con opiniones**:
+
+- **Desborde de pila por un ciclo de layout**: en un backtrace de 60 tramas del core solo hay **3**
+  tramas de layout. No es recursion.
+- **El control remoto** (mi extension de hoy a 23 apps): `{"cmd":"app","text":"NoExiste"}` responde
+  "Unknown app" y `{"cmd":"btn","val":9}` responde "Invalid value", y en los dos casos la GUI
+  **sigue viva**. Los arrays estan parejos (23 y 23) y el indice se resuelve acotado.
+- **Memoria**: `oom_kill 0` y la GUI usa 20 MB.
+- **Los `exit(0)` del arbol** y las librerias de instrumentacion del banco (§32).
+
+**Estado medido con 15 a 22 s de permanencia por app**: **21 de 23 apps andan** (todas las que se
+probaron, incluidas las 9 que antes ni se podian abrir); **CW Trainer y Status siguen matando la
+GUI** ✗. El equipo **no se reinicia**: el supervisor la relanza en ~1 s y el uptime sigue subiendo.
+
+**Proximo paso concreto** (no hace falta repetir el camino largo): activar
+`LV_USE_ASSERT_OBJ 1` en `lv_conf.h` con un `LV_ASSERT_HANDLER` que registre
+`__builtin_return_address(0)` y salga. Hoy ese assert esta en **0**, y por eso el objeto invalido no
+avisa y el crash es mudo. Con eso LVGL mismo dice **que objeto** es invalido y **quien** se lo paso.
