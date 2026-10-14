@@ -16,10 +16,15 @@ from x6200_ab.errors import ConfigError
 from x6200_ab.theme_files import (
     SHIPPED_THEMES_SUBDIR,
     ThemePair,
+    ThemeReport,
+    UnsupportedTheme,
     check_shipped_themes,
+    ensure_unsupported_are_not_measured,
     load_builtin_palettes,
     load_theme_pairs,
+    load_unsupported_themes,
     measure_theme_file,
+    served_theme_reports,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -186,3 +191,141 @@ def test_a_pair_with_a_non_numeric_threshold_is_refused(tmp_path: Path) -> None:
     path.write_text("pairs:\n  - fg: text\n    bg: dialog\n    min_ratio: alto\n")
     with pytest.raises(ConfigError, match="`min_ratio` must be a number"):
         load_theme_pairs(path)
+
+
+# --- the served inventory: built-ins + files, and what stays unsupported ------
+
+
+def _served(palettes: dict[str, dict[str, str]]):
+    pairs = load_theme_pairs(QUALITY_DIR / "theme_pairs.yaml")
+    return served_theme_reports(SHIPPED_DIR, THEME_H, palettes, pairs), pairs
+
+
+def test_the_served_inventory_is_the_builtins_then_the_files(
+    palettes: dict[str, dict[str, str]],
+) -> None:
+    """The inventory has no silent hole: the four data palettes come first."""
+    reports, pairs = _served(palettes)
+    assert [report.name for report in reports] == [
+        "IU1WXY",
+        "Legacy",
+        "Outdoor",
+        "Classic",
+        "Holo",
+        "Material 3",
+        "RS",
+    ]
+    builtins = [report for report in reports if report.source == "builtin"]
+    assert len(builtins) == 4
+    assert all(report.inherited == () for report in builtins)
+    assert all(report.base == report.name for report in builtins)
+    assert all(len(report.results) == len(pairs) for report in reports)
+
+
+def test_every_served_theme_passes_every_declared_pair(
+    palettes: dict[str, dict[str, str]],
+) -> None:
+    """The extended coverage finds no sub-WCAG pair: 7 themes, 63 measurements."""
+    reports, _ = _served(palettes)
+    checked = sum(len(report.results) for report in reports)
+    assert checked == 63
+    assert all(report.ok for report in reports)
+    assert all(report.error is None for report in reports)
+
+
+def test_builtin_report_ratios_agree_with_the_c_table(
+    palettes: dict[str, dict[str, str]],
+) -> None:
+    """The numbers here have to match tests/check_wcag.py on the same palettes."""
+    reports, _ = _served(palettes)
+    by_name = {report.name: report for report in reports}
+    iu = _ratio(by_name["IU1WXY"], "text", "dialog")
+    classic = _ratio(by_name["Classic"], "control_border", "dialog")
+    outdoor = _ratio(by_name["Outdoor"], "text", "dialog")
+    assert iu == pytest.approx(6.37, abs=0.01)
+    assert classic == pytest.approx(3.12, abs=0.01)
+    assert outdoor == pytest.approx(21.00, abs=0.01)
+
+
+def test_legacy_is_measured_but_not_offered(palettes: dict[str, dict[str, str]]) -> None:
+    """`theme_list()` skips Legacy, so the inventory has to say it is not a choice."""
+    reports, _ = _served(palettes)
+    by_name = {report.name: report for report in reports}
+    assert by_name["Legacy"].offered is False
+    assert all(by_name[name].offered for name in ("IU1WXY", "Outdoor", "Classic"))
+
+
+def test_rs_declares_the_binary_surfaces_it_paints(
+    palettes: dict[str, dict[str, str]],
+) -> None:
+    """The PNG backgrounds are not statically resolvable, so the theme is partial."""
+    reports, _ = _served(palettes)
+    rs = next(report for report in reports if report.name == "RS")
+    assert "dialog" in rs.binary_surfaces
+    assert "panel" not in rs.binary_surfaces
+    assert rs.coverage == "partial"
+    dialog = next(
+        result for result in rs.results if (result.pair.fg, result.pair.bg) == ("text", "dialog")
+    )
+    assert dialog.binary is True
+    assert dialog.image == "dialog.png"
+    panel = next(
+        result for result in rs.results if (result.pair.fg, result.pair.bg) == ("text", "panel")
+    )
+    assert panel.binary is False
+    assert panel.image == ""
+    # The two roles are still the file's: the flag does not change the verdict.
+    assert dialog.ok is True
+    assert "both roles set by the file" in dialog.origin
+
+
+def test_the_runtime_builtins_are_declared_unsupported() -> None:
+    """Outdoor-Negative and VISION are made by C at runtime; declared, not guessed."""
+    unsupported = load_unsupported_themes(QUALITY_DIR / "theme_pairs.yaml")
+    assert [theme.name for theme in unsupported] == ["Outdoor-Negative", "VISION"]
+    assert all(theme.source == "builtin" for theme in unsupported)
+    assert all("use_builtin" in theme.reason for theme in unsupported)
+    # Declared unsupported is not measured: no theme appears in both lists.
+    assert not {theme.name for theme in unsupported} & {"IU1WXY", "Outdoor", "RS"}
+
+
+def test_the_unsupported_themes_do_not_collide_with_the_measured_ones() -> None:
+    palettes = load_builtin_palettes(THEME_H)
+    reports, _ = _served(palettes)
+    unsupported = load_unsupported_themes(QUALITY_DIR / "theme_pairs.yaml")
+    ensure_unsupported_are_not_measured(unsupported, reports, "theme_pairs.yaml")
+
+
+def test_a_theme_both_measured_and_unsupported_is_refused(
+    palettes: dict[str, dict[str, str]],
+) -> None:
+    reports, _ = _served(palettes)
+    unsupported = load_unsupported_themes(QUALITY_DIR / "theme_pairs.yaml")
+    clash = UnsupportedTheme(name="RS", source="builtin", reason="x")
+    with pytest.raises(ConfigError, match="measured and declared unsupported"):
+        ensure_unsupported_are_not_measured((*unsupported, clash), reports, "theme_pairs.yaml")
+
+
+def test_an_unsupported_theme_needs_a_reason(tmp_path: Path) -> None:
+    path = tmp_path / "pairs.yaml"
+    path.write_text("pairs: []\nunsupported:\n  - theme: VISION\n")
+    with pytest.raises(ConfigError, match="needs a `reason`"):
+        load_unsupported_themes(path)
+
+
+def test_an_unsupported_theme_is_listed_once(tmp_path: Path) -> None:
+    path = tmp_path / "pairs.yaml"
+    path.write_text(
+        "pairs: []\n"
+        "unsupported:\n"
+        "  - theme: VISION\n    reason: a\n"
+        "  - theme: VISION\n    reason: b\n"
+    )
+    with pytest.raises(ConfigError, match="listed twice"):
+        load_unsupported_themes(path)
+
+
+def _ratio(report: ThemeReport, fg: str, bg: str) -> float:
+    return next(
+        result.ratio for result in report.results if (result.pair.fg, result.pair.bg) == (fg, bg)
+    )

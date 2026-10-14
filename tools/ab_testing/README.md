@@ -83,8 +83,11 @@ uv run x6200-ab benchmark --a <sha> --b <branch> --experiment-id BENCH-0001
 # objective quality contracts on the candidate alone (no baseline)
 uv run x6200-ab contracts --revision <sha>
 
-# static contrast over the theme JSON files the ROM ships (offline: no capture,
-# no Docker, no revision) — the Settings pairs the rendered checks cannot reach
+# static contrast over every theme the ROM serves (offline: no capture, no
+# Docker, no revision) — the built-in palettes of src/theme.h + the shipped
+# files, on the Settings pairs the rendered checks cannot reach. Themes the
+# check cannot resolve (the runtime-built ones) are listed UNSUPPORTED with a
+# reason instead of silently missing from the coverage.
 uv run x6200-ab themes
 
 # read back a verdict, and recheck it from results.json
@@ -137,10 +140,13 @@ stay BLOCKED).
   UI-013) carries no `detector:` block and names the rule in its note; UI-010 is
   kept out of the gate by a scoped `exclusions` entry, the structural ones by the
   scoped `exceptions` of `contracts.yaml`.
-* `theme_pairs.yaml` — the pairs the **static** theme contract checks on the
-  theme JSON files the ROM ships (`x6200-ab themes`): the ones that only exist on
-  screens the harness cannot open yet (Settings), with the code that draws each
-  one. Read against the palettes of `src/theme.h`, through each file's `base`.
+* `theme_pairs.yaml` — the pairs the **static** theme contract checks over every
+  theme the ROM serves (`x6200-ab themes`): the four built-in palettes of
+  `src/theme.h` and the shipped files of `rootfs/usr/share/x6200/themes`, through
+  each file's `base`. The pairs are the ones that only exist on screens the
+  harness cannot open yet (Settings), with the code that draws each one. Themes
+  the check cannot resolve (the runtime-built Outdoor-Negative and VISION) are
+  declared `unsupported` here with their reason.
 
 ## Structural checks
 
@@ -163,11 +169,13 @@ stay BLOCKED).
 A failing finding is turned into a recorded waiver (still visible, marked `ok`)
 only when a dated, fixture-scoped `exceptions` entry matches it.
 
-The same WCAG formula runs **statically** over the theme files the image ships
+The same WCAG formula runs **statically** over every theme the image serves
 (`uv run x6200-ab themes`, `quality/theme_pairs.yaml`): with no render and no
-Docker, it resolves each file's `base` against the palettes of `src/theme.h` and
-measures the pairs that only exist on the Settings window, which the harness
-cannot open yet. It is the complementary detector UI-007 lacks; the exhaustive
+Docker, it resolves each file's `base` against the palettes of `src/theme.h`,
+measures the built-in palettes too, and reports the pairs that only exist on the
+Settings window, which the harness cannot open yet. Themes it cannot resolve
+(runtime-built) and surfaces a theme paints with a binary image are declared, not
+silently dropped. It is the complementary detector UI-007 lacks; the exhaustive
 sweep over the nine palettes stays in `tests/check_wcag.py`.
 
 ## Known issues

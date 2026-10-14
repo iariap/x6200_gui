@@ -1365,6 +1365,86 @@ es **byte-idéntico** entre A y B (el fix no lo toca), así que el FAIL es ruido
 host (load average ~4), el mismo caso que `BENCH-UI04-EXP3`/`-repeat`. Las dos
 corridas quedan commiteadas.
 
+## Inventario de contraste estático por tema (UI-06 incremento 1, issue #12) ✅
+
+Gate: `x6200-ab themes` reporta **todos** los temas que sirve la ROM, no sólo los
+tres archivos que resolvía antes, con una fila por tema (fuente/schema → pares →
+resultado) y los que no puede resolver declarados **UNSUPPORTED** con motivo.
+Nada del render cambia (no se toca `src/`, fixtures ni harness).
+
+### `x6200-ab themes` (offline, sin Docker)
+
+Antes: `3 shipped file(s) … 27 pair(s) checked` (sólo Holo, Material 3 y RS).
+Ahora: `7 resolvable theme(s) (4 built-in + 3 file(s)), 9 pair(s) declared,
+63 pair(s) checked, 0 failure(s), 2 unsupported (declared)`.
+
+| Tema | Fuente (schema) | En el menú | Pares | Resultado |
+|---|---|---|---|---|
+| IU1WXY | `builtin` — `src/theme.h` `THEME_COLORS(X)` | sí | 9/9 | PASS |
+| Legacy | `builtin` — `src/theme.h` | **no** (`theme_list()` lo saltea) | 9/9 | PASS |
+| Outdoor | `builtin` — `src/theme.h` | sí | 9/9 | PASS |
+| Classic | `builtin` — `src/theme.h` | sí | 9/9 | PASS |
+| Outdoor-Negative | derivado — `use_builtin()` (`negative()` sobre Outdoor) | sí | 0/9 | **UNCOVERED** |
+| VISION | derivado — `use_builtin()` (`vision_colors[]` sobre IU1WXY) | sí | 0/9 | **UNCOVERED** |
+| Holo | `file` — `Holo.json` (base IU1WXY) | sí | 9/9 | PASS |
+| Material 3 | `file` — `Material 3.json` (base IU1WXY) | sí | 9/9 | PASS |
+| RS | `file` — `RS/theme.json` (base Classic) + PNG | sí | 9/9 | PASS *(parcial)* |
+
+- **`builtin`**: las cuatro paletas de datos de `src/theme.h` — las mismas que un
+  archivo usa como `base`. Se miden acá también, así que ningún tema servido queda
+  fuera del mapa. Los ratios coinciden con `tests/check_wcag.py` (mismo par, misma
+  paleta).
+- **UNCOVERED — Outdoor-Negative y VISION**: su paleta se arma en **runtime** con
+  `use_builtin()` (`src/theme.c`), no es data. Re-derivarla en el framework sería
+  re-implementar ese C en Python (una segunda fuente de verdad que podría divergir
+  en silencio), así que se declaran `unsupported` en `quality/theme_pairs.yaml` con
+  el motivo, en vez de forzar el parser. Las cubren `tests/check_wcag.py` (que sí
+  deriva las nueve paletas) y los fixtures `main-tema-outdoor-negative` y
+  `main-tema-vision`. Quedan como el próximo incremento de #12 si se quiere la
+  derivación dentro del framework.
+- **RS (parcial)**: su bloque `"images"` pinta `bar/btn/btn_active/btn_page/strip/
+  dialog` con PNGs binarios. El par de los roles `dialog` se mide igual (el rol es
+  el valor que `src/theme.c` deja cuando la imagen falta) pero el píxel real sale
+  del PNG: el resultado se marca `binary` y el tema queda como cobertura
+  **partial**. Las superficies `panel`/`list` no usan imagen y se miden normales.
+  El fixture `main-tema-rs` valida el render real.
+
+### Hallazgos estáticos (ejecutado)
+
+**Ninguno.** Los 63 pares de los 7 temas resolubles cumplen WCAG (normal ≥ 4.5:1,
+no-texto/texto-grande ≥ 3.0:1); los 2 temas derivados quedan UNCOVERED, no en
+falta. El sweep completo del propio ROM (`tests/check_wcag.py`, las nueve paletas
+y ~135 pares por tema) también cierra en **0 FALLAS**: lo único por debajo del
+umbral son los pares que la tabla **excluye a propósito** (WCAG 1.4.3,
+deshabilitado/incidental: `btn_off_text`, `text_mute`, `text_faint`, `icon_off`,
+`switch_off`, `off`, `track`) y que `check_wcag.py` imprime sin fallar. Por eso
+este incremento **no agrega entradas** a `known_issues.yaml`: el registro sólo
+acepta defectos que el arnés **reproduce** en pantalla, y acá no hay ninguno
+(ni estático). Ver `docs/UI_KNOWN_ISSUES.md` → *estático, sin fixture*.
+
+### Evidencia (host, 2026-10-14, `318b9e7` + este cambio)
+
+```text
+$ cd tools/ab_testing && uv run x6200-ab themes
+themes PASS: 7 resolvable theme(s) (4 built-in + 3 file(s)), 9 pair(s) declared, 63 pair(s) checked, 0 failure(s), 2 unsupported (declared)
+  IU1WXY (src/theme.h; built-in palette): all 128 roles from the C table
+  Legacy (src/theme.h; built-in palette): all 128 roles from the C table [not offered in the menu]
+  Outdoor (src/theme.h; built-in palette): all 128 roles from the C table
+  Classic (src/theme.h; built-in palette): all 128 roles from the C table
+  Holo (rootfs/usr/share/x6200/themes/Holo.json; base IU1WXY): 38/128 roles from the base
+  Material 3 (rootfs/usr/share/x6200/themes/Material 3.json; base IU1WXY): 33/128 roles from the base
+  RS (rootfs/usr/share/x6200/themes/RS/theme.json; base Classic): 53/128 roles from the base [binary surfaces: bar, btn, btn_active, btn_page, dialog, strip]
+  UNSUPPORTED Outdoor-Negative (builtin): paleta generada en runtime por use_builtin() (src/theme.c) …
+  UNSUPPORTED VISION (builtin): paleta generada en runtime por use_builtin() (src/theme.c) …
+
+$ uv run ruff check src tests && uv run ty check       → All checks passed
+$ uv run pytest -m "not e2e" -q                        → 132 passed, 17 deselected
+```
+
+El render no se toca: los fixtures y `src/` quedan byte-idénticos, así que los 18
+hashes de determinismo y los contratos de `HEAD` no cambian (ver *Pendientes* para
+el detalle del host).
+
 ## Pendientes
 
 - **UI-05 (Flex/Grid) sigue abierto**: el **incremento 1** fue la capa de tokens
@@ -1376,6 +1456,13 @@ corridas quedan commiteadas.
   siguientes, y spectrum/waterfall/band_plan quedan afuera (áreas de dibujo fijo:
   el issue prohíbe convertirlas a ciegas). Los tokens son constantes por ahora;
   consumirlos desde el JSON de tema es otro PR.
+
+- **UI-06 (temas) incremento 1 hecho, quedan los siguientes**: el chequeo estático
+  ya cubre los 7 temas resolubles (4 built-ins + 3 JSON), con **Outdoor-Negative** y
+  **VISION** declarados UNCOVERED (paleta de runtime, `use_builtin()`). Los
+  incrementos siguientes de #12 deciden si se deriva esa paleta dentro del framework
+  o se deja sólo en `tests/check_wcag.py`, y suman focus states / waterfall palettes.
+  Sin hallazgos estáticos nuevos (ver la sección de UI-06 arriba).
 
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
   Hardware/Energy quedan BLOCKED/PENDING, nunca PASS por default.
@@ -1421,7 +1508,8 @@ corridas quedan commiteadas.
   experimento).
 - **El par `text` sobre `bg`/`strip` de la pantalla principal no lo mide nadie**:
   `quality/theme_pairs.yaml` (estático) cubre los pares de Ajustes y de los diálogos
-  sobre los temas JSON shipeados, y `typography_contrast` sólo puede medir un par
+  sobre los temas shipeados y las cuatro paletas incorporadas (UI-06 incr. 1), y
+  `typography_contrast` sólo puede medir un par
   cuando el label pinta un fondo opaco (los de la fila de frecuencia tienen
   `bg_opa 0`). Con `text` como rol el par queda bien en todos los temas medidos
   (`text`/`bg`: IU1WXY 13.24, Legacy 9.37, Outdoor 21.00, Classic 21.00, Holo 21.00,

@@ -78,3 +78,28 @@ def test_unknown_status_is_an_error() -> None:
 def test_unknown_gate_is_an_error() -> None:
     with pytest.raises(AbError, match="unknown gate"):
         _gate_name("Nonexistent")
+
+
+def test_themes_json_lists_the_full_served_inventory(capsys: pytest.CaptureFixture) -> None:
+    """The static command reports every served theme, not only the shipped files."""
+    repo = Path(__file__).resolve().parents[3]
+    code = main(["themes", "--repo", str(repo), "--json"])
+    assert code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["status"] == "PASS"
+    names = [theme["theme"] for theme in payload["themes"]]
+    assert names == ["IU1WXY", "Legacy", "Outdoor", "Classic", "Holo", "Material 3", "RS"]
+    assert [theme["theme"] for theme in payload["unsupported"]] == ["Outdoor-Negative", "VISION"]
+    assert payload["pairs_checked"] == len(names) * len(payload["pairs"])
+    assert all(theme["ok"] for theme in payload["themes"])
+
+
+def test_themes_text_shows_the_unsupported_reasons(capsys: pytest.CaptureFixture) -> None:
+    repo = Path(__file__).resolve().parents[3]
+    code = main(["themes", "--repo", str(repo)])
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "7 resolvable theme(s) (4 built-in + 3 file(s))" in out
+    assert "2 unsupported (declared)" in out
+    assert "UNSUPPORTED Outdoor-Negative" in out
+    assert "UNSUPPORTED VISION" in out

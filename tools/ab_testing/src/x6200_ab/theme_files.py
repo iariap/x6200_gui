@@ -14,10 +14,25 @@ file's `colors`) and measures the pairs `quality/theme_pairs.yaml` declares: the
 ones that live on the screen the harness cannot reach yet. Everything is offline
 — files in, findings out; no Docker, no radio, no pixels.
 
-The exhaustive sweep over the nine palettes (including the C tables and the
-`negative()`/VISION derivations) stays in `tests/check_wcag.py`, which the ROM's
-own CI runs. This one is the framework-side contract over the shipped files, so
-a file that stops defining a role cannot silently inherit an illegible one.
+Two families of served themes are measured here, so the report is a full
+inventory of what the user can pick and not only of what ships as a file:
+
+- the **built-in palettes** of `src/theme.h` (IU1WXY, Legacy, Outdoor, Classic) —
+  they are the `base` every file resolves against, the same data the macro holds;
+- the **shipped files** of `rootfs/usr/share/x6200/themes` (`<name>.json` or
+  `<name>/theme.json`), with the `base` inheritance `src/theme.c` applies.
+
+The two runtime built-ins (Outdoor-Negative, VISION) are *not* resolved: their
+palette is produced at run time by `use_builtin()` (`src/theme.c`, `negative()`
+over Outdoor and the `vision_colors[]` overrides over IU1WXY), so re-deriving it
+here would be a second source of truth for C. They are declared UNSUPPORTED with
+a reason in `quality/theme_pairs.yaml` and show up in the report as UNCOVERED
+instead of silently disappearing from the coverage.
+
+The exhaustive sweep over the nine palettes stays in `tests/check_wcag.py`, which
+the ROM's own CI runs. This one is the framework-side inventory over what the
+files and the C table spell out, so a file that stops defining a role cannot
+silently inherit an illegible one, and no served theme is missing from the map.
 """
 
 from __future__ import annotations
@@ -44,8 +59,33 @@ SHIPPED_THEMES_SUBDIR = ("rootfs", "usr", "share", "x6200", "themes")
 # values would hide exactly the inheritance this check exists to catch.
 BASE_PALETTES = ("IU1WXY", "Legacy", "Outdoor", "Classic")
 
+# Which of the built-ins `theme_list()` (src/theme.c) offers in Settings. Legacy
+# is kept as a palette and as a `base` for shipped files, but the menu skips it,
+# so the inventory has to say so instead of counting it as a served choice.
+BUILTIN_OFFERED = {"IU1WXY": True, "Legacy": False, "Outdoor": True, "Classic": True}
+
+# The surfaces of the `images` block (src/theme.c, `image_names[]`): a file may
+# paint one with a PNG it ships instead of the role's colour. A pair whose
+# background is one of these still measures the role (the value src/theme.c keeps
+# when the PNG is missing or unreadable), but the pixels that reach the screen
+# come from the binary, so the pair is flagged and the theme's coverage is
+# partial — the binary is not statically resolvable.
+IMAGE_SURFACES = (
+    "bg",
+    "btn",
+    "btn_active",
+    "btn_off",
+    "btn_page",
+    "bar",
+    "strip",
+    "dialog",
+    "mark",
+    "mark_active",
+)
+
 RULE_FILE_INVALID = "theme_file_invalid"
 RULE_PAIR_PREFIX = "theme_pair:"
+
 
 _ROLE_LINE = re.compile(
     r"^\s*X\(\s*([a-z_0-9]+)\s*,\s*(0x[0-9a-fA-F]{6})\s*,\s*(0x[0-9a-fA-F]{6})\s*,"
@@ -81,12 +121,15 @@ class PairResult:
     ratio: float
     ok: bool
     origin: str
+    binary: bool = False
+    image: str = ""
 
     @property
     def detail(self) -> str:
+        note = f" [bg painted by {self.image}, ratio is the role's]" if self.binary else ""
         return (
             f"{self.pair.fg} on {self.pair.bg} = {self.ratio:.2f}:1 "
-            f"(min {self.pair.min_ratio:.1f}:1) [{self.origin}]"
+            f"(min {self.pair.min_ratio:.1f}:1) [{self.origin}]{note}"
         )
 
     def as_dict(self) -> dict[str, Any]:
@@ -100,13 +143,15 @@ class PairResult:
             "ok": self.ok,
             "origin": self.origin,
             "where": self.pair.where,
+            "binary": self.binary,
+            "image": self.image,
             "detail": self.detail,
         }
 
 
 @dataclass(frozen=True)
 class ThemeReport:
-    """One shipped theme file: its palette and every pair measured on it."""
+    """One served theme: its palette and every pair measured on it."""
 
     name: str
     path: str
@@ -114,6 +159,9 @@ class ThemeReport:
     inherited: tuple[str, ...]
     results: tuple[PairResult, ...]
     error: str | None = None
+    source: str = "file"
+    offered: bool = True
+    binary_surfaces: tuple[str, ...] = ()
 
     @property
     def ok(self) -> bool:
@@ -123,17 +171,49 @@ class ThemeReport:
     def failures(self) -> tuple[PairResult, ...]:
         return tuple(result for result in self.results if not result.ok)
 
+    @property
+    def coverage(self) -> str:
+        """`full` when every declared pair is measured, `partial` with binaries.
+
+        A theme whose `images` block replaces a measured surface keeps passing
+        (the role is still measured) but its coverage is partial: the painted
+        pixel comes from a PNG the static check cannot read.
+        """
+        if self.error is not None:
+            return "error"
+        return "partial" if self.binary_surfaces else "full"
+
     def as_dict(self) -> dict[str, Any]:
         return {
             "theme": self.name,
             "path": self.path,
+            "source": self.source,
+            "offered": self.offered,
             "base": self.base,
             "inherited_roles": list(self.inherited),
+            "binary_surfaces": list(self.binary_surfaces),
+            "coverage": self.coverage,
             "pairs_checked": len(self.results),
             "ok": self.ok,
             "error": self.error,
             "results": [result.as_dict() for result in self.results],
         }
+
+
+@dataclass(frozen=True)
+class UnsupportedTheme:
+    """A served theme the static check does not resolve, and the reason why.
+
+    Declared in `quality/theme_pairs.yaml` so it shows up in the report as
+    UNCOVERED with a motive instead of silently missing from the coverage.
+    """
+
+    name: str
+    source: str
+    reason: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return {"theme": self.name, "source": self.source, "reason": self.reason}
 
 
 def load_builtin_palettes(theme_h: Path) -> dict[str, dict[str, str]]:
@@ -203,6 +283,53 @@ def load_theme_pairs(path: Path) -> tuple[ThemePair, ...]:
     return tuple(pairs)
 
 
+def load_unsupported_themes(path: Path) -> tuple[UnsupportedTheme, ...]:
+    """The `unsupported:` section of `quality/theme_pairs.yaml`.
+
+    A theme the ROM serves but this check does not resolve is declared here with
+    the reason. The list is data, not a comment, so the report can print it and
+    the coverage stays honest: a served theme is either measured or declared, and
+    a name that appears in both is a config error (there would be no single
+    source of truth for it).
+    """
+    data = read_yaml_mapping(path)
+    raw = data.get("unsupported", [])
+    if not isinstance(raw, list):
+        raise ConfigError(f"{path}: `unsupported` must be a list")
+    themes: list[UnsupportedTheme] = []
+    seen: set[str] = set()
+    for entry in raw:
+        if not isinstance(entry, dict):
+            raise ConfigError(f"{path}: every unsupported theme must be a mapping")
+        name = str(entry.get("theme", "")).strip()
+        reason = str(entry.get("reason", "")).strip()
+        if not name:
+            raise ConfigError(f"{path}: unsupported theme without a `theme`")
+        if not reason:
+            raise ConfigError(f"{path}: unsupported theme `{name}` needs a `reason`")
+        if name in seen:
+            raise ConfigError(f"{path}: unsupported theme `{name}` is listed twice")
+        seen.add(name)
+        themes.append(
+            UnsupportedTheme(name=name, source=str(entry.get("source", "builtin")), reason=reason)
+        )
+    return tuple(themes)
+
+
+def ensure_unsupported_are_not_measured(
+    unsupported: tuple[UnsupportedTheme, ...],
+    reports: tuple[ThemeReport, ...],
+    where: Path | str,
+) -> None:
+    """A theme cannot be measured and declared unsupported at the same time."""
+    clash = sorted({report.name for report in reports} & {theme.name for theme in unsupported})
+    if clash:
+        raise ConfigError(
+            f"{where}: theme(s) {clash} are measured and declared unsupported at once: "
+            f"pick one so the coverage has a single source of truth"
+        )
+
+
 def shipped_theme_files(directory: Path) -> tuple[Path, ...]:
     """`<name>.json` and `<name>/theme.json`, as `src/theme.c` looks for them."""
     if not directory.is_dir():
@@ -219,6 +346,53 @@ def check_shipped_themes(
     _validate_pairs(pairs, palettes)
     return tuple(
         measure_theme_file(path, pairs, palettes) for path in shipped_theme_files(directory)
+    )
+
+
+def served_theme_reports(
+    directory: Path,
+    theme_h: Path,
+    palettes: dict[str, dict[str, str]],
+    pairs: tuple[ThemePair, ...],
+) -> tuple[ThemeReport, ...]:
+    """Every theme the firmware serves that the static check can resolve.
+
+    The four built-in palettes of `src/theme.h` first (they are what a file's
+    `base` resolves to), then the shipped files. The runtime built-ins are not
+    here: they are declared in `load_unsupported_themes()`.
+    """
+    _validate_pairs(pairs, palettes)
+    reports = [_measure_builtin(name, palettes[name], pairs, theme_h) for name in palettes]
+    reports.extend(
+        measure_theme_file(path, pairs, palettes) for path in shipped_theme_files(directory)
+    )
+    return tuple(reports)
+
+
+def _measure_builtin(
+    name: str,
+    palette: dict[str, str],
+    pairs: tuple[ThemePair, ...],
+    theme_h: Path,
+) -> ThemeReport:
+    """One built-in palette of src/theme.h, with every role straight from the macro."""
+    results = tuple(
+        _pair_result(
+            name,
+            pair,
+            ratio=contrast_ratio(palette[pair.fg], palette[pair.bg]),
+            origin="built-in palette src/theme.h THEME_COLORS",
+        )
+        for pair in pairs
+    )
+    return ThemeReport(
+        name=name,
+        path=str(theme_h),
+        base=name,
+        inherited=(),
+        results=results,
+        source="builtin",
+        offered=BUILTIN_OFFERED[name],
     )
 
 
@@ -247,7 +421,7 @@ def measure_theme_file(
     """
     name = path.stem if path.name != "theme.json" else path.parent.name
     try:
-        base, colours = _read_theme_file(path)
+        base, colours, images = _read_theme_file(path)
     except ConfigError as exc:
         return ThemeReport(
             name=name, path=str(path), base="", inherited=(), results=(), error=str(exc)
@@ -282,8 +456,35 @@ def measure_theme_file(
 
     palette = dict(palettes[base]) | colours
     inherited = tuple(role for role in sorted(known) if role not in colours)
-    results = tuple(_measure(name, palette, colours, base, pair) for pair in pairs)
-    return ThemeReport(name=name, path=str(path), base=base, inherited=inherited, results=results)
+    results = tuple(_measure(name, palette, colours, base, pair, images) for pair in pairs)
+    binary = tuple(sorted(surface for surface in images if surface in known))
+    return ThemeReport(
+        name=name,
+        path=str(path),
+        base=base,
+        inherited=inherited,
+        results=results,
+        binary_surfaces=binary,
+    )
+
+
+def _pair_result(
+    theme: str,
+    pair: ThemePair,
+    *,
+    ratio: float,
+    origin: str,
+    image: str = "",
+) -> PairResult:
+    return PairResult(
+        theme=theme,
+        pair=pair,
+        ratio=ratio,
+        ok=ratio >= pair.min_ratio,
+        origin=origin,
+        binary=bool(image),
+        image=image,
+    )
 
 
 def _measure(
@@ -292,6 +493,7 @@ def _measure(
     colours: dict[str, str],
     base: str,
     pair: ThemePair,
+    images: dict[str, str],
 ) -> PairResult:
     ratio = contrast_ratio(palette[pair.fg], palette[pair.bg])
     from_base = [role for role in (pair.fg, pair.bg) if role not in colours]
@@ -300,11 +502,11 @@ def _measure(
         if not from_base
         else f"inherited from base {base}: {', '.join(from_base)}"
     )
-    return PairResult(theme=name, pair=pair, ratio=ratio, ok=ratio >= pair.min_ratio, origin=origin)
+    return _pair_result(name, pair, ratio=ratio, origin=origin, image=images.get(pair.bg, ""))
 
 
-def _read_theme_file(path: Path) -> tuple[str, dict[str, str]]:
-    """`(base, colours the file sets)`, with the schema `src/theme.c` accepts."""
+def _read_theme_file(path: Path) -> tuple[str, dict[str, str], dict[str, str]]:
+    """`(base, colours the file sets, images it ships)`, with src/theme.c's schema."""
     try:
         data = json.loads(path.read_text(errors="surrogateescape"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -320,4 +522,23 @@ def _read_theme_file(path: Path) -> tuple[str, dict[str, str]]:
         if not isinstance(value, str) or not _COLOUR_VALUE.fullmatch(value):
             raise ConfigError(f"{path}: colour `{role}` is not #rrggbb: {value!r}")
         colours[str(role)] = "#" + value.lstrip("#").lower()
-    return base, colours
+    return base, colours, _read_images(data.get("images"), path)
+
+
+def _read_images(raw: Any, path: Path) -> dict[str, str]:
+    """`surface -> png file` of the `images` block, for the surfaces src/theme.c paints.
+
+    Only the names `image_names[]` knows count: an unknown key is ignored by
+    src/theme.c too. A malformed entry does not fail the colour check — the image
+    never changes a role's value.
+    """
+    if not isinstance(raw, dict):
+        return {}
+    images: dict[str, str] = {}
+    for surface, entry in raw.items():
+        if surface not in IMAGE_SURFACES or not isinstance(entry, dict):
+            continue
+        file = entry.get("file")
+        if isinstance(file, str) and file:
+            images[str(surface)] = file
+    return images

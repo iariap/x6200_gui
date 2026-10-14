@@ -1,5 +1,6 @@
-# Pairs the *static* theme contract checks on the theme JSON files the ROM ships
-# (rootfs/usr/share/x6200/themes), i.e. the ones the user can pick in Settings.
+# Pairs the *static* theme contract checks over every theme the ROM serves
+# (rootfs/usr/share/x6200/themes + the built-in palettes of src/theme.h), i.e.
+# the ones the user can pick in Settings.
 #
 # Why a separate table: the rendered typography_contrast contract only sees the
 # screens the harness opens. Settings is not one of them (dialog_settings.c drags
@@ -8,6 +9,21 @@
 # exactly the one UI-007 recorded as broken, with the value inherited from the
 # theme's `base` when the file did not define it. So the pairs below are the ones
 # that only exist on that screen, plus the text pairs of a dialog window.
+#
+# Three theme *schemas* are resolved (all against these same pairs, because all
+# of them carry the 128 THEME_COLORS roles):
+#   - `file`:    `<name>.json` / `<name>/theme.json` of the shipped dir, with its
+#                `base` inheritance (src/theme.c theme_init).
+#   - `builtin`: the four data palettes of src/theme.h THEME_COLORS(X). They are
+#                the `base` a file resolves to; they are measured here too, so no
+#                served theme is missing from the map.
+#   - derived:   Outdoor-Negative and VISION are made at *runtime* by
+#                use_builtin() (negative() over Outdoor, vision_colors[] over
+#                IU1WXY). They are not data, so they are declared `unsupported`
+#                below instead of re-implementing the C here.
+# A theme file that ships `images` (binary PNG) paints some surfaces with the
+# PNG instead of the role; the pair still measures the role and is flagged
+# `binary` in the output — the pixel itself is not statically resolvable.
 #
 # `where` is the code that draws the pair; `min_ratio` is the WCAG 2.1 threshold
 # (4.5 normal text, 3.0 large text / non-text). The roles are the names of
@@ -67,3 +83,27 @@ pairs:
     bg: control_border
     min_ratio: 3.0
     where: "styles.c styles_switch_init/styles_slider_init (perilla contra el riel)"
+
+
+# Themes the ROM serves whose palette this static check does NOT resolve, and
+# why. They are printed as UNSUPPORTED (UNCOVERED) with the reason, so the
+# coverage map has no silent hole; `--json` carries the same list. A name here
+# and measured above at once is a config error (the check refuses it).
+unsupported:
+  - theme: "Outdoor-Negative"
+    source: builtin
+    reason: >
+      paleta generada en runtime por use_builtin() (src/theme.c): negative() sobre
+      la de Outdoor, con los roles que no se pueden invertir puestos a mano (el
+      amarillo de la seleccion, el azul del VFO). Resolverla aca seria
+      re-implementar ese C en Python (una segunda fuente de verdad). La cubren el
+      sweep tests/check_wcag.py del propio ROM (que si deriva las nueve paletas) y
+      el fixture main-tema-outdoor-negative del arnes.
+
+  - theme: "VISION"
+    source: builtin
+    reason: >
+      paleta generada en runtime por use_builtin() (src/theme.c): IU1WXY mas el
+      array vision_colors[]. El chequeo estatico resuelve paletas de datos (la
+      tabla C y los archivos), no derivaciones. La cubren tests/check_wcag.py y el
+      fixture main-tema-vision.
