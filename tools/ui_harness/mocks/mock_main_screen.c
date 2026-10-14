@@ -39,11 +39,13 @@ rotary_t  *mfk_inner;
 
 /* --- app dialogs -----------------------------------------------------------
  * `main_screen.c` references one descriptor per app. The harness compiles the
- * real shared dialog machinery (src/dialog.c) and the real About window
- * (src/dialog_about.c), which owns `dialog_about`; the rest of the apps still
- * point at one inert descriptor whose constructor does nothing, so opening one
- * of them from a fixture is a no-op instead of a NULL call. `dialog_about` is
- * NOT declared here: src/dialog_about.c defines it. */
+ * real shared dialog machinery (src/dialog.c), the real About window
+ * (src/dialog_about.c, which owns `dialog_about`) and the real Ajustes window
+ * (src/dialog_settings.c, which owns `dialog_settings`); the rest of the apps
+ * still point at one inert descriptor whose constructor does nothing, so
+ * opening one of them from a fixture is a no-op instead of a NULL call.
+ * `dialog_about` and `dialog_settings` are NOT declared here: their own sources
+ * define them. */
 
 static void mock_construct_cb(lv_obj_t *parent) { (void) parent; }
 
@@ -66,7 +68,6 @@ dialog_t *dialog_msg_voice  = &mock_dialog;
 dialog_t *dialog_navtex     = &mock_dialog;
 dialog_t *dialog_qth        = &mock_dialog;
 dialog_t *dialog_recorder   = &mock_dialog;
-dialog_t *dialog_settings   = &mock_dialog;
 dialog_t *dialog_sstv       = &mock_dialog;
 dialog_t *dialog_status     = &mock_dialog;
 dialog_t *dialog_swrscan    = &mock_dialog;

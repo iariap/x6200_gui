@@ -23,8 +23,10 @@
 
 #include "lvgl/lvgl.h"
 
+#include "buttons.h"
 #include "clock.h"
 #include "keyboard.h"
+#include "main.h"
 #include "main_screen.h"
 #include "meter.h"
 #include "params/params.h"
@@ -107,6 +109,19 @@ bool scenario_build(const scenario_t *scenario)
         return true;
     }
 
+    if (!strcmp(scenario->screen, "settings-home") || !strcmp(scenario->screen, "settings-wfbat")) {
+        /* Ajustes on top of the real main screen, opened by the firmware's own
+         * path: main_screen_action(ACTION_APP_SETTINGS) -> main_screen_start_app()
+         * -> dialog_construct(dialog_settings) (src/main_screen.c -> src/dialog.c
+         * -> src/dialog_settings.c). The keyboard group is up first so
+         * dialog_item() registers every widget and settings_goto() can move the
+         * focus, exactly as in the radio. */
+        mock_keyboard_group_up();
+        build_main(scenario);
+        main_screen_action(ACTION_APP_SETTINGS);
+        return true;
+    }
+
     fprintf(stderr, "scenario: unknown screen '%s'\n", scenario->screen);
     return false;
 }
@@ -116,5 +131,16 @@ void scenario_settle(const scenario_t *scenario)
     if (!strcmp(scenario->screen, "main-foco")) {
         /* Move the focus once the timers have run and the group is populated. */
         lv_group_focus_next(keyboard_group);
+    }
+
+    if (!strcmp(scenario->screen, "settings-wfbat")) {
+        /* Jump to the Spectrum/waterfall group the way the user does: the
+         * bottom bar's "Mas >" loads page 2 and its "Espectro" tab calls
+         * settings_goto(), which scrolls the grid and moves the focus
+         * (src/dialog_settings.c). Runs after the timers so the grid layout is
+         * already computed; both callbacks request LV_ANIM_OFF, so the resulting
+         * scroll is immediate and deterministic. */
+        buttons_press(4, false);    /* page 1, index 4: "Mas >"  */
+        buttons_press(0, false);    /* page 2, index 0: "Espectro" */
     }
 }

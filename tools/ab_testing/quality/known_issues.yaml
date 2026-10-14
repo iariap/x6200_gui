@@ -278,6 +278,55 @@ issues:
       - "tools/ab_testing/quality/contracts.yaml (expected_change acotado a barra_superior; sin exclusion de UI-014)"
     exclusions: []
 
+  # --- Found by the Ajustes fixture (this run): real defects of the Ajustes
+  # window, measurable now that the harness renders it. Nothing under `src/` is
+  # touched by the fixture run, so each one stays out of the gate with a scoped,
+  # dated exception in contracts.yaml (structural findings are waived there, not
+  # in `exclusions`, which are region-scoped by construction). The Ajustes UX
+  # increment fixes them and withdraws the exception in the same change.
+
+  - id: UI-015
+    title: "Ajustes: los switches y el slider quedan por debajo del target tactil de 44 px"
+    severity: minor
+    fixture: settings-wfbat
+    status: verified
+    note: >
+      Los controles del dialogo de Ajustes son mas bajos que el target de campo
+      que pide AGENTS.md (44 px): los ocho lv_switch miden 111x30 (LVGL fija el
+      alto del switch) y el lv_slider del brillo del backlight 159x13. Medido con
+      la inspeccion estructural del arnes (--inspect, sin OCR) sobre las dos
+      fixtures nuevas. La regla `layout_touch_target` de quality/contracts.yaml los
+      marca; el contrato NO se relaja: la excepcion acotada (regla+fixture, con
+      fecha) los mantiene a la vista en el reporte de `contracts`/`audit` mientras
+      la geometria de las filas de Ajustes este fuera del alcance de la corrida.
+      Arreglar el alto de los controles (o fijar el target que la radio realmente
+      usa) es el incremento de UX de Ajustes.
+    evidence:
+      - "tools/ui_harness/fixtures/settings-wfbat.scn (8 switches 111x30 en el grupo Espectro)"
+      - "tools/ui_harness/fixtures/settings-home.scn (slider del backlight 610,373 159x13)"
+      - "audit HEAD --suite visual: 8 x layout_touch_target [settings-wfbat] + 1 x layout_touch_target [settings-home]"
+      - "tools/ab_testing/quality/contracts.yaml (excepcion de layout_touch_target por fixture, hasta 2027-03-31)"
+
+  - id: UI-016
+    title: "Ajustes: el campo Año recorta 4 px el valor de 4 digitos"
+    severity: minor
+    fixture: settings-home
+    status: verified
+    note: >
+      La etiqueta del spinbox del año ("2026", sony_36) mide 84 px de texto
+      natural y el area de contenido del spinbox (SMALL_2 = 93 px menos padding y
+      borde) le deja 80: los ultimos 4 px del ultimo digito quedan recortados.
+      Medido en la inspeccion estructural (nodo 0/41/0/3/0: text_natural.w 84
+      contra el box visible de 80; `text_overflow` NO lo ve porque mide contra el
+      box sin recortar). Detector: la regla `layout_clipped` sobre la fixture
+      `settings-home`. Fix (fuera del alcance de esta corrida): ensanchar el campo
+      del año o bajar su fuente, el idioma que UI-012 uso con la celda del VFO.
+    evidence:
+      - "tools/ui_harness/fixtures/settings-home.scn"
+      - "inspeccion estructural: nodo 0/41/0/3/0 lv_label '2026' 84x28 visible 80x28 (lost 4x0)"
+      - "audit HEAD --suite visual: 1 x layout_clipped [settings-home]"
+      - "tools/ab_testing/quality/contracts.yaml (excepcion de layout_clipped [settings-home], until 2027-03-31)"
+
   # --- Seeds from the repository history: recorded, not yet reproduced. -------
   # They stay unverified until the harness can reproduce them (pixel-region
   # detector today; structural inspection once the harness emits object bounds).

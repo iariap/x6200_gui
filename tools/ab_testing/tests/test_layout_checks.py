@@ -106,6 +106,160 @@ def test_hidden_element_is_ignored(tmp_path: Path) -> None:
     assert not [finding for finding in findings if not finding.ok]
 
 
+def _scroll_dialog(children: list[dict]) -> list[dict]:
+    """A dialog-sized scroll area (like the Ajustes grid) with `children` inside."""
+    grid = node(
+        cls="lv_obj",
+        x=2,
+        y=66,
+        w=796,
+        h=330,
+        scrollable=True,
+        scroll_dir="ver",
+        bg_opa=255,
+        children=children,
+    )
+    return [grid]
+
+
+def test_content_scrolled_out_of_a_scroll_area_is_not_offscreen(tmp_path: Path) -> None:
+    # the Ajustes grid: rows below the fold are reachable by scrolling
+    row = node(cls="lv_label", x=22, y=600, w=200, h=28, visible=None, text="Timeout")
+    findings = run_layout_checks(_capture(tmp_path, _scroll_dialog([row])), LAYOUT)
+    assert not _rules(findings, "layout_offscreen")
+
+
+def test_content_pushed_off_the_viewport_is_still_offscreen(tmp_path: Path) -> None:
+    # no scroll area: the object is simply off the screen
+    row = node(cls="lv_label", x=22, y=600, w=200, h=28, visible=None, text="Timeout")
+    findings = run_layout_checks(_capture(tmp_path, [row]), LAYOUT)
+    assert _rules(findings, "layout_offscreen")
+
+
+def test_the_screen_itself_is_not_a_scroll_area(tmp_path: Path) -> None:
+    # the screen reports scrollable + scroll_dir all (LVGL default); a widget it
+    # pushes off the viewport is a layout defect, not content to scroll into view
+    screen = node(
+        cls="lv_obj",
+        x=0,
+        y=0,
+        w=800,
+        h=480,
+        scrollable=True,
+        scroll_dir="all",
+        children=[node(cls="lv_btn", x=0, y=478, w=160, h=62, visible=None, bg_image=True)],
+    )
+    findings = run_layout_checks(_capture(tmp_path, [screen]), LAYOUT)
+    assert _rules(findings, "layout_offscreen")
+
+
+def test_clip_along_the_scroll_axis_is_not_a_defect(tmp_path: Path) -> None:
+    half = node(
+        cls="lv_dropdown",
+        x=499,
+        y=391,
+        w=285,
+        h=56,
+        visible={"x": 499, "y": 391, "w": 285, "h": 14},
+    )
+    findings = run_layout_checks(_capture(tmp_path, _scroll_dialog([half])), LAYOUT)
+    assert not _rules(findings, "layout_clipped")
+
+
+def test_clip_off_the_scroll_axis_is_still_a_defect(tmp_path: Path) -> None:
+    # the grid scrolls vertically only: a box that overhangs it horizontally is a
+    # real clip even though it lives in the scroll area
+    wide = node(
+        cls="lv_obj",
+        x=740,
+        y=113,
+        w=84,
+        h=28,
+        visible={"x": 740, "y": 113, "w": 58, "h": 28},
+        bg_opa=255,
+    )
+    findings = run_layout_checks(_capture(tmp_path, _scroll_dialog([wide])), LAYOUT)
+    assert _rules(findings, "layout_clipped")
+
+
+def test_default_scroll_dir_is_not_a_scroll_area(tmp_path: Path) -> None:
+    # a spinbox clips its own 4-digit label by 4px (the Ajustes year field); it
+    # carries LVGL's default `scroll_dir: all`, so it is a real clip, not content
+    # the user can scroll to
+    spinbox = node(
+        cls="other",
+        x=691,
+        y=100,
+        w=93,
+        h=56,
+        scrollable=True,
+        scroll_dir="all",
+        bg_opa=255,
+        children=[
+            node(
+                cls="lv_label",
+                x=704,
+                y=113,
+                w=84,
+                h=28,
+                visible={"x": 704, "y": 113, "w": 80, "h": 28},
+                text="2026",
+            )
+        ],
+    )
+    findings = run_layout_checks(_capture(tmp_path, [spinbox]), LAYOUT)
+    assert _rules(findings, "layout_clipped")
+
+
+def test_scrolled_control_measures_with_its_real_size(tmp_path: Path) -> None:
+    half = node(
+        cls="lv_dropdown",
+        x=499,
+        y=391,
+        w=285,
+        h=56,
+        visible={"x": 499, "y": 391, "w": 285, "h": 14},
+    )
+    findings = run_layout_checks(_capture(tmp_path, _scroll_dialog([half])), LAYOUT)
+    assert not _rules(findings, "layout_touch_target")
+
+
+def test_small_scrolled_control_is_still_reported(tmp_path: Path) -> None:
+    # the switch of Ajustes is 30px tall wherever it is; scrolling it into view
+    # does not make it a 44px target
+    switch = node(cls="lv_switch", x=514, y=94, w=111, h=30)
+    findings = run_layout_checks(_capture(tmp_path, _scroll_dialog([switch])), LAYOUT)
+    assert _rules(findings, "layout_touch_target")
+
+
+def test_label_hidden_by_a_surface_above_is_not_an_overlap(tmp_path: Path) -> None:
+    behind = node(cls="lv_label", x=0, y=160, w=150, h=36, text="14.074.000")
+    dialog_label = node(cls="lv_label", x=22, y=173, w=200, h=28, text="Hour, Min, Sec")
+    surface = node(cls="lv_obj", x=2, y=66, w=796, h=330, bg_opa=255)
+    # paint order: the screen behind, then the surface, then the label on it
+    findings = run_layout_checks(_capture(tmp_path, [behind, surface, dialog_label]), LAYOUT)
+    assert not _rules(findings, "layout_overlap")
+
+
+def test_overlap_inside_the_surface_is_still_reported(tmp_path: Path) -> None:
+    # two labels on the same surface: the surface is painted below both, so it
+    # hides neither of them
+    surface = node(
+        cls="lv_obj",
+        x=2,
+        y=66,
+        w=796,
+        h=330,
+        bg_opa=255,
+        children=[
+            node(cls="lv_label", x=22, y=100, w=200, h=28, text="first"),
+            node(cls="lv_label", x=22, y=100, w=200, h=28, text="second"),
+        ],
+    )
+    findings = run_layout_checks(_capture(tmp_path, [surface]), LAYOUT)
+    assert _rules(findings, "layout_overlap")
+
+
 def test_hidden_ancestor_hides_children(tmp_path: Path) -> None:
     child = node(cls="lv_label", x=-500, y=0, w=100, h=20, visible=None, text="hi")
     parent = node(cls="lv_obj", x=0, y=0, w=800, h=480, hidden=True, children=[child])

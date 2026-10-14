@@ -27,8 +27,14 @@ cfg_cur_t  cfg_cur;
 static atu_network_t atu_network;
 static cfg_band_t    band0;
 
-/* cfg_transverters is a real array in the firmware; empty here (no shift). */
+/* cfg_transverters is a real array in the firmware; the defaults are the ones
+ * src/cfg/transverter.c:36-50 creates before loading the DB (MHz -> Hz are the
+ * values Ajustes shows after dividing by 1000000). */
 cfg_transverter_t cfg_transverters[TRANSVERTER_NUM];
+
+static const int32_t dflt_from[TRANSVERTER_NUM]  = { 70000000, 144000000, 432000000 };
+static const int32_t dflt_to[TRANSVERTER_NUM]    = { 72000000, 150000000, 438000000 };
+static const int32_t dflt_shift[TRANSVERTER_NUM] = { 42000000, 116000000, 404000000 };
 
 void mock_cfg_init(void)
 {
@@ -80,6 +86,20 @@ void mock_cfg_init(void)
     cfg.dnf_width.val  = subject_create_int(100);
     cfg.cw_decoder.val = subject_create_int(0);
     cfg.cw_tune.val    = subject_create_int(0);
+
+    /* Ajustes (src/dialog_settings.c) reads the cluster column switch, which is
+     * a cfg item and not a params_* (the real default is off, src/cfg/cfg.c:323). */
+    cfg.cluster_column.val = subject_create_int(0);
+
+    /* The transverter rows of Ajustes read three subjects each; src/cfg/
+     * transverter.c:36-50 creates them with these same defaults (and would load
+     * them from the DB, which the harness has none of). Without them the dialog
+     * would dereference a NULL subject. */
+    for (uint8_t n = 0; n < TRANSVERTER_NUM; n++) {
+        cfg_transverters[n].from.val  = subject_create_int(dflt_from[n]);
+        cfg_transverters[n].to.val    = subject_create_int(dflt_to[n]);
+        cfg_transverters[n].shift.val = subject_create_int(dflt_shift[n]);
+    }
 }
 
 /* --- helpers the rendered components call ---------------------------------- */

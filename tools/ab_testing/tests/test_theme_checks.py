@@ -109,17 +109,35 @@ def test_the_fixed_store_keeps_the_full_name(tmp_path: Path) -> None:
     assert "fits params.theme_name" in finding.detail
 
 
-def test_the_repo_contracts_carry_no_exceptions(real_quality: RealQuality) -> None:
-    """The register has no waiver left: every fix is guarded by its contract.
+def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQuality) -> None:
+    """A waiver may only exist while it is scoped, dated, reasoned and behind a known issue.
 
-    UI-013 was the last exception. The store (`params_str_t.x`, src/params/types.h)
-    now holds the 31 characters `theme_list()` admits, so `theme_name_fits_params`
-    passes on its own fixture and the dated waiver went away with the fix
-    (UI-04/AB-UI04-EXP4) — UI-011's waiver was withdrawn in EXP-1, UI-012's in EXP-2
-    and the UI-010 region exclusion in EXP-3. With nothing waived, a reappearance of
-    any of them fails the run again.
+    UI-013 was the last exception for a while: the store (`params_str_t.x`,
+    src/params/types.h) holds the 31 characters `theme_list()` admits, so
+    `theme_name_fits_params` passes on its own fixture and the dated waiver went
+    away with the fix (UI-04/AB-UI04-EXP4) — UI-011's waiver was withdrawn in
+    EXP-1, UI-012's in EXP-2 and the UI-010 region exclusion in EXP-3. The
+    invariant is not "no waivers": it is that a waiver is never global and never
+    permanent, and that the defect it holds back is recorded. The three that exist
+    now are the Ajustes window's real findings (UI-015, UI-016), which this run
+    only measures. Each one names exactly one rule and one fixture (no `path`
+    shadow, so it cannot hide another node), carries a reason, an author and an
+    expiry, and its reason names the open known issue that documents it.
     """
-    assert real_quality.contracts.exceptions == ()
+    exceptions = real_quality.contracts.exceptions
+    assert {exception.rule for exception in exceptions} == {
+        "layout_clipped",
+        "layout_touch_target",
+    }
+    assert {exception.fixture for exception in exceptions} == {"settings-home", "settings-wfbat"}
+    for exception in exceptions:
+        assert exception.path is None
+        assert exception.reason.strip()
+        assert exception.author
+        assert date.fromisoformat(exception.until) >= date(2026, 10, 14)
+        documented = [issue for issue in real_quality.known_issues if issue.id in exception.reason]
+        assert documented, f"{exception.rule} [{exception.fixture}] names no known issue"
+        assert all(issue.is_open_defect for issue in documented)
 
 
 def test_the_repo_explains_the_top_bar_visual_changes(real_quality: RealQuality) -> None:

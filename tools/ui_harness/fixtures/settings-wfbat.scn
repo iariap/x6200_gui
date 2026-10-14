@@ -1,0 +1,39 @@
+# settings-wfbat: Ajustes scrolled to the Spectrum/waterfall group, with the
+# waterfall battery mode the user turned on in the policy config. Same real path
+# as settings-home; the fixture then drives the bottom bar exactly as the user
+# does: `buttons_press(4)` loads page 2 through the "Mas >" button and
+# `buttons_press(0)` presses its "Espectro" tab, which calls settings_goto()
+# (src/dialog_settings.c) to scroll the grid and move the focus to the group's
+# first widget. The "Waterfall battery mode" switch therefore renders checked,
+# and the real waterfall runs in the saving cadence the visual policy applies on
+# the main screen, behind the dialog. See src/screens.c (scenario_settle).
+
+name settings-wfbat
+screen settings-wfbat
+
+seed 20
+
+waterfall_battery true
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

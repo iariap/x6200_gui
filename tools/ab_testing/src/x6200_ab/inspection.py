@@ -48,6 +48,7 @@ class InspectionNode:
     hidden: bool
     opa: int
     scrollable: bool
+    scroll_dir: str
     clickable: bool
     bg_color: str
     bg_opa: int
@@ -75,6 +76,14 @@ class InspectionNode:
     @property
     def is_label(self) -> bool:
         return self.cls == "lv_label"
+
+    @property
+    def scrolls_horizontally(self) -> bool:
+        return self.scroll_dir in ("hor", "all")
+
+    @property
+    def scrolls_vertically(self) -> bool:
+        return self.scroll_dir in ("ver", "all")
 
 
 @dataclass(frozen=True)
@@ -157,6 +166,7 @@ def _parse_node(entry: dict[str, Any]) -> InspectionNode:
         hidden=bool(entry.get("hidden", False)),
         opa=int(entry.get("opa", 255)),
         scrollable=bool(entry.get("scrollable", False)),
+        scroll_dir=str(entry.get("scroll_dir", "none")),
         clickable=bool(entry.get("clickable", False)),
         bg_color=str(entry.get("bg_color", "#000000")),
         bg_opa=int(entry.get("bg_opa", 0)),
