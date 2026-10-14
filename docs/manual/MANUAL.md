@@ -64,6 +64,11 @@ se toca al actualizar.** Igual, respaldala antes de cada actualización.
 | La zona oscura | **Waterfall**; arriba, la franja con las **marcas de los spots** del clúster |
 | Los botones de abajo | Volumen, Squelch, RF gain, TX power y las páginas de botones de función |
 
+**Las páginas de botones.** La fila de abajo tiene 5 botones y el primero es el **cambiador de
+página**: apretarlo pasa a la página siguiente, mantenerlo vuelve a la anterior. Hay varios grupos
+de páginas (VOL, MFK, MEM y **APP**) y se cambian con la **tecla APP**. En las **6 páginas APP**
+están **todas las aplicaciones**, 4 por página (la tabla está en la sección 6).
+
 ## 4. Los controles
 
 ### 4.1 El dial (rueda grande)
@@ -123,7 +128,7 @@ Se entra con la acción *APP Settings*. Las filas, por página:
 | **Info** | Mag Freq, Info, ALC | Qué muestra cada zona de la barra superior |
 | **Audio** | Audio enhance / Speaker mode / Voice mode / Voice rate, pitch, volume | Realce de audio, modo del parlante, y los anuncios de voz con su velocidad, tono y volumen |
 | **Espectro** | Spectrum auto min, max / Waterfall auto min, max / Waterfall line, zoom / Waterfall smooth scroll / Waterfall battery mode | Ajuste automático de los niveles, líneas y zoom del waterfall, desplazamiento suave y modo de ahorro en batería |
-| **Operación** | Freq acceleration / Charger / Cluster column / Bluetooth / Discoverable (CAT) | Aceleración del dial, modo del cargador, columna del clúster, Bluetooth y visibilidad para CAT |
+| **Operación** | Freq acceleration / Charger / Cluster column / Bluetooth / Discoverable (CAT) / Devices | Aceleración del dial, modo del cargador, columna del clúster, Bluetooth y visibilidad para CAT |
 | **Apariencia** | Theme / Font | Los **8 temas** y la familia de fuente (se aplican al reiniciar) |
 | **Servicios** | wfview server / Update check | Servidor wfview y aviso de firmware nuevo |
 | **Field Ops** | Referencias y log | Referencias SOTA/POTA y el log ADIF |
@@ -133,6 +138,22 @@ Se entra con la acción *APP Settings*. Las filas, por página:
 
 Se abre con el botón `APP` (o asignando la acción del app a un botón). En las capturas se ve el
 diálogo del app sobre la pantalla principal, tal como queda en el equipo.
+
+**Todas las apps están en las páginas APP.** Antes algunas sólo se podían alcanzar asignándolas a
+una pulsación larga desde Ajustes, así que no se encontraban (Field Ops era una). Ahora la **tecla
+APP** entra al grupo y el primer botón de abajo cambia de página: son **6**, con 4 apps cada una.
+
+| Página | Apps |
+|---|---|
+| **APP 1:6** | FT8, JS8, WSPR, RTTY |
+| **APP 2:6** | SSTV, WeFax, NavTex, Clúster |
+| **APP 3:6** | Recorder, **Field Ops**, GPS, Bandas |
+| **APP 4:6** | CW Kbd, CW Trainer, Eq, Status |
+| **APP 5:6** | Ajustes, Callsign, QTH, About |
+| **APP 6:6** | WiFi, Bluetooth, SWR Scan |
+
+Igual podés asignar cualquier app a un botón o a una pulsación larga desde Ajustes → Acciones, pero
+ya no hace falta para encontrarla.
 
 ### 6.1 FT8 / FT4
 
@@ -233,7 +254,7 @@ satélites.
 ![Field Ops](img/09-field.png)
 
 La app para salir al campo: referencias SOTA y POTA, log de contactos y self-spot. Está pensada
-para que en la cumbre no tengas que pelear con nada.
+para que en la cumbre no tengas que pelear con nada. **Está en APP 3:6.**
 
 **Cómo se usa:** elegí la **referencia** (la lista viene incluida, se puede usar sin internet),
 poné tu **indicativo**, y activá el **self-spot** para avisar a pota.app en qué frecuencia estás.
@@ -306,13 +327,40 @@ El equipo abre un socket en `/tmp/x6200_remote.sock` con unos 65 comandos.
 
 ### 7.3 Bluetooth
 
-1. Ajustes → Bluetooth → activar. Marcá **Discoverable (CAT)** si vas a usarlo desde la PC.
-2. **CAT (SPP):** vinculá la PC y elegí el puerto serie que aparece (19200 8N1 o lo que pida tu
-   programa). Sirve para cualquier logger o programa CAT.
-3. **Auriculares (A2DP):** poné los auriculares en vinculación, buscalos en la app de
-   dispositivos y elegí la salida de audio; el RX sale por ahí.
-4. **Teclado:** vinculá un teclado Bluetooth o conectá uno USB; se usa en el CW Keyboard y para
-   navegar los menús.
+Sirve para tres cosas: **CAT** (puente serie para la PC), **auriculares A2DP** y **teclado**. El
+estado se ve en la barra de arriba, al lado del WiFi: la **runa** queda invisible con el Bluetooth
+apagado, gris cuando está prendido y **blanca** con auriculares conectados.
+
+**Encenderlo:** Ajustes → **Bluetooth** (el interruptor de arriba). Marcá **Discoverable (CAT)** si
+vas a usarlo desde la PC.
+
+**CAT (SPP):** vinculá la PC y elegí el puerto serie que aparece (19200 8N1 o lo que pida tu
+programa). Sirve para cualquier logger o programa CAT.
+
+**Auriculares (A2DP):** entrá con el botón **BT** (al lado de WiFi, página **APP 6:6**) o desde
+Ajustes → Bluetooth → **Devices**.
+
+1. Pulsá **Scan** (15 s). El botón queda gris con la cuenta regresiva (`Scan 13s`) para que veas que
+   está trabajando, y al terminar dice `Scan done: N device(s)` o `Scan done: nothing found`.
+2. Poné los auriculares en **modo vinculación** y **desconectalos del teléfono**: si el teléfono
+   está cerca vuelven a él y dejan de anunciarse (el síntoma es que no aparecen o sale
+   `Pairing failed`).
+3. Tocá la fila de los auriculares: **parean y se conectan**. Si piden un código, aparece en
+   pantalla para escribirlo en el teclado.
+4. Pulsá **RX to HP** para que la **recepción** salga por los auriculares.
+5. El **volumen** de los auriculares se mueve con la **rueda de volumen** del equipo.
+6. **Speaker** apaga el altavoz mientras los usás, para no escuchar doble.
+
+| Botón de la app | Qué hace |
+|---|---|
+| **Scan** | Busca dispositivos (con cuenta regresiva) |
+| **RX to HP** | Manda la recepción a los auriculares |
+| **Speaker** | Apaga o prende el altavoz del equipo |
+| **Auto** | Pulsando: prende/apaga el **auto-conexión** del equipo elegido. Manteniéndolo: **desempareja** (`Unpair`) |
+| **Close** | Cierra la app |
+
+**Teclado:** vinculá un teclado Bluetooth o conectá uno USB; se usa en el CW Keyboard y para
+navegar los menús.
 
 ### 7.4 El clúster, paso a paso
 
@@ -405,6 +453,12 @@ X6100 que van como archivos (Holo, Material 3 y RS).
 2. **Tu propio tema:** copiá un `.json` a `DATA/themes/` (tomá `Holo.json` como modelo) y aparece
    en la lista. También puede ser una **carpeta** con un `theme.json` adentro, como `RS/`.
 
+**Accesibilidad:** los 8 temas cumplen **WCAG 2.1 AA**: todo par de colores que se dibuja junto
+(texto sobre su fondo, bordes, el switch y el slider de Ajustes, la barra de estado) tiene contraste
+**≥ 4.5:1** para texto normal y **≥ 3:1** para texto grande, bordes e indicadores. Un chequeo
+automático (990 pares) lo verifica con cada compilación, así que un tema nuevo no puede quedar por
+debajo.
+
 ### 7.7 Anuncios por voz (TTS en español)
 
 1. Ajustes → **Voice mode** → **Off**, **When LCD off** o **Always**. *When LCD off* es lo más
@@ -448,6 +502,11 @@ no se ve bien, borralo y volvés al motor clásico.
 | **El clúster no muestra spots** | Revisá servidor, indicativo y filtros; una línea de prueba necesita la hora `HHMMZ`. |
 | **Sin espacio en `DATA`** | Borrá `rec/`, capturas viejas o los `backup_*.tgz`. |
 | **Ajustes raros tras actualizar** | Restaurá el respaldo de `params.db` o borralo (perdés los ajustes, no el log). |
+| **No encuentro una app** | Están todas en las **6 páginas APP** (tecla APP); la tabla está en la sección 6. |
+| **El Bluetooth no encuentra los auriculares** | Tienen que estar en modo vinculación **y desconectados del teléfono**: si el teléfono está cerca vuelven a él y dejan de anunciarse. |
+| **Sale `Pairing failed`** | Lo mismo: ponelos en vinculación y reintentá (la app avisa cuando falla, antes quedaba muda). |
+| **No se oye la radio en los auriculares** | Pulsá **RX to HP** en la app de Bluetooth y subí el volumen con la rueda del equipo. |
+| **Se escucha doble (altavoz y auriculares)** | Pulsá **Speaker** en la app de Bluetooth. |
 
 ## 9. Referencia
 
