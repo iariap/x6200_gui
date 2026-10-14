@@ -9,26 +9,31 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 from x6200_ab.errors import ConfigError
 from x6200_ab.theme_files import (
+    DERIVED_PALETTES,
+    SERVED_BUILTINS,
     SHIPPED_THEMES_SUBDIR,
     ThemePair,
     ThemeReport,
-    UnsupportedTheme,
     check_shipped_themes,
-    ensure_unsupported_are_not_measured,
+    derive_outdoor_negative,
+    derive_vision,
     load_builtin_palettes,
+    load_exemptions,
+    load_runtime_palettes,
     load_theme_pairs,
-    load_unsupported_themes,
     measure_theme_file,
     served_theme_reports,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 THEME_H = REPO_ROOT / "src" / "theme.h"
+THEME_C = REPO_ROOT / "src" / "theme.c"
 SHIPPED_DIR = REPO_ROOT.joinpath(*SHIPPED_THEMES_SUBDIR)
 QUALITY_DIR = Path(__file__).resolve().parents[1] / "quality"
 
@@ -44,6 +49,11 @@ RAIL_ON_DIALOG = ThemePair(
 @pytest.fixture(scope="module")
 def palettes() -> dict[str, dict[str, str]]:
     return load_builtin_palettes(THEME_H)
+
+
+@pytest.fixture(scope="module")
+def runtime_palettes() -> dict[str, dict[str, str]]:
+    return load_runtime_palettes(THEME_C, load_builtin_palettes(THEME_H))
 
 
 def _write_theme(directory: Path, name: str, body: dict) -> Path:
@@ -126,11 +136,22 @@ def test_an_unknown_role_is_refused(tmp_path: Path, palettes: dict[str, dict[str
     assert "unknown role" in report.error
 
 
-def test_a_derived_base_is_refused(tmp_path: Path, palettes: dict[str, dict[str, str]]) -> None:
+def test_a_derived_base_resolves(
+    tmp_path: Path, runtime_palettes: dict[str, dict[str, str]]
+) -> None:
+    """A shipped file may inherit a `use_builtin()` base, as `builtin_index()` allows."""
     path = _write_theme(tmp_path, "Vision", {"base": "VISION"})
+    report = measure_theme_file(path, (RAIL_ON_DIALOG,), runtime_palettes)
+    assert report.error is None
+    assert report.base == "VISION"
+    assert all(result.ok for result in report.results)
+
+
+def test_an_unknown_base_is_refused(tmp_path: Path, palettes: dict[str, dict[str, str]]) -> None:
+    path = _write_theme(tmp_path, "Raro", {"base": "NoExiste"})
     report = measure_theme_file(path, (RAIL_ON_DIALOG,), palettes)
     assert report.error is not None
-    assert "derived built-in" in report.error
+    assert "not one of" in report.error
 
 
 def test_bad_json_colour_and_shape_are_refused(
@@ -202,42 +223,44 @@ def _served(palettes: dict[str, dict[str, str]]):
 
 
 def test_the_served_inventory_is_the_builtins_then_the_files(
-    palettes: dict[str, dict[str, str]],
+    runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    """The inventory has no silent hole: the four data palettes come first."""
-    reports, pairs = _served(palettes)
+    """The inventory has no silent hole: the nine served themes, built-ins first."""
+    reports, pairs = _served(runtime_palettes)
     assert [report.name for report in reports] == [
         "IU1WXY",
         "Legacy",
         "Outdoor",
         "Classic",
+        "Outdoor-Negative",
+        "VISION",
         "Holo",
         "Material 3",
         "RS",
     ]
     builtins = [report for report in reports if report.source == "builtin"]
-    assert len(builtins) == 4
+    assert len(builtins) == 6
     assert all(report.inherited == () for report in builtins)
     assert all(report.base == report.name for report in builtins)
     assert all(len(report.results) == len(pairs) for report in reports)
 
 
 def test_every_served_theme_passes_every_declared_pair(
-    palettes: dict[str, dict[str, str]],
+    runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    """The extended coverage finds no sub-WCAG pair: 7 themes, 63 measurements."""
-    reports, _ = _served(palettes)
+    """The full coverage finds no sub-WCAG pair: 9 themes, 81 measurements."""
+    reports, _ = _served(runtime_palettes)
     checked = sum(len(report.results) for report in reports)
-    assert checked == 63
+    assert checked == 81
     assert all(report.ok for report in reports)
     assert all(report.error is None for report in reports)
 
 
 def test_builtin_report_ratios_agree_with_the_c_table(
-    palettes: dict[str, dict[str, str]],
+    runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
     """The numbers here have to match tests/check_wcag.py on the same palettes."""
-    reports, _ = _served(palettes)
+    reports, _ = _served(runtime_palettes)
     by_name = {report.name: report for report in reports}
     iu = _ratio(by_name["IU1WXY"], "text", "dialog")
     classic = _ratio(by_name["Classic"], "control_border", "dialog")
@@ -247,19 +270,19 @@ def test_builtin_report_ratios_agree_with_the_c_table(
     assert outdoor == pytest.approx(21.00, abs=0.01)
 
 
-def test_legacy_is_measured_but_not_offered(palettes: dict[str, dict[str, str]]) -> None:
+def test_legacy_is_measured_but_not_offered(runtime_palettes: dict[str, dict[str, str]]) -> None:
     """`theme_list()` skips Legacy, so the inventory has to say it is not a choice."""
-    reports, _ = _served(palettes)
+    reports, _ = _served(runtime_palettes)
     by_name = {report.name: report for report in reports}
     assert by_name["Legacy"].offered is False
     assert all(by_name[name].offered for name in ("IU1WXY", "Outdoor", "Classic"))
 
 
 def test_rs_declares_the_binary_surfaces_it_paints(
-    palettes: dict[str, dict[str, str]],
+    runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
     """The PNG backgrounds are not statically resolvable, so the theme is partial."""
-    reports, _ = _served(palettes)
+    reports, _ = _served(runtime_palettes)
     rs = next(report for report in reports if report.name == "RS")
     assert "dialog" in rs.binary_surfaces
     assert "panel" not in rs.binary_surfaces
@@ -279,53 +302,156 @@ def test_rs_declares_the_binary_surfaces_it_paints(
     assert "both roles set by the file" in dialog.origin
 
 
-def test_the_runtime_builtins_are_declared_unsupported() -> None:
-    """Outdoor-Negative and VISION are made by C at runtime; declared, not guessed."""
-    unsupported = load_unsupported_themes(QUALITY_DIR / "theme_pairs.yaml")
-    assert [theme.name for theme in unsupported] == ["Outdoor-Negative", "VISION"]
-    assert all(theme.source == "builtin" for theme in unsupported)
-    assert all("use_builtin" in theme.reason for theme in unsupported)
-    # Declared unsupported is not measured: no theme appears in both lists.
-    assert not {theme.name for theme in unsupported} & {"IU1WXY", "Outdoor", "RS"}
-
-
-def test_the_unsupported_themes_do_not_collide_with_the_measured_ones() -> None:
-    palettes = load_builtin_palettes(THEME_H)
-    reports, _ = _served(palettes)
-    unsupported = load_unsupported_themes(QUALITY_DIR / "theme_pairs.yaml")
-    ensure_unsupported_are_not_measured(unsupported, reports, "theme_pairs.yaml")
-
-
-def test_a_theme_both_measured_and_unsupported_is_refused(
-    palettes: dict[str, dict[str, str]],
+def test_derived_builtins_are_measured_like_the_data_ones(
+    runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    reports, _ = _served(palettes)
-    unsupported = load_unsupported_themes(QUALITY_DIR / "theme_pairs.yaml")
-    clash = UnsupportedTheme(name="RS", source="builtin", reason="x")
-    with pytest.raises(ConfigError, match="measured and declared unsupported"):
-        ensure_unsupported_are_not_measured((*unsupported, clash), reports, "theme_pairs.yaml")
+    """Outdoor-Negative and VISION are no longer UNCOVERED: they carry all 9 pairs."""
+    reports, _ = _served(runtime_palettes)
+    by_name = {report.name: report for report in reports}
+    for name in DERIVED_PALETTES:
+        report = by_name[name]
+        assert report.source == "builtin"
+        assert report.error is None
+        assert len(report.results) == 9
+        assert all(result.ok for result in report.results)
+        assert all("use_builtin()" in result.origin for result in report.results)
 
 
-def test_an_unsupported_theme_needs_a_reason(tmp_path: Path) -> None:
-    path = tmp_path / "pairs.yaml"
-    path.write_text("pairs: []\nunsupported:\n  - theme: VISION\n")
-    with pytest.raises(ConfigError, match="needs a `reason`"):
-        load_unsupported_themes(path)
+def test_derived_palettes_never_invent_a_role(
+    runtime_palettes: dict[str, dict[str, str]],
+) -> None:
+    """The derivation is a port: Outdoor-Negative and VISION keep the 128 C roles."""
+    data_roles = set(load_builtin_palettes(THEME_H)["Outdoor"])
+    assert set(runtime_palettes["Outdoor-Negative"]) == data_roles
+    assert set(runtime_palettes["VISION"]) == data_roles
 
 
-def test_an_unsupported_theme_is_listed_once(tmp_path: Path) -> None:
-    path = tmp_path / "pairs.yaml"
-    path.write_text(
-        "pairs: []\n"
-        "unsupported:\n"
-        "  - theme: VISION\n    reason: a\n"
-        "  - theme: VISION\n    reason: b\n"
+def test_served_builtins_are_the_c_enum_order() -> None:
+    """SERVED_BUILTINS mirrors `builtin_names[]` (src/theme.c): data then derives."""
+    assert SERVED_BUILTINS == (
+        "IU1WXY",
+        "Legacy",
+        "Outdoor",
+        "Classic",
+        "Outdoor-Negative",
+        "VISION",
     )
-    with pytest.raises(ConfigError, match="listed twice"):
-        load_unsupported_themes(path)
+    assert DERIVED_PALETTES == ("Outdoor-Negative", "VISION")
+
+
+def test_outdoor_negative_is_negative_over_outdoor() -> None:
+    """Spot checks against src/theme.c: white <-> black, and the pinned yellow/blue."""
+    outdoor = load_builtin_palettes(THEME_H)["Outdoor"]
+    negative = derive_outdoor_negative(THEME_C, outdoor)
+    # negative(#ffffff) == #000000 and the two hand-tuned literals of use_builtin().
+    assert negative["dialog"] == "#000000"
+    assert negative["focus_bg"] == "#877100"
+    assert negative["vfo"] == "#4574ff"
+    # The selection yellow stays at its Outdoor value (its channels add to 255).
+    for role in ("sel_text", "btn_active_text", "sel_border", "btn_active_border", "near_bg"):
+        assert negative[role] == outdoor[role]
+
+
+def test_vision_is_iu1wxy_plus_vision_colors() -> None:
+    iu1wxy = load_builtin_palettes(THEME_H)["IU1WXY"]
+    vision = derive_vision(THEME_C, iu1wxy)
+    # Every role the array does not override keeps its IU1WXY value.
+    assert vision["text"] == "#ffffff"
+    assert vision["bg"] == "#1c1f24"
+    assert vision["meter_bar"] == "#5dcaa5"
+
+
+def _load_wcag_sweep() -> tuple[Any, dict[str, dict[str, str]]]:
+    """tests/check_wcag.py, loaded from the ROM's test tree, plus its palettes."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "check_wcag_parity", REPO_ROOT / "tests" / "check_wcag.py"
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    colores = module.leer_theme_h()
+    paletas, _shapes = module.armar_paletas(colores)
+    sweep = {
+        theme: {role: f"#{value & 0xFFFFFF:06x}" for role, value in paleta.items()}
+        for theme, paleta in paletas.items()
+    }
+    return module, sweep
+
+
+def test_the_derivation_matches_the_rom_sweep_byte_for_byte(
+    runtime_palettes: dict[str, dict[str, str]],
+) -> None:
+    """Parity with tests/check_wcag.py: the same C, two implementations agree.
+
+    `check_wcag.py` is the ROM's own sweep; if the port and it ever disagree on a
+    role of any of the nine served palettes, one of them is wrong. This is the
+    self-test the spec asks for: it pins the derivation, it does not trust it.
+    """
+    _module, sweep = _load_wcag_sweep()
+    for theme in (*("IU1WXY", "Legacy", "Outdoor", "Classic"), *DERIVED_PALETTES):
+        theirs = sweep[theme]
+        mine = runtime_palettes[theme]
+        # check_wcag injects its literals table (LVGL colours, hand-written hex);
+        # the parity is over the roles src/theme.h defines.
+        assert set(mine) <= set(theirs), f"{theme}: a role of the C table is missing in the sweep"
+        drift = {role: (mine[role], theirs[role]) for role in mine if mine[role] != theirs[role]}
+        assert drift == {}, f"{theme}: roles disagree with check_wcag.py: {drift}"
+
+
+def test_the_declared_pairs_match_the_rom_sweep_ratio_by_ratio(
+    runtime_palettes: dict[str, dict[str, str]],
+) -> None:
+    """Every framework pair's ratio equals the ROM sweep's on the same palette."""
+    module, sweep = _load_wcag_sweep()
+    pairs = load_theme_pairs(QUALITY_DIR / "theme_pairs.yaml")
+    reports, _ = _served(runtime_palettes)
+    by_name = {report.name: report for report in reports}
+    for theme in (*("IU1WXY", "Legacy", "Outdoor", "Classic"), *DERIVED_PALETTES):
+        paleta = sweep[theme]
+        for pair in pairs:
+            expected = module.contraste(
+                int(paleta[pair.fg].lstrip("#"), 16), int(paleta[pair.bg].lstrip("#"), 16)
+            )
+            assert _ratio(by_name[theme], pair.fg, pair.bg) == pytest.approx(expected, abs=1e-9)
 
 
 def _ratio(report: ThemeReport, fg: str, bg: str) -> float:
     return next(
         result.ratio for result in report.results if (result.pair.fg, result.pair.bg) == (fg, bg)
     )
+
+
+# --- the WCAG 1.4.3 exemptions ----------------------------------------------
+
+
+def test_the_exempt_roles_are_the_ones_the_rom_sweep_exempts(
+    runtime_palettes: dict[str, dict[str, str]],
+) -> None:
+    """The framework and tests/check_wcag.py cannot disagree on what is exempt."""
+    module, _sweep = _load_wcag_sweep()
+    declared = {exemption.role for exemption in load_exemptions(QUALITY_DIR / "theme_pairs.yaml")}
+    assert declared == set(module.EXENTOS)
+    # Every exempt role is a role the C table actually has, not a typo.
+    assert declared <= set(runtime_palettes["IU1WXY"])
+
+
+def test_every_exempt_role_is_drawn_somewhere_in_the_rom_sweep() -> None:
+    """An exemption has to cover a role the sweep measures (not dead data)."""
+    module, _sweep = _load_wcag_sweep()
+    measured = {fg for fg, _bg, _threshold, _where in module.PARES_EXENTOS}
+    declared = {exemption.role for exemption in load_exemptions(QUALITY_DIR / "theme_pairs.yaml")}
+    assert declared <= measured, f"exempt but never drawn: {sorted(declared - measured)}"
+
+
+def test_an_exempt_role_needs_a_reason_and_is_listed_once(tmp_path: Path) -> None:
+    path = tmp_path / "pairs.yaml"
+    path.write_text("pairs: []\nexempt:\n  - role: off\n")
+    with pytest.raises(ConfigError, match="needs a `reason`"):
+        load_exemptions(path)
+    path.write_text(
+        "pairs: []\nexempt:\n  - role: off\n    reason: a\n  - role: off\n    reason: b\n"
+    )
+    with pytest.raises(ConfigError, match="listed twice"):
+        load_exemptions(path)

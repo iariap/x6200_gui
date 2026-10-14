@@ -2444,3 +2444,111 @@ Las fixtures nuevas **no entran en el `compare`**: la suite sale de la revisión
 existen (mismo comportamiento que `settings-home`/`settings-wfbat` en la corrida anterior). Su
 cobertura es determinismo (24×2), `contracts`, `audit` y `benchmark`, más el antes/después
 explícito de `arnes-antes-despues.txt`.
+
+## wcag-full: contraste WCAG de los 9 temas, texto y no-texto (issue #12)
+
+Orden del owner: **todos los temas tienen que tener buen contraste, medido**. Hasta
+acá el framework medía 7 temas × 9 pares (texto) y dejaba Outdoor-Negative y VISION
+en **UNCOVERED**; ahora mide los 9 y suma el contraste **no-texto (WCAG 1.4.11)** de
+los objetos gráficos informativos sobre los píxeles del render.
+
+### Texto — 9 temas × 9 pares = 81 mediciones
+
+`theme_files.py` deriva `use_builtin()` (src/theme.c) en Python: Outdoor-Negative es
+`negative()` sobre Outdoor con los roles que el C fija a mano, y VISION es IU1WXY más
+`vision_colors[]`. La derivación se lee del mismo C (no se re-implementan números) y
+se pinea **byte a byte** contra `tests/check_wcag.py` (las nueve paletas, rol por rol)
+y **ratio por ratio** en los pares declarados. Con eso no queda tema sin resolver y
+`theme_pairs.yaml` ya no tiene sección `unsupported`.
+
+| Tema | fuente | pares | peor ratio | resultado |
+|------|--------|------:|-----------:|-----------|
+| IU1WXY | `src/theme.h` | 9 | 3.11 | PASS |
+| Legacy | `src/theme.h` (no en el menú) | 9 | 3.08 | PASS |
+| Outdoor | `src/theme.h` | 9 | 3.11 | PASS |
+| Classic | `src/theme.h` | 9 | 3.12 | PASS |
+| Outdoor-Negative | derivado `use_builtin()` | 9 | 4.06 | PASS |
+| VISION | derivado `use_builtin()` | 9 | 7.02 | PASS |
+| Holo | `rootfs/.../Holo.json` | 9 | 3.12 | PASS |
+| Material 3 | `rootfs/.../Material 3.json` | 9 | 5.14 | PASS |
+| RS | `rootfs/.../RS/theme.json` | 9 | 3.08 | PASS |
+
+El peor par de cada tema es `control_border` sobre `dialog`/`panel` (el riel del
+switch/slider de Ajustes, UI-007): pasa el 3.0:1 de texto grande/no-texto con poco
+margen, por eso figura primero en la tabla.
+
+### No-texto (1.4.11) — objetos informativos, medidos por píxeles
+
+`nontext_checks.py` mide, sobre los renders commiteados en `tools/ab_testing/golden/`
+(capturas deterministas de la revisión), cada objeto con rectángulos **fijos
+declarados** en `quality/nontext.yaml` (el mismo idioma de los contratos `region_*`).
+El color del objeto es el percentil alto de su región y el de la superficie el
+percentil bajo del fondo; como el objeto puede ser más claro o más oscuro que su
+fondo (el waterfall de Outdoor es tinta oscura sobre blanco, el de Classic es tinta
+clara sobre negro), se mide en ambas polaridades y se reporta la que separa al objeto
+de su superficie. Umbral 3.0:1. Self-tests sintéticos fijan el algoritmo (pasa/falla,
+ambas polaridades, región que "yerra" al objeto, un píxel anti-aliased no decide).
+
+| Tema | objeto no-texto | ratio | fg / bg |
+|------|-----------------|------:|---------|
+| IU1WXY | S-meter (arco `meter_over`) | 9.86 | #ffffff / #364552 |
+| IU1WXY | waterfall (columna) | 5.73 | #35b129 / #000d73 |
+| IU1WXY | foco (celda `TC(focus)`) | 8.76 | #ffffff / #394e56 |
+| Legacy | S-meter | 9.40 | #ffffff / #2e4866 |
+| Legacy | waterfall (`main-espectro-agua`) | 4.71 | #149748 / #00065b |
+| Outdoor | S-meter | 3.74 | #000000 / #5e6972 |
+| Outdoor | waterfall | 13.58 | #181818 / #e1e1e1 |
+| Classic | S-meter | 3.30 | #ff4040 / #2f3b47 |
+| Classic | waterfall | 16.61 | #e7f918 / #000043 |
+| Classic | franja CW / DIG del strip | 4.07 / 5.87 | #426bbd / #3a9955 sobre #000000 |
+| Holo | S-meter | 3.35 | #ff4444 / #2f3b47 |
+| Holo | waterfall | 5.73 | #35b129 / #000d73 |
+| Material 3 | S-meter | 6.37 | #ffb4ab / #313f4b |
+| Material 3 | waterfall | 5.73 | #35b129 / #000d73 |
+| Outdoor-Negative | S-meter | 11.43 | #ffffff / #2f3b47 |
+| Outdoor-Negative | waterfall | 11.14 | #d3d3d3 / #1e1e1e |
+| VISION | S-meter | 7.13 | #ffd040 / #34414e |
+| VISION | waterfall | 5.73 | #44b023 / #000d73 |
+| RS | S-meter | 3.22 | #ff5252 / #36424e |
+| RS | waterfall | 17.09 | #e7f952 / #000038 |
+
+21 objetos, 0 fallas. El **waterfall de Outdoor en claro (gris sobre gris)** de la
+observación de UI-010 **no se reproduce** con estos números: la columna de señal del
+waterfall de Outdoor es tinta oscura (#181818) sobre la cara clara (#e1e1e1) = 13.58:1,
+y el tema Legacy (el que usa `main-espectro-agua`) da 4.71:1. La paleta del waterfall de
+Outdoor/Classic/Legacy **sí es del tema** (`theme_shape.waterfall`), pero pasa el umbral;
+para IU1WXY/Holo/Material 3/RS/VISION el color del bin sale de `wf_palette_gauss[256]`
+(DSP), no del tema, y también pasa (5.7:1).
+
+### Exentos (WCAG 1.4.3, disabled/incidental)
+
+Se declaran como datos en `theme_pairs.yaml` (`exempt:`) con su razón, y
+`tests/test_theme_files.py` los pinea contra el conjunto `EXENTOS` de
+`tests/check_wcag.py` y verifica que cada uno sea un rol que el sweep del ROM mide
+(no data muerta): `btn_off_text` (botón deshabilitado), `text_mute`, `text_faint`
+(texto atenuado/en cola), `icon_off`, `switch_off`, `off`, `track` (estados apagados /
+pistas inactivas). Se miden e informan sin fallar; **no están en la tabla de pares**.
+
+### Fix aplicado en el mismo cambio (alcance tema)
+
+- **RS / S-meter**: el arco `TC(meter_over)` = `#ff4040` sobre la cara del medidor de
+  RS (`bar.png`) medía **2.96:1**, por debajo del 3:1 de 1.4.11. `RS/theme.json` lo
+  sube a `#ff5252` → **3.22:1** medido. El cambio se confina a `s_metro` y se declara
+  en `contracts.yaml` (`expected_changes`); el resto de los 9 renders queda
+  byte-idéntico. Los otros temas (Classic 3.30, Holo 3.35) ya pasaban.
+
+### Gates (host, 2026-10-14, HEAD del cambio)
+
+```
+tests/check_harness_determinism.sh                     → PASS (24 fixtures x2, hashes idénticos)
+uv run x6200-ab themes                                 → PASS, 9 temas x 9 pares = 81 + 21 objetos no-texto, 0 fallas
+uv run x6200-ab compare --a 0684861 --b HEAD           → PASS (24 escenarios; 1 diff declarado en s_metro/RS)
+uv run x6200-ab contracts --revision HEAD              → PASS (250 checks, 0 fallas)
+uv run x6200-ab audit --revision HEAD --suite visual   → PASS (2480 objetos, 0 findings estructurales)
+uv run x6200-ab benchmark --revision HEAD              → PASS
+uv run pytest -m "not e2e" -q                          → 164 passed, 17 deselected
+uv run pytest -m e2e -q                                → 17 passed
+tests/native/run_native_tests.sh                       → ok
+repo static checks (cfg_fills/actions/settings_focus/apps_menu/app_handlers/wcag) → PASS
+     tests/check_wcag.py → 990 OK / 0 fallas (9 paletas)
+```

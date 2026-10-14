@@ -125,6 +125,21 @@ expected_changes:
     author: ui04-tipografia
     until: 2027-03-31
 
+  # wcag-full (WCAG 1.4.11, issue #12): the RS S-meter arc (`TC(meter_over)`) went
+  # from #ff4040 to #ff5252 so it reaches 3:1 over the meter's bitmap face. The
+  # pixel measurement of the arc (tools/ab_testing/quality/nontext.yaml) read
+  # 2.96:1 with the old colour, below the non-text minimum; #ff5252 reads 3.22:1.
+  # The change is confined to the S-meter band (`s_metro`) of the RS fixture; the
+  # other nine golden renders stay byte-identical.
+  - region: s_metro
+    reason: >
+      wcag-full: hallazgo no-texto del arco del S-meter en el tema RS. El arco
+      TC(meter_over) = #ff4040 sobre la cara del medidor (bar.png de RS) daba
+      2.96:1, por debajo del 3:1 de WCAG 1.4.11. RS/theme.json lo sube a #ff5252
+      (3.22:1 medido). Solo se mueven los pixeles del arco dentro de `s_metro`.
+    author: wcag-full
+    until: 2027-03-31
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.
