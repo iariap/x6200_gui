@@ -49,6 +49,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 28. [WCAG: barra de estado, switch, slider y about](#28-wcag-barra-de-estado-switch-slider-y-about)
 29. [Todas las apps en el menu de apps](#29-todas-las-apps-en-el-menu-de-apps)
 30. [Verificacion en el banco (QEMU): paginas APP y WCAG](#30-verificacion-en-el-banco-qemu-paginas-app-y-wcag)
+31. [Ajustes con tabs: los botones de abajo ahora llevan a cada seccion](#31-ajustes-con-tabs-los-botones-de-abajo-ahora-llevan-a-cada-seccion)
 
 ---
 
@@ -1463,3 +1464,62 @@ Para manejarla sin teclas se agrego al control remoto el comando **`{"cmd":"page
 - La lista de apps del **control remoto** (`app_names[]`) no tiene About, Cluster, CW Trainer, Eq,
   Status, QTH, Callsign, Recorder ni WiFi: abrirlas por el socket responde "Unknown app". Es del
   protocolo remoto (la pagina /remote del webserver usa la misma lista), no de la GUI.
+
+---
+
+## 31. Ajustes con tabs: los botones de abajo ahora llevan a cada seccion
+
+**Pedido**: "en la pantalla de settings los botones no son usados, quiero que agrupes los settings
+por temas y que cada boton sea como un tab que se puede cambiar para ir mas agil a cada seccion".
+
+**Lo que habia**: 25 filas (date/time, backlight, mag, s-meter, band plan, wfview, clock, las dos
+acciones, audio gain/enh, voice, auto, waterfall x3, sp mode, freq accel, theme, bluetooth, cluster
+column, font, transverter xN) en una lista que se recorria **solo con la perilla**: `dialog_settings`
+no tenia `.btn_page`, asi que el marco de dialogos dejaba la fila de botones vacia.
+
+**Arreglado**: 8 grupos por tema, cada uno **contiguo** (se reordenaron las llamadas para que lo
+sean), con su tab:
+
+| Tab | Que entra |
+|---|---|
+| **Reloj** | Day/Month/Year, Hour/Min/Sec, Clock view, Timeout Clock/Power/TX |
+| **Pantalla** | Timeout/Brightness, Buttons brightness, S-meter needle, Band plan |
+| **Info** | Mag Freq, Info, ALC |
+| **Audio** | Line-in/out, audio gain, audio enhance, Speaker mode, Voice |
+| **Espectro** | Spectrum auto min/max, Waterfall auto min/max, line/zoom, smooth scroll, battery |
+| **Operacion** | Freq acceleration, Bluetooth, Discoverable, Cluster column, wfview, transverter |
+| **Apariencia** | Theme, Font |
+| **Acciones** | APP long press, MIC long press |
+
+Son 8, y la fila admite 5 (`#define BUTTONS 5`), asi que van en **dos paginas de 4** con el boton de
+pagina: `Reloj Pantalla Info Audio | Mas >` y `Espectro Operacion Apariencia Acciones | < Mas`
+(`tab_mas_cb`/`tab_menos_cb` llaman a `buttons_load_page()`, que es publica).
+
+Cada tab (`settings_goto(g)`) hace tres cosas:
+
+1. Lleva el grupo **arriba** de la vista con `lv_obj_scroll_to_y(grid, lv_obj_get_y(primero))`:
+   `lv_obj_scroll_to_view()` solo asegura que se vea, y con el grupo ya parcialmente visible el
+   salto quedaba a medias (visto en la radio: la seccion empezaba a media pantalla).
+2. Le da el foco a su **primer widget navegable**: los ajustes viven dentro de contenedores (la
+   etiqueta y el campo), y al grupo de foco entra el campo, no el contenedor, asi que hay que
+   bajar por el arbol (`primer_navegable()`). Sin esto la vista saltaba pero la perilla volvia al
+   widget de antes.
+3. Marca el tab activo con `buttons_mark()` (LV_STATE_CHECKED); los del otro lado quedan sin
+   `label_obj` y la funcion los ignora.
+
+**Dos cosas que aparecieron al verificar en la radio** (no en el banco, porque ahi no hay tema
+Material 3):
+
+1. El switch **prendido** salia con el azul `#2196f3` de LVGL, no con el color del tema: el tema
+   de LVGL trae su propio estilo para `LV_STATE_CHECKED` del switch y, al ser **mas especifico**
+   que un estilo local sin estado, ganaba. Ahora `styles_switch_init()` pisa los cuatro selectores
+   (0, CHECKED, PRESSED, CHECKED|PRESSED) y el switch prendido mide `#8e9099` = `control_border`
+   con la perilla `#111318` = `panel`, igual que el slider (medido sobre el framebuffer).
+2. Dos de los cinco `lv_switch_create` de `dialog_settings.c` no llamaban a
+   `styles_switch_init()` (los de S-meter needle y Band plan): quedaban con el estilo de LVGL. Ya
+   estan los cinco.
+
+**Verificado en la radio** (capturas en `evidencia-radio/tabs/`): los 8 tabs con su rotulo, el
+marcado del activo, el salto de cada uno a su seccion arriba de todo y el foco en su primer campo;
+`check_wcag.py` 990 pares / 0 fallas, `check_settings_focus.py`, `check_actions.py`,
+`check_apps_menu.py` y los 538 tests nativos, todos OK.

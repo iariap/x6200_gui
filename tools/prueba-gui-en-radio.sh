@@ -15,7 +15,7 @@
 
 set -e
 
-IP="${1:-192.168.0.236}"
+IP="${1:-${RADIO_IP:-192.168.0.236}}"
 VOLUMEN="${VOLUMEN:-x6200-build-output}"
 IMAGEN="${IMAGEN:-x6200-buildroot}"
 

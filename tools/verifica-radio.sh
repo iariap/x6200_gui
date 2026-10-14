@@ -13,7 +13,7 @@
 #   - que el log de la GUI no traiga senales de crash
 set -u
 
-IP="${1:-192.168.0.236}"
+IP="${1:-${RADIO_IP:-192.168.0.236}}"
 SSH_OPTS=(-F /dev/null -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
           -o ConnectTimeout=10 -o LogLevel=ERROR -o PreferredAuthentications=password
           -o PubkeyAuthentication=no)

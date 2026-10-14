@@ -299,26 +299,38 @@ void styles_init(themes_t theme) {
 
 void styles_switch_init(lv_obj_t *sw) {
     /* Pista / relleno / perilla con pares que el chequeo WCAG valida en los 9 temas: la pista usa
-     * control_border (el rol que el tema define para switches y sliders), el relleno el color de
-     * texto y la perilla el color de fondo, asi que la perilla se distingue del relleno y del
-     * fondo del dialogo. Antes lo pintaba el tema de LVGL (riel #E0E0E0 = 2.78:1 medido). */
-    lv_obj_set_style_bg_color(sw, TC(control_border), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(sw, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_set_style_border_width(sw, 0, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(sw, LV_OPA_TRANSP, LV_PART_INDICATOR);   /* sin relleno: el estado lo
-                                                                      * indica la posicion de la perilla */
-    lv_obj_set_style_bg_color(sw, TC(panel), LV_PART_KNOB);
-    lv_obj_set_style_bg_opa(sw, LV_OPA_COVER, LV_PART_KNOB);
+     * control_border (el rol que el tema define para switches y sliders) y la perilla el color de
+     * fondo, asi que la perilla se distingue del fondo del dialogo. El estado lo indica la POSICION
+     * de la perilla, no un relleno de color.
+     *
+     * Hay que pisar los cuatro selectores: el tema de LVGL trae su propio estilo para
+     * LV_STATE_CHECKED del switch y, al ser mas especifico que un estilo local sin estado, ganaba y
+     * el switch prendido quedaba con su azul #2196F3 (medido en el framebuffer de la radio, no es
+     * el azul del tema). Y antes el riel era #E0E0E0 = 2.78:1 contra el dialogo (docs/HALLAZGOS.md 28). */
+    static const lv_state_t estados[] = { 0, LV_STATE_CHECKED, LV_STATE_PRESSED, LV_STATE_CHECKED | LV_STATE_PRESSED };
+
+    for (size_t i = 0; i < sizeof(estados) / sizeof(estados[0]); i++) {
+        lv_obj_set_style_bg_color(sw, TC(control_border), LV_PART_MAIN | estados[i]);
+        lv_obj_set_style_bg_opa(sw, LV_OPA_COVER, LV_PART_MAIN | estados[i]);
+        lv_obj_set_style_border_width(sw, 0, LV_PART_MAIN | estados[i]);
+        lv_obj_set_style_bg_opa(sw, LV_OPA_TRANSP, LV_PART_INDICATOR | estados[i]);   /* sin relleno */
+        lv_obj_set_style_bg_color(sw, TC(panel), LV_PART_KNOB | estados[i]);
+        lv_obj_set_style_bg_opa(sw, LV_OPA_COVER, LV_PART_KNOB | estados[i]);
+    }
 }
 
 void styles_slider_init(lv_obj_t *sl) {
-    lv_obj_set_style_bg_color(sl, TC(control_border), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(sl, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(sl, LV_OPA_TRANSP, LV_PART_INDICATOR);
-    lv_obj_set_style_bg_color(sl, TC(panel), LV_PART_KNOB);
-    lv_obj_set_style_bg_opa(sl, LV_OPA_COVER, LV_PART_KNOB);
-    lv_obj_set_style_border_width(sl, 2, LV_PART_KNOB);
-    lv_obj_set_style_border_color(sl, TC(control_border), LV_PART_KNOB);
+    static const lv_state_t estados[] = { 0, LV_STATE_PRESSED };
+
+    for (size_t i = 0; i < sizeof(estados) / sizeof(estados[0]); i++) {
+        lv_obj_set_style_bg_color(sl, TC(control_border), LV_PART_MAIN | estados[i]);
+        lv_obj_set_style_bg_opa(sl, LV_OPA_COVER, LV_PART_MAIN | estados[i]);
+        lv_obj_set_style_bg_opa(sl, LV_OPA_TRANSP, LV_PART_INDICATOR | estados[i]);
+        lv_obj_set_style_bg_color(sl, TC(panel), LV_PART_KNOB | estados[i]);
+        lv_obj_set_style_bg_opa(sl, LV_OPA_COVER, LV_PART_KNOB | estados[i]);
+        lv_obj_set_style_border_width(sl, 2, LV_PART_KNOB | estados[i]);
+        lv_obj_set_style_border_color(sl, TC(control_border), LV_PART_KNOB | estados[i]);
+    }
 }
 
 void styles_set_theme(themes_t theme) {
