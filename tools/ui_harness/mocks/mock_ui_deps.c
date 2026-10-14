@@ -1,11 +1,13 @@
 /*
  *  Host stubs for everything the rendered GUI components call that is not a
  *  rendered component itself: the event bus, the message bars, voice, the
- *  Bluetooth/WiFi/backlight modules and the monotonic clock.
+ *  Bluetooth/WiFi/backlight modules, the audio volume surface, the wfview
+ *  server, the audio-enhancement presets and the clocks.
  *
  *  Every stub has a documented, fixed answer. In particular get_time() reads
- *  the harness' virtual clock (virtual_time.h), never the wall clock, so the
- *  rendered state can never depend on how long the process has run.
+ *  the harness' virtual clock (virtual_time.h) and __wrap_time() returns a
+ *  fixed epoch, never the wall clock, so the rendered state can never depend on
+ *  how long the process has run or on what the day is when it runs.
  *
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -14,9 +16,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "lvgl/lvgl.h"
 
+#include "audio.h"
+#include "audio_enhancement.h"
 #include "backlight.h"
 #include "btaudio.h"
 #include "bt_state.h"
@@ -26,9 +31,52 @@
 #include "spectrum.h"
 #include "util.h"
 #include "voice.h"
+#include "wfview_server.h"
 #include "wifi.h"
 
 #include "virtual_time.h"
+
+/* --- wall clock ------------------------------------------------------------
+ * `src/dialog_settings.c` fills its Day/Month/Year and Hour/Min/Sec fields from
+ * `time()` + `localtime()` (the RTC the radio sets). The harness has no RTC and
+ * must not depend on the host clock —a fixture that renders the current date
+ * would change every second—, so the link wraps every `time()` call of the
+ * firmware sources onto this fixed epoch (CMakeLists.txt: `--wrap=time`). The
+ * TZ is pinned to UTC by harness_main.c so `localtime()` is fixed too. The
+ * value is arbitrary but constant: 2026-01-01 00:00:00 UTC. */
+
+#define HARNESS_FIXED_EPOCH ((time_t) 1767225600)
+
+time_t __wrap_time(time_t *tloc)
+{
+    if (tloc != NULL) {
+        *tloc = HARNESS_FIXED_EPOCH;
+    }
+    return HARNESS_FIXED_EPOCH;
+}
+
+/* --- audio volume ----------------------------------------------------------
+ * audio_set_play_vol()/audio_set_rec_vol() (src/audio.c) drive the ALSA mixer
+ * and return the level the codec accepted; when the device is absent they
+ * return the requested value (src/audio.c:387/428). The harness never
+ * reaches a device, so the mixer is "absent": the requested value comes back,
+ * which is exactly what the firmware does on a machine without that mixer. */
+float audio_set_play_vol(float db) { return db; }
+float audio_set_rec_vol(float db) { return db; }
+
+/* --- audio enhancement presets ---------------------------------------------
+ * The Ajustes "Audio enhance" dropdown loads a DSP preset (src/
+ * audio_enhancement.c, speex + liquid). No FFT/DSP runs on the host, so the
+ * preset load is a no-op; the parameter the dropdown writes (params.
+ * audio_enh_preset) is the mock store's. */
+void audio_enh_preset_load(audio_enh_preset_t preset) { (void) preset; }
+
+/* --- wfview (Icom LAN) server ---------------------------------------------
+ * The real wfview_server reads /mnt/wfview.conf and opens UDP ports (pulse,
+ * cat). The harness owns no file and no socket: the server is off, so the
+ * Ajustes switch draws unchecked and enabling it is a no-op. */
+bool wfview_server_get_enabled(void) { return false; }
+void wfview_server_set_enabled(bool on) { (void) on; }
 
 /* --- event bus -------------------------------------------------------------
  * The custom event ids must be allocated by LVGL (lv_event_register_id), exactly

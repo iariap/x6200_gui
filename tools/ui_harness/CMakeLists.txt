@@ -76,6 +76,7 @@ set(GUI_SRC
     # dialogs stay inert mocks (see mocks/mock_main_screen.c).
     ${REPO}/src/dialog.c
     ${REPO}/src/dialog_about.c
+    ${REPO}/src/dialog_settings.c
 )
 
 # The GUI's own C++ (button bar, MFK encoder state, controls, DSP helpers) and
@@ -108,6 +109,15 @@ add_executable(ui_harness
 # warnings it surfaces are upstream (the ROM compiles the same code, and -Wformat
 # is on by default in GCC), never introduced by the harness code.
 target_compile_options(ui_harness PRIVATE -D_GNU_SOURCE -Wall)
+
+# The rendered state must not depend on how long the process has run, so the
+# wall clock is another service the harness owns: `--wrap=time` rewrites every
+# `time()` call of the linked firmware sources to `__wrap_time` (defined in
+# mocks/mock_ui_deps.c), which returns a fixed epoch. The RTC/`time()` on the
+# radio is replaced the same way `get_time()` is replaced by the virtual clock;
+# nothing else in the linked objects calls `time()` (the power clock only does it
+# in its CLOCK_TIME branch, which no fixture reaches).
+target_link_options(ui_harness PRIVATE -Wl,--wrap=time)
 
 target_compile_definitions(ui_harness PRIVATE
     LV_CONF_INCLUDE_SIMPLE=1

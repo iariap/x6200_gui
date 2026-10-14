@@ -29,7 +29,8 @@ typedef struct {
 const coverage_entry_t *coverage_main_screen(int *count);
 
 /* The entries that match the screen a scenario builds: the main-screen table,
- * or the dialog table when the scenario opens the real About window. */
+ * the dialog table when the scenario opens the real About window, or the
+ * settings table when it opens the real Ajustes window. */
 const coverage_entry_t *coverage_for_screen(const char *screen, int *count);
 
 const char *coverage_level_name(coverage_level_t level);

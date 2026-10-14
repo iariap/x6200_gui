@@ -441,6 +441,8 @@ Entregado en `tools/ui_harness/` y `tools/ab_testing/`:
   `dialog_about`). Los demás diálogos de app siguen siendo mocks inertes (su
   descriptor no hace nada). Sin tocar `src/`: Ajustes/WeFax/SSTV arrastran
   `dialog_field` y decenas de dependencias y quedan fuera del alcance.
+  *(Corregido después: Ajustes **no** arrastra `dialog_field` y quedó cubierto en
+  2026-10-14 — ver la sección **Fixture del diálogo de Ajustes**.)*
 - **Matriz de temas**: fixtures `main-tema-rs` (JSON RS con sus imágenes),
   `main-tema-outdoor-negative`, `main-tema-classic`, `main-tema-holo` y
   `main-tema-material-3`. El arnés lee los temas que la ROM trae desde el propio
@@ -500,8 +502,10 @@ los declara el JSON del arnés. La tabla exacta por componente está en cada JSO
 |---|---|---|---|---|---|
 | Pantalla `main_screen.c` | todas las `main`/`main-tema-*` | ✓ | | | |
 | Diálogo About (`dialog.c` + `dialog_about.c`) | `dialog-about` | ✓ | | | |
-| Otros diálogos de app | — | | | | ✗ (mocks inertes) |
-| Ajustes / menú de apps | — | | | | ✗ (arrastran `dialog_field` y decenas de deps) |
+| Diálogo de Ajustes (`dialog.c` + `dialog_settings.c`) | `settings-home`, `settings-wfbat` | ✓ | | | |
+| Menú de apps | — | | | | ✗ (no hay fixture del menú) |
+| Otros diálogos de app (BT/WeFax/SSTV, `dialog_field.c`) | — | | | | ✗ (mocks inertes; `dialog_field` **no** es dependencia de Ajustes) |
+| Servicios que Ajustes llama (audio/DSP/wfview/RTC/transverters/backlight/BT) | `settings-home`, `settings-wfbat` | | | ✓ (mocks explícitos, sin dispositivo) | |
 | Tema IU1WXY | `home-usb-20m`, `main-tx-simulado`, `main-bateria-baja`, `home-frecuencia-extrema`, `home-bateria-externa`, `bench-render` | ✓ | | | |
 | Tema Legacy | `main-espectro-agua`, `bench-render` | ✓ | | | |
 | Tema Outdoor | `main-otro-tema` | ✓ (defecto UI-010 corregido en UI-04/EXP-3) | | | |
@@ -515,7 +519,7 @@ los declara el JSON del arnés. La tabla exacta por componente está en cada JSO
 | Fuente elegida por el usuario (Roboto/DejaVu/Arial) | — | | | | ✗ (no hay fixture de fuente) |
 | Espectro / waterfall | todas | | ✓ (generador determinista, sin FFT) | | |
 | Catálogo de bandas (`band_info`) | todas | | ✓ (catálogo del arnés, no la DB) | | |
-| Foco / encoder | `main-foco` | | ✓ (cadena de foco real; sin resalte visible) | | |
+| Foco / encoder | `main-foco`, `settings-wfbat` | | ✓ (cadena de foco real: en `main-foco` sin resalte visible, en `settings-wfbat` el foco del tab Espectro) | | |
 | `cfg`, `params`, `radio` | todas | | | ✓ (mock explícito, sin DB/dispositivo) | |
 | Hardware / energía | — | | | | ✗ **BLOCKED** (sin X6200 físico) |
 
@@ -2125,6 +2129,152 @@ hasta la proxima transicion del perfil (y el switch de Ajustes, como manda la sp
 reflejando unicamente el param, no el perfil). Re-aplicar en cada paquete queda fuera del
 alcance de este incremento: no cambia la evidencia y agrega una escritura por paquete.
 
+## Fixture del diálogo de Ajustes (issue #11, desbloqueo de #14 incr. 5) ✅
+
+Gate: el arnés renderiza el **diálogo real de Ajustes** por el camino del firmware, con
+capturas deterministas (22 fixtures × 2) y las **20 previas byte-idénticas**; `contracts` y
+`audit` corren también sobre las dos fixtures nuevas, con un waiver acotado y fechado por cada
+defecto real que la fixture mide.
+
+### Lo que faltaba de verdad (medido, no la nota vieja)
+
+`src/dialog_settings.c` **no** arrastra `dialog_field` (la nota de UI-02 —"arrastran
+`dialog_field` y decenas de dependencias"— era **incorrecta**): se compila y linkea entero con
+lo que el arnés ya tenía (radio, backlight, waterfall, cluster, voice, teclado, scheduler,
+`dialog.c` real). Enumerado por el linker, lo que faltaba es corto:
+
+| pieza | por qué | cómo se resolvió |
+|---|---|---|
+| `speex/speex_preprocess.h` | lo incluye `src/audio_enhancement.h`, que `dialog_settings.c` incluye por el preset de audio | `libspeexdsp-dev` en el stage `ci` del Dockerfile (el arnés **no linkea** speex: solo el header), junto a `libsqlite3-dev`/`libliquid-dev`, que ya estaban por el mismo motivo |
+| `audio_set_play_vol` | `src/audio.c` maneja el mixer ALSA | mock: devuelve el valor pedido, **exactamente** lo que hace el firmware cuando el mixer no está (`src/audio.c:387`) |
+| `audio_enh_preset_load` | preset de DSP (speex+liquid) | mock no-op: en el host no corre DSP |
+| `wfview_server_get_enabled`/`set_enabled` | lee `/mnt/wfview.conf` y abre UDP (pulse/cat) | mock: sin archivo ni socket, off |
+| `cfg.cluster_column`, `cfg_transverters[]` | el firmware los inicializa desde SQLite | subjects del mock con los defaults de `src/cfg/transverter.c:36-50` (sin ellos el diálogo desreferenciaba NULL) |
+| `time()` + `localtime()` | los campos Day/Month/Year y Hour/Min/Sec salen del RTC | `--wrap=time` (CMakeLists) + `__wrap_time` con época fija + `TZ=UTC` en `harness_main`: el reloj de pared es otro servicio que el arnés posee, igual que `get_time()` |
+
+El build suma **2 warnings**, los dos de `src/dialog_settings.c` (locales `obj` sin usar,
+líneas 691 y 1270): son del firmware (el ROM compila el mismo código), no del arnés.
+
+### Las dos fixtures
+
+- **`settings-home`**: el diálogo abierto por `main_screen_action(ACTION_APP_SETTINGS)` sobre la
+  pantalla principal real (grupo Reloj: fecha/hora, Clock view, timeouts). El grupo de teclado
+  está creado antes de construir, así que `dialog_item()` registra cada widget como en la radio.
+- **`settings-wfbat`**: Ajustes con el **modo Ahorro del waterfall** encendido (clave de
+  escenario nueva `waterfall_battery`, que escribe `params.waterfall_battery.x`) y la vista
+  saltada al grupo **Espectro por el mismo camino del usuario**: `buttons_press(4)` carga la
+  página 2 con el botón "Mas >" y `buttons_press(0)` llama al tab "Espectro" →
+  `settings_goto()` (scroll + foco). El switch "Waterfall battery mode" se dibuja **marcado** y
+  el policy visual lleva la cascada real a su cadencia de ahorro (detrás del diálogo).
+
+Cobertura honesta (`coverage.c`, tabla nueva): `dialog.c` y `dialog_settings.c` **REAL**;
+`audio.c`, `audio_enhancement.c`, `wfview_server.c`, `cfg/transverter.c`, el RTC,
+`backlight.c` y `bt_state.c` **SYNTHETIC** (mocks explícitos); `dialog_field.c`
+**UNSUPPORTED y documentado como no-dependencia** de Ajustes.
+
+### Las reglas de layout que la fixture obligó a arreglar (no a silenciar)
+
+Ajustes es un **diálogo con scroll sobre la pantalla principal** y las reglas de layout estaban
+escritas para una pantalla única sin scroll: sobre el diálogo daban 93–96 `layout_offscreen`,
+4/1 `layout_overlap` y 1/1 `layout_clipped` **falsos positivos**. Se arreglaron de raíz (con
+test unitario por caso), no con un waiver:
+
+- **Contenido de un área de scroll** (`layout_checks._scroll_reach`): las filas bajo el pliegue
+  no son "nada en pantalla", son alcanzables. El inspector emite ahora **`scroll_dir`** y la
+  regla salta el nodo que sale de un área de scroll *en el eje que esa área scrollea*. El
+  viewport **no** es un área de scroll (`scroll_dir: all`, el default de LVGL en cualquier
+  objeto) y **ninguna sub-widget tampoco**: un widget empujado fuera de la pantalla por un
+  defecto sigue fallando (la regresión deliberada de la barra de botones lo sigue cazando, ver
+  `test_e2e.py`), y un label recortado por su propio spinbox también (el caso UI-016).
+- **Oclusión** (`layout_checks._overlap_hidden`): una etiqueta tapada por una **superficie opaca
+  pintada después** (el fondo del diálogo) no es "dos textos superpuestos": el usuario ve una.
+  El par se salta solo si la superficie cubre la intersección de las dos cajas.
+- **Target táctil**: un control scrolleado se mide con su **tamaño real**, no con la franja
+  visible (el dropdown a medio scrollear no es "un control de 14 px").
+
+Los 20 fixtures previos siguen dando **0 findings** (la prueba de que el cambio es inerte ahí)
+y cada comportamiento nuevo tiene su test en `tests/test_layout_checks.py` (incluido el caso
+que **sí** debe seguir fallando en cada clase).
+
+### Dos defectos reales de Ajustes (medidos y registrados, no arreglados acá)
+
+La spec prohíbe tocar Ajustes en esta corrida (los fixes son los issues UI-002…008), así que
+los dos hallazgos **reales** que la fixture mide quedan registrados con **excepción acotada
+(regla + fixture, nunca global) y fecha** en `quality/contracts.yaml`, visibles en el reporte:
+
+- **UI-015** (`layout_touch_target`): los ocho switches del grupo Espectro son 111×30 y el
+  slider del brillo del backlight 159×13, por debajo del **target de campo de 44 px**
+  (AGENTS.md).
+- **UI-016** (`layout_clipped`): el campo **Año** dibuja "2026" con 84 px de texto y el área de
+  contenido del spinbox le deja 80 → el último dígito pierde sus 4 px de la derecha.
+  `typography_text_overflow` **no** lo ve (mide contra la caja sin recortar); lo ve
+  `layout_clipped`.
+
+### Evidencia (host, 2026-10-14, `f360f92` → `63ecc87`)
+
+```text
+$ tests/check_harness_determinism.sh        # 22 fixtures x 2 corridas
+settings-home: 369cb648116732a75a88b88bfcf7062e20dc0e8be5fffbfbe8292a93fdd6e067
+settings-wfbat: c456422d50c408d5cd416b17a1a2c720bd26080cb255473f9642e49fa50b8aae
+... (las 20 previas con el MISMO sha256 del tip f360f92)
+PASS: deterministic (identical PNGs for every fixture)
+
+$ cd tools/ab_testing && uv run x6200-ab compare --a f360f92 --b HEAD --experiment-id AB-AJUSTES-T1
+experiment AB-AJUSTES-T1: PASS (exit 0)
+  Functional PASS · Visual Regression PASS (captures are pixel-identical to the baseline)
+  Quality Contract PASS (200 checks) · Performance PASS · Hardware BLOCKED · Energy BLOCKED
+  20/20 fixtures: changed_pixels 0        # la suite sale de la revision A (20 fixtures)
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts 63ecc8716859: PASS — 230 checks, 0 failure(s), 0 unchanged baseline defect(s)
+  (220 de las 22 fixtures + 10 findings estructurales de Ajustes, los 10 waived por UI-015/UI-016)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited 63ecc8716859: 16 known issues — 0 reproduced, 14 unverified; structural
+inspection REAL over 2306 objects on 22 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab benchmark --revision HEAD --experiment-id BENCH-AJUSTES-M1
+benchmark 63ecc8716859: PASS (exit 0) — 22 escenarios
+  settings-home  p50 6.623 p95 6.792 ms    settings-wfbat  p50 6.581 p95 6.881 ms
+  (los mas pesados del corpus, junto a dialog-about 6.119; la pantalla principal ~3.2-3.4 ms)
+
+$ uv run pytest -m "not e2e" -q           → 146 passed, 17 deselected
+$ tests/native/run_native_tests.sh        → 759 + 7 + 13 comprobaciones, 0 fallos
+repo static checks (cfg_fills/actions/settings_focus/apps_menu/app_handlers/wcag) → PASS
+ruff check / ruff format --check → limpios   (ty: "No python files found", pendiente conocido)
+build: 70 warnings (los mismos de siempre + 2 de src/dialog_settings.c, upstream)
+```
+
+`BENCH-AJUSTES-T1` (A vs B, 20 escenarios) **falla** en 5 escenarios con el **mismo trabajo**
+(flushes 1.0 y 384000 px en los 20) y su repetición `BENCH-AJUSTES-T1-repeat` pasa con p95 entre
+−13% y +21%: es el ruido del host ya documentado (`BENCH-UI04-EXP3-repeat`,
+`BENCH-UI05-T3-repeat`, `BENCH-UI07-T1-repeat`; load average ~3.7). Las dos corridas quedan
+commiteadas lado a lado.
+
+El tip del cambio es `892fc7c`, que agrega una comprobación de que la fila que `settings-wfbat`
+afirma mostrar está a la vista (si el renglón de tabs del pie se reordena, el arnés corta en vez
+de capturar otro grupo): **no mueve un solo píxel**, así que el determinismo, `contracts`
+(230 chequeos) y `audit` (2306 objetos / 22 escenarios) dan los mismos números en el tip. Los
+reportes commiteados citan `63ecc87`, la revisión del código contra la que corrió el `compare`.
+
+El `compare` sigue tomando los fixtures de la **revisión A** (el límite ya anotado en UI-07
+incr. 2 y UI-08 incr. 2): A no tiene las fixtures nuevas, así que la cadena A/B no gana el caso
+nuevo. La afirmación del render de Ajustes la dan el determinismo, `contracts`/`audit` sobre
+HEAD y las capturas PNG (`settings-home`/`settings-wfbat`), no el diff A/B.
+
+### Cómo lo siguen #14 incr. 5 y los issues
+
+- **#14 incr. 5 (UI de Ajustes / persistencia de la política)**: el arnés ya renderiza Ajustes,
+  así que el toggle de la política (y las filas que toque ese incremento) se pueden capturar y
+  medir en píxeles. La fixture `settings-wfbat` ya muestra el estado "Ahora" del switch del
+  waterfall, y `waterfall_battery` es una clave de escenario de primera clase.
+- **#10/#12 (tokens/Flex, restante de "filas de Ajustes")**: la grilla de Ajustes es ahora
+  visible y medible (`--inspect` da sus 280 objetos y los paths); convertir sus filas a
+  Flex/Grid se puede verificar pixel a pixel contra estas dos fixtures.
+- **#11 (semillas)**: ver la re-evaluación en `docs/UI_KNOWN_ISSUES.md` — el fixture de Ajustes
+  es el habilitante que faltaba para **UI-004** y **UI-007**; ambos quedan a un detector (grilla
+  de foco / variante de tema para el riel del switch) de fundarse.
+
 ## Pendientes
 
 - **UI-05 (Flex/Grid) sigue abierto**: el **incremento 1** fue la capa de tokens
@@ -2161,9 +2311,11 @@ alcance de este incremento: no cambia la evidencia y agrega una escritura por pa
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
   Hardware/Energy quedan BLOCKED/PENDING, nunca PASS por default.
 - **Fixtures de diálogos de app** (Ajustes, menú de apps, BT/WeFax/SSTV): el
-  About real ya está cubierto (`dialog-about`); Ajustes y los diálogos que
-  arrastran `dialog_field`/audio/tabla siguen fuera, y con ellos las semillas
-  UI-002/UI-004/UI-005 quedan `unverified`.
+  About real (`dialog-about`) y el **diálogo de Ajustes** (`settings-home`,
+  `settings-wfbat`, ver arriba) ya están cubiertos. Quedan fuera el menú de apps
+  y los diálogos BT/WeFax/SSTV (esos sí arrastran `dialog_field`/tabla); con
+  ellos las semillas UI-002/UI-005 quedan `unverified` y UI-004/UI-007 quedan a
+  un detector de distancia (ver `docs/UI_KNOWN_ISSUES.md`).
 - **Tema VISION y fuentes de usuario**: VISION ya tiene fixture
   (`main-tema-vision`, UI-03) y sus tres defectos de tipografía quedaron **fixed**:
   los glifos (**UI-011**) en UI-04/EXP-1, el overflow de `VFO-A` (**UI-012**) en

@@ -88,6 +88,44 @@ static const coverage_entry_t dialog_about[] = {
               "DX cluster column is not rendered (no cluster data on the host)"),
 };
 
+/* The `settings-home` / `settings-wfbat` scenarios: the same main screen with the
+ * real Ajustes window over it. The shared dialog machinery, the window itself
+ * and every widget it places are the real firmware sources; the few services the
+ * window calls (mixer volume, the DSP presets, the wfview server, the RTC) are
+ * the harness' explicit mocks, and the three transverter rows read harness
+ * subjects because there is no database. */
+static const coverage_entry_t settings_dialog[] = {
+    MAIN_COMPONENTS,
+    COMPONENT("dialog.c", COVERAGE_REAL,
+              "src/dialog.c compiled; dialog_construct()/dialog_init()/dialog_item() build the real dialog box over the screen"),
+    COMPONENT("dialog_settings.c", COVERAGE_REAL,
+              "src/dialog_settings.c compiled; the whole Ajustes grid is built and drawn (date/time, clock, backlight, info, audio, spectrum, waterfall, operations, appearance, actions)"),
+    COMPONENT("audio.c", COVERAGE_SYNTHETIC,
+              "the mixer surface only: audio_set_play_vol() returns the requested level (src/audio.c does the same when the ALSA mixer is absent); no device"),
+    COMPONENT("audio_enhancement.c", COVERAGE_SYNTHETIC,
+              "the preset load is a harness no-op; no speex/liquid DSP runs (mocks/mock_ui_deps.c)"),
+    COMPONENT("wfview_server.c", COVERAGE_SYNTHETIC,
+              "no /mnt/wfview.conf and no socket: the server reports off (mocks/mock_ui_deps.c)"),
+    COMPONENT("cfg/transverter.c", COVERAGE_SYNTHETIC,
+              "the three transverter rows read harness subjects with the firmware defaults; no DB (mocks/mock_cfg.c)"),
+    COMPONENT("RTC / system clock (time())", COVERAGE_SYNTHETIC,
+              "the date/time fields read a fixed epoch, not the host clock (CMakeLists `--wrap=time`); the radio's RTC is another replaced service"),
+    COMPONENT("backlight.c", COVERAGE_SYNTHETIC,
+              "the backlight setters are no-ops on the host (mocks/mock_ui_deps.c): the Ajustes backlight row draws, it does not change a level"),
+    COMPONENT("bt_state.c", COVERAGE_SYNTHETIC,
+              "Bluetooth off (mocks/mock_ui_deps.c): the two Bluetooth switches draw unchecked"),
+    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
+              "the other app dialogs are inert mocks; only the About and Ajustes paths are compiled and opened"),
+    COMPONENT("dialog_field.c", COVERAGE_UNSUPPORTED,
+              "not a dependency of the Ajustes window: src/dialog_settings.c does not include it, and the harness links the window without it (the earlier 'Ajustes arrastra dialog_field' note was wrong)"),
+    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
+              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
+    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
+              "DX cluster spot marks are not rendered (no cluster data on the host)"),
+    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
+              "DX cluster column is not rendered (no cluster data on the host)"),
+};
+
 const coverage_entry_t *coverage_main_screen(int *count)
 {
     *count = (int) (sizeof(main_screen) / sizeof(main_screen[0]));
@@ -99,6 +137,10 @@ const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
     if (screen && !strcmp(screen, "dialog-about")) {
         *count = (int) (sizeof(dialog_about) / sizeof(dialog_about[0]));
         return dialog_about;
+    }
+    if (screen && (!strcmp(screen, "settings-home") || !strcmp(screen, "settings-wfbat"))) {
+        *count = (int) (sizeof(settings_dialog) / sizeof(settings_dialog[0]));
+        return settings_dialog;
     }
     return coverage_main_screen(count);
 }

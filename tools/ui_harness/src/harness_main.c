@@ -38,6 +38,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include "lvgl/lvgl.h"
 
@@ -280,6 +281,14 @@ int main(int argc, char **argv)
     mock_params_init();
     mock_cfg_init();
     mock_radio_init();
+
+    /* `src/dialog_settings.c` fills its date/time fields with localtime(), which
+     * depends on TZ. The harness reads nothing from the environment, so the zone
+     * is pinned to UTC; together with the fixed epoch of `__wrap_time()`
+     * (mocks/mock_ui_deps.c) the Ajustes date/time fields are identical on every
+     * host and every run. */
+    setenv("TZ", "UTC", 1);
+    tzset();
 
     scenario_t scenario;
     memset(&scenario, 0, sizeof(scenario));

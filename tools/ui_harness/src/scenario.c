@@ -106,6 +106,12 @@ static bool apply_key(const char *key, const char *value, scenario_t *out)
         return parse_bool(value, &params.spectrum_peak);
     } else if (!strcmp(key, "waterfall_center_line")) {
         return parse_bool(value, &params.waterfall_center_line.x);
+    } else if (!strcmp(key, "waterfall_battery")) {
+        /* The user's waterfall battery mode (the Ajustes "Waterfall battery mode"
+         * switch, src/dialog_settings.c). Off by default; a fixture that turns it
+         * on renders the switch checked and drives the real waterfall into its
+         * saving cadence through the visual policy, exactly as the radio does. */
+        return parse_bool(value, &params.waterfall_battery.x);
     } else if (!strcmp(key, "frequency_hz")) {
         mock_radio.frequency_hz = strtoull(value, NULL, 10);
     } else if (!strcmp(key, "tx_frequency_hz")) {

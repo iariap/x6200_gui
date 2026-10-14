@@ -35,8 +35,8 @@ tools/ui_harness/
     mock_radio.c        explicit radio state + a call log (mock_radio_calls)
     mock_cfg.c          cfg / cfg_cur subjects and the band catalogue the components read
     mock_params.c       params_t with the values the layout needs
-    mock_main_screen.c  the app dialogs (About is real; the rest are inert), DX cluster column, scheduler queue, recorder/RTTY surface
-    mock_ui_deps.c      event bus, message helpers, voice, BT/WiFi/backlight, clock
+    mock_main_screen.c  the app dialogs (About and Settings are real; the rest are inert), DX cluster column, scheduler queue, recorder/RTTY surface
+    mock_ui_deps.c      event bus, message helpers, voice, BT/WiFi/backlight, audio volume + DSP preset + wfview server surfaces, the fixed wall clock (`__wrap_time`) and the virtual clock
     mock_dsp.c          the DSP setter mfk.cpp calls (no FFT runs)
   third_party/          vendored build headers (see third_party/README.md)
 ```
@@ -45,26 +45,36 @@ The real firmware sources are compiled here (see `CMakeLists.txt`): `main_screen
 plus `spectrum.c`, `waterfall.c`, `tx_info.c`, `band_plan.c`, `band_plan_data.c`,
 `pannel.c`, `vol.c`, `msg.c`, `msg_tiny.c`, `adaptive_tuning.c`, `cw_tune_ui.c`,
 `clock.c`, `info.c`, `meter.c`, `band_info.c`, `theme.c`, `styles.c`, `fonts/*`,
-`dialog.c` + `dialog_about.c` (the shared dialog machinery and the real About
-window the `dialog-about` fixture opens), the GUI's C++ (`buttons.cpp`, `mfk.cpp`,
-`controls.cpp`) and the real `cfg/subjects.cpp`. Nothing under `src/` of the
-repository is modified: the harness owns its source list, its LVGL config and its
-mocks.
+`dialog.c` + `dialog_about.c` + `dialog_settings.c` (the shared dialog machinery,
+the real About window the `dialog-about` fixture opens and the real Ajustes window
+the `settings-home`/`settings-wfbat` fixtures open), the GUI's C++
+(`buttons.cpp`, `mfk.cpp`, `controls.cpp`) and the real `cfg/subjects.cpp`.
+Nothing under `src/` of the repository is modified: the harness owns its source
+list, its LVGL config and its mocks.
+
+Two harness-owned services the Ajustes window needs are worth naming: the wall
+clock (the dialog fills its date/time fields from `time()`/`localtime()`, so the
+binary is linked with `--wrap=time` onto a fixed epoch and `harness_main` pins
+`TZ=UTC`) and the audio/wfview/preset surfaces (`src/audio.c`,
+`src/audio_enhancement.c`, `src/wfview_server.c` are not compiled: the mixer
+level, the DSP preset load and the wfview server are the explicit mocks in
+`mocks/mock_ui_deps.c`).
 
 ## Build
 
 The Docker image `x6200-uiharness` is the reproducible build environment. It is
 built **from scratch** from `ubuntu:24.04`: the `ci` stage installs the host
 build dependencies (`build-essential`, `cmake`, `pkg-config`, `libpng-dev`,
-`libnm-dev`, `libsqlite3-dev`, `libliquid-dev`) and the `full` stage (the
-default target) adds the extra packages the ROM's own test suites use
+`libnm-dev`, `libsqlite3-dev`, `libliquid-dev`, `libspeexdsp-dev`) and the `full`
+stage (the default target) adds the extra packages the ROM's own test suites use
 (`libfftw3-dev`, `libsndfile1-dev`, `libglib2.0-dev`, `sqlite3`,
 `libboost-dev`, `liquid-dsp 1.4.0`, `Catch2`). It no longer depends on the local
 `x6200-buildroot` image, which is 6.7 GB and cannot be rebuilt in CI. The
 harness links only libpng and libnm; the signal generator is plain C and does
 not use FFTW, but the firmware headers the harness compiles against pull in
-`<sqlite3.h>` (`src/cfg/cfg.h`) and `<liquid/liquid.h>` (`src/dsp.h`,
-`src/util.h`), hence those two development packages.
+`<sqlite3.h>` (`src/cfg/cfg.h`), `<liquid/liquid.h>` (`src/dsp.h`,
+`src/util.h`) and `<speex/speex_preprocess.h>` (`src/audio_enhancement.h`, which
+`src/dialog_settings.c` includes), hence those three development packages.
 
 ```sh
 # the default (full) image, same tag the tooling expects
@@ -128,7 +138,7 @@ cannot state, and it is measured, never guessed:
       "class": "lv_label", "x": 15, "y": 5, "w": 56, "h": 26,
       "clip": { "x": 0, "y": 0, "w": 800, "h": 480 },   // effective clipping
       "visible": { "x": 15, "y": 5, "w": 56, "h": 26 }, // box ∩ clip, null if off screen
-      "hidden": false, "opa": 255, "scrollable": true,
+      "hidden": false, "opa": 255, "scrollable": true, "scroll_dir": "all",
       "text_color": "#FFFFFF", "text_opa": 255,
       "bg_color": "#3A3F47", "bg_opa": 255, "bg_image": false,
       "text": "VFO-A", "text_font": "sony_20", "long_mode": "WRAP",
@@ -145,6 +155,12 @@ cannot state, and it is measured, never guessed:
 * `visible` is the object's own box intersected with the clipping of its
   ancestors (a parent without `LV_OBJ_FLAG_OVERFLOW_VISIBLE` clips its children,
   `lv_refr.c`); `null` when nothing of it lands on the screen.
+* `scroll_dir` is the axis the object may scroll on (`none`/`hor`/`ver`/`all`,
+  `lv_obj_get_scroll_dir`). LVGL's default is `all` on any object that never
+  configured scrolling — the screen and every sub-widget report it — so it is what
+  tells a **scroll area** (the Ajustes grid declares `ver`) from a default box: the
+  structural layout rules use it to tell content the user can scroll into view from
+  content pushed off the screen by a defect (`quality/layout_checks.py`).
 * Text sizes come from LVGL's own font metrics (`lv_txt_get_size`), with the
   label's letter/line space and long mode. `text_overflow` and `text_truncated`
   compare the text against the object's box; **no OCR** is involved.
@@ -280,7 +296,8 @@ run is in `tools/ab_testing/reports/NATURAL-UI07-N1/`.
 A scenario is a `key value` file (unknown keys are an error). Besides the radio
 state (`frequency_hz`, `mode`, `rxtx`, `smeter_db`, `battery_v`, …) it can pick
 the `theme` and a `seed`, and toggle `band_plan`, `spectrum_filled`,
-`spectrum_peak` and `waterfall_center_line`. `bench_warmup`, `bench_repeats`,
+`spectrum_peak`, `waterfall_center_line` and `waterfall_battery` (the user's
+waterfall battery mode, the Ajustes switch). `bench_warmup`, `bench_repeats`,
 `bench_redraw_passes` (the forced bench) and `natural_frames` (the natural bench)
 are honoured only in their own mode and never change a rendered pixel.
 
@@ -293,8 +310,12 @@ can measure how a given mode's text fits its fixed cell.
 
 The `screen` selects what is built: `main` (the real main screen), `dialog-about`
 (the same screen with the real About window opened through the firmware's own
-`main_screen_action(ACTION_APP_ABOUT)`) and `main-foco` (the same screen with the
-real keyboard group, so `lv_group_focus_next()` runs over it).
+`main_screen_action(ACTION_APP_ABOUT)`), `settings-home` and `settings-wfbat`
+(the same screen with the real Ajustes window, `ACTION_APP_SETTINGS` → `dialog_construct(dialog_settings)`;
+`settings-wfbat` then presses the bottom bar's "Mas >" and "Espectro" tabs through
+`buttons_press()`, the same path the user takes, so the view is scrolled to the
+Spectrum/waterfall group with its battery switch on) and `main-foco` (the same
+screen with the real keyboard group, so `lv_group_focus_next()` runs over it).
 
 The `theme` is the full name the GUI lists: a builtin (`IU1WXY`, `Legacy`,
 `Outdoor`, `Classic`, `Outdoor-Negative`, `VISION`) or a JSON theme the ROM ships
@@ -321,6 +342,8 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `main-natural` | the natural-bench fixture (its own seed, `natural_frames`); the spectrum/waterfall are driven frame by frame by `--bench-natural` |
 | `main-natural-eco` | the natural-bench fixture with the pack on battery at 11.2 V (`external_v 0.0`): the same screen/data as `main-natural`, but the visual policy puts the waterfall in ECO, so `--bench-natural` measures the reduced cadence (UI-08 incr. 2) |
 | `dialog-about` | the real main screen with the real About window open over it (`dialog.c` + `dialog_about.c`) |
+| `settings-home` | the real main screen with the real Ajustes window open over it (`dialog.c` + `dialog_settings.c`), on its first group (clock: date/time, Clock view, timeouts). The wall clock is the harness' fixed epoch, so the date/time fields are deterministic |
+| `settings-wfbat` | Ajustes scrolled to the Spectrum/waterfall group with the waterfall battery mode the user turned on (`waterfall_battery true`); the switch renders checked and the real waterfall runs the saving cadence the visual policy applies |
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
 | `main-tema-rs` | the same screen under the shipped "RS" JSON theme (with its images), for UI-007 |
 | `main-tema-vision` | the builtin "VISION" theme (every font three sizes up through `fonts_scale()`), for the icon-glyph and top-bar layout findings of UI-011/UI-012 |
@@ -341,7 +364,12 @@ Nothing that shapes the pixels reads the wall clock or sleeps:
   (`lv_tick_inc` + `lv_timer_handler` in fixed slices); `get_time()` (the
   firmware's monotonic clock) is wired to the same counter;
 - the radio state, the band catalogue and the cfg subjects are the mocks'
-  fixed values, never a device or a database.
+  fixed values, never a device or a database;
+- the wall clock is a harness-owned service too: the Ajustes dialog fills its
+  date/time fields from `time()`/`localtime()`, so the binary is linked with
+  `--wrap=time` onto a fixed epoch (`__wrap_time`, `mocks/mock_ui_deps.c`) and
+  `harness_main` pins `TZ=UTC`. Without it the fixture would render the host's
+  current second and every run would differ.
 
 `tests/check_harness_determinism.sh` builds the harness and runs **every**
 fixture twice, comparing the PNGs by sha256 (it must print `PASS`). Each run
@@ -374,8 +402,13 @@ inputs are substituted, so coverage is declared honestly per component:
 
 The `dialog-about` screen swaps the dialog row for the truth of the About path:
 `src/dialog.c` and `src/dialog_about.c` become REAL, and the other app dialogs
-stay UNSUPPORTED (they keep their inert mock descriptors). The coverage is chosen
-per `screen` (`coverage_for_screen()` in `src/coverage.c`).
+stay UNSUPPORTED (they keep their inert mock descriptors). The
+`settings-home`/`settings-wfbat` screens do the same for the Ajustes path
+(`dialog_settings.c` REAL; the services it calls — mixer volume, DSP preset,
+wfview server, the RTC, the transverter subjects — are SYNTHETIC, and
+`dialog_field.c` is declared UNSUPPORTED to record that it is **not** a
+dependency of Ajustes). The coverage is chosen per `screen`
+(`coverage_for_screen()` in `src/coverage.c`).
 
 The exact, per-scenario table is in each JSON's `coverage` array. It is never
 inflated: a PARTIAL is never written as REAL.

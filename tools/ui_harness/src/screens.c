@@ -17,14 +17,17 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "scenario.h"
 
 #include "lvgl/lvgl.h"
 
+#include "buttons.h"
 #include "clock.h"
 #include "keyboard.h"
+#include "main.h"
 #include "main_screen.h"
 #include "meter.h"
 #include "params/params.h"
@@ -40,6 +43,61 @@
 static uint16_t volts_to_mv(float volts)
 {
     return (uint16_t) (volts * 1000.0f + 0.5f);
+}
+
+/* The box the object actually shows on screen: its coordinates intersected with
+ * the clipping of its ancestors (a parent without LV_OBJ_FLAG_OVERFLOW_VISIBLE
+ * clips its children, exactly as lv_refr.c does) and with the viewport. An object
+ * scrolled out of a scroll area has coordinates inside the screen but shows
+ * nothing: the intersection is what tells the two apart. */
+static bool visible_on_screen(lv_obj_t *obj)
+{
+    lv_area_t area;
+
+    lv_obj_get_coords(obj, &area);
+
+    for (lv_obj_t *parent = lv_obj_get_parent(obj); parent != NULL;
+         parent = lv_obj_get_parent(parent)) {
+        if (lv_obj_has_flag(parent, LV_OBJ_FLAG_HIDDEN)) {
+            return false;
+        }
+        if (!lv_obj_has_flag(parent, LV_OBJ_FLAG_OVERFLOW_VISIBLE)) {
+            lv_area_t parent_area;
+
+            lv_obj_get_coords(parent, &parent_area);
+            if (!_lv_area_intersect(&area, &area, &parent_area)) {
+                return false;
+            }
+        }
+    }
+
+    lv_area_t viewport = { 0, 0, lv_disp_get_hor_res(NULL) - 1, lv_disp_get_ver_res(NULL) - 1 };
+
+    return _lv_area_intersect(&area, &area, &viewport);
+}
+
+/* Is a label with this exact text visible on screen? Used to codify what a
+ * fixture claims to show (see scenario_settle): the harness stops if the row is
+ * not visible, instead of capturing another group and reporting a green run. */
+static bool label_on_screen(lv_obj_t *obj, const char *text)
+{
+    if (lv_obj_check_type(obj, &lv_label_class) && !lv_obj_has_flag(obj, LV_OBJ_FLAG_HIDDEN)) {
+        const char *obj_text = lv_label_get_text(obj);
+
+        if (obj_text != NULL && strcmp(obj_text, text) == 0 && visible_on_screen(obj)) {
+            return true;
+        }
+    }
+
+    uint32_t children = lv_obj_get_child_cnt(obj);
+
+    for (uint32_t i = 0; i < children; i++) {
+        if (label_on_screen(lv_obj_get_child(obj, (int32_t) i), text)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 static void build_main(const scenario_t *scenario)
@@ -107,6 +165,19 @@ bool scenario_build(const scenario_t *scenario)
         return true;
     }
 
+    if (!strcmp(scenario->screen, "settings-home") || !strcmp(scenario->screen, "settings-wfbat")) {
+        /* Ajustes on top of the real main screen, opened by the firmware's own
+         * path: main_screen_action(ACTION_APP_SETTINGS) -> main_screen_start_app()
+         * -> dialog_construct(dialog_settings) (src/main_screen.c -> src/dialog.c
+         * -> src/dialog_settings.c). The keyboard group is up first so
+         * dialog_item() registers every widget and settings_goto() can move the
+         * focus, exactly as in the radio. */
+        mock_keyboard_group_up();
+        build_main(scenario);
+        main_screen_action(ACTION_APP_SETTINGS);
+        return true;
+    }
+
     fprintf(stderr, "scenario: unknown screen '%s'\n", scenario->screen);
     return false;
 }
@@ -116,5 +187,28 @@ void scenario_settle(const scenario_t *scenario)
     if (!strcmp(scenario->screen, "main-foco")) {
         /* Move the focus once the timers have run and the group is populated. */
         lv_group_focus_next(keyboard_group);
+    }
+
+    if (!strcmp(scenario->screen, "settings-wfbat")) {
+        /* Jump to the Spectrum/waterfall group the way the user does: the
+         * bottom bar's "Mas >" loads page 2 and its "Espectro" tab calls
+         * settings_goto(), which scrolls the grid and moves the focus
+         * (src/dialog_settings.c). Runs after the timers so the grid layout is
+         * already computed; both callbacks request LV_ANIM_OFF, so the resulting
+         * scroll is immediate and deterministic. */
+        buttons_press(4, false);    /* page 1, index 4: "Mas >"  */
+        buttons_press(0, false);    /* page 2, index 0: "Espectro" */
+
+        /* The presses are positional, and what this fixture *means* is that the
+         * Spectrum/waterfall group's row is the one on screen now. Codified
+         * instead of commented: if the bottom bar's tabs are ever reordered the
+         * harness stops here instead of capturing a different group and still
+         * printing a green determinism run. */
+        if (!label_on_screen(lv_scr_act(), "Waterfall battery mode")) {
+            fprintf(stderr,
+                    "settings-wfbat: 'Waterfall battery mode' is not on screen after the "
+                    "tab presses (did the bottom bar's tabs move?)\n");
+            exit(1);
+        }
     }
 }

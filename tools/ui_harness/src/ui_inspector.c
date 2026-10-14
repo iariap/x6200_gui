@@ -205,6 +205,23 @@ static const char *long_mode_name(lv_label_long_mode_t mode)
     }
 }
 
+/* The axis a container is allowed to scroll on. The structural checks need it to
+ * tell content the user can scroll to (a list/dialog scroll area, like the
+ * Ajustes grid) from content that is off the screen by mistake: a container that
+ * clips its children *and* scrolls on that axis can be reached; the viewport
+ * cannot. LVGL's default is LV_DIR_ALL, which is what an object that never
+ * configured scrolling reports. */
+static const char *scroll_dir_name(lv_dir_t dir)
+{
+    switch ((unsigned) dir) {
+        case LV_DIR_NONE: return "none";
+        case LV_DIR_HOR:  return "hor";
+        case LV_DIR_VER:  return "ver";
+        case LV_DIR_ALL:  return "all";
+        default:          return "other";
+    }
+}
+
 static void emit_label(FILE *f, const lv_obj_t *obj)
 {
     const char *text = lv_label_get_text(obj);
@@ -301,6 +318,7 @@ static void emit_node(inspector_t *ins, const lv_obj_t *obj, lv_area_t clip)
             lv_obj_has_flag(obj, LV_OBJ_FLAG_OVERFLOW_VISIBLE) ? "true" : "false");
     fprintf(f, ",\"scrollable\":%s",
             lv_obj_has_flag(obj, LV_OBJ_FLAG_SCROLLABLE) ? "true" : "false");
+    fprintf(f, ",\"scroll_dir\":\"%s\"", scroll_dir_name(lv_obj_get_scroll_dir(obj)));
     fprintf(f, ",\"clickable\":%s",
             lv_obj_has_flag(obj, LV_OBJ_FLAG_CLICKABLE) ? "true" : "false");
     fprintf(f, ",\"opa\":%u", (unsigned) lv_obj_get_style_opa(obj, LV_PART_MAIN));

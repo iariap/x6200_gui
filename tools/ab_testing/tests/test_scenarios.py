@@ -90,9 +90,12 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "main-tema-vision-cwr",
         "main-tema-vision-usbd",
         "main-tx-simulado",
+        "settings-home",
+        "settings-wfbat",
     ]
     # Every fixture builds one of the screens the harness knows; the theme
-    # fixtures still build `main`, only the dialog and focus ones do not.
+    # fixtures still build `main`, only the dialog, focus and settings ones do not.
     assert all(
-        scenario.screen in {"main", "dialog-about", "main-foco"} for scenario in suite.scenarios
+        scenario.screen in {"main", "dialog-about", "main-foco", "settings-home", "settings-wfbat"}
+        for scenario in suite.scenarios
     )

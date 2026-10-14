@@ -23,6 +23,7 @@ KNOWN_KEYS = frozenset(
         "spectrum_filled",
         "spectrum_peak",
         "waterfall_center_line",
+        "waterfall_battery",
         "band_plan",
         "frequency_hz",
         "tx_frequency_hz",

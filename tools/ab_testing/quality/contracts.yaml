@@ -134,11 +134,47 @@ review_regions: []
 # fixture (optionally one node `path`) and carry a reason, an author and an
 # expiry. Never global, never permanent.
 #
-# Empty on purpose. UI-013 was the last one: `theme_list()` offers names up to 31
-# characters and `params.theme_name` (a `params_str_t`, src/params/types.h) now
-# holds 31 too, so `theme_name_fits_params` passes on its own fixture and its
-# waiver was withdrawn in UI-04/AB-UI04-EXP4, together with the fix — the same
-# way the UI-011 waiver went in EXP-1, UI-012 in EXP-2 and the UI-010 region
-# exclusion in EXP-3. With no waiver left, a truncation that comes back fails the
-# run again and no recorded issue explains it.
-exceptions: []
+# UI-013 was the last one for a while: `theme_list()` offers names up to 31
+# characters and `params.theme_name` (a `params_str_t`, src/params/types.h) holds
+# 31 too, so `theme_name_fits_params` passes on its own fixture and its waiver was
+# withdrawn in UI-04/AB-UI04-EXP4, together with the fix — the same way the UI-011
+# waiver went in EXP-1, UI-012 in EXP-2 and the UI-010 region exclusion in EXP-3.
+# With no waiver left, a truncation that comes back fails the run again and no
+# recorded issue explains it.
+#
+# The three below are new (the Ajustes window, UI-015/UI-016); see their `reason`.
+exceptions:
+  # Ajustes (`settings-home` / `settings-wfbat`): two REAL defects of the Ajustes
+  # window that this change renders/measures for the first time (UI-015, UI-016).
+  # Fixing them is the Ajustes UX increment — this run only teaches the harness to
+  # render the window, and `src/dialog_settings.c` is not touched. Each waiver is
+  # scoped to one rule and one fixture (never global), carries a reason and an
+  # expiry, and stays visible in the `contracts`/`audit` report; the check itself
+  # is not weakened. Withdraw each one in the same change that fixes the defect.
+  - rule: layout_touch_target
+    fixture: settings-wfbat
+    reason: >
+      UI-015: the eight Ajustes switches are 111x30 — LVGL's lv_switch height —
+      below the 44px field-UX target. Pre-existing row geometry of the firmware;
+      the fixture change does not alter it.
+    author: ajustes-fixture
+    until: 2027-03-31
+
+  - rule: layout_touch_target
+    fixture: settings-home
+    reason: >
+      UI-015: the Ajustes backlight slider is 159x13 tall, below the 44px target.
+      Same pre-existing row geometry as the switches.
+    author: ajustes-fixture
+    until: 2027-03-31
+
+  - rule: layout_clipped
+    fixture: settings-home
+    reason: >
+      UI-016: the Ajustes year field ("2026", sony_36) draws 84px of text and the
+      spinbox content area leaves 80, so the last digit loses its right 4px
+      (inspection: text_natural.w 84 vs visible 80). Real, pre-existing clip of
+      the Ajustes row; the fix (widen the field or shrink its font, the same
+      idiom the VFO cell uses) is the Ajustes UX increment.
+    author: ajustes-fixture
+    until: 2027-03-31

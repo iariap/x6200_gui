@@ -14,15 +14,18 @@
 
 # --- ci: minimal image the harness and the Python framework need ------------
 # The harness links only libpng and libnm, but the firmware headers it compiles
-# against pull in <sqlite3.h> (src/cfg/cfg.h) and <liquid/liquid.h>
-# (src/dsp.h, src/util.h), so libsqlite3-dev and libliquid-dev are required to
-# build it. The signal generator is plain C and does NOT use FFTW.
+# against pull in <sqlite3.h> (src/cfg/cfg.h), <liquid/liquid.h>
+# (src/dsp.h, src/util.h) and <speex/speex_preprocess.h>
+# (src/audio_enhancement.h, which src/dialog_settings.c includes), so
+# libsqlite3-dev, libliquid-dev and libspeexdsp-dev are required to build it.
+# The signal generator is plain C and does NOT use FFTW, and the harness never
+# links speex: only the headers are needed so the real sources compile.
 FROM ubuntu:24.04 AS ci
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq \
     && apt-get install -y -qq --no-install-recommends \
         build-essential cmake git pkg-config ca-certificates \
-        libpng-dev libnm-dev libsqlite3-dev libliquid-dev \
+        libpng-dev libnm-dev libsqlite3-dev libliquid-dev libspeexdsp-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # --- full: adds the extra host dependencies of the ROM's test suites --------
