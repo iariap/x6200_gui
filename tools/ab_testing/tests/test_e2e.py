@@ -36,6 +36,7 @@ class Revisions:
     regression: str
     defect: str
     bench_regression: str
+    structural: str
     cache_dir: Path
 
 
@@ -119,6 +120,34 @@ def _raise_bench_cost(worktree: Path) -> None:
     path.write_text(text.replace(needle, "bench_redraw_passes 3"))
 
 
+def _inject_structural_defects(worktree: Path) -> None:
+    """Deliberate structural defects, all in the real top bar (`src/info.c`):
+
+    * the mode label of a fixed 56x26 cell holds a much longer text, so it wraps
+      past the cell (overflowing text);
+    * the WiFi cell draws U+F293, a glyph that no font in the chain has, so LVGL
+      paints a placeholder box (missing glyph);
+    * the WiFi cell paints its text with the cell's own background colour, so the
+      pair is illegible (contrast 1:1).
+    """
+    path = worktree / "src" / "info.c"
+    text = path.read_text()
+
+    mode = "lv_label_set_text(items[INFO_MODE], info_params_mode_label_get());"
+    assert mode in text
+    text = text.replace(mode, 'lv_label_set_text(items[INFO_MODE], "VERYLONGMODENAME");')
+
+    glyph = "lv_label_set_text(items[INFO_WIFI], LV_SYMBOL_WIFI);"
+    assert glyph in text
+    text = text.replace(glyph, 'lv_label_set_text(items[INFO_WIFI], "\\xEF\\x8A\\x93");')
+
+    contrast = "lv_obj_set_style_text_color(items[INFO_WIFI], TC(text_dim), 0);"
+    assert contrast in text
+    text = text.replace(contrast, "lv_obj_set_style_text_color(items[INFO_WIFI], TC(bar), 0);")
+
+    path.write_text(text)
+
+
 def _base_revision() -> str:
     """The commit the demo revisions are built from.
 
@@ -142,9 +171,15 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
     regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar)
     defect = _ephemeral(REPO_ROOT, base, "defect", _show_multiplier_label)
     bench_regression = _ephemeral(REPO_ROOT, base, "bench", _raise_bench_cost)
+    structural = _ephemeral(REPO_ROOT, base, "structural", _inject_structural_defects)
     _record_patches(
         base,
-        {"regression": regression, "defect": defect, "bench": bench_regression},
+        {
+            "regression": regression,
+            "defect": defect,
+            "bench": bench_regression,
+            "structural": structural,
+        },
     )
     try:
         yield Revisions(
@@ -152,6 +187,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             regression=regression,
             defect=defect,
             bench_regression=bench_regression,
+            structural=structural,
             cache_dir=cache_dir,
         )
     finally:
@@ -163,6 +199,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             "abtest/regression",
             "abtest/defect",
             "abtest/bench",
+            "abtest/structural",
         )
         _git("-C", str(REPO_ROOT), "worktree", "prune")
 
@@ -316,18 +353,71 @@ def _run(tmp_path: Path, revisions: Revisions, extra: list[str]) -> int:
     )
 
 
-def test_audit_reports_the_missing_instrumentation(
+def _record_audit(payload: dict, slug: str) -> None:
+    """Keep the structural audit evidence next to the committed reports."""
+    override = os.environ.get("X6200_AB_E2E_REPORTS")
+    if not override:
+        return
+    destination = Path(override).resolve() / "AB-e2e-structural"
+    destination.mkdir(parents=True, exist_ok=True)
+    (destination / f"audit-{slug}.json").write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    )
+
+
+def test_audit_uses_the_real_instrumentation(
     tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
 ) -> None:
+    # `--ref`/`--suite` are the aliases the plan's gate command uses.
     code = _run(
         tmp_path,
         revisions,
-        ["audit", "--revision", revisions.base, "--scenario", FIXTURE],
+        ["audit", "--ref", revisions.base, "--suite", "visual", "--scenario", FIXTURE],
     )
-    assert code == 0
     payload = json.loads(capsys.readouterr().out)
+    assert code == 0
     assert payload["issues"], "the audit must evaluate the registered issues"
-    assert "structural inspection" in payload["blocked_instrumentation"]
+    assert payload["instrumentation"]["structural"] is True
+    assert payload["instrumentation"]["nodes_inspected"] > 0
+    assert payload["structural_failures"] == 0
+    assert "blocked_instrumentation" not in payload
+    _record_audit(payload, "base")
+
+
+def test_audit_detects_a_clipped_element(
+    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
+) -> None:
+    """The button bar pushed past the screen edge is a real structural defect."""
+    code = _run(
+        tmp_path,
+        revisions,
+        ["audit", "--revision", revisions.regression, "--scenario", FIXTURE],
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert code == 1
+    failed = {finding["rule"] for finding in payload["findings"] if not finding["ok"]}
+    assert "layout_clipped" in failed
+    _record_audit(payload, "clipped")
+
+
+def test_audit_detects_text_glyph_and_contrast_defects(
+    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
+) -> None:
+    """The three deliberate text defects of the milestone-2 self-test."""
+    code = _run(
+        tmp_path,
+        revisions,
+        ["audit", "--revision", revisions.structural, "--scenario", FIXTURE],
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert code == 1
+    failed = {finding["rule"] for finding in payload["findings"] if not finding["ok"]}
+    assert {
+        "typography_text_overflow",
+        "typography_missing_glyph",
+        "typography_contrast",
+    } <= failed
+    _record_audit(payload, "structural")
 
 
 def test_contracts_pass_on_the_base(

@@ -3,31 +3,24 @@
 Contracts are independent of the baseline — they are the "C" of the plan. They
 answer questions a diff cannot: is the framebuffer the size the layout expects,
 is every component on screen instead of blank, is the coverage table honest and
-complete. A diff of zero is not proof of quality; these rules are.
+complete, and — from the harness' structural inspection — does the layout hold
+(text fits, nothing clipped or stacked, controls big enough) with legible
+colours and real glyphs. A diff of zero is not proof of quality; these rules are.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any
+from datetime import date
 
 from .capture import Capture
+from .findings import ContractFinding
+from .layout_checks import run_layout_checks
 from .quality_config import QualityContracts
 from .regions import RegionMap
+from .typography_checks import run_typography_checks
 from .visual_diff import load_rgb, region_content_fraction
 
-
-@dataclass(frozen=True)
-class ContractFinding:
-    """One contract checked against one capture."""
-
-    rule: str
-    fixture: str
-    ok: bool
-    detail: str
-
-    def as_dict(self) -> dict[str, Any]:
-        return {"rule": self.rule, "fixture": self.fixture, "ok": self.ok, "detail": self.detail}
+__all__ = ["ContractFinding", "run_contracts"]
 
 
 def run_contracts(
@@ -35,12 +28,62 @@ def run_contracts(
 ) -> list[ContractFinding]:
     """Evaluate every contract for every capture, in a stable order."""
     findings: list[ContractFinding] = []
+    today = date.today()
     for capture in captures:
         findings.append(_framebuffer(capture, region_map))
         findings.extend(_region_content(capture, region_map, contracts))
         findings.append(_coverage_levels(capture, contracts))
         findings.append(_coverage_required(capture, contracts))
-    return findings
+        findings.extend(run_layout_checks(capture, contracts.layout))
+        findings.extend(run_typography_checks(capture, contracts.typography))
+    return apply_waivers(findings, contracts, today)
+
+
+def run_structural_checks(
+    captures: list[Capture], contracts: QualityContracts
+) -> list[ContractFinding]:
+    """Only the layout + typography checks, with waivers applied.
+
+    The audit reports this side of the contracts on its own, without the
+    pixel-region rules that need a rendered PNG to be interpreted.
+    """
+    findings: list[ContractFinding] = []
+    for capture in captures:
+        findings.extend(run_layout_checks(capture, contracts.layout))
+        findings.extend(run_typography_checks(capture, contracts.typography))
+    return apply_waivers(findings, contracts, date.today())
+
+
+def apply_waivers(
+    findings: list[ContractFinding], contracts: QualityContracts, today: date
+) -> list[ContractFinding]:
+    """Turn a failing finding covered by an active exception into a recorded waiver.
+
+    The finding stays in the report, marked `ok` with the reason and the expiry,
+    so an exception is visible instead of silently dropping evidence.
+    """
+    result: list[ContractFinding] = []
+    for finding in findings:
+        if finding.ok:
+            result.append(finding)
+            continue
+        waiver = contracts.waiver(finding.rule, finding.fixture, finding.path, today)
+        if waiver is None:
+            result.append(finding)
+            continue
+        result.append(
+            ContractFinding(
+                rule=finding.rule,
+                fixture=finding.fixture,
+                ok=True,
+                detail=(
+                    f"waived until {waiver.until} by {waiver.author}: {waiver.reason} "
+                    f"({finding.detail})"
+                ),
+                path=finding.path,
+            )
+        )
+    return result
 
 
 def _framebuffer(capture: Capture, region_map: RegionMap) -> ContractFinding:

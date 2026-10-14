@@ -20,19 +20,27 @@ def read_yaml_mapping(path: Path) -> dict[str, Any]:
     return loaded
 
 
-def as_int(mapping: dict[str, Any], key: str, where: Path | str) -> int:
+def as_int(
+    mapping: dict[str, Any], key: str, where: Path | str, *, default: int | None = None
+) -> int:
+    if key not in mapping:
+        if default is not None:
+            return default
+        raise ConfigError(f"{where}: missing `{key}`")
     try:
         return int(mapping[key])
-    except KeyError as exc:
-        raise ConfigError(f"{where}: missing `{key}`") from exc
     except (TypeError, ValueError) as exc:
         raise ConfigError(f"{where}: `{key}` must be an integer") from exc
 
 
-def as_float(mapping: dict[str, Any], key: str, where: Path | str) -> float:
+def as_float(
+    mapping: dict[str, Any], key: str, where: Path | str, *, default: float | None = None
+) -> float:
+    if key not in mapping:
+        if default is not None:
+            return default
+        raise ConfigError(f"{where}: missing `{key}`")
     try:
         return float(mapping[key])
-    except KeyError as exc:
-        raise ConfigError(f"{where}: missing `{key}`") from exc
     except (TypeError, ValueError) as exc:
         raise ConfigError(f"{where}: `{key}` must be a number") from exc

@@ -2,12 +2,17 @@
  *  ui_harness: headless LVGL renderer for the X6200 GUI.
  *
  *  Usage: ui_harness --scenario <file> --png <out.png> --json <out.json>
- *                    [--bench [--warmup N] [--repeats N]]
+ *                    [--bench [--warmup N] [--repeats N]] [--inspect]
  *
  *  Builds a scenario from real firmware components on an 800x480 RAM
  *  framebuffer, advances the harness' virtual clock (no sleeps), writes the
  *  PNG and a JSON with the git revision, the per-component coverage and the
  *  render metrics.
+ *
+ *  With `--inspect` the JSON also carries the structural inspection of the live
+ *  LVGL object tree (see ui_inspector.h): bounding boxes with the real clipping,
+ *  widget class, label text with its font metrics and the glyphs that fall back
+ *  or are missing. It never changes a rendered pixel.
  *
  *  With `--bench` it also measures the real render cost of each frame with the
  *  monotonic clock (see bench_metrics.h) and writes the per-frame timings plus
@@ -37,6 +42,7 @@
 #include "theme.h"
 #include "fonts/font_select.h"
 #include "coverage.h"
+#include "ui_inspector.h"
 #include "virtual_time.h"
 
 #include "mock_harness.h"
@@ -50,7 +56,7 @@ static void usage(const char *argv0)
 {
     fprintf(stderr,
             "usage: %s --scenario <file> --png <out.png> [--json <out.json>]\n"
-            "          [--bench [--warmup N] [--repeats N]]\n",
+            "          [--bench [--warmup N] [--repeats N]] [--inspect]\n",
             argv0);
 }
 
@@ -96,7 +102,8 @@ static void write_benchmark(FILE *f, const scenario_t *scenario)
     fprintf(f, "  }\n");
 }
 
-static void write_json(const char *path, const char *png_path, const scenario_t *scenario)
+static void write_json(const char *path, const char *png_path, const scenario_t *scenario,
+                       bool inspect)
 {
     FILE *f = fopen(path, "w");
 
@@ -145,9 +152,16 @@ static void write_json(const char *path, const char *png_path, const scenario_t 
             (unsigned long long) png_framebuffer_hash());
     fprintf(f, "    \"png_path\": \"%s\",\n", png_path);
     fprintf(f, "    \"png_bytes\": %ld\n", file_size(png_path));
-    fprintf(f, "  }%s\n", bench_enabled() ? "," : "");
+    fprintf(f, "  }%s\n", (bench_enabled() || inspect) ? "," : "");
     if (bench_enabled()) {
         write_benchmark(f, scenario);
+        if (inspect) {
+            fprintf(f, ",\n");
+        }
+    }
+    if (inspect) {
+        fprintf(f, "  \"inspection\": ");
+        ui_inspector_write_json(f, lv_scr_act());
     }
     fprintf(f, "}\n");
     fclose(f);
@@ -159,6 +173,7 @@ int main(int argc, char **argv)
     const char *png_path = NULL;
     const char *json_path = NULL;
     bool        bench = false;
+    bool        inspect = false;
     int         warmup_override = -1;
     int         repeats_override = -1;
 
@@ -171,6 +186,8 @@ int main(int argc, char **argv)
             json_path = argv[++i];
         } else if (!strcmp(argv[i], "--bench")) {
             bench = true;
+        } else if (!strcmp(argv[i], "--inspect")) {
+            inspect = true;
         } else if (!strcmp(argv[i], "--warmup") && i + 1 < argc) {
             warmup_override = (int) strtol(argv[++i], NULL, 10);
         } else if (!strcmp(argv[i], "--repeats") && i + 1 < argc) {
@@ -265,7 +282,7 @@ int main(int argc, char **argv)
     }
 
     if (json_path) {
-        write_json(json_path, png_path, &scenario);
+        write_json(json_path, png_path, &scenario, inspect);
     }
 
     printf("ui_harness: %s -> %s (%ld bytes), flushes=%u, flushed_pixels=%llu\n",

@@ -63,6 +63,66 @@ class BenchmarkBudget:
 
 
 @dataclass(frozen=True)
+class LayoutRules:
+    """Geometry rules over the harness' structural inspection."""
+
+    min_touch_target_px: int
+    clip_tolerance_px: int
+
+
+@dataclass(frozen=True)
+class TypographyRules:
+    """Text-legibility rules over the structural inspection.
+
+    `allow_fallback_glyphs` is true for this firmware on purpose: the alternate
+    fonts are ASCII-only and the icon glyphs are meant to come from the Sony
+    fallback. A glyph missing from *every* font (`missing_glyphs`, a placeholder
+    rectangle on screen) is a defect regardless.
+    """
+
+    min_contrast_ratio: float
+    large_text_min_contrast_ratio: float
+    large_text_px: int
+    allow_fallback_glyphs: bool
+
+
+@dataclass(frozen=True)
+class RuleException:
+    """A scoped, dated waiver for one structural finding.
+
+    Never global and never permanent: it names the rule and the fixture (and
+    optionally one node path) and carries a reason, an author and an expiry date.
+    """
+
+    rule: str
+    fixture: str
+    reason: str
+    author: str
+    until: str
+    path: str | None = None
+
+    def active(self, rule: str, fixture: str, path: str | None, today: date) -> bool:
+        if self.rule != rule or self.fixture != fixture:
+            return False
+        if self.path is not None and self.path != path:
+            return False
+        try:
+            return today <= date.fromisoformat(self.until)
+        except ValueError as exc:
+            raise ConfigError(f"exception until `{self.until}` is not an ISO date") from exc
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "rule": self.rule,
+            "fixture": self.fixture,
+            "path": self.path,
+            "reason": self.reason,
+            "author": self.author,
+            "until": self.until,
+        }
+
+
+@dataclass(frozen=True)
 class Budgets:
     visual: VisualBudget
     performance: PerformanceBudget
@@ -103,9 +163,26 @@ class QualityContracts:
     coverage_levels: tuple[str, ...]
     expected_changes: tuple[ExpectedChange, ...]
     review_regions: tuple[str, ...] = ()
+    layout: LayoutRules = LayoutRules(min_touch_target_px=44, clip_tolerance_px=0)
+    typography: TypographyRules = TypographyRules(
+        min_contrast_ratio=4.5,
+        large_text_min_contrast_ratio=3.0,
+        large_text_px=24,
+        allow_fallback_glyphs=True,
+    )
+    exceptions: tuple[RuleException, ...] = ()
 
     def active_expectations(self, today: date) -> tuple[ExpectedChange, ...]:
         return tuple(change for change in self.expected_changes if change.active(today))
+
+    def waiver(
+        self, rule: str, fixture: str, path: str | None, today: date
+    ) -> RuleException | None:
+        """The active exception that covers a finding, if any."""
+        for exception in self.exceptions:
+            if exception.active(rule, fixture, path, today):
+                return exception
+        return None
 
 
 def load_budgets(path: Path) -> Budgets:
@@ -167,13 +244,70 @@ def load_contracts(path: Path, known_regions: set[str]) -> QualityContracts:
         if str(name) not in known_regions:
             raise ConfigError(f"{path}: review_regions names unknown region `{name}`")
         review_regions.append(str(name))
+    layout = _load_layout(data.get("layout", {}), path)
+    typography = _load_typography(data.get("typography", {}), path)
+    exceptions = _load_exceptions(data.get("exceptions", []), path)
     return QualityContracts(
         region_min_content=region_min_content,
         required_coverage_components=tuple(str(item) for item in required),
         coverage_levels=tuple(str(item) for item in levels),
         expected_changes=expected,
         review_regions=tuple(review_regions),
+        layout=layout,
+        typography=typography,
+        exceptions=exceptions,
     )
+
+
+def _load_layout(raw: object, path: Path) -> LayoutRules:
+    if not isinstance(raw, dict):
+        raise ConfigError(f"{path}: `layout` must be a mapping")
+    return LayoutRules(
+        min_touch_target_px=as_int(raw, "min_touch_target_px", path, default=44),
+        clip_tolerance_px=as_int(raw, "clip_tolerance_px", path, default=0),
+    )
+
+
+def _load_typography(raw: object, path: Path) -> TypographyRules:
+    if not isinstance(raw, dict):
+        raise ConfigError(f"{path}: `typography` must be a mapping")
+    allow_fallback = raw.get("allow_fallback_glyphs", True)
+    if not isinstance(allow_fallback, bool):
+        raise ConfigError(f"{path}: `allow_fallback_glyphs` must be a boolean")
+    return TypographyRules(
+        min_contrast_ratio=as_float(raw, "min_contrast_ratio", path, default=4.5),
+        large_text_min_contrast_ratio=as_float(
+            raw, "large_text_min_contrast_ratio", path, default=3.0
+        ),
+        large_text_px=as_int(raw, "large_text_px", path, default=24),
+        allow_fallback_glyphs=allow_fallback,
+    )
+
+
+def _load_exceptions(raw: object, path: Path) -> tuple[RuleException, ...]:
+    if raw is None:
+        return ()
+    if not isinstance(raw, list):
+        raise ConfigError(f"{path}: `exceptions` must be a list")
+    exceptions: list[RuleException] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            raise ConfigError(f"{path}: every exception must be a mapping")
+        for key in ("rule", "fixture", "reason", "author", "until"):
+            if key not in entry:
+                raise ConfigError(f"{path}: exception missing `{key}`")
+        path_value = entry.get("path")
+        exceptions.append(
+            RuleException(
+                rule=str(entry["rule"]),
+                fixture=str(entry["fixture"]),
+                reason=str(entry["reason"]),
+                author=str(entry["author"]),
+                until=str(entry["until"]),
+                path=str(path_value) if path_value is not None else None,
+            )
+        )
+    return tuple(exceptions)
 
 
 def _load_expected_changes(

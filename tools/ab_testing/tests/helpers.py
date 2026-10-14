@@ -64,6 +64,7 @@ def make_capture(
     rev: Revision | None = None,
     coverage: list[dict[str, str]] | None = None,
     metrics: dict[str, object] | None = None,
+    inspection: dict[str, object] | None = None,
 ) -> Capture:
     """Write a PNG + harness-like JSON and return the resulting `Capture`."""
     rev = rev or revision()
@@ -90,6 +91,8 @@ def make_capture(
             "png_bytes": 0,
         },
     }
+    if inspection is not None:
+        report["inspection"] = inspection
     report_path = directory / f"{name}.json"
     report_path.write_text(json.dumps(report))
     return Capture(
@@ -102,12 +105,86 @@ def make_capture(
     )
 
 
+def inspection(nodes: list[dict], width: int = 800, height: int = 480) -> dict:
+    """A harness `inspection` block like the one `--inspect` writes."""
+    return {
+        "instrumented": True,
+        "viewport": {"width": width, "height": height},
+        "nodes": nodes,
+    }
+
+
+class _Auto:
+    """Sentinel: let the helper derive `visible` from the object's own box."""
+
+
+_AUTO = _Auto()
+
+
+def node(
+    *,
+    cls: str = "lv_obj",
+    x: int = 0,
+    y: int = 0,
+    w: int = 10,
+    h: int = 10,
+    visible: dict | _Auto | None = _AUTO,
+    hidden: bool = False,
+    opa: int = 255,
+    bg_color: str = "#000000",
+    bg_opa: int = 0,
+    bg_image: bool = False,
+    text_color: str = "#FFFFFF",
+    text_opa: int = 255,
+    text: str = "",
+    text_font: str = "sony_20",
+    long_mode: str = "WRAP",
+    text_overflow: bool = False,
+    text_truncated: bool = False,
+    missing_glyphs: list[str] | None = None,
+    fallback_glyphs: list[str] | None = None,
+    children: list[dict] | None = None,
+) -> dict:
+    """One inspection node with sensible defaults for the geometry tests.
+
+    `visible` defaults to the object's own box (a fully visible node); pass
+    `visible=None` for an element that is completely off the viewport.
+    """
+    if isinstance(visible, _Auto):
+        visible = None if hidden or w <= 0 or h <= 0 else {"x": x, "y": y, "w": w, "h": h}
+    return {
+        "class": cls,
+        "x": x,
+        "y": y,
+        "w": w,
+        "h": h,
+        "visible": visible,
+        "hidden": hidden,
+        "opa": opa,
+        "scrollable": False,
+        "bg_color": bg_color,
+        "bg_opa": bg_opa,
+        "bg_image": bg_image,
+        "text_color": text_color,
+        "text_opa": text_opa,
+        "text": text,
+        "text_font": text_font,
+        "long_mode": long_mode,
+        "text_overflow": text_overflow,
+        "text_truncated": text_truncated,
+        "missing_glyphs": missing_glyphs or [],
+        "fallback_glyphs": fallback_glyphs or [],
+        "children": children or [],
+    }
+
+
 def contracts(
     *,
     region_min_content: dict[str, float] | None = None,
     expected_changes: tuple = (),
     review_regions: tuple[str, ...] = (),
     required_components: tuple[str, ...] = ("main_screen.c", "theme.c"),
+    exceptions: tuple = (),
 ) -> QualityContracts:
     return QualityContracts(
         region_min_content=region_min_content or {},
@@ -115,6 +192,7 @@ def contracts(
         coverage_levels=("REAL", "PARTIAL", "SYNTHETIC", "UNSUPPORTED"),
         expected_changes=expected_changes,
         review_regions=review_regions,
+        exceptions=exceptions,
     )
 
 
