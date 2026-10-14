@@ -123,14 +123,20 @@ issues:
     fixture: home-usb-20m
     status: unverified
     note: >
-      Hallazgos 24/26/27/28. El arnes ya calcula el contraste de cada par
-      texto/fondo opaco de la pantalla real (typography_contrast) y no encuentra
-      ninguno por debajo de 4.5:1/3:1: las violaciones historicas ya estaban
-      corregidas y ningun fixture renderiza los pares que fallaban. El
-      verificador de la ROM sigue en tests/check_wcag.py (9 temas).
+      Hallazgos 24/26/27/28. El arnes calcula el contraste de cada par texto/fondo
+      opaco de la pantalla real (typography_contrast). Desde UI-02 corre ademas
+      sobre el dialogo About real (fixture `dialog-about`) y sobre los temas de la
+      ROM (built-in y los JSON RS, Holo y Material 3) y sigue sin encontrar
+      ningun par por debajo de 4.5:1/3:1: las violaciones historicas ya estaban
+      corregidas (hallazgo 24).
+      VISION no entra todavia (sus fuentes escaladas muestran otros hallazgos).
+      El verificador de la ROM (tests/check_wcag.py) sigue corriendo sobre las
+      paletas y los JSON.
     evidence:
       - "docs/HALLAZGOS.md 24, 26, 27, 28"
       - "tests/check_wcag.py"
+      - "tools/ui_harness/fixtures/dialog-about.scn"
+      - "tools/ui_harness/fixtures/main-tema-rs.scn, main-tema-outdoor-negative.scn, main-tema-classic.scn, main-tema-holo.scn, main-tema-material-3.scn"
       - "tools/ab_testing/reports/AB-e2e-structural/audit-base.json"
 
   - id: UI-004
@@ -139,10 +145,14 @@ issues:
     fixture: home-usb-20m
     status: unverified
     note: >
-      Hallazgo 18. El arnes no abre dialogos ni emite la grilla de foco.
+      Hallazgo 18. El arnes no abre Ajustes: dialog_settings.c necesita
+      dialog_field y decenas de dependencias, y no hay fixture que emita la grilla
+      de foco de Ajustes. `dialog-about` cubre el camino de dialogo (un dialogo
+      real sobre la pantalla real) pero no Ajustes ni su grilla de foco.
     evidence:
       - "docs/HALLAZGOS.md 18"
       - "tests/check_settings_focus.py"
+      - "tools/ui_harness/fixtures/dialog-about.scn"
 
   - id: UI-005
     title: "Dialogo viejo: texto constante tapado por los botones"
@@ -150,9 +160,15 @@ issues:
     fixture: home-usb-20m
     status: unverified
     note: >
-      Hallazgo 21. Los dialogos no se abren en los fixtures actuales.
+      Hallazgo 21: la linea de estado de las apps de BT/WeFax/SSTV (calculada con
+      las constantes viejas DIALOG_H/DIALOG_Y) quedaba tapada por la fila de
+      botones. La fixture `dialog-about` abre un dialogo real sobre la pantalla
+      real y no lo reproduce: el texto del About esta centrado, no apoyado abajo.
+      Falta un fixture de BT/WeFax/SSTV, que exige compilar esos dialogos y su
+      superficie (bluetooth/audio/tabla), fuera del alcance de UI-02.
     evidence:
       - "docs/HALLAZGOS.md 21"
+      - "tools/ui_harness/fixtures/dialog-about.scn"
 
   - id: UI-006
     title: "Icono BT: el glifo U+F293 no existe en sony_20 (rectangulo vacio)"
@@ -175,13 +191,17 @@ issues:
     fixture: main-otro-tema
     status: unverified
     note: >
-      Hallazgo 28. El chequeo de contraste estructural ya corre sobre la fixture
-      real y no encuentra pares por debajo del umbral; falta un fixture que
-      renderice los temas RS (main-otro-tema usa Outdoor), que es donde estaba la
-      violacion.
+      Hallazgo 28. Desde UI-02 existe la fixture `main-tema-rs`: los temas RS
+      renderizan y el chequeo de contraste estructural corre sobre la captura sin
+      encontrar pares por debajo del umbral en la pantalla principal. El par del
+      hallazgo es el riel del switch (`control_border`, la clave que RS no definia
+      y heredaba a 2.58:1 contra su dialogo) y solo aparece en Ajustes, no en la
+      pantalla principal; ademas el JSON ya trae la clave (hallazgo 28). Sigue
+      unverified hasta que exista una fixture de Ajustes.
     evidence:
       - "docs/HALLAZGOS.md 28"
       - "docs/THEMES.md"
+      - "tools/ui_harness/fixtures/main-tema-rs.scn"
       - "tools/ab_testing/reports/AB-e2e-structural/audit-base.json"
 
   - id: UI-008

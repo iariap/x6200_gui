@@ -15,6 +15,7 @@
 
 #define SCENARIO_NAME_MAX   64
 #define SCENARIO_SCREEN_MAX 32
+#define SCENARIO_THEME_MAX  32
 
 /* Benchmark defaults; a fixture (or the CLI) may override them. See
  * bench_metrics.h for what each frame measures. */
@@ -25,6 +26,10 @@
 typedef struct {
     char name[SCENARIO_NAME_MAX];
     char screen[SCENARIO_SCREEN_MAX];
+    /* The theme to build, as the fixture spells it. Kept whole: the firmware's
+     * params_str_t (theme_name.x) is 16 bytes, so a longer name — "Outdoor-
+     * Negative" — would be truncated there; theme_init() gets the full name. */
+    char theme[SCENARIO_THEME_MAX];
     /* Deterministic seed for the synthetic spectrum/waterfall data. */
     uint32_t seed;
     /* Benchmark-only knobs. Ignored outside `--bench`, so they never change a
@@ -40,3 +45,8 @@ bool scenario_load(const char *path, scenario_t *out);
 
 /* Builds the named screen. Returns false when the name is unknown. */
 bool scenario_build(const scenario_t *scenario);
+
+/* Fixture work that has to run after the virtual clock has advanced and the
+ * components' timers have fired (e.g. moving the keyboard focus). Never changes
+ * a pixel on its own. */
+void scenario_settle(const scenario_t *scenario);

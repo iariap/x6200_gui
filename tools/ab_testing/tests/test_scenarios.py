@@ -71,12 +71,23 @@ def test_repo_fixtures_are_all_parsable() -> None:
     suite = ScenarioSuite.from_fixtures_dir(HARNESS_FIXTURES)
     assert suite.names == [
         "bench-render",
+        "dialog-about",
         "home-bateria-externa",
         "home-frecuencia-extrema",
         "home-usb-20m",
         "main-bateria-baja",
         "main-espectro-agua",
+        "main-foco",
         "main-otro-tema",
+        "main-tema-classic",
+        "main-tema-holo",
+        "main-tema-material-3",
+        "main-tema-outdoor-negative",
+        "main-tema-rs",
         "main-tx-simulado",
     ]
-    assert all(scenario.screen == "main" for scenario in suite.scenarios)
+    # Every fixture builds one of the screens the harness knows; the theme
+    # fixtures still build `main`, only the dialog and focus ones do not.
+    assert all(
+        scenario.screen in {"main", "dialog-about", "main-foco"} for scenario in suite.scenarios
+    )

@@ -408,8 +408,10 @@ def test_all_fixtures_can_be_captured(tmp_path: Path, revisions: Revisions) -> N
         ]
     )
     assert code == 0
-    assert len(sorted(out.glob("*.png"))) == 8
-    assert len(sorted(out.glob("*.json"))) == 8
+    fixtures = REPO_ROOT / "tools" / "ui_harness" / "fixtures"
+    expected = len(list(fixtures.glob("*.scn")))
+    assert len(sorted(out.glob("*.png"))) == expected
+    assert len(sorted(out.glob("*.json"))) == expected
 
 
 def _run(tmp_path: Path, revisions: Revisions, extra: list[str]) -> int:

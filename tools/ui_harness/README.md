@@ -34,7 +34,7 @@ tools/ui_harness/
     mock_radio.c        explicit radio state + a call log (mock_radio_calls)
     mock_cfg.c          cfg / cfg_cur subjects and the band catalogue the components read
     mock_params.c       params_t with the values the layout needs
-    mock_main_screen.c  the app dialogs, DX cluster column, scheduler queue, recorder/RTTY surface
+    mock_main_screen.c  the app dialogs (About is real; the rest are inert), DX cluster column, scheduler queue, recorder/RTTY surface
     mock_ui_deps.c      event bus, message helpers, voice, BT/WiFi/backlight, clock
     mock_dsp.c          the DSP setter mfk.cpp calls (no FFT runs)
   third_party/          vendored build headers (see third_party/README.md)
@@ -44,9 +44,11 @@ The real firmware sources are compiled here (see `CMakeLists.txt`): `main_screen
 plus `spectrum.c`, `waterfall.c`, `tx_info.c`, `band_plan.c`, `band_plan_data.c`,
 `pannel.c`, `vol.c`, `msg.c`, `msg_tiny.c`, `adaptive_tuning.c`, `cw_tune_ui.c`,
 `clock.c`, `info.c`, `meter.c`, `band_info.c`, `theme.c`, `styles.c`, `fonts/*`,
-the GUI's C++ (`buttons.cpp`, `mfk.cpp`, `controls.cpp`) and the real
-`cfg/subjects.cpp`. Nothing under `src/` of the repository is modified: the
-harness owns its source list, its LVGL config and its mocks.
+`dialog.c` + `dialog_about.c` (the shared dialog machinery and the real About
+window the `dialog-about` fixture opens), the GUI's C++ (`buttons.cpp`, `mfk.cpp`,
+`controls.cpp`) and the real `cfg/subjects.cpp`. Nothing under `src/` of the
+repository is modified: the harness owns its source list, its LVGL config and its
+mocks.
 
 ## Build
 
@@ -188,6 +190,19 @@ state (`frequency_hz`, `mode`, `rxtx`, `smeter_db`, `battery_v`, …) it can pic
 the `theme` and a `seed`, and toggle `band_plan`, `spectrum_filled`,
 `spectrum_peak` and `waterfall_center_line`.
 
+The `screen` selects what is built: `main` (the real main screen), `dialog-about`
+(the same screen with the real About window opened through the firmware's own
+`main_screen_action(ACTION_APP_ABOUT)`) and `main-foco` (the same screen with the
+real keyboard group, so `lv_group_focus_next()` runs over it).
+
+The `theme` is the full name the GUI lists: a builtin (`IU1WXY`, `Legacy`,
+`Outdoor`, `Classic`, `Outdoor-Negative`, `VISION`) or a JSON theme the ROM ships
+(`RS`, `Holo`, `Material 3`). The harness reads the shipped themes from this
+repository's `rootfs/usr/share/x6200/themes` (the same files the image installs)
+by setting `THEMES_DIR_SHIPPED` before `theme_init()`; an explicit
+`THEMES_DIR_SHIPPED` still wins. The theme's own font (Classic/RS name Arial) and
+VISION's `fonts_scale()` are applied exactly as the firmware's `main()` does.
+
 | Fixture | What it shows |
 |---|---|
 | `home-usb-20m` | 20 m USB, S9, on battery: the plain main screen |
@@ -198,6 +213,13 @@ the `theme` and a `seed`, and toggle `band_plan`, `spectrum_filled`,
 | `main-otro-tema` | the same screen under the builtin "Outdoor" theme |
 | `main-espectro-agua` | the waterfall with a fixed seed, peaks on, centre line, Legacy theme |
 | `bench-render` | the benchmark fixture (waterfall peaks, its own seed); `bench_*` knobs for the render benchmark |
+| `dialog-about` | the real main screen with the real About window open over it (`dialog.c` + `dialog_about.c`) |
+| `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
+| `main-tema-rs` | the same screen under the shipped "RS" JSON theme (with its images), for UI-007 |
+| `main-tema-outdoor-negative` | the dark pair of `main-otro-tema` (every colour run through `negative()`, `src/theme.c`) |
+| `main-tema-classic` | the builtin "Classic" theme (names the Arial family) |
+| `main-tema-holo` | the shipped "Holo" JSON theme (flat, no images) |
+| `main-tema-material-3` | the shipped "Material 3" JSON theme (the one the radio runs) |
 
 ## Determinism
 
@@ -234,6 +256,11 @@ inputs are substituted, so coverage is declared honestly per component:
 | `cfg/subjects.cpp` | REAL | the real Subject/observer core |
 | `cfg` (catalogue), `params`, `radio` | SYNTHETIC | harness-owned values; no DB, no device |
 | `spot_marks.c`, `cluster_column.c`, `freq_strip.c`, dialogs | UNSUPPORTED | not rendered in these scenarios |
+
+The `dialog-about` screen swaps the dialog row for the truth of the About path:
+`src/dialog.c` and `src/dialog_about.c` become REAL, and the other app dialogs
+stay UNSUPPORTED (they keep their inert mock descriptors). The coverage is chosen
+per `screen` (`coverage_for_screen()` in `src/coverage.c`).
 
 The exact, per-scenario table is in each JSON's `coverage` array. It is never
 inflated: a PARTIAL is never written as REAL.

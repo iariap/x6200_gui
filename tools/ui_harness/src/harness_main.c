@@ -52,6 +52,10 @@
 #define HARNESS_REVISION "unknown"
 #endif
 
+#ifndef HARNESS_THEMES_DIR_SHIPPED
+#define HARNESS_THEMES_DIR_SHIPPED "/usr/share/x6200/themes"
+#endif
+
 static void usage(const char *argv0)
 {
     fprintf(stderr,
@@ -113,7 +117,7 @@ static void write_json(const char *path, const char *png_path, const scenario_t 
     }
 
     int count = 0;
-    const coverage_entry_t *cov = coverage_main_screen(&count);
+    const coverage_entry_t *cov = coverage_for_screen(scenario->screen, &count);
 
     fprintf(f, "{\n");
     fprintf(f, "  \"scenario\": \"%s\",\n", scenario->name);
@@ -241,8 +245,27 @@ int main(int argc, char **argv)
      * callback for them (the firmware's main does the same). */
     event_init();
 
-    theme_init(params.theme_name.x);
-    fonts_apply(params.font.x);
+    /* The ROM ships its themes with the image; read them from this repository
+     * (the same files) so a fixture can name one (RS, Holo, Material 3) without
+     * depending on an installed /usr/share/x6200. An explicit THEMES_DIR_SHIPPED
+     * still wins (overwrite=0). */
+    setenv("THEMES_DIR_SHIPPED", HARNESS_THEMES_DIR_SHIPPED, 0);
+
+    theme_init(scenario.theme[0] ? scenario.theme : params.theme_name.x);
+
+    /* Same font choice as the firmware's main(): a theme's own font first, then
+     * the parameter, and VISION scales the whole family up. Before this the
+     * harness applied params.font only, so a theme that names a font (Classic,
+     * RS) or VISION drew with the wrong one. */
+    if (theme_shape.font >= 0) {
+        fonts_apply((uint8_t) theme_shape.font);
+    } else if (params.font.x > 0) {
+        fonts_apply((uint8_t) (params.font.x - 1));
+    }
+    if (theme_shape.vision) {
+        fonts_scale(VISION_FONT_STEPS);
+    }
+
     styles_init(THEME_SIMPLE);
 
     if (!scenario_build(&scenario)) {
@@ -252,6 +275,10 @@ int main(int argc, char **argv)
     /* Let the components' timers run on the virtual clock, then force a full
      * repaint so the framebuffer holds the settled screen. */
     virtual_time_advance(1200, 10);
+
+    /* Fixture work that needs the timers to have run: moving the focus once the
+     * real main screen has registered its widget in the keyboard group. */
+    scenario_settle(&scenario);
 
     if (bench) {
         bench_enable(true);

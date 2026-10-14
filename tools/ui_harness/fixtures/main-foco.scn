@@ -1,0 +1,38 @@
+# main-foco: the real main screen with the real keyboard group. The firmware's
+# main_screen() registers its spectrum in keyboard_group through a 100 ms timer
+# (keys_enable_cb in src/main_screen.c); with the group created up front the
+# harness lets that timer fire on the virtual clock and then moves the focus with
+# lv_group_focus_next(). It exercises the focus chain without hardware.
+#
+# The spectrum is the only main-screen widget in the group and it carries no
+# focus style, so this render is pixel-identical to `main` today; the fixture
+# keeps the chain reproducible until a focus-styled widget (Settings) is covered.
+# See the coverage matrix in docs/AB_TESTING.md.
+
+name main-foco
+screen main-foco
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

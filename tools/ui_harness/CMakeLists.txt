@@ -68,6 +68,11 @@ set(GUI_SRC
     ${REPO}/src/msg_tiny.c
     ${REPO}/src/adaptive_tuning.c
     ${REPO}/src/cw_tune_ui.c
+    # The shared dialog machinery and the real About window: the fixture
+    # `dialog-about` opens it over the real main screen. The rest of the app
+    # dialogs stay inert mocks (see mocks/mock_main_screen.c).
+    ${REPO}/src/dialog.c
+    ${REPO}/src/dialog_about.c
 )
 
 # The GUI's own C++ (button bar, MFK encoder state, controls, DSP helpers) and
@@ -103,7 +108,12 @@ target_compile_options(ui_harness PRIVATE -D_GNU_SOURCE -Wall)
 
 target_compile_definitions(ui_harness PRIVATE
     LV_CONF_INCLUDE_SIMPLE=1
-    HARNESS_REVISION="${HARNESS_REVISION}")
+    HARNESS_REVISION="${HARNESS_REVISION}"
+    # The themes the ROM ships (the JSON files + the RS folder), read from this
+    # repository instead of /usr/share: theme.c looks in THEMES_DIR_SHIPPED and
+    # the harness sets it to this path before theme_init (harness_main.c). Same
+    # files the image installs; nothing is read from the environment.
+    HARNESS_THEMES_DIR_SHIPPED="${REPO}/rootfs/usr/share/x6200/themes")
 
 target_include_directories(ui_harness PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}          # lv_conf.h

@@ -7,6 +7,12 @@
  *  comes from the explicit mocks; the spectrum/waterfall magnitudes come from
  *  the deterministic generator (src/signal_gen.c), because there is no SDR.
  *
+ *  `dialog-about` is the same screen with the real About window opened through
+ *  the firmware's own path (main_screen_action(ACTION_APP_ABOUT), src/dialog.c).
+ *  `main-foco` is the same screen with the real keyboard group, so the focus
+ *  chain the firmware builds (main_screen registers its spectrum in the group)
+ *  can be exercised with lv_group_focus_next().
+ *
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
@@ -18,11 +24,13 @@
 #include "lvgl/lvgl.h"
 
 #include "clock.h"
+#include "keyboard.h"
 #include "main_screen.h"
 #include "meter.h"
 #include "signal_gen.h"
 #include "styles.h"
 
+#include "mock_harness.h"
 #include "mock_radio.h"
 
 static void build_main(const scenario_t *scenario)
@@ -53,6 +61,30 @@ bool scenario_build(const scenario_t *scenario)
         return true;
     }
 
+    if (!strcmp(scenario->screen, "dialog-about")) {
+        /* The firmware's own path: the About action builds the real window over
+         * the main screen (src/main_screen.c -> src/dialog.c -> dialog_about.c). */
+        build_main(scenario);
+        main_screen_action(ACTION_APP_ABOUT);
+        return true;
+    }
+
+    if (!strcmp(scenario->screen, "main-foco")) {
+        /* The real keyboard group has to exist before main_screen() arms its
+         * 100 ms timer, so the spectrum ends up registered when it fires. */
+        mock_keyboard_group_up();
+        build_main(scenario);
+        return true;
+    }
+
     fprintf(stderr, "scenario: unknown screen '%s'\n", scenario->screen);
     return false;
+}
+
+void scenario_settle(const scenario_t *scenario)
+{
+    if (!strcmp(scenario->screen, "main-foco")) {
+        /* Move the focus once the timers have run and the group is populated. */
+        lv_group_focus_next(keyboard_group);
+    }
 }
