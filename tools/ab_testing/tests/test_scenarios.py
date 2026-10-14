@@ -70,6 +70,7 @@ def test_empty_suite_is_rejected(tmp_path: Path) -> None:
 def test_repo_fixtures_are_all_parsable() -> None:
     suite = ScenarioSuite.from_fixtures_dir(HARNESS_FIXTURES)
     assert suite.names == [
+        "app-about",
         "app-bands",
         "bench-render",
         "dialog-about",
@@ -108,6 +109,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
             "settings-wfbat",
             "settings-bands",
             "app-bands",
+            "app-about",
         }
         for scenario in suite.scenarios
     )

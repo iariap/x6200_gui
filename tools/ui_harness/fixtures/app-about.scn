@@ -1,0 +1,43 @@
+# app-about: the real main screen with the app menu the APP key opens (APP 5:6,
+# Settings / Callsign / QTH / About) and the "About" button pressed.
+#
+# This is the route the menu uses: APP -> app pages -> About. The path is the
+# firmware's own: the APP key loads buttons_group_app (src/main_screen.c,
+# KEYPAD_APP), the page button cycles the pages and the "About" button is
+# make_app_btn("About") (src/buttons.cpp) -> button_app_page_cb ->
+# main_screen_start_app(ACTION_APP_ABOUT) -> dialog_construct(dialog_about).
+#
+# `dialog_about` is the REAL descriptor on the host (src/dialog_about.c is
+# compiled, the same window the `dialog-about` fixture opens): this fixture
+# renders the real About window and stops the run if the button does not reach
+# it, instead of capturing a green capture of a screen where nothing happened.
+#
+# The radio state matches home-usb-20m so the only difference is the window.
+
+name app-about
+screen app-about
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

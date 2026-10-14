@@ -2445,7 +2445,6 @@ existen (mismo comportamiento que `settings-home`/`settings-wfbat` en la corrida
 cobertura es determinismo (24×2), `contracts`, `audit` y `benchmark`, más el antes/después
 explícito de `arnes-antes-despues.txt`.
 
-## wcag-full: contraste WCAG de los 9 temas, texto y no-texto (issue #12)
 
 Orden del owner: **todos los temas tienen que tener buen contraste, medido**. Hasta
 acá el framework medía 7 temas × 9 pares (texto) y dejaba Outdoor-Negative y VISION
@@ -2551,4 +2550,99 @@ uv run pytest -m e2e -q                                → 17 passed
 tests/native/run_native_tests.sh                       → ok
 repo static checks (cfg_fills/actions/settings_focus/apps_menu/app_handlers/wcag) → PASS
      tests/check_wcag.py → 990 OK / 0 fallas (9 paletas)
+
+## La app About desde el menú de apps (follow-up del reporte de Bands) ✅
+
+Gate: el botón **About** de `APP 5:6` abre la ventana real de About en el banco (binario ARM
+real, ruta del owner APP → páginas APP → About) y el arnés de host queda con una fixture nueva
+(`app-about`, 25 × 2 en determinismo) que falla sin el fix y pasa con él.
+
+### El defecto
+
+Mismo camino y misma causa que Bands (sección anterior, donde quedó **declarado y sin
+arreglar**): el botón About del menú de apps (`src/buttons.cpp`, `make_app_btn` →
+`button_app_page_cb`) llama a `main_screen_start_app()`, que **no tenía `case
+ACTION_APP_ABOUT`**: caía en el `default`. La acción se despachaba **solo** en
+`main_screen_action()`, que el botón no usa. El fix es el `case` en `main_screen_start_app()`
+(3 líneas, idénticas al de Bands): `dialog_construct(dialog_about, obj)`.
+
+Evidencia en `docs/evidencia/2026-10-14-about-fix/README.md` (PNGs del banco + md5 del binario
+de cada lado: `061f8b88dea9` antes, `7f2c94ecb2c7` después). Con el fix, el botón abre la
+ventana real ("About", "Version v0.1.2-lu2dsx", "73 de LU2DSX", "Made with love by LU2DSX"); sin
+él, el botón no cambia nada.
+
+### La fixture y su límite honesto
+
+- **`app-about`**: la ruta del menú (el menú de apps de `buttons_group_app`, botón "About" de
+  `APP 5:6`).
+
+`dialog_about` es **real** en el arnés (`src/dialog_about.c` se compila, la misma ventana que
+abre `dialog-about`), así que la fixture **renderiza la ventana real** y `scenario_settle` corta
+la corrida si el botón no la abre (`dialog_about->run`): sin el `case`, exit 1. Las etiquetas de
+la ventana no se pueden mirar en `scenario_settle` porque LVGL calcula el layout recién en el
+refresh posterior, así que la aserción es el **estado del firmware**; que la ventana dibuja se ve
+en el PNG, que sale **byte a byte idéntico** a `dialog-about` (mismo sha256 en el determinismo).
+
+### El chequeo estático (`tests/check_apps_menu.py`)
+
+El chequeo leía los `case ACTION_APP_*` de **todo** `main_screen.c`, así que el botón About pasaba
+estando muerto (existía en `main_screen_action()`). Ahora el cuerpo de cada función se extrae
+balanceando llaves y cada botón se valida contra el dispatcher que le corresponde (`make_app_btn`
+→ `main_screen_start_app`, `make_action_btn` → `main_screen_action`): con el fix da **21/21 + 2/2**
+(y las 23 apps siguen en las páginas APP); restando el `case`, da **20/21** y **FALLA**
+(`page_app_5: el boton btn_about (ACTION_APP_ABOUT) no tiene case en main_screen_start_app()`).
+
+### `tests/run_all_tests.sh`: los chequeos estáticos cuentan de verdad
+
+Los estáticos usaban `fallos=$((fallos+1))` con una variable que **no existía**: la falla se
+anotaba en otro contador y la suite terminaba **verde**. Ahora van por el mismo `run()` que el
+resto (suman a `fail`, el que imprime el resumen y decide el exit). Contracara medida con
+`check_wcag.py` roto a propósito: el script original daba **`6 OK, 0 fallos`, exit 0**; el
+corregido, **`10 OK, 1 fallos`, exit 1**.
+
+### Evidencia (host, 2026-10-14, `0684861` → `9224734`)
+
+```text
+$ tests/check_harness_determinism.sh        # 25 fixtures x 2 corridas
+PASS: deterministic (identical PNGs for every fixture)
+  app-about: 213c5cc1…  == dialog-about: 213c5cc1…   # misma ventana, mismo sha256
+
+$ cd tools/ab_testing && uv run x6200-ab compare --a 0684861 --b HEAD --experiment-id AB-ABOUT-T1
+experiment AB-ABOUT-T1: PASS (exit 0)
+  Functional PASS · Visual Regression PASS (pixel-identical) · Quality Contract PASS (250 checks)
+  Performance PASS · Hardware BLOCKED · Energy BLOCKED
+  24/24 fixtures: changed_pixels 0        # la suite sale de la revision A (24 fixtures)
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts 9224734864e8: PASS — 260 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited 9224734864e8: 16 known issues — 0 reproduced, 14 unverified; structural
+inspection REAL over 2573 objects on 25 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab benchmark --a 0684861 --b HEAD
+benchmark: PASS (exit 0) — 24 escenarios, p95 dentro de budget (delta ~0; el fix no cambia
+el render-cost)
+
+$ uv run pytest -m "not e2e" -q           → 146 passed, 17 deselected
+$ uv run ruff check . / ruff format --check . → limpios
+$ uv run ty check src tests               → All checks passed!
+tests/native/run_native_tests.sh          → 13 comprobaciones, 0 fallos
+repo static checks (cfg_fills/actions/settings_focus/apps_menu/app_handlers/wcag) → PASS
+banco QEMU: preflight ok; botón About de APP 5:6 → abre la ventana real (md5 7f2c94ecb2c7);
+  sin el fix (md5 061f8b88dea9) el botón no hace nada
+docs/evidencia/2026-10-14-about-fix/arnes-antes-despues.txt → app-about: exit 1 en 0684861,
+  exit 0 con el fix (mismo comando)
 ```
+
+Sin cambios en `quality/contracts.yaml`: el corpus no cambia un pixel (las 24 fixtures
+comparables salen byte-idénticas) y la fixture nueva pasa los contratos sin waiver.
+
+La fixture nueva (`app-about`) **no entra en el `compare`** por la misma razón que las de Bands:
+la suite sale de la revisión A. Su cobertura es determinismo (25×2), `contracts`, `audit` y
+`benchmark`, más el antes/después explícito del banco y de `arnes-antes-despues.txt`.
+
+PENDIENTE del banco: `tools/captura-banco.sh` reinicia la GUI en cada llamada porque el handshake
+`{"cmd":"get"}` falla contra una GUI ya arrancada (contenedor vivo, socket que no contesta); por eso
+las capturas de varios pasos se hicieron con un driver de una sola corrida. No se tocó el script
+(el defecto es del banco, no de este cambio).

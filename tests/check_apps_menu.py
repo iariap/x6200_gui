@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
-"""Comprueba que TODAS las apps esten en el menu de apps (las paginas APP).
+"""Comprueba que TODAS las apps esten en el menu de apps (las paginas APP) y que el boton
+que las abre llegue DE VERDAD al dispatcher que ese boton usa.
 
 El port tenia 23 apps y solo 9 con boton en las paginas APP: el resto solo se alcanzaba
 asignandolas a un long press desde Ajustes, asi que no se encontraban (el usuario reporto "la de
-Field Ops no la veo"). Ahora las paginas APP tienen todas y esto lo verifica.
+Field Ops no la veo"). Las paginas APP tienen todas y esto lo verifica.
+
+El conteo de los `case ACTION_APP_*` mira SOLO dentro de la funcion que despacha cada boton, no
+todo main_screen.c: los botones de app (`make_app_btn`) llaman a `main_screen_start_app()` y los
+de accion (`make_action_btn`) a `main_screen_action()`. Antes se leia el archivo entero, asi que
+el boton About (que existe en `main_screen_action` pero no en `main_screen_start_app`, por donde
+pasa el boton del menu) pasaba el chequeo estando muerto. Ver docs/HALLAZGOS.md 29 y el fix del
+follow-up.
 
 SPDX-License-Identifier: GPL-2.0-or-later
 """
@@ -18,22 +26,74 @@ BOTONES = SRC / "buttons.cpp"
 
 fallos = []
 
-# Apps que el equipo puede abrir: los case ACTION_APP_* de main_screen_start_app
-apps = set(re.findall(r"case (ACTION_APP_[A-Z0-9_]+)\s*:", MAIN.read_text(errors="surrogateescape")))
 
-# Lo que hay en las paginas APP: se leen SOLO los cuerpos de "static buttons_page_t page_app_N" y
-# se resuelve cada &btn_x a la accion de su definicion (make_app_btn / make_action_btn).
+def cuerpo_de_funcion(texto, firma):
+    """Devuelve el cuerpo de `firma(...) {...}` balanceando llaves, para mirar solo sus `case`.
+
+    Si la firma no aparece devuelve None (el llamador lo reporta como FALLA en vez de contar
+    cero apps en silencio).
+    """
+    m = re.search(rf"\b{re.escape(firma)}\s*\([^;]{{0,200}}\)\s*\{{", texto)
+    if not m:
+        return None
+
+    profundidad = 1
+    i = m.end()
+    while i < len(texto) and profundidad:
+        if texto[i] == "{":
+            profundidad += 1
+        elif texto[i] == "}":
+            profundidad -= 1
+        i += 1
+    return texto[m.end():i - 1]
+
+
+def cases(texto):
+    return set(re.findall(r"case (ACTION_APP_[A-Z0-9_]+)\s*:", texto))
+
+
+main_txt = MAIN.read_text(errors="surrogateescape")
+inicio_app = cuerpo_de_funcion(main_txt, "main_screen_start_app")
+accion = cuerpo_de_funcion(main_txt, "main_screen_action")
+
+# El dispatcher de cada boton (src/buttons.cpp): make_app_btn -> main_screen_start_app,
+# make_action_btn -> main_screen_action. Sin las dos funciones no hay nada que medir.
+if inicio_app is None or accion is None:
+    print("  FALLA no encontre main_screen_start_app() o main_screen_action() en main_screen.c")
+    sys.exit(1)
+
+en_start_app = cases(inicio_app)      # donde despacha el boton de app del menu
+en_action = cases(accion)             # donde despachan los botones de accion (QTH, Callsign)
+
+# Botones de las paginas APP: se leen SOLO los cuerpos de "static buttons_page_t page_app_N" y se
+# resuelve cada &btn_x a su definicion (tipo de helper + accion).
 texto = BOTONES.read_text(errors="surrogateescape")
-btn_a_accion = dict(re.findall(
-    r"static button_item_t\s+(btn_\w+)\s*=\s*make_(?:app|action)_btn\([^,]+,\s*(ACTION_APP_[A-Z0-9_]+)\)", texto))
+boton = {
+    btn: (tipo, accion_btn)
+    for btn, tipo, accion_btn in re.findall(
+        r"static button_item_t\s+(btn_\w+)\s*=\s*make_(app|action)_btn\([^,]+,\s*(ACTION_APP_[A-Z0-9_]+)\)",
+        texto)
+}
 paginas = re.findall(r"static buttons_page_t (page_app_\d+)\s*=\s*\{(.*?)\n\};", texto, re.S)
 
 en_menu = {}
+por_tipo = {"app": set(), "action": set()}
 for nombre, cuerpo in paginas:
     for btn in re.findall(r"&(btn_\w+)", cuerpo):
-        accion = btn_a_accion.get(btn)
-        if accion:
-            en_menu.setdefault(accion, []).append(nombre)
+        definicion = boton.get(btn)
+        if definicion:
+            tipo, accion_btn = definicion
+            en_menu.setdefault(accion_btn, []).append(nombre)
+            por_tipo[tipo].add(accion_btn)
+            # El boton tiene que llegar al dispatcher que le corresponde: el de app pasa por
+            # main_screen_start_app() y el de accion por main_screen_action(). Un `case` en la
+            # OTRA funcion no alcanza (es el defecto de About).
+            destino = en_start_app if tipo == "app" else en_action
+            funcion = "main_screen_start_app" if tipo == "app" else "main_screen_action"
+            if accion_btn not in destino:
+                fallos.append(
+                    f"{nombre}: el boton {btn} ({accion_btn}) no tiene case en {funcion}() "
+                    f"(el boton del menu queda muerto)")
         elif btn not in ("btn_app_p1", "btn_app_p2", "btn_app_p3", "btn_app_p4", "btn_app_p5", "btn_app_p6"):
             print(f"  (aviso) {nombre} usa {btn}, que no es una app")
 
@@ -44,11 +104,17 @@ for nombre, cuerpo in paginas:
     if n > limite:
         fallos.append(f"{nombre} tiene {n} botones y el marco admite {limite}")
 
-for app in sorted(apps):
+# Toda app despachada (por cualquiera de las dos funciones) tiene que estar en una pagina APP:
+# una accion sin boton solo se alcanzaria por long press.
+for app in sorted(en_start_app | en_action):
     if app not in en_menu:
         fallos.append(f"{app} no esta en ninguna pagina APP (solo se llegaria por long press)")
 
-print(f"  apps abribles: {len(apps)} | en las paginas APP: {len(en_menu)} | paginas: {len(paginas)}")
+ok_app = [a for a in por_tipo["app"] if a in en_start_app]
+ok_accion = [a for a in por_tipo["action"] if a in en_action]
+print(f"  apps en las paginas APP: {len(en_menu)} | make_app_btn -> main_screen_start_app(): "
+      f"{len(ok_app)}/{len(por_tipo['app'])} | make_action_btn -> main_screen_action(): "
+      f"{len(ok_accion)}/{len(por_tipo['action'])} | paginas: {len(paginas)}")
 duplicadas = {a: p for a, p in en_menu.items() if len(p) > 1}
 for a, p in sorted(duplicadas.items()):
     print(f"  (aviso) {a} aparece en {len(p)} paginas: {', '.join(p)}")
@@ -58,4 +124,4 @@ if fallos:
         print(f"  FALLA {f}")
     sys.exit(1)
 
-print("  todas las apps estan en el menu de apps")
+print("  todas las apps del menu llegan al dispatcher que usa su boton")

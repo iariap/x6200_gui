@@ -1,0 +1,20 @@
+# Arnés de host: app-about antes (src/ en 0684861) y después (src/ con el fix)
+
+Comando (mismo para los dos lados):
+
+    docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" -v "$PWD:/src" \
+        -w /src/tools/ui_harness/build x6200-uiharness -lc \
+        "./ui_harness --scenario ../fixtures/app-about.scn --png /tmp/app-about.png"
+
+## ANTES — src/main_screen.c en 0684861 (sin el case ACTION_APP_ABOUT en main_screen_start_app)
+
+$ ./ui_harness --scenario ../fixtures/app-about.scn
+app-about: the app-menu About button did not open the real About window (the button did nothing)
+exit=1
+
+## DESPUÉS — src/ con el fix (9224734864e877b2df716261e474d942946c4c67), misma fixture
+
+$ ./ui_harness --scenario ../fixtures/app-about.scn
+ui_harness: app-about -> /tmp/aa-after.png (409568 bytes), flushes=7, flushed_pixels=1259680
+exit=0
+

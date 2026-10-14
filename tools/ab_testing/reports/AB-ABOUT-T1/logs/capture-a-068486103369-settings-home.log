@@ -1,0 +1,13 @@
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #565)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #571)
+[User]	(0.000, +0)	 construct_cb: Ajustes grupo 0: hijos 0..14 	(in dialog_settings.c line #2126)
+[User]	(0.000, +0)	 construct_cb: Ajustes grupo 1: hijos 14..23 	(in dialog_settings.c line #2126)
+[User]	(0.000, +0)	 construct_cb: Ajustes grupo 2: hijos 23..27 	(in dialog_settings.c line #2126)
+[User]	(0.000, +0)	 construct_cb: Ajustes grupo 3: hijos 27..43 	(in dialog_settings.c line #2126)
+[User]	(0.000, +0)	 construct_cb: Ajustes grupo 4: hijos 43..56 	(in dialog_settings.c line #2126)
+[User]	(0.000, +0)	 construct_cb: Ajustes grupo 5: hijos 56..82 	(in dialog_settings.c line #2126)
+[User]	(0.000, +0)	 construct_cb: Ajustes grupo 6: hijos 82..86 	(in dialog_settings.c line #2126)
+[User]	(0.000, +0)	 construct_cb: Ajustes grupo 7: hijos 86..106 	(in dialog_settings.c line #2126)
+[User]	(0.000, +0)	 construct_cb: Ajustes: 64 items navegables (creados en esta apertura) 	(in dialog_settings.c line #2128)
+[Error]	(0.010, +10)	 _lv_inv_area: detected modifying dirty areas in render 	(in lv_refr.c line #213)
+ui_harness: settings-home -> /out/settings-home.png (423850 bytes), flushes=7, flushed_pixels=1135170
