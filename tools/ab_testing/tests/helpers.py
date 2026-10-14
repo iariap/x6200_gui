@@ -65,6 +65,7 @@ def make_capture(
     coverage: list[dict[str, str]] | None = None,
     metrics: dict[str, object] | None = None,
     inspection: dict[str, object] | None = None,
+    theme: dict[str, object] | None = None,
 ) -> Capture:
     """Write a PNG + harness-like JSON and return the resulting `Capture`."""
     rev = rev or revision()
@@ -93,6 +94,8 @@ def make_capture(
     }
     if inspection is not None:
         report["inspection"] = inspection
+    if theme is not None:
+        report["theme"] = theme
     report_path = directory / f"{name}.json"
     report_path.write_text(json.dumps(report))
     return Capture(

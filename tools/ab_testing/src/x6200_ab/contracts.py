@@ -18,6 +18,7 @@ from .known_issues import KnownIssue, baseline_issue_for
 from .layout_checks import run_layout_checks
 from .quality_config import QualityContracts
 from .regions import RegionMap
+from .theme_checks import run_theme_checks
 from .typography_checks import run_typography_checks
 from .visual_diff import load_rgb, region_content_fraction
 
@@ -47,6 +48,7 @@ def run_contracts(
         findings.append(_coverage_required(capture, contracts))
         findings.extend(run_layout_checks(capture, contracts.layout))
         findings.extend(run_typography_checks(capture, contracts.typography))
+        findings.extend(run_theme_checks(capture))
     waived = apply_waivers(findings, contracts, day)
     return mark_baseline_defects(waived, known_issues, day)
 
@@ -89,15 +91,18 @@ def mark_baseline_defects(
 def run_structural_checks(
     captures: list[Capture], contracts: QualityContracts
 ) -> list[ContractFinding]:
-    """Only the layout + typography checks, with waivers applied.
+    """The rules that read the harness' own metadata, with waivers applied.
 
-    The audit reports this side of the contracts on its own, without the
-    pixel-region rules that need a rendered PNG to be interpreted.
+    Object-tree geometry and typography, plus the theme the capture rendered:
+    everything the harness reports about itself, never the pixels. The audit
+    reports this side of the contracts on its own, without the pixel-region rules
+    that need a rendered PNG to be interpreted.
     """
     findings: list[ContractFinding] = []
     for capture in captures:
         findings.extend(run_layout_checks(capture, contracts.layout))
         findings.extend(run_typography_checks(capture, contracts.typography))
+        findings.extend(run_theme_checks(capture))
     return apply_waivers(findings, contracts, date.today())
 
 

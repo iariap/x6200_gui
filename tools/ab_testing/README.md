@@ -37,12 +37,15 @@ Phases are separate modules, not one script:
 | `contracts.py` | objective checks on the candidate alone (C of the plan): pixel regions, coverage, layout, typography |
 | `layout_checks.py` | geometry rules over the object tree: off-screen, clipped, degenerate boxes, stacked labels, touch targets |
 | `typography_checks.py` | text-legibility rules: overflow, truncation, missing glyphs, WCAG contrast |
+| `theme_checks.py` | the theme resolution rule: the theme a capture rendered must fit `params.theme_name` (UI-013) |
+| `theme_files.py` | static WCAG pairs over the theme JSON files the ROM ships, `base` inheritance included |
+| `contrast.py` | WCAG 2.1 luminance and contrast ratio, shared by both contrast families |
 | `known_issues.py` | detectors and the FIXED / UNCHANGED DEFECT / REGRESSION / NEW DEFECT classification |
 | `quality_gates.py` | the six gates and the profile that decides which are required |
 | `performance.py` | render-benchmark statistics (p50/p95/p99, FPS, dispersion) and the relative regression verdict |
 | `evaluator.py` | combines the gates into one verdict |
 | `reports.py` | `reports/<experiment-id>/` with MD, HTML, JSON, screenshots, diffs, metrics, logs |
-| `cli.py` | `capture` / `audit` / `contracts` / `compare` / `benchmark` / `report` / `evaluate` |
+| `cli.py` | `capture` / `audit` / `contracts` / `themes` / `compare` / `benchmark` / `report` / `evaluate` |
 
 ## Setup
 
@@ -79,6 +82,10 @@ uv run x6200-ab benchmark --a <sha> --b <branch> --experiment-id BENCH-0001
 
 # objective quality contracts on the candidate alone (no baseline)
 uv run x6200-ab contracts --revision <sha>
+
+# static contrast over the theme JSON files the ROM ships (offline: no capture,
+# no Docker, no revision) — the Settings pairs the rendered checks cannot reach
+uv run x6200-ab themes
 
 # read back a verdict, and recheck it from results.json
 uv run x6200-ab report --experiment-id AB-0001
@@ -125,7 +132,15 @@ stay BLOCKED).
   `region_content_above` (a pixel region must stay near-uniform) or
   `leading_glyph_range` (the label whose text matches `text_pattern` — the power
   clock is the only one with a voltage line — must start with a code point in
-  `glyph_range`; the text comes from the structural inspection, never OCR).
+  `glyph_range`; the text comes from the structural inspection, never OCR). A
+  `verified` issue whose detector is a contract rule (UI-010, UI-011, UI-012,
+  UI-013) carries no `detector:` block and names the rule in its note; UI-010 is
+  kept out of the gate by a scoped `exclusions` entry, the structural ones by the
+  scoped `exceptions` of `contracts.yaml`.
+* `theme_pairs.yaml` — the pairs the **static** theme contract checks on the
+  theme JSON files the ROM ships (`x6200-ab themes`): the ones that only exist on
+  screens the harness cannot open yet (Settings), with the code that draws each
+  one. Read against the palettes of `src/theme.h`, through each file's `base`.
 
 ## Structural checks
 
@@ -140,10 +155,20 @@ stay BLOCKED).
 * **typography** — text that overflows or is truncated in its label, a glyph
   missing from every font in the chain (a placeholder box on screen) and a
   text/background pair below the WCAG 2.1 contrast ratio when the label paints an
-  opaque background.
+  opaque background;
+* **theme** — the theme the capture rendered must fit `params.theme_name`, the
+  16-byte parameter the firmware stores the choice in: a name that does not
+  survive the round trip makes `theme_init()` fall back to IU1WXY.
 
 A failing finding is turned into a recorded waiver (still visible, marked `ok`)
 only when a dated, fixture-scoped `exceptions` entry matches it.
+
+The same WCAG formula runs **statically** over the theme files the image ships
+(`uv run x6200-ab themes`, `quality/theme_pairs.yaml`): with no render and no
+Docker, it resolves each file's `base` against the palettes of `src/theme.h` and
+measures the pairs that only exist on the Settings window, which the harness
+cannot open yet. It is the complementary detector UI-007 lacks; the exhaustive
+sweep over the nine palettes stays in `tests/check_wcag.py`.
 
 ## Known issues
 
