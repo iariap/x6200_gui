@@ -49,6 +49,7 @@ static float rel_lum(lv_color_t c)
 
 static void update_cb(lv_event_t * e);
 static void update_visibility(Subject *subj, void *user_data);
+static void obj_deleted_cb(lv_event_t *e);
 
 void cw_tune_init(lv_obj_t *parent)
 {
@@ -76,6 +77,7 @@ void cw_tune_init(lv_obj_t *parent)
     lv_obj_add_style(obj, &cw_tune_style, 0);
 
     lv_obj_add_event_cb(obj, update_cb, LV_EVENT_DRAW_MAIN, NULL);
+    lv_obj_add_event_cb(obj, obj_deleted_cb, LV_EVENT_DELETE, NULL);
     subject_add_delayed_observer(cfg_cur.mode, update_visibility, NULL);
     subject_add_delayed_observer(cfg.cw_tune.val, update_visibility, NULL);
     update_visibility(cfg.cw_tune.val, NULL);
@@ -141,7 +143,23 @@ static void update_cb(lv_event_t * e) {
     }
 }
 
+/* Cuando el objeto se destruye (por ejemplo al reconstruirse la pantalla principal al abrir una
+ * app), el observador del modo sigue vivo: sin esto quedaba un puntero colgado y el primer cambio
+ * de modo despues tocaba memoria liberada y mataba la GUI. Medido con el core: el SIGSEGV era en
+ * lv_obj_add_flag -> lv_obj_has_flag_any (docs/HALLAZGOS.md 34). */
+static void obj_deleted_cb(lv_event_t *e) {
+    /* Solo si el que muere es el objeto que apuntamos: cuando la pantalla se reconstruye, el viejo
+     * se destruye despues de crear el nuevo y no hay que borrar el puntero nuevo. */
+    if (obj == (lv_obj_t *) lv_event_get_target(e)) {
+        obj = NULL;
+    }
+}
+
 static void update_visibility(Subject *subj, void *user_data) {
+    if (obj == NULL) {
+        return;
+    }
+
     x6200_mode_t mode = subject_get_int(cfg_cur.mode);
     bool on = subject_get_int(cfg.cw_tune.val) && ((mode == x6200_mode_cw) || (mode == x6200_mode_cwr));
     if (on) {

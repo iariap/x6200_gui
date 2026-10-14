@@ -815,6 +815,7 @@ static void refresh_btn(button_data_t *b) {
 }
 
 static void show(lv_obj_t *o, bool on) {
+    fprintf(stderr, "CWDBG show o=%p on=%d\n", (void*) o, (int) on); fflush(stderr);
     if (on) lv_obj_clear_flag(o, LV_OBJ_FLAG_HIDDEN);
     else lv_obj_add_flag(o, LV_OBJ_FLAG_HIDDEN);
 }
@@ -1062,7 +1063,9 @@ static void click_cb(lv_event_t *e) {
 }
 
 static lv_obj_t *label(lv_obj_t *parent, const lv_font_t *font, uint32_t color) {
+    fprintf(stderr, "CWDBG label parent=%p font=%p\n", (void*) parent, (const void*) font); fflush(stderr);
     lv_obj_t *l = lv_label_create(parent);
+    fprintf(stderr, "CWDBG label creado l=%p\n", (void*) l); fflush(stderr);
     lv_obj_set_style_text_font(l, font, 0);
     lv_obj_set_style_text_color(l, lv_color_hex(color), 0);
     lv_label_set_recolor(l, true);
@@ -1079,7 +1082,9 @@ static lv_obj_t *cont(lv_obj_t *parent, lv_coord_t w, lv_coord_t h) {
 }
 
 static lv_obj_t *panel(lv_obj_t *parent, lv_coord_t x, lv_coord_t w) {
+    fprintf(stderr, "CWDBG panel parent=%p\n", (void*) parent); fflush(stderr);
     lv_obj_t *o = lv_obj_create(parent);
+    fprintf(stderr, "CWDBG panel creado o=%p\n", (void*) o); fflush(stderr);
     lv_obj_remove_style_all(o);
     lv_obj_set_size(o, w, BOX_H);
     lv_obj_set_pos(o, x, BOX_Y);

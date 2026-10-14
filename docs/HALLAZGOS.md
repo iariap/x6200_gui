@@ -52,6 +52,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 31. [Ajustes con tabs: los botones de abajo ahora llevan a cada seccion](#31-ajustes-con-tabs-los-botones-de-abajo-ahora-llevan-a-cada-seccion)
 32. [Algunas apps matan la GUI (y el equipo parece reiniciarse)](#32-algunas-apps-matan-la-gui-y-el-equipo-parece-reiniciarse)
 33. [Todos los botones de las apps tienen handler](#33-todos-los-botones-de-las-apps-tienen-handler)
+34. [El core dice donde muere CW Trainer y Status (y tres punteros colgados)](#34-el-core-dice-donde-muere-cw-trainer-y-status-y-tres-punteros-colgados)
 
 ---
 
@@ -1614,3 +1615,53 @@ item a su definicion (entendiendo los helpers `make_*btn*`), **falla si algun bo
 **CW Trainer y Status siguen muriendo** (la GUI se cae y el supervisor la relanza). O sea: los
 handlers faltantes **no eran la causa del SIGSEGV** de §32; siguen Bands, Field y About OK. La
 investigacion de esas dos sigue abierta con el core ya capturado.
+
+---
+
+## 34. El core dice donde muere CW Trainer y Status (y tres punteros colgados)
+
+**Metodo que funciono** (para no repetir el camino largo): el core no se guardaba porque el
+`core_pattern` era relativo y el proceso corre con el directorio en `/`, y ademas en `/mnt` (vfat) el
+kernel aborta el volcado con "cannot preserve file permissions". Con `core_pattern=/tmp/core.%p` y un
+arranque de la GUI con `ulimit -c unlimited` (el daemon de la imagen no lo pone) **si** se obtuvo el
+core (193 MB). Para leerlo no hacian falta gdb-multiarch: alcanza el **gdb del host** con
+`set architecture arm` y `set solib-search-path`, y para las direcciones `eu-stack -l` (da el mapa de
+modulos con la base) + `addr2line` del toolchain.
+
+**El backtrace** (CwTrainer, reproducible 7/7):
+
+```
+#0 lv_obj_has_flag_any        (liblvgl.so base 0xb6150000, PC 0xb616cc28 = offset 0x1CC28)
+#1 lv_obj_is_layout_positioned
+#2 lv_obj_add_flag            <- LVGL
+#3/#4 codigo de la app        (la pila esta corrupta y gdb no los resuelve)
+```
+
+O sea: **la app le pasa a `lv_obj_add_flag()` un objeto invalido** (NULL o liberado). Y las marcas
+propias en `construct_cb` de las dos apps **no llegan a imprimirse**: el crash ocurre **antes**, en el
+camino de apertura de la app (que incluye el cambio de modo a CW y sus observadores).
+
+**Un problema de despliegue que aparecio en el camino** (y que explica horas de confusion): el script
+`tools/prueba-gui-en-radio.sh` copiaba **solo el binario**, no las librerias. La radio tenia la
+`liblvgl.so` del arranque anterior (`5ad04ccc…`), asi que un cambio hecho en `lvgl/` **no llegaba** y
+no habia forma de verlo desde el log. Arreglado: ahora sincroniza `liblv*.so*` (con `SIN_LIBS=1` se
+puede saltear).
+
+**Tres punteros colgados, arreglados** (misma clase: observadores globales del modo/banda que tocan
+widgets de una pantalla destruida):
+
+| Archivo | Objeto | Que pasaba |
+|---|---|---|
+| `cw_tune_ui.c` | `obj` (UI de sintonía CW) | observador de `cfg_cur.mode` sin guarda |
+| `pannel.c` | `obj` (panel de decoder) | idem, y es el panel que se oculta al abrir una app |
+| `band_plan.c` | `segs[i].box/label` | idem, recreados en cada `band_plan_init` |
+
+Los tres ahora limpian su puntero con un handler de `LV_EVENT_DELETE` (comparando el target, para no
+borrar el puntero nuevo cuando el viejo muere despues) y `update_visibility()` sale si es NULL.
+
+**Lo que sigue abierto**: CW Trainer y Status **siguen muriendo** (medido despues de cada arreglo,
+20 s por app). El proximo paso es instrumentar la **familia entera** (`lv_obj_add_flag`,
+`lv_obj_clear_flag`, `lv_obj_add/clear_state`) con el llamador, porque el parche a
+`lv_obj_add_flag` no imprimio **ninguna** linea antes de morir (con `LV_USE_ASSERT_OBJ` en 0 un
+objeto invalido no avisa: por eso el crash es mudo), o revisar los otros observadores de
+`cfg_cur.mode` (`spectrum.c`, `tx_info.c`, `info.c`, `rtty.c`, `dialog_eq.cpp`).

@@ -103,6 +103,19 @@ static void redraw(void) {
     }
 }
 
+/* Los segmentos viven en la pantalla principal, pero los observadores del modo y de la banda son
+ * globales: si la pantalla se destruye, los punteros de segs[] quedan colgados y el primer cambio
+ * de modo mata la GUI en lv_obj_add_flag -> lv_obj_has_flag_any (medido con el core,
+ * docs/HALLAZGOS.md 34). Cada objeto avisa cuando muere. */
+static void seg_deleted_cb(lv_event_t *e) {
+    seg_t *s = (seg_t *) lv_event_get_user_data(e);
+
+    if (s != NULL && s->box == (lv_obj_t *) lv_event_get_target(e)) {
+        s->box = NULL;
+        s->label = NULL;
+    }
+}
+
 void band_plan_init(lv_obj_t *parent, lv_coord_t y) {
     for (int i = 0; i < BAND_PLAN_MAX; i++) {
         lv_obj_t *b = lv_obj_create(parent);
@@ -114,6 +127,7 @@ void band_plan_init(lv_obj_t *parent, lv_coord_t y) {
         lv_obj_clear_flag(b, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_add_flag(b, LV_OBJ_FLAG_HIDDEN);
         segs[i].box = b;
+        lv_obj_add_event_cb(b, seg_deleted_cb, LV_EVENT_DELETE, &segs[i]);
 
         lv_obj_t *l = lv_label_create(b);
 

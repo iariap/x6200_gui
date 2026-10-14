@@ -30,6 +30,15 @@ md5sum "$NUEVO"
 
 echo "== subiendo a la radio ($IP) =="
 sshpass -p 123 scp "${SSH_OPTS[@]}" "$NUEVO" "root@$IP:/tmp/x6200_gui.nuevo"
+
+# Las librerias tambien: la GUI las usa compartidas y una lib vieja en la radio hace que el binario
+# nuevo corra contra otro LVGL sin que se note (me paso hoy: el cambio en lvgl/ no llegaba a la
+# radio y no habia forma de verlo desde el log). docs/HALLAZGOS.md 34.
+if [ "${SIN_LIBS:-0}" != "1" ]; then
+    docker run --rm --entrypoint "" -v x6200-build-output:/b x6200-buildroot \
+        sh -c 'cd /b/target/usr/lib && tar -cf - liblv*.so* 2>/dev/null' | \
+        sshpass -p 123 ssh "${SSH_OPTS[@]}" "root@$IP" 'tar -C /usr/lib -xf - 2>/dev/null; sync'
+fi
 rm -f "$NUEVO"
 
 echo "== reiniciando la GUI (el daemon la levanta de nuevo) =="
