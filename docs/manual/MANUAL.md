@@ -119,20 +119,24 @@ parámetros:
 
 ## 5. Ajustes: todos los parámetros
 
-Se entra con la acción *APP Settings*. Las filas, por página:
+Se entra con la acción *APP Settings* (o desde la página APP 5:6). Los ajustes están **agrupados por
+tema en 8 secciones** y la fila de botones de abajo son **tabs**: cada botón salta a su sección, que
+queda arriba de todo y con el foco en su primer campo. El tab en el que estás queda marcado.
 
-| Página | Parámetros | Para qué |
+Son 8 tabs y en la fila entran 4 más el botón de página, así que hay dos páginas: la primera tiene
+`Reloj · Pantalla · Info · Audio · Mas >` y la segunda `Espectro · Operacion · Apariencia · Acciones
+· < Mas`. El botón de la punta pasa a la otra página de tabs.
+
+| Tab | Parámetros | Para qué |
 |---|---|---|
-| **Reloj** | Day, Month, Year / Hour, Min, Sec | Hora UTC de los decodificados (también la ajusta el NTP si hay red) |
-| **Pantalla** | Timeout, Brightness / Buttons brightness / Clock view / S-meter needle / Band plan | Apagado automático, brillo de pantalla y de botones, vista del reloj, aguja del S-meter y plan de banda |
+| **Reloj** | Day, Month, Year / Hour, Min, Sec / Clock view / Timeout Clock, Power, TX | Hora UTC de los decodificados (también la ajusta el NTP si hay red) y qué muestra el reloj |
+| **Pantalla** | Timeout, Brightness / Buttons brightness / S-meter needle / Band plan | Apagado automático, brillo de pantalla y de botones, aguja del S-meter y plan de banda |
 | **Info** | Mag Freq, Info, ALC | Qué muestra cada zona de la barra superior |
-| **Audio** | Audio enhance / Speaker mode / Voice mode / Voice rate, pitch, volume | Realce de audio, modo del parlante, y los anuncios de voz con su velocidad, tono y volumen |
-| **Espectro** | Spectrum auto min, max / Waterfall auto min, max / Waterfall line, zoom / Waterfall smooth scroll / Waterfall battery mode | Ajuste automático de los niveles, líneas y zoom del waterfall, desplazamiento suave y modo de ahorro en batería |
-| **Operación** | Freq acceleration / Charger / Cluster column / Bluetooth / Discoverable (CAT) / Devices | Aceleración del dial, modo del cargador, columna del clúster, Bluetooth y visibilidad para CAT |
+| **Audio** | Line-in, Line-out / audio gain / Audio enhance / Speaker mode / Voice mode, rate, pitch, volume | Entradas y ganancias, realce de audio, modo del parlante y los anuncios de voz |
+| **Espectro** | Spectrum auto min, max / Waterfall auto min, max / Waterfall line, zoom / Waterfall smooth scroll / Waterfall battery mode | Ajuste automático de niveles, líneas y zoom del waterfall, desplazamiento suave y ahorro en batería |
+| **Operacion** | Freq acceleration / Charger / Cluster column / Bluetooth / Discoverable (CAT) / Devices / wfview server / Transverter | Aceleración del dial, cargador, columna del clúster, Bluetooth y su panel de dispositivos, servidor wfview y transverter |
 | **Apariencia** | Theme / Font | Los **8 temas** y la familia de fuente (se aplican al reiniciar) |
-| **Servicios** | wfview server / Update check | Servidor wfview y aviso de firmware nuevo |
-| **Field Ops** | Referencias y log | Referencias SOTA/POTA y el log ADIF |
-| **Acciones** | Pantalla completa de acciones | Asignar acciones a los botones: Screenshot, Screen rec, Mute, Voice mode, Battery info, ATT, PRE, ATU, ATU tune, APP Bands y las demás apps |
+| **Acciones** | APP long press / MIC long press | Asignar acciones a las pulsaciones largas: Screenshot, Screen rec, Mute, Voice mode, Battery info, ATT, PRE, ATU, ATU tune, APP Bands y las demás apps |
 
 ## 6. Las aplicaciones
 
