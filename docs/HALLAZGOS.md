@@ -50,6 +50,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 29. [Todas las apps en el menu de apps](#29-todas-las-apps-en-el-menu-de-apps)
 30. [Verificacion en el banco (QEMU): paginas APP y WCAG](#30-verificacion-en-el-banco-qemu-paginas-app-y-wcag)
 31. [Ajustes con tabs: los botones de abajo ahora llevan a cada seccion](#31-ajustes-con-tabs-los-botones-de-abajo-ahora-llevan-a-cada-seccion)
+32. [Algunas apps matan la GUI (y el equipo parece reiniciarse)](#32-algunas-apps-matan-la-gui-y-el-equipo-parece-reiniciarse)
 
 ---
 
@@ -1523,3 +1524,49 @@ Material 3):
 marcado del activo, el salto de cada uno a su seccion arriba de todo y el foco en su primer campo;
 `check_wcag.py` 990 pares / 0 fallas, `check_settings_focus.py`, `check_actions.py`,
 `check_apps_menu.py` y los 538 tests nativos, todos OK.
+
+---
+
+## 32. Algunas apps matan la GUI (y el equipo parece reiniciarse)
+
+**Reportado**: "hay algo con las apps, algunas al querer accederlas hacen reiniciar el equipo".
+
+**Lo que pasa, medido**: abrir **CW Trainer** o **Status** mata el proceso de la GUI con
+**SIGSEGV** (`rc=139`, medido instrumentando el supervisor para que registre el codigo de salida del
+proceso). La GUI **no** reinicia el equipo: el uptime sigue subiendo. Lo que pasa es que la GUI la
+supervisa `/usr/sbin/x6200_daemon`, que es un `while true` que la vuelve a lanzar en cuanto muere:
+
+```sh
+while true; do
+    /usr/sbin/x6200_gui > /tmp/x6200_log.txt 2>&1 || sync
+    mv /tmp/x6200_log.txt /mnt/app_logs/x6200_log_$(date ...).txt
+done
+```
+
+Asi que la pantalla vuelve al logo en un segundo y **parece** un reinicio del equipo. Reproducido
+7 de 7 veces con CW Trainer y 2 de 2 con Status; las otras 21 apps (incluidas las 9 que antes ni se
+podian abrir) abren y cierran bien.
+
+**Como se acoto**:
+
+1. Barrido de las 23 apps por control remoto, con deteccion de reinicio por **PID de la GUI** y
+   cantidad de logs (no alcanza con el uptime, que no baja): todas "ok" con 3 s de espera. Repitiendo
+   con **20 s** de permanencia aparecen CW Trainer y Status.
+2. El log del proceso muerto (el supervisor lo guarda en `/mnt/app_logs/`): el cambio de modo a CW y
+   los filtros terminan bien (marcas propias A..F en `cfg/mode.c`, todas impresas) y **no hay
+   ninguna linea mas**: el SIGSEGV es silencioso y ocurre despues, en la construccion de la UI de
+   la app.
+3. `dmesg` no deja mensaje y no habia core: el `core_pattern` era `core` (relativo) y el proceso
+   corre con el directorio en `/`, pero al apuntarlo a `/mnt` el kernel aborta el volcado con
+   "cannot preserve file permissions" (vfat). Apuntandolo a `/tmp` (tmpfs) **si** se obtuvo el core
+   (210 MB): queda pendiente analizarlo con un gdb multiarquitectura (el toolchain de buildroot no
+   trae gdb y el core es ARM).
+4. Antes se descartaron, con datos: memoria (`oom_kill 0`, GUI de 20 MB), el handler de asserts de
+   LVGL (`while(1)`, colgaria en vez de salir), los `exit(0)` del arbol (marcados con `fprintf` sin
+   buffer: ninguna marca aparecio) y las librerias de instrumentacion del banco (`ld.so.preload`
+   vacio y no estan en la radio).
+
+**Herramienta nueva**: `tools/prueba-apps-radio.sh` abre las 23 apps o aprieta los 24 botones de las
+paginas APP y detecta si la GUI se cayo (PID o log nuevo) o si el equipo reinicio (uptime). Es la que
+encontro estas dos. Tambien se completo el control remoto: ahora expone las **23 apps** (antes 15),
+asi que la pagina /remote del webserver tambien las puede abrir.

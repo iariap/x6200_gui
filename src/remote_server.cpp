@@ -121,7 +121,10 @@ static const char *mode_names[] = {"LSB", "LSB-D", "USB", "USB-D", "CW", "CW-R",
 static const char *agc_names[]  = {"OFF", "SLOW", "FAST", "AUTO"};
 
 /* "app" values; cont_modes[] order in dialog_sstv.c */
-static const char *app_names[]  = {"off", "FT8", "FT4", "JS8", "WSPR", "SSTV", "WeFax", "NavTex", "RTTY", "CW", "Field", "GPS", "Bands", "Settings", "BT"};
+/* Las 23 apps de main_screen.c: estaban solo 15, asi que no se podian abrir por control remoto
+ * (ni desde la pagina /remote del webserver). Los indices importan: FT4 es el 2. */
+static const char *app_names[]  = {"off", "FT8", "FT4", "JS8", "WSPR", "SSTV", "WeFax", "NavTex", "RTTY", "CW", "Field", "GPS", "Bands", "Settings", "BT",
+                                   "About", "Cluster", "CwTrainer", "Eq", "Status", "QTH", "Callsign", "Recorder", "WiFi"};
 static const char *sstv_modes[] = {"R8BW", "R36", "R72", "M1", "M2", "S1", "S2"};
 
 /* Commands of the app that is open: app is current_app() or its start ("FT": FT8 and FT4); a name
@@ -288,9 +291,10 @@ static bool app_open(size_t i) {
 }
 
 static void open_app(int32_t app) {
-    static const press_action_t actions[] = {ACTION_NONE,     ACTION_APP_FT8,     ACTION_APP_FT8,   ACTION_APP_JS8,
-                                             ACTION_APP_WSPR, ACTION_APP_SSTV,    ACTION_APP_WEFAX, ACTION_APP_NAVTEX,
-                                             ACTION_APP_RTTY, ACTION_APP_CW_KBD,  ACTION_APP_FIELD, ACTION_APP_GPS, ACTION_APP_BANDS, ACTION_APP_SETTINGS, ACTION_APP_BT};
+    static const press_action_t actions[] = {ACTION_NONE,      ACTION_APP_FT8,      ACTION_APP_FT8,      ACTION_APP_JS8,
+                                             ACTION_APP_WSPR,  ACTION_APP_SSTV,     ACTION_APP_WEFAX,    ACTION_APP_NAVTEX,
+                                             ACTION_APP_RTTY,  ACTION_APP_CW_KBD,   ACTION_APP_FIELD,    ACTION_APP_GPS, ACTION_APP_BANDS, ACTION_APP_SETTINGS, ACTION_APP_BT,
+                                             ACTION_APP_ABOUT, ACTION_APP_CLUSTER,  ACTION_APP_CWTRAINER, ACTION_APP_EQ, ACTION_APP_STATUS, ACTION_APP_QTH, ACTION_APP_CALLSIGN, ACTION_APP_RECORDER, ACTION_APP_WIFI};
     const char *cur = current_app();
 
     if (!app) {
