@@ -1710,3 +1710,48 @@ GUI** ✗. El equipo **no se reinicia**: el supervisor la relanza en ~1 s y el u
 `LV_USE_ASSERT_OBJ 1` en `lv_conf.h` con un `LV_ASSERT_HANDLER` que registre
 `__builtin_return_address(0)` y salga. Hoy ese assert esta en **0**, y por eso el objeto invalido no
 avisa y el crash es mudo. Con eso LVGL mismo dice **que objeto** es invalido y **quien** se lo paso.
+
+---
+
+## 36. Causa raiz: la pantalla principal se destruye al abrir la app
+
+**La herramienta que lo resolvio** (anotada para no volver a dar vueltas): activar
+`LV_USE_ASSERT_OBJ 1` en `lv_conf.h` con
+
+```c
+#define LV_ASSERT_HANDLER_INCLUDE <stdio.h>
+#define LV_ASSERT_HANDLER (fprintf(stderr, "LVGLASSERT %s:%d caller=%p\n", __FILE__, __LINE__, \
+                                    __builtin_return_address(0)), fflush(stderr), __builtin_trap());
+```
+
+(como **expresion** y con `;` final: LVGL usa `LV_ASSERT_HANDLER` sin punto y coma). Con eso el
+crash deja de ser mudo y sale en el log **con el llamador**:
+
+```
+LVGLASSERT src/core/lv_obj.c:231 caller=0x4dc1fc
+```
+
+**Que dice ese llamador**: `0x4dc1fc` cae dentro de **`band_plan_init`** (los simbolos vecinos son
+`scheduler_put` 0x4c860 y `scheduler_put_noargs` 0x4cb34 para el llamador de `main_screen`, y
+`redraw`/`band_plan_init` para este). O sea: el codigo que **arma la pantalla principal**
+(`main_screen()`) esta trabajando sobre un **padre muerto**: crea objetos bajo un contenedor ya
+destruido.
+
+Y una marca al entrar a `main_screen()` muestra que se llama **una sola vez por arranque**, desde
+`scheduler_put`:
+
+```
+SCREENDBG main_screen obj=(nil) caller=0x4c9b34
+```
+
+**Conclusion (fundada)**: el arbol de objetos de la pantalla principal **se destruye cuando se abre
+una app**, y lo que sobrevive -el timer de 1 s de `spot_marks`, el plan de banda, los observadores
+globales del modo y la banda- sigue tocando esa memoria liberada. Eso es el use-after-free que
+aparece adentro de LVGL recorriendo el layout flexivo (`lv_obj_has_flag_any` por `flex_update`), y
+es tambien la razon de que el crash llegue **unos segundos despues** de abrir la app: lo dispara el
+timer.
+
+**Proximo paso, concreto**: encontrar quien destruye los hijos de la pantalla principal en el camino
+de apertura de la app (`dialog_construct` / `apps_disable` / el frame del app) y arreglar ese ciclo
+de vida. Con el assert de arriba el aviso es inmediato. **Estado**: 21 de 23 apps andan y el equipo
+no se reinicia; CW Trainer y Status siguen matando la GUI.
