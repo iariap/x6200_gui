@@ -259,8 +259,7 @@ void scenario_settle(const scenario_t *scenario)
          * the action ever goes back to constructing the window on top of the
          * current one (the Ajustes window left running, `current_dialog`
          * overwritten and the Ajustes object orphaned) or reaches no dialog at
-         * all (the app-menu button the user reported), the harness stops here
-         * instead of capturing a green run.
+         * all, the harness stops here instead of capturing a green run.
          *
          * `dialog_settings` is the real descriptor (src/dialog_settings.c is
          * compiled); `run` stays true until the window's object is deleted. */
