@@ -1250,6 +1250,121 @@ Prueba que la posición X de los tres labels sale del flex (no de un
 fuente montado. El `_Static_assert` de la tesela del header sigue siendo el guard
 de la relación `2*UI_FREQ_SIDE_W + UI_FREQ_MAIN_W == UI_FREQ_SCREEN_W`.
 
+## Fix real de firmware: UI-014 (la celda del modo en VISION) — EXP-5 de UI-04 (issue #28) ✅
+
+Hermano exacto de UI-012 en la misma barra: con **VISION** el texto crece tres
+pasos de fuente (`fonts_scale()`) y la celda del **modo** (`items[INFO_MODE]`,
+`src/info.c`) siguió con las 56x26 fijas de `src/ui_tokens.h`, sin el tratamiento
+que EXP-2 le dio al VFO. `CW-R` mide **exactamente 56 px**, el ancho de la celda
+**0 px de margen**: se pega a la celda de AGC (que muestra `AUTO`) y en pantalla se
+lee `CW-RAUTO` (issue #28, evidencia de radio `e4c329c`). `USB-D`, el modo más ancho
+de los que la radio lista, mide **66 px** y el `WRAP` lo parte en dos líneas que la
+celda recorta.
+
+**La pieza que faltaba para fundarlo: el campo `mode` del escenario.** Existía desde
+el primer commit del arnés (`scenario.c` → `mock_radio.mode`;
+`mock_radio_apply()` lo publica en `cfg_cur.mode`, que es de donde `src/info.c` saca
+la etiqueta), pero sólo entendía formas tipo enum (`cwr`, `usb_dig`). Ahora acepta
+además los nombres canónicos que la radio lista y acepta (`mode_names[]`,
+`src/remote_server.cpp`): `LSB`, `LSB-D`, `USB`, `USB-D`, `CW`, `CW-R`, `AM`, `NFM`
+(más `SAM`/`WFM`, que están en el enum). Los dos spellings rinden **byte-idéntico**
+(verificado por sha256).
+
+**Dos fixtures nuevos** (el set pasa de **16 a 18**), mismos radio state que
+`home-usb-20m` salvo el modo:
+
+- `main-tema-vision-cwr` (VISION + `CW-R`): el estado exacto del issue. La etiqueta
+  mide 56 px, el ancho de la celda.
+- `main-tema-vision-usbd` (VISION + `USB-D`): 66 px, el fixture que el contrato
+  `typography_text_overflow` puede medir.
+
+### Sensibilidad medida (por qué el fixture que dispara es `usbd` y no `cwr`)
+
+La etiqueta del modo bajo VISION, medida con `lv_txt_get_size` (inspección
+estructural, sin OCR) sobre una celda de 56 px:
+
+| modo | etiqueta | ancho (px) | margen | contrato (`WRAP`) |
+|---|---|---|---|---|
+| `CW` | CW | 34 | 22 | OK |
+| `LSB` / `USB` | LSB / USB | 42 / 44 | 14 / 12 | OK |
+| `NFM` / `SAM` | NFM / SAM | 49 | 7 | OK |
+| `WFM` | WFM | 54 | 2 | OK |
+| `CW-R` | CW-R | **56** | **0** | OK (`56 > 56` es falso: no hace `WRAP`) |
+| `LSB-D` | LSB-D | **64** | −8 | **FAIL** |
+| `USB-D` | USB-D | **66** | −10 | **FAIL** |
+
+`CW-R` mide **el ancho exacto** de la celda, así que no hace `WRAP` y el contrato
+(exige que el texto crezca más allá de la caja) no puede dispararse sobre él —el
+pegado queda fuera de su alcance por 1 px—. Por eso el fixture que funda UI-014 es
+`main-tema-vision-usbd` y `main-tema-vision-cwr` queda como la evidencia del pegado
+reportado, que el arnés reproduce **pixel a pixel** contra la captura de la radio:
+la tinta del modo va de 74 a 127 y la de `AUTO` de 131 a 185 en las **dos**.
+
+### Defecto y fix
+
+- **A** (`9c031c8`, sólo los fixtures): el audit falla —`text 'USB-D' does not fit
+  its 56x26 box (WRAP)` sobre `main-tema-vision-usbd`— y el fixture `cwr` muestra el
+  pegado (`CW-R` a 0 px de margen).
+- **Fix** (`src/info.c`): bajo `theme_shape.vision` la celda del modo usa
+  `font_down(UI_INFO_FONT, VISION_FONT_STEPS)` = `sony_14`, el mismo idioma que
+  `NF()` de `src/cluster_column.c` y que la celda del VFO de UI-012. Medido: `CW-R`
+  pasa de **56 a 42 px** y `USB-D` de **66 a 52 px**.
+- **B** (`7b644a7`): audit **PASS** (0 findings, 1572 objetos, 18 fixtures) y
+  contracts **PASS** (180 checks, 0 excepciones).
+
+### Blast radius (medido, no afirmado)
+
+`compare` de A a B: **15 de 18 fixtures byte-idénticas**; los 3 diffs quedan
+**confinados a `barra_superior`** y son la celda del modo de los tres fixtures
+VISION (`main-tema-vision` 406 px, `main-tema-vision-cwr` 446 px,
+`main-tema-vision-usbd` 448 px). `main-tema-vision` **cambia** aunque su modo sea
+`USB`: el fix es a nivel de celda (la fuente de las seis celdas es la misma), así
+que `USB` (44 → 35 px) también se redibuja; el cambio está declarado en
+`expected_changes` (región `barra_superior`). `home-frecuencia-extrema`,
+`main-tx-simulado`, `main-espectro-agua` y las demás no mueven un píxel.
+
+### Evidencia (host, 2026-10-14, `9c031c8` → `7b644a7`)
+
+```text
+$ tests/check_harness_determinism.sh          # 18 fixtures x2
+main-tema-vision: 626412d8b6f47f1ce76f0ec700dd16b1d2f4e975a9c81ffc698cdffd25de609a
+main-tema-vision-cwr: 25fd0585073f3c1218df046055bc7778c29f688b68f7550364e15ff12c1720b9
+main-tema-vision-usbd: aab452ee2ca0f143efbeaf6dc9159448dd706e9dedf565420b2748bbefbf96d6
+... (las otras 15 con el sha256 del tip previo, salvo main-tema-vision por el fix)
+PASS: deterministic (identical PNGs for every fixture)
+
+$ uv run x6200-ab audit --revision 9c031c8 --suite visual       # A, sólo los fixtures
+audited 9c031c85d4ea: 14 known issues — 0 reproduced, 12 unverified; structural
+inspection REAL over 1572 objects on 18 scenario(s): 1 structural finding(s)
+  FAIL typography_text_overflow [main-tema-vision-usbd]: text 'USB-D' does not fit
+  its 56x26 box (WRAP)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual          # B, el fix
+audited 7b644a771458: 14 known issues — 0 reproduced, 12 unverified; structural
+inspection REAL over 1572 objects on 18 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts 7b644a771458: PASS — 180 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab compare --a 9c031c8 --b HEAD --experiment-id AB-UI04-EXP5
+experiment AB-UI04-EXP5: PASS (exit 0) — 15/18 byte-idénticas; los 3 diffs de
+VISION dentro de barra_superior
+
+$ uv run x6200-ab benchmark --a 9c031c8 --b HEAD --experiment-id BENCH-UI04-EXP5-repeat
+benchmark 9c031c8 (A) vs 7b644a7 (B): PASS (exit 0) — 18 escenarios, p95 entre
+-10.7% y +9.1% (dentro del presupuesto del 25%)
+
+$ uv run pytest -m "not e2e" -q            → 120 passed, 17 deselected
+$ uv run pytest -m e2e -q                  → 17 passed
+$ tests/native/run_native_tests.sh         → 545 comprobaciones, 0 fallos + 7, 0 fallos
+```
+
+`BENCH-UI04-EXP5` (la primera corrida) **falla** en `main-tema-rs` (+38.6% p95) y su
+repetición `BENCH-UI04-EXP5-repeat` pasa con `main-tema-rs` a −2.7 %: `main-tema-rs`
+es **byte-idéntico** entre A y B (el fix no lo toca), así que el FAIL es ruido del
+host (load average ~4), el mismo caso que `BENCH-UI04-EXP3`/`-repeat`. Las dos
+corridas quedan commiteadas.
+
 ## Pendientes
 
 - **UI-05 (Flex/Grid) sigue abierto**: el **incremento 1** fue la capa de tokens
@@ -1269,9 +1384,14 @@ de la relación `2*UI_FREQ_SIDE_W + UI_FREQ_MAIN_W == UI_FREQ_SCREEN_W`.
   arrastran `dialog_field`/audio/tabla siguen fuera, y con ellos las semillas
   UI-002/UI-004/UI-005 quedan `unverified`.
 - **Tema VISION y fuentes de usuario**: VISION ya tiene fixture
-  (`main-tema-vision`, UI-03) y sus dos defectos quedaron **fixed**: los glifos
-  (**UI-011**) en UI-04/EXP-1 y el overflow de `VFO-A` (**UI-012**) en UI-04/EXP-2
-  (ver arriba), cada uno con su excepción retirada en el mismo cambio. Sigue sin
+  (`main-tema-vision`, UI-03) y sus tres defectos de tipografía quedaron **fixed**:
+  los glifos (**UI-011**) en UI-04/EXP-1, el overflow de `VFO-A` (**UI-012**) en
+  UI-04/EXP-2 y la celda del modo (**UI-014**) en UI-04/EXP-5 (ver arriba), cada uno
+  con su excepción retirada en el mismo cambio. Ojo con UI-014: el fixture que
+  **dispara** el contrato es `main-tema-vision-usbd` (`USB-D`, 66 px); el `CW-R` del
+  issue mide **exactamente** el ancho de la celda (56 px), así que se pega pero no
+  hace `WRAP` y el contrato no puede medirlo (queda como evidencia pixel a pixel).
+  Sigue sin
   haber fixture de fuente elegida por el usuario (Roboto/DejaVu/Arial):
   `font_down()` devuelve el tamaño del slot, que con `fonts_apply()` es el de la
   fuente alternativa elegida, así que el fix de UI-012 cubre también ese camino,

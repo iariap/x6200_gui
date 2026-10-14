@@ -237,6 +237,47 @@ issues:
       - "tools/ab_testing/reports/AB-UI04-EXP4/ (screenshots A/B, diff, overlay, results.json)"
       - "tools/ab_testing/quality/contracts.yaml (excepcion de UI-013 retirada en el mismo cambio; el registro queda sin waivers)"
 
+  - id: UI-014
+    title: "VISION: la celda del modo no entra en su celda de 56 px (CW-R se pega a AUTO; USB-D se parte)"
+    severity: minor
+    fixture: main-tema-vision-usbd
+    region: barra_superior
+    status: fixed
+    note: >
+      Con VISION el texto de la barra crece tres pasos de fuente (fonts_scale,
+      src/fonts/font_select.c) pero las seis celdas siguen siendo las 56x26 fijas
+      del bitmap de la barra (src/ui_tokens.h, src/info.c). UI-012 le devolvio a la
+      celda del VFO la fuente de los otros temas y la celda del modo se quedo sin
+      ese tratamiento: su etiqueta se mide distinto segun el modo. `CW-R` (4
+      caracteres) mide exactamente 56 px, el ancho de la celda: queda con 0 px de
+      margen y se pega a la celda de AGC, que muestra "AUTO", y en pantalla se lee
+      `CW-RAUTO` (esto es lo que reporta el issue #28, y lo que reproduce el
+      fixture main-tema-vision-cwr, medido pixel a pixel contra la captura de la
+      radio: MODE 74..127 y AUTO 131..185 en los dos). `USB-D` (el modo mas ancho
+      de los que la radio lista, mode_names[] de src/remote_server.cpp) mide 66 px:
+      el WRAP lo parte en dos lineas y la celda recorta la segunda, asi que la
+      etiqueta desborda la caja. El detector es el contrato
+      `typography_text_overflow`, y dispara sobre el fixture main-tema-vision-usbd
+      (el que sobresale de la caja); `CW-R`, al medir exactamente el ancho de la
+      celda, no hace wrap y el contrato (que exige que el texto crezca mas alla de
+      la caja, > 56 px) no puede dispararse sobre el: el fixture cwr queda como la
+      evidencia del pegado reportado. FIX (UI-04/AB-UI04-EXP5): bajo
+      theme_shape.vision la celda del modo vuelve al tamano de los otros temas
+      (font_down(UI_INFO_FONT, VISION_FONT_STEPS) = sony_14, el mismo idioma que
+      NF() de src/cluster_column.c y que la celda del VFO de UI-012; medido: `CW-R`
+      pasa de 56 a 42 px y `USB-D` de 66 a 52 px). Las otras cuatro celdas y el VFO
+      no se tocan y los temas que no son VISION quedan byte-identicos, porque el
+      cambio esta detras de theme_shape.vision. El contrato no lleva ninguna
+      excepcion: sin waiver, una reaparicion vuelve a fallar la corrida.
+    evidence:
+      - "tools/ui_harness/fixtures/main-tema-vision-cwr.scn (VISION + CW-R: la etiqueta mide 56 px, 0 px de margen; el fixture del estado reportado)"
+      - "tools/ui_harness/fixtures/main-tema-vision-usbd.scn (VISION + USB-D: 66 px, el fixture que dispara el contrato)"
+      - "src/info.c (info_init: items[INFO_MODE] usa font_down(UI_INFO_FONT, VISION_FONT_STEPS) bajo theme_shape.vision, junto a items[INFO_VFO]) + src/ui_tokens.h UI_INFO_CELL_W=56"
+      - "audit 9c031c8 (A, el commit que solo suma los fixtures): FAIL typography_text_overflow [main-tema-vision-usbd] text 'USB-D' does not fit its 56x26 box (WRAP); audit 7b644a7 (B, el fix): PASS, 0 structural findings (1572 objetos, 18 fixtures)"
+      - "tools/ab_testing/reports/AB-UI04-EXP5/ (screenshots A/B, diffs y overlays de los tres fixtures VISION, results.json)"
+      - "tools/ab_testing/quality/contracts.yaml (expected_change acotado a barra_superior; sin exclusion de UI-014)"
+    exclusions: []
+
   # --- Seeds from the repository history: recorded, not yet reproduced. -------
   # They stay unverified until the harness can reproduce them (pixel-region
   # detector today; structural inspection once the harness emits object bounds).
