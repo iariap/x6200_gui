@@ -26,6 +26,27 @@ coverage:
     - theme.c
     - styles.c
 
+# Layout rules over the harness' structural inspection (`ui_harness --inspect`):
+# absolute bounding boxes, the box visible after clipping and the real widget
+# class. They catch what a pixel diff cannot state.
+layout:
+  # Minimum touch target for an interactive control (AGENTS.md: usable field UX).
+  min_touch_target_px: 44
+  # Slack when comparing the visible box against the object box (rounding).
+  clip_tolerance_px: 0
+
+# Text-legibility rules, from LVGL's own font metrics and glyph resolution
+# (lv_txt_get_size / lv_font_get_glyph_dsc); never OCR.
+typography:
+  # WCAG 2.1 contrast thresholds, normal and large text.
+  min_contrast_ratio: 4.5
+  large_text_min_contrast_ratio: 3.0
+  large_text_px: 24
+  # Icon glyphs are meant to come from the Sony fallback (the alternate fonts are
+  # ASCII-only), so falling back is not a defect. A glyph missing from *every*
+  # font (a placeholder box on screen) is, always.
+  allow_fallback_glyphs: true
+
 # A visual change stops being a regression only if it is a fix of a known issue
 # or is listed here. Each entry needs a reason, an author and an expiry date —
 # never a global, permanent exemption. Empty on purpose: nothing is expected.
@@ -35,3 +56,8 @@ expected_changes: []
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.
 review_regions: []
+
+# Scoped, dated waivers for structural findings: they name the rule and the
+# fixture (optionally one node `path`) and carry a reason, an author and an
+# expiry. Never global, never permanent. Empty on purpose: nothing is waived.
+exceptions: []

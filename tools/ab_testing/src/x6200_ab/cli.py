@@ -24,10 +24,11 @@ from typing import Any
 from . import __version__, proc
 from .builds import HarnessBuilder
 from .capture import BenchmarkRun, Capture, Capturer, FrameSample, MemorySample
-from .contracts import run_contracts
+from .contracts import run_contracts, run_structural_checks
 from .docker import DockerRunner
 from .errors import AbError, DockerUnavailable
 from .evaluator import ComparisonData, evaluate, observe_issues
+from .inspection import inspection_of
 from .known_issues import KnownIssue, evaluate_detector, load_known_issues
 from .performance import (
     BenchmarkVerdict,
@@ -78,13 +79,24 @@ def build_parser() -> argparse.ArgumentParser:
     capture.add_argument("--revision", required=True, help="git rev (SHA, branch, tag)")
     capture.add_argument("--label", default="rev", help="label used in paths and reports")
     capture.add_argument("--scenario", action="append", default=[], help="limit to a fixture")
+    capture.add_argument(
+        "--inspect",
+        action="store_true",
+        help="also emit the structural inspection of the object tree in the JSON",
+    )
     capture.add_argument("--out", required=True, help="directory for the PNG + JSON captures")
     capture.set_defaults(func=cmd_capture)
 
     audit = sub.add_parser("audit", help="check the known-issue detectors on one revision")
     _common(audit)
-    audit.add_argument("--revision", required=True)
+    audit.add_argument("--revision", "--ref", dest="revision", required=True)
     audit.add_argument("--scenario", action="append", default=[])
+    audit.add_argument(
+        "--suite",
+        choices=("visual", "all"),
+        default=None,
+        help="select the whole visual suite (all fixtures); same as no --scenario",
+    )
     audit.set_defaults(func=cmd_audit)
 
     contracts = sub.add_parser(
@@ -187,7 +199,11 @@ def cmd_capture(args: argparse.Namespace) -> int:
         suite = ScenarioSuite.from_fixtures_dir(revision.fixtures_dir, args.scenario)
         out_dir = Path(args.out).resolve()
         captures = Capturer(context.runner).capture_all(
-            revision, suite, out_dir, context.workspace / "logs"
+            revision,
+            suite,
+            out_dir,
+            context.workspace / "logs",
+            inspect=bool(getattr(args, "inspect", False)),
         )
         payload = {
             "status": Status.PASS.value,
@@ -210,6 +226,12 @@ def cmd_capture(args: argparse.Namespace) -> int:
 
 
 def cmd_audit(args: argparse.Namespace) -> int:
+    """Known-issue detectors *and* the structural inspection of the live tree.
+
+    Captures run with `--inspect`, so the audit measures the real object tree
+    (bounding boxes, text metrics, glyphs) instead of being blocked on missing
+    instrumentation. A structural finding that is not waived fails the audit.
+    """
     context = _build_context(args)
     manager = RevisionManager(context.repo, context.workspace, context.cache_dir)
     try:
@@ -219,7 +241,7 @@ def cmd_audit(args: argparse.Namespace) -> int:
         captures = {
             capture.name: capture
             for capture in Capturer(context.runner).capture_all(
-                revision, suite, out_dir, context.workspace / "logs"
+                revision, suite, out_dir, context.workspace / "logs", inspect=True
             )
         }
         results: list[dict[str, Any]] = []
@@ -246,26 +268,46 @@ def cmd_audit(args: argparse.Namespace) -> int:
             )
         reproduced = [item["id"] for item in results if item["reproduced"]]
         unverified = [item["id"] for item in results if item["reproduced"] is None]
+
+        structural = run_structural_checks(
+            [captures[name] for name in sorted(captures)], context.contracts
+        )
+        failures = [finding for finding in structural if not finding.ok]
+        nodes = sum(
+            inspection.count
+            for capture in captures.values()
+            if (inspection := inspection_of(capture)) is not None
+        )
+        status = Status.FAIL if failures else Status.PASS
         payload = {
-            "status": Status.PASS.value,
-            "exit_code": Status.PASS.exit_code,
+            "status": status.value,
+            "exit_code": status.exit_code,
             "revision": revision.sha,
             "scenarios": suite.names,
+            "instrumentation": {
+                "structural": True,
+                "source": "live LVGL object tree (ui_harness --inspect); no OCR",
+                "nodes_inspected": nodes,
+            },
             "reproduced": reproduced,
             "unverified": unverified,
             "issues": results,
-            "blocked_instrumentation": (
-                "structural inspection (object bounding boxes, glyphs, overflow) is not "
-                "emitted by the harness yet; this audit is pixel-region only"
-            ),
+            "structural_checks": len(structural),
+            "structural_failures": len(failures),
+            "findings": [finding.as_dict() for finding in structural],
         }
         text = (
-            f"audited {revision.short_sha}: {len(results)} issues — "
+            f"audited {revision.short_sha}: {len(results)} known issues — "
             f"{len(reproduced)} reproduced, {len(unverified)} unverified; "
-            "structural inspection (object bounds, glyphs) BLOCKED: the harness does not "
-            "emit it yet, so this audit is pixel-region only"
+            f"structural inspection REAL over {nodes} objects on {len(captures)} "
+            f"scenario(s): {len(structural)} checks, {len(failures)} finding(s)"
         )
-        return _emit(args, payload, text, Status.PASS)
+        if failures:
+            text += "\n" + "\n".join(
+                f"  FAIL {finding.rule} [{finding.fixture}]: {finding.detail}"
+                for finding in failures
+            )
+        return _emit(args, payload, text, status)
     finally:
         _teardown(context, manager)
 
@@ -287,7 +329,7 @@ def cmd_contracts(args: argparse.Namespace) -> int:
         suite = ScenarioSuite.from_fixtures_dir(revision.fixtures_dir, args.scenario)
         out_dir = context.workspace / "captures" / revision.short_sha
         captures = Capturer(context.runner).capture_all(
-            revision, suite, out_dir, context.workspace / "logs"
+            revision, suite, out_dir, context.workspace / "logs", inspect=True
         )
         findings = run_contracts(captures, context.region_map, context.contracts)
         failures = [finding for finding in findings if not finding.ok]
@@ -343,6 +385,7 @@ def cmd_compare(args: argparse.Namespace) -> int:
             suite,
             context.workspace / "captures" / f"b-{revision_b.short_sha}",
             context.workspace / "logs",
+            inspect=True,
         )
         a_by = {capture.name: capture for capture in a_captures}
         b_by = {capture.name: capture for capture in b_captures}

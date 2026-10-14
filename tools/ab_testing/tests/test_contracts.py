@@ -4,8 +4,17 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from helpers import blank_image, contracts, draw_box, make_capture, revision
+from helpers import (
+    blank_image,
+    contracts,
+    draw_box,
+    inspection,
+    make_capture,
+    node,
+    revision,
+)
 from x6200_ab.contracts import ContractFinding, run_contracts
+from x6200_ab.quality_config import RuleException
 from x6200_ab.regions import RegionMap
 
 
@@ -60,3 +69,61 @@ def test_coverage_levels_and_required(tmp_path: Path, region_map: RegionMap) -> 
         contracts(required_components=("main_screen.c", "theme.c", "styles.c")),
     )
     assert _finding(findings, "coverage_required").ok is False
+
+
+def _defective_capture(tmp_path: Path):
+    """A capture whose inspection already carries a missing-glyph defect."""
+    label = node(
+        cls="lv_label",
+        x=0,
+        y=0,
+        w=56,
+        h=26,
+        text="\uf293",
+        missing_glyphs=["U+F293"],
+    )
+    return make_capture(
+        tmp_path,
+        "home",
+        blank_image(),
+        rev=revision(),
+        inspection=inspection([label]),
+    )
+
+
+def test_structural_checks_run_inside_the_contracts(tmp_path: Path, region_map: RegionMap) -> None:
+    findings = run_contracts([_defective_capture(tmp_path)], region_map, contracts())
+    assert _finding(findings, "typography_missing_glyph").ok is False
+
+
+def test_active_exception_waives_a_structural_finding(
+    tmp_path: Path, region_map: RegionMap
+) -> None:
+    exception = RuleException(
+        rule="typography_missing_glyph",
+        fixture="home",
+        reason="recorded known issue",
+        author="test",
+        until="2999-01-01",
+        path="0",
+    )
+    findings = run_contracts(
+        [_defective_capture(tmp_path)], region_map, contracts(exceptions=(exception,))
+    )
+    waived = _finding(findings, "typography_missing_glyph")
+    assert waived.ok is True
+    assert "waived until 2999-01-01" in waived.detail
+
+
+def test_expired_exception_does_not_waive(tmp_path: Path, region_map: RegionMap) -> None:
+    exception = RuleException(
+        rule="typography_missing_glyph",
+        fixture="home",
+        reason="old waiver",
+        author="test",
+        until="2000-01-01",
+    )
+    findings = run_contracts(
+        [_defective_capture(tmp_path)], region_map, contracts(exceptions=(exception,))
+    )
+    assert _finding(findings, "typography_missing_glyph").ok is False

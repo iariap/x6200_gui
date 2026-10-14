@@ -26,8 +26,13 @@ cd tools/ui_harness/build
 ./ui_harness \
   --scenario /src/tools/ui_harness/fixtures/{fixture} \
   --png /out/{name}.png \
-  --json /out/{name}.json
+  --json /out/{name}.json{inspect}
 """
+
+# `--inspect` adds the structural inspection of the live LVGL object tree to the
+# JSON (see tools/ui_harness/src/ui_inspector.c). It never changes a pixel, so
+# the plain capture stays byte-identical.
+INSPECT_FLAG = " --inspect"
 
 # `--bench` measures the real render cost of each frame with CLOCK_MONOTONIC
 # (see tools/ui_harness/src/bench_metrics.h) and appends a `benchmark` block to
@@ -170,9 +175,14 @@ class Capturer:
         suite: ScenarioSuite,
         out_dir: Path,
         logs_dir: Path,
+        *,
+        inspect: bool = False,
     ) -> list[Capture]:
         out_dir.mkdir(parents=True, exist_ok=True)
-        return [self.capture(revision, scenario, out_dir, logs_dir) for scenario in suite.scenarios]
+        return [
+            self.capture(revision, scenario, out_dir, logs_dir, inspect=inspect)
+            for scenario in suite.scenarios
+        ]
 
     def capture(
         self,
@@ -180,6 +190,8 @@ class Capturer:
         scenario: Scenario,
         out_dir: Path,
         logs_dir: Path,
+        *,
+        inspect: bool = False,
     ) -> Capture:
         scenario_path = revision.fixtures_dir / scenario.filename
         parsed = parse_scenario(scenario_path)
@@ -187,7 +199,11 @@ class Capturer:
             raise HarnessError(
                 f"{scenario_path} declares name `{parsed.name}`, expected `{scenario.name}`"
             )
-        script = CAPTURE_SCRIPT.format(fixture=scenario.filename, name=scenario.name)
+        script = CAPTURE_SCRIPT.format(
+            fixture=scenario.filename,
+            name=scenario.name,
+            inspect=INSPECT_FLAG if inspect else "",
+        )
         log_path = logs_dir / f"capture-{revision.label}-{revision.short_sha}-{scenario.name}.log"
         result = self.runner.run_script(
             revision.worktree,
