@@ -586,7 +586,7 @@ def test_contracts_pass_on_the_fixed_outdoor_frequency_row(
     assert finding["ok"] is True
 
 
-def test_ui010_fix_is_confined_to_the_frequency_region(tmp_path: Path, revisions: Revisions) -> None:
+def test_ui010_fix_stays_inside_the_frequency_region(tmp_path: Path, revisions: Revisions) -> None:
     """A is the white frequency row, B the fix -> the only change is `frecuencia`.
 
     UI-010 has no pixel detector of its own (its detector is the contract rule, so
