@@ -279,7 +279,7 @@ run pytest -m e2e`: **11 passed**; audit guardado en
 
 ```text
 audit base       (home-usb-20m): PASS — 84 objetos inspeccionados, 0 findings
-audit regression (botones +30px): FAIL — 10 × layout_clipped
+audit regression (botones +30px): FAIL — 10 × layout_clipped + 5 × layout_touch_target
                                   (lv_obj 0,448 160x62 cut to 160x32; labels ídem)
 audit structural (defecto       : FAIL — typography_text_overflow  ('VERYLONGMODENAME'
                   deliberado)             en 56x26), typography_missing_glyph (U+F293)
