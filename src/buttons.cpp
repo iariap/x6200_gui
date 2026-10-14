@@ -792,6 +792,14 @@ void buttons_press(uint8_t n, bool hold) {
         LV_LOG_WARN("Button %u is NULL", n);
         return;
     }
+    /* Un item puede estar cargado en la fila y a la vez haber quedado sin label_obj (por ejemplo
+     * si el mismo item se usa en dos paginas y se descarga una): lv_obj_get_parent(NULL) es un
+     * SIGSEGV. Se avisa y se sale, como con el item NULL de mas arriba (docs/HALLAZGOS.md 33). */
+    if (item->label_obj == NULL) {
+        LV_LOG_WARN("Button %u has no label object (item not loaded)", n);
+        return;
+    }
+
     lv_obj_t *btn_obj = lv_obj_get_parent(item->label_obj);
     if (lv_obj_has_state(btn_obj, LV_STATE_DISABLED)) {
         LV_LOG_INFO("Button %s is disabled", lv_label_get_text(item->label_obj));

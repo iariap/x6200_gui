@@ -39,11 +39,20 @@ static void key_cb(lv_event_t *e);
 static void beacon_cb(button_data_t *b);
 static void tune_cb(button_data_t *b);
 
-static button_data_t btn_page   = {.type = BTN_TEXT, .label = "(BANDS 1:1)"};
+static void bands_title_cb(button_data_t *b);
+
+static button_data_t btn_page   = {.type = BTN_TEXT, .label = "(BANDS 1:1)", .press = bands_title_cb};
 static button_data_t btn_beacon = {.type = BTN_TEXT, .label = "Test\nbeacon", .press = beacon_cb};
 static button_data_t btn_tune   = {.type = BTN_TEXT, .label = "Use\nband", .press = tune_cb};
 
 static buttons_page_t btn_page_1 = {.items = {&btn_page, &btn_beacon, &btn_tune}};
+
+/* El boton que muestra el titulo ("BANDS 1:1") no tenia handler: al apretarlo, buttons_press
+ * avisaba "press action is NULL". Reaplica la pantalla de bandas (docs/HALLAZGOS.md 33). */
+static void bands_title_cb(button_data_t *b) {
+    (void) b;
+    buttons_load_page(&btn_page_1);
+}
 
 static dialog_t dialog = {
     .run          = false,

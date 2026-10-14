@@ -51,6 +51,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 30. [Verificacion en el banco (QEMU): paginas APP y WCAG](#30-verificacion-en-el-banco-qemu-paginas-app-y-wcag)
 31. [Ajustes con tabs: los botones de abajo ahora llevan a cada seccion](#31-ajustes-con-tabs-los-botones-de-abajo-ahora-llevan-a-cada-seccion)
 32. [Algunas apps matan la GUI (y el equipo parece reiniciarse)](#32-algunas-apps-matan-la-gui-y-el-equipo-parece-reiniciarse)
+33. [Todos los botones de las apps tienen handler](#33-todos-los-botones-de-las-apps-tienen-handler)
 
 ---
 
@@ -1570,3 +1571,46 @@ podian abrir) abren y cierran bien.
 paginas APP y detecta si la GUI se cayo (PID o log nuevo) o si el equipo reinicio (uptime). Es la que
 encontro estas dos. Tambien se completo el control remoto: ahora expone las **23 apps** (antes 15),
 asi que la pagina /remote del webserver tambien las puede abrir.
+
+---
+
+## 33. Todos los botones de las apps tienen handler
+
+**Pedido**: "asegurate que todos los botones de las apps tengan su handler para que no se reinicie".
+
+**La pista era real**: en el log del crash de CW Trainer (§32) aparecia, cada ~26 s,
+`buttons_press: Button 0 press action is NULL`: una app apretando un boton **sin handler**.
+
+**Auditoria** (268 botones en 61 paginas, `tests/check_app_handlers.py`): **4 sin handler**.
+
+| Archivo | Boton | Que era |
+|---|---|---|
+| `dialog_field.c` | `b_home` ('FIELD OPS') | titulo de pagina, sin `.press` |
+| `dialog_field.c` | `b_bands` ('BANDS') | idem |
+| `dialog_field.c` | `b_logpg` ('LOGBOOK') | idem |
+| `dialog_bands.c` | `btn_page` ('BANDS 1:1') | idem |
+
+Los cuatro son los **titulos de pagina** de esas apps: ahora tienen handler y reaplican su pantalla
+(`titulo_cb` / `bands_title_cb`), asi que no queda ningun boton muerto.
+
+**Ademas, `buttons_press()` tenia un SIGSEGV esperando**: hacia
+
+```c
+lv_obj_t *btn_obj = lv_obj_get_parent(item->label_obj);   /* label_obj puede ser NULL */
+```
+
+**antes** de mirar si el item tenia handler. Un item puede estar en la fila de botones y a la vez
+tener `label_obj == NULL` (por ejemplo si el **mismo item se usa en dos paginas** y se descarga una):
+ahi `lv_obj_get_parent(NULL)` es un segfault, no un aviso. La auditoria encontro items compartidos
+entre paginas en `dialog_field.c` (6: `b_act`, `b_spot`, `b_back`, `b_reccq`, `b_log`) y en
+`dialog_cluster.c` (`btn_close`). Ahora se avisa y se sale, igual que con el item NULL.
+
+**Chequeo nuevo**: `tests/check_app_handlers.py` recorre todas las `buttons_page_t`, resuelve cada
+item a su definicion (entendiendo los helpers `make_*btn*`), **falla si algun boton no tiene
+`.press`** y **avisa** si un item se usa en dos paginas del mismo archivo. Enganchado a
+`tests/run_all_tests.sh`. Hoy: **268 botones, 0 sin handler**.
+
+**Lo que NO arreglo** (medido despues de estos cambios, con 20 s de permanencia por app):
+**CW Trainer y Status siguen muriendo** (la GUI se cae y el supervisor la relanza). O sea: los
+handlers faltantes **no eran la causa del SIGSEGV** de §32; siguen Bands, Field y About OK. La
+investigacion de esas dos sigue abierta con el core ya capturado.

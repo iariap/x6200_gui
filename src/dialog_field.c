@@ -610,7 +610,12 @@ static const char *cq_level_label(void);
 static const char *boot_label(void);
 static const char *activate_label(void);
 
-static button_data_t b_home   = {.type = BTN_TEXT, .label = "FIELD OPS"};
+/* Los titulos de pagina (FIELD OPS, BANDS, LOGBOOK) no tenian handler: al apretarlos,
+ * buttons_press avisaba "press action is NULL" y quedaba un boton sin accion. Son el nombre de la
+ * pagina, asi que vuelven a su pantalla (docs/HALLAZGOS.md 33). */
+static void titulo_cb(button_data_t *b);
+
+static button_data_t b_home   = {.type = BTN_TEXT, .label = "FIELD OPS", .press = titulo_cb};
 static button_data_t b_reccq  = {.type = BTN_TEXT_FN, .label_fn = rec_cq_label, .press = rec_cq_cb};
 static button_data_t b_open   = {.type = BTN_TEXT, .label = "Select", .press = open_cb};
 static button_data_t b_boot   = {.type = BTN_TEXT_FN, .label_fn = boot_label, .press = boot_cb};
@@ -630,10 +635,10 @@ static button_data_t b_cq     = {.type = BTN_TEXT, .label = "CQ", .press = cq_cb
 static button_data_t b_cqlvl  = {.type = BTN_TEXT_FN, .label_fn = cq_level_label, .press = cq_level_cb};
 static button_data_t b_band   = {.type = BTN_TEXT, .label = "Bands", .press = bands_cb};
 static button_data_t b_book __attribute__((unused)) = {.type = BTN_TEXT, .label = "Log\nbook", .press = logbook_cb};
-static button_data_t b_bands  = {.type = BTN_TEXT, .label = "BANDS"};
+static button_data_t b_bands  = {.type = BTN_TEXT, .label = "BANDS", .press = titulo_cb};
 static button_data_t b_beacon = {.type = BTN_TEXT, .label = "Test\nbeacon", .press = beacon_cb};
 static button_data_t b_tune   = {.type = BTN_TEXT, .label = "Use\nband", .press = tune_cb};
-static button_data_t b_logpg  = {.type = BTN_TEXT, .label = "LOGBOOK"};
+static button_data_t b_logpg  = {.type = BTN_TEXT, .label = "LOGBOOK", .press = titulo_cb};
 static button_data_t b_qrz    = {.type = BTN_TEXT, .label = "Upload\nQRZ", .press = qrz_cb};
 
 static buttons_page_t page_home  = {.items = {&b_home, &b_open, &b_boot, NULL, &b_exit}};
@@ -705,6 +710,14 @@ static void exit_cb(button_data_t *b) {
 }
 
 static void back_cb(button_data_t *b) {
+    show(SCR_HOME);
+}
+
+/* El boton que lleva el nombre de la pagina: vuelve a su pantalla (es un no-op estando ahi, pero
+ * asi no queda ningun boton sin accion). */
+static void titulo_cb(button_data_t *b) {
+    (void) b;
+
     show(SCR_HOME);
 }
 
