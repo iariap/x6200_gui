@@ -597,6 +597,83 @@ benchmark BENCH-UI04-EXP1: PASS (exit 0) — 16 escenarios, main-tema-vision p95
   host >25%; en máquina ociosa el veredicto es PASS)
 ```
 
+## Fix real de firmware: UI-012 (celda del VFO en VISION) — EXP-2 de UI-04 (issue #9) ✅
+
+Segundo experimento del mismo issue, con la misma disciplina: repro primero con la
+excepción retirada, fix mínimo y reversible, A/B con el cambio confinado y la
+excepción **retirada en el mismo cambio**.
+
+`src/info.c`: las seis celdas de la barra siguen siendo las **56×26 fijas** del
+bitmap (`lv_obj_set_size(item, 56, 26)`), pero VISION escala todas las fuentes tres
+pasos (`fonts_scale(3)`), así que `info_item_style` (`src/styles.c:259`, `sony_20`)
+rinde el tamaño efectivo de `sony_26`. `VFO-A` pasa de **48 a 66 px** de ancho: no
+entra, el label (WRAP) la parte en dos líneas y la celda recorta la segunda — en
+pantalla queda `VFO-` y el `A` no se ve (**UI-012**). De las seis celdas es la única
+que no entra: las otras cinco (`USB` 44, `AUTO` 56, `P/A` 43, `ATU1` 55, el icono de
+WiFi 19) sí, así que **sólo el VFO** vuelve al tamaño de los otros temas
+(`font_down(&sony_20, VISION_FONT_STEPS)` bajo `theme_shape.vision`, medido 51×17 en
+la caja de 56×26), el mismo idioma que `NF()` de `src/cluster_column.c` para sus
+columnas de ancho fijo y la alternativa que `UI_KNOWN_ISSUES.md` ya anotaba ("VISION
+dibujar esa fila con el tamaño de siempre"). No se toca `fonts_scale()` (el fix de
+UI-011), ni `src/clock.c`, ni las otras cinco celdas; los otros temas quedan
+byte-idénticos porque el cambio está detrás de `theme_shape.vision`.
+
+- **Repro antes del fix** (`8512d86` con la excepción de UI-012 retirada sólo en un
+  directorio de calidad local): audit **FAIL** con un único finding —
+  `typography_text_overflow [main-tema-vision] text 'VFO-A' does not fit its 56x26
+  box (WRAP)` (medición de la inspección: `text_natural w=66` contra
+  `text_box w=56`, `text_wrapped_h=40` en una caja de 26).
+- **Región real del cambio**: `barra_superior` (la celda del VFO es la primera de la
+  banda superior; no toca `espectro` ni `reloj_potencia`, a diferencia de EXP-1). Se
+  declara como segundo `expected_change` acotado y fechado en
+  `quality/contracts.yaml` (la entrada de UI-011 se conserva: el gate lee las
+  entradas de una región como un conjunto).
+- **Cómo lo reproduce el arnés**: contrato `typography_text_overflow` sobre
+  `main-tema-vision` (inspección estructural, sin OCR). A: FAIL; B: **0 structural
+  findings**. La excepción acotada que lo waiveaba se **retiró en el mismo cambio**.
+
+Evidencia (host, 2026-10-14, `8512d86` → `6a17b83`):
+
+```text
+audit 8512d86, excepcion retirada (A): FAIL — 1 × typography_text_overflow [main-tema-vision]
+  text 'VFO-A' does not fit its 56x26 box (WRAP)   (natural w=66, wrapped_h=40)
+audit 6a17b83 (B): PASS — 0 structural findings (1350 objetos, 16 fixtures)
+
+contracts 6a17b83: PASS — 160 checks, 0 failure(s), 1 unchanged baseline defect(s)
+  UNCHANGED DEFECT region_min_content:frecuencia [main-otro-tema] (UI-010)
+  (161 en A con la excepcion — el finding del overflow waiveado; el fix lo elimina)
+
+compare AB-UI04-EXP2: PASS (exit 0)
+  Functional PASS · Visual Regression PASS · Quality Contract PASS · Performance PASS
+  Hardware BLOCKED · Energy BLOCKED (advisory: sin unidad física)
+  main-tema-vision: 373 px cambiados (0.097%), TODO dentro de `barra_superior`,
+                     un solo box 17,13-68,26 (la celda del VFO); 15 fixtures en 0 px
+```
+
+Respecto del set de contratos, el único finding distinto entre A y B es el del
+overflow (`0/38/0`, waiveado en A, ausente en B): los otros 160 quedan iguales.
+Screenshots A/B y `diff`/`overlay` en
+[`tools/ab_testing/reports/AB-UI04-EXP2/`](../tools/ab_testing/reports/AB-UI04-EXP2/)
+(`a-`/`b-main-tema-vision.png`, `diffs/main-tema-vision-*.png`).
+
+Determinismo (mismos sha para cada fixture entre corridas; la cadena de
+`main-tema-vision` acompaña a cada fix de VISION):
+
+```text
+tests/check_harness_determinism.sh   -> PASS (16 fixtures)
+main-tema-vision   UI-03 (A): d59e7cf8…   EXP-1: abe5d57f…   EXP-2 (B): e5b176ed…
+```
+
+`tests/native/run_native_tests.sh` PASS (538 + 7) y `uv run pytest -m "not e2e"` PASS
+(118); `ruff check`/`ruff format --check`/`ty check` sin hallazgos.
+
+```text
+benchmark BENCH-UI04-EXP2: PASS (exit 0) — 16 escenarios dentro de presupuesto
+  main-tema-vision p95 3.415 -> 3.740 ms (+9.5%) con el MISMO trabajo de redibujo
+  (flushes 1.0 -> 1.0, area 384000 -> 384000 px, cv 6.1/5.1%): dispersión del host,
+  no costo del cambio
+```
+
 ## Pendientes
 
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
@@ -606,10 +683,13 @@ benchmark BENCH-UI04-EXP1: PASS (exit 0) — 16 escenarios, main-tema-vision p95
   arrastran `dialog_field`/audio/tabla siguen fuera, y con ellos las semillas
   UI-002/UI-004/UI-005 quedan `unverified`.
 - **Tema VISION y fuentes de usuario**: VISION ya tiene fixture
-  (`main-tema-vision`, UI-03) y su defecto de glifos (**UI-011**) quedó **fixed** en
-  UI-04/EXP-1 (ver arriba); el overflow de `VFO-A` (**UI-012**) sigue abierto
-  (EXP-2 de UI-04). Sigue sin haber fixture de fuente elegida por el usuario
-  (Roboto/DejaVu/Arial).
+  (`main-tema-vision`, UI-03) y sus dos defectos quedaron **fixed**: los glifos
+  (**UI-011**) en UI-04/EXP-1 y el overflow de `VFO-A` (**UI-012**) en UI-04/EXP-2
+  (ver arriba), cada uno con su excepción retirada en el mismo cambio. Sigue sin
+  haber fixture de fuente elegida por el usuario (Roboto/DejaVu/Arial):
+  `font_down()` devuelve el tamaño del slot, que con `fonts_apply()` es el de la
+  fuente alternativa elegida, así que el fix de UI-012 cubre también ese camino,
+  pero ninguna captura lo ejerce todavía.
 - El reloj de energía dependía de una variable local sin inicializar
   (`src/clock.c`, `show_time`): quedó corregido como **UI-009** con test nativo y
   caso A/B propio (ver la sección **UI-009** arriba). Las capturas aceptadas de
