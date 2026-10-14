@@ -249,6 +249,10 @@ void main_screen_start_app(press_action_t app_action) {
             dialog_construct(dialog_bands, obj);
             break;
 
+        case ACTION_APP_ABOUT:
+            dialog_construct(dialog_about, obj);
+            break;
+
         default:
             break;
     }

@@ -27,6 +27,7 @@
 #include "buttons.h"
 #include "clock.h"
 #include "dialog.h"
+#include "dialog_about.h"
 #include "dialog_settings.h"
 #include "keyboard.h"
 #include "main.h"
@@ -217,6 +218,24 @@ bool scenario_build(const scenario_t *scenario)
         return true;
     }
 
+    if (!strcmp(scenario->screen, "app-about")) {
+        /* The same route through the app menu, one page further: the "About"
+         * button of page 5 (APP 5:6: Settings / Callsign / QTH / About), reached
+         * by the page button. The keyboard group is up first because the real
+         * About window registers a focusable container in construct_cb.
+         *
+         * `dialog_about` is the real window, so this fixture renders it and
+         * scenario_settle codifies that the button opened it. */
+        mock_keyboard_group_up();
+        build_main(scenario);
+        buttons_load_page_group(buttons_group_app);
+        buttons_press(0, false);    /* (APP 1:6) -> (APP 2:6) */
+        buttons_press(0, false);    /* (APP 2:6) -> (APP 3:6) */
+        buttons_press(0, false);    /* (APP 3:6) -> (APP 4:6) */
+        buttons_press(0, false);    /* (APP 4:6) -> (APP 5:6) */
+        return true;
+    }
+
     fprintf(stderr, "scenario: unknown screen '%s'\n", scenario->screen);
     return false;
 }
@@ -295,6 +314,39 @@ void scenario_settle(const scenario_t *scenario)
             fprintf(stderr,
                     "app-bands: the app-menu Bands button reached no dialog at all "
                     "(the button did nothing)\n");
+            exit(1);
+        }
+    }
+
+    if (!strcmp(scenario->screen, "app-about")) {
+        /* The button this fixture presses is positional: codify that it is the
+         * "About" one before pressing it, so a reordering of the APP pages stops
+         * the run instead of pressing another app and still reporting green. The
+         * bottom bar was built in scenario_build, so its layout is already
+         * computed here. */
+        if (!label_on_screen(lv_scr_act(), "About")) {
+            fprintf(stderr,
+                    "app-about: 'About' is not in the bottom bar after the page presses "
+                    "(did the APP pages move?)\n");
+            exit(1);
+        }
+
+        buttons_press(4, false);    /* (APP 5:6) index 4: "About" */
+
+        /* What this fixture *means*: pressing the app-menu About button has to
+         * open the REAL About window. `dialog_about` is not a mock here (its
+         * source is compiled), and dialog_construct() runs construct_cb and sets
+         * `run` synchronously, so the observable is the firmware's own state: the
+         * real About dialog has to be the one that opened. Its labels cannot be
+         * looked up here (the layout is computed by the refresh that follows
+         * scenario_settle, not before), but the window is drawn in the PNG. If the
+         * button reaches no dialog at all (the defect this fixture was added for)
+         * or opens a different one, the harness stops here instead of capturing a
+         * green run. */
+        if (!dialog_about->run) {
+            fprintf(stderr,
+                    "app-about: the app-menu About button did not open the real About "
+                    "window (the button did nothing)\n");
             exit(1);
         }
     }

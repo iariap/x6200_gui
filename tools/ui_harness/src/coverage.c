@@ -157,6 +157,29 @@ static const coverage_entry_t app_bands[] = {
               "DX cluster column is not rendered (no cluster data on the host)"),
 };
 
+/* The `app-about` scenario: the main screen with the app menu the APP key opens
+ * and the "About" button pressed. `dialog_about` is the real window (src/dialog_about.c
+ * is compiled, the same one the `dialog-about` fixture opens), so this fixture
+ * renders it; only the ROUTE (the app-menu button -> main_screen_start_app) is
+ * what the fixture codifies in scenario_settle. */
+static const coverage_entry_t app_about[] = {
+    MAIN_COMPONENTS,
+    COMPONENT("main_screen.c (ACTION_APP_ABOUT)", COVERAGE_REAL,
+              "src/main_screen.c compiled; the app-menu About button's path to main_screen_start_app(ACTION_APP_ABOUT) runs and builds the window in scenario_settle"),
+    COMPONENT("dialog.c", COVERAGE_REAL,
+              "src/dialog.c compiled; dialog_construct()/dialog_init() build the real dialog box over the screen"),
+    COMPONENT("dialog_about.c", COVERAGE_REAL,
+              "src/dialog_about.c compiled; the real About window (title, version, callsign, author labels) opened through the app menu"),
+    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
+              "the other app dialogs are inert mocks; only the About and Ajustes paths are compiled and opened"),
+    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
+              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
+    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
+              "DX cluster spot marks are not rendered (no cluster data on the host)"),
+    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
+              "DX cluster column is not rendered (no cluster data on the host)"),
+};
+
 /* The `settings-bands` scenario: the real Ajustes window over the main screen and
  * then the real Bands action run from there. The shared dialog machinery and the
  * Ajustes window are real; the Bands window itself is NOT: `dialog_bands` is one
@@ -202,6 +225,10 @@ const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
     if (screen && !strcmp(screen, "app-bands")) {
         *count = (int) (sizeof(app_bands) / sizeof(app_bands[0]));
         return app_bands;
+    }
+    if (screen && !strcmp(screen, "app-about")) {
+        *count = (int) (sizeof(app_about) / sizeof(app_about[0]));
+        return app_about;
     }
     return coverage_main_screen(count);
 }
