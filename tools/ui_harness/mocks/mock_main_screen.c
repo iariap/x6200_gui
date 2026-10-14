@@ -38,13 +38,17 @@ encoder_t *mfk;
 rotary_t  *mfk_inner;
 
 /* --- app dialogs -----------------------------------------------------------
- * `main_screen.c` references one descriptor per app; the harness does not open
- * any of them, so they all share one inert descriptor and dialog_construct()
- * only records that it was asked to open a dialog. */
+ * `main_screen.c` references one descriptor per app. The harness compiles the
+ * real shared dialog machinery (src/dialog.c) and the real About window
+ * (src/dialog_about.c), which owns `dialog_about`; the rest of the apps still
+ * point at one inert descriptor whose constructor does nothing, so opening one
+ * of them from a fixture is a no-op instead of a NULL call. `dialog_about` is
+ * NOT declared here: src/dialog_about.c defines it. */
 
-static dialog_t mock_dialog;
+static void mock_construct_cb(lv_obj_t *parent) { (void) parent; }
 
-dialog_t *dialog_about      = &mock_dialog;
+static dialog_t mock_dialog = { .construct_cb = mock_construct_cb };
+
 dialog_t *dialog_bands      = &mock_dialog;
 dialog_t *dialog_bt         = &mock_dialog;
 dialog_t *dialog_callsign   = &mock_dialog;
@@ -70,24 +74,19 @@ dialog_t *dialog_wefax      = &mock_dialog;
 dialog_t *dialog_wifi       = &mock_dialog;
 dialog_t *dialog_wspr       = &mock_dialog;
 
-void dialog_construct(dialog_t *dialog, lv_obj_t *parent)
-{
-    (void) dialog;
-    (void) parent;
-}
-
-void dialog_destruct(void) {}
-void dialog_restore_radio_on_close(void) {}
-void dialog_restore_mode_on_close(int32_t mode, int32_t forced) { (void) mode; (void) forced; }
-bool dialog_key(dialog_t *dialog, lv_event_t *e) { (void) dialog; (void) e; return false; }
-void dialog_send(lv_event_code_t event_code, void *param) { (void) event_code; (void) param; }
-bool dialog_is_run(void) { return false; }
-bool dialog_type_is_run(dialog_t *dialog) { (void) dialog; return false; }
-lv_obj_t *dialog_init(lv_obj_t *parent) { return lv_obj_create(parent); }
-void dialog_item(dialog_t *dialog, lv_obj_t *obj) { (void) dialog; (void) obj; }
-void dialog_audio_samples(unsigned int n, cfloat *samples) { (void) n; (void) samples; }
-void dialog_rotary(int32_t diff) { (void) diff; }
 bool dialog_cluster_tune_spot(void) { return false; }
+
+/* --- keyboard group ---------------------------------------------------------
+ * The firmware's keyboard.c creates the group that focus travels through;
+ * keyboard_init() is a no-op here, so the group starts NULL. A fixture that
+ * exercises the focus chain asks for it explicitly. */
+
+void mock_keyboard_group_up(void)
+{
+    if (!keyboard_group) {
+        keyboard_group = lv_group_create();
+    }
+}
 
 /* --- DX cluster column and spot marks over the waterfall ------------------- */
 

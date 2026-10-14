@@ -117,12 +117,12 @@ reproduzca. Cada una dice qué falta.
 
 | ID | Tema | Evidencia previa | Qué falta para fundarla |
 |---|---|---|---|
-| UI-002 | Las apps solo vivían en el long-press de Ajustes | `docs/HALLAZGOS.md` 17, 29 | un fixture que abra el menú de apps |
-| UI-003 | Pares texto/fondo por debajo de 4.5:1 / 3:1 | `docs/HALLAZGOS.md` 24, 26, 27, 28; `tests/check_wcag.py` | un fixture que renderice los pares que incumplen (los 9 temas); el arnés ya calcula el contraste de cada par opaco |
-| UI-004 | Ajustes: widgets inalcanzables con el foco | `docs/HALLAZGOS.md` 18; `tests/check_settings_focus.py` | un fixture que abra Ajustes y emita la grilla de foco |
-| UI-005 | Diálogo viejo: texto tapado por los botones | `docs/HALLAZGOS.md` 21 | un fixture que abra el diálogo |
+| UI-002 | Las apps solo vivían en el long-press de Ajustes | `docs/HALLAZGOS.md` 17, 29 | un fixture que abra el menú de apps (el arnés abre el About real, no el menú) |
+| UI-003 | Pares texto/fondo por debajo de 4.5:1 / 3:1 | `docs/HALLAZGOS.md` 24, 26, 27, 28; `tests/check_wcag.py` | un fixture que renderice los pares que incumplen; el arnés ya calcula el contraste de cada par opaco y desde UI-02 lo corre también sobre el diálogo About y sobre los temas (`main-tema-*`) sin encontrar nada |
+| UI-004 | Ajustes: widgets inalcanzables con el foco | `docs/HALLAZGOS.md` 18; `tests/check_settings_focus.py` | un fixture que abra Ajustes y emita la grilla de foco (Ajustes arrastra `dialog_field` y decenas de dependencias) |
+| UI-005 | Diálogo viejo: texto tapado por los botones | `docs/HALLAZGOS.md` 21 | un fixture de BT/WeFax/SSTV (el About real ya se abre y no lo reproduce: su texto está centrado) |
 | UI-006 | Glifo BT U+F293 inexistente en `sony_20` | `docs/HALLAZGOS.md` 19; `src/info.c` | que una pantalla vuelva a dibujar el glifo en un label; el arnés ya detecta glifos ausentes (y la pantalla actual dibuja el icono con `lv_line`) |
-| UI-007 | Temas RS sin clave propia, contraste 2.58:1 | `docs/HALLAZGOS.md` 28; `docs/THEMES.md` | un fixture que renderice los temas RS; el chequeo de contraste estructural ya existe |
+| UI-007 | Temas RS sin clave propia, contraste 2.58:1 | `docs/HALLAZGOS.md` 28; `docs/THEMES.md` | un fixture de Ajustes: el par es el riel del switch (`control_border`), que solo aparece ahí; el fixture `main-tema-rs` ya renderiza RS y el chequeo de contraste no ve nada en la pantalla principal |
 | UI-008 | CMA: 128 MB reservados para GPU no usada | `docs/RESOURCE_USAGE.md` | presupuesto de recursos del firmware, no defecto de la UI; el arnés no mide memoria del sistema |
 
 ## Re-evaluación con instrumentación estructural (2026-10-13)
@@ -148,3 +148,22 @@ Los detectores de layout/tipografía no se declaran fundados por sí solos: se
 verifica que **detectan un defecto deliberado** (texto recortado, elemento fuera
 de pantalla, glifo faltante, color ilegible) en las autopruebas
 `tools/ab_testing/tests/test_e2e.py`; la pantalla real, hoy, no los exhibe.
+
+## Re-evaluación con los fixtures de UI-02 (2026-10-14)
+
+UI-02 agregó un diálogo real (`dialog-about`, `src/dialog.c` + `src/dialog_about.c`),
+la matriz de temas (`main-tema-rs`, `main-tema-outdoor-negative`, `main-tema-classic`,
+`main-tema-holo`, `main-tema-material-3`) y un fixture de foco (`main-foco`). Los
+contratos corren sobre las 15 fixtures (135 chequeos, 0 fallas fuera de UI-010):
+
+| ID | Resultado | Motivo concreto |
+|---|---|---|
+| UI-002 | sigue `unverified` | el fixture nuevo abre el **About real**, no el menú de apps; la inspección es de la pantalla activa |
+| UI-003 | sigue `unverified` | el chequeo de contraste estructural corre ahora también sobre el About real y sobre los temas nuevos y no encuentra ningún par por debajo de 4.5:1/3:1; las violaciones históricas ya estaban corregidas (hallazgo 24). No hay nada que reproducir |
+| UI-004 | sigue `unverified` | no hay fixture que abra Ajustes (arrastra `dialog_field` y decenas de dependencias); `dialog-about` cubre el camino de diálogo, no la grilla de foco de Ajustes |
+| UI-005 | sigue `unverified` | el About real no lo reproduce (su texto está centrado, no apoyado en la fila de botones); el caso era de BT/WeFax/SSTV |
+| UI-007 | sigue `unverified` | `main-tema-rs` renderiza RS y el contraste estructural no ve nada en la pantalla principal; el par del hallazgo es el riel del switch (`control_border`), que vive en Ajustes |
+
+Una inyección deliberada de `U+F293` en el título del About (`src/dialog_about.c`,
+revertida) hace fallar `typography_missing_glyph` en `dialog-about`: el fixture
+nuevo está cableado a los detectores, no solo renderizado.

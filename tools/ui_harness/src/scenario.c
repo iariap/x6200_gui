@@ -87,6 +87,7 @@ static bool apply_key(const char *key, const char *value, scenario_t *out)
     } else if (!strcmp(key, "seed")) {
         out->seed = (uint32_t) strtoul(value, NULL, 10);
     } else if (!strcmp(key, "theme")) {
+        snprintf(out->theme, sizeof(out->theme), "%s", value);
         params_str_set(&params.theme_name, value);
     } else if (!strcmp(key, "band_plan")) {
         return parse_bool(value, &params.band_plan.x);

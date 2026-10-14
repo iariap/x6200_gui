@@ -1,0 +1,34 @@
+# main-tema-material-3: the real main screen under the "Material 3" theme the
+# ROM ships as a JSON file (rootfs/usr/share/x6200/themes/Material 3.json, base
+# IU1WXY; it is the theme the radio runs, see docs/HALLAZGOS.md 24). The name has
+# a space, so the value is the whole rest of the line. Same radio state as
+# home-usb-20m.
+
+name main-tema-material-3
+screen main
+
+theme Material 3
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

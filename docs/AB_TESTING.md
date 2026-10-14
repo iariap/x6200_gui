@@ -422,12 +422,119 @@ scaffolding— queda cubierto por `tests/test_git_scaffolding.py`.
 > así que su SHA corto cambia aunque el parche sea el mismo; la evidencia
 > commiteada en `tools/ab_testing/reports/` se regeneró con esta corrida.
 
+## UI-02 — cobertura real: diálogo, matriz de temas y foco (issue #7) ✅
+
+Gate: el arnés cubre un **diálogo real del firmware** y la **matriz de temas** de
+la ROM, con capturas deterministas y cobertura honesta; los contratos siguen en
+verde y un fixture nuevo está cableado a los detectores (probado con una regresión
+deliberada).
+
+Entregado en `tools/ui_harness/` y `tools/ab_testing/`:
+
+- **Diálogo real (`dialog-about`)**: el arnés compila el `src/dialog.c` real y el
+  `src/dialog_about.c` real y el fixture abre la ventana por el camino del
+  firmware (`main_screen_action(ACTION_APP_ABOUT)` → `dialog_construct` →
+  `dialog_about`). Los demás diálogos de app siguen siendo mocks inertes (su
+  descriptor no hace nada). Sin tocar `src/`: Ajustes/WeFax/SSTV arrastran
+  `dialog_field` y decenas de dependencias y quedan fuera del alcance.
+- **Matriz de temas**: fixtures `main-tema-rs` (JSON RS con sus imágenes),
+  `main-tema-outdoor-negative`, `main-tema-classic`, `main-tema-holo` y
+  `main-tema-material-3`. El arnés lee los temas que la ROM trae desde el propio
+  repo (`rootfs/usr/share/x6200/themes`, los mismos archivos que instala la
+  imagen) y aplica la fuente del tema y el `fonts_scale()` de VISION como el
+  `main()` del firmware. **VISION no entra como fixture**: al escalar las fuentes
+  aparecen hallazgos reales de tipografía (glifo del reloj ausente, `VFO-A`
+  desbordado) que son triage del issue #8, no de este incremento.
+- **Foco (`main-foco`)**: el grupo de teclado real, con el `spectrum` que
+  `main_screen()` registra (timer de 100 ms) y `lv_group_focus_next()`. El
+  spectrum es el único widget del grupo y no tiene estilo de foco, así que el PNG
+  es idéntico a `main` (mismo sha256 `a656e096…`): la **cadena** queda
+  reproducible, el **resalte visible** no existe sin Settings.
+- **Cobertura honesta por pantalla**: `coverage.c` elige la tabla según el
+  `screen`; en `dialog-about`, `dialog.c` y `dialog_about.c` son REAL y los demás
+  diálogos UNSUPPORTED.
+- **Temas largos**: el campo `theme` guarda el nombre completo; `params.theme_name`
+  es `char[16]` y `Outdoor-Negative` (16) se truncaba (límite real del firmware,
+  anotado abajo).
+
+Evidencia (host, 2026-10-14, `d082583` + este cambio):
+
+```text
+$ tests/check_harness_determinism.sh
+bench-render: 5ba21bea…        home-usb-20m: a656e096…      main-otro-tema: 65064bfa…
+dialog-about: 213c5cc1…        main-bateria-baja: 975a45e5… main-tema-classic: b251bbe8…
+home-bateria-externa: 2c83b8b7…  main-espectro-agua: 41cc0d50… main-tema-holo: d52d097e…
+home-frecuencia-extrema: f11829c3…  main-foco: a656e096…     main-tema-material-3: baa8a0ec…
+main-tema-outdoor-negative: 31ea5ccc…  main-tema-rs: c2411cb0…  main-tx-simulado: e0281c23…
+PASS: deterministic (identical PNGs for every fixture)
+
+$ uv run x6200-ab contracts --revision <head> --json   # (vía local: 15 fixtures)
+PASS — 135 checks, 0 failure(s), 1 unchanged baseline defect(s) (UI-010 en main-otro-tema)
+```
+
+Los 8 fixtures previos conservan su sha256; `main-foco` coincide con `main`
+(esperado, ver arriba).
+
+### Prueba de detección (regresión deliberada en un fixture nuevo)
+
+`U+F293` en el título del About (`src/dialog_about.c`, revertido antes del
+commit) hace fallar el detector de tipografía sobre el fixture nuevo:
+
+```text
+FAIL dialog-about: typography_missing_glyph -> text '\uf293' uses glyph(s) ['U+F293']
+     missing from every font in the chain (LVGL draws a placeholder box)
+dialog-about: ok=9 fail=1
+```
+
+### Matriz de cobertura por fixture (pantalla / tema / fuente × nivel)
+
+`✓` = cubierto con captura determinista; `PARTIAL`/`SYNTHETIC`/`UNSUPPORTED` como
+los declara el JSON del arnés. La tabla exacta por componente está en cada JSON.
+
+| Área | Fixture(s) | REAL | PARTIAL | SYNTHETIC | UNSUPPORTED |
+|---|---|---|---|---|---|
+| Pantalla `main_screen.c` | todas las `main`/`main-tema-*` | ✓ | | | |
+| Diálogo About (`dialog.c` + `dialog_about.c`) | `dialog-about` | ✓ | | | |
+| Otros diálogos de app | — | | | | ✗ (mocks inertes) |
+| Ajustes / menú de apps | — | | | | ✗ (arrastran `dialog_field` y decenas de deps) |
+| Tema IU1WXY | `home-usb-20m`, `main-tx-simulado`, `main-bateria-baja`, `home-frecuencia-extrema`, `home-bateria-externa`, `bench-render` | ✓ | | | |
+| Tema Legacy | `main-espectro-agua`, `bench-render` | ✓ | | | |
+| Tema Outdoor | `main-otro-tema` | ✓ (defecto UI-010 abierto) | | | |
+| Tema Outdoor-Negative | `main-tema-outdoor-negative` | ✓ | | | |
+| Tema Classic | `main-tema-classic` | ✓ | | | |
+| Tema RS (JSON + imágenes) | `main-tema-rs` | ✓ | | | |
+| Tema Holo (JSON) | `main-tema-holo` | ✓ | | | |
+| Tema Material 3 (JSON) | `main-tema-material-3` | ✓ | | | |
+| Tema VISION | — | | | | ✗ (font scale: hallazgos para #8) |
+| Fuente por tema (Arial en Classic/RS) | `main-tema-classic`, `main-tema-rs` | ✓ | | | |
+| Fuente elegida por el usuario (Roboto/DejaVu/Arial) | — | | | | ✗ (no hay fixture de fuente) |
+| Espectro / waterfall | todas | | ✓ (generador determinista, sin FFT) | | |
+| Catálogo de bandas (`band_info`) | todas | | ✓ (catálogo del arnés, no la DB) | | |
+| Foco / encoder | `main-foco` | | ✓ (cadena de foco real; sin resalte visible) | | |
+| `cfg`, `params`, `radio` | todas | | | ✓ (mock explícito, sin DB/dispositivo) | |
+| Hardware / energía | — | | | | ✗ **BLOCKED** (sin X6200 físico) |
+
+### Límite real anotado: nombre de tema largo
+
+`params.theme_name` es `params_str_t` con `char x[16]`; `"Outdoor-Negative"` tiene
+16 caracteres y `params_str_set()` lo trunca a 15 → `theme_init()` no lo reconoce
+y cae a `IU1WXY`. La ruta de Ajustes (`dialog_settings.c` `theme_update_cb`)
+guarda por ese mismo campo, así que elegir **Outdoor-Negative** en pantalla
+terminaría en el tema por defecto. Es un hallazgo real **fuera del alcance** de
+UI-02 (cobertura): el arnés usa el nombre completo para poder renderizar el tema y
+lo deja documentado para el triage del issue #8.
+
 ## Pendientes
 
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
   Hardware/Energy quedan BLOCKED/PENDING, nunca PASS por default.
-- **Fixtures de diálogos y apps** (Ajustes, menú de apps, about, cluster): sin
-  ellos las semillas UI-002/UI-004/UI-005 quedan `unverified`.
+- **Fixtures de diálogos de app** (Ajustes, menú de apps, BT/WeFax/SSTV): el
+  About real ya está cubierto (`dialog-about`); Ajustes y los diálogos que
+  arrastran `dialog_field`/audio/tabla siguen fuera, y con ellos las semillas
+  UI-002/UI-004/UI-005 quedan `unverified`.
+- **Tema VISION y fuentes de usuario**: VISION no entra como fixture (su
+  `fonts_scale()` muestra hallazgos de tipografía para el issue #8) ni hay fixture
+  de fuente elegida por el usuario (Roboto/DejaVu/Arial).
 - El reloj de energía dependía de una variable local sin inicializar
   (`src/clock.c`, `show_time`): quedó corregido como **UI-009** con test nativo y
   caso A/B propio (ver la sección **UI-009** arriba). Las capturas aceptadas de
