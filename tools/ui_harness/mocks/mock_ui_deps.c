@@ -30,19 +30,36 @@
 
 #include "virtual_time.h"
 
-/* --- event bus ------------------------------------------------------------- */
+/* --- event bus -------------------------------------------------------------
+ * The custom event ids must be allocated by LVGL (lv_event_register_id), exactly
+ * as the firmware's events.c does: LVGL stores the callback filter in an 8-bit
+ * field, so an id above 255 would silently become LV_EVENT_ALL and dispatch
+ * every event to every callback. event_init() must run before any screen is
+ * built. event_send() is a no-op here: the harness pushes state directly. */
 
-uint32_t EVENT_ROTARY_ENHANCED = 0x100;
-uint32_t EVENT_KEYPAD          = 0x101;
-uint32_t EVENT_HKEY            = 0x102;
-uint32_t EVENT_RADIO_TX        = 0x103;
-uint32_t EVENT_RADIO_RX        = 0x104;
-uint32_t EVENT_SCREEN_UPDATE   = 0x105;
-uint32_t EVENT_MSG_UPDATE      = 0x106;
-uint32_t EVENT_BAND_UP         = 0x107;
-uint32_t EVENT_BAND_DOWN       = 0x108;
+uint32_t EVENT_ROTARY_ENHANCED;
+uint32_t EVENT_KEYPAD;
+uint32_t EVENT_HKEY;
+uint32_t EVENT_RADIO_TX;
+uint32_t EVENT_RADIO_RX;
+uint32_t EVENT_SCREEN_UPDATE;
+uint32_t EVENT_MSG_UPDATE;
+uint32_t EVENT_BAND_UP;
+uint32_t EVENT_BAND_DOWN;
 
-void event_init(void) {}
+void event_init(void)
+{
+    EVENT_ROTARY_ENHANCED = lv_event_register_id();
+    EVENT_KEYPAD          = lv_event_register_id();
+    EVENT_HKEY            = lv_event_register_id();
+    EVENT_RADIO_TX        = lv_event_register_id();
+    EVENT_RADIO_RX        = lv_event_register_id();
+    EVENT_SCREEN_UPDATE   = lv_event_register_id();
+    EVENT_MSG_UPDATE      = lv_event_register_id();
+    EVENT_BAND_UP         = lv_event_register_id();
+    EVENT_BAND_DOWN       = lv_event_register_id();
+}
+
 void event_obj_check(void) {}
 
 void event_send(lv_obj_t *obj, lv_event_code_t event_code, void *param)
@@ -109,36 +126,44 @@ int sign(int x)
     return x > 0 ? 1 : x < 0 ? -1 : 0;
 }
 
-/* --- message bars ---------------------------------------------------------- */
+/* util.cpp's low-pass filter and mode stepper, re-implemented here so the
+ * harness does not pull util.cpp's get_time() (which reads the wall clock) and
+ * keeps every value on the virtual clock. Same behaviour as src/util.cpp. */
 
-lv_obj_t *msg_init(lv_obj_t *parent)
+void lpf(float *x, float current, float beta, float initial)
 {
-    return lv_obj_create(parent);
+    if (*x == initial) {
+        *x = current;
+    } else {
+        *x = *x * beta + current * (1.0f - beta);
+    }
 }
 
-void msg_update_text_fmt(const char *fmt, ...)
+int loop_modes(int16_t dir, int mode, uint64_t modes, const int max_val)
 {
-    (void) fmt;
-}
+    /* Same stepping as src/util.cpp: advance one slot in `dir` and stop on the
+     * first enabled mode. The firmware loops forever when dir == 0 and the
+     * current mode is disabled; the harness caps the search so it can never
+     * hang a render. */
+    int guard = 0;
+    int cap = 2 * (max_val + 1) + 1;
 
-void msg_schedule_text_fmt(const char *fmt, ...)
-{
-    (void) fmt;
-}
+    while (1) {
+        if (dir > 0) {
+            mode = (mode == max_val) ? 0 : mode + 1;
+        } else if (dir < 0) {
+            mode = (mode == 0) ? max_val : mode - 1;
+        }
 
-lv_obj_t *msg_tiny_init(lv_obj_t *parent)
-{
-    return lv_obj_create(parent);
-}
+        if (modes & ((uint64_t) 1 << mode)) {
+            break;
+        }
+        if (++guard > cap) {
+            break;
+        }
+    }
 
-void msg_tiny_set_text_fmt(const char *fmt, ...)
-{
-    (void) fmt;
-}
-
-void msg_tiny_set_timeout(uint16_t x)
-{
-    (void) x;
+    return mode;
 }
 
 /* --- voice ----------------------------------------------------------------- */
@@ -182,23 +207,3 @@ void backlight_set_brightness(int16_t value) { (void) value; }
 void backlight_set_buttons(buttons_light_t value) { (void) value; }
 void backlight_switch(void) {}
 bool backlight_is_on(void) { return true; }
-
-/* --- spectrum (not rendered in milestone 1) -------------------------------- */
-
-lv_obj_t *spectrum_init(lv_obj_t *parent)
-{
-    return lv_obj_create(parent);
-}
-
-void spectrum_data(float *data_buf, uint16_t size, bool tx)
-{
-    (void) data_buf;
-    (void) size;
-    (void) tx;
-}
-
-void spectrum_min_max_reset(void) {}
-float spectrum_get_min(void) { return -127.0f; }
-void spectrum_update_max(float db) { (void) db; }
-void spectrum_update_min(float db) { (void) db; }
-void spectrum_clear(void) {}

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# Milestone-1 gate: two runs of the same scenario must produce byte-identical
-# PNGs. Builds the harness (Docker image x6200-uiharness) and runs the
-# home-usb-20m fixture twice, then compares sha256.
+# Harness gate: two runs of the same scenario must produce byte-identical PNGs.
+# Builds the harness (Docker image x6200-uiharness) and runs every fixture in
+# fixtures/ twice, then compares sha256. Prints PASS when all of them match.
 #
 # Usage: tests/check_harness_determinism.sh
 #   SKIP_BUILD=1   reuse the existing build/
@@ -15,10 +15,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HARNESS_DIR="$ROOT/tools/ui_harness"
 BUILD_DIR="$HARNESS_DIR/build"
 IMAGE="${UI_HARNESS_IMAGE:-x6200-uiharness}"
-FIXTURE="fixtures/home-usb-20m.scn"
-
-PNG_A="out/determinism-a.png"
-PNG_B="out/determinism-b.png"
+RUNS=2
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
@@ -40,25 +37,38 @@ fi
 
 [ -x "$BUILD_DIR/ui_harness" ] || fail "ui_harness not built ($BUILD_DIR/ui_harness)"
 
-echo "running the scenario twice..."
-run -lc "cd build && mkdir -p out && \
-    ./ui_harness --scenario ../$FIXTURE --png $PNG_A && \
-    ./ui_harness --scenario ../$FIXTURE --png $PNG_B"
+# Every fixture is rendered RUNS times; the PNGs of each run must match.
+echo "running every fixture $RUNS times..."
+run -lc "cd build && mkdir -p out/determinism && \
+    for f in ../fixtures/*.scn; do
+        n=\$(basename \"\$f\" .scn)
+        for r in \$(seq 1 $RUNS); do
+            ./ui_harness --scenario \"\$f\" \
+                --png \"out/determinism/\$n-\$r.png\" \
+                --json \"out/determinism/\$n-\$r.json\" >/dev/null
+        done
+    done"
 
-A="$BUILD_DIR/$PNG_A"
-B="$BUILD_DIR/$PNG_B"
+status=0
+for f in "$HARNESS_DIR"/fixtures/*.scn; do
+    n="$(basename "$f" .scn)"
+    ref=""
+    for r in $(seq 1 "$RUNS"); do
+        png="$BUILD_DIR/out/determinism/$n-$r.png"
+        json="$BUILD_DIR/out/determinism/$n-$r.json"
+        [ -f "$png" ] || fail "missing $png"
+        [ -f "$json" ] || fail "missing $json (each fixture must emit PNG + JSON)"
+        h="$(sha256sum "$png" | cut -d' ' -f1)"
+        if [ -z "$ref" ]; then
+            ref="$h"
+            echo "$n: $h"
+        elif [ "$h" != "$ref" ]; then
+            echo "$n: run $r differs ($h != $ref)" >&2
+            status=1
+        fi
+    done
+done
 
-[ -f "$A" ] || fail "missing $A"
-[ -f "$B" ] || fail "missing $B"
+[ "$status" -eq 0 ] || fail "some fixtures produced different PNGs across runs"
 
-HA=$(sha256sum "$A" | cut -d' ' -f1)
-HB=$(sha256sum "$B" | cut -d' ' -f1)
-
-echo "run 1 sha256: $HA"
-echo "run 2 sha256: $HB"
-
-if [ "$HA" != "$HB" ]; then
-    fail "the two runs produced different PNGs"
-fi
-
-echo "PASS: deterministic (identical PNGs)"
+echo "PASS: deterministic (identical PNGs for every fixture)"

@@ -8,41 +8,63 @@
 
 #define COMPONENT(c, l, n) { .component = (c), .level = (l), .note = (n) }
 
-static const coverage_entry_t home_usb_20m[] = {
+static const coverage_entry_t main_screen[] = {
     COMPONENT("theme.c", COVERAGE_REAL,
-              "src/theme.c compiled; theme_init(IU1WXY) sets the builtin colours"),
+              "src/theme.c compiled; theme_init() sets the scenario's theme"),
     COMPONENT("styles.c", COVERAGE_REAL,
-              "src/styles.c compiled; the screen is styled by the real styles"),
+              "src/styles.c compiled; every object is styled by the real styles"),
     COMPONENT("fonts/", COVERAGE_REAL,
               "every src/fonts/*.c compiled and used by the labels"),
-    COMPONENT("clock.c", COVERAGE_REAL,
-              "src/clock.c compiled and drawn; shown in battery mode"),
-    COMPONENT("info.c", COVERAGE_REAL,
-              "src/info.c compiled and drawn (VFO, mode, AGC, PRE/ATT, ATU, WiFi, BT)"),
+    COMPONENT("main_screen.c", COVERAGE_REAL,
+              "src/main_screen.c compiled; main_screen() builds the whole screen"),
+    COMPONENT("spectrum.c", COVERAGE_PARTIAL,
+              "src/spectrum.c compiled and drawn; the magnitudes come from the seed-driven generator (src/signal_gen.c), not from an FFT/radio"),
+    COMPONENT("waterfall.c", COVERAGE_PARTIAL,
+              "src/waterfall.c compiled and drawn; the per-row magnitudes come from the seed-driven generator, not from an FFT/radio"),
+    COMPONENT("band_info.c", COVERAGE_PARTIAL,
+              "src/band_info.c compiled and drawn; the band rows come from the harness catalogue (mock_cfg), not from the SQLite DB"),
+    COMPONENT("band_plan.c", COVERAGE_REAL,
+              "src/band_plan.c + band_plan_data.c compiled and drawn (IARU strip)"),
     COMPONENT("meter.c", COVERAGE_REAL,
               "src/meter.c compiled and drawn; needle S-meter"),
-    COMPONENT("band_info.c", COVERAGE_PARTIAL,
-              "src/band_info.c compiled, not placed in this scenario's layout"),
+    COMPONENT("info.c", COVERAGE_REAL,
+              "src/info.c compiled and drawn (VFO, mode, AGC, PRE/ATT, ATU, WiFi, BT)"),
+    COMPONENT("clock.c", COVERAGE_REAL,
+              "src/clock.c compiled and drawn (battery / power view)"),
+    COMPONENT("tx_info.c", COVERAGE_REAL,
+              "src/tx_info.c compiled and drawn (TX info, hidden while RX)"),
+    COMPONENT("buttons.cpp", COVERAGE_REAL,
+              "src/buttons.cpp compiled; the bottom button bar is drawn"),
+    COMPONENT("pannel.c", COVERAGE_REAL,
+              "src/pannel.c compiled and drawn (the overlay panel, empty here)"),
+    COMPONENT("msg.c", COVERAGE_REAL,
+              "src/msg.c + msg_tiny.c compiled and drawn (empty: the harness sends no messages)"),
+    COMPONENT("adaptive_tuning.c", COVERAGE_REAL,
+              "src/adaptive_tuning.c compiled and initialised; the tuning-multiplier label is created (hidden)"),
+    COMPONENT("cw_tune_ui.c", COVERAGE_PARTIAL,
+              "src/cw_tune_ui.c compiled; hidden because CW tune is off in these fixtures"),
+    COMPONENT("cfg/subjects.cpp", COVERAGE_REAL,
+              "src/cfg/subjects.cpp compiled; the real Subject/observer core backs cfg_cur/cfg"),
+    COMPONENT("cfg (catalogue)", COVERAGE_SYNTHETIC,
+              "no database: mock_cfg owns cfg_t/cfg_cur and its values (no src/cfg/db.cpp)"),
     COMPONENT("params", COVERAGE_SYNTHETIC,
               "src/params/params.c not compiled; harness owns params_t with fixed values"),
-    COMPONENT("cfg", COVERAGE_SYNTHETIC,
-              "src/cfg/* not compiled; harness owns cfg_t/cfg_cur with the subjects the components read"),
     COMPONENT("radio", COVERAGE_SYNTHETIC,
               "mocks/mock_radio.c: explicit radio state, no device"),
-    COMPONENT("spectrum.c", COVERAGE_UNSUPPORTED,
-              "not rendered in milestone 1 (needs the DSP/FFT path)"),
-    COMPONENT("waterfall.c", COVERAGE_UNSUPPORTED,
-              "not rendered in milestone 1"),
-    COMPONENT("main_screen.c", COVERAGE_UNSUPPORTED,
-              "the full main screen is not linked in milestone 1; only its top-bar components are"),
-    COMPONENT("buttons.cpp", COVERAGE_UNSUPPORTED,
-              "the bottom button bar is not rendered in milestone 1"),
+    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
+              "DX cluster spot marks are not rendered (no cluster data on the host)"),
+    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
+              "DX cluster column is not rendered (no cluster data on the host)"),
+    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
+              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
+    COMPONENT("dialogs (dialog_*.c)", COVERAGE_UNSUPPORTED,
+              "app dialogs are not opened; dialog_construct() is an explicit no-op"),
 };
 
-const coverage_entry_t *coverage_home_usb_20m(int *count)
+const coverage_entry_t *coverage_main_screen(int *count)
 {
-    *count = (int) (sizeof(home_usb_20m) / sizeof(home_usb_20m[0]));
-    return home_usb_20m;
+    *count = (int) (sizeof(main_screen) / sizeof(main_screen[0]));
+    return main_screen;
 }
 
 const char *coverage_level_name(coverage_level_t level)

@@ -1,12 +1,11 @@
 /*
  *  Screen builders for the host UI harness.
  *
- *  Each builder places real firmware components on the LVGL screen. The
- *  home-usb-20m fixture renders the top bar exactly as src/main_screen.c does:
- *  info_init() top-left, meter_init() top-middle, clock_init() top-right, all
- *  with their real styles. The rest of the main screen (spectrum, waterfall,
- *  frequency strip, band plan, spots, buttons, panels) is not rendered in
- *  milestone 1 and is declared UNSUPPORTED in the coverage table.
+ *  The `main` screen is the firmware's own main_screen() (src/main_screen.c):
+ *  it places the real spectrum, waterfall, frequency row, band plan, buttons,
+ *  panel, message bars, clock, info, meter and TX info. The radio/DSP state
+ *  comes from the explicit mocks; the spectrum/waterfall magnitudes come from
+ *  the deterministic generator (src/signal_gen.c), because there is no SDR.
  *
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -18,40 +17,39 @@
 
 #include "lvgl/lvgl.h"
 
-#include "styles.h"
 #include "clock.h"
-#include "info.h"
+#include "main_screen.h"
 #include "meter.h"
+#include "signal_gen.h"
+#include "styles.h"
 
 #include "mock_radio.h"
 
-static void build_home_usb_20m(void)
+static void build_main(const scenario_t *scenario)
 {
     /* Push the scenario's radio state into the subjects before the components
      * read them (the firmware's radio module does this from the driver). */
     mock_radio_apply();
 
-    lv_obj_t *scr = lv_scr_act();
+    /* The firmware's real main screen: loads the real components. */
+    lv_obj_t *scr = main_screen();
 
-    lv_obj_add_style(scr, &background_style, 0);
-    lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
+    lv_scr_load(scr);
 
-    /* Order and positions are the ones the real main_screen() uses; each
-     * component's style carries its align and size (styles.c). */
-    info_init(scr);
-    clock_init(scr);
-    meter_init(scr);
-
-    /* Battery shown by the clock and an S9 signal on the needle S-meter. */
+    /* Values the radio would report that main_screen() itself does not push:
+     * the battery the clock draws and the signal the needle points at. */
     clock_update_power(mock_radio.external_v, mock_radio.battery_v,
                        mock_radio.battery_cap, mock_radio.charging);
     meter_update(mock_radio.smeter_db, 0.0f);
+
+    /* Feed the components the FFT would: deterministic, seed-driven. */
+    signal_gen_feed(scenario->seed);
 }
 
 bool scenario_build(const scenario_t *scenario)
 {
-    if (!strcmp(scenario->screen, "home-usb-20m")) {
-        build_home_usb_20m();
+    if (!strcmp(scenario->screen, "main") || !strcmp(scenario->screen, "home-usb-20m")) {
+        build_main(scenario);
         return true;
     }
 

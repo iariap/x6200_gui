@@ -6,13 +6,22 @@
 
 #include "mock_radio.h"
 
+#include <string.h>
+
 #include "cfg/cfg.h"
 #include "cfg/subjects.h"
 
 mock_radio_state_t mock_radio;
+mock_radio_calls_t mock_radio_calls;
+
+void mock_radio_calls_reset(void)
+{
+    memset(&mock_radio_calls, 0, sizeof(mock_radio_calls));
+}
 
 void mock_radio_init(void)
 {
+    mock_radio_calls_reset();
     mock_radio = (mock_radio_state_t){
         .frequency_hz    = 14074000,        /* 20 m, USB, the fixture's band */
         .tx_frequency_hz = 14074000,
@@ -65,45 +74,49 @@ bool radio_tick(void) { return false; }
 
 radio_state_t radio_get_state(void)
 {
+    mock_radio_calls.get_state++;
     return mock_radio.state;
 }
 
 void radio_set_freq(int32_t freq)
 {
+    mock_radio_calls.set_freq++;
     mock_radio.frequency_hz = (uint32_t) freq;
 }
 
 bool radio_check_freq(int32_t freq)
 {
+    mock_radio_calls.check_freq++;
     return (uint32_t) freq == mock_radio.frequency_hz;
 }
 
 x6200_vfo_t radio_toggle_vfo(void)
 {
+    mock_radio_calls.toggle_vfo++;
     mock_radio.vfo = mock_radio.vfo == X6200_VFO_A ? X6200_VFO_B : X6200_VFO_A;
     return mock_radio.vfo;
 }
 
-uint16_t radio_change_vol(int16_t df) { (void) df; return 0; }
+uint16_t radio_change_vol(int16_t df) { mock_radio_calls.change_vol++; (void) df; return 0; }
 uint16_t radio_change_moni(int16_t df) { (void) df; return 0; }
 bool radio_change_spmode(int16_t df) { (void) df; return false; }
 
-void radio_change_mute(void) {}
+void radio_change_mute(void) { mock_radio_calls.change_mute++; }
 bool radio_is_muted(void) { return false; }
 
-void radio_set_pwr(float d) { (void) d; }
+void radio_set_pwr(float d) { mock_radio_calls.set_pwr++; (void) d; }
 
 radio_charger_t radio_change_charger(int16_t d) { (void) d; return RADIO_CHARGER_OFF; }
-x6200_mic_sel_t radio_change_mic(int16_t d) { (void) d; return x6200_mic_builtin; }
+x6200_mic_sel_t radio_change_mic(int16_t d) { mock_radio_calls.change_mic++; (void) d; return x6200_mic_builtin; }
 uint8_t radio_change_hmic(int16_t d) { (void) d; return 0; }
 uint8_t radio_change_imic(int16_t d) { (void) d; return 0; }
 
-void radio_start_atu(void) {}
+void radio_start_atu(void) { mock_radio_calls.start_atu++; }
 bool radio_start_swrscan(void) { return false; }
 void radio_stop_swrscan(void) {}
 
-void radio_poweroff(void) {}
-void radio_set_ptt(bool tx) { (void) tx; }
+void radio_poweroff(void) { mock_radio_calls.poweroff++; }
+void radio_set_ptt(bool tx) { mock_radio_calls.set_ptt++; (void) tx; }
 void radio_set_modem(bool tx) { (void) tx; }
 void radio_set_charger(radio_charger_t v) { (void) v; }
 void radio_set_tx_filter(uint16_t low, uint16_t high) { (void) low; (void) high; }

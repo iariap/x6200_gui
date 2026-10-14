@@ -8,6 +8,7 @@
 
 #include "lvgl/lvgl.h"
 #include "cfg/subjects.h"
+#include "scheduler.h"
 
 static uint64_t now_ms = 1000;
 
@@ -39,5 +40,6 @@ void virtual_time_advance(uint64_t ms, uint32_t slice_ms)
         lv_tick_inc(step);
         lv_timer_handler();
         observer_delayed_notify_all();
+        scheduler_work();
     }
 }

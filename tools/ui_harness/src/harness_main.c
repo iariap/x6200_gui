@@ -20,6 +20,7 @@
 
 #include "clock.h"
 #include "display.h"
+#include "events.h"
 #include "params/params.h"
 #include "png_export.h"
 #include "render_metrics.h"
@@ -64,11 +65,12 @@ static void write_json(const char *path, const char *png_path, const scenario_t 
     }
 
     int count = 0;
-    const coverage_entry_t *cov = coverage_home_usb_20m(&count);
+    const coverage_entry_t *cov = coverage_main_screen(&count);
 
     fprintf(f, "{\n");
     fprintf(f, "  \"scenario\": \"%s\",\n", scenario->name);
     fprintf(f, "  \"screen\": \"%s\",\n", scenario->screen);
+    fprintf(f, "  \"seed\": %u,\n", scenario->seed);
     fprintf(f, "  \"revision\": \"%s\",\n", HARNESS_REVISION);
     fprintf(f, "  \"framebuffer\": { \"width\": %u, \"height\": %u },\n",
             display_width(), display_height());
@@ -81,6 +83,19 @@ static void write_json(const char *path, const char *png_path, const scenario_t 
                 i + 1 < count ? "," : "");
     }
     fprintf(f, "  ],\n");
+    fprintf(f, "  \"radio_calls\": {\n");
+    fprintf(f, "    \"get_state\": %u,\n", mock_radio_calls.get_state);
+    fprintf(f, "    \"set_freq\": %u,\n", mock_radio_calls.set_freq);
+    fprintf(f, "    \"check_freq\": %u,\n", mock_radio_calls.check_freq);
+    fprintf(f, "    \"toggle_vfo\": %u,\n", mock_radio_calls.toggle_vfo);
+    fprintf(f, "    \"set_ptt\": %u,\n", mock_radio_calls.set_ptt);
+    fprintf(f, "    \"set_pwr\": %u,\n", mock_radio_calls.set_pwr);
+    fprintf(f, "    \"change_vol\": %u,\n", mock_radio_calls.change_vol);
+    fprintf(f, "    \"change_mic\": %u,\n", mock_radio_calls.change_mic);
+    fprintf(f, "    \"change_mute\": %u,\n", mock_radio_calls.change_mute);
+    fprintf(f, "    \"start_atu\": %u,\n", mock_radio_calls.start_atu);
+    fprintf(f, "    \"poweroff\": %u\n", mock_radio_calls.poweroff);
+    fprintf(f, "  },\n");
     fprintf(f, "  \"metrics\": {\n");
     fprintf(f, "    \"flushes\": %u,\n", render_metrics_flush_count());
     fprintf(f, "    \"flushed_pixels\": %llu,\n",
@@ -129,7 +144,8 @@ int main(int argc, char **argv)
     scenario_t scenario;
     memset(&scenario, 0, sizeof(scenario));
     snprintf(scenario.name, sizeof(scenario.name), "unnamed");
-    snprintf(scenario.screen, sizeof(scenario.screen), "home-usb-20m");
+    snprintf(scenario.screen, sizeof(scenario.screen), "main");
+    scenario.seed = 1;
 
     if (!scenario_load(scenario_path, &scenario)) {
         return 1;
@@ -140,6 +156,10 @@ int main(int argc, char **argv)
 
     lv_init();
     display_init();
+
+    /* Allocate the GUI's custom LVGL event ids before any screen registers a
+     * callback for them (the firmware's main does the same). */
+    event_init();
 
     theme_init(params.theme_name.x);
     fonts_apply(params.font.x);

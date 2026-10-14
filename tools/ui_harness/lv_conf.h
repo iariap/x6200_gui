@@ -16,6 +16,8 @@
 #define LV_CONF_H
 
 #define LV_COLOR_DEPTH 32
+/* Same as the ROM's lv_conf.h: some widgets (opacity/layers) need it. */
+#define LV_COLOR_SCREEN_TRANSP 1
 #define LV_MEM_SIZE (64U * 1024U * 1024U)
 
 /* Log to stdout at warnings and above (image/driver problems show up here). */
