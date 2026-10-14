@@ -1994,6 +1994,137 @@ Si la cascada no cae a ~1/4 (por ejemplo porque `refresh_period` no llegue a la 
 porque el join de rectangulos de LVGL absorba el cambio), se documenta la investigacion con
 los datos: **no se fuerza el numero**.
 
+### Medido (host, 2026-10-14, `5301918` -> `84f9f08`)
+
+Evidencia cruda en
+[`tools/ab_testing/reports/NATURAL-UI08-N1/`](../tools/ab_testing/reports/NATURAL-UI08-N1/)
+(los cuatro JSON del banco natural + las dos capturas comunes + `sha256.txt`).
+
+**1. `compare` A/B: 0 diffs, tal como se declaro.**
+
+```text
+$ uv run x6200-ab compare --a 5301918 --b HEAD --experiment-id AB-UI08-T2
+experiment AB-UI08-T2: PASS (exit 0)
+  Functional PASS · Visual Regression PASS (captures are pixel-identical to the baseline)
+  Quality Contract PASS (190 contract checks) · Performance PASS · Hardware BLOCKED · Energy BLOCKED
+  19/19 escenarios: changed_pixels 0
+```
+
+Los 19 fixtures de la revision A — `main-bateria-baja` incluido, que es el que la politica
+manda a CRITICAL — salen **byte-identicos**. La razon es la declarada: la captura comun
+alimenta las 200 filas de la cascada de una sola vez (`signal_gen_feed()`, 200 = 4 x 50) y
+`redraw_cb()` solo lee la cache, asi que el ultimo redibujo ocurre igual con
+`refresh_period` en 1 o en 4. Lo prueba el par de capturas comunes de la evidencia:
+`metrics.flushes` 6 y `metrics.flushed_pixels` 1127680 en las dos, con el mismo par de
+valores que el corpus.
+
+**2. Anti-falso-verde del cero** (que "0 diffs" no sea "el wiring no hace nada"):
+
+a) el test nativo asserta la tabla perfil -> modo contra el stub que registra
+`waterfall_set_battery_mode` (**27 comprobaciones** nuevas — la de la tabla corre por los 4
+perfiles —; `682, 0 fallos` en total);
+
+b) la cadencia medida en `--bench-natural` (abajo) se mueve **exactamente** como la
+declaracion predijo;
+
+c) el pixel-diff entre las dos capturas comunes (`main-natural` QUALITY vs
+`main-natural-eco` ECO) da **1136 px cambiados, bounding box `(649,10,93,43)`** — dentro del
+reloj de potencia, que es lo unico que la fuente externa cambia en los pixeles — y **0 px
+dentro del rectangulo de la cascada `0,235 800x245`**: en la captura comun la cascada es
+pixel-identica entre los dos perfiles.
+
+**3. Cadencia natural por perfil (mismo seed 13, 40 frames, 24 filas).**
+
+| medición | QUALITY (`quality.json`) | ECO (`eco.json`) | diferencia |
+|---|---|---|---|
+| redibujos de cascada | 24 (uno por fila) | **6** (1 de cada 4) | 6 x 196000 = 1176000 = **49000 px/fila** |
+| rectángulos de cascada reportados | 23 | **5** (+1 fusionado de 196000) | -78% |
+| px **invalidados** de cascada (`0,235 800x245`) | 23 x 196000 = 4508000 | 5 x 196000 = **980000** | -78% (la declaración pedía ~-75%) |
+| `natural.totals.invalidated_px` | **6745720** | **3474360** | -48.5% |
+| `natural.totals.invalidated_rects` | 45 | 33 | -12 |
+| `natural.totals.refresh_cycles` | 37 | 27 | -10 |
+| `natural.totals.frames_with_flush` | 37/40 | 27/40 | -10 |
+| `metrics.flushed_pixels` | 7873400 | 4602040 | -41.5% |
+
+Los redibujos de la cascada en ECO son 6 de 24 filas (1 cada 4 filas: las filas 4, 8, 12,
+16, 20 y 24); 5 de ellos quedan como rectangulo propio — frames **6, 13, 20, 26 y 33** — y el
+sexto se fusiona con otro rectangulo (`joined_px = 196000`, exactamente una cascada). El
+espaciado observado (~6.7 frames) sale de que una fila llega cada 40 ms y un frame dura 30 ms.
+El perfil QUALITY da **exactamente** el baseline del corpus UI-07 incr. 2
+(196000 x 23, 6745720 px, 45 rectangulos) y el gate del modo natural sigue PASS con el
+mismo sha256 (`8ec63121…`): el wiring no toco el caso que no ahorra.
+
+**4. La divergencia con lo declarado (y su causa, medida):** el total de ECO quedo en
+**3474360 px**, apenas **por encima** del rango declarado (3.22-3.41 M), y el conteo de las
+regiones vecinas cambio (espectro 16 -> 17, band-info 4 -> 8, reloj 1 -> 2) aunque sus
+timers disparan igual (17 frames de FFT, 24 filas, 2 ticks de reloj). Causa: LVGL **fusiona
+los rectangulos de cada ciclo de refresh**, y con la cascada redibujando 1 de cada 4 ciclos
+quedan 10 frames sin cascada (37 -> 27 ciclos con flush) donde las regiones vecinas dejan de
+fusionarse con ella. Los **eventos** del firmware son los mismos; el **reparto en ciclos** no.
+Es el unico punto donde la declaracion peco de optimista ("exactamente los del perfil
+QUALITY"), y queda corregido con el dato: la cascada es lo unico que cambia de trabajo, pero
+los rectangulos que el banco reporta alrededor tambien se reagrupan.
+
+**5. Delimitacion: el efecto sigue al pack, no al fixture.** Dos corridas extra del mismo
+modo sobre fixtures que ya existian y con **otro seed**:
+
+| fixture | pack | perfil | rectangulos de cascada | totales |
+|---|---|---|---|---|
+| `main-natural-eco` | 11.2 V sin fuente | ECO | 5 (+1 fusionado) | 3474360 |
+| `main-bateria-baja` (`baja.json`) | 10.6 V sin fuente | CRITICAL | 5 (+1 fusionado) | 3474360 |
+| `home-bateria-externa` (`ext.json`) | 12.1 V + fuente | QUALITY | 23 | 6745720 |
+| `main-natural` | 12.1 V + fuente | QUALITY | 23 | 6745720 |
+
+Dos fixtures distintos con el pack bajo dan el mismo perfil reducido y dos fixtures
+distintos con fuente externa dan el perfil completo: la cadencia la decide el estado del
+pack, no el fixture.
+
+**6. Gates restantes.**
+
+```text
+$ tests/check_harness_determinism.sh          # 20 fixtures x 2 corridas
+main-natural-eco: 6297ef99d8b3babfd844749206afb87aaf59e7c52b5830446a46170357b01292
+bench-render: 5ba21bea… (igual al tip base) · home-usb-20m: a656e096… (idem)
+main-natural: 3986bc9a… (idem)
+PASS: deterministic (identical PNGs for every fixture)   # los 19 sha256 previos no se movieron
+
+$ tests/check_harness_natural.sh               # SKIP_BUILD=1
+  profile: spectrum 132000 px x 16 frames, waterfall 196000 px x 23 rows, clock 15840 px x 1 tick(s)
+  natural totals: invalidated 6745720 px in 45 rectangles / 45 flushes over 37/40 frames
+  png sha256: 8ec631215c28e27fb901f186273fe6afa0fd6b9470550cf810cb1988f84273fd
+PASS: natural bench deterministic, profiled and delimited (main-natural)
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts 84f9f0840501: PASS — 200 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited 84f9f0840501: 14 known issues — 0 reproduced, 12 unverified; structural inspection
+REAL over 1746 objects on 20 scenario(s): 0 structural finding(s)
+
+$ uv run pytest -m "not e2e" -q   -> 136 passed, 17 deselected
+$ uv run pytest -m e2e -q         -> 17 passed
+$ tests/native/run_native_tests.sh -> 682 comprobaciones, 0 fallos + 7, 0 fallos
+ruff check / ruff format --check -> limpios; ty (con la lista de archivos) -> limpio
+```
+
+`contracts` pasa de 190 a **200** checks y el `audit` de 1659/19 a **1746 objetos en 20
+escenarios**: lo mismo que en el incremento anterior, el fixture nuevo entra en esas suites
+(son de HEAD). El `compare` sigue con los **19** de la revision A, asi que la cadena A/B no
+gana el caso nuevo (mismo limite anotado en UI-07 incr. 2).
+
+### Interaccion con el toggle del usuario (decision declarada)
+
+`params.waterfall_battery` es del usuario y el perfil **no lo escribe** (el modulo de
+politica ni siquiera incluye `params.h`: el toggle entra como parametro y se lee del lado de
+LVGL). El cambio de modo del waterfall se aplica **en la transicion del perfil**
+(`visual_policy_result_t.changed`), que es lo que pidio la spec: al entrar a ECO/CRITICAL se
+fuerza el ahorro y al volver a QUALITY/BALANCED se restituye el valor del param. Consecuencia
+honesta de la politica "solo en la transicion": si el usuario apaga el switch de Ajustes
+**mientras** el pack esta en ECO, el waterfall vuelve a `refresh_period = 1` y no se re-fuerza
+hasta la proxima transicion del perfil (y el switch de Ajustes, como manda la spec, sigue
+reflejando unicamente el param, no el perfil). Re-aplicar en cada paquete queda fuera del
+alcance de este incremento: no cambia la evidencia y agrega una escritura por paquete.
+
 ## Pendientes
 
 - **UI-05 (Flex/Grid) sigue abierto**: el **incremento 1** fue la capa de tokens
