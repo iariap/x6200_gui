@@ -1265,23 +1265,44 @@ lv_obj_t * main_screen() {
 
     y += spectrum_height;
 
+    /* Fila de frecuencia: un contenedor flex (LV_FLEX_ROW) del ancho del panel
+     * (UI_FREQ_SCREEN_W) cuyos tres labels se colocan por flex, en vez de la x
+     * calculada a mano por label (incremento 3). Mismo idioma que la barra de
+     * info (incremento 2): el flex gobierna SOLO el eje X. Las anchuras siguen
+     * saliendo de freq_style / freq_main_style (150/500/150) y los hijos no
+     * llevan flex_grow: flex coloca, no redimensiona, asi que la tesela
+     * 150+500+150 = 800 se mantiene sola. El Y no lo toca el flex: el
+     * contenedor se ancla en el MISMO cursor `y` del layout apilado (debajo del
+     * espectro, `y += spectrum_height`) y, con pad/borde 0, deja a los labels en
+     * el mismo cursor que tenian (el espectro y el flujo vertical no se tocan). */
+    lv_obj_t *freq_row = lv_obj_create(obj);
+
+    lv_obj_clear_flag(freq_row, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_opa(freq_row, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_radius(freq_row, 0, 0);
+    lv_obj_set_style_border_width(freq_row, 0, 0);
+    lv_obj_set_style_pad_all(freq_row, 0, 0);
+    lv_obj_set_style_pad_column(freq_row, 0, 0);
+    lv_obj_set_size(freq_row, UI_FREQ_SCREEN_W, freq_height);
+    lv_obj_set_pos(freq_row, UI_FREQ_LEFT_X, y);
+    lv_obj_set_layout(freq_row, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(freq_row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(freq_row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+
     lv_obj_t *f;
 
-    f = lv_label_create(obj);
+    f = lv_label_create(freq_row);
     lv_obj_add_style(f, &freq_style, 0);
-    lv_obj_set_pos(f, UI_FREQ_LEFT_X, y);
     lv_label_set_recolor(f, true);
     freq[0] = f;
 
-    f = lv_label_create(obj);
+    f = lv_label_create(freq_row);
     lv_obj_add_style(f, &freq_main_style, 0);
-    lv_obj_set_pos(f, UI_FREQ_CENTER_X, y);
     lv_label_set_recolor(f, true);
     freq[1] = f;
 
-    f = lv_label_create(obj);
+    f = lv_label_create(freq_row);
     lv_obj_add_style(f, &freq_style, 0);
-    lv_obj_set_pos(f, UI_FREQ_RIGHT_X, y);
     lv_label_set_recolor(f, true);
     freq[2] = f;
 
