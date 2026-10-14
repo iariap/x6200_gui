@@ -25,3 +25,24 @@ barra superior, se restauro el archivo, se reconstruyo y se volvio a capturar. C
 En la misma captura sigue viendose la celda de la izquierda como `VFO-`: con VISION el texto de la
 barra crece tres pasos y la celda de 56x26 no, que es exactamente el hallazgo **UI-012**, todavia
 abierto. No es una regresion de este fix: este fix restaura los glifos, no cambia tamanos de celda.
+
+---
+
+## UI-012 (validado despues, commit `4d24990`, PR #21)
+
+El fix devuelve la celda del VFO al tamano chico solo con VISION (`font_down(&sony_20, VISION_FONT_STEPS)`,
+`src/info.c`), porque es la unica de las seis que no entra con la fuente escalada.
+
+A/B en la radio con el tema VISION (mismas condiciones):
+
+| Captura | Celda del VFO |
+|---|---|
+| `vision-barra-CON-fix.png` (fix de UI-011, sin el de UI-012) | `VFO-` — la letra no entraba (UI-012) |
+| `vision-barra-UI012-CON.png` (con los dos fixes) | `VFO-B` — completa, y los iconos siguen bien (UI-011 no se rompio) |
+
+## Estado de los tres hallazgos, visto desde la radio
+
+- **UI-011**: arreglado y validado en la radio (bateria, WiFi y enchufe vuelven con VISION).
+- **UI-012**: arreglado y validado en la radio (`VFO-B` entra en su celda).
+- **UI-013**: sigue abierto (elegir Outdoor-Negative no aplica el tema); no lo valide porque el fix
+  todavia no esta en la rama.
