@@ -35,3 +35,23 @@ Disparador, reproducido a voluntad:
 Con el build actual la radio **no es usable** mientras se usen las apps CW: entra en un bucle de
 reinicio de la GUI cada ~30-46 s. Reiniciar la GUI la deja estable (150 s sin caidas) hasta que
 vuelvan a usarse esas apps. Todo lo demas que se probo funciona.
+
+## Correccion: el bucle NO se limpia reiniciando la GUI
+
+Reinicio de GUI medido: `kill -9` + el supervisor la relanza -> en 120 s hubo **3 caidas** (PID 2278 ->
+2414, logs 75 -> 78). El disparador esta **persistido** en `/mnt/params.db`:
+
+```
+cw_tune|1
+cw_decoder|1
+key_train|1
+```
+
+Son exactamente las tres banderas del early-return de `cw_put_audio_samples`
+(`if ((!cw_decoder) && (!cw_tune) && (!trainer)) return;`), asi que cada arranque de GUI vuelve a
+procesar audio y vuelve a caerse. `key_train=1` es lo que dejo el paso por la app `CwTrainer`, que es
+justo la reproduccion minima medida (abrir/cerrar CwTrainer -> 5 caidas en 150 s). `params.db` se
+reescribe mientras la GUI vive (mtime 12:40 con reloj en 12:41), asi que desarmarlo exige hacerlo con
+la GUI muerta o desde el codigo.
+
+Estado en que queda la radio al cerrar esta prueba: **en el bucle** (no se limpia reiniciando la GUI).
