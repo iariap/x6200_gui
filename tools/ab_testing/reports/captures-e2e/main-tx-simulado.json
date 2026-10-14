@@ -2,7 +2,7 @@
   "scenario": "main-tx-simulado",
   "screen": "main",
   "seed": 31,
-  "revision": "667fad4b2cf96e958464b88dd992ea496c063bc8",
+  "revision": "92d940529a9252d50b8eb4410611b957213ff6ac",
   "framebuffer": { "width": 800, "height": 480 },
   "virtual_time_ms": 2200,
   "coverage": [
