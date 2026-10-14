@@ -11,12 +11,14 @@
  *
  *  Es la primera pieza del manager de UI-08. La evaluacion es pura y no depende
  *  de nada; las salidas al mundo son los wirings: el incremento 2
- *  (visual_policy_waterfall_apply) lleva el perfil al modo Ahorro del waterfall
- *  y el incremento 3 (visual_policy_brightness_apply) al nivel del backlight.
- *  El del spectrum es el incremento 4.
+ *  (visual_policy_waterfall_apply) lleva el perfil al modo Ahorro del waterfall,
+ *  el incremento 3 (visual_policy_brightness_apply) al nivel del backlight y el
+ *  incremento 4 (visual_policy_brightness_rewrite) hace que ese nivel no se
+ *  pueda volver a subir por los rewrites de input/timeout (src/backlight.c). El
+ *  del spectrum sigue pendiente.
  *
  *  Lo cubre el test nativo (tests/native/test_visual_policy.c): la evaluacion
- *  sin stubs, y los wirings contra los stubs que registran la llamada a
+ *  sin stubs, y los wirings contra los stubs que registran las llamadas a
  *  waterfall_set_battery_mode y a backlight_set_brightness
  *  (tests/native/stubs/stubs.c).
  */
@@ -217,8 +219,9 @@ void visual_policy_waterfall_apply(visual_profile_t profile, bool user_battery_m
  * la de la radio no pueden divergir.
  *
  * El setting del usuario entra como parametro y NUNCA se escribe: el param
- * queda en disco intacto (mismo patron que el waterfall). El modulo tampoco
- * mantiene estado propio: el perfil y el setting son la entrada entera.
+ * queda en disco intacto (mismo patron que el waterfall). El apply fija ademas
+ * el cap vigente que leen los rewrites del incremento 4 (mas abajo); el perfil
+ * y el setting siguen siendo la entrada entera.
  * ------------------------------------------------------------------------- */
 
 /* Aplica un perfil ya evaluado al nivel del backlight:
@@ -230,9 +233,42 @@ void visual_policy_waterfall_apply(visual_profile_t profile, bool user_battery_m
  * El cap es un techo: el nivel aplicado es el menor entre el setting del
  * usuario y el cap, asi que el perfil nunca sube el brillo que el usuario
  * eligio (y un display que el usuario apago con VP_BRIGHTNESS_OFF queda
- * apagado). Idempotente y sin estado: el llamador decide cuando llamar (el ROM
- * lo hace en la transicion del perfil). */
+ * apagado). Deja el cap del perfil como el cap VIGENTE, que es el que aplican
+ * los rewrites del incremento 4: el recorte no depende de que el llamador
+ * vuelva a pasar el perfil. Idempotente para el nivel; el llamador decide
+ * cuando llamar (el ROM lo hace en la transicion del perfil). */
 void visual_policy_brightness_apply(visual_profile_t profile, int16_t user_setting);
+
+/* ------------------------------------------------------------------------- *
+ * Enforcement del cap (UI-08 incremento 4): los rewrites del nivel por input y
+ * por timeout.
+ *
+ * En la radio real el nivel se reescribe desde `params` en dos cadencias que NO
+ * conocen el perfil: `backlight_tick()` (src/backlight.c, disparado por input:
+ * encoder/hkey/keypad/rotary y el timeout de Ajustes) vuelve el brillo normal,
+ * y su timer de idle lo baja al nivel de reposo. Sin pasar por aca, el recorte
+ * del incremento 3 duraba hasta el proximo input: el rewrite volvia el setting
+ * del usuario y saltaba el cap. Los dos rewrites llaman a esta funcion, que
+ * aplica el cap VIGENTE (el del ultimo perfil que paso por el apply), asi que el
+ * recorte es persistente en las mismas cadencias.
+ *
+ * Es la query del modulo: el cap se lee de la MISMA tabla que el apply (no hay
+ * copia en backlight.c) y no requiere locking; el llamador solo aporta el
+ * setting de params, que NUNCA se escribe.
+ * ------------------------------------------------------------------------- */
+
+/* Aplica un rewrite del nivel del backlight con el cap vigente:
+ *
+ *   - el nivel es el menor entre el setting del usuario y el cap del perfil
+ *     vigente (mismo clamp que el apply);
+ *   - con QUALITY/BALANCED (cap = maximo del panel) el setting pasa intacto;
+ *   - antes de cualquier apply el cap es el maximo: sin recorte.
+ *
+ * El setting del usuario es el techo: el cap solo lo baja, nunca lo sube, y un
+ * display apagado (VP_BRIGHTNESS_OFF) no se revive. La usan los rewrites de
+ * src/backlight.c (tick por input y timer de idle), que son los dos call-sites
+ * que el perfil no podia ver. */
+void visual_policy_brightness_rewrite(int16_t user_setting);
 
 #ifdef __cplusplus
 }

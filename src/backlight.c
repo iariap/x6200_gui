@@ -18,6 +18,7 @@
 #include "gpio_safe.h"
 #include "util.h"
 #include "voice.h"
+#include "visual_policy.h"
 
 static int          power;
 static int          brightness;
@@ -26,7 +27,9 @@ static bool         on = true;
 static lv_timer_t   *timer = NULL;
 
 static void backlight_timer(lv_timer_t *t) {
-    backlight_set_brightness(params.brightness_idle);
+    /* Nivel de reposo (timeout idle): pasa por el cap vigente del perfil
+     * (UI-08 incr. 4); el setting de params queda intacto. */
+    visual_policy_brightness_rewrite(params.brightness_idle);
     gpio_safe_set(x6200_pin_light, params.brightness_buttons == BUTTONS_LIGHT ? 1 : 0);
     timer = NULL;
 }
@@ -65,7 +68,10 @@ void backlight_tick() {
         timer = lv_timer_create(backlight_timer, params.brightness_timeout * 1000, NULL);
         lv_timer_set_repeat_count(timer, 1);
 
-        backlight_set_brightness(params.brightness_normal);
+        /* Nivel normal (rewrite por input): pasa por el cap vigente del perfil
+         * (UI-08 incr. 4) para que el recorte del perfil no se pierda en el
+         * proximo input; el setting de params queda intacto. */
+        visual_policy_brightness_rewrite(params.brightness_normal);
         gpio_safe_set(x6200_pin_light, params.brightness_buttons == BUTTONS_DARK ? 0 : 1);
     }
 }

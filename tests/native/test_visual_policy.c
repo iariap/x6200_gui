@@ -1,5 +1,5 @@
 /*
- * Native test for src/visual_policy.c (issue #14, UI-08 incrementos 1, 2 y 3).
+ * Native test for src/visual_policy.c (issue #14, UI-08 incrementos 1 a 4).
  *
  * La evaluacion es pura y sin dependencias, asi que se prueba directo, sin
  * stubs:
@@ -22,6 +22,11 @@
  * setting del usuario. Los cuatro caps declarados van como literales en la
  * tabla de casos; el resto usa los #define del header, que son el contrato que
  * el wiring comparte con el ROM y con el arnes.
+ *
+ * El enforcement del incremento 4 (los rewrites del tick por input y del timer
+ * de idle) se prueba contra el mismo stub: el cap lo deja vigente el apply y
+ * los dos rewrites lo aplican, con los dos lados del clamp comprobados sobre el
+ * mismo numero (el que el stub registra).
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -465,4 +470,124 @@ void test_visual_policy(void) {
     test_backlight_brightness_reset();
     visual_policy_brightness_apply(r.profile, VP_BRIGHTNESS_ECO);
     CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_ECO);  /* sin recorte */
+
+    /* --- Enforcement del incr. 4: los rewrites del tick (input) y del timer
+     * (idle) pasan por el cap VIGENTE. El cap lo deja el apply, que lo lee de la
+     * misma tabla que el rewrite (no hay copia en backlight.c); el stub registra
+     * el nivel que sale. Los dos lados del clamp tienen que dar el MISMO numero. --- */
+
+    /* El recorte de un perfil que ahorra se ve igual desde la transicion (apply)
+     * y desde el rewrite del tick: misma fuente de datos. */
+    test_backlight_brightness_reset();
+    visual_policy_brightness_apply(VP_ECO, VP_BRIGHTNESS_MAX);
+    CHECK(test_backlight_brightness_calls() == 1);
+    CHECK(test_backlight_brightness_level() == 6);     /* lado apply */
+    test_backlight_brightness_reset();
+    visual_policy_brightness_rewrite(VP_BRIGHTNESS_MAX);
+    CHECK(test_backlight_brightness_calls() == 1);
+    CHECK(test_backlight_brightness_level() == 6);     /* lado tick, mismo numero */
+
+    /* Tick por input: el rewrite del nivel normal sigue recortado. */
+    test_backlight_brightness_reset();
+    visual_policy_brightness_rewrite(VP_BRIGHTNESS_MAX);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_ECO);
+
+    /* Timer de idle: el rewrite del nivel de reposo tambien pasa por el cap, y un
+     * idle por debajo del cap pasa intacto (el cap solo baja, nunca sube). */
+    test_backlight_brightness_reset();
+    visual_policy_brightness_rewrite(4);
+    CHECK(test_backlight_brightness_calls() == 1);
+    CHECK(test_backlight_brightness_level() == 4);
+    test_backlight_brightness_reset();
+    visual_policy_brightness_rewrite(VP_BRIGHTNESS_ECO);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_ECO);
+    test_backlight_brightness_reset();
+    visual_policy_brightness_rewrite(VP_BRIGHTNESS_ECO - 1);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_ECO - 1);
+
+    /* El cap es persistente: sobrevive a todos los rewrites (no se consume ni se
+     * "capta" una sola vez). */
+    for (int i = 0; i < 3; i++) {
+        test_backlight_brightness_reset();
+        visual_policy_brightness_rewrite(VP_BRIGHTNESS_MAX);
+        CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_ECO);
+    }
+
+    /* Un display apagado (VP_BRIGHTNESS_OFF) no lo revive el cap:
+     * min(-1, VP_BRIGHTNESS_ECO) = VP_BRIGHTNESS_OFF. */
+    test_backlight_brightness_reset();
+    visual_policy_brightness_rewrite(VP_BRIGHTNESS_OFF);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_OFF);
+
+    /* Tabla del enforcement con los caps declarados como literales: el rewrite
+     * del tick devuelve el cap del perfil vigente, sea cual sea. QUALITY y
+     * BALANCED (sin recorte) comparten el clamp con ECO y CRITICAL (recorte): es
+     * la misma politica, no una copia. */
+    {
+        static const struct {
+            visual_profile_t profile;
+            int16_t          cap;
+        } cases[] = {
+            { VP_QUALITY,  9 },
+            { VP_BALANCED, 9 },
+            { VP_ECO,      6 },
+            { VP_CRITICAL, 3 },
+        };
+
+        for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+            visual_policy_brightness_apply(cases[i].profile, VP_BRIGHTNESS_MAX);
+            test_backlight_brightness_reset();
+            visual_policy_brightness_rewrite(VP_BRIGHTNESS_MAX);
+            CHECK(test_backlight_brightness_calls() == 1);
+            CHECK(test_backlight_brightness_level() == cases[i].cap);
+        }
+    }
+
+    /* Con QUALITY/BALANCED el rewrite devuelve el setting del usuario intacto: el
+     * cap es del perfil vigente, no una constante del modulo. */
+    visual_policy_brightness_apply(VP_QUALITY, VP_BRIGHTNESS_MAX);
+    test_backlight_brightness_reset();
+    visual_policy_brightness_rewrite(VP_BRIGHTNESS_MAX);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_MAX);
+    visual_policy_brightness_apply(VP_BALANCED, VP_BRIGHTNESS_MAX);
+    test_backlight_brightness_reset();
+    visual_policy_brightness_rewrite(VP_BRIGHTNESS_MAX);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_MAX);
+
+    /* --- Prioridad de la fuente externa / carga: con el pack bajo el perfil es
+     * QUALITY (calidad plena), asi que el cap NO restringe el rewrite aunque el
+     * voltaje este en la banda de CRITICAL. --- */
+    visual_policy_init(&state);
+    r = auto_vbat(&state, VP_CRITICAL_ENTER_MV);       /* CRITICAL */
+    CHECK(r.profile == VP_CRITICAL);
+    visual_policy_brightness_apply(r.profile, VP_BRIGHTNESS_MAX);
+    test_backlight_brightness_reset();
+    visual_policy_brightness_rewrite(VP_BRIGHTNESS_MAX);
+    CHECK(test_backlight_brightness_level() == 3);     /* a bateria: recorta */
+
+    /* Se enchufa (fuente externa): QUALITY de inmediato, sin hysteresis. */
+    r = visual_policy_eval(&state, VP_CRITICAL_ENTER_MV, VP_VEXT_PRESENT_MV, 50, false,
+                           NOW, NOW, VP_AUTO);
+    CHECK(r.profile == VP_QUALITY);
+    visual_policy_brightness_apply(r.profile, VP_BRIGHTNESS_MAX);
+    test_backlight_brightness_reset();
+    visual_policy_brightness_rewrite(VP_BRIGHTNESS_MAX);
+    CHECK(test_backlight_brightness_calls() == 1);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_MAX);  /* el cap no restringe */
+
+    /* Idem cargando con la fuente presente: manda la presencia de fuente. */
+    r = visual_policy_eval(&state, VP_CRITICAL_ENTER_MV, 13000, 50, true, NOW, NOW, VP_AUTO);
+    CHECK(r.profile == VP_QUALITY);
+    visual_policy_brightness_apply(r.profile, 5);
+    test_backlight_brightness_reset();
+    visual_policy_brightness_rewrite(5);
+    CHECK(test_backlight_brightness_level() == 5);
+
+    /* Al irse la fuente vuelve la banda real y el cap recorta otra vez. */
+    r = auto_vbat(&state, VP_CRITICAL_ENTER_MV);       /* CRITICAL */
+    CHECK(r.profile == VP_CRITICAL);
+    visual_policy_brightness_apply(r.profile, VP_BRIGHTNESS_MAX);
+    test_backlight_brightness_reset();
+    visual_policy_brightness_rewrite(VP_BRIGHTNESS_MAX);
+    CHECK(test_backlight_brightness_level() == 3);
 }
