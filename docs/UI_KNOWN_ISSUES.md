@@ -340,6 +340,28 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
 
 ---
 
+## Estático, sin fixture
+
+Bloque para los pares que el chequeo **estático** (`x6200-ab themes` +
+`quality/theme_pairs.yaml`) marca por debajo de WCAG pero que **ningún fixture
+renderiza** todavía: se listan acá como hallazgo *informativo* con su número, no
+como defecto activo, porque el registro sólo acepta lo que el arnés **reproduce**
+en pantalla. Un par que se funde con una captura sube a la lista de arriba.
+
+**Estado tras UI-06 incremento 1 (issue #12, 2026-10-14): sin hallazgos.**
+`x6200-ab themes` mide 63 pares sobre los 7 temas que resuelve (4 paletas
+incorporadas de `src/theme.h` + Holo, Material 3 y RS) y **ninguno** queda por
+debajo de su umbral (normal ≥ 4.5:1, no-texto/texto-grande ≥ 3.0:1). Los dos
+temas derivados en runtime (**Outdoor-Negative** y **VISION**) quedan **UNCOVERED**
+declarados con motivo (no son data: los arma `use_builtin()`), no en falta. El
+sweep del propio ROM (`tests/check_wcag.py`, nueve paletas) cierra en **0 fallas**:
+lo único sub-umbral son los pares que la tabla excluye por WCAG 1.4.3
+(deshabilitado/incidental). Detalle y tabla por tema en
+`docs/AB_TESTING.md` → *Inventario de contraste estático por tema*. Esto cubre la
+parte estática de la semilla **UI-003** sin agregar un defecto nuevo.
+
+---
+
 ## Anexo: hipótesis sin reproducir
 
 Semillas con evidencia previa en el repo pero **sin detector** todavía: no
@@ -349,7 +371,7 @@ reproduzca. Cada una dice qué falta.
 | ID | Tema | Evidencia previa | Qué falta para fundarla |
 |---|---|---|---|
 | UI-002 | Las apps solo vivían en el long-press de Ajustes | `docs/HALLAZGOS.md` 17, 29 | un fixture que abra el menú de apps (el arnés abre el About real, no el menú) |
-| UI-003 | Pares texto/fondo por debajo de 4.5:1 / 3:1 | `docs/HALLAZGOS.md` 24, 26, 27, 28; `tests/check_wcag.py` | un fixture que renderice los pares que incumplen; el arnés ya calcula el contraste de cada par opaco y desde UI-02 lo corre también sobre el diálogo About y sobre los temas (`main-tema-*`) sin encontrar nada |
+| UI-003 | Pares texto/fondo por debajo de 4.5:1 / 3:1 | `docs/HALLAZGOS.md` 24, 26, 27, 28; `tests/check_wcag.py` | un fixture que renderice los pares que incumplen; el arnés ya calcula el contraste de cada par opaco y desde UI-02 lo corre también sobre el diálogo About y sobre los temas (`main-tema-*`) sin encontrar nada. Desde UI-06 incr. 1 el chequeo **estático** cubre los 7 temas resolubles (4 incorporadas + 3 JSON; 63 pares, 0 fallas) y declara UNCOVERED a los derivados — ver *Estático, sin fixture* |
 | UI-004 | Ajustes: widgets inalcanzables con el foco | `docs/HALLAZGOS.md` 18; `tests/check_settings_focus.py` | un fixture que abra Ajustes y emita la grilla de foco (Ajustes arrastra `dialog_field` y decenas de dependencias) |
 | UI-005 | Diálogo viejo: texto tapado por los botones | `docs/HALLAZGOS.md` 21 | un fixture de BT/WeFax/SSTV (el About real ya se abre y no lo reproduce: su texto está centrado) |
 | UI-006 | Glifo BT U+F293 inexistente en `sony_20` | `docs/HALLAZGOS.md` 19; `src/info.c` | que una pantalla vuelva a dibujar el glifo en un label; el arnés ya detecta glifos ausentes (y la pantalla actual dibuja el icono con `lv_line`) |
