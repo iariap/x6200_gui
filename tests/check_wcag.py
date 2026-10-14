@@ -357,6 +357,9 @@ PARES_ESPECIFICOS = [
     ("text_dim", "bar", 4.5, None, "info.c:93+277 (WiFi/BT y ATU apagado)"),
     ("text_mute", "bar", 4.5, None, "info.c:260 (modo bloqueado)"),
     ("mode_dig", "bar", 4.5, None, "info.c:258 (modo digital)"),
+    ("text_dim", "bar", 4.5, None, "info.c:289 (ATU sin cargar)"),
+    ("sel_text", "sel_bg", 4.5, None, "info.c:275-300 (ATU cargado) y PRE/ATT activo"),
+    ("text", "bar", 4.5, None, "info.c:275-300 (ATU apagado)"),
     # Switch y slider de Ajustes: pintados por partes con roles (styles.c styles_switch_init/
     # styles_slider_init, antes los pintaba LVGL con su tema: riel #E0E0E0 = 2.78:1)
     # dialog_about con roles del tema

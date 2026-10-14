@@ -218,13 +218,13 @@ static void wifi_state_change_cb(void *s, lv_msg_t *m) {
     lv_color_t color;
     switch (wifi_get_status()) {
     case WIFI_CONNECTED:
-        color = lv_color_white();
+        color = TC(text);
         break;
     case WIFI_OFF:
-        color = lv_color_black();
+        color = TC(icon_off);
         break;
     default:
-        color = lv_color_hex(0x909090);
+        color = TC(text_dim);
         break;
     }
     lv_obj_set_style_text_color(items[INFO_WIFI], color, 0);
@@ -284,12 +284,19 @@ static void atu_label_update(Subject *subj, void * user_data) {
     } else {
         if (cfg_transverter_get_shift(freq)) {
             lv_obj_set_style_text_color(items[INFO_ATU], TC(text_dim), 0);
-            lv_obj_set_style_bg_opa(items[INFO_ATU], LV_OPA_TRANSP, 0);
+            lv_obj_set_style_bg_color(items[INFO_ATU], TC(bar), 0);
+            lv_obj_set_style_bg_opa(items[INFO_ATU], LV_OPA_COVER, 0);
         } else {
-            lv_obj_set_style_text_color(items[INFO_ATU], subject_get_int(cfg_cur.atu->loaded) ? lv_color_black() : lv_color_hex(0xFF0000), 0);
-            lv_obj_set_style_bg_opa(items[INFO_ATU], LV_OPA_50, 0);
+            /* Cargado o no: roles del tema. El rojo fijo #FF0000 no servia (daba ~2:1 sobre las partes
+             * claras del bitmap) y ningun rol "rojo" del tema llega a 4.5 sobre TC(bar) -tx 3.06 en
+             * IU1WXY, 1.97 en Legacy, medido-, asi que el ATU sin cargar queda atenuado (text_dim),
+             * que es lo que el chequeo valida (docs/HALLAZGOS.md 30). */
+            bool cargado = subject_get_int(cfg_cur.atu->loaded);
+
+            lv_obj_set_style_bg_color(items[INFO_ATU], cargado ? TC(sel_bg) : TC(bar), 0);
+            lv_obj_set_style_bg_opa(items[INFO_ATU], LV_OPA_COVER, 0);
+            lv_obj_set_style_text_color(items[INFO_ATU], cargado ? TC(sel_text) : TC(text_dim), 0);
         }
-        lv_obj_set_style_bg_color(items[INFO_ATU], lv_color_white(), 0);
     }
 }
 
@@ -303,20 +310,20 @@ static void agc_label_update(Subject *subj, void *user_data) {
 }
 
 static void att_pre_label_update(Subject *subj, void * user_data) {
+    /* Activo: el par "seleccionado" del tema (bg/texto, validado >=4.5 en los 9 temas); inactivo:
+     * el fondo de la celda y el texto normal. Antes era negro sobre blanco al 50%, que sobre el
+     * fondo del tema daba texto claro sobre celda clara (medido en el banco, docs/HALLAZGOS.md 30). */
+    bool activo = subject_get_int(cfg_cur.att) || subject_get_int(cfg_cur.pre);
+
     if (subject_get_int(cfg_cur.att)) {
-        lv_obj_set_style_text_color(items[INFO_PRE_ATT], lv_color_black(), 0);
-        lv_obj_set_style_bg_color(items[INFO_PRE_ATT], lv_color_white(), 0);
-        lv_obj_set_style_bg_opa(items[INFO_PRE_ATT], LV_OPA_50, 0);
         lv_label_set_text(items[INFO_PRE_ATT], "ATT");
     } else if (subject_get_int(cfg_cur.pre)) {
-        lv_obj_set_style_text_color(items[INFO_PRE_ATT], lv_color_black(), 0);
-        lv_obj_set_style_bg_color(items[INFO_PRE_ATT], lv_color_white(), 0);
-        lv_obj_set_style_bg_opa(items[INFO_PRE_ATT], LV_OPA_50, 0);
         lv_label_set_text(items[INFO_PRE_ATT], "PRE");
     } else {
-        lv_obj_set_style_text_color(items[INFO_PRE_ATT], lv_color_white(), 0);
-        lv_obj_set_style_bg_color(items[INFO_PRE_ATT], lv_color_black(), 0);
-        lv_obj_set_style_bg_opa(items[INFO_PRE_ATT], LV_OPA_0, 0);
         lv_label_set_text(items[INFO_PRE_ATT], "P/A");
     }
+
+    lv_obj_set_style_bg_color(items[INFO_PRE_ATT], activo ? TC(sel_bg) : TC(bar), 0);
+    lv_obj_set_style_bg_opa(items[INFO_PRE_ATT], LV_OPA_COVER, 0);
+    lv_obj_set_style_text_color(items[INFO_PRE_ATT], activo ? TC(sel_text) : TC(text), 0);
 }

@@ -735,6 +735,20 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
         cmd->id = CMD_QSO_LOG;
         return NULL;
     }
+    if (!strcmp(name, "page")) {
+        /* Grupo de botones de abajo: el mismo camino que la tecla APP/KEY/DFN (main_screen.c), para
+         * poder manejar la GUI sin teclas (banco y control remoto) */
+        const char *s2 = text ? cmd->text : cJSON_IsString(val) ? val->valuestring : "";
+
+        if (!strcmp(s2, "gen"))       buttons_load_page_group(buttons_group_gen);
+        else if (!strcmp(s2, "app"))  buttons_load_page_group(buttons_group_app);
+        else if (!strcmp(s2, "key"))  buttons_load_page_group(buttons_group_key);
+        else if (!strcmp(s2, "dfn"))  buttons_load_page_group(buttons_group_dfn);
+        else if (!strcmp(s2, "dfl"))  buttons_load_page_group(buttons_group_dfl);
+        else return "Unknown page";
+
+        return NULL;
+    }
     if (!strcmp(name, "app")) {
         const char *s = text ? cmd->text : cJSON_IsString(val) ? val->valuestring : "";
         for (int32_t i = 0; i < (int32_t)(sizeof(app_names) / sizeof(app_names[0])); i++)

@@ -48,6 +48,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 27. [Barrido WCAG de toda la UI: colores que pinta LVGL y colores a mano](#27-barrido-wcag-de-toda-la-ui-colores-que-pinta-lvgl-y-colores-a-mano)
 28. [WCAG: barra de estado, switch, slider y about](#28-wcag-barra-de-estado-switch-slider-y-about)
 29. [Todas las apps en el menu de apps](#29-todas-las-apps-en-el-menu-de-apps)
+30. [Verificacion en el banco (QEMU): paginas APP y WCAG](#30-verificacion-en-el-banco-qemu-paginas-app-y-wcag)
 
 ---
 
@@ -1417,3 +1418,48 @@ ACTION_APP_*` de `main_screen.c`, lee los cuerpos de las `page_app_N` de `button
 `&btn_x` a la accion de su `make_app_btn`/`make_action_btn` y **falla si alguna app no esta en
 ninguna pagina** (tambien avisa si una pagina se pasa de `BUTTONS` y si una app aparece dos veces).
 Hoy: **23 apps, 23 en el menu, 6 paginas**.
+
+---
+
+## 30. Verificacion en el banco (QEMU): paginas APP y WCAG
+
+Con la radio en otra subred (§28), el trabajo se verifico en el **banco**: chroot de la imagen +
+**QEMU user** + framebuffer falso (`libfakefb` deja cada cuadro en `/tmp/fakefb0`, 480x800x32 BGRA,
+rotado 270° como en la radio). Herramienta nueva: **`tools/captura-banco.sh`** (arranca la GUI en el
+banco, la maneja por su socket de control y saca el PNG; deja la GUI corriendo entre llamadas para
+encadenar capturas).
+
+Para manejarla sin teclas se agrego al control remoto el comando **`{"cmd":"page","text":"app"}`**
+(gen|app|key|dfn|dfl): llama al mismo `buttons_load_page_group()` que la tecla APP (`main_screen.c:700`).
+
+**Verificado**:
+
+- **Las 6 paginas APP**, con las 23 apps y los rotulos entrando bien:
+  `APP 1:6` FT8/JS8/WSPR/RTTY · `APP 2:6` SSTV/WeFax/NavTex/Cluster · `APP 3:6` Recorder/**Field
+  Ops**/GPS/Bands · `APP 4:6` CW Kbd/CW Trainer/Eq/Status · `APP 5:6` Settings/Callsign/QTH/**About**
+  · `APP 6:6` WiFi/BT/SWR Scan (capturas en `evidencia-banco/paginas-app.png`).
+- **El look WCAG**: celdas de la barra de estado con `TC(bar)` y texto de roles, el "PRE" resaltado
+  con el par `sel_bg`/`sel_text`, el "ATU1" sin cargar atenuado (`text_dim`), y el switch/slider con
+  pista `control_border` + perilla `panel` y sin relleno (`evidencia-banco/final-barra.png`,
+  `wcag-settings.png`).
+
+**Dos cosas que solo se vieron en el banco** (y quedaron arregladas):
+
+1. `att_pre_label_update` pintaba **negro sobre blanco al 50%** y `atu_label_update` dejaba el fondo
+   en **blanco al 50%** con texto del tema: sobre el fondo del tema eso es texto claro sobre celda
+   clara. La auditoria no lo podia ver porque el fondo era el bitmap. Ahora usan pares del tema
+   (`sel_bg`/`sel_text` para el estado activo, `bar`+`text`/`text_dim` para el resto) y el chequeo
+   los valida: **990 pares OK, 0 fallas**.
+2. La barra de estado tenia todavia tres colores a mano (`#909090` de WiFi conectando, `#FF0000` del
+   ATU y el blanco de WiFi conectado): ahora ninguno (`grep -c "lv_color_hex\|lv_color_white\|
+   lv_color_black" src/info.c` = **0**).
+
+**Hallazgos del banco que quedan anotados** (no bloquean, son del banco o del control remoto):
+
+- La GUI en el banco **muere a los ~1-3 minutos** con **Bus error en `main_knob_thread`**
+  (`rotary.c`, LR resuelto con `addr2line`: 0x27e58). Le pasa tambien al build anterior y no le pasa
+  a la radio, que lleva horas andando: es del dispositivo de perilla falso del banco (acceso
+  desalineado bajo QEMU). Para capturar alcanza con hacerlo dentro de esa ventana.
+- La lista de apps del **control remoto** (`app_names[]`) no tiene About, Cluster, CW Trainer, Eq,
+  Status, QTH, Callsign, Recorder ni WiFi: abrirlas por el socket responde "Unknown app". Es del
+  protocolo remoto (la pagina /remote del webserver usa la misma lista), no de la GUI.
