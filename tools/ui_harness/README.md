@@ -314,8 +314,12 @@ The `screen` selects what is built: `main` (the real main screen), `dialog-about
 (the same screen with the real Ajustes window, `ACTION_APP_SETTINGS` → `dialog_construct(dialog_settings)`;
 `settings-wfbat` then presses the bottom bar's "Mas >" and "Espectro" tabs through
 `buttons_press()`, the same path the user takes, so the view is scrolled to the
-Spectrum/waterfall group with its battery switch on) and `main-foco` (the same
-screen with the real keyboard group, so `lv_group_focus_next()` runs over it).
+Spectrum/waterfall group with its battery switch on), `settings-bands` (Ajustes and
+then the real Bands action, `main_screen_action(ACTION_APP_BANDS)`) and `app-bands`
+(the app menu the APP key loads, `buttons_load_page_group(buttons_group_app)`, with
+the "Bands" button of `APP 3:6` pressed — the route the owner reported), and
+`main-foco` (the same screen with the real keyboard group, so
+`lv_group_focus_next()` runs over it).
 
 The `theme` is the full name the GUI lists: a builtin (`IU1WXY`, `Legacy`,
 `Outdoor`, `Classic`, `Outdoor-Negative`, `VISION`) or a JSON theme the ROM ships
@@ -344,6 +348,8 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `dialog-about` | the real main screen with the real About window open over it (`dialog.c` + `dialog_about.c`) |
 | `settings-home` | the real main screen with the real Ajustes window open over it (`dialog.c` + `dialog_settings.c`), on its first group (clock: date/time, Clock view, timeouts). The wall clock is the harness' fixed epoch, so the date/time fields are deterministic |
 | `settings-wfbat` | Ajustes scrolled to the Spectrum/waterfall group with the waterfall battery mode the user turned on (`waterfall_battery true`); the switch renders checked and the real waterfall runs the saving cadence the visual policy applies |
+| `settings-bands` | Ajustes and then the real Bands action (`main_screen_action(ACTION_APP_BANDS)`, the dispatcher the Ajustes long-press list reaches). `dialog_bands` is an inert mock here, so the fixture codifies the route in `scenario_settle` (the Ajustes window has to be closed and a dialog has to be running) instead of the window's pixels |
+| `app-bands` | the app menu the APP key opens (`buttons_group_app`, page `APP 3:6`) with the "Bands" button pressed — the route the owner reported ("the Bands menu does nothing"). Same inert `dialog_bands`: `scenario_settle` stops the run if the button reaches no dialog at all |
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
 | `main-tema-rs` | the same screen under the shipped "RS" JSON theme (with its images), for UI-007 |
 | `main-tema-vision` | the builtin "VISION" theme (every font three sizes up through `fonts_scale()`), for the icon-glyph and top-bar layout findings of UI-011/UI-012 |
@@ -407,8 +413,12 @@ stay UNSUPPORTED (they keep their inert mock descriptors). The
 (`dialog_settings.c` REAL; the services it calls — mixer volume, DSP preset,
 wfview server, the RTC, the transverter subjects — are SYNTHETIC, and
 `dialog_field.c` is declared UNSUPPORTED to record that it is **not** a
-dependency of Ajustes). The coverage is chosen per `screen`
-(`coverage_for_screen()` in `src/coverage.c`).
+dependency of Ajustes). The `settings-bands`/`app-bands` screens keep
+`dialog_bands.c` (and its subtree: `dialog_field.c`, `field/bands.c`,
+`cluster/spots.c`) explicitly UNSUPPORTED: the Bands window is an inert mock, so
+those two fixtures measure the route the firmware takes to it — an assertion on
+the firmware's own state in `scenario_settle`, never its pixels. The coverage is
+chosen per `screen` (`coverage_for_screen()` in `src/coverage.c`).
 
 The exact, per-scenario table is in each JSON's `coverage` array. It is never
 inflated: a PARTIAL is never written as REAL.

@@ -2365,3 +2365,82 @@ HEAD y las capturas PNG (`settings-home`/`settings-wfbat`), no el diff A/B.
   región (`content 0.0000`). El agujero que queda es otro: un par claro-sobre-claro
   que **no** deje la región uniforme. Candidato para `/factory-correct`.
 
+
+## La app Bands desde el menú de apps (reporte del owner) ✅
+
+Gate: el defecto se reproduce **en el banco** con el binario ARM real (ruta del owner:
+APP → páginas APP → Bands: la pantalla no cambia), y el arnés de host queda con **dos fixtures
+nuevas** (24 × 2 en determinismo) que fallan sin el fix y pasan con él.
+
+### El defecto, medido en el banco
+
+El botón "Bands" de las páginas APP (`src/buttons.cpp`, `make_app_btn`) llama a
+`main_screen_start_app()`, que **no tenía `case ACTION_APP_BANDS`**: caía en el `default` y no
+hacía nada. La acción se despachaba **solo** en `main_screen_action()`, donde además construía
+`dialog_bands` **sin cerrar** la ventana abierta (por el long press de Ajustes la ventana
+anterior quedaba huérfana: `current_dialog` pisado y su objeto sin destructor). La ruta y los
+controles están en `docs/evidencia/2026-10-14-bands-settings/README.md` (PNGs + md5 del binario
+de cada lado): con el fix, la misma secuencia abre la ventana real de Bands ("BANDS 21.2500 MHz
+/ RBN connected", 12 bandas, spots de cluster/RBN, barra `(BANDS 1:1) Test beacon Use band`).
+
+Mismo defecto, misma causa: el botón **About** de `APP 5:6` (`ACTION_APP_ABOUT` tampoco está en
+`main_screen_start_app`) también queda muerto. **No se arregló en esta corrida** (fuera del
+alcance de la spec) y **no** está registrado todavía en HALLAZGOS/known_issues: queda como
+pendiente con evidencia en la carpeta de la corrida.
+
+### Las dos fixtures y su límite honesto
+
+- **`app-bands`**: la ruta del owner (el menú de apps de `buttons_group_app`, botón "Bands" de
+  `APP 3:6`).
+- **`settings-bands`**: Ajustes y después la acción de Bands (`main_screen_action(ACTION_APP_BANDS)`).
+
+`dialog_bands` es un **mock inerte** en el arnés (`src/dialog_bands.c` no se compila; su subárbol
+—`dialog_field.c`, `field/bands.c`, `cluster/spots.c`— tampoco), así que las fixtures **miden la
+ruta, no los píxeles de la ventana**: `scenario_settle` corta la corrida si no se cumple el estado
+del firmware que el fix garantiza (el botón tiene que llegar a *algún* diálogo; con Ajustes
+abierto, Ajustes tiene que quedar cerrado). La cobertura lo declara por fixture y honesto
+(`dialog_bands.c` UNSUPPORTED). Que la ventana abre de verdad se midió en el banco, que es donde
+el binario real la dibuja.
+
+Sin cambios en `quality/contracts.yaml`: el corpus no cambia un pixel (las 22 fixtures comparables
+salen byte-idénticas), y las dos nuevas pasan los contratos sin waiver (la barra de botones
+descargada por el mock deja **content 0.677** en la región `botones`, muy por encima del 0.02).
+
+### Evidencia (host, 2026-10-14, `89851e6` → `1ef010a`)
+
+```text
+$ tests/check_harness_determinism.sh        # 24 fixtures x 2 corridas
+PASS: deterministic (identical PNGs for every fixture)
+
+$ cd tools/ab_testing && uv run x6200-ab compare --a 89851e6 --b 487af1e --experiment-id AB-BANDS-T1
+experiment AB-BANDS-T1: PASS (exit 0)
+  Functional PASS · Visual Regression PASS (pixel-identical) · Quality Contract PASS (230 checks)
+  Performance PASS · Hardware BLOCKED · Energy BLOCKED
+  22/22 fixtures: changed_pixels 0        # la suite sale de la revision A (22 fixtures)
+
+$ uv run x6200-ab contracts --revision 487af1e
+contracts 487af1e5b99b: PASS — 250 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision 487af1e
+audited 487af1e5b99b: 16 known issues — 0 reproduced, 14 unverified; structural
+inspection REAL over 2480 objects on 24 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab benchmark --revision 487af1e --repeats 5 --experiment-id BENCH-BANDS-T1
+benchmark 487af1e5b99b: PASS (exit 0) — 24 escenarios
+  app-bands p50 3.169 p95 3.382 ms    settings-bands p50 3.141 p95 3.246 ms
+  (los dos, junto a la pantalla principal ~3.2-3.5 ms; Ajustes ~6.6-7.1)
+
+$ uv run pytest -m "not e2e" -q           → 146 passed, 17 deselected (dos corridas)
+$ uv run ruff check . / ruff format --check . → limpios
+$ uv run ty check                         → All checks passed!
+tests/native/run_native_tests.sh          → ok
+repo static checks (cfg_fills/actions/settings_focus/apps_menu/app_handlers/wcag) → PASS
+banco QEMU (preflight + params.db + captura de humo) → ok, md5 del binario 061f8b88dea9
+docs/evidencia/2026-10-14-bands-settings/arnes-antes-despues.txt → las dos fixtures: exit 1 en
+  89851e6, exit 0 con el fix (mismo comando)
+```
+
+Las fixtures nuevas **no entran en el `compare`**: la suite sale de la revisión A y ahí no
+existen (mismo comportamiento que `settings-home`/`settings-wfbat` en la corrida anterior). Su
+cobertura es determinismo (24×2), `contracts`, `audit` y `benchmark`, más el antes/después
+explícito de `arnes-antes-despues.txt`.
