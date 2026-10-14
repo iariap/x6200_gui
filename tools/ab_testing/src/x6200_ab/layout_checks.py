@@ -126,7 +126,7 @@ def _geometry(
             )
         )
 
-    if node.cls in INTERACTIVE and (
+    if _is_control(node) and (
         node.visible.w < layout.min_touch_target_px or node.visible.h < layout.min_touch_target_px
     ):
         findings.append(
@@ -142,6 +142,17 @@ def _geometry(
             )
         )
     return findings
+
+
+def _is_control(node: InspectionNode) -> bool:
+    """A standard LVGL control, or a clickable object that paints like one.
+
+    The firmware's own button bar is clickable `lv_obj`s (with a background
+    image), so `node.cls in INTERACTIVE` alone would miss the main control
+    surface. A clickable object that paints nothing (a transparent drag strip) is
+    not a control.
+    """
+    return node.cls in INTERACTIVE or (node.clickable and node.draws_content)
 
 
 def _overlaps(name: str, inspection: Inspection) -> list[ContractFinding]:

@@ -301,6 +301,8 @@ static void emit_node(inspector_t *ins, const lv_obj_t *obj, lv_area_t clip)
             lv_obj_has_flag(obj, LV_OBJ_FLAG_OVERFLOW_VISIBLE) ? "true" : "false");
     fprintf(f, ",\"scrollable\":%s",
             lv_obj_has_flag(obj, LV_OBJ_FLAG_SCROLLABLE) ? "true" : "false");
+    fprintf(f, ",\"clickable\":%s",
+            lv_obj_has_flag(obj, LV_OBJ_FLAG_CLICKABLE) ? "true" : "false");
     fprintf(f, ",\"opa\":%u", (unsigned) lv_obj_get_style_opa(obj, LV_PART_MAIN));
 
     lv_color_t text_color = lv_obj_get_style_text_color(obj, LV_PART_MAIN);
