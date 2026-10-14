@@ -26,6 +26,8 @@
 
 #include "buttons.h"
 #include "clock.h"
+#include "dialog.h"
+#include "dialog_settings.h"
 #include "keyboard.h"
 #include "main.h"
 #include "main_screen.h"
@@ -178,6 +180,43 @@ bool scenario_build(const scenario_t *scenario)
         return true;
     }
 
+    if (!strcmp(scenario->screen, "settings-bands")) {
+        /* Ajustes over the main screen, then the real Bands action run from there:
+         * main_screen_action(ACTION_APP_BANDS), the dispatcher the Ajustes
+         * long-press list (`APP Bands`, src/dialog_settings.c) reaches. The
+         * keyboard group is up first because the Bands route goes through
+         * dialog_construct()/dialog_init(), the same as every other app.
+         *
+         * `dialog_bands` is an inert mock on the host (mocks/mock_main_screen.c):
+         * the Bands window is not rendered, so this fixture measures the ROUTE
+         * (scenario_settle codifies what it must leave behind), never its pixels.
+         * The app-menu button the user reported is `app-bands`. */
+        mock_keyboard_group_up();
+        build_main(scenario);
+        main_screen_action(ACTION_APP_SETTINGS);
+        main_screen_action(ACTION_APP_BANDS);
+        return true;
+    }
+
+    if (!strcmp(scenario->screen, "app-bands")) {
+        /* The route the owner reported: the APP key loads the app pages
+         * (src/main_screen.c, KEYPAD_APP -> buttons_load_page_group(buttons_group_app))
+         * and the "Bands" button of page 3 (APP 3:6) is pressed. The page
+         * presses are positional and happen in scenario_settle, after the same
+         * "is the button I am about to press really Bands?" check the
+         * settings-wfbat fixture uses.
+         *
+         * `dialog_bands` is an inert mock here too: this fixture measures whether
+         * the button reaches the Bands path at all (scenario_settle), which is
+         * exactly what did not happen. */
+        mock_keyboard_group_up();
+        build_main(scenario);
+        buttons_load_page_group(buttons_group_app);
+        buttons_press(0, false);    /* (APP 1:6) -> (APP 2:6) */
+        buttons_press(0, false);    /* (APP 2:6) -> (APP 3:6) */
+        return true;
+    }
+
     fprintf(stderr, "scenario: unknown screen '%s'\n", scenario->screen);
     return false;
 }
@@ -208,6 +247,55 @@ void scenario_settle(const scenario_t *scenario)
             fprintf(stderr,
                     "settings-wfbat: 'Waterfall battery mode' is not on screen after the "
                     "tab presses (did the bottom bar's tabs move?)\n");
+            exit(1);
+        }
+    }
+
+    if (!strcmp(scenario->screen, "settings-bands")) {
+        /* What this fixture *means* is that the Bands action replaced the window
+         * that was open and reached the Bands path — the two things the route
+         * change fixes. Codified instead of commented, and checked on the
+         * firmware's own state, because `dialog_bands` is an inert mock here: if
+         * the action ever goes back to constructing the window on top of the
+         * current one (the Ajustes window left running, `current_dialog`
+         * overwritten and the Ajustes object orphaned) or reaches no dialog at
+         * all (the app-menu button the user reported), the harness stops here
+         * instead of capturing a green run.
+         *
+         * `dialog_settings` is the real descriptor (src/dialog_settings.c is
+         * compiled); `run` stays true until the window's object is deleted. */
+        if (dialog_settings->run) {
+            fprintf(stderr,
+                    "settings-bands: the Bands action left the Ajustes window running "
+                    "(it was not closed before the Bands path opened)\n");
+            exit(1);
+        }
+        if (!dialog_is_run()) {
+            fprintf(stderr, "settings-bands: the Bands action reached no dialog at all\n");
+            exit(1);
+        }
+    }
+
+    if (!strcmp(scenario->screen, "app-bands")) {
+        /* The button this fixture presses is positional: codify that it is the
+         * "Bands" one before pressing it, so a reordering of the APP pages stops
+         * the run instead of pressing another app and still reporting green. */
+        if (!label_on_screen(lv_scr_act(), "Bands")) {
+            fprintf(stderr,
+                    "app-bands: 'Bands' is not in the bottom bar after the page presses "
+                    "(did the APP pages move?)\n");
+            exit(1);
+        }
+
+        buttons_press(4, false);    /* (APP 3:6) index 4: "Bands" */
+
+        /* What this fixture *means*: pressing the app-menu Bands button has to
+         * reach the Bands path. With the window itself an inert mock, the
+         * firmware's own state is the observable: a dialog has to be running. */
+        if (!dialog_is_run()) {
+            fprintf(stderr,
+                    "app-bands: the app-menu Bands button reached no dialog at all "
+                    "(the button did nothing)\n");
             exit(1);
         }
     }

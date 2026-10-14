@@ -132,6 +132,59 @@ const coverage_entry_t *coverage_main_screen(int *count)
     return main_screen;
 }
 
+/* The `app-bands` scenario: the main screen with the app menu the APP key opens
+ * and the "Bands" button pressed. The button bar and the main screen are real;
+ * `dialog_bands` is the inert mock, so the fixture measures the route the button
+ * takes (src/main_screen.c -> src/buttons.cpp -> main_screen_start_app) and not
+ * the window's pixels. */
+static const coverage_entry_t app_bands[] = {
+    MAIN_COMPONENTS,
+    COMPONENT("main_screen.c (ACTION_APP_BANDS)", COVERAGE_PARTIAL,
+              "src/main_screen.c compiled; the app-menu button's path to main_screen_start_app(ACTION_APP_BANDS) runs and is followed through dialog_is_run() in scenario_settle, not through the Bands window"),
+    COMPONENT("dialog.c", COVERAGE_REAL,
+              "src/dialog.c compiled; when the route reaches the Bands path dialog_construct()/dialog_init() run the real dialog lifecycle"),
+    COMPONENT("dialog_bands.c", COVERAGE_UNSUPPORTED,
+              "src/dialog_bands.c is NOT compiled: dialog_bands is an inert mock descriptor (mocks/mock_main_screen.c). The Bands window is not rendered and nothing of it is measured"),
+    COMPONENT("dialog_field.c / field/bands.c / cluster/spots.c", COVERAGE_UNSUPPORTED,
+              "the Bands window's dependencies are not compiled either; with dialog_bands.c unsupported there is nothing of that subtree to render"),
+    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
+              "the other app dialogs are inert mocks; only the About and Ajustes paths are compiled and opened"),
+    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
+              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
+    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
+              "DX cluster spot marks are not rendered (no cluster data on the host)"),
+    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
+              "DX cluster column is not rendered (no cluster data on the host)"),
+};
+
+/* The `settings-bands` scenario: the real Ajustes window over the main screen and
+ * then the real Bands action run from there. The shared dialog machinery and the
+ * Ajustes window are real; the Bands window itself is NOT: `dialog_bands` is one
+ * of the inert mock descriptors (mocks/mock_main_screen.c), so the fixture
+ * measures the route the firmware takes (src/screens.c, scenario_settle) and not
+ * the window's pixels. */
+static const coverage_entry_t settings_bands[] = {
+    MAIN_COMPONENTS,
+    COMPONENT("dialog.c", COVERAGE_REAL,
+              "src/dialog.c compiled; dialog_construct()/dialog_init()/dialog_destruct() run the real dialog lifecycle the route uses"),
+    COMPONENT("dialog_settings.c", COVERAGE_REAL,
+              "src/dialog_settings.c compiled; the Ajustes window is built and drawn before the Bands action closes it"),
+    COMPONENT("main_screen.c (ACTION_APP_BANDS)", COVERAGE_PARTIAL,
+              "src/main_screen.c compiled and its dispatcher runs; the action is followed through dialog_is_run()/dialog_settings->run in scenario_settle, not through the Bands window"),
+    COMPONENT("dialog_bands.c", COVERAGE_UNSUPPORTED,
+              "src/dialog_bands.c is NOT compiled: dialog_bands is an inert mock descriptor (mocks/mock_main_screen.c). The Bands window is not rendered and nothing of it is measured"),
+    COMPONENT("dialog_field.c / field/bands.c / cluster/spots.c", COVERAGE_UNSUPPORTED,
+              "the Bands window's dependencies are not compiled either; with dialog_bands.c unsupported there is nothing of that subtree to render"),
+    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
+              "the other app dialogs are inert mocks; only the About and Ajustes paths are compiled and opened"),
+    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
+              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
+    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
+              "DX cluster spot marks are not rendered (no cluster data on the host)"),
+    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
+              "DX cluster column is not rendered (no cluster data on the host)"),
+};
+
 const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
 {
     if (screen && !strcmp(screen, "dialog-about")) {
@@ -141,6 +194,14 @@ const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
     if (screen && (!strcmp(screen, "settings-home") || !strcmp(screen, "settings-wfbat"))) {
         *count = (int) (sizeof(settings_dialog) / sizeof(settings_dialog[0]));
         return settings_dialog;
+    }
+    if (screen && !strcmp(screen, "settings-bands")) {
+        *count = (int) (sizeof(settings_bands) / sizeof(settings_bands[0]));
+        return settings_bands;
+    }
+    if (screen && !strcmp(screen, "app-bands")) {
+        *count = (int) (sizeof(app_bands) / sizeof(app_bands[0]));
+        return app_bands;
     }
     return coverage_main_screen(count);
 }
