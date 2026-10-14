@@ -1,0 +1,82 @@
+{
+  "budget": {
+    "max_dispersion_cv_pct": 25.0,
+    "max_flushes_delta_pct": 20.0,
+    "max_p95_delta_pct": 25.0,
+    "max_redrawn_area_delta_pct": 20.0,
+    "min_frames": 12,
+    "repeats": 5,
+    "rounds": 4,
+    "warmup_frames": 3
+  },
+  "comparisons": [
+    {
+      "a": {
+        "dispersion_cv_pct": 9.125,
+        "draw_ms_mean": 3.4288,
+        "flush_ms_mean": 0.4423,
+        "flushes_mean": 1.0,
+        "fps": 271.82,
+        "frames": 15,
+        "memory": {
+          "peak_rss_bytes": 10174464,
+          "peak_vm_bytes": 79765504,
+          "pss_bytes": 10162176,
+          "rss_bytes": 10174464
+        },
+        "redrawn_area_mean": 384000.0,
+        "render_mean_ms": 3.8711,
+        "render_p50_ms": 3.6789,
+        "render_p95_ms": 4.4682,
+        "render_p99_ms": 4.8031,
+        "render_stdev_ms": 0.3532,
+        "scenario": "bench-render",
+        "unique_redrawn_mean": 384000.0
+      },
+      "b": {
+        "dispersion_cv_pct": 3.335,
+        "draw_ms_mean": 9.8731,
+        "flush_ms_mean": 1.3099,
+        "flushes_mean": 3.0,
+        "fps": 89.97,
+        "frames": 15,
+        "memory": {
+          "peak_rss_bytes": 10121216,
+          "peak_vm_bytes": 79765504,
+          "pss_bytes": 10108928,
+          "rss_bytes": 10063872
+        },
+        "redrawn_area_mean": 1152000.0,
+        "render_mean_ms": 11.1831,
+        "render_p50_ms": 11.1143,
+        "render_p95_ms": 11.951,
+        "render_p99_ms": 11.9646,
+        "render_stdev_ms": 0.373,
+        "scenario": "bench-render",
+        "unique_redrawn_mean": 384000.0
+      },
+      "flushes_delta_pct": 200.0,
+      "p95_delta_pct": 167.468,
+      "reasons": [
+        "p95 render +167.5% (budget 25.0%): 4.468 -> 11.951 ms",
+        "flushes +200.0% (budget 20.0%): 1.0 -> 3.0",
+        "redrawn area +200.0% (budget 20.0%): 384000 -> 1152000 px"
+      ],
+      "redrawn_area_delta_pct": 200.0,
+      "scenario": "bench-render",
+      "status": "FAIL"
+    }
+  ],
+  "environment": "x86 host: relative regression proxy, not the Cortex-A7",
+  "exit_code": 1,
+  "experiment_id": "AB-e2e-benchmark",
+  "kind": "benchmark-comparison",
+  "revisions": {
+    "a": "c3ce8fa5a7ce82c771c1fd544e557ee4d823bc66",
+    "b": "fd466dd0ffb8bc714b823ef110edadf7e2a697ea"
+  },
+  "scenarios": [
+    "bench-render"
+  ],
+  "status": "FAIL"
+}

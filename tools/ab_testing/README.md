@@ -36,9 +36,10 @@ Phases are separate modules, not one script:
 | `contracts.py` | objective checks on the candidate alone (C of the plan) |
 | `known_issues.py` | detectors and the FIXED / UNCHANGED DEFECT / REGRESSION / NEW DEFECT classification |
 | `quality_gates.py` | the six gates and the profile that decides which are required |
+| `performance.py` | render-benchmark statistics (p50/p95/p99, FPS, dispersion) and the relative regression verdict |
 | `evaluator.py` | combines the gates into one verdict |
 | `reports.py` | `reports/<experiment-id>/` with MD, HTML, JSON, screenshots, diffs, metrics, logs |
-| `cli.py` | `capture` / `audit` / `compare` / `benchmark` / `report` / `evaluate` |
+| `cli.py` | `capture` / `audit` / `contracts` / `compare` / `benchmark` / `report` / `evaluate` |
 
 ## Setup
 
@@ -65,8 +66,13 @@ uv run x6200-ab compare --a <sha> --b <branch> --experiment-id AB-0001
 # known-issue detectors on one revision (pixel-region level today)
 uv run x6200-ab audit --revision <sha>
 
-# render-cost repetitions (frame timing / FPS are not instrumented -> BLOCKED)
-uv run x6200-ab benchmark --revision <sha> --repeats 3
+# render-cost repetitions: real p50/p95/p99, FPS, flushes, area, RSS/PSS
+uv run x6200-ab benchmark --revision <sha> --repeats 5
+# relative render-cost regression gate (FAIL on p95 over budget), A vs B
+uv run x6200-ab benchmark --a <sha> --b <branch> --experiment-id BENCH-0001
+
+# objective quality contracts on the candidate alone (no baseline)
+uv run x6200-ab contracts --revision <sha>
 
 # read back a verdict, and recheck it from results.json
 uv run x6200-ab report --experiment-id AB-0001
