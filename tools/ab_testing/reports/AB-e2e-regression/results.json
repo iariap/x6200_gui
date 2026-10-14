@@ -7,11 +7,11 @@
   "improvement": false,
   "revision_a": {
     "label": "a",
-    "sha": "c3ce8fa5a7ce82c771c1fd544e557ee4d823bc66"
+    "sha": "667fad4b2cf96e958464b88dd992ea496c063bc8"
   },
   "revision_b": {
     "label": "b",
-    "sha": "118d85197e2d091791c53e2c6074389e10414543"
+    "sha": "54351a624f1d76c3ca827b8a3f01de94f99f58c6"
   },
   "scenarios": [
     "home-usb-20m"
@@ -20,7 +20,7 @@
     "a": [
       {
         "scenario": "home-usb-20m",
-        "revision": "c3ce8fa5a7ce82c771c1fd544e557ee4d823bc66",
+        "revision": "667fad4b2cf96e958464b88dd992ea496c063bc8",
         "png_sha256": "14f380ff07444726b7df4765537e219dbe865a85a3643f7f7fb36df0303eeb3f",
         "width": 800,
         "height": 480,
@@ -159,7 +159,7 @@
     "b": [
       {
         "scenario": "home-usb-20m",
-        "revision": "118d85197e2d091791c53e2c6074389e10414543",
+        "revision": "54351a624f1d76c3ca827b8a3f01de94f99f58c6",
         "png_sha256": "06e59f83cedf4bd5467c08ceb2d30254e1178b652a3c86ef9c2f70652147ce28",
         "width": 800,
         "height": 480,
@@ -305,10 +305,10 @@
       "evidence": [],
       "details": {
         "revision_a": [
-          "c3ce8fa5a7ce82c771c1fd544e557ee4d823bc66"
+          "667fad4b2cf96e958464b88dd992ea496c063bc8"
         ],
         "revision_b": [
-          "118d85197e2d091791c53e2c6074389e10414543"
+          "54351a624f1d76c3ca827b8a3f01de94f99f58c6"
         ]
       }
     },
@@ -318,8 +318,8 @@
       "required": true,
       "summary": "visual regressions vs the baseline",
       "evidence": [
-        "/tmp/pytest-of-pablo/pytest-26/test_regression_is_detected_wi0/ws-AB-e2e-regression/diffs/home-usb-20m-diff.png",
-        "/tmp/pytest-of-pablo/pytest-26/test_regression_is_detected_wi0/ws-AB-e2e-regression/diffs/home-usb-20m-overlay.png",
+        "/tmp/pytest-of-pablo/pytest-32/test_regression_is_detected_wi0/ws-AB-e2e-regression/diffs/home-usb-20m-diff.png",
+        "/tmp/pytest-of-pablo/pytest-32/test_regression_is_detected_wi0/ws-AB-e2e-regression/diffs/home-usb-20m-overlay.png",
         "home-usb-20m box 1,419-160,480 (9665px)",
         "home-usb-20m box 321,419-480,480 (9662px)",
         "home-usb-20m box 161,419-320,480 (9649px)",
@@ -334,10 +334,21 @@
     },
     {
       "gate": "Quality Contract",
-      "status": "PASS",
+      "status": "FAIL",
       "required": true,
-      "summary": "9 contract checks passed on the candidate",
-      "evidence": [],
+      "summary": "10 contract(s) violated by the candidate",
+      "evidence": [
+        "layout_clipped [home-usb-20m]: lv_obj at 0,448 160x62 cut to 160x32 (lost 0x30)",
+        "layout_clipped [home-usb-20m]: lv_label at 26,467 108x25 cut to 108x13 (lost 0x12)",
+        "layout_clipped [home-usb-20m]: lv_obj at 160,448 160x62 cut to 160x32 (lost 0x30)",
+        "layout_clipped [home-usb-20m]: lv_label at 193,454 95x50 cut to 95x26 (lost 0x24)",
+        "layout_clipped [home-usb-20m]: lv_obj at 320,448 160x62 cut to 160x32 (lost 0x30)",
+        "layout_clipped [home-usb-20m]: lv_label at 349,454 103x50 cut to 103x26 (lost 0x24)",
+        "layout_clipped [home-usb-20m]: lv_obj at 480,448 160x62 cut to 160x32 (lost 0x30)",
+        "layout_clipped [home-usb-20m]: lv_label at 510,454 101x50 cut to 101x26 (lost 0x24)",
+        "layout_clipped [home-usb-20m]: lv_obj at 640,448 160x62 cut to 160x32 (lost 0x30)",
+        "layout_clipped [home-usb-20m]: lv_label at 660,454 120x50 cut to 120x26 (lost 0x24)"
+      ],
       "details": {}
     },
     {
@@ -487,55 +498,134 @@
       "rule": "framebuffer_size",
       "fixture": "home-usb-20m",
       "ok": true,
-      "detail": "800x480 (expected 800x480)"
+      "detail": "800x480 (expected 800x480)",
+      "path": null
     },
     {
       "rule": "region_min_content:barra_superior",
       "fixture": "home-usb-20m",
       "ok": true,
-      "detail": "content 0.5501 >= 0.0200"
+      "detail": "content 0.5501 >= 0.0200",
+      "path": null
     },
     {
       "rule": "region_min_content:botones",
       "fixture": "home-usb-20m",
       "ok": true,
-      "detail": "content 0.9367 >= 0.0200"
+      "detail": "content 0.9367 >= 0.0200",
+      "path": null
     },
     {
       "rule": "region_min_content:espectro",
       "fixture": "home-usb-20m",
       "ok": true,
-      "detail": "content 0.2865 >= 0.0200"
+      "detail": "content 0.2865 >= 0.0200",
+      "path": null
     },
     {
       "rule": "region_min_content:frecuencia",
       "fixture": "home-usb-20m",
       "ok": true,
-      "detail": "content 0.1047 >= 0.0200"
+      "detail": "content 0.1047 >= 0.0200",
+      "path": null
     },
     {
       "rule": "region_min_content:s_metro",
       "fixture": "home-usb-20m",
       "ok": true,
-      "detail": "content 0.7435 >= 0.0200"
+      "detail": "content 0.7435 >= 0.0200",
+      "path": null
     },
     {
       "rule": "region_min_content:waterfall",
       "fixture": "home-usb-20m",
       "ok": true,
-      "detail": "content 0.3471 >= 0.0200"
+      "detail": "content 0.3471 >= 0.0200",
+      "path": null
     },
     {
       "rule": "coverage_levels",
       "fixture": "home-usb-20m",
       "ok": true,
-      "detail": "all levels allowed"
+      "detail": "all levels allowed",
+      "path": null
     },
     {
       "rule": "coverage_required",
       "fixture": "home-usb-20m",
       "ok": true,
-      "detail": "all required components declared"
+      "detail": "all required components declared",
+      "path": null
+    },
+    {
+      "rule": "layout_clipped",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "detail": "lv_obj at 0,448 160x62 cut to 160x32 (lost 0x30)",
+      "path": "0/29"
+    },
+    {
+      "rule": "layout_clipped",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "detail": "lv_label at 26,467 108x25 cut to 108x13 (lost 0x12)",
+      "path": "0/29/0"
+    },
+    {
+      "rule": "layout_clipped",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "detail": "lv_obj at 160,448 160x62 cut to 160x32 (lost 0x30)",
+      "path": "0/30"
+    },
+    {
+      "rule": "layout_clipped",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "detail": "lv_label at 193,454 95x50 cut to 95x26 (lost 0x24)",
+      "path": "0/30/0"
+    },
+    {
+      "rule": "layout_clipped",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "detail": "lv_obj at 320,448 160x62 cut to 160x32 (lost 0x30)",
+      "path": "0/31"
+    },
+    {
+      "rule": "layout_clipped",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "detail": "lv_label at 349,454 103x50 cut to 103x26 (lost 0x24)",
+      "path": "0/31/0"
+    },
+    {
+      "rule": "layout_clipped",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "detail": "lv_obj at 480,448 160x62 cut to 160x32 (lost 0x30)",
+      "path": "0/32"
+    },
+    {
+      "rule": "layout_clipped",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "detail": "lv_label at 510,454 101x50 cut to 101x26 (lost 0x24)",
+      "path": "0/32/0"
+    },
+    {
+      "rule": "layout_clipped",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "detail": "lv_obj at 640,448 160x62 cut to 160x32 (lost 0x30)",
+      "path": "0/33"
+    },
+    {
+      "rule": "layout_clipped",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "detail": "lv_label at 660,454 120x50 cut to 120x26 (lost 0x24)",
+      "path": "0/33/0"
     }
   ],
   "diffs": [

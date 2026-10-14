@@ -30,10 +30,13 @@ Phases are separate modules, not one script:
 | `revisions.py` | one git worktree per exact SHA, `lvgl` submodule pinned by gitlink, never touches the user's worktrees |
 | `builds.py` | compiles the harness in the `x6200-uiharness` image; a revision that does not build is BLOCKED, never a silently reused binary |
 | `scenarios.py` | parses the `.scn` fixtures and the suite |
-| `capture.py` | runs the harness per scenario → PNG + JSON (coverage, metrics, revision) |
+| `capture.py` | runs the harness per scenario → PNG + JSON (coverage, metrics, revision, optional structural inspection) |
+| `inspection.py` | parses the harness' structural inspection (object tree) into a walkable model |
 | `visual_diff.py` | Pillow/NumPy pixel diff: area, bounding boxes, per-region, `diff.png`, `overlay.png`, dimension mismatch |
-| `quality_config.py` | contracts, budgets and dated expected changes |
-| `contracts.py` | objective checks on the candidate alone (C of the plan) |
+| `quality_config.py` | contracts, budgets, layout/typography rules and dated expected changes/exceptions |
+| `contracts.py` | objective checks on the candidate alone (C of the plan): pixel regions, coverage, layout, typography |
+| `layout_checks.py` | geometry rules over the object tree: off-screen, clipped, degenerate boxes, stacked labels, touch targets |
+| `typography_checks.py` | text-legibility rules: overflow, truncation, missing glyphs, WCAG contrast |
 | `known_issues.py` | detectors and the FIXED / UNCHANGED DEFECT / REGRESSION / NEW DEFECT classification |
 | `quality_gates.py` | the six gates and the profile that decides which are required |
 | `performance.py` | render-benchmark statistics (p50/p95/p99, FPS, dispersion) and the relative regression verdict |
@@ -63,8 +66,11 @@ uv run x6200-ab capture --revision <sha> --label base --out /tmp/captures
 # compare two revisions and write a report under tools/ab_testing/reports/
 uv run x6200-ab compare --a <sha> --b <branch> --experiment-id AB-0001
 
-# known-issue detectors on one revision (pixel-region level today)
-uv run x6200-ab audit --revision <sha>
+# known-issue detectors on one revision (pixel-region detectors + the structural
+# inspection of the live object tree; a structural finding that is not waived
+# fails the audit)
+uv run x6200-ab audit --revision <sha>          # aliases: --ref <sha> --suite visual
+uv run x6200-ab audit --revision <sha> --scenario home-usb-20m
 
 # render-cost repetitions: real p50/p95/p99, FPS, flushes, area, RSS/PSS
 uv run x6200-ab benchmark --revision <sha> --repeats 5
@@ -105,13 +111,35 @@ stay BLOCKED).
 * `regions.yaml` — semantic regions of the 800×480 screen (top bar, S-meter,
   spectrum, frequency, waterfall, buttons, multiplier).
 * `contracts.yaml` — rules checked on the candidate alone: minimum content per
-  region, honest coverage levels, required declared components, and the dated
+  region, honest coverage levels, required declared components, the dated
   `expected_changes` list (the only way a change stops being a regression
-  without being a fix; each entry needs a reason, an author and an expiry).
+  without being a fix; each entry needs a reason, an author and an expiry), the
+  `layout` and `typography` rules that read the harness' structural inspection
+  (minimum touch target, WCAG contrast thresholds, whether fallbacks are
+  allowed) and the dated `exceptions` that can waive one structural finding by
+  rule and fixture without hiding it.
 * `budgets.yaml` — thresholds fixed **before** a run (pixel tolerance, minimum
   box size, render-cost deltas).
 * `known_issues.yaml` — recorded defects. An issue without a detector is
   `unverified`: it never fails and never passes.
+
+## Structural checks
+
+`audit`, `contracts` and the `compare` candidate capture with `ui_harness
+--inspect`, so they read the real object tree instead of a picture of it (see
+`tools/ui_harness/README.md`). The checks are objective and need no OCR:
+
+* **layout** — an element that paints something completely off the viewport, a
+  box cut by the viewport or a clipping parent, a degenerate (zero/negative) box
+  that paints, two text labels stacked on each other, an interactive control
+  below the minimum touch target;
+* **typography** — text that overflows or is truncated in its label, a glyph
+  missing from every font in the chain (a placeholder box on screen) and a
+  text/background pair below the WCAG 2.1 contrast ratio when the label paints an
+  opaque background.
+
+A failing finding is turned into a recorded waiver (still visible, marked `ok`)
+only when a dated, fixture-scoped `exceptions` entry matches it.
 
 ## Known issues
 

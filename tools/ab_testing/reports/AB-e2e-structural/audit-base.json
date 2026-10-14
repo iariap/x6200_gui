@@ -1,0 +1,75 @@
+{
+  "exit_code": 0,
+  "findings": [],
+  "instrumentation": {
+    "nodes_inspected": 84,
+    "source": "live LVGL object tree (ui_harness --inspect); no OCR",
+    "structural": true
+  },
+  "issues": [
+    {
+      "detail": "region `multiplicador` content 0.0000 <= 0.0500",
+      "id": "UI-001",
+      "reproduced": false,
+      "title": "Etiqueta del multiplicador de tuning visible sobre la barra superior"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-002",
+      "reproduced": null,
+      "title": "Menu de apps: las apps solo vivian en el long-press de Ajustes"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-003",
+      "reproduced": null,
+      "title": "WCAG 2.1: pares texto/fondo por debajo de 4.5:1 o 3:1"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-004",
+      "reproduced": null,
+      "title": "Ajustes: widgets que no se podian alcanzar con el foco"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-005",
+      "reproduced": null,
+      "title": "Dialogo viejo: texto constante tapado por los botones"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-006",
+      "reproduced": null,
+      "title": "Icono BT: el glifo U+F293 no existe en sony_20 (rectangulo vacio)"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-007",
+      "reproduced": null,
+      "title": "Temas RS sin clave propia heredaban un color por debajo de 2.58:1"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-008",
+      "reproduced": null,
+      "title": "CMA: 128 MB reservados para GPU no usada (presupuesto del firmware)"
+    }
+  ],
+  "reproduced": [],
+  "revision": "667fad4b2cf96e958464b88dd992ea496c063bc8",
+  "scenarios": [
+    "home-usb-20m"
+  ],
+  "status": "PASS",
+  "structural_failures": 0,
+  "unverified": [
+    "UI-002",
+    "UI-003",
+    "UI-004",
+    "UI-005",
+    "UI-006",
+    "UI-007",
+    "UI-008"
+  ]
+}

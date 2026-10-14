@@ -2,8 +2,8 @@
 
 - Date: 2026-10-13
 - Profile: `host-ui`
-- A (baseline): `c3ce8fa5a7ce82c771c1fd544e557ee4d823bc66` (a)
-- B (candidate): `118d85197e2d091791c53e2c6074389e10414543` (b)
+- A (baseline): `667fad4b2cf96e958464b88dd992ea496c063bc8` (a)
+- B (candidate): `54351a624f1d76c3ca827b8a3f01de94f99f58c6` (b)
 - Scenarios: `home-usb-20m`
 
 ## Verdict: **FAIL** (exit 1)
@@ -12,7 +12,7 @@
 |---|---|---|---|
 | Functional | yes | PASS | 1 scenarios captured on both revisions |
 | Visual Regression | yes | FAIL | visual regressions vs the baseline |
-| Quality Contract | yes | PASS | 9 contract checks passed on the candidate |
+| Quality Contract | yes | FAIL | 10 contract(s) violated by the candidate |
 | Performance | yes | PASS | render-cost proxy within budget |
 | Hardware | no (advisory) | BLOCKED | no physical X6200 attached; hardware behaviour is not measured |
 | Energy | no (advisory) | BLOCKED | no power measurement; energy evidence must be physical |
@@ -50,7 +50,17 @@ Components declared below REAL (never written as REAL):
 
 ## Quality contracts
 
-9 contract checks, 0 failure(s).
+19 contract checks, 10 failure(s).
+- FAIL `layout_clipped` [home-usb-20m]: lv_obj at 0,448 160x62 cut to 160x32 (lost 0x30)
+- FAIL `layout_clipped` [home-usb-20m]: lv_label at 26,467 108x25 cut to 108x13 (lost 0x12)
+- FAIL `layout_clipped` [home-usb-20m]: lv_obj at 160,448 160x62 cut to 160x32 (lost 0x30)
+- FAIL `layout_clipped` [home-usb-20m]: lv_label at 193,454 95x50 cut to 95x26 (lost 0x24)
+- FAIL `layout_clipped` [home-usb-20m]: lv_obj at 320,448 160x62 cut to 160x32 (lost 0x30)
+- FAIL `layout_clipped` [home-usb-20m]: lv_label at 349,454 103x50 cut to 103x26 (lost 0x24)
+- FAIL `layout_clipped` [home-usb-20m]: lv_obj at 480,448 160x62 cut to 160x32 (lost 0x30)
+- FAIL `layout_clipped` [home-usb-20m]: lv_label at 510,454 101x50 cut to 101x26 (lost 0x24)
+- FAIL `layout_clipped` [home-usb-20m]: lv_obj at 640,448 160x62 cut to 160x32 (lost 0x30)
+- FAIL `layout_clipped` [home-usb-20m]: lv_label at 660,454 120x50 cut to 120x26 (lost 0x24)
 
 ## Evidence
 
