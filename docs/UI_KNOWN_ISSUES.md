@@ -75,9 +75,9 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
 
 - **Severidad**: critical (información crítica ilegible en el campo).
 - **Fixture**: `main-otro-tema` (tema Outdoor), región `frecuencia`.
-- **Estado**: `fixed` (UI-04 / AB-UI04-EXP3; si vuelve a aparecer en B, es
-  `REGRESSION`). La exclusión acotada de `quality/known_issues.yaml` se **retiró
-  en el mismo cambio**: el detector ya no falla, así que no hay nada que eximir.
+- **Estado**: `fixed` (UI-04 / AB-UI04-EXP3). La exclusión acotada de
+  `quality/known_issues.yaml` se **retiró en el mismo cambio**: el contrato ya no
+  falla, así que no hay nada que eximir (ver "Qué prueba el fix y qué no").
 - **Síntoma**: la fila de frecuencia (`src/main_screen.c`, región `frecuencia`,
   `y=160..196`) se dibujaba **blanca sobre fondo blanco**: los dígitos de la
   frecuencia central y de los extremos no se veían. La región quedaba
@@ -125,8 +125,14 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
   B la misma región mide **content 0.0979** y la inspección reporta los tres labels
   con `text_color #000000`. Un test permanente lo fija: la revisión efímera
   `abtest/style` vuelve a cablear el blanco en el markup y el contrato vuelve a
-  fallar, sin baseline (`tests/test_e2e.py`); su comparación contra el fix clasifica
-  UI-010 como `FIXED` (improvement).
+  fallar, **sin baseline** (`tests/test_e2e.py`).
+- **Qué prueba el fix y qué no**: esta entrada no tiene `detector:` propio (igual
+  que UI-011/UI-012: su detector es la regla de contrato, que no dice dónde se
+  mueven los píxeles), así que la comparación A/B **no** puede clasificarla
+  `FIXED` —la reporta `UNVERIFIED`— y la mejora queda probada por el **contrato**:
+  `region_min_content:frecuencia` FAIL en A con el waiver retirado → PASS en B sin
+  waiver, más el diff confinado a la región `frecuencia`. La protección contra una
+  reaparición es la misma: sin waiver, el contrato vuelve a fallar.
 - **Evidencia**: `tools/ab_testing/reports/AB-UI04-EXP3/` (screenshots A/B,
   `diff`/`overlay`, `results.json`); repro de A: contracts `FAIL
   region_min_content:frecuencia [main-otro-tema]`.
