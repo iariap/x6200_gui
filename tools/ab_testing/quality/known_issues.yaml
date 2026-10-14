@@ -115,7 +115,7 @@ issues:
     severity: major
     fixture: main-tema-vision
     region: barra_superior
-    status: verified
+    status: fixed
     note: >
       Con el tema VISION los glifos de icono de la barra dejan de existir: el
       reloj de potencia dibuja un rectangulo vacio en lugar del simbolo de
@@ -130,13 +130,19 @@ issues:
       info_item_style con sony_20) pierde U+F1EB. El detector es el contrato
       `typography_missing_glyph` sobre la fixture `main-tema-vision`: la
       inspeccion estructural reporta los glifos ausentes de toda la cadena
-      (nunca OCR) y LVGL lo dice en su propio log ("glyph dsc. not found for
-      U+F240"). El fix es de UI-04+.
+      (nunca OCR). FIX (UI-04/AB-UI04-EXP1): fonts_scale() conserva ademas, para
+      cada tamano escalado, su fuente de origen como fallback
+      (`sony[i]->fallback = &was[i]`): el tamano grande dibuja el texto y el
+      tamano original aporta los rangos de icono, con lo que el reloj y el WiFi
+      vuelven (sin disenar iconos nuevos ni tocar el plumbing fuera de
+      font_select.c).
     evidence:
       - "tools/ui_harness/fixtures/main-tema-vision.scn"
-      - "src/fonts/font_select.c (fonts_scale) + src/fonts/sony_20.c, sony_30.c (cmap con iconos) contra sony_26.c, sony_36.c (solo 32..126)"
-      - "src/clock.c:53,58 + src/styles.c:259 (los tamanos que quedan sin glifos)"
-      - "tools/ab_testing/quality/contracts.yaml (excepcion scoped, vence 2027-03-31)"
+      - "src/fonts/font_select.c (fonts_scale: `sony[i]->fallback = &was[i]`) + src/fonts/sony_20.c, sony_30.c (cmap con iconos) contra sony_26.c, sony_36.c (solo 32..126)"
+      - "src/clock.c:53,58 + src/styles.c:259 (los tamanos que dibujan los iconos)"
+      - "audit b029907 (A): FAIL typography_missing_glyph x2 (clock U+F240/U+F1E6, WiFi U+F1EB); audit del fix (B): 0 findings"
+      - "tools/ab_testing/reports/AB-UI04-EXP1/ (screenshots A/B, diff, results.json)"
+      - "tools/ab_testing/quality/contracts.yaml (excepcion retirada en el mismo PR; expected_change acotado por region)"
 
   - id: UI-012
     title: "VISION: la etiqueta VFO-A no entra en su celda de la barra (geometria fija)"
