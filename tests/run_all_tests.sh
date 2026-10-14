@@ -33,7 +33,7 @@ run() {
     printf '\n=== %s ===\n' "$name"
 
     if "$@" > /tmp/"$name".log 2>&1; then
-        line=$(grep -E "comprobaciones|assertions|all OK|PASS|all tests passed" /tmp/"$name".log | tail -1)
+        line=$(grep -E "comprobaciones|assertions|all OK|PASS|all tests passed|todas|todos|OK:" /tmp/"$name".log | tail -1)
         results="$results\n  $name: OK   $line"
         pass=$((pass + 1))
     else
@@ -46,12 +46,15 @@ run() {
 
 # Chequeo estatico barato: si la struct cfg queda sin inicializar, la GUI se muere antes
 # de dibujar (paso con cwt_level y cwt_group y la radio quedo en el logo de arranque).
+# Van por el mismo `run` que el resto: un fallo tiene que sumar al contador `fail` (el que
+# imprime el resumen y decide el exit). Antes usaban `fallos=$((fallos+1))`, una variable
+# que no existia: la falla se anotaba en otro lado y la suite terminaba verde igual.
 run config python3 "$DIR/check_cfg_fills.py" "$GUI"
-python3 "$DIR/check_actions.py" || fallos=$((fallos+1))
-python3 "$DIR/check_settings_focus.py" || fallos=$((fallos+1))
-python3 "$DIR/check_apps_menu.py" || fallos=$((fallos+1))
-python3 "$DIR/check_app_handlers.py" || fallos=$((fallos+1))
-python3 "$DIR/check_wcag.py" || fallos=$((fallos+1))
+run actions python3 "$DIR/check_actions.py"
+run settings_focus python3 "$DIR/check_settings_focus.py"
+run apps_menu python3 "$DIR/check_apps_menu.py"
+run app_handlers python3 "$DIR/check_app_handlers.py"
+run wcag python3 "$DIR/check_wcag.py"
 
 run host sh "$DIR/native/run_native_tests.sh"
 run wspr sh "$DIR/native/run_wspr_tests.sh"
