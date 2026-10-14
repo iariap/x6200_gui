@@ -24,6 +24,7 @@ tools/ui_harness/
     png_export.c        PNG writer (libpng)
     virtual_time.c      deterministic tick: advance N ms, no sleeps
     render_metrics.c    flush count / flushed pixels
+    bench_metrics.c     real-clock (CLOCK_MONOTONIC) frame timings + /proc memory
     screens.c           scenario -> screen builder (calls the firmware's main_screen())
     scenario.c          scenario file parser (radio state, theme, seed)
     signal_gen.c        deterministic spectrum/waterfall magnitudes, seeded by the scenario
@@ -49,13 +50,23 @@ harness owns its source list, its LVGL config and its mocks.
 ## Build
 
 The Docker image `x6200-uiharness` is the reproducible build environment. It is
-`x6200-buildroot` (the ROM Buildroot image, built from the AetherX6200Buildroot
-workspace — see `docs/TRD.md`) plus the host build dependencies
-(`build-essential`, `cmake`, `pkg-config`, `libpng-dev`, `libsqlite3-dev`,
-`libnm-dev`, `libfftw3-dev`, `liquid-dsp 1.4.0`). Rebuild it with:
+built **from scratch** from `ubuntu:24.04`: the `ci` stage installs the host
+build dependencies (`build-essential`, `cmake`, `pkg-config`, `libpng-dev`,
+`libnm-dev`, `libsqlite3-dev`, `libliquid-dev`) and the `full` stage (the
+default target) adds the extra packages the ROM's own test suites use
+(`libfftw3-dev`, `libsndfile1-dev`, `libglib2.0-dev`, `sqlite3`,
+`libboost-dev`, `liquid-dsp 1.4.0`, `Catch2`). It no longer depends on the local
+`x6200-buildroot` image, which is 6.7 GB and cannot be rebuilt in CI. The
+harness links only libpng and libnm; the signal generator is plain C and does
+not use FFTW, but the firmware headers the harness compiles against pull in
+`<sqlite3.h>` (`src/cfg/cfg.h`) and `<liquid/liquid.h>` (`src/dsp.h`,
+`src/util.h`), hence those two development packages.
 
 ```sh
+# the default (full) image, same tag the tooling expects
 docker build -t x6200-uiharness tools/ui_harness
+# the minimal image CI uses (harness + framework only)
+docker build -t x6200-uiharness-ci --target ci tools/ui_harness
 ```
 
 Configure and build the harness (run from the repository root):
@@ -83,11 +94,48 @@ docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" \
       --json     out/home-usb-20m.json"
 ```
 
-CLI: `ui_harness --scenario <file> --png <out.png> [--json <out.json>]`.
+CLI: `ui_harness --scenario <file> --png <out.png> [--json <out.json>] [--bench [--warmup N] [--repeats N]]`.
 
 The JSON carries the scenario name/screen/seed, the git revision, the
 per-component coverage, the radio-call log from the mock, and the render metrics
 (flushes, flushed pixels, a framebuffer hash).
+
+## Benchmark
+
+With `--bench` the harness also measures the **real** render cost of each frame
+with `CLOCK_MONOTONIC` (`src/bench_metrics.c`), separately from the virtual
+clock that decides the pixels. The JSON gains a `benchmark` block:
+
+```jsonc
+"benchmark": {
+  "clock": "CLOCK_MONOTONIC",
+  "environment": "x86 host: relative regression proxy, not the Cortex-A7",
+  "warmup_frames": 3, "repeats": 5, "redraw_passes": 1,
+  "frames": [
+    { "render_ms": 3.79, "flush_ms": 0.41, "draw_ms": 3.37,
+      "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 }
+  ],
+  "memory": { "rss_bytes": 10100736, "pss_bytes": 8751104,
+              "peak_rss_bytes": 10100736, "peak_vm_bytes": 79761408 }
+}
+```
+
+* `render_ms` is the wall time of the whole frame; `flush_ms` is the time inside
+  the display flush callback (measured); `draw_ms` is the remainder
+  (layout + draw), derived and never invented.
+* `redrawn_area_px` is the sum of the flushed rectangles (a repeated repaint
+  counts again); `unique_redrawn_px` is the distinct set. `memory` is read from
+  `/proc/self/status` and `/proc/self/smaps_rollup` at the end.
+* Warm-up frames are discarded; the measured frames are configurable with
+  `--warmup`/`--repeats` or a fixture's `bench_warmup`/`bench_repeats`.
+  `bench_redraw_passes` lets a fixture repaint the screen several times per
+  measured frame (the controlled cost regression the benchmark self-test uses).
+  All three `bench_*` keys are ignored outside `--bench` and never change a
+  rendered pixel.
+
+Benchmarking never feeds a wall-clock value back into the GUI: a scenario's PNG
+is byte-identical with and without `--bench`. `tests/check_harness_determinism.sh`
+still runs every fixture twice and compares the sha256.
 
 ## Scenarios
 
@@ -104,6 +152,7 @@ the `theme` and a `seed`, and toggle `band_plan`, `spectrum_filled`,
 | `home-frecuencia-extrema` | the dial at the top band edge; frequency/band-plan strips run past it |
 | `main-otro-tema` | the same screen under the builtin "Outdoor" theme |
 | `main-espectro-agua` | the waterfall with a fixed seed, peaks on, centre line, Legacy theme |
+| `bench-render` | the benchmark fixture (waterfall peaks, its own seed); `bench_*` knobs for the render benchmark |
 
 ## Determinism
 
