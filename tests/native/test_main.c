@@ -29,6 +29,7 @@ void test_kbd_caps(void);
 void test_bt_devices(void);
 void test_dxcc(void);
 void test_flags(void);
+void test_visual_policy(void);
 
 int main(void) {
     test_adaptive_tuning();
@@ -49,6 +50,7 @@ int main(void) {
     test_bt_devices();
     test_dxcc();
     test_flags();
+    test_visual_policy();
 
     printf("%d comprobaciones, %d fallos\n", tests_run, tests_failed);
 
