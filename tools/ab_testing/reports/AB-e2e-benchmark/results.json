@@ -12,53 +12,53 @@
   "comparisons": [
     {
       "a": {
-        "dispersion_cv_pct": 3.339,
-        "draw_ms_mean": 3.6758,
-        "flush_ms_mean": 0.4669,
+        "dispersion_cv_pct": 5.481,
+        "draw_ms_mean": 3.7858,
+        "flush_ms_mean": 0.4874,
         "flushes_mean": 1.0,
-        "fps": 240.99,
+        "fps": 231.32,
         "frames": 15,
         "memory": {
-          "peak_rss_bytes": 10252288,
+          "peak_rss_bytes": 10121216,
           "peak_vm_bytes": 79785984,
-          "pss_bytes": 10240000,
-          "rss_bytes": 10186752
+          "pss_bytes": 10108928,
+          "rss_bytes": 10121216
         },
         "redrawn_area_mean": 384000.0,
-        "render_mean_ms": 4.1427,
-        "render_p50_ms": 4.1496,
-        "render_p95_ms": 4.3133,
-        "render_p99_ms": 4.362,
-        "render_stdev_ms": 0.1383,
+        "render_mean_ms": 4.2732,
+        "render_p50_ms": 4.3231,
+        "render_p95_ms": 4.5631,
+        "render_p99_ms": 4.6445,
+        "render_stdev_ms": 0.2342,
         "scenario": "bench-render",
         "unique_redrawn_mean": 384000.0
       },
       "b": {
-        "dispersion_cv_pct": 4.508,
-        "draw_ms_mean": 12.0796,
-        "flush_ms_mean": 1.6016,
+        "dispersion_cv_pct": 4.535,
+        "draw_ms_mean": 11.2816,
+        "flush_ms_mean": 1.4603,
         "flushes_mean": 3.0,
-        "fps": 72.35,
+        "fps": 78.09,
         "frames": 15,
         "memory": {
-          "peak_rss_bytes": 10321920,
+          "peak_rss_bytes": 10014720,
           "peak_vm_bytes": 79785984,
-          "pss_bytes": 10309632,
-          "rss_bytes": 10321920
+          "pss_bytes": 10002432,
+          "rss_bytes": 9965568
         },
         "redrawn_area_mean": 1152000.0,
-        "render_mean_ms": 13.6812,
-        "render_p50_ms": 13.821,
-        "render_p95_ms": 14.5219,
-        "render_p99_ms": 14.7556,
-        "render_stdev_ms": 0.6168,
+        "render_mean_ms": 12.7419,
+        "render_p50_ms": 12.8052,
+        "render_p95_ms": 13.4877,
+        "render_p99_ms": 13.6853,
+        "render_stdev_ms": 0.5779,
         "scenario": "bench-render",
         "unique_redrawn_mean": 384000.0
       },
       "flushes_delta_pct": 200.0,
-      "p95_delta_pct": 236.676,
+      "p95_delta_pct": 195.585,
       "reasons": [
-        "p95 render +236.7% (budget 25.0%): 4.313 -> 14.522 ms",
+        "p95 render +195.6% (budget 25.0%): 4.563 -> 13.488 ms",
         "flushes +200.0% (budget 20.0%): 1.0 -> 3.0",
         "redrawn area +200.0% (budget 20.0%): 384000 -> 1152000 px"
       ],
@@ -72,8 +72,8 @@
   "experiment_id": "AB-e2e-benchmark",
   "kind": "benchmark-comparison",
   "revisions": {
-    "a": "667fad4b2cf96e958464b88dd992ea496c063bc8",
-    "b": "6b66383e500ff8702045c14a44c95ce9fcf5df6b"
+    "a": "92d940529a9252d50b8eb4410611b957213ff6ac",
+    "b": "93187e179bce715106b7ae6ad87a38e4e98669ca"
   },
   "scenarios": [
     "bench-render"

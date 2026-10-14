@@ -9,6 +9,13 @@
       "rule": "layout_clipped"
     },
     {
+      "detail": "lv_obj at 0,448 160x62 is 160x32, below the 44px touch target",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/29",
+      "rule": "layout_touch_target"
+    },
+    {
       "detail": "lv_label at 26,467 108x25 cut to 108x13 (lost 0x12)",
       "fixture": "home-usb-20m",
       "ok": false,
@@ -21,6 +28,13 @@
       "ok": false,
       "path": "0/30",
       "rule": "layout_clipped"
+    },
+    {
+      "detail": "lv_obj at 160,448 160x62 is 160x32, below the 44px touch target",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/30",
+      "rule": "layout_touch_target"
     },
     {
       "detail": "lv_label at 193,454 95x50 cut to 95x26 (lost 0x24)",
@@ -37,6 +51,13 @@
       "rule": "layout_clipped"
     },
     {
+      "detail": "lv_obj at 320,448 160x62 is 160x32, below the 44px touch target",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/31",
+      "rule": "layout_touch_target"
+    },
+    {
       "detail": "lv_label at 349,454 103x50 cut to 103x26 (lost 0x24)",
       "fixture": "home-usb-20m",
       "ok": false,
@@ -51,6 +72,13 @@
       "rule": "layout_clipped"
     },
     {
+      "detail": "lv_obj at 480,448 160x62 is 160x32, below the 44px touch target",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/32",
+      "rule": "layout_touch_target"
+    },
+    {
       "detail": "lv_label at 510,454 101x50 cut to 101x26 (lost 0x24)",
       "fixture": "home-usb-20m",
       "ok": false,
@@ -63,6 +91,13 @@
       "ok": false,
       "path": "0/33",
       "rule": "layout_clipped"
+    },
+    {
+      "detail": "lv_obj at 640,448 160x62 is 160x32, below the 44px touch target",
+      "fixture": "home-usb-20m",
+      "ok": false,
+      "path": "0/33",
+      "rule": "layout_touch_target"
     },
     {
       "detail": "lv_label at 660,454 120x50 cut to 120x26 (lost 0x24)",
@@ -128,12 +163,12 @@
     }
   ],
   "reproduced": [],
-  "revision": "86e950cd7cf1b5fd4ea8bc73da755745bf110ef1",
+  "revision": "1640b84d061248ceb424f051701e6d8e8c8bb6d8",
   "scenarios": [
     "home-usb-20m"
   ],
   "status": "FAIL",
-  "structural_failures": 10,
+  "structural_failures": 15,
   "unverified": [
     "UI-002",
     "UI-003",

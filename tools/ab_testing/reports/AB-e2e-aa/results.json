@@ -7,11 +7,11 @@
   "improvement": false,
   "revision_a": {
     "label": "a",
-    "sha": "667fad4b2cf96e958464b88dd992ea496c063bc8"
+    "sha": "92d940529a9252d50b8eb4410611b957213ff6ac"
   },
   "revision_b": {
     "label": "a",
-    "sha": "667fad4b2cf96e958464b88dd992ea496c063bc8"
+    "sha": "92d940529a9252d50b8eb4410611b957213ff6ac"
   },
   "scenarios": [
     "home-usb-20m"
@@ -20,7 +20,7 @@
     "a": [
       {
         "scenario": "home-usb-20m",
-        "revision": "667fad4b2cf96e958464b88dd992ea496c063bc8",
+        "revision": "92d940529a9252d50b8eb4410611b957213ff6ac",
         "png_sha256": "14f380ff07444726b7df4765537e219dbe865a85a3643f7f7fb36df0303eeb3f",
         "width": 800,
         "height": 480,
@@ -159,7 +159,7 @@
     "b": [
       {
         "scenario": "home-usb-20m",
-        "revision": "667fad4b2cf96e958464b88dd992ea496c063bc8",
+        "revision": "92d940529a9252d50b8eb4410611b957213ff6ac",
         "png_sha256": "14f380ff07444726b7df4765537e219dbe865a85a3643f7f7fb36df0303eeb3f",
         "width": 800,
         "height": 480,
@@ -305,10 +305,10 @@
       "evidence": [],
       "details": {
         "revision_a": [
-          "667fad4b2cf96e958464b88dd992ea496c063bc8"
+          "92d940529a9252d50b8eb4410611b957213ff6ac"
         ],
         "revision_b": [
-          "667fad4b2cf96e958464b88dd992ea496c063bc8"
+          "92d940529a9252d50b8eb4410611b957213ff6ac"
         ]
       }
     },

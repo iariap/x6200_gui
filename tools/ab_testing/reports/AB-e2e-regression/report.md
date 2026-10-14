@@ -2,8 +2,8 @@
 
 - Date: 2026-10-13
 - Profile: `host-ui`
-- A (baseline): `667fad4b2cf96e958464b88dd992ea496c063bc8` (a)
-- B (candidate): `54351a624f1d76c3ca827b8a3f01de94f99f58c6` (b)
+- A (baseline): `92d940529a9252d50b8eb4410611b957213ff6ac` (a)
+- B (candidate): `1640b84d061248ceb424f051701e6d8e8c8bb6d8` (b)
 - Scenarios: `home-usb-20m`
 
 ## Verdict: **FAIL** (exit 1)
@@ -12,7 +12,7 @@
 |---|---|---|---|
 | Functional | yes | PASS | 1 scenarios captured on both revisions |
 | Visual Regression | yes | FAIL | visual regressions vs the baseline |
-| Quality Contract | yes | FAIL | 10 contract(s) violated by the candidate |
+| Quality Contract | yes | FAIL | 15 contract(s) violated by the candidate |
 | Performance | yes | PASS | render-cost proxy within budget |
 | Hardware | no (advisory) | BLOCKED | no physical X6200 attached; hardware behaviour is not measured |
 | Energy | no (advisory) | BLOCKED | no power measurement; energy evidence must be physical |
@@ -50,16 +50,21 @@ Components declared below REAL (never written as REAL):
 
 ## Quality contracts
 
-19 contract checks, 10 failure(s).
+24 contract checks, 15 failure(s).
 - FAIL `layout_clipped` [home-usb-20m]: lv_obj at 0,448 160x62 cut to 160x32 (lost 0x30)
+- FAIL `layout_touch_target` [home-usb-20m]: lv_obj at 0,448 160x62 is 160x32, below the 44px touch target
 - FAIL `layout_clipped` [home-usb-20m]: lv_label at 26,467 108x25 cut to 108x13 (lost 0x12)
 - FAIL `layout_clipped` [home-usb-20m]: lv_obj at 160,448 160x62 cut to 160x32 (lost 0x30)
+- FAIL `layout_touch_target` [home-usb-20m]: lv_obj at 160,448 160x62 is 160x32, below the 44px touch target
 - FAIL `layout_clipped` [home-usb-20m]: lv_label at 193,454 95x50 cut to 95x26 (lost 0x24)
 - FAIL `layout_clipped` [home-usb-20m]: lv_obj at 320,448 160x62 cut to 160x32 (lost 0x30)
+- FAIL `layout_touch_target` [home-usb-20m]: lv_obj at 320,448 160x62 is 160x32, below the 44px touch target
 - FAIL `layout_clipped` [home-usb-20m]: lv_label at 349,454 103x50 cut to 103x26 (lost 0x24)
 - FAIL `layout_clipped` [home-usb-20m]: lv_obj at 480,448 160x62 cut to 160x32 (lost 0x30)
+- FAIL `layout_touch_target` [home-usb-20m]: lv_obj at 480,448 160x62 is 160x32, below the 44px touch target
 - FAIL `layout_clipped` [home-usb-20m]: lv_label at 510,454 101x50 cut to 101x26 (lost 0x24)
 - FAIL `layout_clipped` [home-usb-20m]: lv_obj at 640,448 160x62 cut to 160x32 (lost 0x30)
+- FAIL `layout_touch_target` [home-usb-20m]: lv_obj at 640,448 160x62 is 160x32, below the 44px touch target
 - FAIL `layout_clipped` [home-usb-20m]: lv_label at 660,454 120x50 cut to 120x26 (lost 0x24)
 
 ## Evidence
