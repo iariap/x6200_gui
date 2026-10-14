@@ -66,3 +66,44 @@ solo no alcanza). Al final imprime `SE CAYO Y VOLVIO LA GUI` por cada caida.
   botones sin handler, `buttons_load_page` con `items[0]` NULL, `wifi_get_ipaddr` con punteros NULL,
   el timer del CW Trainer y el callback de audio de JS8). Despues de esos arreglos el barrido sigue
   mostrando caidas aleatorias.
+
+---
+
+## Actualizacion: causa raiz encontrada (misma firma, ahora con nombre)
+
+Barrido nuevo con el build que ya trae el handler de crashes (`prueba-23-postfix.log`): **5 caidas**
+(CwTrainer, Eq, Status, Callsign, Recorder) y 18 apps OK. Otra vez caidas **distintas** a las
+corridas anteriores: sigue siendo endemico y ajeno a la app.
+
+Lo nuevo: en los logs de esos crashes aparece el mensaje de glibc **antes** del `CRASHLOG`:
+
+```
+*** buffer overflow detected ***: terminated
+CRASHLOG sig=6 fallo=0x669b pc=0xb5dc6dd4 lr=0xb5dc6dc8 sp=0xb46fe838 base=0x4c9804
+```
+
+Es el chequeo **fortify de glibc** (`*** buffer overflow detected ***`), que termina en `abort()`
+dentro de **libc** (los `pc` caen en el rango de `libc.so.6`, `b5cb0000-b5e2c000`, medido en
+`/proc/<pid>/maps` de la GUI viva): de ahi el `sig=6`.
+
+Resolviendo las **pilas** de esos crashes por direccion de enlace (invariante al ASLR,
+`link = link(main) + (pc - base)`) salen solo **10 direcciones distintas**, todas en un mismo
+cluster (0x2E000-0x33000) y todas en un solo camino:
+
+```
+audio.c: on_state_change / read_callback / monitor_cb
+      -> cw_put_audio_samples   (src/cw.cpp:212)
+      -> cw_decoder_signal      (src/dsp.cpp:252 llama a cw_put_audio_samples)
+```
+
+Detalle de las 40 pilas en `pilas-resueltas.txt`.
+
+Dato que cierra: las "pilas" estaban llenas de pares tipo `000b000b`, `000c000d`, `000a000a`: eso no
+es una pila, es **audio** (pares de 16 bits). El desborde ocurre sobre datos de audio.
+
+**Hipotesis fundada del mecanismo** (a confirmar por quien arregle): `cw_put_audio_samples` usa el
+buffer circular de liquid-dsp sin mirar el contrato de `cbuffercf_read` — el read devuelve en `n` la
+cantidad **contigua** disponible (puede ser menor que `desired_num` cuando el buffer da la vuelta), y
+el codigo usa `desired_num` para el DSP y para el `release`. Cuando el buffer circular envuelve, se
+lee/escribe mas alla de lo contiguo: es un desborde, y da la casualidad (depende del timing del audio)
+que explica por que caen apps distintas en cada corrida.

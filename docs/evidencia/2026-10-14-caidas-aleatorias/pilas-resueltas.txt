@@ -1,0 +1,16 @@
+Pilas de 40 crashes con la MISMA firma (sig=6 en libc), resueltas por direccion de enlace
+(link = link(main) + (word - base), invariante al ASLR). Solo hay 10 direcciones distintas,
+todas en un cluster (0x2E000-0x33000) y todas en el camino de audio -> decodificador CW:
+
+0x0321fc  x26  cw_decoder_signal
+0x031b3c  x26  cw_put_audio_samples
+0x02e2b0  x26  read_callback (audio.c)
+0x031ba4  x8   cw_put_audio_samples
+0x02e314  x8   monitor_cb (audio.c)
+0x032264  x7   cw_decoder_signal
+0x03223c  x6   cw_decoder_signal
+0x031b7c  x6   cw_put_audio_samples
+0x02e2f0  x6   on_state_change (audio.c)
+0x032294  x1   cw_decoder_signal
+
+pares (base, pila) analizados: 40
