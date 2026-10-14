@@ -63,5 +63,11 @@ void fonts_scale(int steps) {
     for (unsigned i = 0; i + 1 < N_FONTS; i++) {
         unsigned to = i + steps < N_FONTS - 1 ? i + steps : N_FONTS - 2;
         *sony[i]    = was[to];
+        /* The scaled struct borrows the coverage of the size it replaced: only
+         * sony_20/sony_30 carry the icon ranges, so without this fallback the
+         * clock (sony_30) and the top-bar icons (sony_20) draw as empty boxes
+         * under VISION (UI-011). was[i] keeps the icon cmap of the original slot
+         * (and, with an alternate font, its own Sony fallback). */
+        sony[i]->fallback = &was[i];
     }
 }

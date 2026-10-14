@@ -86,7 +86,7 @@ def test_the_exception_is_scoped_to_its_fixture(real_quality: RealQuality) -> No
     assert apply_waivers([finding], real_quality.contracts, date(2026, 10, 14))[0].ok is False
 
 
-def test_the_repo_contracts_carry_the_vision_and_theme_exceptions(
+def test_the_repo_contracts_carry_the_remaining_exceptions(
     real_quality: RealQuality,
 ) -> None:
     scoped = {
@@ -94,8 +94,20 @@ def test_the_repo_contracts_carry_the_vision_and_theme_exceptions(
         for exception in real_quality.contracts.exceptions
     }
     assert ("theme_name_fits_params", "main-tema-outdoor-negative") in scoped
-    assert ("typography_missing_glyph", "main-tema-vision") in scoped
     assert ("typography_text_overflow", "main-tema-vision") in scoped
+    # UI-011 was withdrawn when its fix landed (UI-04/AB-UI04-EXP1): the missing
+    # glyphs are gone, so there is no waiver left to carry.
+    assert ("typography_missing_glyph", "main-tema-vision") not in scoped
     for exception in real_quality.contracts.exceptions:
         assert exception.reason.strip(), f"{exception.rule} has no reason"
         assert exception.until >= "2026-10-14"
+
+
+def test_the_repo_explains_the_ui011_visual_change(real_quality: RealQuality) -> None:
+    """UI-011 has no pixel detector, so its fix is explained by an expected change."""
+    regions = {change.region for change in real_quality.contracts.expected_changes}
+    assert "barra_superior" in regions
+    for change in real_quality.contracts.expected_changes:
+        assert change.reason.strip(), f"{change.region} has no reason"
+        assert change.author, f"{change.region} has no author"
+        assert change.until >= "2026-10-14"

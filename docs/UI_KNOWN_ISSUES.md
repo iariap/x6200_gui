@@ -113,7 +113,9 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
 
 - **Severidad**: major.
 - **Fixture**: `main-tema-vision` (tema VISION, la misma radio que `home-usb-20m`).
-- **Estado**: `verified` — defecto **preexistente** de la ROM, todavía **abierto**.
+- **Estado**: `fixed` (UI-04 / AB-UI04-EXP1; si vuelve a aparecer en B, es
+  `REGRESSION`). La excepción acotada de `quality/contracts.yaml` se **retiró en el
+  mismo PR**: el hallazgo ya no existe.
 - **Síntoma**: con VISION el reloj de potencia dibuja un **rectángulo vacío** en
   lugar del símbolo de batería y el icono de WiFi de la barra deja de existir. No
   es un problema de la captura: LVGL lo avisa en su propio log
@@ -128,14 +130,23 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
   `VISION_FONT_STEPS = 3` `sony_20` pasa a ser `sony_26` y `sony_30` pasa a ser
   `sony_36`, los dos ASCII: el reloj (`src/clock.c:58`) y la celda de la barra
   (`src/styles.c:259`, `info_item_style`) se quedan sin sus iconos.
+- **Fix en el código** (`src/fonts/font_select.c`, `fonts_scale()`): cada tamaño
+  escalado conserva **su fuente de origen como `fallback`**
+  (`sony[i]->fallback = &was[i]`). El tamaño grande sigue dibujando el texto y el
+  tamaño original aporta los rangos de icono que solo `sony_20`/`sony_30` traen;
+  con un tema de fuente alternativa, `was[i]` resuelve a su vez por su propia
+  copia Sony, así que el icono sale igual. Un glifo presente en el tamaño escalado
+  no cambia (el `fallback` solo se consulta cuando la fuente primaria no lo
+  tiene): ningún icono nuevo, ningún paquete de fuentes, ningún cambio fuera de
+  ese archivo.
 - **Cómo lo reproduce el arnés**: el contrato `typography_missing_glyph` sobre la
-  fixture `main-tema-vision` (la inspección real del árbol, nunca OCR). Está
-  **conectado al gate** por una *excepción acotada* en `quality/contracts.yaml`
-  (regla + fixture, vence el 2027-03-31): mientras el defecto siga abierto el
-  hallazgo se lista en el reporte del audit, pero no convierte la corrida en FAIL.
-  Un glifo ausente en **otra** fixture sigue fallando.
-- **Fix**: pendiente, UI-04+ (las fuentes de icono tendrían que estar en todos los
-  tamaños escalados, o `fonts_scale()` no reemplazar el `cmap`).
+  fixture `main-tema-vision` (la inspección real del árbol, nunca OCR). Sobre A
+  (`b029907`) falla con dos hallazgos —reloj `U+F240`/`U+F1E6` y WiFi `U+F1EB`—;
+  sobre B pasa (0 findings). El cambio visual queda **confinado a la barra
+  superior** y declarado como `expected_change` acotado en `quality/contracts.yaml`.
+  Un glifo ausente en otra fixture sigue fallando.
+- **Evidencia**: `tools/ab_testing/reports/AB-UI04-EXP1/` (screenshots A/B y diff,
+  `results.json`); audit de A: `FAIL typography_missing_glyph ×2`.
 
 ---
 
@@ -271,7 +282,7 @@ acotadas y con vencimiento, igual que UI-010.
 | UI-008 | CMA: 128 MB reservados para GPU no usada | `unverified` | info | — (no es un defecto de UI) | `RESOURCE_USAGE.md` |
 | UI-009 | Reloj de potencia: símbolo de batería sin inicializar | `fixed` | major | `leading_glyph_range` | `home-bateria-externa`; `AB-e2e-ui009` |
 | UI-010 | Tema Outdoor: franja de frecuencia invisible | `verified` (abierto) | critical | `region_min_content:frecuencia` | `main-otro-tema`; exclusión scoped hasta 2027-03-31 |
-| UI-011 | VISION: los iconos de la barra desaparecen | `verified` (abierto) | major | `typography_missing_glyph` | `main-tema-vision`; excepción scoped hasta 2027-03-31 |
+| UI-011 | VISION: los iconos de la barra desaparecen | `fixed` (UI-04 / AB-UI04-EXP1) | major | `typography_missing_glyph` | `main-tema-vision`; `AB-UI04-EXP1`; excepción retirada |
 | UI-012 | VISION: `VFO-A` no entra en su celda | `verified` (abierto) | minor | `typography_text_overflow` | `main-tema-vision`; excepción scoped hasta 2027-03-31 |
 | UI-013 | `params.theme_name` no guarda un nombre que el menú ofrece | `verified` (abierto) | major | `theme_name_fits_params` | `main-tema-outdoor-negative`; excepción scoped hasta 2027-03-31 |
 
