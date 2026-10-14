@@ -11,6 +11,9 @@
 #            unverified  -> recorded from the repository, no detector yet
 #   detector:region_content_above  -> the region must stay near-uniform; content
 #            there means the element it should hide is being drawn.
+#   detector:leading_glyph_range   -> the label whose text matches `text_pattern`
+#            (the power clock) must start with a code point inside `glyph_range`;
+#            the text comes from the harness' structural inspection, never OCR.
 #   exclusions: scoped by fixture and region, with an expiry date and a reason.
 #            Never global, never permanent.
 
@@ -36,6 +39,34 @@ issues:
       region: multiplicador
       pixel_tolerance: 24
       max_content: 0.05
+    exclusions: []
+
+  - id: UI-009
+    title: "Reloj de potencia: simbolo de bateria con puntero sin inicializar (glifos basura)"
+    severity: major
+    fixture: home-bateria-externa
+    region: reloj_potencia
+    status: fixed
+    note: >
+      src/clock.c, show_time() rama CLOCK_POWER: `bat_sym` se declaraba sin
+      inicializar y el `switch ((uint8_t)(v_bat * 10))` solo cubria 0..100. Con
+      v_bat > 10.2 (p.ej. 12.1 V con fuente externa -> 121 tras el cast) ningun
+      case pisaba el puntero y `snprintf` leia la pila: glifos basura en pantalla
+      ("EHE 12.1v" en las capturas del toolchain aceptado) y comportamiento
+      indefinido (segfault reproducido con gcc 12 en Debian). El fix inicializa
+      el puntero a LV_SYMBOL_BATTERY_FULL. El arnes lo reproduce: el detector
+      `leading_glyph_range` exige que el texto del reloj arranque con un glifo de
+      la familia battery (U+F2xx) y no con ASCII.
+    evidence:
+      - "src/clock.c (show_time, CLOCK_POWER)"
+      - "tools/ui_harness/fixtures/home-bateria-externa.scn"
+      - "tests/native/test_clock.c"
+      - "tools/ab_testing/reports/AB-e2e-ui009/"
+    detector:
+      kind: leading_glyph_range
+      region: reloj_potencia
+      text_pattern: '\d\.\dv\n'
+      glyph_range: [0xF200, 0xF2FF]
     exclusions: []
 
   # --- Seeds from the repository history: recorded, not yet reproduced. -------

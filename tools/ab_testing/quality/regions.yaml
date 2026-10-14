@@ -39,3 +39,7 @@ regions:
   - name: multiplicador
     rect: [758, 8, 40, 16]
     description: "Esquina superior derecha donde main_screen.c crea la etiqueta del multiplicador (oculta)"
+
+  - name: reloj_potencia
+    rect: [591, 0, 209, 46]
+    description: "Reloj de potencia (clock.c, CLOCK_POWER): simbolo de bateria y tensiones en la esquina superior derecha"

@@ -12,6 +12,7 @@ reason — so a waiver cannot become permanent or global by accident.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
@@ -20,11 +21,12 @@ from typing import Any
 
 from .capture import Capture
 from .configio import read_yaml_mapping
-from .errors import ConfigError
+from .errors import ConfigError, HarnessError
+from .inspection import inspection_of, iter_tree
 from .regions import RegionMap
 from .visual_diff import load_rgb, region_content_fraction
 
-DETECTOR_KINDS = frozenset({"region_content_above"})
+DETECTOR_KINDS = frozenset({"region_content_above", "leading_glyph_range"})
 STATUSES = frozenset({"verified", "fixed", "unverified", "new"})
 SEVERITIES = frozenset({"critical", "major", "minor", "info"})
 
@@ -42,12 +44,24 @@ class IssueClassification(StrEnum):
 
 @dataclass(frozen=True)
 class Detector:
-    """A deterministic check over one capture region."""
+    """A deterministic check over one capture.
+
+    Two kinds:
+
+    * `region_content_above`: the region must stay near-uniform; content there
+      means the element that should be hidden is being drawn;
+    * `leading_glyph_range`: the label whose text matches `text_pattern` (the
+      power clock is the only label with a voltage line) must start with a code
+      point inside `glyph_range`. The harness's structural inspection carries
+      that text, so the check is exact and needs no OCR.
+    """
 
     kind: str
     region: str
-    pixel_tolerance: int
-    max_content: float
+    pixel_tolerance: int = 12
+    max_content: float = 0.02
+    text_pattern: str = ""
+    glyph_range: tuple[int, int] = (0, 0)
 
 
 @dataclass(frozen=True)
@@ -108,6 +122,8 @@ class KnownIssue:
                 "region": self.detector.region,
                 "pixel_tolerance": self.detector.pixel_tolerance,
                 "max_content": self.detector.max_content,
+                "text_pattern": self.detector.text_pattern,
+                "glyph_range": list(self.detector.glyph_range),
             },
             "exclusions": [exclusion.as_dict() for exclusion in self.exclusions],
         }
@@ -219,11 +235,41 @@ def _parse_detector(
     region = str(raw.get("region", ""))
     if region not in known_regions:
         raise ConfigError(f"{path}: issue {issue_id} detector names unknown region `{region}`")
+    if kind == "leading_glyph_range":
+        return _parse_glyph_detector(raw, issue_id, path, region)
     return Detector(
         kind=kind,
         region=region,
         pixel_tolerance=int(raw.get("pixel_tolerance", 12)),
         max_content=float(raw.get("max_content", 0.02)),
+    )
+
+
+def _parse_glyph_detector(raw: dict[str, Any], issue_id: str, path: Path, region: str) -> Detector:
+    pattern = str(raw.get("text_pattern", ""))
+    if not pattern:
+        raise ConfigError(f"{path}: issue {issue_id} `leading_glyph_range` needs `text_pattern`")
+    try:
+        re.compile(pattern)
+    except re.error as exc:
+        raise ConfigError(f"{path}: issue {issue_id} invalid `text_pattern`: {exc}") from exc
+    raw_range = raw.get("glyph_range")
+    if (
+        not isinstance(raw_range, list)
+        or len(raw_range) != 2
+        or not all(isinstance(item, int) for item in raw_range)
+    ):
+        raise ConfigError(
+            f"{path}: issue {issue_id} `leading_glyph_range` needs `glyph_range: [start, end]`"
+        )
+    start, end = (int(raw_range[0]), int(raw_range[1]))
+    if start > end:
+        raise ConfigError(f"{path}: issue {issue_id} `glyph_range` start > end")
+    return Detector(
+        kind="leading_glyph_range",
+        region=region,
+        text_pattern=pattern,
+        glyph_range=(start, end),
     )
 
 
@@ -259,6 +305,8 @@ def evaluate_detector(
     detector: Detector, capture: Capture, region_map: RegionMap
 ) -> DetectorOutcome:
     """Run one detector on one capture and report whether the defect shows."""
+    if detector.kind == "leading_glyph_range":
+        return _evaluate_leading_glyph(detector, capture)
     region = region_map.get(detector.region)
     array = load_rgb(capture.png)
     measured = region_content_fraction(array, region, detector.pixel_tolerance)
@@ -268,6 +316,45 @@ def evaluate_detector(
         f"{'>' if reproduced else '<='} {detector.max_content:.4f}"
     )
     return DetectorOutcome(reproduced=reproduced, measured=measured, detail=detail)
+
+
+def _evaluate_leading_glyph(detector: Detector, capture: Capture) -> DetectorOutcome:
+    """The label matching `text_pattern` must start with a glyph inside `glyph_range`.
+
+    The power clock is the only label whose first line ends in a voltage
+    (`... 12.1v\\n`), so its text is the one to check. `measured` is the leading
+    code point as a number so the report shows it; `reproduced` is True when that
+    code point falls outside the range (the defect: ASCII memory instead of an
+    icon glyph). The text comes from the harness' structural inspection, never
+    from OCR.
+    """
+    inspection = inspection_of(capture)
+    if inspection is None:
+        raise HarnessError(
+            f"detector `leading_glyph_range` needs the structural inspection: "
+            f"{capture.name} was captured without `--inspect`"
+        )
+    pattern = re.compile(detector.text_pattern)
+    start, end = detector.glyph_range
+    for node, _ancestors, _path in iter_tree(inspection.nodes):
+        text = node.text
+        if not text or pattern.search(text) is None:
+            continue
+        leading = ord(text[0])
+        inside = start <= leading <= end
+        return DetectorOutcome(
+            reproduced=not inside,
+            measured=float(leading),
+            detail=(
+                f"label {text!r} starts with U+{leading:04X}, "
+                f"{'inside' if inside else 'outside'} U+{start:04X}..U+{end:04X}"
+            ),
+        )
+    return DetectorOutcome(
+        reproduced=False,
+        measured=-1.0,
+        detail=f"no label matched {detector.text_pattern!r}",
+    )
 
 
 def classify(

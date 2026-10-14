@@ -24,6 +24,7 @@ from x6200_ab.docker import HARNESS_IMAGE
 REPO_ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = "home-usb-20m"
 BENCH_FIXTURE = "bench-render"
+CLOCK_FIXTURE = "home-bateria-externa"
 
 pytestmark = pytest.mark.e2e
 
@@ -35,6 +36,7 @@ class Revisions:
     base: str
     regression: str
     defect: str
+    clock_defect: str
     bench_regression: str
     structural: str
     cache_dir: Path
@@ -105,6 +107,20 @@ def _show_multiplier_label(worktree: Path) -> None:
     path.write_text(text.replace(needle, "    /* abtest e2e: label left visible */"))
 
 
+def _reintroduce_clock_defect(worktree: Path) -> None:
+    """Deliberate defect: drop the battery symbol's initialization (UI-009).
+
+    The fix initialised `bat_sym`; putting back the bare declaration reproduces
+    the uninitialized-pointer read of `show_time()` on the `home-bateria-externa`
+    fixture (12.1 V > 10.2 V, outside the switch's 0..100 range).
+    """
+    path = worktree / "src" / "clock.c"
+    text = path.read_text()
+    needle = "const char * bat_sym = LV_SYMBOL_BATTERY_FULL;"
+    assert needle in text
+    path.write_text(text.replace(needle, "const char * bat_sym;"))
+
+
 def _raise_bench_cost(worktree: Path) -> None:
     """Deliberate render regression: repaint the screen three times per frame.
 
@@ -170,6 +186,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
     _seed_cache(cache_dir)
     regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar)
     defect = _ephemeral(REPO_ROOT, base, "defect", _show_multiplier_label)
+    clock_defect = _ephemeral(REPO_ROOT, base, "clock", _reintroduce_clock_defect)
     bench_regression = _ephemeral(REPO_ROOT, base, "bench", _raise_bench_cost)
     structural = _ephemeral(REPO_ROOT, base, "structural", _inject_structural_defects)
     _record_patches(
@@ -177,6 +194,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
         {
             "regression": regression,
             "defect": defect,
+            "clock": clock_defect,
             "bench": bench_regression,
             "structural": structural,
         },
@@ -186,6 +204,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             base=base,
             regression=regression,
             defect=defect,
+            clock_defect=clock_defect,
             bench_regression=bench_regression,
             structural=structural,
             cache_dir=cache_dir,
@@ -198,6 +217,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             "-D",
             "abtest/regression",
             "abtest/defect",
+            "abtest/clock",
             "abtest/bench",
             "abtest/structural",
         )
@@ -227,7 +247,12 @@ def _reports_root(tmp_path: Path) -> Path:
 
 
 def _compare(
-    tmp_path: Path, revisions: Revisions, a: str, b: str, experiment_id: str
+    tmp_path: Path,
+    revisions: Revisions,
+    a: str,
+    b: str,
+    experiment_id: str,
+    fixture: str = FIXTURE,
 ) -> tuple[int, Path]:
     reports = _reports_root(tmp_path)
     workspace = tmp_path / f"ws-{experiment_id}"
@@ -241,7 +266,7 @@ def _compare(
             "--repo",
             str(REPO_ROOT),
             "--scenario",
-            FIXTURE,
+            fixture,
             "--reports-dir",
             str(reports),
             "--workspace",
@@ -315,6 +340,36 @@ def test_regression_of_a_fixed_issue_is_a_regression(tmp_path: Path, revisions: 
     assert issue["classification"] == "REGRESSION"
 
 
+def test_ui009_battery_symbol_fix_is_an_improvement(tmp_path: Path, revisions: Revisions) -> None:
+    """A is the clock with the uninitialized symbol, B the fix -> IMPROVEMENT.
+
+    This is the first real firmware fix evaluated by the harness: on the
+    `home-bateria-externa` fixture (12.1 V on an external supply) A prints the
+    garbage first glyph of the uninitialized pointer and B prints a battery
+    icon; the `leading_glyph_range` detector records UI-009 as FIXED.
+    """
+    code, report = _compare(
+        tmp_path,
+        revisions,
+        revisions.clock_defect,
+        revisions.base,
+        "AB-e2e-ui009",
+        fixture=CLOCK_FIXTURE,
+    )
+    assert code == 0
+    results = _results(report)
+    assert results["status"] == "PASS"
+    assert results["improvement"] is True
+    issue = next(item for item in results["known_issues"] if item["id"] == "UI-009")
+    assert issue["reproduced_a"] is True
+    assert issue["reproduced_b"] is False
+    assert issue["classification"] == "FIXED"
+    # Evidence: the A/B screenshots and the diff are kept with the report.
+    assert (report / "screenshots" / f"a-{CLOCK_FIXTURE}.png").is_file()
+    assert (report / "screenshots" / f"b-{CLOCK_FIXTURE}.png").is_file()
+    assert (report / "diffs" / f"{CLOCK_FIXTURE}-diff.png").is_file()
+
+
 def test_all_fixtures_can_be_captured(tmp_path: Path, revisions: Revisions) -> None:
     out = _reports_root(tmp_path) / "captures-e2e"
     code = main(
@@ -334,8 +389,8 @@ def test_all_fixtures_can_be_captured(tmp_path: Path, revisions: Revisions) -> N
         ]
     )
     assert code == 0
-    assert len(sorted(out.glob("*.png"))) == 7
-    assert len(sorted(out.glob("*.json"))) == 7
+    assert len(sorted(out.glob("*.png"))) == 8
+    assert len(sorted(out.glob("*.json"))) == 8
 
 
 def _run(tmp_path: Path, revisions: Revisions, extra: list[str]) -> int:

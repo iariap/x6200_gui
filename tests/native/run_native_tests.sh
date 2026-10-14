@@ -60,3 +60,45 @@ export CTY_PATH="${CTY_PATH:-$SRC/../rootfs/usr/share/x6200/cty.dat}"
 # Los temas que vienen con la ROM: el test comprueba que carguen todos (ver test_theme.c).
 export X6200_SHIPPED_THEMES="${X6200_SHIPPED_THEMES:-$SRC/../rootfs/usr/share/x6200/themes}"
 "$OUT/native_tests"
+
+# --- Clock test (UI-009) ------------------------------------------------------
+# src/clock.c includes its sibling firmware headers with `#include "..."`, and
+# for a quoted include the directory of the including file always wins over -I.
+# So the committed stub headers under tests/native/stubs_clock/ cannot shadow
+# src/styles.h etc. from their own directory: the real clock.c is staged next to
+# a copy of the stubs in the build dir, where `#include "styles.h"` resolves to
+# the stub. See tests/native/test_clock.c and docs/UI_KNOWN_ISSUES.md (UI-009).
+echo "== clock (UI-009): reloj de potencia =="
+# The defect was an *uninitialized pointer read* (undefined behaviour), which a
+# normal build may mask with whatever the stack held. `-ftrivial-auto-var-init=pattern`
+# poisons automatic variables that are read before being written, so a
+# reintroduced `const char * bat_sym;` makes this test crash deterministically
+# instead of passing by luck. Probed, since it needs gcc>=12 / clang>=8.
+if echo 'int main(void){return 0;}' | $CC -x c - -ftrivial-auto-var-init=pattern -o "$OUT/.pattern_probe" >/dev/null 2>&1; then
+    POISON="-ftrivial-auto-var-init=pattern"
+    echo "== clock: -ftrivial-auto-var-init=pattern (defecto observable) =="
+else
+    POISON=""
+    echo "== clock: sin -ftrivial-auto-var-init; el defecto podria no manifestarse =="
+fi
+CLOCK_STAGE="$OUT/clock_src"
+rm -rf "$CLOCK_STAGE"
+mkdir -p "$CLOCK_STAGE/lvgl" "$CLOCK_STAGE/params"
+cp "$SRC/clock.c" "$SRC/clock.h" "$CLOCK_STAGE/"
+cp "$DIR/stubs_clock/styles.h" "$DIR/stubs_clock/radio.h" "$DIR/stubs_clock/util.h" \
+   "$DIR/stubs_clock/backlight.h" "$DIR/stubs_clock/voice.h" "$DIR/stubs_clock/msg.h" \
+   "$CLOCK_STAGE/"
+cp "$DIR/stubs_clock/params/params.h" "$CLOCK_STAGE/params/"
+cp "$DIR/stubs_clock/lvgl/lvgl.h" "$CLOCK_STAGE/lvgl/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN $POISON -I"$CLOCK_STAGE" -I"$DIR/stubs_clock" \
+        "$CLOCK_STAGE/clock.c" "$DIR/clock_stubs.c" "$DIR/test_clock.c" \
+        "$DIR/test_framework.c" "$DIR/clock_test_main.c" -o "$OUT/clock_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $POISON -I"$CLOCK_STAGE" -I"$DIR/stubs_clock" \
+        "$CLOCK_STAGE/clock.c" "$DIR/clock_stubs.c" "$DIR/test_clock.c" \
+        "$DIR/test_framework.c" "$DIR/clock_test_main.c" -o "$OUT/clock_tests"
+fi
+"$OUT/clock_tests"
