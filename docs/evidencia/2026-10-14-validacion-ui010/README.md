@@ -17,8 +17,8 @@ trabado) y `%06X`.
 
 Medido sobre las capturas (pixeles con luminancia < 128 en la banda de la fila, y=28..62 del recorte):
 
-- antes: **0,00 %**
-- despues: **1,97 %**
+- antes: **0 de 27200 (0,00 %)**
+- despues: **2274 de 27200 (8,36 %)**
 
 ## Resultado
 
