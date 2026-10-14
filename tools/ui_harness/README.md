@@ -199,6 +199,13 @@ state (`frequency_hz`, `mode`, `rxtx`, `smeter_db`, `battery_v`, …) it can pic
 the `theme` and a `seed`, and toggle `band_plan`, `spectrum_filled`,
 `spectrum_peak` and `waterfall_center_line`.
 
+`mode` takes the names the radio itself lists and accepts (`mode_names[]`,
+`src/remote_server.cpp`): `LSB`, `LSB-D`, `USB`, `USB-D`, `CW`, `CW-R`, `AM`,
+`NFM`, plus `SAM` and `WFM` (the enum has them, the remote list does not). The
+older enum-ish spellings (`cwr`, `usb_dig`) still work; the mode label the top bar
+draws is the one `info_params_mode_label_get()` (src/info.c) returns, so a fixture
+can measure how a given mode's text fits its fixed cell.
+
 The `screen` selects what is built: `main` (the real main screen), `dialog-about`
 (the same screen with the real About window opened through the firmware's own
 `main_screen_action(ACTION_APP_ABOUT)`) and `main-foco` (the same screen with the
@@ -230,6 +237,8 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
 | `main-tema-rs` | the same screen under the shipped "RS" JSON theme (with its images), for UI-007 |
 | `main-tema-vision` | the builtin "VISION" theme (every font three sizes up through `fonts_scale()`), for the icon-glyph and top-bar layout findings of UI-011/UI-012 |
+| `main-tema-vision-cwr` | "VISION" with the mode in `CW-R`: the 4-character mode whose label measures exactly the mode cell's 56 px (0 px of margin, the `CW-RAUTO` pegging of UI-014), for the pixel/visual evidence |
+| `main-tema-vision-usbd` | "VISION" with the mode in `USB-D`: the widest mode the radio lists, whose label measures 66 px in the same 56 px cell and grows past the box, so the contract `typography_text_overflow` fails on it (UI-014's structural detector) |
 | `main-tema-outdoor-negative` | the dark pair of `main-otro-tema` (every colour run through `negative()`, `src/theme.c`) |
 | `main-tema-classic` | the builtin "Classic" theme (names the Arial family) |
 | `main-tema-holo` | the shipped "Holo" JSON theme (flat, no images) |

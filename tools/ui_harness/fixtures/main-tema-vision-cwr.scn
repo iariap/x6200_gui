@@ -1,0 +1,38 @@
+# main-tema-vision-cwr: the real main screen under the builtin "VISION" theme
+# (big type for weak eyes: every font three sizes up through fonts_scale(), a low
+# top bar, a tall frequency strip, the S-meter on a row of its own) with the mode
+# in CW-R. It is main-tema-vision with the one variable UI-014 needs: the mode
+# label "CW-R" (4 characters, the widest 4-character mode the radio lists) in the
+# fixed 56 px cell of the top bar, whose text does not fit once VISION scales the
+# fonts (the AGC cell next to it reads "AUTO" and the two peg together). Same
+# radio state as home-usb-20m apart from the mode, so the only variable is the
+# mode label under the scaled fonts.
+
+name main-tema-vision-cwr
+screen main
+
+theme VISION
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode CW-R
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

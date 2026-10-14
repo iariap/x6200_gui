@@ -45,14 +45,23 @@ static bool parse_bool(const char *v, bool *out)
     return false;
 }
 
+/* The mode the fixture spells. The canonical names are the ones the radio itself
+ * lists and accepts (`mode_names[]`, src/remote_server.cpp: LSB, LSB-D, USB,
+ * USB-D, CW, CW-R, AM, NFM), so a fixture can use the same string the user would
+ * send over the remote control; the enum-ish short forms (`cwr`, `usb_dig`) are
+ * kept because the older fixtures use them. */
 static bool parse_mode(const char *v, x6200_mode_t *out)
 {
     if (!strcasecmp(v, "usb"))     { *out = x6200_mode_usb;     return true; }
     if (!strcasecmp(v, "lsb"))     { *out = x6200_mode_lsb;     return true; }
-    if (!strcasecmp(v, "usb-dig") || !strcasecmp(v, "usb_dig")) { *out = x6200_mode_usb_dig; return true; }
-    if (!strcasecmp(v, "lsb-dig") || !strcasecmp(v, "lsb_dig")) { *out = x6200_mode_lsb_dig; return true; }
+    if (!strcasecmp(v, "usb-dig") || !strcasecmp(v, "usb_dig") || !strcasecmp(v, "usb-d")) {
+        *out = x6200_mode_usb_dig; return true;
+    }
+    if (!strcasecmp(v, "lsb-dig") || !strcasecmp(v, "lsb_dig") || !strcasecmp(v, "lsb-d")) {
+        *out = x6200_mode_lsb_dig; return true;
+    }
     if (!strcasecmp(v, "cw"))      { *out = x6200_mode_cw;      return true; }
-    if (!strcasecmp(v, "cwr"))     { *out = x6200_mode_cwr;     return true; }
+    if (!strcasecmp(v, "cwr") || !strcasecmp(v, "cw-r")) { *out = x6200_mode_cwr; return true; }
     if (!strcasecmp(v, "am"))      { *out = x6200_mode_am;      return true; }
     if (!strcasecmp(v, "sam"))     { *out = x6200_mode_sam;     return true; }
     if (!strcasecmp(v, "nfm"))     { *out = x6200_mode_nfm;     return true; }
