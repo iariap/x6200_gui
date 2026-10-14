@@ -1,0 +1,13 @@
+diff --git a/src/buttons.cpp b/src/buttons.cpp
+index 6145278..208dcda 100644
+--- a/src/buttons.cpp
++++ b/src/buttons.cpp
+@@ -573,7 +573,7 @@ void buttons_init(lv_obj_t *parent) {
+         }
+     }
+ 
+-    uint16_t y = 480 - btn_height;
++    uint16_t y = 480 - btn_height + 30;
+     uint16_t x = 0;
+     uint16_t width = 800 / 5;
+ 
