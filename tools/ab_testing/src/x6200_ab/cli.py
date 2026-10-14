@@ -48,7 +48,7 @@ from .quality_gates import ALL_GATES, GateName, GateProfile, GateResult, overall
 from .regions import RegionMap, load_regions
 from .reports import ReportMetadata, write_benchmark_report, write_report
 from .revisions import Revision, RevisionManager, find_repo
-from .scenarios import ScenarioSuite
+from .scenarios import ScenarioSuite, split_by_fixtures_dir
 from .status import Status
 from .theme_files import (
     BASE_PALETTES,
@@ -588,6 +588,11 @@ def cmd_compare(args: argparse.Namespace) -> int:
         revision_a = _materialize(context, manager, args.a, "a")
         suite = ScenarioSuite.from_fixtures_dir(revision_a.fixtures_dir, args.scenario)
         revision_b = _materialize(context, manager, args.b, "b")
+        # A defines the suite. A change may legitimately drop a fixture in B (a screen B
+        # no longer ships): that scenario cannot be rendered on B, so it is left out of the
+        # comparison and reported (payload, text and metadata) instead of aborting the whole
+        # run on a missing file. See tests/test_scenarios.py.
+        suite, removed_in_b = split_by_fixtures_dir(suite, revision_b.fixtures_dir)
         a_captures = capturer.capture_all(
             revision_a,
             suite,
@@ -635,6 +640,7 @@ def cmd_compare(args: argparse.Namespace) -> int:
             date=evaluation.date,
             docker_image=context.runner.image,
             scenario_fixtures={scenario.name: scenario.filename for scenario in suite.scenarios},
+            scenarios_removed_in_b=removed_in_b,
         )
         paths = write_report(
             evaluation,
@@ -651,20 +657,26 @@ def cmd_compare(args: argparse.Namespace) -> int:
             "report": str(paths.root),
             "improvement": evaluation.improvement,
             "gates": [gate.as_dict() for gate in evaluation.gates],
+            "scenarios_removed_in_b": list(removed_in_b),
         }
-        text = _compare_text(evaluation, paths.root)
+        text = _compare_text(evaluation, paths.root, removed_in_b)
         return _emit(args, payload, text, evaluation.status)
     finally:
         _teardown(context, manager)
 
 
-def _compare_text(evaluation: Any, report_root: Path) -> str:
+def _compare_text(evaluation: Any, report_root: Path, removed_in_b: tuple[str, ...] = ()) -> str:
     lines = [
         f"experiment {evaluation.experiment_id}: {evaluation.status.value} "
         f"(exit {evaluation.status.exit_code})"
     ]
     if evaluation.improvement:
         lines.append("IMPROVEMENT: a known issue present in A is fixed in B")
+    if removed_in_b:
+        lines.append(
+            "scenarios REMOVED in B (A's fixture, not shipped by B; left out of the "
+            f"comparison): {', '.join(removed_in_b)}"
+        )
     for gate in evaluation.gates:
         lines.append(
             f"  {gate.name.value:18s} {gate.status.value:15s} "

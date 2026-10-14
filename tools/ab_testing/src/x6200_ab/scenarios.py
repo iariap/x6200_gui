@@ -129,3 +129,27 @@ class ScenarioSuite:
         if not selected:
             raise HarnessError(f"no scenarios found in {fixtures_dir}")
         return cls(scenarios=selected)
+
+
+def split_by_fixtures_dir(
+    suite: ScenarioSuite, fixtures_dir: Path
+) -> tuple[ScenarioSuite, tuple[str, ...]]:
+    """Split a suite into the scenarios a fixtures dir ships and the names it does not.
+
+    The comparison suite comes from A. A change may legitimately drop a fixture in B (a
+    screen B no longer ships), and then that scenario cannot be rendered on B: it is
+    reported and left out of the run instead of aborting the whole comparison on a
+    missing file. A suite that no longer has anything to render is an error.
+    """
+    kept: list[Scenario] = []
+    removed: list[str] = []
+    for scenario in suite.scenarios:
+        if (fixtures_dir / scenario.filename).is_file():
+            kept.append(scenario)
+        else:
+            removed.append(scenario.name)
+    if not kept:
+        raise HarnessError(
+            f"none of the {len(suite.scenarios)} scenario(s) of the suite exist in {fixtures_dir}"
+        )
+    return ScenarioSuite(scenarios=tuple(kept)), tuple(removed)

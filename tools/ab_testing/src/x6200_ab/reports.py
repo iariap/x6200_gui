@@ -48,6 +48,9 @@ class ReportMetadata:
     date: str
     docker_image: str
     scenario_fixtures: dict[str, str]
+    # A's fixtures that B does not ship (a screen B removes): they are left out of the
+    # comparison, so the report has to say it instead of quietly comparing fewer fixtures.
+    scenarios_removed_in_b: tuple[str, ...] = ()
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -61,6 +64,7 @@ class ReportMetadata:
             "numpy_version": _module_version("numpy"),
             "docker_image": self.docker_image,
             "scenario_fixtures": dict(sorted(self.scenario_fixtures.items())),
+            "scenarios_removed_in_b": list(self.scenarios_removed_in_b),
         }
 
 
@@ -303,6 +307,12 @@ def _evidence_section(
     lines.append(f"- Diffs: `{paths.diffs.name}/`")
     lines.append(f"- Logs: `{paths.logs.name}/`")
     lines.append(f"- Docker image: `{metadata.docker_image}`")
+    if metadata.scenarios_removed_in_b:
+        removed = ", ".join(f"`{name}`" for name in metadata.scenarios_removed_in_b)
+        lines.append(
+            f"- Fixtures of A that B does not ship (REMOVED in B, left out of the "
+            f"comparison): {removed}"
+        )
     lines.append("")
     lines.append("### Gates without instrumentation (BLOCKED, never PASS)")
     lines.append("")
@@ -344,6 +354,9 @@ def render_html(evaluation: Evaluation, metadata: ReportMetadata, paths: ReportP
     parts.append(f"<li>B: <code>{evaluation.revision_b.sha}</code></li>")
     parts.append(f"<li>Docker image: <code>{metadata.docker_image}</code></li>")
     parts.append(f"<li>Scenarios: {', '.join(evaluation.scenario_names)}</li>")
+    if metadata.scenarios_removed_in_b:
+        removed = ", ".join(metadata.scenarios_removed_in_b)
+        parts.append(f"<li>Fixtures removed in B (not compared): {removed}</li>")
     parts.append("</ul>")
     parts.append("<h2>Gates</h2>")
     parts.append("<table><tr><th>Gate</th><th>Required</th><th>Status</th><th>Summary</th></tr>")

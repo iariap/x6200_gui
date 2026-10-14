@@ -194,6 +194,11 @@ class Capturer:
         inspect: bool = False,
     ) -> Capture:
         scenario_path = revision.fixtures_dir / scenario.filename
+        if not scenario_path.is_file():
+            raise HarnessError(
+                f"scenario `{scenario.name}` ({scenario.filename}) is not in revision "
+                f"{revision.short_sha}'s fixtures ({revision.fixtures_dir})"
+            )
         parsed = parse_scenario(scenario_path)
         if parsed.name != scenario.name:
             raise HarnessError(
@@ -254,6 +259,11 @@ class Capturer:
         """
         out_dir.mkdir(parents=True, exist_ok=True)
         scenario_path = revision.fixtures_dir / scenario.filename
+        if not scenario_path.is_file():
+            raise HarnessError(
+                f"scenario `{scenario.name}` ({scenario.filename}) is not in revision "
+                f"{revision.short_sha}'s fixtures ({revision.fixtures_dir})"
+            )
         parsed = parse_scenario(scenario_path)
         if parsed.name != scenario.name:
             raise HarnessError(
