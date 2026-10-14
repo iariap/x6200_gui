@@ -1445,6 +1445,319 @@ El render no se toca: los fixtures y `src/` quedan byte-idénticos, así que los
 hashes de determinismo y los contratos de `HEAD` no cambian (ver *Pendientes* para
 el detalle del host).
 
+## Perfil del renderer (UI-07 incremento 1, issue #13) ✅ — sin cambio de render
+
+Primer incremento de #13 (*optimizar el costo de presentación de espectro/cascada*):
+**perfil primero**, con el bench existente y la lectura del código, sin tocar `src/`.
+El incremento **no implementa** la invalidación parcial: el perfil no confirma el
+candidato que la spec suponía, por dos razones medidas (abajo). No se mueve un píxel
+ni un contador: `compare` 18/18 idénticas, `benchmark` Δ0, determinismo con los hashes
+del tip base.
+
+### 1. El full-frame redraw de 384000 px **no** viene del firmware: lo fabrica el bench
+
+La spec partía de `redrawn_area_mean = 384000` (= 800×480) y `flushes_mean = 1.0` en
+todos los escenarios y preguntaba si eso venía de que espectro/cascada invalidan el
+objeto entero cada tick. **No**: viene del lazo del bench.
+
+`tools/ui_harness/src/harness_main.c:307-325` — con `--bench`, **cada** pase medido
+invalida la **pantalla completa** y repinta:
+
+```c
+for (int p = 0; p < scenario.bench_redraw_passes; p++) {
+    lv_obj_invalidate(lv_scr_act());   /* harness_main.c:321 */
+    lv_refr_now(NULL);
+}
+```
+
+y el display del arnés es un framebuffer de pantalla completa con `flush_cb` 1:1
+(`tools/ui_harness/src/display.c:37` `malloc(800*480)`, `display.c:15-36`). Así que el
+rectángulo del flush es la pantalla entera **por construcción**, sea cual sea el
+contenido del fixture. Las tres pruebas de que es el lazo y no los widgets:
+
+1. **Todos** los escenarios miden lo mismo, incluido `dialog-about` (un diálogo, sin
+   espectro ni cascada): `redrawn_area_mean = 384000`, `unique_redrawn_mean = 384000`,
+   `flushes_mean = 1.0` (tabla 1).
+2. Con `bench_redraw_passes 3` (`bench-render`) el área es **exactamente** 3×384000 =
+   1152000 px y los flushes 3.0 (`AB-e2e-benchmark`, milestone 4): el contador escala
+   con el número de veces que el lazo invalida la pantalla, no con lo que dibujan los
+   componentes.
+3. Traza real de los flushes (protocolo al final de la sección 2): con `--bench` los 8
+   pases (3 de warm-up + 5 medidos) son `800x480` cada uno, sin importar el escenario.
+
+> Consecuencia directa: **ningún** cambio de invalidación en el firmware puede mover
+> `redrawn_area_mean`/`flushes_mean`. La puerta de `benchmark` que pedía la spec para
+> este experimento (`área ↓`) es inalcanzable por diseño del arnés, no por el código
+> de la GUI.
+
+### Tabla 1 — bench por escenario (`BENCH-UI07-P1`, 20 frames c/u, host x86)
+
+`uv run x6200-ab benchmark --revision HEAD --experiment-id BENCH-UI07-P1` → PASS.
+Los `render p50/p95` son el proxy de costo del **repaint completo forzado** por el
+lazo; `flushes`/`área` son constantes del arnés (ver arriba).
+
+| escenario | frames | flushes_mean | redrawn_area_mean | unique_redrawn_mean | render p50 (ms) | render p95 (ms) | cv % |
+|---|---|---|---|---|---|---|---|
+| `bench-render` | 20 | 1.0 | 384000 | 384000 | 3.465 | 5.270 | 14.9 |
+| `dialog-about` | 20 | 1.0 | 384000 | 384000 | 6.122 | 6.620 | 8.8 |
+| `home-bateria-externa` | 20 | 1.0 | 384000 | 384000 | 3.202 | 3.798 | 10.7 |
+| `home-frecuencia-extrema` | 20 | 1.0 | 384000 | 384000 | 3.166 | 3.220 | 2.9 |
+| `home-usb-20m` | 20 | 1.0 | 384000 | 384000 | 3.219 | 3.375 | 10.9 |
+| `main-bateria-baja` | 20 | 1.0 | 384000 | 384000 | 3.179 | 3.817 | 7.1 |
+| `main-espectro-agua` | 20 | 1.0 | 384000 | 384000 | 3.397 | 3.774 | 12.6 |
+| `main-foco` | 20 | 1.0 | 384000 | 384000 | 3.268 | 3.537 | 11.2 |
+| `main-otro-tema` | 20 | 1.0 | 384000 | 384000 | 3.125 | 3.254 | 1.9 |
+| `main-tema-classic` | 20 | 1.0 | 384000 | 384000 | 3.226 | 4.274 | 16.3 |
+| `main-tema-holo` | 20 | 1.0 | 384000 | 384000 | 3.288 | 3.751 | 10.4 |
+| `main-tema-material-3` | 20 | 1.0 | 384000 | 384000 | 3.341 | 3.638 | 6.8 |
+| `main-tema-outdoor-negative` | 20 | 1.0 | 384000 | 384000 | 3.232 | 3.443 | 12.2 |
+| `main-tema-rs` | 20 | 1.0 | 384000 | 384000 | 3.228 | 3.402 | 9.7 |
+| `main-tema-vision` | 20 | 1.0 | 384000 | 384000 | 3.303 | 3.657 | 6.5 |
+| `main-tema-vision-cwr` | 20 | 1.0 | 384000 | 384000 | 3.314 | 3.345 | 1.1 |
+| `main-tema-vision-usbd` | 20 | 1.0 | 384000 | 384000 | 3.295 | 3.764 | 8.2 |
+| `main-tx-simulado` | 20 | 1.0 | 384000 | 384000 | 3.287 | 3.568 | 10.6 |
+
+El costo real de un repaint completo es ~3.2-3.5 ms (p50) en x86 y lo que más pesa es
+`dialog-about` (6.1 ms: el diálogo real sobre la pantalla principal). Ese es el número
+que el banco traduciría a presupuesto de frame en el Cortex-A7; **no** es la autonomía
+ni el costo por trama del radio.
+
+### 2. Dónde invalida el firmware (y qué mide el camino **natural**)
+
+El harness tiene una segunda vista, más fiel, de la invalidación: la captura normal
+(sin `--bench`), que termina con **un** repaint completo forzado
+(`harness_main.c:327`) pero durante el avance de reloj virtual deja correr los timers
+y el `scheduler`, que es donde el firmware invalida por sí mismo. Ahí los flushes
+**no** son la pantalla: son objetos.
+
+Traza real de los flushes de `home-usb-20m` (protocolo al final de esta sección;
+`DIAGINV` son las áreas invalidadas que LVGL acumuló en el ciclo y `DIAGOBJ` el nodo
+del árbol cuyo box + 5 px coincide con el rect que se flushea):
+
+```text
+DIAGFLUSH #0 t=1010 area=0,0 800x480
+DIAGINV inv_p=1: #0[0,0 800x480]
+DIAGOBJ d=0 other coords=0,0 800x480          # la pantalla: repaint forzado por el arnés
+DIAGFLUSH #1 t=1040 area=0,0 800x165
+DIAGINV inv_p=2: #0[0,0 800x165] #1[0,235 800x245]
+DIAGOBJ d=1 other coords=0,0 800x160          # spectrum_init(): el objeto del espectro
+DIAGFLUSH #2 t=1040 area=0,235 800x245
+DIAGOBJ d=1 other coords=0,240 800x240        # waterfall_init(): el objeto
+DIAGOBJ d=2 other coords=0,240 800x240        # y su lv_img (el que invalida refresh_waterfall)
+DIAGFLUSH #3 t=1500 area=580,0 220x72         # reloj (timer de 500 ms; caja previa del label)
+DIAGFLUSH #4 t=2000 area=580,0 220x72         # reloj
+DIAGFLUSH #5 t=2200 area=0,0 800x480          # repaint completo forzado por el arnés
+```
+
+`main-foco` es igual más un flush #3 a t=1100 con la banda del espectro
+(`0,0 800x165`, `DIAGOBJ coords=0,0 800x160`): es el `lv_group_focus_next()` del
+settle, que invalida el objeto por el cambio de estado de foco.
+
+Suma = 2×384000 + 132000 + 196000 + 2×15840 = **1127680 px / 6 flushes**, que es
+exactamente el `metrics.flushed_pixels`/`metrics.flushes` que la captura venía
+reportando en las 18 fixtures (commit `9c031c8`, `reports/AB-UI04-EXP5/metrics/a.json`
+y verificado de nuevo en HEAD). `main-foco` tiene **7** flushes y
+1259680 = 1127680 + 132000 px: la banda del espectro del `lv_group_focus_next()` del
+settle.
+
+| escenario (captura, HEAD) | flushes | flushed_pixels |
+|---|---|---|
+| `main-foco` | 7 | 1259680 |
+| `main-tema-holo` / `-material-3` / `-vision` / `-vision-cwr` / `-vision-usbd` | 6 | 1128266 |
+| los otros 12 | 6 | 1127680 |
+
+De esas dos vistas sale el reparto del trabajo por actualización (el rect real con el
+que el firmware invalida y cuánto pesa contra el frame completo):
+
+| región | rectángulo medido | px | qué la invalida |
+|---|---|---|---|
+| espectro | `0,0 800x165` | 132000 | `spectrum_refresh()` → `lv_obj_invalidate(obj)` (`src/spectrum.c:274-276`) |
+| cascada | `0,235 800x245` | 196000 | `refresh_waterfall()` → `redraw_cb()` + `lv_obj_invalidate(img)` (`src/waterfall.c:288-295`) |
+| reloj/estado | `580,0 220x72` | 15840 | `show_time()` cada **500 ms** (`src/clock.c:155`) → `lv_label_set_text` (`src/clock.c:140`) |
+| resto (frecuencia, spots, band plan, botones, panel) | — | 0 | solo en el paint inicial |
+
+Los rectángulos son **el box del objeto más 5 px de cada lado**, recortado al
+viewport. La cadena es: `lv_obj_invalidate` infla la caja por `ext_draw_size` (0 en
+estos objetos), `lv_obj_area_is_visible` recorta contra el padre y llama a
+`lv_obj_get_transformed_area`, que termina en `lv_area_increase(area, 5, 5)`
+(`lvgl/src/core/lv_obj_pos.c`), y `_lv_inv_area` recorta al viewport
+(`lvgl/src/core/lv_refr.c`). El `DIAGOBJ` de arriba lo verifica en los dos sentidos:
+el objeto del espectro (0,0 800x160) da 800x165 por el borde superior recortado, y la
+imagen de la cascada (0,240 800x240) da 800x245. Si en un ciclo hay dos áreas y una
+queda **contenida** en la otra, `_lv_inv_area` descarta la segunda (`lv_refr.c:246-250`):
+es lo que pasa con el reloj, cuyo label cambia de caja al re-renderizarse —la caja
+previa (585,5 210x62) +5 da el `580,0 220x72` medido y la nueva (591,0 209x61) queda
+adentro, por eso el ciclo cierra con `inv_p=1`. Los 5 px son de LVGL, **no** del
+firmware (son hasta 8000 px por objeto de ancho completo), y son el único renglón de
+este perfil que se podría atacar desde un `rounder_cb` del driver, no desde `src/`.
+
+Protocolo de la traza (diagnóstico **temporal**, revertido antes de commitear: el árbol
+queda sin cambios en `tools/ui_harness/`). En `tools/ui_harness/src/display.c`, dentro
+de `flush_cb`, un `fprintf(stderr, ...)` por flush con el rectángulo y el reloj virtual,
+más las áreas invalidadas acumuladas en `lv_disp_get_default()->inv_areas` y el nodo
+del árbol cuyo box + 5 px coincide con el rect (recorrido recursivo); se corre el
+harness local (`docker run … x6200-uiharness`, `make` + `./ui_harness`) capturando
+`stderr`. El PNG y los contadores no cambian (la instrumentación no toca el camino de
+dibujo; los 18 sha256 no se movieron durante el diagnóstico):
+
+```diff
++#include <stdio.h>
++#include "virtual_time.h"
+ static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *px)
+ {
+     uint32_t pixels = 0;
+
++    static unsigned flush_seq;
++    lv_disp_t *d = lv_disp_get_default();
++    fprintf(stderr, "DIAGFLUSH #%u t=%llu area=%d,%d %dx%d\n", flush_seq++,
++            (unsigned long long) virtual_time_now_ms(), area->x1, area->y1,
++            area->x2 - area->x1 + 1, area->y2 - area->y1 + 1);
++    if (d) {
++        fprintf(stderr, "DIAGINV inv_p=%u:", d->inv_p);
++        for (uint16_t i = 0; i < d->inv_p; i++) {
++            fprintf(stderr, " #%u[%d,%d %dx%d]%s", i,
++                    d->inv_areas[i].x1, d->inv_areas[i].y1,
++                    d->inv_areas[i].x2 - d->inv_areas[i].x1 + 1,
++                    d->inv_areas[i].y2 - d->inv_areas[i].y1 + 1,
++                    d->inv_area_joined[i] ? "(joined)" : "");
++        }
++        fprintf(stderr, "\n");
++    }
++    diag_walk(lv_scr_act(), area, 0);   /* coords + 5 px recortados al viewport */
+     bench_flush_begin();
+```
+
+### 3. Hipótesis ordenadas por área ahorrable (y qué necesitaría cada una)
+
+| # | candidato | área por actualización | ¿ahorrable con el PNG idéntico? | qué necesitaría para ser válido |
+|---|---|---|---|---|
+| H2 | **cascada**: invalidar la imagen entera por cada fila nueva | 196000 px (51% del frame) | **No** | la cascada se "scrollea" con un remapeo modular: `dst_y = ((height - src_y + last_row_id) % height)` (`src/waterfall.c:258`) y `redraw_cb` reescribe los 800×240 px de `frame`; **cada** fila destino cambia con cada fila nueva. Invalidar solo la fila nueva deja la imagen vieja (PNG distinto). El ahorro de *trabajo de C* que sí existe (memmove + 1 fila) es un cambio de **algoritmo**, no de invalidación, y el bench no lo mide (`redraw_cb` corre al llegar datos, `src/waterfall.c:137`, no en el repaint forzado). |
+| H1 | **espectro**: invalidar el objeto entero por cada trama de FFT | 132000 px (34%) | **No** | `spectrum_data()` reemplaza los **800** bins (`SPECTRUM_NFFT` = `SPECTRUM_SIZE` = 800, `src/dsp.h:32`/`src/spectrum.c:31`, llamada en `src/dsp.cpp:189`) y `spectrum_draw_cb` dibuja las 800 columnas desde ese buffer (`src/spectrum.c:121-174`): todos los píxeles del objeto pueden cambiar. La invalidación actual ya es el mínimo correcto. |
+| H4 | banda del reloj/estado | 15840 px cada 500 ms | No | es `lv_label_set_text` sobre el label del reloj (se invalida su caja previa, 210x62): no hay menos que invalidar. 1.4% del costo natural. |
+| H3 | los 5 px por lado que LVGL agrega a cada objeto | 8000 px por objeto de ancho completo | No, y no es del firmware | sería un `rounder_cb` del driver (arnés/display real), no un cambio de `src/`. |
+| H5 | resto de la pantalla (filas 165..234, 56000 px) | 0 | — | los objetos estáticos (frecuencia, spots, band plan, botones, panel) **no** se invalidan por frame: no hay costo que recortar. |
+
+Orden por área: H2 (196000) > H1 (132000) > H4 (15840) > H3 > H5. **Ninguno ahorra
+área con el PNG idéntico**, así que este incremento no toca `src/` (spec §3).
+
+### 4. Prueba diferencial (anti-falso-verde, y por qué la Parte B no se implementa)
+
+Para que la conclusión no sea una lectura de código, se forzó una invalidación parcial
+en el espectro **y se revirtió** (mismo protocolo temporal que usan las verificaciones
+anti-falso-verde de los incrementos anteriores):
+
+```diff
+ static void spectrum_refresh(void *data) {
+-    lv_obj_invalidate(obj);
++    lv_area_t area;
++    lv_obj_get_coords(obj, &area);
++    area.y1 = area.y1 + 80;          /* sólo la mitad inferior: 800x80 */
++    lv_obj_invalidate_area(obj, &area);
+ }
+```
+
+Resultado (3 fixtures, HEAD, harness local):
+
+```text
+                            flushes  flushed_pixels   PNG sha256
+home-usb-20m     antes            6         1127680   a656e0961a41c890...
+                 parcial          6         1067680   a656e0961a41c890...  (idéntico)
+bench-render     antes            6         1127680   5ba21bea6dcd30cf...
+                 parcial          6         1067680   5ba21bea6dcd30cf...  (idéntico)
+main-espectro-agua antes          6         1127680   41cc0d5051a06250...
+                 parcial          6         1067680   41cc0d5051a06250...  (idéntico)
+
+--bench, con la invalidación parcial:  flushes=1  redrawn_area=384000  unique=384000  (sin cambio)
+```
+
+Los −60000 px son exactamente la banda que se dejó de invalidar (132000 → 72000:
+`0,75 800x90` con los 5 px de LVGL). Tres hechos, los tres incómodos para la hipótesis
+de la spec:
+
+1. **El bench es ciego a la invalidación**: `redrawn_area`/`flushes` no se mueven ni un
+   dígito. La puerta que la spec proponía no puede aprobar ni rechazar el cambio.
+2. **El camino natural sí es sensible** (1127680 → 1067680, determinista): existe un
+   contador del framework que mide el trabajo de invalidación de verdad.
+3. **El gate de PNG no puede validar una invalidación parcial**: la mitad del área del
+   espectro sin invalidar da un PNG **byte-idéntico**. El motivo es del arnés: los datos
+   se alimentan **una sola vez**, al construir la pantalla
+   (`tools/ui_harness/src/screens.c:54` → `signal_gen_feed`), así que el
+   `lv_obj_invalidate` del espectro a t=1040 es redundante (su contenido ya se pintó
+   igual en el paint inicial). Con datos por frame (como en el radio: `spectrum_fps_ms`
+   / `waterfall_fps_ms`, `src/dsp.cpp:186-197`) esa mitad habría quedado vieja.
+
+Lo que esto dice del incremento: implementar la invalidación parcial en
+espectro/cascada sería (a) **incorrecto en el radio** (los 800 bins y las 240 filas
+cambian enteros por actualización, así que cualquier sub-región deja píxeles viejos) y
+(b) **indemostrable en host**: el gate de PNG no distingue una invalidación parcial
+correcta de una rota con los fixtures actuales, y el gate de `benchmark` no ve ninguna
+de las dos. Sin camino de verificación no hay experimento: se termina el incremento con
+el perfil (spec §3), sin tocar `src/`.
+
+### 5. Qué proveería el banco/ARM y qué le falta al arnés
+
+- **ARM / banco (hardware-pass, BLOCKED)**: el Cortex-A7 con el driver real mide lo que
+  el host no: la **cadencia** real (`spectrum_fps_ms`/`waterfall_fps_ms`, una trama de
+  espectro y una fila de cascada por intervalo, `src/dsp.cpp:186-197`) y el costo del
+  flush real del framebuffer (el driver copia el rectángulo a la pantalla; el arnés
+  copia a RAM). Ahí `1127680 px` deja de ser un número de `memcpy` y pasa a ser trabajo
+  de bus/DRAM. Nada de esto se puede atribuir desde el host.
+- **Próximo incremento del arnés (si #13 quiere medir invalidación en host)**: (1) un
+  modo de bench que **no** fuerce `lv_obj_invalidate(lv_scr_act())` sino que corra
+  timers/scheduler sobre el reloj virtual y mida los flushes que el firmware produce;
+  (2) fixtures con **datos por frame** (hoy `signal_gen_feed` corre una vez,
+  `screens.c:54`), sin los cuales ningún cambio de invalidación en espectro/cascada es
+  verificable en píxeles (medido: la mitad del área da PNG idéntico). Sin (1) y (2),
+  el trabajo de presentación de #13 no es host-demostrable y queda para el banco.
+
+### Evidencia (host, 2026-10-14, `d9c63b2` = tip base; este incremento no cambia `src/`)
+
+```text
+$ tests/check_harness_determinism.sh          # 18 fixtures x2, hashes = los del tip base
+bench-render: 5ba21bea6dcd30cffeea0bf171f578ba3fb51c811e44aa22c875c5fc74378beb
+home-usb-20m: a656e0961a41c890bd6663a46dc3d36d2606df4f0b56eae126a88ac32bb974f9
+main-tema-vision-usbd: aab452ee2ca0f143efbeaf6dc9159448dd706e9dedf565420b2748bbefbf96d6
+main-foco: a656e0961a41c890bd6663a46dc3d36d2606df4f0b56eae126a88ac32bb974f9
+PASS: deterministic (identical PNGs for every fixture)
+
+$ cd tools/ab_testing && uv run x6200-ab benchmark --revision HEAD --experiment-id BENCH-UI07-P1
+benchmark d9c63b2d92b5: PASS (exit 0) — tabla 1
+
+$ uv run x6200-ab compare --a d9c63b2 --b HEAD --experiment-id AB-UI07-T1
+experiment AB-UI07-T1: PASS (exit 0) — 18/18 fixtures pixel-identical (changed_pixels 0)
+  (A y B son el mismo commit: este incremento sólo agrega este documento y los reportes)
+
+$ uv run x6200-ab benchmark --a d9c63b2 --b HEAD --experiment-id BENCH-UI07-T1
+benchmark d9c63b2d92b5 (A) vs d9c63b2d92b5 (B): FAIL (exit 1) por p95 en 2 escenarios
+  flushes 1.0 -> 1.0 y área 384000 -> 384000 px en los 18 (Δ 0.0%): el trabajo es idéntico
+  bench-render +38.7% y main-espectro-agua +47.8% de p95 — ruido del host (load ~1.9)
+$ uv run x6200-ab benchmark --a d9c63b2 --b HEAD --experiment-id BENCH-UI07-T1-repeat
+benchmark ...: FAIL (exit 1) — ahora falla OTRO escenario (main-tema-classic +39.8%) y los
+  dos anteriores pasan (bench-render -5.1%, main-espectro-agua +6.1%); flushes/área Δ 0.0%
+  otra vez. Los dos reportes quedan commiteados lado a lado.
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts d9c63b2d92b5: PASS — 180 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited d9c63b2d92b5: 14 known issues — 0 reproduced, 12 unverified; structural
+inspection REAL over 1572 objects on 18 scenario(s): 0 structural finding(s)
+
+$ uv run pytest -m "not e2e" -q   → 132 passed, 17 deselected
+$ uv run pytest -m e2e -q         → 17 passed
+$ tests/native/run_native_tests.sh → 545 comprobaciones, 0 fallos + 7, 0 fallos
+repo static checks (cfg_fills/actions/settings_focus/apps_menu/app_handlers/wcag) → PASS
+ruff check / ruff format --check → limpios; ty (con la lista de archivos) → limpio
+```
+
+El `FAIL` de las dos corridas de `benchmark` es el caso ya documentado
+(`BENCH-UI04-EXP3-repeat`, `BENCH-UI05-T3-repeat`): con load ~2-4 el veredicto de p95 a
+4 rondas × 5 frames es ruido, y acá el A/B es **el mismo commit**, así que no hay
+regresión posible. Lo que decide el costo real (flushes y área redibujada) es idéntico
+y estable en las 18. Los reportes quedan en
+[`tools/ab_testing/reports/AB-UI07-T1/`](../tools/ab_testing/reports/AB-UI07-T1/),
+`BENCH-UI07-P1/`, `BENCH-UI07-T1/` y `BENCH-UI07-T1-repeat/`.
+
 ## Pendientes
 
 - **UI-05 (Flex/Grid) sigue abierto**: el **incremento 1** fue la capa de tokens
@@ -1463,6 +1776,16 @@ el detalle del host).
   incrementos siguientes de #12 deciden si se deriva esa paleta dentro del framework
   o se deja sólo en `tests/check_wcag.py`, y suman focus states / waterfall palettes.
   Sin hallazgos estáticos nuevos (ver la sección de UI-06 arriba).
+
+- **UI-07 (render) incremento 1 hecho — perfil, sin cambio de render** (sección
+  *Perfil del renderer*): el perfil **descarta** el candidato de invalidación parcial que
+  suponía la spec (el full-frame de 384000 px lo fabrica el lazo del bench y los objetos
+  de espectro/cascada cambian enteros por actualización, así que no hay sub-región
+  correcta que invalidar). Si #13 sigue, el primer paso es del **arnés**, no de `src/`:
+  un modo de bench que mida la invalidación natural (hoy `--bench` invalida la pantalla)
+  y fixtures con datos por frame (hoy `signal_gen_feed` corre una vez,
+  `screens.c:54`). Hardware/Energy siguen **BLOCKED** (sin banco/radio): la cadencia y el
+  costo del flush real son del pase de hardware.
 
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
   Hardware/Energy quedan BLOCKED/PENDING, nunca PASS por default.
