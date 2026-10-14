@@ -11,6 +11,10 @@
 #include "liquid/liquid.h"
 #include "speex/speex_preprocess.h"
 
+/* La firma del nivel del backlight que este stub implementa (misma declaracion
+ * que ve el ROM y el test: src/backlight_level.h). */
+#include "backlight_level.h"
+
 /* ---------------- LVGL ---------------- */
 
 static uint32_t test_tick = 0;
@@ -137,4 +141,32 @@ int test_waterfall_battery_calls(void) {
 void test_waterfall_battery_reset(void) {
     waterfall_battery_mode = false;
     waterfall_battery_calls = 0;
+}
+
+/* ---------------- backlight: wiring del brillo de la politica visual -------- */
+
+/* src/visual_policy.c aplica el perfil al nivel del backlight (UI-08 incr. 3)
+ * por backlight_set_brightness() (src/backlight_level.h). El test nativo no
+ * linkea backlight.c (sysfs y GPIO reales), asi que este stub registra la
+ * ultima llamada (y cuantas hubo): la decision de la politica se comprueba sin
+ * la senal de hardware, que es de la pasada fisica. */
+static int16_t backlight_brightness;
+static int     backlight_brightness_calls;
+
+void backlight_set_brightness(int16_t value) {
+    backlight_brightness = value;
+    backlight_brightness_calls++;
+}
+
+int16_t test_backlight_brightness_level(void) {
+    return backlight_brightness;
+}
+
+int test_backlight_brightness_calls(void) {
+    return backlight_brightness_calls;
+}
+
+void test_backlight_brightness_reset(void) {
+    backlight_brightness = 0;
+    backlight_brightness_calls = 0;
 }

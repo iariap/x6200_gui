@@ -1,20 +1,23 @@
 /*
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  Xiegu X6200 LVGL GUI - politica visual de bateria (UI-08 incr. 1 y 2).
+ *  Xiegu X6200 LVGL GUI - politica visual de bateria (UI-08 incr. 1, 2 y 3).
  *
  *  Implementacion de visual_policy.h. La evaluacion es pura y sin
  *  dependencias; el test nativo (tests/native/test_visual_policy.c) la cubre
- *  entera. La unica salida al mundo es
+ *  entera. Las salidas al mundo son
  *  visual_policy_waterfall_apply() (incr. 2), que aplica el perfil al modo
- *  Ahorro del waterfall: por eso este archivo incluye waterfall.h, y el test
- *  nativo compila contra el stub que registra esa llamada.
+ *  Ahorro del waterfall, y visual_policy_brightness_apply() (incr. 3), que lo
+ *  aplica al nivel del backlight: por eso este archivo incluye waterfall.h y
+ *  backlight_level.h, y el test nativo compila contra los stubs que registran
+ *  esas llamadas.
  */
 
 #include "visual_policy.h"
 
 #include <string.h>
 
+#include "backlight_level.h"
 #include "waterfall.h"
 
 /* Umbral de entrada (bajando) y de salida (subiendo) por banda. QUALITY, la
@@ -30,6 +33,29 @@ static const vp_band_t VP_BANDS[VP_PROFILE_COUNT] = {
     [VP_ECO]      = { VP_ECO_ENTER_MV,       VP_ECO_EXIT_MV },
     [VP_CRITICAL] = { VP_CRITICAL_ENTER_MV,  VP_CRITICAL_EXIT_MV },
 };
+
+/* Cap de brillo por perfil (nivel maximo permitido sobre el setting del
+ * usuario). Es la tabla del contrato del incr. 3: QUALITY y BALANCED no
+ * recortan (cap = maximo del panel) y los que ahorran si. La tabla y los
+ * #define son el unico lugar con los valores; el test nativo los fija con
+ * literales, asi que mover un cap deja el test rojo. */
+static const int16_t VP_BRIGHTNESS_CAP[VP_PROFILE_COUNT] = {
+    [VP_QUALITY]  = VP_BRIGHTNESS_QUALITY,
+    [VP_BALANCED] = VP_BRIGHTNESS_BALANCED,
+    [VP_ECO]      = VP_BRIGHTNESS_ECO,
+    [VP_CRITICAL] = VP_BRIGHTNESS_CRITICAL,
+};
+
+/* El cap no puede salirse del dominio del panel (el slider de Ajustes), y solo
+ * puede bajar: si creciera al ahorrar mas, un perfil mas austero seria mas
+ * brillante que uno mejor. */
+_Static_assert(VP_BRIGHTNESS_CRITICAL >= 0 &&
+               VP_BRIGHTNESS_CRITICAL < VP_BRIGHTNESS_ECO &&
+               VP_BRIGHTNESS_ECO < VP_BRIGHTNESS_MAX,
+               "ECO y CRITICAL tienen que recortar de verdad, en ese orden");
+_Static_assert(VP_BRIGHTNESS_QUALITY == VP_BRIGHTNESS_MAX &&
+               VP_BRIGHTNESS_BALANCED == VP_BRIGHTNESS_MAX,
+               "QUALITY y BALANCED no recortan: cap = maximo del panel");
 
 /* La muestra se descarta entera si el voltaje esta fuera de rango, la
  * capacidad no es un porcentaje, o la bandera de carga es imposible (cargando
@@ -154,4 +180,23 @@ void visual_policy_waterfall_apply(visual_profile_t profile, bool user_battery_m
     bool saving = (profile == VP_ECO || profile == VP_CRITICAL);
 
     waterfall_set_battery_mode(saving || user_battery_mode);
+}
+
+void visual_policy_brightness_apply(visual_profile_t profile, int16_t user_setting) {
+    /* Un perfil fuera del rango del enum no puede indexar la tabla: se trata
+     * como el perfil sin recorte (el mismo que la politica usa por defecto). */
+    int index = (int) profile;
+
+    if (index < 0 || index >= (int) VP_PROFILE_COUNT) {
+        index = (int) VP_QUALITY;
+    }
+
+    int16_t cap = VP_BRIGHTNESS_CAP[index];
+
+    /* El cap solo BAJA el nivel: el setting del usuario es el techo y nunca se
+     * escribe (runtime, el disco no se toca). Un nivel negativo (el usuario
+     * apago el display) queda negativo: el perfil no lo revive. */
+    int16_t level = (user_setting < cap) ? user_setting : cap;
+
+    backlight_set_brightness(level);
 }

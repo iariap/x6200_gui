@@ -1,5 +1,5 @@
 /*
- * Native test for src/visual_policy.c (issue #14, UI-08 incrementos 1 y 2).
+ * Native test for src/visual_policy.c (issue #14, UI-08 incrementos 1, 2 y 3).
  *
  * La evaluacion es pura y sin dependencias, asi que se prueba directo, sin
  * stubs:
@@ -16,8 +16,12 @@
  * (tests/native/stubs/stubs.c): cuantos llamados hubo y con que valor, sin el
  * render ni el flujo de radio.
  *
- * El test no lleva literales de umbral: usa los #define del header, que son el
- * contrato que el wiring del incremento 2 comparte con el ROM y con el arnes.
+ * El wiring del incremento 3 (el perfil -> el nivel del backlight) se prueba
+ * igual, contra el stub que registra la llamada a backlight_set_brightness: la
+ * tabla perfil -> cap, el borde exacto del cap y que el perfil nunca suba el
+ * setting del usuario. Los cuatro caps declarados van como literales en la
+ * tabla de casos; el resto usa los #define del header, que son el contrato que
+ * el wiring comparte con el ROM y con el arnes.
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -32,6 +36,11 @@
 void test_waterfall_battery_reset(void);
 bool test_waterfall_battery_mode(void);
 int  test_waterfall_battery_calls(void);
+
+/* Registro del stub de backlight (tests/native/stubs/stubs.c). */
+void    test_backlight_brightness_reset(void);
+int16_t test_backlight_brightness_level(void);
+int     test_backlight_brightness_calls(void);
 
 /* Instante fijo; la muestra es fresca (age 0) salvo en los casos de stale,
  * donde se mueve last_valid_ms. */
@@ -362,4 +371,98 @@ void test_visual_policy(void) {
     visual_policy_init(&state);
     r = visual_policy_eval(&state, VP_ECO_ENTER_MV - 200u, 0, 76, false, NOW, NOW, VP_AUTO);
     CHECK(r.profile == VP_ECO);
+
+    /* --- Wiring del incr. 3: el perfil -> el nivel del backlight. La tabla
+     * perfil -> cap va con los CUATRO caps declarados como literales: el .c usa
+     * los #define, asi que estos numeros son el unico lugar donde mover un cap
+     * deja el test rojo (los #define del header sostienen el resto). El stub
+     * registra cada llamada. --- */
+    CHECK(VP_BRIGHTNESS_QUALITY == VP_BRIGHTNESS_MAX);
+    CHECK(VP_BRIGHTNESS_BALANCED == VP_BRIGHTNESS_MAX);
+    CHECK(VP_BRIGHTNESS_ECO < VP_BRIGHTNESS_MAX);
+    CHECK(VP_BRIGHTNESS_CRITICAL < VP_BRIGHTNESS_ECO);
+    CHECK(VP_BRIGHTNESS_CRITICAL >= 0);
+    CHECK(VP_BRIGHTNESS_OFF < 0);
+    {
+        static const struct {
+            visual_profile_t profile;
+            int16_t          cap;      /* el cap declarado por perfil */
+        } cases[] = {
+            { VP_QUALITY,  9 },
+            { VP_BALANCED, 9 },
+            { VP_ECO,      6 },
+            { VP_CRITICAL, 3 },
+        };
+
+        for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+            /* El usuario pide el maximo: manda el cap del perfil. */
+            test_backlight_brightness_reset();
+            visual_policy_brightness_apply(cases[i].profile, VP_BRIGHTNESS_MAX);
+            CHECK(test_backlight_brightness_calls() == 1);
+            CHECK(test_backlight_brightness_level() == cases[i].cap);
+
+            /* Un setting por debajo del cap pasa intacto: el perfil no sube. */
+            test_backlight_brightness_reset();
+            visual_policy_brightness_apply(cases[i].profile, 1);
+            CHECK(test_backlight_brightness_calls() == 1);
+            CHECK(test_backlight_brightness_level() == 1);
+
+            /* Justo en el cap no hay recorte. */
+            test_backlight_brightness_reset();
+            visual_policy_brightness_apply(cases[i].profile, cases[i].cap);
+            CHECK(test_backlight_brightness_level() == cases[i].cap);
+
+            /* El usuario apago el display (VP_BRIGHTNESS_OFF): ningun perfil,
+             * ni el mas austero, lo revive. */
+            test_backlight_brightness_reset();
+            visual_policy_brightness_apply(cases[i].profile, VP_BRIGHTNESS_OFF);
+            CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_OFF);
+        }
+    }
+
+    /* --- El borde del cap es exacto (con los #define del header): por encima se
+     * recorta, en el cap se aplica, por debajo pasa. --- */
+    test_backlight_brightness_reset();
+    visual_policy_brightness_apply(VP_ECO, VP_BRIGHTNESS_ECO + 1);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_ECO);
+    visual_policy_brightness_apply(VP_ECO, VP_BRIGHTNESS_ECO);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_ECO);
+    visual_policy_brightness_apply(VP_ECO, VP_BRIGHTNESS_ECO - 1);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_ECO - 1);
+    CHECK(test_backlight_brightness_calls() == 3);
+
+    /* --- Un perfil fuera del enum no puede indexar la tabla: se trata como el
+     * perfil sin recorte (el estado por defecto de la politica). --- */
+    test_backlight_brightness_reset();
+    visual_policy_brightness_apply((visual_profile_t) 99, VP_BRIGHTNESS_MAX);
+    CHECK(test_backlight_brightness_calls() == 1);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_MAX);
+
+    /* --- De punta a punta con la evaluacion: el perfil sale del pack y el nivel
+     * aplicado es el recorte de ESE perfil, no de un caso armado a mano. --- */
+    visual_policy_init(&state);
+    r = auto_vbat(&state, VP_ECO_ENTER_MV);            /* ECO */
+    CHECK(r.profile == VP_ECO);
+    test_backlight_brightness_reset();
+    visual_policy_brightness_apply(r.profile, VP_BRIGHTNESS_MAX);
+    CHECK(test_backlight_brightness_calls() == 1);
+    CHECK(test_backlight_brightness_level() == 6);     /* el cap declarado de ECO */
+
+    r = auto_vbat(&state, VP_ECO_EXIT_MV);             /* BALANCED */
+    CHECK(r.profile == VP_BALANCED);
+    test_backlight_brightness_reset();
+    visual_policy_brightness_apply(r.profile, VP_BRIGHTNESS_ECO);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_ECO);  /* sin recorte */
+
+    r = auto_vbat(&state, VP_CRITICAL_ENTER_MV);       /* CRITICAL */
+    CHECK(r.profile == VP_CRITICAL);
+    test_backlight_brightness_reset();
+    visual_policy_brightness_apply(r.profile, VP_BRIGHTNESS_MAX);
+    CHECK(test_backlight_brightness_level() == 3);     /* el cap declarado de CRITICAL */
+
+    r = visual_policy_eval(&state, 13000, VP_VEXT_PRESENT_MV, 50, false, NOW, NOW, VP_AUTO);
+    CHECK(r.profile == VP_QUALITY);                    /* fuente externa */
+    test_backlight_brightness_reset();
+    visual_policy_brightness_apply(r.profile, VP_BRIGHTNESS_ECO);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_ECO);  /* sin recorte */
 }
