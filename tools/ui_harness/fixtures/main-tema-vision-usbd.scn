@@ -1,0 +1,39 @@
+# main-tema-vision-usbd: the same main screen as main-tema-vision-cwr with the
+# mode in USB-D. It is the VISION fixture that makes the top bar's mode cell
+# measurably overflow: `USB-D` (5 characters) is the widest mode the radio lists
+# (`mode_names[]`, src/remote_server.cpp) and, once fonts_scale() widens it to
+# sony_26, its label measures 66 px in the fixed 56 px cell of the top bar, so the
+# WRAP label grows past the box the cell clips (`typography_text_overflow`). The
+# 4-character modes sit at the cell's edge instead of crossing it: `CW-R` measures
+# 56 px, exactly the cell width (0 px of margin, which is the `CW-RAUTO` pegging of
+# issue #28 in main-tema-vision-cwr), so it does not wrap and the contract cannot
+# fire on it. Same radio state as home-usb-20m apart from the mode.
+
+name main-tema-vision-usbd
+screen main
+
+theme VISION
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode USB-D
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

@@ -51,14 +51,14 @@ typography:
 # or is listed here. Each entry needs a reason, an author and an expiry date —
 # never a global, permanent exemption.
 #
-# The three entries below declare where the pixels of one fix move: UI-011 and
-# UI-012 are structural findings of VISION (`typography_missing_glyph`,
+# The four entries below declare where the pixels of one fix move: UI-011,
+# UI-012 and UI-014 are structural findings of VISION (`typography_missing_glyph`,
 # `typography_text_overflow`), whose rule says *what* is wrong but never where
 # the pixels move, and UI-010 was a pixel-region finding of the light Outdoor
 # theme whose scoped exclusion was withdrawn from known_issues.yaml in the same
 # change as the fix. The region is declared here, scoped and dated like every
-# other waiver; several entries may name the same region (the top band holds two
-# fixes) and the gate reads them as a set.
+# other waiver; several entries may name the same region (the top band holds
+# three fixes) and the gate reads them as a set.
 expected_changes:
   # AB-UI04-EXP1 (UI-011): restoring the icon glyph ranges of the scaled VISION
   # fonts redraws the power clock (region `reloj_potencia`, inside the top band)
@@ -103,6 +103,25 @@ expected_changes:
       `main-otro-tema`). The only other theme whose `text` role is not white is
       Material 3 (#e2e2e9), whose three labels move by that same 29/255 step; the
       other fourteen fixtures are byte-identical.
+    author: ui04-tipografia
+    until: 2027-03-31
+
+  # AB-UI04-EXP5 (UI-014): the mode cell of the top bar also goes back to the font
+  # size of the other themes under VISION, next to the VFO cell UI-012 fixed. The
+  # 4-character mode `CW-R` measured exactly the cell width (0 px of margin, the
+  # `CW-RAUTO` pegging of issue #28); the widest mode (`USB-D`) overflowed it.
+  - region: barra_superior
+    reason: >
+      UI-014: the top bar's mode cell (src/info.c, items[INFO_MODE]) joins the VFO
+      cell in drawing with the font size of the other themes under VISION, because
+      once fonts_scale() widened the label `CW-R` it measured exactly the 56 px of
+      the fixed cell (0 px of margin, which is why `CW-R` pegs to the AGC cell's
+      `AUTO` and the two read as `CW-RAUTO`, the finding of issue #28) and `USB-D`
+      measured 66 px and wrapped to a second line the cell clipped. Measured: `CW-R`
+      goes from 56 to 42 px and `USB-D` from 66 to 52 px in the 56 px cell. The only
+      pixels that move are the mode cell's glyphs inside `barra_superior` (three
+      VISION fixtures: the mode cell is drawn with the smaller font whichever the
+      mode), and every other fixture stays byte-identical.
     author: ui04-tipografia
     until: 2027-03-31
 

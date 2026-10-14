@@ -122,15 +122,21 @@ lv_obj_t * info_init(lv_obj_t * parent) {
         }
     }
 
-    /* La celda del VFO es la unica que no entra cuando VISION escala las fuentes
-     * (fonts_scale, tres pasos): las seis celdas siguen siendo las 56x26 fijas del
-     * bitmap de la barra (arriba) y `VFO-A` pasa de 48 a 66 px de ancho, mas que
-     * la celda, asi que el WRAP la parte en dos lineas y la celda recorta la
-     * segunda: en pantalla queda "VFO-" y el "A" no se ve (UI-012). Las otras
-     * cinco celdas ya entran con la fuente grande, asi que solo el VFO vuelve al
-     * tamano de los otros temas -- el mismo idioma que NF() en
-     * src/cluster_column.c, que tambien tiene columnas de ancho fijo. */
+    /* Dos de las seis celdas no entran cuando VISION escala las fuentes
+     * (fonts_scale, tres pasos): las seis siguen siendo las 56x26 fijas del bitmap
+     * de la barra (arriba) y con la fuente grande `VFO-A` pasa de 48 a 66 px de
+     * ancho, mas que la celda, asi que el WRAP la parte en dos lineas y la celda
+     * recorta la segunda: en pantalla queda "VFO-" y el "A" no se ve (UI-012). La
+     * celda del modo tiene el mismo problema y se mide segun el modo: `CW-R` mide
+     * exactamente 56 px, el ancho de la celda, asi que queda con 0 px de margen y
+     * se pega a la celda de AGC (que muestra "AUTO" -> en pantalla se lee
+     * "CW-RAUTO", UI-014), y `USB-D` mide 66 px y tambien se parte y se recorta.
+     * Las dos celdas vuelven al tamano de los otros temas -- el mismo idioma que
+     * NF() en src/cluster_column.c, que tambien tiene columnas de ancho fijo. */
     lv_obj_set_style_text_font(items[INFO_VFO],
+                               theme_shape.vision ? font_down(UI_INFO_FONT, VISION_FONT_STEPS) : UI_INFO_FONT,
+                               0);
+    lv_obj_set_style_text_font(items[INFO_MODE],
                                theme_shape.vision ? font_down(UI_INFO_FONT, VISION_FONT_STEPS) : UI_INFO_FONT,
                                0);
 

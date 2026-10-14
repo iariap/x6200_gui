@@ -289,6 +289,57 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
 
 ---
 
+## UI-014 — VISION: la celda del modo no entra en su celda de 56 px (`CW-R` se pega a `AUTO`; `USB-D` se parte)
+
+- **Severidad**: minor.
+- **Fixture**: `main-tema-vision-usbd` (`USB-D`, el fixture que dispara el contrato);
+  `main-tema-vision-cwr` (`CW-R`) es la evidencia del pegado reportado.
+- **Estado**: `fixed` (UI-04 / AB-UI04-EXP5). El contrato no lleva ninguna
+  **excepción** en `quality/contracts.yaml`: sin waiver, una reaparición vuelve a
+  fallar la corrida.
+- **Síntoma** (issue #28, evidencia de radio `e4c329c`): con **VISION** y el modo en
+  **`CW-R`** la celda del modo se pega a la de `AUTO` y en pantalla se lee
+  **`CW-RAUTO`**; con `CW` (3 caracteres) no pasa. El hermano exacto de UI-012, en
+  la misma barra (`src/info.c`) y con el mismo defecto de fondo: la geometría fija
+  de 56x26 contra las fuentes que `fonts_scale()` agranda tres pasos.
+- **Causa**: `src/info.c` crea las seis celdas de la barra con el tamaño fijo de
+  `src/ui_tokens.h` (`UI_INFO_CELL_W` = 56) mientras la fuente sale de
+  `info_item_style` (`src/styles.c`, `sony_20`, que VISION escala a `sony_26`). UI-012
+  le devolvió a la celda del **VFO** la fuente de los otros temas y la celda del
+  **modo** (`items[INFO_MODE]`) quedó sin ese tratamiento. Medido con las métricas
+  propias de LVGL (`lv_txt_get_size`, inspección estructural, sin OCR): `CW-R` mide
+  **exactamente 56 px**, el ancho de la celda — **0 px de margen**, que es el pegado
+  a la celda de AGC (que muestra `AUTO`); `USB-D`, el modo más ancho de los que la
+  radio lista (`mode_names[]`, `src/remote_server.cpp`), mide **66 px** y el `WRAP` lo
+  parte en dos líneas que la celda recorta. `CW`, `LSB`, `AM`, `NFM`, `SAM` y `WFM`
+  (hasta 54 px) ya entraban.
+- **Fix en el código** (`src/info.c`): bajo `theme_shape.vision` la celda del modo
+  usa la fuente de los otros temas —
+  `font_down(UI_INFO_FONT, VISION_FONT_STEPS)` = `sony_14`, el mismo idioma que
+  `NF()` de `src/cluster_column.c` para columnas de ancho fijo y que la celda del VFO
+  de UI-012. Medido: `CW-R` pasa de **56 a 42 px** y `USB-D` de **66 a 52 px** en la
+  celda de 56. Las otras cuatro celdas y el VFO no se tocan y los temas que no son
+  VISION quedan **byte-idénticos**, porque el cambio está detrás de
+  `theme_shape.vision`.
+- **Cómo lo reproduce el arnés**: el contrato `typography_text_overflow` sobre la
+  inspección estructural. Sobre A (`9c031c8`, el commit que sólo suma los fixtures)
+  falla con `text 'USB-D' does not fit its 56x26 box (WRAP)` en
+  `main-tema-vision-usbd`; sobre B (`7b644a7`, el fix) el audit da **PASS** (0
+  findings) y contracts **PASS** (180 checks). Nota medida: `main-tema-vision-cwr`
+  reproduce el pegado **pixel a pixel** (la tinta del modo va de 74 a 127 y la de
+  `AUTO` de 131 a 185, idénticas a la captura de la radio) pero **no** dispara el
+  contrato: `CW-R` mide el ancho exacto de la celda, así que no hace `WRAP` y el
+  contrato (que exige que el texto crezca más allá de la caja) no puede medirlo. El
+  fixture que sí lo hace es `main-tema-vision-usbd`; por eso el registro apunta a él
+  y la evidencia lista los dos.
+- **Evidencia**: `tools/ab_testing/reports/AB-UI04-EXP5/` (screenshots A/B, `diff` y
+  `overlay` de los tres fixtures VISION, `results.json`); `audit 9c031c8`: FAIL
+  `typography_text_overflow [main-tema-vision-usbd]`; `audit 7b644a7` y
+  `contracts 7b644a7`: PASS; `compare 9c031c8..7b644a7`: 15 de 18 fixtures
+  byte-idénticas y los 3 diffs confinados a `barra_superior`.
+
+---
+
 ## Anexo: hipótesis sin reproducir
 
 Semillas con evidencia previa en el repo pero **sin detector** todavía: no
