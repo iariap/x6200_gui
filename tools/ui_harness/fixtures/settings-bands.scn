@@ -1,0 +1,48 @@
+# settings-bands: the real Ajustes window open over the main screen, then the
+# firmware's own Bands action run from there.
+#
+# The path is the firmware's own: main_screen_action(ACTION_APP_BANDS), the
+# dispatcher the app-menu Bands button (src/buttons.cpp -> make_app_btn("Bands")
+# -> main_screen_start_app) and the Ajustes long-press list (`APP Bands`,
+# src/dialog_settings.c) both reach. The owner's route is APP -> app pages ->
+# Bands; the app-menu button is the one that did nothing.
+#
+# `dialog_bands` is an inert mock on the host (tools/ui_harness/mocks/
+# mock_main_screen.c), so the Bands window itself is not rendered: this fixture
+# measures the ROUTE. src/screens.c (scenario_settle) codifies what the route
+# must leave behind — the Ajustes window closed and a dialog running — and stops
+# the run if it does not, instead of capturing a green capture of another state.
+#
+# The radio state matches settings-home / home-usb-20m so the only difference is
+# the windows and the route.
+#
+# Deterministic: the date/time fields read the harness' fixed clock, not the
+# host's (tools/ui_harness/CMakeLists.txt links with `--wrap=time`).
+
+name settings-bands
+screen settings-bands
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

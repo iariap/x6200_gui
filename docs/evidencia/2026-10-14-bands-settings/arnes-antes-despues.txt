@@ -1,0 +1,28 @@
+# Arnés de host: antes (src/ en 89851e6) y despues (src/ con el fix)
+
+Comando (mismo para los dos lados):
+
+    docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" -v "$PWD:/src" \
+        -w /src/tools/ui_harness/build x6200-uiharness -lc \
+        "./ui_harness --scenario ../fixtures/<fixture>.scn --png /tmp/<fixture>.png"
+
+## ANTES — src/main_screen.c en 89851e6 (sin el route-change), fixture presente
+
+$ ./ui_harness --scenario ../fixtures/app-bands.scn
+app-bands: the app-menu Bands button reached no dialog at all (the button did nothing)
+exit=1
+
+$ ./ui_harness --scenario ../fixtures/settings-bands.scn
+settings-bands: the Bands action left the Ajustes window running (it was not closed before the Bands path opened)
+exit=1
+
+## DESPUES — src/ con el fix (487af1e), mismas fixtures
+
+$ ./ui_harness --scenario ../fixtures/app-bands.scn
+ui_harness: app-bands -> /tmp/app-bands.png (241755 bytes), flushes=7, flushed_pixels=1259680
+exit=0
+
+$ ./ui_harness --scenario ../fixtures/settings-bands.scn
+ui_harness: settings-bands -> /tmp/settings-bands.png (241755 bytes), flushes=7, flushed_pixels=1259680
+exit=0
+
