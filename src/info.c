@@ -13,6 +13,7 @@
 #include "bt_state.h"
 #include "cfg/transverter.h"
 #include "cfg/mode.h"
+#include "fonts/font_select.h"
 #include "styles.h"
 #include "params/params.h"
 #include "pubsub_ids.h"
@@ -96,6 +97,18 @@ lv_obj_t * info_init(lv_obj_t * parent) {
             items[index] = item;
             index++;
         }
+
+    /* La celda del VFO es la unica que no entra cuando VISION escala las fuentes
+     * (fonts_scale, tres pasos): las seis celdas siguen siendo las 56x26 fijas del
+     * bitmap de la barra (arriba) y `VFO-A` pasa de 48 a 66 px de ancho, mas que
+     * la celda, asi que el WRAP la parte en dos lineas y la celda recorta la
+     * segunda: en pantalla queda "VFO-" y el "A" no se ve (UI-012). Las otras
+     * cinco celdas ya entran con la fuente grande, asi que solo el VFO vuelve al
+     * tamano de los otros temas -- el mismo idioma que NF() en
+     * src/cluster_column.c, que tambien tiene columnas de ancho fijo. */
+    lv_obj_set_style_text_font(items[INFO_VFO],
+                               theme_shape.vision ? font_down(&sony_20, VISION_FONT_STEPS) : &sony_20,
+                               0);
 
     lv_label_set_text(items[INFO_PRE_ATT], "PRE/ATT");
     lv_label_set_text(items[INFO_WIFI], LV_SYMBOL_WIFI);
