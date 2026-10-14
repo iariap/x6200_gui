@@ -17,6 +17,15 @@ Documento de la revisión de ROM del 2026-10-11, actualizado con el estado del p
 
 ---
 
+## Pruebas y capturas sin radio
+
+El procedimiento completo (tests ARM con `qemu-arm-static`, el **banco** con framebuffer falso para
+capturas, y como **comandar la app desde afuera** por su socket) esta en el skill
+[`.agents/pruebas-sin-radio/SKILL.md`](../.agents/pruebas-sin-radio/SKILL.md), con las garantias que
+da `tools/captura-banco.sh`: prueba la **ultima version** (reconstruye si el fuente es mas nuevo e
+imprime commit + md5) y usa el **socket correcto** (limpia socket/framebuffer viejos y hace handshake
+`{"cmd":"get"}` antes de mandar nada).
+
 ## Estado actual (2026-10-12): todo en un comando
 
 ```bash
