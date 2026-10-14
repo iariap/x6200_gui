@@ -132,8 +132,15 @@ void styles_init(themes_t theme) {
     lv_style_set_width(&spectrum_style, 800);
     lv_style_set_x(&spectrum_style, 0);
 
+    /* La fila de frecuencia dibuja sobre el fondo de la pantalla, asi que su color sale del
+     * tema (TC_text) y no de un blanco fijo: en el tema Outdoor el fondo es blanco y el texto
+     * negro, y un blanco cableado deja la frecuencia invisible (UI-010). El color que se ve lo
+     * escribe main_screen.c en el markup de recolor de cada label, que pisa este text_color; el
+     * estilo pide el mismo rol para que la pareja sea coherente. Es el rol que ya usa la franja
+     * de frecuencia (src/freq_strip.c, los digitos del dial) y lo que pide theme.h: el codigo no
+     * escribe un color, pide un rol. */
     lv_style_init(&freq_style);
-    lv_style_set_text_color(&freq_style, lv_color_white());
+    lv_style_set_text_color(&freq_style, TC(text));
     lv_style_set_text_font(&freq_style, &sony_30);
     lv_style_set_pad_ver(&freq_style, 7);
     lv_style_set_width(&freq_style, 150);
@@ -141,7 +148,7 @@ void styles_init(themes_t theme) {
     lv_style_set_text_align(&freq_style, LV_TEXT_ALIGN_CENTER);
 
     lv_style_init(&freq_main_style);
-    lv_style_set_text_color(&freq_main_style, lv_color_white());
+    lv_style_set_text_color(&freq_main_style, TC(text));
     lv_style_set_text_font(&freq_main_style, &sony_38);
     lv_style_set_pad_ver(&freq_main_style, 5);
     lv_style_set_width(&freq_main_style, 500);

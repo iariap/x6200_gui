@@ -1367,7 +1367,13 @@ void main_screen_notify_rx()
 
 static void on_fg_freq_change(Subject *subj, void *user_data) {
     int32_t    f;
-    uint32_t    color = subject_get_int(freq_lock) ? 0xBBBBBB : 0xFFFFFF;
+    /* El color viaja en el markup de recolor del label (`#RRGGBB `), y ese markup PISA el
+     * text_color del estilo: un blanco cableado aca deja la fila de frecuencia blanco sobre
+     * blanco en el tema claro Outdoor (UI-010, region `frecuencia` con content 0.0000). Los
+     * roles del tema son el color correcto: `text` normalmente y `text_soft` ("inactive knob /
+     * lock", su comentario en theme.h) con el dial trabado, que en IU1WXY vale exactamente el
+     * 0xBBBBBB de antes. `%06X` porque LVGL solo acepta el parametro si mide 6 digitos. */
+    uint32_t    color = theme_hex(subject_get_int(freq_lock) ? TC_text_soft : TC_text);
 
     bool split = subject_get_int(cfg_cur.band->split.val);
     Subject *freq_fg_subj = cfg_cur.fg_freq;
@@ -1398,9 +1404,9 @@ static void on_fg_freq_change(Subject *subj, void *user_data) {
 
         split_freq(f2, &mhz2, &khz2, &hz2);
 
-        lv_label_set_text_fmt(freq[1], "#%03X %i.%03i.%03i / %i.%03i.%03i", color, mhz, khz, hz, mhz2, khz2, hz2);
+        lv_label_set_text_fmt(freq[1], "#%06X %i.%03i.%03i / %i.%03i.%03i", color, mhz, khz, hz, mhz2, khz2, hz2);
     } else {
-        lv_label_set_text_fmt(freq[1], "#%03X %i.%03i.%03i", color, mhz, khz, hz);
+        lv_label_set_text_fmt(freq[1], "#%06X %i.%03i.%03i", color, mhz, khz, hz);
     }
 }
 
@@ -1415,13 +1421,14 @@ static void update_freq_boundaries(Subject *subj, void *user_data) {
 
     uint16_t    mhz, khz, hz;
     uint32_t    half_width = subject_get_int(cfg_cur.fft_width) / 2;
-    uint32_t    color = subject_get_int(freq_lock) ? 0xBBBBBB : 0xFFFFFF;
+    /* Los extremos de la fila usan los mismos roles del tema que la frecuencia central (UI-010) */
+    uint32_t    color = theme_hex(subject_get_int(freq_lock) ? TC_text_soft : TC_text);
 
     split_freq(f - half_width, &mhz, &khz, &hz);
-    lv_label_set_text_fmt(freq[0], "#%03X %i.%03i", color, mhz, khz);
+    lv_label_set_text_fmt(freq[0], "#%06X %i.%03i", color, mhz, khz);
 
     split_freq(f + half_width, &mhz, &khz, &hz);
-    lv_label_set_text_fmt(freq[2], "#%03X %i.%03i", color, mhz, khz);
+    lv_label_set_text_fmt(freq[2], "#%06X %i.%03i", color, mhz, khz);
 
     /* The band plan strip follows the same span as the frequency labels */
     band_plan_update(f, (int32_t) half_width);
