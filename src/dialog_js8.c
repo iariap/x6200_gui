@@ -497,6 +497,16 @@ static button_data_t  btn_p7        = {.type = BTN_TEXT, .label = "(JS8 7:7)", .
 static button_data_t  btn_map       = {.type = BTN_TEXT, .label = "Map", .press = map_cb};
 static buttons_page_t page_7        = {{&btn_p7, NULL, &btn_map}};
 
+/* El callback de audio es global y sobrevive al dialogo: on_audio -> tx_play -> update_status
+ * tocaban widgets ya liberados y la GUI moria con SIGSEGV en fallo=(nil) (medido con el handler de
+ * crashes y el volcado de pila: la cadena caia en estos tres). docs/HALLAZGOS.md 38. */
+static bool ui_alive;
+
+static void ui_deleted_cb(lv_event_t *e) {
+    (void) e;
+    ui_alive = false;
+}
+
 static dialog_t dialog = {
     .run          = false,
     .construct_cb = construct_cb,
@@ -1044,6 +1054,10 @@ static void on_message(const js8_rx_msg_t *m, void *ctx) {
 }
 
 static void update_status(void) {
+    if (!ui_alive) {
+        return;                     /* el dialogo ya no esta */
+    }
+
     time_t    now = (time_t)(now_wall_ms() / 1000);
     struct tm tm;
     gmtime_r(&now, &tm);
@@ -1208,6 +1222,10 @@ static void wf_emit_row(void) {
 }
 
 static void on_audio(const float *samples, unsigned n, void *ctx) {
+    if (!ui_alive) {
+        return;                     /* el dialogo ya no esta: el callback de audio queda inerte */
+    }
+
     (void)ctx;
     if (!sg) return;
 
@@ -2009,6 +2027,8 @@ static void construct_cb(lv_obj_t *parent) {
      * would make every send fail; start from 1500 Hz instead. */
     if (params.js8_tx_freq.x < JS8_TX_MIN_OFFSET || params.js8_tx_freq.x > js8_speed_max_offset_hz(cur_speed())) {
         params_uint16_set(&params.js8_tx_freq, 1500);
+    ui_alive = true;
+    lv_obj_add_event_cb(dialog.obj, ui_deleted_cb, LV_EVENT_DELETE, NULL);
     }
 
     /* The finder's band is our TX offset; its cursor line marks the

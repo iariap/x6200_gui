@@ -56,6 +56,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 35. [Estado final de las apps que matan la GUI: que quedo arreglado y que falta](#35-estado-final-de-las-apps-que-matan-la-gui-que-quedo-arreglado-y-que-falta)
 36. [Causa raiz: la pantalla principal se destruye al abrir la app](#36-causa-raiz-la-pantalla-principal-se-destruye-al-abrir-la-app)
 37. [Lo que arreglo las apps que se caian (y lo que no)](#37-lo-que-arreglo-las-apps-que-se-caian-y-lo-que-no)
+38. [Status y JS8: los dos crashes que quedaban (y que la migracion estaba bien)](#38-status-y-js8-los-dos-crashes-que-quedaban-y-que-la-migracion-estaba-bien)
 
 ---
 
@@ -1779,3 +1780,47 @@ que su crash no es por esa via; y cuando muere deja al GUI en un arranque que a 
 morir. El proximo paso es capturar el **core del proceso recien nacido** (con `core_pattern` en
 `/tmp` y `ulimit -c unlimited`) y leerlo con gdb, que para un crash de arranque tiene la pila
 intacta.
+
+---
+
+## 38. Status y JS8: los dos crashes que quedaban (y que la migracion estaba bien)
+
+**La herramienta que lo resolvio, y que queda en el build** (antes el crash era mudo: el log se
+cortaba y no decia nada):
+
+* Un **handler de crashes** en `main.c` (SIGSEGV/BUS/ABRT/ILL/FPE) que registra la senal, la
+  direccion que fallo, **PC/LR/SP**, la **base del binario** (`&main`) y un volcado de 160 palabras
+  de pila. Con la base alcanza para resolver: `link = link(main) + (pc - base)` y `addr2line`, sin
+  depender del ASLR ni de gdb (el toolchain no lo trae). Cuando el PC cae en una libreria, el
+  volcado de pila da la cadena de la app: asi se encontro JS8.
+* `LV_USE_ASSERT_OBJ` **queda en 0**: se probo en 1 (con un handler que registra el llamador) y
+  sirvio para encontrar un caso (§34), pero convierte en abortes otros que el equipo toleraba: el
+  barrido paso de 2 apps caidas a 6. Revertido y anotado.
+
+**Status: dos bugs, los dos con el numero de fallo a la vista**:
+
+1. `buttons_load_page()` hacia `page->items[0]->voice` sin mirar si `items[0]` era NULL, y la pagina
+   de Status es `{.items = {NULL, NULL, NULL, NULL, &btn_close}}`: el crash fue `fallo=0x14`
+   (exactamente el offset del campo `voice`) dentro de `buttons_load_page`. Guardado (y lo mismo en
+   `buttons_load_page_group`, que hacia `cur_page->items[0]->next`).
+2. `char *ip = NULL; char *gw = NULL; wifi_get_ipaddr(&ip, &gw)`: esa funcion hace
+   `strcpy(*ip_addr, ...)`, o sea que espera punteros a **buffers**, no punteros NULL. El crash fue
+   `fallo=(nil)` con el `lr` dentro de `wifi_get_ipaddr` (resuelto con el truco de la base). Status
+   ahora pasa buffers de verdad y la funcion valida su contrato.
+
+**JS8: un callback global que sobrevivia al dialogo**. El volcado de pila dio la cadena
+`on_audio -> tx_play -> update_status` (las tres en `dialog_js8.c`) y el fallo era NULL dentro de una
+libreria: el callback de audio es global y seguia llamando a la UI despues de cerrarse el dialogo.
+Se le puso el mismo patron que al CW Trainer: bandera `ui_alive` + handler de `LV_EVENT_DELETE` en
+`dialog.obj`, y la guarda tambien en `on_audio` (sin eso, JS8 dejaba rota a la app **siguiente** que
+se abria: medido, CW Trainer moria despues de JS8).
+
+**Revision de la migracion desde el X6100** (`.x6100_ref`):
+
+* **JS8 esta portado fielmente**: 5421 lineas contra 5413 de la referencia. Las diferencias son las
+  deliberadas (adaptador de audio de banda base compleja, publicacion al control remoto no portada) y
+  **una pieza que falta**: el boton global `btn_dig_pwr` ("TX power steps for the digital apps"), que
+  el X6100 usa en JS8, FT8 y SSTV. En el port la pagina 7 de JS8 conserva un lugar NULL. Queda
+  anotado para restaurarlo.
+* **Status no existe en el X6100** (no hay `dialog_status` ni equivalente en la referencia): es una
+  app nueva de este port, asi que no "se migro mal": se escribio aca.

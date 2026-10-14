@@ -342,6 +342,14 @@ void wifi_disconnect() {
 
 bool wifi_get_ipaddr(char **ip_addr, char **gateway) {
     NMIPConfig *ip_cfg;
+
+    /* El contrato es "punteros a buffers del que llama": si vienen NULL (o apuntan a NULL), el
+     * strcpy de abajo escribia en la direccion 0. Se avisa y se sale. docs/HALLAZGOS.md 38. */
+    if (ip_addr == NULL || gateway == NULL || *ip_addr == NULL || *gateway == NULL) {
+        LV_LOG_WARN("wifi_get_ipaddr: hace falta un buffer para la IP y el gateway");
+        return false;
+    }
+
     if (device) {
         ip_cfg = nm_device_get_ip4_config(device);
         if (ip_cfg) {

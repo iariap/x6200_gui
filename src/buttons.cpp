@@ -681,7 +681,10 @@ void buttons_load_page(buttons_page_t *page) {
     for (uint8_t i = 0; i < BUTTONS; i++) {
         buttons_load(i, page->items[i]);
     }
-    if (page->items[0]->voice) {
+    /* Una pagina puede no tener ningun boton (la de Status, por ejemplo): items[0] es NULL y
+     * leer items[0]->voice es un SIGSEGV (medido: fallo 0x14 dentro de buttons_load_page).
+     * docs/HALLAZGOS.md 38. */
+    if (page->items[0] != NULL && page->items[0]->voice != NULL) {
         voice_say_text_fmt("%s", page->items[0]->voice);
     }
 }
@@ -832,7 +835,7 @@ void buttons_load_page_group(buttons_group_t group) {
         return;
     }
     for (size_t i = 0; i < group_size; i++) {
-        if ((group[i] == cur_page) && (cur_page->items[0]->next)) {
+        if ((group[i] == cur_page) && (cur_page->items[0] != NULL) && (cur_page->items[0]->next)) {
             // load next
             cur_page->items[0]->press(cur_page->items[0]);
             return;

@@ -126,7 +126,63 @@ static void boot_time_log(void) {
     }
 }
 
+
+/* --- Registro de crashes ---------------------------------------------------------------------
+ * Un SIGSEGV sin handler deja el log cortado y no dice donde: esto registra la senal, la direccion
+ * que fallo, el PC/LR/SP y la base del binario (con &main_screen, para resolver sin depender del
+ * ASLR) y termina. docs/HALLAZGOS.md 38. */
+#include <signal.h>
+#include <ucontext.h>
+
+int main(void);      /* para tomar su direccion como base del binario */
+
+static void crash_log_handler(int sig, siginfo_t *info, void *ctx) {
+    ucontext_t *uc = (ucontext_t *) ctx;
+
+    fprintf(stderr, "CRASHLOG sig=%d fallo=%p pc=%p lr=%p sp=%p base=%p\n",
+            sig, info != NULL ? info->si_addr : NULL,
+#if defined(__arm__) && defined(__GLIBC__)
+            (void *) uc->uc_mcontext.arm_pc, (void *) uc->uc_mcontext.arm_lr, (void *) uc->uc_mcontext.arm_sp,
+#else
+            NULL, NULL, NULL,
+#endif
+            (void *) &main);
+    fflush(stderr);
+
+    /* Volcado de la pila: para saber quien llamo cuando el PC cae en una libreria (ahi el lr no
+     * sirve). Despues se buscan las direcciones dentro del texto del binario y se resuelven con
+     * addr2line restando la base. docs/HALLAZGOS.md 38. */
+#if defined(__arm__) && defined(__GLIBC__)
+    {
+        uint32_t *sp = (uint32_t *) uc->uc_mcontext.arm_sp;
+
+        fprintf(stderr, "CRASHLOG-STACK");
+        for (int i = 0; i < 160; i++) {
+            fprintf(stderr, " %08x", sp[i]);
+        }
+        fprintf(stderr, "\n");
+        fflush(stderr);
+    }
+#endif
+
+    _exit(128 + sig);
+}
+
+static void crash_log_install(void) {
+    struct sigaction sa;
+
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_sigaction = crash_log_handler;
+    sa.sa_flags     = SA_SIGINFO;
+    sigaction(SIGSEGV, &sa, NULL);
+    sigaction(SIGBUS, &sa, NULL);
+    sigaction(SIGABRT, &sa, NULL);
+    sigaction(SIGILL, &sa, NULL);
+    sigaction(SIGFPE, &sa, NULL);
+}
+
 int main(void) {
+    crash_log_install();
     boot_mark("GUI inicio");
     lv_init();
     boot_mark("lv_init");

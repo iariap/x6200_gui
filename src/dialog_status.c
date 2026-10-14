@@ -200,10 +200,15 @@ static void construct_cb(lv_obj_t *parent) {
     add_row("#%06x wfview# %s (port 50001)", theme_hex(TC_text_dim), wf ? "on" : "off");
 
     /* Web configurator */
-    char *ip = NULL;
-    char *gw = NULL;
+    /* OJO: wifi_get_ipaddr() hace strcpy(*ip_addr, ...), o sea que espera punteros a BUFFERS, no
+     * punteros NULL. Con char *ip = NULL el strcpy escribia en la direccion 0 y la GUI moria con
+     * SIGSEGV en fallo=(nil) (medido con el handler de crashes, docs/HALLAZGOS.md 38). */
+    char  ip[32] = "";
+    char  gw[32] = "";
+    char *ip_p = ip;
+    char *gw_p = gw;
 
-    if (wifi_get_ipaddr(&ip, &gw) && ip) {
+    if (wifi_get_ipaddr(&ip_p, &gw_p) && ip[0] != '\0') {
         add_row("#%06x Web# http://%s/ %s", theme_hex(TC_text_dim), ip,
                 access("/mnt/https/cert.pem", F_OK) == 0 ? "+ HTTPS" : "");
     } else {
