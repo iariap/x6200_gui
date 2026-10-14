@@ -25,7 +25,7 @@ typedef struct {
     const char      *note;
 } coverage_entry_t;
 
-/* The entries for the home-usb-20m scenario. */
-const coverage_entry_t *coverage_home_usb_20m(int *count);
+/* The entries for the main-screen scenarios. */
+const coverage_entry_t *coverage_main_screen(int *count);
 
 const char *coverage_level_name(coverage_level_t level);

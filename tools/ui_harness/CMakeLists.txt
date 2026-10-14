@@ -6,10 +6,16 @@
 # from this repository. Build with the x6200-uiharness Docker image (also
 # defined here) or any host that has libpng, libnm and sqlite3 headers.
 cmake_minimum_required(VERSION 3.23)
-project(ui_harness C)
+# C++ is needed by the GUI's own C++ sources (buttons.cpp, mfk.cpp,
+# controls.cpp) and by cfg/subjects.cpp; GCC accepts their designated
+# initialisers as an extension, exactly as the ROM build does (the firmware
+# sets no C++ standard either).
+project(ui_harness C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # tools/ui_harness -> repository root
 get_filename_component(REPO ${CMAKE_CURRENT_SOURCE_DIR}/../.. ABSOLUTE)
@@ -43,7 +49,35 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/styles_host.c "${STYLES_HOST}")
 file(GLOB FONTS ${REPO}/src/fonts/*.c)
 
 file(GLOB HARNESS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c)
-file(GLOB MOCK_SRC ${CMAKE_CURRENT_SOURCE_DIR}/mocks/*.c)
+file(GLOB MOCK_SRC ${CMAKE_CURRENT_SOURCE_DIR}/mocks/*.c ${CMAKE_CURRENT_SOURCE_DIR}/mocks/*.cpp)
+
+# --- real firmware components ----------------------------------------------
+# The main screen and the visual components it places (spectrum, waterfall,
+# frequency row, band plan, buttons, panels, S-meter, info, clock). Their
+# radio/DSP/hardware dependencies are the explicit mocks under mocks/.
+set(GUI_SRC
+    ${REPO}/src/main_screen.c
+    ${REPO}/src/spectrum.c
+    ${REPO}/src/waterfall.c
+    ${REPO}/src/tx_info.c
+    ${REPO}/src/band_plan.c
+    ${REPO}/src/band_plan_data.c
+    ${REPO}/src/pannel.c
+    ${REPO}/src/vol.c
+    ${REPO}/src/msg.c
+    ${REPO}/src/msg_tiny.c
+    ${REPO}/src/adaptive_tuning.c
+    ${REPO}/src/cw_tune_ui.c
+)
+
+# The GUI's own C++ (button bar, MFK encoder state, controls, DSP helpers) and
+# the real Subject/observer implementation from cfg/ (the C++ template).
+set(GUI_CXX_SRC
+    ${REPO}/src/buttons.cpp
+    ${REPO}/src/mfk.cpp
+    ${REPO}/src/controls.cpp
+    ${REPO}/src/cfg/subjects.cpp
+)
 
 add_executable(ui_harness
     ${HARNESS_SRC}
@@ -56,10 +90,15 @@ add_executable(ui_harness
     ${REPO}/src/info.c
     ${REPO}/src/meter.c
     ${REPO}/src/band_info.c
+    ${GUI_SRC}
+    ${GUI_CXX_SRC}
     ${FONTS}
 )
 
 # M_PI and the `case a ... b:` ranges the firmware uses need GNU extensions.
+# -Wall lints the harness sources and the firmware sources alike; the firmware
+# warnings it surfaces are upstream (the ROM compiles the same code, and -Wformat
+# is on by default in GCC), never introduced by the harness code.
 target_compile_options(ui_harness PRIVATE -D_GNU_SOURCE -Wall)
 
 target_compile_definitions(ui_harness PRIVATE

@@ -1,0 +1,30 @@
+# home-frecuencia-extrema: the main screen dial at the top edge of 20 m; the
+# left/right frequency labels and the band-plan strip run past the segment.
+
+name home-frecuencia-extrema
+screen main
+
+seed 55
+
+frequency_hz 14350000
+tx_frequency_hz 14350000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att true
+pre false
+atu false
+ant 3
+
+smeter_db -83
+
+battery_v 12.4
+external_v 13.8
+battery_cap 88
+charging true
+
+rxtx rx

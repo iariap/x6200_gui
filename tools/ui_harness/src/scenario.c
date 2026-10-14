@@ -12,6 +12,8 @@
 #include "scenario.h"
 #include "mock_radio.h"
 
+#include "params/params.h"
+
 static void trim(char *s)
 {
     char *p = s;
@@ -82,6 +84,18 @@ static bool apply_key(const char *key, const char *value, scenario_t *out)
         snprintf(out->name, sizeof(out->name), "%s", value);
     } else if (!strcmp(key, "screen")) {
         snprintf(out->screen, sizeof(out->screen), "%s", value);
+    } else if (!strcmp(key, "seed")) {
+        out->seed = (uint32_t) strtoul(value, NULL, 10);
+    } else if (!strcmp(key, "theme")) {
+        params_str_set(&params.theme_name, value);
+    } else if (!strcmp(key, "band_plan")) {
+        return parse_bool(value, &params.band_plan.x);
+    } else if (!strcmp(key, "spectrum_filled")) {
+        return parse_bool(value, &params.spectrum_filled);
+    } else if (!strcmp(key, "spectrum_peak")) {
+        return parse_bool(value, &params.spectrum_peak);
+    } else if (!strcmp(key, "waterfall_center_line")) {
+        return parse_bool(value, &params.waterfall_center_line.x);
     } else if (!strcmp(key, "frequency_hz")) {
         mock_radio.frequency_hz = strtoull(value, NULL, 10);
     } else if (!strcmp(key, "tx_frequency_hz")) {

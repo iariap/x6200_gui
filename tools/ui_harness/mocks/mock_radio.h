@@ -42,9 +42,32 @@ typedef struct {
 
 extern mock_radio_state_t mock_radio;
 
+/* Every call the GUI makes into the radio command surface while a scenario is
+ * built. The render reads radio_get_state() (the frequency observers), so that
+ * counter proves the mock was exercised; the command counters stay 0 unless a
+ * fixture drives a press action. A functional gate can assert on them. */
+typedef struct {
+    unsigned get_state;
+    unsigned set_freq;
+    unsigned check_freq;
+    unsigned toggle_vfo;
+    unsigned set_ptt;
+    unsigned set_pwr;
+    unsigned change_vol;
+    unsigned change_mic;
+    unsigned change_mute;
+    unsigned start_atu;
+    unsigned poweroff;
+} mock_radio_calls_t;
+
+extern mock_radio_calls_t mock_radio_calls;
+
 /* Sets mock_radio defaults and wires them into the cfg subjects. Called once
  * by the harness before the scenario builds the screen. */
 void mock_radio_init(void);
+
+/* Zeroes the call counters (called by mock_radio_init). */
+void mock_radio_calls_reset(void);
 
 /* Pushes the current mock_radio values into the subjects (so the observers run
  * as they would when the radio reports a change). */

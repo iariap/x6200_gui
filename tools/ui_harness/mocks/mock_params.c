@@ -29,6 +29,7 @@ void mock_params_init(void)
     params.clock_power_timeout = 5;
     params.clock_tx_timeout    = 5;
     params.smeter_needle.x     = true;   /* the needle S-meter (repo feature) */
+    params.band_plan.x         = true;   /* IARU band plan strip under the spectrum */
     params.mag_freq.x          = false;
     params.mag_info.x          = false;
     params.freq_accel.x        = FREQ_ACCEL_NONE;
@@ -105,4 +106,46 @@ uint8_t params_uint8_change(params_uint8_t *var, int16_t df)
     var->x = (uint8_t) v;
     var->dirty = true;
     return var->x;
+}
+
+/* Option labels the button bar shows; the same text the real params.c returns
+ * (src/params/params.c). No database is read. */
+
+char *params_charger_str_get(radio_charger_t val)
+{
+    switch (val) {
+        case RADIO_CHARGER_OFF:    return "Off";
+        case RADIO_CHARGER_ON:     return "On";
+        case RADIO_CHARGER_SHADOW: return "Shadow";
+    }
+    return "";
+}
+
+char *params_mic_str_get(x6200_mic_sel_t val)
+{
+    switch (val) {
+        case x6200_mic_builtin: return "Built-In";
+        case x6200_mic_handle:  return "Handle";
+        case x6200_mic_auto:    return "Auto";
+    }
+    return "";
+}
+
+char *params_key_mode_str_get(x6200_key_mode_t val)
+{
+    switch (val) {
+        case x6200_key_manual:     return "Manual";
+        case x6200_key_auto_left:  return "Auto-L";
+        case x6200_key_auto_right: return "Auto-R";
+    }
+    return "";
+}
+
+char *params_iambic_mode_str_ger(x6200_iambic_mode_t val)
+{
+    switch (val) {
+        case x6200_iambic_a: return "A";
+        case x6200_iambic_b: return "B";
+    }
+    return "";
 }

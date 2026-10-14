@@ -77,5 +77,13 @@ verifican solo por compilación y strings del binario.
   pantalla principal a PNG y es determinista (dos corridas → PNG idéntico por
   sha256, `tests/check_harness_determinism.sh`). Ver el README del arnés para los
   comandos y la tabla de cobertura REAL/PARTIAL/SYNTHETIC/UNSUPPORTED.
-- ⏳ Resto de la pantalla principal (espectro, waterfall, franja de frecuencia,
-  band plan, spots, botones) y los diálogos: siguientes incrementos.
+- ✅ **Pantalla principal completa (incremento)**: el arnés llama a
+  `main_screen()` real y compila el resto de los componentes visuales
+  (`spectrum.c`, `waterfall.c`, `tx_info.c`, `band_plan*`, `pannel.c`, `vol.c`,
+  `msg*`, `adaptive_tuning.c`, `cw_tune_ui.c`, `buttons.cpp`, `mfk.cpp`,
+  `controls.cpp`, `cfg/subjects.cpp`). Espectro/agua quedan **PARTIAL**: el
+  componente es real, los datos vienen de un generador determinista por `seed`.
+  Seis fixtures (incluye TX simulado, batería baja, frecuencia extrema, otro
+  tema y waterfall en movimiento); determinismo PASS en todos. Ver
+  `docs/AB_TESTING.md`.
+- ⏳ Resto de los diálogos y apps (Ajustes, FT8, WSPR, etc.): siguientes incrementos.

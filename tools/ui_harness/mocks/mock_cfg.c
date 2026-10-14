@@ -14,6 +14,8 @@
 #include <string.h>
 
 #include "cfg/cfg.h"
+#include "cfg/memory.h"
+#include "cfg/mode.h"
 #include "cfg/subjects.h"
 #include "cfg/transverter.h"
 #include "mock_harness.h"
@@ -42,20 +44,42 @@ void mock_cfg_init(void)
     cfg_cur.fft_width = subject_create_int(FFT_FULL_WIDTH);
     cfg_cur.sql_level = subject_create_int(0);
 
+    /* Filter edges: spectrum.c/subscribe to the "real" passband. */
+    cfg_cur.filter.low      = subject_create_int(0);
+    cfg_cur.filter.high     = subject_create_int(3000);
+    cfg_cur.filter.bw       = subject_create_int(3000);
+    cfg_cur.filter.real.from = subject_create_int(0);
+    cfg_cur.filter.real.to   = subject_create_int(3000);
+
     atu_network.loaded  = subject_create_int(0);
     atu_network.network = subject_create_int(0);
     cfg_cur.atu = &atu_network;
 
     band0.vfo.val   = subject_create_int(X6200_VFO_A);
     band0.split.val = subject_create_int(0);
+    band0.rfg.val   = subject_create_int(100);   /* the button bar shows RF gain */
     band0.vfo_a.freq.val = subject_create_int(14074000);
     band0.vfo_a.mode.val = subject_create_int(x6200_mode_usb);
+    band0.vfo_b.freq.val = subject_create_int(14074000);
+    band0.vfo_b.mode.val = subject_create_int(x6200_mode_usb);
+    /* Spectrum/waterfall vertical scale (dB): the real values come from the DB. */
+    band0.grid.min.val = subject_create_int(-120);
+    band0.grid.max.val = subject_create_int(-40);
     cfg_cur.band = &band0;
 
     cfg.atu_enabled.val = subject_create_int(0);
     cfg.ant_id.val      = subject_create_int(1);
+    cfg.vol.val         = subject_create_int(50);
+    cfg.pwr.val         = subject_create_float(5.0f);
     cfg.nr.val          = subject_create_int(0);
     cfg.nb.val          = subject_create_int(0);
+
+    /* DSP state spectrum.c watches, and the CW switches pannel/cw_tune read. */
+    cfg.dnf.val        = subject_create_int(x6200_dnf_off);
+    cfg.dnf_center.val = subject_create_int(0);
+    cfg.dnf_width.val  = subject_create_int(100);
+    cfg.cw_decoder.val = subject_create_int(0);
+    cfg.cw_tune.val    = subject_create_int(0);
 }
 
 /* --- helpers the rendered components call ---------------------------------- */
@@ -82,8 +106,25 @@ int cfg_atu_save_network(uint32_t value)
     return 0;
 }
 
-/* The IARU Region 1 band plan rows the band-plan/band-info strips draw. A
- * short, fixed 20 m set: enough for a deterministic strip and nothing more. */
+/* Band/memory/mode helpers: the harness owns no database, so the calls that
+ * would touch it answer with the harness state (a fixed step, no memory). */
+
+void cfg_band_vfo_copy(void) {}
+void cfg_band_load_next(bool up) { (void) up; }
+
+bool cfg_memory_load(int32_t id) { (void) id; return false; }
+void cfg_memory_save(int32_t id) { (void) id; }
+
+int32_t cfg_mode_change_freq_step(bool up) { (void) up; return 100; }
+int32_t cfg_mode_set_low_filter(int32_t val) { return val; }
+int32_t cfg_mode_set_high_filter(int32_t val) { return val; }
+
+const char *cfg_dnf_label_get(void) { return "Off"; }
+
+/* The IARU Region 1 band-plan rows band_info/band_plan draw. The real rows
+ * come from the SQLite catalogue; this is the same public plan (see
+ * src/band_plan_data.c), enough for the strip to show the right band whatever
+ * the fixture tunes to. */
 uint32_t cfg_band_read_all_bands(band_info_t **results, int32_t *cap)
 {
     static const struct {
@@ -91,10 +132,22 @@ uint32_t cfg_band_read_all_bands(band_info_t **results, int32_t *cap)
         uint32_t    start;
         uint32_t    stop;
     } segs[] = {
-        { "CW",  14000000, 14070000 },
-        { "DIG", 14070000, 14099000 },
-        { "SSB", 14101000, 14350000 },
-        { "BCN", 14100000, 14101000 },
+        { "CW",  1810000,  1838000 }, { "DIG", 1838000,  1843000 }, { "SSB", 1843000,  2000000 },
+        { "CW",  3500000,  3570000 }, { "DIG", 3570000,  3600000 }, { "SSB", 3600000,  3800000 },
+        { "CW",  7000000,  7040000 }, { "DIG", 7040000,  7050000 }, { "SSB", 7050000,  7200000 },
+        { "CW", 10100000, 10130000 }, { "DIG", 10130000, 10150000 },
+        { "CW", 14000000, 14070000 }, { "DIG", 14070000, 14099000 }, { "BCN", 14099000, 14101000 },
+        { "DIG", 14101000, 14112000 }, { "SSB", 14112000, 14350000 },
+        { "CW", 18068000, 18095000 }, { "DIG", 18095000, 18109000 }, { "BCN", 18109000, 18111000 },
+        { "DIG", 18111000, 18120000 }, { "SSB", 18120000, 18168000 },
+        { "CW", 21000000, 21070000 }, { "DIG", 21070000, 21120000 }, { "CW", 21120000, 21149000 },
+        { "BCN", 21149000, 21151000 }, { "SSB", 21151000, 21450000 },
+        { "CW", 24890000, 24915000 }, { "DIG", 24915000, 24929000 }, { "BCN", 24929000, 24931000 },
+        { "SSB", 24931000, 24990000 },
+        { "CW", 28000000, 28070000 }, { "DIG", 28070000, 28190000 }, { "BCN", 28190000, 28225000 },
+        { "SSB", 28225000, 29700000 },
+        { "CW", 50000000, 50100000 }, { "SSB", 50100000, 50300000 }, { "DIG", 50300000, 50400000 },
+        { "BCN", 50400000, 50500000 }, { "SSB", 50500000, 52000000 },
     };
     size_t n = sizeof(segs) / sizeof(segs[0]);
 
