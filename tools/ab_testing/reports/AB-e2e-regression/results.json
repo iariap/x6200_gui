@@ -11,7 +11,7 @@
   },
   "revision_b": {
     "label": "b",
-    "sha": "a7569b11d303df166157db9bfe4ae99d8ecbe55c"
+    "sha": "50cc02649e9429b20fa6ba5a2e01b09776fc8e95"
   },
   "scenarios": [
     "home-usb-20m"
@@ -159,7 +159,7 @@
     "b": [
       {
         "scenario": "home-usb-20m",
-        "revision": "a7569b11d303df166157db9bfe4ae99d8ecbe55c",
+        "revision": "50cc02649e9429b20fa6ba5a2e01b09776fc8e95",
         "png_sha256": "61e09eb1796ec49849dfb57f174e3409ffc6d139a5a49a48db2e797a95eece9b",
         "width": 800,
         "height": 480,
@@ -308,7 +308,7 @@
           "ec1b0a58ec30270ece2a6b490ae41ed341133755"
         ],
         "revision_b": [
-          "a7569b11d303df166157db9bfe4ae99d8ecbe55c"
+          "50cc02649e9429b20fa6ba5a2e01b09776fc8e95"
         ]
       }
     },
@@ -318,8 +318,8 @@
       "required": true,
       "summary": "visual regressions vs the baseline",
       "evidence": [
-        "/tmp/pytest-of-pablo/pytest-43/test_regression_is_detected_wi0/ws-AB-e2e-regression/diffs/home-usb-20m-diff.png",
-        "/tmp/pytest-of-pablo/pytest-43/test_regression_is_detected_wi0/ws-AB-e2e-regression/diffs/home-usb-20m-overlay.png",
+        "/tmp/pytest-of-pablo/pytest-0/test_regression_is_detected_wi0/ws-AB-e2e-regression/diffs/home-usb-20m-diff.png",
+        "/tmp/pytest-of-pablo/pytest-0/test_regression_is_detected_wi0/ws-AB-e2e-regression/diffs/home-usb-20m-overlay.png",
         "home-usb-20m box 1,419-160,480 (9665px)",
         "home-usb-20m box 321,419-480,480 (9662px)",
         "home-usb-20m box 161,419-320,480 (9649px)",
@@ -354,7 +354,9 @@
         "layout_touch_target [home-usb-20m]: lv_obj at 640,448 160x62 is 160x32, below the 44px touch target",
         "layout_clipped [home-usb-20m]: lv_label at 660,454 120x50 cut to 120x26 (lost 0x24)"
       ],
-      "details": {}
+      "details": {
+        "unchanged_defects": []
+      }
     },
     {
       "gate": "Performance",
@@ -420,6 +422,18 @@
       "fixture": "home-bateria-externa",
       "region": "reloj_potencia",
       "status": "fixed",
+      "reproduced_a": null,
+      "reproduced_b": null,
+      "classification": "UNVERIFIED",
+      "detail": "no detector: only recorded from the repository"
+    },
+    {
+      "id": "UI-010",
+      "title": "Tema Outdoor: franja de frecuencia invisible sobre fondo blanco",
+      "severity": "critical",
+      "fixture": "main-otro-tema",
+      "region": "frecuencia",
+      "status": "verified",
       "reproduced_a": null,
       "reproduced_b": null,
       "classification": "UNVERIFIED",
@@ -516,168 +530,192 @@
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "800x480 (expected 800x480)",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:barra_superior",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.5455 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:botones",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.9367 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:espectro",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.2865 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:frecuencia",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.1047 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:s_metro",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.7435 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:waterfall",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.3471 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "coverage_levels",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "all levels allowed",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "coverage_required",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "all required components declared",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "layout_clipped",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_obj at 0,448 160x62 cut to 160x32 (lost 0x30)",
-      "path": "0/29"
+      "path": "0/29",
+      "baseline_issue": null
     },
     {
       "rule": "layout_touch_target",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_obj at 0,448 160x62 is 160x32, below the 44px touch target",
-      "path": "0/29"
+      "path": "0/29",
+      "baseline_issue": null
     },
     {
       "rule": "layout_clipped",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_label at 26,467 108x25 cut to 108x13 (lost 0x12)",
-      "path": "0/29/0"
+      "path": "0/29/0",
+      "baseline_issue": null
     },
     {
       "rule": "layout_clipped",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_obj at 160,448 160x62 cut to 160x32 (lost 0x30)",
-      "path": "0/30"
+      "path": "0/30",
+      "baseline_issue": null
     },
     {
       "rule": "layout_touch_target",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_obj at 160,448 160x62 is 160x32, below the 44px touch target",
-      "path": "0/30"
+      "path": "0/30",
+      "baseline_issue": null
     },
     {
       "rule": "layout_clipped",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_label at 193,454 95x50 cut to 95x26 (lost 0x24)",
-      "path": "0/30/0"
+      "path": "0/30/0",
+      "baseline_issue": null
     },
     {
       "rule": "layout_clipped",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_obj at 320,448 160x62 cut to 160x32 (lost 0x30)",
-      "path": "0/31"
+      "path": "0/31",
+      "baseline_issue": null
     },
     {
       "rule": "layout_touch_target",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_obj at 320,448 160x62 is 160x32, below the 44px touch target",
-      "path": "0/31"
+      "path": "0/31",
+      "baseline_issue": null
     },
     {
       "rule": "layout_clipped",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_label at 349,454 103x50 cut to 103x26 (lost 0x24)",
-      "path": "0/31/0"
+      "path": "0/31/0",
+      "baseline_issue": null
     },
     {
       "rule": "layout_clipped",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_obj at 480,448 160x62 cut to 160x32 (lost 0x30)",
-      "path": "0/32"
+      "path": "0/32",
+      "baseline_issue": null
     },
     {
       "rule": "layout_touch_target",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_obj at 480,448 160x62 is 160x32, below the 44px touch target",
-      "path": "0/32"
+      "path": "0/32",
+      "baseline_issue": null
     },
     {
       "rule": "layout_clipped",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_label at 510,454 101x50 cut to 101x26 (lost 0x24)",
-      "path": "0/32/0"
+      "path": "0/32/0",
+      "baseline_issue": null
     },
     {
       "rule": "layout_clipped",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_obj at 640,448 160x62 cut to 160x32 (lost 0x30)",
-      "path": "0/33"
+      "path": "0/33",
+      "baseline_issue": null
     },
     {
       "rule": "layout_touch_target",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_obj at 640,448 160x62 is 160x32, below the 44px touch target",
-      "path": "0/33"
+      "path": "0/33",
+      "baseline_issue": null
     },
     {
       "rule": "layout_clipped",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "lv_label at 660,454 120x50 cut to 120x26 (lost 0x24)",
-      "path": "0/33/0"
+      "path": "0/33/0",
+      "baseline_issue": null
     }
   ],
   "diffs": [

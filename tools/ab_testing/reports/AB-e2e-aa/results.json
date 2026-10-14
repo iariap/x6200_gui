@@ -398,6 +398,18 @@
       "detail": "no detector: only recorded from the repository"
     },
     {
+      "id": "UI-010",
+      "title": "Tema Outdoor: franja de frecuencia invisible sobre fondo blanco",
+      "severity": "critical",
+      "fixture": "main-otro-tema",
+      "region": "frecuencia",
+      "status": "verified",
+      "reproduced_a": null,
+      "reproduced_b": null,
+      "classification": "UNVERIFIED",
+      "detail": "no detector: only recorded from the repository"
+    },
+    {
       "id": "UI-002",
       "title": "Menu de apps: las apps solo vivian en el long-press de Ajustes",
       "severity": "major",
@@ -488,63 +500,72 @@
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "800x480 (expected 800x480)",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:barra_superior",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.5455 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:botones",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.7551 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:espectro",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.2865 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:frecuencia",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.1047 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:s_metro",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.7435 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:waterfall",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.3471 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "coverage_levels",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "all levels allowed",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "coverage_required",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "all required components declared",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     }
   ],
   "diffs": [

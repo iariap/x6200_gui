@@ -330,8 +330,13 @@ def cmd_contracts(args: argparse.Namespace) -> int:
         captures = Capturer(context.runner).capture_all(
             revision, suite, out_dir, context.workspace / "logs", inspect=True
         )
-        findings = run_contracts(captures, context.region_map, context.contracts)
-        failures = [finding for finding in findings if not finding.ok]
+        findings = run_contracts(
+            captures, context.region_map, context.contracts, context.known_issues
+        )
+        failures = [
+            finding for finding in findings if not finding.ok and finding.baseline_issue is None
+        ]
+        unchanged = [finding for finding in findings if finding.unchanged_defect]
         status = Status.FAIL if failures else Status.PASS
         payload = {
             "status": status.value,
@@ -340,16 +345,23 @@ def cmd_contracts(args: argparse.Namespace) -> int:
             "scenarios": suite.names,
             "checks": len(findings),
             "failures": [finding.as_dict() for finding in failures],
+            "unchanged_defects": [finding.as_dict() for finding in unchanged],
             "findings": [finding.as_dict() for finding in findings],
         }
         text = (
             f"contracts {revision.short_sha}: {status.value} — "
-            f"{len(findings)} checks, {len(failures)} failure(s)"
+            f"{len(findings)} checks, {len(failures)} failure(s), "
+            f"{len(unchanged)} unchanged baseline defect(s)"
         )
         if failures:
             text += "\n" + "\n".join(
                 f"  FAIL {finding.rule} [{finding.fixture}]: {finding.detail}"
                 for finding in failures
+            )
+        for defect in unchanged:
+            text += (
+                f"\n  UNCHANGED DEFECT {defect.rule} [{defect.fixture}] "
+                f"({defect.baseline_issue}): {defect.detail}"
             )
         return _emit(args, payload, text, status)
     finally:
@@ -394,7 +406,9 @@ def cmd_compare(args: argparse.Namespace) -> int:
         b_by = {capture.name: capture for capture in b_captures}
         diffs = _compute_diffs(a_by, b_by, context)
         issues = observe_issues(context.known_issues, a_by, b_by, context.region_map)
-        findings = run_contracts(b_captures, context.region_map, context.contracts)
+        findings = run_contracts(
+            b_captures, context.region_map, context.contracts, context.known_issues
+        )
         data = ComparisonData(
             revision_a=revision_a,
             revision_b=revision_b,

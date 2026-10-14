@@ -69,6 +69,39 @@ issues:
       glyph_range: [0xF200, 0xF2FF]
     exclusions: []
 
+  - id: UI-010
+    title: "Tema Outdoor: franja de frecuencia invisible sobre fondo blanco"
+    severity: critical
+    fixture: main-otro-tema
+    region: frecuencia
+    status: verified
+    note: >
+      Defecto PREEXISTENTE de la ROM en el tema Outdoor (fixture `main-otro-tema`):
+      la fila de frecuencia (region `frecuencia`, main_screen.c) se pinta blanca
+      sobre fondo blanco y los digitos no se ven; la region queda uniforme y el
+      contrato `region_min_content:frecuencia` la marca (content 0.0000 < 0.0200).
+      Confirmado a ojo sobre la captura del arnes (banda central vacia). Es
+      informacion critica para el operador (la frecuencia de trabajo). El mismo
+      tema muestra una cascada de ruido casi blanco sobre blanco y las etiquetas
+      CW/DIG del strip lavadas; eso no lo detecta ninguna regla (ver la nota del
+      documento) y queda como observacion, no como entrada detectada. El contrato
+      SI lo detecta: el exclusion scoped de abajo conecta la regla con esta
+      entrada para que sea UNCHANGED DEFECT (no bloquea) mientras siga abierta.
+    evidence:
+      - "docs/UI_KNOWN_ISSUES.md (UI-010)"
+      - "tools/ui_harness/fixtures/main-otro-tema.scn"
+      - "ui-contracts/contracts.json (run 38497082174; region_min_content:frecuencia 0.0000)"
+    exclusions:
+      - fixture: main-otro-tema
+        region: frecuencia
+        rule: "region_min_content:frecuencia"
+        until: 2027-03-31
+        reason: >
+          Defecto preexistente del tema Outdoor, no introducido por el arnes:
+          mientras siga abierto no debe bloquear la corrida, pero queda listado
+          como UNCHANGED DEFECT. Vence el 2027-03-31: si el tema no se corrigio,
+          el gate vuelve a fallar y obliga a re-evaluar.
+
   # --- Seeds from the repository history: recorded, not yet reproduced. -------
   # They stay unverified until the harness can reproduce them (pixel-region
   # detector today; structural inspection once the harness emits object bounds).

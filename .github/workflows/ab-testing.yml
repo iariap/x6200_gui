@@ -124,9 +124,14 @@ jobs:
           data = json.loads(path.read_text())
           print(f"- status: **{data.get('status')}** (exit {data.get('exit_code')})")
           print(f"- revision: `{data.get('revision', '')}`")
-          print(f"- checks: {data.get('checks', 0)}; failures: {len(data.get('failures', []))}")
+          unchanged = data.get("unchanged_defects", [])
+          print(f"- checks: {data.get('checks', 0)}; failures: {len(data.get('failures', []))}; "
+                f"unchanged baseline defects: {len(unchanged)}")
           for failure in data.get("failures", []):
               print(f"  - FAIL `{failure.get('rule')}` [{failure.get('fixture')}]: {failure.get('detail')}")
+          for defect in unchanged:
+              print(f"  - UNCHANGED DEFECT `{defect.get('rule')}` [{defect.get('fixture')}] "
+                    f"({defect.get('baseline_issue')}): {defect.get('detail')}")
           if data.get("status") == "FAIL":
               raise SystemExit(1)
           PY

@@ -21,6 +21,12 @@
     },
     {
       "detail": "unverified: no detector yet",
+      "id": "UI-010",
+      "reproduced": null,
+      "title": "Tema Outdoor: franja de frecuencia invisible sobre fondo blanco"
+    },
+    {
+      "detail": "unverified: no detector yet",
       "id": "UI-002",
       "reproduced": null,
       "title": "Menu de apps: las apps solo vivian en el long-press de Ajustes"
@@ -71,6 +77,7 @@
   "structural_failures": 0,
   "unverified": [
     "UI-009",
+    "UI-010",
     "UI-002",
     "UI-003",
     "UI-004",

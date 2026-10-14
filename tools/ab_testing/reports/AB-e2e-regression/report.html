@@ -8,7 +8,7 @@
 <ul>
 <li>Date: 2026-10-13</li>
 <li>A: <code>ec1b0a58ec30270ece2a6b490ae41ed341133755</code></li>
-<li>B: <code>a7569b11d303df166157db9bfe4ae99d8ecbe55c</code></li>
+<li>B: <code>50cc02649e9429b20fa6ba5a2e01b09776fc8e95</code></li>
 <li>Docker image: <code>x6200-uiharness</code></li>
 <li>Scenarios: home-usb-20m</li>
 </ul>
@@ -36,6 +36,7 @@
 <table><tr><th>Issue</th><th>Fixture</th><th>A</th><th>B</th><th>Classification</th></tr>
 <tr><td>UI-001</td><td>home-usb-20m</td><td>no</td><td>no</td><td>NOT_REPRODUCED</td></tr>
 <tr><td>UI-009</td><td>home-bateria-externa</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-010</td><td>main-otro-tema</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
 <tr><td>UI-002</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
 <tr><td>UI-003</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
 <tr><td>UI-004</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
@@ -44,6 +45,25 @@
 <tr><td>UI-007</td><td>main-otro-tema</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
 <tr><td>UI-008</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
 </table>
+<h2>Quality contracts</h2>
+<p>24 checks, 15 failure(s), 0 unchanged baseline defect(s).</p>
+<ul>
+<li>FAIL <code>layout_clipped</code> [home-usb-20m]: lv_obj at 0,448 160x62 cut to 160x32 (lost 0x30)</li>
+<li>FAIL <code>layout_touch_target</code> [home-usb-20m]: lv_obj at 0,448 160x62 is 160x32, below the 44px touch target</li>
+<li>FAIL <code>layout_clipped</code> [home-usb-20m]: lv_label at 26,467 108x25 cut to 108x13 (lost 0x12)</li>
+<li>FAIL <code>layout_clipped</code> [home-usb-20m]: lv_obj at 160,448 160x62 cut to 160x32 (lost 0x30)</li>
+<li>FAIL <code>layout_touch_target</code> [home-usb-20m]: lv_obj at 160,448 160x62 is 160x32, below the 44px touch target</li>
+<li>FAIL <code>layout_clipped</code> [home-usb-20m]: lv_label at 193,454 95x50 cut to 95x26 (lost 0x24)</li>
+<li>FAIL <code>layout_clipped</code> [home-usb-20m]: lv_obj at 320,448 160x62 cut to 160x32 (lost 0x30)</li>
+<li>FAIL <code>layout_touch_target</code> [home-usb-20m]: lv_obj at 320,448 160x62 is 160x32, below the 44px touch target</li>
+<li>FAIL <code>layout_clipped</code> [home-usb-20m]: lv_label at 349,454 103x50 cut to 103x26 (lost 0x24)</li>
+<li>FAIL <code>layout_clipped</code> [home-usb-20m]: lv_obj at 480,448 160x62 cut to 160x32 (lost 0x30)</li>
+<li>FAIL <code>layout_touch_target</code> [home-usb-20m]: lv_obj at 480,448 160x62 is 160x32, below the 44px touch target</li>
+<li>FAIL <code>layout_clipped</code> [home-usb-20m]: lv_label at 510,454 101x50 cut to 101x26 (lost 0x24)</li>
+<li>FAIL <code>layout_clipped</code> [home-usb-20m]: lv_obj at 640,448 160x62 cut to 160x32 (lost 0x30)</li>
+<li>FAIL <code>layout_touch_target</code> [home-usb-20m]: lv_obj at 640,448 160x62 is 160x32, below the 44px touch target</li>
+<li>FAIL <code>layout_clipped</code> [home-usb-20m]: lv_label at 660,454 120x50 cut to 120x26 (lost 0x24)</li>
+</ul>
 <h2>Gates without instrumentation</h2><ul>
 <li><strong>Hardware</strong>: no physical X6200 attached; hardware behaviour is not measured</li>
 <li><strong>Energy</strong>: no power measurement; energy evidence must be physical</li>

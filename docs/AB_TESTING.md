@@ -337,10 +337,10 @@ toolchain (reproducido con gcc 12 en Debian). El fix inicializa el puntero
   en vez de pasar por azar (ver [`docs/UI_KNOWN_ISSUES.md`](UI_KNOWN_ISSUES.md)).
 
 Evidencia (host, `uv run pytest -m e2e`, base fijada con
-`X6200_AB_E2E_BASE=ec1b0a5`, **12 passed**):
+`X6200_AB_E2E_BASE=ec1b0a5`, **13 passed**):
 
 ```text
-AB-e2e-ui009  clock sin fix (0d96c79f) vs fix (ec1b0a5)  -> PASS (IMPROVEMENT)
+AB-e2e-ui009  clock sin fix (f5c36778) vs fix (ec1b0a5)  -> PASS (IMPROVEMENT)
   Functional PASS · Visual Regression PASS · Quality Contract PASS · Performance PASS
   Hardware BLOCKED · Energy BLOCKED (advisory: sin unidad física)
   UI-009 FIXED:  A '\x89E… 12.1v' (U+0089, memoria)  ->  B '\uf240 12.1v' (U+F240)
@@ -373,6 +373,54 @@ después del fix.
 
 `tests/check_harness_determinism.sh` sigue en **PASS** con los hashes nuevos
 (idénticos run-a-run); lo que cambió es qué se dibuja, no el determinismo.
+
+## Contratos ↔ registro de defectos conocidos: UI-010 (`UNCHANGED DEFECT`) ✅
+
+Gate: una violación de contrato que el registro ya documenta como defecto de
+línea base **abierto y fundado** no falla la corrida —se lista como
+`UNCHANGED DEFECT` con su issue—, y **toda otra** violación sigue fallando.
+
+`run_contracts()` corre ahora con el registro (`quality/known_issues.yaml`): un
+finding fallido cuyo `(regla, fixture, región)` matchea una *exclusión acotada*
+de un issue `verified` con evidencia se marca con `baseline_issue` y pasa a
+`UNCHANGED DEFECT`; el gate de calidad lo reporta pero no falla por él. Una
+exclusión sin regla —o de otra fixture/región— nunca matchea: no hay exclusiones
+globales, y cada una lleva motivo y fecha de vencimiento. El detalle queda en el
+reporte (`report.md`/`report.html`), en el JSON de `contracts`
+(`unchanged_defects`) y en el resumen del workflow
+(`UNCHANGED DEFECT … (UI-010)`).
+
+- **UI-010** (`main-otro-tema`, región `frecuencia`): la franja de frecuencia se
+  pinta blanca sobre blanco (defecto **preexistente** del tema Outdoor); el
+  contrato `region_min_content:frecuencia` la detecta (`content 0.0000`).
+  Exclusión acotada `until 2027-03-31` (ver `docs/UI_KNOWN_ISSUES.md`).
+- **UI-011** (cascada casi blanca sobre blanco) evaluada y **plegada** en UI-010:
+  ninguna regla detecta "contenido presente pero ilegible" (el ruido casi blanco
+  cuenta como contenido y `region_min_content:waterfall` pasa), así que queda
+  como observación documentada, no como defecto detectado.
+
+Evidencia (host, base fijada con `X6200_AB_E2E_BASE=ec1b0a5`, la evidencia en
+`tools/ab_testing/reports/` y `uv run pytest -m e2e`, **13 passed**):
+
+```text
+contracts main-otro-tema: PASS — 9 checks, 0 failure(s), 1 unchanged baseline defect(s)
+  UNCHANGED DEFECT region_min_content:frecuencia [main-otro-tema] (UI-010): content 0.0000 >= 0.0200 — unchanged defect UI-010: Tema Outdoor: franja de frecuencia invisible sobre fondo blanco
+contracts (suite, 8 fixtures): PASS — 72 checks, 0 failure(s), 1 unchanged baseline defect(s)
+```
+
+Antes (run de CI `38497082174`, `ui-contracts/contracts.json`): `FAIL — 72
+checks, 1 failure(s)` por `region_min_content:frecuencia [main-otro-tema]`.
+
+Una violación distinta de la de línea base sigue **FAIL** (tests unitarios
+`test_violation_not_in_the_registry_stays_a_real_failure` y
+`test_regression_next_to_a_baseline_defect_still_fails`). El fix de identidad git
+de las revisiones efímeras del self-test —el runner de Actions no tiene
+`user.name`/`user.email`, así que `_ephemeral` commitea con una identidad de
+scaffolding— queda cubierto por `tests/test_git_scaffolding.py`.
+
+> Las revisiones efímeras (`abtest/*`) se recrean en cada corrida de evidencia,
+> así que su SHA corto cambia aunque el parche sea el mismo; la evidencia
+> commiteada en `tools/ab_testing/reports/` se regeneró con esta corrida.
 
 ## Pendientes
 

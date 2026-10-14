@@ -30,6 +30,18 @@ DETECTOR_KINDS = frozenset({"region_content_above", "leading_glyph_range"})
 STATUSES = frozenset({"verified", "fixed", "unverified", "new"})
 SEVERITIES = frozenset({"critical", "major", "minor", "info"})
 
+# The contract rules that are scoped to one semantic region carry the region in
+# their name (`region_min_content:frecuencia`); that is the region a baseline
+# waiver is matched against.
+REGION_RULE_PREFIX = "region_min_content:"
+
+
+def contract_rule_region(rule: str) -> str | None:
+    """The region a contract rule is scoped to, when it names one."""
+    if rule.startswith(REGION_RULE_PREFIX):
+        return rule[len(REGION_RULE_PREFIX) :]
+    return None
+
 
 class IssueClassification(StrEnum):
     """How one known issue behaves from A to B."""
@@ -66,12 +78,19 @@ class Detector:
 
 @dataclass(frozen=True)
 class Exclusion:
-    """A scoped, dated waiver for a known issue."""
+    """A scoped, dated waiver for a known issue.
+
+    The scope is always fixture + region; when `rule` is set the waiver is
+    additionally pinned to one contract rule (a contract finding whose rule,
+    fixture and region match). There is no global form: a waiver without a rule
+    never matches a contract finding.
+    """
 
     fixture: str
     region: str
     until: str
     reason: str
+    rule: str | None = None
 
     def active(self, fixture: str, today: date) -> bool:
         if self.fixture != fixture:
@@ -81,12 +100,24 @@ class Exclusion:
         except ValueError as exc:
             raise ConfigError(f"exclusion until `{self.until}` is not an ISO date") from exc
 
+    def covers(self, rule: str, fixture: str, region: str | None, today: date) -> bool:
+        """True when the waiver covers one failing region contract.
+
+        Matching is exact and scoped: fixture + region + rule must all agree and
+        the waiver must still be within its expiry. A finding with no region
+        (non-region rule) is never covered, so a waiver cannot go global.
+        """
+        if region is None or self.rule != rule or self.region != region:
+            return False
+        return self.active(fixture, today)
+
     def as_dict(self) -> dict[str, Any]:
         return {
             "fixture": self.fixture,
             "region": self.region,
             "until": self.until,
             "reason": self.reason,
+            "rule": self.rule,
         }
 
 
@@ -104,6 +135,16 @@ class KnownIssue:
     evidence: tuple[str, ...]
     detector: Detector | None
     exclusions: tuple[Exclusion, ...]
+
+    @property
+    def is_open_defect(self) -> bool:
+        """An evidenced defect that is present now (open, not fixed, not a guess).
+
+        `verified` means the harness reproduces it today and `unverified` means
+        it is only a recorded hypothesis; only an evidenced `verified` issue is
+        an open baseline defect and can explain a failing contract.
+        """
+        return self.status == "verified" and bool(self.evidence)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -290,15 +331,39 @@ def _parse_exclusions(
         region = str(entry["region"])
         if region not in known_regions:
             raise ConfigError(f"{path}: issue {issue_id} exclusion names unknown region `{region}`")
+        rule_value = entry.get("rule")
+        rule = str(rule_value) if rule_value is not None else None
+        if rule is not None:
+            _validate_exclusion_rule(rule, region, issue_id, path)
         exclusions.append(
             Exclusion(
                 fixture=str(entry["fixture"]),
                 region=region,
                 until=str(entry["until"]),
                 reason=str(entry["reason"]),
+                rule=rule,
             )
         )
     return tuple(exclusions)
+
+
+def _validate_exclusion_rule(rule: str, region: str, issue_id: str, path: Path) -> None:
+    """A waiver may only name a region-scoped contract rule about its own region.
+
+    Anything else would either never match (a silent no-op that looks like a
+    guard) or waive a rule about a different region. Both are refused here.
+    """
+    rule_region = contract_rule_region(rule)
+    if rule_region is None:
+        raise ConfigError(
+            f"{path}: issue {issue_id} exclusion rule `{rule}` is not region-scoped; "
+            f"only `{REGION_RULE_PREFIX}<region>` rules can be excluded"
+        )
+    if rule_region != region:
+        raise ConfigError(
+            f"{path}: issue {issue_id} exclusion rule `{rule}` is scoped to region "
+            f"`{rule_region}`, not `{region}`"
+        )
 
 
 def evaluate_detector(
@@ -372,3 +437,26 @@ def classify(
             return IssueClassification.REGRESSION, "a previously fixed defect came back on B"
         return IssueClassification.NEW_DEFECT, "present only on B"
     return IssueClassification.NOT_REPRODUCED, "absent on both A and B"
+
+
+def baseline_issue_for(
+    rule: str, fixture: str, issues: tuple[KnownIssue, ...], today: date
+) -> KnownIssue | None:
+    """The open, founded known issue that explains a failing contract rule.
+
+    The match is exact and scoped: the issue must be an open baseline defect for
+    the same fixture, its region must be the region the rule names, and it must
+    carry an active waiver that pins that same rule. Any mismatch (a fixed or
+    unverified issue, another fixture, another region) leaves the finding as a
+    real failure, so the gate still catches a violation the registry does not
+    record.
+    """
+    region = contract_rule_region(rule)
+    if region is None:
+        return None
+    for issue in issues:
+        if not issue.is_open_defect or issue.fixture != fixture or issue.region != region:
+            continue
+        if any(waiver.covers(rule, fixture, region, today) for waiver in issue.exclusions):
+            return issue
+    return None

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 
 from helpers import (
@@ -14,6 +15,7 @@ from helpers import (
     revision,
 )
 from x6200_ab.contracts import ContractFinding, run_contracts
+from x6200_ab.known_issues import Exclusion, KnownIssue
 from x6200_ab.quality_config import RuleException
 from x6200_ab.regions import RegionMap
 
@@ -127,3 +129,79 @@ def test_expired_exception_does_not_waive(tmp_path: Path, region_map: RegionMap)
         [_defective_capture(tmp_path)], region_map, contracts(exceptions=(exception,))
     )
     assert _finding(findings, "typography_missing_glyph").ok is False
+
+
+def _open_frequency_issue() -> KnownIssue:
+    """UI-010 as the registry records it: open, evidenced, scoped to one rule."""
+    return KnownIssue(
+        id="UI-010",
+        title="frecuencia invisible",
+        severity="critical",
+        fixture="home",
+        region="frecuencia",
+        status="verified",
+        note="",
+        evidence=("capture",),
+        detector=None,
+        exclusions=(
+            Exclusion(
+                fixture="home",
+                region="frecuencia",
+                until="2030-01-01",
+                reason="known baseline defect",
+                rule="region_min_content:frecuencia",
+            ),
+        ),
+    )
+
+
+def test_open_known_issue_turns_a_failure_into_an_unchanged_defect(
+    tmp_path: Path, region_map: RegionMap
+) -> None:
+    blank = make_capture(tmp_path, "home", blank_image(), rev=revision())
+    findings = run_contracts(
+        [blank],
+        region_map,
+        contracts(region_min_content={"frecuencia": 0.02}),
+        (_open_frequency_issue(),),
+        today=date(2026, 10, 14),
+    )
+    finding = _finding(findings, "region_min_content:frecuencia")
+    assert finding.ok is False
+    assert finding.unchanged_defect is True
+    assert finding.baseline_issue == "UI-010"
+    assert "UI-010" in finding.detail
+
+
+def test_violation_not_in_the_registry_stays_a_real_failure(
+    tmp_path: Path, region_map: RegionMap
+) -> None:
+    # Same contract shape, but a region the registered issue does not cover.
+    blank = make_capture(tmp_path, "home", blank_image(), rev=revision())
+    findings = run_contracts(
+        [blank],
+        region_map,
+        contracts(region_min_content={"waterfall": 0.02}),
+        (_open_frequency_issue(),),
+        today=date(2026, 10, 14),
+    )
+    finding = _finding(findings, "region_min_content:waterfall")
+    assert finding.ok is False
+    assert finding.unchanged_defect is False
+    assert finding.baseline_issue is None
+
+
+def test_known_issue_outside_its_expiry_stays_a_real_failure(
+    tmp_path: Path, region_map: RegionMap
+) -> None:
+    blank = make_capture(tmp_path, "home", blank_image(), rev=revision())
+    findings = run_contracts(
+        [blank],
+        region_map,
+        contracts(region_min_content={"frecuencia": 0.02}),
+        (_open_frequency_issue(),),
+        today=date(2031, 1, 1),
+    )
+    finding = _finding(findings, "region_min_content:frecuencia")
+    assert finding.unchanged_defect is False
+    assert finding.baseline_issue is None

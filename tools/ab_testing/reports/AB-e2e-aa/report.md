@@ -39,6 +39,7 @@ Components declared below REAL (never written as REAL):
 |---|---|---|---|---|---|---|
 | UI-001 | home-usb-20m | major | fixed | no | no | NOT_REPRODUCED |
 | UI-009 | home-bateria-externa | major | fixed | — | — | UNVERIFIED |
+| UI-010 | main-otro-tema | critical | verified | — | — | UNVERIFIED |
 | UI-002 | home-usb-20m | major | unverified | — | — | UNVERIFIED |
 | UI-003 | home-usb-20m | major | unverified | — | — | UNVERIFIED |
 | UI-004 | home-usb-20m | major | unverified | — | — | UNVERIFIED |
@@ -47,11 +48,11 @@ Components declared below REAL (never written as REAL):
 | UI-007 | main-otro-tema | major | unverified | — | — | UNVERIFIED |
 | UI-008 | home-usb-20m | info | unverified | — | — | UNVERIFIED |
 
-8 issue(s) are unverified: recorded from the repository but with no detector yet, so they neither block nor pass. They stay in the annex until the harness reproduces them.
+9 issue(s) are unverified: recorded from the repository but with no detector yet, so they neither block nor pass. They stay in the annex until the harness reproduces them.
 
 ## Quality contracts
 
-9 contract checks, 0 failure(s).
+9 contract checks, 0 failure(s), 0 unchanged baseline defect(s).
 
 ## Evidence
 

@@ -11,7 +11,7 @@
   },
   "revision_b": {
     "label": "b",
-    "sha": "66fb131fb86cb13b1e667bd1684c5f459a9f1f56"
+    "sha": "261ae08c7b6dd48c7d33327623d9775b20cf583f"
   },
   "scenarios": [
     "home-usb-20m"
@@ -159,7 +159,7 @@
     "b": [
       {
         "scenario": "home-usb-20m",
-        "revision": "66fb131fb86cb13b1e667bd1684c5f459a9f1f56",
+        "revision": "261ae08c7b6dd48c7d33327623d9775b20cf583f",
         "png_sha256": "0955aef900023601b0bdaad7f518fdc59eb5a64e7fbc77ccee948de71604023d",
         "width": 800,
         "height": 480,
@@ -308,7 +308,7 @@
           "ec1b0a58ec30270ece2a6b490ae41ed341133755"
         ],
         "revision_b": [
-          "66fb131fb86cb13b1e667bd1684c5f459a9f1f56"
+          "261ae08c7b6dd48c7d33327623d9775b20cf583f"
         ]
       }
     },
@@ -318,8 +318,8 @@
       "required": true,
       "summary": "visual regressions vs the baseline",
       "evidence": [
-        "/tmp/pytest-of-pablo/pytest-43/test_regression_of_a_fixed_iss0/ws-AB-e2e-reappear/diffs/home-usb-20m-diff.png",
-        "/tmp/pytest-of-pablo/pytest-43/test_regression_of_a_fixed_iss0/ws-AB-e2e-reappear/diffs/home-usb-20m-overlay.png",
+        "/tmp/pytest-of-pablo/pytest-0/test_regression_of_a_fixed_iss0/ws-AB-e2e-reappear/diffs/home-usb-20m-diff.png",
+        "/tmp/pytest-of-pablo/pytest-0/test_regression_of_a_fixed_iss0/ws-AB-e2e-reappear/diffs/home-usb-20m-overlay.png",
         "home-usb-20m box 782,12-790,20 (55px)",
         "home-usb-20m box 762,14-769,20 (26px)",
         "home-usb-20m box 772,12-776,20 (22px)"
@@ -339,7 +339,9 @@
       "evidence": [
         "layout_overlap [home-usb-20m]: text labels overlap: '\\uf240 12.1v\\n\\uf1e6 13.8v' at 591,0 and 'x1.0' at 762,10 (100% covered)"
       ],
-      "details": {}
+      "details": {
+        "unchanged_defects": []
+      }
     },
     {
       "gate": "Performance",
@@ -405,6 +407,18 @@
       "fixture": "home-bateria-externa",
       "region": "reloj_potencia",
       "status": "fixed",
+      "reproduced_a": null,
+      "reproduced_b": null,
+      "classification": "UNVERIFIED",
+      "detail": "no detector: only recorded from the repository"
+    },
+    {
+      "id": "UI-010",
+      "title": "Tema Outdoor: franja de frecuencia invisible sobre fondo blanco",
+      "severity": "critical",
+      "fixture": "main-otro-tema",
+      "region": "frecuencia",
+      "status": "verified",
       "reproduced_a": null,
       "reproduced_b": null,
       "classification": "UNVERIFIED",
@@ -501,70 +515,80 @@
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "800x480 (expected 800x480)",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:barra_superior",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.5475 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:botones",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.7551 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:espectro",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.2865 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:frecuencia",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.1047 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:s_metro",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.7435 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:waterfall",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.3471 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "coverage_levels",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "all levels allowed",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "coverage_required",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "all required components declared",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "layout_overlap",
       "fixture": "home-usb-20m",
       "ok": false,
       "detail": "text labels overlap: '\\uf240 12.1v\\n\\uf1e6 13.8v' at 591,0 and 'x1.0' at 762,10 (100% covered)",
-      "path": "0/37|0/41"
+      "path": "0/37|0/41",
+      "baseline_issue": null
     }
   ],
   "diffs": [

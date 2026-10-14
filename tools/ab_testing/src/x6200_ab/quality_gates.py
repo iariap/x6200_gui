@@ -209,14 +209,48 @@ def visual_regression_gate(
 
 
 def quality_contract_gate(findings: list[ContractFinding]) -> GateResult:
-    """The candidate must satisfy the objective contracts on its own."""
-    failures = [finding for finding in findings if not finding.ok]
+    """The candidate must satisfy the objective contracts on its own.
+
+    A failure the known-issue registry already records as an open baseline
+    defect is an UNCHANGED DEFECT: reported prominently, but not a new failure,
+    so it does not fail the gate. Any other violation does — the registry only
+    covers the exact (rule, fixture, region) it declares.
+    """
+    failures = [
+        finding for finding in findings if not finding.ok and finding.baseline_issue is None
+    ]
+    unchanged = [finding for finding in findings if finding.unchanged_defect]
+    unchanged_evidence = tuple(
+        f"UNCHANGED DEFECT {finding.rule} [{finding.fixture}] "
+        f"({finding.baseline_issue}): {finding.detail}"
+        for finding in unchanged
+    )
     if failures:
         return GateResult(
             name=GateName.QUALITY_CONTRACT,
             status=Status.FAIL,
-            summary=f"{len(failures)} contract(s) violated by the candidate",
-            evidence=tuple(f"{f.rule} [{f.fixture}]: {f.detail}" for f in failures),
+            summary=(
+                f"{len(failures)} contract(s) violated by the candidate"
+                + (
+                    f"; {len(unchanged)} unchanged baseline defect(s) also recorded"
+                    if unchanged
+                    else ""
+                )
+            ),
+            evidence=tuple(f"{f.rule} [{f.fixture}]: {f.detail}" for f in failures)
+            + unchanged_evidence,
+            details={"unchanged_defects": [finding.as_dict() for finding in unchanged]},
+        )
+    if unchanged:
+        return GateResult(
+            name=GateName.QUALITY_CONTRACT,
+            status=Status.PASS,
+            summary=(
+                f"{len(findings) - len(unchanged)} contract checks passed; "
+                f"{len(unchanged)} unchanged baseline defect(s) recorded, not blocking"
+            ),
+            evidence=unchanged_evidence,
+            details={"unchanged_defects": [finding.as_dict() for finding in unchanged]},
         )
     return GateResult(
         name=GateName.QUALITY_CONTRACT,
