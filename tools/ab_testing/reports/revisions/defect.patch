@@ -1,0 +1,22 @@
+diff --git a/src/main_screen.c b/src/main_screen.c
+index e82c1e7..af6f3bf 100644
+--- a/src/main_screen.c
++++ b/src/main_screen.c
+@@ -1003,7 +1003,7 @@ static void update_tuning_multiplier_display(float multiplier) {
+ 
+ static void hide_multiplier_cb(lv_timer_t *timer) {
+     if (tuning_multiplier_label) {
+-        lv_obj_add_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
++        /* abtest e2e: label left visible */
+     }
+ }
+ 
+@@ -1326,7 +1326,7 @@ lv_obj_t * main_screen() {
+     lv_obj_set_style_text_font(tuning_multiplier_label, &sony_16, 0);
+     lv_obj_align(tuning_multiplier_label, LV_ALIGN_TOP_RIGHT, -10, 10);
+     lv_label_set_text(tuning_multiplier_label, "x1.0");
+-    lv_obj_add_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
++    /* abtest e2e: label left visible */
+     
+     // Hide timer for multiplier display
+     multiplier_hide_timer = lv_timer_create(hide_multiplier_cb, 2000, NULL);
