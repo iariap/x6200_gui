@@ -20,6 +20,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     dialog_wifi.c wifi.cpp controls_encoder.c controls_step.c voice.c voice_text.c controls.cpp usb_devices.cpp
     dialog_eq.cpp dialog_about.c
     adaptive_tuning.c
+    visual_policy.c
     audio_enhancement.c
     wspr/wspr.c wspr/wsprnet.c
     theme.c cJSON.c app_frame.c freq_strip.c station.c tx_level.c
