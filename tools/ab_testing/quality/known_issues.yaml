@@ -1,0 +1,122 @@
+# Known issues of the X6200 UI, as the A/B framework sees them.
+#
+# Rule (docs/AB_TESTING_PLAN.md, and the seeds in the milestone-2 brief): an
+# issue is only trusted when the *harness reproduces it*. An issue without a
+# detector is a recorded hypothesis — it never fails and never passes, and stays
+# listed here (and in the report) as `unverified`.
+#
+# Fields:
+#   status:  fixed       -> was fixed before; if it shows again on B it is a REGRESSION
+#            verified    -> reproducible now
+#            unverified  -> recorded from the repository, no detector yet
+#   detector:region_content_above  -> the region must stay near-uniform; content
+#            there means the element it should hide is being drawn.
+#   exclusions: scoped by fixture and region, with an expiry date and a reason.
+#            Never global, never permanent.
+
+version: 1
+
+issues:
+  - id: UI-001
+    title: "Etiqueta del multiplicador de tuning visible sobre la barra superior"
+    severity: major
+    fixture: home-usb-20m
+    region: multiplicador
+    status: fixed
+    note: >
+      ROM_REVIEW.md §5.3: la etiqueta `x%.1f` del tuning adaptativo se creaba visible y
+      tapaba la barra de estado (clima/voltaje). El fix la deja con
+      LV_OBJ_FLAG_HIDDEN. El arnes la reproduce: si la etiqueta se dibuja, la region
+      `multiplicador` deja de ser fondo puro y el detector la marca.
+    evidence:
+      - "docs/ROM_REVIEW.md §5.3"
+      - "src/main_screen.c: crear la etiqueta y ocultarla (LV_OBJ_FLAG_HIDDEN)"
+    detector:
+      kind: region_content_above
+      region: multiplicador
+      pixel_tolerance: 24
+      max_content: 0.05
+    exclusions: []
+
+  # --- Seeds from the repository history: recorded, not yet reproduced. -------
+  # They stay unverified until the harness can reproduce them (pixel-region
+  # detector today; structural inspection once the harness emits object bounds).
+
+  - id: UI-002
+    title: "Menu de apps: las apps solo vivian en el long-press de Ajustes"
+    severity: major
+    fixture: home-usb-20m
+    status: unverified
+    note: >
+      Hallazgo 17 y 29. Sin fixture que abra el menu de apps; el arnes renderiza la
+      pantalla principal, no el menu.
+    evidence:
+      - "docs/HALLAZGOS.md 17, 29"
+
+  - id: UI-003
+    title: "WCAG 2.1: pares texto/fondo por debajo de 4.5:1 o 3:1"
+    severity: major
+    fixture: home-usb-20m
+    status: unverified
+    note: >
+      Hallazgos 24/26/27/28. Hay verificador de color (tests/check_wcag.py) pero el
+      arnes todavia no expone los pares que dibuja, solo el PNG.
+    evidence:
+      - "docs/HALLAZGOS.md 24, 26, 27, 28"
+      - "tests/check_wcag.py"
+
+  - id: UI-004
+    title: "Ajustes: widgets que no se podian alcanzar con el foco"
+    severity: major
+    fixture: home-usb-20m
+    status: unverified
+    note: >
+      Hallazgo 18. El arnes no abre dialogos ni emite la grilla de foco.
+    evidence:
+      - "docs/HALLAZGOS.md 18"
+      - "tests/check_settings_focus.py"
+
+  - id: UI-005
+    title: "Dialogo viejo: texto constante tapado por los botones"
+    severity: minor
+    fixture: home-usb-20m
+    status: unverified
+    note: >
+      Hallazgo 21. Los dialogos no se abren en los fixtures actuales.
+    evidence:
+      - "docs/HALLAZGOS.md 21"
+
+  - id: UI-006
+    title: "Icono BT: el glifo U+F293 no existe en sony_20 (rectangulo vacio)"
+    severity: minor
+    fixture: home-usb-20m
+    status: unverified
+    note: >
+      Hallazgo 19. El arnes dibuja la barra superior; falta un detector de glifos
+      faltantes (la comprobacion seria sobre las fuentes, no sobre el PNG).
+    evidence:
+      - "docs/HALLAZGOS.md 19"
+      - "src/info.c (la runa se dibuja con lv_line)"
+
+  - id: UI-007
+    title: "Temas RS sin clave propia heredaban un color por debajo de 2.58:1"
+    severity: major
+    fixture: main-otro-tema
+    status: unverified
+    note: >
+      Hallazgo 28. Requiere el chequeo de contraste sobre los pares del tema, no
+      disponible a nivel de pixel todavia.
+    evidence:
+      - "docs/HALLAZGOS.md 28"
+      - "docs/THEMES.md"
+
+  - id: UI-008
+    title: "CMA: 128 MB reservados para GPU no usada (presupuesto del firmware)"
+    severity: info
+    fixture: home-usb-20m
+    status: unverified
+    note: >
+      docs/RESOURCE_USAGE.md. Es un presupuesto de recursos del firmware, no un
+      defecto de la UI; acota LV_MEM y buffers. El arnes no mide memoria del sistema.
+    evidence:
+      - "docs/RESOURCE_USAGE.md"

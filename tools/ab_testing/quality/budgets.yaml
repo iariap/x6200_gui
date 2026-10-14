@@ -1,0 +1,20 @@
+# Thresholds fixed *before* a comparison runs (rule 5 of docs/AB_TESTING_PLAN.md).
+# Editing them to make a run pass is exactly what the plan forbids, so they live
+# next to the code and are reviewed like code.
+
+visual:
+  # Summed |dR| + |dG| + |dB| above which a pixel counts as changed. 12 keeps
+  # single-bit noise and antialiasing jitter out of the report.
+  pixel_tolerance: 12
+  # Ignore connected components smaller than this many pixels.
+  min_box_pixels: 6
+  # A change covering more than this percent of the framebuffer is reported as
+  # major (informational; the gate itself is region-based).
+  major_change_pct: 1.0
+
+performance:
+  # Relative render-cost proxy on the x86 host (not battery, not the Cortex-A7):
+  # the harness exposes flushed pixels and flush counts under virtual time, and
+  # the candidate may not increase them beyond these budgets.
+  max_flushed_pixels_delta_pct: 10.0
+  max_flushes_delta_pct: 20.0

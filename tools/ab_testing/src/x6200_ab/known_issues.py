@@ -1,0 +1,287 @@
+"""Known issues: recorded defects, their detectors and their A→B classification.
+
+An issue is only trusted when the harness *reproduces* it: a detector runs on a
+capture and says whether the defect is present. Issues with no detector yet
+(the seeds from the repository history) are kept as `unverified` and never fail
+a run. Given the detector's answer on A and on B, the issue is classified as
+FIXED, UNCHANGED DEFECT, REGRESSION, NEW DEFECT or NOT REPRODUCED.
+
+Exclusions are scoped and dated — a fixture, a region and an expiry date with a
+reason — so a waiver cannot become permanent or global by accident.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import date
+from enum import StrEnum
+from pathlib import Path
+from typing import Any
+
+from .capture import Capture
+from .configio import read_yaml_mapping
+from .errors import ConfigError
+from .regions import RegionMap
+from .visual_diff import load_rgb, region_content_fraction
+
+DETECTOR_KINDS = frozenset({"region_content_above"})
+STATUSES = frozenset({"verified", "fixed", "unverified", "new"})
+SEVERITIES = frozenset({"critical", "major", "minor", "info"})
+
+
+class IssueClassification(StrEnum):
+    """How one known issue behaves from A to B."""
+
+    NOT_REPRODUCED = "NOT_REPRODUCED"
+    FIXED = "FIXED"
+    UNCHANGED_DEFECT = "UNCHANGED DEFECT"
+    REGRESSION = "REGRESSION"
+    NEW_DEFECT = "NEW DEFECT"
+    UNVERIFIED = "UNVERIFIED"
+
+
+@dataclass(frozen=True)
+class Detector:
+    """A deterministic check over one capture region."""
+
+    kind: str
+    region: str
+    pixel_tolerance: int
+    max_content: float
+
+
+@dataclass(frozen=True)
+class Exclusion:
+    """A scoped, dated waiver for a known issue."""
+
+    fixture: str
+    region: str
+    until: str
+    reason: str
+
+    def active(self, fixture: str, today: date) -> bool:
+        if self.fixture != fixture:
+            return False
+        try:
+            return today <= date.fromisoformat(self.until)
+        except ValueError as exc:
+            raise ConfigError(f"exclusion until `{self.until}` is not an ISO date") from exc
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "fixture": self.fixture,
+            "region": self.region,
+            "until": self.until,
+            "reason": self.reason,
+        }
+
+
+@dataclass(frozen=True)
+class KnownIssue:
+    """One recorded defect."""
+
+    id: str
+    title: str
+    severity: str
+    fixture: str
+    region: str | None
+    status: str
+    note: str
+    evidence: tuple[str, ...]
+    detector: Detector | None
+    exclusions: tuple[Exclusion, ...]
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "title": self.title,
+            "severity": self.severity,
+            "fixture": self.fixture,
+            "region": self.region,
+            "status": self.status,
+            "note": self.note,
+            "evidence": list(self.evidence),
+            "detector": None
+            if self.detector is None
+            else {
+                "kind": self.detector.kind,
+                "region": self.detector.region,
+                "pixel_tolerance": self.detector.pixel_tolerance,
+                "max_content": self.detector.max_content,
+            },
+            "exclusions": [exclusion.as_dict() for exclusion in self.exclusions],
+        }
+
+
+@dataclass(frozen=True)
+class DetectorOutcome:
+    """What a detector measured on one capture."""
+
+    reproduced: bool
+    measured: float
+    detail: str
+
+
+@dataclass(frozen=True)
+class IssueObservation:
+    """A known issue evaluated against A and B."""
+
+    issue: KnownIssue
+    reproduced_a: bool | None
+    reproduced_b: bool | None
+    classification: IssueClassification
+    detail: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.issue.id,
+            "title": self.issue.title,
+            "severity": self.issue.severity,
+            "fixture": self.issue.fixture,
+            "region": self.issue.region,
+            "status": self.issue.status,
+            "reproduced_a": self.reproduced_a,
+            "reproduced_b": self.reproduced_b,
+            "classification": self.classification.value,
+            "detail": self.detail,
+        }
+
+
+def load_known_issues(path: Path, known_regions: set[str]) -> tuple[KnownIssue, ...]:
+    """Load `quality/known_issues.yaml`."""
+    data = read_yaml_mapping(path)
+    raw = data.get("issues")
+    if not isinstance(raw, list):
+        raise ConfigError(f"{path}: `issues` must be a list")
+    issues: list[KnownIssue] = []
+    seen: set[str] = set()
+    for entry in raw:
+        issue = _parse_issue(entry, path, known_regions)
+        if issue.id in seen:
+            raise ConfigError(f"{path}: duplicate issue id `{issue.id}`")
+        seen.add(issue.id)
+        issues.append(issue)
+    return tuple(issues)
+
+
+def _parse_issue(entry: object, path: Path, known_regions: set[str]) -> KnownIssue:
+    if not isinstance(entry, dict):
+        raise ConfigError(f"{path}: every issue must be a mapping")
+    required = ("id", "title", "severity", "fixture", "status")
+    for key in required:
+        if key not in entry:
+            raise ConfigError(f"{path}: issue missing `{key}`")
+    issue_id = str(entry["id"])
+    severity = str(entry["severity"])
+    if severity not in SEVERITIES:
+        raise ConfigError(f"{path}: issue {issue_id} has unknown severity `{severity}`")
+    status = str(entry["status"])
+    if status not in STATUSES:
+        raise ConfigError(f"{path}: issue {issue_id} has unknown status `{status}`")
+    detector = _parse_detector(entry.get("detector"), issue_id, path, known_regions)
+    region_value = entry.get("region")
+    region = str(region_value) if region_value is not None else None
+    if detector is None:
+        # An issue with no detector is a recorded hypothesis: it lives outside
+        # any main-screen region for now, so a region is optional.
+        if region is not None and region not in known_regions:
+            raise ConfigError(f"{path}: issue {issue_id} names unknown region `{region}`")
+    elif region is None:
+        raise ConfigError(f"{path}: issue {issue_id} has a detector but no `region`")
+    exclusions = _parse_exclusions(entry.get("exclusions", []), issue_id, path, known_regions)
+    evidence = entry.get("evidence", [])
+    if not isinstance(evidence, list):
+        raise ConfigError(f"{path}: issue {issue_id} `evidence` must be a list")
+    return KnownIssue(
+        id=issue_id,
+        title=str(entry["title"]),
+        severity=severity,
+        fixture=str(entry["fixture"]),
+        region=region,
+        status=status,
+        note=str(entry.get("note", "")),
+        evidence=tuple(str(item) for item in evidence),
+        detector=detector,
+        exclusions=exclusions,
+    )
+
+
+def _parse_detector(
+    raw: object, issue_id: str, path: Path, known_regions: set[str]
+) -> Detector | None:
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ConfigError(f"{path}: issue {issue_id} `detector` must be a mapping")
+    kind = str(raw.get("kind", ""))
+    if kind not in DETECTOR_KINDS:
+        raise ConfigError(f"{path}: issue {issue_id} has unknown detector kind `{kind}`")
+    region = str(raw.get("region", ""))
+    if region not in known_regions:
+        raise ConfigError(f"{path}: issue {issue_id} detector names unknown region `{region}`")
+    return Detector(
+        kind=kind,
+        region=region,
+        pixel_tolerance=int(raw.get("pixel_tolerance", 12)),
+        max_content=float(raw.get("max_content", 0.02)),
+    )
+
+
+def _parse_exclusions(
+    raw: object, issue_id: str, path: Path, known_regions: set[str]
+) -> tuple[Exclusion, ...]:
+    if raw is None:
+        return ()
+    if not isinstance(raw, list):
+        raise ConfigError(f"{path}: issue {issue_id} `exclusions` must be a list")
+    exclusions: list[Exclusion] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            raise ConfigError(f"{path}: issue {issue_id} exclusion must be a mapping")
+        for key in ("fixture", "region", "until", "reason"):
+            if key not in entry:
+                raise ConfigError(f"{path}: issue {issue_id} exclusion missing `{key}`")
+        region = str(entry["region"])
+        if region not in known_regions:
+            raise ConfigError(f"{path}: issue {issue_id} exclusion names unknown region `{region}`")
+        exclusions.append(
+            Exclusion(
+                fixture=str(entry["fixture"]),
+                region=region,
+                until=str(entry["until"]),
+                reason=str(entry["reason"]),
+            )
+        )
+    return tuple(exclusions)
+
+
+def evaluate_detector(
+    detector: Detector, capture: Capture, region_map: RegionMap
+) -> DetectorOutcome:
+    """Run one detector on one capture and report whether the defect shows."""
+    region = region_map.get(detector.region)
+    array = load_rgb(capture.png)
+    measured = region_content_fraction(array, region, detector.pixel_tolerance)
+    reproduced = measured > detector.max_content
+    detail = (
+        f"region `{detector.region}` content {measured:.4f} "
+        f"{'>' if reproduced else '<='} {detector.max_content:.4f}"
+    )
+    return DetectorOutcome(reproduced=reproduced, measured=measured, detail=detail)
+
+
+def classify(
+    issue: KnownIssue, reproduced_a: bool | None, reproduced_b: bool | None
+) -> tuple[IssueClassification, str]:
+    """Classify an issue from its reproduction on A and B."""
+    if reproduced_a is None or reproduced_b is None:
+        return IssueClassification.UNVERIFIED, "no detector: only recorded from the repository"
+    if reproduced_a and not reproduced_b:
+        return IssueClassification.FIXED, "reproduced on A, absent on B"
+    if reproduced_a and reproduced_b:
+        return IssueClassification.UNCHANGED_DEFECT, "reproduced on both A and B"
+    if not reproduced_a and reproduced_b:
+        if issue.status == "fixed":
+            return IssueClassification.REGRESSION, "a previously fixed defect came back on B"
+        return IssueClassification.NEW_DEFECT, "present only on B"
+    return IssueClassification.NOT_REPRODUCED, "absent on both A and B"

@@ -100,6 +100,66 @@ recibe todos los eventos. El mock del arnés ahora asigna los ids con
 `lv_event_register_id()` (como `events.c`) y `event_init()` corre antes de
 construir la pantalla.
 
-## Milestones 2–7 — pendientes
+## Milestone 2 — inventario de defectos con el arnés ✅ (parcial)
 
-Ver `docs/AB_TESTING_PLAN.md` (tabla de milestones y gates).
+Gate: se documenta al menos un defecto real reproducible; los checks sintéticos
+detectan fallos deliberados.
+
+Entregado en `tools/ab_testing/` (framework Python, rama `lu2dsx/ui-ab-harness`):
+
+- `quality/known_issues.yaml` con `UI-001` (la etiqueta del multiplicador de
+  tuning visible sobre la barra superior, `ROM_REVIEW.md` §5.3) **reproducido por
+  el arnés**: el detector `region_content_above` mide la región `multiplicador`
+  sobre el PNG y la marca cuando deja de ser fondo.
+- Las 8 semillas del brief entran con su evidencia; las que el arnés todavía no
+  reproduce quedan `unverified` y **no bloquean**. Registro:
+  [`docs/UI_KNOWN_ISSUES.md`](UI_KNOWN_ISSUES.md).
+- Detección de fallos deliberados verificada por los tests: un fixture con la
+  barra de botones corrida 30 px produce un diff localizado (48 267 px, región
+  `botones`).
+
+Lo pendiente de este milestone es la **inspección estructural** (cajas de
+objetos, glifos, overflow): el arnés aún no la emite, así que `audit` la reporta
+como instrumentación faltante en vez de inventar resultados.
+
+## Milestone 3 — A/B entre commits, diff, contratos, reportes ✅
+
+Gate: distingue corrección / regresión / cambio esperado.
+
+Entregado en `tools/ab_testing/`:
+
+- **Revisiones aisladas por SHA**: `git worktree` por commit, submódulo `lvgl`
+  fijado por gitlink y cacheado; la revisión que no compila queda **BLOCKED**
+  con la cola del log. Nunca se reusa silenciosamente el binario de otra
+  revisión (el JSON del arnés declara la revisión y se verifica).
+- **Diff visual** (Pillow/NumPy): área, cajas (flood fill), regiones semánticas
+  (`regions.yaml`), `diff.png` y `overlay.png`, y dimensiones incompatibles como
+  defecto.
+- **Contratos** independientes de A y **budgets** fijados antes de correr;
+  **regiones de revisión** y **cambios esperados** con vencimiento.
+- **Evaluador** con las cinco salidas y las seis puertas separadas; Hardware y
+  Energy BLOCKED (advisory), nunca PASS por defecto. Códigos de salida 0/1/2/3/4.
+- **Reportes** en `reports/<experiment-id>/` con MD, HTML, `results.json`,
+  `metadata.json`, `screenshots/`, `diffs/`, `metrics/`, `logs/`. Evidencia
+  commiteada en [`tools/ab_testing/reports/`](../tools/ab_testing/reports/README.md).
+
+Evidencia (host, 2026-10-13, `uv run pytest`, incluida la suite `-m e2e` que
+compila el arnés real con Docker):
+
+```text
+AB-e2e-aa         base vs base                     -> PASS   (diff 0)
+AB-e2e-regression base vs barra de botones +30 px  -> FAIL   (48 267 px, región botones)
+AB-e2e-fix        etiqueta UI-001 vs base          -> PASS (IMPROVEMENT, UI-001 FIXED)
+AB-e2e-reappear   base vs etiqueta UI-001          -> FAIL   (UI-001 REGRESSION)
+capture CLI       los 6 fixtures                    -> 6 PNG + 6 JSON
+```
+
+Puertas que arrancan mínimas y **honestas**: `benchmark` devuelve BLOCKED (no hay
+instrumentación de tiempos de frame/FPS; los contadores de render son de tiempo
+virtual, no duraciones), y `audit` es solo por región de píxeles hasta que el
+arnés emita la inspección estructural.
+
+## Milestones 4–7 — pendientes
+
+Ver `docs/AB_TESTING_PLAN.md` (tabla de milestones y gates). Benchmark de render
+con repeticiones y FPS, workflow de CI, y captura física/energía del equipo.
