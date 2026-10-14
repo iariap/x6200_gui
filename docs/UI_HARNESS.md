@@ -16,13 +16,13 @@ El arnés del X6100 **renderiza los diálogos reales de la GUI en el PC, sin rad
   Ajustes se pueda renderizar; Wireless muestra redes y dispositivos falsos.
 - Bloquea la red con `-Wl,--wrap=connect`, así que ningún cliente sale a internet.
 
-**Probado acá**: el método funciona en este entorno. `tools/ui_harness/probe.c` compila LVGL
-headless y escribe `probe.png` (800x480):
+**Probado acá**: el método funciona en este entorno. `tools/ui_harness/probe.c` compiló LVGL
+headless y escribió `probe.png` (800x480). La sonda ya fue reemplazada por el arnés completo
+(milestone 1 de `docs/AB_TESTING_PLAN.md`); comandos en `tools/ui_harness/README.md`:
 
 ```bash
-docker build -t x6200-uiharness tools/ui_harness          # imagen con libpng/fftw/sndfile/glib/libnm/sqlite
-docker run --rm -v "$PWD:/src" -w /src/x6200_gui/tools/ui_harness x6200-uiharness \
-  bash -c 'mkdir -p build && cd build && cmake .. && make -j$(nproc) && ./ui_probe'
+docker build -t x6200-uiharness tools/ui_harness      # imagen con libpng/libnm/sqlite/cmake
+# compilar y correr (raíz del repo montada en /src); ver README.md
 ```
 
 ![prueba de render headless](ui_harness_probe.png)
@@ -70,6 +70,12 @@ verifican solo por compilación y strings del binario.
 ## Estado
 
 - ✅ Método verificado (render headless + PNG).
-- ✅ Imagen de build reproducible (`tools/ui_harness/Dockerfile`) y sonda de render
-  (`tools/ui_harness/probe.c`).
-- ⏳ Adaptación completa del arnés a nuestras fuentes (paso siguiente).
+- ✅ Imagen de build reproducible (`tools/ui_harness/Dockerfile`).
+- ✅ **Arnes adaptado (milestone 1 de `docs/AB_TESTING_PLAN.md`)**: `tools/ui_harness/`
+  compila componentes reales (`theme.c`, `styles.c`, `fonts/`, `clock.c`, `info.c`,
+  `meter.c`) sobre LVGL 8.3.11 del submódulo, renderiza la barra de arriba de la
+  pantalla principal a PNG y es determinista (dos corridas → PNG idéntico por
+  sha256, `tests/check_harness_determinism.sh`). Ver el README del arnés para los
+  comandos y la tabla de cobertura REAL/PARTIAL/SYNTHETIC/UNSUPPORTED.
+- ⏳ Resto de la pantalla principal (espectro, waterfall, franja de frecuencia,
+  band plan, spots, botones) y los diálogos: siguientes incrementos.

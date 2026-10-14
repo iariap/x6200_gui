@@ -1,7 +1,38 @@
-/* Minimal lv_conf.h for the host render probe (32-bit colour, no extras). */
+/*
+ *  LVGL configuration for the host UI harness.
+ *
+ *  Only the settings the harness needs are set here; LVGL 8's
+ *  lv_conf_internal.h fills in the rest with its defaults. The important ones:
+ *    - 32-bit colour, a large heap (the real fonts and images are in RAM);
+ *    - the 'A:' drive mapped to the host filesystem so the theme's `A:/...`
+ *      background bitmaps resolve to the repository (no /dev/shm on the PC);
+ *    - the built-in Montserrat 14 kept as the default font (LVGL's own widgets
+ *      fall back to it; the GUI uses its own fonts).
+ */
+
 #pragma once
+
+/* Marks the file as found (LVGL's lv_conf_internal.h checks this). */
+#define LV_CONF_H
+
 #define LV_COLOR_DEPTH 32
-#define LV_MEM_SIZE (48U * 1024U * 1024U)
-#define LV_USE_LOG 0
+#define LV_MEM_SIZE (64U * 1024U * 1024U)
+
+/* Log to stdout at warnings and above (image/driver problems show up here). */
+#define LV_USE_LOG 1
+#define LV_LOG_LEVEL LV_LOG_LEVEL_WARN
+#define LV_LOG_PRINTF 1
+
+/* Host filesystem for the theme bitmaps: A:/path -> /path */
+#define LV_USE_FS_STDIO 1
+#if LV_USE_FS_STDIO
+    #define LV_FS_STDIO_LETTER 'A'
+    #define LV_FS_STDIO_PATH ""
+    #define LV_FS_STDIO_CACHE_SIZE 0
+#endif
+
 #define LV_USE_ASSERT_NULL 0
 #define LV_USE_ASSERT_MALLOC 0
+
+/* info.c subscribes to WiFi state messages (LVGL's lv_msg). */
+#define LV_USE_MSG 1
