@@ -101,7 +101,7 @@ lv_obj_t * pannel_init(lv_obj_t *parent) {
     lv_obj_add_event_cb(obj, obj_deleted_cb, LV_EVENT_DELETE, NULL);
 
     lv_obj_add_style(obj, &pannel_style, 0);
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
 
     subject_add_delayed_observer(cfg_cur.mode, update_visibility, NULL);
     subject_add_delayed_observer_and_call(cfg.cw_decoder.val, update_visibility, NULL);
@@ -117,7 +117,7 @@ void pannel_hide() {
         return;
     }
 
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
 }
 
 void pannel_visible() {
@@ -142,9 +142,9 @@ void pannel_visible() {
         strcpy(buf, "");
         last_line = (char *) &buf;
         lv_label_set_text_static(obj, buf);
-        lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
+        if (obj) lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
     } else {
-        lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+        if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
     }
 }
 

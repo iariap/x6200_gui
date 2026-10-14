@@ -1820,9 +1820,9 @@ static void bt_power_update_cb(lv_event_t * e) {
 
     if (bt_visible_sw) {
         if (on) {
-            lv_obj_clear_state(bt_visible_sw, LV_STATE_DISABLED);
+            if (bt_visible_sw) lv_obj_clear_state(bt_visible_sw, LV_STATE_DISABLED);
         } else {
-            lv_obj_add_state(bt_visible_sw, LV_STATE_DISABLED);
+            if (bt_visible_sw) lv_obj_add_state(bt_visible_sw, LV_STATE_DISABLED);
         }
     }
 }
@@ -1914,7 +1914,7 @@ static uint8_t make_bluetooth(uint8_t row) {
     bt_visible_sw = bt_switch_cell(row, bt_state_discoverable(), bt_visible_update_cb);
 
     if (!on) {
-        lv_obj_add_state(bt_visible_sw, LV_STATE_DISABLED);
+        if (bt_visible_sw) lv_obj_add_state(bt_visible_sw, LV_STATE_DISABLED);
     }
 
     lv_obj_add_event_cb(bt_visible_sw, bt_visible_delete_cb, LV_EVENT_DELETE, NULL);

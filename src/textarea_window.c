@@ -103,7 +103,7 @@ lv_obj_t * textarea_window_open(textarea_window_cb_t ok, textarea_window_cb_t ca
     lv_obj_remove_style_all(window);
 
     lv_obj_add_style(window, &msg_style, 0);
-    lv_obj_clear_flag(window, LV_OBJ_FLAG_SCROLLABLE);
+    if (window) lv_obj_clear_flag(window, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_y(window, 80);
 
     lv_obj_t * obj = lv_obj_create(window);
@@ -136,7 +136,7 @@ lv_obj_t * textarea_window_open(textarea_window_cb_t ok, textarea_window_cb_t ca
     lv_textarea_set_one_line(text, true);
     lv_textarea_set_max_length(text, 64);
 
-    lv_obj_clear_flag(text, LV_OBJ_FLAG_SCROLLABLE);
+    if (text) lv_obj_clear_flag(text, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_text_font(text, &sony_44, 0);
     lv_obj_set_flex_grow(text, 1);
 

@@ -1056,8 +1056,8 @@ static void construct_cb(lv_obj_t *parent)
     lv_obj_remove_style_all(fax_viewport);
     lv_obj_set_size(fax_viewport, 795, DIALOG_BOX_H);
     lv_obj_center(fax_viewport);
-    lv_obj_clear_flag(fax_viewport, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_clear_flag(fax_viewport, LV_OBJ_FLAG_CLICKABLE);
+    if (fax_viewport) lv_obj_clear_flag(fax_viewport, LV_OBJ_FLAG_SCROLLABLE);
+    if (fax_viewport) lv_obj_clear_flag(fax_viewport, LV_OBJ_FLAG_CLICKABLE);
 
     /*
      * Fax canvas.
@@ -1135,8 +1135,8 @@ static void construct_cb(lv_obj_t *parent)
     lv_obj_set_style_border_opa(fax_frame, LV_OPA_COVER, LV_PART_MAIN);
     lv_obj_set_style_radius(fax_frame, 8, LV_PART_MAIN);
 
-    lv_obj_clear_flag(fax_frame, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_clear_flag(fax_frame, LV_OBJ_FLAG_CLICKABLE);
+    if (fax_frame) lv_obj_clear_flag(fax_frame, LV_OBJ_FLAG_SCROLLABLE);
+    if (fax_frame) lv_obj_clear_flag(fax_frame, LV_OBJ_FLAG_CLICKABLE);
 
 
     app_frame_create(&frame, dialog.obj);
@@ -1287,7 +1287,7 @@ static void apply_zoom_geometry(void)
 
         lv_obj_set_size(fax_viewport, PREVIEW_WIDTH, 152);
         lv_obj_align(fax_viewport, LV_ALIGN_CENTER, 0, 0);
-        lv_obj_clear_flag(fax_viewport, LV_OBJ_FLAG_HIDDEN);
+        if (fax_viewport) lv_obj_clear_flag(fax_viewport, LV_OBJ_FLAG_HIDDEN);
         lv_obj_set_style_bg_opa(fax_viewport, LV_OPA_TRANSP, LV_PART_MAIN);
         lv_obj_set_style_border_width(fax_viewport, 0, LV_PART_MAIN);
 
@@ -1304,7 +1304,7 @@ static void apply_zoom_geometry(void)
         if (fax_frame) {
             lv_obj_set_size(fax_frame, 795, 182);
             lv_obj_center(fax_frame);
-            lv_obj_clear_flag(fax_frame, LV_OBJ_FLAG_HIDDEN);
+            if (fax_frame) lv_obj_clear_flag(fax_frame, LV_OBJ_FLAG_HIDDEN);
             lv_obj_move_background(fax_frame);
         }
     } else {
@@ -1320,13 +1320,13 @@ static void apply_zoom_geometry(void)
         lv_obj_clear_flag(frame.status, LV_OBJ_FLAG_HIDDEN);
 
         app_frame_body(fax_viewport);
-        lv_obj_clear_flag(fax_viewport, LV_OBJ_FLAG_HIDDEN);
+        if (fax_viewport) lv_obj_clear_flag(fax_viewport, LV_OBJ_FLAG_HIDDEN);
 
         lv_obj_set_size(fax_canvas, PREVIEW_WIDTH, PREVIEW_HEIGHT);
         lv_obj_align(fax_canvas, LV_ALIGN_CENTER, 0, 0);
 
         if (fax_frame) {
-            lv_obj_add_flag(fax_frame, LV_OBJ_FLAG_HIDDEN);
+            if (fax_frame) lv_obj_add_flag(fax_frame, LV_OBJ_FLAG_HIDDEN);
         }
     }
 }
@@ -2708,11 +2708,11 @@ static bool fax_browser_open_png(const char *filename)
 
     if (fax_browser_table) {
         lv_group_remove_obj(fax_browser_table);
-        lv_obj_add_flag(fax_browser_table, LV_OBJ_FLAG_HIDDEN);
+        if (fax_browser_table) lv_obj_add_flag(fax_browser_table, LV_OBJ_FLAG_HIDDEN);
     }
 
     if (fax_canvas) {
-        lv_obj_clear_flag(fax_canvas, LV_OBJ_FLAG_HIDDEN);
+        if (fax_canvas) lv_obj_clear_flag(fax_canvas, LV_OBJ_FLAG_HIDDEN);
         lv_group_add_obj(keyboard_group, fax_canvas);
         lv_group_focus_obj(fax_canvas);
         lv_group_set_editing(keyboard_group, true);
@@ -2744,12 +2744,12 @@ static void fax_browser_build(void)
     fax_browser_set_editor_buttons(false);
 
     if (fax_canvas) {
-        lv_obj_add_flag(fax_canvas, LV_OBJ_FLAG_HIDDEN);
+        if (fax_canvas) lv_obj_add_flag(fax_canvas, LV_OBJ_FLAG_HIDDEN);
         lv_group_remove_obj(fax_canvas);
     }
     /* Hide SMALL-only decorations while the browser owns the viewport. */
     if (small_top_mask) {
-        lv_obj_add_flag(small_top_mask, LV_OBJ_FLAG_HIDDEN);
+        if (small_top_mask) lv_obj_add_flag(small_top_mask, LV_OBJ_FLAG_HIDDEN);
     }
     /*
      * Keep the common WEFAX frame visible behind the browser as well.
@@ -2758,7 +2758,7 @@ static void fax_browser_build(void)
      * apply_zoom_geometry() made the frame visible again.
      */
     if (fax_frame && zoom_mode == WEFAX_ZOOM_SMALL) {   /* BIG/FULL: the common look has no frame */
-        lv_obj_clear_flag(fax_frame, LV_OBJ_FLAG_HIDDEN);
+        if (fax_frame) lv_obj_clear_flag(fax_frame, LV_OBJ_FLAG_HIDDEN);
         lv_obj_move_background(fax_frame);
     }
 
@@ -2907,7 +2907,7 @@ static void fax_browser_close(void)
     rerender_preview();
 
     if (fax_canvas) {
-        lv_obj_clear_flag(fax_canvas, LV_OBJ_FLAG_HIDDEN);
+        if (fax_canvas) lv_obj_clear_flag(fax_canvas, LV_OBJ_FLAG_HIDDEN);
 
         /*
          * Re-apply the CURRENT zoom layout after leaving the browser.
@@ -3124,14 +3124,14 @@ static void fax_browser_return_to_list(void)
 
     if (fax_canvas) {
         lv_group_remove_obj(fax_canvas);
-        lv_obj_add_flag(fax_canvas, LV_OBJ_FLAG_HIDDEN);
+        if (fax_canvas) lv_obj_add_flag(fax_canvas, LV_OBJ_FLAG_HIDDEN);
     }
 
     fax_browser_free_image();
     fax_browser_refresh();
 
     if (fax_browser_table) {
-        lv_obj_clear_flag(fax_browser_table, LV_OBJ_FLAG_HIDDEN);
+        if (fax_browser_table) lv_obj_clear_flag(fax_browser_table, LV_OBJ_FLAG_HIDDEN);
 
         fax_browser_update_list();
         fax_browser_set_editor_buttons(false);

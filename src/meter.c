@@ -272,11 +272,11 @@ static void meter_draw_cb(lv_event_t * e) {
 }
 
 static void tx_cb(lv_event_t * e) {
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
 }
 
 static void rx_cb(lv_event_t * e) {
-    lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
 }
 
 

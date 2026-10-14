@@ -235,7 +235,7 @@ static void alert_show(const cluster_spot_t *s) {
     lv_obj_set_style_border_color(alert_box, lv_color_hex(COLOR_ALERT_BORDER), 0);
     lv_obj_set_style_border_width(alert_box, 2, 0);
     lv_obj_set_style_radius(alert_box, theme_shape.radius_popup, 0);
-    lv_obj_clear_flag(alert_box, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
+    if (alert_box) lv_obj_clear_flag(alert_box, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t *title = lv_label_create(alert_box);
     lv_obj_set_style_text_font(title, VF(18), 0);
@@ -951,7 +951,7 @@ static void open_popup(void) {
     lv_obj_set_size(popup, lv_pct(100), lv_pct(100));
     lv_obj_set_style_bg_color(popup, TC(veil), 0);
     lv_obj_set_style_bg_opa(popup, LV_OPA_COVER, 0);
-    lv_obj_clear_flag(popup, LV_OBJ_FLAG_SCROLLABLE);
+    if (popup) lv_obj_clear_flag(popup, LV_OBJ_FLAG_SCROLLABLE);
 
     int rows_h = srv_n * POP_ROW_H;
     if (rows_h > POP_MAX_ROWS_H) rows_h = POP_MAX_ROWS_H;

@@ -55,6 +55,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 34. [El core dice donde muere CW Trainer y Status (y tres punteros colgados)](#34-el-core-dice-donde-muere-cw-trainer-y-status-y-tres-punteros-colgados)
 35. [Estado final de las apps que matan la GUI: que quedo arreglado y que falta](#35-estado-final-de-las-apps-que-matan-la-gui-que-quedo-arreglado-y-que-falta)
 36. [Causa raiz: la pantalla principal se destruye al abrir la app](#36-causa-raiz-la-pantalla-principal-se-destruye-al-abrir-la-app)
+37. [Lo que arreglo las apps que se caian (y lo que no)](#37-lo-que-arreglo-las-apps-que-se-caian-y-lo-que-no)
 
 ---
 
@@ -1756,3 +1757,25 @@ timer.
 de apertura de la app (`dialog_construct` / `apps_disable` / el frame del app) y arreglar ese ciclo
 de vida. Con el assert de arriba el aviso es inmediato. **Estado**: 21 de 23 apps andan y el equipo
 no se reinicia; CW Trainer y Status siguen matando la GUI.
+
+---
+
+## 37. Lo que arreglo las apps que se caian (y lo que no)
+
+**Arreglado y verificado**: **CW Trainer** ya no mata la GUI ✓. Eran dos cosas: las llamadas a
+`lv_obj_add_flag` sobre objetos **globales** que podian no existir (84 guardas de NULL en 20
+archivos, §33 y estas) y su **timer de 1 s** siguiendo vivo despues de cerrarse el dialogo
+(`show()`/`refresh_ui()` tocaban widgets liberados: ahora hay una bandera `ui_alive` y un handler de
+`LV_EVENT_DELETE` en `dialog.obj` que borra el timer por **cualquier** camino en que muera el
+dialogo, porque el marco no siempre llama a `destruct_cb`).
+
+**Probado y descartado con datos**: reescribir los diez `system("amixer ...")` de `mixer_setup()`
+por la API de ALSA (con las guardas `has_*`) **empeoro** las cosas: pasaron a morir 5 de 10 apps en
+vez de 1. Revertido. Queda anotado para no volver a intentarlo sin entender por que.
+
+**Sigue fallando**: **Status** y **JS8** ✗ (con 18-20 s de permanencia; el resto de las probadas
+anda). Lo que se sabe de Status: **no tiene ni una llamada** a `lv_obj_add_flag` en su archivo, asi
+que su crash no es por esa via; y cuando muere deja al GUI en un arranque que a veces vuelve a
+morir. El proximo paso es capturar el **core del proceso recien nacido** (con `core_pattern` en
+`/tmp` y `ulimit -c unlimited`) y leerlo con gdb, que para un crash de arranque tiene la pila
+intacta.

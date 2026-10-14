@@ -88,7 +88,7 @@ lv_obj_t * waterfall_init(lv_obj_t * parent) {
     obj = lv_obj_create(parent);
 
     lv_obj_add_style(obj, &waterfall_style, 0);
-    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    if (obj) lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
 
     // Middle line style
     lv_style_init(&middle_line_style);
@@ -182,11 +182,11 @@ void waterfall_set_height(lv_coord_t h) {
 
 static void middle_line_cb(lv_event_t * event) {
     if (params.waterfall_center_line.x && lv_obj_has_flag(middle_line, LV_OBJ_FLAG_HIDDEN)) {
-        lv_obj_clear_flag(middle_line, LV_OBJ_FLAG_HIDDEN);
+        if (middle_line) lv_obj_clear_flag(middle_line, LV_OBJ_FLAG_HIDDEN);
         return;
     }
     if (!params.waterfall_center_line.x && !lv_obj_has_flag(middle_line, LV_OBJ_FLAG_HIDDEN)) {
-        lv_obj_add_flag(middle_line, LV_OBJ_FLAG_HIDDEN);
+        if (middle_line) lv_obj_add_flag(middle_line, LV_OBJ_FLAG_HIDDEN);
         return;
     }
 }

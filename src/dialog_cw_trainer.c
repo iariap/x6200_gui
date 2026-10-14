@@ -157,9 +157,14 @@ static lv_obj_t   *head, *head_right, *box, *big, *line1, *line2, *side_score, *
 static lv_obj_t   *box_r, *calls_cont, *c_sent_cap, *c_call, *c_key_cap, *c_keyed, *c_res, *c_score, *c_stats;
 static lv_obj_t   *stats_cont, *tile[HIST_N], *tile_c[HIST_N], *tile_p[HIST_N], *st_next_c, *st_today;
 static lv_timer_t *timer;
+/* La UI existe solo entre construct_cb y destruct_cb. El timer de 1 s y los observadores del modo
+ * pueden dispararse despues (y el marco de dialogos no siempre llama a destruct_cb): sin esta
+ * bandera, show()/refresh_ui() tocaban widgets ya liberados y la GUI moria. docs/HALLAZGOS.md 37. */
+static bool       ui_alive;
 
 static void construct_cb(lv_obj_t *parent);
 static void destruct_cb(void);
+static void ui_deleted_cb(lv_event_t *e);
 static void key_cb(lv_event_t *e);
 static void refresh_ui(void);
 static void refresh_btn(button_data_t *b);
@@ -600,6 +605,10 @@ static void evaluate_call(void) {
 }
 
 static void tick_cb(lv_timer_t *t) {
+    if (!ui_alive) {
+        return;
+    }
+
     (void)t;
 
     /* The paddle must not transmit: train back on, whoever turned it off */
@@ -906,6 +915,10 @@ static void refresh_stats(void) {
 }
 
 static void refresh_ui(void) {
+    if (!ui_alive) {
+        return;
+    }
+
     bool learn = mode == MODE_LEARN, calls = mode == MODE_CALLS, sv = learn && stats_view;
     int  wpm   = param_i_get(cfg_key_speed);
     char m1[48], m2[48], buf[160];
@@ -1230,12 +1243,28 @@ static void construct_cb(lv_obj_t *parent) {
     active = true;
     cw_decoder_set_sink(sink_text, sink_wpm);
     cw_trainer_set(true);
+    ui_alive = true;
+    lv_obj_add_event_cb(dialog.obj, ui_deleted_cb, LV_EVENT_DELETE, NULL);
     timer = lv_timer_create(tick_cb, TIMER_MS, NULL);
     refresh_ui();
 }
 
 /* Every exit: the close button, another app, a key page, the mode timer */
+/* Cualquier camino que mate el dialogo pasa por aca: se borra el timer y los callbacks tardios
+ * quedan inertes. */
+static void ui_deleted_cb(lv_event_t *e) {
+    (void) e;
+
+    ui_alive = false;
+
+    if (timer) {
+        lv_timer_del(timer);
+        timer = NULL;
+    }
+}
+
 static void destruct_cb(void) {
+    ui_alive = false;
     active = false;
     if (timer) {
         lv_timer_del(timer);

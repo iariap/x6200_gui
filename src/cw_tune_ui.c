@@ -163,9 +163,9 @@ static void update_visibility(Subject *subj, void *user_data) {
     x6200_mode_t mode = subject_get_int(cfg_cur.mode);
     bool on = subject_get_int(cfg.cw_tune.val) && ((mode == x6200_mode_cw) || (mode == x6200_mode_cwr));
     if (on) {
-        lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
+        if (obj) lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
     } else {
-        lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+        if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
     }
 
 }

@@ -73,7 +73,6 @@ static bool conf_get(const char *path, const char *key, char *out, size_t size) 
 }
 
 static void add_row(const char *fmt, ...) {
-    fprintf(stderr, "STDBG add_row n=%d dialog.obj=%p\n", n_rows, (void*) dialog.obj); fflush(stderr);
     if (n_rows >= STATUS_ROWS) {
         return;
     }
@@ -130,9 +129,7 @@ static const char *bt_transport(void) {
 }
 
 static void construct_cb(lv_obj_t *parent) {
-    fprintf(stderr, "STDBG construct parent=%p\n", (void*) parent); fflush(stderr);
     dialog.obj = dialog_init(parent);
-    fprintf(stderr, "STDBG dialog.obj=%p\n", (void*) dialog.obj); fflush(stderr);
     n_rows     = 0;
 
     lv_obj_t *title = lv_label_create(dialog.obj);

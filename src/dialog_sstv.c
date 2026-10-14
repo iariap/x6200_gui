@@ -510,7 +510,7 @@ static void set_receiver_ui_stopped(void)
     set_status("Stand by.\n\n- Press Start Auto RX to start Autodecoder.\n\n- Press Start Manual RX to start Manual decoder, press RX Mode button to cycle Auto (mode from the line syncs) and all available modes for the Manual decoder.");
     if (progress_bar) {
         lv_bar_set_value(progress_bar, 0, LV_ANIM_OFF);
-        lv_obj_add_flag(progress_bar, LV_OBJ_FLAG_HIDDEN);
+        if (progress_bar) lv_obj_add_flag(progress_bar, LV_OBJ_FLAG_HIDDEN);
     }
     btn_start.label = "Start\nAuto RX";
     buttons_disabled(&btn_start, false);
@@ -523,7 +523,7 @@ static void set_receiver_ui_listening(void)
     set_status("SSTV Autodecoder is running.\n\nAwaiting signal...");
     if (progress_bar) {
         lv_bar_set_value(progress_bar, 0, LV_ANIM_OFF);
-        lv_obj_add_flag(progress_bar, LV_OBJ_FLAG_HIDDEN);
+        if (progress_bar) lv_obj_add_flag(progress_bar, LV_OBJ_FLAG_HIDDEN);
     }
     btn_start.label = "Stop\nAuto RX";
     buttons_disabled(&btn_start, false);
@@ -827,7 +827,7 @@ static void construct_cb(lv_obj_t *parent)
     progress_bar = frame.bar;
     lv_obj_set_style_bg_color(progress_bar, TC(ok_bar), LV_PART_INDICATOR);
     lv_bar_set_value(progress_bar, 0, LV_ANIM_OFF);
-    lv_obj_add_flag(progress_bar, LV_OBJ_FLAG_HIDDEN);
+    if (progress_bar) lv_obj_add_flag(progress_bar, LV_OBJ_FLAG_HIDDEN);
     set_receiver_ui_stopped();
 
     /* RESTART defaults ON: a new valid VIS restarts the current Auto RX capture. */
@@ -1203,7 +1203,7 @@ static void ui_timer_cb(lv_timer_t *timer)
         tx_thread_valid = false;
         if (progress_bar) {
             lv_bar_set_value(progress_bar, tx_result == 1 ? 1000 : 0, LV_ANIM_OFF);
-            lv_obj_add_flag(progress_bar, LV_OBJ_FLAG_HIDDEN);
+            if (progress_bar) lv_obj_add_flag(progress_bar, LV_OBJ_FLAG_HIDDEN);
             lv_obj_set_style_bg_color(progress_bar, TC(ok_bar), LV_PART_INDICATOR);
         }
         if (tx_ui_state == SSTV_TX_UI_RF) {
@@ -1489,7 +1489,7 @@ static void test_cb(button_data_t *data)
     set_status("Decoding Test WAV");
     if (progress_bar) {
         lv_bar_set_value(progress_bar,0,LV_ANIM_OFF);
-        lv_obj_clear_flag(progress_bar, LV_OBJ_FLAG_HIDDEN);
+        if (progress_bar) lv_obj_clear_flag(progress_bar, LV_OBJ_FLAG_HIDDEN);
     }
     shown_rows = 0;
     test_rows = 0;
@@ -2216,7 +2216,7 @@ static void tx_picture_pressed_cb(lv_event_t *e)
              tx_picture_files[row]);
 
     lv_group_remove_obj(tx_picture_table);
-    lv_obj_add_flag(tx_picture_table, LV_OBJ_FLAG_HIDDEN);
+    if (tx_picture_table) lv_obj_add_flag(tx_picture_table, LV_OBJ_FLAG_HIDDEN);
 
     fprintf(stderr, "SSTV TX UI: picture confirmed: %s\n", tx_picture_name);
     if (tx_message_type == SSTV_TX_MESSAGE_IMAGE_ONLY) {
@@ -2706,7 +2706,7 @@ static bool tx_start_final_rf_mode(sstv_mode_t mode)
     }
     if (progress_bar) {
         lv_bar_set_value(progress_bar,0,LV_ANIM_OFF);
-        lv_obj_clear_flag(progress_bar,LV_OBJ_FLAG_HIDDEN);
+        if (progress_bar) lv_obj_clear_flag(progress_bar,LV_OBJ_FLAG_HIDDEN);
     }
     if (btn_tx.disp_btn) buttons_refresh(&btn_tx);
     if (btn_cont_mode.disp_btn) buttons_refresh(&btn_cont_mode);
@@ -3087,7 +3087,7 @@ static void tx_picture_selector_build(void)
     tx_picture_selector_refresh();
 
     if (status_label)
-        lv_obj_add_flag(status_label, LV_OBJ_FLAG_HIDDEN);
+        if (status_label) lv_obj_add_flag(status_label, LV_OBJ_FLAG_HIDDEN);
 
     tx_instruction_show("TX PICTURE", "MFK: choose - press: confirm - TX Mode: mode - Cancel TX: back");
 
@@ -3436,10 +3436,10 @@ static bool sstv_browser_open_png(const char *filename)
 
     if (sstv_browser_table) {
         lv_group_remove_obj(sstv_browser_table);
-        lv_obj_add_flag(sstv_browser_table, LV_OBJ_FLAG_HIDDEN);
+        if (sstv_browser_table) lv_obj_add_flag(sstv_browser_table, LV_OBJ_FLAG_HIDDEN);
     }
 
-    lv_obj_clear_flag(sstv_browser_canvas, LV_OBJ_FLAG_HIDDEN);
+    if (sstv_browser_canvas) lv_obj_clear_flag(sstv_browser_canvas, LV_OBJ_FLAG_HIDDEN);
     lv_group_add_obj(keyboard_group, sstv_browser_canvas);
     lv_group_focus_obj(sstv_browser_canvas);
     lv_group_set_editing(keyboard_group, true);
@@ -3476,14 +3476,14 @@ static void sstv_browser_return_to_list(void)
 
     if (sstv_browser_canvas) {
         lv_group_remove_obj(sstv_browser_canvas);
-        lv_obj_add_flag(sstv_browser_canvas, LV_OBJ_FLAG_HIDDEN);
+        if (sstv_browser_canvas) lv_obj_add_flag(sstv_browser_canvas, LV_OBJ_FLAG_HIDDEN);
     }
 
     sstv_browser_free_image();
     sstv_browser_refresh();
 
     if (sstv_browser_table) {
-        lv_obj_clear_flag(sstv_browser_table, LV_OBJ_FLAG_HIDDEN);
+        if (sstv_browser_table) lv_obj_clear_flag(sstv_browser_table, LV_OBJ_FLAG_HIDDEN);
         sstv_browser_update_list();
         lv_group_add_obj(keyboard_group, sstv_browser_table);
         lv_group_focus_obj(sstv_browser_table);
@@ -3549,8 +3549,8 @@ static void sstv_browser_build(void)
     sstv_browser_frame = lv_obj_create(dialog.obj);
     lv_obj_remove_style_all(sstv_browser_frame);
     app_frame_body(sstv_browser_frame);   /* the body of the common app look */
-    lv_obj_clear_flag(sstv_browser_frame, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_clear_flag(sstv_browser_frame, LV_OBJ_FLAG_CLICKABLE);
+    if (sstv_browser_frame) lv_obj_clear_flag(sstv_browser_frame, LV_OBJ_FLAG_SCROLLABLE);
+    if (sstv_browser_frame) lv_obj_clear_flag(sstv_browser_frame, LV_OBJ_FLAG_CLICKABLE);
 
     sstv_browser_table = lv_table_create(dialog.obj);
     lv_obj_set_style_border_width(sstv_browser_table, 0, LV_PART_MAIN);
@@ -4034,7 +4034,7 @@ static void tx_ui_cb(button_data_t *data)
         tx_instruction_hide();
         tx_phase = SSTV_TX_PHASE_NONE;
         if (status_label)
-            lv_obj_clear_flag(status_label, LV_OBJ_FLAG_HIDDEN);
+            if (status_label) lv_obj_clear_flag(status_label, LV_OBJ_FLAG_HIDDEN);
         tx_ui_state = SSTV_TX_UI_RX;
 
         /* TX selectors own keyboard focus while the TX setup is open.
@@ -4091,7 +4091,7 @@ static void tx_ui_cb(button_data_t *data)
     set_status("TX setup\n\nChoose TX action");
     if (progress_bar) {
         lv_bar_set_value(progress_bar, 0, LV_ANIM_OFF);
-        lv_obj_add_flag(progress_bar, LV_OBJ_FLAG_HIDDEN);
+        if (progress_bar) lv_obj_add_flag(progress_bar, LV_OBJ_FLAG_HIDDEN);
     }
     if (btn_tx.disp_btn) buttons_refresh(&btn_tx);
     if (btn_cont_mode.disp_btn) buttons_refresh(&btn_cont_mode);

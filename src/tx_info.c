@@ -193,12 +193,12 @@ static void tx_cb(lv_event_t *e) {
     vswr = 0.0f;
     alc  = 0.0f;
 
-    lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
     lv_obj_move_foreground(obj);
 }
 
 static void rx_cb(lv_event_t *e) {
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
 }
 
 static void update_tx_info(void *arg) {
@@ -222,7 +222,7 @@ lv_obj_t *tx_info_init(lv_obj_t *parent) {
     lv_obj_add_style(obj, &tx_info_style, 0);
     lv_obj_set_scrollbar_mode(obj, LV_SCROLLBAR_MODE_OFF);
 
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_event_cb(obj, tx_cb, EVENT_RADIO_TX, NULL);
     lv_obj_add_event_cb(obj, rx_cb, EVENT_RADIO_RX, NULL);
     lv_obj_add_event_cb(obj, tx_info_draw_cb, LV_EVENT_DRAW_MAIN_END, NULL);

@@ -93,8 +93,8 @@ lv_obj_t * panel_init(lv_obj_t *parent) {
     lv_label_set_text_static(obj, buf);
 
     lv_obj_add_style(obj, &pannel_style, 0);
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
+    if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 
     lv_anim_init(&dim_anim);
     lv_anim_set_exec_cb(&dim_anim, set_opa);
@@ -123,7 +123,7 @@ void panel_set_info(const char *text) {
 }
 
 void panel_hide() {
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
     knobs_display(true);
 }
 
@@ -155,11 +155,11 @@ void panel_update_visibility(bool clear) {
 
     if (on) {
         if (lv_obj_has_flag(obj, LV_OBJ_FLAG_HIDDEN)) {
-            lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
+            if (obj) lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
             knobs_display(false);
         }
     } else {
-        lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+        if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
         knobs_display(true);
     }
     if (clear) {

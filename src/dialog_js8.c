@@ -1655,11 +1655,11 @@ static void compose_layout(bool typing) {
     if (kb_shown) {
         lv_obj_set_pos(table, 13, 13);
         lv_obj_set_size(table, WIDTH, kb_top - d.y1 - 13 - 2);
-        lv_obj_add_flag(tx_bar, LV_OBJ_FLAG_HIDDEN);
+        if (tx_bar) lv_obj_add_flag(tx_bar, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_set_pos(table, 13, 13 + WF_VISIBLE + TX_BAR_H);
         lv_obj_set_size(table, WIDTH, WF_HEIGHT - WF_VISIBLE - TX_BAR_H);
-        lv_obj_clear_flag(tx_bar, LV_OBJ_FLAG_HIDDEN);
+        if (tx_bar) lv_obj_clear_flag(tx_bar, LV_OBJ_FLAG_HIDDEN);
     }
     if (at_bottom()) follow();
 }
@@ -1992,7 +1992,7 @@ static void construct_cb(lv_obj_t *parent) {
 
     waterfall = lv_waterfall_create(wf_box);
     lv_obj_add_style(waterfall, &waterfall_style, 0);
-    lv_obj_clear_flag(waterfall, LV_OBJ_FLAG_SCROLLABLE);
+    if (waterfall) lv_obj_clear_flag(waterfall, LV_OBJ_FLAG_SCROLLABLE);
     lv_waterfall_set_palette(waterfall, (lv_color_t *)wf_palette, 256);
     lv_waterfall_set_size(waterfall, WIDTH, WF_HEIGHT);
     lv_waterfall_set_min(waterfall, WF_MIN_DB);

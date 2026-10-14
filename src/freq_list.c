@@ -156,7 +156,7 @@ void freq_list_open(lv_obj_t *parent, const char *title, const freq_list_item_t 
     panel = lv_obj_create(parent);
     lv_obj_remove_style_all(panel);
     lv_obj_add_style(panel, &dialog_style, 0);
-    lv_obj_clear_flag(panel, LV_OBJ_FLAG_SCROLLABLE);
+    if (panel) lv_obj_clear_flag(panel, LV_OBJ_FLAG_SCROLLABLE);
     /* dialog_style places it on the screen: inside an app's dialog (SSTV, NAVTEX), already at
      * DIALOG_Y, it went down twice and its bottom under the buttons */
     lv_area_t pa;

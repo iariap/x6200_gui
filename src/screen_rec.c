@@ -333,7 +333,7 @@ static void timer_cb(lv_timer_t *t) {
         } else {
             msg_update_text_fmt("Saved %s", strrchr(path, '/') + 1);
         }
-        lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
+        if (label) lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
         lv_timer_del(timer);
         timer = NULL;
     }
@@ -433,7 +433,7 @@ static bool start() {
     pthread_detach(th);
 
     lv_label_set_text(label, "REC 00:00");
-    lv_obj_clear_flag(label, LV_OBJ_FLAG_HIDDEN);
+    if (label) lv_obj_clear_flag(label, LV_OBJ_FLAG_HIDDEN);
     lv_obj_invalidate(lv_scr_act());                /* redraw everything into the copy */
     lv_obj_invalidate(lv_layer_top());
     timer = lv_timer_create(timer_cb, 1000 / SCREEN_REC_FPS, NULL);
