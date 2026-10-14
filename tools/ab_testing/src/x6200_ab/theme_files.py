@@ -14,20 +14,23 @@ file's `colors`) and measures the pairs `quality/theme_pairs.yaml` declares: the
 ones that live on the screen the harness cannot reach yet. Everything is offline
 — files in, findings out; no Docker, no radio, no pixels.
 
-Two families of served themes are measured here, so the report is a full
+Three families of served themes are measured here, so the report is a full
 inventory of what the user can pick and not only of what ships as a file:
 
 - the **built-in palettes** of `src/theme.h` (IU1WXY, Legacy, Outdoor, Classic) —
   they are the `base` every file resolves against, the same data the macro holds;
+- the **runtime built-ins** `use_builtin()` (`src/theme.c`) derives at init:
+  Outdoor-Negative (`negative()` over Outdoor plus its hand-tuned WCAG role
+  overrides) and VISION (IU1WXY plus the `vision_colors[]` array). They are not
+  data, so they are *derived* from the same C the firmware runs — never guessed
+  — and `tests/test_theme_files.py` pins the derivation byte-for-byte against
+  `tests/check_wcag.py`, the ROM's own sweep over the nine palettes;
 - the **shipped files** of `rootfs/usr/share/x6200/themes` (`<name>.json` or
   `<name>/theme.json`), with the `base` inheritance `src/theme.c` applies.
 
-The two runtime built-ins (Outdoor-Negative, VISION) are *not* resolved: their
-palette is produced at run time by `use_builtin()` (`src/theme.c`, `negative()`
-over Outdoor and the `vision_colors[]` overrides over IU1WXY), so re-deriving it
-here would be a second source of truth for C. They are declared UNSUPPORTED with
-a reason in `quality/theme_pairs.yaml` and show up in the report as UNCOVERED
-instead of silently disappearing from the coverage.
+The ninth theme the menu offers is `Outdoor-Negative`; with the derivation below
+every served palette resolves, so the whole inventory is measured (9 themes x 9
+pairs = 81 measurements) and nothing is declared UNCOVERED.
 
 The exhaustive sweep over the nine palettes stays in `tests/check_wcag.py`, which
 the ROM's own CI runs. This one is the framework-side inventory over what the
@@ -59,10 +62,26 @@ SHIPPED_THEMES_SUBDIR = ("rootfs", "usr", "share", "x6200", "themes")
 # values would hide exactly the inheritance this check exists to catch.
 BASE_PALETTES = ("IU1WXY", "Legacy", "Outdoor", "Classic")
 
+# The two built-ins `use_builtin()` (src/theme.c) derives at init, in the order
+# of the `B_*` enum: Outdoor-Negative and VISION. Their palette is not data, so
+# `load_runtime_palettes()` builds it from the same C the firmware runs.
+DERIVED_PALETTES = ("Outdoor-Negative", "VISION")
+
+# Every built-in palette in the order `builtin_names[]` declares them: the four
+# data palettes of THEME_COLORS(X) first, then the two `use_builtin()` derives.
+SERVED_BUILTINS = (*BASE_PALETTES, *DERIVED_PALETTES)
+
 # Which of the built-ins `theme_list()` (src/theme.c) offers in Settings. Legacy
 # is kept as a palette and as a `base` for shipped files, but the menu skips it,
 # so the inventory has to say so instead of counting it as a served choice.
-BUILTIN_OFFERED = {"IU1WXY": True, "Legacy": False, "Outdoor": True, "Classic": True}
+BUILTIN_OFFERED = {
+    "IU1WXY": True,
+    "Legacy": False,
+    "Outdoor": True,
+    "Classic": True,
+    "Outdoor-Negative": True,
+    "VISION": True,
+}
 
 # The surfaces of the `images` block (src/theme.c, `image_names[]`): a file may
 # paint one with a PNG it ships instead of the role's colour. A pair whose
@@ -93,6 +112,16 @@ _ROLE_LINE = re.compile(
     re.MULTILINE,
 )
 _COLOUR_VALUE = re.compile(r"#?[0-9a-fA-F]{6}")
+
+# The derivation `use_builtin()` applies at init (src/theme.c). Both are read
+# from the C so the framework never carries a second copy of the numbers:
+_VISION_ENTRY = re.compile(r"\{\s*TC_([a-z_0-9]+)\s*,\s*(0x[0-9a-fA-F]{6})\s*\}")
+# Outdoor-Negative keeps a role at its Outdoor value (`colors[TC_x] =
+# builtin_colors[B_OUTDOOR][TC_y];`) or pins it to a literal (`= 0xrrggbb;`).
+_NEG_FROM_OUTDOOR = re.compile(
+    r"colors\[TC_([a-z_0-9]+)\]\s*=\s*builtin_colors\[B_OUTDOOR\]\[TC_([a-z_0-9]+)\]\s*;"
+)
+_NEG_LITERAL = re.compile(r"colors\[TC_([a-z_0-9]+)\]\s*=\s*(0x[0-9a-fA-F]{6})\s*;")
 
 
 @dataclass(frozen=True)
@@ -200,22 +229,6 @@ class ThemeReport:
         }
 
 
-@dataclass(frozen=True)
-class UnsupportedTheme:
-    """A served theme the static check does not resolve, and the reason why.
-
-    Declared in `quality/theme_pairs.yaml` so it shows up in the report as
-    UNCOVERED with a motive instead of silently missing from the coverage.
-    """
-
-    name: str
-    source: str
-    reason: str
-
-    def as_dict(self) -> dict[str, Any]:
-        return {"theme": self.name, "source": self.source, "reason": self.reason}
-
-
 def load_builtin_palettes(theme_h: Path) -> dict[str, dict[str, str]]:
     """The four built-in palettes of src/theme.h, as `#rrggbb` per role.
 
@@ -256,6 +269,117 @@ def _macro_body(text: str) -> str:
     return "\n".join(body)
 
 
+def _negative(colour: str) -> str:
+    """`negative()` of src/theme.c: lightness inverted, hue and saturation kept.
+
+    Black maps to white and a colour whose highest and lowest channel already
+    add up to 255 (the selection yellow, the pure VFO blue) does not move: that
+    is the C arithmetic, and the caller keeps those roles at their Outdoor value.
+    """
+    value = int(colour.lstrip("#"), 16)
+    r, g, b = (value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF
+    delta = 255 - max(r, g, b) - min(r, g, b)
+    return hex_colour(((r + delta) & 0xFF) << 16 | ((g + delta) & 0xFF) << 8 | ((b + delta) & 0xFF))
+
+
+def derive_outdoor_negative(theme_c: Path, outdoor: dict[str, str]) -> dict[str, str]:
+    """The Outdoor-Negative palette `use_builtin(B_OUTDOOR_NEG)` builds.
+
+    Every role goes through `negative()`; the roles the C then pins (`sel_text`,
+    `btn_active_text`, `sel_border`, `btn_active_border`, `near_bg`, `focus_bg`,
+    `vfo`) are read back from the same C — five keep their Outdoor value and two
+    are literals — so this is a port, not a second source of truth.
+    """
+    text = theme_c.read_text(errors="surrogateescape")
+    palette = {role: _negative(colour) for role, colour in outdoor.items()}
+    from_outdoor = _NEG_FROM_OUTDOOR.findall(text)
+    if not from_outdoor:
+        raise ConfigError(
+            f"{theme_c}: found no `builtin_colors[B_OUTDOOR]` override in use_builtin()"
+        )
+    for role, source in from_outdoor:
+        palette[role] = outdoor[source]
+    for role, value in _NEG_LITERAL.findall(text):
+        palette[role] = hex_colour(int(value, 16))
+    return palette
+
+
+def derive_vision(theme_c: Path, iu1wxy: dict[str, str]) -> dict[str, str]:
+    """The VISION palette `use_builtin(B_VISION)` builds: IU1WXY plus `vision_colors[]`."""
+    text = theme_c.read_text(errors="surrogateescape")
+    block = re.search(r"vision_colors\[\]\s*=\s*\{(.*?)\};", text, re.S)
+    if block is None:
+        raise ConfigError(f"{theme_c}: no `vision_colors[]` array")
+    overrides = {
+        role: hex_colour(int(value, 16)) for role, value in _VISION_ENTRY.findall(block.group(1))
+    }
+    if not overrides:
+        raise ConfigError(f"{theme_c}: `vision_colors[]` has no entries")
+    return dict(iu1wxy) | overrides
+
+
+def load_runtime_palettes(
+    theme_c: Path, palettes: dict[str, dict[str, str]]
+) -> dict[str, dict[str, str]]:
+    """The nine palettes the user can see: the four data plus the two derives.
+
+    Shipping a palette whose roles are *derived* from C is what closes the
+    coverage hole: the static contract used to declare Outdoor-Negative and
+    VISION UNCOVERED because re-deriving them looked like a second source of
+    truth. Reading the derivation out of `src/theme.c` instead (and pinning it
+    against `tests/check_wcag.py`) makes that hole measurable.
+    """
+    if not theme_c.is_file():
+        raise ConfigError(f"missing the theme derivation: {theme_c}")
+    extended = dict(palettes)
+    extended["Outdoor-Negative"] = derive_outdoor_negative(theme_c, palettes["Outdoor"])
+    extended["VISION"] = derive_vision(theme_c, palettes["IU1WXY"])
+    return extended
+
+
+@dataclass(frozen=True)
+class Exemption:
+    """A colour WCAG 1.4.3 exempts, with the reason it is dimmed on purpose."""
+
+    role: str
+    reason: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return {"role": self.role, "reason": self.reason}
+
+
+def load_exemptions(path: Path) -> tuple[Exemption, ...]:
+    """The `exempt:` section of `quality/theme_pairs.yaml`.
+
+    Disabled and incidental content is exempt from the contrast minimum (WCAG
+    1.4.3): the dimmed button label, the muted text, the off rail. They are not
+    pairs in this table (nothing has to reach 4.5:1), but they are not silence
+    either: the list is data, and `tests/test_theme_files.py` pins it against the
+    roles `tests/check_wcag.py` measures without failing, so the two cannot
+    disagree on what is exempt.
+    """
+    data = read_yaml_mapping(path)
+    raw = data.get("exempt", [])
+    if not isinstance(raw, list):
+        raise ConfigError(f"{path}: `exempt` must be a list")
+    exemptions: list[Exemption] = []
+    seen: set[str] = set()
+    for entry in raw:
+        if not isinstance(entry, dict):
+            raise ConfigError(f"{path}: every exempt role must be a mapping")
+        role = str(entry.get("role", "")).strip()
+        reason = str(entry.get("reason", "")).strip()
+        if not role:
+            raise ConfigError(f"{path}: exempt entry without a `role`")
+        if not reason:
+            raise ConfigError(f"{path}: exempt role `{role}` needs a `reason`")
+        if role in seen:
+            raise ConfigError(f"{path}: exempt role `{role}` is listed twice")
+        seen.add(role)
+        exemptions.append(Exemption(role=role, reason=reason))
+    return tuple(exemptions)
+
+
 def load_theme_pairs(path: Path) -> tuple[ThemePair, ...]:
     """The declared pairs from `quality/theme_pairs.yaml`."""
     data = read_yaml_mapping(path)
@@ -283,53 +407,6 @@ def load_theme_pairs(path: Path) -> tuple[ThemePair, ...]:
     return tuple(pairs)
 
 
-def load_unsupported_themes(path: Path) -> tuple[UnsupportedTheme, ...]:
-    """The `unsupported:` section of `quality/theme_pairs.yaml`.
-
-    A theme the ROM serves but this check does not resolve is declared here with
-    the reason. The list is data, not a comment, so the report can print it and
-    the coverage stays honest: a served theme is either measured or declared, and
-    a name that appears in both is a config error (there would be no single
-    source of truth for it).
-    """
-    data = read_yaml_mapping(path)
-    raw = data.get("unsupported", [])
-    if not isinstance(raw, list):
-        raise ConfigError(f"{path}: `unsupported` must be a list")
-    themes: list[UnsupportedTheme] = []
-    seen: set[str] = set()
-    for entry in raw:
-        if not isinstance(entry, dict):
-            raise ConfigError(f"{path}: every unsupported theme must be a mapping")
-        name = str(entry.get("theme", "")).strip()
-        reason = str(entry.get("reason", "")).strip()
-        if not name:
-            raise ConfigError(f"{path}: unsupported theme without a `theme`")
-        if not reason:
-            raise ConfigError(f"{path}: unsupported theme `{name}` needs a `reason`")
-        if name in seen:
-            raise ConfigError(f"{path}: unsupported theme `{name}` is listed twice")
-        seen.add(name)
-        themes.append(
-            UnsupportedTheme(name=name, source=str(entry.get("source", "builtin")), reason=reason)
-        )
-    return tuple(themes)
-
-
-def ensure_unsupported_are_not_measured(
-    unsupported: tuple[UnsupportedTheme, ...],
-    reports: tuple[ThemeReport, ...],
-    where: Path | str,
-) -> None:
-    """A theme cannot be measured and declared unsupported at the same time."""
-    clash = sorted({report.name for report in reports} & {theme.name for theme in unsupported})
-    if clash:
-        raise ConfigError(
-            f"{where}: theme(s) {clash} are measured and declared unsupported at once: "
-            f"pick one so the coverage has a single source of truth"
-        )
-
-
 def shipped_theme_files(directory: Path) -> tuple[Path, ...]:
     """`<name>.json` and `<name>/theme.json`, as `src/theme.c` looks for them."""
     if not directory.is_dir():
@@ -355,14 +432,14 @@ def served_theme_reports(
     palettes: dict[str, dict[str, str]],
     pairs: tuple[ThemePair, ...],
 ) -> tuple[ThemeReport, ...]:
-    """Every theme the firmware serves that the static check can resolve.
+    """Every theme the firmware serves, in `builtin_names[]` order then the files.
 
-    The four built-in palettes of `src/theme.h` first (they are what a file's
-    `base` resolves to), then the shipped files. The runtime built-ins are not
-    here: they are declared in `load_unsupported_themes()`.
+    The six built-in palettes first (the four data ones of `src/theme.h` plus the
+    two `use_builtin()` derives), then the shipped files. Nine palettes in total:
+    the whole inventory is measured, so there is no UNCOVERED theme left.
     """
     _validate_pairs(pairs, palettes)
-    reports = [_measure_builtin(name, palettes[name], pairs, theme_h) for name in palettes]
+    reports = [_measure_builtin(name, palettes[name], pairs, theme_h) for name in SERVED_BUILTINS]
     reports.extend(
         measure_theme_file(path, pairs, palettes) for path in shipped_theme_files(directory)
     )
@@ -375,13 +452,18 @@ def _measure_builtin(
     pairs: tuple[ThemePair, ...],
     theme_h: Path,
 ) -> ThemeReport:
-    """One built-in palette of src/theme.h, with every role straight from the macro."""
+    """One built-in palette: data from src/theme.h, or derived by `use_builtin()`."""
+    origin = (
+        "built-in palette src/theme.h THEME_COLORS"
+        if name in BASE_PALETTES
+        else "derived palette use_builtin() src/theme.c"
+    )
     results = tuple(
         _pair_result(
             name,
             pair,
             ratio=contrast_ratio(palette[pair.fg], palette[pair.bg]),
-            origin="built-in palette src/theme.h THEME_COLORS",
+            origin=origin,
         )
         for pair in pairs
     )
@@ -434,9 +516,9 @@ def measure_theme_file(
             inherited=(),
             results=(),
             error=(
-                f"base `{base}` is not one of {list(BASE_PALETTES)}: this check resolves "
-                f"the four palettes of src/theme.h, and a derived built-in has to be "
-                f"spelled out here before a shipped file can use it"
+                f"base `{base}` is not one of {list(palettes)}: src/theme.c resolves a base "
+                f"by `builtin_index()`, so a shipped file may only inherit a name the six "
+                f"built-ins declare"
             ),
         )
     known = set(palettes[BASE_PALETTES[0]])

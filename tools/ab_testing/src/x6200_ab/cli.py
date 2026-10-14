@@ -30,6 +30,12 @@ from .errors import AbError, DockerUnavailable
 from .evaluator import ComparisonData, evaluate, observe_issues
 from .inspection import inspection_of
 from .known_issues import KnownIssue, evaluate_detector, load_known_issues
+from .nontext_checks import (
+    MissingRender,
+    NonTextResult,
+    load_nontext_objects,
+    run_nontext_checks,
+)
 from .performance import (
     BenchmarkVerdict,
     ScenarioStats,
@@ -48,10 +54,10 @@ from .theme_files import (
     BASE_PALETTES,
     SHIPPED_THEMES_SUBDIR,
     ThemeReport,
-    ensure_unsupported_are_not_measured,
     load_builtin_palettes,
+    load_exemptions,
+    load_runtime_palettes,
     load_theme_pairs,
-    load_unsupported_themes,
     served_theme_reports,
 )
 from .visual_diff import DiffResult, compute_diff
@@ -143,7 +149,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     themes = sub.add_parser(
         "themes",
-        help="static contrast over every served theme (built-ins + files; no Docker)",
+        help="static contrast over every served theme + non-text over the golden renders",
     )
     themes.add_argument("--repo", default=None, help="repository root (default: cwd)")
     themes.add_argument("--quality-dir", default=None, help="quality YAML directory")
@@ -151,6 +157,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--themes-dir",
         default=None,
         help="directory with the shipped theme files (default: rootfs/usr/share/x6200/themes)",
+    )
+    themes.add_argument(
+        "--renders-dir",
+        default=None,
+        help="committed renders for the non-text check (default: tools/ab_testing/golden)",
+    )
+    themes.add_argument(
+        "--no-nontext",
+        action="store_true",
+        help="skip the WCAG 1.4.11 non-text pixel check",
     )
     themes.add_argument("--json", action="store_true")
     themes.set_defaults(func=cmd_themes)
@@ -398,12 +414,13 @@ def cmd_contracts(args: argparse.Namespace) -> int:
 def cmd_themes(args: argparse.Namespace) -> int:
     """Static WCAG contrast over every theme the ROM serves.
 
-    Offline by design: it reads the built-in palettes of `src/theme.h` and the
+    Offline by design: it reads the built-in palettes of `src/theme.h`, the two
+    `use_builtin()` derives of `src/theme.c` (Outdoor-Negative, VISION) and the
     shipped files of `rootfs/usr/share/x6200/themes`, resolves each file's `base`
     the way `src/theme.c` loads a theme, and measures the pairs
     `quality/theme_pairs.yaml` declares — the Settings pairs the rendered
-    contracts cannot reach. Themes the check cannot resolve are declared in the
-    same YAML and printed as UNSUPPORTED, so the coverage map has no silent hole.
+    contracts cannot reach. The nine served palettes are measured (81 pairs), so
+    there is no UNCOVERED theme left.
     No capture, no revision, no Docker: the verdict only depends on files in the
     repository.
     """
@@ -418,15 +435,19 @@ def cmd_themes(args: argparse.Namespace) -> int:
     )
     pairs_path = quality_dir / "theme_pairs.yaml"
     theme_h = repo / "src" / "theme.h"
+    theme_c = repo / "src" / "theme.c"
     pairs = load_theme_pairs(pairs_path)
-    palettes = load_builtin_palettes(theme_h)
+    exemptions = load_exemptions(pairs_path)
+    palettes = load_runtime_palettes(theme_c, load_builtin_palettes(theme_h))
     reports = served_theme_reports(themes_dir, theme_h, palettes, pairs)
-    unsupported = load_unsupported_themes(pairs_path)
-    ensure_unsupported_are_not_measured(unsupported, reports, pairs_path)
 
     failures = [result for report in reports for result in report.failures]
     errors = [report for report in reports if report.error is not None]
-    status = Status.FAIL if (failures or errors) else Status.PASS
+
+    nontext_results, nontext_missing = _nontext_section(args, repo, quality_dir)
+
+    nontext_failures = [result for result in nontext_results if not result.ok]
+    status = Status.FAIL if (failures or errors or nontext_failures) else Status.PASS
     checked = sum(len(report.results) for report in reports)
     builtin_count = sum(1 for report in reports if report.source == "builtin")
     file_count = len(reports) - builtin_count
@@ -440,9 +461,16 @@ def cmd_themes(args: argparse.Namespace) -> int:
         "theme_roles": len(palettes[BASE_PALETTES[0]]),
         "pairs": [pair.as_dict() for pair in pairs],
         "themes": themes_json,
-        "unsupported": [theme.as_dict() for theme in unsupported],
         "pairs_checked": checked,
+        "exempt": [exemption.as_dict() for exemption in exemptions],
         "failures": [result.as_dict() for result in failures],
+        "nontext": {
+            "objects": len(nontext_results),
+            "checked": len(nontext_results),
+            "failures": [result.as_dict() for result in nontext_failures],
+            "missing": [missing.as_dict() for missing in nontext_missing],
+            "results": [result.as_dict() for result in nontext_results],
+        },
         "errors": [
             {
                 "theme": report.name,
@@ -453,10 +481,9 @@ def cmd_themes(args: argparse.Namespace) -> int:
         ],
     }
     lines = [
-        f"themes {status.value}: {len(reports)} resolvable theme(s) "
+        f"themes {status.value}: {len(reports)} served theme(s) "
         f"({builtin_count} built-in + {file_count} file(s)), {len(pairs)} pair(s) declared, "
-        f"{checked} pair(s) checked, {len(failures)} failure(s), "
-        f"{len(unsupported)} unsupported (declared)"
+        f"{checked} pair(s) checked, {len(failures)} failure(s)"
     ]
     for report in reports:
         header = f"  {report.name} ({_relative(Path(report.path), repo)}"
@@ -468,7 +495,7 @@ def cmd_themes(args: argparse.Namespace) -> int:
         where = (
             f"{len(report.inherited)}/{len(palettes[BASE_PALETTES[0]])} roles from the base"
             if report.source != "builtin"
-            else f"all {len(palettes[BASE_PALETTES[0]])} roles from the C table"
+            else f"all {len(palettes[BASE_PALETTES[0]])} roles from src/theme.c"
         )
         flags = []
         if not report.offered:
@@ -484,9 +511,47 @@ def cmd_themes(args: argparse.Namespace) -> int:
                 f"    {'OK  ' if result.ok else 'FAIL'} {label:<30}"
                 f"{result.ratio:6.2f} >= {result.pair.min_ratio:4.1f}  {result.origin}{note}"
             )
-    for theme in unsupported:
-        lines.append(f"  UNSUPPORTED {theme.name} ({theme.source}): {theme.reason}")
+    if nontext_results:
+        lines.append(
+            f"  non-text (WCAG 1.4.11, pixels): {len(nontext_results)} object(s) measured, "
+            f"{len(nontext_failures)} failure(s)"
+        )
+        for result in nontext_results:
+            lines.append(f"    {'OK  ' if result.ok else 'FAIL'} {result.detail}")
+    for missing in nontext_missing:
+        lines.append(
+            f"  NON-TEXT UNMEASURED {missing.fixture}: {missing.detail} "
+            f"({', '.join(missing.objects)})"
+        )
+    if exemptions:
+        lines.append(
+            f"  exempt (WCAG 1.4.3, disabled/incidental): {len(exemptions)} role(s) — "
+            f"{', '.join(exemption.role for exemption in exemptions)}"
+        )
     return _emit(args, payload, "\n".join(lines), status)
+
+
+def _nontext_section(
+    args: argparse.Namespace, repo: Path, quality_dir: Path
+) -> tuple[tuple[NonTextResult, ...], tuple[MissingRender, ...]]:
+    """Measure the WCAG 1.4.11 objects over the committed (or given) renders."""
+    if bool(getattr(args, "no_nontext", False)):
+        return (), ()
+    config = quality_dir / "nontext.yaml"
+    if not config.is_file():
+        return (), ()
+    renders_dir = (
+        Path(args.renders_dir).resolve()
+        if getattr(args, "renders_dir", None)
+        else repo / "tools" / "ab_testing" / "golden"
+    )
+    renders = (
+        {path.stem: path for path in sorted(renders_dir.glob("*.png"))}
+        if renders_dir.is_dir()
+        else {}
+    )
+    objects = load_nontext_objects(config)
+    return run_nontext_checks(renders, objects)
 
 
 def _theme_dict(report: ThemeReport, repo: Path) -> dict[str, Any]:
