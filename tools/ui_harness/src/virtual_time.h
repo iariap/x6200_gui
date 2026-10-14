@@ -25,6 +25,16 @@ uint64_t virtual_time_now_ms(void);
 
 void virtual_time_reset(uint64_t start_ms);
 
+/* Run once per slice of `virtual_time_advance_step()`, after the tick has been
+ * incremented and before LVGL's timers run: where the natural bench drives the
+ * components' data from (natural_bench.c). */
+typedef void (*virtual_time_slice_cb_t)(void *arg);
+
 /* Advance the clock by `ms`, running LVGL's timer handler every `slice_ms`
  * (and flushing the firmware's delayed observers each slice). No sleeps. */
 void virtual_time_advance(uint64_t ms, uint32_t slice_ms);
+
+/* Same as virtual_time_advance(), with `on_slice` (when not NULL) called once
+ * per slice. No sleeps. */
+void virtual_time_advance_step(uint64_t ms, uint32_t slice_ms,
+                               virtual_time_slice_cb_t on_slice, void *arg);

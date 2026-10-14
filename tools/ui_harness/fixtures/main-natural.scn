@@ -1,0 +1,43 @@
+# main-natural: the fixture of the natural bench (`--bench-natural`).
+#
+# The screen is the firmware's own main screen (the same keys as home-usb-20m,
+# plus the natural knobs): what makes it the natural fixture is that the run
+# drives the spectrum and the waterfall magnitudes frame by frame with the
+# harness' deterministic generator, so the components invalidate themselves
+# exactly as they do on the radio (spectrum every 1000/15 ms, one waterfall row
+# every 1000/25 ms, the clock every 500 ms -- src/dsp.cpp, src/clock.c) instead
+# of the full-screen repaint the forced bench fabricates.
+#
+# `natural_frames` is honoured only with `--bench-natural`/`--natural-frames`;
+# like the `bench_*` knobs it never changes the rendered PNG, so this fixture is
+# captured, inspected and compared like any other one. See tools/ui_harness/README.md.
+
+name main-natural
+screen main
+
+seed 13
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx
+
+natural_frames 40

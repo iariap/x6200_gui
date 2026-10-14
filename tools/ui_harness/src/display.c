@@ -8,6 +8,7 @@
 
 #include "bench_metrics.h"
 #include "display.h"
+#include "natural_bench.h"
 #include "render_metrics.h"
 
 static lv_color_t fb[HARNESS_SCREEN_W * HARNESS_SCREEN_H];
@@ -17,6 +18,10 @@ static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *px)
     uint32_t pixels = 0;
 
     bench_flush_begin();
+    /* The natural bench records the flush and, when the draw buffer says this
+     * was the last part of the last invalidated area, the invalidation LVGL
+     * collected for the cycle. Read-only: it never changes a pixel. */
+    natural_bench_flush(area, drv);
     for (int32_t y = area->y1; y <= area->y2; y++) {
         for (int32_t x = area->x1; x <= area->x2; x++) {
             fb[y * HARNESS_SCREEN_W + x] = *px++;

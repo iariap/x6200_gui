@@ -24,6 +24,12 @@ void virtual_time_reset(uint64_t start_ms)
 
 void virtual_time_advance(uint64_t ms, uint32_t slice_ms)
 {
+    virtual_time_advance_step(ms, slice_ms, NULL, NULL);
+}
+
+void virtual_time_advance_step(uint64_t ms, uint32_t slice_ms,
+                               virtual_time_slice_cb_t on_slice, void *arg)
+{
     if (slice_ms == 0) {
         slice_ms = 1;
     }
@@ -38,6 +44,9 @@ void virtual_time_advance(uint64_t ms, uint32_t slice_ms)
         }
         now_ms += step;
         lv_tick_inc(step);
+        if (on_slice) {
+            on_slice(arg);
+        }
         lv_timer_handler();
         observer_delayed_notify_all();
         scheduler_work();

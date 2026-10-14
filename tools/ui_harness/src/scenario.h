@@ -38,6 +38,9 @@ typedef struct {
     int bench_warmup;
     int bench_repeats;
     int bench_redraw_passes;
+    /* Natural-bench-only knob: natural frames the run does. Ignored outside
+     * `--bench-natural`, so it never changes a rendered pixel. */
+    int natural_frames;
 } scenario_t;
 
 /* Parses `path`. Unknown keys are an error (a scenario must not silently

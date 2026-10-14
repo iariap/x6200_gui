@@ -25,6 +25,7 @@ tools/ui_harness/
     virtual_time.c      deterministic tick: advance N ms, no sleeps
     render_metrics.c    flush count / flushed pixels
     bench_metrics.c     real-clock (CLOCK_MONOTONIC) frame timings + /proc memory
+    natural_bench.c     natural-invalidation bench: LVGL's own loop over the virtual clock, per-frame invalidation (`--bench-natural`)
     ui_inspector.c      structural inspection of the live LVGL object tree (--inspect)
     screens.c           scenario -> screen builder (calls the firmware's main_screen())
     scenario.c          scenario file parser (radio state, theme, seed)
@@ -97,7 +98,7 @@ docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" \
       --json     out/home-usb-20m.json"
 ```
 
-CLI: `ui_harness --scenario <file> --png <out.png> [--json <out.json>] [--bench [--warmup N] [--repeats N]] [--inspect]`.
+CLI: `ui_harness --scenario <file> --png <out.png> [--json <out.json>] [--bench [--warmup N] [--repeats N]] [--inspect] [--bench-natural [N]] [--natural-frames N] [--natural-static]`.
 
 The JSON carries the scenario name/screen/seed, the git revision, the
 per-component coverage, the radio-call log from the mock, and the render metrics
@@ -192,12 +193,96 @@ Benchmarking never feeds a wall-clock value back into the GUI: a scenario's PNG
 is byte-identical with and without `--bench`. `tests/check_harness_determinism.sh`
 still runs every fixture twice and compares the sha256.
 
+## Natural-invalidation bench
+
+The forced bench above measures a full-screen repaint the harness fabricates
+itself: every measured frame invalidates the whole screen and calls
+`lv_refr_now()`. That is a cost proxy, and it is **blind to the firmware's own
+invalidation** — halving the invalidated area of the spectrum moves neither
+`flushes` nor `redrawn_area` (measured in UI-07 increment 1,
+`docs/AB_TESTING.md`). The natural bench is the opposite measurement:
+
+```sh
+./ui_harness --scenario ../fixtures/main-natural.scn \
+    --png out/natural.png --json out/natural.json --bench-natural
+```
+
+* No forced invalidation and no `lv_refr_now()`: the refresh is the one **LVGL's
+  own refresh timer** decides, from the invalidations the real components queue
+  through the scheduler.
+* The spectrum and the waterfall are driven **frame by frame** by the same
+  deterministic generator (`src/signal_gen.c`) on the radio's own cadence:
+  `signal_gen_spectrum_frame()` every `1000/15` ms and
+  `signal_gen_waterfall_row()` every `1000/25` ms (`src/dsp.cpp`'s
+  `spectrum_fps_ms`/`waterfall_fps_ms`), checked once per 10 ms slice. The clock
+  invalidates every 500 ms on its own (`src/clock.c`).
+* **One natural frame is one LVGL display refresh period** of virtual time
+  (`LV_DISP_DEF_REFR_PERIOD`, 30 ms). `--bench-natural [N]`,
+  `--natural-frames N` or the fixture's `natural_frames N` set how many frames
+  the run does (40 by default).
+* The JSON gains a `natural` block; `metrics` and `benchmark` keep their format
+  and their meaning (the settled capture's own numbers, plus what the natural
+  frames add).
+
+```jsonc
+"natural": {
+  "enabled": true,
+  "clock": "virtual-time",
+  "environment": "x86 host: the channel/ARM energy cost is not measured",
+  "frame_ms": 30, "slice_ms": 10, "frames": 40,
+  "data_drive": true, "seed": 13,
+  "spectrum_fps_ms": 66, "waterfall_fps_ms": 40,
+  "spectrum_frames": 17, "waterfall_rows": 24,
+  "per_frame": [
+    { "frame": 1, "virtual_end_ms": 2260, "refresh_cycles": 1,
+      "invalidated_px": 196000, "invalidated_rects": 1, "joined_px": 0,
+      "flushed_px": 196000, "flushes": 1, "rects_complete": true,
+      "rects": [[0, 235, 800, 245]] },
+    { "frame": 2, "virtual_end_ms": 2290, "refresh_cycles": 1,
+      "invalidated_px": 132000, "invalidated_rects": 1, "joined_px": 0,
+      "flushed_px": 132000, "flushes": 1, "rects_complete": true,
+      "rects": [[0, 0, 800, 165]] }
+  ],
+  "totals": { "invalidated_px": 6745720, "invalidated_rects": 45, "joined_px": 784000,
+              "flushed_px": 6745720, "flushes": 45, "refresh_cycles": 37,
+              "frames_with_flush": 37 }
+}
+```
+
+* `invalidated_px` is the invalidation **LVGL collected** for the frame's
+  refresh cycle (`inv_areas`/`inv_p`, read from inside the flush callback before
+  LVGL clears them — the same trace increment 1 used as a temporary
+  diagnostic). `joined_px` is the part LVGL merged into another rectangle, so it
+  is not counted twice; `flushed_px`/`flushes` are what the display driver was
+  asked to flush. With the harness' full-screen draw buffer the two are 1:1.
+* `rects` is the evidence: the invalidated rectangles of that frame, `x,y,w,h`.
+  On `main-natural` every one of them is a region a firmware timer invalidates
+  (spectrum `0,0 800x165`, waterfall `0,235 800x245`, clock `580,0 220x72`, band
+  info `0,241 800x34`, BT icon `152,23 30x36`): the bench invalidates nothing on
+  its own.
+* Nothing in the block is a wall clock value, so two runs with the same seed and
+  the same frame count write the same bytes (PNG included).
+* `--natural-static` runs the same loop **without** the data drive: the spectrum
+  and the waterfall are then never fed, so only the clock/BT/band-info rectangles
+  remain. It is the delimitation control of
+  `tests/check_harness_natural.sh`, not a product mode.
+
+`tests/check_harness_natural.sh` is the gate: it rebuilds the harness, runs the
+fixture in the four modes, checks the PNG and the whole JSON are identical across
+two natural runs, and checks the produced areas against the profile of UI-07
+increment 1 (spectrum 132000 px per FFT frame, waterfall 196000 px per row, clock
+15840 px per 500 ms tick), the drive cadence against `src/dsp.cpp`'s constants,
+and that `--bench` still repaints the whole 384000 px screen. The raw output of a
+run is in `tools/ab_testing/reports/NATURAL-UI07-N1/`.
+
 ## Scenarios
 
 A scenario is a `key value` file (unknown keys are an error). Besides the radio
 state (`frequency_hz`, `mode`, `rxtx`, `smeter_db`, `battery_v`, …) it can pick
 the `theme` and a `seed`, and toggle `band_plan`, `spectrum_filled`,
-`spectrum_peak` and `waterfall_center_line`.
+`spectrum_peak` and `waterfall_center_line`. `bench_warmup`, `bench_repeats`,
+`bench_redraw_passes` (the forced bench) and `natural_frames` (the natural bench)
+are honoured only in their own mode and never change a rendered pixel.
 
 `mode` takes the names the radio itself lists and accepts (`mode_names[]`,
 `src/remote_server.cpp`): `LSB`, `LSB-D`, `USB`, `USB-D`, `CW`, `CW-R`, `AM`,
@@ -233,6 +318,7 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `main-otro-tema` | the same screen under the builtin "Outdoor" theme |
 | `main-espectro-agua` | the waterfall with a fixed seed, peaks on, centre line, Legacy theme |
 | `bench-render` | the benchmark fixture (waterfall peaks, its own seed); `bench_*` knobs for the render benchmark |
+| `main-natural` | the natural-bench fixture (its own seed, `natural_frames`); the spectrum/waterfall are driven frame by frame by `--bench-natural` |
 | `dialog-about` | the real main screen with the real About window open over it (`dialog.c` + `dialog_about.c`) |
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
 | `main-tema-rs` | the same screen under the shipped "RS" JSON theme (with its images), for UI-007 |
@@ -259,6 +345,11 @@ Nothing that shapes the pixels reads the wall clock or sleeps:
 `tests/check_harness_determinism.sh` builds the harness and runs **every**
 fixture twice, comparing the PNGs by sha256 (it must print `PASS`). Each run
 also writes a JSON, so "PNG + JSON" is checked for every scenario.
+
+The natural bench is deterministic by construction too: it reads no wall clock
+(only the harness' virtual counter), its per-frame values are functions of the
+scenario's seed and the frame count, and `tests/check_harness_natural.sh` runs it
+twice and compares the PNG sha256 and the whole JSON byte for byte.
 
 ## Coverage (main screen)
 

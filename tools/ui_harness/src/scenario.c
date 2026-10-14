@@ -155,6 +155,13 @@ static bool apply_key(const char *key, const char *value, scenario_t *out)
 
         if (v <= 0) { return false; }
         out->bench_redraw_passes = (int) v;
+    } else if (!strcmp(key, "natural_frames")) {
+        long v = strtol(value, NULL, 10);
+
+        /* Natural-bench-only knob: parsed here so a fixture that uses it is not
+         * an "unknown key" error, but applied only in `--bench-natural` mode. */
+        if (v <= 0) { return false; }
+        out->natural_frames = (int) v;
     } else if (!strcmp(key, "rxtx")) {
         if (!strcasecmp(value, "rx")) { mock_radio.state = RADIO_RX; }
         else if (!strcasecmp(value, "tx")) { mock_radio.state = RADIO_TX; }

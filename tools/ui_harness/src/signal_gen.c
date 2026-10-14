@@ -22,7 +22,7 @@
 #define WATERFALL_LEN 512       /* dsp.h's WATERFALL_NFFT */
 
 /* Waterfall rows to push: enough to fill the ~180 px tall column with texture. */
-#define WATERFALL_ROWS 200
+#define WATERFALL_ROWS SIGNAL_GEN_WATERFALL_ROWS
 
 /* A tiny deterministic PRNG (LCG): no libc rand(), no seed from the clock. */
 typedef struct {
@@ -80,4 +80,22 @@ void signal_gen_feed(uint32_t seed)
         fill_line(line, WATERFALL_LEN, seed, row);
         waterfall_data(line, WATERFALL_LEN, false);
     }
+}
+
+void signal_gen_spectrum_frame(uint32_t seed, int frame)
+{
+    float line[SPECTRUM_LEN];
+
+    /* Row 0 is the settled frame above; the natural drive moves on from it. */
+    fill_line(line, SPECTRUM_LEN, seed, frame + 1);
+    spectrum_data(line, SPECTRUM_LEN, false);
+}
+
+void signal_gen_waterfall_row(uint32_t seed, int row)
+{
+    float line[WATERFALL_LEN];
+
+    /* The same row space: the settled column covers 0..WATERFALL_ROWS-1. */
+    fill_line(line, WATERFALL_LEN, seed, WATERFALL_ROWS + row);
+    waterfall_data(line, WATERFALL_LEN, false);
 }
