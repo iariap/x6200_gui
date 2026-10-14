@@ -114,3 +114,44 @@ def test_themes_text_reports_the_nine_served_themes(capsys: pytest.CaptureFixtur
     assert "Outdoor-Negative" in out
     assert "VISION" in out
     assert "UNSUPPORTED" not in out
+
+
+def test_themes_reports_the_nontext_objects_and_the_exempt_roles(
+    capsys: pytest.CaptureFixture,
+) -> None:
+    repo = Path(__file__).resolve().parents[3]
+    code = main(["themes", "--repo", str(repo), "--json"])
+    assert code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["nontext"]["objects"] == 21
+    assert payload["nontext"]["failures"] == []
+    assert payload["nontext"]["missing"] == []
+    assert {exempt["role"] for exempt in payload["exempt"]} == {
+        "btn_off_text",
+        "text_mute",
+        "text_faint",
+        "icon_off",
+        "switch_off",
+        "off",
+        "track",
+    }
+
+
+def test_a_declared_nontext_object_without_a_render_fails(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    """A coverage hole is not a pass: the owner's order is measured, not declared."""
+    repo = Path(__file__).resolve().parents[3]
+    code = main(["themes", "--repo", str(repo), "--renders-dir", str(tmp_path), "--json"])
+    assert code == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["status"] == "FAIL"
+    assert payload["nontext"]["missing"], "a missing render has to be reported"
+
+
+def test_themes_can_skip_the_nontext_check(capsys: pytest.CaptureFixture) -> None:
+    repo = Path(__file__).resolve().parents[3]
+    code = main(["themes", "--repo", str(repo), "--no-nontext", "--json"])
+    assert code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["nontext"]["objects"] == 0

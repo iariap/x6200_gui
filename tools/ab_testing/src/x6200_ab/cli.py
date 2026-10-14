@@ -447,7 +447,11 @@ def cmd_themes(args: argparse.Namespace) -> int:
     nontext_results, nontext_missing = _nontext_section(args, repo, quality_dir)
 
     nontext_failures = [result for result in nontext_results if not result.ok]
-    status = Status.FAIL if (failures or errors or nontext_failures) else Status.PASS
+    # A declared object with no render is a coverage hole, not a pass: the owner's
+    # order is "measured, not declared".
+    status = (
+        Status.FAIL if (failures or errors or nontext_failures or nontext_missing) else Status.PASS
+    )
     checked = sum(len(report.results) for report in reports)
     builtin_count = sum(1 for report in reports if report.source == "builtin")
     file_count = len(reports) - builtin_count
