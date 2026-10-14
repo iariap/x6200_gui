@@ -7,7 +7,7 @@
   "improvement": true,
   "revision_a": {
     "label": "a",
-    "sha": "0d96c79ff4b514e6a8be55b0ba827c2d68486cb4"
+    "sha": "f5c36778ed0f2f04eece99fb24d07539fc167ec7"
   },
   "revision_b": {
     "label": "b",
@@ -20,7 +20,7 @@
     "a": [
       {
         "scenario": "home-bateria-externa",
-        "revision": "0d96c79ff4b514e6a8be55b0ba827c2d68486cb4",
+        "revision": "f5c36778ed0f2f04eece99fb24d07539fc167ec7",
         "png_sha256": "8a3420b2aebd7f064119e98096bfee4da1f28b1cb4480a4026f3c0fcad035bfb",
         "width": 800,
         "height": 480,
@@ -305,7 +305,7 @@
       "evidence": [],
       "details": {
         "revision_a": [
-          "0d96c79ff4b514e6a8be55b0ba827c2d68486cb4"
+          "f5c36778ed0f2f04eece99fb24d07539fc167ec7"
         ],
         "revision_b": [
           "ec1b0a58ec30270ece2a6b490ae41ed341133755"
@@ -402,6 +402,18 @@
       "detail": "reproduced on A, absent on B; A: label '\\x89E\u00fcH\\x8bE\u00e8\\x8b 12.1v\\n\\ue55b 13.8v' starts with U+0089, outside U+F200..U+F2FF; B: label '\\uf240 12.1v\\n\\ue55b 13.8v' starts with U+F240, inside U+F200..U+F2FF"
     },
     {
+      "id": "UI-010",
+      "title": "Tema Outdoor: franja de frecuencia invisible sobre fondo blanco",
+      "severity": "critical",
+      "fixture": "main-otro-tema",
+      "region": "frecuencia",
+      "status": "verified",
+      "reproduced_a": null,
+      "reproduced_b": null,
+      "classification": "UNVERIFIED",
+      "detail": "no detector: only recorded from the repository"
+    },
+    {
       "id": "UI-002",
       "title": "Menu de apps: las apps solo vivian en el long-press de Ajustes",
       "severity": "major",
@@ -492,63 +504,72 @@
       "fixture": "home-bateria-externa",
       "ok": true,
       "detail": "800x480 (expected 800x480)",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:barra_superior",
       "fixture": "home-bateria-externa",
       "ok": true,
       "detail": "content 0.5455 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:botones",
       "fixture": "home-bateria-externa",
       "ok": true,
       "detail": "content 0.7551 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:espectro",
       "fixture": "home-bateria-externa",
       "ok": true,
       "detail": "content 0.2865 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:frecuencia",
       "fixture": "home-bateria-externa",
       "ok": true,
       "detail": "content 0.1047 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:s_metro",
       "fixture": "home-bateria-externa",
       "ok": true,
       "detail": "content 0.7435 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:waterfall",
       "fixture": "home-bateria-externa",
       "ok": true,
       "detail": "content 0.3471 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "coverage_levels",
       "fixture": "home-bateria-externa",
       "ok": true,
       "detail": "all levels allowed",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "coverage_required",
       "fixture": "home-bateria-externa",
       "ok": true,
       "detail": "all required components declared",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     }
   ],
   "diffs": [

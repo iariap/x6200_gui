@@ -184,6 +184,50 @@ def test_contract_failure_fails_the_run(tmp_path: Path, region_map: RegionMap) -
     assert contract_gate.status is Status.FAIL
 
 
+def test_unchanged_baseline_defect_does_not_fail_the_run(
+    tmp_path: Path, region_map: RegionMap
+) -> None:
+    """A failure the registry already records as open is reported, not blocking."""
+    finding = ContractFinding(
+        rule="region_min_content:frecuencia",
+        fixture="home",
+        ok=False,
+        detail="content 0.0000 >= 0.0200",
+        baseline_issue="UI-010",
+    )
+    data = _data(tmp_path, region_map, blank_image(), blank_image(), findings=(finding,))
+    evaluation = _evaluate(tmp_path, region_map, data)
+    assert evaluation.status is Status.PASS
+    contract_gate = next(g for g in evaluation.gates if g.name is GateName.QUALITY_CONTRACT)
+    assert contract_gate.status is Status.PASS
+    assert contract_gate.details["unchanged_defects"][0]["baseline_issue"] == "UI-010"
+    assert any("UNCHANGED DEFECT" in item for item in contract_gate.evidence)
+
+
+def test_regression_next_to_a_baseline_defect_still_fails(
+    tmp_path: Path, region_map: RegionMap
+) -> None:
+    baseline = ContractFinding(
+        rule="region_min_content:frecuencia",
+        fixture="home",
+        ok=False,
+        detail="known",
+        baseline_issue="UI-010",
+    )
+    regression = ContractFinding(
+        rule="region_min_content:waterfall", fixture="home", ok=False, detail="new violation"
+    )
+    data = _data(
+        tmp_path, region_map, blank_image(), blank_image(), findings=(baseline, regression)
+    )
+    evaluation = _evaluate(tmp_path, region_map, data)
+    assert evaluation.status is Status.FAIL
+    contract_gate = next(g for g in evaluation.gates if g.name is GateName.QUALITY_CONTRACT)
+    assert contract_gate.status is Status.FAIL
+    assert any("waterfall" in item for item in contract_gate.evidence)
+    assert contract_gate.details["unchanged_defects"][0]["rule"] == "region_min_content:frecuencia"
+
+
 # --- gate-level unit tests ---------------------------------------------------
 
 

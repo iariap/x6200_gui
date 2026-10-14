@@ -274,11 +274,24 @@ def _issues_section(evaluation: Evaluation) -> list[str]:
 
 def _contracts_section(evaluation: Evaluation) -> list[str]:
     lines = ["## Quality contracts", ""]
-    failures = [finding for finding in evaluation.contract_findings if not finding.ok]
+    failures = [
+        finding
+        for finding in evaluation.contract_findings
+        if not finding.ok and finding.baseline_issue is None
+    ]
+    unchanged = [finding for finding in evaluation.contract_findings if finding.unchanged_defect]
     total = len(evaluation.contract_findings)
-    lines.append(f"{total} contract checks, {len(failures)} failure(s).")
+    lines.append(
+        f"{total} contract checks, {len(failures)} failure(s), "
+        f"{len(unchanged)} unchanged baseline defect(s)."
+    )
     for failure in failures:
         lines.append(f"- FAIL `{failure.rule}` [{failure.fixture}]: {failure.detail}")
+    for item in unchanged:
+        lines.append(
+            f"- **UNCHANGED DEFECT** `{item.rule}` [{item.fixture}] ({item.baseline_issue}): "
+            f"{item.detail}"
+        )
     return lines
 
 
@@ -388,6 +401,29 @@ def render_html(evaluation: Evaluation, metadata: ReportMetadata, paths: ReportP
             f"<td>{issue.classification.value}</td></tr>"
         )
     parts.append("</table>")
+    parts.append("<h2>Quality contracts</h2>")
+    failures = [
+        finding
+        for finding in evaluation.contract_findings
+        if not finding.ok and finding.baseline_issue is None
+    ]
+    unchanged = [finding for finding in evaluation.contract_findings if finding.unchanged_defect]
+    parts.append(
+        f"<p>{len(evaluation.contract_findings)} checks, {len(failures)} failure(s), "
+        f"{len(unchanged)} unchanged baseline defect(s).</p>"
+    )
+    if failures or unchanged:
+        parts.append("<ul>")
+        for failure in failures:
+            parts.append(
+                f"<li>FAIL <code>{failure.rule}</code> [{failure.fixture}]: {failure.detail}</li>"
+            )
+        for defect in unchanged:
+            parts.append(
+                f"<li><strong>UNCHANGED DEFECT</strong> <code>{defect.rule}</code> "
+                f"[{defect.fixture}] ({defect.baseline_issue}): {defect.detail}</li>"
+            )
+        parts.append("</ul>")
     if evaluation.blocked_gates:
         parts.append("<h2>Gates without instrumentation</h2><ul>")
         for gate in evaluation.blocked_gates:

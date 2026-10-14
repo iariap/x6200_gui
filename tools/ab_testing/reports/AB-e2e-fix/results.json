@@ -7,7 +7,7 @@
   "improvement": true,
   "revision_a": {
     "label": "a",
-    "sha": "66fb131fb86cb13b1e667bd1684c5f459a9f1f56"
+    "sha": "261ae08c7b6dd48c7d33327623d9775b20cf583f"
   },
   "revision_b": {
     "label": "b",
@@ -20,7 +20,7 @@
     "a": [
       {
         "scenario": "home-usb-20m",
-        "revision": "66fb131fb86cb13b1e667bd1684c5f459a9f1f56",
+        "revision": "261ae08c7b6dd48c7d33327623d9775b20cf583f",
         "png_sha256": "0955aef900023601b0bdaad7f518fdc59eb5a64e7fbc77ccee948de71604023d",
         "width": 800,
         "height": 480,
@@ -305,7 +305,7 @@
       "evidence": [],
       "details": {
         "revision_a": [
-          "66fb131fb86cb13b1e667bd1684c5f459a9f1f56"
+          "261ae08c7b6dd48c7d33327623d9775b20cf583f"
         ],
         "revision_b": [
           "ec1b0a58ec30270ece2a6b490ae41ed341133755"
@@ -402,6 +402,18 @@
       "detail": "no detector: only recorded from the repository"
     },
     {
+      "id": "UI-010",
+      "title": "Tema Outdoor: franja de frecuencia invisible sobre fondo blanco",
+      "severity": "critical",
+      "fixture": "main-otro-tema",
+      "region": "frecuencia",
+      "status": "verified",
+      "reproduced_a": null,
+      "reproduced_b": null,
+      "classification": "UNVERIFIED",
+      "detail": "no detector: only recorded from the repository"
+    },
+    {
       "id": "UI-002",
       "title": "Menu de apps: las apps solo vivian en el long-press de Ajustes",
       "severity": "major",
@@ -492,63 +504,72 @@
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "800x480 (expected 800x480)",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:barra_superior",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.5455 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:botones",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.7551 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:espectro",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.2865 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:frecuencia",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.1047 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:s_metro",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.7435 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "region_min_content:waterfall",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "content 0.3471 >= 0.0200",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "coverage_levels",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "all levels allowed",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     },
     {
       "rule": "coverage_required",
       "fixture": "home-usb-20m",
       "ok": true,
       "detail": "all required components declared",
-      "path": null
+      "path": null,
+      "baseline_issue": null
     }
   ],
   "diffs": [

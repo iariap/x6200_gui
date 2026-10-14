@@ -46,6 +46,18 @@ def _git(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["git", *args], capture_output=True, text=True, check=False)
 
 
+# Identity for the throwaway revisions: the Actions runner has no user.name or
+# user.email configured and these commits are never pushed, so they carry a
+# scaffolding identity instead of the project's. The repository rule about the
+# owner's identity applies to real project commits, not to these self-test ones.
+EPHEMERAL_IDENTITY = (
+    "-c",
+    "user.name=ab-test-ephemeral",
+    "-c",
+    "user.email=ab-test-ephemeral@example.invalid",
+)
+
+
 def _docker_ready() -> bool:
     if shutil.which("docker") is None:
         return False
@@ -79,7 +91,14 @@ def _ephemeral(repo: Path, base: str, slug: str, mutate: Callable[[Path], None])
         _git("-C", str(repo), "worktree", "add", "--detach", str(scratch), base)
         mutate(scratch)
         _git("-C", str(scratch), "add", "-A")
-        committed = _git("-C", str(scratch), "commit", "-m", f"abtest: {slug} (ephemeral)")
+        committed = _git(
+            "-C",
+            str(scratch),
+            *EPHEMERAL_IDENTITY,
+            "commit",
+            "-m",
+            f"abtest: {slug} (ephemeral)",
+        )
         assert committed.returncode == 0, committed.stderr
         sha = _git("-C", str(scratch), "rev-parse", "HEAD").stdout.strip()
         _git("-C", str(repo), "branch", "-f", f"abtest/{slug}", sha)
@@ -488,6 +507,31 @@ def test_contracts_pass_on_the_base(
     assert payload["status"] == "PASS"
     assert payload["checks"] > 0
     assert payload["failures"] == []
+    assert payload["unchanged_defects"] == []
+
+
+def test_contracts_report_the_outdoor_baseline_defect(
+    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
+) -> None:
+    """The Outdoor frequency strip is invisible: a recorded, non-blocking defect.
+
+    The contract still detects it (`region_min_content:frecuencia` on
+    `main-otro-tema`), but the registry records it as an open baseline defect, so
+    the run PASSes and the failure is listed as an UNCHANGED DEFECT pinned to
+    UI-010 instead of a new violation.
+    """
+    code = _run(
+        tmp_path,
+        revisions,
+        ["contracts", "--revision", revisions.base, "--scenario", "main-otro-tema"],
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert code == 0
+    assert payload["status"] == "PASS"
+    assert payload["failures"] == []
+    unchanged = {item["rule"]: item for item in payload["unchanged_defects"]}
+    assert "region_min_content:frecuencia" in unchanged
+    assert unchanged["region_min_content:frecuencia"]["baseline_issue"] == "UI-010"
 
 
 def test_benchmark_measures_the_real_render_cost(

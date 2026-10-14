@@ -14,6 +14,7 @@ from datetime import date
 
 from .capture import Capture
 from .findings import ContractFinding
+from .known_issues import KnownIssue, baseline_issue_for
 from .layout_checks import run_layout_checks
 from .quality_config import QualityContracts
 from .regions import RegionMap
@@ -24,11 +25,21 @@ __all__ = ["ContractFinding", "run_contracts"]
 
 
 def run_contracts(
-    captures: list[Capture], region_map: RegionMap, contracts: QualityContracts
+    captures: list[Capture],
+    region_map: RegionMap,
+    contracts: QualityContracts,
+    known_issues: tuple[KnownIssue, ...] = (),
+    today: date | None = None,
 ) -> list[ContractFinding]:
-    """Evaluate every contract for every capture, in a stable order."""
+    """Evaluate every contract for every capture, in a stable order.
+
+    `known_issues` is the registry of recorded defects: a violation it already
+    documents as an open, evidenced baseline defect is reported as an UNCHANGED
+    DEFECT (still visible, no longer a new failure). Every other violation stays
+    a failure, so a regression the registry does not record is not hidden.
+    """
     findings: list[ContractFinding] = []
-    today = date.today()
+    day = today or date.today()
     for capture in captures:
         findings.append(_framebuffer(capture, region_map))
         findings.extend(_region_content(capture, region_map, contracts))
@@ -36,7 +47,43 @@ def run_contracts(
         findings.append(_coverage_required(capture, contracts))
         findings.extend(run_layout_checks(capture, contracts.layout))
         findings.extend(run_typography_checks(capture, contracts.typography))
-    return apply_waivers(findings, contracts, today)
+    waived = apply_waivers(findings, contracts, day)
+    return mark_baseline_defects(waived, known_issues, day)
+
+
+def mark_baseline_defects(
+    findings: list[ContractFinding],
+    known_issues: tuple[KnownIssue, ...],
+    today: date,
+) -> list[ContractFinding]:
+    """Tag failures already recorded as an open known issue (UNCHANGED DEFECT).
+
+    The finding keeps `ok=False` — it is a real defect — but carries the issue id
+    in `baseline_issue`, which is what the gate reads to not fail on it. Nothing
+    is dropped: a finding that no issue explains comes back untouched.
+    """
+    if not known_issues:
+        return findings
+    result: list[ContractFinding] = []
+    for finding in findings:
+        if finding.ok:
+            result.append(finding)
+            continue
+        issue = baseline_issue_for(finding.rule, finding.fixture, known_issues, today)
+        if issue is None:
+            result.append(finding)
+            continue
+        result.append(
+            ContractFinding(
+                rule=finding.rule,
+                fixture=finding.fixture,
+                ok=False,
+                detail=f"{finding.detail} — unchanged defect {issue.id}: {issue.title}",
+                path=finding.path,
+                baseline_issue=issue.id,
+            )
+        )
+    return result
 
 
 def run_structural_checks(

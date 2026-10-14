@@ -3,7 +3,7 @@
 - Date: 2026-10-13
 - Profile: `host-ui`
 - A (baseline): `ec1b0a58ec30270ece2a6b490ae41ed341133755` (a)
-- B (candidate): `66fb131fb86cb13b1e667bd1684c5f459a9f1f56` (b)
+- B (candidate): `261ae08c7b6dd48c7d33327623d9775b20cf583f` (b)
 - Scenarios: `home-usb-20m`
 
 ## Verdict: **FAIL** (exit 1)
@@ -39,6 +39,7 @@ Components declared below REAL (never written as REAL):
 |---|---|---|---|---|---|---|
 | UI-001 | home-usb-20m | major | fixed | no | yes | REGRESSION |
 | UI-009 | home-bateria-externa | major | fixed | — | — | UNVERIFIED |
+| UI-010 | main-otro-tema | critical | verified | — | — | UNVERIFIED |
 | UI-002 | home-usb-20m | major | unverified | — | — | UNVERIFIED |
 | UI-003 | home-usb-20m | major | unverified | — | — | UNVERIFIED |
 | UI-004 | home-usb-20m | major | unverified | — | — | UNVERIFIED |
@@ -47,11 +48,11 @@ Components declared below REAL (never written as REAL):
 | UI-007 | main-otro-tema | major | unverified | — | — | UNVERIFIED |
 | UI-008 | home-usb-20m | info | unverified | — | — | UNVERIFIED |
 
-8 issue(s) are unverified: recorded from the repository but with no detector yet, so they neither block nor pass. They stay in the annex until the harness reproduces them.
+9 issue(s) are unverified: recorded from the repository but with no detector yet, so they neither block nor pass. They stay in the annex until the harness reproduces them.
 
 ## Quality contracts
 
-10 contract checks, 1 failure(s).
+10 contract checks, 1 failure(s), 0 unchanged baseline defect(s).
 - FAIL `layout_overlap` [home-usb-20m]: text labels overlap: '\uf240 12.1v\n\uf1e6 13.8v' at 591,0 and 'x1.0' at 762,10 (100% covered)
 
 ## Evidence

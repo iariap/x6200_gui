@@ -2,6 +2,7 @@
   "exit_code": 1,
   "findings": [
     {
+      "baseline_issue": null,
       "detail": "text 'VERYLONGMODENAME' does not fit its 56x26 box (WRAP)",
       "fixture": "home-usb-20m",
       "ok": false,
@@ -9,6 +10,7 @@
       "rule": "typography_text_overflow"
     },
     {
+      "baseline_issue": null,
       "detail": "text '\\uf293' uses glyph(s) ['U+F293'] missing from every font in the chain (LVGL draws a placeholder box)",
       "fixture": "home-usb-20m",
       "ok": false,
@@ -16,6 +18,7 @@
       "rule": "typography_missing_glyph"
     },
     {
+      "baseline_issue": null,
       "detail": "text '\\uf293' contrast 1.00:1 < 4.50:1 (#3A3F47 on #3A3F47)",
       "fixture": "home-usb-20m",
       "ok": false,
@@ -40,6 +43,12 @@
       "id": "UI-009",
       "reproduced": null,
       "title": "Reloj de potencia: simbolo de bateria con puntero sin inicializar (glifos basura)"
+    },
+    {
+      "detail": "unverified: no detector yet",
+      "id": "UI-010",
+      "reproduced": null,
+      "title": "Tema Outdoor: franja de frecuencia invisible sobre fondo blanco"
     },
     {
       "detail": "unverified: no detector yet",
@@ -85,7 +94,7 @@
     }
   ],
   "reproduced": [],
-  "revision": "8a172fb6c1d32f07afc661b9bfb5a9a0f42f8be8",
+  "revision": "0890ae625570f27d55414663c2a88270e0844fa3",
   "scenarios": [
     "home-usb-20m"
   ],
@@ -93,6 +102,7 @@
   "structural_failures": 3,
   "unverified": [
     "UI-009",
+    "UI-010",
     "UI-002",
     "UI-003",
     "UI-004",

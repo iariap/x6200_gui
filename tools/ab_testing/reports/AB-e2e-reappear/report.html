@@ -8,7 +8,7 @@
 <ul>
 <li>Date: 2026-10-13</li>
 <li>A: <code>ec1b0a58ec30270ece2a6b490ae41ed341133755</code></li>
-<li>B: <code>66fb131fb86cb13b1e667bd1684c5f459a9f1f56</code></li>
+<li>B: <code>261ae08c7b6dd48c7d33327623d9775b20cf583f</code></li>
 <li>Docker image: <code>x6200-uiharness</code></li>
 <li>Scenarios: home-usb-20m</li>
 </ul>
@@ -36,6 +36,7 @@
 <table><tr><th>Issue</th><th>Fixture</th><th>A</th><th>B</th><th>Classification</th></tr>
 <tr><td>UI-001</td><td>home-usb-20m</td><td>no</td><td>yes</td><td>REGRESSION</td></tr>
 <tr><td>UI-009</td><td>home-bateria-externa</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-010</td><td>main-otro-tema</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
 <tr><td>UI-002</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
 <tr><td>UI-003</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
 <tr><td>UI-004</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
@@ -44,6 +45,11 @@
 <tr><td>UI-007</td><td>main-otro-tema</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
 <tr><td>UI-008</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
 </table>
+<h2>Quality contracts</h2>
+<p>10 checks, 1 failure(s), 0 unchanged baseline defect(s).</p>
+<ul>
+<li>FAIL <code>layout_overlap</code> [home-usb-20m]: text labels overlap: '\uf240 12.1v\n\uf1e6 13.8v' at 591,0 and 'x1.0' at 762,10 (100% covered)</li>
+</ul>
 <h2>Gates without instrumentation</h2><ul>
 <li><strong>Hardware</strong>: no physical X6200 attached; hardware behaviour is not measured</li>
 <li><strong>Energy</strong>: no power measurement; energy evidence must be physical</li>

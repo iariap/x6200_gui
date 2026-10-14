@@ -71,6 +71,44 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
 
 ---
 
+## UI-010 — Tema Outdoor: franja de frecuencia invisible sobre fondo blanco
+
+- **Severidad**: critical (información crítica ilegible en el campo).
+- **Fixture**: `main-otro-tema` (tema Outdoor), región `frecuencia`.
+- **Estado**: `verified` — defecto **preexistente** de la ROM, presente en la
+  línea base, todavía **abierto**.
+- **Síntoma**: la fila de frecuencia (`src/main_screen.c`, región `frecuencia`,
+  `y=160..196`) se dibuja **blanca sobre fondo blanco**: los dígitos de la
+  frecuencia central y de los extremos no se ven. La región queda **uniforme**
+  (content `0.0000`), o sea información crítica para el operador ausente.
+  Confirmado mirando la captura del arnés: la banda central sale vacía. No es un
+  defecto introducido por el arnés ni por el PR: es la paleta del tema Outdoor.
+- **Cómo lo reproduce el arnés**: el contrato objetivo
+  `region_min_content:frecuencia` (mínimo 0.02 de píxeles distintos del mediano
+  de la región) mide `0.0000` y lo marca. Evidencia:
+  `ui-contracts/contracts.json` del run `38497082174` (única violación:
+  `region_min_content:frecuencia [main-otro-tema]: content 0.0000 >= 0.0200`).
+- **Cómo se clasifica**: la entrada está **conectada al gate** por una
+  *exclusión acotada* (`fixture: main-otro-tema`, `region: frecuencia`,
+  `rule: region_min_content:frecuencia`, `until: 2027-03-31`, con motivo). Un
+  finding que matchea esa exclusión se clasifica **`UNCHANGED DEFECT`**: se
+  lista en el resumen y en el reporte, pero **no** convierte el gate en FAIL.
+  Una violación que **no** esté en el registro sigue fallando. La exclusión no
+  es global ni permanente: vence el 2027-03-31 y entonces el gate vuelve a
+  fallar para forzar la re-evaluación.
+- **UI-011 (evaluada y plegada acá, no como entrada separada)**: el mismo tema
+  muestra además la **cascada de ruido casi blanco sobre blanco** (invisible) y
+  las **etiquetas CW/DIG del strip lavadas**. Se evaluó si merecía entrada
+  propia: la regla que abastece la región `waterfall` es
+  `region_min_content:waterfall`, que sólo pregunta "¿hay contenido?" y en este
+  fixture **pasa** (content `0.29`, el ruido casi-blanco cuenta como contenido);
+  **ninguna regla** detecta "contenido presente pero ilegible sobre el fondo".
+  Como no existe detección y no se inventa una, el síntoma queda **documentado
+  como observación** dentro de esta misma entrada (una sola entrada), no como
+  defecto "detectado".
+
+---
+
 ## Anexo: hipótesis sin reproducir
 
 Semillas con evidencia previa en el repo pero **sin detector** todavía: no
