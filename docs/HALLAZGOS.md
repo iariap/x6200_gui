@@ -54,6 +54,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 33. [Todos los botones de las apps tienen handler](#33-todos-los-botones-de-las-apps-tienen-handler)
 34. [El core dice donde muere CW Trainer y Status (y tres punteros colgados)](#34-el-core-dice-donde-muere-cw-trainer-y-status-y-tres-punteros-colgados)
 35. [Estado final de las apps que matan la GUI: que quedo arreglado y que falta](#35-estado-final-de-las-apps-que-matan-la-gui-que-quedo-arreglado-y-que-falta)
+36. [Causa raiz: la pantalla principal se destruye al abrir la app](#36-causa-raiz-la-pantalla-principal-se-destruye-al-abrir-la-app)
 
 ---
 
