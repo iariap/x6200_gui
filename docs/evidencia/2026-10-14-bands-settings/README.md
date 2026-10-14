@@ -68,10 +68,19 @@ La acción se despachaba **solo** en `main_screen_action()`, que además constru
 la ventana anterior huérfana). El fix manda `ACTION_APP_BANDS` por
 `main_screen_start_app()`, como el resto de las apps.
 
-## `harness-app-bands.png`
+## Las fixtures del arnés de host
 
-Es la misma ruta en el **arnés de host** (`tools/ui_harness`, fixture `app-bands`),
-no en el banco. `dialog_bands` es un mock inerte en el arnés: la barra de abajo
-queda vacía porque la ventana que la cargaría no se compila. Sirve para ver que la
-fixture mide **la ruta** (una aserción sobre el estado del firmware), no los
-píxeles de la ventana; por eso el banco es la evidencia de que la ventana abre.
+El arnés de host (`tools/ui_harness/`) tiene dos fixtures nuevas para este cambio, y las dos
+**fallan con `src/` en 89851e6 y pasan con el fix** (transcript exacto, mismo comando:
+`arnes-antes-despues.txt`):
+
+- **`app-bands`**: la ruta del owner (el menú de apps de `buttons_group_app`, botón "Bands" de
+  `APP 3:6`). Sin el fix: *"the app-menu Bands button reached no dialog at all (the button did
+  nothing)"*.
+- **`settings-bands`**: Ajustes y después la acción de Bands (`main_screen_action(ACTION_APP_BANDS)`).
+  Sin el fix: *"the Bands action left the Ajustes window running"*.
+
+`harness-app-bands.png` es lo que renderiza `app-bands` con el fix. `dialog_bands` es un mock
+inerte en el arnés: la barra de abajo queda vacía porque la ventana que la cargaría no se
+compila. Por eso las fixtures miden **la ruta** (una aserción sobre el estado del firmware en
+`scenario_settle`), y el banco es la evidencia de que la ventana abre de verdad.
