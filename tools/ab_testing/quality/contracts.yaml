@@ -140,6 +140,21 @@ expected_changes:
     author: wcag-full
     until: 2027-03-31
 
+  # AB-UI016-T1 (UI-016): the Ajustes year field stops clipping its last digit.
+  - region: ajustes_anio
+    reason: >
+      UI-016: el campo Año de Ajustes (src/dialog_settings.c, fila Day/Month/Year)
+      dibujaba "2026" con 84 px de texto en un área de contenido de 67 (la caja de
+      2 columnas con el padding horizontal del textarea) y la caja le recortaba
+      los últimos 4 px contra su borde. El fix le baja el padding horizontal (el
+      del cursor de un textarea, que un spinbox no usa) y le da el ancho que piden
+      sus 4 cifras con la fuente vigente, medido en runtime; el campo pasa a 94x56
+      y el "2026" se ve completo. Sobre la fixture settings-home solo se mueven los
+      pixeles del campo, dentro de `ajustes_anio`; los otros 21 fixtures de la
+      suite quedan byte-idénticos respecto de la revisión anterior al fix.
+    author: ui016-year-field
+    until: 2027-03-31
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.
@@ -157,12 +172,11 @@ review_regions: []
 # With no waiver left, a truncation that comes back fails the run again and no
 # recorded issue explains it.
 #
-# The three below are new (the Ajustes window, UI-015/UI-016); see their `reason`.
+# The two below are what is left of the Ajustes window's UI-015 (UI-016 was fixed
+# and its waiver withdrawn by AB-UI016-T1); see their `reason`.
 exceptions:
-  # Ajustes (`settings-home` / `settings-wfbat`): two REAL defects of the Ajustes
-  # window that this change renders/measures for the first time (UI-015, UI-016).
-  # Fixing them is the Ajustes UX increment — this run only teaches the harness to
-  # render the window, and `src/dialog_settings.c` is not touched. Each waiver is
+  # Ajustes (`settings-home` / `settings-wfbat`): the REAL UI-015 defect of the
+  # Ajustes window (controls below the 44px field-UX target). Each waiver is
   # scoped to one rule and one fixture (never global), carries a reason and an
   # expiry, and stays visible in the `contracts`/`audit` report; the check itself
   # is not weakened. Withdraw each one in the same change that fixes the defect.
@@ -183,13 +197,9 @@ exceptions:
     author: ajustes-fixture
     until: 2027-03-31
 
-  - rule: layout_clipped
-    fixture: settings-home
-    reason: >
-      UI-016: the Ajustes year field ("2026", sony_36) draws 84px of text and the
-      spinbox content area leaves 80, so the last digit loses its right 4px
-      (inspection: text_natural.w 84 vs visible 80). Real, pre-existing clip of
-      the Ajustes row; the fix (widen the field or shrink its font, the same
-      idiom the VFO cell uses) is the Ajustes UX increment.
-    author: ajustes-fixture
-    until: 2027-03-31
+# UI-016 (`layout_clipped` [settings-home]) was withdrawn here in AB-UI016-T1,
+# together with the fix: the Ajustes year field no longer clips its last digit
+# (src/dialog_settings.c, the year spinbox gets the width its four digits need
+# with the current font), so `layout_clipped` passes on its own and no waiver
+# explains a reappearance. The fix moves pixels inside `ajustes_anio` only; that
+# is declared in `expected_changes` above, not waived here.

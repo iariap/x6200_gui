@@ -340,6 +340,50 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
 
 ---
 
+## UI-016 — Ajustes: el campo Año recortaba 4 px el valor de 4 dígitos
+
+- **Severidad**: minor.
+- **Fixture**: `settings-home`, región `ajustes_anio`.
+- **Estado**: `fixed` (AB-UI016-T1). La excepción `layout_clipped` de
+  `quality/contracts.yaml` se retiró en el mismo cambio: sin waiver, una
+  reaparición vuelve a fallar la corrida.
+- **Síntoma**: en la fila **Day, Month, Year** de Ajustes el campo del **Año**
+  dibujaba **`2026`** con las últimas 4 px del último dígito recortadas contra el
+  borde de su caja (medido por la inspección estructural: la etiqueta mide 84 px de
+  texto natural y su caja visible era de 80). `typography_text_overflow` **no** lo
+  veía: mide contra la caja del objeto, no contra el recorte del padre; lo ve
+  `layout_clipped`.
+- **Causa**: `src/dialog_settings.c` (`make_date`) creaba el campo del Año como un
+  `lv_spinbox` de 4 cifras con el tamaño de **dos columnas** de la grilla
+  (`SMALL_2` = 93 px). El área de contenido útil era de **67 px**: 93 menos el
+  padding horizontal del `lv_textarea` (11 px por lado, reservado para el cursor)
+  y el borde de 2 px. Los campos de Día y Mes entran con **2 cifras** (la etiqueta
+  mide 67 px), pero `2026` mide **84 px** con `sony_36` (la fuente del tema): 17 px
+  no entraban y el padre recortaba los últimos 4.
+- **Fix en el código** (`src/dialog_settings.c`): el Año —y sólo el Año— baja su
+  padding horizontal al de la grilla (`SMALL_PAD`, el espacio entre columnas) y
+  toma el ancho que piden sus 4 cifras con la fuente vigente, **medido en runtime**
+  con `lv_txt_get_size` (el helper `ancho_campo_cifras`, el mismo idioma que el
+  resto del código usa para medir etiquetas — `info.c`, `meter.c`, `band_info.c`:
+  nada de un ancho clavado, si el tema trae otra fuente el campo se ajusta solo).
+  Un `lv_spinbox` no edita texto libre y no necesita el padding del cursor de un
+  `lv_textarea`. Medido: la caja pasa de **93 a 94 px** (la etiqueta queda
+  `696,113 84x28` con caja visible `84x28`), entra en la grilla y **Día y Mes no se
+  tocan** (siguen `704,113 84x28`/`495,113 84x28`, byte-idénticos).
+- **Cómo lo reproduce el arnés**: el contrato `layout_clipped` sobre la inspección
+  estructural (`ui_harness --inspect`). Sobre la revisión con el defecto
+  (`89851e6`/`ccfe1f5`) el campo del Año reporta `lost 4x0`; sobre el fix el
+  contrato pasa sin ninguna excepción (`contracts --revision HEAD`: **0 failures**;
+  `audit --suite visual`: **0 structural findings**). El A/B (`compare`) confina el
+  diff de `settings-home` a `ajustes_anio` (la región nueva de `regions.yaml`), y
+  los otros 21 fixtures de la suite salen sin cambios propios del fix.
+- **Evidencia**: `tools/ab_testing/reports/AB-UI016-T1/` (capturas A/B, `diff`,
+  `overlay`, `results.json`); `tests/check_harness_determinism.sh` (los 22 fixtures
+  x2 corridas, byte-idénticos); `tools/ab_testing/quality/contracts.yaml` (excepción
+  de `layout_clipped` retirada; `expected_change` acotado a `ajustes_anio`).
+
+---
+
 ## Estático, sin fixture
 
 Bloque para los pares que el chequeo **estático** (`x6200-ab themes` +
