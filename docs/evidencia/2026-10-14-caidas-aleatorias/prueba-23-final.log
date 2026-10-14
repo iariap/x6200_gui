@@ -1,0 +1,98 @@
+== prueba de apps contra 192.168.18.67 ==
+  uptime inicial: 9796.18 s
+  FT8        ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  FT4        SE CAYO Y VOLVIO LA GUI (pid 20742 -> 20869) (abre: , cierra: {"t":"ok"})
+      volvio con uptime 9840.72 s
+      -rwxr-xr-x    1 root     root         14146 Oct 14 03:44 x6200_log_2026-10-14_03-44-26.txt
+      -rwxr-xr-x    1 root     root         23922 Oct 14 03:45 x6200_log_2026-10-14_03-45-31.txt
+      -rwxr-xr-x    1 root     root         15730 Oct 14 03:45 x6200_log_2026-10-14_03-45-59.txt
+      -rwxr-xr-x    1 root     root         14146 Oct 14 03:45 x6200_log_2026-10-14_03-46-23.txt
+      -rwxr-xr-x    1 root     root         19788 Oct 14 03:47 x6200_log_2026-10-14_03-47-09.txt
+      --- ultimas lineas de boot.log ---
+        radio          9816.3 s de uptime  (+0.23 s)
+        cat/qso_log    9816.4 s de uptime  (+0.07 s)
+        wfview         9816.4 s de uptime  (+0.00 s)
+        control remoto 9816.4 s de uptime  (+0.00 s)
+      GUI lista: 9816.6 s
+  JS8        ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  WSPR       SE CAYO Y VOLVIO LA GUI (pid 20869 -> 21037) (abre: {"t":"ok"}, cierra: {"t":"ok"})
+      volvio con uptime 9887.40 s
+      -rwxr-xr-x    1 root     root         23922 Oct 14 03:45 x6200_log_2026-10-14_03-45-31.txt
+      -rwxr-xr-x    1 root     root         15730 Oct 14 03:45 x6200_log_2026-10-14_03-45-59.txt
+      -rwxr-xr-x    1 root     root         14146 Oct 14 03:45 x6200_log_2026-10-14_03-46-23.txt
+      -rwxr-xr-x    1 root     root         19788 Oct 14 03:47 x6200_log_2026-10-14_03-47-09.txt
+      -rwxr-xr-x    1 root     root         27931 Oct 14 03:48 x6200_log_2026-10-14_03-48-03.txt
+      --- ultimas lineas de boot.log ---
+        radio          9870.4 s de uptime  (+0.21 s)
+        cat/qso_log    9870.5 s de uptime  (+0.07 s)
+        wfview         9870.5 s de uptime  (+0.00 s)
+        control remoto 9870.5 s de uptime  (+0.00 s)
+      GUI lista: 9870.7 s
+  SSTV       ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  WeFax      ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  NavTex     ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  RTTY       ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  CW         ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  Field      ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  GPS        ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  Bands      ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  Settings   ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  BT         ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  About      ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  Cluster    ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  CwTrainer  SE CAYO Y VOLVIO LA GUI (pid 21037 -> 21680) (abre: {"t":"ok"}, cierra: {"t":"ok"})
+      volvio con uptime 10129.94 s
+      -rwxr-xr-x    1 root     root         15730 Oct 14 03:45 x6200_log_2026-10-14_03-45-59.txt
+      -rwxr-xr-x    1 root     root         14146 Oct 14 03:45 x6200_log_2026-10-14_03-46-23.txt
+      -rwxr-xr-x    1 root     root         19788 Oct 14 03:47 x6200_log_2026-10-14_03-47-09.txt
+      -rwxr-xr-x    1 root     root         27931 Oct 14 03:48 x6200_log_2026-10-14_03-48-03.txt
+      -rwxr-xr-x    1 root     root        127388 Oct 14 03:52 x6200_log_2026-10-14_03-52-11.txt
+      --- ultimas lineas de boot.log ---
+        radio          10118.2 s de uptime  (+0.22 s)
+        cat/qso_log    10118.3 s de uptime  (+0.07 s)
+        wfview         10118.3 s de uptime  (+0.00 s)
+        control remoto 10118.3 s de uptime  (+0.00 s)
+      GUI lista: 10118.5 s
+  Eq         SE CAYO Y VOLVIO LA GUI (pid 21680 -> 21813) (abre: {"t":"ok"}, cierra: {"t":"ok"})
+      volvio con uptime 10160.02 s
+      -rwxr-xr-x    1 root     root         14146 Oct 14 03:45 x6200_log_2026-10-14_03-46-23.txt
+      -rwxr-xr-x    1 root     root         19788 Oct 14 03:47 x6200_log_2026-10-14_03-47-09.txt
+      -rwxr-xr-x    1 root     root         27931 Oct 14 03:48 x6200_log_2026-10-14_03-48-03.txt
+      -rwxr-xr-x    1 root     root        127388 Oct 14 03:52 x6200_log_2026-10-14_03-52-11.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 03:52 x6200_log_2026-10-14_03-52-44.txt
+      --- ultimas lineas de boot.log ---
+        radio          10151.2 s de uptime  (+0.22 s)
+        cat/qso_log    10151.3 s de uptime  (+0.07 s)
+        wfview         10151.3 s de uptime  (+0.00 s)
+        control remoto 10151.3 s de uptime  (+0.00 s)
+      GUI lista: 10151.5 s
+  Status     SE CAYO Y VOLVIO LA GUI (pid 21813 -> 21927) (abre: {"t":"ok"}, cierra: {"t":"ok"})
+      volvio con uptime 10187.46 s
+      -rwxr-xr-x    1 root     root         19788 Oct 14 03:47 x6200_log_2026-10-14_03-47-09.txt
+      -rwxr-xr-x    1 root     root         27931 Oct 14 03:48 x6200_log_2026-10-14_03-48-03.txt
+      -rwxr-xr-x    1 root     root        127388 Oct 14 03:52 x6200_log_2026-10-14_03-52-11.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 03:52 x6200_log_2026-10-14_03-52-44.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 03:53 x6200_log_2026-10-14_03-53-14.txt
+      --- ultimas lineas de boot.log ---
+        radio          10181.4 s de uptime  (+0.22 s)
+        cat/qso_log    10181.4 s de uptime  (+0.08 s)
+        wfview         10181.4 s de uptime  (+0.00 s)
+        control remoto 10181.4 s de uptime  (+0.00 s)
+      GUI lista: 10181.7 s
+  QTH        ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  Callsign   ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  Recorder   ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  WiFi       SE CAYO Y VOLVIO LA GUI (pid 21927 -> 22161) (abre: {"t":"ok"}, cierra: {"t":"ok"})
+      volvio con uptime 10269.36 s
+      -rwxr-xr-x    1 root     root         27931 Oct 14 03:48 x6200_log_2026-10-14_03-48-03.txt
+      -rwxr-xr-x    1 root     root        127388 Oct 14 03:52 x6200_log_2026-10-14_03-52-11.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 03:52 x6200_log_2026-10-14_03-52-44.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 03:53 x6200_log_2026-10-14_03-53-14.txt
+      -rwxr-xr-x    1 root     root         15652 Oct 14 03:54 x6200_log_2026-10-14_03-54-22.txt
+      --- ultimas lineas de boot.log ---
+        radio          10248.6 s de uptime  (+0.22 s)
+        cat/qso_log    10248.7 s de uptime  (+0.07 s)
+        wfview         10248.7 s de uptime  (+0.00 s)
+        control remoto 10248.7 s de uptime  (+0.00 s)
+      GUI lista: 10248.9 s
+== fin (detalle en /home/pablo/desa/x6200/x6200_gui/prueba-23-final.log) ==
