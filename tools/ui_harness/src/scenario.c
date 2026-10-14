@@ -128,6 +128,23 @@ static bool apply_key(const char *key, const char *value, scenario_t *out)
         mock_radio.battery_cap = (uint8_t) strtol(value, NULL, 10);
     } else if (!strcmp(key, "charging")) {
         return parse_bool(value, &b) && ((mock_radio.charging = b), true);
+    } else if (!strcmp(key, "bench_warmup")) {
+        long v = strtol(value, NULL, 10);
+
+        /* Bench-only knobs: parsed here so a fixture that uses them is not an
+         * "unknown key" error, but applied only in `--bench` mode. */
+        if (v <= 0) { return false; }
+        out->bench_warmup = (int) v;
+    } else if (!strcmp(key, "bench_repeats")) {
+        long v = strtol(value, NULL, 10);
+
+        if (v <= 0) { return false; }
+        out->bench_repeats = (int) v;
+    } else if (!strcmp(key, "bench_redraw_passes")) {
+        long v = strtol(value, NULL, 10);
+
+        if (v <= 0) { return false; }
+        out->bench_redraw_passes = (int) v;
     } else if (!strcmp(key, "rxtx")) {
         if (!strcasecmp(value, "rx")) { mock_radio.state = RADIO_RX; }
         else if (!strcasecmp(value, "tx")) { mock_radio.state = RADIO_TX; }

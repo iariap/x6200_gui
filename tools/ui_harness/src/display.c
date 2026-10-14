@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 
+#include "bench_metrics.h"
 #include "display.h"
 #include "render_metrics.h"
 
@@ -15,12 +16,14 @@ static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *px)
 {
     uint32_t pixels = 0;
 
+    bench_flush_begin();
     for (int32_t y = area->y1; y <= area->y2; y++) {
         for (int32_t x = area->x1; x <= area->x2; x++) {
             fb[y * HARNESS_SCREEN_W + x] = *px++;
             pixels++;
         }
     }
+    bench_flush_end(area->x1, area->y1, area->x2, area->y2);
 
     render_metrics_record_flush(pixels);
     lv_disp_flush_ready(drv);

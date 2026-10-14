@@ -16,11 +16,22 @@
 #define SCENARIO_NAME_MAX   64
 #define SCENARIO_SCREEN_MAX 32
 
+/* Benchmark defaults; a fixture (or the CLI) may override them. See
+ * bench_metrics.h for what each frame measures. */
+#define SCENARIO_BENCH_WARMUP_DEFAULT 3
+#define SCENARIO_BENCH_REPEATS_DEFAULT 5
+#define SCENARIO_BENCH_REDRAW_PASSES_DEFAULT 1
+
 typedef struct {
     char name[SCENARIO_NAME_MAX];
     char screen[SCENARIO_SCREEN_MAX];
     /* Deterministic seed for the synthetic spectrum/waterfall data. */
     uint32_t seed;
+    /* Benchmark-only knobs. Ignored outside `--bench`, so they never change a
+     * rendered pixel. */
+    int bench_warmup;
+    int bench_repeats;
+    int bench_redraw_passes;
 } scenario_t;
 
 /* Parses `path`. Unknown keys are an error (a scenario must not silently
