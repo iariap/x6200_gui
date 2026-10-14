@@ -102,7 +102,7 @@ static void show_time() {
 
         case CLOCK_POWER:
             pthread_mutex_lock(&power_mux);
-            const char * bat_sym;
+            const char * bat_sym = LV_SYMBOL_BATTERY_FULL;
             const char * ext_sym;
             switch ((uint8_t)(v_bat * 10)) {
                 case 0 ... 56:
