@@ -17,6 +17,7 @@
 #include "styles.h"
 #include "params/params.h"
 #include "pubsub_ids.h"
+#include "ui_tokens.h"      /* la geometria de la barra (issue #10, UI-05) */
 #include "wifi.h"
 
 #include <ctype.h>
@@ -31,7 +32,7 @@ typedef enum {
 } info_items_t;
 
 static lv_obj_t     *obj;
-static lv_obj_t     *items[6];
+static lv_obj_t     *items[UI_INFO_COLS * UI_INFO_ROWS];
 
 static Subject *mode_lock;
 
@@ -75,12 +76,13 @@ lv_obj_t * info_init(lv_obj_t * parent) {
 
     uint8_t index = 0;
 
-    for (uint8_t y = 0; y < 2; y++)
-        for (uint8_t x = 0; x < 3; x++) {
+    for (uint8_t y = 0; y < UI_INFO_ROWS; y++)
+        for (uint8_t x = 0; x < UI_INFO_COLS; x++) {
             lv_obj_t *item = lv_label_create(obj);
 
             lv_obj_add_style(item, &info_item_style, 0);
-            lv_obj_set_pos(item, x * 58 + 15, y * 22 + 5);
+            lv_obj_set_pos(item, x * UI_INFO_COL_PITCH + UI_INFO_ORIGIN_X,
+                           y * UI_INFO_ROW_PITCH + UI_INFO_ORIGIN_Y);
             lv_obj_set_style_text_align(item, LV_TEXT_ALIGN_CENTER, 0);
 
             /* El fondo de la barra es un bitmap (images/top_short*.bin) con zonas claras y oscuras,
@@ -90,9 +92,9 @@ lv_obj_t * info_init(lv_obj_t * parent) {
              * temas (docs/HALLAZGOS.md 28). */
             lv_obj_set_style_bg_color(item, TC(bar), 0);
             lv_obj_set_style_bg_opa(item, LV_OPA_COVER, 0);
-            lv_obj_set_style_radius(item, 3, 0);
+            lv_obj_set_style_radius(item, UI_INFO_CELL_RADIUS, 0);
             lv_obj_set_style_text_color(item, TC(text), 0);
-            lv_obj_set_size(item, 56, 26);
+            lv_obj_set_size(item, UI_INFO_CELL_W, UI_INFO_CELL_H);
 
             items[index] = item;
             index++;
@@ -107,7 +109,7 @@ lv_obj_t * info_init(lv_obj_t * parent) {
      * tamano de los otros temas -- el mismo idioma que NF() en
      * src/cluster_column.c, que tambien tiene columnas de ancho fijo. */
     lv_obj_set_style_text_font(items[INFO_VFO],
-                               theme_shape.vision ? font_down(&sony_20, VISION_FONT_STEPS) : &sony_20,
+                               theme_shape.vision ? font_down(UI_INFO_FONT, VISION_FONT_STEPS) : UI_INFO_FONT,
                                0);
 
     lv_label_set_text(items[INFO_PRE_ATT], "PRE/ATT");
@@ -119,14 +121,15 @@ lv_obj_t * info_init(lv_obj_t * parent) {
      * puede agregar una columna). Tres estados, como el WiFi: apagado (negro), prendido sin
      * auriculares (gris) y con auriculares A2DP conectados (blanco). Se refresca cada 2 s porque
      * btcat-ctl escribe el estado en un hilo, con un retraso (docs/HALLAZGOS.md 19). */
-    lv_obj_set_size(items[INFO_WIFI], 28, 26);
+    lv_obj_set_size(items[INFO_WIFI], UI_INFO_WIFI_W, UI_INFO_CELL_H);
     lv_obj_set_style_text_align(items[INFO_WIFI], LV_TEXT_ALIGN_LEFT, 0);
 
     bt_item = lv_line_create(obj);
-    lv_line_set_points(bt_item, bt_pts, 7);
-    lv_obj_set_style_line_width(bt_item, 2, 0);
+    lv_line_set_points(bt_item, bt_pts, UI_INFO_BT_POINTS);
+    lv_obj_set_style_line_width(bt_item, UI_INFO_BT_LINE_W, 0);
     lv_obj_set_style_line_rounded(bt_item, true, 0);
-    lv_obj_set_pos(bt_item, 2 * 58 + 15 + 28, 1 * 22 + 8);
+    lv_obj_set_pos(bt_item, UI_INFO_WIFI_COL * UI_INFO_COL_PITCH + UI_INFO_ORIGIN_X + UI_INFO_WIFI_W,
+                   UI_INFO_WIFI_ROW * UI_INFO_ROW_PITCH + UI_INFO_BT_DY);
 
     bt_state_show();
     lv_timer_create(bt_state_timer_cb, 2000, NULL);
