@@ -10,13 +10,15 @@
  *  modo automatico.
  *
  *  Es la primera pieza del manager de UI-08. La evaluacion es pura y no depende
- *  de nada; la unica salida al mundo es el wiring del incremento 2
- *  (visual_policy_waterfall_apply), que lleva el perfil al modo Ahorro del
- *  waterfall. El wiring del spectrum y del backlight son los incrementos 3/4.
+ *  de nada; las salidas al mundo son los wirings: el incremento 2
+ *  (visual_policy_waterfall_apply) lleva el perfil al modo Ahorro del waterfall
+ *  y el incremento 3 (visual_policy_brightness_apply) al nivel del backlight.
+ *  El del spectrum es el incremento 4.
  *
  *  Lo cubre el test nativo (tests/native/test_visual_policy.c): la evaluacion
- *  sin stubs, y el wiring contra el stub que registra la llamada a
- *  waterfall_set_battery_mode (tests/native/stubs/stubs.c).
+ *  sin stubs, y los wirings contra los stubs que registran la llamada a
+ *  waterfall_set_battery_mode y a backlight_set_brightness
+ *  (tests/native/stubs/stubs.c).
  */
 
 #pragma once
@@ -154,6 +156,28 @@ visual_policy_result_t visual_policy_eval(visual_policy_t *state,
                                           visual_override_t override);
 
 /* ------------------------------------------------------------------------- *
+ * Tabla de caps de brillo (UI-08 incremento 3).
+ *
+ * El nivel es el del slider de Ajustes (src/dialog_settings.c: rango -1..9):
+ * -1 apaga el display, 9 es el maximo del panel. Cada perfil declara su nivel
+ * MAXIMO permitido; el perfil solo puede BAJAR el brillo del usuario, nunca
+ * subirlo (el setting del usuario es el techo, el cap es un techo mas bajo).
+ *
+ * Los cuatro valores son el contrato que el test nativo fija con literales: un
+ * cap que se mueva deja el test rojo (el .c usa estos nombres, pero el test
+ * declara el numero). Orden garantizado (y verificado en el .c con
+ * _Static_assert): QUALITY == BALANCED == VP_BRIGHTNESS_MAX, y
+ * VP_BRIGHTNESS_CRITICAL < VP_BRIGHTNESS_ECO < VP_BRIGHTNESS_MAX.
+ * ------------------------------------------------------------------------- */
+
+#define VP_BRIGHTNESS_OFF      (-1)   /* el slider: display apagado por el usuario */
+#define VP_BRIGHTNESS_MAX      9      /* el slider: brillo maximo del panel */
+#define VP_BRIGHTNESS_QUALITY  9      /* sin cap: manda el setting del usuario */
+#define VP_BRIGHTNESS_BALANCED 9      /* sin cap: manda el setting del usuario */
+#define VP_BRIGHTNESS_ECO      6      /* ahorro marcado: recorta 3 niveles */
+#define VP_BRIGHTNESS_CRITICAL 3      /* minimo legible: recorta 6 niveles */
+
+/* ------------------------------------------------------------------------- *
  * Wiring al primer consumidor (UI-08 incremento 2): el modo Ahorro del
  * waterfall, que el firmware ya tiene como toggle de usuario
  * (`params.waterfall_battery` -> `waterfall_set_battery_mode()`).
@@ -179,6 +203,36 @@ visual_policy_result_t visual_policy_eval(visual_policy_t *state,
  * Idempotente y sin estado: el llamador decide cuando llamar (el ROM lo hace
  * en la transicion del perfil, con `visual_policy_result_t.changed`). */
 void visual_policy_waterfall_apply(visual_profile_t profile, bool user_battery_mode);
+
+/* ------------------------------------------------------------------------- *
+ * Wiring al segundo consumidor (UI-08 incremento 3): el brillo del panel.
+ *
+ * El firmware ya tiene su nivel y su setting de usuario: el nivel actual se fija
+ * con `backlight_set_brightness()` (src/backlight.c), que escribe el PWM por
+ * sysfs, y el setting vive en `params.brightness_normal` (Ajustes ->
+ * "Timeout, Brightness"; src/dialog_settings.c). El ROM llama a esta funcion en
+ * el MISMO punto donde ya aplica el waterfall (src/radio.c,
+ * `apply_visual_profile`), diferido por el scheduler al hilo de LVGL, y el
+ * arnes en `screens.c`: un solo camino de aplicacion, la decision del banco y
+ * la de la radio no pueden divergir.
+ *
+ * El setting del usuario entra como parametro y NUNCA se escribe: el param
+ * queda en disco intacto (mismo patron que el waterfall). El modulo tampoco
+ * mantiene estado propio: el perfil y el setting son la entrada entera.
+ * ------------------------------------------------------------------------- */
+
+/* Aplica un perfil ya evaluado al nivel del backlight:
+ *
+ *   - ECO y CRITICAL recortan el brillo al cap del perfil
+ *     (VP_BRIGHTNESS_ECO / VP_BRIGHTNESS_CRITICAL);
+ *   - QUALITY y BALANCED no recortan nada: vuelve el setting del usuario.
+ *
+ * El cap es un techo: el nivel aplicado es el menor entre el setting del
+ * usuario y el cap, asi que el perfil nunca sube el brillo que el usuario
+ * eligio (y un display que el usuario apago con VP_BRIGHTNESS_OFF queda
+ * apagado). Idempotente y sin estado: el llamador decide cuando llamar (el ROM
+ * lo hace en la transicion del perfil). */
+void visual_policy_brightness_apply(visual_profile_t profile, int16_t user_setting);
 
 #ifdef __cplusplus
 }

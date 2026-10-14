@@ -102,15 +102,16 @@ static void process_power_key(bool val, uint64_t now) {
     prev_val = val;
 }
 
-/* Aplica el perfil ya evaluado al waterfall. Corre en el hilo de LVGL (lo
- * encola radio_tick por el scheduler, el mismo patron que tx_info_update en
- * src/tx_info.c, porque el waterfall no es de este hilo). El toggle del usuario
- * se lee aca, del lado de LVGL, y el perfil solo lo respeta o lo fuerza: el
- * parametro no se escribe nunca. */
+/* Aplica el perfil ya evaluado al waterfall y al brillo del backlight. Corre en
+ * el hilo de LVGL (lo encola radio_tick por el scheduler, el mismo patron que
+ * tx_info_update en src/tx_info.c, porque el waterfall no es de este hilo). Los
+ * settings del usuario se leen aca, del lado de LVGL, y el perfil solo los
+ * respeta o los recorta: los parametros no se escriben nunca. */
 static void apply_visual_profile(void *arg) {
     visual_profile_t profile = *(visual_profile_t *) arg;
 
     visual_policy_waterfall_apply(profile, params.waterfall_battery.x);
+    visual_policy_brightness_apply(profile, params.brightness_normal);
 }
 
 bool radio_tick() {
@@ -134,16 +135,16 @@ bool radio_tick() {
             delay = 0;
             clock_update_power(pack->vext * 0.1f, pack->vbat*0.1f, pack->batcap, pack->flag.charging);
 
-            /* UI-08 incr. 2: el mismo pack que alimenta el reloj alimenta el
-             * perfil visual. La politica espera mV y los campos vienen en
+            /* UI-08 incr. 2 (y 3): el mismo pack que alimenta el reloj alimenta
+             * el perfil visual. La politica espera mV y los campos vienen en
              * decimas de voltio (clock.c dibuja v_bat*10 sobre el mismo campo
              * que aca se convierte con *0.1), asi que mV = campo * 100: 121 ->
              * 12.1 V -> 12100 mV. La muestra acaba de llegar (x6200_flow_read
              * devolvio este paquete), asi que last_valid_ms = now_time y la
              * antiguedad es 0: el fallback por datos viejos no aplica a este
-             * punto de conexion. Solo la transicion del perfil toca el
-             * waterfall; el valor de arranque lo puso main.c con el toggle del
-             * usuario. */
+             * punto de conexion. Solo la transicion del perfil toca el waterfall
+             * y el brillo (el mismo apply_visual_profile); el valor de arranque
+             * lo pusieron main.c y Ajustes con los settings del usuario. */
             visual_policy_result_t visual = visual_policy_eval(&visual_policy,
                                                                (uint16_t) pack->vbat * 100u,
                                                                (uint16_t) pack->vext * 100u,
