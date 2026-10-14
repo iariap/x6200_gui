@@ -115,22 +115,11 @@ review_regions: []
 # fixture (optionally one node `path`) and carry a reason, an author and an
 # expiry. Never global, never permanent.
 #
-# The last confirmed-but-open defect of the UI-03 audit (docs/UI_KNOWN_ISSUES.md,
-# UI-013 — the UI-011 waiver was withdrawn in UI-04/AB-UI04-EXP1, the UI-012 one in
-# UI-04/AB-UI04-EXP2 and the UI-010 region exclusion of known_issues.yaml in
-# UI-04/AB-UI04-EXP3, each when its fix landed): the detector fires, the finding
-# is a real one, and until the fix lands in UI-04+ it must not turn every run red —
-# the way a pixel-region defect used to be waved by the (region-scoped) exclusions
-# of known_issues.yaml. A structural rule cannot be excluded there, so the scoped
-# waiver lives here. It expires on 2027-03-31: if the defect is still there, the
-# gate fails again and forces a re-evaluation.
-exceptions:
-  - rule: theme_name_fits_params
-    fixture: main-tema-outdoor-negative
-    reason: >
-      UI-013: theme_list() ofrece "Outdoor-Negative" pero params.theme_name
-      (params_str_t.x[16], 15 caracteres utiles) lo trunca, y theme_init() cae a
-      IU1WXY en silencio. Verificado con la fixture y con la medicion del JSON
-      (requested vs params_name); el fix es de UI-04+.
-    author: ui03-audit-defectos
-    until: 2027-03-31
+# Empty on purpose. UI-013 was the last one: `theme_list()` offers names up to 31
+# characters and `params.theme_name` (a `params_str_t`, src/params/types.h) now
+# holds 31 too, so `theme_name_fits_params` passes on its own fixture and its
+# waiver was withdrawn in UI-04/AB-UI04-EXP4, together with the fix — the same
+# way the UI-011 waiver went in EXP-1, UI-012 in EXP-2 and the UI-010 region
+# exclusion in EXP-3. With no waiver left, a truncation that comes back fails the
+# run again and no recorded issue explains it.
+exceptions: []

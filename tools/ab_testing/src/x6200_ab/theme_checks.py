@@ -1,16 +1,20 @@
 """The theme the capture rendered must be one the firmware can keep.
 
 `theme_list()` (`src/theme.c`) offers theme names up to 31 characters — the
-built-ins and the JSON files — but the choice travels to the next boot inside
-`params.theme_name`, a `params_str_t` whose `x[]` is 16 bytes
-(`src/params/types.h`). A longer name is truncated by `params_str_set()` and the
-next `theme_init(params.theme_name.x)` (`src/main.c`) falls back to IU1WXY
-without telling anyone: the user picked a theme and got another one.
+built-ins and the JSON files — and the choice travels to the next boot inside
+`params.theme_name`, a `params_str_t` (`src/params/types.h`). A name longer than
+the store is truncated by `params_str_set()` and the next
+`theme_init(params.theme_name.x)` (`src/main.c`) falls back to IU1WXY without
+telling anyone: the user picked a theme and got another one. That was UI-013:
+the store held 15 characters and "Outdoor-Negative" (16) did not fit. The fix
+gave the store the 31 characters `theme_list()` admits (`params_str_t.x` is 32
+bytes, one for the NUL).
 
 The harness writes both names in the capture's `theme` block (`requested`, the
 name that was rendered, and `params_name`, what the firmware's own store holds),
 so this rule compares a measurement against a measurement — never a guess about
-which one is "right".
+which one is "right". With no waiver left in `contracts.yaml`, it is the
+permanent guard: a store that truncates again fails the fixture.
 """
 
 from __future__ import annotations

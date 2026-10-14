@@ -107,8 +107,9 @@ It also carries a `theme` block — `requested` (the theme this capture rendered
 `params_name` (what the firmware's own `params.theme_name` holds, read from the
 `params_str_t` the mock shares with the firmware), `params_max_chars` and
 `active`. The two names differ when the theme name does not survive the
-firmware's 16-byte parameter, which is what makes the theme resolution
-measurable instead of assumed (see the contract `theme_name_fits_params` in
+firmware's parameter — 16 bytes before UI-013, 32 (31 useful) since the fix, so
+the menu's names all fit. That is what makes the theme resolution measurable
+instead of assumed (see the contract `theme_name_fits_params` in
 `tools/ab_testing`, and UI-013 in `docs/UI_KNOWN_ISSUES.md`).
 
 ## Structural inspection (`--inspect`)
