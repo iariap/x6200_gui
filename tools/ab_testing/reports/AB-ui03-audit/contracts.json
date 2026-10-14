@@ -1,0 +1,1341 @@
+{
+  "status": "PASS",
+  "exit_code": 0,
+  "revision": "7b66686fd209611d75a57df127f8e23f49657a6b",
+  "scenarios": [
+    "bench-render",
+    "dialog-about",
+    "home-bateria-externa",
+    "home-frecuencia-extrema",
+    "home-usb-20m",
+    "main-bateria-baja",
+    "main-espectro-agua",
+    "main-foco",
+    "main-otro-tema",
+    "main-tema-classic",
+    "main-tema-holo",
+    "main-tema-material-3",
+    "main-tema-outdoor-negative",
+    "main-tema-rs",
+    "main-tema-vision",
+    "main-tx-simulado"
+  ],
+  "checks": 163,
+  "failures": [],
+  "unchanged_defects": [
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "main-otro-tema",
+      "ok": false,
+      "detail": "content 0.0000 >= 0.0200 \u2014 unchanged defect UI-010: Tema Outdoor: franja de frecuencia invisible sobre fondo blanco",
+      "path": null,
+      "baseline_issue": "UI-010"
+    }
+  ],
+  "findings": [
+    {
+      "rule": "framebuffer_size",
+      "fixture": "bench-render",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "bench-render",
+      "ok": true,
+      "detail": "content 0.6949 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "bench-render",
+      "ok": true,
+      "detail": "content 0.7553 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "bench-render",
+      "ok": true,
+      "detail": "content 0.3608 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "bench-render",
+      "ok": true,
+      "detail": "content 0.1047 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "bench-render",
+      "ok": true,
+      "detail": "content 0.7611 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "bench-render",
+      "ok": true,
+      "detail": "content 0.4437 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "bench-render",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "bench-render",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "bench-render",
+      "ok": true,
+      "detail": "theme 'Legacy' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "dialog-about",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "dialog-about",
+      "ok": true,
+      "detail": "content 0.5332 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "dialog-about",
+      "ok": true,
+      "detail": "content 0.6767 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "dialog-about",
+      "ok": true,
+      "detail": "content 0.3271 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "dialog-about",
+      "ok": true,
+      "detail": "content 0.0765 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "dialog-about",
+      "ok": true,
+      "detail": "content 0.7435 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "dialog-about",
+      "ok": true,
+      "detail": "content 0.1714 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "dialog-about",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "dialog-about",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "dialog-about",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "home-bateria-externa",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "home-bateria-externa",
+      "ok": true,
+      "detail": "content 0.5332 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "home-bateria-externa",
+      "ok": true,
+      "detail": "content 0.7551 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "home-bateria-externa",
+      "ok": true,
+      "detail": "content 0.2865 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "home-bateria-externa",
+      "ok": true,
+      "detail": "content 0.1047 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "home-bateria-externa",
+      "ok": true,
+      "detail": "content 0.7435 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "home-bateria-externa",
+      "ok": true,
+      "detail": "content 0.3471 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "home-bateria-externa",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "home-bateria-externa",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "home-bateria-externa",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "home-frecuencia-extrema",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "home-frecuencia-extrema",
+      "ok": true,
+      "detail": "content 0.5594 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "home-frecuencia-extrema",
+      "ok": true,
+      "detail": "content 0.7551 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "home-frecuencia-extrema",
+      "ok": true,
+      "detail": "content 0.2552 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "home-frecuencia-extrema",
+      "ok": true,
+      "detail": "content 0.1018 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "home-frecuencia-extrema",
+      "ok": true,
+      "detail": "content 0.7439 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "home-frecuencia-extrema",
+      "ok": true,
+      "detail": "content 0.3328 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "home-frecuencia-extrema",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "home-frecuencia-extrema",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "home-frecuencia-extrema",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "home-usb-20m",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "home-usb-20m",
+      "ok": true,
+      "detail": "content 0.5332 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "home-usb-20m",
+      "ok": true,
+      "detail": "content 0.7551 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "home-usb-20m",
+      "ok": true,
+      "detail": "content 0.2865 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "home-usb-20m",
+      "ok": true,
+      "detail": "content 0.1047 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "home-usb-20m",
+      "ok": true,
+      "detail": "content 0.7435 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "home-usb-20m",
+      "ok": true,
+      "detail": "content 0.3471 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "home-usb-20m",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "home-usb-20m",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "home-usb-20m",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "main-bateria-baja",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "main-bateria-baja",
+      "ok": true,
+      "detail": "content 0.5338 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "main-bateria-baja",
+      "ok": true,
+      "detail": "content 0.7551 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "main-bateria-baja",
+      "ok": true,
+      "detail": "content 0.2598 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "main-bateria-baja",
+      "ok": true,
+      "detail": "content 0.0972 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "main-bateria-baja",
+      "ok": true,
+      "detail": "content 0.7432 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "main-bateria-baja",
+      "ok": true,
+      "detail": "content 0.3328 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "main-bateria-baja",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "main-bateria-baja",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-bateria-baja",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "main-espectro-agua",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "main-espectro-agua",
+      "ok": true,
+      "detail": "content 0.6950 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "main-espectro-agua",
+      "ok": true,
+      "detail": "content 0.7553 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "main-espectro-agua",
+      "ok": true,
+      "detail": "content 0.3611 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "main-espectro-agua",
+      "ok": true,
+      "detail": "content 0.1047 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "main-espectro-agua",
+      "ok": true,
+      "detail": "content 0.7582 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "main-espectro-agua",
+      "ok": true,
+      "detail": "content 0.4447 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "main-espectro-agua",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "main-espectro-agua",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-espectro-agua",
+      "ok": true,
+      "detail": "theme 'Legacy' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "main-foco",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "main-foco",
+      "ok": true,
+      "detail": "content 0.5332 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "main-foco",
+      "ok": true,
+      "detail": "content 0.7551 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "main-foco",
+      "ok": true,
+      "detail": "content 0.2865 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "main-foco",
+      "ok": true,
+      "detail": "content 0.1047 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "main-foco",
+      "ok": true,
+      "detail": "content 0.7435 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "main-foco",
+      "ok": true,
+      "detail": "content 0.3471 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "main-foco",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "main-foco",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-foco",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "main-otro-tema",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "main-otro-tema",
+      "ok": true,
+      "detail": "content 0.6883 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "main-otro-tema",
+      "ok": true,
+      "detail": "content 0.6893 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "main-otro-tema",
+      "ok": true,
+      "detail": "content 0.1950 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "main-otro-tema",
+      "ok": false,
+      "detail": "content 0.0000 >= 0.0200 \u2014 unchanged defect UI-010: Tema Outdoor: franja de frecuencia invisible sobre fondo blanco",
+      "path": null,
+      "baseline_issue": "UI-010"
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "main-otro-tema",
+      "ok": true,
+      "detail": "content 0.7482 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "main-otro-tema",
+      "ok": true,
+      "detail": "content 0.2909 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "main-otro-tema",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "main-otro-tema",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-otro-tema",
+      "ok": true,
+      "detail": "theme 'Outdoor' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "main-tema-classic",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "main-tema-classic",
+      "ok": true,
+      "detail": "content 0.6847 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "main-tema-classic",
+      "ok": true,
+      "detail": "content 0.7554 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "main-tema-classic",
+      "ok": true,
+      "detail": "content 0.2831 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "main-tema-classic",
+      "ok": true,
+      "detail": "content 0.1057 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "main-tema-classic",
+      "ok": true,
+      "detail": "content 0.7373 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "main-tema-classic",
+      "ok": true,
+      "detail": "content 0.3096 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "main-tema-classic",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "main-tema-classic",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tema-classic",
+      "ok": true,
+      "detail": "theme 'Classic' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "main-tema-holo",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "main-tema-holo",
+      "ok": true,
+      "detail": "content 0.6851 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "main-tema-holo",
+      "ok": true,
+      "detail": "content 0.7541 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "main-tema-holo",
+      "ok": true,
+      "detail": "content 0.2842 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "main-tema-holo",
+      "ok": true,
+      "detail": "content 0.1116 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "main-tema-holo",
+      "ok": true,
+      "detail": "content 0.7389 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "main-tema-holo",
+      "ok": true,
+      "detail": "content 0.3801 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "main-tema-holo",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "main-tema-holo",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tema-holo",
+      "ok": true,
+      "detail": "theme 'Holo' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "main-tema-material-3",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "main-tema-material-3",
+      "ok": true,
+      "detail": "content 0.6824 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "main-tema-material-3",
+      "ok": true,
+      "detail": "content 0.7541 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "main-tema-material-3",
+      "ok": true,
+      "detail": "content 0.2864 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "main-tema-material-3",
+      "ok": true,
+      "detail": "content 0.1116 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "main-tema-material-3",
+      "ok": true,
+      "detail": "content 0.7453 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "main-tema-material-3",
+      "ok": true,
+      "detail": "content 0.3471 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "main-tema-material-3",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "main-tema-material-3",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tema-material-3",
+      "ok": true,
+      "detail": "theme 'Material 3' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "main-tema-outdoor-negative",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "main-tema-outdoor-negative",
+      "ok": true,
+      "detail": "content 0.6858 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "main-tema-outdoor-negative",
+      "ok": true,
+      "detail": "content 0.7499 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "main-tema-outdoor-negative",
+      "ok": true,
+      "detail": "content 0.2840 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "main-tema-outdoor-negative",
+      "ok": true,
+      "detail": "content 0.1047 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "main-tema-outdoor-negative",
+      "ok": true,
+      "detail": "content 0.7439 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "main-tema-outdoor-negative",
+      "ok": true,
+      "detail": "content 0.3384 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "main-tema-outdoor-negative",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "main-tema-outdoor-negative",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tema-outdoor-negative",
+      "ok": true,
+      "detail": "waived until 2027-03-31 by ui03-audit-defectos: UI-013: theme_list() ofrece \"Outdoor-Negative\" pero params.theme_name (params_str_t.x[16], 15 caracteres utiles) lo trunca, y theme_init() cae a IU1WXY en silencio. Verificado con la fixture y con la medicion del JSON (requested vs params_name); el fix es de UI-04+.\n (theme 'Outdoor-Negative' (16 chars) does not fit params.theme_name (15 chars): the store keeps 'Outdoor-Negativ' and theme_init() falls back to IU1WXY (src/main.c))",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "main-tema-rs",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "main-tema-rs",
+      "ok": true,
+      "detail": "content 0.6832 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "main-tema-rs",
+      "ok": true,
+      "detail": "content 0.7525 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "main-tema-rs",
+      "ok": true,
+      "detail": "content 0.2853 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "main-tema-rs",
+      "ok": true,
+      "detail": "content 0.1057 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "main-tema-rs",
+      "ok": true,
+      "detail": "content 0.7333 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "main-tema-rs",
+      "ok": true,
+      "detail": "content 0.3442 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "main-tema-rs",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "main-tema-rs",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tema-rs",
+      "ok": true,
+      "detail": "theme 'RS' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "content 0.6831 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "content 0.7670 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "content 0.2769 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "content 0.1391 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "content 0.7489 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "content 0.3471 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "typography_missing_glyph",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "waived until 2027-03-31 by ui03-audit-defectos: UI-011: con VISION, fonts_scale(VISION_FONT_STEPS) reemplaza sony_20 y sony_30 \u2014 las dos unicas fuentes que traen los glifos de icono \u2014 por tamanos ASCII, asi que el reloj y el icono de WiFi quedan en rectangulo vacio. Defecto real, ya verificado con la fixture; el fix es de UI-04+.\n (text '\\uf240 12.1v\\n\\uf1e6 13.8v' uses glyph(s) ['U+F240', 'U+F1E6'] missing from every font in the chain (LVGL draws a placeholder box))",
+      "path": "0/37",
+      "baseline_issue": null
+    },
+    {
+      "rule": "typography_text_overflow",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "waived until 2027-03-31 by ui03-audit-defectos: UI-012: la celda de 56x26 con posiciones fijas de src/info.c no escala con las fuentes de VISION y `VFO-A` ya no entra. Verificado con la fixture; el fix es de UI-04+.\n (text 'VFO-A' does not fit its 56x26 box (WRAP))",
+      "path": "0/38/0",
+      "baseline_issue": null
+    },
+    {
+      "rule": "typography_missing_glyph",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "waived until 2027-03-31 by ui03-audit-defectos: UI-011: con VISION, fonts_scale(VISION_FONT_STEPS) reemplaza sony_20 y sony_30 \u2014 las dos unicas fuentes que traen los glifos de icono \u2014 por tamanos ASCII, asi que el reloj y el icono de WiFi quedan en rectangulo vacio. Defecto real, ya verificado con la fixture; el fix es de UI-04+.\n (text '\\uf1eb' uses glyph(s) ['U+F1EB'] missing from every font in the chain (LVGL draws a placeholder box))",
+      "path": "0/38/5",
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tema-vision",
+      "ok": true,
+      "detail": "theme 'VISION' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "framebuffer_size",
+      "fixture": "main-tx-simulado",
+      "ok": true,
+      "detail": "800x480 (expected 800x480)",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:barra_superior",
+      "fixture": "main-tx-simulado",
+      "ok": true,
+      "detail": "content 0.5826 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:botones",
+      "fixture": "main-tx-simulado",
+      "ok": true,
+      "detail": "content 0.7554 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:espectro",
+      "fixture": "main-tx-simulado",
+      "ok": true,
+      "detail": "content 0.2867 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:frecuencia",
+      "fixture": "main-tx-simulado",
+      "ok": true,
+      "detail": "content 0.1669 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:s_metro",
+      "fixture": "main-tx-simulado",
+      "ok": true,
+      "detail": "content 0.7406 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "region_min_content:waterfall",
+      "fixture": "main-tx-simulado",
+      "ok": true,
+      "detail": "content 0.3515 >= 0.0200",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_levels",
+      "fixture": "main-tx-simulado",
+      "ok": true,
+      "detail": "all levels allowed",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "coverage_required",
+      "fixture": "main-tx-simulado",
+      "ok": true,
+      "detail": "all required components declared",
+      "path": null,
+      "baseline_issue": null
+    },
+    {
+      "rule": "theme_name_fits_params",
+      "fixture": "main-tx-simulado",
+      "ok": true,
+      "detail": "theme 'IU1WXY' fits params.theme_name (15 chars)",
+      "path": null,
+      "baseline_issue": null
+    }
+  ]
+}
