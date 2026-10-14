@@ -51,13 +51,14 @@ typography:
 # or is listed here. Each entry needs a reason, an author and an expiry date —
 # never a global, permanent exemption.
 #
-# Both entries below are top-bar fixes of VISION, each reproduced by a structural
-# rule (`typography_missing_glyph`, `typography_text_overflow`), not by a pixel
-# detector: the rule says *what* is wrong, never where the pixels move, so the fix
-# cannot be explained through known_issues.yaml the way UI-001/UI-009 are. The
-# region is declared here, scoped and dated like every other waiver. Several
-# entries may name the same region (the top band holds two fixes) and the gate
-# reads them as a set.
+# The three entries below declare where the pixels of one fix move: UI-011 and
+# UI-012 are structural findings of VISION (`typography_missing_glyph`,
+# `typography_text_overflow`), whose rule says *what* is wrong but never where
+# the pixels move, and UI-010 was a pixel-region finding of the light Outdoor
+# theme whose scoped exclusion was withdrawn from known_issues.yaml in the same
+# change as the fix. The region is declared here, scoped and dated like every
+# other waiver; several entries may name the same region (the top band holds two
+# fixes) and the gate reads them as a set.
 expected_changes:
   # AB-UI04-EXP1 (UI-011): restoring the icon glyph ranges of the scaled VISION
   # fonts redraws the power clock (region `reloj_potencia`, inside the top band)
@@ -84,6 +85,27 @@ expected_changes:
     author: ui04-tipografia
     until: 2027-03-31
 
+  # AB-UI04-EXP3 (UI-010): the frequency row of the main screen stops writing a
+  # white text colour and asks the theme for it (TC(text)), so under the light
+  # Outdoor theme the digits are black on white instead of white on white.
+  - region: frecuencia
+    reason: >
+      UI-010: the three labels of the main screen's frequency row
+      (src/main_screen.c, region `frecuencia`) carried their colour in the label's
+      recolor markup (`"#%03X ..."`, 0xFFFFFF) and src/styles.c wrote the same
+      white as the style default, so under the light Outdoor theme the digits were
+      white on the white background and the region measured content 0.0000 (the
+      information was missing, not just low contrast). Both now ask the theme for
+      it: `theme_hex(TC_text)` in the markup (and `TC_text_soft`, the theme's own
+      "lock" role, when the dial is locked) with `#%06X`, the width LVGL requires,
+      plus `TC(text)` on the two styles — the role src/freq_strip.c already uses
+      for the dial digits. So Outdoor paints them black (region `frecuencia` of
+      `main-otro-tema`). The only other theme whose `text` role is not white is
+      Material 3 (#e2e2e9), whose three labels move by that same 29/255 step; the
+      other fourteen fixtures are byte-identical.
+    author: ui04-tipografia
+    until: 2027-03-31
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.
@@ -94,11 +116,12 @@ review_regions: []
 # expiry. Never global, never permanent.
 #
 # The last confirmed-but-open defect of the UI-03 audit (docs/UI_KNOWN_ISSUES.md,
-# UI-013 — the UI-011 waiver was withdrawn in UI-04/AB-UI04-EXP1 and the UI-012 one
-# in UI-04/AB-UI04-EXP2, each when its fix landed): the detector fires, the finding
+# UI-013 — the UI-011 waiver was withdrawn in UI-04/AB-UI04-EXP1, the UI-012 one in
+# UI-04/AB-UI04-EXP2 and the UI-010 region exclusion of known_issues.yaml in
+# UI-04/AB-UI04-EXP3, each when its fix landed): the detector fires, the finding
 # is a real one, and until the fix lands in UI-04+ it must not turn every run red —
-# exactly like UI-010 does through the (region-scoped) exclusions of
-# known_issues.yaml. A structural rule cannot be excluded there, so the scoped
+# the way a pixel-region defect used to be waved by the (region-scoped) exclusions
+# of known_issues.yaml. A structural rule cannot be excluded there, so the scoped
 # waiver lives here. It expires on 2027-03-31: if the defect is still there, the
 # gate fails again and forces a re-evaluation.
 exceptions:

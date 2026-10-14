@@ -75,37 +75,81 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
 
 - **Severidad**: critical (información crítica ilegible en el campo).
 - **Fixture**: `main-otro-tema` (tema Outdoor), región `frecuencia`.
-- **Estado**: `verified` — defecto **preexistente** de la ROM, presente en la
-  línea base, todavía **abierto**.
+- **Estado**: `fixed` (UI-04 / AB-UI04-EXP3). La exclusión acotada de
+  `quality/known_issues.yaml` se **retiró en el mismo cambio**: el contrato ya no
+  falla, así que no hay nada que eximir (ver "Qué prueba el fix y qué no").
 - **Síntoma**: la fila de frecuencia (`src/main_screen.c`, región `frecuencia`,
-  `y=160..196`) se dibuja **blanca sobre fondo blanco**: los dígitos de la
-  frecuencia central y de los extremos no se ven. La región queda **uniforme**
-  (content `0.0000`), o sea información crítica para el operador ausente.
-  Confirmado mirando la captura del arnés: la banda central sale vacía. No es un
-  defecto introducido por el arnés ni por el PR: es la paleta del tema Outdoor.
+  `y=160..196`) se dibujaba **blanca sobre fondo blanco**: los dígitos de la
+  frecuencia central y de los extremos no se veían. La región quedaba
+  **uniforme** (content `0.0000`), o sea información crítica para el operador
+  ausente. Confirmado mirando la captura del arnés: la banda central salía vacía.
+  No es un defecto introducido por el arnés ni por el PR: es la paleta del tema
+  Outdoor.
+- **Causa**: el color de los tres labels viaja en el **markup de recolor** del
+  label, no en el estilo: `on_fg_freq_change()` y `update_freq_boundaries()`
+  (`src/main_screen.c`) escriben `"#%03X %i.%03i.%03i"` con
+  `subject_get_int(freq_lock) ? 0xBBBBBB : 0xFFFFFF`, y ese markup **pisa** el
+  `text_color` del estilo (LVGL sólo pinta el color del label cuando el parámetro
+  del recolor mide **6 dígitos**, `lvgl/src/draw/lv_draw_label.c`). El tema Outdoor
+  es el tema **claro**: `bg` y `strip` son `0xffffff` y `text` es `0x000000`
+  (`src/theme.h`, `THEME_COLORS`, columna Outdoor; `src/theme.c`, `use_builtin`).
+  Blanco fijo sobre fondo blanco = 1:1 y la fila desaparece. La inspección
+  estructural lo dejó medido: los tres labels (`9.933`, `10.125.000`, `10.317`)
+  salían con `text_color #FFFFFF` sobre un `bg #FFFFFF`. `freq_style` y
+  `freq_main_style` (`src/styles.c:142,150`) cableaban **el mismo** blanco como
+  default del estilo: muerto para estos labels, pero era la misma trampa.
+- **Fix en el código** (`src/main_screen.c` + `src/styles.c`): el markup pide los
+  **roles del tema** (`theme_hex(TC_text)` con el dial suelto, `theme_hex(TC_text_soft)`
+  —el rol "inactive knob / lock" de `theme.h`— con el dial trabado) y los dos
+  estilos piden **`TC(text)`**; en Outdoor los dígitos salen **negros** sobre el
+  fondo blanco. Es el mismo rol que la franja de frecuencia ya usa para los dígitos
+  del dial (`src/freq_strip.c`, `freq_label` con `theme_hex(TC_text)`) y el mismo
+  formato (`"#%06X ...", theme_hex(TC_text)`) que este archivo ya usa para
+  ATT/PRE/ATU. El `%03X` de antes pasa a `%06X` porque es lo que LVGL exige para
+  aceptar el parámetro: con 4 dígitos el recolor se descarta **en silencio** y el
+  texto cae al color del estilo. No se tocan la geometría ni las paletas de los
+  temas.
+- **Blast radius medido**: `TC(text)` (y `TC_text_soft`) son blanco/0xBBBBBB en
+  IU1WXY (el default de la radio: **idénticos**, incluso el estado trabado, que ya
+  valía `0xBBBBBB`), Legacy, Classic, VISION (sus colores propios) y
+  Outdoor-Negative (`negative(...)`), así que 14 de las 16 fixtures quedan
+  **byte-idénticas**. Además de `main-otro-tema` se mueve `main-tema-material-3`,
+  cuyo `text` es `#e2e2e9` (un paso de 29/255 en los mismos tres labels de la
+  misma región); el cambio se declara en `expected_changes` (región `frecuencia`),
+  como los fixes de EXP-1/EXP-2. Ninguna fixture traba el dial, así que el camino
+  `TC_text_soft` no mueve un píxel medido.
 - **Cómo lo reproduce el arnés**: el contrato objetivo
   `region_min_content:frecuencia` (mínimo 0.02 de píxeles distintos del mediano
-  de la región) mide `0.0000` y lo marca. Evidencia:
-  `ui-contracts/contracts.json` del run `38497082174` (única violación:
-  `region_min_content:frecuencia [main-otro-tema]: content 0.0000 >= 0.0200`).
-- **Cómo se clasifica**: la entrada está **conectada al gate** por una
-  *exclusión acotada* (`fixture: main-otro-tema`, `region: frecuencia`,
-  `rule: region_min_content:frecuencia`, `until: 2027-03-31`, con motivo). Un
-  finding que matchea esa exclusión se clasifica **`UNCHANGED DEFECT`**: se
-  lista en el resumen y en el reporte, pero **no** convierte el gate en FAIL.
-  Una violación que **no** esté en el registro sigue fallando. La exclusión no
-  es global ni permanente: vence el 2027-03-31 y entonces el gate vuelve a
-  fallar para forzar la re-evaluación.
+  de la región). Sobre A (`4d24990`, con la exclusión retirada) falla:
+  `region_min_content:frecuencia [main-otro-tema]: content 0.0000 >= 0.0200`; sobre
+  B la misma región mide **content 0.0979** y la inspección reporta los tres labels
+  con `text_color #000000`. Un test permanente lo fija: la revisión efímera
+  `abtest/style` vuelve a cablear el blanco en el markup y el contrato vuelve a
+  fallar, **sin baseline** (`tests/test_e2e.py`).
+- **Qué prueba el fix y qué no**: esta entrada no tiene `detector:` propio (igual
+  que UI-011/UI-012: su detector es la regla de contrato, que no dice dónde se
+  mueven los píxeles), así que la comparación A/B **no** puede clasificarla
+  `FIXED` —la reporta `UNVERIFIED`— y la mejora queda probada por el **contrato**:
+  `region_min_content:frecuencia` FAIL en A con el waiver retirado → PASS en B sin
+  waiver, más el diff confinado a la región `frecuencia`. La protección contra una
+  reaparición es la misma: sin waiver, el contrato vuelve a fallar.
+- **Evidencia**: `tools/ab_testing/reports/AB-UI04-EXP3/` (screenshots A/B,
+  `diff`/`overlay`, `results.json`); repro de A: contracts `FAIL
+  region_min_content:frecuencia [main-otro-tema]`. Hash de determinismo del fixture:
+  `main-otro-tema` `65064bfa…` (A) → **`8592ccff…`** (B); el otro que se mueve es
+  `main-tema-material-3` `baa8a0ec…` → `7d3a1016…`, y las otras 14 fixtures conservan
+  su sha256 (ver `docs/AB_TESTING.md`, sección EXP-3).
 - **UI-011 (evaluada y plegada acá, no como entrada separada)**: el mismo tema
-  muestra además la **cascada de ruido casi blanco sobre blanco** (invisible) y
-  las **etiquetas CW/DIG del strip lavadas**. Se evaluó si merecía entrada
-  propia: la regla que abastece la región `waterfall` es
+  muestra además la **cascada de ruido casi blanco sobre blanco** y las
+  **etiquetas CW/DIG del strip del band plan**. Sigue como **observación**, no
+  como defecto detectado: la regla que abastece la región `waterfall` es
   `region_min_content:waterfall`, que sólo pregunta "¿hay contenido?" y en este
   fixture **pasa** (content `0.29`, el ruido casi-blanco cuenta como contenido);
-  **ninguna regla** detecta "contenido presente pero ilegible sobre el fondo".
-  Como no existe detección y no se inventa una, el síntoma queda **documentado
-  como observación** dentro de esta misma entrada (una sola entrada), no como
-  defecto "detectado".
+  **ninguna regla** detecta "contenido presente pero ilegible sobre el fondo" y no
+  se inventa una. Las etiquetas del band plan no son un defecto de color: su
+  `text_color` lo elige `src/band_plan.c` por contraste WCAG sobre el color del
+  segmento (negro o blanco, el que más contraste tenga), así que no dependen del
+  tema y este cambio no las toca.
 
 ---
 
@@ -305,7 +349,7 @@ acotadas y con vencimiento, igual que UI-010.
 | UI-007 | Temas RS sin `control_border` propio (2.58:1) | `unverified` | major | `theme_pairs:control_border_on_dialog` (estático, no dispara: el JSON ya define la clave) | `HALLAZGOS.md` 28; `main-tema-rs`; `quality/theme_pairs.yaml` |
 | UI-008 | CMA: 128 MB reservados para GPU no usada | `unverified` | info | — (no es un defecto de UI) | `RESOURCE_USAGE.md` |
 | UI-009 | Reloj de potencia: símbolo de batería sin inicializar | `fixed` | major | `leading_glyph_range` | `home-bateria-externa`; `AB-e2e-ui009` |
-| UI-010 | Tema Outdoor: franja de frecuencia invisible | `verified` (abierto) | critical | `region_min_content:frecuencia` | `main-otro-tema`; exclusión scoped hasta 2027-03-31 |
+| UI-010 | Tema Outdoor: franja de frecuencia invisible | `fixed` (UI-04 / AB-UI04-EXP3) | critical | `region_min_content:frecuencia` | `main-otro-tema`; `AB-UI04-EXP3`; exclusión de región retirada |
 | UI-011 | VISION: los iconos de la barra desaparecen | `fixed` (UI-04 / AB-UI04-EXP1) | major | `typography_missing_glyph` | `main-tema-vision`; `AB-UI04-EXP1`; excepción retirada |
 | UI-012 | VISION: `VFO-A` no entra en su celda | `fixed` (UI-04 / AB-UI04-EXP2) | minor | `typography_text_overflow` | `main-tema-vision`; `AB-UI04-EXP2`; excepción retirada |
 | UI-013 | `params.theme_name` no guarda un nombre que el menú ofrece | `verified` (abierto) | major | `theme_name_fits_params` | `main-tema-outdoor-negative`; excepción scoped hasta 2027-03-31 |
@@ -313,8 +357,13 @@ acotadas y con vencimiento, igual que UI-010.
 **Orden propuesto para UI-04+** (severidad y alcance; lo aprueba el owner):
 
 1. **UI-010** (critical, ya registrado): información crítica invisible en el campo.
+   **Hecho** en UI-04/EXP-3 (ver arriba): la fila de frecuencia pide el rol del
+   tema en vez de cablear blanco, con la exclusión de región retirada en el mismo
+   cambio.
 2. **UI-011** (major, VISION): es el tema pensado para vista débil y pierde los
    iconos de batería/WiFi en la barra; el arreglo es acotado (`fonts_scale`/fuentes).
+   **Hecho** en UI-04/EXP-1 (ver arriba), con la excepción retirada en el mismo
+   cambio.
 3. **UI-013** (major): una opción de Ajustes que se elige y no se aplica, con el
    desplegable mostrando además otra selección; el arreglo toca `params`/menú.
 4. **UI-012** (minor, VISION): consecuencia de la geometría fija de la barra.

@@ -37,6 +37,7 @@ class Revisions:
     regression: str
     defect: str
     clock_defect: str
+    style_defect: str
     bench_regression: str
     structural: str
     cache_dir: Path
@@ -140,6 +141,28 @@ def _reintroduce_clock_defect(worktree: Path) -> None:
     path.write_text(text.replace(needle, "const char * bat_sym;"))
 
 
+def _reintroduce_frequency_white(worktree: Path) -> None:
+    """Deliberate defect: put the frequency row back on a hard-coded white (UI-010).
+
+    The fix made the recolor markup of the three labels ask the theme for their
+    colour (`theme_hex(TC_text)`, `#%06X`); writing the white back is exactly the
+    defect that under the light Outdoor theme painted the digits white on the
+    white background, so the region measured content 0.0000.
+    """
+    path = worktree / "src" / "main_screen.c"
+    text = path.read_text()
+    needle = "uint32_t    color = theme_hex(subject_get_int(freq_lock) ? TC_text_soft : TC_text);"
+    assert text.count(needle) == 2, "the two frequency-row paths must carry the theme role"
+    text = text.replace(
+        needle,
+        "uint32_t    color = subject_get_int(freq_lock) ? 0xBBBBBB : 0xFFFFFF;",
+    )
+    for fmt in ('"#%06X %i.%03i.%03i / %i.%03i.%03i"', '"#%06X %i.%03i.%03i"'):
+        assert fmt in text, fmt
+        text = text.replace(fmt, fmt.replace("%06X", "%03X"))
+    path.write_text(text)
+
+
 def _raise_bench_cost(worktree: Path) -> None:
     """Deliberate render regression: repaint the screen three times per frame.
 
@@ -206,6 +229,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
     regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar)
     defect = _ephemeral(REPO_ROOT, base, "defect", _show_multiplier_label)
     clock_defect = _ephemeral(REPO_ROOT, base, "clock", _reintroduce_clock_defect)
+    style_defect = _ephemeral(REPO_ROOT, base, "style", _reintroduce_frequency_white)
     bench_regression = _ephemeral(REPO_ROOT, base, "bench", _raise_bench_cost)
     structural = _ephemeral(REPO_ROOT, base, "structural", _inject_structural_defects)
     _record_patches(
@@ -214,6 +238,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             "regression": regression,
             "defect": defect,
             "clock": clock_defect,
+            "style": style_defect,
             "bench": bench_regression,
             "structural": structural,
         },
@@ -224,6 +249,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             regression=regression,
             defect=defect,
             clock_defect=clock_defect,
+            style_defect=style_defect,
             bench_regression=bench_regression,
             structural=structural,
             cache_dir=cache_dir,
@@ -237,6 +263,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             "abtest/regression",
             "abtest/defect",
             "abtest/clock",
+            "abtest/style",
             "abtest/bench",
             "abtest/structural",
         )
@@ -512,28 +539,89 @@ def test_contracts_pass_on_the_base(
     assert payload["unchanged_defects"] == []
 
 
-def test_contracts_report_the_outdoor_baseline_defect(
+def test_contracts_reject_the_outdoor_frequency_defect(
     tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
 ) -> None:
-    """The Outdoor frequency strip is invisible: a recorded, non-blocking defect.
+    """UI-010 is fixed: the registry keeps no waiver, a reappearance fails.
 
-    The contract still detects it (`region_min_content:frecuencia` on
-    `main-otro-tema`), but the registry records it as an open baseline defect, so
-    the run PASSes and the failure is listed as an UNCHANGED DEFECT pinned to
-    UI-010 instead of a new violation.
+    The ephemeral revision puts the hard-coded white of the frequency row back
+    (`src/styles.c`), which under the light Outdoor theme renders the digits white
+    on the white background. Nothing in the registry exempts the region any more
+    (the UI-010 exclusion was withdrawn when the fix landed), so the contract is a
+    plain failure with no baseline issue attached.
     """
+    code = _run(
+        tmp_path,
+        revisions,
+        ["contracts", "--revision", revisions.style_defect, "--scenario", "main-otro-tema"],
+    )
+    assert code == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["status"] == "FAIL"
+    failure = next(
+        item for item in payload["failures"] if item["rule"] == "region_min_content:frecuencia"
+    )
+    assert failure["fixture"] == "main-otro-tema"
+    assert failure["baseline_issue"] is None
+    assert payload["unchanged_defects"] == []
+
+
+def test_contracts_pass_on_the_fixed_outdoor_frequency_row(
+    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
+) -> None:
+    """The fixed frequency row keeps content: the contract and the registry agree."""
     code = _run(
         tmp_path,
         revisions,
         ["contracts", "--revision", revisions.base, "--scenario", "main-otro-tema"],
     )
-    payload = json.loads(capsys.readouterr().out)
     assert code == 0
+    payload = json.loads(capsys.readouterr().out)
     assert payload["status"] == "PASS"
     assert payload["failures"] == []
-    unchanged = {item["rule"]: item for item in payload["unchanged_defects"]}
-    assert "region_min_content:frecuencia" in unchanged
-    assert unchanged["region_min_content:frecuencia"]["baseline_issue"] == "UI-010"
+    assert payload["unchanged_defects"] == []
+    finding = next(
+        item for item in payload["findings"] if item["rule"] == "region_min_content:frecuencia"
+    )
+    assert finding["ok"] is True
+
+
+def test_ui010_fix_stays_inside_the_frequency_region(tmp_path: Path, revisions: Revisions) -> None:
+    """A is the white frequency row, B the fix -> the only change is `frecuencia`.
+
+    UI-010 has no pixel detector of its own (its detector is the contract rule, so
+    A/B classifies it UNVERIFIED, never FIXED: the honest limit, the same one
+    UI-011/UI-012 have). What the comparison does prove is the shape of the fix: on
+    the Outdoor fixture the only pixels that move are the three labels of the
+    frequency row, and the contract of B passes without any waiver.
+    """
+    code, report = _compare(
+        tmp_path,
+        revisions,
+        revisions.style_defect,
+        revisions.base,
+        "AB-e2e-ui010",
+        fixture="main-otro-tema",
+    )
+    assert code == 0
+    results = _results(report)
+    assert results["status"] == "PASS"
+    diff = next(item for item in results["diffs"] if item["scenario"] == "main-otro-tema")
+    assert diff["identical"] is False
+    assert diff["changed_pixels"] > 0
+    changed = [region["region"] for region in diff["regions"] if region["changed_pixels"] > 0]
+    assert changed == ["frecuencia"]
+    issue = next(item for item in results["known_issues"] if item["id"] == "UI-010")
+    assert issue["classification"] == "UNVERIFIED"
+    contract = results["contracts"]
+    frequency = next(
+        finding for finding in contract if finding["rule"] == "region_min_content:frecuencia"
+    )
+    assert frequency["ok"] is True
+    # Evidence: the A/B screenshots and the diff are kept with the report.
+    assert (report / "screenshots" / "a-main-otro-tema.png").is_file()
+    assert (report / "screenshots" / "b-main-otro-tema.png").is_file()
+    assert (report / "diffs" / "main-otro-tema-diff.png").is_file()
 
 
 def test_benchmark_measures_the_real_render_cost(

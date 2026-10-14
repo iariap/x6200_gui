@@ -220,24 +220,32 @@ def test_baseline_issue_expiry_closes_the_waiver() -> None:
     )
 
 
-def test_repo_ui010_is_a_scoped_baseline_defect(region_map: RegionMap) -> None:
+def test_repo_ui010_is_fixed_and_the_registry_no_longer_waives_it(region_map: RegionMap) -> None:
+    """UI-010 was fixed: the registry keeps the entry and drops the waiver.
+
+    White frequency digits on Outdoor's white background (region `frecuencia` of
+    `main-otro-tema`) were fixed in UI-04/AB-UI04-EXP3 (src/main_screen.c asks the
+    theme for its `text` role in the label's recolor markup instead of writing
+    white), so the scoped exclusion went away in the same change: with the contract
+    in PASS there is nothing to exempt. Like UI-011/UI-012 the entry carries no
+    pixel `detector:` of its own — its detector is the contract rule, which never
+    says where the pixels move — so the permanent guard is the contract: with no
+    waiver, a uniform region fails the run again and no recorded issue explains it.
+    """
     issues = load_known_issues(QUALITY_DIR / "known_issues.yaml", set(region_map.regions))
-    by_id = {issue.id: issue for issue in issues}
-    ui010 = by_id["UI-010"]
-    assert ui010.is_open_defect is True
+    ui010 = {issue.id: issue for issue in issues}["UI-010"]
     assert ui010.fixture == "main-otro-tema"
     assert ui010.region == "frecuencia"
-    waiver = ui010.exclusions[0]
-    assert (waiver.fixture, waiver.region, waiver.rule) == (
-        "main-otro-tema",
-        "frecuencia",
-        "region_min_content:frecuencia",
-    )
+    assert ui010.status == "fixed"
+    assert ui010.evidence
+    assert ui010.detector is None
+    assert ui010.exclusions == ()
+    assert ui010.is_open_defect is False
     assert (
         baseline_issue_for(
             "region_min_content:frecuencia", "main-otro-tema", (ui010,), date(2026, 10, 14)
         )
-        is ui010
+        is None
     )
 
 

@@ -391,9 +391,13 @@ reporte (`report.md`/`report.html`), en el JSON de `contracts`
 (`UNCHANGED DEFECT … (UI-010)`).
 
 - **UI-010** (`main-otro-tema`, región `frecuencia`): la franja de frecuencia se
-  pinta blanca sobre blanco (defecto **preexistente** del tema Outdoor); el
-  contrato `region_min_content:frecuencia` la detecta (`content 0.0000`).
+  pintaba blanca sobre blanco (defecto **preexistente** del tema Outdoor); el
+  contrato `region_min_content:frecuencia` la detectaba (`content 0.0000`).
   Exclusión acotada `until 2027-03-31` (ver `docs/UI_KNOWN_ISSUES.md`).
+  **Corregido** en UI-04/EXP-3 (ver abajo, `src/styles.c`): con el contrato en
+  PASS la exclusión se **retiró** en el mismo cambio. El mecanismo sigue vigente
+  para un defecto de región abierto (hoy ninguno lo usa) y para el caso
+  estructural de UI-013 (`exceptions` de `quality/contracts.yaml`).
 - **UI-011** (cascada casi blanca sobre blanco) evaluada y **plegada** en UI-010:
   ninguna regla detecta "contenido presente pero ilegible" (el ruido casi blanco
   cuenta como contenido y `region_min_content:waterfall` pasa), así que queda
@@ -499,7 +503,7 @@ los declara el JSON del arnés. La tabla exacta por componente está en cada JSO
 | Ajustes / menú de apps | — | | | | ✗ (arrastran `dialog_field` y decenas de deps) |
 | Tema IU1WXY | `home-usb-20m`, `main-tx-simulado`, `main-bateria-baja`, `home-frecuencia-extrema`, `home-bateria-externa`, `bench-render` | ✓ | | | |
 | Tema Legacy | `main-espectro-agua`, `bench-render` | ✓ | | | |
-| Tema Outdoor | `main-otro-tema` | ✓ (defecto UI-010 abierto) | | | |
+| Tema Outdoor | `main-otro-tema` | ✓ (defecto UI-010 corregido en UI-04/EXP-3) | | | |
 | Tema Outdoor-Negative | `main-tema-outdoor-negative` | ✓ | | | |
 | Tema Classic | `main-tema-classic` | ✓ | | | |
 | Tema RS (JSON + imágenes) | `main-tema-rs` | ✓ | | | |
@@ -674,6 +678,105 @@ benchmark BENCH-UI04-EXP2: PASS (exit 0) — 16 escenarios dentro de presupuesto
   no costo del cambio
 ```
 
+## Fix real de firmware: UI-010 (frecuencia invisible en Outdoor) — EXP-3 de UI-04 (issue #9) ✅
+
+Tercer experimento del issue, con la misma disciplina: repro primero con el waiver
+retirado, causa medida en el árbol real (no leída), fix mínimo y reversible, A/B con
+el cambio confinado y el waiver **retirado en el mismo cambio**. Es el defecto de
+mayor severidad del backlog (critical: la frecuencia de trabajo no se veía en el tema
+de campo).
+
+Repro en A (`4d24990`, exclusión de UI-010 retirada sólo en un directorio de calidad
+local — el waiver no se toca antes de tener el fix):
+
+```text
+contracts --revision 4d24990 --scenario main-otro-tema (sin el waiver): FAIL (exit 1)
+  1 failure: region_min_content:frecuencia [main-otro-tema]: content 0.0000 >= 0.0200
+Inspección estructural de la MISMA captura: los tres labels de la fila
+  '#FFFFFF 9.933' / '#FFFFFF 10.125.000' / '#FFFFFF 10.317' con text_color #FFFFFF
+  sobre una región de fondo #FFFFFF (1:1).
+```
+
+**Causa real (medida, no la hipótesis del registro)**: el color de esos tres labels
+no sale del estilo sino del **markup de recolor** del propio label:
+`on_fg_freq_change()` y `update_freq_boundaries()` (`src/main_screen.c`) escriben
+`"#%03X %i.%03i.%03i"` con `subject_get_int(freq_lock) ? 0xBBBBBB : 0xFFFFFF`, y
+LVGL **pisa** el `text_color` del estilo cuando el parámetro del recolor es válido
+(`lvgl/src/draw/lv_draw_label.c`: sólo lo acepta si mide **6 dígitos**). El tema
+Outdoor es el tema claro (`src/theme.h`, `THEME_COLORS`: `bg`/`strip` `0xffffff`,
+`text` `0x000000`), así que el blanco cableado quedaba blanco sobre blanco.
+`freq_style`/`freq_main_style` (`src/styles.c:142,150`) cableaban **el mismo** blanco
+como default del estilo: muerto para estos labels, pero la misma trampa. Un intento
+previo de fix sólo en `styles.c` se descartó **con la medición en la mano**: la
+captura salía byte-idéntica (el markup manda).
+
+- **Fix** (`src/main_screen.c` + `src/styles.c`): el markup pide los roles del tema
+  (`theme_hex(TC_text)` con el dial suelto, `theme_hex(TC_text_soft)` —el rol
+  "inactive knob / lock" de `theme.h`— con el dial trabado) con `#%06X`, y los dos
+  estilos `TC(text)`. Mismo idioma que el propio archivo ya usa para ATT/PRE/ATU
+  (`"#%06X ...", theme_hex(TC_text)`) y que `freq_strip.c` para los dígitos del dial.
+- **Región real del cambio**: `frecuencia` (y=160..196), declarada como
+  `expected_change` acotado y fechado en `quality/contracts.yaml`.
+- **Blast radius medido**: `TC(text)` vale `0xFFFFFF` en IU1WXY/Legacy/Classic/VISION
+  y `negative(0x000000)` en Outdoor-Negative; `TC_text_soft` vale el `0xBBBBBB` de
+  antes en IU1WXY. **14 de 16 fixtures byte-idénticas**; sólo se mueve, además de
+  `main-otro-tema`, `main-tema-material-3` (su `text` es `#e2e2e9`, 29/255 en los
+  mismos tres labels). Ninguna fixture traba el dial, así que el camino
+  `TC_text_soft` no cambia un píxel medido.
+
+Evidencia (host, 2026-10-14, `4d24990` → `fb2e5a8`):
+
+```text
+contracts HEAD: PASS — 160 checks, 0 failure(s), 0 unchanged baseline defect(s)
+  region_min_content:frecuencia [main-otro-tema]: content 0.0979 >= 0.0200
+  (sin waiver: la exclusión scoped de UI-010 se retiró en este PR)
+audit HEAD: PASS — 0 structural findings (1350 objetos, 16 fixtures)
+
+compare AB-UI04-EXP3: PASS (exit 0)
+  Functional PASS · Visual Regression PASS · Quality Contract PASS · Performance PASS
+  Hardware BLOCKED · Energy BLOCKED (advisory: sin unidad física)
+  main-otro-tema:        2819 px (0.734%), 21 boxes, TODO dentro de `frecuencia`
+  main-tema-material-3:  3027 px (0.788%), 22 boxes, TODO dentro de `frecuencia`
+  14 fixtures en 0 px; flushes y área redibujada idénticos en las 16
+  improvement: false — UI-010 no tiene detector de píxeles propio (su detector es la
+  regla de contrato): A/B la clasifica UNVERIFIED, nunca FIXED. La mejora la prueba
+  el contrato (FAIL en A con el waiver retirado → PASS en B sin waiver).
+
+determinismo (16 fixtures): PASS
+  main-otro-tema         A 65064bfa… -> B 8592ccff…
+  main-tema-material-3   A baa8a0ec… -> B 7d3a1016…   (las otras 14 sin cambio)
+```
+
+Screenshots A/B, `diff`/`overlay` de los dos fixtures que se mueven en
+[`tools/ab_testing/reports/AB-UI04-EXP3/`](../tools/ab_testing/reports/AB-UI04-EXP3/).
+
+Test permanente del fix (idioma de UI-009): una revisión efímera
+(`abtest/style`) vuelve a cablear el blanco en el markup y el contrato **vuelve a
+fallar sin baseline** (`tests/test_e2e.py`), mientras la comparación contra el fix
+prueba que el único cambio está en `frecuencia`. Los 15 tests `-m e2e` pasan.
+
+```text
+benchmark BENCH-UI04-EXP3: PASS (exit 0) — 16 escenarios dentro de presupuesto
+  flushes 1.0 -> 1.0 y área 384000 -> 384000 px en las 16: el cambio es de color,
+  no de trabajo de redibujo
+  los p95 se mueven entre -30% y +13% según el escenario con cv de hasta 17.6% en el
+  lado A (que se mide primero en cada ronda): dispersión del host, no costo
+```
+
+`BENCH-UI04-EXP3-repeat` (segunda corrida mía, mismo A/B) **falló** en
+`bench-render` (+44% p95) con el **mismo trabajo** (flushes 1.0→1.0, 384000 px): con
+esta carga de host (load average ~3) el veredicto de p95 a este tamaño de muestra es
+ruido, y lo que decide el costo real (flushes/área) no cambió. El reporte repetido
+queda commiteado al lado del aceptado para que el número esté a la vista.
+
+`tests/native/run_native_tests.sh` PASS (538 + 7), `uv run pytest -m "not e2e"` PASS
+(118), e2e completo PASS (15), los cinco chequeos estáticos del repo PASS; `ruff
+check`/`ruff format --check` limpios; el build de A y B da los mismos **67
+warnings**. `ty check src tests` en ty 0.0.87 **no encuentra archivos** (avisa "No
+python files found under the given path(s)": con un archivo de prueba con un error de
+tipos deliberado el comando pasa igual); corriendo `ty` sobre la lista explícita de
+archivos del framework sí analiza y no reporta nada (ver Pendientes).
+
 ## Pendientes
 
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
@@ -695,4 +798,33 @@ benchmark BENCH-UI04-EXP2: PASS (exit 0) — 16 escenarios dentro de presupuesto
   caso A/B propio (ver la sección **UI-009** arriba). Las capturas aceptadas de
   los milestones 1–6 son **previas** al fix y por eso cambian; el camino de un
   voltaje dentro de rango es byte a byte idéntico antes y después.
+- **Gate QEMU ARM (#15)**: sigue **BLOCKED** y no se atribuye un PASS ficticio. El
+  flow del repo (`tests/e2e_chroot.sh`) necesita la raíz extraída de la imagen
+  (`../images/rootfs_*.tar`, hermana del worktree) y las bibliotecas de `../trace`:
+  ninguna de las dos está en el worktree, y no hay job de CI que lo corra. Es el
+  mismo estado que dejó anotado EXP-2.
+- **Benchmark de render en un host cargado**: `BENCH-UI04-EXP3` (PASS) y su
+  repetición `BENCH-UI04-EXP3-repeat` (**FAIL** en `bench-render`, +44% p95) miden
+  **el mismo trabajo** (flushes 1.0 y 384000 px redibujados en los 16 escenarios) y
+  difieren sólo en p95: con load average ~3 el veredicto de p95 a 4 rondas × 5
+  frames es ruido. Lo que decide el costo real (flushes/área) es estable; conviene
+  subir el muestreo o el umbral antes de confiar en un FAIL de p95 solo.
+- **`ty` con un directorio no chequea nada**: `uv run ty check src tests`
+  (ty 0.0.87, el comando del job `functional`) avisa `No python files found under
+  the given path(s)` y sale 0 —con un archivo de prueba con un error de tipos
+  deliberado el comando pasa igual—, así que ese paso del CI no está midiendo nada.
+  Nombrando los archivos (`ty check <lista de .py>`) sí analiza y pasa. El step del
+  workflow queda para una corrida de CI/harness (tocar `.github/**` no es de este
+  experimento).
+- **El par `text` sobre `bg`/`strip` de la pantalla principal no lo mide nadie**:
+  `quality/theme_pairs.yaml` (estático) cubre los pares de Ajustes y de los diálogos
+  sobre los temas JSON shipeados, y `typography_contrast` sólo puede medir un par
+  cuando el label pinta un fondo opaco (los de la fila de frecuencia tienen
+  `bg_opa 0`). Con `text` como rol el par queda bien en todos los temas medidos
+  (`text`/`bg`: IU1WXY 13.24, Legacy 9.37, Outdoor 21.00, Classic 21.00, Holo 21.00,
+  Material 3 14.41, RS 15.72). Ojo: para UI-010 un par estático **no** habría
+  alcanzado —la paleta de Outdoor ya tenía `text` negro sobre `bg` blanco—: el
+  defecto era el código escribiendo un color en vez del rol, y lo vio el contrato de
+  región (`content 0.0000`). El agujero que queda es otro: un par claro-sobre-claro
+  que **no** deje la región uniforme. Candidato para `/factory-correct`.
 

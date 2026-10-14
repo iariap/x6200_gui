@@ -74,41 +74,59 @@ issues:
     severity: critical
     fixture: main-otro-tema
     region: frecuencia
-    status: verified
+    status: fixed
     note: >
       Defecto PREEXISTENTE de la ROM en el tema Outdoor (fixture `main-otro-tema`):
-      la fila de frecuencia (region `frecuencia`, main_screen.c) se pinta blanca
-      sobre fondo blanco y los digitos no se ven; la region queda uniforme y el
-      contrato `region_min_content:frecuencia` la marca (content 0.0000 < 0.0200).
-      Confirmado a ojo sobre la captura del arnes (banda central vacia). Es
-      informacion critica para el operador (la frecuencia de trabajo). El mismo
-      tema muestra una cascada de ruido casi blanco sobre blanco y las etiquetas
-      CW/DIG del strip lavadas; eso no lo detecta ninguna regla (ver la nota del
-      documento) y queda como observacion, no como entrada detectada. El contrato
-      SI lo detecta: el exclusion scoped de abajo conecta la regla con esta
-      entrada para que sea UNCHANGED DEFECT (no bloquea) mientras siga abierta.
+      la fila de frecuencia (region `frecuencia`, main_screen.c) se pintaba blanca
+      sobre fondo blanco y los digitos no se veian; la region quedaba uniforme y el
+      contrato `region_min_content:frecuencia` la marcaba (content 0.0000 < 0.0200).
+      Causa: `on_fg_freq_change()` y `update_freq_boundaries()` (src/main_screen.c)
+      escribian el color en el markup de recolor del label (`"#%03X ..."`, con
+      0xFFFFFF para el dial suelto y 0xBBBBBB con el dial trabado). Ese markup PISA
+      el text_color del estilo (lv_draw_label.c: solo pinta el color del label si
+      el recolor trae 6 digitos), y el tema Outdoor es claro: `bg`/`strip` son
+      blancos y `text` es negro (src/theme.h, THEME_COLORS). Blanco fijo sobre
+      fondo blanco = 1:1: la fila desaparecia. `freq_style`/`freq_main_style`
+      (src/styles.c) cableaban ademas el mismo blanco, o sea un color muerto que
+      quedaba como trampa.
+      FIX (UI-04/AB-UI04-EXP3): los dos caminos piden los roles del tema
+      (`theme_hex(TC_text)` para el dial suelto, `theme_hex(TC_text_soft)` —el rol
+      "inactive knob / lock" de theme.h— con el dial trabado) y el formato pasa a
+      `#%06X`, que es lo que LVGL exige para aceptar el parametro (con `%03X` un
+      rol con un nibble alto en cero se descartaria en silencio y el texto
+      volveria al color del estilo). El mismo idioma y el mismo formato que usa
+      este archivo para el ATT/PRE/ATU (`"#%06X ...", theme_hex(TC_text)`). Los dos
+      estilos de src/styles.c piden `TC(text)`, como la franja de frecuencia ya
+      hace con los digitos del dial (src/freq_strip.c). En Outdoor los digitos
+      salen negros sobre el fondo blanco y el contrato pasa. El waiver scoped de
+      region de esta entrada se RETIRO en el mismo cambio: con el detector en PASS
+      no hay nada que eximir. Como UI-011/UI-012 esta entrada no tiene `detector:`
+      propio (su detector es la regla de contrato, que no dice donde se mueven los
+      pixeles), asi que la proteccion permanente no es la clasificacion A/B sino el
+      CONTRATO: sin waiver, una reaparicion de la region uniforme vuelve a fallar la
+      corrida y no hay nada en el registro que la explique.
+      Queda como observacion (sin detector) la cascada de ruido casi blanco sobre
+      blanco y las etiquetas del strip del band plan lavadas; ninguna regla mide
+      "contenido presente pero ilegible sobre el fondo" y no se inventa una.
     evidence:
-      - "docs/UI_KNOWN_ISSUES.md (UI-010)"
-      - "tools/ui_harness/fixtures/main-otro-tema.scn"
-      - "ui-contracts/contracts.json (run 38497082174; region_min_content:frecuencia 0.0000)"
-    exclusions:
-      - fixture: main-otro-tema
-        region: frecuencia
-        rule: "region_min_content:frecuencia"
-        until: 2027-03-31
-        reason: >
-          Defecto preexistente del tema Outdoor, no introducido por el arnes:
-          mientras siga abierto no debe bloquear la corrida, pero queda listado
-          como UNCHANGED DEFECT. Vence el 2027-03-31: si el tema no se corrigio,
-          el gate vuelve a fallar y obliga a re-evaluar.
+      - "src/main_screen.c (on_fg_freq_change/update_freq_boundaries: theme_hex(TC_text) / TC_text_soft y `#%06X` en el markup de recolor)"
+      - "src/styles.c:142,150 (freq_style/freq_main_style: TC(text) en lugar de lv_color_white())"
+      - "src/theme.h THEME_COLORS (columna Outdoor: bg/strip 0xffffff, text 0x000000, text_soft 0x4a4a4a) + src/theme.c (use_builtin: builtin_colors[B_OUTDOOR])"
+      - "lvgl/src/draw/lv_draw_label.c (el recolor solo aplica con 6 digitos: `i - par_start == LABEL_RECOLOR_PAR_LENGTH + 1`)"
+      - "Repro (A, 4d24990, con el exclusion retirado): contracts FAIL region_min_content:frecuencia [main-otro-tema] content 0.0000 >= 0.0200"
+      - "B: la misma region mide content 0.0979 y los tres labels salen text_color #000000 (inspeccion estructural, sin OCR)"
+      - "tools/ab_testing/reports/AB-UI04-EXP3/ (screenshots A/B, diff, overlay, results.json)"
+      - "tools/ab_testing/quality/contracts.yaml (exclusion de region retirada; expected_change acotado a `frecuencia`)"
+    exclusions: []
 
   # --- Verified in the UI-03 audit: contract detectors, no pixel Detector. -----
   # Their detector is a contract rule over a fixture (the harness JSON and the
   # structural inspection), not one of the two pixel `detector:` kinds above, so
-  # the `detector:` block is absent and the note names the rule. Being open and
-  # evidenced they stay out of the gate the same way UI-010 does: a scoped,
-  # dated exception in contracts.yaml (structural findings are waived there, not
-  # in `exclusions`, which is region-scoped by construction).
+  # the `detector:` block is absent and the note names the rule. An open one stays
+  # out of the gate with a scoped, dated exception in contracts.yaml (structural
+  # findings are waived there, not in `exclusions`, which is region-scoped by
+  # construction): the UI-011 and UI-012 exceptions were withdrawn when their
+  # fixes landed (AB-UI04-EXP1/EXP2) and UI-013 carries the only one left.
 
   - id: UI-011
     title: "VISION: los iconos de la barra desaparecen (glifos ausentes en el reloj y en el WiFi)"
