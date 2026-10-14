@@ -888,14 +888,121 @@ como etiqueta de la tabla; ninguna regla parsea el fuente, así que no hay
 detector que se rompa. La instrumentación estructural sigue contando los mismos
 1350 objetos.
 
+## Flex real en la barra de info (UI-05 incremento 2, issue #10) ✅
+
+Segundo incremento del issue #10, sobre el tip del incremento 1 (`41532e7`): la
+rejilla 3×2 de `src/info.c` deja de posicionar cada celda con `x*58+15, y*22+5` y
+pasa a **dos contenedores `LV_FLEX_ROW`** (uno por fila) alimentados por los
+tokens. El flex gobierna el eje X (gap = `UI_INFO_CELL_GAP`, celdas de
+`UI_INFO_CELL_W×H`) y el Y de cada fila queda en el origen exacto de su token
+(`UI_INFO_ROW_PITCH`), así que el solapamiento de 4 px entre filas (26 > 22) se
+conserva **sin márgenes negativos**. La celda WiFi/BT (`UI_INFO_WIFI_*`) y la
+runa de BT siguen su camino actual (la runa es una forma, no layout).
+
+- **`src/info.c`**: un `lv_obj` por fila con `LV_LAYOUT_FLEX`/`LV_FLEX_FLOW_ROW`,
+  `pad_all 0`, `pad_column = UI_INFO_CELL_GAP`, fondo transparente (la barra es
+  un bitmap: el contenedor no debe pintar), radio/borde 0, sin scroll, y tamaño
+  exacto `3*56 + 2*2 = 172 × 26`; las seis celdas pasan a hijas del contenedor de
+  su fila. Flex coloca, no redimensiona: ninguna celda lleva `flex_grow`, así que
+  conserva su `56×26` fijo (por eso el fix UI-012 de la fuente VFO sigue igual).
+- No se toca `lvgl/`, `styles.c`, `main_screen.c`, `clock.c`, los tokens de
+  `src/ui_tokens.h` ni el JSON de tema.
+
+Es un refactor puro: mismas posiciones y mismos píxeles que el incremento 1.
+
+### Costo estructural (+2 objetos por fixture) y paths que se mueven
+
+Los dos contenedores son **dos objetos nuevos en el árbol LVGL**: la
+instrumentación pasa de **1350 a 1382 objetos** en las 16 fixtures (+32 = 2×16).
+Es el riesgo declarado de la spec: como los contenedores de fila intercalan un
+nivel, los **paths `0/N/i`** de los labels se desplazan. Las **cajas no cambian**
+(la instrumentación da coordenadas absolutas):
+
+| celda | path antes | path después | caja (idéntica) |
+|---|---|---|---|
+| VFO-A | `0/38/0` | `0/38/0/0` | 15,5 56×26 |
+| USB | `0/38/1` | `0/38/0/1` | 73,5 56×26 |
+| AUTO | `0/38/2` | `0/38/0/2` | 131,5 56×26 |
+| P/A | `0/38/3` | `0/38/1/0` | 15,27 56×26 |
+| ATU1 | `0/38/4` | `0/38/1/1` | 73,27 56×26 |
+| WiFi | `0/38/5` | `0/38/1/2` | 131,27 28×26 |
+| runa BT | `0/38/6` (`lv_line`) | `0/38/2` (`lv_line`) | 159,30 16×22 |
+| contenedor fila 0 | — | `0/38/0` (`lv_obj`) | 15,5 172×26 |
+| contenedor fila 1 | — | `0/38/1` (`lv_obj`) | 15,27 172×26 |
+
+### Blast radius: ningún consumidor del framework dependía de los índices
+
+Se revisó el blast radius **antes** de codear y se verificó corriendo los tests
+que lo cubren: **no hubo que adaptar ningún test del framework** (no se debilitó
+ninguno).
+
+- `quality/contracts.yaml` → `exceptions: []`: el único lugar del framework que
+  compara el path de un nodo (`RuleException.path`) no tiene entradas.
+- `known_issues.py` → los detectores son por **píxel** (`region_content_above`) o
+  por **texto** (`leading_glyph_range`, un regex sobre el texto del label; el
+  path se descarta, `_path`). `layout_checks.py` y `typography_checks.py`
+  recorren el árbol por geometría/clase/texto; el path solo aparece en el
+  `detail` del finding, nunca como criterio.
+- `test_e2e.py::_inject_structural_defects` parchea `src/info.c` por **strings**
+  (`lv_label_set_text(items[INFO_MODE], ...)`, el glifo del WiFi y su
+  `text_color`), que quedan intactos; `pytest -m e2e -k audit` pasa (3 tests,
+  incluido `test_audit_detects_text_glyph_and_contrast_defects`) sobre el nuevo
+  tip.
+- Los reportes commiteados (`reports/AB-ui03-audit`, `AB-UI04-EXP1`, …) y este
+  mismo documento citan `0/38/*` como **historia** de corridas pasadas; no son
+  consumidores.
+
+### Evidencia (host, 2026-10-14, `41532e7` → `84c9115`)
+
+```text
+$ tests/check_harness_determinism.sh          # 16 fixtures x2, hashes idénticos
+... (las 16 con el mismo sha256 que el tip 41532e7)
+PASS: deterministic (identical PNGs for every fixture)
+
+$ cd tools/ab_testing && uv run x6200-ab compare --a 41532e7 --b HEAD --experiment-id AB-UI05-T2
+experiment AB-UI05-T2: PASS (exit 0)
+  Functional PASS · Visual Regression PASS (captures are pixel-identical to the baseline)
+  Quality Contract PASS (160 checks) · Performance PASS
+  Hardware BLOCKED · Energy BLOCKED (advisory: sin unidad física)
+  16/16 fixtures: changed_pixels 0   (CASO A puro)
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts 84c9115ccb20: PASS — 160 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited 84c9115ccb20: 13 known issues — 0 reproduced, 11 unverified; structural
+inspection REAL over 1382 objects on 16 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab benchmark --a 41532e7 --b HEAD --experiment-id BENCH-UI05-T2
+benchmark 41532e786bf0 (A) vs 84c9115ccb20 (B): PASS (exit 0)
+  16 escenarios: flushes 1.0 -> 1.0 y área 384000 -> 384000 px en los 16 (0.0%);
+  p95 entre -20.9% y +10.2% (dispersión del host, no costo: el trabajo de
+  redibujo es idéntico)
+
+$ uv run pytest -m "not e2e" -q            → 120 passed, 17 deselected
+$ X6200_AB_E2E_BASE=HEAD uv run pytest -m e2e -k audit -q → 3 passed
+$ tests/native/run_native_tests.sh         → 545 comprobaciones, 0 fallos + 7, 0 fallos
+repo static checks (cfg_fills/actions/settings_focus/apps_menu/app_handlers/wcag) → PASS
+ruff check / ruff format --check → limpios   (ninguno en src/info.c)
+build de A y B: sin warnings nuevos en info.c
+```
+
+### Verificación extra (que el layout salga del flex)
+
+Cambiando temporalmente el gap del contenedor (`lv_obj_set_style_pad_column(row,
+10, 0)`, en vez de `UI_INFO_CELL_GAP`), la celda USB se mueve (`73 → 81`, AUTO
+`131 → 147`, ATU1 `73 → 81`); al revertir al token, los 16 sha256 vuelven
+exactos. Prueba que la posición X de las celdas sale del flex (no de un
+`lv_obj_set_pos` residual) y que el arnés recompila `src/info.c`.
+
 ## Pendientes
 
-- **UI-05 (design tokens) sigue abierto**: este PR es el **incremento 1**
-  (capa de tokens + `src/info.c`). La conversión a Flex/Grid y las otras
-  regiones (botones, `band_plan`, filas de Ajustes) son incrementos siguientes,
-  y spectrum/waterfall/band_plan quedan afuera (áreas de dibujo fijo: el issue
-  prohíbe convertirlas a ciegas). Los tokens son constantes por ahora; consumirlos
-  desde el JSON de tema es otro PR.
+- **UI-05 (Flex/Grid) sigue abierto**: el **incremento 1** fue la capa de tokens
+  + `src/info.c`; el **incremento 2** es la conversión de la barra de info a
+  `LV_FLEX_ROW`. Las otras regiones (botones, `band_plan`, filas de Ajustes) son
+  incrementos siguientes, y spectrum/waterfall/band_plan quedan afuera (áreas de
+  dibujo fijo: el issue prohíbe convertirlas a ciegas). Los tokens son constantes
+  por ahora; consumirlos desde el JSON de tema es otro PR.
 
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
   Hardware/Energy quedan BLOCKED/PENDING, nunca PASS por default.
