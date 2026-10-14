@@ -72,6 +72,20 @@ def test_big_enough_touch_target_is_fine(tmp_path: Path) -> None:
     assert not _rules(findings, "layout_touch_target")
 
 
+def test_custom_clickable_button_below_target_is_reported(tmp_path: Path) -> None:
+    # the firmware's button bar is clickable lv_obj with a background image
+    button = node(cls="lv_obj", x=0, y=0, w=160, h=30, clickable=True, bg_image=True)
+    findings = run_layout_checks(_capture(tmp_path, [button]), LAYOUT)
+    assert _rules(findings, "layout_touch_target")
+
+
+def test_transparent_clickable_strip_is_not_a_control(tmp_path: Path) -> None:
+    # a clickable object that paints nothing is a drag strip, not a control
+    strip = node(cls="lv_obj", x=0, y=0, w=800, h=24, clickable=True)
+    findings = run_layout_checks(_capture(tmp_path, [strip]), LAYOUT)
+    assert not _rules(findings, "layout_touch_target")
+
+
 def test_two_overlapping_text_labels_are_reported(tmp_path: Path) -> None:
     a = node(cls="lv_label", x=100, y=100, w=80, h=20, text="first")
     b = node(cls="lv_label", x=100, y=100, w=80, h=20, text="second")

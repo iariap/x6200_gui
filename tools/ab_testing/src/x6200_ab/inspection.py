@@ -48,6 +48,7 @@ class InspectionNode:
     hidden: bool
     opa: int
     scrollable: bool
+    clickable: bool
     bg_color: str
     bg_opa: int
     bg_image: bool
@@ -156,6 +157,7 @@ def _parse_node(entry: dict[str, Any]) -> InspectionNode:
         hidden=bool(entry.get("hidden", False)),
         opa=int(entry.get("opa", 255)),
         scrollable=bool(entry.get("scrollable", False)),
+        clickable=bool(entry.get("clickable", False)),
         bg_color=str(entry.get("bg_color", "#000000")),
         bg_opa=int(entry.get("bg_opa", 0)),
         bg_image=bool(entry.get("bg_image", False)),
