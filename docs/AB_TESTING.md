@@ -1115,13 +1115,148 @@ estructurales (`_inject_structural_defects`) son todas de `src/info.c` y no se
 tocaron. El audit estructural sigue contando **1382 objetos**: este incremento no
 agrega nodos al árbol (solo cambia constantes de posición).
 
+## Flex real en la fila de frecuencia (UI-05 incremento 4, issue #10) ✅
+
+Cuarto incremento del issue #10, sobre el tip del incremento 3 (`fad0b42`): la
+fila de frecuencia de `src/main_screen.c` (los tres labels `freq[]` con la x por
+token) pasa a **un contenedor `LV_FLEX_ROW`** del ancho del panel
+(`UI_FREQ_SCREEN_W` = 800) cuyos hijos conservan sus anchuras por los estilos
+actuales (`freq_style` 150 / `freq_main_style` 500). Mismo idioma que la barra
+del incremento 2.
+
+- **`src/main_screen.c`**: un `lv_obj` con `LV_LAYOUT_FLEX`/`LV_FLEX_FLOW_ROW`,
+  `pad_all 0` + `pad_column 0`, fondo transparente (radius/borde 0, sin scroll) y
+  tamaño exacto `800 × UI_FREQ_ROW_H (36)`; los tres labels pasan a hijos del
+  contenedor. Ninguno lleva `flex_grow` (flex **coloca, no redimensiona**), así
+  que la tesela `150 + 500 + 150 = 800` se mantiene sola —el `_Static_assert` del
+  header sigue vigente—. Los tokens de x del incremento 3 no se borran:
+  `UI_FREQ_CENTER_X`/`UI_FREQ_RIGHT_X` quedan definidos en `src/ui_tokens.h` (ya
+  no hay un `lv_obj_set_pos` por label) y el contenedor se ancla en
+  `UI_FREQ_LEFT_X`.
+- **El Y no lo toca el flex**: el contenedor se posiciona con el MISMO cursor `y`
+  del layout apilado (`lv_obj_set_pos(freq_row, UI_FREQ_LEFT_X, y)`, justo antes
+  de `y += freq_height`); con pad/borde 0 los labels quedan en el mismo cursor que
+  tenían. El espectro (`y += spectrum_height`) y el flujo vertical quedan
+  intactos. Es solo el eje X.
+- No se toca `lvgl/`, `styles.c`, `info.c`, `clock.c`, los **valores** de
+  `src/ui_tokens.h` ni el **markup del EXP-3** (`"#%06X ..."` + `theme_hex(...)`
+  en `freq[1]`/`on_fg_freq_change`/`update_freq_boundaries`): se preservan
+  literales.
+
+Es un refactor puro: las tres cajas cambian de padre pero **no** de posición ni
+de tamaño (los tres labels siguen en `0/160`, `150/160`, `650/160` con
+150/500/150 px).
+
+### Costo estructural (+1 objeto por fixture) y paths que se mueven
+
+El contenedor es **un objeto nuevo** en el árbol LVGL. El conteo agregado de la
+inspección sube **+1 por fixture** (86 → 87 en `home-usb-20m`; **1382 → 1398** en
+las 16 capturas, `audit`). Como el contenedor intercala un nivel, la fila de
+frecuencia **colapsa tres hijos en uno** (3 labels + 1 contenedor = +1 nodo neto,
+−2 hermanos del screen) y los paths se corren:
+
+- los tres labels pasan de ser hijos directos del screen a hijos del contenedor
+  (`0/1`, `0/2`, `0/3` → `0/1/0`, `0/1/1`, `0/1/2`);
+- el contenedor ocupa el `0/1`;
+- **todo** hijo del screen desde el viejo índice 4 en adelante baja **2** (3
+  labels → 1 contenedor): p. ej. el label del reloj de potencia `0/37` → `0/35`,
+  las seis celdas de la barra `0/38/…` → `0/36/…` (mismos boxes), la etiqueta del
+  multiplicador `0/41` → `0/39`.
+
+| nodo | path antes (`fad0b42`) | path después (`c52ca22`) | caja (idéntica) |
+|---|---|---|---|
+| extremo izquierdo | `0/1` | `0/1/0` | 0,160 150×36 |
+| frecuencia central | `0/2` | `0/1/1` | 150,160 500×36 |
+| extremo derecho | `0/3` | `0/1/2` | 650,160 150×36 |
+| contenedor fila | — | `0/1` (`lv_obj`) | 0,160 800×36 |
+
+Las cajas **no cambian** (la inspección da coordenadas absolutas; el render es
+byte a byte idéntico, ver la evidencia).
+
+### Blast radius: ningún consumidor del framework dependía de los índices
+
+Se revisó **antes** de codear y se verificó corriendo los tests que lo cubren: no
+hubo que adaptar ningún test del framework.
+
+- `quality/contracts.yaml` → `exceptions: []`: el único lugar que compara el path
+  de un nodo no tiene entradas.
+- `known_issues.py` → detectores por **píxel** (`region_content_above`) o por
+  **texto** (`leading_glyph_range`, un regex sobre el texto); `layout_checks.py`
+  y `typography_checks.py` recorren el árbol por geometría/clase/texto. El path
+  solo aparece en el `detail` del finding, nunca como criterio.
+- `tools/ab_testing/tests/test_e2e.py` parchea `src/main_screen.c` por **strings**:
+  el label del multiplicador (UI-001), la asignación del recolor
+  (`theme_hex(subject_get_int(freq_lock) ? TC_text_soft : TC_text)`, ×2) y los dos
+  formatos `"#%06X …"` del fix UI-010 (EXP-3). Los tres siguen intactos
+  (`grep -cF`) y `pytest -m e2e` (17) pasa sobre el nuevo tip; las inyecciones
+  estructurales (`_inject_structural_defects`) son todas de `src/info.c`.
+- Los reportes commiteados y este documento citan paths viejos como **historia**
+  de corridas pasadas; no son consumidores.
+
+Los contratos `region_min_content:*` (incluido `frecuencia`) y el detector
+`region_content_above` de UI-001 miden **rectángulos de píxel**: con el render
+idéntico quedan iguales (`contracts` PASS, 160 checks).
+
+### Evidencia (host, 2026-10-14, `fad0b42` → `c52ca22`)
+
+```text
+$ tests/check_harness_determinism.sh          # 16 fixtures x2, hashes = los del tip fad0b42
+bench-render: 5ba21bea6dcd30cffeea0bf171f578ba3fb51c811e44aa22c875c5fc74378beb
+home-usb-20m: a656e0961a41c890bd6663a46dc3d36d2606df4f0b56eae126a88ac32bb974f9
+main-tema-vision: e5b176ed6a03a5b75100a403afb53e1094d6271bff61ff81e61348c2946a049d
+... (las 16 con el mismo sha256 que el tip previo)
+PASS: deterministic (identical PNGs for every fixture)
+
+$ cd tools/ab_testing && uv run x6200-ab compare --a fad0b42 --b HEAD --experiment-id AB-UI05-T4
+experiment AB-UI05-T4: PASS (exit 0)
+  Functional PASS · Visual Regression PASS (captures are pixel-identical to the baseline)
+  Quality Contract PASS (160 checks) · Performance PASS
+  Hardware BLOCKED · Energy BLOCKED (advisory: sin unidad física)
+  16/16 fixtures: changed_pixels 0   (CASO A puro)
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts c52ca22aa4c3: PASS — 160 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited c52ca22aa4c3: 13 known issues — 0 reproduced, 11 unverified; structural
+inspection REAL over 1398 objects on 16 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab benchmark --a fad0b42 --b HEAD --experiment-id BENCH-UI05-T4
+benchmark fad0b42aa803 (A) vs c52ca22aa4c3 (B): PASS (exit 0)
+  16 escenarios: flushes 1.0 -> 1.0 y área 384000 -> 384000 px en los 16 (0.0%);
+  p95 entre -3.4% y +17.6% (dispersión del host, no costo: el trabajo de
+  redibujo es idéntico)
+
+$ uv run pytest -m "not e2e" -q            → 120 passed, 17 deselected
+$ uv run pytest -m e2e -q                  → 17 passed
+$ tests/native/run_native_tests.sh         → 545 comprobaciones, 0 fallos + 7, 0 fallos
+repo static checks (cfg_fills/actions/settings_focus/apps_menu/wcag) → PASS
+build de A y B: mismos 67 warnings (ninguno en la fila de frecuencia)
+```
+
+**CASO A**, como en los incrementos 1–3: el flex es real pero la tesela
+150/500/150 sobre 800 px es exacta, así que no hay sub-píxeles de redondeo y el
+render queda byte a byte idéntico. No hubo `expected_change`, ni capturas A/B/diff
+especiales, ni sección REVIEW REQUIRED (no se movió un solo píxel).
+
+### Verificación anti-falso-verde (que el layout salga del flex)
+
+Cambiando temporalmente el gap del contenedor (`lv_obj_set_style_pad_column(
+freq_row, 10, 0)`, en vez de `0`), la fila se corre (el central arranca en 160, el
+derecho en 670) y el sha de `home-usb-20m` pasa de `a656e096…` a `9f19e379…`; al
+revertir al token, el sha vuelve **exacto** (`a656e096…`, `git diff` limpio).
+Prueba que la posición X de los tres labels sale del flex (no de un
+`lv_obj_set_pos` residual) y que el arnés recompila `src/main_screen.c` desde el
+fuente montado. El `_Static_assert` de la tesela del header sigue siendo el guard
+de la relación `2*UI_FREQ_SIDE_W + UI_FREQ_MAIN_W == UI_FREQ_SCREEN_W`.
+
 ## Pendientes
 
 - **UI-05 (Flex/Grid) sigue abierto**: el **incremento 1** fue la capa de tokens
   + `src/info.c`; el **incremento 2** es la conversión de la barra de info a
   `LV_FLEX_ROW`; el **incremento 3** tokeniza la fila de frecuencia
-  (`src/main_screen.c`) sin convertirla a flex (el flex de esa fila, con su markup
-  de recolor y tamaños mixtos, sería un incremento aparte, evaluado después). Las
+  (`src/main_screen.c`); el **incremento 4** convierte esa fila a un contenedor
+  `LV_FLEX_ROW` (solo eje X, el Y sigue en el cursor apilado). Las
   otras regiones (botones, `band_plan`, filas de Ajustes) son incrementos
   siguientes, y spectrum/waterfall/band_plan quedan afuera (áreas de dibujo fijo:
   el issue prohíbe convertirlas a ciegas). Los tokens son constantes por ahora;
