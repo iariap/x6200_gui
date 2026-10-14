@@ -781,7 +781,121 @@ python files found under the given path(s)": con un archivo de prueba con un err
 tipos deliberado el comando pasa igual); corriendo `ty` sobre la lista explícita de
 archivos del framework sí analiza y no reporta nada (ver Pendientes).
 
+## Design tokens (UI-05 incremento 1, issue #10): la geometría de la barra de info ✅
+
+Primer incremento del issue #10 (*design tokens, reusable widgets, Flex/Grid*),
+elegido por ser el nido de números mágicos donde ya vivieron dos defectos
+(UI-011/UI-012 estaban en la geometría fija de `src/info.c`). El issue pide
+centralizar de a poco ("small reviewable PRs, not single massive rewrite"), así
+que este PR es **un refactor puro y nada más**: cero cambio visual.
+
+- **`src/ui_tokens.h`** (nuevo): los nombres de dominio de la geometría de la
+  barra. El header no tiene lógica ni estado del tema —solo los números, más la
+  fuente de la celda, que el fix UI-012 necesita nombrar—: consumirlos desde el
+  JSON de tema es un incremento aparte, con su propio PR.
+- **`src/info.c`**: los literales de geometría pasan a los tokens. No se toca la
+  lógica de fuente VFO / `theme_shape.vision` del fix EXP-2, ni `styles.c`,
+  `main_screen.c`, `clock.c`, `fonts_scale` ni `lvgl/`.
+- **Sin Flex/Grid todavía**: la conversión de layout es el incremento 2, para
+  que este diff sea verificable pixel-por-pixel.
+
+Los tokens y los literales que reemplazan. El borrador del issue nombra
+`56×26/72/2`, pero el **72 no existe en la fuente**: el paso de columna real es
+**58 = 56 (celda) + 2 (gap)** y el de fila **22** (los renglones además se
+solapan 4 px, porque la celda mide 26):
+
+| token | valor | reemplaza en `info.c` |
+|---|---|---|
+| `UI_INFO_COLS` / `UI_INFO_ROWS` | `3` / `2` | `x < 3`, `y < 2` y el tamaño del array de items |
+| `UI_INFO_CELL_W` / `UI_INFO_CELL_H` | `56` / `26` | `lv_obj_set_size(item, 56, 26)` y el alto `26` de la celda del WiFi |
+| `UI_INFO_CELL_GAP` | `2` | el gap implícito de la rejilla |
+| `UI_INFO_COL_PITCH` | `56 + 2` = `58` | `x * 58 + 15` |
+| `UI_INFO_ROW_PITCH` | `22` | `y * 22 + 5` |
+| `UI_INFO_ORIGIN_X` / `UI_INFO_ORIGIN_Y` | `15` / `5` | el origen de la rejilla |
+| `UI_INFO_CELL_RADIUS` | `3` | `lv_obj_set_style_radius(item, 3, 0)` |
+| `UI_INFO_WIFI_COL` / `UI_INFO_WIFI_ROW` | `2` / `1` | la celda 6 (WiFi/BT) en el índice de la rejilla |
+| `UI_INFO_WIFI_W` | `56 / 2` = `28` | `lv_obj_set_size(items[INFO_WIFI], 28, 26)` |
+| `UI_INFO_BT_LINE_W` | `2` | `lv_obj_set_style_line_width(bt_item, 2, 0)` |
+| `UI_INFO_BT_POINTS` | `7` | `lv_line_set_points(bt_item, bt_pts, 7)` |
+| `UI_INFO_BT_DY` | `8` | `1 * 22 + 8` (la runa baja 8 px en la celda) |
+| `UI_INFO_FONT` | `&sony_20` | la fuente por defecto de la celda (dos usos: el default y la base de `font_down` bajo VISION) |
+
+Quedan **a propósito** fuera de los tokens (y anotados en el header):
+las 7 coordenadas de la runa de BT (son una forma, no layout), el timer de
+refresco de 2 s del icono de BT (es una política de tiempo, no geometría) y los
+textos/colores, que salen de los roles del tema.
+
+### Evidencia (host, 2026-10-14, `135f297` → `ccaa95f`)
+
+El criterio 1 de la spec es la garantía: **si un solo píxel cambia, el refactor
+está mal**. No cambia ninguno de los 16 fixtures.
+
+```text
+$ tests/check_harness_determinism.sh          # hashes INALTERADOS vs 135f297
+bench-render: 5ba21bea6dcd30cffeea0bf171f578ba3fb51c811e44aa22c875c5fc74378beb
+home-usb-20m: a656e0961a41c890bd6663a46dc3d36d2606df4f0b56eae126a88ac32bb974f9
+main-tema-vision: e5b176ed6a03a5b75100a403afb53e1094d6271bff61ff81e61348c2946a049d
+... (las 16 con el mismo sha256 que el tip previo)
+PASS: deterministic (identical PNGs for every fixture)
+
+$ cd tools/ab_testing && uv run x6200-ab compare --a 135f297 --b HEAD --experiment-id AB-UI05-T1
+experiment AB-UI05-T1: PASS (exit 0)
+  Functional PASS · Visual Regression PASS (captures are pixel-identical to the baseline)
+  Quality Contract PASS (160 checks) · Performance PASS
+  Hardware BLOCKED · Energy BLOCKED (advisory: sin unidad física)
+  16/16 fixtures: changed_pixels 0
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts ccaa95fdd9e7: PASS — 160 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited ccaa95fdd9e7: 13 known issues — 0 reproduced, 11 unverified; structural
+inspection REAL over 1350 objects on 16 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab benchmark --a 135f297 --b HEAD --experiment-id BENCH-UI05-T1
+benchmark 135f2970eb86 (A) vs ccaa95fdd9e7 (B): PASS (exit 0)
+  16 escenarios: flushes 1.0 -> 1.0 y área 384000 -> 384000 px en los 16 (0.0%);
+  p95 entre -11.7% y +12.8% (dispersión del host, no costo: el trabajo de redibujo
+  es idéntico)
+
+$ uv run pytest -m "not e2e" -q            → 120 passed, 17 deselected
+$ tests/native/run_native_tests.sh         → 545 comprobaciones, 0 fallos + 7, 0 fallos
+repo static checks (cfg_fills/actions/settings_focus/apps_menu/wcag) → PASS
+ruff check / ruff format --check → limpios   (ty: "No python files found", pendiente conocido)
+build de A y B: los mismos 67 warnings cada lado (ninguno en info.c)
+```
+
+### Dos verificaciones extra (que el "cero cambio" no sea un falso verde)
+
+1. **Los tokens manejan el render (no un build viejo).** Cambiando a mano
+   `UI_INFO_CELL_GAP` de 2 a 3, los hashes de la barra se mueven
+   (`home-usb-20m: a656e096… → 23930e15…`); al revertir vuelven exactos. Prueba
+   que el arnés recompila `info.c` desde el fuente montado y que la geometría
+   sale de los tokens.
+2. **La aritmética es el literal, verificado en compilación.** Un TU temporal
+   (no commiteado) con `_Static_assert` sobre cada token y sobre las expresiones
+   exactas que reemplazan (`UI_INFO_WIFI_COL * UI_INFO_COL_PITCH +
+   UI_INFO_ORIGIN_X + UI_INFO_WIFI_W == 2 * 58 + 15 + 28`, etc.) compila sin
+   observaciones: los tokens valen el literal histórico.
+
+### Blast radius revisado
+
+`tools/ab_testing/tests/test_e2e.py::_inject_structural_defects` parchea
+`src/info.c`, pero solo textos y colores de labels (no la geometría), así que los
+tests `-m e2e` siguen aplicando igual. `quality/known_issues.yaml` (UI-012) y
+`tests/check_wcag.py` citan los literales viejos **como historia** del defecto /
+como etiqueta de la tabla; ninguna regla parsea el fuente, así que no hay
+detector que se rompa. La instrumentación estructural sigue contando los mismos
+1350 objetos.
+
 ## Pendientes
+
+- **UI-05 (design tokens) sigue abierto**: este PR es el **incremento 1**
+  (capa de tokens + `src/info.c`). La conversión a Flex/Grid y las otras
+  regiones (botones, `band_plan`, filas de Ajustes) son incrementos siguientes,
+  y spectrum/waterfall/band_plan quedan afuera (áreas de dibujo fijo: el issue
+  prohíbe convertirlas a ciegas). Los tokens son constantes por ahora; consumirlos
+  desde el JSON de tema es otro PR.
 
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
   Hardware/Energy quedan BLOCKED/PENDING, nunca PASS por default.
