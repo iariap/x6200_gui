@@ -1,14 +1,15 @@
 /*
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  Xiegu X6200 LVGL GUI - politica visual de bateria (UI-08 incr. 1, 2 y 3).
+ *  Xiegu X6200 LVGL GUI - politica visual de bateria (UI-08 incr. 1, 2, 3 y 4).
  *
  *  Implementacion de visual_policy.h. La evaluacion es pura y sin
  *  dependencias; el test nativo (tests/native/test_visual_policy.c) la cubre
  *  entera. Las salidas al mundo son
  *  visual_policy_waterfall_apply() (incr. 2), que aplica el perfil al modo
- *  Ahorro del waterfall, y visual_policy_brightness_apply() (incr. 3), que lo
- *  aplica al nivel del backlight: por eso este archivo incluye waterfall.h y
+ *  Ahorro del waterfall, y visual_policy_brightness_apply() /
+ *  visual_policy_brightness_rewrite() (incr. 3 y 4), que lo aplican al nivel
+ *  del backlight: por eso este archivo incluye waterfall.h y
  *  backlight_level.h, y el test nativo compila contra los stubs que registran
  *  esas llamadas.
  */
@@ -56,6 +57,31 @@ _Static_assert(VP_BRIGHTNESS_CRITICAL >= 0 &&
 _Static_assert(VP_BRIGHTNESS_QUALITY == VP_BRIGHTNESS_MAX &&
                VP_BRIGHTNESS_BALANCED == VP_BRIGHTNESS_MAX,
                "QUALITY y BALANCED no recortan: cap = maximo del panel");
+
+/* Cap VIGENTE: el del ultimo perfil aplicado. Es el unico estado propio del
+ * modulo y existe por el enforcement del incremento 4: el tick por input y el
+ * timer de idle (src/backlight.c) reescriben el nivel desde params sin conocer
+ * el perfil, asi que el recorte tiene que sobrevivir entre transiciones. Lo
+ * fija visual_policy_brightness_apply() (la unica que ve el perfil) y lo lee
+ * visual_policy_brightness_rewrite(). Arranca en el maximo del panel: antes de
+ * cualquier apply no hay recorte, que es el perfil inicial (QUALITY). Un solo
+ * hilo lo toca: en la radio el apply de radio.c y los ticks de input/timer
+ * corren en el hilo de LVGL, y el arnes corre en un unico hilo. */
+static int16_t vp_brightness_cap = VP_BRIGHTNESS_MAX;
+
+/* Cap declarado de un perfil: UNICA lectura de la tabla. Un perfil fuera del
+ * enum no puede indexarla y se trata como el perfil sin recorte (el mismo que
+ * la politica usa por defecto). La usan el apply (lo fija como vigente) y el
+ * rewrite (lo lee); por eso el enforcement no puede divergir del recorte. */
+static int16_t vp_brightness_cap_of(visual_profile_t profile) {
+    int index = (int) profile;
+
+    if (index < 0 || index >= (int) VP_PROFILE_COUNT) {
+        index = (int) VP_QUALITY;
+    }
+
+    return VP_BRIGHTNESS_CAP[index];
+}
 
 /* La muestra se descarta entera si el voltaje esta fuera de rango, la
  * capacidad no es un porcentaje, o la bandera de carga es imposible (cargando
@@ -183,19 +209,20 @@ void visual_policy_waterfall_apply(visual_profile_t profile, bool user_battery_m
 }
 
 void visual_policy_brightness_apply(visual_profile_t profile, int16_t user_setting) {
-    /* Un perfil fuera del rango del enum no puede indexar la tabla: se trata
-     * como el perfil sin recorte (el mismo que la politica usa por defecto). */
-    int index = (int) profile;
+    /* El perfil fija el cap vigente (el que veran los rewrites del tick/timer) y
+     * el nivel sale del MISMO clamp que esos rewrites: el recorte del apply y el
+     * del rewrite no pueden diferir. */
+    vp_brightness_cap = vp_brightness_cap_of(profile);
 
-    if (index < 0 || index >= (int) VP_PROFILE_COUNT) {
-        index = (int) VP_QUALITY;
-    }
+    visual_policy_brightness_rewrite(user_setting);
+}
 
-    int16_t cap = VP_BRIGHTNESS_CAP[index];
-
+void visual_policy_brightness_rewrite(int16_t user_setting) {
     /* El cap solo BAJA el nivel: el setting del usuario es el techo y nunca se
      * escribe (runtime, el disco no se toca). Un nivel negativo (el usuario
      * apago el display) queda negativo: el perfil no lo revive. */
+    int16_t cap = vp_brightness_cap;
+
     int16_t level = (user_setting < cap) ? user_setting : cap;
 
     backlight_set_brightness(level);

@@ -102,3 +102,40 @@ else
         "$DIR/test_framework.c" "$DIR/clock_test_main.c" -o "$OUT/clock_tests"
 fi
 "$OUT/clock_tests"
+
+# --- Backlight test (UI-08 incremento 4) -------------------------------------
+# src/backlight.c includes its siblings with `#include "..."`, and for a quoted
+# include the directory of the including file always wins over -I, so the stub
+# headers under tests/native/stubs_backlight/ cannot shadow src/backlight.h,
+# src/gpio_safe.h, etc. from their own directory. The real backlight.c is staged
+# next to a copy of the stubs in the build dir, the same pattern as the clock
+# test (see tests/native/test_backlight.c).
+#
+# The real module runs here because no other gate compiles it: the UI harness
+# mocks backlight (tools/ui_harness/mocks/mock_ui_deps.c) and the host has no
+# aether SDK. The increment 4 wire is observed through the stub of
+# visual_policy_brightness_rewrite() (tests/native/backlight_stubs.c): the tick
+# by input and the idle timer have to hand it the params level, so reverting
+# either rewrite to a direct backlight_set_brightness() call leaves the recorder
+# empty and the test red.
+echo "== backlight (UI-08 incr. 4): el cap en los rewrites del tick/timer =="
+BL_STAGE="$OUT/backlight_src"
+rm -rf "$BL_STAGE"
+mkdir -p "$BL_STAGE/lvgl" "$BL_STAGE/params" "$BL_STAGE/aether_radio/x6200_control/low"
+cp "$SRC/backlight.c" "$SRC/backlight.h" "$SRC/backlight_level.h" "$SRC/visual_policy.h" "$BL_STAGE/"
+cp "$DIR/stubs_backlight/gpio_safe.h" "$DIR/stubs_backlight/util.h" "$DIR/stubs_backlight/voice.h" "$BL_STAGE/"
+cp "$DIR/stubs_backlight/params/params.h" "$BL_STAGE/params/"
+cp "$DIR/stubs_backlight/lvgl/lvgl.h" "$BL_STAGE/lvgl/"
+cp "$DIR/stubs_backlight/aether_radio/x6200_control/low/gpio.h" "$BL_STAGE/aether_radio/x6200_control/low/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$BL_STAGE" -I"$DIR/stubs_backlight" \
+        "$BL_STAGE/backlight.c" "$DIR/backlight_stubs.c" "$DIR/test_backlight.c" \
+        "$DIR/test_framework.c" "$DIR/backlight_test_main.c" -o "$OUT/backlight_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$BL_STAGE" -I"$DIR/stubs_backlight" \
+        "$BL_STAGE/backlight.c" "$DIR/backlight_stubs.c" "$DIR/test_backlight.c" \
+        "$DIR/test_framework.c" "$DIR/backlight_test_main.c" -o "$OUT/backlight_tests"
+fi
+"$OUT/backlight_tests"
