@@ -3,7 +3,7 @@
 - Date: 2026-10-14
 - Profile: `host-ui`
 - A (baseline): `325ec32ac625192b3276ad8cdfd3927bbb2685ac` (a)
-- B (candidate): `04bcf31c4b1f2a89a54898a521d6fdbf32bfd51e` (b)
+- B (candidate): `376ed09bc56a3356708080caffea86646a5e3969` (b)
 - Scenarios: `bench-render`, `dialog-about`, `home-bateria-externa`, `home-frecuencia-extrema`, `home-usb-20m`, `main-bateria-baja`, `main-espectro-agua`, `main-foco`, `main-otro-tema`, `main-tema-classic`, `main-tema-holo`, `main-tema-material-3`, `main-tema-outdoor-negative`, `main-tema-rs`, `main-tema-vision`, `main-tema-vision-cwr`, `main-tema-vision-usbd`, `main-tx-simulado`
 
 ## Verdict: **PASS** (exit 0)

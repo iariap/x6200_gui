@@ -2,8 +2,8 @@
 
 - Status: **PASS** (`tests/check_harness_natural.sh`, exit 0)
 - Date: 2026-10-14
-- Revision: `325ec32` (base of `factory/ui07-bench-natural`; the harness adds the
-  mode, the ROM's `src/` is untouched)
+- Revision: `376ed09` (`factory/ui07-bench-natural`; the harness adds the mode, the
+  ROM's `src/` is untouched)
 - Fixture: `tools/ui_harness/fixtures/main-natural.scn` (seed 13, `natural_frames 40`)
 - Host: x86 (the Cortex-A7 cadence and the real flush cost stay PENDING)
 
@@ -64,6 +64,44 @@ buffer, read before it clears it) and what the display driver was asked to flush
 hashes of the four runs. `natural.json`, `static.json`, `forced.json` and
 `cli.json` are the raw output (the same files `tests/natural_evidence.py` checks
 in the non-e2e suite).
+
+## Sensitivity: the PNG gate is no longer blind (anti-false-green)
+
+The profile of increment 1 ended with a hole: halving the invalidated area of the
+spectrum (a temporary patch, reverted) moved `flushed_pixels` 1127680 → 1067680
+but left the PNG **byte-identical**, so the A/B gate could not tell a correct
+partial invalidation from a broken one. With the data driven per frame that hole
+is closed. Same experiment, re-run on this revision:
+
+```diff
+  static void spectrum_refresh(void *data) {
+-     lv_obj_invalidate(obj);
++     lv_area_t area;
++     lv_obj_get_coords(obj, &area);
++     area.y1 = area.y1 + 80;          /* only the lower half: 800x80 */
++     lv_obj_invalidate_area(obj, &area);
+  }
+```
+
+| Run | PNG sha256 | plain `flushed_pixels` | natural `invalidated_px` | spectrum rectangle |
+|---|---|---|---|---|
+| baseline | `8ec63121…` | 1127680 | 6745720 | `0,0 800x165` (132000) |
+| half patch | `492910b4…` | 1067680 | 5801560 | `0,75 800x90` (72000) |
+
+* `--bench-natural` **reports** the reduced work (6745720 → 5801560 px, and the
+  spectrum's rectangle and area move with it) — the per-frame metrics are
+  sensitive to a presentation change.
+* `--bench-natural` **detects the broken pixels**: the PNG changes, because the
+  half of the spectrum that is not invalidated keeps the previous frame's
+  content. The natural PNG is therefore a gate a partial invalidation cannot
+  pass by accident.
+* The plain capture keeps its PNG byte-identical (`3986bc9a…` in both rows) even
+  though its flushed area moves: the increment-1 blindness is a property of the
+  plain path (the data is fed once), not of the harness.
+
+The patch and its build were reverted; `src/` is untouched in the commit. The raw
+JSON of the two patched runs is in `sensitivity/` (`half-nat.json`,
+`half-plain.json`).
 
 ## Honest limits
 

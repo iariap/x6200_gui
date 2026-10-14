@@ -126,7 +126,8 @@ def check_natural(checker: Checker, doc: dict) -> None:
     checker.check(natural["slice_ms"] == SLICE_MS, f"slice_ms = {natural['slice_ms']}")
     checker.check(natural["data_drive"] is True, "the natural run did not drive the data")
     checker.check(
-        natural["spectrum_fps_ms"] == SPECTRUM_FPS_MS and natural["waterfall_fps_ms"] == WATERFALL_FPS_MS,
+        natural["spectrum_fps_ms"] == SPECTRUM_FPS_MS
+        and natural["waterfall_fps_ms"] == WATERFALL_FPS_MS,
         "the drive cadence does not mirror src/dsp.cpp (1000/15, 1000/25)",
     )
     checker.check(
@@ -144,8 +145,15 @@ def check_natural(checker: Checker, doc: dict) -> None:
     checker.check(len(frames) == FRAMES, f"per_frame has {len(frames)} entries")
     base_ms = frames[0]["virtual_end_ms"] - FRAME_MS
     counts: Counter[tuple[int, int, int, int]] = Counter()
-    totals = {"invalidated_px": 0, "invalidated_rects": 0, "joined_px": 0, "flushed_px": 0,
-              "flushes": 0, "refresh_cycles": 0, "frames_with_flush": 0}
+    totals = {
+        "invalidated_px": 0,
+        "invalidated_rects": 0,
+        "joined_px": 0,
+        "flushed_px": 0,
+        "flushes": 0,
+        "refresh_cycles": 0,
+        "frames_with_flush": 0,
+    }
 
     for index, frame in enumerate(frames):
         where = f"frame {index}"
@@ -171,16 +179,30 @@ def check_natural(checker: Checker, doc: dict) -> None:
         )
         checker.check(frame["rects_complete"] is True, f"{where}: the rectangle list was truncated")
         for rect in rects_of(frame):
-            checker.check(rect in PROFILE, f"{where}: unprofiled invalidated rectangle {rect} ({rect[2] * rect[3]} px)")
+            checker.check(
+                rect in PROFILE,
+                f"{where}: unprofiled invalidated rectangle {rect} ({rect[2] * rect[3]} px)",
+            )
             counts[rect] += 1
-        for key in ("invalidated_px", "invalidated_rects", "joined_px", "flushed_px", "flushes",
-                    "refresh_cycles"):
+        for key in (
+            "invalidated_px",
+            "invalidated_rects",
+            "joined_px",
+            "flushed_px",
+            "flushes",
+            "refresh_cycles",
+        ):
             totals[key] += frame[key]
         totals["frames_with_flush"] += 1 if frame["flushes"] else 0
 
-    checker.check(counts == RECT_COUNTS, f"rectangle histogram moved: {dict(counts)} != {dict(RECT_COUNTS)}")
+    checker.check(
+        counts == RECT_COUNTS, f"rectangle histogram moved: {dict(counts)} != {dict(RECT_COUNTS)}"
+    )
     for key, value in totals.items():
-        checker.check(natural["totals"][key] == value, f"totals.{key} = {natural['totals'][key]}, summed {value}")
+        checker.check(
+            natural["totals"][key] == value,
+            f"totals.{key} = {natural['totals'][key]}, summed {value}",
+        )
 
     metrics = doc["metrics"]
     checker.check(
@@ -243,7 +265,8 @@ def check_forced(checker: Checker, forced: dict, natural_doc: dict) -> None:
     checker.check(len(benchmark["frames"]) == 3, f"{len(benchmark['frames'])} forced frames")
     for index, frame in enumerate(benchmark["frames"]):
         checker.check(
-            frame["flushes"] == 1 and frame["redrawn_area_px"] == FULL_SCREEN_PX
+            frame["flushes"] == 1
+            and frame["redrawn_area_px"] == FULL_SCREEN_PX
             and frame["unique_redrawn_px"] == FULL_SCREEN_PX,
             f"forced frame {index}: {frame['flushes']} flush(es) and {frame['redrawn_area_px']} px "
             f"(the forced mode must still repaint the whole {FULL_SCREEN_PX} px screen)",
@@ -261,7 +284,9 @@ def check_forced(checker: Checker, forced: dict, natural_doc: dict) -> None:
 
 def check_cli(checker: Checker, cli: dict) -> None:
     """`--bench-natural 10` overrides the fixture's `natural_frames`."""
-    checker.check(cli["natural"]["frames"] == 10, f"--bench-natural 10 ran {cli['natural']['frames']} frames")
+    checker.check(
+        cli["natural"]["frames"] == 10, f"--bench-natural 10 ran {cli['natural']['frames']} frames"
+    )
     checker.note("  CLI override: --bench-natural 10 ran 10 frames (the fixture says 40)")
 
 

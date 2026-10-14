@@ -2,7 +2,7 @@
   "scenario": "main-natural",
   "screen": "main",
   "seed": 13,
-  "revision": "325ec32ac625192b3276ad8cdfd3927bbb2685ac",
+  "revision": "376ed09bc56a3356708080caffea86646a5e3969",
   "framebuffer": { "width": 800, "height": 480 },
   "theme": {
     "requested": "IU1WXY",

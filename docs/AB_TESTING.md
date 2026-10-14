@@ -1808,7 +1808,7 @@ draw buffer full-screen del arnés, 1:1.
 
 ### Checkpoints medidos y correlación con el perfil del incremento 1
 
-`main-natural` (seed 13, 40 frames = 1200 ms, `325ec32`, run x86):
+`main-natural` (seed 13, 40 frames = 1200 ms, `376ed09`, run x86):
 
 | región | rectángulo | px | veces / 40 frames | qué la invalida |
 |---|---|---|---|---|
@@ -1847,6 +1847,72 @@ La evidencia cruda (4 JSON + PNG + hashes) queda en
 [`tools/ab_testing/reports/NATURAL-UI07-N1/`](../tools/ab_testing/reports/NATURAL-UI07-N1/),
 y `tools/ab_testing/tests/test_natural.py` corre el mismo chequeo en `pytest -m "not e2e"`
 sobre esa evidencia (no necesita Docker).
+
+### Verificación anti-falso-verde: la traza de píxeles ya no es ciega
+
+El perfil del incr. 1 cerró con un agujero **medido**: con una invalidación parcial
+temporal del espectro, el PNG quedaba byte-idéntico (1127680 → 1067680 px de flush,
+mismo sha256), así que el gate de píxeles no podía distinguir una invalidación parcial
+correcta de una rota — y por eso el incremento 1 no tocó `src/`. Con los datos por frame
+ese agujero se cierra. Mismo experimento (patch **temporal y revertido**; evidencia cruda
+en `reports/NATURAL-UI07-N1/sensitivity/`):
+
+| corrida | PNG sha256 | captura común `flushed_pixels` | natural `invalidated_px` | rectángulo del espectro |
+|---|---|---|---|---|
+| base | `8ec63121…` | 1127680 | 6745720 | `0,0 800x165` (132000) |
+| patch (mitad inferior) | `492910b4…` | 1067680 | 5801560 | `0,75 800x90` (72000) |
+
+- el natural **mide** el cambio: las áreas por frame y el rectángulo del espectro se
+  mueven con la invalidación (132000 → 72000 px por trama, total 6745720 → 5801560);
+- el natural **ve la rotura**: el PNG cambia, porque la mitad que no se invalida queda con
+  el contenido del frame anterior. Un candidato de invalidación parcial ya no puede pasar
+  el gate de píxeles por accidente;
+- la captura común mantiene el PNG byte-idéntico (`3986bc9a…` en las dos filas): la
+  ceguera era del **camino común** (los datos se alimentan una vez), no del arnés.
+
+### Evidencia (host, 2026-10-14, `325ec32` → `376ed09`)
+
+```text
+$ tests/check_harness_determinism.sh          # 19 fixtures (los 18 + main-natural) x2
+bench-render: 5ba21bea6dcd30cffeea0bf171f578ba3fb51c811e44aa22c875c5fc74378beb
+home-usb-20m: a656e0961a41c890bd6663a46dc3d36d2606df4f0b56eae126a88ac32bb974f9
+main-natural: 3986bc9a6047744aa2cd8db1c9879d73e71e16e45d7737b0d7035c06e22ec821
+... (los 18 previos con el MISMO sha256 del tip base)
+PASS: deterministic (identical PNGs for every fixture)
+
+$ tests/check_harness_natural.sh
+  profile: spectrum 132000 px x 16 frames, waterfall 196000 px x 23 rows, clock 15840 px x 1 tick(s)
+  natural totals: invalidated 6745720 px in 45 rectangles / 45 flushes over 37/40 frames
+  delimitation: drive off -> 304760 px (4.5% of the 6745720 px with the drive), only clock/BT/band-info rectangles
+  forced mode: 3 frames x 1 flush x 384000 px (natural: 6745720 px in 40 frames)
+  CLI override: --bench-natural 10 ran 10 frames (the fixture says 40)
+PASS: natural bench deterministic, profiled and delimited (main-natural)
+  png sha256: 8ec631215c28e27fb901f186273fe6afa0fd6b9470550cf810cb1988f84273fd
+
+$ cd tools/ab_testing && uv run x6200-ab compare --a 325ec32 --b HEAD --experiment-id AB-UI07-T2
+experiment AB-UI07-T2: PASS (exit 0)
+  Functional PASS · Visual Regression PASS (captures are pixel-identical to the baseline)
+  Quality Contract PASS (180 checks) · Performance PASS · Hardware BLOCKED · Energy BLOCKED
+  18/18 fixtures: changed_pixels 0
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts 376ed09bc56a: PASS — 190 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited 376ed09bc56a: 14 known issues — 0 reproduced, 12 unverified; structural
+inspection REAL over 1659 objects on 19 scenario(s): 0 structural finding(s)
+
+$ uv run pytest -m "not e2e" -q   → 136 passed, 17 deselected
+$ uv run pytest -m e2e -q         → 17 passed
+$ tests/native/run_native_tests.sh → 545 comprobaciones, 0 fallos + 7, 0 fallos
+ruff check / ruff format --check → limpios; ty (con la lista de archivos) → limpio
+```
+
+Dos diferencias de conteo, todas por el fixture nuevo: `contracts` pasa de 180 a **190**
+checks y el `audit` de 1572 objetos/18 escenarios a **1659/19**, porque `main-natural`
+entra en esas suites (son las de la revisión HEAD). El `compare` sigue con los **18**:
+toma los fixtures de la revisión A, así que la cadena A/B no gana un caso. El reporte
+queda en `tools/ab_testing/reports/AB-UI07-T2/`.
 
 ### Cómo lo siguen #13/#14
 
