@@ -11,7 +11,7 @@
   },
   "revision_b": {
     "label": "b",
-    "sha": "6508c139ab5200de2196c26fb3439d5e82201fb2"
+    "sha": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e"
   },
   "scenarios": [
     "bench-render",
@@ -2791,7 +2791,7 @@
     "b": [
       {
         "scenario": "bench-render",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "5ba21bea6dcd30cffeea0bf171f578ba3fb51c811e44aa22c875c5fc74378beb",
         "width": 800,
         "height": 480,
@@ -2928,7 +2928,7 @@
       },
       {
         "scenario": "dialog-about",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "213c5cc1f06107414fa83676f89b4a80f8fc019d1a1d53b8522fa6cb076e6778",
         "width": 800,
         "height": 480,
@@ -3075,7 +3075,7 @@
       },
       {
         "scenario": "home-bateria-externa",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "2c83b8b73c887409abb6030e130c87db1d01656fb095294699e905a759450985",
         "width": 800,
         "height": 480,
@@ -3212,7 +3212,7 @@
       },
       {
         "scenario": "home-frecuencia-extrema",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "f11829c36da2a3dc0731c5590d1855b554ed2e9c4b184faaeb48b1b96b7aa56b",
         "width": 800,
         "height": 480,
@@ -3349,7 +3349,7 @@
       },
       {
         "scenario": "home-usb-20m",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "a656e0961a41c890bd6663a46dc3d36d2606df4f0b56eae126a88ac32bb974f9",
         "width": 800,
         "height": 480,
@@ -3486,7 +3486,7 @@
       },
       {
         "scenario": "main-bateria-baja",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "975a45e584dc95bccc5cffb30421c481e2a5b1ab4b815c94f7f5a1d095935ef4",
         "width": 800,
         "height": 480,
@@ -3623,7 +3623,7 @@
       },
       {
         "scenario": "main-espectro-agua",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "41cc0d5051a0625040150e4372fe93a6e3a3ba57e0a2cee6e7ca66df7d31595b",
         "width": 800,
         "height": 480,
@@ -3760,7 +3760,7 @@
       },
       {
         "scenario": "main-foco",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "a656e0961a41c890bd6663a46dc3d36d2606df4f0b56eae126a88ac32bb974f9",
         "width": 800,
         "height": 480,
@@ -3897,7 +3897,7 @@
       },
       {
         "scenario": "main-natural",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "3986bc9a6047744aa2cd8db1c9879d73e71e16e45d7737b0d7035c06e22ec821",
         "width": 800,
         "height": 480,
@@ -4034,7 +4034,7 @@
       },
       {
         "scenario": "main-natural-eco",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "6297ef99d8b3babfd844749206afb87aaf59e7c52b5830446a46170357b01292",
         "width": 800,
         "height": 480,
@@ -4171,7 +4171,7 @@
       },
       {
         "scenario": "main-otro-tema",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "8592ccff35e3e40d983aa1fd6c68ff0d16b3787f7fe151837322c144a2b9ac7e",
         "width": 800,
         "height": 480,
@@ -4308,7 +4308,7 @@
       },
       {
         "scenario": "main-tema-classic",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "b251bbe844bab5e3fcc33420b36e158c68b83539b359f79fadcb4ac8f532e25c",
         "width": 800,
         "height": 480,
@@ -4445,7 +4445,7 @@
       },
       {
         "scenario": "main-tema-holo",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "d52d097e71fa8d36a0ea6815a677d914ff7c5f04245555ba76a9240c42ac2b19",
         "width": 800,
         "height": 480,
@@ -4582,7 +4582,7 @@
       },
       {
         "scenario": "main-tema-material-3",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "7d3a101696f6f7620a2da9c1686248b1258de2aa6507de9178735ecd93ab6936",
         "width": 800,
         "height": 480,
@@ -4719,7 +4719,7 @@
       },
       {
         "scenario": "main-tema-outdoor-negative",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "31ea5cccb8c076e693ad3af419d7a2362357295fd842e65bc7a0eb058bcbe72d",
         "width": 800,
         "height": 480,
@@ -4856,7 +4856,7 @@
       },
       {
         "scenario": "main-tema-rs",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "c2411cb0c02994886926c9d3f4feb371cad49a637fe9a515e885c5e5017e926e",
         "width": 800,
         "height": 480,
@@ -4993,7 +4993,7 @@
       },
       {
         "scenario": "main-tema-vision",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "626412d8b6f47f1ce76f0ec700dd16b1d2f4e975a9c81ffc698cdffd25de609a",
         "width": 800,
         "height": 480,
@@ -5130,7 +5130,7 @@
       },
       {
         "scenario": "main-tema-vision-cwr",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "25fd0585073f3c1218df046055bc7778c29f688b68f7550364e15ff12c1720b9",
         "width": 800,
         "height": 480,
@@ -5267,7 +5267,7 @@
       },
       {
         "scenario": "main-tema-vision-usbd",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "aab452ee2ca0f143efbeaf6dc9159448dd706e9dedf565420b2748bbefbf96d6",
         "width": 800,
         "height": 480,
@@ -5404,7 +5404,7 @@
       },
       {
         "scenario": "main-tx-simulado",
-        "revision": "6508c139ab5200de2196c26fb3439d5e82201fb2",
+        "revision": "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e",
         "png_sha256": "e0281c2320943a1121c7dad1741e638ce026794fcdc215f48a2ec99b6f5e7459",
         "width": 800,
         "height": 480,
@@ -5553,7 +5553,7 @@
           "4c711f60b3789372f9e1c117e514418f0eee00c8"
         ],
         "revision_b": [
-          "6508c139ab5200de2196c26fb3439d5e82201fb2"
+          "625f254b7b1ba359ebcd4ea0f7c29859ceaa082e"
         ]
       }
     },

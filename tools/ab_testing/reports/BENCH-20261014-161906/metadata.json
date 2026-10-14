@@ -1,7 +1,7 @@
 {
   "date": "2026-10-14",
   "docker_image": "x6200-uiharness",
-  "experiment_id": "BENCH-20261014-161143",
+  "experiment_id": "BENCH-20261014-161906",
   "framework_version": "0.1.0",
   "host": "fedora",
   "numpy_version": "2.5.4",
