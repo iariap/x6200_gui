@@ -191,6 +191,7 @@ the `theme` and a `seed`, and toggle `band_plan`, `spectrum_filled`,
 | Fixture | What it shows |
 |---|---|
 | `home-usb-20m` | 20 m USB, S9, on battery: the plain main screen |
+| `home-bateria-externa` | external supply (13.8 V) with the battery at 12.1 V, charging; exercises the power clock above the firmware's 0..10 V mapping (UI-009) |
 | `main-tx-simulado` | TX state with split (TX visor, TX info). No audio/RF is generated |
 | `main-bateria-baja` | nearly flat battery; the clock drops to the battery-percentage view |
 | `home-frecuencia-extrema` | the dial at the top band edge; frequency/band-plan strips run past it |

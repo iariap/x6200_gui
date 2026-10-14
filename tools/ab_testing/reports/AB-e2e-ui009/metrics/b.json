@@ -1,0 +1,10 @@
+{
+  "home-bateria-externa": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xcbd48ced3c6a8bec",
+    "png_sha256": "c0cb0ed34c97ac3d1737a580db37067129fef430314e231bccd6feb6452b6064",
+    "revision": "ec1b0a58ec30270ece2a6b490ae41ed341133755",
+    "virtual_time_ms": 2200
+  }
+}

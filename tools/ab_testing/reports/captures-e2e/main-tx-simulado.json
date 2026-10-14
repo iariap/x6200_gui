@@ -2,7 +2,7 @@
   "scenario": "main-tx-simulado",
   "screen": "main",
   "seed": 31,
-  "revision": "92d940529a9252d50b8eb4410611b957213ff6ac",
+  "revision": "ec1b0a58ec30270ece2a6b490ae41ed341133755",
   "framebuffer": { "width": 800, "height": 480 },
   "virtual_time_ms": 2200,
   "coverage": [
@@ -48,8 +48,8 @@
   "metrics": {
     "flushes": 6,
     "flushed_pixels": 1127680,
-    "framebuffer_fnv1a": "0xe1acaca7ba4ce8f0",
+    "framebuffer_fnv1a": "0x9b09481d6964f737",
     "png_path": "/out/main-tx-simulado.png",
-    "png_bytes": 254124
+    "png_bytes": 254055
   }
 }

@@ -88,6 +88,11 @@ main-tx-simulado: 5ba48d4e7e5e2cf9060865591564a56577cc7d8242765be5569b871f7c89cd
 PASS: deterministic (identical PNGs for every fixture)
 ```
 
+> Estos hashes son **previos al fix UI-009** (el reloj de potencia leía un
+> puntero sin inicializar en las 7 fixtures): ver más abajo la tabla antes/
+> después y por qué cambian. El determinismo (dos corridas idénticas) sigue
+> pasando con los valores nuevos.
+
 Cada fixture emite además JSON con la cobertura por componente; por ejemplo el
 de `main-tx-simulado` declara `main_screen.c` REAL, `spectrum.c`/`waterfall.c`
 PARTIAL, `cfg (catalogue)` SYNTHETIC y `radio_calls.get_state = 2` (el mock se
@@ -151,7 +156,8 @@ AB-e2e-aa         base vs base                     -> PASS   (diff 0)
 AB-e2e-regression base vs barra de botones +30 px  -> FAIL   (48 267 px, región botones)
 AB-e2e-fix        etiqueta UI-001 vs base          -> PASS (IMPROVEMENT, UI-001 FIXED)
 AB-e2e-reappear   base vs etiqueta UI-001          -> FAIL   (UI-001 REGRESSION)
-capture CLI       los 6 fixtures                    -> 6 PNG + 6 JSON
+AB-e2e-ui009      clock sin fix vs fix             -> PASS (IMPROVEMENT, UI-009 FIXED)  # ver más abajo
+capture CLI       los 8 fixtures                    -> 8 PNG + 8 JSON
 ```
 
 Puertas que arrancan mínimas y **honestas**: `benchmark` devuelve BLOCKED (no hay
@@ -185,23 +191,23 @@ Entregado en `tools/ui_harness/` y `tools/ab_testing/`:
   `contracts` (contratos objetivos sobre el candidato solo) para el check
   separado de CI.
 
-Evidencia (host x86, `uv run pytest -m e2e`, `AB-e2e-benchmark`): una revisión
-de prueba que repinta la pantalla 3 veces por frame (trabajo de render extra
-deliberado, `bench_redraw_passes 3`) es detectada por p95 sobre presupuesto, con
-15 frames por lado y sin depender de una sola medición:
+Evidencia (host x86, `uv run pytest -m e2e`, `AB-e2e-benchmark`, regenerada con
+el fix UI-009): una revisión de prueba que repinta la pantalla 3 veces por frame
+(trabajo de render extra deliberado, `bench_redraw_passes 3`) es detectada por
+p95 sobre presupuesto, con 15 frames por lado y sin depender de una sola
+medición:
 
 ```text
-bench-render  FAIL  p95 A 4.468 ms -> B 11.951 ms  (+167.5%)
+bench-render  FAIL  p95 A 3.774 ms -> B 11.318 ms  (+199.9%)
               flushes 1.0 -> 3.0  (+200%)   área 384000 -> 1152000 px (+200%)
-  A: 15 frames, dispersión 9.1%     B: 15 frames, dispersión 3.3%
-  razones: p95 render +167.5% (budget 25.0%); flushes +200.0% (budget 20.0%);
+  A: 15 frames, dispersión 2.7%     B: 15 frames, dispersión 3.9%
+  razones: p95 render +199.9% (budget 25.0%); flushes +200.0% (budget 20.0%);
            redrawn area +200.0% (budget 20.0%)
 ```
 
-Medición del arnés (base, `bench-render`, 15 frames): p50 3.602 ms, p95 3.658 ms,
-p99 3.660 ms, 277.6 FPS efectivos, dispersión 1.8%, 1 flush/frame, RSS 10.1 MB,
-PSS 9.0 MB. Todo etiquetado como **proxy x86**: no es el rendimiento del
-Cortex-A7 ni la autonomía de batería.
+Medición del arnés (lado A de `bench-render`, 15 frames): p50 3.608 ms, p95
+3.774 ms, 1 flush/frame, RSS ≈10.1 MB. Todo etiquetado como **proxy x86**: no es
+el rendimiento del Cortex-A7 ni la autonomía de batería.
 
 Reporte commiteado: `tools/ab_testing/reports/AB-e2e-benchmark/`.
 
@@ -239,6 +245,9 @@ PASS: deterministic (identical PNGs for every fixture)
 
 $ uv run pytest -m e2e            # 9 passed
 ```
+
+> Hashes **previos al fix UI-009**; con el fix la imagen `ci` produce los valores
+> nuevos (ver la tabla de la sección UI-009) y el gate sigue en PASS.
 
 ## Incremento — inspección estructural y contratos de layout/tipografía ✅
 
@@ -300,15 +309,80 @@ siguen `unverified`, cada una con su motivo concreto (el contraste estructural y
 el detector de glifos ahora corren sobre la pantalla real y no encuentran
 violaciones). Ver [`docs/UI_KNOWN_ISSUES.md`](UI_KNOWN_ISSUES.md).
 
+## Fix real de firmware: UI-009 (reloj de potencia) — primer caso A/B ✅
+
+Gate: el arnés reproduce un defecto real del firmware, lo clasifica contra su fix
+y deja el test que impide reintroducirlo.
+
+`src/clock.c`, `show_time()` rama `CLOCK_POWER`: `bat_sym` se declaraba **sin
+inicializar** y el `switch ((uint8_t)(v_bat * 10))` sólo cubría 0–100. Con
+`v_bat > 10.2` (12.1 V con fuente externa → 121 tras el cast) ningún `case`
+pisaba el puntero y `snprintf` leía la pila: glifos basura (`EHE 12.1v` en las
+capturas del toolchain aceptado) y comportamiento indefinido — segfault con otro
+toolchain (reproducido con gcc 12 en Debian). El fix inicializa el puntero
+(`const char * bat_sym = LV_SYMBOL_BATTERY_FULL;`, una línea).
+
+- **Fixture**: `tools/ui_harness/fixtures/home-bateria-externa.scn` (12.1 V,
+  13.8 V externos, cargando). `tests/check_harness_determinism.sh` lo toma solo y
+  pasa; el fixture nuevo no requiere tocar el script (recorre `fixtures/*.scn`).
+- **Detector**: nueva clase de known issue `leading_glyph_range` en
+  `quality/known_issues.yaml` (UI-009) + región `reloj_potencia` en
+  `quality/regions.yaml`. Exige que el texto del reloj —leído de la inspección
+  estructural, `--inspect`, sin OCR— arranque con un code point del bloque de
+  iconos de batería `U+F200..U+F2FF`. `compare` ahora captura también A con
+  `--inspect` (los píxeles no cambian) porque el detector necesita el texto en
+  ambos lados.
+- **Test permanente**: `tests/native/test_clock.c`, compilado con
+  `-ftrivial-auto-var-init=pattern` para que reinstalar el puntero pelado crashee
+  en vez de pasar por azar (ver [`docs/UI_KNOWN_ISSUES.md`](UI_KNOWN_ISSUES.md)).
+
+Evidencia (host, `uv run pytest -m e2e`, base fijada con
+`X6200_AB_E2E_BASE=ec1b0a5`, **12 passed**):
+
+```text
+AB-e2e-ui009  clock sin fix (0d96c79f) vs fix (ec1b0a5)  -> PASS (IMPROVEMENT)
+  Functional PASS · Visual Regression PASS · Quality Contract PASS · Performance PASS
+  Hardware BLOCKED · Energy BLOCKED (advisory: sin unidad física)
+  UI-009 FIXED:  A '\x89E… 12.1v' (U+0089, memoria)  ->  B '\uf240 12.1v' (U+F240)
+  diff: 1 142 px, todo dentro de `reloj_potencia` (explicado por el fix)
+```
+
+PNG A/B y diff commiteados en `tools/ab_testing/reports/AB-e2e-ui009/`
+(`screenshots/a-…png` con `EHE`, `screenshots/b-…png` con el ícono de batería,
+`diffs/home-bateria-externa-overlay.png` con la caja).
+
+### Hashes de determinismo antes y después del fix
+
+El defecto estaba en **las 7 fixtures previas** — todas con `battery_v` entre 10.6
+y 12.4 V, fuera del switch — así que el fix cambia el reloj de todas ellas. Para
+un voltaje dentro de rango el render sigue siendo byte a byte idéntico: un fixture
+temporal de 8.1 V da
+`6e4f8a3d2773daef47866bf150825637b3cf2e697355aa979a8120632004d4eb` antes y
+después del fix.
+
+| fixture | antes del fix (aceptado, M1–M6) | después del fix (UI-009) |
+|---|---|---|
+| `bench-render` | `56d7562491f2c26f20f7c37c044a26566adf92cc4659a6e46e2cf4d804a537e4` | `eae13ebaf270528d1d77e281077c366b13db856158694d92fecf54f2fbd204be` |
+| `home-frecuencia-extrema` | `3f6209c3a8edeed38f1e5b0069754e5eacb337c8a3ae85a2ab0671ce4a6d3900` | `2eee0a627d6098b7a44fb7f999ce38ebffa2ef294b4c3fe2b726d151976e76b1` |
+| `home-usb-20m` | `14f380ff07444726b7df4765537e219dbe865a85a3643f7f7fb36df0303eeb3f` | `21b9b8b132028b93d33da3162f03329e722697484f988ac92477c1c7d0386c73` |
+| `main-bateria-baja` | `5593056bf94d7affe9820114b5bc8e88c6701ed4f79484d778a8ace764ef254e` | `575aa927fdb259dd3d5421d7937ab6c95e31216d3d2ba72432f115e1ac6b0820` |
+| `main-espectro-agua` | `b5109240540f052314479e67ea1400d22f838df6c3aa9005cf0294940613cd8f` | `198f255c363a1d38e46c97ed07236b62c18a43c69ca5bbf8e22cfe6285bc8382` |
+| `main-otro-tema` | `f59bba03d1780167f75d24124248c750cc77f12f12daa7992113576388a816d2` | `ec6303188d54b567b8f3c252a4de8058ffd50f63539d49c67b317d338ea4b32c` |
+| `main-tx-simulado` | `5ba48d4e7e5e2cf9060865591564a56577cc7d8242765be5569b871f7c89cd51` | `b476647d4d4c4a9284b261fccbbed19dd07cf9f3d693b6478a0ebe78880a48d8` |
+| `home-bateria-externa` | (fixture nuevo) | `c0cb0ed34c97ac3d1737a580db37067129fef430314e231bccd6feb6452b6064` |
+
+`tests/check_harness_determinism.sh` sigue en **PASS** con los hashes nuevos
+(idénticos run-a-run); lo que cambió es qué se dibuja, no el determinismo.
+
 ## Pendientes
 
 - **Captura física y energía** (milestone 7): sin un X6200 conectado,
   Hardware/Energy quedan BLOCKED/PENDING, nunca PASS por default.
 - **Fixtures de diálogos y apps** (Ajustes, menú de apps, about, cluster): sin
   ellos las semillas UI-002/UI-004/UI-005 quedan `unverified`.
-- El comportamiento del reloj de energía del firmware depende de una variable
-  local sin inicializar en `src/clock.c` (`show_time`); en `src/` no se toca.
-  La imagen `ci` (Ubuntu 24.04, mismo toolchain que las capturas aceptadas)
-  reproduce las capturas; con otro toolchain el valor es indefinido y hay que
-  tratarlo como defecto del firmware, no del arnés.
+- El reloj de energía dependía de una variable local sin inicializar
+  (`src/clock.c`, `show_time`): quedó corregido como **UI-009** con test nativo y
+  caso A/B propio (ver la sección **UI-009** arriba). Las capturas aceptadas de
+  los milestones 1–6 son **previas** al fix y por eso cambian; el camino de un
+  voltaje dentro de rango es byte a byte idéntico antes y después.
 

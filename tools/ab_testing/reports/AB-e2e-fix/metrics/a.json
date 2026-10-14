@@ -2,9 +2,9 @@
   "home-usb-20m": {
     "flushed_pixels": 1127680,
     "flushes": 6,
-    "framebuffer_fnv1a": "0x6bc9bbb40ea6e754",
-    "png_sha256": "43ed0dd8ebdcafcccfc0e94066a334ccdb3bbdebde2577d3dd0e0dd5215eeb28",
-    "revision": "61b44a13f551e3a5feafee6741ba74a2b9b17591",
+    "framebuffer_fnv1a": "0xb88ac25f8798e92a",
+    "png_sha256": "0955aef900023601b0bdaad7f518fdc59eb5a64e7fbc77ccee948de71604023d",
+    "revision": "66fb131fb86cb13b1e667bd1684c5f459a9f1f56",
     "virtual_time_ms": 2200
   }
 }

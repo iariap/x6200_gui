@@ -2,7 +2,7 @@
   "scenario": "home-usb-20m",
   "screen": "main",
   "seed": 20,
-  "revision": "92d940529a9252d50b8eb4410611b957213ff6ac",
+  "revision": "ec1b0a58ec30270ece2a6b490ae41ed341133755",
   "framebuffer": { "width": 800, "height": 480 },
   "virtual_time_ms": 2200,
   "coverage": [
@@ -48,8 +48,8 @@
   "metrics": {
     "flushes": 6,
     "flushed_pixels": 1127680,
-    "framebuffer_fnv1a": "0x7b6377a1efe2b68c",
+    "framebuffer_fnv1a": "0x9ce2810b4882ae96",
     "png_path": "/out/home-usb-20m.png",
-    "png_bytes": 252319
+    "png_bytes": 252182
   }
 }

@@ -2,7 +2,7 @@
   "scenario": "home-frecuencia-extrema",
   "screen": "main",
   "seed": 55,
-  "revision": "92d940529a9252d50b8eb4410611b957213ff6ac",
+  "revision": "ec1b0a58ec30270ece2a6b490ae41ed341133755",
   "framebuffer": { "width": 800, "height": 480 },
   "virtual_time_ms": 2200,
   "coverage": [
@@ -48,8 +48,8 @@
   "metrics": {
     "flushes": 6,
     "flushed_pixels": 1127680,
-    "framebuffer_fnv1a": "0xb1d4e7a6e7b22673",
+    "framebuffer_fnv1a": "0xfc50e30e849ab41f",
     "png_path": "/out/home-frecuencia-extrema.png",
-    "png_bytes": 251730
+    "png_bytes": 251684
   }
 }
