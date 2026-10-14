@@ -2,8 +2,8 @@
 
 - Date: 2026-10-13
 - Profile: `host-ui`
-- A (baseline): `cba8dad52510683ec55d42234c01dfb2cd73f3a9` (a)
-- B (candidate): `0520be21c22a4fab7ccea2003626538e45201779` (b)
+- A (baseline): `c3ce8fa5a7ce82c771c1fd544e557ee4d823bc66` (a)
+- B (candidate): `118d85197e2d091791c53e2c6074389e10414543` (b)
 - Scenarios: `home-usb-20m`
 
 ## Verdict: **FAIL** (exit 1)

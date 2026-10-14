@@ -159,7 +159,96 @@ instrumentación de tiempos de frame/FPS; los contadores de render son de tiempo
 virtual, no duraciones), y `audit` es solo por región de píxeles hasta que el
 arnés emita la inspección estructural.
 
-## Milestones 4–7 — pendientes
+## Milestone 4 — benchmark de render ✅
 
-Ver `docs/AB_TESTING_PLAN.md` (tabla de milestones y gates). Benchmark de render
-con repeticiones y FPS, workflow de CI, y captura física/energía del equipo.
+Gate: detecta una regresión de rendimiento controlada.
+
+Entregado en `tools/ui_harness/` y `tools/ab_testing/`:
+
+- **Instrumentación real en C** (`src/bench_metrics.c`): con `--bench` el arnés
+  mide cada frame con `CLOCK_MONOTONIC` — **separado** del reloj virtual que
+  decide los píxeles — y reporta `render_ms`, `flush_ms` (tiempo real dentro del
+  flush), `draw_ms` (render − flush, derivado), cantidad de flushes, área
+  redibujada (suma de rectángulos) y píxeles distintos redibujados. Al final lee
+  RSS/PSS y el pico de memoria de `/proc`. Warm-up y N repeticiones
+  configurables por fixture (`bench_warmup`, `bench_repeats`,
+  `bench_redraw_passes`) o por CLI (`--warmup`, `--repeats`). El modo normal no
+  cambia: el PNG de un escenario es idéntico con y sin `--bench`.
+- **Framework Python**: `src/x6200_ab/performance.py` consume esos datos y
+  calcula p50/p95/p99, FPS efectivo (desde el frame mediano) y dispersión
+  (coeficiente de variación); repite A y B **alternadas** por rondas. Un lado con
+  pocas muestras o dispersión excesiva es **INCONCLUSIVE** (nunca PASS por
+  ruido). `quality/budgets.yaml` fija el plan de muestreo y los presupuestos
+  relativos (p95 de render, flushes, área) **antes** de correr.
+- `x6200-ab benchmark` deja de ser BLOCKED: con `--revision` mide; con `--a/--b`
+  evalúa regresión relativa y escribe `reports/<id>/`. Se agrega el subcomando
+  `contracts` (contratos objetivos sobre el candidato solo) para el check
+  separado de CI.
+
+Evidencia (host x86, `uv run pytest -m e2e`, `AB-e2e-benchmark`): una revisión
+de prueba que repinta la pantalla 3 veces por frame (trabajo de render extra
+deliberado, `bench_redraw_passes 3`) es detectada por p95 sobre presupuesto, con
+15 frames por lado y sin depender de una sola medición:
+
+```text
+bench-render  FAIL  p95 A 4.468 ms -> B 11.951 ms  (+167.5%)
+              flushes 1.0 -> 3.0  (+200%)   área 384000 -> 1152000 px (+200%)
+  A: 15 frames, dispersión 9.1%     B: 15 frames, dispersión 3.3%
+  razones: p95 render +167.5% (budget 25.0%); flushes +200.0% (budget 20.0%);
+           redrawn area +200.0% (budget 20.0%)
+```
+
+Medición del arnés (base, `bench-render`, 15 frames): p50 3.602 ms, p95 3.658 ms,
+p99 3.660 ms, 277.6 FPS efectivos, dispersión 1.8%, 1 flush/frame, RSS 10.1 MB,
+PSS 9.0 MB. Todo etiquetado como **proxy x86**: no es el rendimiento del
+Cortex-A7 ni la autonomía de batería.
+
+Reporte commiteado: `tools/ab_testing/reports/AB-e2e-benchmark/`.
+
+## Milestone 6 — workflow de CI ✅
+
+Gate: un PR con regresión deliberada falla con evidencia.
+
+- **Imagen reproducible desde cero** (`tools/ui_harness/Dockerfile`): antes era
+  `FROM x6200-buildroot` (imagen local de 6.7 GB, no reconstruible en CI). Ahora
+  se construye sobre `ubuntu:24.04`: stage `ci` (mínimo: `build-essential`,
+  `cmake`, `pkg-config`, `libpng-dev`, `libnm-dev`, `libsqlite3-dev`,
+  `libliquid-dev` — los headers del firmware usan `sqlite3.h` y
+  `liquid/liquid.h`) y stage `full` (default, con los extras de los tests del
+  ROM). El generador de señal no usa FFTW. La imagen `ci` pesa ~576 MB (vs 6.7
+  GB) y reproduce **byte a byte** las capturas commiteadas.
+- **`.github/workflows/ab-testing.yml`**: jobs separados — UI Functional Tests
+  (ruff + format + ty + pytest unit, checks estáticos del repo
+  `check_cfg_fills/actions/settings_focus/apps_menu/wcag`, `run_native_tests.sh`),
+  UI Quality Contracts, UI Visual Regression (A vs B), UI Performance (benchmark
+  host) y UI A/B Summary. Corre en PRs con cambios en `tools/**`, `src/**` o
+  `tests/**`. Publica artifacts (screenshots/diffs/reportes) y resumen por
+  `$GITHUB_STEP_SUMMARY`. Regla: los fallos funcionales/regresiones objetivas
+  bloquean; los cambios estéticos son REVIEW REQUIRED y no bloquean solos; un
+  benchmark inconcluso se muestra como tal; Hardware/Energy quedan **PENDING**.
+
+Evidencia:
+
+```text
+$ docker build -t x6200-uiharness-ci --target ci tools/ui_harness   # ~32 s, sin imágenes locales
+$ UI_HARNESS_IMAGE=x6200-uiharness-ci tests/check_harness_determinism.sh
+bench-render: 56d7562491f2c26f20f7c37c044a26566adf92cc4659a6e46e2cf4d804a537e4
+home-usb-20m: 14f380ff07444726b7df4765537e219dbe865a85a3643f7f7fb36df0303eeb3f
+... (el resto quedan idénticos a los de los milestones 1–3)
+PASS: deterministic (identical PNGs for every fixture)
+
+$ uv run pytest -m e2e            # 9 passed
+```
+
+## Pendientes
+
+- **Inspección estructural** (cajas de objetos, glifos, overflow): el arnés
+  todavía no la emite, así que `audit` la reporta como instrumentación faltante.
+- **Captura física y energía** (milestone 7): sin un X6200 conectado,
+  Hardware/Energy quedan BLOCKED/PENDING, nunca PASS por default.
+- El comportamiento del reloj de energía del firmware depende de una variable
+  local sin inicializar en `src/clock.c` (`show_time`); en `src/` no se toca.
+  La imagen `ci` (Ubuntu 24.04, mismo toolchain que las capturas aceptadas)
+  reproduce las capturas; con otro toolchain el valor es indefinido y hay que
+  tratarlo como defecto del firmware, no del arnés.
+

@@ -330,6 +330,21 @@ def test_audit_reports_the_missing_instrumentation(
     assert "structural inspection" in payload["blocked_instrumentation"]
 
 
+def test_contracts_pass_on_the_base(
+    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
+) -> None:
+    code = _run(
+        tmp_path,
+        revisions,
+        ["contracts", "--revision", revisions.base, "--scenario", FIXTURE],
+    )
+    assert code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["status"] == "PASS"
+    assert payload["checks"] > 0
+    assert payload["failures"] == []
+
+
 def test_benchmark_measures_the_real_render_cost(
     tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
 ) -> None:
@@ -348,6 +363,8 @@ def test_benchmark_measures_the_real_render_cost(
             "3",
             "--rounds",
             "3",
+            "--reports-dir",
+            str(tmp_path / "bench-reports"),
         ],
     )
     assert code == 0

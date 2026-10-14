@@ -7,11 +7,11 @@
   "improvement": true,
   "revision_a": {
     "label": "a",
-    "sha": "921daac0f594b139211cdd42eff306e6bc8336d3"
+    "sha": "9a171d6be5976812894083c452b1fb61c1108218"
   },
   "revision_b": {
     "label": "b",
-    "sha": "cba8dad52510683ec55d42234c01dfb2cd73f3a9"
+    "sha": "c3ce8fa5a7ce82c771c1fd544e557ee4d823bc66"
   },
   "scenarios": [
     "home-usb-20m"
@@ -20,7 +20,7 @@
     "a": [
       {
         "scenario": "home-usb-20m",
-        "revision": "921daac0f594b139211cdd42eff306e6bc8336d3",
+        "revision": "9a171d6be5976812894083c452b1fb61c1108218",
         "png_sha256": "43ed0dd8ebdcafcccfc0e94066a334ccdb3bbdebde2577d3dd0e0dd5215eeb28",
         "width": 800,
         "height": 480,
@@ -159,7 +159,7 @@
     "b": [
       {
         "scenario": "home-usb-20m",
-        "revision": "cba8dad52510683ec55d42234c01dfb2cd73f3a9",
+        "revision": "c3ce8fa5a7ce82c771c1fd544e557ee4d823bc66",
         "png_sha256": "14f380ff07444726b7df4765537e219dbe865a85a3643f7f7fb36df0303eeb3f",
         "width": 800,
         "height": 480,
@@ -305,10 +305,10 @@
       "evidence": [],
       "details": {
         "revision_a": [
-          "921daac0f594b139211cdd42eff306e6bc8336d3"
+          "9a171d6be5976812894083c452b1fb61c1108218"
         ],
         "revision_b": [
-          "cba8dad52510683ec55d42234c01dfb2cd73f3a9"
+          "c3ce8fa5a7ce82c771c1fd544e557ee4d823bc66"
         ]
       }
     },

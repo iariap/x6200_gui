@@ -2,8 +2,8 @@
 
 - Date: 2026-10-13
 - Profile: `host-ui`
-- A (baseline): `921daac0f594b139211cdd42eff306e6bc8336d3` (a)
-- B (candidate): `cba8dad52510683ec55d42234c01dfb2cd73f3a9` (b)
+- A (baseline): `9a171d6be5976812894083c452b1fb61c1108218` (a)
+- B (candidate): `c3ce8fa5a7ce82c771c1fd544e557ee4d823bc66` (b)
 - Scenarios: `home-usb-20m`
 
 ## Verdict: **PASS (IMPROVEMENT: a known issue present in A is fixed in B)** (exit 0)
