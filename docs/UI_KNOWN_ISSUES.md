@@ -29,6 +29,48 @@ comparación A/B lo clasifica (`FIXED` / `UNCHANGED DEFECT` / `REGRESSION` /
 
 ---
 
+## UI-009 — Reloj de potencia: símbolo de batería con puntero sin inicializar
+
+- **Severidad**: major.
+- **Fixture**: `home-bateria-externa` (12.1 V con fuente externa conectada).
+- **Estado**: `fixed` (si vuelve a aparecer en B, es `REGRESSION`).
+- **Síntoma**: en `src/clock.c`, `show_time()` rama `CLOCK_POWER`, `bat_sym` se
+  declaraba **sin inicializar** y el `switch ((uint8_t)(v_bat * 10))` sólo cubría
+  0–100. Con `v_bat > 10.2` (12.1 V → 121 tras el cast) ningún `case` pisaba el
+  puntero y `snprintf("%s", bat_sym)` imprimía memoria: **glifos basura** en la
+  esquina superior derecha (las capturas del toolchain aceptado muestran
+  `EHE 12.1v`) y comportamiento indefinido — **segfault** con otro toolchain
+  (reproducido con gcc 12 en Debian).
+- **Fix en el código**: `const char * bat_sym = LV_SYMBOL_BATTERY_FULL;`
+  (`src/clock.c`). El mapeo ya clampea el extremo bajo (0–56 → `BATTERY_EMPTY`) y
+  78–100 → `BATTERY_FULL`, así que una lectura por encima del tope es batería
+  llena; con `BATTERY_EMPTY` el reloj mostraría una batería vacía a 12.1 V, que
+  sería un defecto de información nuevo.
+- **Test permanente**: `tests/native/test_clock.c` (nativo, sin hardware) corre el
+  camino `CLOCK_POWER` con voltajes dentro y fuera de rango y exige que el texto
+  del reloj arranque con un `LV_SYMBOL_BATTERY_*`. El binario se compila con
+  `-ftrivial-auto-var-init=pattern`, así que reinstalar la declaración pelada
+  vuelve a leer un puntero envenenado y el test crashea en vez de pasar por azar.
+  `tests/native/run_native_tests.sh` lo corre junto al resto de los tests nativos.
+- **Cómo lo reproduce el arnés**: el detector `leading_glyph_range` lee el texto
+  del reloj de la inspección estructural (`ui_harness --inspect`, sin OCR) y exige
+  que su primer code point esté en el bloque de iconos de batería
+  `U+F200..U+F2FF` (`region: reloj_potencia`). Sobre la revisión sin el fix el
+  primer code point es memoria (`U+0089`), y el detector lo marca; sobre el fix
+  arranca con `U+F240` (`BATTERY_FULL`) y pasa.
+- **Evidencia**: `tools/ab_testing/reports/AB-e2e-ui009/` — comparación A/B del
+  fixture `home-bateria-externa` con la revisión sin fix en A (glifos `EHE`) y el
+  fix en B (símbolo válido); veredicto **PASS** marcado *IMPROVEMENT*, con
+  `UI-009` clasificado **FIXED**.
+
+Nota: el mismo defecto estaba presente en **las 7 fixtures previas** (todas tienen
+`battery_v > 10.0` V), así que el fix cambia el reloj en todas ellas; los hashes
+de determinismo aceptados son los previos al fix y están fechados en
+`docs/AB_TESTING.md`. Para un voltaje dentro de rango el render es byte a byte
+idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V).
+
+---
+
 ## Anexo: hipótesis sin reproducir
 
 Semillas con evidencia previa en el repo pero **sin detector** todavía: no

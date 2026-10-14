@@ -109,7 +109,7 @@ stay BLOCKED).
 ## Quality files (`quality/`)
 
 * `regions.yaml` — semantic regions of the 800×480 screen (top bar, S-meter,
-  spectrum, frequency, waterfall, buttons, multiplier).
+  spectrum, frequency, waterfall, buttons, multiplier, power clock).
 * `contracts.yaml` — rules checked on the candidate alone: minimum content per
   region, honest coverage levels, required declared components, the dated
   `expected_changes` list (the only way a change stops being a regression
@@ -121,7 +121,11 @@ stay BLOCKED).
 * `budgets.yaml` — thresholds fixed **before** a run (pixel tolerance, minimum
   box size, render-cost deltas).
 * `known_issues.yaml` — recorded defects. An issue without a detector is
-  `unverified`: it never fails and never passes.
+  `unverified`: it never fails and never passes. A detector is either
+  `region_content_above` (a pixel region must stay near-uniform) or
+  `leading_glyph_range` (the label whose text matches `text_pattern` — the power
+  clock is the only one with a voltage line — must start with a code point in
+  `glyph_range`; the text comes from the structural inspection, never OCR).
 
 ## Structural checks
 
@@ -168,3 +172,8 @@ uv run pytest -m e2e          # end-to-end: builds the real harness with Docker
 The e2e suite reproduces the milestone gate with ephemeral revisions:
 A vs A → PASS (zero diff), A vs a deliberate regression → FAIL with `diff.png`
 and a bounding box, and a defective revision vs its fix → IMPROVEMENT (PASS).
+
+`AB-e2e-ui009` is the first real firmware fix evaluated end to end: A is the
+`home-bateria-externa` fixture with `bat_sym` uninitialized (`src/clock.c`,
+garbage `EHE` glyphs) and B is the fix (a battery icon); the comparison is an
+IMPROVEMENT with UI-009 `FIXED` (see `docs/UI_KNOWN_ISSUES.md`).

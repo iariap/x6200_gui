@@ -7,11 +7,11 @@
   "improvement": true,
   "revision_a": {
     "label": "a",
-    "sha": "61b44a13f551e3a5feafee6741ba74a2b9b17591"
+    "sha": "66fb131fb86cb13b1e667bd1684c5f459a9f1f56"
   },
   "revision_b": {
     "label": "b",
-    "sha": "92d940529a9252d50b8eb4410611b957213ff6ac"
+    "sha": "ec1b0a58ec30270ece2a6b490ae41ed341133755"
   },
   "scenarios": [
     "home-usb-20m"
@@ -20,13 +20,13 @@
     "a": [
       {
         "scenario": "home-usb-20m",
-        "revision": "61b44a13f551e3a5feafee6741ba74a2b9b17591",
-        "png_sha256": "43ed0dd8ebdcafcccfc0e94066a334ccdb3bbdebde2577d3dd0e0dd5215eeb28",
+        "revision": "66fb131fb86cb13b1e667bd1684c5f459a9f1f56",
+        "png_sha256": "0955aef900023601b0bdaad7f518fdc59eb5a64e7fbc77ccee948de71604023d",
         "width": 800,
         "height": 480,
         "flushes": 6,
         "flushed_pixels": 1127680,
-        "framebuffer_fnv1a": "0x6bc9bbb40ea6e754",
+        "framebuffer_fnv1a": "0xb88ac25f8798e92a",
         "coverage": [
           {
             "component": "theme.c",
@@ -159,13 +159,13 @@
     "b": [
       {
         "scenario": "home-usb-20m",
-        "revision": "92d940529a9252d50b8eb4410611b957213ff6ac",
-        "png_sha256": "14f380ff07444726b7df4765537e219dbe865a85a3643f7f7fb36df0303eeb3f",
+        "revision": "ec1b0a58ec30270ece2a6b490ae41ed341133755",
+        "png_sha256": "21b9b8b132028b93d33da3162f03329e722697484f988ac92477c1c7d0386c73",
         "width": 800,
         "height": 480,
         "flushes": 6,
         "flushed_pixels": 1127680,
-        "framebuffer_fnv1a": "0x7b6377a1efe2b68c",
+        "framebuffer_fnv1a": "0x9ce2810b4882ae96",
         "coverage": [
           {
             "component": "theme.c",
@@ -305,10 +305,10 @@
       "evidence": [],
       "details": {
         "revision_a": [
-          "61b44a13f551e3a5feafee6741ba74a2b9b17591"
+          "66fb131fb86cb13b1e667bd1684c5f459a9f1f56"
         ],
         "revision_b": [
-          "92d940529a9252d50b8eb4410611b957213ff6ac"
+          "ec1b0a58ec30270ece2a6b490ae41ed341133755"
         ]
       }
     },
@@ -388,6 +388,18 @@
       "reproduced_b": false,
       "classification": "FIXED",
       "detail": "reproduced on A, absent on B; A: region `multiplicador` content 0.1938 > 0.0500; B: region `multiplicador` content 0.0000 <= 0.0500"
+    },
+    {
+      "id": "UI-009",
+      "title": "Reloj de potencia: simbolo de bateria con puntero sin inicializar (glifos basura)",
+      "severity": "major",
+      "fixture": "home-bateria-externa",
+      "region": "reloj_potencia",
+      "status": "fixed",
+      "reproduced_a": null,
+      "reproduced_b": null,
+      "classification": "UNVERIFIED",
+      "detail": "no detector: only recorded from the repository"
     },
     {
       "id": "UI-002",
@@ -486,7 +498,7 @@
       "rule": "region_min_content:barra_superior",
       "fixture": "home-usb-20m",
       "ok": true,
-      "detail": "content 0.5501 >= 0.0200",
+      "detail": "content 0.5455 >= 0.0200",
       "path": null
     },
     {
@@ -616,6 +628,12 @@
           "changed_pixels": 107,
           "total_pixels": 640,
           "fraction": 0.167187
+        },
+        {
+          "region": "reloj_potencia",
+          "changed_pixels": 107,
+          "total_pixels": 9614,
+          "fraction": 0.01113
         }
       ],
       "dimension_mismatch": null

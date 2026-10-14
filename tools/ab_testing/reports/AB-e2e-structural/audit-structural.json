@@ -37,6 +37,12 @@
     },
     {
       "detail": "unverified: no detector yet",
+      "id": "UI-009",
+      "reproduced": null,
+      "title": "Reloj de potencia: simbolo de bateria con puntero sin inicializar (glifos basura)"
+    },
+    {
+      "detail": "unverified: no detector yet",
       "id": "UI-002",
       "reproduced": null,
       "title": "Menu de apps: las apps solo vivian en el long-press de Ajustes"
@@ -79,13 +85,14 @@
     }
   ],
   "reproduced": [],
-  "revision": "3d770a967553ddbd01f761cc4889d976c3781a92",
+  "revision": "8a172fb6c1d32f07afc661b9bfb5a9a0f42f8be8",
   "scenarios": [
     "home-usb-20m"
   ],
   "status": "FAIL",
   "structural_failures": 3,
   "unverified": [
+    "UI-009",
     "UI-002",
     "UI-003",
     "UI-004",

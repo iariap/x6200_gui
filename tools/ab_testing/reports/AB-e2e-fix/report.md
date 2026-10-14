@@ -2,8 +2,8 @@
 
 - Date: 2026-10-13
 - Profile: `host-ui`
-- A (baseline): `61b44a13f551e3a5feafee6741ba74a2b9b17591` (a)
-- B (candidate): `92d940529a9252d50b8eb4410611b957213ff6ac` (b)
+- A (baseline): `66fb131fb86cb13b1e667bd1684c5f459a9f1f56` (a)
+- B (candidate): `ec1b0a58ec30270ece2a6b490ae41ed341133755` (b)
 - Scenarios: `home-usb-20m`
 
 ## Verdict: **PASS (IMPROVEMENT: a known issue present in A is fixed in B)** (exit 0)
@@ -21,7 +21,7 @@
 
 | Scenario | Identical | Changed px | Area | Boxes | Regions |
 |---|---|---|---|---|---|
-| home-usb-20m | no | 107 | 0.028% | 3 | barra_superior, multiplicador |
+| home-usb-20m | no | 107 | 0.028% | 3 | barra_superior, multiplicador, reloj_potencia |
 
 ## Coverage (declared by the harness)
 
@@ -38,6 +38,7 @@ Components declared below REAL (never written as REAL):
 | Issue | Fixture | Severity | Status | A | B | Classification |
 |---|---|---|---|---|---|---|
 | UI-001 | home-usb-20m | major | fixed | yes | no | FIXED |
+| UI-009 | home-bateria-externa | major | fixed | — | — | UNVERIFIED |
 | UI-002 | home-usb-20m | major | unverified | — | — | UNVERIFIED |
 | UI-003 | home-usb-20m | major | unverified | — | — | UNVERIFIED |
 | UI-004 | home-usb-20m | major | unverified | — | — | UNVERIFIED |
@@ -46,7 +47,7 @@ Components declared below REAL (never written as REAL):
 | UI-007 | main-otro-tema | major | unverified | — | — | UNVERIFIED |
 | UI-008 | home-usb-20m | info | unverified | — | — | UNVERIFIED |
 
-7 issue(s) are unverified: recorded from the repository but with no detector yet, so they neither block nor pass. They stay in the annex until the harness reproduces them.
+8 issue(s) are unverified: recorded from the repository but with no detector yet, so they neither block nor pass. They stay in the annex until the harness reproduces them.
 
 ## Quality contracts
 

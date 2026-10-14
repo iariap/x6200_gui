@@ -2,7 +2,7 @@
   "scenario": "bench-render",
   "screen": "main",
   "seed": 11,
-  "revision": "92d940529a9252d50b8eb4410611b957213ff6ac",
+  "revision": "ec1b0a58ec30270ece2a6b490ae41ed341133755",
   "framebuffer": { "width": 800, "height": 480 },
   "virtual_time_ms": 2200,
   "coverage": [
@@ -48,8 +48,8 @@
   "metrics": {
     "flushes": 6,
     "flushed_pixels": 1127680,
-    "framebuffer_fnv1a": "0x2215b977aedca2f2",
+    "framebuffer_fnv1a": "0x873104c40619cc4a",
     "png_path": "/out/bench-render.png",
-    "png_bytes": 249866
+    "png_bytes": 249809
   }
 }
