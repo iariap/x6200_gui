@@ -109,13 +109,15 @@ static void write_benchmark(FILE *f, const scenario_t *scenario)
 /* The theme of this capture, as the firmware would see it.
  *
  * `theme_list()` (src/theme.c) offers names up to 31 characters — the built-ins
- * and the JSON files — but the choice travels to the next boot inside
- * `params.theme_name`, a `params_str_t` whose `x[]` is 16 bytes
- * (src/params/types.h). `requested` is the name this capture rendered (what the
- * fixture asked for); `params_name` is what the firmware's own store holds, read
- * from the `params_str_t` the mock shares with the firmware, so its capacity and
- * its truncation are the firmware's. A name that does not survive the round trip
- * makes `theme_init(params.theme_name.x)` (src/main.c) fall back to IU1WXY. */
+ * and the JSON files — and the choice travels to the next boot inside
+ * `params.theme_name`, a `params_str_t` whose `x[]` is 32 bytes
+ * (src/params/types.h), enough for every name the menu can offer. (Before UI-013
+ * it was 16 bytes and "Outdoor-Negative" did not fit.) `requested` is the name
+ * this capture rendered (what the fixture asked for); `params_name` is what the
+ * firmware's own store holds, read from the `params_str_t` the mock shares with
+ * the firmware, so its capacity and its truncation are the firmware's. A name
+ * that does not survive the round trip makes `theme_init(params.theme_name.x)`
+ * (src/main.c) fall back to IU1WXY. */
 static void write_theme(FILE *f, const scenario_t *scenario)
 {
     fprintf(f, "  \"theme\": {\n");

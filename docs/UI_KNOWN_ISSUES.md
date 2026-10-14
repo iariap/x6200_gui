@@ -241,7 +241,9 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
 
 - **Severidad**: major.
 - **Fixture**: `main-tema-outdoor-negative`.
-- **Estado**: `verified` — defecto **preexistente** de la ROM, todavía **abierto**.
+- **Estado**: `fixed` (UI-04 / AB-UI04-EXP4; si vuelve a aparecer en B, es
+  `REGRESSION`). La excepción acotada de `quality/contracts.yaml` se **retiró en
+  el mismo cambio**: era la última del registro, que hoy no tiene ningún waiver.
 - **Síntoma**: elegir **Outdoor-Negative** en *Ajustes → Display → Theme* (o con el
   long-press de la pantalla principal) **no aplica el tema**: la GUI reinicia con
   IU1WXY. Es silencioso: el único rastro es el aviso de `theme_init()` por stderr
@@ -255,16 +257,35 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
   (`src/params/params.c`), así que "Outdoor-Negative" (16) queda como
   "Outdoor-Negativ", que no está en `builtin_names[]` ni existe como archivo, y
   `theme_init(params.theme_name.x)` (`src/main.c`) cae al tema por defecto.
+- **Fix en el código** (`src/params/types.h`): `params_str_t.x` pasa de **16 a 32
+  bytes**, el ancho que `theme_list()` admite por nombre (31 caracteres + el NUL).
+  El ancho es **sólo el buffer en RAM**: `params.db` guarda `params(name, val)` como
+  clave/valor **sin ancho** (el texto vive en `val`, afinidad dinámica de SQLite),
+  así que no hay migración ni cambio de esquema, y `params_load_str()` sigue
+  copiando hasta `sizeof(x) - 1`: un `params.db` de usuario se lee igual y su
+  configuración no se trunca. Se descartó **normalizar el menú** (renombrar o
+  acortar "Outdoor-Negative") porque los temas JSON del usuario también admiten
+  hasta 31 caracteres y el store seguiría truncando la clase entera; y se descartó
+  la **sola detección del fallback** porque el contrato exige
+  `params_name == requested`, que un store que trunca nunca cumple.
 - **Cómo lo reproduce el arnés**: el contrato `theme_name_fits_params`. El JSON de
-  cada captura trae ahora un bloque `theme` con el nombre que **se renderizó** y
-  el que el **store del firmware** contiene (el mock usa el `params_str_t` real),
-  así que la fixture `main-tema-outdoor-negative` los separa por medición:
-  `requested "Outdoor-Negative"` vs `params_name "Outdoor-Negativ"`,
-  `params_max_chars 15`. Está conectado al gate por una excepción acotada (regla +
-  fixture, vence el 2027-03-31).
-- **Fix**: pendiente, UI-04+ (más ancho en `params_str_t.x` para el nombre del
-  tema, o nombres de tema que entren en 15; la copia del nombre a `params_str_t`
-  es lo que hay que mirar, no el render).
+  cada captura trae un bloque `theme` con el nombre que **se renderizó** y el que el
+  **store del firmware** contiene (el mock usa el `params_str_t` real). Sobre A
+  (`cc55931`, con la excepción retirada) la fixture `main-tema-outdoor-negative`
+  separa `requested "Outdoor-Negative"` de `params_name "Outdoor-Negativ"`
+  (`params_max_chars 15`) y falla; sobre B `params_name` es el nombre entero
+  (`params_max_chars 31`) y pasa (0 findings). El arnés **renderiza** el tema que
+  pide la fixture (le pasa el nombre entero a `theme_init`) y **mide** el store
+  aparte: por eso A y B son **byte-idénticos** — el defecto y el fix son del store,
+  no del render — y lo que cambia es la medición y el contrato. El guard permanente
+  es doble: el contrato sin excepción (un store que vuelva a truncar deja la fixture
+  en FAIL) y el test nativo `test_names_fit_the_store`
+  (`tests/native/test_theme.c`), que hace el round-trip de "Outdoor-Negative"
+  contra el `params_str_t` real y exige que **todo** nombre de `theme_list()` entre
+  en el store.
+- **Evidencia**: `tools/ab_testing/reports/AB-UI04-EXP4/` (screenshots A/B y
+  `diff`/`overlay`, `results.json`); contracts de A sin la excepción: `FAIL
+  theme_name_fits_params [main-tema-outdoor-negative]`; contracts de B: PASS.
 
 ---
 
@@ -336,7 +357,9 @@ semilla. Se agregó un fixture (`main-tema-vision`), un contrato nuevo
 JSON de `rootfs` (`uv run x6200-ab themes`); quedaron tres entradas fundadas
 (UI-011, UI-012, UI-013). Los contratos corren sobre las **16 fixtures** (163
 chequeos) y los tres defectos nuevos están conectados al gate con excepciones
-acotadas y con vencimiento, igual que UI-010.
+acotadas y con vencimiento, igual que UI-010. **Las cuatro ya están `fixed`** (UI-010
+en AB-UI04-EXP3, UI-011 en EXP-1, UI-012 en EXP-2 y UI-013 en EXP-4) y cada
+excepción se retiró con su fix: el registro no tiene hoy ningún waiver.
 
 | ID | Título | Estado | Severidad | Detector | Fixture / evidencia |
 |---|---|---|---|---|---|
@@ -352,7 +375,7 @@ acotadas y con vencimiento, igual que UI-010.
 | UI-010 | Tema Outdoor: franja de frecuencia invisible | `fixed` (UI-04 / AB-UI04-EXP3) | critical | `region_min_content:frecuencia` | `main-otro-tema`; `AB-UI04-EXP3`; exclusión de región retirada |
 | UI-011 | VISION: los iconos de la barra desaparecen | `fixed` (UI-04 / AB-UI04-EXP1) | major | `typography_missing_glyph` | `main-tema-vision`; `AB-UI04-EXP1`; excepción retirada |
 | UI-012 | VISION: `VFO-A` no entra en su celda | `fixed` (UI-04 / AB-UI04-EXP2) | minor | `typography_text_overflow` | `main-tema-vision`; `AB-UI04-EXP2`; excepción retirada |
-| UI-013 | `params.theme_name` no guarda un nombre que el menú ofrece | `verified` (abierto) | major | `theme_name_fits_params` | `main-tema-outdoor-negative`; excepción scoped hasta 2027-03-31 |
+| UI-013 | `params.theme_name` no guarda un nombre que el menú ofrece | `fixed` (UI-04 / AB-UI04-EXP4) | major | `theme_name_fits_params` | `main-tema-outdoor-negative`; `AB-UI04-EXP4`; excepción retirada (registro sin waivers) |
 
 **Orden propuesto para UI-04+** (severidad y alcance; lo aprueba el owner):
 
@@ -366,6 +389,10 @@ acotadas y con vencimiento, igual que UI-010.
    cambio.
 3. **UI-013** (major): una opción de Ajustes que se elige y no se aplica, con el
    desplegable mostrando además otra selección; el arreglo toca `params`/menú.
+   **Hecho** en UI-04/EXP-4 (ver arriba): `params_str_t.x` pasa a 32 bytes (el
+   ancho que `theme_list()` admite por nombre) sin migración de `params.db`, con la
+   excepción retirada en el mismo cambio y un test nativo que exige que todo nombre
+   del menú entre en el store.
 4. **UI-012** (minor, VISION): consecuencia de la geometría fija de la barra.
    **Hecho** en UI-04/EXP-2 (ver arriba): la celda del VFO vuelve al tamaño de los
    otros temas bajo VISION, con la excepción retirada en el mismo cambio.

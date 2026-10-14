@@ -17,6 +17,7 @@
 #include <unistd.h>
 
 #include "test_framework.h"
+#include "params/types.h"      /* params_str_t: el ancho del store de theme_name (UI-013) */
 #include "theme.h"
 
 /* theme.c falls back to these when a theme has no waterfall palette; the X6100
@@ -81,6 +82,33 @@ static void test_list(void) {
     }
 
     CHECK(found_default);
+}
+
+/* UI-013: ningún nombre del menú puede no entrar en el store.
+ *
+ * La elección de tema viaja al próximo arranque dentro de `params.theme_name`,
+ * un `params_str_t` (src/params/types.h): `params_str_set`/`params_load_str`
+ * copian `sizeof(x) - 1` caracteres y `theme_init(params.theme_name.x)`
+ * (src/main.c) resuelve por nombre, así que un nombre que no entre se trunca y
+ * cae a IU1WXY en silencio. Acá se hace el round-trip exacto con el nombre que
+ * no entraba (el `params_str_t` es el del firmware, no una copia) y se comprueba
+ * que TODO nombre que `theme_list()` ofrece entre en el store: es la invariante
+ * que UI-013 rompía y que un nombre nuevo de 16+ caracteres volvería a romper.
+ */
+static void test_names_fit_the_store(void) {
+    params_str_t store = {0};
+
+    strncpy(store.x, "Outdoor-Negative", sizeof(store.x) - 1);
+    CHECK(strcmp(store.x, "Outdoor-Negative") == 0);   /* entra entero, no truncado */
+
+    char names[32][32];
+    int  n = theme_list(names, 32);
+
+    CHECK(n > 0);
+
+    for (int i = 0; i < n; i++) {
+        CHECK(strlen(names[i]) < sizeof(store.x));     /* el store puede con cada uno */
+    }
 }
 
 /* A JSON theme in the themes directory is loaded and its colours are used */
@@ -177,6 +205,7 @@ static void test_shipped(void) {
 void test_theme(void) {
     test_builtins();
     test_list();
+    test_names_fit_the_store();
     test_json_theme();
     test_shipped();
 }

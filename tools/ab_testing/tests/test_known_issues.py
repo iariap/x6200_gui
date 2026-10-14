@@ -249,6 +249,31 @@ def test_repo_ui010_is_fixed_and_the_registry_no_longer_waives_it(region_map: Re
     )
 
 
+def test_repo_ui013_is_fixed_and_the_registry_no_longer_waives_it(
+    region_map: RegionMap,
+) -> None:
+    """UI-013 was fixed: the registry keeps the entry and drops the waiver.
+
+    `params.theme_name` (a `params_str_t`, src/params/types.h) did not hold the
+    names `theme_list()` offers, so "Outdoor-Negative" was truncated and
+    `theme_init()` fell back to IU1WXY; the fix (UI-04/AB-UI04-EXP4) gave the store
+    the 31 characters the menu admits, so the contract `theme_name_fits_params`
+    passes on the `main-tema-outdoor-negative` fixture and its dated exception —
+    the last one in `contracts.yaml` — went away in the same change. The entry
+    carries no pixel `detector:` of its own (its detector is the contract rule), so
+    with no waiver a truncation that comes back fails the run again.
+    """
+    issues = load_known_issues(QUALITY_DIR / "known_issues.yaml", set(region_map.regions))
+    ui013 = {issue.id: issue for issue in issues}["UI-013"]
+    assert ui013.fixture == "main-tema-outdoor-negative"
+    assert ui013.region is None
+    assert ui013.status == "fixed"
+    assert ui013.evidence
+    assert ui013.detector is None
+    assert ui013.exclusions == ()
+    assert ui013.is_open_defect is False
+
+
 def test_exclusion_rule_must_be_region_scoped(tmp_path: Path, region_map: RegionMap) -> None:
     path = tmp_path / "issues.yaml"
     path.write_text(

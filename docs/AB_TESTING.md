@@ -459,7 +459,8 @@ Entregado en `tools/ui_harness/` y `tools/ab_testing/`:
   diálogos UNSUPPORTED.
 - **Temas largos**: el campo `theme` guarda el nombre completo; `params.theme_name`
   es `char[16]` y `Outdoor-Negative` (16) se truncaba (límite real del firmware,
-  anotado abajo).
+  anotado abajo). Corregido después en UI-04/AB-UI04-EXP4: `params_str_t.x` es de
+  32 bytes y el menú entero entra (UI-013).
 
 Evidencia (host, 2026-10-14, `d082583` + este cambio):
 
@@ -526,7 +527,10 @@ y cae a `IU1WXY`. La ruta de Ajustes (`dialog_settings.c` `theme_update_cb`)
 guarda por ese mismo campo, así que elegir **Outdoor-Negative** en pantalla
 terminaría en el tema por defecto. Es un hallazgo real **fuera del alcance** de
 UI-02 (cobertura): el arnés usa el nombre completo para poder renderizar el tema y
-lo deja documentado para el triage del issue #8.
+lo deja documentado para el triage del issue #8. **Corregido en UI-04/AB-UI04-EXP4
+(UI-013)**: `params_str_t.x` pasó a 32 bytes (el ancho que `theme_list()` admite
+por nombre), sin migración de `params.db`; la excepción del contrato
+`theme_name_fits_params` se retiró en el mismo cambio.
 
 ## Fix real de firmware: UI-011 (iconos de VISION) — EXP-1 de UI-04 (issue #9) ✅
 

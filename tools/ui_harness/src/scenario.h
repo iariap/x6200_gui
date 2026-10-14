@@ -26,9 +26,10 @@
 typedef struct {
     char name[SCENARIO_NAME_MAX];
     char screen[SCENARIO_SCREEN_MAX];
-    /* The theme to build, as the fixture spells it. Kept whole: the firmware's
-     * params_str_t (theme_name.x) is 16 bytes, so a longer name — "Outdoor-
-     * Negative" — would be truncated there; theme_init() gets the full name. */
+    /* The theme to build, as the fixture spells it. Kept whole: it is the name
+     * `theme_list()` offers (up to 31 characters) and the one the store keeps,
+     * `params_str_t.theme_name.x` (32 bytes, 31 useful — before UI-013 it was 16
+     * and "Outdoor-Negative" did not fit); theme_init() gets the full name. */
     char theme[SCENARIO_THEME_MAX];
     /* Deterministic seed for the synthetic spectrum/waterfall data. */
     uint32_t seed;

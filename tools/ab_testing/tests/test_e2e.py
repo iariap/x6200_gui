@@ -38,6 +38,7 @@ class Revisions:
     defect: str
     clock_defect: str
     style_defect: str
+    theme_defect: str
     bench_regression: str
     structural: str
     cache_dir: Path
@@ -163,6 +164,22 @@ def _reintroduce_frequency_white(worktree: Path) -> None:
     path.write_text(text)
 
 
+def _reintroduce_theme_truncation(worktree: Path) -> None:
+    """Deliberate defect: put the theme-name store back to 16 bytes (UI-013).
+
+    The fix widened `params_str_t.x` (src/params/types.h) to the 31 characters
+    `theme_list()` admits, so "Outdoor-Negative" survives the store. Shrinking it
+    back to the 16 bytes of the defect truncates it to "Outdoor-Negativ" and
+    `theme_name_fits_params` fires again on `main-tema-outdoor-negative`: the
+    contract, with no waiver left, turns that into a plain failure.
+    """
+    path = worktree / "src" / "params" / "types.h"
+    text = path.read_text()
+    needle = "    char        x[32];"
+    assert needle in text, "the width fix must be in the base revision"
+    path.write_text(text.replace(needle, "    char        x[16];", 1))
+
+
 def _raise_bench_cost(worktree: Path) -> None:
     """Deliberate render regression: repaint the screen three times per frame.
 
@@ -230,6 +247,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
     defect = _ephemeral(REPO_ROOT, base, "defect", _show_multiplier_label)
     clock_defect = _ephemeral(REPO_ROOT, base, "clock", _reintroduce_clock_defect)
     style_defect = _ephemeral(REPO_ROOT, base, "style", _reintroduce_frequency_white)
+    theme_defect = _ephemeral(REPO_ROOT, base, "theme", _reintroduce_theme_truncation)
     bench_regression = _ephemeral(REPO_ROOT, base, "bench", _raise_bench_cost)
     structural = _ephemeral(REPO_ROOT, base, "structural", _inject_structural_defects)
     _record_patches(
@@ -239,6 +257,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             "defect": defect,
             "clock": clock_defect,
             "style": style_defect,
+            "theme": theme_defect,
             "bench": bench_regression,
             "structural": structural,
         },
@@ -250,6 +269,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             defect=defect,
             clock_defect=clock_defect,
             style_defect=style_defect,
+            theme_defect=theme_defect,
             bench_regression=bench_regression,
             structural=structural,
             cache_dir=cache_dir,
@@ -264,6 +284,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             "abtest/defect",
             "abtest/clock",
             "abtest/style",
+            "abtest/theme",
             "abtest/bench",
             "abtest/structural",
         )
@@ -584,6 +605,63 @@ def test_contracts_pass_on_the_fixed_outdoor_frequency_row(
         item for item in payload["findings"] if item["rule"] == "region_min_content:frecuencia"
     )
     assert finding["ok"] is True
+
+
+def test_contracts_reject_a_theme_the_store_truncates(
+    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
+) -> None:
+    """UI-013 is fixed: a store that truncates the name fails, not silently.
+
+    The ephemeral revision puts `params_str_t.x` back to the 16 bytes of the
+    defect (src/params/types.h), so the harness' own store truncates
+    "Outdoor-Negative" to "Outdoor-Negativ" while the fixture renders the whole
+    name. Nothing waives `theme_name_fits_params` any more (the UI-013 exception
+    was the last one and was withdrawn when the fix landed), so the contract is a
+    plain failure: the defect cannot come back unnoticed.
+    """
+    code = _run(
+        tmp_path,
+        revisions,
+        [
+            "contracts",
+            "--revision",
+            revisions.theme_defect,
+            "--scenario",
+            "main-tema-outdoor-negative",
+        ],
+    )
+    assert code == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["status"] == "FAIL"
+    failure = next(item for item in payload["failures"] if item["rule"] == "theme_name_fits_params")
+    assert failure["fixture"] == "main-tema-outdoor-negative"
+    assert failure["baseline_issue"] is None
+    assert "'Outdoor-Negativ'" in failure["detail"]
+    assert payload["unchanged_defects"] == []
+
+
+def test_contracts_pass_on_the_fixed_theme_store(
+    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
+) -> None:
+    """The widened store keeps the whole name: the contract and the registry agree.
+
+    On the fixed revision the fixture measures `requested == params_name` and no
+    issue waives the rule, so the fixture that used to separate the two names now
+    passes on its own.
+    """
+    code = _run(
+        tmp_path,
+        revisions,
+        ["contracts", "--revision", revisions.base, "--scenario", "main-tema-outdoor-negative"],
+    )
+    assert code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["status"] == "PASS"
+    assert payload["failures"] == []
+    assert payload["unchanged_defects"] == []
+    finding = next(item for item in payload["findings"] if item["rule"] == "theme_name_fits_params")
+    assert finding["ok"] is True
+    assert "fits params.theme_name" in finding["detail"]
 
 
 def test_ui010_fix_stays_inside_the_frequency_region(tmp_path: Path, revisions: Revisions) -> None:

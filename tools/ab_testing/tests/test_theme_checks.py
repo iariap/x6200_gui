@@ -24,6 +24,14 @@ TRUNCATED: dict[str, object] = {
     "params_max_chars": 15,
     "active": "Outdoor-Negative",
 }
+# The store after UI-013's fix (`params_str_t.x` is 32 bytes, 31 useful): the
+# whole name survives, so `requested == params_name`.
+WIDE: dict[str, object] = {
+    "requested": "Outdoor-Negative",
+    "params_name": "Outdoor-Negative",
+    "params_max_chars": 31,
+    "active": "Outdoor-Negative",
+}
 
 
 def _capture(tmp_path: Path, name: str, theme: dict[str, object] | None):
@@ -59,49 +67,59 @@ def test_a_capture_without_the_theme_block_is_reported_as_not_instrumented(
     assert "no `theme` block" in finding.detail
 
 
-def test_the_repo_waives_the_theme_finding_only_until_its_expiry(
-    real_quality: RealQuality,
-) -> None:
-    """The registry's exception covers this rule on this fixture — and expires."""
+def test_the_repo_does_not_waive_the_theme_finding(real_quality: RealQuality) -> None:
+    """With the fix in, the registry carries no exception: the finding is real.
+
+    Before UI-04/AB-UI04-EXP4 this rule was waived on its fixture by a dated
+    exception; now that `params.theme_name` holds the whole name the exception is
+    gone, so a theme the store cannot keep is a plain failure — the same shape as
+    UI-010/UI-011/UI-012 after their fixes.
+    """
     finding = ContractFinding(
         rule=RULE_THEME_NAME,
         fixture="main-tema-outdoor-negative",
         ok=False,
         detail="theme 'Outdoor-Negative' does not fit params.theme_name",
     )
-    waived = apply_waivers([finding], real_quality.contracts, date(2026, 10, 14))
-    assert waived[0].ok is True
-    assert waived[0].detail.startswith("waived until ")
-    # A dated waiver, not a permanent one: after the expiry it is a failure again.
-    assert apply_waivers([finding], real_quality.contracts, date(2028, 1, 1))[0].ok is False
+    unchanged = apply_waivers([finding], real_quality.contracts, date(2026, 10, 14))
+    assert unchanged == [finding]
+    assert unchanged[0].ok is False
 
 
-def test_the_exception_is_scoped_to_its_fixture(real_quality: RealQuality) -> None:
-    finding = ContractFinding(
-        rule=RULE_THEME_NAME,
-        fixture="main-tema-classic",
-        ok=False,
-        detail="theme that does not fit",
-    )
-    assert apply_waivers([finding], real_quality.contracts, date(2026, 10, 14))[0].ok is False
+def test_no_fixture_is_waived_for_the_theme_rule(real_quality: RealQuality) -> None:
+    """No fixture gets a pass for the theme rule: the register has no waiver."""
+    for fixture in ("main-tema-outdoor-negative", "main-tema-classic"):
+        finding = ContractFinding(
+            rule=RULE_THEME_NAME,
+            fixture=fixture,
+            ok=False,
+            detail="theme that does not fit",
+        )
+        assert apply_waivers([finding], real_quality.contracts, date(2026, 10, 14))[0].ok is False
 
 
-def test_the_repo_contracts_carry_the_remaining_exceptions(
-    real_quality: RealQuality,
-) -> None:
-    scoped = {
-        (exception.rule, exception.fixture): exception
-        for exception in real_quality.contracts.exceptions
-    }
-    assert ("theme_name_fits_params", "main-tema-outdoor-negative") in scoped
-    # UI-011 was withdrawn when its fix landed (UI-04/AB-UI04-EXP1) and UI-012 in
-    # UI-04/AB-UI04-EXP2: the missing glyphs and the overflowing `VFO-A` are gone,
-    # so there is no waiver left to carry for either.
-    assert ("typography_missing_glyph", "main-tema-vision") not in scoped
-    assert ("typography_text_overflow", "main-tema-vision") not in scoped
-    for exception in real_quality.contracts.exceptions:
-        assert exception.reason.strip(), f"{exception.rule} has no reason"
-        assert exception.until >= "2026-10-14"
+def test_the_fixed_store_keeps_the_full_name(tmp_path: Path) -> None:
+    """UI-013's fix: the store holds the 31 characters `theme_list()` admits.
+
+    `params_str_t.x` is 32 bytes (src/params/types.h), so "Outdoor-Negative" (16)
+    survives the round trip and the fixture measures `requested == params_name`.
+    """
+    finding = run_theme_checks(_capture(tmp_path, "main-tema-outdoor-negative", WIDE))[0]
+    assert finding.ok is True
+    assert "fits params.theme_name" in finding.detail
+
+
+def test_the_repo_contracts_carry_no_exceptions(real_quality: RealQuality) -> None:
+    """The register has no waiver left: every fix is guarded by its contract.
+
+    UI-013 was the last exception. The store (`params_str_t.x`, src/params/types.h)
+    now holds the 31 characters `theme_list()` admits, so `theme_name_fits_params`
+    passes on its own fixture and the dated waiver went away with the fix
+    (UI-04/AB-UI04-EXP4) — UI-011's waiver was withdrawn in EXP-1, UI-012's in EXP-2
+    and the UI-010 region exclusion in EXP-3. With nothing waived, a reappearance of
+    any of them fails the run again.
+    """
+    assert real_quality.contracts.exceptions == ()
 
 
 def test_the_repo_explains_the_top_bar_visual_changes(real_quality: RealQuality) -> None:
