@@ -29,6 +29,74 @@ cd tools/ui_harness/build
   --json /out/{name}.json
 """
 
+# `--bench` measures the real render cost of each frame with CLOCK_MONOTONIC
+# (see tools/ui_harness/src/bench_metrics.h) and appends a `benchmark` block to
+# the JSON. It never changes the PNG.
+BENCHMARK_SCRIPT = """\
+set -euo pipefail
+cd tools/ui_harness/build
+./ui_harness \
+  --scenario /src/tools/ui_harness/fixtures/{fixture} \
+  --png /out/{name}.png \
+  --json /out/{name}.json \
+  --bench --warmup {warmup} --repeats {repeats}
+"""
+
+
+@dataclass(frozen=True)
+class FrameSample:
+    """One measured frame: real-clock timings and the render counters."""
+
+    render_ms: float
+    flush_ms: float
+    draw_ms: float
+    flushes: int
+    redrawn_area_px: int
+    unique_redrawn_px: int
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> FrameSample:
+        return cls(
+            render_ms=float(data["render_ms"]),
+            flush_ms=float(data["flush_ms"]),
+            draw_ms=float(data["draw_ms"]),
+            flushes=int(data["flushes"]),
+            redrawn_area_px=int(data["redrawn_area_px"]),
+            unique_redrawn_px=int(data["unique_redrawn_px"]),
+        )
+
+
+@dataclass(frozen=True)
+class MemorySample:
+    """Process memory read from /proc at the end of the benchmark run."""
+
+    rss_bytes: int
+    pss_bytes: int
+    peak_rss_bytes: int
+    peak_vm_bytes: int
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> MemorySample:
+        return cls(
+            rss_bytes=int(data.get("rss_bytes", 0)),
+            pss_bytes=int(data.get("pss_bytes", 0)),
+            peak_rss_bytes=int(data.get("peak_rss_bytes", 0)),
+            peak_vm_bytes=int(data.get("peak_vm_bytes", 0)),
+        )
+
+
+@dataclass(frozen=True)
+class BenchmarkRun:
+    """One `ui_harness --bench` invocation for a scenario in one round."""
+
+    scenario: Scenario
+    revision: Revision
+    round_index: int
+    frames: tuple[FrameSample, ...]
+    memory: MemorySample | None
+    environment: str
+    report: dict[str, Any]
+
 
 @dataclass(frozen=True)
 class Capture:
@@ -149,6 +217,81 @@ class Capturer:
             report_path=report_path,
             report=report,
             png_sha256=_sha256(png),
+        )
+
+    def benchmark(
+        self,
+        revision: Revision,
+        scenario: Scenario,
+        *,
+        warmup: int,
+        repeats: int,
+        round_index: int,
+        out_dir: Path,
+        logs_dir: Path,
+    ) -> BenchmarkRun:
+        """Run one `--bench` pass and keep its per-frame timings.
+
+        A revision whose harness does not emit the `benchmark` block (an older
+        commit) is BLOCKED with a clear cause, never silently reported as
+        measured.
+        """
+        out_dir.mkdir(parents=True, exist_ok=True)
+        scenario_path = revision.fixtures_dir / scenario.filename
+        parsed = parse_scenario(scenario_path)
+        if parsed.name != scenario.name:
+            raise HarnessError(
+                f"{scenario_path} declares name `{parsed.name}`, expected `{scenario.name}`"
+            )
+        script = BENCHMARK_SCRIPT.format(
+            fixture=scenario.filename,
+            name=scenario.name,
+            warmup=warmup,
+            repeats=repeats,
+        )
+        log_path = logs_dir / (
+            f"benchmark-{revision.label}-{revision.short_sha}-{scenario.name}-r{round_index}.log"
+        )
+        result = self.runner.run_script(
+            revision.worktree,
+            out_dir,
+            script,
+            timeout=600,
+            log_path=log_path,
+        )
+        report_path = out_dir / f"{scenario.name}.json"
+        if not result.ok or not report_path.is_file():
+            raise HarnessError(
+                f"harness --bench failed for scenario {scenario.name} on {revision.short_sha} "
+                f"(exit {result.returncode}): {result.tail(10)}"
+            )
+        report = json.loads(report_path.read_text())
+        reported = str(report.get("revision", ""))
+        if reported != revision.sha:
+            raise HarnessError(
+                f"harness for {scenario.name} reports revision {reported or 'unknown'} "
+                f"but {revision.sha} was built"
+            )
+        benchmark = report.get("benchmark")
+        if not isinstance(benchmark, dict) or not benchmark.get("enabled"):
+            raise HarnessError(
+                f"revision {revision.short_sha} does not emit the benchmark block: it was "
+                "built before the real-clock instrumentation (milestone 4)"
+            )
+        frames = tuple(FrameSample.from_dict(entry) for entry in benchmark.get("frames", []))
+        if not frames:
+            raise HarnessError(
+                f"revision {revision.short_sha} reported no benchmark frame for {scenario.name}"
+            )
+        memory = benchmark.get("memory")
+        return BenchmarkRun(
+            scenario=scenario,
+            revision=revision,
+            round_index=round_index,
+            frames=frames,
+            memory=MemorySample.from_dict(memory) if isinstance(memory, dict) else None,
+            environment=str(benchmark.get("environment", "")),
+            report=report,
         )
 
 

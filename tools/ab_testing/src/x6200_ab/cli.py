@@ -23,16 +23,23 @@ from typing import Any
 
 from . import __version__, proc
 from .builds import HarnessBuilder
-from .capture import Capture, Capturer
+from .capture import BenchmarkRun, Capture, Capturer, FrameSample, MemorySample
 from .contracts import run_contracts
 from .docker import DockerRunner
 from .errors import AbError, DockerUnavailable
 from .evaluator import ComparisonData, evaluate, observe_issues
 from .known_issues import KnownIssue, evaluate_detector, load_known_issues
+from .performance import (
+    BenchmarkVerdict,
+    ScenarioStats,
+    compare_benchmark,
+    measure_verdict,
+    stats_from_frames,
+)
 from .quality_config import Budgets, QualityContracts, load_budgets, load_contracts
 from .quality_gates import ALL_GATES, GateName, GateProfile, GateResult, overall
 from .regions import RegionMap, load_regions
-from .reports import ReportMetadata, write_report
+from .reports import ReportMetadata, write_benchmark_report, write_report
 from .revisions import Revision, RevisionManager, find_repo
 from .scenarios import ScenarioSuite
 from .status import Status
@@ -80,6 +87,14 @@ def build_parser() -> argparse.ArgumentParser:
     audit.add_argument("--scenario", action="append", default=[])
     audit.set_defaults(func=cmd_audit)
 
+    contracts = sub.add_parser(
+        "contracts", help="evaluate the objective quality contracts on one revision"
+    )
+    _common(contracts)
+    contracts.add_argument("--revision", required=True)
+    contracts.add_argument("--scenario", action="append", default=[])
+    contracts.set_defaults(func=cmd_contracts)
+
     compare = sub.add_parser("compare", help="A/B compare two revisions and write a report")
     _common(compare)
     compare.add_argument("--a", required=True, help="baseline rev")
@@ -89,11 +104,19 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("--reports-dir", default=None)
     compare.set_defaults(func=cmd_compare)
 
-    benchmark = sub.add_parser("benchmark", help="render-cost repetitions for one revision")
+    benchmark = sub.add_parser(
+        "benchmark", help="real-clock render cost of one revision, or A vs B"
+    )
     _common(benchmark)
-    benchmark.add_argument("--revision", required=True)
+    benchmark.add_argument("--revision", default=None, help="measure a single revision")
+    benchmark.add_argument("--a", default=None, help="baseline revision (with --b)")
+    benchmark.add_argument("--b", default=None, help="candidate revision (with --a)")
     benchmark.add_argument("--scenario", action="append", default=[])
-    benchmark.add_argument("--repeats", type=int, default=3)
+    benchmark.add_argument("--repeats", type=int, default=None, help="override the budget")
+    benchmark.add_argument("--warmup", type=int, default=None, help="override the budget")
+    benchmark.add_argument("--rounds", type=int, default=None, help="override the budget")
+    benchmark.add_argument("--experiment-id", default=None)
+    benchmark.add_argument("--reports-dir", default=None)
     benchmark.set_defaults(func=cmd_benchmark)
 
     report = sub.add_parser("report", help="print an existing experiment's verdict")
@@ -247,6 +270,51 @@ def cmd_audit(args: argparse.Namespace) -> int:
         _teardown(context, manager)
 
 
+# --- contracts ---------------------------------------------------------------
+
+
+def cmd_contracts(args: argparse.Namespace) -> int:
+    """Evaluate the candidate alone against the objective quality contracts.
+
+    Independent from any baseline: geometry, minimum content per region and the
+    honesty of the declared coverage. A rule the candidate violates is a FAIL;
+    this is the C of the plan (quality, not A/B).
+    """
+    context = _build_context(args)
+    manager = RevisionManager(context.repo, context.workspace, context.cache_dir)
+    try:
+        revision = _materialize(context, manager, args.revision, "contracts")
+        suite = ScenarioSuite.from_fixtures_dir(revision.fixtures_dir, args.scenario)
+        out_dir = context.workspace / "captures" / revision.short_sha
+        captures = Capturer(context.runner).capture_all(
+            revision, suite, out_dir, context.workspace / "logs"
+        )
+        findings = run_contracts(captures, context.region_map, context.contracts)
+        failures = [finding for finding in findings if not finding.ok]
+        status = Status.FAIL if failures else Status.PASS
+        payload = {
+            "status": status.value,
+            "exit_code": status.exit_code,
+            "revision": revision.sha,
+            "scenarios": suite.names,
+            "checks": len(findings),
+            "failures": [finding.as_dict() for finding in failures],
+            "findings": [finding.as_dict() for finding in findings],
+        }
+        text = (
+            f"contracts {revision.short_sha}: {status.value} — "
+            f"{len(findings)} checks, {len(failures)} failure(s)"
+        )
+        if failures:
+            text += "\n" + "\n".join(
+                f"  FAIL {finding.rule} [{finding.fixture}]: {finding.detail}"
+                for finding in failures
+            )
+        return _emit(args, payload, text, status)
+    finally:
+        _teardown(context, manager)
+
+
 # --- compare -----------------------------------------------------------------
 
 
@@ -347,44 +415,238 @@ def _compare_text(evaluation: Any, report_root: Path) -> str:
 
 
 def cmd_benchmark(args: argparse.Namespace) -> int:
+    """Measure the real render cost: one revision, or A vs B with alternation.
+
+    A single revision is a *measurement* (p50/p95/p99, FPS, dispersion): PASS
+    when the sample is stable, INCONCLUSIVE when it is too variable. Two
+    revisions are a *gate*: FAIL when the candidate's p95 render time (or flush
+    count / redrawn area) exceeds the baseline beyond the fixed budget.
+    """
     context = _build_context(args)
+    budget = context.budgets.benchmark
+    warmup = args.warmup or budget.warmup_frames
+    repeats = args.repeats or budget.repeats
+    rounds = args.rounds or budget.rounds
+    experiment_id = args.experiment_id or ("BENCH-" + datetime.now().strftime("%Y%m%d-%H%M%S"))
+    reports_dir = (
+        Path(args.reports_dir).resolve()
+        if args.reports_dir
+        else context.repo.joinpath(*DEFAULT_REPORTS_SUBDIR)
+    )
     manager = RevisionManager(context.repo, context.workspace, context.cache_dir)
+    capturer = Capturer(context.runner)
+    logs_dir = context.workspace / "logs"
+
+    if not args.revision and not (args.a and args.b):
+        raise AbError("benchmark needs --revision, or both --a and --b")
+
     try:
+        environment = ""
+
+        if args.a and args.b:
+            revision_a = _materialize(context, manager, args.a, "a")
+            revision_b = _materialize(context, manager, args.b, "b")
+            suite = ScenarioSuite.from_fixtures_dir(revision_a.fixtures_dir, args.scenario)
+            frames_a: dict[str, list[FrameSample]] = {name: [] for name in suite.names}
+            frames_b: dict[str, list[FrameSample]] = {name: [] for name in suite.names}
+            memory_a: dict[str, MemorySample] = {}
+            memory_b: dict[str, MemorySample] = {}
+            for round_index in range(rounds):
+                environment = _bench_round(
+                    capturer,
+                    revision_a,
+                    suite,
+                    round_index=round_index,
+                    warmup=warmup,
+                    repeats=repeats,
+                    workspace=context.workspace,
+                    logs_dir=logs_dir,
+                    frames=frames_a,
+                    memories=memory_a,
+                )
+                environment = _bench_round(
+                    capturer,
+                    revision_b,
+                    suite,
+                    round_index=round_index,
+                    warmup=warmup,
+                    repeats=repeats,
+                    workspace=context.workspace,
+                    logs_dir=logs_dir,
+                    frames=frames_b,
+                    memories=memory_b,
+                )
+            stats_a = _stats(frames_a, memory_a)
+            stats_b = _stats(frames_b, memory_b)
+            verdict = compare_benchmark(stats_a, stats_b, budget)
+            payload: dict[str, Any] = {
+                "status": verdict.status.value,
+                "exit_code": verdict.status.exit_code,
+                "experiment_id": experiment_id,
+                "kind": "benchmark-comparison",
+                "revisions": {"a": revision_a.sha, "b": revision_b.sha},
+                "scenarios": suite.names,
+                "environment": environment,
+                "budget": verdict.as_dict()["budget"],
+                "comparisons": [item.as_dict() for item in verdict.comparisons],
+            }
+            metadata = ReportMetadata(
+                experiment_id=experiment_id,
+                date=datetime.now().date().isoformat(),
+                docker_image=context.runner.image,
+                scenario_fixtures={
+                    scenario.name: scenario.filename for scenario in suite.scenarios
+                },
+            )
+            paths = write_benchmark_report(
+                experiment_id=experiment_id,
+                reports_dir=reports_dir,
+                payload=payload,
+                metadata=metadata,
+            )
+            payload["report"] = str(paths.root)
+            text = _benchmark_comparison_text(verdict, revision_a, revision_b, paths.root)
+            return _emit(args, payload, text, verdict.status)
+
         revision = _materialize(context, manager, args.revision, "bench")
         suite = ScenarioSuite.from_fixtures_dir(revision.fixtures_dir, args.scenario)
-        capturer = Capturer(context.runner)
-        runs: dict[str, list[dict[str, Any]]] = {name: [] for name in suite.names}
-        for repeat in range(max(1, args.repeats)):
-            out_dir = context.workspace / "bench" / f"{revision.short_sha}-{repeat}"
-            for capture in capturer.capture_all(
-                revision, suite, out_dir, context.workspace / "logs"
-            ):
-                runs[capture.name].append(
-                    {
-                        "flushes": capture.flushes(),
-                        "flushed_pixels": capture.flushed_pixels(),
-                        "framebuffer_fnv1a": capture.framebuffer_hash,
-                        "png_sha256": capture.png_sha256,
-                    }
-                )
+        frames: dict[str, list[FrameSample]] = {name: [] for name in suite.names}
+        memories: dict[str, MemorySample] = {}
+        for round_index in range(rounds):
+            environment = _bench_round(
+                capturer,
+                revision,
+                suite,
+                round_index=round_index,
+                warmup=warmup,
+                repeats=repeats,
+                workspace=context.workspace,
+                logs_dir=logs_dir,
+                frames=frames,
+                memories=memories,
+            )
+        stats = _stats(frames, memories)
+        status = measure_verdict(stats, budget)
         payload = {
-            "status": Status.BLOCKED.value,
-            "exit_code": Status.BLOCKED.exit_code,
-            "revision": revision.sha,
-            "cause": (
-                "frame timing, FPS and p50/p95/p99 are not instrumented: the harness only "
-                "exposes render counters under virtual time, which are not wall-clock "
-                "durations. Energy cannot be derived from them either."
-            ),
-            "available": runs,
+            "status": status.value,
+            "exit_code": status.exit_code,
+            "experiment_id": experiment_id,
+            "kind": "benchmark-measurement",
+            "revisions": {"revision": revision.sha},
+            "scenarios": suite.names,
+            "environment": environment,
+            "budget": {
+                "warmup_frames": warmup,
+                "repeats": repeats,
+                "rounds": rounds,
+                "min_frames": budget.min_frames,
+                "max_dispersion_cv_pct": budget.max_dispersion_cv_pct,
+            },
+            "measurements": [stats[name].as_dict() for name in sorted(stats)],
         }
-        text = (
-            f"benchmark of {revision.short_sha}: BLOCKED — no frame-timing instrumentation; "
-            f"render counters collected for {len(runs)} scenario(s)"
+        metadata = ReportMetadata(
+            experiment_id=experiment_id,
+            date=datetime.now().date().isoformat(),
+            docker_image=context.runner.image,
+            scenario_fixtures={scenario.name: scenario.filename for scenario in suite.scenarios},
         )
-        return _emit(args, payload, text, Status.BLOCKED)
+        paths = write_benchmark_report(
+            experiment_id=experiment_id,
+            reports_dir=reports_dir,
+            payload=payload,
+            metadata=metadata,
+        )
+        payload["report"] = str(paths.root)
+        text = _benchmark_measurement_text(revision, stats, status, paths.root)
+        return _emit(args, payload, text, status)
     finally:
         _teardown(context, manager)
+
+
+def _bench_round(
+    capturer: Capturer,
+    revision: Revision,
+    suite: ScenarioSuite,
+    *,
+    round_index: int,
+    warmup: int,
+    repeats: int,
+    workspace: Path,
+    logs_dir: Path,
+    frames: dict[str, list[FrameSample]],
+    memories: dict[str, MemorySample],
+) -> str:
+    """Run one `--bench` pass per scenario and append its frames."""
+    environment = ""
+    for scenario in suite.scenarios:
+        out_dir = workspace / "bench" / f"{revision.short_sha}-r{round_index}"
+        run: BenchmarkRun = capturer.benchmark(
+            revision,
+            scenario,
+            warmup=warmup,
+            repeats=repeats,
+            round_index=round_index,
+            out_dir=out_dir,
+            logs_dir=logs_dir,
+        )
+        frames[scenario.name].extend(run.frames)
+        if run.memory is not None:
+            memories[scenario.name] = run.memory
+        if run.environment:
+            environment = run.environment
+    return environment
+
+
+def _stats(
+    frames: dict[str, list[FrameSample]], memories: dict[str, MemorySample]
+) -> dict[str, ScenarioStats]:
+    return {
+        name: stats_from_frames(name, tuple(samples), memories.get(name))
+        for name, samples in frames.items()
+    }
+
+
+def _benchmark_comparison_text(
+    verdict: BenchmarkVerdict, revision_a: Revision, revision_b: Revision, report_root: Path
+) -> str:
+    lines = [
+        f"benchmark {revision_a.short_sha} (A) vs {revision_b.short_sha} (B): "
+        f"{verdict.status.value} (exit {verdict.status.exit_code})"
+    ]
+    for item in verdict.comparisons:
+        lines.append(
+            f"  {item.scenario:20s} {item.status.value:15s} "
+            f"p95 {item.a.render_p95_ms:.3f} -> {item.b.render_p95_ms:.3f} ms "
+            f"({item.p95_delta_pct:+.1f}%)"
+        )
+        for reason in item.reasons:
+            lines.append(f"      {reason}")
+    lines.append("  x86 host proxy: relative regression detection, not the Cortex-A7")
+    lines.append(f"report: {report_root}")
+    return "\n".join(lines)
+
+
+def _benchmark_measurement_text(
+    revision: Revision,
+    stats: dict[str, ScenarioStats],
+    status: Status,
+    report_root: Path,
+) -> str:
+    lines = [
+        f"benchmark {revision.short_sha}: {status.value} (exit {status.exit_code}) — "
+        "x86 host proxy, not the Cortex-A7"
+    ]
+    for name in sorted(stats):
+        scenario = stats[name]
+        rss = scenario.memory.rss_bytes if scenario.memory else 0
+        lines.append(
+            f"  {name:20s} frames={scenario.frames} p50={scenario.render_p50_ms:.3f} "
+            f"p95={scenario.render_p95_ms:.3f} p99={scenario.render_p99_ms:.3f} ms "
+            f"fps={scenario.fps:.1f} cv={scenario.dispersion_cv_pct:.1f}% "
+            f"flushes={scenario.flushes_mean:.1f} rss={rss} B"
+        )
+    lines.append(f"report: {report_root}")
+    return "\n".join(lines)
 
 
 # --- report / evaluate -------------------------------------------------------

@@ -43,7 +43,7 @@ def _results(recorded: str, functional: str) -> dict:
 
 def test_parser_exposes_every_subcommand() -> None:
     help_text = build_parser().format_help()
-    for command in ("capture", "audit", "compare", "benchmark", "report", "evaluate"):
+    for command in ("capture", "audit", "contracts", "compare", "benchmark", "report", "evaluate"):
         assert command in help_text
 
 

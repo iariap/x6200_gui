@@ -403,6 +403,108 @@ def _tri(value: bool | None) -> str:
     return "yes" if value else "no"
 
 
+@dataclass(frozen=True)
+class BenchmarkReportPaths:
+    """Where a benchmark report and its evidence landed."""
+
+    root: Path
+    markdown: Path
+    results: Path
+    metadata: Path
+
+
+def write_benchmark_report(
+    *,
+    experiment_id: str,
+    reports_dir: Path,
+    payload: dict[str, Any],
+    metadata: ReportMetadata,
+) -> BenchmarkReportPaths:
+    """Write `reports/<experiment-id>/` for a render benchmark run.
+
+    The payload is the machine-readable result (same shape the CLI prints) and
+    the Markdown is the human-readable summary; both carry the x86-proxy label.
+    """
+    root = reports_dir / experiment_id
+    if root.exists():
+        shutil.rmtree(root)
+    root.mkdir(parents=True, exist_ok=True)
+    paths = BenchmarkReportPaths(
+        root=root,
+        markdown=root / "report.md",
+        results=root / "results.json",
+        metadata=root / "metadata.json",
+    )
+    paths.results.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    paths.metadata.write_text(json.dumps(metadata.as_dict(), indent=2, sort_keys=True) + "\n")
+    paths.markdown.write_text(render_benchmark_markdown(experiment_id, payload, metadata))
+    return paths
+
+
+def render_benchmark_markdown(
+    experiment_id: str, payload: dict[str, Any], metadata: ReportMetadata
+) -> str:
+    status = str(payload.get("status", ""))
+    lines = [f"# Render benchmark — {experiment_id}", ""]
+    lines.append(f"- Status: **{status}** (exit {payload.get('exit_code', '')})")
+    lines.append(f"- Date: {metadata.date}")
+    revisions = payload.get("revisions", {})
+    for label, sha in revisions.items():
+        lines.append(f"- {label}: `{sha}`")
+    comparisons = payload.get("comparisons", [])
+    if comparisons:
+        lines.append("")
+        lines.append(
+            "> x86 host proxy (CLOCK_MONOTONIC): relative regression detection only, "
+            "not the Cortex-A7 frame budget nor battery life."
+        )
+        lines.append("")
+        lines.append(
+            "| Scenario | Status | p50 (ms) | p95 (ms) | p99 (ms) | FPS | "
+            "p95 Δ | flushes Δ | area Δ |"
+        )
+        lines.append("|---|---|---|---|---|---|---|---|---|")
+        for item in comparisons:
+            b = item.get("b", {})
+            lines.append(
+                f"| {item['scenario']} | {item['status']} | "
+                f"{b.get('render_p50_ms', '')} | {b.get('render_p95_ms', '')} | "
+                f"{b.get('render_p99_ms', '')} | {b.get('fps', '')} | "
+                f"{item.get('p95_delta_pct', '')}% | {item.get('flushes_delta_pct', '')}% | "
+                f"{item.get('redrawn_area_delta_pct', '')}% |"
+            )
+        for item in comparisons:
+            if item.get("reasons"):
+                lines.append("")
+                lines.append(f"- **{item['scenario']}** ({item['status']}):")
+                for reason in item["reasons"]:
+                    lines.append(f"  - {reason}")
+    measurements = payload.get("measurements", [])
+    if measurements:
+        lines.append("")
+        lines.append("> x86 host proxy (CLOCK_MONOTONIC): a measurement, not a battery figure.")
+        lines.append("")
+        lines.append(
+            "| Scenario | Frames | p50 (ms) | p95 (ms) | p99 (ms) | FPS | Dispersion | "
+            "flushes | redrawn area | RSS | PSS |"
+        )
+        lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
+        for item in measurements:
+            memory = item.get("memory") or {}
+            lines.append(
+                f"| {item['scenario']} | {item.get('frames', '')} | "
+                f"{item.get('render_p50_ms', '')} | {item.get('render_p95_ms', '')} | "
+                f"{item.get('render_p99_ms', '')} | {item.get('fps', '')} | "
+                f"{item.get('dispersion_cv_pct', '')}% | {item.get('flushes_mean', '')} | "
+                f"{item.get('redrawn_area_mean', '')} | "
+                f"{memory.get('rss_bytes', '')} | {memory.get('pss_bytes', '')} |"
+            )
+    lines.append("")
+    lines.append(f"- Environment: {payload.get('environment', 'x86 host')}")
+    lines.append("")
+    return "\n".join(lines)
+
+
 def _module_version(name: str) -> str:
     try:
         module = importlib.import_module(name)
