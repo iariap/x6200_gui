@@ -372,10 +372,10 @@ reproduzca. Cada una dice qué falta.
 |---|---|---|---|
 | UI-002 | Las apps solo vivían en el long-press de Ajustes | `docs/HALLAZGOS.md` 17, 29 | un fixture que abra el menú de apps (el arnés abre el About real, no el menú) |
 | UI-003 | Pares texto/fondo por debajo de 4.5:1 / 3:1 | `docs/HALLAZGOS.md` 24, 26, 27, 28; `tests/check_wcag.py` | un fixture que renderice los pares que incumplen; el arnés ya calcula el contraste de cada par opaco y desde UI-02 lo corre también sobre el diálogo About y sobre los temas (`main-tema-*`) sin encontrar nada. Desde UI-06 incr. 1 el chequeo **estático** cubre los 7 temas resolubles (4 incorporadas + 3 JSON; 63 pares, 0 fallas) y declara UNCOVERED a los derivados — ver *Estático, sin fixture* |
-| UI-004 | Ajustes: widgets inalcanzables con el foco | `docs/HALLAZGOS.md` 18; `tests/check_settings_focus.py` | un fixture que abra Ajustes y emita la grilla de foco (Ajustes arrastra `dialog_field` y decenas de dependencias) |
+| UI-004 | Ajustes: widgets inalcanzables con el foco | `docs/HALLAZGOS.md` 18; `tests/check_settings_focus.py` | el fixture ya existe (`settings-home`/`settings-wfbat`, 2026-10-14); falta que el inspector emita la pertenencia al grupo de foco (`keyboard_group`) por nodo para un detector renderizado, y la grilla de foco de `settings-home` que lo ejercite |
 | UI-005 | Diálogo viejo: texto tapado por los botones | `docs/HALLAZGOS.md` 21 | un fixture de BT/WeFax/SSTV (el About real ya se abre y no lo reproduce: su texto está centrado) |
 | UI-006 | Glifo BT U+F293 inexistente en `sony_20` | `docs/HALLAZGOS.md` 19; `src/info.c` | que una pantalla vuelva a dibujar el glifo en un label; el arnés ya detecta glifos ausentes (y la pantalla actual dibuja el icono con `lv_line`) |
-| UI-007 | Temas RS sin clave propia, contraste 2.58:1 | `docs/HALLAZGOS.md` 28; `docs/THEMES.md` | un fixture de Ajustes: el par es el riel del switch (`control_border`), que solo aparece ahí; el fixture `main-tema-rs` ya renderiza RS y el chequeo de contraste no ve nada en la pantalla principal. Desde UI-03 el par está cubierto **estáticamente** (`x6200-ab themes` + `quality/theme_pairs.yaml`: resuelve la herencia del `base` como `src/theme.c`) y pasa en los 3 temas JSON, así que sólo falta la evidencia renderizada |
+| UI-007 | Temas RS sin clave propia, contraste 2.58:1 | `docs/HALLAZGOS.md` 28; `docs/THEMES.md` | el fixture de Ajustes ya existe (2026-10-14), pero corre con el tema por defecto: falta una variante **Ajustes + tema RS** para que el par del riel del switch (`control_border`) se dibuje y lo mida `typography_contrast`. Desde UI-03 el par está cubierto **estáticamente** (`x6200-ab themes` + `quality/theme_pairs.yaml`: resuelve la herencia del `base` como `src/theme.c`) y pasa en los 3 temas JSON, así que sólo falta la evidencia renderizada |
 | UI-008 | CMA: 128 MB reservados para GPU no usada | `docs/RESOURCE_USAGE.md` | presupuesto de recursos del firmware, no defecto de la UI; el arnés no mide memoria del sistema |
 
 ## Re-evaluación con instrumentación estructural (2026-10-13)
@@ -485,3 +485,35 @@ Los dos hallazgos que UI-02 dejó *surfaced*, y cómo quedaron:
   registrados y visibles en el reporte: la excepción acotada los mantiene fuera
   del veredicto, no fuera de la evidencia, y vence el 2027-03-31 para forzar la
   re-evaluación.
+
+---
+
+## Fixture de Ajustes (2026-10-14) — re-evaluación de las semillas
+
+El arnés ya **renderiza el diálogo real de Ajustes** (`src/dialog_settings.c`, por el camino
+del firmware; ver `docs/AB_TESTING.md` → *Fixture del diálogo de Ajustes*). Era el habilitante
+que las semillas venían esperando: re-evaluadas contra las dos fixtures nuevas
+(`settings-home`, `settings-wfbat`) y sus **280 objetos** inspeccionados:
+
+| ID | Resultado | Motivo concreto |
+|---|---|---|
+| UI-002 | sigue `unverified` | el fixture abre **Ajustes**, no el menú de apps (`ACTION_APP_*` de las apps): el menú es otra pantalla y sigue sin fixture |
+| UI-003 | sigue `unverified` | el contraste estructural corre ahora sobre las dos fixtures de Ajustes y **no encuentra ningún par** por debajo de 4.5:1/3:1: los pares del diálogo (texto sobre el fondo del diálogo, etiquetas sobre el riel del switch) pasan con el tema por defecto. Nada que reproducir |
+| UI-004 | **habilitante cerrado** | el fixture existe y la grilla de foco se construye (`dialog_item()` registra los widgets en `keyboard_group`); falta el **detector**: el inspector no emite aún la pertenencia al grupo de foco por nodo, así que no hay regla que marque "widget que no se puede alcanzar". El chequeo **estático** `tests/check_settings_focus.py` sigue cubriendo la fuente (28 widgets creados, todos con `dialog_item()`) |
+| UI-005 | sigue `unverified` | el caso es de BT/WeFax/SSTV (el texto viejo apoyado en la fila de botones); Ajustes no lo reproduce |
+| UI-006 | sigue `unverified` | el icono BT se dibuja con `lv_line`; el detector de glifos ausentes sigue sin nada que morder |
+| UI-007 | **habilitante cerrado** | el par del riel del switch (`control_border`) vive en Ajustes y el fixture ya lo renderiza, pero con el **tema por defecto**: falta la variante **Ajustes + RS** para que el contraste se mida sobre el riel del tema RS (el chequeo estático ya resuelve el par y pasa en los 3 temas JSON) |
+| UI-008 | sigue `unverified` | presupuesto de recursos del firmware; el arnés de UI no mide memoria del sistema |
+
+Dos **hallazgos nuevos y reales** salen de estas fixtures (la spec de la corrida prohíbe tocar
+Ajustes, así que quedan registrados con excepción acotada y fechada, no arreglados):
+
+- **UI-015** (`layout_touch_target`): los ocho switches del grupo Espectro son 111×30 y el
+  slider del brillo del backlight 159×13, por debajo del target de campo de 44 px (AGENTS.md).
+- **UI-016** (`layout_clipped`): el campo **Año** dibuja "2026" con 84 px de texto y el área de
+  contenido del spinbox le deja 80 → el último dígito pierde sus 4 px de la derecha.
+
+Los dos están en el registro (`quality/known_issues.yaml`, `status: verified`) y cada uno tiene
+su excepción acotada (regla + fixture) con vencimiento `2027-03-31` en
+`quality/contracts.yaml`; el incremento de UX de Ajustes los arregla y **retira la excepción en
+el mismo cambio**.

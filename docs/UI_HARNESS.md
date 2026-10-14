@@ -86,4 +86,10 @@ verifican solo por compilación y strings del binario.
   Seis fixtures (incluye TX simulado, batería baja, frecuencia extrema, otro
   tema y waterfall en movimiento); determinismo PASS en todos. Ver
   `docs/AB_TESTING.md`.
-- ⏳ Resto de los diálogos y apps (Ajustes, FT8, WSPR, etc.): siguientes incrementos.
+- ✅ **Diálogos reales**: el About (`dialog-about`) y el **Ajustes**
+  (`settings-home`, `settings-wfbat`) se abren por el camino del firmware
+  (`ACTION_APP_ABOUT` / `ACTION_APP_SETTINGS` → `dialog_construct`), con el
+  `dialog_settings.c` real y las superficies que llama mockeadas (mixer, preset de
+  DSP, wfview, RTC). Ver `docs/AB_TESTING.md` → *Fixture del diálogo de Ajustes*.
+- ⏳ Resto de los diálogos y apps (menú de apps, BT/FT8/WSPR/WeFax/SSTV, etc.):
+  siguientes incrementos.

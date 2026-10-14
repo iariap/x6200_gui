@@ -35,7 +35,7 @@ Phases are separate modules, not one script:
 | `visual_diff.py` | Pillow/NumPy pixel diff: area, bounding boxes, per-region, `diff.png`, `overlay.png`, dimension mismatch |
 | `quality_config.py` | contracts, budgets, layout/typography rules and dated expected changes/exceptions |
 | `contracts.py` | objective checks on the candidate alone (C of the plan): pixel regions, coverage, layout, typography |
-| `layout_checks.py` | geometry rules over the object tree: off-screen, clipped, degenerate boxes, stacked labels, touch targets |
+| `layout_checks.py` | geometry rules over the object tree: off-screen, clipped, degenerate boxes, stacked labels, touch targets. Scroll areas (`scroll_dir`) and opaque surfaces painted above a label are respected: content reachable by scrolling is not "off screen" and a label a surface hides is not a stacked text |
 | `typography_checks.py` | text-legibility rules: overflow, truncation, missing glyphs, WCAG contrast |
 | `theme_checks.py` | the theme resolution rule: the theme a capture rendered must fit `params.theme_name` (UI-013) |
 | `theme_files.py` | static WCAG pairs over the theme JSON files the ROM ships, `base` inheritance included |
