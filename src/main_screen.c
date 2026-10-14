@@ -43,7 +43,6 @@
 #include "dialog_callsign.h"
 #include "dialog_wifi.h"
 #include "dialog_eq.h"
-#include "dialog_about.h"
 #include "backlight.h"
 #include "buttons.h"
 #include "recorder.h"
@@ -249,10 +248,6 @@ void main_screen_start_app(press_action_t app_action) {
             dialog_construct(dialog_bands, obj);
             break;
 
-        case ACTION_APP_ABOUT:
-            dialog_construct(dialog_about, obj);
-            break;
-
         default:
             break;
     }
@@ -401,10 +396,6 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_CALLSIGN:
             dialog_construct(dialog_callsign, obj);
             voice_say_text_fmt("Callsign window");
-            break;
-
-        case ACTION_APP_ABOUT:
-            dialog_construct(dialog_about, obj);
             break;
     }
 }

@@ -69,25 +69,6 @@ static const coverage_entry_t main_screen[] = {
               "app dialogs are not opened; dialog_construct() opens none of them in these fixtures"),
 };
 
-/* The `dialog-about` scenario: the same main screen with the real About window
- * over it. The shared dialog machinery and that one window are real; the rest
- * of the app dialogs keep their inert mock descriptors. */
-static const coverage_entry_t dialog_about[] = {
-    MAIN_COMPONENTS,
-    COMPONENT("dialog.c", COVERAGE_REAL,
-              "src/dialog.c compiled; dialog_construct()/dialog_init() build the real dialog box over the screen"),
-    COMPONENT("dialog_about.c", COVERAGE_REAL,
-              "src/dialog_about.c compiled; the real About window (title, version, callsign, author labels)"),
-    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
-              "the other app dialogs are inert mocks; only the About path is compiled and opened"),
-    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
-              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
-    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
-              "DX cluster spot marks are not rendered (no cluster data on the host)"),
-    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
-              "DX cluster column is not rendered (no cluster data on the host)"),
-};
-
 /* The `settings-home` / `settings-wfbat` scenarios: the same main screen with the
  * real Ajustes window over it. The shared dialog machinery, the window itself
  * and every widget it places are the real firmware sources; the few services the
@@ -115,7 +96,7 @@ static const coverage_entry_t settings_dialog[] = {
     COMPONENT("bt_state.c", COVERAGE_SYNTHETIC,
               "Bluetooth off (mocks/mock_ui_deps.c): the two Bluetooth switches draw unchecked"),
     COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
-              "the other app dialogs are inert mocks; only the About and Ajustes paths are compiled and opened"),
+              "the other app dialogs are inert mocks; only the Ajustes path is compiled and opened"),
     COMPONENT("dialog_field.c", COVERAGE_UNSUPPORTED,
               "not a dependency of the Ajustes window: src/dialog_settings.c does not include it, and the harness links the window without it (the earlier 'Ajustes arrastra dialog_field' note was wrong)"),
     COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
@@ -148,30 +129,7 @@ static const coverage_entry_t app_bands[] = {
     COMPONENT("dialog_field.c / field/bands.c / cluster/spots.c", COVERAGE_UNSUPPORTED,
               "the Bands window's dependencies are not compiled either; with dialog_bands.c unsupported there is nothing of that subtree to render"),
     COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
-              "the other app dialogs are inert mocks; only the About and Ajustes paths are compiled and opened"),
-    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
-              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
-    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
-              "DX cluster spot marks are not rendered (no cluster data on the host)"),
-    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
-              "DX cluster column is not rendered (no cluster data on the host)"),
-};
-
-/* The `app-about` scenario: the main screen with the app menu the APP key opens
- * and the "About" button pressed. `dialog_about` is the real window (src/dialog_about.c
- * is compiled, the same one the `dialog-about` fixture opens), so this fixture
- * renders it; only the ROUTE (the app-menu button -> main_screen_start_app) is
- * what the fixture codifies in scenario_settle. */
-static const coverage_entry_t app_about[] = {
-    MAIN_COMPONENTS,
-    COMPONENT("main_screen.c (ACTION_APP_ABOUT)", COVERAGE_REAL,
-              "src/main_screen.c compiled; the app-menu About button's path to main_screen_start_app(ACTION_APP_ABOUT) runs and builds the window in scenario_settle"),
-    COMPONENT("dialog.c", COVERAGE_REAL,
-              "src/dialog.c compiled; dialog_construct()/dialog_init() build the real dialog box over the screen"),
-    COMPONENT("dialog_about.c", COVERAGE_REAL,
-              "src/dialog_about.c compiled; the real About window (title, version, callsign, author labels) opened through the app menu"),
-    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
-              "the other app dialogs are inert mocks; only the About and Ajustes paths are compiled and opened"),
+              "the other app dialogs are inert mocks; only the Ajustes path is compiled and opened"),
     COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
               "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
     COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
@@ -199,7 +157,7 @@ static const coverage_entry_t settings_bands[] = {
     COMPONENT("dialog_field.c / field/bands.c / cluster/spots.c", COVERAGE_UNSUPPORTED,
               "the Bands window's dependencies are not compiled either; with dialog_bands.c unsupported there is nothing of that subtree to render"),
     COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
-              "the other app dialogs are inert mocks; only the About and Ajustes paths are compiled and opened"),
+              "the other app dialogs are inert mocks; only the Ajustes path is compiled and opened"),
     COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
               "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
     COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
@@ -210,10 +168,6 @@ static const coverage_entry_t settings_bands[] = {
 
 const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
 {
-    if (screen && !strcmp(screen, "dialog-about")) {
-        *count = (int) (sizeof(dialog_about) / sizeof(dialog_about[0]));
-        return dialog_about;
-    }
     if (screen && (!strcmp(screen, "settings-home") || !strcmp(screen, "settings-wfbat"))) {
         *count = (int) (sizeof(settings_dialog) / sizeof(settings_dialog[0]));
         return settings_dialog;
@@ -225,10 +179,6 @@ const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
     if (screen && !strcmp(screen, "app-bands")) {
         *count = (int) (sizeof(app_bands) / sizeof(app_bands[0]));
         return app_bands;
-    }
-    if (screen && !strcmp(screen, "app-about")) {
-        *count = (int) (sizeof(app_about) / sizeof(app_about[0]));
-        return app_about;
     }
     return coverage_main_screen(count);
 }

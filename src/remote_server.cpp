@@ -121,10 +121,11 @@ static const char *mode_names[] = {"LSB", "LSB-D", "USB", "USB-D", "CW", "CW-R",
 static const char *agc_names[]  = {"OFF", "SLOW", "FAST", "AUTO"};
 
 /* "app" values; cont_modes[] order in dialog_sstv.c */
-/* Las 23 apps de main_screen.c: estaban solo 15, asi que no se podian abrir por control remoto
- * (ni desde la pagina /remote del webserver). Los indices importan: FT4 es el 2. */
+/* Las 22 apps de main_screen.c: estaban solo 15, asi que no se podian abrir por control remoto
+ * (ni desde la pagina /remote del webserver). Los indices importan: FT4 es el 2. Esta lista va en
+ * paralelo con actions[] de open_app() (mismo indice); ver el static_assert que las ata. */
 static const char *app_names[]  = {"off", "FT8", "FT4", "JS8", "WSPR", "SSTV", "WeFax", "NavTex", "RTTY", "CW", "Field", "GPS", "Bands", "Settings", "BT",
-                                   "About", "Cluster", "CwTrainer", "Eq", "Status", "QTH", "Callsign", "Recorder", "WiFi"};
+                                   "Cluster", "CwTrainer", "Eq", "Status", "QTH", "Callsign", "Recorder", "WiFi"};
 static const char *sstv_modes[] = {"R8BW", "R36", "R72", "M1", "M2", "S1", "S2"};
 
 /* Commands of the app that is open: app is current_app() or its start ("FT": FT8 and FT4); a name
@@ -294,7 +295,13 @@ static void open_app(int32_t app) {
     static const press_action_t actions[] = {ACTION_NONE,      ACTION_APP_FT8,      ACTION_APP_FT8,      ACTION_APP_JS8,
                                              ACTION_APP_WSPR,  ACTION_APP_SSTV,     ACTION_APP_WEFAX,    ACTION_APP_NAVTEX,
                                              ACTION_APP_RTTY,  ACTION_APP_CW_KBD,   ACTION_APP_FIELD,    ACTION_APP_GPS, ACTION_APP_BANDS, ACTION_APP_SETTINGS, ACTION_APP_BT,
-                                             ACTION_APP_ABOUT, ACTION_APP_CLUSTER,  ACTION_APP_CWTRAINER, ACTION_APP_EQ, ACTION_APP_STATUS, ACTION_APP_QTH, ACTION_APP_CALLSIGN, ACTION_APP_RECORDER, ACTION_APP_WIFI};
+                                             ACTION_APP_CLUSTER,  ACTION_APP_CWTRAINER, ACTION_APP_EQ, ACTION_APP_STATUS, ACTION_APP_QTH, ACTION_APP_CALLSIGN, ACTION_APP_RECORDER, ACTION_APP_WIFI};
+
+    /* app_names[] y actions[] van en paralelo: el indice que resuelve el comando "app" por
+     * nombre tiene que caer en la MISMA accion. El static_assert lo fija en compilacion para
+     * que sacar/agregar una app en una sola de las dos listas no desalinee el mapeo. */
+    static_assert(sizeof(app_names) / sizeof(app_names[0]) == sizeof(actions) / sizeof(actions[0]),
+                  "app_names[] y actions[] deben tener el mismo largo (mapeo por indice)");
     const char *cur = current_app();
 
     if (!app) {

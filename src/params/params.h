@@ -60,11 +60,16 @@ typedef enum {
     ACTION_APP_CALLSIGN,
     ACTION_APP_WIFI,
     ACTION_APP_EQ,
-    ACTION_APP_ABOUT,
+
+    /* ACTION_APP_ABOUT (121) se elimino: About fuera (orden del owner, 2026-10-14). El hueco
+     * 121 queda libre a proposito: las acciones se guardan por su valor crudo en los campos
+     * uint8 de params (long_gen/long_app/long_key/long_msg/long_dfn/long_dfl y
+     * press_f1/press_f2/long_f1/long_f2), que se cargan por nombre en params.c; mover las que
+     * siguen les cambiaria la accion guardada en el equipo. Ver el _Static_assert en params.c. */
 
     /* Agregadas al final: los valores de las existentes no se mueven (estan guardados en la
      * configuracion de cada equipo). */
-    ACTION_APP_GPS,
+    ACTION_APP_GPS = 122,
     ACTION_ATT_TOGGLE,
     ACTION_PRE_TOGGLE,
     ACTION_ATU_TOGGLE,
