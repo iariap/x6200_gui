@@ -263,10 +263,27 @@ def check_window(checker: Checker, doc: dict) -> None:
     )
 
 
-def check_plain(checker: Checker, plain: dict) -> None:
-    """El bloque es extra: la captura comun no lo lleva."""
+def check_plain(checker: Checker, plain: dict, wakeup_doc: dict) -> None:
+    """El bloque es extra: la captura comun no lo lleva.
+
+    Y el trabajo de render del modo cuadra con esa captura: el settle (los mismos
+    px que la captura comun) mas lo que flusheo cada pase. Si un pase dejara de
+    contarse o se contara dos veces, la suma no cierra.
+    """
     checker.check("wakeups" not in plain, "the plain capture carries a `wakeups` block")
-    checker.note("  plain capture: no `wakeups` block (the mode is additive)")
+
+    wakeups = wakeup_doc["wakeups"]
+    settle_px = plain["metrics"]["flushed_pixels"]
+    passes_px = wakeups["with_drive"]["flushed_px"] + wakeups["static"]["flushed_px"]
+    checker.check(
+        wakeup_doc["metrics"]["flushed_pixels"] == settle_px + passes_px,
+        f"the wakeup run flushed {wakeup_doc['metrics']['flushed_pixels']} px: the settled capture "
+        f"({settle_px}) plus the two passes ({passes_px})",
+    )
+    checker.note(
+        f"  plain capture: no `wakeups` block (the mode is additive) and its {settle_px} px "
+        "settle plus the two passes add up to the run's flushed pixels"
+    )
 
 
 def main(argv: list[str]) -> int:
@@ -279,9 +296,10 @@ def main(argv: list[str]) -> int:
 
     # Las dos corridas del gate (wakeups.json / run1.json) tienen que ser byte a
     # byte iguales; el shell compara los bytes, aca se leen los numeros.
-    check_wakeups(checker, load(out_dir, "wakeups"), root)
+    wakeup_doc = load(out_dir, "wakeups")
+    check_wakeups(checker, wakeup_doc, root)
     check_window(checker, load(out_dir, "window"))
-    check_plain(checker, load(out_dir, "plain"))
+    check_plain(checker, load(out_dir, "plain"), wakeup_doc)
 
     print("\n".join(checker.lineas))
     return 0
