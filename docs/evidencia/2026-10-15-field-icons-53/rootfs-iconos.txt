@@ -1,0 +1,40 @@
+== Los PNGs que la ROM instala (repo, rootfs/) ==
+$ git log --oneline -1 -- rootfs/usr/share/x6200/field
+da183f3 Add Field Ops (SOTA/POTA): references, ADIF log and RBN feed
+
+$ find rootfs/usr/share/x6200/field -type f | sort
+rootfs/usr/share/x6200/field/bands_64.png
+rootfs/usr/share/x6200/field/bands_96.png
+rootfs/usr/share/x6200/field/log_64.png
+rootfs/usr/share/x6200/field/log_96.png
+rootfs/usr/share/x6200/field/pota_64.png
+rootfs/usr/share/x6200/field/pota_96.png
+rootfs/usr/share/x6200/field/sota_64.png
+rootfs/usr/share/x6200/field/sota_96.png
+
+== La misma ruta DENTRO del chroot del banco (/home/pablo/desa/x6200/.vfix3) ==
+$ ls -la /home/pablo/desa/x6200/.vfix3/usr/share/x6200/field
+total 40
+drwxr-xr-x. 1 pablo pablo  176 Oct 11 22:54 .
+drwxr-xr-x. 1 pablo pablo   90 Oct 12 01:35 ..
+-rw-r--r--. 1 pablo pablo 1203 Oct 11 22:50 bands_64.png
+-rw-r--r--. 1 pablo pablo 1456 Oct 11 22:50 bands_96.png
+-rw-r--r--. 1 pablo pablo 1048 Oct 11 22:50 log_64.png
+-rw-r--r--. 1 pablo pablo 1814 Oct 11 22:50 log_96.png
+-rw-r--r--. 1 pablo pablo 3766 Oct 11 22:50 pota_64.png
+-rw-r--r--. 1 pablo pablo 5438 Oct 11 22:50 pota_96.png
+-rw-r--r--. 1 pablo pablo 2894 Oct 11 22:50 sota_64.png
+-rw-r--r--. 1 pablo pablo 4176 Oct 11 22:50 sota_96.png
+
+$ ls -d /home/pablo/desa/x6200/.vfix3/usr/share/x6100   # la carpeta del X6100 que el codigo pedia
+ls: cannot access '/home/pablo/desa/x6200/.vfix3/usr/share/x6100': No such file or directory
+
+== md5: repo (rootfs/) vs chroot (lo que la ROM tiene) ==
+bands_64.png  repo=e8f82cc0bf243249f223fb9a96894abf  chroot=e8f82cc0bf243249f223fb9a96894abf  ==
+bands_96.png  repo=791b2bcc94c0d83f6f8bb85d80d8fb1c  chroot=791b2bcc94c0d83f6f8bb85d80d8fb1c  ==
+log_64.png    repo=00fb121eedadee0ea1f1fcef11b604b3  chroot=00fb121eedadee0ea1f1fcef11b604b3  ==
+log_96.png    repo=cf525cbde471188078fc29e96d2a2576  chroot=cf525cbde471188078fc29e96d2a2576  ==
+pota_64.png   repo=c3739636cc0224d3c5c911312d9eb924  chroot=c3739636cc0224d3c5c911312d9eb924  ==
+pota_96.png   repo=39fd486cb66ba88da58d607cb925b840  chroot=39fd486cb66ba88da58d607cb925b840  ==
+sota_64.png   repo=8c82ce2793a107b94fc1c6998512f360  chroot=8c82ce2793a107b94fc1c6998512f360  ==
+sota_96.png   repo=8151bde39c64ecd78fd3e9a3ff6e81fa  chroot=8151bde39c64ecd78fd3e9a3ff6e81fa  ==

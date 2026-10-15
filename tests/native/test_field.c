@@ -5,12 +5,17 @@
  * SOTA/POTA reference lookup, the ADIF activation log and the band helpers.
  * All three are pure C, so they run on the host.
  *
+ * It also checks the tiles' prefix against the assets the ROM installs (issue #53):
+ * the dialog asks for `FIELD_ICONS/<name>_<size>.png` and `rootfs/` is what lands in
+ * the image, so the files the constant names have to be there.
+ *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -152,9 +157,103 @@ static void test_bands(void) {
     CHECK(field_band_word(5) != NULL);
 }
 
+/* El prefijo del que `icon()` arma la ruta de cada tile (`FIELD_ICONS`, en
+ * src/dialog_field.c) tiene que ser el directorio que la imagen realmente instala:
+ * `install(DIRECTORY rootfs/ DESTINATION /)` pone `rootfs/<ruta>` en la ROM. El
+ * issue #53 fue un prefijo heredado del X6100 (`/usr/share/x6100/field`), carpeta
+ * que en la imagen no existe: los cuatro tiles salían sin icono. Se lee el prefijo
+ * del fuente y se abren los PNG que el diálogo pide en `rootfs/`, así un prefijo
+ * equivocado (o un asset que deje de instalarse) falla acá, en el host. */
+static void test_icons_shipped(void) {
+    const char *src = getenv("X6200_DIALOG_FIELD_SRC");
+
+    if (src == NULL || *src == 0) {
+        return;                         /* el runner no lo pasó: nada que comprobar */
+    }
+
+    FILE *f = fopen(src, "r");
+
+    if (!f) {
+        CHECK(f != NULL);
+        return;
+    }
+
+    char prefix[128] = "";
+    char line[512];
+
+    while (fgets(line, sizeof(line), f) != NULL) {
+        const char *p = strstr(line, "#define FIELD_ICONS");
+
+        if (p == NULL) {
+            continue;
+        }
+
+        p += strlen("#define FIELD_ICONS");
+
+        while (*p == ' ' || *p == '\t') {
+            p++;
+        }
+
+        if (*p != '"') {
+            break;
+        }
+
+        p++;
+
+        size_t n = strcspn(p, "\"");
+
+        if (n < sizeof(prefix)) {
+            memcpy(prefix, p, n);
+            prefix[n] = 0;
+        }
+
+        break;
+    }
+    fclose(f);
+
+    CHECK(prefix[0] == '/');            /* el prefijo es una ruta dentro del rootfs */
+
+    /* Raíz del checkout: <raíz>/src/dialog_field.c -> dirname(dirname(...)) */
+    char root[512];
+    int  dirs = 2;
+
+    snprintf(root, sizeof(root), "%s", src);
+
+    while (dirs-- > 0) {
+        char *slash = strrchr(root, '/');
+
+        if (slash == NULL) {
+            break;
+        }
+
+        *slash = 0;
+    }
+
+    /* Los cuatro tiles del HOME y las cabeceras, en los dos tamaños que usa el
+     * diálogo (icon(): 96 px el tile, 64 px la cabecera y el program panel). */
+    static const char *const names[] = {"sota", "pota", "bands", "log"};
+    static const int         sizes[] = {64, 96};
+
+    for (size_t k = 0; k < sizeof(names) / sizeof(*names); k++) {
+        for (size_t j = 0; j < sizeof(sizes) / sizeof(*sizes); j++) {
+            char  path[768];
+            FILE *icon;
+
+            snprintf(path, sizeof(path), "%s/rootfs%s/%s_%d.png", root, prefix, names[k], sizes[j]);
+            icon = fopen(path, "rb");
+            CHECK(icon != NULL);
+
+            if (icon != NULL) {
+                fclose(icon);
+            }
+        }
+    }
+}
+
 void test_field(void) {
     test_refs_nearest();
     test_adif_record();
     test_log_round_trip();
     test_bands();
+    test_icons_shipped();
 }

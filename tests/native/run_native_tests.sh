@@ -73,6 +73,9 @@ echo "== ejecutando =="
 export CTY_PATH="${CTY_PATH:-$SRC/../rootfs/usr/share/x6200/cty.dat}"
 # Los temas que vienen con la ROM: el test comprueba que carguen todos (ver test_theme.c).
 export X6200_SHIPPED_THEMES="${X6200_SHIPPED_THEMES:-$SRC/../rootfs/usr/share/x6200/themes}"
+# El diálogo de Field arma la ruta de sus tiles desde un prefijo (FIELD_ICONS):
+# el test comprueba que los PNG que pide estén en rootfs/ (ver test_field.c).
+export X6200_DIALOG_FIELD_SRC="${X6200_DIALOG_FIELD_SRC:-$SRC/dialog_field.c}"
 "$OUT/native_tests"
 
 # --- Clock test (UI-009) ------------------------------------------------------

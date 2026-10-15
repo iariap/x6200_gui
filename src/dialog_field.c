@@ -63,8 +63,12 @@
 #ifndef FIELD_DIR   /* overridden by the UI harness */
 #define FIELD_DIR   "/mnt/field"
 #endif
+/* The X6200 image installs the Field Ops tiles with the rest of its own assets
+ * (rootfs/usr/share/x6200/field, installed by CMakeLists.txt): the X6100 path this
+ * port inherited has no directory in the ROM, so every `theme_png()` failed with
+ * "No such file or directory" and the tiles came up without icons. */
 #ifndef FIELD_ICONS
-#define FIELD_ICONS "/usr/share/x6100/field"
+#define FIELD_ICONS "/usr/share/x6200/field"
 #endif
 #define REFS_PATH   FIELD_DIR "/refs.tsv"
 #define STATE_PATH  FIELD_DIR "/state"

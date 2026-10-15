@@ -1,0 +1,13 @@
+### after3: md5=163f1f5883aeed640ca120c7515f1cad
+$ x6200-remote '{"cmd":"app","text":"Field"}'
+{"t":"ok"}
+  estado: "app":"Field"
+  estado: "scr":"HOME"
+colores=1996 bytes=38645
+$ x6200-remote '{"cmd":"field_screen","text":"BANDS"}'
+  estado: "scr":"BANDS"
+colores=456 bytes=26315
+$ x6200-remote '{"cmd":"field_screen","text":"SOTA"}'
+  estado: "scr":"PROG"
+colores=780 bytes=25367
+  errores 'Theme image' en la secuencia: 0

@@ -1,0 +1,115 @@
+# Gates de la corrida field-icons-53, corridos sobre el arbol de codigo de esta
+# corrida (la salida de `contracts` imprime el sha que evaluo: b426806cafb8). El
+# commit final solo agrega este archivo y el resto de docs/evidencia: no toca
+# codigo, asi que el arbol medido es el mismo.
+
+$ scripts/apps/x6200/check-matrix.sh 11f8d689 HEAD <worktree>   # los 7 estaticos + el banco
+
+==> [check] native tests (tests/native/run_native_tests.sh)
+    ok
+==> [check] check_cfg_fills
+    ok
+==> [check] check_actions
+    ok
+==> [check] check_settings_focus
+    ok
+==> [check] check_apps_menu
+    ok
+==> [check] check_app_handlers
+    ok
+==> [check] check_wcag
+    ok
+==> [check] bash -n tests/native/run_native_tests.sh
+    ok
+==> [check] banco QEMU: preflight (tools/captura-banco.sh --check)
+    ok
+==> [check] banco QEMU: params.db generado (idempotencia del rebuild)
+    ok (borrado el params.db generado):
+    /b/build/x6200-gui-custom/params.db
+==> [check] banco QEMU: captura de humo (home)
+    ok
+      captura: /tmp/banco-qemu-home.png (330 colores distintos)
+      version: b426806 Field Ops #53: los tiles vuelven a cargar (la ruta e
+      binario: md5 163f1f5883ae   qemu-cpu: cortex-a7
+
+(exit: 0)
+
+$ tests/check_harness_determinism.sh
+
+building ui_harness (revision b426806cafb822dc26fb77b0b4dfcf0357b13ece)...
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/tools/ui_harness/build/styles_host.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+running every fixture 2 times...
+app-bands: 5d9f8b82395878843e201fab71ef68bd3823cf9f1c3cd8c9894f5a6abee7eb1f
+app-close-home: 0a2c0c82fdfc4f9395ad8d11684a20af973abc815fad8c68bde59a243a10680a
+apps-menu-1: 8c10c7e6cba348aff4ad5edca2221222b47d7bac1a51efb89b87c0c56d38f392
+apps-menu-2: 0d8fbafa8ab6f40f030f21d2a4425019747adcc92d8ebb2e3c1ebf999d3b26ee
+apps-menu-3: 42908f9f0fc55d0997fc8aa404afc8b902928af39ec2aa3b12c473277da9485b
+apps-menu-4: 2a85223880c4229e72c61018ee395ca1687fd7130b366bdf5c01114505dfe7a7
+apps-menu-5: f4afbe174373c782addece79e770b51d711f37e74ea0bb2b654d450a9ac99864
+apps-menu-6: 6ca0c460ba29f029e6948cbb3d647aba92713110c3f3b4fb69238c895dadb3c6
+bench-render: aefebba48d3d138b3aa830c4d1c7107b75a42b0b84c0730e5dbabbbe48a3555d
+bt-dialog: 02325980d253b956565b1fe01c1cd27f5a69f7f15aec028272047e7fc5f38b16
+home-bateria-externa: a763773fe412b12222217b5f4fb79dba4081a0238403d00a8294f987d097a01c
+home-frecuencia-extrema: 643dd0b392599f5a05bd1344b3573317e1448ab719089c31c102677122989e94
+home-usb-20m: 0a2c0c82fdfc4f9395ad8d11684a20af973abc815fad8c68bde59a243a10680a
+main-bateria-baja: a5e2ad5656b8df2950b0003ab462514275df943f6c52b7fd55e6c61abfaf2365
+main-espectro-agua: 754cc8e4bd4924578074c8aa2e3bdac28140021ad0e4fe8f67f8745d4b2f5fa2
+main-foco: 0a2c0c82fdfc4f9395ad8d11684a20af973abc815fad8c68bde59a243a10680a
+main-frecuencia-dseg: b162f3cc34f8979ae4c4ddfbae5d5a3ae46e04ebaf49598f32739b89b7c3c17b
+main-natural-eco: ff1b40d39ff767ae2160664499b90357166636a2aa912734b2487f245a53d48f
+main-natural: 8ab2bf4f40e9ef591c8b9da4f2f69d767beced181aaa44c8de395b12b811bfdd
+main-otro-tema: 71595030b63cf98cbffefefec3bbbd48e4a7f26434d402ad2fa9f2cde1f21e64
+main-tema-classic: ce6c02825e095513fc56c5e81cf2123be6ce1de91a338b96e109214673f47d51
+main-tema-holo: e9f5e6991d5568e257fd9aded7d3dde17eccddcdf6b575504c3cc6c2a0b3b739
+main-tema-material-3: e462acde9c055d95ee3628e37155b71a7d67a461fa8dc81e8b4d105f7b0d6609
+main-tema-outdoor-negative: 83d243273745bcbaa2858eb01cb77eaba838cc4eb994d8512006677385587b1f
+main-tema-rs: 2a75ba0e57f409bfdc9519e4cc30f89c3077fec9bf966c10a907bc0adfe93d2f
+main-tema-vision-cwr: 4bf11512ed77e1bfa3d763bd6fceb26962c18d7b5b827e4885e506edecf0a8d6
+main-tema-vision: 2e9588ff20cc217212e98b55b4d376a9208a19361e23ac1fdc5e25f6367a2da1
+main-tema-vision-usbd: 3655f725ead58b57f9f94a0674b3b80c7263acf1deb963cd296335af164fe9f0
+main-tx-simulado: b36c39ad7d86b611e763ff9475f834702b1b7fe6c515a97d4a7774fe1d56d526
+settings-audio: 2c5df9e725e25377d035d64ee443f0a4f02169748645b1942cd7a6d8a1624c55
+settings-bands: 5d9f8b82395878843e201fab71ef68bd3823cf9f1c3cd8c9894f5a6abee7eb1f
+settings-home: c4b5e602386fc1d8c74039ad5a1ecbfae3b8bbfacf1edd8707b6798ef344c558
+settings-perfil: 00d2baac136dc14676c5c9176551a603b9879b2b92dcdb2c7f4d952670e4e064
+settings-rs-theme: ef9a1aecf1c9bb562ff2e293f033860a8ec456d1575fd0724a336d508cad6f9b
+settings-wfbat: caaf77d2bb6e384107dfbad118c7c31ca8ac1fa9af84e138cb726b35df419b90
+PASS: deterministic (identical PNGs for every fixture)
+
+$ uv run x6200-ab compare --a 11f8d689 --b HEAD --experiment-id AB-FIELD53
+
+experiment AB-FIELD53: PASS (exit 0)
+  Functional         PASS            (required) — 35 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — captures are pixel-identical to the baseline
+  Quality Contract   PASS            (required) — 372 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+report: /home/pablo/desa/asf/state/worktrees/x6200/field-icons-53/tools/ab_testing/reports/AB-FIELD53
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts b426806cafb8: PASS — 372 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited b426806cafb8: 16 known issues — 0 reproduced, 14 unverified; structural inspection REAL over 4035 objects on 35 scenario(s): 0 structural finding(s)
+
+$ uv run pytest -m 'not e2e' -q
+........................................................................ [ 77%]
+...........................................                              [100%]
+187 passed, 18 deselected in 1.97s
+
+$ uv run pytest -m e2e -q
+..................                                                       [100%]
+18 passed, 187 deselected in 164.56s (0:02:44)
+
+$ sh tests/native/run_native_tests.sh   (desde la raiz del checkout; la matriz lo corre igual)
+== sanitizers: NO disponibles en este toolchain (se omite) ==
+== analisis estatico (gcc -fanalyzer) ==
+819 comprobaciones, 0 fallos
+7 comprobaciones, 0 fallos
+25 comprobaciones, 0 fallos
