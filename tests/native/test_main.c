@@ -30,6 +30,7 @@ void test_bt_devices(void);
 void test_dxcc(void);
 void test_flags(void);
 void test_visual_policy(void);
+void test_cw_decoder(void);
 
 int main(void) {
     test_adaptive_tuning();
@@ -51,6 +52,7 @@ int main(void) {
     test_dxcc();
     test_flags();
     test_visual_policy();
+    test_cw_decoder();
 
     printf("%d comprobaciones, %d fallos\n", tests_run, tests_failed);
 

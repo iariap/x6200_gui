@@ -59,6 +59,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 38. [Status y JS8: los dos crashes que quedaban (y que la migracion estaba bien)](#38-status-y-js8-los-dos-crashes-que-quedaban-y-que-la-migracion-estaba-bien)
 39. [QTH y Callsign no abrian por el control remoto (y el barrido las daba por vivas)](#39-qth-y-callsign-no-abrian-por-el-control-remoto-y-el-barrido-las-daba-por-vivas)
 40. [El volumen que el control remoto no veia (y la etiqueta de ganancia del Audio)](#40-el-volumen-que-el-control-remoto-no-veia-y-la-etiqueta-de-ganancia-del-audio)
+41. [CW Trainer: el desborde del buffer del decodificador CW (issue #51)](#41-cw-trainer-el-desborde-del-buffer-del-decodificador-cw-issue-51)
 
 ---
 
@@ -701,6 +702,7 @@ con lo que haría falta para fundarlas.
 | "El banco da 0,15 s por los `open()` del sistema de archivos del host" | La comparación es medida; **la explicación** no | Perfilar el banco (QEMU) |
 | Que `addgroup` de busybox cree grupos en vez de agregar usuarios | Se observó en su momento, sin captura conservada | Repetirlo y pegar la salida |
 | `speaker-test` "corre sin error y sin sonido" (12/10) | No quedó la captura y hoy no se puede repetir con la GUI andando | Parar la GUI, correrlo y pegar la salida |
+| El bucle de reinicio del CW Trainer (issue #51) se rearma en el arranque "por sí solo" | El banco no tiene camino de audio y el chroot no estaba armado, así que no se pudo medir la cadencia en el equipo | Medir en la radio el `PID` de la GUI por 150 s tras un reset (issue #15), con `key_train` en `params.db` |
 
 **Estimaciones explícitas** (dichas como tales, no son hallazgos): el "~20 s" del banco rápido y el
 "~3 s" del diagnóstico de voz no se cronometraron con precisión; y el "~1 s" de daemon + enlace
@@ -1979,3 +1981,67 @@ un framebuffer falso y sin Pulse ni codec, asi que ahi no hay monitor que grabar
 en el banco es el camino `params.db -> estado de la GUI -> control remoto`, que es donde estaba el
 defecto; que ese estado llegue al codec es del aplicador del SDK (`x6200_control_rxvol_set`) y del
 canal fisico (#15).
+
+---
+
+## 41. CW Trainer: el desborde del buffer del decodificador CW (issue #51)
+
+**Sintoma** (reportado por el usuario, issue #51): usar el CW Trainer deja la GUI en un bucle de
+reinicio, una caida cada medio minuto, medida en la radio.
+
+**Causa, reproducida en el host** (codigo + medicion): el decodificador CW acumula los puntos y
+rayas del caracter en curso en un buffer fijo `elements[128]` (`src/cw_decoder.c:57`) con un
+`strcat()` sin limite, uno por cada flanco de bajada. Una racha de eventos de tecla sin espacio
+inter-caracter (senal pegada, o el audio corrupto que describe #19) lo desborda y el chequeo
+fortify de glibc aborta el proceso dentro de `strcat`. Es el mismo sintoma de #19
+(`*** buffer overflow detected ***` terminando en `abort()` dentro de libc) y la pila resuelta de
+#19 (`audio.c` -> `cw_put_audio_samples` -> `cw_decoder_signal`) apunta a esta funcion.
+
+Se reprodujo en el host con el mismo `cw_decoder.c`, un sink que junta el texto y una racha de 300
+eventos de 20 ms (por debajo del umbral de elemento de 139 ms, sin espacio):
+
+```
+$ cd /tmp/opencode/cwtest
+$ gcc -std=gnu11 -O2 -D_FORTIFY_SOURCE=2 -I. cw_decoder.c driver.c -o test
+$ ./test
+*** buffer overflow detected ***: terminated
+$ echo $?
+134
+```
+
+**Correccion de lo que decia antes este registro**: la hipotesis del issue #19 (el contrato de
+`cbuffercf_read` en `cw_put_audio_samples`, `src/cw.cpp:228-235`, que devolveria en `n` menos
+muestras contiguas que `desired_num`) **no se sostiene con la libreria que se envia**: liquid-dsp
+1.4.0 (`AetherX6200Buildroot/buildroot/dl/liquid-dsp/liquid-dsp-1.4.0.tar.gz`; el header del
+sysroot dice `LIQUID_VERSION "1.4.0"`) llama a `CBUFFER(_linearize)()` dentro de `CBUFFER(_read)`
+cuando la peticion cruza el final del buffer (`liquid-dsp/src/buffer/src/cbuffer.c`), asi que `n`
+es siempre `desired_num` y el `release` con `desired_num` es correcto.
+
+**Arreglo** (`src/cw_decoder.c`): la acumulacion pasa por `cw_decoder_element()` (`:172`), que corta
+en el borde del buffer (decodifica lo que entro y arranca de nuevo) en vez de hacer `strcat()`.
+Ningun Morse valido mide mas de 9 elementos, asi que el corte solo actua sobre basura; el
+`_Static_assert(sizeof(elements) >= 16, ...)` (`:65`) deja la invariante en el codigo.
+
+**Verificacion, medida**: el test nativo `tests/native/test_cw_decoder.c` reproduce la racha y
+comprueba que la GUI sobrevive y que el decodificador sigue decodificando (un punto aislado es
+"E"):
+
+```
+$ tests/native/run_native_tests.sh          # con el src sin arreglar
+FALLO .../tests/native/test_cw_decoder.c:78: got_calls >= 2
+814 comprobaciones, 4 fallos
+$ tests/native/run_native_tests.sh          # con el arreglo
+814 comprobaciones, 0 fallos
+```
+
+**Aparte** (issue #51, mitigacion en la app): el estado de radio que la app arma (key train, sink
+del decodificador, modo forzado a CW) se devolvia solo desde `destruct_cb`, y el marco de dialogos
+no siempre lo llama (lo que motivo la bandera `ui_alive` de #19, `fb640dc`): por ese camino el
+equipo quedaba armado. Ahora `trainer_release()` (`src/dialog_cw_trainer.c:1281`, idempotente)
+devuelve ese estado y lo llaman tanto `destruct_cb` como el `LV_EVENT_DELETE` (`ui_deleted_cb`,
+`:1275`).
+
+**Sin fundar** (anexo A): que el circuito de reinicio se rearme en el arranque por si solo; en el
+banco no se pudo medir (no tiene camino de audio y el chroot no estaba armado). Y el contrato de
+`cbuffercf_read` si se cambia de version de liquid.
+

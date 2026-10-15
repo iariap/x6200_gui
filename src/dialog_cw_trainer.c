@@ -161,10 +161,15 @@ static lv_timer_t *timer;
  * pueden dispararse despues (y el marco de dialogos no siempre llama a destruct_cb): sin esta
  * bandera, show()/refresh_ui() tocaban widgets ya liberados y la GUI moria. docs/HALLAZGOS.md 37. */
 static bool       ui_alive;
+/* El estado de radio que arma la app (key train, banderas del decodificador, modo) se devuelve
+ * una sola vez, desde el primer camino que mate el dialogo (destruct_cb o el LV_EVENT_DELETE), para
+ * que usarla no deje el equipo armado. Ver trainer_release(). */
+static bool       armed;
 
 static void construct_cb(lv_obj_t *parent);
 static void destruct_cb(void);
 static void ui_deleted_cb(lv_event_t *e);
+static void trainer_release(void);
 static void key_cb(lv_event_t *e);
 static void refresh_ui(void);
 static void refresh_btn(button_data_t *b);
@@ -1116,6 +1121,7 @@ static void construct_cb(lv_obj_t *parent) {
     /* Train first: nothing below may key the radio without it */
     prev_train = param_i_get(cfg_key_train);
     saved      = true;
+    armed      = true;
     force_train();
     cw_encoder_require_train(true);
 
@@ -1261,15 +1267,24 @@ static void ui_deleted_cb(lv_event_t *e) {
         lv_timer_del(timer);
         timer = NULL;
     }
+
+    /* El marco de dialogos no siempre llama a destruct_cb, y cuando no lo llama el estado de radio
+     * (key train en 1, el decoder con sink, el modo forzado a CW) quedaba armado: al reiniciarse la
+     * GUI el equipo volvia a procesar audio por el camino que armaba el bucle de #51. Se devuelve
+     * desde aca tambien; trainer_release() es idempotente. */
+    trainer_release();
 }
 
-static void destruct_cb(void) {
-    ui_alive = false;
-    active = false;
-    if (timer) {
-        lv_timer_del(timer);
-        timer = NULL;
+/* Devuelve el estado de radio que la app armo (key train, banderas del decodificador, sink, modo)
+ * y guarda los stats. Idempotente: gana el primer camino que la llame; los siguientes no hacen
+ * nada. */
+static void trainer_release(void) {
+    if (!armed) {
+        return;
     }
+
+    armed  = false;
+    active = false;
     cw_trainer_set(false);
     cw_decoder_set_sink(NULL, NULL);
     cw_encoder_stop();
@@ -1285,6 +1300,15 @@ static void destruct_cb(void) {
         param_i_set(cfg_key_train, prev_train);
         saved = false;
     }
+}
+
+static void destruct_cb(void) {
+    ui_alive = false;
+    if (timer) {
+        lv_timer_del(timer);
+        timer = NULL;
+    }
+    trainer_release();
     lv_group_remove_obj(dialog.obj);
     main_screen_lock_mode(false);
     panel_update_visibility(false);
