@@ -3023,3 +3023,100 @@ el de la base y el comando `vol` lo mueve (medido arriba). Que eso suene es del 
   una vez; tres corridas seguidas despues dieron `791 comprobaciones, 0 fallos` y el commit base
   tambien pasa. Ningun archivo de los que toca este cambio se compila en ese suite. Queda anotado
   como candidato a flake por carga, sin tocarlo.
+
+## Cierre de las semillas del issue #11 (UI-002/004/005/007/008) — 2026-10-15
+
+Corrida `factory/seeds-11-fixtures` (base `c4ff0c5`, 25 fixtures) sobre las cinco semillas. Las
+cuatro que el arnes podia medir quedan con fixture y **ninguna reproduce defecto**; la quinta es un
+presupuesto de recursos y queda declarada `out-of-scope`. Los detalles por semilla y la decision de
+UI-008 estan en `docs/UI_KNOWN_ISSUES.md` → *Cierre de las semillas del issue #11*; el registro
+(`quality/known_issues.yaml`) pasa UI-002/004/005/007 a `fixed` y UI-008 a `out-of-scope`.
+
+Lo que agrega esta corrida, en piezas:
+
+- **UI-002** (`apps-menu-1..6`): seis fixtures abren el menu de apps por el camino del firmware
+  (`buttons_load_page_group(buttons_group_app)`, pagina por pagina con `buttons_press`) y cubren las
+  **22 celdas** post-About. `scenario_settle` lee la tabla real `buttons_group_app` y corta la corrida
+  si el rotulo `(APP n:6)` o una app de la pagina no quedan en la barra. La suite de fixtures pasa de
+  **25 a 33**.
+- **UI-004** (`layout_focus_unreachable`): el inspector emite `in_keyboard_group` por nodo (y
+  `keyboard_group` en el bloque) y la regla marca todo control de clase de foco que este dibujado y
+  fuera del grupo. Cero hallazgos sobre los fixtures que abren Ajustes, `bt-dialog`, `main-foco` y
+  `apps-menu-*`. Autoprueba e2e: la revision efimera `abtest/focus` quita el
+  `lv_group_add_obj()` de `dialog_item()` y el audit falla.
+- **UI-005** (`bt-dialog`): el dialogo real de Bluetooth (`ACTION_APP_BT` → `src/dialog_bt.c`) con
+  `btaudio-ctl` mockeado (`__wrap_system` + una lista sembrada). Medido: la linea de estado
+  "no headphones, RX off" termina en y2=396, **arriba** de la fila de botones (y=418) → no reproduce
+  el texto tapado; `scenario_settle` codifica ese invariante. El contrato
+  `typography_text_truncated` encontro y se cerro un recorte real de 3 px de la **nota** del dialogo
+  (363 px de texto en una caja de 360; `NOTE_W`, `src/dialog_bt.c`).
+- **UI-007** (`settings-rs-theme`): la ventana de Ajustes (`settings-wfbat`) bajo el tema **RS**,
+  scrolleda al grupo Espectro: los ocho switches salen con `bg_color #6E6E6E` (el `control_border` de
+  RS) — la evidencia renderizada que faltaba; el par ya lo cubria el chequeo estatico.
+
+### La dispersion del benchmark: un frame preemptado no es "el host es ruidoso"
+
+En la suite `-m e2e` completa el gate del benchmark (CLOCK_MONOTONIC sobre un host compartido)
+devolvio **INCONCLUSIVE** de forma intermitente y el test fallaba; el mismo test pasaba aislado. El
+numero que lo decide es `dispersion_cv_pct` del lado medido, comparado contra
+`max_dispersion_cv_pct: 25.0`:
+
+| Corrida | frames | `stdev/mean` del lado | veredicto |
+|---|---|---|---|
+| suite plena, 1a (con el suite nativo en paralelo) | 15 | **29.1%** (B, `bench_regression`) | INCONCLUSIVE → el assert de FAIL falla |
+| host quieto, `--bench --repeats 40` | 40 | 3.1% | PASS (dispersion robusta 1.0%) |
+| con compilacion nativa en paralelo (2 frames de 1.24x) | 15 | 7.8% | la robusta mide 1.4% |
+
+El `stdev/mean` lo domina **un** frame que el host preempta, y ese frame no puede mover un p95 (1
+frame de 20 queda por debajo del percentil 95, asi que no cambia ninguna comparacion de p95): la
+pregunta del gate es "¿una fraccion no trivial de la muestra es outlier?", que es lo que si mueve un
+p95. `dispersion_cv_pct` pasa a ser el coeficiente de variacion robusto por mediana
+(`robust_dispersion_cv_pct`: `1.4826 * MAD / mediana`), **sin tocar el umbral** (25%) ni los demas
+presupuestos; una muestra ruidosa de verdad sigue leyendo muy por encima y declarando INCONCLUSIVE
+(sample alternado 1/10 del test unitario: 121%; `tests/test_performance.py`,
+`test_noisy_side_is_inconclusive_not_pass`), y un frame aislado ya no alcanza
+(`test_a_few_host_spikes_are_not_dispersion`).
+
+### Evidencia (host, 2026-10-15; gates de A/B sobre `1c3db39`)
+
+```text
+$ tests/check_harness_determinism.sh
+running every fixture 2 times...
+app-bands: 5781b1f17a972051925f34c23a2de4518e0710b573cfda5dd1b595752a8044c3
+apps-menu-1: bf6ff1457fe52d736502b9280c19842e7c2381430c8464f8fb257b636d26d90e
+...
+settings-rs-theme: e8bfb3a3077a481a06f3f518a4a2298faef2863026cbcf6f94a36f880aefbb0b
+PASS: deterministic (identical PNGs for every fixture)      [33 fixtures x2]
+$ cd tools/ab_testing
+$ uv run x6200-ab compare --a c4ff0c5 --b HEAD --experiment-id AB-SEEDS11
+experiment AB-SEEDS11: PASS (exit 0)
+  Functional         PASS            (required) — 25 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — captures are pixel-identical to the baseline
+  Quality Contract   PASS            (required) — 264 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+$ uv run x6200-ab contracts --revision HEAD
+contracts 1c3db3940828: PASS — 352 checks, 0 failure(s), 0 unchanged baseline defect(s)
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited 1c3db3940828: 16 known issues — 0 reproduced, 14 unverified; structural inspection REAL over
+3861 objects on 33 scenario(s): 0 structural finding(s)
+$ uv run x6200-ab themes
+themes PASS: 9 served theme(s) (6 built-in + 3 file(s)), 9 pair(s) declared, 81 pair(s) checked,
+0 failure(s); non-text (WCAG 1.4.11, pixels): 21 object(s) measured, 0 failure(s)
+$ uv run pytest -m "not e2e" -q
+182 passed, 18 deselected
+$ uv run pytest -m e2e -q          # tres corridas completas seguidas tras el fix
+18 passed, 182 deselected in 121.40s (0:02:01)
+18 passed, 182 deselected in 122.03s (0:02:02)
+18 passed, 182 deselected in 122.30s (0:02:02)
+$ tests/native/run_native_tests.sh
+791 comprobaciones, 0 fallos + 7, 0 fallos (clock, UI-009) + 19, 0 fallos (backlight)
+repo static checks (cfg_fills/actions/settings_focus/apps_menu/app_handlers/manual_apps/wcag) → PASS
+```
+
+El `compare` es **PASS sin un solo pixel cambiado** en las 25 fixtures que A y B comparten: los
+fixtures nuevos no tocan ninguna pantalla existente. La unica fuente que se movio es la del nuevo
+`bt-dialog` (el ancho de la nota, `NOTE_W`), que A no tiene y por eso no entra en el diff A/B. El
+corpus pasa de **25 a 33 fixtures** y el contrato suma 352 chequeos. La evidencia de la corrida es
+`tools/ab_testing/reports/AB-SEEDS11/` (commiteada al lado).
