@@ -1,8 +1,10 @@
 #!/bin/sh
 #
 # JS8 test suite: builds the X6100's tests/test_js8.cpp (Catch2) against this
-# repo's src/js8 and the vendored js8core, and runs it. Needs Catch2 and the
-# Boost headers, which the UI-harness container image provides.
+# repo's src/js8 and the vendored js8core, and runs it. Needs Catch2, the Boost
+# headers and libfftw3f, which only the full UI-harness container image provides;
+# when the image in use lacks any of them the runner skips with a reason instead
+# of failing: see tests/native/codec_docker.sh.
 #
 # Usage: tests/native/run_js8_tests.sh
 #
@@ -11,12 +13,18 @@
 set -e
 
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-PARENT=$(CDPATH= cd -- "$DIR/../../.." && pwd)
-IMAGE="${IMAGE:-x6200-uiharness}"
+REPO=$(CDPATH= cd -- "$DIR/../.." && pwd)
+# shellcheck source=tests/native/codec_docker.sh
+. "$DIR/codec_docker.sh"
 
-docker run --rm --entrypoint="" -v "$PARENT:/src" -w /src/x6200_gui x6200-uiharness bash -c '
+codec_env js8 \
+    /usr/include/fftw3.h \
+    /usr/include/boost/version.hpp \
+    /usr/local/include/catch2/catch_test_macros.hpp
+
+codec_run "$REPO" '
     set -e
-    G=/src/x6200_gui
+    G=/repo
     W=$(mktemp -d)
     cd "$W"
 

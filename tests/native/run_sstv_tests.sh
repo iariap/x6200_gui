@@ -2,7 +2,10 @@
 #
 # SSTV codec test: encodes a test picture in every mode the app sends, adds
 # noise, decodes it with the real src/sstv code (VIS detection + the same RAM
-# decoder used live) and compares the picture.
+# decoder used live) and compares the picture. Needs libsndfile as a development
+# package, so it runs in the full UI-harness container; when the image lacks
+# sndfile.h the runner skips with a reason instead of failing: see
+# tests/native/codec_docker.sh.
 #
 # Usage: tests/native/run_sstv_tests.sh
 #
@@ -11,12 +14,15 @@
 set -e
 
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-PARENT=$(CDPATH= cd -- "$DIR/../../.." && pwd)
-IMAGE="${IMAGE:-x6200-uiharness}"
+REPO=$(CDPATH= cd -- "$DIR/../.." && pwd)
+# shellcheck source=tests/native/codec_docker.sh
+. "$DIR/codec_docker.sh"
 
-docker run --rm --entrypoint="" -v "$PARENT:/src" -w /src/x6200_gui x6200-uiharness bash -c '
+codec_env sstv /usr/include/sndfile.h
+
+codec_run "$REPO" '
     set -e
-    G=/src/x6200_gui
+    G=/repo
     W=$(mktemp -d)
     gcc -O2 -std=gnu11 -w -I "$G/src" -o "$W/sstv_loopback" \
         "$G/tests/native/test_sstv_loopback.c" \

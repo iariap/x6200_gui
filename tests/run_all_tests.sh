@@ -15,6 +15,13 @@
 # Needs the docker images x6200-uiharness and x6200-buildroot. The webserver part
 # is skipped when its checkout or the build output are not around.
 #
+# The four codec suites need codec build dependencies (libfftw3-dev for wspr,
+# libsndfile1-dev for sstv/wefax) that only the *full* stage of
+# tools/ui_harness/Dockerfile installs. When the image in use is the minimal
+# `--target ci` one, the runner prints a `SKIP:` reason and exits 77, which
+# `run` below counts as omitted, never as a failure nor as a pass. Point IMAGE
+# at a full image to run them (see tests/native/codec_docker.sh).
+#
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -34,15 +41,32 @@ run() {
     printf '\n=== %s ===\n' "$name"
 
     if "$@" > /tmp/"$name".log 2>&1; then
-        line=$(grep -E "comprobaciones|assertions|all OK|PASS|all tests passed|todas|todos|OK:" /tmp/"$name".log | tail -1)
-        results="$results\n  $name: OK   $line"
-        pass=$((pass + 1))
+        status=0
     else
-        printf '    FALLÓ, ver /tmp/%s.log\n' "$name"
-        tail -5 /tmp/"$name".log | sed 's/^/    /'
-        results="$results\n  $name: FALLÓ"
-        fail=$((fail + 1))
+        status=$?
     fi
+
+    case $status in
+        0)
+            line=$(grep -E "comprobaciones|assertions|all OK|PASS|all tests passed|todas|todos|OK:" /tmp/"$name".log | tail -1)
+            results="$results\n  $name: OK   $line"
+            pass=$((pass + 1))
+            ;;
+        77)
+            # El runner declaro un skip hermetico (p. ej. un codec IMAGE con una
+            # imagen sin las deps). Se cuenta como omitido: ni OK ni FALLO.
+            line=$(grep -E "^SKIP:" /tmp/"$name".log | tail -1)
+            printf '    %s\n' "$line"
+            results="$results\n  $name: SKIP $line"
+            skipped="$skipped $name"
+            ;;
+        *)
+            printf '    FALLÓ, ver /tmp/%s.log\n' "$name"
+            tail -5 /tmp/"$name".log | sed 's/^/    /'
+            results="$results\n  $name: FALLÓ"
+            fail=$((fail + 1))
+            ;;
+    esac
 }
 
 # Chequeo estatico barato: si la struct cfg queda sin inicializar, la GUI se muere antes

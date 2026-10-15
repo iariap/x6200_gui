@@ -3,8 +3,11 @@
 # WSPR round-trip test.
 #
 # Needs libfftw3f as a development package, which the host does not have, so it
-# runs in the UI-harness container (tools/ui_harness/Dockerfile). It compiles the
-# real src/wspr code plus K1JT's wsprd engine and decodes a synthesized signal.
+# runs in the UI-harness container built from the full stage of
+# tools/ui_harness/Dockerfile. It compiles the real src/wspr code plus K1JT's
+# wsprd engine and decodes a synthesized signal. When the image lacks fftw3.h
+# (the CI builds the minimal `--target ci` image), the runner skips with a
+# reason instead of failing: see tests/native/codec_docker.sh.
 #
 # Usage: tests/native/run_wspr_tests.sh
 #
@@ -13,12 +16,15 @@
 set -e
 
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-PARENT=$(CDPATH= cd -- "$DIR/../../.." && pwd)
-IMAGE="${IMAGE:-x6200-uiharness}"
+REPO=$(CDPATH= cd -- "$DIR/../.." && pwd)
+# shellcheck source=tests/native/codec_docker.sh
+. "$DIR/codec_docker.sh"
 
-docker run --rm --entrypoint="" -v "$PARENT:/src" -w /src/x6200_gui x6200-uiharness bash -c '
+codec_env wspr /usr/include/fftw3.h
+
+codec_run "$REPO" '
     set -e
-    G=/src/x6200_gui
+    G=/repo
     W=$(mktemp -d)
     cd "$W"
 

@@ -2,6 +2,9 @@
 #
 # NavTex (SITOR-B) codec test: synthesizes a FEC transmission, decodes it with
 # the real src/navtex code and checks the message comes back at several SNRs.
+# It needs only the base C++ toolchain, so it runs even in the minimal
+# `--target ci` image; when there is no docker/image at all the runner skips
+# with a reason instead of failing: see tests/native/codec_docker.sh.
 #
 # Usage: tests/native/run_navtex_tests.sh
 #
@@ -10,12 +13,15 @@
 set -e
 
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-PARENT=$(CDPATH= cd -- "$DIR/../../.." && pwd)
-IMAGE="${IMAGE:-x6200-uiharness}"
+REPO=$(CDPATH= cd -- "$DIR/../.." && pwd)
+# shellcheck source=tests/native/codec_docker.sh
+. "$DIR/codec_docker.sh"
 
-docker run --rm --entrypoint="" -v "$PARENT:/src" -w /src/x6200_gui x6200-uiharness bash -c '
+codec_env navtex
+
+codec_run "$REPO" '
     set -e
-    G=/src/x6200_gui
+    G=/repo
     W=$(mktemp -d)
     g++ -O2 -std=gnu++17 -I "$G/src/navtex" \
         -o "$W/navtex_loopback" \
