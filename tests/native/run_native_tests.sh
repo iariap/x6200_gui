@@ -156,3 +156,39 @@ else
         "$DIR/test_framework.c" "$DIR/backlight_test_main.c" -o "$OUT/backlight_tests"
 fi
 "$OUT/backlight_tests"
+
+# --- Digital modes test (issue #63) ------------------------------------------
+# src/cfg/digital_modes.c includes its siblings with `#include "..."` (cfg.h and
+# ../lvgl/lvgl.h), and for a quoted include the directory of the including file
+# always wins over -I, so the real module is staged next to minimal stubs of
+# cfg.h and lvgl.h, the same pattern as the clock/backlight tests (see
+# tests/native/test_digital_modes.c). The test drives cfg_digital_load() through
+# a fake sqlite3_step() and pins the invariant that cfg_digital_label_get() is
+# never NULL: the WSPR dialog hands the label to LVGL's "%s" formatter, which
+# dereferences it, and a radio whose database had no WSPR rows crashed with
+# SIGSEGV as soon as the app opened.
+echo "== digital modes (#63): cfg_digital_label_get() nunca NULL =="
+DM_STAGE="$OUT/digital_modes_src"
+rm -rf "$DM_STAGE"
+mkdir -p "$DM_STAGE/cfg" "$DM_STAGE/lvgl"
+cp "$SRC/cfg/digital_modes.c" "$SRC/cfg/digital_modes.h" "$SRC/cfg/digital_modes.private.h" "$DM_STAGE/cfg/"
+cp "$DIR/stubs_digital/cfg.h" "$DM_STAGE/cfg/"
+cp "$DIR/stubs_digital/lvgl/lvgl.h" "$DM_STAGE/lvgl/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$DM_STAGE/cfg" -I"$DIR/stubs_digital" \
+        "$DM_STAGE/cfg/digital_modes.c" "$DIR/digital_modes_stubs.c" "$DIR/test_digital_modes.c" \
+        "$DIR/test_framework.c" "$DIR/digital_modes_test_main.c" -o "$OUT/digital_modes_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$DM_STAGE/cfg" -I"$DIR/stubs_digital" \
+        "$DM_STAGE/cfg/digital_modes.c" "$DIR/digital_modes_stubs.c" "$DIR/test_digital_modes.c" \
+        "$DIR/test_framework.c" "$DIR/digital_modes_test_main.c" -o "$OUT/digital_modes_tests"
+fi
+
+echo "== digital modes: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$DM_STAGE/cfg" -I"$DIR/stubs_digital" \
+    -c "$DM_STAGE/cfg/digital_modes.c" -o "$OUT/digital_modes.o" || true
+
+"$OUT/digital_modes_tests"
