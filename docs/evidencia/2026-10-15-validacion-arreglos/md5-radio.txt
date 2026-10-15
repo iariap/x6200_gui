@@ -1,0 +1,2 @@
+efcc0b0ce0957c5e75a9dfaac2128ad8  /usr/sbin/x6200-field
+d0ff2dba9c852cb697d481d967aac668  /usr/sbin/x6200_gui
