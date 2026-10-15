@@ -119,14 +119,18 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
     EXP-1, UI-012's in EXP-2, the UI-010 region exclusion in EXP-3 and UI-016's
     `layout_clipped` in AB-UI016-T1. The invariant is not "no waivers": it is that
     a waiver is never global and never permanent, and that the defect it holds back
-    is recorded. Four of the five are the Ajustes window's remaining real finding
+    is recorded. Four of the nine are the Ajustes window's remaining real finding
     (UI-015, the controls below the 44px field-UX target), one per fixture that
     renders the rows it lives in — settings-rs-theme (UI-007) renders the same
-    Spectrum/waterfall rows as settings-wfbat, under the RS theme. The fifth is the
-    digit panels' ghost layer (UI-017, AB-FONTSE): the shadow label of the frequency
-    row is stacked under the value on purpose, and `layout_overlap` reads that
-    stacking for what it is — two visible labels in the same box — until the rule
-    tells a by-design alpha layer from two texts hiding each other. Each one names
+    Spectrum/waterfall rows as settings-wfbat, under the RS theme. The other five
+    are the digit panels' ghost layer (UI-017, AB-FONTSE): the shadow label of the
+    frequency row is stacked under the value on purpose, and `layout_overlap` reads
+    that stacking for what it is — two visible labels in the same box — until the
+    rule tells a by-design alpha layer from two texts hiding each other. The first
+    of them is `main-frecuencia-dseg` (the fixture that asks for `digits dseg7`);
+    the other four are the Sprint theme's main-screen fixtures (THEMES v2, #69),
+    which carry the same layer because the theme's own `font_digits: dseg14` makes
+    the frequency row draw with the segmented family. Each one names
     exactly one rule and one fixture (no `path` shadow, so it cannot hide another
     node), carries a reason, an author and an expiry, and its reason names the open
     known issue that documents it.
@@ -142,6 +146,10 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
         "settings-rs-theme",
         "settings-wfbat",
         "main-frecuencia-dseg",
+        "main-tema-sprint",
+        "main-tema-sprint-agua",
+        "main-tema-sprint-eco",
+        "main-tema-sprint-tx",
     }
     for exception in exceptions:
         assert exception.path is None

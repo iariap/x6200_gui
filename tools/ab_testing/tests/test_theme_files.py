@@ -119,6 +119,7 @@ def test_the_shipped_themes_pass_every_declared_pair(
         "Holo",
         "Material 3",
         "Redshift",
+        "Sprint",
         "Sunlit",
         "Trail",
         "RS",
@@ -233,7 +234,7 @@ def _served(palettes: dict[str, dict[str, str]]):
 def test_the_served_inventory_is_the_builtins_then_the_files(
     runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    """The inventory has no silent hole: the thirteen served themes, built-ins first."""
+    """The inventory has no silent hole: the served themes, built-ins first."""
     reports, pairs = _served(runtime_palettes)
     assert [report.name for report in reports] == [
         "IU1WXY",
@@ -246,6 +247,7 @@ def test_the_served_inventory_is_the_builtins_then_the_files(
         "Holo",
         "Material 3",
         "Redshift",
+        "Sprint",
         "Sunlit",
         "Trail",
         "RS",
@@ -260,10 +262,10 @@ def test_the_served_inventory_is_the_builtins_then_the_files(
 def test_every_served_theme_passes_every_declared_pair(
     runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    """The full coverage finds no sub-WCAG pair: 13 themes, 117 measurements."""
+    """The full coverage finds no sub-WCAG pair: 14 themes, 126 measurements."""
     reports, _ = _served(runtime_palettes)
     checked = sum(len(report.results) for report in reports)
-    assert checked == 117
+    assert checked == 126
     assert all(report.ok for report in reports)
     assert all(report.error is None for report in reports)
 
@@ -398,8 +400,8 @@ def test_the_derivation_matches_the_rom_sweep_byte_for_byte(
     """Parity with tests/check_wcag.py: the same C, two implementations agree.
 
     `check_wcag.py` is the ROM's own sweep; if the port and it ever disagree on a
-    role of any of the served palettes, one of them is wrong. This is the
-    self-test the spec asks for: it pins the derivation, it does not trust it.
+    role of any of the built-in or derived palettes, one of them is wrong. This is
+    the self-test the spec asks for: it pins the derivation, it does not trust it.
     """
     _module, sweep = _load_wcag_sweep()
     for theme in (*("IU1WXY", "Legacy", "Outdoor", "Classic"), *DERIVED_PALETTES):

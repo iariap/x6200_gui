@@ -3619,3 +3619,106 @@ afirma nada sobre energía (el fondo oscuro no se asocia a ahorro de Wh: el LCD 
 3. **Sin captura ARM**: el banco está reservado y la pasada física (QEMU user-mode con el
    binario real + la pantalla de la radio) se consolida en #73. Nada de este PR afirma brillo,
    energía ni comportamiento en el Cortex-A7.
+
+## 2026-10-15 — Sprint: el tema de concurso de la colección THEMES v2 (issue #69)
+
+**Qué llegó.** El tema **Sprint** (`rootfs/usr/share/x6200/themes/Sprint.json`) y las seis
+fixtures que lo rinden, cada una con el estado de radio de su gemela de otro tema para que el
+tema sea la única variable:
+
+| Fixture | Estado que cubre | Gemela |
+|---|---|---|
+| `main-tema-sprint` | principal, RX (frecuencia, modo, VFO, S-meter, band plan, cascada) | `home-usb-20m` / `main-tema-classic` |
+| `main-tema-sprint-agua` | waterfall en movimiento (peaks, línea central, espectro lleno) | `main-espectro-agua` |
+| `main-tema-sprint-tx` | TX simulado (visor TX, split, `tx_bg`/`tx_box`) | `main-tx-simulado` |
+| `main-tema-sprint-eco` | batería baja + ECO (reloj en %, política en VP_ECO) | `main-bateria-baja` |
+| `bt-dialog-tema-sprint` | diálogo de app (`dialog_bt.c`) | `bt-dialog` |
+| `settings-tema-sprint` | Ajustes con el foco sobre la fila del tema | `settings-perfil` |
+
+Las cuatro de pantalla principal traen la capa del "8 fantasma" de UI-017 sin pedirla: el
+`font_digits: dseg14` del tema hace que la fila de frecuencia y el reloj dibujen con la
+familia segmentada (`font_digit()`, slots 30/38), así que `layout_overlap` las marca como a
+`main-frecuencia-dseg` y quedan con el mismo waiver acotado (un `exceptions` por fixture, con
+razón y vencimiento; `tests/test_theme_checks.py` fija el conjunto).
+
+**Gates corridos sobre `6a4b6ea` (la rama del tema; los reportes quedan en
+`reports/AB-SPRINT69` y `reports/BENCH-SPRINT69*`).**
+
+```text
+$ tests/check_harness_determinism.sh
+PASS: deterministic (identical PNGs for every fixture)          # 41 fixtures x2
+
+$ uv run x6200-ab compare --a 122bea3 --b HEAD --experiment-id AB-SPRINT69
+experiment AB-SPRINT69: PASS (exit 0)
+  Functional         PASS — 35 scenarios captured on both revisions
+  Visual Regression  PASS — captures are pixel-identical to the baseline
+  Quality Contract   PASS — 373 contract checks passed on the candidate
+  Performance        PASS — render-cost proxy within budget
+  Hardware/Energy    BLOCKED (advisory) — sin X6200 físico / sin medición de energía
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts 6a4b6ea0fd59: PASS — 437 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited 6a4b6ea0fd59: 17 known issues — 0 reproduced, 15 unverified;
+structural inspection REAL over 4773 objects on 41 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab themes
+themes PASS: 10 served theme(s) (6 built-in + 4 file(s)), 9 pair(s) declared, 90 pair(s) checked, 0 failure(s)
+  Sprint (...; base Classic): 0/122 roles from the base
+  non-text (WCAG 1.4.11, pixels): 23 object(s) measured, 0 failure(s)
+    OK  s_meter_arc on main-tema-sprint = 5.46:1 (min 3.0:1) [object lighter; #ff9f87 vs #323e4e]
+    OK  waterfall_signal on main-tema-sprint = 8.31:1 (min 3.0:1) [object lighter; #7fc7ab vs #0e2038]
+```
+
+**El `compare` de A contra B no puede ver el tema nuevo, y hay que decirlo.** La suite sale de
+A (`split_by_fixtures_dir`), y las seis fixtures de Sprint **sólo existen en B**: la comparación
+cubre los 35 escenarios compartidos y ahí el veredicto es *pixel-identical* (un archivo de tema
+nuevo no toca ninguna pantalla que no lo elija). Lo que sí mide al tema es lo demás:
+`contracts` (437 checks sobre las 41 fixtures del candidato, incluidas las seis nuevas),
+`audit` (0 hallazgos estructurales sobre las 41), `themes` (el par estático y el no-texto por
+píxeles sobre el render dorado nuevo `golden/main-tema-sprint.png`) y el `benchmark` de abajo.
+La comparación **tema contra tema** es la de los renders dorados `main-tema-classic.png` y
+`main-tema-sprint.png` —mismo estado de radio, sólo cambia el tema— más los números del S-meter
+y la cascada que `themes` mide sobre cada uno.
+
+**Bench vs Classic** (`benchmark --revision HEAD`, plan del presupuesto: 5 repeticiones, 4
+rondas, 20 frames por escenario; x86 host, no el Cortex-A7):
+
+| escenario | p50 | p95 | p99 | fps | cv | flushes | rss |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `main-tema-classic` | 3.382 ms | 3.566 ms | 4.132 ms | 295.7 | 3.2% | 1.0 | 10 711 040 B |
+| `main-tema-sprint` | 3.401 ms | 4.121 ms | 4.213 ms | 294.0 | 1.7% | 1.0 | 10 686 464 B |
+
+Repetido en una corrida limpia (`reports/BENCH-SPRINT69-R1`, cv 2.5%/3.0%) el orden se invierte
+y la diferencia queda dentro del ruido: p50 5.957 vs 5.995 ms y p95 6.151 vs 6.286 ms
+(**−0.6% / −2.1%**), fps +0.7%, rss +2.0%. Las dos corridas de 80 frames que se intentaron
+(`-R20` y `-R2`) volvieron **INCONCLUSIVE**: el host estaba cargado por las otras corridas de
+la colección (cv 36–40%), que es exactamente el caso que el presupuesto marca como no
+confiable. Aislamiento del sospechoso obvio —la familia segmentada, que agrega la capa sombra
+de los dígitos—: `main-foco` (IU1WXY, familia por defecto) vs `main-frecuencia-dseg` (mismo
+tema y estado, `digits dseg7`), 80 frames, p50 5.743 vs 5.876 ms y p95 6.202 vs 6.177 ms
+(`reports/BENCH-SPRINT69-DSEG`): la capa no mide un costo propio. **Conclusión**: sin regresión
+de costo medible dentro del ruido del host; el número físico (Cortex-A7) no se midió y no se
+afirma nada sobre energía.
+
+**Hallazgos y límites declarados** (ninguno bloquea este PR):
+
+1. **`theme_image()` no tiene llamadores** en esta revisión: el `images` de un tema JSON se
+   carga y nunca se dibuja, y la barra de botones inferior se pinta con el bitmap de la ROM
+   (`images/btn_dark.bin`) igual en todos los temas. Por eso `btn`/`btn_text`/`btn_grad`/
+   `btn_border` de Sprint se miden estáticamente (`check_wcag.py`, `themes`) pero no se ven en
+   el render; lo que sí se ve de los botones es el recolor de activo/deshabilitado
+   (`btn_mark_active`, `bg` + `text_mute`). Consecuencia para la colección: los seis temas
+   nuevos van a compartir el aspecto de la barra inferior hasta que esa superficie vuelva a
+   ser del tema — decisión de integración (#73/#74), no de este PR.
+2. **Renders dorados desactualizados (pre-existente)**: los PNG de las fixtures que dibujan con
+   la familia por defecto (`main-foco`, `settings-home`, `main-espectro-agua`,
+   `main-otro-tema`, `main-tema-vision`) no coinciden byte a byte con el render de hoy —
+   el kerning de AB-FONTSE (`4e9b5f4`) movió sus glifos y no se re-baselinaron (los de los
+   temas que nombran Roboto sí coinciden). La medición no-texto de esas fixtures describe un
+   render anterior; la re-baseline declarada queda para #73. El render nuevo de Sprint se
+   capturó en esta revisión, así que sus dos objetos miden los píxeles de hoy.
+3. **Sin captura ARM**: el banco está reservado y la pasada física (QEMU user-mode con el
+   binario real + la pantalla de la radio) se consolida en #73. Nada de este PR afirma brillo,
+   energía ni comportamiento en el Cortex-A7.
