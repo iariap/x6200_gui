@@ -1,0 +1,426 @@
+{
+  "app-bands": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x4ab3c0db49984709",
+    "png_sha256": "32ff1db922285c97dc32a68e1565763dbfe1936b200e3dcf68f2050b0d2f7dbc",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "app-close-home": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0xa5d5baf398e372e6",
+    "png_sha256": "f0fd618233917888f6790c3b220bdcdc067c397339b6be262d86bc16052b42b6",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "apps-menu-1": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0xd19b8e5805411aff",
+    "png_sha256": "c5629161e9173fc423d3224fd2ffe1998a46697f5fd176b3459714e0ac2d4b34",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "apps-menu-2": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x10d3b098a8aa8cf4",
+    "png_sha256": "7eca28ad7d63fef113575496feebbca85553b9c31e634a8d8819151cfee47e05",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "apps-menu-3": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x840c0a1e13250819",
+    "png_sha256": "528e4d0cdebb4a60fb80e2dfb2d4d8c5170190230c9e3b880cc9def3c887a206",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "apps-menu-4": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x229eecc51a21169d",
+    "png_sha256": "7001f67a726b35434483cbcff35e256dd17dcd41d8b9a078d477760caa7a82ae",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "apps-menu-5": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x3313fa07f6fa786a",
+    "png_sha256": "781ebebb342b746cfcc167ce9f799a8cb1ae5612d2e0b2790596e76d730a213f",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "apps-menu-6": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x919f8398be94b5c9",
+    "png_sha256": "73b2435d6a5a474e0f639d6e470ed83b64d7442230f6d695c208207b3209cbbc",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "bench-render": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x63531ce97afc620d",
+    "png_sha256": "9ab219320780669e61abb3922797b0ce26a1cfb983fe7ed5a1f6c73cfb95aa70",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "bt-dialog": {
+    "flushed_pixels": 1568308,
+    "flushes": 10,
+    "framebuffer_fnv1a": "0xf3ebac180147534e",
+    "png_sha256": "2c9be4fc2c60b0e0d369f290531d35a0a9c9446862773a678cee9fbd3f8a127d",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "bt-dialog-tema-aurora": {
+    "flushed_pixels": 1568840,
+    "flushes": 10,
+    "framebuffer_fnv1a": "0x79067aa04da6afa1",
+    "png_sha256": "fd4b5860038a2e7d26077da539427191200727d9b6f80df209406fbf5180b915",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "bt-dialog-tema-redshift": {
+    "flushed_pixels": 1568241,
+    "flushes": 10,
+    "framebuffer_fnv1a": "0xe643901912334e0f",
+    "png_sha256": "5bf903af0dcb6c8fe41a619ca2d2023a34c2b7fa432ee30921c1bad7b7a92422",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "bt-dialog-tema-sunlit": {
+    "flushed_pixels": 1569179,
+    "flushes": 10,
+    "framebuffer_fnv1a": "0x1357b021ae9a347e",
+    "png_sha256": "18dc3e4a28a0c717022ef0b7f0d7c91625823525532abac16cdc43dc2b9f148f",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "home-bateria-externa": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x33727466d0d4ae0c",
+    "png_sha256": "33dfa767ce76cc2ccab59b7f23f672f9250d5fc800b1131a87d088dc4ec39630",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "home-frecuencia-extrema": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x679748c5f64efb6b",
+    "png_sha256": "61c63cc655b9e04f2726032ebf8a8d5f2bab2387a1d04a98fb63599e760f516f",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "home-usb-20m": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xa5d5baf398e372e6",
+    "png_sha256": "f0fd618233917888f6790c3b220bdcdc067c397339b6be262d86bc16052b42b6",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-bateria-baja": {
+    "flushed_pixels": 995680,
+    "flushes": 5,
+    "framebuffer_fnv1a": "0xddc80b1ba3b495a4",
+    "png_sha256": "6f558a3669d80fd3342540369cbd61f361e719f6ceb7c7934ea64204a4257891",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-espectro-agua": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x30d7213a00eca98f",
+    "png_sha256": "dc74b8843c0a0018b5c628f1133fa625e847f7618c81b9675e11893a39e7f0dd",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-foco": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0xa5d5baf398e372e6",
+    "png_sha256": "f0fd618233917888f6790c3b220bdcdc067c397339b6be262d86bc16052b42b6",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-frecuencia-dseg": {
+    "flushed_pixels": 1127098,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xdd57190831d2c8a6",
+    "png_sha256": "260c0dd7568ee840512e2e86f4653c4bb5b9ae7a4e8ddd3b3c381d363bd7e4ef",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-natural": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xace382051230b2ce",
+    "png_sha256": "ba8e7270d399b593466b3a4d66d880af48dece900af092887bb54af905bca556",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-natural-eco": {
+    "flushed_pixels": 995680,
+    "flushes": 5,
+    "framebuffer_fnv1a": "0xaec1e1af2adacf23",
+    "png_sha256": "be30b115eb3eb4059166ec2913c6c246e8a52813736bf3ad58098a91d5a41ceb",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-otro-tema": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x7e557be76d8d4570",
+    "png_sha256": "44c17f4e1f695932693285f394e59778a4eecb989064c0788205297fa5c61874",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-aurora": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x69f59b6eac42a402",
+    "png_sha256": "7edd1f99c8e71ba47d40f3673b8890b6ded1c899669dfb8576cb1bff68737154",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-aurora-agua": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x18a0846222b3ea14",
+    "png_sha256": "b982cbfdc08f8a6adfc45e5415134e6fd70d0a0acff53f682e826bdafc76ebda",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-aurora-eco": {
+    "flushed_pixels": 995680,
+    "flushes": 5,
+    "framebuffer_fnv1a": "0x5b294f4840005a97",
+    "png_sha256": "d7f888a299647bdcd08220d52c70dd76c50e5d3ebfffad8bca688864e3d6b072",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-aurora-tx": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x725f024c3f69525f",
+    "png_sha256": "5eaa355b21ad4456abdf3911ad110694ffef66f0735cd686ecc56ed14154ccf9",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-classic": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x3a123019cc2d249f",
+    "png_sha256": "ce6c02825e095513fc56c5e81cf2123be6ce1de91a338b96e109214673f47d51",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-holo": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x06862cd92859fa56",
+    "png_sha256": "e9f5e6991d5568e257fd9aded7d3dde17eccddcdf6b575504c3cc6c2a0b3b739",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-material-3": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x4abd51ba5360b117",
+    "png_sha256": "e462acde9c055d95ee3628e37155b71a7d67a461fa8dc81e8b4d105f7b0d6609",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-outdoor-negative": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xa786a0c64a507300",
+    "png_sha256": "d505a1a9bb44c08d366985d98e1a644ea372aa04776e4dd3a4fc8a353c2f053b",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-redshift": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x4c4ae6dff6d6a338",
+    "png_sha256": "335cc28f91b73cacede9864385424b743f77cb6634abc2d1f00a36be798d431a",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-redshift-agua": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x36fe5e6c43d74eb4",
+    "png_sha256": "dbc56c6c61242b2926e1977664aca66cb14aa28c93b9f1c0a5b9496d5ffaeb86",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-redshift-eco": {
+    "flushed_pixels": 995680,
+    "flushes": 5,
+    "framebuffer_fnv1a": "0x913216d20486876f",
+    "png_sha256": "727feaf3bc1be8737f0270b513576291d8d7e9ec3990fd3b14498224ff18f229",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-redshift-tx": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xd468aa0d72e4671e",
+    "png_sha256": "289b08a9db853ea380614930ca53b4b52d0f24dd3aadc2c7d4e0fe7b32c080fd",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-rs": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xb79994c831baf629",
+    "png_sha256": "2a75ba0e57f409bfdc9519e4cc30f89c3077fec9bf966c10a907bc0adfe93d2f",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-sunlit": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x4679655ec56da6d3",
+    "png_sha256": "d5a9778614d2a9886ac875db102d5ee14d34f55a5640d2b0b2b183258599d164",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-sunlit-agua": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x2adaabe0aa9da38a",
+    "png_sha256": "2c5d005d9efdc38da21334c125d6b9daf92ff2022b76711effee2276a0cdc575",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-sunlit-eco": {
+    "flushed_pixels": 995680,
+    "flushes": 5,
+    "framebuffer_fnv1a": "0x94f4502ed8305b59",
+    "png_sha256": "0ea54e141124a8d4c38c86b665d353744d03d1a4641b2f62b6afc26313cc414d",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-sunlit-tx": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x17f9e1782880e1f2",
+    "png_sha256": "d6aab5035ffa8541a7bf19b9d616c8eb8d3907d715557699dfc7c7cdaa3a61e0",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-vision": {
+    "flushed_pixels": 1128266,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x90b90fc9930c622e",
+    "png_sha256": "1bd43e3087d38bcec31b2a7db99647eecb8d754df0be5cb98701c6065b4e2942",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-vision-cwr": {
+    "flushed_pixels": 1128266,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xb94904b790e5418a",
+    "png_sha256": "17cc1fa5c6579d5003bb14bed147beca113578e2fc42ea57367ceba5c048b45e",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-vision-usbd": {
+    "flushed_pixels": 1128266,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xfe1d95e25181873c",
+    "png_sha256": "f139c9778de4e27939638d2f9888a225ac87c81a219aa6da505fa2346835fd77",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "main-tx-simulado": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x71c4925804e457cc",
+    "png_sha256": "17053440e0fceb7063c2a950835982c8aedf6ab44b07894b50bdb2d3e85b7d42",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "settings-audio": {
+    "flushed_pixels": 1135170,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x46002d5fba390dc1",
+    "png_sha256": "d107d60e332ff3ed2007cdc5744ca6e7a04c6d7c0ef574f01b7e01b83db12299",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "settings-bands": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x4ab3c0db49984709",
+    "png_sha256": "32ff1db922285c97dc32a68e1565763dbfe1936b200e3dcf68f2050b0d2f7dbc",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "settings-home": {
+    "flushed_pixels": 1135170,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x11eb0bf282dd546c",
+    "png_sha256": "0a1d9d4be0c8808b0c5c411bea3b76f1c4c3aceca467b9625e36ee62db428c95",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "settings-perfil": {
+    "flushed_pixels": 1003170,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x6b713776d5727619",
+    "png_sha256": "e1fcdc5b4bb362b328afe921a6e9e8dbd747e4bc3fe95e38b422f7cf6fae239b",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "settings-rs-theme": {
+    "flushed_pixels": 1135170,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x642b72e54ba63f82",
+    "png_sha256": "ef9a1aecf1c9bb562ff2e293f033860a8ec456d1575fd0724a336d508cad6f9b",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "settings-tema-aurora": {
+    "flushed_pixels": 1003170,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x59cd74f0d554e796",
+    "png_sha256": "4dc956a078e63c480fcaf0ebf9d8e8c2ec5294d5022a2d1c3702bcaa6163b725",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "settings-tema-redshift": {
+    "flushed_pixels": 1003170,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x7655e1ddea4fb8c1",
+    "png_sha256": "902842e11766628d3597ebb372ad2b160c2fc711b1861c66428836cd399d870f",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "settings-tema-sunlit": {
+    "flushed_pixels": 1003170,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x9caf828150146828",
+    "png_sha256": "681b05a7e2af31b6b5224cd175cf05940310b8c44589506a6447660a4bb14334",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  },
+  "settings-wfbat": {
+    "flushed_pixels": 1135170,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x92f71478aa681d90",
+    "png_sha256": "326787043b26a899be8ca9b53c236b5bb75684ff40741d41ee066256a97a7b45",
+    "revision": "db15620394e3dfc138a428423ad14db090b27c4f",
+    "virtual_time_ms": 2200
+  }
+}
