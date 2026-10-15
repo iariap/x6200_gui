@@ -10,6 +10,8 @@
 
 #include "ui_inspector.h"
 
+#include "keyboard.h"
+
 /* The firmware's fonts: font_select.c swaps their contents but the pointers stay
  * `&sony_N`, so pointer identity is a stable way to name the font a label draws
  * with. Nothing under src/ is modified. */
@@ -48,6 +50,7 @@ static const struct {
     { &lv_textarea_class,   "lv_textarea" },
     { &lv_roller_class,     "lv_roller" },
     { &lv_btnmatrix_class,  "lv_btnmatrix" },
+    { &lv_spinbox_class,    "lv_spinbox" },
 };
 
 typedef struct {
@@ -321,6 +324,12 @@ static void emit_node(inspector_t *ins, const lv_obj_t *obj, lv_area_t clip)
     fprintf(f, ",\"scroll_dir\":\"%s\"", scroll_dir_name(lv_obj_get_scroll_dir(obj)));
     fprintf(f, ",\"clickable\":%s",
             lv_obj_has_flag(obj, LV_OBJ_FLAG_CLICKABLE) ? "true" : "false");
+    /* Focus-group membership (UI-004): `dialog_item()` is the only thing that puts a
+     * widget into `keyboard_group` (src/dialog.c); without it neither the keys nor
+     * the MFK can reach the widget (docs/HALLAZGOS.md 18). Emitted per node so the
+     * structural check measures it on the real tree. */
+    fprintf(f, ",\"in_keyboard_group\":%s",
+            (keyboard_group != NULL && lv_obj_get_group(obj) == keyboard_group) ? "true" : "false");
     fprintf(f, ",\"opa\":%u", (unsigned) lv_obj_get_style_opa(obj, LV_PART_MAIN));
 
     lv_color_t text_color = lv_obj_get_style_text_color(obj, LV_PART_MAIN);
@@ -372,6 +381,10 @@ void ui_inspector_write_json(FILE *f, const lv_obj_t *screen)
     fprintf(f, "  \"source\": \"live LVGL object tree; absolute coordinates, "
                "font metrics from lv_txt_get_size/lv_font_get_glyph_dsc, no OCR\",\n");
     fprintf(f, "  \"viewport\": { \"width\": %d, \"height\": %d },\n", (int) hor, (int) ver);
+    /* Whether the firmware's focus group exists in this capture. The `main` fixtures
+     * do not create it (keyboard_init() is a no-op on the host), so the
+     * focus-reachability rule only applies when a group is present (UI-004). */
+    fprintf(f, "  \"keyboard_group\": %s,\n", keyboard_group != NULL ? "true" : "false");
     fprintf(f, "  \"nodes\": [");
     if (screen != NULL) {
         emit_node(&ins, screen, viewport);

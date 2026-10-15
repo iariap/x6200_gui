@@ -293,7 +293,12 @@ def cmd_audit(args: argparse.Namespace) -> int:
                         "id": issue.id,
                         "title": issue.title,
                         "reproduced": None,
-                        "detail": "unverified: no detector yet",
+                        "detail": (
+                            "out of scope: the UI harness cannot measure it (see "
+                            "docs/UI_KNOWN_ISSUES.md)"
+                            if issue.status == "out-of-scope"
+                            else "unverified: no detector yet"
+                        ),
                     }
                 )
                 continue

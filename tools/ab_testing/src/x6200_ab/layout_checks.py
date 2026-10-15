@@ -54,6 +54,27 @@ INTERACTIVE = frozenset(
 # A text label is hidden if another text label covers most of it.
 OVERLAP_RATIO = 0.5
 
+# The LVGL widget classes a user changes with the keys/MFK. `dialog_item()`
+# (src/dialog.c) is the only thing that registers one in `keyboard_group`; without
+# it neither the keys nor the MFK can reach the widget (docs/HALLAZGOS.md 18, the
+# two Bluetooth switches and the Charger dropdown that were unreachable). The
+# button bar and the overlay panels are `lv_obj` and are deliberately not in the
+# group, so the class set is exactly the controls the focus has to reach.
+FOCUSABLE = frozenset(
+    {
+        "lv_btn",
+        "lv_btnmatrix",
+        "lv_slider",
+        "lv_switch",
+        "lv_dropdown",
+        "lv_checkbox",
+        "lv_roller",
+        "lv_spinbox",
+        "lv_textarea",
+        "lv_table",
+    }
+)
+
 
 def run_layout_checks(capture: Capture, layout: LayoutRules) -> list[ContractFinding]:
     """Evaluate the layout rules on one capture's structural inspection."""
@@ -74,6 +95,40 @@ def run_layout_checks(capture: Capture, layout: LayoutRules) -> list[ContractFin
             continue
         findings.extend(_geometry(capture.name, node, ancestors, path, inspection, layout))
     findings.extend(_overlaps(capture.name, inspection))
+    if inspection.has_keyboard_group:
+        findings.extend(_focus_reachability(capture.name, inspection))
+    return findings
+
+
+def _focus_reachability(name: str, inspection: Inspection) -> list[ContractFinding]:
+    """Controls the keyboard focus cannot reach (UI-004).
+
+    The harness emits, per node, whether the object is registered in the firmware's
+    `keyboard_group` (`ui_inspector.c`). A control of a class the user changes with
+    the keys that is *not* in that group cannot be reached or changed
+    (docs/HALLAZGOS.md 18); the finding names where it is drawn. The rule only runs
+    when the capture has the group at all: the `main` fixtures do not create it
+    (`keyboard_init()` is a no-op on the host), so their tree would otherwise flag
+    every control.
+    """
+    findings: list[ContractFinding] = []
+    for node, ancestors, path in iter_tree(inspection.nodes):
+        if node.cls not in FOCUSABLE or node.in_keyboard_group:
+            continue
+        if effectively_hidden(node, ancestors):
+            continue
+        findings.append(
+            ContractFinding(
+                rule="layout_focus_unreachable",
+                fixture=name,
+                ok=False,
+                detail=(
+                    f"{node.cls} at {node.x},{node.y} {node.w}x{node.h} is not in the "
+                    f"keyboard group: the keys and the MFK cannot reach it"
+                ),
+                path=path,
+            )
+        )
     return findings
 
 

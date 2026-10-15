@@ -100,6 +100,36 @@ static bool label_on_screen(lv_obj_t *obj, const char *text)
     return false;
 }
 
+/* El borde inferior en pantalla de la etiqueta visible con este texto exacto, o -1 si
+ * ninguna calza. Es la metrica con la que el fixture de BT (UI-005) mide que la linea
+ * de estado no quede debajo de la fila de botones: el defecto historico era texto
+ * tapado por los botones, y "no se ve" no es una frase, es un numero. */
+static int label_bottom(lv_obj_t *obj, const char *text)
+{
+    if (lv_obj_check_type(obj, &lv_label_class) && !lv_obj_has_flag(obj, LV_OBJ_FLAG_HIDDEN)) {
+        const char *obj_text = lv_label_get_text(obj);
+
+        if (obj_text != NULL && strcmp(obj_text, text) == 0 && visible_on_screen(obj)) {
+            lv_area_t area;
+
+            lv_obj_get_coords(obj, &area);
+            return (int) area.y2;
+        }
+    }
+
+    uint32_t children = lv_obj_get_child_cnt(obj);
+
+    for (uint32_t i = 0; i < children; i++) {
+        int bottom = label_bottom(lv_obj_get_child(obj, (int32_t) i), text);
+
+        if (bottom >= 0) {
+            return bottom;
+        }
+    }
+
+    return -1;
+}
+
 /* El lv_slider del arbol que esta mostrando este valor. El fixture de audio le da un valor
  * distinto a cada slider de ganancia justamente para poder identificar cual es cual sin leer
  * el texto de su etiqueta (que lo escribe el callback, recien cuando el usuario lo mueve). */
@@ -233,6 +263,37 @@ bool scenario_build(const scenario_t *scenario)
         buttons_load_page_group(buttons_group_app);
         buttons_press(0, false);    /* (APP 1:6) -> (APP 2:6) */
         buttons_press(0, false);    /* (APP 2:6) -> (APP 3:6) */
+        return true;
+    }
+
+    if (!strcmp(scenario->screen, "apps-menu")) {
+        /* El menú de apps de la pantalla principal (UI-002): la tecla APP carga
+         * `buttons_group_app` (src/main_screen.c, KEYPAD_APP) y el botón-página
+         * cicla las 6 páginas (src/buttons.cpp, button_next_page_cb). El fixture
+         * abre la página que pide `apps_page` desde la 1, pulsando el botón-página
+         * las veces que haga falta; scenario_settle codifica que los rótulos de
+         * esa página son los que quedaron en la barra. */
+        unsigned page = (scenario->apps_page > 0) ? (unsigned) scenario->apps_page : 1u;
+
+        mock_keyboard_group_up();
+        build_main(scenario);
+        buttons_load_page_group(buttons_group_app);
+        for (unsigned i = 1; i < page; i++) {
+            buttons_press(0, false);    /* (APP n:6) -> (APP n+1:6) */
+        }
+        return true;
+    }
+
+    if (!strcmp(scenario->screen, "bt-dialog")) {
+        /* El diálogo real de Bluetooth (UI-005): la ruta del firmware
+         * main_screen_start_app(ACTION_APP_BT) -> dialog_construct(dialog_bt)
+         * (src/dialog_bt.c). El host no tiene `btaudio-ctl`, así que el mock
+         * escribe el archivo que el script dejaría (/tmp/bt_ui_list.txt) con una
+         * lista fija: el diálogo dibuja sus filas reales y su línea de estado. */
+        mock_keyboard_group_up();
+        build_main(scenario);
+        mock_btaudio_seed_files();
+        main_screen_start_app(ACTION_APP_BT);
         return true;
     }
 
@@ -408,6 +469,65 @@ void scenario_settle(const scenario_t *scenario)
             fprintf(stderr,
                     "app-bands: the app-menu Bands button reached no dialog at all "
                     "(the button did nothing)\n");
+            exit(1);
+        }
+    }
+
+    if (!strcmp(scenario->screen, "apps-menu")) {
+        /* Lo que esta fixture *significa*: la pagina APP que se pidio es la que quedo
+         * en la barra, con SUS apps. Los rotulos se leen de la tabla real
+         * (`buttons_group_app`, src/buttons.cpp): si alguien reordena las paginas, el
+         * arnes corta aca en vez de capturar otra pagina y reportar verde. */
+        unsigned page = (scenario->apps_page > 0) ? (unsigned) scenario->apps_page : 1u;
+        buttons_page_t *p = buttons_group_app[page - 1];
+        char expected[16];
+
+        snprintf(expected, sizeof(expected), "(APP %u:6)", page);
+
+        if (!label_on_screen(lv_scr_act(), expected)) {
+            fprintf(stderr,
+                    "apps-menu: el boton-pagina '%s' no quedo en la barra (¿se reordenaron "
+                    "las paginas APP?)\n",
+                    expected);
+            exit(1);
+        }
+
+        for (int i = 0; i < BUTTONS; i++) {
+            button_item_t *it = p->items[i];
+
+            if (it == NULL || it->type != BTN_TEXT) {
+                continue;
+            }
+            if (!label_on_screen(lv_scr_act(), it->label)) {
+                fprintf(stderr,
+                        "apps-menu: la app '%s' de la pagina APP %u no quedo en la barra "
+                        "(¿se movio de pagina?)\n",
+                        it->label, page);
+                exit(1);
+            }
+        }
+    }
+
+    if (!strcmp(scenario->screen, "bt-dialog")) {
+        /* UI-005: el defecto historico era la linea de estado del dialogo de BT -el
+         * texto apoyado en la geometria vieja (DIALOG_H/DIALOG_Y)- tapada por la fila
+         * de botones. La fila empieza en 480 - 62 (buttons.cpp, btn_height = 62). El
+         * fixture codifica que la linea de estado existe y termina arriba de los
+         * botones: si vuelve a caer debajo, el arnes corta en vez de capturar un
+         * render tapado y reportar verde. */
+        int bottom = label_bottom(lv_scr_act(), "no headphones, RX off");
+
+        if (bottom < 0) {
+            fprintf(stderr,
+                    "bt-dialog: la linea de estado 'no headphones, RX off' no quedo en "
+                    "pantalla (¿cambio el texto o el archivo de la lista?)\n");
+            exit(1);
+        }
+        if (bottom >= 418) {
+            fprintf(stderr,
+                    "bt-dialog: la linea de estado (y2=%d) cae dentro de la fila de botones "
+                    "(y=418): texto tapado por los botones (UI-005)\n",
+                    bottom);
             exit(1);
         }
     }

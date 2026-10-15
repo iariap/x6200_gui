@@ -41,6 +41,10 @@ typedef struct {
     /* Natural-bench-only knob: natural frames the run does. Ignored outside
      * `--bench-natural`, so it never changes a rendered pixel. */
     int natural_frames;
+    /* The APP page an `apps-menu` fixture opens (1..6, the pages of
+     * `buttons_group_app`). 0 means the first page: it selects which page of the
+     * app menu the fixture renders, never a pixel of the page itself. */
+    int apps_page;
 } scenario_t;
 
 /* Parses `path`. Unknown keys are an error (a scenario must not silently

@@ -39,18 +39,18 @@ rotary_t  *mfk_inner;
 
 /* --- app dialogs -----------------------------------------------------------
  * `main_screen.c` references one descriptor per app. The harness compiles the
- * real shared dialog machinery (src/dialog.c) and the real Ajustes window
- * (src/dialog_settings.c, which owns `dialog_settings`); the rest of the apps
- * still point at one inert descriptor whose constructor does nothing, so
- * opening one of them from a fixture is a no-op instead of a NULL call.
- * `dialog_settings` is NOT declared here: its own source defines it. */
+ * real shared dialog machinery (src/dialog.c), the real Ajustes window
+ * (src/dialog_settings.c) and the real Bluetooth window (src/dialog_bt.c, for
+ * UI-005), each of which owns its descriptor; the rest of the apps still point
+ * at one inert descriptor whose constructor does nothing, so opening one of them
+ * from a fixture is a no-op instead of a NULL call. `dialog_settings` and
+ * `dialog_bt` are NOT declared here: their own sources define them. */
 
 static void mock_construct_cb(lv_obj_t *parent) { (void) parent; }
 
 static dialog_t mock_dialog = { .construct_cb = mock_construct_cb };
 
 dialog_t *dialog_bands      = &mock_dialog;
-dialog_t *dialog_bt         = &mock_dialog;
 dialog_t *dialog_callsign   = &mock_dialog;
 dialog_t *dialog_cluster    = &mock_dialog;
 dialog_t *dialog_cw_kbd     = &mock_dialog;

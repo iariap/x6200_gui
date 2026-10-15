@@ -347,13 +347,29 @@ issues:
   - id: UI-002
     title: "Menu de apps: las apps solo vivian en el long-press de Ajustes"
     severity: major
-    fixture: home-usb-20m
-    status: unverified
+    fixture: apps-menu-1
+    status: fixed
     note: >
-      Hallazgo 17 y 29. Sin fixture que abra el menu de apps; el arnes renderiza la
-      pantalla principal, no el menu.
+      Hallazgos 17 y 29. El defecto (las apps alcanzables solo por el long-press
+      asignado, 9 de 23 con boton) se arreglo en el issue #46: las paginas APP
+      pasaron a 6 y las 23 apps (22 desde que About se elimino) tienen boton. El
+      arnes ahora SI abre el menu: los seis fixtures `apps-menu-1..6`
+      (tools/ui_harness/fixtures/) cargan `buttons_group_app` por el mismo camino
+      que la tecla APP (src/main_screen.c, KEYPAD_APP) y ciclan las seis paginas
+      con el boton-pagina (src/buttons.cpp). La inspeccion estructural de los seis
+      renders cubre las 22 celdas de app (con texto y caja), y `scenario_settle`
+      codifica, leyendo la tabla real `buttons_group_app`, que el rotulo
+      "(APP n:6)" y las apps de cada pagina son los que quedaron en la barra: una
+      pagina reordenada corta la corrida en vez de capturar otra cosa y salir
+      verde. No reproduce ningun defecto: la semilla pasa a `fixed` y la guarda es
+      el chequeo estatico `tests/check_apps_menu.py` (23 apps, 23 en el menu, 6
+      paginas) mas la codificacion del fixture.
     evidence:
       - "docs/HALLAZGOS.md 17, 29"
+      - "tools/ui_harness/fixtures/apps-menu-1.scn .. apps-menu-6.scn (las 6 paginas, 22 apps)"
+      - "src/main_screen.c (KEYPAD_APP -> buttons_load_page_group(buttons_group_app)) + src/buttons.cpp (page_app_1..6, button_next_page_cb)"
+      - "tools/ui_harness/src/screens.c (scenario_build/apps-menu + scenario_settle: lee buttons_group_app y exige el rotulo y las apps de la pagina)"
+      - "tests/check_apps_menu.py (23 apps, 23 en el menu, 6 paginas)"
 
   - id: UI-003
     title: "WCAG 2.1: pares texto/fondo por debajo de 4.5:1 o 3:1"
@@ -384,29 +400,65 @@ issues:
   - id: UI-004
     title: "Ajustes: widgets que no se podian alcanzar con el foco"
     severity: major
-    fixture: home-usb-20m
-    status: unverified
+    fixture: settings-home
+    status: fixed
     note: >
-      Hallazgo 18. El arnes no abre Ajustes: dialog_settings.c necesita
-      dialog_field y decenas de dependencias, y no hay fixture que emita la grilla
-      de foco de Ajustes.
+      Hallazgo 18: tres widgets de Ajustes (los dos switches de Bluetooth y el
+      desplegable Charger) no llamaban a `dialog_item()` y quedaban fuera de
+      `keyboard_group`, sin poder alcanzarlos ni cambiarlos con las teclas. Se
+      arreglaron con `dialog_item()` en los tres. El detector renderizado que
+      faltaba es ahora el contrato `layout_focus_unreachable`
+      (tools/ab_testing/src/x6200_ab/layout_checks.py): el inspector emite, por
+      nodo, la pertenencia a `keyboard_group` (`--inspect`;
+      tools/ui_harness/src/ui_inspector.c) y la regla marca todo control de una clase
+      que el usuario cambia con las teclas (switch/slider/dropdown/spinbox/textarea/
+      roller/checkbox/table/btn/btnmatrix) que este visible y NO este en el grupo.
+      Corrida sobre los fixtures que abren Ajustes (`settings-home`,
+      `settings-wfbat`, `settings-perfil`, `settings-audio`, `settings-rs-theme`) y
+      sobre `bt-dialog`/`main-foco`/`apps-menu-*`: **0 hallazgos** (todos los
+      controles alcanzables estan en el grupo). La regla solo corre cuando la
+      captura tiene el grupo (los fixtures `main` no lo crean). Guarda permanente:
+      el propio contrato (la autocprueba de `tests/test_e2e.py` quita el
+      `lv_group_add_obj()` de `dialog_item()` en una revision efimera y exige el
+      hallazgo) mas el chequeo estatico `tests/check_settings_focus.py` (28 widgets
+      creados, 28 registrados).
     evidence:
       - "docs/HALLAZGOS.md 18"
+      - "src/dialog.c (dialog_item: lv_group_add_obj(keyboard_group, obj))"
+      - "tools/ui_harness/src/ui_inspector.c (in_keyboard_group por nodo + keyboard_group en la inspeccion)"
+      - "tools/ab_testing/src/x6200_ab/layout_checks.py (layout_focus_unreachable)"
+      - "settings-home/-wfbat/-perfil/-audio/-rs-theme + bt-dialog + main-foco: 0 hallazgos layout_focus_unreachable"
       - "tests/check_settings_focus.py"
 
   - id: UI-005
     title: "Dialogo viejo: texto constante tapado por los botones"
     severity: minor
-    fixture: home-usb-20m
-    status: unverified
+    fixture: bt-dialog
+    status: fixed
     note: >
-      Hallazgo 21: la linea de estado de las apps de BT/WeFax/SSTV (calculada con
-      las constantes viejas DIALOG_H/DIALOG_Y) quedaba tapada por la fila de
-      botones.
-      Falta un fixture de BT/WeFax/SSTV, que exige compilar esos dialogos y su
-      superficie (bluetooth/audio/tabla), fuera del alcance de UI-02.
+      Hallazgo 21: la linea de estado del dialogo de BT (y las de WeFax/SSTV) se
+      apoyaba en las constantes viejas DIALOG_H (372) / DIALOG_Y (108) y quedaba
+      tapada por la fila de botones (que empieza en 480 - 62). Se arreglo con la
+      geometria real (DIALOG_BOX_H 348, DIALOG_Y 66, src/styles.h). El arnes ahora
+      SI renderiza el dialogo de BT: el fixture `bt-dialog`
+      (tools/ui_harness/fixtures/bt-dialog.scn) abre el dialogo real por el camino
+      del firmware (main_screen_start_app(ACTION_APP_BT) -> src/dialog_bt.c), con
+      `btaudio-ctl` reemplazado por un mock que siembra la lista de dispositivos
+      (/tmp/bt_ui_list.txt) y `system()` envuelto a un no-op
+      (mocks/mock_btaudio.c). Medido con la inspeccion estructural: la linea de
+      estado "no headphones, RX off" queda en y=380, 17 px de alto -> y2=396,
+      ARRIBA de la fila de botones (y=418): 21 px de aire. NO reproduce el defecto.
+      La semilla pasa a `fixed`; la guarda es `scenario_settle`, que exige que esa
+      linea exista y que su y2 quede por encima de 418 (una reaparicion corta la
+      corrida), mas el contrato `typography_text_truncated` (que ademas encontro y
+      cerro un recorte real de la nota del mismo dialogo, ver la nota del NOTE_W en
+      src/dialog_bt.c).
     evidence:
       - "docs/HALLAZGOS.md 21"
+      - "tools/ui_harness/fixtures/bt-dialog.scn + tools/ui_harness/src/screens.c (scenario_settle: y2 de la linea de estado < 418)"
+      - "src/dialog_bt.c (DIALOG_BOX_H, NOTE_W) + src/styles.h (DIALOG_BOX_H 348, DIALOG_Y 66)"
+      - "tools/ui_harness/mocks/mock_btaudio.c (__wrap_system + lista sembrada)"
+      - "inspeccion structural del render: 'no headphones, RX off' y2=396 < 418 (21 px)"
 
   - id: UI-006
     title: "Icono BT: el glifo U+F293 no existe en sony_20 (rectangulo vacio)"
@@ -426,35 +478,43 @@ issues:
   - id: UI-007
     title: "Temas RS sin clave propia heredaban un color por debajo de 2.58:1"
     severity: major
-    fixture: main-otro-tema
-    status: unverified
+    fixture: settings-rs-theme
+    status: fixed
     note: >
-      Hallazgo 28. Desde UI-02 existe la fixture `main-tema-rs`: los temas RS
-      renderizan y el chequeo de contraste estructural corre sobre la captura sin
-      encontrar pares por debajo del umbral en la pantalla principal. El par del
-      hallazgo es el riel del switch (`control_border`, la clave que RS no definia
-      y heredaba a 2.58:1 contra su dialogo) y solo aparece en Ajustes, no en la
-      pantalla principal; ademas el JSON ya trae la clave (hallazgo 28). Desde UI-03
-      el par esta cubierto ESTATICAMENTE por `x6200-ab themes` con las parejas de
-      quality/theme_pairs.yaml: resuelve la herencia del `base` como src/theme.c
-      (una prueba con el RS sin `control_border` mide 2.58:1 de nuevo, o sea el
-      detector funciona) y pasa en los 3 temas JSON que van en la imagen. Sigue
-      unverified hasta que exista una fixture de Ajustes: el detector no es una
-      captura, es el archivo del tema.
+      Hallazgo 28. El par del hallazgo es el riel del switch (`control_border`, la
+      clave que RS no definia y heredaba a 2.58:1 contra su dialogo) y vive en
+      Ajustes. Se arreglo agregando la clave `control_border` (#6e6e6e) al JSON de
+      RS, y desde UI-03 el par esta cubierto ESTATICAMENTE por `x6200-ab themes`
+      con quality/theme_pairs.yaml (resuelve la herencia del `base` como
+      src/theme.c; una prueba con RS sin la clave vuelve a medir 2.58:1). Faltaba la
+      evidencia renderizada: el fixture `settings-rs-theme` (tools/ui_harness/
+      fixtures/settings-rs-theme.scn) es la MISMA ventana de Ajustes que
+      `settings-wfbat` bajo el tema RS, scrolleda al grupo Espectro/waterfall, asi
+      que el riel del switch se dibuja en pantalla. Medido con la inspeccion
+      estructural del render: los ocho switches salen con bg_color `#6E6E6E` (el
+      `control_border` de RS) contra el panel del dialogo, el par que el chequeo
+      estatico mide >= 3:1. No reproduce defecto: la semilla pasa a `fixed`; las
+      guardas son el chequeo estatico (el par) y el fixture renderizado.
     evidence:
       - "docs/HALLAZGOS.md 28"
       - "docs/THEMES.md"
-      - "tools/ui_harness/fixtures/main-tema-rs.scn"
+      - "tools/ui_harness/fixtures/settings-rs-theme.scn (Ajustes + RS, grupo Espectro)"
+      - "rootfs/usr/share/x6200/themes/RS/theme.json (control_border #6e6e6e)"
+      - "settings-rs-theme (--inspect): 8 switches con bg_color #6E6E6E"
       - "tools/ab_testing/quality/theme_pairs.yaml + tools/ab_testing/tests/test_theme_files.py (RS sin la clave: 2.58:1)"
-      - "tools/ab_testing/reports/AB-e2e-structural/audit-base.json"
 
   - id: UI-008
-    title: "CMA: 128 MB reservados para GPU no usada (presupuesto del firmware)"
+    title: "CMA: 128 MB reservados para GPU no usada (presupuesto del firmware, fuera del alcance de la UI)"
     severity: info
     fixture: home-usb-20m
-    status: unverified
+    status: out-of-scope
     note: >
-      docs/RESOURCE_USAGE.md. Es un presupuesto de recursos del firmware, no un
-      defecto de la UI; acota LV_MEM y buffers. El arnes no mide memoria del sistema.
+      docs/RESOURCE_USAGE.md. NO es un defecto de la UI: es un presupuesto de
+      recursos del firmware (el pool CMA de 128 MB del DTS, atado a una GPU que el
+      firmware no usa), y el arnes de UI no mide memoria del sistema. No lleva
+      fixture ni fake-trick: queda `out-of-scope` declarado, con la decision escrita
+      en docs/UI_KNOWN_ISSUES.md (seccion UI-008). El monitoreo queda en
+      docs/RESOURCE_USAGE.md, que es donde vive el presupuesto.
     evidence:
       - "docs/RESOURCE_USAGE.md"
+      - "docs/UI_KNOWN_ISSUES.md (UI-008: decision out-of-scope)"

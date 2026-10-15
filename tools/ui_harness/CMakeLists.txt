@@ -71,11 +71,16 @@ set(GUI_SRC
     # La politica visual de bateria (UI-08 incr. 1): modulo puro que todavia no
     # llama nadie; se compila aca para que el -Wall del arnes lo cubra desde ya.
     ${REPO}/src/visual_policy.c
-    # The shared dialog machinery and the real Ajustes window: the fixtures
-    # `settings-home`/`settings-wfbat` open it over the real main screen. The rest
-    # of the app dialogs stay inert mocks (see mocks/mock_main_screen.c).
+    # The shared dialog machinery, the real Ajustes window and the real Bluetooth
+    # window: the `settings-*` fixtures open Ajustes over the real main screen and
+    # `bt-dialog` opens the Bluetooth app (UI-002/UI-005). The rest of the app
+    # dialogs stay inert mocks (see mocks/mock_main_screen.c). `bt_devices.c` is the
+    # dialog's pure parser (no UI, no LVGL); the script surface is mocked
+    # (mocks/mock_btaudio.c, mocks/mock_ui_deps.c).
     ${REPO}/src/dialog.c
     ${REPO}/src/dialog_settings.c
+    ${REPO}/src/dialog_bt.c
+    ${REPO}/src/bt_devices.c
 )
 
 # The GUI's own C++ (button bar, MFK encoder state, controls, DSP helpers) and
@@ -122,7 +127,12 @@ target_compile_options(ui_harness PRIVATE -D_GNU_SOURCE -Wall)
 # radio is replaced the same way `get_time()` is replaced by the virtual clock;
 # nothing else in the linked objects calls `time()` (the power clock only does it
 # in its CLOCK_TIME branch, which no fixture reaches).
-target_link_options(ui_harness PRIVATE -Wl,--wrap=time)
+#
+# `--wrap=system` is the same idea for the Bluetooth app (UI-005): `src/dialog_bt.c`
+# runs `btaudio-ctl` with system() on a worker thread, and the host must run
+# nothing. `__wrap_system` (mocks/mock_btaudio.c) is a no-op that documents it; the
+# state the dialog reads is seeded explicitly by the fixture.
+target_link_options(ui_harness PRIVATE -Wl,--wrap=time -Wl,--wrap=system)
 
 target_compile_definitions(ui_harness PRIVATE
     LV_CONF_INCLUDE_SIMPLE=1
