@@ -116,7 +116,7 @@ docker run --rm --entrypoint "" -v "$PWD/../.vfix3:/t" x6200-buildroot \
 | `{"cmd":"btn","val":N}` | aprieta el boton N de la barra de abajo |
 
 Apps por nombre: `off`, `FT8`, `FT4`, `JS8`, `WSPR`, `SSTV`, `WeFax`, `NavTex`, `RTTY`, `CW`,
-`Field`, `GPS`, `Bands`, `Settings`, `BT`, `About`, `Cluster`, `CwTrainer`, `Eq`, `Status`, `QTH`,
+`Field`, `GPS`, `Bands`, `Settings`, `BT`, `Cluster`, `CwTrainer`, `Eq`, `Status`, `QTH`,
 `Callsign`, `Recorder`, `WiFi`. Los comandos especificos de cada app estan en `app_cmds[]`
 (`src/remote_server.cpp`): tienen `min`/`max` para `val` y/o texto.
 
