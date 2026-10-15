@@ -44,7 +44,7 @@ static volatile bool   reconnect_requested; /* new server or callsign */
  * other servers of the list (one node only gets its own region's spots well) and pota.app's
  * activator spots. Their threads leave the state shown, the main server's, alone. */
 #define EXTRA_LINKS      4
-#define POTA_SPOTS       "/usr/sbin/x6100-pota-spots"
+#define POTA_SPOTS       "/usr/sbin/x6200-pota-spots"
 #define POTA_POLL_MS     60000
 static __thread bool   extra_link;
 static volatile unsigned extras_gen;       /* +1: other servers or callsign changed */

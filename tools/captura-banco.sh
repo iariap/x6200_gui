@@ -16,9 +16,11 @@
 #   CHROOT=../.vfix3 CAP_AUDIO=/tmp/vol.wav CAP_LOOPBACK=si tools/captura-banco.sh  # Parte B (sudo)
 #
 # Garantias (ver .agents/pruebas-sin-radio/SKILL.md):
-#   - Prueba la ULTIMA version: reconstruye si el hash de los fuentes cambio, si hay cambios sin
-#     commitear o si un fuente es mas nuevo que el binario (RECONSTRUIR=auto|si|no). Imprime commit
-#     y md5 del binario que corrio.
+#   - Prueba la ULTIMA version: si el hash de los fuentes cambio, hay cambios sin commitear o un fuente
+#     es mas nuevo que el binario (RECONSTRUIR=auto|si|no), limpia con `make x6200-gui-dirclean` y
+#     recien despues reconstruye. El rebuild compila en una copia propia del repo y el mtime no es
+#     confiable (hallazgo #65: un binario viejo pasaba el check), asi que ese camino no reusa nada.
+#     Imprime commit, md5 de la fuente y md5 del binario que corrio.
 #   - Usa el socket CORRECTO: borra socket/framebuffer viejos, espera el socket, hace handshake
 #     {"cmd":"get"}, comprueba que la GUI este viva y reintenta reiniciando el banco una vez.
 #   - No deja evidencia falsa: si la captura sale vacia (o el framebuffer es uniforme) falla.
@@ -110,6 +112,7 @@ if [ "$MODO_CHECK" = "si" ]; then
     docker image inspect "$IMAGEN" --format '  imagen: {{.Id}}' 2>/dev/null | cut -c1-40
     echo "  version del repo: $(git -C "$REPO" log -1 --format='%h %s' 2>/dev/null | cut -c1-60)"
     [ -n "$(git -C "$REPO" status --porcelain -- src lvgl/src 2>/dev/null)" ] && echo "  aviso: hay cambios sin commitear en src/ (se reconstruye antes de probar)"
+    echo "  rebuild: si corresponde, dirclean + rebuild (el rebuild compila en una copia propia del repo)"
     echo "  capturas mas chicas que $MINIMO_PNG bytes se consideran vacias"
     exit 0
 fi
@@ -134,13 +137,24 @@ MOTIVO=
 [ -n "$MAS_NUEVO" ] && MOTIVO="${MOTIVO:+$MOTIVO y }un fuente es mas nuevo que el binario"
 if [ "$RECONSTRUIR" = "si" ]; then MOTIVO="RECONSTRUIR=si"; fi
 
-if [ -n "$MOTIVO" ] && [ "$RECONSTRUIR" != "no" ]; then
-    [ -d "$BUILDROOT" ] || fallar "hay que reconstruir ($MOTIVO) y no esta $BUILDROOT (usar RECONSTRUIR=no para probar el binario que ya esta)"
-    echo "  reconstruyendo la GUI: $MOTIVO"
+# Corre un target de buildroot del GUI en el volumen del build (mismo entorno para dirclean y rebuild).
+make_gui() {
     docker run --rm --entrypoint "" \
         -v "$BUILDROOT":/workspace -v "$VOLUMEN":/workspace/build -v "$REPO":/workspace_gui:ro \
         -e FORCE_UNSAFE_CONFIGURE=1 -w /workspace/build "$IMAGEN" \
-        make x6200-gui-rebuild -j"$(nproc)" >/dev/null 2>&1 || fallar "fallo la reconstruccion (make x6200-gui-rebuild)"
+        make "$@" >/dev/null 2>&1
+}
+
+if [ -n "$MOTIVO" ] && [ "$RECONSTRUIR" != "no" ]; then
+    [ -d "$BUILDROOT" ] || fallar "hay que reconstruir ($MOTIVO) y no esta $BUILDROOT (usar RECONSTRUIR=no para probar el binario que ya esta)"
+    # dirclean SIEMPRE en este camino: el rebuild compila en una copia propia del repo y su mtime no
+    # es confiable (hallazgo #65: el check-matrix daba ok con un binario viejo), asi que no se reusa
+    # nada. Borra la copia y los .o del GUI y el rebuild los rehace del arbol fuente. Cuesta un
+    # rebuild completo, aceptable en el banco.
+    echo "  limpiando la GUI (dirclean): el rebuild reusa una copia propia del repo"
+    make_gui x6200-gui-dirclean || fallar "fallo la limpieza (make x6200-gui-dirclean)"
+    echo "  reconstruyendo la GUI: $MOTIVO"
+    make_gui x6200-gui-rebuild -j"$(nproc)" || fallar "fallo la reconstruccion (make x6200-gui-rebuild)"
     echo "$HASH" > "$SELLO"
 elif [ -n "$MOTIVO" ]; then
     echo "  aviso: $MOTIVO, pero RECONSTRUIR=no: se prueba el binario que ya esta"
@@ -325,6 +339,7 @@ FIN
 
     # que se probo (la garantia 1 del banco vale tambien para el audio)
     echo "  version: $(git -C "$REPO" log -1 --format='%h %s' 2>/dev/null | cut -c1-60)"
+    echo "  fuente: md5 $(printf '%s' "$HASH" | cut -c1-12) (src/ + lvgl/src)"
     echo "  binario: md5 $(md5sum "$CHROOT$BIN" | cut -c1-12)   qemu-cpu: $QEMU_CPU"
 
     # la cuenta del RMS: numeros, no afirmaciones (y falla si pidieron voz y la captura es silencio)
@@ -440,6 +455,7 @@ PY
 # --- 6. que se probo, y que la captura no sea basura -------------------------------------------
 TAM=$(stat -c %s "$SALIDA" 2>/dev/null || echo 0)
 echo "  version: $(git -C "$REPO" log -1 --format='%h %s' 2>/dev/null | cut -c1-60)"
+echo "  fuente: md5 $(printf '%s' "$HASH" | cut -c1-12) (src/ + lvgl/src)"
 echo "  binario: md5 $(md5sum "$CHROOT$BIN" | cut -c1-12)   qemu-cpu: $QEMU_CPU"
 if [ "$TAM" -lt "$MINIMO_PNG" ]; then
     echo "ERROR: la captura parece vacia ($TAM bytes < $MINIMO_PNG): la GUI no dibujo la pantalla" >&2
