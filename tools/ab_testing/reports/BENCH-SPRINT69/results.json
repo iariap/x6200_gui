@@ -1,0 +1,67 @@
+{
+  "budget": {
+    "max_dispersion_cv_pct": 25.0,
+    "min_frames": 12,
+    "repeats": 5,
+    "rounds": 4,
+    "warmup_frames": 3
+  },
+  "environment": "x86 host: relative regression proxy, not the Cortex-A7",
+  "exit_code": 0,
+  "experiment_id": "BENCH-SPRINT69",
+  "kind": "benchmark-measurement",
+  "measurements": [
+    {
+      "dispersion_cv_pct": 1.653,
+      "draw_ms_mean": 2.9248,
+      "flush_ms_mean": 0.4149,
+      "flushes_mean": 1.0,
+      "fps": 302.08,
+      "frames": 20,
+      "memory": {
+        "peak_rss_bytes": 10366976,
+        "peak_vm_bytes": 82194432,
+        "pss_bytes": 10354688,
+        "rss_bytes": 10301440
+      },
+      "redrawn_area_mean": 384000.0,
+      "render_mean_ms": 3.3397,
+      "render_p50_ms": 3.3104,
+      "render_p95_ms": 3.4198,
+      "render_p99_ms": 3.6928,
+      "render_stdev_ms": 0.1067,
+      "scenario": "main-tema-classic",
+      "unique_redrawn_mean": 384000.0
+    },
+    {
+      "dispersion_cv_pct": 1.407,
+      "draw_ms_mean": 2.8899,
+      "flush_ms_mean": 0.4348,
+      "flushes_mean": 1.0,
+      "fps": 306.54,
+      "frames": 20,
+      "memory": {
+        "peak_rss_bytes": 10686464,
+        "peak_vm_bytes": 82198528,
+        "pss_bytes": 10674176,
+        "rss_bytes": 10686464
+      },
+      "redrawn_area_mean": 384000.0,
+      "render_mean_ms": 3.3248,
+      "render_p50_ms": 3.2622,
+      "render_p95_ms": 3.399,
+      "render_p99_ms": 4.3464,
+      "render_stdev_ms": 0.2909,
+      "scenario": "main-tema-sprint",
+      "unique_redrawn_mean": 384000.0
+    }
+  ],
+  "revisions": {
+    "revision": "46195bffe31baf790fce23f79698941b6504cbe6"
+  },
+  "scenarios": [
+    "main-tema-sprint",
+    "main-tema-classic"
+  ],
+  "status": "PASS"
+}
