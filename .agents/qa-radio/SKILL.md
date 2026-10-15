@@ -205,6 +205,8 @@ caidas, TX/ROE si se midio, e issues abiertos.
 | Dar por muerto el fix del #44 | el JSON nuevo estaba en `/usr/share`, la GUI leia `/mnt` | medir en la radio, mirar `DATA` |
 | **Build desde un `git worktree` sin el submódulo `lvgl`** | el CMake falla (`lvgl does not contain a CMakeLists.txt`) o sale un binario **PIE de 776 KB** en vez del de 13.737.784 B | `git submodule update --init lvgl` en el worktree; y **verificar el tamaño/md5 del binario despues de cada build** (el de la GUI es 13.737.784 B; si pesa cientos de KB, algo falta) |
 | Mi `compila-gui.sh` escondia el error | mandaba la salida a /dev/null y decia "FALLO la compilacion" sin el motivo | al fallar un build, correr el `make` a mano con el log a un archivo |
+| **El deploy por WiFi no prueba el rootfs** | el flicker venia de `/etc/init.d/S95gui`, que `prueba-gui-en-radio.sh` no toca (copia binario y libs) | si el cambio es del rootfs o de los scripts de init, hay que **flashear la imagen** (ver la receta de SD). Y si la GUI se ve rara, revisar `ps`: dos `x6200_gui` con `/dev/fb0` = dos GUIs dibujando |
+| Traer cuadros del framebuffer con `cat` por SSH | los archivos llegaban cortados (786 KB de 1.5 MB) | usar `scp` o leer hasta completar el tamano |
 | El push rebota | el otro agente empujo a la misma rama mientras yo trabajaba (15/10 17:20) | `git pull --rebase fork lu2dsx/x6200-rom` y volver a pushear; los commits propios quedan encima de los de el |
 
 ## Imagen de SD: armado, flasheo y conservar la DATA
