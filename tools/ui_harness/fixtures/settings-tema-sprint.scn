@@ -1,0 +1,47 @@
+# settings-tema-sprint: the real Ajustes window under the shipped "Sprint" theme,
+# scrolled to the Apariencia group (the "Visual profile" row), which is the same
+# real path as settings-perfil (main_screen_action(ACTION_APP_SETTINGS) ->
+# dialog_construct -> src/dialog_settings.c, then "Mas >" + the "Apariencia" tab,
+# which calls settings_goto(): scroll + focus) with the theme as the only
+# variable.
+#
+# It is Sprint's focus state: settings_goto() leaves the focus on a control of the
+# row, so the focus ring (TC(focus) / TC(focus_text), styles.c
+# dialog_item_focus_style) is drawn with the theme's amber over navy, and the
+# dialog text (labels, group header, values) is read with Sprint's roles.
+#
+# The battery is 11.2 V without an external source, so the visual policy decides
+# ECO on its own: the dropdown renders "Auto" while the row label reads
+# "Visual profile (Eco)".
+#
+# Deterministic: the date/time fields read the harness' fixed clock, not the
+# host's (tools/ui_harness/CMakeLists.txt links with `--wrap=time`).
+
+name settings-tema-sprint
+screen settings-perfil
+
+theme Sprint
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 11.2
+external_v 0
+battery_cap 50
+charging false
+
+rxtx rx

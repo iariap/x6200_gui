@@ -372,6 +372,57 @@ exceptions:
     author: fonts-extras
     until: 2027-03-31
 
+  # Sprint (THEMES v2, issue #69): las cuatro fixtures de pantalla principal del
+  # tema traen `font_digits: dseg14` en su JSON (es el requisito del issue: los
+  # paneles de digitos dibujan con la familia segmentada en los slots reales
+  # 30/38), asi que traen la MISMA capa de "8 fantasma" de UI-017 que
+  # `main-frecuencia-dseg` y la regla la lee igual: dos etiquetas con texto
+  # visible apiladas en la caja de 500x36 de la fila de frecuencia. Es el diseno
+  # (la sombra enciende los segmentos que el valor apaga, a LV_OPA_30, y el valor
+  # se dibuja encima a opacidad plena), no dos textos que se tapan. Un waiver por
+  # fixture, como los de Ajustes: la regla no se debilita y el dia que la sombra
+  # deje de existir (o que la regla distinga una capa de alpha de dos textos) se
+  # retiran los cinco.
+  - rule: layout_overlap
+    fixture: main-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): el tema Sprint pide
+      `font_digits: dseg14`, asi que la fila de frecuencia dibuja con la familia
+      segmentada y `src/main_screen.c` arma la etiqueta sombra ("88.888.888" a
+      LV_OPA_30) debajo del valor, con su misma caja. Es la capa que da el look
+      de segmentos apagados, no dos textos que se esconden; ver el `reason` de la
+      region `frecuencia` y la ficha UI-017.
+    author: theme-sprint-69
+    until: 2027-03-31
+
+  - rule: layout_overlap
+    fixture: main-tema-sprint-agua
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `main-tema-sprint` (el tema pide `font_digits: dseg14`); esta
+      fixture cambia el estado del waterfall, no la fila. Diseno, no defecto.
+    author: theme-sprint-69
+    until: 2027-03-31
+
+  - rule: layout_overlap
+    fixture: main-tema-sprint-eco
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `main-tema-sprint` (el tema pide `font_digits: dseg14`); esta
+      fixture cambia el estado de bateria/ECO, no la fila. Diseno, no defecto.
+    author: theme-sprint-69
+    until: 2027-03-31
+
+  - rule: layout_overlap
+    fixture: main-tema-sprint-tx
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `main-tema-sprint` (el tema pide `font_digits: dseg14`); en TX
+      la sombra lleva el split ("88.888.888 / 88.888.888") debajo del valor. Diseno,
+      no defecto.
+    author: theme-sprint-69
+    until: 2027-03-31
+
 # UI-016 (`layout_clipped` [settings-home]) was withdrawn here in AB-UI016-T1,
 # together with the fix: the Ajustes year field no longer clips its last digit
 # (src/dialog_settings.c, the year spinbox gets the width its four digits need

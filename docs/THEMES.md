@@ -27,6 +27,7 @@ paleta del waterfall.
 | **Redshift** | `themes/Redshift.json` |
 | **Aurora** | `themes/Aurora.json` |
 | **Trail** | `themes/Trail.json` |
+| **Sprint** | `themes/Sprint.json` |
 
 ## El arco del S-meter (`meter_over`) — medido en el equipo, 2026-10-15 (#44)
 
@@ -312,3 +313,70 @@ Las capturas del arnés por estado son `main-tema-trail` (principal), `settings-
 `main-tema-trail-eco` (batería baja/ECO) y `main-tema-trail-agua` (espectro + waterfall).
 La galería ARM real y la comparación consolidada contra los otros cinco temas se cierran en el
 #73; el selector/default se migra en el #74.
+
+## Sprint — concursos / operación rápida (THEMES v2, issue #69)
+
+**Qué es.** Un tablero de contest: **marino profundo** (`bg #091222`, `bar #11233E`,
+`panel #071529`), **ámbar** para lo que pide atención (foco, botón activo, selección, títulos,
+franja de band plan) y **cian hielo** para las lecturas (`vfo #7CE4EE`, barras del S-meter,
+spots, `info`). El sistema de color es una jerarquía, no una paleta: ámbar = acción/atención,
+cian = lectura, coral (`#FF8E83`/`#FF6E5C`) = TX y alarma, verde = OK. El waterfall
+(`#030A17 → #173050 → #21689F → #2DBFCB → #F6D47D → #FF825E`) lleva el piso de ruido al marino
+y la señal del cian al ámbar: la misma lectura de jerarquía en la cascada.
+
+**Forma y fuentes.** `font: robotocondensed` (la familia compilada en ROM desde #60, sin
+descargar nada) y `font_digits: dseg14`: los paneles de dígitos —la fila de frecuencia y el
+reloj— dibujan con DSEG14 en los slots reales 30/38 (`font_digit()`, `src/styles.c`), con los
+separadores y el `8` fantasma que trae la familia segmentada (fixtures `main-frecuencia-dseg`
+y las de Sprint). El nombre del tema entra en `params.theme_name` entero (`Sprint`, 6 de 31
+caracteres), así que sobrevive el round-trip y el tema queda elegido también en una
+instalación actualizada (contrato `theme_name_fits_params`).
+
+La prioridad de la fuente no cambia con este tema: la que nombra el tema **manda** sobre
+`params.font` (el orden de `src/main.c`: `theme_shape.font` primero, después la elección del
+usuario), y `font_digits` sólo toca los paneles de dígitos. Por eso en la fixture
+`settings-tema-sprint` la fila *Font* de Ajustes sigue mostrando la elección persistida
+(`Fira Sans`) mientras la pantalla se dibuja con Roboto Condensed: es el comportamiento
+documentado, no una divergencia de esta corrida.
+
+`radius 0 / radius_btn 2 / radius_popup 2 / border 2`, sin gradientes (`btn_gradient` y
+`box_gradient` en `false`) y `focus_solid: true`: cantos angulares. **Ojo con lo que la
+revisión actual dibuja**: `theme_shape.radius`, `radius_btn`, `btn_gradient`, `box_gradient`,
+`focus_solid`, `mode_box`, `pill_border`, `mark` e `images` se cargan del JSON pero hoy el
+código no los usa en la pantalla principal (`src/styles.c` fija `radius 0` y dibuja la barra
+de botones con el bitmap de la ROM, y `theme_image()` no tiene llamadores): el ángulo del
+tema no es un delta respecto de los otros temas en esta revisión, y `btn`/`btn_text` se ven
+sólo por el recolor de botón activo/deshabilitado (`btn_mark_active` / `bg` + `text_mute`).
+Los roles se miden igual —`x6200-ab themes` los mide estáticamente— y quedan declarados acá
+para que el día que la superficie de forma vuelva a dibujarse el tema ya la traiga.
+
+**Cobertura de roles.** El archivo escribe **122 de 122 roles** de `src/theme.h` (nada queda
+heredado de `Classic`, que es su `base`): `x6200-ab themes` lo reporta como
+`Sprint (...; base Classic): 0/122 roles from the base`. La cobertura semántica del issue:
+frecuencia (`text`/`text_value`, dígitos DSEG14), modo (`mode_dig`, `sel_bg`/`sel_border`,
+`info`), selección (`sel_bg`/`sel_text`/`sel_border`, `near_bg`, `focus_bg`), foco
+(`focus`/`focus_text`), botones (`btn*`, `btn_off_*`, `btn_page*`, `btn_mark*`),
+S-meter (`meter_weak`/`meter_bar`/`meter_low`/`meter_high`/`meter_over`), RX/TX
+(`tx`/`tx_bg`/`tx_box`, `alc`, `bar_high`/`bar_mid`), warning/error (`warn*`, `err*`, `ok*`)
+y la paleta del waterfall.
+
+**WCAG 2.1 (medido, no estimado).** `tests/check_wcag.py` mide **128 pares** aplicables de
+Sprint con **0 fallas** (texto 4.5:1, no-texto 3:1); los ratios que fijan la identidad:
+`text/bg` 17.44:1, `text/panel` 17.03:1, `btn_text/btn` 10.60:1,
+`btn_active_text/btn_active` 9.78:1, `focus_text/focus` 11.79:1, `sel_text/sel_bg` 6.92:1,
+`text_head/bar` 10.98:1, `mode_dig/bar` 8.15:1, `control_border/dialog` 4.78:1,
+`bar_border/bar` 3.53:1, `btn_border/btn` 3.94:1, `sel_border/sel_bg` 4.68:1, `card/bg` 3.14:1.
+Los colores apagados a propósito (`btn_off_text`, `text_mute`, `text_faint`, `icon_off`,
+`switch_off`, `off`, `track`) siguen la exención *disabled/incidental* de WCAG 1.4.3 y se
+informan sin hacer fallar el chequeo. En el framework, `x6200-ab themes` mide además los pares
+que sólo existen en Ajustes (9/9 OK) y el **no-texto por píxeles** (WCAG 1.4.11) sobre el
+render dorado del tema: el arco `meter_over` del S-meter da **5.46:1** y la columna de señal
+del waterfall **8.31:1** (mínimo 3:1), los dos declarados en
+`tools/ab_testing/quality/nontext.yaml`.
+
+**Capturas por estado.** Las fixtures del arnés que rinden Sprint (todas con el mismo estado
+de radio que su gemela de otro tema, así el tema es la única variable):
+`main-tema-sprint` (principal, RX, con DSEG14), `main-tema-sprint-agua` (waterfall en
+movimiento), `main-tema-sprint-tx` (TX simulado), `main-tema-sprint-eco` (batería baja + ECO),
+`bt-dialog-tema-sprint` (diálogo) y `settings-tema-sprint` (Ajustes, con el foco sobre la fila
+del tema). El detalle de la corrida está en `docs/AB_TESTING.md`.
