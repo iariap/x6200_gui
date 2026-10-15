@@ -53,8 +53,8 @@ def apps_del_firmware():
 def main():
     apps = apps_del_firmware()
     manual = MANUAL.read_text(encoding="utf-8", errors="ignore")
-    secciones = re.findall(r"^### (\d+\.\d+) (.+)$", manual, re.M)
-    titulos = [t for _, t in secciones]
+    secciones = re.findall(r"^### 6\.\d+ (.+)$", manual, re.M)  # las apps estan en la seccion 6
+    titulos = list(secciones)
 
     faltan, desconocidas = [], []
     for app in apps:
