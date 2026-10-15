@@ -14,7 +14,6 @@
 #include "radio.h"
 #include "styles.h"
 #include "theme.h"
-#include "freq_strip.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -254,13 +253,6 @@ void freq_list_tune(const freq_list_item_t *it, int32_t audio) {
 
     main_screen_set_freq(dial);
     cparam_i_set(cfg_cur_mode, it->lsb ? x6100_mode_lsb : x6100_mode_usb);
-    /* The station stays named in the frequency strip while decoding */
-    char label[64];
-    if (it->note)
-        snprintf(label, sizeof(label), "%s - %s", it->name, it->note);
-    else
-        snprintf(label, sizeof(label), "%s", it->name);
-    freq_strip_set_label(label, dial);
     msg_update_text_fmt("%s %d.%d kHz", it->name, it->freq_hz / 1000, (it->freq_hz % 1000) / 100);
 }
 

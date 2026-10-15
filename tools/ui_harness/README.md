@@ -441,6 +441,7 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `app-bands` | the app menu the APP key opens (`buttons_group_app`, page `APP 3:6`) with the "Bands" button pressed — the route the owner reported ("the Bands menu does nothing"). Same inert `dialog_bands`: `scenario_settle` stops the run if the button reaches no dialog at all |
 | `apps-menu-1` … `apps-menu-6` | the app menu the APP key opens (`buttons_load_page_group(buttons_group_app)`) on each of its six pages (the fixture's `apps_page`); together they render the 22 app cells after issue #46. `scenario_settle` reads the real `buttons_group_app` table and stops the run if the page's `(APP n:6)` label or an app name is not on screen (UI-002) |
 | `bt-dialog` | the real Bluetooth window (`src/dialog_bt.c`) over the main screen, opened by `main_screen_start_app(ACTION_APP_BT)`. `btaudio-ctl` is mocked (`__wrap_system` + a seeded `/tmp/bt_ui_list.txt`, `mocks/mock_btaudio.c`) so a device row and the status line render. `scenario_settle` codifies the UI-005 metric: the status label's bottom must end above the button row (y=418) |
+| `app-close-home` | menu-hygiene (decisions 5/6): RTTY (the app that is not a dialog) opened with `main_screen_start_app(ACTION_APP_RTTY)` and closed through the remote control's own path (`main_screen_close_app()`), then RTTY again with the real Ajustes window over it and the dialog closed. `scenario_settle` codifies both checkpoints — RTTY is `RTTY_OFF` (its state is a tracking mock, `mocks/mock_main_screen.c`) and the bar is back on the home page (`buttons_get_cur_page()`), not on RTTY's page — and stops the run if either fails |
 | `settings-rs-theme` | the same Ajustes window as `settings-wfbat` (Spectrum/waterfall group) under the shipped "RS" theme, so the switch rail (`TC(control_border)`) renders for UI-007 |
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
 | `main-tema-rs` | the same screen under the shipped "RS" JSON theme (with its images), for UI-007 |
@@ -497,7 +498,7 @@ inputs are substituted, so coverage is declared honestly per component:
 | `cfg/subjects.cpp` | REAL | the real Subject/observer core |
 | `cfg/settings_manager.cpp` | REAL | the remote control's mirror of the configuration; its parameters are bound to the real subjects at boot and checked there (`mocks/mock_settings_manager.cpp`) |
 | `cfg` (catalogue), `params`, `radio` | SYNTHETIC | harness-owned values; no DB, no device |
-| `spot_marks.c`, `cluster_column.c`, `freq_strip.c`, dialogs | UNSUPPORTED | not rendered in these scenarios |
+| `spot_marks.c`, `cluster_column.c`, dialogs | UNSUPPORTED | not rendered in these scenarios |
 
 The `settings-home`/`settings-wfbat`/`settings-perfil`/`settings-audio` screens swap the dialog row
 for the truth of the Ajustes path: `src/dialog.c` and `src/dialog_settings.c` become REAL, and the
@@ -509,7 +510,10 @@ to record that it is **not** a dependency of Ajustes. The
 `dialog_bands.c` (and its subtree: `dialog_field.c`, `field/bands.c`,
 `cluster/spots.c`) explicitly UNSUPPORTED: the Bands window is an inert mock, so
 those two fixtures measure the route the firmware takes to it — an assertion on
-the firmware's own state in `scenario_settle`, never its pixels. The coverage is
+the firmware's own state in `scenario_settle`, never its pixels. The
+`app-close-home` screen also brings the Ajustes row REAL (its route opens the
+real window over RTTY) and declares `rtty.c` SYNTHETIC: the RTTY codec is not
+compiled, only the state the route sets and clears. The coverage is
 chosen per `screen` (`coverage_for_screen()` in `src/coverage.c`).
 
 The exact, per-scenario table is in each JSON's `coverage` array. It is never

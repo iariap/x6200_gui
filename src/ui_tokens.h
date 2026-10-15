@@ -77,10 +77,7 @@
  * La fila se apila debajo del espectro con el cursor `y` de main_screen.c
  * (`y += spectrum_height` con `spectrum_height = 480 / 3`): su Y no es un
  * literal sino el cursor del layout apilado, y el espectro queda fuera del
- * issue, asi que este incremento no lo tokeniza. La "franja de frecuencia"
- * (src/freq_strip.c) tampoco: es un strip flex con offsets por variante VISION
- * y freq_strip_init() no lo monta ningun consumidor (no hay captura que lo
- * verifique). */
+ * issue, asi que este incremento no lo tokeniza. */
 
 #define UI_FREQ_SCREEN_W        800     /* ancho fijo del panel */
 #define UI_FREQ_SIDE_W          150     /* ancho de cada extremo (freq_style) */

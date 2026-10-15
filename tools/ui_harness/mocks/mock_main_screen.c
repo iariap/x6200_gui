@@ -177,8 +177,14 @@ void recorder_put_audio_samples(size_t nsamples, int16_t *samples) { (void) nsam
 
 void rtty_init(void) {}
 void rtty_put_audio_samples(unsigned int n, cfloat *samples) { (void) n; (void) samples; }
-void rtty_set_state(rtty_state_t state) { (void) state; }
-rtty_state_t rtty_get_state(void) { return RTTY_OFF; }
+/* The state is real state, not a frozen answer: `main_screen.c` opens and
+ * closes RTTY through it (apps_disable / main_screen_close_app) and the
+ * `app-close-home` fixture has to see whether "off" really turned it off. It
+ * starts OFF, so every fixture that never touches RTTY keeps the old answer
+ * (RTTY_OFF everywhere, src/spectrum.c and src/pannel.c reading it included). */
+static rtty_state_t mock_rtty_state = RTTY_OFF;
+void rtty_set_state(rtty_state_t state) { mock_rtty_state = state; }
+rtty_state_t rtty_get_state(void) { return mock_rtty_state; }
 float rtty_change_rate(int16_t df) { (void) df; return 0.0f; }
 uint16_t rtty_change_shift(int16_t df) { (void) df; return 0; }
 uint16_t rtty_change_center(int16_t df) { (void) df; return 0; }
