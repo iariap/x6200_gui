@@ -60,6 +60,8 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 39. [QTH y Callsign no abrian por el control remoto (y el barrido las daba por vivas)](#39-qth-y-callsign-no-abrian-por-el-control-remoto-y-el-barrido-las-daba-por-vivas)
 40. [El volumen que el control remoto no veia (y la etiqueta de ganancia del Audio)](#40-el-volumen-que-el-control-remoto-no-veia-y-la-etiqueta-de-ganancia-del-audio)
 41. [CW Trainer: el desborde del buffer del decodificador CW (issue #51)](#41-cw-trainer-el-desborde-del-buffer-del-decodificador-cw-issue-51)
+42. [WSPR como primera app mataba la GUI: la etiqueta NULL del modo digital](#42-wspr-como-primera-app-mataba-la-gui-la-etiqueta-null-del-modo-digital)
+43. [Codigo vendoreado de WSPR: escritura fuera del array en pack_call (sin llamadores)](#43-codigo-vendoreado-de-wspr-escritura-fuera-del-array-en-pack_call-sin-llamadores)
 
 ---
 
@@ -2045,3 +2047,153 @@ devuelve ese estado y lo llaman tanto `destruct_cb` como el `LV_EVENT_DELETE` (`
 banco no se pudo medir (no tiene camino de audio y el chroot no estaba armado). Y el contrato de
 `cbuffercf_read` si se cambia de version de liquid.
 
+## 42. WSPR como primera app mataba la GUI: la etiqueta NULL del modo digital
+
+**Sintoma** (reportado por el usuario, issue #63): al abrir la app WSPR la radio "se reinicia". Es el
+mismo cuadro de §32: la GUI muere y el equipo da la impresion de reiniciarse.
+
+**Causa, medida en el banco** (`tools/captura-banco.sh` con QEMU, commit `11f8d68`, binario de la
+imagen `md5 163f1f5883ae`, WSPR como primera app de una GUI recien arrancada). La base del banco
+(`.vfix3/mnt/params.db`) es la de una radio actualizada en el lugar: no tiene filas de WSPR:
+
+```
+$ sqlite3 .vfix3/mnt/params.db "select type, count(*) from digital_modes group by type;"
+0|11
+1|9
+$ docker exec banco-apps chroot /t /tmp/x6200-remote '{"cmd":"app","text":"WSPR"}'
+{"t":"ok"}
+$ grep -n "digital_modes\|CRASHLOG" .vfix3/out-banco.txt | tail -2
+312:[Warn]	(271374.047, +48)	 cfg_digital_load: No results for load from digital_modes with dir=0, freq=21250000, type=4 	(in digital_modes.c line #84)
+314:CRASHLOG sig=11 fallo=(nil) pc=0x4160d6a8 lr=0x1000 sp=0x40800998 base=0x41e084
+```
+
+El PC del volcado cae dentro de `liblvgl.so` (el banco la mapea en el pid 7 del contenedor; la lib
+del chroot es la que cargo esa corrida, el banco no la reescribe):
+
+```
+$ docker exec banco-apps sh -c 'for p in $(ls /proc | grep -E "^[0-9]+$"); do grep -H liblvgl /proc/$p/maps 2>/dev/null | head -3; done'
+/proc/7/maps:815a0000-8162d000 r--p 00000000 00:23 21421257                           /t/usr/lib/liblvgl.so
+/proc/7/maps:8162d000-8163d000 ---p 0008d000 00:23 21421257                           /t/usr/lib/liblvgl.so
+/proc/7/maps:8163d000-8163e000 r--p 0008d000 00:23 21421257                           /t/usr/lib/liblvgl.so
+$ md5sum .vfix3/usr/lib/liblvgl.so
+cd30ca6c58ad42f06caad930b65f0ee2  .vfix3/usr/lib/liblvgl.so
+```
+
+El lado invitado esta 0x40000000 abajo del host: `nm` da `main` en `0x1e084` y el volcado dice
+`base=0x41e084`, o sea que el binario vive en `0x41000000`. Entonces
+`pc - base_lib = 0x4160d6a8 - 0x415a0000`, y ese offset, resuelto contra esa lib, da el simbolo:
+
+```
+$ python3 -c 'print(hex(0x4160d6a8 - 0x415a0000))'
+0x6d6a8
+$ nm -n --defined-only liblvgl.so | grep -i vsnprintf
+0006cfdc _vsnprintf
+0006df20 lv_snprintf
+$ addr2line -f -e liblvgl.so 0x6d6a8
+_vsnprintf
+lv_printf.c:?
+```
+
+**Causa, en el codigo** (dos piezas):
+
+1. `cfg_digital_label_get()` (`src/cfg/digital_modes.c:100`) devolvia `label`, que es NULL hasta que
+   un `cfg_digital_load()` tenga exito. Con una base sin filas del tipo pedido (WSPR = 4, y tampoco
+   JS8 = 2/3) el load falla (el `LV_LOG_WARN` de arriba) y la etiqueta queda NULL.
+2. El consumidor que crashea no la mira: `lv_label_set_text_fmt(frame.head_left, "%s   %.4f MHz",
+   cfg_digital_label_get(), ...)` en el `timer_cb` de `src/dialog_wspr.c`, y el `%s` de LVGL
+   desreferencia el argumento sin guarda (`lvgl/src/misc/lv_printf.c:820`, `case 's'`:
+   `_strnlen_s(p, precision ? ... : (size_t) -1)`, que recorre `*s` en `lv_printf.c:146`).
+
+Los otros tres caminos que tambien le pasan la etiqueta a un `%s`
+(`dialog_wspr.c:551,637,711`, `dialog_ft8.c:661,1483`, `dialog_js8.c:1866`) estan detras de un
+`cfg_digital_load()` exitoso, y por eso el barrido anterior no veia el crash: abrir FT8/FT4/JS8 antes
+dejaba la etiqueta seteada (§19).
+
+**Por que la base del banco no tiene el tipo 4** (medido): la copia de la base la hace una sola vez
+`S20gui` (`rootfs/etc/init.d/S20gui:23`: `[ ! -f /mnt/params.db ] && cp
+/usr/share/x6200/params.default.db /mnt/params.db`), asi que una radio que ya tenia `params.db` de una
+ROM anterior conserva una base sin filas de WSPR (mismo problema de fondo que §4). La base que la ROM
+*instala* si las tiene (`sqlite3 .vfix3/usr/share/x6200/params.default.db`: `0|11`, `1|9`, `4|11`).
+
+**Arreglo**: `cfg_digital_label_get()` no puede devolver NULL; devuelve `""` mientras no haya
+etiqueta (`src/cfg/digital_modes.c`), y el contrato queda escrito en `src/cfg/digital_modes.h`. Cubre
+WSPR, JS8 y FT8 por igual. En el mismo archivo va un cast explicito `(const char *)` sobre
+`sqlite3_column_text()`, que devuelve `const unsigned char *`: al entrar el modulo al suite nativo
+bajo `-Wall -Wextra`, ese warning previo se saca de raiz.
+
+**Verificacion, medida en el banco** (mismo banco, mismas condiciones, `RECONSTRUIR=si` desde el
+worktree, binario `md5 d0ff2dba9c85`). Primero, que el arbol de build compilo el fuente del worktree:
+
+```
+$ docker run --rm --entrypoint "" -v x6200-build-output:/b x6200-buildroot \
+    sh -c 'sed -n "/char \*cfg_digital_label_get/,/^}/p" /b/build/x6200-gui-custom/src/cfg/digital_modes.c'
+char *cfg_digital_label_get() {
+    /* ... */
+    return label != NULL ? label : "";
+}
+```
+
+Y despues, la misma orden y el mismo `params.db` que mataban a la GUI:
+
+```
+$ docker exec banco-apps chroot /t /tmp/x6200-remote '{"cmd":"app","text":"WSPR"}'
+{"t":"ok"}
+$ docker exec banco-apps chroot /t /tmp/x6200-remote '{"cmd":"get"}'
+{"t":"state",...,"app":"WSPR","ax":{"st":"RX","sec":17,"pct":...
+$ grep -c CRASHLOG .vfix3/out-banco.txt
+0
+```
+
+Mas 9 sondeos del socket cada 10 s (90 s) con WSPR abierta, todos contestados, con `banco-apps`
+todavia arriba al final. El aviso `No results for load ... type=4` sigue en el log (es el camino
+normal de esa base); lo que ya no aparece es el `CRASHLOG`.
+
+**Test nativo** (el que reproduce el crash sin radio): `tests/native/test_digital_modes.c` compila el
+modulo real contra stubs de sqlite3/cfg/lvgl (mismo staging que los tests de clock y backlight) y
+fija el contrato "nunca NULL" (y que un load exitoso siga publicando la etiqueta). En la revision sin
+el arreglo el test muere con el mismo SIGSEGV (la lectura de la etiqueta no lleva guarda, igual que el
+consumidor real) despues de decir en stderr por que; con el arreglo pasa (`12 comprobaciones, 0
+fallos`). Corre en `tests/native/run_native_tests.sh`.
+
+**Sin fundar** (anexo A): que en la radio ese SIGSEGV termine en un *reinicio* (eso es el relato del
+usuario; lo medido es que la GUI muere, §32) y el log de la radio para este issue: causa y arreglo
+quedaron medidos en el banco.
+
+---
+
+## 43. Codigo vendoreado de WSPR: escritura fuera del array en pack_call (sin llamadores)
+
+Salio del mismo barrido de los caminos de memoria de WSPR que el §42. Es codigo de K1JT/rtlsdr-wsprd
+(`src/wspr/wsprd/`, ver `UPSTREAM.md`), no de este port, y hoy **no tiene llamadores**.
+
+**Medido** (driver minimo que llama a la funcion como la compila la ROM; `-fstack-protector-all`
+pone el canario pegado al buffer y la escritura fuera del array se ve):
+
+```
+$ gcc -std=gnu11 -O1 -g -w -fstack-protector-all -I src/wspr/wsprd \
+    driver.c src/wspr/wsprd/{wsprsim_utils,nhash,tab,fano,wsprd_utils}.c -lm -o driver
+$ ./driver
+K1ABC    -> 259047992
+*** stack smashing detected ***: terminated
+Aborted (core dumped)
+```
+
+**Codigo** (`src/wspr/wsprd/wsprsim_utils.c:49-67`): el buffer es `char call6[6]` y la rama
+"digito en la posicion 1" escribe `for (i = 1; i < call_len + 1; i++) call6[i] = callsign[i - 1];`.
+Con un callsign de 6 caracteres que entre por esa rama (`K1ABCD`, `A1BCDE`) el ultimo indice escrito
+es 6: un byte fuera del array. Ese byte no se relee (el bucle que empaqueta recorre `0..5`), asi que
+el valor que devuelve la funcion no cambia: el defecto es la escritura en si. El import es pristine
+salvo los patches que lista `UPSTREAM.md`, y `wsprsim_utils.c` no esta en esa lista.
+
+**Sin llamadores, medido** (`pack_call` no aparece en ningun camino de la app ni del arnes):
+
+```
+$ grep -rn "pack_call" src/ tools/ tests/ | grep -v "^src/wspr/wsprd/wsprsim_utils.c"
+src/wspr/wsprd/wsprsim_utils.h:6:long unsigned int pack_call(char const *callsign);
+```
+
+**Queda sin tocar a proposito**: es codigo vendoreado (parchearlo agrega una entrada nueva a los
+"Local patches" de `UPSTREAM.md`) y hoy es inalcanzable desde la app, asi que no entra en el arreglo
+del §42: pediria decision del owner. Camino barato para cerrarlo cuando se decida: acotar el bucle
+(`i < call_len + 1 && i < sizeof(call6)`), que no cambia lo que devuelve la funcion, con un test
+nativo del valor empaquetado.

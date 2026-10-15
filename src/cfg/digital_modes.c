@@ -76,7 +76,7 @@ bool cfg_digital_load(int8_t dir, cfg_digital_type_t type) {
         if (label != NULL) {
             free(label);
         }
-        label = strdup(sqlite3_column_text(stmt, 0));
+        label = strdup((const char *) sqlite3_column_text(stmt, 0));
         freq = sqlite3_column_int(stmt, 1);
         mode = sqlite3_column_int(stmt, 2);
         rc = 0;
@@ -98,7 +98,13 @@ bool cfg_digital_load(int8_t dir, cfg_digital_type_t type) {
 }
 
 char *cfg_digital_label_get() {
-    return label;
+    /* `label` is only set by a successful cfg_digital_load(). Before the first
+     * one -- and after a load that found no row, e.g. on a database without
+     * rows of the requested type (WSPR, type 4) -- there is no label. Never
+     * return NULL: the callers hand this to LVGL's text formatting (%s), which
+     * dereferences it, so a NULL label crashed the GUI as soon as WSPR was
+     * opened as the first digital app (issue #63). */
+    return label != NULL ? label : "";
 }
 
 int32_t cfg_digital_freq_get(void) {
