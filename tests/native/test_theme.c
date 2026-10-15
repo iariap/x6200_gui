@@ -175,7 +175,7 @@ static void test_shipped(void) {
     setenv("THEMES_DIR", "/tmp/test_themes_sin_usuario", 1);     /* sin temas del usuario */
 
     static const char *const esperados[] = {"Holo", "Material 3", "RS", "Redshift", "Sunlit", "Aurora",
-                                           "Trail"};
+                                           "Trail", "Sprint"};
     char names[32][32];
     int  n = theme_list(names, 32);
 
