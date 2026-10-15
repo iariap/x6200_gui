@@ -25,6 +25,26 @@ paleta del waterfall.
 | **Material 3** | `themes/Material 3.json` |
 | **RS** | `themes/RS/theme.json` + los PNG de sus botones (`btn.png`, `bar.png`, `strip.png`, `dialog.png`, `mark.png`, ...) |
 
+## El arco del S-meter (`meter_over`) — medido en el equipo, 2026-10-15 (#44)
+
+El arco `TC(meter_over)` del medidor hay que mirarlo **en la pantalla**, no sólo en el JSON:
+el fondo real del arco en la radio es `(62,78,92)`, no el `panel` que declara el archivo.
+RS es un **tema de ROM** — su `base` es Classic, así que el equipo resuelve la columna Classic
+de la tabla compilada (`src/theme.h`, `X(meter_over, ...)`) — y el `theme.json` no garantiza
+que el color llegue a la pantalla.
+
+| Color | vs fondo real `(62,78,92)` | ¿3:1 (WCAG 1.4.11)? |
+|---|---:|---|
+| `#ff4040` (viejo, columna Classic de `src/theme.h`) | 2.47:1 | no |
+| `#ff5252` (fix de #42, sólo en `theme.json`) | 2.69:1 | no |
+| **`#f08080` (issue #44)** | **3.31:1** | sí |
+
+El valor queda **igual en los dos lugares** (la columna Classic de la tabla compilada y
+`themes/RS/theme.json`) para que banco y radio no diverjan: `#f08080`. En el arnés el mismo
+color mide **3.96:1** (RS) y **4.41:1** (Classic) por píxel, contra el fondo que el propio
+render dibuja, en `tools/ab_testing/quality/nontext.yaml` (objeto `s_meter_arc`, WCAG 1.4.11);
+el repaso del tono en la radio queda en la pasada física (#15).
+
 ## Dónde se buscan
 
 Dos directorios, en este orden:
