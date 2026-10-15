@@ -24,6 +24,12 @@ void waterfall_refresh_reset();
 void waterfall_refresh_period_set(uint8_t k);
 void waterfall_set_battery_mode(bool enabled);
 
+/* Redibujos offscreen de la paleta que efectivamente corrieron (instrumento del
+ * issue #13): no cuenta los que se saltearon con la pantalla apagada
+ * (backlight_switch() -> lv_disp_enable_invalidation(false)). Lo mide el arnes
+ * con `--bench-natural --display-off`. */
+uint32_t waterfall_offscreen_redraw_count(void);
+
 /* The levels the waterfall is drawing with, for the remote scope */
 void waterfall_get_levels(bool tx, float *min, float *max);
 

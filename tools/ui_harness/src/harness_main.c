@@ -33,8 +33,10 @@
  *
  *  With `--bench-wakeups [MS]` the harness measures the ROM's *main loop*
  *  (src/main.c) over MS milliseconds of virtual time —default 1000— on the
- *  firmware's own timer set, and reports it next to the tick thread's cadence
- *  (5 ms, src/main.c) in a `wakeups` block (see wakeup_bench.h). It answers the
+ *  firmware's own timer set, and reports the tick thread's cadence next to it in
+ *  a `wakeups` block (see wakeup_bench.h). Con `LV_TICK_CUSTOM` en el lv_conf.h de
+ *  la ROM el hilo del tick no existe y el perfil declara `tick_custom: true` con 0
+ *  wakeups de tick (el CMake deriva el modo de ese mismo archivo). It answers the
  *  wakeup question of issue #13 without touching the ROM. `--display-off` runs
  *  the ROM's own display-off route (the POWER key -> backlight_switch()) before
  *  the capture/bench, so the bench can measure what the blanked screen does and

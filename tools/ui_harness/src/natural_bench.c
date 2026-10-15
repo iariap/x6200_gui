@@ -35,6 +35,7 @@
 
 #include "cfg/subjects.h"
 #include "scheduler.h"
+#include "waterfall.h"
 
 #define NATURAL_BENCH_MAX_FRAMES 512
 
@@ -52,6 +53,12 @@ static uint64_t spectrum_time;
 static uint64_t waterfall_time;
 static uint32_t spectrum_frames;
 static uint32_t waterfall_rows;
+
+/* Redibujos offscreen de la paleta del waterfall que corrieron durante la
+ * corrida (delta del instrumento de src/waterfall.c). Con la pantalla apagada
+ * (`--display-off`) la cascada los saltea, asi que la cuenta queda en 0: es la
+ * medicion de que el panel oscuro no hace el trabajo de software. */
+static uint32_t offscreen_redraws;
 
 static uint32_t area_size(const lv_area_t *area)
 {
@@ -131,6 +138,8 @@ void natural_bench_run(const scenario_t *scenario, int count)
     total_frames = count;
     enabled = true;
 
+    uint32_t offscreen_start = waterfall_offscreen_redraw_count();
+
     for (current_frame = 0; current_frame < total_frames; current_frame++) {
         frame_open = true;
         virtual_time_advance_step(LV_DISP_DEF_REFR_PERIOD, NATURAL_BENCH_SLICE_MS,
@@ -138,6 +147,8 @@ void natural_bench_run(const scenario_t *scenario, int count)
         frames[current_frame].virtual_end_ms = virtual_time_now_ms();
         frame_open = false;
     }
+
+    offscreen_redraws = waterfall_offscreen_redraw_count() - offscreen_start;
 }
 
 void natural_bench_flush(const lv_area_t *area, const lv_disp_drv_t *drv)
@@ -242,6 +253,7 @@ void natural_bench_write_json(FILE *f)
     fprintf(f, "    \"waterfall_fps_ms\": %d,\n", NATURAL_WATERFALL_FPS_MS);
     fprintf(f, "    \"spectrum_frames\": %u,\n", spectrum_frames);
     fprintf(f, "    \"waterfall_rows\": %u,\n", waterfall_rows);
+    fprintf(f, "    \"waterfall_offscreen_redraws\": %u,\n", offscreen_redraws);
     fprintf(f, "    \"per_frame\": [\n");
 
     for (int i = 0; i < total_frames; i++) {

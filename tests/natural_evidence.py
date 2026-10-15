@@ -140,6 +140,15 @@ def check_natural(checker: Checker, doc: dict) -> None:
         f"waterfall_rows = {natural['waterfall_rows']}, expected "
         f"{expected_drives(total_ms, WATERFALL_FPS_MS)} at 1000/25 ms over {total_ms} ms",
     )
+    # El instrumento del redibujo offscreen (src/waterfall.c): con el perfil
+    # QUALITY del fixture la cascada dibuja siempre, asi que la cuenta es una por
+    # fila. Es la vara de la medicion de `--display-off` (abajo): mismo fixture,
+    # panel oscuro.
+    checker.check(
+        natural["waterfall_offscreen_redraws"] == expected_drives(total_ms, WATERFALL_FPS_MS),
+        f"waterfall_offscreen_redraws = {natural['waterfall_offscreen_redraws']}, expected "
+        f"{expected_drives(total_ms, WATERFALL_FPS_MS)} (one per new row at QUALITY)",
+    )
 
     frames = natural["per_frame"]
     checker.check(len(frames) == FRAMES, f"per_frame has {len(frames)} entries")
@@ -308,6 +317,15 @@ def check_display_off(checker: Checker, off: dict, natural_doc: dict, lit_doc: d
     checker.check(
         natural["spectrum_frames"] > 0 and natural["waterfall_rows"] > 0,
         "the display-off run has no data to measure: the drive did not run",
+    )
+    # El corte del redibujo offscreen (issue #13): con el panel oscuro la cascada
+    # saltea el computo de la paleta (~196000 px por fila) en vez de hacerlo para
+    # nada. El instrumento de src/waterfall.c tiene que dar 0 con las filas
+    # llegando igual, contra una por fila con la pantalla encendida (arriba).
+    checker.check(
+        natural["waterfall_offscreen_redraws"] == 0,
+        f"display off: the waterfall ran {natural['waterfall_offscreen_redraws']} offscreen "
+        "redraw(s) with the panel dark (the palette computation must be skipped)",
     )
     for key, value in totals.items():
         checker.check(

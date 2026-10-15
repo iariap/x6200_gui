@@ -14,7 +14,8 @@
  * El wiring del incremento 2 (el perfil -> el modo Ahorro del waterfall) se
  * prueba contra el stub que registra la llamada a waterfall_set_battery_mode
  * (tests/native/stubs/stubs.c): cuantos llamados hubo y con que valor, sin el
- * render ni el flujo de radio.
+ * render ni el flujo de radio. La cadencia del espectro (corrida eco-final) se
+ * prueba igual, contra el stub de spectrum_set_refresh_period.
  *
  * El wiring del incremento 3 (el perfil -> el nivel del backlight) se prueba
  * igual, contra el stub que registra la llamada a backlight_set_brightness: la
@@ -52,6 +53,11 @@ int  test_waterfall_battery_calls(void);
 void    test_backlight_brightness_reset(void);
 int16_t test_backlight_brightness_level(void);
 int     test_backlight_brightness_calls(void);
+
+/* Registro del stub de la cadencia del espectro (tests/native/stubs/stubs.c). */
+void    test_spectrum_period_reset(void);
+uint8_t test_spectrum_period(void);
+int     test_spectrum_period_calls(void);
 
 /* Instante fijo; la muestra es fresca (age 0) salvo en los casos de stale,
  * donde se mueve last_valid_ms. */
@@ -382,6 +388,64 @@ void test_visual_policy(void) {
     visual_policy_init(&state);
     r = visual_policy_eval(&state, VP_ECO_ENTER_MV - 200u, 0, 76, false, NOW, NOW, VP_AUTO);
     CHECK(r.profile == VP_ECO);
+
+    /* --- Wires del espectro (cadencia ECO): mismo reparto que el waterfall, pero
+     * el espectro no tiene toggle del usuario. La tabla perfil -> periodo va con el
+     * literal declarado: el .c usa los #define, asi que mover el periodo deja este
+     * test rojo. El stub registra cada llamada. --- */
+    CHECK(VP_SPECTRUM_ECO_PERIOD == 4);
+    {
+        static const struct {
+            visual_profile_t profile;
+            uint8_t          period;
+        } cases[] = {
+            { VP_QUALITY,  1 },
+            { VP_BALANCED, 1 },
+            { VP_ECO,      4 },
+            { VP_CRITICAL, 4 },
+        };
+
+        for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+            test_spectrum_period_reset();
+            visual_policy_spectrum_apply(cases[i].profile);
+            CHECK(test_spectrum_period_calls() == 1);
+            CHECK(test_spectrum_period() == cases[i].period);
+        }
+    }
+
+    /* Un perfil fuera del enum no ahorra: se trata como el perfil por defecto. */
+    test_spectrum_period_reset();
+    visual_policy_spectrum_apply((visual_profile_t) 99);
+    CHECK(test_spectrum_period_calls() == 1);
+    CHECK(test_spectrum_period() == 1);
+
+    /* De punta a punta con la evaluacion: el periodo sale del pack, no de un caso
+     * armado a mano. El borde de bajada (ECO -> BALANCED) vuelve a 1, asi que el
+     * proximo refresco dibuja completo. */
+    visual_policy_init(&state);
+    r = auto_vbat(&state, VP_ECO_ENTER_MV);            /* ECO */
+    CHECK(r.profile == VP_ECO);
+    test_spectrum_period_reset();
+    visual_policy_spectrum_apply(r.profile);
+    CHECK(test_spectrum_period() == VP_SPECTRUM_ECO_PERIOD);
+
+    r = auto_vbat(&state, VP_ECO_EXIT_MV);             /* BALANCED */
+    CHECK(r.profile == VP_BALANCED);
+    test_spectrum_period_reset();
+    visual_policy_spectrum_apply(r.profile);
+    CHECK(test_spectrum_period() == 1);
+
+    r = auto_vbat(&state, VP_CRITICAL_ENTER_MV);       /* CRITICAL */
+    CHECK(r.profile == VP_CRITICAL);
+    test_spectrum_period_reset();
+    visual_policy_spectrum_apply(r.profile);
+    CHECK(test_spectrum_period() == VP_SPECTRUM_ECO_PERIOD);
+
+    r = visual_policy_eval(&state, 13000, VP_VEXT_PRESENT_MV, 50, false, NOW, NOW, VP_AUTO);
+    CHECK(r.profile == VP_QUALITY);                    /* fuente externa */
+    test_spectrum_period_reset();
+    visual_policy_spectrum_apply(r.profile);
+    CHECK(test_spectrum_period() == 1);
 
     /* --- Wiring del incr. 3: el perfil -> el nivel del backlight. La tabla
      * perfil -> cap va con los CUATRO caps declarados como literales: el .c usa

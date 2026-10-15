@@ -105,6 +105,13 @@ void test_backlight(void) {
     CHECK(test_invalidation_calls() == 1);
     CHECK(test_invalidation_last() == false);
 
+    /* El estado de pantalla que consume la cascada (issue #13: el corte del
+     * redibujo offscreen, src/waterfall.c usa backlight_is_on()) tiene que seguir
+     * el MISMO switch que la invalidacion: si el apagado dejara backlight_is_on()
+     * en true, la cascada seguiria computando la paleta de ~196000 px con el panel
+     * oscuro. */
+    CHECK(!backlight_is_on());
+
     test_rewrite_reset();
     test_invalidation_reset();
     backlight_switch();                 /* apagado -> encendido: un rewrite */
@@ -115,6 +122,10 @@ void test_backlight(void) {
     /* Y al volver la pantalla se vuelve a invalidar. */
     CHECK(test_invalidation_calls() == 1);
     CHECK(test_invalidation_last() == true);
+
+    /* Y el estado que gatea el redibujo offscreen vuelve a encendido junto con la
+     * invalidacion: la cascada redibuja de nuevo en la proxima fila. */
+    CHECK(backlight_is_on());
 
     /* El switch tampoco toca los settings del usuario. */
     CHECK(params.brightness_normal == 9);

@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <time.h>
 #include <sys/time.h>
 
@@ -62,8 +61,6 @@ rotary_t                    *mfk_inner;
 static lv_color_t           buf[DISP_BUF_SIZE];
 static lv_disp_draw_buf_t   disp_buf;
 static lv_disp_drv_t        disp_drv;
-
-void * tick_thread (void *args);
 
 /* Runs on the update-check thread; msg_schedule_* queues it for the UI loop. */
 static void update_check_notify(const char *version) {
@@ -353,9 +350,9 @@ int main(void) {
     qso_log_import_adif("/mnt/incoming_log.adi");
     boot_mark("cat/qso_log");
 
-    pthread_t thread;
-    pthread_create(&thread, NULL, tick_thread, NULL);
-    pthread_detach(thread);
+    /* LV_TICK_CUSTOM (lv_conf.h del proyecto) mide el tick con CLOCK_MONOTONIC:
+     * el hilo que hacia `usleep(5*1000) + lv_tick_inc(5)` ya no existe (era el
+     * 93.5% de los wakeups del hilo de GUI, issue #13). */
 
 #if 0
     lv_obj_set_style_bg_opa(lv_scr_act(), LV_OPA_0, 0);
@@ -397,12 +394,4 @@ int main(void) {
         }
     }
     return 0;
-}
-
-void * tick_thread (void *args)
-{
-      while(1) {
-        usleep(5 * 1000);    /*Sleep for 5 millisecond*/
-        lv_tick_inc(5);      /*Tell LVGL that 5 milliseconds were elapsed*/
-    }
 }

@@ -60,6 +60,13 @@ static int32_t          wf_center_freq = 0;
 static uint8_t          refresh_period = 1;
 static uint8_t          refresh_counter = 0;
 
+/* Instrumento del redibujo offscreen (issue #13, UI-07 remanente): cada
+ * `redraw_cb(NULL)` reconstruye la paleta de 800 x height px fuera de pantalla,
+ * aunque el display no invalide. La cuenta la lee el arnes para medir el ahorro
+ * de `--bench-natural --display-off` (tests/natural_evidence.py: 0 px con el panel
+ * oscuro contra una cuenta por fila con la pantalla encendida). */
+static uint32_t         offscreen_redraws = 0;
+
 
 static void refresh_waterfall( void * arg);
 static void draw_middle_line();
@@ -287,11 +294,31 @@ static void redraw_cb(lv_event_t * e) {
 
 static void refresh_waterfall( void * arg) {
     refresh_counter++;
-    if (refresh_counter >= refresh_period) {
-        refresh_counter = 0;
-        redraw_cb(NULL);
-        lv_obj_invalidate(img);
+
+    if (refresh_counter < refresh_period) {
+        return;
     }
+
+    refresh_counter = 0;
+
+    /* Pantalla apagada (issue #13, UI-07 remanente): `backlight_switch()` apago
+     * la invalidacion del display (src/backlight.c), asi que el redibujo de la
+     * paleta fuera de pantalla no llega a ningun lado. Son ~800 x height px de
+     * trabajo de software por fila (~196000 px) a 25 filas/s mientras el DSP
+     * siga alimentando. Se saltea mientras el panel esta oscuro; al volver a
+     * encender, la proxima fila redibuja con la cache al dia (el refresh del
+     * scheduler sigue disparandose). */
+    if (!backlight_is_on()) {
+        return;
+    }
+
+    redraw_cb(NULL);
+    offscreen_redraws++;
+    lv_obj_invalidate(img);
+}
+
+uint32_t waterfall_offscreen_redraw_count(void) {
+    return offscreen_redraws;
 }
 
 static void on_fg_freq_change(Subject *subj, void *user_data) {

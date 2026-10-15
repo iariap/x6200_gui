@@ -12,15 +12,15 @@
  *  Es la primera pieza del manager de UI-08. La evaluacion es pura y no depende
  *  de nada; las salidas al mundo son los wirings: el incremento 2
  *  (visual_policy_waterfall_apply) lleva el perfil al modo Ahorro del waterfall,
+ *  visual_policy_spectrum_apply() a la cadencia del espectro (corrida eco-final),
  *  el incremento 3 (visual_policy_brightness_apply) al nivel del backlight y el
  *  incremento 4 (visual_policy_brightness_rewrite) hace que ese nivel no se
- *  pueda volver a subir por los rewrites de input/timeout (src/backlight.c). El
- *  del spectrum sigue pendiente.
+ *  pueda volver a subir por los rewrites de input/timeout (src/backlight.c).
  *
  *  Lo cubre el test nativo (tests/native/test_visual_policy.c): la evaluacion
  *  sin stubs, y los wirings contra los stubs que registran las llamadas a
- *  waterfall_set_battery_mode y a backlight_set_brightness
- *  (tests/native/stubs/stubs.c).
+ *  waterfall_set_battery_mode, spectrum_set_refresh_period y
+ *  backlight_set_brightness (tests/native/stubs/stubs.c).
  */
 
 #pragma once
@@ -244,6 +244,30 @@ visual_policy_result_t visual_policy_eval(visual_policy_t *state,
  * Idempotente y sin estado: el llamador decide cuando llamar (el ROM lo hace
  * en la transicion del perfil, con `visual_policy_result_t.changed`). */
 void visual_policy_waterfall_apply(visual_profile_t profile, bool user_battery_mode);
+
+/* ------------------------------------------------------------------------- *
+ * Wiring al consumidor del espectro (UI-08, cadencia ECO; corrida eco-final): la
+ * cadencia de redibujo del espectro.
+ *
+ * Mismo contrato que el waterfall: ECO y CRITICAL fuerzan el ahorro (el espectro
+ * dibuja 1 de cada VP_SPECTRUM_ECO_PERIOD refrescos), QUALITY y BALANCED vuelven a
+ * dibujar siempre. El espectro no tiene un toggle de usuario como el waterfall,
+ * asi que el unico estado es el perfil; el modulo no incluye params.h (el ROM y el
+ * arnes llaman a esta funcion con el perfil ya evaluado, en el hilo de LVGL, junto
+ * al apply del waterfall).
+ * ------------------------------------------------------------------------- */
+
+#define VP_SPECTRUM_ECO_PERIOD 4   /* ECO/CRITICAL: dibuja 1 de cada N refrescos */
+
+/* Aplica un perfil ya evaluado a la cadencia del espectro:
+ *
+ *   - ECO y CRITICAL: 1 de cada VP_SPECTRUM_ECO_PERIOD refrescos;
+ *   - QUALITY y BALANCED: todos los refrescos (periodo 1).
+ *
+ * Idempotente. El borde de bajada lo garantiza el periodo 1: al salir de ECO el
+ * proximo refresco dibuja completo, asi que el ultimo frame nunca queda sin
+ * dibujar. */
+void visual_policy_spectrum_apply(visual_profile_t profile);
 
 /* ------------------------------------------------------------------------- *
  * Wiring al segundo consumidor (UI-08 incremento 3): el brillo del panel.

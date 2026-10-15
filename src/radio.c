@@ -102,15 +102,16 @@ static void process_power_key(bool val, uint64_t now) {
     prev_val = val;
 }
 
-/* Aplica el perfil ya evaluado al waterfall y al brillo del backlight. Corre en
- * el hilo de LVGL (lo encola radio_tick por el scheduler, el mismo patron que
- * tx_info_update en src/tx_info.c, porque el waterfall no es de este hilo). Los
- * settings del usuario se leen aca, del lado de LVGL, y el perfil solo los
- * respeta o los recorta: los parametros no se escriben nunca. */
+/* Aplica el perfil ya evaluado al waterfall, al espectro y al brillo del
+ * backlight. Corre en el hilo de LVGL (lo encola radio_tick por el scheduler, el
+ * mismo patron que tx_info_update en src/tx_info.c, porque el waterfall no es de
+ * este hilo). Los settings del usuario se leen aca, del lado de LVGL, y el perfil
+ * solo los respeta o los recorta: los parametros no se escriben nunca. */
 static void apply_visual_profile(void *arg) {
     visual_profile_t profile = *(visual_profile_t *) arg;
 
     visual_policy_waterfall_apply(profile, params.waterfall_battery.x);
+    visual_policy_spectrum_apply(profile);
     visual_policy_brightness_apply(profile, params.brightness_normal);
 }
 
@@ -130,6 +131,7 @@ static void apply_visual_override_at_boot(void) {
     visual_policy_result_t boot = visual_policy_eval(&visual_policy, 0, 0, 0, false, 0, 0, override);
 
     visual_policy_waterfall_apply(boot.profile, params.waterfall_battery.x);
+    visual_policy_spectrum_apply(boot.profile);
     visual_policy_brightness_apply(boot.profile, params.brightness_normal);
 }
 

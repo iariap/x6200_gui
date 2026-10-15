@@ -4,18 +4,23 @@
 Reads the JSON the harness wrote for `fixtures/main-natural.scn` in the modes of
 the gate and verifies, on the produced numbers:
 
-* the ROM's own refresh period (`LV_DISP_DEF_REFR_PERIOD`, lv_conf.h) and the
-  tick thread's cadence (`usleep(5 * 1000)` + `lv_tick_inc(5)`, src/main.c) are
-  the ones the profile ran with: the numbers are read from the firmware sources,
+* el modo del tick de la ROM (`LV_TICK_CUSTOM`, lv_conf.h) y su coherencia: con
+  `LV_TICK_CUSTOM 1` el hilo del tick no existe y el perfil tiene que declarar 0
+  wakeups de tick (y la fuente monotona del lv_conf.h tiene que nombrar
+  `clock_gettime`/`CLOCK_MONOTONIC`); sin la macro, la cadencia del hilo se lee de
+  `src/main.c` (`usleep(5 * 1000)` + `lv_tick_inc(5)`), asi que ninguna config
+  puede correrse de abajo de la medicion;
+* the ROM's own refresh period (`LV_DISP_DEF_REFR_PERIOD`, lv_conf.h) is
+  the one the profile ran with: the numbers are read from the firmware sources,
   so neither config can drift out from under the measurement;
 * the data drive cadence is the radio's DSP loop (1000/15 and 1000/25,
   src/dsp.cpp), the same mirror the natural bench uses;
 * the loop's sleep accounting adds up to the window and the loop never
   busy-spins (no `immediate`, no `no_timer`): what is counted is sleep-and-wake
   cycles, not iterations of a spinning loop;
-* the headline of issue #13: the tick thread's wakeups dominate the ROM's own
-  loop's by at least 5x on the main screen, with and without the data path
-  (the delimitation control);
+* the headline of issue #13: con el hilo del tick presente, sus wakeups dominan
+  los del lazo de la ROM por al menos 5x; con LV_TICK_CUSTOM el hilo se elimino y
+  el titular es que el perfil declara 0 wakeups de tick;
 * the window is a CLI knob and the counts scale with it;
 * a plain capture (no mode) carries no `wakeups` block, and the block declares
   that the wakeup *cost* is not measured on this host.
@@ -125,6 +130,44 @@ def rom_tick_thread_ms(root: Path) -> int:
     return sleep_ms
 
 
+def rom_tick_custom(root: Path) -> bool:
+    """`LV_TICK_CUSTOM` de lv_conf.h (la config de la ROM): 1 = el tick sale de una
+    fuente monotona y no hay hilo del tick (src/main.c no lo tiene)."""
+    return source_number(
+        root / "lv_conf.h",
+        r"^#define\s+LV_TICK_CUSTOM\s+(\d+)",
+        "the ROM's tick mode",
+    ) == 1
+
+
+def rom_tick_custom_source(root: Path) -> str:
+    """El include y la expresion de la fuente monotona (lv_conf.h), juntos.
+
+    La definicion de `LV_TICK_CUSTOM_SYS_TIME_EXPR` es multilinea (continuaciones
+    con `\\`), asi que se junta entera: el gate exige que nombre el reloj
+    monotono (`clock_gettime` + `CLOCK_MONOTONIC`) y que el include sea una
+    cabecera de tiempo. Sin eso, `LV_TICK_CUSTOM 1` podria apuntar a cualquier
+    cosa y el modo reportado dejaria de describir al firmware.
+    """
+    text = (root / "lv_conf.h").read_text()
+    include = re.search(r'^\s*#define\s+LV_TICK_CUSTOM_INCLUDE\s+(\S.*)$', text, re.M)
+    if include is None:
+        print("FAIL: LV_TICK_CUSTOM_INCLUDE not found in lv_conf.h", file=sys.stderr)
+        raise SystemExit(1)
+
+    head = re.search(r"^\s*#define\s+LV_TICK_CUSTOM_SYS_TIME_EXPR\s*(.*)$", text, re.M)
+    if head is None:
+        print("FAIL: LV_TICK_CUSTOM_SYS_TIME_EXPR not found in lv_conf.h", file=sys.stderr)
+        raise SystemExit(1)
+
+    expr = head.group(1)
+    lines = text[head.end() :].splitlines()
+    while expr.rstrip().endswith("\\") and lines:
+        expr += "\n" + lines.pop(0)
+
+    return include.group(1) + "\n" + expr
+
+
 def dsp_fps_ms(root: Path, name: str) -> int:
     """`spectrum_fps_ms`/`waterfall_fps_ms` de src/dsp.cpp, en ms (1000 / N)."""
     divisor = source_number(
@@ -164,7 +207,7 @@ def check_wakeups(checker: Checker, doc: dict, root: Path) -> None:
     wakeups = doc["wakeups"]
     window_ms = wakeups["window_ms"]
     period_ms = rom_refresh_period_ms(root)
-    tick_ms = rom_tick_thread_ms(root)
+    custom = rom_tick_custom(root)
     spectrum_ms = dsp_fps_ms(root, "spectrum_fps_ms")
     waterfall_ms = dsp_fps_ms(root, "waterfall_fps_ms")
 
@@ -178,11 +221,6 @@ def check_wakeups(checker: Checker, doc: dict, root: Path) -> None:
         f"configures {period_ms} ms (lv_conf.h)",
     )
     checker.check(
-        wakeups["tick_thread_ms"] == tick_ms,
-        f"the profile declares a {wakeups['tick_thread_ms']} ms tick thread, but src/main.c "
-        f"sleeps {tick_ms} ms",
-    )
-    checker.check(
         wakeups["slice_ms"] == SLICE_MS,
         f"slice_ms = {wakeups['slice_ms']}, expected {SLICE_MS}",
     )
@@ -190,11 +228,42 @@ def check_wakeups(checker: Checker, doc: dict, root: Path) -> None:
         wakeups["spectrum_fps_ms"] == spectrum_ms and wakeups["waterfall_fps_ms"] == waterfall_ms,
         "the drive cadence does not mirror src/dsp.cpp (1000/15, 1000/25)",
     )
+
+    # El modo del tick: la ROM decide con LV_TICK_CUSTOM (lv_conf.h) y el perfil
+    # tiene que declarar el MISMO modo. Con la macro no hay hilo del tick (0
+    # wakeups) y la fuente tiene que ser el reloj monotono; sin la macro la
+    # cadencia del hilo se lee de src/main.c.
     checker.check(
-        wakeups["tick_thread_wakeups"] == window_ms // tick_ms,
-        f"tick_thread_wakeups = {wakeups['tick_thread_wakeups']}, expected "
-        f"{window_ms // tick_ms} ({window_ms} ms / {tick_ms} ms)",
+        wakeups["tick_custom"] is custom,
+        f"the profile declares tick_custom = {wakeups['tick_custom']}, but lv_conf.h says "
+        f"LV_TICK_CUSTOM {1 if custom else 0}",
     )
+    if custom:
+        checker.check(
+            wakeups["tick_thread_ms"] == 0 and wakeups["tick_thread_wakeups"] == 0,
+            "LV_TICK_CUSTOM is on (no tick thread, src/main.c does not have one) but the profile "
+            f"declares {wakeups['tick_thread_ms']} ms / "
+            f"{wakeups['tick_thread_wakeups']} wakeups",
+        )
+        source = rom_tick_custom_source(root)
+        for token in ("time.h", "clock_gettime", "CLOCK_MONOTONIC"):
+            checker.check(
+                token in source,
+                f"LV_TICK_CUSTOM 1 but its source does not name {token}: {source!r}",
+            )
+    else:
+        tick_ms = rom_tick_thread_ms(root)
+        checker.check(
+            wakeups["tick_thread_ms"] == tick_ms,
+            f"the profile declares a {wakeups['tick_thread_ms']} ms tick thread, but src/main.c "
+            f"sleeps {tick_ms} ms",
+        )
+        checker.check(
+            wakeups["tick_thread_wakeups"] == window_ms // tick_ms,
+            f"tick_thread_wakeups = {wakeups['tick_thread_wakeups']}, expected "
+            f"{window_ms // tick_ms} ({window_ms} ms / {tick_ms} ms)",
+        )
+
     checker.check(
         "is not measured" in wakeups["environment"],
         "the block does not declare that the wakeup cost is not measured on this host: "
@@ -218,44 +287,62 @@ def check_wakeups(checker: Checker, doc: dict, root: Path) -> None:
         f"{drive['flushed_px']} with it)",
     )
 
-    # El titular de #13: el tick del hilo, que despierta pase lo que pase, pesa
-    # mucho mas que el lazo de la ROM.
     tick = wakeups["tick_thread_wakeups"]
-    checker.check(
-        tick >= MIN_TICK_RATIO * drive["wakeups"],
-        f"the tick thread's {tick} wakeups are less than {MIN_TICK_RATIO}x the loop's "
-        f"{drive['wakeups']}: the profile no longer shows the tick dominating",
-    )
-    checker.note(
-        f"  loop: {drive['wakeups']} wakeups with the data drive ({static['wakeups']} without "
-        f"it) in {window_ms} ms; sleeps {drive['sleep_ms_min']}-{drive['sleep_ms_max']} ms"
-    )
-    checker.note(
-        f"  tick thread: {tick} wakeups in {window_ms} ms ({tick_ms} ms, src/main.c) = "
-        f"{100 * tick / (tick + drive['wakeups']):.1f}% of the two sources"
-    )
+    if custom:
+        # El titular de #13 ya no es una proporcion: el hilo del tick (93.5% de
+        # los wakeups) se elimino con LV_TICK_CUSTOM, asi que el perfil declara 0
+        # wakeups de tick y el lazo de la ROM queda como la unica fuente.
+        checker.note(
+            f"  loop: {drive['wakeups']} wakeups with the data drive ({static['wakeups']} without "
+            f"it) in {window_ms} ms; sleeps {drive['sleep_ms_min']}-{drive['sleep_ms_max']} ms"
+        )
+        checker.note(
+            f"  tick thread: none (LV_TICK_CUSTOM, lv_conf.h: CLOCK_MONOTONIC) = 0 wakeups "
+            f"in {window_ms} ms"
+        )
+    else:
+        tick_ms = wakeups["tick_thread_ms"]
+        # El titular de #13: el tick del hilo, que despierta pase lo que pase,
+        # pesa mucho mas que el lazo de la ROM.
+        checker.check(
+            tick >= MIN_TICK_RATIO * drive["wakeups"],
+            f"the tick thread's {tick} wakeups are less than {MIN_TICK_RATIO}x the loop's "
+            f"{drive['wakeups']}: the profile no longer shows the tick dominating",
+        )
+        checker.note(
+            f"  loop: {drive['wakeups']} wakeups with the data drive ({static['wakeups']} without "
+            f"it) in {window_ms} ms; sleeps {drive['sleep_ms_min']}-{drive['sleep_ms_max']} ms"
+        )
+        checker.note(
+            f"  tick thread: {tick} wakeups in {window_ms} ms ({tick_ms} ms, src/main.c) = "
+            f"{100 * tick / (tick + drive['wakeups']):.1f}% of the two sources"
+        )
 
 
 def check_window(checker: Checker, doc: dict) -> None:
     """`--bench-wakeups 3000` corre 3 s: los conteos escalan con la ventana."""
     wakeups = doc["wakeups"]
     window_ms = wakeups["window_ms"]
-    tick_ms = wakeups["tick_thread_ms"]
 
     checker.check(window_ms == 3000, f"--bench-wakeups 3000 ran {window_ms} ms")
+    if wakeups["tick_custom"]:
+        expected = 0
+    else:
+        expected = window_ms // wakeups["tick_thread_ms"]
     checker.check(
-        wakeups["tick_thread_wakeups"] == window_ms // tick_ms,
+        wakeups["tick_thread_wakeups"] == expected,
         f"the 3000 ms window reports {wakeups['tick_thread_wakeups']} tick wakeups, expected "
-        f"{window_ms // tick_ms}",
+        f"{expected}",
     )
     checker.check(
         wakeups["with_drive"]["sleep_ms_total"] == window_ms,
         "the 3000 ms window's sleeps do not add up to the window",
     )
-    checker.check(
-        wakeups["tick_thread_wakeups"] >= MIN_TICK_RATIO * wakeups["with_drive"]["wakeups"],
-        "the 3000 ms window no longer shows the tick dominating",
-    )
+    if not wakeups["tick_custom"]:
+        checker.check(
+            wakeups["tick_thread_wakeups"] >= MIN_TICK_RATIO * wakeups["with_drive"]["wakeups"],
+            "the 3000 ms window no longer shows the tick dominating",
+        )
     checker.note(
         f"  window override: --bench-wakeups 3000 ran {window_ms} ms with "
         f"{wakeups['with_drive']['wakeups']} loop wakeups (the default window: "
