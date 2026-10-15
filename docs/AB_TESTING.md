@@ -2511,6 +2511,12 @@ ambas polaridades, región que "yerra" al objeto, un píxel anti-aliased no deci
 | RS | S-meter | 3.22 | #ff5252 / #36424e |
 | RS | waterfall | 17.09 | #e7f952 / #000038 |
 
+> **#44 (2026-10-15)**: los números de la tabla son los de la revisión de #42. En el equipo el
+> fondo real del arco es `(62,78,92)` y ni `#ff4040` ni `#ff5252` llegaban a 3:1; el arco pasó a
+> `#f08080` en la tabla compilada de `src/theme.h` (columna Classic, la que resuelve RS) y en
+> `themes/RS/theme.json`. Con eso el objeto `s_meter_arc` mide ahora **3.96:1** (RS) y
+> **4.41:1** (Classic, la columna compartida); sigue 21 objetos y 0 fallas.
+
 21 objetos, 0 fallas. El **waterfall de Outdoor en claro (gris sobre gris)** de la
 observación de UI-010 **no se reproduce** con estos números: la columna de señal del
 waterfall de Outdoor es tinta oscura (#181818) sobre la cara clara (#e1e1e1) = 13.58:1,
