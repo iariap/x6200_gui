@@ -1,0 +1,151 @@
+CWDBG label parent=0x1b069b8 font=0xeac6e0
+CWDBG label creado l=0x1b1fc50
+CWDBG label parent=0x1b069b8 font=0xeac6e0
+CWDBG label creado l=0x1af0898
+CWDBG panel parent=0x1b069b8
+CWDBG panel creado o=0x1a6b368
+CWDBG label parent=0x1a6b368 font=0xeac830
+CWDBG label creado l=0x1afa548
+CWDBG label parent=0x1a6b368 font=0xeac830
+CWDBG label creado l=0x1afa200
+CWDBG label parent=0x1a6b368 font=0xeac750
+CWDBG label creado l=0x1b10bc8
+CWDBG label parent=0x1a6b368 font=0xeac750
+CWDBG label creado l=0x1b16bf8
+CWDBG label parent=0x1a6b368 font=0xeac6fc
+CWDBG label creado l=0x1afa100
+CWDBG label parent=0x1a6b368 font=0xeac6fc
+CWDBG label creado l=0x1b1fca0
+CWDBG label parent=0x1b0e378 font=0xeac718
+CWDBG label creado l=0x1b1fe08
+CWDBG label parent=0x1b0e378 font=0xeac68c
+CWDBG label creado l=0x1b27d70
+CWDBG label parent=0x1b1bd50 font=0xeac718
+CWDBG label creado l=0x1af0968
+CWDBG label parent=0x1b1bd50 font=0xeac68c
+CWDBG label creado l=0x1b04c40
+CWDBG label parent=0x1b1dc18 font=0xeac718
+CWDBG label creado l=0x1af9fe0
+CWDBG label parent=0x1b1dc18 font=0xeac68c
+CWDBG label creado l=0x1b1de00
+CWDBG label parent=0x1b0df68 font=0xeac718
+CWDBG label creado l=0x1b1c440
+CWDBG label parent=0x1b0df68 font=0xeac68c
+CWDBG label creado l=0x1b1d4a0
+CWDBG label parent=0x1b1bb90 font=0xeac718
+CWDBG label creado l=0x1b1cb80
+CWDBG label parent=0x1b1bb90 font=0xeac68c
+CWDBG label creado l=0x1ab46c0
+CWDBG label parent=0x1a97258 font=0xeac718
+CWDBG label creado l=0x1b36260
+CWDBG label parent=0x1a97258 font=0xeac68c
+CWDBG label creado l=0x1a14f58
+CWDBG label parent=0x1b05158 font=0xeac718
+CWDBG label creado l=0x1a15010
+CWDBG label parent=0x1b05158 font=0xeac68c
+CWDBG label creado l=0x1b13750
+CWDBG label parent=0x1ab3438 font=0xeac718
+CWDBG label creado l=0x1b1cfb0
+CWDBG label parent=0x1ab3438 font=0xeac68c
+CWDBG label creado l=0x1b1d088
+CWDBG label parent=0x1b0d160 font=0xeac718
+CWDBG label creado l=0x1b1b2f0
+CWDBG label parent=0x1b0d160 font=0xeac68c
+CWDBG label creado l=0x1b1b3e8
+CWDBG label parent=0x1b17000 font=0xeac718
+CWDBG label creado l=0x1b1f878
+CWDBG label parent=0x1b17000 font=0xeac68c
+CWDBG label creado l=0x1b1f970
+CWDBG label parent=0x1b0e470 font=0xeac718
+CWDBG label creado l=0x1b0cb18
+CWDBG label parent=0x1b0e470 font=0xeac68c
+CWDBG label creado l=0x1b143f8
+CWDBG label parent=0x1b1b848 font=0xeac718
+CWDBG label creado l=0x1b19428
+CWDBG label parent=0x1b1b848 font=0xeac68c
+CWDBG label creado l=0x1b127d8
+CWDBG label parent=0x1acb378 font=0xeac718
+CWDBG label creado l=0x1b1c8e0
+CWDBG label parent=0x1acb378 font=0xeac68c
+CWDBG label creado l=0x1b1d1a8
+CWDBG label parent=0x1b0d1d0 font=0xeac718
+CWDBG label creado l=0x1b12c68
+CWDBG label parent=0x1b0d1d0 font=0xeac68c
+CWDBG label creado l=0x1b19fc0
+CWDBG label parent=0x1b0d1a8 font=0xeac718
+CWDBG label creado l=0x1b111d8
+CWDBG label parent=0x1b0d1a8 font=0xeac68c
+CWDBG label creado l=0x1b10dd0
+CWDBG label parent=0x1b10e78 font=0xeac718
+CWDBG label creado l=0x1b1eef8
+CWDBG label parent=0x1b10e78 font=0xeac68c
+CWDBG label creado l=0x1b1eff0
+CWDBG label parent=0x1b172f8 font=0xeac718
+CWDBG label creado l=0x1b17378
+CWDBG label parent=0x1b172f8 font=0xeac68c
+CWDBG label creado l=0x1b0e7c8
+CWDBG label parent=0x1b0e890 font=0xeac718
+CWDBG label creado l=0x1b04590
+CWDBG label parent=0x1b0e890 font=0xeac68c
+CWDBG label creado l=0x1b04688
+CWDBG label parent=0x1b0e928 font=0xeac718
+CWDBG label creado l=0x1b14be0
+CWDBG label parent=0x1b0e928 font=0xeac68c
+CWDBG label creado l=0x1b14cd8
+CWDBG label parent=0x1b0d220 font=0xeac718
+CWDBG label creado l=0x1b0e8b8
+CWDBG label parent=0x1b0d220 font=0xeac68c
+CWDBG label creado l=0x1b0d380
+CWDBG label parent=0x1b1e6c0 font=0xeac6fc
+CWDBG label creado l=0x1b1e748
+CWDBG label parent=0x1b1e6c0 font=0xeac76c
+CWDBG label creado l=0x1b1e828
+CWDBG label parent=0x1b1e6c0 font=0xeac6e0
+CWDBG label creado l=0x1b1e8c8
+CWDBG label parent=0x1acb3c8 font=0xeac6fc
+CWDBG label creado l=0x1b1e998
+CWDBG label parent=0x1b0cd98 font=0xeac6a8
+CWDBG label creado l=0x1b0ce00
+CWDBG label parent=0x1b0cd98 font=0xeac830
+CWDBG label creado l=0x1b0cef0
+CWDBG label parent=0x1b0cd98 font=0xeac6a8
+CWDBG label creado l=0x1b1f470
+CWDBG label parent=0x1b0cd98 font=0xeac830
+CWDBG label creado l=0x1b1f530
+CWDBG label parent=0x1b0cd98 font=0xeac6fc
+CWDBG label creado l=0x1b1f5e8
+CWDBG panel parent=0x1b069b8
+CWDBG panel creado o=0x1b0d910
+CWDBG label parent=0x1b0d910 font=0xeac6a8
+CWDBG label creado l=0x1b0d9b0
+CWDBG label parent=0x1b0d910 font=0xeac7f8
+CWDBG label creado l=0x1b0da90
+CWDBG label parent=0x1b0d910 font=0xeac6fc
+CWDBG label creado l=0x1b0db50
+CWDBG label parent=0x1b069b8 font=0xeac6c4
+CWDBG label creado l=0x1b1e020
+CWDBG show o=0x1a6b368 on=1
+CWDBG show o=0x1b0d910 on=0
+CWDBG show o=0x1b0cd98 on=0
+CWDBG show o=0x1acb3c8 on=0
+CWDBG show o=0x1afa200 on=1
+CWDBG show o=0x1b10bc8 on=1
+CWDBG show o=0x1b16bf8 on=1
+CWDBG show o=0x1afa548 on=0
+CWDBG show o=0x1afa100 on=1
+CWDBG show o=0x1b1fca0 on=1
+[User]	(310.680, +85)	 cfg_params_save_item: Saved key_train=1 (pk=0) 	(in params.c line #142)
+[Error]	(325.775, +180)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa7f40) 	(in subjects.cpp line #97)
+[Error]	(325.775, +0)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa7f5c) 	(in subjects.cpp line #97)
+[Error]	(325.775, +0)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa7fe0) 	(in subjects.cpp line #97)
+[Error]	(325.775, +0)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa8004) 	(in subjects.cpp line #97)
+[Error]	(325.775, +0)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa8028) 	(in subjects.cpp line #97)
+[Error]	(325.775, +0)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa8044) 	(in subjects.cpp line #97)
+[Error]	(325.775, +0)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa8060) 	(in subjects.cpp line #97)
+[Error]	(325.825, +50)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa7f40) 	(in subjects.cpp line #97)
+[Error]	(325.825, +0)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa7f5c) 	(in subjects.cpp line #97)
+[Error]	(325.825, +0)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa7fe0) 	(in subjects.cpp line #97)
+[Error]	(325.825, +0)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa8004) 	(in subjects.cpp line #97)
+[Error]	(325.825, +0)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa8028) 	(in subjects.cpp line #97)
+[Error]	(325.825, +0)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa8044) 	(in subjects.cpp line #97)
+[Error]	(325.825, +0)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0xa8060) 	(in subjects.cpp line #97)
