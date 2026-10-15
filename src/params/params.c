@@ -16,6 +16,10 @@
 #include "../vol.h"
 #include "../dialog_msg_cw.h"
 #include "../qth/qth.h"
+/* Solo por VP_PARAM_AUTO/VP_PROFILE_COUNT (el valor reservado del parametro del
+ * perfil visual, UI-08 incr. 5). El modulo de la politica no incluye params.h:
+ * esta dependencia es de una sola direccion. */
+#include "../visual_policy.h"
 
 #include "lvgl/lvgl.h"
 
@@ -43,6 +47,10 @@ params_t params = {
     .brightness_idle        = 1,
     .brightness_timeout     = 10,
     .brightness_buttons     = BUTTONS_TEMPORARILY,
+
+    /* Por defecto la politica decide (AUTO). Un perfil fijado se guarda como su
+     * indice (0..VP_PROFILE_COUNT-1); VP_PARAM_AUTO es el modo automatico. */
+    .visual_profile         = { .x = VP_PARAM_AUTO, .min = 0, .max = VP_PROFILE_COUNT - 1, .name = "visual_profile" },
 
     .spectrum_beta          = 70,
     .spectrum_filled        = true,
@@ -346,6 +354,7 @@ static bool params_load() {
         if (params_load_uint8(&params.voice_pitch, name, i)) continue;
         if (params_load_uint8(&params.voice_volume, name, i)) continue;
         if (params_load_uint8(&params.freq_accel, name, i)) continue;
+        if (params_load_uint8(&params.visual_profile, name, i)) continue;
 
         if (params_load_uint16(&params.js8_tx_freq, name, i)) continue;
         if (params_load_bool(&params.js8_hold_offset, name, i)) continue;
@@ -463,6 +472,8 @@ static void params_save() {
     if (params.dirty.brightness_idle)       params_write_int("brightness_idle", params.brightness_idle, &params.dirty.brightness_idle);
     if (params.dirty.brightness_timeout)    params_write_int("brightness_timeout", params.brightness_timeout, &params.dirty.brightness_timeout);
     if (params.dirty.brightness_buttons)    params_write_int("brightness_buttons", params.brightness_buttons, &params.dirty.brightness_buttons);
+
+    params_save_uint8(&params.visual_profile);
 
     if (params.dirty.clock_view)            params_write_int("clock_view", params.clock_view, &params.dirty.clock_view);
     if (params.dirty.clock_time_timeout)    params_write_int("clock_time_timeout", params.clock_time_timeout, &params.dirty.clock_time_timeout);

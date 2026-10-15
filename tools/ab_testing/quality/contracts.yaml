@@ -155,6 +155,21 @@ expected_changes:
     author: ui016-year-field
     until: 2027-03-31
 
+  # AB-UI08-I5 (UI-08 incr. 5): the new Ajustes row makes the grid one row taller,
+  # so the scrollbar thumb of the scrolled fixture (settings-wfbat) gets shorter.
+  - region: ajustes_scrollbar
+    reason: >
+      UI-08 incr. 5: la fila "Visual profile" (src/dialog_settings.c, grupo
+      Apariencia) agrega una fila (54+5 px) al contenido de la grilla de Ajustes,
+      asi que el pulgar de la barra de scroll queda mas corto. Es la unica region
+      que se mueve en settings-wfbat: la fila nueva es del grupo Apariencia (no
+      del Espectro que esa fixture muestra), asi que sus switches y la cascada
+      detras del dialogo quedan byte-identicos. Los pixeles de la fila los captura
+      la fixture nueva settings-perfil (region ajustes_perfil), que la revision A
+      no tiene y por eso no aparece en el diff A/B.
+    author: ui08-incr5
+    until: 2027-03-31
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.

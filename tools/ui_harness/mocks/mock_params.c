@@ -17,6 +17,9 @@
 #include "params/params.h"
 #include "params/common.h"
 #include "mock_harness.h"
+/* Solo por VP_PARAM_AUTO: el valor por defecto del parametro del perfil visual
+ * (UI-08 incr. 5), el mismo que trae src/params/params.c. */
+#include "visual_policy.h"
 
 params_t params;
 
@@ -33,6 +36,9 @@ void mock_params_init(void)
     params.mag_freq.x          = false;
     params.mag_info.x          = false;
     params.freq_accel.x        = FREQ_ACCEL_NONE;
+    /* AUTOMATICO por defecto, como src/params/params.c: el arnes no tiene un
+     * perfil fijado. */
+    params.visual_profile.x    = VP_PARAM_AUTO;
     snprintf(params.theme_name.x, sizeof(params.theme_name.x), "%s", "IU1WXY");
 }
 

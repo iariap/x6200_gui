@@ -1,5 +1,5 @@
 /*
- * Native test for src/visual_policy.c (issue #14, UI-08 incrementos 1 a 4).
+ * Native test for src/visual_policy.c (issue #14, UI-08 incrementos 1 a 5).
  *
  * La evaluacion es pura y sin dependencias, asi que se prueba directo, sin
  * stubs:
@@ -28,10 +28,16 @@
  * los dos rewrites lo aplican, con los dos lados del clamp comprobados sobre el
  * mismo numero (el que el stub registra).
  *
+ * La persistencia del incremento 5 (el byte de params -> el override de la
+ * politica y los nombres de la UI) es pura y se prueba directo. El perfil
+ * vigente se registra en el apply (el que corre en el hilo de LVGL), asi que se
+ * comprueba contra el stub del backlight, igual que el cap.
+ *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #include <stddef.h>
+#include <string.h>
 
 #include "test_framework.h"
 
@@ -590,4 +596,81 @@ void test_visual_policy(void) {
     test_backlight_brightness_reset();
     visual_policy_brightness_rewrite(VP_BRIGHTNESS_MAX);
     CHECK(test_backlight_brightness_level() == 3);
+
+    /* --- Persistencia del override (incr. 5): el byte de params -> el override
+     * de la politica. Esa conversion es TODO lo que el ROM y el arnes hacen con
+     * el parametro, asi que se prueba entera: los indices del enum son manuales
+     * y cualquier otro valor (VP_PARAM_AUTO incluido) cae al automatico. --- */
+    CHECK(VP_PARAM_AUTO >= VP_PROFILE_COUNT);
+    {
+        visual_override_t override;
+
+        for (int p = 0; p < (int) VP_PROFILE_COUNT; p++) {
+            override = visual_policy_override_from_param((uint8_t) p);
+            CHECK(override.manual);
+            CHECK(override.profile == (visual_profile_t) p);
+        }
+
+        /* El valor reservado y cualquier byte desconocido (un equipo con otro
+         * firmware, un byte corrupto) caen al automatico, nunca a un perfil
+         * arbitrario. */
+        override = visual_policy_override_from_param(VP_PARAM_AUTO);
+        CHECK(!override.manual);
+        override = visual_policy_override_from_param((uint8_t) VP_PROFILE_COUNT);
+        CHECK(!override.manual);
+        override = visual_policy_override_from_param((uint8_t) 200);
+        CHECK(!override.manual);
+        override = visual_policy_override_from_param((uint8_t) 0xFF);
+        CHECK(!override.manual);
+    }
+
+    /* --- Nombres para la UI de Ajustes: uno por perfil y el del perfil por
+     * defecto para lo que no es un perfil. --- */
+    CHECK(strcmp(visual_policy_profile_name(VP_QUALITY), "Quality") == 0);
+    CHECK(strcmp(visual_policy_profile_name(VP_BALANCED), "Balanced") == 0);
+    CHECK(strcmp(visual_policy_profile_name(VP_ECO), "Eco") == 0);
+    CHECK(strcmp(visual_policy_profile_name(VP_CRITICAL), "Critical") == 0);
+    CHECK(strcmp(visual_policy_profile_name((visual_profile_t) 99), "Quality") == 0);
+
+    /* --- Perfil VIGENTE (la consulta que usa la UI de Ajustes): es el ultimo
+     * APLICADO, no el ultimo evaluado. Se registra en el apply porque es el que
+     * corre en el hilo de LVGL (el de la evaluacion, en la radio, es el de la
+     * radio): asi la lectura del dialogo no cruza hilos. --- */
+    visual_policy_init(&state);
+    r = auto_vbat(&state, VP_ECO_ENTER_MV);            /* ECO */
+    CHECK(r.profile == VP_ECO);
+    visual_policy_brightness_apply(r.profile, VP_BRIGHTNESS_MAX);
+    CHECK(visual_policy_current() == VP_ECO);
+
+    r = visual_policy_eval(&state, 11000, 0, 50, false, NOW, NOW, VP_MANUAL(VP_CRITICAL));
+    CHECK(r.profile == VP_CRITICAL);
+    CHECK(visual_policy_current() == VP_ECO);          /* todavia no se aplico */
+
+    visual_policy_brightness_apply(r.profile, VP_BRIGHTNESS_MAX);
+    CHECK(visual_policy_current() == VP_CRITICAL);     /* recien ahora */
+
+    r = auto_vbat(&state, 11000);                      /* suelta el override: vuelve ECO */
+    CHECK(r.profile == VP_ECO);
+    visual_policy_brightness_apply(r.profile, VP_BRIGHTNESS_MAX);
+    CHECK(visual_policy_current() == VP_ECO);
+
+    /* --- De punta a punta con el byte persistido: un indice fijado congela el
+     * automatico (aunque el pack pida otra banda) y su cap llega al panel; el
+     * valor reservado AUTO deja mandar al pack. --- */
+    visual_policy_init(&state);
+    r = visual_policy_eval(&state, VP_CRITICAL_ENTER_MV, 0, 50, false, NOW, NOW,
+                           visual_policy_override_from_param((uint8_t) VP_ECO));
+    CHECK(r.manual);
+    CHECK(r.profile == VP_ECO);                        /* el pack pedia CRITICAL */
+    test_backlight_brightness_reset();
+    visual_policy_brightness_apply(r.profile, VP_BRIGHTNESS_MAX);
+    CHECK(visual_policy_current() == VP_ECO);
+    CHECK(test_backlight_brightness_calls() == 1);
+    CHECK(test_backlight_brightness_level() == VP_BRIGHTNESS_ECO);
+
+    visual_policy_init(&state);
+    r = visual_policy_eval(&state, VP_CRITICAL_ENTER_MV, 0, 50, false, NOW, NOW,
+                           visual_policy_override_from_param(VP_PARAM_AUTO));
+    CHECK(!r.manual);
+    CHECK(r.profile == VP_CRITICAL);                   /* AUTO: manda el pack */
 }

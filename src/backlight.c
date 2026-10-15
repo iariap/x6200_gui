@@ -100,6 +100,8 @@ void backlight_set_buttons(buttons_light_t value) {
 
 void backlight_switch() {
     if (on) {
+        /* Apagado: el PWM sube al maximo para reducir ruido con el panel oscuro;
+         * no hace falta el cap porque no se emite luz (UI-08 incr. 5). */
         set_power(false);
         set_brightness(9);
         gpio_safe_set(x6200_pin_light, 0);
@@ -110,11 +112,17 @@ void backlight_switch() {
     } else {
         lv_disp_enable_invalidation(lv_disp_get_default(), true);
         set_power(true);
-        set_brightness(params.brightness_normal);
+
+        /* El nivel de vuelta pasa por la unica puerta con cap (UI-08 incr. 5),
+         * como el resto del brillo: asi el recorte del perfil vigente sobrevive
+         * al OFF/ON en vez de saltar al setting crudo. `on` se pone antes porque
+         * backlight_set_brightness() solo escribe con el display encendido. */
+        on = true;
+        visual_policy_brightness_rewrite(params.brightness_normal);
+
         gpio_safe_set(x6200_pin_light, params.brightness_buttons == BUTTONS_DARK ? 0 : 1);
 
         voice_say_text_fmt("Display on");
-        on = true;
     }
 }
 

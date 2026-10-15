@@ -69,8 +69,8 @@ static const coverage_entry_t main_screen[] = {
               "app dialogs are not opened; dialog_construct() opens none of them in these fixtures"),
 };
 
-/* The `settings-home` / `settings-wfbat` scenarios: the same main screen with the
- * real Ajustes window over it. The shared dialog machinery, the window itself
+/* The `settings-home` / `settings-wfbat` / `settings-perfil` scenarios: the same
+ * main screen with the real Ajustes window over it. The shared dialog machinery, the window itself
  * and every widget it places are the real firmware sources; the few services the
  * window calls (mixer volume, the DSP presets, the wfview server, the RTC) are
  * the harness' explicit mocks, and the three transverter rows read harness
@@ -168,7 +168,8 @@ static const coverage_entry_t settings_bands[] = {
 
 const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
 {
-    if (screen && (!strcmp(screen, "settings-home") || !strcmp(screen, "settings-wfbat"))) {
+    if (screen && (!strcmp(screen, "settings-home") || !strcmp(screen, "settings-wfbat")
+                   || !strcmp(screen, "settings-perfil"))) {
         *count = (int) (sizeof(settings_dialog) / sizeof(settings_dialog[0]));
         return settings_dialog;
     }

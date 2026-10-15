@@ -104,6 +104,14 @@ typedef struct {
     uint16_t            brightness_timeout; /* seconds */
     buttons_light_t     brightness_buttons;
 
+    /* Perfil visual de bateria (UI-08 incr. 5): 0..VP_PROFILE_COUNT-1 = un perfil
+     * fijado por el usuario (override manual), VP_PARAM_AUTO = automatico. La
+     * politica (src/visual_policy.c) lo lee pero NUNCA lo escribe; el unico que
+     * lo guarda es la fila "Visual profile" de Ajustes (src/dialog_settings.c).
+     * Distinto de `waterfall_battery` (el toggle de usuario del modo Ahorro): el
+     * perfil es la capa por encima del toggle, no el toggle. */
+    params_uint8_t      visual_profile;
+
     /* radio */
 
     int16_t             band_id;

@@ -147,6 +147,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "main-tx-simulado",
         "settings-bands",
         "settings-home",
+        "settings-perfil",
         "settings-wfbat",
     ]
     # Every fixture builds one of the screens the harness knows; the theme
@@ -158,6 +159,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
             "main",
             "main-foco",
             "settings-home",
+            "settings-perfil",
             "settings-wfbat",
             "settings-bands",
             "app-bands",

@@ -1,7 +1,7 @@
 /*
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  Xiegu X6200 LVGL GUI - politica visual de bateria (UI-08 incr. 1, 2, 3 y 4).
+ *  Xiegu X6200 LVGL GUI - politica visual de bateria (UI-08 incr. 1 a 5).
  *
  *  Implementacion de visual_policy.h. La evaluacion es pura y sin
  *  dependencias; el test nativo (tests/native/test_visual_policy.c) la cubre
@@ -68,6 +68,16 @@ _Static_assert(VP_BRIGHTNESS_QUALITY == VP_BRIGHTNESS_MAX &&
  * hilo lo toca: en la radio el apply de radio.c y los ticks de input/timer
  * corren en el hilo de LVGL, y el arnes corre en un unico hilo. */
 static int16_t vp_brightness_cap = VP_BRIGHTNESS_MAX;
+
+/* Perfil VIGENTE: el ultimo que paso por visual_policy_brightness_apply() (el
+ * apply que ya fija el cap y llega al panel). Existe para la UI de Ajustes
+ * (visual_policy_current), que tiene que mostrar el estado real y no solo el
+ * seteado. Se escribe en el APPLY y no en la evaluacion a proposito: en la radio
+ * la evaluacion corre en el hilo de la radio (radio_tick, src/radio.c) y el
+ * apply en el de LVGL (lo encola el scheduler), que es el mismo hilo del
+ * dialogo; escribir aca deja la lectura del dialogo en un solo hilo. Arranca en
+ * QUALITY: antes del primer apply el perfil efectivo es ese. */
+static visual_profile_t vp_current = VP_QUALITY;
 
 /* Cap declarado de un perfil: UNICA lectura de la tabla. Un perfil fuera del
  * enum no puede indexarla y se trata como el perfil sin recorte (el mismo que
@@ -199,6 +209,35 @@ visual_policy_result_t visual_policy_eval(visual_policy_t *state,
     return result;
 }
 
+visual_override_t visual_policy_override_from_param(uint8_t value) {
+    /* 0..VP_PROFILE_COUNT-1 es un perfil fijado; todo lo demas (incluido
+     * VP_PARAM_AUTO y cualquier byte desconocido) es el modo automatico. */
+    if (value < VP_PROFILE_COUNT) {
+        return vp_override_manual((visual_profile_t) value);
+    }
+
+    return vp_override_auto();
+}
+
+const char *visual_policy_profile_name(visual_profile_t profile) {
+    switch (profile) {
+        case VP_QUALITY:
+            return "Quality";
+        case VP_BALANCED:
+            return "Balanced";
+        case VP_ECO:
+            return "Eco";
+        case VP_CRITICAL:
+            return "Critical";
+        default:
+            return "Quality";
+    }
+}
+
+visual_profile_t visual_policy_current(void) {
+    return vp_current;
+}
+
 void visual_policy_waterfall_apply(visual_profile_t profile, bool user_battery_mode) {
     /* Los perfiles que ahorran trabajo en la cascada son ECO y CRITICAL: el
      * perfil manda y el toggle del usuario queda intacto (el param no se toca).
@@ -211,8 +250,11 @@ void visual_policy_waterfall_apply(visual_profile_t profile, bool user_battery_m
 void visual_policy_brightness_apply(visual_profile_t profile, int16_t user_setting) {
     /* El perfil fija el cap vigente (el que veran los rewrites del tick/timer) y
      * el nivel sale del MISMO clamp que esos rewrites: el recorte del apply y el
-     * del rewrite no pueden diferir. */
+     * del rewrite no pueden diferir. Deja tambien el perfil VIGENTE que consulta
+     * la UI (visual_policy_current): el apply corre en el hilo de LVGL, el mismo
+     * del dialogo, asi que la lectura no cruza hilos. */
     vp_brightness_cap = vp_brightness_cap_of(profile);
+    vp_current = profile;
 
     visual_policy_brightness_rewrite(user_setting);
 }

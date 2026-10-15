@@ -107,6 +107,45 @@ static inline visual_override_t vp_override_manual(visual_profile_t profile) {
 #define VP_AUTO            (vp_override_auto())
 #define VP_MANUAL(profile) (vp_override_manual(profile))
 
+/* ------------------------------------------------------------------------- *
+ * Persistencia del override (UI-08 incremento 5): el valor que vive en
+ * `params.visual_profile` (src/params/params.h).
+ *
+ * El param es UN byte: 0..VP_PROFILE_COUNT-1 es un perfil fijado por el usuario
+ * (el override manual) y VP_PARAM_AUTO es el modo automatico. Se elige un valor
+ * FUERA del enum (y no un indice corrido) para que agregar un perfil al enum no
+ * convierta en silencio un "automatico" guardado en un perfil fijo, y para que
+ * cualquier valor desconocido (un equipo con un firmware mas nuevo, un byte
+ * corrupto) caiga al modo automatico en vez de a un perfil arbitrario: el
+ * fallback lo decide visual_policy_override_from_param().
+ * ------------------------------------------------------------------------- */
+
+#define VP_PARAM_AUTO      ((uint8_t) 0xFFu)
+
+/* Traduce el valor persistido en params al override de la politica:
+ *
+ *   - 0..VP_PROFILE_COUNT-1 -> VP_MANUAL(ese perfil);
+ *   - cualquier otro valor (VP_PARAM_AUTO o desconocido) -> VP_AUTO.
+ *
+ * Es pura: el modulo no incluye params.h (solo recibe el numero), asi que la
+ * politica sigue sin poder escribir el parametro. El llamador (radio.c en el
+ * ROM, screens.c en el arnes) la usa para convertir el byte que SI leyo de
+ * params en el override que visual_policy_eval() consume. */
+visual_override_t visual_policy_override_from_param(uint8_t value);
+
+/* Nombre legible de un perfil, para la UI de Ajustes ("Perfil visual"). Un
+ * perfil fuera del enum devuelve el nombre del perfil por defecto (QUALITY),
+ * el mismo que usan la tabla de caps y el estado inicial. */
+const char *visual_policy_profile_name(visual_profile_t profile);
+
+/* Perfil VIGENTE: el ultimo que paso por visual_policy_brightness_apply() (el
+ * manual si hay override, o el que decidio el automatico). Lo consulta la UI de
+ * Ajustes para mostrar el estado real, no solo el seteado. Se registra en el
+ * apply —que corre en el hilo de LVGL, el mismo del dialogo— y no en la
+ * evaluacion, que en la radio corre en el hilo de la radio. Antes del primer
+ * apply es QUALITY: el perfil efectivo del arranque. */
+visual_profile_t visual_policy_current(void);
+
 /* Estado que el manager conserva entre evaluaciones (memoria de hysteresis y
  * de override). Se inicializa con visual_policy_init(). */
 typedef struct {
