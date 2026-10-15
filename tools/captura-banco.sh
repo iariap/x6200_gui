@@ -9,6 +9,12 @@
 #   CHROOT=../.vfix3 tools/captura-banco.sh salida.png '{"cmd":"app","text":"Status"}'
 #   CHROOT=../.vfix3 tools/captura-banco.sh salida.png '{"cmd":"freq","val":14074000}'
 #
+# Audio (modo CAP_AUDIO, ver docs/banco-audio.md): graba lo que la GUI escribe a su sink y mide el
+# nivel. La fuente de senal es la prueba de voz de la propia GUI (X6200_VOICE_TEST).
+#   CHROOT=../.vfix3 CAP_AUDIO=/tmp/audio.wav  tools/captura-banco.sh    # dice la frase y mide RMS
+#   CHROOT=../.vfix3 CAP_AUDIO=/tmp/vacio.wav CAP_VOZ= tools/captura-banco.sh   # control sin voz
+#   CHROOT=../.vfix3 CAP_AUDIO=/tmp/vol.wav CAP_LOOPBACK=si tools/captura-banco.sh  # Parte B (sudo)
+#
 # Garantias (ver .agents/pruebas-sin-radio/SKILL.md):
 #   - Prueba la ULTIMA version: reconstruye si el hash de los fuentes cambio, si hay cambios sin
 #     commitear o si un fuente es mas nuevo que el binario (RECONSTRUIR=auto|si|no). Imprime commit
@@ -40,6 +46,10 @@ RECONSTRUIR=${RECONSTRUIR:-auto}
 QEMU_CPU=${QEMU_CPU:-cortex-a7}
 MINIMO_PNG=${MINIMO_PNG:-4000}          # menos que esto = captura vacia
 BIN=/usr/sbin/x6200_gui
+CAP_AUDIO=${CAP_AUDIO:-}                # modo audio: ruta del WAV de salida (ver docs/banco-audio.md)
+CAP_VOZ=${CAP_VOZ-prueba de audio del banco}   # frase de la prueba de voz; vacio = control de silencio
+CAP_SEGUNDOS=${CAP_SEGUNDOS:-8}         # ventana de captura del modo audio, en segundos
+CAP_LOOPBACK=${CAP_LOOPBACK:-no}        # Parte B: captura por el loopback del host (necesita sudo)
 MODO_CHECK=no
 [ "${1:-}" = "--check" ] && MODO_CHECK=si
 
@@ -76,6 +86,11 @@ if [ -n "$BENCH_FALTA" ]; then
     fi
 fi
 [ -f "$AQUI/bench/libfakefb.so" ] && nota "libs del banco: ok"
+# modo audio (CAP_AUDIO): lo que necesita esta adentro del chroot/volumen; se informa, no se exige
+if [ -n "$CAP_AUDIO" ]; then
+    [ -f "$CHROOT/usr/bin/pulseaudio" ] && nota "audio: pulseaudio en el chroot: ok" || nota "aviso: sin $CHROOT/usr/bin/pulseaudio no hay modo CAP_AUDIO"
+    [ -f "$CHROOT/usr/bin/parec" ]      && nota "audio: parec en el chroot: ok"      || nota "aviso: sin $CHROOT/usr/bin/parec no hay captura"
+fi
 
 if [ "$FALTAN" -gt 0 ]; then
     echo "== $FALTAN cosa(s) faltan: el banco no puede correr ==" >&2
@@ -138,6 +153,232 @@ docker run --rm --entrypoint "" -v "$CHROOT:/t" -v "$VOLUMEN":/b "$IMAGEN" \
 cp "$AQUI/bench/libfakefb.so" "$AQUI/bench/libcrash.so" "$AQUI/bench/libx6200trace.so" "$CHROOT/lib/" || fallar "no pude copiar las libs del banco al chroot"
 cp "$AQUI/remote/x6200-remote" "$CHROOT/tmp/x6200-remote" || fallar "no pude copiar el cliente de control al chroot"
 chmod 755 "$CHROOT/tmp/x6200-remote"
+
+# --- 2b. modo audio (CAP_AUDIO=<out.wav>): lo que la GUI escribe a su sink, medido ---------------
+#
+# Que se puede medir sin root y sin /dev/snd (el chroot no tiene placa de sonido) y que no:
+#
+#   - La GUI manda su audio a PulseAudio (src/audio.c: pa_stream_connect_playback al sink
+#     "alsa_output.platform-sound.stereo-fallback"), asi que la unica via de captura es correr
+#     PulseAudio ADENTRO del chroot con un sink que lleve ESE nombre y grabar su monitor con
+#     `parec`: es exactamente lo que la GUI manda al sink, a ritmo real (176 KB/s).
+#     El reloj sin hardware lo pone el sink nulo de PulseAudio (ver abajo).
+#   - El plugin de ALSA `type file` NO sirve aca como captura: sin un device que consuma a ritmo
+#     real (nulo, en la config del banco) escribe a velocidad de CPU — medido 3,5 GB en 6 s — y no
+#     hay forma de acotarlo: ninguna primitiva de ALSA sin hardware pone el reloj (se probaron null,
+#     plug, rate, dmix y un loopback de PulseAudio: todos escriben a velocidad de CPU;
+#     ver docs/banco-audio.md, que ademas valida el plugin con un tono conocido).
+#   - El volumen de la GUI (`audio_set_play_vol` -> el elemento "AIF1 DA0" de la tarjeta "default")
+#     NO se puede medir aca: sin /dev/snd no hay tarjeta, el mixer no abre y la GUI lo avisa
+#     ("No se pudo preparar el mixer de 'default'"). Esa parte necesita el loopback del host (Parte
+#     B): `sudo modprobe snd-aloop` da una tarjeta de verdad, y ahi softvol crea el elemento que el
+#     GUI busca y el volumen entra en la captura. Runbook: docs/banco-audio.md.
+#
+# La senal de no-silencio es la prueba de voz de la propia GUI (X6200_VOICE_TEST): espeak manda su
+# WAV por el mismo camino de audio_play que la voz/FT8/JS8 (ver docs/HALLAZGOS.md 2), sin depender
+# de la radio. espeak no esta en este chroot y se copia del volumen del build, como $BIN.
+#
+# Genera todo lo que hace falta (config de PulseAudio, config de ALSA de la Parte B y el arranque
+# interno) y lo deja en $CHROOT/tmp/banco-audio/ para poder mirarlo. No edita el chroot a mano: solo
+# copia espeak/libespeak/espeak-data si faltan (igual que hace con el binario) y deja esos archivos.
+modo_audio() {
+    local sink=alsa_output.platform-sound.stereo-fallback
+    local adir="$CHROOT/tmp/banco-audio"
+    local wav="$adir/capture.wav"
+    local voz=$CAP_VOZ
+    local loop=$CAP_LOOPBACK
+
+    # el directorio lo crea el host (y tiene que quedar escribible por el: el contenedor escribe
+    # adentro como root y si un archivo queda de root no se puede limpiar desde aca; el arranque
+    # interno limpia rt/home/state como root)
+    if ! mkdir -p "$adir" 2>/dev/null || ! : > "$adir/.escribible" 2>/dev/null; then
+        fallar "$adir no se puede escribir (¿quedo de root? borralo con: docker run --rm -v \"$CHROOT:/t\" $IMAGEN rm -rf /t/tmp/banco-audio)"
+    fi
+
+    cat > "$adir/pulse-banco.pa" <<'FIN'
+# lo genera tools/captura-banco.sh: el sink nulo lleva el nombre que la GUI busca por nombre fijo
+# (src/audio.c), y es el unico reloj disponible sin hardware (el sink nulo de PulseAudio consume a
+# ritmo real; un slave `null` de ALSA no).
+load-module module-native-protocol-unix auth-anonymous=1
+load-module module-null-sink sink_name=alsa_output.platform-sound.stereo-fallback
+FIN
+
+    cat > "$adir/arranca-audio.sh" <<'FIN'
+# lo genera tools/captura-banco.sh y corre ADENTRO del chroot (ver ese script para el porque)
+set -u
+B=/tmp/banco-audio
+# lo que dejo la corrida anterior lo limpia el contenedor (es root aca): rt con el pid de pulse y
+# la captura vieja. Los .pa/.conf los escribe el host y no se tocan.
+rm -rf "$B/rt" "$B/home" "$B/state" "$B/capture.wav" "$B/pulse.log" "$B/gui.log" "$B/parec.log" "$B/capture.log"
+mkdir -p "$B" /mnt/app_logs "$B/rt" "$B/home" "$B/state"
+export HOME="$B/home"
+export PULSE_RUNTIME_PATH="$B/rt"
+export PULSE_STATE_PATH="$B/state"
+export PULSE_SERVER="unix:$B/rt/native"
+
+# 1. espeak de la prueba de voz: no esta en el chroot del banco, se copia del volumen del build
+if [ ! -x /usr/bin/espeak ] && [ -f /b/target/usr/bin/espeak ]; then
+    cp -a /b/target/usr/bin/espeak /usr/bin/espeak
+    cp -a /b/target/usr/lib/libespeak.so* /usr/lib/ 2>/dev/null
+    [ -d /usr/share/espeak-data ] || cp -a /b/target/usr/share/espeak-data /usr/share/ 2>/dev/null
+fi
+if [ -n "$A_VOZ" ] && [ ! -x /usr/bin/espeak ]; then
+    echo "BANCO-AUDIO: no hay espeak en el chroot ni en el volumen: sin fuente de senal (usar CAP_VOZ= para el control)"
+    exit 3
+fi
+
+# 2. la grabacion
+GRABADOR=
+if [ "$A_LOOPBACK" = "si" ]; then
+    # Parte B: la GUI -> ALSA -> softvol -> lado playback del loopback, y del otro lado arecord
+    # (que ademas es el que hace andar el loopback: sin consumidor, la escritura se traba)
+    if [ ! -d /dev/snd ]; then
+        echo "BANCO-AUDIO: PENDIENTE parte B: el chroot no tiene /dev/snd. En el host:"
+        echo "  sudo modprobe snd-aloop"
+        echo "  y montar /dev/snd en el chroot del contenedor (-v /dev/snd:/t/dev/snd; ver docs/banco-audio.md)"
+        exit 2
+    fi
+    CARD=$(/usr/bin/aplay -l 2>/dev/null | sed -n 's/^card \([0-9]*\): Loopback.*/\1/p' | head -1)
+    if [ -z "$CARD" ]; then
+        echo "BANCO-AUDIO: hay /dev/snd pero no la tarjeta Loopback (sudo modprobe snd-aloop)"
+        exit 2
+    fi
+    cat > "$B/alsa-banco.conf" <<CONF
+# lo genera tools/captura-banco.sh: el elemento "AIF1 DA0" que audio_set_play_vol() busca en la
+# tarjeta "default" lo crea softvol sobre la tarjeta del loopback (sin tarjeta, softvol no abre:
+# ese es el motivo de fondo de la Parte B)
+pcm.banco_loop { type plug; slave.pcm "hw:Loopback,1" }
+pcm.banco_vol {
+    type softvol
+    slave.pcm "banco_loop"
+    control { name "AIF1 DA0"; card $CARD }
+    min_dB -51.0
+    max_dB 0.0
+}
+pcm.!default { type plug; slave.pcm "banco_vol" }
+ctl.!default { type hw; card $CARD }
+CONF
+    export ALSA_CONFIG_PATH="$B/alsa-banco.conf"
+    echo "BANCO-AUDIO: parte B con la tarjeta Loopback $CARD (ALSA_CONFIG_PATH=$ALSA_CONFIG_PATH)"
+    /usr/bin/arecord -D hw:Loopback,0 -f S16_LE -r 44100 -c 2 -d "$A_SEGUNDOS" "$B/capture.wav" > "$B/capture.log" 2>&1 &
+    GRABADOR=$!
+else
+    /usr/bin/pulseaudio -nF "$B/pulse-banco.pa" --exit-idle-time=-1 --disallow-exit --disable-shm \
+        --log-target=stderr > "$B/pulse.log" 2>&1 &
+    # hasta-condicion: el socket aparece antes de que el demonio atienda, asi que se espera a que
+    # conteste de verdad (con el socket solo, el primero en conectar se come un "Connection refused")
+    i=0
+    while [ "$i" -lt 20 ]; do
+        /usr/bin/pactl info >/dev/null 2>&1 && break
+        sleep 1
+        i=$((i + 1))
+    done
+    if ! /usr/bin/pactl info >/dev/null 2>&1; then
+        echo "BANCO-AUDIO: pulseaudio no atiende en $B/rt/native"
+        tail -5 "$B/pulse.log"
+        exit 1
+    fi
+    /usr/bin/pactl list short sinks
+    /usr/bin/parec -d "$A_SINK.monitor" --file-format=wav "$B/capture.wav" > "$B/parec.log" 2>&1 &
+    GRABADOR=$!
+    sleep 2
+fi
+
+# 3. la GUI: con la prueba de voz dice la frase y termina sola; sin voz (control) corre normal y la
+#    paramos nosotros. 1 s de latido para que la grabacion ya este prendida.
+sleep 1
+X6200_VOICE_TEST="$A_VOZ" LD_PRELOAD=/lib/libfakefb.so:/lib/libcrash.so:/lib/libx6200trace.so \
+    "$A_BIN" > "$B/gui.log" 2>&1 &
+GUI=$!
+sleep "$A_SEGUNDOS"
+kill -TERM "$GUI" 2>/dev/null
+sleep 1
+# SIGTERM: parec finaliza el WAV (escribe el tamano en la cabecera) y arecord cierra el suyo
+kill -TERM "$GRABADOR" 2>/dev/null
+sleep 1
+kill -TERM "$GRABADOR" 2>/dev/null
+wait "$GRABADOR" 2>/dev/null
+
+# en cuantos dB esta el sink: si no fuera 0 dB, el nivel capturado ya vendria atenuado
+/usr/bin/pactl list sinks 2>/dev/null | grep -i "Volume:" | head -1
+echo "BANCO-AUDIO: captura lista"
+FIN
+    chmod 755 "$adir/arranca-audio.sh"
+
+    echo "== audio del banco (modo CAP_AUDIO) =="
+    nota "sink: $sink   ventana: ${CAP_SEGUNDOS}s   voz: ${voz:-(vacio: control de silencio)}   parte B: $loop"
+    # el techo es de red de seguridad: el arranque interno ya termina solo
+    timeout $((CAP_SEGUNDOS + 90)) docker run --rm --name banco-audio --entrypoint "" \
+        -v "$CHROOT:/t" -v "$VOLUMEN:/t/b:ro" \
+        -e "A_BIN=$BIN" -e "A_SINK=$sink" -e "A_VOZ=$voz" -e "A_SEGUNDOS=$CAP_SEGUNDOS" -e "A_LOOPBACK=$loop" \
+        "$IMAGEN" sh -c "chroot /t /bin/busybox sh /tmp/banco-audio/arranca-audio.sh" \
+        > "$adir/out.txt" 2>&1
+    COD=$?
+    docker rm -f banco-audio >/dev/null 2>&1
+    sed 's/^/  /' "$adir/out.txt"
+    if [ "$COD" = 2 ]; then
+        echo "  PENDIENTE (Parte B): el paso de arriba es del owner (sudo); la Parte A no lo necesita" >&2
+        exit 2
+    fi
+    [ "$COD" = 0 ] || fallar "el modo audio fallo (exit $COD): ver $adir/out.txt"
+    [ -s "$wav" ] || fallar "no quedo la captura ($wav): ver $adir/out.txt"
+
+    # que se probo (la garantia 1 del banco vale tambien para el audio)
+    echo "  version: $(git -C "$REPO" log -1 --format='%h %s' 2>/dev/null | cut -c1-60)"
+    echo "  binario: md5 $(md5sum "$CHROOT$BIN" | cut -c1-12)   qemu-cpu: $QEMU_CPU"
+
+    # la cuenta del RMS: numeros, no afirmaciones (y falla si pidieron voz y la captura es silencio)
+    python3 - "$wav" "$CAP_AUDIO" "$voz" <<'PY' || exit 1
+import math, sys, wave
+
+ruta, salida, voz = sys.argv[1], sys.argv[2], sys.argv[3]
+w = wave.open(ruta, 'rb')
+n, ch, rate = w.getnframes(), w.getnchannels(), w.getframerate()
+if ch != 1 and ch != 2:
+    sys.exit("el WAV no es mono ni estereo (%d canales)" % ch)
+buf = w.readframes(n)
+w.close()
+# se cuenta lo que de verdad hay en el archivo (puede ser menos que lo que dice la cabecera)
+muestras = len(buf) // 2
+datos = memoryview(buf).cast('h')[:muestras]
+canales = [datos[c::ch] for c in range(ch)]
+print("  wav: %s -> %s (%d muestras por canal, %d canal(es), %d Hz, %.2f s, %d bytes)"
+      % (ruta, salida, muestras // ch, ch, rate, muestras / ch / rate, len(buf)))
+if muestras == 0:
+    sys.exit("ERROR: la captura no tiene ninguna muestra: no es una captura, es un grabador que no "
+             "arranco (ver capture.log / parec.log en el mismo directorio)")
+
+
+def a_db(nivel):
+    return 20.0 * math.log10(nivel / 32767.0) if nivel > 0 else -math.inf
+
+
+for c, canal in enumerate(canales):
+    n_c = len(canal)
+    rms = math.sqrt(sum(float(v) * v for v in canal) / n_c) if n_c else 0.0
+    pico = max((abs(v) for v in canal), default=0)
+    distintos = sum(1 for v in canal if v != 0)
+    print("  canal %d: RMS %+.2f dBFS   pico %+.2f dBFS   distinto de 0: %d de %d (%.1f%%)"
+          % (c, a_db(rms), a_db(pico), distintos, n_c, 100.0 * distintos / n_c if n_c else 0.0))
+
+if all(max((abs(v) for v in c), default=0) == 0 for c in canales):
+    print("  la captura es SILENCIO DIGITAL (todas las muestras en 0)")
+    if voz:
+        sys.exit("ERROR: se pidio la prueba de voz (%r) y la captura quedo en silencio digital: "
+                 "esto no es evidencia de que el audio de la GUI llegue al sink" % voz)
+PY
+    cp "$wav" "$CAP_AUDIO" || fallar "no pude copiar la captura a $CAP_AUDIO"
+    nota "captura util ($CAP_AUDIO)"
+
+    # el camino del mixer (o su ausencia en el banco) tambien es evidencia
+    grep -h -m2 "mixer de 'default'" "$adir/gui.log" 2>/dev/null | sed 's/^/  mixer del GUI: /' || true
+    nota "config y logs en $adir/ (arranca-audio.sh, pulse-banco.pa, pulse.log, gui.log)"
+}
+
+if [ -n "$CAP_AUDIO" ]; then
+    modo_audio
+    exit 0
+fi
 
 # --- 3. arrancar la GUI (una sola vez por contenedor) ------------------------------------------
 arrancar_banco() {

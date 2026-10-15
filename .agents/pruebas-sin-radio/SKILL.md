@@ -47,6 +47,22 @@ docker rm -f banco-apps        # cuando terminaste (deja la GUI viva entre llama
 El script deja la GUI corriendo entre llamadas para poder encadenar capturas. Sale con error si el
 banco no responde.
 
+## El audio: que la GUI escriba y capturarlo
+
+```bash
+CHROOT=../.vfix3 CAP_AUDIO=/tmp/audio.wav tools/captura-banco.sh               # prueba de voz + RMS
+CHROOT=../.vfix3 CAP_AUDIO=/tmp/vacio.wav CAP_VOZ= tools/captura-banco.sh     # control: silencio
+docker rm -f banco-audio                                                      # el modo audio lo deja borrado solo
+```
+
+Corre PulseAudio adentro del chroot con un sink nulo que lleva el nombre que la GUI busca por nombre
+fijo y graba su monitor: es lo que la GUI manda al sink, con el RMS/pico medidos en la salida (y el
+control sin voz tiene que dar silencio digital, si no la captura no sirve). La señal la pone la prueba
+de voz de la GUI (`X6200_VOICE_TEST`, espeak, que el script copia del volumen si falta). El volumen
+del mixer **no** se puede medir así (sin `/dev/snd` no hay tarjeta): eso es la Parte B, con runbook y
+guard en `CAP_LOOPBACK=si`. Todo el detalle, los números medidos y lo que queda pendiente:
+[`docs/banco-audio.md`](../../docs/banco-audio.md).
+
 ## Lo que el script garantiza (y como verificarlo a mano)
 
 1. **Se prueba la ultima version.** Reconstruye antes de probar si **cualquiera** de estas se cumple:
