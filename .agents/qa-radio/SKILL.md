@@ -185,3 +185,4 @@ caidas, TX/ROE si se midio, e issues abiertos.
 | Build pisando el A/B del otro | volumen de build compartido | avisar antes de compilar |
 | Editar un archivo recien cambiado | `FS_STALE_VERSION` / archivo "desaparecido" | releer antes de editar; verificar el commit del arbol |
 | Dar por muerto el fix del #44 | el JSON nuevo estaba en `/usr/share`, la GUI leia `/mnt` | medir en la radio, mirar `DATA` |
+| El push rebota | el otro agente empujo a la misma rama mientras yo trabajaba (15/10 17:20) | `git pull --rebase fork lu2dsx/x6200-rom` y volver a pushear; los commits propios quedan encima de los de el |
