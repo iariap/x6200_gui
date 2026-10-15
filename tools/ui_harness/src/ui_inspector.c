@@ -10,24 +10,19 @@
 
 #include "ui_inspector.h"
 
+#include "lvgl/lvgl.h"
+
 #include "keyboard.h"
 
 /* The firmware's fonts: font_select.c swaps their contents but the pointers stay
  * `&sony_N`, so pointer identity is a stable way to name the font a label draws
- * with. Nothing under src/ is modified. */
-#define SONY_SIZES(X) X(14) X(16) X(18) X(20) X(22) X(24) X(26) X(28) X(30) \
-                      X(32) X(34) X(36) X(38) X(40) X(42) X(44) X(60)
-#define SONY_DECL(n) extern lv_font_t sony_##n;
-SONY_SIZES(SONY_DECL)
-
-static const struct {
-    const lv_font_t *font;
-    const char      *name;
-} FONT_NAMES[] = {
-#define SONY_ENTRY(n) { &sony_##n, "sony_" #n },
-    SONY_SIZES(SONY_ENTRY)
-#undef SONY_ENTRY
-};
+ * with. Nothing under src/ is modified.
+ *
+ * Every family by name comes from src/fonts/font_names.h (generated from
+ * tools/fonts/candidates.json); it used to be a hand-written copy of the stock slot
+ * list here, which drifts from the compiled families as soon as one is added.
+ * Included after lvgl.h: it declares the symbols as `lv_font_t`. */
+#include "fonts/font_names.h"
 
 static const struct {
     const lv_obj_class_t *class_p;

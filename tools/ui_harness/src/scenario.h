@@ -16,6 +16,7 @@
 #define SCENARIO_NAME_MAX   64
 #define SCENARIO_SCREEN_MAX 32
 #define SCENARIO_THEME_MAX  32
+#define SCENARIO_DIGITS_MAX 24
 
 /* Benchmark defaults; a fixture (or the CLI) may override them. See
  * bench_metrics.h for what each frame measures. */
@@ -31,6 +32,10 @@ typedef struct {
      * `params_str_t.theme_name.x` (32 bytes, 31 useful — before UI-013 it was 16
      * and "Outdoor-Negative" did not fit); theme_init() gets the full name. */
     char theme[SCENARIO_THEME_MAX];
+    /* The segmented-digit family the frequency row and the clock draw with, as the
+     * fixture spells it (a FONT_DIGIT_* id of src/fonts/font_families.h). Empty or
+     * "none" keeps the default family. */
+    char digits[SCENARIO_DIGITS_MAX];
     /* Deterministic seed for the synthetic spectrum/waterfall data. */
     uint32_t seed;
     /* Benchmark-only knobs. Ignored outside `--bench`, so they never change a

@@ -193,6 +193,20 @@ int test_backlight_brightness_calls(void) {
     return backlight_brightness_calls;
 }
 
+/* src/fonts/font_select.c is not compiled here (the host tests stub LVGL): the
+ * theme test only reads the shape, so an id the fonts would resolve reports
+ * "unknown" and theme_shape.font keeps -1. */
+int font_family_by_id(const char *id) {
+    (void) id;
+    return -1;
+}
+
+/* Same for the digit panels' lookup: no segmented family is reachable here. */
+int font_digit_by_id(const char *id) {
+    (void) id;
+    return -1;
+}
+
 void test_backlight_brightness_reset(void) {
     backlight_brightness = 0;
     backlight_brightness_calls = 0;

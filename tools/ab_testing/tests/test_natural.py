@@ -74,8 +74,8 @@ def test_evidence_is_profiled_delimited_and_deterministic() -> None:
         check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "spectrum 132000 px x 16 frames" in result.stdout
-    assert "waterfall 196000 px x 23 rows" in result.stdout
+    assert "spectrum 132000 px x 27 frames" in result.stdout
+    assert "waterfall 196000 px x 39 rows" in result.stdout
     assert "clock 15840 px x 1 tick(s)" in result.stdout
 
 

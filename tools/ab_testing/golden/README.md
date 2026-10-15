@@ -28,6 +28,17 @@ uv run x6200-ab capture --revision <sha> --label golden \
 The harness is deterministic (two runs of a fixture produce a byte-identical
 PNG; see `tests/check_harness_determinism.sh`), so these files are reproducible.
 
+## 2026-10-15 — regenerated for the font migration (AB-FONTS)
+
+Every render here was captured again at the font migration of issue #9 / decision 1
+(the ROM draws with a libre family, `docs/THIRD_PARTY.md`): the objects this check
+measures are painted with theme roles and bitmaps, so their contrast does not
+depend on the font, and `x6200-ab themes --renders-dir` over the new renders reports
+the same ratios as before (the S-meter arc, the waterfall signal, the focus
+indicator and the band-plan chips all keep their values). The renders themselves
+changed, because the text of every screen did: that is the declared change of
+`quality/contracts.yaml` (`expected_changes`, AB-FONTS).
+
 ## When they change
 
 A render has to be regenerated when a change moves a measured object: a theme

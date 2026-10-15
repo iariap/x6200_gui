@@ -304,21 +304,26 @@ int main(void) {
 
 
     theme_init(params.theme_name.x);    /* an unknown one falls back to IU1WXY */
-    /* Ojo con los índices: el desplegable de Ajustes ofrece
-     * "Sony Sketch, Roboto, DejaVu, Arial" (0..3), pero fonts_apply() usa
-     * FONT_ROBOTO/FONT_DEJAVU/FONT_ARIAL (0..2). Pasando el valor crudo, elegir "Roboto"
-     * aplicaba DejaVu: la copia de esa tabla mataba la GUI al reiniciar y el equipo quedaba
-     * en el logo. Con 0 (Sony Sketch) no se toca nada, que es la fuente propia del equipo.
-     * El tema, en cambio, ya habla en el idioma de fonts_apply(). */
+    /* El desplegable de Ajustes y `params.font` hablan el idioma de fonts_apply():
+     * su lista de items se arma de `font_names[]` en orden FONT_*, asi que la fila
+     * elegida ES el valor FONT_* (antes era una tabla paralela escrita a mano y
+     * elegir "Roboto" aplicaba DejaVu: la copia de esa tabla mataba la GUI al
+     * reiniciar y el equipo quedaba en el logo). FONT_STOCK (0) no toca nada: es la
+     * familia propia del equipo. El tema, si nombra una, manda. */
     if (theme_shape.font >= 0) {
         fonts_apply((uint8_t) theme_shape.font);
     } else if (params.font.x > 0) {
-        fonts_apply((uint8_t) (params.font.x - 1));
+        fonts_apply((uint8_t) params.font.x);
     }
 
     if (theme_shape.vision) {
         fonts_scale(VISION_FONT_STEPS);
     }
+
+    /* Los paneles de dígitos (fila de frecuencia y reloj) pueden dibujar con una
+     * familia segmentada; styles_init() resuelve font_digit() al crear los estilos,
+     * asi que la eleccion tiene que estar hecha antes. */
+    fonts_set_digit_family((uint8_t) theme_shape.font_digits);
 
     styles_init(params.theme.x);
     boot_mark("fuentes y estilos");

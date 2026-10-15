@@ -187,6 +187,9 @@ typedef struct {
     bool    mono_cluster;   /* cluster column all in the text colour (Outdoor: colours fade in the sun) */
     uint8_t images;         /* message/panel backgrounds: 0 drawn, 1 dark images, 2 legacy images */
     int8_t  font;           /* FONT_* (fonts/font_select.h), -1 = the Settings choice */
+    int8_t  font_digits;    /* FONT_DIGIT_* (fonts/font_select.h) the frequency row and the
+                             * clock draw with: 0 (FONT_DIGIT_NONE, the zero value of the
+                             * built-in shapes) is the default family */
     int16_t mark[3];        /* encoder LED on the buttons: x, width, height (centred); 0 = the bar on the left edge */
     int16_t pill_border;    /* border of the info box items (VFO, mode, AGC, PRE, ATT, ATU), 0 = none */
     bool    mode_box;       /* the mode next to the frequency in a box (sel_bg, sel_border), else plain text */

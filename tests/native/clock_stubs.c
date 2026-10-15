@@ -26,6 +26,16 @@ lv_style_t clock_style;
 lv_font_t sony_30;
 lv_font_t sony_38;
 
+/* src/fonts/font_select.c is not compiled here: the clock test only needs the
+ * identity (the ROM's segmented digit families are host-side data). */
+const lv_font_t *font_digit(const lv_font_t *stock_slot) {
+    return stock_slot;
+}
+
+void fonts_set_digit_family(uint8_t family) {
+    (void) family;
+}
+
 static lv_obj_t  label;
 static lv_timer_t timer;
 static char       label_text[64];

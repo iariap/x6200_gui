@@ -44,14 +44,13 @@
 #include "cfg/subjects.h"
 
 /* El periodo de refresco que la ROM configura (lv_conf.h:
- * LV_DISP_DEF_REFR_PERIOD). El arnes es un binario de host con su propio
- * lv_conf.h, que no define ese valor, asi que LVGL le queda en su default
- * (30 ms) y el lazo de la ROM dormiria contra el periodo equivocado. El modo
- * wakeups le pone al refr_timer el periodo de la ROM antes de medir:
- * tests/check_harness_wakeups.sh lee el numero de lv_conf.h y comprueba que sea
- * este mismo, asi que un cambio de config no puede mover la medicion en
- * silencio. */
-#define WAKEUP_REFR_PERIOD_MS 50
+ * LV_DISP_DEF_REFR_PERIOD). Sale del mismo define que el banco natural
+ * (natural_bench.h: HARNESS_ROM_REFR_PERIOD, leido del lv_conf.h de la ROM por
+ * el CMake en build time), asi que los dos modos que miden el lazo de la ROM no
+ * pueden declarar periodos distintos. Sin la definicion (build suelto) queda el
+ * default de LVGL (30 ms); tests/check_harness_wakeups.sh lee el numero de
+ * lv_conf.h y comprueba que sea este mismo. */
+#define WAKEUP_REFR_PERIOD_MS NATURAL_BENCH_REFR_PERIOD_MS
 
 /* La cadencia del hilo del tick (src/main.c, tick_thread()). La misma vara: el
  * gate la lee de src/main.c. Con LV_TICK_CUSTOM (lv_conf.h de la ROM) el hilo no

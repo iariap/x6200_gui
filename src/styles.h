@@ -113,6 +113,13 @@ extern lv_font_t    sony_42;
 extern lv_font_t    sony_44;
 extern lv_font_t    sony_60;
 
+/* The family the digit panels draw with (src/fonts/font_select.c). Declared here
+ * as well as in fonts/font_select.h because src/clock.c draws the clock's digits
+ * and the clock test compiles it against tests/native/stubs_clock/styles.h, which
+ * has no fonts/ tree. */
+const struct _lv_font_t *font_digit(const struct _lv_font_t *stock_slot);
+void fonts_set_digit_family(uint8_t digit_family);
+
 void styles_init(themes_t theme);
 
 void styles_set_theme(themes_t theme);

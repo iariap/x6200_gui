@@ -170,6 +170,83 @@ expected_changes:
     author: ui08-incr5
     until: 2027-03-31
 
+
+  # AB-FONTS (issue #9, decision 1): el ROM deja de dibujar con la familia
+  # propietaria (Sony) y dibuja con una libre (Fira Sans; tools/fonts/README.md,
+  # docs/THIRD_PARTY.md). Cambia la forma de TODOS los glifos de la GUI, asi que el
+  # diff de pixeles es el texto entero de la pantalla: las regiones de abajo son
+  # todas las que dibujan texto. No cambia ninguna regla de layout: el tamano de
+  # cada familia se elige por slot para reproducir la line height de la familia que
+  # reemplaza (tools/fonts/fonts.py plan), y las cajas de texto medidas derivan -21%
+  # de ancho en promedio (las libres son mas angostas a la misma altura) con 0
+  # etiquetas que desbordan o se truncan sobre las 8 fixtures de la matriz
+  # (tools/ab_testing/reports/AB-FONTS, tools/fonts/README.md).
+  - region: barra_superior
+    reason: >
+      AB-FONTS: las celdas de la barra superior (VFO, modo, AGC, PRE/ATT, ATU, WiFi: src/info.c) y la etiqueta del S-meter escriben con la familia migrada; cada glifo cambia de forma.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: s_metro
+    reason: >
+      AB-FONTS: la etiqueta en dB del S-meter (src/meter.c) es texto sobre el arco: cambia con la fuente, el arco no.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: espectro
+    reason: >
+      AB-FONTS: las etiquetas del band plan (src/band_plan.c) y el texto del pannel que cae sobre la banda (el dialogo de Ajustes se dibuja encima) son texto.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: frecuencia
+    reason: >
+      AB-FONTS: los tres labels de la fila de frecuencia (src/main_screen.c) son los digitos mas grandes de la pantalla; el ancho de cada cadena cambia (-21% medido) y el texto queda centrado en la misma caja de 150/500/150 px.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: waterfall
+    reason: >
+      AB-FONTS: la etiqueta del panel de texto decodificado (src/pannel.c) y los rotulos de la cascada son texto.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: botones
+    reason: >
+      AB-FONTS: la barra inferior (buttons.cpp) rotula cada boton con texto; las etiquetas de dos lineas (Volume/Squelch/RF gain/TX power) son las mas sensibles al cambio de metricas.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: reloj_potencia
+    reason: >
+      AB-FONTS: el reloj de potencia (src/clock.c) dibuja hora y tension (13.8v) con la familia migrada, mas el simbolo de bateria del slot de iconos.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: ajustes_anio
+    reason: >
+      AB-FONTS: el campo Anio de Ajustes (src/dialog_settings.c) es un spinbox de 4 cifras: cambia el ancho del texto, no la caja.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: ajustes_perfil
+    reason: >
+      AB-FONTS: la fila 'Visual profile' rotula su etiqueta y su desplegable con la familia migrada.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: ajustes_audio_ganancia
+    reason: >
+      AB-FONTS: las etiquetas de la fila 'Play,Rec gain' y los valores de los sliders son texto.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: ajustes_scrollbar
+    reason: >
+      AB-FONTS: el pulgar de la barra de scroll de Ajustes cambia de unos pixeles porque la altura del contenido de la grilla depende de la linea de las etiquetas (la fuente migrada tiene la misma line height por slot, +-1 px).
+    author: fonts-libre
+    until: 2027-03-31
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.

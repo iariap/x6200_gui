@@ -21,13 +21,24 @@
 
 #include "scenario.h"
 
-/* One natural frame is one LVGL display refresh period. The ROM configures
- * LV_DISP_DEF_REFR_PERIOD 50 ms (lv_conf.h); the harness' own lv_conf.h does not
- * set it, so the harness runs at LVGL's default 30 ms and a natural frame is
- * 30 ms of virtual time. tests/check_harness_wakeups.sh measures the ROM's loop
- * with the ROM's own period (wakeup_bench.c) instead of this one. The clock
- * advances in slices of NATURAL_BENCH_SLICE_MS and the data drive is checked once
- * per slice (the same 10 ms the plain capture uses). */
+/* One natural frame is one LVGL display refresh period of virtual time. The ROM
+ * configures LV_DISP_DEF_REFR_PERIOD (lv_conf.h); the harness' own lv_conf.h does
+ * not set it, so LVGL would run this bench at its own default (30 ms) and a
+ * natural frame would not be a ROM frame. The CMake reads the ROM's value into
+ * HARNESS_ROM_REFR_PERIOD and natural_bench_run() puts it on the display refresh
+ * timer before measuring -- the same piece the wakeup profile uses
+ * (wakeup_bench.c, #56), now from one source for both. Without the definition (a
+ * standalone build) it is LVGL's own default. tests/natural_evidence.py re-reads
+ * lv_conf.h and checks the JSON's `frame_ms` against it, so neither can drift. */
+#ifndef HARNESS_ROM_REFR_PERIOD
+#define HARNESS_ROM_REFR_PERIOD 30
+#endif
+
+#define NATURAL_BENCH_REFR_PERIOD_MS HARNESS_ROM_REFR_PERIOD
+
+/* The refresh period one natural frame measures (the ROM's config). */
+uint32_t natural_bench_refresh_period_ms(void);
+
 #define NATURAL_BENCH_SLICE_MS 10
 
 /* Frames a natural run does when neither the fixture nor the CLI say. */

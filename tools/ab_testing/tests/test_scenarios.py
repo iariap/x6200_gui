@@ -141,6 +141,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "main-bateria-baja",
         "main-espectro-agua",
         "main-foco",
+        "main-frecuencia-dseg",
         "main-natural",
         "main-natural-eco",
         "main-otro-tema",
