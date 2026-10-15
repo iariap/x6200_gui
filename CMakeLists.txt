@@ -28,6 +28,22 @@ else()
                 DESTINATION /
                 USE_SOURCE_PERMISSIONS
         )
+        # El rootfs del vendor (el origen que Buildroot cachea para este paquete)
+        # trae /etc/init.d/S95gui, que arranca el mismo x6200_daemon que el S20gui
+        # del port: dos GUIs dibujan sobre /dev/fb0 (flicker + doble CPU, issue
+        # #89). El target de Buildroot es incremental y no limpia lo que un
+        # paquete dejo de instalar, asi que ese S95gui sobrevive a cada build; el
+        # port declara lo prohibido en buildroot/prune-vendor-rootfs.sh y lo saca
+        # en cada instalacion (ver docs/IMAGE_ROOTFS_PRUNE.md).
+        install(CODE "
+            execute_process(
+                COMMAND sh \"${CMAKE_CURRENT_SOURCE_DIR}/buildroot/prune-vendor-rootfs.sh\" \"\$ENV{DESTDIR}\"
+                RESULT_VARIABLE _x6200_prune_rc
+            )
+            if(NOT _x6200_prune_rc EQUAL 0)
+                message(FATAL_ERROR \"prune-vendor-rootfs.sh fallo (rc=\${_x6200_prune_rc})\")
+            endif()
+        ")
         install(DIRECTORY images DESTINATION share/x6200)
 endif()
 
