@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 15/10 ~17:10 | `d0ff2dba9c85` (sin cambios) | `1a56556` | TODO OK | no se corrió | **0 en 300 s** | **Sin desplegar (3ª)**: el volumen tiene 25 contenedores del arnés del otro agente; se dobló la vigilancia más larga (180 → 300 s) |
 | 15/10 ~16:40 | `d0ff2dba9c85` (sin cambios) | `122bea3` | TODO OK | no se corrió | no medido | **Sin desplegar (2ª)**: quedan `4e9b5f4` (#77), `072f2c7` (#79) y `122bea3` (#80); hay builds corriendo en el volumen |
 | 15/10 ~16:10 | `d0ff2dba9c85` (sin cambios) | `f6d1cb1` | TODO OK | no se corrió | 0 en 90 s | **Sin desplegar**: `4e9b5f4` (#77) queda pendiente, el volumen del build lo tiene el A/B del otro agente |
 | 15/10 ~15:20 | `d0ff2dba9c85` | `337036c` (incluye `457a9a3`) | TODO OK | 22 ok | 0 en el barrido y 0 en 180 s de vigilancia | **Funciona** |
@@ -99,6 +100,29 @@ perderle su corrida.
 commits y después, además del chequeo general, **la prueba de TX que quedó bloqueada**: con el #80 el
 SWR Scan ya se puede abrir por socket, la antena es de 40 m, el dueño autorizó QRP y `swrscan_span` está
 en 50000 Hz (7.05–7.15 MHz con el dial en 7.100).
+
+### Tercera corrida (17:10): el volumen sigue ocupado, y una vigilancia más larga
+
+`git fetch fork` trajo **1 commit más** (`1a56556`, #81: temas v2 Redshift, issue #68). El volumen
+compartido estaba **saturado** — **25 contenedores** corriendo (`x6200-uiharness` y varios
+`x6200-buildroot` con `chroot` y `dirclean`) —, así que tampoco se compiló.
+
+Como el despliegue no dependía de mí, la ventana se usó para **alargar la vigilancia de estabilidad**,
+que era el pendiente más flojo del anexo B (180 s):
+
+```
+  t=0    pid=309  logs=187  uptime=4410.34s  (17:11:50)
+  t=300  pid=309  logs=187  uptime=4711.57s  (17:16:51)
+  caidas: 0 | PID estable: si | el equipo reinicio: no
+```
+
+Más `tools/verifica-radio.sh` → `TODO OK` y los dos últimos logs con `CRASHLOG=0`. Ajustes del dueño sin
+tocar (`theme_name=IU1WXY`, CW en 0, `swrscan_span=50000`).
+
+**Conflicto de fondo (para el owner):** el volumen `x6200-build-output` es **uno solo** y el otro agente
+lo usa para sus A/B y su arnés. En tres corridas seguidas (16:10, 16:40, 17:10) no se pudo compilar sin
+pisarle un build en curso. O se le da un volumen propio (`x6200-build-output-ab`) o se acuerda una
+ventana; si no, el ciclo «cada commit → build + deploy + prueba» se atrasa aunque la rama avance.
 
 ## 15/10 ~15:20 — `d0ff2dba9c85` (commit `337036c`)
 
@@ -203,7 +227,7 @@ a mano, el medidor pasó a `#f08080` y **3.64:1**. Quedó documentado en el issu
 | Pendiente | Por qué no está fundado | Qué haría falta |
 |---|---|---|
 | **Transmisión (TX) y RF** | Intentado el 15/10 y **no medido**: la app del barrido de ROE no se puede abrir por el control remoto (issue #78), así que `radio_start_swrscan()` nunca corrió. La antena es de 40 m. | Que el remoto pueda abrir esa app; después, un barrido de ROE con la potencia al mínimo |
-| **Estabilidad de horas** | La vigilancia más larga fue de 180 s. | Dejar la radio corriendo y contar caídas por hora |
+| **Estabilidad de horas** | La vigilancia más larga pasó a **300 s** el 15/10 17:11 (0 caídas), todavía lejos de "horas". | Dejar la radio corriendo varias horas y contar caídas |
 | **El #63 con spots reales decodificados** | Se abrió WSPR y quedó viva, pero no se esperó un ciclo completo con decodificación. | Dejarla en WSPR varios ciclos y mirar el log |
 
 **Cerrado de este anexo:** *"el barrido dice 22 y el menú tiene 23"* — medido: el que falta es el

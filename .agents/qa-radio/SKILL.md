@@ -57,6 +57,11 @@ git log --oneline HEAD..fork/lu2dsx/x6200-rom      # ¿hay algo nuevo?
   builds activos.
 - Si hay que compilar igual, **respaldar antes** el binario que este en el volumen
   (`cp /b/target/usr/sbin/x6200_gui /b/ab-backup-<md5>`): asi el A/B del otro agente no se pierde.
+- Si el volumen esta ocupado **varias corridas seguidas** (paso el 15/10: tres ciclos sin poder compilar),
+  las salidas son: esperar una ventana, pedirle al owner un volumen propio (`x6200-build-output-ab`), o
+  **clonar el volumen** (`docker volume create` + `cp -a` adentro) y compilar sobre la copia, que no
+  toca el build del otro. El aviso al owner va igual: el ciclo "cada commit -> build + deploy + prueba"
+  se atrasa aunque la rama avance.
 - El trabajo en curso del otro agente aparece en ramas `factory/*`: no se mergean.
 
 ## Paso 2 — Build (limpio, siempre)
