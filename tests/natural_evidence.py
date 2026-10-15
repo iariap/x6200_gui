@@ -290,6 +290,67 @@ def check_cli(checker: Checker, cli: dict) -> None:
     checker.note("  CLI override: --bench-natural 10 ran 10 frames (the fixture says 40)")
 
 
+def check_display_off(checker: Checker, off: dict, natural_doc: dict, lit_doc: dict) -> None:
+    """La ruta de pantalla apagada de la ROM no hace trabajo de render.
+
+    `--display-off` manda la tecla POWER por el camino del firmware
+    (src/main_screen.c -> src/backlight.c -> lv_disp_enable_invalidation(false))
+    antes de la corrida natural, asi que los 40 frames con el drive andando
+    tienen que invalidar y flushear CERO: el espectro, la cascada y el reloj
+    siguen disparando, y ninguna de sus invalidaciones llega al driver. La vara
+    es el mismo fixture encendido (6745720 px, `natural`): la diferencia es lo
+    que el panel oscuro se ahorra.
+    """
+    natural = off["natural"]
+    totals = natural["totals"]
+
+    checker.check(natural["data_drive"] is True, "the display-off run did not drive the data")
+    checker.check(
+        natural["spectrum_frames"] > 0 and natural["waterfall_rows"] > 0,
+        "the display-off run has no data to measure: the drive did not run",
+    )
+    for key, value in totals.items():
+        checker.check(
+            value == 0,
+            f"display off: totals.{key} = {value} (the dark panel must render nothing)",
+        )
+    for index, frame in enumerate(natural["per_frame"]):
+        checker.check(
+            frame["invalidated_px"] == 0 and frame["invalidated_rects"] == 0,
+            f"display off, frame {index}: {frame['invalidated_px']} px in "
+            f"{frame['invalidated_rects']} rectangles",
+        )
+        checker.check(
+            frame["flushes"] == 0 and frame["flushed_px"] == 0,
+            f"display off, frame {index}: {frame['flushes']} flush(es), {frame['flushed_px']} px",
+        )
+
+    # La captura: el repaint de pantalla completa que el arnes hace antes de la
+    # corrida es justo lo que no ocurre. Los 743680 px de la captura son los que
+    # se pintaron ANTES de apretar la tecla (el panel conserva el ultimo frame).
+    metrics = off["metrics"]
+    checker.check(
+        metrics["flushes"] == SETTLE_FLUSHES - 1,
+        f"display off: metrics.flushes = {metrics['flushes']}, expected {SETTLE_FLUSHES - 1} "
+        "(all but the capture's full-screen repaint)",
+    )
+    checker.check(
+        metrics["flushed_pixels"] == SETTLE_PX - FULL_SCREEN_PX,
+        f"display off: metrics.flushed_pixels = {metrics['flushed_pixels']}, expected "
+        f"{SETTLE_PX - FULL_SCREEN_PX} ({SETTLE_PX} minus the {FULL_SCREEN_PX} px repaint)",
+    )
+    checker.check(
+        metrics["framebuffer_fnv1a"] == lit_doc["metrics"]["framebuffer_fnv1a"],
+        "display off: the dark panel rendered different pixels than the lit capture: the "
+        "blanked route changed the image instead of skipping work",
+    )
+    checker.note(
+        f"  display off: 0 px in {natural['frames']} frames (against "
+        f"{natural_doc['natural']['totals']['invalidated_px']} px lit) and a capture "
+        f"{FULL_SCREEN_PX} px lighter"
+    )
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 2:
         print("usage: natural_evidence.py <out-dir>", file=sys.stderr)
@@ -304,6 +365,9 @@ def main(argv: list[str]) -> int:
     check_static(checker, load(out_dir, "static"), natural_doc)
     check_forced(checker, load(out_dir, "forced"), natural_doc)
     check_cli(checker, load(out_dir, "cli"))
+    check_display_off(
+        checker, load(out_dir, "off"), natural_doc, load(out_dir, "forced")
+    )
 
     print("\n".join(checker.lineas))
     return 0

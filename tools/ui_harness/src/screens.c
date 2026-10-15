@@ -26,6 +26,7 @@
 #include "clock.h"
 #include "dialog.h"
 #include "dialog_settings.h"
+#include "events.h"
 #include "keyboard.h"
 #include "main.h"
 #include "main_screen.h"
@@ -531,4 +532,20 @@ void scenario_settle(const scenario_t *scenario)
             exit(1);
         }
     }
+}
+
+/* La ruta de la ROM para apagar el display (`--display-off`): la tecla POWER
+ * suelta llega al main screen como en la radio —keypad.c hace
+ * lv_event_send(lv_scr_act(), EVENT_KEYPAD, &event) y main_screen.c registra
+ * main_screen_keypad_cb para ese evento—, y de ahi backlight_switch() apaga la
+ * invalidacion del display (src/backlight.c, el modulo real). Lo que el host
+ * sustituye es el teclado, no el camino. */
+void scenario_display_off(void)
+{
+    event_keypad_t keypad;
+
+    keypad.key = KEYPAD_POWER;
+    keypad.state = KEYPAD_RELEASE;
+
+    lv_event_send(lv_scr_act(), EVENT_KEYPAD, &keypad);
 }

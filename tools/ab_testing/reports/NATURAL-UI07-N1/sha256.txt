@@ -2,6 +2,10 @@
 # run1/natural: the two runs of the gate with the same output paths (the
 # idempotency self-test of tests/check_harness_natural.sh); forced: `--bench`;
 # static: `--bench-natural --natural-static`; cli: `--bench-natural 10`.
+# off: `--bench-natural --display-off` (issue #13, UI-07 remanente, revision
+# ec89fc3): la ruta de pantalla apagada de la ROM, sin trabajo de render. Su PNG
+# es byte a byte el de la captura comun (`forced`, 3986bc9a…): la misma imagen,
+# menos trabajo.
 # sensitivity/half-*: the same fixture with a TEMPORARY patch that invalidates
 # only the lower half of the spectrum (src/spectrum.c, reverted before
 # committing): the natural PNG moves, the plain capture's does not.
@@ -10,10 +14,12 @@ natural 8ec631215c28e27fb901f186273fe6afa0fd6b9470550cf810cb1988f84273fd
 forced 3986bc9a6047744aa2cd8db1c9879d73e71e16e45d7737b0d7035c06e22ec821
 static adcdc8cb22f27cf508b5ec6f1286d46bc633798bc5276c9ca08816ba0f53d98f
 cli d89696122e23431a06c50e8530a7406c3614903e2c706c0b0d80eb73e7228ca9
+off 3986bc9a6047744aa2cd8db1c9879d73e71e16e45d7737b0d7035c06e22ec821
 half-nat 492910b48989df6e693d1ba15100e72f5d819b994c68acaf74bcdc6682a85af0
 half-plain 3986bc9a6047744aa2cd8db1c9879d73e71e16e45d7737b0d7035c06e22ec821
 # natural.json revision=376ed09bc56a3356708080caffea86646a5e3969 framebuffer_fnv1a=0x1cf41b099f85ece4 natural_invalidated_px=6745720
 # forced.json revision=376ed09bc56a3356708080caffea86646a5e3969 framebuffer_fnv1a=0x6f0b9749e63207f0 no natural block
 # static.json revision=376ed09bc56a3356708080caffea86646a5e3969 framebuffer_fnv1a=0x6576db34a91c95f8 natural_invalidated_px=304760
+# off.json revision=ec89fc30ff4092e24fcd9b5dff9655daed6d6548 framebuffer_fnv1a=0x6f0b9749e63207f0 natural_invalidated_px=0 flushes=5 flushed_pixels=743680
 # half-nat.json revision=376ed09bc56a3356708080caffea86646a5e3969 framebuffer_fnv1a=0x102480df8c47df6e natural_invalidated_px=5801560
 # half-plain.json revision=376ed09bc56a3356708080caffea86646a5e3969 framebuffer_fnv1a=0x6f0b9749e63207f0 no natural block

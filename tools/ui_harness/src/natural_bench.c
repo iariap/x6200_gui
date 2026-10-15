@@ -36,17 +36,6 @@
 #include "cfg/subjects.h"
 #include "scheduler.h"
 
-/* The radio's DSP loop feeds the spectrum and one waterfall row on its own
- * cadence: `spectrum_fps_ms = 1000 / 15` and `waterfall_fps_ms = 1000 / 25`
- * (src/dsp.cpp), with the `now - last > fps_ms` condition. The harness does not
- * compile dsp.cpp (there is no FFT and no SDR), so the cadence is mirrored here;
- * tests/check_harness_natural.sh recomputes the expected frame/row counts from
- * these same expressions on the produced JSON, so a drift between this mirror
- * and the radio's loop is caught by the gate. */
-#define NATURAL_SPECTRUM_FPS_MS  (1000 / 15)
-#define NATURAL_WATERFALL_FPS_MS (1000 / 25)
-
-/* Upper bound of a run's frames (the record array is fixed). */
 #define NATURAL_BENCH_MAX_FRAMES 512
 
 static bool enabled;
@@ -93,7 +82,7 @@ bool natural_bench_drive(void)
  * here. Feeding them queues the component's own refresh (spectrum_data() and
  * waterfall_data() call scheduler_put_noargs), which the scheduler runs right
  * after LVGL's timers: the invalidation is the firmware's, never the bench's. */
-static void natural_slice(void *arg)
+void natural_bench_drive_slice(void *arg)
 {
     (void) arg;
 
@@ -115,6 +104,15 @@ static void natural_slice(void *arg)
     }
 }
 
+void natural_bench_drive_reset(uint32_t seed_arg)
+{
+    seed = seed_arg;
+    spectrum_frames = 0;
+    waterfall_rows = 0;
+    spectrum_time = virtual_time_now_ms();
+    waterfall_time = spectrum_time;
+}
+
 void natural_bench_run(const scenario_t *scenario, int count)
 {
     if (count < 1) {
@@ -129,18 +127,14 @@ void natural_bench_run(const scenario_t *scenario, int count)
         frames[i].rects_complete = true;
     }
 
-    seed = scenario->seed;
+    natural_bench_drive_reset(scenario->seed);
     total_frames = count;
-    spectrum_frames = 0;
-    waterfall_rows = 0;
-    spectrum_time = virtual_time_now_ms();
-    waterfall_time = spectrum_time;
     enabled = true;
 
     for (current_frame = 0; current_frame < total_frames; current_frame++) {
         frame_open = true;
-        virtual_time_advance_step(LV_DISP_DEF_REFR_PERIOD, NATURAL_BENCH_SLICE_MS, natural_slice,
-                                  NULL);
+        virtual_time_advance_step(LV_DISP_DEF_REFR_PERIOD, NATURAL_BENCH_SLICE_MS,
+                                  natural_bench_drive_slice, NULL);
         frames[current_frame].virtual_end_ms = virtual_time_now_ms();
         frame_open = false;
     }

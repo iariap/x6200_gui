@@ -21,10 +21,13 @@
 
 #include "scenario.h"
 
-/* One natural frame is one LVGL display refresh period (LV_DISP_DEF_REFR_PERIOD,
- * 30 ms): the granularity at which LVGL decides to refresh on its own. The
- * clock advances in slices of this size, and the data drive is checked once per
- * slice (the same 10 ms the plain capture uses). */
+/* One natural frame is one LVGL display refresh period. The ROM configures
+ * LV_DISP_DEF_REFR_PERIOD 50 ms (lv_conf.h); the harness' own lv_conf.h does not
+ * set it, so the harness runs at LVGL's default 30 ms and a natural frame is
+ * 30 ms of virtual time. tests/check_harness_wakeups.sh measures the ROM's loop
+ * with the ROM's own period (wakeup_bench.c) instead of this one. The clock
+ * advances in slices of NATURAL_BENCH_SLICE_MS and the data drive is checked once
+ * per slice (the same 10 ms the plain capture uses). */
 #define NATURAL_BENCH_SLICE_MS 10
 
 /* Frames a natural run does when neither the fixture nor the CLI say. */
@@ -35,6 +38,18 @@
  * frame with more sets `rects_complete` to false: the sums stay complete, only
  * the reported rectangles are capped. */
 #define NATURAL_BENCH_MAX_RECTS 8
+
+/* The radio's DSP loop feeds the spectrum and one waterfall row on its own
+ * cadence: `spectrum_fps_ms = 1000 / 15` and `waterfall_fps_ms = 1000 / 25`
+ * (src/dsp.cpp), with the `now - last > fps_ms` condition. The harness does not
+ * compile dsp.cpp (there is no FFT and no SDR), so the cadence is mirrored here;
+ * tests/check_harness_natural.sh recomputes the expected frame/row counts from
+ * these same expressions on the produced JSON, so a drift between this mirror
+ * and the radio's loop is caught by the gate. The wakeup profile
+ * (wakeup_bench.c) feeds the same cadence, so the two modes measure the same
+ * radio. */
+#define NATURAL_SPECTRUM_FPS_MS  (1000 / 15)
+#define NATURAL_WATERFALL_FPS_MS (1000 / 25)
 
 typedef struct {
     uint64_t  virtual_end_ms;    /* harness' virtual clock at the end of the frame */
@@ -55,9 +70,24 @@ bool natural_bench_enabled(void);
 
 /* Whether the run drives the spectrum/waterfall data frame by frame. With it
  * off the only natural invalidation left is the clock's: the delimitation
- * control of tests/check_harness_natural.sh. */
+ * control of tests/check_harness_natural.sh. The wakeup profile switches it for
+ * its two passes. */
 void natural_bench_set_drive(bool on);
 bool natural_bench_drive(void);
+
+/* One slice of the virtual clock: the samples of the radio's DSP loop arrive
+ * here. Feeding them queues the component's own refresh (spectrum_data() and
+ * waterfall_data() call scheduler_put_noargs), which the scheduler runs right
+ * after LVGL's timers: the invalidation is the firmware's, never the bench's.
+ * Exported for the wakeup profile (wakeup_bench.c), which runs the ROM's loop
+ * over the same cadence. */
+void natural_bench_drive_slice(void *arg);
+
+/* Re-arms the drive with `seed` at the current virtual instant: the same
+ * counters the natural run starts from (spectrum/waterfall times and row
+ * counts), so a run of the profile is a function of the seed and the window.
+ * Used by the wakeup profile's two passes (wakeup_bench.c). */
+void natural_bench_drive_reset(uint32_t seed);
 
 /* Runs a natural bench of `frames` frames on the scenario's seed, advancing the
  * virtual clock (no sleeps) and collecting the per-frame metrics. */

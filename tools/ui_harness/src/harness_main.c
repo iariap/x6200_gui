@@ -4,7 +4,7 @@
  *  Usage: ui_harness --scenario <file> --png <out.png> --json <out.json>
  *                    [--bench [--warmup N] [--repeats N]] [--inspect]
  *                    [--bench-natural [N]] [--natural-frames N]
- *                    [--natural-static]
+ *                    [--natural-static] [--bench-wakeups [MS]] [--display-off]
  *
  *  Builds a scenario from real firmware components on an 800x480 RAM
  *  framebuffer, advances the harness' virtual clock (no sleeps), writes the
@@ -30,6 +30,15 @@
  *  It is an extra mode: the `benchmark` block, the PNG path and the plain
  *  capture are untouched. `--natural-static` runs the same loop without the
  *  data drive (the delimitation control of tests/check_harness_natural.sh).
+ *
+ *  With `--bench-wakeups [MS]` the harness measures the ROM's *main loop*
+ *  (src/main.c) over MS milliseconds of virtual time —default 1000— on the
+ *  firmware's own timer set, and reports it next to the tick thread's cadence
+ *  (5 ms, src/main.c) in a `wakeups` block (see wakeup_bench.h). It answers the
+ *  wakeup question of issue #13 without touching the ROM. `--display-off` runs
+ *  the ROM's own display-off route (the POWER key -> backlight_switch()) before
+ *  the capture/bench, so the bench can measure what the blanked screen does and
+ *  does not render (tests/check_harness_natural.sh).
  *
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -57,6 +66,7 @@
 #include "coverage.h"
 #include "ui_inspector.h"
 #include "virtual_time.h"
+#include "wakeup_bench.h"
 
 #include "mock_harness.h"
 #include "mock_radio.h"
@@ -74,7 +84,8 @@ static void usage(const char *argv0)
     fprintf(stderr,
             "usage: %s --scenario <file> --png <out.png> [--json <out.json>]\n"
             "          [--bench [--warmup N] [--repeats N]] [--inspect]\n"
-            "          [--bench-natural [N]] [--natural-frames N] [--natural-static]\n",
+            "          [--bench-natural [N]] [--natural-frames N] [--natural-static]\n"
+            "          [--bench-wakeups [MS]] [--display-off]\n",
             argv0);
 }
 
@@ -194,15 +205,23 @@ static void write_json(const char *path, const char *png_path, const scenario_t 
             (unsigned long long) png_framebuffer_hash());
     fprintf(f, "    \"png_path\": \"%s\",\n", png_path);
     fprintf(f, "    \"png_bytes\": %ld\n", file_size(png_path));
-    fprintf(f, "  }%s\n", (bench_enabled() || natural_bench_enabled() || inspect) ? "," : "");
+    fprintf(f, "  }%s\n",
+            (bench_enabled() || natural_bench_enabled() || wakeup_bench_enabled() || inspect)
+                ? "," : "");
     if (bench_enabled()) {
         write_benchmark(f, scenario);
-        if (natural_bench_enabled() || inspect) {
+        if (natural_bench_enabled() || wakeup_bench_enabled() || inspect) {
             fprintf(f, ",\n");
         }
     }
     if (natural_bench_enabled()) {
         natural_bench_write_json(f);
+        if (wakeup_bench_enabled() || inspect) {
+            fprintf(f, ",\n");
+        }
+    }
+    if (wakeup_bench_enabled()) {
+        wakeup_bench_write_json(f);
         if (inspect) {
             fprintf(f, ",\n");
         }
@@ -224,9 +243,12 @@ int main(int argc, char **argv)
     bool        inspect = false;
     bool        natural = false;
     bool        natural_static = false;
+    bool        wakeups = false;
+    bool        display_off = false;
     int         warmup_override = -1;
     int         repeats_override = -1;
     int         natural_frames_override = -1;
+    uint32_t    wakeup_window_ms = 0;
 
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--scenario") && i + 1 < argc) {
@@ -252,6 +274,22 @@ int main(int argc, char **argv)
         } else if (!strcmp(argv[i], "--natural-static")) {
             natural = true;
             natural_static = true;
+        } else if (!strcmp(argv[i], "--bench-wakeups")) {
+            wakeups = true;
+            /* An explicit window in ms may follow (`--bench-wakeups 5000`);
+             * without it the built-in default decides. A window that is not a
+             * positive count is a typo, never a default. */
+            if (i + 1 < argc && argv[i + 1][0] != '-') {
+                long v = strtol(argv[++i], NULL, 10);
+
+                if (v <= 0) {
+                    fprintf(stderr, "ui_harness: --bench-wakeups needs a positive window\n");
+                    return 2;
+                }
+                wakeup_window_ms = (uint32_t) v;
+            }
+        } else if (!strcmp(argv[i], "--display-off")) {
+            display_off = true;
         } else if (!strcmp(argv[i], "--warmup") && i + 1 < argc) {
             warmup_override = (int) strtol(argv[++i], NULL, 10);
         } else if (!strcmp(argv[i], "--repeats") && i + 1 < argc) {
@@ -268,6 +306,13 @@ int main(int argc, char **argv)
 
     if (!scenario_path || !png_path) {
         usage(argv[0]);
+        return 2;
+    }
+
+    /* The two loop-measuring modes are separate runs of the same loop: asking
+     * for both at once would measure one on top of the other. */
+    if (wakeups && natural) {
+        fprintf(stderr, "ui_harness: --bench-wakeups and --bench-natural are separate modes\n");
         return 2;
     }
 
@@ -359,6 +404,13 @@ int main(int argc, char **argv)
      * real main screen has registered its widget in the keyboard group. */
     scenario_settle(&scenario);
 
+    /* Pantalla apagada (`--display-off`): la tecla POWER de la ROM, despues de
+     * que la pantalla ya se dibujo (el panel conserva el ultimo frame y lo que
+     * se apaga es el backlight). */
+    if (display_off) {
+        scenario_display_off();
+    }
+
     if (bench) {
         bench_enable(true);
 
@@ -392,6 +444,13 @@ int main(int argc, char **argv)
         natural_bench_run(&scenario, scenario.natural_frames);
     }
 
+    if (wakeups) {
+        /* El perfil de wakeups (wakeup_bench.c) corre tambien despues del
+         * repaint del settle: mide el lazo de la ROM sobre los timers reales de
+         * los componentes, no un frame fabricado. */
+        wakeup_bench_run(&scenario, wakeup_window_ms);
+    }
+
     if (!png_export(png_path)) {
         return 1;
     }
@@ -414,6 +473,11 @@ int main(int argc, char **argv)
         printf("ui_harness: natural frames=%d (frame_ms=%d, drive=%s)\n",
                natural_bench_frame_count(), LV_DISP_DEF_REFR_PERIOD,
                natural_bench_drive() ? "on" : "off");
+    }
+    if (wakeup_bench_enabled()) {
+        printf("ui_harness: wakeups window=%u ms (refresh_period_ms=%u, tick_thread_ms=%u)\n",
+               wakeup_bench_window_ms(), wakeup_bench_refresh_period_ms(),
+               wakeup_bench_tick_thread_ms());
     }
     return 0;
 }

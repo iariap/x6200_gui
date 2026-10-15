@@ -68,6 +68,11 @@ struct _lv_timer_t {
 static struct _lv_timer_t idle_timer;
 static lv_timer_cb_t      idle_cb;
 
+/* Registro de lv_disp_enable_invalidation() (mas abajo), la ruta de pantalla
+ * apagada. */
+static int  inv_calls;
+static bool inv_last;
+
 lv_timer_t * lv_timer_create(lv_timer_cb_t cb, uint32_t period, void * user_data) {
     (void) user_data;
 
@@ -95,11 +100,29 @@ void lv_timer_set_repeat_count(lv_timer_t * timer, int32_t count) {
 
 void lv_disp_enable_invalidation(void * disp, bool en) {
     (void) disp;
-    (void) en;
+
+    /* La ruta de pantalla apagada (issue #13) es esa llamada y nada mas:
+     * backlight_switch() corta la invalidacion del display cuando el panel
+     * queda oscuro. Se registra para que el test pueda mirarla. */
+    inv_calls++;
+    inv_last = en;
 }
 
 void * lv_disp_get_default(void) {
     return NULL;
+}
+
+int test_invalidation_calls(void) {
+    return inv_calls;
+}
+
+bool test_invalidation_last(void) {
+    return inv_last;
+}
+
+void test_invalidation_reset(void) {
+    inv_calls = 0;
+    inv_last = false;
 }
 
 /* Dispara el callback de idle que backlight_tick() registro (el timeout). */

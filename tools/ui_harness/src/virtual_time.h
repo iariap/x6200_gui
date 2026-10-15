@@ -38,3 +38,13 @@ void virtual_time_advance(uint64_t ms, uint32_t slice_ms);
  * per slice. No sleeps. */
 void virtual_time_advance_step(uint64_t ms, uint32_t slice_ms,
                                virtual_time_slice_cb_t on_slice, void *arg);
+
+/* Advance the clock by `ms` with LVGL's timer handler NOT running: only the
+ * tick and `on_slice` move. It is the ROM's main loop *asleep* (src/main.c:
+ * `usleep(sleep_time * 1000)` until the next timer it says is due), where the
+ * tick thread keeps calling lv_tick_inc() and the DSP thread keeps posting
+ * data, but no timer runs. The wakeup profile (wakeup_bench.c) measures the
+ * loop with it: running the handler here would run the timers during the sleep
+ * and count wakeups that the firmware does not have. */
+void virtual_time_advance_idle(uint64_t ms, uint32_t slice_ms,
+                               virtual_time_slice_cb_t on_slice, void *arg);

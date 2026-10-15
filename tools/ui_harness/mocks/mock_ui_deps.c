@@ -1,7 +1,7 @@
 /*
  *  Host stubs for everything the rendered GUI components call that is not a
  *  rendered component itself: the event bus, the message bars, voice, the
- *  Bluetooth/WiFi/backlight modules, the audio volume surface, the wfview
+ *  Bluetooth/WiFi modules, the audio volume surface, the wfview
  *  server, the audio-enhancement presets and the clocks.
  *
  *  Every stub has a documented, fixed answer. In particular get_time() reads
@@ -22,7 +22,6 @@
 
 #include "audio.h"
 #include "audio_enhancement.h"
-#include "backlight.h"
 #include "btaudio.h"
 #include "bt_state.h"
 #include "events.h"
@@ -265,7 +264,7 @@ void voice_say_text(const char *p, const char *x) { (void) p; (void) x; }
 void voice_say_lang(void) {}
 const char *voice_change(int16_t diff) { (void) diff; return NULL; }
 
-/* --- Bluetooth (off), WiFi (off), backlight -------------------------------- */
+/* --- Bluetooth (off), WiFi (off) ------------------------------------------- */
 
 bool bt_state_on(void) { return false; }
 bool bt_state_discoverable(void) { return false; }
@@ -283,9 +282,19 @@ wifi_status_t wifi_get_status(void)
     return WIFI_OFF;
 }
 
-void backlight_init(void) {}
-void backlight_tick(void) {}
-void backlight_set_brightness(int16_t value) { (void) value; }
-void backlight_set_buttons(buttons_light_t value) { (void) value; }
-void backlight_switch(void) {}
-bool backlight_is_on(void) { return true; }
+/* --- backlight -------------------------------------------------------------
+ * src/backlight.c is NOT stubbed: the real module is compiled into the harness
+ * (CMakeLists.txt, GUI_SRC). It is where the display-off route lives —
+ * backlight_switch() calls lv_disp_enable_invalidation(disp, false) — and the
+ * bench has to measure that route's effect on the render, not a copy of it
+ * (--display-off, tests/check_harness_natural.sh).
+ *
+ * Two things of the module cannot run on the host and are the explicit stubs
+ * below: the sysfs writes (the fds stay -1 on a PC, so the module's own writes
+ * are already no-ops) and the aether SDK's GPIO surface
+ * (`x6200_pin_light`/`gpio_safe_set()`, vendored header in third_party/ and
+ * src/gpio_safe.h). Neither is read back by the firmware. */
+
+int x6200_pin_light = 0;
+
+void gpio_safe_set(int pin, int value) { (void) pin; (void) value; }

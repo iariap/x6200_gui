@@ -4,7 +4,7 @@
 # deterministically, and correlates with the UI-07 increment-1 profile.
 #
 # Builds the harness (Docker image x6200-uiharness) and runs
-# fixtures/main-natural.scn four ways:
+# fixtures/main-natural.scn five ways:
 #   1. `--bench-natural` twice, with the same output paths: the PNG sha256 and
 #      the whole JSON must be byte-identical (the idempotency self-test: the
 #      natural section carries no wall clock at all);
@@ -14,7 +14,12 @@
 #   3. `--bench-natural --natural-static`: the delimitation control -- with the
 #      data drive off the spectrum/waterfall areas disappear, so the profiled
 #      areas cannot come from anything but the deterministic per-frame drive;
-#   4. `--bench-natural 10`: the CLI frame count overrides the fixture.
+#   4. `--bench-natural 10`: the CLI frame count overrides the fixture;
+#   5. `--bench-natural --display-off`: the ROM's own display-off route (the
+#      POWER key -> backlight_switch()) before the run. With the panel dark the
+#      whole 40-frame run has to invalidate and flush 0 px -- and its capture is
+#      exactly the full-screen repaint lighter -- which is how the gate locks
+#      that the blanked screen is not doing render work.
 # Then it checks the produced JSON against the profile (spectrum 132000 px per
 # FFT frame, waterfall 196000 px per row, clock 15840 px every 500 ms -- the
 # rectangles UI-07 increment 1 measured), against the radio's DSP cadence
@@ -75,9 +80,12 @@ run -lc "cd build && rm -rf out/natural && mkdir -p out/natural && \
         --bench-natural --natural-static >/dev/null 2>&1 && \
     ./ui_harness --scenario ../fixtures/$FIXTURE.scn \
         --png out/natural/cli.png --json out/natural/cli.json \
-        --bench-natural 10 >/dev/null 2>&1"
+        --bench-natural 10 >/dev/null 2>&1 && \
+    ./ui_harness --scenario ../fixtures/$FIXTURE.scn \
+        --png out/natural/off.png --json out/natural/off.json \
+        --bench-natural --display-off >/dev/null 2>&1"
 
-for f in natural run1 forced static cli; do
+for f in natural run1 forced static cli off; do
     [ -f "$OUT_DIR/$f.json" ] || fail "missing $OUT_DIR/$f.json"
 done
 
