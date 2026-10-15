@@ -203,4 +203,27 @@ caidas, TX/ROE si se midio, e issues abiertos.
 | Build pisando el A/B del otro | volumen de build compartido | avisar antes de compilar |
 | Editar un archivo recien cambiado | `FS_STALE_VERSION` / archivo "desaparecido" | releer antes de editar; verificar el commit del arbol |
 | Dar por muerto el fix del #44 | el JSON nuevo estaba en `/usr/share`, la GUI leia `/mnt` | medir en la radio, mirar `DATA` |
+| **Build desde un `git worktree` sin el submódulo `lvgl`** | el CMake falla (`lvgl does not contain a CMakeLists.txt`) o sale un binario **PIE de 776 KB** en vez del de 13.737.784 B | `git submodule update --init lvgl` en el worktree; y **verificar el tamaño/md5 del binario despues de cada build** (el de la GUI es 13.737.784 B; si pesa cientos de KB, algo falta) |
+| Mi `compila-gui.sh` escondia el error | mandaba la salida a /dev/null y decia "FALLO la compilacion" sin el motivo | al fallar un build, correr el `make` a mano con el log a un archivo |
 | El push rebota | el otro agente empujo a la misma rama mientras yo trabajaba (15/10 17:20) | `git pull --rebase fork lu2dsx/x6200-rom` y volver a pushear; los commits propios quedan encima de los de el |
+
+## Imagen de SD: armado, flasheo y conservar la DATA
+
+Cuando el owner pide la ROM en la SD (no alcanza el deploy por WiFi):
+
+1. **Build de la imagen** (con el arbol del port y el submodulo `lvgl` poblado): `make -j$(nproc)` en
+   el buildroot con `-v .wt-pruebas:/workspace_gui:ro`. Tarda minutos si los paquetes ya estan.
+   Verificar: `tar tvf /b/images/rootfs.tar ./usr/sbin/x6200_gui` → **13.248.936 B** (stripped) y no
+   los ~600 KB del binario roto.
+2. **Identificar la SD con evidencia**: `lsblk` → tiene que ser `removable=1`, del tamano de la
+   tarjeta, y con el **layout del X6200** (`p1` 31-32 MB vfat `BOOT`, `p2` 512 MB ext4 `rootfs`,
+   `p3` 3.2 GB vfat `DATA`). Nunca escribir en `nvme*`.
+3. **Flashear**: `dd if=sdcard.img of=/dev/sdX bs=4M conv=fsync` y **verificar leyendo de vuelta**:
+   `dd if=/dev/sdX ... | head -c <bytes> | md5sum` tiene que dar el md5 de la imagen.
+4. **La imagen trae 2 particiones** (MBR + p1 + p2, 545 MB): al flashear **desaparece la DATA**. Para
+   conservar los ajustes, volver a declarar `p3` con `start` = tamano de la imagen en sectores
+   (571473920/512 = **1116160**) y `size` = el resto de la tarjeta, **en el slot 3** (offset 478 del
+   MBR; si queda en el slot 4 la radio la ve como `p4` y no la monta). El host puede bloquear la
+   escritura al dispositivo: hacerlo desde un contenedor `--privileged -v /dev:/dev`.
+5. **Verificar la DATA**: `blkid /dev/sda3` → `TYPE=vfat LABEL=DATA` + montarla en ro y ver
+   `params.db` (106.496 B) y `themes/`.

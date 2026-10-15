@@ -1,0 +1,51 @@
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_rsynced
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_staging_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_target_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_images_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_host_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_built
+>>> x6200-gui custom Syncing from source dir /workspace_gui
+rsync -au --chmod=u=rwX,go=rX  --exclude .svn --exclude .git --exclude .hg --exclude .bzr --exclude CVS /workspace_gui/ /workspace/build/build/x6200-gui-custom
+>>> x6200-gui custom Configuring
+(mkdir -p /workspace/build/build/x6200-gui-custom/ && cd /workspace/build/build/x6200-gui-custom/ && rm -f CMakeCache.txt && PATH="/workspace/build/host/bin:/workspace/build/host/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"  /usr/bin/cmake /workspace/build/build/x6200-gui-custom/ -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="/workspace/build/host/share/buildroot/toolchainfile.cmake" -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_INSTALL_RUNSTATEDIR="/run" -DCMAKE_COLOR_MAKEFILE=OFF -DBUILD_DOC=OFF -DBUILD_DOCS=OFF -DBUILD_EXAMPLE=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TEST=OFF -DBUILD_TESTS=OFF -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON   )
+-- The C compiler identification is GNU 12.3.0
+-- The CXX compiler identification is GNU 12.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /workspace/build/host/bin/arm-buildroot-linux-gnueabihf-gcc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /workspace/build/host/bin/arm-buildroot-linux-gnueabihf-g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+CMake Error at CMakeLists.txt:13 (add_subdirectory):
+  The source directory
+
+    /workspace/build/build/x6200-gui-custom/lvgl
+
+  does not contain a CMakeLists.txt file.
+
+
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Found PkgConfig: /workspace/build/host/bin/pkg-config (found version "1.6.3") 
+-- Checking for modules 'libnm;dbus-glib-1;sqlite3;libpng;sndfile;libudev;libpulse;libpulse-simple;alsa;speexdsp'
+--   Found libnm, version 1.40.10
+--   Found dbus-glib-1, version 0.112
+--   Found sqlite3, version 3.40.1
+--   Found libpng, version 1.6.39
+--   Found sndfile, version 1.2.0
+--   Found libudev, version 243
+--   Found libpulse, version 16.1
+--   Found libpulse-simple, version 16.1
+--   Found alsa, version 1.2.8
+--   Found speexdsp, version 1.2.1
+-- Checking for module 'libdrm'
+--   Found libdrm, version 2.4.115
+-- Configuring incomplete, errors occurred!
+make[1]: *** [package/pkg-generic.mk:273: /workspace/build/build/x6200-gui-custom/.stamp_configured] Error 1
+make: *** [Makefile:23: _all] Error 2

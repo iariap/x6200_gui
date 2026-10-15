@@ -1,0 +1,6 @@
+Imagen: sdcard.img md5 25e38412aefc3293a288cf7317c964c2, 571473920 bytes, armada 2026-10-15 21:35 desde el port (commit 5ebe692, incluye los merges hasta #87)
+GUI dentro del rootfs: 13248936 bytes (la del port, no el binario roto de 776884)
+Flasheada a /dev/sda (3781.5 MB, removable=1, STORAGE DEVICE): dd bs=4M + verificacion por md5 leido de vuelta
+Particiones finales: sda1 2048 32M vfat BOOT | sda2 67584 512M ext4 rootfs | sda3 1116160 3.2G vfat DATA (UUID 1CC2-C434)
+DATA conservada: params.db 106496 bytes + themes/ (Holo.json, Material 3.json, RS)
+Nota: el build de la GUI fallaba por el submodulo lvgl vacio en el worktree; se poblo con git submodule update --init lvgl y el binario volvio a 13737784 B (md5 d9ccb7d4c224)

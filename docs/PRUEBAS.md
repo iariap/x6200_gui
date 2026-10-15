@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 15/10 ~18:45 | **imagen en la SD** (no deploy) | `5ebe692` (+ #87) | — | — | — | **Imagen armada y flasheada** (`sdcard.img` md5 `25e38412aefc…`, verificada leyendo de vuelta). La **DATA se conservó** (params.db + themes). Detalle en el anexo de imagen |
 | 15/10 ~18:15 | `main` desplegado a la radio | `main` = `e1476ec` | — | — | **la GUI no arranca** | **`main` no es desplegable en el X6200**: el binario pide `libRHVoice.so.5` (del rootfs del X6100). Restaurado el port (`d9ccb7d4c224`). Comentado en #86 |
 | 15/10 ~18:05 | (sin desplegar) | `main` = `e1476ec` | — | — | — | **El build de `main` en verde no produce el firmware** (776.884 B vs 13.737.784, PIE vs non-PIE, 0 simbolos x6100): issue #86. La radio no se toco |
 | 15/10 ~17:50 | `d9ccb7d4c224` | `c2f88e1` | TODO OK | **23 ok** | **1 crash al cerrar el SWR Scan** (el barrido de apps, 0) | **Funciona** con dos defectos: #64, #77 y #78/#80 validados, ROE de 40 m medida (1.4–1.9); salen **#84** (queda en LSB) y **#85** (crash al cerrar con el barrido corriendo) |
