@@ -30,7 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
-| 15/10 ~17:50 | `d9ccb7d4c224` | `c2f88e1` | TODO OK | **23 ok** | 0 en el barrido y 0 en 60 s | **Funciona**: #64, #77, #78/#80 validados y ROE de 40 m medida (1.4–1.9); sale el #84 |
+| 15/10 ~17:50 | `d9ccb7d4c224` | `c2f88e1` | TODO OK | **23 ok** | **1 crash al cerrar el SWR Scan** (el barrido de apps, 0) | **Funciona** con dos defectos: #64, #77 y #78/#80 validados, ROE de 40 m medida (1.4–1.9); salen **#84** (queda en LSB) y **#85** (crash al cerrar con el barrido corriendo) |
 | 15/10 ~17:10 | `d0ff2dba9c85` (sin cambios) | `1a56556` | TODO OK | no se corrió | **0 en 300 s** | **Sin desplegar (3ª)**: el volumen tiene 25 contenedores del arnés del otro agente; se dobló la vigilancia más larga (180 → 300 s) |
 | 15/10 ~16:40 | `d0ff2dba9c85` (sin cambios) | `122bea3` | TODO OK | no se corrió | no medido | **Sin desplegar (2ª)**: quedan `4e9b5f4` (#77), `072f2c7` (#79) y `122bea3` (#80); hay builds corriendo en el volumen |
 | 15/10 ~16:10 | `d0ff2dba9c85` (sin cambios) | `f6d1cb1` | TODO OK | no se corrió | 0 en 90 s | **Sin desplegar**: `4e9b5f4` (#77) queda pendiente, el volumen del build lo tiene el A/B del otro agente |
@@ -86,6 +86,21 @@ mode=0`. Evidencia:
    worktree no estaba y el `scp` falló en silencio. Se copió del árbol compartido.
 3. Los rótulos grises del gráfico llegan a **6.994** (unos 6 kHz por debajo de 7.000), aunque el barrido
    útil quedó entre 7.005 y 7.031.
+
+**Corrección de lo que informé primero:** dije "0 caídas" en esta corrida y **no era cierto**: hubo **un
+crash**, en el momento en que cerré la app del barrido con el barrido corriendo. Aparece en el log
+guardado (`x6200_log_2026-10-15_20-42-17.txt`) y no en el log vivo, que es el que mira
+`tools/verifica-radio.sh`, por eso el chequeo dio `TODO OK` igual. Firma y pila resuelta:
+
+```
+CRASHLOG sig=11 fallo=0x4 pc=0x4bf320 lr=0x4b2010 sp=0xbeda2c08 base=0x48ea64
+main+0x4ac -> scheduler_work+0x28 -> main_screen_close_app+0x14 -> dialog_destruct+0x74 -> apply_cmd+0x0
+```
+
+(Resuelta con `nm -n` y el símbolo más cercano: `addr2line` no da símbolos para este binario, que tiene
+symtab pero sin debug.) El barrido de las 23 apps cerró todas sin problema, así que se necesita **el
+barrido corriendo**. Reportado en [#85](https://github.com/iariap/x6200_gui/issues/85). Evidencia:
+[`crash-swrscan-al-cerrar.txt`](evidencia/2026-10-15-validacion-arreglos/crash-swrscan-al-cerrar.txt).
 
 ---
 

@@ -101,6 +101,7 @@ tools/prueba-gui-en-radio.sh      # copia el binario y las liblv*.so*
 | Estado general | `tools/verifica-radio.sh` | `TODO OK` (assets, dispositivos de entrada, sink de PulseAudio, sin crashes, 0 errores de archivo) |
 | Barrido de apps | `PERMANENCIA=14 tools/prueba-apps-radio.sh` | `0` caidas; informa 22 de 23 (el SWR Scan no se puede abrir por remoto, issue #78) |
 | Vigilancia de crashes | contar el PID y los logs por 180 s | PID estable, 0 logs nuevos |
+| Crash que mató la corrida anterior | `grep -ac 'CRASHLOG sig'` en los **app_logs nuevos** de `/mnt/app_logs`, no sólo en el log vivo | `verifica-radio` mira `/tmp/x6200_log.txt`: un crash que termina la corrida queda en el log guardado y el chequeo igual dice TODO OK (pasó el 15/10 17:42) |
 | Captura de pantalla | `tools/captura-radio.sh salida.png [x1 y1 x2 y2]` | PNG con colores reales (no negro) |
 | Sin radio (banco) | skill `pruebas-sin-radio` | para ver UI sin ocupar el equipo |
 
