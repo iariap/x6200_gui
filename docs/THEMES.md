@@ -122,6 +122,18 @@ dejar roles sin definir los heredaba de `Classic`, que trae blancos, celestes y 
 del issue además nombraba tres claves que ya no existen en el esquema (`strip`, `mode_bg`,
 `mode_text`, podadas en #77): incluirlas habría dejado el tema con colores desconocidos.
 
+**Alcance real en la pantalla.** El motor de temas JSON colorea los roles que el firmware ya lee:
+el fondo (`bg`), la fila de frecuencia (`text`), los bordes de panel (`panel_border`), la paleta
+del waterfall, los items del info box (`bar`), los switches/sliders de Ajustes
+(`control_border`/`panel`) y el recolor del botón activo/deshabilitado. Las cajas de la barra
+superior (reloj, S-meter), los botones inferiores y el marco de los diálogos todavía se dibujan
+con las imágenes fijas `images/top_*_dark.bin`, `btn_dark.bin` y `dialog_dark.bin`
+(`src/styles.c:393-423`, `setup_theme_simple`), así que quedan en el gris azulado del asset en
+**todos** los temas: RS, Material 3, Holo y Redshift renderizan ese marco idéntico (medido: el
+fondo del diálogo de Ajustes es `#3c505c` bajo RS, bajo el tema por defecto y `#3b4e59` bajo
+Redshift). Es un hueco preexistente del motor —documentado en el commit que agregó el sistema
+JSON— y migrarlo es un refactor aparte, fuera del alcance de un tema suelto.
+
 Pares medidos (WCAG 2.1, sRGB) para los roles de la identidad, todos por encima del umbral:
 
 | Par (fg sobre bg) | Ratio | Mínimo |
