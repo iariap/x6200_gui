@@ -3287,3 +3287,173 @@ los mismos PNG (`8ec63121…`, `3986bc9a…`, `c1c66701…`); los JSON sólo dif
 Evidencia commiteada de la corrida: `tools/ab_testing/reports/AB-ECO13/`
 (compare A/B), `tools/ab_testing/reports/WAKEUPS-ECO13/` (perfil de wakeups) y
 `tools/ab_testing/reports/NATURAL-UI07-N1/off.json` (pantalla apagada).
+
+## eco-final: tick sin hilo, cadencia ECO del espectro y corte del redibujo offscreen (#13) ✅
+
+Aplica las tres decisiones del owner sobre los tres pendientes que dejó la corrida
+anterior: (2) `LV_TICK_CUSTOM` con `CLOCK_MONOTONIC` — el hilo del tick se
+elimina; (3) el wiring del espectro al perfil (cadencia ECO); (4) el corte del
+redibujo offscreen de la cascada con la pantalla apagada. No toca `lvgl/`
+(pinned `74d0a816`), audio, fuentes libres ni DSP/RF/TX.
+
+### Decision 2 — el hilo del tick desaparece (`lv_conf.h` del proyecto + `src/main.c`)
+
+`lv_conf.h` (el del **proyecto**, no el de `lvgl/`) pasa a `LV_TICK_CUSTOM 1` con
+`LV_TICK_CUSTOM_INCLUDE <time.h>` y una expresión de milisegundos monotónicos
+(`clock_gettime(CLOCK_MONOTONIC)`), la misma fuente que `get_time()`
+(`src/util.cpp`). El hilo `while (1) { usleep(5 * 1000); lv_tick_inc(5); }` sale
+de `src/main.c`. La resolución no cambia: 1 ms monotónicos, los mismos que el
+hilo declaraba con `lv_tick_inc(5)` cada 5 ms.
+
+| medición (fixture `main-natural`, seed 13, ventana 1000 ms) | antes (ec89fc3) | ahora |
+|---|---|---|
+| wakeups del hilo del tick | 200 (5 ms, 93.5% de las dos fuentes) | **0** (no existe) |
+| wakeups del lazo de la ROM, con / sin datos | 14 / 11 | **14 / 11** (el lazo no cambia) |
+| `tick_custom` en el perfil | — | `true` |
+
+El modo `--bench-wakeups` **refleja el modo**: el CMake del arnés deriva
+`HARNESS_ROM_TICK_CUSTOM` del `lv_conf.h` de la ROM y el perfil declara
+`tick_custom: true`, `tick_thread_ms: 0`, `tick_thread_wakeups: 0`. El gate
+`tests/check_harness_wakeups.sh` (vía `tests/wakeup_evidence.py`) sigue leyendo de
+fuentes: con la macro exige el `tick_custom` y los 0 wakeups de tick **y** la
+coherencia de la fuente (`time.h` + `clock_gettime` + `CLOCK_MONOTONIC` en
+`lv_conf.h`); sin la macro sigue validando el hilo (cadencia leída de
+`src/main.c`), así que revertir la decisión no deja el gate ciego. El arnés no
+usa su propio tick (avanza LVGL con `lv_tick_inc` desde el reloj virtual), por eso
+su `lv_conf.h` queda en `LV_TICK_CUSTOM 0`.
+
+### Decision 3 — cadencia ECO del espectro (`src/spectrum.c` + el wiring de `visual_policy`)
+
+`spectrum_set_refresh_period(frames)` + un contador en `spectrum_refresh()`: con
+el perfil en ECO/CRITICAL el espectro dibuja 1 de cada `VP_SPECTRUM_ECO_PERIOD`
+(= 4) refrescos; con QUALITY/BALANCED dibuja siempre (período 1). Es el mismo
+mecanismo del modo Ahorro del waterfall, y el borde de bajada queda cubierto
+porque al volver el período a 1 el próximo refresco dibuja (ningún frame queda en
+deuda). El wiring nuevo, `visual_policy_spectrum_apply()`, va en los **mismos dos
+puntos** que el del waterfall (`src/radio.c` en `apply_visual_profile`/boot y
+`tools/ui_harness/src/screens.c`), así que la decisión del banco y la de la radio
+no pueden divergir; el test nativo fija la tabla perfil → período contra el stub
+que registra `spectrum_set_refresh_period`.
+
+Medido en `--bench-natural` sobre `main-natural-eco` (seed 13, 40 frames; 11.2 V
+sin fuente = ECO), con los píxeles del banco:
+
+| medición | QUALITY (`main-natural`) | ECO (`main-natural-eco`) |
+|---|---|---|
+| redibujos del espectro (132000 px c/u) | 16 | **4** (1 de cada 4) |
+| redibujos de la cascada (196000 px c/u) | 23 | 5 |
+| `natural.totals.invalidated_px` | 6745720 | **1758360** |
+| `natural.totals.invalidated_rects` | 45 | 20 |
+| `metrics.flushed_pixels` | 7873400 | 2754040 |
+
+La pieza del espectro baja los redibujos del espectro de 16 a 4 (−75%) y el total
+ECO de **3474360 px** (el ECO de la corrida anterior, sólo cascada) a **1758360 px**
+(−49.4%; −73.9% contra QUALITY). El reparto de rectángulos vecinos se reagrupa
+como ya se había medido con la cascada (LVGL fusiona por ciclo de refresh), pero
+el trabajo del **espectro** es lo que mueve: sus rectángulos caen de 16 a 4 y el
+reloj/cascada mantienen sus eventos.
+
+### Decision 4 — el redibujo offscreen de la cascada con la pantalla apagada (`src/waterfall.c`)
+
+`refresh_waterfall()` hacía `redraw_cb(NULL)` —la paleta de 800 × height px,
+~196000 px— **antes** de invalidar; con el display apagado la invalidación es nop
+pero el trabajo offscreen ya había ocurrido. Ahora la cascada lo **saltea mientras
+`backlight_is_on()` es false** (el mismo estado que `backlight_switch()` pone junto
+a `lv_disp_enable_invalidation(false)`, `src/backlight.c`), y al volver la pantalla
+la próxima fila redibuja con la caché al día. El instrumento es
+`waterfall_offscreen_redraw_count()` (cuenta los `redraw_cb` que efectivamente
+corrieron) y lo reporta el banco natural como `waterfall_offscreen_redraws`.
+
+| 40 frames con el drive andando | pantalla encendida | pantalla apagada |
+|---|---|---|
+| `natural.waterfall_offscreen_redraws` | **24** (una por fila) | **0** |
+| `natural.totals.invalidated_px` / `flushes` | 6745720 / 45 | 0 / 0 |
+| `metrics.flushes` / `flushed_pixels` (captura) | 6 / 1127680 | 5 / 743680 |
+
+Las filas siguen llegando igual (`waterfall_rows = 24`): lo que desaparece es el
+cómputo de la paleta. La captura sigue siendo la misma imagen, 384000 px más
+liviana. En el test nativo, `tests/native/test_backlight.c` fija que el estado que
+consume la cascada (`backlight_is_on()`) sigue al switch (false al apagar, true al
+encender): si el apagado dejara el estado en true, la cascada seguiría trabajando y
+el test queda rojo.
+
+### Gates (salida real, HEAD `ce6410b`)
+
+```text
+$ tests/check_harness_determinism.sh           # 33 fixtures x 2 corridas
+main-natural-eco: 6297ef99d8b3babfd844749206afb87aaf59e7c52b5830446a46170357b01292
+main-natural: 3986bc9a6047744aa2cd8db1c9879d73e71e16e45d7737b0d7035c06e22ec821
+PASS: deterministic (identical PNGs for every fixture)
+# los 33 sha256 son identicos a los del tip base baf6164: ni el tick sin hilo, ni
+# la cadencia ECO del espectro, ni el corte offscreen mueven un pixel de la
+# captura comun.
+
+$ tests/check_harness_natural.sh                # SKIP_BUILD=1
+  profile: spectrum 132000 px x 16 frames, waterfall 196000 px x 23 rows, clock 15840 px x 1 tick(s)
+  natural totals: invalidated 6745720 px in 45 rectangles / 45 flushes over 37/40 frames
+  delimitation: drive off -> 304760 px (4.5% of the 6745720 px with the drive), only clock/BT/band-info rectangles
+  forced mode: 3 frames x 1 flush x 384000 px (natural: 6745720 px in 40 frames)
+  CLI override: --bench-natural 10 ran 10 frames (the fixture says 40)
+  display off: 0 px in 40 frames (against 6745720 px lit) and a capture 384000 px lighter
+PASS: natural bench deterministic, profiled and delimited (main-natural)
+  png sha256: 8ec631215c28e27fb901f186273fe6afa0fd6b9470550cf810cb1988f84273fd
+
+$ tests/check_harness_wakeups.sh                # SKIP_BUILD=1
+  loop: 14 wakeups with the data drive (11 without it) in 1000 ms; sleeps 10-200 ms
+  tick thread: none (LV_TICK_CUSTOM, lv_conf.h: CLOCK_MONOTONIC) = 0 wakeups in 1000 ms
+  window override: --bench-wakeups 3000 ran 3000 ms with 31 loop wakeups (the default window: 1000 ms)
+  plain capture: no `wakeups` block (the mode is additive) and its 1127680 px settle plus the two passes add up to the run's flushed pixels
+PASS: wakeup profile measured, sourced and delimited (main-natural)
+  png sha256: c1c66701b47c8926adbb37221406705404e82be85c574ce8108c71d3dd6428ae
+
+$ uv run x6200-ab compare --a baf6164 --b HEAD --experiment-id AB-ECOFINAL
+experiment AB-ECOFINAL: PASS (exit 0)
+  Functional PASS · Visual Regression PASS (captures are pixel-identical to the baseline)
+  Quality Contract PASS (352 contract checks) · Performance PASS · Hardware BLOCKED · Energy BLOCKED
+  33/33 escenarios: changed_pixels 0
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts ce6410bc1c3e: PASS — 352 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited ce6410bc1c3e: 16 known issues — 0 reproduced, 14 unverified; structural inspection REAL
+over 3861 objects on 33 scenario(s): 0 structural finding(s)
+
+$ uv run pytest -m "not e2e" -q    -> 187 passed, 18 deselected
+$ uv run pytest -m e2e -q          -> 18 passed, 187 deselected in 135.86s
+$ tests/native/run_native_tests.sh -> 810 comprobaciones, 0 fallos + 7, 0 fallos (clock) + 25, 0 fallos
+  (backlight: +2 sobre las 23 de UI-08 incr. 4: el estado que consume la cascada sigue al switch)
+$ 6 chequeos estaticos (check_cfg_fills, check_actions, check_settings_focus,
+  check_apps_menu, check_app_handlers, check_wcag) -> PASS
+$ cd tools/ab_testing && uv run ruff check . && uv run ruff format --check . && uv run ty check $(find src tests -name '*.py')
+  -> All checks passed! / 114 files already formatted / All checks passed!
+```
+
+Reproducibilidad **x3**: tres corridas de `--bench-natural` (QUALITY), de
+`--bench-natural --display-off` y de `--bench-natural` sobre `main-natural-eco`
+dan los mismos números (6745720 px / offscreen 24; 0 px / offscreen 0; 1758360 px /
+offscreen 6) y los mismos PNG; los JSON sólo difieren en `png_path`/`png_bytes`.
+
+Evidencia commiteada de la corrida: `tools/ab_testing/reports/AB-ECOFINAL/`
+(compare A/B), `tools/ab_testing/reports/NATURAL-ECOFINAL/` (banco natural,
+pantalla apagada y el ECO) y `tools/ab_testing/reports/WAKEUPS-ECOFINAL/` (perfil
+de wakeups del tick sin hilo). Los directorios `*-ECO13` / `NATURAL-UI07-N1`
+quedan como evidencia histórica de la corrida anterior.
+
+### PENDIENTES honestos
+
+1. **El costo del wakeup y la energía del Cortex-A7 siguen BLOCKED**: el banco
+   mide cuentas, no tiempos en un wakeup (host x86). Con el hilo del tick
+   eliminado, la pasada física del canal de bugs (#15) confirmaría latencia y
+   consumo, como con cualquier cambio de cadencia global.
+2. **La cadencia ECO del espectro es una decisión de producto no calibrada**: el
+   período (4, como el waterfall) es un default de ingeniería; el canal físico
+   ajusta si el ECO deja el panel demasiado "quieto".
+3. **`update_check`/voz dependen del tick**: con `LV_TICK_CUSTOM` el tick ya no lo
+   alimenta un hilo, sino el reloj monotónico; los timers de LVGL y las esperas de
+   `get_time()` corren sobre la misma fuente (no hay cambio esperado), pero la
+   pasada física de latencia de audio/voz queda como verificación del canal.
+4. **El corte offscreen no instrumenta escrituras a sysfs**: `backlight_is_on()`
+   es el estado en memoria del módulo; la confirmación de que el GPIO no escribe
+   con el panel oscuro es del canal físico.
+
