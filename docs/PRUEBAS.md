@@ -88,6 +88,30 @@ Es el mejor barrido registrado: en versiones anteriores caían 5 a 8 apps por ba
   [`errores-field-ops.txt`](evidencia/2026-10-15-validacion-arreglos/errores-field-ops.txt) y
   [`06-field-ops.png`](evidencia/2026-10-15-validacion-arreglos/06-field-ops.png).
 
+**Transmisión: intento, y no se pudo medir.** Con la antena de 40 m ya conectada y autorización del
+dueño (QRP, 40 m) se intentó disparar el **barrido de ROE**, que es el único camino de transmisión de
+las apps (`Run` → `radio_start_swrscan()` → 3 W en LSB; `codigo: src/radio.c:667-690`). **No se
+transmitió**, porque la app no se puede abrir por el control remoto:
+
+```
+$ for n in SWRSCAN Swrscan swrscan "SWR Scan" SWR; do
+    ssh root@radio "/tmp/x6200-remote '{\"cmd\":\"app\",\"text\":\"$n\"}'"; done
+  'SWRSCAN'  -> {"t":"err","err":"Unknown app"}
+  'Swrscan'  -> {"t":"err","err":"Unknown app"}
+  'swrscan'  -> {"t":"err","err":"Unknown app"}
+  'SWR Scan' -> {"t":"err","err":"Unknown app"}
+  'SWR'      -> {"t":"err","err":"Unknown app"}
+```
+
+Que **no hubo emisión** está medido, no supuesto: el log de la radio no registra TX y el estado quedó
+igual antes y después (`7.1001 MHz LSB 40m SSB pwr=50`). El defecto quedó reportado (issue
+[#78](https://github.com/iariap/x6200_gui/issues/78), previa búsqueda de duplicados).
+
+Antes de intentarlo se acotó el barrido: `swrscan_span` pasó de **200000** a **50000** Hz (el log de
+arranque lo confirma: `Loaded swrscan_span=50000`), así que con el dial en 7.100 el barrido quedaría
+en 7.05–7.15, dentro de 40 m. Evidencia:
+[`08-swrscan-tx.png`](evidencia/2026-10-15-validacion-arreglos/08-swrscan-tx.png).
+
 ## 15/10 ~14:05 — `5a6e561e502f` (commit `e5a869b`)
 
 **Qué se probó:** la primera compilación **limpia** (el build incremental dejaba un binario viejo:
@@ -113,7 +137,11 @@ a mano, el medidor pasó a `#f08080` y **3.64:1**. Quedó documentado en el issu
 
 | Pendiente | Por qué no está fundado | Qué haría falta |
 |---|---|---|
-| **Transmisión (TX) y RF** | Todas las corridas fueron de recepción y UI. La antena se conectó el 15/10 cerca de las 15:40, según el dueño. | Autorización explícita del dueño y una prueba con potencia mínima (barrido de ROE, un ciclo de WSPR) |
+| **Transmisión (TX) y RF** | Intentado el 15/10 y **no medido**: la app del barrido de ROE no se puede abrir por el control remoto (issue #78), así que `radio_start_swrscan()` nunca corrió. La antena es de 40 m. | Que el remoto pueda abrir esa app; después, un barrido de ROE con la potencia al mínimo |
 | **Estabilidad de horas** | La vigilancia más larga fue de 180 s. | Dejar la radio corriendo y contar caídas por hora |
 | **El #63 con spots reales decodificados** | Se abrió WSPR y quedó viva, pero no se esperó un ciclo completo con decodificación. | Dejarla en WSPR varios ciclos y mirar el log |
-| **El barrido dice 22 y el menú tiene 23 botones de app** | El log del barrido informa 22 `ok`; no se investigó la diferencia. | Revisar la lista del barrido contra el menú de apps |
+
+**Cerrado de este anexo:** *"el barrido dice 22 y el menú tiene 23"* — medido: el que falta es el
+**SWR Scan**, que no está en la lista de apps del control remoto (`src/remote_server.cpp:285-292`,
+12 entradas; probadas 5 variantes del nombre, todas `Unknown app`). Ver issue
+[#78](https://github.com/iariap/x6200_gui/issues/78).
