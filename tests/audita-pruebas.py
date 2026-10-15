@@ -35,10 +35,12 @@ lineas = texto.splitlines()
 
 # --- secciones y tabla
 secciones = re.findall(r"^## .*?`([0-9a-f]{12})`", texto, re.M)
-# Solo la tabla de resumen: es la que esta antes de la primera seccion (## ). Asi no cuenta los
-# md5 de ejemplo de la tabla "como se registra una corrida".
-corte = next((i for i, l in enumerate(lineas) if l.startswith("## ")), len(lineas))
-resumen = [l for l in lineas[:corte] if l.startswith("| ") and re.search(r"`[0-9a-f]{12}`", l)]
+# Solo la tabla que esta debajo del encabezado "## Resumen" (no los md5 de ejemplo de la tabla
+# "como se registra una corrida", que esta mas arriba).
+ini = next((i for i, l in enumerate(lineas) if l.startswith("## Resumen")), None)
+fin = next((i for i, l in enumerate(lineas) if ini is not None and i > ini and l.startswith("## ")), len(lineas))
+resumen = [l for l in lineas[ini:fin]] if ini is not None else []
+resumen = [l for l in resumen if l.startswith("| ") and re.search(r"`[0-9a-f]{12}`", l)]
 en_tabla = re.findall(r"`([0-9a-f]{12})`", "\n".join(resumen))
 
 if not en_tabla:
