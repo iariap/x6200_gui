@@ -43,6 +43,46 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 ---
 
+---
+
+## 15/10 ~19:00 — la imagen flasheada: `cb2da072b7b0` (commit `5ebe692`, imagen `25e38412aefc…`)
+
+**Qué se probó:** la **imagen nueva**, arrancada desde la SD flasheada (no un deploy por WiFi).
+
+**Arranque y datos, medido:**
+
+```
+$ ssh root@192.168.18.67 'md5sum /usr/sbin/x6200_gui; cut -d" " -f1 /proc/uptime'
+  cb2da072b7b0            (el GUI de la imagen)
+  30.14                   (uptime: arranque limpio)
+$ df -h /mnt
+  3.2G montado, 3.1G libre      (la particion DATA que volvi a declarar, montada)
+$ sqlite3 /mnt/params.db ...
+  theme_name=Outdoor   cw_tune|cw_decoder|key_train=0|0|0   swrscan_span=50000
+```
+
+O sea: **el flasheo y la conservación de la DATA funcionaron** (los ajustes del owner intactos).
+Barrido de apps: **23 ok, 0 caídas**. `verifica-radio`: **1 comprobación falló** (no llegué a ver cuál;
+el chequeo de crashes dio OK).
+
+**Y el defecto que apareció: flickering y CPU alta (issue [#89](https://github.com/iariap/x6200_gui/issues/89)).**
+
+Causa medida: **dos scripts de init arrancan el mismo daemon** —`/etc/init.d/S20gui` (del repo, commit
+`29c5896`) y `/etc/init.d/S95gui` (**no está en el repo**: resto del rootfs del vendor)— → **dos
+`x6200_daemon`** → **dos `x6200_gui`, los dos con `/dev/fb0` abierto** → parpadeo.
+
+```
+  pid 295/533  {x6200_daemon}      pid 307/542  /usr/sbin/x6200_gui  (fd 3 -> /dev/fb0)
+  CPU: x6200_gui 542 ~20.7% | x6200_gui 307 ~23.3% | kworker/u8:2-events_unbound ~97.7%
+  /dev/fb0: 24 lecturas -> 6 hashes distintos; entre dos cuadros distintos cambia el 10.4%
+```
+
+**Por qué nunca se vio con los deploys por WiFi:** `tools/prueba-gui-en-radio.sh` copia el binario y las
+`liblv*.so*`, **no** `/etc/init.d/` → este defecto sólo aparece al arrancar una imagen flasheada.
+
+Evidencia: `docs/evidencia/2026-10-15-validacion-arreglos/flicker/` (medición + 2 cuadros + GIF).
+**No se midió la ROE** en esta corrida (se priorizó el flicker que pidió el owner).
+
 ## 15/10 ~17:50 — `d9ccb7d4c224` (commit `c2f88e1`): despliegue y validación
 
 **Qué se hizo:** build limpio + deploy + la batería de validación que pidió el owner.
