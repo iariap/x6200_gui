@@ -138,6 +138,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "bt-dialog-tema-aurora",
         "bt-dialog-tema-redshift",
         "bt-dialog-tema-sunlit",
+        "bt-dialog-tema-trail",
         "home-bateria-externa",
         "home-frecuencia-extrema",
         "home-usb-20m",
@@ -165,6 +166,10 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "main-tema-sunlit-agua",
         "main-tema-sunlit-eco",
         "main-tema-sunlit-tx",
+        "main-tema-trail",
+        "main-tema-trail-agua",
+        "main-tema-trail-eco",
+        "main-tema-trail-tx",
         "main-tema-vision",
         "main-tema-vision-cwr",
         "main-tema-vision-usbd",
@@ -177,6 +182,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "settings-tema-aurora",
         "settings-tema-redshift",
         "settings-tema-sunlit",
+        "settings-tema-trail",
         "settings-wfbat",
     ]
     # Every fixture builds one of the screens the harness knows; the theme

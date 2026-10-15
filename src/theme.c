@@ -28,9 +28,9 @@ static const char *themes_dir(void) {
     return p && *p ? p : THEMES_DIR;
 }
 
-/* Los temas que vienen con la ROM: Holo, Material 3 y RS (con sus imágenes), Redshift, Sunlit y
- * Aurora. Se buscan en los dos directorios: el de DATA primero, así un tema del usuario con el
- * mismo nombre gana. */
+/* Los temas que vienen con la ROM: Holo, Material 3 y RS (con sus imágenes), Redshift, Sunlit,
+ * Aurora y Trail. Se buscan en los dos directorios: el de DATA primero, así un tema del usuario
+ * con el mismo nombre gana. */
 #ifndef THEMES_DIR_SHIPPED
 #define THEMES_DIR_SHIPPED "/usr/share/x6200/themes"
 #endif

@@ -1,0 +1,34 @@
+# settings-tema-trail: the real Ajustes window under the shipped "Trail" theme,
+# scrolled to the Apariencia group (the same path and state as settings-perfil:
+# main_screen_action(ACTION_APP_SETTINGS) -> dialog_construct -> dialog_settings.c,
+# then "Mas >" + "Apariencia"). The theme is the only variable, so the dialog,
+# panel, row and label roles of Trail are measured on a real render.
+
+name settings-tema-trail
+screen settings-perfil
+
+theme Trail
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 11.2
+external_v 0
+battery_cap 50
+charging false
+
+rxtx rx
