@@ -49,3 +49,12 @@ regions:
   - name: reloj_potencia
     rect: [591, 0, 209, 62]
     description: "Reloj de potencia (clock.c, CLOCK_POWER): simbolo de bateria y tensiones en la esquina superior derecha"
+
+  # El dialogo de Ajustes se dibuja sobre la pantalla principal: la region del
+  # campo Año (fila Day/Month/Year de src/dialog_settings.c, el spinbox de 4
+  # cifras) vive dentro de `espectro` y sin una region propia el diff de UI-016
+  # se atribuiria a toda la banda del espectro. La caja del campo es 691..784
+  # (94x56) en el render del arnes; la region la cubre con un pixel de margen.
+  - name: ajustes_anio
+    rect: [689, 98, 98, 60]
+    description: "Campo Año del dialogo de Ajustes (dialog_settings.c, fila Day/Month/Year) sobre el arnes"

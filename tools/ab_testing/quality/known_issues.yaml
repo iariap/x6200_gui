@@ -311,21 +311,34 @@ issues:
     title: "Ajustes: el campo Año recorta 4 px el valor de 4 digitos"
     severity: minor
     fixture: settings-home
-    status: verified
+    region: ajustes_anio
+    status: fixed
     note: >
-      La etiqueta del spinbox del año ("2026", sony_36) mide 84 px de texto
-      natural y el area de contenido del spinbox (SMALL_2 = 93 px menos padding y
-      borde) le deja 80: los ultimos 4 px del ultimo digito quedan recortados.
-      Medido en la inspeccion estructural (nodo 0/41/0/3/0: text_natural.w 84
-      contra el box visible de 80; `text_overflow` NO lo ve porque mide contra el
-      box sin recortar). Detector: la regla `layout_clipped` sobre la fixture
-      `settings-home`. Fix (fuera del alcance de esta corrida): ensanchar el campo
-      del año o bajar su fuente, el idioma que UI-012 uso con la celda del VFO.
+      La etiqueta del spinbox del año ("2026", sony_36) medía 84 px de texto y el
+      area de contenido de la caja de 2 columnas (SMALL_2 = 93 menos el padding
+      horizontal del textarea, 11 px por lado, y el borde) le dejaba 67: los
+      ultimos 4 px del ultimo digito quedaban recortados contra el borde. Medido en
+      la inspeccion estructural (text_natural.w 84 contra el box visible de 80;
+      `text_overflow` NO lo veia porque mide contra el box sin recortar).
+      FIX (AB-UI016-T1): en src/dialog_settings.c el campo Año baja su padding
+      horizontal al de la grilla (SMALL_PAD; el padding del textarea es para el
+      cursor y un spinbox no edita texto libre) y toma el ancho que piden sus 4
+      cifras con la fuente vigente, medido en runtime con lv_txt_get_size (el mismo
+      idioma que el resto del codigo usa para medir labels, sin un ancho clavado).
+      Medido: la caja pasa de 93 a 94 px, la etiqueta queda 696,113 84x28 y su box
+      visible es 84x28 (ya no se recorta); Dia y Mes no se tocan. La excepcion
+      acotada de `layout_clipped` en quality/contracts.yaml se retiro en el mismo
+      cambio: sin waiver, una reaparicion vuelve a fallar la corrida. El fix mueve
+      pixeles solo dentro de `ajustes_anio` (regions.yaml), declarado en
+      `expected_changes`.
     evidence:
       - "tools/ui_harness/fixtures/settings-home.scn"
-      - "inspeccion estructural: nodo 0/41/0/3/0 lv_label '2026' 84x28 visible 80x28 (lost 4x0)"
-      - "audit HEAD --suite visual: 1 x layout_clipped [settings-home]"
-      - "tools/ab_testing/quality/contracts.yaml (excepcion de layout_clipped [settings-home], until 2027-03-31)"
+      - "inspeccion estructural ANTES (ccfe1f5): lv_label '2026' 704,113 84x28 visible 704,113 80x28 (lost 4x0), spinbox 691,100 93x56"
+      - "inspeccion estructural DESPUES (fix): lv_label '2026' 696,113 84x28 visible 696,113 84x28, spinbox 691,100 94x56"
+      - "src/dialog_settings.c (ancho_campo_cifras + el campo Año: pad_hor SMALL_PAD y ancho medido)"
+      - "audit HEAD --suite visual: 0 structural findings (sin el waiver de UI-016)"
+      - "tools/ab_testing/reports/AB-UI016-T1/ (capturas A/B, diff, overlay, results.json)"
+      - "tools/ab_testing/quality/contracts.yaml (excepcion de layout_clipped retirada; expected_change acotado a `ajustes_anio`)"
 
   # --- Seeds from the repository history: recorded, not yet reproduced. -------
   # They stay unverified until the harness can reproduce them (pixel-region

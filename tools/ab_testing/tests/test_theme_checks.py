@@ -116,19 +116,17 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
     src/params/types.h) holds the 31 characters `theme_list()` admits, so
     `theme_name_fits_params` passes on its own fixture and the dated waiver went
     away with the fix (UI-04/AB-UI04-EXP4) — UI-011's waiver was withdrawn in
-    EXP-1, UI-012's in EXP-2 and the UI-010 region exclusion in EXP-3. The
-    invariant is not "no waivers": it is that a waiver is never global and never
-    permanent, and that the defect it holds back is recorded. The three that exist
-    now are the Ajustes window's real findings (UI-015, UI-016), which this run
-    only measures. Each one names exactly one rule and one fixture (no `path`
-    shadow, so it cannot hide another node), carries a reason, an author and an
-    expiry, and its reason names the open known issue that documents it.
+    EXP-1, UI-012's in EXP-2, the UI-010 region exclusion in EXP-3 and UI-016's
+    `layout_clipped` in AB-UI016-T1. The invariant is not "no waivers": it is that
+    a waiver is never global and never permanent, and that the defect it holds back
+    is recorded. The two left are the Ajustes window's remaining real finding
+    (UI-015, the controls below the 44px field-UX target). Each one names exactly
+    one rule and one fixture (no `path` shadow, so it cannot hide another node),
+    carries a reason, an author and an expiry, and its reason names the open known
+    issue that documents it.
     """
     exceptions = real_quality.contracts.exceptions
-    assert {exception.rule for exception in exceptions} == {
-        "layout_clipped",
-        "layout_touch_target",
-    }
+    assert {exception.rule for exception in exceptions} == {"layout_touch_target"}
     assert {exception.fixture for exception in exceptions} == {"settings-home", "settings-wfbat"}
     for exception in exceptions:
         assert exception.path is None
