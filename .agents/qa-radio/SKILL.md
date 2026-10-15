@@ -18,7 +18,18 @@ Nace de la rutina que pidio el dueño el 2026-10-15 y de los errores que ya se c
 4. Vale la regla del proyecto: *todos los hallazgos deben estar fundados, si no se pueden fundar no debe
    ser un hallazgo* (ver el skill `hallazgos-fundados`).
 5. La radio y la estacion son del dueño: no se transmite sin su autorizacion y se deja todo como estaba.
-6. **SOLO SE MONITOREA Y SE REPORTA** (regla del dueño, 15/10 17:30, en mayusculas). No se arregla el
+6. **TODAS LAS PRUEBAS SE HACEN EN LA RADIO** (regla del owner, 15/10 18:30). No se prueba en el
+   banco ni en QEMU: se compila, **se despliega a la radio** y se prueba ahi. O sea: cada build termina
+   en un deploy. Y lo que se prueba es **lo ultimo mergeado**: el tip de la rama de integracion
+   (`lu2dsx/x6200-rom`), que es donde entran los PRs.
+   **Ojo con `main`**: `fork/main` es la linea ORIGINAL del X6100 (hoy `e1476ec`), NO tiene los archivos
+   del port y **desplegarla deja la radio sin GUI**: medido el 15/10 18:18, el binario que produce el
+   build de `main` no arranca en el X6200 (`error while loading shared libraries: libRHVoice.so.5`).
+   Si el owner pide probar `main`, avisarle esto ANTES de desplegar.
+   **Antes de cada deploy, guardar el par que funciona** (`.rollback/x6200_gui-port` y
+   `.rollback/liblvgl.so-port`): si el deploy deja la GUI muerta, restaurar los dos archivos y
+   `kill -9 $(pidof x6200_gui)` para que el daemon relance.
+7. **SOLO SE MONITOREA Y SE REPORTA** (regla del dueño, 15/10 17:30, en mayusculas). No se arregla el
    firmware (`src/`, `rootfs/`), **no se tocan los ajustes de la radio** (params, temas, archivos de
    `DATA`) y **no se ofrecen arreglos**: el entregable es el reporte y, si algo falla, el issue. Lo unico
    que este rol escribe son los documentos del QA: el reporte al dueño, `docs/PRUEBAS.md`, la evidencia
@@ -103,7 +114,7 @@ tools/prueba-gui-en-radio.sh      # copia el binario y las liblv*.so*
 | Vigilancia de crashes | contar el PID y los logs por 180 s | PID estable, 0 logs nuevos |
 | Crash que mató la corrida anterior | `grep -ac 'CRASHLOG sig'` en los **app_logs nuevos** de `/mnt/app_logs`, no sólo en el log vivo | `verifica-radio` mira `/tmp/x6200_log.txt`: un crash que termina la corrida queda en el log guardado y el chequeo igual dice TODO OK (pasó el 15/10 17:42) |
 | Captura de pantalla | `tools/captura-radio.sh salida.png [x1 y1 x2 y2]` | PNG con colores reales (no negro) |
-| Sin radio (banco) | skill `pruebas-sin-radio` | para ver UI sin ocupar el equipo |
+| Sin radio (banco) | **no se usa**: el owner pidio que todas las pruebas sean en la radio (15/10) | — |
 
 - La GUI la relanza `x6200_daemon` en ~1 s: "se reinicio la radio" casi siempre es la **GUI** reiniciandose.
   El uptime del equipo sigue subiendo si no hubo reinicio de verdad.
