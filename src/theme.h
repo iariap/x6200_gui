@@ -206,7 +206,8 @@ uint32_t theme_hex(theme_color_t c);
  * Unknown names fall back to IU1WXY. Call once, before styles_init(). */
 void theme_init(const char *name);
 
-/* Names for the Settings list: the built-in themes, then the files */
+/* Names for the Settings list: the six v2 themes (issue #73). The legacy
+ * built-ins and files are still loaded by name, but never listed. */
 int theme_list(char names[][32], int max);
 
 const uint32_t *theme_waterfall(void);

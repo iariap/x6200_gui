@@ -514,6 +514,8 @@ los declara el JSON del arnés. La tabla exacta por componente está en cada JSO
 | Tema RS (JSON + imágenes) | `main-tema-rs` | ✓ | | | |
 | Tema Holo (JSON) | `main-tema-holo` | ✓ | | | |
 | Tema Material 3 (JSON) | `main-tema-material-3` | ✓ | | | |
+| Tema Redshift (JSON, THEMES v2) | `main-tema-redshift`, `main-tema-redshift-agua`, `main-tema-redshift-tx`, `main-tema-redshift-eco`, `settings-tema-redshift`, `bt-dialog-tema-redshift` | ✓ | | | |
+| Tema Sunlit (JSON, THEMES v2) | `main-tema-sunlit`, `main-tema-sunlit-agua`, `main-tema-sunlit-tx`, `main-tema-sunlit-eco`, `settings-tema-sunlit`, `bt-dialog-tema-sunlit` | ✓ | | | |
 | Tema Aurora (JSON, THEMES v2) | `main-tema-aurora`, `main-tema-aurora-agua`, `main-tema-aurora-tx`, `main-tema-aurora-eco`, `settings-tema-aurora`, `bt-dialog-tema-aurora` | ✓ | | | |
 | Tema Trail (JSON, THEMES v2) | `main-tema-trail`, `main-tema-trail-agua`, `main-tema-trail-tx`, `main-tema-trail-eco`, `settings-tema-trail`, `bt-dialog-tema-trail` | ✓ | | | |
 | Tema Sprint (JSON, THEMES v2) | `main-tema-sprint`, `main-tema-sprint-agua`, `main-tema-sprint-tx`, `main-tema-sprint-eco`, `settings-tema-sprint`, `bt-dialog-tema-sprint` | ✓ | | | |
