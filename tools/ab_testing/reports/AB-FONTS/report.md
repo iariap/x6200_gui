@@ -3,7 +3,7 @@
 - Date: 2026-10-15
 - Profile: `host-ui`
 - A (baseline): `02c13119039da34c9a888e200d61948602b5a9ac` (a)
-- B (candidate): `a872a2fa33c092daefb63a9bbd84c851137500e3` (b)
+- B (candidate): `aabbf0ed35e8d911c167cf1afc26066ce64a6c74` (b)
 - Scenarios: `app-bands`, `app-close-home`, `apps-menu-1`, `apps-menu-2`, `apps-menu-3`, `apps-menu-4`, `apps-menu-5`, `apps-menu-6`, `bench-render`, `bt-dialog`, `home-bateria-externa`, `home-frecuencia-extrema`, `home-usb-20m`, `main-bateria-baja`, `main-espectro-agua`, `main-foco`, `main-natural`, `main-natural-eco`, `main-otro-tema`, `main-tema-classic`, `main-tema-holo`, `main-tema-material-3`, `main-tema-outdoor-negative`, `main-tema-rs`, `main-tema-vision`, `main-tema-vision-cwr`, `main-tema-vision-usbd`, `main-tx-simulado`, `settings-audio`, `settings-bands`, `settings-home`, `settings-perfil`, `settings-rs-theme`, `settings-wfbat`
 
 ## Verdict: **PASS** (exit 0)

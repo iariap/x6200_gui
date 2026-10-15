@@ -11,6 +11,11 @@ Evidencia de la corrida del cambio de tipografía, medida con el arnés A/B sobr
 | `font-matrix-digits.md` | lo mismo para las tres familias segmentadas, sobre `main-frecuencia-dseg` (fila de frecuencia y reloj) |
 | `gallery.png` | la galería para el ojo del owner: barra superior + fila de frecuencia + botones de las 15 familias completas y de las tres de dígitos |
 
+`x6200-ab compare` reescribe `report.*`, `results.json`, `diffs/`, `screenshots/`,
+`metrics/` y `logs/` en cada corrida y **borra lo que no es suyo**: `font-matrix*.md`,
+`gallery.png` y este README se vuelven a copiar después de correrlo (los genera
+`tools/fonts/matrix.py`).
+
 Cómo se reproduce:
 
 ```sh
