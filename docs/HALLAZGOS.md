@@ -57,6 +57,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 36. [Causa raiz: la pantalla principal se destruye al abrir la app](#36-causa-raiz-la-pantalla-principal-se-destruye-al-abrir-la-app)
 37. [Lo que arreglo las apps que se caian (y lo que no)](#37-lo-que-arreglo-las-apps-que-se-caian-y-lo-que-no)
 38. [Status y JS8: los dos crashes que quedaban (y que la migracion estaba bien)](#38-status-y-js8-los-dos-crashes-que-quedaban-y-que-la-migracion-estaba-bien)
+39. [QTH y Callsign no abrian por el control remoto (y el barrido las daba por vivas)](#39-qth-y-callsign-no-abrian-por-el-control-remoto-y-el-barrido-las-daba-por-vivas)
 
 ---
 
@@ -1824,3 +1825,68 @@ se abria: medido, CW Trainer moria despues de JS8).
   anotado para restaurarlo.
 * **Status no existe en el X6100** (no hay `dialog_status` ni equivalente en la referencia): es una
   app nueva de este port, asi que no "se migro mal": se escribio aca.
+
+---
+
+## 39. QTH y Callsign no abrian por el control remoto (y el barrido las daba por vivas)
+
+**Sintoma** (barrido del issue #19): al abrir las 22 apps por el socket de control, `QTH` y
+`Callsign` quedaban "vivas" pero la captura mostraba la pantalla de inicio con la barra de botones
+de la app anterior: nunca abrian.
+
+**Causa, medida** (con el binario previo al arreglo, `md5 2875410929b0`, sobre `e93b22f`):
+
+```
+$ docker exec banco-apps chroot /t /tmp/x6200-remote '{"cmd":"app","text":"QTH"}'
+{"t":"ok"}
+$ docker exec banco-apps chroot /t /tmp/x6200-remote '{"cmd":"get"}' | sed -n 's/.*"app":"\([^"]*\)".*/\1/p'
+                       # vacio; la captura (reports/BARRIDO-APPS-19/repro/QTH-sin-abrir.png)
+                       # muestra la pantalla de inicio: no abrio
+$ docker exec banco-apps chroot /t /tmp/x6200-remote '{"cmd":"app","text":"Status"}' ; sleep 2
+$ docker exec banco-apps chroot /t /tmp/x6200-remote '{"cmd":"app","text":"off"}' ; sleep 2
+                       # Status seguia abierta: "off" no cierra un dialogo
+```
+
+**Codigo** (las dos causas): en `src/remote_server.cpp`, `open_app()` manda TODAS las apps a
+`main_screen_start_app()`, y esa funcion (en `src/main_screen.c`) tenia `case` para 20 apps pero
+**no** para `ACTION_APP_QTH`/`ACTION_APP_CALLSIGN`, que se atendian solo en `main_screen_action()`
+(el dispatcher de los botones de accion): al pedir QTH por el socket, `main_screen_start_app()`
+corria `apps_disable()` y despues no hacia nada. Y `current_app()` nombraba solo 8 apps, asi que
+`{"cmd":"get"}` dejaba `"app":""` para cualquier dialogo (Status incluido) y
+`{"cmd":"app","text":"off"}` -que cierra solo cuando `current_app()` no es vacio- no la cerraba.
+
+**Arreglo**:
+
+* `src/main_screen.c`: QTH y Callsign pasan por `main_screen_start_app()` (y `main_screen_action()`
+  los despacha ahi), como el resto de las apps: un solo camino.
+* `src/remote_server.cpp`: `current_app()` nombra las 22 apps de `app_names[]` (los 12 dialogos que
+  faltaban, mas la tecla CW).
+* `tests/check_apps_menu.py`: chequeo estatico nuevo: toda `ACTION_APP_*` de `actions[]` de
+  `remote_server.cpp` tiene que tener `case` en `main_screen_start_app()`, y los largos de
+  `app_names[]`/`actions[]` tienen que coincidir.
+
+**Verificacion, medida** (binario con el arreglo, `md5 a553a015fdfe`):
+
+```
+$ docker exec banco-apps chroot /t /tmp/x6200-remote '{"cmd":"app","text":"QTH"}' ; sleep 1.5
+$ docker exec banco-apps chroot /t /tmp/x6200-remote '{"cmd":"get"}' | sed -n 's/.*"app":"\([^"]*\)".*/\1/p'
+QTH
+$ docker exec banco-apps chroot /t /tmp/x6200-remote '{"cmd":"app","text":"off"}' ; sleep 1
+$ docker exec banco-apps chroot /t /tmp/x6200-remote '{"cmd":"get"}' | sed -n 's/.*"app":"\([^"]*\)".*/\1/p'
+                       # vacio: cerro
+```
+
+Y el barrido completo de las 22 apps (dwell 20 s), con el campo `app_estado` igual a la app pedida
+en todas: `tools/ab_testing/reports/BARRIDO-APPS-19/barrido.json` (22/22 vivas). El chequeo
+estatico falla si se vuelve a sacar el `case`:
+
+```
+$ python3 tests/check_apps_menu.py
+  control remoto: 23 apps en app_names[] | 23 acciones
+  todas las apps del menu llegan al dispatcher que usa su boton
+```
+
+**Queda anotado, medido**: `{"cmd":"app","text":"off"}` **no apaga RTTY** (no es un dialogo:
+`main_screen_close_app()` es `dialog_destruct()`, que no lo toca). En el barrido no molesta porque
+abrir la app siguiente pasa por `apps_disable()`, que lo apaga. Apagarlo bien pide ademas devolver
+la barra de botones al inicio (hoy la pagina de RTTY queda cargada despues de cerrar un dialogo).

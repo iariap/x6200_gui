@@ -40,15 +40,27 @@ extern "C" {
     #include "cJSON.h"
     #include "cfg/cfg_api.h"
     #include "buttons.h"
-#include "dialog.h"
-    #include "dialog_cw_kbd.h"
+    #include "dialog.h"
     #include "cw_tune_ui.h"
+    #include "dialog_bands.h"
+    #include "dialog_bt.h"
+    #include "dialog_callsign.h"
+    #include "dialog_cluster.h"
+    #include "dialog_cw_kbd.h"
+    #include "dialog_cw_trainer.h"
+    #include "dialog_eq.h"
     #include "dialog_field.h"
     #include "dialog_ft8.h"
+    #include "dialog_gps.h"
     #include "dialog_js8.h"
     #include "dialog_navtex.h"
+    #include "dialog_qth.h"
+    #include "dialog_recorder.h"
+    #include "dialog_settings.h"
     #include "dialog_sstv.h"
+    #include "dialog_status.h"
     #include "dialog_wefax.h"
+    #include "dialog_wifi.h"
     #include "dialog_wspr.h"
     #include "gps.h"
     #include "main_screen.h"
@@ -263,6 +275,21 @@ void remote_set_band(int32_t m) {
         cfg_sm.p_band_id.set(id);
 }
 
+/* Las apps que no estan en app_states[] tampoco se nombraban aca: abrir Status (o cualquier
+ * dialogo) por control remoto dejaba "app" en "" -como si no hubiera nada abierto- y "app off"
+ * no la cerraba, porque open_app() solo cierra cuando current_app() no es vacio. Ahora se
+ * nombran las 22, y el barrido del banco verifica con este campo que la app que pidio es la
+ * que quedo abierta (docs/HALLAZGOS.md 39). */
+static const struct {
+    const char *name;
+    dialog_t   *dialog;
+} dialog_apps[] = {
+    {"GPS", dialog_gps},           {"Bands", dialog_bands},       {"Settings", dialog_settings},
+    {"BT", dialog_bt},             {"Cluster", dialog_cluster},   {"CwTrainer", dialog_cw_trainer},
+    {"Eq", dialog_eq},             {"Status", dialog_status},     {"QTH", dialog_qth},
+    {"Callsign", dialog_callsign}, {"Recorder", dialog_recorder}, {"WiFi", dialog_wifi},
+};
+
 /* "" when none of the remote's apps is open. Any thread. */
 static const char *current_app() {
     if (dialog_type_is_run(dialog_ft8))
@@ -279,6 +306,11 @@ static const char *current_app() {
         return "NavTex";
     if (dialog_type_is_run(dialog_field))
         return "Field";
+    if (dialog_type_is_run(dialog_cw_kbd))
+        return "CW";
+    for (const auto &a : dialog_apps)
+        if (dialog_type_is_run(a.dialog))
+            return a.name;
     if (rtty_get_state() != RTTY_OFF)
         return "RTTY";
     return "";
