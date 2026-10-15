@@ -42,6 +42,7 @@ class Revisions:
     theme_defect: str
     bench_regression: str
     structural: str
+    focus_defect: str
     cache_dir: Path
 
 
@@ -224,6 +225,22 @@ def _inject_structural_defects(worktree: Path) -> None:
     path.write_text(text)
 
 
+def _break_focus_group(worktree: Path) -> None:
+    """Deliberate defect: stop registering Ajustes widgets in the focus group (UI-004).
+
+    `dialog_item()` (src/dialog.c) is the only thing that adds a control to
+    `keyboard_group`; with the call removed every Ajustes switch/slider/dropdown is
+    still drawn but the keys and the MFK cannot reach it, which is the defect of
+    docs/HALLAZGOS.md 18. The rendered detector `layout_focus_unreachable` must fire
+    on the settings fixture.
+    """
+    path = worktree / "src" / "dialog.c"
+    text = path.read_text()
+    needle = "    lv_group_add_obj(keyboard_group, obj);"
+    assert needle in text
+    path.write_text(text.replace(needle, "    /* abtest e2e: focus group not registered */"))
+
+
 def _base_revision() -> str:
     """The commit the demo revisions are built from.
 
@@ -251,6 +268,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
     theme_defect = _ephemeral(REPO_ROOT, base, "theme", _reintroduce_theme_truncation)
     bench_regression = _ephemeral(REPO_ROOT, base, "bench", _raise_bench_cost)
     structural = _ephemeral(REPO_ROOT, base, "structural", _inject_structural_defects)
+    focus_defect = _ephemeral(REPO_ROOT, base, "focus", _break_focus_group)
     _record_patches(
         base,
         {
@@ -261,6 +279,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             "theme": theme_defect,
             "bench": bench_regression,
             "structural": structural,
+            "focus": focus_defect,
         },
     )
     try:
@@ -273,6 +292,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             theme_defect=theme_defect,
             bench_regression=bench_regression,
             structural=structural,
+            focus_defect=focus_defect,
             cache_dir=cache_dir,
         )
     finally:
@@ -288,6 +308,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             "abtest/theme",
             "abtest/bench",
             "abtest/structural",
+            "abtest/focus",
         )
         _git("-C", str(REPO_ROOT), "worktree", "prune")
 
@@ -543,6 +564,32 @@ def test_audit_detects_text_glyph_and_contrast_defects(
         "typography_contrast",
     } <= failed
     _record_audit(payload, "structural")
+
+
+def test_audit_detects_a_widget_out_of_the_focus_group(
+    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
+) -> None:
+    """UI-004: a control the keyboard cannot reach is a rendered finding.
+
+    The ephemeral revision drops `lv_group_add_obj()` from `dialog_item()`
+    (src/dialog.c), so every Ajustes switch/slider/dropdown is drawn but outside
+    `keyboard_group`; `layout_focus_unreachable` must fire on the settings fixture
+    (the same class of defect docs/HALLAZGOS.md 18 fixed).
+    """
+    code = _run(
+        tmp_path,
+        revisions,
+        ["audit", "--revision", revisions.focus_defect, "--scenario", "settings-home"],
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert code == 1
+    failed = {
+        (finding["rule"], finding["fixture"])
+        for finding in payload["findings"]
+        if not finding["ok"]
+    }
+    assert ("layout_focus_unreachable", "settings-home") in failed
+    _record_audit(payload, "focus")
 
 
 def test_contracts_pass_on_the_base(

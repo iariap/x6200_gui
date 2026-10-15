@@ -21,6 +21,11 @@ void mock_settings_manager_check(void);
  * registers its focusable widget in (keyboard_init() is a no-op here). */
 void mock_keyboard_group_up(void);
 
+/* mocks/mock_btaudio.c: writes the /tmp file `btaudio-ctl list` would leave
+ * (src/dialog_bt.c reads it back) with a fixed device list, so the Bluetooth
+ * dialog renders real rows without running the script (`__wrap_system`). */
+void mock_btaudio_seed_files(void);
+
 /* mocks/mock_ui_deps.c: which of the two audio gain setters (src/audio.c) ran
  * last, and how many times each one did. The `settings-audio` fixture uses it to
  * check that each slider of Ajustes -> Audio reaches its own setter (issue #26). */

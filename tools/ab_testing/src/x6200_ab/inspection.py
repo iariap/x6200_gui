@@ -50,6 +50,7 @@ class InspectionNode:
     scrollable: bool
     scroll_dir: str
     clickable: bool
+    in_keyboard_group: bool
     bg_color: str
     bg_opa: int
     bg_image: bool
@@ -88,10 +89,16 @@ class InspectionNode:
 
 @dataclass(frozen=True)
 class Inspection:
-    """The whole inspected tree of one screen."""
+    """The whole inspected tree of one screen.
+
+    `has_keyboard_group` is whether the firmware's focus group exists in this
+    capture: the `main` fixtures do not create it (`keyboard_init()` is a no-op on
+    the host), so the focus-reachability rule only applies when it is present.
+    """
 
     viewport: Box
     nodes: tuple[InspectionNode, ...]
+    has_keyboard_group: bool = False
 
     @property
     def count(self) -> int:
@@ -136,6 +143,7 @@ def parse_inspection(report: dict[str, Any]) -> Inspection | None:
             h=int(viewport["height"]),
         ),
         nodes=tuple(_parse_node(entry) for entry in nodes),
+        has_keyboard_group=bool(raw.get("keyboard_group", False)),
     )
 
 
@@ -168,6 +176,7 @@ def _parse_node(entry: dict[str, Any]) -> InspectionNode:
         scrollable=bool(entry.get("scrollable", False)),
         scroll_dir=str(entry.get("scroll_dir", "none")),
         clickable=bool(entry.get("clickable", False)),
+        in_keyboard_group=bool(entry.get("in_keyboard_group", False)),
         bg_color=str(entry.get("bg_color", "#000000")),
         bg_opa=int(entry.get("bg_opa", 0)),
         bg_image=bool(entry.get("bg_image", False)),

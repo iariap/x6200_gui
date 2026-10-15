@@ -126,7 +126,14 @@ def test_repo_fixtures_are_all_parsable() -> None:
     suite = ScenarioSuite.from_fixtures_dir(HARNESS_FIXTURES)
     assert suite.names == [
         "app-bands",
+        "apps-menu-1",
+        "apps-menu-2",
+        "apps-menu-3",
+        "apps-menu-4",
+        "apps-menu-5",
+        "apps-menu-6",
         "bench-render",
+        "bt-dialog",
         "home-bateria-externa",
         "home-frecuencia-extrema",
         "home-usb-20m",
@@ -149,11 +156,12 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "settings-bands",
         "settings-home",
         "settings-perfil",
+        "settings-rs-theme",
         "settings-wfbat",
     ]
     # Every fixture builds one of the screens the harness knows; the theme
-    # fixtures still build `main`, only the focus, settings and app-menu ones do
-    # not.
+    # fixtures still build `main`, only the focus, settings, app-menu and BT ones
+    # do not.
     assert all(
         scenario.screen
         in {
@@ -165,6 +173,8 @@ def test_repo_fixtures_are_all_parsable() -> None:
             "settings-wfbat",
             "settings-bands",
             "app-bands",
+            "apps-menu",
+            "bt-dialog",
         }
         for scenario in suite.scenarios
     )

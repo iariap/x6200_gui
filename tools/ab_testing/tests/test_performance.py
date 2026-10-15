@@ -69,8 +69,30 @@ def test_stats_from_frames_reports_percentiles_fps_and_dispersion() -> None:
     assert stats.render_p95_ms == pytest.approx(4.8)
     assert stats.render_p99_ms == pytest.approx(4.96)
     assert stats.fps == pytest.approx(1000.0 / 3.0)
-    assert stats.dispersion_cv_pct == pytest.approx(47.14, abs=0.01)
+    # The dispersion is the robust (MAD) CV: median 3, MAD 1 -> 1.4826/3 = 49.42%,
+    # not the stdev/mean of the same sample (47.14%). The stdev is still reported.
+    assert stats.dispersion_cv_pct == pytest.approx(49.42, abs=0.01)
+    assert stats.render_stdev_ms == pytest.approx(1.4142, abs=0.0001)
     assert stats.memory is memory
+
+
+def test_a_few_host_spikes_are_not_dispersion() -> None:
+    """One preemption frame must not read as `the host is too noisy to trust`.
+
+    Measured on this host: a quiet 20-frame run reads ~1.5%, and one 10 ms frame
+    among twenty (3.3 ms median) pushed the stdev CV to ~38% while it does not
+    move any p95 (1 frame in 20 is below the 95th percentile, so it cannot change
+    a p95 comparison). The robust CV stays low there, and still flags a sample a
+    non-trivial fraction of which is outliers — what does move a p95.
+    """
+    quiet = [3.3] * 19 + [10.0]
+    spiked = stats_from_frames("s", _frames(quiet))
+    assert spiked.dispersion_cv_pct < BUDGET.max_dispersion_cv_pct
+    assert measure_verdict({"s": spiked}, BUDGET) is Status.PASS
+
+    every_other = stats_from_frames("s", _frames([3.0, 10.0] * 3))
+    assert every_other.dispersion_cv_pct > BUDGET.max_dispersion_cv_pct
+    assert measure_verdict({"s": every_other}, BUDGET) is Status.INCONCLUSIVE
 
 
 def test_stats_without_frames_is_an_error() -> None:

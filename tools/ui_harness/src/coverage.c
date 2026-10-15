@@ -168,6 +168,55 @@ static const coverage_entry_t settings_bands[] = {
               "DX cluster column is not rendered (no cluster data on the host)"),
 };
 
+/* The `apps-menu` scenarios (UI-002): the main screen with the app menu the APP
+ * key opens, on one of its six pages. The button bar and the main screen are
+ * real; the fixtures measure the menu itself (the page's cells draw their app
+ * names) and not any app window. */
+static const coverage_entry_t apps_menu[] = {
+    MAIN_COMPONENTS,
+    COMPONENT("main_screen.c (APP key -> buttons_group_app)", COVERAGE_PARTIAL,
+              "src/main_screen.c compiled; the APP key's path loads buttons_group_app and the page button cycles its six pages, but the keypress itself is driven by buttons_load_page_group()/buttons_press() from the fixture, not by the panel keypad"),
+    COMPONENT("buttons.cpp (app pages)", COVERAGE_REAL,
+              "src/buttons.cpp compiled; the six APP pages and their app buttons are the real firmware table, drawn in the bottom bar"),
+    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
+              "the fixtures open no app dialog: the app buttons are counted in the bar, not pressed"),
+    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
+              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
+    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
+              "DX cluster spot marks are not rendered (no cluster data on the host)"),
+    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
+              "DX cluster column is not rendered (no cluster data on the host)"),
+};
+
+/* The `bt-dialog` scenario (UI-005): the real Bluetooth window (src/dialog_bt.c)
+ * opened over the main screen. The dialog, its table and its status line are the
+ * real firmware sources; `btaudio-ctl` is replaced by a mock that seeds the file
+ * the script would leave (mocks/mock_btaudio.c) and `system()` is wrapped to a
+ * no-op, so no script runs on the host. */
+static const coverage_entry_t bt_dialog[] = {
+    MAIN_COMPONENTS,
+    COMPONENT("dialog.c", COVERAGE_REAL,
+              "src/dialog.c compiled; dialog_construct()/dialog_init() run the real dialog lifecycle over the screen"),
+    COMPONENT("dialog_bt.c", COVERAGE_REAL,
+              "src/dialog_bt.c compiled; the Bluetooth window (header, device table, status line and the Scan/RX/Speaker/Auto/Close row) is built and drawn"),
+    COMPONENT("bt_devices.c", COVERAGE_REAL,
+              "src/bt_devices.c compiled; the file the script leaves is parsed by the real parser"),
+    COMPONENT("btaudio.c", COVERAGE_SYNTHETIC,
+              "the script surface is a mock: btaudio_log()/btaudio_speaker_mute() are no-ops and system() is wrapped (mocks/mock_btaudio.c), so no btaudio-ctl runs and the list file is seeded explicitly"),
+    COMPONENT("buttons.cpp", COVERAGE_REAL,
+              "src/buttons.cpp compiled; the dialog's own bottom bar (Scan/RX/Speaker/Auto/Close) is drawn"),
+    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
+              "only the Bluetooth dialog is compiled and opened; the rest are inert mocks"),
+    COMPONENT("dialog_field.c", COVERAGE_UNSUPPORTED,
+              "not a dependency of the Bluetooth window"),
+    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
+              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
+    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
+              "DX cluster spot marks are not rendered (no cluster data on the host)"),
+    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
+              "DX cluster column is not rendered (no cluster data on the host)"),
+};
+
 const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
 {
     if (screen && (!strcmp(screen, "settings-home") || !strcmp(screen, "settings-wfbat")
@@ -182,6 +231,14 @@ const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
     if (screen && !strcmp(screen, "app-bands")) {
         *count = (int) (sizeof(app_bands) / sizeof(app_bands[0]));
         return app_bands;
+    }
+    if (screen && !strcmp(screen, "apps-menu")) {
+        *count = (int) (sizeof(apps_menu) / sizeof(apps_menu[0]));
+        return apps_menu;
+    }
+    if (screen && !strcmp(screen, "bt-dialog")) {
+        *count = (int) (sizeof(bt_dialog) / sizeof(bt_dialog[0]));
+        return bt_dialog;
     }
     return coverage_main_screen(count);
 }

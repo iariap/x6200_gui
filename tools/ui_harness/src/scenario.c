@@ -176,6 +176,15 @@ static bool apply_key(const char *key, const char *value, scenario_t *out)
          * an "unknown key" error, but applied only in `--bench-natural` mode. */
         if (v <= 0) { return false; }
         out->natural_frames = (int) v;
+    } else if (!strcmp(key, "apps_page")) {
+        /* The APP page an `apps-menu` fixture opens (1..6). The fixture name and
+         * this key pick one of the six pages of `buttons_group_app`; out of range
+         * is refused, never silently clamped (a typo would render page 1 and look
+         * green). */
+        long v = strtol(value, NULL, 10);
+
+        if (v < 1 || v > 6) { return false; }
+        out->apps_page = (int) v;
     } else if (!strcmp(key, "rxtx")) {
         if (!strcasecmp(value, "rx")) { mock_radio.state = RADIO_RX; }
         else if (!strcasecmp(value, "tx")) { mock_radio.state = RADIO_TX; }

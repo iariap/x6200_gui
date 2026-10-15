@@ -163,6 +163,12 @@ cannot state, and it is measured, never guessed:
 * Text sizes come from LVGL's own font metrics (`lv_txt_get_size`), with the
   label's letter/line space and long mode. `text_overflow` and `text_truncated`
   compare the text against the object's box; **no OCR** is involved.
+* `in_keyboard_group` says whether the object is registered in the firmware's
+  focus group (`lv_obj_get_group(obj) == keyboard_group`); `dialog_item()` is the
+  only thing that adds an Ajustes widget to it (`src/dialog.c`), so a control that
+  is drawn but not in the group cannot be reached with the keys (UI-004). The block
+  also carries `keyboard_group: true` when the fixture created the group at all —
+  the `main` fixtures do not (`keyboard_init()` is a no-op on the host).
 * `missing_glyphs` lists code points that are a placeholder in *every* font of
   the chain (`lv_font_glyph_dsc_t.is_placeholder`); `fallback_glyphs` lists the
   ones resolved in another font (`resolved_font`). The fallback is expected here:
@@ -324,7 +330,11 @@ then the real Bands action, `main_screen_action(ACTION_APP_BANDS)`), `app-bands`
 (the app menu the APP key loads, `buttons_load_page_group(buttons_group_app)`, with
 the "Bands" button of `APP 3:6` pressed — the route the owner reported), and
 `main-foco` (the same screen with the real keyboard
-group, so `lv_group_focus_next()` runs over it).
+group, so `lv_group_focus_next()` runs over it),
+`apps-menu` (the app menu the APP key loads, `buttons_load_page_group(buttons_group_app)`,
+on the page a fixture's `apps_page` picks: the six `apps-menu-1..6` cover the 22
+app cells after issue #46), and `bt-dialog` (the real Bluetooth window, `src/dialog_bt.c`,
+opened by `main_screen_start_app(ACTION_APP_BT)`).
 
 The `theme` is the full name the GUI lists: a builtin (`IU1WXY`, `Legacy`,
 `Outdoor`, `Classic`, `Outdoor-Negative`, `VISION`) or a JSON theme the ROM ships
@@ -356,6 +366,9 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `settings-audio` | Ajustes scrolled to the Audio group (the "Audio" tab, page 1 index 3): the "Line-in, Line-out" row, the "Play,Rec gain" row, "Audio enhance", "Speaker mode" and the voice rows. `play_gain_db`/`rec_gain_db` give the two gain sliders different values (the radio loads them from params.db) so each one can be told apart, and `scenario_settle` drags the Rec one and checks with the audio mock's recorder (`mocks/mock_ui_deps.c`) that the setter it ran is `audio_set_rec_vol()`: with the two callbacks wired to the same function (issue #26) the run stops instead of going green |
 | `settings-bands` | Ajustes and then the real Bands action (`main_screen_action(ACTION_APP_BANDS)`, the dispatcher the Ajustes long-press list reaches). `dialog_bands` is an inert mock here, so the fixture codifies the route in `scenario_settle` (the Ajustes window has to be closed and a dialog has to be running) instead of the window's pixels |
 | `app-bands` | the app menu the APP key opens (`buttons_group_app`, page `APP 3:6`) with the "Bands" button pressed — the route the owner reported ("the Bands menu does nothing"). Same inert `dialog_bands`: `scenario_settle` stops the run if the button reaches no dialog at all |
+| `apps-menu-1` … `apps-menu-6` | the app menu the APP key opens (`buttons_load_page_group(buttons_group_app)`) on each of its six pages (the fixture's `apps_page`); together they render the 22 app cells after issue #46. `scenario_settle` reads the real `buttons_group_app` table and stops the run if the page's `(APP n:6)` label or an app name is not on screen (UI-002) |
+| `bt-dialog` | the real Bluetooth window (`src/dialog_bt.c`) over the main screen, opened by `main_screen_start_app(ACTION_APP_BT)`. `btaudio-ctl` is mocked (`__wrap_system` + a seeded `/tmp/bt_ui_list.txt`, `mocks/mock_btaudio.c`) so a device row and the status line render. `scenario_settle` codifies the UI-005 metric: the status label's bottom must end above the button row (y=418) |
+| `settings-rs-theme` | the same Ajustes window as `settings-wfbat` (Spectrum/waterfall group) under the shipped "RS" theme, so the switch rail (`TC(control_border)`) renders for UI-007 |
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
 | `main-tema-rs` | the same screen under the shipped "RS" JSON theme (with its images), for UI-007 |
 | `main-tema-vision` | the builtin "VISION" theme (every font three sizes up through `fonts_scale()`), for the icon-glyph and top-bar layout findings of UI-011/UI-012 |

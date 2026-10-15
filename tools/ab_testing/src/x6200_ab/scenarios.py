@@ -53,6 +53,8 @@ KNOWN_KEYS = frozenset(
         # Natural-bench-only knob (ignored outside `--bench-natural`; never
         # changes a pixel either).
         "natural_frames",
+        # Which APP page an `apps-menu` fixture opens (1..6, UI-002).
+        "apps_page",
     }
 )
 

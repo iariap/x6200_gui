@@ -410,17 +410,19 @@ parte estática de la semilla **UI-003** sin agregar un defecto nuevo.
 
 Semillas con evidencia previa en el repo pero **sin detector** todavía: no
 bloquean ni pasan, quedan listadas como `unverified` hasta que el arnés las
-reproduzca. Cada una dice qué falta.
+reproduzca. Cada una dice qué falta. Tras la corrida del issue #11 (2026-10-15)
+UI-002, UI-004, UI-005 y UI-007 salieron de este anexo (ver *Cierre de las
+semillas del issue #11*); quedan UI-003 y UI-006.
 
 | ID | Tema | Evidencia previa | Qué falta para fundarla |
 |---|---|---|---|
-| UI-002 | Las apps solo vivían en el long-press de Ajustes | `docs/HALLAZGOS.md` 17, 29 | un fixture que abra el menú de apps (el arnés abría el About real, no el menú; **About se eliminó por orden del owner el 2026-10-14**, así que el arnés ya no lo renderiza) |
+| UI-002 | Las apps solo vivían en el long-press de Ajustes | `docs/HALLAZGOS.md` 17, 29 | **cerrada (2026-10-15)**: los seis fixtures `apps-menu-1..6` abren el menú de apps y cubren las 22 celdas; no reproduce defecto. Ver *Cierre de las semillas del issue #11* |
 | UI-003 | Pares texto/fondo por debajo de 4.5:1 / 3:1 | `docs/HALLAZGOS.md` 24, 26, 27, 28; `tests/check_wcag.py` | un fixture que renderice los pares que incumplen; el arnés ya calcula el contraste de cada par opaco y desde UI-02 lo corre también sobre los temas (`main-tema-*`) sin encontrar nada. Desde UI-06 incr. 1 el chequeo **estático** cubre los 7 temas resolubles (4 incorporadas + 3 JSON; 63 pares, 0 fallas) y declara UNCOVERED a los derivados — ver *Estático, sin fixture* |
-| UI-004 | Ajustes: widgets inalcanzables con el foco | `docs/HALLAZGOS.md` 18; `tests/check_settings_focus.py` | el fixture ya existe (`settings-home`/`settings-wfbat`, 2026-10-14); falta que el inspector emita la pertenencia al grupo de foco (`keyboard_group`) por nodo para un detector renderizado, y la grilla de foco de `settings-home` que lo ejercite |
-| UI-005 | Diálogo viejo: texto tapado por los botones | `docs/HALLAZGOS.md` 21 | un fixture de BT/WeFax/SSTV (el About real ya no existe: se eliminó por orden del owner el 2026-10-14) |
+| UI-004 | Ajustes: widgets inalcanzables con el foco | `docs/HALLAZGOS.md` 18; `tests/check_settings_focus.py` | **cerrada (2026-10-15)**: el inspector emite `in_keyboard_group` por nodo y el contrato `layout_focus_unreachable` corre sobre Ajustes/`bt-dialog`/`main-foco`/`apps-menu-*` con 0 hallazgos. Ver *Cierre de las semillas del issue #11* |
+| UI-005 | Diálogo viejo: texto tapado por los botones | `docs/HALLAZGOS.md` 21 | **cerrada (2026-10-15)**: la fixture `bt-dialog` renderiza el diálogo real de BT; la línea de estado termina en y2=396, arriba de los botones (418). Ver *Cierre de las semillas del issue #11* |
 | UI-006 | Glifo BT U+F293 inexistente en `sony_20` | `docs/HALLAZGOS.md` 19; `src/info.c` | que una pantalla vuelva a dibujar el glifo en un label; el arnés ya detecta glifos ausentes (y la pantalla actual dibuja el icono con `lv_line`) |
-| UI-007 | Temas RS sin clave propia, contraste 2.58:1 | `docs/HALLAZGOS.md` 28; `docs/THEMES.md` | el fixture de Ajustes ya existe (2026-10-14), pero corre con el tema por defecto: falta una variante **Ajustes + tema RS** para que el par del riel del switch (`control_border`) se dibuje y lo mida `typography_contrast`. Desde UI-03 el par está cubierto **estáticamente** (`x6200-ab themes` + `quality/theme_pairs.yaml`: resuelve la herencia del `base` como `src/theme.c`) y pasa en los 3 temas JSON, así que sólo falta la evidencia renderizada |
-| UI-008 | CMA: 128 MB reservados para GPU no usada | `docs/RESOURCE_USAGE.md` | presupuesto de recursos del firmware, no defecto de la UI; el arnés no mide memoria del sistema |
+| UI-007 | Temas RS sin clave propia, contraste 2.58:1 | `docs/HALLAZGOS.md` 28; `docs/THEMES.md` | **cerrada (2026-10-15)**: el fixture `settings-rs-theme` (Ajustes + RS, grupo Espectro) dibuja el riel del switch con el `control_border` de RS (#6E6E6E); el par ya lo cubría el chequeo estático. Ver *Cierre de las semillas del issue #11* |
+| UI-008 | CMA: 128 MB reservados para GPU no usada | `docs/RESOURCE_USAGE.md` | **cerrada como `out-of-scope` (2026-10-15)**: presupuesto de recursos del firmware, no defecto de la UI; el arnés no mide memoria del sistema. Ver la decisión en *Cierre de las semillas del issue #11* |
 
 ## Re-evaluación con instrumentación estructural (2026-10-13)
 
@@ -565,3 +567,31 @@ el mismo cambio**.
 La fixture `settings-audio` (issue #26, la fila "Play,Rec gain") agrega su propia excepción de
 **UI-015** por la misma geometría heredada del grupo Audio (los cuatro sliders de 13 px y el switch
 de "Speaker mode", 111x30): misma regla, mismo hallazgo, otra página de la ventana.
+
+---
+
+## Cierre de las semillas del issue #11 (2026-10-15)
+
+Corrida `factory/seeds-11-fixtures` (base `c4ff0c5`, 25 fixtures) sobre las cinco semillas
+UI-002/004/005/007/008. Las cuatro que el arnés podía medir ya tienen fixture y **ninguna
+reproduce un defecto**; la quinta es un presupuesto de recursos y queda declarada fuera del alcance.
+
+| ID | Resultado | Evidencia |
+|---|---|---|
+| UI-002 | `fixed` (sin defecto reproducido) | seis fixtures `apps-menu-1..6` abren el menú de apps (la tecla APP carga `buttons_group_app`, el botón-página cicla las 6 páginas) y cubren las **22 celdas** post-About; `scenario_settle` lee la tabla real `buttons_group_app` y exige el rótulo `(APP n:6)` y las apps de la página (una página reordenada corta la corrida). Suma `tests/check_apps_menu.py` (23 apps, 23 en el menú, 6 páginas) |
+| UI-004 | `fixed` (sin defecto reproducido) | el inspector (`--inspect`) emite `in_keyboard_group` por nodo (y `keyboard_group` en el bloque); el contrato nuevo `layout_focus_unreachable` (clase de control + visible + fuera del grupo) corre sobre los fixtures de Ajustes, `bt-dialog`, `main-foco` y `apps-menu-*` con **0 hallazgos**. Autoprueba: quitar `lv_group_add_obj()` de `dialog_item()` en una revisión efímera hace fallar el audit |
+| UI-005 | `fixed` (sin defecto reproducido) | la fixture `bt-dialog` abre el diálogo real de BT (`main_screen_start_app(ACTION_APP_BT)` → `src/dialog_bt.c`, con `btaudio-ctl` mockeado). Medido con `--inspect`: la línea de estado "no headphones, RX off" queda en y=380 (y2=396), **arriba** de la fila de botones (y=418) → 21 px de aire; no reproduce el texto tapado. `scenario_settle` codifica ese invariante. El contrato `typography_text_truncated` encontró y se cerró un recorte real de 3 px de la **nota** del mismo diálogo (`NOTE_W`, `src/dialog_bt.c`) |
+| UI-007 | `fixed` (sin defecto reproducido) | `settings-rs-theme` es la ventana de Ajustes (`settings-wfbat`) bajo el tema **RS**, scrolleda al grupo Espectro: el riel del switch se dibuja con el `control_border` de RS (**#6E6E6E**, medido en la inspección). El par ya lo cubre el chequeo estático `x6200-ab themes` (≥3:1); faltaba —y ahora está— la evidencia renderizada |
+| UI-008 | `out-of-scope` | no es un defecto de UI: es un presupuesto de recursos del firmware y el arnés de UI no mide memoria del sistema |
+
+### UI-008 — decisión (5 líneas)
+
+UI-008 no es un defecto de la UI: el pool **CMA de 128 MB** del DTS reservado a la Mali
+(unas ~3 veces lo que cuesta el configurador en Python, `docs/RESOURCE_USAGE.md`) es un presupuesto
+de recursos del **firmware**, no un comportamiento de la GUI. El arnés de UI renderiza píxeles y mide layout,
+tipografía, contraste y foco: **no mide memoria del sistema**, así que no puede reproducirlo por más
+fixtures que se agreguen y no se le inventa un fake. Queda `out-of-scope` declarado (no es un waiver
+de defecto: es la limitación del arnés con la razón por escrito). Su **monitoreo** vive donde vive el
+presupuesto, [`docs/RESOURCE_USAGE.md`](RESOURCE_USAGE.md), que lo mide y ordena su reducción. Por
+eso el registro lo lleva `status: out-of-scope` (sin fixture) y lo cierra esta corrida: el issue #11
+queda con las cinco semillas resueltas.

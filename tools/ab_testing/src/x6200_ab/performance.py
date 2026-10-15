@@ -9,7 +9,9 @@ alternating rounds.
 Everything here is an **x86 host proxy**: it detects relative regressions
 between two revisions, it does not claim the Cortex-A7 frame budget nor the
 radio's battery life. A measurement whose dispersion is too high is reported
-INCONCLUSIVE instead of being trusted.
+INCONCLUSIVE instead of being trusted. The dispersion is the median-based (MAD)
+coefficient of variation, not `stdev/mean`: on a shared host a few preemption
+frames must not read as "the machine is noisy" (see `robust_dispersion_cv_pct`).
 """
 
 from __future__ import annotations
@@ -98,6 +100,40 @@ def _memory_dict(memory: MemorySample | None) -> dict[str, int] | None:
     }
 
 
+# 1.4826 scales the median absolute deviation to a standard-deviation analogue for
+# normal data, so the robust coefficient of variation below reads on the same scale
+# as `stdev/mean` when there are no outliers.
+MAD_TO_STDEV = 1.4826
+
+
+def robust_dispersion_cv_pct(values: list[float]) -> float:
+    """Median-based (MAD) coefficient of variation: a dispersion a few host spikes
+    cannot dominate.
+
+    The render benchmark is a wall-clock (`CLOCK_MONOTONIC`) proxy on a shared x86
+    host, so a container that gets preempted a few times collects a handful of
+    frames far above the rest. `stdev/mean` let **one** such frame dominate the
+    figure: measured here, a quiet 20-frame run reads ~1.5%, and a single 10 ms
+    frame among twenty (3.3 ms median) pushed the stdev CV to ~38% while it does
+    not move any p95 (1 frame of 20 is below the 95th percentile, so it cannot
+    change a p95 comparison). The dispersion the gate needs is "is a non-trivial
+    *fraction* of the sample an outlier" — what does move a p95 — so it is measured
+    against the median with the median absolute deviation:
+
+        dispersion = 1.4826 * median(|x - median(x)|) / median(x) * 100
+
+    A sample whose every other frame is an outlier still reads far above any
+    budget (see test_noisy_side_is_inconclusive_not_pass).
+    """
+    if not values:
+        raise ValueError("no values to measure dispersion")
+    median = statistics.median(values)
+    if median <= 0:
+        return 0.0
+    mad = statistics.median([abs(value - median) for value in values])
+    return MAD_TO_STDEV * mad / median * 100.0
+
+
 def stats_from_frames(
     scenario: str,
     frames: tuple[FrameSample, ...],
@@ -118,7 +154,7 @@ def stats_from_frames(
         render_p99_ms=percentile(render, 99),
         render_mean_ms=mean,
         render_stdev_ms=stdev,
-        dispersion_cv_pct=(stdev / mean * 100.0) if mean > 0 else 0.0,
+        dispersion_cv_pct=robust_dispersion_cv_pct(render),
         fps=(1000.0 / p50) if p50 > 0 else 0.0,
         flush_ms_mean=statistics.fmean(frame.flush_ms for frame in frames),
         draw_ms_mean=statistics.fmean(frame.draw_ms for frame in frames),

@@ -27,7 +27,10 @@ from .regions import RegionMap
 from .visual_diff import load_rgb, region_content_fraction
 
 DETECTOR_KINDS = frozenset({"region_content_above", "leading_glyph_range"})
-STATUSES = frozenset({"verified", "fixed", "unverified", "new"})
+# `out-of-scope` is a seed the UI harness can never measure (a firmware resource
+# budget such as the CMA pool of UI-008): it is not a defect of the UI, carries no
+# detector and is declared, with the reason in writing, instead of being faked.
+STATUSES = frozenset({"verified", "fixed", "unverified", "out-of-scope", "new"})
 SEVERITIES = frozenset({"critical", "major", "minor", "info"})
 
 # The contract rules that are scoped to one semantic region carry the region in

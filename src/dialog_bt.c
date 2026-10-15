@@ -40,6 +40,15 @@
 #define TABLE_H         (DIALOG_BOX_H - TABLE_Y - STATUS_H - 8)
 #define REFRESH_MS      700
 
+/* La nota (abajo a la derecha) va del borde derecho de la tabla (DIALOG_W + 13)
+ * hacia la izquierda y comparte la fila con la linea de estado (label_state), asi
+ * que su caja es el hueco que queda entre las dos: no un ancho redondo. Con 360 el
+ * texto mas largo que el dialogo muestra de entrada ("Row: pair/connect - Auto:
+ * hold to unpair", 363 px con sony_22 medido con --inspect) no entraba y el CLIP le
+ * cortaba los ultimos pixeles. */
+#define NOTE_X          (DIALOG_W + 13 - 18 - 360)
+#define NOTE_W          (DIALOG_W + 13 - NOTE_X)
+
 /* The dialog's font: one step down in the VISION theme, like the other dialogs */
 #define VF(n) (theme_shape.vision ? font_down(&sony_##n, VISION_FONT_STEPS - 1) : &sony_##n)
 
@@ -562,9 +571,9 @@ static void construct_cb(lv_obj_t *parent) {
     lv_label_set_text(label_state, "");
 
     label_note = make_label(dialog.obj, TC(text));
-    lv_obj_set_width(label_note, 360);
+    lv_obj_set_width(label_note, NOTE_W);
     lv_obj_set_style_text_align(label_note, LV_TEXT_ALIGN_RIGHT, 0);
-    lv_obj_set_pos(label_note, DIALOG_W + 13 - 18 - 360, DIALOG_BOX_H - STATUS_H - 4);
+    lv_obj_set_pos(label_note, NOTE_X, DIALOG_BOX_H - STATUS_H - 4);
     lv_label_set_text(label_note, "Row: pair/connect - Auto: hold to unpair");
 
     shown.n  = 0;
