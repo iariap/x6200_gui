@@ -126,7 +126,9 @@ extern "C" {
     X(pill_border,       0x777777, 0x777777, 0x888888, 0x5a5a5a) /* info box items (theme_shape.pill_border) */ \
     X(meter_weak,        0xaaaaaa, 0xaaaaaa, 0xc8c8c8, 0xa0a0a0) /* S-meter first bar of meter_gradient */ \
     X(meter_bar,         0xaaaaaa, 0xaaaaaa, 0x404040, 0xa0a0a0) /* S-meter bars up to S9 */ \
-    X(meter_over,        0xffffff, 0xffffff, 0x000000, 0xff4040) /* S-meter +20 +40 labels */ \
+    /* issue #44: el arco de RS (esta columna) mide 3.31:1 sobre el fondo medido (62,78,92); */ \
+    /* #ff4040 daba 2.47:1 y #ff5252 (solo en el JSON) 2.69:1, los dos por debajo de 3:1. */ \
+    X(meter_over,        0xffffff, 0xffffff, 0x000000, 0xf08080) /* S-meter +20 +40 labels */ \
     X(meter_low,         0x20c040, 0x20c040, 0x3fdf5f, 0x40e040) /* S-meter above S9: from this... */ \
     X(meter_high,        0xe02020, 0xe02020, 0x000000, 0xff3030) /* ...to this; last bar of meter_gradient */ \
     X(bar_high,          0xcc3333, 0xcc3333, 0xcc3333, 0xe03030) /* SWR high, mic clipping */ \

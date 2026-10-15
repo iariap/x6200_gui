@@ -91,7 +91,7 @@
         "meter_low": "#196fd2",
         "meter_high": "#196fd2",
         "meter_bar": "#196fd2",
-        "meter_over": "#ff5252",
+        "meter_over": "#f08080",
         "alc": "#0ac7ff",
         "pill_off_text": "#808080",
         "pill_border": "#5d5d5d",
