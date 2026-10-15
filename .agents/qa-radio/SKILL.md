@@ -18,6 +18,12 @@ Nace de la rutina que pidio el dueño el 2026-10-15 y de los errores que ya se c
 4. Vale la regla del proyecto: *todos los hallazgos deben estar fundados, si no se pueden fundar no debe
    ser un hallazgo* (ver el skill `hallazgos-fundados`).
 5. La radio y la estacion son del dueño: no se transmite sin su autorizacion y se deja todo como estaba.
+6. **SOLO SE MONITOREA Y SE REPORTA** (regla del dueño, 15/10 17:30, en mayusculas). No se arregla el
+   firmware (`src/`, `rootfs/`), **no se tocan los ajustes de la radio** (params, temas, archivos de
+   `DATA`) y **no se ofrecen arreglos**: el entregable es el reporte y, si algo falla, el issue. Lo unico
+   que este rol escribe son los documentos del QA: el reporte al dueño, `docs/PRUEBAS.md`, la evidencia
+   en `docs/evidencia/` y este skill. Si un fix aparece en la rama, se **valida y se reporta**, no se
+   escribe.
 
 ## Paso 0 — Donde trabajar (el arbol es compartido)
 
