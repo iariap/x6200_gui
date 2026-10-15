@@ -22,9 +22,23 @@ mkdir -p "$OUT"
 BASEFLAGS="-std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter -pthread"
 SAN="-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover"
 
-SOURCES="$SRC/adaptive_tuning.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c \
+# --- CW decoder stage (issue #51) --------------------------------------------
+# src/cw_decoder.c includes its siblings with `#include "..."`, and for a quoted
+# include the directory of the including file always wins over -I: the stub
+# headers under tests/native/stubs_cw/ cannot shadow src/pannel.h and
+# src/remote_server.h from their own directory. The real cw_decoder.c is staged
+# next to a copy of the stubs and of the LVGL stub, the same pattern as the
+# clock and backlight tests (see tests/native/test_cw_decoder.c).
+CW_STAGE="$OUT/cw_src"
+rm -rf "$CW_STAGE"
+mkdir -p "$CW_STAGE/lvgl"
+cp "$SRC/cw_decoder.c" "$SRC/cw_decoder.h" "$CW_STAGE/"
+cp "$DIR/stubs_cw/pannel.h" "$DIR/stubs_cw/remote_server.h" "$CW_STAGE/"
+cp "$DIR/stubs/lvgl/lvgl.h" "$CW_STAGE/lvgl/"
+
+SOURCES="$SRC/adaptive_tuning.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c $CW_STAGE/cw_decoder.c \
 $DIR/stubs/stubs.c $DIR/test_main.c $DIR/test_framework.c \
-$DIR/test_adaptive_tuning.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c \
+$DIR/test_adaptive_tuning.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c \
 $DIR/test_update_check.c"
 
 echo "== compilador: $($CC --version | head -1) =="
