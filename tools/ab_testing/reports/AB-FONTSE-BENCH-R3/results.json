@@ -1,0 +1,78 @@
+{
+  "budget": {
+    "max_dispersion_cv_pct": 25.0,
+    "max_flushes_delta_pct": 20.0,
+    "max_p95_delta_pct": 25.0,
+    "max_redrawn_area_delta_pct": 20.0,
+    "min_frames": 12,
+    "repeats": 5,
+    "rounds": 4,
+    "warmup_frames": 3
+  },
+  "comparisons": [
+    {
+      "a": {
+        "dispersion_cv_pct": 1.464,
+        "draw_ms_mean": 2.8784,
+        "flush_ms_mean": 0.4083,
+        "flushes_mean": 1.0,
+        "fps": 305.31,
+        "frames": 20,
+        "memory": {
+          "peak_rss_bytes": 10346496,
+          "peak_vm_bytes": 81956864,
+          "pss_bytes": 10334208,
+          "rss_bytes": 10280960
+        },
+        "redrawn_area_mean": 384000.0,
+        "render_mean_ms": 3.2867,
+        "render_p50_ms": 3.2753,
+        "render_p95_ms": 3.3713,
+        "render_p99_ms": 3.4563,
+        "render_stdev_ms": 0.0605,
+        "scenario": "main-frecuencia-dseg",
+        "unique_redrawn_mean": 384000.0
+      },
+      "b": {
+        "dispersion_cv_pct": 3.148,
+        "draw_ms_mean": 3.0348,
+        "flush_ms_mean": 0.4463,
+        "flushes_mean": 1.0,
+        "fps": 296.77,
+        "frames": 20,
+        "memory": {
+          "peak_rss_bytes": 10473472,
+          "peak_vm_bytes": 81956864,
+          "pss_bytes": 10461184,
+          "rss_bytes": 10473472
+        },
+        "redrawn_area_mean": 384000.0,
+        "render_mean_ms": 3.481,
+        "render_p50_ms": 3.3697,
+        "render_p95_ms": 3.8132,
+        "render_p99_ms": 4.1058,
+        "render_stdev_ms": 0.2344,
+        "scenario": "main-frecuencia-dseg",
+        "unique_redrawn_mean": 384000.0
+      },
+      "flushes_delta_pct": 0.0,
+      "p95_delta_pct": 13.107,
+      "reasons": [],
+      "redrawn_area_delta_pct": 0.0,
+      "scenario": "main-frecuencia-dseg",
+      "status": "PASS"
+    }
+  ],
+  "environment": "x86 host: relative regression proxy, not the Cortex-A7",
+  "exit_code": 0,
+  "experiment_id": "AB-FONTSE-BENCH-R3",
+  "kind": "benchmark-comparison",
+  "revisions": {
+    "a": "11f8d689317a76f68cd4da5d6915e13e8b09450e",
+    "b": "562d3f212002a5379f448a1ee8eb9a16ffdd8f06"
+  },
+  "scenarios": [
+    "main-frecuencia-dseg"
+  ],
+  "status": "PASS"
+}
