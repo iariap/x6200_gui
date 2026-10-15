@@ -238,10 +238,13 @@ invalidation** — halving the invalidated area of the spectrum moves neither
   `signal_gen_waterfall_row()` every `1000/25` ms (`src/dsp.cpp`'s
   `spectrum_fps_ms`/`waterfall_fps_ms`), checked once per 10 ms slice. The clock
   invalidates every 500 ms on its own (`src/clock.c`).
-* **One natural frame is one LVGL display refresh period** of virtual time
-  (`LV_DISP_DEF_REFR_PERIOD`, 30 ms). `--bench-natural [N]`,
-  `--natural-frames N` or the fixture's `natural_frames N` set how many frames
-  the run does (40 by default).
+* **One natural frame is one LVGL display refresh period** of virtual time: the
+  ROM's own (`LV_DISP_DEF_REFR_PERIOD`, 50 ms), which the harness reads from
+  `lv_conf.h` at build time (`HARNESS_ROM_REFR_PERIOD`) and puts on the display's
+  refresh timer before measuring — the same source the wakeup profile uses, so
+  the two cannot disagree. `--bench-natural [N]`, `--natural-frames N` or the
+  fixture's `natural_frames N` set how many frames the run does (40 by default,
+  2000 ms of virtual time).
 * The JSON gains a `natural` block; `metrics` and `benchmark` keep their format
   and their meaning (the settled capture's own numbers, plus what the natural
   frames add).
@@ -251,24 +254,24 @@ invalidation** — halving the invalidated area of the spectrum moves neither
   "enabled": true,
   "clock": "virtual-time",
   "environment": "x86 host: the channel/ARM energy cost is not measured",
-  "frame_ms": 30, "slice_ms": 10, "frames": 40,
+  "frame_ms": 50, "slice_ms": 10, "frames": 40,
   "data_drive": true, "seed": 13,
   "spectrum_fps_ms": 66, "waterfall_fps_ms": 40,
-  "spectrum_frames": 17, "waterfall_rows": 24,
-  "waterfall_offscreen_redraws": 24,
+  "spectrum_frames": 28, "waterfall_rows": 40,
+  "waterfall_offscreen_redraws": 40,
   "per_frame": [
-    { "frame": 1, "virtual_end_ms": 2260, "refresh_cycles": 1,
+    { "frame": 1, "virtual_end_ms": 2250, "refresh_cycles": 1,
       "invalidated_px": 196000, "invalidated_rects": 1, "joined_px": 0,
       "flushed_px": 196000, "flushes": 1, "rects_complete": true,
       "rects": [[0, 235, 800, 245]] },
-    { "frame": 2, "virtual_end_ms": 2290, "refresh_cycles": 1,
+    { "frame": 2, "virtual_end_ms": 2300, "refresh_cycles": 1,
       "invalidated_px": 132000, "invalidated_rects": 1, "joined_px": 0,
       "flushed_px": 132000, "flushes": 1, "rects_complete": true,
       "rects": [[0, 0, 800, 165]] }
   ],
-  "totals": { "invalidated_px": 6745720, "invalidated_rects": 45, "joined_px": 784000,
-              "flushed_px": 6745720, "flushes": 45, "refresh_cycles": 37,
-              "frames_with_flush": 37 }
+  "totals": { "invalidated_px": 11223840, "invalidated_rects": 67, "joined_px": 1372000,
+              "flushed_px": 11223840, "flushes": 67, "refresh_cycles": 39,
+              "frames_with_flush": 39 }
 }
 ```
 
@@ -346,12 +349,14 @@ more is a number:
   wakeups the firmware does not have.
 * It runs the loop with the ROM's configured refresh period
   (`LV_DISP_DEF_REFR_PERIOD`, `lv_conf.h`) instead of the harness's own LVGL
-  default (30 ms), and reports the ROM's tick mode next to it. `LV_TICK_CUSTOM`
-  (`lv_conf.h` of the ROM) is read at build time by the harness CMake and passed
-  as `HARNESS_ROM_TICK_CUSTOM`: with it on, `tick_custom` is true, the tick thread
-  does not exist and `tick_thread_wakeups` is 0; with it off, the tick cadence is
-  read from `src/main.c`. The gate re-reads the same source, so neither can drift
-  out from under the measurement.
+  default (30 ms), and reports the ROM's tick mode next to it. Both the period
+  and `LV_TICK_CUSTOM` come from the ROM's `lv_conf.h`, read at build time by the
+  harness CMake and passed as `HARNESS_ROM_REFR_PERIOD` (one source shared with
+  the natural bench, which now measures its frames at the same period) and
+  `HARNESS_ROM_TICK_CUSTOM`: with the latter on, `tick_custom` is true, the tick
+  thread does not exist and `tick_thread_wakeups` is 0; with it off, the tick
+  cadence is read from `src/main.c`. The gate re-reads the same source, so
+  neither can drift out from under the measurement.
 * Two passes: `with_drive` (the radio's steady state) and `static` (the data
   drive off — the delimitation control).
 * The JSON gains a `wakeups` block: `wakeups`, `with_flush`, `immediate`,

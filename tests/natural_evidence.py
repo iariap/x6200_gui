@@ -9,6 +9,10 @@ modes of the gate and verifies, on the produced numbers:
   the clock 15840 px every 500 ms, and *every* rectangle the run reports is one
   of the regions a firmware timer invalidates (the bench invalidates nothing on
   its own);
+* that one natural frame is one refresh period of the ROM (`frame_ms` must be
+  the `LV_DISP_DEF_REFR_PERIOD` of the ROM's lv_conf.h, read here from the same
+  file the harness' CMake reads at build time: #56's cross-check, applied to
+  this mode too);
 * the radio's DSP cadence mirrored by the drive (src/dsp.cpp: 1000/15 and
   1000/25, checked once per virtual-time slice);
 * the delimitation control (`--natural-static`): with the data drive off the
@@ -27,6 +31,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 from __future__ import annotations
 
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -34,7 +39,12 @@ from pathlib import Path
 # rectangle (x, y, w, h) -> (px, what invalidates it). Measured on
 # main-natural; the first three are the profile of UI-07 increment 1, the last
 # two are the firmware's 2 s timers, which only fire because the natural run
-# reaches t > 3 s (the plain capture advances 1.2 s and never sees them).
+# reaches t > 3 s (the plain capture advances 1.2 s and never sees them). With
+# the ROM's own refresh period (50 ms, the alignment of decision 8) the driven
+# run lands a data rectangle in almost every frame, so both 2 s-timer
+# rectangles usually arrive inside the spectrum/waterfall one and LVGL joins
+# them: they show up in the `--natural-static` control instead (7 + 1 times),
+# which is where the delimitation check reads them.
 PROFILE: dict[tuple[int, int, int, int], tuple[int, str]] = {
     (0, 0, 800, 165): (132000, "spectrum, one FFT frame (src/spectrum.c)"),
     (0, 235, 800, 245): (196000, "waterfall, one new row (src/waterfall.c)"),
@@ -44,12 +54,30 @@ PROFILE: dict[tuple[int, int, int, int], tuple[int, str]] = {
 }
 
 # The fixture declares `natural_frames 40`; one frame is one LVGL display
-# refresh period. The drive is checked once per slice.
+# refresh period. The period is NOT a constant of this file: the harness reads
+# the ROM's LV_DISP_DEF_REFR_PERIOD (lv_conf.h) at build time
+# (HARNESS_ROM_REFR_PERIOD, tools/ui_harness/CMakeLists.txt) and reports it as
+# `frame_ms`; this checker re-reads the same lv_conf.h and requires the JSON to
+# carry it, so the measurement cannot drift from the ROM's config (the same
+# cross-check tests/wakeup_evidence.py does for the wakeup profile, #56).
 FRAMES = 40
-FRAME_MS = 30
 SLICE_MS = 10
 SPECTRUM_FPS_MS = 1000 // 15
 WATERFALL_FPS_MS = 1000 // 25
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def rom_refresh_period_ms(root: Path) -> int:
+    """`LV_DISP_DEF_REFR_PERIOD` de lv_conf.h (la config de la ROM)."""
+    match = re.search(
+        r"^#define\s+LV_DISP_DEF_REFR_PERIOD\s+(\d+)", (root / "lv_conf.h").read_text(), re.M
+    )
+    if match is None:
+        print("FAIL: the ROM's refresh period is not in lv_conf.h", file=sys.stderr)
+        raise SystemExit(1)
+    return int(match.group(1))
+
 
 # The settled capture of main-natural: 6 flushes and 1127680 px (the same
 # numbers the 18 fixtures of the A/B suite report); the natural run adds its own
@@ -59,15 +87,17 @@ SETTLE_PX = 1127680
 FULL_SCREEN_PX = 800 * 480
 
 # How many times each rectangle appears in the 40 frames (deterministic: seed 13,
-# fixed frame count). Pinned so a change of the drive, the cadence or the fixture
-# has to be justified instead of silently moving the profile.
+# fixed frame count). Pinned so a change of the drive, the cadence, the frame
+# period or the fixture has to be justified instead of silently moving the
+# profile. At the ROM's 50 ms period the waterfall fires exactly once per frame
+# and the spectrum every other frame, so almost every frame carries a data
+# rectangle and the 2 s-timer rectangles are joined into them (they are counted
+# in RECT_COUNTS of the static control, below in check_static).
 RECT_COUNTS = Counter(
     {
-        (0, 235, 800, 245): 23,  # waterfall: 24 rows, one lands with the faded band info
-        (0, 0, 800, 165): 16,  # spectrum: 17 FFT frames, one shares the cycle with the clock
-        (0, 241, 800, 34): 4,  # band info fading (part of it lands inside the waterfall)
+        (0, 235, 800, 245): 39,  # waterfall: one row per frame (40 rows, one shares with the clock)
+        (0, 0, 800, 165): 27,  # spectrum: 28 FFT frames, one shares the cycle with the clock
         (580, 0, 220, 72): 1,  # clock: the other tick lands inside the spectrum
-        (152, 23, 30, 36): 1,  # BT icon (its timer fires once in the window)
     }
 )
 
@@ -117,12 +147,17 @@ def rects_of(frame: dict) -> list[tuple[int, int, int, int]]:
     return [(int(rect[0]), int(rect[1]), int(rect[2]), int(rect[3])) for rect in frame["rects"]]
 
 
-def check_natural(checker: Checker, doc: dict) -> None:
+def check_natural(checker: Checker, doc: dict, rom_frame_ms: int) -> None:
     natural = doc["natural"]
-    total_ms = FRAMES * FRAME_MS
+    frame_ms = natural["frame_ms"]
+    checker.check(
+        frame_ms == rom_frame_ms,
+        f"frame_ms = {frame_ms}, but the ROM configures {rom_frame_ms} ms (lv_conf.h, "
+        "LV_DISP_DEF_REFR_PERIOD): a natural frame is not a ROM frame",
+    )
+    total_ms = FRAMES * frame_ms
 
     checker.check(natural["frames"] == FRAMES, f"frames = {natural['frames']}, expected {FRAMES}")
-    checker.check(natural["frame_ms"] == FRAME_MS, f"frame_ms = {natural['frame_ms']}")
     checker.check(natural["slice_ms"] == SLICE_MS, f"slice_ms = {natural['slice_ms']}")
     checker.check(natural["data_drive"] is True, "the natural run did not drive the data")
     checker.check(
@@ -152,7 +187,7 @@ def check_natural(checker: Checker, doc: dict) -> None:
 
     frames = natural["per_frame"]
     checker.check(len(frames) == FRAMES, f"per_frame has {len(frames)} entries")
-    base_ms = frames[0]["virtual_end_ms"] - FRAME_MS
+    base_ms = frames[0]["virtual_end_ms"] - frame_ms
     counts: Counter[tuple[int, int, int, int]] = Counter()
     totals = {
         "invalidated_px": 0,
@@ -168,7 +203,7 @@ def check_natural(checker: Checker, doc: dict) -> None:
         where = f"frame {index}"
         checker.check(frame["frame"] == index, f"{where}: frame index")
         checker.check(
-            frame["virtual_end_ms"] == base_ms + (index + 1) * FRAME_MS,
+            frame["virtual_end_ms"] == base_ms + (index + 1) * frame_ms,
             f"{where}: virtual_end_ms = {frame['virtual_end_ms']} (the clock did not advance "
             "one frame of virtual time)",
         )
@@ -379,13 +414,11 @@ def main(argv: list[str]) -> int:
     # The two runs of the gate (natural.json / run1.json) must be byte-identical;
     # the shell checks the bytes, here the numbers of the profiled run are read.
     natural_doc = load(out_dir, "natural")
-    check_natural(checker, natural_doc)
+    check_natural(checker, natural_doc, rom_refresh_period_ms(ROOT))
     check_static(checker, load(out_dir, "static"), natural_doc)
     check_forced(checker, load(out_dir, "forced"), natural_doc)
     check_cli(checker, load(out_dir, "cli"))
-    check_display_off(
-        checker, load(out_dir, "off"), natural_doc, load(out_dir, "forced")
-    )
+    check_display_off(checker, load(out_dir, "off"), natural_doc, load(out_dir, "forced"))
 
     print("\n".join(checker.lineas))
     return 0

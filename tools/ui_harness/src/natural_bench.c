@@ -138,11 +138,21 @@ void natural_bench_run(const scenario_t *scenario, int count)
     total_frames = count;
     enabled = true;
 
+    /* Un frame natural es un periodo de refresco de la ROM, no el default de
+     * LVGL del arnes: se le pone el periodo que configura la ROM (ver
+     * natural_bench.h) al refr_timer del display antes de medir, igual que el
+     * perfil de wakeups (wakeup_bench.c). */
+    lv_disp_t *disp = lv_disp_get_default();
+
+    if (disp != NULL && disp->refr_timer != NULL) {
+        lv_timer_set_period(disp->refr_timer, NATURAL_BENCH_REFR_PERIOD_MS);
+    }
+
     uint32_t offscreen_start = waterfall_offscreen_redraw_count();
 
     for (current_frame = 0; current_frame < total_frames; current_frame++) {
         frame_open = true;
-        virtual_time_advance_step(LV_DISP_DEF_REFR_PERIOD, NATURAL_BENCH_SLICE_MS,
+        virtual_time_advance_step(NATURAL_BENCH_REFR_PERIOD_MS, NATURAL_BENCH_SLICE_MS,
                                   natural_bench_drive_slice, NULL);
         frames[current_frame].virtual_end_ms = virtual_time_now_ms();
         frame_open = false;
@@ -203,6 +213,11 @@ int natural_bench_frame_count(void)
     return total_frames;
 }
 
+uint32_t natural_bench_refresh_period_ms(void)
+{
+    return NATURAL_BENCH_REFR_PERIOD_MS;
+}
+
 static void write_totals(FILE *f)
 {
     uint64_t invalidated = 0;
@@ -244,7 +259,7 @@ void natural_bench_write_json(FILE *f)
     fprintf(f, "    \"enabled\": true,\n");
     fprintf(f, "    \"clock\": \"virtual-time\",\n");
     fprintf(f, "    \"environment\": \"x86 host: the channel/ARM energy cost is not measured\",\n");
-    fprintf(f, "    \"frame_ms\": %d,\n", LV_DISP_DEF_REFR_PERIOD);
+    fprintf(f, "    \"frame_ms\": %d,\n", NATURAL_BENCH_REFR_PERIOD_MS);
     fprintf(f, "    \"slice_ms\": %d,\n", NATURAL_BENCH_SLICE_MS);
     fprintf(f, "    \"frames\": %d,\n", total_frames);
     fprintf(f, "    \"data_drive\": %s,\n", drive ? "true" : "false");

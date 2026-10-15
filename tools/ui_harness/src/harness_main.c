@@ -473,7 +473,7 @@ int main(int argc, char **argv)
     }
     if (natural_bench_enabled()) {
         printf("ui_harness: natural frames=%d (frame_ms=%d, drive=%s)\n",
-               natural_bench_frame_count(), LV_DISP_DEF_REFR_PERIOD,
+               natural_bench_frame_count(), (int) natural_bench_refresh_period_ms(),
                natural_bench_drive() ? "on" : "off");
     }
     if (wakeup_bench_enabled()) {

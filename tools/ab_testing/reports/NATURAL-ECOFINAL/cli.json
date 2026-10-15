@@ -2,7 +2,7 @@
   "scenario": "main-natural",
   "screen": "main",
   "seed": 13,
-  "revision": "baf6164dfc09c48a540db637846c05302612bca2",
+  "revision": "02c13119039da34c9a888e200d61948602b5a9ac",
   "framebuffer": { "width": 800, "height": 480 },
   "theme": {
     "requested": "IU1WXY",
@@ -10,7 +10,7 @@
     "params_max_chars": 31,
     "active": "IU1WXY"
   },
-  "virtual_time_ms": 2500,
+  "virtual_time_ms": 2700,
   "coverage": [
     { "component": "theme.c", "level": "REAL", "note": "src/theme.c compiled; theme_init() sets the scenario's theme (builtin or the ROM's JSON)" },
     { "component": "styles.c", "level": "REAL", "note": "src/styles.c compiled; every object is styled by the real styles" },
@@ -36,7 +36,6 @@
     { "component": "radio", "level": "SYNTHETIC", "note": "mocks/mock_radio.c: explicit radio state, no device" },
     { "component": "spot_marks.c", "level": "UNSUPPORTED", "note": "DX cluster spot marks are not rendered (no cluster data on the host)" },
     { "component": "cluster_column.c", "level": "UNSUPPORTED", "note": "DX cluster column is not rendered (no cluster data on the host)" },
-    { "component": "freq_strip.c", "level": "UNSUPPORTED", "note": "the app frequency strip is not rendered; main_screen draws its frequency row inline" },
     { "component": "dialogs (dialog_*.c)", "level": "UNSUPPORTED", "note": "app dialogs are not opened; dialog_construct() opens none of them in these fixtures" }
   ],
   "radio_calls": {
@@ -53,44 +52,44 @@
     "poweroff": 0
   },
   "metrics": {
-    "flushes": 15,
-    "flushed_pixels": 2635680,
-    "framebuffer_fnv1a": "0x6a93a16bdceefa7f",
+    "flushes": 21,
+    "flushed_pixels": 3683680,
+    "framebuffer_fnv1a": "0xa9d10f7d7173a495",
     "png_path": "out/natural/cli.png",
-    "png_bytes": 254256
+    "png_bytes": 256402
   },
   "natural": {
     "enabled": true,
     "clock": "virtual-time",
     "environment": "x86 host: the channel/ARM energy cost is not measured",
-    "frame_ms": 30,
+    "frame_ms": 50,
     "slice_ms": 10,
     "frames": 10,
     "data_drive": true,
     "seed": 13,
     "spectrum_fps_ms": 66,
     "waterfall_fps_ms": 40,
-    "spectrum_frames": 4,
-    "waterfall_rows": 6,
-    "waterfall_offscreen_redraws": 6,
+    "spectrum_frames": 7,
+    "waterfall_rows": 10,
+    "waterfall_offscreen_redraws": 10,
     "per_frame": [
-      { "frame": 0, "virtual_end_ms": 2230, "refresh_cycles": 0, "invalidated_px": 0, "invalidated_rects": 0, "joined_px": 0, "flushed_px": 0, "flushes": 0, "rects_complete": true, "rects": [] },
-      { "frame": 1, "virtual_end_ms": 2260, "refresh_cycles": 1, "invalidated_px": 196000, "invalidated_rects": 1, "joined_px": 0, "flushed_px": 196000, "flushes": 1, "rects_complete": true, "rects": [[0,235,800,245]] },
-      { "frame": 2, "virtual_end_ms": 2290, "refresh_cycles": 1, "invalidated_px": 132000, "invalidated_rects": 1, "joined_px": 0, "flushed_px": 132000, "flushes": 1, "rects_complete": true, "rects": [[0,0,800,165]] },
-      { "frame": 3, "virtual_end_ms": 2320, "refresh_cycles": 1, "invalidated_px": 196000, "invalidated_rects": 1, "joined_px": 0, "flushed_px": 196000, "flushes": 1, "rects_complete": true, "rects": [[0,235,800,245]] },
-      { "frame": 4, "virtual_end_ms": 2350, "refresh_cycles": 1, "invalidated_px": 132000, "invalidated_rects": 1, "joined_px": 0, "flushed_px": 132000, "flushes": 1, "rects_complete": true, "rects": [[0,0,800,165]] },
-      { "frame": 5, "virtual_end_ms": 2380, "refresh_cycles": 1, "invalidated_px": 196000, "invalidated_rects": 1, "joined_px": 0, "flushed_px": 196000, "flushes": 1, "rects_complete": true, "rects": [[0,235,800,245]] },
-      { "frame": 6, "virtual_end_ms": 2410, "refresh_cycles": 1, "invalidated_px": 196000, "invalidated_rects": 1, "joined_px": 0, "flushed_px": 196000, "flushes": 1, "rects_complete": true, "rects": [[0,235,800,245]] },
-      { "frame": 7, "virtual_end_ms": 2440, "refresh_cycles": 1, "invalidated_px": 132000, "invalidated_rects": 1, "joined_px": 0, "flushed_px": 132000, "flushes": 1, "rects_complete": true, "rects": [[0,0,800,165]] },
-      { "frame": 8, "virtual_end_ms": 2470, "refresh_cycles": 1, "invalidated_px": 196000, "invalidated_rects": 1, "joined_px": 0, "flushed_px": 196000, "flushes": 1, "rects_complete": true, "rects": [[0,235,800,245]] },
-      { "frame": 9, "virtual_end_ms": 2500, "refresh_cycles": 1, "invalidated_px": 132000, "invalidated_rects": 1, "joined_px": 0, "flushed_px": 132000, "flushes": 1, "rects_complete": true, "rects": [[0,0,800,165]] }
+      { "frame": 0, "virtual_end_ms": 2250, "refresh_cycles": 0, "invalidated_px": 0, "invalidated_rects": 0, "joined_px": 0, "flushed_px": 0, "flushes": 0, "rects_complete": true, "rects": [] },
+      { "frame": 1, "virtual_end_ms": 2300, "refresh_cycles": 1, "invalidated_px": 196000, "invalidated_rects": 1, "joined_px": 0, "flushed_px": 196000, "flushes": 1, "rects_complete": true, "rects": [[0,235,800,245]] },
+      { "frame": 2, "virtual_end_ms": 2350, "refresh_cycles": 1, "invalidated_px": 328000, "invalidated_rects": 2, "joined_px": 0, "flushed_px": 328000, "flushes": 2, "rects_complete": true, "rects": [[0,0,800,165], [0,235,800,245]] },
+      { "frame": 3, "virtual_end_ms": 2400, "refresh_cycles": 1, "invalidated_px": 328000, "invalidated_rects": 2, "joined_px": 0, "flushed_px": 328000, "flushes": 2, "rects_complete": true, "rects": [[0,0,800,165], [0,235,800,245]] },
+      { "frame": 4, "virtual_end_ms": 2450, "refresh_cycles": 1, "invalidated_px": 196000, "invalidated_rects": 1, "joined_px": 0, "flushed_px": 196000, "flushes": 1, "rects_complete": true, "rects": [[0,235,800,245]] },
+      { "frame": 5, "virtual_end_ms": 2500, "refresh_cycles": 1, "invalidated_px": 328000, "invalidated_rects": 2, "joined_px": 0, "flushed_px": 328000, "flushes": 2, "rects_complete": true, "rects": [[0,0,800,165], [0,235,800,245]] },
+      { "frame": 6, "virtual_end_ms": 2550, "refresh_cycles": 1, "invalidated_px": 328000, "invalidated_rects": 2, "joined_px": 0, "flushed_px": 328000, "flushes": 2, "rects_complete": true, "rects": [[0,0,800,165], [0,235,800,245]] },
+      { "frame": 7, "virtual_end_ms": 2600, "refresh_cycles": 1, "invalidated_px": 328000, "invalidated_rects": 2, "joined_px": 0, "flushed_px": 328000, "flushes": 2, "rects_complete": true, "rects": [[0,0,800,165], [0,235,800,245]] },
+      { "frame": 8, "virtual_end_ms": 2650, "refresh_cycles": 1, "invalidated_px": 196000, "invalidated_rects": 1, "joined_px": 0, "flushed_px": 196000, "flushes": 1, "rects_complete": true, "rects": [[0,235,800,245]] },
+      { "frame": 9, "virtual_end_ms": 2700, "refresh_cycles": 1, "invalidated_px": 328000, "invalidated_rects": 2, "joined_px": 0, "flushed_px": 328000, "flushes": 2, "rects_complete": true, "rects": [[0,0,800,165], [0,235,800,245]] }
     ],
     "totals": {
-      "invalidated_px": 1508000,
-      "invalidated_rects": 9,
+      "invalidated_px": 2556000,
+      "invalidated_rects": 15,
       "joined_px": 0,
-      "flushed_px": 1508000,
-      "flushes": 9,
+      "flushed_px": 2556000,
+      "flushes": 15,
       "refresh_cycles": 9,
       "frames_with_flush": 9
     }

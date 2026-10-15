@@ -3457,3 +3457,56 @@ quedan como evidencia histórica de la corrida anterior.
    es el estado en memoria del módulo; la confirmación de que el GPIO no escribe
    con el panel oscuro es del canal físico.
 
+
+## 2026-10-15 — El frame natural es un frame de la ROM (decisión 8, corrida `fonts-libre`)
+
+**Qué cambió.** Un "frame natural" es *un período de refresco de LVGL*, y el banco
+nuevo lo medía con el default de LVGL del arnés (**30 ms**) porque el `lv_conf.h`
+del arnés no define `LV_DISP_DEF_REFR_PERIOD`. La ROM configura **50 ms**
+(`lv_conf.h`), así que la ventana que el banco reportaba no era una ventana de la
+ROM. Ahora el CMake del arnés lee el número del `lv_conf.h` de la ROM y lo pasa
+como `HARNESS_ROM_REFR_PERIOD`; `natural_bench_run()` lo pone en el `refr_timer`
+del display antes de medir y lo reporta en `frame_ms`. Es la **misma pieza** que
+el perfil de wakeups ya usaba (`wakeup_bench.c`, #56): ahora las dos leen el
+período de una sola fuente y ninguna lo hardcodea, así que no pueden declarar
+períodos distintos.
+
+**Cómo se codifica la restricción** (no en prosa): `tests/natural_evidence.py`
+re-lee `lv_conf.h` y falla si `natural.frame_ms` no es el número de la ROM; la
+cadencia del drive se sigue reproduciendo desde `src/dsp.cpp`
+(1000/15, 1000/25). El gate sigue siendo `tests/check_harness_natural.sh`
+(determinismo byte a byte + perfil + delimitación + pantalla apagada + `--bench`
+intacto) y `tests/check_harness_wakeups.sh` para el lazo.
+
+**Re-baseline medido** (harness local, fixture `main-natural`, seed 13, 40 frames;
+evidencia cruda re-generada en `tools/ab_testing/reports/NATURAL-ECOFINAL/`):
+
+| métrica | antes (30 ms) | después (50 ms) |
+|---|---|---|
+| `frame_ms` / ventana de 40 frames | 30 ms / 1200 ms | 50 ms / 2000 ms |
+| `spectrum_frames` / `waterfall_rows` | 17 / 24 | 28 / 40 |
+| `waterfall_offscreen_redraws` | 24 | 40 |
+| `natural.totals.invalidated_px` | 6745720 | 11223840 |
+| `natural.totals.invalidated_rects` | 45 | 67 |
+| `joined_px` | 784000 | 1372000 |
+| frames con flush | 37/40 | 39/40 |
+| delimitación (`--natural-static`) | 304760 px (4.5%) | 254840 px (2.3%) |
+| `--bench-natural --display-off` | 0 px | 0 px |
+| `metrics.flushed_pixels` | 1127680 + 6745720 | 1127680 + 11223840 |
+| `main-natural-eco` invalidated px | 1758360 (offscreen 6) | 2861240 (offscreen 10) |
+
+Ninguna **región** perfilada se movió: el espectro sigue invalidando 132000 px por
+frame de FFT, la cascada 196000 px por fila, el reloj 15840 px por tick de 500 ms,
+la band info 27200 px y el ícono de BT 1080 px (son geometría, no cadencia). Lo que
+cambió es cuántas entran en la ventana y, con ello, el histograma de rectángulos:
+con el período de la ROM la cascada dispara exactamente una vez por frame y el
+espectro una de cada dos, así que casi todos los frames llevan una región de datos
+y los dos rectángulos de los timers de 2 s (band info, BT) llegan dentro de ellas
+(el espectro cubre `0,0 800x165`; la cascada, `0,235 800x245`) y LVGL los une: se
+cuentan como `joined_px`. Los dos siguen midiéndose —y son los que reporta el
+control de delimitación `--natural-static`—: 7 band info y 1 BT en la ventana.
+
+**Blast radius.** `--bench` (forzado), el formato de `metrics` y el de la captura
+común quedan intactos: los PNG de `forced`/`static`/`off` son byte a byte los
+mismos (ver `sha256.txt`); sólo cambian los PNG de las corridas natural (más
+frames de trabajo dibujados). El submódulo LVGL no se toca.

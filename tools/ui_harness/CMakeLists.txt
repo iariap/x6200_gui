@@ -56,6 +56,22 @@ else()
     set(HARNESS_ROM_TICK_CUSTOM 0)
 endif()
 
+# --- el periodo de refresco de la ROM ---------------------------------------
+# Un frame natural es un periodo de refresco de LVGL, y los dos modos que miden
+# ese lazo (natural_bench.c y wakeup_bench.c) tienen que correr con el periodo
+# que configura la ROM (lv_conf.h: LV_DISP_DEF_REFR_PERIOD). El arnes es un
+# binario de host con su propio lv_conf.h, que no define ese valor, asi que LVGL
+# le queda en su default (30 ms) y la medicion no seria la de la ROM. El valor
+# sale de la misma fuente que LV_TICK_CUSTOM, en build time: no puede driftear
+# del lv_conf.h de la ROM. Sin la definicion (build suelto) queda el default de
+# LVGL, y los gates (tests/natural_evidence.py, tests/check_harness_wakeups.sh)
+# leen el numero de lv_conf.h y lo cruzan con el JSON.
+if(ROM_LV_CONF MATCHES "#define[ \t]+LV_DISP_DEF_REFR_PERIOD[ \t]+([0-9]+)")
+    set(HARNESS_ROM_REFR_PERIOD ${CMAKE_MATCH_1})
+else()
+    set(HARNESS_ROM_REFR_PERIOD 30)   # el default de LVGL: la ROM no lo define
+endif()
+
 # --- theme images: styles.c points at A:/dev/shm on the radio ---------------
 file(READ ${REPO}/src/styles.c STYLES_HOST)
 string(REPLACE "A:/dev/shm/" "A:${REPO}/" STYLES_HOST "${STYLES_HOST}")
@@ -161,6 +177,7 @@ target_compile_definitions(ui_harness PRIVATE
     LV_CONF_INCLUDE_SIMPLE=1
     HARNESS_REVISION="${HARNESS_REVISION}"
     HARNESS_ROM_TICK_CUSTOM=${HARNESS_ROM_TICK_CUSTOM}
+    HARNESS_ROM_REFR_PERIOD=${HARNESS_ROM_REFR_PERIOD}
     # The themes the ROM ships (the JSON files + the RS folder), read from this
     # repository instead of /usr/share: theme.c looks in THEMES_DIR_SHIPPED and
     # the harness sets it to this path before theme_init (harness_main.c). Same

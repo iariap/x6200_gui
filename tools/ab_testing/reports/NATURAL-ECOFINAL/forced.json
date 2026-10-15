@@ -2,7 +2,7 @@
   "scenario": "main-natural",
   "screen": "main",
   "seed": 13,
-  "revision": "baf6164dfc09c48a540db637846c05302612bca2",
+  "revision": "02c13119039da34c9a888e200d61948602b5a9ac",
   "framebuffer": { "width": 800, "height": 480 },
   "theme": {
     "requested": "IU1WXY",
@@ -36,7 +36,6 @@
     { "component": "radio", "level": "SYNTHETIC", "note": "mocks/mock_radio.c: explicit radio state, no device" },
     { "component": "spot_marks.c", "level": "UNSUPPORTED", "note": "DX cluster spot marks are not rendered (no cluster data on the host)" },
     { "component": "cluster_column.c", "level": "UNSUPPORTED", "note": "DX cluster column is not rendered (no cluster data on the host)" },
-    { "component": "freq_strip.c", "level": "UNSUPPORTED", "note": "the app frequency strip is not rendered; main_screen draws its frequency row inline" },
     { "component": "dialogs (dialog_*.c)", "level": "UNSUPPORTED", "note": "app dialogs are not opened; dialog_construct() opens none of them in these fixtures" }
   ],
   "radio_calls": {
@@ -67,15 +66,15 @@
     "repeats": 3,
     "redraw_passes": 1,
     "frames": [
-      { "render_ms": 3.2165, "flush_ms": 0.3957, "draw_ms": 2.8208, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 },
-      { "render_ms": 3.1991, "flush_ms": 0.3911, "draw_ms": 2.8081, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 },
-      { "render_ms": 3.1888, "flush_ms": 0.3886, "draw_ms": 2.8002, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 }
+      { "render_ms": 3.1969, "flush_ms": 0.3937, "draw_ms": 2.8032, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 },
+      { "render_ms": 3.2283, "flush_ms": 0.3951, "draw_ms": 2.8332, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 },
+      { "render_ms": 3.2067, "flush_ms": 0.3899, "draw_ms": 2.8168, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 }
     ],
     "memory": {
-      "rss_bytes": 10137600,
-      "pss_bytes": 9377792,
-      "peak_rss_bytes": 10203136,
-      "peak_vm_bytes": 79986688
+      "rss_bytes": 10215424,
+      "pss_bytes": 9340928,
+      "peak_rss_bytes": 10215424,
+      "peak_vm_bytes": 79990784
     }
   }
 }
