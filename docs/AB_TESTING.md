@@ -2646,3 +2646,157 @@ PENDIENTE del banco: `tools/captura-banco.sh` reinicia la GUI en cada llamada po
 `{"cmd":"get"}` falla contra una GUI ya arrancada (contenedor vivo, socket que no contesta); por eso
 las capturas de varios pasos se hicieron con un driver de una sola corrida. No se tocó el script
 (el defecto es del banco, no de este cambio).
+
+## Perfil visual de bateria en Ajustes: UI + persistencia + los 2 clamps (UI-08 incremento 5, issue #14) ✅
+
+Cierra el ultimo tramo de UI-08: la politica de bateria (incr. 1-4) queda **manejable desde la GUI**
+y **persistente**. Ajustes gana la fila **"Visual profile"** (AUTO + los cuatro perfiles), el perfil
+que el usuario fija **sobrevive al reboot**, y los dos clamps que la spec dejo pendientes —el preview
+del slider de brillo y el OFF/ON del switch— pasan por la **unica puerta con cap**. Nada de
+RF/TX/CAT/DSP ni del submodulo `lvgl/` pineado.
+
+### La fila: el seteado (desplegable) y el VIGENTE (etiqueta)
+
+- **Desplegable** (`src/dialog_settings.c`, `make_visual_profile`): `Auto`, `Quality`, `Balanced`,
+  `Eco`, `Critical`. Es el valor **seteado** y lo persiste en `params.visual_profile` con
+  `params_uint8_set()` (el mismo lock/dirty que las filas vecinas).
+- **Etiqueta** de la fila: `Visual profile (<perfil>)`, y el `<perfil>` es el **VIGENTE**, no el
+  seteado. Sale de `visual_policy_current()` (`src/visual_policy.c`): el ultimo perfil que paso por
+  `visual_policy_brightness_apply()`. Se registra en el **apply** y no en la evaluacion a proposito:
+  en la radio la evaluacion corre en el hilo de la radio (`radio_tick`) y el apply en el de LVGL (lo
+  encola el scheduler), que es el mismo del dialogo, asi que la lectura de la UI no cruza hilos. En
+  AUTO lo decide la bateria; con un override esta congelado. Es una foto del estado **al abrir
+  Ajustes** (el dialogo es modal y el perfil no cambia mientras esta abierto).
+
+La fila vive en el grupo **Apariencia** (con Theme y Font: es el preset de look-and-feel). No va en
+Espectro (donde esta el toggle "Waterfall battery mode") porque ese grupo ya ocupa 5 filas y una
+sexta se **recortaria** contra el viewport de 330 px de la grilla; y no va en Pantalla porque su
+fixture volveria a medir la geometria pre-existente de **UI-015** (el slider y los switches por
+debajo del target de 44 px), que esta **N/A** en este incremento. Asi los contratos cierran **sin
+agregar un waiver**.
+
+### Persistencia: `params.visual_profile` (y por que NO es `waterfall_battery`)
+
+| pieza | donde | que hace |
+|---|---|---|
+| valor reservado | `src/visual_policy.h`, `VP_PARAM_AUTO` = `0xFF` | fuera del enum: agregar un perfil no convierte un "automatico" guardado en un perfil fijo |
+| traduccion (pura) | `visual_policy_override_from_param(u8)` | `0..VP_PROFILE_COUNT-1` -> `VP_MANUAL(perfil)`; **cualquier otro valor** (AUTO o un byte desconocido) -> `VP_AUTO` (fallback declarado) |
+| store | `src/params/params.h` (`params_uint8_t visual_profile`), `.c` | carga por nombre y guarda por nombre (`params_load_uint8`/`params_save_uint8`); por defecto `VP_PARAM_AUTO` |
+| ROM | `src/radio.c` | `apply_visual_override_at_boot()` (con el byte cargado por `params_init`) y **por muestra** en `radio_tick()`, los dos convertidos con `visual_policy_override_from_param()` |
+| arnes | `tools/ui_harness/src/screens.c` | `build_main()` usa **la misma conversion** (mock_params deja AUTO), asi el banco no puede divergir del ROM |
+
+La politica **no incluye `params.h`** (solo recibe el byte) y **nunca escribe el parametro**: el
+unico que lo guarda es la fila de Ajustes. `waterfall_battery` sigue siendo **otra cosa** —el toggle
+de usuario del modo Ahorro que vive en disco—; el perfil es la **capa por encima** del toggle
+(ECO/CRITICAL lo fuerzan, QUALITY/BALANCED lo devuelven al usuario), no el toggle. Los defaults de
+ingenieria (umbrales mV, caps de brillo) no se tocan: son de la pasada fisica.
+
+### Los 2 clamps plegados
+
+1. **Preview del slider de brillo** (`backlight_brightness_update_cb`, `src/dialog_settings.c`): el
+   `LV_EVENT_VALUE_CHANGED` del arrastre llamaba `backlight_set_brightness(params.brightness_normal)`
+   **directo**. Ahora llama `visual_policy_brightness_rewrite(params.brightness_normal)`: el setting
+   se guarda entero en `params`, pero el nivel que va al panel es `min(setting, cap del perfil
+   vigente)`.
+2. **`backlight_switch()`** (`src/backlight.c`): el camino de vuelta a encender llamaba
+   `set_brightness(params.brightness_normal)` directo (saltaba el cap). Ahora pasa por
+   `visual_policy_brightness_rewrite()`; `on` se pone en `true` **antes** porque
+   `backlight_set_brightness()` solo escribe con el display encendido (el gate de la puerta unica).
+   El apagado no pasa por el cap: sube el PWM al maximo con la luz apagada (no emite).
+
+Ambos clamps son la **misma query** que ya usan el tick por input y el timer de idle (incr. 4): el
+cap lo deja vigente el `apply` y **sobrevive** tanto al preview como al OFF/ON.
+
+### Fixture y regiones (sin waivers nuevos)
+
+- **`settings-perfil`** (nueva): pantalla principal real + Ajustes por el camino del firmware, con el
+  grupo **Apariencia** a la vista (`buttons_press(4)` -> "Mas >", `buttons_press(2)` -> "Apariencia",
+  el mismo `settings_goto()` del usuario). La bateria es **11.2 V sin fuente externa**, asi que el
+  automatico decide **ECO**: el desplegable dice `Auto` (el seteado) y la etiqueta `Visual profile
+  (Eco)` (el VIGENTE). `scenario_settle` **codifica** ese texto exacto (`label_on_screen`): si el
+  perfil de la bateria o la fila se mueven, el arnes corta en vez de capturar otra cosa. Golden nuevo
+  en `tools/ab_testing/golden/settings-perfil.png`.
+- **`ajustes_perfil`** (`quality/regions.yaml`): la caja de la fila (x=20..783, y=199..255), medida
+  con `--inspect` sobre el render.
+- **`ajustes_scrollbar`** + un **`expected_change`** acotado: la fila nueva alarga el contenido de la
+  grilla **una fila (54+5 px)**, asi que el pulgar de la barra de scroll —que solo se dibuja en la
+  fixture scrolleada `settings-wfbat`— queda mas corto. Es la **unica** region que se mueve en
+  `settings-wfbat`. El `expected_change` lleva autor y fecha de vencimiento, y **no** se agrego
+  ningun waiver (`exceptions` queda con las dos entradas de UI-015 de siempre).
+
+`quality/contracts.yaml` gana un solo `expected_changes` (el del pulgar); ningun cambio de regla ni
+`exceptions` nuevo.
+
+### Evidencia (host, 2026-10-14, A = `688e393` -> B = `8b26972`)
+
+```text
+$ tests/check_harness_determinism.sh            # 24 fixtures x 2 corridas
+settings-home:   d83f57b39ff7706dffc7ad041269781c7e2a1520f7b27e35f05232b5e63b5395
+settings-perfil: 72d3197c3063b5a829e2161b27907c34f887a6ae1d4eee957264d7a585825f83
+settings-wfbat:  2b9e1a08bc40b6eeece3df7414088575652790c9d13feee88c9aac29966fff24
+... (las 21 fixtures previas con el MISMO sha256 del tip 688e393)
+PASS: deterministic (identical PNGs for every fixture)
+
+$ cd tools/ab_testing && uv run x6200-ab compare --a 688e393 --b HEAD --experiment-id AB-UI08-I5
+experiment AB-UI08-I5: PASS (exit 0)
+  Functional PASS · Visual Regression PASS (no unexplained visual regressions)
+  Quality Contract PASS (239 checks) · Performance PASS · Hardware BLOCKED · Energy BLOCKED
+  23/23 fixtures (las de A): solo settings-wfbat cambia, 50 px, todos en `ajustes_scrollbar`
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts 8b26972043aa: PASS — 249 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited 8b26972043aa: 16 known issues — 0 reproduced, 14 unverified; structural
+inspection REAL over 2679 objects on 24 scenario(s): 0 structural finding(s)
+
+$ uv run pytest -m "not e2e" -q           → 170 passed, 17 deselected
+$ uv run pytest -m e2e -q                 → 17 passed, 170 deselected
+$ uv run ruff check . / ruff format --check . → limpios
+tests/native/run_native_tests.sh          → 790 + 7 + 19 comprobaciones, 0 fallos
+repo static checks (cfg_fills/actions/settings_focus/apps_menu/app_handlers/wcag) → PASS
+```
+
+Evidencia cruda del A/B en
+[`tools/ab_testing/reports/AB-UI08-I5/`](../tools/ab_testing/reports/AB-UI08-I5/) (reporte, `results.json`,
+diffs por fixture, screenshots). Impacto en pixeles: **50 px cambiados en total** (un solo fixture, la
+barra de scroll), **0 regresiones sin explicar**. Como en los incrementos anteriores, la fixture nueva
+**no entra en el `compare`** (la suite sale de A): su cobertura la dan el determinismo (24x2),
+`contracts`/`audit` sobre HEAD y su PNG commiteado.
+
+`settings-home` no se mueve (sha256 identico al del tip): la fila nueva **no toca** ningun pixel de
+las fixtures previas salvo el pulgar de la barra de scroll de `settings-wfbat`, que esta declarado.
+
+### Anti-falso-verde
+
+- **Persistencia**: el test nativo cubre `visual_policy_override_from_param` entera (los cuatro
+  indices, `VP_PARAM_AUTO`, `VP_PROFILE_COUNT` y bytes desconocidos), los nombres de la UI y
+  `visual_policy_current()`, mas el camino de punta a punta (byte -> override -> apply -> cap). El
+  byte se guarda/carga por nombre en `params.c` (mismo mecanismo que los vecinos).
+- **Clamps**: el test nativo de `src/backlight.c` (`tests/native/test_backlight.c`) asserta que el
+  OFF/ON encendido pasa por `visual_policy_brightness_rewrite()` con el nivel de `params`; volver a
+  un `backlight_set_brightness()` directo deja el recorder vacio y el test rojo. El clamp del preview
+  usa la **misma** funcion (cubierta en `test_visual_policy.c`).
+- **La fila**: la fixture **codifica** el texto del perfil vigente (`Visual profile (Eco)`) y el
+  golden lo fija pixel a pixel.
+
+### Stretch: el wiring del spectrum — PENDIENTE (con analisis)
+
+El tercer consumidor que el header de `visual_policy.h` declara pendiente **no se hizo**. El
+waterfall tiene un hook listo (`waterfall_set_battery_mode()` -> `refresh_period`), pero el
+**espectro no tiene equivalente**: su dibujo es por evento (`LV_EVENT_DRAW_MAIN_END`,
+`src/spectrum.c:75`) y no hay ningun contador de frames ni setter de cadencia. Conectarlo requiere
+**diseno nuevo** (un contador + una funcion tipo `spectrum_set_refresh_period()` y decidir que se
+saltea: el espectro, o solo el relleno), fuera del alcance de "solo si hay un hook listo". Queda como
+candidato del proximo incremento de UI-08.
+
+### PENDIENTES honestos
+
+- **Calibracion fisica**: los umbrales de mV y los caps de brillo siguen siendo **defaults de
+  ingenieria**; el canal de bugs de la radio (#15) los ajusta en la pasada fisica.
+- **Puerta del owner (layout de bateria)**: el reparto visual de la bateria en el reloj de potencia
+  es decision del owner; este incremento no lo toca.
+- **Etiqueta "vigente"**: es una **foto al abrir Ajustes** (no se re-evalua con el dialogo abierto).
+  El perfil no cambia mientras el dialogo esta abierto salvo por este control, asi que una
+  re-lectura live no agregaria informacion hoy; queda anotado por si en el futuro el dialogo se abre
+  de forma no modal sobre la pantalla.
