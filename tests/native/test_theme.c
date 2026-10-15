@@ -390,6 +390,54 @@ static void test_waterfall_signal_width(void) {
     unsetenv("THEMES_DIR_SHIPPED");
 }
 
+/* issue #91: un tema que no se puede resolver (ni builtin ni archivo) tiene que caer al
+ * default COMPLETO. Los 122 roles salen del default: ninguno queda del tema pedido ni a medio
+ * aplicar (mitad-y-mitad), el nombre que reporta el engine es el del default (no el pedido) y
+ * pedirlo dos veces da lo mismo (sin estado que se arrastre entre intentos). */
+static void test_unknown_theme_is_complete_default(void) {
+    uint32_t def[TC_COUNT];
+
+    theme_init("IU1WXY");
+    for (int i = 0; i < TC_COUNT; i++) def[i] = theme_hex((theme_color_t) i);
+
+    theme_init("no-such-theme-91");
+
+    for (int i = 0; i < TC_COUNT; i++) {
+        CHECK(theme_hex((theme_color_t) i) == def[i]);
+    }
+    CHECK(strcmp(theme_shape.name, "IU1WXY") == 0);
+    CHECK(theme_waterfall() != NULL);
+
+    /* Idempotente: pedirlo de nuevo da exactamente lo mismo */
+    theme_init("no-such-theme-91");
+    for (int i = 0; i < TC_COUNT; i++) {
+        CHECK(theme_hex((theme_color_t) i) == def[i]);
+    }
+}
+
+/* Y un archivo de tema que EXISTE pero no se puede leer (JSON roto, DATA a medio copiar) cae
+ * igual al default completo: la resolucion no puede depender de que el archivo sea valido. */
+static void test_broken_theme_file_falls_back(void) {
+    uint32_t def[TC_COUNT];
+
+    mkdir(DIR, 0777);
+    setenv("THEMES_DIR", DIR, 1);
+    write_file(DIR "/roto91.json", "{ esto no es json");
+
+    theme_init("IU1WXY");
+    for (int i = 0; i < TC_COUNT; i++) def[i] = theme_hex((theme_color_t) i);
+
+    theme_init("roto91");
+    for (int i = 0; i < TC_COUNT; i++) {
+        CHECK(theme_hex((theme_color_t) i) == def[i]);
+    }
+    CHECK(strcmp(theme_shape.name, "IU1WXY") == 0);
+    CHECK(theme_waterfall() != NULL);
+
+    unlink(DIR "/roto91.json");
+    rmdir(DIR);
+}
+
 void test_theme(void) {
     test_default();
     test_list();
@@ -399,5 +447,7 @@ void test_theme(void) {
     test_sunlit();
     test_cathode();
     test_waterfall_signal_width();
+    test_unknown_theme_is_complete_default();
+    test_broken_theme_file_falls_back();
 }
 
