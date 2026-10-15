@@ -118,3 +118,36 @@ JSON of the two patched runs is in `sensitivity/` (`half-nat.json`,
   to the base revision `325ec32`, hashes `a656e096…`/`3986bc9a…`): it is the
   firmware's `band_info`/`middle_line` draw-end callback touching the object tree
   during a render. Pre-existing, not introduced here.
+
+## Modo `--display-off`: la pantalla apagada no hace trabajo de render (issue #13, UI-07 remanente)
+
+Evidencia nueva del **mismo** modo natural, con el display apagado por la ruta de
+la ROM (la tecla POWER suelta: `src/keypad.c` ->
+`lv_event_send(lv_scr_act(), EVENT_KEYPAD)` -> `main_screen_keypad_cb` ->
+`backlight_switch()` -> `lv_disp_enable_invalidation(disp, false)`,
+`src/main_screen.c`/`src/backlight.c`, los dos reales en el harness):
+
+| medición (40 frames, drive de datos activo) | encendida (`natural`) | apagada (`off`) |
+|---|---|---|
+| `natural.totals.invalidated_px` | 6745720 | **0** |
+| `natural.totals.invalidated_rects` | 45 | **0** |
+| `natural.totals.flushes` | 45 | **0** |
+| `natural.totals.refresh_cycles` | 37 | **0** |
+| `metrics.flushes` (captura) | 6 | 5 |
+| `metrics.flushed_pixels` (captura) | 1127680 | 743680 |
+| PNG de la corrida natural | `8ec63121…` | `3986bc9a…` (= captura común) |
+
+El espectro, la cascada y el reloj siguen disparando sus timers y siguen
+alimentándose de datos (17 frames de FFT y 24 filas de cascada en la ventana,
+`off.json`): lo único que desaparece es el trabajo de render, porque ninguna
+invalidación llega al driver. De la captura también desaparece exactamente el
+repaint de pantalla completa que el harness hace antes de la corrida
+(**384000 px = 1127680 − 743680**), y su PNG queda **byte a byte** igual al de la
+captura con la pantalla encendida (`forced`, `3986bc9a…`): la misma imagen, menos
+trabajo. Los 743680 px que quedan son los que se pintaron *antes* de apretar la
+tecla — el panel conserva el último frame, que es lo que hace la radio.
+
+`off.json` es de la revisión `ec89fc3` (la corrida `factory/spectrum-eco-13`); el
+resto de este directorio es de `376ed09`. La propiedad queda además en el test
+nativo (`tests/native/test_backlight.c`): el módulo real declara una sola llamada
+a `lv_disp_enable_invalidation` por switch, `false` al apagar y `true` al volver.

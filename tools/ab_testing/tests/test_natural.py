@@ -118,3 +118,22 @@ def test_static_control_has_no_data_regions() -> None:
     assert control["waterfall_rows"] == 0
     rectangles = {tuple(rect) for frame in control["per_frame"] for rect in frame["rects"]}
     assert rectangles.isdisjoint({(0, 0, 800, 165), (0, 235, 800, 245)})
+
+
+def test_display_off_evidence_renders_nothing() -> None:
+    """`--display-off` (issue #13): el panel oscuro no hace trabajo de render.
+
+    La propiedad la mide el `natural` block (todo en cero) y el test nativo del
+    backlight; aca queda pineada sobre la evidencia, porque la captura de la
+    pantalla apagada es exactamente un repaint de pantalla completa mas liviana
+    (1127680 - 384000 = 743680 px) y el mismo PNG que con la pantalla encendida.
+    """
+    document = _load("off")
+    natural = document["natural"]
+    assert natural["data_drive"] is True
+    assert natural["spectrum_frames"] > 0 and natural["waterfall_rows"] > 0
+    assert set(natural["totals"].values()) == {0}
+    assert document["metrics"]["flushes"] == 6 - 1
+    assert document["metrics"]["flushed_pixels"] == 1127680 - 800 * 480
+    lit = _load("forced")["metrics"]["framebuffer_fnv1a"]
+    assert document["metrics"]["framebuffer_fnv1a"] == lit

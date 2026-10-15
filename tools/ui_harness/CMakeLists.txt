@@ -71,6 +71,14 @@ set(GUI_SRC
     # La politica visual de bateria (UI-08 incr. 1): modulo puro que todavia no
     # llama nadie; se compila aca para que el -Wall del arnes lo cubra desde ya.
     ${REPO}/src/visual_policy.c
+    # El modulo real del backlight (issue #13, UI-07 remanente): ahi vive la
+    # ruta de pantalla apagada que el banco mide. backlight_switch() apaga la
+    # invalidacion del display (lv_disp_enable_invalidation) y `--display-off`
+    # la recorre por la tecla POWER del propio main screen
+    # (src/main_screen.c -> src/backlight.c). Lo que el host sustituye son las
+    # escrituras a sysfs (los fds quedan -1, el modulo ya es no-op) y el GPIO
+    # del SDK (mocks/mock_ui_deps.c, third_party/).
+    ${REPO}/src/backlight.c
     # The shared dialog machinery, the real Ajustes window and the real Bluetooth
     # window: the `settings-*` fixtures open Ajustes over the real main screen and
     # `bt-dialog` opens the Bluetooth app (UI-002/UI-005). The rest of the app

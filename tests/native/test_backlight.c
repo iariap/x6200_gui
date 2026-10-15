@@ -36,6 +36,12 @@ int     test_rewrite_calls(void);
 int16_t test_rewrite_last(void);
 bool    test_rewrite_last_valid(void);
 
+/* Registro de lv_disp_enable_invalidation() (tests/native/backlight_stubs.c):
+ * la ruta de pantalla apagada. */
+void test_invalidation_reset(void);
+int  test_invalidation_calls(void);
+bool test_invalidation_last(void);
+
 /* Dispara el callback de idle que backlight_tick() registro. */
 void test_backlight_run_idle_timer(void);
 
@@ -87,14 +93,28 @@ void test_backlight(void) {
      * un backlight_set_brightness() directo. El apagado no emite luz, asi que no
      * pasa por el cap. Empieza encendido (arranque del modulo). --- */
     test_rewrite_reset();
+    test_invalidation_reset();
     backlight_switch();                 /* encendido -> apagado: sin rewrite */
     CHECK(test_rewrite_calls() == 0);
 
+    /* El apagado corta la invalidacion del display (issue #13, UI-07
+     * remanente): con el panel oscuro no queda trabajo de render. El banco lo
+     * mide con `--bench-natural --display-off`: 0 px invalidados y 0 flush
+     * contra los 6745720 px con la pantalla encendida. Si el apagado volviera a
+     * dejar la invalidacion prendida, esto queda rojo. */
+    CHECK(test_invalidation_calls() == 1);
+    CHECK(test_invalidation_last() == false);
+
     test_rewrite_reset();
+    test_invalidation_reset();
     backlight_switch();                 /* apagado -> encendido: un rewrite */
     CHECK(test_rewrite_calls() == 1);
     CHECK(test_rewrite_last_valid());
     CHECK(test_rewrite_last() == params.brightness_normal);
+
+    /* Y al volver la pantalla se vuelve a invalidar. */
+    CHECK(test_invalidation_calls() == 1);
+    CHECK(test_invalidation_last() == true);
 
     /* El switch tampoco toca los settings del usuario. */
     CHECK(params.brightness_normal == 9);

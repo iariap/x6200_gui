@@ -3120,3 +3120,170 @@ fixtures nuevos no tocan ninguna pantalla existente. La unica fuente que se movi
 `bt-dialog` (el ancho de la nota, `NOTE_W`), que A no tiene y por eso no entra en el diff A/B. El
 corpus pasa de **25 a 33 fixtures** y el contrato suma 352 chequeos. La evidencia de la corrida es
 `tools/ab_testing/reports/AB-SEEDS11/` (commiteada al lado).
+
+## UI-07 remanente: wakeups del tick y pantalla apagada (issue #13) — corrida `factory/spectrum-eco-13`
+
+Cierre del remanente declarado de UI-07 (`docs/spectrum-eco-spec.md`): medir el
+wake-up del tick, verificar la ruta de pantalla apagada y decidir el espectro en
+ECO. **La ROM no cambia** (ni un archivo de `src/`, `lvgl/` pineado `74d0a816`):
+las dos primeras piezas terminan en **medición + guardas del banco** y la tercera
+en **PENDIENTE fundado**.
+
+### 1. Wakeups: el hilo del tick es el 93.5% de los wakeups de la GUI
+
+La ROM tiene dos fuentes de wakeups: el lazo de `src/main.c` (duerme hasta el
+próximo timer que `lv_timer_handler()` diga; los posts del DSP **no** lo
+despiertan — `src/scheduler.cpp` es una cola común que se drena en la próxima
+vuelta) y el hilo del tick (`while (1) { usleep(5 * 1000); lv_tick_inc(5); }`).
+
+Modo nuevo y adicional del arnés, `--bench-wakeups [MS]` (ver
+`tools/ui_harness/README.md`): reproduce el lazo sobre la **misma base de timers**
+que la ROM arma (los componentes reales son los que crean y arman los timers) y
+lo reporta al lado de la cadencia del tick, que el gate lee de `src/main.c`. El
+lazo corre con el periodo de refresco **de la ROM** (`LV_DISP_DEF_REFR_PERIOD 50`,
+`lv_conf.h`), no con el default de LVGL del `lv_conf.h` del host (30 ms): el gate
+lee los dos números (y la cadencia del DSP de `src/dsp.cpp`) de las fuentes.
+
+| medición (fixture `main-natural`, seed 13, ventana 1000 ms) | valor |
+|---|---|
+| wakeups del lazo, con el camino de datos | **14** |
+| wakeups del lazo, sin el camino de datos (control) | **11** |
+| sueños del lazo (min–max) | **10–200 ms** |
+| px flusheados en el lazo, con / sin datos | **2492000 / 414080** |
+| wakeups del hilo del tick (5 ms) | **200** |
+| **share del tick sobre las dos fuentes** | **93.5%** |
+| vueltas sin sueño (`lv_timer_handler()` en 0) o sin timer armado | **0** |
+
+Con `--bench-wakeups 3000`: lazo 31, tick 600 (el conteo escala con la ventana).
+Evidencia cruda: `tools/ab_testing/reports/WAKEUPS-ECO13/`.
+
+**Recomendación (no aplicada: el spec pide medir y recomendar).** Con el tick como
+93.5% de los wakeups, la vía es sacar el hilo, no optimizar el lazo: (1)
+`LV_TICK_CUSTOM 1` con una fuente monotónica (`clock_gettime(CLOCK_MONOTONIC)`, que
+la ROM ya usa en `get_time()`) elimina el hilo entero (200 → 0 wakeups/s) y toca
+`lv_conf.h` + `src/main.c`, **no** `lvgl/`; (2) sin tocar `lv_conf.h`,
+`usleep(20*1000)` + `lv_tick_inc(20)` en `src/main.c` baja a 50 wakeups/s a costa
+de la resolución del tick. Cualquiera de las dos es una decisión sobre la cadencia
+global de la ROM y va con pasada por hardware: el banco no mide el costo de un
+wakeup (x86; la energía del Cortex-A7 sigue BLOCKED).
+
+### 2. Pantalla apagada: la ruta de la ROM ya se salta todo el render (medido)
+
+`--display-off` recorre la ruta real (la tecla POWER: `src/keypad.c` →
+`main_screen_keypad_cb` → `backlight_switch()` → `lv_disp_enable_invalidation(false)`,
+con `src/backlight.c` compilado de verdad en el arnés) antes de la corrida natural:
+
+| 40 frames, drive de datos activo | pantalla encendida | pantalla apagada |
+|---|---|---|
+| `natural.totals.invalidated_px` | 6745720 | **0** |
+| `natural.totals.flushes` / `rects` / `cycles` | 45 / 45 / 37 | **0 / 0 / 0** |
+| `metrics.flushes` / `flushed_pixels` (captura) | 6 / 1127680 | 5 / **743680** |
+| PNG de la corrida | `8ec63121…` | `3986bc9a…` (= la captura común) |
+
+El espectro, la cascada y el reloj siguen disparando y siguen recibiendo datos (17
+frames de FFT y 24 filas en la ventana): lo único que desaparece es el trabajo de
+render. De la captura desaparece exactamente el repaint de pantalla completa que
+el arnés hace antes de medir (384000 = 1127680 − 743680) y el PNG queda byte a
+byte igual al de la pantalla encendida: **la misma imagen, menos trabajo**. No
+había nada que arreglar en la ROM (el corte ya estaba); lo que faltaba era la
+guarda: el modo queda en `tests/check_harness_natural.sh` +
+`tests/natural_evidence.py` y la propiedad del módulo real (una sola llamada a
+`lv_disp_enable_invalidation` por switch, `false` al apagar y `true` al volver) en
+`tests/native/test_backlight.c`.
+
+### 3. PENDIENTES honestos
+
+1. **Espectro en ECO (diseño, no medido).** El cableado del espectro al perfil
+   sigue pendiente y **no se fuerza**: el dibujo del espectro es por evento
+   (`LV_EVENT_DRAW_MAIN_END`), no hay contador de frames ni setter de cadencia, y
+   la decisión de producto (¿se saltea cadencia, relleno o banda?) no es de esta
+   corrida. Diseño mínimo para el próximo run (5 líneas): (a) el perfil ECO fija
+   un período de refresco del espectro (contador en `spectrum_refresh()` como
+   `refresh_period` del waterfall, `src/spectrum.c`), (b) el primer refresco tras
+   encender/ECO siempre dibuja (borde de subida), para no dejar el panel vacío
+   cuando los datos llegan despacio, y (c) la medición es `--bench-natural` con el
+   fixture `main-natural-eco` (el camino ya existe: el perfil llega al waterfall).
+   Potencial **medido** (no implementado): el espectro es 132000 px × 16 frames =
+   **2112000 px de los 6745720** del bench natural (**31.3%**); una cadencia de
+   1/4 dejaría ~528000 px de espectro, ~23% del total, sujeto al reagrupamiento de
+   rectángulos de LVGL que ya se midió en el waterfall (que bajó 48.5% con una
+   cadencia de 1/4, no el 75% nominal). Requiere además decidir el borde de bajada
+   (que el último frame no quede sin dibujar) — es la parte que hace que el cambio
+   no sea chico y por eso queda para un run propio.
+2. **El redibujo offscreen de la cascada sigue corriendo con la pantalla apagada
+   (hallazgo, sin medición en el banco).** `refresh_waterfall()`
+   (`src/waterfall.c`) hace `redraw_cb(NULL)` —reconstruye los 800×245 px de la
+   paleta— **antes** de invalidar; con el display apagado la invalidación es
+   nop pero el dibujo offscreen ya ocurrió: ~196000 px de trabajo de software por
+   fila a 25 filas/s si el DSP sigue alimentando. El `--display-off` de hoy **no lo
+   ve** (el banco mide lo que el driver flushea, y ahí no llega nada): haría falta
+   un contador del redibujo offscreen (por ejemplo `redraw_cb` contado en el
+   arnés, o un instrumento explícito del componente) para fundar el fix
+   (`refresh_waterfall()` salteando el redibujo mientras el display está apagado,
+   y un redibujo al volver). El espectro, en cambio, no dibuja nada fuera de
+   LVGL: su `spectrum_refresh()` sólo invalida.
+
+### Gates (salida real, HEAD `9b6fe17`)
+
+```text
+$ tests/check_harness_determinism.sh          # 33 fixtures x 2 corridas
+...
+PASS: deterministic (identical PNGs for every fixture)
+# los 33 sha256 son IDENTICOS a los del tip base ec89fc3: compilar src/backlight.c
+# de verdad en el arnes no movio un pixel de ninguna fixture.
+
+$ tests/check_harness_natural.sh
+  profile: spectrum 132000 px x 16 frames, waterfall 196000 px x 23 rows, clock 15840 px x 1 tick(s)
+  natural totals: invalidated 6745720 px in 45 rectangles / 45 flushes over 37/40 frames
+  delimitation: drive off -> 304760 px (4.5% of the 6745720 px with the drive), only clock/BT/band-info rectangles
+  forced mode: 3 frames x 1 flush x 384000 px (natural: 6745720 px in 40 frames)
+  CLI override: --bench-natural 10 ran 10 frames (the fixture says 40)
+  display off: 0 px in 40 frames (against 6745720 px lit) and a capture 384000 px lighter
+PASS: natural bench deterministic, profiled and delimited (main-natural)
+
+$ tests/check_harness_wakeups.sh               # gate nuevo
+  loop: 14 wakeups with the data drive (11 without it) in 1000 ms; sleeps 10-200 ms
+  tick thread: 200 wakeups in 1000 ms (5 ms, src/main.c) = 93.5% of the two sources
+  window override: --bench-wakeups 3000 ran 3000 ms with 31 loop wakeups (the default window: 1000 ms)
+  plain capture: no `wakeups` block (the mode is additive)
+PASS: wakeup profile measured, sourced and delimited (main-natural)
+
+$ uv run x6200-ab compare --a ec89fc3 --b HEAD --experiment-id AB-ECO13
+experiment AB-ECO13: PASS (exit 0)
+  Functional PASS (33 scenarios captured on both revisions) · Visual Regression PASS
+  (captures are pixel-identical to the baseline) · Quality Contract PASS (352 contract checks)
+  Performance PASS · Hardware BLOCKED · Energy BLOCKED
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts 9b6fe17abc54: PASS — 352 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited 9b6fe17abc54: 16 known issues — 0 reproduced, 14 unverified; structural inspection REAL
+over 3861 objects on 33 scenario(s): 0 structural finding(s)
+
+$ uv run pytest -m "not e2e" -q
+187 passed, 18 deselected
+$ uv run pytest -m e2e -q
+18 passed, 187 deselected in 126.06s (0:02:06)
+$ tests/native/run_native_tests.sh
+791 comprobaciones, 0 fallos + 7, 0 fallos (clock, UI-009) + 23, 0 fallos (backlight:
+la guarda nueva de lv_disp_enable_invalidation suma 4 sobre las 19 de UI-08 incr. 4)
+$ 6 chequeos estaticos (check_cfg_fills, check_actions, check_settings_focus, check_apps_menu,
+  check_app_handlers, check_wcag) → PASS
+$ cd tools/ab_testing && uv run ruff check . && uv run ruff format --check .   → PASS
+```
+
+Nota de herramienta: en este entorno `uv run ty check src tests` (la forma que corre el
+CI) imprime `WARN No python files found under the given path(s)` con `ty 0.0.87` y sale 0;
+se reprodujo igual en el checkout base (`work/x6200_gui`), así que es preexistente.
+Pasándole archivos (`ty check $(find src tests -name '*.py')`) sí chequea y sale limpio.
+
+Reproducibilidad **x3**: tres corridas seguidas de `--bench-natural`,
+`--bench-natural --display-off` y `--bench-wakeups` dan los mismos números
+(natural 6745720 px, apagada 0 px / captura 743680, wakeups lazo 14 / tick 200) y
+los mismos PNG (`8ec63121…`, `3986bc9a…`, `c1c66701…`); los JSON sólo difieren en
+`png_path`/`png_bytes` (el nombre del archivo de salida).
+
+Evidencia commiteada de la corrida: `tools/ab_testing/reports/AB-ECO13/`
+(compare A/B), `tools/ab_testing/reports/WAKEUPS-ECO13/` (perfil de wakeups) y
+`tools/ab_testing/reports/NATURAL-UI07-N1/off.json` (pantalla apagada).

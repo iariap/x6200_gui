@@ -26,6 +26,7 @@ tools/ui_harness/
     render_metrics.c    flush count / flushed pixels
     bench_metrics.c     real-clock (CLOCK_MONOTONIC) frame timings + /proc memory
     natural_bench.c     natural-invalidation bench: LVGL's own loop over the virtual clock, per-frame invalidation (`--bench-natural`)
+    wakeup_bench.c      wakeup profile of the ROM's GUI loop vs its tick thread (`--bench-wakeups`)
     ui_inspector.c      structural inspection of the live LVGL object tree (--inspect)
     screens.c           scenario -> screen builder (calls the firmware's main_screen())
     scenario.c          scenario file parser (radio state, theme, seed)
@@ -107,7 +108,7 @@ docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" \
       --json     out/home-usb-20m.json"
 ```
 
-CLI: `ui_harness --scenario <file> --png <out.png> [--json <out.json>] [--bench [--warmup N] [--repeats N]] [--inspect] [--bench-natural [N]] [--natural-frames N] [--natural-static]`.
+CLI: `ui_harness --scenario <file> --png <out.png> [--json <out.json>] [--bench [--warmup N] [--repeats N]] [--inspect] [--bench-natural [N]] [--natural-frames N] [--natural-static] [--bench-wakeups [MS]] [--display-off]`.
 
 The JSON carries the scenario name/screen/seed, the git revision, the
 per-component coverage, the radio-call log from the mock, and the render metrics
@@ -295,6 +296,64 @@ increment 1 (spectrum 132000 px per FFT frame, waterfall 196000 px per row, cloc
 15840 px per 500 ms tick), the drive cadence against `src/dsp.cpp`'s constants,
 and that `--bench` still repaints the whole 384000 px screen. The raw output of a
 run is in `tools/ab_testing/reports/NATURAL-UI07-N1/`.
+
+### Display off (`--display-off`)
+
+`--display-off` runs the ROM's own display-off route before the capture and the
+bench: the POWER key (`src/keypad.c` sends `EVENT_KEYPAD` to the active screen),
+the main screen's callback and `src/backlight.c` (the real module, compiled
+here) -> `lv_disp_enable_invalidation(disp, false)`. With the panel dark the
+whole natural run invalidates and flushes **0 px** while the spectrum, the
+waterfall and the clock keep firing and the data drive keeps running: the same
+image (`metrics.framebuffer_fnv1a` is the lit capture's), no render work. The
+capture is also exactly one full-screen repaint lighter (1127680 -> 743680 px),
+because the repaint the harness does before every capture is skipped too.
+
+`tests/check_harness_natural.sh` runs it as its fifth mode and
+`tests/natural_evidence.py` locks it (0 px per frame, the reduced capture, the
+same framebuffer as the lit one). The property on the ROM side — one
+`lv_disp_enable_invalidation` call per switch, `false` off and `true` on — is in
+`tests/native/test_backlight.c`, which compiles the real `src/backlight.c`.
+
+## Wakeup profile
+
+The ROM has two wakeup sources: its GUI loop (`src/main.c`: it sleeps until
+`lv_timer_handler()` says a timer is due; the DSP's posts do **not** wake it,
+`src/scheduler.cpp` is a plain queue) and its tick thread
+(`while (1) { usleep(5 * 1000); lv_tick_inc(5); }`). Which one costs more is a
+number:
+
+```sh
+./ui_harness --scenario ../fixtures/main-natural.scn \
+    --png out/wk.png --json out/wk.json --bench-wakeups        # 1000 ms window
+./ui_harness … --bench-wakeups 5000                            # CLI window in ms
+```
+
+* It reproduces the ROM's loop over the virtual clock — the observer pass, the
+  scheduler and `lv_timer_handler()`, then a sleep until the deadline the handler
+  returned — on the **firmware's own timer set** (the real components are the ones
+  creating and arming timers). During the sleep only the tick and the data drive
+  advance (`virtual_time_advance_idle`): running the handler there would count
+  wakeups the firmware does not have.
+* It runs the loop with the ROM's configured refresh period
+  (`LV_DISP_DEF_REFR_PERIOD`, `lv_conf.h`) instead of the harness's own LVGL
+  default (30 ms), and reports the tick thread's cadence next to it; the gate
+  reads both numbers from the firmware sources, so neither can drift out from
+  under the measurement.
+* Two passes: `with_drive` (the radio's steady state) and `static` (the data
+  drive off — the delimitation control).
+* The JSON gains a `wakeups` block: `wakeups`, `with_flush`, `immediate`,
+  `no_timer`, `sleep_ms_min/max/total` and `flushed_px` per pass, plus
+  `window_ms`, `refresh_period_ms`, `slice_ms`, `tick_thread_ms`,
+  `tick_thread_wakeups` and the two drive cadences. No wall clock is read.
+* It is **not** a cost measurement: the time spent in a wakeup and anything about
+  the Cortex-A7's energy are the hardware pass (BLOCKED, no radio attached).
+
+Measured on `main-natural` (seed 13, 1000 ms): the loop wakes **14** times with
+the data path and **11** without it, sleeping 10-200 ms, while the 5 ms tick
+thread wakes **200** times — 93.5% of the two sources. `tests/check_harness_wakeups.sh`
+is the gate (idempotency, the sources, the delimitation, the refused
+combinations) and the raw output is in `tools/ab_testing/reports/WAKEUPS-ECO13/`.
 
 ## Scenarios
 

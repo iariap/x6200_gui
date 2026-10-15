@@ -58,3 +58,14 @@ bool scenario_build(const scenario_t *scenario);
  * components' timers have fired (e.g. moving the keyboard focus). Never changes
  * a pixel on its own. */
 void scenario_settle(const scenario_t *scenario);
+
+/* Pantalla apagada por la ruta de la ROM: la tecla POWER suelta
+ * (src/keypad.c -> lv_event_send(lv_scr_act(), EVENT_KEYPAD) ->
+ * main_screen_keypad_cb -> backlight_switch(), src/main_screen.c). El callback y
+ * el modulo del backlight son los reales (src/backlight.c se compila en el
+ * arnes); lo que el host sustituye es la tecla, igual que sustituye el DSP. La
+ * pide el CLI (`--display-off`), no un fixture: el estado no es una pantalla que
+ * el corpus tenga que cargar. Se llama despues de que la pantalla ya se dibujo,
+ * que es cuando el usuario aprieta la tecla: el panel conserva el ultimo frame y
+ * el backlight queda apagado. */
+void scenario_display_off(void);
