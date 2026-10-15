@@ -145,21 +145,21 @@ diálogo del app sobre la pantalla principal, tal como queda en el equipo.
 
 ![Las páginas APP](img/00-app-pages.png)
 
-**Todas las apps están en las páginas APP.** Antes algunas sólo se podían alcanzar asignándolas a
-una pulsación larga desde Ajustes, así que no se encontraban (Field Ops era una). Ahora la **tecla
-APP** entra al grupo y el primer botón de abajo cambia de página: son **6**, con 4 apps cada una.
+**Todas las apps están alcanzables.** La **tecla APP** entra al grupo y el primer botón de abajo
+cambia de página: son **6**, con 3 o 4 apps cada una.
 
 | Página | Apps |
 |---|---|
-| **APP 1:6** | FT8, JS8, WSPR, RTTY |
+| **APP 1:6** | FT8 (y FT4), JS8, WSPR, RTTY |
 | **APP 2:6** | SSTV, WeFax, NavTex, Clúster |
 | **APP 3:6** | Recorder, **Field Ops**, GPS, Bandas |
 | **APP 4:6** | CW Kbd, CW Trainer, Eq, Status |
-| **APP 5:6** | Ajustes, Callsign, QTH, About |
+| **APP 5:6** | Ajustes, Callsign, QTH |
 | **APP 6:6** | WiFi, Bluetooth, SWR Scan |
 
-Igual podés asignar cualquier app a un botón o a una pulsación larga desde Ajustes → Acciones, pero
-ya no hace falta para encontrarla.
+Además de las páginas, **cada app está en la lista de acciones** de *Ajustes → Acciones* y se puede
+asignar a un botón o a una pulsación larga. Es el camino para las que no tienen botón propio en las
+páginas: **About**, por ejemplo, se abre desde ahí (o asignándola).
 
 ### 6.1 FT8 / FT4
 
@@ -278,37 +278,160 @@ en 40 y 20 metros y sigue siendo divertido de decodificar.
 escribí en el teclado y el app transmite; lo que llega se decodifica en pantalla. Es ideal para
 probar el filtro angosto del receptor.
 
-### 6.11 CW Keyboard y CW Trainer
+### 6.11 CW Keyboard (la app `CW`)
 
-![CW](img/11-cw.png)
+![CW Keyboard](img/11-cw.png)
 
-Dos herramientas: el **CW Keyboard** para transmitir desde un teclado (USB o Bluetooth) sin
-manipulador, y el **CW Trainer** para practicar recepción a distintas velocidades.
+Telegrafía sin manipulador: escribís en un **teclado USB o Bluetooth** y el equipo sale al aire en
+CW con tu velocidad, tono y peso. Ideal para el campo (nada que enchufar), para quien no puede usar
+la paleta por una lesión, o para mandar un texto largo sin equivocarse.
 
-**Cómo se usa:** en el CW Keyboard escribís y el equipo transmite en CW con la velocidad, el tono
-y el peso que tengas configurados (`CW key speed`, `CW key tone`, `CW key ratio`); también
-decodifica lo que recibe. El **CW Trainer** genera grupos de caracteres para practicar, con
-dificultad creciente.
+**Cómo se usa:** abrí la app (página **APP 4:6**, o la acción *APP CW Keyboard*), escribí y mandá.
+Una línea sale con **Enter**; lo que llega se decodifica en pantalla. La velocidad, el tono y el
+peso se ajustan con el MFK (**CW key speed**, **CW key tone**, **CW key ratio**).
 
-### 6.12 Bandas
+| Botón del pie | Qué hace |
+|---|---|
+| **Send** | Manda la línea escrita |
+| **Stop** | Corta la transmisión |
+| **Clear** | Borra el texto |
+| **Close** | Cierra la app |
+
+### 6.12 CW Trainer
+
+![CW Trainer](img/11-cw.png)
+
+Para practicar recepción: el equipo **te toca CW** y vos copiás. Arranca con el modo **Learn
+(Koch)** —el clásico para aprender por etapas, sin contar puntos— y sube la velocidad a medida que
+acertás. **Corre en el modo *train* del keyer: usa el sidetone y NO transmite**, así que no sales al
+aire mientras practicás.
+
+**Cómo se usa:** abrí la app (página **APP 4:6** o la acción *APP CW Trainer*) y elegí en el pie el
+modo y la dificultad; hay 3 páginas de botones (`CWT 1:3`, `2:3` y `3:3`). Antes de empezar, poné el
+keyer en modo train (**CW key train** en el MFK, grupo CW).
+
+> **Aviso (defecto conocido).** En esta versión, usar el CW Trainer deja el equipo en un **bucle de
+> reinicio de la GUI**: la pantalla se reinicia cada medio minuto y se pierde lo que estabas
+> haciendo. Está identificado y reportado (issue **#19** del repositorio), con la causa medida: un
+> desborde de buffer en el camino de audio al decodificador CW. Si te pasa: salí de la app y
+> **reiniciá el equipo**; mientras no se arregle, conviene practicar recién arrancado, o usar el CW
+> Keyboard para transmitir y practicar la recepción "en el aire".
+
+### 6.13 Bandas
 
 ![Bandas](img/13-bands.png)
 
-La vista de bandas: los límites de cada banda y los parámetros guardados por banda y modo. Sirve
-para moverse rápido entre bandas sin pasar por el dial.
+La vista de bandas: los límites de cada banda, la **propagación** estimada y los parámetros
+guardados por banda y modo. Sirve para moverse rápido entre bandas sin pasar por el dial.
 
-**Cómo se usa:** abrí la app y elegí la banda; el equipo cambia de banda manteniendo el modo y
-sus ajustes. Cada banda recuerda su última frecuencia, filtro y estado del ATU.
+**Cómo se usa:** abrí la app (página **APP 3:6**), mirá las barras de cada banda (HIGH / FAIR /
+GOOD, con los spots del clúster y del RBN de los últimos minutos) y tocá la banda; el equipo cambia
+manteniendo el modo y sus ajustes. Cada banda recuerda su última frecuencia, filtro y estado del
+ATU. **Use band** cambia a la banda elegida, y **Test beacon** emite un CQ de prueba para que el
+**RBN** te escuche y veas hasta dónde llegás (transmite: hacelo con antena conectada).
 
-### 6.13 Ajustes y las demás
+### 6.14 Recorder (grabador)
+
+Graba el **audio del receptor** y lo reproduce, para dejar registrado un contacto difícil, un
+identificador de baliza o una señal rara y escucharla con calma después (o mandarla a un colega).
+
+**Cómo se usa:** abrí la app (página **APP 3:6**) y usá el pie: **Rec** y **Rec Stop** graban,
+**Play** y **Play Stop** reproducen, **Rename** le pone nombre y **Delete** borra. Los archivos
+quedan en `DATA/rec/`.
+
+### 6.15 EQ (ecualizador del micrófono)
+
+Cinco bandas para tu **audio de transmisión**: si te reportan que salís muy grave ("gordo") o muy
+chillón ("finito"), se corrige acá. Es el ecualizador de la **entrada**, así que se nota en tu señal
+de SSB y de AM, no en lo que escuchás.
+
+**Cómo se usa:** abrí la app (página **APP 4:6** o la acción *APP EQ*), prendé el ecualizador y
+movés las bandas. Queda guardado y se aplica al equipo.
+
+### 6.16 Callsign (indicativo)
+
+Tu **indicativo**, en un solo lugar. Lo usan las apps digitales (FT8/FT4, WSPR, JS8, RTTY), el
+clúster DX y Field Ops, así que conviene cargarlo **antes** de estrenar cualquier modo digital.
+
+**Cómo se usa:** abrí la app (página **APP 5:6**), escribilo con el teclado y guardá. Si sale en
+mayúsculas y sin errores, mejor: es lo que va a salir al aire y a los spots.
+
+### 6.17 QTH (tu ubicación)
+
+Tu **grilla** (locator, por ejemplo `GF05xx`) y tu QTH. Sin la grilla, WSPR y el clúster no pueden
+ubicarte y los reportes pierden la mitad de la gracia.
+
+**Cómo se usa:** abrí la app (página **APP 5:6**), cargá la grilla de 6 caracteres y el texto de tu
+QTH, y guardá. Podés calcular tu grilla en cualquier página de locator o directamente en el
+configurador web.
+
+### 6.18 Status (estado del sistema)
+
+Todo lo que el equipo "cree que tiene", en una pantalla: la **versión** del firmware
+(`v0.1.2-lu2dsx`), el kernel, el **adaptador Bluetooth** y los emparejamientos guardados, el nivel
+de TX, el **espacio libre** en `DATA`, si **wfview** está prendido y el puerto, y si hay **IP** web.
+Es la pantalla para diagnosticar por teléfono o por radio: cuando reportes un problema, mirá acá los
+datos y anotalos.
+
+**Cómo se usa:** abrí la app (página **APP 4:6**). Se lee, no se toca; **Close** para salir.
+
+### 6.19 WiFi
+
+Para conectar el equipo a la red de tu casa o al hotspot del teléfono. Con WiFi andando tenés:
+**control remoto** (`http://<ip>/remote`), **configurador web** (`https://<ip>/`), **wfview**,
+**clúster DX** y la hora por NTP.
+
+**Cómo se usa:** abrí la app (página **APP 6:6**), elegí la red de la lista, escribí la clave y
+conectá. Anotá la **IP** que te asigna: es la que vas a escribir en el teléfono y en la PC. Si no
+aparece tu red, revisá que el equipo esté cerca del router o usá el hotspot del teléfono.
+
+### 6.20 Bluetooth
+
+Para las tres cosas que hace el Bluetooth acá: **CAT** (puente serie para la PC), **auriculares
+A2DP** (escuchar sin cables) y **teclado** (para el CW Keyboard y los menús). El paso a paso del
+pareado —que es donde se traba todo el mundo— está en la **sección 7.3**; acá van los botones de la
+app (página **APP 6:6**):
+
+| Botón | Qué hace |
+|---|---|
+| **Scan** | Busca dispositivos (15 s, con cuenta regresiva) |
+| **RX to HP** | Manda la recepción a los auriculares |
+| **Speaker** | Apaga o prende el altavoz del equipo (para no escuchar doble) |
+| **Auto** | Pulsando: auto-conexión del equipo elegido. Manteniendo: desempareja |
+| **Close** | Cierra la app |
+
+### 6.21 SWR Scan (barrido de ROE)
+
+Mide la **ROE** (relación de ondas estacionarias) en **50 puntos** a lo largo de la banda y dibuja
+la curva: sirve para ver **dónde resuena** tu antena, cuánto ancho tiene y si conviene el ATU. Es la
+forma rápida de saber si el problema es la antena o el equipo.
+
+**Cómo se usa:** abrí la app (página **APP 6:6**) y pulsá **Run**; la curva se dibuja a medida que
+barre. **Usalo con la antena conectada** (la medición necesita RF) y, como siempre: **nunca
+transmitas sin antena o carga fantasma**.
+
+### 6.22 About (acerca de)
+
+La **versión** del firmware (`v0.1.2-lu2dsx`) y los **créditos** de todo el software libre con el
+que está hecho el equipo. Es el dato que hay que mandar cuando se reporta un problema: sin la
+versión, no se puede saber qué código estabas corriendo.
+
+**Cómo se usa:** no tiene botón propio en las páginas APP: se abre desde *Ajustes → Acciones*
+(asignándola a una pulsación larga) o desde el menú de la app de Ajustes. Se lee y se cierra.
+
+### 6.23 Ajustes
 
 ![Ajustes](img/12-settings.png)
 
-La app de **Ajustes** es la puerta a todo lo que vimos en la sección 5 (páginas de reloj,
-pantalla, audio, espectro, apariencia, servicios y la lista de **acciones** asignables). Además
-del FT8/FT4, WSPR, JS8, SSTV, WeFax, NavTex, Clúster, Field Ops, GPS, RTTY, CW y Bandas, el menú
-incluye las apps de estado del sistema, Bluetooth, WiFi, ecualizador, grabador, indicativo,
-QTH y el barrido de ROE.
+La app de **Ajustes** es la puerta a todo lo que vimos en la **sección 5**: reloj, pantalla, info,
+audio, espectro, operación, apariencia y las **acciones** asignables a las pulsaciones largas. Está
+en la página **APP 5:6** y el pie funciona como **tabs** (cada botón salta a su sección).
+
+**Todas las apps se pueden asignar a un botón o a una pulsación larga.** En *Ajustes → Acciones*
+tenés la lista completa de acciones, incluidas todas las apps: `APP FT8`, `APP Bands`,
+`APP Bluetooth`, `APP Callsign`, `APP Cluster`, `APP CW Keyboard`, `APP CW Trainer`, `APP EQ` y
+las demás. Con eso te armás el equipo a tu manera: FT8 a un toque corto, el entrenador CW a una
+pulsación larga, y así.
 
 ## 7. Guías avanzadas
 
@@ -461,11 +584,16 @@ X6100 que van como archivos (Holo, Material 3 y RS).
 2. **Tu propio tema:** copiá un `.json` a `DATA/themes/` (tomá `Holo.json` como modelo) y aparece
    en la lista. También puede ser una **carpeta** con un `theme.json` adentro, como `RS/`.
 
-**Accesibilidad:** los 8 temas cumplen **WCAG 2.1 AA**: todo par de colores que se dibuja junto
-(texto sobre su fondo, bordes, el switch y el slider de Ajustes, la barra de estado) tiene contraste
-**≥ 4.5:1** para texto normal y **≥ 3:1** para texto grande, bordes e indicadores. Un chequeo
-automático (990 pares) lo verifica con cada compilación, así que un tema nuevo no puede quedar por
-debajo.
+**Accesibilidad:** los temas están medidos para **WCAG 2.1 AA**: cada par de colores que se dibuja
+junto (texto sobre su fondo, bordes, el switch y el slider de Ajustes, la barra de estado) tiene
+contraste **≥ 4.5:1** para texto normal y **≥ 3:1** para texto grande, bordes e indicadores. Un
+chequeo automático recorre todos los pares declarados en cada compilación, así que un tema nuevo no
+puede quedar por debajo.
+
+> **Una salvedad medida en el equipo:** el **medidor (S-meter) del tema RS** queda en **2,4:1**
+> contra el fondo real sobre el que se dibuja, por debajo del 3:1 que pide el criterio 1.4.11. Está
+> reportado (issue **#44**) y se explica porque el color sale de la tabla compilada y no del archivo
+> del tema. En los demás temas y elementos, el contraste es el medido por el chequeo.
 
 ### 7.7 Anuncios por voz (TTS en español)
 
@@ -515,6 +643,8 @@ no se ve bien, borralo y volvés al motor clásico.
 | **Sale `Pairing failed`** | Lo mismo: ponelos en vinculación y reintentá (la app avisa cuando falla, antes quedaba muda). |
 | **No se oye la radio en los auriculares** | Pulsá **RX to HP** en la app de Bluetooth y subí el volumen con la rueda del equipo. |
 | **Se escucha doble (altavoz y auriculares)** | Pulsá **Speaker** en la app de Bluetooth. |
+| **Subís el volumen y no cambia nada** | Defecto conocido y reportado (issue **#30**): el ajuste se guarda en `params.db` pero no se aplica al audio. No es tu equipo: está en estudio. Mientras tanto, la única forma de subir el nivel es la ganancia (*Ajustes → Audio*, `Play gain`, hasta +10 dB). |
+| **La GUI se reinicia cada medio minuto** | Defecto conocido y reportado (issue **#19**): pasa después de usar el **CW Trainer** (o las apps de CW). Salí de la app y **reiniciá el equipo**; no es una falla del hardware ni del suministro. |
 
 ## 9. Referencia
 
@@ -566,4 +696,7 @@ atribución original en sus cabeceras); cada biblioteca mantiene la suya.
 
 
 > Documento generado desde `docs/NEW_FEATURES.md` y `docs/X6100_FEATURE_GAP.md`, con capturas
-> reales del firmware (banco de pruebas y equipo).
+> reales del firmware (banco de pruebas y equipo). Las secciones de las aplicaciones (nombres,
+> botones de cada pie y ajustes que usan) se verificaron además contra el propio código
+> (`src/buttons.cpp`, `src/dialog_*.c` y `src/params/params.c`), no sólo contra la documentación
+> previa.

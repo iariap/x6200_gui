@@ -5,6 +5,7 @@
 #   tests/run_all_tests.sh [--quick]
 #
 #   config        the cfg struct is fully initialised (a missing field kills the GUI)
+#   manual_apps   every app of the firmware has its own section in the operator manual
 #   host          the native suite (401 assertions, no container)
 #   wspr/sstv     codec round trips against the X6100's own test tools
 #   wefax/navtex
@@ -54,6 +55,7 @@ run actions python3 "$DIR/check_actions.py"
 run settings_focus python3 "$DIR/check_settings_focus.py"
 run apps_menu python3 "$DIR/check_apps_menu.py"
 run app_handlers python3 "$DIR/check_app_handlers.py"
+run manual_apps python3 "$DIR/check_manual_apps.py"
 run wcag python3 "$DIR/check_wcag.py"
 
 run host sh "$DIR/native/run_native_tests.sh"
