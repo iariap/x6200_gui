@@ -132,7 +132,10 @@ id="toc-grabación-de-pantalla-y-capturas">7.9 Grabación de pantalla y
 capturas</a></li>
 <li><a href="#motor-de-video-drmkms" id="toc-motor-de-video-drmkms">7.10
 Motor de video DRM/KMS</a></li>
-<li><a href="#actualizaciones-y-ssh" id="toc-actualizaciones-y-ssh">7.11
+<li><a href="#transverter-trabajar-vhfuhf-con-el-equipo"
+id="toc-transverter-trabajar-vhfuhf-con-el-equipo">7.11 Transverter:
+trabajar VHF/UHF con el equipo</a></li>
+<li><a href="#actualizaciones-y-ssh" id="toc-actualizaciones-y-ssh">7.12
 Actualizaciones y SSH</a></li>
 </ul></li>
 <li><a href="#solución-de-problemas" id="toc-solución-de-problemas">8.
@@ -1206,7 +1209,93 @@ capturas</h3>
 <p>Está portado y <strong>apagado por defecto</strong>. Se activa
 creando <code>/mnt/use_drm</code> y reiniciando. Si algo no se ve bien,
 borralo y volvés al motor clásico.</p>
-<h3 id="actualizaciones-y-ssh">7.11 Actualizaciones y SSH</h3>
+<h3 id="transverter-trabajar-vhfuhf-con-el-equipo">7.11 Transverter:
+trabajar VHF/UHF con el equipo</h3>
+<p>Un <strong>transverter</strong> es un conversor que traslada otra
+banda a la que trabaja tu equipo. El X6200 es de HF y 6 m, así que con
+un transverter de <strong>2 m</strong> (o de 70 cm, o de 4 m) podés
+trabajar esas bandas: el equipo sigue sintonizando en su banda de
+<strong>IF</strong> —casi siempre <strong>28 MHz</strong> (10 m)— y el
+transverter hace el resto. Es la forma clásica de subir a VHF/UHF con un
+equipo de HF.</p>
+<p><strong>Cómo lo maneja la GUI.</strong> Vos ves y sintonizás la
+<strong>frecuencia real</strong> de la banda objetivo (por ejemplo
+<code>144.300</code>) y el firmware, por dentro, pone el hardware en la
+<strong>IF</strong> (<code>28.300</code>). Se ve en el propio log:</p>
+<pre><code>Radio set vfo 0 freq=144300000 (28300000)
+                    ^ la que ves          ^ la que sintoniza el equipo</code></pre>
+<p><strong>Configuración:</strong> <em>Ajustes → Operación →
+<strong>Transverter</strong></em>. Hay <strong>3</strong> transverters
+cargados, cada uno con tres campos:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Qué es</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>From</strong> / <strong>To</strong></td>
+<td>La <strong>ventana</strong> de la banda objetivo en la que el shift
+se aplica (en MHz enteros)</td>
+</tr>
+<tr>
+<td><strong>Shift</strong></td>
+<td>La diferencia entre la banda objetivo y la IF:
+<code>frecuencia objetivo − IF</code></td>
+</tr>
+</tbody>
+</table>
+<p>Los valores de fábrica suponen <strong>IF de 28 MHz</strong> (las
+tres bandas típicas de un equipo de HF):</p>
+<table>
+<thead>
+<tr>
+<th>From</th>
+<th>To</th>
+<th>Shift</th>
+<th>Banda</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>70 MHz</td>
+<td>72 MHz</td>
+<td>42 MHz</td>
+<td>4 m</td>
+</tr>
+<tr>
+<td>144 MHz</td>
+<td>150 MHz</td>
+<td>116 MHz</td>
+<td>2 m</td>
+</tr>
+<tr>
+<td>432 MHz</td>
+<td>438 MHz</td>
+<td>404 MHz</td>
+<td>70 cm</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Para tu transverter:</strong> si el tuyo tiene la IF en 28
+MHz, los valores ya sirven; si no, poné
+<code>Shift = banda objetivo − IF</code>. Por ejemplo, un transverter de
+2 m con IF en 50 MHz usa <code>Shift = 94</code>. Cuando la frecuencia
+en la que estás <strong>cae dentro</strong> de la ventana
+<code>From</code>..<code>To</code> el shift se aplica; fuera de ella no
+pasa nada (shift 0) y el equipo vuelve a la banda de HF.</p>
+<p><strong>Ojo con dos cosas:</strong> los tres campos se editan en
+<strong>MHz enteros</strong> (no hay decimales), y la ventana tiene que
+cubrir el segmento que vas a usar. Si sintonizás fuera de la ventana, el
+equipo trabaja en su frecuencia real (la IF), así que no vas a ver la
+banda objetivo.</p>
+<h3 id="actualizaciones-y-ssh">7.12 Actualizaciones y SSH</h3>
 <ul>
 <li>Aviso de firmware nuevo en la pantalla de estado (consulta GitHub;
 no manda datos tuyos).</li>

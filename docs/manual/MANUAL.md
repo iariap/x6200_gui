@@ -620,7 +620,48 @@ puede quedar por debajo.
 Está portado y **apagado por defecto**. Se activa creando `/mnt/use_drm` y reiniciando. Si algo
 no se ve bien, borralo y volvés al motor clásico.
 
-### 7.11 Actualizaciones y SSH
+### 7.11 Transverter: trabajar VHF/UHF con el equipo
+
+Un **transverter** es un conversor que traslada otra banda a la que trabaja tu equipo. El X6200 es de
+HF y 6 m, así que con un transverter de **2 m** (o de 70 cm, o de 4 m) podés trabajar esas bandas: el
+equipo sigue sintonizando en su banda de **IF** —casi siempre **28 MHz** (10 m)— y el transverter hace
+el resto. Es la forma clásica de subir a VHF/UHF con un equipo de HF.
+
+**Cómo lo maneja la GUI.** Vos ves y sintonizás la **frecuencia real** de la banda objetivo (por
+ejemplo `144.300`) y el firmware, por dentro, pone el hardware en la **IF** (`28.300`). Se ve en el
+propio log:
+
+```
+Radio set vfo 0 freq=144300000 (28300000)
+                    ^ la que ves          ^ la que sintoniza el equipo
+```
+
+**Configuración:** *Ajustes → Operación → **Transverter***. Hay **3** transverters cargados, cada uno
+con tres campos:
+
+| Campo | Qué es |
+|---|---|
+| **From** / **To** | La **ventana** de la banda objetivo en la que el shift se aplica (en MHz enteros) |
+| **Shift** | La diferencia entre la banda objetivo y la IF: `frecuencia objetivo − IF` |
+
+Los valores de fábrica suponen **IF de 28 MHz** (las tres bandas típicas de un equipo de HF):
+
+| From | To | Shift | Banda |
+|---|---|---|---|
+| 70 MHz | 72 MHz | 42 MHz | 4 m |
+| 144 MHz | 150 MHz | 116 MHz | 2 m |
+| 432 MHz | 438 MHz | 404 MHz | 70 cm |
+
+**Para tu transverter:** si el tuyo tiene la IF en 28 MHz, los valores ya sirven; si no, poné
+`Shift = banda objetivo − IF`. Por ejemplo, un transverter de 2 m con IF en 50 MHz usa `Shift = 94`.
+Cuando la frecuencia en la que estás **cae dentro** de la ventana `From`..`To` el shift se aplica;
+fuera de ella no pasa nada (shift 0) y el equipo vuelve a la banda de HF.
+
+**Ojo con dos cosas:** los tres campos se editan en **MHz enteros** (no hay decimales), y la ventana
+tiene que cubrir el segmento que vas a usar. Si sintonizás fuera de la ventana, el equipo trabaja en
+su frecuencia real (la IF), así que no vas a ver la banda objetivo.
+
+### 7.12 Actualizaciones y SSH
 
 - Aviso de firmware nuevo en la pantalla de estado (consulta GitHub; no manda datos tuyos).
 - **SSH**: usuario `root`. **Cambiá la contraseña** (la de fábrica es conocida). Los logs están
