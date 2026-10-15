@@ -380,3 +380,81 @@ de radio que su gemela de otro tema, así el tema es la única variable):
 movimiento), `main-tema-sprint-tx` (TX simulado), `main-tema-sprint-eco` (batería baja + ECO),
 `bt-dialog-tema-sprint` (diálogo) y `settings-tema-sprint` (Ajustes, con el foco sobre la fila
 del tema). El detalle de la corrida está en `docs/AB_TESTING.md`.
+
+## Cathode — tubo CRT sepia/ámbar (THEMES v2, issue #70)
+
+**Qué es.** Instrumentación **CRT sepia/ámbar**: vidrio **café-negro** (`bg #100B07`,
+`bar #24170C`, `panel #140D08`) con lecturas **ámbar/crema luminiscentes** (`text #F9D9AA`,
+`text_value #FFE7BF`, `vfo #FFD59B`) y **cobre** para lo que pide atención (foco, botón activo,
+selección, encabezados: `accent #F1BE75`, `sel_bg #5E3A19`, `focus #F5C27C`). No es un
+videojuego ni una TV skeuomorphic: **no hay gradientes, glow, scanlines ni trails**; la
+asociación CRT sale de la **tipografía, el color y la jerarquía**. El sistema de color es una
+jerarquía de un solo tono: ámbar = acción/atención, crema = lectura, y el **naranja-rojizo**
+(`tx #FFA27A`, `err #FF9B77`, `btn_mark_active #FF9760`) para TX y alarma, que se distingue por
+forma/posición además del tono. El waterfall
+(`#090605 → #241308 → #4F2B0E → #86511D → #C78A3D → #F2C57C → #FFF1CB`) es **térmico ámbar
+monocromático**: negro → espresso → burnt umber → copper → ámbar → crema pergamino, con los
+niveles de señal visiblemente distintos.
+
+**Forma y fuentes.** `font: ibmplexsans` (la familia compilada en ROM desde #60, sin descargar
+nada) y `font_digits: dseg14`: los paneles de dígitos —la fila de frecuencia y el reloj— dibujan
+con DSEG14 en los slots reales 30/38 (`font_digit()`, `src/styles.c`), con los separadores y el
+`8` fantasma que trae la familia segmentada (fixtures `main-tema-cathode` y hermanas, y
+`main-frecuencia-dseg`). Cantos **casi cuadrados** (`radius 1`, `radius_btn 2`, `radius_popup 3`,
+`border 1`), sin gradientes (`btn_gradient`/`box_gradient` en `false`) y `focus_solid: true`. El
+nombre del tema entra en `params.theme_name` entero (`Cathode`, 7 de 31 caracteres), así que
+sobrevive el round-trip y el tema queda elegido también en una instalación actualizada (contrato
+`theme_name_fits_params`).
+
+La prioridad de la fuente no cambia con este tema: la que nombra el tema **manda** sobre
+`params.font` (el orden de `src/main.c`: `theme_shape.font` primero, después la elección del
+usuario), y `font_digits` sólo toca los paneles de dígitos. Por eso en la fixture
+`settings-tema-cathode` la fila *Font* de Ajustes sigue mostrando la elección persistida
+(`Fira Sans`) mientras la pantalla se dibuja con IBM Plex Sans: es el comportamiento
+documentado, no una divergencia de esta corrida.
+
+**Ojo con lo que la revisión actual dibuja**: `theme_shape.radius`, `radius_btn`, `btn_gradient`,
+`box_gradient`, `focus_solid`, `mode_box`, `pill_border`, `mark` e `images` se cargan del JSON
+pero hoy el código no los usa en la pantalla principal (`src/styles.c` fija `radius 0` y dibuja
+la barra de botones con el bitmap de la ROM, y `theme_image()` no tiene llamadores): el ángulo
+del tema no es un delta respecto de los otros temas en esta revisión. Los roles se miden igual
+—`x6200-ab themes` los mide estáticamente— y quedan declarados acá para que el día que la
+superficie de forma vuelva a dibujarse el tema ya la traiga.
+
+**Cobertura de roles.** El archivo escribe **122 de 122 roles** de `src/theme.h` (nada queda
+heredado de `Classic`, que es su `base`): `x6200-ab themes` lo reporta como
+`Cathode (...; base Classic): 0/122 roles from the base`. El JSON de partida del issue #70
+nombraba tres claves que ya no existen en el esquema (`strip`/`strip_grad`/`strip_border` y
+`mode_text`/`mode_bg`/`mode_border`, podadas en #77): incluirlas habría dejado el tema con
+colores desconocidos, así que se reasignaron a sus roles reales (`bar_grad`/`panel`, y
+`sel_bg`/`sel_text`/`mode_dig`). La cobertura semántica del issue: frecuencia
+(`text`/`text_value`, dígitos DSEG14), modo (`mode_dig`, `sel_bg`/`sel_border`, `info`),
+selección (`sel_bg`/`sel_text`/`sel_border`, `near_bg`, `focus_bg`), foco (`focus`/`focus_text`),
+botones (`btn*`, `btn_off_*`, `btn_page*`, `btn_mark*`), S-meter
+(`meter_weak`/`meter_bar`/`meter_low`/`meter_high`/`meter_over`), RX/TX (`tx`/`tx_bg`/`tx_box`,
+`alc`, `bar_high`/`bar_mid`), warning/error (`warn*`, `err*`, `ok*`) y la paleta del waterfall.
+Ningún rol del `base` Classic (blancos, celestes, azules, violetas) se cuela: la identidad
+café/sepia se mantiene en los 122.
+
+**WCAG 2.1 (medido, no estimado).** `tests/check_wcag.py` mide **128 pares** aplicables de
+Cathode con **0 fallas** (texto 4.5:1, no-texto 3:1); los ratios que fijan la identidad:
+`text/bg` 14.48:1, `text/panel` 14.24:1, `text_value/bg` 16.25:1, `btn_text/btn` 10.45:1,
+`btn_active_text/btn_active` 6.05:1, `focus_text/focus` 11.00:1, `sel_text/sel_bg` 8.06:1,
+`text_head/bar` 12.13:1, `mode_dig/bar` 14.33:1, `tx/tx_bg` 5.75:1, `control_border/dialog`
+4.26:1, `bar_border/bar` 3.14:1, `btn_border/btn` 3.67:1, `sel_border/sel_bg` 5.80:1,
+`card/bg` 4.90:1. Los colores apagados a propósito (`btn_off_text`, `text_mute`, `text_faint`,
+`icon_off`, `switch_off`, `off`, `track`) siguen la exención *disabled/incidental* de WCAG 1.4.3
+y se informan sin hacer fallar el chequeo. En el framework, `x6200-ab themes` mide además los
+pares que sólo existen en Ajustes (9/9 OK) y el **no-texto por píxeles** (WCAG 1.4.11) sobre el
+render dorado del tema: el arco `meter_over` del S-meter da **8.11:1** y la columna de señal del
+waterfall **6.82:1** (mínimo 3:1), los dos declarados en
+`tools/ab_testing/quality/nontext.yaml`.
+
+**Capturas por estado.** Las fixtures del arnés que rinden Cathode (todas con el mismo estado
+de radio que su gemela de otro tema, así el tema es la única variable):
+`main-tema-cathode` (principal, RX, con DSEG14), `main-tema-cathode-agua` (waterfall en
+movimiento), `main-tema-cathode-tx` (TX simulado), `main-tema-cathode-eco` (batería baja + ECO),
+`bt-dialog-tema-cathode` (diálogo) y `settings-tema-cathode` (Ajustes, con el foco sobre la fila
+del tema). La galería ARM real y la comparación consolidada contra los otros cinco temas se
+cierran en el #73; el selector/default se migra en el #74. El detalle de la corrida está en
+`docs/AB_TESTING.md`.

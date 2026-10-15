@@ -116,6 +116,7 @@ def test_the_shipped_themes_pass_every_declared_pair(
     reports = check_shipped_themes(SHIPPED_DIR, pairs, palettes)
     assert [report.name for report in reports] == [
         "Aurora",
+        "Cathode",
         "Holo",
         "Material 3",
         "Redshift",
@@ -244,6 +245,7 @@ def test_the_served_inventory_is_the_builtins_then_the_files(
         "Outdoor-Negative",
         "VISION",
         "Aurora",
+        "Cathode",
         "Holo",
         "Material 3",
         "Redshift",
@@ -262,10 +264,10 @@ def test_the_served_inventory_is_the_builtins_then_the_files(
 def test_every_served_theme_passes_every_declared_pair(
     runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    """The full coverage finds no sub-WCAG pair: 14 themes, 126 measurements."""
+    """The full coverage finds no sub-WCAG pair: 15 themes, 135 measurements."""
     reports, _ = _served(runtime_palettes)
     checked = sum(len(report.results) for report in reports)
-    assert checked == 126
+    assert checked == 135
     assert all(report.ok for report in reports)
     assert all(report.error is None for report in reports)
 

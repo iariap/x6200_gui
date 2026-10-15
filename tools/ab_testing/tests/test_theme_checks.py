@@ -128,8 +128,9 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
     that stacking for what it is — two visible labels in the same box — until the
     rule tells a by-design alpha layer from two texts hiding each other. The first
     of them is `main-frecuencia-dseg` (the fixture that asks for `digits dseg7`);
-    the other four are the Sprint theme's main-screen fixtures (THEMES v2, #69),
-    which carry the same layer because the theme's own `font_digits: dseg14` makes
+    the other eight are the Sprint and Cathode themes' main-screen fixtures (THEMES
+    v2, #69 and #70), which carry the same layer because the theme's own
+    `font_digits: dseg14` makes
     the frequency row draw with the segmented family. Each one names
     exactly one rule and one fixture (no `path` shadow, so it cannot hide another
     node), carries a reason, an author and an expiry, and its reason names the open
@@ -150,6 +151,10 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
         "main-tema-sprint-agua",
         "main-tema-sprint-eco",
         "main-tema-sprint-tx",
+        "main-tema-cathode",
+        "main-tema-cathode-agua",
+        "main-tema-cathode-eco",
+        "main-tema-cathode-tx",
     }
     for exception in exceptions:
         assert exception.path is None

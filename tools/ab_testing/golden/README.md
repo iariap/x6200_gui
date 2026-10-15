@@ -120,3 +120,30 @@ glifos y esos PNG no se regeneraron (los de los temas que nombran Roboto —Clas
 Material 3— sí coinciden). La medición no-texto de esas fixtures describe, entonces, un
 render anterior; regenerarlos es una re-baseline declarada (`expected_changes`) que queda
 para la pasada de integración (#73).
+
+## 2026-10-15 — `main-tema-cathode.png` (THEMES v2, issue #70)
+
+A **new** render, not a regeneration: the Cathode theme
+(`rootfs/usr/share/x6200/themes/Cathode.json`) and its fixture
+(`tools/ui_harness/fixtures/main-tema-cathode.scn`, the same radio state as
+`home-usb-20m`, the theme the only variable) arrive together with this PNG, so the
+non-text contract can measure the two objects that only the pixels answer on this
+theme: `s_meter_arc` (Cathode's own `meter_over` over the meter's bitmap face,
+**8.11:1**) and `waterfall_signal` (Cathode's own `waterfall` table, **6.82:1**),
+both declared in `quality/nontext.yaml`. The other renders in this directory are
+untouched by the change.
+
+Captured at the same revision as the rest of the branch, inside
+`tools/ab_testing`:
+
+```bash
+uv run x6200-ab capture --revision <sha> --label golden \
+    --scenario main-tema-cathode --out "$(git rev-parse --show-toplevel)/tools/ab_testing/golden"
+```
+
+or, without Docker, with the harness build of `tests/check_harness_determinism.sh`:
+
+```bash
+tools/ui_harness/build/ui_harness --scenario tools/ui_harness/fixtures/main-tema-cathode.scn \
+    --png tools/ab_testing/golden/main-tema-cathode.png --json /tmp/main-tema-cathode.json
+```
