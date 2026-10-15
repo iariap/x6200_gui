@@ -308,11 +308,13 @@ draws is the one `info_params_mode_label_get()` (src/info.c) returns, so a fixtu
 can measure how a given mode's text fits its fixed cell.
 
 The `screen` selects what is built: `main` (the real main screen),
-`settings-home` and `settings-wfbat`
+`settings-home`, `settings-wfbat` and `settings-perfil`
 (the same screen with the real Ajustes window, `ACTION_APP_SETTINGS` → `dialog_construct(dialog_settings)`;
 `settings-wfbat` then presses the bottom bar's "Mas >" and "Espectro" tabs through
 `buttons_press()`, the same path the user takes, so the view is scrolled to the
-Spectrum/waterfall group with its battery switch on), `settings-bands` (Ajustes and
+Spectrum/waterfall group with its battery switch on, and `settings-perfil` presses
+"Mas >" and "Apariencia" to reach the "Visual profile" row of UI-08 increment 5),
+`settings-bands` (Ajustes and
 then the real Bands action, `main_screen_action(ACTION_APP_BANDS)`), `app-bands`
 (the app menu the APP key loads, `buttons_load_page_group(buttons_group_app)`, with
 the "Bands" button of `APP 3:6` pressed — the route the owner reported), and
@@ -345,6 +347,7 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `main-natural-eco` | the natural-bench fixture with the pack on battery at 11.2 V (`external_v 0.0`): the same screen/data as `main-natural`, but the visual policy puts the waterfall in ECO, so `--bench-natural` measures the reduced cadence (UI-08 incr. 2) |
 | `settings-home` | the real main screen with the real Ajustes window open over it (`dialog.c` + `dialog_settings.c`), on its first group (clock: date/time, Clock view, timeouts). The wall clock is the harness' fixed epoch, so the date/time fields are deterministic |
 | `settings-wfbat` | Ajustes scrolled to the Spectrum/waterfall group with the waterfall battery mode the user turned on (`waterfall_battery true`); the switch renders checked and the real waterfall runs the saving cadence the visual policy applies |
+| `settings-perfil` | Ajustes scrolled to the Apariencia group, where the "Visual profile" row of UI-08 increment 5 lives. The pack is on battery at 11.2 V (`external_v 0.0`), so the auto policy decides ECO: the dropdown renders `Auto` (the persisted setting) while the row label reads the effective profile (`Visual profile (Eco)`). `scenario_settle` codifies that exact text |
 | `settings-bands` | Ajustes and then the real Bands action (`main_screen_action(ACTION_APP_BANDS)`, the dispatcher the Ajustes long-press list reaches). `dialog_bands` is an inert mock here, so the fixture codifies the route in `scenario_settle` (the Ajustes window has to be closed and a dialog has to be running) instead of the window's pixels |
 | `app-bands` | the app menu the APP key opens (`buttons_group_app`, page `APP 3:6`) with the "Bands" button pressed — the route the owner reported ("the Bands menu does nothing"). Same inert `dialog_bands`: `scenario_settle` stops the run if the button reaches no dialog at all |
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
@@ -403,7 +406,7 @@ inputs are substituted, so coverage is declared honestly per component:
 | `cfg` (catalogue), `params`, `radio` | SYNTHETIC | harness-owned values; no DB, no device |
 | `spot_marks.c`, `cluster_column.c`, `freq_strip.c`, dialogs | UNSUPPORTED | not rendered in these scenarios |
 
-The `settings-home`/`settings-wfbat` screens swap the dialog row for the truth of
+The `settings-home`/`settings-wfbat`/`settings-perfil` screens swap the dialog row for the truth of
 the Ajustes path: `src/dialog.c` and `src/dialog_settings.c` become REAL, and the
 other app dialogs stay UNSUPPORTED (they keep their inert mock descriptors). The
 services the window calls — mixer volume, DSP preset, wfview server, the RTC, the

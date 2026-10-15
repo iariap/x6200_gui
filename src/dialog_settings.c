@@ -32,6 +32,7 @@
 #include "cluster_column.h"
 #include "wfview_server.h"
 #include "main.h"
+#include "visual_policy.h"
 
 #include <sys/time.h>
 #include <time.h>
@@ -612,7 +613,11 @@ static void backlight_brightness_update_cb(lv_event_t * e) {
     params.brightness_idle = lv_slider_get_left_value(obj);
     params_unlock(&params.dirty.brightness_idle);
 
-    backlight_set_brightness(params.brightness_normal);
+    /* El preview del slider pasa por la MISMA puerta que el resto del brillo
+     * (UI-08 incr. 5): sin esto el arrastre aplicaba el setting crudo y saltaba
+     * el cap del perfil vigente. El setting (params.brightness_normal) se guarda
+     * entero: el cap solo recorta el nivel que va al panel, nunca el parametro. */
+    visual_policy_brightness_rewrite(params.brightness_normal);
 }
 
 static void backlight_buttons_update_cb(lv_event_t * e) {
@@ -696,6 +701,62 @@ static uint8_t make_backlight(uint8_t row) {
     lv_dropdown_set_symbol(obj, NULL);
     lv_dropdown_set_selected(obj, params.brightness_buttons);
     lv_obj_add_event_cb(obj, backlight_buttons_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    return row + 1;
+}
+
+/* Perfil visual de bateria (UI-08 incr. 5). El desplegable elige el perfil
+ * SETEADO (AUTO o uno fijo) y lo persiste en params.visual_profile con el mismo
+ * lock/dirty que las filas vecinas; la etiqueta muestra ademas el perfil
+ * VIGENTE, que puede diferir del seteado cuando decide la bateria (AUTO). */
+
+/* Indice del desplegable para un valor de params: 0 = AUTO, 1..VP_PROFILE_COUNT
+ * = el perfil (profile + 1). Un valor desconocido cae a AUTO, el mismo fallback
+ * que visual_policy_override_from_param(). */
+static uint8_t visual_profile_selection(uint8_t value) {
+    return (value < VP_PROFILE_COUNT) ? (uint8_t) (value + 1) : 0;
+}
+
+static void visual_profile_update_cb(lv_event_t * e) {
+    lv_obj_t *obj = lv_event_get_target(e);
+    uint8_t   selected = (uint8_t) lv_dropdown_get_selected(obj);
+
+    /* 0 = AUTO (el valor reservado); 1.. = el perfil selected - 1.
+     * params_uint8_set toma el lock y marca el dirty, como el resto de los
+     * ajustes; la politica lo lee (radio_tick, src/radio.c) pero nunca lo toca. */
+    params_uint8_set(&params.visual_profile,
+                     selected == 0 ? VP_PARAM_AUTO : (uint8_t) (selected - 1));
+}
+
+static uint8_t make_visual_profile(uint8_t row) {
+    lv_obj_t    *obj;
+
+    row_dsc[row] = 54;
+
+    /* La etiqueta nombra el ajuste y, entre parentesis, el perfil VIGENTE: en
+     * AUTO lo decide la politica (y en manual lo congela el override), asi que
+     * no siempre coincide con lo que muestra el desplegable. Es una foto del
+     * estado al abrir Ajustes. */
+    obj = lv_label_create(grid);
+    lv_label_set_text_fmt(obj, "Visual profile (%s)",
+                          visual_policy_profile_name(visual_policy_current()));
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    obj = lv_dropdown_create(grid);
+
+    dialog_item(&dialog, obj);
+
+    lv_obj_set_size(obj, SMALL_6, 56);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_center(obj);
+
+    lv_obj_t *list = lv_dropdown_get_list(obj);
+    lv_obj_add_style(list, &dialog_dropdown_list_style, 0);
+
+    lv_dropdown_set_options(obj, " Auto \n Quality \n Balanced \n Eco \n Critical ");
+    lv_dropdown_set_symbol(obj, NULL);
+    lv_dropdown_set_selected(obj, visual_profile_selection(params.visual_profile.x));
+    lv_obj_add_event_cb(obj, visual_profile_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     return row + 1;
 }
@@ -2137,6 +2198,7 @@ static void construct_cb(lv_obj_t *parent) {
     n = lv_obj_get_child_cnt(grid);
     row = make_theme(row);
     row = make_font(row);
+    row = make_visual_profile(row);
     grp_primero[GRP_APARIENCIA] = n; grp_ultimo[GRP_APARIENCIA] = lv_obj_get_child_cnt(grid);
 
     /* 8. Acciones */

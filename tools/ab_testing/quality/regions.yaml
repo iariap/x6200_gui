@@ -58,3 +58,25 @@ regions:
   - name: ajustes_anio
     rect: [689, 98, 98, 60]
     description: "Campo Año del dialogo de Ajustes (dialog_settings.c, fila Day/Month/Year) sobre el arnes"
+
+  # La fila "Visual profile" (UI-08 incr. 5) vive en el grupo Apariencia del
+  # dialogo de Ajustes: su caja va del pad del dialogo (x=20, donde arrancan las
+  # etiquetas) al borde del desplegable (x=784), y la fila ocupa y=199..255 (el
+  # desplegable a y=199, la etiqueta a y=213, alturas 56/28, medido con
+  # --inspect sobre el render de settings-perfil). El rect la cubre con un pixel
+  # de margen por lado y por la derecha se detiene en x=784 para no solaparse con
+  # la barra de scroll (`ajustes_scrollbar`). Se dibuja entera en la fixture
+  # settings-perfil.
+  - name: ajustes_perfil
+    rect: [20, 197, 764, 60]
+    description: "Fila 'Visual profile' de Ajustes (dialog_settings.c, grupo Apariencia) sobre el arnes"
+
+  # La barra de scroll de la grilla de Ajustes, en el borde derecho del dialogo
+  # (x=785..791, el ancho de 7 px que fija construct_cb con pad_right 14). Solo
+  # se ve en las fixtures que scrollean la grilla (settings-wfbat,
+  # settings-perfil); su pulgar depende de la altura del contenido, asi que una
+  # fila nueva la mueve. La region la aísla para que ese cambio no se atribuya a
+  # `waterfall`, que la contiene.
+  - name: ajustes_scrollbar
+    rect: [785, 75, 8, 330]
+    description: "Barra de scroll vertical de la grilla de Ajustes (dialog_settings.c) sobre el arnes"

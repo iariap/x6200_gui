@@ -12,7 +12,9 @@
  * it). The test drives the two rewrites that used to bypass the cap:
  *
  *   - backlight_tick() (input) has to hand it params.brightness_normal;
- *   - the idle timer has to hand it params.brightness_idle.
+ *   - the idle timer has to hand it params.brightness_idle;
+ *   - the OFF/ON switch, on the way back on, has to hand it
+ *     params.brightness_normal (increment 5: the cap survives the toggle).
  *
  * Reverting either line to a direct backlight_set_brightness() call leaves the
  * recorder empty and this test red: that is the anti-false-green of the
@@ -77,6 +79,24 @@ void test_backlight(void) {
     CHECK(test_rewrite_last() == params.brightness_normal);
 
     /* Ningun rewrite toco los settings. */
+    CHECK(params.brightness_normal == 9);
+    CHECK(params.brightness_idle == 1);
+
+    /* --- Switch OFF/ON (UI-08 incr. 5): al volver a encender, el nivel pasa por
+     * la politica (asi el cap del perfil vigente sobrevive al toggle) en vez de
+     * un backlight_set_brightness() directo. El apagado no emite luz, asi que no
+     * pasa por el cap. Empieza encendido (arranque del modulo). --- */
+    test_rewrite_reset();
+    backlight_switch();                 /* encendido -> apagado: sin rewrite */
+    CHECK(test_rewrite_calls() == 0);
+
+    test_rewrite_reset();
+    backlight_switch();                 /* apagado -> encendido: un rewrite */
+    CHECK(test_rewrite_calls() == 1);
+    CHECK(test_rewrite_last_valid());
+    CHECK(test_rewrite_last() == params.brightness_normal);
+
+    /* El switch tampoco toca los settings del usuario. */
     CHECK(params.brightness_normal == 9);
     CHECK(params.brightness_idle == 1);
 }

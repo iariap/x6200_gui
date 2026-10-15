@@ -127,12 +127,17 @@ static void build_main(const scenario_t *scenario)
     visual_policy_t        policy;
     visual_policy_result_t visual;
 
+    /* El override sale del parametro persistido, igual que en el ROM
+     * (src/radio.c): con AUTO lo decide la bateria del fixture; con un perfil
+     * fijado, ese perfil manda. El arnes no tiene un perfil fijado (mock_params
+     * deja VP_PARAM_AUTO), pero el camino es el mismo que el de la radio. */
     visual_policy_init(&policy);
     visual = visual_policy_eval(&policy,
                                 volts_to_mv(mock_radio.battery_v),
                                 volts_to_mv(mock_radio.external_v),
                                 mock_radio.battery_cap, mock_radio.charging,
-                                0u, 0u, VP_AUTO);
+                                0u, 0u,
+                                visual_policy_override_from_param(params.visual_profile.x));
     visual_policy_waterfall_apply(visual.profile, params.waterfall_battery.x);
     visual_policy_brightness_apply(visual.profile, params.brightness_normal);
 
@@ -157,7 +162,8 @@ bool scenario_build(const scenario_t *scenario)
         return true;
     }
 
-    if (!strcmp(scenario->screen, "settings-home") || !strcmp(scenario->screen, "settings-wfbat")) {
+    if (!strcmp(scenario->screen, "settings-home") || !strcmp(scenario->screen, "settings-wfbat")
+        || !strcmp(scenario->screen, "settings-perfil")) {
         /* Ajustes on top of the real main screen, opened by the firmware's own
          * path: main_screen_action(ACTION_APP_SETTINGS) -> main_screen_start_app()
          * -> dialog_construct(dialog_settings) (src/main_screen.c -> src/dialog.c
@@ -237,6 +243,27 @@ void scenario_settle(const scenario_t *scenario)
             fprintf(stderr,
                     "settings-wfbat: 'Waterfall battery mode' is not on screen after the "
                     "tab presses (did the bottom bar's tabs move?)\n");
+            exit(1);
+        }
+    }
+
+    if (!strcmp(scenario->screen, "settings-perfil")) {
+        /* La fila nueva vive en el grupo Apariencia (UI-08 incr. 5). Se salta
+         * como el usuario: `buttons_press(4)` carga la pagina 2 con "Mas >" y
+         * `buttons_press(2)` es el tab "Apariencia", que llama a settings_goto()
+         * (scroll + foco). El grupo entra entero en el viewport. */
+        buttons_press(4, false);    /* page 1, index 4: "Mas >"      */
+        buttons_press(2, false);    /* page 2, index 2: "Apariencia" */
+
+        /* Lo que esta fixture *significa*: el perfil VIGENTE que muestra la
+         * etiqueta sale del automatico con la bateria del fixture (11.2 V ->
+         * ECO), no del seteado (AUTO). Codificado: si el perfil de la bateria o
+         * el nombre de la fila cambian, el arnes corta en vez de capturar otra
+         * cosa y reportar verde. */
+        if (!label_on_screen(lv_scr_act(), "Visual profile (Eco)")) {
+            fprintf(stderr,
+                    "settings-perfil: 'Visual profile (Eco)' is not on screen after the "
+                    "Apariencia tab press (did the row move or the auto profile change?)\n");
             exit(1);
         }
     }

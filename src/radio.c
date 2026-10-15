@@ -114,6 +114,25 @@ static void apply_visual_profile(void *arg) {
     visual_policy_brightness_apply(profile, params.brightness_normal);
 }
 
+/* Aplica el override persistido antes de la primera muestra (UI-08 incr. 5).
+ * El byte de `params.visual_profile` (cargado por params_init) es AUTOMATICO por
+ * defecto; si el usuario dejo un perfil fijado, el cap del brillo y el modo del
+ * waterfall valen desde el arranque, sin esperar al primer paquete del pack. Con
+ * AUTO no se toca nada: lo decide la bateria en radio_tick. Corre en el hilo
+ * principal, el mismo que arma la GUI y que despues corre la politica. */
+static void apply_visual_override_at_boot(void) {
+    visual_override_t override = visual_policy_override_from_param(params.visual_profile.x);
+
+    if (!override.manual) {
+        return;
+    }
+
+    visual_policy_result_t boot = visual_policy_eval(&visual_policy, 0, 0, 0, false, 0, 0, override);
+
+    visual_policy_waterfall_apply(boot.profile, params.waterfall_battery.x);
+    visual_policy_brightness_apply(boot.profile, params.brightness_normal);
+}
+
 bool radio_tick() {
 
     if (now_time < prev_time) {
@@ -144,7 +163,11 @@ bool radio_tick() {
              * antiguedad es 0: el fallback por datos viejos no aplica a este
              * punto de conexion. Solo la transicion del perfil toca el waterfall
              * y el brillo (el mismo apply_visual_profile); el valor de arranque
-             * lo pusieron main.c y Ajustes con los settings del usuario. */
+             * lo pusieron main.c y Ajustes con los settings del usuario.
+             *
+             * El override sale del parametro persistido (UI-08 incr. 5): con
+             * AUTO lo decide la bateria; con un perfil fijado, ese perfil manda
+             * (y el parametro NO se escribe: la politica lo lee, nunca lo toca). */
             visual_policy_result_t visual = visual_policy_eval(&visual_policy,
                                                                (uint16_t) pack->vbat * 100u,
                                                                (uint16_t) pack->vext * 100u,
@@ -152,7 +175,7 @@ bool radio_tick() {
                                                                pack->flag.charging,
                                                                (uint32_t) now_time,
                                                                (uint32_t) now_time,
-                                                               VP_AUTO);
+                                                               visual_policy_override_from_param(params.visual_profile.x));
 
             if (visual.changed) {
                 scheduler_put(apply_visual_profile, &visual.profile, sizeof(visual.profile));
@@ -406,8 +429,10 @@ void radio_bb_reset() {
 
 void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
     /* La politica visual arranca en QUALITY: el modo Ahorro del waterfall solo
-     * cambia si el pack lo pide (UI-08 incr. 2). */
+     * cambia si el pack lo pide (UI-08 incr. 2). Despues se aplica el override
+     * persistido, si lo hay (UI-08 incr. 5). */
     visual_policy_init(&visual_policy);
+    apply_visual_override_at_boot();
 
     /* El GPIO se inicializa antes que esto (gpio_safe_prepare, en main), así que acá no
      * se vuelve a pedir. Y el reintento del control tiene tope: antes era un bucle
