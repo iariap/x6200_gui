@@ -101,7 +101,7 @@ static const theme_shape_t builtin_shapes[B_OUTDOOR_NEG] = {
                                  0x181818, 0x0a0a0a, 0x000000},
                    .waterfall_n = 11},
     [B_CLASSIC] = {.radius = 3, .radius_btn = 4, .radius_popup = 4, .border = 1, .btn_gradient = true,
-                   .focus_solid = true, .font = FONT_ARIAL,
+                   .focus_solid = true, .font = FONT_ROBOTO,
                    .waterfall = {0x000000, 0x000060, 0x0040e0, 0x00c8ff, 0xffff00, 0xff6000, 0xffffff},
                    .waterfall_n = 7},
 };
@@ -297,12 +297,19 @@ static bool load_file(const char *name) {
     get_int(root, "waterfall_steps", &v);
     theme_shape.waterfall_steps = v;
 
+    const char *digits = cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(root, "font_digits"));
+    if (digits) {
+        /* The digit panels of this theme (frequency row, clock) draw with a
+         * segmented family; anything that is not a digit family keeps the
+         * default. See src/fonts/font_select.h. */
+        int digit_family = font_digit_by_id(digits);
+        theme_shape.font_digits = (int8_t) (digit_family < 0 ? FONT_DIGIT_NONE : digit_family);
+    }
     const char *font = cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(root, "font"));
     if (font) {
-        theme_shape.font = !strcasecmp(font, "roboto") ? FONT_ROBOTO :
-                           !strcasecmp(font, "dejavu") ? FONT_DEJAVU :
-                           !strcasecmp(font, "arial") ? FONT_ARIAL :
-                           !strcasecmp(font, "sony") ? FONT_SONY : -1;
+        /* The ids are the generated font_ids[] (fonts/font_families.h): a theme
+         * names the family with the same id the Ajustes dropdown shows. */
+        theme_shape.font = (int8_t) font_family_by_id(font);
     }
     const cJSON *wf = cJSON_GetObjectItemCaseSensitive(root, "waterfall");
     if (cJSON_IsArray(wf) && cJSON_GetArraySize(wf) >= 2) {

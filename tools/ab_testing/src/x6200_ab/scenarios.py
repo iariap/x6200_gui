@@ -20,6 +20,11 @@ KNOWN_KEYS = frozenset(
         "screen",
         "seed",
         "theme",
+        # La familia segmentada de los paneles de dígitos (fila de frecuencia y
+        # reloj): un id FONT_DIGIT_* del arnés (src/fonts/font_families.h,
+        # `--digits` en tools/ui_harness/README.md). Vacío o `none` = la familia
+        # por defecto.
+        "digits",
         "spectrum_filled",
         "spectrum_peak",
         "waterfall_center_line",

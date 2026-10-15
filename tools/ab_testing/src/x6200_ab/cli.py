@@ -100,6 +100,13 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="also emit the structural inspection of the object tree in the JSON",
     )
+    capture.add_argument(
+        "--font",
+        default=None,
+        help="render with this font family (the ids of src/fonts/font_families.h, "
+        "e.g. inter): the font matrix of issue #9 renders every candidate with one "
+        "build instead of one build per family",
+    )
     capture.add_argument("--out", required=True, help="directory for the PNG + JSON captures")
     capture.set_defaults(func=cmd_capture)
 
@@ -244,6 +251,7 @@ def cmd_capture(args: argparse.Namespace) -> int:
             out_dir,
             context.workspace / "logs",
             inspect=bool(getattr(args, "inspect", False)),
+            font=getattr(args, "font", None),
         )
         payload = {
             "status": Status.PASS.value,

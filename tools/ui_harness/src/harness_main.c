@@ -86,6 +86,7 @@ static void usage(const char *argv0)
     fprintf(stderr,
             "usage: %s --scenario <file> --png <out.png> [--json <out.json>]\n"
             "          [--bench [--warmup N] [--repeats N]] [--inspect]\n"
+            "          [--font <family>] [--digits <family>]\n"
             "          [--bench-natural [N]] [--natural-frames N] [--natural-static]\n"
             "          [--bench-wakeups [MS]] [--display-off]\n",
             argv0);
@@ -247,6 +248,8 @@ int main(int argc, char **argv)
     bool        natural_static = false;
     bool        wakeups = false;
     bool        display_off = false;
+    const char *font_id = NULL;
+    const char *digits_id = NULL;
     int         warmup_override = -1;
     int         repeats_override = -1;
     int         natural_frames_override = -1;
@@ -261,6 +264,10 @@ int main(int argc, char **argv)
             json_path = argv[++i];
         } else if (!strcmp(argv[i], "--bench")) {
             bench = true;
+        } else if (!strcmp(argv[i], "--font") && i + 1 < argc) {
+            font_id = argv[++i];
+        } else if (!strcmp(argv[i], "--digits") && i + 1 < argc) {
+            digits_id = argv[++i];
         } else if (!strcmp(argv[i], "--inspect")) {
             inspect = true;
         } else if (!strcmp(argv[i], "--bench-natural")) {
@@ -383,13 +390,45 @@ int main(int argc, char **argv)
      * the parameter, and VISION scales the whole family up. Before this the
      * harness applied params.font only, so a theme that names a font (Classic,
      * RS) or VISION drew with the wrong one. */
-    if (theme_shape.font >= 0) {
+    if (font_id != NULL) {
+        /* `--font <id>`: the same ids a theme JSON writes (fonts/font_families.h).
+         * The A/B matrix and the gallery render every candidate family with one
+         * binary instead of one build per family. */
+        int family = font_family_by_id(font_id);
+
+        if (family < 0) {
+            fprintf(stderr, "ui_harness: unknown --font '%s'\n", font_id);
+            return 2;
+        }
+        fonts_apply((uint8_t) family);
+    } else if (theme_shape.font >= 0) {
         fonts_apply((uint8_t) theme_shape.font);
     } else if (params.font.x > 0) {
-        fonts_apply((uint8_t) (params.font.x - 1));
+        fonts_apply((uint8_t) params.font.x);
     }
     if (theme_shape.vision) {
         fonts_scale(VISION_FONT_STEPS);
+    }
+
+    /* The digit panels' family (the frequency row and the clock). `--digits` wins,
+     * then the fixture's own key, then the theme's `font_digits`. It has to be set
+     * before styles_init(), which resolves font_digit() when it builds the styles:
+     * the same order as the firmware's main(). */
+    const char *digit_id = digits_id;
+
+    if (digit_id == NULL && scenario.digits[0] != '\0') {
+        digit_id = scenario.digits;
+    }
+    if (digit_id != NULL) {
+        int digit_family = font_digit_by_id(digit_id);
+
+        if (digit_family < 0) {
+            fprintf(stderr, "ui_harness: unknown --digits '%s'\n", digit_id);
+            return 2;
+        }
+        fonts_set_digit_family((uint8_t) digit_family);
+    } else if (theme_shape.font_digits != FONT_DIGIT_NONE) {
+        fonts_set_digit_family((uint8_t) theme_shape.font_digits);
     }
 
     styles_init(THEME_SIMPLE);

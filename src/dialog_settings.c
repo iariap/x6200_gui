@@ -16,6 +16,7 @@
 
 #include "styles.h"
 #include "theme.h"
+#include "fonts/font_select.h"
 #include "msg.h"
 #include "params/params.h"
 #include "backlight.h"
@@ -1875,7 +1876,10 @@ static uint8_t make_font(uint8_t row) {
     lv_label_set_text(obj, "Font");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
-    obj = dropdown_uint8_custom_cb(grid, &params.font, " Sony Sketch \n Roboto \n DejaVu \n Arial", font_update_cb);
+    /* The item list comes from the generated font_names[] (fonts/font_families.h,
+     * via font_select.h): the row that is picked IS the FONT_* value, so this and
+     * fonts_apply() cannot drift apart (see src/main.c). */
+    obj = dropdown_uint8_custom_cb(grid, &params.font, font_dropdown_items(), font_update_cb);
 
     lv_obj_set_size(obj, SMALL_6, 56);
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);

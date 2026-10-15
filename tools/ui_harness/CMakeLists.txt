@@ -173,6 +173,13 @@ target_compile_options(ui_harness PRIVATE -D_GNU_SOURCE -Wall)
 # state the dialog reads is seeded explicitly by the fixture.
 target_link_options(ui_harness PRIVATE -Wl,--wrap=time -Wl,--wrap=system)
 
+# Una llamada sin declaracion (C99 la acepta como `int`) devuelve un puntero
+# truncado: es un fallo silencioso que el compilador avisa y el link suele dejar
+# pasar. En este arnes ya costo un segfault (un `#include` que faltaba), asi que
+# el aviso es un error.
+target_compile_options(ui_harness PRIVATE
+    $<$<COMPILE_LANGUAGE:C>:-Werror=implicit-function-declaration>)
+
 target_compile_definitions(ui_harness PRIVATE
     LV_CONF_INCLUDE_SIMPLE=1
     HARNESS_REVISION="${HARNESS_REVISION}"

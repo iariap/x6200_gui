@@ -26,13 +26,19 @@ cd tools/ui_harness/build
 ./ui_harness \
   --scenario /src/tools/ui_harness/fixtures/{fixture} \
   --png /out/{name}.png \
-  --json /out/{name}.json{inspect}
+  --json /out/{name}.json{inspect}{font}
 """
 
 # `--inspect` adds the structural inspection of the live LVGL object tree to the
 # JSON (see tools/ui_harness/src/ui_inspector.c). It never changes a pixel, so
 # the plain capture stays byte-identical.
 INSPECT_FLAG = " --inspect"
+
+# `--font <id>` renders with that family (src/fonts/font_families.h). It is what
+# the font matrix and the gallery need: one build of the harness carries every
+# candidate family, so a whole matrix is one revision instead of one revision per
+# family. Without it the harness picks the family the theme or params names.
+FONT_FLAG = " --font {}"
 
 # `--bench` measures the real render cost of each frame with CLOCK_MONOTONIC
 # (see tools/ui_harness/src/bench_metrics.h) and appends a `benchmark` block to
@@ -177,10 +183,11 @@ class Capturer:
         logs_dir: Path,
         *,
         inspect: bool = False,
+        font: str | None = None,
     ) -> list[Capture]:
         out_dir.mkdir(parents=True, exist_ok=True)
         return [
-            self.capture(revision, scenario, out_dir, logs_dir, inspect=inspect)
+            self.capture(revision, scenario, out_dir, logs_dir, inspect=inspect, font=font)
             for scenario in suite.scenarios
         ]
 
@@ -192,6 +199,7 @@ class Capturer:
         logs_dir: Path,
         *,
         inspect: bool = False,
+        font: str | None = None,
     ) -> Capture:
         scenario_path = revision.fixtures_dir / scenario.filename
         if not scenario_path.is_file():
@@ -208,6 +216,7 @@ class Capturer:
             fixture=scenario.filename,
             name=scenario.name,
             inspect=INSPECT_FLAG if inspect else "",
+            font=FONT_FLAG.format(font) if font else "",
         )
         log_path = logs_dir / f"capture-{revision.label}-{revision.short_sha}-{scenario.name}.log"
         result = self.runner.run_script(
