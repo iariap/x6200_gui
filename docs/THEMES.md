@@ -25,6 +25,7 @@ paleta del waterfall.
 | **Material 3** | `themes/Material 3.json` |
 | **RS** | `themes/RS/theme.json` + los PNG de sus botones (`btn.png`, `bar.png`, `strip.png`, `dialog.png`, `mark.png`, ...) |
 | **Redshift** | `themes/Redshift.json` |
+| **Aurora** | `themes/Aurora.json` |
 
 ## El arco del S-meter (`meter_over`) — medido en el equipo, 2026-10-15 (#44)
 
@@ -166,3 +167,82 @@ Las capturas del arnés por estado son `main-tema-redshift` (principal), `settin
 `main-tema-redshift-eco` (batería baja/ECO) y `main-tema-redshift-agua` (espectro + waterfall).
 La galería ARM real y la comparación consolidada contra los otros cinco temas se cierran en el
 #73; el selector/default se migra en el #74.
+
+## Aurora — uso diario premium (THEMES v2, issue #72)
+
+Tema **de uso diario**: **berenjena profundo** (fondo `bg #1A1227`, barra `bar #2C213E`,
+panel `panel #1B1529`), **lavanda** para las lecturas (`text #F8EEFF`, `vfo #D4BBFF`,
+`accent`/`text_head #D7C2FF`) y **coral** para lo que pide atención o energía
+(`tx`/`err`/`mode_dig #FFAAA4`–`#FFB3A8`, `btn_mark_active #FF8E86`), con **notas turquesas**
+en el S-meter y los spots (`meter_bar`/`alc`/`spot #7EE0D0`, `meter_low #5FD0C8`). Es el
+único de la colección que arranca con **gradientes suaves encendidos** (`btn_gradient` y
+`box_gradient` en `true`) y **radios grandes** (`radius 12`, `radius_btn 16`, `radius_popup 14`),
+con foco sólido y caja de modo: la cara "premium" del epic, distinta del Material 3 azul/gris y
+del Sprint angular.
+
+**Fuente.** `font: inter` (la familia ya compilada en ROM desde #60; `src/fonts/font_families.c`).
+El tema **no** fija `font_digits`: la frecuencia y el reloj siguen con la familia por defecto,
+que es lo que la identidad de Aurora pide (números normales, sin panel segmentado).
+
+**Cobertura de roles.** El archivo escribe **122 de 122 roles** de `src/theme.h` (nada queda
+heredado de `IU1WXY`, que es su `base`): `x6200-ab themes` lo reporta como
+`Aurora (...; base IU1WXY): 0/122 roles from the base`. El JSON de partida del issue #72 nombraba
+tres claves que ya no existen en el esquema (`strip`, `mode_bg`, `mode_text`, podadas en #77):
+incluirlas habría dejado el tema con colores desconocidos, así que se reasignaron a sus roles
+reales (`bar_grad`/`panel` y `sel_bg`/`sel_text`). El `base` es `IU1WXY`, que **se retira** en
+#74: como el archivo define los 122 roles, la migración de la base en #74 no puede contradecir
+ningún rol de Aurora.
+
+**Alcance real en la pantalla.** El motor de temas JSON colorea los roles que el firmware ya lee:
+el fondo (`bg`), la fila de frecuencia (`text`), los bordes de panel (`panel_border`), la paleta
+del waterfall, los items del info box (`bar`), los switches/sliders de Ajustes
+(`control_border`/`panel`) y el recolor del botón activo/deshabilitado. Las cajas de la barra
+superior (reloj, S-meter), los botones inferiores y el marco de los diálogos todavía se dibujan
+con las imágenes fijas `images/top_*_dark.bin`, `btn_dark.bin` y `dialog_dark.bin`
+(`src/styles.c`, `setup_theme_simple`), así que quedan en el gris azulado del asset en **todos**
+los temas. `theme_shape.radius`, `radius_btn`, `btn_gradient`, `box_gradient`, `focus_solid`,
+`mode_box`, `pill_border`, `mark` e `images` se cargan del JSON pero hoy el código no los usa en
+la pantalla principal: los radios y los gradientes de Aurora no son un delta respecto de los
+otros temas en esta revisión, y quedan declarados acá para que el día que la superficie de forma
+vuelva a dibujarse el tema ya la traiga.
+
+Pares medidos (WCAG 2.1, sRGB) para los roles de la identidad, todos por encima del umbral:
+
+| Par (fg sobre bg) | Ratio | Mínimo |
+|---|---:|---:|
+| `text` sobre `bg` / `panel` / `bar` / `dialog` | 16.09 / 15.74 / 13.39 / 14.77 | 4.5 |
+| `text` sobre `row` / `chip` | 13.53 / 12.85 | 4.5 |
+| `text_value` sobre `bg` | 18.11 | 4.5 |
+| `text_dim` sobre `bg` | 11.04 | 4.5 |
+| `text_head` sobre `bar` | 9.36 | 4.5 |
+| `btn_text` sobre `btn` / `btn_grad` | 11.29 / 12.39 | 4.5 |
+| `btn_active_text` sobre `btn_active` / `btn_active_grad` | 5.55 / 5.08 | 4.5 |
+| `focus_text` sobre `focus` | 10.43 | 4.5 |
+| `sel_text` sobre `sel_bg` / `near_bg` | 6.91 / 9.52 | 4.5 |
+| `vfo` sobre `vfo_bg` / `side` | 6.29 / 9.90 | 4.5 |
+| `tx` sobre `tx_bg` | 5.70 | 4.5 |
+| `mode_dig` sobre `bar` | 8.80 | 4.5 |
+| `info` / `ok` / `err` / `accent` sobre `panel` | 11.18 / 12.44 / 9.68 / 9.62 | 4.5 |
+| `action` / `ok` sobre `row` | 8.89 / 10.69 | 4.5 |
+| `alert_text` sobre `alert_bg` | 8.81 | 4.5 |
+| `control_border` sobre `dialog` / `panel` | 4.34 / 4.62 | 3.0 |
+| `bar_border`/`panel_border`/`popup_border`/`card` sobre su fondo | 3.93–4.72 | 3.0 |
+| `btn_border` sobre `btn` | 3.30 | 3.0 |
+| `btn_active_border` sobre `btn_active` | 3.46 | 3.0 |
+| `sel_border` sobre `sel_bg` | 4.78 | 3.0 |
+| `meter_bar` sobre `bg` | 12.88 | 3.0 |
+
+`tests/check_wcag.py` mide **134 pares aplicables** a este tema (es el que más pares tiene, por
+traer gradientes y `pill_border`) y no reporta **ninguna falla**; `x6200-ab themes` (los nueve
+pares que sólo viven en Ajustes) suma 9/9 OK. En el framework, el **no-texto por píxeles**
+(WCAG 1.4.11) sobre el render dorado del tema da el arco `meter_over` del S-meter **6.23:1** y
+la columna de señal del waterfall **6.57:1** (mínimo 3:1), declarados en
+`tools/ab_testing/quality/nontext.yaml`.
+
+**Capturas por estado.** Las fixtures del arnés que rinden Aurora (todas con el mismo estado de
+radio que su gemela de otro tema, así el tema es la única variable): `main-tema-aurora`
+(principal, RX), `main-tema-aurora-agua` (waterfall en movimiento), `main-tema-aurora-tx` (TX
+simulado), `main-tema-aurora-eco` (batería baja + ECO), `bt-dialog-tema-aurora` (diálogo) y
+`settings-tema-aurora` (Ajustes, con el foco sobre la fila del perfil). La galería ARM real y la
+comparación consolidada contra los otros cinco temas se cierran en el #73; el selector/default se
+migra en el #74.
