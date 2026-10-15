@@ -119,21 +119,29 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
     EXP-1, UI-012's in EXP-2, the UI-010 region exclusion in EXP-3 and UI-016's
     `layout_clipped` in AB-UI016-T1. The invariant is not "no waivers": it is that
     a waiver is never global and never permanent, and that the defect it holds back
-    is recorded. The four left are the Ajustes window's remaining real finding
+    is recorded. Four of the five are the Ajustes window's remaining real finding
     (UI-015, the controls below the 44px field-UX target), one per fixture that
     renders the rows it lives in — settings-rs-theme (UI-007) renders the same
-    Spectrum/waterfall rows as settings-wfbat, under the RS theme. Each one names
+    Spectrum/waterfall rows as settings-wfbat, under the RS theme. The fifth is the
+    digit panels' ghost layer (UI-017, AB-FONTSE): the shadow label of the frequency
+    row is stacked under the value on purpose, and `layout_overlap` reads that
+    stacking for what it is — two visible labels in the same box — until the rule
+    tells a by-design alpha layer from two texts hiding each other. Each one names
     exactly one rule and one fixture (no `path` shadow, so it cannot hide another
     node), carries a reason, an author and an expiry, and its reason names the open
     known issue that documents it.
     """
     exceptions = real_quality.contracts.exceptions
-    assert {exception.rule for exception in exceptions} == {"layout_touch_target"}
+    assert {exception.rule for exception in exceptions} == {
+        "layout_touch_target",
+        "layout_overlap",
+    }
     assert {exception.fixture for exception in exceptions} == {
         "settings-audio",
         "settings-home",
         "settings-rs-theme",
         "settings-wfbat",
+        "main-frecuencia-dseg",
     }
     for exception in exceptions:
         assert exception.path is None

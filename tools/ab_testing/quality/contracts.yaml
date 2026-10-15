@@ -363,12 +363,12 @@ exceptions:
   - rule: layout_overlap
     fixture: main-frecuencia-dseg
     reason: >
-      El "8 fantasma" (AB-FONTSE): la etiqueta sombra de la fila de frecuencia se
-      apila a proposito debajo del valor, con la misma caja, y el valor la tapa
-      solo donde enciende sus segmentos. `layout_overlap` mide el apilado de dos
-      etiquetas con texto visible; aca es la capa que da el look de segmentos
-      apagados, no dos textos que se esconden. Ver el `reason` de la region
-      `frecuencia` en `expected_changes`.
+      UI-017 (el "8 fantasma", AB-FONTSE): la etiqueta sombra de la fila de
+      frecuencia se apila a proposito debajo del valor, con la misma caja, y el
+      valor la tapa solo donde enciende sus segmentos. `layout_overlap` mide el
+      apilado de dos etiquetas con texto visible; aca es la capa que da el look de
+      segmentos apagados, no dos textos que se esconden. Ver el `reason` de la
+      region `frecuencia` en `expected_changes` y la ficha UI-017.
     author: fonts-extras
     until: 2027-03-31
 
