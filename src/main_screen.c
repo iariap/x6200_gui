@@ -248,6 +248,16 @@ void main_screen_start_app(press_action_t app_action) {
             dialog_construct(dialog_bands, obj);
             break;
 
+        case ACTION_APP_QTH:
+            dialog_construct(dialog_qth, obj);
+            voice_say_text_fmt("QTH window");
+            break;
+
+        case ACTION_APP_CALLSIGN:
+            dialog_construct(dialog_callsign, obj);
+            voice_say_text_fmt("Callsign window");
+            break;
+
         default:
             break;
     }
@@ -385,17 +395,9 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_RECORDER:
         case ACTION_APP_WIFI:
         case ACTION_APP_BANDS:
-            main_screen_start_app(action);
-            break;
-
         case ACTION_APP_QTH:
-            dialog_construct(dialog_qth, obj);
-            voice_say_text_fmt("QTH window");
-            break;
-
         case ACTION_APP_CALLSIGN:
-            dialog_construct(dialog_callsign, obj);
-            voice_say_text_fmt("Callsign window");
+            main_screen_start_app(action);
             break;
     }
 }

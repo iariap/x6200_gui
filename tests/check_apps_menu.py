@@ -119,6 +119,35 @@ duplicadas = {a: p for a, p in en_menu.items() if len(p) > 1}
 for a, p in sorted(duplicadas.items()):
     print(f"  (aviso) {a} aparece en {len(p)} paginas: {', '.join(p)}")
 
+# El control remoto (src/remote_server.cpp) abre las apps por su nombre llamando a
+# main_screen_start_app(): TODAS sus ACTION_APP_* tienen que tener `case` ahi, o la app no
+# abre por el socket (ni desde la pagina /remote del webserver) y el barrido del banco no la
+# puede medir. QTH y Callsign se abrian solo desde main_screen_action() y quedaban sin abrir
+# por el control remoto (docs/HALLAZGOS.md 39).
+remote_txt = (SRC / "remote_server.cpp").read_text(errors="surrogateescape")
+nombres = re.search(r"app_names\[\]\s*=\s*\{(.*?)\};", remote_txt, re.S)
+acciones = re.search(r"actions\[\]\s*=\s*\{(.*?)\};", remote_txt, re.S)
+
+if not nombres or not acciones:
+    fallos.append("no encontre app_names[]/actions[] en remote_server.cpp")
+else:
+    n_nombres = len(re.findall(r'"[^"]+"', nombres.group(1)))
+    lista_acciones = re.findall(r"ACTION_[A-Z0-9_]+", acciones.group(1))
+    print(f"  control remoto: {n_nombres} apps en app_names[] | {len(lista_acciones)} acciones")
+
+    if n_nombres != len(lista_acciones):
+        fallos.append(
+            f"remote_server.cpp: app_names[] tiene {n_nombres} apps y actions[] "
+            f"{len(lista_acciones)} acciones (el mapeo por indice queda desalineado)"
+        )
+
+    for accion_remota in sorted({a for a in lista_acciones if a.startswith("ACTION_APP_")}):
+        if accion_remota not in en_start_app:
+            fallos.append(
+                f"remote_server.cpp: {accion_remota} no tiene case en main_screen_start_app() "
+                f"(la app no abre por el control remoto)"
+            )
+
 if fallos:
     for f in fallos:
         print(f"  FALLA {f}")

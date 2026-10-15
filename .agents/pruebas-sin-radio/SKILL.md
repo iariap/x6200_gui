@@ -126,6 +126,29 @@ Apps por nombre: `off`, `FT8`, `FT4`, `JS8`, `WSPR`, `SSTV`, `WeFax`, `NavTex`, 
 - Mientras la radio transmite, solo se aceptan los comandos de stop/close.
 - Todo se aplica en el hilo de LVGL: para ver el efecto, esperar y volver a capturar (`ESPERA`).
 
+## Barrido de las apps en una sola corrida
+
+`tools/barrido-apps-banco.sh` levanta el banco UNA vez (con `captura-banco.sh`: build fresco, socket
+correcto, handshake) y contra esa misma GUI abre las 22 apps por el socket -dwell configurable,
+verificacion de que sigue viva y captura por app-, y escribe la evidencia a JSON.
+
+```bash
+CHROOT=../.vfix3 tools/barrido-apps-banco.sh           # las 22 apps, 20 s de permanencia
+DWELL=10 REINTENTAR=si tools/barrido-apps-banco.sh     # re-corre una vez lo que falle
+SALIDA=/tmp/barrido tools/barrido-apps-banco.sh        # donde dejar la evidencia
+```
+
+Cierra el pendiente "captura-banco.sh reinicia la GUI por cada llamada": las ordenes van por
+`docker exec` al contenedor que ya corre. Deja `barrido.json` (app, resultado, `app_estado`, colores,
+tiempo, captura y log de cada app) mas `capturas/` y `logs/` en el directorio de `SALIDA`.
+
+Una app esta **viva** solo si el contenedor sigue arriba, el socket contesta el handshake, el
+framebuffer dibujo algo **no uniforme** y el estado dice que la app abierta es la que se pidio
+(`"app"` del `{"cmd":"get"}`). Si no: `muerta` (el proceso se cayo), `sin-dibujo` (pantalla
+uniforme) o `no-abrio` (la app pedida no quedo abierta); las tres fallan. El handshake se reintenta
+3 veces y el crash se corrobora por los dos lados (contenedor/socket y el `CRASHLOG` del log de la
+GUI).
+
 ## Otros caminos sin radio
 
 1. **Tests ARM nativos** (logica, sin UI), con `qemu-arm-static`:
