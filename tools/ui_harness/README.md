@@ -409,11 +409,12 @@ inputs are substituted, so coverage is declared honestly per component:
 | `adaptive_tuning.c` | REAL | compiled and initialised (multiplier label hidden) |
 | `cw_tune_ui.c` | PARTIAL | compiled; hidden while CW tune is off |
 | `cfg/subjects.cpp` | REAL | the real Subject/observer core |
+| `cfg/settings_manager.cpp` | REAL | the remote control's mirror of the configuration; its parameters are bound to the real subjects at boot and checked there (`mocks/mock_settings_manager.cpp`) |
 | `cfg` (catalogue), `params`, `radio` | SYNTHETIC | harness-owned values; no DB, no device |
 | `spot_marks.c`, `cluster_column.c`, `freq_strip.c`, dialogs | UNSUPPORTED | not rendered in these scenarios |
 
-The `settings-home`/`settings-wfbat`/`settings-perfil` screens swap the dialog row for the truth of
-the Ajustes path: `src/dialog.c` and `src/dialog_settings.c` become REAL, and the
+The `settings-home`/`settings-wfbat`/`settings-perfil`/`settings-audio` screens swap the dialog row
+for the truth of the Ajustes path: `src/dialog.c` and `src/dialog_settings.c` become REAL, and the
 other app dialogs stay UNSUPPORTED (they keep their inert mock descriptors). The
 services the window calls — mixer volume, DSP preset, wfview server, the RTC, the
 transverter subjects — are SYNTHETIC, and `dialog_field.c` is declared UNSUPPORTED
