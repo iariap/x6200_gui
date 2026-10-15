@@ -7,9 +7,10 @@
  *  dependencias; el test nativo (tests/native/test_visual_policy.c) la cubre
  *  entera. Las salidas al mundo son
  *  visual_policy_waterfall_apply() (incr. 2), que aplica el perfil al modo
- *  Ahorro del waterfall, y visual_policy_brightness_apply() /
+ *  Ahorro del waterfall, visual_policy_spectrum_apply() (cadencia ECO del
+ *  espectro, corrida eco-final), y visual_policy_brightness_apply() /
  *  visual_policy_brightness_rewrite() (incr. 3 y 4), que lo aplican al nivel
- *  del backlight: por eso este archivo incluye waterfall.h y
+ *  del backlight: por eso este archivo incluye waterfall.h, spectrum.h y
  *  backlight_level.h, y el test nativo compila contra los stubs que registran
  *  esas llamadas.
  */
@@ -19,6 +20,7 @@
 #include <string.h>
 
 #include "backlight_level.h"
+#include "spectrum.h"
 #include "waterfall.h"
 
 /* Umbral de entrada (bajando) y de salida (subiendo) por banda. QUALITY, la
@@ -245,6 +247,16 @@ void visual_policy_waterfall_apply(visual_profile_t profile, bool user_battery_m
     bool saving = (profile == VP_ECO || profile == VP_CRITICAL);
 
     waterfall_set_battery_mode(saving || user_battery_mode);
+}
+
+void visual_policy_spectrum_apply(visual_profile_t profile) {
+    /* Mismo reparto que el waterfall: ECO y CRITICAL son los perfiles que ahorran
+     * trabajo de render; QUALITY y BALANCED vuelven a dibujar todos los refrescos.
+     * El espectro no tiene toggle del usuario, asi que el perfil es la entrada
+     * entera. */
+    bool saving = (profile == VP_ECO || profile == VP_CRITICAL);
+
+    spectrum_set_refresh_period(saving ? VP_SPECTRUM_ECO_PERIOD : 1);
 }
 
 void visual_policy_brightness_apply(visual_profile_t profile, int16_t user_setting) {

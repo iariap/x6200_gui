@@ -255,6 +255,7 @@ invalidation** — halving the invalidated area of the spectrum moves neither
   "data_drive": true, "seed": 13,
   "spectrum_fps_ms": 66, "waterfall_fps_ms": 40,
   "spectrum_frames": 17, "waterfall_rows": 24,
+  "waterfall_offscreen_redraws": 24,
   "per_frame": [
     { "frame": 1, "virtual_end_ms": 2260, "refresh_cycles": 1,
       "invalidated_px": 196000, "invalidated_rects": 1, "joined_px": 0,
@@ -288,6 +289,10 @@ invalidation** — halving the invalidated area of the spectrum moves neither
   and the waterfall are then never fed, so only the clock/BT/band-info rectangles
   remain. It is the delimitation control of
   `tests/check_harness_natural.sh`, not a product mode.
+* `waterfall_offscreen_redraws` is the instrument of `src/waterfall.c` (issue #13):
+  how many times the waterfall rebuilt its 800 x height px palette off-screen
+  during the run. With the panel lit it is one per new row (24 on `main-natural`);
+  with `--display-off` the waterfall skips the palette computation, so it is 0.
 
 `tests/check_harness_natural.sh` is the gate: it rebuilds the harness, runs the
 fixture in the four modes, checks the PNG and the whole JSON are identical across
@@ -295,7 +300,7 @@ two natural runs, and checks the produced areas against the profile of UI-07
 increment 1 (spectrum 132000 px per FFT frame, waterfall 196000 px per row, clock
 15840 px per 500 ms tick), the drive cadence against `src/dsp.cpp`'s constants,
 and that `--bench` still repaints the whole 384000 px screen. The raw output of a
-run is in `tools/ab_testing/reports/NATURAL-UI07-N1/`.
+run is in `tools/ab_testing/reports/NATURAL-ECOFINAL/`.
 
 ### Display off (`--display-off`)
 
@@ -307,21 +312,25 @@ whole natural run invalidates and flushes **0 px** while the spectrum, the
 waterfall and the clock keep firing and the data drive keeps running: the same
 image (`metrics.framebuffer_fnv1a` is the lit capture's), no render work. The
 capture is also exactly one full-screen repaint lighter (1127680 -> 743680 px),
-because the repaint the harness does before every capture is skipped too.
+because the repaint the harness does before every capture is skipped too. The
+waterfall also stops rebuilding its off-screen palette (`refresh_waterfall()` skips
+it while `backlight_is_on()` is false, `src/waterfall.c`): the run's
+`waterfall_offscreen_redraws` drops from one per row to **0**.
 
 `tests/check_harness_natural.sh` runs it as its fifth mode and
 `tests/natural_evidence.py` locks it (0 px per frame, the reduced capture, the
-same framebuffer as the lit one). The property on the ROM side — one
-`lv_disp_enable_invalidation` call per switch, `false` off and `true` on — is in
+same framebuffer as the lit one, 0 off-screen redraws). The property on the ROM
+side — one `lv_disp_enable_invalidation` call per switch, `false` off and `true`
+on, and the same state the waterfall gate consumes — is in
 `tests/native/test_backlight.c`, which compiles the real `src/backlight.c`.
 
 ## Wakeup profile
 
 The ROM has two wakeup sources: its GUI loop (`src/main.c`: it sleeps until
 `lv_timer_handler()` says a timer is due; the DSP's posts do **not** wake it,
-`src/scheduler.cpp` is a plain queue) and its tick thread
-(`while (1) { usleep(5 * 1000); lv_tick_inc(5); }`). Which one costs more is a
-number:
+`src/scheduler.cpp` is a plain queue) and — while `LV_TICK_CUSTOM` is off — its
+tick thread (`while (1) { usleep(5 * 1000); lv_tick_inc(5); }`). Which one costs
+more is a number:
 
 ```sh
 ./ui_harness --scenario ../fixtures/main-natural.scn \
@@ -337,23 +346,28 @@ number:
   wakeups the firmware does not have.
 * It runs the loop with the ROM's configured refresh period
   (`LV_DISP_DEF_REFR_PERIOD`, `lv_conf.h`) instead of the harness's own LVGL
-  default (30 ms), and reports the tick thread's cadence next to it; the gate
-  reads both numbers from the firmware sources, so neither can drift out from
-  under the measurement.
+  default (30 ms), and reports the ROM's tick mode next to it. `LV_TICK_CUSTOM`
+  (`lv_conf.h` of the ROM) is read at build time by the harness CMake and passed
+  as `HARNESS_ROM_TICK_CUSTOM`: with it on, `tick_custom` is true, the tick thread
+  does not exist and `tick_thread_wakeups` is 0; with it off, the tick cadence is
+  read from `src/main.c`. The gate re-reads the same source, so neither can drift
+  out from under the measurement.
 * Two passes: `with_drive` (the radio's steady state) and `static` (the data
   drive off — the delimitation control).
 * The JSON gains a `wakeups` block: `wakeups`, `with_flush`, `immediate`,
   `no_timer`, `sleep_ms_min/max/total` and `flushed_px` per pass, plus
-  `window_ms`, `refresh_period_ms`, `slice_ms`, `tick_thread_ms`,
+  `window_ms`, `refresh_period_ms`, `slice_ms`, `tick_custom`, `tick_thread_ms`,
   `tick_thread_wakeups` and the two drive cadences. No wall clock is read.
 * It is **not** a cost measurement: the time spent in a wakeup and anything about
   the Cortex-A7's energy are the hardware pass (BLOCKED, no radio attached).
 
 Measured on `main-natural` (seed 13, 1000 ms): the loop wakes **14** times with
-the data path and **11** without it, sleeping 10-200 ms, while the 5 ms tick
-thread wakes **200** times — 93.5% of the two sources. `tests/check_harness_wakeups.sh`
+the data path and **11** without it, sleeping 10-200 ms. In the base run the 5 ms
+tick thread woke **200** times (93.5% of the two sources); this revision applies
+`LV_TICK_CUSTOM 1` with `CLOCK_MONOTONIC` (lv_conf.h), so the thread is gone and
+`tick_thread_wakeups` is **0**. `tests/check_harness_wakeups.sh`
 is the gate (idempotency, the sources, the delimitation, the refused
-combinations) and the raw output is in `tools/ab_testing/reports/WAKEUPS-ECO13/`.
+combinations) and the raw output is in `tools/ab_testing/reports/WAKEUPS-ECOFINAL/`.
 
 ## Scenarios
 

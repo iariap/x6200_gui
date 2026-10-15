@@ -192,6 +192,7 @@ static void build_main(const scenario_t *scenario)
                                 0u, 0u,
                                 visual_policy_override_from_param(params.visual_profile.x));
     visual_policy_waterfall_apply(visual.profile, params.waterfall_battery.x);
+    visual_policy_spectrum_apply(visual.profile);
     visual_policy_brightness_apply(visual.profile, params.brightness_normal);
 
     meter_update(mock_radio.smeter_db, 0.0f);

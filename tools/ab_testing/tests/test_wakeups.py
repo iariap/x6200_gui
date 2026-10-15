@@ -1,10 +1,10 @@
 """Non-e2e checks of the wakeup profile (issue #13, UI-07 remainder).
 
 These tests do not build the harness: they check the committed evidence
-(`reports/WAKEUPS-ECO13/`) with the same checker the local gate runs
+(`reports/WAKEUPS-ECOFINAL/`) with the same checker the local gate runs
 (`tests/check_harness_wakeups.sh` -> `tests/wakeup_evidence.py`), so the wakeup
 mode's contract — deterministic, measured on the ROM's own refresh period and
-tick cadence, delimited by its data drive, and additive (a plain capture carries
+tick mode, delimited by its data drive, and additive (a plain capture carries
 no `wakeups` block) — is enforced on every `pytest -m "not e2e"` run. The checker
 re-reads `lv_conf.h`, `src/main.c` and `src/dsp.cpp` from the repository, so the
 evidence cannot drift from the firmware it describes. The harness itself is
@@ -21,7 +21,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-EVIDENCE = REPO_ROOT / "tools" / "ab_testing" / "reports" / "WAKEUPS-ECO13"
+EVIDENCE = REPO_ROOT / "tools" / "ab_testing" / "reports" / "WAKEUPS-ECOFINAL"
 CHECKER = REPO_ROOT / "tests" / "wakeup_evidence.py"
 
 # The keys the `wakeups` section carries. There is no wall clock in any of them:
@@ -34,6 +34,7 @@ WAKEUP_KEYS = {
     "window_ms",
     "refresh_period_ms",
     "slice_ms",
+    "tick_custom",
     "tick_thread_ms",
     "tick_thread_wakeups",
     "spectrum_fps_ms",
@@ -71,8 +72,9 @@ def test_evidence_is_sourced_delimited_and_deterministic() -> None:
         check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "tick thread: 200 wakeups in 1000 ms" in result.stdout
-    assert "93.5% of the two sources" in result.stdout
+    # Con LV_TICK_CUSTOM en el lv_conf.h de la ROM el hilo del tick no existe: el
+    # perfil declara 0 wakeups de tick y el checker lo cruza contra esa fuente.
+    assert "tick thread: none" in result.stdout
     assert "window override: --bench-wakeups 3000" in result.stdout
 
 
@@ -93,10 +95,13 @@ def test_wakeups_section_is_extra_and_carries_no_wall_clock() -> None:
     }
 
 
-def test_the_tick_dominates_the_loop() -> None:
-    """El titular de #13, pineado sobre la evidencia: 5 ms de tick contra el lazo."""
+def test_the_tick_thread_is_gone_the_loop_remains() -> None:
+    """El titular de #13, pineado sobre la evidencia: el hilo del tick se elimino
+    con LV_TICK_CUSTOM (0 wakeups) y el lazo de la ROM queda como la unica fuente."""
     wakeups = _load("wakeups")["wakeups"]
-    assert wakeups["tick_thread_wakeups"] == 200
+    assert wakeups["tick_custom"] is True
+    assert wakeups["tick_thread_ms"] == 0
+    assert wakeups["tick_thread_wakeups"] == 0
     assert wakeups["with_drive"]["wakeups"] == 14
     assert wakeups["static"]["wakeups"] == 11
     # Sin vueltas sin sueño: cada vuelta contada es un ciclo dormir -> despertar.

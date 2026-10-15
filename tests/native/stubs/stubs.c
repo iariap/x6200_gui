@@ -143,6 +143,33 @@ void test_waterfall_battery_reset(void) {
     waterfall_battery_calls = 0;
 }
 
+/* ---------------- spectrum: wiring de la cadencia ECO ---------------- */
+
+/* src/visual_policy.c aplica el perfil a la cadencia del espectro
+ * (visual_policy_spectrum_apply -> spectrum_set_refresh_period). Como el
+ * waterfall, el test no linkea spectrum.c: este stub registra el ultimo periodo
+ * (y cuantas veces se lo fijo) para asertar la decision de la politica. */
+static uint8_t spectrum_period;
+static int     spectrum_period_calls;
+
+void spectrum_set_refresh_period(uint8_t frames) {
+    spectrum_period = frames;
+    spectrum_period_calls++;
+}
+
+uint8_t test_spectrum_period(void) {
+    return spectrum_period;
+}
+
+int test_spectrum_period_calls(void) {
+    return spectrum_period_calls;
+}
+
+void test_spectrum_period_reset(void) {
+    spectrum_period = 0;
+    spectrum_period_calls = 0;
+}
+
 /* ---------------- backlight: wiring del brillo de la politica visual -------- */
 
 /* src/visual_policy.c aplica el perfil al nivel del backlight (UI-08 incr. 3)

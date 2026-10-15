@@ -1,7 +1,7 @@
 """Non-e2e checks of the natural-invalidation bench (UI-07 increment 2).
 
 These tests do not build the harness: they check the committed evidence
-(`reports/NATURAL-UI07-N1/`) with the same checker the local gate runs
+(`reports/NATURAL-ECOFINAL/`) with the same checker the local gate runs
 (`tests/check_harness_natural.sh` -> `tests/natural_evidence.py`), so the natural
 mode's contract — deterministic, profiled against UI-07 increment 1, delimited by
 its data drive, and compatible with the existing `metrics`/`benchmark` blocks — is
@@ -19,7 +19,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-EVIDENCE = REPO_ROOT / "tools" / "ab_testing" / "reports" / "NATURAL-UI07-N1"
+EVIDENCE = REPO_ROOT / "tools" / "ab_testing" / "reports" / "NATURAL-ECOFINAL"
 CHECKER = REPO_ROOT / "tests" / "natural_evidence.py"
 
 # The keys the `natural` section carries. There is no wall clock in any of them:
@@ -38,6 +38,7 @@ NATURAL_KEYS = {
     "waterfall_fps_ms",
     "spectrum_frames",
     "waterfall_rows",
+    "waterfall_offscreen_redraws",
     "per_frame",
     "totals",
 }
@@ -126,12 +127,16 @@ def test_display_off_evidence_renders_nothing() -> None:
     La propiedad la mide el `natural` block (todo en cero) y el test nativo del
     backlight; aca queda pineada sobre la evidencia, porque la captura de la
     pantalla apagada es exactamente un repaint de pantalla completa mas liviana
-    (1127680 - 384000 = 743680 px) y el mismo PNG que con la pantalla encendida.
+    (1127680 - 384000 = 743680 px) y el mismo PNG que con la pantalla encendida. El
+    instrumento del redibujo offscreen de la cascada (src/waterfall.c) queda en 0
+    contra una por fila con la pantalla encendida: el panel oscuro saltea el computo
+    de la paleta (~196000 px por fila) en vez de hacerlo para nada.
     """
     document = _load("off")
     natural = document["natural"]
     assert natural["data_drive"] is True
     assert natural["spectrum_frames"] > 0 and natural["waterfall_rows"] > 0
+    assert natural["waterfall_offscreen_redraws"] == 0
     assert set(natural["totals"].values()) == {0}
     assert document["metrics"]["flushes"] == 6 - 1
     assert document["metrics"]["flushed_pixels"] == 1127680 - 800 * 480

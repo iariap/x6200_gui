@@ -63,6 +63,16 @@ static int16_t freq_mod;
 
 static pthread_mutex_t data_mux;
 
+/* Cadencia del redibujo (perfil ECO/CRITICAL, UI-08): el espectro dibuja 1 de
+ * cada `refresh_period` refrescos. Los datos siguen llegando y actualizandose en
+ * spectrum_buf; lo que se saltea es la invalidacion completa del widget (el
+ * redibujo de LVGL). Es el mismo mecanismo del modo Ahorro del waterfall
+ * (src/waterfall.c), con el borde de bajada gratis: al volver el perfil a
+ * QUALITY/BALANCED el periodo vuelve a 1 y el proximo refresco dibuja, asi que
+ * ningun frame queda en deuda. */
+static uint8_t refresh_period = 1;
+static uint8_t refresh_counter = 0;
+
 static void on_fft_width_changed(Subject *subj, void *user_data);
 static void on_real_filter_from_change(Subject *subj, void *user_data);
 static void on_real_filter_to_change(Subject *subj, void *user_data);
@@ -272,7 +282,20 @@ static void rx_cb(lv_event_t *e) {
 }
 
 static void spectrum_refresh(void *data) {
-    lv_obj_invalidate(obj);
+    refresh_counter++;
+
+    if (refresh_counter >= refresh_period) {
+        refresh_counter = 0;
+        lv_obj_invalidate(obj);
+    }
+}
+
+void spectrum_set_refresh_period(uint8_t frames) {
+    if (frames == 0) {
+        return;
+    }
+
+    refresh_period = frames;
 }
 
 lv_obj_t *spectrum_init(lv_obj_t *parent) {

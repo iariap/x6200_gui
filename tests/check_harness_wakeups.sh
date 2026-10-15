@@ -4,10 +4,14 @@
 # remainder).
 #
 # The ROM has two wakeup sources: its own main loop (src/main.c: it sleeps until
-# the LVGL timer handler says a timer is due) and its tick thread (src/main.c:
-# `while (1) { usleep(5 * 1000); lv_tick_inc(5); }`). `--bench-wakeups` measures
-# the first one on the firmware's own timer set and reports it next to the second
-# one's cadence, so "how much does the 5 ms tick wake the CPU" is a number.
+# the LVGL timer handler says a timer is due) and — while `LV_TICK_CUSTOM` is off —
+# its tick thread (src/main.c: `while (1) { usleep(5 * 1000); lv_tick_inc(5); }`).
+# `--bench-wakeups` measures the first one on the firmware's own timer set and
+# reports it next to the second one's cadence, so "how much does the tick wake the
+# CPU" is a number. This run applied `LV_TICK_CUSTOM 1` (lv_conf.h of the ROM,
+# CLOCK_MONOTONIC): el hilo del tick ya no existe, asi que el perfil declara 0
+# wakeups de tick y el gate lo cruza contra la misma fuente; sin la macro el gate
+# sigue validando el hilo leyendo su cadencia de src/main.c.
 #
 # Builds the harness (Docker image x6200-uiharness) and runs
 # fixtures/main-natural.scn five ways:
@@ -20,10 +24,11 @@
 #   4. `--bench-wakeups --bench-natural` and `--bench-wakeups 0`: refused (exit
 #      2), a mode cannot be measured on top of another and a non-positive window
 #      is a typo, never a default.
-# Then tests/wakeup_evidence.py checks the numbers: the ROM's own refresh period
-# read from lv_conf.h, the tick's cadence read from src/main.c, the loop's
-# sleep accounting, that the loop does not busy-spin, and the headline -- the
-# tick thread's share of the wakeups.
+# Then tests/wakeup_evidence.py checks the numbers: the ROM's tick mode
+# (LV_TICK_CUSTOM) and its monotonic source read from lv_conf.h, the ROM's own
+# refresh period read from the same file, the loop's sleep accounting, that the
+# loop does not busy-spin, and the headline -- with the tick thread gone, 0
+# wakeups of tick; without the macro, the thread's share of the wakeups.
 #
 # Usage: tests/check_harness_wakeups.sh
 #   SKIP_BUILD=1   reuse the existing build/

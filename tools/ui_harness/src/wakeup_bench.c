@@ -54,8 +54,16 @@
 #define WAKEUP_REFR_PERIOD_MS 50
 
 /* La cadencia del hilo del tick (src/main.c, tick_thread()). La misma vara: el
- * gate la lee de src/main.c. */
+ * gate la lee de src/main.c. Con LV_TICK_CUSTOM (lv_conf.h de la ROM) el hilo no
+ * existe: el modo lo declara HARNESS_ROM_TICK_CUSTOM, que el CMake deriva del
+ * lv_conf.h de la ROM, y el perfil reporta 0 wakeups de tick. */
 #define WAKEUP_TICK_THREAD_MS 5
+
+/* El CMake del arnes define HARNESS_ROM_TICK_CUSTOM a partir del lv_conf.h de la
+ * ROM; sin esa definicion (build suelto) el modo por defecto es el hilo. */
+#ifndef HARNESS_ROM_TICK_CUSTOM
+#define HARNESS_ROM_TICK_CUSTOM 0
+#endif
 
 /* Paso del reloj virtual durante el sueno del lazo (el mismo del banco natural:
  * la resolucion a la que el banco inyecta datos y tick). */
@@ -206,9 +214,38 @@ uint32_t wakeup_bench_refresh_period_ms(void)
     return WAKEUP_REFR_PERIOD_MS;
 }
 
+/* El hilo que declara el tick de LVGL (src/main.c): con LV_TICK_CUSTOM en la ROM
+ * el hilo no existe, asi que no hay cadencia que reportar (0) ni wakeups que
+ * contar. */
 uint32_t wakeup_bench_tick_thread_ms(void)
 {
+#if HARNESS_ROM_TICK_CUSTOM
+    return 0;
+#else
     return WAKEUP_TICK_THREAD_MS;
+#endif
+}
+
+bool wakeup_bench_tick_custom(void)
+{
+#if HARNESS_ROM_TICK_CUSTOM
+    return true;
+#else
+    return false;
+#endif
+}
+
+/* Wakeups del hilo del tick en la ventana: 0 con LV_TICK_CUSTOM (no hay hilo),
+ * window_ms / tick_ms con el hilo. */
+static uint32_t tick_thread_wakeups(void)
+{
+    uint32_t tick_ms = wakeup_bench_tick_thread_ms();
+
+    if (tick_ms == 0) {
+        return 0;
+    }
+
+    return window_ms / tick_ms;
 }
 
 static void write_pass(FILE *f, const char *name, const wakeup_pass_t *pass, bool more)
@@ -235,9 +272,9 @@ void wakeup_bench_write_json(FILE *f)
     fprintf(f, "    \"window_ms\": %u,\n", window_ms);
     fprintf(f, "    \"refresh_period_ms\": %u,\n", wakeup_bench_refresh_period_ms());
     fprintf(f, "    \"slice_ms\": %d,\n", WAKEUP_SLICE_MS);
+    fprintf(f, "    \"tick_custom\": %s,\n", wakeup_bench_tick_custom() ? "true" : "false");
     fprintf(f, "    \"tick_thread_ms\": %u,\n", wakeup_bench_tick_thread_ms());
-    fprintf(f, "    \"tick_thread_wakeups\": %u,\n",
-            window_ms / wakeup_bench_tick_thread_ms());
+    fprintf(f, "    \"tick_thread_wakeups\": %u,\n", tick_thread_wakeups());
     fprintf(f, "    \"spectrum_fps_ms\": %d,\n", NATURAL_SPECTRUM_FPS_MS);
     fprintf(f, "    \"waterfall_fps_ms\": %d,\n", NATURAL_WATERFALL_FPS_MS);
     write_pass(f, "with_drive", &with_drive, true);

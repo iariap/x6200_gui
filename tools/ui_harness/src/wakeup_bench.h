@@ -31,6 +31,11 @@ uint32_t wakeup_bench_window_ms(void);
 
 /* Los dos numeros que el perfil declara y el gate comprueba contra la fuente: el
  * periodo de refresco con el que corre el lazo (el de la ROM, lv_conf.h) y la
- * cadencia del hilo del tick (src/main.c). */
+ * cadencia del hilo del tick (src/main.c; 0 con LV_TICK_CUSTOM, porque el hilo no
+ * existe). */
 uint32_t wakeup_bench_refresh_period_ms(void);
 uint32_t wakeup_bench_tick_thread_ms(void);
+
+/* El modo del tick de la ROM (lv_conf.h: LV_TICK_CUSTOM). El gate lo cruza
+ * contra esa misma fuente. */
+bool wakeup_bench_tick_custom(void);

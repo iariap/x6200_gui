@@ -41,6 +41,21 @@ if(NOT HARNESS_REVISION)
     set(HARNESS_REVISION "unknown")
 endif()
 
+# --- el modo del tick de la ROM ---------------------------------------------
+# La ROM decide con LV_TICK_CUSTOM (lv_conf.h de la raiz) si el tick de LVGL sale
+# de un hilo propio (`usleep` + `lv_tick_inc`) o del reloj monotono. El perfil de
+# wakeups del arnes tiene que declarar el MISMO modo, y
+# tests/wakeup_evidence.py lo cruza contra esa misma fuente: el arnes lee el
+# lv_conf.h de la ROM en build time (no tiene uno propio para el tick: el suyo
+# queda en LV_TICK_CUSTOM 0 porque avanza LVGL con `lv_tick_inc` desde el reloj
+# virtual, tools/ui_harness/src/virtual_time.c).
+file(READ ${REPO}/lv_conf.h ROM_LV_CONF)
+if(ROM_LV_CONF MATCHES "#define[ \t]+LV_TICK_CUSTOM[ \t]+1")
+    set(HARNESS_ROM_TICK_CUSTOM 1)
+else()
+    set(HARNESS_ROM_TICK_CUSTOM 0)
+endif()
+
 # --- theme images: styles.c points at A:/dev/shm on the radio ---------------
 file(READ ${REPO}/src/styles.c STYLES_HOST)
 string(REPLACE "A:/dev/shm/" "A:${REPO}/" STYLES_HOST "${STYLES_HOST}")
@@ -145,6 +160,7 @@ target_link_options(ui_harness PRIVATE -Wl,--wrap=time -Wl,--wrap=system)
 target_compile_definitions(ui_harness PRIVATE
     LV_CONF_INCLUDE_SIMPLE=1
     HARNESS_REVISION="${HARNESS_REVISION}"
+    HARNESS_ROM_TICK_CUSTOM=${HARNESS_ROM_TICK_CUSTOM}
     # The themes the ROM ships (the JSON files + the RS folder), read from this
     # repository instead of /usr/share: theme.c looks in THEMES_DIR_SHIPPED and
     # the harness sets it to this path before theme_init (harness_main.c). Same
