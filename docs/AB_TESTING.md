@@ -517,6 +517,7 @@ los declara el JSON del arnés. La tabla exacta por componente está en cada JSO
 | Tema Aurora (JSON, THEMES v2) | `main-tema-aurora`, `main-tema-aurora-agua`, `main-tema-aurora-tx`, `main-tema-aurora-eco`, `settings-tema-aurora`, `bt-dialog-tema-aurora` | ✓ | | | |
 | Tema Trail (JSON, THEMES v2) | `main-tema-trail`, `main-tema-trail-agua`, `main-tema-trail-tx`, `main-tema-trail-eco`, `settings-tema-trail`, `bt-dialog-tema-trail` | ✓ | | | |
 | Tema Sprint (JSON, THEMES v2) | `main-tema-sprint`, `main-tema-sprint-agua`, `main-tema-sprint-tx`, `main-tema-sprint-eco`, `settings-tema-sprint`, `bt-dialog-tema-sprint` | ✓ | | | |
+| Tema Cathode (JSON, THEMES v2) | `main-tema-cathode`, `main-tema-cathode-agua`, `main-tema-cathode-tx`, `main-tema-cathode-eco`, `settings-tema-cathode`, `bt-dialog-tema-cathode` | ✓ | | | |
 | Tema VISION | — | | | | ✗ (font scale: hallazgos para #8) |
 | Fuente por tema (Arial en Classic/RS) | `main-tema-classic`, `main-tema-rs` | ✓ | | | |
 | Fuente elegida por el usuario (Roboto/DejaVu/Arial) | — | | | | ✗ (no hay fixture de fuente) |
