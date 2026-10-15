@@ -108,7 +108,16 @@ docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" \
       --json     out/home-usb-20m.json"
 ```
 
-CLI: `ui_harness --scenario <file> --png <out.png> [--json <out.json>] [--bench [--warmup N] [--repeats N]] [--inspect] [--bench-natural [N]] [--natural-frames N] [--natural-static] [--bench-wakeups [MS]] [--display-off]`.
+CLI: `ui_harness --scenario <file> --png <out.png> [--json <out.json>] [--bench [--warmup N] [--repeats N]] [--inspect] [--font <family>] [--digits <family>] [--bench-natural [N]] [--natural-frames N] [--natural-static] [--bench-wakeups [MS]] [--display-off]`.
+
+`--font <id>` renders with a whole font family and `--digits <id>` with a segmented
+one for the digit panels only (the frequency row and the clock); both take the ids
+of `src/fonts/font_families.h` (generated, `tools/fonts/README.md`) and are what the
+font matrix and the gallery of issue #9 use: one build of the harness carries every
+candidate family, so the whole matrix is one revision instead of one revision per
+family. Without them the family the theme or `params.font` names is used, exactly
+like the firmware's `main()`. A fixture can declare the digit family itself with the
+`digits` key (`fixtures/main-frecuencia-dseg.scn`).
 
 The JSON carries the scenario name/screen/seed, the git revision, the
 per-component coverage, the radio-call log from the mock, and the render metrics
@@ -173,7 +182,8 @@ cannot state, and it is measured, never guessed:
 * `missing_glyphs` lists code points that are a placeholder in *every* font of
   the chain (`lv_font_glyph_dsc_t.is_placeholder`); `fallback_glyphs` lists the
   ones resolved in another font (`resolved_font`). The fallback is expected here:
-  the alternate fonts are ASCII-only and icons come from the Sony copy.
+  the alternate fonts are ASCII-only and the stock family carries the icons
+  (`docs/THIRD_PARTY.md`).
 * `--inspect` is only a flag on the JSON path: **it never changes a pixel**, so a
   scenario's PNG is byte-identical with and without it, and the benchmark path is
   untouched. `tests/check_harness_determinism.sh` still passes.
@@ -419,8 +429,9 @@ The `theme` is the full name the GUI lists: a builtin (`IU1WXY`, `Legacy`,
 (`RS`, `Holo`, `Material 3`). The harness reads the shipped themes from this
 repository's `rootfs/usr/share/x6200/themes` (the same files the image installs)
 by setting `THEMES_DIR_SHIPPED` before `theme_init()`; an explicit
-`THEMES_DIR_SHIPPED` still wins. The theme's own font (Classic/RS name Arial) and
-VISION's `fonts_scale()` are applied exactly as the firmware's `main()` does.
+`THEMES_DIR_SHIPPED` still wins. The theme's own font (Classic/RS name Roboto) and
+VISION's `fonts_scale()` are applied exactly as the firmware's `main()` does, plus
+the theme's `font_digits` for the digit panels.
 
 The name is kept whole by the scenario and handed to `theme_init()` as the
 firmware would (a name the firmware cannot store is the firmware's problem, not
@@ -436,6 +447,7 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `main-otro-tema` | the same screen under the builtin "Outdoor" theme |
 | `main-espectro-agua` | the waterfall with a fixed seed, peaks on, centre line, Legacy theme |
 | `bench-render` | the benchmark fixture (waterfall peaks, its own seed); `bench_*` knobs for the render benchmark |
+| `main-frecuencia-dseg` | the frequency row and the clock drawn with the segmented-digit family (`digits dseg7`): the sample screen of the DSEG candidates of issue #9 (a segmented face is digit-only, so it is never a whole-family choice) |
 | `main-natural` | the natural-bench fixture (its own seed, `natural_frames`); the spectrum/waterfall are driven frame by frame by `--bench-natural` |
 | `main-natural-eco` | the natural-bench fixture with the pack on battery at 11.2 V (`external_v 0.0`): the same screen/data as `main-natural`, but the visual policy puts the waterfall in ECO, so `--bench-natural` measures the reduced cadence (UI-08 incr. 2) |
 | `settings-home` | the real main screen with the real Ajustes window open over it (`dialog.c` + `dialog_settings.c`), on its first group (clock: date/time, Clock view, timeouts). The wall clock is the harness' fixed epoch, so the date/time fields are deterministic |
