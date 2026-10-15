@@ -94,3 +94,17 @@ regions:
   - name: ajustes_audio_ganancia
     rect: [20, 138, 764, 60]
     description: "Fila 'Play,Rec gain' de Ajustes (dialog_settings.c, grupo Audio) sobre el arnes"
+
+  # La fila "Theme" del grupo Apariencia de Ajustes (issue #73): su etiqueta va del
+  # pad del dialogo (x=20) al borde del desplegable (x=784), y la fila ocupa
+  # y=81..137 (el desplegable a y=81, alto 56, medido con --inspect sobre el render
+  # de settings-perfil). El selector six-only del #73 cambia el TEXTO que el
+  # desplegable muestra cuando el tema guardado es un legado (IU1WXY -> la primera
+  # opcion ofrecida), asi que sin region propia el cambio se atribuiria a la banda
+  # `espectro` (que la contiene) y pareceria de la migracion de fuentes. El rect la
+  # cubre con un pixel de margen y por la derecha se detiene en x=784 para no
+  # solaparse con la barra de scroll (`ajustes_scrollbar`). Se dibuja entera en la
+  # fixture settings-perfil.
+  - name: ajustes_tema
+    rect: [20, 79, 764, 60]
+    description: "Fila 'Theme' de Ajustes (dialog_settings.c, grupo Apariencia) sobre el arnes"
