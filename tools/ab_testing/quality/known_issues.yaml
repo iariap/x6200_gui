@@ -340,6 +340,39 @@ issues:
       - "tools/ab_testing/reports/AB-UI016-T1/ (capturas A/B, diff, overlay, results.json)"
       - "tools/ab_testing/quality/contracts.yaml (excepcion de layout_clipped retirada; expected_change acotado a `ajustes_anio`)"
 
+  - id: UI-017
+    title: "Paneles de digitos: el \"8 fantasma\" se apila por diseno debajo del valor"
+    severity: minor
+    fixture: main-frecuencia-dseg
+    status: verified
+    note: >
+      El look Casio de los paneles segmentados (issue #9, decision 1): detras del
+      valor va la capa de segmentos apagados -el mismo texto con cada digito en su
+      forma de 8, que es el digito que enciende los siete segmentos- a
+      LV_OPA_30, en la misma caja y dibujada ANTES del valor, asi que a la vista
+      solo quedan los segmentos que el valor no enciende. La regla
+      `layout_overlap` de quality/contracts.yaml la mide como lo que es -dos
+      etiquetas con texto visible y la misma caja, una sobre otra- y el hallazgo
+      se declara con una excepcion acotada a la regla y a la fixture, con fecha,
+      mientras la regla no distinga un apilado por diseno (una capa de alpha baja)
+      de dos textos que se tapan: el contrato NO se relaja, el hallazgo queda a la
+      vista en los reportes de `contracts`/`audit`. Solo hay una fixture en el
+      corpus con familia segmentada (`digits dseg7`), y sin ella el fantasma no se
+      crea (seria un digito mas). El solapamiento del reloj no llega a la regla
+      porque la etiqueta del valor conserva `bg_img_src` (la imagen de la barra,
+      con `bg_img_opa` en LV_OPA_TRANSP) y `_opaque` mira la presencia de la
+      imagen, no su opacidad: mismo diseno, distinto camino. Eso es una
+      imprecision de la regla, no una diferencia del look: el fantasma del reloj
+      se ve en los pixeles (`reports/AB-FONTSE`, region `reloj_potencia`).
+    evidence:
+      - "tools/ui_harness/fixtures/main-frecuencia-dseg.scn (digits dseg7 + clock_view time)"
+      - "src/main_screen.c (freq_shadow_update) + src/styles.h (UI_DIGIT_SHADOW_OPA = LV_OPA_30)"
+      - "inspeccion estructural: lv_label sombra 150,160 500x36 opa=76 \"88.888.888\" debajo del valor \"#FFFFFF 14.074.000\""
+      - "contracts HEAD: 1 x layout_overlap [main-frecuencia-dseg] (unico hallazgo, exceptuado por UI-017)"
+      - "audit HEAD --suite visual: 0 structural finding(s) sobre 4037 objetos / 35 escenarios"
+      - "tools/ab_testing/reports/AB-FONTSE/ (A/B 11f8d689 -> 562d3f2: main-frecuencia-dseg 4862 px en frecuencia + reloj_potencia)"
+      - "tools/ab_testing/quality/contracts.yaml (excepcion de layout_overlap [main-frecuencia-dseg] hasta 2027-03-31, autor fonts-extras)"
+
   # --- Seeds from the repository history: recorded, not yet reproduced. -------
   # They stay unverified until the harness can reproduce them (pixel-region
   # detector today; structural inspection once the harness emits object bounds).

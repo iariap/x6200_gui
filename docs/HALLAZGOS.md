@@ -1008,7 +1008,7 @@ estado; los botones de abajo salen del estilo global (`btn_style`, `sony_38`, el
 dialogos); y las apps portadas usan el mismo tamano (SSTV/WeFax: `sony_22`/`sony_24`). Sobre las
 capturas, la tinta del titulo mide **14 px en BT y 13 px en WeFax/SSTV**, y la linea de estado **23 px
 contra 22**: la misma tipografia. El tema activo **no** es VISION (el S-meter esta en la barra de
-arriba y VISION lo pone en su propia fila, `theme.h:193`), que es el unico caso en el que BT bajaria
+arriba y VISION lo pone en su propia fila, `theme.h:192`), que es el unico caso en el que BT bajaria
 un paso respecto de las apps portadas.
 
 ---

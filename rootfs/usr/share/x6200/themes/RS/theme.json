@@ -29,9 +29,6 @@
         "bar": "#000000",
         "bar_grad": "#000000",
         "bar_border": "#5d5d5d",
-        "strip": "#000000",
-        "strip_grad": "#000000",
-        "strip_border": "#5d5d5d",
         "dialog": "#232323",
         "dialog_grad": "#232323",
         "dialog_border": "#717171",
@@ -96,9 +93,6 @@
         "pill_off_text": "#808080",
         "pill_border": "#5d5d5d",
         "mode_dig": "#ffffff",
-        "mode_text": "#ffffff",
-        "mode_bg": "#20529b",
-        "mode_border": "#afd1ff",
         "control_border": "#6e6e6e"
     },
     "images": {

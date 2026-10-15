@@ -96,23 +96,23 @@ pairs:
 # (role, where it is drawn)
 exempt:
   - role: "btn_off_text"
-    reason: "boton deshabilitado (theme.h:47); texto dentro de un control inactivo"
+    reason: "boton deshabilitado (theme.h:44); texto dentro de un control inactivo"
 
   - role: "text_mute"
-    reason: "texto atenuado a proposito (theme.h:79: cola/idle, items grises)"
+    reason: "texto atenuado a proposito (theme.h:76: cola/idle, items grises)"
 
   - role: "text_faint"
-    reason: "texto en cola/idle (theme.h:80; dialog_wspr.c:464, js8_map.c)"
+    reason: "texto en cola/idle (theme.h:77; dialog_wspr.c:464, js8_map.c)"
 
   - role: "icon_off"
-    reason: "iconos apagados de la barra (theme.h:112); estado no activo"
+    reason: "iconos apagados de la barra (theme.h:109); estado no activo"
 
   - role: "switch_off"
-    reason: "switch de Ajustes apagado (theme.h:111); control inactivo"
+    reason: "switch de Ajustes apagado (theme.h:108); control inactivo"
 
   - role: "off"
-    reason: "barras/segmentos sin encender (theme.h:110); estado apagado"
+    reason: "barras/segmentos sin encender (theme.h:107); estado apagado"
 
   - role: "track"
-    reason: "riel de la barra de progreso (theme.h:108, app_frame.c:36); pista inactiva"
+    reason: "riel de la barra de progreso (theme.h:105, app_frame.c:36); pista inactiva"
 

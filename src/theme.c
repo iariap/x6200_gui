@@ -56,15 +56,13 @@ static const struct {
     uint32_t      v;
 } vision_colors[] = {
     {TC_bg, 0x1c1f24},          {TC_bar, 0x1c1f24},          {TC_bar_grad, 0x1c1f24},       {TC_bar_border, 0x5dcaa5},
-    {TC_strip, 0x262a31},       {TC_strip_grad, 0x262a31},   {TC_strip_border, 0x5dcaa5},   {TC_dialog, 0x262a31},
-    {TC_dialog_grad, 0x262a31}, {TC_dialog_border, 0x5dcaa5}, {TC_btn, 0x2a3038},           {TC_btn_grad, 0x2a3038},
-    {TC_btn_border, 0x5dcaa5},  {TC_btn_text, 0xffffff},     {TC_btn_active, 0xff8a30},     {TC_btn_active_grad, 0xff8a30},
-    {TC_btn_active_border, 0x8d3d00}, {TC_btn_active_text, 0x2a1200}, {TC_btn_page, 0x2a3038}, {TC_btn_page_text, 0xe6fff6},
-    {TC_text, 0xffffff},        {TC_text_value, 0xffffff},   {TC_text_soft, 0xe6fff6},      {TC_text_head, 0x5dcaa5},
-    {TC_mode_text, 0x2a1200},   {TC_mode_bg, 0xff8a30},      {TC_mode_border, 0x8d3d00},    {TC_pill_border, 0x5dcaa5},
-    {TC_pill_off_text, 0x80868e}, {TC_focus, 0xff8a30},      {TC_focus_text, 0x2a1200},     {TC_meter_bar, 0x5dcaa5},
-    {TC_meter_weak, 0x5dcaa5},  {TC_meter_low, 0x5dcaa5},    {TC_meter_high, 0xff5a3c},     {TC_meter_over, 0xffd040},
-    {TC_popup, 0x262a31},       {TC_popup_border, 0x5dcaa5},
+    {TC_dialog, 0x262a31},      {TC_dialog_grad, 0x262a31},  {TC_dialog_border, 0x5dcaa5},  {TC_btn, 0x2a3038},
+    {TC_btn_grad, 0x2a3038},    {TC_btn_border, 0x5dcaa5},   {TC_btn_text, 0xffffff},       {TC_btn_active, 0xff8a30},
+    {TC_btn_active_grad, 0xff8a30}, {TC_btn_active_border, 0x8d3d00}, {TC_btn_active_text, 0x2a1200}, {TC_btn_page, 0x2a3038},
+    {TC_btn_page_text, 0xe6fff6}, {TC_text, 0xffffff},       {TC_text_value, 0xffffff},     {TC_text_soft, 0xe6fff6},
+    {TC_text_head, 0x5dcaa5},   {TC_pill_border, 0x5dcaa5},  {TC_pill_off_text, 0x80868e},  {TC_focus, 0xff8a30},
+    {TC_focus_text, 0x2a1200},  {TC_meter_bar, 0x5dcaa5},    {TC_meter_weak, 0x5dcaa5},     {TC_meter_low, 0x5dcaa5},
+    {TC_meter_high, 0xff5a3c},  {TC_meter_over, 0xffd040},   {TC_popup, 0x262a31},          {TC_popup_border, 0x5dcaa5},
 };
 
 static const uint32_t builtin_colors[B_OUTDOOR_NEG][TC_COUNT] = {   /* VISION and Outdoor-Negative are made from these */

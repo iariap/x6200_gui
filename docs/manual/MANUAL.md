@@ -442,6 +442,7 @@ El equipo abre un socket en `/tmp/x6200_remote.sock` con unos 65 comandos.
 1. Conectá el equipo al WiFi (Ajustes → Bluetooth/WiFi) y averiguá la IP.
 2. Abrí `http://<ip>/remote` en el teléfono.
 3. Comandos útiles: `{"cmd":"app","text":"FT8"}` abre una app;
+   `{"cmd":"app","text":"off"}` la cierra (también a RTTY, que no tiene diálogo);
    `{"cmd":"band","val":1}` cambia de banda; `{"cmd":"mode","val":1}` cambia el modo;
    `{"cmd":"freq","val":14074000}` sintoniza;
    `{"cmd":"location","text":"-34.6037,-58.3816"}` manda tu posición.

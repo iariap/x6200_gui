@@ -74,6 +74,7 @@
 
 #include <unistd.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 
@@ -87,6 +88,9 @@ static bool         band_lock = false;
 
 static lv_obj_t     *spectrum;
 static lv_obj_t     *freq[3];
+/* El "8 fantasma" del centro de la fila (ver freq_shadow_update): NULL mientras no
+ * haya familia segmentada. */
+static lv_obj_t     *freq_shadow;
 static lv_obj_t     *waterfall;
 static lv_obj_t     *msg;
 static lv_obj_t     *msg_tiny;
@@ -1318,6 +1322,19 @@ lv_obj_t * main_screen() {
      * contenedor se ancla en el MISMO cursor `y` del layout apilado (debajo del
      * espectro, `y += spectrum_height`) y, con pad/borde 0, deja a los labels en
      * el mismo cursor que tenian (el espectro y el flujo vertical no se tocan). */
+    /* El "8 fantasma" del label central, creado ANTES de freq_row para quedar
+     * debajo en el z-order (el hermano posterior se dibuja encima). Va como hijo de
+     * la pantalla y NO del flex: un cuarto hijo correria las teselas 150+500+150.
+     * La geometria la da freq_main_style (500x36, texto centrado y mismo pad_ver
+     * que el label del valor), asi que el fantasma cae digito a digito sobre la
+     * frecuencia. */
+    if (font_digit_active()) {
+        freq_shadow = lv_label_create(obj);
+        lv_obj_add_style(freq_shadow, &freq_main_style, 0);
+        lv_obj_set_style_text_opa(freq_shadow, UI_DIGIT_SHADOW_OPA, 0);
+        lv_obj_set_pos(freq_shadow, UI_FREQ_CENTER_X, y);
+    }
+
     lv_obj_t *freq_row = lv_obj_create(obj);
 
     lv_obj_clear_flag(freq_row, LV_OBJ_FLAG_SCROLLABLE);
@@ -1430,8 +1447,34 @@ void main_screen_notify_rx()
     event_send(obj, EVENT_RADIO_RX, NULL);
 }
 
+/* El "8 fantasma": la capa de segmentos apagados del look Casio (issue #9, decision
+ * 1). La familia segmentada trae los siete segmentos de cada digito, asi que un `8`
+ * dibujado con su glifo enciende TODOS: el fantasma es el texto del valor con cada
+ * digito cambiado por `8`, dibujado a alpha bajo y por DEBAJO del label del valor
+ * (`freq_shadow` se crea antes que `freq_row`). Los separadores y el largo se
+ * conservan, y eso es lo que hace que el fantasma caiga sobre los mismos digitos.
+ *
+ * Se llama SIEMPRE junto con el texto del valor: si el valor cambia de forma (split,
+ * el dial trabado) los dos textos tienen que decir lo mismo o el fantasma queda
+ * corrido. Sin familia segmentada la etiqueta no existe y esto no hace nada. */
+static void freq_shadow_update(const char *value) {
+    if (freq_shadow == NULL) return;
+
+    /* El buffer del valor mas largo: "%i.%03i.%03i / %i.%03i.%03i" son 26 caracteres. */
+    char    ghost[48];
+    size_t  i = 0;
+
+    for (; value[i] != '\0' && i < sizeof(ghost) - 1; i++) {
+        ghost[i] = (value[i] >= '0' && value[i] <= '9') ? '8' : value[i];
+    }
+    ghost[i] = '\0';
+
+    lv_label_set_text(freq_shadow, ghost);
+}
+
 static void on_fg_freq_change(Subject *subj, void *user_data) {
     int32_t    f;
+    char       value[48];
     /* El color viaja en el markup de recolor del label (`#RRGGBB `), y ese markup PISA el
      * text_color del estilo: un blanco cableado aca deja la fila de frecuencia blanco sobre
      * blanco en el tema claro Outdoor (UI-010, region `frecuencia` con content 0.0000). Los
@@ -1469,10 +1512,16 @@ static void on_fg_freq_change(Subject *subj, void *user_data) {
 
         split_freq(f2, &mhz2, &khz2, &hz2);
 
-        lv_label_set_text_fmt(freq[1], "#%06X %i.%03i.%03i / %i.%03i.%03i", color, mhz, khz, hz, mhz2, khz2, hz2);
+        snprintf(value, sizeof(value), "%i.%03i.%03i / %i.%03i.%03i", mhz, khz, hz, mhz2, khz2, hz2);
     } else {
-        lv_label_set_text_fmt(freq[1], "#%06X %i.%03i.%03i", color, mhz, khz, hz);
+        snprintf(value, sizeof(value), "%i.%03i.%03i", mhz, khz, hz);
     }
+
+    /* El color va en el markup del valor, que pisa el text_color del estilo; el
+     * fantasma va sin markup, para que la unica diferencia entre los dos sea la
+     * alpha (y en el tema claro Outdoor el fantasma no quede invisible). */
+    lv_label_set_text_fmt(freq[1], "#%06X %s", color, value);
+    freq_shadow_update(value);
 }
 
 static void update_freq_boundaries(Subject *subj, void *user_data) {

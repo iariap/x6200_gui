@@ -100,6 +100,22 @@ static bool apply_key(const char *key, const char *value, scenario_t *out)
         params_str_set(&params.theme_name, value);
     } else if (!strcmp(key, "digits")) {
         snprintf(out->digits, sizeof(out->digits), "%s", value);
+    } else if (!strcmp(key, "clock_view")) {
+        /* El reloj de la barra de arriba (src/clock.c): `power` (el defecto del
+         * arnes: bateria y voltios), `time` (la hora, la vista que lleva el "8
+         * fantasma") o `time-power` (las dos alternandose segun los timeouts de
+         * Ajustes). La hora sale del `time()` fijo del arnes (`--wrap=time`), asi
+         * que la vista de hora es determinista. */
+        if (!strcmp(value, "time")) {
+            params.clock_view = CLOCK_TIME_ALLWAYS;
+        } else if (!strcmp(value, "power")) {
+            params.clock_view = CLOCK_POWER_ALLWAYS;
+        } else if (!strcmp(value, "time-power")) {
+            params.clock_view = CLOCK_TIME_POWER;
+        } else {
+            fprintf(stderr, "scenario: unknown clock_view '%s'\n", value);
+            return false;
+        }
     } else if (!strcmp(key, "band_plan")) {
         return parse_bool(value, &params.band_plan.x);
     } else if (!strcmp(key, "spectrum_filled")) {

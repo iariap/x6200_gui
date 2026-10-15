@@ -3,7 +3,6 @@
     "colors": {
         "bg": "#111318",
         "bar": "#1d2024", "bar_grad": "#1d2024", "bar_border": "#1d2024",
-        "strip": "#282a2f", "strip_grad": "#282a2f", "strip_border": "#282a2f",
         "dialog": "#1d2024", "dialog_grad": "#1d2024", "dialog_border": "#44474e",
         "btn": "#282a2f", "btn_grad": "#282a2f", "btn_border": "#282a2f", "btn_text": "#e2e2e9",
         "btn_active": "#284777", "btn_active_grad": "#284777", "btn_active_border": "#284777", "btn_active_text": "#d6e3ff",
@@ -28,8 +27,7 @@
         "off": "#44474e", "switch_off": "#c4c6d0", "icon_off": "#2a2d32", "control_border": "#8e9099",
         "toggle_on": "#a8c7fa", "toggle_focus": "#d6e3ff",
 
-        "vfo_line": "#ffb4ab", "spot": "#a8c7fa", "mode_text": "#a8c7fa", "mode_dig": "#d0bcff",
-        "mode_bg": "#1d2024", "mode_border": "#8e9099",
+        "vfo_line": "#ffb4ab", "spot": "#a8c7fa", "mode_dig": "#d0bcff",
         "pill_off_text": "#c4c6d0", "pill_border": "#44474e",
         "meter_weak": "#7f9cc8", "meter_bar": "#a8c7fa", "meter_over": "#ffb4ab", "meter_low": "#9cd67e", "meter_high": "#ffb4ab",
         "bp_cw": "#7fa8e8", "bp_dig": "#e8c86a", "bp_ssb": "#7cc48a", "bp_bcn": "#e88a8a", "bp_text": "#111318"

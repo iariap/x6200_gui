@@ -27,6 +27,10 @@ typedef enum {
 } clock_state_t;
 
 static lv_obj_t         *obj;
+/* El "8 fantasma" del reloj (ver clock_shadow_update): la etiqueta hermana que va
+ * DEBAJO del valor. NULL cuando no hay familia segmentada, que es el caso en el que
+ * no se crea. */
+static lv_obj_t         *shadow;
 static pthread_mutex_t  power_mux;
 
 static clock_state_t    state = CLOCK_TIME;
@@ -45,19 +49,34 @@ static char             str[32];
 static void check_time_sync_cb(lv_timer_t * t);
 static time_t get_last_sync_time();
 
+/* El texto del "8 fantasma": la capa de segmentos apagados del look Casio (issue #9,
+ * decision 1). En el reloj de hora el valor es SIEMPRE "%02i:%02i:%02i" (ocho
+ * caracteres, digitos y dos puntos), asi que el fantasma es la constante "88:88:88"
+ * y no hace falta transformar el texto del valor. En el de potencia el valor es el
+ * simbolo de bateria mas los voltios: no hay segmentos apagados que mostrar, asi
+ * que el fantasma queda vacio y la sombra solo aporta el fondo del reloj (que es de
+ * ella: el valor no lleva la imagen, ver clock_init). */
+static void clock_shadow_update() {
+    if (shadow == NULL) return;
+
+    lv_label_set_text(shadow, state == CLOCK_TIME ? "88:88:88" : "");
+}
+
 static void set_state(clock_state_t new_state) {
     state = new_state;
 
-    switch (state) {
-        case CLOCK_TIME:
-            lv_obj_set_style_text_font(obj, font_digit(&sony_38), 0);
-            lv_obj_set_style_pad_ver(obj, 18, 0);
-            break;
+    const lv_font_t *font = state == CLOCK_TIME ? font_digit(&sony_38) : font_digit(&sony_30);
+    lv_coord_t       pad = state == CLOCK_TIME ? 18 : 5;
 
-        case CLOCK_POWER:
-            lv_obj_set_style_text_font(obj, font_digit(&sony_30), 0);
-            lv_obj_set_style_pad_ver(obj, 5, 0);
-            break;
+    /* El valor y su fantasma miden igual: el fantasma solo enciende los segmentos
+     * que el valor apaga, asi que la metrica (fuente y pad) tiene que ser la misma
+     * en las dos etiquetas. */
+    lv_obj_set_style_text_font(obj, font, 0);
+    lv_obj_set_style_pad_ver(obj, pad, 0);
+
+    if (shadow != NULL) {
+        lv_obj_set_style_text_font(shadow, font, 0);
+        lv_obj_set_style_pad_ver(shadow, pad, 0);
     }
 }
 
@@ -138,15 +157,33 @@ static void show_time() {
     }
 
     lv_label_set_text(obj, str);
+    clock_shadow_update();
 }
 
 lv_obj_t * clock_init(lv_obj_t * parent) {
     pthread_mutex_init(&power_mux, NULL);
 
+    /* El fondo del reloj (clock_style.bg_img_src: la imagen del panel de arriba) lo
+     * dibuja la SOMBRA, que se crea primero y queda debajo. Si lo dibujara el valor
+     * -opaco- taparia al fantasma. Las dos etiquetas llevan clock_style, asi que
+     * miden y se alinean igual (209x61, arriba a la derecha) y el fondo cae en el
+     * mismo rect: no hay cambio de pixeles, solo la capa nueva en el medio. Sin
+     * familia segmentada no hay sombra y el fondo se queda donde estaba (el valor). */
+    if (font_digit_active()) {
+        shadow = lv_label_create(parent);
+        lv_obj_add_style(shadow, &clock_style, 0);
+        lv_obj_set_style_text_align(shadow, LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_set_style_text_opa(shadow, UI_DIGIT_SHADOW_OPA, 0);
+    }
+
     obj = lv_label_create(parent);
 
     lv_obj_add_style(obj, &clock_style, 0);
     lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, 0);
+
+    if (shadow != NULL) {
+        lv_obj_set_style_bg_img_opa(obj, LV_OPA_TRANSP, 0);
+    }
 
     set_state(CLOCK_TIME);
     timeout = get_time() + params.clock_time_timeout * 1000;

@@ -8,7 +8,9 @@
  *
  * The LV_SYMBOL_BATTERY_* values are copied verbatim from the pinned LVGL
  * (lvgl/src/font/lv_symbol_def.h): the battery family is the U+F240..U+F244
- * block, `BATTERY_FULL` = U+F240 and `BATTERY_EMPTY` = U+F244.
+ * block, `BATTERY_FULL` = U+F240 and `BATTERY_EMPTY` = U+F244. The opacity enum
+ * is copied verbatim from lvgl/src/misc/lv_color.h (LV_OPA_30 = 76): src/clock.c
+ * and the style token it uses (UI_DIGIT_SHADOW_OPA) need it.
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -19,6 +21,7 @@
 #include <stdint.h>
 
 typedef int16_t lv_coord_t;
+typedef uint8_t lv_opa_t;
 
 typedef struct _lv_obj_t { int unused; } lv_obj_t;
 typedef struct _lv_timer_t { int unused; } lv_timer_t;
@@ -32,11 +35,32 @@ typedef enum {
     LV_TEXT_ALIGN_AUTO
 } lv_text_align_t;
 
+/* lvgl/src/misc/lv_color.h */
+enum {
+    LV_OPA_TRANSP = 0,
+    LV_OPA_0      = 0,
+    LV_OPA_10     = 25,
+    LV_OPA_20     = 51,
+    LV_OPA_30     = 76,
+    LV_OPA_40     = 102,
+    LV_OPA_50     = 127,
+    LV_OPA_60     = 153,
+    LV_OPA_70     = 178,
+    LV_OPA_80     = 204,
+    LV_OPA_90     = 229,
+    LV_OPA_100    = 255,
+    LV_OPA_COVER  = 255,
+};
+
+#define LV_OPA_MIN 2 /*Opacities below this will be transparent*/
+
 lv_obj_t * lv_label_create(lv_obj_t * parent);
 void lv_obj_add_style(lv_obj_t * obj, const lv_style_t * style, uint32_t selector);
 void lv_obj_set_style_text_font(lv_obj_t * obj, const lv_font_t * font, uint32_t selector);
 void lv_obj_set_style_pad_ver(lv_obj_t * obj, lv_coord_t value, uint32_t selector);
 void lv_obj_set_style_text_align(lv_obj_t * obj, lv_text_align_t align, uint32_t selector);
+void lv_obj_set_style_text_opa(lv_obj_t * obj, lv_opa_t value, uint32_t selector);
+void lv_obj_set_style_bg_img_opa(lv_obj_t * obj, lv_opa_t value, uint32_t selector);
 void lv_label_set_text(lv_obj_t * obj, const char * text);
 lv_timer_t * lv_timer_create(void (*timer_cb)(lv_timer_t *), uint32_t period, void * user_data);
 

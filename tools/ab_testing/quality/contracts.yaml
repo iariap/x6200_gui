@@ -247,6 +247,35 @@ expected_changes:
     author: fonts-libre
     until: 2027-03-31
 
+  # AB-FONTSE (fonts-extras, issue #9): la capa del "8 fantasma" y la familia
+  # segmentada en los dos paneles de digitos. Cambia pixeles solo en
+  # `main-frecuencia-dseg`, la unica fixture con familia segmentada.
+  - region: frecuencia
+    reason: >
+      AB-FONTSE: la fila de frecuencia pasa a dibujar con la familia de digitos
+      (font_digit(&sony_30)/font_digit(&sony_38) en freq_style/freq_main_style,
+      src/styles.c) — antes usaba los slots crudos, asi que en esta fixture los
+      tres labels se dibujaban con la familia por defecto mientras el reloj ya
+      usaba la segmentada — y el label central estrena su "8 fantasma" (la
+      etiqueta sombra de src/main_screen.c, texto del valor con cada digito en 8
+      a LV_OPA_30 por debajo). Los pixeles que se mueven son los glifos de la
+      fila, dentro de `frecuencia`; las otras 21 fixtures de la suite no tienen
+      familia segmentada y quedan byte-identicas.
+    author: fonts-extras
+    until: 2027-03-31
+
+  - region: reloj_potencia
+    reason: >
+      AB-FONTSE: el reloj lleva su "8 fantasma" (src/clock.c: la etiqueta sombra
+      con "88:88:88" por debajo del valor, que hereda el fondo del reloj porque el
+      valor queda transparente) y la fixture pide `clock_view time`, que es la
+      vista donde el fantasma tiene digitos que mostrar (el reloj de potencia
+      dibuja el simbolo de bateria y los voltios). Todo cae dentro de
+      `reloj_potencia`; las otras fixtures siguen en el reloj de potencia y sin
+      sombra.
+    author: fonts-extras
+    until: 2027-03-31
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.
@@ -317,6 +346,30 @@ exceptions:
       renders RS over the same rows as settings-wfbat; the row geometry is
       unchanged.
     author: seeds11-rs-theme
+    until: 2027-03-31
+
+  # main-frecuencia-dseg: el "8 fantasma" del label central de la fila de
+  # frecuencia (src/main_screen.c) se dibuja DEBAJO del valor y con su misma caja
+  # de 500x36: la regla de solapamiento lo lee como dos etiquetas apiladas (el
+  # unico caso del corpus, porque la capa solo existe con familia segmentada). Es
+  # el diseno, no un defecto: el fantasma enciende los segmentos que el valor
+  # apaga, a LV_OPA_30, y el valor se dibuja encima a opacidad plena. El
+  # solapamiento del reloj no llega a la regla porque la etiqueta del valor
+  # conserva `bg_img_src` (con la imagen en LV_OPA_TRANSP) y `_opaque` mira la
+  # presencia de la imagen, no su opacidad: mismo diseno, distinto camino.
+  #
+  # Se retira cuando el fantasma deje de existir o cuando la regla distinga un
+  # apilado por diseno (una capa de alpha bajo) de dos textos que se tapan.
+  - rule: layout_overlap
+    fixture: main-frecuencia-dseg
+    reason: >
+      UI-017 (el "8 fantasma", AB-FONTSE): la etiqueta sombra de la fila de
+      frecuencia se apila a proposito debajo del valor, con la misma caja, y el
+      valor la tapa solo donde enciende sus segmentos. `layout_overlap` mide el
+      apilado de dos etiquetas con texto visible; aca es la capa que da el look de
+      segmentos apagados, no dos textos que se esconden. Ver el `reason` de la
+      region `frecuencia` en `expected_changes` y la ficha UI-017.
+    author: fonts-extras
     until: 2027-03-31
 
 # UI-016 (`layout_clipped` [settings-home]) was withdrawn here in AB-UI016-T1,

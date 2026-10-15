@@ -52,6 +52,8 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
+from fontTools.ttLib import TTFont, newTable
+from fontTools.ttLib.tables._k_e_r_n import KernTable_format_0
 from PIL import ImageFont
 
 HERE = Path(__file__).resolve().parent
@@ -210,12 +212,192 @@ def lvfc(spec: dict) -> str:
 
 
 def font_entries(ttf: Path, icons: bool) -> list[dict]:
-    entries = [{"path": ttf.name, "source": str(ttf), "symbols": ASCII}]
+    entries = [{"path": ttf.name, "source": str(kern_source(ttf)), "symbols": ASCII}]
     if icons:
         icon = load_manifest()["icon_font"]
         codes = ",".join(str(code) for code in load_manifest()["icon_codepoints"])
         entries.append({"path": icon["file"], "source": str(CACHE / icon["file"]), "ranges": [codes]})
     return entries
+
+
+# --- kerning: GPOS -> the legacy `kern` table -------------------------------
+
+
+# `lv_font_conv` 1.5.3 reads kerning through the `getKerningValue()` of the
+# opentype.js 1.3.4 it bundles, and that reader has two paths:
+#
+#   1. GPOS: the lookups the `kern` feature of the *default script* (`DFLT`, else
+#      `latn`) points at, **only** the ones whose lookup type is 2 (pair
+#      adjustment). `Position.init()` stores them in `defaultKerningTables`.
+#   2. the legacy `kern` table (`font.kerningPairs`), reached only when
+#      `defaultKerningTables` is *falsy*.
+#
+# The second path is dead for every font that has a GPOS table: `getLookupTables()`
+# returns `[]` when no type-2 lookup matches, and an empty array is truthy, so
+# `getKerningValue()` returns `undefined` for every pair instead of falling back.
+# A font whose kerning is emitted in *extension* lookups (type 9 wrapping type 2,
+# what recent releases of these families do) therefore renders with no kerning at
+# all, and no `kern` table it carries would be read either (measured: Fira Sans,
+# Lato, Open Sans, Source Sans 3 and JetBrains Mono -> 0 pairs; Roboto, Archivo,
+# PT Sans and Ubuntu, whose kerning is in direct type-2 lookups -> non-zero).
+#
+# So the pipeline hands the reader a converted copy of the font: the GPOS pair
+# kerning written as the legacy `kern` table (format 0, the pair table the tool's
+# writer reads -- `lib/font/table_kern.js`) and the GPOS table dropped, because
+# its mere presence is what keeps the fallback unreachable. Only the fonts on the
+# dead path are converted: a family the reader already kerns is left untouched, so
+# its generated C stays byte-identical.
+
+KERN_CACHE = CACHE / "kern"
+
+# `path -> converted pair count` (0 = the font was left untouched), filled by
+# kern_source() so cmd_generate can annotate what happened.
+_KERNED: dict[str, int] = {}
+
+
+def kerned_pairs(ttf: Path) -> int:
+    """The pairs kern_source() converted for `ttf` (0 = untouched)."""
+    return _KERNED.get(str(ttf), 0)
+
+
+def _kern_lookups(gpos: object) -> tuple[list[int], list[int]]:
+    """`(direct, extension)` lookup indexes of the `kern` feature the reader uses.
+
+    `direct` is what the reader follows (type 2); `extension` is the same kerning
+    hidden behind a type-9 extension lookup, the one it cannot follow. Both are
+    empty when the font has no `kern` feature for the default script, which is the
+    case in which the reader gets no kerning from GPOS either.
+    """
+    scripts = getattr(getattr(gpos, "ScriptList", None), "ScriptRecord", None)
+    features = getattr(getattr(gpos, "FeatureList", None), "FeatureRecord", None)
+    lookups = getattr(getattr(gpos, "LookupList", None), "Lookup", None)
+    if not scripts or features is None or lookups is None:
+        return [], []
+    tags = {record.ScriptTag for record in scripts}
+    script = "DFLT" if "DFLT" in tags else "latn" if "latn" in tags else None
+    if script is None:
+        return [], []
+    record = next(item for item in scripts if item.ScriptTag == script)
+    langsys = record.Script.DefaultLangSys
+    if langsys is None:
+        return [], []
+    indexes = list(langsys.FeatureIndex)
+    if langsys.ReqFeatureIndex != 0xFFFF:
+        indexes.append(langsys.ReqFeatureIndex)
+    direct: list[int] = []
+    extension: list[int] = []
+    for index in indexes:
+        record = features[index]
+        if record.FeatureTag != "kern":
+            continue
+        for lookup_index in record.Feature.LookupListIndex:
+            lookup = lookups[lookup_index]
+            if lookup.LookupType == 2:
+                direct.append(lookup_index)
+            elif lookup.LookupType == 9 and any(
+                sub.ExtensionLookupType == 2 for sub in lookup.SubTable
+            ):
+                extension.append(lookup_index)
+    return direct, extension
+
+
+def _pair_values(sub: object, glyphs: set[str]):
+    """`((left, right), xAdvance)` of one PairPos subtable, ASCII glyphs only.
+
+    Format 1 lists the pairs explicitly; format 2 lists them as classes, so the
+    right side is looked up in the class definition (class 0 is a real class: a
+    non-zero entry there kerns every glyph of that class, and `getKerningValue()`
+    applies it, so it is not skipped here either). A subtable whose value format
+    carries no `XAdvance` (bit 3) kerns nothing horizontally.
+    """
+    if getattr(sub, "Format", None) == 1:
+        # `strict=False`: a font whose PairSetCount is shorter than its Coverage
+        # (invalid, but seen in the wild) must not take the whole pipeline down.
+        for left, pair_set in zip(sub.Coverage.glyphs, sub.PairSet, strict=False):
+            if left not in glyphs:
+                continue
+            for pair in pair_set.PairValueRecord:
+                right = pair.SecondGlyph
+                if right not in glyphs:
+                    continue
+                value = getattr(getattr(pair, "Value1", None), "XAdvance", 0)
+                if value:
+                    yield (left, right), value
+    elif getattr(sub, "Format", None) == 2:
+        if not getattr(sub, "ValueFormat1", 0) & 0x0004:
+            return
+        left_classes = sub.ClassDef1.classDefs if sub.ClassDef1 is not None else {}
+        right_classes = sub.ClassDef2.classDefs if sub.ClassDef2 is not None else {}
+        for left in sub.Coverage.glyphs:
+            if left not in glyphs:
+                continue
+            records = sub.Class1Record[left_classes.get(left, 0)].Class2Record
+            for right in glyphs:
+                rc = right_classes.get(right, 0)
+                if rc >= len(records):
+                    continue
+                value = getattr(getattr(records[rc], "Value1", None), "XAdvance", 0)
+                if value:
+                    yield (left, right), value
+
+
+def kern_pairs(font: TTFont) -> dict[tuple[str, str], int]:
+    """The pair kerning of `font`'s GPOS, `{(left, right): xAdvance}` in font units.
+
+    ASCII glyphs only: they are the glyph set the pipeline ships, and lv_font_conv
+    reads a pair only when both glyphs are in the subset anyway. On a duplicate
+    pair the first subtable wins, which is what `getKerningValue()` does (it
+    returns at the first hit instead of adding the tables up).
+    """
+    if "GPOS" not in font:
+        return {}
+    direct, extension = _kern_lookups(font["GPOS"].table)
+    cmap = font.getBestCmap()
+    glyphs = {cmap[code] for code in range(32, 127) if code in cmap}
+    pairs: dict[tuple[str, str], int] = {}
+    lookups = font["GPOS"].table.LookupList.Lookup
+    for index in direct + extension:
+        for sub in lookups[index].SubTable:
+            subtable = sub.ExtSubTable if lookups[index].LookupType == 9 else sub
+            for key, value in _pair_values(subtable, glyphs):
+                pairs.setdefault(key, value)
+    return pairs
+
+
+def kern_source(ttf: Path) -> Path:
+    """The file to hand the reader so `ttf`'s kerning reaches the generated C.
+
+    Returns `ttf` itself when there is nothing to convert: a font with no pair
+    kerning in GPOS, or one whose `kern` feature already lists a direct type-2
+    lookup (the path the reader does follow -- converting it would change nothing
+    and would rewrite a file that is currently reproducible byte for byte).
+    Otherwise it writes `.cache/kern/<name>`: the same font with the kerning in a
+    legacy `kern` table and no GPOS, and returns that path. `recalcTimestamp` is
+    off, so the converted file is a function of the input (`fetch`'s sha256) and
+    the run stays reproducible.
+    """
+    font = TTFont(ttf, recalcTimestamp=False)
+    direct, extension = _kern_lookups(font["GPOS"].table) if "GPOS" in font else ([], [])
+    if direct or not extension:
+        _KERNED[str(ttf)] = 0
+        return ttf
+    pairs = kern_pairs(font)
+    assert pairs, f"{ttf.name}: the kerning lookups yielded no ASCII pair"
+    kern = newTable("kern")
+    kern.version = 0
+    subtable = KernTable_format_0()
+    subtable.version = 0
+    subtable.coverage = 1
+    subtable.format = 0
+    subtable.kernTable = pairs
+    kern.kernTables = [subtable]
+    font["kern"] = kern
+    del font["GPOS"]
+    target = KERN_CACHE / ttf.name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    font.save(target)
+    _KERNED[str(ttf)] = len(pairs)
+    return target
 
 
 _PROBES: dict[tuple[str, bool, str], dict[int, tuple[int, int]]] = {}
@@ -692,6 +874,9 @@ def cmd_generate(args: argparse.Namespace) -> int:
             lvfc(spec)
 
         print(f"{entry['display']}: {'stock (sony_*)' if is_stock else entry['c_name']}")
+        kerned = kerned_pairs(CACHE / entry["file"])
+        if kerned:
+            print(f"  kerning {kerned} GPOS pair(s) -> legacy `kern` table (see kern_source)")
         for slot in slots:
             row = plan[slot]
             note = f"ink {row['ink']} target {row['target_cap_height']}" if segmented else \
@@ -700,18 +885,25 @@ def cmd_generate(args: argparse.Namespace) -> int:
                 f"  {prefix}_{slot}.c".ljust(26)
                 + f"size {row['size']:>2} ({note})"
             )
-            annotate(SRC_FONTS / f"{prefix}_{slot}.c", entry, is_stock, slot in icon_slots)
+            annotate(SRC_FONTS / f"{prefix}_{slot}.c", entry, is_stock, slot in icon_slots, kerned)
     write_header(manifest)
     return 0
 
 
-def annotate(path: Path, entry: dict, stock: bool, icons: bool) -> None:
+def annotate(path: Path, entry: dict, stock: bool, icons: bool, kerned: int = 0) -> None:
     """Documents the real source of the generated file in the file itself."""
     lines = [
         f" * Source: {entry['display']} ({entry['license']}) {entry['url']}",
         f" * sha256 {entry['sha256']}  ·  generated by tools/fonts/fonts.py (lv_font_conv"
         f" {LV_FONT_CONV_VERSION}), do not edit by hand",
     ]
+    if kerned:
+        lines.append(
+            f" * Kerning: {kerned} GPOS pair(s) of the source font converted to the legacy"
+            " `kern` table (tools/fonts/fonts.py, kern_source): the reader of"
+            f" lv_font_conv {LV_FONT_CONV_VERSION} only sees GPOS kerning in direct"
+            " pair-adjustment lookups, not in the extension lookups this family emits"
+        )
     if icons:
         icon = load_manifest()["icon_font"]
         lines.append(

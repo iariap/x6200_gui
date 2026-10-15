@@ -3,8 +3,13 @@
  *
  * They stand in for the small set of LVGL/firmware symbols src/clock.c calls,
  * and expose just enough state for the test to drive the CLOCK_POWER branch of
- * the static show_time(): the label text and the timer callbacks clock_init
+ * the static show_time(): the label texts and the timer callbacks clock_init
  * registers.
+ *
+ * clock_init() creates up to two labels: the "8 fantasma" shadow (first, drawn
+ * behind) and the value (last) when `font_digit_active()`. Each one is a
+ * different object here, so each keeps its own text and the test can check both
+ * (the shadow's text is what pins the ghost layer).
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -27,18 +32,31 @@ lv_font_t sony_30;
 lv_font_t sony_38;
 
 /* src/fonts/font_select.c is not compiled here: the clock test only needs the
- * identity (the ROM's segmented digit families are host-side data). */
+ * identity (the ROM's segmented digit families are host-side data). The active
+ * flag is true, which is the case this test covers: the clock panels drawn with
+ * a segmented family, the only case that has an "8 fantasma" layer. */
 const lv_font_t *font_digit(const lv_font_t *stock_slot) {
     return stock_slot;
+}
+
+bool font_digit_active(void) {
+    return true;
 }
 
 void fonts_set_digit_family(uint8_t family) {
     (void) family;
 }
 
-static lv_obj_t  label;
+/* clock_init() creates the shadow first and the value second: the test reads the
+ * texts by creation order (`clock_stub_shadow_text` / `clock_stub_last_text`),
+ * which is also what pins the z-order (the ghost has to be the lower one). */
+#define MAX_LABEL_TEXT 64
+#define MAX_LABELS 4
+static lv_obj_t   labels[MAX_LABELS];
+static char       label_text[MAX_LABELS][MAX_LABEL_TEXT];
+static int        label_count;
+
 static lv_timer_t timer;
-static char       label_text[64];
 
 /* clock_init() registers the clock callback first (show_time, 500 ms) and the
  * time-sync callback second; both are kept so the test can run them. */
@@ -49,9 +67,23 @@ static int    timer_count;
 static uint64_t      now_ms = 1000;
 static radio_state_t radio_state = RADIO_RX;
 
+/* The index of a stub object in `labels`, so lv_label_set_text() writes the text
+ * of the object it was given. */
+static int label_index(const lv_obj_t * obj) {
+    int i = (int) (obj - labels);
+
+    return (i >= 0 && i < MAX_LABELS) ? i : 0;
+}
+
+/* Every call returns a different object: clock.c creates two labels (the shadow
+ * and the value) and the test needs their texts apart. */
 lv_obj_t * lv_label_create(lv_obj_t * parent) {
     (void) parent;
-    return &label;
+
+    if (label_count >= MAX_LABELS) {
+        return &labels[MAX_LABELS - 1];
+    }
+    return &labels[label_count++];
 }
 
 void lv_obj_add_style(lv_obj_t * obj, const lv_style_t * style, uint32_t selector) {
@@ -78,9 +110,20 @@ void lv_obj_set_style_text_align(lv_obj_t * obj, lv_text_align_t align, uint32_t
     (void) selector;
 }
 
-void lv_label_set_text(lv_obj_t * obj, const char * text) {
+void lv_obj_set_style_text_opa(lv_obj_t * obj, lv_opa_t value, uint32_t selector) {
     (void) obj;
-    snprintf(label_text, sizeof(label_text), "%s", text);
+    (void) value;
+    (void) selector;
+}
+
+void lv_obj_set_style_bg_img_opa(lv_obj_t * obj, lv_opa_t value, uint32_t selector) {
+    (void) obj;
+    (void) value;
+    (void) selector;
+}
+
+void lv_label_set_text(lv_obj_t * obj, const char * text) {
+    snprintf(label_text[label_index(obj)], MAX_LABEL_TEXT, "%s", text);
 }
 
 lv_timer_t * lv_timer_create(void (*timer_cb)(lv_timer_t *), uint32_t period, void * user_data) {
@@ -121,8 +164,20 @@ void params_unlock(bool * dirty) {
 
 /* ---- accessors used by the test ---- */
 
+/* El valor: la ULTIMA etiqueta que clock_init() crea. */
 const char * clock_stub_last_text(void) {
-    return label_text;
+    if (label_count == 0) {
+        return "";
+    }
+    return label_text[label_count - 1];
+}
+
+/* El "8 fantasma": la PRIMERA etiqueta, la que queda debajo del valor. */
+const char * clock_stub_shadow_text(void) {
+    if (label_count < 2) {
+        return "";
+    }
+    return label_text[0];
 }
 
 void clock_stub_run_timers(void) {

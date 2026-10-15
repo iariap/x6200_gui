@@ -25,6 +25,10 @@ KNOWN_KEYS = frozenset(
         # `--digits` en tools/ui_harness/README.md). Vacío o `none` = la familia
         # por defecto.
         "digits",
+        # La vista del reloj de la barra superior (src/clock.c): `time`, `power`
+        # (el defecto del arnés) o `time-power`. La fixture de la familia de
+        # dígitos pide `time` porque es la vista que lleva el "8 fantasma".
+        "clock_view",
         "spectrum_filled",
         "spectrum_peak",
         "waterfall_center_line",

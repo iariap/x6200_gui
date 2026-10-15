@@ -50,6 +50,15 @@
 #define COLOR_LIGHT_YELLOW (0xFFFF30)
 #define COLOR_LIGHT_RED (0xFF8080)
 
+/* Opacidad del "8 fantasma": la capa de segmentos apagados que los paneles de
+ * digitos (la fila de frecuencia y el reloj) dibujan DEBAJO del valor, con la
+ * familia segmentada (src/clock.c, src/main_screen.c). El fantasma no pisa el
+ * valor: comparte sus segmentos, asi que lo unico que decide este numero es
+ * cuanta luz tienen los segmentos que el valor no enciende. Vive aca y no en
+ * ui_tokens.h porque es una constante de la capa de estilos y este header es el
+ * unico que src/clock.c comparte con su test nativo. */
+#define UI_DIGIT_SHADOW_OPA  LV_OPA_30
+
 // Symbols
 
 #define SYMBOL_PLUG "\xEF\x87\xA6"  // F1E6
@@ -118,6 +127,7 @@ extern lv_font_t    sony_60;
  * and the clock test compiles it against tests/native/stubs_clock/styles.h, which
  * has no fonts/ tree. */
 const struct _lv_font_t *font_digit(const struct _lv_font_t *stock_slot);
+bool font_digit_active(void);
 void fonts_set_digit_family(uint8_t digit_family);
 
 void styles_init(themes_t theme);
