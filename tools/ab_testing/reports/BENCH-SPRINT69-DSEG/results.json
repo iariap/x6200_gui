@@ -12,11 +12,11 @@
   "kind": "benchmark-measurement",
   "measurements": [
     {
-      "dispersion_cv_pct": 2.133,
-      "draw_ms_mean": 2.8055,
-      "flush_ms_mean": 0.3958,
+      "dispersion_cv_pct": 1.584,
+      "draw_ms_mean": 2.9407,
+      "flush_ms_mean": 0.4191,
       "flushes_mean": 1.0,
-      "fps": 312.74,
+      "fps": 300.2,
       "frames": 20,
       "memory": {
         "peak_rss_bytes": 10424320,
@@ -25,39 +25,39 @@
         "rss_bytes": 10424320
       },
       "redrawn_area_mean": 384000.0,
-      "render_mean_ms": 3.2013,
-      "render_p50_ms": 3.1975,
-      "render_p95_ms": 3.3196,
-      "render_p99_ms": 3.3346,
-      "render_stdev_ms": 0.0612,
+      "render_mean_ms": 3.3598,
+      "render_p50_ms": 3.3312,
+      "render_p95_ms": 3.5236,
+      "render_p99_ms": 3.6067,
+      "render_stdev_ms": 0.0871,
       "scenario": "main-foco",
       "unique_redrawn_mean": 384000.0
     },
     {
-      "dispersion_cv_pct": 1.105,
-      "draw_ms_mean": 2.8191,
-      "flush_ms_mean": 0.3963,
+      "dispersion_cv_pct": 2.016,
+      "draw_ms_mean": 2.9858,
+      "flush_ms_mean": 0.4124,
       "flushes_mean": 1.0,
-      "fps": 310.63,
+      "fps": 301.83,
       "frames": 20,
       "memory": {
-        "peak_rss_bytes": 10592256,
+        "peak_rss_bytes": 10547200,
         "peak_vm_bytes": 82194432,
-        "pss_bytes": 10579968,
-        "rss_bytes": 10526720
+        "pss_bytes": 10534912,
+        "rss_bytes": 10481664
       },
       "redrawn_area_mean": 384000.0,
-      "render_mean_ms": 3.2154,
-      "render_p50_ms": 3.2193,
-      "render_p95_ms": 3.271,
-      "render_p99_ms": 3.2797,
-      "render_stdev_ms": 0.0375,
+      "render_mean_ms": 3.3982,
+      "render_p50_ms": 3.3131,
+      "render_p95_ms": 3.5336,
+      "render_p99_ms": 4.6167,
+      "render_stdev_ms": 0.3469,
       "scenario": "main-frecuencia-dseg",
       "unique_redrawn_mean": 384000.0
     }
   ],
   "revisions": {
-    "revision": "16fae76b327cb9426c0ff575f03e8526e176f5f2"
+    "revision": "3d8a3ae9f9a733019c4e398d1bb47ea8756afd10"
   },
   "scenarios": [
     "main-foco",

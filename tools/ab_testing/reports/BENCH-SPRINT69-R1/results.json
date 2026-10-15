@@ -12,52 +12,52 @@
   "kind": "benchmark-measurement",
   "measurements": [
     {
-      "dispersion_cv_pct": 2.574,
-      "draw_ms_mean": 3.0665,
-      "flush_ms_mean": 0.4223,
+      "dispersion_cv_pct": 2.024,
+      "draw_ms_mean": 2.9608,
+      "flush_ms_mean": 0.4162,
       "flushes_mean": 1.0,
-      "fps": 298.57,
+      "fps": 298.43,
       "frames": 20,
       "memory": {
-        "peak_rss_bytes": 10539008,
+        "peak_rss_bytes": 10391552,
         "peak_vm_bytes": 82194432,
-        "pss_bytes": 10526720,
-        "rss_bytes": 10539008
+        "pss_bytes": 10379264,
+        "rss_bytes": 10391552
       },
       "redrawn_area_mean": 384000.0,
-      "render_mean_ms": 3.4888,
-      "render_p50_ms": 3.3492,
-      "render_p95_ms": 4.0455,
-      "render_p99_ms": 4.3001,
-      "render_stdev_ms": 0.3073,
+      "render_mean_ms": 3.3771,
+      "render_p50_ms": 3.3508,
+      "render_p95_ms": 3.582,
+      "render_p99_ms": 3.6381,
+      "render_stdev_ms": 0.1039,
       "scenario": "main-tema-classic",
       "unique_redrawn_mean": 384000.0
     },
     {
-      "dispersion_cv_pct": 1.831,
-      "draw_ms_mean": 3.0417,
-      "flush_ms_mean": 0.4093,
+      "dispersion_cv_pct": 2.081,
+      "draw_ms_mean": 2.9323,
+      "flush_ms_mean": 0.4084,
       "flushes_mean": 1.0,
-      "fps": 303.89,
+      "fps": 301.91,
       "frames": 20,
       "memory": {
-        "peak_rss_bytes": 10395648,
+        "peak_rss_bytes": 10469376,
         "peak_vm_bytes": 82198528,
-        "pss_bytes": 10383360,
-        "rss_bytes": 10330112
+        "pss_bytes": 10457088,
+        "rss_bytes": 10469376
       },
       "redrawn_area_mean": 384000.0,
-      "render_mean_ms": 3.4509,
-      "render_p50_ms": 3.2907,
-      "render_p95_ms": 3.822,
-      "render_p99_ms": 4.9706,
-      "render_stdev_ms": 0.4377,
+      "render_mean_ms": 3.3407,
+      "render_p50_ms": 3.3122,
+      "render_p95_ms": 3.4609,
+      "render_p99_ms": 3.4749,
+      "render_stdev_ms": 0.0788,
       "scenario": "main-tema-sprint",
       "unique_redrawn_mean": 384000.0
     }
   ],
   "revisions": {
-    "revision": "16fae76b327cb9426c0ff575f03e8526e176f5f2"
+    "revision": "3d8a3ae9f9a733019c4e398d1bb47ea8756afd10"
   },
   "scenarios": [
     "main-tema-classic",

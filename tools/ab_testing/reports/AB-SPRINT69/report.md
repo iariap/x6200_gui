@@ -2,8 +2,8 @@
 
 - Date: 2026-10-15
 - Profile: `host-ui`
-- A (baseline): `4737fcd82cc4a8c39363059348d0dfdb8ad8d837` (a)
-- B (candidate): `16fae76b327cb9426c0ff575f03e8526e176f5f2` (b)
+- A (baseline): `b65d519d852118256081a5fd8208a41be83498cb` (a)
+- B (candidate): `3d8a3ae9f9a733019c4e398d1bb47ea8756afd10` (b)
 - Scenarios: `app-bands`, `app-close-home`, `apps-menu-1`, `apps-menu-2`, `apps-menu-3`, `apps-menu-4`, `apps-menu-5`, `apps-menu-6`, `bench-render`, `bt-dialog`, `bt-dialog-tema-aurora`, `bt-dialog-tema-redshift`, `bt-dialog-tema-sunlit`, `bt-dialog-tema-trail`, `home-bateria-externa`, `home-frecuencia-extrema`, `home-usb-20m`, `main-bateria-baja`, `main-espectro-agua`, `main-foco`, `main-frecuencia-dseg`, `main-natural`, `main-natural-eco`, `main-otro-tema`, `main-tema-aurora`, `main-tema-aurora-agua`, `main-tema-aurora-eco`, `main-tema-aurora-tx`, `main-tema-classic`, `main-tema-holo`, `main-tema-material-3`, `main-tema-outdoor-negative`, `main-tema-redshift`, `main-tema-redshift-agua`, `main-tema-redshift-eco`, `main-tema-redshift-tx`, `main-tema-rs`, `main-tema-sunlit`, `main-tema-sunlit-agua`, `main-tema-sunlit-eco`, `main-tema-sunlit-tx`, `main-tema-trail`, `main-tema-trail-agua`, `main-tema-trail-eco`, `main-tema-trail-tx`, `main-tema-vision`, `main-tema-vision-cwr`, `main-tema-vision-usbd`, `main-tx-simulado`, `settings-audio`, `settings-bands`, `settings-home`, `settings-perfil`, `settings-rs-theme`, `settings-tema-aurora`, `settings-tema-redshift`, `settings-tema-sunlit`, `settings-tema-trail`, `settings-wfbat`
 
 ## Verdict: **PASS** (exit 0)

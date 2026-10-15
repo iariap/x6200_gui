@@ -3641,8 +3641,8 @@ familia segmentada (`font_digit()`, slots 30/38), así que `layout_overlap` las 
 `main-frecuencia-dseg` y quedan con el mismo waiver acotado (un `exceptions` por fixture, con
 razón y vencimiento; `tests/test_theme_checks.py` fija el conjunto).
 
-**Gates corridos sobre `16fae76`, la rama del tema rebasada sobre `4737fcd` (el trunk que ya
-trae Redshift #81, Sunlit #83, Aurora #87 y Trail #88); los reportes quedan en
+**Gates corridos sobre `3d8a3ae`, la rama del tema rebasada sobre `b65d519` (el trunk actual,
+con Redshift #81, Sunlit #83, Aurora #87 y Trail #88 ya mergeados); los reportes quedan en
 `reports/AB-SPRINT69` y `reports/BENCH-SPRINT69*`.**
 
 ```text
@@ -3690,23 +3690,22 @@ descargado (dispersión máxima medida 1.9% y 2.6%, presupuesto 25%): las dos **
 
 | corrida | escenario | p50 | p95 | p99 | fps | cv | flushes | rss |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| `BENCH-SPRINT69` | `main-tema-classic` | 3.277 ms | 3.356 ms | 3.585 ms | 305.2 | 1.9% | 1.0 | 10 694 656 B |
-| `BENCH-SPRINT69` | `main-tema-sprint` | 3.176 ms | 3.329 ms | 3.587 ms | 314.9 | 1.6% | 1.0 | 10 559 488 B |
-| `BENCH-SPRINT69-R1` | `main-tema-classic` | 3.349 ms | 4.046 ms | 4.300 ms | 298.6 | 2.6% | 1.0 | 10 539 008 B |
-| `BENCH-SPRINT69-R1` | `main-tema-sprint` | 3.291 ms | 3.822 ms | 4.971 ms | 303.9 | 1.8% | 1.0 | 10 330 112 B |
+| `BENCH-SPRINT69` | `main-tema-classic` | 3.311 ms | 3.463 ms | 3.595 ms | 302.0 | 1.9% | 1.0 | 10 522 624 B |
+| `BENCH-SPRINT69` | `main-tema-sprint` | 3.326 ms | 3.678 ms | 4.349 ms | 300.7 | 1.8% | 1.0 | 10 489 856 B |
+| `BENCH-SPRINT69-R1` | `main-tema-classic` | 3.351 ms | 3.582 ms | 3.638 ms | 298.4 | 2.0% | 1.0 | 10 391 552 B |
+| `BENCH-SPRINT69-R1` | `main-tema-sprint` | 3.312 ms | 3.461 ms | 3.475 ms | 301.9 | 2.1% | 1.0 | 10 469 376 B |
 
-Es decir **−3.1% / −1.7% de p50** y **−0.8% / −5.5% de p95** contra Classic según la corrida
-(Sprint un poco más rápido, dentro del ruido) y **+3.2% / +1.8% de fps**: los dos deltas quedan
-por debajo del presupuesto relativo (`max_p95_delta_pct` 25%), así que **no se afirma una mejora
-ni una regresión de costo**: lo que se afirma es que las dos corridas pasan el presupuesto del
-host. El veredicto del `benchmark` es **PASS** en las dos, y el proxy determinista del `compare`
-(que no depende de la carga del host) también da `Performance PASS`. Aislamiento del sospechoso
-obvio —la familia segmentada, que agrega la capa sombra de los dígitos—:
-`main-foco` (IU1WXY, familia por defecto) vs `main-frecuencia-dseg` (mismo tema y estado,
-`digits dseg7`), p50 3.197 vs 3.219 ms y p95 3.320 vs 3.271 ms
-(`reports/BENCH-SPRINT69-DSEG`): la capa no mide un costo propio. El número físico (Cortex-A7) no
-se midió y no se afirma nada sobre energía (el fondo oscuro no se asocia a ahorro de Wh: el LCD
-tiene backlight).
+Es decir **+0.4% / −1.2% de p50** y **+6.2% / −3.4% de p95** contra Classic según la corrida: el
+signo cambia entre corridas, así que **no se afirma una mejora ni una regresión de costo**; lo
+que se afirma es que los cuatro deltas quedan por debajo del presupuesto relativo
+(`max_p95_delta_pct` 25%) y que las dos corridas pasan el presupuesto del host. El veredicto del
+`benchmark` es **PASS** en las dos, y el proxy determinista del `compare` (que no depende de la
+carga del host) también da `Performance PASS`. Aislamiento del sospechoso obvio —la familia
+segmentada, que agrega la capa sombra de los dígitos—: `main-foco` (IU1WXY, familia por defecto)
+vs `main-frecuencia-dseg` (mismo tema y estado, `digits dseg7`), p50 3.331 vs 3.313 ms y p95
+3.524 vs 3.534 ms (`reports/BENCH-SPRINT69-DSEG`): la capa no mide un costo propio. El número
+físico (Cortex-A7) no se midió y no se afirma nada sobre energía (el fondo oscuro no se asocia a
+ahorro de Wh: el LCD tiene backlight).
 
 **Hallazgos y límites declarados** (ninguno bloquea este PR):
 
