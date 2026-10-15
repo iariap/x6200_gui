@@ -320,7 +320,7 @@ def test_derived_builtins_are_measured_like_the_data_ones(
 def test_derived_palettes_never_invent_a_role(
     runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    """The derivation is a port: Outdoor-Negative and VISION keep the 128 C roles."""
+    """The derivation is a port: Outdoor-Negative and VISION keep the 122 C roles."""
     data_roles = set(load_builtin_palettes(THEME_H)["Outdoor"])
     assert set(runtime_palettes["Outdoor-Negative"]) == data_roles
     assert set(runtime_palettes["VISION"]) == data_roles

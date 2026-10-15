@@ -194,11 +194,11 @@ def leer_formas():
     if set(forma) != {"B_IU1WXY", "B_LEGACY", "B_OUTDOOR", "B_CLASSIC"}:
         return forma
 
-    # VISION se arma con IU1WXY y despues pisa la forma (theme.c:158-160).
+    # VISION se arma con IU1WXY y despues pisa la forma (theme.c:156-158).
     forma["B_VISION"] = {
         "border": 2, "pill_border": 2, "btn_gradient": False, "box_gradient": False, "mode_box": True,
     }
-    # Outdoor-Negative usa la forma de Outdoor sin cambios (theme.c:147).
+    # Outdoor-Negative usa la forma de Outdoor sin cambios (theme.c:145).
     forma["B_OUTDOOR_NEG"] = dict(forma["B_OUTDOOR"])
     return forma
 
@@ -218,7 +218,7 @@ def armar_paletas(colores):
 
     # Outdoor-Negative: Outdoor entero por negative(); los roles que negative() no
     # puede invertir (amarillo de la seleccion, azul puro del VFO) quedan como en
-    # Outdoor o puestos a mano (theme.c:148-162).
+    # Outdoor o puestos a mano (theme.c:146-160).
     neg = {rol: negativo(c) for rol, c in paletas["Outdoor"].items()}
     for rol in ("sel_text", "btn_active_text", "sel_border", "btn_active_border", "near_bg"):
         neg[rol] = paletas["Outdoor"][rol]
@@ -227,7 +227,7 @@ def armar_paletas(colores):
     paletas["Outdoor-Negative"] = neg
     shapes["Outdoor-Negative"] = dict(shapes["Outdoor"])
 
-    # VISION: parte de IU1WXY y pisa lo que dice vision_colors (theme.c:155-161).
+    # VISION: parte de IU1WXY y pisa lo que dice vision_colors (theme.c:153-159).
     vision = dict(paletas["IU1WXY"])
     vision.update(leer_vision())
     paletas["VISION"] = vision

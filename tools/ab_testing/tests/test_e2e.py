@@ -167,6 +167,11 @@ def _reintroduce_frequency_white(worktree: Path) -> None:
     colour (`theme_hex(TC_text)`, `#%06X`); writing the white back is exactly the
     defect that under the light Outdoor theme painted the digits white on the
     white background, so the region measured content 0.0000.
+
+    The value's colour markup is now written by the one call that paints the
+    frequency value (`freq[1]`, `#%06X %s` over the `value` string the ghost layer
+    is also built from — AB-FONTSE), so that is the literal the `%03X` half of the
+    defect breaks.
     """
     path = worktree / "src" / "main_screen.c"
     text = path.read_text()
@@ -176,9 +181,9 @@ def _reintroduce_frequency_white(worktree: Path) -> None:
         needle,
         "uint32_t    color = subject_get_int(freq_lock) ? 0xBBBBBB : 0xFFFFFF;",
     )
-    for fmt in ('"#%06X %i.%03i.%03i / %i.%03i.%03i"', '"#%06X %i.%03i.%03i"'):
-        assert fmt in text, fmt
-        text = text.replace(fmt, fmt.replace("%06X", "%03X"))
+    fmt = 'lv_label_set_text_fmt(freq[1], "#%06X %s", color, value);'
+    assert text.count(fmt) == 1, "the frequency value is painted once, with the theme colour"
+    text = text.replace(fmt, fmt.replace("%06X", "%03X"))
     path.write_text(text)
 
 
