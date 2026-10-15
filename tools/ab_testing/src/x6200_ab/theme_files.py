@@ -24,18 +24,21 @@ inventory of what the user can pick and not only of what ships as a file:
   overrides) and VISION (IU1WXY plus the `vision_colors[]` array). They are not
   data, so they are *derived* from the same C the firmware runs — never guessed
   — and `tests/test_theme_files.py` pins the derivation byte-for-byte against
-  `tests/check_wcag.py`, the ROM's own sweep over the nine palettes;
+  `tests/check_wcag.py`, the ROM's own sweep over the fifteen served palettes;
 - the **shipped files** of `rootfs/usr/share/x6200/themes` (`<name>.json` or
   `<name>/theme.json`), with the `base` inheritance `src/theme.c` applies.
 
-The ninth theme the menu offers is `Outdoor-Negative`; with the derivation below
-every served palette resolves, so the whole inventory is measured (every served
-theme x 9 pairs) and nothing is declared UNCOVERED.
+With the derivation below every served palette resolves, so the whole inventory is
+measured (every served theme x 9 pairs) and nothing is declared UNCOVERED. The
+Settings selector, though, offers only the six v2 themes (issue #73): every other
+served theme is flagged `offered=False`, a palette the engine can still load by
+name but the menu does not list.
 
-The exhaustive sweep over the nine palettes stays in `tests/check_wcag.py`, which
-the ROM's own CI runs. This one is the framework-side inventory over what the
-files and the C table spell out, so a file that stops defining a role cannot
-silently inherit an illegible one, and no served theme is missing from the map.
+The exhaustive sweep over the fifteen served palettes stays in
+`tests/check_wcag.py`, which the ROM's own CI runs. This one is the framework-side
+inventory over what the files and the C table spell out, so a file that stops
+defining a role cannot silently inherit an illegible one, and no served theme is
+missing from the map.
 """
 
 from __future__ import annotations
@@ -71,17 +74,23 @@ DERIVED_PALETTES = ("Outdoor-Negative", "VISION")
 # data palettes of THEME_COLORS(X) first, then the two `use_builtin()` derives.
 SERVED_BUILTINS = (*BASE_PALETTES, *DERIVED_PALETTES)
 
-# Which of the built-ins `theme_list()` (src/theme.c) offers in Settings. Legacy
-# is kept as a palette and as a `base` for shipped files, but the menu skips it,
-# so the inventory has to say so instead of counting it as a served choice.
+# Which of the built-ins `theme_list()` (src/theme.c) offers in Settings. Since the
+# six v2 themes are the whole selector (issue #73) no built-in is offered any more:
+# they are kept as palettes and as `base` for shipped files, but the menu has no
+# entry for them (their removal and the default migration are #74).
 BUILTIN_OFFERED = {
-    "IU1WXY": True,
+    "IU1WXY": False,
     "Legacy": False,
-    "Outdoor": True,
-    "Classic": True,
-    "Outdoor-Negative": True,
-    "VISION": True,
+    "Outdoor": False,
+    "Classic": False,
+    "Outdoor-Negative": False,
+    "VISION": False,
 }
+
+# The six v2 themes that make up the whole Settings selector (issue #73). Only a
+# shipped file with one of these names is offered; any other file (Holo, Material 3,
+# RS or a user's own DATA theme) is still loaded by name but never listed.
+OFFERED_THEMES = ("Sunlit", "Redshift", "Sprint", "Cathode", "Trail", "Aurora")
 
 # The surfaces of the `images` block (src/theme.c, `image_names[]`): a file may
 # paint one with a PNG it ships instead of the role's colour. A pair whose
@@ -502,11 +511,18 @@ def measure_theme_file(
     pick that the checker cannot read is not a pass.
     """
     name = path.stem if path.name != "theme.json" else path.parent.name
+    offered = name in OFFERED_THEMES
     try:
         base, colours, images = _read_theme_file(path)
     except ConfigError as exc:
         return ThemeReport(
-            name=name, path=str(path), base="", inherited=(), results=(), error=str(exc)
+            name=name,
+            path=str(path),
+            base="",
+            inherited=(),
+            results=(),
+            error=str(exc),
+            offered=offered,
         )
     if base not in palettes:
         return ThemeReport(
@@ -515,6 +531,7 @@ def measure_theme_file(
             base=base,
             inherited=(),
             results=(),
+            offered=offered,
             error=(
                 f"base `{base}` is not one of {list(palettes)}: src/theme.c resolves a base "
                 f"by `builtin_index()`, so a shipped file may only inherit a name the six "
@@ -530,6 +547,7 @@ def measure_theme_file(
             base=base,
             inherited=(),
             results=(),
+            offered=offered,
             error=(
                 f"unknown role(s) {unknown}: src/theme.c ignores a colour the C table "
                 f"does not define, so the theme silently keeps the base value"
@@ -547,6 +565,7 @@ def measure_theme_file(
         inherited=inherited,
         results=results,
         binary_surfaces=binary,
+        offered=offered,
     )
 
 

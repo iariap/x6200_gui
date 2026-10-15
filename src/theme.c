@@ -9,13 +9,11 @@
 #include "cJSON.h"
 #include "fonts/font_select.h"
 
-#include <dirent.h>
 #include <png.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <unistd.h>
 
 #ifndef THEMES_DIR
 #define THEMES_DIR "/mnt/themes"
@@ -499,57 +497,21 @@ const uint32_t *theme_waterfall(void) {
     return theme_shape.waterfall_table == 1 ? wf_palette_legacy : wf_palette_gauss;
 }
 
-/* Legacy is kept but not offered: IU1WXY, Outdoor, Classic, the files */
+/* El selector de Ajustes ofrece SOLO los seis temas v2 (issue #73): la colección
+ * es la oferta completa del menú. Los temas viejos (los incorporados IU1WXY, Legacy,
+ * Outdoor, Outdoor-Negative, Classic y VISION, y los archivos Holo, Material 3 y RS)
+ * siguen en la ROM y en el motor: `theme_init()` los carga por nombre (params
+ * guardados, fixtures históricas del arnés), pero no tienen entrada en la lista.
+ * Retirarlos del todo y migrar el valor guardado (al default nuevo) es el issue #74;
+ * acá el default no cambia. Un tema propio del usuario (DATA) tampoco se lista: se
+ * conserva su archivo pero no aparece en el menú. */
+static const char *const offered_names[] = {"Sunlit", "Redshift", "Sprint", "Cathode", "Trail", "Aurora"};
+
 int theme_list(char names[][32], int max) {
-    int            n = 0;
-    DIR           *d;
-    struct dirent *e;
+    int n = 0;
 
-    for (int i = 0; i < B_COUNT && n < max; i++) {
-        if (i != B_LEGACY) snprintf(names[n++], 32, "%s", builtin_names[i]);
-    }
-    /* Los del usuario (DATA) primero y después los que vienen con la ROM: un nombre
-     * repetido se lista una sola vez y el archivo del usuario es el que se carga. */
-    for (int di = 0; di < 2; di++) {
-        const char *base = themes_dir_n(di);
-
-        d = opendir(base);
-
-        while (d && (e = readdir(d)) && n < max) {
-            size_t len = strlen(e->d_name);
-            char   path[600];
-            char   nuevo[32];
-            int    repetido = 0;
-
-            if (len > 5 && len < 32 + 5 && !strcmp(e->d_name + len - 5, ".json")) {
-                snprintf(nuevo, sizeof(nuevo), "%.*s", (int)(len - 5), e->d_name);
-            } else if (e->d_name[0] != '.' && len < 32) {   /* a folder with theme.json */
-                if (snprintf(path, sizeof(path), "%s/%s/theme.json", base, e->d_name) >= (int) sizeof(path)) {
-                    continue;
-                }
-
-                if (access(path, R_OK) != 0) {
-                    continue;
-                }
-
-                snprintf(nuevo, sizeof(nuevo), "%.*s", (int) sizeof(nuevo) - 1, e->d_name);
-            } else {
-                continue;
-            }
-
-            for (int i = 0; i < n; i++) {
-                if (strcmp(names[i], nuevo) == 0) {
-                    repetido = 1;
-                    break;
-                }
-            }
-
-            if (!repetido) {
-                snprintf(names[n++], 32, "%s", nuevo);
-            }
-        }
-
-        if (d) closedir(d);
+    for (size_t i = 0; i < sizeof(offered_names) / sizeof(offered_names[0]) && n < max; i++) {
+        snprintf(names[n++], 32, "%s", offered_names[i]);
     }
 
     return n;
