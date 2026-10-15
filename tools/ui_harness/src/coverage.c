@@ -65,8 +65,6 @@ static const coverage_entry_t main_screen[] = {
               "DX cluster spot marks are not rendered (no cluster data on the host)"),
     COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
               "DX cluster column is not rendered (no cluster data on the host)"),
-    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
-              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
     COMPONENT("dialogs (dialog_*.c)", COVERAGE_UNSUPPORTED,
               "app dialogs are not opened; dialog_construct() opens none of them in these fixtures"),
 };
@@ -101,8 +99,6 @@ static const coverage_entry_t settings_dialog[] = {
               "the other app dialogs are inert mocks; only the Ajustes path is compiled and opened"),
     COMPONENT("dialog_field.c", COVERAGE_UNSUPPORTED,
               "not a dependency of the Ajustes window: src/dialog_settings.c does not include it, and the harness links the window without it (the earlier 'Ajustes arrastra dialog_field' note was wrong)"),
-    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
-              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
     COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
               "DX cluster spot marks are not rendered (no cluster data on the host)"),
     COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
@@ -132,8 +128,6 @@ static const coverage_entry_t app_bands[] = {
               "the Bands window's dependencies are not compiled either; with dialog_bands.c unsupported there is nothing of that subtree to render"),
     COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
               "the other app dialogs are inert mocks; only the Ajustes path is compiled and opened"),
-    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
-              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
     COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
               "DX cluster spot marks are not rendered (no cluster data on the host)"),
     COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
@@ -160,8 +154,6 @@ static const coverage_entry_t settings_bands[] = {
               "the Bands window's dependencies are not compiled either; with dialog_bands.c unsupported there is nothing of that subtree to render"),
     COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
               "the other app dialogs are inert mocks; only the Ajustes path is compiled and opened"),
-    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
-              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
     COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
               "DX cluster spot marks are not rendered (no cluster data on the host)"),
     COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
@@ -180,8 +172,6 @@ static const coverage_entry_t apps_menu[] = {
               "src/buttons.cpp compiled; the six APP pages and their app buttons are the real firmware table, drawn in the bottom bar"),
     COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
               "the fixtures open no app dialog: the app buttons are counted in the bar, not pressed"),
-    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
-              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
     COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
               "DX cluster spot marks are not rendered (no cluster data on the host)"),
     COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
@@ -209,8 +199,31 @@ static const coverage_entry_t bt_dialog[] = {
               "only the Bluetooth dialog is compiled and opened; the rest are inert mocks"),
     COMPONENT("dialog_field.c", COVERAGE_UNSUPPORTED,
               "not a dependency of the Bluetooth window"),
-    COMPONENT("freq_strip.c", COVERAGE_UNSUPPORTED,
-              "the app frequency strip is not rendered; main_screen draws its frequency row inline"),
+    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
+              "DX cluster spot marks are not rendered (no cluster data on the host)"),
+    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
+              "DX cluster column is not rendered (no cluster data on the host)"),
+};
+
+/* The `app-close-home` scenario (menu-hygiene 5/6): the real main screen with
+ * RTTY opened and closed through the firmware's own route
+ * (main_screen_start_app(ACTION_APP_RTTY) -> main_screen_close_app()) and, in
+ * between, the real Ajustes window. `scenario_settle` codifies what the route
+ * must leave behind (RTTY off and the bar back on the home page). RTTY itself is
+ * not compiled on the host: its state is a documented mock
+ * (mocks/mock_main_screen.c) that now tracks the set/reset the route performs. */
+static const coverage_entry_t app_close[] = {
+    MAIN_COMPONENTS,
+    COMPONENT("main_screen.c (ACTION_APP_RTTY close)", COVERAGE_PARTIAL,
+              "src/main_screen.c compiled; the non-dialog app (RTTY) is opened and closed by the same functions the remote control calls, but the RTTY codec is a state-only mock"),
+    COMPONENT("dialog.c", COVERAGE_REAL,
+              "src/dialog.c compiled; dialog_construct()/dialog_destruct() run the real dialog lifecycle the fixture opens over RTTY"),
+    COMPONENT("dialog_settings.c", COVERAGE_REAL,
+              "src/dialog_settings.c compiled; the real Ajustes window is built over RTTY and then closed"),
+    COMPONENT("rtty.c", COVERAGE_SYNTHETIC,
+              "src/rtty.c not compiled; the state (RTTY_OFF/RTTY_RX) is a documented mock (mocks/mock_main_screen.c) whose only observable is what the route sets it to"),
+    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
+              "only the Ajustes path is compiled and opened; the rest are inert mocks"),
     COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
               "DX cluster spot marks are not rendered (no cluster data on the host)"),
     COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
@@ -239,6 +252,10 @@ const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
     if (screen && !strcmp(screen, "bt-dialog")) {
         *count = (int) (sizeof(bt_dialog) / sizeof(bt_dialog[0]));
         return bt_dialog;
+    }
+    if (screen && !strcmp(screen, "app-close-home")) {
+        *count = (int) (sizeof(app_close) / sizeof(app_close[0]));
+        return app_close;
     }
     return coverage_main_screen(count);
 }

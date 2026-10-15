@@ -25,7 +25,6 @@
 #include "dialog.h"
 #include "dsp.h"
 #include "events.h"
-#include "freq_strip.h"
 #include "keyboard.h"
 #include "main_screen.h"
 #include "msg.h"
@@ -559,7 +558,6 @@ static void rotary_cb(int32_t diff) {
 
     f = f < 1410 ? 1410 : f > 1590 ? 1590 : f;
     param_i_set(cfg_wspr_tx_freq, f);
-    freq_strip_set_offset(f);
     msg_update_text_fmt("WSPR TX at %d Hz", f);
 }
 
@@ -642,7 +640,6 @@ static void construct_cb(lv_obj_t *parent) {
     main_screen_lock_mode(true);
     main_screen_lock_freq(true);
     main_screen_lock_band(true);
-    freq_strip_set_offset(param_i_get(cfg_wspr_tx_freq));
 
     if (param_f_get(cfg_pwr) > MAX_PWR) {
         radio_set_pwr(MAX_PWR);
@@ -694,7 +691,6 @@ static void destruct_cb(void) {
     main_screen_lock_ab(false);
     main_screen_lock_freq(false);
     main_screen_lock_band(false);
-    freq_strip_set_offset(-1);
     radio_set_pwr(param_f_get(cfg_pwr));
     table = NULL;
 }

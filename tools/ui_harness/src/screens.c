@@ -32,6 +32,7 @@
 #include "main_screen.h"
 #include "meter.h"
 #include "params/params.h"
+#include "rtty.h"
 #include "signal_gen.h"
 #include "styles.h"
 #include "visual_policy.h"
@@ -299,6 +300,19 @@ bool scenario_build(const scenario_t *scenario)
         return true;
     }
 
+    if (!strcmp(scenario->screen, "app-close-home")) {
+        /* menu-hygiene (decisiones 5 y 6): la app que NO es diálogo (RTTY) se abre
+         * por la ruta del firmware (main_screen_start_app(ACTION_APP_RTTY)) y el
+         * fixture la cierra en scenario_settle por el mismo camino que el control
+         * remoto (main_screen_close_app). El grupo de teclado sube primero porque
+         * la segunda mitad del fixture abre el Ajustes real encima de RTTY
+         * (dialog_construct -> dialog_init -> dialog_item). */
+        mock_keyboard_group_up();
+        build_main(scenario);
+        main_screen_start_app(ACTION_APP_RTTY);
+        return true;
+    }
+
     fprintf(stderr, "scenario: unknown screen '%s'\n", scenario->screen);
     return false;
 }
@@ -507,6 +521,48 @@ void scenario_settle(const scenario_t *scenario)
                         it->label, page);
                 exit(1);
             }
+        }
+    }
+
+    if (!strcmp(scenario->screen, "app-close-home")) {
+        /* menu-hygiene (decision 5): `{"cmd":"app","text":"off"}` sobre RTTY
+         * abierta cierra la app de verdad. El fixture abrio RTTY en el build; aca
+         * se la cierra por el mismo camino que usa el control remoto
+         * (src/remote_server.cpp -> main_screen_close_app()). Lo que la fixture
+         * *significa* son las dos cosas medibles: RTTY quedo OFF (el mock del
+         * estado es stateful, mocks/mock_main_screen.c) y la barra volvio al home
+         * (la pagina previa a la apertura), no a la de RTTY. */
+        main_screen_close_app();
+
+        if (rtty_get_state() != RTTY_OFF) {
+            fprintf(stderr,
+                    "app-close-home: 'off' no apago RTTY: sigue en %d (menu-hygiene 5)\n",
+                    (int) rtty_get_state());
+            exit(1);
+        }
+        if (buttons_get_cur_page() != &buttons_page_vol_1) {
+            fprintf(stderr,
+                    "app-close-home: cerrar RTTY dejo la barra en la pagina de la app, "
+                    "no en el home (menu-hygiene 5)\n");
+            exit(1);
+        }
+
+        /* menu-hygiene (decision 6): cerrar un dialogo abierto sobre RTTY vuelve al
+         * estado pre-apertura de la barra (el home), no a la pagina "pegada" de
+         * RTTY. Es la ruta de la repro del #50: RTTY -> dialogo -> cerrar. */
+        main_screen_start_app(ACTION_APP_RTTY);
+        main_screen_action(ACTION_APP_SETTINGS);
+        main_screen_close_app();
+
+        if (rtty_get_state() != RTTY_OFF) {
+            fprintf(stderr, "app-close-home: el dialogo no apago RTTY (menu-hygiene 6)\n");
+            exit(1);
+        }
+        if (buttons_get_cur_page() != &buttons_page_vol_1) {
+            fprintf(stderr,
+                    "app-close-home: cerrar el dialogo dejo la barra en la pagina de RTTY, "
+                    "no en el home (menu-hygiene 6)\n");
+            exit(1);
         }
     }
 

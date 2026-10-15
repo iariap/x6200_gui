@@ -98,8 +98,8 @@ expected_changes:
       information was missing, not just low contrast). Both now ask the theme for
       it: `theme_hex(TC_text)` in the markup (and `TC_text_soft`, the theme's own
       "lock" role, when the dial is locked) with `#%06X`, the width LVGL requires,
-      plus `TC(text)` on the two styles — the role src/freq_strip.c already uses
-      for the dial digits. So Outdoor paints them black (region `frecuencia` of
+      plus `TC(text)` on the two styles — the theme role the pixels are drawn on.
+      So Outdoor paints them black (region `frecuencia` of
       `main-otro-tema`). The only other theme whose `text` role is not white is
       Material 3 (#e2e2e9), whose three labels move by that same 29/255 step; the
       other fourteen fixtures are byte-identical.

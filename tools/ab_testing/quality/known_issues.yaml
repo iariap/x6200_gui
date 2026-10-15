@@ -96,8 +96,8 @@ issues:
       rol con un nibble alto en cero se descartaria en silencio y el texto
       volveria al color del estilo). El mismo idioma y el mismo formato que usa
       este archivo para el ATT/PRE/ATU (`"#%06X ...", theme_hex(TC_text)`). Los dos
-      estilos de src/styles.c piden `TC(text)`, como la franja de frecuencia ya
-      hace con los digitos del dial (src/freq_strip.c). En Outdoor los digitos
+      estilos de src/styles.c piden `TC(text)`, que es el rol que pide theme.h para
+      lo que se dibuja sobre el fondo. En Outdoor los digitos
       salen negros sobre el fondo blanco y el contrato pasa. El waiver scoped de
       region de esta entrada se RETIRO en el mismo cambio: con el detector en PASS
       no hay nada que eximir. Como UI-011/UI-012 esta entrada no tiene `detector:`

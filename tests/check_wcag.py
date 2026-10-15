@@ -281,7 +281,7 @@ def armar_paletas(colores):
 # Superficies de contenido: donde el codigo pone un fondo y encima una etiqueta.
 #   bg            styles.c:318/349 (fondo de pantalla), dialog_field.c:1805
 #   bar/bar_grad  dialog_field.c:1813-1827 (cabecera de FIELD)
-#   strip[/_grad] freq_strip.c:108/120 (franja de frecuencia)
+#   strip[/_grad] theme.h:31-33 + theme.c image_names[] "strip" (franja del tema)
 #   dialog[/_grad] app_frame.c:41 + app_frame.h:31-32 (cabecera y estado del app)
 #   panel         app_frame.c:52 + dialog_field.c:465/853
 #   list          dialog_js8.c:2729 + 2669
@@ -379,11 +379,11 @@ PARES_ESPECIFICOS = [
     ("btn_active_text", "btn_active", 4.5, None, "theme.h:41+44"),
     ("btn_active_text", "btn_active_grad", 4.5, "btn_gradient", "theme.h:42+44"),
     ("btn_page_text", "btn_page", 4.5, None, "theme.h:45-46"),
-    # Encabezados de lista y del modo (fuente grande en freq_strip.c:121).
+    # Encabezados de lista y roles del modo (theme.h:122-124).
     ("title_text", "list", 4.5, None, "dialog_js8.c:3945"),
-    ("mode_text", "mode_bg", 3.0, "mode_box", "freq_strip.c:121+124 (sony_24/sony_36, grande)"),
-    ("mode_text", "strip", 3.0, "no_mode_box", "freq_strip.c:108+121 (sony_24/sony_36, grande)"),
-    ("mode_border", "mode_bg", 3.0, "mode_box", "freq_strip.c:124-126"),
+    ("mode_text", "mode_bg", 3.0, "mode_box", "theme.h:122-124 (rol del tema; sony_24/sony_36, grande)"),
+    ("mode_text", "strip", 3.0, "no_mode_box", "theme.h:31+122-124 (rol del tema; sony_24/sony_36, grande)"),
+    ("mode_border", "mode_bg", 3.0, "mode_box", "theme.h:122-124"),
     ("mode_dig", "bar", 4.5, None, "info.c:256, theme.h:121 (info box)"),
     # Estados sobre las superficies donde el codigo los escribe.
     ("alert_text", "alert_bg", 4.5, None, "cluster_column.c:114+135"),

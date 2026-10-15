@@ -141,18 +141,56 @@ static void restart_cb(lv_timer_t *t) {
     exit(0);
 }
 
-static void apps_disable() {
+/* La pagina de la barra que estaba antes de abrir una app que NO es dialogo
+ * (hoy, RTTY): cerrar la app la devuelve en vez de dejar pegada la suya. Un
+ * dialogo guarda su pagina previa en dialog_t.prev_page; RTTY no tiene
+ * descriptor, asi que la suya vive aca (menu-hygiene 5 y 6). */
+static buttons_page_t *app_prev_page = NULL;
+
+/* Apaga la app abierta: cierra su dialogo (si lo hay) y RTTY. */
+static void apps_stop() {
     dialog_destruct();
 
     rtty_set_state(RTTY_OFF);
     pannel_visible();
 }
 
+/* Cierra la app abierta porque el usuario pasa a una pagina de la barra de casa
+ * (teclas GEN/APP/KEY/DFN/DFL): se suelta la pagina previa de la app, que ya no
+ * aplica, porque lo que sigue carga la del grupo pedido. */
+static void apps_disable() {
+    apps_stop();
+
+    app_prev_page = NULL;
+}
+
+/* Cierra la app abierta y devuelve la barra a la pagina previa a su apertura.
+ * Es el camino del "off" del control remoto (main_screen_close_app) y el de
+ * abrir una app, que cierra la anterior -y su barra- antes de que la nueva tome
+ * la pagina: asi el dialogo que se abra encima guarda la de casa y no la de la
+ * app que se cierra (menu-hygiene 5 y 6). */
+static void apps_close() {
+    buttons_page_t *prev = app_prev_page;
+
+    apps_stop();
+
+    app_prev_page = NULL;
+    if (prev) {
+        buttons_load_page(prev);
+    }
+}
+
 void main_screen_start_app(press_action_t app_action) {
-    apps_disable();
+    apps_close();
 
     switch (app_action) {
         case ACTION_APP_RTTY:
+            /* La barra antes de RTTY: cerrarla la devuelve. Si la barra ya es la
+             * de RTTY (se reabre teniendo RTTY abierto) se conserva la guardada
+             * en la primera apertura. */
+            if (buttons_get_cur_page() != &buttons_page_rtty) {
+                app_prev_page = buttons_get_cur_page();
+            }
             buttons_load_page(&buttons_page_rtty);
             rtty_set_state(RTTY_RX);
             pannel_visible();
@@ -727,7 +765,7 @@ static void main_screen_keypad_cb(lv_event_t * e) {
                     case x6200_mode_cw:
                     case x6200_mode_cwr:
                         if (!dialog_type_is_run(dialog_msg_cw)) {
-                            apps_disable();
+                            apps_close();
                         }
 
                         pannel_hide();
@@ -740,7 +778,7 @@ static void main_screen_keypad_cb(lv_event_t * e) {
                     case x6200_mode_am:
                     case x6200_mode_nfm:
                         if (!dialog_type_is_run(dialog_msg_voice)) {
-                            apps_disable();
+                            apps_close();
                         }
 
                         pannel_hide();
@@ -1471,7 +1509,12 @@ void channel_overlay_show(const char *name) {
 
 /* The ported app dialogs call this to close themselves */
 void main_screen_close_app(void) {
-    dialog_destruct();
+    /* Cierra la app abierta de verdad: su dialogo (si lo hay) y RTTY, que no es
+     * un dialogo, y devuelve la barra a la pagina previa a la apertura. Es el
+     * camino de {"cmd":"app","text":"off"} del control remoto: con la sola
+     * dialog_destruct() RTTY seguia encendida y "app" no quedaba en "" (#50,
+     * menu-hygiene 5). */
+    apps_close();
 }
 
 bool main_screen_freq_locked(void) {

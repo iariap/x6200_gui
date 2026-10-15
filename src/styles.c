@@ -136,9 +136,8 @@ void styles_init(themes_t theme) {
      * tema (TC_text) y no de un blanco fijo: en el tema Outdoor el fondo es blanco y el texto
      * negro, y un blanco cableado deja la frecuencia invisible (UI-010). El color que se ve lo
      * escribe main_screen.c en el markup de recolor de cada label, que pisa este text_color; el
-     * estilo pide el mismo rol para que la pareja sea coherente. Es el rol que ya usa la franja
-     * de frecuencia (src/freq_strip.c, los digitos del dial) y lo que pide theme.h: el codigo no
-     * escribe un color, pide un rol. */
+     * estilo pide el mismo rol para que la pareja sea coherente. Es el mismo idioma que
+     * pide theme.h: el codigo no escribe un color, pide un rol. */
     lv_style_init(&freq_style);
     lv_style_set_text_color(&freq_style, TC(text));
     lv_style_set_text_font(&freq_style, &sony_30);
