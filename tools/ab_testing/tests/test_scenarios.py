@@ -3,11 +3,20 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import cast
 
 import pytest
 
+from helpers import revision
+from x6200_ab.capture import Capturer
+from x6200_ab.docker import DockerRunner
 from x6200_ab.errors import HarnessError
-from x6200_ab.scenarios import ScenarioSuite, parse_scenario
+from x6200_ab.scenarios import (
+    Scenario,
+    ScenarioSuite,
+    parse_scenario,
+    split_by_fixtures_dir,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 HARNESS_FIXTURES = REPO_ROOT / "tools" / "ui_harness" / "fixtures"
@@ -66,14 +75,58 @@ def test_empty_suite_is_rejected(tmp_path: Path) -> None:
         ScenarioSuite.from_fixtures_dir(tmp_path)
 
 
+def test_split_reports_the_fixture_b_does_not_ship(tmp_path: Path) -> None:
+    """A fixture of A that B no longer ships is reported, not fatal.
+
+    The comparison suite is A's; a change may remove a screen (and its fixture) in B.
+    That scenario cannot be rendered on B, so it is left out of the run and named,
+    instead of aborting the whole comparison on a missing file.
+    """
+    a_dir = tmp_path / "a"
+    b_dir = tmp_path / "b"
+    a_dir.mkdir()
+    b_dir.mkdir()
+    _write(a_dir, VALID, "keep.scn")
+    _write(a_dir, VALID.replace("name demo", "name gone"), "gone.scn")
+    _write(b_dir, VALID, "keep.scn")
+
+    kept, removed = split_by_fixtures_dir(ScenarioSuite.from_fixtures_dir(a_dir), b_dir)
+
+    assert kept.names == ["demo"]
+    assert removed == ("gone",)
+
+
+def test_split_rejects_a_suite_with_nothing_left(tmp_path: Path) -> None:
+    a_dir = tmp_path / "a"
+    b_dir = tmp_path / "b"
+    a_dir.mkdir()
+    b_dir.mkdir()
+    _write(a_dir, VALID, "only.scn")
+
+    with pytest.raises(HarnessError, match="none of the 1 scenario"):
+        split_by_fixtures_dir(ScenarioSuite.from_fixtures_dir(a_dir), b_dir)
+
+
+def test_capture_rejects_a_fixture_the_revision_does_not_ship(tmp_path: Path) -> None:
+    """`Capturer` names the missing fixture instead of dying on `read_text()`."""
+    scenario = Scenario(name="gone", screen="main", filename="gone.scn", seed=None, raw={})
+    capturer = Capturer(runner=cast(DockerRunner, object()))
+
+    with pytest.raises(HarnessError, match="is not in revision"):
+        capturer.capture(
+            revision("b", "b" * 40),
+            scenario,
+            tmp_path / "captures",
+            tmp_path / "logs",
+        )
+
+
 @pytest.mark.skipif(not HARNESS_FIXTURES.is_dir(), reason="harness fixtures not present")
 def test_repo_fixtures_are_all_parsable() -> None:
     suite = ScenarioSuite.from_fixtures_dir(HARNESS_FIXTURES)
     assert suite.names == [
-        "app-about",
         "app-bands",
         "bench-render",
-        "dialog-about",
         "home-bateria-externa",
         "home-frecuencia-extrema",
         "home-usb-20m",
@@ -97,19 +150,17 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "settings-wfbat",
     ]
     # Every fixture builds one of the screens the harness knows; the theme
-    # fixtures still build `main`, only the dialog, focus, settings and app-menu
-    # ones do not.
+    # fixtures still build `main`, only the focus, settings and app-menu ones do
+    # not.
     assert all(
         scenario.screen
         in {
             "main",
-            "dialog-about",
             "main-foco",
             "settings-home",
             "settings-wfbat",
             "settings-bands",
             "app-bands",
-            "app-about",
         }
         for scenario in suite.scenarios
     )

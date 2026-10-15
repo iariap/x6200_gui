@@ -362,10 +362,11 @@ PARES_ESPECIFICOS = [
     ("text", "bar", 4.5, None, "info.c:275-300 (ATU apagado)"),
     # Switch y slider de Ajustes: pintados por partes con roles (styles.c styles_switch_init/
     # styles_slider_init, antes los pintaba LVGL con su tema: riel #E0E0E0 = 2.78:1)
-    # dialog_about con roles del tema
-    ("text", "dialog", 4.5, None, "dialog_about.c:56-77"),
-    ("text_dim", "dialog", 4.5, None, "dialog_about.c:63"),
-    ("text_head", "dialog", 4.5, None, "dialog_about.c:70 (73 de LU2DSX)"),
+    # Etiquetas y encabezados de los dialogos con roles del tema (Ajustes y las apps
+    # que usan dialog_field.c; ver tambien quality/theme_pairs.yaml)
+    ("text", "dialog", 4.5, None, "dialog_field.c:534 (etiquetas de los dialogos)"),
+    ("text_dim", "dialog", 4.5, None, "dialog_field.c:557 (notas y valores atenuados)"),
+    ("text_head", "dialog", 4.5, None, "dialog_field.c:151, dialog_bt.c:514 (encabezados)"),
     # Switch y slider de Ajustes: pista control_border, relleno text, perilla panel
     # (styles.c styles_switch_init/styles_slider_init)
     ("control_border", "dialog", 3.0, None, "styles.c:switch/slider (pista vs dialogo)"),

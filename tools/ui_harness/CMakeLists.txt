@@ -71,11 +71,10 @@ set(GUI_SRC
     # La politica visual de bateria (UI-08 incr. 1): modulo puro que todavia no
     # llama nadie; se compila aca para que el -Wall del arnes lo cubra desde ya.
     ${REPO}/src/visual_policy.c
-    # The shared dialog machinery and the real About window: the fixture
-    # `dialog-about` opens it over the real main screen. The rest of the app
-    # dialogs stay inert mocks (see mocks/mock_main_screen.c).
+    # The shared dialog machinery and the real Ajustes window: the fixtures
+    # `settings-home`/`settings-wfbat` open it over the real main screen. The rest
+    # of the app dialogs stay inert mocks (see mocks/mock_main_screen.c).
     ${REPO}/src/dialog.c
-    ${REPO}/src/dialog_about.c
     ${REPO}/src/dialog_settings.c
 )
 

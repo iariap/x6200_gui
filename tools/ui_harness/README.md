@@ -35,7 +35,7 @@ tools/ui_harness/
     mock_radio.c        explicit radio state + a call log (mock_radio_calls)
     mock_cfg.c          cfg / cfg_cur subjects and the band catalogue the components read
     mock_params.c       params_t with the values the layout needs
-    mock_main_screen.c  the app dialogs (About and Settings are real; the rest are inert), DX cluster column, scheduler queue, recorder/RTTY surface
+    mock_main_screen.c  the app dialogs (Settings is real; the rest are inert), DX cluster column, scheduler queue, recorder/RTTY surface
     mock_ui_deps.c      event bus, message helpers, voice, BT/WiFi/backlight, audio volume + DSP preset + wfview server surfaces, the fixed wall clock (`__wrap_time`) and the virtual clock
     mock_dsp.c          the DSP setter mfk.cpp calls (no FFT runs)
   third_party/          vendored build headers (see third_party/README.md)
@@ -45,9 +45,8 @@ The real firmware sources are compiled here (see `CMakeLists.txt`): `main_screen
 plus `spectrum.c`, `waterfall.c`, `tx_info.c`, `band_plan.c`, `band_plan_data.c`,
 `pannel.c`, `vol.c`, `msg.c`, `msg_tiny.c`, `adaptive_tuning.c`, `cw_tune_ui.c`,
 `clock.c`, `info.c`, `meter.c`, `band_info.c`, `theme.c`, `styles.c`, `fonts/*`,
-`dialog.c` + `dialog_about.c` + `dialog_settings.c` (the shared dialog machinery,
-the real About window the `dialog-about` fixture opens and the real Ajustes window
-the `settings-home`/`settings-wfbat` fixtures open), the GUI's C++
+`dialog.c` + `dialog_settings.c` (the shared dialog machinery and the real Ajustes
+window the `settings-home`/`settings-wfbat` fixtures open), the GUI's C++
 (`buttons.cpp`, `mfk.cpp`, `controls.cpp`) and the real `cfg/subjects.cpp`.
 Nothing under `src/` of the repository is modified: the harness owns its source
 list, its LVGL config and its mocks.
@@ -308,19 +307,16 @@ older enum-ish spellings (`cwr`, `usb_dig`) still work; the mode label the top b
 draws is the one `info_params_mode_label_get()` (src/info.c) returns, so a fixture
 can measure how a given mode's text fits its fixed cell.
 
-The `screen` selects what is built: `main` (the real main screen), `dialog-about`
-(the same screen with the real About window opened through the firmware's own
-`main_screen_action(ACTION_APP_ABOUT)`), `settings-home` and `settings-wfbat`
+The `screen` selects what is built: `main` (the real main screen),
+`settings-home` and `settings-wfbat`
 (the same screen with the real Ajustes window, `ACTION_APP_SETTINGS` → `dialog_construct(dialog_settings)`;
 `settings-wfbat` then presses the bottom bar's "Mas >" and "Espectro" tabs through
 `buttons_press()`, the same path the user takes, so the view is scrolled to the
 Spectrum/waterfall group with its battery switch on), `settings-bands` (Ajustes and
 then the real Bands action, `main_screen_action(ACTION_APP_BANDS)`), `app-bands`
 (the app menu the APP key loads, `buttons_load_page_group(buttons_group_app)`, with
-the "Bands" button of `APP 3:6` pressed — the route the owner reported) and
-`app-about` (the app menu with the "About" button of `APP 5:6` pressed, which
-reaches the real About window through `main_screen_start_app(ACTION_APP_ABOUT)` —
-the route the menu uses), and `main-foco` (the same screen with the real keyboard
+the "Bands" button of `APP 3:6` pressed — the route the owner reported), and
+`main-foco` (the same screen with the real keyboard
 group, so `lv_group_focus_next()` runs over it).
 
 The `theme` is the full name the GUI lists: a builtin (`IU1WXY`, `Legacy`,
@@ -347,12 +343,10 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `bench-render` | the benchmark fixture (waterfall peaks, its own seed); `bench_*` knobs for the render benchmark |
 | `main-natural` | the natural-bench fixture (its own seed, `natural_frames`); the spectrum/waterfall are driven frame by frame by `--bench-natural` |
 | `main-natural-eco` | the natural-bench fixture with the pack on battery at 11.2 V (`external_v 0.0`): the same screen/data as `main-natural`, but the visual policy puts the waterfall in ECO, so `--bench-natural` measures the reduced cadence (UI-08 incr. 2) |
-| `dialog-about` | the real main screen with the real About window open over it (`dialog.c` + `dialog_about.c`) |
 | `settings-home` | the real main screen with the real Ajustes window open over it (`dialog.c` + `dialog_settings.c`), on its first group (clock: date/time, Clock view, timeouts). The wall clock is the harness' fixed epoch, so the date/time fields are deterministic |
 | `settings-wfbat` | Ajustes scrolled to the Spectrum/waterfall group with the waterfall battery mode the user turned on (`waterfall_battery true`); the switch renders checked and the real waterfall runs the saving cadence the visual policy applies |
 | `settings-bands` | Ajustes and then the real Bands action (`main_screen_action(ACTION_APP_BANDS)`, the dispatcher the Ajustes long-press list reaches). `dialog_bands` is an inert mock here, so the fixture codifies the route in `scenario_settle` (the Ajustes window has to be closed and a dialog has to be running) instead of the window's pixels |
 | `app-bands` | the app menu the APP key opens (`buttons_group_app`, page `APP 3:6`) with the "Bands" button pressed — the route the owner reported ("the Bands menu does nothing"). Same inert `dialog_bands`: `scenario_settle` stops the run if the button reaches no dialog at all |
-| `app-about` | the app menu (`buttons_group_app`, page `APP 5:6`) with the "About" button pressed — the menu's route to About (`buttons.cpp`'s `make_app_btn` → `main_screen_start_app(ACTION_APP_ABOUT)`, the follow-up of the Bands defect). `dialog_about` is real here, so the fixture renders the real About window (byte-identical to `dialog-about`): `scenario_settle` stops the run if the button does not open it (`dialog_about->run`) |
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
 | `main-tema-rs` | the same screen under the shipped "RS" JSON theme (with its images), for UI-007 |
 | `main-tema-vision` | the builtin "VISION" theme (every font three sizes up through `fonts_scale()`), for the icon-glyph and top-bar layout findings of UI-011/UI-012 |
@@ -409,17 +403,13 @@ inputs are substituted, so coverage is declared honestly per component:
 | `cfg` (catalogue), `params`, `radio` | SYNTHETIC | harness-owned values; no DB, no device |
 | `spot_marks.c`, `cluster_column.c`, `freq_strip.c`, dialogs | UNSUPPORTED | not rendered in these scenarios |
 
-The `dialog-about` and `app-about` screens swap the dialog row for the truth of
-the About path: `src/dialog.c` and `src/dialog_about.c` become REAL, and the other
-app dialogs stay UNSUPPORTED (they keep their inert mock descriptors). Both render
-the real About window; `dialog-about` opens it through `main_screen_action()` and
-`app-about` through the app-menu button (`main_screen_start_app()`), the route the
-defect was in. The
-`settings-home`/`settings-wfbat` screens do the same for the Ajustes path
-(`dialog_settings.c` REAL; the services it calls — mixer volume, DSP preset,
-wfview server, the RTC, the transverter subjects — are SYNTHETIC, and
-`dialog_field.c` is declared UNSUPPORTED to record that it is **not** a
-dependency of Ajustes). The `settings-bands`/`app-bands` screens keep
+The `settings-home`/`settings-wfbat` screens swap the dialog row for the truth of
+the Ajustes path: `src/dialog.c` and `src/dialog_settings.c` become REAL, and the
+other app dialogs stay UNSUPPORTED (they keep their inert mock descriptors). The
+services the window calls — mixer volume, DSP preset, wfview server, the RTC, the
+transverter subjects — are SYNTHETIC, and `dialog_field.c` is declared UNSUPPORTED
+to record that it is **not** a dependency of Ajustes. The
+`settings-bands`/`app-bands` screens keep
 `dialog_bands.c` (and its subtree: `dialog_field.c`, `field/bands.c`,
 `cluster/spots.c`) explicitly UNSUPPORTED: the Bands window is an inert mock, so
 those two fixtures measure the route the firmware takes to it — an assertion on

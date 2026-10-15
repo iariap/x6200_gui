@@ -18,7 +18,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     update_check.c band_plan.c band_plan_data.c
     screen_rec.c avi_writer.c wfview_server.c
     dialog_wifi.c wifi.cpp controls_encoder.c controls_step.c voice.c voice_text.c controls.cpp usb_devices.cpp
-    dialog_eq.cpp dialog_about.c
+    dialog_eq.cpp
     adaptive_tuning.c
     visual_policy.c
     audio_enhancement.c

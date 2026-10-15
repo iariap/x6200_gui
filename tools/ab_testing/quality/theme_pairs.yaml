@@ -40,12 +40,12 @@ pairs:
   - fg: text
     bg: dialog
     min_ratio: 4.5
-    where: "dialog_field.c:534 (etiquetas de Ajustes y de los dialogos) + dialog_about.c:56-77"
+    where: "dialog_field.c:534 (etiquetas de Ajustes y de los dialogos)"
 
   - fg: text_dim
     bg: dialog
     min_ratio: 4.5
-    where: "app_frame.h:32, dialog_field.c:557 (notas y valores atenuados) + dialog_about.c:63"
+    where: "app_frame.h:32, dialog_field.c:557 (notas y valores atenuados)"
 
   - fg: text_head
     bg: dialog

@@ -27,6 +27,14 @@
 
 #define BAND_NOT_LOADED -10
 
+/* Los valores del enum press_action_t se guardan por su numero en el equipo (los campos uint8
+ * de params: long_gen/long_app/long_key/long_msg/long_dfn/long_dfl y press_f1/press_f2/long_f1/
+ * long_f2, cargados por nombre en params_load). El hueco 121 que deja la accion eliminada el
+ * 2026-10-14 no se reutiliza (ver params.h): si se reutilizara, o si las acciones que siguen se
+ * movieran, cambiaria en silencio la accion guardada de la radio. */
+_Static_assert(ACTION_APP_GPS == 122 && ACTION_APP_BANDS == 128,
+               "press_action_t: no muevas los valores de las acciones guardadas (el hueco 121 no se reutiliza)");
+
 params_t params = {
     .vol_modes              = (1 << VOL_VOL) | (1 << VOL_RFG) | (1 << VOL_FILTER_LOW) | (1 << VOL_FILTER_HIGH) | (1 << VOL_PWR) | (1 << VOL_HMIC),
     .mfk_modes              = (1 << MFK_FFT_DECIM) | (1 << MFK_SPECTRUM_BETA) | (1 << MFK_PEAK_HOLD) | (1<< MFK_PEAK_SPEED),
