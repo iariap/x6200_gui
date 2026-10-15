@@ -1,0 +1,789 @@
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_rsynced
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_staging_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_target_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_images_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_host_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_built
+>>> x6200-gui custom Syncing from source dir /workspace_gui
+rsync -au --chmod=u=rwX,go=rX  --exclude .svn --exclude .git --exclude .hg --exclude .bzr --exclude CVS /workspace_gui/ /workspace/build/build/x6200-gui-custom
+>>> x6200-gui custom Building
+GIT_DIR=. PATH="/workspace/build/host/bin:/workspace/build/host/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"  /usr/bin/make   -C /workspace/build/build/x6200-gui-custom/
+[  1%] Built target params_sqlite
+[  1%] Built target QTH
+[  1%] Built target FT8
+[ 37%] Built target lvgl
+[ 38%] Built target lv_drivers
+[ 50%] Built target lvgl_demos
+[ 82%] Built target lvgl_examples
+[ 82%] Building C object src/CMakeFiles/x6200_gui.dir/spectrum.c.o
+[ 82%] Building C object src/CMakeFiles/x6200_gui.dir/radio.c.o
+[ 82%] Building C object src/CMakeFiles/x6200_gui.dir/main_screen.c.o
+[ 82%] Building CXX object src/CMakeFiles/x6200_gui.dir/util.cpp.o
+[ 82%] Building C object src/CMakeFiles/x6200_gui.dir/main.c.o
+[ 83%] Building C object src/CMakeFiles/x6200_gui.dir/encoder.c.o
+[ 83%] Building CXX object src/CMakeFiles/x6200_gui.dir/dsp.cpp.o
+[ 83%] Building C object src/CMakeFiles/x6200_gui.dir/rotary.c.o
+[ 83%] Building C object src/CMakeFiles/x6200_gui.dir/keyboard.c.o
+[ 83%] Building C object src/CMakeFiles/x6200_gui.dir/msg.c.o
+[ 83%] Building C object src/CMakeFiles/x6200_gui.dir/events.c.o
+[ 82%] Building C object src/CMakeFiles/x6200_gui.dir/waterfall.c.o
+[ 84%] Building C object src/CMakeFiles/x6200_gui.dir/styles.c.o
+[ 84%] Building C object src/CMakeFiles/x6200_gui.dir/hkey.c.o
+[ 85%] Building C object src/CMakeFiles/x6200_gui.dir/keypad.c.o
+[ 85%] Building C object src/CMakeFiles/x6200_gui.dir/msg_tiny.c.o
+[ 85%] Building C object src/CMakeFiles/x6200_gui.dir/clock.c.o
+[ 85%] Building C object src/CMakeFiles/x6200_gui.dir/info.c.o
+[ 85%] Building C object src/CMakeFiles/x6200_gui.dir/band_info.c.o
+[ 86%] Building C object src/CMakeFiles/x6200_gui.dir/meter.c.o
+[ 86%] Building C object src/CMakeFiles/x6200_gui.dir/tx_info.c.o
+[ 86%] Building C object src/CMakeFiles/x6200_gui.dir/audio.c.o
+[ 86%] Building CXX object src/CMakeFiles/x6200_gui.dir/mfk.cpp.o
+[ 87%] Building C object src/CMakeFiles/x6200_gui.dir/cw_decoder.c.o
+[ 86%] Building CXX object src/CMakeFiles/x6200_gui.dir/cw.cpp.o
+[ 86%] Building C object src/CMakeFiles/x6200_gui.dir/pannel.c.o
+[ 87%] Building C object src/CMakeFiles/x6200_gui.dir/rtty.c.o
+[ 87%] Building C object src/CMakeFiles/x6200_gui.dir/screenshot.c.o
+[ 87%] Building C object src/CMakeFiles/x6200_gui.dir/backlight.c.o
+[ 88%] Building C object src/CMakeFiles/x6200_gui.dir/gps.c.o
+[ 88%] Building CXX object src/CMakeFiles/x6200_gui.dir/cat.cpp.o
+[ 88%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_settings.c.o
+[ 88%] Building C object src/CMakeFiles/x6200_gui.dir/dialog.c.o
+[ 88%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_swrscan.c.o
+[ 89%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_ft8.c.o
+[ 89%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_freq.c.o
+[ 89%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_gps.c.o
+[ 89%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_msg_cw.c.o
+[ 89%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_msg_voice.c.o
+[ 89%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_recorder.c.o
+[ 89%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_callsign.c.o
+[ 90%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_qth.c.o
+[ 90%] Building C object src/CMakeFiles/x6200_gui.dir/textarea_window.c.o
+[ 90%] Building C object src/CMakeFiles/x6200_gui.dir/cw_encoder.c.o
+[ 90%] Building CXX object src/CMakeFiles/x6200_gui.dir/buttons.cpp.o
+[ 91%] Building C object src/CMakeFiles/x6200_gui.dir/vol.c.o
+[ 91%] Building C object src/CMakeFiles/x6200_gui.dir/recorder.c.o
+[ 91%] Building CXX object src/CMakeFiles/x6200_gui.dir/voice.cpp.o
+[ 91%] Building C object src/CMakeFiles/x6200_gui.dir/cw_tune_ui.c.o
+[ 91%] Building C object src/CMakeFiles/x6200_gui.dir/adif.c.o
+[ 91%] Building C object src/CMakeFiles/x6200_gui.dir/qso_log.c.o
+[ 92%] Building CXX object src/CMakeFiles/x6200_gui.dir/scheduler.cpp.o
+[ 92%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_wifi.c.o
+[ 92%] Building CXX object src/CMakeFiles/x6200_gui.dir/wifi.cpp.o
+[ 92%] Building CXX object src/CMakeFiles/x6200_gui.dir/controls.cpp.o
+[ 92%] Building CXX object src/CMakeFiles/x6200_gui.dir/usb_devices.cpp.o
+[ 93%] Building CXX object src/CMakeFiles/x6200_gui.dir/dialog_eq.cpp.o
+[ 93%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_8.c.o
+[ 93%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_10.c.o
+[ 93%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_12.c.o
+[ 93%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_14.c.o
+[ 94%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_16.c.o
+[ 94%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_18.c.o
+[ 94%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_20.c.o
+[ 94%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_22.c.o
+[ 94%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_24.c.o
+[ 94%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_26.c.o
+[ 95%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_28.c.o
+[ 95%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_30.c.o
+[ 95%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_32.c.o
+[ 95%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_34.c.o
+[ 95%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_36.c.o
+[ 96%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_38.c.o
+[ 96%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_40.c.o
+[ 96%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_42.c.o
+[ 96%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_60.c.o
+[ 96%] Building C object src/CMakeFiles/x6200_gui.dir/fonts/sony_44.c.o
+[ 97%] Building C object src/CMakeFiles/x6200_gui.dir/widgets/lv_waterfall.c.o
+[ 97%] Building C object src/CMakeFiles/x6200_gui.dir/widgets/lv_finder.c.o
+[ 97%] Building C object src/CMakeFiles/x6200_gui.dir/params/common.c.o
+[ 97%] Building C object src/CMakeFiles/x6200_gui.dir/params/db.c.o
+[ 97%] Building C object src/CMakeFiles/x6200_gui.dir/params/migrations.c.o
+[ 97%] Building C object src/CMakeFiles/x6200_gui.dir/params/params.c.o
+[ 98%] Building C object src/CMakeFiles/x6200_gui.dir/cfg/cfg.c.o
+widgets/lv_waterfall.c: In function ‘lv_waterfall_set_size’:
+widgets/lv_waterfall.c:72:26: warning: passing argument 1 of ‘memset’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+   72 |     memset(waterfall->dsc->data, 0, waterfall->dsc->data_size);
+      |            ~~~~~~~~~~~~~~^~~~~~
+In file included from ../../../host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/features.h:490,
+                 from ../../../host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/bits/libc-header-start.h:33,
+                 from ../../../host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/stdint.h:26,
+                 from /workspace/build/host/lib/gcc/arm-buildroot-linux-gnueabihf/12.3.0/include/stdint.h:9,
+                 from ../lvgl/src/misc/../lv_conf_internal.h:11,
+                 from ../lvgl/src/misc/lv_log.h:16,
+                 from ../lvgl/lvgl.h:25,
+                 from widgets/lv_waterfall.h:18,
+                 from widgets/lv_waterfall.c:11:
+../../../host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/bits/string_fortified.h:57:1: note: expected ‘void *’ but argument is of type ‘const uint8_t *’ {aka ‘const unsigned char *’}
+   57 | __NTH (memset (void *__dest, int __ch, size_t __len))
+      | ^~~~~
+widgets/lv_waterfall.c: In function ‘lv_waterfall_clear_data’:
+widgets/lv_waterfall.c:86:26: warning: passing argument 1 of ‘memset’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+   86 |     memset(waterfall->dsc->data, 0, waterfall->dsc->data_size);
+      |            ~~~~~~~~~~~~~~^~~~~~
+../../../host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/bits/string_fortified.h:57:1: note: expected ‘void *’ but argument is of type ‘const uint8_t *’ {aka ‘const unsigned char *’}
+   57 | __NTH (memset (void *__dest, int __ch, size_t __len))
+      | ^~~~~
+widgets/lv_waterfall.c: In function ‘lv_waterfall_add_data’:
+widgets/lv_waterfall.c:104:23: warning: passing argument 1 of ‘memmove’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  104 |     memmove(dsc->data + line_len, dsc->data, dsc->data_size - line_len);
+      |             ~~~~~~~~~~^~~~~~~~~~
+../../../host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/bits/string_fortified.h:34:1: note: expected ‘void *’ but argument is of type ‘const uint8_t *’ {aka ‘const unsigned char *’}
+   34 | __NTH (memmove (void *__dest, const void *__src, size_t __len))
+      | ^~~~~
+[ 98%] Building C object src/CMakeFiles/x6200_gui.dir/cfg/band.c.o
+[ 98%] Building C object src/CMakeFiles/x6200_gui.dir/cfg/params.c.o
+[ 98%] Building C object src/CMakeFiles/x6200_gui.dir/cfg/mode.c.o
+[ 98%] Building C object src/CMakeFiles/x6200_gui.dir/cfg/atu.c.o
+[ 99%] Building C object src/CMakeFiles/x6200_gui.dir/cfg/transverter.c.o
+[ 99%] Building C object src/CMakeFiles/x6200_gui.dir/cfg/digital_modes.c.o
+[ 99%] Building C object src/CMakeFiles/x6200_gui.dir/cfg/memory.c.o
+[ 99%] Building CXX object src/CMakeFiles/x6200_gui.dir/cfg/subjects.cpp.o
+[ 99%] Building C object src/CMakeFiles/x6200_gui.dir/cfg/test_cfg.c.o
+[100%] Linking CXX executable x6200_gui
+[100%] Built target x6200_gui
+>>> x6200-gui custom Installing to staging directory
+GIT_DIR=. PATH="/workspace/build/host/bin:/workspace/build/host/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"  /usr/bin/make   DESTDIR=/workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot install/fast -C /workspace/build/build/x6200-gui-custom/
+Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/CMakeFiles
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/cfg_api.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/db.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/settings_manager.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/atu.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/atu.private.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/band.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/band.private.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/cfg.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/cfg.private.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/common.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/digital_modes.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/digital_modes.private.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/memory.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/memory.private.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/mode.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/mode.private.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/params.private.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/subjects.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/transverter.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cfg/transverter.private.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cluster
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cluster/client.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cluster/spots.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/field
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/field/bands.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/field/flog.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/field/rbn.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/field/refs.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/fonts
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/fonts/licenses
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/fonts/CMakeFiles
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/fonts/font_families.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/fonts/font_names.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/fonts/font_select.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/ft8
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/ft8/CMakeFiles
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/ft8/CMakeFiles/FT8.dir
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/ft8/gfsk.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/ft8/qso.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/ft8/utils.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/ft8/worker.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/js8
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/js8/CMakeFiles
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/js8/CMakeFiles/JS8.dir
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/js8/CMakeFiles/JS8TestSignal.dir
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/js8/js8_ops.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/js8/js8_rx.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/js8/js8_speed.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/js8/js8_tx.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/navtex
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/navtex/complex.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/navtex/decoder.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/navtex/fftfilt.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/navtex/gfft.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/navtex/misc.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/navtex/navtex_rx.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/params
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/params/CMakeFiles
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/params/common.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/params/db.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/params/migrations.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/params/params.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/params/types.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/qth
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/qth/CMakeFiles
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/qth/CMakeFiles/QTH.dir
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/qth/qth.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/sstv
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/sstv/decoder.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/sstv/encoder.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/sstv/linesync.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/sstv/preview.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/sstv/vis.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wefax
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wefax/decoder.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wefax/encoder.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/widgets
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/widgets/CMakeFiles
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/widgets/lv_finder.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/widgets/lv_waterfall.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr/wsprd
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr/wsprd/fano.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr/wsprd/metric_tables.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr/wsprd/nhash.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr/wsprd/wsprd.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr/wsprd/wsprd_utils.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr/wsprd/wsprsim_utils.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr/CMakeFiles
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr/CMakeFiles/wsprd.dir
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr/CMakeFiles/wsprd.dir/wsprd
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr/wspr.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wspr/wsprnet.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/CMakeFiles
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/wspr
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/cluster
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/navtex
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/sstv
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/wefax
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/fonts
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/cfg
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/field
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/widgets
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/params
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/adaptive_tuning.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/app_frame.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/audio_enhancement.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/avi_writer.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/backlight_level.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/band_plan.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/band_plan_data.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/bt_devices.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/bt_state.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/btaudio.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cJSON.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cluster_column.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/controls_ids.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/controls_step.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_bands.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_bt.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_cluster.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_cw_kbd.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_cw_trainer.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_field.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_js8.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_navtex.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_sstv.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_status.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_wefax.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_wspr.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dxcc.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/flags.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/flags_data.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/freq_list.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/ft8_udp.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/gpio_safe.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/gps_format.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/input_dev.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/js8_map.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/kbd_caps.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/kbd_rollover.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/knobs.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/panel.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/remote_server.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/screen_rec.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/spot_marks.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/station.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/theme.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/tx_level.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/tx_player.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/ui_tokens.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/update_check.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/visual_policy.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/voice_stub.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/voice_text.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wfview_server.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/world_map.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/adif.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/audio.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/backlight.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/band_info.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/buttons.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cat.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/clock.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/controls.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cw.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cw_decoder.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cw_encoder.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/cw_tune_ui.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_callsign.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_eq.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_freq.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_ft8.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_gps.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_msg_cw.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_msg_voice.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_qth.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_recorder.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_settings.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_swrscan.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dialog_wifi.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/dsp.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/encoder.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/events.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/goertzel.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/gps.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/helpers.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/hkey.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/info.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/keyboard.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/keypad.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/main.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/main_screen.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/meter.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/mfk.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/mouse.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/msg.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/msg_tiny.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/pannel.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/pubsub_ids.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/qso_log.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/radio.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/recorder.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/rotary.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/rtty.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/scheduler.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/screenshot.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/spectrum.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/styles.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/textarea_window.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/tx_info.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/usb_devices.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/util.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/voice.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/vol.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/waterfall.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl//src/wifi.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/lib/liblvgl.so
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lvgl/lv_conf.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/lib/liblv_drivers.so
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/lv_drv_conf.h
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/params.default.db
+-- Installing: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/sbin/x6200_gui
+-- Set non-toolchain portion of runtime path of "/workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/sbin/x6200_gui" to ""
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc/default
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc/default/btcat
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc/init.d
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc/init.d/S01boot_time
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc/init.d/S20gui
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc/init.d/S39btpairings
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc/init.d/S94btcat
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc/init.d/rcS
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc/init.d/S95gui
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc/pulse
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc/pulse/system.pa.d
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//etc/pulse/system.pa.d/btaudio.pa
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/sbin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/sbin/btaudio-ctl
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/sbin/btcat-ctl
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/sbin/btcat-setup
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/sbin/x6200-field
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/sbin/x6200-pota-spots
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/sbin/x6200_daemon
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/field
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/field/bands_64.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/field/bands_96.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/field/log_64.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/field/log_96.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/field/pota_64.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/field/pota_96.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/field/sota_64.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/field/sota_96.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv/tx_pics
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv/tx_pics/defaultpic1.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv/tx_pics/defaultpic2.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv/tx_pics/defaultpic3.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv/tx_pics/defaultpic4.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv/tx_text
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv/tx_text/73.sstvtxt
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv/tx_text/CQ REPLY.sstvtxt
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv/tx_text/PSEQSL.sstvtxt
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv/tx_text/R454QRM.sstvtxt
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv/tx_text/R575QSB.sstvtxt
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/sstv/tx_text/R595.sstvtxt
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/RS
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/RS/bar.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/RS/btn.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/RS/btn_active.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/RS/btn_off.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/RS/btn_page.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/RS/dialog.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/RS/mark.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/RS/mark_active.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/RS/strip.png
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/RS/theme.json
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/Holo.json
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/Material 3.json
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/themes/Redshift.json
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot//usr/share/x6200/cty.dat
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/btn.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/btn_dark.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/dialog.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/dialog_dark.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/msg.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/msg_dark.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/msg_tiny.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/msg_tiny_dark.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/panel.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/panel_dark.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/top_big.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/top_big_dark.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/top_long.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/top_long_dark.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/top_short.bin
+-- Up-to-date: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/x6200/images/top_short_dark.bin
+>>> x6200-gui custom Fixing libtool files
+for la in $(find /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/lib* -name "*.la"); do \
+	cp -a "${la}" "${la}.fixed" && \
+	/usr/bin/sed -i -e "s:/workspace/build:@BASE_DIR@:g" \
+		-e "s:/workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot:@STAGING_DIR@:g" \
+		 \
+		-e "s:\(['= ]\)/usr:\\1@STAGING_DIR@/usr:g" \
+		-e "s:\(['= ]\)/lib:\\1@STAGING_DIR@/lib:g" \
+		 \
+		-e "s:@STAGING_DIR@:/workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot:g" \
+		-e "s:@BASE_DIR@:/workspace/build:g" \
+		"${la}.fixed" && \
+	if cmp -s "${la}" "${la}.fixed"; then \
+		rm -f "${la}.fixed"; \
+	else \
+		mv "${la}.fixed" "${la}"; \
+	fi || exit 1; \
+done
+>>> x6200-gui custom Installing to target
+GIT_DIR=. PATH="/workspace/build/host/bin:/workspace/build/host/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"  /usr/bin/make   DESTDIR=/workspace/build/target install/fast -C /workspace/build/build/x6200-gui-custom/
+Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/CMakeFiles
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/cfg_api.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/db.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/settings_manager.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/atu.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/atu.private.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/band.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/band.private.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/cfg.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/cfg.private.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/common.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/digital_modes.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/digital_modes.private.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/memory.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/memory.private.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/mode.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/mode.private.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/params.private.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/subjects.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/transverter.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cfg/transverter.private.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cluster
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cluster/client.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cluster/spots.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/field
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/field/bands.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/field/flog.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/field/rbn.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/field/refs.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/fonts
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/fonts/licenses
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/fonts/CMakeFiles
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/fonts/font_families.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/fonts/font_names.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/fonts/font_select.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/ft8
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/ft8/CMakeFiles
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/ft8/CMakeFiles/FT8.dir
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/ft8/gfsk.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/ft8/qso.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/ft8/utils.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/ft8/worker.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/js8
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/js8/CMakeFiles
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/js8/CMakeFiles/JS8.dir
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/js8/CMakeFiles/JS8TestSignal.dir
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/js8/js8_ops.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/js8/js8_rx.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/js8/js8_speed.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/js8/js8_tx.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/navtex
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/navtex/complex.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/navtex/decoder.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/navtex/fftfilt.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/navtex/gfft.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/navtex/misc.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/navtex/navtex_rx.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/params
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/params/CMakeFiles
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/params/common.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/params/db.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/params/migrations.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/params/params.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/params/types.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/qth
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/qth/CMakeFiles
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/qth/CMakeFiles/QTH.dir
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/qth/qth.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/sstv
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/sstv/decoder.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/sstv/encoder.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/sstv/linesync.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/sstv/preview.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/sstv/vis.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wefax
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wefax/decoder.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wefax/encoder.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/widgets
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/widgets/CMakeFiles
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/widgets/lv_finder.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/widgets/lv_waterfall.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr/wsprd
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr/wsprd/fano.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr/wsprd/metric_tables.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr/wsprd/nhash.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr/wsprd/wsprd.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr/wsprd/wsprd_utils.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr/wsprd/wsprsim_utils.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr/CMakeFiles
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr/CMakeFiles/wsprd.dir
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr/CMakeFiles/wsprd.dir/wsprd
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr/wspr.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wspr/wsprnet.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/CMakeFiles
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/wspr
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/cluster
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/navtex
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/sstv
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/wefax
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/fonts
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/cfg
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/field
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/widgets
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/CMakeFiles/x6200_gui.dir/params
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/adaptive_tuning.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/app_frame.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/audio_enhancement.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/avi_writer.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/backlight_level.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/band_plan.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/band_plan_data.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/bt_devices.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/bt_state.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/btaudio.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cJSON.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cluster_column.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/controls_ids.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/controls_step.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_bands.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_bt.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_cluster.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_cw_kbd.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_cw_trainer.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_field.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_js8.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_navtex.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_sstv.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_status.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_wefax.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_wspr.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dxcc.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/flags.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/flags_data.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/freq_list.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/ft8_udp.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/gpio_safe.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/gps_format.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/input_dev.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/js8_map.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/kbd_caps.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/kbd_rollover.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/knobs.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/panel.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/remote_server.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/screen_rec.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/spot_marks.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/station.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/theme.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/tx_level.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/tx_player.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/ui_tokens.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/update_check.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/visual_policy.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/voice_stub.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/voice_text.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wfview_server.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/world_map.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/adif.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/audio.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/backlight.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/band_info.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/buttons.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cat.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/clock.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/controls.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cw.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cw_decoder.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cw_encoder.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/cw_tune_ui.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_callsign.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_eq.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_freq.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_ft8.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_gps.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_msg_cw.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_msg_voice.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_qth.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_recorder.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_settings.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_swrscan.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dialog_wifi.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/dsp.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/encoder.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/events.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/goertzel.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/gps.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/helpers.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/hkey.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/info.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/keyboard.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/keypad.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/main.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/main_screen.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/meter.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/mfk.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/mouse.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/msg.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/msg_tiny.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/pannel.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/pubsub_ids.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/qso_log.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/radio.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/recorder.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/rotary.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/rtty.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/scheduler.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/screenshot.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/spectrum.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/styles.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/textarea_window.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/tx_info.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/usb_devices.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/util.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/voice.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/vol.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/waterfall.h
+-- Up-to-date: /workspace/build/target/usr/include/lvgl//src/wifi.h
+-- Up-to-date: /workspace/build/target/usr/lib/liblvgl.so
+-- Up-to-date: /workspace/build/target/usr/include/lvgl/lv_conf.h
+-- Up-to-date: /workspace/build/target/usr/lib/liblv_drivers.so
+-- Up-to-date: /workspace/build/target/usr/include/lv_drv_conf.h
+-- Up-to-date: /workspace/build/target/usr/share/x6200/params.default.db
+-- Installing: /workspace/build/target/usr/sbin/x6200_gui
+-- Set non-toolchain portion of runtime path of "/workspace/build/target/usr/sbin/x6200_gui" to ""
+-- Up-to-date: /workspace/build/target/
+-- Up-to-date: /workspace/build/target//etc
+-- Up-to-date: /workspace/build/target//etc/default
+-- Up-to-date: /workspace/build/target//etc/default/btcat
+-- Up-to-date: /workspace/build/target//etc/init.d
+-- Up-to-date: /workspace/build/target//etc/init.d/S01boot_time
+-- Up-to-date: /workspace/build/target//etc/init.d/S20gui
+-- Up-to-date: /workspace/build/target//etc/init.d/S39btpairings
+-- Up-to-date: /workspace/build/target//etc/init.d/S94btcat
+-- Up-to-date: /workspace/build/target//etc/init.d/rcS
+-- Up-to-date: /workspace/build/target//etc/init.d/S95gui
+-- Up-to-date: /workspace/build/target//etc/pulse
+-- Up-to-date: /workspace/build/target//etc/pulse/system.pa.d
+-- Up-to-date: /workspace/build/target//etc/pulse/system.pa.d/btaudio.pa
+-- Up-to-date: /workspace/build/target//usr
+-- Up-to-date: /workspace/build/target//usr/sbin
+-- Up-to-date: /workspace/build/target//usr/sbin/btaudio-ctl
+-- Up-to-date: /workspace/build/target//usr/sbin/btcat-ctl
+-- Up-to-date: /workspace/build/target//usr/sbin/btcat-setup
+-- Up-to-date: /workspace/build/target//usr/sbin/x6200-field
+-- Up-to-date: /workspace/build/target//usr/sbin/x6200-pota-spots
+-- Up-to-date: /workspace/build/target//usr/sbin/x6200_daemon
+-- Up-to-date: /workspace/build/target//usr/share
+-- Up-to-date: /workspace/build/target//usr/share/x6200
+-- Up-to-date: /workspace/build/target//usr/share/x6200/field
+-- Up-to-date: /workspace/build/target//usr/share/x6200/field/bands_64.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/field/bands_96.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/field/log_64.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/field/log_96.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/field/pota_64.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/field/pota_96.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/field/sota_64.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/field/sota_96.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv/tx_pics
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv/tx_pics/defaultpic1.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv/tx_pics/defaultpic2.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv/tx_pics/defaultpic3.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv/tx_pics/defaultpic4.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv/tx_text
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv/tx_text/73.sstvtxt
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv/tx_text/CQ REPLY.sstvtxt
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv/tx_text/PSEQSL.sstvtxt
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv/tx_text/R454QRM.sstvtxt
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv/tx_text/R575QSB.sstvtxt
+-- Up-to-date: /workspace/build/target//usr/share/x6200/sstv/tx_text/R595.sstvtxt
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/RS
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/RS/bar.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/RS/btn.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/RS/btn_active.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/RS/btn_off.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/RS/btn_page.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/RS/dialog.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/RS/mark.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/RS/mark_active.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/RS/strip.png
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/RS/theme.json
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/Holo.json
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/Material 3.json
+-- Up-to-date: /workspace/build/target//usr/share/x6200/themes/Redshift.json
+-- Up-to-date: /workspace/build/target//usr/share/x6200/cty.dat
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/btn.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/btn_dark.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/dialog.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/dialog_dark.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/msg.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/msg_dark.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/msg_tiny.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/msg_tiny_dark.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/panel.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/panel_dark.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/top_big.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/top_big_dark.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/top_long.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/top_long_dark.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/top_short.bin
+-- Up-to-date: /workspace/build/target/usr/share/x6200/images/top_short_dark.bin
+comm: /workspace/build/build/x6200-gui-custom/.files-list.before: No such file or directory
+comm: /workspace/build/build/x6200-gui-custom/.files-list-staging.before: No such file or directory
+comm: /workspace/build/build/x6200-gui-custom/.files-list-images.before: No such file or directory
+comm: /workspace/build/build/x6200-gui-custom/.files-list-host.before: No such file or directory
