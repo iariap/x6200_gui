@@ -163,9 +163,9 @@ def leer_vision():
 def leer_formas():
     """Forma de cada tema incorporado: las banderas que deciden que par existe.
 
-    Un borde de ancho 0 no se dibuja (no hay contraste que exigir); sin
-    gradiente no hay *_grad; sin mode_box el modo se escribe sobre la franja.
-    Estas son las mismas banderas de src/theme.c y de los JSON.
+    Un borde de ancho 0 no se dibuja (no hay contraste que exigir) y sin
+    gradiente no hay *_grad. Estas son las mismas banderas de src/theme.c y de
+    los JSON.
     """
     texto = THEME_C.read_text(errors="surrogateescape")
     forma = {}
@@ -281,7 +281,6 @@ def armar_paletas(colores):
 # Superficies de contenido: donde el codigo pone un fondo y encima una etiqueta.
 #   bg            styles.c:318/349 (fondo de pantalla), dialog_field.c:1805
 #   bar/bar_grad  dialog_field.c:1813-1827 (cabecera de FIELD)
-#   strip[/_grad] theme.h:31-33 + theme.c image_names[] "strip" (franja del tema)
 #   dialog[/_grad] app_frame.c:41 + app_frame.h:31-32 (cabecera y estado del app)
 #   panel         app_frame.c:52 + dialog_field.c:465/853
 #   list          dialog_js8.c:2729 + 2669
@@ -290,11 +289,11 @@ def armar_paletas(colores):
 #   side          cluster_column.c:400 + 418/427/428/437
 #   chip          dialog_cw_kbd.c:164, dialog_field.c:900
 #   frame         dialog_wefax.c:1131
-# card queda afuera de la tabla de texto a proposito: es un borde (theme.h:52),
+# card queda afuera de la tabla de texto a proposito: es un borde (theme.h:49),
 # no una superficie de texto; se mide como no-texto mas abajo. Lo mismo
 # sel_bg/focus/btn*: su texto es sel_text/focus_text/btn*_text, no el generico.
 SUPERFICIES = [
-    "bg", "bar", "bar_grad", "strip", "strip_grad", "dialog", "dialog_grad",
+    "bg", "bar", "bar_grad", "dialog", "dialog_grad",
     "panel", "list", "row", "popup", "side", "chip", "frame",
 ]
 TEXTOS = ["text", "text_value", "text_head", "text_dim"]
@@ -347,7 +346,7 @@ PARES_ESPECIFICOS = [
     # Seleccion, foco y botones: cada rol de texto tiene su superficie.
     ("sel_text", "sel_bg", 4.5, None, "dialog_bands.c:87+194, dialog_sstv.c:1833+1840"),
     ("sel_text", "near_bg", 4.5, None, "freq_list.c:31+134+144"),
-    ("focus_text", "focus", 4.5, None, "theme.h:53-54, styles.c:229-233"),
+    ("focus_text", "focus", 4.5, None, "theme.h:50-51, styles.c:229-233"),
     ("text", "focus_bg", 4.5, None, "dialog_js8.c:2668-2669"),
     # Fila seleccionada de los listados: el texto va sobre TC(ok)/TC(warn)
     # Barra de estado de arriba: los items pintan su celda con TC(bar) y el texto con roles
@@ -374,17 +373,14 @@ PARES_ESPECIFICOS = [
     ("panel", "control_border", 3.0, None, "styles.c:switch/slider (perilla vs pista)"),
     ("panel", "ok", 4.5, None, "dialog_field.c:578-583"),
     ("panel", "warn", 4.5, None, "dialog_field.c:578-583"),
-    ("btn_text", "btn", 4.5, None, "theme.h:37+40, styles.c:162"),
-    ("btn_text", "btn_grad", 4.5, "btn_gradient", "theme.h:38+40"),
-    ("btn_active_text", "btn_active", 4.5, None, "theme.h:41+44"),
-    ("btn_active_text", "btn_active_grad", 4.5, "btn_gradient", "theme.h:42+44"),
-    ("btn_page_text", "btn_page", 4.5, None, "theme.h:45-46"),
-    # Encabezados de lista y roles del modo (theme.h:122-124).
+    ("btn_text", "btn", 4.5, None, "theme.h:34+37, styles.c:162"),
+    ("btn_text", "btn_grad", 4.5, "btn_gradient", "theme.h:35+37"),
+    ("btn_active_text", "btn_active", 4.5, None, "theme.h:38+41"),
+    ("btn_active_text", "btn_active_grad", 4.5, "btn_gradient", "theme.h:39+41"),
+    ("btn_page_text", "btn_page", 4.5, None, "theme.h:42-43"),
+    # Encabezados de lista (theme.h).
     ("title_text", "list", 4.5, None, "dialog_js8.c:3945"),
-    ("mode_text", "mode_bg", 3.0, "mode_box", "theme.h:122-124 (rol del tema; sony_24/sony_36, grande)"),
-    ("mode_text", "strip", 3.0, "no_mode_box", "theme.h:31+122-124 (rol del tema; sony_24/sony_36, grande)"),
-    ("mode_border", "mode_bg", 3.0, "mode_box", "theme.h:122-124"),
-    ("mode_dig", "bar", 4.5, None, "info.c:256, theme.h:121 (info box)"),
+    ("mode_dig", "bar", 4.5, None, "info.c:256, theme.h:118 (info box)"),
     # Estados sobre las superficies donde el codigo los escribe.
     ("alert_text", "alert_bg", 4.5, None, "cluster_column.c:114+135"),
     ("text", "alert_box", 4.5, None, "dialog_cluster.c:233+254"),
@@ -454,16 +450,15 @@ PARES_INFORMATIVOS = [
 # (fg, bg, requisito, archivo:linea)
 PARES_NO_TEXTO = [
     ("bar_border", "bar", "border", "theme.h:30, dialog_field.c:1813"),
-    ("strip_border", "strip", "border", "theme.h:33"),
-    ("dialog_border", "dialog", "border", "theme.h:36, app_frame.c:54"),
-    ("panel_border", "panel", "border", "theme.h:59, app_frame.c:52-54"),
-    ("btn_border", "btn", "border", "theme.h:39"),
-    ("btn_active_border", "btn_active", "border", "theme.h:43"),
+    ("dialog_border", "dialog", "border", "theme.h:33, app_frame.c:54"),
+    ("panel_border", "panel", "border", "theme.h:56, app_frame.c:52-54"),
+    ("btn_border", "btn", "border", "theme.h:36"),
+    ("btn_active_border", "btn_active", "border", "theme.h:40"),
     ("popup_border", "popup", "border", "dialog_cluster.c:959-961"),
-    ("card", "bg", "border", "theme.h:52 (borde de las tarjetas de Ajustes)"),
-    ("control_border", "panel", "border", "theme.h:114 (sliders y toggles de Ajustes)"),
+    ("card", "bg", "border", "theme.h:49 (borde de las tarjetas de Ajustes)"),
+    ("control_border", "panel", "border", "theme.h:111 (sliders y toggles de Ajustes)"),
     ("sel_border", "sel_bg", None, "freq_list.c:134-135, dialog_sstv.c:1833-1835"),
-    ("pill_border", "bar", "pill_border", "theme.h:126 (items del info box)"),
+    ("pill_border", "bar", "pill_border", "theme.h:120 (items del info box)"),
     ("ok_bar", "track", None, "app_frame.c:36+65 (barra de la app)"),
 ]
 
@@ -475,22 +470,22 @@ EXENTOS = {"btn_off_text", "text_mute", "text_faint", "icon_off", "switch_off", 
 # no hace fallar el chequeo (WCAG 1.4.3, texto deshabilitado o incidental).
 # (fg, bg, umbral, archivo:linea)
 PARES_EXENTOS = [
-    ("btn_off_text", "btn", 4.5, "theme.h:47 (boton deshabilitado)"),
-    ("btn_off_text", "btn_grad", 4.5, "theme.h:47"),
-    ("text_mute", "bg", 4.5, "theme.h:79, spectrum.c:101"),
-    ("text_mute", "bar", 4.5, "theme.h:79"),
-    ("text_mute", "panel", 4.5, "theme.h:79 (items grises)"),
-    ("text_mute", "list", 4.5, "theme.h:79, styles.c:176"),
+    ("btn_off_text", "btn", 4.5, "theme.h:44 (boton deshabilitado)"),
+    ("btn_off_text", "btn_grad", 4.5, "theme.h:44"),
+    ("text_mute", "bg", 4.5, "theme.h:76, spectrum.c:101"),
+    ("text_mute", "bar", 4.5, "theme.h:76"),
+    ("text_mute", "panel", 4.5, "theme.h:76 (items grises)"),
+    ("text_mute", "list", 4.5, "theme.h:76, styles.c:176"),
     ("text_mute", "side", 4.5, "cluster_column.c:64"),
-    ("text_faint", "panel", 4.5, "theme.h:80 (en cola, idle)"),
+    ("text_faint", "panel", 4.5, "theme.h:77 (en cola, idle)"),
     ("text_faint", "bg", 4.5, "dialog_wspr.c:464, js8_map.c"),
-    ("text_faint", "list", 4.5, "theme.h:80"),
-    ("icon_off", "bar", 3.0, "theme.h:112 (iconos apagados de la barra)"),
-    ("switch_off", "panel", 3.0, "theme.h:111 (switch de Ajustes apagado)"),
-    ("off", "panel", 3.0, "theme.h:110 (barras sin encender)"),
-    ("off", "bar", 3.0, "theme.h:110"),
-    ("track", "panel", 3.0, "theme.h:108, app_frame.c:36 (riel de la barra)"),
-    ("track", "bar", 3.0, "theme.h:108"),
+    ("text_faint", "list", 4.5, "theme.h:77"),
+    ("icon_off", "bar", 3.0, "theme.h:109 (iconos apagados de la barra)"),
+    ("switch_off", "panel", 3.0, "theme.h:108 (switch de Ajustes apagado)"),
+    ("off", "panel", 3.0, "theme.h:107 (barras sin encender)"),
+    ("off", "bar", 3.0, "theme.h:107"),
+    ("track", "panel", 3.0, "theme.h:105, app_frame.c:36 (riel de la barra)"),
+    ("track", "bar", 3.0, "theme.h:105"),
 ]
 
 
@@ -498,7 +493,7 @@ def armar_pares():
     pares = []
     for fg in TEXTOS:
         for bg in SUPERFICIES:
-            req = "box_gradient" if bg in ("strip_grad", "dialog_grad") else None
+            req = "box_gradient" if bg == "dialog_grad" else None
             pares.append((fg, bg, 4.5, req, f"theme.h:{fg} sobre {bg}; uso: {USO_TEXTO[fg]}"))
     for fg, bg, umbral, req, donde in PARES_ESPECIFICOS:
         pares.append((fg, bg, umbral, req, donde))
@@ -521,8 +516,6 @@ def aplica(req, forma, tema=None):
         return True
     if req == "border":
         return forma.get("border", 0) > 0
-    if req == "no_mode_box":
-        return not forma.get("mode_box", False)
     if isinstance(req, str) and req.startswith("solo:"):
         return tema in req[5:].split(",")
     return bool(forma.get(req, False))

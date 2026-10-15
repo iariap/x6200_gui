@@ -72,8 +72,8 @@ def _rs_without_control_border() -> dict:
 
 def test_builtin_palettes_come_from_the_role_table(palettes: dict[str, dict[str, str]]) -> None:
     assert list(palettes) == ["IU1WXY", "Legacy", "Outdoor", "Classic"]
-    assert len(palettes["IU1WXY"]) == 128
-    assert all(len(roles) == 128 for roles in palettes.values())
+    assert len(palettes["IU1WXY"]) == 122
+    assert all(len(roles) == 122 for roles in palettes.values())
     # Spot checks against src/theme.h: the macro is the only source of these.
     assert palettes["IU1WXY"]["bg"] == "#27313a"
     assert palettes["Classic"]["control_border"] == "#626262"

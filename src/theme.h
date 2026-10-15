@@ -28,9 +28,6 @@ extern "C" {
     X(bar,               0x3a3f47, 0x2a5aa0, 0xf2f2f2, 0x0e0e0e) /* top bar boxes: info, S-meter, clock */ \
     X(bar_grad,          0x23272d, 0x103060, 0xf2f2f2, 0x0e0e0e) \
     X(bar_border,        0x8d8d8d, 0x98b3dd, 0x000000, 0x636363) \
-    X(strip,             0x1c2a38, 0x1a4078, 0xffffff, 0x000000) /* frequency strip */ \
-    X(strip_grad,        0x101a24, 0x0c2448, 0xffffff, 0x000000) \
-    X(strip_border,      0x54799d, 0x8aa8d8, 0x000000, 0x5d5d5d) \
     X(dialog,            0x49636f, 0x2a5aa0, 0xffffff, 0x101010) /* app windows */ \
     X(dialog_grad,       0x2c3a45, 0x103060, 0xffffff, 0x000000) \
     X(dialog_border,     0xe0e4e8, 0x98b3dd, 0x000000, 0x646464) \
@@ -119,9 +116,6 @@ extern "C" {
     X(vfo_line,          0xff2020, 0xff2020, 0xe00000, 0xff2020) /* VFO line and filter band on spectrum / waterfall */ \
     X(spot,              0x40e8ff, 0x40e8ff, 0x000000, 0x40e8ff) /* cluster spots on the waterfall */ \
     X(mode_dig,          0xff8e8e, 0xffcbcb, 0x5f0000, 0xff8080) /* digital mode name in the info box */ \
-    X(mode_text,         0xff6060, 0xff6060, 0x770000, 0xff4040) /* mode next to the frequency */ \
-    X(mode_bg,           0x5a4818, 0x5a4818, 0xe7d5a5, 0x1f5fbf) /* its box (theme_shape.mode_box) */ \
-    X(mode_border,       0xffffff, 0xffffff, 0x000000, 0x9fd2ff) \
     X(pill_off_text,     0xffffff, 0xffffff, 0x000000, 0xffffff) /* info box: PRE, ATT, ATU when off */ \
     X(pill_border,       0x777777, 0x777777, 0x888888, 0x5a5a5a) /* info box items (theme_shape.pill_border) */ \
     X(meter_weak,        0xaaaaaa, 0xaaaaaa, 0xc8c8c8, 0xa0a0a0) /* S-meter first bar of meter_gradient */ \
