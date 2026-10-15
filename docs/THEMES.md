@@ -26,6 +26,7 @@ paleta del waterfall.
 | **RS** | `themes/RS/theme.json` + los PNG de sus botones (`btn.png`, `bar.png`, `strip.png`, `dialog.png`, `mark.png`, ...) |
 | **Redshift** | `themes/Redshift.json` |
 | **Aurora** | `themes/Aurora.json` |
+| **Trail** | `themes/Trail.json` |
 
 ## El arco del S-meter (`meter_over`) — medido en el equipo, 2026-10-15 (#44)
 
@@ -246,3 +247,68 @@ simulado), `main-tema-aurora-eco` (batería baja + ECO), `bt-dialog-tema-aurora`
 `settings-tema-aurora` (Ajustes, con el foco sobre la fila del perfil). La galería ARM real y la
 comparación consolidada contra los otros cinco temas se cierran en el #73; el selector/default se
 migra en el #74.
+
+## Trail — campo y expedición (THEMES v2, issue #71)
+
+Tema de **campo**: verde bosque plano para las superficies, **oliva** para lo que pide atención
+(foco, botón activo, selección, encabezados, S-meter) y **arena** clara para leer; el ámbar de
+tierra queda para TX y alarma. Sin neón, sin superficies frías y sin berenjena: los roles
+"fríos" que el esquema hereda del `base` (info cian, digi violeta, ACCENT azul, TX blanco) se
+reescriben en la familia tierra para que ningún rol de `Classic` se cuele y contradiga la
+identidad. Fuente **IBM Plex Sans** (`"font": "ibmplexsans"`, la familia compilada en ROM desde
+#60, sin descargar nada), geometría sobria (`radius 5`, `radius_btn 5`, `radius_popup 6`,
+`border 1`), sin gradientes (`btn_gradient`/`box_gradient` en `false`) y foco sólido. El
+waterfall (`#0A150D → #25412B → #526A3C → #9EB370 → #E1C073 → #FC985E`) lleva el piso de ruido
+al bosque y la señal del verde al ámbar de tierra: la misma jerarquía en la cascada.
+
+El archivo **define los 122 roles** de `src/theme.h` (no sólo los ~30 del borrador del issue):
+dejar roles sin definir los heredaba de `Classic`, que trae blancos, celestes y azules. El JSON
+del issue además nombraba tres claves que ya no existen en el esquema (`strip`, `mode_bg`,
+`mode_text`, podadas en #77): incluirlas habría dejado el tema con colores desconocidos.
+
+**Alcance real en la pantalla.** El motor de temas JSON colorea los roles que el firmware ya lee:
+el fondo (`bg`), la fila de frecuencia (`text`), los bordes de panel (`panel_border`), la paleta
+del waterfall, los items del info box (`bar`), los switches/sliders de Ajustes
+(`control_border`/`panel`) y el recolor del botón activo/deshabilitado. Las cajas de la barra
+superior (reloj, S-meter), los botones inferiores y el marco de los diálogos todavía se dibujan
+con las imágenes fijas `images/top_*_dark.bin`, `btn_dark.bin` y `dialog_dark.bin`
+(`src/styles.c:393-423`, `setup_theme_simple`), así que quedan en el gris azulado del asset en
+**todos** los temas: RS, Material 3, Holo, Redshift y Trail renderizan ese marco idéntico (medido:
+el fondo del diálogo de Ajustes es `#3c505c` bajo RS, bajo el tema por defecto y `#3b4e59` bajo
+Redshift). Es un hueco preexistente del motor —documentado en el commit que agregó el sistema
+JSON— y migrarlo es un refactor aparte, fuera del alcance de un tema suelto.
+
+Pares medidos (WCAG 2.1, sRGB) para los roles de la identidad, todos por encima del umbral:
+
+| Par (fg sobre bg) | Ratio | Mínimo |
+|---|---:|---:|
+| `text` sobre `bg` / `panel` | 14.41 / 14.31 | 4.5 |
+| `text` sobre `bar` / `dialog` | 11.77 / 12.91 | 4.5 |
+| `text` sobre `row` / `chip` | 12.25 / 10.70 | 4.5 |
+| `text_value` sobre `bg` | 15.97 | 4.5 |
+| `text_dim` sobre `bg` / `dialog` | 11.74 / 10.52 | 4.5 |
+| `btn_text` sobre `btn` | 10.13 | 4.5 |
+| `btn_active_text` sobre `btn_active` | 10.05 | 4.5 |
+| `focus_text` sobre `focus` | 11.66 | 4.5 |
+| `sel_text` sobre `sel_bg` / `near_bg` | 5.72 / 9.11 | 4.5 |
+| `vfo` sobre `vfo_bg` / `side` | 7.98 / 12.72 | 4.5 |
+| `tx` sobre `tx_bg` | 6.20 | 4.5 |
+| `mode_dig` sobre `bar` | 8.59 | 4.5 |
+| `info` sobre `panel` / `bg` | 10.76 / 10.84 | 4.5 |
+| `control_border` sobre `dialog` / `panel` | 4.23 / 4.68 | 3.0 |
+| `bar_border`/`panel_border`/`popup_border`/`card` sobre su fondo | 3.15–3.58 | 3.0 |
+| `btn_border` / `btn_active_border` sobre su botón | 3.10 / 5.00 | 3.0 |
+| `sel_border` sobre `sel_bg` | 4.13 | 3.0 |
+| `meter_bar` sobre `bg` | 10.02 | 3.0 |
+
+`tests/check_wcag.py` mide 127 pares aplicables a este tema y no reporta **ninguna falla**;
+`x6200-ab themes` (los pares que sólo viven en Ajustes) suma los nueve declarados y también
+pasa. El arco del S-meter (`meter_over` = `#FFB59A`) mide 9.87:1 sobre el `bg` del tema; el
+repaso sobre el fondo **real compuesto en la radio** queda para la pasada física del #73 (el
+banco no se usó en esta corrida).
+
+Las capturas del arnés por estado son `main-tema-trail` (principal), `settings-tema-trail`
+(Ajustes → Apariencia), `bt-dialog-tema-trail` (diálogo), `main-tema-trail-tx` (TX),
+`main-tema-trail-eco` (batería baja/ECO) y `main-tema-trail-agua` (espectro + waterfall).
+La galería ARM real y la comparación consolidada contra los otros cinco temas se cierran en el
+#73; el selector/default se migra en el #74.

@@ -100,20 +100,21 @@ def test_themes_json_lists_the_full_served_inventory(capsys: pytest.CaptureFixtu
         "Material 3",
         "Redshift",
         "Sunlit",
+        "Trail",
         "RS",
     ]
     assert "unsupported" not in payload
-    assert payload["pairs_checked"] == len(names) * len(payload["pairs"]) == 108
+    assert payload["pairs_checked"] == len(names) * len(payload["pairs"]) == 117
     assert all(theme["ok"] for theme in payload["themes"])
 
 
-def test_themes_text_reports_the_twelve_served_themes(capsys: pytest.CaptureFixture) -> None:
+def test_themes_text_reports_the_thirteen_served_themes(capsys: pytest.CaptureFixture) -> None:
     repo = Path(__file__).resolve().parents[3]
     code = main(["themes", "--repo", str(repo)])
     assert code == 0
     out = capsys.readouterr().out
-    assert "12 served theme(s) (6 built-in + 6 file(s))" in out
-    assert "108 pair(s) checked, 0 failure(s)" in out
+    assert "13 served theme(s) (6 built-in + 7 file(s))" in out
+    assert "117 pair(s) checked, 0 failure(s)" in out
     assert "Outdoor-Negative" in out
     assert "VISION" in out
     assert "UNSUPPORTED" not in out

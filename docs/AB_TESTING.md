@@ -515,6 +515,7 @@ los declara el JSON del arnés. La tabla exacta por componente está en cada JSO
 | Tema Holo (JSON) | `main-tema-holo` | ✓ | | | |
 | Tema Material 3 (JSON) | `main-tema-material-3` | ✓ | | | |
 | Tema Aurora (JSON, THEMES v2) | `main-tema-aurora`, `main-tema-aurora-agua`, `main-tema-aurora-tx`, `main-tema-aurora-eco`, `settings-tema-aurora`, `bt-dialog-tema-aurora` | ✓ | | | |
+| Tema Trail (JSON, THEMES v2) | `main-tema-trail`, `main-tema-trail-agua`, `main-tema-trail-tx`, `main-tema-trail-eco`, `settings-tema-trail`, `bt-dialog-tema-trail` | ✓ | | | |
 | Tema VISION | — | | | | ✗ (font scale: hallazgos para #8) |
 | Fuente por tema (Arial en Classic/RS) | `main-tema-classic`, `main-tema-rs` | ✓ | | | |
 | Fuente elegida por el usuario (Roboto/DejaVu/Arial) | — | | | | ✗ (no hay fixture de fuente) |
@@ -3511,3 +3512,109 @@ control de delimitación `--natural-static`—: 7 band info y 1 BT en la ventana
 común quedan intactos: los PNG de `forced`/`static`/`off` son byte a byte los
 mismos (ver `sha256.txt`); sólo cambian los PNG de las corridas natural (más
 frames de trabajo dibujados). El submódulo LVGL no se toca.
+
+## 2026-10-15 — Trail: el tema de campo de la colección THEMES v2 (issue #71)
+
+**Qué llegó.** El tema **Trail** (`rootfs/usr/share/x6200/themes/Trail.json`) y las seis
+fixtures que lo rinden, cada una con el estado de radio de su gemela de otro tema para que el
+tema sea la única variable:
+
+| Fixture | Estado que cubre | Gemela |
+|---|---|---|
+| `main-tema-trail` | principal, RX (frecuencia, modo, VFO, S-meter, band plan, cascada) | `home-usb-20m` / `main-tema-classic` |
+| `main-tema-trail-agua` | waterfall en movimiento (peaks, línea central, espectro lleno) | `main-espectro-agua` |
+| `main-tema-trail-tx` | TX simulado (visor TX, split, `tx_bg`/`tx_box`) | `main-tx-simulado` |
+| `main-tema-trail-eco` | batería baja + ECO (reloj en %, política en VP_ECO) | `main-bateria-baja` |
+| `bt-dialog-tema-trail` | diálogo de app (`dialog_bt.c`) | `bt-dialog` |
+| `settings-tema-trail` | Ajustes con el foco sobre la fila del tema | `settings-perfil` |
+
+Trail nombra `ibmplexsans` (familia compilada en ROM desde #60) y **no** pide familia
+segmentada, así que sus cuatro fixtures de pantalla principal no traen la capa del "8 fantasma"
+de UI-017 y no necesitan waiver de `layout_overlap`: son las primeras fixtures de un tema nuevo
+que pasan las reglas de layout sin excepciones.
+
+**Gates corridos sobre `99109d9`, la rama del tema rebasada sobre `db15620` (el trunk que ya trae
+Sunlit #83, los commits de QA y Aurora #87); los reportes quedan en `reports/AB-TRAIL71` y
+`reports/BENCH-TRAIL71*`.**
+
+```text
+$ tests/check_harness_determinism.sh
+PASS: deterministic (identical PNGs for every fixture)          # 59 fixtures x2
+
+$ uv run x6200-ab compare --a origin/lu2dsx/x6200-rom --b 99109d9 --experiment-id AB-TRAIL71
+experiment AB-TRAIL71: PASS (exit 0)
+  Functional         PASS — 53 scenarios captured on both revisions
+  Visual Regression  PASS — captures are pixel-identical to the baseline
+  Quality Contract   PASS — 553 contract checks passed on the candidate
+  Performance        PASS — render-cost proxy within budget
+  Hardware/Energy    BLOCKED (advisory) — sin X6200 físico / sin medición de energía
+
+$ uv run x6200-ab contracts --revision 99109d9
+contracts 99109d9bc8f9: PASS — 613 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision 99109d9 --suite visual
+audited 99109d9bc8f9: 17 known issues — 0 reproduced, 15 unverified;
+structural inspection REAL over 6933 objects on 59 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab themes
+themes PASS: 13 served theme(s) (6 built-in + 7 file(s)), 9 pair(s) declared, 117 pair(s) checked, 0 failure(s)
+  Trail (rootfs/usr/share/x6200/themes/Trail.json; base Classic): 0/122 roles from the base
+  non-text (WCAG 1.4.11, pixels): 27 object(s) measured, 0 failure(s)
+
+$ tests/native/run_native_tests.sh
+845 comprobaciones, 0 fallos
+$ uv run pytest -m "not e2e" -q
+187 passed, 18 deselected
+$ uv run pytest -m e2e -q
+18 passed, 187 deselected
+$ python3 tests/check_wcag.py            # 127 pares aplicables a Trail, 0 fallas
+```
+
+**El `compare` de A contra B no puede ver el tema nuevo, y hay que decirlo.** La suite sale de
+A (`split_by_fixtures_dir`), y las seis fixtures de Trail **sólo existen en B** (como las de
+Redshift, Sunlit y Aurora, ya mergeadas): la comparación cubre los 53 escenarios compartidos y ahí
+el veredicto es *pixel-identical* (un archivo de tema nuevo no toca ninguna pantalla que no lo
+elija). Lo que sí mide al tema es lo demás: `contracts` (613 checks sobre las 59 fixtures del
+candidato, incluidas las seis nuevas), `audit` (0 hallazgos estructurales sobre las 59), `themes`
+(el par estático 13×9 y el no-texto por píxeles) y el `benchmark` de abajo. La comparación **tema
+contra tema** es la de los renders dorados `main-tema-classic` y `main-tema-trail` —mismo estado de
+radio, sólo cambia el tema— más los ratios que `themes` y `check_wcag.py` miden sobre cada uno.
+
+**Bench vs Classic** (`benchmark --revision 99109d9`, plan del presupuesto: 5 repeticiones, 4
+rondas, 20 frames por escenario; x86 host, no el Cortex-A7), dos corridas limpias con el host
+descargado (dispersión máxima medida 5.0% y 5.3%, presupuesto 25%): las dos **PASS**.
+
+| corrida | escenario | p50 | p95 | p99 | fps | cv | flushes | rss |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| `BENCH-TRAIL71` | `main-tema-classic` | 3.298 ms | 3.391 ms | 3.411 ms | 303.2 | 1.1% | 1.0 | 10 313 728 B |
+| `BENCH-TRAIL71` | `main-tema-trail` | 3.305 ms | 3.343 ms | 3.358 ms | 302.6 | 1.2% | 1.0 | 10 473 472 B |
+| `BENCH-TRAIL71-R1` | `main-tema-classic` | 3.339 ms | 3.461 ms | 3.484 ms | 299.5 | 2.4% | 1.0 | 10 694 656 B |
+| `BENCH-TRAIL71-R1` | `main-tema-trail` | 3.331 ms | 4.139 ms | 4.219 ms | 300.2 | 2.1% | 1.0 | 10 551 296 B |
+
+Es decir **+0.2% / −0.2% de p50** y **−1.4% / +19.6% de p95** contra Classic según la corrida: los
+dos deltas quedan por debajo del presupuesto relativo (`max_p95_delta_pct` 25%), aunque el de p95
+de la segunda corrida se le acerca, así que **no se afirma una mejora ni una regresión de costo**:
+lo que se afirma es que las dos corridas pasan el presupuesto del host. El veredicto del
+`benchmark` es **PASS** en las dos, y el proxy determinista del `compare` (que no depende de la
+carga del host) también da `Performance PASS`. El número físico (Cortex-A7) no se midió y no se
+afirma nada sobre energía (el fondo oscuro no se asocia a ahorro de Wh: el LCD tiene backlight).
+
+**Hallazgos y límites declarados** (ninguno bloquea este PR):
+
+1. **`theme_image()` no tiene llamadores** en esta revisión: el `images` de un tema JSON se
+   carga y nunca se dibuja, y la barra de botones inferior se pinta con el bitmap de la ROM
+   (`images/btn_dark.bin`) igual en todos los temas. Por eso `btn`/`btn_text`/`btn_grad`/
+   `btn_border` de Trail se miden estáticamente (`check_wcag.py`, `themes`) pero no se ven en el
+   render; lo que sí se ve de los botones es el recolor de activo/deshabilitado
+   (`btn_mark_active`, `bg` + `text_mute`). Consecuencia para la colección: los seis temas nuevos
+   comparten el aspecto de la barra inferior hasta que esa superficie vuelva a ser del tema —
+   decisión de integración (#73/#74), no de este PR.
+2. **Renders dorados desactualizados (pre-existente)**: los PNG de las fixtures que dibujan con
+   la familia por defecto (`main-foco`, `settings-home`, `main-espectro-agua`,
+   `main-otro-tema`, `main-tema-vision`) no coinciden byte a byte con el render de hoy — el
+   kerning de AB-FONTSE (`4e9b5f4`) movió sus glifos y no se re-baselinaron (los de los temas que
+   nombran Roboto sí coinciden). La medición no-texto de esas fixtures describe un render
+   anterior; la re-baseline declarada queda para #73.
+3. **Sin captura ARM**: el banco está reservado y la pasada física (QEMU user-mode con el
+   binario real + la pantalla de la radio) se consolida en #73. Nada de este PR afirma brillo,
+   energía ni comportamiento en el Cortex-A7.

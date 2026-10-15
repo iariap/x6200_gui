@@ -1,0 +1,34 @@
+# main-tema-trail-tx: the main screen while transmitting (TX visor, TX info,
+# split) under the "Trail" theme. No audio or RF is generated: the radio state
+# is the mock's. Same state as main-tx-simulado, with the theme as the only
+# variable, so the TX roles (tx, tx_bg, mode_dig, meter) are measured on a real
+# render.
+
+name main-tema-trail-tx
+screen main
+
+theme Trail
+seed 31
+
+frequency_hz 14074000
+tx_frequency_hz 14076000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc fast
+
+split true
+att false
+pre true
+atu true
+ant 2
+
+smeter_db -63
+
+battery_v 12.0
+external_v 13.8
+battery_cap 70
+charging false
+
+rxtx tx
