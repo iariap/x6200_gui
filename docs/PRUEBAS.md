@@ -30,11 +30,62 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 15/10 ~17:50 | `d9ccb7d4c224` | `c2f88e1` | TODO OK | **23 ok** | 0 en el barrido y 0 en 60 s | **Funciona**: #64, #77, #78/#80 validados y ROE de 40 m medida (1.4–1.9); sale el #84 |
 | 15/10 ~17:10 | `d0ff2dba9c85` (sin cambios) | `1a56556` | TODO OK | no se corrió | **0 en 300 s** | **Sin desplegar (3ª)**: el volumen tiene 25 contenedores del arnés del otro agente; se dobló la vigilancia más larga (180 → 300 s) |
 | 15/10 ~16:40 | `d0ff2dba9c85` (sin cambios) | `122bea3` | TODO OK | no se corrió | no medido | **Sin desplegar (2ª)**: quedan `4e9b5f4` (#77), `072f2c7` (#79) y `122bea3` (#80); hay builds corriendo en el volumen |
 | 15/10 ~16:10 | `d0ff2dba9c85` (sin cambios) | `f6d1cb1` | TODO OK | no se corrió | 0 en 90 s | **Sin desplegar**: `4e9b5f4` (#77) queda pendiente, el volumen del build lo tiene el A/B del otro agente |
 | 15/10 ~15:20 | `d0ff2dba9c85` | `337036c` (incluye `457a9a3`) | TODO OK | 22 ok | 0 en el barrido y 0 en 180 s de vigilancia | **Funciona** |
 | 15/10 ~14:05 | `5a6e561e502f` | `e5a869b` | TODO OK | (no se corrió) | no medido | **Funciona** para #19/#26/#30/#47 |
+
+---
+
+## 15/10 ~17:50 — `d9ccb7d4c224` (commit `c2f88e1`): despliegue y validación
+
+**Qué se hizo:** build limpio + deploy + la batería de validación que pidió el owner.
+
+**Build y deploy, medido:**
+
+```
+$ tools/compila-gui.sh
+  binario: md5 d9ccb7d4c224   (commit c2f88e1 - qa-radio: la regla del owner queda explicita)  [43 s]
+$ tools/prueba-gui-en-radio.sh
+  GUI lista: 5886.6 s
+$ md5sum /usr/sbin/x6200_gui        # en la radio
+  d9ccb7d4c224                       (la lib también viajó: liblvgl.so cd30ca6c58ad)
+```
+
+El commit incluye los tres fixes que estaban pendientes: `4e9b5f4` (#77, tipografías), `072f2c7` (#79,
+Field Ops) y `122bea3` (#80, SWR Scan por socket).
+
+**Nota de honestidad:** el volumen del build estaba ocupado por el A/B del otro agente y el owner indicó
+compilar ahí mismo. Antes de compilar se **respaldaron** sus artefactos dentro del volumen
+(`/b/ab-backup-237f1f6bc1da`, `/b/ab-backup-liblvgl-cd30ca6c58ad`, `/b/ab-backup-sello-8b10fe903942`).
+Si su A/B estaba midiendo en ese momento, esa corrida pudo verse afectada.
+
+**Validaciones:**
+
+| Qué | Resultado medido |
+|---|---|
+| `tools/verifica-radio.sh` | **TODO OK** |
+| **#64** Field Ops | **0 errores de archivo** (antes del fix: 3); los íconos cargan |
+| **#78 / #80** SWR Scan | Abre por socket (`{"cmd":"app","text":"SWRScan"}` → `ok`) y el barrido corre (`btn 0` → `ok`) |
+| Barrido de apps | **23 de 23 ok**, 0 caídas (antes informaba 22: faltaba justamente el SWR Scan) |
+| Vigilancia 60 s | PID estable, 0 caídas |
+| **ROE de 40 m** | **~1.4 a ~1.9** en 7.005.792–7.030.792 (`Span: 50 kHz`): la antena de 40 m está bien |
+
+**La transmisión que estaba bloqueada, hecha:** 3 W (QRP, autorizado por el dueño), LSB forzado por la
+app, dial 7.018.3, `swrscan_span=50000`. El log lo confirma: `on_vfo_mode_change: Radio set vfo 1
+mode=0`. Evidencia:
+[`10-swrscan-tx-resultado.png`](evidencia/2026-10-15-validacion-arreglos/10-swrscan-tx-resultado.png).
+
+**Tres cosas que salieron mal en la prueba y se corrigieron:**
+
+1. El **modo quedó en LSB** (el barrido lo fuerza y no lo devuelve): se restauró a **CW** a mano y quedó
+   reportado en [#84](https://github.com/iariap/x6200_gui/issues/84).
+2. El **cliente del control remoto** no viaja en el repo (`tools/remote/x6200-remote` se compila): en el
+   worktree no estaba y el `scp` falló en silencio. Se copió del árbol compartido.
+3. Los rótulos grises del gráfico llegan a **6.994** (unos 6 kHz por debajo de 7.000), aunque el barrido
+   útil quedó entre 7.005 y 7.031.
 
 ---
 
