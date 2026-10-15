@@ -9,7 +9,8 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 set -e
 
-IP=${RADIO_IP:-192.168.0.236}
+. "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/lib-radio.sh"
+IP=$(radio_ip)
 SALIDA=${1:-captura.png}
 FB=$(mktemp)
 

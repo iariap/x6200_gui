@@ -13,7 +13,8 @@
 #   - que el log de la GUI no traiga senales de crash
 set -u
 
-IP="${1:-${RADIO_IP:-192.168.0.236}}"
+. "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/lib-radio.sh"
+IP="${1:-$(radio_ip)}"
 SSH_OPTS=(-F /dev/null -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
           -o ConnectTimeout=10 -o LogLevel=ERROR -o PreferredAuthentications=password
           -o PubkeyAuthentication=no)

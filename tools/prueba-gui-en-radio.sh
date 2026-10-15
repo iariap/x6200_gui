@@ -15,7 +15,8 @@
 
 set -e
 
-IP="${1:-${RADIO_IP:-192.168.0.236}}"
+. "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/lib-radio.sh"
+IP="${1:-$(radio_ip)}"
 VOLUMEN="${VOLUMEN:-x6200-build-output}"
 IMAGEN="${IMAGEN:-x6200-buildroot}"
 

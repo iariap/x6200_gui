@@ -10,7 +10,8 @@
 set -e
 
 DIR=${1:-capturas}
-IP=${RADIO_IP:-192.168.0.236}
+. "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/lib-radio.sh"
+IP=$(radio_ip)
 AQUI=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 mkdir -p "$DIR"
 
