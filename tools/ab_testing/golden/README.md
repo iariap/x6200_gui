@@ -47,3 +47,14 @@ that moves it declares the region in `quality/contracts.yaml`
 (`expected_changes`), regenerates the golden PNG, and the non-text check then
 measures the new pixels — a contrast that drops below 3:1 fails `x6200-ab themes`
 and `tests/test_nontext_checks.py`.
+
+## 2026-10-15 — Sunlit added (issue #67, THEMES v2)
+
+Two renders are new: `main-tema-sunlit` and `main-tema-sunlit-agua`, the
+principal and waterfall fixtures of the Sunlit theme. They are the renders the
+new non-text objects of `quality/nontext.yaml` measure: the S-meter arc
+(`TC(meter_over)` over the theme-independent `top_long.bin` face, which on a
+light theme must be a *light* ink) and the theme's own waterfall column (dark
+navy signal over a near-white floor). No existing render changed: adding a theme
+file does not move any object the other fixtures paint.
+
