@@ -1,2 +1,0 @@
-HEAD is now at b9fc081 Fuentes: el driver pasaba `compress` y el escritor lee `no_compress` (bitmaps RLE, bitmap_format 1)
-Preparing worktree (detached HEAD b9fc081)

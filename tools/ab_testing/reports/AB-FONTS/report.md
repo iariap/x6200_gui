@@ -3,15 +3,15 @@
 - Date: 2026-10-15
 - Profile: `host-ui`
 - A (baseline): `02c13119039da34c9a888e200d61948602b5a9ac` (a)
-- B (candidate): `b9fc0812bc8d4effb6939311bf15668e9d3a32ad` (b)
+- B (candidate): `a872a2fa33c092daefb63a9bbd84c851137500e3` (b)
 - Scenarios: `app-bands`, `app-close-home`, `apps-menu-1`, `apps-menu-2`, `apps-menu-3`, `apps-menu-4`, `apps-menu-5`, `apps-menu-6`, `bench-render`, `bt-dialog`, `home-bateria-externa`, `home-frecuencia-extrema`, `home-usb-20m`, `main-bateria-baja`, `main-espectro-agua`, `main-foco`, `main-natural`, `main-natural-eco`, `main-otro-tema`, `main-tema-classic`, `main-tema-holo`, `main-tema-material-3`, `main-tema-outdoor-negative`, `main-tema-rs`, `main-tema-vision`, `main-tema-vision-cwr`, `main-tema-vision-usbd`, `main-tx-simulado`, `settings-audio`, `settings-bands`, `settings-home`, `settings-perfil`, `settings-rs-theme`, `settings-wfbat`
 
-## Verdict: **FAIL** (exit 1)
+## Verdict: **PASS** (exit 0)
 
 | Gate | Required | Status | Summary |
 |---|---|---|---|
 | Functional | yes | PASS | 34 scenarios captured on both revisions |
-| Visual Regression | yes | FAIL | visual regressions vs the baseline |
+| Visual Regression | yes | PASS | no unexplained visual regressions |
 | Quality Contract | yes | PASS | 362 contract checks passed on the candidate |
 | Performance | yes | PASS | render-cost proxy within budget |
 | Hardware | no (advisory) | BLOCKED | no physical X6200 attached; hardware behaviour is not measured |

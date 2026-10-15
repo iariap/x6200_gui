@@ -121,6 +121,22 @@ def _shift_button_bar(worktree: Path) -> None:
     path.write_text(text.replace(needle, "    uint16_t y = 480 - btn_height + 30;"))
 
 
+def _shift_button_bar_and_show_multiplier(worktree: Path) -> None:
+    """Deliberate regression, in two parts.
+
+    The pixel shift alone no longer fails the visual gate: the font migration
+    (issue #9 / decision 1) declares every region text is drawn in
+    (`quality/contracts.yaml`, `expected_changes` AB-FONTS), so a change *inside*
+    one of those regions is explained by the declaration — that is what the
+    declarations say. What the corpus must still fail, and what this revision
+    exercises, is a change that introduces a defect: the same shift plus the
+    tuning-multiplier label left visible (UI-001). The evidence assertions of the
+    test (bounding boxes, region attribution, diff/overlay PNGs) are unchanged.
+    """
+    _shift_button_bar(worktree)
+    _show_multiplier_label(worktree)
+
+
 def _show_multiplier_label(worktree: Path) -> None:
     """Deliberate defect: stop hiding the tuning-multiplier label (UI-001)."""
     path = worktree / "src" / "main_screen.c"
@@ -261,7 +277,7 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
     base = _base_revision()
     cache_dir = tmp_path_factory.mktemp("ab-cache")
     _seed_cache(cache_dir)
-    regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar)
+    regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
     defect = _ephemeral(REPO_ROOT, base, "defect", _show_multiplier_label)
     clock_defect = _ephemeral(REPO_ROOT, base, "clock", _reintroduce_clock_defect)
     style_defect = _ephemeral(REPO_ROOT, base, "style", _reintroduce_frequency_white)

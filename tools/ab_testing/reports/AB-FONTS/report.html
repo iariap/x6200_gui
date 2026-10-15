@@ -4,18 +4,18 @@
 <style>body{font-family:system-ui,sans-serif;margin:2rem;max-width:60rem}table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{border:1px solid #ccc;padding:.35rem .6rem;text-align:left;font-size:.92rem}img{max-width:100%;border:1px solid #ccc;margin:.4rem 0}.pill{padding:.2rem .7rem;border-radius:1rem;color:#fff;font-weight:600}</style>
 </head><body>
 <h1>A/B UI report — AB-FONTS</h1>
-<p><span class="pill" style="background:#b3261e">FAIL</span> exit 1</p>
+<p><span class="pill" style="background:#1b7f3b">PASS</span> exit 0</p>
 <ul>
 <li>Date: 2026-10-15</li>
 <li>A: <code>02c13119039da34c9a888e200d61948602b5a9ac</code></li>
-<li>B: <code>b9fc0812bc8d4effb6939311bf15668e9d3a32ad</code></li>
+<li>B: <code>a872a2fa33c092daefb63a9bbd84c851137500e3</code></li>
 <li>Docker image: <code>x6200-uiharness</code></li>
 <li>Scenarios: app-bands, app-close-home, apps-menu-1, apps-menu-2, apps-menu-3, apps-menu-4, apps-menu-5, apps-menu-6, bench-render, bt-dialog, home-bateria-externa, home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco, main-natural, main-natural-eco, main-otro-tema, main-tema-classic, main-tema-holo, main-tema-material-3, main-tema-outdoor-negative, main-tema-rs, main-tema-vision, main-tema-vision-cwr, main-tema-vision-usbd, main-tx-simulado, settings-audio, settings-bands, settings-home, settings-perfil, settings-rs-theme, settings-wfbat</li>
 </ul>
 <h2>Gates</h2>
 <table><tr><th>Gate</th><th>Required</th><th>Status</th><th>Summary</th></tr>
 <tr><td>Functional</td><td>yes</td><td>PASS</td><td>34 scenarios captured on both revisions</td></tr>
-<tr><td>Visual Regression</td><td>yes</td><td>FAIL</td><td>visual regressions vs the baseline</td></tr>
+<tr><td>Visual Regression</td><td>yes</td><td>PASS</td><td>no unexplained visual regressions</td></tr>
 <tr><td>Quality Contract</td><td>yes</td><td>PASS</td><td>362 contract checks passed on the candidate</td></tr>
 <tr><td>Performance</td><td>yes</td><td>PASS</td><td>render-cost proxy within budget</td></tr>
 <tr><td>Hardware</td><td>advisory</td><td>BLOCKED</td><td>no physical X6200 attached; hardware behaviour is not measured</td></tr>
