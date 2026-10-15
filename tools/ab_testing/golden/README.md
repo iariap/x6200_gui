@@ -58,3 +58,29 @@ light theme must be a *light* ink) and the theme's own waterfall column (dark
 navy signal over a near-white floor). No existing render changed: adding a theme
 file does not move any object the other fixtures paint.
 
+## 2026-10-15 — `main-tema-aurora.png` (THEMES v2, issue #72)
+
+A **new** render, not a regeneration: the Aurora theme
+(`rootfs/usr/share/x6200/themes/Aurora.json`) and its fixture
+(`tools/ui_harness/fixtures/main-tema-aurora.scn`, the same radio state as
+`home-usb-20m`, the theme the only variable) arrive together with this PNG, so the
+non-text contract can measure the two objects that only the pixels answer on this
+theme: `s_meter_arc` (Aurora's own `meter_over` over the meter's bitmap face,
+**6.23:1**) and `waterfall_signal` (Aurora's own `waterfall` table, **6.57:1**),
+both declared in `quality/nontext.yaml`. The other renders in this directory are
+untouched by the change.
+
+Captured at the same revision as the rest of the branch, inside
+`tools/ab_testing`:
+
+```bash
+uv run x6200-ab capture --revision <sha> --label golden \
+    --scenario main-tema-aurora --out "$(git rev-parse --show-toplevel)/tools/ab_testing/golden"
+```
+
+or, without Docker, with the harness build of `tests/check_harness_determinism.sh`:
+
+```bash
+tools/ui_harness/build/ui_harness --scenario tools/ui_harness/fixtures/main-tema-aurora.scn \
+    --png tools/ab_testing/golden/main-tema-aurora.png --json /tmp/main-tema-aurora.json
+```
