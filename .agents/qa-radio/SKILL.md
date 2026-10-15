@@ -51,6 +51,12 @@ git log --oneline HEAD..fork/lu2dsx/x6200-rom      # ¿hay algo nuevo?
   si el otro agente acaba de compilar su A/B. Si el sello no es el hash de nuestros fuentes
   (`RECONSTRUIR=auto tools/compila-gui.sh` lo calcula), el volumen es suyo: **no compilar**, dejar el
   despliegue pendiente y avisar.
+- **Y mirar `docker ps`**: si hay contenedores `x6200-buildroot` corriendo, hay un build en curso **ahora**
+  y el volumen esta en uso. La hora del binario NO alcanza para saberlo (refleja el ultimo build
+  terminado, no el que esta corriendo): el 15/10 16:39 el binario tenia 35 minutos pero habia tres
+  builds activos.
+- Si hay que compilar igual, **respaldar antes** el binario que este en el volumen
+  (`cp /b/target/usr/sbin/x6200_gui /b/ab-backup-<md5>`): asi el A/B del otro agente no se pierde.
 - El trabajo en curso del otro agente aparece en ramas `factory/*`: no se mergean.
 
 ## Paso 2 — Build (limpio, siempre)

@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 15/10 ~16:40 | `d0ff2dba9c85` (sin cambios) | `122bea3` | TODO OK | no se corrió | no medido | **Sin desplegar (2ª)**: quedan `4e9b5f4` (#77), `072f2c7` (#79) y `122bea3` (#80); hay builds corriendo en el volumen |
 | 15/10 ~16:10 | `d0ff2dba9c85` (sin cambios) | `f6d1cb1` | TODO OK | no se corrió | 0 en 90 s | **Sin desplegar**: `4e9b5f4` (#77) queda pendiente, el volumen del build lo tiene el A/B del otro agente |
 | 15/10 ~15:20 | `d0ff2dba9c85` | `337036c` (incluye `457a9a3`) | TODO OK | 22 ok | 0 en el barrido y 0 en 180 s de vigilancia | **Funciona** |
 | 15/10 ~14:05 | `5a6e561e502f` | `e5a869b` | TODO OK | (no se corrió) | no medido | **Funciona** para #19/#26/#30/#47 |
@@ -66,6 +67,38 @@ El equipo reinició (uptime `712.97` s) y el build desplegado persistió.
 **Hueco del proceso que salió de esta corrida:** la idempotencia se medía contra git (`HEAD..remote`), y
 eso no dice si la radio tiene el build del tip. Corregido en el skill `qa-radio`: ahora se compara el md5
 **desplegado** y, antes de compilar, se mira el sello del volumen compartido.
+
+### Segunda corrida (16:40): siguen 2 commits más y el volumen está compilando
+
+`git fetch fork` trajo **2 commits nuevos**, y los dos son arreglos de issues de este QA:
+
+- `072f2c7` (#79) — Field Ops: `HELPER` pasa de `"x6100-field"` a `"x6200-field"` en
+  `src/dialog_field.c` (el hallazgo del #64) y los spots de POTA usan el nombre real.
+- `122bea3` (#80) — Control remoto: entra `SWRScan` en **las tres tablas** de `src/remote_server.cpp`
+  (`app_names[]`, `actions[]`, `dialog_apps[]`), que es exactamente lo que faltaba según el triage del
+  #78. De paso el barrido de apps ahora cubre las 23.
+
+Los dos tocan **sólo `src/`**, así que el deploy del GUI alcanza (el helper del rootfs en la radio ya
+coincide con el repo: `md5 efcc0b0ce095` en los dos).
+
+**Por qué tampoco se desplegó:** hay **builds corriendo ahora** en el volumen compartido:
+
+```
+$ docker ps --format '{{.Image}} {{.Command}}'
+  x6200-buildroot:latest  "sh -c 'mkdir -p /t/…"        <- dirclean / rebuild del otro agente
+  x6200-buildroot         "./entrypoint.sh sh …"
+  9c4ba5849793            "./entrypoint.sh bas…"   (x3, en paralelo)
+```
+
+La hora del binario del volumen **no alcanzaba** para saberlo (marcaba 35 minutos, del último build
+terminado), así que la regla del skill se amplió: además del sello `.fuente.md5`, mirar `docker ps`.
+El binario del A/B que estaba en el volumen quedó **respaldado** (`/b/ab-backup-237f1f6bc1da`) para no
+perderle su corrida.
+
+**Pendiente para la próxima corrida (cuando el volumen esté libre):** build limpio + deploy de los tres
+commits y después, además del chequeo general, **la prueba de TX que quedó bloqueada**: con el #80 el
+SWR Scan ya se puede abrir por socket, la antena es de 40 m, el dueño autorizó QRP y `swrscan_span` está
+en 50000 Hz (7.05–7.15 MHz con el dial en 7.100).
 
 ## 15/10 ~15:20 — `d0ff2dba9c85` (commit `337036c`)
 
