@@ -30,8 +30,15 @@ benchmark:
   repeats: 5
   rounds: 4
   min_frames: 12
-  # A side whose coefficient of variation (stdev/mean) exceeds this is too
-  # variable to trust: the comparison is INCONCLUSIVE, never a PASS on noise.
+  # A side whose dispersion exceeds this is too variable to trust: the comparison
+  # is INCONCLUSIVE, never a PASS on noise. The figure is the median-based (MAD)
+  # coefficient of variation (src/x6200_ab/performance.py,
+  # robust_dispersion_cv_pct), not stdev/mean: a shared host that preempts the
+  # container a few times leaves a handful of frames far above the rest and
+  # stdev/mean let one of them dominate the figure even though it cannot move a
+  # p95 (measured: a quiet 20-frame run reads ~1.5%, and one 10 ms frame among
+  # twenty pushed stdev/mean to ~38%). A sample with a non-trivial fraction of
+  # outliers still reads far above this, as before.
   max_dispersion_cv_pct: 25.0
   # Relative budgets for the candidate. A controlled regression that triples the
   # per-frame redraw work lands far above these; host noise stays well below.
