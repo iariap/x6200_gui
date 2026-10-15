@@ -7,61 +7,61 @@
     "warmup_frames": 3
   },
   "environment": "x86 host: relative regression proxy, not the Cortex-A7",
-  "exit_code": 3,
+  "exit_code": 0,
   "experiment_id": "BENCH-AURORA72-CLASSIC-R1",
   "kind": "benchmark-measurement",
   "measurements": [
     {
-      "dispersion_cv_pct": 6.639,
-      "draw_ms_mean": 4.6714,
-      "flush_ms_mean": 0.678,
+      "dispersion_cv_pct": 2.426,
+      "draw_ms_mean": 3.0894,
+      "flush_ms_mean": 0.4282,
       "flushes_mean": 1.0,
-      "fps": 172.27,
+      "fps": 290.85,
       "frames": 20,
       "memory": {
-        "peak_rss_bytes": 10440704,
+        "peak_rss_bytes": 10678272,
         "peak_vm_bytes": 82198528,
-        "pss_bytes": 7606272,
-        "rss_bytes": 10334208
+        "pss_bytes": 8507392,
+        "rss_bytes": 10612736
       },
       "redrawn_area_mean": 384000.0,
-      "render_mean_ms": 5.3495,
-      "render_p50_ms": 5.8048,
-      "render_p95_ms": 7.1298,
-      "render_p99_ms": 7.3082,
-      "render_stdev_ms": 1.235,
+      "render_mean_ms": 3.5176,
+      "render_p50_ms": 3.4382,
+      "render_p95_ms": 3.9486,
+      "render_p99_ms": 4.0627,
+      "render_stdev_ms": 0.2025,
       "scenario": "main-tema-aurora",
       "unique_redrawn_mean": 384000.0
     },
     {
-      "dispersion_cv_pct": 37.562,
-      "draw_ms_mean": 4.3064,
-      "flush_ms_mean": 0.605,
+      "dispersion_cv_pct": 0.621,
+      "draw_ms_mean": 3.0833,
+      "flush_ms_mean": 0.4314,
       "flushes_mean": 1.0,
-      "fps": 183.55,
+      "fps": 290.0,
       "frames": 20,
       "memory": {
-        "peak_rss_bytes": 10477568,
+        "peak_rss_bytes": 10481664,
         "peak_vm_bytes": 82194432,
-        "pss_bytes": 10465280,
-        "rss_bytes": 10412032
+        "pss_bytes": 8249344,
+        "rss_bytes": 10481664
       },
       "redrawn_area_mean": 384000.0,
-      "render_mean_ms": 4.9114,
-      "render_p50_ms": 5.4482,
-      "render_p95_ms": 6.3562,
-      "render_p99_ms": 7.1538,
-      "render_stdev_ms": 1.44,
+      "render_mean_ms": 3.5147,
+      "render_p50_ms": 3.4483,
+      "render_p95_ms": 3.6577,
+      "render_p99_ms": 4.3381,
+      "render_stdev_ms": 0.2331,
       "scenario": "main-tema-classic",
       "unique_redrawn_mean": 384000.0
     }
   ],
   "revisions": {
-    "revision": "3ebe828aeaf23a90d3ec28a608778fb743f8456b"
+    "revision": "5ff37274d8d413d2c92a1527ce204f36550fd651"
   },
   "scenarios": [
     "main-tema-aurora",
     "main-tema-classic"
   ],
-  "status": "INCONCLUSIVE"
+  "status": "PASS"
 }

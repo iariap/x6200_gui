@@ -1,14 +1,14 @@
 # Render benchmark — BENCH-AURORA72-CLASSIC
 
-- Status: **INCONCLUSIVE** (exit 3)
+- Status: **PASS** (exit 0)
 - Date: 2026-10-15
-- revision: `3ebe828aeaf23a90d3ec28a608778fb743f8456b`
+- revision: `5ff37274d8d413d2c92a1527ce204f36550fd651`
 
 > x86 host proxy (CLOCK_MONOTONIC): a measurement, not a battery figure.
 
 | Scenario | Frames | p50 (ms) | p95 (ms) | p99 (ms) | FPS | Dispersion | flushes | redrawn area | RSS | PSS |
 |---|---|---|---|---|---|---|---|---|---|---|
-| main-tema-aurora | 20 | 5.0623 | 6.4975 | 7.4973 | 197.54 | 39.767% | 1.0 | 384000.0 | 10616832 | 10604544 |
-| main-tema-classic | 20 | 3.4641 | 6.2497 | 6.3003 | 288.68 | 5.189% | 1.0 | 384000.0 | 10420224 | 8127488 |
+| main-tema-aurora | 20 | 3.4506 | 3.6261 | 3.6581 | 289.8 | 3.663% | 1.0 | 384000.0 | 10264576 | 8060928 |
+| main-tema-classic | 20 | 3.6846 | 4.4337 | 4.504 | 271.4 | 8.19% | 1.0 | 384000.0 | 10428416 | 8351744 |
 
 - Environment: x86 host: relative regression proxy, not the Cortex-A7
