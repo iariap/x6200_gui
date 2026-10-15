@@ -85,11 +85,29 @@ Cubierto por tests nuevos en `tests/native/test_theme.c`
 y archivo de tema que existe pero no parsea → los 122 roles del default, nombre `IU1WXY`, y pedirlo
 dos veces da lo mismo. **No hizo falta cambiar `src/`**: la garantía ya estaba; el test la fija.
 
+## 4b. Banco: el repro, con captura
+
+`tools/captura-banco.sh` (chroot ARM + `qemu-arm-static`, `RECONSTRUIR=no`), inyectando
+`theme_name` en `mnt/params.db` (tabla `params`). Evidencia en
+`docs/evidencia/2026-10-15-fallback91/`:
+
+| `theme_name` | captura | resultado |
+|---|---|---|
+| ausente (default `IU1WXY`) | `banco-default-iu1wxy.png` | `bg #27313A` (oscuro) |
+| `Outdoor` | `banco-tema-outdoor.png` | `bg #FFFFFF` + `bar #F2F2F2` = **Outdoor (claro)**, reproduce la captura de la radio |
+| `no-such-theme-91` | `banco-tema-invalido.png` | log `Theme no-such-theme-91 not found, using IU1WXY`; PNG **byte-idéntico** al default |
+
+Es decir: el banco reproduce el "lavado" con `Outdoor` y confirma que un params inválido deja el
+default **completo** (idéntico al arranque normal), sin mitad-y-mitad ni redibujo raro.
+
 ## 5. Lo que queda abierto (no es el tema)
 
 El **~1,2 núcleos** y el redibujo permanente: el framebuffer se dibuja con un buffer de pantalla
 completa (`src/main.c:55`, `DISP_BUF_SIZE (800*480*4)`, un solo buffer) + `sw_rotate`/`ROT_90`
 (`main.c:233`), y el S-meter/spectrum/waterfall se invalidan solos. **No es del tema**: el mismo
-camino corre para cualquier tema. No se midió en el banco (sin chroot ARM armado en esta corrida);
-queda para la radio (ajuste del owner: cambiar de tema y volver a medir para separar causa), como
-ya pide el issue.
+camino corre para cualquier tema.
+
+Se intentó medir en el banco como proxy relativo (`docker stats` del contenedor, 3 muestras de 3 s):
+`Outdoor` ~100,6 % y `IU1WXY` ~100,7 % — **QEMU satura el core del host en los dos**, así que no
+separa (el A33 real no se modela). **Declarado**: el ~1,2 núcleos queda para la radio (ajuste del
+owner: cambiar de tema y volver a medir para separar causa), como ya pide el issue.
