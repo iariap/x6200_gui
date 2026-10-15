@@ -141,11 +141,24 @@ else:
             f"{len(lista_acciones)} acciones (el mapeo por indice queda desalineado)"
         )
 
-    for accion_remota in sorted({a for a in lista_acciones if a.startswith("ACTION_APP_")}):
+    acciones_app = {a for a in lista_acciones if a.startswith("ACTION_APP_")}
+
+    for accion_remota in sorted(acciones_app):
         if accion_remota not in en_start_app:
             fallos.append(
                 f"remote_server.cpp: {accion_remota} no tiene case en main_screen_start_app() "
                 f"(la app no abre por el control remoto)"
+            )
+
+    # Y al reves: toda app que el menu sabe abrir (un `case` en main_screen_start_app) tiene que
+    # estar en `actions[]` del control remoto, o el socket contesta "Unknown app" aunque el
+    # dialogo exista. Es el defecto del issue #78: el SWR Scan tenia `case` y dialogo pero no
+    # estaba en la lista, y el barrido del banco no lo podia medir (22 de 23 apps).
+    for app in sorted(en_start_app):
+        if app not in acciones_app:
+            fallos.append(
+                f"remote_server.cpp: {app} tiene case en main_screen_start_app() pero no esta en "
+                f"actions[] del control remoto (la app no abre por el socket: 'Unknown app')"
             )
 
 if fallos:

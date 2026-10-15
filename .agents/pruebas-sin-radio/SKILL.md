@@ -140,7 +140,7 @@ docker run --rm --entrypoint "" -v "$PWD/../.vfix3:/t" x6200-buildroot \
 
 Apps por nombre: `off`, `FT8`, `FT4`, `JS8`, `WSPR`, `SSTV`, `WeFax`, `NavTex`, `RTTY`, `CW`,
 `Field`, `GPS`, `Bands`, `Settings`, `BT`, `Cluster`, `CwTrainer`, `Eq`, `Status`, `QTH`,
-`Callsign`, `Recorder`, `WiFi`. Los comandos especificos de cada app estan en `app_cmds[]`
+`Callsign`, `Recorder`, `WiFi`, `SWRScan`. Los comandos especificos de cada app estan en `app_cmds[]`
 (`src/remote_server.cpp`): tienen `min`/`max` para `val` y/o texto.
 
 ### Invariantes
@@ -152,11 +152,11 @@ Apps por nombre: `off`, `FT8`, `FT4`, `JS8`, `WSPR`, `SSTV`, `WeFax`, `NavTex`, 
 ## Barrido de las apps en una sola corrida
 
 `tools/barrido-apps-banco.sh` levanta el banco UNA vez (con `captura-banco.sh`: build fresco, socket
-correcto, handshake) y contra esa misma GUI abre las 22 apps por el socket -dwell configurable,
+correcto, handshake) y contra esa misma GUI abre las 23 apps por el socket -dwell configurable,
 verificacion de que sigue viva y captura por app-, y escribe la evidencia a JSON.
 
 ```bash
-CHROOT=../.vfix3 tools/barrido-apps-banco.sh           # las 22 apps, 20 s de permanencia
+CHROOT=../.vfix3 tools/barrido-apps-banco.sh           # las 23 apps, 20 s de permanencia
 DWELL=10 REINTENTAR=si tools/barrido-apps-banco.sh     # re-corre una vez lo que falle
 SALIDA=/tmp/barrido tools/barrido-apps-banco.sh        # donde dejar la evidencia
 ```
