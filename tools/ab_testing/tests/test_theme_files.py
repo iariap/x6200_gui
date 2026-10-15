@@ -1,7 +1,7 @@
 """Tests for the static contrast contract over the theme JSON files.
 
 The pairs and the numbers here are cross-checked against `tests/check_wcag.py`
-(the ROM's own sweep over the nine palettes): the two implementations agree on
+(the ROM's own sweep over the served palettes): the two implementations agree on
 every shared pair, so a disagreement in the future is a real signal.
 """
 
@@ -114,7 +114,7 @@ def test_the_shipped_themes_pass_every_declared_pair(
 ) -> None:
     pairs = load_theme_pairs(QUALITY_DIR / "theme_pairs.yaml")
     reports = check_shipped_themes(SHIPPED_DIR, pairs, palettes)
-    assert [report.name for report in reports] == ["Holo", "Material 3", "RS"]
+    assert [report.name for report in reports] == ["Holo", "Material 3", "Redshift", "RS"]
     assert all(report.ok for report in reports)
     assert all(report.error is None for report in reports)
     assert all(len(report.results) == len(pairs) for report in reports)
@@ -225,7 +225,7 @@ def _served(palettes: dict[str, dict[str, str]]):
 def test_the_served_inventory_is_the_builtins_then_the_files(
     runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    """The inventory has no silent hole: the nine served themes, built-ins first."""
+    """The inventory has no silent hole: every served theme, built-ins first."""
     reports, pairs = _served(runtime_palettes)
     assert [report.name for report in reports] == [
         "IU1WXY",
@@ -236,6 +236,7 @@ def test_the_served_inventory_is_the_builtins_then_the_files(
         "VISION",
         "Holo",
         "Material 3",
+        "Redshift",
         "RS",
     ]
     builtins = [report for report in reports if report.source == "builtin"]
@@ -248,10 +249,10 @@ def test_the_served_inventory_is_the_builtins_then_the_files(
 def test_every_served_theme_passes_every_declared_pair(
     runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    """The full coverage finds no sub-WCAG pair: 9 themes, 81 measurements."""
+    """The full coverage finds no sub-WCAG pair: 10 themes, 90 measurements."""
     reports, _ = _served(runtime_palettes)
     checked = sum(len(report.results) for report in reports)
-    assert checked == 81
+    assert checked == 90
     assert all(report.ok for report in reports)
     assert all(report.error is None for report in reports)
 
@@ -386,7 +387,7 @@ def test_the_derivation_matches_the_rom_sweep_byte_for_byte(
     """Parity with tests/check_wcag.py: the same C, two implementations agree.
 
     `check_wcag.py` is the ROM's own sweep; if the port and it ever disagree on a
-    role of any of the nine served palettes, one of them is wrong. This is the
+    role of any of the served palettes, one of them is wrong. This is the
     self-test the spec asks for: it pins the derivation, it does not trust it.
     """
     _module, sweep = _load_wcag_sweep()

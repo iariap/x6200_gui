@@ -24,6 +24,7 @@ paleta del waterfall.
 | **Holo** | `themes/Holo.json` |
 | **Material 3** | `themes/Material 3.json` |
 | **RS** | `themes/RS/theme.json` + los PNG de sus botones (`btn.png`, `bar.png`, `strip.png`, `dialog.png`, `mark.png`, ...) |
+| **Redshift** | `themes/Redshift.json` |
 
 ## El arco del S-meter (`meter_over`) — medido en el equipo, 2026-10-15 (#44)
 
@@ -106,3 +107,62 @@ el nombre no existe y —con `X6200_SHIPPED_THEMES` apuntando a `rootfs/usr/shar
 que **todos** los temas que vienen con la ROM se listen y carguen, incluido el RS con sus
 imágenes. Si alguno queda afuera, el test falla: es lo que garantiza que estén en el menú del
 equipo y no sólo en la imagen.
+
+## Redshift — operación nocturna (THEMES v2, issue #68)
+
+Tema de **noche**: negro casi absoluto con tinte cálido, texto coral rojo cálido, foco salmón
+y waterfall granate. Sin cian, sin azul y sin superficies blancas: los roles "fríos" que el
+esquema hereda del `base` (info cian, digi violeta, ACCENT azul, TX blanco) se reescriben en la
+familia cálida para que ningún rol de `Classic` se cuele y contradiga la identidad. Fuente
+**Source Sans 3** (`"font": "sourcesans3"`), geometría recta (`radius 0`, `radius_btn 1`,
+`radius_popup 2`), sin gradientes (`btn_gradient`/`box_gradient` en `false`) y foco sólido.
+
+El archivo **define los 122 roles** de `src/theme.h` (no sólo los ~40 del borrador del issue):
+dejar roles sin definir los heredaba de `Classic`, que trae blancos, celestes y azules. El JSON
+del issue además nombraba tres claves que ya no existen en el esquema (`strip`, `mode_bg`,
+`mode_text`, podadas en #77): incluirlas habría dejado el tema con colores desconocidos.
+
+**Alcance real en la pantalla.** El motor de temas JSON colorea los roles que el firmware ya lee:
+el fondo (`bg`), la fila de frecuencia (`text`), los bordes de panel (`panel_border`), la paleta
+del waterfall, los items del info box (`bar`), los switches/sliders de Ajustes
+(`control_border`/`panel`) y el recolor del botón activo/deshabilitado. Las cajas de la barra
+superior (reloj, S-meter), los botones inferiores y el marco de los diálogos todavía se dibujan
+con las imágenes fijas `images/top_*_dark.bin`, `btn_dark.bin` y `dialog_dark.bin`
+(`src/styles.c:393-423`, `setup_theme_simple`), así que quedan en el gris azulado del asset en
+**todos** los temas: RS, Material 3, Holo y Redshift renderizan ese marco idéntico (medido: el
+fondo del diálogo de Ajustes es `#3c505c` bajo RS, bajo el tema por defecto y `#3b4e59` bajo
+Redshift). Es un hueco preexistente del motor —documentado en el commit que agregó el sistema
+JSON— y migrarlo es un refactor aparte, fuera del alcance de un tema suelto.
+
+Pares medidos (WCAG 2.1, sRGB) para los roles de la identidad, todos por encima del umbral:
+
+| Par (fg sobre bg) | Ratio | Mínimo |
+|---|---:|---:|
+| `text` sobre `bg` / `panel` | 11.77 | 4.5 |
+| `text` sobre `bar` / `dialog` | 11.43 | 4.5 |
+| `text` sobre `row` / `chip` | 11.13 / 10.80 | 4.5 |
+| `text_value` sobre `bg` | 14.48 | 4.5 |
+| `text_dim` sobre `bg` | 7.82 | 4.5 |
+| `btn_text` sobre `btn` | 9.92 | 4.5 |
+| `btn_active_text` sobre `btn_active` | 8.88 | 4.5 |
+| `focus_text` sobre `focus` | 9.38 | 4.5 |
+| `sel_text` sobre `sel_bg` / `near_bg` | 9.05 / 13.44 | 4.5 |
+| `vfo` sobre `vfo_bg` / `side` | 10.26 / 11.55 | 4.5 |
+| `tx` sobre `tx_bg` | 6.69 | 4.5 |
+| `mode_dig` sobre `bar` | 11.20 | 4.5 |
+| `control_border` sobre `dialog` / `panel` | 3.11 / 3.20 | 3.0 |
+| `bar_border`/`panel_border`/`popup_border`/`card` sobre su fondo | 3.70–3.81 | 3.0 |
+| `btn_border` sobre `btn` | 3.43 | 3.0 |
+| `meter_bar` sobre `bg` | 8.65 | 3.0 |
+
+`tests/check_wcag.py` mide 127 pares aplicables a este tema y no reporta **ninguna falla**;
+`x6200-ab themes` (los pares que sólo viven en Ajustes) suma los nueve declarados y también
+pasa. El arco del S-meter (`meter_over` = `#FFD0AA`) mide 14.33:1 sobre el `bg` del tema; el
+repaso sobre el fondo **real compuesto en la radio** queda para la pasada física del #73 (el
+banco no se usó en esta corrida).
+
+Las capturas del arnés por estado son `main-tema-redshift` (principal), `settings-tema-redshift`
+(Ajustes → Apariencia), `bt-dialog-tema-redshift` (diálogo), `main-tema-redshift-tx` (TX),
+`main-tema-redshift-eco` (batería baja/ECO) y `main-tema-redshift-agua` (espectro + waterfall).
+La galería ARM real y la comparación consolidada contra los otros cinco temas se cierran en el
+#73; el selector/default se migra en el #74.
