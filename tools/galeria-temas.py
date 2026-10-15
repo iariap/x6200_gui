@@ -5,7 +5,7 @@ Compone una hoja de contactos por **estado** (pantalla principal, Ajustes,
 diálogo, TX simulado, waterfall en movimiento, batería baja/ECO) a partir de los
 renders del arnés de UI (`tools/ui_harness`): cada hoja es una grilla de los
 **seis temas** en el mismo estado de radio, así el tema es la única variable. Las
-imágenes son los PNG reales del framebuffer LVGL 8 (800×480), nunca una
+imágenes son los PNG reales del framebuffer LVGL 8 (800x480), nunca una
 ilustración.
 
 Reproducible: los renders son deterministas (dos corridas del mismo fixture dan
