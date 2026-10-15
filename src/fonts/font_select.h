@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "font_families.h"
@@ -29,6 +30,13 @@ const char *font_dropdown_items(void);
  * selected or the family does not carry that slot. */
 void fonts_set_digit_family(uint8_t digit_family);
 const struct _lv_font_t *font_digit(const struct _lv_font_t *stock_slot);
+
+/* Si los paneles de digitos dibujan con una familia segmentada. La capa del "8
+ * fantasma" (los segmentos apagados del look Casio, src/clock.c y
+ * src/main_screen.c) solo existe con una familia asi: con la familia por defecto
+ * el `8` seria un digito mas y el fantasma un texto duplicado, asi que la capa no
+ * se arma y la etiqueta no se crea. */
+bool font_digit_active(void);
 
 /* The digit family a theme's `font_digits` key names, or -1 when the id is
  * unknown (no segmented digits). */

@@ -10,10 +10,12 @@
 # lowercase and its letters are approximations, so it is never a whole-family
 # choice.
 #
-# The unlit-segment look (a ghost "8" behind the digit at low alpha) is NOT drawn:
-# the firmware has no such layer, and adding one is a rendering feature of its own
-# (see docs/fonts-spec.md, PENDIENTES). What this fixture shows is the real thing:
-# the digits of the frequency row and the clock set in the segmented face.
+# This is also the fixture of the "8 fantasma": the unlit-segment layer behind the
+# digits of the frequency row and of the clock, drawn by src/main_screen.c and
+# src/clock.c. The layer only exists with a segmented family (a `8` in the default
+# family is just another digit), so this is the only fixture that has it, and it
+# carries `clock_view time` because the clock's ghost is the time view (the power
+# clock's value is a battery symbol plus volts: no unlit digits to show).
 #
 # The rest of the candidates are measured with `--font` (every screen); the digit
 # families are measured on this fixture (see tools/fonts/README.md).
@@ -24,6 +26,7 @@ screen main
 seed 20
 
 digits dseg7
+clock_view time
 
 frequency_hz 14074000
 tx_frequency_hz 14074000

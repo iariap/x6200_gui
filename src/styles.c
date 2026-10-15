@@ -140,7 +140,12 @@ void styles_init(themes_t theme) {
      * pide theme.h: el codigo no escribe un color, pide un rol. */
     lv_style_init(&freq_style);
     lv_style_set_text_color(&freq_style, TC(text));
-    lv_style_set_text_font(&freq_style, &sony_30);
+    /* Los tres labels de la fila son paneles de digitos: con una familia segmentada
+     * los dibuja ella (font_digit(); sin familia es el slot, o sea el mismo
+     * sony_30/38 de siempre). Tiene que ser ACA y no en main_screen.c porque los
+     * estilos se resuelven una vez, con la familia ya elegida (main.c la setea
+     * antes de styles_init()). */
+    lv_style_set_text_font(&freq_style, font_digit(&sony_30));
     lv_style_set_pad_ver(&freq_style, 7);
     lv_style_set_width(&freq_style, 150);
     lv_style_set_height(&freq_style, 36);
@@ -148,7 +153,7 @@ void styles_init(themes_t theme) {
 
     lv_style_init(&freq_main_style);
     lv_style_set_text_color(&freq_main_style, TC(text));
-    lv_style_set_text_font(&freq_main_style, &sony_38);
+    lv_style_set_text_font(&freq_main_style, font_digit(&sony_38));
     lv_style_set_pad_ver(&freq_main_style, 5);
     lv_style_set_width(&freq_main_style, 500);
     lv_style_set_height(&freq_main_style, 36);

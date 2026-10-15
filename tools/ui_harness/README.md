@@ -390,9 +390,12 @@ A scenario is a `key value` file (unknown keys are an error). Besides the radio
 state (`frequency_hz`, `mode`, `rxtx`, `smeter_db`, `battery_v`, …) it can pick
 the `theme` and a `seed`, toggle `band_plan`, `spectrum_filled`,
 `spectrum_peak`, `waterfall_center_line` and `waterfall_battery` (the user's
-waterfall battery mode, the Ajustes switch), and set the two audio gains of the
+waterfall battery mode, the Ajustes switch), set the two audio gains of the
 Ajustes Audio group (`play_gain_db`, `rec_gain_db`, the dB the radio loads from
-params.db into `params.play_gain_db_f`/`params.rec_gain_db_f`). `bench_warmup`, `bench_repeats`,
+params.db into `params.play_gain_db_f`/`params.rec_gain_db_f`) and pick the
+`clock_view` of the top bar's clock (`time`, `power` — the default — or
+`time-power`, the firmware's `clock_view_t`), which is what the wall clock of the
+`main` screen shows. `bench_warmup`, `bench_repeats`,
 `bench_redraw_passes` (the forced bench) and `natural_frames` (the natural bench)
 are honoured only in their own mode and never change a rendered pixel.
 
@@ -447,7 +450,7 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `main-otro-tema` | the same screen under the builtin "Outdoor" theme |
 | `main-espectro-agua` | the waterfall with a fixed seed, peaks on, centre line, Legacy theme |
 | `bench-render` | the benchmark fixture (waterfall peaks, its own seed); `bench_*` knobs for the render benchmark |
-| `main-frecuencia-dseg` | the frequency row and the clock drawn with the segmented-digit family (`digits dseg7`): the sample screen of the DSEG candidates of issue #9 (a segmented face is digit-only, so it is never a whole-family choice) |
+| `main-frecuencia-dseg` | the frequency row and the clock drawn with the segmented-digit family (`digits dseg7`) plus the "8 fantasma" layer behind their digits (`clock_view time`, the clock view that has unlit digits to show): the sample screen of the DSEG candidates of issue #9 (a segmented face is digit-only, so it is never a whole-family choice) |
 | `main-natural` | the natural-bench fixture (its own seed, `natural_frames`); the spectrum/waterfall are driven frame by frame by `--bench-natural` |
 | `main-natural-eco` | the natural-bench fixture with the pack on battery at 11.2 V (`external_v 0.0`): the same screen/data as `main-natural`, but the visual policy puts the waterfall in ECO, so `--bench-natural` measures the reduced cadence (UI-08 incr. 2) |
 | `settings-home` | the real main screen with the real Ajustes window open over it (`dialog.c` + `dialog_settings.c`), on its first group (clock: date/time, Clock view, timeouts). The wall clock is the harness' fixed epoch, so the date/time fields are deterministic |

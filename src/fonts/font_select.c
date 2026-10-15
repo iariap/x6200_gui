@@ -87,6 +87,10 @@ const lv_font_t *font_digit(const lv_font_t *stock_slot) {
     return stock_slot;
 }
 
+bool font_digit_active(void) {
+    return digit_family != FONT_DIGIT_NONE;
+}
+
 void fonts_apply(uint8_t family) {
     if (applied || family == FONT_STOCK || family >= FONT_COUNT) return;
     applied = true;

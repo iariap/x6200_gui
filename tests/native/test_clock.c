@@ -1,6 +1,12 @@
 /*
  * Native test for the CLOCK_POWER branch of src/clock.c (UI-009).
  *
+ * The same binary also pins the "8 fantasma" layer of the clock (issue #9,
+ * decision 1): with a segmented digit family `clock_init()` creates a shadow
+ * label behind the value (the clock's own background image moves to the shadow,
+ * which is the lower one), and the shadow's text is the value's text in the
+ * "8" form. The stub tree declares the family active for exactly that reason.
+ *
  * The defect (docs/UI_KNOWN_ISSUES.md, UI-009): `show_time()` declared
  * `bat_sym` without initialising it while the `switch ((uint8_t)(v_bat * 10))`
  * only covered 0..100. A battery above 10.2 V (12.1 V on an external supply is
@@ -40,6 +46,7 @@
 
 /* Accessors provided by tests/native/clock_stubs.c. */
 const char * clock_stub_last_text(void);
+const char * clock_stub_shadow_text(void);
 void clock_stub_run_timers(void);
 
 /* The battery family is the U+F240..U+F244 block: three UTF-8 bytes each,
@@ -86,4 +93,18 @@ void test_clock(void) {
     params.clock_view = CLOCK_TIME_ALLWAYS;
     clock_stub_run_timers();
     CHECK(!starts_with_battery_glyph(clock_stub_last_text()));
+
+    /* El "8 fantasma" (issue #9, decision 1): con la familia segmentada el reloj
+     * dibuja DOS etiquetas, la sombra primero (debajo) y el valor despues. El
+     * fantasma es el mismo texto en forma de 8 -los siete segmentos de cada digito-
+     * a alpha bajo, asi que tiene que medir lo mismo que el valor: eso es lo que lo
+     * deja caer digito a digito sobre el. */
+    CHECK(strcmp(clock_stub_shadow_text(), "88:88:88") == 0);
+    CHECK(strlen(clock_stub_last_text()) == strlen(clock_stub_shadow_text()));
+
+    /* El reloj de potencia no lleva fantasma (el valor es el simbolo de bateria mas
+     * los voltios: no hay segmentos apagados que mostrar) y la sombra queda vacia,
+     * solo con el fondo. */
+    render_power(5.8f, 13.8f, 30, false);
+    CHECK(strcmp(clock_stub_shadow_text(), "") == 0);
 }
