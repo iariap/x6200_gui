@@ -20,9 +20,16 @@ brillo al sol ni del consumo: QEMU no mide energía.
 | Sesión | `dirclean` + rebuild **una vez** (`RECONSTRUIR=si`); las otras cinco capturas reusan el binario (`RECONSTRUIR=no`) |
 
 El md5 del binario es **idéntico** en las seis capturas: el único cambio de `src/` entre
-el build y el tip (`62f5b33`) son **comentarios** (`src/dialog_settings.c`, `src/theme.h`),
-que no entran al código objeto — por eso el guard del banco avisa que el hash de fuentes
-cambió pero el binario es el mismo.
+el build y el tip son **comentarios** (`src/dialog_settings.c`, `src/theme.h`), que no entran
+al código objeto — por eso el guard del banco avisa que el hash de fuentes cambió pero el
+binario es el mismo.
+
+**Nota de rebase.** La rama se rebasó sobre el trunk actual (`01d632e`, el fix de SWR Scan
+#96) después de las capturas: #96 toca `src/dialog_swrscan.c` y `src/radio.c`, que **no** son
+el motor de temas ni entran a ninguna fixture del arnés, así que el render de los seis temas
+no cambia (el `compare` A/B del #73, ya sobre el tip rebasado, da los mismos píxeles y los
+`golden/` regenerados coinciden byte a byte con los renders del tip). El binario del banco se
+construyó sobre el tip previo al rebase (contenido equivalente a `f3ed0d9`).
 
 ## Cómo se cambiaron los temas (gap declarado)
 
