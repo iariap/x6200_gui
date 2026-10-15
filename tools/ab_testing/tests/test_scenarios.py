@@ -135,6 +135,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "apps-menu-6",
         "bench-render",
         "bt-dialog",
+        "bt-dialog-tema-redshift",
         "home-bateria-externa",
         "home-frecuencia-extrema",
         "home-usb-20m",
@@ -149,6 +150,10 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "main-tema-holo",
         "main-tema-material-3",
         "main-tema-outdoor-negative",
+        "main-tema-redshift",
+        "main-tema-redshift-agua",
+        "main-tema-redshift-eco",
+        "main-tema-redshift-tx",
         "main-tema-rs",
         "main-tema-vision",
         "main-tema-vision-cwr",
@@ -159,6 +164,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "settings-home",
         "settings-perfil",
         "settings-rs-theme",
+        "settings-tema-redshift",
         "settings-wfbat",
     ]
     # Every fixture builds one of the screens the harness knows; the theme

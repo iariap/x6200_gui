@@ -29,8 +29,8 @@ inventory of what the user can pick and not only of what ships as a file:
   `<name>/theme.json`), with the `base` inheritance `src/theme.c` applies.
 
 The ninth theme the menu offers is `Outdoor-Negative`; with the derivation below
-every served palette resolves, so the whole inventory is measured (9 themes x 9
-pairs = 81 measurements) and nothing is declared UNCOVERED.
+every served palette resolves, so the whole inventory is measured (every served
+theme x 9 pairs) and nothing is declared UNCOVERED.
 
 The exhaustive sweep over the nine palettes stays in `tests/check_wcag.py`, which
 the ROM's own CI runs. This one is the framework-side inventory over what the
@@ -321,7 +321,7 @@ def derive_vision(theme_c: Path, iu1wxy: dict[str, str]) -> dict[str, str]:
 def load_runtime_palettes(
     theme_c: Path, palettes: dict[str, dict[str, str]]
 ) -> dict[str, dict[str, str]]:
-    """The nine palettes the user can see: the four data plus the two derives.
+    """The palettes the user can see: the four data plus the two derives.
 
     Shipping a palette whose roles are *derived* from C is what closes the
     coverage hole: the static contract used to declare Outdoor-Negative and
@@ -435,8 +435,8 @@ def served_theme_reports(
     """Every theme the firmware serves, in `builtin_names[]` order then the files.
 
     The six built-in palettes first (the four data ones of `src/theme.h` plus the
-    two `use_builtin()` derives), then the shipped files. Nine palettes in total:
-    the whole inventory is measured, so there is no UNCOVERED theme left.
+    two `use_builtin()` derives), then the shipped files. Every served palette is
+    measured, so there is no UNCOVERED theme left.
     """
     _validate_pairs(pairs, palettes)
     reports = [_measure_builtin(name, palettes[name], pairs, theme_h) for name in SERVED_BUILTINS]
