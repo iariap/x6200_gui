@@ -3728,3 +3728,123 @@ ahorro de Wh: el LCD tiene backlight).
 3. **Sin captura ARM**: el banco está reservado y la pasada física (QEMU user-mode con el
    binario real + la pantalla de la radio) se consolida en #73. Nada de este PR afirma brillo,
    energía ni comportamiento en el Cortex-A7.
+
+## 2026-10-15 — Cathode: el tema CRT sepia/ámbar de la colección THEMES v2 (issue #70)
+
+**Qué llegó.** El tema **Cathode** (`rootfs/usr/share/x6200/themes/Cathode.json`) y las seis
+fixtures que lo rinden, cada una con el estado de radio de su gemela de otro tema para que el
+tema sea la única variable:
+
+| Fixture | Estado que cubre | Gemela |
+|---|---|---|
+| `main-tema-cathode` | principal, RX (frecuencia, modo, VFO, S-meter, band plan, cascada) | `home-usb-20m` / `main-tema-classic` |
+| `main-tema-cathode-agua` | waterfall en movimiento (peaks, línea central, espectro lleno) | `main-espectro-agua` |
+| `main-tema-cathode-tx` | TX simulado (visor TX, split, `tx_bg`/`tx_box`) | `main-tx-simulado` |
+| `main-tema-cathode-eco` | batería baja + ECO (reloj en %, política en VP_ECO) | `main-bateria-baja` |
+| `bt-dialog-tema-cathode` | diálogo de app (`dialog_bt.c`) | `bt-dialog` |
+| `settings-tema-cathode` | Ajustes con el foco sobre la fila del tema | `settings-perfil` |
+
+Cathode nombra `ibmplexsans` (familia compilada en ROM desde #60) y pide `font_digits: dseg14`,
+así que sus cuatro fixtures de pantalla principal traen la capa del "8 fantasma" de UI-017 (como
+`main-frecuencia-dseg` y las de Sprint) y quedan con el mismo waiver acotado de `layout_overlap`
+(un `exceptions` por fixture, con razón y vencimiento; `tests/test_theme_checks.py` fija el
+conjunto).
+
+**Gates corridos sobre `e510791`, la rama del tema rebasada sobre `b5ef235` (el trunk actual,
+con Redshift #81, Sunlit #83, Aurora #87, Trail #88 y Sprint #82 ya mergeados); los reportes
+quedan en `reports/AB-CATHODE70` y `reports/BENCH-CATHODE70*`.**
+
+```text
+$ tests/check_harness_determinism.sh
+PASS: deterministic (identical PNGs for every fixture)          # 71 fixtures x2
+
+$ uv run x6200-ab compare --a origin/lu2dsx/x6200-rom --b HEAD --experiment-id AB-CATHODE70
+experiment AB-CATHODE70: PASS (exit 0)
+  Functional         PASS — 65 scenarios captured on both revisions
+  Visual Regression  PASS — captures are pixel-identical to the baseline
+  Quality Contract   PASS — 677 contract checks passed on the candidate
+  Performance        PASS — render-cost proxy within budget
+  Hardware/Energy    BLOCKED (advisory) — sin X6200 físico / sin medición de energía
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts e510791b81d1: PASS — 741 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited e510791b81d1: 17 known issues — 0 reproduced, 15 unverified;
+structural inspection REAL over 8405 objects on 71 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab themes
+themes PASS: 15 served theme(s) (6 built-in + 9 file(s)), 9 pair(s) declared, 135 pair(s) checked, 0 failure(s)
+  Cathode (rootfs/usr/share/x6200/themes/Cathode.json; base Classic): 0/122 roles from the base
+  non-text (WCAG 1.4.11, pixels): 31 object(s) measured, 0 failure(s)
+    OK  waterfall_signal on main-tema-cathode = 6.82:1 (min 3.0:1) [object lighter; #cc9044 vs #1c0f07]
+    OK  s_meter_arc on main-tema-cathode = 8.11:1 (min 3.0:1) [object lighter; #ffd6a0 vs #323d48]
+
+$ tests/native/run_native_tests.sh
+860 comprobaciones, 0 fallos
+$ uv run pytest -m "not e2e" -q
+187 passed, 18 deselected
+$ uv run pytest -m e2e -q
+18 passed, 187 deselected
+$ python3 tests/check_wcag.py            # 128 pares aplicables a Cathode, 0 fallas
+```
+
+**El `compare` de A contra B no puede ver el tema nuevo, y hay que decirlo.** La suite sale de
+A (`split_by_fixtures_dir`), y las seis fixtures de Cathode **sólo existen en B** (como las de
+Redshift, Sunlit, Aurora, Trail y Sprint, ya mergeadas): la comparación cubre los 65 escenarios
+compartidos y ahí el veredicto es *pixel-identical* (un archivo de tema nuevo no toca ninguna
+pantalla que no lo elija). Lo que sí mide al tema es lo demás: `contracts` (741 checks sobre las
+71 fixtures del candidato, incluidas las seis nuevas), `audit` (0 hallazgos estructurales sobre
+las 71), `themes` (el par estático 15×9 y el no-texto por píxeles sobre el render dorado nuevo
+`golden/main-tema-cathode.png`) y el `benchmark` de abajo. La comparación **tema contra tema** es
+la de los renders dorados `main-tema-classic.png` y `main-tema-cathode.png` —mismo estado de
+radio, sólo cambia el tema— más los números del S-meter y la cascada que `themes` mide sobre cada
+uno.
+
+**Bench vs Classic** (`benchmark --revision HEAD`, plan del presupuesto: 5 repeticiones, 4
+rondas, 20 frames por escenario; x86 host, no el Cortex-A7), dos corridas limpias con el host
+descargado (dispersión máxima medida 2.6% y 2.9%, presupuesto 25%): las dos **PASS**.
+
+| corrida | escenario | p50 | p95 | p99 | fps | cv | flushes | rss |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| `BENCH-CATHODE70` | `main-tema-classic` | 3.371 ms | 3.653 ms | 3.934 ms | 296.7 | 2.6% | 1.0 | 10 477 568 B |
+| `BENCH-CATHODE70` | `main-tema-cathode` | 3.351 ms | 3.529 ms | 3.544 ms | 298.4 | 1.7% | 1.0 | 10 674 176 B |
+| `BENCH-CATHODE70-R1` | `main-tema-classic` | 3.409 ms | 3.762 ms | 3.853 ms | 293.3 | 2.9% | 1.0 | 10 518 528 B |
+| `BENCH-CATHODE70-R1` | `main-tema-cathode` | 3.348 ms | 3.478 ms | 3.720 ms | 298.7 | 1.7% | 1.0 | 10 641 408 B |
+
+Es decir **−0.6% / −1.8% de p50** y **−3.4% / −7.5% de p95** contra Classic según la corrida: los
+dos deltas quedan por debajo del presupuesto relativo (`max_p95_delta_pct` 25%) y el signo es
+consistente (Cathode un poco más barato), pero **no se afirma una mejora de costo**: la
+diferencia cae dentro del ruido del host. Lo que se afirma es que las dos corridas pasan el
+presupuesto del host. El veredicto del `benchmark` es **PASS** en las dos, y el proxy
+determinista del `compare` (que no depende de la carga del host) también da `Performance PASS`.
+Aislamiento del sospechoso obvio —la familia segmentada, que agrega la capa sombra de los
+dígitos—: `main-foco` (IU1WXY, familia por defecto) vs `main-frecuencia-dseg` (mismo tema y
+estado, `digits dseg7`), p50 3.399 vs 3.406 ms (`reports/BENCH-CATHODE70-DSEG`): la capa no mide
+un costo propio. El número físico (Cortex-A7) no se midió y no se afirma nada sobre energía (el
+fondo oscuro no se asocia a ahorro de Wh: el LCD tiene backlight).
+
+**Hallazgos y límites declarados** (ninguno bloquea este PR):
+
+1. **`theme_image()` no tiene llamadores** en esta revisión: el `images` de un tema JSON se
+   carga y nunca se dibuja, y la barra de botones inferior se pinta con el bitmap de la ROM
+   (`images/btn_dark.bin`) igual en todos los temas. Por eso `btn`/`btn_text`/`btn_grad`/
+   `btn_border` de Cathode se miden estáticamente (`check_wcag.py`, `themes`) pero no se ven en
+   el render; lo que sí se ve de los botones es el recolor de activo/deshabilitado
+   (`btn_mark_active`, `bg` + `text_mute`). Consecuencia para la colección: los seis temas nuevos
+   comparten el aspecto de la barra inferior hasta que esa superficie vuelva a ser del tema —
+   decisión de integración (#73/#74), no de este PR.
+2. **El fondo del diálogo de Ajustes es un asset fijo** (`images/dialog_dark.bin`): medido por
+   píxeles, el fondo del diálogo de Ajustes es `(59,80,91)` bajo Cathode y bajo cualquier otro
+   tema, así que el vidrio café-negro de Cathode no llega a esa superficie en esta revisión.
+   Pre-existente del motor (mismo hueco que documentan Redshift/Trail/Sprint).
+3. **Renders dorados desactualizados (pre-existente)**: los PNG de las fixtures que dibujan con
+   la familia por defecto (`main-foco`, `settings-home`, `main-espectro-agua`,
+   `main-otro-tema`, `main-tema-vision`) no coinciden byte a byte con el render de hoy —
+   el kerning de AB-FONTSE (`4e9b5f4`) movió sus glifos y no se re-baselinaron (los de los
+   temas que nombran Roboto sí coinciden). La medición no-texto de esas fixtures describe un
+   render anterior; la re-baseline declarada queda para #73. El render nuevo de Cathode se
+   capturó en esta revisión, así que sus dos objetos miden los píxeles de hoy.
+4. **Sin captura ARM**: el banco está reservado y la pasada física (QEMU user-mode con el
+   binario real + la pantalla de la radio) se consolida en #73. Nada de este PR afirma brillo,
+   energía ni comportamiento en el Cortex-A7.
