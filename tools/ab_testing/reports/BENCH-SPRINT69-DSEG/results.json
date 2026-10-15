@@ -2,7 +2,7 @@
   "budget": {
     "max_dispersion_cv_pct": 25.0,
     "min_frames": 12,
-    "repeats": 20,
+    "repeats": 5,
     "rounds": 4,
     "warmup_frames": 3
   },
@@ -12,52 +12,52 @@
   "kind": "benchmark-measurement",
   "measurements": [
     {
-      "dispersion_cv_pct": 17.172,
-      "draw_ms_mean": 4.2386,
-      "flush_ms_mean": 0.6251,
+      "dispersion_cv_pct": 2.133,
+      "draw_ms_mean": 2.8055,
+      "flush_ms_mean": 0.3958,
       "flushes_mean": 1.0,
-      "fps": 174.12,
-      "frames": 80,
+      "fps": 312.74,
+      "frames": 20,
       "memory": {
-        "peak_rss_bytes": 10522624,
+        "peak_rss_bytes": 10424320,
         "peak_vm_bytes": 82194432,
-        "pss_bytes": 9086976,
-        "rss_bytes": 10457088
+        "pss_bytes": 10412032,
+        "rss_bytes": 10424320
       },
       "redrawn_area_mean": 384000.0,
-      "render_mean_ms": 4.8637,
-      "render_p50_ms": 5.7431,
-      "render_p95_ms": 6.2024,
-      "render_p99_ms": 6.6209,
-      "render_stdev_ms": 1.2686,
+      "render_mean_ms": 3.2013,
+      "render_p50_ms": 3.1975,
+      "render_p95_ms": 3.3196,
+      "render_p99_ms": 3.3346,
+      "render_stdev_ms": 0.0612,
       "scenario": "main-foco",
       "unique_redrawn_mean": 384000.0
     },
     {
-      "dispersion_cv_pct": 3.91,
-      "draw_ms_mean": 4.6225,
-      "flush_ms_mean": 0.6831,
+      "dispersion_cv_pct": 1.105,
+      "draw_ms_mean": 2.8191,
+      "flush_ms_mean": 0.3963,
       "flushes_mean": 1.0,
-      "fps": 170.18,
-      "frames": 80,
+      "fps": 310.63,
+      "frames": 20,
       "memory": {
-        "peak_rss_bytes": 10452992,
+        "peak_rss_bytes": 10592256,
         "peak_vm_bytes": 82194432,
-        "pss_bytes": 8041472,
-        "rss_bytes": 10432512
+        "pss_bytes": 10579968,
+        "rss_bytes": 10526720
       },
       "redrawn_area_mean": 384000.0,
-      "render_mean_ms": 5.3055,
-      "render_p50_ms": 5.8761,
-      "render_p95_ms": 6.1773,
-      "render_p99_ms": 6.4732,
-      "render_stdev_ms": 1.142,
+      "render_mean_ms": 3.2154,
+      "render_p50_ms": 3.2193,
+      "render_p95_ms": 3.271,
+      "render_p99_ms": 3.2797,
+      "render_stdev_ms": 0.0375,
       "scenario": "main-frecuencia-dseg",
       "unique_redrawn_mean": 384000.0
     }
   ],
   "revisions": {
-    "revision": "6a4b6ea0fd59a56a4f47e7453e7407542431e4c0"
+    "revision": "16fae76b327cb9426c0ff575f03e8526e176f5f2"
   },
   "scenarios": [
     "main-foco",

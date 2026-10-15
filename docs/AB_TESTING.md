@@ -3641,67 +3641,72 @@ familia segmentada (`font_digit()`, slots 30/38), así que `layout_overlap` las 
 `main-frecuencia-dseg` y quedan con el mismo waiver acotado (un `exceptions` por fixture, con
 razón y vencimiento; `tests/test_theme_checks.py` fija el conjunto).
 
-**Gates corridos sobre `46195bf` (la rama del tema; los reportes quedan en
-`reports/AB-SPRINT69` y `reports/BENCH-SPRINT69*`).**
+**Gates corridos sobre `16fae76`, la rama del tema rebasada sobre `4737fcd` (el trunk que ya
+trae Redshift #81, Sunlit #83, Aurora #87 y Trail #88); los reportes quedan en
+`reports/AB-SPRINT69` y `reports/BENCH-SPRINT69*`.**
 
 ```text
 $ tests/check_harness_determinism.sh
-PASS: deterministic (identical PNGs for every fixture)          # 41 fixtures x2
+PASS: deterministic (identical PNGs for every fixture)          # 65 fixtures x2
 
-$ uv run x6200-ab compare --a 122bea3 --b HEAD --experiment-id AB-SPRINT69
+$ uv run x6200-ab compare --a origin/lu2dsx/x6200-rom --b HEAD --experiment-id AB-SPRINT69
 experiment AB-SPRINT69: PASS (exit 0)
-  Functional         PASS — 35 scenarios captured on both revisions
+  Functional         PASS — 59 scenarios captured on both revisions
   Visual Regression  PASS — captures are pixel-identical to the baseline
-  Quality Contract   PASS — 373 contract checks passed on the candidate
+  Quality Contract   PASS — 613 contract checks passed on the candidate
   Performance        PASS — render-cost proxy within budget
   Hardware/Energy    BLOCKED (advisory) — sin X6200 físico / sin medición de energía
 
 $ uv run x6200-ab contracts --revision HEAD
-contracts 46195bffe31b: PASS — 437 checks, 0 failure(s), 0 unchanged baseline defect(s)
+contracts 16fae76b327c: PASS — 677 checks, 0 failure(s), 0 unchanged baseline defect(s)
 
 $ uv run x6200-ab audit --revision HEAD --suite visual
-audited 46195bffe31b: 17 known issues — 0 reproduced, 15 unverified;
-structural inspection REAL over 4773 objects on 41 scenario(s): 0 structural finding(s)
+audited 16fae76b327c: 17 known issues — 0 reproduced, 15 unverified;
+structural inspection REAL over 7669 objects on 65 scenario(s): 0 structural finding(s)
 
 $ uv run x6200-ab themes
-themes PASS: 10 served theme(s) (6 built-in + 4 file(s)), 9 pair(s) declared, 90 pair(s) checked, 0 failure(s)
+themes PASS: 14 served theme(s) (6 built-in + 8 file(s)), 9 pair(s) declared, 126 pair(s) checked, 0 failure(s)
   Sprint (...; base Classic): 0/122 roles from the base
-  non-text (WCAG 1.4.11, pixels): 23 object(s) measured, 0 failure(s)
+  non-text (WCAG 1.4.11, pixels): 29 object(s) measured, 0 failure(s)
     OK  s_meter_arc on main-tema-sprint = 5.46:1 (min 3.0:1) [object lighter; #ff9f87 vs #323e4e]
     OK  waterfall_signal on main-tema-sprint = 8.31:1 (min 3.0:1) [object lighter; #7fc7ab vs #0e2038]
 ```
 
 **El `compare` de A contra B no puede ver el tema nuevo, y hay que decirlo.** La suite sale de
-A (`split_by_fixtures_dir`), y las seis fixtures de Sprint **sólo existen en B**: la comparación
-cubre los 35 escenarios compartidos y ahí el veredicto es *pixel-identical* (un archivo de tema
-nuevo no toca ninguna pantalla que no lo elija). Lo que sí mide al tema es lo demás:
-`contracts` (437 checks sobre las 41 fixtures del candidato, incluidas las seis nuevas),
-`audit` (0 hallazgos estructurales sobre las 41), `themes` (el par estático y el no-texto por
+A (`split_by_fixtures_dir`), y las seis fixtures de Sprint **sólo existen en B** (como las de
+Redshift, Sunlit, Aurora y Trail, ya mergeadas): la comparación cubre los 59 escenarios
+compartidos y ahí el veredicto es *pixel-identical* (un archivo de tema nuevo no toca ninguna
+pantalla que no lo elija). Lo que sí mide al tema es lo demás:
+`contracts` (613 checks sobre las 65 fixtures del candidato, incluidas las seis nuevas),
+`audit` (0 hallazgos estructurales sobre las 65), `themes` (el par estático y el no-texto por
 píxeles sobre el render dorado nuevo `golden/main-tema-sprint.png`) y el `benchmark` de abajo.
 La comparación **tema contra tema** es la de los renders dorados `main-tema-classic.png` y
 `main-tema-sprint.png` —mismo estado de radio, sólo cambia el tema— más los números del S-meter
 y la cascada que `themes` mide sobre cada uno.
 
 **Bench vs Classic** (`benchmark --revision HEAD`, plan del presupuesto: 5 repeticiones, 4
-rondas, 20 frames por escenario; x86 host, no el Cortex-A7):
+rondas, 20 frames por escenario; x86 host, no el Cortex-A7), dos corridas limpias con el host
+descargado (dispersión máxima medida 1.9% y 2.6%, presupuesto 25%): las dos **PASS**.
 
-| escenario | p50 | p95 | p99 | fps | cv | flushes | rss |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| `main-tema-classic` | 3.310 ms | 3.420 ms | 3.693 ms | 302.1 | 1.7% | 1.0 | 10 301 440 B |
-| `main-tema-sprint` | 3.262 ms | 3.399 ms | 4.346 ms | 306.5 | 1.4% | 1.0 | 10 686 464 B |
+| corrida | escenario | p50 | p95 | p99 | fps | cv | flushes | rss |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| `BENCH-SPRINT69` | `main-tema-classic` | 3.277 ms | 3.356 ms | 3.585 ms | 305.2 | 1.9% | 1.0 | 10 694 656 B |
+| `BENCH-SPRINT69` | `main-tema-sprint` | 3.176 ms | 3.329 ms | 3.587 ms | 314.9 | 1.6% | 1.0 | 10 559 488 B |
+| `BENCH-SPRINT69-R1` | `main-tema-classic` | 3.349 ms | 4.046 ms | 4.300 ms | 298.6 | 2.6% | 1.0 | 10 539 008 B |
+| `BENCH-SPRINT69-R1` | `main-tema-sprint` | 3.291 ms | 3.822 ms | 4.971 ms | 303.9 | 1.8% | 1.0 | 10 330 112 B |
 
-Es decir **−1.5% de p50 y −0.6% de p95** (Sprint un poco más rápido, dentro del ruido), +1.5%
-de fps, +3.7% de RSS; el p99 de Sprint (4.346 vs 3.693 ms) es un frame de cola suelto con
-cv 1.4%. Repetido en otra corrida limpia (`reports/BENCH-SPRINT69-R1`, cv 2.5%/3.0%) el
-resultado es el mismo signo y la misma magnitud: −0.6% de p50 y −2.1% de p95. Las dos corridas
-de 80 frames que se intentaron (`-R20` y `-R2`) volvieron **INCONCLUSIVE**: el host estaba
-cargado por las otras corridas de la colección (cv 36–40%), que es exactamente el caso que el
-presupuesto marca como no confiable. Aislamiento del sospechoso obvio —la familia segmentada,
-que agrega la capa sombra de los dígitos—: `main-foco` (IU1WXY, familia por defecto) vs
-`main-frecuencia-dseg` (mismo tema y estado, `digits dseg7`), 80 frames, p50 5.743 vs 5.876 ms
-y p95 6.202 vs 6.177 ms (`reports/BENCH-SPRINT69-DSEG`): la capa no mide un costo propio.
-**Conclusión**: sin regresión de costo medible dentro del ruido del host; el número físico
-(Cortex-A7) no se midió y no se afirma nada sobre energía.
+Es decir **−3.1% / −1.7% de p50** y **−0.8% / −5.5% de p95** contra Classic según la corrida
+(Sprint un poco más rápido, dentro del ruido) y **+3.2% / +1.8% de fps**: los dos deltas quedan
+por debajo del presupuesto relativo (`max_p95_delta_pct` 25%), así que **no se afirma una mejora
+ni una regresión de costo**: lo que se afirma es que las dos corridas pasan el presupuesto del
+host. El veredicto del `benchmark` es **PASS** en las dos, y el proxy determinista del `compare`
+(que no depende de la carga del host) también da `Performance PASS`. Aislamiento del sospechoso
+obvio —la familia segmentada, que agrega la capa sombra de los dígitos—:
+`main-foco` (IU1WXY, familia por defecto) vs `main-frecuencia-dseg` (mismo tema y estado,
+`digits dseg7`), p50 3.197 vs 3.219 ms y p95 3.320 vs 3.271 ms
+(`reports/BENCH-SPRINT69-DSEG`): la capa no mide un costo propio. El número físico (Cortex-A7) no
+se midió y no se afirma nada sobre energía (el fondo oscuro no se asocia a ahorro de Wh: el LCD
+tiene backlight).
 
 **Hallazgos y límites declarados** (ninguno bloquea este PR):
 
