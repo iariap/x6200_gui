@@ -2,7 +2,7 @@
   "scenario": "bt-dialog-tema-cathode",
   "screen": "bt-dialog",
   "seed": 20,
-  "revision": "5ade4f999813400efdcb6a1850cb56c68f906a91",
+  "revision": "170ac892b4653c62e1c5ffac3c894997d2ab0e1e",
   "framebuffer": { "width": 800, "height": 480 },
   "theme": {
     "requested": "Cathode",

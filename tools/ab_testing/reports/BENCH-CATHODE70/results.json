@@ -12,52 +12,52 @@
   "kind": "benchmark-measurement",
   "measurements": [
     {
-      "dispersion_cv_pct": 2.178,
-      "draw_ms_mean": 2.9867,
-      "flush_ms_mean": 0.4186,
+      "dispersion_cv_pct": 1.358,
+      "draw_ms_mean": 2.8439,
+      "flush_ms_mean": 0.4031,
       "flushes_mean": 1.0,
-      "fps": 297.61,
+      "fps": 307.84,
       "frames": 20,
       "memory": {
-        "peak_rss_bytes": 10608640,
+        "peak_rss_bytes": 10698752,
         "peak_vm_bytes": 82198528,
-        "pss_bytes": 10596352,
-        "rss_bytes": 10543104
+        "pss_bytes": 10670080,
+        "rss_bytes": 10682368
       },
       "redrawn_area_mean": 384000.0,
-      "render_mean_ms": 3.4053,
-      "render_p50_ms": 3.3601,
-      "render_p95_ms": 3.6086,
-      "render_p99_ms": 4.0232,
-      "render_stdev_ms": 0.1847,
+      "render_mean_ms": 3.247,
+      "render_p50_ms": 3.2485,
+      "render_p95_ms": 3.3068,
+      "render_p99_ms": 3.3102,
+      "render_stdev_ms": 0.0362,
       "scenario": "main-tema-cathode",
       "unique_redrawn_mean": 384000.0
     },
     {
-      "dispersion_cv_pct": 1.054,
-      "draw_ms_mean": 2.9553,
-      "flush_ms_mean": 0.4135,
+      "dispersion_cv_pct": 0.404,
+      "draw_ms_mean": 2.8452,
+      "flush_ms_mean": 0.401,
       "flushes_mean": 1.0,
-      "fps": 297.94,
+      "fps": 307.83,
       "frames": 20,
       "memory": {
-        "peak_rss_bytes": 10584064,
+        "peak_rss_bytes": 10366976,
         "peak_vm_bytes": 82194432,
-        "pss_bytes": 10571776,
-        "rss_bytes": 10584064
+        "pss_bytes": 10354688,
+        "rss_bytes": 10301440
       },
       "redrawn_area_mean": 384000.0,
-      "render_mean_ms": 3.3688,
-      "render_p50_ms": 3.3564,
-      "render_p95_ms": 3.4494,
-      "render_p99_ms": 3.5982,
-      "render_stdev_ms": 0.071,
+      "render_mean_ms": 3.2462,
+      "render_p50_ms": 3.2485,
+      "render_p95_ms": 3.2807,
+      "render_p99_ms": 3.2892,
+      "render_stdev_ms": 0.0183,
       "scenario": "main-tema-classic",
       "unique_redrawn_mean": 384000.0
     }
   ],
   "revisions": {
-    "revision": "5ade4f999813400efdcb6a1850cb56c68f906a91"
+    "revision": "170ac892b4653c62e1c5ffac3c894997d2ab0e1e"
   },
   "scenarios": [
     "main-tema-cathode",

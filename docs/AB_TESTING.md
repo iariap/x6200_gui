@@ -3750,7 +3750,7 @@ así que sus cuatro fixtures de pantalla principal traen la capa del "8 fantasma
 (un `exceptions` por fixture, con razón y vencimiento; `tests/test_theme_checks.py` fija el
 conjunto).
 
-**Gates corridos sobre `5ade4f9`, la rama del tema rebasada sobre `b78b779` (el trunk actual,
+**Gates corridos sobre `170ac89`, la rama del tema rebasada sobre `ad2bd88` (el trunk actual,
 con Redshift #81, Sunlit #83, Aurora #87, Trail #88, Sprint #82, el prune del rootfs #90 y los
 commits de QA ya mergeados); los reportes quedan en `reports/AB-CATHODE70` y
 `reports/BENCH-CATHODE70*`.**
@@ -3768,10 +3768,10 @@ experiment AB-CATHODE70: PASS (exit 0)
   Hardware/Energy    BLOCKED (advisory) — sin X6200 físico / sin medición de energía
 
 $ uv run x6200-ab contracts --revision HEAD
-contracts 5ade4f999813: PASS — 741 checks, 0 failure(s), 0 unchanged baseline defect(s)
+contracts 170ac892b465: PASS — 741 checks, 0 failure(s), 0 unchanged baseline defect(s)
 
 $ uv run x6200-ab audit --revision HEAD --suite visual
-audited 5ade4f999813: 17 known issues — 0 reproduced, 15 unverified;
+audited 170ac892b465: 17 known issues — 0 reproduced, 15 unverified;
 structural inspection REAL over 8405 objects on 71 scenario(s): 0 structural finding(s)
 
 $ uv run x6200-ab themes
@@ -3804,26 +3804,33 @@ uno.
 
 **Bench vs Classic** (`benchmark --revision HEAD`, plan del presupuesto: 5 repeticiones, 4
 rondas, 20 frames por escenario; x86 host, no el Cortex-A7), dos corridas limpias con el host
-descargado (dispersión máxima medida 2.2% y 2.7%, presupuesto 25%): las dos **PASS**.
+descargado (dispersión máxima medida 1.4% en las dos, presupuesto 25%): las dos **PASS**.
 
 | corrida | escenario | p50 | p95 | p99 | fps | cv | flushes | rss |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| `BENCH-CATHODE70` | `main-tema-classic` | 3.356 ms | 3.449 ms | 3.598 ms | 297.9 | 1.1% | 1.0 | 10 584 064 B |
-| `BENCH-CATHODE70` | `main-tema-cathode` | 3.360 ms | 3.609 ms | 4.023 ms | 297.6 | 2.2% | 1.0 | 10 543 104 B |
-| `BENCH-CATHODE70-R1` | `main-tema-classic` | 3.455 ms | 3.663 ms | 3.698 ms | 289.4 | 2.7% | 1.0 | 10 473 472 B |
-| `BENCH-CATHODE70-R1` | `main-tema-cathode` | 3.341 ms | 3.676 ms | 3.858 ms | 299.3 | 2.1% | 1.0 | 10 637 312 B |
+| `BENCH-CATHODE70` | `main-tema-classic` | 3.248 ms | 3.281 ms | 3.289 ms | 307.8 | 0.4% | 1.0 | 10 301 440 B |
+| `BENCH-CATHODE70` | `main-tema-cathode` | 3.248 ms | 3.307 ms | 3.310 ms | 307.8 | 1.4% | 1.0 | 10 682 368 B |
+| `BENCH-CATHODE70-R1` | `main-tema-classic` | 3.274 ms | 3.361 ms | 3.440 ms | 305.5 | 1.4% | 1.0 | 10 547 200 B |
+| `BENCH-CATHODE70-R1` | `main-tema-cathode` | 3.284 ms | 3.362 ms | 3.411 ms | 304.5 | 0.6% | 1.0 | 10 452 992 B |
 
-Es decir **+0.1% / −3.3% de p50** y **+4.6% / +0.4% de p95** contra Classic según la corrida: el
-signo cambia entre corridas, así que **no se afirma una mejora ni una regresión de costo**; lo
-que se afirma es que los cuatro deltas quedan por debajo del presupuesto relativo
-(`max_p95_delta_pct` 25%) y que las dos corridas pasan el presupuesto del host. El veredicto del
-`benchmark` es **PASS** en las dos, y el proxy determinista del `compare` (que no depende de la
-carga del host) también da `Performance PASS`. Aislamiento del sospechoso obvio —la familia
-segmentada, que agrega la capa sombra de los dígitos—: `main-foco` (IU1WXY, familia por defecto)
-vs `main-frecuencia-dseg` (mismo tema y estado, `digits dseg7`), p50 3.335 vs 3.336 ms
+Es decir **0.0% / +0.3% de p50** y **+0.8% / +0.03% de p95** contra Classic según la corrida: los
+cuatro deltas quedan por debajo del presupuesto relativo (`max_p95_delta_pct` 25%) y son del
+orden del ruido, así que **no se afirma una mejora ni una regresión de costo**; lo que se afirma
+es que las dos corridas pasan el presupuesto del host. El veredicto del `benchmark` es **PASS**
+en las dos, y el proxy determinista del `compare` (que no depende de la carga del host) también
+da `Performance PASS`. Aislamiento del sospechoso obvio —la familia segmentada, que agrega la
+capa sombra de los dígitos—: `main-foco` (IU1WXY, familia por defecto) vs `main-frecuencia-dseg`
+(mismo tema y estado, `digits dseg7`), p50 3.243 vs 3.247 ms
 (`reports/BENCH-CATHODE70-DSEG`): la capa no mide un costo propio. El número físico (Cortex-A7)
 no se midió y no se afirma nada sobre energía (el fondo oscuro no se asocia a ahorro de Wh: el
 LCD tiene backlight).
+
+**Nota de medición (host cargado).** Una corrida intermedia del bench dio **INCONCLUSIVE**
+(exit 3) con el host ocupado por el banco QEMU de otra corrida (dispersión de B hasta 39%, muy
+por encima del presupuesto del 25%): se descartó y se repitió con el host descargado (carga de
+1 min por debajo de 4) hasta tener las dos corridas limpias de arriba. El patrón es el mismo que
+documentan Redshift/Trail/Sprint: una muestra ruidosa de verdad lee muy por encima del
+presupuesto y el bench la declara INCONCLUSIVE, nunca PASS.
 
 **Hallazgos y límites declarados** (ninguno bloquea este PR):
 
