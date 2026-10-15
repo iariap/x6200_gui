@@ -664,10 +664,19 @@ void radio_start_atu() {
     }
 }
 
+/* El barrido de ROE fuerza LSB (es una portadora) y 3 W: al pararlo hay que devolver el equipo
+ * como estaba. La potencia se restaura desde cfg.pwr.val; el modo hay que guardarlo al arrancar
+ * (issue #84: sin esto la radio quedaba en LSB). */
+static int32_t  swrscan_prev_mode;
+static bool     swrscan_mode_saved = false;
+
 bool radio_start_swrscan() {
     if (state != RADIO_RX) {
         return false;
     }
+
+    swrscan_prev_mode  = subject_get_int(cfg_cur.mode);
+    swrscan_mode_saved = true;
 
     subject_set_int(cfg_cur.mode, x6200_mode_lsb);
     radio_lock();
@@ -686,6 +695,13 @@ void radio_stop_swrscan() {
         x6200_control_swrscan_set(false);
         x6200_control_txpwr_set(subject_get_float(cfg.pwr.val));
         radio_unlock();
+
+        /* El cambio de modo dispara observadores que toman el lock de radio, asi que va afuera
+         * del radio_lock (mismo orden que el set de LSB al arrancar). */
+        if (swrscan_mode_saved) {
+            subject_set_int(cfg_cur.mode, swrscan_prev_mode);
+            swrscan_mode_saved = false;
+        }
     }
 }
 
