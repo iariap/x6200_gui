@@ -3222,3 +3222,68 @@ guarda: el modo queda en `tests/check_harness_natural.sh` +
    (`refresh_waterfall()` salteando el redibujo mientras el display está apagado,
    y un redibujo al volver). El espectro, en cambio, no dibuja nada fuera de
    LVGL: su `spectrum_refresh()` sólo invalida.
+
+### Gates (salida real, HEAD `9b6fe17`)
+
+```text
+$ tests/check_harness_determinism.sh          # 33 fixtures x 2 corridas
+...
+PASS: deterministic (identical PNGs for every fixture)
+# los 33 sha256 son IDENTICOS a los del tip base ec89fc3: compilar src/backlight.c
+# de verdad en el arnes no movio un pixel de ninguna fixture.
+
+$ tests/check_harness_natural.sh
+  profile: spectrum 132000 px x 16 frames, waterfall 196000 px x 23 rows, clock 15840 px x 1 tick(s)
+  natural totals: invalidated 6745720 px in 45 rectangles / 45 flushes over 37/40 frames
+  delimitation: drive off -> 304760 px (4.5% of the 6745720 px with the drive), only clock/BT/band-info rectangles
+  forced mode: 3 frames x 1 flush x 384000 px (natural: 6745720 px in 40 frames)
+  CLI override: --bench-natural 10 ran 10 frames (the fixture says 40)
+  display off: 0 px in 40 frames (against 6745720 px lit) and a capture 384000 px lighter
+PASS: natural bench deterministic, profiled and delimited (main-natural)
+
+$ tests/check_harness_wakeups.sh               # gate nuevo
+  loop: 14 wakeups with the data drive (11 without it) in 1000 ms; sleeps 10-200 ms
+  tick thread: 200 wakeups in 1000 ms (5 ms, src/main.c) = 93.5% of the two sources
+  window override: --bench-wakeups 3000 ran 3000 ms with 31 loop wakeups (the default window: 1000 ms)
+  plain capture: no `wakeups` block (the mode is additive)
+PASS: wakeup profile measured, sourced and delimited (main-natural)
+
+$ uv run x6200-ab compare --a ec89fc3 --b HEAD --experiment-id AB-ECO13
+experiment AB-ECO13: PASS (exit 0)
+  Functional PASS (33 scenarios captured on both revisions) · Visual Regression PASS
+  (captures are pixel-identical to the baseline) · Quality Contract PASS (352 contract checks)
+  Performance PASS · Hardware BLOCKED · Energy BLOCKED
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts 9b6fe17abc54: PASS — 352 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited 9b6fe17abc54: 16 known issues — 0 reproduced, 14 unverified; structural inspection REAL
+over 3861 objects on 33 scenario(s): 0 structural finding(s)
+
+$ uv run pytest -m "not e2e" -q
+187 passed, 18 deselected
+$ uv run pytest -m e2e -q
+18 passed, 187 deselected in 126.06s (0:02:06)
+$ tests/native/run_native_tests.sh
+791 comprobaciones, 0 fallos + 7, 0 fallos (clock, UI-009) + 23, 0 fallos (backlight:
+la guarda nueva de lv_disp_enable_invalidation suma 4 sobre las 19 de UI-08 incr. 4)
+$ 6 chequeos estaticos (check_cfg_fills, check_actions, check_settings_focus, check_apps_menu,
+  check_app_handlers, check_wcag) → PASS
+$ cd tools/ab_testing && uv run ruff check . && uv run ruff format --check .   → PASS
+```
+
+Nota de herramienta: en este entorno `uv run ty check src tests` (la forma que corre el
+CI) imprime `WARN No python files found under the given path(s)` con `ty 0.0.87` y sale 0;
+se reprodujo igual en el checkout base (`work/x6200_gui`), así que es preexistente.
+Pasándole archivos (`ty check $(find src tests -name '*.py')`) sí chequea y sale limpio.
+
+Reproducibilidad **x3**: tres corridas seguidas de `--bench-natural`,
+`--bench-natural --display-off` y `--bench-wakeups` dan los mismos números
+(natural 6745720 px, apagada 0 px / captura 743680, wakeups lazo 14 / tick 200) y
+los mismos PNG (`8ec63121…`, `3986bc9a…`, `c1c66701…`); los JSON sólo difieren en
+`png_path`/`png_bytes` (el nombre del archivo de salida).
+
+Evidencia commiteada de la corrida: `tools/ab_testing/reports/AB-ECO13/`
+(compare A/B), `tools/ab_testing/reports/WAKEUPS-ECO13/` (perfil de wakeups) y
+`tools/ab_testing/reports/NATURAL-UI07-N1/off.json` (pantalla apagada).
