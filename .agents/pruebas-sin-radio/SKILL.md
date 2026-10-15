@@ -65,12 +65,19 @@ guard en `CAP_LOOPBACK=si`. Todo el detalle, los números medidos y lo que queda
 
 ## Lo que el script garantiza (y como verificarlo a mano)
 
-1. **Se prueba la ultima version.** Reconstruye antes de probar si **cualquiera** de estas se cumple:
-   el **hash de los fuentes** (`src/` + `lvgl/src`) cambio respecto de la ultima corrida, hay cambios
-   **sin commitear**, o algun fuente es mas nuevo que el binario. No depende solo de timestamps.
-   (`RECONSTRUIR=auto` por defecto, `si` para forzar, `no` para probar el binario que ya esta.)
-   Al final imprime **commit y md5** del binario que corrio, y ese md5 se compara con el de la radio o
-   con el de la imagen. En la pantalla, **Status → "CUI vX.Y.Z"** muestra la version del firmware.
+1. **Se prueba la ultima version.** Si **cualquiera** de estas se cumple, **limpia y despues
+   reconstruye antes de probar**: el **hash de los fuentes** (`src/` + `lvgl/src`) cambio respecto de
+   la ultima corrida, hay cambios **sin commitear**, o algun fuente es mas nuevo que el binario. No
+   depende solo de timestamps. (`RECONSTRUIR=auto` por defecto, `si` para forzar, `no` para probar el
+   binario que ya esta.)
+   La limpieza es `make x6200-gui-dirclean` **antes** del `x6200-gui-rebuild`: el rebuild compila en
+   una **copia propia del repo** y su mtime no es confiable (el `check-matrix` daba ok con un binario
+   viejo, `docs/HALLAZGOS.md` 65), asi que ese camino no reusa ni la copia ni los `.o`. Cuesta un
+   rebuild completo, a proposito.
+   Al final imprime **commit, md5 de la fuente y md5 del binario** que corrio: si el `fuente:` no
+   coincide con el arbol que querias probar, la corrida no vale. El md5 del binario se compara con el
+   de la radio o con el de la imagen. En la pantalla, **Status → "CUI vX.Y.Z"** muestra la version del
+   firmware.
 2. **Se usa el socket correcto.** Al arrancar borra `tmp/fakefb0`, `crash.txt` y el
    `tmp/x6200_remote.sock` viejos (un socket viejo hace que cualquier espera pase de largo y que la
    captura salga en blanco), espera a que exista el socket y hace un **handshake `{"cmd":"get"}`**:
@@ -183,7 +190,8 @@ GUI).
 | `connect ... Connection refused` | El socket es de `nobody` modo 600: usar el cliente dentro del chroot |
 | Captura en blanco (PNG de ~1 KB) | Socket o framebuffer viejos; el script los borra. El fb es `480x800x32 BGRA` y hay que rotarlo 270 |
 | El banco muere solo despues de un rato | Artefacto del rotativo bajo QEMU; el script reinicia el contenedor |
-| `md5` del binario no cambia | `RECONSTRUIR=si` (el hash de fuentes o los cambios sin commitear tambien lo fuerzan) |
+| `md5` del binario no cambia | `RECONSTRUIR=si` (el hash de fuentes o los cambios sin commitear tambien lo fuerzan; ese camino fuerza `dirclean` antes del rebuild) |
+| `fuente:` distinto del arbol que probas | El hash es de `src/` + `lvgl/src`: commitear o sacar los cambios sin commitear, y volver a correr |
 | Avisos `avisa_subject_nulo: subject_get_int con sujeto NULL` | Esperables en el banco: no hay hardware, los sujetos arrancan nulos. No impiden la captura |
 | `ERROR: la captura parece vacia` | La GUI no dibujo: subir `ESPERA`, o correr `--check` para ver si falta algo |
 

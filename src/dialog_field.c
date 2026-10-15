@@ -8,7 +8,7 @@
  *  S-meter, CQ, QSO count and time), Bands (activity and who hears you, from RBN) and
  *  the activation log. The dialog covers the whole screen above the buttons; the main
  *  knob still tunes. The network jobs (reference list update, POTA spot, QRZ upload) run
- *  x6100-field in a thread; its one-line answer comes back through the scheduler.
+ *  x6200-field in a thread; its one-line answer comes back through the scheduler.
  *  The companion app follows the screen through the remote state (dialog_field_remote_state)
  *  and logs, spots and starts the activation with dialog_field_remote().
  */
@@ -73,7 +73,7 @@
 #define REFS_PATH   FIELD_DIR "/refs.tsv"
 #define STATE_PATH  FIELD_DIR "/state"
 #define LOGS_DIR    FIELD_DIR "/logs"
-#define HELPER      "x6100-field"
+#define HELPER      "x6200-field"
 
 #define W           800
 #define HEAD_H      46
@@ -133,7 +133,7 @@ static char        near_prog;
 static field_qso_t qsos[MAX_QSO];
 static int         qsos_n;
 
-static atomic_bool busy;            /* an x6100-field job runs */
+static atomic_bool busy;            /* an x6200-field job runs */
 static bool        updating;        /* the reference list downloads */
 static bool        end_armed;
 static bool        spotted;      /* this activation is on pota.app: End posts a QRT spot */
@@ -318,7 +318,7 @@ static void freq_text(char *buf, size_t size, int32_t hz) {
     snprintf(buf, size, "%d.%03d.%03d", hz / 1000000, hz / 1000 % 1000, hz % 1000);
 }
 
-/* x6100-field jobs */
+/* x6200-field jobs */
 
 typedef void (*job_done_t)(const char *line);
 

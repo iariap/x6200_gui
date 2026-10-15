@@ -2,7 +2,7 @@
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  Xiegu X6100 LVGL GUI - Field Ops: parks (POTA) and summits (SOTA) near a position,
- *  from the list x6100-field update writes (one reference per line, tab separated:
+ *  from the list x6200-field update writes (one reference per line, tab separated:
  *  type P/S, ref, name, lat, lon, alt m, points).
  */
 
