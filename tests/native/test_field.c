@@ -7,7 +7,9 @@
  *
  * It also checks the tiles' prefix against the assets the ROM installs (issue #53):
  * the dialog asks for `FIELD_ICONS/<name>_<size>.png` and `rootfs/` is what lands in
- * the image, so the files the constant names have to be there.
+ * the image, so the files the constant names have to be there. The same check covers
+ * the helpers Field Ops spawns (`HELPER`, `POTA_SPOTS`, issue #64): they are named
+ * `x6200-*` in the ROM, not the inherited `x6100-*`.
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -250,10 +252,124 @@ static void test_icons_shipped(void) {
     }
 }
 
+/* Valor de `#define <macro> "..."` leido del fuente (texto, sin compilar el modulo). */
+static bool lee_define_string(const char *path, const char *macro, char *out, size_t size) {
+    char  needle[64];
+    FILE *f = fopen(path, "r");
+    bool  ok = false;
+
+    if (f == NULL || size == 0) {
+        if (f != NULL) {
+            fclose(f);
+        }
+        return false;
+    }
+
+    snprintf(needle, sizeof(needle), "#define %s", macro);
+
+    char line[512];
+
+    while (fgets(line, sizeof(line), f) != NULL) {
+        const char *p = strstr(line, needle);
+
+        if (p == NULL) {
+            continue;
+        }
+
+        p += strlen(needle);
+
+        if (*p != ' ' && *p != '\t') {
+            continue;                   /* HELPER_ALGO no es HELPER */
+        }
+
+        while (*p == ' ' || *p == '\t') {
+            p++;
+        }
+
+        if (*p != '"') {
+            continue;
+        }
+
+        p++;
+        size_t n = strcspn(p, "\"");
+
+        if (n < size) {
+            memcpy(out, p, n);
+            out[n] = 0;
+            ok     = true;
+        }
+        break;
+    }
+    fclose(f);
+    return ok;
+}
+
+/* Los ejecutables que Field Ops arranca por popen() tienen que existir en la imagen con el
+ * mismo nombre. #64 fueron dos heredados del X6100 que la ROM no instala (instala `x6200-*`):
+ * `x6100-field` (los jobs del dialogo) y `/usr/sbin/x6100-pota-spots` (el feed de POTA), y el
+ * `2>/dev/null` del popen se comia el "not found". Se leen los #define de los fuentes y se
+ * abren en `rootfs/`: un nombre viejo (o un helper que deje de instalarse) falla aca, en el host. */
+static void test_helpers_shipped(void) {
+    const char *src = getenv("X6200_DIALOG_FIELD_SRC");
+
+    if (src == NULL || *src == 0) {
+        return;                         /* el runner no lo paso: nada que comprobar */
+    }
+
+    /* Raiz del checkout: <raiz>/src/dialog_field.c -> dirname(dirname(...)) */
+    char root[512];
+
+    snprintf(root, sizeof(root), "%s", src);
+
+    for (int dirs = 2; dirs > 0; dirs--) {
+        char *slash = strrchr(root, '/');
+
+        if (slash == NULL) {
+            break;
+        }
+
+        *slash = 0;
+    }
+
+    /* HELPER se invoca por PATH (popen corre `sh -c`): la imagen pone sus helpers en /usr/sbin */
+    char name[128] = "";
+    char path[1024] = "";
+
+    CHECK(lee_define_string(src, "HELPER", name, sizeof(name)));
+    snprintf(path, sizeof(path), "%s/rootfs/usr/sbin/%s", root, name);
+
+    FILE *f = fopen(path, "rb");
+
+    CHECK(f != NULL);
+
+    if (f != NULL) {
+        fclose(f);
+    }
+
+    /* POTA_SPOTS es una ruta absoluta: rootfs + la ruta */
+    char client[768];
+
+    snprintf(client, sizeof(client), "%s/src/cluster/client.c", root);
+
+    char spots[128] = "";
+
+    CHECK(lee_define_string(client, "POTA_SPOTS", spots, sizeof(spots)));
+    CHECK(spots[0] == '/');             /* la ruta es absoluta */
+    snprintf(path, sizeof(path), "%s/rootfs%s", root, spots);
+
+    f = fopen(path, "rb");
+    CHECK(f != NULL);
+
+    if (f != NULL) {
+        fclose(f);
+    }
+}
+
 void test_field(void) {
     test_refs_nearest();
     test_adif_record();
     test_log_round_trip();
     test_bands();
     test_icons_shipped();
+    test_helpers_shipped();
 }
