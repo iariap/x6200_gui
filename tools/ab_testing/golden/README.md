@@ -84,3 +84,39 @@ or, without Docker, with the harness build of `tests/check_harness_determinism.s
 tools/ui_harness/build/ui_harness --scenario tools/ui_harness/fixtures/main-tema-aurora.scn \
     --png tools/ab_testing/golden/main-tema-aurora.png --json /tmp/main-tema-aurora.json
 ```
+
+## 2026-10-15 — `main-tema-sprint.png` (THEMES v2, issue #69)
+
+A **new** render, not a regeneration: the Sprint theme
+(`rootfs/usr/share/x6200/themes/Sprint.json`) and its fixture
+(`tools/ui_harness/fixtures/main-tema-sprint.scn`, the same radio state as
+`home-usb-20m`, the theme the only variable) arrive together with this PNG, so the
+non-text contract can measure the two objects that only the pixels answer on this
+theme: `s_meter_arc` (Sprint's own `meter_over` over the meter's bitmap face,
+**5.46:1**) and `waterfall_signal` (Sprint's own `waterfall` table, **8.31:1**),
+both declared in `quality/nontext.yaml`. The other renders in this directory are
+untouched by the change.
+
+Captured at the same revision as the rest of the branch, inside
+`tools/ab_testing`:
+
+```bash
+uv run x6200-ab capture --revision <sha> --label golden \
+    --scenario main-tema-sprint --out "$(git rev-parse --show-toplevel)/tools/ab_testing/golden"
+```
+
+or, without Docker, with the harness build of `tests/check_harness_determinism.sh`:
+
+```bash
+tools/ui_harness/build/ui_harness --scenario tools/ui_harness/fixtures/main-tema-sprint.scn \
+    --png tools/ab_testing/golden/main-tema-sprint.png --json /tmp/main-tema-sprint.json
+```
+
+**Nota medida (pre-existente, no de este cambio).** Los renders dorados de las fixtures que
+dibujan con la familia por defecto (`main-foco`, `settings-home`, `main-espectro-agua`,
+`main-otro-tema`, `main-tema-vision`) **no** coinciden byte a byte con el render de la
+revisión de hoy: el kerning de la migración de fuentes (`4e9b5f4`, AB-FONTSE) movió sus
+glifos y esos PNG no se regeneraron (los de los temas que nombran Roboto —Classic, RS, Holo,
+Material 3— sí coinciden). La medición no-texto de esas fixtures describe, entonces, un
+render anterior; regenerarlos es una re-baseline declarada (`expected_changes`) que queda
+para la pasada de integración (#73).

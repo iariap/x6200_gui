@@ -184,6 +184,27 @@ objects:
     min_ratio: 3.0
     where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
 
+  - name: waterfall_signal
+    fixture: main-tema-sprint
+    theme: Sprint
+    object: [383, 255, 22, 150]
+    background: [220, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
+
+  # --- Sprint (THEMES v2, issue #69): the same two objects, measured on the
+  # theme's own golden render. Sprint ships its own waterfall table (the JSON
+  # `waterfall` stops, theme.c make_palette) and its own `meter_over` (the +20/+40
+  # arc over the meter's bitmap face), so the pixels answer what the static check
+  # cannot: the arc and the signal column reach 3:1 with Sprint's roles.
+  - name: s_meter_arc
+    fixture: main-tema-sprint
+    theme: Sprint
+    object: [481, 28, 10, 12]
+    background: [481, 17, 10, 9]
+    min_ratio: 3.0
+    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
+
   # --- Focus indicator: the focused field surface against the dialog ---
   # styles.c paints the focused cell with TC(focus); on settings-home the focus is
   # on the day field. The dialog is the surface it is read against.
