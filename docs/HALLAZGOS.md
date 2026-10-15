@@ -58,6 +58,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 37. [Lo que arreglo las apps que se caian (y lo que no)](#37-lo-que-arreglo-las-apps-que-se-caian-y-lo-que-no)
 38. [Status y JS8: los dos crashes que quedaban (y que la migracion estaba bien)](#38-status-y-js8-los-dos-crashes-que-quedaban-y-que-la-migracion-estaba-bien)
 39. [QTH y Callsign no abrian por el control remoto (y el barrido las daba por vivas)](#39-qth-y-callsign-no-abrian-por-el-control-remoto-y-el-barrido-las-daba-por-vivas)
+40. [El volumen que el control remoto no veia (y la etiqueta de ganancia del Audio)](#40-el-volumen-que-el-control-remoto-no-veia-y-la-etiqueta-de-ganancia-del-audio)
 
 ---
 
@@ -1890,3 +1891,91 @@ $ python3 tests/check_apps_menu.py
 `main_screen_close_app()` es `dialog_destruct()`, que no lo toca). En el barrido no molesta porque
 abrir la app siguiente pasa por `apps_disable()`, que lo apaga. Apagarlo bien pide ademas devolver
 la barra de botones al inicio (hoy la pagina de RTTY queda cargada despues de cerrar un dialogo).
+
+---
+
+## 40. El volumen que el control remoto no veia (y la etiqueta de ganancia del Audio)
+
+**Sintoma** (reportado por el usuario, issue #30): el volumen de recepcion no se aplica; la radio
+suena muy bajo y subirlo por el control remoto no lo cambia. En el equipo, `/mnt/params.db` tenia
+`vol = 8` y el `GET` del propio control remoto contestaba `"vol": 0`.
+
+**Causa, medida en el banco** (binario ARM de la imagen con QEMU, `tools/captura-banco.sh`,
+commit `5f07ac6`, md5 del binario `b662ca41cde6`):
+
+```
+$ sqlite3 .vfix3/mnt/params.db "select name,val from params where name in ('vol','sql','nb','nr');"
+nb|1
+nr|1
+sql|0
+vol|10
+$ docker run --rm --entrypoint "" -v .vfix3:/t x6200-buildroot sh -c "chroot /t /tmp/x6200-remote '{\"cmd\":\"get\"}'"
+{"t":"state","vfo":"A","freq":21250000,...,"rfgain":0,"sql":0,"vol":0,...,"nb":0,"nr":0,
+ "nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,...,"did":""}
+$ grep -c "sujeto NULL" .vfix3/out-banco.txt
+28
+```
+
+Los 28 avisos del log son 7 por cada `GET` (4 `GET` en esa corrida: el handshake y tres
+consultas): `vol`, `sql`, `nb`, `nb_level`, `nb_width`, `nr`, `nr_level`, exactamente los siete
+Param que en `state_line()` (`src/remote_server.cpp:610-614`) leen items de `cfg`. Todos los
+avisos dicen `subject_get_int con sujeto NULL` y salen de `avisa_subject_nulo()`
+(`src/cfg/subjects.cpp:89`), que devuelve el valor neutro: por eso el `vol` que contesta el control
+remoto es 0 y no el de la base.
+
+La causa, en el codigo: `cfg_sm` (`src/cfg/settings_manager.cpp`) es un global C++, asi que su
+constructor corre antes de que `cfg_init()` cree los items de `cfg` y sus subjects. Los Param de
+esos items quedaban ligados a un `Subject *` NULL para siempre: `init_live()` rehacia el mapeo de
+los subjects de estado vivo (`cfg_cur.*`, los del dial) pero no el de los persistidos. `pwr` no
+estaba roto porque su `tief()` lee `cfg.pwr.val` en cada llamada, no al construir.
+
+**Arreglo**: `SettingsManager::init_persisted()` vuelve a ligar los Param persistidos, y
+`cfg_sm_init_live()` (el ultimo paso de `cfg_init()`, `src/cfg/cfg.c`) lo llama junto con
+`init_live()`. `check_live()` ahora recorre los veinte parametros (persistidos y de estado vivo) y
+devuelve cuantos quedaron sin subject, para que se pueda comprobar en vez de mirarlo en el log.
+
+**Verificacion, medida** (el mismo banco, commit `9a5a769`, md5 del binario `e8572f2d8355`):
+
+```
+$ sqlite3 .vfix3/mnt/params.db "select name,val from params where name in ('vol','sql','nb','nr');"
+nb|1
+nr|1
+sql|0
+vol|8
+$ docker run --rm --entrypoint "" -v .vfix3:/t x6200-buildroot sh -c "chroot /t /tmp/x6200-remote '{\"cmd\":\"get\"}'"
+{"t":"state","vfo":"A","freq":21250000,...,"rfgain":0,"sql":0,"vol":8,...,"nb":1,"nr":1,
+ "nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,...,"did":""}
+$ docker run --rm --entrypoint "" -v .vfix3:/t x6200-buildroot sh -c "chroot /t /tmp/x6200-remote '{\"cmd\":\"vol\",\"val\":30}'"
+{"t":"ok"}
+$ ... '{"cmd":"get"}'  ->  ..."vol":30...
+$ grep -c "sujeto NULL" .vfix3/out-banco.txt
+0
+```
+
+Es decir: el estado que ve el control remoto pasa a ser el de la base (`vol 8`, `nb 1`, `nr 1`),
+el comando `vol` del control remoto mueve ese estado, y los avisos de sujeto NULL desaparecen del
+log. Lo mismo cubre el arnes de UI: `settings-audio` y las otras 24 fixtures lo comprueban en cada
+corrida (`mocks/mock_settings_manager.cpp`, con `check_live() == 0`).
+
+**La etiqueta de "Play,Rec gain"** (mismo cambio, issue #26). Medido con el inspector del arnes
+(`ui_harness --inspect`) sobre el render de la fixture `settings-audio`: las dos etiquetas de valor
+de la fila de ganancia de Ajustes -> Audio salian con el texto `f`:
+
+```
+('Play,Rec gain', 22, 154, 197, 28)
+('f', 619, 154, 11, 28)          <- etiqueta del slider de Play gain
+('f', 763, 154, 11, 28)          <- etiqueta del slider de Rec gain
+```
+
+Eran dos causas que se sumaban, las dos de codigo: `slider_with_text()`
+(`src/dialog_settings.c`) le pasaba un `int32_t` a un formato `"%.1f"` (tipo equivocado en los
+argumentos variables), y el `lv_conf.h` del arnes no habilitaba el `%f` de LVGL, que la ROM si
+habilita (`lv_conf.h` de la raiz: `LV_SPRINTF_USE_FLOAT 1`). Con las dos corregidas, la etiqueta de
+Play gain dice `3.0` y la de Rec gain `-7.0` (el valor al que la fixture la arrastra).
+
+**Sin fundar** (anexo A): el silencio digital del sink que el issue #30 mide en la radio
+(`parecord` del monitor, RMS -240 dBFS). El banco no tiene el stack de audio real: la GUI corre con
+un framebuffer falso y sin Pulse ni codec, asi que ahi no hay monitor que grabar. Lo que se midio
+en el banco es el camino `params.db -> estado de la GUI -> control remoto`, que es donde estaba el
+defecto; que ese estado llegue al codec es del aplicador del SDK (`x6200_control_rxvol_set`) y del
+canal fisico (#15).

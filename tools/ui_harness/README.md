@@ -294,9 +294,11 @@ run is in `tools/ab_testing/reports/NATURAL-UI07-N1/`.
 
 A scenario is a `key value` file (unknown keys are an error). Besides the radio
 state (`frequency_hz`, `mode`, `rxtx`, `smeter_db`, `battery_v`, …) it can pick
-the `theme` and a `seed`, and toggle `band_plan`, `spectrum_filled`,
+the `theme` and a `seed`, toggle `band_plan`, `spectrum_filled`,
 `spectrum_peak`, `waterfall_center_line` and `waterfall_battery` (the user's
-waterfall battery mode, the Ajustes switch). `bench_warmup`, `bench_repeats`,
+waterfall battery mode, the Ajustes switch), and set the two audio gains of the
+Ajustes Audio group (`play_gain_db`, `rec_gain_db`, the dB the radio loads from
+params.db into `params.play_gain_db_f`/`params.rec_gain_db_f`). `bench_warmup`, `bench_repeats`,
 `bench_redraw_passes` (the forced bench) and `natural_frames` (the natural bench)
 are honoured only in their own mode and never change a rendered pixel.
 
@@ -308,12 +310,15 @@ draws is the one `info_params_mode_label_get()` (src/info.c) returns, so a fixtu
 can measure how a given mode's text fits its fixed cell.
 
 The `screen` selects what is built: `main` (the real main screen),
-`settings-home`, `settings-wfbat` and `settings-perfil`
+`settings-home`, `settings-wfbat`, `settings-perfil` and `settings-audio`
 (the same screen with the real Ajustes window, `ACTION_APP_SETTINGS` → `dialog_construct(dialog_settings)`;
 `settings-wfbat` then presses the bottom bar's "Mas >" and "Espectro" tabs through
 `buttons_press()`, the same path the user takes, so the view is scrolled to the
-Spectrum/waterfall group with its battery switch on, and `settings-perfil` presses
-"Mas >" and "Apariencia" to reach the "Visual profile" row of UI-08 increment 5),
+Spectrum/waterfall group with its battery switch on, `settings-perfil` presses
+"Mas >" and "Apariencia" to reach the "Visual profile" row of UI-08 increment 5, and
+`settings-audio` presses the "Audio" tab, drags the Rec gain slider and checks which
+of the two audio setters ran -the two sliders look alike, see the row's entry in the
+table below-),
 `settings-bands` (Ajustes and
 then the real Bands action, `main_screen_action(ACTION_APP_BANDS)`), `app-bands`
 (the app menu the APP key loads, `buttons_load_page_group(buttons_group_app)`, with
@@ -348,6 +353,7 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `settings-home` | the real main screen with the real Ajustes window open over it (`dialog.c` + `dialog_settings.c`), on its first group (clock: date/time, Clock view, timeouts). The wall clock is the harness' fixed epoch, so the date/time fields are deterministic |
 | `settings-wfbat` | Ajustes scrolled to the Spectrum/waterfall group with the waterfall battery mode the user turned on (`waterfall_battery true`); the switch renders checked and the real waterfall runs the saving cadence the visual policy applies |
 | `settings-perfil` | Ajustes scrolled to the Apariencia group, where the "Visual profile" row of UI-08 increment 5 lives. The pack is on battery at 11.2 V (`external_v 0.0`), so the auto policy decides ECO: the dropdown renders `Auto` (the persisted setting) while the row label reads the effective profile (`Visual profile (Eco)`). `scenario_settle` codifies that exact text |
+| `settings-audio` | Ajustes scrolled to the Audio group (the "Audio" tab, page 1 index 3): the "Line-in, Line-out" row, the "Play,Rec gain" row, "Audio enhance", "Speaker mode" and the voice rows. `play_gain_db`/`rec_gain_db` give the two gain sliders different values (the radio loads them from params.db) so each one can be told apart, and `scenario_settle` drags the Rec one and checks with the audio mock's recorder (`mocks/mock_ui_deps.c`) that the setter it ran is `audio_set_rec_vol()`: with the two callbacks wired to the same function (issue #26) the run stops instead of going green |
 | `settings-bands` | Ajustes and then the real Bands action (`main_screen_action(ACTION_APP_BANDS)`, the dispatcher the Ajustes long-press list reaches). `dialog_bands` is an inert mock here, so the fixture codifies the route in `scenario_settle` (the Ajustes window has to be closed and a dialog has to be running) instead of the window's pixels |
 | `app-bands` | the app menu the APP key opens (`buttons_group_app`, page `APP 3:6`) with the "Bands" button pressed — the route the owner reported ("the Bands menu does nothing"). Same inert `dialog_bands`: `scenario_settle` stops the run if the button reaches no dialog at all |
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |

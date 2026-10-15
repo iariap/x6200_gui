@@ -86,7 +86,8 @@ verifican solo por compilación y strings del binario.
   Seis fixtures (incluye TX simulado, batería baja, frecuencia extrema, otro
   tema y waterfall en movimiento); determinismo PASS en todos. Ver
   `docs/AB_TESTING.md`.
-- ✅ **Diálogos reales**: el **Ajustes** (`settings-home`, `settings-wfbat`) se
+- ✅ **Diálogos reales**: el **Ajustes** (`settings-home`, `settings-wfbat`,
+  `settings-perfil`, `settings-audio`) se
   abre por el camino del firmware
   (`ACTION_APP_SETTINGS` → `dialog_construct`), con el
   `dialog_settings.c` real y las superficies que llama mockeadas (mixer, preset de

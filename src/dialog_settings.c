@@ -38,6 +38,7 @@
 #include <time.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/rtc.h>
@@ -367,7 +368,16 @@ static void slider_with_text(lv_obj_t *cell, int32_t val, int32_t min, int32_t m
     /*Create a label below the slider*/
     lv_obj_t *slider_label = lv_label_create(cell);
     lv_obj_set_user_data(slider_label, fmt);
-    lv_label_set_text_fmt(slider_label, fmt, val);
+    /* La etiqueta se escribe con el mismo `fmt` que el callback usa despues, asi que el
+     * formato decide con que tipo se pasa el valor por varargs: "%d" lleva un entero y "%.1f"
+     * un double. El valor de un slider de ganancia es un float y llegaba como entero, que por
+     * varargs es el tipo equivocado: la etiqueta de "Play,Rec gain" quedaba con basura (no la
+     * del valor guardado) hasta que el usuario la movia (fila del issue #26). */
+    if (strchr(fmt, '.') != NULL) {
+        lv_label_set_text_fmt(slider_label, fmt, (double) val);
+    } else {
+        lv_label_set_text_fmt(slider_label, fmt, val);
+    }
     lv_obj_align(slider_label, LV_ALIGN_RIGHT_MID, 12, 0);
     lv_obj_set_style_text_color(slider_label, TC(text), 0);
 
@@ -1336,7 +1346,15 @@ static uint8_t make_hmic_action(uint8_t row) {
     return row;
 }
 
-/* Play,Rec gain */
+/* Play,Rec gain
+ *
+ * Cada slider mueve SU ganancia y guarda SU parametro: el de la izquierda la salida
+ * (audio_set_play_vol -> params.play_gain_db_f) y el de la derecha la entrada
+ * (audio_set_rec_vol -> params.rec_gain_db_f). Los dos sliders se ven iguales, y el
+ * callback de Rec salio copiado del de Play llamando a la funcion de salida (issue #26):
+ * arrastrarlo movia el volumen que se escucha y el gain de entrada no se aplicaba nunca.
+ * tests/check_settings_focus.py lo comprueba (el parametro del slider tiene que aparecer
+ * en el cuerpo de su callback), asi que un copiar/pegar cruzado lo deja en rojo. */
 
 static void play_gain_update_cb(lv_event_t * e) {
     lv_obj_t *obj = lv_event_get_target(e);
@@ -1351,7 +1369,7 @@ static void play_gain_update_cb(lv_event_t * e) {
 
 static void rec_gain_update_cb(lv_event_t * e) {
     lv_obj_t *obj = lv_event_get_target(e);
-    float val = audio_set_play_vol(lv_slider_get_value(obj));
+    float val = audio_set_rec_vol(lv_slider_get_value(obj));
 
     params_float_set(&params.rec_gain_db_f, val);
     lv_obj_t *slider_label = (lv_obj_t *)lv_event_get_user_data(e);

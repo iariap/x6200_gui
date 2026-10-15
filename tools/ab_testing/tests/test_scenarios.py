@@ -145,6 +145,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "main-tema-vision-cwr",
         "main-tema-vision-usbd",
         "main-tx-simulado",
+        "settings-audio",
         "settings-bands",
         "settings-home",
         "settings-perfil",
@@ -158,6 +159,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
         in {
             "main",
             "main-foco",
+            "settings-audio",
             "settings-home",
             "settings-perfil",
             "settings-wfbat",

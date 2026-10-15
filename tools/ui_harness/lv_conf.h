@@ -25,6 +25,12 @@
 #define LV_LOG_LEVEL LV_LOG_LEVEL_WARN
 #define LV_LOG_PRINTF 1
 
+/* Los formatos con float de las etiquetas (%f/%.1f), como en la ROM: el lv_conf.h de la raiz
+ * los habilita (LV_SPRINTF_USE_FLOAT 1) y LVGL trae el default en 0. Sin esto LVGL imprime la
+ * letra 'f' en vez del numero (el arnes decia "f" donde la radio dice el valor) y una etiqueta
+ * que la ROM dibuja con su numero quedaba sin medir en el banco. */
+#define LV_SPRINTF_USE_FLOAT 1
+
 /* Host filesystem for the theme bitmaps: A:/path -> /path */
 #define LV_USE_FS_STDIO 1
 #if LV_USE_FS_STDIO

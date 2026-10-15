@@ -112,6 +112,14 @@ static bool apply_key(const char *key, const char *value, scenario_t *out)
          * on renders the switch checked and drives the real waterfall into its
          * saving cadence through the visual policy, exactly as the radio does. */
         return parse_bool(value, &params.waterfall_battery.x);
+    } else if (!strcmp(key, "play_gain_db") || !strcmp(key, "rec_gain_db")) {
+        /* Las dos ganancias de Ajustes -> Audio (los sliders de la fila "Play,Rec gain",
+         * src/dialog_settings.c). El fixture les da valores distintos para que el slider de
+         * cada una se pueda identificar en el render; en la radio los carga del DB con
+         * params_load_float() (src/params/params.c), que escribe el mismo `.x`. */
+        float *destino = (key[0] == 'p') ? &params.play_gain_db_f.x : &params.rec_gain_db_f.x;
+
+        *destino = strtof(value, NULL);
     } else if (!strcmp(key, "frequency_hz")) {
         mock_radio.frequency_hz = strtoull(value, NULL, 10);
     } else if (!strcmp(key, "tx_frequency_hz")) {

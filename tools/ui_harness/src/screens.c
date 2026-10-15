@@ -100,6 +100,28 @@ static bool label_on_screen(lv_obj_t *obj, const char *text)
     return false;
 }
 
+/* El lv_slider del arbol que esta mostrando este valor. El fixture de audio le da un valor
+ * distinto a cada slider de ganancia justamente para poder identificar cual es cual sin leer
+ * el texto de su etiqueta (que lo escribe el callback, recien cuando el usuario lo mueve). */
+static lv_obj_t *slider_with_value(lv_obj_t *obj, int32_t value)
+{
+    if (lv_obj_check_type(obj, &lv_slider_class) && lv_slider_get_value(obj) == value) {
+        return obj;
+    }
+
+    uint32_t children = lv_obj_get_child_cnt(obj);
+
+    for (uint32_t i = 0; i < children; i++) {
+        lv_obj_t *hit = slider_with_value(lv_obj_get_child(obj, (int32_t) i), value);
+
+        if (hit != NULL) {
+            return hit;
+        }
+    }
+
+    return NULL;
+}
+
 static void build_main(const scenario_t *scenario)
 {
     /* Push the scenario's radio state into the subjects before the components
@@ -163,7 +185,8 @@ bool scenario_build(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "settings-home") || !strcmp(scenario->screen, "settings-wfbat")
-        || !strcmp(scenario->screen, "settings-perfil")) {
+        || !strcmp(scenario->screen, "settings-perfil")
+        || !strcmp(scenario->screen, "settings-audio")) {
         /* Ajustes on top of the real main screen, opened by the firmware's own
          * path: main_screen_action(ACTION_APP_SETTINGS) -> main_screen_start_app()
          * -> dialog_construct(dialog_settings) (src/main_screen.c -> src/dialog.c
@@ -264,6 +287,79 @@ void scenario_settle(const scenario_t *scenario)
             fprintf(stderr,
                     "settings-perfil: 'Visual profile (Eco)' is not on screen after the "
                     "Apariencia tab press (did the row move or the auto profile change?)\n");
+            exit(1);
+        }
+    }
+
+    if (!strcmp(scenario->screen, "settings-audio")) {
+        /* La pagina Ajustes -> Audio: el tab "Audio" es el indice 3 de la pagina 1 de la
+         * barra de tabs (src/dialog_settings.c, tabs_pagina_1) y llama a settings_goto(),
+         * que scrollea la grilla hasta el grupo y le mueve el foco. */
+        if (!label_on_screen(lv_scr_act(), "Audio")) {
+            fprintf(stderr,
+                    "settings-audio: no hay tab 'Audio' en la barra de abajo (¿se reordenaron "
+                    "los tabs?)\n");
+            exit(1);
+        }
+        buttons_press(3, false);    /* page 1, index 3: tab "Audio" */
+
+        /* Lo que esta fixture *significa*: la fila "Play,Rec gain" (los dos sliders de
+         * ganancia) esta a la vista en el grupo Audio. Codificado: si el grupo o la fila se
+         * mueven, el arnes corta en vez de capturar otra cosa y reportar verde. */
+        if (!label_on_screen(lv_scr_act(), "Play,Rec gain")) {
+            fprintf(stderr,
+                    "settings-audio: la fila 'Play,Rec gain' no quedo en pantalla despues del "
+                    "tab Audio (¿se movio el grupo?)\n");
+            exit(1);
+        }
+
+        /* Los dos sliders se ven iguales: se los distingue por el valor que el fixture les
+         * dio (play_gain_db 3, rec_gain_db -4). Faltando uno, la premisa del fixture no vale
+         * y el arnes corta aca. */
+        lv_obj_t *play = slider_with_value(lv_scr_act(), 3);
+        lv_obj_t *rec  = slider_with_value(lv_scr_act(), -4);
+
+        if (play == NULL || rec == NULL || play == rec) {
+            fprintf(stderr,
+                    "settings-audio: no encontre los dos sliders de ganancia por su valor "
+                    "(play %s, rec %s): ¿el fixture o la fila cambiaron?\n",
+                    play ? "ok" : "falta", rec ? "ok" : "falta");
+            exit(1);
+        }
+
+        /* El usuario arrastra el slider de Rec gain: LVGL setea el valor y manda
+         * LV_EVENT_VALUE_CHANGED, que es exactamente lo que se manda aca. El observable es el
+         * setter que corre (mock_audio_last_setter(), mocks/mock_ui_deps.c): cada slider
+         * tiene que llegar a SU ganancia. Con el callback de Rec apuntando a la funcion de
+         * salida -el copiar/pegar del issue #26- el registro queda en `play` y la corrida
+         * para; el fixture nunca sale verde midiendo lo que no es. */
+        mock_audio_reset();
+        lv_slider_set_value(rec, -7, LV_ANIM_OFF);
+        lv_event_send(rec, LV_EVENT_VALUE_CHANGED, NULL);
+
+        if (mock_audio_last_setter() != MOCK_AUDIO_REC || mock_audio_calls(MOCK_AUDIO_REC) != 1
+            || mock_audio_calls(MOCK_AUDIO_PLAY) != 0) {
+            fprintf(stderr,
+                    "settings-audio: arrastrar el slider de Rec gain corrio %s (x%d) en vez de "
+                    "audio_set_rec_vol() -> el slider de entrada mueve la salida (issue #26)\n",
+                    mock_audio_last_setter() == MOCK_AUDIO_PLAY ? "audio_set_play_vol()"
+                                                                : "ningun setter de audio",
+                    mock_audio_calls(MOCK_AUDIO_PLAY));
+            exit(1);
+        }
+
+        /* Y el estado: cada slider guardo en SU parametro. El de Play no se toco. */
+        if (params.rec_gain_db_f.x != -7.0f || params.play_gain_db_f.x != 3.0f) {
+            fprintf(stderr,
+                    "settings-audio: despues de mover Rec gain quedo rec_gain_db_f=%f y "
+                    "play_gain_db_f=%f (se esperaba -7 y 3)\n",
+                    (double) params.rec_gain_db_f.x, (double) params.play_gain_db_f.x);
+            exit(1);
+        }
+
+        if (mock_audio_last_db() != -7.0f) {
+            fprintf(stderr, "settings-audio: el setter de entrada recibio %f en vez de -7\n",
+                    (double) mock_audio_last_db());
             exit(1);
         }
     }

@@ -76,8 +76,10 @@ int cfg_init(sqlite3 *db) {
     cfg_mode_params_init(db);
     boot_mark("cfg:mode");
 
-    /* Ya existen los subjects cfg_cur.*: rehacer el mapeo de cfg_sm (ver init_live, en
-     * settings_manager.cpp; el puente está porque este archivo es C). */
+    /* Ya existen los items de cfg (init_params_cfg) y los subjects cfg_cur.* (los dos
+     * cfg_*_params_init de más arriba): rehacer el mapeo de cfg_sm, que como global corrió
+     * su constructor antes que todo esto y quedó apuntando a NULL (ver init_persisted e
+     * init_live en settings_manager.cpp; el puente está porque este archivo es C). */
     cfg_sm_init_live();
     boot_mark("cfg:sm");
     // rc = init_mode_cfg(db);
