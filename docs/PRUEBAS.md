@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 15/10 ~20:15 | imagen `cb2da072b7b0` (sin cambios) | `ad2bd88` | TODO OK | (ya corrido) | **0 en 180 s** | Radio en **192.168.0.236** (cambió de IP); 0 caídas en la vigilancia; el log de 8.388 líneas es histórico del barrido; sale **#92**: el barrido deja modo/dial cambiados. El **CPU ~99% sigue** y no es del barrido |
 | 15/10 ~19:50 | imagen `cb2da072b7b0` (sin cambios) | `b78b779` | TODO OK | **23 ok** | 0 en la muestra | Sigue **#91**: CPU ~114,8% (3ª muestra: 118,8/115,2/114,8 + load 1,11) y la pantalla lavada; **fundado que el tema activo es `Sunlit`** (migrado desde `Outdoor`) por los colores de la captura |
 | 15/10 ~19:40 | **imagen con #89** `cb2da072b7b0` | `d1d645d` | **TODO OK** | no se corrió | 0 en la muestra | **#89 arreglado** (1 GUI, sin kworker al 98%, entrada OK) pero sale **#91**: el GUI come ~1,2 núcleos y la pantalla se ve lavada |
 | 15/10 ~19:00 | **imagen nueva en la SD** `cb2da072b7b0` | `5ebe692` (+#87) | 1 falló | **23 ok** | — | **Funciona**, pero la imagen **parpadea**: el rootfs trae DOS scripts de init (`S20gui` + `S95gui`) → dos GUIs con `/dev/fb0` abierto → flicker + el doble de CPU (**#89**). DATA y ajustes intactos; ROE no se midió |
