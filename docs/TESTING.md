@@ -26,6 +26,16 @@ da `tools/captura-banco.sh`: prueba la **ultima version** (reconstruye si el fue
 imprime commit + md5) y usa el **socket correcto** (limpia socket/framebuffer viejos y hace handshake
 `{"cmd":"get"}` antes de mandar nada).
 
+## QA en la radio: monitoreo, pruebas, triage, issue y evidencia
+
+El ciclo completo —monitorear la rama del port, compilar limpio, desplegar por WiFi, probar en el
+equipo, hacer el **triage** de lo que falla, cargar el **issue** (buscando antes si ya existe) y dejar
+la **evidencia** en `docs/evidencia/` con el **registro** en [`PRUEBAS.md`](PRUEBAS.md)— esta en el
+skill [`.agents/qa-radio/SKILL.md`](../.agents/qa-radio/SKILL.md). Incluye la tabla de errores ya
+cometidos (build incremental stale, IP fija, issue duplicado, escribir en el arbol compartido,
+`grep` sin `-a` sobre un binario) para no repetirlos, y la politica de transmision: solo la banda de la
+antena, en QRP, con autorizacion del dueño.
+
 ## Estado actual (2026-10-12): todo en un comando
 
 ```bash
