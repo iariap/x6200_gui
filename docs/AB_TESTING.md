@@ -514,6 +514,7 @@ los declara el JSON del arnés. La tabla exacta por componente está en cada JSO
 | Tema RS (JSON + imágenes) | `main-tema-rs` | ✓ | | | |
 | Tema Holo (JSON) | `main-tema-holo` | ✓ | | | |
 | Tema Material 3 (JSON) | `main-tema-material-3` | ✓ | | | |
+| Tema Aurora (JSON, THEMES v2) | `main-tema-aurora`, `main-tema-aurora-agua`, `main-tema-aurora-tx`, `main-tema-aurora-eco`, `settings-tema-aurora`, `bt-dialog-tema-aurora` | ✓ | | | |
 | Tema VISION | — | | | | ✗ (font scale: hallazgos para #8) |
 | Fuente por tema (Arial en Classic/RS) | `main-tema-classic`, `main-tema-rs` | ✓ | | | |
 | Fuente elegida por el usuario (Roboto/DejaVu/Arial) | — | | | | ✗ (no hay fixture de fuente) |

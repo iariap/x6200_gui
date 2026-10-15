@@ -1,0 +1,34 @@
+# main-tema-aurora-tx: the Aurora theme on the transmitting state of
+# main-tx-simulado: TX visor, TX info panel, split and the active buttons. Same
+# radio state as that fixture; the theme is the only variable, so the render
+# shows how Aurora separates TX (warm coral on tx_bg / tx_box) from the lavender
+# RX readings. No audio or RF is generated: the radio state is the mock's.
+
+name main-tema-aurora-tx
+screen main
+
+theme Aurora
+seed 31
+
+frequency_hz 14074000
+tx_frequency_hz 14076000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc fast
+
+split true
+att false
+pre true
+atu true
+ant 2
+
+smeter_db -63
+
+battery_v 12.0
+external_v 13.8
+battery_cap 70
+charging false
+
+rxtx tx
