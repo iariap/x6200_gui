@@ -2,17 +2,17 @@
 
 - Date: 2026-10-15
 - Profile: `host-ui`
-- A (baseline): `4e9b5f4be58a3e2ab14f49bb625cf878ff0c4360` (a)
-- B (candidate): `f5cfc6f844c6009ef25d3c96fb2ba13316f62a8c` (b)
-- Scenarios: `app-bands`, `app-close-home`, `apps-menu-1`, `apps-menu-2`, `apps-menu-3`, `apps-menu-4`, `apps-menu-5`, `apps-menu-6`, `bench-render`, `bt-dialog`, `home-bateria-externa`, `home-frecuencia-extrema`, `home-usb-20m`, `main-bateria-baja`, `main-espectro-agua`, `main-foco`, `main-frecuencia-dseg`, `main-natural`, `main-natural-eco`, `main-otro-tema`, `main-tema-classic`, `main-tema-holo`, `main-tema-material-3`, `main-tema-outdoor-negative`, `main-tema-rs`, `main-tema-vision`, `main-tema-vision-cwr`, `main-tema-vision-usbd`, `main-tx-simulado`, `settings-audio`, `settings-bands`, `settings-home`, `settings-perfil`, `settings-rs-theme`, `settings-wfbat`
+- A (baseline): `1a56556117eacc9092201afa55730b3f4277c2d2` (a)
+- B (candidate): `6fdfe43aff3b43f65b7d0296fc8bac405fca4cc7` (b)
+- Scenarios: `app-bands`, `app-close-home`, `apps-menu-1`, `apps-menu-2`, `apps-menu-3`, `apps-menu-4`, `apps-menu-5`, `apps-menu-6`, `bench-render`, `bt-dialog`, `bt-dialog-tema-redshift`, `home-bateria-externa`, `home-frecuencia-extrema`, `home-usb-20m`, `main-bateria-baja`, `main-espectro-agua`, `main-foco`, `main-frecuencia-dseg`, `main-natural`, `main-natural-eco`, `main-otro-tema`, `main-tema-classic`, `main-tema-holo`, `main-tema-material-3`, `main-tema-outdoor-negative`, `main-tema-redshift`, `main-tema-redshift-agua`, `main-tema-redshift-eco`, `main-tema-redshift-tx`, `main-tema-rs`, `main-tema-vision`, `main-tema-vision-cwr`, `main-tema-vision-usbd`, `main-tx-simulado`, `settings-audio`, `settings-bands`, `settings-home`, `settings-perfil`, `settings-rs-theme`, `settings-tema-redshift`, `settings-wfbat`
 
 ## Verdict: **PASS** (exit 0)
 
 | Gate | Required | Status | Summary |
 |---|---|---|---|
-| Functional | yes | PASS | 35 scenarios captured on both revisions |
+| Functional | yes | PASS | 41 scenarios captured on both revisions |
 | Visual Regression | yes | PASS | captures are pixel-identical to the baseline |
-| Quality Contract | yes | PASS | 373 contract checks passed on the candidate |
+| Quality Contract | yes | PASS | 433 contract checks passed on the candidate |
 | Performance | yes | PASS | render-cost proxy within budget |
 | Hardware | no (advisory) | BLOCKED | no physical X6200 attached; hardware behaviour is not measured |
 | Energy | no (advisory) | BLOCKED | no power measurement; energy evidence must be physical |
@@ -31,6 +31,7 @@
 | apps-menu-6 | yes | 0 | 0.000% | 0 | — |
 | bench-render | yes | 0 | 0.000% | 0 | — |
 | bt-dialog | yes | 0 | 0.000% | 0 | — |
+| bt-dialog-tema-redshift | yes | 0 | 0.000% | 0 | — |
 | home-bateria-externa | yes | 0 | 0.000% | 0 | — |
 | home-frecuencia-extrema | yes | 0 | 0.000% | 0 | — |
 | home-usb-20m | yes | 0 | 0.000% | 0 | — |
@@ -45,6 +46,10 @@
 | main-tema-holo | yes | 0 | 0.000% | 0 | — |
 | main-tema-material-3 | yes | 0 | 0.000% | 0 | — |
 | main-tema-outdoor-negative | yes | 0 | 0.000% | 0 | — |
+| main-tema-redshift | yes | 0 | 0.000% | 0 | — |
+| main-tema-redshift-agua | yes | 0 | 0.000% | 0 | — |
+| main-tema-redshift-eco | yes | 0 | 0.000% | 0 | — |
+| main-tema-redshift-tx | yes | 0 | 0.000% | 0 | — |
 | main-tema-rs | yes | 0 | 0.000% | 0 | — |
 | main-tema-vision | yes | 0 | 0.000% | 0 | — |
 | main-tema-vision-cwr | yes | 0 | 0.000% | 0 | — |
@@ -55,6 +60,7 @@
 | settings-home | yes | 0 | 0.000% | 0 | — |
 | settings-perfil | yes | 0 | 0.000% | 0 | — |
 | settings-rs-theme | yes | 0 | 0.000% | 0 | — |
+| settings-tema-redshift | yes | 0 | 0.000% | 0 | — |
 | settings-wfbat | yes | 0 | 0.000% | 0 | — |
 
 ## Coverage (declared by the harness)
@@ -71,6 +77,7 @@
 | apps-menu-6 | 16 | 5 | 3 | 3 |
 | bench-render | 15 | 4 | 3 | 3 |
 | bt-dialog | 19 | 4 | 4 | 4 |
+| bt-dialog-tema-redshift | 19 | 4 | 4 | 4 |
 | home-bateria-externa | 15 | 4 | 3 | 3 |
 | home-frecuencia-extrema | 15 | 4 | 3 | 3 |
 | home-usb-20m | 15 | 4 | 3 | 3 |
@@ -85,6 +92,10 @@
 | main-tema-holo | 15 | 4 | 3 | 3 |
 | main-tema-material-3 | 15 | 4 | 3 | 3 |
 | main-tema-outdoor-negative | 15 | 4 | 3 | 3 |
+| main-tema-redshift | 15 | 4 | 3 | 3 |
+| main-tema-redshift-agua | 15 | 4 | 3 | 3 |
+| main-tema-redshift-eco | 15 | 4 | 3 | 3 |
+| main-tema-redshift-tx | 15 | 4 | 3 | 3 |
 | main-tema-rs | 15 | 4 | 3 | 3 |
 | main-tema-vision | 15 | 4 | 3 | 3 |
 | main-tema-vision-cwr | 15 | 4 | 3 | 3 |
@@ -95,6 +106,7 @@
 | settings-home | 17 | 4 | 10 | 4 |
 | settings-perfil | 17 | 4 | 10 | 4 |
 | settings-rs-theme | 17 | 4 | 10 | 4 |
+| settings-tema-redshift | 17 | 4 | 10 | 4 |
 | settings-wfbat | 17 | 4 | 10 | 4 |
 
 Components declared below REAL (never written as REAL):
@@ -127,7 +139,7 @@ Components declared below REAL (never written as REAL):
 
 ## Quality contracts
 
-373 contract checks, 0 failure(s), 0 unchanged baseline defect(s).
+433 contract checks, 0 failure(s), 0 unchanged baseline defect(s).
 
 ## Evidence
 
