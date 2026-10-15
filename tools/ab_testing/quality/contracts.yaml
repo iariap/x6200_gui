@@ -293,6 +293,29 @@ expected_changes:
     author: themes-integration-73
     until: 2027-03-31
 
+  # AB-WFWIDTH (feedback del owner, 2026-10-15): la linea central del waterfall
+  # deja de estar fija en 1 px y pasa a ser una clave de tema
+  # (`waterfall_signal_width`, default 1, clamp 1..8). Los dos temas outdoor la
+  # piden en 3, asi que solo las fixtures que DIBUJAN esa linea cambian.
+  - region: waterfall
+    reason: >
+      AB-WFWIDTH (feedback directo del owner, 2026-10-15): "los temas outdoor
+      deberian traer la barra del waterfall mas gruesa porque al ser tan fina (1
+      px) no se distingue bien del resto". El ancho de la linea central del
+      waterfall (src/waterfall.c, draw_middle_line) pasa a ser la clave de tema
+      `waterfall_signal_width` (default 1, clamp 1..8); themes/Sunlit.json y
+      themes/Trail.json la fijan en 3 y los temas que no la definen quedan en 1 px
+      (retrocompatible). Los pixeles que se mueven son la propia linea: 356 px
+      dentro de `waterfall` (un pixel a la izquierda del centro) mas los px de la
+      MISMA linea que caen en las bandas `botones` y `ajustes_perfil` —el objeto
+      del waterfall llega hasta y=480 y la linea se pinta ahi, como ya hacia con 1
+      px— que esas bandas ya las declaran las entradas de AB-FONTS. Solo cambian
+      las fixtures `-agua` de Sunlit y Trail (las que dibujan la linea, con
+      `waterfall_center_line` encendido); los demas fixtures de la suite quedan
+      byte-identicos.
+    author: waterfall-width-outdoor
+    until: 2027-03-31
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.
