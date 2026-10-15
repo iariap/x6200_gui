@@ -44,6 +44,13 @@ git log --oneline HEAD..fork/lu2dsx/x6200-rom      # ¿hay algo nuevo?
 - **`fork/main` es la linea ORIGINAL** del proyecto (cientos de commits atras): **nunca** construirla ni
   desplegarla, revertiria el port. `origin/main` es lo mismo.
 - Si no hay nada nuevo: **no recompilar ni re-desplegar**. Solo `tools/verifica-radio.sh` y un resumen.
+- **"Nada nuevo" se mide contra la radio, no solo contra git.** Comparar el md5 desplegado con el build
+  del tip. Ya paso (15/10 16:10): el git decia "0 commits nuevos" porque mi HEAD ya era el tip, pero la
+  radio tenia un build viejo y habia un commit de fuentes (`4e9b5f4`, #77) sin desplegar.
+- **Antes de compilar, mirar el volumen compartido**: su sello `.fuente.md5` y la hora del binario dicen
+  si el otro agente acaba de compilar su A/B. Si el sello no es el hash de nuestros fuentes
+  (`RECONSTRUIR=auto tools/compila-gui.sh` lo calcula), el volumen es suyo: **no compilar**, dejar el
+  despliegue pendiente y avisar.
 - El trabajo en curso del otro agente aparece en ramas `factory/*`: no se mergean.
 
 ## Paso 2 — Build (limpio, siempre)
@@ -148,7 +155,8 @@ cargo el #76 y era duplicado del #64, hubo que cerrarlo.
 
 ## Paso 8 — Dejar todo como estaba
 
-Tema del dueño (hoy `VISION`), `cw_tune=cw_decoder=key_train=0`, la radio en RX y los params que se
+El **tema que tenga puesto el dueño** (no forzar ninguno: el 15/10 a la tarde tenia `IU1WXY`, antes
+`VISION`), `cw_tune=cw_decoder=key_train=0`, la radio en RX y los params que se
 hayan tocado (por ejemplo `swrscan_span`) anotados en el reporte. Avisar: md5 desplegado, apps ok,
 caidas, TX/ROE si se midio, e issues abiertos.
 

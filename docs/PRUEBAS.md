@@ -30,10 +30,42 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 15/10 ~16:10 | `d0ff2dba9c85` (sin cambios) | `f6d1cb1` | TODO OK | no se corrió | 0 en 90 s | **Sin desplegar**: `4e9b5f4` (#77) queda pendiente, el volumen del build lo tiene el A/B del otro agente |
 | 15/10 ~15:20 | `d0ff2dba9c85` | `337036c` (incluye `457a9a3`) | TODO OK | 22 ok | 0 en el barrido y 0 en 180 s de vigilancia | **Funciona** |
 | 15/10 ~14:05 | `5a6e561e502f` | `e5a869b` | TODO OK | (no se corrió) | no medido | **Funciona** para #19/#26/#30/#47 |
 
 ---
+
+## 15/10 ~16:10 — corrida sin despliegue (la radio sigue en `d0ff2dba9c85`)
+
+**Qué se hizo:** el ciclo de monitoreo. `git fetch fork` y `HEAD..fork/lu2dsx/x6200-rom` dieron **0
+commits**, pero **la radio no tiene el build del tip**: el commit de fuentes `4e9b5f4` (#77,
+tipografías) está en la rama y **no desplegado**.
+
+**Por qué no se desplegó:** el volumen del build (`x6200-build-output`) lo está usando el otro agente
+para su A/B de fuentes:
+
+```
+$ docker run --rm --entrypoint "" -v x6200-build-output:/b x6200-buildroot sh -c 'ls -l /b/target/usr/sbin/x6200_gui; md5sum ...; cat /b/.fuente.md5'
+  -rwxr-xr-x ... Oct 15 19:04 /b/target/usr/sbin/x6200_gui     (compilado 5 minutos antes)
+  md5 237f1f6bc1da
+  sello .fuente.md5 = 8b10fe903942
+$ (hash de mis fuentes)          = b3334bef0b7d               (distinto: el volumen es suyo)
+```
+
+Un build limpio le pisaría el binario del A/B, así que el despliegue queda **pendiente** (regla del
+skill `qa-radio`).
+
+**Salud de la radio, medido:** `tools/verifica-radio.sh` → `TODO OK`; los dos últimos logs con
+`CRASHLOG=0` y `buffer overflow=0`; vigilancia de 90 s con el PID estable (`309 → 309`) y **0 caídas**.
+El equipo reinició (uptime `712.97` s) y el build desplegado persistió.
+
+**Ajustes del dueño, sin tocar:** `theme_name=IU1WXY`, `cw_tune=cw_decoder=key_train=0`,
+`swrscan_span=50000`.
+
+**Hueco del proceso que salió de esta corrida:** la idempotencia se medía contra git (`HEAD..remote`), y
+eso no dice si la radio tiene el build del tip. Corregido en el skill `qa-radio`: ahora se compara el md5
+**desplegado** y, antes de compilar, se mira el sello del volumen compartido.
 
 ## 15/10 ~15:20 — `d0ff2dba9c85` (commit `337036c`)
 
