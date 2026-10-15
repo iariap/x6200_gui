@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Barrido de las 22 apps del banco: abre el banco UNA vez y maneja todas las apps contra la
+# Barrido de las 23 apps del banco: abre el banco UNA vez y maneja todas las apps contra la
 # misma GUI por el socket de control, con permanencia (dwell) configurable, verificacion de que
 # sigue viva y captura por app. Escribe un JSON con el resultado y las capturas/logs.
 #
@@ -42,8 +42,9 @@ VOLUMEN=${VOLUMEN:-x6200-build-output}
 BUILDROOT=${BUILDROOT:-$REPO/../buildroot_new/AetherX6200Buildroot}
 QEMU_CPU=${QEMU_CPU:-cortex-a7}
 RECONSTRUIR=${RECONSTRUIR:-auto}
-# Las 22 apps del menu (src/remote_server.cpp app_names[] sin "off"): 20 botones + QTH/Callsign.
-APPS=${APPS:-"FT8 FT4 JS8 WSPR SSTV WeFax NavTex RTTY CW Field GPS Bands Settings BT Cluster CwTrainer Eq Status QTH Callsign Recorder WiFi"}
+# Las 23 apps del menu (src/remote_server.cpp app_names[] sin "off"): las 22 apps con boton en las
+# paginas APP (20 make_app_btn + QTH/Callsign) mas el alias FT4, que reusa la accion de FT8.
+APPS=${APPS:-"FT8 FT4 JS8 WSPR SSTV WeFax NavTex RTTY CW Field GPS Bands Settings BT Cluster CwTrainer Eq Status QTH Callsign Recorder WiFi SWRScan"}
 
 BIN=/usr/sbin/x6200_gui
 LOG=$CHROOT/out-banco.txt
