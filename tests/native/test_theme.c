@@ -174,7 +174,7 @@ static void test_shipped(void) {
     setenv("THEMES_DIR_SHIPPED", dir, 1);
     setenv("THEMES_DIR", "/tmp/test_themes_sin_usuario", 1);     /* sin temas del usuario */
 
-    static const char *const esperados[] = {"Holo", "Material 3", "RS", "Redshift"};
+    static const char *const esperados[] = {"Holo", "Material 3", "RS", "Redshift", "Sunlit"};
     char names[32][32];
     int  n = theme_list(names, 32);
 
@@ -202,11 +202,47 @@ static void test_shipped(void) {
     unsetenv("THEMES_DIR_SHIPPED");
 }
 
+/* El tema Sunlit (issue #67) tiene que cargar con su identidad: los roles del archivo, la forma y
+ * su paleta de cascada propia. La familia de fuente que el archivo nombra no se comprueba acá
+ * (font_select.c no se compila en el host y su stub devuelve -1, ver stubs/stubs.c); la cubre el
+ * arnés de UI. */
+static void test_sunlit(void) {
+    const char *dir = getenv("X6200_SHIPPED_THEMES");
+
+    if (dir == NULL || *dir == 0) {
+        return;                     /* el runner no los pasó: nada que comprobar */
+    }
+
+    setenv("THEMES_DIR_SHIPPED", dir, 1);
+    setenv("THEMES_DIR", "/tmp/test_themes_sin_usuario", 1);
+
+    theme_init("Sunlit");
+
+    /* Roles del archivo: marfil de fondo, texto casi negro y el arco del S-meter en tinta clara
+     * (la cara del medidor es un bitmap fijo y oscuro, así que una tinta oscura no se vería). */
+    CHECK(theme_hex(TC_bg) == 0xf7f5eb);
+    CHECK(theme_hex(TC_text) == 0x162436);
+    CHECK(theme_hex(TC_meter_over) == 0xffc9b8);
+
+    /* Forma: bordes firmes y casi sin radios */
+    CHECK(theme_shape.radius == 2);
+    CHECK(theme_shape.border == 2);
+    CHECK(theme_shape.focus_solid);
+
+    /* La cascada propia del tema: 6 paradas, del blanco al azul profundo */
+    CHECK(theme_shape.waterfall_n == 6);
+    CHECK(theme_shape.waterfall[0] == 0xffffff);
+    CHECK(theme_shape.waterfall[5] == 0x102845);
+
+    unsetenv("THEMES_DIR_SHIPPED");
+}
+
 void test_theme(void) {
     test_builtins();
     test_list();
     test_names_fit_the_store();
     test_json_theme();
     test_shipped();
+    test_sunlit();
 }
 
