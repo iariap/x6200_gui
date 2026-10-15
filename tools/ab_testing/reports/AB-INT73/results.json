@@ -11,7 +11,7 @@
   },
   "revision_b": {
     "label": "b",
-    "sha": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0"
+    "sha": "f067b203127911219f714db695b2eb1b715e142e"
   },
   "scenarios": [
     "app-bands",
@@ -10704,7 +10704,7 @@
     "b": [
       {
         "scenario": "app-bands",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "32ff1db922285c97dc32a68e1565763dbfe1936b200e3dcf68f2050b0d2f7dbc",
         "width": 800,
         "height": 480,
@@ -10861,7 +10861,7 @@
       },
       {
         "scenario": "app-close-home",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "f0fd618233917888f6790c3b220bdcdc067c397339b6be262d86bc16052b42b6",
         "width": 800,
         "height": 480,
@@ -11018,7 +11018,7 @@
       },
       {
         "scenario": "apps-menu-1",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "c5629161e9173fc423d3224fd2ffe1998a46697f5fd176b3459714e0ac2d4b34",
         "width": 800,
         "height": 480,
@@ -11165,7 +11165,7 @@
       },
       {
         "scenario": "apps-menu-2",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "7eca28ad7d63fef113575496feebbca85553b9c31e634a8d8819151cfee47e05",
         "width": 800,
         "height": 480,
@@ -11312,7 +11312,7 @@
       },
       {
         "scenario": "apps-menu-3",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "528e4d0cdebb4a60fb80e2dfb2d4d8c5170190230c9e3b880cc9def3c887a206",
         "width": 800,
         "height": 480,
@@ -11459,7 +11459,7 @@
       },
       {
         "scenario": "apps-menu-4",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "7001f67a726b35434483cbcff35e256dd17dcd41d8b9a078d477760caa7a82ae",
         "width": 800,
         "height": 480,
@@ -11606,7 +11606,7 @@
       },
       {
         "scenario": "apps-menu-5",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "781ebebb342b746cfcc167ce9f799a8cb1ae5612d2e0b2790596e76d730a213f",
         "width": 800,
         "height": 480,
@@ -11753,7 +11753,7 @@
       },
       {
         "scenario": "apps-menu-6",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "73b2435d6a5a474e0f639d6e470ed83b64d7442230f6d695c208207b3209cbbc",
         "width": 800,
         "height": 480,
@@ -11900,7 +11900,7 @@
       },
       {
         "scenario": "bench-render",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "9ab219320780669e61abb3922797b0ce26a1cfb983fe7ed5a1f6c73cfb95aa70",
         "width": 800,
         "height": 480,
@@ -12037,7 +12037,7 @@
       },
       {
         "scenario": "bt-dialog",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "2c9be4fc2c60b0e0d369f290531d35a0a9c9446862773a678cee9fbd3f8a127d",
         "width": 800,
         "height": 480,
@@ -12204,7 +12204,7 @@
       },
       {
         "scenario": "bt-dialog-tema-aurora",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "fd4b5860038a2e7d26077da539427191200727d9b6f80df209406fbf5180b915",
         "width": 800,
         "height": 480,
@@ -12371,7 +12371,7 @@
       },
       {
         "scenario": "bt-dialog-tema-cathode",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "b17ebb882c142786f09621f961deb362f10ca0f557d7c38fb2cf1d8fdd572a5f",
         "width": 800,
         "height": 480,
@@ -12538,7 +12538,7 @@
       },
       {
         "scenario": "bt-dialog-tema-redshift",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "5bf903af0dcb6c8fe41a619ca2d2023a34c2b7fa432ee30921c1bad7b7a92422",
         "width": 800,
         "height": 480,
@@ -12705,7 +12705,7 @@
       },
       {
         "scenario": "bt-dialog-tema-sprint",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "f21c5d041335ed93bcef7743fc3793f8a53c14d68a4267a0371d7b7487d23285",
         "width": 800,
         "height": 480,
@@ -12872,7 +12872,7 @@
       },
       {
         "scenario": "bt-dialog-tema-sunlit",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "18dc3e4a28a0c717022ef0b7f0d7c91625823525532abac16cdc43dc2b9f148f",
         "width": 800,
         "height": 480,
@@ -13039,7 +13039,7 @@
       },
       {
         "scenario": "bt-dialog-tema-trail",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "2197a15895e7592aca474390962b4cf333b3e1e3432abaf4f5105050709d2a64",
         "width": 800,
         "height": 480,
@@ -13206,7 +13206,7 @@
       },
       {
         "scenario": "home-bateria-externa",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "33dfa767ce76cc2ccab59b7f23f672f9250d5fc800b1131a87d088dc4ec39630",
         "width": 800,
         "height": 480,
@@ -13343,7 +13343,7 @@
       },
       {
         "scenario": "home-frecuencia-extrema",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "61c63cc655b9e04f2726032ebf8a8d5f2bab2387a1d04a98fb63599e760f516f",
         "width": 800,
         "height": 480,
@@ -13480,7 +13480,7 @@
       },
       {
         "scenario": "home-usb-20m",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "f0fd618233917888f6790c3b220bdcdc067c397339b6be262d86bc16052b42b6",
         "width": 800,
         "height": 480,
@@ -13617,7 +13617,7 @@
       },
       {
         "scenario": "main-bateria-baja",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "6f558a3669d80fd3342540369cbd61f361e719f6ceb7c7934ea64204a4257891",
         "width": 800,
         "height": 480,
@@ -13754,7 +13754,7 @@
       },
       {
         "scenario": "main-espectro-agua",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "dc74b8843c0a0018b5c628f1133fa625e847f7618c81b9675e11893a39e7f0dd",
         "width": 800,
         "height": 480,
@@ -13891,7 +13891,7 @@
       },
       {
         "scenario": "main-foco",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "f0fd618233917888f6790c3b220bdcdc067c397339b6be262d86bc16052b42b6",
         "width": 800,
         "height": 480,
@@ -14028,7 +14028,7 @@
       },
       {
         "scenario": "main-frecuencia-dseg",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "260c0dd7568ee840512e2e86f4653c4bb5b9ae7a4e8ddd3b3c381d363bd7e4ef",
         "width": 800,
         "height": 480,
@@ -14165,7 +14165,7 @@
       },
       {
         "scenario": "main-natural",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "ba8e7270d399b593466b3a4d66d880af48dece900af092887bb54af905bca556",
         "width": 800,
         "height": 480,
@@ -14302,7 +14302,7 @@
       },
       {
         "scenario": "main-natural-eco",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "be30b115eb3eb4059166ec2913c6c246e8a52813736bf3ad58098a91d5a41ceb",
         "width": 800,
         "height": 480,
@@ -14439,7 +14439,7 @@
       },
       {
         "scenario": "main-otro-tema",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "44c17f4e1f695932693285f394e59778a4eecb989064c0788205297fa5c61874",
         "width": 800,
         "height": 480,
@@ -14576,7 +14576,7 @@
       },
       {
         "scenario": "main-tema-aurora",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "7edd1f99c8e71ba47d40f3673b8890b6ded1c899669dfb8576cb1bff68737154",
         "width": 800,
         "height": 480,
@@ -14713,7 +14713,7 @@
       },
       {
         "scenario": "main-tema-aurora-agua",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "b982cbfdc08f8a6adfc45e5415134e6fd70d0a0acff53f682e826bdafc76ebda",
         "width": 800,
         "height": 480,
@@ -14850,7 +14850,7 @@
       },
       {
         "scenario": "main-tema-aurora-eco",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "d7f888a299647bdcd08220d52c70dd76c50e5d3ebfffad8bca688864e3d6b072",
         "width": 800,
         "height": 480,
@@ -14987,7 +14987,7 @@
       },
       {
         "scenario": "main-tema-aurora-tx",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "5eaa355b21ad4456abdf3911ad110694ffef66f0735cd686ecc56ed14154ccf9",
         "width": 800,
         "height": 480,
@@ -15124,7 +15124,7 @@
       },
       {
         "scenario": "main-tema-cathode",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "50fbfb03309a6f340e5380f1a32ff115025b4e9fa9227aea7df073b57a8aab4a",
         "width": 800,
         "height": 480,
@@ -15261,7 +15261,7 @@
       },
       {
         "scenario": "main-tema-cathode-agua",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "fcc0f2eaf4c392f012c8f793078114a854ea2ae8a83c16073f0c8515d7bca76a",
         "width": 800,
         "height": 480,
@@ -15398,7 +15398,7 @@
       },
       {
         "scenario": "main-tema-cathode-eco",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "1d11566a427665410c9c56a67b24304890188deec3a697e0dc54767c994146d0",
         "width": 800,
         "height": 480,
@@ -15535,7 +15535,7 @@
       },
       {
         "scenario": "main-tema-cathode-tx",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "34babf3cec40f6541362e9e52e971b5e27a8d17e62dd3aa54b2d329267ff7d3a",
         "width": 800,
         "height": 480,
@@ -15672,7 +15672,7 @@
       },
       {
         "scenario": "main-tema-classic",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "ce6c02825e095513fc56c5e81cf2123be6ce1de91a338b96e109214673f47d51",
         "width": 800,
         "height": 480,
@@ -15809,7 +15809,7 @@
       },
       {
         "scenario": "main-tema-holo",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "e9f5e6991d5568e257fd9aded7d3dde17eccddcdf6b575504c3cc6c2a0b3b739",
         "width": 800,
         "height": 480,
@@ -15946,7 +15946,7 @@
       },
       {
         "scenario": "main-tema-material-3",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "e462acde9c055d95ee3628e37155b71a7d67a461fa8dc81e8b4d105f7b0d6609",
         "width": 800,
         "height": 480,
@@ -16083,7 +16083,7 @@
       },
       {
         "scenario": "main-tema-outdoor-negative",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "d505a1a9bb44c08d366985d98e1a644ea372aa04776e4dd3a4fc8a353c2f053b",
         "width": 800,
         "height": 480,
@@ -16220,7 +16220,7 @@
       },
       {
         "scenario": "main-tema-redshift",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "335cc28f91b73cacede9864385424b743f77cb6634abc2d1f00a36be798d431a",
         "width": 800,
         "height": 480,
@@ -16357,7 +16357,7 @@
       },
       {
         "scenario": "main-tema-redshift-agua",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "dbc56c6c61242b2926e1977664aca66cb14aa28c93b9f1c0a5b9496d5ffaeb86",
         "width": 800,
         "height": 480,
@@ -16494,7 +16494,7 @@
       },
       {
         "scenario": "main-tema-redshift-eco",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "727feaf3bc1be8737f0270b513576291d8d7e9ec3990fd3b14498224ff18f229",
         "width": 800,
         "height": 480,
@@ -16631,7 +16631,7 @@
       },
       {
         "scenario": "main-tema-redshift-tx",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "289b08a9db853ea380614930ca53b4b52d0f24dd3aadc2c7d4e0fe7b32c080fd",
         "width": 800,
         "height": 480,
@@ -16768,7 +16768,7 @@
       },
       {
         "scenario": "main-tema-rs",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "2a75ba0e57f409bfdc9519e4cc30f89c3077fec9bf966c10a907bc0adfe93d2f",
         "width": 800,
         "height": 480,
@@ -16905,7 +16905,7 @@
       },
       {
         "scenario": "main-tema-sprint",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "fdc2d456247079373b44827fc3966d3eaf92a39ea55d24943717b6510796736b",
         "width": 800,
         "height": 480,
@@ -17042,7 +17042,7 @@
       },
       {
         "scenario": "main-tema-sprint-agua",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "20d54f32bace5d01f21935f802af8b8b1cad0d932e8568e56483bb8b11ed0916",
         "width": 800,
         "height": 480,
@@ -17179,7 +17179,7 @@
       },
       {
         "scenario": "main-tema-sprint-eco",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "b077c4be5bc50695fbe330426bc76ba9a216bac25ecca5e6e7f6980a014fe13b",
         "width": 800,
         "height": 480,
@@ -17316,7 +17316,7 @@
       },
       {
         "scenario": "main-tema-sprint-tx",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "5b10bfa6bb61bb7eec73da8c0d8b3088e70e1d1fc4e66eeab01fa4d9ea3e3549",
         "width": 800,
         "height": 480,
@@ -17453,7 +17453,7 @@
       },
       {
         "scenario": "main-tema-sunlit",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "d5a9778614d2a9886ac875db102d5ee14d34f55a5640d2b0b2b183258599d164",
         "width": 800,
         "height": 480,
@@ -17590,7 +17590,7 @@
       },
       {
         "scenario": "main-tema-sunlit-agua",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "2c5d005d9efdc38da21334c125d6b9daf92ff2022b76711effee2276a0cdc575",
         "width": 800,
         "height": 480,
@@ -17727,7 +17727,7 @@
       },
       {
         "scenario": "main-tema-sunlit-eco",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "0ea54e141124a8d4c38c86b665d353744d03d1a4641b2f62b6afc26313cc414d",
         "width": 800,
         "height": 480,
@@ -17864,7 +17864,7 @@
       },
       {
         "scenario": "main-tema-sunlit-tx",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "d6aab5035ffa8541a7bf19b9d616c8eb8d3907d715557699dfc7c7cdaa3a61e0",
         "width": 800,
         "height": 480,
@@ -18001,7 +18001,7 @@
       },
       {
         "scenario": "main-tema-trail",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "4723161f0f37f29e344e03b5e49ac87c6b4a3c2ed7662b842719b5a4e29a7c54",
         "width": 800,
         "height": 480,
@@ -18138,7 +18138,7 @@
       },
       {
         "scenario": "main-tema-trail-agua",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "ee487ed27dc7a6af6accdb706f1abd0294760c99c1c55b26cc9df30520412a5d",
         "width": 800,
         "height": 480,
@@ -18275,7 +18275,7 @@
       },
       {
         "scenario": "main-tema-trail-eco",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "4c831e137a8d344ebc44a159839efdb6e705bc46af1f3f10b30ed7666fe92d1a",
         "width": 800,
         "height": 480,
@@ -18412,7 +18412,7 @@
       },
       {
         "scenario": "main-tema-trail-tx",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "f934738fd1f0d4fbc3f22066694c3450d223c122bd3ebf645cb7647af48fbad4",
         "width": 800,
         "height": 480,
@@ -18549,7 +18549,7 @@
       },
       {
         "scenario": "main-tema-vision",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "1bd43e3087d38bcec31b2a7db99647eecb8d754df0be5cb98701c6065b4e2942",
         "width": 800,
         "height": 480,
@@ -18686,7 +18686,7 @@
       },
       {
         "scenario": "main-tema-vision-cwr",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "17cc1fa5c6579d5003bb14bed147beca113578e2fc42ea57367ceba5c048b45e",
         "width": 800,
         "height": 480,
@@ -18823,7 +18823,7 @@
       },
       {
         "scenario": "main-tema-vision-usbd",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "f139c9778de4e27939638d2f9888a225ac87c81a219aa6da505fa2346835fd77",
         "width": 800,
         "height": 480,
@@ -18960,7 +18960,7 @@
       },
       {
         "scenario": "main-tx-simulado",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "17053440e0fceb7063c2a950835982c8aedf6ab44b07894b50bdb2d3e85b7d42",
         "width": 800,
         "height": 480,
@@ -19097,7 +19097,7 @@
       },
       {
         "scenario": "settings-audio",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "d107d60e332ff3ed2007cdc5744ca6e7a04c6d7c0ef574f01b7e01b83db12299",
         "width": 800,
         "height": 480,
@@ -19284,7 +19284,7 @@
       },
       {
         "scenario": "settings-bands",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "32ff1db922285c97dc32a68e1565763dbfe1936b200e3dcf68f2050b0d2f7dbc",
         "width": 800,
         "height": 480,
@@ -19446,7 +19446,7 @@
       },
       {
         "scenario": "settings-home",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "0a1d9d4be0c8808b0c5c411bea3b76f1c4c3aceca467b9625e36ee62db428c95",
         "width": 800,
         "height": 480,
@@ -19633,7 +19633,7 @@
       },
       {
         "scenario": "settings-perfil",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "12f86e3bb418a13bb51e84785c54f14a9d779cc6de6d8a156eaa6871e953ecaf",
         "width": 800,
         "height": 480,
@@ -19820,7 +19820,7 @@
       },
       {
         "scenario": "settings-rs-theme",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "ef9a1aecf1c9bb562ff2e293f033860a8ec456d1575fd0724a336d508cad6f9b",
         "width": 800,
         "height": 480,
@@ -20007,7 +20007,7 @@
       },
       {
         "scenario": "settings-tema-aurora",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "4dc956a078e63c480fcaf0ebf9d8e8c2ec5294d5022a2d1c3702bcaa6163b725",
         "width": 800,
         "height": 480,
@@ -20194,7 +20194,7 @@
       },
       {
         "scenario": "settings-tema-cathode",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "b37b2bd58d75d3b8a83fd432e484b81d2116c3fd6f43d42dc6f335647bcfd6a9",
         "width": 800,
         "height": 480,
@@ -20381,7 +20381,7 @@
       },
       {
         "scenario": "settings-tema-redshift",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "902842e11766628d3597ebb372ad2b160c2fc711b1861c66428836cd399d870f",
         "width": 800,
         "height": 480,
@@ -20568,7 +20568,7 @@
       },
       {
         "scenario": "settings-tema-sprint",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "011f9021cc04f4f1f60ea5a10b308856e1826e508e31f3f4f1b35bc3031b1a20",
         "width": 800,
         "height": 480,
@@ -20755,7 +20755,7 @@
       },
       {
         "scenario": "settings-tema-sunlit",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "681b05a7e2af31b6b5224cd175cf05940310b8c44589506a6447660a4bb14334",
         "width": 800,
         "height": 480,
@@ -20942,7 +20942,7 @@
       },
       {
         "scenario": "settings-tema-trail",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "5038dec4a4551aca109ed6464d083e889d9b7b3652a916a405da31972383f765",
         "width": 800,
         "height": 480,
@@ -21129,7 +21129,7 @@
       },
       {
         "scenario": "settings-wfbat",
-        "revision": "5ac37b1ba893f591a0d73a48e7a626633f51b2b0",
+        "revision": "f067b203127911219f714db695b2eb1b715e142e",
         "png_sha256": "326787043b26a899be8ca9b53c236b5bb75684ff40741d41ee066256a97a7b45",
         "width": 800,
         "height": 480,
@@ -21328,7 +21328,7 @@
           "2663a04ee9f9352bacdc396d821bdcf80cb29ebc"
         ],
         "revision_b": [
-          "5ac37b1ba893f591a0d73a48e7a626633f51b2b0"
+          "f067b203127911219f714db695b2eb1b715e142e"
         ]
       }
     },
@@ -21340,7 +21340,7 @@
       "evidence": [],
       "details": {
         "explained_changes": [
-          "settings-perfil: 868 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_perfil', 'ajustes_scrollbar', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']"
+          "settings-perfil: 868 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_perfil', 'ajustes_scrollbar', 'ajustes_tema', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']"
         ]
       }
     },
@@ -28241,6 +28241,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -28320,6 +28326,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -28405,6 +28417,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -28484,6 +28502,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -28569,6 +28593,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -28648,6 +28678,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -28733,6 +28769,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -28812,6 +28854,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -28897,6 +28945,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -28976,6 +29030,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -29061,6 +29121,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -29140,6 +29206,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -29225,6 +29297,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -29304,6 +29382,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -29389,6 +29473,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -29468,6 +29558,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -29553,6 +29649,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -29632,6 +29734,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -29717,6 +29825,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -29796,6 +29910,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -29881,6 +30001,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -29960,6 +30086,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -30045,6 +30177,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -30124,6 +30262,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -30209,6 +30353,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -30288,6 +30438,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -30373,6 +30529,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -30452,6 +30614,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -30537,6 +30705,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -30616,6 +30790,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -30701,6 +30881,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -30780,6 +30966,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -30865,6 +31057,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -30944,6 +31142,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -31029,6 +31233,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -31108,6 +31318,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -31193,6 +31409,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -31272,6 +31494,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -31357,6 +31585,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -31436,6 +31670,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -31521,6 +31761,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -31600,6 +31846,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -31685,6 +31937,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -31764,6 +32022,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -31849,6 +32113,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -31928,6 +32198,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -32013,6 +32289,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -32092,6 +32374,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -32177,6 +32465,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -32256,6 +32550,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -32341,6 +32641,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -32420,6 +32726,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -32505,6 +32817,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -32584,6 +32902,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -32669,6 +32993,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -32748,6 +33078,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -32833,6 +33169,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -32912,6 +33254,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -32997,6 +33345,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -33076,6 +33430,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -33161,6 +33521,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -33240,6 +33606,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -33353,6 +33725,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 868,
+          "total_pixels": 45840,
+          "fraction": 0.018935
         }
       ],
       "dimension_mismatch": null
@@ -33432,6 +33810,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -33517,6 +33901,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -33596,6 +33986,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -33681,6 +34077,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -33760,6 +34162,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
@@ -33845,6 +34253,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -33927,6 +34341,12 @@
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
         }
       ],
       "dimension_mismatch": null
@@ -34006,6 +34426,12 @@
         },
         {
           "region": "ajustes_audio_ganancia",
+          "changed_pixels": 0,
+          "total_pixels": 45840,
+          "fraction": 0.0
+        },
+        {
+          "region": "ajustes_tema",
           "changed_pixels": 0,
           "total_pixels": 45840,
           "fraction": 0.0
