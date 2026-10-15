@@ -48,7 +48,11 @@ static ObserverDelayed *span_obs;
 
 static void construct_cb(lv_obj_t *parent);
 static void destruct_cb();
+static void ui_deleted_cb(lv_event_t * e);
 static void key_cb(lv_event_t * e);
+
+static void swrscan_stop(void);
+static void swrscan_release(void);
 
 static void dialog_swrscan_run_cb(button_item_t *item);
 static void dialog_swrscan_scale_cb(button_item_t *item);
@@ -250,6 +254,13 @@ static void freq_update_cb(Subject *subj, void *user_data) {
 
 static void construct_cb(lv_obj_t *parent) {
     dialog.obj = dialog_init(parent);
+
+    /* El marco de dialogos llama a destruct_cb, pero no siempre (patron de dialog_cw_trainer,
+     * HALLAZGOS 37): si el objeto muere por otro camino, el barrido seguia corriendo con el
+     * chart ya liberado y el proximo tick de la radio lo desreferenciaba. swrscan_release() es
+     * idempotente, asi que el primer camino que llegue apaga todo. */
+    lv_obj_add_event_cb(dialog.obj, ui_deleted_cb, LV_EVENT_DELETE, NULL);
+
     linear_obs = subject_add_delayed_observer_and_call(cfg.swrscan_linear.val, set_linear, NULL);
     span_obs = subject_add_delayed_observer_and_call(cfg.swrscan_span.val, set_span, NULL);
 
@@ -276,11 +287,22 @@ static void construct_cb(lv_obj_t *parent) {
     do_init();
 }
 
-static void destruct_cb() {
-    if (run) {
-        // Stop
-        dialog_swrscan_run_cb(NULL);
+/* Apaga el barrido y devuelve el estado de radio que armo (radio_stop_swrscan: potencia y modo) y
+ * la frecuencia/memoria de la app. Idempotente: la llaman destruct_cb y el LV_EVENT_DELETE. */
+static void swrscan_stop(void) {
+    if (!run) {
+        return;
     }
+
+    run = false;
+    radio_stop_swrscan();
+    radio_set_freq(freq_center);
+    mem_load(MEM_BACKUP_ID);
+}
+
+/* Cualquier camino que mate el dialogo pasa por aca: primero se sueltan los observadores (que
+ * tocan el chart) y despues se apaga el barrido. Idempotente. */
+static void swrscan_release(void) {
     if (freq_obs) {
         observer_delayed_del(freq_obs);
         freq_obs = NULL;
@@ -293,7 +315,19 @@ static void destruct_cb() {
         observer_delayed_del(span_obs);
         span_obs = NULL;
     }
+
+    swrscan_stop();
+}
+
+static void destruct_cb() {
+    swrscan_release();
     radio_set_freq(subject_get_int(cfg_cur.fg_freq));
+}
+
+static void ui_deleted_cb(lv_event_t * e) {
+    (void) e;
+
+    swrscan_release();
 }
 
 static void key_cb(lv_event_t * e) {
@@ -318,13 +352,16 @@ static void key_cb(lv_event_t * e) {
 
 void dialog_swrscan_run_cb(button_item_t *item) {
     if (run) {
-        button_update_label(item, "Run");
-        run = false;
-        radio_stop_swrscan();
-        radio_set_freq(freq_center);
-        mem_load(MEM_BACKUP_ID);
+        /* item es NULL cuando el cierre apaga el barrido: sin la guarda, button_update_label()
+         * desreferencia NULL+4 y la GUI muere (issue #85, fallo=0x4). */
+        if (item) {
+            button_update_label(item, "Run");
+        }
+        swrscan_stop();
     } else {
-        button_update_label(item, "Stop");
+        if (item) {
+            button_update_label(item, "Stop");
+        }
         mem_save(MEM_BACKUP_ID);
         do_init();
         radio_set_freq(freq_start);

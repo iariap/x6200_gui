@@ -192,3 +192,43 @@ $CC $BASEFLAGS -fanalyzer -I"$DM_STAGE/cfg" -I"$DIR/stubs_digital" \
     -c "$DM_STAGE/cfg/digital_modes.c" -o "$OUT/digital_modes.o" || true
 
 "$OUT/digital_modes_tests"
+
+# --- SWR Scan dialog test (issue #85) ----------------------------------------
+# src/dialog_swrscan.c includes its siblings with `#include "..."` (dialog.h,
+# buttons.h, params/params.h, ...), and for a quoted include the directory of the
+# including file always wins over -I, so the committed stub headers under
+# tests/native/stubs_swrscan/ cannot shadow src/dialog.h etc. from their own
+# directory: the real dialog_swrscan.c is staged next to a copy of the stubs, the
+# same pattern as the clock/backlight/digital-modes tests (see
+# tests/native/test_swrscan.c). The test pins that closing the dialog with the
+# sweep running stops the sweep without handing a NULL item to a button callback
+# (the destructor used to call dialog_swrscan_run_cb(NULL) -> button_update_label
+# dereferenced item->type = NULL+4, the fallo=0x4 of issue #85).
+echo "== SWR Scan (#85): cerrar con el barrido corriendo no desreferencia NULL =="
+SW_STAGE="$OUT/swrscan_src"
+rm -rf "$SW_STAGE"
+mkdir -p "$SW_STAGE/lvgl" "$SW_STAGE/params"
+cp "$SRC/dialog_swrscan.c" "$SRC/dialog_swrscan.h" "$SW_STAGE/"
+cp "$DIR/stubs_swrscan/lvgl/lvgl.h" "$SW_STAGE/lvgl/"
+cp "$DIR/stubs_swrscan/dialog.h" "$DIR/stubs_swrscan/styles.h" "$DIR/stubs_swrscan/radio.h" \
+   "$DIR/stubs_swrscan/events.h" "$DIR/stubs_swrscan/util.h" "$DIR/stubs_swrscan/keyboard.h" \
+   "$DIR/stubs_swrscan/main_screen.h" "$DIR/stubs_swrscan/buttons.h" "$SW_STAGE/"
+cp "$DIR/stubs_swrscan/params/params.h" "$SW_STAGE/params/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$SW_STAGE" \
+        "$SW_STAGE/dialog_swrscan.c" "$DIR/swrscan_stubs.c" "$DIR/test_swrscan.c" \
+        "$DIR/test_framework.c" "$DIR/swrscan_test_main.c" -lm -o "$OUT/swrscan_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$SW_STAGE" \
+        "$SW_STAGE/dialog_swrscan.c" "$DIR/swrscan_stubs.c" "$DIR/test_swrscan.c" \
+        "$DIR/test_framework.c" "$DIR/swrscan_test_main.c" -lm -o "$OUT/swrscan_tests"
+fi
+
+echo "== SWR Scan: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$SW_STAGE" \
+    -c "$SW_STAGE/dialog_swrscan.c" -o "$OUT/dialog_swrscan.o" || true
+
+"$OUT/swrscan_tests"
