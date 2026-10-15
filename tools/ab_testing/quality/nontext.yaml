@@ -184,6 +184,12 @@ objects:
     min_ratio: 3.0
     where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
 
+  # --- Sprint (THEMES v2, issue #69): the same two objects the other themes
+  # declare, measured on Sprint's own golden render. Sprint ships its own
+  # waterfall table (the JSON `waterfall` stops, theme.c make_palette) and its own
+  # `meter_over` (the +20/+40 arc over the meter's bitmap face), so the pixels
+  # answer what the static check cannot: the arc and the signal column reach 3:1
+  # with Sprint's roles.
   - name: waterfall_signal
     fixture: main-tema-sprint
     theme: Sprint
@@ -192,11 +198,6 @@ objects:
     min_ratio: 3.0
     where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
 
-  # --- Sprint (THEMES v2, issue #69): the same two objects, measured on the
-  # theme's own golden render. Sprint ships its own waterfall table (the JSON
-  # `waterfall` stops, theme.c make_palette) and its own `meter_over` (the +20/+40
-  # arc over the meter's bitmap face), so the pixels answer what the static check
-  # cannot: the arc and the signal column reach 3:1 with Sprint's roles.
   - name: s_meter_arc
     fixture: main-tema-sprint
     theme: Sprint

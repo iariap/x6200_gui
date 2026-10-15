@@ -332,6 +332,13 @@ y las de Sprint). El nombre del tema entra en `params.theme_name` entero (`Sprin
 caracteres), así que sobrevive el round-trip y el tema queda elegido también en una
 instalación actualizada (contrato `theme_name_fits_params`).
 
+La prioridad de la fuente no cambia con este tema: la que nombra el tema **manda** sobre
+`params.font` (el orden de `src/main.c`: `theme_shape.font` primero, después la elección del
+usuario), y `font_digits` sólo toca los paneles de dígitos. Por eso en la fixture
+`settings-tema-sprint` la fila *Font* de Ajustes sigue mostrando la elección persistida
+(`Fira Sans`) mientras la pantalla se dibuja con Roboto Condensed: es el comportamiento
+documentado, no una divergencia de esta corrida.
+
 `radius 0 / radius_btn 2 / radius_popup 2 / border 2`, sin gradientes (`btn_gradient` y
 `box_gradient` en `false`) y `focus_solid: true`: cantos angulares. **Ojo con lo que la
 revisión actual dibuja**: `theme_shape.radius`, `radius_btn`, `btn_gradient`, `box_gradient`,

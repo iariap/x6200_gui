@@ -3641,7 +3641,7 @@ familia segmentada (`font_digit()`, slots 30/38), así que `layout_overlap` las 
 `main-frecuencia-dseg` y quedan con el mismo waiver acotado (un `exceptions` por fixture, con
 razón y vencimiento; `tests/test_theme_checks.py` fija el conjunto).
 
-**Gates corridos sobre `6a4b6ea` (la rama del tema; los reportes quedan en
+**Gates corridos sobre `46195bf` (la rama del tema; los reportes quedan en
 `reports/AB-SPRINT69` y `reports/BENCH-SPRINT69*`).**
 
 ```text
@@ -3657,10 +3657,10 @@ experiment AB-SPRINT69: PASS (exit 0)
   Hardware/Energy    BLOCKED (advisory) — sin X6200 físico / sin medición de energía
 
 $ uv run x6200-ab contracts --revision HEAD
-contracts 6a4b6ea0fd59: PASS — 437 checks, 0 failure(s), 0 unchanged baseline defect(s)
+contracts 46195bffe31b: PASS — 437 checks, 0 failure(s), 0 unchanged baseline defect(s)
 
 $ uv run x6200-ab audit --revision HEAD --suite visual
-audited 6a4b6ea0fd59: 17 known issues — 0 reproduced, 15 unverified;
+audited 46195bffe31b: 17 known issues — 0 reproduced, 15 unverified;
 structural inspection REAL over 4773 objects on 41 scenario(s): 0 structural finding(s)
 
 $ uv run x6200-ab themes
@@ -3687,20 +3687,21 @@ rondas, 20 frames por escenario; x86 host, no el Cortex-A7):
 
 | escenario | p50 | p95 | p99 | fps | cv | flushes | rss |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| `main-tema-classic` | 3.382 ms | 3.566 ms | 4.132 ms | 295.7 | 3.2% | 1.0 | 10 711 040 B |
-| `main-tema-sprint` | 3.401 ms | 4.121 ms | 4.213 ms | 294.0 | 1.7% | 1.0 | 10 686 464 B |
+| `main-tema-classic` | 3.310 ms | 3.420 ms | 3.693 ms | 302.1 | 1.7% | 1.0 | 10 301 440 B |
+| `main-tema-sprint` | 3.262 ms | 3.399 ms | 4.346 ms | 306.5 | 1.4% | 1.0 | 10 686 464 B |
 
-Repetido en una corrida limpia (`reports/BENCH-SPRINT69-R1`, cv 2.5%/3.0%) el orden se invierte
-y la diferencia queda dentro del ruido: p50 5.957 vs 5.995 ms y p95 6.151 vs 6.286 ms
-(**−0.6% / −2.1%**), fps +0.7%, rss +2.0%. Las dos corridas de 80 frames que se intentaron
-(`-R20` y `-R2`) volvieron **INCONCLUSIVE**: el host estaba cargado por las otras corridas de
-la colección (cv 36–40%), que es exactamente el caso que el presupuesto marca como no
-confiable. Aislamiento del sospechoso obvio —la familia segmentada, que agrega la capa sombra
-de los dígitos—: `main-foco` (IU1WXY, familia por defecto) vs `main-frecuencia-dseg` (mismo
-tema y estado, `digits dseg7`), 80 frames, p50 5.743 vs 5.876 ms y p95 6.202 vs 6.177 ms
-(`reports/BENCH-SPRINT69-DSEG`): la capa no mide un costo propio. **Conclusión**: sin regresión
-de costo medible dentro del ruido del host; el número físico (Cortex-A7) no se midió y no se
-afirma nada sobre energía.
+Es decir **−1.5% de p50 y −0.6% de p95** (Sprint un poco más rápido, dentro del ruido), +1.5%
+de fps, +3.7% de RSS; el p99 de Sprint (4.346 vs 3.693 ms) es un frame de cola suelto con
+cv 1.4%. Repetido en otra corrida limpia (`reports/BENCH-SPRINT69-R1`, cv 2.5%/3.0%) el
+resultado es el mismo signo y la misma magnitud: −0.6% de p50 y −2.1% de p95. Las dos corridas
+de 80 frames que se intentaron (`-R20` y `-R2`) volvieron **INCONCLUSIVE**: el host estaba
+cargado por las otras corridas de la colección (cv 36–40%), que es exactamente el caso que el
+presupuesto marca como no confiable. Aislamiento del sospechoso obvio —la familia segmentada,
+que agrega la capa sombra de los dígitos—: `main-foco` (IU1WXY, familia por defecto) vs
+`main-frecuencia-dseg` (mismo tema y estado, `digits dseg7`), 80 frames, p50 5.743 vs 5.876 ms
+y p95 6.202 vs 6.177 ms (`reports/BENCH-SPRINT69-DSEG`): la capa no mide un costo propio.
+**Conclusión**: sin regresión de costo medible dentro del ruido del host; el número físico
+(Cortex-A7) no se midió y no se afirma nada sobre energía.
 
 **Hallazgos y límites declarados** (ninguno bloquea este PR):
 
