@@ -213,3 +213,41 @@ objects:
     background: [250, 120, 140, 14]
     min_ratio: 3.0
     where: "band_plan.c:19 (franja DIG #33aa55 sobre el strip)"
+
+  # --- Sunlit (issue #67, THEMES v2) ---------------------------------------
+  # The S-meter face is the theme-independent bitmap (top_long.bin), so a light
+  # theme cannot recolour it: the arc `TC(meter_over)` has to be a light ink to
+  # clear 3:1 (meter.c:116-119). Sunlit's own waterfall palette (dark navy signal
+  # over a near-white floor, waterfall.c) is measured on the two fixtures that
+  # render it; the column moves with the seed, so each fixture carries its rect.
+  - name: s_meter_arc
+    fixture: main-tema-sunlit
+    theme: Sunlit
+    object: [481, 28, 10, 12]
+    background: [481, 17, 10, 9]
+    min_ratio: 3.0
+    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
+
+  - name: waterfall_signal
+    fixture: main-tema-sunlit
+    theme: Sunlit
+    object: [316, 255, 9, 150]
+    background: [100, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
+
+  - name: s_meter_arc
+    fixture: main-tema-sunlit-agua
+    theme: Sunlit
+    object: [481, 28, 10, 12]
+    background: [481, 17, 10, 9]
+    min_ratio: 3.0
+    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
+
+  - name: waterfall_signal
+    fixture: main-tema-sunlit-agua
+    theme: Sunlit
+    object: [216, 255, 8, 150]
+    background: [300, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"

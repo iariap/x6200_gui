@@ -114,7 +114,7 @@ def test_the_shipped_themes_pass_every_declared_pair(
 ) -> None:
     pairs = load_theme_pairs(QUALITY_DIR / "theme_pairs.yaml")
     reports = check_shipped_themes(SHIPPED_DIR, pairs, palettes)
-    assert [report.name for report in reports] == ["Holo", "Material 3", "Redshift", "RS"]
+    assert [report.name for report in reports] == ["Holo", "Material 3", "Redshift", "Sunlit", "RS"]
     assert all(report.ok for report in reports)
     assert all(report.error is None for report in reports)
     assert all(len(report.results) == len(pairs) for report in reports)
@@ -225,7 +225,7 @@ def _served(palettes: dict[str, dict[str, str]]):
 def test_the_served_inventory_is_the_builtins_then_the_files(
     runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    """The inventory has no silent hole: every served theme, built-ins first."""
+    """The inventory has no silent hole: the eleven served themes, built-ins first."""
     reports, pairs = _served(runtime_palettes)
     assert [report.name for report in reports] == [
         "IU1WXY",
@@ -237,6 +237,7 @@ def test_the_served_inventory_is_the_builtins_then_the_files(
         "Holo",
         "Material 3",
         "Redshift",
+        "Sunlit",
         "RS",
     ]
     builtins = [report for report in reports if report.source == "builtin"]
@@ -249,10 +250,10 @@ def test_the_served_inventory_is_the_builtins_then_the_files(
 def test_every_served_theme_passes_every_declared_pair(
     runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    """The full coverage finds no sub-WCAG pair: 10 themes, 90 measurements."""
+    """The full coverage finds no sub-WCAG pair: 11 themes, 99 measurements."""
     reports, _ = _served(runtime_palettes)
     checked = sum(len(report.results) for report in reports)
-    assert checked == 90
+    assert checked == 99
     assert all(report.ok for report in reports)
     assert all(report.error is None for report in reports)
 
