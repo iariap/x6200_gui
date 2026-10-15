@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>A/B report AB-FONTS</title>
+<style>body{font-family:system-ui,sans-serif;margin:2rem;max-width:60rem}table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{border:1px solid #ccc;padding:.35rem .6rem;text-align:left;font-size:.92rem}img{max-width:100%;border:1px solid #ccc;margin:.4rem 0}.pill{padding:.2rem .7rem;border-radius:1rem;color:#fff;font-weight:600}</style>
+</head><body>
+<h1>A/B UI report — AB-FONTS</h1>
+<p><span class="pill" style="background:#b3261e">FAIL</span> exit 1</p>
+<ul>
+<li>Date: 2026-10-15</li>
+<li>A: <code>02c13119039da34c9a888e200d61948602b5a9ac</code></li>
+<li>B: <code>b9fc0812bc8d4effb6939311bf15668e9d3a32ad</code></li>
+<li>Docker image: <code>x6200-uiharness</code></li>
+<li>Scenarios: app-bands, app-close-home, apps-menu-1, apps-menu-2, apps-menu-3, apps-menu-4, apps-menu-5, apps-menu-6, bench-render, bt-dialog, home-bateria-externa, home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco, main-natural, main-natural-eco, main-otro-tema, main-tema-classic, main-tema-holo, main-tema-material-3, main-tema-outdoor-negative, main-tema-rs, main-tema-vision, main-tema-vision-cwr, main-tema-vision-usbd, main-tx-simulado, settings-audio, settings-bands, settings-home, settings-perfil, settings-rs-theme, settings-wfbat</li>
+</ul>
+<h2>Gates</h2>
+<table><tr><th>Gate</th><th>Required</th><th>Status</th><th>Summary</th></tr>
+<tr><td>Functional</td><td>yes</td><td>PASS</td><td>34 scenarios captured on both revisions</td></tr>
+<tr><td>Visual Regression</td><td>yes</td><td>FAIL</td><td>visual regressions vs the baseline</td></tr>
+<tr><td>Quality Contract</td><td>yes</td><td>PASS</td><td>362 contract checks passed on the candidate</td></tr>
+<tr><td>Performance</td><td>yes</td><td>PASS</td><td>render-cost proxy within budget</td></tr>
+<tr><td>Hardware</td><td>advisory</td><td>BLOCKED</td><td>no physical X6200 attached; hardware behaviour is not measured</td></tr>
+<tr><td>Energy</td><td>advisory</td><td>BLOCKED</td><td>no power measurement; energy evidence must be physical</td></tr>
+</table>
+<h2>Visual diff</h2>
+<table><tr><th>Scenario</th><th>Changed px</th><th>Area</th><th>Regions</th></tr>
+<tr><td>app-bands</td><td>9270</td><td>2.414%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>app-close-home</td><td>15398</td><td>4.010%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>apps-menu-1</td><td>12274</td><td>3.196%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>apps-menu-2</td><td>13225</td><td>3.444%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>apps-menu-3</td><td>13566</td><td>3.533%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>apps-menu-4</td><td>13272</td><td>3.456%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>apps-menu-5</td><td>12708</td><td>3.309%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>apps-menu-6</td><td>12274</td><td>3.196%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>bench-render</td><td>15452</td><td>4.024%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>bt-dialog</td><td>15671</td><td>4.081%</td><td>barra_superior, s_metro, espectro, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_scrollbar, ajustes_audio_ganancia</td></tr>
+<tr><td>home-bateria-externa</td><td>15512</td><td>4.040%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>home-frecuencia-extrema</td><td>14710</td><td>3.831%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>home-usb-20m</td><td>15398</td><td>4.010%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-bateria-baja</td><td>14394</td><td>3.748%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-espectro-agua</td><td>15452</td><td>4.024%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-foco</td><td>15398</td><td>4.010%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-natural</td><td>15398</td><td>4.010%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-natural-eco</td><td>15107</td><td>3.934%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-otro-tema</td><td>14143</td><td>3.683%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-tema-classic</td><td>15718</td><td>4.093%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-tema-holo</td><td>16589</td><td>4.320%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-tema-material-3</td><td>16579</td><td>4.317%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-tema-outdoor-negative</td><td>15392</td><td>4.008%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-tema-rs</td><td>15715</td><td>4.092%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-tema-vision</td><td>21390</td><td>5.570%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-tema-vision-cwr</td><td>21410</td><td>5.576%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-tema-vision-usbd</td><td>21506</td><td>5.601%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>main-tx-simulado</td><td>17891</td><td>4.659%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>settings-audio</td><td>25625</td><td>6.673%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>settings-bands</td><td>9270</td><td>2.414%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>settings-home</td><td>30217</td><td>7.869%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>settings-perfil</td><td>25658</td><td>6.682%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>settings-rs-theme</td><td>39477</td><td>10.280%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+<tr><td>settings-wfbat</td><td>27517</td><td>7.166%</td><td>barra_superior, s_metro, espectro, frecuencia, waterfall, botones, reloj_potencia, ajustes_anio, ajustes_perfil, ajustes_audio_ganancia</td></tr>
+</table>
+<h3>app-bands</h3>
+<img src="diffs/app-bands-diff.png" alt="diff">
+<img src="diffs/app-bands-overlay.png" alt="overlay">
+<h3>app-close-home</h3>
+<img src="diffs/app-close-home-diff.png" alt="diff">
+<img src="diffs/app-close-home-overlay.png" alt="overlay">
+<h3>apps-menu-1</h3>
+<img src="diffs/apps-menu-1-diff.png" alt="diff">
+<img src="diffs/apps-menu-1-overlay.png" alt="overlay">
+<h3>apps-menu-2</h3>
+<img src="diffs/apps-menu-2-diff.png" alt="diff">
+<img src="diffs/apps-menu-2-overlay.png" alt="overlay">
+<h3>apps-menu-3</h3>
+<img src="diffs/apps-menu-3-diff.png" alt="diff">
+<img src="diffs/apps-menu-3-overlay.png" alt="overlay">
+<h3>apps-menu-4</h3>
+<img src="diffs/apps-menu-4-diff.png" alt="diff">
+<img src="diffs/apps-menu-4-overlay.png" alt="overlay">
+<h3>apps-menu-5</h3>
+<img src="diffs/apps-menu-5-diff.png" alt="diff">
+<img src="diffs/apps-menu-5-overlay.png" alt="overlay">
+<h3>apps-menu-6</h3>
+<img src="diffs/apps-menu-6-diff.png" alt="diff">
+<img src="diffs/apps-menu-6-overlay.png" alt="overlay">
+<h3>bench-render</h3>
+<img src="diffs/bench-render-diff.png" alt="diff">
+<img src="diffs/bench-render-overlay.png" alt="overlay">
+<h3>bt-dialog</h3>
+<img src="diffs/bt-dialog-diff.png" alt="diff">
+<img src="diffs/bt-dialog-overlay.png" alt="overlay">
+<h3>home-bateria-externa</h3>
+<img src="diffs/home-bateria-externa-diff.png" alt="diff">
+<img src="diffs/home-bateria-externa-overlay.png" alt="overlay">
+<h3>home-frecuencia-extrema</h3>
+<img src="diffs/home-frecuencia-extrema-diff.png" alt="diff">
+<img src="diffs/home-frecuencia-extrema-overlay.png" alt="overlay">
+<h3>home-usb-20m</h3>
+<img src="diffs/home-usb-20m-diff.png" alt="diff">
+<img src="diffs/home-usb-20m-overlay.png" alt="overlay">
+<h3>main-bateria-baja</h3>
+<img src="diffs/main-bateria-baja-diff.png" alt="diff">
+<img src="diffs/main-bateria-baja-overlay.png" alt="overlay">
+<h3>main-espectro-agua</h3>
+<img src="diffs/main-espectro-agua-diff.png" alt="diff">
+<img src="diffs/main-espectro-agua-overlay.png" alt="overlay">
+<h3>main-foco</h3>
+<img src="diffs/main-foco-diff.png" alt="diff">
+<img src="diffs/main-foco-overlay.png" alt="overlay">
+<h3>main-natural</h3>
+<img src="diffs/main-natural-diff.png" alt="diff">
+<img src="diffs/main-natural-overlay.png" alt="overlay">
+<h3>main-natural-eco</h3>
+<img src="diffs/main-natural-eco-diff.png" alt="diff">
+<img src="diffs/main-natural-eco-overlay.png" alt="overlay">
+<h3>main-otro-tema</h3>
+<img src="diffs/main-otro-tema-diff.png" alt="diff">
+<img src="diffs/main-otro-tema-overlay.png" alt="overlay">
+<h3>main-tema-classic</h3>
+<img src="diffs/main-tema-classic-diff.png" alt="diff">
+<img src="diffs/main-tema-classic-overlay.png" alt="overlay">
+<h3>main-tema-holo</h3>
+<img src="diffs/main-tema-holo-diff.png" alt="diff">
+<img src="diffs/main-tema-holo-overlay.png" alt="overlay">
+<h3>main-tema-material-3</h3>
+<img src="diffs/main-tema-material-3-diff.png" alt="diff">
+<img src="diffs/main-tema-material-3-overlay.png" alt="overlay">
+<h3>main-tema-outdoor-negative</h3>
+<img src="diffs/main-tema-outdoor-negative-diff.png" alt="diff">
+<img src="diffs/main-tema-outdoor-negative-overlay.png" alt="overlay">
+<h3>main-tema-rs</h3>
+<img src="diffs/main-tema-rs-diff.png" alt="diff">
+<img src="diffs/main-tema-rs-overlay.png" alt="overlay">
+<h3>main-tema-vision</h3>
+<img src="diffs/main-tema-vision-diff.png" alt="diff">
+<img src="diffs/main-tema-vision-overlay.png" alt="overlay">
+<h3>main-tema-vision-cwr</h3>
+<img src="diffs/main-tema-vision-cwr-diff.png" alt="diff">
+<img src="diffs/main-tema-vision-cwr-overlay.png" alt="overlay">
+<h3>main-tema-vision-usbd</h3>
+<img src="diffs/main-tema-vision-usbd-diff.png" alt="diff">
+<img src="diffs/main-tema-vision-usbd-overlay.png" alt="overlay">
+<h3>main-tx-simulado</h3>
+<img src="diffs/main-tx-simulado-diff.png" alt="diff">
+<img src="diffs/main-tx-simulado-overlay.png" alt="overlay">
+<h3>settings-audio</h3>
+<img src="diffs/settings-audio-diff.png" alt="diff">
+<img src="diffs/settings-audio-overlay.png" alt="overlay">
+<h3>settings-bands</h3>
+<img src="diffs/settings-bands-diff.png" alt="diff">
+<img src="diffs/settings-bands-overlay.png" alt="overlay">
+<h3>settings-home</h3>
+<img src="diffs/settings-home-diff.png" alt="diff">
+<img src="diffs/settings-home-overlay.png" alt="overlay">
+<h3>settings-perfil</h3>
+<img src="diffs/settings-perfil-diff.png" alt="diff">
+<img src="diffs/settings-perfil-overlay.png" alt="overlay">
+<h3>settings-rs-theme</h3>
+<img src="diffs/settings-rs-theme-diff.png" alt="diff">
+<img src="diffs/settings-rs-theme-overlay.png" alt="overlay">
+<h3>settings-wfbat</h3>
+<img src="diffs/settings-wfbat-diff.png" alt="diff">
+<img src="diffs/settings-wfbat-overlay.png" alt="overlay">
+<h2>Coverage (declared by the harness)</h2>
+<table><tr><th>Scenario</th><th>REAL</th><th>PARTIAL</th><th>SYNTHETIC</th><th>UNSUPPORTED</th></tr>
+<tr><td>app-bands</td><td>16</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>app-close-home</td><td>17</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td>apps-menu-1</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-2</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-3</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-4</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-5</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-6</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>bench-render</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>bt-dialog</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>home-bateria-externa</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>home-frecuencia-extrema</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>home-usb-20m</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-bateria-baja</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-espectro-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-foco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-natural</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-natural-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-otro-tema</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-classic</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-holo</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-material-3</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-outdoor-negative</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-rs</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-vision</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-vision-cwr</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-vision-usbd</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tx-simulado</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-audio</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-bands</td><td>17</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>settings-home</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-perfil</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-rs-theme</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-wfbat</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+</table>
+<h2>Known issues</h2>
+<table><tr><th>Issue</th><th>Fixture</th><th>A</th><th>B</th><th>Classification</th></tr>
+<tr><td>UI-001</td><td>home-usb-20m</td><td>no</td><td>no</td><td>NOT_REPRODUCED</td></tr>
+<tr><td>UI-009</td><td>home-bateria-externa</td><td>no</td><td>no</td><td>NOT_REPRODUCED</td></tr>
+<tr><td>UI-010</td><td>main-otro-tema</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-011</td><td>main-tema-vision</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-012</td><td>main-tema-vision</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-013</td><td>main-tema-outdoor-negative</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-014</td><td>main-tema-vision-usbd</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-015</td><td>settings-wfbat</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-016</td><td>settings-home</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-002</td><td>apps-menu-1</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-003</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-004</td><td>settings-home</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-005</td><td>bt-dialog</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-006</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-007</td><td>settings-rs-theme</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-008</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+</table>
+<h2>Quality contracts</h2>
+<p>362 checks, 0 failure(s), 0 unchanged baseline defect(s).</p>
+<h2>Gates without instrumentation</h2><ul>
+<li><strong>Hardware</strong>: no physical X6200 attached; hardware behaviour is not measured</li>
+<li><strong>Energy</strong>: no power measurement; energy evidence must be physical</li>
+</ul>
+</body></html>

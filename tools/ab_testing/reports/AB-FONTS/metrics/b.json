@@ -1,0 +1,274 @@
+{
+  "app-bands": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x1e4bdc77fd95111f",
+    "png_sha256": "5d9f8b82395878843e201fab71ef68bd3823cf9f1c3cd8c9894f5a6abee7eb1f",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "app-close-home": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x3121bf22c3264bd4",
+    "png_sha256": "0a2c0c82fdfc4f9395ad8d11684a20af973abc815fad8c68bde59a243a10680a",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "apps-menu-1": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x17671666bc5edf6d",
+    "png_sha256": "8c10c7e6cba348aff4ad5edca2221222b47d7bac1a51efb89b87c0c56d38f392",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "apps-menu-2": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0xf9967ebab3095f50",
+    "png_sha256": "0d8fbafa8ab6f40f030f21d2a4425019747adcc92d8ebb2e3c1ebf999d3b26ee",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "apps-menu-3": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x385cde91b041d634",
+    "png_sha256": "42908f9f0fc55d0997fc8aa404afc8b902928af39ec2aa3b12c473277da9485b",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "apps-menu-4": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0xd4b78b51f42016fd",
+    "png_sha256": "2a85223880c4229e72c61018ee395ca1687fd7130b366bdf5c01114505dfe7a7",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "apps-menu-5": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x9edcf115b1907dbf",
+    "png_sha256": "f4afbe174373c782addece79e770b51d711f37e74ea0bb2b654d450a9ac99864",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "apps-menu-6": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0xd9ab65f6695c38fb",
+    "png_sha256": "6ca0c460ba29f029e6948cbb3d647aba92713110c3f3b4fb69238c895dadb3c6",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "bench-render": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x8c12c06e26748fe9",
+    "png_sha256": "aefebba48d3d138b3aa830c4d1c7107b75a42b0b84c0730e5dbabbbe48a3555d",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "bt-dialog": {
+    "flushed_pixels": 1568308,
+    "flushes": 10,
+    "framebuffer_fnv1a": "0x0d734fe07f5f1455",
+    "png_sha256": "02325980d253b956565b1fe01c1cd27f5a69f7f15aec028272047e7fc5f38b16",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "home-bateria-externa": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x6953571d91c3b3da",
+    "png_sha256": "a763773fe412b12222217b5f4fb79dba4081a0238403d00a8294f987d097a01c",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "home-frecuencia-extrema": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xa12b34acbd6bc24d",
+    "png_sha256": "643dd0b392599f5a05bd1344b3573317e1448ab719089c31c102677122989e94",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "home-usb-20m": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x3121bf22c3264bd4",
+    "png_sha256": "0a2c0c82fdfc4f9395ad8d11684a20af973abc815fad8c68bde59a243a10680a",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-bateria-baja": {
+    "flushed_pixels": 995680,
+    "flushes": 5,
+    "framebuffer_fnv1a": "0x76f6039e67019b93",
+    "png_sha256": "a5e2ad5656b8df2950b0003ab462514275df943f6c52b7fd55e6c61abfaf2365",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-espectro-agua": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xfb7d4cc3af4e12e0",
+    "png_sha256": "754cc8e4bd4924578074c8aa2e3bdac28140021ad0e4fe8f67f8745d4b2f5fa2",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-foco": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x3121bf22c3264bd4",
+    "png_sha256": "0a2c0c82fdfc4f9395ad8d11684a20af973abc815fad8c68bde59a243a10680a",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-natural": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x803927964b1d8c72",
+    "png_sha256": "8ab2bf4f40e9ef591c8b9da4f2f69d767beced181aaa44c8de395b12b811bfdd",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-natural-eco": {
+    "flushed_pixels": 995680,
+    "flushes": 5,
+    "framebuffer_fnv1a": "0xa489c8ced8dd3eb9",
+    "png_sha256": "ff1b40d39ff767ae2160664499b90357166636a2aa912734b2487f245a53d48f",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-otro-tema": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x3b6f414ab46853db",
+    "png_sha256": "71595030b63cf98cbffefefec3bbbd48e4a7f26434d402ad2fa9f2cde1f21e64",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-classic": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x3a123019cc2d249f",
+    "png_sha256": "ce6c02825e095513fc56c5e81cf2123be6ce1de91a338b96e109214673f47d51",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-holo": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x06862cd92859fa56",
+    "png_sha256": "e9f5e6991d5568e257fd9aded7d3dde17eccddcdf6b575504c3cc6c2a0b3b739",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-material-3": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x4abd51ba5360b117",
+    "png_sha256": "e462acde9c055d95ee3628e37155b71a7d67a461fa8dc81e8b4d105f7b0d6609",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-outdoor-negative": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xa36c102a927172b1",
+    "png_sha256": "83d243273745bcbaa2858eb01cb77eaba838cc4eb994d8512006677385587b1f",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-rs": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xb79994c831baf629",
+    "png_sha256": "2a75ba0e57f409bfdc9519e4cc30f89c3077fec9bf966c10a907bc0adfe93d2f",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-vision": {
+    "flushed_pixels": 1128266,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x52408a35e48c97dc",
+    "png_sha256": "2e9588ff20cc217212e98b55b4d376a9208a19361e23ac1fdc5e25f6367a2da1",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-vision-cwr": {
+    "flushed_pixels": 1128266,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x6461bc22f5ab2738",
+    "png_sha256": "4bf11512ed77e1bfa3d763bd6fceb26962c18d7b5b827e4885e506edecf0a8d6",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-vision-usbd": {
+    "flushed_pixels": 1128266,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xc4d2ce72e3171a86",
+    "png_sha256": "3655f725ead58b57f9f94a0674b3b80c7263acf1deb963cd296335af164fe9f0",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "main-tx-simulado": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x062cc159be1e694f",
+    "png_sha256": "b36c39ad7d86b611e763ff9475f834702b1b7fe6c515a97d4a7774fe1d56d526",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "settings-audio": {
+    "flushed_pixels": 1135170,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x7a4c6d49fe7be5d2",
+    "png_sha256": "2c5df9e725e25377d035d64ee443f0a4f02169748645b1942cd7a6d8a1624c55",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "settings-bands": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x1e4bdc77fd95111f",
+    "png_sha256": "5d9f8b82395878843e201fab71ef68bd3823cf9f1c3cd8c9894f5a6abee7eb1f",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "settings-home": {
+    "flushed_pixels": 1135170,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x63c83abdc281b489",
+    "png_sha256": "c4b5e602386fc1d8c74039ad5a1ecbfae3b8bbfacf1edd8707b6798ef344c558",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "settings-perfil": {
+    "flushed_pixels": 1003170,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x8904346518214775",
+    "png_sha256": "00d2baac136dc14676c5c9176551a603b9879b2b92dcdb2c7f4d952670e4e064",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "settings-rs-theme": {
+    "flushed_pixels": 1135170,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x642b72e54ba63f82",
+    "png_sha256": "ef9a1aecf1c9bb562ff2e293f033860a8ec456d1575fd0724a336d508cad6f9b",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  },
+  "settings-wfbat": {
+    "flushed_pixels": 1135170,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0xf574c52c797e5b85",
+    "png_sha256": "caaf77d2bb6e384107dfbad118c7c31ca8ac1fa9af84e138cb726b35df419b90",
+    "revision": "b9fc0812bc8d4effb6939311bf15668e9d3a32ad",
+    "virtual_time_ms": 2200
+  }
+}
