@@ -14,7 +14,7 @@ integración #73, con el banco reservado para esa pasada.
 
 ## Cómo se reprodujo
 
-Desde `tools/ab_testing`, en la revisión de la rama del tema (`e510791`):
+Desde `tools/ab_testing`, en la revisión de la rama del tema (`5ade4f9`):
 
 ```bash
 uv run x6200-ab capture --revision HEAD --label cathode70 \
@@ -79,12 +79,12 @@ el tema):
 
 | escenario | p50 | p95 | p99 | fps | cv | flushes |
 |---|---:|---:|---:|---:|---:|---:|
-| `main-tema-classic` | 3.371 ms | 3.653 ms | 3.934 ms | 296.7 | 2.6% | 1.0 |
-| `main-tema-cathode` | 3.351 ms | 3.529 ms | 3.544 ms | 298.4 | 1.7% | 1.0 |
+| `main-tema-classic` | 3.356 ms | 3.449 ms | 3.598 ms | 297.9 | 1.1% | 1.0 |
+| `main-tema-cathode` | 3.360 ms | 3.609 ms | 4.023 ms | 297.6 | 2.2% | 1.0 |
 
-Sin regresión medible: p50 −0.6%, p95 −3.4%, fps +0.6%. El aislamiento de la familia
+Sin regresión medible: p50 +0.1%, p95 +4.6%, fps −0.1%. El aislamiento de la familia
 segmentada (que agrega la capa del "8 fantasma" en la fila de frecuencia) no muestra costo
-propio: `main-foco` vs `main-frecuencia-dseg`, p50 3.399 vs 3.406 ms. Los reportes crudos quedan
+propio: `main-foco` vs `main-frecuencia-dseg`, p50 3.335 vs 3.336 ms. Los reportes crudos quedan
 en `tools/ab_testing/reports/BENCH-CATHODE70*`.
 
 ## Lo que esta evidencia NO cubre

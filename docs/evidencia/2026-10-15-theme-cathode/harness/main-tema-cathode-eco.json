@@ -2,7 +2,7 @@
   "scenario": "main-tema-cathode-eco",
   "screen": "main",
   "seed": 44,
-  "revision": "e510791b81d1a181621a0e71e094038435312a8c",
+  "revision": "5ade4f999813400efdcb6a1850cb56c68f906a91",
   "framebuffer": { "width": 800, "height": 480 },
   "theme": {
     "requested": "Cathode",

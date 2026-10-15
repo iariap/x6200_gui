@@ -12,52 +12,52 @@
   "kind": "benchmark-measurement",
   "measurements": [
     {
-      "dispersion_cv_pct": 3.765,
-      "draw_ms_mean": 2.9961,
-      "flush_ms_mean": 0.4375,
+      "dispersion_cv_pct": 1.958,
+      "draw_ms_mean": 2.9932,
+      "flush_ms_mean": 0.4287,
       "flushes_mean": 1.0,
-      "fps": 294.24,
+      "fps": 299.88,
       "frames": 20,
       "memory": {
-        "peak_rss_bytes": 10452992,
+        "peak_rss_bytes": 10461184,
         "peak_vm_bytes": 82194432,
-        "pss_bytes": 10440704,
-        "rss_bytes": 10387456
+        "pss_bytes": 10448896,
+        "rss_bytes": 10395648
       },
       "redrawn_area_mean": 384000.0,
-      "render_mean_ms": 3.4336,
-      "render_p50_ms": 3.3986,
-      "render_p95_ms": 3.7133,
-      "render_p99_ms": 3.8309,
-      "render_stdev_ms": 0.1471,
+      "render_mean_ms": 3.4219,
+      "render_p50_ms": 3.3347,
+      "render_p95_ms": 3.6584,
+      "render_p99_ms": 4.2611,
+      "render_stdev_ms": 0.2443,
       "scenario": "main-foco",
       "unique_redrawn_mean": 384000.0
     },
     {
-      "dispersion_cv_pct": 2.49,
-      "draw_ms_mean": 3.0895,
-      "flush_ms_mean": 0.4122,
+      "dispersion_cv_pct": 1.758,
+      "draw_ms_mean": 2.9426,
+      "flush_ms_mean": 0.441,
       "flushes_mean": 1.0,
-      "fps": 293.61,
+      "fps": 299.8,
       "frames": 20,
       "memory": {
-        "peak_rss_bytes": 10477568,
+        "peak_rss_bytes": 10625024,
         "peak_vm_bytes": 82194432,
-        "pss_bytes": 10465280,
-        "rss_bytes": 10477568
+        "pss_bytes": 10612736,
+        "rss_bytes": 10625024
       },
       "redrawn_area_mean": 384000.0,
-      "render_mean_ms": 3.5017,
-      "render_p50_ms": 3.4059,
-      "render_p95_ms": 3.8408,
-      "render_p99_ms": 4.5434,
-      "render_stdev_ms": 0.3109,
+      "render_mean_ms": 3.3836,
+      "render_p50_ms": 3.3355,
+      "render_p95_ms": 3.6872,
+      "render_p99_ms": 3.7008,
+      "render_stdev_ms": 0.1241,
       "scenario": "main-frecuencia-dseg",
       "unique_redrawn_mean": 384000.0
     }
   ],
   "revisions": {
-    "revision": "e510791b81d1a181621a0e71e094038435312a8c"
+    "revision": "5ade4f999813400efdcb6a1850cb56c68f906a91"
   },
   "scenarios": [
     "main-foco",
