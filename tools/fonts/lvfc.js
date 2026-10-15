@@ -87,7 +87,12 @@ async function run(size, output) {
   return convert({
     size,
     bpp: 4,
-    compress: false,
+    // The option the writer reads is `no_compress` (lib/font/table_glyf.js
+    // getCompressionCode()): with it unset the bitmaps come out RLE-compressed and
+    // `.bitmap_format` is 1, which is NOT what the committed families are
+    // (bitmap_format 0, uncompressed 4 bpp). A driver that got this wrong renders
+    // glyphs for some sizes and none for others, silently.
+    no_compress: true,
     lcd: false,
     use_color_info: false,
     no_prefilter: false,
