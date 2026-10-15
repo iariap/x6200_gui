@@ -80,11 +80,17 @@ set(GUI_SRC
 
 # The GUI's own C++ (button bar, MFK encoder state, controls, DSP helpers) and
 # the real Subject/observer implementation from cfg/ (the C++ template).
+# cfg/settings_manager.cpp is the remote control's mirror of the configuration
+# (the ported X6100 SettingsManager): the harness compiles it so the mirror's
+# wiring is exercised by the fixtures' boot -the "vol": 0 with vol=8 in
+# params.db of issue #30 was its Params pointing at subjects that did not exist
+# yet- and mock_cfg.c codifies the boot order (see its cfg_sm_init_live() call).
 set(GUI_CXX_SRC
     ${REPO}/src/buttons.cpp
     ${REPO}/src/mfk.cpp
     ${REPO}/src/controls.cpp
     ${REPO}/src/cfg/subjects.cpp
+    ${REPO}/src/cfg/settings_manager.cpp
 )
 
 add_executable(ui_harness

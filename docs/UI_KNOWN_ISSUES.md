@@ -561,3 +561,7 @@ Los dos están en el registro (`quality/known_issues.yaml`, `status: verified`) 
 su excepción acotada (regla + fixture) con vencimiento `2027-03-31` en
 `quality/contracts.yaml`; el incremento de UX de Ajustes los arregla y **retira la excepción en
 el mismo cambio**.
+
+La fixture `settings-audio` (issue #26, la fila "Play,Rec gain") agrega su propia excepción de
+**UI-015** por la misma geometría heredada del grupo Audio (los cuatro sliders de 13 px y el switch
+de "Speaker mode", 111x30): misma regla, mismo hallazgo, otra página de la ventana.

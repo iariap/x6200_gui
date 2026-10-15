@@ -80,6 +80,16 @@ void mock_cfg_init(void)
     cfg.nr.val          = subject_create_int(0);
     cfg.nb.val          = subject_create_int(0);
 
+    /* Los items de cfg que el espejo del control remoto (src/cfg/settings_manager.cpp)
+     * lee y escribe: el arnes los crea todos para que un Param no quede apuntando a un
+     * subject NULL (issue #30: `"vol": 0` con vol=8 en params.db). Los defaults son los del
+     * firmware (sql/nb_level/... arrancan en 0; band_id en 5, src/cfg/cfg.c). */
+    cfg.sql.val        = subject_create_int(0);
+    cfg.band_id.val    = subject_create_int(5);
+    cfg.nb_level.val   = subject_create_int(0);
+    cfg.nb_width.val   = subject_create_int(0);
+    cfg.nr_level.val   = subject_create_int(0);
+
     /* DSP state spectrum.c watches, and the CW switches pannel/cw_tune read. */
     cfg.dnf.val        = subject_create_int(x6200_dnf_off);
     cfg.dnf_center.val = subject_create_int(0);
@@ -100,6 +110,14 @@ void mock_cfg_init(void)
         cfg_transverters[n].to.val    = subject_create_int(dflt_to[n]);
         cfg_transverters[n].shift.val = subject_create_int(dflt_shift[n]);
     }
+
+    /* Ultimo paso del arranque, como en la radio: con los items y los subjects ya creados,
+     * cfg_init() engancha el espejo del control remoto (cfg_sm_init_live(), src/cfg/cfg.c).
+     * Es el unico momento en que ese mapeo puede quedar bien: con los Param del espejo
+     * apuntando a un subject NULL, leer devuelve el valor neutro y escribir no hace nada (el
+     * `"vol": 0` con vol=8 en params.db del issue #30). La comprobacion -y el porque- estan
+     * en mocks/mock_settings_manager.cpp, que es C++ como el espejo. */
+    mock_settings_manager_check();
 }
 
 /* --- helpers the rendered components call ---------------------------------- */

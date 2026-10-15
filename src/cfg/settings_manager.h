@@ -85,9 +85,16 @@ public:
      * mapeo del constructor los deja en NULL. Se rehace cuando ya existen. */
     void init_live(void);
 
-    /* Avisa si algún parámetro de estado vivo quedó apuntando a un subject NULL: eso hacía
-     * que el control remoto no hiciera nada, en silencio. */
-    void check_live(void);
+    /* Los parámetros persistidos (p_volume, p_squelch, ...) apuntan a subjects de los items
+     * de cfg, que la carga de la configuración crea *después* del constructor de este global:
+     * el mapeo del constructor los deja en NULL igual que los de arriba. Se rehace cuando ya
+     * existen (lo llama cfg_sm_init_live(), el último paso de cfg_init()). */
+    void init_persisted(void);
+
+    /* Cuántos parámetros quedaron apuntando a un subject NULL (0 = ninguno). Ese fue el
+     * defecto del issue #30: el espejo del control remoto leía el neutro y escribía en el
+     * vacío, en silencio, sin que nada fallara. */
+    int check_live(void) const;
 
     /* Persisted parameters */
     Param p_volume, p_squelch, p_rfgain, p_pwr, p_nb, p_nb_level, p_nb_width;

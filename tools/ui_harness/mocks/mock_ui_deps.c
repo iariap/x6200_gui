@@ -34,6 +34,7 @@
 #include "wfview_server.h"
 #include "wifi.h"
 
+#include "mock_harness.h"
 #include "virtual_time.h"
 
 /* --- wall clock ------------------------------------------------------------
@@ -60,9 +61,42 @@ time_t __wrap_time(time_t *tloc)
  * and return the level the codec accepted; when the device is absent they
  * return the requested value (src/audio.c:387/428). The harness never
  * reaches a device, so the mixer is "absent": the requested value comes back,
- * which is exactly what the firmware does on a machine without that mixer. */
-float audio_set_play_vol(float db) { return db; }
-float audio_set_rec_vol(float db) { return db; }
+ * which is exactly what the firmware does on a machine without that mixer.
+ *
+ * They are also a recorder, the same idiom as the backlight test's policy stub:
+ * both sliders of Ajustes -> Audio look identical and their callbacks differ only
+ * in which of these two they call, so which one ran is the only observation point
+ * there is. The `settings-audio` fixture fires the Rec slider and checks the
+ * recorded setter: with the two wired to the same function (issue #26) the
+ * recorder stays on `play` and the fixture stops the run. */
+static mock_audio_setter_t audio_last = MOCK_AUDIO_NONE;
+static float               audio_last_db;
+static int                 audio_calls[3];
+
+mock_audio_setter_t mock_audio_last_setter(void) { return audio_last; }
+float               mock_audio_last_db(void) { return audio_last_db; }
+
+int mock_audio_calls(mock_audio_setter_t which) {
+    return (which >= MOCK_AUDIO_NONE && which <= MOCK_AUDIO_REC) ? audio_calls[which] : 0;
+}
+
+void mock_audio_reset(void) {
+    audio_last    = MOCK_AUDIO_NONE;
+    audio_last_db = 0.0f;
+    audio_calls[MOCK_AUDIO_NONE] = 0;
+    audio_calls[MOCK_AUDIO_PLAY] = 0;
+    audio_calls[MOCK_AUDIO_REC]  = 0;
+}
+
+static float audio_record(mock_audio_setter_t which, float db) {
+    audio_last    = which;
+    audio_last_db = db;
+    audio_calls[which]++;
+    return db;
+}
+
+float audio_set_play_vol(float db) { return audio_record(MOCK_AUDIO_PLAY, db); }
+float audio_set_rec_vol(float db) { return audio_record(MOCK_AUDIO_REC, db); }
 
 /* --- audio enhancement presets ---------------------------------------------
  * The Ajustes "Audio enhance" dropdown loads a DSP preset (src/

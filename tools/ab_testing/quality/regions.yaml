@@ -80,3 +80,17 @@ regions:
   - name: ajustes_scrollbar
     rect: [785, 75, 8, 330]
     description: "Barra de scroll vertical de la grilla de Ajustes (dialog_settings.c) sobre el arnes"
+
+  # La fila "Play,Rec gain" del grupo Audio de Ajustes (issue #26): su etiqueta
+  # va del pad del dialogo (x=20, donde arrancan las etiquetas) al borde de la
+  # segunda celda de slider (x=784), y las dos celdas ocupan y=140..196 (56 px de
+  # alto, medido con --inspect sobre el render de settings-audio). Como el
+  # dialogo se dibuja sobre la pantalla principal, la fila cae dentro de
+  # `espectro`: sin region propia el cambio de sus dos sliders -y de las
+  # etiquetas que muestran la ganancia- se atribuiria a toda la banda del
+  # espectro. El rect la cubre con 2 px de margen y se detiene en x=784 para no
+  # solaparse con la barra de scroll (`ajustes_scrollbar`). Se dibuja entera en
+  # la fixture settings-audio, que ademas mueve el slider de Rec gain.
+  - name: ajustes_audio_ganancia
+    rect: [20, 138, 764, 60]
+    description: "Fila 'Play,Rec gain' de Ajustes (dialog_settings.c, grupo Audio) sobre el arnes"

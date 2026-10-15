@@ -212,6 +212,21 @@ exceptions:
     author: ajustes-fixture
     until: 2027-03-31
 
+  # settings-audio (issue #26): the Audio group's own rows of the same window. The
+  # four sliders of "Line-in, Line-out" and "Play,Rec gain" (46..51x13) and the
+  # "Speaker mode" switch (111x30, LVGL's lv_switch height) are the same
+  # pre-existing row geometry as the controls the other two fixtures waive; the
+  # fixture measures the row (it fires the Rec gain slider) and does not alter it.
+  - rule: layout_touch_target
+    fixture: settings-audio
+    reason: >
+      UI-015: the four sliders of the Ajustes Audio group (the "Line-in, Line-out"
+      and "Play,Rec gain" rows) are 13 px tall and the "Speaker mode" switch is
+      111x30, all below the 44px field-UX target. Pre-existing row geometry of the
+      firmware, the same one the settings-home/-wfbat waivers hold back.
+    author: audio-vol-recgain
+    until: 2027-03-31
+
 # UI-016 (`layout_clipped` [settings-home]) was withdrawn here in AB-UI016-T1,
 # together with the fix: the Ajustes year field no longer clips its last digit
 # (src/dialog_settings.c, the year spinbox gets the width its four digits need

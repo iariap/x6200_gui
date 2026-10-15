@@ -25,6 +25,10 @@ KNOWN_KEYS = frozenset(
         "waterfall_center_line",
         "waterfall_battery",
         "band_plan",
+        # Las dos ganancias de Ajustes -> Audio (la fila "Play,Rec gain"): el
+        # fixture de audio las fija para poder distinguir un slider del otro.
+        "play_gain_db",
+        "rec_gain_db",
         "frequency_hz",
         "tx_frequency_hz",
         "fft_width_hz",

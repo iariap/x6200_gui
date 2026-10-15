@@ -50,6 +50,8 @@
               "src/cw_tune_ui.c compiled; hidden because CW tune is off in these fixtures"), \
     COMPONENT("cfg/subjects.cpp", COVERAGE_REAL, \
               "src/cfg/subjects.cpp compiled; the real Subject/observer core backs cfg_cur/cfg"), \
+    COMPONENT("cfg/settings_manager.cpp", COVERAGE_REAL, \
+              "src/cfg/settings_manager.cpp compiled; the remote control's mirror of the configuration binds its parameters to the real subjects at boot and is checked there (mocks/mock_settings_manager.cpp): reading it returns the stored value, not the neutral one (issue #30)"), \
     COMPONENT("cfg (catalogue)", COVERAGE_SYNTHETIC, \
               "no database: mock_cfg owns cfg_t/cfg_cur and its values (no src/cfg/db.cpp)"), \
     COMPONENT("params", COVERAGE_SYNTHETIC, \
@@ -69,12 +71,12 @@ static const coverage_entry_t main_screen[] = {
               "app dialogs are not opened; dialog_construct() opens none of them in these fixtures"),
 };
 
-/* The `settings-home` / `settings-wfbat` / `settings-perfil` scenarios: the same
- * main screen with the real Ajustes window over it. The shared dialog machinery, the window itself
- * and every widget it places are the real firmware sources; the few services the
- * window calls (mixer volume, the DSP presets, the wfview server, the RTC) are
- * the harness' explicit mocks, and the three transverter rows read harness
- * subjects because there is no database. */
+/* The `settings-home` / `settings-wfbat` / `settings-perfil` / `settings-audio`
+ * scenarios: the same main screen with the real Ajustes window over it. The shared
+ * dialog machinery, the window itself and every widget it places are the real
+ * firmware sources; the few services the window calls (mixer volume, the DSP
+ * presets, the wfview server, the RTC) are the harness' explicit mocks, and the
+ * three transverter rows read harness subjects because there is no database. */
 static const coverage_entry_t settings_dialog[] = {
     MAIN_COMPONENTS,
     COMPONENT("dialog.c", COVERAGE_REAL,
@@ -82,7 +84,7 @@ static const coverage_entry_t settings_dialog[] = {
     COMPONENT("dialog_settings.c", COVERAGE_REAL,
               "src/dialog_settings.c compiled; the whole Ajustes grid is built and drawn (date/time, clock, backlight, info, audio, spectrum, waterfall, operations, appearance, actions)"),
     COMPONENT("audio.c", COVERAGE_SYNTHETIC,
-              "the mixer surface only: audio_set_play_vol() returns the requested level (src/audio.c does the same when the ALSA mixer is absent); no device"),
+              "the mixer surface only: audio_set_play_vol()/audio_set_rec_vol() return the requested level (src/audio.c does the same when the ALSA mixer is absent) and record which one ran, which is what the settings-audio fixture asserts; no device"),
     COMPONENT("audio_enhancement.c", COVERAGE_SYNTHETIC,
               "the preset load is a harness no-op; no speex/liquid DSP runs (mocks/mock_ui_deps.c)"),
     COMPONENT("wfview_server.c", COVERAGE_SYNTHETIC,
@@ -169,7 +171,7 @@ static const coverage_entry_t settings_bands[] = {
 const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
 {
     if (screen && (!strcmp(screen, "settings-home") || !strcmp(screen, "settings-wfbat")
-                   || !strcmp(screen, "settings-perfil"))) {
+                   || !strcmp(screen, "settings-perfil") || !strcmp(screen, "settings-audio"))) {
         *count = (int) (sizeof(settings_dialog) / sizeof(settings_dialog[0]));
         return settings_dialog;
     }

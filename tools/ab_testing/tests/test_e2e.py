@@ -20,6 +20,7 @@ import pytest
 
 from x6200_ab.cli import main
 from x6200_ab.docker import HARNESS_IMAGE
+from x6200_ab.regions import load_regions
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = "home-usb-20m"
@@ -688,7 +689,19 @@ def test_ui010_fix_stays_inside_the_frequency_region(tmp_path: Path, revisions: 
     assert diff["identical"] is False
     assert diff["changed_pixels"] > 0
     changed = [region["region"] for region in diff["regions"] if region["changed_pixels"] > 0]
-    assert changed == ["frecuencia"]
+    # `ajustes_audio_ganancia` (the Ajustes Audio row of issue #26) is the second
+    # region the pixels fall in: its rectangle spans y=140..196, so it overlaps the
+    # frequency band (y=160..196) the dialog is drawn over - the house regions may
+    # overlap on purpose (regions.py), and on this fixture the Ajustes window is not
+    # even open, so the row that region names is not on screen. What pins the *shape*
+    # of the fix is every changed box, below, being inside the frequency row.
+    assert changed == ["frecuencia", "ajustes_audio_ganancia"]
+
+    region_map = load_regions(REPO_ROOT / "tools" / "ab_testing" / "quality" / "regions.yaml")
+    frequency_region = region_map.get("frecuencia")
+    assert diff["boxes"]
+    for box in diff["boxes"]:
+        assert frequency_region.contains((box["x0"], box["y0"], box["x1"], box["y1"])), box
     issue = next(item for item in results["known_issues"] if item["id"] == "UI-010")
     assert issue["classification"] == "UNVERIFIED"
     contract = results["contracts"]

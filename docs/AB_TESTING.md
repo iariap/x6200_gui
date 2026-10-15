@@ -2800,3 +2800,220 @@ candidato del proximo incremento de UI-08.
   El perfil no cambia mientras el dialogo esta abierto salvo por este control, asi que una
   re-lectura live no agregaria informacion hoy; queda anotado por si en el futuro el dialogo se abre
   de forma no modal sobre la pantalla.
+
+## Audio: el slider de Rec gain y el volumen que el control remoto no veia (issues #26 y #30) ✅
+
+Dos issues de audio en el mismo cambio: uno de UI (el slider de entrada movia la salida) y uno de
+estado (el control remoto contestaba `"vol": 0` con el volumen en la base). El segundo lo decidio el
+banco: ahi no hay stack de audio, pero el camino `params.db -> estado -> control remoto` si corre,
+y ahi estaba el defecto.
+
+### #26: el slider de `Rec gain` movia la salida
+
+`rec_gain_update_cb()` (`src/dialog_settings.c`) salio copiado del callback de al lado y llamaba a
+`audio_set_play_vol()`: el slider de la ganancia **de entrada** movia la de **salida**, y su propia
+ganancia no se aplicaba nunca (lo que reporta el issue). El arreglo es la palabra que el issue
+propone: `audio_set_rec_vol()`.
+
+**El chequeo estatico** (`tests/check_settings_focus.py`, uno de los seis de la matriz) ahora
+comprueba, ademas del grupo de foco, que **cada slider de Ajustes mueve el parametro que muestra**:
+el cuerpo de su callback tiene que nombrar el parametro que el `slider_with_text()` le pasa, y **dos
+sliders distintos no pueden aplicar la misma funcion**. Revirtiendo a mano esa sola palabra, el
+chequeo queda rojo:
+
+```text
+$ python3 tests/check_settings_focus.py
+  widgets de foco creados: 29 | dialog_item(): 30
+  sliders con parametro propio: 4
+  FALLA linea 1399: el slider de params.rec_gain_db_f (rec_gain_update_cb) y el de
+  params.play_gain_db_f (play_gain_update_cb, linea 1389) aplican los dos
+  audio_set_play_vol() -> uno de los dos mueve lo del otro
+```
+
+**Un defecto adyacente, de la misma fila** (lo encontro la fixture nueva): la etiqueta de valor de
+los dos sliders de ganancia salia con basura. Medido con el inspector del arnes sobre el render de
+`settings-audio`, los dos labels de la fila "Play,Rec gain" median 11 px y decian `f`. Eran dos
+causas de codigo sumadas: `slider_with_text()` le pasaba un `int32_t` a un formato `"%.1f"` (tipo
+equivocado en los argumentos variables), y el `lv_conf.h` **del arnes** no habilitaba el `%f` de
+LVGL (`LV_SPRINTF_USE_FLOAT`, cuyo default es 0), que la ROM si habilita en el suyo (`lv_conf.h` de
+la raiz): el arnes decia `f` donde la radio dice el valor, una divergencia del banco. Corregidas las
+dos, la etiqueta de Play gain dice `3.0` y la de Rec gain el valor al que la fixture la arrastra
+(`-7.0`).
+
+### La fixture `settings-audio` y su fidelidad
+
+`tools/ui_harness/fixtures/settings-audio.scn` abre el Ajustes real por el camino del firmware
+(`ACTION_APP_SETTINGS` -> `dialog_construct(dialog_settings)`) y despues aprieta el tab **Audio**
+(pagina 1, indice 3) con `buttons_press(3)`, que es lo que hace el usuario: `settings_goto()`
+scrollea la grilla hasta el grupo y le mueve el foco. Geometria de lo que mide, del propio render
+(`--inspect`): la etiqueta de la fila en la columna 0 y las dos celdas de slider de 141x56 en
+`x=499` y `x=643`, la fila entera en `y=140..196` (los sliders de 46x13 con su etiqueta al lado).
+
+Fidelidad, punto por punto:
+
+- Los dos sliders **se ven iguales**: lo unico que los distingue es el parametro detras, y la
+  fixture lo fija con `play_gain_db 3` / `rec_gain_db -4` (dos claves nuevas del `.scn`; la radio
+  las carga de `params.db` con `params_load_float()`). Asi el slider de cada uno se identifica por
+  su valor en el render.
+- `scenario_settle` **arrastra el slider de Rec** (setea el valor y manda `LV_EVENT_VALUE_CHANGED`,
+  que es el evento que manda LVGL en un arrastre) y comprueba el observable que hay: **cual de los
+  dos setters corrio**. Los setters de audio del arnes (`mocks/mock_ui_deps.c`) son un **recorder**,
+  el mismo idioma del stub de la politica en el test de backlight: con los dos callbacks cableados a
+  la misma funcion el registro queda en `play` y la corrida **para** (no puede salir verde midiendo
+  otra cosa). Ademas se comprueba que el estado quedo en `rec_gain_db_f = -7` y que
+  `play_gain_db_f` no se movio.
+- La fixture **codifica** lo que significa antes de usarlo: que el tab de indice 3 sea el de
+  "Audio" y que la fila "Play,Rec gain" este en pantalla despues del toque; si los tabs o el grupo
+  se reordenan, el arnes corta en vez de capturar otro grupo.
+- El setter del slider de Rec y el parametro que guarda son **el mismo camino** que en la radio
+  (`audio_set_rec_vol()` -> `params.rec_gain_db_f`), asi que el arrastre de la fixture mide la
+  conexion que el issue reporta rota.
+
+**Region y waivers**: `ajustes_audio_ganancia` (`[20, 138, 764, 60]`, `quality/regions.yaml`) aisla
+la fila para que un cambio suyo no se atribuya a la banda del espectro que el dialogo tapa. Esa
+region **se solapa** con `frecuencia` (y=160..196) porque la fila del grupo Audio queda sobre esa
+banda cuando el grupo se scrollea al tope; el solapamiento esta escrito en el `regions.yaml`, y el
+test e2e que fijaba "el unico cambio de UI-010 es `frecuencia`" ahora comprueba ademas que **todas**
+las cajas cambiadas caigan adentro de la fila de frecuencia (mas fuerte que antes, no mas debil). La
+fixture agrega su propia excepcion acotada y fechada de **UI-015** (`layout_touch_target`) por la
+geometria heredada de esas filas: los cuatro sliders de 13 px y el switch de "Speaker mode" (111x30),
+los mismos controles que ya excepcionan `settings-home` y `settings-wfbat`.
+
+**Sin `expected_changes` y sin golden, con el porque**: la fixture **no existe en A** y la suite del
+`compare` sale de A, asi que no entra en el diff A/B (igual que `settings-perfil` en UI-08 incr. 5):
+su cobertura la dan el determinismo (25x2), `contracts`/`audit` sobre HEAD y su render. El golden
+(`tools/ab_testing/golden/`) es la entrada de la tabla de contraste no-texto
+(`quality/nontext.yaml`) y esta fixture no declara ningun objeto no-texto: un PNG ahi que nadie mide
+seria peso muerto, asi que no se agrega (archivar el render es una decision aparte).
+
+### #30: la repro en el banco y el fix del espejo del control remoto
+
+**La repro, medida en el banco** (binario ARM de la imagen, `tools/captura-banco.sh`, commit
+`5f07ac6`, md5 `b662ca41cde6`): con `vol = 10` en `params.db`, el `GET` del control remoto
+contestaba `"vol": 0` (`nb` y `nr` tambien en 0 con 1 y 1 en la base) y el log tenia **28 avisos de
+sujeto NULL**, que son 7 por cada `GET` de esa corrida: `vol`, `sql`, `nb`, `nb_level`, `nb_width`,
+`nr`, `nr_level` - los siete Param del espejo que leen items de `cfg` en `state_line()`
+(`src/remote_server.cpp:610-614`).
+
+**La causa, en el codigo**: `cfg_sm` (`src/cfg/settings_manager.cpp`) es un global C++ y su
+constructor corre antes de que `cfg_init()` cree los items de `cfg` y sus subjects; los Param de
+esos items quedaban ligados a un `Subject *` NULL **para siempre** (`init_live()` rehacia el mapeo
+de los subjects del dial, `cfg_cur.*`, pero no el de los persistidos). Leer un Param asi devuelve el
+neutro (0) y escribir no hace nada, en silencio: es el `"vol": 0` del issue. `pwr` no estaba roto
+porque su `tief()` lee `cfg.pwr.val` en cada llamada, no al construir.
+
+**El fix**: `init_persisted()` vuelve a ligar los Param persistidos y `cfg_sm_init_live()` (el
+ultimo paso de `cfg_init()`) lo llama junto con `init_live()`; `check_live()` pasa a recorrer los
+**20** parametros (persistidos y de estado vivo) y **devuelve** cuantos quedaron sin subject.
+
+**Anti-falso-verde**: el arnes compila ahora `src/cfg/settings_manager.cpp` (contra los headers
+reales de `cfg`/`params`) y `mocks/mock_settings_manager.cpp` **repite el ultimo paso del arranque**
+y lo comprueba: `cfg_sm_init_live()` sobre los items que `mock_cfg_init()` ya creo, `check_live() == 0`
+y que el espejo y el estado digan lo mismo (`vol`, `sql`, `nb`, `nr`, `band`). Con el mapeo sin
+rehacer, **toda** corrida del arnes corta ahi. El camino real lo convalida el banco, con el fix
+(commit `54341c8`, md5 `e8572f2d8355`): el `GET` contesta el valor de la base (`vol: 8`), el comando
+`vol` del control remoto mueve ese estado (`vol 30` -> `"vol": 30`) y el log queda con **0** avisos
+de sujeto NULL. El detalle medido esta en `docs/HALLAZGOS.md` §40.
+
+**Lo que NO se puede medir en el banco**: el silencio del sink (el `parecord` del monitor con
+RMS -240 dBFS del issue). El banco corre la GUI con framebuffer falso y sin Pulse ni codec: no hay
+monitor que grabar. Ese tramo (`x6200_control_rxvol_set` -> codec) es del **canal fisico (#15)**. No
+se reintento la migracion de `mixer_setup()` a la API de ALSA: se probo y se revirtio con datos
+(`docs/HALLAZGOS.md` §37, y el `fb640dc` que la revierte).
+
+### Evidencia (host, 2026-10-14, A = `5f07ac6` -> B = `54341c8`)
+
+```text
+$ tests/check_harness_determinism.sh
+building ui_harness (revision 54341c8e26d9...)
+running every fixture 2 times...
+app-bands: 5781b1f17a972051925f34c23a2de4518e0710b573cfda5dd1b595752a8044c3
+...
+settings-audio: 015e2798d26bce9f18b6fd19431a65b2846db16f7bdeab469530f27e54d99885
+PASS: deterministic (identical PNGs for every fixture)      [25 fixtures x2]
+$ cd tools/ab_testing
+$ uv run x6200-ab compare --a 5f07ac6 --b HEAD --experiment-id AB-AUDIO2630
+experiment AB-AUDIO2630: PASS (exit 0)
+  Functional         PASS            (required) — 24 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — captures are pixel-identical to the baseline
+  Quality Contract   PASS            (required) — 249 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+$ uv run x6200-ab contracts --revision HEAD
+contracts 54341c8e26d9: PASS — 264 checks, 0 failure(s), 0 unchanged baseline defect(s)
+$ uv run x6200-ab audit --revision HEAD --suite visual
+audited 54341c8e26d9: 16 known issues — 0 reproduced, 14 unverified; structural inspection REAL over 2963 objects on 25 scenario(s): 0 structural finding(s)
+$ uv run pytest -m "not e2e" -q
+181 passed, 17 deselected in 2.03s
+$ uv run pytest -m e2e -q
+17 passed, 181 deselected in 123.05s (0:02:03)
+$ tests/native/run_native_tests.sh
+791 comprobaciones, 0 fallos     (suite principal: adaptive_tuning, audio_enhancement, ft8_udp,
+                                update_check, band_plan, avi_writer, wfview, cluster, field, theme,
+                                teclado, bt_devices, dxcc, flags, controls, voice, gps, visual_policy)
+7 comprobaciones, 0 fallos       (clock, UI-009)
+19 comprobaciones, 0 fallos      (backlight, UI-08 incr. 4)
+$ 6 chequeos estaticos (check_cfg_fills, check_actions, check_settings_focus, check_apps_menu,
+  check_app_handlers, check_wcag)
+check_cfg_fills:    OK: los 69 campos se inicializan, en orden
+check_actions:      38 acciones ofrecidas, todas con manejador
+check_settings_focus: 29 widgets en el grupo de foco | 4 sliders con parametro propio
+check_apps_menu:    las 22 apps del menu llegan a su dispatcher
+check_app_handlers: 268 botones en 61 paginas, 0 sin handler
+check_wcag:         9 temas, 990 pares OK, 0 FALLAS
+```
+
+Y el banco, antes y despues (los dos con su md5 de binario y el `params.db` del chroot):
+
+```text
+# A = 5f07ac6, binario md5 b662ca41cde6 (la GUI viva del banco)
+$ sqlite3 .vfix3/mnt/params.db "select name,val from params where name in ('vol','sql','nb','nr');"
+nb|1
+nr|1
+sql|0
+vol|10
+$ docker run --rm --entrypoint "" -v .vfix3:/t x6200-buildroot \
+      sh -c "chroot /t /tmp/x6200-remote '{\"cmd\":\"get\"}'"
+{"t":"state","vfo":"A","freq":21250000,...,"sql":0,"vol":0,...,"nb":0,"nr":0,"nb_level":0,
+ "nb_width":0,"nr_level":0,"pwr":50,...,"did":""}
+$ grep -c "sujeto NULL" .vfix3/out-banco.txt
+28
+# B = 54341c8, binario md5 e8572f2d8355 (el mismo banco, mismo chroot)
+$ sqlite3 .vfix3/mnt/params.db "select name,val from params where name in ('vol','sql','nb','nr');"
+nb|1
+nr|1
+sql|0
+vol|8
+$ docker run --rm --entrypoint "" -v .vfix3:/t x6200-buildroot \
+      sh -c "chroot /t /tmp/x6200-remote '{\"cmd\":\"get\"}'"
+{"t":"state","vfo":"A","freq":21250000,...,"sql":0,"vol":8,...,"nb":1,"nr":1,"nb_level":0,
+ "nb_width":0,"nr_level":0,"pwr":50,...,"did":""}
+$ docker run --rm --entrypoint "" -v .vfix3:/t x6200-buildroot \
+      sh -c "chroot /t /tmp/x6200-remote '{\"cmd\":\"vol\",\"val\":30}'"
+{"t":"ok"}
+# y el GET que sigue: ..."vol":30...
+$ grep -c "sujeto NULL" .vfix3/out-banco.txt
+0
+```
+
+Sobre el `mixer` y el sink, lo unico que se puede afirmar hoy: el estado que ve el control remoto es
+el de la base y el comando `vol` lo mueve (medido arriba). Que eso suene es del canal fisico.
+
+### PENDIENTES honestos
+
+- **El sink real (issue #30, canal #15)**: el banco no tiene stack de audio, asi que el
+  `RMS -240 dBFS` del monitor no se reproduce ahi. El defecto del *estado* quedo arreglado y medido;
+  el tramo del aplicador al codec queda para la pasada fisica. **Sin fundar, no se afirma nada mas**.
+- **Sin test nativo para `settings_manager`**: la pieza se cubre compilando el modulo real en el
+  arnes, contra los headers reales de `cfg`/`params` (y con el arranque repetido). Un test en
+  `tests/native/` necesitaria stubs de `cfg.h`/`params.h` -menos fidelidad que la que ya hay-, asi
+  que no se agrego; si el nativo quiere cubrirlo, el stub de `params.h` del backlight es el patron.
+- **La etiqueta de los sliders de ganancia**: el valor que el slider guarda es un float y el slider
+  trabaja en enteros, asi que un `+3.7 dB` guardado se muestra como `3.0`. La truncacion es
+  preexistente y no se toco (fuera del alcance del issue); queda anotado.
+- **Un test nativo flakey observado**: en una corrida del suite nativo en paralelo con el build de
+  Docker, `tests/native/test_wfview.c:309` (`CHECK(n > 0x15)`, el socket del servidor CI-V) fallo
+  una vez; tres corridas seguidas despues dieron `791 comprobaciones, 0 fallos` y el commit base
+  tambien pasa. Ningun archivo de los que toca este cambio se compila en ese suite. Queda anotado
+  como candidato a flake por carga, sin tocarlo.
