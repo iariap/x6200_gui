@@ -26,7 +26,9 @@ tools/fonts/matrix.py gallery --captures /tmp/fontmatrix --out gallery.png
 ```
 
 `fetch` is the only step that needs the network; it verifies every sha256 against
-the manifest and fails on a mismatch. `generate` and `verify` are offline.
+the manifest and fails on a mismatch. `generate` and `verify` are offline. The
+script runs on the host `python3`: `plan` and `generate` need `Pillow`, and
+`generate` needs `fontTools` for the kerning conversion (`pip install fonttools`).
 
 ## The conversion pipeline
 
@@ -53,6 +55,27 @@ lv_font_conv --bpp 4 --size <S> --no-compress \
   `fallback` (the contracts allow that: `allow_fallback_glyphs: true`).
 * Every generated file carries its source, its sha256 and the tool version in its
   header, so a `.c` that does not match `candidates.json` is visible by inspection.
+* **Kerning**: the reader of `lv_font_conv` (`opentype.js` 1.3.4: `Position.init()`
+  + `Font.getKerningValue()`) collects the pair kerning of GPOS only from the
+  lookups of **type 2** that the `kern` feature of the default script (`DFLT`,
+  else `latn`) lists, and it never reaches the legacy `kern` table while the font
+  has a GPOS table (with no type-2 lookup the list is empty, and an empty array is
+  truthy, so it reports "no kerning" instead of looking further). A family that
+  emits its kerning in **extension** lookups (type 9 wrapping type 2) therefore
+  renders with no kerning at all, and no `kern` table it carried would be read
+  either. That is the case of Fira Sans (the stock family), IBM Plex Sans, Source
+  Sans 3 and Lato in this manifest; Roboto, Archivo, PT Sans, DejaVu Sans and
+  Ubuntu list direct type-2 lookups (their kerning was already reaching the C),
+  Inter and Noto Sans list both, and Open Sans, JetBrains Mono and the DSEG
+  families carry no pair kerning.
+  `fonts.py` therefore hands the reader a converted copy of the fonts on that dead
+  path (`.cache/kern/<name>`, `kern_source()`): the GPOS pair kerning written as
+  the legacy `kern` table (format 0, the pair table `lib/font/table_kern.js`
+  reads) with the GPOS table dropped. The conversion is a no-op for every other
+  family -- their generated files stay byte-identical -- and the converted file is
+  a function of the pinned TTF (`recalcTimestamp` off), so `generate` is
+  reproducible. The measurement of what the added kerning moves is in
+  `tools/ab_testing/reports/AB-FONTSE-KERN` (region `frecuencia` and friends).
 
 ### The size map: matching the family it replaces
 
