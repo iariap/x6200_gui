@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 16/10 ~17:50 | `3604cece0e43` (sin cambios) | `3d6c022` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0. El owner sigue en CW 7.012. #111 sigue |
 | 16/10 ~17:45 | `3604cece0e43` (sin cambios) | `7ddfa88` | (se cuelga) | (ya corrido) | **0** | **Rechequeo tras un salto de ~5,5 h** (equipo suspendido): 0 merges, 1 GUI (pid 2889 estable), **CRASHLOG 0 en los 6 últimos app_logs** (ninguno en el hueco), DATA 1% usada, load 0,92. El owner está en **CW 7.012000**. El #111 sigue: log nuevo con 3.857 overflows de 3.814 líneas |
 | 16/10 ~18:45 | `3604cece0e43` (sin cambios) | `31b8d8a` | (se cuelga) | (ya corrido) | **0 en 60 s** | **#99 VALIDADO**: con el dial en 7.012 (el owner lo movió) el barrido **dibuja la curva** (17,77% no-fondo vs 17,83% del build sin #99) y se ve el valle de resonancia (~1,0-1,4 en 7,01). Cerrar no reinicia la GUI (pid 2889) y **devuelve el modo a CW** (#84) con CRASHLOG 0 |
 | 16/10 ~18:40 | `3604cece0e43` (sin cambios) | `789ee5c` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0. #111 sigue; dial fuera del rango del #99 |
