@@ -99,6 +99,46 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 ---
 
+## 16/10 ~23:40 — ROM nueva flasheada en la SD: `c640645d810c` (GUI `e294229dd32d`)
+
+**Qué se hizo:** build de la ROM con todo lo mergeado (HEAD `223b30a`, incluye `fe67ded` = issue #117) y
+**flasheo de la SD**, porque los dos intentos de deploy por WiFi fallaron (el script quedó colgado y el
+`scp` cortó con "text file busy").
+
+**Verificación del artefacto:**
+
+```
+  sdcard.img: 571473920 bytes  md5 c640645d810c1488682668eae62204f3
+  init.d en el rootfs:  solo ./etc/init.d/S20gui        (fix del #89)
+  GUI en la imagen:     13257128 bytes  md5 e294229dd32d
+  lib en la imagen:     md5 5ed07c1719f8
+```
+
+**Flasheo y verificación, medido:**
+
+```
+  dd: 571473920 bytes en 118 s (4.6 MB/s)
+  md5 leido de vuelta de la SD: c640645d810c1488682668eae62204f3   -> IGUAL a la imagen
+```
+
+**La DATA se conservó** (se re-declaró en el slot 3 desde el sector 1116160):
+
+```
+  /proc/partitions: sda3 3314176 bloques  (== 6628352 sectores)
+  desde el mount del host: params.db 106496 bytes, 78 parametros
+    theme_name=Redshift  vol=66  swrscan_span=50000  nb=0
+    themes: Aurora, Holo, Material 3, Redshift, RS, Sprint, Sunlit, Trail
+    app_logs: 662 archivos
+```
+
+**Nota**: el md5 de los primeros 571 MB despues del flasheo es `f1ac0dc42452fde034041319bae59dc2`, distinto
+del de la imagen, **esperado**: se reescribió el MBR (offset 478) para volver a declarar la DATA.
+
+**Pendiente**: poner la SD en la radio y validar (GUI `e294229dd32d`, `init.d`=`S20gui`, barrido de apps, y
+si el audio arranca — el race del #116 es un bug de código).
+
+---
+
 ## 16/10 ~17:30 — `3604cece0e43` (merge `2392624`, issue #110): el campo de año de Ajustes
 
 **Qué se probó:** el merge `2392624` (*"Ajustes: el campo de año con la misma caja que Day/Month"*,
