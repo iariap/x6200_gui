@@ -12,6 +12,15 @@ radio's battery life. A measurement whose dispersion is too high is reported
 INCONCLUSIVE instead of being trusted. The dispersion is the median-based (MAD)
 coefficient of variation, not `stdev/mean`: on a shared host a few preemption
 frames must not read as "the machine is noisy" (see `robust_dispersion_cv_pct`).
+
+The render workload is deterministic under the harness' virtual time: the flush
+count and the redrawn area of a scenario depend on the code, not on how busy the
+runner is. A real regression of the render work moves those counters; a shared
+runner that degrades mid-run only inflates the wall-clock p95. So a scenario
+whose *only* breach is the p95, with both deterministic proxies byte-for-byte
+unchanged (`0.0%`), is reported INCONCLUSIVE (`host_noise`) instead of FAIL:
+"measured on a noisy host", never a silent PASS. As soon as either proxy moves,
+the comparison is a real change and stays FAIL. See `docs/AB_TESTING.md`.
 """
 
 from __future__ import annotations
@@ -24,6 +33,10 @@ from typing import Any
 from .capture import FrameSample, MemorySample
 from .quality_config import BenchmarkBudget
 from .status import Status, combine
+
+# The `UI Performance` CI job greps this exact token out of the FAIL reasons to
+# tell a "too noisy to conclude" run from a regression; keep it stable.
+HOST_NOISE_MARKER = "host noise"
 
 
 def percentile(values: list[float], p: float) -> float:
@@ -177,11 +190,15 @@ class ScenarioComparison:
     redrawn_area_delta_pct: float
     status: Status
     reasons: tuple[str, ...]
+    # True when the only breach is the p95 and both deterministic proxies are
+    # unchanged: INCONCLUSIVE (host noise), never FAIL and never PASS.
+    host_noise: bool = False
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "scenario": self.scenario,
             "status": self.status.value,
+            "host_noise": self.host_noise,
             "p95_delta_pct": round(self.p95_delta_pct, 3),
             "flushes_delta_pct": round(self.flushes_delta_pct, 3),
             "redrawn_area_delta_pct": round(self.redrawn_area_delta_pct, 3),
@@ -223,7 +240,9 @@ def compare_scenario(
     """Compare B against A with the run's fixed budgets.
 
     Too few frames or excessive dispersion is INCONCLUSIVE: the honest answer
-    is "not measurable", never a PASS on noise.
+    is "not measurable", never a PASS on noise. So is a p95 breach with both
+    deterministic proxies unchanged: the honest answer there is "not a render
+    change" (host noise), never a FAIL that blocks a PR.
     """
     reasons: list[str] = []
     p95_delta = pct_delta(a_stats.render_p95_ms, b_stats.render_p95_ms)
@@ -255,32 +274,69 @@ def compare_scenario(
             reasons=tuple(reasons),
         )
 
-    problems: list[str] = []
+    problems: list[tuple[str, str]] = []
     if p95_delta > budget.max_p95_delta_pct:
         problems.append(
-            f"p95 render {p95_delta:+.1f}% (budget {budget.max_p95_delta_pct:.1f}%): "
-            f"{a_stats.render_p95_ms:.3f} -> {b_stats.render_p95_ms:.3f} ms"
+            (
+                "p95",
+                f"p95 render {p95_delta:+.1f}% (budget {budget.max_p95_delta_pct:.1f}%): "
+                f"{a_stats.render_p95_ms:.3f} -> {b_stats.render_p95_ms:.3f} ms",
+            )
         )
     if flushes_delta > budget.max_flushes_delta_pct:
         problems.append(
-            f"flushes {flushes_delta:+.1f}% (budget {budget.max_flushes_delta_pct:.1f}%): "
-            f"{a_stats.flushes_mean:.1f} -> {b_stats.flushes_mean:.1f}"
+            (
+                "flushes",
+                f"flushes {flushes_delta:+.1f}% (budget {budget.max_flushes_delta_pct:.1f}%): "
+                f"{a_stats.flushes_mean:.1f} -> {b_stats.flushes_mean:.1f}",
+            )
         )
     if area_delta > budget.max_redrawn_area_delta_pct:
         problems.append(
-            f"redrawn area {area_delta:+.1f}% "
-            f"(budget {budget.max_redrawn_area_delta_pct:.1f}%): "
-            f"{a_stats.redrawn_area_mean:.0f} -> {b_stats.redrawn_area_mean:.0f} px"
+            (
+                "area",
+                f"redrawn area {area_delta:+.1f}% "
+                f"(budget {budget.max_redrawn_area_delta_pct:.1f}%): "
+                f"{a_stats.redrawn_area_mean:.0f} -> {b_stats.redrawn_area_mean:.0f} px",
+            )
         )
+
+    common: dict[str, Any] = {
+        "scenario": a_stats.scenario,
+        "a": a_stats,
+        "b": b_stats,
+        "p95_delta_pct": p95_delta,
+        "flushes_delta_pct": flushes_delta,
+        "redrawn_area_delta_pct": area_delta,
+    }
+
+    # Host-noise signature: the p95 is the only breach and *both* deterministic
+    # proxies are unchanged. The render workload of a scenario is a deterministic
+    # pixel count under virtual time, so a code change always moves at least one
+    # proxy; a wall-clock p95 that moves alone is runner preemption. The honest
+    # verdict is INCONCLUSIVE ("measured on a noisy host"), never FAIL (which
+    # would block the PR on the runner's mood) and never PASS (which would hide
+    # a real slowdown behind the noise).
+    host_noise = (
+        len(problems) == 1
+        and problems[0][0] == "p95"
+        and flushes_delta == 0.0
+        and area_delta == 0.0
+    )
+    if host_noise:
+        reason = (
+            f"{problems[0][1]} — {HOST_NOISE_MARKER}: the deterministic proxies are "
+            "unchanged (flushes 0.0%, redrawn area 0.0%), so this is runner preemption, "
+            "not a render change"
+        )
+        return ScenarioComparison(
+            **common, status=Status.INCONCLUSIVE, reasons=(reason,), host_noise=True
+        )
+
     return ScenarioComparison(
-        scenario=a_stats.scenario,
-        a=a_stats,
-        b=b_stats,
-        p95_delta_pct=p95_delta,
-        flushes_delta_pct=flushes_delta,
-        redrawn_area_delta_pct=area_delta,
+        **common,
         status=Status.FAIL if problems else Status.PASS,
-        reasons=tuple(problems),
+        reasons=tuple(message for _, message in problems),
     )
 
 

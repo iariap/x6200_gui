@@ -33,6 +33,25 @@ def _frames(values: list[float]) -> tuple[FrameSample, ...]:
     )
 
 
+def _cost_frames(values: list[float], repaints: int = 1) -> tuple[FrameSample, ...]:
+    """A real cost regression (the e2e `_raise_bench_cost` knob): the frame is
+    repainted `repaints` times, so the render time, the flush count and the
+    redrawn area all grow together. This is what a code regression looks like —
+    as opposed to a p95 that moves alone, which is host noise (see
+    test_bench_host_noise.py)."""
+    return tuple(
+        FrameSample(
+            render_ms=value * repaints,
+            flush_ms=value * 0.2 * repaints,
+            draw_ms=value * 0.8 * repaints,
+            flushes=repaints,
+            redrawn_area_px=384000 * repaints,
+            unique_redrawn_px=384000 * repaints,
+        )
+        for value in values
+    )
+
+
 BUDGET = BenchmarkBudget(
     warmup_frames=3,
     repeats=5,
@@ -117,11 +136,23 @@ def test_compare_identical_sides_pass() -> None:
 
 def test_compare_detects_a_render_regression() -> None:
     a = stats_from_frames("s", _frames([4.0, 4.1, 4.2, 3.9, 4.0, 4.1]))
-    b = stats_from_frames("s", _frames([12.0, 12.1, 12.2, 11.9, 12.0, 12.1]))
+    b = stats_from_frames("s", _cost_frames([4.0, 4.1, 4.2, 3.9, 4.0, 4.1], repaints=3))
     comparison = compare_scenario(a, b, BUDGET)
     assert comparison.status is Status.FAIL
     assert comparison.p95_delta_pct > 100
     assert any("p95 render" in reason for reason in comparison.reasons)
+
+
+def test_a_p95_only_change_with_static_proxies_is_host_noise() -> None:
+    """A p95 that moves alone (both deterministic proxies unchanged) is the
+    runner's own noise, not a regression: INCONCLUSIVE, never FAIL. The full
+    real-payload coverage is in test_bench_host_noise.py."""
+    a = stats_from_frames("s", _frames([4.0, 4.1, 4.2, 3.9, 4.0, 4.1]))
+    b = stats_from_frames("s", _frames([6.0, 6.1, 6.2, 5.9, 6.0, 6.1]))
+    comparison = compare_scenario(a, b, BUDGET)
+    assert comparison.status is Status.INCONCLUSIVE
+    assert comparison.host_noise is True
+    assert any("host noise" in reason for reason in comparison.reasons)
 
 
 def test_compare_flags_flush_regression() -> None:
@@ -166,7 +197,7 @@ def test_compare_benchmark_combines_worst_scenario() -> None:
     }
     b = {
         "good": stats_from_frames("good", _frames([4.0, 4.1, 4.2, 3.9])),
-        "bad": stats_from_frames("bad", _frames([12.0, 12.1, 12.2, 11.9])),
+        "bad": stats_from_frames("bad", _cost_frames([4.0, 4.1, 4.2, 3.9], repaints=3)),
     }
     verdict = compare_benchmark(a, b, BUDGET)
     assert isinstance(verdict, BenchmarkVerdict)

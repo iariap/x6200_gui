@@ -3968,3 +3968,90 @@ con el fondo `#1a1227` y la barra `#2c213e`, los roles de Aurora; el binario cor
 `6841894a9409`. Con `version=2` y `theme_name='Outdoor'` en el `params.db`, el boot aplicó la
 migración `_3_migrate_theme_name` y el `params.db` quedó en `theme_name='Aurora'` (y el render, en
 Aurora). Evidencia en `docs/evidencia/2026-10-15-themes-removal-74/`.
+
+## 2026-10-15 — El bench de CI: el ruido del runner va a INCONCLUSIVE, no a FAIL (corrida `factory/bench-ci-tolerance`)
+
+El job **UI Performance (render benchmark, host)** de `ab-testing.yml` falló **5 veces
+seguidas** el mismo día con la misma firma, y siempre en un escenario **distinto y al
+azar** de los 71 del suite. Este incremento no relaja el gate: le enseña a distinguir
+el ruido del runner de una regresión de render, con el proxy determinista como árbitro.
+
+### El patrón (payloads reales de los 4 runs del día)
+
+Los `benchmark.json` de los artifacts del job (`ui-performance`), escenarios con el único
+motivo de FAIL = p95:
+
+| run | escenario FAIL | p95 Δ | flushes Δ | área Δ | cv A / B |
+|---|---|---|---|---|---|
+| 38810720725 | `apps-menu-6` | +41.8% | **0.0%** | **0.0%** | — |
+| 38810720725 | `bench-render` | +66.2% | **0.0%** | **0.0%** | — |
+| 38810720725 | `main-tema-redshift-agua` | +70.6% | **0.0%** | **0.0%** | — |
+| 38810720725 | `main-tema-sunlit-eco` | +65.4% | **0.0%** | **0.0%** | — |
+| 38810720725 | `main-tema-vision` | +46.0% | **0.0%** | **0.0%** | — |
+| 38822204534 | `apps-menu-2` | +56.1% | **0.0%** | **0.0%** | — |
+| 38830907010 | `main-tema-cathode-tx` | +35.3% | **0.0%** | **0.0%** | — |
+| 38832600451 | `main-foco` | +42.4% | **0.0%** | **0.0%** | 0.5% / 3.2% |
+| 38832600451 | `main-tema-vision` | +25.6% | **0.0%** | **0.0%** | 1.8% / 3.5% |
+| 38832600451 | `main-tema-aurora` | +37.5% | **0.0%** | **0.0%** | 0.6% / 1.9% |
+| 38832600451 | `main-tema-sunlit-eco` | +35.0% | **0.0%** | **0.0%** | 0.4% / 0.7% |
+
+Dos hechos lo cierran: (1) el escenario que falla **cambia en cada re-run** del mismo par
+A/B (el 38832600451 corrió 3 veces: `main-tema-aurora` → `main-tema-sunlit-eco` →
+`main-foco`+`main-tema-vision`), y (2) los re-runs del mismo par salieron **PASS** (artifacts
+`12007949278`, `12013784369`, `12017800864`). El trabajo de render del fixture es un
+conteo **determinista** bajo el tiempo virtual: si el código no cambió, `flushes` y área
+son byte a byte iguales (`0.0%`). El p95, en cambio, es `CLOCK_MONOTONIC` sobre un runner
+compartido: si a mitad de la corrida el runner se degrada, el lado que corre después sale
+inflado y su p95 cruza el budget. La dispersión (MAD CV) **no** lo atrapa: todos los casos
+de arriba quedaron entre 0.4% y 3.5%, muy por debajo del 25% del budget.
+
+### La clasificación (el gate sigue aprobando/fallando por lo REAL)
+
+En `performance.py` (`compare_scenario`), un escenario cuyo **único** breach sea el p95 y
+cuyos **dos** proxies deterministas estén en `0.0%` exacto se clasifica:
+
+- `INCONCLUSIVE` con `host_noise: true` (exit 3, la convención de `status.py`), con el motivo
+  marcado con `HOST_NOISE_MARKER = "host noise"`. El experimento sale INCONCLUSIVE — **ni 0
+  ni 1** — y el job de CI **no** se bloquea.
+- Sigue `FAIL` en cuanto **cualquier** proxy se mueve (aunque sea a la baja): un cambio del
+  proxy determinista es un cambio de código, no ruido. Un p95 que se mueve **solo** no es una
+  regresión demostrable, pero tampoco es un PASS: el veredicto honesto es "medido en un host
+  ruidoso".
+
+El invariante queda intacto: la barra real es el proxy determinista. La regresión controlada
+del e2e (`bench_redraw_passes 3`: p95 **y** flushes **y** área ×3) sigue FAIL (ver
+`test_benchmark_detects_a_controlled_regression`), y `test_compare_flags_flush_regression`
+también. El `benchmark` de **host de una sola revisión** (`measure_verdict`) no cambia: los
+PASS/INCONCLUSIVE por cv se mantienen.
+
+### Robustez del workflow: por qué (1) y no 2 rondas con `min(p95)`
+
+La spec ofrecía, como refuerzo opcional, repetir el par A/B en 2 rondas y usar el menor p95
+por escenario (`min(p95_A, p95_A_r2)`). **No se implementó**, y la razón es de invariante, no
+de esfuerzo:
+
+- El benchmark A/B es la **misma** ruta de código para host y CI; cambiar la semántica a
+  "mejor de N rondas por lado" cambiaría también el benchmark de host, que la spec pide
+  **no tocar** (`ScenarioStats` pasaría a ser un agregado por-ronda, no del pool).
+- El job **ya alterna** A y B sobre `rounds: 4` (`quality/budgets.yaml`), que reparte una
+  deriva lenta. La degradación observada, en cambio, **infla un lado entero**: el par A/B
+  corre A primero y B después, y si el runner se degrada en el turno de B, las 4 rondas de B
+  salen lentas. Un `min` sobre 2 rondas no separa eso; el clasificador por firma sí.
+- El `min(p95)` baja el estimador de **ambos** lados y puede fabricar un falso PASS cuando la
+  degradación es sostenida: exactamente el modo de falla que motivó el cambio.
+
+El job **no** re-intenta tampoco: la clasificación por firma reemplaza al re-run manual, y la
+decisión queda escrita en el JSON y en el `$GITHUB_STEP_SUMMARY`. El header del job
+(`.github/workflows/ab-testing.yml`) documenta la regla, y el paso de reporte lee
+`host_noise` del payload (nunca re-deriva la firma).
+
+### Tests (TDD con los payloads de hoy)
+
+`tests/fixtures/benchci_today.json` guarda, verbatim, los bloques `a`/`b` de los escenarios
+de la tabla. `tests/test_bench_host_noise.py` reconstruye las `ScenarioStats` y prueba:
+
+- los 9 escenarios reales con 0.0% en ambos proxies → `INCONCLUSIVE`, `host_noise=true`;
+- los PASS reales de los re-runs verdes → siguen `PASS`;
+- mover `flushes` (arriba o abajo) o el área → `FAIL`;
+- un escenario ruidoso junto a uno real → el veredicto combinado es `FAIL` (el peor gana);
+- `HOST_NOISE_MARKER == "host noise"` (lo greppea el paso de CI).
