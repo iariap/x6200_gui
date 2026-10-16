@@ -52,6 +52,48 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 ---
 
+## 15/10 ~21:30 — `2c02321cc5ff` (build del clon, commit `ed5b01e`): #84/#85 validados y sale el #101
+
+**Qué se probó:** el build de los 4 merges (`01d632e` #84/#85, `ed5b01e` #86, `aa8de14` temas v2,
+`2663a04` Cathode) compilado **desde el clon** y desplegado por WiFi.
+
+**Build y deploy, medido:**
+
+```
+$ tools/compila-gui.sh          # dijo FALLO (carrera con los 26 contenedores del otro agente)
+$ make x6200-gui-rebuild        # a mano: exit 0 en 11 s   <- el script escondía el error
+$ gate: OK: es el firmware del port (ELF32 ARM, 13737932 B, 3/3 marcas)
+$ tools/prueba-gui-en-radio.sh  # pasó el gate y subió
+  radio: gui=2c02321cc5ff (1 GUI)
+```
+
+**#84 y #85 validados en el equipo** (dos corridas del barrido de ROE):
+
+```
+  abrir: ok | Run: ok | off: ok
+  antes:   7.167971 MHz USB-D pwr=50
+  despues: 7.167971 MHz USB-D pwr=50      <- modo, frecuencia y potencia restaurados (#84)
+  pid 10809 sin cambios y CRASHLOG=0       <- no reinicia la GUI (#85)
+```
+
+Comentados en [#84](https://github.com/iariap/x6200_gui/issues/84#issuecomment-6205247712) y
+[#85](https://github.com/iariap/x6200_gui/issues/85#issuecomment-6205247981).
+
+**Lo nuevo: [#101](https://github.com/iariap/x6200_gui/issues/101)** — el barrido corre (`Stop`) pero
+**el gráfico queda vacío**: los píxeles no-fondo del chart son **10,82% constantes** a los 10, 20, 30, 40
+y 50 s. Dos pistas **sin fundar**: (1) con el código previo al #96 la curva aparecía (otro build, otra
+banda); (2) el estado es `pre=1 att=0` y en aquella corrida figuraba `ATT` (lo dejó el barrido de apps).
+Al buscar duplicados apareció el **#99** (la curva *dibujada*, con sierra), lo que **debilita la pista 1**:
+quedó corregido en el issue.
+
+**Ciclo 12 (~21:45):** barrido de las 23 apps → **23 ok, 0 caídas** (405 s) y el **modo/dial/pre/att
+quedaron idénticos** (`7.167971 USB-D pre=1 att=0` antes y después): **#94 ya no se reproduce**, porque la
+última app del barrido es `SWRScan` y su fix del #96 restaura frecuencia/modo/potencia. Vigilancia 90 s:
+pid 10809 sin cambios, 0 caídas. Sigue el **CPU ~108%** (#91). Evidencia:
+[`barrido-3-23ok-0caidas.log`](evidencia/2026-10-15-validacion-arreglos/barrido-3-23ok-0caidas.log).
+
+---
+
 ## 15/10 ~19:00 — la imagen flasheada: `cb2da072b7b0` (commit `5ebe692`, imagen `25e38412aefc…`)
 
 **Qué se probó:** la **imagen nueva**, arrancada desde la SD flasheada (no un deploy por WiFi).
