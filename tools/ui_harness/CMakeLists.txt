@@ -185,7 +185,7 @@ target_compile_definitions(ui_harness PRIVATE
     HARNESS_REVISION="${HARNESS_REVISION}"
     HARNESS_ROM_TICK_CUSTOM=${HARNESS_ROM_TICK_CUSTOM}
     HARNESS_ROM_REFR_PERIOD=${HARNESS_ROM_REFR_PERIOD}
-    # The themes the ROM ships (the JSON files + the RS folder), read from this
+    # The themes the ROM ships (the six JSON files, docs/THEMES.md), read from this
     # repository instead of /usr/share: theme.c looks in THEMES_DIR_SHIPPED and
     # the harness sets it to this path before theme_init (harness_main.c). Same
     # files the image installs; nothing is read from the environment.

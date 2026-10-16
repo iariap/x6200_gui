@@ -26,9 +26,10 @@ static const char *themes_dir(void) {
     return p && *p ? p : THEMES_DIR;
 }
 
-/* Los temas que vienen con la ROM: Holo, Material 3 y RS (con sus imágenes), Redshift, Sunlit,
- * Aurora, Trail, Sprint y Cathode. Se buscan en los dos directorios: el de DATA primero, así un
- * tema del usuario con el mismo nombre gana. */
+/* Los temas que vienen con la ROM son los seis archivos JSON de
+ * rootfs/usr/share/x6200/themes (docs/THEMES.md). Se buscan en los dos directorios: el de DATA
+ * primero, así un tema del usuario con el mismo nombre gana. No hay built-ins: `theme_list()`
+ * ofrece esos seis y nada más, y `theme_init()` sólo carga un archivo. */
 #ifndef THEMES_DIR_SHIPPED
 #define THEMES_DIR_SHIPPED "/usr/share/x6200/themes"
 #endif
@@ -43,28 +44,21 @@ static const char *themes_dir_n(int i) {
     return i == 0 ? themes_dir() : themes_dir_shipped();
 }
 
-enum { B_IU1WXY, B_LEGACY, B_OUTDOOR, B_CLASSIC, B_OUTDOOR_NEG, B_VISION, B_COUNT };
+/* El default de la colección (issue #74): el tema con el que arranca la GUI cuando no hay
+ * `theme_name` guardado, cuando el guardado no es uno de los seis (un tema legado o un DATA que el
+ * selector ya no ofrece) o cuando su archivo no se puede leer. Nunca un built-in: IU1WXY dejó de
+ * ser el fallback (lo era) y el default es Aurora (THEME_DEFAULT, theme.h). */
 
-static const char *const builtin_names[B_COUNT] = {"IU1WXY", "Legacy", "Outdoor", "Classic", "Outdoor-Negative",
-                                                   "VISION"};
+/* Las cuatro paletas base del esquema: las columnas de THEME_COLORS(X) (theme.h). Son plantillas
+ * internas, NO temas: `base_index()` resuelve el `base` de un archivo JSON y `use_base()` lo
+ * aplica. Tres de los seis temas heredan de una (Aurora de IU1WXY, Sunlit de Outdoor,
+ * Cathode/Redshift/Sprint/Trail de Classic); ninguna se ofrece ni se carga por nombre (retirar los
+ * temas legados como temas es el #74; la data queda privada para no romper la herencia). */
+enum { BASE_IU1WXY, BASE_LEGACY, BASE_OUTDOOR, BASE_CLASSIC, BASE_COUNT };
 
-/* VISION: IU1WXY's colours made "warm anthracite": white digits on dark grey, orange for what is on,
- * aqua frames, the layout big (styles.c) */
-static const struct {
-    theme_color_t c;
-    uint32_t      v;
-} vision_colors[] = {
-    {TC_bg, 0x1c1f24},          {TC_bar, 0x1c1f24},          {TC_bar_grad, 0x1c1f24},       {TC_bar_border, 0x5dcaa5},
-    {TC_dialog, 0x262a31},      {TC_dialog_grad, 0x262a31},  {TC_dialog_border, 0x5dcaa5},  {TC_btn, 0x2a3038},
-    {TC_btn_grad, 0x2a3038},    {TC_btn_border, 0x5dcaa5},   {TC_btn_text, 0xffffff},       {TC_btn_active, 0xff8a30},
-    {TC_btn_active_grad, 0xff8a30}, {TC_btn_active_border, 0x8d3d00}, {TC_btn_active_text, 0x2a1200}, {TC_btn_page, 0x2a3038},
-    {TC_btn_page_text, 0xe6fff6}, {TC_text, 0xffffff},       {TC_text_value, 0xffffff},     {TC_text_soft, 0xe6fff6},
-    {TC_text_head, 0x5dcaa5},   {TC_pill_border, 0x5dcaa5},  {TC_pill_off_text, 0x80868e},  {TC_focus, 0xff8a30},
-    {TC_focus_text, 0x2a1200},  {TC_meter_bar, 0x5dcaa5},    {TC_meter_weak, 0x5dcaa5},     {TC_meter_low, 0x5dcaa5},
-    {TC_meter_high, 0xff5a3c},  {TC_meter_over, 0xffd040},   {TC_popup, 0x262a31},          {TC_popup_border, 0x5dcaa5},
-};
+static const char *const base_names[BASE_COUNT] = {"IU1WXY", "Legacy", "Outdoor", "Classic"};
 
-static const uint32_t builtin_colors[B_OUTDOOR_NEG][TC_COUNT] = {   /* VISION and Outdoor-Negative are made from these */
+static const uint32_t base_colors[BASE_COUNT][TC_COUNT] = {
 #define COL(name, a, b, c, d) a,
     {THEME_COLORS(COL)},
 #undef COL
@@ -85,22 +79,22 @@ static const char *const color_names[TC_COUNT] = {
 #undef NAME
 };
 
-static const theme_shape_t builtin_shapes[B_OUTDOOR_NEG] = {
-    [B_IU1WXY]  = {.radius = 7, .radius_btn = 10, .radius_popup = 10, .border = 1, .box_gradient = true,
-                   .images = 1, .font = -1, .waterfall_table = 0},
-    [B_LEGACY]  = {.radius = 7, .radius_btn = 10, .radius_popup = 10, .border = 1, .box_gradient = true,
-                   .images = 2, .font = -1, .waterfall_table = 1},
+static const theme_shape_t base_shapes[BASE_COUNT] = {
+    [BASE_IU1WXY]  = {.radius = 7, .radius_btn = 10, .radius_popup = 10, .border = 1, .box_gradient = true,
+                      .images = 1, .font = -1, .waterfall_table = 0},
+    [BASE_LEGACY]  = {.radius = 7, .radius_btn = 10, .radius_popup = 10, .border = 1, .box_gradient = true,
+                      .images = 2, .font = -1, .waterfall_table = 1},
     /* Light and high contrast for the sun, in grey: the noise light, weak signals already mid grey,
      * then darker at an even pace up to black, so a strong signal shows how strong it is */
-    [B_OUTDOOR] = {.radius = 6, .radius_btn = 8, .radius_popup = 8, .border = 2, .focus_solid = true,
-                   .font = -1, .meter_gradient = true, .mono_cluster = true,
-                   .waterfall = {0xfafafa, 0xe6e6e6, 0xc8c8c8, 0xa0a0a0, 0x787878, 0x585858, 0x3c3c3c, 0x282828,
-                                 0x181818, 0x0a0a0a, 0x000000},
-                   .waterfall_n = 11},
-    [B_CLASSIC] = {.radius = 3, .radius_btn = 4, .radius_popup = 4, .border = 1, .btn_gradient = true,
-                   .focus_solid = true, .font = FONT_ROBOTO,
-                   .waterfall = {0x000000, 0x000060, 0x0040e0, 0x00c8ff, 0xffff00, 0xff6000, 0xffffff},
-                   .waterfall_n = 7},
+    [BASE_OUTDOOR] = {.radius = 6, .radius_btn = 8, .radius_popup = 8, .border = 2, .focus_solid = true,
+                      .font = -1, .meter_gradient = true, .mono_cluster = true,
+                      .waterfall = {0xfafafa, 0xe6e6e6, 0xc8c8c8, 0xa0a0a0, 0x787878, 0x585858, 0x3c3c3c, 0x282828,
+                                    0x181818, 0x0a0a0a, 0x000000},
+                      .waterfall_n = 11},
+    [BASE_CLASSIC] = {.radius = 3, .radius_btn = 4, .radius_popup = 4, .border = 1, .btn_gradient = true,
+                      .focus_solid = true, .font = FONT_ROBOTO,
+                      .waterfall = {0x000000, 0x000060, 0x0040e0, 0x00c8ff, 0xffff00, 0xff6000, 0xffffff},
+                      .waterfall_n = 7},
 };
 
 extern const uint32_t wf_palette_gauss[256], wf_palette_legacy[256];   /* styles.c */
@@ -120,55 +114,29 @@ uint32_t theme_hex(theme_color_t c) {
     return c < TC_COUNT ? colors[c] : 0xff00ff;
 }
 
-static int builtin_index(const char *name) {
-    for (int i = 0; i < B_COUNT; i++) {
-        if (name && strcasecmp(name, builtin_names[i]) == 0) return i;
+/* El índice de una paleta base por nombre: lo usa `load_file()` para resolver el `base` de un
+ * archivo JSON. No es un catálogo de temas: un nombre fuera de la tabla es un `base` desconocido y
+ * el archivo arranca de la base por defecto. */
+static int base_index(const char *name) {
+    for (int i = 0; i < BASE_COUNT; i++) {
+        if (name && strcasecmp(name, base_names[i]) == 0) return i;
     }
     return -1;
 }
 
-/* Lightness inverted, hue and saturation kept: black <-> white, red stays red */
-static uint32_t negative(uint32_t c) {
-    int r = c >> 16 & 0xff, g = c >> 8 & 0xff, b = c & 0xff;
-    int hi = r > g ? (r > b ? r : b) : (g > b ? g : b), lo = r < g ? (r < b ? r : b) : (g < b ? g : b);
-    int d  = 255 - hi - lo;
+/* Aplica una plantilla base: la paleta y la forma que hereda el `base` de un archivo. Sólo la usan
+ * `load_file()` (la herencia) y `theme_init()` (último recurso si el archivo del default no se
+ * puede leer, para no dejar la GUI sin tema). No fija `theme_shape.name`: un built-in ya no es un
+ * tema. */
+static void use_base(int b) {
+    if (b < 0 || b >= BASE_COUNT) b = BASE_IU1WXY;
 
-    return (uint32_t)(r + d) << 16 | (uint32_t)(g + d) << 8 | (uint32_t)(b + d);
-}
-
-/* Outdoor-Negative: Outdoor with every colour and the waterfall through negative() */
-static void use_builtin(int b) {
-    int src = b == B_OUTDOOR_NEG ? B_OUTDOOR : b == B_VISION ? B_IU1WXY : b;
-
-    memcpy(colors, builtin_colors[src], sizeof(colors));
-    theme_shape = builtin_shapes[src];
-    /* Los incorporados (y la base de todo archivo JSON, que pasa por aca) llevan la
+    memcpy(colors, base_colors[b], sizeof(colors));
+    theme_shape = base_shapes[b];
+    /* Las plantillas base (y la base de todo archivo JSON, que pasa por aca) llevan la
      * linea central del waterfall en 1 px: es el default retrocompatible de
      * `waterfall_signal_width` y lo que un tema que no la define hereda. */
     theme_shape.waterfall_signal_width = 1;
-    if (b == B_OUTDOOR_NEG) {
-        for (int i = 0; i < TC_COUNT; i++) colors[i] = negative(colors[i]);
-        /* The yellow of the selection stays yellow: its text and its border stay black.
-         * negative() corre los tres canales lo mismo, asi que un color cuyo canal mas alto y
-         * el mas bajo ya suman 255 (el amarillo de la seleccion, el azul puro del VFO) no se
-         * invierte: esos roles se ajustan a mano para que el texto siga legible (WCAG). */
-        colors[TC_sel_text]          = builtin_colors[B_OUTDOOR][TC_sel_text];
-        colors[TC_btn_active_text]   = builtin_colors[B_OUTDOOR][TC_btn_active_text];
-        colors[TC_sel_border]        = builtin_colors[B_OUTDOOR][TC_sel_border];
-        colors[TC_btn_active_border] = builtin_colors[B_OUTDOOR][TC_btn_active_border];
-        colors[TC_near_bg]           = builtin_colors[B_OUTDOOR][TC_near_bg];
-        colors[TC_focus_bg]          = 0x877100;
-        colors[TC_vfo]               = 0x4574ff;
-        for (int i = 0; i < theme_shape.waterfall_n; i++) theme_shape.waterfall[i] = negative(theme_shape.waterfall[i]);
-    }
-    if (b == B_VISION) {
-        for (size_t i = 0; i < sizeof(vision_colors) / sizeof(vision_colors[0]); i++)
-            colors[vision_colors[i].c] = vision_colors[i].v;
-        theme_shape = (theme_shape_t){.radius = 8, .radius_btn = 10, .radius_popup = 10, .border = 2,
-                                      .focus_solid = true, .mode_box = true, .pill_border = 2, .font = -1,
-                                      .vision = true};
-    }
-    snprintf(theme_shape.name, sizeof(theme_shape.name), "%s", builtin_names[b]);
 }
 
 /* "#rrggbb" or "rrggbb" */
@@ -268,8 +236,8 @@ static bool load_file(const char *name) {
         return false;
     }
 
-    int b = builtin_index(cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(root, "base")));
-    use_builtin(b < 0 ? B_IU1WXY : b);
+    int b = base_index(cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(root, "base")));
+    use_base(b < 0 ? BASE_IU1WXY : b);
     snprintf(theme_shape.name, sizeof(theme_shape.name), "%s", name);
 
     const cJSON *c, *cols = cJSON_GetObjectItemCaseSensitive(root, "colors");
@@ -300,7 +268,7 @@ static bool load_file(const char *name) {
 
     /* La linea central del waterfall (la marca de senal sobre la paleta): el tema la
      * pide en px. Clamp 1..8 — 0 la dejaria invisible y un valor alto taparia la
-     * cascada. Un archivo que no la define conserva el 1 px del base (use_builtin). */
+     * cascada. Un archivo que no la define conserva el 1 px del base (use_base). */
     v = theme_shape.waterfall_signal_width;
     get_int(root, "waterfall_signal_width", &v);
     theme_shape.waterfall_signal_width = v < 1 ? 1 : v > 8 ? 8 : v;
@@ -486,19 +454,22 @@ static void make_palette(void) {
 }
 
 void theme_init(const char *name) {
-    int b = builtin_index(name);
-
     memset(images, 0, sizeof(images));
     for (int i = 0; i < cached; i++) {
         free((void *)cache[i].dsc.data);
     }
     cached = 0;
 
-    if (b >= 0) {
-        use_builtin(b);
-    } else if (!name || !*name || !load_file(name)) {
-        if (name && *name) fprintf(stderr, "Theme %s not found, using IU1WXY\n", name);
-        use_builtin(B_IU1WXY);
+    /* El catálogo son los seis archivos (docs/THEMES.md): un nombre vacío, un legado (IU1WXY,
+     * Outdoor, ...) o un DATA que el selector no ofrece NO cargan un tema por nombre; caen al
+     * default. Sólo si el propio archivo del default no se puede leer se usa la plantilla base
+     * IU1WXY como último recurso, para no dejar la GUI sin tema (issue #74). */
+    if (!name || !*name || !load_file(name)) {
+        if (name && *name) fprintf(stderr, "Theme %s not found, using %s\n", name, THEME_DEFAULT);
+        if (!load_file(THEME_DEFAULT)) {
+            fprintf(stderr, "Theme %s not found, using the IU1WXY base\n", THEME_DEFAULT);
+            use_base(BASE_IU1WXY);
+        }
     }
     if (theme_shape.waterfall_n >= 2) make_palette();
 }
@@ -508,14 +479,13 @@ const uint32_t *theme_waterfall(void) {
     return theme_shape.waterfall_table == 1 ? wf_palette_legacy : wf_palette_gauss;
 }
 
-/* El selector de Ajustes ofrece SOLO los seis temas v2 (issue #73): la colección
- * es la oferta completa del menú. Los temas viejos (los incorporados IU1WXY, Legacy,
- * Outdoor, Outdoor-Negative, Classic y VISION, y los archivos Holo, Material 3 y RS)
- * siguen en la ROM y en el motor: `theme_init()` los carga por nombre (params
- * guardados, fixtures históricas del arnés), pero no tienen entrada en la lista.
- * Retirarlos del todo y migrar el valor guardado (al default nuevo) es el issue #74;
- * acá el default no cambia. Un tema propio del usuario (DATA) tampoco se lista: se
- * conserva su archivo pero no aparece en el menú. */
+/* El catálogo de Ajustes: SOLO los seis temas v2 (issue #73), que son la colección completa
+ * (docs/THEMES.md). Los temas viejos (los built-ins IU1WXY, Legacy, Outdoor, Outdoor-Negative,
+ * Classic y VISION, y los archivos Holo, Material 3 y RS) ya NO existen como temas: `theme_init()`
+ * no los carga por nombre (un `theme_name` guardado que los nombre migra a Aurora, ver
+ * src/params/migrations.c) y sus archivos salieron de la ROM. Un tema propio del usuario (DATA)
+ * tampoco se lista: se conserva su archivo pero no aparece en el menú. `theme_offered()` es la
+ * misma lista, para la migración. */
 static const char *const offered_names[] = {"Sunlit", "Redshift", "Sprint", "Cathode", "Trail", "Aurora"};
 
 int theme_list(char names[][32], int max) {
@@ -526,4 +496,11 @@ int theme_list(char names[][32], int max) {
     }
 
     return n;
+}
+
+bool theme_offered(const char *name) {
+    for (size_t i = 0; i < sizeof(offered_names) / sizeof(offered_names[0]); i++) {
+        if (name && strcmp(name, offered_names[i]) == 0) return true;
+    }
+    return false;
 }

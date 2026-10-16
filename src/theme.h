@@ -3,8 +3,10 @@
  *
  *  Themes: every colour of the GUI is a role, a theme gives each role its
  *  value plus the shapes (corners, borders, gradients), the font and the
- *  waterfall palette. Four themes are built in; more are JSON files in
- *  /mnt/themes/ (docs/THEMES.md), chosen in Settings and applied at start.
+ *  waterfall palette. The themes are JSON files in /mnt/themes/ and
+ *  /usr/share/x6200/themes (docs/THEMES.md); the collection is six and the
+ *  default is Aurora. The four palettes of THEME_COLORS(X) are internal base
+ *  templates a file's `base` inherits from, not themes.
  *
  *  Code never writes a colour: TC(role) for an lv_color_t, theme_hex(TC_role)
  *  for 0xRRGGBB (e.g. "#%06x text#" recolor strings).
@@ -21,7 +23,9 @@
 extern "C" {
 #endif
 
-/* role, IU1WXY, Legacy, Outdoor, Classic (IC-7300 style) */
+/* role, base palettes: IU1WXY, Legacy, Outdoor, Classic (IC-7300 style).
+ * These four columns are internal base templates (src/theme.c, base_colors[]),
+ * the palettes a JSON file's `base` inherits from; they are not themes. */
 #define THEME_COLORS(X) \
     /* screen and the shared boxes (styles.c) */ \
     X(bg,                0x27313a, 0x0040a0, 0xffffff, 0x000000) /* screen background */ \
@@ -202,16 +206,24 @@ typedef struct {
 
 extern theme_shape_t theme_shape;
 
+/* The default theme of the collection (issue #74): the fallback of theme_init() and the value a
+ * saved legacy/DATA `theme_name` migrates to (src/params/migrations.c). Aurora. */
+#define THEME_DEFAULT "Aurora"
+
 uint32_t theme_hex(theme_color_t c);
 #define TC(role) lv_color_hex(theme_hex(TC_##role))
 
-/* Loads the theme by name: a built-in one or /mnt/themes/<name>.json.
- * Unknown names fall back to IU1WXY. Call once, before styles_init(). */
+/* Loads the theme by name: a JSON file in the themes directories (docs/THEMES.md). An empty,
+ * unknown or retired name falls back to the default theme (Aurora). Call once, before
+ * styles_init(). */
 void theme_init(const char *name);
 
-/* Names for the Settings list: the six v2 themes (issue #73). The legacy
- * built-ins and files are still loaded by name, but never listed. */
+/* Names for the Settings list: the six themes of the collection (docs/THEMES.md). */
 int theme_list(char names[][32], int max);
+
+/* True when `name` is one of the six the selector offers. Same list as theme_list(); the
+ * params migration uses it to retire a saved legacy/DATA value (issue #74). */
+bool theme_offered(const char *name);
 
 const uint32_t *theme_waterfall(void);
 

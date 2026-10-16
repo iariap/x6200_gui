@@ -87,7 +87,7 @@ verifican solo por compilación y strings del binario.
   tema y waterfall en movimiento); determinismo PASS en todos. Ver
   `docs/AB_TESTING.md`.
 - ✅ **Diálogos reales**: el **Ajustes** (`settings-home`, `settings-wfbat`,
-  `settings-perfil`, `settings-audio`, `settings-rs-theme`) se
+  `settings-perfil`, `settings-audio`) se
   abre por el camino del firmware
   (`ACTION_APP_SETTINGS` → `dialog_construct`), con el
   `dialog_settings.c` real y las superficies que llama mockeadas (mixer, preset de

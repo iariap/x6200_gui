@@ -3913,3 +3913,58 @@ queda byte-idéntica.
 
 **Sin captura ARM acá**: la pasada del binario real (banco QEMU) está en
 `docs/evidencia/2026-10-15-themes-integration-73/banco/`.
+
+---
+
+## 2026-10-15 — THEMES v2 #74: retiro de los legados, default Aurora y migración
+
+Cierra el epic THEMES v2. La colección queda en **exactamente seis temas** (Sunlit, Redshift,
+Sprint, Cathode, Trail, Aurora), el **default pasa a Aurora** y el valor guardado migra. Los
+built-ins legados (IU1WXY, Classic, Outdoor, Outdoor-Negative, Legacy, VISION) dejan de ser
+temas —`theme_list()` no los lista y `theme_init()` no los carga por nombre— y sus archivos
+(Holo, Material 3, RS) salen de la ROM. Las **paletas base** (las cuatro columnas de
+`THEME_COLORS(X)`) quedan como plantillas internas para no romper la herencia del `base`; no se
+ofrecen. Los **temas DATA** del usuario no se tocan (quedan en `/mnt/themes`, sólo dejan de ser el
+tema activo).
+
+**Fixtures retiradas (10).** `main-otro-tema`, `main-tema-classic`, `main-tema-holo`,
+`main-tema-material-3`, `main-tema-outdoor-negative`, `main-tema-rs`, `main-tema-vision`,
+`main-tema-vision-cwr`, `main-tema-vision-usbd`, `settings-rs-theme`, con sus goldens. El sweep
+queda en **61 fixtures**; `main-espectro-agua` y `bench-render`, que nombraban el built-in Legacy,
+ahora nombran Aurora. Los temas de cada fixture que no fija `theme` renderizan el default nuevo.
+
+**Inventario estático.** `x6200-ab themes` pasa de 15 paletas a **10** (4 base internas + 6
+archivos): las dos derivadas (`use_builtin()`: Outdoor-Negative y VISION) se fueron con el código
+que las armaba. 90 pares medidos, 0 fallas.
+
+**Goldens re-baselineados.** `main-foco`, `main-espectro-agua`, `settings-home` y `settings-perfil`
+(renderizan el default). El `waterfall_signal` de `main-espectro-agua` se re-midió (columna de
+señal de Aurora, 7.10:1). El resto de los renders de temas que fijan su `theme` queda
+byte-idéntico.
+
+**Gate A/B (ejecutado).**
+
+```text
+$ uv run x6200-ab compare --a origin/lu2dsx/x6200-rom --b HEAD --experiment-id AB-REMOVE74
+experiment AB-REMOVE74: PASS (exit 0)
+scenarios REMOVED in B: main-otro-tema, main-tema-classic, main-tema-holo, main-tema-material-3,
+  main-tema-outdoor-negative, main-tema-rs, main-tema-vision, main-tema-vision-cwr,
+  main-tema-vision-usbd, settings-rs-theme
+  Functional         PASS   (required) — 61 scenarios captured on both revisions
+  Visual Regression  PASS   (required) — no unexplained visual regressions
+  Quality Contract   PASS   (required) — 633 contract checks passed on the candidate
+  Performance        PASS   (required) — render-cost proxy within budget
+  Hardware           BLOCKED (advisory) — no physical X6200 attached
+  Energy             BLOCKED (advisory) — no power measurement
+```
+
+El cambio de default se declara región por región en `quality/contracts.yaml`
+(`expected_changes`, autor `themes-removal-74`): la revisión A renderiza IU1WXY y la B Aurora, así
+que las superficies del tema cambian en las fixtures que no fijan `theme`. La revisión estética
+del default es del owner con el epic de PRUEBAS #66.
+
+**Banco QEMU (UNA sesión, guard del #90).** `dirclean + rebuild` y captura del boot: el render sale
+con el fondo `#1a1227` y la barra `#2c213e`, los roles de Aurora; el binario corrió con md5
+`6841894a9409`. Con `version=2` y `theme_name='Outdoor'` en el `params.db`, el boot aplicó la
+migración `_3_migrate_theme_name` y el `params.db` quedó en `theme_name='Aurora'` (y el render, en
+Aurora). Evidencia en `docs/evidencia/2026-10-15-themes-removal-74/`.

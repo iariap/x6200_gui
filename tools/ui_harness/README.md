@@ -427,18 +427,20 @@ on the page a fixture's `apps_page` picks: the six `apps-menu-1..6` cover the 22
 app cells after issue #46), and `bt-dialog` (the real Bluetooth window, `src/dialog_bt.c`,
 opened by `main_screen_start_app(ACTION_APP_BT)`).
 
-The `theme` is the full name the GUI lists: a builtin (`IU1WXY`, `Legacy`,
-`Outdoor`, `Classic`, `Outdoor-Negative`, `VISION`) or a JSON theme the ROM ships
-(`RS`, `Holo`, `Material 3`). The harness reads the shipped themes from this
+The `theme` is the full name the GUI lists: one of the six themes of the collection
+(`Sunlit`, `Redshift`, `Sprint`, `Cathode`, `Trail`, `Aurora`, docs/THEMES.md). A
+fixture that does not set one renders the default, Aurora (issue #74). The harness
+reads the shipped themes from this
 repository's `rootfs/usr/share/x6200/themes` (the same files the image installs)
 by setting `THEMES_DIR_SHIPPED` before `theme_init()`; an explicit
-`THEMES_DIR_SHIPPED` still wins. The theme's own font (Classic/RS name Roboto) and
-VISION's `fonts_scale()` are applied exactly as the firmware's `main()` does, plus
-the theme's `font_digits` for the digit panels.
+`THEMES_DIR_SHIPPED` still wins. The theme's own font is applied exactly as the
+firmware's `main()` does, plus the theme's `font_digits` for the digit panels.
 
 The name is kept whole by the scenario and handed to `theme_init()` as the
 firmware would (a name the firmware cannot store is the firmware's problem, not
-the fixture's: the JSON `theme` block shows both, see UI-013).
+the fixture's: the JSON `theme` block shows both, see UI-013). A name that is not
+one of the six (a retired legacy theme or an unknown one) makes `theme_init()` fall
+back to Aurora, and the JSON `active` field says which theme actually rendered.
 
 | Fixture | What it shows |
 |---|---|
@@ -447,8 +449,7 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `main-tx-simulado` | TX state with split (TX visor, TX info). No audio/RF is generated |
 | `main-bateria-baja` | nearly flat battery; the clock drops to the battery-percentage view |
 | `home-frecuencia-extrema` | the dial at the top band edge; frequency/band-plan strips run past it |
-| `main-otro-tema` | the same screen under the builtin "Outdoor" theme |
-| `main-espectro-agua` | the waterfall with a fixed seed, peaks on, centre line, Legacy theme |
+| `main-espectro-agua` | the waterfall with a fixed seed, peaks on, centre line, Aurora theme |
 | `bench-render` | the benchmark fixture (waterfall peaks, its own seed); `bench_*` knobs for the render benchmark |
 | `main-frecuencia-dseg` | the frequency row and the clock drawn with the segmented-digit family (`digits dseg7`) plus the "8 fantasma" layer behind their digits (`clock_view time`, the clock view that has unlit digits to show): the sample screen of the DSEG candidates of issue #9 (a segmented face is digit-only, so it is never a whole-family choice) |
 | `main-natural` | the natural-bench fixture (its own seed, `natural_frames`); the spectrum/waterfall are driven frame by frame by `--bench-natural` |
@@ -462,16 +463,7 @@ the fixture's: the JSON `theme` block shows both, see UI-013).
 | `apps-menu-1` … `apps-menu-6` | the app menu the APP key opens (`buttons_load_page_group(buttons_group_app)`) on each of its six pages (the fixture's `apps_page`); together they render the 22 app cells after issue #46. `scenario_settle` reads the real `buttons_group_app` table and stops the run if the page's `(APP n:6)` label or an app name is not on screen (UI-002) |
 | `bt-dialog` | the real Bluetooth window (`src/dialog_bt.c`) over the main screen, opened by `main_screen_start_app(ACTION_APP_BT)`. `btaudio-ctl` is mocked (`__wrap_system` + a seeded `/tmp/bt_ui_list.txt`, `mocks/mock_btaudio.c`) so a device row and the status line render. `scenario_settle` codifies the UI-005 metric: the status label's bottom must end above the button row (y=418) |
 | `app-close-home` | menu-hygiene (decisions 5/6): RTTY (the app that is not a dialog) opened with `main_screen_start_app(ACTION_APP_RTTY)` and closed through the remote control's own path (`main_screen_close_app()`), then RTTY again with the real Ajustes window over it and the dialog closed. `scenario_settle` codifies both checkpoints — RTTY is `RTTY_OFF` (its state is a tracking mock, `mocks/mock_main_screen.c`) and the bar is back on the home page (`buttons_get_cur_page()`), not on RTTY's page — and stops the run if either fails |
-| `settings-rs-theme` | the same Ajustes window as `settings-wfbat` (Spectrum/waterfall group) under the shipped "RS" theme, so the switch rail (`TC(control_border)`) renders for UI-007 |
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
-| `main-tema-rs` | the same screen under the shipped "RS" JSON theme (with its images), for UI-007 |
-| `main-tema-vision` | the builtin "VISION" theme (every font three sizes up through `fonts_scale()`), for the icon-glyph and top-bar layout findings of UI-011/UI-012 |
-| `main-tema-vision-cwr` | "VISION" with the mode in `CW-R`: the 4-character mode whose label measures exactly the mode cell's 56 px (0 px of margin, the `CW-RAUTO` pegging of UI-014), for the pixel/visual evidence |
-| `main-tema-vision-usbd` | "VISION" with the mode in `USB-D`: the widest mode the radio lists, whose label measures 66 px in the same 56 px cell and grows past the box, so the contract `typography_text_overflow` fails on it (UI-014's structural detector) |
-| `main-tema-outdoor-negative` | the dark pair of `main-otro-tema` (every colour run through `negative()`, `src/theme.c`) |
-| `main-tema-classic` | the builtin "Classic" theme (names the Arial family) |
-| `main-tema-holo` | the shipped "Holo" JSON theme (flat, no images) |
-| `main-tema-material-3` | the shipped "Material 3" JSON theme (the one the radio runs) |
 
 ## Determinism
 

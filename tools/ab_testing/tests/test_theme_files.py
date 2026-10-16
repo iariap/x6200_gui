@@ -15,17 +15,13 @@ import pytest
 
 from x6200_ab.errors import ConfigError
 from x6200_ab.theme_files import (
-    DERIVED_PALETTES,
     SERVED_BUILTINS,
     SHIPPED_THEMES_SUBDIR,
     ThemePair,
     ThemeReport,
     check_shipped_themes,
-    derive_outdoor_negative,
-    derive_vision,
     load_builtin_palettes,
     load_exemptions,
-    load_runtime_palettes,
     load_theme_pairs,
     measure_theme_file,
     served_theme_reports,
@@ -33,7 +29,6 @@ from x6200_ab.theme_files import (
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 THEME_H = REPO_ROOT / "src" / "theme.h"
-THEME_C = REPO_ROOT / "src" / "theme.c"
 SHIPPED_DIR = REPO_ROOT.joinpath(*SHIPPED_THEMES_SUBDIR)
 QUALITY_DIR = Path(__file__).resolve().parents[1] / "quality"
 
@@ -48,12 +43,14 @@ RAIL_ON_DIALOG = ThemePair(
 
 @pytest.fixture(scope="module")
 def palettes() -> dict[str, dict[str, str]]:
+    """The four base palettes of src/theme.h a file's `base` inherits from."""
     return load_builtin_palettes(THEME_H)
 
 
 @pytest.fixture(scope="module")
 def runtime_palettes() -> dict[str, dict[str, str]]:
-    return load_runtime_palettes(THEME_C, load_builtin_palettes(THEME_H))
+    """The palettes the framework measures: the same four base templates (issue #74)."""
+    return load_builtin_palettes(THEME_H)
 
 
 def _write_theme(directory: Path, name: str, body: dict) -> Path:
@@ -63,11 +60,13 @@ def _write_theme(directory: Path, name: str, body: dict) -> Path:
     return path
 
 
-def _rs_without_control_border() -> dict:
-    """The RS file as it was before hallazgo 28: the rail inherited, not set."""
-    body = json.loads((SHIPPED_DIR / "RS" / "theme.json").read_text())
-    del body["colors"]["control_border"]
-    return body
+def _theme_without_control_border() -> dict:
+    """A theme that leaves the rail inherited from its base, as UI-007 recorded.
+
+    The dialog is the value RS shipped (#232323); the rail is not set, so it comes
+    from Classic (#626262) and draws 2.58:1.
+    """
+    return {"base": "Classic", "colors": {"dialog": "#232323"}}
 
 
 def test_builtin_palettes_come_from_the_role_table(palettes: dict[str, dict[str, str]]) -> None:
@@ -88,7 +87,7 @@ def test_a_theme_that_stops_defining_the_rail_reproduces_the_2_58_defect(
     `measure_theme_file` has to resolve the base to see it: the value is not in
     the file, it comes from the Classic palette in src/theme.h.
     """
-    path = _write_theme(tmp_path, "RS", _rs_without_control_border())
+    path = _write_theme(tmp_path, "RS", _theme_without_control_border())
     report = measure_theme_file(path, (RAIL_ON_DIALOG,), palettes)
     assert report.ok is False
     assert report.base == "Classic"
@@ -102,7 +101,7 @@ def test_a_theme_that_stops_defining_the_rail_reproduces_the_2_58_defect(
 def test_a_theme_that_defines_the_rail_passes(
     tmp_path: Path, palettes: dict[str, dict[str, str]]
 ) -> None:
-    body = _rs_without_control_border()
+    body = _theme_without_control_border()
     body["colors"]["control_border"] = "#6e6e6e"
     report = measure_theme_file(_write_theme(tmp_path, "RS", body), (RAIL_ON_DIALOG,), palettes)
     assert report.ok is True
@@ -117,24 +116,14 @@ def test_the_shipped_themes_pass_every_declared_pair(
     assert [report.name for report in reports] == [
         "Aurora",
         "Cathode",
-        "Holo",
-        "Material 3",
         "Redshift",
         "Sprint",
         "Sunlit",
         "Trail",
-        "RS",
     ]
     assert all(report.ok for report in reports)
     assert all(report.error is None for report in reports)
     assert all(len(report.results) == len(pairs) for report in reports)
-    # RS sets the rail it used to inherit (hallazgo 28); the check has to see the
-    # file's own value, and it has to agree with tests/check_wcag.py on it.
-    rs = next(report for report in reports if report.name == "RS")
-    rail = next(result for result in rs.results if result.pair.rule == RAIL_ON_DIALOG.rule)
-    assert "control_border" not in rs.inherited
-    assert rail.ratio == pytest.approx(3.08, abs=0.01)
-    assert rail.origin == "both roles set by the file"
 
 
 def test_an_unknown_role_is_refused(tmp_path: Path, palettes: dict[str, dict[str, str]]) -> None:
@@ -144,17 +133,6 @@ def test_an_unknown_role_is_refused(tmp_path: Path, palettes: dict[str, dict[str
     assert report.ok is False
     assert report.error is not None
     assert "unknown role" in report.error
-
-
-def test_a_derived_base_resolves(
-    tmp_path: Path, runtime_palettes: dict[str, dict[str, str]]
-) -> None:
-    """A shipped file may inherit a `use_builtin()` base, as `builtin_index()` allows."""
-    path = _write_theme(tmp_path, "Vision", {"base": "VISION"})
-    report = measure_theme_file(path, (RAIL_ON_DIALOG,), runtime_palettes)
-    assert report.error is None
-    assert report.base == "VISION"
-    assert all(result.ok for result in report.results)
 
 
 def test_an_unknown_base_is_refused(tmp_path: Path, palettes: dict[str, dict[str, str]]) -> None:
@@ -232,47 +210,42 @@ def _served(palettes: dict[str, dict[str, str]]):
     return served_theme_reports(SHIPPED_DIR, THEME_H, palettes, pairs), pairs
 
 
-def test_the_served_inventory_is_the_builtins_then_the_files(
+def test_the_inventory_is_the_base_templates_then_the_files(
     runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    """The inventory has no silent hole: the served themes, built-ins first."""
+    """The inventory has no silent hole: the four base templates, then the files."""
     reports, pairs = _served(runtime_palettes)
     assert [report.name for report in reports] == [
         "IU1WXY",
         "Legacy",
         "Outdoor",
         "Classic",
-        "Outdoor-Negative",
-        "VISION",
         "Aurora",
         "Cathode",
-        "Holo",
-        "Material 3",
         "Redshift",
         "Sprint",
         "Sunlit",
         "Trail",
-        "RS",
     ]
-    builtins = [report for report in reports if report.source == "builtin"]
-    assert len(builtins) == 6
-    assert all(report.inherited == () for report in builtins)
-    assert all(report.base == report.name for report in builtins)
+    bases = [report for report in reports if report.source == "base"]
+    assert len(bases) == 4
+    assert all(report.inherited == () for report in bases)
+    assert all(report.base == report.name for report in bases)
     assert all(len(report.results) == len(pairs) for report in reports)
 
 
-def test_every_served_theme_passes_every_declared_pair(
+def test_every_palette_passes_every_declared_pair(
     runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
-    """The full coverage finds no sub-WCAG pair: 15 themes, 135 measurements."""
+    """The full coverage finds no sub-WCAG pair: 10 palettes, 90 measurements."""
     reports, _ = _served(runtime_palettes)
     checked = sum(len(report.results) for report in reports)
-    assert checked == 135
+    assert checked == 90
     assert all(report.ok for report in reports)
     assert all(report.error is None for report in reports)
 
 
-def test_builtin_report_ratios_agree_with_the_c_table(
+def test_base_report_ratios_agree_with_the_c_table(
     runtime_palettes: dict[str, dict[str, str]],
 ) -> None:
     """The numbers here have to match tests/check_wcag.py on the same palettes."""
@@ -286,104 +259,26 @@ def test_builtin_report_ratios_agree_with_the_c_table(
     assert outdoor == pytest.approx(21.00, abs=0.01)
 
 
-def test_only_the_six_v2_themes_are_offered(runtime_palettes: dict[str, dict[str, str]]) -> None:
-    """`theme_list()` offers exactly the six v2 themes (issue #73), nothing else.
+def test_only_the_six_themes_are_offered(runtime_palettes: dict[str, dict[str, str]]) -> None:
+    """`theme_list()` offers exactly the six themes of the collection (#73/#74).
 
-    The built-ins (IU1WXY, Outdoor, Classic, ...) are still measured but no longer a
-    menu choice, and the legacy files (Holo, Material 3, RS) are loaded by name but
-    not listed either.
+    The base templates (IU1WXY, Outdoor, Classic, ...) are measured but are not a
+    menu choice and are never loaded by name; the legacy files (Holo, Material 3,
+    RS) left the ROM with #74, so they are not in the inventory at all.
     """
     reports, _ = _served(runtime_palettes)
     offered = {report.name for report in reports if report.offered}
     assert offered == {"Sunlit", "Redshift", "Sprint", "Cathode", "Trail", "Aurora"}
     by_name = {report.name: report for report in reports}
-    for name in ("IU1WXY", "Legacy", "Outdoor", "Classic", "Outdoor-Negative", "VISION"):
+    for name in ("IU1WXY", "Legacy", "Outdoor", "Classic"):
         assert by_name[name].offered is False
-    for name in ("Holo", "Material 3", "RS"):
-        assert by_name[name].offered is False
+    for name in ("Holo", "Material 3", "RS", "Outdoor-Negative", "VISION"):
+        assert name not in by_name
 
 
-def test_rs_declares_the_binary_surfaces_it_paints(
-    runtime_palettes: dict[str, dict[str, str]],
-) -> None:
-    """The PNG backgrounds are not statically resolvable, so the theme is partial."""
-    reports, _ = _served(runtime_palettes)
-    rs = next(report for report in reports if report.name == "RS")
-    assert "dialog" in rs.binary_surfaces
-    assert "panel" not in rs.binary_surfaces
-    assert rs.coverage == "partial"
-    dialog = next(
-        result for result in rs.results if (result.pair.fg, result.pair.bg) == ("text", "dialog")
-    )
-    assert dialog.binary is True
-    assert dialog.image == "dialog.png"
-    panel = next(
-        result for result in rs.results if (result.pair.fg, result.pair.bg) == ("text", "panel")
-    )
-    assert panel.binary is False
-    assert panel.image == ""
-    # The two roles are still the file's: the flag does not change the verdict.
-    assert dialog.ok is True
-    assert "both roles set by the file" in dialog.origin
-
-
-def test_derived_builtins_are_measured_like_the_data_ones(
-    runtime_palettes: dict[str, dict[str, str]],
-) -> None:
-    """Outdoor-Negative and VISION are no longer UNCOVERED: they carry all 9 pairs."""
-    reports, _ = _served(runtime_palettes)
-    by_name = {report.name: report for report in reports}
-    for name in DERIVED_PALETTES:
-        report = by_name[name]
-        assert report.source == "builtin"
-        assert report.error is None
-        assert len(report.results) == 9
-        assert all(result.ok for result in report.results)
-        assert all("use_builtin()" in result.origin for result in report.results)
-
-
-def test_derived_palettes_never_invent_a_role(
-    runtime_palettes: dict[str, dict[str, str]],
-) -> None:
-    """The derivation is a port: Outdoor-Negative and VISION keep the 122 C roles."""
-    data_roles = set(load_builtin_palettes(THEME_H)["Outdoor"])
-    assert set(runtime_palettes["Outdoor-Negative"]) == data_roles
-    assert set(runtime_palettes["VISION"]) == data_roles
-
-
-def test_served_builtins_are_the_c_enum_order() -> None:
-    """SERVED_BUILTINS mirrors `builtin_names[]` (src/theme.c): data then derives."""
-    assert SERVED_BUILTINS == (
-        "IU1WXY",
-        "Legacy",
-        "Outdoor",
-        "Classic",
-        "Outdoor-Negative",
-        "VISION",
-    )
-    assert DERIVED_PALETTES == ("Outdoor-Negative", "VISION")
-
-
-def test_outdoor_negative_is_negative_over_outdoor() -> None:
-    """Spot checks against src/theme.c: white <-> black, and the pinned yellow/blue."""
-    outdoor = load_builtin_palettes(THEME_H)["Outdoor"]
-    negative = derive_outdoor_negative(THEME_C, outdoor)
-    # negative(#ffffff) == #000000 and the two hand-tuned literals of use_builtin().
-    assert negative["dialog"] == "#000000"
-    assert negative["focus_bg"] == "#877100"
-    assert negative["vfo"] == "#4574ff"
-    # The selection yellow stays at its Outdoor value (its channels add to 255).
-    for role in ("sel_text", "btn_active_text", "sel_border", "btn_active_border", "near_bg"):
-        assert negative[role] == outdoor[role]
-
-
-def test_vision_is_iu1wxy_plus_vision_colors() -> None:
-    iu1wxy = load_builtin_palettes(THEME_H)["IU1WXY"]
-    vision = derive_vision(THEME_C, iu1wxy)
-    # Every role the array does not override keeps its IU1WXY value.
-    assert vision["text"] == "#ffffff"
-    assert vision["bg"] == "#1c1f24"
-    assert vision["meter_bar"] == "#5dcaa5"
+def test_base_templates_are_the_c_order() -> None:
+    """SERVED_BUILTINS mirrors `base_names[]` (src/theme.c): the four base palettes."""
+    assert SERVED_BUILTINS == ("IU1WXY", "Legacy", "Outdoor", "Classic")
 
 
 def _load_wcag_sweep() -> tuple[Any, dict[str, dict[str, str]]]:
@@ -415,7 +310,7 @@ def test_the_derivation_matches_the_rom_sweep_byte_for_byte(
     the self-test the spec asks for: it pins the derivation, it does not trust it.
     """
     _module, sweep = _load_wcag_sweep()
-    for theme in (*("IU1WXY", "Legacy", "Outdoor", "Classic"), *DERIVED_PALETTES):
+    for theme in ("IU1WXY", "Legacy", "Outdoor", "Classic"):
         theirs = sweep[theme]
         mine = runtime_palettes[theme]
         # check_wcag injects its literals table (LVGL colours, hand-written hex);
@@ -433,7 +328,7 @@ def test_the_declared_pairs_match_the_rom_sweep_ratio_by_ratio(
     pairs = load_theme_pairs(QUALITY_DIR / "theme_pairs.yaml")
     reports, _ = _served(runtime_palettes)
     by_name = {report.name: report for report in reports}
-    for theme in (*("IU1WXY", "Legacy", "Outdoor", "Classic"), *DERIVED_PALETTES):
+    for theme in ("IU1WXY", "Legacy", "Outdoor", "Classic"):
         paleta = sweep[theme]
         for pair in pairs:
             expected = module.contraste(

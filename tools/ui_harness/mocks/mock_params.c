@@ -39,7 +39,8 @@ void mock_params_init(void)
     /* AUTOMATICO por defecto, como src/params/params.c: el arnes no tiene un
      * perfil fijado. */
     params.visual_profile.x    = VP_PARAM_AUTO;
-    snprintf(params.theme_name.x, sizeof(params.theme_name.x), "%s", "IU1WXY");
+    /* El default de la coleccion (src/params/params.c, issue #74): Aurora. */
+    snprintf(params.theme_name.x, sizeof(params.theme_name.x), "%s", "Aurora");
 }
 
 void params_init(void)

@@ -1,8 +1,8 @@
-# Pairs the *static* theme contract checks over every theme the ROM serves
-# (rootfs/usr/share/x6200/themes + the six built-in palettes of src/theme.c): the
-# full inventory, not only what the Settings menu offers (since issue #73 that menu
-# lists the six v2 themes and nothing else; the inventory flags the rest as
-# `offered=False`).
+# Pairs the *static* theme contract checks over every palette the ROM carries
+# (rootfs/usr/share/x6200/themes + the four base palettes of src/theme.c): the
+# full inventory, not only what the Settings menu offers (since issues #73/#74 that
+# menu lists the six themes and nothing else; the inventory flags the base palettes
+# as `offered=False`).
 #
 # Why a separate table: the rendered typography_contrast contract only sees the
 # screens the harness opens. Settings is not one of them (dialog_settings.c drags
@@ -12,18 +12,15 @@
 # theme's `base` when the file did not define it. So the pairs below are the ones
 # that only exist on that screen, plus the text pairs of a dialog window.
 #
-# The fifteen served themes are measured (15 themes x 9 pairs = 135 measurements):
-#   - `builtin`: the four data palettes of src/theme.h THEME_COLORS(X). They are
-#                the `base` a file resolves to; they are measured here too, so no
-#                served theme is missing from the map.
-#   - `derived`: Outdoor-Negative and VISION are made by `use_builtin()`
-#                (src/theme.c): `negative()` over Outdoor (plus the hand-tuned
-#                WCAG role overrides) and `vision_colors[]` over IU1WXY. The
-#                framework derives them from the same C and pins the derivation
-#                against tests/check_wcag.py, so the runtime built-ins are covered
-#                instead of declared UNSUPPORTED.
+# The ten palettes are measured (10 palettes x 9 pairs = 90 measurements):
+#   - `base`:    the four palettes of src/theme.h THEME_COLORS(X). They are the
+#                `base` a file resolves to; they are measured here too, so no
+#                palette is missing from the map. They are internal templates, not
+#                themes (issue #74): src/theme.c loads no built-in by name and the
+#                menu does not offer one.
 #   - `file`:    `<name>.json` / `<name>/theme.json` of the shipped dir, with its
-#                `base` inheritance (src/theme.c theme_init).
+#                `base` inheritance (src/theme.c theme_init). These six are the
+#                served themes.
 # A theme file that ships `images` (binary PNG) paints some surfaces with the
 # PNG instead of the role; the pair still measures the role and is flagged
 # `binary` in the output — the pixel itself is not statically resolvable.
@@ -71,7 +68,8 @@ pairs:
 
   # El riel del switch/slider y la perilla (styles.c styles_switch_init /
   # styles_slider_init, aplicados en los 7 lugares de dialog_settings.c). Es el
-  # par del hallazgo 28: 2.58:1 cuando el tema RS no definia control_border.
+  # par del hallazgo 28: 2.58:1 cuando un tema no definia control_border y lo
+  # heredaba de su `base` (el RS legado, retirado en #74).
   - fg: control_border
     bg: dialog
     min_ratio: 3.0

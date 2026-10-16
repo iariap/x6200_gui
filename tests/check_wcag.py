@@ -3,10 +3,10 @@
 
 AGENTS.md dice "Use WCAG coloring" y hasta ahora no habia ningun chequeo: un
 tema podia dejar texto gris sobre fondo gris y nadie se enteraba. Este script
-lee las cuatro paletas incorporadas de src/theme.h, los nueve temas JSON que van
-en la imagen (Aurora, Cathode, Holo, Material 3, Redshift, Sprint, Sunlit, Trail
-y RS) y los dos temas que se arman en src/theme.c (VISION y Outdoor-Negative), y
-mide cada par (color de texto sobre superficie) que el codigo realmente dibuja.
+lee las cuatro paletas base de src/theme.h (las plantillas internas que el
+`base` de un archivo hereda; no son temas, issue #74) y los seis temas JSON que
+van en la imagen (Aurora, Cathode, Redshift, Sprint, Sunlit y Trail), y mide cada
+par (color de texto sobre superficie) que el codigo realmente dibuja.
 
 No usa nada fuera de la stdlib: la formula es la de WCAG 2.1.
 
@@ -41,7 +41,7 @@ TEMAS_DIR = RAIZ / "rootfs" / "usr" / "share" / "x6200" / "themes"
 
 
 def temas_json():
-    """Los temas de la imagen: `<nombre>.json` y `<nombre>/theme.json` (el RS)."""
+    """Los temas de la imagen: `<nombre>.json` y `<nombre>/theme.json` (los seis)."""
     return sorted(TEMAS_DIR.glob("*.json")) + sorted(TEMAS_DIR.glob("*/theme.json"))
 
 fallos = []
@@ -86,15 +86,6 @@ def mezclar(fg, bg, opa):
     return (salida[0] << 16) | (salida[1] << 8) | salida[2]
 
 
-def negativo(c):
-    """Luminosidad invertida conservando tono: el negative() de src/theme.c."""
-    r, g, b = (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF
-    hi = max(r, g, b)
-    lo = min(r, g, b)
-    d = 255 - hi - lo
-    return ((r + d) & 0xFF) << 16 | ((g + d) & 0xFF) << 8 | ((b + d) & 0xFF)
-
-
 # ---------------------------------------------------------------------------
 # Lectura de las paletas
 # ---------------------------------------------------------------------------
@@ -104,8 +95,9 @@ def leer_theme_h():
     """Devuelve {rol: [4 hexes]} con la linea de cada rol.
 
     Cada renglon de THEME_COLORS(X) es `X(rol, 0x..., 0x..., 0x..., 0x...)`:
-    cuatro paletas en orden IU1WXY, Legacy, Outdoor, Classic. Si un color no
-    tiene cuatro valores, es un error (TC_COUNT se genera de esta misma macro).
+    cuatro paletas base en orden IU1WXY, Legacy, Outdoor, Classic (las plantillas
+    internas que el `base` de un archivo hereda; no son temas, issue #74). Si un
+    color no tiene cuatro valores, es un error (TC_COUNT se genera de esta macro).
     """
     texto = THEME_H.read_text(errors="surrogateescape")
     m = re.search(r"#define\s+THEME_COLORS\(X\)(.*?)typedef enum", texto, re.S)
@@ -147,29 +139,16 @@ def leer_theme_h():
     return colores
 
 
-def leer_vision():
-    """Overrides de VISION que estan en el array vision_colors de src/theme.c."""
-    texto = THEME_C.read_text(errors="surrogateescape")
-    m = re.search(r"vision_colors\[\]\s*=\s*\{(.*?)\};", texto, re.S)
-    if not m:
-        fallos.append("src/theme.c: no encontre el array vision_colors")
-        return {}
-    over = {}
-    for rol, valor in re.findall(r"\{\s*TC_([a-z_0-9]+)\s*,\s*(0x[0-9a-fA-F]{6})\s*\}", m.group(1)):
-        over[rol] = int(valor, 16)
-    return over
-
-
 def leer_formas():
-    """Forma de cada tema incorporado: las banderas que deciden que par existe.
+    """Forma de cada paleta base: las banderas que deciden que par existe.
 
     Un borde de ancho 0 no se dibuja (no hay contraste que exigir) y sin
-    gradiente no hay *_grad. Estas son las mismas banderas de src/theme.c y de
-    los JSON.
+    gradiente no hay *_grad. Estas son las mismas banderas de src/theme.c
+    (base_shapes[]) y de los JSON.
     """
     texto = THEME_C.read_text(errors="surrogateescape")
     forma = {}
-    for acronimo in ("B_IU1WXY", "B_LEGACY", "B_OUTDOOR", "B_CLASSIC"):
+    for acronimo in ("BASE_IU1WXY", "BASE_LEGACY", "BASE_OUTDOOR", "BASE_CLASSIC"):
         m = re.search(r"\[" + acronimo + r"\]\s*=\s*\{(.*?)\}", texto, re.S)
         if not m:
             fallos.append(f"src/theme.c: no encontre la forma de {acronimo}")
@@ -191,47 +170,21 @@ def leer_formas():
             "box_gradient": flag("box_gradient"),
             "mode_box": flag("mode_box"),
         }
-    if set(forma) != {"B_IU1WXY", "B_LEGACY", "B_OUTDOOR", "B_CLASSIC"}:
-        return forma
-
-    # VISION se arma con IU1WXY y despues pisa la forma (theme.c:156-158).
-    forma["B_VISION"] = {
-        "border": 2, "pill_border": 2, "btn_gradient": False, "box_gradient": False, "mode_box": True,
-    }
-    # Outdoor-Negative usa la forma de Outdoor sin cambios (theme.c:145).
-    forma["B_OUTDOOR_NEG"] = dict(forma["B_OUTDOOR"])
     return forma
 
 
 def armar_paletas(colores):
-    """Las quince paletas que sirve la ROM (los seis incorporados y los nueve archivos)."""
+    """Las diez paletas que sirve la ROM (las cuatro base y los seis archivos)."""
     formas = leer_formas()
     acronimo = {
-        "IU1WXY": "B_IU1WXY", "Legacy": "B_LEGACY", "Outdoor": "B_OUTDOOR",
-        "Classic": "B_CLASSIC", "Outdoor-Negative": "B_OUTDOOR_NEG", "VISION": "B_VISION",
+        "IU1WXY": "BASE_IU1WXY", "Legacy": "BASE_LEGACY", "Outdoor": "BASE_OUTDOOR",
+        "Classic": "BASE_CLASSIC",
     }
     cuatro = ["IU1WXY", "Legacy", "Outdoor", "Classic"]
     paletas, shapes = {}, {}
     for i, nombre in enumerate(cuatro):
         paletas[nombre] = {rol: v[i] for rol, v in colores.items()}
         shapes[nombre] = dict(formas.get(acronimo[nombre], {}))
-
-    # Outdoor-Negative: Outdoor entero por negative(); los roles que negative() no
-    # puede invertir (amarillo de la seleccion, azul puro del VFO) quedan como en
-    # Outdoor o puestos a mano (theme.c:146-160).
-    neg = {rol: negativo(c) for rol, c in paletas["Outdoor"].items()}
-    for rol in ("sel_text", "btn_active_text", "sel_border", "btn_active_border", "near_bg"):
-        neg[rol] = paletas["Outdoor"][rol]
-    neg["focus_bg"] = 0x877100
-    neg["vfo"] = 0x4574ff
-    paletas["Outdoor-Negative"] = neg
-    shapes["Outdoor-Negative"] = dict(shapes["Outdoor"])
-
-    # VISION: parte de IU1WXY y pisa lo que dice vision_colors (theme.c:153-159).
-    vision = dict(paletas["IU1WXY"])
-    vision.update(leer_vision())
-    paletas["VISION"] = vision
-    shapes["VISION"] = dict(shapes["IU1WXY"], border=2, pill_border=2, btn_gradient=False, box_gradient=False, mode_box=True)
 
     # JSON: base + colors por nombre de clave (el nombre del color sin TC_), y
     # las banderas de forma que el archivo pise.

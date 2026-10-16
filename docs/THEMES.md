@@ -6,57 +6,42 @@ paleta del waterfall.
 
 ## Los que vienen con la ROM
 
-Desde el issue #73 el **selector de Ajustes ofrece SOLO los seis temas v2** (Sunlit, Redshift,
-Sprint, Cathode, Trail, Aurora): la colección es la oferta completa del menú. Todo lo demás
-sigue en la ROM y el motor lo carga por nombre —params guardados, fixtures históricas del
-arnés—, pero no tiene entrada en la lista; retirarlo del todo y migrar el valor guardado (al
-default nuevo) es el #74 (acá el default no cambia). Un tema propio de la partición DATA
-tampoco se lista: su archivo se conserva, pero no aparece en el menú.
+La colección es **exactamente seis temas** (Sunlit, Redshift, Sprint, Cathode, Trail, Aurora): son la
+oferta completa del selector de Ajustes y lo único que la ROM distribuye. El **default es Aurora**.
+Los temas viejos —los incorporados IU1WXY, Classic, Outdoor, Outdoor-Negative, Legacy y VISION, y
+los archivos Holo, Material 3 y RS— **se retiraron** (issue #74): ya no son temas, no se cargan por
+nombre y sus archivos salieron de la ROM. Un tema propio de la partición DATA tampoco se lista: su
+archivo se conserva (no se borra nada del usuario), pero no aparece en el menú ni se usa como tema
+activo.
 
-**Incorporados** (tablas en el código, sin archivos) — ninguno en el selector desde #73:
+**Archivos JSON** (`rootfs/usr/share/x6200/themes/`): los seis son la colección.
 
-| Nombre | Qué es |
+| Tema | Archivo |
 |---|---|
-| **IU1WXY** | el de fábrica del X6100, oscuro con digitos blancos y turquesa |
-| **Classic** | negro y gris, al estilo IC-7300 |
-| **Outdoor** | claro, para el sol |
-| **Outdoor-Negative** | Outdoor con la luminosidad invertida (oscuro, mismos tonos) |
-| **Legacy** | se conserva pero **no se ofrece** en el menú |
-| **VISION** | los colores de IU1WXY en "antracita cálido": dígitos blancos sobre gris oscuro, naranja para lo encendido, marcos agua |
+| **Sunlit** | `themes/Sunlit.json` |
+| **Redshift** | `themes/Redshift.json` |
+| **Sprint** | `themes/Sprint.json` |
+| **Cathode** | `themes/Cathode.json` |
+| **Trail** | `themes/Trail.json` |
+| **Aurora** | `themes/Aurora.json` |
 
-**Archivos JSON** (`rootfs/usr/share/x6200/themes/`); sólo los seis v2 entran al selector:
+### Paletas base (internas, no son temas)
 
-| Tema | Archivo | En el selector (#73) |
-|---|---|---|
-| **Sunlit** | `themes/Sunlit.json` | sí |
-| **Redshift** | `themes/Redshift.json` | sí |
-| **Sprint** | `themes/Sprint.json` | sí |
-| **Cathode** | `themes/Cathode.json` | sí |
-| **Trail** | `themes/Trail.json` | sí |
-| **Aurora** | `themes/Aurora.json` | sí |
-| **Holo** | `themes/Holo.json` | no (legado, carga por nombre) |
-| **Material 3** | `themes/Material 3.json` | no (legado, carga por nombre) |
-| **RS** | `themes/RS/theme.json` + los PNG de sus botones (`btn.png`, `bar.png`, `strip.png`, `dialog.png`, `mark.png`, ...) | no (legado, carga por nombre) |
+Un archivo JSON hereda de una **paleta base** con su `base`: `IU1WXY`, `Legacy`, `Outdoor` y
+`Classic` (las cuatro columnas de `THEME_COLORS(X)` en `src/theme.h`, `base_colors[]`/`base_shapes[]`
+en `src/theme.c`). Son plantillas internas para no romper la herencia: tres de los seis temas heredan
+de una (Aurora de IU1WXY, Sunlit de Outdoor, Cathode/Redshift/Sprint/Trail de Classic). **Ninguna se
+ofrece ni se carga por nombre**: `theme_list()` no las lista y `theme_init()` sólo carga un archivo.
+Un nombre de tema que no sea uno de los seis (un legado o un DATA) **cae al default, Aurora**.
 
-## El arco del S-meter (`meter_over`) — medido en el equipo, 2026-10-15 (#44)
+### Migración del valor guardado (issue #74)
 
-El arco `TC(meter_over)` del medidor hay que mirarlo **en la pantalla**, no sólo en el JSON:
-el fondo real del arco en la radio es `(62,78,92)`, no el `panel` que declara el archivo.
-RS es un **tema de ROM** — su `base` es Classic, así que el equipo resuelve la columna Classic
-de la tabla compilada (`src/theme.h`, `X(meter_over, ...)`) — y el `theme.json` no garantiza
-que el color llegue a la pantalla.
-
-| Color | vs fondo real `(62,78,92)` | ¿3:1 (WCAG 1.4.11)? |
-|---|---:|---|
-| `#ff4040` (viejo, columna Classic de `src/theme.h`) | 2.47:1 | no |
-| `#ff5252` (fix de #42, sólo en `theme.json`) | 2.69:1 | no |
-| **`#f08080` (issue #44)** | **3.31:1** | sí |
-
-El valor queda **igual en los dos lugares** (la columna Classic de la tabla compilada y
-`themes/RS/theme.json`) para que banco y radio no diverjan: `#f08080`. En el arnés el mismo
-color mide **3.96:1** (RS) y **4.41:1** (Classic) por píxel, contra el fondo que el propio
-render dibuja, en `tools/ab_testing/quality/nontext.yaml` (objeto `s_meter_arc`, WCAG 1.4.11);
-el repaso del tono en la radio queda en la pasada física (#15).
+Un `params.theme_name` guardado que no sea uno de los seis se migra a Aurora al arrancar
+(`src/params/migrations.c`, migración `_3_migrate_theme_name`): es idempotente y no toca ninguna otra
+setting. La migración es sólo del valor: **ningún archivo del usuario se borra**. Los temas DATA
+quedan en `/mnt/themes` (el epic #66 exige "temas DATA no destruidos"), sólo dejan de ser el tema
+activo. Si el archivo del tema no se puede leer, `theme_init()` cae igual a Aurora (nunca a un
+built-in, nunca a una pantalla en blanco).
 
 ## Dónde se buscan
 
@@ -67,8 +52,8 @@ Dos directorios, en este orden:
 2. **`/usr/share/x6200/themes/`** — los que vienen en la imagen.
 
 Un tema es un archivo `<nombre>.json`, o una carpeta `<nombre>/theme.json` cuando trae sus
-propias imágenes (como el RS). `THEMES_DIR` y `THEMES_DIR_SHIPPED` cambian esos dos caminos
-(lo usan los tests, para no tocar `/mnt`).
+propias imágenes. `THEMES_DIR` y `THEMES_DIR_SHIPPED` cambian esos dos caminos (lo usan los
+tests, para no tocar `/mnt`).
 
 Elegir un tema en *Ajustes → Display → INTERFACE → Theme* reinicia la GUI con él.
 
@@ -124,11 +109,11 @@ agregar campos del parser"*; esto lo **extiende por orden del owner**: el ancho 
   cero — el motor sólo lee la clave cuando el archivo la trae).
 - **Rango**: **1..8**. El parser (`src/theme.c`, `load_file()`) clampea: un `0` o un valor
   negativo cae a 1 (la línea no puede desaparecer) y cualquier cosa por encima de 8 a 8 (no
-  puede tapar la cascada). El default del struct (`use_builtin()`) es 1.
+  puede tapar la cascada). El default del struct (`use_base()`) es 1.
 - **Los temas outdoor**: `themes/Sunlit.json` y `themes/Trail.json` la fijan en **3**. Los otros
-  trece temas servidos (Redshift, Sprint, Cathode y Aurora, más los seis incorporados —IU1WXY,
-  Legacy, Outdoor, Classic, Outdoor-Negative y VISION— y los tres archivos legados —Holo,
-  Material 3 y RS—) **no la setean**: quedan en 1 px y sus renders no cambian.
+  cuatro de la colección (Redshift, Sprint, Cathode y Aurora) **no la setean**: quedan en 1 px y sus
+  renders no cambian. (Los temas legados y los archivos Holo/Material 3/RS ya no existen: el #74 los
+  retiró, así que ninguno los setea.)
 - **WCAG**: la clave **no** cambia el color de la línea (sigue siendo `panel_border`), sólo su
   ancho, así que no hay un par nuevo que medir; el ancho no interviene en el contraste (WCAG
   1.4.11 mide color, no grosor).
@@ -146,19 +131,21 @@ resto de la suite queda byte-idéntico.
    (o `/mnt/themes/Mi tema/theme.json` si trae imágenes al lado).
 2. Un tema de DATA con el nombre de uno de los seis del selector lo **reemplaza** (el
    directorio DATA gana sobre la ROM), sin recompilar nada. Un nombre propio —que no sea uno
-   de los seis— **no aparece en el menú** (issue #73): el motor lo carga si algo lo pide por
-   nombre, pero el selector ofrece sólo la colección. Convertirlo en una séptima opción de
-   menú es un cambio de producto, no un archivo suelto.
+   de los seis— **no aparece en el menú** y **no se usa como tema activo**: el motor lo carga si
+   algo lo pide por nombre, pero el selector ofrece sólo la colección y un `theme_name` guardado
+   que no sea uno de los seis migra a Aurora al arrancar (issue #74). Convertirlo en una séptima
+   opción de menú es un cambio de producto, no un archivo suelto.
 
 ## Tests
 
-`tests/native/test_theme.c` prueba los incorporados, la carga de un JSON, el respaldo cuando
-el nombre no existe y —con `X6200_SHIPPED_THEMES` apuntando a `rootfs/usr/share/x6200/themes`—
-que el **selector ofrezca exactamente los seis v2** (`theme_list()`), que los seis **carguen**
-y que los legados (Holo, Material 3, RS) sigan cargando por nombre pero **no** aparezcan en la
-lista. Si un tema del selector falta, o si un legado se cuela en la lista, el test falla: es lo
-que garantiza la oferta de seis del menú del equipo y no sólo la presencia de los archivos en
-la imagen.
+`tests/native/test_theme.c` prueba la carga de un JSON, la herencia del `base` y —con
+`X6200_SHIPPED_THEMES` apuntando a `rootfs/usr/share/x6200/themes`— que el **selector ofrezca
+exactamente los seis** (`theme_list()`), que los seis **carguen** y que un nombre retirado o
+desconocido (un built-in legado, un archivo Holo/Material 3/RS) **caiga al default, Aurora**.
+`tests/check_wcag.py` mide el contraste de las cuatro paletas base y de los seis archivos. Si un
+tema del selector falta, si un séptimo se cuela en la lista o si el default deja de ser Aurora,
+el test falla: es lo que garantiza la oferta de seis del menú del equipo y no sólo la presencia
+de los archivos en la imagen.
 
 ## Sunlit — sol y exteriores (THEMES v2, issue #67)
 
@@ -179,9 +166,9 @@ el arnés y QEMU no demuestran legibilidad al sol ni consumo de energía (LCD co
 
 **Cobertura de roles.** El archivo escribe **122 de 122 roles** de `src/theme.h` (nada queda
 heredado de `Outdoor`, que es su `base`): `x6200-ab themes` lo reporta como
-`Sunlit (...; base Outdoor): 0/122 roles from the base`. El `base` es `Outdoor`, que **se retira
-del menú** en #74: como el archivo define los 122 roles, la migración de la base no puede
-contradecir ningún rol de Sunlit.
+`Sunlit (...; base Outdoor): 0/122 roles from the base`. El `base` es la paleta **interna**
+`Outdoor` (no un tema: no se ofrece ni se carga por nombre, #74); como el archivo define los 122
+roles, ningún rol de la base se cuela en Sunlit.
 
 **Alcance real en la pantalla.** El motor de temas JSON colorea los roles que el firmware ya lee:
 el fondo (`bg`), la fila de frecuencia (`text`), los bordes de panel (`panel_border`), la paleta
@@ -254,10 +241,9 @@ del waterfall, los items del info box (`bar`), los switches/sliders de Ajustes
 (`control_border`/`panel`) y el recolor del botón activo/deshabilitado. Las cajas de la barra
 superior (reloj, S-meter), los botones inferiores y el marco de los diálogos todavía se dibujan
 con las imágenes fijas `images/top_*_dark.bin`, `btn_dark.bin` y `dialog_dark.bin`
-(`src/styles.c:393-423`, `setup_theme_simple`), así que quedan en el gris azulado del asset en
-**todos** los temas: RS, Material 3, Holo y Redshift renderizan ese marco idéntico (medido: el
-fondo del diálogo de Ajustes es `#3c505c` bajo RS, bajo el tema por defecto y `#3b4e59` bajo
-Redshift). Es un hueco preexistente del motor —documentado en el commit que agregó el sistema
+(`src/styles.c:393-423`, `setup_theme_simple`), así que quedan en el gris azulado del asset en **todos** los temas, que renderizan ese marco
+idéntico (medido: el fondo del diálogo de Ajustes es `#3c505c` bajo el tema por defecto y
+`#3b4e59` bajo Redshift). Es un hueco preexistente del motor —documentado en el commit que agregó el sistema
 JSON— y migrarlo es un refactor aparte, fuera del alcance de un tema suelto.
 
 Pares medidos (WCAG 2.1, sRGB) para los roles de la identidad, todos por encima del umbral:
@@ -291,7 +277,7 @@ Las capturas del arnés por estado son `main-tema-redshift` (principal), `settin
 (Ajustes → Apariencia), `bt-dialog-tema-redshift` (diálogo), `main-tema-redshift-tx` (TX),
 `main-tema-redshift-eco` (batería baja/ECO) y `main-tema-redshift-agua` (espectro + waterfall).
 La galería ARM real y la comparación consolidada contra los otros cinco temas se cierran en el
-#73; el selector/default se migra en el #74.
+#73; el selector y el default se migraron en el #74 (default Aurora).
 
 ## Aurora — uso diario premium (THEMES v2, issue #72)
 
@@ -314,9 +300,9 @@ heredado de `IU1WXY`, que es su `base`): `x6200-ab themes` lo reporta como
 `Aurora (...; base IU1WXY): 0/122 roles from the base`. El JSON de partida del issue #72 nombraba
 tres claves que ya no existen en el esquema (`strip`, `mode_bg`, `mode_text`, podadas en #77):
 incluirlas habría dejado el tema con colores desconocidos, así que se reasignaron a sus roles
-reales (`bar_grad`/`panel` y `sel_bg`/`sel_text`). El `base` es `IU1WXY`, que **se retira** en
-#74: como el archivo define los 122 roles, la migración de la base en #74 no puede contradecir
-ningún rol de Aurora.
+reales (`bar_grad`/`panel` y `sel_bg`/`sel_text`). El `base` es la paleta **interna** `IU1WXY`
+(no un tema: no se ofrece ni se carga por nombre, #74); como el archivo define los 122 roles,
+ningún rol de la base se cuela en Aurora.
 
 **Alcance real en la pantalla.** El motor de temas JSON colorea los roles que el firmware ya lee:
 el fondo (`bg`), la fila de frecuencia (`text`), los bordes de panel (`panel_border`), la paleta
@@ -396,10 +382,9 @@ del waterfall, los items del info box (`bar`), los switches/sliders de Ajustes
 (`control_border`/`panel`) y el recolor del botón activo/deshabilitado. Las cajas de la barra
 superior (reloj, S-meter), los botones inferiores y el marco de los diálogos todavía se dibujan
 con las imágenes fijas `images/top_*_dark.bin`, `btn_dark.bin` y `dialog_dark.bin`
-(`src/styles.c:393-423`, `setup_theme_simple`), así que quedan en el gris azulado del asset en
-**todos** los temas: RS, Material 3, Holo, Redshift y Trail renderizan ese marco idéntico (medido:
-el fondo del diálogo de Ajustes es `#3c505c` bajo RS, bajo el tema por defecto y `#3b4e59` bajo
-Redshift). Es un hueco preexistente del motor —documentado en el commit que agregó el sistema
+(`src/styles.c:393-423`, `setup_theme_simple`), así que quedan en el gris azulado del asset en **todos** los temas, que renderizan ese marco
+idéntico (medido: el fondo del diálogo de Ajustes es `#3c505c` bajo el tema por defecto y
+`#3b4e59` bajo Redshift). Es un hueco preexistente del motor —documentado en el commit que agregó el sistema
 JSON— y migrarlo es un refactor aparte, fuera del alcance de un tema suelto.
 
 Pares medidos (WCAG 2.1, sRGB) para los roles de la identidad, todos por encima del umbral:
@@ -435,7 +420,7 @@ Las capturas del arnés por estado son `main-tema-trail` (principal), `settings-
 (Ajustes → Apariencia), `bt-dialog-tema-trail` (diálogo), `main-tema-trail-tx` (TX),
 `main-tema-trail-eco` (batería baja/ECO) y `main-tema-trail-agua` (espectro + waterfall).
 La galería ARM real y la comparación consolidada contra los otros cinco temas se cierran en el
-#73; el selector/default se migra en el #74.
+#73; el selector y el default se migraron en el #74 (default Aurora).
 
 ## Sprint — concursos / operación rápida (THEMES v2, issue #69)
 
@@ -579,7 +564,7 @@ de radio que su gemela de otro tema, así el tema es la única variable):
 movimiento), `main-tema-cathode-tx` (TX simulado), `main-tema-cathode-eco` (batería baja + ECO),
 `bt-dialog-tema-cathode` (diálogo) y `settings-tema-cathode` (Ajustes, con el foco sobre la fila
 del tema). La galería ARM real y la comparación consolidada contra los otros cinco temas se
-cierran en el #73; el selector/default se migra en el #74. El detalle de la corrida está en
+cierran en el #73; el selector y el default se migraron en el #74 (default Aurora). El detalle de la corrida está en
 `docs/AB_TESTING.md`.
 
 ## Galería consolidada (THEMES v2, issue #73)
@@ -620,7 +605,7 @@ documentados acá para que la ficha de un tema no prometa lo que el render no ha
    (`dialog_dark.bin`), los paneles (`panel_dark.bin`) y los mensajes (`msg_dark.bin`,
    `msg_tiny_dark.bin`) con **imágenes de la ROM, iguales en todos los temas**. Por eso las cajas
    del reloj/S-meter, la barra de botones y el marco de los diálogos quedan en el gris azulado
-   del asset en los quince temas, y `theme_image()` (el `images` de un tema JSON) se carga pero
+   del asset en los seis temas, y `theme_image()` (el `images` de un tema JSON) se carga pero
    hoy nunca se dibuja.
 2. **`bp_*` declarados pero no leídos.** Los roles `bp_cw`/`bp_dig`/`bp_ssb`/`bp_bcn`/`bp_text`
    (`src/theme.h`) están en el esquema y `tests/check_wcag.py` los mide, pero `src/band_plan.c`

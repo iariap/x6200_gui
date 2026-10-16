@@ -4,41 +4,36 @@ The rendered `typography_contrast` contract only speaks about the screens the
 harness can open. Settings is not one of them (`dialog_settings.c` drags
 `dialog_field.c` and dozens of dependencies — UI-004), and its own pair — the
 switch/slider rail `TC(control_border)` against the dialog and the panel — is
-exactly the one UI-007 recorded as broken: an RS theme that did not define
+exactly the one UI-007 recorded as broken: a theme that did not define
 `control_border` inherited one from its `base` and drew 2.58:1.
 
 This module reads the files the image installs
 (`rootfs/usr/share/x6200/themes/<name>.json` or `<name>/theme.json`), resolves
-their `base` inheritance the way `src/theme.c` does (`use_builtin()` plus the
+their `base` inheritance the way `src/theme.c` does (`use_base()` plus the
 file's `colors`) and measures the pairs `quality/theme_pairs.yaml` declares: the
 ones that live on the screen the harness cannot reach yet. Everything is offline
 — files in, findings out; no Docker, no radio, no pixels.
 
-Three families of served themes are measured here, so the report is a full
-inventory of what the user can pick and not only of what ships as a file:
+Two families are measured here:
 
-- the **built-in palettes** of `src/theme.h` (IU1WXY, Legacy, Outdoor, Classic) —
-  they are the `base` every file resolves against, the same data the macro holds;
-- the **runtime built-ins** `use_builtin()` (`src/theme.c`) derives at init:
-  Outdoor-Negative (`negative()` over Outdoor plus its hand-tuned WCAG role
-  overrides) and VISION (IU1WXY plus the `vision_colors[]` array). They are not
-  data, so they are *derived* from the same C the firmware runs — never guessed
-  — and `tests/test_theme_files.py` pins the derivation byte-for-byte against
-  `tests/check_wcag.py`, the ROM's own sweep over the fifteen served palettes;
+- the **base palettes** of `src/theme.h` (IU1WXY, Legacy, Outdoor, Classic) —
+  they are the `base` every file resolves against, the same data the macro
+  holds. They are internal templates, not themes (issue #74): `src/theme.c` no
+  longer loads a built-in by name, and a file's `base` is the only thing that
+  names one;
 - the **shipped files** of `rootfs/usr/share/x6200/themes` (`<name>.json` or
   `<name>/theme.json`), with the `base` inheritance `src/theme.c` applies.
 
-With the derivation below every served palette resolves, so the whole inventory is
-measured (every served theme x 9 pairs) and nothing is declared UNCOVERED. The
-Settings selector, though, offers only the six v2 themes (issue #73): every other
-served theme is flagged `offered=False`, a palette the engine can still load by
-name but the menu does not list.
+With the resolution below every base template resolves, so the whole inventory is
+measured (every palette x 9 pairs) and nothing is declared UNCOVERED. The
+Settings selector offers exactly the six themes of the collection (issue #73/#74):
+every other palette is flagged `offered=False`, a base the engine can inherit from
+but the menu does not list.
 
-The exhaustive sweep over the fifteen served palettes stays in
-`tests/check_wcag.py`, which the ROM's own CI runs. This one is the framework-side
-inventory over what the files and the C table spell out, so a file that stops
-defining a role cannot silently inherit an illegible one, and no served theme is
-missing from the map.
+The exhaustive sweep over the palettes stays in `tests/check_wcag.py`, which the
+ROM's own CI runs. This one is the framework-side inventory over what the files
+and the C table spell out, so a file that stops defining a role cannot silently
+inherit an illegible one, and no palette is missing from the map.
 """
 
 from __future__ import annotations
@@ -58,38 +53,31 @@ from .errors import ConfigError
 SHIPPED_THEMES_SUBDIR = ("rootfs", "usr", "share", "x6200", "themes")
 
 # The four palettes of `THEME_COLORS(X)` in src/theme.h, in the order
-# `builtin_names[]` uses in src/theme.c: IU1WXY, Legacy, Outdoor, Classic. A
+# `base_names[]` uses in src/theme.c: IU1WXY, Legacy, Outdoor, Classic. A
 # shipped file's `base` names one of them, and every role the file does not set
-# comes from there. The two derived built-ins (Outdoor-Negative, VISION) are made
-# at runtime by `use_builtin()` and are refused here on purpose: guessing their
-# values would hide exactly the inheritance this check exists to catch.
+# comes from there. They are internal base templates, not themes (issue #74):
+# `src/theme.c` loads no built-in by name and `theme_list()` does not offer one.
 BASE_PALETTES = ("IU1WXY", "Legacy", "Outdoor", "Classic")
 
-# The two built-ins `use_builtin()` (src/theme.c) derives at init, in the order
-# of the `B_*` enum: Outdoor-Negative and VISION. Their palette is not data, so
-# `load_runtime_palettes()` builds it from the same C the firmware runs.
-DERIVED_PALETTES = ("Outdoor-Negative", "VISION")
+# Every base template in the order `base_names[]` declares them. There are no
+# `use_builtin()` derives any more: Outdoor-Negative and VISION were legacy
+# themes and left with #74.
+SERVED_BUILTINS = BASE_PALETTES
 
-# Every built-in palette in the order `builtin_names[]` declares them: the four
-# data palettes of THEME_COLORS(X) first, then the two `use_builtin()` derives.
-SERVED_BUILTINS = (*BASE_PALETTES, *DERIVED_PALETTES)
-
-# Which of the built-ins `theme_list()` (src/theme.c) offers in Settings. Since the
-# six v2 themes are the whole selector (issue #73) no built-in is offered any more:
-# they are kept as palettes and as `base` for shipped files, but the menu has no
-# entry for them (their removal and the default migration are #74).
+# Which of the base templates `theme_list()` (src/theme.c) offers in Settings.
+# Since the six v2 themes are the whole selector (issues #73/#74) no base is
+# offered: they are kept as templates and as `base` for shipped files, but the
+# menu has no entry for them.
 BUILTIN_OFFERED = {
     "IU1WXY": False,
     "Legacy": False,
     "Outdoor": False,
     "Classic": False,
-    "Outdoor-Negative": False,
-    "VISION": False,
 }
 
-# The six v2 themes that make up the whole Settings selector (issue #73). Only a
-# shipped file with one of these names is offered; any other file (Holo, Material 3,
-# RS or a user's own DATA theme) is still loaded by name but never listed.
+# The six themes that make up the whole Settings selector (docs/THEMES.md). Only a
+# shipped file with one of these names is offered; any other file (a user's own DATA
+# theme) is still loaded by name but never listed.
 OFFERED_THEMES = ("Sunlit", "Redshift", "Sprint", "Cathode", "Trail", "Aurora")
 
 # The surfaces of the `images` block (src/theme.c, `image_names[]`): a file may
@@ -121,16 +109,6 @@ _ROLE_LINE = re.compile(
     re.MULTILINE,
 )
 _COLOUR_VALUE = re.compile(r"#?[0-9a-fA-F]{6}")
-
-# The derivation `use_builtin()` applies at init (src/theme.c). Both are read
-# from the C so the framework never carries a second copy of the numbers:
-_VISION_ENTRY = re.compile(r"\{\s*TC_([a-z_0-9]+)\s*,\s*(0x[0-9a-fA-F]{6})\s*\}")
-# Outdoor-Negative keeps a role at its Outdoor value (`colors[TC_x] =
-# builtin_colors[B_OUTDOOR][TC_y];`) or pins it to a literal (`= 0xrrggbb;`).
-_NEG_FROM_OUTDOOR = re.compile(
-    r"colors\[TC_([a-z_0-9]+)\]\s*=\s*builtin_colors\[B_OUTDOOR\]\[TC_([a-z_0-9]+)\]\s*;"
-)
-_NEG_LITERAL = re.compile(r"colors\[TC_([a-z_0-9]+)\]\s*=\s*(0x[0-9a-fA-F]{6})\s*;")
 
 
 @dataclass(frozen=True)
@@ -239,12 +217,12 @@ class ThemeReport:
 
 
 def load_builtin_palettes(theme_h: Path) -> dict[str, dict[str, str]]:
-    """The four built-in palettes of src/theme.h, as `#rrggbb` per role.
+    """The four base palettes of src/theme.h, as `#rrggbb` per role.
 
     The macro is what the firmware's enum is generated from, so a role added
     there (or a value changed) is picked up here without touching this module;
     what this parser cannot guess is the palette order, which is
-    `builtin_names[]`'s in src/theme.c.
+    `base_names[]`'s in src/theme.c.
     """
     if not theme_h.is_file():
         raise ConfigError(f"missing the theme role table: {theme_h}")
@@ -276,74 +254,6 @@ def _macro_body(text: str) -> str:
         if not line.rstrip().endswith("\\"):
             break
     return "\n".join(body)
-
-
-def _negative(colour: str) -> str:
-    """`negative()` of src/theme.c: lightness inverted, hue and saturation kept.
-
-    Black maps to white and a colour whose highest and lowest channel already
-    add up to 255 (the selection yellow, the pure VFO blue) does not move: that
-    is the C arithmetic, and the caller keeps those roles at their Outdoor value.
-    """
-    value = int(colour.lstrip("#"), 16)
-    r, g, b = (value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF
-    delta = 255 - max(r, g, b) - min(r, g, b)
-    return hex_colour(((r + delta) & 0xFF) << 16 | ((g + delta) & 0xFF) << 8 | ((b + delta) & 0xFF))
-
-
-def derive_outdoor_negative(theme_c: Path, outdoor: dict[str, str]) -> dict[str, str]:
-    """The Outdoor-Negative palette `use_builtin(B_OUTDOOR_NEG)` builds.
-
-    Every role goes through `negative()`; the roles the C then pins (`sel_text`,
-    `btn_active_text`, `sel_border`, `btn_active_border`, `near_bg`, `focus_bg`,
-    `vfo`) are read back from the same C — five keep their Outdoor value and two
-    are literals — so this is a port, not a second source of truth.
-    """
-    text = theme_c.read_text(errors="surrogateescape")
-    palette = {role: _negative(colour) for role, colour in outdoor.items()}
-    from_outdoor = _NEG_FROM_OUTDOOR.findall(text)
-    if not from_outdoor:
-        raise ConfigError(
-            f"{theme_c}: found no `builtin_colors[B_OUTDOOR]` override in use_builtin()"
-        )
-    for role, source in from_outdoor:
-        palette[role] = outdoor[source]
-    for role, value in _NEG_LITERAL.findall(text):
-        palette[role] = hex_colour(int(value, 16))
-    return palette
-
-
-def derive_vision(theme_c: Path, iu1wxy: dict[str, str]) -> dict[str, str]:
-    """The VISION palette `use_builtin(B_VISION)` builds: IU1WXY plus `vision_colors[]`."""
-    text = theme_c.read_text(errors="surrogateescape")
-    block = re.search(r"vision_colors\[\]\s*=\s*\{(.*?)\};", text, re.S)
-    if block is None:
-        raise ConfigError(f"{theme_c}: no `vision_colors[]` array")
-    overrides = {
-        role: hex_colour(int(value, 16)) for role, value in _VISION_ENTRY.findall(block.group(1))
-    }
-    if not overrides:
-        raise ConfigError(f"{theme_c}: `vision_colors[]` has no entries")
-    return dict(iu1wxy) | overrides
-
-
-def load_runtime_palettes(
-    theme_c: Path, palettes: dict[str, dict[str, str]]
-) -> dict[str, dict[str, str]]:
-    """The palettes the user can see: the four data plus the two derives.
-
-    Shipping a palette whose roles are *derived* from C is what closes the
-    coverage hole: the static contract used to declare Outdoor-Negative and
-    VISION UNCOVERED because re-deriving them looked like a second source of
-    truth. Reading the derivation out of `src/theme.c` instead (and pinning it
-    against `tests/check_wcag.py`) makes that hole measurable.
-    """
-    if not theme_c.is_file():
-        raise ConfigError(f"missing the theme derivation: {theme_c}")
-    extended = dict(palettes)
-    extended["Outdoor-Negative"] = derive_outdoor_negative(theme_c, palettes["Outdoor"])
-    extended["VISION"] = derive_vision(theme_c, palettes["IU1WXY"])
-    return extended
 
 
 @dataclass(frozen=True)
@@ -441,11 +351,12 @@ def served_theme_reports(
     palettes: dict[str, dict[str, str]],
     pairs: tuple[ThemePair, ...],
 ) -> tuple[ThemeReport, ...]:
-    """Every theme the firmware serves, in `builtin_names[]` order then the files.
+    """Every palette the firmware carries, in `base_names[]` order then the files.
 
-    The six built-in palettes first (the four data ones of `src/theme.h` plus the
-    two `use_builtin()` derives), then the shipped files. Every served palette is
-    measured, so there is no UNCOVERED theme left.
+    The four base palettes first (the templates of `src/theme.h` a file's `base`
+    inherits from), then the shipped files. Every palette is measured, so there is
+    no UNCOVERED one left. Only the shipped files are themes the selector offers;
+    a base template is flagged `offered=False` and never loaded by name (issue #74).
     """
     _validate_pairs(pairs, palettes)
     reports = [_measure_builtin(name, palettes[name], pairs, theme_h) for name in SERVED_BUILTINS]
@@ -461,12 +372,8 @@ def _measure_builtin(
     pairs: tuple[ThemePair, ...],
     theme_h: Path,
 ) -> ThemeReport:
-    """One built-in palette: data from src/theme.h, or derived by `use_builtin()`."""
-    origin = (
-        "built-in palette src/theme.h THEME_COLORS"
-        if name in BASE_PALETTES
-        else "derived palette use_builtin() src/theme.c"
-    )
+    """One base palette: data from the THEME_COLORS(X) table of src/theme.h."""
+    origin = "base palette src/theme.h THEME_COLORS"
     results = tuple(
         _pair_result(
             name,
@@ -482,7 +389,7 @@ def _measure_builtin(
         base=name,
         inherited=(),
         results=results,
-        source="builtin",
+        source="base",
         offered=BUILTIN_OFFERED[name],
     )
 
@@ -534,8 +441,8 @@ def measure_theme_file(
             offered=offered,
             error=(
                 f"base `{base}` is not one of {list(palettes)}: src/theme.c resolves a base "
-                f"by `builtin_index()`, so a shipped file may only inherit a name the six "
-                f"built-ins declare"
+                f"by `base_index()`, so a shipped file may only inherit a name the four "
+                f"base palettes declare"
             ),
         )
     known = set(palettes[BASE_PALETTES[0]])

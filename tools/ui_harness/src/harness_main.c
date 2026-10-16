@@ -136,16 +136,16 @@ static void write_benchmark(FILE *f, const scenario_t *scenario)
 
 /* The theme of this capture, as the firmware would see it.
  *
- * `theme_list()` (src/theme.c) offers names up to 31 characters — the built-ins
- * and the JSON files — and the choice travels to the next boot inside
+ * `theme_list()` (src/theme.c) offers the six themes of the collection (up to 31
+ * characters) and the choice travels to the next boot inside
  * `params.theme_name`, a `params_str_t` whose `x[]` is 32 bytes
  * (src/params/types.h), enough for every name the menu can offer. (Before UI-013
  * it was 16 bytes and "Outdoor-Negative" did not fit.) `requested` is the name
  * this capture rendered (what the fixture asked for); `params_name` is what the
  * firmware's own store holds, read from the `params_str_t` the mock shares with
  * the firmware, so its capacity and its truncation are the firmware's. A name
- * that does not survive the round trip makes `theme_init(params.theme_name.x)`
- * (src/main.c) fall back to IU1WXY. */
+ * that does not survive the round trip, is unknown or is a retired legacy theme
+ * makes `theme_init(params.theme_name.x)` (src/main.c) fall back to Aurora. */
 static void write_theme(FILE *f, const scenario_t *scenario)
 {
     fprintf(f, "  \"theme\": {\n");
@@ -379,7 +379,7 @@ int main(int argc, char **argv)
     event_init();
 
     /* The ROM ships its themes with the image; read them from this repository
-     * (the same files) so a fixture can name one (RS, Holo, Material 3) without
+     * (the same files) so a fixture can name one (docs/THEMES.md) without
      * depending on an installed /usr/share/x6200. An explicit THEMES_DIR_SHIPPED
      * still wins (overwrite=0). */
     setenv("THEMES_DIR_SHIPPED", HARNESS_THEMES_DIR_SHIPPED, 0);
@@ -387,9 +387,8 @@ int main(int argc, char **argv)
     theme_init(scenario.theme[0] ? scenario.theme : params.theme_name.x);
 
     /* Same font choice as the firmware's main(): a theme's own font first, then
-     * the parameter, and VISION scales the whole family up. Before this the
-     * harness applied params.font only, so a theme that names a font (Classic,
-     * RS) or VISION drew with the wrong one. */
+     * the parameter. Before this the harness applied params.font only, so a theme
+     * that names a font (docs/THEMES.md) drew with the wrong one. */
     if (font_id != NULL) {
         /* `--font <id>`: the same ids a theme JSON writes (fonts/font_families.h).
          * The A/B matrix and the gallery render every candidate family with one

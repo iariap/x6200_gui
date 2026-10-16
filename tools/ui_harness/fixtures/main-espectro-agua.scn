@@ -1,11 +1,12 @@
 # main-espectro-agua: the waterfall in "movement" with a fixed seed and the
-# Legacy theme (its 256-colour table), peaks on and the centre line drawn.
+# Aurora theme (its own 256-colour table, docs/THEMES.md), peaks on and the
+# centre line drawn.
 
 name main-espectro-agua
 screen main
 
 seed 7
-theme Legacy
+theme Aurora
 spectrum_peak true
 waterfall_center_line true
 spectrum_filled true

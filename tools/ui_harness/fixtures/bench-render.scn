@@ -10,7 +10,7 @@ name bench-render
 screen main
 
 seed 11
-theme Legacy
+theme Aurora
 spectrum_peak true
 waterfall_center_line true
 spectrum_filled true

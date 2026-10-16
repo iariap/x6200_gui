@@ -5,7 +5,7 @@
 # object tree. This table is the third case: informative graphics whose ink or
 # whose surface is not a role the framework can introspect — the S-meter arc is
 # drawn by hand over a bitmap (images/top_long.bin), the waterfall column is the
-# DSP palette, the band-plan chips are hand-picked literals. Only the pixels know
+# DSP palette. Only the pixels know
 # their real contrast, so the measurement is over the committed renders in
 # `tools/ab_testing/golden/` (the `.scn` fixtures rendered by the harness) and
 # `--renders-dir` points it at a fresh capture.
@@ -35,10 +35,10 @@ objects:
   # meter.c:116-119 draws the arc width 5 in TC(meter_over) at r+2; the face is
   # images/top_long.bin (a binary surface the static check only knows by name).
   # The arc geometry is fixed (it does not move with the value), so the same rect
-  # measures it on all nine fixtures.
+  # measures it on every fixture that paints it.
   - name: s_meter_arc
     fixture: main-foco
-    theme: IU1WXY
+    theme: Aurora
     object: [481, 28, 10, 12]
     background: [481, 17, 10, 9]
     min_ratio: 3.0
@@ -46,75 +46,15 @@ objects:
 
   - name: s_meter_arc
     fixture: main-espectro-agua
-    theme: Legacy
+    theme: Aurora
     object: [481, 28, 10, 12]
     background: [481, 17, 10, 9]
     min_ratio: 3.0
     where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
 
-  - name: s_meter_arc
-    fixture: main-otro-tema
-    theme: Outdoor
-    object: [481, 28, 10, 12]
-    background: [481, 17, 10, 9]
-    min_ratio: 3.0
-    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
-
-  - name: s_meter_arc
-    fixture: main-tema-classic
-    theme: Classic
-    object: [481, 28, 10, 12]
-    background: [481, 17, 10, 9]
-    min_ratio: 3.0
-    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
-
-  - name: s_meter_arc
-    fixture: main-tema-holo
-    theme: Holo
-    object: [481, 28, 10, 12]
-    background: [481, 17, 10, 9]
-    min_ratio: 3.0
-    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
-
-  - name: s_meter_arc
-    fixture: main-tema-material-3
-    theme: Material 3
-    object: [481, 28, 10, 12]
-    background: [481, 17, 10, 9]
-    min_ratio: 3.0
-    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
-
-  - name: s_meter_arc
-    fixture: main-tema-outdoor-negative
-    theme: Outdoor-Negative
-    object: [481, 28, 10, 12]
-    background: [481, 17, 10, 9]
-    min_ratio: 3.0
-    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
-
-  - name: s_meter_arc
-    fixture: main-tema-vision
-    theme: VISION
-    object: [481, 28, 10, 12]
-    background: [481, 17, 10, 9]
-    min_ratio: 3.0
-    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
-
-  - name: s_meter_arc
-    fixture: main-tema-rs
-    theme: RS
-    object: [481, 28, 10, 12]
-    background: [481, 17, 10, 9]
-    min_ratio: 3.0
-    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
-
-  # --- Waterfall: the signal column over the noise floor ---
-  # The bright (or dark, on Outdoor-Negative) column the DSP/theme palette paints
-  # on the waterfall; the background is a quiet strip beside it. The column moves
-  # with the band plan and the frequency, so each fixture carries its own rect.
   - name: waterfall_signal
     fixture: main-foco
-    theme: IU1WXY
+    theme: Aurora
     object: [383, 255, 22, 150]
     background: [220, 255, 40, 150]
     min_ratio: 3.0
@@ -122,74 +62,12 @@ objects:
 
   - name: waterfall_signal
     fixture: main-espectro-agua
-    theme: Legacy
-    object: [390, 255, 22, 150]
+    theme: Aurora
+    object: [396, 255, 6, 150]
     background: [220, 255, 40, 150]
     min_ratio: 3.0
     where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
 
-  - name: waterfall_signal
-    fixture: main-otro-tema
-    theme: Outdoor
-    object: [182, 255, 22, 150]
-    background: [250, 255, 40, 150]
-    min_ratio: 3.0
-    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
-
-  - name: waterfall_signal
-    fixture: main-tema-classic
-    theme: Classic
-    object: [383, 255, 22, 150]
-    background: [220, 255, 40, 150]
-    min_ratio: 3.0
-    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
-
-  - name: waterfall_signal
-    fixture: main-tema-holo
-    theme: Holo
-    object: [383, 255, 22, 150]
-    background: [220, 255, 40, 150]
-    min_ratio: 3.0
-    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
-
-  - name: waterfall_signal
-    fixture: main-tema-material-3
-    theme: Material 3
-    object: [383, 255, 22, 150]
-    background: [220, 255, 40, 150]
-    min_ratio: 3.0
-    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
-
-  - name: waterfall_signal
-    fixture: main-tema-outdoor-negative
-    theme: Outdoor-Negative
-    object: [383, 255, 22, 150]
-    background: [220, 255, 40, 150]
-    min_ratio: 3.0
-    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
-
-  - name: waterfall_signal
-    fixture: main-tema-vision
-    theme: VISION
-    object: [383, 255, 22, 150]
-    background: [220, 255, 40, 150]
-    min_ratio: 3.0
-    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
-
-  - name: waterfall_signal
-    fixture: main-tema-rs
-    theme: RS
-    object: [383, 255, 22, 150]
-    background: [220, 255, 40, 150]
-    min_ratio: 3.0
-    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
-
-  # --- Sprint (THEMES v2, issue #69): the same two objects the other themes
-  # declare, measured on Sprint's own golden render. Sprint ships its own
-  # waterfall table (the JSON `waterfall` stops, theme.c make_palette) and its own
-  # `meter_over` (the +20/+40 arc over the meter's bitmap face), so the pixels
-  # answer what the static check cannot: the arc and the signal column reach 3:1
-  # with Sprint's roles.
   - name: waterfall_signal
     fixture: main-tema-sprint
     theme: Sprint
@@ -211,30 +89,11 @@ objects:
   # on the day field. The dialog is the surface it is read against.
   - name: focus_indicator
     fixture: settings-home
-    theme: IU1WXY
+    theme: Aurora
     object: [505, 112, 86, 26]
     background: [400, 300, 40, 20]
     min_ratio: 3.0
     where: "styles.c (celda con foco, TC(focus)) contra el dialogo"
-
-  # --- Band-plan strip markers: the CW and DIG chips against the strip ---
-  # band_plan.c:19 paints the band segments with the hand-picked #3366cc (CW) and
-  # #33aa55 (DIG) literals; the strip behind them is the spectrum noise.
-  - name: strip_marker_cw
-    fixture: main-tema-classic
-    theme: Classic
-    object: [250, 140, 140, 17]
-    background: [250, 120, 140, 14]
-    min_ratio: 3.0
-    where: "band_plan.c:19 (franja CW #3366cc sobre el strip)"
-
-  - name: strip_marker_dig
-    fixture: main-tema-classic
-    theme: Classic
-    object: [400, 140, 75, 17]
-    background: [250, 120, 140, 14]
-    min_ratio: 3.0
-    where: "band_plan.c:19 (franja DIG #33aa55 sobre el strip)"
 
   # --- Sunlit (issue #67, THEMES v2) ---------------------------------------
   # The S-meter face is the theme-independent bitmap (top_long.bin), so a light

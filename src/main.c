@@ -303,7 +303,7 @@ int main(void) {
     }
 
 
-    theme_init(params.theme_name.x);    /* an unknown one falls back to IU1WXY */
+    theme_init(params.theme_name.x);    /* un nombre retirado o desconocido cae al default (Aurora) */
     /* El desplegable de Ajustes y `params.font` hablan el idioma de fonts_apply():
      * su lista de items se arma de `font_names[]` en orden FONT_*, asi que la fila
      * elegida ES el valor FONT_* (antes era una tabla paralela escrita a mano y
