@@ -30,8 +30,8 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
-| 17/10 ~00:30 | ROM `c640645d810c` / GUI `e294229dd32d` | `223b30a` (con #117) | (pendiente) | (pendiente) | — | **#119**: la curva de ROE **no es una parábola**: se dibuja **escalonada** (6 cuadros del framebuffer leídos en bucle rápido, `frame-2.png` lo muestra) → el #117 dice "fitted to a single parabola" en el código pero el render sale en escalera. **Y la app se cierra sola** al terminar el barrido (3 capturas muestran la pantalla principal, mismo pid, sin CRASHLOG). Además: fantasma de repintado. Causa **sin fundar**. **Datos anexados al issue**: `roe-muestras-extraidas.csv/.json` (496 puntos extraidos de la pantalla; el log no guarda las muestras) — **y muestran que la curva viene cuantizada en escalones** (12 muestras identicas seguidas, p.ej. 1.33) |
-| 17/10 ~00:10 | **ROM nueva corriendo** `e294229dd32d` (imagen `c640645d810c`) | `223b30a` | (pendiente barrido) | (pendiente) | — | **La ROM flasheada arrancó bien** ✓: GUI `e294229dd32d` ✓, lib `5ed07c1719f8` ✓, `init.d`=`S20gui` ✓ (fix #89 en la imagen ✓), CRASHLOG 0, **y los ajustes del owner intactos** (`Redshift`/`vol=66`/`span=50000`, DATA 3,2G) ✓✓. **El race del #116 se reproduce en la instalación limpia** ✗✓ → queda fundado que es determinista |
+| 17/10 ~00:30 | ROM `c640645d810c` / GUI e294229dd32d | `223b30a` (con #117) | (pendiente) | (pendiente) | — | **#119**: la curva de ROE **no es una parábola**: se dibuja **escalonada** (6 cuadros del framebuffer leídos en bucle rápido, `frame-2.png` lo muestra) → el #117 dice "fitted to a single parabola" en el código pero el render sale en escalera. **Y la app se cierra sola** al terminar el barrido (3 capturas muestran la pantalla principal, mismo pid, sin CRASHLOG). Además: fantasma de repintado. Causa **sin fundar**. **Datos anexados al issue**: `roe-muestras-extraidas.csv/.json` (496 puntos extraidos de la pantalla; el log no guarda las muestras) — **y muestran que la curva viene cuantizada en escalones** (12 muestras identicas seguidas, p.ej. 1.33) |
+| 17/10 ~00:10 | **ROM nueva corriendo** e294229dd32d (imagen `c640645d810c`) | `223b30a` | (pendiente barrido) | (pendiente) | — | **La ROM flasheada arrancó bien** ✓: GUI e294229dd32d ✓, lib 5ed07c1719f8 ✓, `init.d`=`S20gui` ✓ (fix #89 en la imagen ✓), CRASHLOG 0, **y los ajustes del owner intactos** (`Redshift`/`vol=66`/`span=50000`, DATA 3,2G) ✓✓. **El race del #116 se reproduce en la instalación limpia** ✗✓ → queda fundado que es determinista |
 | 16/10 ~23:40 | **ROM nueva flasheada** `c640645d810c` | `223b30a` (incluye #117) | (pendiente: validar en la radio) | (pendiente) | — | **Flasheo de la SD** ✓: verificado por md5 ida y vuelta (`c640645d810c…` idéntico) ✓, `init.d`=sólo `S20gui` ✓. **DATA restaurada en slot 3** ✓ y **ajustes intactos** (params.db 106 KB, `theme_name=Redshift`, `vol=66`, `swrscan_span=50000`, 662 app_logs) ✓. Los deploys por WiFi fallaron 2 veces (script colgado + scp text-busy) → se fue por SD |
 | 16/10 ~23:00 | `3604cece0e43` (sigue) | `246ffa5` | (no corrido) | (no corrido) | — | 0 merges nuevos; **el otro agente abrió `factory/events-queue-111`** (trabajando el #111). Audio: `Conected` ✓ y streams 1+2 ✓ pero el sink sigue `rms=0.0` (la parte 2 del #116 sin fix). Radio estable, CRASHLOG 0 |
 | 16/10 ~22:50 | `3604cece0e43` (sigue) | `420d5fc` | (no corrido) | (no corrido) | — | **Causa raíz del audio FUNDADA**: un **race de arranque** — `audio_init_sync: pulseaudio no disponible (Connection refused)` a los ~6 s (la GUI no reintenta) → **0 streams en frío**; al reiniciar la GUI con PA arriba dice **`Conected`** y abre los 3 streams. **PERO**: aun conectada, **el sink sigue en ceros** (captura ✓ + reproduce silencio ✗) → **segunda parte sin causa**. Es lo que dejó sin audio tras el crash del #116 |
@@ -101,7 +101,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 ---
 
-## 16/10 ~23:40 — ROM nueva flasheada en la SD: `c640645d810c` (GUI `e294229dd32d`)
+## 16/10 ~23:40 — ROM nueva flasheada en la SD: `c640645d810c` (GUI e294229dd32d)
 
 **Qué se hizo:** build de la ROM con todo lo mergeado (HEAD `223b30a`, incluye `fe67ded` = issue #117) y
 **flasheo de la SD**, porque los dos intentos de deploy por WiFi fallaron (el script quedó colgado y el
@@ -136,7 +136,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 **Nota**: el md5 de los primeros 571 MB despues del flasheo es `f1ac0dc42452fde034041319bae59dc2`, distinto
 del de la imagen, **esperado**: se reescribió el MBR (offset 478) para volver a declarar la DATA.
 
-**Pendiente**: poner la SD en la radio y validar (GUI `e294229dd32d`, `init.d`=`S20gui`, barrido de apps, y
+**Pendiente**: poner la SD en la radio y validar (GUI e294229dd32d, `init.d`=`S20gui`, barrido de apps, y
 si el audio arranca — el race del #116 es un bug de código).
 
 ---
