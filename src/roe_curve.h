@@ -3,12 +3,14 @@
  *
  *  Xiegu X6200 LVGL GUI
  *
- *  ROE/SWR scan chart: resample the sweep samples into a smooth curve.
+ *  ROE/SWR scan chart: fit the sweep samples to a parabola and resample that
+ *  single valley into the points the chart draws.
  *
- *  Render-only helper for dialog_swrscan.c (issue #99): the chart used to join
- *  the raw samples with straight segments, which reads as a sawtooth and is not
- *  representative of the antenna. The samples themselves are never touched --
- *  the sweep, the RF and the DSP are out of scope here.
+ *  Render-only helper for dialog_swrscan.c. #99 drew a Catmull-Rom spline that
+ *  passed through every sample (noise included) and read as a jagged curve; #113
+ *  (owner's order) replaced it with one clean valley: a least-squares quadratic
+ *  over all the samples. The samples themselves are never touched -- the sweep,
+ *  the RF and the DSP are out of scope here.
  *
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
@@ -18,8 +20,9 @@
 #include <stdbool.h>
 
 /* The chart's y axis spans SWR 1..5 (see calc_y() in dialog_swrscan.c: SWR 1
- * sits at the bottom, SWR 5 at the top). A resampled value is clamped to that
- * range so the smoothing never draws outside the frame; SWR is physically >= 1. */
+ * sits at the bottom, SWR 5 at the top). The parabola runs to infinity at the
+ * ends, so each resampled value is clamped to that range and the curve never
+ * draws outside the frame; SWR is physically >= 1. */
 #define ROE_CURVE_MIN_VALUE 1.0f
 #define ROE_CURVE_MAX_VALUE 5.0f
 
@@ -31,16 +34,29 @@
 /* Number of points roe_curve_resample() writes for `n` input samples. */
 int roe_curve_point_count(int n);
 
+/* Least-squares quadratic fit of the sweep samples: y = a*x^2 + b*x + c, with x
+ * in sample units (0 .. n-1). This is the shape roe_curve_resample() draws.
+ *
+ * Ordinary least squares over ALL the samples (not a robust fit): it is the
+ * stable, closed-form choice for a noisy sweep, and every sample weighs the
+ * same. Only +,-,*,/ are used, so this file stays free of math.h (it compiles in
+ * the native stage, the firmware and the UI harness as they are today).
+ *
+ * Returns false when n < 3 (no parabola: roe_curve_resample() then draws the
+ * straight line through the samples) and leaves a, b, c untouched.
+ *
+ * Deterministic: the same input always yields the same coefficients. */
+bool roe_curve_quadratic_fit(const float *in, int n, float *a, float *b, float *c);
+
 /* Resample `n` samples of `in` into `out`, which must hold at least
  * roe_curve_point_count(n) floats.
  *
- * The curve is a uniform Catmull-Rom cubic through the samples, evaluated at a
- * fixed step, so every sample stays an exact knot of the curve: the first and
- * last samples and the local minima (the antenna resonances) are preserved.
- * Each interpolated point is clamped to the value range of the two samples that
- * bracket it, which removes Catmull-Rom's overshoot: the curve never invents a
- * dip below a resonance nor a peak above a sample. Values are additionally
- * clamped to [ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE].
+ * The curve is the least-squares parabola of the samples, evaluated at a fixed
+ * step (~2 px on the panel): one clean valley instead of a spline that follows
+ * every sample. Each point is clamped to [ROE_CURVE_MIN_VALUE,
+ * ROE_CURVE_MAX_VALUE], which clips the parabola's ends to the chart's ceiling.
+ * The measured minimum (the resonance the operator is after) is read off the
+ * samples, never off this curve -- the fit is the drawn shape only.
  *
  * Deterministic: the same input always yields the same output. */
 void roe_curve_resample(const float *in, int n, float *out);

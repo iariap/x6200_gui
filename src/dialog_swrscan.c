@@ -232,11 +232,12 @@ static void draw_cb(lv_event_t * e) {
         lv_draw_label(draw_ctx, &dsc_label, &area, str, NULL);
     }
 
-    /* Chart: the same samples, resampled into a smooth Catmull-Rom curve so the
-     * zigzag of the sampling is not read as the antenna's response (issue #99).
-     * Render only: data_filtered is untouched, and the local minima (the
-     * resonances) stay exact knots of the curve. The samples keep the x they
-     * had (i / (OVERSAMPLE * STEPS) * w); only the segments between them bend. */
+    /* Chart: the same samples, fitted to a single parabola so the zigzag of the
+     * sampling is not read as the antenna's response (issue #113, replacing the
+     * Catmull-Rom spline of #99). Render only: data_filtered is untouched and
+     * the samples keep the x they had (i / (OVERSAMPLE * STEPS) * w); the drawn
+     * shape is the least-squares valley of the sweep. The minimum the operator
+     * reads is the measured sample, not the fit's vertex. */
 
     static float curve[(STEPS - 1) * ROE_CURVE_OVERSAMPLE + 1];
 
