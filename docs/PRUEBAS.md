@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 15/10 ~21:45 | `2c02321cc5ff` (sin cambios) | `5e252df` | OK entrada (verifica se cuelga) | **23 ok** | 0 en el barrido y 0 en 90 s | **Sano**: 1 GUI, mismo pid, 0 CRASHLOG. El barrido **ya no cambia el modo/dial** (la última app, `SWRScan`, ahora los restaura por el fix del #96) → #94 no se reproduce. Sigue el CPU ~108% (#91) |
 | 15/10 ~21:30 | **`2c02321cc5ff`** (build del clon) | `ed5b01e` | (pendiente) | no se corrió | 0 en las pruebas | **#84 y #85 validados** en la radio (modo/frecuencia/potencia restaurados, sin crash, pid estable). **Sale el #99**: el barrido arranca pero el gráfico queda vacío (10,82% constante a 10..50 s) |
 | 15/10 ~21:10 | imagen `cb2da072b7b0` (sin cambios) | `e37db08` | (no corrido) | no se corrió | (no se corrió) | **Sin desplegar (2ª)**: el volumen sigue con el A/B del otro agente (26 contenedores, con su sello de fuentes). Se validó la herramienta nueva del #86: gate fail-closed, positivo con el firmware de la imagen y negativo con un archivo chico |
 | 15/10 ~20:40 | imagen `cb2da072b7b0` (sin cambios) | `ed5b01e` (4 merges) | (no corrido) | no se corrió | 0 en 90 s | **Sin desplegar**: llegaron #96 (#84/#85, en `src/`), #97 (temas v2), #98 (gate del #86, en `tools/`) pero el volumen lo tiene el otro agente. La radio sigue sana (1 GUI, pid estable, 0 CRASHLOG) |
