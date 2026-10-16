@@ -367,15 +367,38 @@ void scenario_settle(const scenario_t *scenario)
         lv_group_focus_next(keyboard_group);
     }
 
+    if (!strcmp(scenario->screen, "settings-home")) {
+        /* El dialogo abre en su PRIMER grupo, que con el orden por utilidad del issue #109 es
+         * Operation; esta fixture mide la fila de fecha/hora (grupo Clock), asi que salta ahi
+         * como el usuario: `buttons_press(3)` es el tab "Clock" de la pagina 1 y llama a
+         * settings_goto() (scroll + foco), que deja la fila Day/Month/Year arriba de la vista
+         * igual que cuando Clock era el primer grupo. */
+        if (!label_on_screen(lv_scr_act(), "Clock")) {
+            fprintf(stderr,
+                    "settings-home: no hay tab 'Clock' en la barra de abajo (¿se reordenaron "
+                    "los tabs?)\n");
+            exit(1);
+        }
+        buttons_press(3, false);    /* page 1, index 3: tab "Clock" */
+
+        /* Lo que esta fixture *significa*: la fila de fecha (con el reloj deterministico del
+         * arnes) esta a la vista. Codificado: si el grupo Clock se mueve, el arnes corta en vez
+         * de capturar otra pantalla y reportar verde. */
+        if (!label_on_screen(lv_scr_act(), "Day, Month, Year")) {
+            fprintf(stderr,
+                    "settings-home: la fila 'Day, Month, Year' no quedo en pantalla despues del "
+                    "tab Clock (¿se movio el grupo?)\n");
+            exit(1);
+        }
+    }
+
     if (!strcmp(scenario->screen, "settings-wfbat")) {
-        /* Jump to the Spectrum/waterfall group the way the user does: the
-         * bottom bar's "Mas >" loads page 2 and its "Espectro" tab calls
-         * settings_goto(), which scrolls the grid and moves the focus
-         * (src/dialog_settings.c). Runs after the timers so the grid layout is
-         * already computed; both callbacks request LV_ANIM_OFF, so the resulting
-         * scroll is immediate and deterministic. */
-        buttons_press(4, false);    /* page 1, index 4: "Mas >"  */
-        buttons_press(0, false);    /* page 2, index 0: "Espectro" */
+        /* Jump to the Spectrum/waterfall group the way the user does: `buttons_press(2)` is
+         * the page 1 "Spectrum" tab, which calls settings_goto() to scroll the grid and move
+         * the focus (src/dialog_settings.c). Runs after the timers so the grid layout is
+         * already computed; the callback requests LV_ANIM_OFF, so the resulting scroll is
+         * immediate and deterministic. */
+        buttons_press(2, false);    /* page 1, index 2: "Spectrum" */
 
         /* The presses are positional, and what this fixture *means* is that the
          * Spectrum/waterfall group's row is the one on screen now. Codified
@@ -392,11 +415,11 @@ void scenario_settle(const scenario_t *scenario)
 
     if (!strcmp(scenario->screen, "settings-perfil")) {
         /* La fila nueva vive en el grupo Apariencia (UI-08 incr. 5). Se salta
-         * como el usuario: `buttons_press(4)` carga la pagina 2 con "Mas >" y
-         * `buttons_press(2)` es el tab "Apariencia", que llama a settings_goto()
+         * como el usuario: `buttons_press(4)` carga la pagina 2 con "More >" y
+         * `buttons_press(1)` es el tab "Appearance", que llama a settings_goto()
          * (scroll + foco). El grupo entra entero en el viewport. */
-        buttons_press(4, false);    /* page 1, index 4: "Mas >"      */
-        buttons_press(2, false);    /* page 2, index 2: "Apariencia" */
+        buttons_press(4, false);    /* page 1, index 4: "More >"      */
+        buttons_press(1, false);    /* page 2, index 1: "Appearance" */
 
         /* Lo que esta fixture *significa*: el perfil VIGENTE que muestra la
          * etiqueta sale del automatico con la bateria del fixture (11.2 V ->
@@ -412,7 +435,7 @@ void scenario_settle(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "settings-audio")) {
-        /* La pagina Ajustes -> Audio: el tab "Audio" es el indice 3 de la pagina 1 de la
+        /* La pagina Ajustes -> Audio: el tab "Audio" es el indice 1 de la pagina 1 de la
          * barra de tabs (src/dialog_settings.c, tabs_pagina_1) y llama a settings_goto(),
          * que scrollea la grilla hasta el grupo y le mueve el foco. */
         if (!label_on_screen(lv_scr_act(), "Audio")) {
@@ -421,7 +444,7 @@ void scenario_settle(const scenario_t *scenario)
                     "los tabs?)\n");
             exit(1);
         }
-        buttons_press(3, false);    /* page 1, index 3: tab "Audio" */
+        buttons_press(1, false);    /* page 1, index 1: tab "Audio" */
 
         /* Lo que esta fixture *significa*: la fila "Play,Rec gain" (los dos sliders de
          * ganancia) esta a la vista en el grupo Audio. Codificado: si el grupo o la fila se

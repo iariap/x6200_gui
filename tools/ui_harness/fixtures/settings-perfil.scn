@@ -1,10 +1,10 @@
 # settings-perfil: the real main screen with the firmware's real Ajustes window
-# open, scrolled to the Apariencia group, where the new "Visual profile" row lives
+# open, scrolled to the Appearance group, where the new "Visual profile" row lives
 # (UI-08 incremento 5). The path is the firmware's own
 # (main_screen_action(ACTION_APP_SETTINGS) -> dialog_construct -> dialog_settings.c)
 # and the fixture jumps to the group exactly as the user does: `buttons_press(4)`
-# loads page 2 through the "Mas >" button and `buttons_press(2)` presses its
-# "Apariencia" tab, which calls settings_goto() (scroll + focus). See src/screens.c
+# loads page 2 through the "More >" button and `buttons_press(1)` presses its
+# "Appearance" tab, which calls settings_goto() (scroll + focus). See src/screens.c
 # (scenario_settle).
 #
 # The battery is 11.2 V without an external source, so the visual policy decides

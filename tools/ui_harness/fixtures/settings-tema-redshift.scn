@@ -1,7 +1,7 @@
 # settings-tema-redshift: the real Ajustes window under the shipped "Redshift"
-# theme, scrolled to the Apariencia group (the same path and state as
+# theme, scrolled to the Appearance group (the same path and state as
 # settings-perfil: main_screen_action(ACTION_APP_SETTINGS) -> dialog_construct ->
-# dialog_settings.c, then "Mas >" + "Apariencia"). The theme is the only
+# dialog_settings.c, then "More >" + "Appearance"). The theme is the only
 # variable, so the dialog, panel, row and label roles of Redshift are measured on
 # a real render.
 

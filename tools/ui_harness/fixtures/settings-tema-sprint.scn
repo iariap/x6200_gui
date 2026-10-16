@@ -1,7 +1,7 @@
 # settings-tema-sprint: the real Ajustes window under the shipped "Sprint" theme,
-# scrolled to the Apariencia group (the "Visual profile" row), which is the same
+# scrolled to the Appearance group (the "Visual profile" row), which is the same
 # real path as settings-perfil (main_screen_action(ACTION_APP_SETTINGS) ->
-# dialog_construct -> src/dialog_settings.c, then "Mas >" + the "Apariencia" tab,
+# dialog_construct -> src/dialog_settings.c, then "More >" + the "Appearance" tab,
 # which calls settings_goto(): scroll + focus) with the theme as the only
 # variable.
 #

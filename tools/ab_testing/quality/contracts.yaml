@@ -409,6 +409,42 @@ expected_changes:
     author: waterfall-width-outdoor
     until: 2027-03-31
 
+  # AB-SETEN109 (issue #109, orden del owner): los tabs de Ajustes pasan a
+  # ingles de ham radio y se reordenan por utilidad para hacer contactos. Dos
+  # regiones se mueven: la barra de tabs (labels + orden) y el cuerpo del
+  # dialogo de la fixture `settings-home`, que ahora navega al grupo Clock con
+  # el tab (el dialogo abre en Operation, el primero del orden nuevo).
+  - region: botones
+    reason: >
+      AB-SETEN109 (issue #109): la barra de tabs de Ajustes (src/dialog_settings.c,
+      tabs_items/tabs_pagina_1/2) rotula en ingles de ham radio (Reloj->Clock,
+      Pantalla->Display, Espectro->Spectrum, Operacion->Operation,
+      Apariencia->Appearance, Acciones->Actions, Mas >->More >, < Mas->< More) y se
+      reordena por utilidad QSO (Operation, Audio, Spectrum, Clock, Display,
+      Appearance, Actions, Info). La barra redibuja cada boton en TODAS las
+      fixtures que abren Ajustes (settings-home/-wfbat/-perfil/-audio/-tema-*).
+      Ademas `settings-wfbat` deja de pasar por "More >": su grupo (Spectrum) ahora
+      es el tab indice 2 de la pagina 1, asi que la barra queda en la pagina 1 y no
+      en la 2 — mismo contenido en pantalla, barra distinta.
+    author: seten109
+    until: 2027-03-31
+
+  - region: ajustes_dialogo
+    reason: >
+      AB-SETEN109 (issue #109): el dialogo de Ajustes abre en su PRIMER grupo, que
+      con el orden nuevo es Operation; la fixture `settings-home` mide la fila de
+      fecha/hora (grupo Clock) y ahora llega ahi como el usuario, con el tab
+      `buttons_press(3)` -> settings_goto(), que scrollea la grilla para dejar la
+      primera fila del grupo arriba del viewport. La apertura vieja quedaba en
+      scroll 0 (el padding superior de la grilla a la vista), asi que el contenido
+      entero del dialogo se corre ~19 px: es un movimiento del CUERPO del dialogo,
+      dentro de `ajustes_dialogo`, y no de una fila. Las otras fixtures de Ajustes
+      ya navegaban con settings_goto (settings-wfbat/-perfil/-audio/-tema-*) y
+      conservan su contenido: su unico cambio esta en `botones`. Los demas fixtures
+      de la suite quedan byte-identicos.
+    author: seten109
+    until: 2027-03-31
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.

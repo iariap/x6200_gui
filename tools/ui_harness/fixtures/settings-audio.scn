@@ -2,7 +2,7 @@
 # real main screen. Same real path as the other settings fixtures
 # (main_screen_action(ACTION_APP_SETTINGS) -> dialog_construct ->
 # src/dialog_settings.c); the fixture then presses the "Audio" tab of the bottom
-# bar (page 1, index 3), which calls settings_goto() to scroll the grid to the
+# bar (page 1, index 1), which calls settings_goto() to scroll the grid to the
 # group and move the focus there. The group holds, in order, the "Line-in,
 # Line-out" row, the "Play,Rec gain" row (the two sliders this fixture is
 # about), "Audio enhance", SP mode and the voice rows.

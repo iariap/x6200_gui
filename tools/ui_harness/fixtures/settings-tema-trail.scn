@@ -1,7 +1,7 @@
 # settings-tema-trail: the real Ajustes window under the shipped "Trail" theme,
-# scrolled to the Apariencia group (the same path and state as settings-perfil:
+# scrolled to the Appearance group (the same path and state as settings-perfil:
 # main_screen_action(ACTION_APP_SETTINGS) -> dialog_construct -> dialog_settings.c,
-# then "Mas >" + "Apariencia"). The theme is the only variable, so the dialog,
+# then "More >" + "Appearance"). The theme is the only variable, so the dialog,
 # panel, row and label roles of Trail are measured on a real render.
 
 name settings-tema-trail

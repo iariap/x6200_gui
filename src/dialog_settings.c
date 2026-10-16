@@ -88,15 +88,21 @@ static void key_cb(lv_event_t * e);
  * La fila de botones de abajo estaba vacia: los 25 ajustes se recorrian con la perilla. Ahora
  * estan agrupados por tema y cada grupo tiene su boton, que salta a la seccion (la vista y el foco
  * viajan juntos). Son 8, asi que van en dos paginas de 4 mas el boton de pagina: la fila admite 5
- * (docs/HALLAZGOS.md 31). */
+ * (docs/HALLAZGOS.md 31).
+ *
+ * El ORDEN es por utilidad para hacer contactos (issue #109): primero lo que se toca mientras se
+ * opera (Operation, Audio, Spectrum, Clock), despues lo ergonomico (Display, Appearance, Actions) y
+ * al final lo eventual (Info). El enum, `tabs_items`, las dos paginas y el armado de la grilla
+ * (construct_cb) van todos en ese orden, que es el que se ve en la barra. Los labels van en ingles
+ * de ham radio (issue #109); el porque de cada uno, en docs/settings-order.md. */
 enum {
-    GRP_RELOJ, GRP_PANTALLA, GRP_INFO, GRP_AUDIO,
-    GRP_ESPECTRO, GRP_OPERACION, GRP_APARIENCIA, GRP_ACCIONES, GRP_COUNT
+    GRP_OPERACION, GRP_AUDIO, GRP_ESPECTRO, GRP_RELOJ,
+    GRP_PANTALLA, GRP_APARIENCIA, GRP_ACCIONES, GRP_INFO, GRP_COUNT
 };
 
 static uint16_t     grp_primero[GRP_COUNT];   /* primer hijo del grupo dentro del grid */
 static uint16_t     grp_ultimo[GRP_COUNT];
-static uint8_t      grp_actual = GRP_RELOJ;
+static uint8_t      grp_actual = GRP_OPERACION;
 
 static void settings_goto(uint8_t g);
 static void tabs_marks(void);
@@ -104,40 +110,40 @@ static void tabs_marks(void);
 /* Cada tab salta a su grupo. button_item_t.press recibe el item, asi que cada uno necesita su
  * propia funcion (una macro para no escribir ocho iguales). */
 #define TAB_CB(nombre, g) static void nombre(button_data_t *d) { (void) d; settings_goto(g); }
-TAB_CB(tab_reloj_cb,      GRP_RELOJ)
-TAB_CB(tab_pantalla_cb,   GRP_PANTALLA)
-TAB_CB(tab_info_cb,       GRP_INFO)
+TAB_CB(tab_operacion_cb,  GRP_OPERACION)
 TAB_CB(tab_audio_cb,      GRP_AUDIO)
 TAB_CB(tab_espectro_cb,   GRP_ESPECTRO)
-TAB_CB(tab_operacion_cb,  GRP_OPERACION)
+TAB_CB(tab_reloj_cb,      GRP_RELOJ)
+TAB_CB(tab_pantalla_cb,   GRP_PANTALLA)
 TAB_CB(tab_apariencia_cb, GRP_APARIENCIA)
 TAB_CB(tab_acciones_cb,   GRP_ACCIONES)
+TAB_CB(tab_info_cb,       GRP_INFO)
 #undef TAB_CB
 
 static void tab_mas_cb(button_data_t *d);
 static void tab_menos_cb(button_data_t *d);
 
-static button_data_t tab_reloj      = { .type = BTN_TEXT, .label = "Reloj",      .press = tab_reloj_cb };
-static button_data_t tab_pantalla   = { .type = BTN_TEXT, .label = "Pantalla",   .press = tab_pantalla_cb };
-static button_data_t tab_info       = { .type = BTN_TEXT, .label = "Info",       .press = tab_info_cb };
+static button_data_t tab_operacion  = { .type = BTN_TEXT, .label = "Operation",  .press = tab_operacion_cb };
 static button_data_t tab_audio      = { .type = BTN_TEXT, .label = "Audio",      .press = tab_audio_cb };
-static button_data_t tab_espectro   = { .type = BTN_TEXT, .label = "Espectro",   .press = tab_espectro_cb };
-static button_data_t tab_operacion  = { .type = BTN_TEXT, .label = "Operacion",  .press = tab_operacion_cb };
-static button_data_t tab_apariencia = { .type = BTN_TEXT, .label = "Apariencia", .press = tab_apariencia_cb };
-static button_data_t tab_acciones   = { .type = BTN_TEXT, .label = "Acciones",   .press = tab_acciones_cb };
-static button_data_t tab_mas        = { .type = BTN_TEXT, .label = "Mas >",      .press = tab_mas_cb };
-static button_data_t tab_menos      = { .type = BTN_TEXT, .label = "< Mas",      .press = tab_menos_cb };
+static button_data_t tab_espectro   = { .type = BTN_TEXT, .label = "Spectrum",   .press = tab_espectro_cb };
+static button_data_t tab_reloj      = { .type = BTN_TEXT, .label = "Clock",      .press = tab_reloj_cb };
+static button_data_t tab_pantalla   = { .type = BTN_TEXT, .label = "Display",    .press = tab_pantalla_cb };
+static button_data_t tab_apariencia = { .type = BTN_TEXT, .label = "Appearance", .press = tab_apariencia_cb };
+static button_data_t tab_acciones   = { .type = BTN_TEXT, .label = "Actions",    .press = tab_acciones_cb };
+static button_data_t tab_info       = { .type = BTN_TEXT, .label = "Info",       .press = tab_info_cb };
+static button_data_t tab_mas        = { .type = BTN_TEXT, .label = "More >",     .press = tab_mas_cb };
+static button_data_t tab_menos      = { .type = BTN_TEXT, .label = "< More",     .press = tab_menos_cb };
 
 static button_item_t *tabs_items[GRP_COUNT] = {
-    &tab_reloj, &tab_pantalla, &tab_info, &tab_audio,
-    &tab_espectro, &tab_operacion, &tab_apariencia, &tab_acciones,
+    &tab_operacion, &tab_audio, &tab_espectro, &tab_reloj,
+    &tab_pantalla, &tab_apariencia, &tab_acciones, &tab_info,
 };
 
 static buttons_page_t tabs_pagina_1 = {
-    .items = { &tab_reloj, &tab_pantalla, &tab_info, &tab_audio, &tab_mas }
+    .items = { &tab_operacion, &tab_audio, &tab_espectro, &tab_reloj, &tab_mas }
 };
 static buttons_page_t tabs_pagina_2 = {
-    .items = { &tab_espectro, &tab_operacion, &tab_apariencia, &tab_acciones, &tab_menos }
+    .items = { &tab_pantalla, &tab_apariencia, &tab_acciones, &tab_info, &tab_menos }
 };
 
 static void tab_mas_cb(button_data_t *d)   { (void) d; buttons_load_page(&tabs_pagina_2); tabs_marks(); }
@@ -2142,51 +2148,11 @@ static void construct_cb(lv_obj_t *parent) {
     memcpy(&ts, t, sizeof(ts));
 
     /* Los grupos siguen el orden de los tabs (grp_primero/grp_ultimo guardan los indices del
-     * grid con los que el tab salta a la seccion). */
+     * grid con los que el tab salta a la seccion): por utilidad para hacer contactos (issue
+     * #109). El primer grupo no lleva delimitador; los demas, si. */
     uint16_t n;
 
-    /* 1. Reloj */
-    n = lv_obj_get_child_cnt(grid);
-    row = make_date(row);
-    row = make_time(row);
-    row = make_clock(row);
-    grp_primero[GRP_RELOJ] = n;      grp_ultimo[GRP_RELOJ] = lv_obj_get_child_cnt(grid);
-
-    /* 2. Pantalla */
-    row = make_delimiter(row);
-    n = lv_obj_get_child_cnt(grid);
-    row = make_backlight(row);
-    row = make_smeter(row);
-    row = make_band_plan(row);
-    grp_primero[GRP_PANTALLA] = n;   grp_ultimo[GRP_PANTALLA] = lv_obj_get_child_cnt(grid);
-
-    /* 3. Info */
-    row = make_delimiter(row);
-    n = lv_obj_get_child_cnt(grid);
-    row = make_mag(row);
-    grp_primero[GRP_INFO] = n;       grp_ultimo[GRP_INFO] = lv_obj_get_child_cnt(grid);
-
-    /* 4. Audio */
-    row = make_delimiter(row);
-    n = lv_obj_get_child_cnt(grid);
-    row = make_line_gain(row);
-    row = make_audio_gain(row);
-    row = make_audio_enh(row);
-    row = make_sp_mode(row);
-    row = make_voice(row);
-    grp_primero[GRP_AUDIO] = n;      grp_ultimo[GRP_AUDIO] = lv_obj_get_child_cnt(grid);
-
-    /* 5. Espectro */
-    row = make_delimiter(row);
-    n = lv_obj_get_child_cnt(grid);
-    row = make_auto(row);
-    row = make_waterfall_line_zoom(row);
-    row = make_waterfall_smooth_scroll(row);
-    row = make_waterfall_battery(row);
-    grp_primero[GRP_ESPECTRO] = n;   grp_ultimo[GRP_ESPECTRO] = lv_obj_get_child_cnt(grid);
-
-    /* 6. Operacion */
-    row = make_delimiter(row);
+    /* 1. Operation */
     n = lv_obj_get_child_cnt(grid);
     row = make_freq_accel(row);
     row = make_bluetooth(row);
@@ -2197,7 +2163,42 @@ static void construct_cb(lv_obj_t *parent) {
         row = make_transverter(row, i);
     grp_primero[GRP_OPERACION] = n;  grp_ultimo[GRP_OPERACION] = lv_obj_get_child_cnt(grid);
 
-    /* 7. Apariencia */
+    /* 2. Audio */
+    row = make_delimiter(row);
+    n = lv_obj_get_child_cnt(grid);
+    row = make_line_gain(row);
+    row = make_audio_gain(row);
+    row = make_audio_enh(row);
+    row = make_sp_mode(row);
+    row = make_voice(row);
+    grp_primero[GRP_AUDIO] = n;      grp_ultimo[GRP_AUDIO] = lv_obj_get_child_cnt(grid);
+
+    /* 3. Spectrum */
+    row = make_delimiter(row);
+    n = lv_obj_get_child_cnt(grid);
+    row = make_auto(row);
+    row = make_waterfall_line_zoom(row);
+    row = make_waterfall_smooth_scroll(row);
+    row = make_waterfall_battery(row);
+    grp_primero[GRP_ESPECTRO] = n;   grp_ultimo[GRP_ESPECTRO] = lv_obj_get_child_cnt(grid);
+
+    /* 4. Clock */
+    row = make_delimiter(row);
+    n = lv_obj_get_child_cnt(grid);
+    row = make_date(row);
+    row = make_time(row);
+    row = make_clock(row);
+    grp_primero[GRP_RELOJ] = n;      grp_ultimo[GRP_RELOJ] = lv_obj_get_child_cnt(grid);
+
+    /* 5. Display */
+    row = make_delimiter(row);
+    n = lv_obj_get_child_cnt(grid);
+    row = make_backlight(row);
+    row = make_smeter(row);
+    row = make_band_plan(row);
+    grp_primero[GRP_PANTALLA] = n;   grp_ultimo[GRP_PANTALLA] = lv_obj_get_child_cnt(grid);
+
+    /* 6. Appearance */
     row = make_delimiter(row);
     n = lv_obj_get_child_cnt(grid);
     row = make_theme(row);
@@ -2205,19 +2206,25 @@ static void construct_cb(lv_obj_t *parent) {
     row = make_visual_profile(row);
     grp_primero[GRP_APARIENCIA] = n; grp_ultimo[GRP_APARIENCIA] = lv_obj_get_child_cnt(grid);
 
-    /* 8. Acciones */
+    /* 7. Actions */
     row = make_delimiter(row);
     n = lv_obj_get_child_cnt(grid);
     row = make_long_action(row);
     row = make_hmic_action(row);
     grp_primero[GRP_ACCIONES] = n;   grp_ultimo[GRP_ACCIONES] = lv_obj_get_child_cnt(grid);
 
+    /* 8. Info */
+    row = make_delimiter(row);
+    n = lv_obj_get_child_cnt(grid);
+    row = make_mag(row);
+    grp_primero[GRP_INFO] = n;       grp_ultimo[GRP_INFO] = lv_obj_get_child_cnt(grid);
+
     row = make_delimiter(row);
 
     row_dsc[row] = LV_GRID_TEMPLATE_LAST;
     lv_obj_set_grid_dsc_array(grid, col_dsc, row_dsc);
 
-    grp_actual = GRP_RELOJ;
+    grp_actual = GRP_OPERACION;
     tabs_marks();
 
     for (uint8_t g = 0; g < GRP_COUNT; g++)

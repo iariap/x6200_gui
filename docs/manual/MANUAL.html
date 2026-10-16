@@ -383,12 +383,18 @@ parámetros</h2>
 secciones</strong> y la fila de botones de abajo son
 <strong>tabs</strong>: cada botón salta a su sección, que queda arriba
 de todo y con el foco en su primer campo. El tab en el que estás queda
-marcado.</p>
+marcado. Los nombres de los tabs están en <strong>inglés de ham
+radio</strong> (<code>Clock</code>, <code>Display</code>,
+<code>Spectrum</code>…): es el idioma de la terminología del equipo.</p>
 <p>Son 8 tabs y en la fila entran 4 más el botón de página, así que hay
 dos páginas: la primera tiene
-<code>Reloj · Pantalla · Info · Audio · Mas &gt;</code> y la segunda
-<code>Espectro · Operacion · Apariencia · Acciones · &lt; Mas</code>. El
-botón de la punta pasa a la otra página de tabs.</p>
+<code>Operation · Audio · Spectrum · Clock · More &gt;</code> y la
+segunda <code>Display · Appearance · Actions · Info · &lt; More</code>.
+El botón de la punta pasa a la otra página de tabs.</p>
+<p><strong>El orden es por utilidad para hacer contactos</strong>:
+primero lo que se toca mientras se opera, después lo ergonómico y al
+final lo eventual. El detalle de cada decisión está en
+<code>docs/settings-order.md</code>.</p>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -404,23 +410,11 @@ botón de la punta pasa a la otra página de tabs.</p>
 </thead>
 <tbody>
 <tr>
-<td><strong>Reloj</strong></td>
-<td>Day, Month, Year / Hour, Min, Sec / Clock view / Timeout Clock,
-Power, TX</td>
-<td>Hora UTC de los decodificados (también la ajusta el NTP si hay red)
-y qué muestra el reloj</td>
-</tr>
-<tr>
-<td><strong>Pantalla</strong></td>
-<td>Timeout, Brightness / Buttons brightness / S-meter needle / Band
-plan</td>
-<td>Apagado automático, brillo de pantalla y de botones, aguja del
-S-meter y plan de banda</td>
-</tr>
-<tr>
-<td><strong>Info</strong></td>
-<td>Mag Freq, Info, ALC</td>
-<td>Qué muestra cada zona de la barra superior</td>
+<td><strong>Operation</strong></td>
+<td>Freq acceleration / Charger / Cluster column / Bluetooth /
+Discoverable (CAT) / Devices / wfview server / Transverter</td>
+<td>Aceleración del dial, cargador, columna del clúster, Bluetooth y su
+panel de dispositivos, servidor wfview y transverter</td>
 </tr>
 <tr>
 <td><strong>Audio</strong></td>
@@ -430,31 +424,43 @@ Voice mode, rate, pitch, volume</td>
 anuncios de voz</td>
 </tr>
 <tr>
-<td><strong>Espectro</strong></td>
+<td><strong>Spectrum</strong></td>
 <td>Spectrum auto min, max / Waterfall auto min, max / Waterfall line,
 zoom / Waterfall smooth scroll / Waterfall battery mode</td>
 <td>Ajuste automático de niveles, líneas y zoom del waterfall,
 desplazamiento suave y ahorro en batería</td>
 </tr>
 <tr>
-<td><strong>Operacion</strong></td>
-<td>Freq acceleration / Charger / Cluster column / Bluetooth /
-Discoverable (CAT) / Devices / wfview server / Transverter</td>
-<td>Aceleración del dial, cargador, columna del clúster, Bluetooth y su
-panel de dispositivos, servidor wfview y transverter</td>
+<td><strong>Clock</strong></td>
+<td>Day, Month, Year / Hour, Min, Sec / Clock view / Timeout Clock,
+Power, TX</td>
+<td>Hora UTC de los decodificados (también la ajusta el NTP si hay red)
+y qué muestra el reloj</td>
 </tr>
 <tr>
-<td><strong>Apariencia</strong></td>
+<td><strong>Display</strong></td>
+<td>Timeout, Brightness / Buttons brightness / S-meter needle / Band
+plan</td>
+<td>Apagado automático, brillo de pantalla y de botones, aguja del
+S-meter y plan de banda</td>
+</tr>
+<tr>
+<td><strong>Appearance</strong></td>
 <td>Theme / Font</td>
 <td>Los <strong>8 temas</strong> y la familia de fuente (se aplican al
 reiniciar)</td>
 </tr>
 <tr>
-<td><strong>Acciones</strong></td>
+<td><strong>Actions</strong></td>
 <td>APP long press / MIC long press</td>
 <td>Asignar acciones a las pulsaciones largas: Screenshot, Screen rec,
 Mute, Voice mode, Battery info, ATT, PRE, ATU, ATU tune, APP Bands y las
 demás apps</td>
+</tr>
+<tr>
+<td><strong>Info</strong></td>
+<td>Mag Freq, Info, ALC</td>
+<td>Qué muestra cada zona de la barra superior</td>
 </tr>
 </tbody>
 </table>
