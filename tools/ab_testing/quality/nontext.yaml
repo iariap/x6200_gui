@@ -63,7 +63,7 @@ objects:
   - name: waterfall_signal
     fixture: main-espectro-agua
     theme: Aurora
-    object: [390, 255, 22, 150]
+    object: [396, 255, 6, 150]
     background: [220, 255, 40, 150]
     min_ratio: 3.0
     where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
