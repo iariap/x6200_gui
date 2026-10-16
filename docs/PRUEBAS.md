@@ -31,6 +31,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
 | 16/10 ~17:30 | `f88813ae85e3` (sin cambios) | `0a7479d` | (no corrido) | (ya corrido) | (sin cambios) | Estable (pid 1099, CRASHLOG 0). **#111 acumula 19.387 overflows** de 20.030 líneas y el ritmo confirmó ser **en ráfagas** (1,0 / 2,1 / 5,9 / 17,6 líneas/s según la ventana). **No pude medir la correlación con el CPU**: 3 intentos fallidos por scripts no-POSIX y `2>/dev/null` que ocultaba el error (anotado en el skill) |
+| 16/10 ~17:30 | **`3604cece0e43`** | `2392624` (#110) | (se cuelga) | **23 ok** | **0 en 90 s** | **Desplegado y sano**: build exit 0 (7 s), gate OK (13.742.964 B, 72 B menos que el anterior = el fix del #110); 1 GUI; barrido 23/0; estado idéntico antes/después; CRASHLOG 0. El #110 (caja del campo de año) **no lo verifiqué** (es visual y profundo en Ajustes). El **#111 persiste** |
 | 16/10 ~17:15 | `f88813ae85e3` (sin cambios) | `7a80645` | (se cuelga) | (ya corrido) | (sin cambios) | Estable (pid 1099, CRASHLOG 0). **#111 en ráfagas**: +1.873 líneas en ~15 min (**100% Overflows**, ~2,1/s de promedio) contra 17,6/s instantáneos medidos antes → el ritmo **varía mucho**, no es un goteo constante. Total acumulado: 13.477 overflows |
 | 16/10 ~17:00 | `f88813ae85e3` (sin cambios) | `cd9bfb3` | (se cuelga) | (ya corrido) | **0 en 60 s** | Sano y estable: 1 GUI (pid 1099), tema `Redshift`, CRASHLOG 0. **#111 sigue activo**: 11.604 de 12.247 líneas (94%) son `Overflow`, ahora a 17,6 líneas/s. El dial está en 7.158, así que **el #99 sigue sin poder validarse** (necesita 7,0-7,03) |
 | 16/10 ~16:50 | `f88813ae85e3` (sin cambios) | `f6bbfca` | (se cuelga) | (ya corrido) | (sin cambios) | **#111: causa raíz leída en el código** — la cola es de 64, la drena `event_obj_check()` **desde el hilo principal** (el que dibuja) y el productor de más ritmo es el **S-meter** (`meter.c:319`, un REFRESH por muestra) → si el hilo está saturado dibujando (~60%, #91) drena más lento y **descarta eventos**. El overflow sigue: 10.434 de 11.077 líneas (94%), ~15/s |
@@ -64,6 +65,40 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 | 15/10 ~14:05 | `5a6e561e502f` | `e5a869b` | TODO OK | (no se corrió) | no medido | **Funciona** para #19/#26/#30/#47 |
 
 ---
+
+---
+
+## 16/10 ~17:30 — `3604cece0e43` (merge `2392624`, issue #110): el campo de año de Ajustes
+
+**Qué se probó:** el merge `2392624` (*"Ajustes: el campo de año con la misma caja que Day/Month"*,
+issue #110), que toca `src/dialog_settings.c`.
+
+**Build y deploy, medido:**
+
+```
+$ make x6200-gui-rebuild        -> exit 0 en 7 s
+$ gate: OK: es el firmware del port (ELF32 ARM, 13742964 B, 3/3 marcas)
+  radio: gui=3604cece0e43 (1 GUI, pid 2889)
+```
+
+El binario pesa **72 B menos** que el anterior (`f88813ae85e3`, 13.743.036 B), consistente con un cambio
+chico de layout.
+
+**Pruebas en la radio:**
+
+```
+  barrido de las 23 apps:  23 ok | 0 caídas   (406 s)
+  estado antes:   7.157640 MHz LSB 40m SSB vol=0 pre=1 att=0
+  estado despues: 7.157640 MHz LSB 40m SSB vol=0 pre=1 att=0     <- IDÉNTICO (fix del #94 andando)
+  vigilancia 90 s: pid 2889 sin cambios, 0 caídas
+  CRASHLOG: 0 (log vivo y el ultimo guardado)
+```
+
+**No verificado**: el fix del #110 es **visual** (el ancho de la caja del campo de año en la pantalla de
+fecha de Ajustes). No navegué hasta ahí, así que **no lo confirmé**: la navegación profunda de Ajustes no
+la hice. Queda para el dueño del cambio o para el owner.
+
+**El #111 sigue**: en el run nuevo, 7.739 de 8.416 lineas (92%) con la firma `Overflow`.
 
 ---
 
