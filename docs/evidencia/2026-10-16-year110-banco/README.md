@@ -103,7 +103,7 @@ y=100..155`): lo único que cambia es el reloj y un valor vivo, no el layout.
 
 El binario **después** es el firmware del port (gate #86: `ELF32 ARM, 13 742 964 B,
 3/3 marcas`) construido desde el fuente `2d911dfd8eef` (esta corrida, `src/` limpio
-en `7c87b8dcd2c8335eb6ed160fa58e3bb5a4686226`). El binario **antes** es el que ya estaba en el volumen compartido
+en `7c87b8dc`). El binario **antes** es el que ya estaba en el volumen compartido
 `x6200-build-output` (el del trunk desplegado, `f88813ae85e3`): **no** se
 reconstruyó desde este worktree, así que su `fuente:` impreso por el script es el
 del árbol actual y **no** corresponde a ese binario (se documenta para no dejar
