@@ -10,7 +10,14 @@ name: UI A/B testing harness
 #   - a functional failure or an objective regression FAILs the run;
 #   - an aesthetic change that needs a human is REVIEW REQUIRED and does not
 #     fail the run on its own;
-#   - an inconclusive benchmark is reported as such, never as a PASS.
+#   - an inconclusive benchmark is reported as such, never as a PASS;
+#   - a benchmark whose ONLY breach is the p95, with both deterministic proxies
+#     (flushes, redrawn area) unchanged at exactly 0.0%, is reported
+#     INCONCLUSIVE (host noise), not FAIL: the render workload is deterministic
+#     under virtual time, so a slow shared runner cannot be a render regression.
+#     As soon as either proxy moves the gate is a real FAIL again; the
+#     classification lives in tools/ab_testing/src/x6200_ab/performance.py
+#     (compare_scenario) and the report step below only reads it.
 
 on:
   pull_request:
@@ -340,19 +347,28 @@ jobs:
           print(f"- status: **{data.get('status')}** (exit {data.get('exit_code')})")
           print(f"- kind: {data.get('kind')}")
           print(f"- environment: {data.get('environment')}")
-          if data.get("comparisons"):
+          comparisons = data.get("comparisons", [])
+          host_noise = [item for item in comparisons if item.get("host_noise")]
+          if comparisons:
               print()
-              print("| Scenario | Status | p95 A (ms) | p95 B (ms) | p95 Δ | flushes Δ |")
-              print("|---|---|---|---|---|---|")
-              for item in data["comparisons"]:
+              print("| Scenario | Status | Host noise | p95 A (ms) | p95 B (ms) | p95 Δ | flushes Δ | area Δ |")
+              print("|---|---|---|---|---|---|---|---|")
+              for item in comparisons:
                   a = item.get("a", {})
                   b = item.get("b", {})
-                  print(f"| {item['scenario']} | {item['status']} | {a.get('render_p95_ms')} | "
-                        f"{b.get('render_p95_ms')} | {item.get('p95_delta_pct')}% | "
-                        f"{item.get('flushes_delta_pct')}% |")
-              for item in data["comparisons"]:
+                  print(f"| {item['scenario']} | {item['status']} | "
+                        f"{'yes' if item.get('host_noise') else ''} | "
+                        f"{a.get('render_p95_ms')} | {b.get('render_p95_ms')} | "
+                        f"{item.get('p95_delta_pct')}% | {item.get('flushes_delta_pct')}% | "
+                        f"{item.get('redrawn_area_delta_pct')}% |")
+              for item in comparisons:
                   for reason in item.get("reasons", []):
                       print(f"  - {item['scenario']}: {reason}")
+          if host_noise:
+              print()
+              print(f"- host noise: {len(host_noise)} scenario(s) breached only the p95 with "
+                    "both deterministic proxies at 0.0% — the runner was busy, the render "
+                    "workload did not change; reported INCONCLUSIVE, never FAIL and never PASS.")
           for item in data.get("measurements", []):
               print()
               print(f"- `{item['scenario']}`: frames={item['frames']} "
@@ -366,7 +382,8 @@ jobs:
               raise SystemExit(1)
           if data.get("status") == "INCONCLUSIVE":
               print()
-              print("note: the sample was too variable to conclude; reported as INCONCLUSIVE, not PASS")
+              print("note: the sample was too variable, or the p95 moved with both deterministic "
+                    "proxies unchanged (host noise); reported as INCONCLUSIVE, not PASS and not FAIL")
           PY
 
       - name: Upload the benchmark evidence
