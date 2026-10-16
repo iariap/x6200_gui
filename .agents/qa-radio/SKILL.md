@@ -56,6 +56,14 @@ El clon tiene `.git` propio (no lo toca nadie) y los submodulos poblados. Verifi
 
 Si hace falta rehacerlo: `rm -rf x6200_qa` y el clone de nuevo (39 s).
 
+**Ojo**: el clon **no trae el remoto `fork`** (en el arbol compartido era local). Hay que agregarlo una vez,
+por HTTPS (el SSH del `origin`/`fork` no tiene acceso):
+
+```bash
+git remote add fork https://github.com/iariap/x6200_gui.git
+git fetch fork
+```
+
 ## Paso 1 — Monitoreo
 
 ```bash
