@@ -1,0 +1,61 @@
+Evidencia del banco — ancho de la linea central del waterfall (issue #92)
+========================================================================
+
+Fecha:      2026-10-15/16 (corrida del banco 23:55–00:01)
+Worktree:   state/worktrees/x6200/banco-evidencia-92  (rama factory/banco-evidencia-92)
+Trunk base: 65cdda6be34ed0ef9c075094291d912c8ec99a36
+            (fork/lu2dsx/x6200-rom; ya contiene el fix de #92, commit 45da382)
+
+
+Que se probo (provenance)
+-------------------------
+binario   /usr/sbin/x6200_gui (chroot .vfix3)   md5 91d9631dc5ce4acd7abd5363fd5bb0da   13738048 B
+          gate fail-closed de #86: "OK: ... es el firmware del port (ELF32 ARM, 13738048 B, 3/3 marcas)"
+fuente    src/ + lvgl/src                       md5 a6f3a3ec51b038a0cd60b4163ae8bb91
+tema      DATA /mnt/themes/Sunlit.json          md5 71dd165b824483ddb75b74cb8d011eb9   (4226 B)
+          == rootfs/usr/share/x6200/themes/Sunlit.json del trunk
+          waterfall_signal_width = 3      panel_border = #14456F
+params.db theme_name = Sunlit
+captura   banco-sunlit-3px.png                  md5 9b6e50d3bac332b6cee1d22e7b4574b3   (800x480)
+
+
+Determinismo
+------------
+Dos corridas independientes del banco -> PNG byte-identicas (mismo md5):
+  banco.png    (1a corrida, RECONSTRUIR=si)  md5 9b6e50d3bac332b6cee1d22e7b4574b3
+  banco-2.png  (2a corrida, RECONSTRUIR=no)  md5 9b6e50d3bac332b6cee1d22e7b4574b3
+
+
+Medicion del ancho (PIL; metodo en README.md)
+---------------------------------------------
+Color de la linea: panel_border * 153/256, aditivo sobre negro
+                   #14456F  ->  0x0b2942 = (11, 41, 66)
+Ventana del waterfall: y = 240..470 (231 filas); corrida contigua que contiene x=399.
+
+  corrida (x0..x1, ancho)     filas
+  x=398..400   ancho = 3 px    214     <- la linea entera
+  x=399..400   ancho = 2 px      3     <- tapada por un widget en el borde
+  x=399..399   ancho = 1 px      2     <- idem
+  (x=399 sin linea)             12     <- tapada por un widget
+
+  filas con la linea visible: 219 / 231
+  anchos presentes: {1, 2, 3}
+  214 filas (93%) = 3 px exactos
+  x del run: 398..400  =>  3 px en el centro (x = 399 +- 1)
+
+
+Contraste: el defecto que esto cierra (DATA vieja)
+--------------------------------------------------
+Con /mnt/themes/Sunlit.json SIN la key (copia vieja de 4193 B: en DATA tiene
+precedencia, y la GUI solo copia los temas si faltan, src/main.c) el tema hereda
+el default waterfall_signal_width = 1 (src/theme.c:138-139). La captura del
+orquestador con esa DATA (2026-10-15 23:15, /tmp/opencode/wf92/banco-sunlit-3px.png
+y -v2.png) mide **1 px** de ancho, en x=400, en 218 / 231 filas.
+
+Con la DATA fresca (este trabajo, los 6 temas v2 del trunk copiados a /mnt/themes):
+0x0b2942 en x=398..400, **3 px**, en 214 / 231 filas.
+
+Corrida:
+  CHROOT=/home/pablo/desa/x6200/.vfix3 \
+  BUILDROOT=/home/pablo/desa/x6200/buildroot_new/AetherX6200Buildroot \
+  RECONSTRUIR=si tools/captura-banco.sh /tmp/opencode/wf92-final/banco.png
