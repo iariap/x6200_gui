@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 16/10 ~18:05 | `3604cece0e43` (sin cambios) | `9b36c0f` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI (pid 2889), CRASHLOG 0, load 0,62. #111: +1.463 en ~10 min (2,4/s). #99: dial 7.158, fuera de rango |
 | 16/10 ~17:55 | `3604cece0e43` (sin cambios) | `026b2f3` | (se cuelga) | (ya corrido) | **0 en 60 s** | Sin novedades: 0 merges, 1 GUI (pid 2889), CRASHLOG 0. **#111**: +1.580 en ~7 min (3,8/s). **Aclaración**: los `app_logs` se **rotan por tamaño** (aparece un log guardado nuevo con el mismo pid) → los 635 archivos **no** son caídas |
 | 16/10 ~17:45 | `3604cece0e43` (sin cambios) | `0dd02f2` | (se cuelga) | (ya corrido) | **0 en 60 s** | Sin novedades: 0 merges, 1 GUI (pid 2889), CRASHLOG 0, load 0,80. **#111**: +702 overflows en ~5 min (2,3/s) — el ritmo varía (18/s en la ventana de 4 min anterior) |
 | 16/10 ~17:35 | `3604cece0e43` (sin cambios) | `b1d48bb` | (se cuelga) | (ya corrido) | (sin cambios) | Estable (pid 2889, CRASHLOG 0). **#111 medido en ventana larga**: +4.447 líneas en 240 s = **18/s, el 100% Overflows**, con la radio en reposo (load 0,84) → es **sostenido**, no ráfagas (corregido en el issue). ~18 eventos/s descartados y ~18 escrituras/s a la SD |
