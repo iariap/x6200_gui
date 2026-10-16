@@ -270,7 +270,7 @@ static void uint8_dropdown_update_cb(lv_event_t * e) {
 
 /* Los temas se aplican al arrancar: cada ventana toma sus colores cuando se construye, asi que
  * se guarda el nombre y la GUI se reinicia (el x6200_daemon la vuelve a lanzar), igual que el
- * X6100. La lista sale de theme_list(): los incorporados mas los JSON de /mnt/themes. */
+ * X6100. La lista sale de theme_list(): los seis temas v2 (#73). */
 static void restart_cb(lv_timer_t *t) {
     (void) t;
     exit(0);        /* el x6200_daemon la vuelve a lanzar con el tema nuevo */
@@ -1816,7 +1816,9 @@ static uint8_t make_theme(uint8_t row) {
     lv_label_set_text(obj, "Theme");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
-    /* La lista real de temas (incorporados + los JSON), no las dos opciones viejas */
+    /* La oferta del selector: los seis temas v2 (theme_list(), src/theme.c, #73).
+     * Un tema guardado que no esté en la lista (un legado, hasta la migración del
+     * #74) no se encuentra y el desplegable cae a la primera opción. */
     {
         char        names[16][32];
         char        opciones[16 * 34];

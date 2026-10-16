@@ -6,7 +6,14 @@ paleta del waterfall.
 
 ## Los que vienen con la ROM
 
-**Incorporados** (tablas en el código, sin archivos):
+Desde el issue #73 el **selector de Ajustes ofrece SOLO los seis temas v2** (Sunlit, Redshift,
+Sprint, Cathode, Trail, Aurora): la colección es la oferta completa del menú. Todo lo demás
+sigue en la ROM y el motor lo carga por nombre —params guardados, fixtures históricas del
+arnés—, pero no tiene entrada en la lista; retirarlo del todo y migrar el valor guardado (al
+default nuevo) es el #74 (acá el default no cambia). Un tema propio de la partición DATA
+tampoco se lista: su archivo se conserva, pero no aparece en el menú.
+
+**Incorporados** (tablas en el código, sin archivos) — ninguno en el selector desde #73:
 
 | Nombre | Qué es |
 |---|---|
@@ -17,17 +24,19 @@ paleta del waterfall.
 | **Legacy** | se conserva pero **no se ofrece** en el menú |
 | **VISION** | los colores de IU1WXY en "antracita cálido": dígitos blancos sobre gris oscuro, naranja para lo encendido, marcos agua |
 
-**Archivos JSON** (migrados del X6100, con sus imágenes):
+**Archivos JSON** (`rootfs/usr/share/x6200/themes/`); sólo los seis v2 entran al selector:
 
-| Tema | Archivo |
-|---|---|
-| **Holo** | `themes/Holo.json` |
-| **Material 3** | `themes/Material 3.json` |
-| **RS** | `themes/RS/theme.json` + los PNG de sus botones (`btn.png`, `bar.png`, `strip.png`, `dialog.png`, `mark.png`, ...) |
-| **Redshift** | `themes/Redshift.json` |
-| **Aurora** | `themes/Aurora.json` |
-| **Trail** | `themes/Trail.json` |
-| **Sprint** | `themes/Sprint.json` |
+| Tema | Archivo | En el selector (#73) |
+|---|---|---|
+| **Sunlit** | `themes/Sunlit.json` | sí |
+| **Redshift** | `themes/Redshift.json` | sí |
+| **Sprint** | `themes/Sprint.json` | sí |
+| **Cathode** | `themes/Cathode.json` | sí |
+| **Trail** | `themes/Trail.json` | sí |
+| **Aurora** | `themes/Aurora.json` | sí |
+| **Holo** | `themes/Holo.json` | no (legado, carga por nombre) |
+| **Material 3** | `themes/Material 3.json` | no (legado, carga por nombre) |
+| **RS** | `themes/RS/theme.json` + los PNG de sus botones (`btn.png`, `bar.png`, `strip.png`, `dialog.png`, `mark.png`, ...) | no (legado, carga por nombre) |
 
 ## El arco del S-meter (`meter_over`) — medido en el equipo, 2026-10-15 (#44)
 
@@ -101,15 +110,95 @@ sin tema.
 
 1. Copiá tu archivo a la partición **DATA**, en `themes/`: `/mnt/themes/Mi tema.json`
    (o `/mnt/themes/Mi tema/theme.json` si trae imágenes al lado).
-2. Aparece como *Mi tema* en la lista de temas, sin reiniciar ni recompilar nada.
+2. Un tema de DATA con el nombre de uno de los seis del selector lo **reemplaza** (el
+   directorio DATA gana sobre la ROM), sin recompilar nada. Un nombre propio —que no sea uno
+   de los seis— **no aparece en el menú** (issue #73): el motor lo carga si algo lo pide por
+   nombre, pero el selector ofrece sólo la colección. Convertirlo en una séptima opción de
+   menú es un cambio de producto, no un archivo suelto.
 
 ## Tests
 
 `tests/native/test_theme.c` prueba los incorporados, la carga de un JSON, el respaldo cuando
 el nombre no existe y —con `X6200_SHIPPED_THEMES` apuntando a `rootfs/usr/share/x6200/themes`—
-que **todos** los temas que vienen con la ROM se listen y carguen, incluido el RS con sus
-imágenes. Si alguno queda afuera, el test falla: es lo que garantiza que estén en el menú del
-equipo y no sólo en la imagen.
+que el **selector ofrezca exactamente los seis v2** (`theme_list()`), que los seis **carguen**
+y que los legados (Holo, Material 3, RS) sigan cargando por nombre pero **no** aparezcan en la
+lista. Si un tema del selector falta, o si un legado se cuela en la lista, el test falla: es lo
+que garantiza la oferta de seis del menú del equipo y no sólo la presencia de los archivos en
+la imagen.
+
+## Sunlit — sol y exteriores (THEMES v2, issue #67)
+
+Tema de **exteriores/día**: fondo **marfil cálido** (`bg #F7F5EB`, `bar #E7E4D8`, `panel #FFFFFF`),
+lecturas en **azul profundo** (`text #162436`, `text_value #162436`, `vfo #03457F`, `text_head
+#053F80`) y **amarillo** para la acción/atención (`btn_active #FFD43B`, `accent #0355A7`, foco
+`#054B9B`). Los roles "fríos" que el esquema hereda del `base` se reescriben en la familia
+cálida/azul para que ningún rol de `Outdoor` se cuele. Fuente **Noto Sans** (`"font": "notosans"`,
+la familia compilada en ROM desde #60, sin descargar nada), **sin** `font_digits` (frecuencia y
+reloj con la familia por defecto). Bordes **firmes** (`radius 2`, `radius_btn 3`, `radius_popup
+4`, `border 2`), sin gradientes (`btn_gradient`/`box_gradient` en `false`), foco sólido y
+`pill_border 2`. El waterfall (`#FFFFFF → #DAEAF3 → #A7CDE5 → #568FBF → #15528A → #102845`) lleva
+el piso de ruido al marfil y la señal al azul profundo.
+
+**Es una meta de diseño, no una garantía medida.** "Alta visibilidad a pleno sol" es la
+intención del tema (fondo claro, contraste alto); el brillo real bajo el sol **no se midió** —
+el arnés y QEMU no demuestran legibilidad al sol ni consumo de energía (LCD con backlight).
+
+**Cobertura de roles.** El archivo escribe **122 de 122 roles** de `src/theme.h` (nada queda
+heredado de `Outdoor`, que es su `base`): `x6200-ab themes` lo reporta como
+`Sunlit (...; base Outdoor): 0/122 roles from the base`. El `base` es `Outdoor`, que **se retira
+del menú** en #74: como el archivo define los 122 roles, la migración de la base no puede
+contradecir ningún rol de Sunlit.
+
+**Alcance real en la pantalla.** El motor de temas JSON colorea los roles que el firmware ya lee:
+el fondo (`bg`), la fila de frecuencia (`text`), los bordes de panel (`panel_border`), la paleta
+del waterfall, los items del info box (`bar`), los switches/sliders de Ajustes
+(`control_border`/`panel`) y el recolor del botón activo/deshabilitado. Las cajas de la barra
+superior (reloj, S-meter), los botones inferiores y el marco de los diálogos todavía se dibujan
+con las imágenes fijas `images/top_*_dark.bin`, `btn_dark.bin` y `dialog_dark.bin`
+(`src/styles.c`, `setup_theme_simple`), así que quedan en el gris azulado del asset en **todos**
+los temas (ver *Limitaciones conocidas del motor* abajo). `theme_shape.radius`, `radius_btn`,
+`btn_gradient`, `box_gradient`, `focus_solid`, `mode_box`, `pill_border`, `mark` e `images` se
+cargan del JSON pero hoy el código no los usa en la pantalla principal: los radios y el borde de
+Sunlit no son un delta respecto de los otros temas en esta revisión.
+
+Pares medidos (WCAG 2.1, sRGB) para los roles de la identidad, todos por encima del umbral:
+
+| Par (fg sobre bg) | Ratio | Mínimo |
+|---|---:|---:|
+| `text` sobre `bg` / `panel` | 14.34 / 15.67 | 4.5 |
+| `text` sobre `bar` / `dialog` | 12.31 / 15.67 | 4.5 |
+| `text` sobre `row` / `chip` | 13.83 / 12.61 | 4.5 |
+| `text_value` sobre `bg` | 14.34 | 4.5 |
+| `text_dim` sobre `bg` | 8.76 | 4.5 |
+| `text_head` sobre `bar` | 8.12 | 4.5 |
+| `btn_text` sobre `btn` | 11.98 | 4.5 |
+| `btn_active_text` sobre `btn_active` | 11.15 | 4.5 |
+| `focus_text` sobre `focus` | 8.45 | 4.5 |
+| `sel_text` sobre `sel_bg` / `near_bg` | 10.83 / 13.67 | 4.5 |
+| `vfo` sobre `vfo_bg` / `side` | 8.43 / 8.43 | 4.5 |
+| `tx` sobre `tx_bg` | 5.55 | 4.5 |
+| `mode_dig` sobre `bar` | 6.18 | 4.5 |
+| `info` / `ok` / `err` / `accent` sobre `panel` | 7.10 / 6.49 / 6.76 / 7.34 | 4.5 |
+| `control_border` sobre `dialog` / `panel` | 5.46 / 5.46 | 3.0 |
+| `bar_border` / `btn_border` / `sel_border` sobre su fondo | 7.81 / 7.67 / 5.85 | 3.0 |
+| `card` sobre `bg` | 9.10 | 3.0 |
+
+`tests/check_wcag.py` mide **128 pares aplicables** a este tema y no reporta **ninguna falla**;
+`x6200-ab themes` (los nueve pares que sólo viven en Ajustes) suma 9/9 OK. En el framework, el
+**no-texto por píxeles** (WCAG 1.4.11) sobre el render dorado del tema
+(`golden/main-tema-sunlit.png` y `-agua`) da el arco `meter_over` del S-meter **3.66:1** y la
+columna de señal del waterfall **8.89:1** (mínimo 3:1), los dos declarados en
+`tools/ab_testing/quality/nontext.yaml`. El arco del S-meter vive sobre la cara de bitmap fija
+(`top_long.bin`, oscura) —por eso `meter_over` de un tema claro es una tinta **clara**,
+`#FFC9B8`— y no sobre el `bg` del tema.
+
+**Capturas por estado.** Las fixtures del arnés que rinden Sunlit (todas con el mismo estado de
+radio que su gemela de otro tema, así el tema es la única variable): `main-tema-sunlit`
+(principal, RX), `main-tema-sunlit-agua` (waterfall en movimiento), `main-tema-sunlit-tx` (TX
+simulado), `main-tema-sunlit-eco` (batería baja + ECO), `bt-dialog-tema-sunlit` (diálogo) y
+`settings-tema-sunlit` (Ajustes, con el foco sobre la fila del tema). La galería ARM real y la
+comparación consolidada contra los otros cinco temas se cierran en el #73 (ver *Galería
+consolidada*).
 
 ## Redshift — operación nocturna (THEMES v2, issue #68)
 
@@ -458,3 +547,57 @@ movimiento), `main-tema-cathode-tx` (TX simulado), `main-tema-cathode-eco` (bate
 del tema). La galería ARM real y la comparación consolidada contra los otros cinco temas se
 cierran en el #73; el selector/default se migra en el #74. El detalle de la corrida está en
 `docs/AB_TESTING.md`.
+
+## Galería consolidada (THEMES v2, issue #73)
+
+Las **hojas de contactos** de la colección completa —los seis temas v2 en el **mismo estado de
+radio**, así el tema es la única variable— viven en
+`docs/evidencia/2026-10-15-themes-integration-73/galeria/` (renders reales del arnés de UI,
+800×480, LVGL 8; no ilustraciones):
+
+| Hoja | Estado | Fixture por tema |
+|---|---|---|
+| `galeria-principal.png` | pantalla principal, RX | `main-tema-<tema>` |
+| `galeria-ajustes.png` | Ajustes → Apariencia, foco en la fila del tema | `settings-tema-<tema>` |
+| `galeria-dialogo.png` | diálogo de app | `bt-dialog-tema-<tema>` |
+| `galeria-tx.png` | TX simulado | `main-tema-<tema>-tx` |
+| `galeria-cascada.png` | waterfall en movimiento | `main-tema-<tema>-agua` |
+| `galeria-eco.png` | batería baja + ECO | `main-tema-<tema>-eco` |
+
+Las compone `tools/galeria-temas.py` (Pillow, sin red) a partir de los renders que deja
+`x6200-ab capture`; el comando exacto está en el README de la carpeta. Cada tema, en una línea:
+Sunlit (día, marfil/azul/amarillo, Noto Sans), Redshift (noche, negro/rojo cálido, Source Sans
+3), Sprint (concurso, marino/ámbar/cian, Roboto Condensed + DSEG14), Cathode (CRT sepia/ámbar,
+IBM Plex Sans + DSEG14), Trail (campo, bosque/oliva/arena, IBM Plex Sans) y Aurora (diario,
+berenjena/lavanda/coral, Inter).
+
+**Los temas no se asocian a ahorro del LCD.** El fondo oscuro no ahorra Wh: el LCD tiene
+backlight, y el brillo real no se mide acá (ni el arnés ni QEMU lo demuestran).
+
+## Limitaciones conocidas del motor (gaps, no del tema)
+
+La revisión actual dibuja algunos roles con assets fijos y deja roles declarados sin uso. No se
+migran en la colección (el epic #66/#73 no lo pide: son refactors de motor aparte); quedan
+documentados acá para que la ficha de un tema no prometa lo que el render no hace.
+
+1. **Bitmaps fijos (`theme_image()` no tiene llamadores).** `src/styles.c`
+   (`setup_theme_simple`) pinta la barra superior (`top_short_dark.bin`, `top_long_dark.bin`,
+   `top_big_dark.bin`), los botones inferiores (`btn_dark.bin`), el marco de los diálogos
+   (`dialog_dark.bin`), los paneles (`panel_dark.bin`) y los mensajes (`msg_dark.bin`,
+   `msg_tiny_dark.bin`) con **imágenes de la ROM, iguales en todos los temas**. Por eso las cajas
+   del reloj/S-meter, la barra de botones y el marco de los diálogos quedan en el gris azulado
+   del asset en los quince temas, y `theme_image()` (el `images` de un tema JSON) se carga pero
+   hoy nunca se dibuja.
+2. **`bp_*` declarados pero no leídos.** Los roles `bp_cw`/`bp_dig`/`bp_ssb`/`bp_bcn`/`bp_text`
+   (`src/theme.h`) están en el esquema y `tests/check_wcag.py` los mide, pero `src/band_plan.c`
+   dibuja la franja del band plan con una paleta **literal** (`{0x3366CC, 0x33AA55, 0x888888,
+   0xCC8800}`, Clase 2 de literales) y elige la etiqueta por luminancia, así que un tema no
+   cambia los colores del band plan todavía.
+3. **La forma declarada no se dibuja.** `theme_shape.radius`/`radius_btn`/`radius_popup`,
+   `btn_gradient`/`box_gradient`, `focus_solid`, `mode_box`, `pill_border`, `mark` e `images` se
+   cargan del JSON pero `src/styles.c` fija `radius 0` y usa el bitmap de la barra: en esta
+   revisión los radios, los gradientes y la caja de modo **no son un delta** entre temas (quedan
+   declarados para el día que esa superficie vuelva a ser del tema).
+
+La migración de estos gaps a un esquema por tema, si se decide, es trabajo de motor con su
+propio issue.

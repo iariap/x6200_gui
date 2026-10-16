@@ -514,10 +514,14 @@ los declara el JSON del arnés. La tabla exacta por componente está en cada JSO
 | Tema RS (JSON + imágenes) | `main-tema-rs` | ✓ | | | |
 | Tema Holo (JSON) | `main-tema-holo` | ✓ | | | |
 | Tema Material 3 (JSON) | `main-tema-material-3` | ✓ | | | |
+| Tema Redshift (JSON, THEMES v2) | `main-tema-redshift`, `main-tema-redshift-agua`, `main-tema-redshift-tx`, `main-tema-redshift-eco`, `settings-tema-redshift`, `bt-dialog-tema-redshift` | ✓ | | | |
+| Tema Sunlit (JSON, THEMES v2) | `main-tema-sunlit`, `main-tema-sunlit-agua`, `main-tema-sunlit-tx`, `main-tema-sunlit-eco`, `settings-tema-sunlit`, `bt-dialog-tema-sunlit` | ✓ | | | |
 | Tema Aurora (JSON, THEMES v2) | `main-tema-aurora`, `main-tema-aurora-agua`, `main-tema-aurora-tx`, `main-tema-aurora-eco`, `settings-tema-aurora`, `bt-dialog-tema-aurora` | ✓ | | | |
 | Tema Trail (JSON, THEMES v2) | `main-tema-trail`, `main-tema-trail-agua`, `main-tema-trail-tx`, `main-tema-trail-eco`, `settings-tema-trail`, `bt-dialog-tema-trail` | ✓ | | | |
 | Tema Sprint (JSON, THEMES v2) | `main-tema-sprint`, `main-tema-sprint-agua`, `main-tema-sprint-tx`, `main-tema-sprint-eco`, `settings-tema-sprint`, `bt-dialog-tema-sprint` | ✓ | | | |
 | Tema Cathode (JSON, THEMES v2) | `main-tema-cathode`, `main-tema-cathode-agua`, `main-tema-cathode-tx`, `main-tema-cathode-eco`, `settings-tema-cathode`, `bt-dialog-tema-cathode` | ✓ | | | |
+| Galería consolidada (THEMES v2, #73) | hojas de contactos de los seis temas × 6 estados (`docs/evidencia/2026-10-15-themes-integration-73/galeria/`) | ✓ (renders reales del arnés, `tools/galeria-temas.py`) | | | |
+| Selector six-only (#73) | `settings-perfil` (fila Theme: el desplegable muestra la oferta) + `tests/native/test_theme.c` (la oferta exacta) | ✓ | | | |
 | Tema VISION | — | | | | ✗ (font scale: hallazgos para #8) |
 | Fuente por tema (Arial en Classic/RS) | `main-tema-classic`, `main-tema-rs` | ✓ | | | |
 | Fuente elegida por el usuario (Roboto/DejaVu/Arial) | — | | | | ✗ (no hay fixture de fuente) |
@@ -3856,3 +3860,56 @@ presupuesto y el bench la declara INCONCLUSIVE, nunca PASS.
 4. **Sin captura ARM**: el banco está reservado y la pasada física (QEMU user-mode con el
    binario real + la pantalla de la radio) se consolida en #73. Nada de este PR afirma brillo,
    energía ni comportamiento en el Cortex-A7.
+
+## 2026-10-15 — Integración THEMES v2: selector six-only, galería y re-baseline (issue #73)
+
+**Qué llegó.** El cierre del epic THEMES v2 (#66): el **selector de Ajustes ofrece sólo los
+seis temas v2** (`theme_list()`, `src/theme.c`), la **galería comparativa** de los seis en seis
+estados, la **re-baseline** de los renders dorados que quedaron viejos, y la deuda documental de
+los temas. La remoción de los legados y la migración del default son el #74.
+
+**Selector six-only.** `theme_list()` dejó de escanear los directorios de temas y devuelve la
+oferta fija (`Sunlit`, `Redshift`, `Sprint`, `Cathode`, `Trail`, `Aurora`). Los legados
+(IU1WXY/Classic/Outdoor/Outdoor-Negative/VISION y los archivos Holo/Material 3/RS) siguen en la
+ROM y el motor los carga por nombre —params guardados, fixtures históricas—, pero no tienen
+entrada en el menú; un tema propio de DATA tampoco se lista. El inventario estático
+(`x6200-ab themes`) refleja el selector: `offered=False` para todo lo que no sea uno de los seis.
+
+El único cambio de píxeles del #73 es la fila **Theme** de `settings-perfil`: con el tema
+guardado por defecto (IU1WXY, un legado sin entrada) el desplegable cae a la primera opción
+ofrecida y muestra `Sunlit`. Es un estado transitorio hasta que el #74 migre el default; la celda
+está declarada en la región nueva `ajustes_tema` de `quality/regions.yaml` +
+`quality/contracts.yaml` (`author: themes-integration-73`), así que el diff se atribuye a la fila
+y no a la banda `espectro` que la contiene.
+
+**Galería.** Las hojas de contactos de los seis temas × 6 estados (principal, Ajustes, diálogo,
+TX, cascada, ECO) viven en `docs/evidencia/2026-10-15-themes-integration-73/galeria/`, compuestas
+por `tools/galeria-temas.py` a partir de los renders del arnés. La tabla está en
+`docs/THEMES.md` (Galería consolidada).
+
+**Re-baseline de renders dorados.** Siete PNG de `tools/ab_testing/golden/` que dibujan con la
+familia por defecto estaban viejos (el kerning de AB-FONTSE movió sus glifos y no se
+re-baselinaron): `main-espectro-agua`, `main-foco`, `main-otro-tema`, `main-tema-outdoor-negative`,
+`main-tema-vision`, `settings-home` y `settings-perfil`. Regenerados en el tip del #73. Los
+objetos que mide el no-texto (arco del S-meter, columna de la cascada, indicador de foco, chips
+del band plan) se pintan con roles y bitmaps, no con la fuente, así que `x6200-ab themes` reporta
+los **mismos ratios** que antes: la medición no cambia, sólo los píxeles debajo.
+
+**Gate A/B (ejecutado).**
+
+```text
+$ uv run x6200-ab compare --a origin/lu2dsx/x6200-rom --b HEAD --experiment-id AB-INT73
+experiment AB-INT73: PASS (exit 0)
+  Functional         PASS   (required) — 71 scenarios captured on both revisions
+  Visual Regression  PASS   (required) — no unexplained visual regressions
+  Quality Contract   PASS   (required) — 741 contract checks passed on the candidate
+  Performance        PASS   (required) — render-cost proxy within budget
+  Hardware           BLOCKED (advisory) — no physical X6200 attached
+  Energy             BLOCKED (advisory) — no power measurement
+```
+
+La única fixture que cambia es `settings-perfil` (868 px, la fila Theme); el resto de las 70
+queda byte-idéntica.
+
+**Sin captura ARM acá**: la pasada del binario real (banco QEMU) está en
+`docs/evidencia/2026-10-15-themes-integration-73/banco/`.

@@ -3,10 +3,10 @@
 
 AGENTS.md dice "Use WCAG coloring" y hasta ahora no habia ningun chequeo: un
 tema podia dejar texto gris sobre fondo gris y nadie se enteraba. Este script
-lee las cuatro paletas incorporadas de src/theme.h, los tres temas JSON que van
-en la imagen (Holo, Material 3, RS) y los dos temas que se arman en src/theme.c
-(VISION y Outdoor-Negative), y mide cada par (color de texto sobre superficie)
-que el codigo realmente dibuja.
+lee las cuatro paletas incorporadas de src/theme.h, los nueve temas JSON que van
+en la imagen (Aurora, Cathode, Holo, Material 3, Redshift, Sprint, Sunlit, Trail
+y RS) y los dos temas que se arman en src/theme.c (VISION y Outdoor-Negative), y
+mide cada par (color de texto sobre superficie) que el codigo realmente dibuja.
 
 No usa nada fuera de la stdlib: la formula es la de WCAG 2.1.
 
@@ -204,7 +204,7 @@ def leer_formas():
 
 
 def armar_paletas(colores):
-    """Las nueve paletas que puede ver el usuario, con su forma, en orden de menu."""
+    """Las quince paletas que sirve la ROM (los seis incorporados y los nueve archivos)."""
     formas = leer_formas()
     acronimo = {
         "IU1WXY": "B_IU1WXY", "Legacy": "B_LEGACY", "Outdoor": "B_OUTDOOR",
@@ -300,7 +300,7 @@ TEXTOS = ["text", "text_value", "text_head", "text_dim"]
 
 # Colors that are NOT roles: literals the UI writes by hand (Clase 2) and the
 # colors the default LVGL theme compiles in (Clase 1). They are the same in the
-# nine themes, so what changes per theme is the surface each one lands on; the
+# fifteen themes, so what changes per theme is the surface each one lands on; the
 # table below only lists the pairs that really fail on some theme.
 #
 # Los de LVGL salen de libreria, no de IGNORE: `lv_conf.h` deja
@@ -405,7 +405,7 @@ PARES_ESPECIFICOS = [
     # falsificado solo para esa celda (lvgl/src/widgets/lv_table.c:788-792) y el
     # tema por defecto le pone SUS colores. Esos pares son los que se ven cuando
     # la tabla no pisa el estado. Los literales de LVGL son los mismos en los
-    # nueve temas, asi que lo que cambia es el color de texto de cada tema.
+    # quince temas, asi que lo que cambia es el color de texto de cada tema.
     ("text", "lvgl_item", 4.5, "solo:Outdoor", "dialog_msg_cw.c:173 (texto del tema sobre la celda de LVGL)"),
     ("text_value", "lvgl_item", 4.5, "solo:Outdoor", "freq_list.c:145 (valor sobre la celda de LVGL)"),
     ("text", "lvgl_focused", 4.5, None, "lv_table.c:790 + lv_theme_default.c:349 (celda elegida, rojo #F44336)"),

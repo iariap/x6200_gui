@@ -58,6 +58,30 @@ light theme must be a *light* ink) and the theme's own waterfall column (dark
 navy signal over a near-white floor). No existing render changed: adding a theme
 file does not move any object the other fixtures paint.
 
+## 2026-10-15 — re-baseline of the default-family renders (issue #73)
+
+Seven renders that draw with the **default font family** were stale: they were
+last captured at AB-FONTS (`b78b779`/`4e9b5f4` era) and the AB-FONTSE kerning
+change moved their glyphs without re-baselining them (the theme files that name
+their own family — Classic/RS/Redshift/Sprint/Cathode — were already current).
+Regenerated at the #73 tip: `main-espectro-agua`, `main-foco`,
+`main-otro-tema`, `main-tema-outdoor-negative`, `main-tema-vision`,
+`settings-home` and `settings-perfil`.
+
+The objects `nontext.yaml` measures are painted with theme roles and the fixed
+bitmaps (`top_long.bin`, the waterfall palette), so the font move does not change
+their contrast: `x6200-ab themes` reports the **same** ratios as before for every
+object (the S-meter arc, the waterfall signal, the focus indicator, the band-plan
+chips). Only the pixels under them changed. The regeneration is declared with the
+region-scoped `expected_changes` of `quality/contracts.yaml` (AB-FONTS/AB-FONTSE
+for the font move; `ajustes_tema` for the #73 Theme row below).
+
+`settings-perfil` carries a second, #73-specific move: the Theme row of Ajustes
+draws the dropdown's selected option, and with the six-only selector the saved
+default (`IU1WXY`, a legacy name) is no longer in the list, so the row falls back
+to the first offered option (`Sunlit`). That single cell is declared under the new
+region `ajustes_tema`; the #74 default migration removes the fallback.
+
 ## 2026-10-15 — `main-tema-aurora.png` (THEMES v2, issue #72)
 
 A **new** render, not a regeneration: the Aurora theme

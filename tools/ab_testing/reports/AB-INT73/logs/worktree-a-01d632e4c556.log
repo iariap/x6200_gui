@@ -1,0 +1,2 @@
+HEAD is now at 01d632e SWR Scan: SIGSEGV al cerrar con el barrido corriendo + el barrido dejaba la radio en LSB (issues #84/#85) (#96)
+Preparing worktree (detached HEAD 01d632e)

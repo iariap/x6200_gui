@@ -1,6 +1,8 @@
 # Pairs the *static* theme contract checks over every theme the ROM serves
-# (rootfs/usr/share/x6200/themes + the nine built-in palettes of src/theme.c), i.e.
-# the ones the user can pick in Settings.
+# (rootfs/usr/share/x6200/themes + the six built-in palettes of src/theme.c): the
+# full inventory, not only what the Settings menu offers (since issue #73 that menu
+# lists the six v2 themes and nothing else; the inventory flags the rest as
+# `offered=False`).
 #
 # Why a separate table: the rendered typography_contrast contract only sees the
 # screens the harness opens. Settings is not one of them (dialog_settings.c drags
@@ -10,7 +12,7 @@
 # theme's `base` when the file did not define it. So the pairs below are the ones
 # that only exist on that screen, plus the text pairs of a dialog window.
 #
-# The nine served palettes are measured (9 themes x 9 pairs = 81 measurements):
+# The fifteen served themes are measured (15 themes x 9 pairs = 135 measurements):
 #   - `builtin`: the four data palettes of src/theme.h THEME_COLORS(X). They are
 #                the `base` a file resolves to; they are measured here too, so no
 #                served theme is missing from the map.

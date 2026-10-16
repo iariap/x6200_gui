@@ -432,8 +432,10 @@ def cmd_themes(args: argparse.Namespace) -> int:
     shipped files of `rootfs/usr/share/x6200/themes`, resolves each file's `base`
     the way `src/theme.c` loads a theme, and measures the pairs
     `quality/theme_pairs.yaml` declares — the Settings pairs the rendered
-    contracts cannot reach. The nine served palettes are measured (81 pairs), so
-    there is no UNCOVERED theme left.
+    contracts cannot reach. The fifteen served themes (six built-in palettes plus
+    the nine shipped files) are measured (135 pairs), so there is no UNCOVERED
+    theme left. The Settings selector itself offers only the six v2 themes (issue
+    #73); the flag `offered` in the payload says which ones are a menu choice.
     No capture, no revision, no Docker: the verdict only depends on files in the
     repository.
     """

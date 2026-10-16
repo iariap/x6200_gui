@@ -286,12 +286,21 @@ def test_builtin_report_ratios_agree_with_the_c_table(
     assert outdoor == pytest.approx(21.00, abs=0.01)
 
 
-def test_legacy_is_measured_but_not_offered(runtime_palettes: dict[str, dict[str, str]]) -> None:
-    """`theme_list()` skips Legacy, so the inventory has to say it is not a choice."""
+def test_only_the_six_v2_themes_are_offered(runtime_palettes: dict[str, dict[str, str]]) -> None:
+    """`theme_list()` offers exactly the six v2 themes (issue #73), nothing else.
+
+    The built-ins (IU1WXY, Outdoor, Classic, ...) are still measured but no longer a
+    menu choice, and the legacy files (Holo, Material 3, RS) are loaded by name but
+    not listed either.
+    """
     reports, _ = _served(runtime_palettes)
+    offered = {report.name for report in reports if report.offered}
+    assert offered == {"Sunlit", "Redshift", "Sprint", "Cathode", "Trail", "Aurora"}
     by_name = {report.name: report for report in reports}
-    assert by_name["Legacy"].offered is False
-    assert all(by_name[name].offered for name in ("IU1WXY", "Outdoor", "Classic"))
+    for name in ("IU1WXY", "Legacy", "Outdoor", "Classic", "Outdoor-Negative", "VISION"):
+        assert by_name[name].offered is False
+    for name in ("Holo", "Material 3", "RS"):
+        assert by_name[name].offered is False
 
 
 def test_rs_declares_the_binary_surfaces_it_paints(

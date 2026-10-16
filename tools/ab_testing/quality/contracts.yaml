@@ -276,6 +276,23 @@ expected_changes:
     author: fonts-extras
     until: 2027-03-31
 
+  # THEMES v2 #73 (selector six-only): la fila "Theme" de Ajustes muestra la
+  # opcion elegida del desplegable. Con el tema guardado por defecto (IU1WXY, un
+  # legado que ya no tiene entrada) el desplegable no encuentra el nombre en la
+  # lista de seis y cae a la primera opcion (Sunlit), asi que el TEXTO de la fila
+  # cambia. El default y la migracion del valor guardado son el #74; hasta
+  # entonces el unico cambio de pixeles del #73 esta en esa celda, dentro de
+  # `ajustes_tema`. La region se retira cuando el #74 migre el default.
+  - region: ajustes_tema
+    reason: >
+      THEMES v2 #73: el selector de Ajustes ofrece SOLO los seis temas v2, asi que
+      la fila "Theme" dibuja la primera opcion ofrecida cuando el tema guardado es
+      un legado (el default IU1WXY). Es el unico pixel que se mueve con el #73; el
+      resto de las 70 fixtures queda byte-identico. La migracion del default y del
+      valor guardado (que devuelve la coherencia a la fila) es el #74.
+    author: themes-integration-73
+    until: 2027-03-31
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.

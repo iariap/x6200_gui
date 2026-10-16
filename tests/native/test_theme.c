@@ -65,23 +65,27 @@ static void test_builtins(void) {
     CHECK(theme_waterfall() != NULL);
 }
 
-/* The theme list has the built-ins (Legacy is deliberately left out of the
- * list: it is the old look, reachable by name) */
+/* El selector de Ajustes ofrece SOLO los seis temas v2 (issue #73): la colección
+ * es la oferta completa del menú. Los legados (IU1WXY, Classic, Holo, ...) siguen
+ * cargándose por nombre pero no tienen entrada en la lista. */
 static void test_list(void) {
-    char names[32][32];
-    int  n = theme_list(names, 32);
+    static const char *const seis[] = {"Sunlit", "Redshift", "Sprint", "Cathode", "Trail", "Aurora"};
+    const int               n_seis = (int)(sizeof(seis) / sizeof(seis[0]));
+    char                    names[32][32];
+    int                     n = theme_list(names, 32);
 
-    CHECK(n >= 5);
-
-    bool found_default = false;
+    CHECK(n == n_seis);
 
     for (int i = 0; i < n; i++) {
-        if (strcmp(names[i], "IU1WXY") == 0) {
-            found_default = true;
-        }
+        CHECK(i < n_seis && strcmp(names[i], seis[i]) == 0);
     }
 
-    CHECK(found_default);
+    /* Ningún legado entra en la lista, aunque el motor lo sepa cargar. */
+    for (int i = 0; i < n; i++) {
+        CHECK(strcmp(names[i], "IU1WXY") != 0);
+        CHECK(strcmp(names[i], "Classic") != 0);
+        CHECK(strcmp(names[i], "Holo") != 0);
+    }
 }
 
 /* UI-013: ningún nombre del menú puede no entrar en el store.
@@ -144,7 +148,7 @@ static void test_json_theme(void) {
     theme_init("unit");
     CHECK(theme_hex(TC_bar) == base_bar);
 
-    /* It shows up in the list */
+    /* Un tema del usuario (DATA) no entra en el menú (#73) */
     char names[32][32];
     int  n     = theme_list(names, 32);
     bool found = false;
@@ -155,15 +159,18 @@ static void test_json_theme(void) {
         }
     }
 
-    CHECK(found);
+    /* Un tema del usuario se carga por nombre pero NO se ofrece en el menú (#73):
+     * el selector sólo lista los seis v2. */
+    CHECK(!found);
 
     unlink(DIR "/unit.json");
     rmdir(DIR);
 }
 
-/* Los temas que vienen con la ROM (rootfs/usr/share/x6200/themes) tienen que cargar todos y
- * aparecer en el listado: si no, no llegan al menú del equipo aunque estén en la imagen.
- * El RS además trae sus propias imágenes (los PNG al lado del JSON). */
+/* Los temas que vienen con la ROM (rootfs/usr/share/x6200/themes): los seis v2 son
+ * la oferta del selector (issue #73) y tienen que estar en la lista y cargar; los
+ * legados (Holo, Material 3, RS) siguen en la ROM y cargan por nombre, pero NO
+ * aparecen en el menú. El RS además trae sus propias imágenes (los PNG al lado del JSON). */
 static void test_shipped(void) {
     const char *dir = getenv("X6200_SHIPPED_THEMES");
 
@@ -174,12 +181,14 @@ static void test_shipped(void) {
     setenv("THEMES_DIR_SHIPPED", dir, 1);
     setenv("THEMES_DIR", "/tmp/test_themes_sin_usuario", 1);     /* sin temas del usuario */
 
-    static const char *const esperados[] = {"Holo", "Material 3", "RS", "Redshift", "Sunlit", "Aurora",
-                                           "Trail", "Sprint", "Cathode"};
-    char names[32][32];
-    int  n = theme_list(names, 32);
+    static const char *const esperados[] = {"Sunlit", "Redshift", "Sprint", "Cathode", "Trail", "Aurora"};
+    const int               n_esp        = (int)(sizeof(esperados) / sizeof(esperados[0]));
+    char                    names[32][32];
+    int                     n = theme_list(names, 32);
 
-    for (size_t k = 0; k < sizeof(esperados) / sizeof(*esperados); k++) {
+    CHECK(n == n_esp);                              /* exactamente los seis, en orden */
+
+    for (int k = 0; k < n_esp; k++) {
         bool en_lista = false;
 
         for (int i = 0; i < n; i++) {
@@ -189,11 +198,29 @@ static void test_shipped(void) {
         }
 
         CHECK(en_lista);                        /* está en el listado */
+        CHECK(strcmp(names[k], esperados[k]) == 0);
 
         theme_init(esperados[k]);               /* y se carga */
         theme_init(esperados[k]);               /* dos veces no rompe */
 
         CHECK(theme_hex(TC_bg) <= 0xffffffu);   /* se puede leer una rol */
+    }
+
+    /* Los legados quedan fuera de la lista pero el motor todavía los carga (hasta #74). */
+    static const char *const legados[] = {"Holo", "Material 3", "RS"};
+
+    for (size_t k = 0; k < sizeof(legados) / sizeof(*legados); k++) {
+        bool en_lista = false;
+
+        for (int i = 0; i < n; i++) {
+            if (strcmp(names[i], legados[k]) == 0) {
+                en_lista = true;
+            }
+        }
+
+        CHECK(!en_lista);                       /* no se ofrece */
+        theme_init(legados[k]);
+        CHECK(theme_hex(TC_bg) <= 0xffffffu);   /* pero carga por nombre */
     }
 
     /* El RS trae imágenes propias: si no se leen, sus botones quedan sin piel. */
