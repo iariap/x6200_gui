@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 16/10 ~18:45 | `3604cece0e43` (sin cambios) | `31b8d8a` | (se cuelga) | (ya corrido) | **0 en 60 s** | **#99 VALIDADO**: con el dial en 7.012 (el owner lo movió) el barrido **dibuja la curva** (17,77% no-fondo vs 17,83% del build sin #99) y se ve el valle de resonancia (~1,0-1,4 en 7,01). Cerrar no reinicia la GUI (pid 2889) y **devuelve el modo a CW** (#84) con CRASHLOG 0 |
 | 16/10 ~18:40 | `3604cece0e43` (sin cambios) | `789ee5c` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0. #111 sigue; dial fuera del rango del #99 |
 | 16/10 ~18:30 | `3604cece0e43` (sin cambios) | `a94d0c3` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0, load ok. #111: 20143 de 20820 overflows. Dial fuera del rango del #99 |
 | 16/10 ~18:20 | `3604cece0e43` (sin cambios) | `fea20c2` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0. **#111**: 18.856 de 19.533 (96%) y **los logs no llenan el disco** (DATA 1% usado, app_logs 26 MB en 657 archivos) → el impacto es **eventos descartados + desgaste de SD**, no espacio |
