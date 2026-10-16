@@ -145,6 +145,8 @@ static void * endecode_thread(void *arg) {
             }
         }
     }
+
+    return NULL;
 }
 
 void cw_encoder_stop() {
@@ -158,6 +160,13 @@ void cw_encoder_stop() {
 }
 
 void cw_encoder_send(const char *text, bool beacon) {
+    /* Sin mensaje no hay nada que mandar: strdup() no acepta NULL y la GUI moria
+     * con fallo=(nil) dentro de strlen() cuando la ventana de mensajes de CW
+     * (tabla msg_cw vacia) le pasaba NULL al keyer. issue #116, docs/HALLAZGOS.md. */
+    if (text == NULL) {
+        return;
+    }
+
     cw_encoder_stop();
 
     if (current_msg) {
@@ -168,13 +177,17 @@ void cw_encoder_send(const char *text, bool beacon) {
     current_char = current_msg;
     state = beacon ? CW_ENCODER_BEACON : CW_ENCODER_SEND;
 
-    int rc;
     pthread_attr_t attr;
     struct sched_param param;
-    rc = pthread_attr_init (&attr);
-    rc = pthread_attr_getschedparam (&attr, &param);
-    param.sched_priority += 5;
-    rc = pthread_attr_setschedparam (&attr, &param);
+
+    /* The priority bump only makes sense if the attributes could be read back:
+     * reading param uninitialized would be undefined behaviour. */
+    pthread_attr_init(&attr);
+
+    if (pthread_attr_getschedparam(&attr, &param) == 0) {
+        param.sched_priority += 5;
+        pthread_attr_setschedparam(&attr, &param);
+    }
 
     pthread_create(&thread, &attr, endecode_thread, NULL);
 }

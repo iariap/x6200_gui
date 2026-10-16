@@ -282,6 +282,12 @@ void dialog_msg_cw_append(uint32_t id, const char *val) {
 void dialog_msg_cw_send_cb(button_item_t *item) {
     const char *msg = get_msg();
 
+    /* Sin mensaje (tabla msg_cw vacia) no hay nada que mandar: pasarselo NULL al
+     * keyer lo hacia strdup(NULL) -> strlen(NULL) y la GUI moria. issue #116. */
+    if (msg == NULL) {
+        return;
+    }
+
     cw_encoder_send(msg, false);
     buttons_unload_page();
     buttons_load(1, &btn_send_stop);
@@ -295,6 +301,12 @@ static void send_stop_cb(button_item_t *item) {
 
 void dialog_msg_cw_beacon_cb(button_item_t *item) {
     const char *msg = get_msg();
+
+    /* Mismo caso que el Send (issue #116): sin mensaje seleccionado no se arranca
+     * el beacon; el NULL que llegaba al keyer mataba la GUI. */
+    if (msg == NULL) {
+        return;
+    }
 
     cw_encoder_send(msg, true);
     buttons_unload_page();
