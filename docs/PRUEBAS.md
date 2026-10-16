@@ -88,7 +88,7 @@ El binario pesa ~5 KB más que el anterior (`3ead572b6fe2`), consistente con la 
 captura `21-build-7032d3b.png` la pantalla principal se ve normal, pero no ejercité el asistente). Queda
 para el dueño de la funcionalidad o para cuando el owner lo pruebe.
 
-## 15/10 ~22:55## 15/10 ~22:55 — `3ead572b6fe2` (build del clon con los merges del #94/#92): #94 validado
+## 15/10 ~22:55 — `3ead572b6fe2` (build del clon con los merges del #94/#92): #94 validado
 
 **Qué se probó:** el build con `cd3bc97` (restore del estado de radio por snapshot, #94) y `45da382`
 (ancho de línea del waterfall, #92), compilado desde el clon y desplegado.
