@@ -4077,6 +4077,12 @@ A = `23926241` (tip de `lu2dsx/x6200-rom`, el #112 del campo Año), B = el candi
 | `settings-home`, `settings-audio`, `settings-wfbat` | 7 → 15 | **+114.3 %** | 1 135 170 → 1 267 780 | **+11.7 %** |
 | `settings-perfil`, `settings-tema-{aurora,cathode,redshift,sprint,sunlit,trail}` | 6 → 14 | **+133.3 %** | 1 003 170 → 1 135 780 | **+13.2 %** |
 
+> El reporte committeado se regeneró después con `--a origin/lu2dsx/x6200-rom`, que para entonces
+> ya apuntaba a `3d6c022e` (el QA ciclo 35, descendiente de `23926241`): el delta medido es
+> **idéntico** (la tabla de arriba), porque ese commit no toca el render; sólo cambia el `sha` de A
+> en `results.json`. Las dos `settings-tema-{cathode,sprint}` miden 1 002 010 → 1 134 620 px
+> (mismo +13.2 %): su base difiere en 1 160 px del resto de la banda.
+
 Los **otros 54 escenarios** del suite quedan byte-idénticos (`0.0 %` en los dos proxies): el delta
 está confinado a las diez fixtures que abren el diálogo de Ajustes.
 
