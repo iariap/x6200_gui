@@ -105,8 +105,7 @@ void test_swrscan(void) {
  * dialog_swrscan.c).
  *
  * Lo que se fija aca: la tabla span -> puntos -> paso exacto -> duracion, los extremos en los
- * limites del span, la grilla determinista, el piso de potencia y que el dialogo siga apagando
- * el barrido al cerrarse.
+ * limites del span, la grilla determinista y el piso de potencia del barrido.
  */
 void test_swrscan_sweep(void) {
     const uint32_t center = 7018300;    /* 40 m CW */
