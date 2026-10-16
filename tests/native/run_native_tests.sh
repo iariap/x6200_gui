@@ -232,3 +232,45 @@ $CC $BASEFLAGS -fanalyzer -I"$SW_STAGE" \
     -c "$SW_STAGE/dialog_swrscan.c" -o "$OUT/dialog_swrscan.o" || true
 
 "$OUT/swrscan_tests"
+
+# --- Dialog restore test (issue #94) -----------------------------------------
+# src/dialog.c includes its siblings with `#include "..."` (dialog.h,
+# cfg/subjects.h, ...), and for a quoted include the directory of the including
+# file always wins over -I, so the committed stub headers under
+# tests/native/stubs_restore/ cannot shadow src/dialog.h etc. from their own
+# directory: the real dialog.c (and its real dialog.h) are staged next to a copy
+# of the stubs, the same pattern as the clock/backlight/digital-modes/SWR-Scan
+# tests (see tests/native/test_dialog_restore.c). The test pins that the app
+# frame restores the radio state (dial + mode) an app changed on open: the
+# backup is the in-memory radio_state_save/restore (issue #94), not the SQLite
+# slot the pre-fix code used (the stub cfg_memory_save/load is a no-op, so the
+# old path cannot restore anything and the test is red before the fix).
+echo "== Restore (#94): el frame devuelve el dial y el modo al cerrar la app =="
+RS_STAGE="$OUT/restore_src"
+rm -rf "$RS_STAGE"
+mkdir -p "$RS_STAGE/cfg" "$RS_STAGE/lvgl" "$RS_STAGE/liquid"
+cp "$SRC/dialog.c" "$SRC/dialog.h" "$RS_STAGE/"
+cp "$DIR/stubs_restore/lvgl/lvgl.h" "$RS_STAGE/lvgl/"
+cp "$DIR/stubs_restore/helpers.h" "$DIR/stubs_restore/buttons.h" "$DIR/stubs_restore/styles.h" \
+   "$DIR/stubs_restore/keyboard.h" "$DIR/stubs_restore/events.h" "$DIR/stubs_restore/waterfall.h" \
+   "$DIR/stubs_restore/main_screen.h" "$DIR/stubs_restore/cluster_column.h" "$DIR/stubs_restore/radio.h" "$RS_STAGE/"
+cp "$DIR/stubs_restore/cfg/cfg.h" "$DIR/stubs_restore/cfg/subjects.h" "$DIR/stubs_restore/cfg/memory.h" "$RS_STAGE/cfg/"
+cp "$DIR/stubs_restore/liquid/liquid.h" "$RS_STAGE/liquid/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$RS_STAGE" \
+        "$RS_STAGE/dialog.c" "$DIR/restore_stubs.c" "$DIR/test_dialog_restore.c" \
+        "$DIR/test_framework.c" "$DIR/restore_test_main.c" -o "$OUT/restore_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$RS_STAGE" \
+        "$RS_STAGE/dialog.c" "$DIR/restore_stubs.c" "$DIR/test_dialog_restore.c" \
+        "$DIR/test_framework.c" "$DIR/restore_test_main.c" -o "$OUT/restore_tests"
+fi
+
+echo "== Restore: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$RS_STAGE" \
+    -c "$RS_STAGE/dialog.c" -o "$OUT/dialog.o" || true
+
+"$OUT/restore_tests"

@@ -69,6 +69,12 @@ void radio_start_atu();
 bool radio_start_swrscan();
 void radio_stop_swrscan();
 
+/* Snapshot del estado del equipo (dial, modo, agc/pre/att y potencia) para las apps que lo mutan
+ * al abrirse: guardarlo al abrir y devolverlo al cerrar (issue #94). Lo llama el marco de
+ * dialogos; no toca la senal de RF, solo el estado. */
+void radio_state_save();
+void radio_state_restore();
+
 void radio_poweroff();
 void radio_set_ptt(bool tx);
 void radio_set_modem(bool tx);

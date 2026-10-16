@@ -7,9 +7,9 @@
  */
 
 #include "dialog.h"
-#include "cfg/memory.h"
 #include "cfg/subjects.h"
 
+#include "radio.h"
 #include "styles.h"
 #include "main_screen.h"
 #include "cluster_column.h"
@@ -22,7 +22,9 @@ static dialog_t     *current_dialog = NULL;
 
 /* The X6100 saves the radio state in a scratch memory slot when an app that
  * changes it opens (or when dialog_restore_radio_on_close() asks), and puts it
- * back when the app closes. */
+ * back when the app closes. Here that snapshot lives in radio.c (radio_state_save/
+ * radio_state_restore): the app dispatcher is the single place that saves on open
+ * and restores on close, so no app depends on its own destructor (issue #94). */
 static bool    restore_mem;
 static int32_t restore_mode = -1;   /* the mode before an app changed it */
 static int32_t forced_mode;
@@ -34,7 +36,7 @@ void dialog_restore_mode_on_close(int32_t mode, int32_t forced) {
 
 void dialog_restore_radio_on_close(void) {
     if (current_dialog && current_dialog->run && !current_dialog->restore_radio) {
-        cfg_memory_save(MEM_BACKUP_ID);
+        radio_state_save();
         restore_mem = true;
     }
 }
@@ -46,7 +48,7 @@ void dialog_construct(dialog_t *dialog, lv_obj_t *parent) {
         cluster_column_hide(true);      /* an app draws over the waterfall */
 
         if (dialog->restore_radio) {
-            cfg_memory_save(MEM_BACKUP_ID);
+            radio_state_save();
         }
 
         dialog->prev_page = buttons_get_cur_page();
@@ -65,7 +67,7 @@ void dialog_construct(dialog_t *dialog, lv_obj_t *parent) {
 void dialog_destruct() {
     if (current_dialog && current_dialog->run) {
         if (current_dialog->restore_radio || restore_mem) {
-            cfg_memory_load(MEM_BACKUP_ID);
+            radio_state_restore();
             restore_mem = false;
         }
 

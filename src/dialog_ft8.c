@@ -632,7 +632,7 @@ static void destruct_cb() {
     firdecim_crcf_destroy(decim);
     free(audio_buf);
 
-    mem_load(MEM_BACKUP_ID);
+    radio_state_restore();
 
     main_screen_lock_mode(false);
     main_screen_lock_ab(false);
@@ -846,7 +846,7 @@ static void construct_cb(lv_obj_t *parent) {
 
     reload_buttons();
 
-    mem_save(MEM_BACKUP_ID);
+    radio_state_save();
     load_band(0);
 
     filter_low = subject_get_int(cfg_cur.filter.low);
