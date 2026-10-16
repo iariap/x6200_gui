@@ -63,6 +63,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 41. [CW Trainer: el desborde del buffer del decodificador CW (issue #51)](#41-cw-trainer-el-desborde-del-buffer-del-decodificador-cw-issue-51)
 42. [WSPR como primera app mataba la GUI: la etiqueta NULL del modo digital](#42-wspr-como-primera-app-mataba-la-gui-la-etiqueta-null-del-modo-digital)
 43. [Codigo vendoreado de WSPR: escritura fuera del array en pack_call (sin llamadores)](#43-codigo-vendoreado-de-wspr-escritura-fuera-del-array-en-pack_call-sin-llamadores)
+45. [La cola de eventos se traba al llenarse (issue #111)](#45-la-cola-de-eventos-se-traba-al-llenarse-issue-111)
 
 ---
 
@@ -2231,3 +2232,76 @@ src/wspr/wsprd/wsprsim_utils.h:6:long unsigned int pack_call(char const *callsig
 del §42: pediria decision del owner. Camino barato para cerrarlo cuando se decida: acotar el bucle
 (`i < call_len + 1 && i < sizeof(call6)`), que no cambia lo que devuelve la funcion, con un test
 nativo del valor empaquetado.
+
+---
+
+## 45. La cola de eventos se traba al llenarse (issue #111)
+
+**Sintoma** (issue #111, medido en la radio): 25.624 `Overflow (events.c line #90)` de 26.313
+lineas en un run, y en la ventana larga de `docs/PRUEBAS.md` "+4.447 lineas en 240 s = **18/s**, el
+100% Overflows, con la radio en reposo (load 0,84)". Es sostenido, no rafagas, y no lo dispara la
+carga de la UI.
+
+**Causa, codigo** (`src/events.c`): la cola es un anillo de 64 slots con un mutex, con productores
+en varios hilos y el consumidor en el lazo de LVGL (`event_obj_check()`). El productor daba por
+lleno el anillo mirando el **contenido** del slot siguiente:
+
+```
+    uint8_t next = (queue_write + 1) % QUEUE_SIZE;
+    if (queue[next]) { ... LV_LOG_ERROR("Overflow"); return; }
+```
+
+pero el consumidor usa `queue_read == queue_write` como marca de **vacio**. En el borde, `next`
+vale `queue_read`, y ese slot esta en NULL (el consumidor lo limpia al leerlo), asi que el productor
+lo daba por libre, escribia ahi y dejaba `queue_write == queue_read`: el consumidor veia la cola
+vacia con los 64 eventos adentro. Como despues `queue[1]` ya no esta libre, el productor no vuelve a
+encolar nunca: la cola queda trabada **para siempre** y todo evento posterior se descarta. De ahi el
+sintoma sostenido al 100% con la radio quieta: una vez que la carga de la UI hizo llenar la cola, el
+descarte no vuelve atras.
+
+**Medido** (test nativo, `tests/native/test_events.c`; el commit `8a05f342` es el test sin el
+arreglo, el `ab7710b3` el codigo previo):
+
+```
+$ git checkout 8a05f342 -- tests/native/test_events.c
+$ git checkout ab7710b3 -- src/events.c src/events.h
+$ sh tests/native/run_native_tests.sh
+FALLO tests/native/test_events.c:46: events_stub_dispatched() == QUEUE_CAPACITY
+FALLO tests/native/test_events.c:52: events_stub_dispatched() == QUEUE_CAPACITY + 1
+FALLO tests/native/test_events.c:74: lines <= EVENTS_OVERFLOW_LOG_DETAIL
+3 comprobaciones, 3 fallos
+```
+
+64 envios y un drenaje entregan **0** eventos (los 64 quedan varados y la cola no se recupera), y
+100 descartes escriben **99** lineas de log.
+
+**Arreglo**: el productor detecta el lleno por posicion (`next == queue_read`) y el consumidor toma
+el mutex para decidir si la cola esta vacia; el descarte libera el `param` (no se encolaba, el
+consumidor no lo liberaba: cada descarte filtraba) y el log queda acotado (los primeros 8 descartes
+en detalle, despues un resumen cada 10 s con el total y el desglose por tipo de evento). Se agregan
+los contadores `event_queue_stats_get()` (ocupacion pico, capacidad, total perdido) y
+`event_queue_drops_of()` (perdidos por tipo).
+
+**Verificacion, medida**:
+
+```
+$ sh tests/native/run_native_tests.sh
+19 comprobaciones, 0 fallos
+```
+
+y el mismo modulo compilado para el target (Cortex-A7, gcc 12.3.0 del buildroot):
+
+```
+$ docker run --rm --entrypoint "" -v "$PWD":/w:ro -v x6200-build-output:/b x6200-buildroot \
+    sh -c '/b/host/bin/arm-buildroot-linux-gnueabihf-gcc -c -O2 -std=gnu11 \
+    -I/w -I/w/src -I/w/lvgl -I/b/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include \
+    /w/src/events.c -o /tmp/events_arm.o'
+arm -c events.c exit=0
+```
+
+**Sin fundar** (anexo A): que el flood medido en la radio sea este latch y no un productor que
+supera estructuralmente al consumidor. El latch esta probado en el test; cual productor lo dispara
+en la radio lo dicen los contadores nuevos en la proxima corrida. Por frecuencia el candidato es
+`meter_update()` -> `event_send(obj, LV_EVENT_REFRESH, NULL)` (`src/meter.c:319`), una vez por
+cuadro de waterfall (`waterfall_fps_ms = 1000/25`, `src/dsp.cpp:119`), que coincide con el ritmo
+medido.

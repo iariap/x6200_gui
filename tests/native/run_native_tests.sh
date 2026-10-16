@@ -278,3 +278,39 @@ $CC $BASEFLAGS -fanalyzer -I"$RS_STAGE" \
     -c "$RS_STAGE/dialog.c" -o "$OUT/dialog.o" || true
 
 "$OUT/restore_tests"
+
+# --- Event queue test (issue #111) -------------------------------------------
+# src/events.c includes its siblings with `#include "..."` (events.h, backlight.h,
+# keyboard.h), and for a quoted include the directory of the including file wins
+# over -I, so the real events.c is staged next to minimal stubs of LVGL (event
+# codes + a capturable LV_LOG_ERROR), keyboard.h and backlight.h, the same pattern
+# as the clock/backlight/digital-modes/SWR-Scan/restore tests (see
+# tests/native/test_events.c). The test pins that the ring never laps its reader
+# (a full queue drops cleanly instead of stranding every item and dropping the
+# rest forever) and that the overflow log is rate-limited (issue #111: the queue
+# saturated at ~2.4 lines/s of `Overflow` and buried the log).
+echo "== Eventos (#111): la cola no se traba al llenarse y el log acota =="
+EV_STAGE="$OUT/events_src"
+rm -rf "$EV_STAGE"
+mkdir -p "$EV_STAGE/lvgl"
+cp "$SRC/events.c" "$SRC/events.h" "$EV_STAGE/"
+cp "$DIR/stubs_events/lvgl/lvgl.h" "$EV_STAGE/lvgl/"
+cp "$DIR/stubs_events/keyboard.h" "$DIR/stubs_events/backlight.h" "$EV_STAGE/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$EV_STAGE" -I"$DIR" \
+        "$EV_STAGE/events.c" "$DIR/events_stubs.c" "$DIR/test_events.c" \
+        "$DIR/test_framework.c" "$DIR/events_test_main.c" -o "$OUT/events_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$EV_STAGE" -I"$DIR" \
+        "$EV_STAGE/events.c" "$DIR/events_stubs.c" "$DIR/test_events.c" \
+        "$DIR/test_framework.c" "$DIR/events_test_main.c" -o "$OUT/events_tests"
+fi
+
+echo "== Eventos: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$EV_STAGE" -I"$DIR" \
+    -c "$EV_STAGE/events.c" -o "$OUT/events.o" || true
+
+"$OUT/events_tests"
