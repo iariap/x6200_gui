@@ -142,6 +142,10 @@ static void use_builtin(int b) {
 
     memcpy(colors, builtin_colors[src], sizeof(colors));
     theme_shape = builtin_shapes[src];
+    /* Los incorporados (y la base de todo archivo JSON, que pasa por aca) llevan la
+     * linea central del waterfall en 1 px: es el default retrocompatible de
+     * `waterfall_signal_width` y lo que un tema que no la define hereda. */
+    theme_shape.waterfall_signal_width = 1;
     if (b == B_OUTDOOR_NEG) {
         for (int i = 0; i < TC_COUNT; i++) colors[i] = negative(colors[i]);
         /* The yellow of the selection stays yellow: its text and its border stay black.
@@ -293,6 +297,13 @@ static bool load_file(const char *name) {
     v = theme_shape.waterfall_steps;
     get_int(root, "waterfall_steps", &v);
     theme_shape.waterfall_steps = v;
+
+    /* La linea central del waterfall (la marca de senal sobre la paleta): el tema la
+     * pide en px. Clamp 1..8 — 0 la dejaria invisible y un valor alto taparia la
+     * cascada. Un archivo que no la define conserva el 1 px del base (use_builtin). */
+    v = theme_shape.waterfall_signal_width;
+    get_int(root, "waterfall_signal_width", &v);
+    theme_shape.waterfall_signal_width = v < 1 ? 1 : v > 8 ? 8 : v;
 
     const char *digits = cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(root, "font_digits"));
     if (digits) {

@@ -195,6 +195,9 @@ typedef struct {
     uint8_t  waterfall_n;       /* 0 = a built-in table (waterfall_table) */
     uint8_t  waterfall_table;   /* 0 gauss, 1 legacy */
     uint8_t  waterfall_steps;   /* 0 smooth, else that many flat bands */
+    uint8_t  waterfall_signal_width; /* the centre line of the waterfall (the signal marker over
+                                      * the palette), px; theme key `waterfall_signal_width`,
+                                      * default 1, clamped 1..8 (src/theme.c) */
 } theme_shape_t;
 
 extern theme_shape_t theme_shape;

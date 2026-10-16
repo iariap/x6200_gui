@@ -302,6 +302,71 @@ static void test_cathode(void) {
     unsetenv("THEMES_DIR_SHIPPED");
 }
 
+/* `waterfall_signal_width` (decision del owner, 2026-10-15): el ancho de la linea
+ * central del waterfall (la marca de senal sobre la paleta, src/waterfall.c) es una
+ * clave de tema en px. Default 1 y clamp 1..8: los temas outdoor la piden en 3 y un
+ * tema que no la define queda en 1 px, retrocompatible. */
+static void test_waterfall_signal_width(void) {
+    const char *dir = getenv("X6200_SHIPPED_THEMES");
+
+    /* Los incorporados (y el default del struct, via use_builtin): 1 px. */
+    theme_init("IU1WXY");
+    CHECK(theme_shape.waterfall_signal_width == 1);
+
+    theme_init("Classic");
+    CHECK(theme_shape.waterfall_signal_width == 1);
+
+    if (dir == NULL || *dir == 0) {
+        return;                     /* el runner no los paso: nada que comprobar */
+    }
+
+    setenv("THEMES_DIR_SHIPPED", dir, 1);
+    setenv("THEMES_DIR", "/tmp/test_themes_sin_usuario", 1);
+
+    /* Los dos temas outdoor la traen mas gruesa (3 px). */
+    theme_init("Sunlit");
+    CHECK(theme_shape.waterfall_signal_width == 3);
+
+    theme_init("Trail");
+    CHECK(theme_shape.waterfall_signal_width == 3);
+
+    /* Un tema que no la define queda en 1 px: nada cambia para el resto. */
+    theme_init("Redshift");
+    CHECK(theme_shape.waterfall_signal_width == 1);
+
+    theme_init("Aurora");
+    CHECK(theme_shape.waterfall_signal_width == 1);
+
+    /* El clamp 1..8 del parser: 0 (o negativo) cae a 1, por encima de 8 cae a 8. */
+    mkdir(DIR, 0777);
+    setenv("THEMES_DIR", DIR, 1);
+
+    write_file(DIR "/width0.json", "{\n  \"waterfall_signal_width\": 0\n}\n");
+    write_file(DIR "/widthneg.json", "{\n  \"waterfall_signal_width\": -5\n}\n");
+    write_file(DIR "/width9.json", "{\n  \"waterfall_signal_width\": 9\n}\n");
+    write_file(DIR "/width3.json", "{\n  \"waterfall_signal_width\": 3\n}\n");
+
+    theme_init("width0");
+    CHECK(theme_shape.waterfall_signal_width == 1);
+
+    theme_init("widthneg");
+    CHECK(theme_shape.waterfall_signal_width == 1);
+
+    theme_init("width9");
+    CHECK(theme_shape.waterfall_signal_width == 8);
+
+    theme_init("width3");
+    CHECK(theme_shape.waterfall_signal_width == 3);
+
+    unlink(DIR "/width0.json");
+    unlink(DIR "/widthneg.json");
+    unlink(DIR "/width9.json");
+    unlink(DIR "/width3.json");
+    rmdir(DIR);
+
+    unsetenv("THEMES_DIR_SHIPPED");
+}
+
 void test_theme(void) {
     test_builtins();
     test_list();
@@ -310,5 +375,6 @@ void test_theme(void) {
     test_shipped();
     test_sunlit();
     test_cathode();
+    test_waterfall_signal_width();
 }
 

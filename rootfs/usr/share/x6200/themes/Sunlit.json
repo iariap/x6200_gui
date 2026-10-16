@@ -141,5 +141,6 @@
         "#15528A",
         "#102845"
     ],
-    "waterfall_steps": 0
+    "waterfall_steps": 0,
+    "waterfall_signal_width": 3
 }

@@ -171,3 +171,22 @@ or, without Docker, with the harness build of `tests/check_harness_determinism.s
 tools/ui_harness/build/ui_harness --scenario tools/ui_harness/fixtures/main-tema-cathode.scn \
     --png tools/ab_testing/golden/main-tema-cathode.png --json /tmp/main-tema-cathode.json
 ```
+
+## 2026-10-15 — `main-tema-sunlit-agua.png` regenerada (AB-WFWIDTH)
+
+El ancho de la **línea central del waterfall** pasa a ser una clave de tema
+(`waterfall_signal_width`, default 1, clamp 1..8) y los dos temas outdoor la piden en 3
+(`rootfs/usr/share/x6200/themes/Sunlit.json`, `Trail.json`). La fixture
+`main-tema-sunlit-agua` es la que dibuja esa línea (las demás la llevan apagada vía
+`waterfall_center_line`), así que su render se regenera con la línea de 3 px. Los objetos
+no-texto que este directorio mide —el arco del S-meter y la columna de señal del
+waterfall— **no** tocan la línea del centro, así que sus ratios no cambian;
+`main-tema-sunlit` (sin la línea) queda byte-idéntico. El cambio de píxeles lo declara
+`quality/contracts.yaml` (`expected_changes`, AB-WFWIDTH).
+
+Capturada con el build de `tests/check_harness_determinism.sh`:
+
+```bash
+tools/ui_harness/build/ui_harness --scenario tools/ui_harness/fixtures/main-tema-sunlit-agua.scn \
+    --png tools/ab_testing/golden/main-tema-sunlit-agua.png --json /tmp/main-tema-sunlit-agua.json
+```

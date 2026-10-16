@@ -139,5 +139,6 @@
         "ft8_tx": "#C09040"
     },
     "waterfall": ["#0A150D", "#25412B", "#526A3C", "#9EB370", "#E1C073", "#FC985E"],
-    "waterfall_steps": 0
+    "waterfall_steps": 0,
+    "waterfall_signal_width": 3
 }

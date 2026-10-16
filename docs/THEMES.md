@@ -96,6 +96,7 @@ Todo campo es opcional: lo que un archivo no pone sale de su `base`.
     "font": "roboto",
     "waterfall": ["#000000", "#000060", "#0040e0", "#00c8ff", "#ffff00", "#ff6000", "#ffffff"],
     "waterfall_steps": 0,
+    "waterfall_signal_width": 3,
     "images": {
         "btn": { "file": "btn.png", "slice": [8, 8, 8, 8] }
     }
@@ -105,6 +106,39 @@ Todo campo es opcional: lo que un archivo no pone sale de su `base`.
 Sin `base`, el tema parte de IU1WXY. Un archivo con JSON inválido, con un color mal escrito o
 que no se puede leer se avisa por el log y se sigue con el tema anterior: nunca deja la GUI
 sin tema.
+
+## Ancho de la línea de señal del waterfall (`waterfall_signal_width`) — decisión del owner, 2026-10-15
+
+El waterfall dibuja una **línea vertical** en el centro (la marca de la señal sobre la paleta,
+`src/waterfall.c`, `draw_middle_line()`), que hoy sale del color `panel_border` del tema. Hasta
+acá su ancho estaba fijo en **1 px**. El owner pidió, con feedback directo del 2026-10-15, que
+**los temas outdoor la traigan más gruesa**: *"los temas que son para outdoor deberían traer la
+barra del waterfall más gruesa porque al ser tan fina (1 px) no se distingue bien del resto"*.
+
+**Decisión de producto post-epic.** El epic de temas v2 había pedido *"sólo esquema real, sin
+agregar campos del parser"*; esto lo **extiende por orden del owner**: el ancho pasa a ser una
+**clave de tema**, no un valor fijo.
+
+- **Clave**: `waterfall_signal_width` (entero, **px**).
+- **Default**: **1** (los temas que no la definen quedan idénticos a hoy: retrocompatibilidad
+  cero — el motor sólo lee la clave cuando el archivo la trae).
+- **Rango**: **1..8**. El parser (`src/theme.c`, `load_file()`) clampea: un `0` o un valor
+  negativo cae a 1 (la línea no puede desaparecer) y cualquier cosa por encima de 8 a 8 (no
+  puede tapar la cascada). El default del struct (`use_builtin()`) es 1.
+- **Los temas outdoor**: `themes/Sunlit.json` y `themes/Trail.json` la fijan en **3**. Los otros
+  trece temas servidos (Redshift, Sprint, Cathode y Aurora, más los seis incorporados —IU1WXY,
+  Legacy, Outdoor, Classic, Outdoor-Negative y VISION— y los tres archivos legados —Holo,
+  Material 3 y RS—) **no la setean**: quedan en 1 px y sus renders no cambian.
+- **WCAG**: la clave **no** cambia el color de la línea (sigue siendo `panel_border`), sólo su
+  ancho, así que no hay un par nuevo que medir; el ancho no interviene en el contraste (WCAG
+  1.4.11 mide color, no grosor).
+
+El test nativo (`tests/native/test_theme.c`) fija el parse: Sunlit y Trail en 3, un tema que no
+la define en 1, y el clamp (`0` → 1, `99` → 8). Los renders que cambian son las fixtures `-agua`
+de Sunlit y Trail (las que dibujan la línea, con `waterfall_center_line` encendido): los píxeles
+que se mueven son la propia línea —la región `waterfall`, más los de la misma línea que caen en
+la banda de botones, porque el objeto del waterfall llega hasta el fondo de la pantalla—; el
+resto de la suite queda byte-idéntico.
 
 ## Para agregar uno propio
 
