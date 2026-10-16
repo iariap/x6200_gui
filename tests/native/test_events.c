@@ -40,6 +40,19 @@
 /* Capacidad util de la cola: QUEUE_SIZE (64) menos el slot de marca de vacio. */
 #define QUEUE_CAPACITY 63
 
+/* Drena la cola con el consumidor real (event_obj_check): libera los nodos y sus
+ * params, y deja por aserto que no queda nada pendiente. Cada test termina con la
+ * cola vacia: si no, el event_init() del test siguiente resetea el anillo sin
+ * liberar y esos nodos quedan sin dueno (ASan/LeakSanitizer ve 63 nodos por test
+ * con cola). El estado final de la cola no le hace falta a ningun test. */
+static void drain_queue(void) {
+    event_obj_check();
+
+    event_queue_stats_t st;
+    event_queue_stats_get(&st);
+    CHECK(st.pending == 0);
+}
+
 static void test_queue_does_not_lap_its_reader(void) {
     events_stub_reset();
     event_init();
@@ -60,6 +73,8 @@ static void test_queue_does_not_lap_its_reader(void) {
     event_obj_check();
 
     CHECK(events_stub_dispatched() == QUEUE_CAPACITY + 1);
+
+    drain_queue();
 }
 
 static void test_overflow_log_is_rate_limited(void) {
@@ -82,6 +97,8 @@ static void test_overflow_log_is_rate_limited(void) {
     /* 100 descartes con el reloj quieto no pueden producir 100 lineas: a lo sumo
      * los EVENTS_OVERFLOW_LOG_DETAIL primeros salen en detalle. */
     CHECK(lines <= EVENTS_OVERFLOW_LOG_DETAIL);
+
+    drain_queue();
 }
 
 static void test_overflow_log_summary_is_periodic(void) {
@@ -127,6 +144,8 @@ static void test_overflow_log_summary_is_periodic(void) {
     CHECK(strstr(events_stub_last_log(), "eventos perdidos") != NULL);
     CHECK(strstr(events_stub_last_log(), want) != NULL);
     CHECK(strstr(events_stub_last_log(), "pico cola") != NULL);
+
+    drain_queue();
 }
 
 static void test_drop_counters_by_type(void) {
@@ -154,6 +173,8 @@ static void test_drop_counters_by_type(void) {
     CHECK(event_queue_drops_of(EVENT_KEYPAD) == 10);
     CHECK(event_queue_drops_of(EVENT_MSG_UPDATE) == 5);
     CHECK(event_queue_drops_of(EVENT_HKEY) == 0);
+
+    drain_queue();
 }
 
 static void test_dropped_event_frees_its_param(void) {
@@ -172,6 +193,8 @@ static void test_dropped_event_frees_its_param(void) {
     event_send(NULL, EVENT_KEYPAD, (void *) p);
 
     CHECK(event_queue_drops_of(EVENT_KEYPAD) == 1);
+
+    drain_queue();
 }
 
 void test_events(void) {
