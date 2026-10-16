@@ -1,0 +1,36 @@
+# autotune-found: the fine-tuning assistant (issue #100) finding a better spot.
+# Same trigger as `autotune` (page APP 6, "Auto Tune" button -> the scan runs),
+# but this fixture pushes a synthetic S-meter with a peak 1500 Hz below the dial
+# (src/screens.c, autotune_found_slice; the bank has no DSP to update the real
+# S-meter). The scan measures every probe and leaves the dial on the peak:
+# 14.072.500. This is the "spot picked up" path, with the same algorithm that
+# runs on the radio; the real "which spot sounds better" correlation is the
+# owner's radio (docs/autotune.md).
+
+name autotune-found
+screen autotune-found
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

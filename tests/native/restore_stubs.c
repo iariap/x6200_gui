@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "autotune_ui.h"
 #include "cfg/subjects.h"
 #include "buttons.h"
 #include "styles.h"
@@ -113,6 +114,11 @@ void buttons_unload_page(void) {
 }
 void buttons_load_page(buttons_page_t *p) {
     (void) p;
+}
+
+/* src/dialog.c cancels the fine-tuning assistant (issue #100) when a window
+ * opens; the restore test runs no assistant, so the cancel is a no-op. */
+void autotune_ui_cancel(void) {
 }
 
 void waterfall_refresh_period_set(uint8_t period) {

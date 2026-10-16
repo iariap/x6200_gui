@@ -51,6 +51,7 @@
 #include "cfg/mode.h"
 #include "cfg/memory.h"
 #include "adaptive_tuning.h"
+#include "autotune_ui.h"
 #include "band_plan.h"
 #include "screen_rec.h"
 #include "dialog_wspr.h"
@@ -186,6 +187,12 @@ static void apps_close() {
 
 void main_screen_start_app(press_action_t app_action) {
     apps_close();
+
+    /* Abrir una app corta el asistente de sintonia fina (issue #100) y devuelve el
+     * dial al punto de arranque: el asistente corre sobre la pantalla principal y no
+     * debe seguir moviendo la frecuencia por detras de una ventana. Cubre tambien a
+     * RTTY, que no es un dialogo (no pasa por dialog_construct()). */
+    autotune_ui_cancel();
 
     switch (app_action) {
         case ACTION_APP_RTTY:
@@ -417,6 +424,12 @@ void main_screen_action(press_action_t action) {
             b = !b;
             subject_set_int(cfg.nb.val, b);
             msg_update_text_fmt("#FFFFFF NB: %s", b ? "On" : "Off");
+            break;
+
+        /* Asistente de sintonia fina (issue #100): arranca el barrido alrededor del
+         * dial, o lo cancela y restaura si ya estaba corriendo. RX only. */
+        case ACTION_ATUNE:
+            autotune_ui_toggle();
             break;
 
         case ACTION_APP_RTTY:

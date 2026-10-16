@@ -98,6 +98,12 @@ set(GUI_SRC
     ${REPO}/src/msg.c
     ${REPO}/src/msg_tiny.c
     ${REPO}/src/adaptive_tuning.c
+    # El asistente de sintonia fina (issue #100): el core puro y su driver. El
+    # driver corre sobre el main screen real (mueve cfg_cur.fg_freq y lee
+    # meter_get_raw_db()); el fixture `autotune` lo dispara por el boton y espera
+    # el barrido sobre el reloj virtual.
+    ${REPO}/src/autotune.c
+    ${REPO}/src/autotune_ui.c
     ${REPO}/src/cw_tune_ui.c
     # La politica visual de bateria (UI-08 incr. 1): modulo puro que todavia no
     # llama nadie; se compila aca para que el -Wall del arnes lo cubra desde ya.

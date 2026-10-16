@@ -37,6 +37,9 @@
 #include "styles.h"
 #include "visual_policy.h"
 
+#include "autotune_ui.h"
+#include "virtual_time.h"
+
 #include "mock_harness.h"
 #include "mock_radio.h"
 
@@ -269,6 +272,26 @@ bool scenario_build(const scenario_t *scenario)
         return true;
     }
 
+    if (!strcmp(scenario->screen, "autotune") || !strcmp(scenario->screen, "autotune-progress")
+        || !strcmp(scenario->screen, "autotune-found")) {
+        /* El asistente de sintonia fina (issue #100): la pantalla principal real con
+         * la pagina APP 6 cargada (radio y red: WiFi / BT / SWR Scan / Auto Tune).
+         * El fixture pulsa el boton "Auto Tune" en scenario_settle, por el mismo
+         * camino que el usuario (button_action_cb -> main_screen_action(ACTION_ATUNE)),
+         * y espera el barrido sobre el reloj virtual. El S-meter del banco es
+         * constante (mock_radio.smeter_db), asi que ningun probe supera al arranque y
+         * el dial vuelve al punto de partida: eso es lo que captura `autotune`.
+         * `autotune-progress` corta el barrido a mitad para capturar el dial en un
+         * probe (el progreso visible). */
+        mock_keyboard_group_up();
+        build_main(scenario);
+        buttons_load_page_group(buttons_group_app);
+        for (unsigned i = 1; i < 6; i++) {
+            buttons_press(0, false);    /* (APP n:6) -> (APP n+1:6) */
+        }
+        return true;
+    }
+
     if (!strcmp(scenario->screen, "apps-menu")) {
         /* El menú de apps de la pantalla principal (UI-002): la tecla APP carga
          * `buttons_group_app` (src/main_screen.c, KEYPAD_APP) y el botón-página
@@ -315,6 +338,26 @@ bool scenario_build(const scenario_t *scenario)
 
     fprintf(stderr, "scenario: unknown screen '%s'\n", scenario->screen);
     return false;
+}
+
+/* S-meter sintetico del fixture `autotune-found` (issue #100): un pico en
+ * `autotune_peak_hz`, mas fuerte cuanto mas cerca (el mismo modelo que usa el
+ * test nativo, con signo de dBm: mas cerca = mas alto). Lo empuja el fixture en
+ * cada slice del reloj virtual porque el banco no tiene DSP que actualice el
+ * S-meter; el algoritmo que lo consume es el de la radio. */
+static int32_t autotune_peak_hz;
+
+static void autotune_found_slice(void *arg)
+{
+    int32_t d;
+
+    (void) arg;
+
+    d = subject_get_int(cfg_cur.fg_freq) - autotune_peak_hz;
+    if (d < 0) {
+        d = -d;
+    }
+    meter_update((int16_t) (-60 - d / 100), 0.0f);
 }
 
 void scenario_settle(const scenario_t *scenario)
@@ -486,6 +529,105 @@ void scenario_settle(const scenario_t *scenario)
                     "app-bands: the app-menu Bands button reached no dialog at all "
                     "(the button did nothing)\n");
             exit(1);
+        }
+    }
+
+    if (!strcmp(scenario->screen, "autotune") || !strcmp(scenario->screen, "autotune-progress")
+        || !strcmp(scenario->screen, "autotune-found")) {
+        /* El boton que se pulsa es posicional: codificar que es "Auto Tune" antes de
+         * pulsarlo, para que reordenar la pagina corte la corrida en vez de pulsar
+         * otra app y reportar verde. */
+        if (!label_on_screen(lv_scr_act(), "Auto\nTune")) {
+            fprintf(stderr,
+                    "autotune: 'Auto Tune' no esta en la barra despues de las pulsaciones "
+                    "(¿se movio la pagina APP 6?)\n");
+            exit(1);
+        }
+
+        buttons_press(4, false);    /* (APP 6:6) index 4: "Auto Tune" */
+
+        /* Lo que el fixture *significa*: pulsar el boton arranca el asistente
+         * (main_screen_action(ACTION_ATUNE) -> autotune_ui_start). Codificado sobre
+         * el estado real del firmware: sin esto el banco capturaria un dial quieto
+         * y reportaria verde. */
+        if (!autotune_ui_running()) {
+            fprintf(stderr,
+                    "autotune: el boton 'Auto Tune' no arranco el asistente "
+                    "(main_screen_action(ACTION_ATUNE) no llego)\n");
+            exit(1);
+        }
+
+        if (!strcmp(scenario->screen, "autotune-progress")) {
+            /* Cortar a mitad: unos 350 ms dejan el dial en el primer probe
+             * (start +/- 500 Hz), el progreso visible. El barrido sigue corriendo;
+             * el capture es un instante fijo del reloj virtual. */
+            virtual_time_advance(350, 5);
+
+            /* Lo que el fixture *significa*: a mitad del barrido el dial YA se movio
+             * del arranque (el progreso visible) y el asistente sigue corriendo. Si
+             * alguien saca el retuneo por probe, esto corta en vez de capturar un
+             * dial quieto y reportar verde. */
+            if (subject_get_int(cfg_cur.fg_freq) == (int32_t) mock_radio.frequency_hz) {
+                fprintf(stderr,
+                        "autotune-progress: el dial sigue en el arranque a los 350 ms "
+                        "(no hay progreso visible)\n");
+                exit(1);
+            }
+            if (!autotune_ui_running()) {
+                fprintf(stderr,
+                        "autotune-progress: el barrido ya termino a los 350 ms "
+                        "(¿se acorto el plan?)\n");
+                exit(1);
+            }
+        } else if (!strcmp(scenario->screen, "autotune-found")) {
+            /* El banco no tiene DSP que actualice el S-meter (es constante,
+             * mock_radio.smeter_db), asi que este fixture lo empuja por slice con un
+             * pico sintetico a `start - 1500 Hz`: el barrido lo encuentra y el dial
+             * se queda en el mejor spot. Es la evidencia del camino "spot recogido"
+             * con el mismo algoritmo que corre en la radio. */
+            autotune_peak_hz = (int32_t) mock_radio.frequency_hz - 1500;
+
+            for (int i = 0; i < 1000 && autotune_ui_running(); i++) {
+                virtual_time_advance_step(50, 5, autotune_found_slice, NULL);
+            }
+            if (autotune_ui_running()) {
+                fprintf(stderr, "autotune-found: el barrido no termino (¿timer colgado?)\n");
+                exit(1);
+            }
+            if (subject_get_int(cfg_cur.fg_freq) != autotune_peak_hz) {
+                fprintf(stderr,
+                        "autotune-found: el dial quedo en %d y no en el pico %d "
+                        "(el barrido no encontro el mejor spot)\n",
+                        (int) subject_get_int(cfg_cur.fg_freq), (int) autotune_peak_hz);
+                exit(1);
+            }
+            virtual_time_advance(400, 10);
+        } else {
+            /* Correr el barrido entero sobre el reloj virtual. El tope corta una
+             * corrida que no termina (un timer que no se apaga) en vez de colgar el
+             * arnes; si el tope se alcanza, el fixture falla en vez de capturar a
+             * mitad. */
+            for (int i = 0; i < 1000 && autotune_ui_running(); i++) {
+                virtual_time_advance(50, 5);
+            }
+            if (autotune_ui_running()) {
+                fprintf(stderr, "autotune: el barrido no termino (¿timer colgado?)\n");
+                exit(1);
+            }
+
+            /* Lo que el fixture *significa*: con el S-meter constante nadie supera al
+             * arranque, asi que el dial tiene que quedar EXACTAMENTE en la frecuencia
+             * del fixture (el punto de partida, nunca perdido). */
+            if (subject_get_int(cfg_cur.fg_freq) != (int32_t) mock_radio.frequency_hz) {
+                fprintf(stderr,
+                        "autotune: el dial quedo en %d y no volvio al arranque %d "
+                        "(el restore no corrio)\n",
+                        (int) subject_get_int(cfg_cur.fg_freq), (int) mock_radio.frequency_hz);
+                exit(1);
+            }
+
+            /* Dejar asentar el mensaje final (fade-in de 250 ms) antes del capture. */
+            virtual_time_advance(400, 10);
         }
     }
 
