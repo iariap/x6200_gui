@@ -100,6 +100,12 @@ antes de compilar (un build limpio le pisa el binario).
 tools/prueba-gui-en-radio.sh      # copia el binario y las liblv*.so*
 ```
 
+- **El gate fail-closed del issue #86 corre solo**: antes de subir nada, `prueba-gui-en-radio.sh`
+  valida el binario con `tools/verifica-firmware-port.py` (ELF32 ARM + tamano >= 8.000.000 B +
+  marcas del port). Un build desde el `main` del remoto sale con **exit 0** y deja un `x6200_gui`
+  de **776.884 B** que **no** es el firmware (el del port: **13.737.784 B**): el gate **aborta el
+  deploy** en vez de dejar la radio sin GUI. Si salta, el binario del volumen no es el del port:
+  no re-desplegar a mano, reconstruir desde la rama del port.
 - La IP **cambia** (se vio en `192.168.18.67` y `192.168.0.236`): no fijarla, la busca
   `tools/lib-radio.sh` (`radio_ip()`: `RADIO_IP`, direcciones conocidas y, si no, barrido de la red
   verificando que sea la radio con el login y `/usr/sbin/x6200_gui`).
@@ -204,6 +210,7 @@ caidas, TX/ROE si se midio, e issues abiertos.
 | Editar un archivo recien cambiado | `FS_STALE_VERSION` / archivo "desaparecido" | releer antes de editar; verificar el commit del arbol |
 | Dar por muerto el fix del #44 | el JSON nuevo estaba en `/usr/share`, la GUI leia `/mnt` | medir en la radio, mirar `DATA` |
 | **Build desde un `git worktree` sin el submódulo `lvgl`** | el CMake falla (`lvgl does not contain a CMakeLists.txt`) o sale un binario **PIE de 776 KB** en vez del de 13.737.784 B | `git submodule update --init lvgl` en el worktree; y **verificar el tamaño/md5 del binario despues de cada build** (el de la GUI es 13.737.784 B; si pesa cientos de KB, algo falta) |
+| **Build desde el `main` del remoto sale verde y deja un binario que no es el firmware** (issue #86) | `make x6200-gui-rebuild` desde `fork/main` (e1476ec) da **exit 0** y deja un `x6200_gui` de **776.884 B** (PIE) que no arranca en la radio (el del port: **13.737.784 B**) | el gate `tools/verifica-firmware-port.py` corre solo en `prueba-gui-en-radio.sh` y en el banco y **aborta** si el binario no es el del port; nunca construir desde `main` (Paso 1) |
 | Mi `compila-gui.sh` escondia el error | mandaba la salida a /dev/null y decia "FALLO la compilacion" sin el motivo | al fallar un build, correr el `make` a mano con el log a un archivo |
 | **El deploy por WiFi no prueba el rootfs** | el flicker venia de `/etc/init.d/S95gui`, que `prueba-gui-en-radio.sh` no toca (copia binario y libs) | si el cambio es del rootfs o de los scripts de init, hay que **flashear la imagen** (ver la receta de SD). Y si la GUI se ve rara, revisar `ps`: dos `x6200_gui` con `/dev/fb0` = dos GUIs dibujando |
 | Traer cuadros del framebuffer con `cat` por SSH | los archivos llegaban cortados (786 KB de 1.5 MB) | usar `scp` o leer hasta completar el tamano |
@@ -215,8 +222,9 @@ Cuando el owner pide la ROM en la SD (no alcanza el deploy por WiFi):
 
 1. **Build de la imagen** (con el arbol del port y el submodulo `lvgl` poblado): `make -j$(nproc)` en
    el buildroot con `-v .wt-pruebas:/workspace_gui:ro`. Tarda minutos si los paquetes ya estan.
-   Verificar: `tar tvf /b/images/rootfs.tar ./usr/sbin/x6200_gui` → **13.248.936 B** (stripped) y no
-   los ~600 KB del binario roto.
+   Verificar: `tools/verifica-firmware-port.py --tar /b/images/rootfs.tar` (ELF32 ARM + tamano +
+   marcas del port, el gate del issue #86) — el binario adentro tiene que pesar **13.248.936 B**
+   (stripped) y no los ~600 KB del binario roto.
 2. **Identificar la SD con evidencia**: `lsblk` → tiene que ser `removable=1`, del tamano de la
    tarjeta, y con el **layout del X6200** (`p1` 31-32 MB vfat `BOOT`, `p2` 512 MB ext4 `rootfs`,
    `p3` 3.2 GB vfat `DATA`). Nunca escribir en `nvme*`.
