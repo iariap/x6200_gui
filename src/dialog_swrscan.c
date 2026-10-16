@@ -24,11 +24,15 @@
 #include <unistd.h>
 #include <math.h>
 
-#define STEPS   50
+/* El barrido no puede pasar el techo de TX (issue #113): el dwell es un paquete del flow de
+ * la radio, no un parametro de la GUI, asi que subir los puntos alarga el tiempo al aire.
+ * El build falla si el barrido se pasa del techo: subirlo es decision del owner. */
+_Static_assert(SWRSCAN_POINTS * SWRSCAN_DWELL_MS <= SWRSCAN_TX_BUDGET_MS,
+               "el barrido de ROE pasa el techo de TX (SWRSCAN_TX_BUDGET_MS)");
 
 static lv_obj_t             *chart;
-static float                data[STEPS];
-static float                data_filtered[STEPS];
+static float                data[SWRSCAN_POINTS];
+static float                data_filtered[SWRSCAN_POINTS];
 
 static lv_coord_t           w;
 static lv_coord_t           h;
@@ -38,7 +42,6 @@ static bool                 run = false;
 static uint16_t             freq_index;
 static uint32_t             freq_start;
 static uint32_t             freq_center;
-static uint32_t             freq_stop;
 
 static bool    linear;
 static int32_t span;
@@ -103,7 +106,7 @@ static dialog_t             dialog = {
 dialog_t                    *dialog_swrscan = &dialog;
 
 static void do_init() {
-    for (uint16_t i = 0; i < STEPS; i++) {
+    for (uint16_t i = 0; i < SWRSCAN_POINTS; i++) {
         data[i] = 1.0f;
         data_filtered[i] = 1.0f;
     }
@@ -111,21 +114,20 @@ static void do_init() {
     freq_index = 0;
     freq_center = subject_get_int(cfg_cur.fg_freq);
 
-    freq_start = freq_center - span / 2;
-    freq_stop = freq_center + span / 2;
+    freq_start = dialog_swrscan_sweep_freq(freq_center, span, 0);
 }
 
 static void do_step(float vswr) {
     data[freq_index] = vswr;
-    int16_t filtered_index = (STEPS + freq_index - 2) % STEPS;
+    int16_t filtered_index = (SWRSCAN_POINTS + freq_index - 2) % SWRSCAN_POINTS;
 
     float avg = 0.0f;
     for (int16_t n = -2; n <= 2; n++) {
         int16_t index = filtered_index + n;
         if (index < 0) {
             index = 0;
-        } else if (index > STEPS-1) {
-            index = STEPS-1;
+        } else if (index > SWRSCAN_POINTS-1) {
+            index = SWRSCAN_POINTS-1;
         }
         avg += data[index];
     }
@@ -135,12 +137,21 @@ static void do_step(float vswr) {
 
     freq_index++;
 
-    if (freq_index == STEPS) {
+    if (freq_index == SWRSCAN_POINTS) {
         freq_index = 0;
     }
 
-    uint32_t freq = freq_start + (freq_stop - freq_start) * freq_index / STEPS;
+    uint32_t freq = dialog_swrscan_sweep_freq(freq_center, span, freq_index);
     radio_set_freq(freq);
+}
+
+/* Geometria del barrido (issue #113): los SWRSCAN_POINTS puntos parten el span en pasos
+ * exactos y el barrido va de punta a punta (index 0 = borde bajo, index SWRSCAN_POINTS =
+ * borde alto). Una sola fuente para do_init/do_step y para el test. */
+uint32_t dialog_swrscan_sweep_freq(uint32_t center, int32_t span_hz, int index) {
+    uint32_t step = (uint32_t) span_hz / SWRSCAN_POINTS;
+
+    return center - (uint32_t) span_hz / 2u + step * (uint32_t) index;
 }
 
 static lv_coord_t calc_y(float vswr) {
@@ -235,24 +246,24 @@ static void draw_cb(lv_event_t * e) {
     /* Chart: the same samples, fitted to a single parabola so the zigzag of the
      * sampling is not read as the antenna's response (issue #113, replacing the
      * Catmull-Rom spline of #99). Render only: data_filtered is untouched and
-     * the samples keep the x they had (i / (OVERSAMPLE * STEPS) * w); the drawn
+     * the samples keep the x they had (i / (OVERSAMPLE * SWRSCAN_POINTS) * w); the drawn
      * shape is the least-squares valley of the sweep. The minimum the operator
      * reads is the measured sample, not the fit's vertex. */
 
-    static float curve[(STEPS - 1) * ROE_CURVE_OVERSAMPLE + 1];
+    static float curve[(SWRSCAN_POINTS - 1) * ROE_CURVE_OVERSAMPLE + 1];
 
     line_dsc.color = lv_color_white();
     line_dsc.width = 4;
 
-    int m = roe_curve_point_count(STEPS);
+    int m = roe_curve_point_count(SWRSCAN_POINTS);
 
-    roe_curve_resample(data_filtered, STEPS, curve);
+    roe_curve_resample(data_filtered, SWRSCAN_POINTS, curve);
 
     for (int i = 1; i < m; i++) {
-        a.x = x1 + (lv_coord_t)((int32_t)(i - 1) * w / (ROE_CURVE_OVERSAMPLE * STEPS));
+        a.x = x1 + (lv_coord_t)((int32_t)(i - 1) * w / (ROE_CURVE_OVERSAMPLE * SWRSCAN_POINTS));
         a.y = y1 + calc_y(curve[i-1]);
 
-        b.x = x1 + (lv_coord_t)((int32_t)i * w / (ROE_CURVE_OVERSAMPLE * STEPS));
+        b.x = x1 + (lv_coord_t)((int32_t)i * w / (ROE_CURVE_OVERSAMPLE * SWRSCAN_POINTS));
         b.y = y1 + calc_y(curve[i]);
 
         lv_draw_line(draw_ctx, &line_dsc, &a, &b);

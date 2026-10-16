@@ -26,14 +26,24 @@ static int stub_null_label;
 static int stub_started;
 static int stub_stopped;
 
+/* The sweep moves the VFO one point per received packet (do_step -> radio_set_freq): the
+ * test reads this sequence to pin the sweep geometry (issue #113). */
+#define STUB_FREQS 128
+
+static int32_t stub_freqs[STUB_FREQS];
+static int     stub_freq_count;
+
 int swrscan_stub_null_label(void) { return stub_null_label; }
 int swrscan_stub_started(void)    { return stub_started; }
 int swrscan_stub_stopped(void)    { return stub_stopped; }
+int32_t swrscan_stub_freq(int i)      { return stub_freqs[i]; }
+int     swrscan_stub_freq_count(void) { return stub_freq_count; }
 
 void swrscan_stub_reset(void) {
     stub_null_label = 0;
     stub_started    = 0;
     stub_stopped    = 0;
+    stub_freq_count = 0;
 }
 
 /* --- cfg / cfg_cur ---------------------------------------------------------- */
@@ -115,9 +125,11 @@ void dialog_destruct(void) {}
 
 /* --- radio ------------------------------------------------------------------ */
 
-static int32_t last_freq;
-
-void radio_set_freq(int32_t freq) { last_freq = freq; }
+void radio_set_freq(int32_t freq) {
+    if (stub_freq_count < STUB_FREQS) {
+        stub_freqs[stub_freq_count++] = freq;
+    }
+}
 uint16_t radio_change_vol(int16_t df) { (void)df; return 0; }
 
 bool radio_start_swrscan(void) {
