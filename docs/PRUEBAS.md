@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 16/10 ~00:20 | **`da1055ddb0c3`** (tip `7032d3b`) | `9153a40` (#100) + `65cdda6` (#107) | (no corrido) | **23 ok** | **0 en 60 s** | **Desplegado y sano**: build exit 0 (13 s) con el gate OK (13.742.896 B); 1 GUI; barrido 23/0; estado idéntico antes/después; CRASHLOG 0. Incluye el asistente de sintonía (#100) y el fix del bench de CI (#107) |
 | 15/10 ~23:10 | `3ead572b6fe2` (sin cambios) | `e5e6be5` | (no corrido) | no se corrió | **0 en 180 s** | Sano: 1 GUI, pid 18345 estable 3 min, CRASHLOG 0. CPU del hilo principal **68%** (en la sesión anterior medí 104-120% con el mismo build: varía). **#94 cerrado** (ya lo habían cerrado; dejé la validación igual) |
 | 15/10 ~23:35 | `3ead572b6fe2` (sin cambios) | `ed6455d` | (no corrido) | no se corrió | 0 en la muestra | **#91 acotado**: el consumo está en el **hilo principal** (75,8%) y es **user-space** (58% user vs 11% sys), y **NO depende del waterfall** (tapar el waterfall: 68,8→71,0%, igual). Descartados el tema, `pre`/`att` y el kworker del 200% (transitorio mío) |
 | 15/10 ~22:55 | **`3ead572b6fe2`** (build del clon con los merges) | `8d3dd73`..`45da382` | (pendiente) | **23 ok** | **0 en 60 s** | **#94 VALIDADO** (el barrido deja modo/dial/pre/att idénticos) y **#105 corregido** (no era bug del repo: copia vieja del build; se arregla borrándola). **#91 corregido dos veces**: el tema es `Aurora` (no `Sunlit`), el lavado no se reproduce y el kworker del 202% era un transitorio mío. Queda el **GUI ~1,2 núcleos** sostenido |
@@ -57,7 +58,37 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 ---
 
-## 15/10 ~22:55 — `3ead572b6fe2` (build del clon con los merges del #94/#92): #94 validado
+## 16/10 ~00:20 — `da1055ddb0c3` (tip `7032d3b`): el asistente de sintonía (#100) desplegado
+
+**Qué se probó:** el build del tip, que ya traía los merges `9153a40` (RX: asistente de sintonía, buscar el
+mejor spot alrededor, issue #100) y `65cdda6` (bench de CI: el ruido del runner sale `INCONCLUSIVE`).
+
+**Build y deploy, medido:**
+
+```
+$ make x6200-gui-rebuild        -> exit 0 en 13 s
+$ gate: OK: es el firmware del port (ELF32 ARM, 13742896 B, 3/3 marcas)
+$ tools/prueba-gui-en-radio.sh  -> GUI lista
+  radio: gui=da1055ddb0c3 (1 GUI, init=1)
+```
+
+El binario pesa ~5 KB más que el anterior (`3ead572b6fe2`), consistente con la funcionalidad nueva.
+
+**Pruebas en la radio:**
+
+```
+  barrido de las 23 apps:  23 ok | 0 caídas   (405 s)
+  estado antes:  7.152000 MHz LSB 40m SSB vol=0
+  estado despues: 7.152000 MHz LSB 40m SSB vol=0     <- IDÉNTICO (el fix del #94 sigue andando)
+  vigilancia 60 s: pid 24361 sin cambios, 0 caídas
+  CRASHLOG: 0 (log nuevo 03-19-14 y los anteriores)
+```
+
+**No medido**: el asistente de sintonía del #100 **no lo probé a fondo** (es una funcionalidad de RX; en la
+captura `21-build-7032d3b.png` la pantalla principal se ve normal, pero no ejercité el asistente). Queda
+para el dueño de la funcionalidad o para cuando el owner lo pruebe.
+
+## 15/10 ~22:55## 15/10 ~22:55 — `3ead572b6fe2` (build del clon con los merges del #94/#92): #94 validado
 
 **Qué se probó:** el build con `cd3bc97` (restore del estado de radio por snapshot, #94) y `45da382`
 (ancho de línea del waterfall, #92), compilado desde el clon y desplegado.
