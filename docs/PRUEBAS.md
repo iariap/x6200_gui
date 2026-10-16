@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 16/10 ~18:40 | `3604cece0e43` (sin cambios) | `69a6501` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0. #111 sigue |
 | 16/10 ~18:15 | `3604cece0e43` (sin cambios) | `fec1c2a` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0. #111 sigue |
 | 16/10 ~17:50 | `3604cece0e43` (sin cambios) | `3d6c022` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0. El owner sigue en CW 7.012. #111 sigue |
 | 16/10 ~17:45 | `3604cece0e43` (sin cambios) | `7ddfa88` | (se cuelga) | (ya corrido) | **0** | **Rechequeo tras un salto de ~5,5 h** (equipo suspendido): 0 merges, 1 GUI (pid 2889 estable), **CRASHLOG 0 en los 6 últimos app_logs** (ninguno en el hueco), DATA 1% usada, load 0,92. El owner está en **CW 7.012000**. El #111 sigue: log nuevo con 3.857 overflows de 3.814 líneas |
