@@ -1,4 +1,4 @@
-# Evidencia de build — #116: ELF exacto de la radio + verificadores ARM
+# Evidencia de build y banco — #116: ELF exacto de la radio + humo del banco
 
 ## 1. El ELF que corre la radio, reconstruido (md5 verificado)
 
@@ -53,32 +53,99 @@ Y el firmware entero (el `x6200_gui` real, con el fix, en el volumen privado):
 El único warning del build es de `lvgl/widgets/lv_waterfall.c` (`discards 'const'
 qualifier`), del submódulo LVGL pineado, pre-existente y ajeno al cambio.
 
-## 3. Banco QEMU: no alcanzable en aislamiento (con control)
+## 3. Banco QEMU: la GUI corre con el fix (capturas)
 
-El banco **no se pudo correr** en aislamiento, y se midió por qué:
+Se corrió el banco de la casa (chroot compartido `.vfix3`, `docker ps` antes → libre)
+con **el binario del fix**, reconstruido desde el worktree por el gate de la matriz:
 
-1. El camino del crash (la ventana de **mensajes de CW**) **no es alcanzable** por el
-   control remoto: se abre con la tecla `MSG` (`src/main_screen.c:783`, `KEYPAD_MSG`),
-   y el socket no tiene comando de teclado — sólo `app` (22 apps del menú, y la ventana
-   de mensajes de CW no está ahí), `btn` (botón de la página actual) y `page`.
-2. El chroot compartido `.vfix3` y el volumen `x6200-build-output` están **fuera de
-   alcance** por la regla de aislamiento del issue. Con un chroot propio (copia de
-   `target/` del build privado) la GUI **no arranca**: crashea temprano, antes del
-   socket, en `subject_get_int` (inicialización de params/subjects; el banco sin
-   `.vfix3` no tiene el `params.db` preparado ni la tarjeta de audio —
-   `amixer: Mixer attach default error: No such file or directory`).
+> **Corrección de lo que decía antes esta evidencia**: la primera pasada intentó el
+> banco con un chroot **propio** (copia de `target/`) y la GUI crasheaba temprano en
+> `subject_get_int` (entorno: sin `params.db` preparado ni tarjeta de audio,
+> `amixer: Mixer attach default error`). El control lo probó: el binario **sin** el fix
+> (`3604cece`) crasheaba **igual** (mismo `fallo=0x10`, mismo `pc`/`base`). Con el chroot
+> de la casa el banco corre, así que aquel "no alcanzable en aislamiento" era del chroot
+> propio, no del cambio. (El aislamiento de la spec era para el **build de la pila**, no
+> para el banco; el volumen del banco sigue siendo el privado de esta corrida.)
 
-**Control (para no atribuirle el crash al fix)**: el binario **sin** el fix
-(`3604cece`) crashea **igual** en el mismo chroot:
-
-```
-sin fix (3604cece):  CRASHLOG sig=11 fallo=0x10 pc=0x419b8400 lr=0x4fa63c base=0x41ea74
-con fix (6d23c090):  CRASHLOG sig=11 fallo=0x10 pc=0x419b8400 lr=0x4fa9ac base=0x41ea74
+```sh
+export CHROOT=/home/pablo/desa/x6200/.vfix3
+export BUILDROOT=/home/pablo/desa/x6200/buildroot_new/AetherX6200Buildroot
+export VOLUMEN=cw116-build-output          # el volumen privado de esta corrida
+scripts/apps/x6200/check-matrix.sh 223b30ae HEAD <worktree>
 ```
 
-Mismo `pc`/`fallo`/`base` (el `lr` difiere en `0x370` porque el fix corrió las
-direcciones), o sea: es del entorno del chroot propio, no del cambio.
+La matriz sale **exit 0** con todos los checks ok, incluido el banco
+(`reconstruyendo la GUI: el hash de los fuentes cambio` → `captura de humo (home)
+ok`, `binario: md5 6d23c0906c80`, `qemu-cpu: cortex-a7`).
 
-**PENDIENTE honesto**: el crash real bajo radio (la secuencia exacta de teclas del
-owner sobre la ventana de mensajes de CW) es `requires-radio`. Lo que queda fundado
-sin radio es el mecanismo (desensamblado + test nativo).
+**Gate #86** (el binario copiado al chroot es el firmware del port) y provenance:
+
+```
+$ python3 tools/verifica-firmware-port.py .vfix3/usr/sbin/x6200_gui
+OK: /home/pablo/desa/x6200/.vfix3/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13743188 B, 3/3 marcas)
+$ md5sum .vfix3/usr/sbin/x6200_gui
+6d23c0906c808f8f9b046ce359b31a0e  .vfix3/usr/sbin/x6200_gui     <- el build del fix
+$ file .vfix3/usr/sbin/x6200_gui
+ELF 32-bit LSB pie executable, ARM, EABI5, dynamically linked, ..., not stripped
+```
+
+Las capturas (el arnés del banco: `qemu-arm-static` + framebuffer falso, orden por
+el socket de control, rotado 270 como en la radio):
+
+| captura | orden | md5 |
+|---|---|---|
+| [`banco-home.png`](banco-home.png) | (arranque) | `6bfb9f96728c74ab6a30978476668d49` |
+| [`banco-cwtrainer.png`](banco-cwtrainer.png) | `{"cmd":"app","text":"CwTrainer"}` | `fe9af8d4d9b66d19b13b79e199eea777` |
+| [`banco-cw-kbd.png`](banco-cw-kbd.png) | `{"cmd":"app","text":"CW"}` | `9f228d2161d0c67de81574e1e30d0726` |
+
+![CW Trainer en el banco](banco-cwtrainer.png)
+
+La GUI arranca y responde con el fix: `{"t":"ok"}` en cada orden, `343`/`397`/`395`
+colores distintos por captura (no son pantallas vacías).
+
+## 4. La ventana del crash NO es alcanzable desde el socket (probado exacto)
+
+La ventana de mensajes de CW (`dialog_msg_cw`, la de **Send**/**Beacon**) se abre
+**sólo** con la tecla `MSG` del panel (`src/main_screen.c:779`, `case KEYPAD_MSG`,
+que construye `dialog_msg_cw` cuando el modo es CW/CWR). El control remoto **no tiene
+comando de teclado**:
+
+* `{"cmd":"app",...}` sólo acepta las 22 apps del menú (`app_names[]`,
+  `src/remote_server.cpp:137`): está `"CW"` pero es la app **CW Keyboard**
+  (`ACTION_APP_CW_KBD`, `dialog_cw_kbd`), no la ventana de mensajes.
+* `{"cmd":"btn","val":N}` (`remote_server.cpp:736`) aprieta el botón N de la página
+  **actual**. Las páginas de botones (`buttons_group_app/key/dfn/dfl/gen`,
+  `src/buttons.cpp`) no tienen ningún botón que abra la ventana de mensajes; la página
+  `key` es `{btn_key_p1, btn_key_speed, btn_key_volume, btn_key_train, btn_key_tone}`.
+* `{"cmd":"page",...}` sólo cambia de página de botones.
+
+No hay camino, así que **no se inventó**: la ventana del crash queda
+**`requires-radio`** (el mecanismo está fundado por el desensamblado y por el test
+nativo; ver [`../2026-10-16-cw116-radio/`](../2026-10-16-cw116-radio/)).
+
+**Dato que sí aporta el banco**: su tabla `msg_cw` está **vacía** — la misma condición
+que dispara el crash en la radio (`table_rows == 0`):
+
+```
+$ sqlite3 .vfix3/mnt/params.db "select count(*) from msg_cw;"
+0
+```
+
+(la app CW Keyboard lo refleja: su botón de página queda deshabilitado, `pages == 1`).
+O sea: el banco **tiene** la condición del crash; lo único que le falta es la tecla
+`MSG`.
+
+## Limpieza
+
+El banco deja la GUI viva entre llamadas; se termina con:
+
+```sh
+docker rm -f banco-apps
+```
+
+## Alcance
+
+El fix es sólo `src/cw_encoder.c` (guard NULL + dos defectos que el suite nativo
+destapa) y `src/dialog_msg_cw.c` (los callbacks de Send/Beacon) + el test nativo
+nuevo. No toca RF/TX/DSP, `lvgl/` ni el render (el A/B lo confirma: capturas
+pixel-identical).
