@@ -1,111 +1,113 @@
 # #91 — "tema guardado `Outdoor`, que ya no existe": hallazgo fundado
 
-**Corrida**: `factory/theme-fallback-91` · **Fecha**: 2026-10-15 · **Base**: trunk `ad2bd88`
+**Corrida**: `factory/theme-fallback-91` · **Fecha**: 2026-10-15 · **Rebase**: 2026-10-16
+**Base**: trunk `7032d3bb` (ya incluye el #103 = cierre del epic THEMES v2 #66/#74)
 **Issue**: #91 (la radio queda lavada y come ~1,2 núcleos tras el reflash con el fix del #89).
 
 ## Resumen (una línea)
 
-**`Outdoor` SÍ existe** — es un tema **incorporado** (`src/theme.c`, `B_OUTDOOR`), se ofrece en
-Ajustes (posición 1 de 13) y **es el que la radio está dibujando**: lo "lavado" es su paleta clara
-por diseño. No hay tema roto, no hay migración y el fallback del engine ya es completo.
+En el trunk actual **`Outdoor` ya no es un tema**: el #74 retiró los legados, el default es
+**`Aurora`** y un `theme_name=Outdoor` guardado **migra a `Aurora`** al arrancar
+(`_3_migrate_theme_name`); aun sin migrar, `theme_init()` **cae al default completo**. Lo "lavado"
+de la captura del QA era la paleta clara de `Outdoor` **por diseño**, y ese síntoma ya no puede
+volver. Este PR fija el fallback con dos tests nativos y deja la evidencia.
 
-## 1. `Outdoor` existe: es un builtin, no un archivo
+> **Nota de rebase.** La investigación original (base `5e252dfb`) fundó que "`Outdoor` **sí**
+> existía —era un built-in— y lo lavado era su paleta clara por diseño". Eso era correcto **antes**
+> del #74: el #103 retiró los built-ins legados, puso el default en Aurora y reescribió
+> `tests/native/test_theme.c`. Al rebasar sobre el trunk, la parte que importa sobrevive intacta
+> —**el fallback es determinista y completo**— y es la que este PR fija con tests; los números de
+> abajo están re-medidos contra el trunk rebasado.
 
-`src/theme.c`:
+## 1. El estado del trunk: los legados ya no son temas
 
-```c
-enum { B_IU1WXY, B_LEGACY, B_OUTDOOR, B_CLASSIC, B_OUTDOOR_NEG, B_VISION, B_COUNT };
-static const char *const builtin_names[B_COUNT] = {"IU1WXY", "Legacy", "Outdoor", "Classic",
-                                                   "Outdoor-Negative", "VISION"};
+`src/theme.c` ya no tiene `builtin_names[]`/`use_builtin()`: hay **cuatro paletas base internas**
+(`IU1WXY`, `Legacy`, `Outdoor`, `Classic`) que **no se ofrecen ni se cargan por nombre** y sólo
+sirven de plantilla al `base` de un archivo JSON (`base_index()`/`use_base()`). La colección son los
+**seis archivos** de `rootfs/usr/share/x6200/themes/` (Sunlit, Redshift, Sprint, Cathode, Trail,
+Aurora) y el **default es `Aurora`** (`THEME_DEFAULT`, `src/theme.h:211`).
+
+- `theme_list()` ofrece exactamente esos seis (`src/theme.c`, `offered_names[]`).
+- Un `params.theme_name` guardado que no sea uno de los seis **migra a Aurora** al arrancar
+  (`src/params/migrations.c`, `_3_migrate_theme_name`); no borra ningún archivo del usuario.
+- `theme_init()` sólo carga un archivo: nombre vacío, desconocido, retirado o archivo ilegible →
+  `load_file(THEME_DEFAULT)`.
+
+**Medido sobre el binario real (evidencia del trunk, #74)**: con `version=2` y
+`theme_name='Outdoor'` en el `params.db`, el boot aplicó la migración y el `params.db` quedó en
+`theme_name|Aurora`, con el render de Aurora. Ver
+`docs/evidencia/2026-10-15-themes-removal-74/gates.txt` y `banco-migracion-outdoor-a-aurora.png`.
+
+## 2. El fallback: determinista y completo (medido)
+
+`theme_init()` (`src/theme.c:456`) limpia `images[]` y la caché de PNG, intenta `load_file(name)` y,
+si falla, carga `THEME_DEFAULT`; sólo si **ese** archivo tampoco se puede leer usa la plantilla base
+`IU1WXY` como último recurso, para no dejar la GUI sin tema. No hay estado mitad-y-mitad: el
+`load_file()` que gana aplica la plantilla base **entera** (`memcpy(colors, base_colors[b],
+sizeof(colors))`) y después los roles que el archivo declara.
+
+Medición con el resolver real (host, sin qemu; instrumento y salida completa en
+`docs/evidencia/2026-10-15-fallback91/resolver.txt`):
+
+```text
+TC_COUNT=122 default=Aurora
+theme_name=no-such-theme-91 -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=IU1WXY           -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=Outdoor          -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=Classic          -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=Holo             -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=Material 3       -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=RS               -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=                 -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=(NULL)           -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+idempotente: roles_distintos=0 name_a='Aurora' name_b='Aurora'
 ```
 
-`theme_list()` (la lista de *Ajustes → Display → INTERFACE → Theme*) recorre los builtins menos
-`Legacy` y después suma los JSON de `/mnt/themes` + `/usr/share/x6200/themes`. Medido con el
-resolver real (`theme_list()`, `THEMES_DIR_SHIPPED=rootfs/usr/share/x6200/themes`):
+Es decir: los 122 roles, el nombre y la forma salen del default, y pedirlo dos veces da lo mismo.
 
-```
-theme_list n=13
-  [0] IU1WXY   [1] Outdoor   [2] Classic   [3] Outdoor-Negative   [4] VISION
-  [5] Aurora   [6] Holo      [7] Material 3 [8] RS   [9] Redshift  [10] Sprint  [11] Sunlit  [12] Trail
-Outdoor offered: YES
-```
+## 3. Los tests que lo fijan
 
-`theme_init("Outdoor")` entra por `builtin_index()` (match `strcasecmp`, `theme.c:125`) → `b >= 0` →
-`use_builtin(B_OUTDOOR)`: **carga el tema completo**, sin pasar por el fallback. Por eso el `grep`
-del log del QA por `theme|image|not found` da 0: nunca se disparó el `"Theme %s not found"`.
+`tests/native/test_theme.c`:
 
-### Por qué la radio (y el QA) lo dan por "inexistente"
+- `test_unknown_theme_is_complete_default()` — un nombre irresoluble cae al default **completo**:
+  los 122 roles, el nombre y la forma de `THEME_DEFAULT`; idempotente; y **sin mezclar** con el tema
+  que hubiera cargado antes (carga Sunlit y después el inexistente: el estado queda idéntico al
+  default, no una mitad de cada uno).
+- `test_broken_theme_file_falls_back()` — un archivo de tema que **existe** pero no parsea (JSON
+  roto, DATA a medio copiar) cae igual al default completo: la resolución no puede depender de que
+  el archivo sea válido.
 
-`Outdoor` es **compilado** (tabla en `src/theme.h`, columna `b`), **no es un JSON**. La lista que
-reportó el QA —`Aurora, Holo, Material 3, Redshift, RS, Sprint, Sunlit, Trail` (8)— es exactamente
-el contenido de **`/mnt/themes`** (los archivos), donde `Outdoor` no está porque no es un archivo.
-De ahí la conclusión "ya no existe". En el desplegable de Ajustes sí está (posición 1).
+El test **muerde**: rompiendo el fallback a mano (dejar el tema anterior en pantalla en vez de
+cargar `THEME_DEFAULT`) la suite pasa de `1512 comprobaciones, 0 fallos` a `1512 comprobaciones,
+124 fallos` (los 122 roles + el nombre + el radio). La mutación no se commitea: **este PR no toca
+código de producción** — el fix lo trajo el #74 y acá sólo se fija el invariante.
 
-## 2. La radio dibuja `Outdoor`, no `Sunlit` (medido en la captura)
-
-Colores de la captura `docs/evidencia/2026-10-15-validacion-arreglos/13-tras-fix89.png` (800x480),
-contados por píxel:
-
-| zona / rol | píxeles | color medido | quién lo declara |
-|---|---:|---|---|
-| barra superior (`bar`) | 7705 | `#F2F2F2` | **`Outdoor`** (`theme.h` col. `b`, `bar`) |
-| waterfall parada 0 | 46725 | `#FAFAFA` | **`Outdoor`** (`theme_shape.waterfall[0]`) |
-| fondo/panel | 125486 | `#FFFFFF` | **`Outdoor`** (`bg`/`panel` col. `b`) |
-| `Sunlit.json` `bg` | **0** | `#F7F5EB` | `Sunlit.json` — **no aparece** |
-| `Sunlit.json` `bar` | **0** | `#E7E4D8` | `Sunlit.json` — **no aparece** |
-
-La barra `#F2F2F2` es **`Outdoor`** (su `bar` compilado); `Sunlit.json` declara `bar` `#E7E4D8`, que
-**no aparece** en la captura. El comentario del issue (y el commit `ad2bd88`) fundaron "el tema
-activo es `Sunlit`" matcheando el pie `#FFFFFF` contra el `panel` de `Sunlit.json` — pero `Outdoor`
-también tiene `panel` `#FFFFFF`, y la barra es el discriminante: `#F2F2F2` = `Outdoor`, no `Sunlit`.
-**Lo lavado es `Outdoor` por diseño** (es el tema "claro, para el sol": `theme.c:95`,
-`docs/THEMES.md`).
-
-## 3. No hay migración de temas
-
-`src/params/migrations.c` sólo tiene 3 migraciones (`_0` init, `_1` tabla `digital_modes`, `_2` freq
-de ATU). No hay ninguna que reescriba `theme_name`. `grep -rn "Sunlit\|migra" src/` no devuelve
-ninguna migración de temas. El mapeo `Outdoor -> Sunlit` que supone el issue **no existe en el
-código**.
-
-## 4. El fallback del engine ya es determinista y completo
-
-`theme_init()` (`src/theme.c:479`): si el nombre no es un builtin y no hay archivo legible, cae a
-`use_builtin(B_IU1WXY)` — **un tema completo**, no un estado mitad-y-mitad: `use_builtin()` copia
-los **122 roles** (`memcpy(colors, builtin_colors[src], sizeof(colors))`) y el `theme_shape` entero,
-y `theme_init` limpia `images[]`/caché antes. Verificado con el resolver real:
-
-```
-TC_COUNT=122 mismatched roles=0 name='IU1WXY'   (nombre inexistente)
-second pass mismatched=0                         (idempotente)
-```
-
-Cubierto por tests nuevos en `tests/native/test_theme.c`
-(`test_unknown_theme_is_complete_default`, `test_broken_theme_file_falls_back`): tema que no existe
-y archivo de tema que existe pero no parsea → los 122 roles del default, nombre `IU1WXY`, y pedirlo
-dos veces da lo mismo. **No hizo falta cambiar `src/`**: la garantía ya estaba; el test la fija.
-
-## 4b. Banco: el repro, con captura
+## 4. Evidencia del repro (banco, base pre-#74)
 
 `tools/captura-banco.sh` (chroot ARM + `qemu-arm-static`, `RECONSTRUIR=no`), inyectando
-`theme_name` en `mnt/params.db` (tabla `params`). Evidencia en
-`docs/evidencia/2026-10-15-fallback91/`:
+`theme_name` en `mnt/params.db`. Las capturas se tomaron sobre la base `5e252dfb`, **antes** del #74
+—cuando `Outdoor` todavía era un built-in y el default era `IU1WXY`— y se conservan como el registro
+del repro:
 
 | `theme_name` | captura | resultado |
 |---|---|---|
-| ausente (default `IU1WXY`) | `banco-default-iu1wxy.png` | `bg #27313A` (oscuro) |
-| `Outdoor` | `banco-tema-outdoor.png` | `bg #FFFFFF` + `bar #F2F2F2` = **Outdoor (claro)**, reproduce la captura de la radio |
+| ausente (default `IU1WXY` de esa base) | `banco-default-iu1wxy.png` | `bg #27313A` (oscuro) |
+| `Outdoor` | `banco-tema-outdoor.png` | `bg #FFFFFF` + `bar #F2F2F2` = **Outdoor (claro)**: reproduce el "lavado" de la radio |
 | `no-such-theme-91` | `banco-tema-invalido.png` | log `Theme no-such-theme-91 not found, using IU1WXY`; PNG **byte-idéntico** al default |
 
-Es decir: el banco reproduce el "lavado" con `Outdoor` y confirma que un params inválido deja el
-default **completo** (idéntico al arranque normal), sin mitad-y-mitad ni redibujo raro.
+En el trunk rebasado ese `theme_name=Outdoor` **ya no puede** dar la pantalla lavada: migra a Aurora
+(§1) y, sin migración, el fallback cae al default completo (§2). No se re-corrió el banco en esta
+pasada: el volumen del build (`x6200-build-output`) está compartido con otros contenedores del host
+(`banco-apps`, …) y un `dirclean`+rebuild los afectaría; el banco del #74 (§1) ya documenta la
+migración sobre el binario real, que es el mismo camino que acá se mide en el resolver.
 
 ## 5. Lo que queda abierto (no es el tema)
 
 El **~1,2 núcleos** y el redibujo permanente: el framebuffer se dibuja con un buffer de pantalla
 completa (`src/main.c:55`, `DISP_BUF_SIZE (800*480*4)`, un solo buffer) + `sw_rotate`/`ROT_90`
-(`main.c:233`), y el S-meter/spectrum/waterfall se invalidan solos. **No es del tema**: el mismo
-camino corre para cualquier tema.
+(`src/main.c:233`), y el S-meter/spectrum/waterfall se invalidan solos. **No es del tema**: el mismo
+camino corre para cualquier tema, y el QA del trunk lo acotó al hilo principal y a user-space
+(`docs/PRUEBAS.md`, 15/10 ~23:35).
 
 Se intentó medir en el banco como proxy relativo (`docker stats` del contenedor, 3 muestras de 3 s):
 `Outdoor` ~100,6 % y `IU1WXY` ~100,7 % — **QEMU satura el core del host en los dos**, así que no

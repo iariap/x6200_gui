@@ -390,22 +390,39 @@ static void test_waterfall_signal_width(void) {
     unsetenv("THEMES_DIR_SHIPPED");
 }
 
-/* issue #91: un tema que no se puede resolver (ni builtin ni archivo) tiene que caer al
- * default COMPLETO. Los 122 roles salen del default: ninguno queda del tema pedido ni a medio
- * aplicar (mitad-y-mitad), el nombre que reporta el engine es el del default (no el pedido) y
- * pedirlo dos veces da lo mismo (sin estado que se arrastre entre intentos). */
+/* issue #91: un tema que no se puede resolver (ni archivo del usuario ni de la coleccion) tiene
+ * que caer al default COMPLETO. El default es THEME_DEFAULT (Aurora, issue #74): los 122 roles,
+ * el nombre y la forma salen del default, ninguno queda del tema pedido ni a medio aplicar
+ * (mitad-y-mitad), y pedirlo dos veces da lo mismo (sin estado que se arrastre entre intentos). */
 static void test_unknown_theme_is_complete_default(void) {
-    uint32_t def[TC_COUNT];
+    const char *dir = getenv("X6200_SHIPPED_THEMES");
+    uint32_t    def[TC_COUNT];
+    int16_t     def_radius, def_border;
 
-    theme_init("IU1WXY");
+    if (dir == NULL || *dir == 0) {
+        return;                     /* el runner no los pasó: nada que comprobar */
+    }
+
+    setenv("THEMES_DIR_SHIPPED", dir, 1);
+    setenv("THEMES_DIR", "/tmp/test_themes_sin_usuario", 1);     /* sin temas del usuario */
+
+    /* El default de la coleccion, cargado por su nombre: la referencia. */
+    theme_init(THEME_DEFAULT);
+    CHECK(strcmp(theme_shape.name, THEME_DEFAULT) == 0);
+
     for (int i = 0; i < TC_COUNT; i++) def[i] = theme_hex((theme_color_t) i);
+
+    def_radius = theme_shape.radius;
+    def_border = theme_shape.border;
 
     theme_init("no-such-theme-91");
 
     for (int i = 0; i < TC_COUNT; i++) {
         CHECK(theme_hex((theme_color_t) i) == def[i]);
     }
-    CHECK(strcmp(theme_shape.name, "IU1WXY") == 0);
+    CHECK(strcmp(theme_shape.name, THEME_DEFAULT) == 0);        /* el nombre es el del default */
+    CHECK(theme_shape.radius == def_radius);                    /* y la forma tambien */
+    CHECK(theme_shape.border == def_border);
     CHECK(theme_waterfall() != NULL);
 
     /* Idempotente: pedirlo de nuevo da exactamente lo mismo */
@@ -413,29 +430,50 @@ static void test_unknown_theme_is_complete_default(void) {
     for (int i = 0; i < TC_COUNT; i++) {
         CHECK(theme_hex((theme_color_t) i) == def[i]);
     }
+    CHECK(strcmp(theme_shape.name, THEME_DEFAULT) == 0);
+
+    /* Y no mezcla con el tema que hubiera antes: cargar otro tema y despues pedir el
+     * inexistente deja el estado identico al default, no una mitad de cada uno. */
+    theme_init("Sunlit");
+    theme_init("no-such-theme-91");
+    for (int i = 0; i < TC_COUNT; i++) {
+        CHECK(theme_hex((theme_color_t) i) == def[i]);
+    }
+    CHECK(strcmp(theme_shape.name, THEME_DEFAULT) == 0);
+    CHECK(theme_shape.radius == def_radius);
+
+    unsetenv("THEMES_DIR_SHIPPED");
 }
 
 /* Y un archivo de tema que EXISTE pero no se puede leer (JSON roto, DATA a medio copiar) cae
  * igual al default completo: la resolucion no puede depender de que el archivo sea valido. */
 static void test_broken_theme_file_falls_back(void) {
-    uint32_t def[TC_COUNT];
+    const char *dir = getenv("X6200_SHIPPED_THEMES");
+    uint32_t    def[TC_COUNT];
 
+    if (dir == NULL || *dir == 0) {
+        return;                     /* el runner no los pasó: nada que comprobar */
+    }
+
+    setenv("THEMES_DIR_SHIPPED", dir, 1);
     mkdir(DIR, 0777);
     setenv("THEMES_DIR", DIR, 1);
     write_file(DIR "/roto91.json", "{ esto no es json");
 
-    theme_init("IU1WXY");
+    theme_init(THEME_DEFAULT);
     for (int i = 0; i < TC_COUNT; i++) def[i] = theme_hex((theme_color_t) i);
 
-    theme_init("roto91");
+    theme_init("roto91");       /* el archivo existe, pero no parsea */
+
     for (int i = 0; i < TC_COUNT; i++) {
         CHECK(theme_hex((theme_color_t) i) == def[i]);
     }
-    CHECK(strcmp(theme_shape.name, "IU1WXY") == 0);
+    CHECK(strcmp(theme_shape.name, THEME_DEFAULT) == 0);
     CHECK(theme_waterfall() != NULL);
 
     unlink(DIR "/roto91.json");
     rmdir(DIR);
+    unsetenv("THEMES_DIR_SHIPPED");
 }
 
 void test_theme(void) {

@@ -5,6 +5,13 @@
 **Dato clave**: el flicker del #89 DESAPARECIÓ (1 solo GUI) — pero al boot la radio queda
 **lavada** y come ~1,2 núcleos con el tema guardado 'Outdoor', que "ya no existe".
 
+> **Actualización (rebase 2026-10-16, trunk `7032d3bb`).** El trunk avanzó y el #103 (cierre del
+> epic THEMES v2, #66/#74) **retiró los legados**: `Outdoor` ya no es un built-in ni un tema, el
+> default de la colección es **Aurora** y un `theme_name=Outdoor` guardado **migra a Aurora** al
+> arrancar. Las premisas de "Qué investigar" (puntos 1 y 2) y la invariante "NO remover legados"
+> quedaron **superadas por el #103**: acá se conservan como el registro del pedido original. El
+> estado final, medido, está en [`docs/fallback91.md`](fallback91.md).
+
 ## Qué investigar (la pregunta principal del issue)
 1. **¿'Outdoor' existe en el trunk atual?** El epic v2 NO removió los legados aún (eso es #74),
    entonces `Outdoor` debería seguir cargado en ROM (`src/theme.c`: verificá SI está en el

@@ -1,9 +1,17 @@
 Banco (tools/captura-banco.sh, CHROOT=.vfix3, RECONSTRUIR=no, QEMU cortex-a7)
 version ea1cd8b, binario md5 bb40ea94dedd, fuente md5 8cd56acbe053
 
+OJO: estas capturas son de la base 5e252dfb, ANTES del #74 (cuando `Outdoor` todavia era un
+built-in y el default de la coleccion era `IU1WXY`). Se conservan como el registro del repro.
+En el trunk rebasado (7032d3bb, con #103) `theme_name=Outdoor` migra a `Aurora` y el fallback
+cae al default completo: ver docs/fallback91.md §1/§2 y
+docs/evidencia/2026-10-15-themes-removal-74/gates.txt (la migracion medida sobre el binario
+real). El banco no se re-corrio en esta pasada: el volumen x6200-build-output esta compartido
+con otros contenedores del host.
+
 params.db (mnt/params.db, tabla params, name=theme_name):
 
-  theme_name ausente (default IU1WXY) -> banco-default-iu1wxy.png
+  theme_name ausente (default IU1WXY en esa base) -> banco-default-iu1wxy.png
       bg (39,49,58) = #27313A = IU1WXY (oscuro). 330 colores.
   theme_name = "Outdoor"             -> banco-tema-outdoor.png
       bg #FFFFFF (160855 px) + bar #F2F2F2 (6425 px) = Outdoor (claro) -> "lavado".
