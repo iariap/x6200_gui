@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 16/10 ~21:35 | `3604cece0e43` (sigue) | `917604e` | (no corrido) | (no corrido) | — | **Reproducción del #114 intentada y NO lograda** (autorizada por el owner): `nb_level` 5→0, `nb_width` 5→0 y los tres juntos → el equipo **sobrevivió** (uptime continuo 448→508 s, mismo pid, CRASHLOG 0) y el NB quedó **restaurado**. **Pista**: cuando murió el log iba a **~16/s** y ahora a **~0,4/s** → la precondición parece ser el **flood del #111** (intermitente) |
 | 16/10 ~21:25 | `3604cece0e43` (sigue) tras **reinicio del equipo** | `a4ba51f` | (no corrido) | (no corrido) | — | **El equipo se reinició al aplicar el NB** (uptime 50 s): **issue #114**. Sin CRASHLOG (murió por debajo de la GUI), el log del run colgado (77.020 líneas, **99% overflows**) **termina cortado en medio del flood a ~16/s**, `nb=1` con `nb_level=0`/`nb_width=0`, y el kernel tiene `panic=10` + watchdog de 16 s (explica el reboot). Reproducción **no hecha** (colgaría la radio del owner otra vez) |
 | 16/10 ~21:10 | `3604cece0e43` (sin cambios) | `2e61ace` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0. #111 sigue |
 | 16/10 ~20:40 | `3604cece0e43` (sin cambios) | `06cf0f7` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0. #111 sigue |
