@@ -7,11 +7,11 @@
   "improvement": false,
   "revision_a": {
     "label": "a",
-    "sha": "5944ff5b3e769709a893299df850e6d0e3ea33b6"
+    "sha": "23926241f39904259bd23c6e10ec48bb77ec0ab9"
   },
   "revision_b": {
     "label": "b",
-    "sha": "9a540991d462c1deb7b94e7dced7d2092f07b484"
+    "sha": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc"
   },
   "scenarios": [
     "app-bands",
@@ -83,7 +83,7 @@
     "a": [
       {
         "scenario": "app-bands",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "13fa691f2dc14f079ef8503a618f21d9a6cf9a81fa7cd2010972c4d0e103bcc4",
         "width": 800,
         "height": 480,
@@ -240,7 +240,7 @@
       },
       {
         "scenario": "app-close-home",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "7edd1f99c8e71ba47d40f3673b8890b6ded1c899669dfb8576cb1bff68737154",
         "width": 800,
         "height": 480,
@@ -397,7 +397,7 @@
       },
       {
         "scenario": "apps-menu-1",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "f71526ea0d4a97b0d2841c9daed0da5ac0730e940b8398d03d4db58045798f01",
         "width": 800,
         "height": 480,
@@ -544,7 +544,7 @@
       },
       {
         "scenario": "apps-menu-2",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "4fcf1151f68adea5e904907dfcfaee1a3c0032f82fcb4ac6dc2a7a9f30cc19ba",
         "width": 800,
         "height": 480,
@@ -691,7 +691,7 @@
       },
       {
         "scenario": "apps-menu-3",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "ff88205346e16cfb5da130a62867e11f99d21d9db15a782ab9033770edd27d43",
         "width": 800,
         "height": 480,
@@ -838,7 +838,7 @@
       },
       {
         "scenario": "apps-menu-4",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "090217343df22c3e45d32b0ebd7f9d9fec26af077ec90fec1d42e1004fdba510",
         "width": 800,
         "height": 480,
@@ -985,7 +985,7 @@
       },
       {
         "scenario": "apps-menu-5",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "7d8694cb6d1e5cc336a54e07f858e1860c30a7e2ec3c006f2dae29455606b151",
         "width": 800,
         "height": 480,
@@ -1132,7 +1132,7 @@
       },
       {
         "scenario": "apps-menu-6",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "905ac96a5e7ec83327d0cc5bb7621ce6ada59a04cf5feaed18b6b8685203a29c",
         "width": 800,
         "height": 480,
@@ -1279,7 +1279,7 @@
       },
       {
         "scenario": "autotune",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "905ac96a5e7ec83327d0cc5bb7621ce6ada59a04cf5feaed18b6b8685203a29c",
         "width": 800,
         "height": 480,
@@ -1446,7 +1446,7 @@
       },
       {
         "scenario": "autotune-found",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "51b5671895a5c42076ac4f5ff15cdec075d0080ccd0af2c0ef67b8cb63024084",
         "width": 800,
         "height": 480,
@@ -1613,7 +1613,7 @@
       },
       {
         "scenario": "autotune-progress",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "534dde51228d60562c924a25b2853f1b2c99a99bd4ca4c88f5343f1cd3b8eec7",
         "width": 800,
         "height": 480,
@@ -1780,7 +1780,7 @@
       },
       {
         "scenario": "bench-render",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "7f3983cce89395071ebc1fe68b628c31f5aeb355f1473c31172b662ba985140f",
         "width": 800,
         "height": 480,
@@ -1917,7 +1917,7 @@
       },
       {
         "scenario": "bt-dialog",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "fd4b5860038a2e7d26077da539427191200727d9b6f80df209406fbf5180b915",
         "width": 800,
         "height": 480,
@@ -2084,7 +2084,7 @@
       },
       {
         "scenario": "bt-dialog-tema-aurora",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "fd4b5860038a2e7d26077da539427191200727d9b6f80df209406fbf5180b915",
         "width": 800,
         "height": 480,
@@ -2251,7 +2251,7 @@
       },
       {
         "scenario": "bt-dialog-tema-cathode",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "b17ebb882c142786f09621f961deb362f10ca0f557d7c38fb2cf1d8fdd572a5f",
         "width": 800,
         "height": 480,
@@ -2418,7 +2418,7 @@
       },
       {
         "scenario": "bt-dialog-tema-redshift",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "5bf903af0dcb6c8fe41a619ca2d2023a34c2b7fa432ee30921c1bad7b7a92422",
         "width": 800,
         "height": 480,
@@ -2585,7 +2585,7 @@
       },
       {
         "scenario": "bt-dialog-tema-sprint",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "f21c5d041335ed93bcef7743fc3793f8a53c14d68a4267a0371d7b7487d23285",
         "width": 800,
         "height": 480,
@@ -2752,7 +2752,7 @@
       },
       {
         "scenario": "bt-dialog-tema-sunlit",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "18dc3e4a28a0c717022ef0b7f0d7c91625823525532abac16cdc43dc2b9f148f",
         "width": 800,
         "height": 480,
@@ -2919,7 +2919,7 @@
       },
       {
         "scenario": "bt-dialog-tema-trail",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "2197a15895e7592aca474390962b4cf333b3e1e3432abaf4f5105050709d2a64",
         "width": 800,
         "height": 480,
@@ -3086,7 +3086,7 @@
       },
       {
         "scenario": "home-bateria-externa",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "ab03e9d1d3fd4019b82f6442a694f6a73a97830ff8e144bac8dd6e47d0e192af",
         "width": 800,
         "height": 480,
@@ -3223,7 +3223,7 @@
       },
       {
         "scenario": "home-frecuencia-extrema",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "73bac5ba79abf9661cc9b6bf4bf7250b5963c4440641e576829cf7d9a2f8c9ba",
         "width": 800,
         "height": 480,
@@ -3360,7 +3360,7 @@
       },
       {
         "scenario": "home-usb-20m",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "7edd1f99c8e71ba47d40f3673b8890b6ded1c899669dfb8576cb1bff68737154",
         "width": 800,
         "height": 480,
@@ -3497,7 +3497,7 @@
       },
       {
         "scenario": "main-bateria-baja",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "d7f888a299647bdcd08220d52c70dd76c50e5d3ebfffad8bca688864e3d6b072",
         "width": 800,
         "height": 480,
@@ -3634,7 +3634,7 @@
       },
       {
         "scenario": "main-espectro-agua",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "b982cbfdc08f8a6adfc45e5415134e6fd70d0a0acff53f682e826bdafc76ebda",
         "width": 800,
         "height": 480,
@@ -3771,7 +3771,7 @@
       },
       {
         "scenario": "main-foco",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "7edd1f99c8e71ba47d40f3673b8890b6ded1c899669dfb8576cb1bff68737154",
         "width": 800,
         "height": 480,
@@ -3908,7 +3908,7 @@
       },
       {
         "scenario": "main-frecuencia-dseg",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "138ce0dfe32267b988c21df9529399bf4f039ebe3add109e61234b7a8afb5c2b",
         "width": 800,
         "height": 480,
@@ -4045,7 +4045,7 @@
       },
       {
         "scenario": "main-natural",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "9ac7766338851ca81921d55cd084af343e5557e4ec23c7347fd4d87c802048a2",
         "width": 800,
         "height": 480,
@@ -4182,7 +4182,7 @@
       },
       {
         "scenario": "main-natural-eco",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "bb67e9d1759e4ce7b751087bd7b7c6c09337a505abc48b8b73368301498e4ff7",
         "width": 800,
         "height": 480,
@@ -4319,7 +4319,7 @@
       },
       {
         "scenario": "main-tema-aurora",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "7edd1f99c8e71ba47d40f3673b8890b6ded1c899669dfb8576cb1bff68737154",
         "width": 800,
         "height": 480,
@@ -4456,7 +4456,7 @@
       },
       {
         "scenario": "main-tema-aurora-agua",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "b982cbfdc08f8a6adfc45e5415134e6fd70d0a0acff53f682e826bdafc76ebda",
         "width": 800,
         "height": 480,
@@ -4593,7 +4593,7 @@
       },
       {
         "scenario": "main-tema-aurora-eco",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "d7f888a299647bdcd08220d52c70dd76c50e5d3ebfffad8bca688864e3d6b072",
         "width": 800,
         "height": 480,
@@ -4730,7 +4730,7 @@
       },
       {
         "scenario": "main-tema-aurora-tx",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "5eaa355b21ad4456abdf3911ad110694ffef66f0735cd686ecc56ed14154ccf9",
         "width": 800,
         "height": 480,
@@ -4867,7 +4867,7 @@
       },
       {
         "scenario": "main-tema-cathode",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "50fbfb03309a6f340e5380f1a32ff115025b4e9fa9227aea7df073b57a8aab4a",
         "width": 800,
         "height": 480,
@@ -5004,7 +5004,7 @@
       },
       {
         "scenario": "main-tema-cathode-agua",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "fcc0f2eaf4c392f012c8f793078114a854ea2ae8a83c16073f0c8515d7bca76a",
         "width": 800,
         "height": 480,
@@ -5141,7 +5141,7 @@
       },
       {
         "scenario": "main-tema-cathode-eco",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "1d11566a427665410c9c56a67b24304890188deec3a697e0dc54767c994146d0",
         "width": 800,
         "height": 480,
@@ -5278,7 +5278,7 @@
       },
       {
         "scenario": "main-tema-cathode-tx",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "34babf3cec40f6541362e9e52e971b5e27a8d17e62dd3aa54b2d329267ff7d3a",
         "width": 800,
         "height": 480,
@@ -5415,7 +5415,7 @@
       },
       {
         "scenario": "main-tema-redshift",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "335cc28f91b73cacede9864385424b743f77cb6634abc2d1f00a36be798d431a",
         "width": 800,
         "height": 480,
@@ -5552,7 +5552,7 @@
       },
       {
         "scenario": "main-tema-redshift-agua",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "dbc56c6c61242b2926e1977664aca66cb14aa28c93b9f1c0a5b9496d5ffaeb86",
         "width": 800,
         "height": 480,
@@ -5689,7 +5689,7 @@
       },
       {
         "scenario": "main-tema-redshift-eco",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "727feaf3bc1be8737f0270b513576291d8d7e9ec3990fd3b14498224ff18f229",
         "width": 800,
         "height": 480,
@@ -5826,7 +5826,7 @@
       },
       {
         "scenario": "main-tema-redshift-tx",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "289b08a9db853ea380614930ca53b4b52d0f24dd3aadc2c7d4e0fe7b32c080fd",
         "width": 800,
         "height": 480,
@@ -5963,7 +5963,7 @@
       },
       {
         "scenario": "main-tema-sprint",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "fdc2d456247079373b44827fc3966d3eaf92a39ea55d24943717b6510796736b",
         "width": 800,
         "height": 480,
@@ -6100,7 +6100,7 @@
       },
       {
         "scenario": "main-tema-sprint-agua",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "20d54f32bace5d01f21935f802af8b8b1cad0d932e8568e56483bb8b11ed0916",
         "width": 800,
         "height": 480,
@@ -6237,7 +6237,7 @@
       },
       {
         "scenario": "main-tema-sprint-eco",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "b077c4be5bc50695fbe330426bc76ba9a216bac25ecca5e6e7f6980a014fe13b",
         "width": 800,
         "height": 480,
@@ -6374,7 +6374,7 @@
       },
       {
         "scenario": "main-tema-sprint-tx",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "5b10bfa6bb61bb7eec73da8c0d8b3088e70e1d1fc4e66eeab01fa4d9ea3e3549",
         "width": 800,
         "height": 480,
@@ -6511,7 +6511,7 @@
       },
       {
         "scenario": "main-tema-sunlit",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "d5a9778614d2a9886ac875db102d5ee14d34f55a5640d2b0b2b183258599d164",
         "width": 800,
         "height": 480,
@@ -6648,7 +6648,7 @@
       },
       {
         "scenario": "main-tema-sunlit-agua",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "197081ebc716317b9af8cb60848417232cb81d2f50e7a18eecfaab44fc12b393",
         "width": 800,
         "height": 480,
@@ -6785,7 +6785,7 @@
       },
       {
         "scenario": "main-tema-sunlit-eco",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "0ea54e141124a8d4c38c86b665d353744d03d1a4641b2f62b6afc26313cc414d",
         "width": 800,
         "height": 480,
@@ -6922,7 +6922,7 @@
       },
       {
         "scenario": "main-tema-sunlit-tx",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "d6aab5035ffa8541a7bf19b9d616c8eb8d3907d715557699dfc7c7cdaa3a61e0",
         "width": 800,
         "height": 480,
@@ -7059,7 +7059,7 @@
       },
       {
         "scenario": "main-tema-trail",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "4723161f0f37f29e344e03b5e49ac87c6b4a3c2ed7662b842719b5a4e29a7c54",
         "width": 800,
         "height": 480,
@@ -7196,7 +7196,7 @@
       },
       {
         "scenario": "main-tema-trail-agua",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "753d19ccd64c9642401f5ac3aab1a8211f38c533a3848a354203c87b1ed6cf53",
         "width": 800,
         "height": 480,
@@ -7333,7 +7333,7 @@
       },
       {
         "scenario": "main-tema-trail-eco",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "4c831e137a8d344ebc44a159839efdb6e705bc46af1f3f10b30ed7666fe92d1a",
         "width": 800,
         "height": 480,
@@ -7470,7 +7470,7 @@
       },
       {
         "scenario": "main-tema-trail-tx",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "f934738fd1f0d4fbc3f22066694c3450d223c122bd3ebf645cb7647af48fbad4",
         "width": 800,
         "height": 480,
@@ -7607,7 +7607,7 @@
       },
       {
         "scenario": "main-tx-simulado",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "5eaa355b21ad4456abdf3911ad110694ffef66f0735cd686ecc56ed14154ccf9",
         "width": 800,
         "height": 480,
@@ -7744,7 +7744,7 @@
       },
       {
         "scenario": "settings-audio",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "368b7e3f3e0804bac69c995cc58d13c4b9b91daa8cb274285a6b6ebf9fdaa7a2",
         "width": 800,
         "height": 480,
@@ -7931,7 +7931,7 @@
       },
       {
         "scenario": "settings-bands",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "13fa691f2dc14f079ef8503a618f21d9a6cf9a81fa7cd2010972c4d0e103bcc4",
         "width": 800,
         "height": 480,
@@ -8093,13 +8093,13 @@
       },
       {
         "scenario": "settings-home",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
-        "png_sha256": "53ae82ef8431fda75b682ceb2d91bf6c53c5ff5155f2f6caf86d267dd8802142",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
+        "png_sha256": "25c43b50883926ef27de5eb7abc6da8eeefa26c8a68276e8714fd358d249b89d",
         "width": 800,
         "height": 480,
         "flushes": 7,
         "flushed_pixels": 1135170,
-        "framebuffer_fnv1a": "0xb139a95fc3f12c91",
+        "framebuffer_fnv1a": "0xb75e683b786ea3f2",
         "coverage": [
           {
             "component": "theme.c",
@@ -8280,7 +8280,7 @@
       },
       {
         "scenario": "settings-perfil",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "4dc956a078e63c480fcaf0ebf9d8e8c2ec5294d5022a2d1c3702bcaa6163b725",
         "width": 800,
         "height": 480,
@@ -8467,7 +8467,7 @@
       },
       {
         "scenario": "settings-tema-aurora",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "4dc956a078e63c480fcaf0ebf9d8e8c2ec5294d5022a2d1c3702bcaa6163b725",
         "width": 800,
         "height": 480,
@@ -8654,7 +8654,7 @@
       },
       {
         "scenario": "settings-tema-cathode",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "b37b2bd58d75d3b8a83fd432e484b81d2116c3fd6f43d42dc6f335647bcfd6a9",
         "width": 800,
         "height": 480,
@@ -8841,7 +8841,7 @@
       },
       {
         "scenario": "settings-tema-redshift",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "902842e11766628d3597ebb372ad2b160c2fc711b1861c66428836cd399d870f",
         "width": 800,
         "height": 480,
@@ -9028,7 +9028,7 @@
       },
       {
         "scenario": "settings-tema-sprint",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "011f9021cc04f4f1f60ea5a10b308856e1826e508e31f3f4f1b35bc3031b1a20",
         "width": 800,
         "height": 480,
@@ -9215,7 +9215,7 @@
       },
       {
         "scenario": "settings-tema-sunlit",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "681b05a7e2af31b6b5224cd175cf05940310b8c44589506a6447660a4bb14334",
         "width": 800,
         "height": 480,
@@ -9402,7 +9402,7 @@
       },
       {
         "scenario": "settings-tema-trail",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "5038dec4a4551aca109ed6464d083e889d9b7b3652a916a405da31972383f765",
         "width": 800,
         "height": 480,
@@ -9589,7 +9589,7 @@
       },
       {
         "scenario": "settings-wfbat",
-        "revision": "5944ff5b3e769709a893299df850e6d0e3ea33b6",
+        "revision": "23926241f39904259bd23c6e10ec48bb77ec0ab9",
         "png_sha256": "ec09167752b9066ba6430d8d8b8d349aded5ed1bf49a3923767037c704d10366",
         "width": 800,
         "height": 480,
@@ -9778,7 +9778,7 @@
     "b": [
       {
         "scenario": "app-bands",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "13fa691f2dc14f079ef8503a618f21d9a6cf9a81fa7cd2010972c4d0e103bcc4",
         "width": 800,
         "height": 480,
@@ -9935,7 +9935,7 @@
       },
       {
         "scenario": "app-close-home",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "7edd1f99c8e71ba47d40f3673b8890b6ded1c899669dfb8576cb1bff68737154",
         "width": 800,
         "height": 480,
@@ -10092,7 +10092,7 @@
       },
       {
         "scenario": "apps-menu-1",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "f71526ea0d4a97b0d2841c9daed0da5ac0730e940b8398d03d4db58045798f01",
         "width": 800,
         "height": 480,
@@ -10239,7 +10239,7 @@
       },
       {
         "scenario": "apps-menu-2",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "4fcf1151f68adea5e904907dfcfaee1a3c0032f82fcb4ac6dc2a7a9f30cc19ba",
         "width": 800,
         "height": 480,
@@ -10386,7 +10386,7 @@
       },
       {
         "scenario": "apps-menu-3",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "ff88205346e16cfb5da130a62867e11f99d21d9db15a782ab9033770edd27d43",
         "width": 800,
         "height": 480,
@@ -10533,7 +10533,7 @@
       },
       {
         "scenario": "apps-menu-4",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "090217343df22c3e45d32b0ebd7f9d9fec26af077ec90fec1d42e1004fdba510",
         "width": 800,
         "height": 480,
@@ -10680,7 +10680,7 @@
       },
       {
         "scenario": "apps-menu-5",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "7d8694cb6d1e5cc336a54e07f858e1860c30a7e2ec3c006f2dae29455606b151",
         "width": 800,
         "height": 480,
@@ -10827,7 +10827,7 @@
       },
       {
         "scenario": "apps-menu-6",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "905ac96a5e7ec83327d0cc5bb7621ce6ada59a04cf5feaed18b6b8685203a29c",
         "width": 800,
         "height": 480,
@@ -10974,7 +10974,7 @@
       },
       {
         "scenario": "autotune",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "905ac96a5e7ec83327d0cc5bb7621ce6ada59a04cf5feaed18b6b8685203a29c",
         "width": 800,
         "height": 480,
@@ -11141,7 +11141,7 @@
       },
       {
         "scenario": "autotune-found",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "51b5671895a5c42076ac4f5ff15cdec075d0080ccd0af2c0ef67b8cb63024084",
         "width": 800,
         "height": 480,
@@ -11308,7 +11308,7 @@
       },
       {
         "scenario": "autotune-progress",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "534dde51228d60562c924a25b2853f1b2c99a99bd4ca4c88f5343f1cd3b8eec7",
         "width": 800,
         "height": 480,
@@ -11475,7 +11475,7 @@
       },
       {
         "scenario": "bench-render",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "7f3983cce89395071ebc1fe68b628c31f5aeb355f1473c31172b662ba985140f",
         "width": 800,
         "height": 480,
@@ -11612,7 +11612,7 @@
       },
       {
         "scenario": "bt-dialog",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "fd4b5860038a2e7d26077da539427191200727d9b6f80df209406fbf5180b915",
         "width": 800,
         "height": 480,
@@ -11779,7 +11779,7 @@
       },
       {
         "scenario": "bt-dialog-tema-aurora",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "fd4b5860038a2e7d26077da539427191200727d9b6f80df209406fbf5180b915",
         "width": 800,
         "height": 480,
@@ -11946,7 +11946,7 @@
       },
       {
         "scenario": "bt-dialog-tema-cathode",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "b17ebb882c142786f09621f961deb362f10ca0f557d7c38fb2cf1d8fdd572a5f",
         "width": 800,
         "height": 480,
@@ -12113,7 +12113,7 @@
       },
       {
         "scenario": "bt-dialog-tema-redshift",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "5bf903af0dcb6c8fe41a619ca2d2023a34c2b7fa432ee30921c1bad7b7a92422",
         "width": 800,
         "height": 480,
@@ -12280,7 +12280,7 @@
       },
       {
         "scenario": "bt-dialog-tema-sprint",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "f21c5d041335ed93bcef7743fc3793f8a53c14d68a4267a0371d7b7487d23285",
         "width": 800,
         "height": 480,
@@ -12447,7 +12447,7 @@
       },
       {
         "scenario": "bt-dialog-tema-sunlit",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "18dc3e4a28a0c717022ef0b7f0d7c91625823525532abac16cdc43dc2b9f148f",
         "width": 800,
         "height": 480,
@@ -12614,7 +12614,7 @@
       },
       {
         "scenario": "bt-dialog-tema-trail",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "2197a15895e7592aca474390962b4cf333b3e1e3432abaf4f5105050709d2a64",
         "width": 800,
         "height": 480,
@@ -12781,7 +12781,7 @@
       },
       {
         "scenario": "home-bateria-externa",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "ab03e9d1d3fd4019b82f6442a694f6a73a97830ff8e144bac8dd6e47d0e192af",
         "width": 800,
         "height": 480,
@@ -12918,7 +12918,7 @@
       },
       {
         "scenario": "home-frecuencia-extrema",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "73bac5ba79abf9661cc9b6bf4bf7250b5963c4440641e576829cf7d9a2f8c9ba",
         "width": 800,
         "height": 480,
@@ -13055,7 +13055,7 @@
       },
       {
         "scenario": "home-usb-20m",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "7edd1f99c8e71ba47d40f3673b8890b6ded1c899669dfb8576cb1bff68737154",
         "width": 800,
         "height": 480,
@@ -13192,7 +13192,7 @@
       },
       {
         "scenario": "main-bateria-baja",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "d7f888a299647bdcd08220d52c70dd76c50e5d3ebfffad8bca688864e3d6b072",
         "width": 800,
         "height": 480,
@@ -13329,7 +13329,7 @@
       },
       {
         "scenario": "main-espectro-agua",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "b982cbfdc08f8a6adfc45e5415134e6fd70d0a0acff53f682e826bdafc76ebda",
         "width": 800,
         "height": 480,
@@ -13466,7 +13466,7 @@
       },
       {
         "scenario": "main-foco",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "7edd1f99c8e71ba47d40f3673b8890b6ded1c899669dfb8576cb1bff68737154",
         "width": 800,
         "height": 480,
@@ -13603,7 +13603,7 @@
       },
       {
         "scenario": "main-frecuencia-dseg",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "138ce0dfe32267b988c21df9529399bf4f039ebe3add109e61234b7a8afb5c2b",
         "width": 800,
         "height": 480,
@@ -13740,7 +13740,7 @@
       },
       {
         "scenario": "main-natural",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "9ac7766338851ca81921d55cd084af343e5557e4ec23c7347fd4d87c802048a2",
         "width": 800,
         "height": 480,
@@ -13877,7 +13877,7 @@
       },
       {
         "scenario": "main-natural-eco",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "bb67e9d1759e4ce7b751087bd7b7c6c09337a505abc48b8b73368301498e4ff7",
         "width": 800,
         "height": 480,
@@ -14014,7 +14014,7 @@
       },
       {
         "scenario": "main-tema-aurora",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "7edd1f99c8e71ba47d40f3673b8890b6ded1c899669dfb8576cb1bff68737154",
         "width": 800,
         "height": 480,
@@ -14151,7 +14151,7 @@
       },
       {
         "scenario": "main-tema-aurora-agua",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "b982cbfdc08f8a6adfc45e5415134e6fd70d0a0acff53f682e826bdafc76ebda",
         "width": 800,
         "height": 480,
@@ -14288,7 +14288,7 @@
       },
       {
         "scenario": "main-tema-aurora-eco",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "d7f888a299647bdcd08220d52c70dd76c50e5d3ebfffad8bca688864e3d6b072",
         "width": 800,
         "height": 480,
@@ -14425,7 +14425,7 @@
       },
       {
         "scenario": "main-tema-aurora-tx",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "5eaa355b21ad4456abdf3911ad110694ffef66f0735cd686ecc56ed14154ccf9",
         "width": 800,
         "height": 480,
@@ -14562,7 +14562,7 @@
       },
       {
         "scenario": "main-tema-cathode",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "50fbfb03309a6f340e5380f1a32ff115025b4e9fa9227aea7df073b57a8aab4a",
         "width": 800,
         "height": 480,
@@ -14699,7 +14699,7 @@
       },
       {
         "scenario": "main-tema-cathode-agua",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "fcc0f2eaf4c392f012c8f793078114a854ea2ae8a83c16073f0c8515d7bca76a",
         "width": 800,
         "height": 480,
@@ -14836,7 +14836,7 @@
       },
       {
         "scenario": "main-tema-cathode-eco",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "1d11566a427665410c9c56a67b24304890188deec3a697e0dc54767c994146d0",
         "width": 800,
         "height": 480,
@@ -14973,7 +14973,7 @@
       },
       {
         "scenario": "main-tema-cathode-tx",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "34babf3cec40f6541362e9e52e971b5e27a8d17e62dd3aa54b2d329267ff7d3a",
         "width": 800,
         "height": 480,
@@ -15110,7 +15110,7 @@
       },
       {
         "scenario": "main-tema-redshift",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "335cc28f91b73cacede9864385424b743f77cb6634abc2d1f00a36be798d431a",
         "width": 800,
         "height": 480,
@@ -15247,7 +15247,7 @@
       },
       {
         "scenario": "main-tema-redshift-agua",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "dbc56c6c61242b2926e1977664aca66cb14aa28c93b9f1c0a5b9496d5ffaeb86",
         "width": 800,
         "height": 480,
@@ -15384,7 +15384,7 @@
       },
       {
         "scenario": "main-tema-redshift-eco",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "727feaf3bc1be8737f0270b513576291d8d7e9ec3990fd3b14498224ff18f229",
         "width": 800,
         "height": 480,
@@ -15521,7 +15521,7 @@
       },
       {
         "scenario": "main-tema-redshift-tx",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "289b08a9db853ea380614930ca53b4b52d0f24dd3aadc2c7d4e0fe7b32c080fd",
         "width": 800,
         "height": 480,
@@ -15658,7 +15658,7 @@
       },
       {
         "scenario": "main-tema-sprint",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "fdc2d456247079373b44827fc3966d3eaf92a39ea55d24943717b6510796736b",
         "width": 800,
         "height": 480,
@@ -15795,7 +15795,7 @@
       },
       {
         "scenario": "main-tema-sprint-agua",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "20d54f32bace5d01f21935f802af8b8b1cad0d932e8568e56483bb8b11ed0916",
         "width": 800,
         "height": 480,
@@ -15932,7 +15932,7 @@
       },
       {
         "scenario": "main-tema-sprint-eco",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "b077c4be5bc50695fbe330426bc76ba9a216bac25ecca5e6e7f6980a014fe13b",
         "width": 800,
         "height": 480,
@@ -16069,7 +16069,7 @@
       },
       {
         "scenario": "main-tema-sprint-tx",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "5b10bfa6bb61bb7eec73da8c0d8b3088e70e1d1fc4e66eeab01fa4d9ea3e3549",
         "width": 800,
         "height": 480,
@@ -16206,7 +16206,7 @@
       },
       {
         "scenario": "main-tema-sunlit",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "d5a9778614d2a9886ac875db102d5ee14d34f55a5640d2b0b2b183258599d164",
         "width": 800,
         "height": 480,
@@ -16343,7 +16343,7 @@
       },
       {
         "scenario": "main-tema-sunlit-agua",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "197081ebc716317b9af8cb60848417232cb81d2f50e7a18eecfaab44fc12b393",
         "width": 800,
         "height": 480,
@@ -16480,7 +16480,7 @@
       },
       {
         "scenario": "main-tema-sunlit-eco",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "0ea54e141124a8d4c38c86b665d353744d03d1a4641b2f62b6afc26313cc414d",
         "width": 800,
         "height": 480,
@@ -16617,7 +16617,7 @@
       },
       {
         "scenario": "main-tema-sunlit-tx",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "d6aab5035ffa8541a7bf19b9d616c8eb8d3907d715557699dfc7c7cdaa3a61e0",
         "width": 800,
         "height": 480,
@@ -16754,7 +16754,7 @@
       },
       {
         "scenario": "main-tema-trail",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "4723161f0f37f29e344e03b5e49ac87c6b4a3c2ed7662b842719b5a4e29a7c54",
         "width": 800,
         "height": 480,
@@ -16891,7 +16891,7 @@
       },
       {
         "scenario": "main-tema-trail-agua",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "753d19ccd64c9642401f5ac3aab1a8211f38c533a3848a354203c87b1ed6cf53",
         "width": 800,
         "height": 480,
@@ -17028,7 +17028,7 @@
       },
       {
         "scenario": "main-tema-trail-eco",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "4c831e137a8d344ebc44a159839efdb6e705bc46af1f3f10b30ed7666fe92d1a",
         "width": 800,
         "height": 480,
@@ -17165,7 +17165,7 @@
       },
       {
         "scenario": "main-tema-trail-tx",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "f934738fd1f0d4fbc3f22066694c3450d223c122bd3ebf645cb7647af48fbad4",
         "width": 800,
         "height": 480,
@@ -17302,7 +17302,7 @@
       },
       {
         "scenario": "main-tx-simulado",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "5eaa355b21ad4456abdf3911ad110694ffef66f0735cd686ecc56ed14154ccf9",
         "width": 800,
         "height": 480,
@@ -17439,7 +17439,7 @@
       },
       {
         "scenario": "settings-audio",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "43959ee15444575d6bb8d8b0922977e633db00c047bf28f9b6bf1ed5db48a2fc",
         "width": 800,
         "height": 480,
@@ -17626,7 +17626,7 @@
       },
       {
         "scenario": "settings-bands",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "13fa691f2dc14f079ef8503a618f21d9a6cf9a81fa7cd2010972c4d0e103bcc4",
         "width": 800,
         "height": 480,
@@ -17788,13 +17788,13 @@
       },
       {
         "scenario": "settings-home",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
-        "png_sha256": "3e6232be8e04fb2bb18623d6133e57573de88def2fabe6705c8f38c52aada675",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
+        "png_sha256": "efb34e21069b4aeffabbd3b88b405f183d1ff620009697c461a35ec236138b0a",
         "width": 800,
         "height": 480,
         "flushes": 15,
         "flushed_pixels": 1267780,
-        "framebuffer_fnv1a": "0x05d16dd762faa515",
+        "framebuffer_fnv1a": "0x93cd849cf086f671",
         "coverage": [
           {
             "component": "theme.c",
@@ -17975,7 +17975,7 @@
       },
       {
         "scenario": "settings-perfil",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "69e73ad5d1317e5abdd1036713646b126f3e0cae2d987d23892514d843c57303",
         "width": 800,
         "height": 480,
@@ -18162,7 +18162,7 @@
       },
       {
         "scenario": "settings-tema-aurora",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "69e73ad5d1317e5abdd1036713646b126f3e0cae2d987d23892514d843c57303",
         "width": 800,
         "height": 480,
@@ -18349,7 +18349,7 @@
       },
       {
         "scenario": "settings-tema-cathode",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "ce5c274c9b9481e3bdec1a38a741c5e537810b419efcbdb8fd8ae62f072d43eb",
         "width": 800,
         "height": 480,
@@ -18536,7 +18536,7 @@
       },
       {
         "scenario": "settings-tema-redshift",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "7bc7f5f2bcc46152a430b98c9359db9e212a1f0f39f2321e978490c7b131b394",
         "width": 800,
         "height": 480,
@@ -18723,7 +18723,7 @@
       },
       {
         "scenario": "settings-tema-sprint",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "19361b22378f959677b065def154dda183d2ddfa35c8200e5cef2ff8a2f4bfb8",
         "width": 800,
         "height": 480,
@@ -18910,7 +18910,7 @@
       },
       {
         "scenario": "settings-tema-sunlit",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "03e1c9436012a05a3682940af417677e677966d40f8a1c47ca523934d218faf8",
         "width": 800,
         "height": 480,
@@ -19097,7 +19097,7 @@
       },
       {
         "scenario": "settings-tema-trail",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
         "png_sha256": "cf47d93cdd53cb699711654c38172b43045f3d8818f5cb357ceadea854923735",
         "width": 800,
         "height": 480,
@@ -19284,13 +19284,13 @@
       },
       {
         "scenario": "settings-wfbat",
-        "revision": "9a540991d462c1deb7b94e7dced7d2092f07b484",
-        "png_sha256": "c6e6fc823e57096851814220941a096f960fa2cd48f061919f7f4bf600136c11",
+        "revision": "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc",
+        "png_sha256": "53695ed554dbbeeac596dec0b45eb44207390ab3a2da645a2c093ba196cf97e8",
         "width": 800,
         "height": 480,
         "flushes": 15,
         "flushed_pixels": 1267780,
-        "framebuffer_fnv1a": "0xc69813c94bc88469",
+        "framebuffer_fnv1a": "0x1d918144bd7f7d0f",
         "coverage": [
           {
             "component": "theme.c",
@@ -19480,10 +19480,10 @@
       "evidence": [],
       "details": {
         "revision_a": [
-          "5944ff5b3e769709a893299df850e6d0e3ea33b6"
+          "23926241f39904259bd23c6e10ec48bb77ec0ab9"
         ],
         "revision_b": [
-          "9a540991d462c1deb7b94e7dced7d2092f07b484"
+          "8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc"
         ]
       }
     },
@@ -19496,7 +19496,7 @@
       "details": {
         "explained_changes": [
           "settings-audio: 21589 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_dialogo', 'ajustes_perfil', 'ajustes_scrollbar', 'ajustes_tema', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']",
-          "settings-home: 64209 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_dialogo', 'ajustes_perfil', 'ajustes_scrollbar', 'ajustes_tema', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']",
+          "settings-home: 64387 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_dialogo', 'ajustes_perfil', 'ajustes_scrollbar', 'ajustes_tema', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']",
           "settings-perfil: 21688 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_dialogo', 'ajustes_perfil', 'ajustes_scrollbar', 'ajustes_tema', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']",
           "settings-tema-aurora: 21688 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_dialogo', 'ajustes_perfil', 'ajustes_scrollbar', 'ajustes_tema', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']",
           "settings-tema-cathode: 21899 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_dialogo', 'ajustes_perfil', 'ajustes_scrollbar', 'ajustes_tema', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']",
@@ -19504,7 +19504,7 @@
           "settings-tema-sprint: 21438 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_dialogo', 'ajustes_perfil', 'ajustes_scrollbar', 'ajustes_tema', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']",
           "settings-tema-sunlit: 22126 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_dialogo', 'ajustes_perfil', 'ajustes_scrollbar', 'ajustes_tema', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']",
           "settings-tema-trail: 21896 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_dialogo', 'ajustes_perfil', 'ajustes_scrollbar', 'ajustes_tema', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']",
-          "settings-wfbat: 21913 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_dialogo', 'ajustes_perfil', 'ajustes_scrollbar', 'ajustes_tema', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']"
+          "settings-wfbat: 21790 changed pixels, all inside ['ajustes_anio', 'ajustes_audio_ganancia', 'ajustes_dialogo', 'ajustes_perfil', 'ajustes_scrollbar', 'ajustes_tema', 'barra_superior', 'botones', 'espectro', 'frecuencia', 'reloj_potencia', 's_metro', 'waterfall']"
         ]
       }
     },
@@ -24823,7 +24823,7 @@
       "rule": "region_min_content:espectro",
       "fixture": "settings-home",
       "ok": true,
-      "detail": "content 0.3597 >= 0.0200",
+      "detail": "content 0.3607 >= 0.0200",
       "path": null,
       "baseline_issue": null
     },
@@ -30916,8 +30916,8 @@
     {
       "scenario": "settings-home",
       "identical": false,
-      "changed_pixels": 64209,
-      "changed_fraction": 0.167211,
+      "changed_pixels": 64387,
+      "changed_fraction": 0.167674,
       "boxes": [
         {
           "x0": 481,
@@ -30980,7 +30980,7 @@
           "y1": 175,
           "width": 93,
           "height": 57,
-          "pixels": 1505
+          "pixels": 1587
         },
         {
           "x0": 595,
@@ -30992,6 +30992,15 @@
           "pixels": 1331
         },
         {
+          "x0": 691,
+          "y0": 81,
+          "x1": 784,
+          "y1": 116,
+          "width": 93,
+          "height": 35,
+          "pixels": 859
+        },
+        {
           "x0": 499,
           "y0": 369,
           "x1": 592,
@@ -30999,15 +31008,6 @@
           "width": 93,
           "height": 36,
           "pixels": 823
-        },
-        {
-          "x0": 691,
-          "y0": 81,
-          "x1": 761,
-          "y1": 116,
-          "width": 70,
-          "height": 35,
-          "pixels": 763
         },
         {
           "x0": 499,
@@ -32780,9 +32780,9 @@
         },
         {
           "region": "espectro",
-          "changed_pixels": 13324,
+          "changed_pixels": 13502,
           "total_pixels": 91200,
-          "fraction": 0.146096
+          "fraction": 0.148048
         },
         {
           "region": "frecuencia",
@@ -32816,9 +32816,9 @@
         },
         {
           "region": "ajustes_anio",
-          "changed_pixels": 1669,
+          "changed_pixels": 1801,
           "total_pixels": 5880,
-          "fraction": 0.283844
+          "fraction": 0.306293
         },
         {
           "region": "ajustes_perfil",
@@ -32834,21 +32834,21 @@
         },
         {
           "region": "ajustes_audio_ganancia",
-          "changed_pixels": 7492,
+          "changed_pixels": 7528,
           "total_pixels": 45840,
-          "fraction": 0.163438
+          "fraction": 0.164223
         },
         {
           "region": "ajustes_tema",
-          "changed_pixels": 10118,
+          "changed_pixels": 10260,
           "total_pixels": 45840,
-          "fraction": 0.220724
+          "fraction": 0.223822
         },
         {
           "region": "ajustes_dialogo",
-          "changed_pixels": 42772,
+          "changed_pixels": 42950,
           "total_pixels": 277008,
-          "fraction": 0.154407
+          "fraction": 0.15505
         }
       ],
       "dimension_mismatch": null
@@ -34538,8 +34538,8 @@
     {
       "scenario": "settings-wfbat",
       "identical": false,
-      "changed_pixels": 21913,
-      "changed_fraction": 0.057065,
+      "changed_pixels": 21790,
+      "changed_fraction": 0.056745,
       "boxes": [
         {
           "x0": 321,
@@ -34612,15 +34612,6 @@
           "width": 17,
           "height": 16,
           "pixels": 184
-        },
-        {
-          "x0": 752,
-          "y0": 391,
-          "x1": 784,
-          "y1": 405,
-          "width": 32,
-          "height": 14,
-          "pixels": 123
         },
         {
           "x0": 187,
@@ -34767,9 +34758,9 @@
         },
         {
           "region": "waterfall",
-          "changed_pixels": 389,
+          "changed_pixels": 266,
           "total_pixels": 177600,
-          "fraction": 0.00219
+          "fraction": 0.001498
         },
         {
           "region": "botones",
@@ -34821,9 +34812,9 @@
         },
         {
           "region": "ajustes_dialogo",
-          "changed_pixels": 389,
+          "changed_pixels": 266,
           "total_pixels": 277008,
-          "fraction": 0.001404
+          "fraction": 0.00096
         }
       ],
       "dimension_mismatch": null

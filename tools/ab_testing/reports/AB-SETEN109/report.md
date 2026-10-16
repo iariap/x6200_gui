@@ -2,8 +2,8 @@
 
 - Date: 2026-10-16
 - Profile: `host-ui`
-- A (baseline): `5944ff5b3e769709a893299df850e6d0e3ea33b6` (a)
-- B (candidate): `9a540991d462c1deb7b94e7dced7d2092f07b484` (b)
+- A (baseline): `23926241f39904259bd23c6e10ec48bb77ec0ab9` (a)
+- B (candidate): `8d4f4338ebd8ce3f0296771aabffca1eb9f6eecc` (b)
 - Scenarios: `app-bands`, `app-close-home`, `apps-menu-1`, `apps-menu-2`, `apps-menu-3`, `apps-menu-4`, `apps-menu-5`, `apps-menu-6`, `autotune`, `autotune-found`, `autotune-progress`, `bench-render`, `bt-dialog`, `bt-dialog-tema-aurora`, `bt-dialog-tema-cathode`, `bt-dialog-tema-redshift`, `bt-dialog-tema-sprint`, `bt-dialog-tema-sunlit`, `bt-dialog-tema-trail`, `home-bateria-externa`, `home-frecuencia-extrema`, `home-usb-20m`, `main-bateria-baja`, `main-espectro-agua`, `main-foco`, `main-frecuencia-dseg`, `main-natural`, `main-natural-eco`, `main-tema-aurora`, `main-tema-aurora-agua`, `main-tema-aurora-eco`, `main-tema-aurora-tx`, `main-tema-cathode`, `main-tema-cathode-agua`, `main-tema-cathode-eco`, `main-tema-cathode-tx`, `main-tema-redshift`, `main-tema-redshift-agua`, `main-tema-redshift-eco`, `main-tema-redshift-tx`, `main-tema-sprint`, `main-tema-sprint-agua`, `main-tema-sprint-eco`, `main-tema-sprint-tx`, `main-tema-sunlit`, `main-tema-sunlit-agua`, `main-tema-sunlit-eco`, `main-tema-sunlit-tx`, `main-tema-trail`, `main-tema-trail-agua`, `main-tema-trail-eco`, `main-tema-trail-tx`, `main-tx-simulado`, `settings-audio`, `settings-bands`, `settings-home`, `settings-perfil`, `settings-tema-aurora`, `settings-tema-cathode`, `settings-tema-redshift`, `settings-tema-sprint`, `settings-tema-sunlit`, `settings-tema-trail`, `settings-wfbat`
 
 ## Verdict: **FAIL** (exit 1)
@@ -76,7 +76,7 @@
 | main-tx-simulado | yes | 0 | 0.000% | 0 | — |
 | settings-audio | no | 21589 | 5.622% | 17 | espectro, frecuencia, botones, ajustes_anio, ajustes_scrollbar, ajustes_dialogo |
 | settings-bands | yes | 0 | 0.000% | 0 | — |
-| settings-home | no | 64209 | 16.721% | 205 | espectro, frecuencia, waterfall, botones, ajustes_anio, ajustes_perfil, ajustes_scrollbar, ajustes_audio_ganancia, ajustes_tema, ajustes_dialogo |
+| settings-home | no | 64387 | 16.767% | 205 | espectro, frecuencia, waterfall, botones, ajustes_anio, ajustes_perfil, ajustes_scrollbar, ajustes_audio_ganancia, ajustes_tema, ajustes_dialogo |
 | settings-perfil | no | 21688 | 5.648% | 17 | waterfall, botones, ajustes_scrollbar, ajustes_dialogo |
 | settings-tema-aurora | no | 21688 | 5.648% | 17 | waterfall, botones, ajustes_scrollbar, ajustes_dialogo |
 | settings-tema-cathode | no | 21899 | 5.703% | 17 | waterfall, botones, ajustes_scrollbar, ajustes_dialogo |
@@ -84,7 +84,7 @@
 | settings-tema-sprint | no | 21438 | 5.583% | 14 | waterfall, botones, ajustes_scrollbar, ajustes_dialogo |
 | settings-tema-sunlit | no | 22126 | 5.762% | 16 | waterfall, botones, ajustes_scrollbar, ajustes_dialogo |
 | settings-tema-trail | no | 21896 | 5.702% | 17 | waterfall, botones, ajustes_scrollbar, ajustes_dialogo |
-| settings-wfbat | no | 21913 | 5.707% | 22 | waterfall, botones, ajustes_scrollbar, ajustes_dialogo |
+| settings-wfbat | no | 21790 | 5.674% | 21 | waterfall, botones, ajustes_scrollbar, ajustes_dialogo |
 
 ## Coverage (declared by the harness)
 

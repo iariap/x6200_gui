@@ -4055,3 +4055,105 @@ de la tabla. `tests/test_bench_host_noise.py` reconstruye las `ScenarioStats` y 
 - mover `flushes` (arriba o abajo) o el área → `FAIL`;
 - un escenario ruidoso junto a uno real → el veredicto combinado es `FAIL` (el peor gana);
 - `HOST_NOISE_MARKER == "host noise"` (lo greppea el paso de CI).
+
+---
+
+## 2026-10-16 — Ajustes #109: la desviación de performance del diálogo, **aceptada** por el owner (corrida `factory/settings-en-order-109`)
+
+El issue #109 pasa los **ocho tabs** del diálogo de Ajustes al inglés de ham radio y los reordena
+por utilidad para hacer contactos (`Operation · Audio · Spectrum · Clock · More >` /
+`Display · Appearance · Actions · Info · < More`). El cambio es de labels/orden/paginación —no
+toca el render— pero **mueve el proxy de costo** del gate `Performance` del A/B en los escenarios
+`settings-*`. Esta sección deja el delta medido, la causa, la decisión del owner (aceptar y
+documentar, **sin tocar presupuestos**) y cómo lo juzga el CI.
+
+### El delta medido
+
+A = `23926241` (tip de `lu2dsx/x6200-rom`, el #112 del campo Año), B = el candidato. Gate
+`Performance` de `AB-SETEN109` (`tools/ab_testing/reports/AB-SETEN109/results.json`):
+
+| escenarios | `flushes` A→B | Δ (budget 20 %) | `flushed_pixels` A→B | Δ (budget 10 %) |
+|---|---|---|---|---|
+| `settings-home`, `settings-audio`, `settings-wfbat` | 7 → 15 | **+114.3 %** | 1 135 170 → 1 267 780 | **+11.7 %** |
+| `settings-perfil`, `settings-tema-{aurora,cathode,redshift,sprint,sunlit,trail}` | 6 → 14 | **+133.3 %** | 1 003 170 → 1 135 780 | **+13.2 %** |
+
+Los **otros 54 escenarios** del suite quedan byte-idénticos (`0.0 %` en los dos proxies): el delta
+está confinado a las diez fixtures que abren el diálogo de Ajustes.
+
+### La firma: un costo **one-off al abrir**, no una regresión de operación
+
+Dos hechos del payload hacen la firma legible:
+
+- El incremento es un **constante**: **+8 flushes** y **+132 610 px** exactos en **las diez**
+  fixtures, sin importar cuánto navegue cada una (0, 1 o 2 pulsaciones de tab; 1, 3 o 5 grupos de
+  scroll). Un costo que dependiera de la navegación o del scroll no daría el mismo número en
+  `settings-audio` (un grupo de distancia) y en `settings-perfil` (cinco, más dos pulsaciones).
+- El **estado estable es idéntico**. El benchmark de reloj real (el job de CI `UI Performance`)
+  descarta los `warmup_frames` y mide medias por frame sobre 20 frames; ahí el trabajo por frame
+  no se mueve:
+
+  ```text
+  $ uv run x6200-ab benchmark --a 23926241 --b HEAD \
+        --scenario settings-home --scenario settings-perfil --scenario settings-wfbat
+  benchmark …: PASS (exit 0)
+    settings-home    PASS  p95 +1.6 %   flushes +0.0 %   area +0.0 %
+    settings-perfil  PASS  p95 +9.1 %   flushes +0.0 %   area +0.0 %
+    settings-wfbat   PASS  p95 -4.0 %   flushes +0.0 %   area +0.0 %
+  ```
+
+  Con `flushes_mean` 1.0 → 1.0 y `redrawn_area_mean` 384 000 → 384 000 px en los tres: lo que
+  costaba el frame ya establecido no cambió.
+
+### Causa: el foco inicial en el dropdown de Operation y la transición de 80 ms del tema
+
+Lo único que cambia al **abrir** el diálogo con el orden nuevo es el **foco inicial**. Antes el
+diálogo abría en su primer grupo (Clock) y el foco caía en el primer campo de la fila de fecha
+(un spinbox); ahora abre en **Operation**, cuyo primer widget navegable es el **dropdown de Freq
+acceleration** (`make_freq_accel` → `dropdown_uint8(grid, &params.freq_accel, …)`,
+`src/dialog_settings.c`). LVGL anima el cambio de estilo del foco con la transición del tema por
+defecto —**80 ms** (`LV_THEME_DEFAULT_TRANSITION_TIME 80`, `lv_conf.h`)—, así que el resalte del
+dropdown cuesta unos frames extra durante la ventana de settle. Es el mismo trabajo de siempre
+para la pantalla en reposo, sólo que ahora hay un objeto enfocado que antes no estaba.
+
+Que el delta sea **constante** (+8 / +132 610 px) en las diez fixtures es lo que descarta las
+otras hipótesis (scroll a un grupo más lejano, una pulsación de tab extra): ninguna de las dos
+podría dar el mismo número con distancias y pulsaciones distintas.
+
+### Decisión del owner (2026-10-16): aceptar y documentar
+
+El owner aprobó **aceptar la desviación y documentarla**, y **no tocar `budgets.yaml`**. El A/B
+va a seguir mostrando `Performance FAIL` para esta corrida: eso queda **registrado como
+aceptado**, no escondido. El patrón de la casa es el mismo de siempre —el gate no se relaja y el
+reporte dice la verdad—; la lectura es que el delta es un costo one-off de apertura con estado
+estable sin cambio, no una regresión de operación.
+
+### Cómo lo juzga el CI (investigado; **sin** cambio de política)
+
+Los tres puntos que la spec pidió investigar:
+
+1. **¿Corre el `compare` completo con los mismos budgets?** El job **`UI Visual Regression`**
+   (`.github/workflows/ab-testing.yml`, `visual`) corre `x6200-ab compare --experiment-id
+   AB-ci-visual` con el perfil por defecto `host-ui`, y su paso de reporte falla el job con
+   **cualquier gate `required` en `FAIL`** (`quality_gates.py`: `Performance` es required en
+   `host-ui`). Ese `compare` usa los budgets **`performance`** de `quality/budgets.yaml`
+   (`flushed_pixels` 10 %, `flushes` 20 %) sobre los **totales** de la captura —los mismos
+   números de la tabla—, así que **el CI reportaría el mismo `Performance FAIL` y bloquearía ese
+   job**. El job `UI Performance (render benchmark, host)` es otro camino: corre `x6200-ab
+   benchmark` con los budgets **`benchmark`** (`p95` 25 %, `flushes` 20 %, área 20 %) sobre medias
+   **por frame** con warm-up descartado, y con esos proxies en `0.0 %` **pasa** (ver arriba).
+
+2. **¿Existe excepción por fixture/escenario sin relajar el budget global?** **No para
+   performance.** Los dos mecanismos con alcance acotado que existen son `RuleException`
+   (`quality_config.py`: regla + fixture + fecha de expiración) para los **quality contracts** y
+   `ExpectedChange` (`contracts.yaml`: región + fecha) para la **regresión visual**. Ninguno
+   cubre el proxy de costo de render: `PerformanceBudget` no tiene forma por fixture ni registro
+   de desviaciones conocidas, y la tolerancia `host_noise` del benchmark
+   (`compare_scenario`) sólo aplica a un breach **p95-only** con **ambos proxies en `0.0 %`
+   exactos** —acá los proxies se mueven, así que no aplica.
+
+3. **Conclusión: PENDIENTE para decisión del orquestador.** Sin relajar el budget global (lo que
+   el owner prohibió) o sin agregar un mecanismo nuevo, el job `UI Visual Regression` del CI
+   queda rojo por este delta. No se implementó ningún cambio de política en esta corrida.
+
+[#109]: https://github.com/iariap/x6200_gui/issues/109
+[#112]: https://github.com/iariap/x6200_gui/issues/112
