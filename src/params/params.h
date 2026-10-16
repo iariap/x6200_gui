@@ -76,6 +76,11 @@ typedef enum {
     ACTION_ATU_TUNE,
     ACTION_WF_MODE,
     ACTION_APP_BANDS,
+
+    /* Asistente de sintonia fina (issue #100). No es una ACTION_APP_*: no abre
+     * dialogo, corre sobre la pantalla principal (mueve el dial) y se despacha en
+     * main_screen_action() desde el boton "Auto Tune" de la pagina APP 6. */
+    ACTION_ATUNE,
 } press_action_t;
 
 typedef enum {

@@ -12,6 +12,7 @@
 
 
 void test_adaptive_tuning(void);
+void test_autotune(void);
 void test_audio_enhancement(void);
 void test_ft8_udp(void);
 void test_update_check(void);
@@ -34,6 +35,7 @@ void test_cw_decoder(void);
 
 int main(void) {
     test_adaptive_tuning();
+    test_autotune();
     test_audio_enhancement();
     test_ft8_udp();
     test_update_check();

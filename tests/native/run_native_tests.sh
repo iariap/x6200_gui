@@ -36,9 +36,9 @@ cp "$SRC/cw_decoder.c" "$SRC/cw_decoder.h" "$CW_STAGE/"
 cp "$DIR/stubs_cw/pannel.h" "$DIR/stubs_cw/remote_server.h" "$CW_STAGE/"
 cp "$DIR/stubs/lvgl/lvgl.h" "$CW_STAGE/lvgl/"
 
-SOURCES="$SRC/adaptive_tuning.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c $CW_STAGE/cw_decoder.c \
+SOURCES="$SRC/adaptive_tuning.c $SRC/autotune.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c $CW_STAGE/cw_decoder.c \
 $DIR/stubs/stubs.c $DIR/test_main.c $DIR/test_framework.c \
-$DIR/test_adaptive_tuning.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c \
+$DIR/test_adaptive_tuning.c $DIR/test_autotune.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c \
 $DIR/test_update_check.c"
 
 echo "== compilador: $($CC --version | head -1) =="
@@ -63,7 +63,7 @@ fi
 echo "== analisis estatico (gcc -fanalyzer) =="
 # wfview_server stays out: it opens the three server sockets on purpose and keeps
 # them for the life of the process, which the leak checker reads as a leak.
-for f in adaptive_tuning audio_enhancement ft8_udp update_check band_plan_data avi_writer bt_devices kbd_rollover; do
+for f in adaptive_tuning autotune audio_enhancement ft8_udp update_check band_plan_data avi_writer bt_devices kbd_rollover; do
     # shellcheck disable=SC2086
     $CC $BASEFLAGS -fanalyzer -I"$DIR/stubs" -I"$SRC" -c "$SRC/$f.c" -o "$OUT/$f.o" || true
 done
@@ -250,6 +250,10 @@ RS_STAGE="$OUT/restore_src"
 rm -rf "$RS_STAGE"
 mkdir -p "$RS_STAGE/cfg" "$RS_STAGE/lvgl" "$RS_STAGE/liquid"
 cp "$SRC/dialog.c" "$SRC/dialog.h" "$RS_STAGE/"
+# dialog_construct() cancela el asistente de sintonia fina (issue #100): el header
+# real se copia al stage y el stub de restore_stubs.c da el no-op (aca no hay
+# asistente corriendo).
+cp "$SRC/autotune_ui.h" "$RS_STAGE/"
 cp "$DIR/stubs_restore/lvgl/lvgl.h" "$RS_STAGE/lvgl/"
 cp "$DIR/stubs_restore/helpers.h" "$DIR/stubs_restore/buttons.h" "$DIR/stubs_restore/styles.h" \
    "$DIR/stubs_restore/keyboard.h" "$DIR/stubs_restore/events.h" "$DIR/stubs_restore/waterfall.h" \

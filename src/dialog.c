@@ -9,6 +9,7 @@
 #include "dialog.h"
 #include "cfg/subjects.h"
 
+#include "autotune_ui.h"
 #include "radio.h"
 #include "styles.h"
 #include "main_screen.h"
@@ -42,6 +43,15 @@ void dialog_restore_radio_on_close(void) {
 }
 
 void dialog_construct(dialog_t *dialog, lv_obj_t *parent) {
+    /* Una ventana que se abre corta el asistente de sintonia fina (issue #100) y
+     * devuelve el dial a su punto de arranque ANTES del snapshot del frame
+     * (radio_state_save, mas abajo): si el asistente siguiera corriendo por detras,
+     * el snapshot guardaria una frecuencia a medio barrido y al cerrar la ventana el
+     * dial quedaria ahi. Es el punto por el que pasan TODOS los dialogos, incluidos
+     * los que se abren sin main_screen_start_app() (Ajustes por F9, la entrada de
+     * frecuencia, los mensajes). */
+    autotune_ui_cancel();
+
     if (dialog && !dialog->run) {
         waterfall_refresh_period_set(2);
         main_screen_keys_enable(false);

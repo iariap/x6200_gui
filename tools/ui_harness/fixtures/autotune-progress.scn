@@ -1,0 +1,34 @@
+# autotune-progress: the same fine-tuning assistant (issue #100) captured
+# mid-scan. The "Auto Tune" button is pressed and the virtual clock is advanced
+# only ~350 ms, so the dial is on the first probe (start + 500 Hz): the search
+# progress the operator sees (the frequency row stepping probe by probe). The
+# scan is still running at capture time; the frame is a fixed instant of the
+# virtual clock, so it stays deterministic.
+
+name autotune-progress
+screen autotune-progress
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

@@ -321,6 +321,9 @@ static button_item_t btn_eq = make_app_btn("Eq", ACTION_APP_EQ);
 static button_item_t btn_rtty = make_app_btn("RTTY", ACTION_APP_RTTY);
 static button_item_t btn_ft8  = make_app_btn("FT8", ACTION_APP_FT8);
 static button_item_t btn_swr  = make_app_btn("SWR\nScan", ACTION_APP_SWRSCAN);
+/* Asistente de sintonia fina (issue #100): accion, no app. No abre dialogo: mueve
+ * el dial por los probes y lo deja en el mejor spot (o lo restaura). */
+static button_item_t btn_atune = make_action_btn("Auto\nTune", ACTION_ATUNE);
 
 static button_item_t btn_rec      = make_app_btn("Recorder", ACTION_APP_RECORDER);
 static button_item_t btn_qth      = make_action_btn("QTH", ACTION_APP_QTH);
@@ -490,7 +493,7 @@ static buttons_page_t page_app_5 = {   /* configuracion */
     {&btn_app_p5, &btn_settings, &btn_callsign, &btn_qth}
 };
 static buttons_page_t page_app_6 = {   /* radio y red */
-    {&btn_app_p6, &btn_wifi, &btn_bt, &btn_swr}
+    {&btn_app_p6, &btn_wifi, &btn_bt, &btn_swr, &btn_atune}
 };
 
 /* RTTY */
