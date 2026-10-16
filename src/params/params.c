@@ -158,7 +158,9 @@ params_t params = {
     .wifi_enabled           = { .x = false, .name="wifi_enabled" },
 
     .theme                  = { .x = THEME_SIMPLE, .name="theme"},
-    .theme_name             = { .x = "IU1WXY", .max_len = sizeof(params.theme_name.x) - 1, .name="theme_name"},
+    /* Default de la coleccion (issue #74): Aurora. El built-in IU1WXY dejo de existir como tema;
+     * un valor guardado de un tema legado o DATA lo migra al arranque src/params/migrations.c. */
+    .theme_name             = { .x = "Aurora", .max_len = sizeof(params.theme_name.x) - 1, .name="theme_name"},
     .font                   = { .x = 255, .min = 0, .max = 3, .name="font"},
 };
 

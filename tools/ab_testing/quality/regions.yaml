@@ -7,9 +7,9 @@
 #
 # The top band (`barra_superior`/`reloj_potencia`) reaches y=62, not 46: the
 # info cells are 56x26 at y5 and y27 (info.c) and the power clock is two lines,
-# which under VISION's scaled fonts (`fonts_scale`) is ~61 px tall. The old 46
-# was the non-scaled fit and left the second clock line / the WiFi cell inside
-# `espectro`, so a change there was reported outside its own region.
+# which with a scaled font (`fonts_scale`, the retired VISION theme) is ~61 px
+# tall. The old 46 was the non-scaled fit and left the second clock line / the
+# WiFi cell inside `espectro`, so a change there was reported outside its own region.
 #
 # Coordinates are [x, y, width, height].
 
@@ -98,9 +98,9 @@ regions:
   # La fila "Theme" del grupo Apariencia de Ajustes (issue #73): su etiqueta va del
   # pad del dialogo (x=20) al borde del desplegable (x=784), y la fila ocupa
   # y=81..137 (el desplegable a y=81, alto 56, medido con --inspect sobre el render
-  # de settings-perfil). El selector six-only del #73 cambia el TEXTO que el
-  # desplegable muestra cuando el tema guardado es un legado (IU1WXY -> la primera
-  # opcion ofrecida), asi que sin region propia el cambio se atribuiria a la banda
+  # de settings-perfil). El selector six-only del #73 y el default Aurora del #74
+  # cambian el TEXTO que el desplegable muestra, asi que sin region propia el cambio
+  # se atribuiria a la banda
   # `espectro` (que la contiene) y pareceria de la migracion de fuentes. El rect la
   # cubre con un pixel de margen y por la derecha se detiene en x=784 para no
   # solaparse con la barra de scroll (`ajustes_scrollbar`). Se dibuja entera en la

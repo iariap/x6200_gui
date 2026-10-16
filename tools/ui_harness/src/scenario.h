@@ -27,10 +27,11 @@
 typedef struct {
     char name[SCENARIO_NAME_MAX];
     char screen[SCENARIO_SCREEN_MAX];
-    /* The theme to build, as the fixture spells it. Kept whole: it is the name
-     * `theme_list()` offers (up to 31 characters) and the one the store keeps,
-     * `params_str_t.theme_name.x` (32 bytes, 31 useful — before UI-013 it was 16
-     * and "Outdoor-Negative" did not fit); theme_init() gets the full name. */
+    /* The theme to build, as the fixture spells it. Kept whole: it is one of the
+     * six names `theme_list()` offers (up to 31 characters) and the one the store
+     * keeps, `params_str_t.theme_name.x` (32 bytes, 31 useful — before UI-013 it
+     * was 16 and "Outdoor-Negative" did not fit); theme_init() gets the full name
+     * and falls back to Aurora when it is not one of the six. */
     char theme[SCENARIO_THEME_MAX];
     /* The segmented-digit family the frequency row and the clock draw with, as the
      * fixture spells it (a FONT_DIGIT_* id of src/fonts/font_families.h). Empty or

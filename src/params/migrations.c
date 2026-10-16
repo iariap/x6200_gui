@@ -12,6 +12,7 @@
 
 #include "db.h"
 #include "../cfg/digital_modes.h"
+#include "../theme.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,11 +89,53 @@ static int _2_update_atu_freq() {
     return 0;
 }
 
+/* Retira los temas legados y migra el valor guardado (issue #74).
+ *
+ * El catalogo de temas es la coleccion de seis archivos (docs/THEMES.md): el selector ya no ofrece
+ * IU1WXY/Classic/Outdoor/Outdoor-Negative/Legacy/VISION, ni los archivos Holo/Material 3/RS, ni un
+ * tema propio de DATA. Un `theme_name` guardado que no sea uno de los seis deja de ser elegible,
+ * asi que migra al default (Aurora): el arranque no carga un tema retirado ni cae a un fallback
+ * silencioso. NO se toca ningun archivo: los temas DATA del usuario quedan en /mnt/themes (el
+ * epic #66 exige "temas DATA no destruidos"), solo dejan de ser el tema activo.
+ *
+ * Idempotente: un valor ya valido (o ya migrado) no se reescribe; correr la migracion dos veces
+ * deja lo mismo. Es un UPDATE de una fila (params.name es PRIMARY KEY); no toca otras settings. */
+static int _3_migrate_theme_name() {
+    sqlite3_stmt *stmt;
+    int           rc;
+    bool          retire = false;
+
+    rc = sqlite3_prepare_v2(db, "SELECT val FROM params WHERE name='theme_name'", -1, &stmt, 0);
+    if (rc != SQLITE_OK) {
+        printf("Cannot read theme_name: %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        const char *val = (const char *) sqlite3_column_text(stmt, 0);
+
+        /* Un valor vacio no es un tema: el codigo aplica su default (Aurora). Un valor que no sea
+         * uno de los seis, en cambio, hay que retirarlo. */
+        retire = val != NULL && *val != '\0' && !theme_offered(val);
+    }
+    sqlite3_finalize(stmt);
+
+    if (!retire) {
+        return 0;
+    }
+    rc = sqlite3_exec(db, "UPDATE params SET val='" THEME_DEFAULT "' WHERE name='theme_name'", NULL, NULL, NULL);
+    if (rc != SQLITE_OK) {
+        printf("Cannot migrate theme_name: %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    return 0;
+}
+
 /* Migrations array */
 static int (*migrations[])() = {
     _0_init_migrations,
     _1_create_ftx_table,
     _2_update_atu_freq,
+    _3_migrate_theme_name,
 };
 
 int migrations_apply(void) {

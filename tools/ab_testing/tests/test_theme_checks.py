@@ -144,7 +144,6 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
     assert {exception.fixture for exception in exceptions} == {
         "settings-audio",
         "settings-home",
-        "settings-rs-theme",
         "settings-wfbat",
         "main-frecuencia-dseg",
         "main-tema-sprint",

@@ -56,7 +56,6 @@ from .theme_files import (
     ThemeReport,
     load_builtin_palettes,
     load_exemptions,
-    load_runtime_palettes,
     load_theme_pairs,
     served_theme_reports,
 )
@@ -425,17 +424,17 @@ def cmd_contracts(args: argparse.Namespace) -> int:
 
 
 def cmd_themes(args: argparse.Namespace) -> int:
-    """Static WCAG contrast over every theme the ROM serves.
+    """Static WCAG contrast over every palette the ROM carries.
 
-    Offline by design: it reads the built-in palettes of `src/theme.h`, the two
-    `use_builtin()` derives of `src/theme.c` (Outdoor-Negative, VISION) and the
-    shipped files of `rootfs/usr/share/x6200/themes`, resolves each file's `base`
-    the way `src/theme.c` loads a theme, and measures the pairs
+    Offline by design: it reads the base palettes of `src/theme.h` (the internal
+    templates a file's `base` inherits from) and the shipped files of
+    `rootfs/usr/share/x6200/themes`, resolves each file's `base` the way
+    `src/theme.c` loads a theme, and measures the pairs
     `quality/theme_pairs.yaml` declares — the Settings pairs the rendered
-    contracts cannot reach. The fifteen served themes (six built-in palettes plus
-    the nine shipped files) are measured (135 pairs), so there is no UNCOVERED
-    theme left. The Settings selector itself offers only the six v2 themes (issue
-    #73); the flag `offered` in the payload says which ones are a menu choice.
+    contracts cannot reach. The ten palettes (four base templates plus the six
+    shipped files) are measured, so there is no UNCOVERED theme left. The Settings
+    selector offers exactly the six themes of the collection (issues #73/#74); the
+    flag `offered` in the payload says which ones are a menu choice.
     No capture, no revision, no Docker: the verdict only depends on files in the
     repository.
     """
@@ -450,10 +449,9 @@ def cmd_themes(args: argparse.Namespace) -> int:
     )
     pairs_path = quality_dir / "theme_pairs.yaml"
     theme_h = repo / "src" / "theme.h"
-    theme_c = repo / "src" / "theme.c"
     pairs = load_theme_pairs(pairs_path)
     exemptions = load_exemptions(pairs_path)
-    palettes = load_runtime_palettes(theme_c, load_builtin_palettes(theme_h))
+    palettes = load_builtin_palettes(theme_h)
     reports = served_theme_reports(themes_dir, theme_h, palettes, pairs)
 
     failures = [result for report in reports for result in report.failures]
@@ -468,8 +466,8 @@ def cmd_themes(args: argparse.Namespace) -> int:
         Status.FAIL if (failures or errors or nontext_failures or nontext_missing) else Status.PASS
     )
     checked = sum(len(report.results) for report in reports)
-    builtin_count = sum(1 for report in reports if report.source == "builtin")
-    file_count = len(reports) - builtin_count
+    base_count = sum(1 for report in reports if report.source == "base")
+    file_count = len(reports) - base_count
     # Paths go out relative to the repository when they live inside it: the
     # payload is an artifact (CI, a report), not a description of this machine.
     themes_json = [_theme_dict(report, repo) for report in reports]
@@ -500,20 +498,20 @@ def cmd_themes(args: argparse.Namespace) -> int:
         ],
     }
     lines = [
-        f"themes {status.value}: {len(reports)} served theme(s) "
-        f"({builtin_count} built-in + {file_count} file(s)), {len(pairs)} pair(s) declared, "
+        f"themes {status.value}: {len(reports)} palette(s) "
+        f"({base_count} base + {file_count} file(s)), {len(pairs)} pair(s) declared, "
         f"{checked} pair(s) checked, {len(failures)} failure(s)"
     ]
     for report in reports:
         header = f"  {report.name} ({_relative(Path(report.path), repo)}"
-        header += "; built-in palette" if report.source == "builtin" else f"; base {report.base}"
+        header += "; base palette" if report.source == "base" else f"; base {report.base}"
         header += ")"
         if report.error is not None:
             lines.append(f"{header}: {report.error}")
             continue
         where = (
             f"{len(report.inherited)}/{len(palettes[BASE_PALETTES[0]])} roles from the base"
-            if report.source != "builtin"
+            if report.source != "base"
             else f"all {len(palettes[BASE_PALETTES[0]])} roles from src/theme.c"
         )
         flags = []

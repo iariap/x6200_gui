@@ -20,7 +20,6 @@ import pytest
 
 from x6200_ab.cli import main
 from x6200_ab.docker import HARNESS_IMAGE
-from x6200_ab.regions import load_regions
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = "home-usb-20m"
@@ -38,8 +37,6 @@ class Revisions:
     regression: str
     defect: str
     clock_defect: str
-    style_defect: str
-    theme_defect: str
     bench_regression: str
     structural: str
     focus_defect: str
@@ -160,49 +157,6 @@ def _reintroduce_clock_defect(worktree: Path) -> None:
     path.write_text(text.replace(needle, "const char * bat_sym;"))
 
 
-def _reintroduce_frequency_white(worktree: Path) -> None:
-    """Deliberate defect: put the frequency row back on a hard-coded white (UI-010).
-
-    The fix made the recolor markup of the three labels ask the theme for their
-    colour (`theme_hex(TC_text)`, `#%06X`); writing the white back is exactly the
-    defect that under the light Outdoor theme painted the digits white on the
-    white background, so the region measured content 0.0000.
-
-    The value's colour markup is now written by the one call that paints the
-    frequency value (`freq[1]`, `#%06X %s` over the `value` string the ghost layer
-    is also built from — AB-FONTSE), so that is the literal the `%03X` half of the
-    defect breaks.
-    """
-    path = worktree / "src" / "main_screen.c"
-    text = path.read_text()
-    needle = "uint32_t    color = theme_hex(subject_get_int(freq_lock) ? TC_text_soft : TC_text);"
-    assert text.count(needle) == 2, "the two frequency-row paths must carry the theme role"
-    text = text.replace(
-        needle,
-        "uint32_t    color = subject_get_int(freq_lock) ? 0xBBBBBB : 0xFFFFFF;",
-    )
-    fmt = 'lv_label_set_text_fmt(freq[1], "#%06X %s", color, value);'
-    assert text.count(fmt) == 1, "the frequency value is painted once, with the theme colour"
-    text = text.replace(fmt, fmt.replace("%06X", "%03X"))
-    path.write_text(text)
-
-
-def _reintroduce_theme_truncation(worktree: Path) -> None:
-    """Deliberate defect: put the theme-name store back to 16 bytes (UI-013).
-
-    The fix widened `params_str_t.x` (src/params/types.h) to the 31 characters
-    `theme_list()` admits, so "Outdoor-Negative" survives the store. Shrinking it
-    back to the 16 bytes of the defect truncates it to "Outdoor-Negativ" and
-    `theme_name_fits_params` fires again on `main-tema-outdoor-negative`: the
-    contract, with no waiver left, turns that into a plain failure.
-    """
-    path = worktree / "src" / "params" / "types.h"
-    text = path.read_text()
-    needle = "    char        x[32];"
-    assert needle in text, "the width fix must be in the base revision"
-    path.write_text(text.replace(needle, "    char        x[16];", 1))
-
-
 def _raise_bench_cost(worktree: Path) -> None:
     """Deliberate render regression: repaint the screen three times per frame.
 
@@ -285,8 +239,6 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
     regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
     defect = _ephemeral(REPO_ROOT, base, "defect", _show_multiplier_label)
     clock_defect = _ephemeral(REPO_ROOT, base, "clock", _reintroduce_clock_defect)
-    style_defect = _ephemeral(REPO_ROOT, base, "style", _reintroduce_frequency_white)
-    theme_defect = _ephemeral(REPO_ROOT, base, "theme", _reintroduce_theme_truncation)
     bench_regression = _ephemeral(REPO_ROOT, base, "bench", _raise_bench_cost)
     structural = _ephemeral(REPO_ROOT, base, "structural", _inject_structural_defects)
     focus_defect = _ephemeral(REPO_ROOT, base, "focus", _break_focus_group)
@@ -296,8 +248,6 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             "regression": regression,
             "defect": defect,
             "clock": clock_defect,
-            "style": style_defect,
-            "theme": theme_defect,
             "bench": bench_regression,
             "structural": structural,
             "focus": focus_defect,
@@ -309,8 +259,6 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             regression=regression,
             defect=defect,
             clock_defect=clock_defect,
-            style_defect=style_defect,
-            theme_defect=theme_defect,
             bench_regression=bench_regression,
             structural=structural,
             focus_defect=focus_defect,
@@ -325,8 +273,6 @@ def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
             "abtest/regression",
             "abtest/defect",
             "abtest/clock",
-            "abtest/style",
-            "abtest/theme",
             "abtest/bench",
             "abtest/structural",
             "abtest/focus",
@@ -627,160 +573,6 @@ def test_contracts_pass_on_the_base(
     assert payload["checks"] > 0
     assert payload["failures"] == []
     assert payload["unchanged_defects"] == []
-
-
-def test_contracts_reject_the_outdoor_frequency_defect(
-    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
-) -> None:
-    """UI-010 is fixed: the registry keeps no waiver, a reappearance fails.
-
-    The ephemeral revision puts the hard-coded white of the frequency row back
-    (`src/styles.c`), which under the light Outdoor theme renders the digits white
-    on the white background. Nothing in the registry exempts the region any more
-    (the UI-010 exclusion was withdrawn when the fix landed), so the contract is a
-    plain failure with no baseline issue attached.
-    """
-    code = _run(
-        tmp_path,
-        revisions,
-        ["contracts", "--revision", revisions.style_defect, "--scenario", "main-otro-tema"],
-    )
-    assert code == 1
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["status"] == "FAIL"
-    failure = next(
-        item for item in payload["failures"] if item["rule"] == "region_min_content:frecuencia"
-    )
-    assert failure["fixture"] == "main-otro-tema"
-    assert failure["baseline_issue"] is None
-    assert payload["unchanged_defects"] == []
-
-
-def test_contracts_pass_on_the_fixed_outdoor_frequency_row(
-    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
-) -> None:
-    """The fixed frequency row keeps content: the contract and the registry agree."""
-    code = _run(
-        tmp_path,
-        revisions,
-        ["contracts", "--revision", revisions.base, "--scenario", "main-otro-tema"],
-    )
-    assert code == 0
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["status"] == "PASS"
-    assert payload["failures"] == []
-    assert payload["unchanged_defects"] == []
-    finding = next(
-        item for item in payload["findings"] if item["rule"] == "region_min_content:frecuencia"
-    )
-    assert finding["ok"] is True
-
-
-def test_contracts_reject_a_theme_the_store_truncates(
-    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
-) -> None:
-    """UI-013 is fixed: a store that truncates the name fails, not silently.
-
-    The ephemeral revision puts `params_str_t.x` back to the 16 bytes of the
-    defect (src/params/types.h), so the harness' own store truncates
-    "Outdoor-Negative" to "Outdoor-Negativ" while the fixture renders the whole
-    name. Nothing waives `theme_name_fits_params` any more (the UI-013 exception
-    was the last one and was withdrawn when the fix landed), so the contract is a
-    plain failure: the defect cannot come back unnoticed.
-    """
-    code = _run(
-        tmp_path,
-        revisions,
-        [
-            "contracts",
-            "--revision",
-            revisions.theme_defect,
-            "--scenario",
-            "main-tema-outdoor-negative",
-        ],
-    )
-    assert code == 1
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["status"] == "FAIL"
-    failure = next(item for item in payload["failures"] if item["rule"] == "theme_name_fits_params")
-    assert failure["fixture"] == "main-tema-outdoor-negative"
-    assert failure["baseline_issue"] is None
-    assert "'Outdoor-Negativ'" in failure["detail"]
-    assert payload["unchanged_defects"] == []
-
-
-def test_contracts_pass_on_the_fixed_theme_store(
-    tmp_path: Path, revisions: Revisions, capsys: pytest.CaptureFixture
-) -> None:
-    """The widened store keeps the whole name: the contract and the registry agree.
-
-    On the fixed revision the fixture measures `requested == params_name` and no
-    issue waives the rule, so the fixture that used to separate the two names now
-    passes on its own.
-    """
-    code = _run(
-        tmp_path,
-        revisions,
-        ["contracts", "--revision", revisions.base, "--scenario", "main-tema-outdoor-negative"],
-    )
-    assert code == 0
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["status"] == "PASS"
-    assert payload["failures"] == []
-    assert payload["unchanged_defects"] == []
-    finding = next(item for item in payload["findings"] if item["rule"] == "theme_name_fits_params")
-    assert finding["ok"] is True
-    assert "fits params.theme_name" in finding["detail"]
-
-
-def test_ui010_fix_stays_inside_the_frequency_region(tmp_path: Path, revisions: Revisions) -> None:
-    """A is the white frequency row, B the fix -> the only change is `frecuencia`.
-
-    UI-010 has no pixel detector of its own (its detector is the contract rule, so
-    A/B classifies it UNVERIFIED, never FIXED: the honest limit, the same one
-    UI-011/UI-012 have). What the comparison does prove is the shape of the fix: on
-    the Outdoor fixture the only pixels that move are the three labels of the
-    frequency row, and the contract of B passes without any waiver.
-    """
-    code, report = _compare(
-        tmp_path,
-        revisions,
-        revisions.style_defect,
-        revisions.base,
-        "AB-e2e-ui010",
-        fixture="main-otro-tema",
-    )
-    assert code == 0
-    results = _results(report)
-    assert results["status"] == "PASS"
-    diff = next(item for item in results["diffs"] if item["scenario"] == "main-otro-tema")
-    assert diff["identical"] is False
-    assert diff["changed_pixels"] > 0
-    changed = [region["region"] for region in diff["regions"] if region["changed_pixels"] > 0]
-    # `ajustes_audio_ganancia` (the Ajustes Audio row of issue #26) is the second
-    # region the pixels fall in: its rectangle spans y=140..196, so it overlaps the
-    # frequency band (y=160..196) the dialog is drawn over - the house regions may
-    # overlap on purpose (regions.py), and on this fixture the Ajustes window is not
-    # even open, so the row that region names is not on screen. What pins the *shape*
-    # of the fix is every changed box, below, being inside the frequency row.
-    assert changed == ["frecuencia", "ajustes_audio_ganancia"]
-
-    region_map = load_regions(REPO_ROOT / "tools" / "ab_testing" / "quality" / "regions.yaml")
-    frequency_region = region_map.get("frecuencia")
-    assert diff["boxes"]
-    for box in diff["boxes"]:
-        assert frequency_region.contains((box["x0"], box["y0"], box["x1"], box["y1"])), box
-    issue = next(item for item in results["known_issues"] if item["id"] == "UI-010")
-    assert issue["classification"] == "UNVERIFIED"
-    contract = results["contracts"]
-    frequency = next(
-        finding for finding in contract if finding["rule"] == "region_min_content:frecuencia"
-    )
-    assert frequency["ok"] is True
-    # Evidence: the A/B screenshots and the diff are kept with the report.
-    assert (report / "screenshots" / "a-main-otro-tema.png").is_file()
-    assert (report / "screenshots" / "b-main-otro-tema.png").is_file()
-    assert (report / "diffs" / "main-otro-tema-diff.png").is_file()
 
 
 def test_benchmark_measures_the_real_render_cost(

@@ -157,11 +157,10 @@ def test_the_committed_table_is_well_formed() -> None:
         for rect in (obj.object_rect, obj.background_rect):
             x, y, w, h = rect
             assert x + w <= width and y + h <= height, f"{obj.name} rect {rect} is off screen"
-    # Nine themes get the S-meter and the waterfall; the focus and the strip
-    # markers are single-fixture objects.
+    # The themes get the S-meter and the waterfall; the focus indicator is a
+    # single-fixture object.
     names = {obj.name for obj in objects}
     assert {"s_meter_arc", "waterfall_signal", "focus_indicator"} <= names
-    assert {"strip_marker_cw", "strip_marker_dig"} <= names
 
 
 def test_the_committed_golden_renders_pass_the_declared_objects() -> None:

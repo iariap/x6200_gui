@@ -4,7 +4,7 @@ These PNGs are the `.scn` fixtures rendered by the harness at a fixed revision.
 They are the source of truth for the WCAG 1.4.11 non-text check
 (`src/x6200_ab/nontext_checks.py`, `quality/nontext.yaml`): the objects it
 measures — the S-meter arc over a bitmap face, the waterfall column, the focus
-indicator, the band-plan chips — have ink or surface that is not a theme role the
+indicator — have ink or surface that is not a theme role the
 static check can resolve, so only the pixels answer.
 
 They are committed, so `x6200-ab themes` stays offline and deterministic (no
@@ -19,10 +19,9 @@ From the revision the check ships with (the branch tip), inside
 ```bash
 uv run x6200-ab capture --revision <sha> --label golden \
     --out "$(git rev-parse --show-toplevel)/tools/ab_testing/golden" \
-    --scenario main-foco --scenario main-espectro-agua --scenario main-otro-tema \
-    --scenario main-tema-classic --scenario main-tema-holo \
-    --scenario main-tema-material-3 --scenario main-tema-outdoor-negative \
-    --scenario main-tema-vision --scenario main-tema-rs --scenario settings-home
+    --scenario main-foco --scenario main-espectro-agua --scenario main-tema-aurora \
+    --scenario main-tema-cathode --scenario main-tema-sprint --scenario main-tema-sunlit \
+    --scenario main-tema-sunlit-agua --scenario settings-home --scenario settings-perfil
 ```
 
 The harness is deterministic (two runs of a fixture produce a byte-identical

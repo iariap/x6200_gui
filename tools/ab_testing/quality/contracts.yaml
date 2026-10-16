@@ -276,21 +276,98 @@ expected_changes:
     author: fonts-extras
     until: 2027-03-31
 
-  # THEMES v2 #73 (selector six-only): la fila "Theme" de Ajustes muestra la
-  # opcion elegida del desplegable. Con el tema guardado por defecto (IU1WXY, un
-  # legado que ya no tiene entrada) el desplegable no encuentra el nombre en la
-  # lista de seis y cae a la primera opcion (Sunlit), asi que el TEXTO de la fila
-  # cambia. El default y la migracion del valor guardado son el #74; hasta
-  # entonces el unico cambio de pixeles del #73 esta en esa celda, dentro de
-  # `ajustes_tema`. La region se retira cuando el #74 migre el default.
+  # THEMES v2 #74 (default Aurora + retiro de los legados): el default de la
+  # coleccion pasa de IU1WXY a Aurora y los temas legados dejan de existir. Las
+  # fixtures que NO fijan un `theme` (main-foco, settings-*, home-*, apps-*, ...)
+  # renderizan el default, asi que TODAS sus superficies pintadas con roles del
+  # tema cambian: es el cambio declarado del #74, no una regresion. La revision A
+  # (la base, con IU1WXY) y la B (Aurora) difieren en el color, no en el layout.
+  # La revision estetica del default es del owner con el epic de PRUEBAS #66; el
+  # gate de pixeles solo tiene que no confundir el cambio declarado con un defecto.
+  # Las fixtures que si fijan su `theme` (los seis v2) quedan byte-identicas.
+  - region: barra_superior
+    reason: >
+      THEMES v2 #74: el default pasa a Aurora. Las cajas de la barra superior
+      (src/info.c) y su texto se pintan con los roles del tema, que cambian.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: s_metro
+    reason: >
+      THEMES v2 #74: el arco y la etiqueta del S-meter (src/meter.c) usan
+      TC(meter_over)/TC(meter_bar) del default, que pasa a Aurora.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: espectro
+    reason: >
+      THEMES v2 #74: el fondo del espectro y las etiquetas del band plan
+      (src/spectrum.c, band_plan.c) se apoyan en el fondo del tema (Aurora).
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: frecuencia
+    reason: >
+      THEMES v2 #74: la fila de frecuencia (src/main_screen.c) pide los roles del
+      tema (TC(text)/TC(text_soft)); con Aurora el color del texto cambia.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: waterfall
+    reason: >
+      THEMES v2 #74: la cascada dibuja la paleta del tema; Aurora trae su propia
+      tabla de 256 colores (theme.c make_palette), distinta de la de IU1WXY.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: botones
+    reason: >
+      THEMES v2 #74: la barra inferior (buttons.cpp) rotula con los roles del
+      tema y el recolor de boton activo/deshabilitado; con Aurora cambian.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: reloj_potencia
+    reason: >
+      THEMES v2 #74: el reloj de potencia (src/clock.c) escribe con los roles del
+      tema; el default Aurora cambia su color.
+    author: themes-removal-74
+    until: 2027-03-31
+
   - region: ajustes_tema
     reason: >
-      THEMES v2 #73: el selector de Ajustes ofrece SOLO los seis temas v2, asi que
-      la fila "Theme" dibuja la primera opcion ofrecida cuando el tema guardado es
-      un legado (el default IU1WXY). Es el unico pixel que se mueve con el #73; el
-      resto de las 70 fixtures queda byte-identico. La migracion del default y del
-      valor guardado (que devuelve la coherencia a la fila) es el #74.
-    author: themes-integration-73
+      THEMES v2 #74: la fila "Theme" de Ajustes dibuja el nombre del tema activo.
+      Con el default migrado a Aurora (un tema ofrecido) la fila es coherente; el
+      texto cambia respecto de la caida a la primera opcion del #73.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: ajustes_perfil
+    reason: >
+      THEMES v2 #74: el dialogo de Ajustes se pinta con los roles del tema; el
+      default Aurora cambia sus superficies y su texto.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: ajustes_scrollbar
+    reason: >
+      THEMES v2 #74: el pulgar de la barra de scroll de Ajustes es una superficie
+      del tema; con el default Aurora cambia de color.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: ajustes_anio
+    reason: >
+      THEMES v2 #74: el campo Año de Ajustes se pinta con los roles del tema; el
+      default Aurora cambia su color.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: ajustes_audio_ganancia
+    reason: >
+      THEMES v2 #74: las filas de audio de Ajustes se pintan con los roles del
+      tema; el default Aurora cambia sus colores.
+    author: themes-removal-74
     until: 2027-03-31
 
   # AB-WFWIDTH (feedback del owner, 2026-10-15): la linea central del waterfall
@@ -371,21 +448,6 @@ exceptions:
       111x30, all below the 44px field-UX target. Pre-existing row geometry of the
       firmware, the same one the settings-home/-wfbat waivers hold back.
     author: audio-vol-recgain
-    until: 2027-03-31
-
-  # settings-rs-theme: the same Ajustes window as settings-wfbat (same screen,
-  # Spectrum/waterfall group) rendered under the RS theme so the switch rail is
-  # drawn with RS's `control_border`. The eight switches are the same pre-existing
-  # 111x30 rows of UI-015, so the same finding is waived for this fixture; the
-  # fixture measures the rail, it does not change it.
-  - rule: layout_touch_target
-    fixture: settings-rs-theme
-    reason: >
-      UI-015: the eight switches of the Spectrum/waterfall group are 111x30 —
-      LVGL's lv_switch height — below the 44px field-UX target. This fixture
-      renders RS over the same rows as settings-wfbat; the row geometry is
-      unchanged.
-    author: seeds11-rs-theme
     until: 2027-03-31
 
   # main-frecuencia-dseg: el "8 fantasma" del label central de la fila de

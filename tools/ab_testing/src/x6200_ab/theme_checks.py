@@ -1,13 +1,13 @@
 """The theme the capture rendered must be one the firmware can keep.
 
-`theme_list()` (`src/theme.c`) offers theme names up to 31 characters — the
-built-ins and the JSON files — and the choice travels to the next boot inside
+`theme_list()` (`src/theme.c`) offers the six names of the collection (docs/THEMES.md,
+up to 31 characters) and the choice travels to the next boot inside
 `params.theme_name`, a `params_str_t` (`src/params/types.h`). A name longer than
 the store is truncated by `params_str_set()` and the next
-`theme_init(params.theme_name.x)` (`src/main.c`) falls back to IU1WXY without
-telling anyone: the user picked a theme and got another one. That was UI-013:
-the store held 15 characters and "Outdoor-Negative" (16) did not fit. The fix
-gave the store the 31 characters `theme_list()` admits (`params_str_t.x` is 32
+`theme_init(params.theme_name.x)` (`src/main.c`) falls back to the default (Aurora,
+issue #74) without telling anyone: the user picked a theme and got another one. That
+was UI-013: the store held 15 characters and "Outdoor-Negative" (16) did not fit. The
+fix gave the store the 31 characters `theme_list()` admits (`params_str_t.x` is 32
 bytes, one for the NUL).
 
 The harness writes both names in the capture's `theme` block (`requested`, the
@@ -47,6 +47,6 @@ def run_theme_checks(capture: Capture) -> list[ContractFinding]:
         detail = (
             f"theme {requested!r} ({len(requested)} chars) does not fit "
             f"params.theme_name ({max_chars} chars): the store keeps {params_name!r} "
-            f"and theme_init() falls back to IU1WXY (src/main.c)"
+            f"and theme_init() falls back to Aurora (src/main.c)"
         )
     return [ContractFinding(rule=RULE_THEME_NAME, fixture=capture.name, ok=ok, detail=detail)]

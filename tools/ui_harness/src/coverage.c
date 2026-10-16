@@ -15,7 +15,7 @@
  * drawn against the explicit mocks. */
 #define MAIN_COMPONENTS \
     COMPONENT("theme.c", COVERAGE_REAL, \
-              "src/theme.c compiled; theme_init() sets the scenario's theme (builtin or the ROM's JSON)"), \
+              "src/theme.c compiled; theme_init() sets the scenario's theme (a ROM JSON, docs/THEMES.md)"), \
     COMPONENT("styles.c", COVERAGE_REAL, \
               "src/styles.c compiled; every object is styled by the real styles"), \
     COMPONENT("fonts/", COVERAGE_REAL, \

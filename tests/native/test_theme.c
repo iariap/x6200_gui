@@ -38,36 +38,52 @@ static void write_file(const char *path, const char *text) {
     }
 }
 
-/* The built-in themes and the fallback for an unknown name */
-static void test_builtins(void) {
-    theme_init("IU1WXY");
+/* The default theme (issue #74): an empty, unknown or retired name loads Aurora,
+ * never a built-in. Aurora is the ROM file rootfs/usr/share/x6200/themes/Aurora.json,
+ * so the runner has to pass X6200_SHIPPED_THEMES for the shipped part. */
+static void test_default(void) {
+    const char *dir = getenv("X6200_SHIPPED_THEMES");
 
-    uint32_t text = theme_hex(TC_text);
-    uint32_t bg   = theme_hex(TC_bg);
+    if (dir == NULL || *dir == 0) {
+        return;                     /* el runner no los pasó: nada que comprobar */
+    }
 
-    CHECK(text != bg);
+    setenv("THEMES_DIR_SHIPPED", dir, 1);
+    setenv("THEMES_DIR", "/tmp/test_themes_sin_usuario", 1);     /* sin temas del usuario */
 
-    /* A different built-in gives a different palette */
-    theme_init("Legacy");
+    /* Los roles de Aurora (el archivo), el default de la colección. */
+    theme_init("Aurora");
+    uint32_t aurora_bg   = theme_hex(TC_bg);
+    uint32_t aurora_text = theme_hex(TC_text);
 
-    uint32_t legacy_bg = theme_hex(TC_bg);
+    CHECK(aurora_bg == 0x1a1227);
+    CHECK(aurora_text == 0xf8eeff);
+    CHECK(strcmp(theme_shape.name, "Aurora") == 0);
 
-    theme_init("IU1WXY");
-    CHECK(theme_hex(TC_bg) == bg);
+    /* Un nombre vacío, uno desconocido y uno retirado (built-ins legados, archivos
+     * Holo/Material 3/RS) caen TODOS al default: Aurora, no IU1WXY ni ningún built-in. */
+    static const char *const retirados[] = {"", "no-such-theme", "IU1WXY", "Classic", "Outdoor",
+                                            "Outdoor-Negative", "Legacy", "VISION", "Holo", "Material 3", "RS"};
 
-    /* An unknown name falls back to the default theme, not to garbage */
-    theme_init("no-such-theme");
+    for (size_t i = 0; i < sizeof(retirados) / sizeof(retirados[0]); i++) {
+        theme_init(retirados[i]);
+        CHECK(theme_hex(TC_bg) == aurora_bg);
+        CHECK(theme_hex(TC_text) == aurora_text);
+        CHECK(strcmp(theme_shape.name, "Aurora") == 0);
+    }
 
-    CHECK(theme_hex(TC_text) == text);
-    CHECK(theme_hex(TC_bg) == bg || legacy_bg != bg);
+    /* NULL también: no hay nombre que cargar. */
+    theme_init(NULL);
+    CHECK(theme_hex(TC_bg) == aurora_bg);
 
-    /* The waterfall palette is always there */
+    /* La paleta del waterfall siempre está. */
     CHECK(theme_waterfall() != NULL);
+
+    unsetenv("THEMES_DIR_SHIPPED");
 }
 
-/* El selector de Ajustes ofrece SOLO los seis temas v2 (issue #73): la colección
- * es la oferta completa del menú. Los legados (IU1WXY, Classic, Holo, ...) siguen
- * cargándose por nombre pero no tienen entrada en la lista. */
+/* El catálogo de Ajustes ofrece SOLO los seis temas de la colección (docs/THEMES.md):
+ * ni un built-in legado ni un archivo retirado tiene entrada en la lista. */
 static void test_list(void) {
     static const char *const seis[] = {"Sunlit", "Redshift", "Sprint", "Cathode", "Trail", "Aurora"};
     const int               n_seis = (int)(sizeof(seis) / sizeof(seis[0]));
@@ -80,12 +96,23 @@ static void test_list(void) {
         CHECK(i < n_seis && strcmp(names[i], seis[i]) == 0);
     }
 
-    /* Ningún legado entra en la lista, aunque el motor lo sepa cargar. */
+    /* Ningún retirado entra en la lista ni se ofrece. */
     for (int i = 0; i < n; i++) {
         CHECK(strcmp(names[i], "IU1WXY") != 0);
         CHECK(strcmp(names[i], "Classic") != 0);
+        CHECK(strcmp(names[i], "Outdoor") != 0);
         CHECK(strcmp(names[i], "Holo") != 0);
+        CHECK(strcmp(names[i], "RS") != 0);
     }
+
+    for (size_t k = 0; k < sizeof(seis) / sizeof(seis[0]); k++) {
+        CHECK(theme_offered(seis[k]));           /* los seis sí */
+    }
+    CHECK(!theme_offered("IU1WXY"));
+    CHECK(!theme_offered("Outdoor"));
+    CHECK(!theme_offered("Holo"));
+    CHECK(!theme_offered(""));
+    CHECK(!theme_offered(NULL));
 }
 
 /* UI-013: ningún nombre del menú puede no entrar en el store.
@@ -94,14 +121,14 @@ static void test_list(void) {
  * un `params_str_t` (src/params/types.h): `params_str_set`/`params_load_str`
  * copian `sizeof(x) - 1` caracteres y `theme_init(params.theme_name.x)`
  * (src/main.c) resuelve por nombre, así que un nombre que no entre se trunca y
- * cae a IU1WXY en silencio. Acá se hace el round-trip exacto con el nombre que
- * no entraba (el `params_str_t` es el del firmware, no una copia) y se comprueba
- * que TODO nombre que `theme_list()` ofrece entre en el store: es la invariante
- * que UI-013 rompía y que un nombre nuevo de 16+ caracteres volvería a romper.
+ * cae al default. El nombre que rompía UI-013 (Outdoor-Negative, 16) se retiró en
+ * #74; el store se queda ancho (32) y acá se comprueba que TODO nombre que
+ * `theme_list()` ofrece entre entero.
  */
 static void test_names_fit_the_store(void) {
     params_str_t store = {0};
 
+    /* El store todavía aguanta un nombre de 16: no es la causa del truncado. */
     strncpy(store.x, "Outdoor-Negative", sizeof(store.x) - 1);
     CHECK(strcmp(store.x, "Outdoor-Negative") == 0);   /* entra entero, no truncado */
 
@@ -115,7 +142,8 @@ static void test_names_fit_the_store(void) {
     }
 }
 
-/* A JSON theme in the themes directory is loaded and its colours are used */
+/* A JSON theme in the themes directory is loaded and its colours are used. It inherits the
+ * `base` template (IU1WXY is still a base, not a theme, issue #74). */
 static void test_json_theme(void) {
     mkdir(DIR, 0777);
     setenv("THEMES_DIR", DIR, 1);
@@ -140,15 +168,15 @@ static void test_json_theme(void) {
     /* Shape fields from the JSON are applied too */
     CHECK(theme_shape.radius == 7);
 
-    /* Colours the file does not set keep the base theme's value */
-    theme_init("IU1WXY");
+    /* Colours the file does not set keep the base template's value (IU1WXY, la
+     * columna de la tabla compilada). */
+    theme_init("unit");
 
     uint32_t base_bar = theme_hex(TC_bar);
 
-    theme_init("unit");
-    CHECK(theme_hex(TC_bar) == base_bar);
+    CHECK(base_bar == 0x3a3f47);     /* IU1WXY bar (src/theme.h) */
 
-    /* Un tema del usuario (DATA) no entra en el menú (#73) */
+    /* Un tema del usuario (DATA) no entra en el menú: el selector sólo lista los seis */
     char names[32][32];
     int  n     = theme_list(names, 32);
     bool found = false;
@@ -159,18 +187,15 @@ static void test_json_theme(void) {
         }
     }
 
-    /* Un tema del usuario se carga por nombre pero NO se ofrece en el menú (#73):
-     * el selector sólo lista los seis v2. */
     CHECK(!found);
 
     unlink(DIR "/unit.json");
     rmdir(DIR);
 }
 
-/* Los temas que vienen con la ROM (rootfs/usr/share/x6200/themes): los seis v2 son
- * la oferta del selector (issue #73) y tienen que estar en la lista y cargar; los
- * legados (Holo, Material 3, RS) siguen en la ROM y cargan por nombre, pero NO
- * aparecen en el menú. El RS además trae sus propias imágenes (los PNG al lado del JSON). */
+/* Los seis temas que vienen con la ROM (rootfs/usr/share/x6200/themes) son la oferta del
+ * selector y todos cargan. Los archivos legados (Holo, Material 3, RS) ya no están: su nombre
+ * cae al default (Aurora), no carga un tema. */
 static void test_shipped(void) {
     const char *dir = getenv("X6200_SHIPPED_THEMES");
 
@@ -203,29 +228,23 @@ static void test_shipped(void) {
         theme_init(esperados[k]);               /* y se carga */
         theme_init(esperados[k]);               /* dos veces no rompe */
 
+        CHECK(strcmp(theme_shape.name, esperados[k]) == 0);
         CHECK(theme_hex(TC_bg) <= 0xffffffu);   /* se puede leer una rol */
     }
 
-    /* Los legados quedan fuera de la lista pero el motor todavía los carga (hasta #74). */
-    static const char *const legados[] = {"Holo", "Material 3", "RS"};
+    /* Los archivos legados salieron de la ROM (#74): cargarlos por nombre NO carga un tema,
+     * cae al default Aurora. */
+    theme_init("Aurora");
 
-    for (size_t k = 0; k < sizeof(legados) / sizeof(*legados); k++) {
-        bool en_lista = false;
+    uint32_t aurora_bg = theme_hex(TC_bg);
 
-        for (int i = 0; i < n; i++) {
-            if (strcmp(names[i], legados[k]) == 0) {
-                en_lista = true;
-            }
-        }
+    static const char *const retirados[] = {"Holo", "Material 3", "RS"};
 
-        CHECK(!en_lista);                       /* no se ofrece */
-        theme_init(legados[k]);
-        CHECK(theme_hex(TC_bg) <= 0xffffffu);   /* pero carga por nombre */
+    for (size_t k = 0; k < sizeof(retirados) / sizeof(*retirados); k++) {
+        theme_init(retirados[k]);
+        CHECK(strcmp(theme_shape.name, "Aurora") == 0);
+        CHECK(theme_hex(TC_bg) == aurora_bg);
     }
-
-    /* El RS trae imágenes propias: si no se leen, sus botones quedan sin piel. */
-    theme_init("RS");
-    CHECK(theme_image(TI_btn, 100, 40) != NULL);
 
     unsetenv("THEMES_DIR_SHIPPED");
 }
@@ -309,7 +328,14 @@ static void test_cathode(void) {
 static void test_waterfall_signal_width(void) {
     const char *dir = getenv("X6200_SHIPPED_THEMES");
 
-    /* Los incorporados (y el default del struct, via use_builtin): 1 px. */
+    if (dir && *dir) {
+        setenv("THEMES_DIR_SHIPPED", dir, 1);
+        setenv("THEMES_DIR", "/tmp/test_themes_sin_usuario", 1);
+    }
+
+    /* El default del struct (via use_base) y de un tema que no define la clave: 1 px.
+     * Un nombre retirado (IU1WXY, Classic) cae al default de la colección (Aurora),
+     * que tampoco define la clave, así que también da 1 px. */
     theme_init("IU1WXY");
     CHECK(theme_shape.waterfall_signal_width == 1);
 
@@ -317,11 +343,8 @@ static void test_waterfall_signal_width(void) {
     CHECK(theme_shape.waterfall_signal_width == 1);
 
     if (dir == NULL || *dir == 0) {
-        return;                     /* el runner no los paso: nada que comprobar */
+        return;                     /* el runner no los pasó: nada que comprobar */
     }
-
-    setenv("THEMES_DIR_SHIPPED", dir, 1);
-    setenv("THEMES_DIR", "/tmp/test_themes_sin_usuario", 1);
 
     /* Los dos temas outdoor la traen mas gruesa (3 px). */
     theme_init("Sunlit");
@@ -368,7 +391,7 @@ static void test_waterfall_signal_width(void) {
 }
 
 void test_theme(void) {
-    test_builtins();
+    test_default();
     test_list();
     test_names_fit_the_store();
     test_json_theme();

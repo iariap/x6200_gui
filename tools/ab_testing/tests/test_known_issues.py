@@ -112,7 +112,7 @@ def test_repo_known_issues_load(region_map: RegionMap) -> None:
     assert "UI-001" in by_id
     assert by_id["UI-001"].detector is not None
     # the repository seeds are recorded but not yet reproducible
-    assert all(by_id[f"UI-00{i}"].detector is None for i in range(2, 9))
+    assert all(by_id[f"UI-00{i}"].detector is None for i in (2, 3, 4, 5, 6, 8))
     # UI-009 is the first reproduced firmware defect with a text detector
     ui009 = by_id["UI-009"]
     assert ui009.detector is not None
@@ -220,58 +220,21 @@ def test_baseline_issue_expiry_closes_the_waiver() -> None:
     )
 
 
-def test_repo_ui010_is_fixed_and_the_registry_no_longer_waives_it(region_map: RegionMap) -> None:
-    """UI-010 was fixed: the registry keeps the entry and drops the waiver.
+def test_repo_ui010_ui013_are_retired_with_their_fixtures(region_map: RegionMap) -> None:
+    """UI-010 and UI-013 left with the legacy themes (issue #74).
 
-    White frequency digits on Outdoor's white background (region `frecuencia` of
-    `main-otro-tema`) were fixed in UI-04/AB-UI04-EXP3 (src/main_screen.c asks the
-    theme for its `text` role in the label's recolor markup instead of writing
-    white), so the scoped exclusion went away in the same change: with the contract
-    in PASS there is nothing to exempt. Like UI-011/UI-012 the entry carries no
-    pixel `detector:` of its own — its detector is the contract rule, which never
-    says where the pixels move — so the permanent guard is the contract: with no
-    waiver, a uniform region fails the run again and no recorded issue explains it.
+    UI-010 (white frequency digits on Outdoor's white background, region
+    `frecuencia` of `main-otro-tema`) and UI-013 (`params.theme_name` truncating
+    "Outdoor-Negative", `main-tema-outdoor-negative`) were anchored to legacy
+    themes that #74 retired: the themes and their fixtures are gone, so the entries
+    go with them. The fixes stay in the code (src/main_screen.c asks the theme for
+    its `text` role; `params_str_t.x` is 32 bytes) and are guarded by the contract
+    rules and `tests/native/test_theme.c`, not by a waived fixture.
     """
     issues = load_known_issues(QUALITY_DIR / "known_issues.yaml", set(region_map.regions))
-    ui010 = {issue.id: issue for issue in issues}["UI-010"]
-    assert ui010.fixture == "main-otro-tema"
-    assert ui010.region == "frecuencia"
-    assert ui010.status == "fixed"
-    assert ui010.evidence
-    assert ui010.detector is None
-    assert ui010.exclusions == ()
-    assert ui010.is_open_defect is False
-    assert (
-        baseline_issue_for(
-            "region_min_content:frecuencia", "main-otro-tema", (ui010,), date(2026, 10, 14)
-        )
-        is None
-    )
-
-
-def test_repo_ui013_is_fixed_and_the_registry_no_longer_waives_it(
-    region_map: RegionMap,
-) -> None:
-    """UI-013 was fixed: the registry keeps the entry and drops the waiver.
-
-    `params.theme_name` (a `params_str_t`, src/params/types.h) did not hold the
-    names `theme_list()` offers, so "Outdoor-Negative" was truncated and
-    `theme_init()` fell back to IU1WXY; the fix (UI-04/AB-UI04-EXP4) gave the store
-    the 31 characters the menu admits, so the contract `theme_name_fits_params`
-    passes on the `main-tema-outdoor-negative` fixture and its dated exception —
-    the last one in `contracts.yaml` — went away in the same change. The entry
-    carries no pixel `detector:` of its own (its detector is the contract rule), so
-    with no waiver a truncation that comes back fails the run again.
-    """
-    issues = load_known_issues(QUALITY_DIR / "known_issues.yaml", set(region_map.regions))
-    ui013 = {issue.id: issue for issue in issues}["UI-013"]
-    assert ui013.fixture == "main-tema-outdoor-negative"
-    assert ui013.region is None
-    assert ui013.status == "fixed"
-    assert ui013.evidence
-    assert ui013.detector is None
-    assert ui013.exclusions == ()
-    assert ui013.is_open_defect is False
+    by_id = {issue.id: issue for issue in issues}
+    assert "UI-010" not in by_id
+    assert "UI-013" not in by_id
 
 
 def test_exclusion_rule_must_be_region_scoped(tmp_path: Path, region_map: RegionMap) -> None:

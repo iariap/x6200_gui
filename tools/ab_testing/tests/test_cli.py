@@ -80,8 +80,8 @@ def test_unknown_gate_is_an_error() -> None:
         _gate_name("Nonexistent")
 
 
-def test_themes_json_lists_the_full_served_inventory(capsys: pytest.CaptureFixture) -> None:
-    """The static command reports every served theme, not only the shipped files."""
+def test_themes_json_lists_the_full_inventory(capsys: pytest.CaptureFixture) -> None:
+    """The static command reports every palette, not only the shipped files."""
     repo = Path(__file__).resolve().parents[3]
     code = main(["themes", "--repo", str(repo), "--json"])
     assert code == 0
@@ -93,32 +93,29 @@ def test_themes_json_lists_the_full_served_inventory(capsys: pytest.CaptureFixtu
         "Legacy",
         "Outdoor",
         "Classic",
-        "Outdoor-Negative",
-        "VISION",
         "Aurora",
         "Cathode",
-        "Holo",
-        "Material 3",
         "Redshift",
         "Sprint",
         "Sunlit",
         "Trail",
-        "RS",
     ]
     assert "unsupported" not in payload
-    assert payload["pairs_checked"] == len(names) * len(payload["pairs"]) == 135
+    assert payload["pairs_checked"] == len(names) * len(payload["pairs"]) == 90
     assert all(theme["ok"] for theme in payload["themes"])
 
 
-def test_themes_text_reports_the_served_themes(capsys: pytest.CaptureFixture) -> None:
+def test_themes_text_reports_the_palettes(capsys: pytest.CaptureFixture) -> None:
     repo = Path(__file__).resolve().parents[3]
     code = main(["themes", "--repo", str(repo)])
     assert code == 0
     out = capsys.readouterr().out
-    assert "15 served theme(s) (6 built-in + 9 file(s))" in out
-    assert "135 pair(s) checked, 0 failure(s)" in out
-    assert "Outdoor-Negative" in out
-    assert "VISION" in out
+    assert "10 palette(s) (4 base + 6 file(s))" in out
+    assert "90 pair(s) checked, 0 failure(s)" in out
+    assert "Aurora" in out
+    assert "Outdoor-Negative" not in out
+    assert "VISION" not in out
+    assert "Holo" not in out
     assert "UNSUPPORTED" not in out
 
 
@@ -129,7 +126,7 @@ def test_themes_reports_the_nontext_objects_and_the_exempt_roles(
     code = main(["themes", "--repo", str(repo), "--json"])
     assert code == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["nontext"]["objects"] == 31
+    assert payload["nontext"]["objects"] == 15
     assert payload["nontext"]["failures"] == []
     assert payload["nontext"]["missing"] == []
     assert {exempt["role"] for exempt in payload["exempt"]} == {
