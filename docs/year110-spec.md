@@ -126,9 +126,10 @@ ancho_campo_cifras("0000") = 60 (cifra más ancha: el '0' mide 15 px, x4)
 `2026` con `60x28` de texto natural). Con el fix, la caja útil es `93 − 6 (pad) − 4 (borde) =
 83`, así que el `2026` entra con **23 px de margen** (no con los ≥3 px que estimaba el spec).
 
-En el banco (ARM real) el ancho base medido es **72 px** (el `ancho_campo_cifras` corre en
-runtime y la fuente real mide `0000` un poco más ancho que en el harness); ver
-`docs/evidencia/2026-10-16-year110-banco/`.
+En el banco (ARM real) el ancho base medido es **74 px** de span externo (el `ancho_campo_cifras`
+corre en runtime y la fuente real mide `0000` un poco más ancho que en el harness); con el fix los
+tres campos miden **93** y caen en `x=499/595/691`, los mismos x que declara el harness. Ver
+`docs/evidencia/2026-10-16-year110-banco/` (`medir.py`/`medicion.txt`).
 
 La conclusión del fix no cambia (el Año pasa a la caja de la fila), pero la magnitud del defecto
 era **7,7×** la estimada y el margen del fix es **holgado**, no al límite.

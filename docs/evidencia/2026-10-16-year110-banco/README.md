@@ -43,51 +43,67 @@ con la pantalla de Ajustes abierta por el socket de control:
    por socket; método del precedente `docs/evidencia/2026-10-15-fallback91/banco.txt`).
 
 3. **Medición determinista** (PIL) de la fila de fecha sobre la captura 800×480:
-   se detectan los bordes verticales (`control_border` = `#E0E0E0`) de la banda
-   `y=100..155` y se agrupan en las cajas de la fila; el texto del Año son los
-   píxeles blancos (`#FFFFFF`) dentro de su caja. Script y salida cruda:
+   se detectan las columnas que son una **línea de borde vertical** del widget
+   (`control_border` = `#E0E0E0`, o blanco en el campo que tiene el foco) en la
+   banda `y=100..155`; se agrupan y se arma una caja por cada par de grupos
+   separados por un interior (> 8 px), así que el hueco de 3 px entre el Mes y el
+   Año no cuenta como caja. Se reporta el **span externo** de cada caja (borde a
+   borde, el anillo de foco cyan queda **fuera** y no se cuenta) y la tinta del
+   `2026` son los píxeles blancos dentro del Año. Script y salida cruda:
    [`medir.py`](medir.py) y [`medicion.txt`](medicion.txt).
 
 ## Resultado
 
 ![captura del banco, campo Año con el fix](banco-despues.png)
 
-Cajas de la fila en la banda `y=100..155` (bordes internos; el widget mide 2 px
-más de borde por lado, así que **inner + 2 = la caja declarada**):
+Cajas de la fila en la banda `y=100..155` (span externo = ancho declarado del
+widget; el campo del Día lleva el foco en esta pantalla, por eso su borde se
+dibuja blanco en vez de gris):
 
-| Corrida | Día (x) | Mes (x) | Año (x) | Año ancho |
-|---|---|---|---|---|
-| **antes** (`banco-antes.png`) | 596..686 | 596..686 | `692..763` | **72** (74 c/ borde) |
-| **después** (`banco-despues.png`) | 596..686 | 596..686 | `692..782` | **91** (93 c/ borde) |
+| Corrida | Día | Mes | Año | tinta `2026` | margen der. del Año |
+|---|---|---|---|---|---|
+| **antes** (`banco-antes.png`) | `499..591` = 93 | `595..687` = 93 | `691..764` = **74** | `698,115 60x20` | 5 px |
+| **después** (`banco-despues.png`) | `499..591` = 93 | `595..687` = 93 | `691..783` = **93** | `698,115 60x20` | 24 px |
 
-El **"2026"** (texto blanco) mide `698,115 60x20` en **las dos**: no se mueve (el
+Los tres widgets caen en `x=499 / 595 / 691`, los **mismos x** que declara el
+harness en la fixture `settings-home` (spinboxes `499,595,691` de 93 px): el
+layout del banco coincide con el del harness, así que la métrica es comparable.
+
+El **"2026"** (tinta blanca) mide `698,115 60x20` en **las dos**: no se mueve (el
 campo es el mismo, la caja se agranda hacia la derecha). Con el fix el margen
-derecho pasa de **6 px** (la caja casi justa) a **25 px**.
+derecho al borde interno del Año pasa de **5 px** (la caja casi justa) a **24 px**.
 
 - **Antes**: el Año (74) era **19 px más angosto** que Día/Mes (93) → la fila
   desalineada (el síntoma del issue).
-- **Después**: los **tres** campos de la fila miden **91 px** internos (**93** con
-  el borde, `SMALL_2`): la fila queda alineada y el "2026" entra completo.
+- **Después**: los **tres** campos de la fila miden **93** (`SMALL_2`): la fila
+  queda alineada y el "2026" entra completo, con margen.
 
 ### Contraste con el harness (A/B)
 
 La misma medición sobre las capturas del A/B (`x6200-ab`, Docker) —`a-settings-home.png`
-vs `b-settings-home.png`— da la caja del Año **70 → 93** (23 px), y el A/B reporta
-**358 px** de diff, todos en `x=752..783, y=100..155` (el borde derecho del campo
-pasa de `x=759` a `x=782`; el texto no se mueve). En el banco el ancho base sale
-**74** (no 70) porque `ancho_campo_cifras` mide en runtime y la fuente real mide
-`0000` un poco más ancho que en el harness; el ancho del fix (93) es la caja fija
-de la grilla, idéntico en los dos caminos.
+vs `b-settings-home.png`— da **Día 93 / Mes 93 / Año 70 → 93** con la misma
+métrica (span externo; los tres en `x=499/595/691`, igual que el banco), y el A/B
+reporta **358 px** de diff, todos en `x=752..783, y=100..155` (el borde derecho
+del campo pasa de `x=760` a `x=783`; el texto no se mueve). En el banco el ancho
+base sale **74** (no 70) porque `ancho_campo_cifras` mide en runtime y la fuente
+real mide `0000` un poco más ancho que en el harness; el ancho del fix (93) es la
+caja fija de la grilla, idéntico en los dos caminos.
+
+(La tinta del `2026` difiere entre caminos —`56x17` en el harness, `60x20` en el
+banco— por el rasterizado de la fuente, pero en los dos el `text_natural` del
+label es 60: en el harness la caja útil del Año es `93 − 6 − 4 = 83`, así que el
+texto entra con margen en ambos.)
 
 ## Determinismo
 
 Dos corridas independientes del banco con el fix (`banco-despues.png` y
 `banco-despues-2.png`, mismo binario `3604cece0e43`) **no son byte-idénticas**:
-difieren en **1323 px**, todos en la **hora viva** del encabezado y en un **valor
-vivo** que la GUI refresca (`x=609..752, y=20..193`). La **región que se mide**
-—la fila de fecha— queda **byte-idéntica** entre las dos corridas (**0 px** de
-diferencia en `x=460..799, y=95..159` y en la caja del Año `x=692..782,
-y=100..155`): lo único que cambia es el reloj y un valor vivo, no el layout.
+difieren en **1006 px**, en dos regiones fuera de la fila de fecha —la **hora viva**
+del encabezado (`x=679..734, y=20..40`, 530 px) y un **valor vivo** que la GUI
+refresca (`x=609..718, y=174..193`, 476 px)—. La **región que se mide** —la fila de
+fecha— queda **byte-idéntica** entre las dos corridas (**0 px** de diferencia en
+`x=460..799, y=95..158` y en la caja del Año `x=692..782, y=100..155`): lo único
+que cambia es el reloj y un valor vivo, no el layout.
 
 ## md5 (provenance)
 
@@ -108,6 +124,14 @@ en `7c87b8dc`). El binario **antes** es el que ya estaba en el volumen compartid
 reconstruyó desde este worktree, así que su `fuente:` impreso por el script es el
 del árbol actual y **no** corresponde a ese binario (se documenta para no dejar
 evidencia falsa).
+
+La línea `version:` de [`banco.txt`](banco.txt) (salida cruda del script) es el
+`HEAD` del worktree **en el momento de la captura** (`03b075a3`, el tip local
+previo a una reescritura de historia pre-push de esta rama; ese sha **no** está en
+la rama publicada). El árbol fuente que se compiló de verdad es el de `7c87b8dc`
+—el `fuente: md5 2d911dfd8eef` de `banco.txt` coincide con el `src/` de la rama
+actual (recomputado: mismo md5)—, así que la provenance del binario es la de la
+tabla, no la de la línea `version:`.
 
 > **Corrección de medición (2026-10-16)**: el primer build de esta corrida anotó
 > en el comentario del fuente que el `2026` medía **54** de natural —un número
