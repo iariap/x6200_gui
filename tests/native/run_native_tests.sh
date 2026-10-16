@@ -36,9 +36,9 @@ cp "$SRC/cw_decoder.c" "$SRC/cw_decoder.h" "$CW_STAGE/"
 cp "$DIR/stubs_cw/pannel.h" "$DIR/stubs_cw/remote_server.h" "$CW_STAGE/"
 cp "$DIR/stubs/lvgl/lvgl.h" "$CW_STAGE/lvgl/"
 
-SOURCES="$SRC/adaptive_tuning.c $SRC/autotune.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c $CW_STAGE/cw_decoder.c \
+SOURCES="$SRC/adaptive_tuning.c $SRC/autotune.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c $SRC/roe_curve.c $CW_STAGE/cw_decoder.c \
 $DIR/stubs/stubs.c $DIR/test_main.c $DIR/test_framework.c \
-$DIR/test_adaptive_tuning.c $DIR/test_autotune.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c \
+$DIR/test_adaptive_tuning.c $DIR/test_autotune.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c $DIR/test_roe_curve.c \
 $DIR/test_update_check.c"
 
 echo "== compilador: $($CC --version | head -1) =="
@@ -208,7 +208,7 @@ echo "== SWR Scan (#85): cerrar con el barrido corriendo no desreferencia NULL =
 SW_STAGE="$OUT/swrscan_src"
 rm -rf "$SW_STAGE"
 mkdir -p "$SW_STAGE/lvgl" "$SW_STAGE/params"
-cp "$SRC/dialog_swrscan.c" "$SRC/dialog_swrscan.h" "$SW_STAGE/"
+cp "$SRC/dialog_swrscan.c" "$SRC/dialog_swrscan.h" "$SRC/roe_curve.c" "$SRC/roe_curve.h" "$SW_STAGE/"
 cp "$DIR/stubs_swrscan/lvgl/lvgl.h" "$SW_STAGE/lvgl/"
 cp "$DIR/stubs_swrscan/dialog.h" "$DIR/stubs_swrscan/styles.h" "$DIR/stubs_swrscan/radio.h" \
    "$DIR/stubs_swrscan/events.h" "$DIR/stubs_swrscan/util.h" "$DIR/stubs_swrscan/keyboard.h" \
@@ -217,12 +217,12 @@ cp "$DIR/stubs_swrscan/params/params.h" "$SW_STAGE/params/"
 if [ "$SAN_OK" = yes ]; then
     # shellcheck disable=SC2086
     $CC $BASEFLAGS $SAN -I"$SW_STAGE" \
-        "$SW_STAGE/dialog_swrscan.c" "$DIR/swrscan_stubs.c" "$DIR/test_swrscan.c" \
+        "$SW_STAGE/dialog_swrscan.c" "$SW_STAGE/roe_curve.c" "$DIR/swrscan_stubs.c" "$DIR/test_swrscan.c" \
         "$DIR/test_framework.c" "$DIR/swrscan_test_main.c" -lm -o "$OUT/swrscan_tests"
 else
     # shellcheck disable=SC2086
     $CC $BASEFLAGS -I"$SW_STAGE" \
-        "$SW_STAGE/dialog_swrscan.c" "$DIR/swrscan_stubs.c" "$DIR/test_swrscan.c" \
+        "$SW_STAGE/dialog_swrscan.c" "$SW_STAGE/roe_curve.c" "$DIR/swrscan_stubs.c" "$DIR/test_swrscan.c" \
         "$DIR/test_framework.c" "$DIR/swrscan_test_main.c" -lm -o "$OUT/swrscan_tests"
 fi
 

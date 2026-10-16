@@ -17,6 +17,7 @@
 #include "keyboard.h"
 #include "main_screen.h"
 #include "buttons.h"
+#include "roe_curve.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -231,17 +232,27 @@ static void draw_cb(lv_event_t * e) {
         lv_draw_label(draw_ctx, &dsc_label, &area, str, NULL);
     }
 
-    /* Chart */
+    /* Chart: the same samples, resampled into a smooth Catmull-Rom curve so the
+     * zigzag of the sampling is not read as the antenna's response (issue #99).
+     * Render only: data_filtered is untouched, and the local minima (the
+     * resonances) stay exact knots of the curve. The samples keep the x they
+     * had (i / (OVERSAMPLE * STEPS) * w); only the segments between them bend. */
+
+    static float curve[(STEPS - 1) * ROE_CURVE_OVERSAMPLE + 1];
 
     line_dsc.color = lv_color_white();
     line_dsc.width = 4;
 
-    for (uint16_t i = 1; i < STEPS; i++) {
-        a.x = x1 + (i - 1) * w / STEPS;
-        a.y = y1 + calc_y(data_filtered[i-1]);
+    int m = roe_curve_point_count(STEPS);
 
-        b.x = x1 + (i) * w / STEPS;
-        b.y = y1 + calc_y(data_filtered[i]);
+    roe_curve_resample(data_filtered, STEPS, curve);
+
+    for (int i = 1; i < m; i++) {
+        a.x = x1 + (lv_coord_t)((int32_t)(i - 1) * w / (ROE_CURVE_OVERSAMPLE * STEPS));
+        a.y = y1 + calc_y(curve[i-1]);
+
+        b.x = x1 + (lv_coord_t)((int32_t)i * w / (ROE_CURVE_OVERSAMPLE * STEPS));
+        b.y = y1 + calc_y(curve[i]);
 
         lv_draw_line(draw_ctx, &line_dsc, &a, &b);
     }
