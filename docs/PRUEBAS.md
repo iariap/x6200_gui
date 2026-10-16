@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 16/10 ~00:45 | **`f88813ae85e3`** | `c60af91` (#95/#91) + `aa05ef9` (#99) | (no corrido) | no se corrió | 0 en las pruebas | **#95 desplegado** (fallback de temas determinista) y **#99** (curva suavizada) — pero **no pude validar el #99**: a 7.152 la ROE sigue fuera de escala y el gráfico queda **vacío** (hace falta el rango resonante). **El CPU sigue ~65%** ✗ (#91 abierto) |
 | 16/10 ~00:20 | **`da1055ddb0c3`** (tip `7032d3b`) | `9153a40` (#100) + `65cdda6` (#107) | (no corrido) | **23 ok** | **0 en 60 s** | **Desplegado y sano**: build exit 0 (13 s) con el gate OK (13.742.896 B); 1 GUI; barrido 23/0; estado idéntico antes/después; CRASHLOG 0. Incluye el asistente de sintonía (#100) y el fix del bench de CI (#107) |
 | 15/10 ~23:10 | `3ead572b6fe2` (sin cambios) | `e5e6be5` | (no corrido) | no se corrió | **0 en 180 s** | Sano: 1 GUI, pid 18345 estable 3 min, CRASHLOG 0. CPU del hilo principal **68%** (en la sesión anterior medí 104-120% con el mismo build: varía). **#94 cerrado** (ya lo habían cerrado; dejé la validación igual) |
 | 15/10 ~23:35 | `3ead572b6fe2` (sin cambios) | `ed6455d` | (no corrido) | no se corrió | 0 en la muestra | **#91 acotado**: el consumo está en el **hilo principal** (75,8%) y es **user-space** (58% user vs 11% sys), y **NO depende del waterfall** (tapar el waterfall: 68,8→71,0%, igual). Descartados el tema, `pre`/`att` y el kworker del 200% (transitorio mío) |
@@ -58,7 +59,42 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 ---
 
-## 16/10 ~00:20 — `da1055ddb0c3` (tip `7032d3b`): el asistente de sintonía (#100) desplegado
+## 16/10 ~00:45 — `f88813ae85e3` (tip `c60af91`): el #95 de temas y el #99 de la curva
+
+**Qué se probó:** los merges `c60af91` (temas: fallback determinista fijado por tests, issue #91 — *"el
+supuesto estaba desmentido"*) y `aa05ef9` (SWR Scan: curva de ROE suavizada con Catmull-Rom, issue #99).
+
+**Build y deploy, medido:**
+
+```
+$ make x6200-gui-rebuild        -> exit 0 en 6 s
+$ gate: OK: es el firmware del port (ELF32 ARM, 13743036 B, 3/3 marcas)
+  radio: gui=f88813ae85e3 (1 GUI, pid 25647)
+```
+
+**El #99 no se pudo validar en este dial.** El barrido de ROE a **7.152000** (donde el owner tiene la
+radio) deja el gráfico **vacío**, igual que antes:
+
+```
+  7.012 (resonante, build viejo): 17.83% de pixeles no-fondo   <- con curva
+  7.152 (build nuevo #99):        12.27%                       <- SIN curva
+```
+
+Ojo: ese 12,27% vs el 10,82% medido antes **no es una curva**: son los **rótulos del eje**, que ahora
+dicen `7.139.500 / 7.152.000 / 7.164.500` (antes `7.155.471 / 7.167.971 / 7.180.471`) y ocupan más
+pixeles. La captura `22-curva-suavizada.png` lo muestra: el chart está **vacío**.
+
+Es consistente con el hallazgo del #101: **una ROE fuera de escala no se dibuja**, y a 7.152 la antena de
+40 m está fuera de resonancia. Para validar el #99 hay que barrer dentro de **7,0-7,03**.
+
+**El #84/#85 siguen bien** con este build: cerrar el barrido no reinicia la GUI (pid 25647 sin cambios) y
+el estado queda intacto (`7.152000 MHz LSB vol=0`), con `CRASHLOG=0`.
+
+**#91**: el fix del #95 confirma por escrito que **el supuesto del tema estaba desmentido** (lo que yo
+habia medido), pero **el CPU sigue en ~65%** en el hilo principal y en user-space. El issue queda abierto
+por esa parte.
+
+## 16/10 ~00:20## 16/10 ~00:20 — `da1055ddb0c3` (tip `7032d3b`): el asistente de sintonía (#100) desplegado
 
 **Qué se probó:** el build del tip, que ya traía los merges `9153a40` (RX: asistente de sintonía, buscar el
 mejor spot alrededor, issue #100) y `65cdda6` (bench de CI: el ruido del runner sale `INCONCLUSIVE`).
