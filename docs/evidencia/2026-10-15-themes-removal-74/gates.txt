@@ -1,0 +1,160 @@
+# Gates de la corrida themes-removal-74 (issue #74, cierre del epic THEMES v2).
+#
+# Corridos sobre el arbol de esta corrida (rama factory/themes-removal-74), ya
+# REBASADA sobre el trunk. El commit de codigo es 1cb587d8 (retiro + default
+# Aurora + migracion) y ff90e29f (goldens re-baselineados, nontext.yaml y el
+# reporte A/B AB-REMOVE74); esta evidencia es el commit de mas arriba. Los checks
+# se anclan a esos dos commits (estables) para que la evidencia no se
+# auto-referencie. El banco corrio con el binario del arbol previo al rebase
+# (085c2aea); ver la nota al final.
+#
+# Rebase sobre el trunk (origin/lu2dsx/x6200-rom = ed8d35a2), que habia avanzado
+# con #92 (waterfall_signal_width), #94 (snapshot de estado) y las QAs del ciclo.
+# El unico conflicto semantico fue src/theme.c (el remate del catalogo vs el
+# parser/struct del #92); ver el reporte de la corrida.
+
+$ scripts/apps/x6200/check-matrix.sh ed8d35a2 HEAD <worktree>
+
+==> [check] native tests (tests/native/run_native_tests.sh)
+    ok
+==> [check] check_cfg_fills
+    ok
+==> [check] check_actions
+    ok
+==> [check] check_settings_focus
+    ok
+==> [check] check_apps_menu
+    ok
+==> [check] check_app_handlers
+    ok
+==> [check] check_wcag
+    ok
+==> [check] ruff check (ab_testing)
+    ok
+==> [check] ruff format --check (ab_testing)
+    ok
+==> [check] pytest -m 'not e2e' (ab_testing)
+    ok
+==> [check] harness determinism gate
+    ok
+==> [check] banco QEMU: preflight (tools/captura-banco.sh --check)
+    BLOCKED: falta entorno (el chroot .vfix3 y el buildroot del owner no viven en el
+    worktree; el banco se corrio a mano con CHROOT=/home/pablo/desa/x6200/.vfix3,
+    ver abajo)
+
+(exit: 0 — los 7 estaticos + ruff/pytest + determinismo en ok; el banco, corrido aparte)
+
+# El 8vo estatico (audita-pruebas, sobre docs/PRUEBAS.md) tambien queda verde:
+$ python3 tests/audita-pruebas.py
+  builds en la tabla: 16 | secciones: 6 | enlaces: 22
+  OK: estructura y evidencia en orden
+(exit 0)
+
+$ tests/check_harness_determinism.sh
+
+building ui_harness (revision ff90e29f...).
+running every fixture 2 times...
+<las 61 fixtures del sweep, sha256 identico entre las dos corridas>
+PASS: deterministic (identical PNGs for every fixture)
+
+$ cd tools/ab_testing
+$ uv run x6200-ab compare --a origin/lu2dsx/x6200-rom --b 1cb587d8 --experiment-id AB-REMOVE74
+
+experiment AB-REMOVE74: PASS (exit 0)
+A (baseline): ed8d35a20035bbaecae4a15acda5d7c8309e890e (el trunk rebasado)
+B (candidate): 1cb587d849b0967e2775480bc31f678c3283b541 (el commit de codigo)
+scenarios REMOVED in B (A's fixture, not shipped by B; left out of the comparison): main-otro-tema, main-tema-classic, main-tema-holo, main-tema-material-3, main-tema-outdoor-negative, main-tema-rs, main-tema-vision, main-tema-vision-cwr, main-tema-vision-usbd, settings-rs-theme
+  Functional         PASS            (required) — 61 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — no unexplained visual regressions
+  Quality Contract   PASS            (required) — 633 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+report: tools/ab_testing/reports/AB-REMOVE74
+
+$ uv run x6200-ab contracts --revision HEAD && uv run x6200-ab audit --revision HEAD --suite visual
+
+contracts ff90e29f64e1: PASS — 633 checks, 0 failure(s), 0 unchanged baseline defect(s)
+audited ff90e29f64e1: 11 known issues — 0 reproduced, 9 unverified; structural inspection REAL over 7338 objects on 61 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab themes
+
+themes PASS: 10 palette(s) (4 base + 6 file(s)), 9 pair(s) declared, 90 pair(s) checked, 0 failure(s)
+  non-text (WCAG 1.4.11, pixels): 15 object(s) measured, 0 failure(s)
+    OK   s_meter_arc on main-foco = 6.23:1 (min 3.0:1)
+    OK   waterfall_signal on main-foco = 6.57:1 (min 3.0:1)
+    OK   s_meter_arc on main-espectro-agua = 6.23:1 (min 3.0:1)
+    OK   waterfall_signal on main-espectro-agua = 7.10:1 (min 3.0:1)
+    OK   waterfall_signal on main-tema-sprint = 8.31:1 (min 3.0:1)
+    OK   s_meter_arc on main-tema-sprint = 5.46:1 (min 3.0:1)
+    OK   focus_indicator on settings-home = 8.91:1 (min 3.0:1)
+    OK   s_meter_arc on main-tema-sunlit = 3.66:1 (min 3.0:1)
+    OK   waterfall_signal on main-tema-sunlit = 8.89:1 (min 3.0:1)
+    OK   s_meter_arc on main-tema-sunlit-agua = 3.66:1 (min 3.0:1)
+    OK   waterfall_signal on main-tema-sunlit-agua = 9.16:1 (min 3.0:1)
+    OK   waterfall_signal on main-tema-aurora = 6.57:1 (min 3.0:1)
+    OK   s_meter_arc on main-tema-aurora = 6.23:1 (min 3.0:1)
+    OK   waterfall_signal on main-tema-cathode = 6.82:1 (min 3.0:1)
+    OK   s_meter_arc on main-tema-cathode = 8.11:1 (min 3.0:1)
+
+$ uv run pytest -m "not e2e" -q && uv run pytest -m e2e -q
+
+189 passed, 13 deselected in 2.43s
+13 passed, 189 deselected in 181.18s (0:03:01)
+
+$ tests/native/run_native_tests.sh
+
+966 comprobaciones, 0 fallos  (theme.c: los seis cargan, un nombre retirado cae a Aurora, el parse de waterfall_signal_width)
+10 comprobaciones, 0 fallos   (clock)
+25 comprobaciones, 0 fallos   (backlight)
+12 comprobaciones, 0 fallos   (digital modes)
+13 comprobaciones, 0 fallos   (swrscan)
+5 comprobaciones, 0 fallos    (restore)
+
+# --- banco QEMU (UNA sesion, guard del #90: dirclean + rebuild) ------------------
+#
+# El chroot .vfix3 y el buildroot del owner viven fuera del worktree, asi que el
+# check-matrix lo reporta BLOCKED; se corrio a mano con los paths del owner:
+#
+#   CHROOT=/home/pablo/desa/x6200/.vfix3 \
+#   BUILDROOT=/home/pablo/desa/x6200/buildroot_new/AetherX6200Buildroot \
+#   RECONSTRUIR=si tools/captura-banco.sh /tmp/banco74.png
+#
+$ CHROOT=/home/pablo/desa/x6200/.vfix3 BUILDROOT=.../AetherX6200Buildroot RECONSTRUIR=si tools/captura-banco.sh /tmp/banco74.png
+
+  limpiando la GUI (dirclean): el rebuild reusa una copia propia del repo
+  reconstruyendo la GUI: RECONSTRUIR=si
+  captura: /tmp/banco74.png (334 colores distintos)
+  version: 085c2aea THEMES v2 #74: goldens re-baselineados (default Aur
+  fuente: md5 eb9439e2c70b (src/ + lvgl/src)
+  binario: md5 6841894a9409   qemu-cpu: cortex-a7
+  captura util (24136 bytes)
+
+# Boot con el default: el fondo del render es #1a1227 y la barra #2c213e, los
+# roles de Aurora (rootfs/usr/share/x6200/themes/Aurora.json). Evidencia:
+# banco-boot-default-aurora.png (md5 da787cc0903751a3ff7e2e02dd03b69e).
+#
+# NOTA del rebase: el banco se capturo con el arbol PRE-rebase (085c2aea, hoy
+# ff90e29f tras rebasar sobre el trunk). El rebase sobre #92 no cambia ese render:
+# el default (Aurora) no define `waterfall_signal_width`, asi que la linea central
+# del waterfall queda en 1 px (el clamp del parser) igual que con el
+# `lv_style_set_line_width(..., 1)` previo; el resto de los roles del default no
+# se toca. Los PNG de evidencia (banco-boot-default-aurora,
+# banco-migracion-outdoor-a-aurora) siguen siendo validos. NO se re-corrio el banco
+# en esta pasada: el volumen x6200-build-output esta compartido con otros
+# contenedores del host (banco-apps, ...) y un dirclean+rebuild los afectaria;
+# re-correrlo es tarea del host del owner (CHROOT/BUILDROOT explicitos).
+
+# Migracion del valor guardado, sobre el binario real (version=2 y
+# theme_name='Outdoor' en el params.db del banco):
+$ sqlite3 /home/pablo/desa/x6200/.vfix3/mnt/params.db \
+    "UPDATE version SET id=2; UPDATE params SET val='Outdoor' WHERE name='theme_name';"
+$ CHROOT=/home/pablo/desa/x6200/.vfix3 ... tools/captura-banco.sh /tmp/banco74-migracion2.png
+$ sqlite3 /home/pablo/desa/x6200/.vfix3/mnt/params.db \
+    "SELECT id FROM version; SELECT name,val FROM params WHERE name='theme_name';"
+3
+theme_name|Aurora
+
+# La migracion _3_migrate_theme_name (src/params/migrations.c) reescribio el valor
+# guardado y el boot renderizo Aurora. Evidencia: banco-migracion-outdoor-a-aurora.png
+# (md5 334808ef46a0ff1d8e63c191702d0553).

@@ -11,6 +11,18 @@ Un defecto corregido pasa a test permanente: en cuanto el arnés lo reproduce, l
 comparación A/B lo clasifica (`FIXED` / `UNCHANGED DEFECT` / `REGRESSION` /
 `NEW DEFECT`) y una reaparición vuelve a fallar la corrida.
 
+> **Cierre del epic THEMES v2 (issue #74, 2026-10-15).** El registro retiró
+> UI-007, UI-010, UI-011, UI-012, UI-013 y UI-014: cada una estaba anclada a un
+> tema legado (RS, Outdoor, VISION) que el #74 retiró, y su fixture salió con él.
+> Los **fixes quedan en el código** (`src/main_screen.c` pide el rol `text` del
+> tema, `src/info.c` devuelve las celdas del VFO/modo al tamaño de los otros temas,
+> `params_str_t.x` es de 32 bytes) y sus guardas permanentes también: el chequeo
+> estático de pares (`x6200-ab themes`), los contratos (`region_min_content`,
+> `theme_name_fits_params`) y `tests/native/test_theme.c`. Lo que se fue con los
+> temas es la **evidencia renderizada** sobre fixtures que ya no existen. Los
+> defectos que no dependían de un tema legado (UI-001, UI-009, UI-015/016/017,
+> UI-002..006, UI-008) siguen acá.
+
 ## UI-001 — Etiqueta del multiplicador de tuning visible sobre la barra superior
 
 - **Severidad**: major.
