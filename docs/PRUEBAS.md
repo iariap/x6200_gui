@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 16/10 ~18:30 | `3604cece0e43` (sin cambios) | `a94d0c3` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0, load ok. #111: 20143 de 20820 overflows. Dial fuera del rango del #99 |
 | 16/10 ~18:20 | `3604cece0e43` (sin cambios) | `fea20c2` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0. **#111**: 18.856 de 19.533 (96%) y **los logs no llenan el disco** (DATA 1% usado, app_logs 26 MB en 657 archivos) → el impacto es **eventos descartados + desgaste de SD**, no espacio |
 | 16/10 ~18:15 | `3604cece0e43` (sin cambios) | `6da72f7` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI, CRASHLOG 0; #111 sigue; dial fuera del rango del #99 |
 | 16/10 ~18:05 | `3604cece0e43` (sin cambios) | `9b36c0f` | (se cuelga) | (ya corrido) | **0 en 45 s** | Sin novedades: 0 merges, 1 GUI (pid 2889), CRASHLOG 0, load 0,62. #111: +1.463 en ~10 min (2,4/s). #99: dial 7.158, fuera de rango |
