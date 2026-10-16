@@ -94,7 +94,7 @@ el estado queda intacto (`7.152000 MHz LSB vol=0`), con `CRASHLOG=0`.
 habia medido), pero **el CPU sigue en ~65%** en el hilo principal y en user-space. El issue queda abierto
 por esa parte.
 
-## 16/10 ~00:20## 16/10 ~00:20 — `da1055ddb0c3` (tip `7032d3b`): el asistente de sintonía (#100) desplegado
+## 16/10 ~00:20 — `da1055ddb0c3` (tip `7032d3b`): el asistente de sintonía (#100) desplegado
 
 **Qué se probó:** el build del tip, que ya traía los merges `9153a40` (RX: asistente de sintonía, buscar el
 mejor spot alrededor, issue #100) y `65cdda6` (bench de CI: el ruido del runner sale `INCONCLUSIVE`).
