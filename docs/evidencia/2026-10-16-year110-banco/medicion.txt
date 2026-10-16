@@ -1,0 +1,18 @@
+# Medicion PIL de la fila Day/Month/Year (medir.py)
+# antes = binario del volumen (trunk 5944ff5, sin el fix); despues = binario con el fix (fuente 2d911dfd8eef)
+
+=== banco-antes.png (base) ===
+# banco-antes.png  (800x480)  banda y=100..155
+bordes verticales (grupos): [(595, 596), (686, 687), (691, 692), (763, 764)]
+  caja entre grupo 0 y 1: x=596..686  ancho=91
+  caja entre grupo 1 y 2: x=687..691  ancho=5
+  caja entre grupo 2 y 3: x=692..763  ancho=72
+  texto '2026' en la caja del Anio: 698,115 60x20  (margen izq=6 px, der=6 px)
+
+=== banco-despues.png (fix) ===
+# banco-despues.png  (800x480)  banda y=100..155
+bordes verticales (grupos): [(595, 596), (686, 687), (691, 692), (782, 783)]
+  caja entre grupo 0 y 1: x=596..686  ancho=91
+  caja entre grupo 1 y 2: x=687..691  ancho=5
+  caja entre grupo 2 y 3: x=692..782  ancho=91
+  texto '2026' en la caja del Anio: 698,115 60x20  (margen izq=6 px, der=25 px)

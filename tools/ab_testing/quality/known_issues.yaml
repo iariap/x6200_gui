@@ -115,13 +115,24 @@ issues:
       cambio: sin waiver, una reaparicion vuelve a fallar la corrida. El fix mueve
       pixeles solo dentro de `ajustes_anio` (regions.yaml), declarado en
       `expected_changes`.
+      #110 (AB-YEAR110, 2026-10-16): ese ancho por contenido se reemplazo por la
+      caja de la fila. Con la fuente vigente el helper pedia 70 px (el peor caso de
+      4 cifras, "0000", mide 60 con sony_36, mas el padding de la grilla y el
+      borde) y el campo quedaba 23 px mas angosto que Dia y Mes; pasa a SMALL_2 = 93
+      (caja util 83, margen de 23 px para el "2026") y el helper `ancho_campo_cifras`
+      se retiro, sin uso. `tests/check_settings_focus.py` comprueba que los tres
+      campos de la fila declaren la misma caja.
     evidence:
       - "tools/ui_harness/fixtures/settings-home.scn"
       - "inspeccion estructural ANTES (ccfe1f5): lv_label '2026' 704,113 84x28 visible 704,113 80x28 (lost 4x0), spinbox 691,100 93x56"
       - "inspeccion estructural DESPUES (fix): lv_label '2026' 696,113 84x28 visible 696,113 84x28, spinbox 691,100 94x56"
-      - "src/dialog_settings.c (ancho_campo_cifras + el campo Año: pad_hor SMALL_PAD y ancho medido)"
+      - "inspeccion estructural ANTES/DESPUES (#110): spinbox del ano 691,100 70x56 -> 691,100 93x56; label '2026' 696,113 60x28 (natural 60) -> 696,113 83x28"
+      - "src/dialog_settings.c (el campo Año: caja SMALL_2 y pad_hor SMALL_PAD; el helper ancho_campo_cifras retirado en #110)"
+      - "tests/check_settings_focus.py (los tres campos de make_date declaran la misma caja)"
       - "audit HEAD --suite visual: 0 structural findings (sin el waiver de UI-016)"
       - "tools/ab_testing/reports/AB-UI016-T1/ (capturas A/B, diff, overlay, results.json)"
+      - "tools/ab_testing/reports/AB-YEAR110/ (358 px de diff en settings-home, dentro de `ajustes_anio`)"
+      - "docs/evidencia/2026-10-16-year110-banco/ (captura del banco QEMU + medicion PIL)"
       - "tools/ab_testing/quality/contracts.yaml (excepcion de layout_clipped retirada; expected_change acotado a `ajustes_anio`)"
 
   - id: UI-017

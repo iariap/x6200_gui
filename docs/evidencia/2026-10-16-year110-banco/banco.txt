@@ -1,0 +1,21 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output: ok
+  chroot /home/pablo/desa/x6200/.vfix3: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  buildroot: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  limpiando la GUI (dirclean): el rebuild reusa una copia propia del repo
+  reconstruyendo la GUI: RECONSTRUIR=si
+OK: /home/pablo/desa/x6200/.vfix3/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13742964 B, 3/3 marcas)
+  respuesta: {"t":"ok"}
+  captura: /tmp/opencode/year110/banco/banco-despues-v2.png (422 colores distintos)
+  version: 03b075a3 Ajustes #110: evidencia del banco QEMU, golden re-b
+  fuente: md5 2d911dfd8eef (src/ + lvgl/src)
+  binario: md5 3604cece0e43   qemu-cpu: cortex-a7
+  captura util (41676 bytes)
+EXIT=0
