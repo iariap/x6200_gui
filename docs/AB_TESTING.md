@@ -4121,13 +4121,15 @@ podría dar el mismo número con distancias y pulsaciones distintas.
 
 ### Decisión del owner (2026-10-16): aceptar y documentar
 
-El owner aprobó **aceptar la desviación y documentarla**, y **no tocar `budgets.yaml`**. El A/B
-va a seguir mostrando `Performance FAIL` para esta corrida: eso queda **registrado como
-aceptado**, no escondido. El patrón de la casa es el mismo de siempre —el gate no se relaja y el
+El owner aprobó **aceptar la desviación y documentarla**, **sin tocar `budgets.yaml`**, y aprobó
+el **mecanismo** que la acepta: un registro de desviaciones de performance por escenario, con
+techos por métrica y vencimiento (abajo). El A/B pasa a mostrar `Performance PASS (by exception)`
+para esta corrida, **con el breach visible**: el delta medido sigue en el reporte, al lado de la
+razón y el vencimiento. El patrón de la casa es el mismo de siempre —el gate no se relaja y el
 reporte dice la verdad—; la lectura es que el delta es un costo one-off de apertura con estado
 estable sin cambio, no una regresión de operación.
 
-### Cómo lo juzga el CI (investigado; **sin** cambio de política)
+### Cómo lo juzga el CI (investigado; con el registro aprobado)
 
 Los tres puntos que la spec pidió investigar:
 
@@ -4137,23 +4139,69 @@ Los tres puntos que la spec pidió investigar:
    **cualquier gate `required` en `FAIL`** (`quality_gates.py`: `Performance` es required en
    `host-ui`). Ese `compare` usa los budgets **`performance`** de `quality/budgets.yaml`
    (`flushed_pixels` 10 %, `flushes` 20 %) sobre los **totales** de la captura —los mismos
-   números de la tabla—, así que **el CI reportaría el mismo `Performance FAIL` y bloquearía ese
-   job**. El job `UI Performance (render benchmark, host)` es otro camino: corre `x6200-ab
-   benchmark` con los budgets **`benchmark`** (`p95` 25 %, `flushes` 20 %, área 20 %) sobre medias
-   **por frame** con warm-up descartado, y con esos proxies en `0.0 %` **pasa** (ver arriba).
+   números de la tabla—, así que **antes** de este cambio el CI reportaba el mismo
+   `Performance FAIL` y bloqueaba ese job. **Ahora** el `compare` lee también
+   `quality/performance_exceptions.yaml`, así que los diez escenarios salen
+   `PASS (by exception)` y el job queda **verde**, con el breach a la vista en el summary y en
+   `reports/AB-ci-visual`. El job `UI Performance (render benchmark, host)` es otro camino: corre
+   `x6200-ab benchmark` con los budgets **`benchmark`** (`p95` 25 %, `flushes` 20 %, área 20 %)
+   sobre medias **por frame** con warm-up descartado, y con esos proxies en `0.0 %` **pasa** (ver
+   arriba) — ese camino no usa el registro.
 
-2. **¿Existe excepción por fixture/escenario sin relajar el budget global?** **No para
-   performance.** Los dos mecanismos con alcance acotado que existen son `RuleException`
+2. **¿Existe excepción por fixture/escenario sin relajar el budget global?** Hasta esta corrida,
+   **no para performance**: los dos mecanismos con alcance acotado eran `RuleException`
    (`quality_config.py`: regla + fixture + fecha de expiración) para los **quality contracts** y
-   `ExpectedChange` (`contracts.yaml`: región + fecha) para la **regresión visual**. Ninguno
-   cubre el proxy de costo de render: `PerformanceBudget` no tiene forma por fixture ni registro
-   de desviaciones conocidas, y la tolerancia `host_noise` del benchmark
-   (`compare_scenario`) sólo aplica a un breach **p95-only** con **ambos proxies en `0.0 %`
-   exactos** —acá los proxies se mueven, así que no aplica.
+   `ExpectedChange` (`contracts.yaml`: región + fecha) para la **regresión visual**, y ninguno
+   cubría el proxy de costo de render (`PerformanceBudget` no tenía forma por fixture). La
+   tolerancia `host_noise` del benchmark (`compare_scenario`) tampoco aplicaba: sólo excusa un
+   breach **p95-only** con **ambos proxies en `0.0 %` exactos**, y acá los proxies se mueven.
 
-3. **Conclusión: PENDIENTE para decisión del orquestador.** Sin relajar el budget global (lo que
-   el owner prohibió) o sin agregar un mecanismo nuevo, el job `UI Visual Regression` del CI
-   queda rojo por este delta. No se implementó ningún cambio de política en esta corrida.
+3. **Solución: un registro de desviaciones de performance por escenario** (aprobado por el owner
+   el 2026-10-16, `budgets.yaml` **sin tocar**). Es el mismo patrón de la casa que las otras dos
+   excepciones —alcance explícito, razón, autor y vencimiento— aplicado al proxy de costo. Se
+   implementó en esta corrida: ver la sección siguiente.
+
+### El mecanismo: `quality/performance_exceptions.yaml`
+
+`budgets.yaml` sigue fijando los presupuestos globales y **no se edita** (regla 5 del plan). Lo
+que cambia es que un cambio que *sabe* que mueve los contadores deterministas —medido, entendido
+y aprobado— se acepta por un registro aparte, `quality/performance_exceptions.yaml`, en vez de
+relajando el presupuesto:
+
+```yaml
+exceptions:
+  - scenarios: [settings-home, settings-audio, settings-wfbat]   # nombres exactos, sin globs
+    ceilings:                                                     # techo por proxy, no un pase libre
+      flushes_delta_pct: 130.0
+      flushed_pixels_delta_pct: 15.0
+    reason: >
+      AB-SETEN109 (#109): ... (causa, medición y la decisión del owner)
+    author: ajustes-tabs-109
+    expires: 2027-03-31
+```
+
+Semántica del gate (`quality_gates.performance_gate`, `quality_config.PerformanceException`):
+
+- **vigente y dentro de los techos** → el escenario sale **`PASS (by exception)`**: el breach
+  **se muestra** —mismo delta medido— junto a la razón y el vencimiento, tanto en `report.md`
+  (tabla de performance) como en `results.json` (`Performance.details.by_exception`);
+- **vencida** → **FAIL** (fail-closed: es como si el escenario no tuviera entrada);
+- **delta sobre el techo** → **FAIL** (el techo acota la desviación, no la libera);
+- **escenario sin entrada** → presupuesto global intacto, **FAIL** como siempre.
+
+Los techos de esta entrada se eligieron **medidos + un margen explícito**: la banda de base 7
+admite el +114.3 % medido y **un flush más** (16 = +128.6 % ≤ 130 %); la de base 6 admite el
++133.3 % y un flush más (15 = +150 %). Un **segundo** widget enfocado sumaría otros +8 flushes
+(+229 % / +267 %) y quedaría muy por encima: el techo no es un pase libre. En píxeles, 15 % deja
+3.3 / 1.8 puntos sobre el +11.7 % / +13.2 % medido. El `expires` sigue la convención de la casa
+(≈6 meses, como los `ExpectedChange` visuales): `2027-03-31`.
+
+`budgets.yaml` queda **byte a byte idéntico**; `tests/test_performance_exceptions.py` lo fija con
+el `sha256` del archivo (y con los valores `10.0` / `20.0`), para que una edición del presupuesto
+global no pueda colarse como un "fix". El mismo test fija que cada entrada del registro real está
+acotada, fechada, razonada, nombra el issue #109, admite el delta medido **y** rechaza el mismo
+delta repetido (segundo widget). Los números del A/B no cambian: lo único que cambia es que ahora
+**se juzgan** contra el registro.
 
 [#109]: https://github.com/iariap/x6200_gui/issues/109
 [#112]: https://github.com/iariap/x6200_gui/issues/112

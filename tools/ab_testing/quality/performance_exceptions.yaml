@@ -1,0 +1,82 @@
+# Performance exceptions: dated, scoped acceptances of a render-cost deviation.
+#
+# `budgets.yaml` fixes the global render-cost budgets and is never edited to make
+# a run pass (rule 5 of docs/AB_TESTING_PLAN.md). When a change is *known* to move
+# the deterministic counters on purpose — measured, understood and approved — it
+# is accepted here instead of by relaxing the budget: one entry per scenario set,
+# with a ceiling per proxy, a reason, an author and an expiry date. The gate reads
+# an entry only while it is current:
+#
+#   * an expired entry fails closed (the scenario FAILs, as if it had no entry);
+#   * a delta above the ceilings FAILs — the ceiling bounds the deviation, it does
+#     not free it (a second focused widget, or any real regression, lands above);
+#   * a scenario with no entry keeps the global budget of `budgets.yaml`.
+#
+# The breach is never hidden: the report shows the measured delta next to the
+# exception's reason and expiry, and results.json carries the same record under
+# the Performance gate's `details.by_exception`.
+#
+# Matching is by exact scenario name — the house pattern of `RuleException` in
+# contracts.yaml. There are deliberately no globs: a waiver can never widen
+# silently to a scenario nobody reviewed.
+
+exceptions:
+  # AB-SETEN109 (issue #109), magnitude band of the fixtures whose base is 7
+  # flushes. See the sibling entry below for the 6-flush band.
+  - scenarios: [settings-home, settings-audio, settings-wfbat]
+    ceilings:
+      # Measured +114.3% flushes (7 -> 15); the ceiling admits one more flush
+      # (16 flushes = +128.6%) and nothing beyond it.
+      flushes_delta_pct: 130.0
+      # Measured +11.7% flushed pixels (1135170 -> 1267780); 15.0% leaves 3.3
+      # points of headroom for the same one-off and stays far below a real
+      # repaint regression.
+      flushed_pixels_delta_pct: 15.0
+    reason: >
+      AB-SETEN109 (#109): reordering the Settings tabs moved the dialog's initial
+      focus from the Clock tab's date spinbox to Operation, whose first focusable
+      widget is the "Freq acceleration" dropdown (make_freq_accel,
+      src/dialog_settings.c). LVGL animates the focus style change with the theme's
+      default transition — 80 ms, LV_THEME_DEFAULT_TRANSITION_TIME in lv_conf.h —
+      so the first open of the window costs a constant +8 flushes and +132610
+      flushed pixels on every fixture that renders it, whatever the navigation.
+      The steady state is unchanged (the CI benchmark measures flushes_mean 1.0 ->
+      1.0 and redrawn_area_mean 384000 -> 384000 on the same fixtures), so this is
+      a one-off cost at open, not an operating regression. Measured here: 7 -> 15
+      flushes (+114.3%) and 1135170 -> 1267780 flushed pixels (+11.7%). Accepted by
+      the owner on 2026-10-16 (issue #109), with budgets.yaml untouched.
+    author: ajustes-tabs-109
+    expires: 2027-03-31
+
+  # AB-SETEN109 (issue #109), magnitude band of the fixtures whose base is 6
+  # flushes: the profile window and the six theme fixtures. Same cause and same
+  # constant +8 flushes / +132610 px; the percentage differs only because the
+  # base does, which is why the two bands carry different ceilings.
+  - scenarios:
+      - settings-perfil
+      - settings-tema-aurora
+      - settings-tema-cathode
+      - settings-tema-redshift
+      - settings-tema-sprint
+      - settings-tema-sunlit
+      - settings-tema-trail
+    ceilings:
+      # Measured +133.3% flushes (6 -> 14); the ceiling admits one more flush
+      # (15 flushes = +150%) and nothing beyond it.
+      flushes_delta_pct: 150.0
+      # Measured +13.2% flushed pixels (1003170 -> 1135780); 15.0% leaves 1.8
+      # points of headroom.
+      flushed_pixels_delta_pct: 15.0
+    reason: >
+      AB-SETEN109 (#109): the same initial-focus change as the sibling entry
+      above (the Settings dialog opens on Operation, whose first widget is the
+      "Freq acceleration" dropdown, animated by LVGL's 80 ms theme transition),
+      measured on the fixtures whose base is 6 flushes: the profile window and the
+      six theme fixtures. The delta is the same constant +8 flushes and +132610
+      flushed pixels, and the steady state is unchanged (the CI benchmark measures
+      flushes_mean 1.0 -> 1.0 and redrawn_area_mean 384000 -> 384000), so it is a
+      one-off cost at open. Measured here: 6 -> 14 flushes (+133.3%) and 1003170 ->
+      1135780 flushed pixels (+13.2%). Accepted by the owner on 2026-10-16 (issue
+      #109), with budgets.yaml untouched.
+    author: ajustes-tabs-109
+    expires: 2027-03-31
