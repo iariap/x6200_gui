@@ -3,8 +3,9 @@
  *
  *  Xiegu X6200 LVGL GUI
  *
- *  ROE/SWR scan chart: resample the sweep samples into a smooth curve
- *  (issue #99). Render-only: the samples, the sweep and the DSP are untouched.
+ *  ROE/SWR scan chart: fit the sweep samples to a parabola (issue #113) and
+ *  resample it into the drawn curve. Render-only: the samples, the sweep, the RF
+ *  and the DSP are untouched.
  *
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
@@ -22,15 +23,102 @@ static float clampf(float v, float lo, float hi) {
     return v;
 }
 
-/* Uniform Catmull-Rom over four control points, at parameter t in [0,1]. */
-static float catmull_rom(float p0, float p1, float p2, float p3, float t) {
-    float t2 = t * t;
-    float t3 = t2 * t;
+/* Least-squares quadratic y = a*x^2 + b*x + c over n >= 3 samples, x = 0..n-1.
+ *
+ * The normal equations form a 3x3 symmetric system:
+ *
+ *   | S0 S1 S2 | | c |   | T0 |
+ *   | S1 S2 S3 | | b | = | T1 |      Sk = sum(x^k), Tk = sum(y*x^k)
+ *   | S2 S3 S4 | | a |   | T2 |
+ *
+ * solved by Cramer's rule. With n <= 50 and x <= 49 the sums stay tiny
+ * (S4 ~ 5.7e6) and the arithmetic is +,-,*,/ only, so no math.h is needed and
+ * the result is deterministic. */
+static bool quadratic_fit(const float *in, int n, double *a, double *b, double *c) {
+    if (n < 3) {
+        return false;
+    }
 
-    return 0.5f * ((2.0f * p1)
-                 + (-p0 + p2) * t
-                 + (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2
-                 + (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
+    double s0 = 0.0, s1 = 0.0, s2 = 0.0, s3 = 0.0, s4 = 0.0;
+    double t0 = 0.0, t1 = 0.0, t2 = 0.0;
+
+    for (int i = 0; i < n; i++) {
+        double x  = (double)i;
+        double x2 = x * x;
+        double y  = (double)in[i];
+
+        s0 += 1.0;
+        s1 += x;
+        s2 += x2;
+        s3 += x2 * x;
+        s4 += x2 * x2;
+        t0 += y;
+        t1 += x * y;
+        t2 += x2 * y;
+    }
+
+    double det = s0 * (s2 * s4 - s3 * s3)
+               - s1 * (s1 * s4 - s3 * s2)
+               + s2 * (s1 * s3 - s2 * s2);
+
+    /* n >= 3 with x = 0..n-1 makes the system non-singular; the guard keeps the
+     * division honest if that ever stops holding. */
+    if (det == 0.0) {
+        return false;
+    }
+
+    double det_c = t0 * (s2 * s4 - s3 * s3)
+                 - s1 * (t1 * s4 - s3 * t2)
+                 + s2 * (t1 * s3 - s2 * t2);
+
+    double det_b = t1 * (s0 * s4 - s2 * s2)
+                 - t0 * (s1 * s4 - s3 * s2)
+                 - t2 * (s0 * s3 - s1 * s2);
+
+    double det_a = t0 * (s1 * s3 - s2 * s2)
+                 - t1 * (s0 * s3 - s1 * s2)
+                 + t2 * (s0 * s2 - s1 * s1);
+
+    *a = det_a / det;
+    *b = det_b / det;
+    *c = det_c / det;
+
+    return true;
+}
+
+/* Least-squares straight line y = m*x + k through n >= 1 samples; the fallback
+ * for n == 2, where a parabola is not determined. Exact for two points. */
+static void line_fit(const float *in, int n, double *m, double *k) {
+    double sx = 0.0, sy = 0.0, sxx = 0.0, sxy = 0.0;
+
+    for (int i = 0; i < n; i++) {
+        double x = (double)i;
+        double y = (double)in[i];
+
+        sx += x;
+        sy += y;
+        sxx += x * x;
+        sxy += x * y;
+    }
+
+    double den = (double)n * sxx - sx * sx;
+
+    *m = (den == 0.0) ? 0.0 : ((double)n * sxy - sx * sy) / den;
+    *k = (sy - *m * sx) / (double)n;
+}
+
+bool roe_curve_quadratic_fit(const float *in, int n, float *a, float *b, float *c) {
+    double da = 0.0, db = 0.0, dc = 0.0;
+
+    if (!quadratic_fit(in, n, &da, &db, &dc)) {
+        return false;
+    }
+
+    *a = (float)da;
+    *b = (float)db;
+    *c = (float)dc;
+
+    return true;
 }
 
 int roe_curve_point_count(int n) {
@@ -54,34 +142,22 @@ void roe_curve_resample(const float *in, int n, float *out) {
         return;
     }
 
+    /* The drawn shape: the least-squares parabola of the samples, or the
+     * straight line through them when a parabola is not determined (n == 2). */
+    double a = 0.0, b = 0.0, c = 0.0;
+
+    if (!quadratic_fit(in, n, &a, &b, &c)) {
+        line_fit(in, n, &b, &c);
+    }
+
     int m = roe_curve_point_count(n);
 
     for (int i = 0; i < m; i++) {
-        int seg = i / ROE_CURVE_OVERSAMPLE;
+        double x = (double)i / (double)ROE_CURVE_OVERSAMPLE;
+        double y = a * x * x + b * x + c;
 
-        /* The last point (t == 1) belongs to the last interval. */
-        if (seg > n - 2) {
-            seg = n - 2;
-        }
-
-        int   rem = i - seg * ROE_CURVE_OVERSAMPLE;
-        float t   = (float)rem / (float)ROE_CURVE_OVERSAMPLE;
-
-        float p1 = in[seg];
-        float p2 = in[seg + 1];
-        float p0 = in[(seg > 0) ? seg - 1 : 0];
-        float p3 = in[(seg + 2 < n) ? seg + 2 : n - 1];
-
-        float v = catmull_rom(p0, p1, p2, p3, t);
-
-        /* No overshoot: the curve stays between the two samples that bracket the
-         * point, so a resonance (a local minimum) is never deepened and a peak is
-         * never amplified by the smoothing. */
-        float lo = (p1 < p2) ? p1 : p2;
-        float hi = (p1 < p2) ? p2 : p1;
-
-        v = clampf(v, lo, hi);
-
-        out[i] = clampf(v, ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE);
+        /* The parabola runs to infinity at the ends: clip each point to the
+         * chart's SWR range so the curve never draws outside the frame. */
+        out[i] = clampf((float)y, ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE);
     }
 }

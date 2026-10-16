@@ -664,9 +664,15 @@ void radio_start_atu() {
     }
 }
 
-/* El barrido de ROE fuerza LSB (es una portadora) y 3 W: al pararlo hay que devolver el equipo
- * como estaba. La potencia se restaura desde cfg.pwr.val; el modo hay que guardarlo al arrancar
- * (issue #84: sin esto la radio quedaba en LSB). */
+/* El barrido de ROE fuerza LSB (es una portadora) y transmite al PISO de potencia del equipo
+ * (issue #113: "la potencia de transmision durante el barrido debe ser la minima posible,
+ * simulando el nanovna"; SWRSCAN_TX_POWER_DW = 0.1 W, 14.8 dB menos que los 3 W que ponia antes):
+ * al pararlo hay que devolver el equipo como estaba. La potencia se restaura desde cfg.pwr.val;
+ * el modo hay que guardarlo al arrancar (issue #84: sin esto la radio quedaba en LSB).
+ *
+ * La potencia se pone aca y no en el dialogo a proposito: tiene que estar en el piso ANTES de
+ * habilitar el barrido (x6200_control_swrscan_set(true) es lo que arranca el TX) y las dos
+ * escrituras van juntas bajo el lock de radio. */
 static int32_t  swrscan_prev_mode;
 static bool     swrscan_mode_saved = false;
 
@@ -680,7 +686,7 @@ bool radio_start_swrscan() {
 
     subject_set_int(cfg_cur.mode, x6200_mode_lsb);
     radio_lock();
-    x6200_control_txpwr_set(3.0f);
+    x6200_control_txpwr_set(SWRSCAN_TX_POWER_W);
     x6200_control_swrscan_set(true);
     radio_unlock();
     state = RADIO_SWRSCAN;

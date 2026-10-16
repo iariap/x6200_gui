@@ -12,9 +12,11 @@
 #include "test_framework.h"
 
 void test_swrscan(void);
+void test_swrscan_sweep(void);
 
 int main(void) {
     test_swrscan();
+    test_swrscan_sweep();
 
     printf("%d comprobaciones, %d fallos\n", tests_run, tests_failed);
 
