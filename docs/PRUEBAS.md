@@ -55,6 +55,53 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 ---
 
+## 15/10 ~22:55 — `3ead572b6fe2` (build del clon con los merges del #94/#92): #94 validado
+
+**Qué se probó:** el build con `cd3bc97` (restore del estado de radio por snapshot, #94) y `45da382`
+(ancho de línea del waterfall, #92), compilado desde el clon y desplegado.
+
+**El build, medido** (y un escollo que vale registrar):
+
+```
+$ make x6200-gui-rebuild        -> exit 2   (params/migrations.c:125, THEME_DEFAULT)
+$ grep -n theme_name src/params/migrations.c                       # en el árbol: NADA
+$ grep -n theme_name /b/build/x6200-gui-custom/src/params/migrations.c
+  125: rc = sqlite3_exec(db, "UPDATE params SET val='" THEME_DEFAULT "' ...   <- copia VIEJA
+$ rm -f /b/build/x6200-gui-custom/src/params/migrations.c
+$ make x6200-gui-rebuild        -> exit 0 en 12 s
+$ gate: OK: es el firmware del port (ELF32 ARM, 13738076 B, 3/3 marcas)
+  radio: gui=3ead572b6fe2 (1 GUI)
+```
+
+O sea: **el árbol compila**; lo que rompía era una **copia vieja de una fuente** en el directorio de
+build compartido, que el `make x6200-gui-rebuild` no refresca. Queda anotado como trampa del volumen
+compartido (y como sugerencia en el issue #105, que se corrigió tres veces hasta dar con esto).
+
+**#94 validado en la radio** — barrido completo de las 23 apps, midiendo antes y después:
+
+```
+  ANTES:   7.012000 MHz LSB  pre=0 att=0 pwr=50
+  barrido: 23 ok | 0 caídas
+  DESPUES: 7.012000 MHz LSB  pre=0 att=0 pwr=50      <- IDÉNTICO
+  vigilancia 60 s: pid 15466 sin cambios
+```
+
+Salvedad honesta: la última app del barrido (orden alfabético) es `SWRScan`, que **también** restaura
+por el fix del #96, así que este test **no separa** los dos mecanismos.
+
+**#91 corregido dos veces** (el registro de correcciones es parte del valor):
+
+1. El tema activo es **`Aurora`** (no `Sunlit`): `params.db` lo dice y la captura
+   `19-tema-aurora.png` muestra el violeta oscuro de Aurora. El "lavado" era el **transitorio** de la
+   migración de temas al arrancar.
+2. El **kworker del 202%** que reporté **no se reproduce**: era el **arranque de la GUI** que yo mismo
+   reinicié para probar el tema. Retirado.
+
+**Lo que queda medido**: el GUI consume **~1,2 núcleos sostenidos** (5 muestras: 103,8 / 110,8 / 113,2 /
+116,5 / 120,4%) **con los dos temas**, sin causa fundada.
+
+---
+
 ## 15/10 ~21:30 — `2c02321cc5ff` (build del clon, commit `ed5b01e`): #84/#85 validados y sale el #101
 
 **Qué se probó:** el build de los 4 merges (`01d632e` #84/#85, `ed5b01e` #86, `aa8de14` temas v2,
