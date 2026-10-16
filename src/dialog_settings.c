@@ -434,31 +434,6 @@ static void datetime_set_rtc_cb(lv_event_t * e) {
 
 }
 
-/* Ancho de caja que pide un campo de `cifras` digitos con la fuente del tema y el padding
- * vigentes: el texto se mide con las metricas de LVGL (lv_txt_get_size, la misma medicion
- * que usa el arnes) y se le suman los dos bordes y el padding horizontal del objeto. Es una
- * medida, no un numero clavado: si el tema trae otra fuente, el campo se ajusta solo. */
-static lv_coord_t ancho_campo_cifras(lv_obj_t *obj, uint8_t cifras) {
-    char        muestra[LV_SPINBOX_MAX_DIGIT_COUNT + 1];
-    lv_point_t  texto;
-
-    for (uint8_t i = 0; i < cifras; i++) {
-        muestra[i] = '0';
-    }
-    muestra[cifras] = '\0';
-
-    lv_txt_get_size(&texto, muestra,
-                    lv_obj_get_style_text_font(obj, LV_PART_MAIN),
-                    lv_obj_get_style_text_letter_space(obj, LV_PART_MAIN),
-                    lv_obj_get_style_text_line_space(obj, LV_PART_MAIN),
-                    LV_COORD_MAX, LV_TEXT_FLAG_NONE);
-
-    return texto.x
-         + lv_obj_get_style_pad_left(obj, LV_PART_MAIN)
-         + lv_obj_get_style_pad_right(obj, LV_PART_MAIN)
-         + 2 * lv_obj_get_style_border_width(obj, LV_PART_MAIN);
-}
-
 static uint8_t make_date(uint8_t row) {
     lv_obj_t    *obj;
     uint8_t     col = 0;
@@ -517,15 +492,20 @@ static uint8_t make_date(uint8_t row) {
     lv_spinbox_set_range(obj, 2020, 2038);
     lv_spinbox_set_digit_format(obj, 4, 0);
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
-    /* El año lleva 4 cifras: "0000" mide 84 px con la fuente del tema, y la caja de 2 columnas
-     * (SMALL_2 = 93) con el padding horizontal del textarea (11 px por lado, reservado para el
-     * cursor) deja solo 67 de contenido, asi que el "2026" quedaba recortado 4 px contra el borde
-     * (UI-016, medido por la fixture settings-home: text_natural.w 84 vs caja util 67).
-     * El spinbox no edita texto libre y no necesita ese padding: se le deja el que separa las
-     * columnas de la grilla (SMALL_PAD) y se le da el ancho que piden sus 4 cifras con la fuente
-     * vigente, medido en runtime. Dia y Mes (2 cifras) entran como estaban: no se tocan. */
+    /* El año lleva 4 cifras y es el tercer campo de la fila: tiene que verse como Dia y Mes.
+     * Los tres comparten la caja de dos columnas de la grilla (SMALL_2 = 93) y el padding
+     * horizontal de la grilla (SMALL_PAD = 3, el que separa las columnas), asi que la caja
+     * util es 93 - 2*3 (pad) - 2*2 (borde) = 83 px. Las 4 cifras miden 60 con la fuente del
+     * tema (sony_36, 15 px por digito): el label "2026" de la fixture settings-home mide
+     * 696,113 83x28 con natural 60 (medido con --inspect), asi que entra con 23 px de margen,
+     * sin recorte (el peor caso de 4 cifras, "0000", tambien mide 60).
+     * Antes el ancho se media por contenido (el helper `ancho_campo_cifras`, el fix de UI-016):
+     * 60 (texto) + 6 (pad) + 4 (borde) = 70 contra los 93 de Dia y Mes, asi que este campo
+     * quedaba 23 px mas angosto (issue #110, medido en la misma fixture: spinbox 691,100 70x56
+     * vs 499,100/595,100 93x56). Un spinbox no edita texto libre: se le deja el padding de la
+     * grilla y la caja de la fila. */
     lv_obj_set_style_pad_hor(obj, SMALL_PAD, LV_PART_MAIN);
-    lv_obj_set_size(obj, ancho_campo_cifras(obj, 4), 56);
+    lv_obj_set_size(obj, SMALL_2, 56);
 
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, datetime_update_cb, LV_EVENT_VALUE_CHANGED, NULL);

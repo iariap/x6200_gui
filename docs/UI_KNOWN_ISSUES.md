@@ -393,6 +393,18 @@ idéntico antes y después del fix (verificado con un fixture temporal de 8.1 V)
   `overlay`, `results.json`); `tests/check_harness_determinism.sh` (los 22 fixtures
   x2 corridas, byte-idénticos); `tools/ab_testing/quality/contracts.yaml` (excepción
   de `layout_clipped` retirada; `expected_change` acotado a `ajustes_anio`).
+- **Nota (#110, 2026-10-16)**: el ancho por contenido que dejó este fix **se
+  reemplazó por la caja de la fila**. Con la fuente vigente el helper
+  `ancho_campo_cifras` pedía **70 px** (el peor caso de 4 cifras, `0000`, mide
+  **60** con `sony_36` —el `0` es la cifra más ancha—, más el padding de la grilla
+  y el borde) y el campo quedaba **23 px más angosto que Día y Mes**: la fila se
+  veía desalineada. El Año pasa a `SMALL_2` = **93** (la caja de Día y Mes) con el
+  padding de la grilla: la caja útil queda **83** y el `2026` (60 px) entra con
+  **23 px de margen**. El helper se retiró (sin uso; un `static` sin uso es warning
+  con `-Wall` en el build del port) y `tests/check_settings_focus.py` comprueba la
+  invariante —los tres campos de `make_date()` declaran la misma caja—. Evidencia:
+  `docs/evidencia/2026-10-16-year110-banco/` (banco QEMU + medición PIL),
+  `tools/ab_testing/reports/AB-YEAR110/`.
 
 ---
 

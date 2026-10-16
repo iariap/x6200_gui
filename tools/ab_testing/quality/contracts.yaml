@@ -155,6 +155,22 @@ expected_changes:
     author: ui016-year-field
     until: 2027-03-31
 
+  # AB-YEAR110 (issue #110): the Ajustes year field gets the box of the row.
+  - region: ajustes_anio
+    reason: >
+      #110: en la fila Day/Month/Year el campo Año quedaba 23 px mas angosto que
+      Día y Mes. Se dimensionaba por contenido (el helper `ancho_campo_cifras`, el
+      fix de UI-016) y con la fuente vigente ese ancho colapsa a 70 px: el peor
+      caso de 4 cifras ("0000", el '0' es la cifra mas ancha) mide 60 px y el
+      padding de la grilla (3) y el borde (2) suman 10. El campo pasa a la caja de
+      dos columnas de la grilla (SMALL_2 = 93), igual que Día y Mes, y conserva el
+      padding de la grilla: la caja útil queda 83 y el "2026" (60 px) entra con
+      23 px de margen. Sobre la fixture settings-home se mueven 358 px (el borde
+      derecho del campo: de x=759 a x=782, medido por pixeles), dentro de
+      `ajustes_anio`; los otros 63 fixtures de la suite quedan byte-idénticos.
+    author: settings-year-110
+    until: 2027-03-31
+
   # AB-UI08-I5 (UI-08 incr. 5): the new Ajustes row makes the grid one row taller,
   # so the scrollbar thumb of the scrolled fixture (settings-wfbat) gets shorter.
   - region: ajustes_scrollbar

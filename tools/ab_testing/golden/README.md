@@ -189,3 +189,36 @@ Capturada con el build de `tests/check_harness_determinism.sh`:
 tools/ui_harness/build/ui_harness --scenario tools/ui_harness/fixtures/main-tema-sunlit-agua.scn \
     --png tools/ab_testing/golden/main-tema-sunlit-agua.png --json /tmp/main-tema-sunlit-agua.json
 ```
+
+## 2026-10-16 — `settings-home.png` regenerada (AB-YEAR110, issue #110)
+
+El campo **Año** de la fila Day/Month/Year de Ajustes pasa a la caja de dos columnas de la
+grilla (`SMALL_2` = 93), igual que Día y Mes: se dimensionaba por contenido y quedaba **70 px**
+(el peor caso de 4 cifras, "0000", mide 60 con `sony_36`, más el padding y el borde). El render
+de `settings-home` se mueve **358 px** (0.093%), todos dentro de la región `ajustes_anio`: el
+borde derecho del campo va de **x=759 a x=782** (medido por píxeles sobre las capturas A/B) y
+el "2026" no se mueve (la etiqueta del spinbox queda `696,113 83x28`, con 23 px de margen
+contra su caja útil de 83). Los otros 63 fixtures de la suite quedan byte-idénticos.
+
+El objeto no-texto que este directorio mide en esta fixture —`focus_indicator`, la celda del
+**Día** con foco, rect `[505, 112, 86, 26]`— no toca el campo del Año: `x6200-ab themes` reporta
+el mismo **8.91:1** antes y después del re-baseline. El cambio de píxeles lo declara
+`quality/contracts.yaml` (`expected_changes`, AB-YEAR110).
+
+Regenerada con el mismo camino que usa el A/B (Docker, la revisión en un worktree propio), así
+que el PNG queda byte-idéntico a la captura B del experimento:
+
+```bash
+cd tools/ab_testing
+uv run x6200-ab capture --revision HEAD --label golden --scenario settings-home \
+    --out "$(git rev-parse --show-toplevel)/tools/ab_testing/golden"
+```
+
+El comando sin Docker del README (correr `tools/ui_harness/build/ui_harness`) **no** sirve en este
+worktree para esta fixture: el build que deja `tests/check_harness_determinism.sh` compila dentro
+del contenedor con el repo montado en `/src` (REPO=/src), así que `src/styles.c` queda con las
+imágenes del tema en `A:/src/...` y en el host `/src` no existe: el fondo del diálogo no se
+encuentra (35 avisos `draw_bg_img: Couldn't read the background image`) y el render difiere del
+dorado en **371 387 px** (medido). El camino del A/B captura adentro del contenedor, donde `/src`
+existe: es el que produce estos dorados.
+
