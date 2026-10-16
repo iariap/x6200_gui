@@ -4055,3 +4055,159 @@ de la tabla. `tests/test_bench_host_noise.py` reconstruye las `ScenarioStats` y 
 - mover `flushes` (arriba o abajo) o el área → `FAIL`;
 - un escenario ruidoso junto a uno real → el veredicto combinado es `FAIL` (el peor gana);
 - `HOST_NOISE_MARKER == "host noise"` (lo greppea el paso de CI).
+
+---
+
+## 2026-10-16 — Ajustes #109: la desviación de performance del diálogo, **aceptada** por el owner (corrida `factory/settings-en-order-109`)
+
+El issue #109 pasa los **ocho tabs** del diálogo de Ajustes al inglés de ham radio y los reordena
+por utilidad para hacer contactos (`Operation · Audio · Spectrum · Clock · More >` /
+`Display · Appearance · Actions · Info · < More`). El cambio es de labels/orden/paginación —no
+toca el render— pero **mueve el proxy de costo** del gate `Performance` del A/B en los escenarios
+`settings-*`. Esta sección deja el delta medido, la causa, la decisión del owner (aceptar y
+documentar, **sin tocar presupuestos**) y cómo lo juzga el CI.
+
+### El delta medido
+
+A = `23926241` (tip de `lu2dsx/x6200-rom`, el #112 del campo Año), B = el candidato. Gate
+`Performance` de `AB-SETEN109` (`tools/ab_testing/reports/AB-SETEN109/results.json`):
+
+| escenarios | `flushes` A→B | Δ (budget 20 %) | `flushed_pixels` A→B | Δ (budget 10 %) |
+|---|---|---|---|---|
+| `settings-home`, `settings-audio`, `settings-wfbat` | 7 → 15 | **+114.3 %** | 1 135 170 → 1 267 780 | **+11.7 %** |
+| `settings-perfil`, `settings-tema-{aurora,cathode,redshift,sprint,sunlit,trail}` | 6 → 14 | **+133.3 %** | 1 003 170 → 1 135 780 | **+13.2 %** |
+
+> El reporte committeado se regeneró después con `--a origin/lu2dsx/x6200-rom`, que para entonces
+> ya apuntaba a `3d6c022e` (el QA ciclo 35, descendiente de `23926241`): el delta medido es
+> **idéntico** (la tabla de arriba), porque ese commit no toca el render; sólo cambia el `sha` de A
+> en `results.json`. Las dos `settings-tema-{cathode,sprint}` miden 1 002 010 → 1 134 620 px
+> (mismo +13.2 %): su base difiere en 1 160 px del resto de la banda.
+
+Los **otros 54 escenarios** del suite quedan byte-idénticos (`0.0 %` en los dos proxies): el delta
+está confinado a las diez fixtures que abren el diálogo de Ajustes.
+
+### La firma: un costo **one-off al abrir**, no una regresión de operación
+
+Dos hechos del payload hacen la firma legible:
+
+- El incremento es un **constante**: **+8 flushes** y **+132 610 px** exactos en **las diez**
+  fixtures, sin importar cuánto navegue cada una (0, 1 o 2 pulsaciones de tab; 1, 3 o 5 grupos de
+  scroll). Un costo que dependiera de la navegación o del scroll no daría el mismo número en
+  `settings-audio` (un grupo de distancia) y en `settings-perfil` (cinco, más dos pulsaciones).
+- El **estado estable es idéntico**. El benchmark de reloj real (el job de CI `UI Performance`)
+  descarta los `warmup_frames` y mide medias por frame sobre 20 frames; ahí el trabajo por frame
+  no se mueve:
+
+  ```text
+  $ uv run x6200-ab benchmark --a 23926241 --b HEAD \
+        --scenario settings-home --scenario settings-perfil --scenario settings-wfbat
+  benchmark …: PASS (exit 0)
+    settings-home    PASS  p95 +1.6 %   flushes +0.0 %   area +0.0 %
+    settings-perfil  PASS  p95 +9.1 %   flushes +0.0 %   area +0.0 %
+    settings-wfbat   PASS  p95 -4.0 %   flushes +0.0 %   area +0.0 %
+  ```
+
+  Con `flushes_mean` 1.0 → 1.0 y `redrawn_area_mean` 384 000 → 384 000 px en los tres: lo que
+  costaba el frame ya establecido no cambió.
+
+### Causa: el foco inicial en el dropdown de Operation y la transición de 80 ms del tema
+
+Lo único que cambia al **abrir** el diálogo con el orden nuevo es el **foco inicial**. Antes el
+diálogo abría en su primer grupo (Clock) y el foco caía en el primer campo de la fila de fecha
+(un spinbox); ahora abre en **Operation**, cuyo primer widget navegable es el **dropdown de Freq
+acceleration** (`make_freq_accel` → `dropdown_uint8(grid, &params.freq_accel, …)`,
+`src/dialog_settings.c`). LVGL anima el cambio de estilo del foco con la transición del tema por
+defecto —**80 ms** (`LV_THEME_DEFAULT_TRANSITION_TIME 80`, `lv_conf.h`)—, así que el resalte del
+dropdown cuesta unos frames extra durante la ventana de settle. Es el mismo trabajo de siempre
+para la pantalla en reposo, sólo que ahora hay un objeto enfocado que antes no estaba.
+
+Que el delta sea **constante** (+8 / +132 610 px) en las diez fixtures es lo que descarta las
+otras hipótesis (scroll a un grupo más lejano, una pulsación de tab extra): ninguna de las dos
+podría dar el mismo número con distancias y pulsaciones distintas.
+
+### Decisión del owner (2026-10-16): aceptar y documentar
+
+El owner aprobó **aceptar la desviación y documentarla**, **sin tocar `budgets.yaml`**, y aprobó
+el **mecanismo** que la acepta: un registro de desviaciones de performance por escenario, con
+techos por métrica y vencimiento (abajo). El A/B pasa a mostrar `Performance PASS (by exception)`
+para esta corrida, **con el breach visible**: el delta medido sigue en el reporte, al lado de la
+razón y el vencimiento. El patrón de la casa es el mismo de siempre —el gate no se relaja y el
+reporte dice la verdad—; la lectura es que el delta es un costo one-off de apertura con estado
+estable sin cambio, no una regresión de operación.
+
+### Cómo lo juzga el CI (investigado; con el registro aprobado)
+
+Los tres puntos que la spec pidió investigar:
+
+1. **¿Corre el `compare` completo con los mismos budgets?** El job **`UI Visual Regression`**
+   (`.github/workflows/ab-testing.yml`, `visual`) corre `x6200-ab compare --experiment-id
+   AB-ci-visual` con el perfil por defecto `host-ui`, y su paso de reporte falla el job con
+   **cualquier gate `required` en `FAIL`** (`quality_gates.py`: `Performance` es required en
+   `host-ui`). Ese `compare` usa los budgets **`performance`** de `quality/budgets.yaml`
+   (`flushed_pixels` 10 %, `flushes` 20 %) sobre los **totales** de la captura —los mismos
+   números de la tabla—, así que **antes** de este cambio el CI reportaba el mismo
+   `Performance FAIL` y bloqueaba ese job. **Ahora** el `compare` lee también
+   `quality/performance_exceptions.yaml`, así que los diez escenarios salen
+   `PASS (by exception)` y el job queda **verde**, con el breach a la vista en el summary y en
+   `reports/AB-ci-visual`. El job `UI Performance (render benchmark, host)` es otro camino: corre
+   `x6200-ab benchmark` con los budgets **`benchmark`** (`p95` 25 %, `flushes` 20 %, área 20 %)
+   sobre medias **por frame** con warm-up descartado, y con esos proxies en `0.0 %` **pasa** (ver
+   arriba) — ese camino no usa el registro.
+
+2. **¿Existe excepción por fixture/escenario sin relajar el budget global?** Hasta esta corrida,
+   **no para performance**: los dos mecanismos con alcance acotado eran `RuleException`
+   (`quality_config.py`: regla + fixture + fecha de expiración) para los **quality contracts** y
+   `ExpectedChange` (`contracts.yaml`: región + fecha) para la **regresión visual**, y ninguno
+   cubría el proxy de costo de render (`PerformanceBudget` no tenía forma por fixture). La
+   tolerancia `host_noise` del benchmark (`compare_scenario`) tampoco aplicaba: sólo excusa un
+   breach **p95-only** con **ambos proxies en `0.0 %` exactos**, y acá los proxies se mueven.
+
+3. **Solución: un registro de desviaciones de performance por escenario** (aprobado por el owner
+   el 2026-10-16, `budgets.yaml` **sin tocar**). Es el mismo patrón de la casa que las otras dos
+   excepciones —alcance explícito, razón, autor y vencimiento— aplicado al proxy de costo. Se
+   implementó en esta corrida: ver la sección siguiente.
+
+### El mecanismo: `quality/performance_exceptions.yaml`
+
+`budgets.yaml` sigue fijando los presupuestos globales y **no se edita** (regla 5 del plan). Lo
+que cambia es que un cambio que *sabe* que mueve los contadores deterministas —medido, entendido
+y aprobado— se acepta por un registro aparte, `quality/performance_exceptions.yaml`, en vez de
+relajando el presupuesto:
+
+```yaml
+exceptions:
+  - scenarios: [settings-home, settings-audio, settings-wfbat]   # nombres exactos, sin globs
+    ceilings:                                                     # techo por proxy, no un pase libre
+      flushes_delta_pct: 130.0
+      flushed_pixels_delta_pct: 15.0
+    reason: >
+      AB-SETEN109 (#109): ... (causa, medición y la decisión del owner)
+    author: ajustes-tabs-109
+    expires: 2027-03-31
+```
+
+Semántica del gate (`quality_gates.performance_gate`, `quality_config.PerformanceException`):
+
+- **vigente y dentro de los techos** → el escenario sale **`PASS (by exception)`**: el breach
+  **se muestra** —mismo delta medido— junto a la razón y el vencimiento, tanto en `report.md`
+  (tabla de performance) como en `results.json` (`Performance.details.by_exception`);
+- **vencida** → **FAIL** (fail-closed: es como si el escenario no tuviera entrada);
+- **delta sobre el techo** → **FAIL** (el techo acota la desviación, no la libera);
+- **escenario sin entrada** → presupuesto global intacto, **FAIL** como siempre.
+
+Los techos de esta entrada se eligieron **medidos + un margen explícito**: la banda de base 7
+admite el +114.3 % medido y **un flush más** (16 = +128.6 % ≤ 130 %); la de base 6 admite el
++133.3 % y un flush más (15 = +150 %). Un **segundo** widget enfocado sumaría otros +8 flushes
+(+229 % / +267 %) y quedaría muy por encima: el techo no es un pase libre. En píxeles, 15 % deja
+3.3 / 1.8 puntos sobre el +11.7 % / +13.2 % medido. El `expires` sigue la convención de la casa
+(≈6 meses, como los `ExpectedChange` visuales): `2027-03-31`.
+
+`budgets.yaml` queda **byte a byte idéntico**; `tests/test_performance_exceptions.py` lo fija con
+el `sha256` del archivo (y con los valores `10.0` / `20.0`), para que una edición del presupuesto
+global no pueda colarse como un "fix". El mismo test fija que cada entrada del registro real está
+acotada, fechada, razonada, nombra el issue #109, admite el delta medido **y** rechaza el mismo
+delta repetido (segundo widget). Los números del A/B no cambian: lo único que cambia es que ahora
+**se juzgan** contra el registro.
+
+[#109]: https://github.com/iariap/x6200_gui/issues/109
+[#112]: https://github.com/iariap/x6200_gui/issues/112

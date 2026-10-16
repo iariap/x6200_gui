@@ -11,12 +11,14 @@ hide. A `GateProfile` decides which gates are *required* for the overall verdict
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import date
 from enum import StrEnum
 from typing import Any
 
 from .capture import Capture
 from .contracts import ContractFinding
 from .known_issues import IssueObservation
+from .quality_config import NO_PERFORMANCE_EXCEPTIONS, PerformanceExceptions
 from .regions import RegionMap
 from .status import Status, combine
 from .visual_diff import DiffResult, unexplained_changed_pixels
@@ -265,8 +267,19 @@ def performance_gate(
     *,
     max_flushed_pixels_delta_pct: float,
     max_flushes_delta_pct: float,
+    exceptions: PerformanceExceptions = NO_PERFORMANCE_EXCEPTIONS,
+    today: date | None = None,
 ) -> GateResult:
-    """Relative render-cost change between A and B (x86 proxy, not battery)."""
+    """Relative render-cost change between A and B (x86 proxy, not battery).
+
+    The global budgets of `budgets.yaml` are fixed before the run and are never
+    relaxed. A scenario the dated registry lists — while the entry is current and
+    every breached proxy is inside its ceilings — passes *by exception*: the
+    breach stays in the evidence with the reason and the expiry, it is not
+    hidden. An expired entry fails closed, a delta above the ceilings fails, and
+    a scenario with no entry keeps the global budget exactly as before.
+    """
+    day = today or date.today()
     shared = sorted(set(a_captures) & set(b_captures))
     if not shared:
         return GateResult(
@@ -275,6 +288,8 @@ def performance_gate(
             summary="no scenario was captured on both revisions",
         )
     problems: list[str] = []
+    evidence: list[str] = []
+    excused: list[dict[str, Any]] = []
     measured: list[dict[str, Any]] = []
     for name in shared:
         a = a_captures[name]
@@ -292,26 +307,70 @@ def performance_gate(
                 "flushes_delta_pct": round(flushes_delta, 3),
             }
         )
+        breaches: list[str] = []
         if pixels_delta > max_flushed_pixels_delta_pct:
-            problems.append(
+            breaches.append(
                 f"{name}: flushed_pixels {pixels_delta:+.1f}% "
                 f"(budget {max_flushed_pixels_delta_pct:.1f}%)"
             )
         if flushes_delta > max_flushes_delta_pct:
-            problems.append(
+            breaches.append(
                 f"{name}: flushes {flushes_delta:+.1f}% (budget {max_flushes_delta_pct:.1f}%)"
             )
+        if not breaches:
+            continue
+        waiver = exceptions.waiver(name, pixels_delta, flushes_delta, day)
+        if waiver is not None:
+            evidence.append(
+                f"{'; '.join(breaches)} — accepted deviation for {name} "
+                f"(expires {waiver.expires}): {waiver.reason}"
+            )
+            excused.append(
+                {
+                    "scenario": name,
+                    "flushed_pixels_delta_pct": round(pixels_delta, 3),
+                    "flushes_delta_pct": round(flushes_delta, 3),
+                    "ceilings": waiver.ceilings.as_dict(),
+                    "reason": waiver.reason,
+                    "author": waiver.author,
+                    "expires": waiver.expires,
+                }
+            )
+            continue
+        problems.extend(breaches)
+        covering = exceptions.covering(name)
+        if covering is not None and not covering.active(day):
+            problems.append(f"{name}: the dated exception expired {covering.expires} — fail-closed")
+        elif covering is not None:
+            ceilings = covering.ceilings
+            problems.append(
+                f"{name}: over the exception ceilings (flushes ≤ "
+                f"{ceilings.flushes_delta_pct:.1f}%, flushed_pixels ≤ "
+                f"{ceilings.flushed_pixels_delta_pct:.1f}%)"
+            )
     status = Status.FAIL if problems else Status.PASS
+    if problems:
+        summary = "render-cost proxy over budget"
+    elif excused:
+        summary = (
+            "render-cost proxy within budget; "
+            f"{len(excused)} scenario(s) accepted by a dated exception"
+        )
+    else:
+        summary = "render-cost proxy within budget"
     return GateResult(
         name=GateName.PERFORMANCE,
         status=status,
-        summary=(
-            "render-cost proxy within budget" if not problems else "render-cost proxy over budget"
-        ),
-        evidence=tuple(problems),
+        summary=summary,
+        evidence=tuple(problems) + tuple(evidence),
         details={
             "note": "x86 render counters under virtual time; not a battery measurement",
+            "budget": {
+                "flushed_pixels_delta_pct": max_flushed_pixels_delta_pct,
+                "flushes_delta_pct": max_flushes_delta_pct,
+            },
             "measured": measured,
+            "by_exception": excused,
         },
     )
 

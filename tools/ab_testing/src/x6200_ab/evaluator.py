@@ -22,7 +22,12 @@ from .known_issues import (
     classify,
     evaluate_detector,
 )
-from .quality_config import Budgets, QualityContracts
+from .quality_config import (
+    NO_PERFORMANCE_EXCEPTIONS,
+    Budgets,
+    PerformanceExceptions,
+    QualityContracts,
+)
 from .quality_gates import (
     GateProfile,
     GateResult,
@@ -151,6 +156,7 @@ def evaluate(
     profile: GateProfile,
     experiment_id: str,
     today: date | None = None,
+    performance_exceptions: PerformanceExceptions = NO_PERFORMANCE_EXCEPTIONS,
 ) -> Evaluation:
     """Run the six gates and combine the required ones into the verdict."""
     day = today or date.today()
@@ -171,6 +177,8 @@ def evaluate(
             data.b_captures,
             max_flushed_pixels_delta_pct=budgets.performance.max_flushed_pixels_delta_pct,
             max_flushes_delta_pct=budgets.performance.max_flushes_delta_pct,
+            exceptions=performance_exceptions,
+            today=day,
         ),
         hardware_gate(),
         energy_gate(),

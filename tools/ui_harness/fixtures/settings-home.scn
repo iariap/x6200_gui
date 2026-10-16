@@ -5,8 +5,12 @@
 # src/dialog_settings.c (the whole grid: date/time, clock, backlight, info,
 # audio, spectrum, waterfall, operations, appearance and the action dropdowns).
 #
-# The dialog opens on its first group (Reloj), so the render shows the date/time
-# and clock rows plus the tab bar the dialog loads with buttons_load_page().
+# The dialog opens on its first group, which after the utility ordering of
+# issue #109 is Operation, so the fixture jumps to the Clock group the way the
+# user does: `buttons_press(3)` presses the page 1 "Clock" tab, which calls
+# settings_goto() (scroll + focus). The render therefore shows the date/time and
+# clock rows plus the tab bar, the same screen this fixture has always measured
+# (src/screens.c, scenario_settle, codifies that the date row is on screen).
 # Deterministic: the date/time fields read the harness' fixed clock, not the
 # host's (tools/ui_harness/CMakeLists.txt links with `--wrap=time`).
 

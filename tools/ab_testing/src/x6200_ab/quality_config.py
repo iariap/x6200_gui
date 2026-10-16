@@ -1,6 +1,6 @@
 """Quality contracts, budgets and declared expected changes (C, independent of A).
 
-Two files, both versioned and read before A or B are captured:
+Three files, all versioned and read before A or B are captured:
 
 * `contracts.yaml` — objective rules the candidate must satisfy on its own
   (minimum content per region, coverage levels that must be declared). They do
@@ -9,10 +9,15 @@ Two files, both versioned and read before A or B are captured:
   defines a "change", the minimum box size worth reporting, the render-cost
   deltas considered acceptable, and the area above which a visual change is
   called major.
+* `performance_exceptions.yaml` — the dated, metric-bounded acceptances of a
+  render-cost deviation. They never relax the global budget of `budgets.yaml`:
+  each entry names the scenarios it covers, a ceiling per proxy, a reason, an
+  author and an expiry, and the gate only reads it while it is current.
 
 `expected_changes` are the only way a visual change stops being a regression
 without being a fix; each one carries a reason, an author and an expiry date,
-so an expectation cannot silently become permanent.
+so an expectation cannot silently become permanent. `PerformanceException` is
+the same idea for the render-cost proxy, with one ceiling per metric.
 """
 
 from __future__ import annotations
@@ -130,6 +135,98 @@ class Budgets:
 
 
 @dataclass(frozen=True)
+class PerformanceCeilings:
+    """The most a scenario may grow per proxy while its exception holds.
+
+    A ceiling bounds the deviation, it does not free it: a second focused widget
+    (the same one-off cost again) or any real regression lands above it and the
+    scenario FAILs.
+    """
+
+    flushed_pixels_delta_pct: float
+    flushes_delta_pct: float
+
+    def as_dict(self) -> dict[str, float]:
+        return {
+            "flushed_pixels_delta_pct": self.flushed_pixels_delta_pct,
+            "flushes_delta_pct": self.flushes_delta_pct,
+        }
+
+
+@dataclass(frozen=True)
+class PerformanceException:
+    """A scoped, dated, metric-bounded acceptance of a render-cost deviation.
+
+    The performance counterpart of `ExpectedChange` and `RuleException`: never
+    global (it names the scenarios it covers, by exact name — a wildcard would
+    widen a waiver to a scenario nobody reviewed) and never permanent (it
+    carries a reason, an author and an expiry; past the expiry it fails closed).
+    """
+
+    scenarios: tuple[str, ...]
+    ceilings: PerformanceCeilings
+    reason: str
+    author: str
+    expires: str
+
+    def covers(self, scenario: str) -> bool:
+        return scenario in self.scenarios
+
+    def active(self, today: date) -> bool:
+        return today <= _parse_expiry(self.expires)
+
+    def allows(self, flushed_pixels_delta_pct: float, flushes_delta_pct: float) -> bool:
+        """True only when *every* breached proxy is inside its ceiling."""
+        return (
+            flushed_pixels_delta_pct <= self.ceilings.flushed_pixels_delta_pct
+            and flushes_delta_pct <= self.ceilings.flushes_delta_pct
+        )
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "scenarios": list(self.scenarios),
+            "ceilings": self.ceilings.as_dict(),
+            "reason": self.reason,
+            "author": self.author,
+            "expires": self.expires,
+        }
+
+
+@dataclass(frozen=True)
+class PerformanceExceptions:
+    """The registry of dated performance deviations, read before a comparison."""
+
+    entries: tuple[PerformanceException, ...] = ()
+
+    def covering(self, scenario: str) -> PerformanceException | None:
+        """The first entry that names this scenario, active or not."""
+        for entry in self.entries:
+            if entry.covers(scenario):
+                return entry
+        return None
+
+    def waiver(
+        self,
+        scenario: str,
+        flushed_pixels_delta_pct: float,
+        flushes_delta_pct: float,
+        today: date,
+    ) -> PerformanceException | None:
+        """The entry that excuses this breach, or None (fail-closed)."""
+        entry = self.covering(scenario)
+        if entry is None:
+            return None
+        if entry.active(today) and entry.allows(flushed_pixels_delta_pct, flushes_delta_pct):
+            return entry
+        return None
+
+
+# The empty registry, shared as a default: an evaluator without the file loaded
+# behaves exactly like the one before the mechanism existed.
+NO_PERFORMANCE_EXCEPTIONS = PerformanceExceptions()
+
+
+@dataclass(frozen=True)
 class ExpectedChange:
     """A visual change that is known and acceptable, until a date."""
 
@@ -213,6 +310,72 @@ def load_budgets(path: Path) -> Budgets:
             max_redrawn_area_delta_pct=as_float(benchmark, "max_redrawn_area_delta_pct", path),
         ),
     )
+
+
+def load_performance_exceptions(path: Path) -> PerformanceExceptions:
+    """Read the dated performance-deviation registry.
+
+    The file is required: a missing registry must be a configuration error, never
+    a silent "no exceptions" that reads like an empty one. Every entry is
+    validated here (scenario set, both ceilings, an ISO expiry) so a malformed
+    waiver fails at load, before any capture is compared.
+    """
+    data = read_yaml_mapping(path)
+    raw = data.get("exceptions", [])
+    if not isinstance(raw, list):
+        raise ConfigError(f"{path}: `exceptions` must be a list")
+    entries: list[PerformanceException] = []
+    seen: set[str] = set()
+    for entry in raw:
+        if not isinstance(entry, dict):
+            raise ConfigError(f"{path}: every performance exception must be a mapping")
+        for key in ("scenarios", "ceilings", "reason", "author", "expires"):
+            if key not in entry:
+                raise ConfigError(f"{path}: performance exception missing `{key}`")
+        scenarios = entry["scenarios"]
+        if not isinstance(scenarios, list) or not scenarios:
+            raise ConfigError(f"{path}: `scenarios` must be a non-empty list")
+        names = tuple(str(scenario) for scenario in scenarios)
+        # One entry per scenario: two overlapping entries would make the ceiling
+        # that applies ambiguous, and the gate reads the first match.
+        for name in names:
+            if name in seen:
+                raise ConfigError(f"{path}: scenario `{name}` is listed by more than one exception")
+            seen.add(name)
+        ceilings = entry["ceilings"]
+        if not isinstance(ceilings, dict):
+            raise ConfigError(f"{path}: `ceilings` must be a mapping")
+        expires = str(entry["expires"])
+        _parse_expiry(expires, path)
+        ceilings_value = PerformanceCeilings(
+            flushed_pixels_delta_pct=_ceiling(ceilings, "flushed_pixels_delta_pct", path),
+            flushes_delta_pct=_ceiling(ceilings, "flushes_delta_pct", path),
+        )
+        entries.append(
+            PerformanceException(
+                scenarios=names,
+                ceilings=ceilings_value,
+                reason=str(entry["reason"]),
+                author=str(entry["author"]),
+                expires=expires,
+            )
+        )
+    return PerformanceExceptions(entries=tuple(entries))
+
+
+def _ceiling(ceilings: dict[str, Any], key: str, path: Path) -> float:
+    """A per-metric ceiling: a percentage, never negative and never absent."""
+    value = as_float(ceilings, key, path)
+    if value < 0.0:
+        raise ConfigError(f"{path}: ceiling `{key}` must not be negative")
+    return value
+
+
+def _parse_expiry(value: str, where: Path | str = "performance exception") -> date:
+    try:
+        return date.fromisoformat(value)
+    except ValueError as exc:
+        raise ConfigError(f"{where}: expiry `{value}` is not an ISO date") from exc
 
 
 def load_contracts(path: Path, known_regions: set[str]) -> QualityContracts:

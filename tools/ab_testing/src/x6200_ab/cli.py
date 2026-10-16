@@ -43,7 +43,14 @@ from .performance import (
     measure_verdict,
     stats_from_frames,
 )
-from .quality_config import Budgets, QualityContracts, load_budgets, load_contracts
+from .quality_config import (
+    Budgets,
+    PerformanceExceptions,
+    QualityContracts,
+    load_budgets,
+    load_contracts,
+    load_performance_exceptions,
+)
 from .quality_gates import ALL_GATES, GateName, GateProfile, GateResult, overall
 from .regions import RegionMap, load_regions
 from .reports import ReportMetadata, write_benchmark_report, write_report
@@ -78,6 +85,7 @@ class Context:
     contracts: QualityContracts
     budgets: Budgets
     known_issues: tuple[KnownIssue, ...]
+    performance_exceptions: PerformanceExceptions
     runner: DockerRunner
 
 
@@ -647,6 +655,7 @@ def cmd_compare(args: argparse.Namespace) -> int:
             budgets=context.budgets,
             profile=_profile(args),
             experiment_id=experiment_id,
+            performance_exceptions=context.performance_exceptions,
         )
         metadata = ReportMetadata(
             experiment_id=experiment_id,
@@ -1001,6 +1010,9 @@ def _build_context(args: argparse.Namespace) -> Context:
     contracts = load_contracts(quality_dir / "contracts.yaml", set(region_map.regions))
     budgets = load_budgets(quality_dir / "budgets.yaml")
     known_issues = load_known_issues(quality_dir / "known_issues.yaml", set(region_map.regions))
+    performance_exceptions = load_performance_exceptions(
+        quality_dir / "performance_exceptions.yaml"
+    )
     runner = DockerRunner()
     runner.check()
     workspace = _resolve_workspace(args)
@@ -1018,6 +1030,7 @@ def _build_context(args: argparse.Namespace) -> Context:
         contracts=contracts,
         budgets=budgets,
         known_issues=known_issues,
+        performance_exceptions=performance_exceptions,
         runner=runner,
     )
 

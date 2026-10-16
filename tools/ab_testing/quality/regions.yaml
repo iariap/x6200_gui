@@ -108,3 +108,16 @@ regions:
   - name: ajustes_tema
     rect: [20, 79, 764, 60]
     description: "Fila 'Theme' de Ajustes (dialog_settings.c, grupo Apariencia) sobre el arnes"
+
+  # El cuerpo entero del dialogo de Ajustes (el `dialog.obj` de
+  # dialog_settings.c: dialog_init lo centra en x=2, y=66, 796x348, medido con
+  # --inspect sobre el render de settings-home). Las filas del dialogo caen
+  # dentro de las bandas de la pantalla principal (`espectro`, `frecuencia`,
+  # `waterfall`), asi que sin region propia un movimiento del CONTENIDO —no de
+  # una fila— se atribuiria a esas bandas y pareceria un cambio de la pantalla
+  # de atras. El issue #109 scrollea el dialogo a su grupo (los tabs cambiaron
+  # de orden) y el contenido entero se corre unos px: esta region aisla ese
+  # movimiento. No cubre la barra de tabs (`botones`, debajo de y=414).
+  - name: ajustes_dialogo
+    rect: [2, 66, 796, 348]
+    description: "Cuerpo del dialogo de Ajustes (dialog_settings.c) sobre el arnes"

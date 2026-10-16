@@ -27,6 +27,7 @@ from typing import Any
 from . import __version__
 from .capture import Capture
 from .evaluator import Evaluation
+from .quality_gates import GateName
 from .status import Status
 
 SUB_DIRS = ("screenshots", "diffs", "metrics", "logs")
@@ -179,6 +180,8 @@ def render_markdown(evaluation: Evaluation, metadata: ReportMetadata, paths: Rep
     lines.append("")
     lines.extend(_gates_table(evaluation))
     lines.append("")
+    lines.extend(_performance_section(evaluation))
+    lines.append("")
     lines.extend(_diff_section(evaluation))
     lines.append("")
     lines.extend(_coverage_section(evaluation))
@@ -200,6 +203,66 @@ def _gates_table(evaluation: Evaluation) -> list[str]:
             f"{gate.status.value} | {gate.summary} |"
         )
     return rows
+
+
+@dataclass(frozen=True)
+class _PerformanceView:
+    """The Performance gate's breach list and the exceptions that accepted them."""
+
+    breaches: tuple[dict[str, Any], ...]
+    by_exception: dict[str, dict[str, Any]]
+
+
+def _performance_view(evaluation: Evaluation) -> _PerformanceView | None:
+    gate = next((gate for gate in evaluation.gates if gate.name is GateName.PERFORMANCE), None)
+    if gate is None:
+        return None
+    budget = gate.details.get("budget", {})
+    by_exception = {record["scenario"]: record for record in gate.details.get("by_exception", [])}
+    breaches = tuple(
+        item
+        for item in gate.details.get("measured", [])
+        if item["flushed_pixels_delta_pct"] > budget.get("flushed_pixels_delta_pct", 0.0)
+        or item["flushes_delta_pct"] > budget.get("flushes_delta_pct", 0.0)
+    )
+    return _PerformanceView(breaches=breaches, by_exception=by_exception)
+
+
+def _performance_section(evaluation: Evaluation) -> list[str]:
+    """The render-cost proxy: every breach the global budget flags, and whether a
+    dated exception accepted it. The breach is never hidden — an accepted one
+    prints the same measured delta next to its reason and expiry."""
+    view = _performance_view(evaluation)
+    if view is None:
+        return []
+    lines = ["## Performance (render-cost proxy)", ""]
+    lines.append("> x86 render counters under virtual time; not a battery measurement.")
+    lines.append("")
+    if not view.breaches:
+        lines.append("Every scenario is within the fixed budgets of `quality/budgets.yaml`.")
+        return lines
+    lines.append("| Scenario | flushes A→B | Δ | flushed_pixels A→B | Δ | Verdict | Expires |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for item in view.breaches:
+        record = view.by_exception.get(item["scenario"])
+        verdict = "PASS (by exception)" if record is not None else "FAIL"
+        expires = record["expires"] if record is not None else "—"
+        lines.append(
+            f"| {item['scenario']} | {item['flushes_a']} → {item['flushes_b']} | "
+            f"{item['flushes_delta_pct']:+.1f}% | "
+            f"{item['flushed_pixels_a']} → {item['flushed_pixels_b']} | "
+            f"{item['flushed_pixels_delta_pct']:+.1f}% | {verdict} | {expires} |"
+        )
+    for record in view.by_exception.values():
+        ceilings = record["ceilings"]
+        lines.append("")
+        lines.append(
+            f"- **{record['scenario']}** accepted by `{record['author']}` until "
+            f"`{record['expires']}` (ceilings: flushes ≤ {ceilings['flushes_delta_pct']:.1f}%, "
+            f"flushed_pixels ≤ {ceilings['flushed_pixels_delta_pct']:.1f}%): "
+            f"{' '.join(record['reason'].split())}"
+        )
+    return lines
 
 
 def _diff_section(evaluation: Evaluation) -> list[str]:
@@ -367,6 +430,7 @@ def render_html(evaluation: Evaluation, metadata: ReportMetadata, paths: ReportP
             f"<td>{gate.status.value}</td><td>{gate.summary}</td></tr>"
         )
     parts.append("</table>")
+    parts.extend(_performance_html(evaluation))
     parts.append("<h2>Visual diff</h2>")
     parts.append(
         "<table><tr><th>Scenario</th><th>Changed px</th><th>Area</th><th>Regions</th></tr>"
@@ -444,6 +508,38 @@ def render_html(evaluation: Evaluation, metadata: ReportMetadata, paths: ReportP
         parts.append("</ul>")
     parts.append("</body></html>")
     return "\n".join(parts) + "\n"
+
+
+def _performance_html(evaluation: Evaluation) -> list[str]:
+    """HTML counterpart of `_performance_section`: same breach, same acceptance."""
+    view = _performance_view(evaluation)
+    if view is None:
+        return []
+    parts = ["<h2>Performance (render-cost proxy)</h2>"]
+    if not view.breaches:
+        parts.append("<p>Every scenario is within the fixed budgets.</p>")
+        return parts
+    parts.append(
+        "<table><tr><th>Scenario</th><th>flushes Δ</th><th>flushed_pixels Δ</th>"
+        "<th>Verdict</th><th>Expires</th></tr>"
+    )
+    for item in view.breaches:
+        record = view.by_exception.get(item["scenario"])
+        verdict = "PASS (by exception)" if record is not None else "FAIL"
+        expires = record["expires"] if record is not None else "—"
+        parts.append(
+            f"<tr><td>{item['scenario']}</td><td>{item['flushes_delta_pct']:+.1f}%</td>"
+            f"<td>{item['flushed_pixels_delta_pct']:+.1f}%</td><td>{verdict}</td>"
+            f"<td>{expires}</td></tr>"
+        )
+    parts.append("</table>")
+    for record in view.by_exception.values():
+        parts.append(
+            f"<p><strong>{record['scenario']}</strong> accepted by "
+            f"<code>{record['author']}</code> until <code>{record['expires']}</code>: "
+            f"{' '.join(record['reason'].split())}</p>"
+        )
+    return parts
 
 
 def _tri(value: bool | None) -> str:

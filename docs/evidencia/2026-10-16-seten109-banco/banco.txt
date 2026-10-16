@@ -1,0 +1,17 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output: ok
+  chroot /home/pablo/desa/x6200/.vfix3: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+OK: /home/pablo/desa/x6200/.vfix3/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13742964 B, 3/3 marcas)
+  respuesta: {"t":"ok"}
+  captura: /tmp/opencode/seten109/banco/banco-pag1.png (424 colores distintos)
+  version: 8d4f4338 Ajustes #109: evidencia A/B (AB-SETEN109) y banco B
+  fuente: md5 7cfb03d11ca0 (src/ + lvgl/src)
+  binario: md5 781d28c54c97   qemu-cpu: cortex-a7
+  captura util (35144 bytes)

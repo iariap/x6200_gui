@@ -130,6 +130,11 @@ stay BLOCKED).
   rule and fixture without hiding it.
 * `budgets.yaml` — thresholds fixed **before** a run (pixel tolerance, minimum
   box size, render-cost deltas).
+* `performance_exceptions.yaml` — dated, scenario-scoped acceptances of a
+  render-cost deviation, each with a ceiling per proxy, a reason, an author and
+  an expiry. They never relax `budgets.yaml`: an expired entry fails closed, a
+  delta above the ceilings fails, and a scenario with no entry keeps the global
+  budget. The breach stays visible in the report next to the exception.
 * `known_issues.yaml` — recorded defects. An issue without a detector is
   `unverified`: it never fails and never passes. A detector is either
   `region_content_above` (a pixel region must stay near-uniform) or
