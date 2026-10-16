@@ -33,6 +33,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 12. [Lo que queda del arranque, medido](#12-lo-que-queda-del-arranque-medido)
 13. [Actualizar la radio por WiFi](#13-actualizar-la-radio-por-wifi)
 14. [La GUI se colgaba al mandar audio](#14-la-gui-se-colgaba-al-mandar-audio)
+44. [El barrido de ROE no dibuja un valor fuera de escala](#44-el-barrido-de-roe-no-dibuja-un-valor-fuera-de-escala)
 15. [Anexo A: hipótesis sin fundar (no son hallazgos)](#anexo-a-hipótesis-sin-fundar-no-son-hallazgos)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
@@ -678,6 +679,39 @@ la GUI andando y no queda una segunda GUI viva.
 
 **Sin fundar** (anexo A): *por qué* el sink no consume (la explicación "el códec del SoC no está
 cableado" es del anexo A, no un hallazgo).
+
+---
+
+## 44. El barrido de ROE no dibuja un valor fuera de escala
+
+**Sintoma**: el owner reporto que el grafico del barrido se ve **vacio**. Yo lo reproduje y lo cargue como
+issue #101 creyendo que era un defecto.
+
+**Causa, medida** (radio en 192.168.0.236, GUI `6841894a9409`; mismo metodo: pixeles no-fondo del area del
+grafico, `docs/evidencia/2026-10-15-validacion-arreglos/`):
+
+```
+  $ <barrido de ROE con el dial en cada frecuencia; captura a los 35 s>
+  7.167971 MHz (fuera de la resonancia de la antena de 40 m):  10.82%
+  7.012000 MHz (rango resonante, el owner puso la radio ahi):   17.83%   <- la curva aparece
+```
+
+El eje del chart va de **1,5 a 4,5** (se lee en las capturas `16-roe-con-att.png` y `18-roe-en-7.012.png`).
+Una ROE **mayor que el tope** no se dibuja: queda un grafico vacio, indistinguible de uno roto.
+
+**Correccion de lo que decia el issue #101**: yo habia propuesto dos hipotesis (una regresion del #96 y el
+estado `pre`/`att`). Las dos quedaron **refutadas por medicion**:
+
+```
+  $ <mismo barrido, cambiando pre/att>
+  pre=1 att=0 -> 10.82%      att=1 pre=0 -> 10.82%     (identico: no es el estado)
+```
+
+y el diff del #96 es de ciclo de vida (`swrscan_stop()`/`swrscan_release()`/`LV_EVENT_DELETE`), no del
+trazado. **No es un defecto**: es la ROE fuera de escala.
+
+**Sin fundar** (anexo A): **no medi la ROE real a 7,167971** (no lei el valor, solo observe que no se
+dibuja). Falta: leer la ROE a esa frecuencia con otra antena o con un medidor externo.
 
 ---
 

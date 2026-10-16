@@ -1,0 +1,45 @@
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_rsynced
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_staging_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_target_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_images_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_host_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_built
+>>> x6200-gui custom Syncing from source dir /workspace_gui
+rsync -au --chmod=u=rwX,go=rX  --exclude .svn --exclude .git --exclude .hg --exclude .bzr --exclude CVS /workspace_gui/ /workspace/build/build/x6200-gui-custom
+>>> x6200-gui custom Building
+GIT_DIR=. PATH="/workspace/build/host/bin:/workspace/build/host/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"  /usr/bin/make   -C /workspace/build/build/x6200-gui-custom/
+[  1%] Built target btcat
+[  1%] Built target QTH
+[  1%] Built target params_sqlite
+[  1%] Built target wsprd
+[  1%] Built target FT8
+[  2%] Built target js8core
+[ 22%] Built target lvgl
+[ 24%] Built target JS8
+[ 25%] Built target lv_drivers
+[ 25%] Built target JS8TestSignal
+[ 32%] Built target lvgl_demos
+[ 51%] Built target lvgl_examples
+[ 51%] Building C object src/CMakeFiles/x6200_gui.dir/params/migrations.c.o
+params/migrations.c: In function ‘_3_migrate_theme_name’:
+params/migrations.c:118:50: warning: implicit declaration of function ‘theme_offered’ [-Wimplicit-function-declaration]
+  118 |         retire = val != NULL && *val != '\0' && !theme_offered(val);
+      |                                                  ^~~~~~~~~~~~~
+params/migrations.c:125:52: error: expected ‘)’ before ‘THEME_DEFAULT’
+  125 |     rc = sqlite3_exec(db, "UPDATE params SET val='" THEME_DEFAULT "' WHERE name='theme_name'", NULL, NULL, NULL);
+      |                      ~                             ^~~~~~~~~~~~~~
+      |                                                    )
+params/migrations.c:125:10: error: too few arguments to function ‘sqlite3_exec’
+  125 |     rc = sqlite3_exec(db, "UPDATE params SET val='" THEME_DEFAULT "' WHERE name='theme_name'", NULL, NULL, NULL);
+      |          ^~~~~~~~~~~~
+In file included from params/db.h:13,
+                 from params/migrations.c:13:
+../../../host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/sqlite3.h:425:16: note: declared here
+  425 | SQLITE_API int sqlite3_exec(
+      |                ^~~~~~~~~~~~
+make[4]: *** [src/CMakeFiles/x6200_gui.dir/build.make:6208: src/CMakeFiles/x6200_gui.dir/params/migrations.c.o] Error 1
+make[3]: *** [CMakeFiles/Makefile2:448: src/CMakeFiles/x6200_gui.dir/all] Error 2
+make[2]: *** [Makefile:136: all] Error 2
+make[1]: *** [package/pkg-generic.mk:283: /workspace/build/build/x6200-gui-custom/.stamp_built] Error 2
+make: *** [Makefile:23: _all] Error 2
