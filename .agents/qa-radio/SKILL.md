@@ -36,19 +36,25 @@ Nace de la rutina que pidio el dueño el 2026-10-15 y de los errores que ya se c
    en `docs/evidencia/` y este skill. Si un fix aparece en la rama, se **valida y se reporta**, no se
    escribe.
 
-## Paso 0 — Donde trabajar (el arbol es compartido)
+## Paso 0 — Donde trabajar: un CLON, no un worktree
 
-Otro agente trabaja en el **mismo checkout** y a veces lo deja en un **HEAD detached**. Nunca trabajar
-ahi ni hacerle checkout: se construye desde **un worktree propio**.
+Se trabaja en un **clon propio** del port, con sus submodulos:
 
 ```bash
-cd /home/pablo/desa/x6200/x6200_gui            # solo para administrar git
-git worktree add /home/pablo/desa/x6200/.wt-pruebas lu2dsx/x6200-rom   # si no existe
-cd /home/pablo/desa/x6200/.wt-pruebas
+git clone --branch lu2dsx/x6200-rom --recurse-submodules \
+    https://github.com/iariap/x6200_gui.git /home/pablo/desa/x6200/x6200_qa    # 39 s, 1.6 GB
+cd /home/pablo/desa/x6200/x6200_qa
 ```
 
-Antes de construir, verificar **que commit se va a construir**: `tools/compila-gui.sh` lo imprime al
-final. Si dice uno viejo, algo quedo mal (el arbol compartido estaba en otro lado).
+**Un `git worktree` NO sirve** (se probo y fallo dos veces):
+- trae el submodulo **`lvgl` vacio** → el CMake falla (`lvgl does not contain a CMakeLists.txt`) o,
+  peor, sale un binario **PIE de 776 KB** que **no es el firmware** y deja la radio sin GUI;
+- comparte `.git` con el arbol compartido del otro agente (que a veces queda en checkout detached).
+
+El clon tiene `.git` propio (no lo toca nadie) y los submodulos poblados. Verificar antes de construir:
+`ls lvgl | wc -l` → **21** (y existe `lvgl/CMakeLists.txt`).
+
+Si hace falta rehacerlo: `rm -rf x6200_qa` y el clone de nuevo (39 s).
 
 ## Paso 1 — Monitoreo
 
