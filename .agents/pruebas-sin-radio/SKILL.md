@@ -90,6 +90,12 @@ guard en `CAP_LOOPBACK=si`. Todo el detalle, los números medidos y lo que queda
 3. **QEMU con el CPU correcto.** Corre con `QEMU_CPU=cortex-a7` (el core de la R16). Con el modelo
    por defecto el binario muere a los pocos segundos con
    `qemu-arm-static: QEMU internal SIGBUS {code=ADERR}` y la captura sale en blanco.
+4. **El binario es el firmware del port, no otra cosa.** Antes de arrancar la GUI, el binario copiado
+   pasa por `tools/verifica-firmware-port.py` (gate fail-closed del issue #86): un build desde el
+   `main` del remoto sale con **exit 0** y deja un `x6200_gui` de **776.884 B** que **no** es el
+   firmware (el del port pesa **13.737.784 B**). El gate lo rechaza por tamano e marcas del port y
+   **falla** en vez de correr una GUI que no es la del port. Senales y calibracion: encabezado de
+   `tools/verifica-firmware-port.py`.
 
 Variables utiles: `CHROOT`, `VOLUMEN`, `IMAGEN`, `BUILDROOT`, `ESPERA` (segundos tras la orden),
 `RECONSTRUIR`, `QEMU_CPU`.

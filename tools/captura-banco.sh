@@ -24,6 +24,9 @@
 #   - Usa el socket CORRECTO: borra socket/framebuffer viejos, espera el socket, hace handshake
 #     {"cmd":"get"}, comprueba que la GUI este viva y reintenta reiniciando el banco una vez.
 #   - No deja evidencia falsa: si la captura sale vacia (o el framebuffer es uniforme) falla.
+#   - No corre un binario que no es el firmware: antes de arrancar la GUI, el binario COPIADO pasa
+#     por tools/verifica-firmware-port.py (gate fail-closed del issue #86: un build desde `main`
+#     sale con exit 0 y deja un x6200_gui que no sirve). Si no es el firmware del port, falla.
 #
 # QEMU_CPU (por defecto cortex-a7, el core de la R16) es necesario: con el modelo por defecto la GUI
 # muere a los pocos segundos con "qemu-arm-static: QEMU internal SIGBUS {code=ADERR}".
@@ -164,6 +167,16 @@ fi
 docker run --rm --entrypoint "" -v "$CHROOT:/t" -v "$VOLUMEN":/b "$IMAGEN" \
     sh -c "cp /b/target$BIN /t$BIN" 2>/dev/null || fallar "no pude copiar el binario desde el volumen $VOLUMEN (¿corriste make?)"
 [ -x "$CHROOT$BIN" ] || fallar "quedo sin permiso de ejecucion $CHROOT$BIN"
+
+# --- 2a. GATE fail-closed: el binario COPIADO tiene que ser el firmware del port ------------------
+# Antes de correr nada: un build desde el `main` del remoto (issue #86) sale con exit 0 y deja un
+# binario de 776.884 B que NO es el firmware del port (el del port pesa 13.737.784 B). El guard
+# compara con los dos binarios reales (tamano + marcas del port) y, si no es el firmware, frena
+# aca en vez de correr una GUI que no es la del port. Senales y calibracion: ver el encabezado de
+# tools/verifica-firmware-port.py.
+python3 "$AQUI/verifica-firmware-port.py" "$CHROOT$BIN" \
+    || fallar "el binario copiado ($CHROOT$BIN) no es el firmware del port (issue #86): NO se corre la GUI"
+
 cp "$AQUI/bench/libfakefb.so" "$AQUI/bench/libcrash.so" "$AQUI/bench/libx6200trace.so" "$CHROOT/lib/" || fallar "no pude copiar las libs del banco al chroot"
 cp "$AQUI/remote/x6200-remote" "$CHROOT/tmp/x6200-remote" || fallar "no pude copiar el cliente de control al chroot"
 chmod 755 "$CHROOT/tmp/x6200-remote"
