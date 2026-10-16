@@ -27,6 +27,7 @@
 #   - No corre un binario que no es el firmware: antes de arrancar la GUI, el binario COPIADO pasa
 #     por tools/verifica-firmware-port.py (gate fail-closed del issue #86: un build desde `main`
 #     sale con exit 0 y deja un x6200_gui que no sirve). Si no es el firmware del port, falla.
+#   - EJEMPLO CANONICO de uso con theme + guard #86: docs/evidencia/2026-10-15-wf92-banco/ (issue #92): rebuild con el guard, /mnt/themes sincronizado con los 6 temas v2 del rootfs (la DATA vieja miente: sin la key waterfall_signal_width la linea midio 1 px), medicion determinista del ancho con PIL.
 #
 # QEMU_CPU (por defecto cortex-a7, el core de la R16) es necesario: con el modelo por defecto la GUI
 # muere a los pocos segundos con "qemu-arm-static: QEMU internal SIGBUS {code=ADERR}".
