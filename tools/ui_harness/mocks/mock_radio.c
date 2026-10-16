@@ -115,6 +115,12 @@ void radio_start_atu(void) { mock_radio_calls.start_atu++; }
 bool radio_start_swrscan(void) { return false; }
 void radio_stop_swrscan(void) {}
 
+/* The app-frame snapshot (issue #94): the harness renders single screens, it
+ * never opens an app that mutates the radio, so the backup is a no-op here.
+ * The symbol is needed because the real src/dialog.c calls it. */
+void radio_state_save(void) {}
+void radio_state_restore(void) {}
+
 void radio_poweroff(void) { mock_radio_calls.poweroff++; }
 void radio_set_ptt(bool tx) { mock_radio_calls.set_ptt++; (void) tx; }
 void radio_set_modem(bool tx) { (void) tx; }

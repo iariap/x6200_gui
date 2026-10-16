@@ -705,6 +705,51 @@ void radio_stop_swrscan() {
     }
 }
 
+/* Snapshot del estado del EQUIPO (dial, modo, agc/pre/att y potencia) para las apps que lo mutan
+ * al abrirse: al cerrarlas hay que devolverlo como estaba (issue #94, la familia del barrido de
+ * ROE del #84/#96). Es el mismo patron de radio_start_swrscan() pero generico: lo guarda y lo
+ * devuelve el dispatcher de apps, asi ninguna app depende de su propio dtor ni del slot SQLite de
+ * memorias (que se usa para las memorias del usuario). La frecuencia y el modo se mueven por los
+ * sujetos de cfg_cur, que son los que hablan con el hardware a traves de sus observadores
+ * (on_vfo_freq_change / on_vfo_mode_change); el cambio de modo va fuera del radio_lock porque
+ * dispara observadores que toman ese lock. */
+typedef struct {
+    int32_t freq;
+    int32_t mode;
+    int32_t agc;
+    int32_t pre;
+    int32_t att;
+    float   pwr;
+    bool    valid;
+} radio_state_backup_t;
+
+static radio_state_backup_t radio_backup;
+
+void radio_state_save() {
+    radio_backup.freq  = subject_get_int(cfg_cur.fg_freq);
+    radio_backup.mode  = subject_get_int(cfg_cur.mode);
+    radio_backup.agc   = subject_get_int(cfg_cur.agc);
+    radio_backup.pre   = subject_get_int(cfg_cur.pre);
+    radio_backup.att   = subject_get_int(cfg_cur.att);
+    radio_backup.pwr   = subject_get_float(cfg.pwr.val);
+    radio_backup.valid = true;
+}
+
+void radio_state_restore() {
+    if (!radio_backup.valid) {
+        return;
+    }
+    radio_backup.valid = false;
+
+    /* Fuera del radio_lock: setear estos sujetos dispara observadores que toman el lock */
+    subject_set_int(cfg_cur.fg_freq, radio_backup.freq);
+    subject_set_int(cfg_cur.mode, radio_backup.mode);
+    subject_set_int(cfg_cur.agc, radio_backup.agc);
+    subject_set_int(cfg_cur.pre, radio_backup.pre);
+    subject_set_int(cfg_cur.att, radio_backup.att);
+    subject_set_float(cfg.pwr.val, radio_backup.pwr);
+}
+
 void radio_set_pwr(float d) {
     WITH_RADIO_LOCK(x6200_control_txpwr_set(d));
 }

@@ -35,8 +35,9 @@ typedef struct {
     buttons_page_t          *btn_page;
     buttons_page_t          *prev_page;
     lv_event_cb_t           key_cb;
-    /* The X6100 apps ask the radio state to be restored when they close (see
-     * the note in docs/NEW_FEATURES.md: the restore itself is still pending) */
+    /* The apps that change the radio on open ask for its state to be restored
+     * when they close (issue #94): the frame saves it in radio_state_save() and
+     * puts it back in radio_state_restore() (src/radio.c). */
     bool                    restore_radio;
     bool                    run;
 } dialog_t;
