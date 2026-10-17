@@ -235,19 +235,23 @@ el borde se pierde).
 | `tests/run_all_tests.sh --quick` | 11 OK, 0 fallos (codecs y webserver omitidos por la imagen `ci`) |
 | `tools/ab_testing` `ruff check` / `ruff format --check` / `ty check` | `All checks passed!` / `169 files already formatted` / `All checks passed!` |
 | `tools/ab_testing` `pytest -m "not e2e"` | **239 passed** |
+| `tools/ab_testing` `pytest -m e2e` (post-commit) | **13 passed**, 227 deselected |
 | `.agents/hallazgos-fundados/scripts/audita-hallazgos.sh` | 0 problemas de estructura |
-| `scripts/apps/x6200/check-matrix.sh <base> factory/cw-tune-122` | PENDIENTE del banco (ver arriba); el resto de la matriz (nativos, estáticos, ab_testing, determinismo) ok |
+| `scripts/apps/x6200/check-matrix.sh 3553a476 HEAD <worktree>` | **exit 0** — 19 checks `ok` (nativos, 6 estáticos, ab_testing ruff/format/pytest, `bash -n`, determinismo); el paso del banco sale **BLOCKED** por entorno (sin `CHROOT`, el preflight no encuentra el chroot), que es el comportamiento diseñado y no marca FAILED |
 
 ### md5 (provenance) — cierre
 
 | Qué | md5 |
 |---|---|
-| `07-harness-cw-tune-default.png` / `.json` | `ea55bb4d918695fd9ab0a3ad581b2245` / `836200d878916027c95baaf3be112ac9` |
-| `08-harness-cw-tune-tuner.png` / `.json` | `b1170a414dc2b42b67c5afe8ae27142e` / `5bfc7d95a5cd34d364e736465f0c5efe` |
-| `09-harness-cw-tune-ssb.png` / `.json` | `02549cfd65c4ec601568393616d32d31` / `697f2d3082e29fc2b1bbed4cb6d02654` |
-| `10-harness-cw-tune-tema-sunlit.png` / `.json` | `cfa98f197f7f8cd1c50a0251d9c31e21` / `5c39784c43d18d011e89e3c6f77da4bd` |
+| `07-harness-cw-tune-default.png` / `.json` | `ea55bb4d918695fd9ab0a3ad581b2245` / `8896ac182785431f36e306b8399c4675` |
+| `08-harness-cw-tune-tuner.png` / `.json` | `b1170a414dc2b42b67c5afe8ae27142e` / `aed99fcc9462e6975265a140a1bd34b1` |
+| `09-harness-cw-tune-ssb.png` / `.json` | `02549cfd65c4ec601568393616d32d31` / `e0f3db4803ec738960b3a2d78294124a` |
+| `10-harness-cw-tune-tema-sunlit.png` / `.json` | `cfa98f197f7f8cd1c50a0251d9c31e21` / `15b3b4eed261d9de3ba69995df6c4f76` |
 | `mide.py` (medición) | `67f9457b4a8ef73bbedf4b298eb456b3` |
 | base del cierre | `3553a476` |
+
+Los JSON llevan el `revision` con el que se compiló el arnés (`a8b41b92`, el commit del arreglo en esta
+rama); los PNG no dependen de eso.
 
 `08` y `10` son **byte a byte** los renders dorados que mide el objeto `cw_tune_bars`
 (`tools/ab_testing/golden/cw-tune-tuner.png`, `cw-tune-tema-sunlit.png`): mismo md5, así que la

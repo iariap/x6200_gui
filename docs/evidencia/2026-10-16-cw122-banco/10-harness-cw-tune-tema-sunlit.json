@@ -2,7 +2,7 @@
   "scenario": "cw-tune-tema-sunlit",
   "screen": "cw-tune-tuner",
   "seed": 20,
-  "revision": "0c0985d055456f0284610a5384545400bc4ced1e",
+  "revision": "a8b41b92bac3a7318db013606735b781ac7c9863",
   "framebuffer": { "width": 800, "height": 480 },
   "theme": {
     "requested": "Sunlit",
@@ -28,7 +28,7 @@
     { "component": "pannel.c", "level": "REAL", "note": "src/pannel.c compiled and drawn (the overlay panel, empty here)" },
     { "component": "msg.c", "level": "REAL", "note": "src/msg.c + msg_tiny.c compiled and drawn (empty: the harness sends no messages)" },
     { "component": "adaptive_tuning.c", "level": "REAL", "note": "src/adaptive_tuning.c compiled and initialised; the tuning-multiplier label is created (hidden)" },
-    { "component": "cw_tune_ui.c", "level": "PARTIAL", "note": "src/cw_tune_ui.c compiled; hidden because CW tune is off in these fixtures" },
+    { "component": "cw_tune_ui.c", "level": "PARTIAL", "note": "src/cw_tune_ui.c compiled; the widget is built with the main screen and its visibility follows the rig's mode (CW/CWR only, issue #122: the mode decides, not cw_tune), so it is hidden outside CW/CWR" },
     { "component": "cfg/subjects.cpp", "level": "REAL", "note": "src/cfg/subjects.cpp compiled; the real Subject/observer core backs cfg_cur/cfg" },
     { "component": "cfg/settings_manager.cpp", "level": "REAL", "note": "src/cfg/settings_manager.cpp compiled; the remote control's mirror of the configuration binds its parameters to the real subjects at boot and is checked there (mocks/mock_settings_manager.cpp): reading it returns the stored value, not the neutral one (issue #30)" },
     { "component": "cfg (catalogue)", "level": "SYNTHETIC", "note": "no database: mock_cfg owns cfg_t/cfg_cur and its values (no src/cfg/db.cpp)" },

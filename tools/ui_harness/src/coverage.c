@@ -47,7 +47,7 @@
     COMPONENT("adaptive_tuning.c", COVERAGE_REAL, \
               "src/adaptive_tuning.c compiled and initialised; the tuning-multiplier label is created (hidden)"), \
     COMPONENT("cw_tune_ui.c", COVERAGE_PARTIAL, \
-              "src/cw_tune_ui.c compiled; the widget is built with the main screen and shown only in CW/CWR (issue #122: the mode decides, not cw_tune), so it is hidden in these fixtures"), \
+              "src/cw_tune_ui.c compiled; the widget is built with the main screen and its visibility follows the rig's mode (CW/CWR only, issue #122: the mode decides, not cw_tune), so it is hidden outside CW/CWR"), \
     COMPONENT("cfg/subjects.cpp", COVERAGE_REAL, \
               "src/cfg/subjects.cpp compiled; the real Subject/observer core backs cfg_cur/cfg"), \
     COMPONENT("cfg/settings_manager.cpp", COVERAGE_REAL, \
