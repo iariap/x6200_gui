@@ -58,6 +58,11 @@ typedef struct {
     unsigned change_mute;
     unsigned start_atu;
     unsigned poweroff;
+    /* El barrido de ROE (issue #125): el arnes NO tiene radio, asi que estos dos
+     * contadores son la prueba de que la unica "transmision" del fixture es el mock.
+     * El binario no linkea aether_control: no hay camino a RF real desde aca. */
+    unsigned start_swrscan;
+    unsigned stop_swrscan;
 } mock_radio_calls_t;
 
 extern mock_radio_calls_t mock_radio_calls;

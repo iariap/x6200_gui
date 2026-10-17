@@ -43,8 +43,10 @@ rotary_t  *mfk_inner;
  * (src/dialog_settings.c) and the real Bluetooth window (src/dialog_bt.c, for
  * UI-005), each of which owns its descriptor; the rest of the apps still point
  * at one inert descriptor whose constructor does nothing, so opening one of them
- * from a fixture is a no-op instead of a NULL call. `dialog_settings` and
- * `dialog_bt` are NOT declared here: their own sources define them. */
+ * from a fixture is a no-op instead of a NULL call. `dialog_settings`,
+ * `dialog_bt` and `dialog_swrscan` are NOT declared here: their own sources
+ * define them (the SWR Scan window is compiled since issue #125, so the
+ * `swrscan` fixtures render the real one over the fake acquisition backend). */
 
 static void mock_construct_cb(lv_obj_t *parent) { (void) parent; }
 
@@ -68,7 +70,6 @@ dialog_t *dialog_qth        = &mock_dialog;
 dialog_t *dialog_recorder   = &mock_dialog;
 dialog_t *dialog_sstv       = &mock_dialog;
 dialog_t *dialog_status     = &mock_dialog;
-dialog_t *dialog_swrscan    = &mock_dialog;
 dialog_t *dialog_wefax      = &mock_dialog;
 dialog_t *dialog_wifi       = &mock_dialog;
 dialog_t *dialog_wspr       = &mock_dialog;

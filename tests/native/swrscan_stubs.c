@@ -13,6 +13,7 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "params/params.h"
@@ -24,6 +25,7 @@
 #include "util.h"
 #include "keyboard.h"
 #include "theme.h"
+#include "scheduler.h"
 #include "lvgl/lvgl.h"
 
 /* --- recorded calls, read by the test -------------------------------------- */
@@ -33,9 +35,40 @@ static int stub_started;
 static int stub_stopped;
 static int stub_destructed;
 
+/* Reloj virtual (issue #125): el motor mide el timeout de RF con get_time(); el test lo mueve
+ * a mano, sin sleeps reales. */
+static uint64_t stub_time;
+
+void     swrscan_stub_time_set(uint64_t t) { stub_time = t; }
+void     swrscan_stub_time_advance(uint64_t d) { stub_time += d; }
+uint64_t get_time(void) { return stub_time; }
+
+/* El cierre del lado de LVGL lo encola el hilo de la radio por el scheduler. El stub lo guarda
+ * para que el test lo corra cuando quiere (como haria el hilo principal). */
+static scheduler_fn_t stub_pending_job;
+static int            stub_pending_jobs;
+
+void scheduler_put_noargs(scheduler_fn_t fn) {
+    stub_pending_job = fn;
+    stub_pending_jobs++;
+}
+
+void swrscan_stub_run_scheduler(void) {
+    scheduler_fn_t fn = stub_pending_job;
+
+    stub_pending_job = NULL;
+
+    if (fn) {
+        fn(NULL);
+    }
+}
+
+int swrscan_stub_pending_jobs(void) { return stub_pending_jobs; }
+
 /* The sweep moves the VFO one point per received packet (do_step -> radio_set_freq): the
- * test reads this sequence to pin the sweep geometry (issue #113). */
-#define STUB_FREQS 128
+ * test reads this sequence to pin the sweep geometry (issue #113). Since #125 the sequence
+ * covers a whole session: 51 points x 5 passes + the return to the app frequency = 256. */
+#define STUB_FREQS 256
 
 static int32_t stub_freqs[STUB_FREQS];
 static int     stub_freq_count;
@@ -53,6 +86,9 @@ void swrscan_stub_reset(void) {
     stub_stopped    = 0;
     stub_destructed = 0;
     stub_freq_count = 0;
+    stub_pending_job  = NULL;
+    stub_pending_jobs = 0;
+    stub_time         = 0;
 }
 
 /* --- theme ------------------------------------------------------------------ */
@@ -86,10 +122,19 @@ static lv_obj_t      *draw_obj;         /* the object the DRAW_MAIN_END callback
 static lv_event_cb_t  draw_cb;
 static lv_obj_t      *event_target;     /* what lv_event_get_target() hands the callback */
 static lv_color_t     last_label_color; /* the colour of the last text the chart painted */
+static char           last_label_text[160]; /* the last text the chart painted (#125 readout) */
+
+/* El fondo del bloque estado+readout (issue #125): el texto se pinta encima de la grilla, de
+ * las etiquetas del eje y de la curva, asi que va sobre un rect del color del panel del chart
+ * con opacidad parcial. El test lee el ultimo rect pintado para fijar esa legibilidad. */
+static int        stub_rect_count;
+static lv_color_t stub_rect_color;
+static uint8_t    stub_rect_opa;
 
 /* Fires the dialog's draw callback on the chart, recording what it paints. */
 void swrscan_stub_draw(void) {
     stub_segment_count = 0;
+    stub_rect_count    = 0;
     event_target       = draw_obj;
     last_label_color   = lv_color_hex(0);
 
@@ -162,6 +207,21 @@ lv_color_t swrscan_stub_curve_color(void) {
 
 lv_color_t swrscan_stub_label_color(void) {
     return last_label_color;
+}
+
+/* El fondo del bloque estado+readout (issue #125): cuantos rects pinto el chart en el ultimo
+ * draw, y con que color/opacidad. El texto va encima de la grilla y de la curva, asi que el
+ * test fija que se pinte UN rect del color del panel del chart con opacidad parcial. */
+int swrscan_stub_rect_count(void) {
+    return stub_rect_count;
+}
+
+lv_color_t swrscan_stub_rect_color(void) {
+    return stub_rect_color;
+}
+
+uint8_t swrscan_stub_rect_opa(void) {
+    return stub_rect_opa;
 }
 
 /* The chart's own background: what construct_cb set on the object it draws into. The test
@@ -389,9 +449,24 @@ void lv_draw_line(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *dsc, const lv_po
         stub_segment_count++;
     }
 }
+void lv_draw_rect_dsc_init(lv_draw_rect_dsc_t *dsc) { memset(dsc, 0, sizeof(*dsc)); }
+void lv_draw_rect(lv_draw_ctx_t *ctx, const lv_draw_rect_dsc_t *dsc, const lv_area_t *coords) {
+    (void)ctx; (void)coords;
+
+    stub_rect_count++;
+    stub_rect_color = dsc->bg_color;
+    stub_rect_opa   = dsc->bg_opa;
+}
 void lv_draw_label(lv_draw_ctx_t *ctx, const lv_draw_label_dsc_t *dsc, const lv_area_t *coords, const char *txt, void *bidi) {
-    (void)ctx; (void)coords; (void)txt; (void)bidi;
+    (void)ctx; (void)coords; (void)bidi;
     last_label_color = dsc->color;
+
+    /* El test lee el ultimo texto dibujado (el readout de estado/minimo del #125). */
+    snprintf(last_label_text, sizeof(last_label_text), "%s", txt ? txt : "");
+}
+
+const char *swrscan_stub_last_label_text(void) {
+    return last_label_text;
 }
 void lv_txt_get_size(lv_point_t *size_res, const char *txt, const lv_font_t *font,
                      lv_coord_t letter_space, lv_coord_t line_space, lv_coord_t max_width, uint32_t flag) {

@@ -36,9 +36,9 @@ cp "$SRC/cw_decoder.c" "$SRC/cw_decoder.h" "$CW_STAGE/"
 cp "$DIR/stubs_cw/pannel.h" "$DIR/stubs_cw/remote_server.h" "$CW_STAGE/"
 cp "$DIR/stubs/lvgl/lvgl.h" "$CW_STAGE/lvgl/"
 
-SOURCES="$SRC/adaptive_tuning.c $SRC/autotune.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c $SRC/roe_curve.c $CW_STAGE/cw_decoder.c \
+SOURCES="$SRC/adaptive_tuning.c $SRC/autotune.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c $SRC/roe_curve.c $SRC/swr_session.c $CW_STAGE/cw_decoder.c \
 $DIR/stubs/stubs.c $DIR/test_main.c $DIR/test_framework.c \
-$DIR/test_adaptive_tuning.c $DIR/test_autotune.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c $DIR/test_roe_curve.c \
+$DIR/test_adaptive_tuning.c $DIR/test_autotune.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c $DIR/test_roe_curve.c $DIR/test_swr_session.c $DIR/swrscan_fixtures.c $DIR/test_swrscan_fixtures.c \
 $DIR/test_update_check.c"
 
 echo "== compilador: $($CC --version | head -1) =="
@@ -76,6 +76,8 @@ export X6200_SHIPPED_THEMES="${X6200_SHIPPED_THEMES:-$SRC/../rootfs/usr/share/x6
 # El diálogo de Field arma la ruta de sus tiles desde un prefijo (FIELD_ICONS):
 # el test comprueba que los PNG que pide estén en rootfs/ (ver test_field.c).
 export X6200_DIALOG_FIELD_SRC="${X6200_DIALOG_FIELD_SRC:-$SRC/dialog_field.c}"
+# Los fixtures del owner (issue #125, seccion 7) son el oraculo de la multipasada.
+export X6200_SWRSCAN_FIXTURES="${X6200_SWRSCAN_FIXTURES:-$DIR/../fixtures/swrscan}"
 "$OUT/native_tests"
 
 # --- Clock test (UI-009) ------------------------------------------------------
@@ -208,21 +210,25 @@ echo "== SWR Scan (#85): cerrar con el barrido corriendo no desreferencia NULL =
 SW_STAGE="$OUT/swrscan_src"
 rm -rf "$SW_STAGE"
 mkdir -p "$SW_STAGE/lvgl" "$SW_STAGE/params"
-cp "$SRC/dialog_swrscan.c" "$SRC/dialog_swrscan.h" "$SRC/roe_curve.c" "$SRC/roe_curve.h" "$SW_STAGE/"
+cp "$SRC/dialog_swrscan.c" "$SRC/dialog_swrscan.h" "$SRC/roe_curve.c" "$SRC/roe_curve.h" \
+   "$SRC/swr_session.c" "$SRC/swr_session.h" "$SW_STAGE/"
 cp "$DIR/stubs_swrscan/lvgl/lvgl.h" "$SW_STAGE/lvgl/"
 cp "$DIR/stubs_swrscan/dialog.h" "$DIR/stubs_swrscan/styles.h" "$DIR/stubs_swrscan/radio.h" \
    "$DIR/stubs_swrscan/events.h" "$DIR/stubs_swrscan/util.h" "$DIR/stubs_swrscan/keyboard.h" \
-   "$DIR/stubs_swrscan/main_screen.h" "$DIR/stubs_swrscan/buttons.h" "$DIR/stubs_swrscan/theme.h" "$SW_STAGE/"
+   "$DIR/stubs_swrscan/main_screen.h" "$DIR/stubs_swrscan/buttons.h" "$DIR/stubs_swrscan/theme.h" \
+   "$DIR/stubs_swrscan/scheduler.h" "$SW_STAGE/"
 cp "$DIR/stubs_swrscan/params/params.h" "$SW_STAGE/params/"
 if [ "$SAN_OK" = yes ]; then
     # shellcheck disable=SC2086
     $CC $BASEFLAGS $SAN -I"$SW_STAGE" \
-        "$SW_STAGE/dialog_swrscan.c" "$SW_STAGE/roe_curve.c" "$DIR/swrscan_stubs.c" "$DIR/test_swrscan.c" \
+        "$SW_STAGE/dialog_swrscan.c" "$SW_STAGE/roe_curve.c" "$SW_STAGE/swr_session.c" \
+        "$DIR/swrscan_stubs.c" "$DIR/test_swrscan.c" \
         "$DIR/test_framework.c" "$DIR/swrscan_test_main.c" -lm -o "$OUT/swrscan_tests"
 else
     # shellcheck disable=SC2086
     $CC $BASEFLAGS -I"$SW_STAGE" \
-        "$SW_STAGE/dialog_swrscan.c" "$SW_STAGE/roe_curve.c" "$DIR/swrscan_stubs.c" "$DIR/test_swrscan.c" \
+        "$SW_STAGE/dialog_swrscan.c" "$SW_STAGE/roe_curve.c" "$SW_STAGE/swr_session.c" \
+        "$DIR/swrscan_stubs.c" "$DIR/test_swrscan.c" \
         "$DIR/test_framework.c" "$DIR/swrscan_test_main.c" -lm -o "$OUT/swrscan_tests"
 fi
 
@@ -232,6 +238,41 @@ $CC $BASEFLAGS -fanalyzer -I"$SW_STAGE" \
     -c "$SW_STAGE/dialog_swrscan.c" -o "$OUT/dialog_swrscan.o" || true
 
 "$OUT/swrscan_tests"
+
+# --- SWR Scan multipasada, 3/5 pasadas con el backend fake (issue #125) --------
+# El dialogo gatea la multipasada sobre TX real (SWRSCAN_MULTIPASS_TX_ENABLED = 0, el default):
+# el binario que se flashea la rechaza (lo pinnea tests/native/test_swrscan.c). Este segundo
+# build del MISMO dialogo con -D...=1 es el unico lugar donde el camino de 3/5 pasadas corre de
+# punta a punta: contra los fixtures del owner y con la radio stubbeada, o sea CERO RF real. Es
+# la evidencia de que el motor y el dialogo soportan N pasadas y de que el gate es lo unico que
+# las apaga (la validacion en hardware sigue pendiente: requires-radio).
+echo "== SWR Scan (#125): 3/5 pasadas con el backend fake (gate ON solo en este binario) =="
+SW_MP_STAGE="$OUT/swrscan_mp_src"
+rm -rf "$SW_MP_STAGE"
+mkdir -p "$SW_MP_STAGE/lvgl" "$SW_MP_STAGE/params"
+cp "$SRC/dialog_swrscan.c" "$SRC/dialog_swrscan.h" "$SRC/roe_curve.c" "$SRC/roe_curve.h" \
+   "$SRC/swr_session.c" "$SRC/swr_session.h" "$SW_MP_STAGE/"
+cp "$DIR/stubs_swrscan/lvgl/lvgl.h" "$SW_MP_STAGE/lvgl/"
+cp "$DIR/stubs_swrscan/dialog.h" "$DIR/stubs_swrscan/styles.h" "$DIR/stubs_swrscan/radio.h" \
+   "$DIR/stubs_swrscan/events.h" "$DIR/stubs_swrscan/util.h" "$DIR/stubs_swrscan/keyboard.h" \
+   "$DIR/stubs_swrscan/main_screen.h" "$DIR/stubs_swrscan/buttons.h" "$DIR/stubs_swrscan/theme.h" \
+   "$DIR/stubs_swrscan/scheduler.h" "$SW_MP_STAGE/"
+cp "$DIR/stubs_swrscan/params/params.h" "$SW_MP_STAGE/params/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -DSWRSCAN_MULTIPASS_TX_ENABLED=1 -I"$SW_MP_STAGE" -I"$DIR" \
+        "$SW_MP_STAGE/dialog_swrscan.c" "$SW_MP_STAGE/roe_curve.c" "$SW_MP_STAGE/swr_session.c" \
+        "$DIR/swrscan_stubs.c" "$DIR/swrscan_fixtures.c" "$DIR/test_swrscan_multipass.c" \
+        "$DIR/test_framework.c" "$DIR/swrscan_multipass_main.c" -lm -o "$OUT/swrscan_mp_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -DSWRSCAN_MULTIPASS_TX_ENABLED=1 -I"$SW_MP_STAGE" -I"$DIR" \
+        "$SW_MP_STAGE/dialog_swrscan.c" "$SW_MP_STAGE/roe_curve.c" "$SW_MP_STAGE/swr_session.c" \
+        "$DIR/swrscan_stubs.c" "$DIR/swrscan_fixtures.c" "$DIR/test_swrscan_multipass.c" \
+        "$DIR/test_framework.c" "$DIR/swrscan_multipass_main.c" -lm -o "$OUT/swrscan_mp_tests"
+fi
+
+"$OUT/swrscan_mp_tests"
 
 # --- Dialog restore test (issue #94) -----------------------------------------
 # src/dialog.c includes its siblings with `#include "..."` (dialog.h,

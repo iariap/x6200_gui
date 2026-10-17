@@ -260,8 +260,47 @@ static const coverage_entry_t autotune_screen[] = {
               "DX cluster column is not rendered (no cluster data on the host)"),
 };
 
+/* The `swrscan` scenarios (issue #125): the real SWR Scan window over the real
+ * main screen, driven by the fake ROE acquisition backend (src/swr_backend.c).
+ * The window, its session engine and the resample of the curve are the real
+ * firmware sources; the radio side is the harness' counter-only mock and the
+ * datasets are the owner's fixtures (tests/fixtures/swrscan/). */
+static const coverage_entry_t swrscan_screen[] = {
+    MAIN_COMPONENTS,
+    COMPONENT("dialog.c", COVERAGE_REAL,
+              "src/dialog.c compiled; dialog_construct()/dialog_init() run the real dialog lifecycle over the screen"),
+    COMPONENT("dialog_swrscan.c", COVERAGE_REAL,
+              "src/dialog_swrscan.c compiled; the whole window is built and drawn (chart, Run/Scale/Span/Passes buttons, status and readout) and its own gate decides whether the session starts"),
+    COMPONENT("swr_session.c", COVERAGE_REAL,
+              "src/swr_session.c compiled; the grid, the per-frequency aggregation and the measured minimum are the real engine, fed one flow packet per point"),
+    COMPONENT("roe_curve.c", COVERAGE_PARTIAL,
+              "src/roe_curve.c compiled; the drawn curve is the quadratic fit over the aggregated samples (decorative, broken at the gaps), while the minimum and the readout come from the measured data (swr_session.c), never from the fit"),
+    COMPONENT("acquisition (fake backend)", COVERAGE_PARTIAL,
+              "the radio's side of the contract is src/swr_backend.c replaying tests/fixtures/swrscan/swr_mock_samples.csv on the virtual clock: the frequencies the dialog asks for are checked against the dataset point by point, but they are the fixture's numbers, not a reading from an instrument"),
+    COMPONENT("radio", COVERAGE_SYNTHETIC,
+              "mocks/mock_radio.c: radio_start_swrscan()/radio_stop_swrscan()/radio_set_freq() only count. The binary links no RF library, so a fixture has no path to a transmission (the JSON reports the counters)"),
+    COMPONENT("scheduler", COVERAGE_SYNTHETIC,
+              "the teardown the window queues when the session ends (scheduler_put_noargs) runs synchronously on the virtual clock (mocks/mock_main_screen.c) instead of on the radio's worker thread"),
+    COMPONENT("settle window / timeouts", COVERAGE_SYNTHETIC,
+              "the stall watchdog runs on the virtual clock (the backend calls dialog_swrscan_poll() after every packet); no real wait is measured, so the settle window of a real VFO is not validated here (requires-radio)"),
+    COMPONENT("multipass TX gate", COVERAGE_PARTIAL,
+              "SWRSCAN_MULTIPASS_TX_ENABLED is compiled ON in this host binary (tools/ui_harness/CMakeLists.txt) so the 3- and 5-pass captures exist at all; the ROM binary keeps it off (src/CMakeLists.txt passes no such define) and test_swrscan_multipass_gate pins that. Enabling multipass TX for real needs the radio (requires-radio)"),
+    COMPONENT("RF / TX", COVERAGE_UNSUPPORTED,
+              "there is no radio on the host: the transmitted power, the real VFO settling and the real VSWR bridge are not measured. What the bank proves is that no transmission is reachable from a fixture (0 real TX), not that the sweep is safe on hardware (requires-radio)"),
+    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
+              "DX cluster spot marks are not rendered (no cluster data on the host)"),
+    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
+              "DX cluster column is not rendered (no cluster data on the host)"),
+    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
+              "the other app dialogs are inert mocks; only the SWR Scan window is compiled and opened"),
+};
+
 const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
 {
+    if (screen && !strcmp(screen, "swrscan")) {
+        *count = (int) (sizeof(swrscan_screen) / sizeof(swrscan_screen[0]));
+        return swrscan_screen;
+    }
     if (screen && (!strcmp(screen, "autotune") || !strcmp(screen, "autotune-progress")
                    || !strcmp(screen, "autotune-found"))) {
         *count = (int) (sizeof(autotune_screen) / sizeof(autotune_screen[0]));

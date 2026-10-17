@@ -1,0 +1,46 @@
+# swrscan-quick: la ventana REAL de barrido de ROE (src/dialog_swrscan.c,
+# issue #125) abierta por el camino del firmware
+# (main_screen_start_app(ACTION_APP_SWRSCAN) -> dialog_construct) sobre el main
+# screen real, con UNA pasada (Quick, la unica que habilita la ROM) y el dataset
+# `single_valley_3pass` (tests/fixtures/swrscan/) del owner.
+#
+# El host no tiene radio: el lado de la radio lo hace el backend fake
+# (src/swr_backend.c) sobre el reloj virtual, un paquete del flow por punto, y el
+# instrumento es mocks/mock_radio.c (contadores, sin RF). El fixture corre la
+# sesion entera (51 puntos) y la captura es el resultado CONGELADO: grafica,
+# estado "Completed" y el readout del minimo medido (mediana + MAD).
+#
+# El span de la grilla (100 kHz) y el centro (7.100.000 Hz) salen del dataset,
+# no del fixture: el backend los fija en cfg.swrscan_span y corta la corrida si
+# el dial no esta donde el dataset dice.
+
+name swrscan-quick
+screen swrscan
+
+seed 20
+
+swr_dataset single_valley_3pass
+swr_passes 1
+
+frequency_hz 7100000
+tx_frequency_hz 7100000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

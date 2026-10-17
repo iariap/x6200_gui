@@ -101,6 +101,14 @@ void mock_cfg_init(void)
      * a cfg item and not a params_* (the real default is off, src/cfg/cfg.c:323). */
     cfg.cluster_column.val = subject_create_int(0);
 
+    /* El barrido de ROE (src/dialog_swrscan.c, issue #125) lee estos dos items del cfg:
+     * el span de la grilla y la escala log/lineal del chart. Los defaults son los del
+     * firmware (src/cfg/cfg.c: span 200 kHz, escala lineal). El backend fake
+     * (src/swr_backend.c) pisa el span con el del dataset del fixture, para que la grilla
+     * que construye el dialogo sea exactamente la del fixture. */
+    cfg.swrscan_span.val   = subject_create_int(200000);
+    cfg.swrscan_linear.val = subject_create_int(1);
+
     /* The transverter rows of Ajustes read three subjects each; src/cfg/
      * transverter.c:36-50 creates them with these same defaults (and would load
      * them from the DB, which the harness has none of). Without them the dialog

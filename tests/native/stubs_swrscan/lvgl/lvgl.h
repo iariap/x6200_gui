@@ -66,6 +66,11 @@ typedef struct {
     const lv_font_t *font;
 } lv_draw_label_dsc_t;
 
+typedef struct {
+    lv_color_t bg_color;
+    uint8_t    bg_opa;
+} lv_draw_rect_dsc_t;
+
 typedef enum {
     LV_EVENT_DELETE = 0,
     LV_EVENT_KEY,
@@ -75,6 +80,7 @@ typedef enum {
 
 #define LV_PART_MAIN     0
 #define LV_OPA_TRANSP    0
+#define LV_OPA_80        204
 #define LV_OPA_COVER     255
 #define LV_COORD_MAX     32767
 #define LV_KEY_ESC       27
@@ -97,9 +103,11 @@ void          *lv_event_get_param(lv_event_t *e);
 
 void lv_draw_line_dsc_init(lv_draw_line_dsc_t *dsc);
 void lv_draw_label_dsc_init(lv_draw_label_dsc_t *dsc);
+void lv_draw_rect_dsc_init(lv_draw_rect_dsc_t *dsc);
 lv_color_t lv_color_white(void);
 lv_color_t lv_color_hex(uint32_t c);
 void lv_draw_line(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *dsc, const lv_point_t *p1, const lv_point_t *p2);
+void lv_draw_rect(lv_draw_ctx_t *ctx, const lv_draw_rect_dsc_t *dsc, const lv_area_t *coords);
 void lv_draw_label(lv_draw_ctx_t *ctx, const lv_draw_label_dsc_t *dsc, const lv_area_t *coords, const char *txt, void *bidi);
 void lv_txt_get_size(lv_point_t *size_res, const char *txt, const lv_font_t *font,
                      lv_coord_t letter_space, lv_coord_t line_space, lv_coord_t max_width, uint32_t flag);

@@ -63,6 +63,7 @@
 #include "render_metrics.h"
 #include "scenario.h"
 #include "styles.h"
+#include "swr_backend.h"
 #include "theme.h"
 #include "fonts/font_select.h"
 #include "coverage.h"
@@ -198,8 +199,13 @@ static void write_json(const char *path, const char *png_path, const scenario_t 
     fprintf(f, "    \"change_mic\": %u,\n", mock_radio_calls.change_mic);
     fprintf(f, "    \"change_mute\": %u,\n", mock_radio_calls.change_mute);
     fprintf(f, "    \"start_atu\": %u,\n", mock_radio_calls.start_atu);
+    fprintf(f, "    \"start_swrscan\": %u,\n", mock_radio_calls.start_swrscan);
+    fprintf(f, "    \"stop_swrscan\": %u,\n", mock_radio_calls.stop_swrscan);
     fprintf(f, "    \"poweroff\": %u\n", mock_radio_calls.poweroff);
     fprintf(f, "  },\n");
+    if (swr_backend_used()) {
+        swr_backend_json(f, scenario);
+    }
     fprintf(f, "  \"metrics\": {\n");
     fprintf(f, "    \"flushes\": %u,\n", render_metrics_flush_count());
     fprintf(f, "    \"flushed_pixels\": %llu,\n",

@@ -34,6 +34,20 @@ void test_visual_policy(void);
 void test_cw_decoder(void);
 void test_roe_curve(void);
 
+/* SWR Scan multipasada (issue #125): el motor puro (src/swr_session.[ch]) y los fixtures del
+ * owner. El dialogo tiene su propio binario (tests/native/test_swrscan.c). */
+void test_swr_grid(void);
+void test_swr_aggregation(void);
+void test_swr_session_quick(void);
+void test_swr_session_multipass(void);
+void test_swr_session_alternate(void);
+void test_swr_session_settle(void);
+void test_swr_session_lifecycle(void);
+void test_swr_session_shapes(void);
+void test_swr_fixture_aggregates(void);
+void test_swr_fixture_minimum(void);
+void test_swr_fixture_delayed_flow(void);
+
 int main(void) {
     test_adaptive_tuning();
     test_autotune();
@@ -57,6 +71,18 @@ int main(void) {
     test_visual_policy();
     test_cw_decoder();
     test_roe_curve();
+
+    test_swr_grid();
+    test_swr_aggregation();
+    test_swr_session_quick();
+    test_swr_session_multipass();
+    test_swr_session_alternate();
+    test_swr_session_settle();
+    test_swr_session_lifecycle();
+    test_swr_session_shapes();
+    test_swr_fixture_aggregates();
+    test_swr_fixture_minimum();
+    test_swr_fixture_delayed_flow();
 
     printf("%d comprobaciones, %d fallos\n", tests_run, tests_failed);
 
