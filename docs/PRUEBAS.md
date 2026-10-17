@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 17/10 ~22:30 | ROM `c640645d810c` + GUI 846afac6ed47 | `f275073` | (no corrido) | (no corrido) | 0 | **Estable 3h50min** ✓ (pid 1133, uptime 13844 s, 1 GUI, CRASHLOG 0). 0 merges |
 | 17/10 ~21:55 | ROM `c640645d810c` + GUI 846afac6ed47 | `dbd6174` | (no corrido) | (no corrido) | 0 | **Estable 3h20min** ✓ (pid 1133, uptime 12043 s, 1 GUI, CRASHLOG 0). 0 merges |
 | 17/10 ~21:20 | ROM `c640645d810c` + GUI 846afac6ed47 | `298f895` | (no corrido) | (no corrido) | 0 | **Estable 2h50min** ✓ (pid 1133, uptime 10244 s, 1 GUI, CRASHLOG 0). 0 merges |
 | 17/10 ~20:45 | ROM `c640645d810c` + GUI 846afac6ed47 | `1da0530` | (no corrido) | (no corrido) | 0 | **Estable 2h20min con la GUI nueva** ✓ (pid 1133, uptime 8445 s, 1 GUI, CRASHLOG 0) · **red OK** ✓ (`scp` de prueba pasa ✓) · `audio_init: Conected` ✓ (el sink sigue en ceros: parte 2 del #116). 0 merges |
