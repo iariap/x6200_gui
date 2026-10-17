@@ -20,6 +20,7 @@
 #include "radio.h"
 #include "buttons.h"
 #include "dialog.h"
+#include "dialog_swrscan.h"
 #include "main_screen.h"
 #include "events.h"
 #include "util.h"
@@ -46,6 +47,41 @@ static uint64_t stub_time;
 void     swrscan_stub_time_set(uint64_t t) { stub_time = t; }
 void     swrscan_stub_time_advance(uint64_t d) { stub_time += d; }
 uint64_t get_time(void) { return stub_time; }
+
+/* --- ventana abierta y estado de radio (issue #133) ------------------------- */
+
+/* El test marca que la ventana del SWR Scan es la "actual" (abierta) o que lo es otra app.
+ * dialog_type_is_run() es la guarda dura del comando remoto: sin ventana abierta no hay TX. */
+static dialog_t     *stub_current_dialog;
+static dialog_t      stub_other_dialog;
+static radio_state_t stub_radio_state = RADIO_RX;
+
+bool dialog_type_is_run(dialog_t *dialog) {
+    return (stub_current_dialog == dialog) && dialog->run;
+}
+
+radio_state_t radio_get_state(void) { return stub_radio_state; }
+
+void swrscan_stub_set_radio_state(radio_state_t state) { stub_radio_state = state; }
+
+void swrscan_stub_dialog_open(void) {
+    dialog_swrscan->run = true;
+    stub_current_dialog  = dialog_swrscan;
+}
+
+/* Otra app abierta: el singleton del SWR Scan sigue construido pero ya no es el actual. */
+void swrscan_stub_dialog_other_open(void) {
+    dialog_swrscan->run = true;
+    stub_other_dialog.run = true;
+    stub_current_dialog   = &stub_other_dialog;
+}
+
+void swrscan_stub_dialog_close(void) {
+    if (dialog_swrscan) {
+        dialog_swrscan->run = false;
+    }
+    stub_current_dialog = NULL;
+}
 
 /* El cierre del lado de LVGL lo encola el hilo de la radio por el scheduler. El stub lo guarda
  * para que el test lo corra cuando quiere (como haria el hilo principal). */
@@ -93,6 +129,7 @@ void swrscan_stub_reset(void) {
     stub_pending_job  = NULL;
     stub_pending_jobs = 0;
     stub_time         = 0;
+    stub_radio_state  = RADIO_RX;
 
     memset(stub_refreshed_label, 0, sizeof(stub_refreshed_label));
 }
@@ -351,13 +388,26 @@ void radio_set_freq(int32_t freq) {
 }
 uint16_t radio_change_vol(int16_t df) { (void)df; return 0; }
 
+/* Como la radio real (src/radio.c): el barrido solo arranca desde RX y deja el estado en
+ * RADIO_SWRSCAN; Stop lo devuelve a RX. El test del #133 usa ese estado para pinnear que el
+ * comando remoto no arranca sobre una TX ajena y que Stop sí funciona durante el barrido. */
 bool radio_start_swrscan(void) {
     stub_started++;
+
+    if (stub_radio_state != RADIO_RX) {
+        return false;
+    }
+
+    stub_radio_state = RADIO_SWRSCAN;
     return true;
 }
 
 void radio_stop_swrscan(void) {
     stub_stopped++;
+
+    if (stub_radio_state == RADIO_SWRSCAN) {
+        stub_radio_state = RADIO_RX;
+    }
 }
 
 /* --- misc ------------------------------------------------------------------- */

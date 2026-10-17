@@ -142,6 +142,7 @@ docker run --rm --entrypoint "" -v "$PWD/../.vfix3:/t" x6200-buildroot \
 | `{"cmd":"qso_log",...}` | registro QSO |
 | `{"cmd":"app","text":"FT8"}` | abre/cierra una app |
 | `{"cmd":"app","text":"<app>","val":..,"text":".."}` | comando **dentro** de la app abierta (`app_cmds[]`) |
+| `{"cmd":"swrscan","val":1\|0}` | con `SWRScan` abierta: Run/Stop del barrido de ROE (**transmite a 0.1 W**; ver abajo) |
 | `{"cmd":"btn","val":N}` | aprieta el boton N de la barra de abajo |
 
 Apps por nombre: `off`, `FT8`, `FT4`, `JS8`, `WSPR`, `SSTV`, `WeFax`, `NavTex`, `RTTY`, `CW`,
@@ -152,7 +153,12 @@ Apps por nombre: `off`, `FT8`, `FT4`, `JS8`, `WSPR`, `SSTV`, `WeFax`, `NavTex`, 
 ### Invariantes
 
 - **No hay PTT por el control remoto**: solo las apps transmiten.
-- Mientras la radio transmite, solo se aceptan los comandos de stop/close.
+- Mientras la radio transmite, solo se aceptan los comandos de stop/close. La excepcion es
+  `swrscan val:1` con el barrido ya corriendo: se acepta como no-op idempotente (el `val:0`
+  es el Stop y funciona durante el barrido).
+- `swrscan val:1` **inicia TX real a 0.1 W** (piso del equipo): solo con autorizacion del
+  owner y en RX, con antena o carga. Para esperar el fin, mirar `ax.swrscan_state` y
+  `ax.swrscan_tx` en `{"cmd":"get"}` (Idle/Scanning/Completed/Stopped/Error).
 - Todo se aplica en el hilo de LVGL: para ver el efecto, esperar y volver a capturar (`ESPERA`).
 
 ## Barrido de las apps en una sola corrida

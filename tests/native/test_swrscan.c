@@ -41,6 +41,7 @@
 
 #include "dialog_swrscan.h"
 #include "buttons.h"
+#include "radio.h"
 #include "roe_curve.h"
 #include "swr_session.h"
 #include "theme.h"
@@ -60,6 +61,11 @@ int  swrscan_stub_destructed(void);
 void swrscan_stub_time_set(uint64_t t);
 void swrscan_stub_run_scheduler(void);
 int  swrscan_stub_pending_jobs(void);
+/* #133: ventana abierta / estado de radio, para las guardas del comando remoto. */
+void swrscan_stub_dialog_open(void);
+void swrscan_stub_dialog_other_open(void);
+void swrscan_stub_dialog_close(void);
+void swrscan_stub_set_radio_state(radio_state_t state);
 
 /* El dibujo del chart (issue #119): el test dispara el callback de dibujo del dialogo y lee la
  * polilinea que pinto (los segmentos de ancho 4: la curva). */
@@ -102,6 +108,7 @@ static void run_one_pass(void) {
  * barrido ya quieto no toca la radio ni la memoria), asi que sirve de quiesce. */
 static void dialog_quiesce(void) {
     dialog_swrscan->destruct_cb();
+    swrscan_stub_dialog_close();      /* #133: la ventana deja de ser la actual */
     swrscan_stub_reset();
 }
 
@@ -833,4 +840,170 @@ void test_swrscan_timeout(void) {
     swrscan_stub_run_scheduler();
     CHECK(strcmp(run->label, "Run") == 0);
     CHECK(strcmp(dialog_swrscan_state_text(), "Error: timeout de RF") == 0);
+}
+
+/*
+ * #133: Run/Stop del barrido por control remoto.
+ *
+ * El comando del socket (`{"cmd":"swrscan","val":1|0}`) entra por el scheduler al hilo de
+ * LVGL y llama a dialog_swrscan_remote_run(). Lo que se pinnea aca es el CONTRATO de esa
+ * funcion, que es donde vive el riesgo (TRANSMITE a 0.1 W):
+ *  - solo actua con la ventana del SWR Scan abierta: cerrada (o con otra app abierta)
+ *    rechaza sin tocar la radio ni el VFO;
+ *  - arranca por el MISMO camino que el boton Run (radio_start_swrscan, sesion #125), y
+ *    respeta el gate de multipasada del dialogo;
+ *  - es idempotente: un segundo Run con el barrido corriendo no reinicia ni re-transmite;
+ *  - Stop funciona DURANTE el barrido (estado RADIO_SWRSCAN, el caso que `btn` no alcanzaba,
+ *    hallazgo del #119), apaga el TX y devuelve el VFO al centro;
+ *  - cerrar la ventana con el barrido corriendo (#85) y pedir Run despues no crashea ni
+ *    transmite.
+ * El estado que el QA espera por `{"cmd":"get"}` sale de dialog_swrscan_remote_state().
+ */
+void test_swrscan_remote(void) {
+    const int32_t center = 7100000;
+    const int32_t span   = 100000;
+    char          state[256];
+
+    dialog_quiesce();
+    swrscan_stub_set_fg_freq(center);
+    swrscan_stub_set_span(span);
+    dialog_swrscan->construct_cb(NULL);
+
+    button_item_t *run    = run_button();
+    button_item_t *passes = passes_button();
+
+    CHECK(strcmp(run->label, "Run") == 0);
+    CHECK(dialog_swrscan_remote_state(state, sizeof(state)) > 0);
+    CHECK(strstr(state, "\"swrscan_state\":\"Idle\"") != NULL);
+    CHECK(strstr(state, "\"points\":51") != NULL);      /* la grilla del #125 es fija */
+    CHECK(strstr(state, "\"swrscan_tx\":false") != NULL);
+
+    /* --- app cerrada: rechaza sin TX ni movimiento del VFO --- */
+    CHECK(dialog_swrscan_remote_run(true) == false);
+    CHECK(swrscan_stub_started() == 0);
+    CHECK(swrscan_stub_freq_count() == 0);
+    CHECK(strcmp(run->label, "Run") == 0);
+
+    /* --- otra app abierta: la ventana del SWR Scan ya no es la actual --- */
+    swrscan_stub_dialog_other_open();
+    CHECK(dialog_swrscan_remote_run(true) == false);
+    CHECK(swrscan_stub_started() == 0);
+    CHECK(swrscan_stub_freq_count() == 0);
+
+    /* --- SWRScan abierta: Run remoto arranca la misma sesion que el boton --- */
+    swrscan_stub_dialog_open();
+    CHECK(dialog_swrscan_remote_run(true) == true);
+    CHECK(swrscan_stub_started() == 1);
+    CHECK(swrscan_stub_freq_count() == 1);
+    CHECK(swrscan_stub_freq(0) == center - span / 2);
+    CHECK(strcmp(run->label, "Stop") == 0);
+    CHECK(strstr(dialog_swrscan_state_text(), "Scanning") != NULL);
+
+    CHECK(dialog_swrscan_remote_state(state, sizeof(state)) > 0);
+    CHECK(strstr(state, "\"swrscan_state\":\"Scanning\"") != NULL);
+    CHECK(strstr(state, "\"passes\":1") != NULL);
+    CHECK(strstr(state, "\"pass\":1") != NULL);
+    CHECK(strstr(state, "\"points\":51") != NULL);
+    CHECK(strstr(state, "\"swrscan_tx\":true") != NULL);
+
+    /* --- doble Run: idempotente (no reinicia la sesion ni re-transmite) --- */
+    int freqs_before = swrscan_stub_freq_count();
+
+    CHECK(dialog_swrscan_remote_run(true) == true);
+    CHECK(swrscan_stub_started() == 1);
+    CHECK(swrscan_stub_freq_count() == freqs_before);
+    CHECK(strcmp(run->label, "Stop") == 0);
+
+    /* --- Stop remoto CON el barrido transmitiendo: corta y restaura --- */
+    for (int k = 0; k < 10; k++) {
+        dialog_swrscan_update(1.8f);
+    }
+
+    CHECK(radio_get_state() == RADIO_SWRSCAN);      /* el barrido es el que transmite */
+
+    CHECK(dialog_swrscan_remote_run(false) == true);
+    CHECK(swrscan_stub_stopped() == 1);
+    CHECK(radio_get_state() == RADIO_RX);
+    CHECK(strcmp(run->label, "Run") == 0);
+    CHECK(strstr(dialog_swrscan_state_text(), "Stopped") != NULL);
+    CHECK(swrscan_stub_freq(swrscan_stub_freq_count() - 1) == center);   /* VFO restaurado */
+
+    CHECK(dialog_swrscan_remote_state(state, sizeof(state)) > 0);
+    CHECK(strstr(state, "\"swrscan_state\":\"Stopped\"") != NULL);
+    CHECK(strstr(state, "\"swrscan_tx\":false") != NULL);
+
+    /* --- Stop sin barrido: no-op con respuesta clara --- */
+    int stopped_before = swrscan_stub_stopped();
+
+    CHECK(dialog_swrscan_remote_run(false) == true);
+    CHECK(swrscan_stub_stopped() == stopped_before);
+
+    /* --- una sesion completa deja Completed y el TX apagado --- */
+    CHECK(dialog_swrscan_remote_run(true) == true);
+    CHECK(swrscan_stub_started() == 2);
+
+    for (int k = 0; k < SWR_SESSION_POINTS; k++) {
+        dialog_swrscan_update(1.5f);
+    }
+
+    CHECK(strstr(dialog_swrscan_state_text(), "Completed") != NULL);
+    CHECK(dialog_swrscan_remote_state(state, sizeof(state)) > 0);
+    CHECK(strstr(state, "\"swrscan_state\":\"Completed\"") != NULL);
+    CHECK(strstr(state, "\"swrscan_tx\":false") != NULL);
+
+    swrscan_stub_run_scheduler();                   /* el cierre LVGL del #125 */
+    CHECK(strcmp(run->label, "Run") == 0);
+    CHECK(dialog_swrscan_remote_run(false) == true);    /* Stop ya quieto: no-op */
+
+    /* --- equipo transmitiendo por otra causa: NO arranca (no hay TX) --- */
+    dialog_quiesce();
+    swrscan_stub_set_fg_freq(center);
+    swrscan_stub_set_span(span);
+    dialog_swrscan->construct_cb(NULL);
+    swrscan_stub_dialog_open();
+
+    run = run_button();
+    swrscan_stub_set_radio_state(RADIO_TX);
+
+    int started_before = swrscan_stub_started();
+
+    CHECK(dialog_swrscan_remote_run(true) == false);
+    CHECK(swrscan_stub_started() == started_before);
+    CHECK(swrscan_stub_freq_count() == 0);
+    CHECK(strcmp(run->label, "Run") == 0);
+
+    swrscan_stub_set_radio_state(RADIO_RX);
+
+    /* --- el gate de multipasada del dialogo NO se saltea por remoto --- */
+    passes->press(passes);                          /* 1 -> 3 (Stable, gateada) */
+    CHECK(strcmp(passes->label_fn(), "Passes:\n3 *") == 0);
+
+    started_before = swrscan_stub_started();
+
+    CHECK(dialog_swrscan_remote_run(true) == false);
+    CHECK(swrscan_stub_started() == started_before);
+    CHECK(swrscan_stub_freq_count() == 0);
+    CHECK(strstr(dialog_swrscan_state_text(), "Error") != NULL);
+    CHECK(dialog_swrscan_remote_state(state, sizeof(state)) > 0);
+    CHECK(strstr(state, "\"swrscan_state\":\"Error\"") != NULL);
+
+    passes->press(passes);                          /* 3 -> 5 */
+    passes->press(passes);                          /* 5 -> 1 (Quick) */
+    CHECK(strcmp(passes->label_fn(), "Passes:\n1") == 0);
+
+    /* --- cerrar la ventana con el barrido corriendo (#85) y pedir Run despues:
+     *     sin crash, sin TX (el dialogo ya no existe para el comando) --- */
+    CHECK(dialog_swrscan_remote_run(true) == true);
+    CHECK(swrscan_stub_started() == started_before + 1);
+
+    dialog_swrscan->destruct_cb();                  /* lo que llama dialog_destruct */
+    swrscan_stub_dialog_close();
+
+    int started_closed = swrscan_stub_started();
+    int freqs_closed   = swrscan_stub_freq_count();
+
+    CHECK(dialog_swrscan_remote_run(true) == false);
+    CHECK(dialog_swrscan_remote_run(false) == false);   /* Stop de una ventana muerta: no-op */
+    CHECK(swrscan_stub_started() == started_closed);
+    CHECK(swrscan_stub_freq_count() == freqs_closed);
 }

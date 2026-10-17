@@ -22,6 +22,7 @@ void test_swrscan_sweep_end(void);
 void test_swrscan_multipass_gate(void);
 void test_swrscan_readout(void);
 void test_swrscan_timeout(void);
+void test_swrscan_remote(void);
 
 int main(void) {
     test_swrscan();
@@ -31,6 +32,7 @@ int main(void) {
     test_swrscan_multipass_gate();
     test_swrscan_readout();
     test_swrscan_timeout();
+    test_swrscan_remote();
 
     printf("%d comprobaciones, %d fallos\n", tests_run, tests_failed);
 

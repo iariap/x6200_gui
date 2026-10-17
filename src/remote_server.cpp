@@ -14,9 +14,12 @@
  *    {"cmd":"pwr","val":1..100} (TX power, tenths of a watt)
  *    {"cmd":"location","text":"45.0,7.7"} (the phone's position, for Field Ops)
  *    {"cmd":"app","text":"FT8"} and the app commands (app_cmds[]), with "val" and/or "text"
+ *    {"cmd":"swrscan","val":1|0}  (with SWRScan open) Run / Stop the ROE sweep. It TRANSMITS
+ *                                  at 0.1 W: use it only with the owner's authorization and in RX
  *                                  -> {"t":"ok"} or {"t":"err","err":"..."}
  *  Commands are applied on the LVGL thread through the scheduler. There is no PTT: only the
- *  apps transmit. While the radio transmits only the stop/close commands are taken.
+ *  apps transmit. While the radio transmits only the stop/close commands are taken (a repeated
+ *  swrscan Run is also taken, as an idempotent no-op; see its app_cmds[] row).
  */
 
 #include "remote_server.h"
@@ -184,6 +187,14 @@ static const struct {
     {"field_log",   "Field",  dialog_field_remote,  1, 0,         INT32_MAX},   /* also while transmitting */
     {"field_spot",  "Field",  dialog_field_remote,  1, 0,         INT32_MIN},
     {"field_update", "Field", dialog_field_remote,  1, 0,         INT32_MIN},
+
+    /* #133: Run (1) / Stop (0) del barrido de ROE. stop = 2 a proposito: el barrido mismo
+     * transmite (RADIO_SWRSCAN), asi que un Run repetido tambien tiene que llegar al dialogo
+     * para ser un no-op idempotente (con stop = 1 el servidor lo rechazaria con "Radio is
+     * transmitting"). El dialogo es el que impide arrancar si el equipo no esta en RX y el
+     * que no reinicia una sesion en curso; Stop (0 < 2) se acepta durante el barrido, que es
+     * el hallazgo del #119 que `btn` no podia resolver. */
+    {"swrscan",     "SWRScan", dialog_swrscan_remote, 0, 1,       2},
     {"app_base",    "JS8",    dialog_js8_remote,    1, 0,         INT32_MIN},
     {"app_base",    "WSPR",   dialog_wspr_remote,   1, 0,         INT32_MIN},
     {"app_base",    "SSTV",   dialog_sstv_remote,   1, 0,         INT32_MIN},
@@ -198,8 +209,8 @@ static const struct {
 } app_states[] = {
     {"FT", dialog_ft8_remote_state},     {"CW", dialog_cw_kbd_remote_state},  {"JS8", dialog_js8_remote_state},     {"WSPR", dialog_wspr_remote_state},
     {"SSTV", dialog_sstv_remote_state}, {"WeFax", dialog_wefax_remote_state}, {"NavTex", dialog_navtex_remote_state},
-    
-    {"Field", dialog_field_remote_state},
+
+    {"Field", dialog_field_remote_state}, {"SWRScan", dialog_swrscan_remote_state},
 };
 
 static client_t          clients[MAX_CLIENTS];

@@ -75,7 +75,7 @@ static ObserverDelayed *linear_obs;
 static ObserverDelayed *span_obs;
 
 static void construct_cb(lv_obj_t *parent);
-static void destruct_cb();
+static void destruct_cb(void);
 static void ui_deleted_cb(lv_event_t * e);
 static void key_cb(lv_event_t * e);
 
@@ -646,7 +646,7 @@ static void construct_cb(lv_obj_t *parent) {
     swrscan_reset();
 }
 
-static void destruct_cb() {
+static void destruct_cb(void) {
     swrscan_release();
     radio_set_freq(subject_get_int(cfg_cur.fg_freq));
 }
@@ -838,4 +838,70 @@ void dialog_swrscan_poll(void) {
         scheduler_put_noargs(swrscan_finished_job);
         event_send(chart, LV_EVENT_REFRESH, NULL);
     }
+}
+
+/* --- control remoto (issue #133) -------------------------------------------- */
+
+/* Token estable para el QA (no el texto largo del readout): Idle / Scanning / Completed /
+ * Stopped / Error. El detalle humano sigue en dialog_swrscan_state_text(). */
+static const char *remote_state_name(swr_session_state_t state) {
+    switch (state) {
+        case SWR_SESSION_SCANNING:  return "Scanning";
+        case SWR_SESSION_COMPLETED: return "Completed";
+        case SWR_SESSION_STOPPED:   return "Stopped";
+        case SWR_SESSION_ERROR:     return "Error";
+
+        case SWR_SESSION_IDLE:
+        default:                    return "Idle";
+    }
+}
+
+bool dialog_swrscan_remote_run(bool start) {
+    /* Guarda dura 1: el comando SOLO existe con la ventana del SWR Scan abierta. El servidor
+     * remoto ya lo verifica (app_open), pero entre el pedido y esta ejecucion (scheduler del
+     * hilo de LVGL) la app pudo cerrarse: sin ventana no hay TX ni desreferencia del chart. */
+    if (!dialog_type_is_run(&dialog)) {
+        return false;
+    }
+
+    /* Idempotencia: Run con el barrido corriendo (o Stop con el barrido quieto) es un no-op
+     * con respuesta clara; NO reinicia la sesion ni vuelve a transmitir. Esta comparacion va
+     * ANTES del chequeo de estado de radio porque durante el barrido el equipo esta en
+     * RADIO_SWRSCAN (no en RX): un segundo Run tiene que ser un no-op, no un rechazo. */
+    if (start == run) {
+        return true;
+    }
+
+    /* Guarda dura 2: arrancar exige el equipo en RX. radio_start_swrscan() tambien lo exige,
+     * pero el pedido remoto no puede ni intentarlo sobre una TX ajena (el barrido fuerza LSB
+     * y 0.1 W). Stop no necesita esta guarda: tiene que funcionar transmitiendo (#119). */
+    if (start && radio_get_state() != RADIO_RX) {
+        return false;
+    }
+
+    /* Mismo camino que el boton (Run/Stop): no se duplica la logica de potencia, modo,
+     * restore (#94/#102) ni la sesion multipasada (#125). */
+    dialog_swrscan_run_cb(&btn_run);
+
+    return start == run;
+}
+
+void dialog_swrscan_remote(const char *cmd, int32_t val, const char *text) {
+    (void) text;
+
+    if (!strcmp(cmd, "swrscan")) {
+        dialog_swrscan_remote_run(val != 0);
+    }
+}
+
+int dialog_swrscan_remote_state(char *buf, size_t size) {
+    /* La grilla es de 51 puntos fijos (#125) tambien antes del primer Run: el QA no tiene que
+     * adivinar el tamano de la sesion. */
+    int points = grid_ready ? session.grid.points : SWR_SESSION_POINTS;
+    int passes = grid_ready ? session.passes_requested : passes_requested;
+    int pass   = (session.state == SWR_SESSION_SCANNING) ? session.pass + 1 : 0;
+
+    return snprintf(buf, size,
+                    "{\"swrscan_state\":\"%s\",\"passes\":%d,\"pass\":%d,\"points\":%d,\"swrscan_tx\":%s}",
+                    remote_state_name(session.state), passes, pass, points, tx_on ? "true" : "false");
 }
