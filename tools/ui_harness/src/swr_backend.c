@@ -98,9 +98,86 @@ static void csv_field(const char *line, int n, char *out, size_t cap)
     out[len] = 0;
 }
 
+/* --- dataset real del owner (seguimiento del #125, orden del owner 17/10) ---- */
+
+/* La medicion REAL de la antena de 40 m del owner, extraida de la pantalla y
+ * commiteada en docs/evidencia/2026-10-15-validacion-arreglos/roe-muestras-extraidas.csv
+ * (commit b39d6014). Es el SEED de este backend: las capturas del banco salian
+ * centradas en la zona por defecto (fuera de la resonancia de su antena), asi que
+ * el grafico salia sin el valle de ROE. Aca se inyectan las muestras reales
+ * re-muestreadas a la grilla de 51 puntos del barrido (src/swr_session.h) sobre el
+ * RANGO REAL del CSV (7.016.044-7.037.606 Hz): el centro y el span salen de ESE
+ * rango, no del default del banco. Valores = ROE en decimas del detector
+ * (raw_swr_tenths), 1.0-2.1; el valle (1.0) cae dentro del span. */
+#define SWR_OWNER_DATASET   "owner_40m_valle"
+#define SWR_OWNER_CENTER_HZ 7026825u
+#define SWR_OWNER_SPAN_HZ   21562
+
+static const int swr_owner_tenths[SWR_SESSION_POINTS] = {
+    17, 11, 11, 12, 13, 13, 13, 12, 11, 10,
+    10, 11, 11, 11, 11, 11, 10, 10, 10, 10,
+    11, 13, 13, 13, 14, 15, 13, 12, 11, 11,
+    11, 10, 10, 10, 10, 10, 10, 10, 10, 11,
+    11, 10, 10, 11, 12, 13, 13, 13, 13, 11,
+    10,
+};
+
+/* Carga el dataset real: 3 pasadas sobre la grilla de 51 puntos del rango real
+ * (las pasadas impares barren descendente, como el contrato del backend). La
+ * grilla usa la MISMA formula que swr_grid_build() para que el chequeo punto a
+ * punto del VFO no dependa de un redondeo distinto. */
+static bool load_owner_dataset(void)
+{
+    const int64_t denom = SWR_SESSION_POINTS - 1;
+
+    n_samples         = 0;
+    passes_in_dataset = 3;
+    grid_lo           = SWR_OWNER_CENTER_HZ - (uint32_t) (SWR_OWNER_SPAN_HZ / 2);
+    grid_hi           = grid_lo + SWR_OWNER_SPAN_HZ;
+
+    for (int pass = 0; pass < passes_in_dataset; pass++) {
+        const bool descending = (pass % 2) == 1;
+
+        for (int order = 0; order < SWR_SESSION_POINTS; order++) {
+            const int point = descending ? (SWR_SESSION_POINTS - 1 - order) : order;
+
+            if (n_samples >= SWR_FX_MAX_SAMPLES) {
+                fprintf(stderr, "swr_backend: el dataset '%s' desborda la tabla\n",
+                        SWR_OWNER_DATASET);
+                return false;
+            }
+
+            int64_t num = (int64_t) SWR_OWNER_SPAN_HZ * point;
+            int64_t q   = num / denom;
+            int64_t r   = num % denom;
+
+            if (r * 2 >= denom) {
+                q++;
+            }
+
+            swr_fx_sample_t *s = &samples[n_samples++];
+
+            s->pass_index    = pass;
+            s->order_in_pass = order;
+            s->point_index   = point;
+            s->freq_hz       = grid_lo + (uint32_t) q;
+            s->raw_tenths    = swr_owner_tenths[point];
+            s->is_valid      = 1;
+        }
+    }
+
+    return true;
+}
+
 static bool load_dataset(const char *name)
 {
     char path[512];
+
+    /* El dataset real del owner viene embebido (seed), no del CSV compartido: el
+     * CSV es el de los fixtures del #125 y el test nativo fija su tamano exacto. */
+    if (strcmp(name, SWR_OWNER_DATASET) == 0) {
+        return load_owner_dataset();
+    }
 
     snprintf(path, sizeof(path), "%s/swr_mock_samples.csv", HARNESS_SWR_FIXTURES_DIR);
 
@@ -469,7 +546,13 @@ void swr_backend_json(FILE *f, const scenario_t *scenario)
 
     fprintf(f, "  \"swr\": {\n");
     fprintf(f, "    \"dataset\": \"%s\",\n", scenario->swr_dataset);
-    fprintf(f, "    \"source\": \"%s/swr_mock_samples.csv\",\n", HARNESS_SWR_FIXTURES_DIR);
+
+    if (strcmp(scenario->swr_dataset, SWR_OWNER_DATASET) == 0) {
+        fprintf(f, "    \"source\": \"seed embebido (docs/evidencia/2026-10-15-validacion-"
+                   "arreglos/roe-muestras-extraidas.csv, b39d6014)\",\n");
+    } else {
+        fprintf(f, "    \"source\": \"%s/swr_mock_samples.csv\",\n", HARNESS_SWR_FIXTURES_DIR);
+    }
     fprintf(f, "    \"radio\": \"mock (mocks/mock_radio.c): no RF library is linked, every "
                "command is a counter\",\n");
     fprintf(f, "    \"passes_requested\": %d,\n", trace.passes);
