@@ -85,3 +85,32 @@ tools/ab_testing/quality/nontext.yaml (percentil 90 del rectangulo de la barra i
 
   (07 vs 08: el unico cambio es el bloque activo —el tono—; el panel y el borde miden lo mismo, que
    es lo que la fixture 07 fija: el widget visible en CW con cw_tune=0 y sin tono.)
+
+== cierre #122 (2026-10-17): banco QEMU, binario ARM real (md5 66b766562d75) ==
+El rebuild del banco salio de estos fuentes (sello md5 d9fac5d89c57) y el gate fail-closed de #86 lo
+acepto: "es el firmware del port (ELF32 ARM, 13748068 B, 3/3 marcas)". Cada captura es una GUI nueva
+(params.db del chroot + `docker rm -f banco-apps`) comandada por el control remoto:
+{"cmd":"mode","val":"CW"} y la ruta de paginas {"cmd":"page","text":"key"} x3 -> (CW 1:2).
+
+  11-banco-cw-tune-sunlit.png    Sunlit    CW  cw_tune=0 cw_decoder=1  colores=11
+      panel (125,124,119) 4136 px | barras (125,125,122) 668 px | borde (0,0,0) 304 px
+      contraste borde/panel =  5.02:1
+  12-banco-cw-tune-redshift.png  Redshift  CW  cw_tune=0 cw_decoder=1  colores=11
+      panel (5,2,2) 4136 px | barras (65,64,64) 668 px | borde (255,255,255) 304 px
+      contraste borde/panel = 20.67:1
+  13-banco-cw-decoder-off.png    Sunlit    CW  cw_tune=0 cw_decoder=0  colores=11
+      contraste borde/panel =  5.02:1   identica a 11 (mismo md5 eb2841aafb4a08e97c6fc2daa5280628)
+  14-banco-usb-control.png       Sunlit    USB cw_tune=0               colores=1 (widget oculto)
+
+  antes del arreglo, misma region y mismo metodo (corrida del 2026-10-16):
+     03-cw-tuner-off.png  banco, pre-fix, cw_tune=0, Sunlit   colores=1  (widget oculto)
+     04-cw-tuner-on.png   banco, pre-fix, cw_tune=1, Sunlit   contraste barras/panel = 1.01:1
+
+  11 vs 03: A/B de la visibilidad en el binario real, mismos params (cw_tune=0, Sunlit) y mismo binario
+            de base; 11 vs 04: A/B del contraste (mismo tema, el widget visible en los dos).
+  13 vs 11: el decodificador apagado no cambia un pixel (captura byte a byte identica): la pagina CW y
+            el widget no dependen del decoder, que es la hipotesis 1 del issue refutada en la radio.
+  14: el control del otro lado — fuera de CW/CWR el widget sigue oculto (1 color).
+
+md5 de las capturas del banco (11-14): eb2841aafb4a08e97c6fc2daa5280628 (11 y 13),
+b915396f9d57e6ba06c346e59ade858a (12), a3b5e02cd83238a55fe68d505a4b5765 (14).

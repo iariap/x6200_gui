@@ -170,6 +170,16 @@ CW/CWR**, que es donde el widget se ve. `cw_put_audio_samples()` se llama **sól
 verdadero ahí: el feed corre siempre que el widget pueda verse, que es lo que el widget necesita para
 marcar el tono.
 
+**Por qué no hay un A/B de CPU del feed**: la GUI bajo `qemu-arm` satura su core (medido con
+`docker top banco-apps` durante la corrida: `qemu-arm-static /usr/sbin/x6200_gui` al 99 % de un core,
+sin bajar), así que el costo del feed —miles de muestras por segundo contra un lazo de eventos que no
+duerme— no es observable en el banco; y `src/cw.cpp` no se compila ni en el arnés de UI ni en la
+suite nativa (necesita liquid-dsp), así que tampoco hay dónde medirlo aislado. Queda la cuenta de
+arriba (del código: `src/cw.cpp:34-36`, `src/dsp.cpp:250-251`, `src/audio.c:68`) más la estructura: es
+el trabajo que **ya** se hace con el decodificador encendido, y sólo dentro de CW/CWR. Lo que sí está
+medido en el binario real es que el render no cambia: `13-banco-cw-decoder-off.png` (decodificador
+apagado) es byte a byte `11-banco-cw-tune-sunlit.png` (encendido), mismo md5.
+
 ### 3. Contraste de las barras (HALLAZGOS §49)
 
 Las barras inactivas llevan ahora **borde de 1 px** (`rect_dsc.border_width = 1`,
@@ -197,11 +207,13 @@ que marca el tono casi desaparece.
 | determinismo | `tests/check_harness_determinism.sh` | PASS (2 corridas, PNG idénticos por fixture) |
 | contraste | borde vs panel en las 10 paletas (`tests/check_wcag.py`) | ≥ 3:1 en todas, mínimo **4.88:1** (Sunlit/Outdoor); antes el relleno medía 1.01:1 |
 | contraste (render) | objeto `cw_tune_bars` de `quality/nontext.yaml` sobre los renders dorados | Sunlit **5.02:1**, Redshift **20.67:1**; antes (captura del banco, binario real) **1.01:1** |
+| contraste (banco) | binario ARM real, capturas `11`-`14` de `docs/evidencia/2026-10-16-cw122-banco/` | Sunlit `1.01:1` → **5.02:1**, Redshift → **20.67:1**; `11` ↔ `03` (pre-arreglo, mismos params) pasa de **1** a **11** colores: el widget visible con `cw_tune=0` |
+| compilación ARM | `arm-buildroot-linux-gnueabihf-g++ -fsyntax-only` con las banderas del build real + rebuild del banco | pasa (sonda negativa: sin la declaración de `cw_tune_ui_visible()` falla en `src/cw.cpp:223`); `make x6200-gui-rebuild` deja `OK: ... es el firmware del port (ELF32 ARM, 13748068 B, 3/3 marcas)` |
 | estáticos | los 7 (`check_cfg_fills`, `check_actions`, `check_settings_focus`, `check_apps_menu`, `check_app_handlers`, `check_wcag`, `check_cw_tune_feed`) | 7/7 ok |
 | nativos | `tests/native/run_native_tests.sh` | 0 fallos |
 | framework A/B | `ruff check`, `ruff format --check`, `ty check`, `pytest -m "not e2e"` | limpio (169 archivos formateados) / 227 pasan (13 e2e deseleccionados) |
 | anti-regresión | `tests/check_cw_tune_feed.py` (nuevo) | verde; sus dos sondas negativas (volver a gatear por `cw_tune`; sacar el accessor del gate) fallan |
-| matriz por paths | `scripts/apps/x6200/check-matrix.sh 3553a476 HEAD <worktree>` | exit 0, 19 checks `ok`; el paso del banco sale **BLOCKED** por entorno (el banco quedó ocupado, ver abajo) |
+| matriz por paths | `scripts/apps/x6200/check-matrix.sh 3553a476 HEAD <worktree>` | exit 0; sin `CHROOT` el paso del banco sale **BLOCKED** por entorno (diseñado), con `CHROOT`/`BUILDROOT` pasa el preflight, la idempotencia del rebuild y la captura de humo (binario `66b766562d75`) |
 | e2e del framework A/B | `pytest -m e2e` (post-commit) | 13 pasan |
 
 ### 5. Reportes al owner (no se tocó nada por esto)

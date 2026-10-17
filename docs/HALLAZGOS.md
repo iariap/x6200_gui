@@ -2621,14 +2621,22 @@ WCAG 1.4.11 mide. Ancho **1** y no 2 como el bloque activo porque la barra mide 
 2 px de borde el relleno que marca el tono queda reducido a un pixel.
 
 **Verificacion, medida** (misma region `(30,70)` `139x40`, mismo metodo Pillow sobre el PNG; el
-"despues" del arnes es el render determinista de la fixture, misma geometria y mismo tema):
+"despues" esta medido en el **binario ARM real** del banco —el mismo camino que la radio— y en el
+render del arnes, y los dos coinciden):
 
 ```
-$ python3 -c "<percentil 90 del rectangulo de la barra i=7 vs percentil 10 del panel, WCAG 2.1>"
-banco, binario ARM real, Sunlit (04-cw-tuner-on.png, antes)   1.01:1
-arnes, Sunlit  (cw-tune-tema-sunlit.png, despues)             5.02:1   (borde negro  (0,0,0) vs panel (125,124,119))
-arnes, Redshift (cw-tune-tuner.png, antes 2.00:1 / despues)  20.67:1   (borde blanco (255,255,255) vs panel (5,2,2))
+$ python3 docs/evidencia/2026-10-16-cw122-banco/mide.py <png...>
+banco, binario ARM real, Sunlit   (04-cw-tuner-on.png -> 11-banco-cw-tune-sunlit.png)   1.01:1 ->  5.02:1
+banco, binario ARM real, Redshift (12-banco-cw-tune-redshift.png)                                 -> 20.67:1
+arnes, Sunlit   (cw-tune-tema-sunlit.png)                                                         ->  5.02:1
+arnes, Redshift (06-harness-cw-tune-on.png -> cw-tune-tuner.png)                        2.00:1 -> 20.67:1
 ```
+
+El "antes" del banco es la corrida del 2026-10-16 (`04`, con el widget encendido a mano porque el
+parametro era el gate); el "antes" de Redshift es el render del arnes. El binario que dibuja el
+"despues" del banco es `md5 66b766562d75` (rebuild de estos fuentes, sello `d9fac5d89c57`, aceptado
+por el gate fail-closed de #86) y el del "antes" es `md5 aaa60c1d3ab5`, el mismo que el
+`/usr/sbin/x6200_gui` de la radio.
 
 Y el chequeo queda automatico en dos lugares (los dos fallan si el borde se pierde):
 
@@ -2642,9 +2650,8 @@ Y el chequeo queda automatico en dos lugares (los dos fallan si el borde se pier
   (Sunlit), con `min_ratio: 3.0` (WCAG 1.4.11 para un componente). El mismo objeto medido sobre la
   captura del banco de antes del arreglo da `1.01:1`, o sea que falla si el borde se pierde.
 
-**Sin fundar** (anexo A): el "despues" con el **binario ARM real** (banco QEMU): el banco quedo
-ocupado por otra sesion durante esta corrida y no se pudo re-construir el firmware ahi (la captura
-del banco que funda el "antes" es de la corrida anterior, ver
-`docs/evidencia/2026-10-16-cw122-banco/`). Lo que hay es el render del arnes (determinista, misma
-geometria) y la medicion sobre los pixeles del objeto `cw_tune_bars`.
+**Sin fundar** (anexo A): nada de este hallazgo. La corrida del 2026-10-16 habia dejado sin fundar el
+"despues" con el **binario ARM real** (el banco estaba ocupado por otra sesion); el banco se libero
+durante esta corrida y la medicion de arriba es de ese binario, con las capturas `11`-`14` en
+`docs/evidencia/2026-10-16-cw122-banco/`.
 

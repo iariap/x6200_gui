@@ -178,7 +178,7 @@ Nota de nombres: al cerrar se renombraron dos fixtures (`cw-tune-off` → **`cw-
 `cw-tune-ssb` (otro modo) y `cw-tune-tema-sunlit` (tema claro). Los nombres `cw-tune-off`/`cw-tune-on`
 de las secciones de arriba son los de aquella corrida (2026-10-16).
 
-### Capturas nuevas (arnés; el banco quedó ocupado por otra sesión)
+### Capturas nuevas — arnés de UI (determinista)
 
 ```sh
 docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" -v "$PWD:/src" -w /src/tools/ui_harness/build \
@@ -199,20 +199,51 @@ docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" -v "$PWD:/src" -w /
 arriba) y con `cw_tune=0` el widget **ahora se ve** (11 colores: panel + barras + borde), donde antes
 la región era uniforme (`05`, 1 color). `09` fija el otro lado: fuera de CW/CWR sigue oculto.
 
+### Capturas nuevas — banco QEMU (binario ARM real)
+
+El banco quedó libre a mitad de la corrida, así que el "después" **también** está medido en el binario
+ARM real (el mismo que corre la radio). El rebuild salió de estos fuentes (sello `d9fac5d89c57`) y el
+gate fail-closed de #86 lo aceptó: *"es el firmware del port (ELF32 ARM, 13748068 B, 3/3 marcas)"*,
+`md5 66b766562d75` (el binario de la radio, pre-arreglo, es `aaa60c1d3ab5`). Cada captura es una GUI
+nueva (`params.db` del chroot + `docker rm -f banco-apps`), comandada por el control remoto como en
+la corrida anterior: `{"cmd":"mode","val":"CW"}` y `{"cmd":"page","text":"key"}` ×3 → `(CW 1:2)`.
+
+```sh
+CHROOT=/home/pablo/desa/x6200/.vfix3 BUILDROOT=/home/pablo/desa/x6200/buildroot_new/AetherX6200Buildroot \
+    tools/captura-banco.sh <out.png> '{"cmd":"mode","val":"CW"}'
+```
+
+| captura | tema | modo | `cw_tune` / `cw_decoder` | colores en la región | borde de barras | contraste |
+|---|---|---|---|---|---|---|
+| `11-banco-cw-tune-sunlit.png` | Sunlit | CW | 0 / 1 | **11** | 304 px `(0,0,0)` | **5.02:1** |
+| `12-banco-cw-tune-redshift.png` | Redshift | CW | 0 / 1 | **11** | 304 px `(255,255,255)` | **20.67:1** |
+| `13-banco-cw-decoder-off.png` | Sunlit | CW | 0 / **0** | **11** | 304 px `(0,0,0)` | **5.02:1** |
+| `14-banco-usb-control.png` | Sunlit | USB | 0 / 0 | **1** (widget oculto) | — | — |
+
+- **`11` ↔ `03` (pre-arreglo)**: mismos params (`cw_tune=0`, Sunlit) y el mismo punto de partida; `03`
+  tenía **1 color** (widget oculto) y `11` tiene 11. Es el issue arreglado **en el binario real**.
+- **`13` ↔ `11`**: byte a byte la misma captura (mismo md5), o sea que apagar el decodificador no
+  cambia un píxel: la página CW y el widget no dependen del decoder. Cierra la limitación que dejó
+  abierta la corrida anterior (no había podido re-correr con `cw_decoder=0` en el banco).
+- **`14`**: el control del otro lado — fuera de CW/CWR el widget sigue oculto.
+- El arnés reproduce la radio: el panel, las barras y el contraste de `11` son los que mide `10`
+  (mismo tema y geometría), así que el chequeo automático sobre el render dorado mide lo que la radio
+  dibuja.
+
 ### Contraste (§49): antes y después, medido sobre los píxeles
 
 | superficie | antes | después |
 |---|---|---|
-| banco, binario ARM real, Sunlit (`04-cw-tuner-on.png`) | `1.01:1` | — (sin banco, ver abajo) |
-| arnés, Sunlit (`10`) | — | **`5.02:1`** (borde negro vs panel `(125,124,119)`) |
-| arnés, Redshift (`06` → `08`) | `2.00:1` | **`20.67:1`** (borde blanco vs panel `(5,2,2)`) |
+| **banco, binario ARM real, Sunlit** (`04` → `11`) | `1.01:1` | **`5.02:1`** (borde negro vs panel `(125,124,119)`) |
+| **banco, binario ARM real, Redshift** (`12`) | `2.00:1` (arnés, `06`) | **`20.67:1`** (borde blanco vs panel `(5,2,2)`) |
+| arnés, Sunlit (`10`) | — | **`5.02:1`** (idéntico al banco) |
+| arnés, Redshift (`06` → `08`) | `2.00:1` | **`20.67:1`** |
 
-El "después" del banco no se pudo tomar: durante esta corrida el banco quedó ocupado por otra sesión
-(el contenedor `banco-apps` corriendo la GUI del **binario viejo**, `md5 aaa60c1d3ab5`, y el chroot
-`.vfix3` compartido) y no se puede reconstruir el firmware ahí sin cortar esa corrida. El "después"
-que hay es el render del **arnés**, que es determinista y de la misma geometría/tema, más el objeto
-`cw_tune_bars` de `tools/ab_testing/quality/nontext.yaml` (que mide el píxel renderizado y falla si
-el borde se pierde).
+El "antes" del banco es la corrida anterior (Sunlit, `04`, con el widget encendido a mano porque el
+parámetro era el gate); el "antes" de Redshift es el render del arnés (`06`), misma geometría. Los dos
+temas quedan medidos en el binario real y en el arnés, y **coinciden**: el render del arnés es el de
+la radio. El objeto `cw_tune_bars` de `tools/ab_testing/quality/nontext.yaml` mide ese mismo píxel en
+CI sobre los renders dorados y falla si el borde se pierde.
 
 ### RED → GREEN (TDD)
 
@@ -237,7 +268,10 @@ el borde se pierde).
 | `tools/ab_testing` `pytest -m "not e2e"` | **227 passed**, 13 deselected |
 | `tools/ab_testing` `pytest -m e2e` (post-commit) | **13 passed**, 227 deselected |
 | `.agents/hallazgos-fundados/scripts/audita-hallazgos.sh` | 0 problemas de estructura |
-| `scripts/apps/x6200/check-matrix.sh 3553a476 HEAD <worktree>` | **exit 0** — 19 checks `ok` (nativos, 6 estáticos, ab_testing ruff/format/pytest, `bash -n`, determinismo); el paso del banco sale **BLOCKED** por entorno (sin `CHROOT`, el preflight no encuentra el chroot), que es el comportamiento diseñado y no marca FAILED |
+| `scripts/apps/x6200/check-matrix.sh 3553a476 HEAD <worktree>` (sin `CHROOT`) | **exit 0** — 19 checks `ok` (nativos, 6 estáticos, ab_testing ruff/format/pytest, `bash -n`, determinismo); el paso del banco sale **BLOCKED** por entorno, que es el comportamiento diseñado y no marca FAILED |
+| `scripts/apps/x6200/check-matrix.sh ...` **con `CHROOT`/`BUILDROOT`** (banco libre) | **exit 0**, 0 `FAIL`: preflight del banco `ok`, `params.db` generado (idempotencia del rebuild) `ok`, captura de humo `ok` con el binario nuevo (`md5 66b766562d75`) |
+| rebuild del banco (ARM) | `make x6200-gui-rebuild` desde estos fuentes: `OK: .../x6200_gui es el firmware del port (ELF32 ARM, 13748068 B, 3/3 marcas)` |
+| `src/cw.cpp` con el compilador ARM real | `arm-buildroot-linux-gnueabihf-g++ 12.3.0 -fsyntax-only` con las banderas del build: pasa; sonda negativa (sin la declaración de `cw_tune_ui_visible()`) falla con `error: 'cw_tune_ui_visible' was not declared in this scope` en `src/cw.cpp:223` |
 
 ### md5 (provenance) — cierre
 
@@ -247,6 +281,10 @@ el borde se pierde).
 | `08-harness-cw-tune-tuner.png` / `.json` | `b1170a414dc2b42b67c5afe8ae27142e` / `7a6a42b9456219cebadb654ee0f7c349` |
 | `09-harness-cw-tune-ssb.png` / `.json` | `02549cfd65c4ec601568393616d32d31` / `995be67a96b21964f7e4ba5291350513` |
 | `10-harness-cw-tune-tema-sunlit.png` / `.json` | `cfa98f197f7f8cd1c50a0251d9c31e21` / `f12fe1dc7d436c6bd3c9b1ee042f4300` |
+| `11-banco-cw-tune-sunlit.png` (banco, ARM real) | `eb2841aafb4a08e97c6fc2daa5280628` |
+| `12-banco-cw-tune-redshift.png` (banco, ARM real) | `b915396f9d57e6ba06c346e59ade858a` |
+| `13-banco-cw-decoder-off.png` (banco, ARM real) | `eb2841aafb4a08e97c6fc2daa5280628` (= `11`) |
+| `14-banco-usb-control.png` (banco, ARM real) | `a3b5e02cd83238a55fe68d505a4b5765` |
 | `mide.py` (medición) | `67f9457b4a8ef73bbedf4b298eb456b3` |
 | base del cierre | `3553a476` |
 
