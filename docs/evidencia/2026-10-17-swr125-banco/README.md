@@ -39,6 +39,19 @@ renderiza la curva real es el **arnés de UI** (`tools/ui_harness`), que compila
 ventana REAL (`src/dialog_swrscan.c` + `swr_session.c` + `roe_curve.c`) sobre el
 backend fake con los datos del owner. Por eso 03/04 son capturas del arnés.
 
+### El ROM del banco (QEMU): el rango, sin curva (05)
+
+Igual se corrió el banco QEMU del ROM (gate #86: binario `00524b47dfb9`,
+rebuild `RECONSTRUIR=si` desde `c9836452`) con el dial en el centro real del
+owner (`{"cmd":"freq","val":7028544}`) y se capturó la ventana abierta:
+`05-rom-abierto-40m.png`. Muestra el **rango ya en la zona de resonancia**
+(ejes **7.016.044 / 7.028.544 / 7.041.044**, `Span: 50 kHz`, `Scale: Log` — el
+span/escala que el equipo tiene persistido, el mismo de la pantalla del owner),
+estado **`Idle`** y readout **`sin datos medidos`**. La **curva no aparece**: el
+ROM no tiene radio (no hay paquetes del flow) y no compila el backend fake; por
+eso la curva real solo la pinta el arnés (03/04). El contenedor `banco-apps` se
+limpió al terminar.
+
 ### Centro y span (b)
 
 - **Centro: 7.026.825 Hz**, **span: 21.562 kHz** — el **rango exacto declarado en
@@ -98,6 +111,7 @@ comandos, estado, congelado).
 |---|---|
 | `03-swrscan-valle.png` | `4b7cc35b75f056aa55117a22b4b60537` |
 | `04-swrscan-valle-sweep.png` | `1dfd6837459586e70906f2ec25b20c86` |
+| `05-rom-abierto-40m.png` | `a37bc09bc82e61ff16d0bc395fecad3f` |
 
 ## Método (01/02: banco QEMU del ROM)
 
@@ -137,6 +151,7 @@ OK: /home/pablo/desa/x6200/.vfix3/usr/sbin/x6200_gui es el firmware del port (EL
 | `02-barriendo.png` | Tras **Run** por el control remoto (`{"cmd":"btn","val":0}`): estado **`Scanning pass 1/1  p 1/51`**, el botón ya dice **`Stop`**, y la radio quedó en el modo del barrido (`mode LSB`) con **`tx: true`** |
 | `03-swrscan-valle.png` | **Seguimiento 17/10.** La ventana REAL sobre el backend fake con el **seed real del owner** (antena de 40 m) anclado a su resonancia: estado **`Completed`** (congelado), la **curva** dibujada sobre el rango **7.016.044–7.037.606 Hz** (`Span: 21 kHz`), el **tick del mínimo** y el readout **`min 1.0 @ 7.019.925 kHz (n=51/51)`**; la fila `Run / Scale: Linear / Span: 21 kHz / Passes: 1` |
 | `04-swrscan-valle-sweep.png` | **Seguimiento 17/10.** La MISMA sesión a mitad de la pasada: estado **`Scanning pass 1/1  p 26/51`**, el botón en **`Stop`**, la **curva parcial** con el valle visible y el readout **`min 1.0 @ 7.019.925 kHz (n=25/51)`** |
+| `05-rom-abierto-40m.png` | **Seguimiento 17/10 (banco QEMU del ROM).** La ventana del ROM con el dial en el centro real del owner: estado **`Idle`**, **`sin datos medidos`**, ejes **7.016.044 / 7.028.544 / 7.041.044** (`Span: 50 kHz`, `Scale: Log`, `Passes: 1`) — el rango ya **en la zona de resonancia** (antes quedaba en 21.250.000 Hz). Sin curva: el ROM no tiene radio |
 
 `estados.txt` guarda las respuestas crudas del control remoto y las mediciones que
 acompañan a lo anterior.
