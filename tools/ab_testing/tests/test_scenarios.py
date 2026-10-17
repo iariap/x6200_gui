@@ -205,6 +205,8 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "swrscan-double-valley",
         "swrscan-flat",
         "swrscan-narrow-zoom",
+        "swrscan-owner-40m",
+        "swrscan-owner-40m-sweep",
         "swrscan-quick",
         "swrscan-wide-zoom",
     ]

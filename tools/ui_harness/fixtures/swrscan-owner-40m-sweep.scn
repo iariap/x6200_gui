@@ -1,0 +1,40 @@
+# swrscan-owner-40m-sweep: la MISMA sesion del seed real del owner (antena de
+# 40 m, centro 7.026.825 Hz, span 21.562 kHz) capturada A MITAD del barrido: 25
+# de los 51 puntos de la unica pasada. El estado muestra
+# "Scanning pass 1/1  p 26/51", el boton ya dice "Stop" y la grafica se dibuja
+# con lo medido hasta ese momento (el valle ya se ve). El backend entrega 25
+# paquetes y deja la sesion viva a proposito (no hay congelado que probar en una
+# captura a mitad de camino). Sin radio: el backend fake de src/swr_backend.c
+# sobre el reloj virtual.
+
+name swrscan-owner-40m-sweep
+screen swrscan
+
+seed 20
+
+swr_dataset owner_40m_valle
+swr_passes 1
+swr_feed 25
+
+frequency_hz 7026825
+tx_frequency_hz 7026825
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx
