@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 17/10 ~15:00 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `98f1231` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 11h51min** ✓ (pid 2452, uptime 42668 s, 1 GUI, CRASHLOG 0). 0 merges; 5 ramas en curso |
 | 17/10 ~14:25 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `11ff9ca` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 11h21min** ✓ (pid 2452, uptime 40875 s, 1 GUI, CRASHLOG 0). 0 merges; 5 ramas en curso |
 | 17/10 ~13:50 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `92fd0ae` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 10h51min** ✓ (pid 2452, uptime 39069 s, 1 GUI, CRASHLOG 0). 0 merges; 5 ramas en curso |
 | 17/10 ~13:15 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `251ab90` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 10h21min** ✓ (pid 2452, uptime 37270 s, 1 GUI, CRASHLOG 0). La IP volvió a 192.168.18.67. 0 merges; 5 ramas en curso |
