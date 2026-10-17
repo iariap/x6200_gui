@@ -67,6 +67,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 46. [La curva de ROE escalonada del #119: el GUI flasheado no tiene el #117](#46-la-curva-de-roe-escalonada-del-119-el-gui-flasheado-no-tiene-el-117)
 47. [El fantasma del chart de ROE: el panel del dialogo es semitransparente](#47-el-fantasma-del-chart-de-roe-el-panel-del-dialogo-es-semitransparente)
 48. [El crash de CW del #116: la ventana de mensajes con la tabla vacia le pasaba NULL al keyer](#48-el-crash-de-cw-del-116-la-ventana-de-mensajes-con-la-tabla-vacia-le-pasaba-null-al-keyer)
+49. [El widget de CW tune en el tema claro: las barras desaparecen sobre su propio panel](#49-el-widget-de-cw-tune-en-el-tema-claro-las-barras-desaparecen-sobre-su-propio-panel)
 
 ---
 
@@ -2557,3 +2558,46 @@ que un mensaje real (`"E"`) sigue armando el keyer.
 `requires-radio`); lo fundado sin radio es el mecanismo (desensamblado + test). El banco no alcanza
 el camino: la ventana de mensajes de CW se abre por la tecla `MSG` y el control remoto no tiene
 comando de teclado (ver `docs/evidencia/2026-10-16-cw116-banco/`).
+
+## 49. El widget de CW tune en el tema claro: las barras desaparecen sobre su propio panel
+
+**Sintoma**: en el tema claro (**Sunlit**, el unico de los seis temas v2 con fondo claro, `#F7F5EB`)
+las quince barras del widget de CW tune no se distinguen del panel del widget: se ve un rectangulo
+gris vacio en lugar de las barras que marcan donde esta la senal. En los cinco temas oscuros las
+barras se leen. Lo encontro la fixture `cw-tune-on` del arnes (`tools/ui_harness/`), no el usuario.
+
+**Medido** (captura del banco, binario ARM real `md5 aaa60c1d3ab5`, tema Sunlit; los colores salen
+del PNG con Pillow sobre la region del widget, `(30,70)` `139x40` = `WIDTH`x`HEIGHT` de
+`src/cw_tune_ui.c`; evidencia en `docs/evidencia/2026-10-16-cw122-banco/`, captura
+`04-cw-tuner-on.png`):
+
+```
+panel del widget (125,124,119)  n=4136   bbox (30,70)-(168,109)
+barras           (125,125,122)  n=1272
+contraste barra vs panel = 1.01:1        (mismo tema, tema oscuro Redshift: 2.00:1)
+```
+
+La misma medicion sobre la fixture del arnes con el tema **Redshift** (`06-harness-cw-tune-on.png`)
+da panel `(5,2,2)` y barras `(65,64,64)`: ahi el contraste es `2.00:1` y las barras se ven. El
+bloque **activo** no esta afectado: en Redshift mide `(90,178,89)` contra el panel = `7.82:1`, y
+ademas lleva borde (§27).
+
+**Causa** (codigo + la cuenta del blend): el panel del widget es **negro a 50 %** sobre el fondo de
+la pagina (`cw_tune_style`: `lv_style_set_bg_color(lv_color_black())` con
+`lv_style_set_opa(&cw_tune_style, LV_OPA_50)`, `src/styles.c:290-296`) y las barras son **gris
+`0x7f7f7f` a 50 %** sobre ese panel (`rect_dsc.bg_color = lv_color_hex(0x7f7f7f)` con
+`rect_dsc.bg_opa = LV_OPA_50`, `src/cw_tune_ui.c:60-63`). Sobre un fondo oscuro el panel queda casi
+negro y el gris al 50 % se despega; sobre el fondo claro el panel queda en gris medio
+(`(247,245,235)` con negro al 50 % -> `(125,124,119)`, la cuenta da `(124,123,118)`) y el gris al
+50 % sobre ese gris medio cae casi en el mismo valor (`(125,125,122)`, la cuenta da `(126,126,123)`):
+los dos terminan con el mismo brillo. La relacion no depende del valor de las barras — subirlo o
+bajarlo no separa los dos grises —, sino de que la barra se mezcla **sobre su propio panel** con la
+misma opacidad que el panel sobre la pagina.
+
+**Estado**: **sin arreglar** (espera decision de diseno). Este hallazgo es distinto del §27: aquel
+arreglo el borde del bloque **activo** (`src/cw_tune_ui.c:45`, de `1.65:1` a `8.65:1`); aca el
+problema es de las barras **inactivas** contra el **panel** del widget, y ninguno de los dos temas
+tenia un chequeo que lo cubriera (el barrido WCAG de §27/§28 mira los colores de la UI, no el blend
+de una barra semitransparente sobre un panel semitransparente). Se destapa con la fixture
+`cw-tune-on` porque es la primera que enciende el widget con un tema claro.
+

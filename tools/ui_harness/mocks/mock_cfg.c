@@ -97,6 +97,25 @@ void mock_cfg_init(void)
     cfg.cw_decoder.val = subject_create_int(0);
     cfg.cw_tune.val    = subject_create_int(0);
 
+    /* Las paginas KEY/CW de la barra de botones (src/buttons.cpp, page_key_1/2 y
+     * page_cw_decoder_1/2) leen estos items por sus rotulos; los defaults son los
+     * que el firmware crea antes de cargar el DB (src/cfg/cfg.c:332-353). Sin
+     * ellos, la ruta del usuario a la pagina CW (tecla KEY y boton-pagina, los
+     * fixtures cw-tune-*) pedia subject_get_int(NULL)/subject_get_float(NULL) por
+     * cada rotulo y lo logueaba como error: el arnes tiene que responder con un
+     * valor explicito, nunca con un cero sin validar (ver la cabecera). */
+    cfg.key_speed.val             = subject_create_int(15);
+    cfg.key_tone.val              = subject_create_int(700);
+    cfg.key_mode.val              = subject_create_int(x6200_key_manual);
+    cfg.iambic_mode.val           = subject_create_int(x6200_iambic_a);
+    cfg.key_vol.val               = subject_create_int(10);
+    cfg.key_train.val             = subject_create_int(0);
+    cfg.qsk_time.val              = subject_create_int(100);
+    cfg.key_ratio.val             = subject_create_float(3.0f);
+    cfg.cw_decoder_snr.val        = subject_create_float(5.0f);
+    cfg.cw_decoder_peak_beta.val  = subject_create_float(0.10f);
+    cfg.cw_decoder_noise_beta.val = subject_create_float(0.80f);
+
     /* Ajustes (src/dialog_settings.c) reads the cluster column switch, which is
      * a cfg item and not a params_* (the real default is off, src/cfg/cfg.c:323). */
     cfg.cluster_column.val = subject_create_int(0);

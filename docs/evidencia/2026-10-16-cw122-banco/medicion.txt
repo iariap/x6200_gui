@@ -1,0 +1,47 @@
+region del widget = (30,70)-(168,109), 139x40 = WIDTH x HEIGHT (src/cw_tune_ui.h:17-21)
+colores distintos en la region: 1 = widget oculto (se ve el fondo de la pagina);
+mas de 1 = widget visible (panel + barras).
+
+== colores distintos en la region del widget ==
+  01-cw-home.png               banco  pantalla principal, banda CW          (800, 480)  colores=7
+      (125, 124, 119)  x4136
+      (125, 125, 122)  x1272
+      (125, 124, 120)  x120
+      (247, 245, 235)  x12
+      (216, 215, 206)  x8
+      (163, 162, 155)  x8
+  02-cw-page-tuner-on.png      banco  pagina (CW 1:2), Tuner On (llegada)   (800, 480)  colores=7
+      (125, 124, 119)  x4136
+      (125, 125, 122)  x1272
+      (125, 124, 120)  x120
+      (247, 245, 235)  x12
+      (216, 215, 206)  x8
+      (163, 162, 155)  x8
+  03-cw-tuner-off.png          banco  pagina (CW 1:2), Tuner Off            (800, 480)  colores=1
+      (247, 245, 235)  x5560
+  04-cw-tuner-on.png           banco  pagina (CW 1:2), Tuner On             (800, 480)  colores=7
+      (125, 124, 119)  x4136
+      (125, 125, 122)  x1272
+      (125, 124, 120)  x120
+      (247, 245, 235)  x12
+      (216, 215, 206)  x8
+      (163, 162, 155)  x8
+  05-harness-cw-tune-off.png   arnes  pagina (CW 1:2), cw_tune=0 (Redshift) (800, 480)  colores=1
+      (10, 5, 5)  x5560
+  06-harness-cw-tune-on.png    arnes  pagina (CW 1:2), cw_tune=1 (Redshift) (800, 480)  colores=12
+      (5, 2, 2)  x4136
+      (65, 64, 64)  x1022
+      (61, 60, 60)  x112
+      (35, 32, 32)  x112
+      (0, 0, 0)  x96
+      (90, 178, 89)  x38
+
+== conteo por color (panel, barras y bloque activo) ==
+  03-cw-tuner-off.png          Sunlit panel             (125, 124, 119)  n=    0  bbox=None
+  03-cw-tuner-off.png          Sunlit barras            (125, 125, 122)  n=    0  bbox=None
+  04-cw-tuner-on.png           Sunlit panel             (125, 124, 119)  n= 4136  bbox=(30, 70, 168, 109)
+  04-cw-tuner-on.png           Sunlit barras            (125, 125, 122)  n= 1272  bbox=(34, 72, 165, 109)
+  05-harness-cw-tune-off.png   Redshift fondo de pagina (10, 5, 5)  n= 5560  bbox=(30, 70, 168, 109)
+  06-harness-cw-tune-on.png    Redshift panel           (5, 2, 2)  n= 4136  bbox=(30, 70, 168, 109)
+  06-harness-cw-tune-on.png    Redshift barras          (65, 64, 64)  n= 1022  bbox=(34, 73, 165, 108)
+  06-harness-cw-tune-on.png    Redshift bloque activo   (90, 178, 89)  n=   38  bbox=(90, 88, 91, 106)
