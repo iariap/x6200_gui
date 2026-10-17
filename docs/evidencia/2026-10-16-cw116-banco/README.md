@@ -46,8 +46,8 @@ cw_encoder.c: compila para ARM ok
 Y el firmware entero (el `x6200_gui` real, con el fix, en el volumen privado):
 
 ```
--rwxr-xr-x  13 743 188 B  /workspace/build/target/usr/sbin/x6200_gui
-6d23c0906c808f8f9b046ce359b31a0e  x6200_gui
+-rwxr-xr-x  13 747 976 B  /workspace/build/target/usr/sbin/x6200_gui
+e5eb7bfd6b9ff03a7f0a5389d5735b7a  x6200_gui
 ```
 
 El único warning del build es de `lvgl/widgets/lv_waterfall.c` (`discards 'const'
@@ -76,15 +76,15 @@ scripts/apps/x6200/check-matrix.sh 223b30ae HEAD <worktree>
 
 La matriz sale **exit 0** con todos los checks ok, incluido el banco
 (`reconstruyendo la GUI: el hash de los fuentes cambio` → `captura de humo (home)
-ok`, `binario: md5 6d23c0906c80`, `qemu-cpu: cortex-a7`).
+ok`, `binario: md5 e5eb7bfd6b9f`, `qemu-cpu: cortex-a7`).
 
 **Gate #86** (el binario copiado al chroot es el firmware del port) y provenance:
 
 ```
 $ python3 tools/verifica-firmware-port.py .vfix3/usr/sbin/x6200_gui
-OK: /home/pablo/desa/x6200/.vfix3/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13743188 B, 3/3 marcas)
+OK: /home/pablo/desa/x6200/.vfix3/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13747976 B, 3/3 marcas)
 $ md5sum .vfix3/usr/sbin/x6200_gui
-6d23c0906c808f8f9b046ce359b31a0e  .vfix3/usr/sbin/x6200_gui     <- el build del fix
+e5eb7bfd6b9ff03a7f0a5389d5735b7a  .vfix3/usr/sbin/x6200_gui     <- el build del fix
 $ file .vfix3/usr/sbin/x6200_gui
 ELF 32-bit LSB pie executable, ARM, EABI5, dynamically linked, ..., not stripped
 ```
@@ -94,9 +94,9 @@ el socket de control, rotado 270 como en la radio):
 
 | captura | orden | md5 |
 |---|---|---|
-| [`banco-home.png`](banco-home.png) | (arranque) | `6bfb9f96728c74ab6a30978476668d49` |
-| [`banco-cwtrainer.png`](banco-cwtrainer.png) | `{"cmd":"app","text":"CwTrainer"}` | `fe9af8d4d9b66d19b13b79e199eea777` |
-| [`banco-cw-kbd.png`](banco-cw-kbd.png) | `{"cmd":"app","text":"CW"}` | `9f228d2161d0c67de81574e1e30d0726` |
+| [`banco-home.png`](banco-home.png) | (arranque) | `18f763ea640c61c0af4da55cbd85d871` |
+| [`banco-cwtrainer.png`](banco-cwtrainer.png) | `{"cmd":"app","text":"CwTrainer"}` | `5f33b94a062f3253dd9790bcd56aa6cd` |
+| [`banco-cw-kbd.png`](banco-cw-kbd.png) | `{"cmd":"app","text":"CW"}` | `a424645098eb995470aba4d4da470d7d` |
 
 ![CW Trainer en el banco](banco-cwtrainer.png)
 
