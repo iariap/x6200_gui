@@ -116,3 +116,4 @@ Salida cruda en `asercion-script.txt`.
 | `apps-sweep.log` | barrido de las 23 apps |
 | `md5.txt` | commit, hash de fuentes, md5 del build, gate #86, md5 desplegado |
 | `estados.txt` | estado del radio, params y el CRASHLOG del #131 |
+| `rx-checks.txt` | chequeos de RX: volumen 0→30→0, dígitos del dial (7.010/7.020/7.030), toggle de NB (#114, la radio sobrevivió: uptime continuo, pid 3931) |
