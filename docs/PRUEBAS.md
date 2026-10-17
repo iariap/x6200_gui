@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 17/10 ~06:15 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `e717d9f` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 4h21min** ✓ (pid 2452, uptime del sistema 15673 s, 1 GUI, CRASHLOG 0). 0 merges; **nueva rama `factory/cw-tune-122`** (issue nuevo, no mío). Siguen 116, 119 y 125 |
 | 17/10 ~05:40 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `d7d0ca2` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 3h51min sin caídas** ✓ (pid 2452, uptime 13872 s, 1 GUI, CRASHLOG 0). 0 merges. 3 ramas en curso: cw-sigsegv-116, roe-staircase-119 y swrscan-mock-fixtures-125 |
 | 17/10 ~05:05 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `52a0204` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 3h21min** ✓ (pid 2452, uptime 12071 s, 1 GUI, CRASHLOG 0). La radio cambió de IP a 192.168.18.67 (normal). 0 merges; **nueva rama `lu2dsx/swrscan-mock-fixtures-125`** (fixtures mock del SWR Scan = los datos del #119) y siguen 116/119 |
 | 17/10 ~04:35 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `38e2186` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 2h51min** ✓ (pid 2452, uptime del sistema 10271 s, 1 GUI, CRASHLOG 0): los fixes #116/#119 aguantan. 0 merges nuevos; siguen `factory/cw-sigsegv-116` y `factory/roe-staircase-119` |
