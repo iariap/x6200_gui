@@ -225,3 +225,105 @@ que marca el tono casi desaparece.
 - **`scripts/apps/x6200/check-matrix.sh` (harness ASF) enumera los estáticos del repo uno por uno** y
   no incluye el nuevo `tests/check_cw_tune_feed.py`: hay que sumarlo allí para que corra también en la
   matriz por paths. Queda PENDIENTE (fuera de este worktree, es el repo del harness).
+
+---
+
+## Fix del rojo de CI (2026-10-17): el widget no es un control (contrato UI-015)
+
+Con el widget ya visible en CW/CWR, el PR #126 dejó en rojo el gate `UI Quality Contracts` con tres
+fallos `layout_touch_target` (`cw-tune-default`, `cw-tune-tema-sunlit`, `cw-tune-tuner`):
+
+```
+lv_obj at 30,70 139x40 is 139x40, below the 44px touch target
+```
+
+La altura del widget es 40 px (`HEIGHT`, `src/cw_tune_ui.h:21`) y el contrato pide 44.
+
+### El criterio, exacto
+
+`tools/ab_testing/src/x6200_ab/layout_checks.py`: la regla audita como control
+
+```python
+def _is_control(node: InspectionNode) -> bool:
+    """A standard LVGL control, or a clickable object that paints like one. ..."""
+    return node.cls in INTERACTIVE or (node.clickable and node.draws_content)
+```
+
+(línea 293; `INTERACTIVE` son las clases de control de LVGL, y `node.clickable` sale del flag real
+del objeto: `ui_inspector.c:320` emite `lv_obj_has_flag(obj, LV_OBJ_FLAG_CLICKABLE)`). El widget es un
+`lv_obj` común —no está en `INTERACTIVE`— pero `lv_obj_create` le deja puestos los flags de entrada
+por defecto: en el JSON del arnés salía `clickable:true` y `scrollable:true`, y pinta panel + barras
+(`draws_content`). O sea: el criterio **no** audita "todos los objetos", audita los clicables que
+pintan, y el widget entraba por el flag heredado, no por ser un control.
+
+### El fix: sacarle los flags de entrada (no subir la altura)
+
+El widget es un **indicador de lectura**: no tiene un solo evento de entrada (solo `DRAW_MAIN` y
+`DELETE`, `src/cw_tune_ui.c:85-86`). Se le sacan los flags, con el mismo par que usan las cajas de
+`src/band_plan.c:127`:
+
+```diff
+     obj = lv_obj_create(parent);
+     lv_obj_set_height(obj, HEIGHT);
+     lv_obj_set_width(obj, WIDTH);
++    /* El widget es un indicador de lectura, no un control ... */
++    lv_obj_clear_flag(obj, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
+     lv_obj_add_style(obj, &cw_tune_style, 0);
+```
+
+Por qué (A) y no (B) subir `HEIGHT` a 46: (B) sería mentirle al criterio —el widget no es un control
+de 46 px, es un indicador de 40— y encima obligaría a correr la geometría del widget y sus
+coordenadas en la evidencia y en `quality/nontext.yaml`. (A) no toca `cw_tune_style`, ni la geometría
+(139x40), ni los píxeles, y no agrega ningún waiver ni hardcode a `quality/contracts.yaml`: el
+criterio queda como está y el objeto deja de cumplir la condición por la razón correcta.
+
+### RED → GREEN (real, `uv run x6200-ab contracts --revision <rev>`)
+
+| | revisión | status | checks | fallos |
+|---|---|---|---|---|
+| RED | `6c9d0727` (antes del fix) | **FAIL** (exit 1) | 706 | los 3 `layout_touch_target` de los fixtures de CW |
+| GREEN | `311d841d` (con el fix) | **PASS** (exit 0) | 703 | **0** (0 waivers) |
+
+### La invariante queda codificada en el fixture
+
+`tools/ui_harness/src/screens.c` corta la corrida si el widget vuelve a tener flags de entrada (para
+los cuatro fixtures de CW tune):
+
+```c
+if (lv_obj_has_flag(widget, LV_OBJ_FLAG_CLICKABLE)
+    || lv_obj_has_flag(widget, LV_OBJ_FLAG_SCROLLABLE)) { ... exit(1); }
+```
+
+Sonda negativa (medida): con el `lv_obj_clear_flag` de vuelta afuera, el fixture
+`cw-tune-default` falla con *"el widget de CW tune quedo con flags de entrada
+(CLICKABLE/SCROLLABLE)"* (exit 1); con el fix pasa. La corrida de CI del contrato corre los fixtures
+a través del arnés, así que la invariante se verifica en CI, no sólo acá.
+
+### No cambia un píxel (medido en las dos superficies)
+
+- **Arnés**: los renders de `cw-tune-tuner` y `cw-tune-tema-sunlit` siguen **byte a byte** iguales a
+  los dorados (`b1170a41…` y `cfa98f19…`, mismo md5) y los **64** PNG pre-existentes quedan
+  idénticos a `before.sha256` (0 diferencias).
+- **Banco QEMU (binario ARM real)**: el rebuild del banco con este cambio
+  (`OK: … es el firmware del port (ELF32 ARM, 13748068 B, 3/3 marcas)`, binario `md5 ebaedf2d89de`)
+  captura `15-banco-cw-tune-sunlit-flagfix.png`, **byte a byte** la `11` (`eb2841aa…`) del binario
+  anterior (`66b766562d75`): mismos 11 colores en la región, panel 4136 px y 5.02:1 de contraste.
+- **Estructura**: `16-harness-cw-tune-default-inspect.json` (revisión `311d841d`) muestra el nodo del
+  widget con `clickable:false` y `scrollable:false`, que es el hecho que el contrato mira.
+
+### Gates de este fix
+
+| qué | cómo | resultado |
+|---|---|---|
+| contrato del CI | `uv run x6200-ab contracts --revision HEAD --repo <worktree>` | RED `6c9d0727` FAIL (3) → GREEN `311d841d` **PASS** (703 checks, 0 fallos) |
+| A/B de píxeles | los 64 PNG pre-existentes vs `before.sha256` | **0** diferencias (byte a byte) |
+| determinismo | `tests/check_harness_determinism.sh` | `PASS: deterministic (identical PNGs for every fixture)` (68 fixtures) |
+| fixtures | los 4 de CW tune + sonda negativa del assert | ok / la sonda falla como debe |
+| nativos | `tests/native/run_native_tests.sh` | **1839 comprobaciones, 0 fallos** (8 suites) |
+| estáticos | los 7 | 7/7 ok |
+| `run_all_tests.sh --quick` | | 11 OK, 0 fallos |
+| framework A/B | `ruff check` / `ruff format --check` / `ty check` / `pytest -m "not e2e"` | limpios / **227 passed**, 13 deselected |
+| compilación ARM real | rebuild del banco (`make x6200-gui-*`) | `OK: … el firmware del port (ELF32 ARM, 13748068 B, 3/3 marcas)` |
+| banco QEMU | `tools/captura-banco.sh` con `CHROOT`/`BUILDROOT` | captura ok, binario `ebaedf2d89de`; `15` = `11` byte a byte |
+| matriz por paths | `scripts/apps/x6200/check-matrix.sh 3553a476 HEAD <worktree>` (con `CHROOT`/`BUILDROOT`) | **exit 0**, 0 `FAIL`, 0 `BLOCKED` (19 checks + banco) |
+| hallazgos | `audita-hallazgos.sh docs/HALLAZGOS.md` | 0 problemas de estructura |

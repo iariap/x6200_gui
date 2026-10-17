@@ -219,6 +219,7 @@ CHROOT=/home/pablo/desa/x6200/.vfix3 BUILDROOT=/home/pablo/desa/x6200/buildroot_
 | `12-banco-cw-tune-redshift.png` | Redshift | CW | 0 / 1 | **11** | 304 px `(255,255,255)` | **20.67:1** |
 | `13-banco-cw-decoder-off.png` | Sunlit | CW | 0 / **0** | **11** | 304 px `(0,0,0)` | **5.02:1** |
 | `14-banco-usb-control.png` | Sunlit | USB | 0 / 0 | **1** (widget oculto) | — | — |
+| `15-banco-cw-tune-sunlit-flagfix.png` | Sunlit | CW | 0 / 1 | **11** | 304 px `(0,0,0)` | **5.02:1** |
 
 - **`11` ↔ `03` (pre-arreglo)**: mismos params (`cw_tune=0`, Sunlit) y el mismo punto de partida; `03`
   tenía **1 color** (widget oculto) y `11` tiene 11. Es el issue arreglado **en el binario real**.
@@ -226,6 +227,10 @@ CHROOT=/home/pablo/desa/x6200/.vfix3 BUILDROOT=/home/pablo/desa/x6200/buildroot_
   cambia un píxel: la página CW y el widget no dependen del decoder. Cierra la limitación que dejó
   abierta la corrida anterior (no había podido re-correr con `cw_decoder=0` en el banco).
 - **`14`**: el control del otro lado — fuera de CW/CWR el widget sigue oculto.
+- **`15` ↔ `11`**: byte a byte la misma captura (mismo md5), pero con el binario **del fix del
+  contrato** (`md5 ebaedf2d89de`, rebuild del 2026-10-17 con el `lv_obj_clear_flag` del widget) contra
+  el binario anterior (`md5 66b766562d75`): sacarle al widget los flags de entrada no mueve un píxel
+  en el firmware ARM real. Ver *Fix del rojo de CI* más abajo.
 - El arnés reproduce la radio: el panel, las barras y el contraste de `11` son los que mide `10`
   (mismo tema y geometría), así que el chequeo automático sobre el render dorado mide lo que la radio
   dibuja.
@@ -285,6 +290,8 @@ CI sobre los renders dorados y falla si el borde se pierde.
 | `12-banco-cw-tune-redshift.png` (banco, ARM real) | `b915396f9d57e6ba06c346e59ade858a` |
 | `13-banco-cw-decoder-off.png` (banco, ARM real) | `eb2841aafb4a08e97c6fc2daa5280628` (= `11`) |
 | `14-banco-usb-control.png` (banco, ARM real) | `a3b5e02cd83238a55fe68d505a4b5765` |
+| `15-banco-cw-tune-sunlit-flagfix.png` (banco, ARM real) | `eb2841aafb4a08e97c6fc2daa5280628` (= `11`) |
+| `16-harness-cw-tune-default-inspect.json` (arnés, `--inspect`) | `51b4118eb9cac8ee2fa5570b29181a00` |
 | `mide.py` (medición) | `67f9457b4a8ef73bbedf4b298eb456b3` |
 | base del cierre | `3553a476` |
 
@@ -296,5 +303,77 @@ es el `git rev-parse HEAD` con el que se compiló (`babc649f`).
 `08` y `10` son **byte a byte** los renders dorados que mide el objeto `cw_tune_bars`
 (`tools/ab_testing/golden/cw-tune-tuner.png`, `cw-tune-tema-sunlit.png`): mismo md5, así que la
 evidencia y el chequeo automático miran el mismo píxel.
+
+## Fix del rojo de CI (2026-10-17): el widget no es un control (contrato UI-015)
+
+Con el widget ya visible, el gate `UI Quality Contracts` del PR #126 quedó en rojo: los tres fixtures
+de CW (`cw-tune-default`, `cw-tune-tema-sunlit`, `cw-tune-tuner`) fallaban con
+
+```
+lv_obj at 30,70 139x40 is 139x40, below the 44px touch target
+```
+
+(el widget mide 40 px de alto y el contrato pide 44).
+
+### Por qué: el criterio audita los objetos clicables que pintan
+
+`tools/ab_testing/src/x6200_ab/layout_checks.py:293`:
+
+```python
+return node.cls in INTERACTIVE or (node.clickable and node.draws_content)
+```
+
+`node.clickable` sale del flag real del objeto (`ui_inspector.c:320`:
+`lv_obj_has_flag(obj, LV_OBJ_FLAG_CLICKABLE)`). El widget es un `lv_obj` común que hereda de
+`lv_obj_create` los flags de entrada por defecto (`clickable:true`, `scrollable:true` en el JSON del
+arnés) y pinta panel + barras, así que el criterio lo leía como un control.
+
+### El fix: sacarle los flags de entrada, no subir la altura
+
+El widget es un indicador de lectura —no tiene un solo evento de entrada (solo `DRAW_MAIN` y
+`DELETE`, `src/cw_tune_ui.c:85-86`)—, así que se le sacan los flags con el mismo par que usan las
+cajas de `src/band_plan.c:127`:
+
+```diff
+     obj = lv_obj_create(parent);
++    lv_obj_clear_flag(obj, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
+```
+
+No toca `cw_tune_style`, ni la geometría (139x40), ni un píxel, y no agrega ningún waiver ni hardcode
+a `quality/contracts.yaml`. Subir `HEIGHT` a 46 (la alternativa) habría sido mentirle al criterio y
+correr la geometría del widget en toda la evidencia.
+
+### Medición
+
+| qué | antes (`6c9d0727`) | después (`311d841d`) |
+|---|---|---|
+| `uv run x6200-ab contracts --revision <rev>` | **FAIL**, exit 1, 706 checks, los 3 `layout_touch_target` | **PASS**, exit 0, 703 checks, **0 fallos**, 0 waivers |
+| nodo del widget en el JSON del arnés | `clickable:true`, `scrollable:true` | `clickable:false`, `scrollable:false` (`16-harness-cw-tune-default-inspect.json`) |
+| render (arnés) | `08` `b1170a41…`, `10` `cfa98f19…` | los mismos md5; los **64** PNG pre-existentes idénticos a `before.sha256` |
+| render (banco, ARM real) | `11` `eb2841aa…` (binario `66b766562d75`) | `15` **el mismo md5** (binario `ebaedf2d89de`) |
+
+### La invariante queda codificada
+
+`tools/ui_harness/src/screens.c` corta la corrida si el widget vuelve a tener flags de entrada, para
+los cuatro fixtures de CW tune. Sonda negativa medida: con el `lv_obj_clear_flag` de vuelta afuera,
+`cw-tune-default` falla con *"el widget de CW tune quedo con flags de entrada (CLICKABLE/SCROLLABLE)"*
+(exit 1). El contrato de CI corre los fixtures a través del arnés, así que la invariante se verifica
+en CI y no sólo acá.
+
+### Gates de este fix
+
+| Gate | Resultado |
+|---|---|
+| `uv run x6200-ab contracts --revision HEAD` | RED `6c9d0727` **FAIL** (3) → GREEN `311d841d` **PASS** (703 checks, 0 fallos) |
+| A/B de píxeles vs `before.sha256` | los **64** PNG pre-existentes **idénticos**; sólo cambian los nombres de los `cw-tune-*` |
+| `tests/check_harness_determinism.sh` | `PASS: deterministic (identical PNGs for every fixture)` (68 fixtures) |
+| fixtures del widget (4) + sonda negativa del assert | ok / la sonda falla como debe |
+| `tests/native/run_native_tests.sh` | **1839 comprobaciones, 0 fallos** (8 suites) |
+| estáticos (7) | ok (incluye `check_cw_tune_feed` y `check_wcag`) |
+| `tests/run_all_tests.sh --quick` | 11 OK, 0 fallos |
+| `tools/ab_testing` `ruff check` / `ruff format --check` / `ty check` / `pytest -m "not e2e"` | limpios / **227 passed**, 13 deselected |
+| rebuild del banco (ARM real) | `OK: … es el firmware del port (ELF32 ARM, 13748068 B, 3/3 marcas)`, binario `md5 ebaedf2d89de` |
+| `scripts/apps/x6200/check-matrix.sh 3553a476 HEAD <worktree>` (con `CHROOT`/`BUILDROOT`) | **exit 0**, 0 `FAIL`, 0 `BLOCKED` (19 checks + banco: preflight, idempotencia del rebuild y captura de humo) |
+| `.agents/hallazgos-fundados/scripts/audita-hallazgos.sh docs/HALLAZGOS.md` | 0 problemas de estructura (igual que la base) |
 
 [#122]: https://github.com/iariap/x6200_gui/issues/122
