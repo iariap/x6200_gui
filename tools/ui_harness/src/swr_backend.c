@@ -208,6 +208,41 @@ static int passes_of(button_item_t *item)
     return v;
 }
 
+/* Lo que el boton de pasadas muestra DE VERDAD en la barra: el texto del objeto LVGL (no la
+ * funcion que lo genera). Es lo que prueba que el callback del boton pidio el repintado: el
+ * boton de pasadas no es un subject, asi que no hay MSG_PARAM_CHANGED que lo refresque. */
+static const char *passes_label_text(void)
+{
+    button_item_t *item = passes_button();
+
+    if (item == NULL || item->label_obj == NULL) {
+        return "";
+    }
+
+    return lv_label_get_text(item->label_obj);
+}
+
+/* El label de la barra trae un \n (dos lineas): se escapa para que el JSON siga siendo JSON.
+ * Mismo criterio que write_json_string() de ui_inspector.c, acotado a lo que el label puede
+ * traer (texto ASCII del formato "Passes:\n%u%s"). */
+static void json_label(FILE *f, const char *text)
+{
+    fputc('"', f);
+
+    for (const char *p = text; *p; p++) {
+        if (*p == '\n') {
+            fputs("\\n", f);
+        } else if (*p == '"' || *p == '\\') {
+            fputc('\\', f);
+            fputc(*p, f);
+        } else {
+            fputc(*p, f);
+        }
+    }
+
+    fputc('"', f);
+}
+
 /* El barrido esta corriendo? El observable del usuario es el boton: el dialogo le
  * pone "Stop" mientras mide y lo vuelve a "Run" cuando el cierre de la sesion corre
  * (dialog_swrscan_run_cb / swrscan_finished_job). El `run` de dialog_t es otra cosa
@@ -464,6 +499,9 @@ void swr_backend_json(FILE *f, const scenario_t *scenario)
     fprintf(f, "],\n");
     fprintf(f, "    \"grid_center_hz\": %u,\n", grid_lo + (uint32_t) ((grid_hi - grid_lo) / 2));
     fprintf(f, "    \"grid_span_hz\": %u,\n", grid_hi - grid_lo);
+    fputs("    \"passes_label\": ", f);
+    json_label(f, passes_label_text());
+    fputs(",\n", f);
     fprintf(f, "    \"readout\": \"en el PNG (el chart dibuja el readout con lv_draw_label, no "
                "es un objeto del arbol)\"\n");
     fprintf(f, "  },\n");

@@ -742,8 +742,6 @@ void dialog_swrscan_span_cb(button_item_t *item) {
  * no esta habilitado (requieren validacion en hardware): el Run las rechaza con el estado
  * Error. Solo se puede cambiar con el barrido detenido. */
 void dialog_swrscan_passes_cb(button_item_t *item) {
-    (void) item;
-
     if (run) {
         return;
     }
@@ -754,6 +752,11 @@ void dialog_swrscan_passes_cb(button_item_t *item) {
         case SWR_SESSION_PASSES_FINE:
         default:                        passes_requested = SWR_SESSION_PASSES_QUICK; break;
     }
+
+    /* El boton TIENE que repintar: `passes_requested` no es un subject, asi que no hay
+     * MSG_PARAM_CHANGED que refresque la etiqueta (a diferencia de span/scale). Sin esto el
+     * operador aprieta Passes, la sesion corre 5 pasadas y el boton sigue diciendo 1. */
+    buttons_refresh(item);
 }
 
 void set_span(Subject *subj, void *user_data) {

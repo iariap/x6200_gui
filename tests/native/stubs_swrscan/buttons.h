@@ -56,5 +56,9 @@ typedef struct buttons_page_t {
  * records the NULL case instead of crashing, so the failure is an assertion. */
 void button_update_label(button_item_t *item, char *label);
 
+/* Repinta la etiqueta del boton (#125: el boton de pasadas no es un subject, asi que su
+ * callback tiene que pedir el repintado; el stub lo registra para poder afirmarlo). */
+void buttons_refresh(button_item_t *item);
+
 void buttons_unload_page(void);
 void buttons_load_page(buttons_page_t *page);

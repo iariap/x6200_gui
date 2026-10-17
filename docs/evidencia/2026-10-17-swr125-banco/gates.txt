@@ -1,0 +1,42 @@
+# Matriz de checks del worktree (issue #125) — base 52a0204e, HEAD ca1b592b
+# generado con: scripts/apps/x6200/check-matrix.sh 52a0204e HEAD <worktree>
+
+==> [check] native tests (tests/native/run_native_tests.sh)
+    ok
+==> [check] check_cfg_fills
+    ok
+==> [check] check_actions
+    ok
+==> [check] check_settings_focus
+    ok
+==> [check] check_apps_menu
+    ok
+==> [check] check_app_handlers
+    ok
+==> [check] check_wcag
+    ok
+==> [check] ruff check (ab_testing)
+    ok
+==> [check] ruff format --check (ab_testing)
+    ok
+==> [check] pytest -m 'not e2e' (ab_testing)
+    ok
+==> [check] bash -n tests/native/run_native_tests.sh
+    ok
+==> [check] harness determinism gate
+    ok
+==> [check] banco QEMU: preflight (tools/captura-banco.sh --check)
+    BLOCKED: falta entorno (corre en el host del owner, no en el runner):
+    == comprobando el banco ==
+      docker: ok
+      imagen x6200-buildroot: ok
+      volumen x6200-build-output: ok
+      FALTA: falta el chroot (/home/pablo/desa/asf/state/worktrees/x6200/swrscan-multipass-125/../.vfix3): extraer el rootfs de la imagen, ver docs/TESTING.md nivel 4
+      FALTA: el chroot no parece un rootfs (sin /bin/busybox)
+      FALTA: el chroot no tiene /lib
+      python3: ok
+      PIL: ok
+      cliente de control: ok
+      aviso: sin /home/pablo/desa/asf/state/worktrees/x6200/swrscan-multipass-125/../buildroot_new/AetherX6200Buildroot no se puede reconstruir (RECONSTRUIR=no para saltearlo)
+      libs del banco: ok
+    == 3 cosa(s) faltan: el banco no puede correr ==

@@ -58,6 +58,7 @@ void    swrscan_stub_run_scheduler(void);
 int     swrscan_stub_pending_jobs(void);
 void    swrscan_stub_draw(void);
 const char *swrscan_stub_last_label_text(void);
+const char *swrscan_stub_refreshed_label(void);
 
 /* --- fixture tables -------------------------------------------------------- */
 
@@ -196,14 +197,35 @@ static replay_t replay(const char *sc, int passes, int stop_after) {
     button_item_t *passes_btn = passes_button();
     button_item_t *run        = run_button();
 
-    /* El boton cicla 1 -> 3 -> 5 -> 1. */
+    /* El boton cicla 1 -> 3 -> 5 -> 1 y `passes_requested` es un estatico del dialogo que
+     * sobrevive al cierre: el test lleva el boton a 1 primero, asi el ciclo de press (y su
+     * repintado) siempre ocurre y no depende del test anterior. */
     int guard = 0;
 
-    while (passes_of(passes_btn) != passes && guard++ < 8) {
+    while (passes_of(passes_btn) != 1 && guard++ < 8) {
         passes_btn->press(passes_btn);
     }
 
+    CHECK(passes_of(passes_btn) == 1);
+
+    /* Al objetivo (1 -> 3 -> 5). Cada press TIENE que pedir el repintado: el boton de pasadas no
+     * es un subject, asi que no hay MSG_PARAM_CHANGED que refresque la etiqueta. Sin el
+     * buttons_refresh() del callback el operador seguiria viendo "1" mientras corren 5. */
+    int pressed = 0;
+
+    while (passes_of(passes_btn) != passes) {
+        passes_btn->press(passes_btn);
+        pressed++;
+
+        char expect_label[32];
+        snprintf(expect_label, sizeof(expect_label), "Passes:\n%d%s", passes_of(passes_btn),
+                 passes_of(passes_btn) > 1 ? " *" : "");
+
+        CHECK(strcmp(swrscan_stub_refreshed_label(), expect_label) == 0);
+    }
+
     CHECK(passes_of(passes_btn) == passes);
+    CHECK(pressed == (passes - 1) / 2);         /* 1 -> 3 = 1 press, 1 -> 5 = 2 press */
 
     run->press(run);
     CHECK(swrscan_stub_started() == 1);         /* la unica sesion que se abre */

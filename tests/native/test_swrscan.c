@@ -73,6 +73,8 @@ int       swrscan_stub_chart_bg_color_set(void);
 lv_color_t swrscan_stub_curve_color(void);
 lv_color_t swrscan_stub_label_color(void);
 const char *swrscan_stub_last_label_text(void);
+/* #125: el texto que el boton de pasadas pasaria a mostrar cuando su callback pide el repintado. */
+const char *swrscan_stub_refreshed_label(void);
 int        swrscan_stub_rect_count(void);
 lv_color_t swrscan_stub_rect_color(void);
 uint8_t    swrscan_stub_rect_opa(void);
@@ -687,9 +689,13 @@ void test_swrscan_multipass_gate(void) {
     button_item_t *passes = passes_button();
 
     CHECK(strcmp(passes->label_fn(), "Passes:\n1") == 0);
+    CHECK(strcmp(swrscan_stub_refreshed_label(), "") == 0);   /* todavia nadie repinto */
 
     passes->press(passes);                          /* 1 -> 3 (Stable) */
     CHECK(strcmp(passes->label_fn(), "Passes:\n3 *") == 0);   /* "*": TX no habilitado */
+    /* Lo que VE el operador: el callback tiene que pedir el repintado (el boton no es un
+     * subject, asi que no hay MSG_PARAM_CHANGED que lo refresque). */
+    CHECK(strcmp(swrscan_stub_refreshed_label(), "Passes:\n3 *") == 0);
 
     run->press(run);
     CHECK(swrscan_stub_started() == 0);             /* CERO TX */
@@ -700,6 +706,7 @@ void test_swrscan_multipass_gate(void) {
 
     passes->press(passes);                          /* 3 -> 5 (Fine) */
     CHECK(strcmp(passes->label_fn(), "Passes:\n5 *") == 0);
+    CHECK(strcmp(swrscan_stub_refreshed_label(), "Passes:\n5 *") == 0);
 
     run->press(run);
     CHECK(swrscan_stub_started() == 0);             /* tampoco */

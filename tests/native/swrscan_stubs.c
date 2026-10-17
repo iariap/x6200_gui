@@ -35,6 +35,10 @@ static int stub_started;
 static int stub_stopped;
 static int stub_destructed;
 
+/* #125: el texto que el boton de pasadas pasaria a mostrar cuando su callback pide el repintado
+ * (el callback tiene que pedirlo a mano: `passes_requested` no es un subject). */
+static char stub_refreshed_label[32];
+
 /* Reloj virtual (issue #125): el motor mide el timeout de RF con get_time(); el test lo mueve
  * a mano, sin sleeps reales. */
 static uint64_t stub_time;
@@ -89,6 +93,8 @@ void swrscan_stub_reset(void) {
     stub_pending_job  = NULL;
     stub_pending_jobs = 0;
     stub_time         = 0;
+
+    memset(stub_refreshed_label, 0, sizeof(stub_refreshed_label));
 }
 
 /* --- theme ------------------------------------------------------------------ */
@@ -295,6 +301,27 @@ void button_update_label(button_item_t *item, char *label) {
     if (item->type == BTN_TEXT) {
         item->label = label;
     }
+}
+
+/* #125: el boton de pasadas no es un subject, asi que no hay MSG_PARAM_CHANGED que le refresque
+ * la etiqueta: su callback tiene que pedir el repintado a mano. El stub guarda el texto que el
+ * boton pasaria a mostrar --lo que ve el operador-- para poder afirmarlo.
+ *
+ * El stub NO exige label_obj (el real lo necesita para repintar): en este test los items del
+ * dialogo no estan cargados en una barra, asi que el guard del real los saltearia. Lo que se
+ * afirma aca es que el callback PIDIO el repintado del item que le dieron, con el texto nuevo. */
+const char *swrscan_stub_refreshed_label(void) { return stub_refreshed_label; }
+
+void buttons_refresh(button_item_t *item) {
+    const char *text;
+
+    if (item == NULL) {
+        return;
+    }
+
+    text = (item->type == BTN_TEXT_FN && item->label_fn != NULL) ? item->label_fn() : item->label;
+
+    snprintf(stub_refreshed_label, sizeof(stub_refreshed_label), "%s", text ? text : "");
 }
 
 void buttons_unload_page(void) {}

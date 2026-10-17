@@ -523,6 +523,15 @@ JSON reports the counters (`radio_calls.start_swrscan`, `stop_swrscan`, and the
 `swr` block with `tx_on`/`tx_off`), which is the "TX real = 0" evidence of the
 bench.
 
+The `swr.passes_label` field of the JSON is the text of the **real LVGL label** of
+the bottom bar's Passes button (`lv_label_get_text()`, not the function that
+generates it), so it is what the operator sees. It is there because the passes
+button is not a `subject`: unlike span/scale there is no `MSG_PARAM_CHANGED` to
+repaint it, so `dialog_swrscan_passes_cb()` asks for the repaint itself
+(`buttons_refresh()`). Without that call the window runs 3 or 5 passes while the
+button keeps reading `Passes: 1`; the field (and the native test that pins the
+request) is what makes that regression visible.
+
 **Two things are compiled differently here, on purpose.** The multipass TX gate
 (`SWRSCAN_MULTIPASS_TX_ENABLED`, `src/dialog_swrscan.h`) is 0 in the ROM and is
 compiled **on** in this host binary (`tools/ui_harness/CMakeLists.txt`), because
