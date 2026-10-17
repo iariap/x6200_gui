@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 18/10 ~00:20 | ROM `c640645d810c` + GUI 846afac6ed47 | `4ee935c` | **SWRScan Passes>1** | **1 repro — gate** | 0 | **Reproducido el error del owner**: con `Passes` en 5 y `Run` sale **`Error: 3/5 pasadas requieren validacion RF`** + `sin datos medidos` ✗. **Causa en código**: `SWRSCAN_MULTIPASS_TX_ENABLED = 0` (dialog_swrscan.h:61) → `limits->max_passes = 1` → `swr_session.c:281` aborta con `SWR_ABORT_MULTIPASS_GATED`. **El gate protege el PA y está bien**; **el defecto es de UX**: el botón `Passes` cicla 1→3→5 y el `Run` lo rechaza sin aviso. Evidencia `28-roe-multipasada-error.png` |
 | 17/10 ~23:40 | ROM `c640645d810c` + GUI 846afac6ed47 | `a1a537c` | (no corrido) | (no corrido) | 0 | **Estable 4h50min** ✓ (pid 1133, uptime 17443 s, 1 GUI, CRASHLOG 0). 0 merges |
 | 17/10 ~23:05 | ROM `c640645d810c` + GUI 846afac6ed47 | `94bfbe6` | (no corrido) | (no corrido) | 0 | **Estable 4h20min** ✓ (pid 1133, uptime 15645 s, 1 GUI, CRASHLOG 0). 0 merges |
 | 17/10 ~22:30 | ROM `c640645d810c` + GUI 846afac6ed47 | `f275073` | (no corrido) | (no corrido) | 0 | **Estable 3h50min** ✓ (pid 1133, uptime 13844 s, 1 GUI, CRASHLOG 0). 0 merges |
