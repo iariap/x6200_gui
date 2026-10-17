@@ -480,6 +480,8 @@ back to Aurora, and the JSON `active` field says which theme actually rendered.
 | `app-close-home` | menu-hygiene (decisions 5/6): RTTY (the app that is not a dialog) opened with `main_screen_start_app(ACTION_APP_RTTY)` and closed through the remote control's own path (`main_screen_close_app()`), then RTTY again with the real Ajustes window over it and the dialog closed. `scenario_settle` codifies both checkpoints — RTTY is `RTTY_OFF` (its state is a tracking mock, `mocks/mock_main_screen.c`) and the bar is back on the home page (`buttons_get_cur_page()`), not on RTTY's page — and stops the run if either fails |
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
 | `swrscan-quick` | the real SWR Scan window (`src/dialog_swrscan.c`) over the main screen, one pass (Quick — the only one the shipped ROM enables), complete and frozen: the drawn curve, the `Completed` state and the readout of the measured minimum (`min 1.2 +/- 0.1 @ 7.100.000 kHz (n=51/51)`) |
+| `swrscan-owner-40m` | the real window over the owner's **real antenna dataset** (`owner_40m_valle`, the seed embedded in `src/swr_backend.c` from the values extracted from his screen, commit `b39d6014`), one pass (Quick), complete and frozen: the drawn curve over the real resonance range (centre 7.026.825 Hz, span 21.562 kHz) and the readout `min 1.0 @ 7.019.925 kHz (n=51/51)`. This is the capture that fixes issue #125's follow-up: the previous bench captures were centred off the antenna's resonance and showed no curve |
+| `swrscan-owner-40m-sweep` | the same owner session captured mid-sweep (25 of 51 points): `Scanning pass 1/1  p 26/51`, the button on `Stop`, and the measured curve so far (not frozen: the JSON's `frozen` is `null`) |
 | `swrscan-3pass` | the same window, three passes (Stable) over `single_valley_3pass`, complete and frozen. `scenario_settle` also probes the freeze: three extra flow packets after the session ended must move neither the VFO nor the session (the backend stops the run if they do) |
 | `swrscan-3pass-p1`, `-p2`, `-p3` | the same three-pass session captured mid-sweep (25, 76 and 127 packets): the per-pass evidence of the issue. The state reads `Scanning pass 1/3  p 26/51`, `2/3`, `3/3`; the graph is the measured data so far and is not frozen (the JSON's `frozen` is `null`) |
 | `swrscan-3pass-stop` | the same session cancelled by the operator (the Run button, now "Stop") after 70 packets: `Stopped (parcial)`, the graph frozen at the measured data, the readout marked as partial |
@@ -503,7 +505,13 @@ session engine it drives, `src/swr_session.c`, and the curve resampler,
   the native test reads) and replays it on the harness' virtual clock: one flow
   packet per point at the real cadence (`SWRSCAN_DWELL_MS`, 35 ms), with the
   radio thread's tick (`dialog_swrscan_poll()`, the stall watchdog) after each
-  one, and the scheduler job the window queues when the session ends.
+  one, and the scheduler job the window queues when the session ends. The owner's
+  **real 40 m dataset** (`owner_40m_valle`, issue #125 follow-up) is **embedded in
+  the backend** as a seed (the values extracted from his screen, commit
+  `b39d6014`, resampled to the 51-point grid): the fixtures `swrscan-owner-40m*`
+  use it to anchor the session to the antenna's real resonance range. The shared
+  CSV is left untouched because the native test pins its exact size (1,428
+  samples).
 - The grid is the dataset's, not the fixture's: the backend derives centre and
   span from the samples, pushes the span into `cfg.swrscan_span` before the
   window opens, and checks the frequency the dialog asks for **point by point**
