@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 18/10 ~05:10 | ROM `c640645d810c` + **GUI b1ba67520079** (merge `885f823`) | `885f823` | **SWRScan** | **1 ok — VALLE** ✓✓ | 0 | **PUBLICADO Y VALIDADO `885f823`**: la curva de ROE **ya NO está invertida** ✓✓. Números: centro y=395 (antes 118) → ROE baja ✓, bordes y=300/309 → ROE alta ✓ → **el valle está en la resonancia** ✓. `min 1.0 @ 6.780.000 kHz`, `Passes: 1`, span 500 kHz, Scale Linear. **Pendiente**: sigue saliendo `Error: timeout de RF` (barrido cortado en n=44/51) ✗ |
 | 18/10 ~04:40 | ROM `c640645d810c` + GUI 846afac6ed47 | `c67a30b` | (no corrido) | (no corrido) | 0 | **Estable 9h07min** ✓ (pid 1133, uptime 32798 s, 1 GUI, CRASHLOG 0) — la racha más larga de la sesión. 0 merges |
 | 18/10 ~01:55 | ROM `c640645d810c` + GUI 846afac6ed47 | `e38267c` | (no corrido) | (no corrido) | 0 | **Estable 5h50min** ✓ (pid 1133, uptime 21043 s, 1 GUI, CRASHLOG 0). 0 merges |
 | 18/10 ~01:20 | ROM `c640645d810c` + GUI 846afac6ed47 | `37de993` | (no corrido) | (no corrido) | 0 | **Estable 5h20min** ✓ (pid 1133, uptime 19243 s, 1 GUI, CRASHLOG 0). 0 merges |
