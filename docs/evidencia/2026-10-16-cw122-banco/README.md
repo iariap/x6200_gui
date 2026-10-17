@@ -107,10 +107,15 @@ Números crudos y el comando que los produce: [`medicion.txt`](medicion.txt).
 | `02-cw-page-tuner-on.png` | `1204ccd901b0acf308f4d612dfd93820` |
 | `03-cw-tuner-off.png` | `b0fd6390cae21a6d2cbcc5489d61e1ba` |
 | `04-cw-tuner-on.png` | `1caa0be5a8d46aabedfa6c2a19489ecb` |
-| `05-harness-cw-tune-off.png` / `.json` | `96837446037450e0f13c42f69846bcee` / `26da92671a8db0d081c6e8f9420b7d46` |
-| `06-harness-cw-tune-on.png` / `.json` | `df858d8f66e8aa24f35aacbadf68cc1c` / `0ff092ec42ee600b8182543e5856f744` |
+| `05-harness-cw-tune-off.png` / `.json` | `96837446037450e0f13c42f69846bcee` / `8464ab2a48ec83c8b7bec7b5ac3b34c1` |
+| `06-harness-cw-tune-on.png` / `.json` | `df858d8f66e8aa24f35aacbadf68cc1c` / `8cf7e05a0ad0dff0ac5e0d53f386d241` |
 | `barras.png` | `e4d72b79620e71d2a11ece16a017d6c1` |
 | base de la corrida | `3553a476` |
+
+El campo `revision` de los JSON del arnés es el `git rev-parse HEAD` con el que se **compiló** el
+arnés (`CMakeLists.txt` → `-DHARNESS_REVISION`); el de estos dos apunta al commit que introduce las
+fixtures `cw-tune-*` (`aa8fcc78`). El render es determinista: re-compilar el arnés en cualquier
+revisión con estas fixtures da el **mismo PNG** (md5 de arriba).
 
 ## Contraste con el defecto
 

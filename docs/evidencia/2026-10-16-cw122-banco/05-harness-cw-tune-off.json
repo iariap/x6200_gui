@@ -2,7 +2,7 @@
   "scenario": "cw-tune-off",
   "screen": "cw-tune-off",
   "seed": 20,
-  "revision": "3553a4769b86128864f29da7687fcd398b7e1351",
+  "revision": "aa8fcc787dc5e91000b62f18f99a38a16475da67",
   "framebuffer": { "width": 800, "height": 480 },
   "theme": {
     "requested": "Redshift",
