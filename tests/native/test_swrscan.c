@@ -551,12 +551,14 @@ void test_swrscan_render(void) {
     CHECK(worst_left <= 1);
     CHECK(worst_right <= 1);
 
-    /* (c) la curva no se sale del chart: el draw pinta en [y1 - 5, y1 - 5 + h] con el chart en
-     *     coords.y1 = 74 y h = 330 (la posicion real del chart en el panel, ver el stub). */
+    /* (c) la curva no se sale del chart. El draw pinta en [y1, y1 + h] con y1 = coords.y1 - 5 =
+     *     69 (el chart esta en coords.y1 = 74) y h = 330, el `h` ESTATICO del archivo que usa
+     *     calc_y() (el `h` local de draw_cb es 330 - 5 y solo lo usan la grilla y las etiquetas):
+     *     la banda dibujada es 69..399, la misma que se mide en los cuadros de la radio. */
     int inside = 1;
 
     for (int i = 0; i < m; i++) {
-        if (y[i] < 69 || y[i] > 394) {
+        if (y[i] < 69 || y[i] > 399) {
             inside = 0;
         }
     }
