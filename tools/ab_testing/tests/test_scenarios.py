@@ -189,10 +189,24 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "settings-tema-sunlit",
         "settings-tema-trail",
         "settings-wfbat",
+        "swrscan-3pass",
+        "swrscan-3pass-p1",
+        "swrscan-3pass-p2",
+        "swrscan-3pass-p3",
+        "swrscan-3pass-stop",
+        "swrscan-3pass-tema-aurora",
+        "swrscan-3pass-tema-cathode",
+        "swrscan-5pass-moving",
+        "swrscan-5pass-outliers",
+        "swrscan-double-valley",
+        "swrscan-flat",
+        "swrscan-narrow-zoom",
+        "swrscan-quick",
+        "swrscan-wide-zoom",
     ]
     # Every fixture builds one of the screens the harness knows; the theme
-    # fixtures still build `main`, only the focus, settings, app-menu, BT and
-    # app-close ones do not.
+    # fixtures still build `main`, only the focus, settings, app-menu, BT,
+    # app-close and SWR Scan ones do not.
     assert all(
         scenario.screen
         in {
@@ -210,6 +224,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
             "autotune-found",
             "bt-dialog",
             "app-close-home",
+            "swrscan",
         }
         for scenario in suite.scenarios
     )

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>A/B report AB-SWR125</title>
+<style>body{font-family:system-ui,sans-serif;margin:2rem;max-width:60rem}table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{border:1px solid #ccc;padding:.35rem .6rem;text-align:left;font-size:.92rem}img{max-width:100%;border:1px solid #ccc;margin:.4rem 0}.pill{padding:.2rem .7rem;border-radius:1rem;color:#fff;font-weight:600}</style>
+</head><body>
+<h1>A/B UI report — AB-SWR125</h1>
+<p><span class="pill" style="background:#1b7f3b">PASS</span> exit 0</p>
+<ul>
+<li>Date: 2026-10-17</li>
+<li>A: <code>52a0204eae98ac42164554d61eac73bba2257558</code></li>
+<li>B: <code>71a87a27a0634af8b89e87dc6adb2d6b93f5e10c</code></li>
+<li>Docker image: <code>x6200-uiharness</code></li>
+<li>Scenarios: app-bands, app-close-home, apps-menu-1, apps-menu-2, apps-menu-3, apps-menu-4, apps-menu-5, apps-menu-6, autotune, autotune-found, autotune-progress, bench-render, bt-dialog, bt-dialog-tema-aurora, bt-dialog-tema-cathode, bt-dialog-tema-redshift, bt-dialog-tema-sprint, bt-dialog-tema-sunlit, bt-dialog-tema-trail, home-bateria-externa, home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco, main-frecuencia-dseg, main-natural, main-natural-eco, main-tema-aurora, main-tema-aurora-agua, main-tema-aurora-eco, main-tema-aurora-tx, main-tema-cathode, main-tema-cathode-agua, main-tema-cathode-eco, main-tema-cathode-tx, main-tema-redshift, main-tema-redshift-agua, main-tema-redshift-eco, main-tema-redshift-tx, main-tema-sprint, main-tema-sprint-agua, main-tema-sprint-eco, main-tema-sprint-tx, main-tema-sunlit, main-tema-sunlit-agua, main-tema-sunlit-eco, main-tema-sunlit-tx, main-tema-trail, main-tema-trail-agua, main-tema-trail-eco, main-tema-trail-tx, main-tx-simulado, settings-audio, settings-bands, settings-home, settings-perfil, settings-tema-aurora, settings-tema-cathode, settings-tema-redshift, settings-tema-sprint, settings-tema-sunlit, settings-tema-trail, settings-wfbat</li>
+</ul>
+<h2>Gates</h2>
+<table><tr><th>Gate</th><th>Required</th><th>Status</th><th>Summary</th></tr>
+<tr><td>Functional</td><td>yes</td><td>PASS</td><td>64 scenarios captured on both revisions</td></tr>
+<tr><td>Visual Regression</td><td>yes</td><td>PASS</td><td>captures are pixel-identical to the baseline</td></tr>
+<tr><td>Quality Contract</td><td>yes</td><td>PASS</td><td>663 contract checks passed on the candidate</td></tr>
+<tr><td>Performance</td><td>yes</td><td>PASS</td><td>render-cost proxy within budget</td></tr>
+<tr><td>Hardware</td><td>advisory</td><td>BLOCKED</td><td>no physical X6200 attached; hardware behaviour is not measured</td></tr>
+<tr><td>Energy</td><td>advisory</td><td>BLOCKED</td><td>no power measurement; energy evidence must be physical</td></tr>
+</table>
+<h2>Performance (render-cost proxy)</h2>
+<p>Every scenario is within the fixed budgets.</p>
+<h2>Visual diff</h2>
+<table><tr><th>Scenario</th><th>Changed px</th><th>Area</th><th>Regions</th></tr>
+<tr><td>app-bands</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>app-close-home</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>apps-menu-1</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>apps-menu-2</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>apps-menu-3</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>apps-menu-4</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>apps-menu-5</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>apps-menu-6</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>autotune</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>autotune-found</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>autotune-progress</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>bench-render</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>bt-dialog</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>bt-dialog-tema-aurora</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>bt-dialog-tema-cathode</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>bt-dialog-tema-redshift</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>bt-dialog-tema-sprint</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>bt-dialog-tema-sunlit</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>bt-dialog-tema-trail</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>home-bateria-externa</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>home-frecuencia-extrema</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>home-usb-20m</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-bateria-baja</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-espectro-agua</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-foco</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-frecuencia-dseg</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-natural</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-natural-eco</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-aurora</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-aurora-agua</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-aurora-eco</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-aurora-tx</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-cathode</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-cathode-agua</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-cathode-eco</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-cathode-tx</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-redshift</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-redshift-agua</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-redshift-eco</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-redshift-tx</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-sprint</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-sprint-agua</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-sprint-eco</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-sprint-tx</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-sunlit</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-sunlit-agua</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-sunlit-eco</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-sunlit-tx</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-trail</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-trail-agua</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-trail-eco</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-trail-tx</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tx-simulado</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>settings-audio</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>settings-bands</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>settings-home</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>settings-perfil</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>settings-tema-aurora</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>settings-tema-cathode</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>settings-tema-redshift</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>settings-tema-sprint</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>settings-tema-sunlit</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>settings-tema-trail</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>settings-wfbat</td><td>0</td><td>0.000%</td><td>—</td></tr>
+</table>
+<h2>Coverage (declared by the harness)</h2>
+<table><tr><th>Scenario</th><th>REAL</th><th>PARTIAL</th><th>SYNTHETIC</th><th>UNSUPPORTED</th></tr>
+<tr><td>app-bands</td><td>16</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>app-close-home</td><td>17</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td>apps-menu-1</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-2</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-3</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-4</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-5</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-6</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>autotune</td><td>18</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>autotune-found</td><td>18</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>autotune-progress</td><td>18</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>bench-render</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>bt-dialog</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>bt-dialog-tema-aurora</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>bt-dialog-tema-cathode</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>bt-dialog-tema-redshift</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>bt-dialog-tema-sprint</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>bt-dialog-tema-sunlit</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>bt-dialog-tema-trail</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>home-bateria-externa</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>home-frecuencia-extrema</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>home-usb-20m</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-bateria-baja</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-espectro-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-foco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-frecuencia-dseg</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-natural</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-natural-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-aurora-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-aurora-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-aurora-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-cathode-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-cathode-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-cathode-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-redshift-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-redshift-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-redshift-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sprint-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sprint-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sprint-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sunlit-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sunlit-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sunlit-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-trail-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-trail-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-trail-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tx-simulado</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-audio</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-bands</td><td>17</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>settings-home</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-perfil</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-tema-aurora</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-tema-cathode</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-tema-redshift</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-tema-sprint</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-tema-sunlit</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-tema-trail</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-wfbat</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+</table>
+<h2>Known issues</h2>
+<table><tr><th>Issue</th><th>Fixture</th><th>A</th><th>B</th><th>Classification</th></tr>
+<tr><td>UI-001</td><td>home-usb-20m</td><td>no</td><td>no</td><td>NOT_REPRODUCED</td></tr>
+<tr><td>UI-009</td><td>home-bateria-externa</td><td>no</td><td>no</td><td>NOT_REPRODUCED</td></tr>
+<tr><td>UI-015</td><td>settings-wfbat</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-016</td><td>settings-home</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-017</td><td>main-frecuencia-dseg</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-002</td><td>apps-menu-1</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-003</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-004</td><td>settings-home</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-005</td><td>bt-dialog</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-006</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-008</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+</table>
+<h2>Quality contracts</h2>
+<p>663 checks, 0 failure(s), 0 unchanged baseline defect(s).</p>
+<h2>Gates without instrumentation</h2><ul>
+<li><strong>Hardware</strong>: no physical X6200 attached; hardware behaviour is not measured</li>
+<li><strong>Energy</strong>: no power measurement; energy evidence must be physical</li>
+</ul>
+</body></html>
