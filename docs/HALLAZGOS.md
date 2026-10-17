@@ -2599,7 +2599,9 @@ distinto del §27: aquel arreglo el borde del bloque **activo** (`src/cw_tune_ui
 `8.65:1`); aca el problema es de las barras **inactivas** contra el **panel** del widget, y ninguno de
 los dos temas tenia un chequeo que lo cubriera (el barrido WCAG de §27/§28 mira los colores de la UI,
 no el blend de una barra semitransparente sobre un panel semitransparente). Se destapa con la fixture
-`cw-tune-on` porque es la primera que enciende el widget con un tema claro.
+`cw-tune-on` porque es la primera que enciende el widget con un tema claro (esa fixture se llama hoy
+`cw-tune-tuner`: los nombres `on`/`off` dejan de tener sentido con el arreglo, ver
+`docs/evidencia/2026-10-16-cw122-banco/README.md`).
 
 **Arreglo** (codigo: `src/cw_tune_ui.c`): las barras inactivas llevan borde de **1 px**
 (`rect_dsc.border_width = 1`, `border_opa = LV_OPA_COVER`, `cw_tune_init`) cuyo color se elige en cada

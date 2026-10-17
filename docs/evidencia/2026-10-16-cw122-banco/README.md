@@ -234,7 +234,7 @@ el borde se pierde).
 | estáticos (7) | `check_cfg_fills`, `check_actions`, `check_settings_focus`, `check_apps_menu`, `check_app_handlers`, `check_wcag`, **`check_cw_tune_feed`** (nuevo): todos ok |
 | `tests/run_all_tests.sh --quick` | 11 OK, 0 fallos (codecs y webserver omitidos por la imagen `ci`) |
 | `tools/ab_testing` `ruff check` / `ruff format --check` / `ty check` | `All checks passed!` / `169 files already formatted` / `All checks passed!` |
-| `tools/ab_testing` `pytest -m "not e2e"` | **239 passed** |
+| `tools/ab_testing` `pytest -m "not e2e"` | **227 passed**, 13 deselected |
 | `tools/ab_testing` `pytest -m e2e` (post-commit) | **13 passed**, 227 deselected |
 | `.agents/hallazgos-fundados/scripts/audita-hallazgos.sh` | 0 problemas de estructura |
 | `scripts/apps/x6200/check-matrix.sh 3553a476 HEAD <worktree>` | **exit 0** — 19 checks `ok` (nativos, 6 estáticos, ab_testing ruff/format/pytest, `bash -n`, determinismo); el paso del banco sale **BLOCKED** por entorno (sin `CHROOT`, el preflight no encuentra el chroot), que es el comportamiento diseñado y no marca FAILED |

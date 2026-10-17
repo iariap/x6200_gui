@@ -199,8 +199,10 @@ que marca el tono casi desaparece.
 | contraste (render) | objeto `cw_tune_bars` de `quality/nontext.yaml` sobre los renders dorados | Sunlit **5.02:1**, Redshift **20.67:1**; antes (captura del banco, binario real) **1.01:1** |
 | estáticos | los 7 (`check_cfg_fills`, `check_actions`, `check_settings_focus`, `check_apps_menu`, `check_app_handlers`, `check_wcag`, `check_cw_tune_feed`) | 7/7 ok |
 | nativos | `tests/native/run_native_tests.sh` | 0 fallos |
-| framework A/B | `ruff check`, `ruff format --check`, `ty check`, `pytest -m "not e2e"` | limpio / 239 pasan |
+| framework A/B | `ruff check`, `ruff format --check`, `ty check`, `pytest -m "not e2e"` | limpio (169 archivos formateados) / 227 pasan (13 e2e deseleccionados) |
 | anti-regresión | `tests/check_cw_tune_feed.py` (nuevo) | verde; sus dos sondas negativas (volver a gatear por `cw_tune`; sacar el accessor del gate) fallan |
+| matriz por paths | `scripts/apps/x6200/check-matrix.sh 3553a476 HEAD <worktree>` | exit 0, 19 checks `ok`; el paso del banco sale **BLOCKED** por entorno (el banco quedó ocupado, ver abajo) |
+| e2e del framework A/B | `pytest -m e2e` (post-commit) | 13 pasan |
 
 ### 5. Reportes al owner (no se tocó nada por esto)
 
