@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 18/10 ~04:40 | ROM `c640645d810c` + GUI 846afac6ed47 | `c67a30b` | (no corrido) | (no corrido) | 0 | **Estable 9h07min** ✓ (pid 1133, uptime 32798 s, 1 GUI, CRASHLOG 0) — la racha más larga de la sesión. 0 merges |
 | 18/10 ~01:55 | ROM `c640645d810c` + GUI 846afac6ed47 | `e38267c` | (no corrido) | (no corrido) | 0 | **Estable 5h50min** ✓ (pid 1133, uptime 21043 s, 1 GUI, CRASHLOG 0). 0 merges |
 | 18/10 ~01:20 | ROM `c640645d810c` + GUI 846afac6ed47 | `37de993` | (no corrido) | (no corrido) | 0 | **Estable 5h20min** ✓ (pid 1133, uptime 19243 s, 1 GUI, CRASHLOG 0). 0 merges |
 | 18/10 ~00:45 | ROM `c640645d810c` + GUI 846afac6ed47 | `40f649f` | **SWRScan** | **1 repro** | 0 | **Curva de ROE INVERTIDA confirmada con números** ✗✓ (lo que vio el owner): la curva extraída de `26-roe-multipasada-final.png` da **ROE ~4.5 en el CENTRO** y **~1.4 en los extremos** (601 columnas, y=118 centro vs y=399 borde) → **donde debería haber un valle hay una montaña**. El readout dice `min 1.0 @ 6.891.334` y **es coherente** con la curva (mínimo en el borde) → **el dato parece bien, el render parece invertido** (sin fundar). Comentado en el #119 con las 2 capturas (curva invertida + error de multipasadas) |
