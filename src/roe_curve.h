@@ -9,8 +9,11 @@
  *  Render-only helper for dialog_swrscan.c. #99 drew a Catmull-Rom spline that
  *  passed through every sample (noise included) and read as a jagged curve; #113
  *  (owner's order) replaced it with one clean valley: a least-squares quadratic
- *  over all the samples. The samples themselves are never touched -- the sweep,
- *  the RF and the DSP are out of scope here.
+ *  over all the samples. #125-fix constrains that drawn valley to open upward
+ *  (the physical ROE resonance shape); the free fit could come out inverted
+ *  (a dome) and the chart then drew the parabola with its base at the top. The
+ *  samples themselves are never touched -- the sweep, the RF and the DSP are out
+ *  of scope here.
  *
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
@@ -53,10 +56,14 @@ bool roe_curve_quadratic_fit(const float *in, int n, float *a, float *b, float *
  *
  * The curve is the least-squares parabola of the samples, evaluated at a fixed
  * step (~2 px on the panel): one clean valley instead of a spline that follows
- * every sample. Each point is clamped to [ROE_CURVE_MIN_VALUE,
- * ROE_CURVE_MAX_VALUE], which clips the parabola's ends to the chart's ceiling.
- * The measured minimum (the resonance the operator is after) is read off the
- * samples, never off this curve -- the fit is the drawn shape only.
+ * every sample. A ROE sweep over a resonance is physically a valley, so the
+ * drawn parabola is constrained to open upward: when the free fit comes out
+ * concave (a dome) it is mirrored into the valley with the same vertex column
+ * and its base on the measured minimum (see roe_curve.c). Each point is clamped
+ * to [ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE], which clips the parabola's ends
+ * to the chart's ceiling. The measured minimum (the resonance the operator is
+ * after) is read off the samples, never off this curve -- the fit is the drawn
+ * shape only.
  *
  * Deterministic: the same input always yields the same output. */
 void roe_curve_resample(const float *in, int n, float *out);

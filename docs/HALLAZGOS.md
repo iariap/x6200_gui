@@ -68,6 +68,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 47. [El fantasma del chart de ROE: el panel del dialogo es semitransparente](#47-el-fantasma-del-chart-de-roe-el-panel-del-dialogo-es-semitransparente)
 48. [El crash de CW del #116: la ventana de mensajes con la tabla vacia le pasaba NULL al keyer](#48-el-crash-de-cw-del-116-la-ventana-de-mensajes-con-la-tabla-vacia-le-pasaba-null-al-keyer)
 49. [El widget de CW tune en el tema claro: las barras desaparecen sobre su propio panel](#49-el-widget-de-cw-tune-en-el-tema-claro-las-barras-desaparecen-sobre-su-propio-panel)
+50. [La parabola de ROE invertida en la radio: el ajuste libre del render, no el camino de datos](#50-la-parabola-de-roe-invertida-en-la-radio-el-ajuste-libre-del-render-no-el-camino-de-datos)
 
 ---
 
@@ -2654,4 +2655,88 @@ Y el chequeo queda automatico en dos lugares (los dos fallan si el borde se pier
 "despues" con el **binario ARM real** (el banco estaba ocupado por otra sesion); el banco se libero
 durante esta corrida y la medicion de arriba es de ese binario, con las capturas `11`-`14` en
 `docs/evidencia/2026-10-16-cw122-banco/`.
+
+---
+
+## 50. La parabola de ROE invertida en la radio: el ajuste libre del render, no el camino de datos
+
+**Sintoma** (reporta el owner el 2026-10-17): en la radio la curva de ROE del barrido sale **dada
+vuelta** — sube desde la esquina inferior-izquierda hasta ~4.0 cerca del 60 % del chart y cae a 1.0
+al final, un **domo** — y pide "base abajo y las puntas tienen que tender a infinito positivo". Su
+captura es `docs/evidencia/2026-10-15-validacion-arreglos/26-roe-multipasada-final.png` (commit
+`b39d6014`): readout `min 1.0 @ 6.891.334 kHz`, banner `Error: timeout de RF`, `n=44/51`,
+`Passes: 1`, `Span: 200 kHz`, `Scale: Log`.
+
+**La hipotesis del setup (dos contadores en el camino de datos) queda refutada.** La spec propuso que
+el `RADIO_SWRSCAN` de `radio.c` auto-steppea el VFO por paquete mientras la sesion del #125 lleva su
+propio indice, y que el desencaje explicaba el domo y el readout fuera de rango. No es asi:
+
+- codigo: `src/radio.c:245-246` el caso `RADIO_SWRSCAN` **solo reenvia** el paquete
+  (`dialog_swrscan_update(pack->vswr * 0.1f)`), y `src/radio.c:269-270` solo llama al watchdog
+  (`dialog_swrscan_poll()`). `radio_start_swrscan()` (`src/radio.c:686-699`) pone el estado y la
+  potencia de TX; **no mueve el VFO ni lleva un contador de puntos**.
+- codigo: el indice y la direccion son **de la sesion y de nadie mas**:
+  `src/swr_session.c:229-242` — "the storage index IS the grid index" (`pass_first_index()` /
+  `pass_step()`), la direccion alterna por pasada segun `limits.alternate_direction`, y el dialogo
+  pide la frecuencia con `swr_session_freq()` (`src/swr_session.c:221-227`). Un unico dueño.
+- codigo/medido: el `6.891.334` **no esta fuera del span**: es el **borde inferior** de la grilla.
+  `swr_grid_build()` (`src/swr_session.c:50-73`) la arma `center ± span/2` = `6.991.334 ± 100.000`,
+  o sea `6.891.334 .. 7.091.334` (las tres etiquetas del eje son ticks interiores cada 50 kHz). El
+  `min` sale de `swr_session_minimum()` sobre las muestras medidas, **nunca del ajuste dibujado**
+  (`src/dialog_swrscan.c:358-380`), y vale 1.0 en el primer punto de la grilla: la base del domo,
+  exactamente donde el domo toca el piso. El `n=44/51` es el **timeout de RF** (los ultimos 7
+  paquetes no llegaron; `abort_text(SWR_ABORT_TIMEOUT)` = `"timeout de RF"`,
+  `src/dialog_swrscan.c:313`).
+
+**Causa, medida**: es el **render**, no los datos. `roe_curve_resample()` (`src/roe_curve.c`) ajusta
+una **cuadratica libre** por minimos cuadrados y la dibuja tal cual: la orientacion no esta
+restringida, asi que un barrido con forma de domo (coeficiente `a < 0`) se dibuja como domo. El mapeo
+vertical es correcto y no puede dar un domo: `calc_y()` (`src/dialog_swrscan.c:295-307`) devuelve
+`(1-x)*h` con `x` creciente con la ROE (log o lineal), o sea ROE alta **arriba** y 1.0 en el piso.
+Medido con el `quadratic_fit` en C sobre el domo del owner: `a = -0.0061` (concava); sobre el dataset
+escalonado del #119: `a = +1.026e-5` (ya abria hacia arriba).
+
+**Arreglo** (solo render, blast radius minimo): despues del ajuste libre, si `a < 0` se lo espeja al
+valle que tiene la **misma columna del vertice** y su base en el **minimo medido**
+(`src/roe_curve.c:166-185`):
+
+```c
+xv = -b / (2.0 * a);        /* clamp a [0, n-1] si el vertice se va del tramo */
+a = -a; b = -2.0 * a * xv; c = ymin + a * xv * xv;
+```
+
+Un ajuste que ya abre hacia arriba se dibuja igual que antes: los casos que funcionaban no cambian
+(el clamp del vertice evita que un ajuste casi plano se vaya al techo). Los samples, el barrido, el
+RF y el DSP no se tocan.
+
+**Verificacion, medida** (TDD RED→GREEN, con el `roe_curve.c` de la base y con el fix):
+
+- Nativo, bloque nuevo en `tests/native/test_roe_curve.c` (domo -> valle: base interior, valor 1.0,
+  los dos extremos suben, un solo valle):
+
+  ```
+  RED   (roe_curve.c de 37de9937):  18522 comprobaciones, 156 fallos
+  GREEN (con el fix):               roe_curve #125-fix: domo (fit a=-0.0061) -> valle en x=20.00, base 1.00, extremos 3.43 / 4.19
+                                    18522 comprobaciones, 0 fallos
+  ```
+
+  El test del #119 no se mueve: `valle dibujado en la muestra 48.88` (391 comprobaciones, 0 fallos).
+
+- Arnes, `tests/check_harness_swrscan_curve.sh` + `tests/swrscan_curve_evidence.py` sobre la fixture
+  nueva `swrscan-owner-40m-domo` (el domo del owner embebido en `src/swr_backend.c`), banda del chart
+  `y=69..399`, cuarto inferior `y>=316`:
+
+  ```
+  RED   (roe_curve.c de 37de9937):  domo: valle y=398 en x=10 (el BORDE); bordes suben 0 / 0 px   -> 3 FAIL
+  GREEN (con el fix):               domo: valle y=398 en x=284; borde izq y=191 (sube 207 px), borde der y=121 (sube 277 px)
+                                    valle real del owner: y=398 en x=149; bordes suben 20 / 12 px  -> PASS
+  ```
+
+  La fixture del valle real (`swrscan-owner-40m`) queda valle: el fix no la toca.
+
+**Sin fundar** (anexo A): **el mecanismo en hardware** que hizo que el barrido medido saliera en domo
+(por que la ROE subio a ~3.8 en el medio en vez de bajar). El host no transmite, asi que el camino de
+adquisicion real no se puede reproducir; la confirmacion final del U **en la radio** es del owner
+(`requires-radio`, con una pasada y carga ficticia). El `timeout de RF` (`n=44/51`) del lado radio
+tampoco se puede fundar desde el repo: el host entrega los 51 paquetes.
 

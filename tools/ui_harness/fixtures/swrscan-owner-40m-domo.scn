@@ -1,0 +1,46 @@
+# swrscan-owner-40m-domo: el MISMO barrido de ROE real (src/dialog_swrscan.c,
+# issue #125) sobre la MISMA antena de 40 m del owner, pero en la captura en que
+# la curva salia INVERTIDA (docs/evidencia/2026-10-15-validacion-arreglos/
+# 26-roe-multipasada-final.png): ROE ~1.0 en los dos bordes y ~3.8 en el medio --
+# un DOMO -- con las ultimas 7 muestras del barrido sin dato (n=44/51, banner
+# "Error: timeout de RF" en la radio). Es el RED del #125-fix.
+#
+# El dataset `owner_40m_domo` va embebido en src/swr_backend.c (valores extraidos
+# de esa captura con la calibracion del eje) y es mock-only: NO sustituye al
+# dataset real ni manda RF. Con el render de #113/#119 el ajuste libre de este
+# domo sale concavo (a < 0) y el chart dibujaba la parabola con la base ARRIBA;
+# con el #125-fix la misma sesion pinta el valle fisico (base abajo, puntas hacia
+# arriba). El centro y el span salen del dataset (no del fixture): el backend los
+# fija en cfg.swrscan_span y corta la corrida si el dial no esta donde el dataset
+# dice.
+
+name swrscan-owner-40m-domo
+screen swrscan
+
+seed 20
+
+swr_dataset owner_40m_domo
+swr_passes 1
+
+frequency_hz 6991334
+tx_frequency_hz 6991334
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

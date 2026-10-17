@@ -122,32 +122,56 @@ static const int swr_owner_tenths[SWR_SESSION_POINTS] = {
     10,
 };
 
-/* Carga el dataset real: 3 pasadas sobre la grilla de 51 puntos del rango real
- * (las pasadas impares barren descendente, como el contrato del backend). La
- * grilla usa la MISMA formula que swr_grid_build() para que el chequeo punto a
- * punto del VFO no dependa de un redondeo distinto. */
-static bool load_owner_dataset(void)
+/* El MISMO recorrido del owner, pero el de su captura del DOMO
+ * (docs/evidencia/2026-10-15-validacion-arreglos/26-roe-multipasada-final.png,
+ * radio re-flasheada el 15/10): la curva sale INVERTIDA -- ROE ~1.0 en los dos
+ * bordes y ~3.8 en el medio -- y las ultimas 7 muestras del barrido faltan
+ * (n=44/51, banner "Error: timeout de RF"). Los valores se extrajeron de la
+ * captura con la calibracion del eje (y1=69.3 px, h=329.9 px, escala Log) y son
+ * la RED del #125-fix: con el render de #113/#119 el ajuste libre de este domo
+ * sale concavo (a < 0) y el chart dibujaba la parabola con la base ARRIBA. Es un
+ * fixture mock-only (no se toca la radio); el dataset no sustituye al real. */
+#define SWR_DOME_DATASET    "owner_40m_domo"
+#define SWR_DOME_CENTER_HZ  6991334u
+#define SWR_DOME_SPAN_HZ    200000
+#define SWR_DOME_VALID      44
+
+static const int swr_dome_tenths[SWR_SESSION_POINTS] = {
+    10, 12, 15, 18, 20, 22, 24, 26, 29, 30,
+    31, 33, 34, 34, 35, 35, 36, 36, 37, 37,
+    38, 38, 37, 37, 36, 36, 35, 34, 33, 31,
+    30, 28, 26, 24, 22, 20, 18, 16, 12, 10,
+    10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+     0,
+};
+
+/* Carga un seed embebido sobre la grilla de SWR_SESSION_POINTS puntos del rango
+ * [center-span/2, center+span/2] (la MISMA formula que swr_grid_build() para que
+ * el chequeo punto a punto del VFO no dependa de un redondeo distinto). Las
+ * pasadas impares barren descendente, como el contrato del backend. Los puntos
+ * >= n_valid se entregan como muestras invalidas (lectura faltante). */
+static bool load_grid_seed(const int *tenths, int n_valid, int passes,
+                           uint32_t center_hz, uint32_t span_hz, const char *name)
 {
     const int64_t denom = SWR_SESSION_POINTS - 1;
 
     n_samples         = 0;
-    passes_in_dataset = 3;
-    grid_lo           = SWR_OWNER_CENTER_HZ - (uint32_t) (SWR_OWNER_SPAN_HZ / 2);
-    grid_hi           = grid_lo + SWR_OWNER_SPAN_HZ;
+    passes_in_dataset = passes;
+    grid_lo           = center_hz - (uint32_t) (span_hz / 2);
+    grid_hi           = grid_lo + span_hz;
 
-    for (int pass = 0; pass < passes_in_dataset; pass++) {
+    for (int pass = 0; pass < passes; pass++) {
         const bool descending = (pass % 2) == 1;
 
         for (int order = 0; order < SWR_SESSION_POINTS; order++) {
             const int point = descending ? (SWR_SESSION_POINTS - 1 - order) : order;
 
             if (n_samples >= SWR_FX_MAX_SAMPLES) {
-                fprintf(stderr, "swr_backend: el dataset '%s' desborda la tabla\n",
-                        SWR_OWNER_DATASET);
+                fprintf(stderr, "swr_backend: el dataset '%s' desborda la tabla\n", name);
                 return false;
             }
 
-            int64_t num = (int64_t) SWR_OWNER_SPAN_HZ * point;
+            int64_t num = (int64_t) span_hz * point;
             int64_t q   = num / denom;
             int64_t r   = num % denom;
 
@@ -161,12 +185,24 @@ static bool load_owner_dataset(void)
             s->order_in_pass = order;
             s->point_index   = point;
             s->freq_hz       = grid_lo + (uint32_t) q;
-            s->raw_tenths    = swr_owner_tenths[point];
-            s->is_valid      = 1;
+            s->raw_tenths    = tenths[point];
+            s->is_valid      = (point < n_valid);
         }
     }
 
     return true;
+}
+
+static bool load_owner_dataset(void)
+{
+    return load_grid_seed(swr_owner_tenths, SWR_SESSION_POINTS, 3,
+                          SWR_OWNER_CENTER_HZ, SWR_OWNER_SPAN_HZ, SWR_OWNER_DATASET);
+}
+
+static bool load_dome_dataset(void)
+{
+    return load_grid_seed(swr_dome_tenths, SWR_DOME_VALID, 1,
+                          SWR_DOME_CENTER_HZ, SWR_DOME_SPAN_HZ, SWR_DOME_DATASET);
 }
 
 static bool load_dataset(const char *name)
@@ -177,6 +213,10 @@ static bool load_dataset(const char *name)
      * CSV es el de los fixtures del #125 y el test nativo fija su tamano exacto. */
     if (strcmp(name, SWR_OWNER_DATASET) == 0) {
         return load_owner_dataset();
+    }
+
+    if (strcmp(name, SWR_DOME_DATASET) == 0) {
+        return load_dome_dataset();
     }
 
     snprintf(path, sizeof(path), "%s/swr_mock_samples.csv", HARNESS_SWR_FIXTURES_DIR);
@@ -550,6 +590,9 @@ void swr_backend_json(FILE *f, const scenario_t *scenario)
     if (strcmp(scenario->swr_dataset, SWR_OWNER_DATASET) == 0) {
         fprintf(f, "    \"source\": \"seed embebido (docs/evidencia/2026-10-15-validacion-"
                    "arreglos/roe-muestras-extraidas.csv, b39d6014)\",\n");
+    } else if (strcmp(scenario->swr_dataset, SWR_DOME_DATASET) == 0) {
+        fprintf(f, "    \"source\": \"seed embebido (docs/evidencia/2026-10-15-validacion-"
+                   "arreglos/26-roe-multipasada-final.png, el DOMO del owner)\",\n");
     } else {
         fprintf(f, "    \"source\": \"%s/swr_mock_samples.csv\",\n", HARNESS_SWR_FIXTURES_DIR);
     }
