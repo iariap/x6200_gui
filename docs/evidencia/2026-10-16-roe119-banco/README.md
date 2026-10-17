@@ -69,9 +69,7 @@ queda **requires-radio**:
 - la **potencia real de TX** del barrido (0.1 W): el banco no tiene equipo, la escritura del
   registro no es observable.
 
-### Una orden del control remoto que el banco deja medida
-
-Apretar **Stop por el control remoto con el barrido transmitiendo no hace nada**: el comando `btn`
+### Una orden del control remoto que el banco deja medidaApretar **Stop por el control remoto con el barrido transmitiendo no hace nada**: el comando `btn`
 se descarta porque `apply_cmd()` (`src/remote_server.cpp`) solo deja pasar los comandos de parada
 mientras la radio transmite (`radio_get_state() != RADIO_RX && !is_stop(c)`), y `btn` no es uno de
 ellos. El estado no cambia (`app=SWRScan tx=True mode=LSB` tras la orden) y el barrido sigue. El
@@ -84,3 +82,49 @@ el barrido"): el cierre remoto `app off` **si** se acepta mientras el barrido tr
 herramientas del QA mandan exactamente esa orden (`tools/prueba-apps-radio.sh`,
 `tools/captura-pantallas.sh`). No quedo el script de esa corrida ni el log de la GUI, asi que el
 camino exacto sigue **sin fundar** (anexo A del registro de hallazgos).
+
+---
+
+## `parabola-roe118.png` — la parábola que el owner no vio (y la escalera de la ROM flasheada)
+
+1600x950, md5 `cd6fa0e24b5266f94202c9dc06e22588`. Es el grafico que faltaba: las capturas del banco
+salen planas porque el banco **no tiene radio** (`data[]` queda en 1.0), asi que la forma de la
+curva solo se puede ver manejando el codigo con los datos reales.
+
+**Las dos lineas, y de donde sale cada una** (ninguna la dibuja el script: las dos salen de codigo
+del repo, y por eso son lo que la radio pinta):
+
+| Linea | Que es | Como se genero |
+|---|---|---|
+| **clara, llena** (`arbol`) | el fit del #117 + el resample actual: la forma que va a pintar la radio al reflashear con el trunk | `src/dialog_swrscan.c` + `src/roe_curve.c` del arbol, con el dialogo real (construct → Run → un paquete por punto → `draw_cb`) y los stubs del test nativo; los segmentos los imprime el mismo stub que usa `tests/native/test_swrscan.c::test_swrscan_render` |
+| **gris, a rayas** (`binario flasheado`) | el resample del **#104** (Catmull-Rom) con el barrido de 50 puntos pre-#113: exactamente lo que corre la ROM flasheada (`md5 e294229dd32d`, HALLAZGOS 46) | el mismo driver con `src/roe_curve.c` y `src/dialog_swrscan.c` de `aa05ef9c` (el #104) |
+
+Las dos comen **las mismas muestras**: los 496 puntos reales (`roe-muestras-extraidas.csv`, commit
+`b39d6014`), muestreados en el centro de cada intervalo de muestreo igual que el test nativo (el
+dataset es la curva del binario, cuyas muestras son nudos exactos). La derivacion y el camino son
+los del test, no una re-implementacion: el script no calcula ningun ajuste.
+
+**El estilo** es el del chart: fondo del **panel** con el rol del tema y el eje en el rol `text`
+—el look nuevo sale del fix del **#123** (`src/dialog_swrscan.c`: el chart pinta su propio fondo
+opaco y el eje deja de ser blanco fijo, para que no se vea la home a traves del panel
+semitransparente y el eje siga legible en los temas claros)—, span 50 kHz con las tres etiquetas
+de frecuencia del chart y la escala Log. El eje esta **recortado al rango de las muestras**
+(0,9..1,7): en la radio el chart va 1,5..4,5 y la curva ocupa la franja de abajo (por eso la
+parabola se lee mal en el equipo; el rango del eje es otro tema, no se toco).
+
+**Lo que se lee** (todo medido sobre el codigo, en px del chart):
+
+- **paso maximo entre puntos dibujados**: 1 px en el arbol, **8 px** en el binario flasheado (la
+  escalera: mesetas planas + escalones verticales). Es el defecto 1 del #119.
+- **minimo medido** (de las muestras): SWR **0,96** en 7.014,8 kHz (muestra 9).
+- **vertice del fit** (la parabola del arbol): SWR **1,18** en 7.024,9 kHz (muestra 17,08).
+- **separacion**: **8,12 muestras = 10,15 kHz** — el PENDIENTE declarado para el owner: el valle
+  que dibuja el fit queda 10 kHz arriba del minimo medido (el test nativo lo imprime; en la
+  imagen se mide 8,08 muestras por la cuantizacion a px, el mismo numero dentro de un pixel).
+
+En la radio los escalones de la ROM flasheada se ven **mas anchos** que aca (mesetas de 16/32/47/62
+px = 1/2/3/4 intervalos de muestreo, medido en `frame-2.png`): el binario es pre-#113 y muestrea 50
+puntos (intervalo 780/49 = 15,9 px), y las muestras reales llegan cuantizadas en decimas de ROE
+(`radio.c`: `pack->vswr * 0.1f`), que es lo que deja corridas largas iguales. Aca las muestras se
+derivan del dataset con la misma derivacion del test, para que el numero declarado (8,12 muestras)
+sea el mismo que el test mide.
