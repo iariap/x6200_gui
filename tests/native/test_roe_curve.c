@@ -248,6 +248,65 @@ void test_roe_curve(void) {
                (double)delta);
     }
 
+    /* --- #125-fix: un domo medido se dibuja como VALLE (base abajo, puntas
+     *     hacia arriba), nunca como la parabola invertida --- */
+    {
+        /* El recorrido medido de la radio (captura del owner
+         * docs/evidencia/2026-10-15-validacion-arreglos/26-roe-multipasada-final.png):
+         * un DOMO, ROE ~1.0 en los bordes y ~3.8 en el medio. El ajuste libre
+         * sale concavo (a < 0) y con #113/#119 el chart lo dibujaba con la base
+         * ARRIBA -- la orden del owner del 17/10: "la parabola esta invertida:
+         * base abajo y las puntas tienen que tender a infinito positivo". La
+         * curva dibujada tiene que ser el valle fisico: base (minimo) en el
+         * cuarto inferior, vertice interior y los DOS extremos subiendo. */
+        static const float dome[44] = {
+            1.0f,  1.05f, 1.1f,  1.2f,  1.35f, 1.5f,  1.7f,  1.9f,
+            2.1f,  2.3f,  2.5f,  2.7f,  2.9f,  3.1f,  3.3f,  3.45f,
+            3.6f,  3.7f,  3.78f, 3.82f, 3.79f, 3.72f, 3.6f,  3.45f,
+            3.3f,  3.1f,  2.9f,  2.7f,  2.5f,  2.3f,  2.1f,  1.9f,
+            1.7f,  1.5f,  1.35f, 1.2f,  1.1f,  1.05f, 1.0f,  1.0f,
+            1.0f,  1.05f, 1.1f,  1.2f,
+        };
+        float a, b, c;
+        int   m = roe_curve_point_count(44);
+
+        /* La entrada es un domo de verdad: el ajuste libre sale concavo. */
+        CHECK(roe_curve_quadratic_fit(dome, 44, &a, &b, &c));
+        CHECK(a < 0.0f);
+
+        roe_curve_resample(dome, 44, out);
+
+        int   v    = min_index(out, m);     /* el vertice dibujado */
+        float base = out[v];
+
+        /* (a) la base NO cae en un borde: es un valle, no un domo. Con el render
+         *     de #119 el minimo cae en out[0] y esto no se cumple. */
+        CHECK(v > 0 && v + 1 < m);
+
+        /* (b) la base es el minimo MEDIDO de las muestras (el valle toca el
+         *     piso con el dato mas bajo del recorrido). */
+        CHECK_CLOSE(base, 1.0f, 1e-3f);
+
+        /* (c) los DOS extremos suben respecto de la base: las puntas tienden a
+         *     infinito positivo. */
+        CHECK(out[0] > base + 0.5f);
+        CHECK(out[m - 1] > base + 0.5f);
+
+        /* (d) un solo valle: monotonamente decreciente hasta el vertice y
+         *     creciente desde ahi (una parabola abierta hacia arriba). */
+        for (int i = 1; i <= v; i++) {
+            CHECK(out[i] <= out[i - 1] + 1e-4f);
+        }
+        for (int i = v + 1; i < m; i++) {
+            CHECK(out[i] >= out[i - 1] - 1e-4f);
+        }
+
+        printf("roe_curve #125-fix: domo (fit a=%.4f) -> valle en x=%.2f, base %.2f, "
+               "extremos %.2f / %.2f\n",
+               (double)a, (double)curve_x(v), (double)base,
+               (double)out[0], (double)out[m - 1]);
+    }
+
     /* --- caso degenerado: una sola muestra no rompe --- */
     {
         float in[1] = {2.5f};

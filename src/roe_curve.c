@@ -151,6 +151,39 @@ void roe_curve_resample(const float *in, int n, float *out) {
         line_fit(in, n, &b, &c);
     }
 
+    /* A ROE sweep over an antenna resonance is physically a VALLEY: the measured
+     * curve must open upward (base at the bottom, both tips rising). The free
+     * least-squares fit does not enforce that, so a measured run that is not a
+     * clean valley can come out inverted -- a dome, a < 0 -- and the chart used
+     * to draw it upside down (the owner's report: "la parabola esta invertida:
+     * base abajo y las puntas a infinito positivo"). When the fit opens
+     * downward, mirror it into the valley that has the same vertex column and
+     * its base on the measured minimum: y = ymin + |a|*(x - xv)^2. The vertex is
+     * clamped inside [0, n-1] so an almost-flat fit (whose vertex runs off the
+     * run) becomes a shallow valley with its base on the nearest edge instead of
+     * a curve pinned to the chart ceiling. A fit that already opens upward is
+     * drawn as-is: the measured minimum of the readout never comes from here. */
+    if (a < 0.0) {
+        double xv = -b / (2.0 * a);
+        double ymin = (double) in[0];
+
+        if (xv < 0.0) {
+            xv = 0.0;
+        } else if (xv > (double) (n - 1)) {
+            xv = (double) (n - 1);
+        }
+
+        for (int i = 1; i < n; i++) {
+            if ((double) in[i] < ymin) {
+                ymin = (double) in[i];
+            }
+        }
+
+        a = -a;
+        b = -2.0 * a * xv;
+        c = ymin + a * xv * xv;
+    }
+
     int m = roe_curve_point_count(n);
 
     for (int i = 0; i < m; i++) {
