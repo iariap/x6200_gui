@@ -1,0 +1,66 @@
+Gates — #125-fix (parabola de ROE invertida) — rama factory/swr125-direction
+base 37de99374de01da75ab3b2bba8246cc18fc03678  HEAD eeb6d3a28141c85bca31996d79a598573238de4c
+fecha 2026-10-17
+
+== nativos (host, gcc, -fanalyzer en cada stage) ==
+tests/native/run_native_tests.sh
+  roe_curve #125-fix: domo (fit a=-0.0061) -> valle en x=20.00, base 1.00, extremos 3.43 / 4.19
+  18522 comprobaciones, 0 fallos
+  #119 forma dibujada: valle dibujado en la muestra 48.88 -> 391 comprobaciones, 0 fallos
+  swrscan multipasada: 4851 comprobaciones, 0 fallos
+  clock 10 / backlight 25 / digital 12 / restore 5 / eventos 24 / cwenc 12 -> 0 fallos
+RED (roe_curve.c de 37de9937): 18522 comprobaciones, 156 fallos
+
+== estaticos (7) ==
+  check_cfg_fills      exit 0  (69 campos inicializados, en orden)
+  check_actions        exit 0  (todas las acciones ofrecidas tienen manejador)
+  check_settings_focus exit 0
+  check_apps_menu      exit 0  (22 apps, 6 paginas)
+  check_app_handlers   exit 0  (269 botones, 0 sin handler)
+  check_wcag           exit 0  (pares OK: 1052 | FALLAS: 0)
+  check_manual_apps    exit 0  (22 apps con seccion)
+  audita-pruebas       exit 0
+  check_cw_tune_feed   exit 0  (el feed sigue a la visibilidad del widget)
+
+== arnes de UI ==
+tests/check_harness_swrscan_curve.sh
+  GREEN domo: valle y=398 en x=284; borde izq y=191 (sube 207 px), borde der y=121 (sube 277 px)
+        valle real: y=398 en x=149; bordes suben 20 / 12 px
+  PASS: la curva dibujada es un valle (base abajo, puntas hacia arriba)
+  RED (roe_curve.c de 37de9937): domo valle en x=10 (el borde), bordes suben 0 / 0 px -> 3 FAIL
+tests/check_harness_determinism.sh
+  PASS: deterministic (identical PNGs for every fixture)  [incluye swrscan-owner-40m-domo]
+
+== A/B (tools/ab_testing) ==
+ruff check .                 -> All checks passed!
+ruff format --check .        -> 171 files already formatted
+ty check                     -> All checks passed!
+pytest -m "not e2e"          -> 227 passed, 13 deselected
+pytest -m "e2e"              -> 13 passed, 227 deselected
+x6200-ab compare --experiment-id AB-SWR125DIR --a 37de9937 --b eeb6d3a2
+  status PASS (improvement False)  84 escenarios comparados
+  Functional PASS · Visual Regression PASS · Quality Contract PASS · Performance PASS
+  Hardware BLOCKED (advisory, sin radio) · Energy BLOCKED (advisory)
+  visual: 1 cambio explicado (swrscan-3pass-p1, 4331 px: la curva del barrido parcial pasa de
+  ajuste libre a valle); el resto byte-identico. La fixture nueva (domo) no se difea (es nueva en B).
+x6200-ab contracts --revision eeb6d3a2  -> PASS — 873 checks, 0 failure(s)
+x6200-ab audit     --revision eeb6d3a2  -> 11 known issues, 0 reproduced, 9 unverified;
+                                            9462 objetos / 85 escenarios, 0 hallazgos estructurales
+x6200-ab themes                          -> PASS (17 objetos no-texto, 0 fallas)
+
+== cross-compile ARM (buildroot gcc 12.3.0, armv7-a + NEON, qemu-arm-static) ==
+tests/native/run_native_tests.sh con CC=arm-buildroot-linux-gnueabihf-gcc
+  18522 comprobaciones, 0 fallos  (todos los stages, 0 fallos)
+
+== banco QEMU (binario ARM real del port, sin radio) ==
+CHROOT=/home/pablo/desa/x6200/.vfix3 BUILDROOT=/home/pablo/desa/x6200/buildroot_new/AetherX6200Buildroot
+  preflight --check: ok
+  rebuild: dirclean + rebuild desde eeb6d3a2
+  binario md5 b1ba67520079 (13.753.408 B, firmware del port, 3/3 marcas) · fuente md5 20d38ed8f352
+  01-home-40m.png (dial 6.991.334), 02-swrscan-abierto.png (ventana Idle, sin curva: el ROM no
+  tiene radio ni backend fake)
+  docker rm -f banco-apps -> limpio
+
+== requires-radio ==
+El mecanismo en hardware que produjo el domo (por que la ROE medida subio a ~3.8 en el medio) no se
+puede fundar desde el repo: el host no transmite. La confirmacion final del U en la radio es del owner.
