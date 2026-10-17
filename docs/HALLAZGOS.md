@@ -2519,9 +2519,12 @@ timer, con el trainer abierto): son ruido de diagnostico (escriben crudo, sin pa
 **Arreglo**:
 
 * `src/cw_encoder.c`: `cw_encoder_send()` rechaza `text == NULL` (no-op: no arma el keyer ni toca la
-  radio). Es el sitio del crash, asi que cubre a los seis llamadores por igual.
-* `src/dialog_msg_cw.c`: los callbacks de Send y Beacon miran el mensaje antes de llamar al keyer,
-  como ya hacia `dialog_msg_cw_edit_cb()` en el mismo archivo.
+  radio). Es el sitio del crash, asi que cubre a los seis llamadores por igual. Rechaza tambien el
+  mensaje **vacio**: el ASan del suite nativo mostro que `endecode_thread()` avanza el puntero mas
+  alla del terminador del buffer de `strdup("")` y lee fuera de el (con `get_msg()` devolviendo `""`
+  cuando la celda no es valida, el camino era alcanzable desde la misma ventana).
+* `src/dialog_msg_cw.c`: los callbacks de Send y Beacon miran el mensaje antes de llamar al keyer
+  (NULL o vacio), como ya hacia `dialog_msg_cw_edit_cb()` en el mismo archivo.
 
 En el mismo archivo del keyer quedaron dos defectos que el suite nativo saca a la luz al compilarlo
 con `-Wall -Wextra`/`-fanalyzer`: `endecode_thread()` (que retorna por el `break` del `while`)
@@ -2537,8 +2540,15 @@ $ tests/native/run_native_tests.sh          # con el src sin arreglar
 Segmentation fault (core dumped)            # exit 139 (128+11): strdup(NULL) -> strlen(NULL)
 $ tests/native/run_native_tests.sh          # con el arreglo
 == CW encoder (#116): cw_encoder_send(NULL) no desreferencia NULL ==
-10 comprobaciones, 0 fallos
+12 comprobaciones, 0 fallos
 ```
+
+El test no usa hilos: `tests/native/cwenc_stubs.c` corre `endecode_thread()` **sincronicamente**
+(`pthread_create` del stub llama a la rutina; `join`/`cancel`/`detach` son no-ops), asi que el proceso
+del test no tiene un segundo hilo y no puede llegar al `CHECK` de `AsanThread::Destroy()` del runtime
+ASan de GCC 13 del runner de CI (el PR #120 murio ahi). Corrida bajo clang-18: seccion CW con
+`-fsanitize=address` (exit 0, `12 comprobaciones, 0 fallos`) y con `address,undefined` (exit 0); el
+ASan fue ademas el que encontro el OOB del mensaje vacio.
 
 El test fija que `cw_encoder_send(NULL)` es un no-op (el keyer queda IDLE, no se toca la radio) y
 que un mensaje real (`"E"`) sigue armando el keyer.

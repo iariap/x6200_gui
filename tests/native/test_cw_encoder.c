@@ -17,11 +17,18 @@
  *
  * The invariant this test pins: cw_encoder_send() never dereferences a NULL
  * message -- a NULL text is a no-op that leaves the keyer idle and does not
- * touch the radio -- while a real message still keys.
+ * touch the radio -- while a real message still keys. An empty message is a
+ * no-op too: the keyer thread would advance past the terminator of the
+ * strdup("") buffer (out-of-bounds read, found by this suite's ASan).
  *
  * The REAL src/cw_encoder.c is staged next to minimal stubs
  * (tests/native/stubs_cwenc/), the same pattern as the clock/backlight/
  * digital-modes/SWR-Scan tests.
+ *
+ * The stub runs endecode_thread() synchronously (tests/native/cwenc_stubs.c), so
+ * the test process never has a second thread: the CI runner's GCC-13 ASan runtime
+ * CHECKs inside AsanThread::Destroy() when a thread exits, and a thread-free test
+ * cannot reach that path.
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -55,22 +62,28 @@ void test_cw_encoder_null(void) {
     CHECK(cw_encoder_sent() == 0);
     CHECK(cwenc_stub_key_toggles() == 0);
 
-    /* An empty (but non-NULL) message is a real message: it must still arm. */
+    /* An empty (but non-NULL) message is also a no-op: endecode_thread advances past
+     * the terminator of the strdup("") buffer and reads out of bounds (the ASan of
+     * this suite found it), and get_msg() returns "" for an invalid cell. */
     cw_encoder_send("", false);
-    CHECK(cw_encoder_state() == CW_ENCODER_SEND);
-    cw_encoder_stop();
     CHECK(cw_encoder_state() == CW_ENCODER_IDLE);
+    CHECK(cwenc_stub_key_toggles() == 0);
 }
 
 void test_cw_encoder_send(void) {
     cwenc_stub_reset();
 
-    /* Positive control: a real message still arms the keyer (the NULL guard did
-     * not turn cw_encoder_send() into a no-op). */
+    /* Positive control: a real message still arms the keyer and keys it (the NULL
+     * guard did not turn cw_encoder_send() into a no-op). The thread stub runs
+     * endecode_thread() synchronously, so by the time cw_encoder_send() returns the
+     * message is already out: the radio was keyed (down + up) and the encoder is
+     * back to IDLE. */
     cw_encoder_send("E", false);
-    CHECK(cw_encoder_state() == CW_ENCODER_SEND);
+    CHECK(cwenc_stub_key_toggles() == 2);            /* key down + key up */
+    CHECK(cw_encoder_state() == CW_ENCODER_IDLE);
+    CHECK(cw_encoder_sent() == 0);
 
-    /* The keyer runs in its own thread; stop() cancels and joins it. */
+    /* stop() over an idle encoder is a no-op. */
     cw_encoder_stop();
     CHECK(cw_encoder_state() == CW_ENCODER_IDLE);
 }

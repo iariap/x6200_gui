@@ -284,7 +284,7 @@ void dialog_msg_cw_send_cb(button_item_t *item) {
 
     /* Sin mensaje (tabla msg_cw vacia) no hay nada que mandar: pasarselo NULL al
      * keyer lo hacia strdup(NULL) -> strlen(NULL) y la GUI moria. issue #116. */
-    if (msg == NULL) {
+    if (msg == NULL || msg[0] == 0) {
         return;
     }
 
@@ -304,7 +304,7 @@ void dialog_msg_cw_beacon_cb(button_item_t *item) {
 
     /* Mismo caso que el Send (issue #116): sin mensaje seleccionado no se arranca
      * el beacon; el NULL que llegaba al keyer mataba la GUI. */
-    if (msg == NULL) {
+    if (msg == NULL || msg[0] == 0) {
         return;
     }
 

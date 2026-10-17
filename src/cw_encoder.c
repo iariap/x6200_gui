@@ -162,8 +162,11 @@ void cw_encoder_stop() {
 void cw_encoder_send(const char *text, bool beacon) {
     /* Sin mensaje no hay nada que mandar: strdup() no acepta NULL y la GUI moria
      * con fallo=(nil) dentro de strlen() cuando la ventana de mensajes de CW
-     * (tabla msg_cw vacia) le pasaba NULL al keyer. issue #116, docs/HALLAZGOS.md. */
-    if (text == NULL) {
+     * (tabla msg_cw vacia) le pasaba NULL al keyer. issue #116, docs/HALLAZGOS.md.
+     * El mensaje vacio tambien se descarta: endecode_thread avanza el puntero mas
+     * alla del terminador y lee fuera del buffer de strdup("") (lo destapo el ASan
+     * del suite nativo; get_msg() devuelve "" cuando la celda no es valida). */
+    if (text == NULL || text[0] == 0) {
         return;
     }
 

@@ -14,6 +14,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <pthread.h>
 
 #include "cfg/cfg_api.h"
 #include "params/params.h"
@@ -53,6 +54,28 @@ buttons_page_t buttons_page_msg_cw_1;
 
 void buttons_unload_page(void) { }
 void buttons_load_page(buttons_page_t *page) { (void) page; }
+
+/* --- threads: none in the test process --------------------------------------
+ * The real keyer runs endecode_thread() in its own pthread (joinable, cancelled and
+ * joined by cw_encoder_stop()). The test stub runs the routine SYNCHRONOUSLY and
+ * makes join/cancel/detach no-ops, so the test process never has a second thread.
+ * Reason: the CI runner's GCC-13 ASan runtime fails its own CHECK inside
+ * AsanThread::Destroy() (asan_thread.cpp:367, the alternate-signal-stack walk) when
+ * a thread exits; a thread-free test cannot reach that path. The keyer's observable
+ * behaviour is the same -- the message is keyed and finishes before
+ * cw_encoder_send() returns. No production attribute (stack size, detached) is
+ * touched: only the test's view of pthread_create. */
+int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
+                   void *(*start_routine)(void *), void *arg) {
+    (void) thread;
+    (void) attr;
+    start_routine(arg);
+    return 0;
+}
+
+int pthread_join(pthread_t thread, void **retval) { (void) thread; (void) retval; return 0; }
+int pthread_cancel(pthread_t thread)              { (void) thread; return 0; }
+int pthread_detach(pthread_t thread)              { (void) thread; return 0; }
 
 /* --- the CW character table (normally in src/cw_decoder.c) -----------------
  * get_morse() walks it until character->morse is NULL, so the array has to be
