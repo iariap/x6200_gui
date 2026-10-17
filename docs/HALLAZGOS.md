@@ -2734,6 +2734,31 @@ RF y el DSP no se tocan.
 
   La fixture del valle real (`swrscan-owner-40m`) queda valle: el fix no la toca.
 
+- Radio, con las capturas del QA del #130 y el script corregido por el #132 (1 argumento; la tinta
+  se detecta por tema dentro de la banda `y=69..399`, descartando la grilla y el fondo):
+
+  ```
+  $ python3 tests/swrscan_curve_evidence.py docs/evidencia/2026-10-17-qa-radio-swr125/01-swrscan-50k-dial7000-U.png
+         tinta: RGB(255,179,160) (detectada en la banda y=69..399)
+         valle: y=398 en x=255; bordes: izq y=304 (x=10), der y=230 (x=696)
+         forma: U
+    ok   captura: borde izquierdo sube 94 px sobre la base (>=3)
+    ok   captura: borde derecho sube 168 px sobre la base (>=3)
+  PASS: la curva dibujada es un valle (base abajo, puntas hacia arriba)     [exit 0]
+
+  $ python3 tests/swrscan_curve_evidence.py docs/evidencia/2026-10-15-validacion-arreglos/26-roe-multipasada-final.png
+         tinta: RGB(255,179,160) (detectada en la banda y=69..399)
+         valle: y=398 en x=10; bordes: izq y=398 (x=10), der y=398 (x=679)
+         forma: domo
+  FAIL captura: valle interior (x=10, bordes 10..679)                       [exit 1]
+  FAIL: 3 comprobacion(es) de forma
+  ```
+
+  Antes del #132 el script pedia 2 argumentos (exit 2 con 1) y su umbral `min(r,g,b)>=180` no veia
+  la tinta de Redshift `RGB(255,179,160)` (`min=160`): la captura de radio daba "no encontre la
+  curva". El #132 separa la deteccion de tinta (automatica, por tema) de los umbrales de forma, que
+  no cambian.
+
 **Sin fundar** (anexo A): **el mecanismo en hardware** que hizo que el barrido medido saliera en domo
 (por que la ROE subio a ~3.8 en el medio en vez de bajar). El host no transmite, asi que el camino de
 adquisicion real no se puede reproducir; la confirmacion final del U **en la radio** es del owner

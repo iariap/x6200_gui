@@ -74,6 +74,14 @@ Salida cruda en `asercion-script.txt`.
 
 → Hallazgo cargado como **issue nuevo** (no se arregla: el entregable es el issue).
 
+**Corregido en el #132 (posterior a esta corrida).** El script ahora acepta **1 argumento** y
+clasifica la forma por sí mismo (`python3 tests/swrscan_curve_evidence.py <captura>.png` → `U`,
+`domo` o `rama`; exit 0/1/2), y detecta la tinta **por tema** dentro de la banda `y=69..399`
+(descarta la grilla `0xAAAAAA` y el fondo/panel, toma el color dominante de texto/curva). Corrido
+sobre estas capturas: `01` → **U** (valle `y=398` en `x=255`, bordes +94/+168), `02` y `03` → **U**,
+y el domo viejo `26-roe-multipasada-final.png` → **domo** medido (exit 1, ya no "no encontré la
+curva"). El modo de 2 argumentos del arnés sigue igual.
+
 ## Hallazgos laterales (no del fix, ya reportados)
 
 - **`Error: timeout de RF`**: en **todas** las pasadas la sesión termina en `Error: timeout de RF` con
