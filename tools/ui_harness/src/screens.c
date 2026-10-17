@@ -739,6 +739,23 @@ void scenario_settle(const scenario_t *scenario)
             exit(1);
         }
 
+        /* El widget es un INDICADOR de lectura, no un control: no tiene eventos de entrada (solo
+         * DRAW_MAIN y DELETE, src/cw_tune_ui.c) y su objeto no puede quedar clicable. Ademas de ser
+         * lo correcto, es lo que lo mantiene fuera del contrato de touch target de 44 px: el
+         * criterio audita los objetos clicables que pintan (_is_control,
+         * tools/ab_testing/src/x6200_ab/layout_checks.py) y el widget mide 139x40. Si alguien le
+         * devuelve los flags de entrada, el arnes corta aca en vez de dejar que el contrato lo lea
+         * como un control de 40 px de alto. */
+        if (lv_obj_has_flag(widget, LV_OBJ_FLAG_CLICKABLE)
+            || lv_obj_has_flag(widget, LV_OBJ_FLAG_SCROLLABLE)) {
+            fprintf(stderr,
+                    "%s: el widget de CW tune quedo con flags de entrada (CLICKABLE/SCROLLABLE) "
+                    "(es un indicador de lectura: sin esto el contrato lo audita como un control "
+                    "de 139x40, por debajo del target de 44 px)\n",
+                    scenario->name);
+            exit(1);
+        }
+
         /* La regla de visibilidad nueva (issue #122): el widget es la herramienta de sintonia
          * de CW, asi que se muestra en CW/CWR y en ningun otro modo — el parametro `cw_tune`
          * (el boton "Tuner" de la pagina CW) ya NO decide. Se codifican las dos mitades, sobre

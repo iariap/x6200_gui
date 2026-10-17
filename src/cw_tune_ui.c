@@ -80,6 +80,13 @@ void cw_tune_init(lv_obj_t *parent)
     obj = lv_obj_create(parent);
     lv_obj_set_height(obj, HEIGHT);
     lv_obj_set_width(obj, WIDTH);
+    /* El widget es un indicador de lectura, no un control: no tiene eventos de entrada (solo
+     * DRAW_MAIN y DELETE), asi que se le sacan los flags de entrada que `lv_obj_create` deja
+     * puestos por defecto. Ademas de ser lo correcto (el objeto no captura toques ni scroll), es
+     * lo que lo deja fuera del contrato de touch target de 44 px: el criterio audita los objetos
+     * clicables que pintan (`_is_control`, tools/ab_testing/src/x6200_ab/layout_checks.py) y este
+     * objeto no es de entrada. Mismo par de flags que las cajas de band_plan.c:127. */
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_style(obj, &cw_tune_style, 0);
 
     lv_obj_add_event_cb(obj, update_cb, LV_EVENT_DRAW_MAIN, NULL);
