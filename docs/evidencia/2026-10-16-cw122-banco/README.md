@@ -243,15 +243,17 @@ el borde se pierde).
 
 | Qué | md5 |
 |---|---|
-| `07-harness-cw-tune-default.png` / `.json` | `ea55bb4d918695fd9ab0a3ad581b2245` / `8896ac182785431f36e306b8399c4675` |
-| `08-harness-cw-tune-tuner.png` / `.json` | `b1170a414dc2b42b67c5afe8ae27142e` / `aed99fcc9462e6975265a140a1bd34b1` |
-| `09-harness-cw-tune-ssb.png` / `.json` | `02549cfd65c4ec601568393616d32d31` / `e0f3db4803ec738960b3a2d78294124a` |
-| `10-harness-cw-tune-tema-sunlit.png` / `.json` | `cfa98f197f7f8cd1c50a0251d9c31e21` / `15b3b4eed261d9de3ba69995df6c4f76` |
+| `07-harness-cw-tune-default.png` / `.json` | `ea55bb4d918695fd9ab0a3ad581b2245` / `045703cebc8fdff5425826684644b1fc` |
+| `08-harness-cw-tune-tuner.png` / `.json` | `b1170a414dc2b42b67c5afe8ae27142e` / `7a6a42b9456219cebadb654ee0f7c349` |
+| `09-harness-cw-tune-ssb.png` / `.json` | `02549cfd65c4ec601568393616d32d31` / `995be67a96b21964f7e4ba5291350513` |
+| `10-harness-cw-tune-tema-sunlit.png` / `.json` | `cfa98f197f7f8cd1c50a0251d9c31e21` / `f12fe1dc7d436c6bd3c9b1ee042f4300` |
 | `mide.py` (medición) | `67f9457b4a8ef73bbedf4b298eb456b3` |
 | base del cierre | `3553a476` |
 
-Los JSON llevan el `revision` con el que se compiló el arnés (`a8b41b92`, el commit del arreglo en esta
-rama); los PNG no dependen de eso.
+Los PNG **no** dependen de la revision del arnes ni de las notas de coverage: los cuatro md5 de
+arriba son los mismos que salieron de las tres compilaciones de esta corrida (misma fuente, distinto
+`-DHARNESS_REVISION`), que es lo que el gate de determinismo fija. El campo `revision` de los JSON
+es el `git rev-parse HEAD` con el que se compiló (`babc649f`).
 
 `08` y `10` son **byte a byte** los renders dorados que mide el objeto `cw_tune_bars`
 (`tools/ab_testing/golden/cw-tune-tuner.png`, `cw-tune-tema-sunlit.png`): mismo md5, así que la
