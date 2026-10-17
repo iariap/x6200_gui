@@ -10,6 +10,7 @@
 
 #include "dialog.h"
 #include "styles.h"
+#include "theme.h"
 #include "params/params.h"
 #include "radio.h"
 #include "events.h"
@@ -342,7 +343,15 @@ static void construct_cb(lv_obj_t *parent) {
     lv_obj_set_size(chart, w, h);
     lv_obj_center(chart);
 
-    lv_obj_set_style_bg_opa(chart, LV_OPA_TRANSP, LV_PART_MAIN);
+    /* El chart pinta su propio fondo (issue #119): el panel del dialogo es una imagen
+     * semitransparente (alpha 204/255 en images/dialog.bin) y el chart era el unico contenido
+     * sin fondo propio, asi que la pantalla de atras se veia a traves del grafico (el fantasma
+     * medido en la radio: la fila de frecuencia y la tira de bandas de la home dentro del
+     * chart, docs/HALLAZGOS.md 46). Mismo idioma que las tablas de contenido de los otros
+     * dialogos y que el cuerpo de las apps (app_frame_body): el color sale del rol del tema,
+     * nunca escrito a mano. */
+    lv_obj_set_style_bg_color(chart, TC(panel), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(chart, LV_OPA_COVER, LV_PART_MAIN);
     lv_obj_set_style_border_width(chart, 0, LV_PART_MAIN);
 
     lv_group_add_obj(keyboard_group, chart);
