@@ -1,9 +1,11 @@
 /*
- * Minimal LVGL stub for the native SWR Scan dialog test (issue #85).
+ * Minimal LVGL stub for the native SWR Scan dialog test (issues #85 and #119).
  *
  * Only the surface src/dialog_swrscan.c touches: the object/event/draw types it
- * reads and the calls it makes. No rendering happens here; the dialog's draw
- * callback is never invoked by the test.
+ * reads and the calls it makes. No rendering happens here, but since #119 the
+ * test *drives* the dialog's draw callback (swrscan_stub_draw() in
+ * tests/native/swrscan_stubs.c) and reads the line segments it paints, so the
+ * stub records the object geometry, the styles set on it and the segments.
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -36,9 +38,15 @@ typedef struct {
 typedef struct _lv_font_t lv_font_t;
 typedef struct _lv_group_t lv_group_t;
 
-/* dialog_swrscan.c reads obj->coords directly in its draw callback. */
+/* dialog_swrscan.c reads obj->coords directly in its draw callback. The fields
+ * below it are recorded by the stub (lv_obj_set_size / the style setters) and read
+ * by the test; the dialog itself never touches them. */
 typedef struct _lv_obj_t {
     lv_area_t coords;
+    lv_coord_t w;
+    lv_coord_t h;
+    uint8_t    bg_opa;
+    bool       bg_color_set;
 } lv_obj_t;
 
 typedef struct _lv_event_t lv_event_t;
@@ -67,6 +75,7 @@ typedef enum {
 
 #define LV_PART_MAIN     0
 #define LV_OPA_TRANSP    0
+#define LV_OPA_COVER     255
 #define LV_COORD_MAX     32767
 #define LV_KEY_ESC       27
 
@@ -75,6 +84,7 @@ void      lv_obj_add_event_cb(lv_obj_t *obj, lv_event_cb_t cb, lv_event_code_t f
 void      lv_obj_set_size(lv_obj_t *obj, lv_coord_t w, lv_coord_t h);
 void      lv_obj_center(lv_obj_t *obj);
 void      lv_obj_set_style_bg_opa(lv_obj_t *obj, uint8_t opa, uint32_t part);
+void      lv_obj_set_style_bg_color(lv_obj_t *obj, lv_color_t color, uint32_t part);
 void      lv_obj_set_style_border_width(lv_obj_t *obj, lv_coord_t width, uint32_t part);
 void      lv_group_add_obj(lv_group_t *group, lv_obj_t *obj);
 lv_coord_t lv_obj_get_width(lv_obj_t *obj);

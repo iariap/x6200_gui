@@ -13,10 +13,14 @@
 
 void test_swrscan(void);
 void test_swrscan_sweep(void);
+void test_swrscan_render(void);
+void test_swrscan_sweep_end(void);
 
 int main(void) {
     test_swrscan();
     test_swrscan_sweep();
+    test_swrscan_render();
+    test_swrscan_sweep_end();
 
     printf("%d comprobaciones, %d fallos\n", tests_run, tests_failed);
 

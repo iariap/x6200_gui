@@ -64,6 +64,8 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 42. [WSPR como primera app mataba la GUI: la etiqueta NULL del modo digital](#42-wspr-como-primera-app-mataba-la-gui-la-etiqueta-null-del-modo-digital)
 43. [Codigo vendoreado de WSPR: escritura fuera del array en pack_call (sin llamadores)](#43-codigo-vendoreado-de-wspr-escritura-fuera-del-array-en-pack_call-sin-llamadores)
 45. [La cola de eventos se traba al llenarse (issue #111)](#45-la-cola-de-eventos-se-traba-al-llenarse-issue-111)
+46. [La curva de ROE escalonada del #119: el GUI flasheado no tiene el #117](#46-la-curva-de-roe-escalonada-del-119-el-gui-flasheado-no-tiene-el-117)
+47. [El fantasma del chart de ROE: el panel del dialogo es semitransparente](#47-el-fantasma-del-chart-de-roe-el-panel-del-dialogo-es-semitransparente)
 
 ---
 
@@ -739,6 +741,7 @@ con lo que haría falta para fundarlas.
 | "El banco da 0,15 s por los `open()` del sistema de archivos del host" | La comparación es medida; **la explicación** no | Perfilar el banco (QEMU) |
 | Que `addgroup` de busybox cree grupos en vez de agregar usuarios | Se observó en su momento, sin captura conservada | Repetirlo y pegar la salida |
 | `speaker-test` "corre sin error y sin sonido" (12/10) | No quedó la captura y hoy no se puede repetir con la GUI andando | Parar la GUI, correrlo y pegar la salida |
+| "La app de SWR Scan se cierra sola al terminar el barrido" (#119, defecto 2) | El cierre no está en el código del fin de barrido (§46) y no quedó el log de la GUI de esa corrida; el candidato (el `app off` del control remoto, que sí se acepta con el barrido transmitiendo) está fundado **en el código**, no en esa corrida | Correr el barrido con el log de la GUI a mano (`/tmp/x6200_log.txt` → `/mnt/app_logs/`), el `pid` de la GUI y el estado `app` del control remoto; y revisar el script de la corrida por si manda `{"cmd":"app","text":"off"}` |
 | El bucle de reinicio del CW Trainer (issue #51) se rearma en el arranque "por sí solo" | El banco no tiene camino de audio y el chroot no estaba armado, así que no se pudo medir la cadencia en el equipo | Medir en la radio el `PID` de la GUI por 150 s tras un reset (issue #15), con `key_train` en `params.db` |
 
 **Estimaciones explícitas** (dichas como tales, no son hallazgos): el "~20 s" del banco rápido y el
@@ -2305,3 +2308,157 @@ en la radio lo dicen los contadores nuevos en la proxima corrida. Por frecuencia
 `meter_update()` -> `event_send(obj, LV_EVENT_REFRESH, NULL)` (`src/meter.c:319`), una vez por
 cuadro de waterfall (`waterfall_fps_ms = 1000/25`, `src/dsp.cpp:119`), que coincide con el ritmo
 medido.
+
+---
+
+## 46. La curva de ROE escalonada del #119: el GUI flasheado no tiene el #117
+
+**Sintoma** (reporta el owner en el #119): con la ROM `c640645d810c` (GUI `e294229dd32d`) la curva
+de ROE del barrido sale **escalonada** — mesetas planas con escalones verticales — aunque el codigo
+del #117 dice "fitted to a single parabola". El QA lo midio leyendo el framebuffer en bucle
+(`docs/evidencia/2026-10-15-validacion-arreglos/frame-*.png`) y anexo la curva extraida (496 puntos,
+`roe-muestras-extraidas.csv`, commit `b39d6014`): corridas de hasta **62 columnas con el mismo valor**.
+
+**Causa, medida**: el GUI que quedo en la imagen flasheada **no es el del #117**. Su
+`roe_curve_resample` es, byte por byte, el **Catmull-Rom del #104** — el resampler que el #113
+reemplazo. Medido compilando los dos `roe_curve.c` con el toolchain y los flags del build de la ROM
+(buildroot 2023.02.11, gcc 12.3.0, `-O3 -g0 -D_FORTIFY_SOURCE=1`, el `TARGET_CFLAGS` que la propia
+imagen declara) y buscando los bytes en el binario de la radio:
+
+```
+$ python3 -   # compara old.text (roe_curve.c del #104) y new.text (el del arbol) contra gui-nuevo
+old(-O3) resample bytes: 376
+ROM match old(-O3) resample: True
+diff bytes: 0
+ROM contains new(-O3) resample: False
+ROM contains new(-O3) quadratic_fit: False
+```
+
+(`gui-nuevo` = `/tmp/gui-nuevo`, md5 `e294229dd32d133d78774e3b971517a3`, 13.257.128 B: el
+`x6200_gui` de la imagen, sacado de la radio. `nm` del objeto da
+`00000020 T roe_curve_resample`; en el binario cae en `0x4393c` y el desensamblado es el
+Catmull-Rom completo, con su clamp a las dos muestras que enmarcan cada tramo.)
+
+**Por que eso dibuja la escalera**: el Catmull-Rom del #104 clampa cada punto al rango de las dos
+muestras que lo enmarcan (`src/roe_curve.c` del #104, `lo`/`hi` = min/max de `p1`/`p2`). Con
+muestras **cuantizadas** (el `vswr` del flow viene en decimas: `radio.c:246`,
+`dialog_swrscan_update(pack->vswr * 0.1f)`) dos muestras iguales dejan el tramo entero **plano**:
+de ahi las mesetas; el salto entre mesetas es el escalon vertical. El ancho de las mesetas lo
+confirma: son multiplos exactos de un intervalo de muestreo. El binario flasheado es **pre-#113**
+(50 puntos fijos, `STEPS 50`), asi que el intervalo es `780/49 = 15.9 px`, y las mesetas medidas en
+`frame-2.png` son 16 / 32 / 47 / 62 px = 1 / 2 / 3 / 4 intervalos (medido columna por columna sobre
+el framebuffer).
+
+**De que arbol salio ese GUI** (codigo): `state/worktrees/x6200/events-queue-111` (HEAD `dbc5e66c`,
+base `ab7710b3` — **anterior** al merge del #117 `fe67dedb`) tiene exactamente las tres marcas del
+binario: `src/roe_curve.c` de 2.236 B (el Catmull-Rom del #104), `src/dialog_swrscan.c` de 11.410 B
+(el de 50 puntos, pre-#113) y el arreglo de la cola de eventos del #111 (cuya cadena
+`Overflow: %u eventos perdidos` esta en el binario). El checkout principal `x6200_gui` (el otro
+candidato) esta en `2392624`, tambien pre-#117, pero **no** tiene el arreglo del #111: la cadena no
+esta en su `events.c`.
+
+**Mecanismo del build** (codigo): el paquete `x6200-gui` de buildroot usa el override srcdir
+(`local.mk` → `X6200_GUI_OVERRIDE_SRCDIR=/workspace_gui`) y copia con `rsync -au` sobre el volumen
+persistente `x6200-build-output`; si el paquete ya esta construido, `make` no re-copia ni recompila
+nada. La imagen que se flasheo llevaba el GUI que se habia compilado antes desde **otro worktree**,
+y la nota del flasheo ("build: HEAD 223b30a; incluye #117") se creyo del `git log` del arbol, no del
+binario. El propio skill del QA documenta el mount (`-v .wt-pruebas:/workspace_gui:ro`,
+`.agents/qa-radio/SKILL.md`, seccion "Imagen de SD"), que apunta a un arbol fijo.
+
+**El codigo del arbol no es la causa, medido** con el dataset real del QA (496 puntos, commit
+`b39d6014`) sobre el camino real del chart (`construct_cb` → Run → `dialog_swrscan_update` por punto
+→ `draw_cb`, con la escala Log y la geometria del chart) en el test nuevo
+`tests/native/test_swrscan.c::test_swrscan_render`:
+
+```
+#119 forma dibujada (dataset real de 496 puntos, 41 muestras del barrido):
+  paso maximo entre puntos dibujados: 1 px (la escalera del #104 da 8 px)
+  caida maxima a la izquierda/derecha del valle: 0 / 0 px (escalera: decenas)
+```
+
+y con el `roe_curve.c` del #104 en su lugar (el que corre la radio), el mismo test:
+
+```
+FALLO tests/native/test_swrscan.c:474: worst_step <= 2
+FALLO tests/native/test_swrscan.c:497: worst_left <= 1
+FALLO tests/native/test_swrscan.c:498: worst_right <= 1
+FALLO tests/native/test_swrscan.c:510: inside
+#119 forma dibujada (dataset real de 496 puntos, 41 muestras del barrido):
+  paso maximo entre puntos dibujados: 9 px
+  caida maxima a la izquierda/derecha del valle: 2 / 3 px
+125 comprobaciones, 4 fallos
+```
+
+**Arreglo**: reconstruir la imagen desde el arbol que tiene el #117 y **verificar el binario** antes
+de flashear (que no contenga el resample del #104 / que el chart dibuje el valle del ajuste). El
+codigo del arbol no se toca por este defecto: el test nuevo lo deja fijado (forma dibujada con el
+dataset real, contra el resample que corra).
+
+**Sin fundar** (anexo A): el cierre solo de la app al terminar el barrido (defecto 2 del #119). El
+barrido del dialogo no termina solo —`do_step` envuelve `freq_index` y sigue midiendo— y en el codigo
+**no hay ningun camino de fin de pasada que cierre el dialogo**: los unicos cierres son la tecla ESC
+(`dialog_swrscan.c` `key_cb` → `dialog_destruct`), el `{"cmd":"app","text":"off"}` del control
+remoto (`main_screen_close_app`) y las teclas de la barra de casa (`apps_disable`). El QA no guardo
+el log de la GUI de esa corrida (`/mnt/app_logs/x6200_log_*.txt`), asi que el camino no se puede
+fijar desde el repo. Lo que **si** quedo medido en el banco (2026-10-16, esta corrida): con el
+barrido transmitiendo, el control remoto **descarta** el `btn` (no se puede apretar Stop por el
+remoto) pero **acepta** `app off` —`apply_cmd()` deja pasar solo los comandos de parada
+(`is_stop()`: `CMD_APP` con `val` 0 y los `app_cmds` con `val < stop`) cuando
+`radio_get_state() != RADIO_RX`—, y las herramientas del QA mandan justamente `app off`
+(`tools/prueba-apps-radio.sh`, `tools/captura-pantallas.sh`). Es el candidato mas probable y queda
+como hipotesis en el anexo A, con lo que falta para fundarlo.
+
+---
+
+## 47. El fantasma del chart de ROE: el panel del dialogo es semitransparente
+
+**Sintoma** (reporta el owner en el #119): al abrir el SWR Scan, dentro del grafico se ve un
+rectangulo tenue con etiquetas que no son del chart ("etiquetas viejas"), y el QA lo leyo como
+"region sucia del frame anterior" (`25c-roe-instantanea.png`).
+
+**Causa, medida**: no es un repintado: es la **pantalla principal viendose a traves** del panel del
+dialogo. El panel es una imagen del tema (`images/dialog.bin`, 9-slice) con **alpha 204/255** (80%
+opaco) — medido leyendo el canal alfa del asset:
+
+```
+$ python3 -   # images/dialog.bin: header LVGL + BGRA, alfa del centro
+images/dialog.bin      center alpha: mean 204.85   (histograma: 204 x 45.412 px)
+images/dialog_dark.bin center alpha: mean 243.0    (histograma: 243 x 49.950 px)
+```
+
+y el chart era el **unico contenido del dialogo sin fondo propio**
+(`lv_obj_set_style_bg_opa(chart, LV_OPA_TRANSP, ...)`, `src/dialog_swrscan.c`), asi que lo que hay
+detras se ve. Con la captura ampliada y con el contraste estirado se lee que el fantasma es
+exactamente la **fila de frecuencia de la home** (la caja redondeada con `7.004 / 7.028.544 / 7.052`,
+o sea el dial +- el ancho del FFT) y su **tira de bandas** (`40m CW`, `40m SSB`) — los mismos
+valores del dial que la captura (7.028.544).
+
+**Correccion de la hipotesis del issue**: "region sucia del frame anterior" / "invalidate
+incompleto" queda **refutado**: en `frame-2.png` (el barrido corriendo, con el chart invalidado una
+vez por paquete, ~28/s) el fantasma sigue ahi, igual que en `25c` (el chart vacio). Invalidar no
+cambia la translucidez del panel.
+
+**Arreglo** (display-only): el chart pinta su propio fondo con el rol del tema, el mismo idioma que
+las tablas de contenido de los otros dialogos (`dialog_bt.c`, `dialog_cluster.c`) y el cuerpo de las
+apps (`app_frame_body`):
+
+```c
+lv_obj_set_style_bg_color(chart, TC(panel), LV_PART_MAIN);
+lv_obj_set_style_bg_opa(chart, LV_OPA_COVER, LV_PART_MAIN);
+```
+
+El rol `panel` de los seis temas que trae la ROM es casi el mismo color que el `dialog` que tapa
+(Aurora `#1B1529` vs `#221A33`, Redshift `#0A0505` vs `#140809`, Sunlit `#FFFFFF` vs `#FFFFFF`,
+Trail `#132117` vs `#1A2A1E`), asi que el cambio se ve como el grafico con su panel, no como un
+rectangulo distinto.
+
+**Verificacion, medida**: el test nuevo (`tests/native/test_swrscan.c::test_swrscan_render`) fija que
+el objeto en el que el dialogo dibuja tiene fondo propio:
+
+```
+CHECK(swrscan_stub_chart_bg_opa() == LV_OPA_COVER);
+CHECK(swrscan_stub_chart_bg_color_set());
+```
+
+con el stub del tema resolviendo `TC(panel)` a un color fijo (lo que se afirma es que el chart pinta
+su fondo, no que color le da el tema).

@@ -1,8 +1,13 @@
 /*
  * Stubs for the native SWR Scan dialog test (tests/native/test_swrscan.c,
- * issue #85). The REAL src/dialog_swrscan.c is compiled against these (staged
- * next to them, the same pattern as the clock/backlight/digital-modes tests);
- * only its collaborators are faked here.
+ * issues #85 and #119). The REAL src/dialog_swrscan.c is compiled against these
+ * (staged next to them, the same pattern as the clock/backlight/digital-modes
+ * tests); only its collaborators are faked here.
+ *
+ * Since #119 the test also drives the dialog's draw callback and reads the line
+ * segments it paints (swrscan_stub_draw() + the swrscan_stub_curve_*() accessors):
+ * the shape of the drawn curve is an assertion of its own (a smooth parabola, not
+ * the staircase of the Catmull-Rom resampler the flashed ROM ran).
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -18,6 +23,7 @@
 #include "events.h"
 #include "util.h"
 #include "keyboard.h"
+#include "theme.h"
 #include "lvgl/lvgl.h"
 
 /* --- recorded calls, read by the test -------------------------------------- */
@@ -25,6 +31,7 @@
 static int stub_null_label;
 static int stub_started;
 static int stub_stopped;
+static int stub_destructed;
 
 /* The sweep moves the VFO one point per received packet (do_step -> radio_set_freq): the
  * test reads this sequence to pin the sweep geometry (issue #113). */
@@ -36,6 +43,7 @@ static int     stub_freq_count;
 int swrscan_stub_null_label(void) { return stub_null_label; }
 int swrscan_stub_started(void)    { return stub_started; }
 int swrscan_stub_stopped(void)    { return stub_stopped; }
+int swrscan_stub_destructed(void) { return stub_destructed; }
 int32_t swrscan_stub_freq(int i)      { return stub_freqs[i]; }
 int     swrscan_stub_freq_count(void) { return stub_freq_count; }
 
@@ -43,7 +51,128 @@ void swrscan_stub_reset(void) {
     stub_null_label = 0;
     stub_started    = 0;
     stub_stopped    = 0;
+    stub_destructed = 0;
     stub_freq_count = 0;
+}
+
+/* --- theme ------------------------------------------------------------------ */
+
+/* The test build stubs the theme (tests/native/stubs_swrscan/theme.h): each role resolves to a
+ * fixed colour, because the assertions are that the chart paints its own background and that its
+ * text comes from the theme's role — not which colour the theme gives it (that is the theme
+ * tests' job). */
+uint32_t theme_hex(theme_color_t c) {
+    return (c == TC_text) ? 0x445566 : 0x112233;
+}
+
+/* --- draw recording (issue #119) -------------------------------------------- */
+
+/* The test drives the dialog's draw callback (swrscan_stub_draw) and reads the line segments
+ * it painted. The chart's curve is the only line with width 4 (the grid and the axis lines use
+ * width 2), so the accessors below return that subset: the drawn polyline. */
+#define STUB_SEGMENTS 1024
+
+typedef struct {
+    lv_point_t a;
+    lv_point_t b;
+    lv_coord_t width;
+    lv_color_t color;
+} stub_segment_t;
+
+static stub_segment_t stub_segments[STUB_SEGMENTS];
+static int            stub_segment_count;
+
+static lv_obj_t      *draw_obj;         /* the object the DRAW_MAIN_END callback was registered on */
+static lv_event_cb_t  draw_cb;
+static lv_obj_t      *event_target;     /* what lv_event_get_target() hands the callback */
+static lv_color_t     last_label_color; /* the colour of the last text the chart painted */
+
+/* Fires the dialog's draw callback on the chart, recording what it paints. */
+void swrscan_stub_draw(void) {
+    stub_segment_count = 0;
+    event_target       = draw_obj;
+    last_label_color   = lv_color_hex(0);
+
+    if (draw_cb) {
+        draw_cb(NULL);
+    }
+
+    event_target = NULL;
+}
+
+/* Number of painted segments (all of them, grid included). */
+int swrscan_stub_segment_count(void) { return stub_segment_count; }
+
+/* The curve: the segments the dialog paints with width 4. `end` = 1 takes the segment's end
+ * point, 0 its start, so segment i of the curve joins (x(i), y(i)) to (x(i+1), y(i+1)). */
+int swrscan_stub_curve_segment_count(void) {
+    int n = 0;
+
+    for (int i = 0; i < stub_segment_count; i++) {
+        if (stub_segments[i].width == 4) {
+            n++;
+        }
+    }
+
+    return n;
+}
+
+static const stub_segment_t *curve_segment(int i) {
+    int n = 0;
+
+    for (int k = 0; k < stub_segment_count; k++) {
+        if (stub_segments[k].width == 4) {
+            if (n == i) {
+                return &stub_segments[k];
+            }
+            n++;
+        }
+    }
+
+    return NULL;
+}
+
+lv_coord_t swrscan_stub_curve_x(int i, int end) {
+    const stub_segment_t *s = curve_segment(i);
+
+    if (!s) {
+        return 0;
+    }
+
+    return end ? s->b.x : s->a.x;
+}
+
+lv_coord_t swrscan_stub_curve_y(int i, int end) {
+    const stub_segment_t *s = curve_segment(i);
+
+    if (!s) {
+        return 0;
+    }
+
+    return end ? s->b.y : s->a.y;
+}
+
+/* El color con el que el chart dibuja la curva y el texto: sale del rol `text` del tema, que es
+ * lo que lo hace legible sobre el panel del chart (claro u oscuro segun el tema). */
+lv_color_t swrscan_stub_curve_color(void) {
+    const stub_segment_t *s = curve_segment(0);
+
+    return s ? s->color : last_label_color;
+}
+
+lv_color_t swrscan_stub_label_color(void) {
+    return last_label_color;
+}
+
+/* The chart's own background: what construct_cb set on the object it draws into. The test
+ * pins that the chart paints an opaque panel of its own (issue #119, the ghost of the main
+ * screen showing through the chart) — 0 means the object has no background at all. */
+uint8_t swrscan_stub_chart_bg_opa(void) {
+    return draw_obj ? draw_obj->bg_opa : 0;
+}
+
+int swrscan_stub_chart_bg_color_set(void) {
+    return draw_obj && draw_obj->bg_color_set;
 }
 
 /* --- cfg / cfg_cur ---------------------------------------------------------- */
@@ -121,7 +250,10 @@ lv_obj_t *dialog_init(lv_obj_t *parent) {
 }
 
 void dialog_construct(dialog_t *dialog, lv_obj_t *parent) { (void)dialog; (void)parent; }
-void dialog_destruct(void) {}
+
+/* The real dialog_destruct() deletes the dialog's object: the app closes. The stub records it
+ * instead (issue #119: el fin del barrido no puede cerrar la app). */
+void dialog_destruct(void) { stub_destructed++; }
 
 /* --- radio ------------------------------------------------------------------ */
 
@@ -183,10 +315,13 @@ lv_obj_t *lv_obj_create(lv_obj_t *parent) {
 }
 
 void lv_obj_add_event_cb(lv_obj_t *obj, lv_event_cb_t cb, lv_event_code_t filter, void *user_data) {
-    (void)obj;
     (void)user_data;
     if (filter == LV_EVENT_DELETE) {
         delete_cb = cb;
+    } else if (filter == LV_EVENT_DRAW_MAIN_END) {
+        /* The chart: the test fires this callback through swrscan_stub_draw(). */
+        draw_obj = obj;
+        draw_cb  = cb;
     }
 }
 
@@ -198,28 +333,65 @@ void swrscan_stub_fire_delete(void) {
 
 int swrscan_stub_delete_cb_registered(void) { return delete_cb != NULL; }
 
-void      lv_obj_set_size(lv_obj_t *obj, lv_coord_t w, lv_coord_t h) { (void)obj; (void)w; (void)h; }
-void      lv_obj_center(lv_obj_t *obj) { (void)obj; }
-void      lv_obj_set_style_bg_opa(lv_obj_t *obj, uint8_t opa, uint32_t part) { (void)obj; (void)opa; (void)part; }
-void      lv_obj_set_style_border_width(lv_obj_t *obj, lv_coord_t width, uint32_t part) { (void)obj; (void)width; (void)part; }
-void      lv_group_add_obj(lv_group_t *group, lv_obj_t *obj) { (void)group; (void)obj; }
-lv_coord_t lv_obj_get_width(lv_obj_t *obj) { (void)obj; return 0; }
-lv_coord_t lv_obj_get_height(lv_obj_t *obj) { (void)obj; return 0; }
-void      lv_obj_invalidate(lv_obj_t *obj) { (void)obj; }
+void lv_obj_set_size(lv_obj_t *obj, lv_coord_t w, lv_coord_t h) {
+    obj->w = w;
+    obj->h = h;
+}
 
-lv_obj_t      *lv_event_get_target(lv_event_t *e) { (void)e; return NULL; }
+/* The chart is the only object the dialog centers. Its real place on the 800x480 panel
+ * (measured on the radio's frames: the chart is 780x330 centered in the dialog box that
+ * starts at y = 66) so the drawn geometry matches what the panel shows. */
+void lv_obj_center(lv_obj_t *obj) {
+    obj->coords.x1 = 10;
+    obj->coords.y1 = 74;
+    obj->coords.x2 = 790;
+    obj->coords.y2 = 404;
+}
+
+void lv_obj_set_style_bg_opa(lv_obj_t *obj, uint8_t opa, uint32_t part) {
+    (void)part;
+    obj->bg_opa = opa;
+}
+
+void lv_obj_set_style_bg_color(lv_obj_t *obj, lv_color_t color, uint32_t part) {
+    (void)color;
+    (void)part;
+    obj->bg_color_set = true;
+}
+
+void lv_obj_set_style_border_width(lv_obj_t *obj, lv_coord_t width, uint32_t part) { (void)obj; (void)width; (void)part; }
+void lv_group_add_obj(lv_group_t *group, lv_obj_t *obj) { (void)group; (void)obj; }
+lv_coord_t lv_obj_get_width(lv_obj_t *obj) { return obj->w; }
+lv_coord_t lv_obj_get_height(lv_obj_t *obj) { return obj->h; }
+void lv_obj_invalidate(lv_obj_t *obj) { (void)obj; }
+
+lv_obj_t      *lv_event_get_target(lv_event_t *e) { (void)e; return event_target; }
 lv_draw_ctx_t *lv_event_get_draw_ctx(lv_event_t *e) { (void)e; return NULL; }
 void          *lv_event_get_param(lv_event_t *e) { (void)e; return NULL; }
 
 void lv_draw_line_dsc_init(lv_draw_line_dsc_t *dsc) { memset(dsc, 0, sizeof(*dsc)); }
 void lv_draw_label_dsc_init(lv_draw_label_dsc_t *dsc) { memset(dsc, 0, sizeof(*dsc)); }
-lv_color_t lv_color_white(void) { lv_color_t c = {0, 0, 0}; return c; }
-lv_color_t lv_color_hex(uint32_t v) { (void)v; lv_color_t c = {0, 0, 0}; return c; }
+lv_color_t lv_color_white(void) { lv_color_t c = {255, 255, 255}; return c; }
+lv_color_t lv_color_hex(uint32_t v) {
+    /* Decoded, so the test can tell the theme's role apart from a colour written in the code.
+     * The struct's fields are blue, green, red (like LVGL's lv_color_t). */
+    lv_color_t c = {(uint8_t) (v & 0xff), (uint8_t) ((v >> 8) & 0xff), (uint8_t) ((v >> 16) & 0xff)};
+    return c;
+}
 void lv_draw_line(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *dsc, const lv_point_t *p1, const lv_point_t *p2) {
-    (void)ctx; (void)dsc; (void)p1; (void)p2;
+    (void)ctx;
+
+    if (stub_segment_count < STUB_SEGMENTS) {
+        stub_segments[stub_segment_count].a     = *p1;
+        stub_segments[stub_segment_count].b     = *p2;
+        stub_segments[stub_segment_count].width = dsc->width;
+        stub_segments[stub_segment_count].color = dsc->color;
+        stub_segment_count++;
+    }
 }
 void lv_draw_label(lv_draw_ctx_t *ctx, const lv_draw_label_dsc_t *dsc, const lv_area_t *coords, const char *txt, void *bidi) {
-    (void)ctx; (void)dsc; (void)coords; (void)txt; (void)bidi;
+    (void)ctx; (void)coords; (void)txt; (void)bidi;
+    last_label_color = dsc->color;
 }
 void lv_txt_get_size(lv_point_t *size_res, const char *txt, const lv_font_t *font,
                      lv_coord_t letter_space, lv_coord_t line_space, lv_coord_t max_width, uint32_t flag) {
