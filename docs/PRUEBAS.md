@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 17/10 ~08:00 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `5c44d3f` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 5h51min** ✓ (pid 2452, uptime 21071 s, 1 GUI, CRASHLOG 0). 0 merges; 5 ramas en curso (sin cambios) |
 | 17/10 ~07:25 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `aad2a5a` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 5h21min** ✓ (pid 2452, uptime 19273 s, 1 GUI, CRASHLOG 0). 0 merges; 5 ramas en curso |
 | 17/10 ~06:50 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `563bfd3` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 4h51min** ✓ (pid 2452, uptime 17470 s, 1 GUI, CRASHLOG 0). 0 merges; **nueva rama `factory/swrscan-multipass-125`** (el próximo paso del #119: el escalón). 5 ramas en curso |
 | 17/10 ~06:15 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `e717d9f` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 4h21min** ✓ (pid 2452, uptime del sistema 15673 s, 1 GUI, CRASHLOG 0). 0 merges; **nueva rama `factory/cw-tune-122`** (issue nuevo, no mío). Siguen 116, 119 y 125 |
