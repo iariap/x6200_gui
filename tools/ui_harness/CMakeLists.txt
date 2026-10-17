@@ -126,6 +126,16 @@ set(GUI_SRC
     ${REPO}/src/dialog_settings.c
     ${REPO}/src/dialog_bt.c
     ${REPO}/src/bt_devices.c
+    # El barrido de ROE (issue #125): la ventana REAL, su motor puro de sesion y
+    # el resample del chart. Los fixtures `swrscan-*` la abren por el camino del
+    # firmware (main_screen_start_app(ACTION_APP_SWRSCAN)) y la manejan con el
+    # backend fake de src/swr_backend.c sobre el reloj virtual; el lado de la
+    # radio es mocks/mock_radio.c (contadores, sin RF). El gate de transmision
+    # multipasada se compila ENCENDIDO en este binario de host (ver abajo) para
+    # poder capturar las pasadas 3 y 5: el binario de la ROM lo deja apagado.
+    ${REPO}/src/dialog_swrscan.c
+    ${REPO}/src/swr_session.c
+    ${REPO}/src/roe_curve.c
 )
 
 # The GUI's own C++ (button bar, MFK encoder state, controls, DSP helpers) and
@@ -195,7 +205,21 @@ target_compile_definitions(ui_harness PRIVATE
     # repository instead of /usr/share: theme.c looks in THEMES_DIR_SHIPPED and
     # the harness sets it to this path before theme_init (harness_main.c). Same
     # files the image installs; nothing is read from the environment.
-    HARNESS_THEMES_DIR_SHIPPED="${REPO}/rootfs/usr/share/x6200/themes")
+    HARNESS_THEMES_DIR_SHIPPED="${REPO}/rootfs/usr/share/x6200/themes"
+    # Los datasets del barrido de ROE (issue #125), los mismos archivos que consume
+    # el test nativo (tests/native/swrscan_fixtures.c): un solo origen de datos
+    # para las dos superficies. La ruta la fija el CMake, no el entorno.
+    HARNESS_SWR_FIXTURES_DIR="${REPO}/tests/fixtures/swrscan"
+    # El gate de transmision multipasada (src/dialog_swrscan.h) se compila
+    # ENCENDIDO **solo en este binario de host**, que no tiene radio: los
+    # contadores de mocks/mock_radio.c son la unica "transmision" y el binario no
+    # linkea ninguna libreria de RF. Hace falta encendido para poder capturar las
+    # pasadas 3 y 5 (con el gate apagado la ventana rechaza la sesion y el fixture
+    # capturaria una pantalla en Error). El binario de la ROM NO pasa este define
+    # (src/CMakeLists.txt no lo tiene), asi que ahi el gate sigue apagado: el
+    # test nativo test_swrscan_multipass_gate lo fija, y la cobertura de los
+    # fixtures `swrscan-*` se declara PARTIAL por esto (docs/UI_HARNESS.md).
+    SWRSCAN_MULTIPASS_TX_ENABLED=1)
 
 target_include_directories(ui_harness PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}          # lv_conf.h

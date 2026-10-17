@@ -38,6 +38,7 @@
 #include "visual_policy.h"
 
 #include "autotune_ui.h"
+#include "swr_backend.h"
 #include "virtual_time.h"
 
 #include "mock_harness.h"
@@ -320,6 +321,27 @@ bool scenario_build(const scenario_t *scenario)
         build_main(scenario);
         mock_btaudio_seed_files();
         main_screen_start_app(ACTION_APP_BT);
+        return true;
+    }
+
+    if (!strcmp(scenario->screen, "swrscan")) {
+        /* El barrido de ROE real (issue #125) sobre el backend fake. La ruta es la del
+         * firmware: main_screen_start_app(ACTION_APP_SWRSCAN) ->
+         * dialog_construct(dialog_swrscan) (src/dialog_swrscan.c, compilado aca). El host no
+         * tiene radio, asi que el lado de la radio lo hace src/swr_backend.c sobre el reloj
+         * virtual: el fixture dice que dataset de tests/fixtures/swrscan/ replayar, cuantas
+         * pasadas y hasta donde llegar. El backend fija el span del cfg con el del dataset
+         * ANTES de abrir la ventana (construct_cb registra el observer del span), asi que la
+         * grilla del dialogo es exactamente la del fixture. El grupo de teclado sube primero
+         * porque dialog_construct -> dialog_init -> dialog_item. */
+        mock_keyboard_group_up();
+        build_main(scenario);
+
+        if (!swr_backend_prepare(scenario)) {
+            exit(1);
+        }
+
+        main_screen_start_app(ACTION_APP_SWRSCAN);
         return true;
     }
 
@@ -753,6 +775,16 @@ void scenario_settle(const scenario_t *scenario)
                     bottom);
             exit(1);
         }
+    }
+
+    if (!strcmp(scenario->screen, "swrscan")) {
+        /* El barrido de ROE corre aca, cuando los timers del dialogo ya corrieron: el
+         * backend fake (src/swr_backend.c) pulsa Run —el mismo boton que el usuario— y
+         * entrega un paquete del flow por punto sobre el reloj virtual, hasta donde pide el
+         * fixture. Sin sleeps y sin RF: la unica "transmision" es el contador del mock
+         * (mocks/mock_radio.c). El backend corta la corrida si la sesion no arranco, si el
+         * VFO no quedo en la frecuencia del fixture o si el resultado no quedo congelado. */
+        swr_backend_run(scenario);
     }
 }
 

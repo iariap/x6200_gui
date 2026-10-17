@@ -399,6 +399,18 @@ params.db into `params.play_gain_db_f`/`params.rec_gain_db_f`) and pick the
 `bench_redraw_passes` (the forced bench) and `natural_frames` (the natural bench)
 are honoured only in their own mode and never change a rendered pixel.
 
+The `swrscan` screen (issue #125) adds four keys, all of them about the fake ROE
+acquisition backend of `src/swr_backend.c` (see its own section below):
+`swr_dataset` names one of the datasets in `tests/fixtures/swrscan/`,
+`swr_passes` is the number of passes asked of the window (1, 3 or 5 — the
+window's own gate still decides whether the session runs), `swr_feed` is how many
+flow packets the backend hands the dialog before it stops (0 = the whole
+session, a smaller number leaves the session running so a fixture can capture it
+mid-sweep) and `swr_stop` presses Stop after the last fed packet (the operator's
+cancel). The grid's centre and span are **not** keys: the backend derives them
+from the dataset and stops the run if the fixture's `frequency_hz` does not match
+the dataset's centre.
+
 `mode` takes the names the radio itself lists and accepts (`mode_names[]`,
 `src/remote_server.cpp`): `LSB`, `LSB-D`, `USB`, `USB-D`, `CW`, `CW-R`, `AM`,
 `NFM`, plus `SAM` and `WFM` (the enum has them, the remote list does not). The
@@ -425,7 +437,10 @@ group, so `lv_group_focus_next()` runs over it),
 `apps-menu` (the app menu the APP key loads, `buttons_load_page_group(buttons_group_app)`,
 on the page a fixture's `apps_page` picks: the six `apps-menu-1..6` cover the 22
 app cells after issue #46), and `bt-dialog` (the real Bluetooth window, `src/dialog_bt.c`,
-opened by `main_screen_start_app(ACTION_APP_BT)`).
+opened by `main_screen_start_app(ACTION_APP_BT)`), and `swrscan` (the real SWR Scan
+window, `src/dialog_swrscan.c`, opened by `main_screen_start_app(ACTION_APP_SWRSCAN)`
+and driven by the fake ROE acquisition backend of `src/swr_backend.c` — its own
+section below).
 
 The `theme` is the full name the GUI lists: one of the six themes of the collection
 (`Sunlit`, `Redshift`, `Sprint`, `Cathode`, `Trail`, `Aurora`, docs/THEMES.md). A
@@ -464,6 +479,71 @@ back to Aurora, and the JSON `active` field says which theme actually rendered.
 | `bt-dialog` | the real Bluetooth window (`src/dialog_bt.c`) over the main screen, opened by `main_screen_start_app(ACTION_APP_BT)`. `btaudio-ctl` is mocked (`__wrap_system` + a seeded `/tmp/bt_ui_list.txt`, `mocks/mock_btaudio.c`) so a device row and the status line render. `scenario_settle` codifies the UI-005 metric: the status label's bottom must end above the button row (y=418) |
 | `app-close-home` | menu-hygiene (decisions 5/6): RTTY (the app that is not a dialog) opened with `main_screen_start_app(ACTION_APP_RTTY)` and closed through the remote control's own path (`main_screen_close_app()`), then RTTY again with the real Ajustes window over it and the dialog closed. `scenario_settle` codifies both checkpoints — RTTY is `RTTY_OFF` (its state is a tracking mock, `mocks/mock_main_screen.c`) and the bar is back on the home page (`buttons_get_cur_page()`), not on RTTY's page — and stops the run if either fails |
 | `main-foco` | the real main screen with the real keyboard group and the focus moved with `lv_group_focus_next()` |
+| `swrscan-quick` | the real SWR Scan window (`src/dialog_swrscan.c`) over the main screen, one pass (Quick — the only one the shipped ROM enables), complete and frozen: the drawn curve, the `Completed` state and the readout of the measured minimum (`min 1.2 +/- 0.1 @ 7.100.000 kHz (n=51/51)`) |
+| `swrscan-3pass` | the same window, three passes (Stable) over `single_valley_3pass`, complete and frozen. `scenario_settle` also probes the freeze: three extra flow packets after the session ended must move neither the VFO nor the session (the backend stops the run if they do) |
+| `swrscan-3pass-p1`, `-p2`, `-p3` | the same three-pass session captured mid-sweep (25, 76 and 127 packets): the per-pass evidence of the issue. The state reads `Scanning pass 1/3  p 26/51`, `2/3`, `3/3`; the graph is the measured data so far and is not frozen (the JSON's `frozen` is `null`) |
+| `swrscan-3pass-stop` | the same session cancelled by the operator (the Run button, now "Stop") after 70 packets: `Stopped (parcial)`, the graph frozen at the measured data, the readout marked as partial |
+| `swrscan-5pass-outliers` | five passes (Fine) over `outliers_5pass`: the median rejects the false low sample of pass 1 and the false high of pass 3, so the measured minimum is still the real dip. The numeric oracle is the native test (`tests/native/test_swrscan_multipass.c`), not the pixels |
+| `swrscan-5pass-moving` | five passes over `moving_5pass`: the resonance moves between passes, so the readout reports the instability (MAD 0.5) instead of one credible minimum |
+| `swrscan-narrow-zoom` | three passes over `narrow_zoom_3pass` (50 kHz span, 1 kHz step): the sharp dip of 7.103.000 Hz is resolved |
+| `swrscan-wide-zoom` | three passes over `wide_zoom_3pass` (500 kHz span, 10 kHz step): the same sharp dip falls between points and is missed. The window is **mock-only** (it leaves the 40 m allocation, `tests/fixtures/swrscan/README.md`); the firmware has no band-plan TX block for any feature yet, so this capture is render/safety-rejection evidence, not a transmission approval |
+| `swrscan-double-valley`, `swrscan-flat` | the two "no single credible resonance" datasets: two real valleys (the lower one is reported) and all medians equal (the readout reports the first tie with MAD 0.0) |
+| `swrscan-3pass-tema-aurora`, `swrscan-3pass-tema-cathode` | the same complete three-pass session under two shipped themes, the theme as the only variable (the chart, the dialog frame and the buttons change colour). Aurora is the harness default, so its PNG is byte-identical to `swrscan-3pass` — the same thing `bt-dialog-tema-aurora` does |
+
+## SWR Scan (`swrscan`): the real window over a fake acquisition backend
+
+The SWR Scan window **transmits while it measures** (`radio_start_swrscan()` puts
+the radio in `RADIO_SWRSCAN`), so the host cannot run it against hardware. The
+`swrscan` fixtures render the **real** window — `src/dialog_swrscan.c` plus the
+session engine it drives, `src/swr_session.c`, and the curve resampler,
+`src/roe_curve.c`, all compiled here — over a fake radio:
+
+- `src/swr_backend.c` is the fake side of the contract. It reads one of the
+  owner's datasets (`tests/fixtures/swrscan/swr_mock_samples.csv`, the same file
+  the native test reads) and replays it on the harness' virtual clock: one flow
+  packet per point at the real cadence (`SWRSCAN_DWELL_MS`, 35 ms), with the
+  radio thread's tick (`dialog_swrscan_poll()`, the stall watchdog) after each
+  one, and the scheduler job the window queues when the session ends.
+- The grid is the dataset's, not the fixture's: the backend derives centre and
+  span from the samples, pushes the span into `cfg.swrscan_span` before the
+  window opens, and checks the frequency the dialog asks for **point by point**
+  against the dataset (which is also how the alternating direction of the odd
+  passes is verified). A fixture whose `frequency_hz` is not the dataset's centre
+  stops the run.
+- `scenario_settle` presses Run (the same button the user presses) and, when the
+  fixture asks for it, Stop; then it checks that the sweep really started, and —
+  when the session ended — that it is frozen: three extra packets must not move
+  the VFO and must not start another session.
+
+**No real TX.** The instrument is `mocks/mock_radio.c`:
+`radio_start_swrscan()`/`radio_stop_swrscan()`/`radio_set_freq()` only count and
+record, and the binary links no RF library at all (`aether_control` is not part
+of the harness), so there is no code path from a fixture to a transmission. The
+JSON reports the counters (`radio_calls.start_swrscan`, `stop_swrscan`, and the
+`swr` block with `tx_on`/`tx_off`), which is the "TX real = 0" evidence of the
+bench.
+
+The `swr.passes_label` field of the JSON is the text of the **real LVGL label** of
+the bottom bar's Passes button (`lv_label_get_text()`, not the function that
+generates it), so it is what the operator sees. It is there because the passes
+button is not a `subject`: unlike span/scale there is no `MSG_PARAM_CHANGED` to
+repaint it, so `dialog_swrscan_passes_cb()` asks for the repaint itself
+(`buttons_refresh()`). Without that call the window runs 3 or 5 passes while the
+button keeps reading `Passes: 1`; the field (and the native test that pins the
+request) is what makes that regression visible.
+
+**Two things are compiled differently here, on purpose.** The multipass TX gate
+(`SWRSCAN_MULTIPASS_TX_ENABLED`, `src/dialog_swrscan.h`) is 0 in the ROM and is
+compiled **on** in this host binary (`tools/ui_harness/CMakeLists.txt`), because
+with it off the window refuses 3 and 5 passes and there would be nothing to
+capture: the ROM keeps it off (`src/CMakeLists.txt` passes no such define) and
+`test_swrscan_multipass_gate` pins that. The settle window
+(`SWRSCAN_SETTLE_MS`) is 0 in the window itself and the fixtures do not change
+it. Both mean the same thing for what these captures prove: they show the logic
+and the rendering, **never** that transmitting three or five passes is safe on
+hardware. Enabling multipass TX for real (and any settle window above 0) needs
+the radio: `requires-radio`. The coverage table of each `swrscan` JSON says so
+per component.
 
 ## Determinism
 
@@ -530,3 +610,13 @@ chosen per `screen` (`coverage_for_screen()` in `src/coverage.c`).
 
 The exact, per-scenario table is in each JSON's `coverage` array. It is never
 inflated: a PARTIAL is never written as REAL.
+
+The `swrscan` screen brings `dialog_swrscan.c`, `swr_session.c` and
+`roe_curve.c` REAL (the window, the session engine and the curve resampler are
+the firmware's own sources) and declares the fake acquisition backend PARTIAL:
+the packets the dialog consumes come from the dataset replay, not from an
+instrument. `radio` and `scheduler` stay SYNTHETIC (counters and a synchronous
+queue), the settle window is SYNTHETIC (a virtual wait is not a measured one),
+the multipass TX gate is PARTIAL (compiled on in this binary only) and RF/TX is
+UNSUPPORTED — there is no radio, so nothing here proves the sweep is safe on
+hardware. The same table, per fixture, is in the JSON.

@@ -203,6 +203,30 @@ static bool apply_key(const char *key, const char *value, scenario_t *out)
 
         if (v < 1 || v > 6) { return false; }
         out->apps_page = (int) v;
+    } else if (!strcmp(key, "swr_dataset")) {
+        /* SWR Scan (issue #125): the deterministic dataset of
+         * tests/fixtures/swrscan/ the fake ROE acquisition backend replays through
+         * the real dialog. The backend derives the grid (centre and span) from the
+         * dataset itself, so a fixture cannot ask for a sweep that does not match
+         * its data; an empty value means "no dataset", which the `swrscan` screen
+         * refuses (never a green capture of an empty sweep). */
+        snprintf(out->swr_dataset, sizeof(out->swr_dataset), "%s", value);
+    } else if (!strcmp(key, "swr_passes")) {
+        /* 1 = Quick (the only one the shipping ROM enables), 3 = Stable, 5 = Fine.
+         * Out of range is refused: the dialog's gate is what decides whether the
+         * session runs, and a typo must not silently become 1 pass. */
+        long v = strtol(value, NULL, 10);
+
+        if (v != 1 && v != 3 && v != 5) { return false; }
+        out->swr_passes = (int) v;
+    } else if (!strcmp(key, "swr_feed")) {
+        /* Samples to feed before the backend stops (0 = the whole session). */
+        long v = strtol(value, NULL, 10);
+
+        if (v < 0) { return false; }
+        out->swr_feed = (int) v;
+    } else if (!strcmp(key, "swr_stop")) {
+        return parse_bool(value, &out->swr_stop);
     } else if (!strcmp(key, "rxtx")) {
         if (!strcasecmp(value, "rx")) { mock_radio.state = RADIO_RX; }
         else if (!strcasecmp(value, "tx")) { mock_radio.state = RADIO_TX; }

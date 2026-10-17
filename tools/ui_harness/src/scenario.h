@@ -17,6 +17,7 @@
 #define SCENARIO_SCREEN_MAX 32
 #define SCENARIO_THEME_MAX  32
 #define SCENARIO_DIGITS_MAX 24
+#define SCENARIO_DATASET_MAX 32
 
 /* Benchmark defaults; a fixture (or the CLI) may override them. See
  * bench_metrics.h for what each frame measures. */
@@ -51,6 +52,19 @@ typedef struct {
      * `buttons_group_app`). 0 means the first page: it selects which page of the
      * app menu the fixture renders, never a pixel of the page itself. */
     int apps_page;
+    /* SWR Scan (issue #125): which deterministic dataset of
+     * tests/fixtures/swrscan/ the fake ROE acquisition backend replays through
+     * the REAL dialog. Empty means the screen is not driven by the backend. */
+    char swr_dataset[SCENARIO_DATASET_MAX];
+    /* Passes the fixture asks the dialog for (1 = Quick, 3 = Stable, 5 = Fine).
+     * The dialog's own gate still decides whether the session is accepted. */
+    int swr_passes;
+    /* Samples the backend hands to the dialog before it stops feeding: 0 feeds
+     * the whole session (51 x passes), a smaller number leaves the session
+     * running so a fixture can capture it mid-sweep (one PNG per pass). */
+    int swr_feed;
+    /* Press Stop after the last fed sample (the operator's cancel). */
+    bool swr_stop;
 } scenario_t;
 
 /* Parses `path`. Unknown keys are an error (a scenario must not silently

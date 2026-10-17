@@ -19,17 +19,21 @@
 #include "main_screen.h"
 #include "buttons.h"
 #include "roe_curve.h"
+#include "swr_session.h"
+#include "scheduler.h"
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <math.h>
 
-/* El barrido no puede pasar el presupuesto de duracion (issue #113): el dwell es un paquete del
- * flow de la radio, no un parametro de la GUI, asi que mas puntos alargan el barrido. El build
- * falla si el barrido se pasa del presupuesto: subirlo es decision del owner. */
-_Static_assert(SWRSCAN_MAX_POINTS * SWRSCAN_DWELL_MS <= SWRSCAN_TX_BUDGET_MS,
-               "el barrido de ROE pasa el presupuesto de duracion (SWRSCAN_TX_BUDGET_MS)");
+/* El barrido no puede pasar el presupuesto de duracion de UNA pasada (issue #113): el dwell es
+ * un paquete del flow de la radio, no un parametro de la GUI, asi que mas puntos alargan el
+ * barrido. La grilla ahora es de 51 puntos fijos (#125), asi que el presupuesto es exactamente
+ * 51 x dwell. Subirlo (o habilitar multipasada) es decision del owner. */
+_Static_assert(SWR_SESSION_POINTS * SWRSCAN_DWELL_MS == SWRSCAN_TX_BUDGET_MS,
+               "el barrido de ROE no coincide con el presupuesto de duracion (SWRSCAN_TX_BUDGET_MS)");
 
 /* La potencia del barrido tiene que estar dentro del control del equipo (issue #113: "la minima
  * posible" = el piso, no menos): por debajo del piso el control no llega, y por encima del techo
@@ -38,17 +42,29 @@ _Static_assert(SWRSCAN_TX_POWER_DW >= SWRSCAN_PWR_FLOOR_DW &&
                SWRSCAN_TX_POWER_DW <= SWRSCAN_PWR_CEILING_DW,
                "la potencia del barrido de ROE esta fuera del control del equipo");
 
+/* La multipasada sobre TX real esta apagada (ver dialog_swrscan.h): el gate del dialogo es
+ * 1 pasada. La constante tiene que ser 0 o 1 (no cualquier valor "verdadero"). */
+_Static_assert(SWRSCAN_MULTIPASS_TX_ENABLED == 0 || SWRSCAN_MULTIPASS_TX_ENABLED == 1,
+               "SWRSCAN_MULTIPASS_TX_ENABLED tiene que ser 0 o 1");
+
 static lv_obj_t             *chart;
-static float                data[SWRSCAN_MAX_POINTS];
-static float                data_filtered[SWRSCAN_MAX_POINTS];
+
+/* Agregado por punto (mediana entre pasadas) que se dibuja: NaN = punto sin muestra valida. Se
+ * calcula del motor (swr_session) en el hilo de la radio; el chart lo lee al dibujar. */
+static float                data_agg[SWR_SESSION_POINTS];
 
 static lv_coord_t           w;
 static lv_coord_t           h;
 
-static bool                 run = false;
+static bool                 run = false;        /* sesion activa (boton en Stop) */
+static bool                 tx_on = false;      /* el TX del barrido esta encendido */
 
-static uint16_t             freq_index;
-static uint32_t             freq_start;
+static swr_session_t        session;
+static swr_grid_t           grid;
+static bool                 grid_ready = false;
+
+static int                  passes_requested = SWR_SESSION_PASSES_QUICK;
+
 static uint32_t             freq_center;
 
 static bool    linear;
@@ -65,16 +81,19 @@ static void key_cb(lv_event_t * e);
 
 static void swrscan_stop(void);
 static void swrscan_release(void);
+static bool swrscan_begin(void);
 
 static void dialog_swrscan_run_cb(button_item_t *item);
 static void dialog_swrscan_scale_cb(button_item_t *item);
 static void dialog_swrscan_span_cb(button_item_t *item);
+static void dialog_swrscan_passes_cb(button_item_t *item);
 
 static void set_span(Subject *subj, void *user_data);
 static void set_linear(Subject *subj, void *user_data);
 
 static const char *scale_label_fn();
 static const char *span_label_fn();
+static const char *passes_label_fn();
 
 static button_item_t btn_run = {
     .type  = BTN_TEXT,
@@ -93,12 +112,18 @@ static button_item_t btn_span = {
     .press = dialog_swrscan_span_cb,
     .subj = &cfg.swrscan_span.val,
 };
+static button_item_t btn_passes = {
+    .type  = BTN_TEXT_FN,
+    .label_fn = passes_label_fn,
+    .press = dialog_swrscan_passes_cb,
+};
 
 static buttons_page_t btn_page = {
     {
      &btn_run,
      &btn_scale,
      &btn_span,
+     &btn_passes,
      }
 };
 
@@ -113,86 +138,158 @@ static dialog_t             dialog = {
 
 dialog_t                    *dialog_swrscan = &dialog;
 
-static void do_init() {
-    int32_t points = dialog_swrscan_points_for_span(span);
+/* Recalcula el agregado por punto (mediana) que dibuja el chart. Corre en el hilo de la radio. */
+static void refresh_aggregate(void) {
+    int points = grid_ready ? session.grid.points : 0;
 
-    for (int32_t i = 0; i < points; i++) {
-        data[i] = 1.0f;
-        data_filtered[i] = 1.0f;
-    }
-
-    freq_index = 0;
-    freq_center = subject_get_int(cfg_cur.fg_freq);
-
-    freq_start = dialog_swrscan_sweep_freq(freq_center, span, 0);
-}
-
-static void do_step(float vswr) {
-    int32_t points = dialog_swrscan_points_for_span(span);
-
-    data[freq_index] = vswr;
-    int16_t filtered_index = (int16_t) ((points + (int16_t) freq_index - 2) % points);
-
-    float avg = 0.0f;
-    for (int16_t k = -2; k <= 2; k++) {
-        int16_t index = (int16_t) (filtered_index + k);
-        if (index < 0) {
-            index = 0;
-        } else if (index > points - 1) {
-            index = (int16_t) (points - 1);
-        }
-        avg += data[index];
-    }
-    data_filtered[filtered_index] = avg / 5.0f;
-
-    event_send(chart, LV_EVENT_REFRESH, NULL);
-
-    freq_index++;
-
-    if (freq_index == (uint16_t) points) {
-        freq_index = 0;
-    }
-
-    uint32_t freq = dialog_swrscan_sweep_freq(freq_center, span, freq_index);
-    radio_set_freq(freq);
-}
-
-/* Puntos del barrido (issue #113, modo automatico): el conteo sale del span, con el paso objetivo
- * acotado y ajustado a un divisor exacto del span. Una sola fuente para do_init/do_step/draw_cb y
- * para el test. */
-int dialog_swrscan_points_for_span(int32_t span_hz) {
-    int32_t intervals = 1;      /* piso absoluto: 2 puntos, paso = span (siempre exacto) */
-
-    if (span_hz > 1) {
-        int32_t target = span_hz / SWRSCAN_STEP_TARGET_HZ;
-
-        if (target < SWRSCAN_MIN_POINTS - 1) {
-            target = SWRSCAN_MIN_POINTS - 1;
-        } else if (target > SWRSCAN_MAX_POINTS - 1) {
-            target = SWRSCAN_MAX_POINTS - 1;
+    for (int i = 0; i < SWR_SESSION_POINTS; i++) {
+        if (i >= points) {
+            data_agg[i] = NAN;
+            continue;
         }
 
-        /* El paso tiene que partir el span exacto: se toma el mayor divisor <= objetivo, que es lo
-         * que acota la duracion (nunca un paso mas fino que el objetivo). Si el span no tiene
-         * divisores en el rango, manda la exactitud y el conteo baja hasta 2 (borde a borde). */
-        for (int32_t d = target; d >= 2; d--) {
-            if (span_hz % d == 0) {
-                intervals = d;
-                break;
-            }
-        }
-    }
+        swr_point_stat_t st;
 
-    return (int) (intervals + 1);
+        swr_point_stat(&session.points[i], &st);
+        data_agg[i] = (st.n_valid > 0) ? st.median : NAN;
+    }
 }
 
-/* Geometria del barrido (issue #113): los puntos parten el span en intervalos exactos y van de
- * borde a borde (index 0 = borde bajo, index puntos-1 = borde alto). Una sola fuente para
- * do_init/do_step y para el test. */
-uint32_t dialog_swrscan_sweep_freq(uint32_t center, int32_t span_hz, int index) {
-    uint32_t step = (uint32_t) span_hz / (uint32_t) (dialog_swrscan_points_for_span(span_hz) - 1);
+/* Nueva sesion vacia (abrir el dialogo, cambiar span/frecuencia, re-Run): la grafica queda sin
+ * datos y el estado en Idle. Nunca se mezclan lecturas de grillas distintas. */
+static void swrscan_reset(void) {
+    memset(&session, 0, sizeof(session));
+    memset(&grid, 0, sizeof(grid));
 
-    return center - (uint32_t) span_hz / 2u + step * (uint32_t) index;
+    grid_ready       = false;
+    session.state    = SWR_SESSION_IDLE;
+    session.abort_reason = SWR_ABORT_NONE;
+    passes_requested = (passes_requested < 1) ? SWR_SESSION_PASSES_QUICK : passes_requested;
+
+    freq_center = (uint32_t) subject_get_int(cfg_cur.fg_freq);
+
+    refresh_aggregate();
+}
+
+/* Arranca una sesion de medicion: grilla de 51 puntos + primera frecuencia + TX. Devuelve false
+ * (con el estado del motor en Error y su razon) si la grilla no es legal o la multipasada esta
+ * gateada. Corre en el hilo de LVGL (boton Run). */
+static bool swrscan_begin(void) {
+    uint32_t now = (uint32_t) get_time();
+
+    freq_center = (uint32_t) subject_get_int(cfg_cur.fg_freq);
+
+    swr_grid_result_t gr = swr_grid_build(freq_center, span, SWR_SESSION_POINTS, &grid);
+
+    if (gr != SWR_GRID_OK) {
+        grid_ready = false;
+        swrscan_reset();
+        swr_session_abort(&session, (gr == SWR_GRID_RANGE) ? SWR_ABORT_RANGE : SWR_ABORT_INVALID, now);
+        return false;
+    }
+
+    grid_ready = true;
+
+    swr_limits_t limits;
+
+    swr_limits_default(&limits);
+    limits.max_passes          = SWRSCAN_MULTIPASS_TX_ENABLED ? SWR_SESSION_MAX_PASSES
+                                                              : SWR_SESSION_PASSES_QUICK;
+    limits.settle_ms           = SWRSCAN_SETTLE_MS;
+    /* Las pasadas impares barren de arriba hacia abajo (contrato del backend fake y del fixture
+     * del owner: la misma grilla, el mismo indice por frecuencia, direccion alternada). Con UNA
+     * pasada no cambia nada: la pasada 0 siempre sube. */
+    limits.alternate_direction = true;
+    limits.pass_timeout_ms     = SWRSCAN_PASS_TIMEOUT_MS;
+    limits.session_timeout_ms  = SWRSCAN_PASS_TIMEOUT_MS * (uint32_t) passes_requested;
+
+    uint32_t    freq = 0;
+    swr_action_t act = swr_session_begin(&session, &grid, passes_requested, &limits, now, &freq);
+
+    refresh_aggregate();
+
+    if (act != SWR_ACT_SET_FREQ) {
+        /* El motor ya dejo state=Error y abort_reason (gate/rango/pasadas invalidas). */
+        return false;
+    }
+
+    mem_save(MEM_BACKUP_ID);
+    radio_set_freq((int32_t) freq);
+    swr_session_tuned(&session, now);   /* la ventana de asentamiento arranca al ordenar el VFO */
+
+    tx_on = radio_start_swrscan();
+
+    if (!tx_on) {
+        swr_session_abort(&session, SWR_ABORT_STATE_CHANGED, now);
+        return false;
+    }
+
+    run = true;
+
+    return true;
+}
+
+/* Apaga el TX del barrido. Idempotente y seguro desde el hilo de la radio: solo toma el lock de
+ * radio (radio_stop_swrscan). NO toca LVGL ni la memoria. */
+static void swrscan_tx_off(void) {
+    if (!tx_on) {
+        return;
+    }
+
+    tx_on = false;
+    radio_stop_swrscan();
+}
+
+/* Cierre de la sesion del lado de LVGL (lo encola el hilo de la radio por el scheduler cuando el
+ * barrido termina solo): boton a Run, restaurar la memoria y liberar el estado. Idempotente y
+ * seguro si el dialogo ya se cerro (run queda en false). */
+static void swrscan_finished_job(void *arg) {
+    (void) arg;
+
+    if (!run) {
+        return;
+    }
+
+    run = false;
+    mem_load(MEM_BACKUP_ID);
+    button_update_label(&btn_run, "Run");
+}
+
+/* Apaga el barrido y devuelve el estado de radio que armo (radio_stop_swrscan: potencia y modo) y
+ * la frecuencia/memoria de la app. Idempotente: la llaman destruct_cb, el LV_EVENT_DELETE y el
+ * Stop del operador (hilo de LVGL). */
+static void swrscan_stop(void) {
+    if (!run && !tx_on) {
+        return;
+    }
+
+    /* La sesion queda marcada como detenida por el operador: la grafica conserva lo medido y el
+     * estado visible lo dice (Stopped (parcial)), en vez de seguir mostrando "Scanning" (#125). */
+    swr_session_stop(&session, (uint32_t) get_time());
+
+    run = false;
+    swrscan_tx_off();
+    radio_set_freq((int32_t) freq_center);
+    mem_load(MEM_BACKUP_ID);
+}
+
+/* Cualquier camino que mate el dialogo pasa por aca: primero se sueltan los observadores (que
+ * tocan el chart) y despues se apaga el barrido. Idempotente. */
+static void swrscan_release(void) {
+    if (freq_obs) {
+        observer_delayed_del(freq_obs);
+        freq_obs = NULL;
+    }
+    if (linear_obs) {
+        observer_delayed_del(linear_obs);
+        linear_obs = NULL;
+    }
+    if (span_obs) {
+        observer_delayed_del(span_obs);
+        span_obs = NULL;
+    }
+
+    swrscan_stop();
 }
 
 static lv_coord_t calc_y(float vswr) {
@@ -209,11 +306,171 @@ static lv_coord_t calc_y(float vswr) {
     return (1.0f - x) * h;
 }
 
+/* Texto corto del motivo de abort/error, para el readout. */
+static const char *abort_text(swr_abort_reason_t reason) {
+    switch (reason) {
+        case SWR_ABORT_USER:            return "Stop";
+        case SWR_ABORT_TIMEOUT:         return "timeout de RF";
+        case SWR_ABORT_NO_DATA:         return "sin datos";
+        case SWR_ABORT_NO_TX:           return "sin TX";
+        case SWR_ABORT_STATE_CHANGED:   return "cambio de estado";
+        case SWR_ABORT_MULTIPASS_GATED: return "3/5 pasadas requieren validacion RF";
+        case SWR_ABORT_RANGE:           return "span/centro fuera de la banda de TX";
+        case SWR_ABORT_INVALID:         return "parametros invalidos";
+        case SWR_ABORT_NONE:
+        default:                        return "";
+    }
+}
+
+/* El estado visible (issue #125): Idle / Scanning pass X/Y / Completed / Stopped / Error. */
+const char *dialog_swrscan_state_text(void) {
+    static char buf[64];
+
+    switch (session.state) {
+        case SWR_SESSION_SCANNING:
+            snprintf(buf, sizeof(buf), "Scanning pass %d/%d  p %d/%d",
+                     session.pass + 1, session.passes_requested, session.point_seq + 1, session.grid.points);
+            break;
+
+        case SWR_SESSION_COMPLETED:
+            snprintf(buf, sizeof(buf), "Completed");
+            break;
+
+        case SWR_SESSION_STOPPED:
+            snprintf(buf, sizeof(buf), "Stopped (parcial)");
+            break;
+
+        case SWR_SESSION_ERROR:
+            snprintf(buf, sizeof(buf), "Error: %s", abort_text(session.abort_reason));
+            break;
+
+        case SWR_SESSION_IDLE:
+        default:
+            snprintf(buf, sizeof(buf), "Idle");
+            break;
+    }
+
+    return buf;
+}
+
+/* El minimo y su dispersion salen SIEMPRE del dato medido agregado, nunca del vertice del
+ * ajuste que se dibuja (issue #125). */
+static void format_readout(char *buf, size_t n) {
+    int   point;
+    float swr;
+    float mad;
+
+    if (!swr_session_minimum(&session, &point, &swr, &mad)) {
+        snprintf(buf, n, "sin datos medidos");
+        return;
+    }
+
+    uint16_t mhz, khz, hz;
+
+    split_freq((int32_t) session.points[point].freq_hz, &mhz, &khz, &hz);
+
+    int valid = swr_session_valid_points(&session);
+
+    if (isnan(mad)) {
+        snprintf(buf, n, "min %.1f @ %u.%03u.%03u kHz (n=%d/%d)",
+                 (double) swr, mhz, khz, hz, valid, session.grid.points);
+    } else {
+        snprintf(buf, n, "min %.1f +/- %.1f @ %u.%03u.%03u kHz (n=%d/%d)",
+                 (double) swr, (double) mad, mhz, khz, hz, valid, session.grid.points);
+    }
+}
+
+/* La curva dibujada: el ajuste cuadratico (decorativo, issue #113) del agregado medido, por
+ * TRAMOS de puntos validos consecutivos. Un punto sin muestra valida corta el tramo: no se une
+ * un hueco con una interpolacion enganosa (issue #125). */
+static void draw_curve(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *line_dsc,
+                       lv_coord_t x1, lv_coord_t y1) {
+    int points = grid_ready ? session.grid.points : 0;
+
+    if (points < 2) {
+        return;
+    }
+
+    static float run_vals[SWR_SESSION_POINTS];
+    static float curve[(SWR_SESSION_POINTS - 1) * ROE_CURVE_OVERSAMPLE + 1];
+
+    int i = 0;
+
+    while (i < points) {
+        if (isnan(data_agg[i])) {
+            i++;
+            continue;
+        }
+
+        int j = i;
+
+        while (j < points && !isnan(data_agg[j])) {
+            j++;
+        }
+
+        int len = j - i;
+
+        if (len >= 2) {
+            for (int k = 0; k < len; k++) {
+                run_vals[k] = data_agg[i + k];
+            }
+
+            int m = roe_curve_point_count(len);
+
+            roe_curve_resample(run_vals, len, curve);
+
+            int denom = (m - 1) * (points - 1);
+
+            lv_point_t a, b;
+
+            for (int t = 1; t < m; t++) {
+                int num0 = i * (m - 1) + (t - 1) * (len - 1);
+                int num1 = i * (m - 1) + t * (len - 1);
+
+                a.x = x1 + (lv_coord_t) ((int32_t) (num0 * w) / denom);
+                a.y = y1 + calc_y(curve[t - 1]);
+
+                b.x = x1 + (lv_coord_t) ((int32_t) (num1 * w) / denom);
+                b.y = y1 + calc_y(curve[t]);
+
+                lv_draw_line(ctx, line_dsc, &a, &b);
+            }
+        }
+
+        i = j;
+    }
+}
+
+/* Marca la frecuencia de la ROE minima MEDIDA (agregada): un tick vertical en el valle. */
+static void draw_min_marker(lv_draw_ctx_t *ctx, lv_coord_t x1, lv_coord_t y1) {
+    int   point;
+    float swr;
+    float mad;
+
+    if (!grid_ready || !swr_session_minimum(&session, &point, &swr, &mad)) {
+        return;
+    }
+
+    lv_draw_line_dsc_t dsc;
+
+    lv_draw_line_dsc_init(&dsc);
+    dsc.color = TC(text);
+    dsc.width = 2;
+
+    lv_point_t a, b;
+
+    a.x = b.x = x1 + (lv_coord_t) ((int32_t) point * w / (session.grid.points - 1));
+    a.y = y1 + calc_y(swr) - 8;
+    b.y = y1 + calc_y(swr) + 8;
+
+    lv_draw_line(ctx, &dsc, &a, &b);
+}
+
 static void draw_cb(lv_event_t * e) {
     lv_obj_t            *obj = lv_event_get_target(e);
     lv_draw_ctx_t       *draw_ctx = lv_event_get_draw_ctx(e);
     lv_draw_line_dsc_t  line_dsc;
-    char                str[32];
+    char                str[64];
 
     lv_draw_line_dsc_init(&line_dsc);
 
@@ -287,36 +544,62 @@ static void draw_cb(lv_event_t * e) {
         lv_draw_label(draw_ctx, &dsc_label, &area, str, NULL);
     }
 
-    /* Chart: the same samples, fitted to a single parabola so the zigzag of the
-     * sampling is not read as the antenna's response (issue #113, replacing the
-     * Catmull-Rom spline of #99). Render only: data_filtered is untouched and the
-     * samples keep their x (i / (OVERSAMPLE * (puntos - 1)) * w, borde a borde); the
-     * drawn shape is the least-squares valley of the sweep. The minimum the operator
-     * reads is the measured sample, not the fit's vertex. */
-
-    int32_t     points = dialog_swrscan_points_for_span(span);
-    static float curve[(SWRSCAN_MAX_POINTS - 1) * ROE_CURVE_OVERSAMPLE + 1];
+    /* Curva: el ajuste cuadratico del agregado medido (decorativo). El minimo que lee el
+     * operador sale de las muestras (draw_min_marker + readout), no del vertice del ajuste. */
 
     line_dsc.color = TC(text);
     line_dsc.width = 4;
 
-    int m = roe_curve_point_count((int) points);
+    draw_curve(draw_ctx, &line_dsc, x1, y1);
+    draw_min_marker(draw_ctx, x1, y1);
 
-    roe_curve_resample(data_filtered, (int) points, curve);
+    /* Estado y readout (issue #125), sobre el chart. Llevan fondo del propio panel
+     * (TC(panel), el mismo rol con el que el chart pinta su fondo desde #119) porque el
+     * texto cae encima de la grilla, de las etiquetas del eje Y y de la curva: sin fondo
+     * quedaba ilegible (lo mostro la primera captura del arnes). El fondo es
+     * semitransparente a proposito: atenua lo que hay debajo, no lo tapa. */
+    char status[64];
+    char readout[64];
 
-    for (int i = 1; i < m; i++) {
-        a.x = x1 + (lv_coord_t)((int32_t)(i - 1) * w / (ROE_CURVE_OVERSAMPLE * (points - 1)));
-        a.y = y1 + calc_y(curve[i-1]);
+    snprintf(status, sizeof(status), "%s", dialog_swrscan_state_text());
+    format_readout(readout, sizeof(readout));
 
-        b.x = x1 + (lv_coord_t)((int32_t)i * w / (ROE_CURVE_OVERSAMPLE * (points - 1)));
-        b.y = y1 + calc_y(curve[i]);
+    lv_point_t size_status, size_readout;
 
-        lv_draw_line(draw_ctx, &line_dsc, &a, &b);
-    }
+    lv_txt_get_size(&size_status, status, dsc_label.font, 0, 0, LV_COORD_MAX, 0);
+    lv_txt_get_size(&size_readout, readout, dsc_label.font, 0, 0, LV_COORD_MAX, 0);
+
+    lv_coord_t box_w = ((size_status.x > size_readout.x) ? size_status.x : size_readout.x) + 16;
+
+    lv_draw_rect_dsc_t rect_dsc;
+
+    lv_draw_rect_dsc_init(&rect_dsc);
+    rect_dsc.bg_color = TC(panel);
+    rect_dsc.bg_opa   = LV_OPA_80;
+
+    area.x1 = x1 + 4;
+    area.y1 = y1 + 2;
+    area.x2 = x1 + 4 + box_w;
+    area.y2 = y1 + 68;
+    lv_draw_rect(draw_ctx, &rect_dsc, &area);
+
+    area.x1 = x1 + 12;
+    area.x2 = x1 + 4 + box_w - 8;
+    area.y1 = y1 + 4;
+    area.y2 = area.y1 + 30;
+    lv_draw_label(draw_ctx, &dsc_label, &area, status, NULL);
+
+    area.y1 = y1 + 36;
+    area.y2 = area.y1 + 30;
+    lv_draw_label(draw_ctx, &dsc_label, &area, readout, NULL);
 }
 
 static void freq_update_cb(Subject *subj, void *user_data) {
-    do_init();
+    if (run) {
+        return;
+    }
+
+    swrscan_reset();
     lv_obj_invalidate(chart);
 }
 
@@ -360,39 +643,7 @@ static void construct_cb(lv_obj_t *parent) {
     lv_group_add_obj(keyboard_group, chart);
     lv_obj_add_event_cb(chart, key_cb, LV_EVENT_KEY, NULL);
 
-    do_init();
-}
-
-/* Apaga el barrido y devuelve el estado de radio que armo (radio_stop_swrscan: potencia y modo) y
- * la frecuencia/memoria de la app. Idempotente: la llaman destruct_cb y el LV_EVENT_DELETE. */
-static void swrscan_stop(void) {
-    if (!run) {
-        return;
-    }
-
-    run = false;
-    radio_stop_swrscan();
-    radio_set_freq(freq_center);
-    mem_load(MEM_BACKUP_ID);
-}
-
-/* Cualquier camino que mate el dialogo pasa por aca: primero se sueltan los observadores (que
- * tocan el chart) y despues se apaga el barrido. Idempotente. */
-static void swrscan_release(void) {
-    if (freq_obs) {
-        observer_delayed_del(freq_obs);
-        freq_obs = NULL;
-    }
-    if (linear_obs) {
-        observer_delayed_del(linear_obs);
-        linear_obs = NULL;
-    }
-    if (span_obs) {
-        observer_delayed_del(span_obs);
-        span_obs = NULL;
-    }
-
-    swrscan_stop();
+    swrscan_reset();
 }
 
 static void destruct_cb() {
@@ -434,15 +685,22 @@ void dialog_swrscan_run_cb(button_item_t *item) {
             button_update_label(item, "Run");
         }
         swrscan_stop();
-    } else {
-        if (item) {
-            button_update_label(item, "Stop");
-        }
-        mem_save(MEM_BACKUP_ID);
-        do_init();
-        radio_set_freq(freq_start);
-        run = radio_start_swrscan();
+        return;
     }
+
+    if (!swrscan_begin()) {
+        /* El motor dejo el motivo en Error (gate multipasada, rango o parametros). */
+        if (item) {
+            button_update_label(item, "Run");
+        }
+        event_send(chart, LV_EVENT_REFRESH, NULL);
+        return;
+    }
+
+    if (item) {
+        button_update_label(item, "Stop");
+    }
+    event_send(chart, LV_EVENT_REFRESH, NULL);
 }
 
 void dialog_swrscan_scale_cb(button_item_t *item) {
@@ -476,8 +734,29 @@ void dialog_swrscan_span_cb(button_item_t *item) {
     }
     subject_set_int(cfg.swrscan_span.val, span);
 
-    do_init();
+    swrscan_reset();
     event_send(chart, LV_EVENT_REFRESH, NULL);
+}
+
+/* Multipasada: cicla 1 (Quick) / 3 (Stable) / 5 (Fine). 3 y 5 quedan marcadas "*" porque su TX
+ * no esta habilitado (requieren validacion en hardware): el Run las rechaza con el estado
+ * Error. Solo se puede cambiar con el barrido detenido. */
+void dialog_swrscan_passes_cb(button_item_t *item) {
+    if (run) {
+        return;
+    }
+
+    switch (passes_requested) {
+        case SWR_SESSION_PASSES_QUICK:  passes_requested = SWR_SESSION_PASSES_STABLE; break;
+        case SWR_SESSION_PASSES_STABLE: passes_requested = SWR_SESSION_PASSES_FINE; break;
+        case SWR_SESSION_PASSES_FINE:
+        default:                        passes_requested = SWR_SESSION_PASSES_QUICK; break;
+    }
+
+    /* El boton TIENE que repintar: `passes_requested` no es un subject, asi que no hay
+     * MSG_PARAM_CHANGED que refresque la etiqueta (a diferencia de span/scale). Sin esto el
+     * operador aprieta Passes, la sesion corre 5 pasadas y el boton sigue diciendo 1. */
+    buttons_refresh(item);
 }
 
 void set_span(Subject *subj, void *user_data) {
@@ -504,8 +783,59 @@ const char *span_label_fn() {
     return buf;
 }
 
+/* "*" = multipasada con TX todavia no habilitado (requiere validacion en hardware). */
+const char *passes_label_fn() {
+    static char buf[24];
+    const char * fmt = "Passes:\n%u%s";
+    sprintf(buf, fmt, (unsigned) passes_requested,
+            (passes_requested > 1) ? " *" : "");
+    return buf;
+}
+
 void dialog_swrscan_update(float vswr) {
-    if (run) {
-        do_step(vswr);
+    if (!run) {
+        return;
+    }
+
+    uint32_t     freq = 0;
+    swr_action_t act  = swr_session_packet(&session, vswr, (uint32_t) get_time(), &freq);
+
+    switch (act) {
+        case SWR_ACT_SET_FREQ:
+            refresh_aggregate();
+            radio_set_freq((int32_t) freq);
+            /* El VFO se ordena aca: la ventana de asentamiento (SWRSCAN_SETTLE_MS) se mide desde
+             * este instante, no desde el paquete que disparo el avance. Con 0 es un no-op. */
+            swr_session_tuned(&session, (uint32_t) get_time());
+            event_send(chart, LV_EVENT_REFRESH, NULL);
+            break;
+
+        case SWR_ACT_COMPLETE:
+        case SWR_ACT_ABORT:
+            refresh_aggregate();
+            /* Cortar el TX YA (lock de radio, seguro desde este hilo) y dejar el cierre del lado
+             * de LVGL (boton/memoria) para el scheduler: aca no se toca LVGL. */
+            swrscan_tx_off();
+            radio_set_freq((int32_t) freq_center);
+            scheduler_put_noargs(swrscan_finished_job);
+            event_send(chart, LV_EVENT_REFRESH, NULL);
+            break;
+
+        case SWR_ACT_NONE:
+        default:
+            break;
+    }
+}
+
+void dialog_swrscan_poll(void) {
+    if (!run) {
+        return;
+    }
+
+    if (swr_session_poll(&session, (uint32_t) get_time()) == SWR_ACT_ABORT) {
+        swrscan_tx_off();
+        radio_set_freq((int32_t) freq_center);
+        scheduler_put_noargs(swrscan_finished_job);
+        event_send(chart, LV_EVENT_REFRESH, NULL);
     }
 }

@@ -112,8 +112,14 @@ uint8_t radio_change_hmic(int16_t d) { (void) d; return 0; }
 uint8_t radio_change_imic(int16_t d) { (void) d; return 0; }
 
 void radio_start_atu(void) { mock_radio_calls.start_atu++; }
-bool radio_start_swrscan(void) { return false; }
-void radio_stop_swrscan(void) {}
+
+/* El barrido de ROE (src/dialog_swrscan.c, issue #125) transmite mientras mide: aca NO hay
+ * radio, asi que "arrancar el barrido" es solo el contador del mock y el dialogo recibe un
+ * true que significa "el instrumento fake acepto". El `radio_set_freq` del mock guarda la
+ * frecuencia y cuenta el comando, y `radio_stop_swrscan` cuenta el apagado: con eso el JSON
+ * del arnes puede afirmar cuantos comandos salieron y que ninguno llego a un equipo. */
+bool radio_start_swrscan(void) { mock_radio_calls.start_swrscan++; return true; }
+void radio_stop_swrscan(void)  { mock_radio_calls.stop_swrscan++; }
 
 /* The app-frame snapshot (issue #94): the harness renders single screens, it
  * never opens an app that mutates the radio, so the backup is a no-op here.

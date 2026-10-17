@@ -1,0 +1,39 @@
+# swrscan-3pass-p1: la MISMA sesion de 3 pasadas, capturada a mitad de la
+# primera (25 de los 51 puntos del barrido 1/3).
+#
+# Es la evidencia visual "por pasada" del issue #125: la grafica se dibuja con lo
+# medido hasta ese momento (una sola pasada => sin MAD en el readout) y el estado
+# muestra "Scanning pass 1/3". El backend entrega 25 paquetes y deja la sesion
+# viva a proposito (no hay congelado que probar en una captura a mitad de camino).
+
+name swrscan-3pass-p1
+screen swrscan
+
+seed 20
+
+swr_dataset single_valley_3pass
+swr_passes 3
+swr_feed 25
+
+frequency_hz 7100000
+tx_frequency_hz 7100000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

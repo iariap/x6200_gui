@@ -64,6 +64,17 @@ KNOWN_KEYS = frozenset(
         "natural_frames",
         # Which APP page an `apps-menu` fixture opens (1..6, UI-002).
         "apps_page",
+        # El backend fake de adquisicion de ROE del arnes (issue #125, la pantalla
+        # `swrscan`): `swr_dataset` es uno de los datasets de
+        # `tests/fixtures/swrscan/`, `swr_passes` la cantidad de pasadas que pide el
+        # fixture (1, 3 o 5; la ventana decide igual si la sesion arranca),
+        # `swr_feed` cuantos paquetes del flow se entregan antes de cortar (0 = la
+        # sesion entera) y `swr_stop` aprieta Stop al final. El centro y el span de
+        # la grilla NO son claves: el backend los saca del dataset.
+        "swr_dataset",
+        "swr_passes",
+        "swr_feed",
+        "swr_stop",
     }
 )
 

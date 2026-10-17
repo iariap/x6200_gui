@@ -31,9 +31,10 @@ static float clampf(float v, float lo, float hi) {
  *   | S1 S2 S3 | | b | = | T1 |      Sk = sum(x^k), Tk = sum(y*x^k)
  *   | S2 S3 S4 | | a |   | T2 |
  *
- * solved by Cramer's rule. With n <= 50 and x <= 49 the sums stay tiny
- * (S4 ~ 5.7e6) and the arithmetic is +,-,*,/ only, so no math.h is needed and
- * the result is deterministic. */
+ * solved by Cramer's rule. With n <= 51 and x <= 50 (the sweep's fixed grid, issue
+ * #125) the sums stay tiny (S4 ~ 6.6e7, and every sum is an integer well below
+ * 2^53) and the arithmetic is +,-,*,/ only, so no math.h is needed and the result
+ * is deterministic. */
 static bool quadratic_fit(const float *in, int n, double *a, double *b, double *c) {
     if (n < 3) {
         return false;

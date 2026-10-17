@@ -505,6 +505,7 @@ los declara el JSON del arnés. La tabla exacta por componente está en cada JSO
 | Diálogo de Ajustes (`dialog.c` + `dialog_settings.c`) | `settings-home`, `settings-wfbat` | ✓ | | | |
 | Menú de apps | — | | | | ✗ (no hay fixture del menú) |
 | Otros diálogos de app (BT/WeFax/SSTV, `dialog_field.c`) | — | | | | ✗ (mocks inertes; `dialog_field` **no** es dependencia de Ajustes) |
+| Ventana de barrido de ROE (`dialog_swrscan.c` + `swr_session.c`, #125) | `swrscan-quick`, `swrscan-3pass`, `swrscan-3pass-p1/-p2/-p3`, `swrscan-3pass-stop`, `swrscan-5pass-outliers`, `swrscan-5pass-moving`, `swrscan-narrow-zoom`, `swrscan-wide-zoom`, `swrscan-double-valley`, `swrscan-flat` | ✓ (la ventana **real** sobre el backend fake de adquisición) | | ✓ (backend de adquisición fake: datasets del owner en `tests/fixtures/swrscan/`, reloj virtual, contador de comandos) | ✗ RF real **BLOCKED** (`requires-radio`: sin X6200 físico no hay barrido ni watchdog de flow) |
 | Servicios que Ajustes llama (audio/DSP/wfview/RTC/transverters/backlight/BT) | `settings-home`, `settings-wfbat` | | | ✓ (mocks explícitos, sin dispositivo) | |
 | Tema IU1WXY | `home-usb-20m`, `main-tx-simulado`, `main-bateria-baja`, `home-frecuencia-extrema`, `home-bateria-externa`, `bench-render` | ✓ | | | |
 | Tema Legacy | `main-espectro-agua`, `bench-render` | ✓ | | | |
@@ -516,10 +517,10 @@ los declara el JSON del arnés. La tabla exacta por componente está en cada JSO
 | Tema Material 3 (JSON) | `main-tema-material-3` | ✓ | | | |
 | Tema Redshift (JSON, THEMES v2) | `main-tema-redshift`, `main-tema-redshift-agua`, `main-tema-redshift-tx`, `main-tema-redshift-eco`, `settings-tema-redshift`, `bt-dialog-tema-redshift` | ✓ | | | |
 | Tema Sunlit (JSON, THEMES v2) | `main-tema-sunlit`, `main-tema-sunlit-agua`, `main-tema-sunlit-tx`, `main-tema-sunlit-eco`, `settings-tema-sunlit`, `bt-dialog-tema-sunlit` | ✓ | | | |
-| Tema Aurora (JSON, THEMES v2) | `main-tema-aurora`, `main-tema-aurora-agua`, `main-tema-aurora-tx`, `main-tema-aurora-eco`, `settings-tema-aurora`, `bt-dialog-tema-aurora` | ✓ | | | |
+| Tema Aurora (JSON, THEMES v2) | `main-tema-aurora`, `main-tema-aurora-agua`, `main-tema-aurora-tx`, `main-tema-aurora-eco`, `settings-tema-aurora`, `bt-dialog-tema-aurora`, `swrscan-3pass-tema-aurora` | ✓ | | | |
 | Tema Trail (JSON, THEMES v2) | `main-tema-trail`, `main-tema-trail-agua`, `main-tema-trail-tx`, `main-tema-trail-eco`, `settings-tema-trail`, `bt-dialog-tema-trail` | ✓ | | | |
 | Tema Sprint (JSON, THEMES v2) | `main-tema-sprint`, `main-tema-sprint-agua`, `main-tema-sprint-tx`, `main-tema-sprint-eco`, `settings-tema-sprint`, `bt-dialog-tema-sprint` | ✓ | | | |
-| Tema Cathode (JSON, THEMES v2) | `main-tema-cathode`, `main-tema-cathode-agua`, `main-tema-cathode-tx`, `main-tema-cathode-eco`, `settings-tema-cathode`, `bt-dialog-tema-cathode` | ✓ | | | |
+| Tema Cathode (JSON, THEMES v2) | `main-tema-cathode`, `main-tema-cathode-agua`, `main-tema-cathode-tx`, `main-tema-cathode-eco`, `settings-tema-cathode`, `bt-dialog-tema-cathode`, `swrscan-3pass-tema-cathode` | ✓ | | | |
 | Galería consolidada (THEMES v2, #73) | hojas de contactos de los seis temas × 6 estados (`docs/evidencia/2026-10-15-themes-integration-73/galeria/`) | ✓ (renders reales del arnés, `tools/galeria-temas.py`) | | | |
 | Selector six-only (#73) | `settings-perfil` (fila Theme: el desplegable muestra la oferta) + `tests/native/test_theme.c` (la oferta exacta) | ✓ | | | |
 | Tema VISION | — | | | | ✗ (font scale: hallazgos para #8) |
@@ -4208,6 +4209,71 @@ global no pueda colarse como un "fix". El mismo test fija que cada entrada del r
 acotada, fechada, razonada, nombra el issue #109, admite el delta medido **y** rechaza el mismo
 delta repetido (segundo widget). Los números del A/B no cambian: lo único que cambia es que ahora
 **se juzgan** contra el registro.
+
+## 2026-10-17 — Barrido de ROE #125: la ventana real sobre un backend fake de adquisición (corrida `factory/swrscan-multipass-125`)
+
+El barrido de ROE pasó de "una pasada que se dibuja mientras llegan los paquetes" a una **sesión**
+con grilla fija de 51 puntos, agregación por frecuencia (mediana + MAD) y mínimo medido. Para
+poder mirarlo sin radio, el arnés ganó una **pantalla `swrscan`** que compila la ventana real
+(`dialog_swrscan.c` + `swr_session.c`) y la alimenta con un **backend fake de adquisición**
+(`tools/ui_harness/src/swr_backend.c`) que reproduce los datasets del owner
+(`tests/fixtures/swrscan/`, entregados en la rama `lu2dsx/swrscan-mock-fixtures-125`) sobre el
+**reloj virtual**, a 35 ms por paquete, y con **contadores de radio en vez de RF** (0 TX real).
+
+### Qué cubre y qué no
+
+- **Cubre** (captura determinista): forma de la curva por pasada (`swrscan-3pass-p1/-p2/-p3`), la
+  curva **congelada** al terminar (`swrscan-3pass`, `swrscan-quick`, `swrscan-5pass-*`,
+  `swrscan-narrow-zoom`, `swrscan-wide-zoom`, `swrscan-double-valley`, `swrscan-flat`), la
+  cancelación parcial (`swrscan-3pass-stop` → `Stopped (parcial)`) y dos temas
+  (`swrscan-3pass-tema-aurora`, `swrscan-3pass-tema-cathode`). El bloque `swr` del JSON del arnés
+  deja la evidencia numérica: pasadas pedidas y ejecutadas, puntos por pasada, muestras entregadas,
+  milisegundos virtuales, comandos de frecuencia, `tx_on`/`tx_off`, estado por pasada y la prueba
+  de congelado (3 paquetes extra después del final, con los contadores y el estado sin cambiar).
+- **No cubre** (BLOCKED, `requires-radio`): el barrido con RF real, el asentamiento del VFO
+  (`SWRSCAN_SETTLE_MS > 0`), la potencia de TX y el watchdog de estancamiento en la radio. En el
+  banco QEMU (sin equipo) el camino sin paquetes de `radio_tick()` no corre —`grep -c "Flow reset"`
+  = 0—, así que el watchdog sólo está probado por el test nativo sobre el reloj virtual. La
+  multipasada 3/5 está **apagada por defecto** en la ROM (`SWRSCAN_MULTIPASS_TX_ENABLED`),
+  y el arnés de UI la compila encendida **sólo en el host** para poder renderizar 3 y 5 pasadas.
+
+### El parser del plan tenía que aprender las claves nuevas
+
+El suite de `x6200-ab` es **cada `*.scn`** del directorio de fixtures, y su parser
+(`src/x6200_ab/scenarios.py`) rechaza claves desconocidas. Las cuatro claves nuevas del backend
+(`swr_dataset`, `swr_passes`, `swr_feed`, `swr_stop`) se agregaron a `KNOWN_KEYS`, y
+`tests/test_scenarios.py` (que fija el nombre de cada fixture del repo y las pantallas válidas) se
+actualizó con las 14 fixtures y la pantalla `swrscan`. Sin eso, `x6200-ab capture/contracts/audit`
+sobre esta revisión moría con `unknown scenario key`.
+
+### Gates (salida real, HEAD `71a87a27`)
+
+```text
+$ uv run x6200-ab compare --a origin/lu2dsx/x6200-rom --b 71a87a27 --experiment-id AB-SWR125
+experiment AB-SWR125: PASS (exit 0)
+  Functional         PASS            (required) — 64 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — captures are pixel-identical to the baseline
+  Quality Contract   PASS            (required) — 663 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+
+$ uv run x6200-ab contracts --revision HEAD
+contracts 71a87a27a063: PASS — 803 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab themes
+themes PASS: 10 palette(s) (4 base + 6 file(s)), 9 pair(s) declared, 90 pair(s) checked, 0 failure(s)
+
+$ uv run x6200-ab audit --revision HEAD
+audited 71a87a27a063: 11 known issues — 0 reproduced, 9 unverified; structural inspection REAL over
+8847 objects on 78 scenario(s): 0 structural finding(s)
+```
+
+**Límite honesto del `compare`**: su suite sale de **A** (`from_fixtures_dir(revision_a.fixtures_dir)`
++ `split_by_fixtures_dir`), así que una pantalla **nueva** no puede entrar al diff A/B (A no tiene ni
+el fixture ni la pantalla): los 64 escenarios del compare son los que ya existían, y las 14 fixtures
+nuevas quedan cubiertas por `contracts`/`capture`/`audit` sobre B (803 checks, 0 fallas). El reporte
+queda en `tools/ab_testing/reports/AB-SWR125/`.
 
 [#109]: https://github.com/iariap/x6200_gui/issues/109
 [#112]: https://github.com/iariap/x6200_gui/issues/112

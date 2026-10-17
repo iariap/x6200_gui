@@ -263,6 +263,13 @@ bool radio_tick() {
             x6200_flow_restart();
             dsp_reset();
         }
+
+        /* Watchdog del barrido de ROE (issue #125): si el flow deja de mandar paquetes, el
+         * barrido no se queda transmitiendo: el motor aborta por timeout y apaga el TX. */
+        if (state == RADIO_SWRSCAN) {
+            dialog_swrscan_poll();
+        }
+
         return true;
     }
     return false;

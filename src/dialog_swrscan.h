@@ -15,54 +15,70 @@
 
 extern dialog_t *dialog_swrscan;
 
-/* Barrido de ROE automatico (issue #113; ampliaciones del owner del 2026-10-16: "aumentar la
- * frecuencia de barrido como lo hace el nanovna" y "la potencia de transmision durante el
- * barrido debe ser la minima posible").
+/* Barrido de ROE automatico (issues #113 y #125).
  *
- * El conteo de puntos NO es fijo: sale del span que se esta mirando (como el NanoVNA, denso en
- * spans chicos y acotado en los anchos, dialog_swrscan_points_for_span). El barrido TRANSMITE
- * mientras mide y avanza un punto por paquete del flow de la radio (do_step se llama desde
- * RADIO_SWRSCAN): un paquete tarda ~35 ms (aether_radio/.../low/flow.h: "Usually a packet
- * arrives every 35ms"), asi que la duracion del barrido es puntos x dwell. El dwell NO es un
- * parametro de la GUI: aether_control solo expone x6200_control_swrscan_set(on/off), sin
- * cadencia.
+ * #125 (este issue) reemplaza el barrido de "un paquete = un punto" y el filtro movil de 5
+ * puntos por una SESION de medicion multipasada (src/swr_session.[ch]):
+ *  - 51 puntos por barrido, independientes del span (los 4 spans del dialogo solo cambian el
+ *    paso: 1 / 2 / 4 / 10 kHz), construidos una sola vez por sesion con aritmetica de 64 bits;
+ *  - varias pasadas sobre EXACTAMENTE la misma grilla y agregacion por frecuencia (mediana),
+ *    nunca entre frecuencias vecinas;
+ *  - la lectura valida no se atribuye a ciegas a la frecuencia recien pedida (ventana de
+ *    asentamiento) y una lectura faltante NUNCA se convierte en ROE 1.0;
+ *  - el minimo sale del dato medido agregado, no del vertice del ajuste que se dibuja.
  *
- * Con la potencia en el piso del equipo el PA dejo de ser la restriccion (ver
- * SWRSCAN_TX_POWER_DW: 0.1 W son 14.8 dB menos que los 3 W que ponia el barrido), asi que lo que
- * acota es la espera del operador. SWRSCAN_TX_BUDGET_MS es explicito y subirlo es decision del
- * owner, no del codigo: el _Static_assert de dialog_swrscan.c hace fallar el build si el barrido
- * se pasa del presupuesto. */
-#define SWRSCAN_STEP_TARGET_HZ  1250  /* paso al que apunta el muestreo (Hz); nunca mas fino */
-#define SWRSCAN_MIN_POINTS      41    /* piso del conteo: los spans chicos quedan densos */
-#define SWRSCAN_MAX_POINTS      51    /* techo del conteo: los spans anchos quedan acotados */
+ * El barrido TRANSMITE mientras mide: el presupuesto SWRSCAN_TX_BUDGET_MS es el de UNA pasada
+ * y NO se sube automaticamente. El dwell no es un parametro de la GUI (aether_control solo
+ * expone x6200_control_swrscan_set(on/off)); un paquete del flow tarda ~35 ms. */
 #define SWRSCAN_DWELL_MS        35    /* lo que tarda un paquete del flow de la radio */
-#define SWRSCAN_TX_BUDGET_MS    1785  /* duracion maxima del barrido: SWRSCAN_MAX_POINTS x dwell */
+#define SWRSCAN_TX_BUDGET_MS    1785  /* duracion maxima de UNA pasada: 51 x dwell */
+
+/* Watchdog de estancamiento (no es el presupuesto de TX): si el flow deja de mandar paquetes,
+ * la sesion se aborta y el TX se apaga. Se mide desde el inicio de la pasada/sesion y tiene
+ * holgura sobre la duracion esperada para no cortar una pasada normal. */
+#define SWRSCAN_PASS_TIMEOUT_MS (SWRSCAN_TX_BUDGET_MS + 500)
+
+/* Ventana de asentamiento: tiempo, desde que se ordena la frecuencia, durante el cual un
+ * paquete todavia puede traer la lectura de la frecuencia anterior (stale) y se descarta. El
+ * flow NO confirma cuando el VFO se movio, asi que 0 significa "atribuir el primer paquete a la
+ * frecuencia pedida" (lo que hacia #113, ahora explicito). Subirlo exige medir el dwell real de
+ * la radio en hardware (carga ficticia): decision del owner. El motor lo implementa y lo prueba
+ * con el flow de fixture (tests/native/test_swrscan_flow.c); el dialogo corre con 0. */
+#define SWRSCAN_SETTLE_MS       0
+
+/* Multipasada (3 = Stable, 5 = Fine) sobre TX real: DESHABILITADA.
+ *
+ * El presupuesto por pasada (SWRSCAN_TX_BUDGET_MS) esta validado para UNA pasada; 3/5 pasadas
+ * triplican/quintuplican el tiempo de TX de la sesion (5355 / 8925 ms) y exigen validacion en
+ * hardware (carga ficticia 50 ohm, potencia entregada y precision del detector a 0.1 W,
+ * temperatura/consumo) y decision explicita del owner. El MOTOR (swr_session) SI soporta N
+ * pasadas: lo prueban los tests con el backend fake; lo que esta apagado es habilitar ese TX
+ * desde el dialogo. Cambiar a 1 solo con orden del owner y evidencia de banco.
+ *
+ * El valor se puede pisar SOLO en tiempo de compilacion (build de test) para que la suite pueda
+ * ejercitar el camino de 3/5 pasadas de punta a punta con el backend fake y demostrar que el
+ * gate funciona: el binario que se flashea se compila sin -D y queda en 0. */
+#ifndef SWRSCAN_MULTIPASS_TX_ENABLED
+#define SWRSCAN_MULTIPASS_TX_ENABLED 0
+#endif
 
 /* Potencia del barrido, en decimas de watt (la unidad del registro: aether_control hace
  * p = pwr * 10 y lo escribe en el byte bajo de rfg_txpwr).
  *
  * El piso del equipo es 0.1 W y no es una suposicion: es el minimo que acepta el control de
- * potencia del panel (src/vol.c, VOL_PWR: LV_MIN(8.0f, ...) / LV_MAX(0.1f, ...)) y el del control
- * remoto (src/remote_server.cpp: {"pwr", CMD_PWR, 1, 100} = decimas de watt). El barrido venia
- * transmitiendo 3 W fijos (radio_start_swrscan): 0.1 W son 14.8 dB menos.
- *
- * El NanoVNA mide a ~0 dBm (1 mW) y el X6200 no llega ahi: 0.1 W = 20 dBm, 20 dB por encima del
- * NanoVNA, pero es el piso del equipo (mas abajo se sale del rango que declara su control). */
+ * potencia del panel (src/vol.c, VOL_PWR: LV_MAX(0.1f, ...)) y el del control remoto
+ * (src/remote_server.cpp: {"pwr", CMD_PWR, 1, 100} = decimas de watt). */
 #define SWRSCAN_TX_POWER_DW     1     /* decimas de watt: el piso del equipo (0.1 W) */
 #define SWRSCAN_PWR_FLOOR_DW    1     /* piso del control del equipo: 0.1 W (src/vol.c) */
 #define SWRSCAN_PWR_CEILING_DW  80    /* techo del control del equipo: 8.0 W (src/vol.c) */
 #define SWRSCAN_TX_POWER_W      ((float) SWRSCAN_TX_POWER_DW / 10.0f)
 
-/* Puntos del barrido para `span_hz` (modo automatico): span / SWRSCAN_STEP_TARGET_HZ acotado a
- * [SWRSCAN_MIN_POINTS, SWRSCAN_MAX_POINTS] y ajustado a un divisor exacto del span
- * (span % (puntos - 1) == 0, ver la geometria de abajo). Con los 4 spans del dialogo:
- * 50 kHz -> 41 (paso 1250 Hz); 100 / 200 / 500 kHz -> 51 (2000 / 4000 / 10000 Hz). */
-int dialog_swrscan_points_for_span(int32_t span_hz);
+/* Estado visible del dialogo, para el readout (issue #125). */
+const char *dialog_swrscan_state_text(void);
 
-/* Frecuencia (Hz) del punto `index` (0 .. puntos-1) del barrido. La geometria es borde a borde:
- * el span [center - span/2, center + span/2] se parte en (puntos - 1) intervalos exactos
- * (span / (puntos - 1), sin resto) y el punto k cae en center - span/2 + k * paso, asi que
- * index 0 es el borde bajo y index puntos-1 el borde alto del span. */
-uint32_t dialog_swrscan_sweep_freq(uint32_t center, int32_t span_hz, int index);
-
+/* Un paquete del flow de la radio (RADIO_SWRSCAN) mientras el barrido corre. Corre en el hilo
+ * de la radio: NO toca LVGL, solo encola un refresh y llama a radio_set_freq(). */
 void dialog_swrscan_update(float vswr);
+
+/* Watchdog del barrido cuando el flow se queda sin paquetes (hilo de la radio). */
+void dialog_swrscan_poll(void);
