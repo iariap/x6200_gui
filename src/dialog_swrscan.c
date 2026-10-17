@@ -232,7 +232,10 @@ static void draw_cb(lv_event_t * e) {
     lv_draw_label_dsc_t dsc_label;
     lv_draw_label_dsc_init(&dsc_label);
 
-    dsc_label.color = lv_color_white();
+    /* El texto del chart sale del rol del tema: el chart ahora pinta su propio panel (issue
+     * #119) y con el color fijo blanco el eje quedaba ilegible en los temas claros (Sunlit tiene
+     * panel y dialogo blancos). */
+    dsc_label.color = TC(text);
     dsc_label.font = &sony_28;
 
     lv_point_t label_size;
@@ -294,7 +297,7 @@ static void draw_cb(lv_event_t * e) {
     int32_t     points = dialog_swrscan_points_for_span(span);
     static float curve[(SWRSCAN_MAX_POINTS - 1) * ROE_CURVE_OVERSAMPLE + 1];
 
-    line_dsc.color = lv_color_white();
+    line_dsc.color = TC(text);
     line_dsc.width = 4;
 
     int m = roe_curve_point_count((int) points);
@@ -347,7 +350,7 @@ static void construct_cb(lv_obj_t *parent) {
      * semitransparente (alpha 204/255 en images/dialog.bin) y el chart era el unico contenido
      * sin fondo propio, asi que la pantalla de atras se veia a traves del grafico (el fantasma
      * medido en la radio: la fila de frecuencia y la tira de bandas de la home dentro del
-     * chart, docs/HALLAZGOS.md 46). Mismo idioma que las tablas de contenido de los otros
+     * chart, docs/HALLAZGOS.md 47). Mismo idioma que las tablas de contenido de los otros
      * dialogos y que el cuerpo de las apps (app_frame_body): el color sale del rol del tema,
      * nunca escrito a mano. */
     lv_obj_set_style_bg_color(chart, TC(panel), LV_PART_MAIN);

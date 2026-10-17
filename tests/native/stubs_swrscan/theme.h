@@ -19,6 +19,7 @@
 
 typedef enum {
     TC_panel,
+    TC_text,
 } theme_color_t;
 
 uint32_t theme_hex(theme_color_t c);

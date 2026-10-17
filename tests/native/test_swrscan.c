@@ -35,6 +35,7 @@
 #include "dialog_swrscan.h"
 #include "buttons.h"
 #include "roe_curve.h"
+#include "theme.h"
 
 /* Provided by tests/native/swrscan_stubs.c. */
 void swrscan_stub_reset(void);
@@ -58,6 +59,8 @@ lv_coord_t swrscan_stub_curve_x(int i, int end);
 lv_coord_t swrscan_stub_curve_y(int i, int end);
 uint8_t   swrscan_stub_chart_bg_opa(void);
 int       swrscan_stub_chart_bg_color_set(void);
+lv_color_t swrscan_stub_curve_color(void);
+lv_color_t swrscan_stub_label_color(void);
 
 /* Puntos de la curva dibujada con el barrido mas largo del dialogo (51 muestras). */
 #define STUB_CURVE_MAX ((SWRSCAN_MAX_POINTS - 1) * ROE_CURVE_OVERSAMPLE + 1)
@@ -429,7 +432,6 @@ void test_swrscan_render(void) {
      * del grafico porque el panel del dialogo es semitransparente. */
     CHECK(swrscan_stub_chart_bg_opa() == LV_OPA_COVER);
     CHECK(swrscan_stub_chart_bg_color_set());
-
     button_item_t *run = run_button();
 
     run->press(run);                                                /* Run: el barrido arranca */
@@ -443,6 +445,12 @@ void test_swrscan_render(void) {
     const int m = roe_curve_point_count(points);
 
     CHECK(swrscan_stub_curve_segment_count() == m - 1);             /* la curva entera */
+
+    /* La curva y el eje salen del rol `text` del tema (no de un blanco escrito a mano): sobre el
+     * panel del chart, que ahora es opaco, es lo que los deja legibles en los temas claros. */
+    CHECK(swrscan_stub_curve_color().red == (uint8_t) ((theme_hex(TC_text) >> 16) & 0xff));
+    CHECK(swrscan_stub_curve_color().green == (uint8_t) ((theme_hex(TC_text) >> 8) & 0xff));
+    CHECK(swrscan_stub_label_color().blue == (uint8_t) (theme_hex(TC_text) & 0xff));
 
     /* La polilinea: y[0] abre el primer segmento, y[i] lo cierra el segmento i-1. */
     static lv_coord_t y[STUB_CURVE_MAX];

@@ -57,12 +57,12 @@ void swrscan_stub_reset(void) {
 
 /* --- theme ------------------------------------------------------------------ */
 
-/* The test build stubs the theme (tests/native/stubs_swrscan/theme.h): the role resolves to a
- * fixed colour, because the assertion is that the chart paints its own background, not which
- * colour the theme gives it (that is the theme tests' job). */
+/* The test build stubs the theme (tests/native/stubs_swrscan/theme.h): each role resolves to a
+ * fixed colour, because the assertions are that the chart paints its own background and that its
+ * text comes from the theme's role — not which colour the theme gives it (that is the theme
+ * tests' job). */
 uint32_t theme_hex(theme_color_t c) {
-    (void)c;
-    return 0x112233;
+    return (c == TC_text) ? 0x445566 : 0x112233;
 }
 
 /* --- draw recording (issue #119) -------------------------------------------- */
@@ -76,6 +76,7 @@ typedef struct {
     lv_point_t a;
     lv_point_t b;
     lv_coord_t width;
+    lv_color_t color;
 } stub_segment_t;
 
 static stub_segment_t stub_segments[STUB_SEGMENTS];
@@ -84,11 +85,13 @@ static int            stub_segment_count;
 static lv_obj_t      *draw_obj;         /* the object the DRAW_MAIN_END callback was registered on */
 static lv_event_cb_t  draw_cb;
 static lv_obj_t      *event_target;     /* what lv_event_get_target() hands the callback */
+static lv_color_t     last_label_color; /* the colour of the last text the chart painted */
 
 /* Fires the dialog's draw callback on the chart, recording what it paints. */
 void swrscan_stub_draw(void) {
     stub_segment_count = 0;
     event_target       = draw_obj;
+    last_label_color   = lv_color_hex(0);
 
     if (draw_cb) {
         draw_cb(NULL);
@@ -147,6 +150,18 @@ lv_coord_t swrscan_stub_curve_y(int i, int end) {
     }
 
     return end ? s->b.y : s->a.y;
+}
+
+/* El color con el que el chart dibuja la curva y el texto: sale del rol `text` del tema, que es
+ * lo que lo hace legible sobre el panel del chart (claro u oscuro segun el tema). */
+lv_color_t swrscan_stub_curve_color(void) {
+    const stub_segment_t *s = curve_segment(0);
+
+    return s ? s->color : last_label_color;
+}
+
+lv_color_t swrscan_stub_label_color(void) {
+    return last_label_color;
 }
 
 /* The chart's own background: what construct_cb set on the object it draws into. The test
@@ -356,8 +371,13 @@ void          *lv_event_get_param(lv_event_t *e) { (void)e; return NULL; }
 
 void lv_draw_line_dsc_init(lv_draw_line_dsc_t *dsc) { memset(dsc, 0, sizeof(*dsc)); }
 void lv_draw_label_dsc_init(lv_draw_label_dsc_t *dsc) { memset(dsc, 0, sizeof(*dsc)); }
-lv_color_t lv_color_white(void) { lv_color_t c = {0, 0, 0}; return c; }
-lv_color_t lv_color_hex(uint32_t v) { (void)v; lv_color_t c = {0, 0, 0}; return c; }
+lv_color_t lv_color_white(void) { lv_color_t c = {255, 255, 255}; return c; }
+lv_color_t lv_color_hex(uint32_t v) {
+    /* Decoded, so the test can tell the theme's role apart from a colour written in the code.
+     * The struct's fields are blue, green, red (like LVGL's lv_color_t). */
+    lv_color_t c = {(uint8_t) (v & 0xff), (uint8_t) ((v >> 8) & 0xff), (uint8_t) ((v >> 16) & 0xff)};
+    return c;
+}
 void lv_draw_line(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *dsc, const lv_point_t *p1, const lv_point_t *p2) {
     (void)ctx;
 
@@ -365,11 +385,13 @@ void lv_draw_line(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *dsc, const lv_po
         stub_segments[stub_segment_count].a     = *p1;
         stub_segments[stub_segment_count].b     = *p2;
         stub_segments[stub_segment_count].width = dsc->width;
+        stub_segments[stub_segment_count].color = dsc->color;
         stub_segment_count++;
     }
 }
 void lv_draw_label(lv_draw_ctx_t *ctx, const lv_draw_label_dsc_t *dsc, const lv_area_t *coords, const char *txt, void *bidi) {
-    (void)ctx; (void)dsc; (void)coords; (void)txt; (void)bidi;
+    (void)ctx; (void)coords; (void)txt; (void)bidi;
+    last_label_color = dsc->color;
 }
 void lv_txt_get_size(lv_point_t *size_res, const char *txt, const lv_font_t *font,
                      lv_coord_t letter_space, lv_coord_t line_space, lv_coord_t max_width, uint32_t flag) {
