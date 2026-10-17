@@ -741,6 +741,7 @@ con lo que haría falta para fundarlas.
 | "El banco da 0,15 s por los `open()` del sistema de archivos del host" | La comparación es medida; **la explicación** no | Perfilar el banco (QEMU) |
 | Que `addgroup` de busybox cree grupos en vez de agregar usuarios | Se observó en su momento, sin captura conservada | Repetirlo y pegar la salida |
 | `speaker-test` "corre sin error y sin sonido" (12/10) | No quedó la captura y hoy no se puede repetir con la GUI andando | Parar la GUI, correrlo y pegar la salida |
+| "La app de SWR Scan se cierra sola al terminar el barrido" (#119, defecto 2) | El cierre no está en el código del fin de barrido (§46) y no quedó el log de la GUI de esa corrida; el candidato (el `app off` del control remoto, que sí se acepta con el barrido transmitiendo) está fundado **en el código**, no en esa corrida | Correr el barrido con el log de la GUI a mano (`/tmp/x6200_log.txt` → `/mnt/app_logs/`), el `pid` de la GUI y el estado `app` del control remoto; y revisar el script de la corrida por si manda `{"cmd":"app","text":"off"}` |
 | El bucle de reinicio del CW Trainer (issue #51) se rearma en el arranque "por sí solo" | El banco no tiene camino de audio y el chroot no estaba armado, así que no se pudo medir la cadencia en el equipo | Medir en la radio el `PID` de la GUI por 150 s tras un reset (issue #15), con `key_train` en `params.db` |
 
 **Estimaciones explícitas** (dichas como tales, no son hallazgos): el "~20 s" del banco rápido y el
@@ -2399,7 +2400,13 @@ barrido del dialogo no termina solo —`do_step` envuelve `freq_index` y sigue m
 (`dialog_swrscan.c` `key_cb` → `dialog_destruct`), el `{"cmd":"app","text":"off"}` del control
 remoto (`main_screen_close_app`) y las teclas de la barra de casa (`apps_disable`). El QA no guardo
 el log de la GUI de esa corrida (`/mnt/app_logs/x6200_log_*.txt`), asi que el camino no se puede
-fijar desde el repo.
+fijar desde el repo. Lo que **si** quedo medido en el banco (2026-10-16, esta corrida): con el
+barrido transmitiendo, el control remoto **descarta** el `btn` (no se puede apretar Stop por el
+remoto) pero **acepta** `app off` —`apply_cmd()` deja pasar solo los comandos de parada
+(`is_stop()`: `CMD_APP` con `val` 0 y los `app_cmds` con `val < stop`) cuando
+`radio_get_state() != RADIO_RX`—, y las herramientas del QA mandan justamente `app off`
+(`tools/prueba-apps-radio.sh`, `tools/captura-pantallas.sh`). Es el candidato mas probable y queda
+como hipotesis en el anexo A, con lo que falta para fundarlo.
 
 ---
 
