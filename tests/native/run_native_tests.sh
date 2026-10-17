@@ -212,7 +212,7 @@ cp "$SRC/dialog_swrscan.c" "$SRC/dialog_swrscan.h" "$SRC/roe_curve.c" "$SRC/roe_
 cp "$DIR/stubs_swrscan/lvgl/lvgl.h" "$SW_STAGE/lvgl/"
 cp "$DIR/stubs_swrscan/dialog.h" "$DIR/stubs_swrscan/styles.h" "$DIR/stubs_swrscan/radio.h" \
    "$DIR/stubs_swrscan/events.h" "$DIR/stubs_swrscan/util.h" "$DIR/stubs_swrscan/keyboard.h" \
-   "$DIR/stubs_swrscan/main_screen.h" "$DIR/stubs_swrscan/buttons.h" "$SW_STAGE/"
+   "$DIR/stubs_swrscan/main_screen.h" "$DIR/stubs_swrscan/buttons.h" "$DIR/stubs_swrscan/theme.h" "$SW_STAGE/"
 cp "$DIR/stubs_swrscan/params/params.h" "$SW_STAGE/params/"
 if [ "$SAN_OK" = yes ]; then
     # shellcheck disable=SC2086
