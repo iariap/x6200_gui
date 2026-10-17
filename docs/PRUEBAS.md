@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 17/10 ~11:30 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `1700cd8` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 8h51min** ✓ (pid 2452, uptime 31870 s, 1 GUI, CRASHLOG 0). 0 merges; 5 ramas en curso |
 | 17/10 ~10:55 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `1129424` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 8h21min** ✓ (pid 2452, uptime 30070 s, 1 GUI, CRASHLOG 0). 0 merges; 5 ramas en curso |
 | 17/10 ~10:20 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `1236440` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 7h51min** ✓ (pid 2452, uptime 28271 s, 1 GUI, CRASHLOG 0). 0 merges; 5 ramas en curso |
 | 17/10 ~09:45 | ROM `c640645d810c` + GUI aaa60c1d3ab5 | `7acc96a` | (no corrido) | (no corrido) | 0 | **GUI nueva estable 7h21min** ✓ (pid 2452, uptime 26471 s, 1 GUI, CRASHLOG 0). 0 merges; 5 ramas en curso |
