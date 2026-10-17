@@ -1,0 +1,18 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output: ok
+  chroot /tmp/opencode/vfix3-swr133: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  aviso: el hash de los fuentes cambio, pero RECONSTRUIR=no: se prueba el binario que ya esta
+OK: /tmp/opencode/vfix3-swr133/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13757724 B, 3/3 marcas)
+  respuesta: {"t":"ok"}
+  captura: /tmp/opencode/bench-swr133-swrscan-final.png (349 colores distintos)
+  version: aea54215 Control remoto: Run/Stop del barrido de ROE por soc
+  fuente: md5 e59f334d4b87 (src/ + lvgl/src)
+  binario: md5 ffef63df58cb   qemu-cpu: cortex-a7
+  captura util (24907 bytes)
