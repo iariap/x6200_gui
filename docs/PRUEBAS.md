@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 17/10 ~22:20 (hora radio) | ROM `c640645d810c` + GUI **b1ba67520079** | `63dbf7a4` (#130) | **SWRScan** | **23 ok** | 0 (1 crash, ya en #131) | **VALIDADA EN RADIO la U del #130** ✓✓: build limpio desde el tip + gate #86 + deploy (idempotente, ya corría el mismo md5). Con el dial en la resonancia (~7.000) la curva es una **U**: base `y=398` en `x=255` (interior), bordes suben **+94/+168 px**; reproducido en 2ª pasada (`x=232`, +80/+174) y con span 200 kHz/Log (`x=238`, +140/+233). **Hallazgo nuevo**: `tests/swrscan_curve_evidence.py` del #125 **no corre sobre una captura de radio** (pide 2 args, no 1; su umbral `min≥180` no ve la curva del tema del owner `Redshift` = RGB(255,179,160)) → **issue nuevo**. Sigue `Error: timeout de RF` (`n≈44/51`, nunca `Completed`). Evidencia `docs/evidencia/2026-10-17-qa-radio-swr125/` |
 | 18/10 ~05:40 | ROM `c640645d810c` + GUI b1ba67520079 | `885f823` | **modo/filtros** | **no repro** | 0 | **CRASH NUEVO detectado en el app_log** ✗: `CRASHLOG sig=11 fallo=0xf363` justo después de `on_vfo_mode_change: mode=2` + carga de `filter_low/high`; la GUI se relanzó sola (pid 2728→3931) y el equipo siguió. **NO es el del #116**. **Stack sin resolver** (direcciones en rango de .so, sin md5 de las libs). **No reproducible**: LSB→USB→CW→AM + 4 botones → sin crash (pid 3931, CRASHLOG 0). **Issue nuevo cargado** |
 | 18/10 ~05:10 | ROM `c640645d810c` + **GUI b1ba67520079** (merge `885f823`) | `885f823` | **SWRScan** | **1 ok — VALLE** ✓✓ | 0 | **PUBLICADO Y VALIDADO `885f823`**: la curva de ROE **ya NO está invertida** ✓✓. Números: centro y=395 (antes 118) → ROE baja ✓, bordes y=300/309 → ROE alta ✓ → **el valle está en la resonancia** ✓. `min 1.0 @ 6.780.000 kHz`, `Passes: 1`, span 500 kHz, Scale Linear. **Pendiente**: sigue saliendo `Error: timeout de RF` (barrido cortado en n=44/51) ✗ |
 | 18/10 ~04:40 | ROM `c640645d810c` + GUI 846afac6ed47 | `c67a30b` | (no corrido) | (no corrido) | 0 | **Estable 9h07min** ✓ (pid 1133, uptime 32798 s, 1 GUI, CRASHLOG 0) — la racha más larga de la sesión. 0 merges |
@@ -144,6 +145,78 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 | 15/10 ~16:10 | `d0ff2dba9c85` (sin cambios) | `f6d1cb1` | TODO OK | no se corrió | 0 en 90 s | **Sin desplegar**: `4e9b5f4` (#77) queda pendiente, el volumen del build lo tiene el A/B del otro agente |
 | 15/10 ~15:20 | `d0ff2dba9c85` | `337036c` (incluye `457a9a3`) | TODO OK | 22 ok | 0 en el barrido y 0 en 180 s de vigilancia | **Funciona** |
 | 15/10 ~14:05 | `5a6e561e502f` | `e5a869b` | TODO OK | (no se corrió) | no medido | **Funciona** para #19/#26/#30/#47 |
+
+---
+
+---
+
+## 17/10 ~22:20 (hora radio) — `63dbf7a4` (#130): la parábola de ROE en la radio es una **U** ✓ (cierre requires-radio del #125)
+
+**Qué se probó:** el fix del **#130** (`src/roe_curve.c`: si el ajuste libre sale con `a<0` —un domo— se
+espeja al valle con la misma columna del vértice y la base en el mínimo medido). Es el `requires-radio`
+que dejó abierto el #125. El criterio del owner (paso 3 del re-test del #125): **la curva dibujada es una
+U** — base en el cuarto inferior (`y≥316`), columna **interior**, y **los dos bordes suben**.
+
+**Método (medido):**
+
+```
+  clon x6200_qa → tip 63dbf7a4
+  RECONSTRUIR=si tools/compila-gui.sh  → binario md5 b1ba67520079 (13.753.408 B)
+  tools/prueba-gui-en-radio.sh         → gate #86: OK ELF32 ARM 13753408 B 3/3 marcas (exit 0)
+  radio md5 desplegado                 → b1ba67520079  (idéntico: el deploy fue idempotente)
+```
+
+El equipo **no se reinició** (uptime continuo 34729→36509 s); la GUI se relanzó (pid 3931). Se corrió
+**1 pasada (Quick)** del SWRScan con **TX a 0.1 W** (lo fuerza `radio_start_swrscan()`,
+`SWRSCAN_TX_POWER_DW=1`), **ATU sin tocar** (`atu=1`, como en la captura del owner; el remoto no expone
+comando de ATU) y sin XPA125B.
+
+**Resultado — la curva es una U (medición de píxeles, banda del chart `y=69..399`):**
+
+| Captura | dial / span / escala | valle (y) | col. valle | bordes (y) izq/der | suben (px) |
+|---|---|---|---|---|---|
+| `01-swrscan-50k-dial7000-U.png` | 7.000 / 50 kHz / Linear | **398** | 255 | 304 / 230 | **+94 / +168** |
+| `02-swrscan-50k-dial7000-U-2da.png` | 7.000 / 50 kHz / Linear | **398** | 232 | 318 / 224 | **+80 / +174** |
+| `03-swrscan-200k-log-dial7016-U.png` | 7.016,334 / 200 kHz / Log | **398** | 238 | 258 / 165 | **+140 / +233** |
+| `04-swrscan-500k-log-dial7016-U.png` | 7.016,334 / 500 kHz / Log | **398** | 273 | 227 / 167 | **+171 / +231** |
+
+Base en el cuarto inferior (`y=398 ≥ 316`) ✓, valle **interior** ✓, **ambos bordes suben** ✓ → **U**.
+Reproducido en la 2ª pasada (lección del #122) y también con **span 200 kHz / Log**, que son las
+condiciones exactas de la captura del domo del owner (`26-roe-multipasada-final.png`): **el domo ya no
+se reproduce, la curva sale U**. Con el dial **fuera de la resonancia** (7.020/7.040) la curva es una
+rama que sube (el mínimo cae en el borde), porque el rango no contiene el valle — no es una inversión.
+
+**El script de la aserción del #125 no es ejecutable en la radio (hallazgo nuevo).** El re-test del #125
+documenta `python3 tests/swrscan_curve_evidence.py /tmp/swrscan-u.png` (1 argumento): el script pide **2**
+(`len(argv)!=3` → docstring y **exit 2**). Con 2 argumentos (fixture del arnés + captura de radio) la
+comprobación de la radio **igual falla**: `FAIL … no encontre la curva dibujada`. Causa medida:
+`curve_mask()` exige `min(r,g,b)≥180` y la curva del tema del owner (`Redshift`) es `RGB(255,179,160)`
+(`min=160`); el fixture del arnés pasa porque su curva es `RGB(248,238,255)` (`min=238`). El docstring del
+script dice **"No OCR, no radio."** Salida cruda: [`asercion-script.txt`](evidencia/2026-10-17-qa-radio-swr125/asercion-script.txt).
+→ **issue nuevo** (el entregable es el issue, no el fix). El RED/GREEN del arnés en el trunk **PASS**
+(`03-harness-domo-valle.png` + `04-harness-valle-real.png`).
+
+**Barrido de apps (no regresión):** `PERMANENCIA=14 tools/prueba-apps-radio.sh` → **23/23 ok, 0 caídas**
+(incluye **SWRScan**, que ahora sí abre por el control remoto; el #78 quedó resuelto). Log en
+[`apps-sweep.log`](evidencia/2026-10-17-qa-radio-swr125/apps-sweep.log).
+
+**Dos cosas que no son del fix y quedan abiertas:**
+
+- **`Error: timeout de RF`**: **todas** las pasadas terminan en `Error: timeout de RF` con `n≈43-45/51`,
+  **nunca `Completed`**. El watchdog de la pasada (`SWRSCAN_PASS_TIMEOUT_MS = 2285 ms` para 51 puntos =
+  44,8 ms/punto) se dispara antes porque el tiempo real por punto supera el `SWRSCAN_DWELL_MS=35` asumido
+  (TX medida ~2,3-2,6 s). Ya anotado en #119 y por el otro QA; sigue abierto.
+- **SIGSEGV (1 vez, no reproducido)**: `CRASHLOG sig=11 fallo=0xf363 pc=0xb6186ae8 lr=0xb618d4f0 …` tras
+  `on_vfo_mode_change: mode=2` + carga de `filter_low/high`; la GUI se relanzó (pid 2728→3931).
+  **Ya reportado en el #131** (mismo evento). Un barrido dirigido de las 23 apps (abrir 6 s / cerrar /
+  comparar pid) **no lo reprodujo** (pid 3931, CRASHLOG 0). Ojo: `verifica-radio` dice "sin senales de
+  crash" porque el log vivo post-relanzamiento arranca limpio; el CRASHLOG está en el `app_log`
+  guardado `x6200_log_2026-10-17_22-38-46.txt`.
+
+**Restauración:** dial `7.030.000`, modo `LSB`, banda `40m CW`, `pwr` 5.0 W, app cerrada, RX;
+`swrscan_span=500000`, `swrscan_linear=1`; `cw_tune=cw_decoder=key_train=0`; tema `Redshift`; **ATU sin
+tocar**. md5 `b1ba67520079`. Evidencia completa:
+[`docs/evidencia/2026-10-17-qa-radio-swr125/`](evidencia/2026-10-17-qa-radio-swr125/README.md).
 
 ---
 

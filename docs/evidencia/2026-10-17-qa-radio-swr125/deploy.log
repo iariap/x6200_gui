@@ -1,0 +1,31 @@
+== copiando la GUI compilada ==
+b1ba67520079904449b6932a112d3c78  /tmp/tmp.Xl768tixde
+OK: /tmp/tmp.Xl768tixde es el firmware del port (ELF32 ARM, 13753408 B, 3/3 marcas)
+== subiendo a la radio (192.168.0.236) ==
+== reiniciando la GUI (el daemon la levanta de nuevo) ==
+== esperando el arranque ==
+  display init   34728.6 s de uptime  (+0.01 s)
+  eventos/usb    34728.6 s de uptime  (+0.00 s)
+  display        34728.6 s de uptime  (+0.00 s)
+  keyboard       34728.6 s de uptime  (+0.00 s)
+  entradas       34728.7 s de uptime  (+0.01 s)
+  db_init        34728.7 s de uptime  (+0.01 s)
+  cfg:items      34728.7 s de uptime  (+0.01 s)
+  cfg:band       34728.7 s de uptime  (+0.01 s)
+  cfg:mode       34728.7 s de uptime  (+0.00 s)
+  cfg:sm         34728.7 s de uptime  (+0.00 s)
+  cfg:atu        34728.7 s de uptime  (+0.00 s)
+  cfg:transv     34728.7 s de uptime  (+0.00 s)
+  cfg:mem        34728.7 s de uptime  (+0.00 s)
+  cfg:digi       34728.7 s de uptime  (+0.00 s)
+  cfg_init       34728.7 s de uptime  (+0.00 s)
+  params_load    34728.7 s de uptime  (+0.00 s)
+  params_init    34728.7 s de uptime  (+0.00 s)
+  fuentes y estilos 34728.8 s de uptime  (+0.05 s)
+  pantalla principal 34728.8 s de uptime  (+0.04 s)
+  cw/rtty        34728.9 s de uptime  (+0.17 s)
+  radio          34729.2 s de uptime  (+0.20 s)
+  cat/qso_log    34729.2 s de uptime  (+0.07 s)
+  wfview         34729.2 s de uptime  (+0.00 s)
+  control remoto 34729.2 s de uptime  (+0.00 s)
+GUI lista: 34729.3 s
