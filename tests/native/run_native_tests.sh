@@ -314,3 +314,43 @@ $CC $BASEFLAGS -fanalyzer -I"$EV_STAGE" -I"$DIR" \
     -c "$EV_STAGE/events.c" -o "$OUT/events.o" || true
 
 "$OUT/events_tests"
+
+# --- CW encoder test (issue #116) --------------------------------------------
+# src/cw_encoder.c includes its siblings with `#include "..."` (cfg/cfg_api.h,
+# cw_decoder.h, params/params.h, radio.h, ...), and for a quoted include the
+# directory of the including file always wins over -I, so the committed stub
+# headers under tests/native/stubs_cwenc/ cannot shadow src/cfg/cfg_api.h etc.
+# from their own directory: the real cw_encoder.c is staged next to a copy of
+# the stubs, the same pattern as the clock/backlight/digital-modes/SWR-Scan/
+# restore tests (see tests/native/test_cw_encoder.c). The test pins that
+# cw_encoder_send(NULL) is a no-op instead of `strdup(NULL)` -> strlen(NULL):
+# the radio crashed with `CRASHLOG sig=11 fallo=(nil)` (pc inside strlen, lr
+# inside strdup, both in libc) when the CW messages window (empty msg_cw table)
+# handed the keyer a NULL message.
+echo "== CW encoder (#116): cw_encoder_send(NULL) no desreferencia NULL =="
+CWENC_STAGE="$OUT/cwenc_src"
+rm -rf "$CWENC_STAGE"
+mkdir -p "$CWENC_STAGE/cfg" "$CWENC_STAGE/params" "$CWENC_STAGE/lvgl"
+cp "$SRC/cw_encoder.c" "$SRC/cw_encoder.h" "$SRC/cw_decoder.h" "$CWENC_STAGE/"
+cp "$DIR/stubs_cwenc/cfg/cfg.h" "$DIR/stubs_cwenc/cfg/cfg_api.h" "$CWENC_STAGE/cfg/"
+cp "$DIR/stubs_cwenc/params/params.h" "$CWENC_STAGE/params/"
+cp "$DIR/stubs_cwenc/radio.h" "$DIR/stubs_cwenc/msg.h" "$DIR/stubs_cwenc/buttons.h" "$CWENC_STAGE/"
+cp "$DIR/stubs_cwenc/lvgl/lvgl.h" "$CWENC_STAGE/lvgl/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$CWENC_STAGE" \
+        "$CWENC_STAGE/cw_encoder.c" "$DIR/cwenc_stubs.c" "$DIR/test_cw_encoder.c" \
+        "$DIR/test_framework.c" "$DIR/cwenc_test_main.c" -o "$OUT/cwenc_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$CWENC_STAGE" \
+        "$CWENC_STAGE/cw_encoder.c" "$DIR/cwenc_stubs.c" "$DIR/test_cw_encoder.c" \
+        "$DIR/test_framework.c" "$DIR/cwenc_test_main.c" -o "$OUT/cwenc_tests"
+fi
+
+echo "== CW encoder: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$CWENC_STAGE" \
+    -c "$CWENC_STAGE/cw_encoder.c" -o "$OUT/cw_encoder.o" || true
+
+"$OUT/cwenc_tests"

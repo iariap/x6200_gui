@@ -66,6 +66,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 45. [La cola de eventos se traba al llenarse (issue #111)](#45-la-cola-de-eventos-se-traba-al-llenarse-issue-111)
 46. [La curva de ROE escalonada del #119: el GUI flasheado no tiene el #117](#46-la-curva-de-roe-escalonada-del-119-el-gui-flasheado-no-tiene-el-117)
 47. [El fantasma del chart de ROE: el panel del dialogo es semitransparente](#47-el-fantasma-del-chart-de-roe-el-panel-del-dialogo-es-semitransparente)
+48. [El crash de CW del #116: la ventana de mensajes con la tabla vacia le pasaba NULL al keyer](#48-el-crash-de-cw-del-116-la-ventana-de-mensajes-con-la-tabla-vacia-le-pasaba-null-al-keyer)
 
 ---
 
@@ -2462,3 +2463,97 @@ CHECK(swrscan_stub_chart_bg_color_set());
 
 con el stub del tema resolviendo `TC(panel)` a un color fijo (lo que se afirma es que el chart pinta
 su fondo, no que color le da el tema).
+
+---
+
+## 48. El crash de CW del #116: la ventana de mensajes con la tabla vacia le pasaba NULL al keyer
+
+**Sintoma** (reportado por el usuario, issue #116): *"recien toque algo y quedo sin audio"*. La GUI
+crasheo (el pid paso de 311 a 1119, el daemon 298 la relanzo) y la radio quedo sin audio (lo maneja
+la GUI).
+
+**Medido en la radio** (`/mnt/app_logs/x6200_log_2026-10-16_22-01-44.txt`, la ultima linea es el
+volcado; el binario que corria es el build del trunk `23926241`,
+`md5 3604cece0e4382229a2de328d9baa614`, reconstruido y verificado en
+`docs/evidencia/2026-10-16-cw116-banco/`):
+
+```
+CRASHLOG sig=11 fallo=(nil) pc=0xb5de0064 lr=0xb5ddf714 sp=0xbeb89ae0 base=0x44ea74
+CRASHLOG-STACK 00000001 00000000 00000001 0124fbcc beb89afc 0047dacc b5ece000 b5dd58ac ...
+```
+
+**La pila resuelta** (los artefactos que corre la radio: `x6200_gui` reconstruido del `23926241`,
+`libc.so.6` `md5 412df301b11e` y `liblvgl.so` `md5 cd30ca6c58ad`; resolucion reproducible con
+`docs/evidencia/2026-10-16-cw116-radio/resuelve-pila.py`):
+
+```
+pc=0xb5de0064 -> libc+0xa0064 : strlen@@GLIBC_2.4+0x23
+lr=0xb5ddf714 -> libc+0x9f714 : __strdup@@GLIBC_2.4+0xc
+0x0047dacc -> enlace 0x4dacc : cw_encoder_send+0x68
+0x004773cc -> enlace 0x473cc : dialog_msg_cw_beacon_cb+0x50
+```
+
+El `pc` y el `lr` caen en **libc**: `lr` es el retorno del `blx strlen` de `__strdup` (`0x9f714`) y
+`pc` es el `ldrd r2,r3,[r1]` de `strlen` (`0xa0064`), con `r1 = r0 & ~7`. Los dos marcos de la GUI
+que cierran la cadena son exactos: `0x4dacc` es el retorno del `bl strdup` de `cw_encoder_send` y
+`0x473cc` el retorno del `bl cw_encoder_send` de `dialog_msg_cw_beacon_cb` (desensamblado en
+`docs/evidencia/2026-10-16-cw116-radio/desensamblado.txt`).
+
+**Causa** (codigo): la ventana de mensajes de CW llamaba al keyer con un mensaje NULL y el keyer lo
+pasa a `strdup()`:
+
+* `get_msg()` (`src/dialog_msg_cw.c:256`) devuelve NULL cuando la tabla de mensajes esta vacia
+  (`table_rows == 0`); `table_rows` solo crece al leer la tabla `msg_cw` del `params.db`, que el
+  esquema de la ROM crea **sin filas** (`sql/params.sql:55`, ningun `INSERT`).
+* `dialog_msg_cw_beacon_cb()` (`src/dialog_msg_cw.c:296`) y `dialog_msg_cw_send_cb()` (`:282`) le
+  pasaban ese NULL a `cw_encoder_send()` sin mirarlo.
+* `cw_encoder_send()` (`src/cw_encoder.c:167`) hace `current_msg = strdup(text)`: con `text == NULL`,
+  `strdup` llama a `strlen(NULL)`, que lee la direccion 0 -> `SIGSEGV` con `si_addr = 0`
+  (`fallo=(nil)`), el `pc` justo en ese `ldrd`.
+
+Los `CWDBG show` que el issue tomo como contexto son del **CW Trainer** (su `refresh_ui()` por el
+timer, con el trainer abierto): son ruido de diagnostico (escriben crudo, sin pasar por el logger) y
+**no** la causa. El crash es otro dialogo, la ventana de mensajes de CW, que se abre con la tecla
+`MSG` en modo CW (`src/main_screen.c:783`) y crasheaba al tocar **Beacon** con la tabla vacia.
+
+**Arreglo**:
+
+* `src/cw_encoder.c`: `cw_encoder_send()` rechaza `text == NULL` (no-op: no arma el keyer ni toca la
+  radio). Es el sitio del crash, asi que cubre a los seis llamadores por igual. Rechaza tambien el
+  mensaje **vacio**: el ASan del suite nativo mostro que `endecode_thread()` avanza el puntero mas
+  alla del terminador del buffer de `strdup("")` y lee fuera de el (con `get_msg()` devolviendo `""`
+  cuando la celda no es valida, el camino era alcanzable desde la misma ventana).
+* `src/dialog_msg_cw.c`: los callbacks de Send y Beacon miran el mensaje antes de llamar al keyer
+  (NULL o vacio), como ya hacia `dialog_msg_cw_edit_cb()` en el mismo archivo.
+
+En el mismo archivo del keyer quedaron dos defectos que el suite nativo saca a la luz al compilarlo
+con `-Wall -Wextra`/`-fanalyzer`: `endecode_thread()` (que retorna por el `break` del `while`)
+devolvia sin valor y `cw_encoder_send()` leia `param.sched_priority` sin comprobar el
+`pthread_attr_getschedparam()`.
+
+**Verificacion, medida** (test nativo `tests/native/test_cw_encoder.c`, el `src/cw_encoder.c` real
+compilado contra stubs, seccion nueva en `tests/native/run_native_tests.sh`):
+
+```
+$ tests/native/run_native_tests.sh          # con el src sin arreglar
+== CW encoder (#116): cw_encoder_send(NULL) no desreferencia NULL ==
+Segmentation fault (core dumped)            # exit 139 (128+11): strdup(NULL) -> strlen(NULL)
+$ tests/native/run_native_tests.sh          # con el arreglo
+== CW encoder (#116): cw_encoder_send(NULL) no desreferencia NULL ==
+12 comprobaciones, 0 fallos
+```
+
+El test no usa hilos: `tests/native/cwenc_stubs.c` corre `endecode_thread()` **sincronicamente**
+(`pthread_create` del stub llama a la rutina; `join`/`cancel`/`detach` son no-ops), asi que el proceso
+del test no tiene un segundo hilo y no puede llegar al `CHECK` de `AsanThread::Destroy()` del runtime
+ASan de GCC 13 del runner de CI (el PR #120 murio ahi). Corrida bajo clang-18: seccion CW con
+`-fsanitize=address` (exit 0, `12 comprobaciones, 0 fallos`) y con `address,undefined` (exit 0); el
+ASan fue ademas el que encontro el OOB del mensaje vacio.
+
+El test fija que `cw_encoder_send(NULL)` es un no-op (el keyer queda IDLE, no se toca la radio) y
+que un mensaje real (`"E"`) sigue armando el keyer.
+
+**Sin fundar** (anexo A): la secuencia exacta de teclas del owner (el camino del crash bajo radio es
+`requires-radio`); lo fundado sin radio es el mecanismo (desensamblado + test). El banco no alcanza
+el camino: la ventana de mensajes de CW se abre por la tecla `MSG` y el control remoto no tiene
+comando de teclado (ver `docs/evidencia/2026-10-16-cw116-banco/`).
