@@ -36,8 +36,14 @@ socket. Muestra `Idle`, `sin datos medidos`, `Run`, `Span: 50 kHz`, `Passes: 1`.
 "app":"SWRScan","ax":{"swrscan_state":"Idle","passes":1,"pass":0,"points":51,"swrscan_tx":false}
 ```
 
-**No se envió `{"cmd":"swrscan","val":1}` en el banco**: el banco no tiene radio y la regla es
-no iniciar TX sin el equipo. El Run real es `requires-radio` (procedimiento en el reporte).
+**No se envió `{"cmd":"swrscan","val":1}` con la app abierta en el banco**: el banco no tiene
+radio y la regla es no iniciar TX sin el equipo. El Run real es `requires-radio` (procedimiento
+en el reporte).
+
+`banco-guardas.txt` sí prueba las guardas sin TX: con la app cerrada,
+`{"cmd":"swrscan","val":1}` responde `{"t":"err","err":"app not open"}` y el `get` siguiente
+sigue con `app:""` y `tx:false`; con la app abierta, `val:2` responde
+`{"t":"err","err":"Invalid value"}` y el estado queda `Idle`/`swrscan_tx:false`.
 
 `banco-run.log`: salida de `tools/captura-banco.sh` (binario verificado por el gate #86,
 respuesta `{"t":"ok"}` al abrir, captura útil, sin `crash.txt`).
