@@ -47,6 +47,37 @@ that moves it declares the region in `quality/contracts.yaml`
 measures the new pixels — a contrast that drops below 3:1 fails `x6200-ab themes`
 and `tests/test_nontext_checks.py`.
 
+## 2026-10-17 — `cw-tune-tuner.png` and `cw-tune-tema-sunlit.png` (issue #122, HALLAZGOS 49)
+
+Two **new** renders, not regenerations: the CW tune widget fixtures
+(`tools/ui_harness/fixtures/cw-tune-tuner.scn`, `cw-tune-tema-sunlit.scn`) arrive together with
+these PNGs so the non-text contract can measure an object only the pixels answer: the widget's
+panel is black at 50% over the theme's bg (`lv_style_set_opa(&cw_tune_style, LV_OPA_50)`,
+`src/styles.c`) and its bars are a fixed grey literal at 50% over that panel, so on the light theme
+the fill lands on the panel's own grey (1.01:1, measured on the radio's own binary) and the bars
+disappear. The fix gives them a 1 px border of the colour that contrasts most with the panel
+(`src/cw_tune_ui.c`, `update_cb`) and the new `cw_tune_bars` object of `quality/nontext.yaml`
+measures that border against the panel: Redshift **20.67:1**, Sunlit **5.02:1**. The other renders in
+this directory are untouched by the change (the 64 pre-existing fixtures still render byte
+identical).
+
+Captured at the same revision as the rest of the branch, inside `tools/ab_testing`:
+
+```bash
+uv run x6200-ab capture --revision <sha> --label golden \
+    --scenario cw-tune-tuner --scenario cw-tune-tema-sunlit \
+    --out "$(git rev-parse --show-toplevel)/tools/ab_testing/golden"
+```
+
+or, without Docker, with the harness build of `tests/check_harness_determinism.sh`:
+
+```bash
+tools/ui_harness/build/ui_harness --scenario tools/ui_harness/fixtures/cw-tune-tuner.scn \
+    --png tools/ab_testing/golden/cw-tune-tuner.png --json /tmp/cw-tune-tuner.json
+tools/ui_harness/build/ui_harness --scenario tools/ui_harness/fixtures/cw-tune-tema-sunlit.scn \
+    --png tools/ab_testing/golden/cw-tune-tema-sunlit.png --json /tmp/cw-tune-tema-sunlit.json
+```
+
 ## 2026-10-15 — Sunlit added (issue #67, THEMES v2)
 
 Two renders are new: `main-tema-sunlit` and `main-tema-sunlit-agua`, the

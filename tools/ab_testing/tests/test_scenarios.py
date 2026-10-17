@@ -144,6 +144,10 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "bt-dialog-tema-sprint",
         "bt-dialog-tema-sunlit",
         "bt-dialog-tema-trail",
+        "cw-tune-default",
+        "cw-tune-ssb",
+        "cw-tune-tema-sunlit",
+        "cw-tune-tuner",
         "home-bateria-externa",
         "home-frecuencia-extrema",
         "home-usb-20m",
@@ -225,6 +229,9 @@ def test_repo_fixtures_are_all_parsable() -> None:
             "bt-dialog",
             "app-close-home",
             "swrscan",
+            "cw-tune-default",
+            "cw-tune-ssb",
+            "cw-tune-tuner",
         }
         for scenario in suite.scenarios
     )

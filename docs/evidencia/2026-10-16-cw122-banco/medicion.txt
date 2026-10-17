@@ -1,0 +1,116 @@
+region del widget = (30,70)-(168,109), 139x40 = WIDTH x HEIGHT (src/cw_tune_ui.h:17-21)
+colores distintos en la region: 1 = widget oculto (se ve el fondo de la pagina);
+mas de 1 = widget visible (panel + barras).
+
+== colores distintos en la region del widget ==
+  01-cw-home.png               banco  pantalla principal, banda CW          (800, 480)  colores=7
+      (125, 124, 119)  x4136
+      (125, 125, 122)  x1272
+      (125, 124, 120)  x120
+      (247, 245, 235)  x12
+      (216, 215, 206)  x8
+      (163, 162, 155)  x8
+  02-cw-page-tuner-on.png      banco  pagina (CW 1:2), Tuner On (llegada)   (800, 480)  colores=7
+      (125, 124, 119)  x4136
+      (125, 125, 122)  x1272
+      (125, 124, 120)  x120
+      (247, 245, 235)  x12
+      (216, 215, 206)  x8
+      (163, 162, 155)  x8
+  03-cw-tuner-off.png          banco  pagina (CW 1:2), Tuner Off            (800, 480)  colores=1
+      (247, 245, 235)  x5560
+  04-cw-tuner-on.png           banco  pagina (CW 1:2), Tuner On             (800, 480)  colores=7
+      (125, 124, 119)  x4136
+      (125, 125, 122)  x1272
+      (125, 124, 120)  x120
+      (247, 245, 235)  x12
+      (216, 215, 206)  x8
+      (163, 162, 155)  x8
+  05-harness-cw-tune-off.png   arnes  pagina (CW 1:2), cw_tune=0 (Redshift) (800, 480)  colores=1
+      (10, 5, 5)  x5560
+  06-harness-cw-tune-on.png    arnes  pagina (CW 1:2), cw_tune=1 (Redshift) (800, 480)  colores=12
+      (5, 2, 2)  x4136
+      (65, 64, 64)  x1022
+      (61, 60, 60)  x112
+      (35, 32, 32)  x112
+      (0, 0, 0)  x96
+      (90, 178, 89)  x38
+
+== conteo por color (panel, barras y bloque activo) ==
+  03-cw-tuner-off.png          Sunlit panel             (125, 124, 119)  n=    0  bbox=None
+  03-cw-tuner-off.png          Sunlit barras            (125, 125, 122)  n=    0  bbox=None
+  04-cw-tuner-on.png           Sunlit panel             (125, 124, 119)  n= 4136  bbox=(30, 70, 168, 109)
+  04-cw-tuner-on.png           Sunlit barras            (125, 125, 122)  n= 1272  bbox=(34, 72, 165, 109)
+  05-harness-cw-tune-off.png   Redshift fondo de pagina (10, 5, 5)  n= 5560  bbox=(30, 70, 168, 109)
+  06-harness-cw-tune-on.png    Redshift panel           (5, 2, 2)  n= 4136  bbox=(30, 70, 168, 109)
+  06-harness-cw-tune-on.png    Redshift barras          (65, 64, 64)  n= 1022  bbox=(34, 73, 165, 108)
+  06-harness-cw-tune-on.png    Redshift bloque activo   (90, 178, 89)  n=   38  bbox=(90, 88, 91, 106)
+
+== cierre #122 (2026-10-17, rama factory/cw-tune-122): despues del arreglo ==
+Los numeros de abajo salen de `python3 mide.py <png...>` (mismo directorio): region del widget
+(30,70) 139x40, y el contraste es el del objeto `cw_tune_bars` de
+tools/ab_testing/quality/nontext.yaml (percentil 90 del rectangulo de la barra i=7 contra percentil
+10 del panel, WCAG 2.1).
+
+== colores distintos en la region del widget ==
+  07-harness-cw-tune-default.png     (800, 480)  colores=11   Redshift, (CW 1:2), cw_tune=0
+      (5, 2, 2)  x4136          panel
+      (65, 64, 64)  x668        barras (relleno gris)
+      (255, 255, 255)  x304     borde de las barras (blanco sobre panel oscuro)
+  08-harness-cw-tune-tuner.png       (800, 480)  colores=15   Redshift, con el tono en 8 Hz
+      (5, 2, 2)  x4136          panel
+      (65, 64, 64)  x588        barras
+      (255, 255, 255)  x266     borde
+  09-harness-cw-tune-ssb.png         (800, 480)  colores=1    USB: widget oculto (se ve el fondo)
+      (10, 5, 5)  x5560
+  10-harness-cw-tune-tema-sunlit.png (800, 480)  colores=13   Sunlit (tema claro), con el tono
+      (125, 124, 119)  x4136    panel
+      (125, 125, 122)  x588     barras
+      (0, 0, 0)  x354           borde de las barras (negro sobre panel claro)
+
+== contraste del objeto cw_tune_bars (borde vs panel) ==
+  07-harness-cw-tune-default.png     (255,255,255) vs (5,2,2)      = 20.67:1
+  08-harness-cw-tune-tuner.png       (255,255,255) vs (5,2,2)      = 20.67:1
+  09-harness-cw-tune-ssb.png         (10,5,5) vs (10,5,5)          = 1.00:1  (widget oculto: no aplica)
+  10-harness-cw-tune-tema-sunlit.png (0,0,0) vs (125,124,119)      =  5.02:1
+
+  antes del arreglo, misma medicion:
+    04-cw-tuner-on.png (banco, binario ARM real, Sunlit)  =  1.01:1
+    06-harness-cw-tune-on.png (arnes, Redshift)           =  2.00:1
+
+== conteo por color dentro de la region (panel, barras, borde) ==
+  07-harness-cw-tune-default.png     panel (5,2,2) n=4136 | barras (65,64,64) n=668 | borde (255,255,255) n=304
+  08-harness-cw-tune-tuner.png       panel (5,2,2) n=4136 | barras (65,64,64) n=588 | borde (255,255,255) n=266
+  10-harness-cw-tune-tema-sunlit.png panel (125,124,119) n=4136 | barras (125,125,122) n=588 | borde (0,0,0) n=354
+
+  (07 vs 08: el unico cambio es el bloque activo —el tono—; el panel y el borde miden lo mismo, que
+   es lo que la fixture 07 fija: el widget visible en CW con cw_tune=0 y sin tono.)
+
+== cierre #122 (2026-10-17): banco QEMU, binario ARM real (md5 66b766562d75) ==
+El rebuild del banco salio de estos fuentes (sello md5 d9fac5d89c57) y el gate fail-closed de #86 lo
+acepto: "es el firmware del port (ELF32 ARM, 13748068 B, 3/3 marcas)". Cada captura es una GUI nueva
+(params.db del chroot + `docker rm -f banco-apps`) comandada por el control remoto:
+{"cmd":"mode","val":"CW"} y la ruta de paginas {"cmd":"page","text":"key"} x3 -> (CW 1:2).
+
+  11-banco-cw-tune-sunlit.png    Sunlit    CW  cw_tune=0 cw_decoder=1  colores=11
+      panel (125,124,119) 4136 px | barras (125,125,122) 668 px | borde (0,0,0) 304 px
+      contraste borde/panel =  5.02:1
+  12-banco-cw-tune-redshift.png  Redshift  CW  cw_tune=0 cw_decoder=1  colores=11
+      panel (5,2,2) 4136 px | barras (65,64,64) 668 px | borde (255,255,255) 304 px
+      contraste borde/panel = 20.67:1
+  13-banco-cw-decoder-off.png    Sunlit    CW  cw_tune=0 cw_decoder=0  colores=11
+      contraste borde/panel =  5.02:1   identica a 11 (mismo md5 eb2841aafb4a08e97c6fc2daa5280628)
+  14-banco-usb-control.png       Sunlit    USB cw_tune=0               colores=1 (widget oculto)
+
+  antes del arreglo, misma region y mismo metodo (corrida del 2026-10-16):
+     03-cw-tuner-off.png  banco, pre-fix, cw_tune=0, Sunlit   colores=1  (widget oculto)
+     04-cw-tuner-on.png   banco, pre-fix, cw_tune=1, Sunlit   contraste barras/panel = 1.01:1
+
+  11 vs 03: A/B de la visibilidad en el binario real, mismos params (cw_tune=0, Sunlit) y mismo binario
+            de base; 11 vs 04: A/B del contraste (mismo tema, el widget visible en los dos).
+  13 vs 11: el decodificador apagado no cambia un pixel (captura byte a byte identica): la pagina CW y
+            el widget no dependen del decoder, que es la hipotesis 1 del issue refutada en la radio.
+  14: el control del otro lado — fuera de CW/CWR el widget sigue oculto (1 color).
+
+md5 de las capturas del banco (11-14): eb2841aafb4a08e97c6fc2daa5280628 (11 y 13),
+b915396f9d57e6ba06c346e59ade858a (12), a3b5e02cd83238a55fe68d505a4b5765 (14).

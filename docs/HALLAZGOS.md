@@ -67,6 +67,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 46. [La curva de ROE escalonada del #119: el GUI flasheado no tiene el #117](#46-la-curva-de-roe-escalonada-del-119-el-gui-flasheado-no-tiene-el-117)
 47. [El fantasma del chart de ROE: el panel del dialogo es semitransparente](#47-el-fantasma-del-chart-de-roe-el-panel-del-dialogo-es-semitransparente)
 48. [El crash de CW del #116: la ventana de mensajes con la tabla vacia le pasaba NULL al keyer](#48-el-crash-de-cw-del-116-la-ventana-de-mensajes-con-la-tabla-vacia-le-pasaba-null-al-keyer)
+49. [El widget de CW tune en el tema claro: las barras desaparecen sobre su propio panel](#49-el-widget-de-cw-tune-en-el-tema-claro-las-barras-desaparecen-sobre-su-propio-panel)
 
 ---
 
@@ -2557,3 +2558,100 @@ que un mensaje real (`"E"`) sigue armando el keyer.
 `requires-radio`); lo fundado sin radio es el mecanismo (desensamblado + test). El banco no alcanza
 el camino: la ventana de mensajes de CW se abre por la tecla `MSG` y el control remoto no tiene
 comando de teclado (ver `docs/evidencia/2026-10-16-cw116-banco/`).
+
+## 49. El widget de CW tune en el tema claro: las barras desaparecen sobre su propio panel
+
+**Sintoma**: en el tema claro (**Sunlit**, el unico de los seis temas v2 con fondo claro, `#F7F5EB`)
+las quince barras del widget de CW tune no se distinguen del panel del widget: se ve un rectangulo
+gris vacio en lugar de las barras que marcan donde esta la senal. En los cinco temas oscuros las
+barras se leen. Lo encontro la fixture `cw-tune-on` del arnes (`tools/ui_harness/`), no el usuario.
+
+**Medido** (captura del banco, binario ARM real `md5 aaa60c1d3ab5`, tema Sunlit; los colores salen
+del PNG con Pillow sobre la region del widget, `(30,70)` `139x40` = `WIDTH`x`HEIGHT` de
+`src/cw_tune_ui.c`; evidencia en `docs/evidencia/2026-10-16-cw122-banco/`, captura
+`04-cw-tuner-on.png`):
+
+```
+panel del widget (125,124,119)  n=4136   bbox (30,70)-(168,109)
+barras           (125,125,122)  n=1272
+contraste barra vs panel = 1.01:1        (mismo tema, tema oscuro Redshift: 2.00:1)
+```
+
+La misma medicion sobre la fixture del arnes con el tema **Redshift** (`06-harness-cw-tune-on.png`)
+da panel `(5,2,2)` y barras `(65,64,64)`: ahi el contraste es `2.00:1` y las barras se ven. El
+bloque **activo** no esta afectado: en Redshift mide `(90,178,89)` contra el panel = `7.82:1`, y
+ademas lleva borde (§27).
+
+**Causa** (codigo + la cuenta del blend): el panel del widget es **negro a 50 %** sobre el fondo de
+la pagina (`cw_tune_style`: `lv_style_set_bg_color(lv_color_black())` con
+`lv_style_set_opa(&cw_tune_style, LV_OPA_50)`, `src/styles.c:290-296`) y las barras son **gris
+`0x7f7f7f` a 50 %** sobre ese panel (`rect_dsc.bg_color = lv_color_hex(0x7f7f7f)` con
+`rect_dsc.bg_opa = LV_OPA_50`, `src/cw_tune_ui.c:60-63`). Sobre un fondo oscuro el panel queda casi
+negro y el gris al 50 % se despega; sobre el fondo claro el panel queda en gris medio
+(`(247,245,235)` con negro al 50 % -> `(125,124,119)`, la cuenta da `(124,123,118)`) y el gris al
+50 % sobre ese gris medio cae casi en el mismo valor (`(125,125,122)`, la cuenta da `(126,126,123)`):
+los dos terminan con el mismo brillo. La relacion no depende del valor de las barras — subirlo o
+bajarlo no separa los dos grises —, sino de que la barra se mezcla **sobre su propio panel** con la
+misma opacidad que el panel sobre la pagina.
+
+**Estado**: **arreglado** (2026-10-17, rama `factory/cw-tune-122`, issue #122). Este hallazgo es
+distinto del §27: aquel arreglo el borde del bloque **activo** (`src/cw_tune_ui.c:45`, de `1.65:1` a
+`8.65:1`); aca el problema es de las barras **inactivas** contra el **panel** del widget, y ninguno de
+los dos temas tenia un chequeo que lo cubriera (el barrido WCAG de §27/§28 mira los colores de la UI,
+no el blend de una barra semitransparente sobre un panel semitransparente). Se destapa con la fixture
+`cw-tune-on` porque es la primera que enciende el widget con un tema claro (esa fixture se llama hoy
+`cw-tune-tuner`: los nombres `on`/`off` dejan de tener sentido con el arreglo, ver
+`docs/evidencia/2026-10-16-cw122-banco/README.md`).
+
+**Arreglo** (codigo: `src/cw_tune_ui.c`): las barras inactivas llevan borde de **1 px**
+(`rect_dsc.border_width = 1`, `border_opa = LV_OPA_COVER`, `cw_tune_init`) cuyo color se elige en cada
+dibujo contra la superficie que las rodea —el **panel**, no su propio relleno—, con el mismo criterio
+y la misma cuenta que el bloque activo (§27) y que `band_plan.c`:
+
+```c
+/* update_cb */
+rect_dsc.border_color = rel_lum(panel_color()) < LUM_CORTE ? lv_color_white() : lv_color_black();
+```
+
+`panel_color()` calcula el color real del panel (negro al 50 % sobre el fondo del tema,
+`src/styles.c:290-296`), que no es un rol que el chequeo estatico pueda resolver. El **relleno** gris
+queda como estaba: la cuenta de arriba muestra que subirlo o bajarlo no separa los dos grises (los
+dos terminan con el mismo brillo); lo que hace visible el componente es su **borde**, que es lo que
+WCAG 1.4.11 mide. Ancho **1** y no 2 como el bloque activo porque la barra mide `BLOCK_W=5` px: con
+2 px de borde el relleno que marca el tono queda reducido a un pixel.
+
+**Verificacion, medida** (misma region `(30,70)` `139x40`, mismo metodo Pillow sobre el PNG; el
+"despues" esta medido en el **binario ARM real** del banco —el mismo camino que la radio— y en el
+render del arnes, y los dos coinciden):
+
+```
+$ python3 docs/evidencia/2026-10-16-cw122-banco/mide.py <png...>
+banco, binario ARM real, Sunlit   (04-cw-tuner-on.png -> 11-banco-cw-tune-sunlit.png)   1.01:1 ->  5.02:1
+banco, binario ARM real, Redshift (12-banco-cw-tune-redshift.png)                                 -> 20.67:1
+arnes, Sunlit   (cw-tune-tema-sunlit.png)                                                         ->  5.02:1
+arnes, Redshift (06-harness-cw-tune-on.png -> cw-tune-tuner.png)                        2.00:1 -> 20.67:1
+```
+
+El "antes" del banco es la corrida del 2026-10-16 (`04`, con el widget encendido a mano porque el
+parametro era el gate); el "antes" de Redshift es el render del arnes. El binario que dibuja el
+"despues" del banco es `md5 66b766562d75` (rebuild de estos fuentes, sello `d9fac5d89c57`, aceptado
+por el gate fail-closed de #86) y el del "antes" es `md5 aaa60c1d3ab5`, el mismo que el
+`/usr/sbin/x6200_gui` de la radio.
+
+Y el chequeo queda automatico en dos lugares (los dos fallan si el borde se pierde):
+
+- `tests/check_wcag.py`: el par `cw_tune_borde` sobre `cw_tune_panel` es **exigible** (>= 3:1) en las
+  diez paletas; medido, el minimo es `4.88:1` (Sunlit) y el maximo `21.00:1`. El mismo script ademas
+  exige, leyendo la fuente, que `cw_tune_ui.c` ponga el borde y lo elija por la luminancia del panel
+  (`$ python3 tests/check_wcag.py` -> `pares OK: 1052 | exentos: 170 | informativos: 90 | FALLAS: 0`;
+  quitando el borde de la fuente el chequeo sale con la falla, probado).
+- `tools/ab_testing/quality/nontext.yaml`: el objeto `cw_tune_bars` mide el **pixel** renderizado
+  (borde vs panel) sobre los renders dorados `cw-tune-tuner` (Redshift) y `cw-tune-tema-sunlit`
+  (Sunlit), con `min_ratio: 3.0` (WCAG 1.4.11 para un componente). El mismo objeto medido sobre la
+  captura del banco de antes del arreglo da `1.01:1`, o sea que falla si el borde se pierde.
+
+**Sin fundar** (anexo A): nada de este hallazgo. La corrida del 2026-10-16 habia dejado sin fundar el
+"despues" con el **binario ARM real** (el banco estaba ocupado por otra sesion); el banco se libero
+durante esta corrida y la medicion de arriba es de ese binario, con las capturas `11`-`14` en
+`docs/evidencia/2026-10-16-cw122-banco/`.
+

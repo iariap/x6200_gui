@@ -176,3 +176,33 @@ objects:
     background: [481, 17, 10, 9]
     min_ratio: 3.0
     where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
+
+  # --- CW tune widget (issue #122, docs/HALLAZGOS.md 49): the inactive bars of the
+  # tuning widget against the widget's own panel. Neither colour is a role the
+  # static check can resolve: the panel is black at 50% over the theme's bg
+  # (`lv_style_set_opa(&cw_tune_style, LV_OPA_50)`, src/styles.c) and the bars are a
+  # fixed grey literal at 50% over that panel, so on the light theme the fill lands
+  # on the same grey as the panel (1.01:1 measured on the radio's own binary, Sunlit)
+  # and the bars disappear. The fix gives them a 1 px border of the colour that
+  # contrasts most with the panel (white over a dark panel, black over a light one,
+  # src/cw_tune_ui.c update_cb): that border is the component's boundary, and it is
+  # what these two objects measure — the object rectangle is the centre bar (i=7,
+  # `h = 37*2/(|i-7|+2)`, bottom-aligned at HEIGHT-1, x = SPACING + i*(BLOCK_W+SPACING)
+  # of the widget at (30,70)) and the surface is the panel above the shorter bars.
+  # The Redshift object is the radio's own theme; the Sunlit one is the light theme
+  # that reported the finding.
+  - name: cw_tune_bars
+    fixture: cw-tune-tuner
+    theme: Redshift
+    object: [97, 72, 5, 38]
+    background: [40, 70, 8, 3]
+    min_ratio: 3.0
+    where: "cw_tune_ui.c:update_cb (borde de las barras inactivas vs el panel del widget)"
+
+  - name: cw_tune_bars
+    fixture: cw-tune-tema-sunlit
+    theme: Sunlit
+    object: [97, 72, 5, 38]
+    background: [40, 70, 8, 3]
+    min_ratio: 3.0
+    where: "cw_tune_ui.c:update_cb (borde de las barras inactivas vs el panel del widget)"

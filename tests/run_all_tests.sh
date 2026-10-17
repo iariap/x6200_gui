@@ -83,6 +83,7 @@ run app_handlers python3 "$DIR/check_app_handlers.py"
 run manual_apps python3 "$DIR/check_manual_apps.py"
 run pruebas python3 "$DIR/audita-pruebas.py"
 run wcag python3 "$DIR/check_wcag.py"
+run cw_tune_feed python3 "$DIR/check_cw_tune_feed.py"
 
 run host sh "$DIR/native/run_native_tests.sh"
 run wspr sh "$DIR/native/run_wspr_tests.sh"

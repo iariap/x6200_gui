@@ -61,6 +61,12 @@ void cw_tune_init(lv_obj_t *parent)
     rect_dsc.bg_color = lv_color_hex(0x7f7f7f);
     rect_dsc.radius = 5;
     rect_dsc.bg_opa = LV_OPA_50;
+    /* Las barras inactivas llevan borde de alto contraste contra el panel del widget (el color se
+     * elige en update_cb, porque depende del tema). Ancho 1 y no 2 como el bloque activo: la barra
+     * mide BLOCK_W=5 px de ancho y con 2 px de borde el relleno que marca el tono casi desaparece
+     * (docs/HALLAZGOS.md 49). */
+    rect_dsc.border_width = 1;
+    rect_dsc.border_opa = LV_OPA_COVER;
 
     lv_draw_rect_dsc_init(&rect_active_dsc);
     rect_active_dsc.radius = 5;
@@ -74,13 +80,19 @@ void cw_tune_init(lv_obj_t *parent)
     obj = lv_obj_create(parent);
     lv_obj_set_height(obj, HEIGHT);
     lv_obj_set_width(obj, WIDTH);
+    /* El widget es un indicador de lectura, no un control: no tiene eventos de entrada (solo
+     * DRAW_MAIN y DELETE), asi que se le sacan los flags de entrada que `lv_obj_create` deja
+     * puestos por defecto. Ademas de ser lo correcto (el objeto no captura toques ni scroll), es
+     * lo que lo deja fuera del contrato de touch target de 44 px: el criterio audita los objetos
+     * clicables que pintan (`_is_control`, tools/ab_testing/src/x6200_ab/layout_checks.py) y este
+     * objeto no es de entrada. Mismo par de flags que las cajas de band_plan.c:127. */
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_style(obj, &cw_tune_style, 0);
 
     lv_obj_add_event_cb(obj, update_cb, LV_EVENT_DRAW_MAIN, NULL);
     lv_obj_add_event_cb(obj, obj_deleted_cb, LV_EVENT_DELETE, NULL);
     subject_add_delayed_observer(cfg_cur.mode, update_visibility, NULL);
-    subject_add_delayed_observer(cfg.cw_tune.val, update_visibility, NULL);
-    update_visibility(cfg.cw_tune.val, NULL);
+    update_visibility(cfg_cur.mode, NULL);
 }
 
 // bool cw_tune_toggle(int16_t diff) {
@@ -115,6 +127,16 @@ void cw_tune_set_freq(float hz) {
     }
 }
 
+/* Superficie sobre la que se apoyan las barras: el panel del widget es negro al 50% sobre el fondo
+ * del tema (`lv_style_set_opa(&cw_tune_style, LV_OPA_50)`, src/styles.c), asi que su color es el
+ * del fondo a la mitad de cada canal. */
+static lv_color_t panel_color(void)
+{
+    lv_color32_t c32 = { .full = lv_color_to32(lv_obj_get_style_bg_color(lv_obj_get_parent(obj), LV_PART_MAIN)) };
+
+    return lv_color_make(c32.ch.red / 2, c32.ch.green / 2, c32.ch.blue / 2);
+}
+
 static void update_cb(lv_event_t * e) {
     int16_t x, h;
     int16_t y_b=HEIGHT - 1;
@@ -125,6 +147,14 @@ static void update_cb(lv_event_t * e) {
     lv_area_t coords, offset;
 
     lv_obj_get_coords(obj, &offset);
+
+    /* El borde de las barras inactivas se elige contra el PANEL que las rodea y no contra su propio
+     * relleno: el relleno es un gris fijo, y sobre el panel del tema claro cae en el mismo valor
+     * (1.01:1 medido, docs/HALLAZGOS.md 49). Mismo criterio y misma cuenta que band_plan.c y que el
+     * bloque activo: blanco o negro, el que mas contraste tenga contra esa superficie (>= 3:1 en los
+     * diez temas, el minimo de WCAG 1.4.11 para un componente). Se recalcula en cada dibujo porque
+     * depende del tema. */
+    rect_dsc.border_color = rel_lum(panel_color()) < LUM_CORTE ? lv_color_white() : lv_color_black();
 
     for (int16_t i = 0; i < N_BLOCKS; i++) {
         x = SPACING + i * (BLOCK_W + SPACING);
@@ -160,14 +190,23 @@ static void update_visibility(Subject *subj, void *user_data) {
         return;
     }
 
+    /* El widget es la herramienta de sintonia de CW: se muestra en CW/CWR y en ningun otro modo.
+     * Antes ademas exigia el parametro `cw_tune` (el boton "Tuner" de la pagina CW), que arranca en
+     * 0 (src/cfg/cfg.c:349) y dejaba el widget invisible en CW: era la causa del issue #122. El
+     * parametro y su boton siguen existiendo, pero ya no deciden la visibilidad. */
     x6200_mode_t mode = subject_get_int(cfg_cur.mode);
-    bool on = subject_get_int(cfg.cw_tune.val) && ((mode == x6200_mode_cw) || (mode == x6200_mode_cwr));
+    bool on = (mode == x6200_mode_cw) || (mode == x6200_mode_cwr);
     if (on) {
         if (obj) lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
     } else {
         if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
     }
 
+}
+
+/* See the note in cw_tune_ui.h */
+bool cw_tune_ui_visible(void) {
+    return (obj != NULL) && (!lv_obj_has_flag(obj, LV_OBJ_FLAG_HIDDEN));
 }
 
 /* See the note in cw_tune_ui.h */

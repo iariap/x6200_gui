@@ -47,7 +47,7 @@
     COMPONENT("adaptive_tuning.c", COVERAGE_REAL, \
               "src/adaptive_tuning.c compiled and initialised; the tuning-multiplier label is created (hidden)"), \
     COMPONENT("cw_tune_ui.c", COVERAGE_PARTIAL, \
-              "src/cw_tune_ui.c compiled; hidden because CW tune is off in these fixtures"), \
+              "src/cw_tune_ui.c compiled; the widget is built with the main screen and its visibility follows the rig's mode (CW/CWR only, issue #122: the mode decides, not cw_tune), so it is hidden outside CW/CWR"), \
     COMPONENT("cfg/subjects.cpp", COVERAGE_REAL, \
               "src/cfg/subjects.cpp compiled; the real Subject/observer core backs cfg_cur/cfg"), \
     COMPONENT("cfg/settings_manager.cpp", COVERAGE_REAL, \
@@ -295,11 +295,43 @@ static const coverage_entry_t swrscan_screen[] = {
               "the other app dialogs are inert mocks; only the SWR Scan window is compiled and opened"),
 };
 
+/* The `cw-tune-default` / `cw-tune-tuner` / `cw-tune-ssb` scenarios (issue #122):
+ * the real main screen with the "(CW 1:2)" page of the key group loaded, and in
+ * `cw-tune-tuner` the "Tuner" button pressed. `cw-tune-ssb` is the same widget with
+ * the rig in USB, the other half of the visibility rule. The widget
+ * (src/cw_tune_ui.c) and the button (src/buttons.cpp, controls_toggle_cw_tuner) are
+ * the real firmware sources; the tone that draws the active block is synthetic (the
+ * bank has no DSP), and the fixtures assert the mode, the parameter, the button
+ * label and the widget's visibility. */
+static const coverage_entry_t cw_tune[] = {
+    MAIN_COMPONENTS,
+    COMPONENT("cw_tune_ui.c", COVERAGE_REAL,
+              "src/cw_tune_ui.c compiled; cw_tune_init() builds the widget and update_visibility() drives its hidden flag from the mode, which the fixtures assert (shown in CW with cw_tune=0, hidden in USB, plus the cw_tune_ui_visible() the tone feed consults); the active block's tone is synthetic (cw_tune_set_freq(8 Hz) from the fixture), since the bank has no DSP"),
+    COMPONENT("buttons.cpp (CW page)", COVERAGE_REAL,
+              "src/buttons.cpp compiled; the key group's `page_cw_decoder_1` (the page labelled (CW 1:2), Decoder / Tuner / Dec SN R) is the real table, and its Tuner button runs controls_toggle_cw_tuner() -> cfg.cw_tune on the user's path"),
+    COMPONENT("main_screen.c (KEY key -> buttons_group_key)", COVERAGE_PARTIAL,
+              "src/main_screen.c compiled; the KEY key's path loads buttons_group_key, but the keypress itself is driven by buttons_load_page_group()/buttons_press() from the fixture, not by the panel keypad"),
+    COMPONENT("cw.cpp (tone feed)", COVERAGE_UNSUPPORTED,
+              "src/cw.cpp is not compiled: the DSP that pushes the tuning tone (update_peak_freq -> cw_tune_set_freq) does not run on the host, so the fixtures call cw_tune_set_freq() directly and tests/check_cw_tune_feed.py codifies its gate over the source"),
+    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
+              "the fixtures open no app dialog: the CW page is measured in the bottom bar"),
+    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
+              "DX cluster spot marks are not rendered (no cluster data on the host)"),
+    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
+              "DX cluster column is not rendered (no cluster data on the host)"),
+};
+
 const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
 {
     if (screen && !strcmp(screen, "swrscan")) {
         *count = (int) (sizeof(swrscan_screen) / sizeof(swrscan_screen[0]));
         return swrscan_screen;
+    }
+    if (screen
+        && (!strcmp(screen, "cw-tune-default") || !strcmp(screen, "cw-tune-tuner")
+            || !strcmp(screen, "cw-tune-ssb"))) {
+        *count = (int) (sizeof(cw_tune) / sizeof(cw_tune[0]));
+        return cw_tune;
     }
     if (screen && (!strcmp(screen, "autotune") || !strcmp(screen, "autotune-progress")
                    || !strcmp(screen, "autotune-found"))) {

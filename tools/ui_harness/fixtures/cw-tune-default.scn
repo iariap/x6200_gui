@@ -1,0 +1,45 @@
+# cw-tune-default: the CW page of the button bar with the CW tune widget and the
+# radio in the state the issue #122 reports ("the Tune widget does not appear on
+# the CW band"): nothing is touched, the Tuner parameter is at its boot value.
+#
+# The route is the user's: the KEY key loads the key pages (src/main_screen.c,
+# KEYPAD_KEY -> buttons_load_page_group(buttons_group_key)) and the page button
+# cycles to `page_cw_decoder_1` (src/buttons.cpp), the "(CW 1:2)" page that holds
+# Decoder / Tuner / Dec SN R. The rig is in CW and cw_tune is at its boot value
+# (0, the port default, src/cfg/cfg.c:349) with the button reading Off: what the
+# fixture *means* is that the widget shows anyway, because the visibility rule is
+# the mode (CW/CWR) and no longer the parameter. scenario_settle codifies exactly
+# that (the "(CW 1:2)" page, the "Tuner" button reading Off, cw_tune still 0, the
+# widget not hidden, and cw_tune_ui_visible() agreeing with it), so the capture is
+# the state of the issue *after* the fix and not a different page.
+#
+# The theme is the radio's own (Redshift), so the render matches the user's screen.
+
+name cw-tune-default
+screen cw-tune-default
+
+theme Redshift
+seed 20
+
+frequency_hz 7030000
+tx_frequency_hz 7030000
+fft_width_hz 384000
+
+mode cw
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx
