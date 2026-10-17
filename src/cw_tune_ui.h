@@ -16,6 +16,10 @@ void cw_tune_init(lv_obj_t * parent);
 
 void cw_tune_set_freq(float hz);
 
+/* Si el widget esta en pantalla y visible: es lo que decide el feed del tono (src/cw.cpp), porque
+ * el bloque activo que marca donde esta el tono lo alimenta ese feed. */
+bool cw_tune_ui_visible(void);
+
 /* The X6100 remembers the last CW tuning tone and the remote server offers it.
  * This GUI does not keep it, so the answer is always "nothing recent". */
 bool cw_tune_recent(int32_t *hz);

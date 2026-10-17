@@ -2594,10 +2594,55 @@ los dos terminan con el mismo brillo. La relacion no depende del valor de las ba
 bajarlo no separa los dos grises —, sino de que la barra se mezcla **sobre su propio panel** con la
 misma opacidad que el panel sobre la pagina.
 
-**Estado**: **sin arreglar** (espera decision de diseno). Este hallazgo es distinto del §27: aquel
-arreglo el borde del bloque **activo** (`src/cw_tune_ui.c:45`, de `1.65:1` a `8.65:1`); aca el
-problema es de las barras **inactivas** contra el **panel** del widget, y ninguno de los dos temas
-tenia un chequeo que lo cubriera (el barrido WCAG de §27/§28 mira los colores de la UI, no el blend
-de una barra semitransparente sobre un panel semitransparente). Se destapa con la fixture
+**Estado**: **arreglado** (2026-10-17, rama `factory/cw-tune-122`, issue #122). Este hallazgo es
+distinto del §27: aquel arreglo el borde del bloque **activo** (`src/cw_tune_ui.c:45`, de `1.65:1` a
+`8.65:1`); aca el problema es de las barras **inactivas** contra el **panel** del widget, y ninguno de
+los dos temas tenia un chequeo que lo cubriera (el barrido WCAG de §27/§28 mira los colores de la UI,
+no el blend de una barra semitransparente sobre un panel semitransparente). Se destapa con la fixture
 `cw-tune-on` porque es la primera que enciende el widget con un tema claro.
+
+**Arreglo** (codigo: `src/cw_tune_ui.c`): las barras inactivas llevan borde de **1 px**
+(`rect_dsc.border_width = 1`, `border_opa = LV_OPA_COVER`, `cw_tune_init`) cuyo color se elige en cada
+dibujo contra la superficie que las rodea —el **panel**, no su propio relleno—, con el mismo criterio
+y la misma cuenta que el bloque activo (§27) y que `band_plan.c`:
+
+```c
+/* update_cb */
+rect_dsc.border_color = rel_lum(panel_color()) < LUM_CORTE ? lv_color_white() : lv_color_black();
+```
+
+`panel_color()` calcula el color real del panel (negro al 50 % sobre el fondo del tema,
+`src/styles.c:290-296`), que no es un rol que el chequeo estatico pueda resolver. El **relleno** gris
+queda como estaba: la cuenta de arriba muestra que subirlo o bajarlo no separa los dos grises (los
+dos terminan con el mismo brillo); lo que hace visible el componente es su **borde**, que es lo que
+WCAG 1.4.11 mide. Ancho **1** y no 2 como el bloque activo porque la barra mide `BLOCK_W=5` px: con
+2 px de borde el relleno que marca el tono queda reducido a un pixel.
+
+**Verificacion, medida** (misma region `(30,70)` `139x40`, mismo metodo Pillow sobre el PNG; el
+"despues" del arnes es el render determinista de la fixture, misma geometria y mismo tema):
+
+```
+$ python3 -c "<percentil 90 del rectangulo de la barra i=7 vs percentil 10 del panel, WCAG 2.1>"
+banco, binario ARM real, Sunlit (04-cw-tuner-on.png, antes)   1.01:1
+arnes, Sunlit  (cw-tune-tema-sunlit.png, despues)             5.02:1   (borde negro  (0,0,0) vs panel (125,124,119))
+arnes, Redshift (cw-tune-tuner.png, antes 2.00:1 / despues)  20.67:1   (borde blanco (255,255,255) vs panel (5,2,2))
+```
+
+Y el chequeo queda automatico en dos lugares (los dos fallan si el borde se pierde):
+
+- `tests/check_wcag.py`: el par `cw_tune_borde` sobre `cw_tune_panel` es **exigible** (>= 3:1) en las
+  diez paletas; medido, el minimo es `4.88:1` (Sunlit) y el maximo `21.00:1`. El mismo script ademas
+  exige, leyendo la fuente, que `cw_tune_ui.c` ponga el borde y lo elija por la luminancia del panel
+  (`$ python3 tests/check_wcag.py` -> `pares OK: 1052 | exentos: 170 | informativos: 90 | FALLAS: 0`;
+  quitando el borde de la fuente el chequeo sale con la falla, probado).
+- `tools/ab_testing/quality/nontext.yaml`: el objeto `cw_tune_bars` mide el **pixel** renderizado
+  (borde vs panel) sobre los renders dorados `cw-tune-tuner` (Redshift) y `cw-tune-tema-sunlit`
+  (Sunlit), con `min_ratio: 3.0` (WCAG 1.4.11 para un componente). El mismo objeto medido sobre la
+  captura del banco de antes del arreglo da `1.01:1`, o sea que falla si el borde se pierde.
+
+**Sin fundar** (anexo A): el "despues" con el **binario ARM real** (banco QEMU): el banco quedo
+ocupado por otra sesion durante esta corrida y no se pudo re-construir el firmware ahi (la captura
+del banco que funda el "antes" es de la corrida anterior, ver
+`docs/evidencia/2026-10-16-cw122-banco/`). Lo que hay es el render del arnes (determinista, misma
+geometria) y la medicion sobre los pixeles del objeto `cw_tune_bars`.
 

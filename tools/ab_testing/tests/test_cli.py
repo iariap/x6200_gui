@@ -126,7 +126,7 @@ def test_themes_reports_the_nontext_objects_and_the_exempt_roles(
     code = main(["themes", "--repo", str(repo), "--json"])
     assert code == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["nontext"]["objects"] == 15
+    assert payload["nontext"]["objects"] == 17
     assert payload["nontext"]["failures"] == []
     assert payload["nontext"]["missing"] == []
     assert {exempt["role"] for exempt in payload["exempt"]} == {

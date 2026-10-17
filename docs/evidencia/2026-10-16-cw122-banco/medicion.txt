@@ -45,3 +45,43 @@ mas de 1 = widget visible (panel + barras).
   06-harness-cw-tune-on.png    Redshift panel           (5, 2, 2)  n= 4136  bbox=(30, 70, 168, 109)
   06-harness-cw-tune-on.png    Redshift barras          (65, 64, 64)  n= 1022  bbox=(34, 73, 165, 108)
   06-harness-cw-tune-on.png    Redshift bloque activo   (90, 178, 89)  n=   38  bbox=(90, 88, 91, 106)
+
+== cierre #122 (2026-10-17, rama factory/cw-tune-122): despues del arreglo ==
+Los numeros de abajo salen de `python3 mide.py <png...>` (mismo directorio): region del widget
+(30,70) 139x40, y el contraste es el del objeto `cw_tune_bars` de
+tools/ab_testing/quality/nontext.yaml (percentil 90 del rectangulo de la barra i=7 contra percentil
+10 del panel, WCAG 2.1).
+
+== colores distintos en la region del widget ==
+  07-harness-cw-tune-default.png     (800, 480)  colores=11   Redshift, (CW 1:2), cw_tune=0
+      (5, 2, 2)  x4136          panel
+      (65, 64, 64)  x668        barras (relleno gris)
+      (255, 255, 255)  x304     borde de las barras (blanco sobre panel oscuro)
+  08-harness-cw-tune-tuner.png       (800, 480)  colores=15   Redshift, con el tono en 8 Hz
+      (5, 2, 2)  x4136          panel
+      (65, 64, 64)  x588        barras
+      (255, 255, 255)  x266     borde
+  09-harness-cw-tune-ssb.png         (800, 480)  colores=1    USB: widget oculto (se ve el fondo)
+      (10, 5, 5)  x5560
+  10-harness-cw-tune-tema-sunlit.png (800, 480)  colores=13   Sunlit (tema claro), con el tono
+      (125, 124, 119)  x4136    panel
+      (125, 125, 122)  x588     barras
+      (0, 0, 0)  x354           borde de las barras (negro sobre panel claro)
+
+== contraste del objeto cw_tune_bars (borde vs panel) ==
+  07-harness-cw-tune-default.png     (255,255,255) vs (5,2,2)      = 20.67:1
+  08-harness-cw-tune-tuner.png       (255,255,255) vs (5,2,2)      = 20.67:1
+  09-harness-cw-tune-ssb.png         (10,5,5) vs (10,5,5)          = 1.00:1  (widget oculto: no aplica)
+  10-harness-cw-tune-tema-sunlit.png (0,0,0) vs (125,124,119)      =  5.02:1
+
+  antes del arreglo, misma medicion:
+    04-cw-tuner-on.png (banco, binario ARM real, Sunlit)  =  1.01:1
+    06-harness-cw-tune-on.png (arnes, Redshift)           =  2.00:1
+
+== conteo por color dentro de la region (panel, barras, borde) ==
+  07-harness-cw-tune-default.png     panel (5,2,2) n=4136 | barras (65,64,64) n=668 | borde (255,255,255) n=304
+  08-harness-cw-tune-tuner.png       panel (5,2,2) n=4136 | barras (65,64,64) n=588 | borde (255,255,255) n=266
+  10-harness-cw-tune-tema-sunlit.png panel (125,124,119) n=4136 | barras (125,125,122) n=588 | borde (0,0,0) n=354
+
+  (07 vs 08: el unico cambio es el bloque activo —el tono—; el panel y el borde miden lo mismo, que
+   es lo que la fixture 07 fija: el widget visible en CW con cw_tune=0 y sin tono.)

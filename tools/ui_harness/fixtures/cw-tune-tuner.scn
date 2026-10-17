@@ -1,20 +1,20 @@
-# cw-tune-on: the same CW page as cw-tune-off with the "Tuner" button pressed, so
-# the CW tune widget appears (issue #122).
+# cw-tune-tuner: the same CW page as cw-tune-default with the "Tuner" button
+# pressed, and a synthetic tone so the active block is drawn (issue #122).
 #
 # Same route (KEY pages -> "(CW 1:2)"); the difference is scenario_settle pressing
 # the page's "Tuner" button (index 2), which runs the user's path
 # button_action_cb -> controls_toggle_cw_tuner -> cfg.cw_tune (src/buttons.cpp,
-# src/controls.cpp). With the rig in CW and cw_tune=1, update_visibility()
-# (src/cw_tune_ui.c) clears the widget's hidden flag: this capture is the fix path
-# the radio takes once the parameter is on (the port ships it off, src/cfg/cfg.c).
+# src/controls.cpp). The parameter no longer gates the widget (that was the cause
+# of #122), but the button still exists and still has to work: the fixture
+# codifies that it flips the parameter and that its label follows.
 #
 # The active block is drawn by the real cw_tune_set_freq() with a synthetic 8 Hz
 # tone: on the radio the tone comes from the DSP (src/cw.cpp, update_peak_freq),
 # which the bank has no way to feed. scenario_settle codifies the parameter, the
 # button label and the widget's visibility.
 
-name cw-tune-on
-screen cw-tune-on
+name cw-tune-tuner
+screen cw-tune-tuner
 
 theme Redshift
 seed 20

@@ -165,4 +165,92 @@ Sin `CHROOT`/`BUILDROOT` en el entorno, la matriz resuelve el chroot relativo al
 worktree (`$APP/../.vfix3`) y el paso del banco sale **BLOCKED** (no FAILED): es
 el comportamiento diseñado para un runner sin el entorno del banco.
 
+## Cierre (2026-10-17): opción (B) implementada
+
+El owner eligió **(B)**: el widget se muestra en CW/CWR sin depender de `cfg.cw_tune` (el diagnóstico
+de arriba queda como estaba; lo que sigue es el cierre). Cambios: `update_visibility()` deja de mirar
+el parámetro, el feed del DSP pasa a gatearse por la visibilidad del widget
+(`cw_tune_ui_visible()`, `src/cw.cpp:213`), y las barras inactivas llevan **borde de 1 px** de alto
+contraste contra el panel (HALLAZGOS §49). Detalle y diff: `docs/cw122-spec.md`.
+
+Nota de nombres: al cerrar se renombraron dos fixtures (`cw-tune-off` → **`cw-tune-default`**,
+`cw-tune-on` → **`cw-tune-tuner`**, porque ya no son "on/off" del parámetro) y se agregaron
+`cw-tune-ssb` (otro modo) y `cw-tune-tema-sunlit` (tema claro). Los nombres `cw-tune-off`/`cw-tune-on`
+de las secciones de arriba son los de aquella corrida (2026-10-16).
+
+### Capturas nuevas (arnés; el banco quedó ocupado por otra sesión)
+
+```sh
+docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" -v "$PWD:/src" -w /src/tools/ui_harness/build \
+    x6200-uiharness -lc 'for n in cw-tune-default cw-tune-tuner cw-tune-ssb cw-tune-tema-sunlit; do \
+        ./ui_harness --scenario ../fixtures/$n.scn \
+            --png /src/docs/evidencia/2026-10-16-cw122-banco/0X-harness-$n.png \
+            --json /src/docs/evidencia/2026-10-16-cw122-banco/0X-harness-$n.json; done'
+```
+
+| captura | página / estado | tema | colores en la región | panel | borde de barras | contraste |
+|---|---|---|---|---|---|---|
+| `07-harness-cw-tune-default.png` | `(CW 1:2)`, **`cw_tune=0`** | Redshift | 11 | 4136 px | 304 px `(255,255,255)` | **20.67:1** |
+| `08-harness-cw-tune-tuner.png` | `(CW 1:2)`, `cw_tune=0`, tono en 8 Hz | Redshift | 15 | 4136 px | 266 px `(255,255,255)` | **20.67:1** |
+| `09-harness-cw-tune-ssb.png` | USB (otro modo) | Redshift | **1** (widget oculto) | 0 px | — | — |
+| `10-harness-cw-tune-tema-sunlit.png` | `(CW 1:2)`, `cw_tune=0`, tono | **Sunlit** | 13 | 4136 px | 354 px `(0,0,0)` | **5.02:1** |
+
+**`07` es el caso del issue**: la radio trae `cw_tune=0` (`src/cfg/cfg.c:349` y el `params.db` medido
+arriba) y con `cw_tune=0` el widget **ahora se ve** (11 colores: panel + barras + borde), donde antes
+la región era uniforme (`05`, 1 color). `09` fija el otro lado: fuera de CW/CWR sigue oculto.
+
+### Contraste (§49): antes y después, medido sobre los píxeles
+
+| superficie | antes | después |
+|---|---|---|
+| banco, binario ARM real, Sunlit (`04-cw-tuner-on.png`) | `1.01:1` | — (sin banco, ver abajo) |
+| arnés, Sunlit (`10`) | — | **`5.02:1`** (borde negro vs panel `(125,124,119)`) |
+| arnés, Redshift (`06` → `08`) | `2.00:1` | **`20.67:1`** (borde blanco vs panel `(5,2,2)`) |
+
+El "después" del banco no se pudo tomar: durante esta corrida el banco quedó ocupado por otra sesión
+(el contenedor `banco-apps` corriendo la GUI del **binario viejo**, `md5 aaa60c1d3ab5`, y el chroot
+`.vfix3` compartido) y no se puede reconstruir el firmware ahí sin cortar esa corrida. El "después"
+que hay es el render del **arnés**, que es determinista y de la misma geometría/tema, más el objeto
+`cw_tune_bars` de `tools/ab_testing/quality/nontext.yaml` (que mide el píxel renderizado y falla si
+el borde se pierde).
+
+### RED → GREEN (TDD)
+
+- **RED**: con el accessor `cw_tune_ui_visible()` ya declarado y `update_visibility()` sin tocar, los
+  tres fixtures de CW fallan con *"el widget de CW tune esta OCULTO en modo CW con `cw_tune=0`"* y
+  `cw-tune-ssb` pasa (el gate por modo ya estaba bien para el resto).
+- **GREEN**: los cuatro pasan. Los fixtures codifican (y cortan la corrida si no se cumple): el
+  widget existe (`139x40`), su flag `HIDDEN` coincide con `cw_tune_ui_visible()`, **`cw_tune=0` no lo
+  oculta en CW/CWR**, la press del botón `Tuner` sigue escribiendo el parámetro, y en USB queda
+  oculto.
+
+### Gates (salida real)
+
+| Gate | Resultado |
+|---|---|
+| `tests/check_harness_determinism.sh` | `PASS: deterministic (identical PNGs for every fixture)` (68 fixtures) |
+| A/B de píxeles vs `before.sha256` | los **64** renders pre-existentes **idénticos** byte a byte; sólo aparecen/cambian los `cw-tune-*` |
+| `tests/native/run_native_tests.sh` | 0 fallos (8 suites) |
+| estáticos (7) | `check_cfg_fills`, `check_actions`, `check_settings_focus`, `check_apps_menu`, `check_app_handlers`, `check_wcag`, **`check_cw_tune_feed`** (nuevo): todos ok |
+| `tests/run_all_tests.sh --quick` | 11 OK, 0 fallos (codecs y webserver omitidos por la imagen `ci`) |
+| `tools/ab_testing` `ruff check` / `ruff format --check` / `ty check` | `All checks passed!` / `169 files already formatted` / `All checks passed!` |
+| `tools/ab_testing` `pytest -m "not e2e"` | **239 passed** |
+| `.agents/hallazgos-fundados/scripts/audita-hallazgos.sh` | 0 problemas de estructura |
+| `scripts/apps/x6200/check-matrix.sh <base> factory/cw-tune-122` | PENDIENTE del banco (ver arriba); el resto de la matriz (nativos, estáticos, ab_testing, determinismo) ok |
+
+### md5 (provenance) — cierre
+
+| Qué | md5 |
+|---|---|
+| `07-harness-cw-tune-default.png` / `.json` | `ea55bb4d918695fd9ab0a3ad581b2245` / `836200d878916027c95baaf3be112ac9` |
+| `08-harness-cw-tune-tuner.png` / `.json` | `b1170a414dc2b42b67c5afe8ae27142e` / `5bfc7d95a5cd34d364e736465f0c5efe` |
+| `09-harness-cw-tune-ssb.png` / `.json` | `02549cfd65c4ec601568393616d32d31` / `697f2d3082e29fc2b1bbed4cb6d02654` |
+| `10-harness-cw-tune-tema-sunlit.png` / `.json` | `cfa98f197f7f8cd1c50a0251d9c31e21` / `5c39784c43d18d011e89e3c6f77da4bd` |
+| `mide.py` (medición) | `67f9457b4a8ef73bbedf4b298eb456b3` |
+| base del cierre | `3553a476` |
+
+`08` y `10` son **byte a byte** los renders dorados que mide el objeto `cw_tune_bars`
+(`tools/ab_testing/golden/cw-tune-tuner.png`, `cw-tune-tema-sunlit.png`): mismo md5, así que la
+evidencia y el chequeo automático miran el mismo píxel.
+
 [#122]: https://github.com/iariap/x6200_gui/issues/122

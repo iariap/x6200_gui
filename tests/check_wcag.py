@@ -37,6 +37,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 THEME_H = RAIZ / "src" / "theme.h"
 THEME_C = RAIZ / "src" / "theme.c"
+CW_TUNE_C = RAIZ / "src" / "cw_tune_ui.c"
 TEMAS_DIR = RAIZ / "rootfs" / "usr" / "share" / "x6200" / "themes"
 
 
@@ -74,6 +75,12 @@ def contraste(a, b):
     if la < lb:
         la, lb = lb, la
     return (la + 0.05) / (lb + 0.05)
+
+
+# Cruce de luminancia para elegir blanco o negro: el que mas contraste tenga. Es el mismo valor que
+# usan src/band_plan.c (LUM_CORTE) y src/cw_tune_ui.c, donde el borde se elige por luminancia del
+# relleno (bloque activo) o del panel del widget (barras inactivas).
+LUM_CORTE = 0.18
 
 
 def mezclar(fg, bg, opa):
@@ -222,6 +229,20 @@ def armar_paletas(colores):
     for paleta in paletas.values():
         for nombre, valor in LITERALES.items():
             paleta[nombre] = valor
+
+    # El widget de CW tune (src/cw_tune_ui.c) son dos capas semitransparentes: su panel es negro al
+    # 50% sobre el fondo del tema (`lv_style_set_opa(&cw_tune_style, LV_OPA_50)`, src/styles.c) y
+    # sus barras son gris 0x7f7f7f al 50% sobre ese panel. Los dos se calculan aca desde `bg`, como
+    # los compone LVGL, para poder medir el par que el codigo dibuja de verdad (issue #122,
+    # docs/HALLAZGOS.md 49). El borde de las barras inactivas es blanco o negro, el que mas
+    # contraste tenga contra el panel: el mismo cruce de luminancia que band_plan.c y el bloque
+    # activo (LUM_CORTE), y se recalcula en cada dibujo (src/cw_tune_ui.c, update_cb).
+    for paleta in paletas.values():
+        paleta["cw_tune_panel"] = mezclar(0x000000, paleta["bg"], 128)
+        paleta["cw_tune_barra"] = mezclar(0x7F7F7F, paleta["cw_tune_panel"], 128)
+        paleta["cw_tune_borde"] = (
+            0xFFFFFF if luminancia(paleta["cw_tune_panel"]) < LUM_CORTE else 0x000000
+        )
 
     return paletas, shapes
 
@@ -383,6 +404,13 @@ PARES_ESPECIFICOS = [
     ("hex_000000", "hex_80ff80", 3.0, None, "cw_tune_ui.c:40+103 (borde del bloque afinado, verde)"),
     ("hex_000000", "hex_ffff30", 3.0, None, "cw_tune_ui.c:41+103 (borde del bloque, amarillo)"),
     ("hex_000000", "hex_ff8080", 3.0, None, "cw_tune_ui.c:42+103 (borde del bloque desentonado, rojo)"),
+    # cw_tune_ui.c: las barras INACTIVAS contra el panel del widget (issue #122,
+    # docs/HALLAZGOS.md 49). El relleno es gris fijo al 50% y sobre el panel del tema
+    # claro cae en el mismo valor (1.01:1 medido en Sunlit): lo que da el 3:1 de WCAG
+    # 1.4.11 para el componente es el contorno, que se elige por luminancia del panel
+    # (blanco sobre panel oscuro, negro sobre panel claro). El relleno se mide aparte,
+    # como par informativo.
+    ("cw_tune_borde", "cw_tune_panel", 3.0, None, "cw_tune_ui.c:update_cb (borde de las barras inactivas vs el panel)"),
 ]
 
 # Pares que se MIDEN pero no hacen fallar: el defecto existe en el color que
@@ -396,6 +424,11 @@ PARES_INFORMATIVOS = [
     ("text_value", "lvgl_focused", 4.5, None, "tablas: idem para los valores"),
     ("text", "lvgl_focuskey", 4.5, None, "tablas: el par del tema pisa el azul #2196F3 de LVGL"),
     ("btn_text", "lvgl_focuskey", 4.5, None, "lv_keyboard: TC(focus)/TC(focus_text) pisan el azul de LVGL"),
+    # El relleno de las barras inactivas de CW tune, al 50% sobre el panel del widget: en el tema
+    # claro cae en el mismo gris que el panel (1.01:1 medido en Sunlit, docs/HALLAZGOS.md 49). Se
+    # informa porque el relleno es incidental: lo que identifica el componente (WCAG 1.4.11) es su
+    # contorno, que se mide arriba con umbral 3:1.
+    ("cw_tune_barra", "cw_tune_panel", 3.0, None, "cw_tune_ui.c:60-63 (relleno de las barras al 50%)"),
 ]
 
 # No-texto (WCAG 1.4.11): bordes, anillos y barras contra lo que tienen al lado.
@@ -552,6 +585,23 @@ def main():
         for (fg, bg), (ratio, tema, donde) in sorted(peores_exentos.items(), key=lambda k: k[1][0]):
             print(f"  {'':<16} {fg + ' sobre ' + bg:<34} {ratio:>6.2f}  peor en {tema}  [{donde}]")
         print()
+
+    # El modelo de arriba mide colores derivados; para que el par del borde de las barras de CW tune
+    # valga, el codigo tiene que dibujar ese borde. Se mira la fuente (misma idea que la lectura de
+    # theme.h/theme.c de mas arriba): sin esto el chequeo mediria un color que nadie pinta y el
+    # issue #122 (docs/HALLAZGOS.md 49) podria volver sin que nadie se entere.
+    cw_tune = CW_TUNE_C.read_text(errors="surrogateescape")
+    if not re.search(r"rect_dsc\.border_width\s*=\s*[1-9]", cw_tune):
+        fallos.append(
+            "src/cw_tune_ui.c: las barras inactivas no llevan borde (rect_dsc.border_width): sin el, "
+            "sobre el panel del tema claro caen en el mismo gris (1.01:1 medido, HALLAZGOS 49)"
+        )
+    if not re.search(r"rect_dsc\.border_color\s*=\s*rel_lum\(panel_color\(\)\)\s*<\s*LUM_CORTE", cw_tune):
+        fallos.append(
+            "src/cw_tune_ui.c: el borde de las barras inactivas no se elige por la luminancia del "
+            "panel (rel_lum(panel_color()) < LUM_CORTE): el color tiene que ser el que mas contraste "
+            "tenga contra la superficie que lo rodea"
+        )
 
     print("================ resumen ================")
     for tema, n in resumen:

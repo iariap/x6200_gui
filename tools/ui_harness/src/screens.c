@@ -320,20 +320,25 @@ bool scenario_build(const scenario_t *scenario)
         return true;
     }
 
-    if (!strcmp(scenario->screen, "cw-tune-off") || !strcmp(scenario->screen, "cw-tune-on")) {
-        /* El widget de CW tune (issue #122): la pantalla principal real en modo CW
-         * con la pagina CW de la barra cargada. La ruta es la del usuario: la tecla
-         * KEY carga `buttons_group_key` (src/main_screen.c, KEYPAD_KEY) y el
-         * boton-pagina cicla hasta `page_cw_decoder_1` (src/buttons.cpp), la pagina
-         * "(CW 1:2)" que lleva Decoder / Tuner / Dec SN R. `cw-tune-on` pulsa el
-         * boton "Tuner" en scenario_settle, por el mismo camino que el usuario
-         * (button_action_cb -> controls_toggle_cw_tuner -> cfg.cw_tune); `cw-tune-off`
-         * deja el parametro en su valor de arranque. */
+    if (!strcmp(scenario->screen, "cw-tune-default") || !strcmp(scenario->screen, "cw-tune-tuner")
+        || !strcmp(scenario->screen, "cw-tune-ssb")) {
+        /* El widget de CW tune (issue #122): la pantalla principal real con la pagina CW
+         * de la barra cargada. La ruta es la del usuario: la tecla KEY carga
+         * `buttons_group_key` (src/main_screen.c, KEYPAD_KEY) y el boton-pagina cicla
+         * hasta `page_cw_decoder_1` (src/buttons.cpp), la pagina "(CW 1:2)" que lleva
+         * Decoder / Tuner / Dec SN R. `cw-tune-tuner` pulsa ademas el boton "Tuner" en
+         * scenario_settle, por el mismo camino que el usuario (button_action_cb ->
+         * controls_toggle_cw_tuner -> cfg.cw_tune). `cw-tune-ssb` no carga esa pagina:
+         * es el control de la otra mitad de la regla de visibilidad (fuera de CW/CWR el
+         * widget no se muestra), asi que solo arma la pantalla principal. */
         mock_keyboard_group_up();
         build_main(scenario);
-        buttons_load_page_group(buttons_group_key);
-        buttons_press(0, false);    /* (KEY 1:2) -> (KEY 2:2) */
-        buttons_press(0, false);    /* (KEY 2:2) -> (CW 1:2)  */
+
+        if (strcmp(scenario->screen, "cw-tune-ssb")) {
+            buttons_load_page_group(buttons_group_key);
+            buttons_press(0, false);    /* (KEY 1:2) -> (KEY 2:2) */
+            buttons_press(0, false);    /* (KEY 2:2) -> (CW 1:2)  */
+        }
         return true;
     }
 
@@ -720,109 +725,149 @@ void scenario_settle(const scenario_t *scenario)
         }
     }
 
-    if (!strcmp(scenario->screen, "cw-tune-off") || !strcmp(scenario->screen, "cw-tune-on")) {
-        /* El boton-pagina es posicional: codificar que la pagina que quedo en la barra es
-         * la "(CW 1:2)" antes de seguir, para que un reordenamiento de las paginas KEY
-         * corte la corrida en vez de medir otra pagina y reportar verde. */
-        if (!label_on_screen(lv_scr_act(), "(CW 1:2)")) {
-            fprintf(stderr,
-                    "cw-tune: la barra no quedo en la pagina '(CW 1:2)' despues de las "
-                    "pulsaciones del boton-pagina (¿se reordenaron las paginas KEY?)\n");
-            exit(1);
-        }
-
-        /* Y que el boton que se va a pulsar (o que se deja como esta) sea "Tuner": su
-         * rotulo sale del subject real (src/buttons.cpp, cw_tuner_label_getter). */
-        if (!label_on_screen(lv_scr_act(), "Tuner:\nOff")) {
-            fprintf(stderr,
-                    "cw-tune: el boton 'Tuner' no esta en la barra con el valor de arranque "
-                    "(¿se movio de la pagina CW o cambio su rotulo?)\n");
-            exit(1);
-        }
-
-        /* La pagina CW de la barra no depende del decodificador CW: se llega con
-         * cw_decoder=0 (el valor de arranque, src/cfg/cfg.c:332-353), que es el estado
-         * del reporte del issue #122. Codifica la refutacion de la hipotesis 1 del issue
-         * ("la pagina solo se alcanza con el decodificador encendido"): la ruta de la
-         * tecla KEY y el boton-pagina no consultan cw_decoder (src/main_screen.c:773,
-         * src/buttons.cpp:443-444,526). Si el mock arrancara con cw_decoder=1 esta
-         * fixture dejaria de probar lo que dice. */
-        if (subject_get_int(cfg.cw_decoder.val) != 0) {
-            fprintf(stderr,
-                    "cw-tune: cfg.cw_decoder arranco en %d y no en 0 (¿cambio el defecto del "
-                    "mock?): la fixture dejaria de probar que la pagina CW se alcanza con el "
-                    "decodificador apagado\n",
-                    (int) subject_get_int(cfg.cw_decoder.val));
-            exit(1);
-        }
-
-        /* El widget de CW tune tiene que existir en la pantalla y su visibilidad seguir al
-         * parametro: oculto con cw_tune=0. Sin esto el fixture no prueba nada del widget. */
+    if (!strcmp(scenario->screen, "cw-tune-default") || !strcmp(scenario->screen, "cw-tune-tuner")
+        || !strcmp(scenario->screen, "cw-tune-ssb")) {
+        /* El widget de CW tune (src/cw_tune_ui.c) entre los hijos de la pantalla: sin el,
+         * la fixture no prueba nada del widget. */
         lv_obj_t *widget = cw_tune_widget(lv_scr_act());
 
         if (widget == NULL) {
             fprintf(stderr,
-                    "cw-tune: no encontre el widget de CW tune (139x40) entre los hijos de la "
-                    "pantalla (¿cambio su tamano en src/cw_tune_ui.c?)\n");
+                    "%s: no encontre el widget de CW tune (139x40) entre los hijos de la "
+                    "pantalla (¿cambio su tamano en src/cw_tune_ui.c?)\n",
+                    scenario->name);
             exit(1);
         }
 
-        if (!strcmp(scenario->screen, "cw-tune-off")) {
-            /* Lo que esta fixture *significa*: con el parametro en su valor de arranque
-             * (cw_tune=0, el defecto del port, src/cfg/cfg.c), el widget esta OCULTO aun en
-             * modo CW. Es la causa del issue #122: el widget no aparece porque el parametro
-             * esta en off, no porque falte el widget ni la pagina. Codificado: si el gate de
-             * update_visibility() (src/cw_tune_ui.c) deja de mirar cw_tune, el arnes corta
-             * en vez de capturar un widget visible y reportar verde. */
-            if (subject_get_int(cfg.cw_tune.val) != 0) {
-                fprintf(stderr,
-                        "cw-tune-off: cfg.cw_tune arranco en %d y no en 0 (¿cambio el defecto?)"
-                        "\n",
-                        (int) subject_get_int(cfg.cw_tune.val));
-                exit(1);
-            }
+        /* La regla de visibilidad nueva (issue #122): el widget es la herramienta de sintonia
+         * de CW, asi que se muestra en CW/CWR y en ningun otro modo — el parametro `cw_tune`
+         * (el boton "Tuner" de la pagina CW) ya NO decide. Se codifican las dos mitades, sobre
+         * el estado real del objeto (el flag HIDDEN) y sobre el accesor que el gate del feed
+         * del tono consulta (src/cw.cpp): si el accesor no coincide con el objeto, el feed
+         * correria cuando el widget no se ve (o al reves) y el arnes corta aca. */
+        if (!strcmp(scenario->screen, "cw-tune-ssb")) {
+            /* Fuera de CW/CWR: el widget existe pero NO se muestra, con el parametro en
+             * cualquiera de sus valores. Es la mitad que el fixture `cw-tune-default` no
+             * puede cubrir (ahi el modo es CW). */
             if (!lv_obj_has_flag(widget, LV_OBJ_FLAG_HIDDEN)) {
                 fprintf(stderr,
-                        "cw-tune-off: el widget de CW tune esta VISIBLE con cw_tune=0 "
-                        "(el gate de update_visibility no lo oculta)\n");
+                        "%s: el widget de CW tune esta VISIBLE fuera de CW/CWR "
+                        "(¿la regla de visibilidad de update_visibility dejo de mirar el modo?)\n",
+                        scenario->name);
+                exit(1);
+            }
+            if (cw_tune_ui_visible()) {
+                fprintf(stderr,
+                        "%s: cw_tune_ui_visible() dice visible con el widget oculto "
+                        "(¿el accesor no sigue al flag del objeto?)\n",
+                        scenario->name);
                 exit(1);
             }
         } else {
-            /* Pulsar el "Tuner" (indice 2 de la pagina (CW 1:2)) por el camino del usuario:
-             * button_action_cb -> controls_toggle_cw_tuner -> cfg.cw_tune (src/buttons.cpp,
-             * src/controls.cpp). */
-            buttons_press(2, false);
-
-            /* Lo que esta fixture *significa*: encender el Tuner con el rig en CW hace
-             * aparecer el widget. Es la respuesta a "¿por que no aparece?": el widget esta
-             * y funciona, el parametro estaba en off. Codificado sobre el estado real del
-             * firmware (el parametro y el flag del objeto). */
-            if (subject_get_int(cfg.cw_tune.val) != 1) {
+            /* El boton-pagina es posicional: codificar que la pagina que quedo en la barra es
+             * la "(CW 1:2)" antes de seguir, para que un reordenamiento de las paginas KEY
+             * corte la corrida en vez de medir otra pagina y reportar verde. */
+            if (!label_on_screen(lv_scr_act(), "(CW 1:2)")) {
                 fprintf(stderr,
-                        "cw-tune-on: pulsar 'Tuner' dejo cfg.cw_tune en %d y no en 1 "
-                        "(¿el boton no llega a controls_toggle_cw_tuner?)\n",
-                        (int) subject_get_int(cfg.cw_tune.val));
+                        "%s: la barra no quedo en la pagina '(CW 1:2)' despues de las "
+                        "pulsaciones del boton-pagina (¿se reordenaron las paginas KEY?)\n",
+                        scenario->name);
                 exit(1);
             }
-            if (!label_on_screen(lv_scr_act(), "Tuner:\nOn")) {
+
+            /* Y que el boton "Tuner" siga en la barra: su rotulo sale del subject real
+             * (src/buttons.cpp, cw_tuner_label_getter). El parametro ya no gatea el widget
+             * (issue #122), pero el boton sigue existiendo. */
+            if (!label_on_screen(lv_scr_act(), "Tuner:\nOff")) {
                 fprintf(stderr,
-                        "cw-tune-on: el boton 'Tuner' no lee 'On' despues de pulsarlo "
-                        "(¿el rotulo no sigue al subject?)\n");
+                        "%s: el boton 'Tuner' no esta en la barra con el valor de arranque "
+                        "(¿se movio de la pagina CW o cambio su rotulo?)\n",
+                        scenario->name);
+                exit(1);
+            }
+
+            /* La pagina CW de la barra no depende del decodificador CW: se llega con
+             * cw_decoder=0 (el valor de arranque, src/cfg/cfg.c:332-353), que es el estado
+             * del reporte del issue #122. Codifica la refutacion de la hipotesis 1 del issue
+             * ("la pagina solo se alcanza con el decodificador encendido"): la ruta de la
+             * tecla KEY y el boton-pagina no consultan cw_decoder (src/main_screen.c:773,
+             * src/buttons.cpp:443-444,526). Si el mock arrancara con cw_decoder=1 esta
+             * fixture dejaria de probar lo que dice. */
+            if (subject_get_int(cfg.cw_decoder.val) != 0) {
+                fprintf(stderr,
+                        "%s: cfg.cw_decoder arranco en %d y no en 0 (¿cambio el defecto del "
+                        "mock?): la fixture dejaria de probar que la pagina CW se alcanza con el "
+                        "decodificador apagado\n",
+                        scenario->name, (int) subject_get_int(cfg.cw_decoder.val));
+                exit(1);
+            }
+
+            /* Lo que esta fixture *significa*: en modo CW el widget se muestra con el
+             * parametro `cw_tune` en su valor de arranque (0, src/cfg/cfg.c:349) y sin tocar
+             * el boton. Es la respuesta al issue #122 ("el widget de Tune no aparece en la
+             * banda CW"): la causa era el gate por `cw_tune` y ya no existe. Codificado sobre
+             * el estado real (el parametro en 0 + el flag del objeto): si alguien vuelve a
+             * gatear la visibilidad por `cw_tune`, el arnes corta en vez de capturar un
+             * widget oculto y reportar verde. */
+            if (subject_get_int(cfg.cw_tune.val) != 0) {
+                fprintf(stderr,
+                        "%s: cfg.cw_tune arranco en %d y no en 0 (¿cambio el "
+                        "defecto?): la fixture dejaria de probar que el widget no depende de "
+                        "ese parametro\n",
+                        scenario->name, (int) subject_get_int(cfg.cw_tune.val));
                 exit(1);
             }
             if (lv_obj_has_flag(widget, LV_OBJ_FLAG_HIDDEN)) {
                 fprintf(stderr,
-                        "cw-tune-on: el widget de CW tune sigue OCULTO con cw_tune=1 en modo "
-                        "CW (issue #122: el gate de update_visibility)\n");
+                        "%s: el widget de CW tune esta OCULTO en modo CW con "
+                        "cw_tune=0 (issue #122: la visibilidad no puede depender de cw_tune)\n",
+                        scenario->name);
+                exit(1);
+            }
+            if (!cw_tune_ui_visible()) {
+                fprintf(stderr,
+                        "%s: cw_tune_ui_visible() dice oculto con el widget visible "
+                        "(¿el accesor no sigue al flag del objeto?)\n",
+                        scenario->name);
                 exit(1);
             }
 
-            /* El bloque activo lo pinta la senal de tono que en la radio empuja el DSP
-             * (src/cw.cpp, update_peak_freq -> cw_tune_set_freq). El banco no tiene DSP, asi
-             * que el fixture la sintetiza: un tono de 8 Hz corre el bloque activo al verde y
-             * deja el capture como lo ve el usuario con senal. La funcion que corre es la real
-             * (src/cw_tune_ui.c). */
-            cw_tune_set_freq(8.0f);
+            if (!strcmp(scenario->screen, "cw-tune-tuner")) {
+                /* Pulsar el "Tuner" (indice 2 de la pagina (CW 1:2)) por el camino del usuario:
+                 * button_action_cb -> controls_toggle_cw_tuner -> cfg.cw_tune (src/buttons.cpp,
+                 * src/controls.cpp). El parametro ya no gatea el widget, pero el boton tiene que
+                 * seguir funcionando (es el control que el owner dejo en su lugar). */
+                buttons_press(2, false);
+
+                if (subject_get_int(cfg.cw_tune.val) != 1) {
+                    fprintf(stderr,
+                            "%s: pulsar 'Tuner' dejo cfg.cw_tune en %d y no en 1 "
+                            "(¿el boton no llega a controls_toggle_cw_tuner?)\n",
+                            scenario->name, (int) subject_get_int(cfg.cw_tune.val));
+                    exit(1);
+                }
+                if (!label_on_screen(lv_scr_act(), "Tuner:\nOn")) {
+                    fprintf(stderr,
+                            "%s: el boton 'Tuner' no lee 'On' despues de pulsarlo "
+                            "(¿el rotulo no sigue al subject?)\n",
+                            scenario->name);
+                    exit(1);
+                }
+                if (lv_obj_has_flag(widget, LV_OBJ_FLAG_HIDDEN)) {
+                    fprintf(stderr,
+                            "%s: el widget de CW tune quedo OCULTO despues de pulsar "
+                            "'Tuner' en modo CW\n",
+                            scenario->name);
+                    exit(1);
+                }
+
+                /* El bloque activo lo pinta la senal de tono que en la radio empuja el DSP
+                 * (src/cw.cpp, update_peak_freq -> cw_tune_set_freq). El banco no tiene DSP, asi
+                 * que el fixture la sintetiza: un tono de 8 Hz corre el bloque activo al verde y
+                 * deja el capture como lo ve el usuario con senal. La funcion que corre es la real
+                 * (src/cw_tune_ui.c). */
+                cw_tune_set_freq(8.0f);
+            }
         }
     }
 

@@ -68,7 +68,6 @@ static float   cw_decoder_snr;
 static float   cw_decoder_snr_gist;
 static bool    cw_decoder;
 static bool                 trainer = false;
-static bool    cw_tune;
 
 static pthread_mutex_t  cw_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -89,7 +88,8 @@ void cw_init() {
     cfg.cw_decoder_snr.val->subscribe(on_val_float_change, (void*)&cw_decoder_snr)->notify();
     cfg.cw_decoder_snr_gist.val->subscribe(on_val_float_change, (void*)&cw_decoder_snr_gist)->notify();
     cfg.cw_decoder.val->subscribe(on_val_bool_change, (void*)&cw_decoder)->notify();
-    cfg.cw_tune.val->subscribe(on_val_bool_change, (void*)&cw_tune)->notify();
+    /* `cfg.cw_tune` ya no se observa aca: el parametro del boton "Tuner" no gatea ni la visibilidad
+     * del widget (src/cw_tune_ui.c) ni este feed (issue #122). El boton sigue existiendo. */
 
     input_cbuf = cbuffercf_create(10000);
     wrms = wrms_create(16, 4);
@@ -213,7 +213,14 @@ void cw_put_audio_samples(unsigned int n, cfloat *samples) {
     if (!ready) {
         return;
     }
-    if ((!cw_decoder) && (!cw_tune) && (!trainer)) {
+    /* El feed alimenta al decodificador CW, al trainer y al widget de sintonia (mas abajo,
+     * update_peak_freq -> cw_tune_set_freq, que mueve el bloque que marca donde esta el tono):
+     * corre si alguno lo necesita. Antes miraba `cw_tune` —el parametro del boton "Tuner", que
+     * arranca en 0 (src/cfg/cfg.c:349)—: con el widget ya visible en CW/CWR sin depender de ese
+     * parametro (issue #122), el gate sigue a la visibilidad del widget, que es lo que el feed
+     * tiene que alimentar. Esta funcion solo se llama en CW/CWR (src/dsp.cpp:251), que es
+     * exactamente donde el widget se muestra, asi que el feed corre siempre que se lo pueda ver. */
+    if ((!cw_decoder) && (!trainer) && (!cw_tune_ui_visible())) {
         return;
     }
     cfloat sample;
