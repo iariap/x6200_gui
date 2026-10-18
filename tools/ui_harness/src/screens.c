@@ -35,6 +35,7 @@
 #include "rtty.h"
 #include "signal_gen.h"
 #include "styles.h"
+#include "theme.h"
 #include "visual_policy.h"
 
 #include "autotune_ui.h"
@@ -473,6 +474,43 @@ static void settle_waterfall_center_line(const scenario_t *scenario)
     }
 
     lv_obj_t *wf = lv_obj_get_parent(line);
+
+    /* El estilo no es decoracion: es el fix del owner del 2026-10-18. La linea
+     * tiene que salir con el ancho del tema (3 px por default, 1..8 si el archivo
+     * lo pide), a opacidad plena y con el rol `text` del tema, que es el que mide
+     * >= 3:1 contra el fondo del waterfall en los seis temas (docs/THEMES.md,
+     * tools/ab_testing/quality/nontext.yaml). Un cambio de color, ancho u opacidad
+     * que vuelva a dejar la linea invisible tiene que romper aca, no en la radio. */
+    lv_coord_t ancho = lv_obj_get_style_line_width(line, LV_PART_MAIN);
+
+    if (ancho != theme_shape.waterfall_signal_width) {
+        fprintf(stderr,
+                "%s: la linea central mide %d px y el tema pide %d ("
+                "src/waterfall.c, waterfall_init)\n",
+                scenario->name, (int) ancho, (int) theme_shape.waterfall_signal_width);
+        exit(1);
+    }
+
+    lv_opa_t opa = lv_obj_get_style_line_opa(line, LV_PART_MAIN);
+
+    if (opa != LV_OPA_COVER) {
+        fprintf(stderr,
+                "%s: la linea central sale con opacidad %d, no LV_OPA_COVER: se lava "
+                "contra el waterfall (src/waterfall.c, waterfall_init)\n",
+                scenario->name, (int) opa);
+        exit(1);
+    }
+
+    lv_color_t color = lv_obj_get_style_line_color(line, LV_PART_MAIN);
+    lv_color_t esperado = lv_color_hex(theme_hex(TC_text));
+
+    if (color.full != esperado.full) {
+        fprintf(stderr,
+                "%s: la linea central no usa el rol text del tema (#%06x vs #%06x): "
+                "no alcanza el 3:1 contra el fondo del waterfall (src/waterfall.c)\n",
+                scenario->name, (unsigned) color.full, (unsigned) esperado.full);
+        exit(1);
+    }
 
     if (lv_obj_has_flag(line, LV_OBJ_FLAG_HIDDEN)) {
         fprintf(stderr,

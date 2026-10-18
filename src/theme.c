@@ -134,9 +134,11 @@ static void use_base(int b) {
     memcpy(colors, base_colors[b], sizeof(colors));
     theme_shape = base_shapes[b];
     /* Las plantillas base (y la base de todo archivo JSON, que pasa por aca) llevan la
-     * linea central del waterfall en 1 px: es el default retrocompatible de
-     * `waterfall_signal_width` y lo que un tema que no la define hereda. */
-    theme_shape.waterfall_signal_width = 1;
+     * linea central del waterfall en 3 px: es el default de `waterfall_signal_width`
+     * desde la orden del owner del 2026-10-18 (el ancho que ya usaban los temas
+     * outdoor, porque 1 px no se ve sobre la cascada) y lo que un tema que no la
+     * define hereda. Un tema que la quiera fina la pide en 1. */
+    theme_shape.waterfall_signal_width = 3;
 }
 
 /* "#rrggbb" or "rrggbb" */
@@ -268,7 +270,7 @@ static bool load_file(const char *name) {
 
     /* La linea central del waterfall (la marca de senal sobre la paleta): el tema la
      * pide en px. Clamp 1..8 — 0 la dejaria invisible y un valor alto taparia la
-     * cascada. Un archivo que no la define conserva el 1 px del base (use_base). */
+     * cascada. Un archivo que no la define conserva los 3 px del base (use_base). */
     v = theme_shape.waterfall_signal_width;
     get_int(root, "waterfall_signal_width", &v);
     theme_shape.waterfall_signal_width = v < 1 ? 1 : v > 8 ? 8 : v;

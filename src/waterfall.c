@@ -103,12 +103,17 @@ lv_obj_t * waterfall_init(lv_obj_t * parent) {
     lv_obj_add_style(obj, &waterfall_style, 0);
     if (obj) lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
 
-    // Middle line style
+    /* Linea central del waterfall (orden del owner, 2026-10-18): "no veo la
+     * frecuencia que estoy sintonizando; no se ve la linea". El ancho sale del tema
+     * (3 px por default), a opacidad plena y en el rol `text` del tema: sobre el
+     * fondo del waterfall los seis temas miden 11.8:1..16.4:1 (antes, 60% + ADDITIVE
+     * daba 1.2:1..3.2:1 y en Sunlit se saturaba a blanco). No se usa ADDITIVE porque
+     * con LV_OPA_COVER el compuesto es `fondo + color` y satura a blanco sobre un
+     * piso claro (medido: Sunlit (165,208,248) sobre (225,235,240), 1.2:1). */
     lv_style_init(&middle_line_style);
     lv_style_set_line_width(&middle_line_style, theme_shape.waterfall_signal_width);
-    lv_style_set_line_color(&middle_line_style, lv_color_hex(theme_hex(TC_panel_border)));
-    lv_style_set_line_opa(&middle_line_style, LV_OPA_60);
-    lv_style_set_blend_mode(&middle_line_style, LV_BLEND_MODE_ADDITIVE);
+    lv_style_set_line_color(&middle_line_style, lv_color_hex(theme_hex(TC_text)));
+    lv_style_set_line_opa(&middle_line_style, LV_OPA_COVER);
 
     subject_add_observer_and_call(cfg_cur.band->grid.min.val, on_grid_min_change, NULL);
     subject_add_observer_and_call(cfg_cur.band->grid.max.val, on_grid_max_change, NULL);
