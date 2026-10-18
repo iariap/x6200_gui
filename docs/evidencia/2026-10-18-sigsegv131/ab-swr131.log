@@ -1,0 +1,13 @@
+Using CPython 3.14.2
+Creating virtual environment at: .venv
+   Building x6200-ab @ file:///home/pablo/desa/asf/state/worktrees/x6200/sigsegv-131/tools/ab_testing
+      Built x6200-ab @ file:///home/pablo/desa/asf/state/worktrees/x6200/sigsegv-131/tools/ab_testing
+Installed 11 packages in 38ms
+experiment AB-SWR131: PASS (exit 0)
+  Functional         PASS            (required) — 85 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — captures are pixel-identical to the baseline
+  Quality Contract   PASS            (required) — 873 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+report: /home/pablo/desa/asf/state/worktrees/x6200/sigsegv-131/tools/ab_testing/reports/AB-SWR131

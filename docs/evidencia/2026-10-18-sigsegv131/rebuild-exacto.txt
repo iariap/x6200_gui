@@ -1,0 +1,29 @@
+# Rebuild aislado del ejecutable que corria la radio (#131)
+
+Volumen privado: sigsegv131-build-output (clon reflink de cw116-build-output)
+Imagen: x6200-buildroot
+Buildroot: /home/pablo/desa/x6200/buildroot_new/AetherX6200Buildroot
+
+$ docker run --rm --entrypoint "" \
+    -v <buildroot>:/workspace -v sigsegv131-build-output:/workspace/build \
+    -v /tmp/opencode/sigsegv131/gui<commit>:/workspace_gui:ro \
+    -e FORCE_UNSAFE_CONFIGURE=1 -w /workspace/build x6200-buildroot \
+    sh -c 'make x6200-gui-dirclean; make x6200-gui-rebuild -j$(nproc)'
+
+Resultados:
+
+commit 885f823  -> md5 846afac6ed47432ec79ca11d309807be   (NO es el del issue)
+commit 63dbf7a4 -> md5 b1ba67520079904449b6932a112d3c78   (SI: el binario del CRASHLOG)
+
+El issue decia "commit 885f823"; el binario b1ba67520079 se compilo desde el tip
+63dbf7a4 (19:15), despues de 885f823 (18:57, solo tests). 63dbf7a4 agrega el
+cambio de src/roe_curve.c del #130, que cambia el md5 pero no el camino del crash.
+
+Verificacion independiente del mismo binario exacto:
+  b1ba67520079904449b6932a112d3c78  /home/pablo/desa/x6200/x6200_qa/bin-resol
+  b1ba67520079904449b6932a112d3c78  /tmp/qa-sw125/x6200_gui-build
+
+Librerias de la ROM c640645d810c (target del volumen y /home/pablo/desa/x6200/.vfix3):
+  412df301b11eeecfaaa77847fe63372b  /lib/libc.so.6
+  cd30ca6c58ad42f06caad930b65f0ee2  /usr/lib/liblvgl.so
+  5a97a669fa86421c171e45dfac987f78  /usr/lib/libstdc++.so.6

@@ -1,0 +1,49 @@
+# Modulos que carga x6200_gui (cierre de NEEDED del binario exacto b1ba67520079).
+# md5 de los archivos del target del build de la ROM c640645d810c.
+# Base de carga: solo liblvgl se pudo fijar con pc/lr del CRASHLOG #131; el resto
+# no tiene /proc/<pid>/maps del equipo (radio inalcanzable). El ejecutable sale de
+# base(&main)=0x47ea8c menos main link=0x1ea8c => 0x460000.
+# base        md5                               path
+?            65e067cdf10411be26b4ca23466ce23e /lib/ld-linux-armhf.so.3
+?            d42cf57ae42a6f86bf283880c50f94ff /lib/libblkid.so.1
+?            412df301b11eeecfaaa77847fe63372b /lib/libc.so.6
+?            705d3f3a9ade4759695e03c2397d28d5 /lib/libgcc_s.so.1
+?            0c1e98f5a65daae227c199095ac2120f /lib/libm.so.6
+?            89015e329605a01e2fde7cb930cf5ed4 /lib/libmount.so.1
+?            4ce01b9317ed323d193ea0387376319c /usr/lib/pulseaudio/libpulsecommon-16.1.so
+?            dfca6d4deeb2bc518f1e1e30dbb90355 /lib/libudev.so.1
+?            d23fb8a61b864de1a75cb795f94f28be /usr/lib/libaether_x6200_control.so.0
+?            37fb0b80a9ae2579b0f0e08fc3d0c486 /usr/lib/libasound.so.2
+?            2de47e5437d3454b1ea61a0bbe9b60ce /usr/lib/libdbus-1.so.3
+?            3e423acfef16d79d9c76450699da7ff8 /usr/lib/libdbus-glib-1.so.2
+?            cedc4c45abe255d08700a501b444e66b /usr/lib/libdrm.so.2
+?            806841f87ab49f3d68a2867bf7b879fa /usr/lib/libffi.so.8
+?            06057e4c1069f5e6a991d7712cb0f255 /usr/lib/libfftw3f.so.3
+?            54f6bf953d210193c2ea841c7c4614ea /usr/lib/libft8.so
+?            f8ac3b5087a5e5f33edef0afec84c375 /usr/lib/libgio-2.0.so.0
+?            9cbbb85f8e667db8c38aedb3c699eeb2 /usr/lib/libglib-2.0.so.0
+?            1a315b41444e0e5942b4c834c358e4eb /usr/lib/libgmodule-2.0.so.0
+?            bac173a7d29734118888338afb1d70fe /usr/lib/libgobject-2.0.so.0
+?            dcbc4af295579b51c3f6720d8406fd3e /usr/lib/libgpiod.so.2
+?            d99e24b3570ee605f689dd2d74358261 /usr/lib/libjpeg.so.8
+?            5a43d6540d45adfb0251db332f9feeaa /usr/lib/libliquid.so
+?            b72dbe4d92840cf052e8d3a5045cb566 /usr/lib/liblv_drivers.so
+0xb6170000   cd30ca6c58ad42f06caad930b65f0ee2 /usr/lib/liblvgl.so
+?            24758fda2e40bcbefa9b354fac24e600 /usr/lib/libnm.so.0
+?            6fc77eda00bb3dac4ab9e009429ddfc7 /usr/lib/libnspr4.so
+?            72d4f31ecd7aa61b605072be2507d8c5 /usr/lib/libnss3.so
+?            40101e3e25081d32cb5aeadc388bc2d9 /usr/lib/libnssutil3.so
+?            3b94158da85cedf1fc5e4320c2703abe /usr/lib/libpcre.so.1
+?            22f521592cec70ada4f33da4f76c1bfb /usr/lib/libplc4.so
+?            8c28242a08745a3bdb466935e8da48d4 /usr/lib/libplds4.so
+?            975a763f7ccf59e4ede4619359b3864d /usr/lib/libpng16.so.16
+?            a5b15a3aa7c31e72a27af25a3e57b9f2 /usr/lib/libpulse-simple.so.0
+?            e3affe2fbdb6037b38235e50583a9905 /usr/lib/libpulse.so.0
+?            d16f22e833ff031ab7ff53cf1089efbf /usr/lib/libsmime3.so
+?            431bd2b46713d1f1aa1940eb2048b4e7 /usr/lib/libsndfile.so.1
+?            7c2335721864f0f7cffc001d428045c1 /usr/lib/libspeexdsp.so.1
+?            e06a38982e3ae4a1114a5fec3807b4d0 /usr/lib/libsqlite3.so.0
+?            5a97a669fa86421c171e45dfac987f78 /usr/lib/libstdc++.so.6
+?            af334536c75cde30c5f9b9b2c66b5dc3 /usr/lib/libxkbcommon.so.0
+?            54f57cb29c4c24c5648e9557c987d2ea /usr/lib/libz.so.1
+0x00460000   b1ba67520079904449b6932a112d3c78 /usr/sbin/x6200_gui
