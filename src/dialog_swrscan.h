@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "lvgl/lvgl.h"
@@ -75,6 +76,35 @@ extern dialog_t *dialog_swrscan;
 
 /* Estado visible del dialogo, para el readout (issue #125). */
 const char *dialog_swrscan_state_text(void);
+
+/* Control remoto del barrido (issue #133): `{"cmd":"swrscan","val":1|0}`.
+ *
+ * `start` = true arranca la MISMA sesion que el boton Run y false la detiene por el MISMO
+ * camino que el boton Stop: esta funcion solo llama a dialog_swrscan_run_cb(), no duplica
+ * la logica de potencia/modo/restore (radio_start_swrscan/radio_stop_swrscan, #94/#102) ni
+ * la de la sesion (swr_session, #125).
+ *
+ * Guardas duras (el barrido TRANSMITE, a 0.1 W):
+ *  - solo actua con la ventana del SWR Scan abierta (dialog_type_is_run); si la app se cerro
+ *    entre el pedido y la ejecucion en el hilo de LVGL, devuelve false sin tocar la radio;
+ *  - arrancar exige el equipo en RADIO_RX (nunca inicia TX sobre una TX ajena);
+ *  - idempotente: Run con el barrido corriendo (o Stop con el barrido quieto) es un no-op y
+ *    devuelve true; un segundo Run NO reinicia la sesion ni vuelve a transmitir.
+ *
+ * Devuelve false cuando no actuo (app cerrada, equipo ocupado o el gate del dialogo rechazo
+ * el arranque: multipasada, rango, parametros). El estado se consulta por `get` (abajo).
+ * Solo se llama desde el hilo de LVGL (el scheduler de src/remote_server.cpp). */
+bool dialog_swrscan_remote_run(bool start);
+
+/* Adaptador para app_cmds[] de src/remote_server.cpp (firma comun de las apps): `cmd` es
+ * "swrscan" y `val` 1 = Run, 0 = Stop. El texto no se usa. */
+void dialog_swrscan_remote(const char *cmd, int32_t val, const char *text);
+
+/* Estado del barrido para el campo `ax` de `{"cmd":"get"}` (issue #133):
+ *   {"swrscan_state":"Idle|Scanning|Completed|Stopped|Error","passes":N,"pass":N,
+ *    "points":N,"swrscan_tx":true|false}
+ * Seguro desde el hilo del socket: solo lee escalares, no toca LVGL. */
+int dialog_swrscan_remote_state(char *buf, size_t size);
 
 /* Un paquete del flow de la radio (RADIO_SWRSCAN) mientras el barrido corre. Corre en el hilo
  * de la radio: NO toca LVGL, solo encola un refresh y llama a radio_set_freq(). */

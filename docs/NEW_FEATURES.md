@@ -889,6 +889,11 @@ navegador, además del **alcance** (el espectro) y el audio.
 
 - `remote_server.cpp/h` del X6100 (1.055 líneas) con el mismo protocolo y el mismo formato de
   eventos, apuntando a `/tmp/x6200_remote.sock` (el que ya usa nuestro fork del webserver).
+- **`{"cmd":"swrscan","val":1|0}`** (issue #133, con la app `SWRScan` abierta): Run/Stop del
+  barrido de ROE por el **mismo camino que el botón**. Es el único comando de app que inicia
+  TX desde el socket (0.1 W, el piso del equipo): sólo con autorización del owner y en RX.
+  El estado se lee en el `ax` de `get` (`swrscan_state`, `passes`, `pass`, `points`,
+  `swrscan_tx`); contrato y guardas en [`swr133-spec.md`](swr133-spec.md).
 - **Adaptador `cfg_sm`**: el módulo lee y escribe la radio a través del `SettingsManager` del
   X6100 (`cfg_sm.p_xxx.get()/set()`, `cp_xxx`, `current_band_id()`, `is_valid_hw_freq()`).
   Escribí `cfg/settings_manager.{h,cpp}` como capa de compatibilidad sobre nuestro `cfg`,

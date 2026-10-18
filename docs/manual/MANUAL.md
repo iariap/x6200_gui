@@ -451,6 +451,10 @@ El equipo abre un socket en `/tmp/x6200_remote.sock` con unos 65 comandos.
    `{"cmd":"band","val":1}` cambia de banda; `{"cmd":"mode","val":1}` cambia el modo;
    `{"cmd":"freq","val":14074000}` sintoniza;
    `{"cmd":"location","text":"-34.6037,-58.3816"}` manda tu posición.
+   Con la app **SWR Scan** abierta, `{"cmd":"swrscan","val":1}` inicia el barrido de ROE y
+   `{"cmd":"swrscan","val":0}` lo detiene. **Ojo: el Run transmite** (a 0.1 W): usalo con la
+   antena o una carga conectada y con autorización; el `get` muestra `swrscan_state` y
+   `swrscan_tx` para saber cuándo terminó.
 4. Diagnóstico: `{"cmd":"cluster_feed","text":"DX de LU1ABC:  14074.0  LU2DSX  FT8  2313Z GF05"}`
    inyecta un spot del clúster (la línea necesita la hora `HHMMZ`).
 

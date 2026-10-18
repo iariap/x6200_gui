@@ -1,0 +1,26 @@
+native full suite:
+  host: OK   12 comprobaciones, 0 fallos
+
+A/B:
+experiment AB-SWR133: PASS (exit 0)
+  Functional         PASS            (required) — 85 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — captures are pixel-identical to the baseline
+  Quality Contract   PASS            (required) — 873 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+report: /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tools/ab_testing/reports/AB-SWR133
+
+contracts:
+contracts aea542153330: PASS — 873 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+audit:
+audited aea542153330: 11 known issues — 0 reproduced, 9 unverified; structural inspection REAL over 9462 objects on 85 scenario(s): 0 structural finding(s)
+
+determinism:
+swrscan-wide-zoom: 46e519eda661c65b3467a73d01a6ef63000ad1b6db9890ddae554e409f333e2c
+PASS: deterministic (identical PNGs for every fixture)
+
+ARM build:
+24:[ 51%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_swrscan.c.o
+ffef63df58cb854a5e63bcf88f645594  /b/target/usr/sbin/x6200_gui

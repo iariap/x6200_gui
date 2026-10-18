@@ -12,6 +12,22 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/* #133: el comando remoto no puede arrancar el barrido sobre una TX ajena. El test mueve
+ * este estado (swrscan_stub_set_radio_state) para pinnear las guardas. */
+typedef enum {
+    RADIO_RX = 0,
+    RADIO_TX,
+    RADIO_ATU_START,
+    RADIO_ATU_WAIT,
+    RADIO_ATU_RUN,
+    RADIO_SWRSCAN,
+
+    RADIO_POWEROFF,
+    RADIO_OFF
+} radio_state_t;
+
+radio_state_t radio_get_state(void);
+
 void     radio_set_freq(int32_t freq);
 uint16_t radio_change_vol(int16_t df);
 bool     radio_start_swrscan(void);
