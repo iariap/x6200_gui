@@ -9,6 +9,7 @@
 /* Based on idea Michael A. Maynard, a.k.a. "K4ICY" */
 
 #include <math.h>
+#include <stdint.h>
 #include "lvgl/lvgl.h"
 #include "cw_decoder.h"
 #include "remote_server.h"
@@ -328,6 +329,15 @@ void cw_decoder_signal(bool on, float ms) {
         cw_decoder_inner_space();
         cw_decoder_word_space();
     }
+}
+
+int cw_decoder_get_wpm(void) {
+    /* `wpm` es uint32_t y sale de 6360/suma: sin un par punto/raya todavia vale
+     * 0. Se satura a int para que el llamador no vea un negativo por cast. */
+    if (wpm > INT32_MAX) {
+        return INT32_MAX;
+    }
+    return (int) wpm;
 }
 
 void cw_decoder_set_sink(void (*text)(const char *), void (*wpm)(int)) {

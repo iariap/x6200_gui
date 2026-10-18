@@ -351,6 +351,9 @@ static int init_params_cfg(sqlite3 *db) {
     fill_cfg_item_float(&cfg.cw_decoder_snr_gist, subject_create_float(1.0f), 0.1f, "cw_decoder_snr_gist");
     fill_cfg_item_float(&cfg.cw_decoder_peak_beta, subject_create_float(0.10f), 0.01f, "cw_decoder_peak_beta");
     fill_cfg_item_float(&cfg.cw_decoder_noise_beta, subject_create_float(0.80f), 0.01f, "cw_decoder_noise_beta");
+    /* AUTO (issue #139) nace apagado: sin tocar el boton, el decodificador usa
+     * los valores manuales tal cual (comportamiento de siempre). */
+    fill_cfg_item(&cfg.cw_decoder_auto, subject_create_int(false), "cw_decoder_auto");
 
     //
     fill_cfg_item(&cfg.agc_hang, subject_create_int(false), "agc_hang");

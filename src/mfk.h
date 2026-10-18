@@ -63,6 +63,8 @@ typedef enum {
     MFK_ATT,
     MFK_PRE,
     MFK_COMP,
+    /* Append-only: los ids son bits de params.mfk_modes y se persisten. */
+    MFK_CW_DECODER_AUTO,
 
     MFK_LAST,
 

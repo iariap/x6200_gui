@@ -9,7 +9,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     lastbreath.c
     hkey.c clock.c info.c
     meter.c band_info.c tx_info.c
-    audio.c mfk.cpp cw.cpp cw_decoder.c pannel.c
+    audio.c mfk.cpp cw.cpp cw_decoder.c cw_autotune.c pannel.c
     rtty.c screenshot.c backlight.c cat.cpp
     dialog.c dialog_settings.c dialog_swrscan.c roe_curve.c swr_session.c
     dialog_ft8.c dialog_freq.c dialog_msg_cw.c

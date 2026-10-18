@@ -671,6 +671,21 @@ void mfk_update(int16_t diff, bool voice) {
             }
             break;
 
+        case MFK_CW_DECODER_AUTO:
+            b = subject_get_int(cfg.cw_decoder_auto.val);
+            if (diff) {
+                b = !b;
+                subject_set_int(cfg.cw_decoder_auto.val, b);
+            }
+            msg_update_text_fmt("#%3X CW auto tune: %s", color, b ? "On" : "Off");
+
+            if (diff) {
+                voice_say_bool("CW auto tune", b);
+            } else if (voice) {
+                voice_say_text_fmt("CW auto tune switcher");
+            }
+            break;
+
         case MFK_CW_DECODER_PEAK_BETA:
             f = subject_get_float(cfg.cw_decoder_peak_beta.val);
             if (diff) {

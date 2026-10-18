@@ -1,0 +1,3 @@
+== binario del banco
+ccaa60d9431590bf06d1349369a9e006  /tmp/opencode/vfix3-cw139/usr/sbin/x6200_gui
+13778528 bytes, ELF32 ARM

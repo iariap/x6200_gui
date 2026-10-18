@@ -1,0 +1,16 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output: ok
+  chroot /tmp/opencode/vfix3-cw139: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+OK: /tmp/opencode/vfix3-cw139/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13778528 B, 3/3 marcas)
+  captura: /tmp/opencode/cw139/banco-final-home.png (273 colores distintos)
+  version: e989c040 CW (#139): auto-ajuste de los parametros del decodi
+  fuente: md5 e4707f319ac8 (src/ + lvgl/src)
+  binario: md5 ccaa60d94315   qemu-cpu: cortex-a7
+  captura util (23910 bytes)

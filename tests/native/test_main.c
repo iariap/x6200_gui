@@ -32,6 +32,7 @@ void test_dxcc(void);
 void test_flags(void);
 void test_visual_policy(void);
 void test_cw_decoder(void);
+void test_cw_autotune(void);
 void test_roe_curve(void);
 
 /* SWR Scan multipasada (issue #125): el motor puro (src/swr_session.[ch]) y los fixtures del
@@ -70,6 +71,7 @@ int main(void) {
     test_flags();
     test_visual_policy();
     test_cw_decoder();
+    test_cw_autotune();
     test_roe_curve();
 
     test_swr_grid();
