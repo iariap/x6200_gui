@@ -1,0 +1,6 @@
+tone  -300.0 Hz -> bin  72 -> formula  +301.46 Hz
+tone  -200.0 Hz -> bin  91 -> formula  +199.18 Hz
+tone  -100.0 Hz -> bin 109 -> formula  +102.28 Hz
+tone  +100.0 Hz -> bin  19 -> formula  -102.28 Hz
+tone  +200.0 Hz -> bin  37 -> formula  -199.18 Hz
+tone  +300.0 Hz -> bin  56 -> formula  -301.46 Hz

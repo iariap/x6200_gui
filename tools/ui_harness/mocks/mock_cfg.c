@@ -115,6 +115,9 @@ void mock_cfg_init(void)
     cfg.cw_decoder_snr.val        = subject_create_float(5.0f);
     cfg.cw_decoder_peak_beta.val  = subject_create_float(0.10f);
     cfg.cw_decoder_noise_beta.val = subject_create_float(0.80f);
+    /* AUTO del decodificador CW (issue #139): el boton de (CW 2:2) lee este
+     * subject; arranca apagado como el firmware (src/cfg/cfg.c). */
+    cfg.cw_decoder_auto.val       = subject_create_int(0);
 
     /* Ajustes (src/dialog_settings.c) reads the cluster column switch, which is
      * a cfg item and not a params_* (the real default is off, src/cfg/cfg.c:323). */

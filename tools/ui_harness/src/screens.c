@@ -321,7 +321,8 @@ bool scenario_build(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "cw-tune-default") || !strcmp(scenario->screen, "cw-tune-tuner")
-        || !strcmp(scenario->screen, "cw-tune-ssb")) {
+        || !strcmp(scenario->screen, "cw-tune-ssb") || !strcmp(scenario->screen, "cw-autotune-off")
+        || !strcmp(scenario->screen, "cw-autotune-on")) {
         /* El widget de CW tune (issue #122): la pantalla principal real con la pagina CW
          * de la barra cargada. La ruta es la del usuario: la tecla KEY carga
          * `buttons_group_key` (src/main_screen.c, KEYPAD_KEY) y el boton-pagina cicla
@@ -338,6 +339,13 @@ bool scenario_build(const scenario_t *scenario)
             buttons_load_page_group(buttons_group_key);
             buttons_press(0, false);    /* (KEY 1:2) -> (KEY 2:2) */
             buttons_press(0, false);    /* (KEY 2:2) -> (CW 1:2)  */
+
+            /* Los fixtures de AUTO (issue #139) siguen un paso mas, a la pagina
+             * (CW 2:2), que es donde vive el boton "Auto" junto a Peak/Noise
+             * beta: la ruta es la del usuario (boton-pagina), no un atajo. */
+            if (!strcmp(scenario->screen, "cw-autotune-off") || !strcmp(scenario->screen, "cw-autotune-on")) {
+                buttons_press(0, false);    /* (CW 1:2) -> (CW 2:2)  */
+            }
         }
         return true;
     }
@@ -726,7 +734,8 @@ void scenario_settle(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "cw-tune-default") || !strcmp(scenario->screen, "cw-tune-tuner")
-        || !strcmp(scenario->screen, "cw-tune-ssb")) {
+        || !strcmp(scenario->screen, "cw-tune-ssb") || !strcmp(scenario->screen, "cw-autotune-off")
+        || !strcmp(scenario->screen, "cw-autotune-on")) {
         /* El widget de CW tune (src/cw_tune_ui.c) entre los hijos de la pantalla: sin el,
          * la fixture no prueba nada del widget. */
         lv_obj_t *widget = cw_tune_widget(lv_scr_act());
@@ -781,26 +790,81 @@ void scenario_settle(const scenario_t *scenario)
                 exit(1);
             }
         } else {
+            bool autotune_page = !strcmp(scenario->screen, "cw-autotune-off")
+                                 || !strcmp(scenario->screen, "cw-autotune-on");
+            bool autotune_on   = !strcmp(scenario->screen, "cw-autotune-on");
+
             /* El boton-pagina es posicional: codificar que la pagina que quedo en la barra es
-             * la "(CW 1:2)" antes de seguir, para que un reordenamiento de las paginas KEY
-             * corte la corrida en vez de medir otra pagina y reportar verde. */
-            if (!label_on_screen(lv_scr_act(), "(CW 1:2)")) {
+             * la que el fixture dice. Un reordenamiento de las paginas KEY corta la corrida
+             * en vez de medir otra pagina y reportar verde. Los fixtures de AUTO miden la
+             * (CW 2:2); los de #122, la (CW 1:2). */
+            if (!label_on_screen(lv_scr_act(), autotune_page ? "(CW 2:2)" : "(CW 1:2)")) {
                 fprintf(stderr,
-                        "%s: la barra no quedo en la pagina '(CW 1:2)' despues de las "
+                        "%s: la barra no quedo en la pagina '%s' despues de las "
                         "pulsaciones del boton-pagina (¿se reordenaron las paginas KEY?)\n",
-                        scenario->name);
+                        scenario->name, autotune_page ? "(CW 2:2)" : "(CW 1:2)");
                 exit(1);
             }
 
-            /* Y que el boton "Tuner" siga en la barra: su rotulo sale del subject real
-             * (src/buttons.cpp, cw_tuner_label_getter). El parametro ya no gatea el widget
-             * (issue #122), pero el boton sigue existiendo. */
-            if (!label_on_screen(lv_scr_act(), "Tuner:\nOff")) {
-                fprintf(stderr,
-                        "%s: el boton 'Tuner' no esta en la barra con el valor de arranque "
-                        "(¿se movio de la pagina CW o cambio su rotulo?)\n",
-                        scenario->name);
-                exit(1);
+            if (autotune_page) {
+                /* Lo que el fixture de AUTO *significa*: en (CW 2:2) estan Peak/Noise beta
+                 * y el boton "Auto", que arranca Off (cfg.cw_decoder_auto=0, src/cfg/cfg.c).
+                 * El fixture `cw-autotune-on` lo pulsa por el camino del usuario
+                 * (button_action_cb -> controls_toggle_cw_decoder_auto) y el rotulo tiene
+                 * que pasar a On. Peak/Noise conservan los valores del firmware: el arnes no
+                 * compila src/cw.cpp, que es el unico que los mueve con AUTO encendido. */
+                if (!label_on_screen(lv_scr_act(), "Peak beta:\n0.10")
+                    || !label_on_screen(lv_scr_act(), "Noise beta:\n0.80")) {
+                    fprintf(stderr,
+                            "%s: faltan los botones 'Peak beta' / 'Noise beta' de la pagina "
+                            "(CW 2:2) (¿se movieron de pagina?)\n",
+                            scenario->name);
+                    exit(1);
+                }
+                if (subject_get_int(cfg.cw_decoder_auto.val) != 0) {
+                    fprintf(stderr,
+                            "%s: cfg.cw_decoder_auto arranco en %d y no en 0 (¿cambio el "
+                            "defecto?): la fixture dejaria de probar el estado apagado\n",
+                            scenario->name, (int) subject_get_int(cfg.cw_decoder_auto.val));
+                    exit(1);
+                }
+                if (!label_on_screen(lv_scr_act(), "Auto:\nOff")) {
+                    fprintf(stderr,
+                            "%s: el boton 'Auto' no esta en la barra leyendo Off "
+                            "(¿se movio de la pagina CW 2:2 o cambio su rotulo?)\n",
+                            scenario->name);
+                    exit(1);
+                }
+                if (autotune_on) {
+                    /* Indice 3 de (CW 2:2): pagina, Peak, Noise, Auto. */
+                    buttons_press(3, false);
+
+                    if (subject_get_int(cfg.cw_decoder_auto.val) != 1) {
+                        fprintf(stderr,
+                                "%s: pulsar 'Auto' dejo cfg.cw_decoder_auto en %d y no en 1 "
+                                "(¿el boton no llega a controls_toggle_cw_decoder_auto?)\n",
+                                scenario->name, (int) subject_get_int(cfg.cw_decoder_auto.val));
+                        exit(1);
+                    }
+                    if (!label_on_screen(lv_scr_act(), "Auto:\nOn")) {
+                        fprintf(stderr,
+                                "%s: el boton 'Auto' no lee On despues de pulsarlo "
+                                "(¿el rotulo no sigue al subject?)\n",
+                                scenario->name);
+                        exit(1);
+                    }
+                }
+            } else {
+                /* Y que el boton "Tuner" siga en la barra: su rotulo sale del subject real
+                 * (src/buttons.cpp, cw_tuner_label_getter). El parametro ya no gatea el widget
+                 * (issue #122), pero el boton sigue existiendo. */
+                if (!label_on_screen(lv_scr_act(), "Tuner:\nOff")) {
+                    fprintf(stderr,
+                            "%s: el boton 'Tuner' no esta en la barra con el valor de arranque "
+                            "(¿se movio de la pagina CW o cambio su rotulo?)\n",
+                            scenario->name);
+                    exit(1);
+                }
             }
 
             /* La pagina CW de la barra no depende del decodificador CW: se llega con

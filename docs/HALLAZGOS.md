@@ -69,6 +69,9 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 48. [El crash de CW del #116: la ventana de mensajes con la tabla vacia le pasaba NULL al keyer](#48-el-crash-de-cw-del-116-la-ventana-de-mensajes-con-la-tabla-vacia-le-pasaba-null-al-keyer)
 49. [El widget de CW tune en el tema claro: las barras desaparecen sobre su propio panel](#49-el-widget-de-cw-tune-en-el-tema-claro-las-barras-desaparecen-sobre-su-propio-panel)
 50. [La parabola de ROE invertida en la radio: el ajuste libre del render, no el camino de datos](#50-la-parabola-de-roe-invertida-en-la-radio-el-ajuste-libre-del-render-no-el-camino-de-datos)
+51. [Las caidas del #121: una ultima respiracion persistente (y el aviso de bateria baja)](#51-las-caidas-del-121-una-ultima-respiracion-persistente-y-el-aviso-de-bateria-baja)
+52. [El tono de CW se mide con el signo invertido (y el auto-ajuste lo compensa)](#52-el-tono-de-cw-se-mide-con-el-signo-invertido-y-el-auto-ajuste-lo-compensa)
+53. [El auto-ajuste de peak beta no puede variar con la WPM: el bloque de FFT es mas largo que medio punto](#53-el-auto-ajuste-de-peak-beta-no-puede-variar-con-la-wpm-el-bloque-de-fft-es-mas-largo-que-medio-punto)
 
 ---
 
@@ -2819,3 +2822,66 @@ tension, corriente, temperatura ni watchdog. La hipotesis de undervoltage (8,6 V
 si es 4S LiFePO4, ~2,87 V/celda si es 3S Li-ion) sigue sin fundar. En la proxima caida hay que
 leer `/mnt/lastbreath` y la linea `LASTBREATH` antes de dar ciclo de energia; el procedimiento
 esta en el README de la evidencia.
+
+
+---
+
+## 52. El tono de CW se mide con el signo invertido (y el auto-ajuste lo compensa)
+
+**Sintoma**: ninguno visible por si solo; aparecio al escribir el auto-ajuste del #139, que necesita
+saber para que lado mover el centro del DDS del decodificador.
+
+**Medido**: la formula de `peak_freq` (`src/cw.cpp:261`) sobre un tono complejo de +100 Hz, con FFT
+de 128 puntos a la tasa decimada (44100/64 = 689,0625 Hz), corrida con liquid 1.4.0 en el contenedor
+del arnes (`docs/evidencia/2026-10-18-cw139-banco/signo-peak-freq.c`):
+
+```
+$ cc -O1 signo-peak-freq.c -o signo -lliquid -lm && ./signo
+tone  -300.0 Hz -> bin  72 -> formula  +301.46 Hz
+tone  -200.0 Hz -> bin  91 -> formula  +199.18 Hz
+tone  -100.0 Hz -> bin 109 -> formula  +102.28 Hz
+tone  +100.0 Hz -> bin  19 -> formula  -102.28 Hz
+tone  +200.0 Hz -> bin  37 -> formula  -199.18 Hz
+tone  +300.0 Hz -> bin  56 -> formula  -301.46 Hz
+```
+
+**Que significa**: la formula devuelve el **negativo** del corrimiento del tono respecto del centro
+del DDS, no el corrimiento. Quien la use como "cuanto mover el centro" tiene que negarla; el
+auto-ajuste aplica `freq = -peak_freq` (`src/cw_autotune.c`, `cw_autotune_compute`) y por eso
+converge en el sentido correcto. El signo del widget de tune (`cw_tune_set_freq`, `src/cw_tune_ui.c`)
+no se toca: es otra convencion y no es parte del #139.
+
+**Sin fundar** (anexo A): si la convencion del widget (bloque a la izquierda/derecha) es la que el
+owner quiere. El widget no tiene rotulos de eje, asi que no se puede afirmar que este "al reves".
+
+---
+
+## 53. El auto-ajuste de peak beta no puede variar con la WPM: el bloque de FFT es mas largo que medio punto
+
+**Codigo**: `src/cw.cpp` hace una FFT de 128 muestras sobre el audio decimado 44100/64 = 689,0625 Hz,
+sin solapamiento (`FFT=128`, `NUM_STAGES=6`, `DECIM_FACTOR=64`) y llama `update_thresholds()` una vez
+por trama: **delta = 128/689,0625 = 185,76 ms** (5,38 tramas/s). El LPF del umbral de pico se
+actualiza a ese ritmo.
+
+**La formula del #139** es `beta = 1 - delta/tau` con `tau = 600/WPM ms` (medio punto Morse). Para
+que de un beta mayor que 0,10 hace falta `tau > ~0,2 s`, es decir un punto de mas de 0,4 s: menos de
+3 WPM. La tabla (derivada en `docs/cw139-spec.md` y fijada por `tests/native/test_cw_autotune.c`):
+
+| WPM | punto (ms) | tau (ms) | 1 - delta/tau | beta |
+|---|---|---|---|---|
+| 5 | 240 | 120 | -0,55 | **0,10** |
+| 10 | 120 | 60 | -2,10 | **0,10** |
+| 20 | 60 | 30 | -5,19 | **0,10** |
+| 30 | 40 | 20 | -8,29 | **0,10** |
+| 40 | 30 | 15 | -11,38 | **0,10** |
+| 60 | 20 | 10 | -17,58 | **0,10** |
+
+**Medido**: la suite nativa da 0,10 para 5, 10, 20, 30, 40 y 60 WPM (vector
+`test_peak_beta_clamps_and_short_block`, `docs/evidencia/2026-10-18-cw139-banco/tdd-green.log`). Con
+el bloque sin decimar (128/44100 = 2,90 ms) la misma funcion da 0,95 @10, 0,90 @20, 0,81 @40 y
+0,71 @60: la formula no es constante, el lazo es el que no puede cumplirla.
+
+**Consecuencia**: con el lazo actual el unico valor correcto para `peak_beta` es el minimo (0,10),
+que es el default del firmware. El AUTO lo deja ahi (no empeora el ajuste manual) y la adaptacion
+real ocurre en `snr`, `gist`, `noise_beta` y el tono. Si en la radio se ve chatter con senales
+fuertes, la alternativa es `tau = 8*delta` (beta 0,88) — **requires-radio**, no se cambio sin medir.

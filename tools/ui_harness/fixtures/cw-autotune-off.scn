@@ -1,0 +1,40 @@
+# cw-autotune-off: la pagina (CW 2:2) de la barra, donde vive el boton "Auto" del
+# auto-ajuste del decodificador CW (issue #139), en su estado de arranque.
+#
+# La ruta es la del usuario: la tecla KEY carga `buttons_group_key`
+# (src/main_screen.c) y el boton-pagina cicla tres veces hasta
+# `page_cw_decoder_2` (src/buttons.cpp), la pagina "(CW 2:2)" que lleva
+# Peak beta / Noise beta / Auto. El fixture codifica que la barra quedo en esa
+# pagina, que Peak/Noise muestran los valores manuales del firmware (0,10 / 0,80)
+# y que "Auto" arranca Off con cfg.cw_decoder_auto=0.
+#
+# El tema es el de la radio (Redshift), asi el render es el que ve el usuario.
+
+name cw-autotune-off
+screen cw-autotune-off
+
+theme Redshift
+seed 20
+
+frequency_hz 7030000
+tx_frequency_hz 7030000
+fft_width_hz 384000
+
+mode cw
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

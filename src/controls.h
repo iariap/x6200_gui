@@ -26,6 +26,7 @@ void controls_toggle_key_train(button_item_t *btn);
 void controls_toggle_key_iambic_mode(button_item_t *btn);
 void controls_toggle_cw_decoder(button_item_t *btn);
 void controls_toggle_cw_tuner(button_item_t *btn);
+void controls_toggle_cw_decoder_auto(button_item_t *btn);
 
 void controls_loop_dnf(button_item_t *btn);
 void controls_toggle_nb(button_item_t *btn);

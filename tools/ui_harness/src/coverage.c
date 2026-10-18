@@ -321,11 +321,39 @@ static const coverage_entry_t cw_tune[] = {
               "DX cluster column is not rendered (no cluster data on the host)"),
 };
 
+/* Los `cw-autotune-off` / `cw-autotune-on` (issue #139): la pagina (CW 2:2) de
+ * la barra, la real, con el boton "Auto" junto a Peak/Noise beta. El boton, su
+ * toggle y su rotulo son fuentes reales del firmware; el auto-ajuste en si vive
+ * en src/cw.cpp + src/cw_autotune.c, que el arnes NO compila (necesitan
+ * liquid-dsp y el lazo de audio): el fixture mide la UI y el modulo se prueba
+ * entero en la suite nativa. */
+static const coverage_entry_t cw_autotune[] = {
+    MAIN_COMPONENTS,
+    COMPONENT("buttons.cpp (CW page 2)", COVERAGE_REAL,
+              "src/buttons.cpp compiled; `page_cw_decoder_2` (the page labelled (CW 2:2): Peak beta / Noise beta / Auto) is the real table, and the Auto button runs controls_toggle_cw_decoder_auto() -> cfg.cw_decoder_auto on the user's path (the fixture presses index 3)"),
+    COMPONENT("cfg.cw_decoder_auto", COVERAGE_SYNTHETIC,
+              "mock_cfg creates the cfg item with its firmware default (0, off); there is no params.db on the host, so the persistence across a reboot is measured in the QEMU bank"),
+    COMPONENT("cw_autotune.c / cw.cpp (AUTO logic)", COVERAGE_UNSUPPORTED,
+              "neither file is compiled here: src/cw.cpp needs liquid-dsp and the audio thread, and src/cw_autotune.c is exercised by tests/native/test_cw_autotune.c (synthetic windows, clamps, deadband, tone sign). The fixture does not claim convergence: that is requires-radio"),
+    COMPONENT("cw_tune_ui.c", COVERAGE_PARTIAL,
+              "src/cw_tune_ui.c compiled; the tuning widget is part of the same CW screen and its visibility follows the rig's mode"),
+    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
+              "the fixtures open no app dialog: the (CW 2:2) page is measured in the bottom bar"),
+    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
+              "DX cluster spot marks are not rendered (no cluster data on the host)"),
+    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
+              "DX cluster column is not rendered (no cluster data on the host)"),
+};
+
 const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
 {
     if (screen && !strcmp(screen, "swrscan")) {
         *count = (int) (sizeof(swrscan_screen) / sizeof(swrscan_screen[0]));
         return swrscan_screen;
+    }
+    if (screen && (!strcmp(screen, "cw-autotune-off") || !strcmp(screen, "cw-autotune-on"))) {
+        *count = (int) (sizeof(cw_autotune) / sizeof(cw_autotune[0]));
+        return cw_autotune;
     }
     if (screen
         && (!strcmp(screen, "cw-tune-default") || !strcmp(screen, "cw-tune-tuner")

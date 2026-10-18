@@ -61,6 +61,7 @@ static const char *mfk_name(mfk_mode_t mode) {
         case MFK_RIT:             return "RIT";
         case MFK_XIT:             return "XIT";
         case MFK_CHARGER:         return "Charger";
+        case MFK_CW_DECODER_AUTO: return "CW auto tune";
         case MFK_SPECTRUM_BETA:   return "Spectrum";
         case MFK_FFT_DECIM:       return "FFT decimation";
         default:                  return "MFK";

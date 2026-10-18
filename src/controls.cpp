@@ -37,6 +37,14 @@ void controls_toggle_cw_tuner(button_item_t *btn) {
     voice_say_bool("CW Decoder", new_val);
 }
 
+/* AUTO (issue #139): toggle del auto-ajuste. El que reacciona es src/cw.cpp
+ * (observa cfg.cw_decoder_auto, calibra con la ventana ya acumulada y, al
+ * apagar, vuelve el centro del DDS al tono manual). */
+void controls_toggle_cw_decoder_auto(button_item_t *btn) {
+    bool new_val = toggle_subj(cfg.cw_decoder_auto.val);
+    voice_say_bool("CW auto tune", new_val);
+}
+
 void controls_loop_dnf(button_item_t *btn) {
     int32_t val = subject_get_int(cfg.dnf.val);
     val = (val + 1) % 3;

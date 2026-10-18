@@ -91,6 +91,7 @@ static const char * cw_snr_label_getter();
 
 static const char * cw_peak_beta_label_getter();
 static const char * cw_noise_beta_label_getter();
+static const char * cw_auto_label_getter();
 
 static const char * dnf_label_getter();
 static const char * dnf_center_label_getter();
@@ -282,6 +283,15 @@ static button_item_t btn_cw_peak_beta =
     make_btn(cw_peak_beta_label_getter, MFK_CW_DECODER_PEAK_BETA, &cfg.cw_decoder_peak_beta.val);
 static button_item_t btn_cw_noise_beta =
     make_btn(cw_noise_beta_label_getter, MFK_CW_DECODER_NOISE_BETA, &cfg.cw_decoder_noise_beta.val);
+/* AUTO (issue #139): toggle. Su rotulo es el indicador de que el auto-ajuste
+ * esta activo; los valores que escribe se ven en los botones de al lado porque
+ * van a los mismos subjects. */
+static button_item_t btn_cw_auto = {.type     = BTN_TEXT_FN,
+                                    .label_fn = cw_auto_label_getter,
+                                    .press    = controls_toggle_cw_decoder_auto,
+                                    .hold     = button_mfk_hold_cb,
+                                    .data     = MFK_CW_DECODER_AUTO,
+                                    .subj     = &cfg.cw_decoder_auto.val};
 
 /* DSP */
 
@@ -444,7 +454,7 @@ static buttons_page_t page_cw_decoder_1 = {
     {&btn_cw_p1, &btn_cw_decoder, &btn_cw_tuner, &btn_cw_snr}
 };
 static buttons_page_t page_cw_decoder_2 = {
-    {&btn_cw_p2, &btn_cw_peak_beta, &btn_cw_noise_beta}
+    {&btn_cw_p2, &btn_cw_peak_beta, &btn_cw_noise_beta, &btn_cw_auto}
 };
 
 /* DFN pages */
@@ -1037,6 +1047,12 @@ static const char * cw_peak_beta_label_getter() {
 static const char * cw_noise_beta_label_getter() {
     static char buf[22];
     sprintf(buf, "Noise beta:\n%0.2f", subject_get_float(cfg.cw_decoder_noise_beta.val));
+    return buf;
+}
+
+static const char * cw_auto_label_getter() {
+    static char buf[22];
+    sprintf(buf, "Auto:\n%s", subject_get_int(cfg.cw_decoder_auto.val) ? "On": "Off");
     return buf;
 }
 
