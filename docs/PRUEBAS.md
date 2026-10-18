@@ -188,15 +188,24 @@ condiciones exactas de la captura del domo del owner (`26-roe-multipasada-final.
 se reproduce, la curva sale U**. Con el dial **fuera de la resonancia** (7.020/7.040) la curva es una
 rama que sube (el mínimo cae en el borde), porque el rango no contiene el valle — no es una inversión.
 
-**El script de la aserción del #125 no es ejecutable en la radio (hallazgo nuevo).** El re-test del #125
-documenta `python3 tests/swrscan_curve_evidence.py /tmp/swrscan-u.png` (1 argumento): el script pide **2**
-(`len(argv)!=3` → docstring y **exit 2**). Con 2 argumentos (fixture del arnés + captura de radio) la
-comprobación de la radio **igual falla**: `FAIL … no encontre la curva dibujada`. Causa medida:
-`curve_mask()` exige `min(r,g,b)≥180` y la curva del tema del owner (`Redshift`) es `RGB(255,179,160)`
-(`min=160`); el fixture del arnés pasa porque su curva es `RGB(248,238,255)` (`min=238`). El docstring del
-script dice **"No OCR, no radio."** Salida cruda: [`asercion-script.txt`](evidencia/2026-10-17-qa-radio-swr125/asercion-script.txt).
-→ **issue nuevo** (el entregable es el issue, no el fix). El RED/GREEN del arnés en el trunk **PASS**
-(`03-harness-domo-valle.png` + `04-harness-valle-real.png`).
+**El script de la aserción del #125 no corría en la radio; corregido en el #132.** El re-test del #125
+documenta `python3 tests/swrscan_curve_evidence.py /tmp/swrscan-u.png` (1 argumento); el script de
+entonces pedía **2** (`len(argv)!=3` → docstring y **exit 2**) y con 2 argumentos la captura de radio
+**igual fallaba**: `FAIL … no encontre la curva dibujada`, porque `curve_mask()` exigía
+`min(r,g,b)≥180` y la curva del tema del owner (`Redshift`) es `RGB(255,179,160)` (`min=160`); el
+fixture del arnés pasaba porque su curva es `RGB(248,238,255)` (`min=238`). Salida cruda de la
+corrida: [`asercion-script.txt`](evidencia/2026-10-17-qa-radio-swr125/asercion-script.txt).
+
+El **#132** (ya en el trunk) lo corrigió: acepta **1 argumento** (clasifica la forma por sí mismo:
+`U` / `domo` / `rama`; el comando de radio queda `python3 tests/swrscan_curve_evidence.py
+<captura>.png`) y **2** (modo histórico del arnés), y detecta la tinta **por tema** dentro de la
+banda `y=69..399` (descarta la grilla `0xAAAAAA` y el fondo/panel, toma el color dominante de
+texto/curva). Verificado sobre las capturas de esta corrida: `01` → **U** (valle `y=398` en `x=255`,
+bordes +94/+168), `02` y `03` → **U**, y el domo viejo `26-roe-multipasada-final.png` → **domo**
+medido (exit 1, ya no "no encontré la curva"). El RED/GREEN del arnés sigue **PASS**
+(`03-harness-domo-valle.png` + `04-harness-valle-real.png`). El test determinista del script es
+`python3 tests/test_swrscan_curve_evidence.py` (capturas reales + los seis temas sintéticos, sin
+radio ni Docker).
 
 **Barrido de apps (no regresión):** `PERMANENCIA=14 tools/prueba-apps-radio.sh` → **23/23 ok, 0 caídas**
 (incluye **SWRScan**, que ahora sí abre por el control remoto; el #78 quedó resuelto). Log en

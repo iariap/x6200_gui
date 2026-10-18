@@ -7,6 +7,7 @@
 #   config        the cfg struct is fully initialised (a missing field kills the GUI)
 #   manual_apps   every app of the firmware has its own section in the operator manual
 #   pruebas       docs/PRUEBAS.md: structure and cited evidence exist
+#   curve_evidence the drawn ROE curve on committed PNGs: U / dome / branch
 #   host          the native suite (401 assertions, no container)
 #   wspr/sstv     codec round trips against the X6100's own test tools
 #   wefax/navtex
@@ -84,6 +85,7 @@ run manual_apps python3 "$DIR/check_manual_apps.py"
 run pruebas python3 "$DIR/audita-pruebas.py"
 run wcag python3 "$DIR/check_wcag.py"
 run cw_tune_feed python3 "$DIR/check_cw_tune_feed.py"
+run curve_evidence python3 "$DIR/test_swrscan_curve_evidence.py"
 
 run host sh "$DIR/native/run_native_tests.sh"
 run wspr sh "$DIR/native/run_wspr_tests.sh"
