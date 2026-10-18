@@ -30,6 +30,11 @@ void waterfall_set_battery_mode(bool enabled);
  * con `--bench-natural --display-off`. */
 uint32_t waterfall_offscreen_redraw_count(void);
 
+/* Linea central del waterfall (issue #140): el objeto vivo, para que el arnes de
+ * UI codifique su geometria (largo = alto del waterfall, centrada, oculta con el
+ * parametro apagado). NULL si todavia no se creo. */
+lv_obj_t * waterfall_middle_line(void);
+
 /* The levels the waterfall is drawing with, for the remote scope */
 void waterfall_get_levels(bool tx, float *min, float *max);
 

@@ -94,6 +94,12 @@ lv_obj_t * waterfall_init(lv_obj_t * parent) {
 
     obj = lv_obj_create(parent);
 
+    /* La linea central pertenece a ESTE waterfall: waterfall_init() arma un obj
+     * nuevo por pantalla, asi que el puntero que quedo de una pantalla anterior
+     * ya no sirve. draw_middle_line() crea la linea una sola vez por obj (issue
+     * #140), y sin este reset reusaria el objeto viejo. */
+    middle_line = NULL;
+
     lv_obj_add_style(obj, &waterfall_style, 0);
     if (obj) lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
 
@@ -188,23 +194,61 @@ void waterfall_set_height(lv_coord_t h) {
 }
 
 static void middle_line_cb(lv_event_t * event) {
-    if (params.waterfall_center_line.x && lv_obj_has_flag(middle_line, LV_OBJ_FLAG_HIDDEN)) {
-        if (middle_line) lv_obj_clear_flag(middle_line, LV_OBJ_FLAG_HIDDEN);
+    if (middle_line == NULL) {
         return;
     }
-    if (!params.waterfall_center_line.x && !lv_obj_has_flag(middle_line, LV_OBJ_FLAG_HIDDEN)) {
-        if (middle_line) lv_obj_add_flag(middle_line, LV_OBJ_FLAG_HIDDEN);
-        return;
+
+    bool hidden = lv_obj_has_flag(middle_line, LV_OBJ_FLAG_HIDDEN);
+
+    if (params.waterfall_center_line.x && hidden) {
+        lv_obj_clear_flag(middle_line, LV_OBJ_FLAG_HIDDEN);
+    } else if (!params.waterfall_center_line.x && !hidden) {
+        lv_obj_add_flag(middle_line, LV_OBJ_FLAG_HIDDEN);
     }
 }
 
+/* Linea central del waterfall (issue #140).
+ *
+ * Los dos puntos salen de `height`: el inferior es el alto del waterfall, asi que
+ * la linea solo se puede armar cuando waterfall_set_height() ya lo resolvio (el
+ * init corre antes y ahi `height` todavia vale 0). Por eso se crea desde aca y no
+ * desde waterfall_init(), y se crea UNA sola vez por obj: una linea nueva por
+ * llamada dejaria la anterior con el alto viejo y el callback duplicado. Cada
+ * llamada vuelve a fijar el punto inferior (el alto puede cambiar) y resuelve la
+ * visibilidad con params.waterfall_center_line en el acto, sin esperar al proximo
+ * DRAW_POST_END; el callback la mantiene al dia cuando el parametro cambia en
+ * Ajustes. */
 static void draw_middle_line() {
     middle_line_points[1].y = height;
-    middle_line = lv_line_create(obj);
+
+    bool created = false;
+
+    if (middle_line == NULL) {
+        middle_line = lv_line_create(obj);
+        created = true;
+    }
+
     lv_line_set_points(middle_line, middle_line_points, 2);
-    lv_obj_add_style(middle_line, &middle_line_style, 0);
+
+    if (created) {
+        lv_obj_add_style(middle_line, &middle_line_style, 0);
+        lv_obj_add_event_cb(obj, middle_line_cb, LV_EVENT_DRAW_POST_END, NULL);
+    }
+
     lv_obj_center(middle_line);
-    lv_obj_add_event_cb(obj, middle_line_cb, LV_EVENT_DRAW_POST_END, NULL);
+
+    if (params.waterfall_center_line.x) {
+        lv_obj_clear_flag(middle_line, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(middle_line, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+/* Geometria de la linea central para el arnes de UI (mismo espiritu que
+ * waterfall_offscreen_redraw_count): el gate nativo no puede mirar pixeles y el
+ * invariante del issue #140 es geometrico (largo = alto del waterfall). */
+lv_obj_t * waterfall_middle_line(void) {
+    return middle_line;
 }
 
 void waterfall_min_max_reset() {
