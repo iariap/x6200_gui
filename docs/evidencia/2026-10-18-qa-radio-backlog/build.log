@@ -1,0 +1,3 @@
+  compilando limpio (objetos de la GUI borrados)...
+  binario: md5 ffef63df58cb   (commit 94b9989 - QA: la radio sigue caida 1h30min despues de la cua)
+exit=0

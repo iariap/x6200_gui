@@ -1,0 +1,7 @@
+commit HEAD: 94b9989d1b327debbf7f03cd5fffff587eb7c197  (QA: la radio sigue caida 1h30min despues de la cuarta caida; 0 merges)
+commit de codigo del trunk: d3e84ed ... ver git log
+md5 del binario compilado (volumen): ffef63df58cb854a5e63bcf88f645594
+tamano: 13757724 B
+hash de fuentes (.fuente.md5 del volumen): 8c1804b4a67a4eccb06c2ad2dcebdadc
+build: tools/compila-gui.sh (limpio) -> exit 0
+fecha: 2026-10-18T01:36:58-03:00

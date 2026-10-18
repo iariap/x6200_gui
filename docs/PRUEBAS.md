@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 18/10 ~12:40 (hora radio) | GUI **ffef63df58cb** (build limpio; **NO desplegado**) | `94b9989` | (sin radio) | — | 0 | **Radio inalcanzable en las dos redes** ✗: build limpio + gate #86 OK (`ffef63df58cb`, 13.757.724 B, 3/3 marcas), pero `tools/prueba-gui-en-radio.sh` abortó porque `radio_ip()` no encontró la radio. **#133/#114/#121 quedan SIN VEREDICTO**: no se pudo correr ninguna de las tres pruebas. La 4.ª caída del #121 sigue sin recuperación (necesita ciclo de energía; la batería estaba en 8,6 V, anotado en el #121). Evidencia: [`2026-10-18-qa-radio-backlog/`](evidencia/2026-10-18-qa-radio-backlog/README.md) |
 | 17/10 ~22:20 (hora radio) | ROM `c640645d810c` + GUI **b1ba67520079** | `63dbf7a4` (#130) | **SWRScan** | **23 ok** | 0 (1 crash, ya en #131) | **VALIDADA EN RADIO la U del #130** ✓✓: build limpio desde el tip + gate #86 + deploy (idempotente, ya corría el mismo md5). Con el dial en la resonancia (~7.000) la curva es una **U**: base `y=398` en `x=255` (interior), bordes suben **+94/+168 px**; reproducido en 2ª pasada (`x=232`, +80/+174) y con span 200 kHz/Log (`x=238`, +140/+233). **Hallazgo nuevo**: `tests/swrscan_curve_evidence.py` del #125 **no corre sobre una captura de radio** (pide 2 args, no 1; su umbral `min≥180` no ve la curva del tema del owner `Redshift` = RGB(255,179,160)) → **issue nuevo**. Sigue `Error: timeout de RF` (`n≈44/51`, nunca `Completed`). Evidencia `docs/evidencia/2026-10-17-qa-radio-swr125/` |
 | 18/10 ~12:20 | (sin radio) | `07321a5` | — | — | 0 | **Sigue caída 1h30min después de la 4ª caída** ✗: 0 hosts con SSH en 192.168.0.0/24 y 192.168.18.0/24. Sin merges nuevos. Pendiente: que el owner la mire (ciclo de energía) y **medir el uptime al volver** para saber si reinició o se colgó sin reiniciar |
 | 18/10 ~11:45 | ROM `c640645d810c` + GUI ffef63df58cb | `896a3cf` | (sin radio) | — | 0 | **4ª CAÍDA del #121** ✗: última vez viva 00:09 (uptime 51644 s = **14 h 20 min**, pid 7317, CRASHLOG 0) → a las 00:45 **0 hosts con SSH en las dos redes** (mi red OK). **Murió en reposo, sin actividad ni TX** ✓ → **no hace falta actividad para que se caiga**. Sin `pstore` sigue sin haber evidencia del kernel (4 caídas, 0 evidencia). Comentado en #121 |
@@ -158,6 +159,47 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 | 15/10 ~14:05 | `5a6e561e502f` | `e5a869b` | TODO OK | (no se corrió) | no medido | **Funciona** para #19/#26/#30/#47 |
 
 ---
+
+---
+
+## 18/10 ~12:40 (hora radio) — `ffef63df58cb` (#133/#114/#121): la radio no responde; **pruebas NO ejecutadas**
+
+**Qué se intentó:** cerrar los tres issues del backlog con la punta del trunk (`94b9989`; el último
+commit de código es `d3e84ed`, con el #130, el #132 y el comando `swrscan` del #133).
+
+**Medido:**
+
+```
+  git fetch fork                                  -> 94b9989 (sin cambios)
+  tools/compila-gui.sh                            -> exit 0, md5 ffef63df58cb (13.757.724 B)
+  python3 tools/verifica-firmware-port.py <bin>   -> OK, ELF32 ARM, 3/3 marcas (gate #86, exit 0)
+  tools/prueba-gui-en-radio.sh                    -> exit 1 (radio_ip no encontró la radio)
+  tools/verifica-radio.sh 192.168.0.236           -> "la radio (192.168.0.236) no responde" (exit 1)
+```
+
+**La radio está inalcanzable en las dos redes** (medido a las 01:35 en 5 GHz y a las 01:36 en 2,4 GHz):
+
+| red | host | radio | ping | SSH | hosts con :22 |
+|---|---|---|---|---|---|
+| DharmaNet (5 GHz) | `192.168.0.195/24` | `192.168.0.236` | **0/2** | `No route to host` | **0** |
+| DharmaNet 2.4 | `192.168.18.68/24` | `192.168.18.67` | **0/2** | `No route to host` | **0** |
+
+La red del host está sana (el gateway `192.168.0.1` responde). Es la **4.ª caída del #121**: la última
+medición viva fue a las 00:13 local (uptime 51.644 s, pid 7317) y a las 00:33 ya no respondía; **no
+volvió sola** y necesita ciclo de energía. En la medición de ROE del 17/10 la batería figuraba en
+**8,6 V**.
+
+**Veredicto:**
+
+| Issue | Veredicto de esta corrida |
+|---|---|
+| **#133** | **NO MEDIDO**: el comando está mergeado y se había validado en `ffef63df58cb` el 17/10, pero no se repitió en esta punta. |
+| **#114** | **NO MEDIDO**: no se corrieron los 16 ciclos de NB en este build. |
+| **#121** | **NO MEDIDO**: no se corrieron los 5 barridos. La caída en reposo (4.ª) sigue abierta. |
+
+No se cierra ningún issue y no se crea ninguno nuevo: la radio caída ya está reportada en el #121. No
+se tocaron params, temas ni apps, y no se desplegó. Evidencia:
+[`docs/evidencia/2026-10-18-qa-radio-backlog/`](evidencia/2026-10-18-qa-radio-backlog/README.md).
 
 ---
 
