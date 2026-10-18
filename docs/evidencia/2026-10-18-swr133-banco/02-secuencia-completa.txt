@@ -1,78 +1,78 @@
-# Banco QEMU #133 — HEAD efae955e, binario ffef63df58cb854a5e63bcf88f645594
-# contenedor banco-apps-swr133: created=2026-10-18T04:48:05.196755364Z started=2026-10-18T04:48:05.621449644Z restart=0
-# md5 del binario al empezar: ffef63df58cb854a5e63bcf88f645594
+# Banco QEMU #133 (fix del Stop) — HEAD 33522a30, binario 991bb0e2fabc26f7f7e2c803e8b40530
+# contenedor banco-apps-swr133: created=2026-10-18T05:03:52.929293256Z started=2026-10-18T05:03:52.954213153Z restart=0
+# md5 del binario al empezar: 991bb0e2fabc26f7f7e2c803e8b40530
 
 ## baseline
-# 01:48:49.339 > {"cmd":"get"}
+# 02:04:10.977 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB-D","band":"","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
 
 ## Run con la app cerrada (debe rechazar sin TX)
-# 01:48:49.396 > {"cmd":"swrscan","val":1}
+# 02:04:11.032 > {"cmd":"swrscan","val":1}
 {"t":"err","err":"app not open"}
-# 01:48:49.450 > {"cmd":"get"}
+# 02:04:11.087 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB-D","band":"","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
 
 ## abrir SWRScan
-# 01:48:49.504 > {"cmd":"app","text":"SWRScan"}
+# 02:04:11.140 > {"cmd":"app","text":"SWRScan"}
 {"t":"ok"}
-# 01:48:50.563 > {"cmd":"get"}
+# 02:04:12.225 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB-D","band":"","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"SWRScan","ax":{"swrscan_state":"Idle","passes":1,"pass":0,"points":51,"swrscan_tx":false},"cwt":null,"logrev":0,"did":""}
-captura: docs/evidencia/2026-10-18-swr133-banco/01-app-abierta.png (349 colores distintos, 25040 bytes)
+captura: docs/evidencia/2026-10-18-swr133-banco/01-app-abierta.png (349 colores distintos, 24848 bytes)
 
 ## Run con la app abierta
-# 01:48:51.038 > {"cmd":"swrscan","val":1}
+# 02:04:12.499 > {"cmd":"swrscan","val":1}
 {"t":"ok"}
-# 01:48:51.598 > {"cmd":"get"}
+# 02:04:13.053 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
 captura: docs/evidencia/2026-10-18-swr133-banco/03-run-scanning.png (379 colores distintos, 26707 bytes)
 
 ## doble Run durante Scanning (debe ser no-op)
-# 01:48:51.878 > {"cmd":"get"}
+# 02:04:13.327 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
-# 01:48:51.929 > {"cmd":"swrscan","val":1}
+# 02:04:13.379 > {"cmd":"swrscan","val":1}
 {"t":"ok"}
-# 01:48:51.981 > {"cmd":"get"}
+# 02:04:13.431 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
 
 ## poll de get cada 1 s (10 s)
-# 01:48:53.035 > {"cmd":"get"}
+# 02:04:14.487 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
-# 01:48:54.088 > {"cmd":"get"}
+# 02:04:15.541 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
-# 01:48:55.140 > {"cmd":"get"}
+# 02:04:16.595 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
-# 01:48:56.195 > {"cmd":"get"}
+# 02:04:17.648 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
-# 01:48:57.244 > {"cmd":"get"}
+# 02:04:18.702 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
-# 01:48:58.295 > {"cmd":"get"}
+# 02:04:19.756 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
-# 01:48:59.348 > {"cmd":"get"}
+# 02:04:20.809 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
-# 01:49:00.399 > {"cmd":"get"}
+# 02:04:21.863 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
-# 01:49:01.452 > {"cmd":"get"}
+# 02:04:22.915 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
-# 01:49:02.504 > {"cmd":"get"}
+# 02:04:23.971 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,"pass":1,"points":51,"swrscan_tx":true},"cwt":null,"logrev":0,"did":""}
 captura: docs/evidencia/2026-10-18-swr133-banco/04-post-poll-10s.png (379 colores distintos, 26707 bytes)
 
 ## Stop
-# 01:49:02.776 > {"cmd":"swrscan","val":0}
+# 02:04:24.244 > {"cmd":"swrscan","val":0}
 {"t":"ok"}
-# 01:49:03.829 > {"cmd":"get"}
+# 02:04:25.297 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB-D","band":"","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"SWRScan","ax":{"swrscan_state":"Stopped","passes":1,"pass":0,"points":51,"swrscan_tx":false},"cwt":null,"logrev":0,"did":""}
-captura: docs/evidencia/2026-10-18-swr133-banco/05-stopped.png (394 colores distintos, 26996 bytes)
+captura: docs/evidencia/2026-10-18-swr133-banco/05-stopped.png (377 colores distintos, 26263 bytes)
 
 ## valor invalido
-# 01:49:04.104 > {"cmd":"swrscan","val":2}
+# 02:04:25.560 > {"cmd":"swrscan","val":2}
 {"t":"err","err":"Invalid value"}
-# 01:49:04.158 > {"cmd":"get"}
+# 02:04:25.614 > {"cmd":"get"}
 {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB-D","band":"","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"SWRScan","ax":{"swrscan_state":"Stopped","passes":1,"pass":0,"points":51,"swrscan_tx":false},"cwt":null,"logrev":0,"did":""}
-captura: docs/evidencia/2026-10-18-swr133-banco/06-final.png (394 colores distintos, 26996 bytes)
+captura: docs/evidencia/2026-10-18-swr133-banco/06-final.png (377 colores distintos, 26263 bytes)
 
 ## cerrar
-# 01:49:04.449 > {"cmd":"app","text":"off"}
+# 02:04:25.893 > {"cmd":"app","text":"off"}
 {"t":"ok"}
 
-# md5 del binario al terminar: ffef63df58cb854a5e63bcf88f645594
+# md5 del binario al terminar: 991bb0e2fabc26f7f7e2c803e8b40530
