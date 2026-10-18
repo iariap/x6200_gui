@@ -51,6 +51,7 @@
 #include "scheduler.h"
 #include "wifi.h"
 #include "usb_devices.h"
+#include "crashlog_modules.h"
 
 #define DISP_BUF_SIZE (800 * 480 * 4)
 
@@ -131,7 +132,7 @@ static void boot_time_log(void) {
 #include <signal.h>
 #include <ucontext.h>
 
-int main(void);      /* para tomar su direccion como base del binario */
+int main(int argc, char **argv);   /* para tomar su direccion como base del binario */
 
 static void crash_log_handler(int sig, siginfo_t *info, void *ctx) {
     ucontext_t *uc = (ucontext_t *) ctx;
@@ -151,6 +152,18 @@ static void crash_log_handler(int sig, siginfo_t *info, void *ctx) {
      * addr2line restando la base. docs/HALLAZGOS.md 38. */
 #if defined(__arm__) && defined(__GLIBC__)
     {
+        /* Antes de la pila, los modulos cargados y su md5: sin eso, un PC en
+         * 0xb6xxxxxx no se puede resolver (issue #131). El bloque ya esta
+         * formateado desde el arranque; aca solo se escribe, no se aloca. */
+        size_t      mods_len = 0;
+        const char *mods     = crashlog_modules_block(&mods_len);
+
+        if (mods != NULL && mods_len > 0) {
+            ssize_t written = write(STDERR_FILENO, mods, mods_len);
+
+            (void) written;
+        }
+
         uint32_t *sp = (uint32_t *) uc->uc_mcontext.arm_sp;
 
         fprintf(stderr, "CRASHLOG-STACK");
@@ -178,11 +191,31 @@ static void crash_log_install(void) {
     sigaction(SIGFPE, &sa, NULL);
 }
 
-int main(void) {
+int main(int argc, char **argv) {
+    (void) argc;
+
     crash_log_install();
     boot_mark("GUI inicio");
+
+    /* Tabla de modulos del CRASHLOG (issue #131): se arma una sola vez, antes
+     * de que la GUI pueda crashear. El md5 de las .so se lee aca; el handler
+     * despues solo escribe el bloque ya formateado. */
+    uint64_t crashlog_start = get_time();
+    crashlog_modules_init(argv[0]);
+    uint64_t crashlog_ms = get_time() - crashlog_start;
+    boot_mark("crashlog modulos");
+
     lv_init();
     boot_mark("lv_init");
+
+    const crashlog_mod_t *exe = crashlog_modules_first();
+    if (exe != NULL) {
+        LV_LOG_USER("CRASHLOG-MOD-INIT modulos=%zu exe_base=0x%08lx exe_md5=%s exe=%s (%llu ms)",
+                    crashlog_modules_count(), (unsigned long) exe->base, exe->md5, exe->path,
+                    (unsigned long long) crashlog_ms);
+    } else {
+        LV_LOG_WARN("CRASHLOG-MOD-INIT sin modulos (no se pudo leer /proc/self/maps)");
+    }
     // lv_png_init();
 
     /* Diagnostico de voz (X6200_VOICE_TEST="texto"): dice la frase y termina. Va aca, antes de
