@@ -231,15 +231,18 @@ _(se completan con la salida real de cada gate; ver el README de la evidencia)_
 
 | Qué | Cómo | Resultado |
 |---|---|---|
-| Nativo TDD | `tests/native/run_native_tests.sh` | RED 70 fallos → GREEN 18 621 comprobaciones, 0 fallos |
-| Estáticos | los 8 de `check-matrix.sh` | 8/8 |
-| Determinismo | `tests/check_harness_determinism.sh` | — |
-| Contratos | `uv run x6200-ab contracts --revision <HEAD>` | — |
-| A/B `AB-CW139` | `uv run x6200-ab compare --a 7222abae --b <HEAD>` | — |
-| Framework | ruff / format / ty / pytest `not e2e` | — |
-| ARM | cross-compile del banco | — |
-| Banco QEMU | botón + toggle + persistencia | — |
-| Hallazgos | `audita-hallazgos.sh` | — |
+| Nativo TDD | `tests/native/run_native_tests.sh` | RED 70 fallos (stub) → **GREEN 18 621 comprobaciones, 0 fallos** |
+| Estáticos | los 8 de `check-matrix.sh` | **8/8** (+ `audita-pruebas` y `curve_evidence` en `run_all_tests.sh --quick`: 12 OK, 0 fallos) |
+| Determinismo | `tests/check_harness_determinism.sh` | **PASS** (87 fixtures, PNG idénticos en 2 corridas) |
+| Contratos | `x6200-ab contracts --revision e989c040` | **PASS** 893 checks, 0 fallos, 87 escenarios |
+| Auditoría | `x6200-ab audit --revision e989c040` | 11 issues conocidos, 0 reproducidos, 0 hallazgos estructurales sobre 9 636 objetos |
+| Temas | `x6200-ab themes` | OK (contraste no-texto incluido) |
+| A/B `AB-CW139` | `x6200-ab compare --a 7222abae --b e989c040` | **PASS**, 85 escenarios **pixel-idénticos** (los 2 fixtures nuevos son altas: no existen en A) |
+| Framework | ruff / format / ty / pytest `not e2e` / e2e | limpio / limpio / limpio / **227 passed** / **13 passed** |
+| ARM | `dirclean` + `rebuild` del banco (cross), 2 veces | OK: ELF32 ARM 13 778 528 B, gate #86 3/3, md5 `ccaa60d94315` (idéntico en los dos builds) |
+| Banco QEMU | botón + toggle + persistencia | OK: `(CW 2:2)` con `Auto: Off` → `Auto: On`; `params.db` = 1 y carga 1 al reiniciar |
+| Matriz por paths | `check-matrix.sh 7222abae HEAD <worktree>` | **exit 0** (nativos, 8 estáticos, determinismo, A/B, bench) |
+| Hallazgos | `audita-hallazgos.sh docs/HALLAZGOS.md` | **exit 0**, 0 problemas de estructura (se agregó al índice el 51, que ya faltaba) |
 
 ## Invariantes
 

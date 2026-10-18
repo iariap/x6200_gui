@@ -1,0 +1,9 @@
+== arranque del GUI (linea de carga) y saves del toggle en la sesion
+[User]	(518723.789, +0)	 cfg_params_load_item: Loaded cw_decoder_auto=1 (pk=0) 	(in params.c line #52)
+[User]	(518763.826, +164)	 cfg_params_save_item: Saved cw_decoder_auto=0 (pk=0) 	(in params.c line #142)
+[User]	(518773.827, +160)	 cfg_params_save_item: Saved cw_decoder_auto=1 (pk=0) 	(in params.c line #142)
+
+== params.db (estado final: AUTO encendido)
+cw_decoder|1
+cw_tune|1
+cw_decoder_auto|1
