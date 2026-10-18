@@ -29,9 +29,8 @@ La radio está inalcanzable en **las dos redes** que usa:
 | DharmaNet 2.4 (2,4 GHz) | `192.168.18.68/24` | `192.168.18.67` | **0/2** | `No route to host` | **0** |
 
 - Evidencia cruda: [`radio-down-5ghz.txt`](radio-down-5ghz.txt), [`radio-down-2ghz.txt`](radio-down-2ghz.txt).
-- Además se reintentó SSH a `192.168.0.236` cada ~20 s desde 01:31:
-  [`poll-radio.log`](poll-radio.log) — **todas las intentonas sin respuesta** (hasta el cierre de esta
-  corrida).
+- Además se reintentó SSH a `192.168.0.236` cada ~20 s desde 01:31 hasta 01:48:
+  [`poll-radio.log`](poll-radio.log) — **todas las intentonas sin respuesta** (`fin: sin radio`).
 - La red del host está sana (gateway `192.168.0.1` responde; otros equipos de la casa también).
 - Es la **4.ª caída del #121**: la última medición viva fue a las 00:13 local (uptime 51.644 s,
   pid 7317); a las 00:33 ya no respondía. Sigue sin volver sola (el watchdog de 16 s no la levanta),
@@ -66,4 +65,4 @@ vuelva.
 | [`verifica-radio-intento.log`](verifica-radio-intento.log) | `tools/verifica-radio.sh` (la radio no responde) |
 | [`radio-down-5ghz.txt`](radio-down-5ghz.txt) | ping/SSH/scan en `192.168.0.0/24` |
 | [`radio-down-2ghz.txt`](radio-down-2ghz.txt) | ping/SSH/scan en `192.168.18.0/24` |
-| [`poll-radio.log`](poll-radio.log) | reintentos cada ~20 s (01:31→01:46) |
+| [`poll-radio.log`](poll-radio.log) | reintentos cada ~20 s (01:31→01:48, `fin: sin radio`) |
