@@ -445,3 +445,43 @@ $CC $BASEFLAGS -fanalyzer -I"$SRC" \
     -c "$SRC/lastbreath.c" -o "$OUT/lastbreath.o" || true
 
 "$OUT/lastbreath_tests"
+
+# --- HKEY put thread-safe (issue #131) ---------------------------------------
+# src/hkey.c se incluye con `#include "..."` (hkey.h, events.h, scheduler.h,
+# keyboard.h) y para un include entre comillas manda el directorio del archivo
+# que incluye, asi que los headers stub de tests/native/stubs_hkey/ no pueden
+# tapar los de src/ desde su propio directorio: el modulo real se stagea al lado
+# de una copia de los stubs, el mismo patron que clock/backlight/digital-modes/
+# SWR-Scan/restore/events (ver tests/native/test_hkey.c).
+#
+# El defecto del #131: hkey_put() lo llama el hilo de radio (radio_tick ->
+# hkey_put(pack->hkey)) y el codigo tocaba LVGL ahi mismo (lv_group_get_editing,
+# event_send_key -> lv_group_get_focused, lv_timer_create/del/set_repeat_count y
+# backlight_tick -> lv_timer_*). El test registra el hilo de cada llamada: con
+# el hkey.c de la base, hkey_stub_lvgl_foreign_calls() > 0 y falla.
+echo "== HKEY (#131): hkey_put desde el hilo de radio no toca LVGL =="
+HK_STAGE="$OUT/hkey_src"
+rm -rf "$HK_STAGE"
+mkdir -p "$HK_STAGE/lvgl" "$HK_STAGE/aether_radio/x6200_control/low"
+cp "$SRC/hkey.c" "$SRC/hkey.h" "$SRC/events.h" "$SRC/scheduler.h" "$HK_STAGE/"
+cp "$DIR/stubs_hkey/lvgl/lvgl.h" "$HK_STAGE/lvgl/"
+cp "$DIR/stubs_hkey/backlight.h" "$DIR/stubs_hkey/keyboard.h" "$HK_STAGE/"
+cp "$DIR/stubs_hkey/aether_radio/x6200_control/low/flow.h" "$HK_STAGE/aether_radio/x6200_control/low/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$HK_STAGE" -I"$DIR" \
+        "$HK_STAGE/hkey.c" "$DIR/hkey_stubs.c" "$DIR/test_hkey.c" \
+        "$DIR/test_framework.c" "$DIR/hkey_test_main.c" -o "$OUT/hkey_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$HK_STAGE" -I"$DIR" \
+        "$HK_STAGE/hkey.c" "$DIR/hkey_stubs.c" "$DIR/test_hkey.c" \
+        "$DIR/test_framework.c" "$DIR/hkey_test_main.c" -o "$OUT/hkey_tests"
+fi
+
+echo "== HKEY: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$HK_STAGE" \
+    -c "$HK_STAGE/hkey.c" -o "$OUT/hkey.o" || true
+
+"$OUT/hkey_tests"
