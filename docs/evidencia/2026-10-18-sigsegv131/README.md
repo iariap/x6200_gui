@@ -40,7 +40,7 @@ en `x6200_qa/bin-resol` y en `/tmp/qa-sw125/x6200_gui-build`; los tres md5 coinc
 ## 2. Base de carga y pila resuelta
 
 La base de `liblvgl` surge del propio par `pc`/`lr`: **`0xb6170000`**. Es la única base
-`0x1000`-alineada en la que:
+`0x1000`-alineada en la que (barrido reproducible en `verifica-base-131.py` → `base-unica.txt`):
 
 - `pc = 0xb6186ae8` cae en `_lv_event_mark_deleted+0x30`;
 - `lr = 0xb618d4f0` queda **exactamente 4 bytes después** del
@@ -148,6 +148,7 @@ themes OK; ruff/format/ty/pytest 227 + e2e 13; cross-compile ARM OK (`5f5bfb3b93
 | `modulos-rom.txt` | cierre de `NEEDED` del binario exacto con md5; base de `liblvgl` y del ejecutable |
 | `resolucion.txt` | pc/lr/pila resueltos |
 | `resuelve-pila-131.py` | script reproducible de la resolución |
+| `verifica-base-131.py`, `base-unica.txt` | barrido de bases 0x1000: sólo `0xb6170000` cumple toda la evidencia |
 | `desensamblado.txt` | desensamblado alrededor de pc, lr y las palabras de pila |
 | `banco-crash-selftest.txt` | `CRASHLOG-MOD` + `CRASHLOG-STACK` del SIGSEGV inducido en QEMU |
 | `tdd-red.log`, `tdd-green.log` | RED→GREEN del formateador y del MD5 |
