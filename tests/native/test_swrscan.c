@@ -58,6 +58,7 @@ int  swrscan_stub_delete_cb_registered(void);
 int32_t swrscan_stub_freq(int i);
 int  swrscan_stub_freq_count(void);
 int  swrscan_stub_destructed(void);
+int  swrscan_stub_chart_refreshes(void);
 void swrscan_stub_time_set(uint64_t t);
 void swrscan_stub_run_scheduler(void);
 int  swrscan_stub_pending_jobs(void);
@@ -127,9 +128,14 @@ void test_swrscan(void) {
     CHECK(swrscan_stub_started() == 1);
     CHECK(swrscan_stub_null_label() == 0);
 
+    /* #133: cerrar con el barrido corriendo NO pide repintar el chart: el objeto se esta
+     * destruyendo (issue #85, no dibujar sobre objetos muertos). */
+    int refreshes = swrscan_stub_chart_refreshes();
+
     dialog_swrscan->destruct_cb();                  /* lo que llama dialog_destruct */
     CHECK(swrscan_stub_null_label() == 0);          /* <- falla antes del fix */
     CHECK(swrscan_stub_stopped() == 1);
+    CHECK(swrscan_stub_chart_refreshes() == refreshes);
 
     /* Idempotente: el LV_EVENT_DELETE que sigue no lo apaga dos veces. */
     swrscan_stub_fire_delete();
@@ -783,11 +789,16 @@ void test_swrscan_readout(void) {
         dialog_swrscan_update(1.8f);
     }
 
+    /* #133: el Stop del operador tiene que pedir el repintado del chart; si no, la leyenda se
+     * queda en "Scanning pass 1/1 p 11/51" aunque el `get` ya diga Stopped (lo mostro el banco). */
+    int refreshes = swrscan_stub_chart_refreshes();
+
     run->press(run);                                /* Stop del operador */
 
     CHECK(strcmp(dialog_swrscan_state_text(), "Stopped (parcial)") == 0);
     CHECK(strcmp(run->label, "Run") == 0);
     CHECK(swrscan_stub_stopped() == 1);
+    CHECK(swrscan_stub_chart_refreshes() == refreshes + 1);
 
     swrscan_stub_draw();
     CHECK(strstr(swrscan_stub_last_label_text(), "n=10/51") != NULL);
@@ -921,11 +932,14 @@ void test_swrscan_remote(void) {
 
     CHECK(radio_get_state() == RADIO_SWRSCAN);      /* el barrido es el que transmite */
 
+    int refreshes = swrscan_stub_chart_refreshes();
+
     CHECK(dialog_swrscan_remote_run(false) == true);
     CHECK(swrscan_stub_stopped() == 1);
     CHECK(radio_get_state() == RADIO_RX);
     CHECK(strcmp(run->label, "Run") == 0);
     CHECK(strstr(dialog_swrscan_state_text(), "Stopped") != NULL);
+    CHECK(swrscan_stub_chart_refreshes() == refreshes + 1);   /* Stop remoto repinta */
     CHECK(swrscan_stub_freq(swrscan_stub_freq_count() - 1) == center);   /* VFO restaurado */
 
     CHECK(dialog_swrscan_remote_state(state, sizeof(state)) > 0);
@@ -996,8 +1010,11 @@ void test_swrscan_remote(void) {
     CHECK(dialog_swrscan_remote_run(true) == true);
     CHECK(swrscan_stub_started() == started_before + 1);
 
+    refreshes = swrscan_stub_chart_refreshes();
+
     dialog_swrscan->destruct_cb();                  /* lo que llama dialog_destruct */
     swrscan_stub_dialog_close();
+    CHECK(swrscan_stub_chart_refreshes() == refreshes);   /* cierre: no repinta el chart */
 
     int started_closed = swrscan_stub_started();
     int freqs_closed   = swrscan_stub_freq_count();

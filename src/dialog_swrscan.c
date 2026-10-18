@@ -255,6 +255,15 @@ static void swrscan_finished_job(void *arg) {
     button_update_label(&btn_run, "Run");
 }
 
+/* Pide el repintado del chart solo si el objeto sigue vivo. El chart se marca NULL al empezar
+ * el cierre del dialogo (swrscan_release), antes de swrscan_stop(): asi el Stop de cierre no
+ * redibuja sobre un objeto que LVGL esta por liberar (#85). */
+static void swrscan_chart_refresh(void) {
+    if (chart) {
+        event_send(chart, LV_EVENT_REFRESH, NULL);
+    }
+}
+
 /* Apaga el barrido y devuelve el estado de radio que armo (radio_stop_swrscan: potencia y modo) y
  * la frecuencia/memoria de la app. Idempotente: la llaman destruct_cb, el LV_EVENT_DELETE y el
  * Stop del operador (hilo de LVGL). */
@@ -271,11 +280,19 @@ static void swrscan_stop(void) {
     swrscan_tx_off();
     radio_set_freq((int32_t) freq_center);
     mem_load(MEM_BACKUP_ID);
+
+    /* El estado logico ya es Stopped: hay que repintar el chart o la leyenda se queda en
+     * "Scanning pass 1/1 p N/51" hasta el proximo evento (defecto del Stop, #133). */
+    swrscan_chart_refresh();
 }
 
 /* Cualquier camino que mate el dialogo pasa por aca: primero se sueltan los observadores (que
  * tocan el chart) y despues se apaga el barrido. Idempotente. */
 static void swrscan_release(void) {
+    /* El chart se va con el dialogo: marcarlo muerto ANTES de swrscan_stop() hace que el Stop
+     * de cierre no pida un repintado sobre un objeto en destruccion (#85). */
+    chart = NULL;
+
     if (freq_obs) {
         observer_delayed_del(freq_obs);
         freq_obs = NULL;
@@ -693,14 +710,14 @@ void dialog_swrscan_run_cb(button_item_t *item) {
         if (item) {
             button_update_label(item, "Run");
         }
-        event_send(chart, LV_EVENT_REFRESH, NULL);
+        swrscan_chart_refresh();
         return;
     }
 
     if (item) {
         button_update_label(item, "Stop");
     }
-    event_send(chart, LV_EVENT_REFRESH, NULL);
+    swrscan_chart_refresh();
 }
 
 void dialog_swrscan_scale_cb(button_item_t *item) {
@@ -735,7 +752,7 @@ void dialog_swrscan_span_cb(button_item_t *item) {
     subject_set_int(cfg.swrscan_span.val, span);
 
     swrscan_reset();
-    event_send(chart, LV_EVENT_REFRESH, NULL);
+    swrscan_chart_refresh();
 }
 
 /* Multipasada: cicla 1 (Quick) / 3 (Stable) / 5 (Fine). 3 y 5 quedan marcadas "*" porque su TX
@@ -807,7 +824,7 @@ void dialog_swrscan_update(float vswr) {
             /* El VFO se ordena aca: la ventana de asentamiento (SWRSCAN_SETTLE_MS) se mide desde
              * este instante, no desde el paquete que disparo el avance. Con 0 es un no-op. */
             swr_session_tuned(&session, (uint32_t) get_time());
-            event_send(chart, LV_EVENT_REFRESH, NULL);
+            swrscan_chart_refresh();
             break;
 
         case SWR_ACT_COMPLETE:
@@ -818,7 +835,7 @@ void dialog_swrscan_update(float vswr) {
             swrscan_tx_off();
             radio_set_freq((int32_t) freq_center);
             scheduler_put_noargs(swrscan_finished_job);
-            event_send(chart, LV_EVENT_REFRESH, NULL);
+            swrscan_chart_refresh();
             break;
 
         case SWR_ACT_NONE:
@@ -836,7 +853,7 @@ void dialog_swrscan_poll(void) {
         swrscan_tx_off();
         radio_set_freq((int32_t) freq_center);
         scheduler_put_noargs(swrscan_finished_job);
-        event_send(chart, LV_EVENT_REFRESH, NULL);
+        swrscan_chart_refresh();
     }
 }
 
