@@ -197,6 +197,23 @@ visual_policy_result_t visual_policy_eval(visual_policy_t *state,
                                           visual_override_t override);
 
 /* ------------------------------------------------------------------------- *
+ * Aviso visible de bateria baja (issue #121).
+ *
+ * Usa los umbrales EXISTENTES del perfil CRITICAL: avisa al entrar
+ * (VP_CRITICAL_ENTER_MV) y no repite hasta recuperar (VP_CRITICAL_EXIT_MV).
+ * Es solo informativo: no bloquea TX, no apaga nada y no cambia el presupuesto
+ * de RF. La calibracion contra el pack real del owner queda pendiente en radio;
+ * por eso el umbral es el de la politica, no un numero nuevo.
+ * ------------------------------------------------------------------------- */
+
+/* Devuelve el estado NUEVO del aviso (true = aviso vigente):
+ *   - lectura invalida o cargando: no avisa (false);
+ *   - sin aviso previo: entra en vbat_mv <= VP_CRITICAL_ENTER_MV;
+ *   - con aviso previo: sigue hasta vbat_mv >= VP_CRITICAL_EXIT_MV.
+ * La fuente externa no participa: el dato que importa es la tension del pack. */
+bool visual_policy_low_battery_warn(uint16_t vbat_mv, bool charging, bool was_warned);
+
+/* ------------------------------------------------------------------------- *
  * Tabla de caps de brillo (UI-08 incremento 3).
  *
  * El nivel es el del slider de Ajustes (src/dialog_settings.c: rango -1..9):

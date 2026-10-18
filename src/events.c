@@ -71,6 +71,11 @@ static uint32_t         drop_other = 0;
 static uint32_t         overflow_log_detail = 0;
 static uint32_t         overflow_log_tick = 0;
 
+/* Ultimo evento PROCESADO (no encolado): el registro de ultima respiracion
+ * (issue #121) lo escribe al lado del estado de la GUI. Es un entero alineado:
+ * el productor y el consumidor no necesitan el mutex de la cola para leerlo. */
+static volatile uint32_t last_event_code = 0;
+
 void event_queue_stats_reset(void) {
     queue_peak = 0;
     dropped_total = 0;
@@ -97,6 +102,7 @@ void event_init() {
     queue_write = 0;
     queue_read = 0;
     queue_pending = 0;
+    last_event_code = 0;
 
     event_queue_stats_reset();
 
@@ -124,6 +130,8 @@ void event_obj_check() {
         pthread_mutex_unlock(&queue_mux);
 
         if (item) {
+            last_event_code = item->event_code;
+
             if (!item->obj) {
                 item->obj = lv_scr_act();
             }
@@ -158,6 +166,18 @@ static const char *event_code_name(uint32_t code) {
     if (code == LV_EVENT_KEY)          return "key";
 
     return "otro";
+}
+
+uint32_t event_last_code(void) {
+    return last_event_code;
+}
+
+const char *event_last_name(void) {
+    if (last_event_code == 0) {
+        return "none";
+    }
+
+    return event_code_name(last_event_code);
 }
 
 static void note_drop(uint32_t code) {

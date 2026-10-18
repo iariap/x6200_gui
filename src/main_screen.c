@@ -152,12 +152,48 @@ static void restart_cb(lv_timer_t *t) {
  * descriptor, asi que la suya vive aca (menu-hygiene 5 y 6). */
 static buttons_page_t *app_prev_page = NULL;
 
+/* Nombre corto de la app abierta (issue #121): sin dialogos abiertos es "home".
+ * Lo escribe el dispatcher, que es el unico camino de apertura, y lo lee el
+ * registro de ultima respiracion. */
+static const char *current_app = "home";
+
 /* Apaga la app abierta: cierra su dialogo (si lo hay) y RTTY. */
 static void apps_stop() {
     dialog_destruct();
 
     rtty_set_state(RTTY_OFF);
     pannel_visible();
+    current_app = "home";
+}
+
+/* Etiqueta corta para el registro de ultima respiracion. Las apps se nombran
+ * igual que en el menu, sin espacios (el record es de una linea). */
+static const char *app_label(press_action_t action) {
+    switch (action) {
+        case ACTION_APP_RTTY:      return "RTTY";
+        case ACTION_APP_FT8:       return "FT8";
+        case ACTION_APP_SWRSCAN:   return "SWRScan";
+        case ACTION_APP_SETTINGS:  return "Settings";
+        case ACTION_APP_WSPR:      return "WSPR";
+        case ACTION_APP_NAVTEX:    return "NavTex";
+        case ACTION_APP_SSTV:      return "SSTV";
+        case ACTION_APP_WEFAX:     return "WeFax";
+        case ACTION_APP_CLUSTER:   return "Cluster";
+        case ACTION_APP_FIELD:     return "Field";
+        case ACTION_APP_JS8:       return "JS8";
+        case ACTION_APP_CW_KBD:    return "CW-Kbd";
+        case ACTION_APP_CWTRAINER: return "CWTrainer";
+        case ACTION_APP_BT:        return "BT";
+        case ACTION_APP_GPS:       return "GPS";
+        case ACTION_APP_STATUS:    return "Status";
+        case ACTION_APP_RECORDER:  return "Recorder";
+        case ACTION_APP_WIFI:      return "WiFi";
+        case ACTION_APP_EQ:        return "EQ";
+        case ACTION_APP_BANDS:     return "Bands";
+        case ACTION_APP_QTH:       return "QTH";
+        case ACTION_APP_CALLSIGN:  return "Callsign";
+        default:                   return "home";
+    }
 }
 
 /* Cierra la app abierta porque el usuario pasa a una pagina de la barra de casa
@@ -187,6 +223,8 @@ static void apps_close() {
 
 void main_screen_start_app(press_action_t app_action) {
     apps_close();
+
+    current_app = app_label(app_action);
 
     /* Abrir una app corta el asistente de sintonia fina (issue #100) y devuelve el
      * dial al punto de arranque: el asistente corre sobre la pantalla principal y no
@@ -1570,6 +1608,10 @@ void channel_overlay_show(const char *name) {
 }
 
 /* The ported app dialogs call this to close themselves */
+const char *main_screen_current_app(void) {
+    return current_app;
+}
+
 void main_screen_close_app(void) {
     /* Cierra la app abierta de verdad: su dialogo (si lo hay) y RTTY, que no es
      * un dialogo, y devuelve la barra a la pagina previa a la apertura. Es el

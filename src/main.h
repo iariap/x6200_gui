@@ -16,3 +16,7 @@
 extern rotary_t     *vol;
 extern encoder_t    *mfk;
 extern rotary_t     *mfk_inner;
+
+/* Apagado limpio del registro de ultima respiracion (issue #121): lo llama
+ * radio_poweroff() antes de apagar el equipo. */
+void lastbreath_mark_clean_now(void);

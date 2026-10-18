@@ -27,6 +27,10 @@ void main_screen_notify_rx();
 
 void main_screen_keys_enable(bool value);
 void main_screen_start_app(press_action_t page_app);
+
+/* Nombre corto de la app abierta ("home" si no hay ninguna): lo usa el
+ * registro de ultima respiracion del issue #121. */
+const char *main_screen_current_app(void);
 void main_screen_action(press_action_t action);
 
 void main_screen_lock_freq(bool lock);

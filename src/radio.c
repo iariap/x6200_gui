@@ -6,6 +6,7 @@
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
 #include "radio.h"
+#include "main.h"
 #include "btaudio.h"
 #include "gpio_safe.h"
 
@@ -16,6 +17,7 @@
 #include "params/params.h"
 #include "hkey.h"
 #include "tx_info.h"
+#include "msg.h"
 #include "info.h"
 #include "dialog_swrscan.h"
 #include "cw.h"
@@ -49,6 +51,11 @@ static uint64_t         now_time;
 static uint64_t         prev_time;
 static uint64_t         idle_time;
 static bool             mute = false;
+
+/* Aviso de bateria baja (issue #121): solo informativo, con hysteresis sobre
+ * los umbrales EXISTENTES del perfil CRITICAL de visual_policy.h. No bloquea
+ * TX, no apaga nada y no cambia el presupuesto de RF. */
+static bool             battery_low_warned = false;
 
 /* Perfil visual del pack (UI-08 incr. 2). El estado lo toca solo este hilo. */
 static visual_policy_t  visual_policy;
@@ -170,9 +177,13 @@ bool radio_tick() {
              * El override sale del parametro persistido (UI-08 incr. 5): con
              * AUTO lo decide la bateria; con un perfil fijado, ese perfil manda
              * (y el parametro NO se escribe: la politica lo lee, nunca lo toca). */
+            uint16_t vbat_mv = (uint16_t) pack->vbat * 100u;
+            uint16_t vext_mv = (uint16_t) pack->vext * 100u;
+            bool     bat_valid = (vbat_mv >= VP_VBAT_MIN_MV && vbat_mv <= VP_VBAT_MAX_MV);
+
             visual_policy_result_t visual = visual_policy_eval(&visual_policy,
-                                                               (uint16_t) pack->vbat * 100u,
-                                                               (uint16_t) pack->vext * 100u,
+                                                               vbat_mv,
+                                                               vext_mv,
                                                                pack->batcap,
                                                                pack->flag.charging,
                                                                (uint32_t) now_time,
@@ -182,6 +193,27 @@ bool radio_tick() {
             if (visual.changed) {
                 scheduler_put(apply_visual_profile, &visual.profile, sizeof(visual.profile));
             }
+
+            /* Aviso de bateria baja (issue #121), SOLO visible: un mensaje en la
+             * GUI y una linea en el log. El umbral es el que ya usa la politica
+             * visual para entrar a CRITICAL (VP_CRITICAL_ENTER_MV, 10.8 V en la
+             * tabla de fabrica); no se inventa un numero nuevo. La calibracion
+             * contra el pack real del owner queda pendiente en la radio. La
+             * salida usa VP_CRITICAL_EXIT_MV (11.3 V) para no repetir el aviso.
+             * Con fuente externa cargando no se avisa (es esperable), pero se
+             * limpia el estado si la lectura se recupera. */
+            bool low = visual_policy_low_battery_warn(vbat_mv, pack->flag.charging,
+                                                      battery_low_warned);
+
+            if (low && !battery_low_warned) {
+                LV_LOG_WARN("BATTERY-LOW %.1f V <= %.1f V (umbral existente de CRITICAL; calibrar en radio)",
+                            vbat_mv / 1000.0f, VP_CRITICAL_ENTER_MV / 1000.0f);
+                msg_schedule_text_fmt("Battery low: %.1f V", vbat_mv / 1000.0f);
+            } else if (!low && battery_low_warned && bat_valid) {
+                msg_schedule_text_fmt("Battery recovered: %.1f V", vbat_mv / 1000.0f);
+            }
+
+            battery_low_warned = low;
         }
         // printf("sql_mute=%d sql_fm_mute=%d\n", pack->flag.sql_mute, pack->flag.sql_fm_mute);
         // printf("flags %08x\n", pack->flag);
@@ -832,6 +864,10 @@ void radio_set_charger(radio_charger_t v) {
 }
 
 void radio_poweroff() {
+    /* Apagado por software = salida limpia: el proximo arranque no tiene que
+     * reportar LASTBREATH (issue #121). */
+    lastbreath_mark_clean_now();
+
     if (params.charger == RADIO_CHARGER_SHADOW) {
         WITH_RADIO_LOCK(x6200_control_charger_set(true));
     }

@@ -6,6 +6,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     waterfall.c rotary.c keyboard.c encoder.c kbd_caps.c bt_state.c btaudio.c
     events.c msg.c msg_tiny.c keypad.c
     crashlog_modules.c
+    lastbreath.c
     hkey.c clock.c info.c
     meter.c band_info.c tx_info.c
     audio.c mfk.cpp cw.cpp cw_decoder.c pannel.c
