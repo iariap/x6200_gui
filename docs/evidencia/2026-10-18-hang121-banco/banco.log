@@ -1,0 +1,6 @@
+== banco #121: LASTBREATH ==
+binario: 2a0be37fdb293383b605316a9881c932  /t/usr/sbin/x6200_gui
+qemu-cpu: cortex-a7
+chroot: /home/pablo/desa/x6200/.vfix3
+contenedor: banco-apps Up 48 seconds
+captura: banco-lastbreath.png (20093 bytes)

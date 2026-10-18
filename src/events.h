@@ -152,3 +152,8 @@ typedef struct {
 void     event_queue_stats_get(event_queue_stats_t *out);
 uint32_t event_queue_drops_of(uint32_t event_code);
 void     event_queue_stats_reset(void);
+
+/* Ultimo evento procesado por el loop de la GUI (issue #121): numero y nombre
+ * corto. Sin heap: el nombre es una constante. */
+uint32_t    event_last_code(void);
+const char *event_last_name(void);

@@ -737,4 +737,22 @@ void test_visual_policy(void) {
                            visual_policy_override_from_param(VP_PARAM_AUTO));
     CHECK(!r.manual);
     CHECK(r.profile == VP_CRITICAL);                   /* AUTO: manda el pack */
+
+    /* --- Aviso visible de bateria baja (issue #121): usa los umbrales que ya
+     * tiene la politica, no inventa otros, y no avisa mientras carga. El pack
+     * medido en el issue estaba en 8.6 V: ahi el aviso tiene que estar. --- */
+    CHECK(!visual_policy_low_battery_warn(12600, false, false));
+    CHECK(!visual_policy_low_battery_warn(VP_CRITICAL_ENTER_MV + 1, false, false));
+    CHECK(visual_policy_low_battery_warn(VP_CRITICAL_ENTER_MV, false, false));
+    CHECK(visual_policy_low_battery_warn(8600, false, false));
+
+    /* Con aviso vigente sigue hasta el umbral de salida (sin repetir). */
+    CHECK(visual_policy_low_battery_warn(VP_CRITICAL_EXIT_MV - 1, false, true));
+    CHECK(!visual_policy_low_battery_warn(VP_CRITICAL_EXIT_MV, false, true));
+
+    /* Cargando o lectura invalida: no hay aviso. */
+    CHECK(!visual_policy_low_battery_warn(8600, true, false));
+    CHECK(!visual_policy_low_battery_warn(8600, true, true));
+    CHECK(!visual_policy_low_battery_warn(0, false, false));
+    CHECK(!visual_policy_low_battery_warn(VP_VBAT_MAX_MV + 1, false, false));
 }

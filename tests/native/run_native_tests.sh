@@ -420,3 +420,28 @@ $CC $BASEFLAGS -fanalyzer -I"$SRC" \
     -c "$SRC/crashlog_modules.c" -o "$OUT/crashlog_modules.o" || true
 
 "$OUT/crashlog_modules_tests"
+
+# --- Last breath (issue #121) -----------------------------------------------
+# La GUI escribe cada N segundos una linea con uptime, estado de radio, app, TX,
+# bateria y ultimo evento; al arrancar reporta la anterior como LASTBREATH si no
+# hubo apagado limpio. El modulo es puro (solo libc): el test fija el formato
+# determinista, la escritura atomica (tmp + rename) y la degradacion sin fs.
+echo "== Last breath (#121): formato, rename atomico y LASTBREATH =="
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$SRC" \
+        "$SRC/lastbreath.c" "$DIR/test_lastbreath.c" \
+        "$DIR/test_framework.c" "$DIR/lastbreath_test_main.c" -o "$OUT/lastbreath_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$SRC" \
+        "$SRC/lastbreath.c" "$DIR/test_lastbreath.c" \
+        "$DIR/test_framework.c" "$DIR/lastbreath_test_main.c" -o "$OUT/lastbreath_tests"
+fi
+
+echo "== Last breath: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$SRC" \
+    -c "$SRC/lastbreath.c" -o "$OUT/lastbreath.o" || true
+
+"$OUT/lastbreath_tests"

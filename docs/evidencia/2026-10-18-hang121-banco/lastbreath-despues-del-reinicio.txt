@@ -1,0 +1,1 @@
+lastbreath v=1 up_s=487288 up_ms=487288320 clean=0 boot=12ad7621 radio=RX tx=0 app=home bat=na ev=0/4/0 last=msg-update wus=3197 msg=X6200 de R1CBU v0.1.2-lu2dsx

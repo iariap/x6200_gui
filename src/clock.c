@@ -31,7 +31,7 @@ static lv_obj_t         *obj;
  * DEBAJO del valor. NULL cuando no hay familia segmentada, que es el caso en el que
  * no se crea. */
 static lv_obj_t         *shadow;
-static pthread_mutex_t  power_mux;
+static pthread_mutex_t  power_mux = PTHREAD_MUTEX_INITIALIZER;
 
 static clock_state_t    state = CLOCK_TIME;
 static uint64_t         timeout;
@@ -161,7 +161,9 @@ static void show_time() {
 }
 
 lv_obj_t * clock_init(lv_obj_t * parent) {
-    pthread_mutex_init(&power_mux, NULL);
+    /* power_mux se inicializa estaticamente (PTHREAD_MUTEX_INITIALIZER): el
+     * registro de ultima respiracion puede leer la muestra desde el arranque,
+     * antes de que exista la pantalla. */
 
     /* El fondo del reloj (clock_style.bg_img_src: la imagen del panel de arriba) lo
      * dibuja la SOMBRA, que se crea primero y queda debajo. Si lo dibujara el valor
@@ -202,6 +204,22 @@ void clock_update_power(float ext, float bat, uint8_t cap, bool charge_flag) {
     cap_bat = cap;
     charging = charge_flag;
     pthread_mutex_unlock(&power_mux);
+}
+
+bool clock_get_power(clock_power_t *out) {
+    if (out == NULL) {
+        return false;
+    }
+
+    pthread_mutex_lock(&power_mux);
+    out->ext_v    = v_ext;
+    out->bat_v    = v_bat;
+    out->cap      = cap_bat;
+    out->charging = charging;
+    out->valid    = v_bat > 0.0f;
+    pthread_mutex_unlock(&power_mux);
+
+    return out->valid;
 }
 
 void clock_set_view(clock_view_t x) {

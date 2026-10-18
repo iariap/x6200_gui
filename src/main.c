@@ -52,6 +52,8 @@
 #include "wifi.h"
 #include "usb_devices.h"
 #include "crashlog_modules.h"
+#include "lastbreath.h"
+#include "clock.h"
 
 #define DISP_BUF_SIZE (800 * 480 * 4)
 
@@ -100,6 +102,185 @@ void boot_mark(const char *etapa) {
         fprintf(b, "  %-14s %.1f s de uptime  (+%.2f s)\n", etapa, up, etapa_s);
         fclose(b);
     }
+}
+
+/* --- Ultima respiracion (issue #121) -----------------------------------------
+ * Cuatro caidas del equipo entero no dejaron evidencia: el log de la GUI vive
+ * en tmpfs y solo se archiva en una salida ordenada, asi que un corte duro se
+ * lo lleva. Cada `lastbreath_period_ms` se escribe una linea chica (tmp+rename)
+ * con uptime, estado de radio, app, TX, bateria y ultimo evento; al arrancar,
+ * si la anterior no fue una salida limpia, se loguea `LASTBREATH ...`.
+ *
+ * El camino de escritura NO usa heap: la linea se arma en un buffer de pila y
+ * se escribe con open/write/fdatasync/rename (src/lastbreath.c). Si el path no
+ * existe (sin particion DATA, banco sin /mnt) se avisa una vez y se sigue.
+ * Configurable para el banco: X6200_LASTBREATH_SECS (1..3600, default 10) y
+ * X6200_LASTBREATH_PATH (default /mnt/lastbreath). */
+
+static const char      *lastbreath_path = "/mnt/lastbreath";
+static uint32_t         lastbreath_period_ms = 10 * 1000;
+static uint64_t         lastbreath_next_ms = 0;
+static lastbreath_state_t lastbreath_last;
+static uint32_t         lastbreath_prev_write_us = 0;
+static bool             lastbreath_enabled = false;
+static bool             lastbreath_write_warned = false;
+
+static uint64_t lastbreath_now_us(void) {
+    struct timespec ts;
+
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+        return get_time() * 1000ULL;
+    }
+
+    return (uint64_t) ts.tv_sec * 1000000ULL + (uint64_t) ts.tv_nsec / 1000ULL;
+}
+
+static const char *radio_state_name(radio_state_t state) {
+    switch (state) {
+        case RADIO_RX:        return "RX";
+        case RADIO_TX:        return "TX";
+        case RADIO_ATU_START: return "ATU_START";
+        case RADIO_ATU_WAIT:  return "ATU_WAIT";
+        case RADIO_ATU_RUN:   return "ATU_RUN";
+        case RADIO_SWRSCAN:   return "SWRSCAN";
+        case RADIO_POWEROFF:  return "POWEROFF";
+        case RADIO_OFF:       return "OFF";
+    }
+
+    return "unknown";
+}
+
+static bool radio_state_is_tx(radio_state_t state) {
+    return state == RADIO_TX || state == RADIO_ATU_START || state == RADIO_ATU_WAIT ||
+           state == RADIO_ATU_RUN || state == RADIO_SWRSCAN;
+}
+
+static void lastbreath_state_fill(lastbreath_state_t *s) {
+    lastbreath_state_init(s);
+
+    s->uptime_ms = lastbreath_read_uptime_ms();
+    lastbreath_read_boot_id(s->boot, sizeof(s->boot));
+
+    radio_state_t radio = radio_get_state();
+
+    snprintf(s->radio, sizeof(s->radio), "%s", radio_state_name(radio));
+    s->tx = radio_state_is_tx(radio);
+
+    snprintf(s->app, sizeof(s->app), "%s", main_screen_current_app());
+    snprintf(s->last_event, sizeof(s->last_event), "%s", event_last_name());
+    snprintf(s->msg, sizeof(s->msg), "%s", msg_last_text());
+
+    clock_power_t power;
+
+    if (clock_get_power(&power) && power.valid) {
+        s->bat_valid = true;
+        s->bat_mv    = (int32_t) (power.bat_v * 1000.0f + 0.5f);
+        s->ext_mv    = (int32_t) (power.ext_v * 1000.0f + 0.5f);
+        s->bat_pct   = power.cap;
+        s->charging  = power.charging;
+    }
+
+    event_queue_stats_t events;
+
+    event_queue_stats_get(&events);
+    s->ev_pending = events.pending;
+    s->ev_peak    = events.peak;
+    s->ev_dropped = events.dropped;
+
+    /* Costo auto-medido: el registro muestra la duracion del write anterior.
+     * La variable es aparte porque state_init() acaba de borrar el struct. */
+    s->prev_write_us = lastbreath_prev_write_us;
+}
+
+static void lastbreath_tick(void) {
+    if (!lastbreath_enabled) {
+        return;
+    }
+
+    uint64_t now = get_time();
+
+    if (now < lastbreath_next_ms) {
+        return;
+    }
+
+    lastbreath_state_fill(&lastbreath_last);
+
+    char   line[LASTBREATH_LINE_MAX];
+    size_t len = lastbreath_format(line, sizeof(line), &lastbreath_last);
+
+    uint64_t start = lastbreath_now_us();
+    int      rc    = lastbreath_write_atomic(lastbreath_path, line, len);
+    uint64_t took  = lastbreath_now_us() - start;
+
+    if (rc == 0) {
+        lastbreath_prev_write_us = took > UINT32_MAX ? UINT32_MAX : (uint32_t) took;
+        lastbreath_last.prev_write_us = lastbreath_prev_write_us;
+        lastbreath_write_warned = false;
+    } else if (!lastbreath_write_warned) {
+        lastbreath_write_warned = true;
+        LV_LOG_WARN("LASTBREATH sin escritura en %s: se sigue sin registro (issue #121)", lastbreath_path);
+    }
+
+    lastbreath_next_ms = now + lastbreath_period_ms;
+}
+
+/* Salida limpia: el proximo arranque no reporta LASTBREATH. Se apaga el registro
+ * para que un tick tardio no vuelva a escribir clean=0 antes del corte. */
+void lastbreath_mark_clean_now(void) {
+    if (!lastbreath_enabled) {
+        return;
+    }
+
+    lastbreath_state_fill(&lastbreath_last);
+    (void) lastbreath_mark_clean(lastbreath_path, &lastbreath_last);
+    lastbreath_enabled = false;
+}
+
+static void lastbreath_init_from_env(void) {
+    const char *path = getenv("X6200_LASTBREATH_PATH");
+
+    if (path != NULL && path[0] != '\0') {
+        lastbreath_path = path;
+    }
+
+    const char *secs = getenv("X6200_LASTBREATH_SECS");
+
+    if (secs != NULL && secs[0] != '\0') {
+        long value = strtol(secs, NULL, 10);
+
+        if (value >= 1 && value <= 3600) {
+            lastbreath_period_ms = (uint32_t) value * 1000u;
+        } else {
+            LV_LOG_WARN("X6200_LASTBREATH_SECS=%s fuera de 1..3600: se usa 10", secs);
+        }
+    }
+
+    char report[LASTBREATH_LINE_MAX * 2];
+    lastbreath_boot_t boot = lastbreath_boot(lastbreath_path, report, sizeof(report));
+
+    if (boot == LASTBREATH_BOOT_UNCLEAN) {
+        size_t len = strlen(report);
+
+        if (len > 0 && report[len - 1] == '\n') {
+            report[len - 1] = '\0';
+        }
+
+        /* Una sola linea para el triage: que habia cuando el equipo dejo de
+         * responder. */
+        LV_LOG_WARN("%s", report);
+    } else if (boot == LASTBREATH_BOOT_CLEAN) {
+        LV_LOG_USER("LASTBREATH salida limpia del run anterior (%s)", lastbreath_path);
+    } else if (boot == LASTBREATH_BOOT_ERROR) {
+        LV_LOG_WARN("LASTBREATH no se pudo leer %s (issue #121)", lastbreath_path);
+    }
+}
+
+static void lastbreath_start(void) {
+    lastbreath_enabled = true;
+    lastbreath_next_ms = 0;
+    lastbreath_tick();
+
+    atexit(lastbreath_mark_clean_now);
 }
 
 /* Tiempo de arranque: se anota cuando la GUI ya esta dibujando, para poder medir (boot.log) */
@@ -216,6 +397,12 @@ int main(int argc, char **argv) {
     } else {
         LV_LOG_WARN("CRASHLOG-MOD-INIT sin modulos (no se pudo leer /proc/self/maps)");
     }
+
+    /* Registro de ultima respiracion (issue #121): leer el del run anterior
+     * antes de que el primer tick lo pise. Si no fue una salida limpia, queda
+     * una linea LASTBREATH en este log. */
+    lastbreath_init_from_env();
+    boot_mark("lastbreath init");
     // lv_png_init();
 
     /* Diagnostico de voz (X6200_VOICE_TEST="texto"): dice la frase y termina. Va aca, antes de
@@ -415,11 +602,16 @@ int main(int argc, char **argv) {
     voice_ready();        /* la GUI ya esta en pie: desde aca la voz anuncia */
     static bool boot_time_anotado = false;
 
+    /* Primer registro de esta corrida (clean=0) y latido cada
+     * lastbreath_period_ms. */
+    lastbreath_start();
+
     while (1) {
         loop_start_time = get_time();
         observer_delayed_notify_all();
         event_obj_check();
         scheduler_work();
+        lastbreath_tick();
         next_loop_time = lv_timer_handler() + loop_start_time;
 
         if (!boot_time_anotado) {

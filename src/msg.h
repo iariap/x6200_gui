@@ -25,3 +25,6 @@ void msg_update_text_fmt(const char * fmt, ...);
 /// @param fmt
 /// @param
 void msg_schedule_text_fmt(const char * fmt, ...);
+
+/// @brief Ultimo texto que la GUI mostro (issue #121); "none" si no hubo
+const char * msg_last_text(void);

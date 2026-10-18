@@ -259,6 +259,18 @@ void visual_policy_spectrum_apply(visual_profile_t profile) {
     spectrum_set_refresh_period(saving ? VP_SPECTRUM_ECO_PERIOD : 1);
 }
 
+bool visual_policy_low_battery_warn(uint16_t vbat_mv, bool charging, bool was_warned) {
+    if (charging || vbat_mv < VP_VBAT_MIN_MV || vbat_mv > VP_VBAT_MAX_MV) {
+        return false;
+    }
+
+    if (was_warned) {
+        return vbat_mv < VP_CRITICAL_EXIT_MV;
+    }
+
+    return vbat_mv <= VP_CRITICAL_ENTER_MV;
+}
+
 void visual_policy_brightness_apply(visual_profile_t profile, int16_t user_setting) {
     /* El perfil fija el cap vigente (el que veran los rewrites del tick/timer) y
      * el nivel sale del MISMO clamp que esos rewrites: el recorte del apply y el
