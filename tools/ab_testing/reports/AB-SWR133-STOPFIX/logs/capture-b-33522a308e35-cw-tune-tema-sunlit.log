@@ -1,0 +1,6 @@
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #567)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #573)
+[Error]	(0.010, +10)	 _lv_inv_area: detected modifying dirty areas in render 	(in lv_refr.c line #213)
+ui_harness: cw-tune-tema-sunlit -> /out/cw-tune-tema-sunlit.png (239433 bytes), flushes=7, flushed_pixels=1259680
