@@ -36,6 +36,11 @@ static int stub_started;
 static int stub_stopped;
 static int stub_destructed;
 
+/* #133 (defecto de repintado del Stop): cuantos LV_EVENT_REFRESH recibio el chart. El dialogo
+ * tiene que pedir el repintado al detener el barrido para que la leyenda deje de decir
+ * "Scanning"; al cerrarse no tiene que pedirlo (el objeto se esta destruyendo). */
+static int stub_chart_refresh;
+
 /* #125: el texto que el boton de pasadas pasaria a mostrar cuando su callback pide el repintado
  * (el callback tiene que pedirlo a mano: `passes_requested` no es un subject). */
 static char stub_refreshed_label[32];
@@ -117,6 +122,7 @@ int swrscan_stub_null_label(void) { return stub_null_label; }
 int swrscan_stub_started(void)    { return stub_started; }
 int swrscan_stub_stopped(void)    { return stub_stopped; }
 int swrscan_stub_destructed(void) { return stub_destructed; }
+int swrscan_stub_chart_refreshes(void) { return stub_chart_refresh; }
 int32_t swrscan_stub_freq(int i)      { return stub_freqs[i]; }
 int     swrscan_stub_freq_count(void) { return stub_freq_count; }
 
@@ -125,6 +131,7 @@ void swrscan_stub_reset(void) {
     stub_started    = 0;
     stub_stopped    = 0;
     stub_destructed = 0;
+    stub_chart_refresh = 0;
     stub_freq_count = 0;
     stub_pending_job  = NULL;
     stub_pending_jobs = 0;
@@ -426,9 +433,13 @@ static struct _lv_group_t group;
 lv_group_t *keyboard_group = &group;
 
 void event_send(lv_obj_t *obj, lv_event_code_t event_code, void *param) {
-    (void)obj;
-    (void)event_code;
     (void)param;
+
+    /* El chart es el objeto sobre el que se registra DRAW_MAIN_END (draw_obj). Cuenta solo sus
+     * refresh: es lo que hace que LVGL vuelva a correr draw_cb y repinte estado/curva. */
+    if (event_code == LV_EVENT_REFRESH && obj == draw_obj) {
+        stub_chart_refresh++;
+    }
 }
 
 void split_freq(int32_t freq, uint16_t *mhz, uint16_t *khz, uint16_t *hz) {

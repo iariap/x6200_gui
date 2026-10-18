@@ -1,0 +1,20 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output: ok
+  chroot /tmp/opencode/vfix3-swr133: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  buildroot: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  limpiando la GUI (dirclean): el rebuild reusa una copia propia del repo
+  reconstruyendo la GUI: RECONSTRUIR=si
+OK: /tmp/opencode/vfix3-swr133/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13757724 B, 3/3 marcas)
+  respuesta: {"t":"ok"}
+  captura: /tmp/opencode/bench-swr133-stopfix.png (349 colores distintos)
+  version: 33522a30 fix(swrscan): el Stop repinta el chart (Stopped, cu
+  fuente: md5 3340b37a956a (src/ + lvgl/src)
+  binario: md5 991bb0e2fabc   qemu-cpu: cortex-a7
+  captura util (24831 bytes)
