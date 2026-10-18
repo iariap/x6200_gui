@@ -74,6 +74,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 53. [El auto-ajuste de peak beta no puede variar con la WPM: el bloque de FFT es mas largo que medio punto](#53-el-auto-ajuste-de-peak-beta-no-puede-variar-con-la-wpm-el-bloque-de-fft-es-mas-largo-que-medio-punto)
 54. [La linea central del waterfall del #140: el defecto de alto 0 no existe en el trunk](#54-la-linea-central-del-waterfall-del-140-el-defecto-de-alto-0-no-existe-en-el-trunk)
 55. [La linea central del waterfall del #140: la geometria estaba, el color no (medido por tema)](#55-la-linea-central-del-waterfall-del-140-la-geometria-estaba-el-color-no-medido-por-tema)
+56. [El SIGSEGV del #131: el hilo de radio tocaba LVGL con las teclas del panel (hkey_put)](#56-el-sigsegv-del-131-el-hilo-de-radio-tocaba-lvgl-con-las-teclas-del-panel-hkey_put)
 
 ---
 
@@ -751,6 +752,7 @@ con lo que haría falta para fundarlas.
 | `speaker-test` "corre sin error y sin sonido" (12/10) | No quedó la captura y hoy no se puede repetir con la GUI andando | Parar la GUI, correrlo y pegar la salida |
 | "La app de SWR Scan se cierra sola al terminar el barrido" (#119, defecto 2) | El cierre no está en el código del fin de barrido (§46) y no quedó el log de la GUI de esa corrida; el candidato (el `app off` del control remoto, que sí se acepta con el barrido transmitiendo) está fundado **en el código**, no en esa corrida | Correr el barrido con el log de la GUI a mano (`/tmp/x6200_log.txt` → `/mnt/app_logs/`), el `pid` de la GUI y el estado `app` del control remoto; y revisar el script de la corrida por si manda `{"cmd":"app","text":"off"}` |
 | El bucle de reinicio del CW Trainer (issue #51) se rearma en el arranque "por sí solo" | El banco no tiene camino de audio y el chroot no estaba armado, así que no se pudo medir la cadencia en el equipo | Medir en la radio el `PID` de la GUI por 150 s tras un reset (issue #15), con `key_train` en `params.db` |
+| El paso exacto por el que `hkey_put()` fuera de hilo corrompió `event_head` (issue #131), y que el trigger sea sólo el cambio de filtro | Está fundado que `hkey_put()` corría en el hilo de radio y tocaba LVGL (§56), pero **no** la escritura concreta que deja el frame muerto en la lista de eventos: el banco no tiene flow y no ejecuta `radio_tick`, y la corrupción necesita concurrencia real. Los dos crashes tienen el mismo `pc`/`lr` con contextos distintos (`on_vfo_mode_change` y `on_high_filter_change`) | Correr en la radio la receta de §56 (200 ciclos de tecla + filtro + modo + banda) con el fix y mirar `CRASHLOG`; si vuelve, guardar el log vivo completo y `/mnt/lastbreath` del momento |
 
 **Estimaciones explícitas** (dichas como tales, no son hallazgos): el "~20 s" del banco rápido y el
 "~3 s" del diagnóstico de voz no se cronometraron con precisión; y el "~1 s" de daemon + enlace
@@ -3026,3 +3028,116 @@ goldens quedan byte-identicas: se re-baselinearon 2 goldens (`main-espectro-agua
 
 Evidencia completa (renders del arnes, banco QEMU, radio, mediciones, crops x4):
 `docs/evidencia/2026-10-18-wf140-contraste/`.
+
+## 56. El SIGSEGV del #131: el hilo de radio tocaba LVGL con las teclas del panel (hkey_put)
+
+**Sintoma** (issue #131, reabierto el 18/10 22:06): tercer `SIGSEGV` con la misma firma. El
+`CRASHLOG` medido en la radio dice `sig=11 fallo=0x15 pc=0xb6186ae8 lr=0xb618d4f0` y las primeras
+palabras de la pila son `b618db48 00000000 b6196128`, iguales a las de los dos crashes anteriores
+(que tenian `fallo=0xf363`, o sea el mismo `pc`/`lr` y otro puntero roto). El contexto es
+`on_high_filter_change: Radio set filter_high=3000` con `filter_low=200` y `Saved band=7`, y el
+`LASTBREATH` del momento es `radio=RX tx=0 app=home bat_mv=8700`.
+
+Con `liblvgl` `cd30ca6c58ad` y base de carga `0xb6170000` (resuelto en #137), `pc` cae en
+`_lv_event_mark_deleted+0x30` y `lr` en `lv_obj_destructor+0x10`; la pila resuelve
+`obj_del_core -> _lv_obj_destruct -> lv_obj_destructor -> _lv_event_mark_deleted`. En
+`lvgl/src/core/lv_event.c`, `event_head` es un estatico (linea 37) que **solo** se asigna dentro de
+`lv_event_send` (lineas 72 y 78) y que `_lv_event_mark_deleted` recorre sin lock (lineas 151-158):
+la lista de eventos quedo apuntando a un frame de pila muerto.
+
+**La hipotesis del ticket no se sostiene tal cual**. Se auditaron todas las suscripciones
+**no diferidas** del camino banda/filtro/modo (`subject_add_observer*` y `->subscribe`, sin
+`ObserverDelayed`): ninguna llama a LVGL. Todas copian escalares, escriben SQLite o hablan con la
+SDK de la radio:
+
+| Registro (codigo) | Observer | Hilo | Toca LVGL? | Que toca |
+|---|---|---|---|---|
+| `src/cfg/band.c:109-125` | `on_ab_*`, `on_band_id_change`, `on_vfo_change`, `on_cur_mode_change` | el que llama a `set()` | **no** | guarda/carga params en SQLite y copia valores a los sujetos `cfg_cur.*` |
+| `src/cfg/mode.c:65-91` | `on_cur_mode_change`, `on_cur_filter_*`, `update_cur_low/high_filter`, `update_real_filters` | el que llama a `set()` | **no** | recalcula low/high/bw y los filtros reales; SQLite al cargar |
+| `src/cfg/cfg.c:210,409-423` | `on_item_change`, `update_sql_level`, `update_fft_width` | el que llama a `set()` | **no** | escribe el item en params/SQLite y actualiza escalares |
+| `src/cfg/atu.c:66-68` | `update_atu_network` | el que llama a `set()` | **no** | cache en RAM, SQLite y sujetos `atu_network.*` |
+| `src/radio.c:505-525` | `on_vfo_*`, `on_low/high_filter_change` | el que llama a `set()` | **no** | `x6200_control_*` (SDK) y `LV_LOG_USER` |
+| `src/spectrum.c:317-328`, `src/waterfall.c:92-109`, `src/band_info.c:158`, `src/dsp.cpp:152-153`, `src/cw.cpp:85-90`, `src/cat.cpp:1020` | observers de ancho de FFT, filtro real, modo, grilla y frecuencia | el que llama a `set()` | **no** | escalares, buffers de PSD/waterfall y la cola del CAT |
+
+El mecanismo (`src/cfg/subjects.cpp:169-173`) notifica en el hilo que llama a `set()`, sin lock
+sobre la lista de observers; por eso la auditoria se hizo observer por observer y no por el
+mecanismo. En esta app esos `set()` del camino banda/filtro/modo llegan del hilo de radio
+(`radio_tick`/SDK), del hilo de LVGL (dialogos, botones, rueda) o del hilo del CAT: por eso la
+columna que decide es **toca LVGL?**, y en las 6 filas la respuesta es no.
+
+**El defecto que si se fundo** es otro, en el mismo camino de teclas del panel: `hkey_put()` (base
+`4e000bca`, `src/hkey.c:44`; el mismo cuerpo que tenia en `94c2c6ab` — el trunk no toco
+`src/hkey.c` en el medio) lo llama `radio_tick()` desde el hilo de radio (`src/radio.c:290`,
+`hkey_put(pack->hkey)`) y su cuerpo tocaba LVGL ahi mismo:
+
+- `lv_group_get_editing()` para las teclas numericas;
+- `event_send_key()` (`src/events.c:340-352`), que lee `lv_group_get_focused()`;
+- `backlight_tick()` (`src/backlight.c:60-80`), que hace `lv_timer_create`, `lv_timer_reset`,
+  `lv_timer_set_period` y `lv_timer_set_repeat_count`;
+- el timer del long-press (`lv_timer_del/create/set_repeat_count`) y la mutacion de
+  `event.state`/`timer`, compartidos con el hilo de LVGL.
+
+`hkey_put()` tiene un solo llamador en `src/` (verificado con
+`grep -rn "hkey_put" src`): `radio.c:290`. El resto del camino de `radio_tick` ya estaba diferido:
+`msg_schedule_text_fmt` y `notify_tx`/`notify_rx` usan `event_send` (cola con mutex),
+`tx_info_update`, `dialog_swrscan_update` y `apply_visual_profile` usan `scheduler_put*`,
+`clock_update_power` y `visual_policy_eval` no tocan LVGL, y `dsp_samples` es DSP.
+
+**Fix** (commit `7f36f607`, `src/hkey.c`; el mismo arbol de `src/hkey.c` que `5e425df7` — el rebase
+sobre el trunk cambio el padre, no el fix): `hkey_put()` solo publica la tecla con
+`scheduler_put(hkey_entry, &key, sizeof key)` y el cuerpo (`hkey_process`) corre en el hilo de
+LVGL. Un `atomic_bool key_armed` (lo prende el productor al publicar una tecla y lo apaga el
+consumidor al procesar el release) evita encolar los ceros que manda el flow cuando no hay tecla
+apretada: la maquina de estados conserva su semantica exacta sin generar trabajo por tick.
+`hkey_event()` ademas chequea el `malloc` que `-fanalyzer` marcaba en el archivo tocado. No cambia
+nada visible.
+
+**Verificacion** (todo en `docs/evidencia/2026-10-18-lvgl131/`):
+
+- **TDD nativo**: `tests/native/test_hkey.c` corre el modulo real contra stubs que registran el
+  hilo de cada llamada LVGL. Con el `hkey.c` de la base: `92 comprobaciones, 18 fallos` (exit 1);
+  con el fix: `92 comprobaciones, 0 fallos` (exit 0). El caso cubre diferimiento, press/release,
+  long press, cero sin press, digito con y sin edicion, y orden FIFO.
+- **Suite nativa completa** (`tests/native/run_native_tests.sh`): exit 0, con el bloque nuevo y
+  `-fanalyzer` sin observaciones sobre `hkey.c`.
+- **8/8 chequeos estaticos** de la app y `bash -n` del script tocado: exit 0.
+- **Cross-compile ARM** con el toolchain de buildroot: build completo y linkeado (`100% Built
+  target x6200_gui`); los unicos warnings son 3 preexistentes en `src/widgets/lv_waterfall.c`
+  (archivo no tocado). El binario que corrio en el banco es `ELF32 ARM`, 14.293.044 B,
+  `md5 9042691874a754782601624cd4c4acc3` (`banco-smoke.log`). **Estos dos gates (ARM y banco) son
+  del arbol pre-rebase `5e425df7`** y no se repitieron sobre el rebase: el `src/hkey.c` del fix es
+  identico en `7f36f607`, pero la base cambio (el trunk toca `src/theme.c`, `waterfall.c`, `cw.cpp`),
+  asi que ese `md5` es del binario de aquel arbol, no del commit de esta rama. Repetirlos pide el
+  host del owner (chroot + buildroot), no el runner.
+- **A/B `AB-LVGL131`** (`4e000bca` contra `7f36f607`, **re-generado tras el rebase**): PASS,
+  87 escenarios **pixel-identicos** y 893 chequeos de contrato.
+- **Determinismo del arnes de UI**: PASS (PNG identicos por fixture; el header del log dice
+  `revision 7f36f607`). **Temas**: OK (90 pares, 0 fallos).
+- **Matriz de la app** (`scripts/apps/x6200/check-matrix.sh`): exit 0. El banco QEMU figura
+  **BLOCKED** porque el runner no tiene el chroot ni el arbol de buildroot en las rutas por
+  defecto; se corrio aparte con `CHROOT`/`BUILDROOT` del host del owner (ver abajo).
+- **Banco QEMU** (ARM real emulado, sin radio): smoke OK y **95 ordenes** de banda/filtro/modo
+  (5 rondas de 19, `band`/`filter`/`mode` por el socket de control), **0 rechazadas**, GUI viva y
+  **sin `crash.txt`**. Binario probado: `md5 9042691874a7`.
+
+**Lo que el banco no puede probar, y receta para la radio**: el banco no tiene flow, asi que no
+corre `radio_tick()` ni `hkey_put()`. La validacion dinamica del fix es en la radio, con el binario
+de este commit:
+
+1. desplegar con `tools/prueba-gui-en-radio.sh` (pasa antes por `verifica-firmware-port.py`) y
+   confirmar el md5 que corre;
+2. con la GUI en home y la radio en RX, repetir 200 veces este ciclo, sin tocar el control
+   remoto: **tecla FIL** (abre/cierra el filtro), **rueda TUNE** para mover el filtro bajo y alto,
+   **tecla MODE** (LSB -> USB -> CW -> AM -> LSB) y **tecla BAND / app Bands** para cambiar de
+   banda; entre paso y paso, apretar **F1** y **F2** (las dos van por `hkey_put`);
+3. al terminar cada ronda de 20 ciclos, verificar `CRASHLOG` 0 en el log vivo y que el `pid` de
+   `x6200_gui` sea el mismo (`pidof x6200_gui`); si cambio, la GUI se relanzo;
+4. cerrar con `tools/verifica-radio.sh` (no tiene que reportar senales de crash) y leer
+   `/mnt/lastbreath`: la linea tiene que mostrar `clean=1` tras el apagado ordenado; si hay
+   `LASTBREATH` al arrancar, el corte fue sucio.
+
+**Sin fundar (anexo A)**: el paso exacto por el que ese acceso fuera de hilo termina corrompiendo
+`event_head`. Se fundo el acceso LVGL fuera de hilo, no la escritura que rompe la lista: la
+corrupcion necesita concurrencia real y el banco no ejecuta `radio_tick`. Tampoco se fundo que el
+trigger sea *solo* el cambio de filtro; los dos crashes tienen el mismo `pc`/`lr` con contextos
+distintos (`on_vfo_mode_change` y `on_high_filter_change`).

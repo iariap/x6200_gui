@@ -1,0 +1,17 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output: ok
+  chroot /home/pablo/desa/x6200/.vfix3: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  aviso: el hash de los fuentes cambio y hay cambios sin commitear, pero RECONSTRUIR=no: se prueba el binario que ya esta
+OK: /home/pablo/desa/x6200/.vfix3/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 14293044 B, 3/3 marcas)
+  captura: /tmp/opencode/lvgl131/banco-home.png (359 colores distintos)
+  version: 94c2c6ab QA: REPRODUCIDO el SIGSEGV del #131 - mismo pc/lr/s
+  fuente: md5 34ad71b39113 (src/ + lvgl/src)
+  binario: md5 9042691874a7   qemu-cpu: cortex-a7
+  captura util (26229 bytes)
