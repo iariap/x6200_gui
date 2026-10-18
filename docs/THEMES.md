@@ -92,38 +92,74 @@ Sin `base`, el tema parte de IU1WXY. Un archivo con JSON inválido, con un color
 que no se puede leer se avisa por el log y se sigue con el tema anterior: nunca deja la GUI
 sin tema.
 
-## Ancho de la línea de señal del waterfall (`waterfall_signal_width`) — decisión del owner, 2026-10-15
+## La línea central del waterfall (`waterfall_signal_width`) — órdenes del owner, 2026-10-15 y 2026-10-18
 
-El waterfall dibuja una **línea vertical** en el centro (la marca de la señal sobre la paleta,
-`src/waterfall.c`, `draw_middle_line()`), que hoy sale del color `panel_border` del tema. Hasta
-acá su ancho estaba fijo en **1 px**. El owner pidió, con feedback directo del 2026-10-15, que
-**los temas outdoor la traigan más gruesa**: *"los temas que son para outdoor deberían traer la
-barra del waterfall más gruesa porque al ser tan fina (1 px) no se distingue bien del resto"*.
+El waterfall dibuja una **línea vertical** en el centro (la marca de la frecuencia
+sintonizada sobre la paleta, `src/waterfall.c`, `waterfall_init`). Su historia:
 
-**Decisión de producto post-epic.** El epic de temas v2 había pedido *"sólo esquema real, sin
-agregar campos del parser"*; esto lo **extiende por orden del owner**: el ancho pasa a ser una
-**clave de tema**, no un valor fijo.
+1. **2026-10-15 (#92)** — el owner: *"los temas que son para outdoor deberían traer
+   la barra del waterfall más gruesa porque al ser tan fina (1 px) no se distingue
+   bien del resto"*. El ancho dejó de ser fijo y pasó a ser una **clave de tema**,
+   con default 1 px; `Sunlit` y `Trail` la pedían en 3.
+2. **2026-10-18 (#140)** — el owner: *"no veo la frecuencia que estoy
+   sintonizando; no se ve la línea"*. El problema no era sólo el ancho: la línea
+   salía con `TC(panel_border)` a `LV_OPA_60` y `LV_BLEND_MODE_ADDITIVE`, y sobre
+   el piso del waterfall medía 2.4:1..11.7:1 (1.2:1..3.2:1 en la línea contra su
+   píxel vecino) — invisible sobre la parte brillante de la cascada y lavada a
+   blanco en Sunlit. La línea pasa a:
+
+   | | antes | ahora |
+   | --- | --- | --- |
+   | ancho | default **1** px | default **3** px |
+   | color | `panel_border` | **`text`** |
+   | opacidad | `LV_OPA_60` | **`LV_OPA_COVER`** |
+   | blending | `LV_BLEND_MODE_ADDITIVE` | normal (sin blend mode) |
+
+   Con eso los seis temas miden **11.93:1..16.55:1** contra el piso de ruido del
+   waterfall (percentil 90 de la tinta contra percentil 10 del fondo, el algoritmo
+   de `x6200-ab themes`) y 2.69:1..7.41:1 contra el píxel vecino más brillante
+   (el peor caso, el carrier justo debajo de la línea). Medición completa, renders
+   antes/después y las variantes descartadas (`panel_border`, `ADDITIVE`):
+   `docs/evidencia/2026-10-18-wf140-contraste/README.md`.
+
+**Decisión de producto post-epic.** El epic de temas v2 había pedido *"sólo
+esquema real, sin agregar campos del parser"*; el #92 lo **extendió por orden del
+owner** (el ancho pasa a ser clave de tema) y el #140 mantiene la clave y agrega la
+decisión de color/opacidad.
 
 - **Clave**: `waterfall_signal_width` (entero, **px**).
-- **Default**: **1** (los temas que no la definen quedan idénticos a hoy: retrocompatibilidad
-  cero — el motor sólo lee la clave cuando el archivo la trae).
-- **Rango**: **1..8**. El parser (`src/theme.c`, `load_file()`) clampea: un `0` o un valor
-  negativo cae a 1 (la línea no puede desaparecer) y cualquier cosa por encima de 8 a 8 (no
-  puede tapar la cascada). El default del struct (`use_base()`) es 1.
-- **Los temas outdoor**: `themes/Sunlit.json` y `themes/Trail.json` la fijan en **3**. Los otros
-  cuatro de la colección (Redshift, Sprint, Cathode y Aurora) **no la setean**: quedan en 1 px y sus
-  renders no cambian. (Los temas legados y los archivos Holo/Material 3/RS ya no existen: el #74 los
-  retiró, así que ninguno los setea.)
-- **WCAG**: la clave **no** cambia el color de la línea (sigue siendo `panel_border`), sólo su
-  ancho, así que no hay un par nuevo que medir; el ancho no interviene en el contraste (WCAG
-  1.4.11 mide color, no grosor).
+- **Default**: **3**. Los temas que no la definen heredan el default del struct
+  (`src/theme.c`, `use_base()`), que desde el 2026-10-18 es 3 px: un tema que la
+  quiera fina la pide en **1**. (Antes el default era 1: el único caso que cambia
+  de ancho son los temas que no la declaran.)
+- **Rango**: **1..8**. El parser (`src/theme.c`, `load_file()`) clampea: un `0` o un
+  valor negativo cae a 1 (la línea no puede desaparecer) y cualquier cosa por encima
+  de 8 a 8 (no puede tapar la cascada).
+- **Los temas de la colección**: `Sunlit.json` y `Trail.json` la fijan en **3**
+  (explícito, igual al default; es la clave que introdujo el #92 y se conserva).
+  Aurora, Cathode, Redshift y Sprint **no la declaran**: ahora heredan 3 px por el
+  default, antes heredaban 1.
+- **Color y opacidad no son clave de tema**: salen de `TC(text)` a opacidad plena
+  para los seis temas, porque es el rol que garantiza el contraste en los seis
+  (la medición que lo funda está en el anexo de evidencia del #140).
+- **WCAG**: desde el #140 **sí hay un par nuevo que medir** (cambió el color y la
+  opacidad, no sólo el ancho). Está declarado en
+  `tools/ab_testing/quality/nontext.yaml` como `waterfall_center_line` sobre las
+  fixtures `main-espectro-agua` (Aurora) y `main-tema-sunlit-agua` (Sunlit), con el
+  piso del waterfall como fondo y el piso de 3:1 de WCAG 1.4.11. Los otros cuatro
+  temas no tienen render comprometido en el gate; su medición por tema está en el
+  anexo del #140.
 
-El test nativo (`tests/native/test_theme.c`) fija el parse: Sunlit y Trail en 3, un tema que no
-la define en 1, y el clamp (`0` → 1, `99` → 8). Los renders que cambian son las fixtures `-agua`
-de Sunlit y Trail (las que dibujan la línea, con `waterfall_center_line` encendido): los píxeles
-que se mueven son la propia línea —la región `waterfall`, más los de la misma línea que caen en
-la banda de botones, porque el objeto del waterfall llega hasta el fondo de la pantalla—; el
-resto de la suite queda byte-idéntico.
+El test nativo (`tests/native/test_theme.c`) fija el parse: un tema que no la
+define en 3, Sunlit y Trail en 3, `1` en 1 y el clamp (`0`/negativo → 1, `9` → 8).
+El assert del arnés (`tools/ui_harness/src/screens.c`,
+`settle_waterfall_center_line`) exige ancho == `waterfall_signal_width`,
+`LV_OPA_COVER` y `TC(text)`: una regresión a la línea invisible rompe el render,
+no la radio. Los renders que cambian son las dos goldens que dibujan la línea,
+`main-espectro-agua.png` (Aurora) y `main-tema-sunlit-agua.png` (Sunlit): los
+píxeles que se mueven son la propia línea (`x=398..400`, y=240..479 — más los de la
+misma línea que caen en la banda de botones, porque el objeto del waterfall llega
+hasta el fondo de la pantalla); el resto de la suite queda byte-idéntico.
 
 ## Para agregar uno propio
 
@@ -207,9 +243,11 @@ Pares medidos (WCAG 2.1, sRGB) para los roles de la identidad, todos por encima 
 `tests/check_wcag.py` mide **128 pares aplicables** a este tema y no reporta **ninguna falla**;
 `x6200-ab themes` (los nueve pares que sólo viven en Ajustes) suma 9/9 OK. En el framework, el
 **no-texto por píxeles** (WCAG 1.4.11) sobre el render dorado del tema
-(`golden/main-tema-sunlit.png` y `-agua`) da el arco `meter_over` del S-meter **3.66:1** y la
-columna de señal del waterfall **8.89:1** (mínimo 3:1), los dos declarados en
-`tools/ab_testing/quality/nontext.yaml`. El arco del S-meter vive sobre la cara de bitmap fija
+(`golden/main-tema-sunlit.png` y `-agua`) da el arco `meter_over` del S-meter **3.66:1**, la
+columna de señal del waterfall **8.89:1** y la línea central del waterfall **14.51:1** (mínimo
+3:1), los tres declarados en
+`tools/ab_testing/quality/nontext.yaml` (la línea central es el fix del #140: en Sunlit sale en
+`TC(text)` a opacidad plena y, antes, con 2.40:1 era el caso que el gate detectaba). El arco del S-meter vive sobre la cara de bitmap fija
 (`top_long.bin`, oscura) —por eso `meter_over` de un tema claro es una tinta **clara**,
 `#FFC9B8`— y no sobre el `bg` del tema.
 
@@ -346,9 +384,11 @@ Pares medidos (WCAG 2.1, sRGB) para los roles de la identidad, todos por encima 
 `tests/check_wcag.py` mide **134 pares aplicables** a este tema (es el que más pares tiene, por
 traer gradientes y `pill_border`) y no reporta **ninguna falla**; `x6200-ab themes` (los nueve
 pares que sólo viven en Ajustes) suma 9/9 OK. En el framework, el **no-texto por píxeles**
-(WCAG 1.4.11) sobre el render dorado del tema da el arco `meter_over` del S-meter **6.23:1** y
-la columna de señal del waterfall **6.57:1** (mínimo 3:1), declarados en
-`tools/ab_testing/quality/nontext.yaml`.
+(WCAG 1.4.11) sobre el render dorado del tema da el arco `meter_over` del S-meter **6.23:1**,
+la columna de señal del waterfall **6.57:1** y la línea central del waterfall **14.58:1**
+(mínimo 3:1), los tres declarados en
+`tools/ab_testing/quality/nontext.yaml` (la línea central es el fix del #140 — Aurora es el
+tema del reporte del owner).
 
 **Capturas por estado.** Las fixtures del arnés que rinden Aurora (todas con el mismo estado de
 radio que su gemela de otro tema, así el tema es la única variable): `main-tema-aurora`

@@ -206,3 +206,32 @@ objects:
     background: [40, 70, 8, 3]
     min_ratio: 3.0
     where: "cw_tune_ui.c:update_cb (borde de las barras inactivas vs el panel del widget)"
+
+  # --- La linea central del waterfall (issue #140, orden del owner 2026-10-18) -----
+  # El owner reporto "no veo la frecuencia que estoy sintonizando; no se ve la linea".
+  # La linea existe (issue #140) pero medía 1 px en cinco temas y salia a LV_OPA_60
+  # con LV_BLEND_MODE_ADDITIVE sobre TC(panel_border): 1.2:1..3.2:1 contra el piso del
+  # waterfall (Aurora 1.9:1 en el arnes) y en Sunlit satuaba a blanco. Ahora sale a
+  # `waterfall_signal_width` (3 px por default), a LV_OPA_COVER y en TC(text), que es
+  # el rol mas claro/oscuro de cada tema. Estos dos objetos son la superficie que la
+  # linea usa para leerse: el objeto es el trazo de 3 px en la columna central del
+  # waterfall (x=398..400) y el fondo es el piso de ruido a su izquierda, la misma
+  # convencion que `waterfall_signal`. Aurora (main-espectro-agua) es el tema del
+  # owner; Sunlit es el caso claro (piso claro + tinta oscura). El resto de los temas
+  # no tiene render comprometido: su tabla medida esta en
+  # docs/THEMES.md y docs/evidencia/2026-10-18-wf140-contraste/README.md.
+  - name: waterfall_center_line
+    fixture: main-espectro-agua
+    theme: Aurora
+    object: [398, 255, 3, 150]
+    background: [220, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c:waterfall_init (linea central TC(text) sobre el piso del waterfall)"
+
+  - name: waterfall_center_line
+    fixture: main-tema-sunlit-agua
+    theme: Sunlit
+    object: [398, 255, 3, 150]
+    background: [220, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c:waterfall_init (linea central TC(text) sobre el piso del waterfall)"
