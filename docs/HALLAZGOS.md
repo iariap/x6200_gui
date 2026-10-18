@@ -1840,6 +1840,15 @@ cortaba y no decia nada):
   de pila. Con la base alcanza para resolver: `link = link(main) + (pc - base)` y `addr2line`, sin
   depender del ASLR ni de gdb (el toolchain no lo trae). Cuando el PC cae en una libreria, el
   volcado de pila da la cadena de la app: asi se encontro JS8.
+* Desde el **#131**, antes del `CRASHLOG-STACK` va una **tabla de modulos** con la base de carga y el
+  md5 de cada `.so`/ejecutable, una linea por modulo:
+  `CRASHLOG-MOD <base> <md5> <path>`. La tabla se arma **una sola vez al arrancar**
+  (`src/crashlog_modules.c`): lee `/proc/self/maps` (o `dl_iterate_phdr` si el chroot no tiene
+  `/proc`), calcula los md5 sin heap y deja el bloque formateado en `.bss`; el handler solo hace
+  `write(2)` de ese bloque. Al arrancar queda una linea
+  `CRASHLOG-MOD-INIT modulos=<n> exe_base=<base> exe_md5=<md5> exe=<path> (<ms> ms)` para medir el
+  costo. Con eso un `pc`/`lr` en `0xb6xxxxxx` se resuelve contra el `.so` exacto sin depender de lo
+  que haya quedado en el equipo.
 * `LV_USE_ASSERT_OBJ` **queda en 0**: se probo en 1 (con un handler que registra el llamador) y
   sirvio para encontrar un caso (§34), pero convierte en abortes otros que el equipo toleraba: el
   barrido paso de 2 apps caidas a 6. Revertido y anotado.

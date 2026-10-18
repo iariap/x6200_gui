@@ -395,3 +395,28 @@ $CC $BASEFLAGS -fanalyzer -I"$CWENC_STAGE" \
     -c "$CWENC_STAGE/cw_encoder.c" -o "$OUT/cw_encoder.o" || true
 
 "$OUT/cwenc_tests"
+
+# --- CRASHLOG module table (issue #131) -------------------------------------
+# El handler de crashes solo puede resolver un PC que cae en una libreria si el
+# log dice que .so y en que base estaba cargada. El bloque CRASHLOG-MOD se arma
+# UNA vez al arrancar (sin heap) y el handler lo escribe tal cual. El test fija
+# el formato, el truncado de paths largos y el MD5 contra vectores conocidos.
+echo "== CRASHLOG-MOD (#131): tabla de modulos y md5 =="
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$SRC" \
+        "$SRC/crashlog_modules.c" "$DIR/test_crashlog_modules.c" \
+        "$DIR/test_framework.c" "$DIR/crashlog_modules_test_main.c" -o "$OUT/crashlog_modules_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$SRC" \
+        "$SRC/crashlog_modules.c" "$DIR/test_crashlog_modules.c" \
+        "$DIR/test_framework.c" "$DIR/crashlog_modules_test_main.c" -o "$OUT/crashlog_modules_tests"
+fi
+
+echo "== CRASHLOG-MOD: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$SRC" \
+    -c "$SRC/crashlog_modules.c" -o "$OUT/crashlog_modules.o" || true
+
+"$OUT/crashlog_modules_tests"

@@ -1,0 +1,18 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen sigsegv131-build-output: ok
+  chroot /home/pablo/desa/x6200/.vfix3: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  aviso: el hash de los fuentes cambio y hay cambios sin commitear, pero RECONSTRUIR=no: se prueba el binario que ya esta
+OK: /home/pablo/desa/x6200/.vfix3/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13762952 B, 3/3 marcas)
+  el banco no contesta o la GUI no esta viva; reiniciando...
+  captura: /tmp/opencode/sigsegv131/banco131.png (359 colores distintos)
+  version: 07321a5b QA: cuarta caida de la radio (#121) - 14h20min esta
+  fuente: md5 ff583730c536 (src/ + lvgl/src)
+  binario: md5 5f5bfb3b9381   qemu-cpu: cortex-a7
+  captura util (26226 bytes)

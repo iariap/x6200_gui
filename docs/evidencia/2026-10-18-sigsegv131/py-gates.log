@@ -1,0 +1,134 @@
+== ruff
+All checks passed!
+== format
+174 files already formatted
+== ty
+WARN No python files found under the given path(s)
+All checks passed!
+== pytest
+........................................................................ [ 31%]
+........................................................................ [ 63%]
+........................................................................ [ 95%]
+...........                                                              [100%]
+227 passed, 13 deselected in 2.72s
+== themes
+themes PASS: 10 palette(s) (4 base + 6 file(s)), 9 pair(s) declared, 90 pair(s) checked, 0 failure(s)
+  IU1WXY (src/theme.h; base palette): all 122 roles from src/theme.c [not offered in the menu]
+    OK   text on dialog                  6.37 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text_dim on dialog              4.78 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text_head on dialog             4.72 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text on panel                  21.00 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text_dim on panel              15.77 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text on list                   16.29 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   control_border on dialog        3.11 >=  3.0  base palette src/theme.h THEME_COLORS
+    OK   control_border on panel        10.24 >=  3.0  base palette src/theme.h THEME_COLORS
+    OK   panel on control_border        10.24 >=  3.0  base palette src/theme.h THEME_COLORS
+  Legacy (src/theme.h; base palette): all 122 roles from src/theme.c [not offered in the menu]
+    OK   text on dialog                  6.84 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text_dim on dialog              4.80 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text_head on dialog             5.07 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text on panel                  21.00 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text_dim on panel              14.73 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text on list                   16.29 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   control_border on dialog        3.08 >=  3.0  base palette src/theme.h THEME_COLORS
+    OK   control_border on panel         9.47 >=  3.0  base palette src/theme.h THEME_COLORS
+    OK   panel on control_border         9.47 >=  3.0  base palette src/theme.h THEME_COLORS
+  Outdoor (src/theme.h; base palette): all 122 roles from src/theme.c [not offered in the menu]
+    OK   text on dialog                 21.00 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text_dim on dialog             11.37 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text_head on dialog            10.88 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text on panel                  21.00 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text_dim on panel              11.37 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text on list                   21.00 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   control_border on dialog        3.11 >=  3.0  base palette src/theme.h THEME_COLORS
+    OK   control_border on panel         3.11 >=  3.0  base palette src/theme.h THEME_COLORS
+    OK   panel on control_border         3.11 >=  3.0  base palette src/theme.h THEME_COLORS
+  Classic (src/theme.h; base palette): all 122 roles from src/theme.c [not offered in the menu]
+    OK   text on dialog                 19.03 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text_dim on dialog              7.28 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text_head on dialog             9.90 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text on panel                  21.00 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text_dim on panel               8.03 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   text on list                   19.80 >=  4.5  base palette src/theme.h THEME_COLORS
+    OK   control_border on dialog        3.12 >=  3.0  base palette src/theme.h THEME_COLORS
+    OK   control_border on panel         3.44 >=  3.0  base palette src/theme.h THEME_COLORS
+    OK   panel on control_border         3.44 >=  3.0  base palette src/theme.h THEME_COLORS
+  Aurora (rootfs/usr/share/x6200/themes/Aurora.json; base IU1WXY): 0/122 roles from the base
+    OK   text on dialog                 14.77 >=  4.5  both roles set by the file
+    OK   text_dim on dialog             10.13 >=  4.5  both roles set by the file
+    OK   text_head on dialog            10.33 >=  4.5  both roles set by the file
+    OK   text on panel                  15.74 >=  4.5  both roles set by the file
+    OK   text_dim on panel              10.79 >=  4.5  both roles set by the file
+    OK   text on list                   15.12 >=  4.5  both roles set by the file
+    OK   control_border on dialog        4.34 >=  3.0  both roles set by the file
+    OK   control_border on panel         4.62 >=  3.0  both roles set by the file
+    OK   panel on control_border         4.62 >=  3.0  both roles set by the file
+  Cathode (rootfs/usr/share/x6200/themes/Cathode.json; base Classic): 0/122 roles from the base
+    OK   text on dialog                 12.57 >=  4.5  both roles set by the file
+    OK   text_dim on dialog              7.50 >=  4.5  both roles set by the file
+    OK   text_head on dialog            11.80 >=  4.5  both roles set by the file
+    OK   text on panel                  14.24 >=  4.5  both roles set by the file
+    OK   text_dim on panel               8.49 >=  4.5  both roles set by the file
+    OK   text on list                   14.01 >=  4.5  both roles set by the file
+    OK   control_border on dialog        4.26 >=  3.0  both roles set by the file
+    OK   control_border on panel         4.82 >=  3.0  both roles set by the file
+    OK   panel on control_border         4.82 >=  3.0  both roles set by the file
+  Redshift (rootfs/usr/share/x6200/themes/Redshift.json; base Classic): 0/122 roles from the base
+    OK   text on dialog                 11.43 >=  4.5  both roles set by the file
+    OK   text_dim on dialog              7.59 >=  4.5  both roles set by the file
+    OK   text_head on dialog            11.40 >=  4.5  both roles set by the file
+    OK   text on panel                  11.77 >=  4.5  both roles set by the file
+    OK   text_dim on panel               7.82 >=  4.5  both roles set by the file
+    OK   text on list                   11.66 >=  4.5  both roles set by the file
+    OK   control_border on dialog        3.11 >=  3.0  both roles set by the file
+    OK   control_border on panel         3.20 >=  3.0  both roles set by the file
+    OK   panel on control_border         3.20 >=  3.0  both roles set by the file
+  Sprint (rootfs/usr/share/x6200/themes/Sprint.json; base Classic): 0/122 roles from the base
+    OK   text on dialog                 15.54 >=  4.5  both roles set by the file
+    OK   text_dim on dialog             10.43 >=  4.5  both roles set by the file
+    OK   text_head on dialog            11.64 >=  4.5  both roles set by the file
+    OK   text on panel                  17.03 >=  4.5  both roles set by the file
+    OK   text_dim on panel              11.43 >=  4.5  both roles set by the file
+    OK   text on list                   16.61 >=  4.5  both roles set by the file
+    OK   control_border on dialog        4.78 >=  3.0  both roles set by the file
+    OK   control_border on panel         5.24 >=  3.0  both roles set by the file
+    OK   panel on control_border         5.24 >=  3.0  both roles set by the file
+  Sunlit (rootfs/usr/share/x6200/themes/Sunlit.json; base Outdoor): 0/122 roles from the base
+    OK   text on dialog                 15.67 >=  4.5  both roles set by the file
+    OK   text_dim on dialog              9.58 >=  4.5  both roles set by the file
+    OK   text_head on dialog            10.35 >=  4.5  both roles set by the file
+    OK   text on panel                  15.67 >=  4.5  both roles set by the file
+    OK   text_dim on panel               9.58 >=  4.5  both roles set by the file
+    OK   text on list                   15.67 >=  4.5  both roles set by the file
+    OK   control_border on dialog        5.46 >=  3.0  both roles set by the file
+    OK   control_border on panel         5.46 >=  3.0  both roles set by the file
+    OK   panel on control_border         5.46 >=  3.0  both roles set by the file
+  Trail (rootfs/usr/share/x6200/themes/Trail.json; base Classic): 0/122 roles from the base
+    OK   text on dialog                 12.91 >=  4.5  both roles set by the file
+    OK   text_dim on dialog             10.52 >=  4.5  both roles set by the file
+    OK   text_head on dialog            11.63 >=  4.5  both roles set by the file
+    OK   text on panel                  14.31 >=  4.5  both roles set by the file
+    OK   text_dim on panel              11.66 >=  4.5  both roles set by the file
+    OK   text on list                   15.16 >=  4.5  both roles set by the file
+    OK   control_border on dialog        4.23 >=  3.0  both roles set by the file
+    OK   control_border on panel         4.68 >=  3.0  both roles set by the file
+    OK   panel on control_border         4.68 >=  3.0  both roles set by the file
+  non-text (WCAG 1.4.11, pixels): 17 object(s) measured, 0 failure(s)
+    OK   s_meter_arc on main-foco = 6.23:1 (min 3.0:1) [object lighter; #ffb2aa vs #363e4f]
+    OK   waterfall_signal on main-foco = 6.57:1 (min 3.0:1) [object lighter; #79b3d2 vs #2a1f4c]
+    OK   s_meter_arc on main-espectro-agua = 6.23:1 (min 3.0:1) [object lighter; #ffb2aa vs #363e4f]
+    OK   waterfall_signal on main-espectro-agua = 7.10:1 (min 3.0:1) [object lighter; #66b6c8 vs #23193e]
+    OK   waterfall_signal on main-tema-sprint = 8.31:1 (min 3.0:1) [object lighter; #7fc7ab vs #0e2038]
+    OK   s_meter_arc on main-tema-sprint = 5.46:1 (min 3.0:1) [object lighter; #ff9f87 vs #323e4e]
+    OK   focus_indicator on settings-home = 3.85:1 (min 3.0:1) [object lighter; #9da6ad vs #384757]
+    OK   s_meter_arc on main-tema-sunlit = 3.66:1 (min 3.0:1) [object lighter; #ffc9b8 vs #606c76]
+    OK   waterfall_signal on main-tema-sunlit = 8.89:1 (min 3.0:1) [object darker; #144472 vs #eaf3f8]
+    OK   s_meter_arc on main-tema-sunlit-agua = 3.66:1 (min 3.0:1) [object lighter; #ffc9b8 vs #606c76]
+    OK   waterfall_signal on main-tema-sunlit-agua = 9.16:1 (min 3.0:1) [object darker; #14426f vs #eaf3f8]
+    OK   waterfall_signal on main-tema-aurora = 6.57:1 (min 3.0:1) [object lighter; #79b3d2 vs #2a1f4c]
+    OK   s_meter_arc on main-tema-aurora = 6.23:1 (min 3.0:1) [object lighter; #ffb2aa vs #363e4f]
+    OK   waterfall_signal on main-tema-cathode = 6.82:1 (min 3.0:1) [object lighter; #cc9044 vs #1c0f07]
+    OK   s_meter_arc on main-tema-cathode = 8.11:1 (min 3.0:1) [object lighter; #ffd6a0 vs #323d48]
+    OK   cw_tune_bars on cw-tune-tuner = 20.67:1 (min 3.0:1) [object lighter; #ffffff vs #050202]
+    OK   cw_tune_bars on cw-tune-tema-sunlit = 5.02:1 (min 3.0:1) [object darker; #000000 vs #7d7c77]
+  exempt (WCAG 1.4.3, disabled/incidental): 7 role(s) — btn_off_text, text_mute, text_faint, icon_off, switch_off, off, track
