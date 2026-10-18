@@ -1,0 +1,7 @@
+# md5 y datos del binario que corrio el banco
+ffef63df58cb854a5e63bcf88f645594  /tmp/opencode/vfix3-swr133/usr/sbin/x6200_gui
+bytes=13757724 mtime=2026-10-17 20:46:19.479004773 -0300
+gate #86:
+OK: /tmp/opencode/vfix3-swr133/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13757724 B, 3/3 marcas)
+HEAD: efae955efde2f9447b822ff604bc599f3c2e12e8
+HEAD corto: efae955e QA: la radio sigue caida 3h despues de la cuarta caida (tercera muerte que no se recupera sola)

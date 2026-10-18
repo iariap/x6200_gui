@@ -1,0 +1,5 @@
+# lineas relevantes del log del banco (/tmp/opencode/vfix3-swr133/out-banco.txt)
+289:[Error]	(454132.615, +14215)	 radio_init: La BASE no respondió: la GUI sigue sin control de la radio 	(in radio.c line #456)
+306:[User]	(454132.700, +5)	 boot_time_log: GUI lista: 0.0 s de uptime 	(in main.c line #116)
+# crash.txt: AUSENTE
+# lineas totales: 746
