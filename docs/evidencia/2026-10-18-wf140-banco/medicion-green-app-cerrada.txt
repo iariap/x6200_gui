@@ -1,0 +1,5 @@
+captura: green-app-cerrada.png (800x480)
+banda del waterfall: y=240..479 (240 filas)
+columna central x=400 vs x-4 y x+4: 207/208 filas medibles con diferencia = 99.5 %
+sobre toda la banda (incluye filas tapadas por texto/controles): 207/240 = 86.2 %
+corrida constante sobre x=400: 189/240 filas, color RGB(11, 41, 66); x-1=RGB(11, 41, 66) x+1=RGB(0, 0, 0)

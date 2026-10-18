@@ -72,6 +72,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 51. [Las caidas del #121: una ultima respiracion persistente (y el aviso de bateria baja)](#51-las-caidas-del-121-una-ultima-respiracion-persistente-y-el-aviso-de-bateria-baja)
 52. [El tono de CW se mide con el signo invertido (y el auto-ajuste lo compensa)](#52-el-tono-de-cw-se-mide-con-el-signo-invertido-y-el-auto-ajuste-lo-compensa)
 53. [El auto-ajuste de peak beta no puede variar con la WPM: el bloque de FFT es mas largo que medio punto](#53-el-auto-ajuste-de-peak-beta-no-puede-variar-con-la-wpm-el-bloque-de-fft-es-mas-largo-que-medio-punto)
+54. [La linea central del waterfall del #140: el defecto de alto 0 no existe en el trunk](#54-la-linea-central-del-waterfall-del-140-el-defecto-de-alto-0-no-existe-en-el-trunk)
 
 ---
 
@@ -2885,3 +2886,72 @@ el bloque sin decimar (128/44100 = 2,90 ms) la misma funcion da 0,95 @10, 0,90 @
 que es el default del firmware. El AUTO lo deja ahi (no empeora el ajuste manual) y la adaptacion
 real ocurre en `snr`, `gist`, `noise_beta` y el tono. Si en la radio se ve chatter con senales
 fuertes, la alternativa es `tau = 8*delta` (beta 0,88) — **requires-radio**, no se cambio sin medir.
+
+---
+
+## 54. La linea central del waterfall del #140: el defecto de alto 0 no existe en el trunk
+
+**Sintoma** (issue #140, lo reporta el owner): "la linea central del waterfall no se ve"; el issue
+lo atribuye a que la `lv_line` se crea con **alto 0** y nadie vuelve a fijar sus puntos.
+
+**Causa, medida**: esa premisa es falsa en el trunk actual. La linea se arma **al final** de
+`waterfall_set_height()` (`codigo: src/waterfall.c:187`), despues de `height = lv_obj_get_height(obj)`
+(`codigo: src/waterfall.c:169`), y `draw_middle_line()` ya hacia `middle_line_points[1].y = height` +
+`lv_line_set_points()` (`codigo: src/waterfall.c:201-208` en `94c2c6ab`). Ademas la linea y las filas
+del waterfall comparten `height`: si midiera 0, el waterfall tambien, y el waterfall se ve.
+
+Medido en el banco QEMU (`cortex-a7`, tema Sunlit, binario del trunk `2a0be37fdb29`, 13.773.024 B):
+
+```
+$ CHROOT=/tmp/opencode/vfix3-wf140 RECONSTRUIR=si ESPERA=12 tools/captura-banco.sh red-trunk.png '{"cmd":"get"}'
+OK: /tmp/opencode/vfix3-wf140/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13773024 B, 3/3 marcas)
+  respuesta: {"t":"state","vfo":"A","freq":6991334,...}
+  version: 94c2c6ab QA: REPRODUCIDO el SIGSEGV del #131 ...
+  fuente: md5 37f55d16fed4 (src/ + lvgl/src)
+  binario: md5 2a0be37fdb29   qemu-cpu: cortex-a7
+
+$ python3 docs/evidencia/2026-10-18-wf140-banco/medir-linea.py red-trunk.png
+banda del waterfall: y=240..479 (240 filas)
+columna central x=400 vs x-4 y x+4: 207/208 filas medibles con diferencia = 99.5 %
+corrida constante sobre x=400: 189/240 filas, color RGB(11, 41, 66); x-1=RGB(11, 41, 66) x+1=RGB(0, 0, 0)
+```
+
+La corrida horizontal sobre `x=400` es de **3 px (x=398..400)** en **222/227** filas con color de
+linea: es el ancho que le da `waterfall_signal_width=3` de Sunlit (`#92`), de punta a punta. En la
+radio la linea tambien esta: `docs/evidencia/2026-10-17-qa-radio-swr125/07-restaurado.png` (Redshift,
+1 px = ancho del tema) mide **217/217** filas medibles. Y en el arnes host, `ui_harness --inspect`
+sobre `main-tema-sunlit-agua.scn` muestra la `lv_line` viva con `w=3 h=243` en `x=399 y=239`
+(`h` = alto del waterfall 240 + trazo 3), `hidden:false`, clip de 240 px.
+
+**Correccion de lo que decia antes este registro**: nada del registro previo; el #92 ya habia medido
+la linea de 3 px el 2026-10-15. Lo que se corrige es la premisa del issue #140.
+
+**Arreglo** (endurecimiento del invariante, sin cambio de render; commit `dc45d924`):
+
+- `draw_middle_line()` crea la linea **una sola vez por `obj`** (una llamada de mas dejaba la linea
+  vieja con el alto viejo y el callback duplicado), recalcula el punto inferior en cada llamada y
+  resuelve la visibilidad con `params.waterfall_center_line` en el acto;
+- `middle_line_cb()` NULL-safe; `waterfall_init()` resetea `middle_line` (la linea pertenece al
+  `obj` de esa pantalla); `waterfall_middle_line()` expone el objeto vivo para el arnes;
+- `tools/ui_harness/src/screens.c`: `scenario_settle()` corta la corrida si la linea no mide el alto
+  del waterfall + trazo, no esta centrada, esta oculta con el parametro encendido o no es el ultimo
+  hijo del waterfall.
+
+**Verificacion, medida**:
+
+- **A/B sin cambio de render**: el trunk y el fix dan la misma banda del waterfall y las mismas
+  columnas de la linea (0 px distintos en `y>=240` y en `x=396..404`; los 1636 px que difieren son el
+  reloj, capturas de distinto minuto). Las 85 fixtures del arnes dan PNG byte-identicos antes y
+  despues, y las 11 goldens de `tools/ab_testing/golden/` quedan identicas (sin re-baseline).
+- **Parametro**: con `waterfall_center_line=0` la linea no se dibuja (0/208 filas, `x=400` negro) y
+  con `=1` vuelve (3 px).
+- **Reconstruccion**: abrir `Status` y cerrarlo deja la home **byte-identica** a la pristina
+  (`md5 c39744054f74...`), o sea el waterfall y su linea sobreviven al ciclo de la app.
+- **El gate no es decorativo**: con `middle_line_points[1].y = 0` el arnes sale exit 1 con
+  `la linea central mide 3 px y el waterfall 240 (+3 de trazo): largo cero o alto viejo (issue #140...)`.
+
+Evidencia completa (capturas, mediciones, logs, md5): `docs/evidencia/2026-10-18-wf140-banco/`.
+
+**Sin fundar** (anexo A): lo que **vio** el owner. En el trunk la linea esta, con el ancho del tema;
+desde aca no se puede ver su `params.db` ni su build. Lo que no se veia era su **color**: ver el
+[hallazgo 55](#55-la-linea-central-del-waterfall-del-140-la-geometria-estaba-el-color-no-medido-por-tema).
