@@ -1,0 +1,94 @@
+== check_cfg_fills ==
+  campos en cfg_t:      69
+  fill_cfg_item():      69
+  OK: los 69 campos se inicializan, en orden
+== check_actions ==
+  acciones ofrecidas: 38 | con manejador: 39
+  todas las acciones ofrecidas tienen manejador
+== check_settings_focus ==
+  widgets de foco creados: 29 | dialog_item(): 30
+  sliders con parametro propio: 4
+  campos de la fila de fecha: 3
+  todos los widgets de Ajustes estan en el grupo de foco
+  cada slider mueve el parametro que muestra
+  los campos de la fila de fecha declaran la misma caja
+== check_apps_menu ==
+  (aviso) page_app_6 usa btn_atune, que no es una app
+  apps en las paginas APP: 22 | make_app_btn -> main_screen_start_app(): 20/20 | make_action_btn -> main_screen_action(): 2/2 | paginas: 6
+  control remoto: 24 apps en app_names[] | 24 acciones
+  todas las apps del menu llegan al dispatcher que usa su boton
+== check_app_handlers ==
+  botones en paginas: 269 | paginas: 61 | sin handler: 0
+  todos los botones de las apps tienen handler
+== check_manual_apps ==
+  apps en el firmware: 22 | secciones de apps en el manual: 23
+  todas las apps tienen su seccion (22 apps)
+== check_wcag ==
+  roles en src/theme.h: 122 (4 valores cada uno)
+  temas: 10 | pares definidos: 138
+
+  IU1WXY           sin fallas
+  Legacy           sin fallas
+  Outdoor          sin fallas
+  Classic          sin fallas
+  Aurora           sin fallas
+  Cathode          sin fallas
+  Redshift         sin fallas
+  Sprint           sin fallas
+  Sunlit           sin fallas
+  Trail            sin fallas
+  === exenciones WCAG 1.4.3 y pares informativos (no fallan) ===
+                   cw_tune_barra sobre cw_tune_panel    1.00  peor en Outdoor  [cw_tune_ui.c:60-63 (relleno de las barras al 50%)]
+                   track sobre bar                      1.00  peor en IU1WXY  [theme.h:105]
+                   off sobre bar                        1.09  peor en Legacy  [theme.h:107]
+                   icon_off sobre bar                   1.11  peor en Classic  [theme.h:109 (iconos apagados de la barra)]
+                   btn_off_text sobre btn               1.20  peor en Classic  [theme.h:44 (boton deshabilitado)]
+                   track sobre panel                    1.36  peor en Redshift  [theme.h:105, app_frame.c:36 (riel de la barra)]
+                   btn_text sobre lvgl_focuskey         1.70  peor en Redshift  [lv_keyboard: btnmatrix pinta la tecla con FOCUS_KEY (lv_btnmatrix.c:756)]
+                   text_mute sobre bar                  1.73  peor en Legacy  [info.c:260 (modo bloqueado)]
+                   off sobre panel                      1.80  peor en Aurora  [theme.h:107 (barras sin encender)]
+                   text sobre lvgl_focuskey             1.82  peor en Redshift  [lv_table.c:791 + lv_theme_default.c:349 (celda con foco de teclado, azul #2196F3)]
+                   text_faint sobre bg                  1.84  peor en Legacy  [dialog_wspr.c:464, js8_map.c]
+                   text sobre lvgl_focused              2.14  peor en Redshift  [lv_table.c:790 + lv_theme_default.c:349 (celda elegida, rojo #F44336)]
+                   text_mute sobre bg                   2.37  peor en Legacy  [theme.h:76, spectrum.c:101]
+                   btn_off_text sobre btn_grad          2.40  peor en Aurora  [theme.h:44]
+                   switch_off sobre panel               2.53  peor en Sunlit  [theme.h:108 (switch de Ajustes apagado)]
+                   text_value sobre lvgl_focused        2.63  peor en Redshift  [lv_table.c:790 (valor sobre el rojo de LVGL)]
+                   text_faint sobre list                2.87  peor en Classic  [theme.h:77]
+                   text_faint sobre panel               3.04  peor en Classic  [theme.h:77 (en cola, idle)]
+                   text_mute sobre list                 4.13  peor en IU1WXY  [theme.h:76, styles.c:176]
+                   text_mute sobre side                 4.34  peor en Aurora  [cluster_column.c:64]
+                   text_mute sobre panel                4.46  peor en Redshift  [theme.h:76 (items grises)]
+
+================ resumen ================
+  IU1WXY           133 pares aplicables
+  Legacy           133 pares aplicables
+  Outdoor          131 pares aplicables
+  Classic          131 pares aplicables
+  Aurora           136 pares aplicables
+  Cathode          130 pares aplicables
+  Redshift         129 pares aplicables
+  Sprint           130 pares aplicables
+  Sunlit           130 pares aplicables
+  Trail            129 pares aplicables
+  pares OK: 1052 | exentos: 170 | informativos: 90 | FALLAS: 0
+  todos los pares cumplen WCAG 2.1 (AA)
+== check_cw_tune_feed ==
+  cw_tune_ui.c update_visibility: ok
+  cw_tune_ui_visible: ok
+  cw.cpp feed gate: ok
+  el feed del tono sigue a la visibilidad del widget de CW
+== audita-pruebas ==
+  builds en la tabla: 123 | secciones: 12 | enlaces: 27
+  para revisar a mano (27):
+    ? 3: Que una versión **funcione** no se sostiene con "debería andar": se sostiene con corridas de prueba
+    ? 21: Un número redondeado está bien **si está dicho como redondeo**. Lo que no puede aparecer es un
+    ? 167: ## 18/10 ~12:40 (hora radio) — `ffef63df58cb` (#133/#114/#121): la radio no responde; **pruebas NO e
+    ? 208: ## 17/10 ~22:20 (hora radio) — `63dbf7a4` (#130): la parábola de ROE en la radio es una **U** ✓ (cie
+    ? 272: (TX medida ~2,3-2,6 s). Ya anotado en #119 y por el otro QA; sigue abierto.
+    ? 289: ## 16/10 ~23:40 — ROM nueva flasheada en la SD: `c640645d810c` (GUI e294229dd32d)
+    ? 329: ## 16/10 ~17:30 — `3604cece0e43` (merge `2392624`, issue #110): el campo de año de Ajustes
+    ? 363: ## 16/10 ~00:45 — `f88813ae85e3` (tip `c60af91`): el #95 de temas y el #99 de la curva
+  OK: estructura y evidencia en orden
+== swrscan curve evidence ==
+PASS: 8 pruebas de swrscan_curve_evidence

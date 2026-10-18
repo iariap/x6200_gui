@@ -1,0 +1,5 @@
+linea: 180 bytes
+lastbreath v=1 up_s=51644 up_ms=51644123 clean=0 boot=12ad7621 radio=RX tx=0 app=SWRScan bat_mv=8600 ext_mv=11500 cap=37 chg=0 ev=2/7/1 last=keypad wus=1234 msg=Battery low: 8.6 V
+format: 200000 ops en 63.952 ms -> 0.320 us/op
+write atomico con fdatasync: 200 ops en 3.814 ms -> 19.070 us/op
+bytes por escritura: 180; con periodo 10 s = 1080 bytes/min

@@ -1,0 +1,3 @@
+2a0be37fdb293383b605316a9881c932  /o/x6200_gui-final
+13773024
+OK: /tmp/opencode/x6200_gui-final es el firmware del port (ELF32 ARM, 13773024 B, 3/3 marcas)

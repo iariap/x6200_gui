@@ -2774,3 +2774,48 @@ adquisicion real no se puede reproducir; la confirmacion final del U **en la rad
 (`requires-radio`, con una pasada y carga ficticia). El `timeout de RF` (`n=44/51`) del lado radio
 tampoco se puede fundar desde el repo: el host entrega los 51 paquetes.
 
+
+---
+
+## 51. Las caidas del #121: una ultima respiracion persistente (y el aviso de bateria baja)
+
+**Sintoma** (issue #121): cuatro caidas del **equipo entero**, sin CRASHLOG de la GUI. La cuarta
+fue **en reposo**, tras 14 h 20 min de uptime, y no volvio sola (hizo falta ciclo de energia).
+El log vivo de la GUI esta en `/tmp` (tmpfs) y solo se archiva al salir ordenadamente: cada corte
+duro se lleva la evidencia. La radio no estuvo accesible en esta corrida, asi que no hubo prueba
+en hardware.
+
+**Lo implementado** (`src/lastbreath.c/h`, integrado en `main.c`, `clock.c`, `events.c`, `msg.c`,
+`main_screen.c`, `radio.c`):
+
+- cada 10 s (`X6200_LASTBREATH_SECS`) escribe de forma **atomica** (`tmp` + `fdatasync` +
+  `rename`) una linea de ~180 B en `/mnt/lastbreath` con uptime, `boot_id`, estado de radio,
+  TX, app abierta, voltaje de bateria/fuente (`bat=na` si el flow no publico muestra), cola de
+  eventos, ultimo evento y ultimo mensaje de la GUI; sin heap en el camino de escritura;
+- al arrancar, si la anterior existe y no tiene `clean=1`, deja **una linea** `LASTBREATH ...`
+  para el triage; la salida limpia (`atexit` / apagado por software) marca `clean=1`;
+- si el path no existe (sin `/mnt`, banco) avisa una vez y sigue: no rompe la GUI ni crea nada.
+
+**Costo medido**: linea de 180 B cada 10 s = **1.080 B/min**; en host 0,32 us de formateo y 19 us
+de escritura atomica; en QEMU `cortex-a7` el propio registro midio `wus=1021..3197` us por
+escritura (con `fdatasync`). Es configurable para bajar la frecuencia si el owner prefiere menos
+desgaste de SD.
+
+**Bateria**: el firmware ya tenia el monitor (`radio.c` publica `vbat/vext/batcap/charging` a
+`clock_update_power`) y los umbrales del perfil visual (`VP_CRITICAL_ENTER_MV 10800`,
+`VP_CRITICAL_EXIT_MV 11300`), pero **no un aviso textual**. Se agrego solo eso: un mensaje
+`Battery low: X.X V` + `BATTERY-LOW` en el log con los umbrales existentes. No bloquea TX ni
+apaga nada. **El umbral requiere calibracion del owner en radio**: el issue midio 8,6 V, que cae
+dentro del aviso, pero no se pudo confirmar contra el pack real.
+
+**Verificacion**: TDD nativo RED→GREEN (formato determinista, rename atomico, deteccion de corte
+sucio, degradacion sin filesystem; 48 comprobaciones). Banco QEMU: el archivo se escribe cada
+10 s, y tras un `docker rm -f` (SIGKILL) el arranque siguiente lo reporto como `LASTBREATH` con
+el uptime y el payload crudos. A/B `AB-HANG121` pixel-identico. Evidencia completa en
+`docs/evidencia/2026-10-18-hang121-banco/`.
+
+**Sin fundar**: la causa de las caidas. No hay `pstore`/ramoops ni consola serie; no se midio
+tension, corriente, temperatura ni watchdog. La hipotesis de undervoltage (8,6 V; ~2,15 V/celda
+si es 4S LiFePO4, ~2,87 V/celda si es 3S Li-ion) sigue sin fundar. En la proxima caida hay que
+leer `/mnt/lastbreath` y la linea `LASTBREATH` antes de dar ciclo de energia; el procedimiento
+esta en el README de la evidencia.
