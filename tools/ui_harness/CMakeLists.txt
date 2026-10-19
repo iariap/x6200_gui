@@ -98,6 +98,10 @@ set(GUI_SRC
     ${REPO}/src/msg.c
     ${REPO}/src/msg_tiny.c
     ${REPO}/src/adaptive_tuning.c
+    # CB 27 MHz (issue #146): el modulo puro del dial por canal y la etiqueta
+    # "CH nn" de la celda VFO. main_screen.c e info.c lo llaman tal cual; las
+    # bandas CB que dibuja la franja salen del catalogo de mocks/mock_cfg.c.
+    ${REPO}/src/cb.c
     # El asistente de sintonia fina (issue #100): el core puro y su driver. El
     # driver corre sobre el main screen real (mueve cfg_cur.fg_freq y lee
     # meter_get_raw_db()); el fixture `autotune` lo dispara por el boton y espera

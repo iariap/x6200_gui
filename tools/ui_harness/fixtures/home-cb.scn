@@ -1,0 +1,38 @@
+# home-cb: la pantalla principal en la banda CB 27 MHz (issue #146), canal 19
+# (27.185 MHz, AM). La celda VFO de la barra muestra "CH 19" en lugar de
+# "VFO-A", el dial cuenta canales de 40 y la franja de bandas sobre el
+# waterfall dice "CB C" (los cuatro grids salen de mocks/mock_cfg.c, con los
+# mismos rangos canonicos que sql/bands_cb.csv).
+#
+# El span de 100 kHz deja entrar el rotulo "CB C" en la franja (la banda mide
+# 440 kHz); es el mismo valor con el que se midio el texto de la celda.
+#
+# See tools/ui_harness/README.md for the coverage table.
+
+name home-cb
+screen main
+
+seed 146
+
+frequency_hz 27185000
+tx_frequency_hz 27185000
+fft_width_hz 100000
+
+mode am
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

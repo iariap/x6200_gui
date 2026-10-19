@@ -9,6 +9,7 @@
 #include "info.h"
 
 #include "btaudio.h"
+#include "cb.h"
 #include "theme.h"
 #include "bt_state.h"
 #include "cfg/transverter.h"
@@ -164,6 +165,10 @@ lv_obj_t * info_init(lv_obj_t * parent) {
 
     subject_add_delayed_observer(cfg_cur.band->vfo.val, vfo_label_update, NULL);
     subject_add_delayed_observer(cfg_cur.band->split.val, vfo_label_update, NULL);
+    /* La celda tambien depende de la frecuencia (en CB pasa a "CH nn") y de la
+     * banda (al cambiar de banda la frecuencia se recarga); issue #146. */
+    subject_add_delayed_observer(cfg_cur.fg_freq, vfo_label_update, NULL);
+    subject_add_delayed_observer(cfg.band_id.val, vfo_label_update, NULL);
     vfo_label_update(cfg_cur.band->vfo.val, NULL);
 
     subject_add_delayed_observer(cfg_cur.mode, mode_label_update, NULL);
@@ -301,7 +306,16 @@ static void bt_state_timer_cb(lv_timer_t *t) {
 
 
 static void vfo_label_update(Subject *subj, void * user_data) {
-    lv_label_set_text(items[INFO_VFO], info_params_vfo_label_get());
+    /* En CB la celda VFO pasa a contar canales (issue #146, seccion 6.2): "CH nn"
+     * si la frecuencia es un canal exacto del plan, "CH --" si cae en un hueco o
+     * entre canales. Fuera de CB conserva el rotulo de siempre (VFO-A / SPL-B). */
+    char label[8];
+
+    if (cb_channel_label(subject_get_int(cfg_cur.fg_freq), label, sizeof(label))) {
+        lv_label_set_text(items[INFO_VFO], label);
+    } else {
+        lv_label_set_text(items[INFO_VFO], info_params_vfo_label_get());
+    }
 }
 
 static void mode_label_update(Subject *subj, void *user_data) {
