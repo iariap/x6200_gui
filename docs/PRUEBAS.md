@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 19/10 ~15:2x (hora radio) | GUI **`67387bfc4391`** (13.849.516 B; ROM SD `c640645d810c`; **desplegado por otra sesión** a las 15:18, no por esta QA) | `02090454` (#154) | **CB TX cualitativo (teclado CW)** | (no corrido) | 2 GUI (#131) + radio caída (#121) | **TX en CB ✓ / interlock ✗ / 10 m ✓**: con `cw_send` (teclado CW) el equipo transmite en **27.185** (CB C, CH 19) y **28.074** (10 m), pero el **interlock NO lo bloquea** en **26.515** (CB B, fuera del SBC): `tx:true`, sin `TX blocked` → el keyer CW usa `radio_set_morse_key()` y **no** pasa por `radio_set_ptt()` (#146 §7.2). Potencia real **NO medida** (sin wattmeter; readback `pwr` roto #157). Evidencia: [`2026-10-19-cb-tx-cualitativo/README.md`](evidencia/2026-10-19-cb-tx-cualitativo/README.md) |
 | 19/10 11:36 (hora radio 14:36 UTC) | GUI **`9a094c421b0e`** (13.844.268 B; ROM SD `c640645d810c`) | `1e3a1e4` | (no corrido) | — | 0 | **F0 CB 27 MHz PARCIAL** ✓✗: **el baseband/MCU NO bloquea el TX en 27 MHz** (medido: `tx:true` y barrido de ROE forzado a 0,1 W con **43/51 muestras entre 26,935 y 27,435 MHz**, min 1,0, alrededor de 1,1 en 27.185). **La F0 NO puede ser PASS**: potencia real y armónicos **NO medidos** (sin carga fantasma ni instrumentos); AM/FM a potencia configurada y PTT del micrófono **no medidos**. Radio restaurada (27.185 MHz LSB, RX, vol 0, misma GUI). Evidencia: [`2026-10-19-f0-cb-tx/README.md`](evidencia/2026-10-19-f0-cb-tx/README.md) |
 | 19/10 ~10:40 (hora host) | (sin radio; ARM **4893b8f39bf3**, 13.783.700 B) | `ade36bbb` (#146) | — | — | 0 | **CB 27 MHz: gates de host + arnés + banco QEMU** ✓ (sin desplegar, sin flashear y **sin transmitir**): nativos 0 fallos (RED→GREEN de `test_cb`, 85 comprobaciones), `check_wcag`/`check_cfg_fills`/`check_actions` OK, determinismo PASS, ruff/format/ty/pytest (incl. 13 e2e) OK, A/B `AB-CB146` PASS (B=`ade36bbb`), y el banco muestra `CH 19`/`CH --`/`CH 23`/`CH 24` con `tx=false`. **F0 (RF real) requiere radio**. Evidencia: [`2026-10-19-cb-27mhz-146/`](evidencia/2026-10-19-cb-27mhz-146/README.md) |
 | 18/10 ~12:40 (hora radio) | GUI **ffef63df58cb** (build limpio; **NO desplegado**) | `94b9989` | (sin radio) | — | 0 | **Radio inalcanzable en las dos redes** ✗: build limpio + gate #86 OK (`ffef63df58cb`, 13.757.724 B, 3/3 marcas), pero `tools/prueba-gui-en-radio.sh` abortó porque `radio_ip()` no encontró la radio. **#133/#114/#121 quedan SIN VEREDICTO**: no se pudo correr ninguna de las tres pruebas. La 4.ª caída del #121 sigue sin recuperación (necesita ciclo de energía; la batería estaba en 8,6 V, anotado en el #121). Evidencia: [`2026-10-18-qa-radio-backlog/`](evidencia/2026-10-18-qa-radio-backlog/README.md) |
@@ -235,6 +236,46 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 ---
 
+
+## 19/10 ~15:2x (hora radio) — TX cualitativa en CB (teclado CW) y el interlock que **no** lo cubre (`67387bfc4391`)
+
+**Qué se probó:** que el equipo **transmite** en un canal CB y que el **interlock** bloquea fuera de
+la ventana, usando el **teclado CW** por el socket de control (el socket no tiene PTT). Sin
+wattmeter. Autorización del owner; antena del owner; sin carga fantasma.
+
+**Medido** (transcripción cruda en
+[`evidencia/2026-10-19-cb-tx-cualitativo/transcript-corrida1.log`](evidencia/2026-10-19-cb-tx-cualitativo/transcript-corrida1.log)
+y [`…/transcript-corrida2.log`](evidencia/2026-10-19-cb-tx-cualitativo/transcript-corrida2.log)):
+
+```text
+$ /tmp/x6200-remote '{"cmd":"app","text":"CW"}'          # abre el teclado CW (pone modo CW)
+$ /tmp/x6200-remote '{"cmd":"pwr","val":40}'             # ≈4 W (tope CB); el readback pwr sigue 50 (#157)
+
+27.185 (CB C, CH 19):  cw_send "PARIS PARIS" -> tx:true (sigue el ritmo del CW)  ✓
+26.515 (CB B, CH 1):   cw_send "PARIS"       -> tx:true, SIN "TX blocked"          ✗  <-- el interlock NO bloquea
+28.074 (10 m):         cw_send "PARIS"       -> tx:true                              ✓
+```
+
+Capturas durante el keying: [`02-durante-tx-cb19.png`](evidencia/2026-10-19-cb-tx-cualitativo/02-durante-tx-cb19.png)
+(CH 19, `ON AIR`, medidor en PWR/SWR, SWR ≈3,5) y
+[`10-interlock-26515-fb.png`](evidencia/2026-10-19-cb-tx-cualitativo/10-interlock-26515-fb.png)
+(CH 1, `ON AIR`, **sin** mensaje de bloqueo).
+
+**Causa (código):** el interlock vive en `radio_set_ptt()` (`src/radio.c:1068`, único que llama a
+`cb_tx_allowed()`); el keyer CW llama a `radio_set_morse_key()` (`src/cw_encoder.c:62` →
+`src/radio.c:1161`, un GPIO) y **nunca** pasa por `radio_set_ptt()`. El build **sí** tiene el
+interlock (strings `TX blocked`/`cb_tx_scope`); es el **camino de TX** el que no lo consulta.
+
+**Incidencias de la corrida:** la GUI se cayó 2 veces por el **#131** (`CRASHLOG sig=11
+pc=0xb6186ae8`) durante los cambios de frecuencia/modo; y la **radio quedó inalcanzable** al final
+(firma del **#121**), así que **no se pudo restaurar** frecuencia/modo/potencia/app ni correr el
+control positivo por FT8. **No se desplegó ni flasheó** (el build `67387bfc4391` lo desplegó otra
+sesión a las 15:18, después de que esta corrida empezara sobre `9a094c421b0e`, que no tenía CB).
+
+**Veredicto:** TX en CB **✓** (medido); interlock del keyer **✗** (defecto, issue nuevo); 10 m
+intacto **✓**. La F0 con instrumentos (#156) sigue pendiente de potencia real y armónicos. Detalle,
+condiciones y advertencia legal en
+[`evidencia/2026-10-19-cb-tx-cualitativo/README.md`](evidencia/2026-10-19-cb-tx-cualitativo/README.md).
 
 ## 19/10 11:36 (hora radio 14:36 UTC) — F0 CB 27 MHz: el MCU **no** bloquea el TX; la F0 completa queda BLOCKED por falta de instrumentos (`9a094c421b0e`)
 
