@@ -1,0 +1,101 @@
+# Banco QEMU (ARM emulado, sin radio) — issue #157
+# Binario: md5 98f18ff4d6ae (commit 9309774b), chroot /home/pablo/desa/x6200/.vrem157
+# Cliente: tools/remote/x6200-remote (ARM, estatico), socket /tmp/x6200_remote.sock
+
+## Handshake
+$ {"cmd":"get"}
+{"t":"state","vfo":"A","freq":7074000,"freq_bg":7141000,"mode":"LSB","band":"40m SSB","filter":3000,"flo":65,"fhi":3065,"rfgain":0,"sql":0,"vol":30,"pre":1,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":7,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+
+## pwr en la banda CB C (27 MHz): el tope de potencia del #155 recorta a 4.0 W
+$ {"cmd":"freq","val":27185000}
+{"t":"ok"}
+$ {"cmd":"pwr","val":1}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=1 mode=AM band=CB C
+$ {"cmd":"pwr","val":10}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=10 mode=AM band=CB C
+$ {"cmd":"pwr","val":33}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=33 mode=AM band=CB C
+$ {"cmd":"pwr","val":50}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=40 mode=AM band=CB C
+$ {"cmd":"pwr","val":100}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=40 mode=AM band=CB C
+
+## pwr en 40m SSB: el setpoint se refleja tal cual (100 -> 100)
+$ {"cmd":"freq","val":7074000}
+{"t":"ok"}
+$ {"cmd":"pwr","val":100}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=100 mode=LSB band=40m SSB
+$ {"cmd":"pwr","val":50}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=50 mode=LSB band=40m SSB
+$ {"cmd":"pwr","val":7}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=7 mode=LSB band=40m SSB
+$ {"cmd":"pwr","val":1}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=1 mode=LSB band=40m SSB
+
+## mode: ida y vuelta de los 10 modos (sin off-by-one)
+$ {"cmd":"mode","val":"LSB"}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=1 mode=LSB band=40m SSB
+$ {"cmd":"mode","val":"LSB-D"}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=1 mode=LSB-D band=40m SSB
+$ {"cmd":"mode","val":"USB"}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=1 mode=USB band=40m SSB
+$ {"cmd":"mode","val":"USB-D"}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=1 mode=USB-D band=40m SSB
+$ {"cmd":"mode","val":"CW"}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=1 mode=CW band=40m SSB
+$ {"cmd":"mode","val":"CW-R"}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=1 mode=CW-R band=40m SSB
+$ {"cmd":"mode","val":"AM"}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=1 mode=AM band=40m SSB
+$ {"cmd":"mode","val":"SAM"}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=1 mode=SAM band=40m SSB
+$ {"cmd":"mode","val":"NFM"}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=1 mode=NFM band=40m SSB
+$ {"cmd":"mode","val":"WFM"}
+{"t":"ok"}
+$ {"cmd":"get"}
+    -> pwr=1 mode=WFM band=40m SSB
+
+## rechazos (contrato del socket)
+$ {"cmd":"mode","val":"BOGUS"}
+{"t":"err","err":"Invalid mode"}
+$ {"cmd":"pwr","val":0}
+{"t":"err","err":"Invalid value"}
+$ {"cmd":"pwr","val":101}
+{"t":"err","err":"Invalid value"}

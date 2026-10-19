@@ -133,9 +133,12 @@ typedef struct {
     char     text[201];
 } cmd_t;
 
-/* x6100_mode_t and x6100_agc_t order */
-static const char *mode_names[] = {"LSB", "LSB-D", "USB", "USB-D", "CW", "CW-R", "AM", "NFM"};
+/* x6200_mode_t and x6200_agc_t order (cfg/cfg_api.h). La tabla va indexada por el enum, asi
+ * que tiene que estar completa y en orden: le faltaba SAM (7), con lo que NFM caia en el
+ * indice 7 (= SAM) y el state line leia mode_names[8] fuera del array (issue #157). */
+static const char *mode_names[] = {"LSB", "LSB-D", "USB", "USB-D", "CW", "CW-R", "AM", "SAM", "NFM", "WFM"};
 static const char *agc_names[]  = {"OFF", "SLOW", "FAST", "AUTO"};
+#define MODE_NAMES_N (sizeof(mode_names) / sizeof(mode_names[0]))
 
 /* "app" values; cont_modes[] order in dialog_sstv.c */
 /* Los nombres que acepta `{"cmd":"app","text":...}`: las 22 apps de main_screen_start_app mas el
@@ -626,14 +629,14 @@ static int state_line(char *buf, size_t size) {
                     "\"cwt\":%s,\"logrev\":%u,\"did\":\"%s\"}\n",
                     cfg_sm.p_band_current_vfo.get() == X6200_VFO_A ? "A" : "B",
                     cfg_sm.cp_fg_freq.get(), cfg_sm.cp_bg_freq.get(),
-                    (mode >= 0 && mode <= x6100_mode_nfm) ? mode_names[mode] : "?", band_name(),
+                    (mode >= 0 && (size_t) mode < MODE_NAMES_N) ? mode_names[mode] : "?", band_name(),
                     cfg_sm.cp_cur_filter_bw.get(), cfg_sm.cp_cur_filter_low.get(), cfg_sm.cp_cur_filter_high.get(),
                     cfg_sm.p_rfgain.get(), cfg_sm.p_squelch.get(), cfg_sm.p_volume.get(),
                     cfg_sm.cp_cur_pre.get() != 0, cfg_sm.cp_cur_att.get() != 0,
                     (agc >= 0 && agc <= x6100_agc_auto) ? agc_names[agc] : "?",
                     cfg_sm.p_nb.get() != 0, cfg_sm.p_nr.get() != 0,
                     cfg_sm.p_nb_level.get(), cfg_sm.p_nb_width.get(), cfg_sm.p_nr_level.get(),
-                    (int)lroundf(cfg_sm.p_pwr.get() * 10), meter_get_raw_db(), radio_get_state() == RADIO_RX ? "false" : "true", app, ax, cwt, log_rev(), device_id());
+                    (int)lroundf(cfg_sm.p_pwr.getf() * 10), meter_get_raw_db(), radio_get_state() == RADIO_RX ? "false" : "true", app, ax, cwt, log_rev(), device_id());
 }
 
 static void send_state(client_t *c) {
@@ -875,7 +878,7 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
     }
     if (!strcmp(name, "mode")) {
         cJSON *v = cJSON_GetObjectItemCaseSensitive(req, "val");
-        for (int32_t i = 0; i < (int32_t)(sizeof(mode_names) / sizeof(mode_names[0])); i++)
+        for (int32_t i = 0; i < (int32_t) MODE_NAMES_N; i++)
             if (cJSON_IsString(v) && !strcmp(v->valuestring, mode_names[i])) {
                 cmd->id  = CMD_MODE;
                 cmd->val = i;
