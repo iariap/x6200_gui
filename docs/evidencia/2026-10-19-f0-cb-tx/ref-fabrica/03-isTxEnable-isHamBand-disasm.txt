@@ -1,0 +1,57 @@
+Nota: isTxEnable() NO tiene llamadores directos en este binario (grep 'bl 8f474' = 0).
+      isHamBand() tiene UN llamador: MainWidget::slot_atuTune (0x5e940).
+
+
+root/usr/app_qt/x6200_ui_v100:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+0008f474 <_ZNK9XBandPlan10isTxEnableEx>:
+   8f474:	e92d41f0 	push	{r4, r5, r6, r7, r8, lr}
+   8f478:	e1a05000 	mov	r5, r0
+   8f47c:	e1a06002 	mov	r6, r2
+   8f480:	e1a07003 	mov	r7, r3
+   8f484:	e3a04000 	mov	r4, #0
+   8f488:	eb000e3d 	bl	92d84 <_ZNK5QListI12XBandMapItemE6lengthEv>
+   8f48c:	e1a08000 	mov	r8, r0
+   8f490:	e1580004 	cmp	r8, r4
+   8f494:	da00000e 	ble	8f4d4 <_ZNK9XBandPlan10isTxEnableEx+0x60>
+   8f498:	e1a01004 	mov	r1, r4
+   8f49c:	e1a00005 	mov	r0, r5
+   8f4a0:	eb000e3c 	bl	92d98 <_ZNK5QListI12XBandMapItemE2atEi>
+   8f4a4:	e1c020d8 	ldrd	r2, [r0, #8]
+   8f4a8:	e1560002 	cmp	r6, r2
+   8f4ac:	e0d73003 	sbcs	r3, r7, r3
+   8f4b0:	ba000005 	blt	8f4cc <_ZNK9XBandPlan10isTxEnableEx+0x58>
+   8f4b4:	e1c021d0 	ldrd	r2, [r0, #16]
+   8f4b8:	e1520006 	cmp	r2, r6
+   8f4bc:	e0d33007 	sbcs	r3, r3, r7
+   8f4c0:	ba000001 	blt	8f4cc <_ZNK9XBandPlan10isTxEnableEx+0x58>
+   8f4c4:	e5d00030 	ldrb	r0, [r0, #48]	@ 0x30
+   8f4c8:	e8bd81f0 	pop	{r4, r5, r6, r7, r8, pc}
+   8f4cc:	e2844001 	add	r4, r4, #1
+   8f4d0:	eaffffee 	b	8f490 <_ZNK9XBandPlan10isTxEnableEx+0x1c>
+   8f4d4:	e3a00000 	mov	r0, #0
+   8f4d8:	e8bd81f0 	pop	{r4, r5, r6, r7, r8, pc}
+
+0008f4dc <_ZNK9XBandPlan9isHamBandEx>:
+   8f4dc:	e92d4070 	push	{r4, r5, r6, lr}
+   8f4e0:	e1a04000 	mov	r4, r0
+   8f4e4:	ebffffc2 	bl	8f3f4 <_ZNK9XBandPlan9bandIndexEx>
+   8f4e8:	e2505000 	subs	r5, r0, #0
+   8f4ec:	ba00000b 	blt	8f520 <_ZNK9XBandPlan9isHamBandEx+0x44>
+   8f4f0:	e1a00004 	mov	r0, r4
+   8f4f4:	eb000e22 	bl	92d84 <_ZNK5QListI12XBandMapItemE6lengthEv>
+   8f4f8:	e1500005 	cmp	r0, r5
+   8f4fc:	da000007 	ble	8f520 <_ZNK9XBandPlan9isHamBandEx+0x44>
+   8f500:	e1a01005 	mov	r1, r5
+   8f504:	e1a00004 	mov	r0, r4
+   8f508:	eb000e22 	bl	92d98 <_ZNK5QListI12XBandMapItemE2atEi>
+   8f50c:	e5d03031 	ldrb	r3, [r0, #49]	@ 0x31
+   8f510:	e3530000 	cmp	r3, #0
+   8f514:	15d03030 	ldrbne	r3, [r0, #48]	@ 0x30
+   8f518:	e1a00003 	mov	r0, r3
+   8f51c:	e8bd8070 	pop	{r4, r5, r6, pc}
+   8f520:	e3a03000 	mov	r3, #0
+   8f524:	eafffffb 	b	8f518 <_ZNK9XBandPlan9isHamBandEx+0x3c>

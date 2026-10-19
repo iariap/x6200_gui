@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 19/10 11:36 (hora radio 14:36 UTC) | GUI **`9a094c421b0e`** (13.844.268 B; ROM SD `c640645d810c`) | `1e3a1e4` | (no corrido) | — | 0 | **F0 CB 27 MHz PARCIAL** ✓✗: **el baseband/MCU NO bloquea el TX en 27 MHz** (medido: `tx:true` y barrido de ROE forzado a 0,1 W con **43/51 muestras entre 26,935 y 27,435 MHz**, min 1,0, alrededor de 1,1 en 27.185). **La F0 NO puede ser PASS**: potencia real y armónicos **NO medidos** (sin carga fantasma ni instrumentos); AM/FM a potencia configurada y PTT del micrófono **no medidos**. Radio restaurada (27.185 MHz LSB, RX, vol 0, misma GUI). Evidencia: [`2026-10-19-f0-cb-tx/README.md`](evidencia/2026-10-19-f0-cb-tx/README.md) |
 | 19/10 ~10:40 (hora host) | (sin radio; ARM **4893b8f39bf3**, 13.783.700 B) | `ade36bbb` (#146) | — | — | 0 | **CB 27 MHz: gates de host + arnés + banco QEMU** ✓ (sin desplegar, sin flashear y **sin transmitir**): nativos 0 fallos (RED→GREEN de `test_cb`, 85 comprobaciones), `check_wcag`/`check_cfg_fills`/`check_actions` OK, determinismo PASS, ruff/format/ty/pytest (incl. 13 e2e) OK, A/B `AB-CB146` PASS (B=`ade36bbb`), y el banco muestra `CH 19`/`CH --`/`CH 23`/`CH 24` con `tx=false`. **F0 (RF real) requiere radio**. Evidencia: [`2026-10-19-cb-27mhz-146/`](evidencia/2026-10-19-cb-27mhz-146/README.md) |
 | 18/10 ~12:40 (hora radio) | GUI **ffef63df58cb** (build limpio; **NO desplegado**) | `94b9989` | (sin radio) | — | 0 | **Radio inalcanzable en las dos redes** ✗: build limpio + gate #86 OK (`ffef63df58cb`, 13.757.724 B, 3/3 marcas), pero `tools/prueba-gui-en-radio.sh` abortó porque `radio_ip()` no encontró la radio. **#133/#114/#121 quedan SIN VEREDICTO**: no se pudo correr ninguna de las tres pruebas. La 4.ª caída del #121 sigue sin recuperación (necesita ciclo de energía; la batería estaba en 8,6 V, anotado en el #121). Evidencia: [`2026-10-18-qa-radio-backlog/`](evidencia/2026-10-18-qa-radio-backlog/README.md) |
 | 17/10 ~22:20 (hora radio) | ROM `c640645d810c` + GUI **b1ba67520079** | `63dbf7a4` (#130) | **SWRScan** | **23 ok** | 0 (1 crash, ya en #131) | **VALIDADA EN RADIO la U del #130** ✓✓: build limpio desde el tip + gate #86 + deploy (idempotente, ya corría el mismo md5). Con el dial en la resonancia (~7.000) la curva es una **U**: base `y=398` en `x=255` (interior), bordes suben **+94/+168 px**; reproducido en 2ª pasada (`x=232`, +80/+174) y con span 200 kHz/Log (`x=238`, +140/+233). **Hallazgo nuevo**: `tests/swrscan_curve_evidence.py` del #125 **no corre sobre una captura de radio** (pide 2 args, no 1; su umbral `min≥180` no ve la curva del tema del owner `Redshift` = RGB(255,179,160)) → **issue nuevo**. Sigue `Error: timeout de RF` (`n≈44/51`, nunca `Completed`). Evidencia `docs/evidencia/2026-10-17-qa-radio-swr125/` |
@@ -231,6 +232,59 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 ---
 
+
+## 19/10 11:36 (hora radio 14:36 UTC) — F0 CB 27 MHz: el MCU **no** bloquea el TX; la F0 completa queda BLOCKED por falta de instrumentos (`9a094c421b0e`)
+
+**Qué se probó:** la fase F0 del issue #146 (§11), con autorización explícita del owner y la radio
+como estaba. Primero el recon read-only y la documentación del gate de fábrica; después una prueba
+en vivo acotada con el **único camino de TX accionable por software**: el **barrido de ROE**
+(`{"cmd":"swrscan","val":1}`), que el firmware fuerza a **0,1 W**, **LSB** y **una pasada**
+(`codigo: src/dialog_swrscan.h:72-75`, `SWRSCAN_MULTIPASS_TX_ENABLED=0`).
+
+**Medido, en la radio:**
+
+```
+$ /tmp/x6200-remote '{"cmd":"get"}'      # antes: 27.185.000 MHz, LSB, CB C, RX, vol 0
+...
+$ /tmp/x6200-remote '{"cmd":"swrscan","val":1}'
+{"t":"ok"}
+{"t":"state",...,"mode":"LSB","app":"SWRScan","ax":{"swrscan_state":"Scanning","passes":1,
+ "pass":1,"points":51,"swrscan_tx":true},"tx":true}
+{"t":"state",...,"mode":"AM","app":"SWRScan","ax":{"swrscan_state":"Error","...",
+ "swrscan_tx":false},"tx":false}
+```
+
+La pantalla del barrido quedó con **`min 1.0 @ 26.935.000 kHz (n=43/51)`** y la curva de ROE
+dibujada de **26,935 a 27,435 MHz** (span 500 kHz): el puente de ROE del equipo midió **RF real en
+43 frecuencias de la banda CB**, con la curva alrededor de 1,1 al centro (27,185). Evidencia:
+[`live-tx/06-swrscan-run.png`](evidencia/2026-10-19-f0-cb-tx/live-tx/06-swrscan-run.png) y
+[`live-tx/transcript.md`](evidencia/2026-10-19-f0-cb-tx/live-tx/transcript.md).
+
+**Veredicto: la fase F0 NO es PASS** (no hay potencia real ni armónicos medidos: no hay carga
+fantasma ni instrumentos de RF). Pero la pregunta que definía el alcance del módulo quedó
+contestada: **el baseband/MCU NO bloquea el TX en 27 MHz** (`tx:true` + ROE medida), así que la
+rama "si el MCU no transmite, el módulo pasa a RX-only" **no se activa**. El barrido termina en
+`Error: timeout de RF` con `n=43/51`: es la firma conocida del barrido (issues #133/#125), no un
+bloqueo de TX.
+
+**Gate de fábrica, documentado:** `/etc/xgradio/xgradio.conf` **línea 7**, leído por
+`XBandPlan::XBandPlan()` de `/usr/app_qt/x6200_ui_v100` (UI-side, no hay daemon `xgradio`); el valor
+canónico es `enable` (no `enabled`). En el rootfs de fábrica **interno** de esta radio (eMMC
+`mmcblk2p2`, sin montar) el conf ya decía **`fullband-tx=enable`** y `man.conf` `fullband-tx=1`
+(`fbtx-open-time=2025-12-13 19:53:25`). El port no tiene el archivo ni la clave: no hay gate Linux.
+Detalle: [`ref-fabrica.md`](evidencia/2026-10-19-f0-cb-tx/ref-fabrica.md) y
+[`recon-radio.txt`](evidencia/2026-10-19-f0-cb-tx/recon-radio.txt).
+
+**Restauración (medida):** 27.185.000 MHz, LSB, CB C, RX, vol 0, app cerrada, GUI PID 13127,
+uptime del equipo sin reinicio; ATU y `DATA` intactos. La frecuencia no se cambió.
+
+**Pendiente (BLOCKED)**: carga fantasma 50 Ω, medidor de potencia/RF y analizador de espectro;
+PTT de AM/FM a potencia configurada (el socket no tiene PTT; la inyección de evdev no llegó a la
+GUI); PTT del micrófono (MCU). Sin eso no se publica TX como validado (#146 §7.3).
+
+Evidencia completa: [`2026-10-19-f0-cb-tx/README.md`](evidencia/2026-10-19-f0-cb-tx/README.md).
+
+---
 ## 18/10 ~12:40 (hora radio) — `ffef63df58cb` (#133/#114/#121): la radio no responde; **pruebas NO ejecutadas**
 
 **Qué se intentó:** cerrar los tres issues del backlog con la punta del trunk (`94b9989`; el último
