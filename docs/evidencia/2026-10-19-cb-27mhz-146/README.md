@@ -1,6 +1,6 @@
 # CB 27 MHz (#146): cierre de la corrida — host, arnés y banco QEMU
 
-Rama `factory/cb-27mhz-146`, base `ae1ba0fe`, HEAD `65c7c8da` (F4-fix). **Sin desplegar,
+Rama `factory/cb-27mhz-146`, base `1e3a1e49`, HEAD `ade36bbb` (F4-fix). **Sin desplegar,
 sin flashear y sin transmitir**: en el banco el estado da `tx=false` en todas las
 consultas. La RF real (F0) queda pendiente y la hace el owner con autorización.
 

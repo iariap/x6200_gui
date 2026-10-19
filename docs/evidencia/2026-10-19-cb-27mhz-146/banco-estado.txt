@@ -1,4 +1,4 @@
-# Salida de {"cmd":"get"} en el banco QEMU (binario 4893b8f39bf3, commit 65c7c8da)
+# Salida de {"cmd":"get"} en el banco QEMU (binario 4893b8f39bf3, commit ade36bbb)
 freq=27185000  band=CB C mode=AM tx=False
 freq=27000000  band=CB C mode=AM tx=False
 freq=27255000  band=CB C mode=AM tx=False

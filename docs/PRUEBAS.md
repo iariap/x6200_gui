@@ -30,7 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
-| 19/10 ~10:40 (hora host) | (sin radio; ARM **4893b8f39bf3**, 13.783.700 B) | `65c7c8da` (#146) | — | — | 0 | **CB 27 MHz: gates de host + arnés + banco QEMU** ✓ (sin desplegar, sin flashear y **sin transmitir**): nativos 0 fallos (RED→GREEN de `test_cb`, 85 comprobaciones), `check_wcag`/`check_cfg_fills`/`check_actions` OK, determinismo PASS, ruff/format/ty/pytest (incl. 13 e2e) OK, A/B `AB-CB146` PASS (B=`65c7c8da`), y el banco muestra `CH 19`/`CH --`/`CH 23`/`CH 24` con `tx=false`. **F0 (RF real) requiere radio**. Evidencia: [`2026-10-19-cb-27mhz-146/`](evidencia/2026-10-19-cb-27mhz-146/README.md) |
+| 19/10 ~10:40 (hora host) | (sin radio; ARM **4893b8f39bf3**, 13.783.700 B) | `ade36bbb` (#146) | — | — | 0 | **CB 27 MHz: gates de host + arnés + banco QEMU** ✓ (sin desplegar, sin flashear y **sin transmitir**): nativos 0 fallos (RED→GREEN de `test_cb`, 85 comprobaciones), `check_wcag`/`check_cfg_fills`/`check_actions` OK, determinismo PASS, ruff/format/ty/pytest (incl. 13 e2e) OK, A/B `AB-CB146` PASS (B=`ade36bbb`), y el banco muestra `CH 19`/`CH --`/`CH 23`/`CH 24` con `tx=false`. **F0 (RF real) requiere radio**. Evidencia: [`2026-10-19-cb-27mhz-146/`](evidencia/2026-10-19-cb-27mhz-146/README.md) |
 | 18/10 ~12:40 (hora radio) | GUI **ffef63df58cb** (build limpio; **NO desplegado**) | `94b9989` | (sin radio) | — | 0 | **Radio inalcanzable en las dos redes** ✗: build limpio + gate #86 OK (`ffef63df58cb`, 13.757.724 B, 3/3 marcas), pero `tools/prueba-gui-en-radio.sh` abortó porque `radio_ip()` no encontró la radio. **#133/#114/#121 quedan SIN VEREDICTO**: no se pudo correr ninguna de las tres pruebas. La 4.ª caída del #121 sigue sin recuperación (necesita ciclo de energía; la batería estaba en 8,6 V, anotado en el #121). Evidencia: [`2026-10-18-qa-radio-backlog/`](evidencia/2026-10-18-qa-radio-backlog/README.md) |
 | 17/10 ~22:20 (hora radio) | ROM `c640645d810c` + GUI **b1ba67520079** | `63dbf7a4` (#130) | **SWRScan** | **23 ok** | 0 (1 crash, ya en #131) | **VALIDADA EN RADIO la U del #130** ✓✓: build limpio desde el tip + gate #86 + deploy (idempotente, ya corría el mismo md5). Con el dial en la resonancia (~7.000) la curva es una **U**: base `y=398` en `x=255` (interior), bordes suben **+94/+168 px**; reproducido en 2ª pasada (`x=232`, +80/+174) y con span 200 kHz/Log (`x=238`, +140/+233). **Hallazgo nuevo**: `tests/swrscan_curve_evidence.py` del #125 **no corre sobre una captura de radio** (pide 2 args, no 1; su umbral `min≥180` no ve la curva del tema del owner `Redshift` = RGB(255,179,160)) → **issue nuevo**. Sigue `Error: timeout de RF` (`n≈44/51`, nunca `Completed`). Evidencia `docs/evidencia/2026-10-17-qa-radio-swr125/` |
 | 20/10 ~03:15 | ROM `c640645d810c` + GUI 9a094c421b0e (races) | `6eb2e68` | (no corrido) | (no corrido) | 0 | **Estable 17h54min** ✓ (pid 13127, uptime 64445 s, CRASHLOG 0). Overflows 0. Batería 8600 mV. app_log nuevo = rotación (pid sin cambios). 0 merges |
@@ -870,10 +870,10 @@ a mano, el medidor pasó a `#f08080` y **3.64:1**. Quedó documentado en el issu
 ## 19/10 ~10:40 (hora host) — rama `factory/cb-27mhz-146` (#146): cierre (F4-fix), gates completos y banco QEMU; **F0 requiere radio**
 
 **Qué se probó:** el módulo CB 27 MHz completo (F1–F5 + el fix de F4) sobre la base
-`ae1ba0fe`, HEAD `65c7c8da`, **sin desplegar, sin flashear y sin transmitir**. La RF real
+`1e3a1e49`, HEAD `ade36bbb`, **sin desplegar, sin flashear y sin transmitir**. La RF real
 (F0) queda pendiente y la hace el owner con autorización.
 
-**Fix de esta corrida** (`65c7c8da`): `cb_split_cache_cb` reconoce el cambio de banda de
+**Fix de esta corrida** (`ade36bbb`): `cb_split_cache_cb` reconoce el cambio de banda de
 `cfg/band.c` por el pk de la banda (`cfg_cur.band->vfo.pk`) y no por `cfg.band_id` —en la
 entrada directa de frecuencia el split de la banda destino se cargaba antes de que cambiara
 `cfg.band_id` y pisaba el split a restaurar—, y los hooks de CB no llaman al control de la
@@ -906,8 +906,8 @@ $ uv run pytest -m "not e2e" -q
   227 passed, 13 deselected
 $ uv run pytest -m "e2e" -q
   13 passed, 227 deselected
-$ uv run x6200-ab compare --a ae1ba0fe --b factory/cb-27mhz-146 --experiment-id AB-CB146
-  experiment AB-CB146: PASS (exit 0)  (B = 65c7c8da)
+$ uv run x6200-ab compare --a 1e3a1e49 --b ade36bbb --experiment-id AB-CB146
+  experiment AB-CB146: PASS (exit 0)  (B = ade36bbb)
   Functional PASS — 87 scenarios captured on both revisions
   Visual Regression PASS — captures are pixel-identical to the baseline
   Quality Contract PASS — 893 contract checks passed on the candidate
@@ -948,7 +948,7 @@ PTT del micrófono y ATU. El TX **no** queda declarado validado.
 
 ## 18/10 ~23:55 (hora host) — rama `factory/cb-27mhz-146` (#146): gates de host y banco QEMU; **F0 requiere radio**
 
-**Qué se probó:** el módulo CB 27 MHz completo (F1–F5) sobre la base `ae1ba0fe`, **sin
+**Qué se probó:** el módulo CB 27 MHz completo (F1–F5) sobre la base `1e3a1e49`, **sin
 desplegar, sin flashear y sin transmitir**: cuatro grids de 40 canales, migración `_4_cb_bands`,
 dial por canal con `CH nn`/`CH --`, políticas de entrada (split/modo/potencia/XIT) e interlock
 de TX. La RF real (F0) queda pendiente y la hace el owner con autorización.
@@ -971,7 +971,7 @@ $ SKIP_BUILD=1 tests/check_harness_determinism.sh
   PASS: deterministic (identical PNGs for every fixture)
 
 $ cd tools/ab_testing
-$ uv run x6200-ab compare --a ae1ba0fe --b factory/cb-27mhz-146 --experiment-id AB-CB146
+$ uv run x6200-ab compare --a 1e3a1e49 --b factory/cb-27mhz-146 --experiment-id AB-CB146
   experiment AB-CB146: PASS (exit 0)
   Functional PASS — 87 scenarios captured on both revisions
   Visual Regression PASS — captures are pixel-identical to the baseline

@@ -1,6 +1,6 @@
 # CB 27 MHz (#146): evidencia de host y banco QEMU
 
-Rama `factory/cb-27mhz-146` (base `ae1ba0fe`), sin despliegue y **sin transmitir**.
+Rama `factory/cb-27mhz-146` (base `1e3a1e49`), sin despliegue y **sin transmitir**.
 
 ## Arnés de UI (host, `tools/ui_harness`)
 
