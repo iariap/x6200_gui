@@ -495,6 +495,47 @@ $CC $BASEFLAGS -fanalyzer -I"$HK_STAGE" \
 
 "$OUT/hkey_tests"
 
+# --- CW tune UI (issue #131) --------------------------------------------------
+# src/cw_tune_ui.c se incluye con `#include "..."` (cw_tune_ui.h, styles.h,
+# params/params.h, scheduler.h) y para un include entre comillas manda el
+# directorio del archivo que incluye, asi que los headers stub de
+# tests/native/stubs_cw_tune/ no pueden tapar los de src/ desde su propio
+# directorio: el modulo real se stagea al lado de una copia de los stubs, el
+# mismo patron que clock/backlight/digital-modes/SWR-Scan/restore/events/hkey
+# (ver tests/native/test_cw_tune.c).
+#
+# El defecto del #131: cw_put_audio_samples() corre en el hilo de audio
+# (dsp_put_audio_samples <- audio.c read_callback) y alimenta el widget de
+# sintonia de CW: cw_tune_ui_visible() hacia lv_obj_has_flag() y
+# cw_tune_set_freq() hacia lv_event_send() desde ESE hilo. El test registra el
+# hilo de cada llamada LVGL: con el cw_tune_ui.c de la base,
+# cw_tune_stub_lvgl_foreign_calls() > 0 y falla.
+echo "== CW tune (#131): el hilo de audio no toca LVGL =="
+CW_TUNE_STAGE="$OUT/cw_tune_src"
+rm -rf "$CW_TUNE_STAGE"
+mkdir -p "$CW_TUNE_STAGE/lvgl" "$CW_TUNE_STAGE/params" "$CW_TUNE_STAGE/cfg"
+cp "$SRC/cw_tune_ui.c" "$SRC/cw_tune_ui.h" "$SRC/scheduler.h" "$CW_TUNE_STAGE/"
+cp "$DIR/stubs_cw_tune/styles.h" "$DIR/stubs_cw_tune/radio.h" "$DIR/stubs_cw_tune/pubsub_ids.h" "$CW_TUNE_STAGE/"
+cp "$DIR/stubs_cw_tune/lvgl/lvgl.h" "$CW_TUNE_STAGE/lvgl/"
+cp "$DIR/stubs_cw_tune/params/params.h" "$CW_TUNE_STAGE/params/"
+cp "$DIR/stubs_cw_tune/cfg/cfg.h" "$CW_TUNE_STAGE/cfg/"
+CW_TUNE_SRC="$CW_TUNE_STAGE/cw_tune_ui.c $DIR/cw_tune_stubs.c $DIR/test_cw_tune.c \
+$DIR/test_framework.c $DIR/cw_tune_test_main.c"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$CW_TUNE_STAGE" -I"$DIR" $CW_TUNE_SRC -lm -o "$OUT/cw_tune_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$CW_TUNE_STAGE" -I"$DIR" $CW_TUNE_SRC -lm -o "$OUT/cw_tune_tests"
+fi
+
+echo "== CW tune: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$CW_TUNE_STAGE" -I"$DIR" \
+    -c "$CW_TUNE_STAGE/cw_tune_ui.c" -o "$OUT/cw_tune_ui.o" || true
+
+"$OUT/cw_tune_tests"
+
 # --- Spectrum snapshots (issue #149) -----------------------------------------
 # src/spectrum.c se incluye con `#include "..."` (spectrum.h, theme.h, dsp.h,
 # params/params.h, ...) y para un include entre comillas manda el directorio del

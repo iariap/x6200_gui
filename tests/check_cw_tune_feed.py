@@ -15,7 +15,9 @@ Dos cosas, las dos que causaron el issue #122 y su arreglo:
    y no por el parametro `cfg.cw_tune` (el boton "Tuner"), que arranca en 0 (src/cfg/cfg.c:349) y
    dejaba el widget oculto en CW.
 2. El gate del feed (src/cw.cpp, `cw_put_audio_samples`) consulta `cw_tune_ui_visible()`, que es lo
-   que dice si el widget que hay que alimentar esta a la vista.
+   que dice si el widget que hay que alimentar esta a la vista. El accesor no toca LVGL: lo llama
+   el hilo de audio, asi que lee el flag de visibilidad que mantiene `update_visibility()` en el
+   hilo de GUI (issue #131).
 
 Se leen los cuerpos de las dos funciones con los comentarios sacados: la prosa explica el cambio y
 menciona los nombres, el codigo es lo que se mira.
@@ -109,8 +111,14 @@ else:
         )
     if "cfg_cur.mode" not in vis:
         fallos.append("src/cw_tune_ui.c: update_visibility() no mira el modo (cfg_cur.mode)")
+    if "LV_OBJ_FLAG_HIDDEN" not in vis:
+        fallos.append(
+            "src/cw_tune_ui.c: update_visibility() no muestra/oculta el widget con LV_OBJ_FLAG_HIDDEN"
+        )
 
 # --- 2. el accesor que el feed consulta -------------------------------------------------------
+# Lo llama cw_put_audio_samples() (hilo de audio): tiene que decir si el widget esta a la vista
+# SIN tocar LVGL (issue #131), leyendo el flag que mantiene update_visibility() en el hilo de GUI.
 ui_h = (SRC / "cw_tune_ui.h").read_text(errors="surrogateescape")
 accesor = cuerpo(sin_comentarios(ui_c), "bool cw_tune_ui_visible(")
 
@@ -118,11 +126,36 @@ if "cw_tune_ui_visible" not in ui_h:
     fallos.append("src/cw_tune_ui.h: falta la declaracion de cw_tune_ui_visible()")
 if not accesor:
     fallos.append("src/cw_tune_ui.c: no encontre el cuerpo de cw_tune_ui_visible()")
-elif "LV_OBJ_FLAG_HIDDEN" not in accesor:
-    fallos.append(
-        "src/cw_tune_ui.c: cw_tune_ui_visible() no mira LV_OBJ_FLAG_HIDDEN: no dice si el widget "
-        "esta a la vista"
-    )
+else:
+    if "lv_" in accesor:
+        fallos.append(
+            "src/cw_tune_ui.c: cw_tune_ui_visible() toca LVGL y la llama el hilo de audio "
+            "(cw_put_audio_samples): corrompe la lista de eventos de LVGL (issue #131)"
+        )
+    if "visible" not in accesor:
+        fallos.append(
+            "src/cw_tune_ui.c: cw_tune_ui_visible() no lee el flag de visibilidad que mantiene "
+            "update_visibility() en el hilo de GUI"
+        )
+
+# --- 2b. el pedido de frecuencia del hilo de audio --------------------------------------------
+# cw_tune_set_freq() lo llama cw_put_audio_samples() (hilo de audio): no puede tocar LVGL, tiene
+# que dejar el cuerpo en el scheduler (issue #131).
+setf = cuerpo(sin_comentarios(ui_c), "void cw_tune_set_freq(")
+
+if not setf:
+    fallos.append("src/cw_tune_ui.c: no encontre el cuerpo de cw_tune_set_freq()")
+else:
+    if "lv_" in setf:
+        fallos.append(
+            "src/cw_tune_ui.c: cw_tune_set_freq() toca LVGL y la llama el hilo de audio "
+            "(cw_put_audio_samples): corrompe la lista de eventos de LVGL (issue #131)"
+        )
+    if "scheduler_put" not in setf:
+        fallos.append(
+            "src/cw_tune_ui.c: cw_tune_set_freq() no difiere el cuerpo al hilo de GUI con el "
+            "scheduler (issue #131)"
+        )
 
 # --- 3. el gate del feed ----------------------------------------------------------------------
 cw_cpp = (SRC / "cw.cpp").read_text(errors="surrogateescape")
@@ -138,7 +171,8 @@ else:
         )
 
 print(f"  cw_tune_ui.c update_visibility: {'ok' if vis and 'cw_tune' not in vis else 'FALLA'}")
-print(f"  cw_tune_ui_visible: {'ok' if accesor else 'FALLA'}")
+print(f"  cw_tune_ui_visible: {'ok' if accesor and 'lv_' not in accesor and 'visible' in accesor else 'FALLA'}")
+print(f"  cw_tune_set_freq: {'ok' if setf and 'lv_' not in setf and 'scheduler_put' in setf else 'FALLA'}")
 print(f"  cw.cpp feed gate: {'ok' if feed and 'cw_tune_ui_visible()' in feed else 'FALLA'}")
 
 if fallos:

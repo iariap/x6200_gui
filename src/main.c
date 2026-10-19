@@ -398,6 +398,11 @@ static void crash_log_install(void) {
 int main(int argc, char **argv) {
     (void) argc;
 
+    /* El hilo de GUI queda identificado antes de crear cualquier hilo: los
+     * modulos que tocan LVGL (buttons, cw_tune_ui, ...) lo consultan para
+     * diferirse cuando los llama un hilo ajeno (issue #131). */
+    scheduler_thread_init();
+
     crash_log_install();
     boot_mark("GUI inicio");
 

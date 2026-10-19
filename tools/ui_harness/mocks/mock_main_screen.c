@@ -170,6 +170,16 @@ void scheduler_work(void)
     }
 }
 
+/* El arnes es de un solo hilo: el "hilo de GUI" es el del test, asi que los
+ * modulos que se auto-difieren (buttons, cw_tune_ui; issue #131) no difieren
+ * nada y el render queda igual. */
+void scheduler_thread_init(void) {}
+
+bool scheduler_in_main_thread(void)
+{
+    return true;
+}
+
 /* --- recorder / RTTY / screen recording / screenshot (no device) ----------- */
 
 char *recorder_path;

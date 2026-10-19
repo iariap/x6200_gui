@@ -24,6 +24,7 @@ extern "C" {
     #include "voice.h"
     #include "pubsub_ids.h"
     #include "cfg/mode.h"
+    #include "scheduler.h"
 }
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(*arr))
@@ -683,7 +684,27 @@ void buttons_load(uint8_t n, button_item_t *item) {
     btn[n].item = item;
 }
 
+/* Un hilo ajeno al de LVGL (el keyer CW, los mensajes de voz) llama a estas dos
+ * funciones: su cuerpo toca LVGL y corrompe la lista de eventos (issue #131).
+ * Cuando el llamador no es el hilo de GUI, se difiere con el scheduler y el
+ * cuerpo corre en el hilo de LVGL, en el mismo orden en que se pidio. Desde el
+ * hilo de GUI el comportamiento es el de siempre (sin diferir). */
+static void buttons_load_page_job(void *arg) {
+    buttons_load_page(*(buttons_page_t **) arg);
+}
+
+static void buttons_unload_page_job(void *arg) {
+    (void) arg;
+    buttons_unload_page();
+}
+
 void buttons_load_page(buttons_page_t *page) {
+    if (!scheduler_in_main_thread()) {
+        if (!scheduler_put(buttons_load_page_job, &page, sizeof(page))) {
+            LV_LOG_WARN("buttons: no se pudo diferir la pagina (cola del scheduler llena)");
+        }
+        return;
+    }
     if (!page) {
         LV_LOG_ERROR("NULL pointer to buttons page");
         return;
@@ -704,6 +725,10 @@ void buttons_load_page(buttons_page_t *page) {
 }
 
 void buttons_unload_page() {
+    if (!scheduler_in_main_thread()) {
+        scheduler_put_noargs(buttons_unload_page_job);
+        return;
+    }
     cur_page = NULL;
     for (uint8_t i = 0; i < BUTTONS; i++) {
         lv_obj_t        *label = btn[i].label;
@@ -1108,7 +1133,14 @@ static const char * nr_level_label_getter() {
 }
 
 
-static void param_changed_cb(void * s, lv_msg_t * m) {
+/* lv_msg_send() no es thread-safe en LVGL 8: cuando MSG_PARAM_CHANGED lo manda
+ * un hilo ajeno (por ejemplo el hilo del CAT al cambiar de frecuencia, que
+ * dispara el observer de banda y este mensaje), recorrer los labels aca mismo
+ * toca LVGL fuera del hilo de GUI (issue #131). Se difiere al hilo de GUI; desde
+ * el hilo de GUI el comportamiento es el de siempre. */
+static void param_changed_apply(void *arg) {
+    (void) arg;
+
     for (size_t i = 0; i < BUTTONS; i++) {
         lv_obj_t  *label = btn[i].label;
         if (!label) continue;
@@ -1116,6 +1148,17 @@ static void param_changed_cb(void * s, lv_msg_t * m) {
         if (!label_getter) continue;
         lv_label_set_text(label, label_getter());
     }
+}
+
+static void param_changed_cb(void * s, lv_msg_t * m) {
+    (void) s;
+    (void) m;
+
+    if (!scheduler_in_main_thread()) {
+        scheduler_put_noargs(param_changed_apply);
+        return;
+    }
+    param_changed_apply(NULL);
 }
 
 

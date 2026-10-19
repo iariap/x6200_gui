@@ -9,10 +9,13 @@
 #include "cw_tune_ui.h"
 
 #include <math.h>
+#include <stdatomic.h>
+#include <stdint.h>
 
 #include "styles.h"
 #include "params/params.h"
 #include "pubsub_ids.h"
+#include "scheduler.h"
 
 #define BLOCK_W 5
 #define SPACING 4
@@ -32,6 +35,18 @@ static lv_obj_t     *obj;
 
 static int8_t cur_freq=-100;
 
+/* Visibilidad en un bool atomico: cw_put_audio_samples() (hilo de audio) consulta
+ * cw_tune_ui_visible() y NO puede tocar LVGL (issue #131). La mantienen
+ * update_visibility() -observer diferido, corre en el hilo de GUI- y
+ * obj_deleted_cb(). */
+static atomic_bool  visible = false;
+
+/* Pedido de frecuencia que llega del hilo de audio: se guarda y lo aplica
+ * cw_tune_apply() en el hilo de GUI. req_pending coalesce los pedidos en un solo
+ * trabajo del scheduler (el feed de CW llama a cw_tune_set_freq() por trama). */
+static atomic_int   req_hz10    = ATOMIC_VAR_INIT(0);
+static atomic_bool  req_pending = false;
+
 /* Borde del bloque activo: blanco o negro, el que mas contraste tenga sobre el relleno.
  * Mismo criterio y misma cuenta que band_plan.c (cruce de WCAG 2.1 en L = 0.179). */
 #define LUM_CORTE 0.18
@@ -50,6 +65,7 @@ static float rel_lum(lv_color_t c)
 static void update_cb(lv_event_t * e);
 static void update_visibility(Subject *subj, void *user_data);
 static void obj_deleted_cb(lv_event_t *e);
+static void cw_tune_apply(void *arg);
 
 void cw_tune_init(lv_obj_t *parent)
 {
@@ -108,7 +124,31 @@ void cw_tune_init(lv_obj_t *parent)
 // }
 
 void cw_tune_set_freq(float hz) {
+    /* Corre en el hilo de audio (cw.cpp, cw_put_audio_samples). Aca no se toca
+     * LVGL: se guarda el valor y el cuerpo se aplica en el hilo de GUI. */
+    atomic_store(&req_hz10, (int) lroundf(hz * 10.0f));
+
+    if (atomic_exchange(&req_pending, true)) {
+        return;                 /* ya hay un trabajo encolado: vale el ultimo valor */
+    }
+
+    if (!scheduler_put_noargs(cw_tune_apply)) {
+        atomic_store(&req_pending, false);      /* cola llena: se reintenta al proximo pedido */
+    }
+}
+
+/* Cuerpo real: corre en el hilo de LVGL, drenado por scheduler_work(). */
+static void cw_tune_apply(void *arg) {
+    (void) arg;
+    atomic_store(&req_pending, false);
+
+    if (obj == NULL) {
+        return;
+    }
+
+    float  hz     = atomic_load(&req_hz10) / 10.0f;
     int8_t new_id = N_BLOCKS / 2 - roundf(hz / BLOCK_HZ);
+
     if (new_id < 0) new_id = 0;
     if (new_id > N_BLOCKS - 1) new_id = N_BLOCKS - 1;
 
@@ -121,7 +161,7 @@ void cw_tune_set_freq(float hz) {
     }
     rect_active_dsc.border_color = rel_lum(rect_active_dsc.bg_color) < LUM_CORTE ? lv_color_white()
                                                                                  : lv_color_black();
-    if (cur_freq != new_id){
+    if (cur_freq != new_id) {
         cur_freq = new_id;
         lv_event_send(obj, LV_EVENT_REFRESH, NULL);
     }
@@ -182,11 +222,13 @@ static void obj_deleted_cb(lv_event_t *e) {
      * se destruye despues de crear el nuevo y no hay que borrar el puntero nuevo. */
     if (obj == (lv_obj_t *) lv_event_get_target(e)) {
         obj = NULL;
+        atomic_store(&visible, false);
     }
 }
 
 static void update_visibility(Subject *subj, void *user_data) {
     if (obj == NULL) {
+        atomic_store(&visible, false);
         return;
     }
 
@@ -202,11 +244,14 @@ static void update_visibility(Subject *subj, void *user_data) {
         if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
     }
 
+    atomic_store(&visible, on);
 }
 
 /* See the note in cw_tune_ui.h */
 bool cw_tune_ui_visible(void) {
-    return (obj != NULL) && (!lv_obj_has_flag(obj, LV_OBJ_FLAG_HIDDEN));
+    /* Se puede llamar desde cualquier hilo (cw_put_audio_samples, hilo de audio):
+     * no toca LVGL, lee el bool que mantiene el hilo de GUI. */
+    return atomic_load(&visible);
 }
 
 /* See the note in cw_tune_ui.h */

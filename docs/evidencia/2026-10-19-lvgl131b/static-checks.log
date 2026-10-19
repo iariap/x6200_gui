@@ -1,0 +1,26 @@
+check_cfg_fills.py               OK
+check_actions.py                 OK
+check_settings_focus.py          OK
+check_apps_menu.py               OK
+check_app_handlers.py            OK
+check_manual_apps.py             OK
+audita-pruebas.py                OK
+check_wcag.py                    OK
+check_cw_tune_feed.py            OK
+test_swrscan_curve_evidence.py   OK
+
+$ sh .agents/hallazgos-fundados/scripts/audita-hallazgos.sh docs/HALLAZGOS.md
+== estructura: indice vs secciones ==
+== revisar: estimaciones o recuerdos fuera del anexo (linea 733 en adelante es el anexo) ==
+  linea 54: 32. [Algunas apps matan la GUI (y el equipo parece reiniciarse)](#32-algunas-apps-matan-la-gui-y-el-equipo-parece-reiniciarse)
+  linea 352: userspace con el kernel ya arriba. Los arranques reales son los que empiezan en ~3 s. Al medir,
+  linea 385: Diferencia medida: ~0,25 s menos y 4512 kB de RAM menos. **Ojo con una sola muestra**: en un
+  linea 468: real 0m0.525s                    → ~52 ms por apertura
+  linea 559: - **Kernel: ~3,1-3,6 s** hasta los scripts (`S01boot_time`), y de ahí ~1,4-2 s más hasta `udevd`.
+  linea 575:   Ojo: los tramos marcados suman ~0,7 s, así que queda **~0,8-1,0 s sin marca** entre el último
+  linea 598: primer cuadro** (5,2 → 6,9) corren en paralelo dbus, Bluetooth, red y NTP (~1,4 s de trabajo,
+  linea 604: (dentro del rango 6,6-7,2 s que se ve entre arranques) y los scripts secundarios terminando ~1 s más
+== revisar: secciones con numeros y sin decir de donde salen ==
+
+resumen: 0 problemas de estructura, 8 lineas para revisar, 0 secciones con numeros sin origen
+exit=0

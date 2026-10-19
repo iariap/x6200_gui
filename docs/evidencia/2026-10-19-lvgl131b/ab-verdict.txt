@@ -1,0 +1,6 @@
+experiment AB-LVGL131B status PASS exit 0
+a b50303edf0f0f750d58efc1e727cdd9075d54d90
+b 260602c5f28859d957c1a3d31ccbdbabad2b43d2
+scenarios 89
+contracts 913 ok
+gates [('Functional', 'PASS'), ('Visual Regression', 'PASS'), ('Quality Contract', 'PASS'), ('Performance', 'PASS'), ('Hardware', 'BLOCKED'), ('Energy', 'BLOCKED')]
