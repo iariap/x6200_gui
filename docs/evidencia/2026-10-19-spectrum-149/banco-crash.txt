@@ -1,0 +1,16 @@
+
+=== senal 6 (Aborted) ===
+PC: 0x40b36dd4   base: 0x400000   offset para addr2line: 0x40736dd4   fallo en: 0x227
+r0=00000000 r1=00000227 r2=00000006 r3=408048a0 r4=00000227 r5=00000006 r6=40a42000 r7=0000010c
+LR: 0x40b36dc8   (llamador: offset 0x40736dc8)   SP: 0x40800ac8
+LR: 0x40b36dc8   (llamador: offset 0x40736dc8)   SP: 0x40800ac8
+maps: 400000-437000 r-xp 00000000 00:00 0
+=== fin ===
+
+=== senal 6 (Aborted) ===
+PC: 0x40b36dd4   base: 0x400000   offset para addr2line: 0x40736dd4   fallo en: 0x23f
+r0=00000000 r1=0000023f r2=00000006 r3=408048a0 r4=0000023f r5=00000006 r6=40a42000 r7=0000010c
+LR: 0x40b36dc8   (llamador: offset 0x40736dc8)   SP: 0x40800ac8
+LR: 0x40b36dc8   (llamador: offset 0x40736dc8)   SP: 0x40800ac8
+maps: 400000-437000 r-xp 00000000 00:00 0
+=== fin ===

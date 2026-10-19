@@ -1,0 +1,61 @@
+=== A/B compare (a69ea288 -> 75a48b89) ===
+# A/B UI report — AB-OPT3-149
+
+- Date: 2026-10-19
+- Profile: `host-ui`
+- A (baseline): `a69ea2883328dc4df4c993e3e83d48f473e9617d` (a)
+- B (candidate): `75a48b8966f31db3bdd5cdf3a98a09080053cc9b` (b)
+- Scenarios: `app-bands`, `app-close-home`, `apps-menu-1`, `apps-menu-2`, `apps-menu-3`, `apps-menu-4`, `apps-menu-5`, `apps-menu-6`, `autotune`, `autotune-found`, `autotune-progress`, `bench-render`, `bt-dialog`, `bt-dialog-tema-aurora`, `bt-dialog-tema-cathode`, `bt-dialog-tema-redshift`, `bt-dialog-tema-sprint`, `bt-dialog-tema-sunlit`, `bt-dialog-tema-trail`, `cw-autotune-off`, `cw-autotune-on`, `cw-tune-default`, `cw-tune-ssb`, `cw-tune-tema-sunlit`, `cw-tune-tuner`, `home-bateria-externa`, `home-frecuencia-extrema`, `home-usb-20m`, `main-bateria-baja`, `main-espectro-agua`, `main-foco`, `main-frecuencia-dseg`, `main-natural`, `main-natural-eco`, `main-tema-aurora`, `main-tema-aurora-agua`, `main-tema-aurora-eco`, `main-tema-aurora-tx`, `main-tema-cathode`, `main-tema-cathode-agua`, `main-tema-cathode-eco`, `main-tema-cathode-tx`, `main-tema-redshift`, `main-tema-redshift-agua`, `main-tema-redshift-eco`, `main-tema-redshift-tx`, `main-tema-sprint`, `main-tema-sprint-agua`, `main-tema-sprint-eco`, `main-tema-sprint-tx`, `main-tema-sunlit`, `main-tema-sunlit-agua`, `main-tema-sunlit-eco`, `main-tema-sunlit-tx`, `main-tema-trail`, `main-tema-trail-agua`, `main-tema-trail-eco`, `main-tema-trail-tx`, `main-tx-simulado`, `settings-audio`, `settings-bands`, `settings-home`, `settings-perfil`, `settings-tema-aurora`, `settings-tema-cathode`, `settings-tema-redshift`, `settings-tema-sprint`, `settings-tema-sunlit`, `settings-tema-trail`, `settings-wfbat`, `swrscan-3pass`, `swrscan-3pass-p1`, `swrscan-3pass-p2`, `swrscan-3pass-p3`, `swrscan-3pass-stop`, `swrscan-3pass-tema-aurora`, `swrscan-3pass-tema-cathode`, `swrscan-5pass-moving`, `swrscan-5pass-outliers`, `swrscan-double-valley`, `swrscan-flat`, `swrscan-narrow-zoom`, `swrscan-owner-40m`, `swrscan-owner-40m-domo`, `swrscan-owner-40m-sweep`, `swrscan-quick`, `swrscan-wide-zoom`
+
+## Verdict: **PASS** (exit 0)
+
+| Gate | Required | Status | Summary |
+|---|---|---|---|
+| Functional | yes | PASS | 87 scenarios captured on both revisions |
+| Visual Regression | yes | PASS | captures are pixel-identical to the baseline |
+| Quality Contract | yes | PASS | 893 contract checks passed on the candidate |
+| Performance | yes | PASS | render-cost proxy within budget |
+| Hardware | no (advisory) | BLOCKED | no physical X6200 attached; hardware behaviour is not measured |
+| Energy | no (advisory) | BLOCKED | no power measurement; energy evidence must be physical |
+
+## Performance (render-cost proxy)
+
+> x86 render counters under virtual time; not a battery measurement.
+
+Every scenario is within the fixed budgets of `quality/budgets.yaml`.
+
+## Visual diff
+
+| Scenario | Identical | Changed px | Area | Boxes | Regions |
+|---|---|---|---|---|---|
+| app-bands | yes | 0 | 0.000% | 0 | — |
+| app-close-home | yes | 0 | 0.000% | 0 | — |
+| apps-menu-1 | yes | 0 | 0.000% | 0 | — |
+| apps-menu-2 | yes | 0 | 0.000% | 0 | — |
+| apps-menu-3 | yes | 0 | 0.000% | 0 | — |
+| apps-menu-4 | yes | 0 | 0.000% | 0 | — |
+| apps-menu-5 | yes | 0 | 0.000% | 0 | — |
+| apps-menu-6 | yes | 0 | 0.000% | 0 | — |
+| autotune | yes | 0 | 0.000% | 0 | — |
+| autotune-found | yes | 0 | 0.000% | 0 | — |
+| autotune-progress | yes | 0 | 0.000% | 0 | — |
+| bench-render | yes | 0 | 0.000% | 0 | — |
+| bt-dialog | yes | 0 | 0.000% | 0 | — |
+| bt-dialog-tema-aurora | yes | 0 | 0.000% | 0 | — |
+| bt-dialog-tema-cathode | yes | 0 | 0.000% | 0 | — |
+| bt-dialog-tema-redshift | yes | 0 | 0.000% | 0 | — |
+| bt-dialog-tema-sprint | yes | 0 | 0.000% | 0 | — |
+| bt-dialog-tema-sunlit | yes | 0 | 0.000% | 0 | — |
+| bt-dialog-tema-trail | yes | 0 | 0.000% | 0 | — |
+| cw-autotune-off | yes | 0 | 0.000% | 0 | — |
+| cw-autotune-on | yes | 0 | 0.000% | 0 | — |
+| cw-tune-default | yes | 0 | 0.000% | 0 | — |
+| cw-tune-ssb | yes | 0 | 0.000% | 0 | — |
+| cw-tune-tema-sunlit | yes | 0 | 0.000% | 0 | — |
+| cw-tune-tuner | yes | 0 | 0.000% | 0 | — |
+| home-bateria-externa | yes | 0 | 0.000% | 0 | — |
+| home-frecuencia-extrema | yes | 0 | 0.000% | 0 | — |
+| home-usb-20m | yes | 0 | 0.000% | 0 | — |
+| main-bateria-baja | yes | 0 | 0.000% | 0 | — |
+| main-espectro-agua | yes | 0 | 0.000% | 0 | — |
+| main-foco | yes | 0 | 0.000% | 0 | — |
