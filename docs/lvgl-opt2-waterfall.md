@@ -179,7 +179,7 @@ píxel del decodificador contra el `memcpy` del camino rápido de TRUE_COLOR,
 `waterfall_test` compila el `src/waterfall.c` real contra LVGL 8.3.11 real y un
 stub de radio; el oráculo de imagen es independiente del módulo (reimplementa el
 mapeo del baseline) y compara la ventana visible (`waterfall_frame_pixels` +
-`waterfall_render_head`). **186 checks, 0 fallas**, en build normal **y** bajo
+`waterfall_render_head`). **195 checks, 0 fallas**, en build normal **y** bajo
 ASan+UBSan:
 
 | Fixture | Qué prueba | Resultado |
@@ -187,10 +187,16 @@ ASan+UBSan:
 | 20 vueltas de anillo (H=8, 160 filas) | imagen por fila + offset (`render_head`), 160×800 px, 0 rebuilds | PASS |
 | cambio de centro durante el scroll | camino real `do_scroll_cb` → reconstrucción completa y ventana correcta | PASS |
 | zoom 100 kHz→30 kHz→100 kHz | reconstrucción por ancho de FFT | PASS |
-| cambio de paleta | reconstrucción por paleta (memcmp) | PASS |
+| las seis paletas (temas) | reconstrucción por paleta (memcmp) en cada una | PASS |
 | RX↔TX | la fila TX viaja con su ancho, sin rebuild | PASS |
-| ECO (1/4) + pantalla OFF/ON | ninguna fila se pierde; 0 px rasterizados con el panel oscuro | PASS |
+| min/max auto↔manual | la fila nueva se normaliza con el grid; las viejas no cambian, sin rebuild | PASS |
+| ECO (1/4) + pantalla OFF/ON | ninguna fila se pierde; 0 px con el panel oscuro; frecuencia y zoom cambian apagado y el wake reconstruye | PASS |
 | límites 0/1/512, size>NFFT, ancho estrecho, reserva fallida | sin divisores cero, sin desborde, inerte sin crash | PASS |
+
+La **línea central** (`waterfall_signal_width`) no vive en el frame del
+waterfall: es un objeto aparte y su contraste/geometría los cubre el arnés
+(`settle_waterfall_center_line`) y el A/B (`main-espectro-agua`,
+`waterfall_center_line`), no este test.
 
 ### A/B + contratos + benchmark
 

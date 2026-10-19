@@ -113,6 +113,11 @@ static int32_t   wf_center;
 
 static float row_buf[WATERFALL_NFFT];
 
+/* Niveles con los que el modulo normaliza (auto => S7/S9_40; manual => el grid
+ * de la banda). El fixture los fija al mismo tiempo que params/grid. */
+static float cur_min = S7;
+static float cur_max = S9_40;
+
 static uint8_t id_from_db(float db, float min, float max) {
     float v = (db - min) / (max - min);
 
@@ -146,8 +151,15 @@ static void setup(int h) {
 
 /* Feeds one constant row (all 512 samples equal) and drains the scheduler. */
 static void feed_row_id(uint8_t id, bool tx, bool drain) {
-    float min = tx ? S7 : S7;          /* auto min/max on => S7 / S9_40 */
-    float max = S9_40;
+    float min = cur_min;   /* el modulo normaliza con grid_min/grid_max (o los
+                            * defaults en TX: S7/S9_40) */
+    float max = cur_max;
+
+    if (tx) {
+        min = S7;
+        max = S9_40;
+    }
+
     float db = db_for_id(id, min, max);
 
     for (int i = 0; i < WATERFALL_NFFT; i++) {
@@ -314,12 +326,20 @@ static void fixture_palette(void) {
     }
     CHECK(compare_window() == 0, "antes del cambio de paleta");
 
-    /* Nueva paleta: el proximo refresh tiene que reconstruir. */
-    for (int i = 0; i < 256; i++) {
-        test_palette_set((uint8_t) i, (uint32_t) (0x00ff00u ^ (uint32_t) (i * 0x010101u)));
+    /* Las seis paletas del catalogo (los seis temas, docs/THEMES.md): cada
+     * cambio tiene que reconstruir. La ultima deja la ventana correcta. */
+    const uint32_t bases[6] = {
+        0x27313a, 0x0040a0, 0xffffff, 0x000000, 0xffd24a, 0x7cc4ff,
+    };
+
+    for (int p = 0; p < 6; p++) {
+        for (int i = 0; i < 256; i++) {
+            uint32_t v = bases[p] ^ (uint32_t) (i * 0x010101u);
+            test_palette_set((uint8_t) i, v & 0x00ffffffu);
+        }
+        feed_row_id((uint8_t) (70 + p), false, true);
+        CHECK(compare_window() == 0, "paleta %d: la ventana no coincide", p);
     }
-    feed_row_id(77, false, true);
-    CHECK(compare_window() == 0, "tras el cambio de paleta la ventana no coincide");
 }
 
 /* RX -> TX: la fila TX viaja con su propio ancho (48000) y no exige rebuild. */
@@ -371,9 +391,65 @@ static void fixture_eco_display(void) {
           "pantalla apagada: rasterizo %llu px",
           (unsigned long long) (waterfall_rasterized_px() - px0));
 
+    /* Frecuencia y zoom cambian con la pantalla apagada: al encender, el refresh
+     * reconstruye con el mapeo nuevo y muestra todas las filas. */
+    subject_set_int(cfg_cur.fft_width, 50000);
+    subject_set_int(cfg_cur.fg_freq, 14074000 + 3000);
+    lv_obj_invalidate(lv_scr_act());
+    lv_refr_now(NULL);              /* do_scroll_cb con el panel apagado */
+    scheduler_work();
+    global_width = 50000;
+    wf_center = 14074000 + 3000;
+    for (int k = 0; k < 4; k++) {
+        feed_row_id((uint8_t) (k + 40), false, false);
+    }
+    scheduler_work();
+    CHECK(waterfall_rasterized_px() - px0 == 0, "cambio con panel apagado: rasterizo");
+
     test_backlight_set(true);
     feed_row_id(99, false, true);   /* el wake muestra todas las pendientes */
     CHECK(compare_window() == 0, "wake: la ventana no coincide con el historial");
+}
+
+/* Min/max auto contra manual: la fila nueva se normaliza con el grid nuevo y
+ * las viejas NO cambian (los ids ya estan normalizados al escribir), asi que no
+ * hay reconstruccion. */
+static void fixture_minmax(void) {
+    printf("fixture: min/max auto/manual\n");
+
+    reset_palette();
+    subject_set_int(cfg_cur.fft_width, 100000);
+
+    params.waterfall_auto_min.x = true;
+    params.waterfall_auto_max.x = true;
+    cur_min = S7;
+    cur_max = S9_40;
+    waterfall_min_max_reset();
+    setup(8);
+    feed_row_id(120, false, true);
+    CHECK(compare_window() == 0, "auto: ventana");
+
+    uint32_t rb = waterfall_full_rebuild_count();
+
+    params.waterfall_auto_min.x = false;
+    params.waterfall_auto_max.x = false;
+    subject_set_int(cfg_cur.band->grid.min.val, S5);
+    subject_set_int(cfg_cur.band->grid.max.val, S9);
+    cur_min = S5;
+    cur_max = S9;
+    waterfall_min_max_reset();
+
+    feed_row_id(80, false, true);
+    CHECK(waterfall_full_rebuild_count() == rb,
+          "min/max manual reconstruyo (%u -> %u)",
+          rb, waterfall_full_rebuild_count());
+    CHECK(compare_window() == 0, "manual: ventana");
+
+    params.waterfall_auto_min.x = true;
+    params.waterfall_auto_max.x = true;
+    cur_min = S7;
+    cur_max = S9_40;
+    waterfall_min_max_reset();
 }
 
 /* Limites: alto 0/1/512/513, >512 muestras, ancho estrecho y reserva fallida. */
@@ -498,6 +574,7 @@ int main(void) {
     fixture_zoom();
     fixture_palette();
     fixture_rx_tx();
+    fixture_minmax();
     fixture_eco_display();
     fixture_limits();
     fixture_instrument();
