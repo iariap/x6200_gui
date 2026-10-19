@@ -8,12 +8,14 @@
 #include "cw_encoder.h"
 #include "cfg/cfg_api.h"
 
+#include "cb.h"
 #include "cw_decoder.h"
 #include "params/params.h"
 #include "cfg/cfg.h"
 #include "radio.h"
 #include "msg.h"
 #include "buttons.h"
+#include "voice.h"
 
 #include "lvgl/lvgl.h"
 #include <unistd.h>
@@ -53,9 +55,26 @@ void cw_encoder_require_train(bool on) {
     need_train = on;
 }
 
+/* CB TX interlock (issue #160). The keyer closes the morse line through
+ * radio_set_morse_key() (a GPIO), which does NOT go through radio_set_ptt() --
+ * the only place that consulted cb_tx_allowed() -- so cw_send could transmit
+ * outside the SBC window (measured at 26.515 MHz with cb_tx_scope = 0). This is
+ * the same gate: outside 26-28 MHz it is always allowed (ham bands unchanged);
+ * inside, cb_tx_allowed() decides by cb_tx_scope. */
+static bool tx_allowed(void) {
+    return cb_tx_allowed(subject_get_int(cfg_cur.fg_freq), params.cb_tx_scope.x);
+}
+
 /* Closes the key; with the train requirement and no train, it does not key */
 static bool key_down(void) {
     if (need_train && !param_i_get(cfg_key_train)) {
+        return false;
+    }
+
+    /* Per-element guard: if the dial moves out of the window mid-message (or
+     * mid-beacon), the key stops closing. The notice is emitted once, at arm
+     * time (cw_encoder_send), so this stays silent. */
+    if (!tx_allowed()) {
         return false;
     }
 
@@ -167,6 +186,15 @@ void cw_encoder_send(const char *text, bool beacon) {
      * alla del terminador y lee fuera del buffer de strdup("") (lo destapo el ASan
      * del suite nativo; get_msg() devuelve "" cuando la celda no es valida). */
     if (text == NULL || text[0] == 0) {
+        return;
+    }
+
+    /* CB TX interlock (issue #160): the same message + voice as radio_set_ptt().
+     * Refusing here (before arming) keeps the encoder IDLE, so the app never
+     * shows ON AIR and the bench can tell a blocked send from a real one. */
+    if (!tx_allowed()) {
+        msg_update_text_fmt("TX blocked: not a CB channel");
+        voice_say_text_fmt("TX blocked, not a C B channel");
         return;
     }
 

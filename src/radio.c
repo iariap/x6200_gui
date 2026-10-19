@@ -704,8 +704,27 @@ bool radio_change_spmode(int16_t df) {
     return params.spmode.x;
 }
 
+/* Interlock de CB (#146 seccion 7.2, #160): true si el software puede transmitir
+ * en la frecuencia actual con la politica cb_tx_scope. Trabaja por VENTANA de
+ * frecuencia, no exige canal exacto. Fuera de 26-28 MHz siempre permite, asi que
+ * las bandas de aficionado siguen iguales. */
+static bool radio_tx_allowed(void) {
+    return cb_tx_allowed(subject_get_int(cfg_cur.fg_freq), params.cb_tx_scope.x);
+}
+
 void radio_start_atu() {
     if (state == RADIO_RX) {
+        /* El tune del ATU transmite a potencia plena (portadora de sintonia):
+         * es un camino de TX que el software controla, asi que pasa por el mismo
+         * interlock que el PTT (issue #160). Fuera de 26-28 MHz no cambia nada.
+         * El barrido de ROE (radio_start_swrscan) queda afuera a proposito: es
+         * un diagnostico a 0,1 W y el unico camino de TX que el owner necesita
+         * en CB (ver el #160). */
+        if (!radio_tx_allowed()) {
+            msg_update_text_fmt("TX blocked: not a CB channel");
+            voice_say_text_fmt("TX blocked, not a C B channel");
+            return;
+        }
         state = RADIO_ATU_START;
     }
 }
@@ -1066,10 +1085,7 @@ radio_charger_t radio_change_charger(int16_t d) {
 }
 
 void radio_set_ptt(bool tx) {
-    /* Interlock de CB (issue #146, seccion 7.2): trabaja por VENTANA de
-     * frecuencia, no exige canal exacto. Fuera de 26-28 MHz no toca nada, asi
-     * que las bandas de aficionado siguen iguales. */
-    if (tx && !cb_tx_allowed(subject_get_int(cfg_cur.fg_freq), params.cb_tx_scope.x)) {
+    if (tx && !radio_tx_allowed()) {
         msg_update_text_fmt("TX blocked: not a CB channel");
         voice_say_text_fmt("TX blocked, not a C B channel");
 
@@ -1097,6 +1113,15 @@ void radio_speaker_play(bool on) {
 
 /* Digital modes: modem mode while a frame is transmitted */
 void radio_set_modem(bool tx) {
+    /* El modo modem es lo que keyea el TX de SSTV/WeFax/JS8 (tx_player), otro
+     * camino de software que no pasa por radio_set_ptt(): mismo interlock
+     * (issue #160). Apagarlo siempre pasa. Fuera de 26-28 MHz no cambia nada. */
+    if (tx && !radio_tx_allowed()) {
+        msg_update_text_fmt("TX blocked: not a CB channel");
+        voice_say_text_fmt("TX blocked, not a C B channel");
+        return;
+    }
+
     WITH_RADIO_LOCK(x6200_control_modem_set(tx));
 }
 
@@ -1159,5 +1184,14 @@ void radio_set_line_out(uint8_t d) {
 }
 
 void radio_set_morse_key(bool on) {
+    /* El keyer CW cierra este GPIO SIN pasar por radio_set_ptt(), que es donde
+     * vivia el interlock de CB (#160): cw_send transmitia fuera del SBC. Se
+     * evalua solo al CERRAR la llave (soltarla siempre pasa: nunca se deja el
+     * keyer pegado). Es un choke point de seguridad ademas del aviso que da el
+     * keyer en cw_encoder.c; por eso aca no repite mensaje. */
+    if (on && !radio_tx_allowed()) {
+        return;
+    }
+
     gpio_safe_set(x6200_pin_morse_key, on ? 0 : 1);
 }

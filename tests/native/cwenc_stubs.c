@@ -27,21 +27,43 @@
 
 static int stub_key_toggles;
 static int stub_msg_updates;
+static int stub_voice_announcements;
+
+/* Frecuencia del dial y politica del interlock de CB (issue #160): el test los
+ * mueve para recorrer la matriz de cb_tx_allowed() a traves del keyer. */
+static int32_t stub_freq = 27185000;   /* default: dentro del SBC argentino */
+
+/* Dummy Subject handle: the test only ever compares its address, never
+ * dereferences it (subject_get_int is faked here). */
+static int32_t stub_subj_fg_freq;
 
 int cwenc_stub_key_toggles(void) { return stub_key_toggles; }
 int cwenc_stub_msg_updates(void) { return stub_msg_updates; }
+int cwenc_stub_voice_announcements(void) { return stub_voice_announcements; }
 
 void cwenc_stub_reset(void) {
     stub_key_toggles = 0;
     stub_msg_updates = 0;
+    stub_voice_announcements = 0;
+    stub_freq  = 27185000;
+    params.cb_tx_scope.x = 0;
 }
+
+void cwenc_stub_set_freq(int32_t freq) { stub_freq = freq; }
+void cwenc_stub_set_scope(int scope)   { params.cb_tx_scope.x = (uint8_t) scope; }
 
 /* --- cfg / params ---------------------------------------------------------- */
 
 cfg_t    cfg;
+cfg_cur_t cfg_cur = { .fg_freq = (Subject *) &stub_subj_fg_freq };
 params_t params;
 
-int32_t subject_get_int(Subject *subj)   { (void) subj; return 20; }   /* WPM */
+int32_t subject_get_int(Subject *subj) {
+    if (subj == cfg_cur.fg_freq) {
+        return stub_freq;      /* dial */
+    }
+    return 20;                 /* WPM */
+}
 float   subject_get_float(Subject *subj) { (void) subj; return 3.0f; } /* ratio */
 
 /* --- radio / msg / buttons ------------------------------------------------- */
@@ -49,6 +71,8 @@ float   subject_get_float(Subject *subj) { (void) subj; return 3.0f; } /* ratio 
 void radio_set_morse_key(bool on) { (void) on; stub_key_toggles++; }
 
 void msg_update_text_fmt(const char *fmt, ...) { (void) fmt; stub_msg_updates++; }
+
+void voice_say_text_fmt(const char *fmt, ...) { (void) fmt; stub_voice_announcements++; }
 
 buttons_page_t buttons_page_msg_cw_1;
 
