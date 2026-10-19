@@ -218,10 +218,10 @@ ASan+UBSan:
 ### Memoria
 
 El anillo reutiliza el **mismo** buffer `800*height*4` (784 000 B con
-`height=245`): no hay buffer 2× ni copias extra. `RSS/PSS` del banco forzado
-(`bench-render`, host) queda dentro del ruido (A ≈ 10,6/7,6 MB, B ≈
-10,5/9,7 MB); el `PSS` de B sale más alto en esa corrida por ruido de medición
-del host, no por el cambio (el frame no crece).
+`height=245`): no hay buffer 2×, ni copias extra, y solo se agregan ~1 KiB de
+estado (`rendered_palette[256]`). `RSS/PSS` del A/B (`bench-render`):
+A `10 657 792 / 10 645 504` B, B `10 522 624 / 10 575 872` B (B no crece;
+`main-espectro-agua` y `main-natural` quedan dentro del ruido, ±1 %).
 
 ## Riesgos y rollback
 
