@@ -42,6 +42,10 @@ void test_invalidation_reset(void);
 int  test_invalidation_calls(void);
 bool test_invalidation_last(void);
 
+/* OPT-4 #150: registro de lv_obj_invalidate(lv_scr_act()) en el OFF->ON. */
+void test_screen_invalidations_reset(void);
+int  test_screen_invalidations(void);
+
 /* Dispara el callback de idle que backlight_tick() registro. */
 void test_backlight_run_idle_timer(void);
 
@@ -94,8 +98,11 @@ void test_backlight(void) {
      * pasa por el cap. Empieza encendido (arranque del modulo). --- */
     test_rewrite_reset();
     test_invalidation_reset();
+    test_screen_invalidations_reset();
     backlight_switch();                 /* encendido -> apagado: sin rewrite */
     CHECK(test_rewrite_calls() == 0);
+    /* Apagar no repinta: la invalidacion del screen solo va en el ON. */
+    CHECK(test_screen_invalidations() == 0);
 
     /* El apagado corta la invalidacion del display (issue #13, UI-07
      * remanente): con el panel oscuro no queda trabajo de render. El banco lo
@@ -114,6 +121,7 @@ void test_backlight(void) {
 
     test_rewrite_reset();
     test_invalidation_reset();
+    test_screen_invalidations_reset();
     backlight_switch();                 /* apagado -> encendido: un rewrite */
     CHECK(test_rewrite_calls() == 1);
     CHECK(test_rewrite_last_valid());
@@ -122,6 +130,14 @@ void test_backlight(void) {
     /* Y al volver la pantalla se vuelve a invalidar. */
     CHECK(test_invalidation_calls() == 1);
     CHECK(test_invalidation_last() == true);
+
+    /* OPT-4 #150: la primera invalidacion tras despertar cubre toda la pantalla.
+     * Mientras el panel estuvo apagado, _lv_inv_area() (lv_refr.c) descarto las
+     * invalidaciones, asi que los pixeles que cambiaron (reloj, banda, updaters)
+     * no quedaron pendientes; rehabilitar la invalidacion no repinta sola, hay
+     * que invalidar el screen. Sin esa linea, esto queda en 0 y el panel
+     * mostraria el frame viejo. */
+    CHECK(test_screen_invalidations() == 1);
 
     /* Y el estado que gatea el redibujo offscreen vuelve a encendido junto con la
      * invalidacion: la cascada redibuja de nuevo en la proxima fila. */

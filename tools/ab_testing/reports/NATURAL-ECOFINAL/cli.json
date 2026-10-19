@@ -2,7 +2,7 @@
   "scenario": "main-natural",
   "screen": "main",
   "seed": 13,
-  "revision": "d2beb6c605b9bc0502a2d6bcc115c3cfa18a2800",
+  "revision": "cbaaf72fc896f918c30717ca6e20c8a3dcc5d8e4",
   "framebuffer": { "width": 800, "height": 480 },
   "theme": {
     "requested": "Aurora",
@@ -54,8 +54,8 @@
     "poweroff": 0
   },
   "metrics": {
-    "flushes": 21,
-    "flushed_pixels": 3683680,
+    "flushes": 20,
+    "flushed_pixels": 3667840,
     "framebuffer_fnv1a": "0x2d156d3bbd15fd50",
     "png_path": "out/natural/cli.png",
     "png_bytes": 255198

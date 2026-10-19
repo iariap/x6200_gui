@@ -19,9 +19,12 @@
 #include "params/params.h"
 #include "pubsub_ids.h"
 #include "ui_tokens.h"      /* la geometria de la barra (issue #10, UI-05) */
+#include "ui_set.h"         /* guardas de igualdad (OPT-4 #150) */
 #include "wifi.h"
 
 #include <ctype.h>
+#include <stdio.h>
+#include <string.h>
 
 typedef enum {
     INFO_VFO = 0,
@@ -276,7 +279,7 @@ static void wifi_state_change_cb(void *s, lv_msg_t *m) {
         color = TC(text_dim);
         break;
     }
-    lv_obj_set_style_text_color(items[INFO_WIFI], color, 0);
+    ui_obj_set_text_color(items[INFO_WIFI], color);
 }
 
 /* Icono de Bluetooth: mismo criterio de colores que el WiFi (blanco = listo, gris = a medias,
@@ -292,8 +295,22 @@ static void bt_state_show(void) {
         color = TC(text_dim);
     }
 
-    if (bt_item != NULL) {
+    /* Guarda de igualdad (OPT-4 #150): el timer de 2 s reescribe el color del
+     * icono aunque el estado de BT no haya cambiado; set_style invalida siempre.
+     * Se compara contra el color resuelto del objeto (sin cache). */
+    if (bt_item != NULL && lv_obj_get_style_line_color(bt_item, 0).full != color.full) {
         lv_obj_set_style_line_color(bt_item, color, 0);
+    }
+}
+
+/* Guarda de igualdad para el color de fondo + opa de una celda (mismo criterio
+ * que ui_obj_set_text_color, para los pares que cambian juntos). */
+static void info_set_bg(lv_obj_t *obj, lv_color_t color, lv_opa_t opa) {
+    if (lv_obj_get_style_bg_color(obj, 0).full != color.full) {
+        lv_obj_set_style_bg_color(obj, color, 0);
+    }
+    if (lv_obj_get_style_bg_opa(obj, 0) != opa) {
+        lv_obj_set_style_bg_opa(obj, opa, 0);
     }
 }
 
@@ -312,38 +329,40 @@ static void vfo_label_update(Subject *subj, void * user_data) {
     char label[8];
 
     if (cb_channel_label(subject_get_int(cfg_cur.fg_freq), label, sizeof(label))) {
-        lv_label_set_text(items[INFO_VFO], label);
+        ui_label_set_text(items[INFO_VFO], label);
     } else {
-        lv_label_set_text(items[INFO_VFO], info_params_vfo_label_get());
+        ui_label_set_text(items[INFO_VFO], info_params_vfo_label_get());
     }
 }
 
 static void mode_label_update(Subject *subj, void *user_data) {
-    lv_label_set_text(items[INFO_MODE], info_params_mode_label_get());
+    ui_label_set_text(items[INFO_MODE], info_params_mode_label_get());
     x6200_mode_t mode = subject_get_int(cfg_cur.mode);
     if ((mode == x6200_mode_lsb_dig) || (mode == x6200_mode_usb_dig)) {
-        lv_obj_set_style_text_color(items[INFO_MODE], TC(mode_dig), 0);
+        ui_obj_set_text_color(items[INFO_MODE], TC(mode_dig));
     } else if (subject_get_int(mode_lock)) {
-        lv_obj_set_style_text_color(items[INFO_MODE], TC(text_mute), 0);
+        ui_obj_set_text_color(items[INFO_MODE], TC(text_mute));
     } else {
-        lv_obj_set_style_text_color(items[INFO_MODE], TC(text), 0);
+        ui_obj_set_text_color(items[INFO_MODE], TC(text));
     }
 }
 
 static void atu_label_update(Subject *subj, void * user_data) {
     int32_t ant = subject_get_int(cfg.ant_id.val);
-    lv_label_set_text_fmt(items[INFO_ATU], "ATU%i", ant);
+    char    label[8];
+
+    snprintf(label, sizeof(label), "ATU%i", ant);
+    ui_label_set_text(items[INFO_ATU], label);
+
     int32_t freq = subject_get_int(cfg_cur.fg_freq);
 
     if (!subject_get_int(cfg.atu_enabled.val)) {
-        lv_obj_set_style_text_color(items[INFO_ATU], TC(text), 0);
-        lv_obj_set_style_bg_color(items[INFO_ATU], TC(bar), 0);
-        lv_obj_set_style_bg_opa(items[INFO_ATU], LV_OPA_COVER, 0);
+        ui_obj_set_text_color(items[INFO_ATU], TC(text));
+        info_set_bg(items[INFO_ATU], TC(bar), LV_OPA_COVER);
     } else {
         if (cfg_transverter_get_shift(freq)) {
-            lv_obj_set_style_text_color(items[INFO_ATU], TC(text_dim), 0);
-            lv_obj_set_style_bg_color(items[INFO_ATU], TC(bar), 0);
-            lv_obj_set_style_bg_opa(items[INFO_ATU], LV_OPA_COVER, 0);
+            ui_obj_set_text_color(items[INFO_ATU], TC(text_dim));
+            info_set_bg(items[INFO_ATU], TC(bar), LV_OPA_COVER);
         } else {
             /* Cargado o no: roles del tema. El rojo fijo #FF0000 no servia (daba ~2:1 sobre las partes
              * claras del bitmap) y ningun rol "rojo" del tema llega a 4.5 sobre TC(bar) -tx 3.06 en
@@ -351,9 +370,8 @@ static void atu_label_update(Subject *subj, void * user_data) {
              * que es lo que el chequeo valida (docs/HALLAZGOS.md 30). */
             bool cargado = subject_get_int(cfg_cur.atu->loaded);
 
-            lv_obj_set_style_bg_color(items[INFO_ATU], cargado ? TC(sel_bg) : TC(bar), 0);
-            lv_obj_set_style_bg_opa(items[INFO_ATU], LV_OPA_COVER, 0);
-            lv_obj_set_style_text_color(items[INFO_ATU], cargado ? TC(sel_text) : TC(text_dim), 0);
+            info_set_bg(items[INFO_ATU], cargado ? TC(sel_bg) : TC(bar), LV_OPA_COVER);
+            ui_obj_set_text_color(items[INFO_ATU], cargado ? TC(sel_text) : TC(text_dim));
         }
     }
 }
@@ -364,7 +382,7 @@ static void agc_label_update(Subject *subj, void *user_data) {
     for (size_t i = 0; i < strlen(label); i++) {
         label[i] = toupper(label[i]);
     }
-    lv_label_set_text(items[INFO_AGC], label);
+    ui_label_set_text(items[INFO_AGC], label);
 }
 
 static void att_pre_label_update(Subject *subj, void * user_data) {
@@ -374,14 +392,13 @@ static void att_pre_label_update(Subject *subj, void * user_data) {
     bool activo = subject_get_int(cfg_cur.att) || subject_get_int(cfg_cur.pre);
 
     if (subject_get_int(cfg_cur.att)) {
-        lv_label_set_text(items[INFO_PRE_ATT], "ATT");
+        ui_label_set_text(items[INFO_PRE_ATT], "ATT");
     } else if (subject_get_int(cfg_cur.pre)) {
-        lv_label_set_text(items[INFO_PRE_ATT], "PRE");
+        ui_label_set_text(items[INFO_PRE_ATT], "PRE");
     } else {
-        lv_label_set_text(items[INFO_PRE_ATT], "P/A");
+        ui_label_set_text(items[INFO_PRE_ATT], "P/A");
     }
 
-    lv_obj_set_style_bg_color(items[INFO_PRE_ATT], activo ? TC(sel_bg) : TC(bar), 0);
-    lv_obj_set_style_bg_opa(items[INFO_PRE_ATT], LV_OPA_COVER, 0);
-    lv_obj_set_style_text_color(items[INFO_PRE_ATT], activo ? TC(sel_text) : TC(text), 0);
+    info_set_bg(items[INFO_PRE_ATT], activo ? TC(sel_bg) : TC(bar), LV_OPA_COVER);
+    ui_obj_set_text_color(items[INFO_PRE_ATT], activo ? TC(sel_text) : TC(text));
 }

@@ -20,6 +20,7 @@
 #define NUM_ITEMS   7
 #define METER_PEAK_HOLD 1500
 #define METER_PEAK_SPEED 20
+#define METER_SLICE_DB  3
 
 static int16_t          min_db = S1;
 static int16_t          max_db = S9_40;
@@ -31,6 +32,14 @@ static float            noise_level = S_MIN;
 static int16_t          meter_peak = S1;
 static int64_t          meter_peak_time;
 static int64_t          now;
+
+/* Ultimo estado efectivamente dibujado (OPT-4 #150), para no invalidar el
+ * medidor cuando meter_update repite el mismo valor. */
+static bool             drawn_valid;
+static int16_t          drawn_bar_count;
+static int16_t          drawn_peak;
+static float            drawn_needle_db;
+static float            drawn_noise_level;
 
 static bool             pre=false;
 static bool             att=false;
@@ -198,7 +207,7 @@ static void meter_draw_cb(lv_event_t * e) {
     lv_coord_t w = lv_obj_get_width(obj) - 80;
     // lv_coord_t h = lv_obj_get_height(obj) - 1;
 
-    uint8_t     slice_db = 3;
+    uint8_t     slice_db = METER_SLICE_DB;
     uint8_t     slices_total = (max_db - min_db) / slice_db;
     uint8_t     slice_w = w / slices_total;
     uint8_t     slice_spacing = slice_w * 2 / 10;
@@ -316,6 +325,36 @@ void meter_update(int16_t db, float beta) {
         meter_peak -= (now - meter_peak_time - METER_PEAK_HOLD) * METER_PEAK_SPEED / 1000;
     }
     meter_db = meter_db * beta + db * (1.0f - beta);
+
+    /* Guarda de igualdad (OPT-4 #150): meter_update corre a la cadencia del DSP
+     * (25 fps, src/dsp.cpp) y event_send(REFRESH) invalida el medidor cada vez.
+     * El medidor de barra dibuja solo el conteo entero de segmentos y el pico;
+     * si ninguno cambio no hay un pixel nuevo que mostrar. El de aguja sigue a
+     * meter_db (float), asi que ahi la guarda es por el float. */
+    if (params.smeter_needle.x) {
+        if (drawn_valid && meter_db == drawn_needle_db && meter_peak == drawn_peak) {
+            return;
+        }
+        drawn_needle_db = meter_db;
+        drawn_peak      = meter_peak;
+    } else {
+        uint32_t slices_total = (uint32_t) (max_db - min_db) / METER_SLICE_DB;
+        uint32_t count = (uint32_t) ((meter_db - min_db + METER_SLICE_DB) / METER_SLICE_DB);
+
+        count = LV_MIN(count, slices_total);
+        /* El color de cada segmento depende de noise_level (spectrum_get_min()):
+         * aunque el conteo y el pico no cambien, un cambio de ruido repinta la
+         * barra, asi que entra en la comparacion. */
+        if (drawn_valid && (int16_t) count == drawn_bar_count && meter_peak == drawn_peak
+            && noise_level == drawn_noise_level) {
+            return;
+        }
+        drawn_bar_count   = (int16_t) count;
+        drawn_peak        = meter_peak;
+        drawn_noise_level = noise_level;
+    }
+    drawn_valid = true;
+
     event_send(obj, LV_EVENT_REFRESH, NULL);
 }
 

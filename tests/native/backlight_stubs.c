@@ -112,6 +112,26 @@ void * lv_disp_get_default(void) {
     return NULL;
 }
 
+/* OPT-4 #150: lv_obj_invalidate(lv_scr_act()) al volver la pantalla. */
+static int screen_invalidations;
+
+void lv_obj_invalidate(lv_obj_t * obj) {
+    (void) obj;
+    screen_invalidations++;
+}
+
+lv_obj_t * lv_scr_act(void) {
+    return NULL;
+}
+
+int test_screen_invalidations(void) {
+    return screen_invalidations;
+}
+
+void test_screen_invalidations_reset(void) {
+    screen_invalidations = 0;
+}
+
 int test_invalidation_calls(void) {
     return inv_calls;
 }

@@ -19,6 +19,7 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 
 typedef enum {
@@ -59,7 +60,15 @@ static time_t get_last_sync_time();
 static void clock_shadow_update() {
     if (shadow == NULL) return;
 
-    lv_label_set_text(shadow, state == CLOCK_TIME ? "88:88:88" : "");
+    const char *txt = state == CLOCK_TIME ? "88:88:88" : "";
+
+    /* Guarda de igualdad (OPT-4 #150): lv_label_set_text invalida el objeto
+     * aunque el texto sea el mismo, y show_time corre cada 500 ms mientras el
+     * fantasma solo cambia con el estado. Se compara contra el texto vivo de la
+     * etiqueta, sin cache: el tema/fuente no la pueden dejar desactualizada. */
+    if (strcmp(lv_label_get_text(shadow), txt) != 0) {
+        lv_label_set_text(shadow, txt);
+    }
 }
 
 static void set_state(clock_state_t new_state) {
@@ -70,13 +79,27 @@ static void set_state(clock_state_t new_state) {
 
     /* El valor y su fantasma miden igual: el fantasma solo enciende los segmentos
      * que el valor apaga, asi que la metrica (fuente y pad) tiene que ser la misma
-     * en las dos etiquetas. */
-    lv_obj_set_style_text_font(obj, font, 0);
-    lv_obj_set_style_pad_ver(obj, pad, 0);
+     * en las dos etiquetas.
+     *
+     * Guarda de igualdad (OPT-4 #150): lv_obj_set_style_* invalida el objeto
+     * aunque el valor sea el mismo (LVGL 8 no compara) y con
+     * CLOCK_TIME_ALLWAYS set_state() corre en cada tick de 500 ms. Se lee el
+     * estilo resuelto del objeto (no un cache) para que un cambio de tema o de
+     * fuente siga aplicandose. */
+    if (lv_obj_get_style_text_font(obj, 0) != font) {
+        lv_obj_set_style_text_font(obj, font, 0);
+    }
+    if (lv_obj_get_style_pad_top(obj, 0) != pad) {
+        lv_obj_set_style_pad_ver(obj, pad, 0);
+    }
 
     if (shadow != NULL) {
-        lv_obj_set_style_text_font(shadow, font, 0);
-        lv_obj_set_style_pad_ver(shadow, pad, 0);
+        if (lv_obj_get_style_text_font(shadow, 0) != font) {
+            lv_obj_set_style_text_font(shadow, font, 0);
+        }
+        if (lv_obj_get_style_pad_top(shadow, 0) != pad) {
+            lv_obj_set_style_pad_ver(shadow, pad, 0);
+        }
     }
 }
 
@@ -156,7 +179,14 @@ static void show_time() {
             break;
     }
 
-    lv_label_set_text(obj, str);
+    /* Guarda de igualdad (OPT-4 #150): show_time corre cada 500 ms y el texto
+     * de la hora solo cambia una vez por segundo (y el de potencia, rara vez),
+     * asi que la mitad de los ticks reescribian el mismo texto e invalidaban el
+     * reloj al pedo. Se compara contra el texto vivo de la etiqueta: no hay
+     * cache que un cambio de tema/fuente pueda invalidar. */
+    if (strcmp(lv_label_get_text(obj), str) != 0) {
+        lv_label_set_text(obj, str);
+    }
     clock_shadow_update();
 }
 

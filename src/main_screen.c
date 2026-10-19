@@ -9,6 +9,7 @@
 #include "main_screen.h"
 
 #include "styles.h"
+#include "ui_set.h"         /* guardas de igualdad (OPT-4 #150) */
 #include "ui_tokens.h"      /* la geometria de la fila de frecuencia (issue #10, UI-05) */
 #include "spectrum.h"
 #include "waterfall.h"
@@ -1096,10 +1097,14 @@ static void freq_shift(int16_t diff) {
 
 static void update_tuning_multiplier_display(float multiplier) {
     if (!tuning_multiplier_label) return;
-    
-    // Update text
-    lv_label_set_text_fmt(tuning_multiplier_label, "x%.1f", multiplier);
-    
+
+    // Update text (OPT-4 #150: guarda de igualdad; el encoder reescribe el
+    // mismo "x%.1f" al moverse dentro del mismo multiplo)
+    char buf[16];
+
+    snprintf(buf, sizeof(buf), "x%.1f", multiplier);
+    ui_label_set_text(tuning_multiplier_label, buf);
+
     // Update color based on range
     lv_color_t color;
     if (multiplier < 1.0f) {
@@ -1111,7 +1116,7 @@ static void update_tuning_multiplier_display(float multiplier) {
     } else {
         color = lv_color_hex(theme_hex(TC_err));   // Red - scan
     }
-    lv_obj_set_style_text_color(tuning_multiplier_label, color, 0);
+    ui_obj_set_text_color(tuning_multiplier_label, color);
     lv_obj_clear_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
     
     // Reset hide timer
@@ -1557,7 +1562,7 @@ static void freq_shadow_update(const char *value) {
     }
     ghost[i] = '\0';
 
-    lv_label_set_text(freq_shadow, ghost);
+    ui_label_set_text(freq_shadow, ghost);
 }
 
 static void on_fg_freq_change(Subject *subj, void *user_data) {
@@ -1608,7 +1613,10 @@ static void on_fg_freq_change(Subject *subj, void *user_data) {
     /* El color va en el markup del valor, que pisa el text_color del estilo; el
      * fantasma va sin markup, para que la unica diferencia entre los dos sea la
      * alpha (y en el tema claro Outdoor el fantasma no quede invisible). */
-    lv_label_set_text_fmt(freq[1], "#%06X %s", color, value);
+    char marked[64];
+
+    snprintf(marked, sizeof(marked), "#%06X %s", color, value);
+    ui_label_set_text(freq[1], marked);
     freq_shadow_update(value);
 }
 
@@ -1626,11 +1634,15 @@ static void update_freq_boundaries(Subject *subj, void *user_data) {
     /* Los extremos de la fila usan los mismos roles del tema que la frecuencia central (UI-010) */
     uint32_t    color = theme_hex(subject_get_int(freq_lock) ? TC_text_soft : TC_text);
 
+    char boundary[32];
+
     split_freq(f - half_width, &mhz, &khz, &hz);
-    lv_label_set_text_fmt(freq[0], "#%06X %i.%03i", color, mhz, khz);
+    snprintf(boundary, sizeof(boundary), "#%06X %i.%03i", color, mhz, khz);
+    ui_label_set_text(freq[0], boundary);
 
     split_freq(f + half_width, &mhz, &khz, &hz);
-    lv_label_set_text_fmt(freq[2], "#%06X %i.%03i", color, mhz, khz);
+    snprintf(boundary, sizeof(boundary), "#%06X %i.%03i", color, mhz, khz);
+    ui_label_set_text(freq[2], boundary);
 
     /* The band plan strip follows the same span as the frequency labels */
     band_plan_update(f, (int32_t) half_width);

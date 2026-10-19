@@ -48,6 +48,9 @@
 const char * clock_stub_last_text(void);
 const char * clock_stub_shadow_text(void);
 void clock_stub_run_timers(void);
+int clock_stub_label_set_calls(void);
+int clock_stub_style_font_calls(void);
+int clock_stub_style_pad_calls(void);
 
 /* The battery family is the U+F240..U+F244 block: three UTF-8 bytes each,
  * sharing the first two (`\xEF\x89`). */
@@ -107,4 +110,32 @@ void test_clock(void) {
      * solo con el fondo. */
     render_power(5.8f, 13.8f, 30, false);
     CHECK(strcmp(clock_stub_shadow_text(), "") == 0);
+
+    /* OPT-4 #150: guardas de igualdad. show_time() corre cada 500 ms y set_state()
+     * puede correr en cada tick (CLOCK_TIME_ALLWAYS); con el mismo valor ninguna
+     * de las dos tiene que volver a escribir (ni invalidar) el reloj. */
+    params.clock_view = CLOCK_POWER_ALLWAYS;
+    clock_update_power(13.8f, 7.2f, 40, false);
+    clock_stub_run_timers();
+
+    int text_calls = clock_stub_label_set_calls();
+    int font_calls = clock_stub_style_font_calls();
+    int pad_calls  = clock_stub_style_pad_calls();
+
+    clock_stub_run_timers();
+    clock_stub_run_timers();
+    CHECK(clock_stub_label_set_calls() == text_calls);
+    CHECK(clock_stub_style_font_calls() == font_calls);
+    CHECK(clock_stub_style_pad_calls() == pad_calls);
+
+    /* Un cambio real si escribe: la guarda no congela el reloj. */
+    clock_update_power(13.8f, 8.4f, 60, false);
+    clock_stub_run_timers();
+    CHECK(clock_stub_label_set_calls() == text_calls + 1);
+
+    /* Y el cambio de vista (fuente/pad distintos) si toca el estilo. */
+    params.clock_view = CLOCK_TIME_ALLWAYS;
+    clock_stub_run_timers();
+    CHECK(clock_stub_style_font_calls() > font_calls);
+    CHECK(clock_stub_style_pad_calls() > pad_calls);
 }

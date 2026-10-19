@@ -6,12 +6,12 @@ corridas que la spec de la corrida mide, generadas en host x86 con el harness de
 
 | archivo | modo | qué fija |
 |---|---|---|
-| `natural.json` / `run1.json` | `--bench-natural` | el perfil del corpus UI-07 (11223840 px, 67 rectángulos, 39/40 frames) y el instrumento `waterfall_offscreen_redraws = 40` (uno por fila) |
+| `natural.json` / `run1.json` | `--bench-natural` | el perfil del corpus UI-07 (11208000 px, 66 rectángulos, 39/40 frames) y el instrumento `waterfall_offscreen_redraws = 40` (uno por fila) |
 | `forced.json` | `--bench` | compatibilidad del modo forzado (3 frames x 384000 px) |
-| `static.json` | `--bench-natural --natural-static` | la delimitación (sin drive no hay regiones de datos; quedan reloj/band info/BT) |
+| `static.json` | `--bench-natural --natural-static` | la delimitación (sin drive no hay regiones de datos; quedan sólo los band-info: las guardas de OPT-4 #150 apagaron los ticks idénticos de reloj/BT) |
 | `cli.json` | `--bench-natural 10` | el override de frames por CLI |
 | `off.json` | `--bench-natural --display-off` | el panel oscuro: 0 px y `waterfall_offscreen_redraws = 0` (el corte del cómputo de la paleta) |
-| `main-natural-eco.json` | `--bench-natural` sobre `main-natural-eco` | la cadencia ECO: cascada 10/40 redibujos y espectro 1 de cada 4 (`VP_SPECTRUM_ECO_PERIOD`), totales 2861240 px |
+| `main-natural-eco.json` | `--bench-natural` sobre `main-natural-eco` | la cadencia ECO: cascada 10/40 redibujos y espectro 1 de cada 4 (`VP_SPECTRUM_ECO_PERIOD`), totales 2796800 px |
 
 Los PNG de la captura común (`forced`, `static`, `off`) son byte a byte los del
 corpus previo (ver `sha256.txt`): poner el periodo de la ROM en el refr_timer no
@@ -80,3 +80,38 @@ entre `02c1311` y esta base entraron cambios de UI ajenos a OPT-2 (el A/B
 OPT-2 `02090454` vs `576d2df3` es pixel-identical sobre 89 escenarios). El
 bloque `natural` no cambió; sólo la imagen (`framebuffer_fnv1a`/`png_bytes`) y
 los dos campos nuevos. Ver `sha256.txt`.
+
+## Re-baseline 2026-10-19 — guardas de igualdad de OPT-4 #150
+
+Las guardas de igualdad de los updaters (`923e4dea`: `src/clock.c`, `src/info.c`,
+`src/meter.c`, `src/tx_info.c`, `src/main_screen.c`, `src/ui_set.h`) evitan
+`lv_label_set_text` / `lv_obj_set_style_*` cuando el valor **vivo** del objeto no
+cambia (LVGL 8.3.11 no compara: cada escritura idéntica invalidaba igual). En el
+arnés `time()` está fijo (`mocks/mock_ui_deps.c`), así que el reloj y el icono BT
+no cambian de texto/color en toda la corrida y dejan de invalidar.
+
+Esta evidencia se re-generó con el binario de la rama (`tests/check_harness_natural.sh`
+más `--bench-natural` sobre `main-natural-eco`). El **histograma de rectángulos
+del bloque `natural` pierde el rectángulo del reloj** `(580,0,220,72)`
+(15840 px) y el control de delimitación queda sólo con los band-info: es el
+efecto buscado por las guardas, no una regresión. Ningún PNG se mueve (ver
+`sha256.txt`: las guardas sólo suprimen invalidaciones que no cambiaban un
+píxel), y las regiones perfiladas tampoco (son geometría): el espectro sigue con
+132000 px x 27 frames y la cascada con 196000 px x 39 filas.
+
+| campo | antes (OPT-2 `d2beb6c6`) | después (OPT-4 `cbaaf72f`) |
+|---|---|---|
+| `natural.totals.invalidated_px` | 11223840 | **11208000** |
+| `natural.totals.invalidated_rects` / `flushes` | 67 / 67 | **66 / 66** |
+| histograma: reloj `(580,0,220,72)` | 1 | **0** |
+| `--natural-static` `invalidated_px` (sólo band-info) | 254840 | **190400** |
+| captura común `metrics.flushes` / `flushed_pixels` | 6 / 1127680 | **5 / 1111840** |
+| `--bench-natural --display-off` `metrics.flushes` / `flushed_pixels` | 5 / 743680 | **4 / 727840** |
+| `main-natural-eco` `invalidated_px` / `rects` | 2861240 / 25 | **2796800 / 20** |
+| PNG de todos los modos | — | **sin cambio** (mismos sha256) |
+
+En la radio el texto del reloj cambia una vez por segundo, así que la guarda no
+lo apaga del todo: sólo evita el tick redundante (2 ticks/s → 1). En el arnés,
+con `time()` congelado, los suprime todos. El perfil natural, el histograma y los
+totales quedan fijados por `tests/natural_evidence.py`; el contrato de
+`tools/ab_testing/tests/test_natural.py` se actualizó con los mismos números.
