@@ -279,25 +279,29 @@ static sched_item_t sched_q[SCHED_MAX];
 static unsigned     sched_read;
 static unsigned     sched_write;
 
-void scheduler_put(scheduler_fn_t fn, void *arg, size_t arg_size) {
+bool scheduler_put(scheduler_fn_t fn, void *arg, size_t arg_size) {
     if ((sched_write + 1) % SCHED_MAX == sched_read || fn == NULL) {
-        return;
+        return false;
     }
 
     void *copy = NULL;
 
     if (arg_size > 0) {
         copy = malloc(arg_size);
+        if (copy == NULL) {
+            return false;
+        }
         memcpy(copy, arg, arg_size);
     }
 
     sched_q[sched_write].fn  = fn;
     sched_q[sched_write].arg = copy;
     sched_write = (sched_write + 1) % SCHED_MAX;
+    return true;
 }
 
-void scheduler_put_noargs(scheduler_fn_t fn) {
-    scheduler_put(fn, NULL, 0);
+bool scheduler_put_noargs(scheduler_fn_t fn) {
+    return scheduler_put(fn, NULL, 0);
 }
 
 void scheduler_work(void) {

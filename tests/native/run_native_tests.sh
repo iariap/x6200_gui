@@ -485,3 +485,100 @@ $CC $BASEFLAGS -fanalyzer -I"$HK_STAGE" \
     -c "$HK_STAGE/hkey.c" -o "$OUT/hkey.o" || true
 
 "$OUT/hkey_tests"
+
+# --- Spectrum snapshots (issue #149) -----------------------------------------
+# src/spectrum.c se incluye con `#include "..."` (spectrum.h, theme.h, dsp.h,
+# params/params.h, ...) y para un include entre comillas manda el directorio del
+# archivo que incluye, asi que los headers stub de tests/native/stubs_spectrum/
+# no pueden tapar los de src/ desde su propio directorio: el modulo real se
+# stagea al lado de una copia de los stubs, el mismo patron que
+# clock/backlight/digital-modes/SWR-Scan/restore/events/hkey (ver
+# tests/native/test_spectrum.c).
+#
+# El defecto del #149: spectrum_data() publica el frame bajo data_mux, pero el
+# callback de dibujo lo leia sin el mutex (y spectrum_clear() lo reiniciaba sin
+# lock). El test intercala al productor EN MITAD del dibujo (pausa determinista
+# en la linea 700 de la traza) y exige una unica generacion por dibujo: con el
+# spectrum.c de la base las lineas 0..699 salen de la generacion A, el resto de
+# la B, y el rectangulo del filtro (que el callback lee despues del lazo) sale
+# de la B. El mismo binario cubre spectrum_clear() concurrente, el backlog del
+# scheduler (50 frames sin drenar -> 1 refresco encolado, no 50), los bounds del
+# frame y el estres de productor+config+dibujo en paralelo.
+echo "== Spectrum (#149): snapshot por frame, sin lock durante el dibujo =="
+SP_STAGE="$OUT/spectrum_src"
+rm -rf "$SP_STAGE"
+mkdir -p "$SP_STAGE/lvgl" "$SP_STAGE/params" "$SP_STAGE/cfg"
+cp "$SRC/spectrum.c" "$SRC/spectrum.h" "$SRC/scheduler.h" "$SP_STAGE/"
+cp "$DIR/stubs_spectrum/lvgl/lvgl.h" "$SP_STAGE/lvgl/"
+cp "$DIR/stubs_spectrum/params/params.h" "$SP_STAGE/params/"
+cp "$DIR/stubs_spectrum/cfg/cfg.h" "$SP_STAGE/cfg/"
+cp "$DIR/stubs_spectrum/theme.h" "$DIR/stubs_spectrum/styles.h" "$DIR/stubs_spectrum/meter.h" \
+   "$DIR/stubs_spectrum/dsp.h" "$DIR/stubs_spectrum/events.h" "$DIR/stubs_spectrum/radio.h" \
+   "$DIR/stubs_spectrum/recorder.h" "$DIR/stubs_spectrum/rtty.h" "$DIR/stubs_spectrum/util.h" \
+   "$DIR/stubs_spectrum/pubsub_ids.h" "$SP_STAGE/"
+SP_SRC="$SP_STAGE/spectrum.c $DIR/spectrum_stubs.c $DIR/test_spectrum.c \
+$DIR/test_framework.c $DIR/spectrum_test_main.c"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$SP_STAGE" -I"$DIR" $SP_SRC -o "$OUT/spectrum_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$SP_STAGE" -I"$DIR" $SP_SRC -o "$OUT/spectrum_tests"
+fi
+
+echo "== Spectrum: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$SP_STAGE" -I"$DIR" \
+    -c "$SP_STAGE/spectrum.c" -o "$OUT/spectrum.o" || true
+
+"$OUT/spectrum_tests"
+
+# --- ThreadSanitizer (issue #149, experimento 6) -----------------------------
+# Cobertura declarada: TSan corre en el HOST (x86_64, gcc). El binario ARM de la
+# radio NO corre bajo TSan en este arnes, asi que estos resultados NO se
+# atribuyen al Cortex-A7: lo que se prueba es el codigo de sincronizacion del
+# modulo (el mismo fuente que se compila para ARM).
+#
+# 1) El mismo binario del test con -fsanitize=thread: el modulo arreglado tiene
+#    que terminar sin reportes (el estres y la pausa determinista hacen que el
+#    productor y el hilo de GUI se pisen de verdad).
+# 2) El fixture de carrera deliberada (escritor con mutex + lector sin mutex,
+#    el patron exacto del spectrum.c de la base): TIENE que reportar una data
+#    race. Si no reporta, el detector no sirve y el punto (1) no valdria nada.
+if echo 'int main(void){return 0;}' | $CC -x c - -pthread -fsanitize=thread -o "$OUT/.tsan_probe" >/dev/null 2>&1 \
+   && "$OUT/.tsan_probe" >/dev/null 2>&1; then
+    TSAN_OK=yes
+    echo "== TSan: disponible en este host =="
+else
+    TSAN_OK=no
+    echo "== TSan: NO disponible en este host (se omite; cobertura x86_64, no ARM) =="
+fi
+
+if [ "$TSAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -fsanitize=thread -fno-omit-frame-pointer -I"$SP_STAGE" -I"$DIR" \
+        $SP_SRC -o "$OUT/spectrum_tsan_tests"
+
+    echo "== TSan: el modulo del espectro no reporta razas =="
+    TSAN_OPTIONS="halt_on_error=1" "$OUT/spectrum_tsan_tests"
+
+    echo "== TSan: fixture de carrera deliberada (el detector tiene que disparar) =="
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -fsanitize=thread -fno-omit-frame-pointer \
+        "$DIR/spectrum_race_fixture.c" -o "$OUT/spectrum_race_fixture"
+
+    if TSAN_OPTIONS="halt_on_error=1" "$OUT/spectrum_race_fixture" \
+            > "$OUT/spectrum_race_fixture.log" 2>&1; then
+        echo "FAIL: el fixture de carrera deliberada no disparo el detector"
+        cat "$OUT/spectrum_race_fixture.log"
+        exit 1
+    fi
+
+    if ! grep -q "data race" "$OUT/spectrum_race_fixture.log"; then
+        echo "FAIL: el fixture termino con error pero sin reportar una data race"
+        cat "$OUT/spectrum_race_fixture.log"
+        exit 1
+    fi
+
+    echo "ok: el detector reporto la carrera deliberada ($OUT/spectrum_race_fixture.log)"
+fi
