@@ -39,6 +39,11 @@ NATURAL_KEYS = {
     "spectrum_frames",
     "waterfall_rows",
     "waterfall_offscreen_redraws",
+    # OPT-2 (#148): the incremental ring rasterizes one row per new row (800 px)
+    # and rebuilds the whole 800 x height image only on a mapping change. Both
+    # are integers measured on the deterministic run, not wall-clock values.
+    "waterfall_rasterized_px",
+    "waterfall_full_rebuilds",
     "per_frame",
     "totals",
 }

@@ -258,3 +258,46 @@ target_include_directories(disp_buf_probe PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}   # harness lv_conf.h
     ${REPO})                      # lvgl/lvgl.h
 target_link_libraries(disp_buf_probe PRIVATE lvgl m)
+
+# --- Waterfall image format probe (issue #148, OPT-2, option B) --------------
+# Measures the LVGL 8.3.11 draw cost of a 32-bit TRUE_COLOR image against an
+# INDEXED_8BIT + palette one, same geometry and content: the data the option-B
+# comparison of the experiment rests on. A measurement instrument, not linked
+# into ui_harness. Run: wf_format_probe [reps].
+add_executable(wf_format_probe ${CMAKE_CURRENT_SOURCE_DIR}/probe/wf_format_probe.c)
+target_compile_options(wf_format_probe PRIVATE -D_GNU_SOURCE -Wall
+    $<$<COMPILE_LANGUAGE:C>:-Werror=implicit-function-declaration>)
+target_include_directories(wf_format_probe PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}   # harness lv_conf.h
+    ${REPO})                      # lvgl/lvgl.h
+target_compile_definitions(wf_format_probe PRIVATE LV_CONF_INCLUDE_SIMPLE=1)
+target_link_libraries(wf_format_probe PRIVATE lvgl m)
+
+# --- Waterfall incremental rasterization fixtures (issue #148, OPT-2) --------
+# Compiles the REAL src/waterfall.c against the stock LVGL 8.3.11 and a small
+# stub layer (tests/waterfall/stubs/) that replaces the radio: params,
+# cfg_cur/subjects, theme, palette, backlight and the scheduler. The source is
+# staged next to the stub headers so the quoted `#include "theme.h"` of
+# waterfall.c resolves to the stub and not to src/. Gate:
+# tests/check_waterfall_incremental.sh. It is a measurement instrument, not
+# linked into ui_harness (its fixtures use the new OPT-2 accessors, which do not
+# exist in the baseline revision the A/B builds).
+set(WF_TEST_STAGE ${CMAKE_CURRENT_BINARY_DIR}/waterfall_stage)
+file(COPY ${REPO}/src/waterfall.c ${REPO}/src/waterfall.h DESTINATION ${WF_TEST_STAGE})
+file(COPY ${REPO}/tests/waterfall/stubs/ DESTINATION ${WF_TEST_STAGE})
+
+add_executable(waterfall_test
+    ${WF_TEST_STAGE}/waterfall.c
+    ${REPO}/tests/waterfall/test_waterfall.c
+    ${REPO}/tests/waterfall/stubs.c)
+target_compile_options(waterfall_test PRIVATE -D_GNU_SOURCE -Wall
+    $<$<COMPILE_LANGUAGE:C>:-Werror=implicit-function-declaration>)
+target_include_directories(waterfall_test PRIVATE
+    ${WF_TEST_STAGE}              # staged waterfall.h + stub headers
+    ${CMAKE_CURRENT_SOURCE_DIR}   # harness lv_conf.h
+    ${REPO})                      # lvgl/lvgl.h
+target_compile_definitions(waterfall_test PRIVATE LV_CONF_INCLUDE_SIMPLE=1)
+# --wrap=lv_img_buf_alloc: el fixture de reserva fallida necesita forzar NULL
+# sin tocar el codigo de produccion (tests/waterfall/stubs.c).
+target_link_options(waterfall_test PRIVATE -Wl,--wrap=lv_img_buf_alloc)
+target_link_libraries(waterfall_test PRIVATE lvgl m)

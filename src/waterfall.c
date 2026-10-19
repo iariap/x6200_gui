@@ -21,6 +21,7 @@
 #include "scheduler.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <stdio.h>
 
@@ -30,7 +31,7 @@
 #define WIDTH 800
 
 typedef struct {
-    uint8_t data[512];
+    uint8_t data[WATERFALL_NFFT];
     uint32_t width_hz;
     int32_t center_freq;
 } waterfall_cache_row_t;
@@ -54,23 +55,52 @@ static lv_img_dsc_t     *frame;
 static uint16_t               last_row_id;
 static waterfall_cache_row_t *waterfall_cache;
 
+/* OPT-2 (#148): anillo de filas YA rasterizadas dentro de `frame`.
+ *
+ * `render_head` es el indice de la fila mas nueva. La fila `j` de pantalla
+ * (j=0 arriba) muestra `frame[(render_head + j) % height]`, y el scroll se
+ * resuelve con `lv_img_set_offset_y()`: en LVGL 8.3.11, cuando la fuente no es
+ * mayor que el objeto, el offset recorre la imagen y la envuelve (lv_img.c,
+ * `offset_y % img->h` + el bucle de tiles), asi que el anillo se muestra sin
+ * mover un solo byte. `pending_rows` cuenta las filas que el hilo de radio ya
+ * escribio y que todavia no se rasterizaron; el wake (panel encendido) las
+ * muestra TODAS, aunque `refresh_period > 1`. */
+static uint16_t         render_head;
+static uint32_t         pending_rows;
+
+/* Parametros de mapeo de la ultima rasterizacion. Si cambian, hay que
+ * reconstruir las `height` filas (el mapeo por fila depende de ellos). La paleta
+ * se compara por contenido porque los temas JSON comparten el mismo array
+ * (`theme_waterfall()` devuelve el `palette` estatico de theme.c). */
+static bool             rendered_valid;
+static int32_t          rendered_center_freq;
+static uint32_t         rendered_width_hz;
+static uint32_t         rendered_palette[256];
+
 static int32_t          radio_center_freq = 0;
 static int32_t          wf_center_freq = 0;
 
 static uint8_t          refresh_period = 1;
 static uint8_t          refresh_counter = 0;
 
-/* Instrumento del redibujo offscreen (issue #13, UI-07 remanente): cada
- * `redraw_cb(NULL)` reconstruye la paleta de 800 x height px fuera de pantalla,
- * aunque el display no invalide. La cuenta la lee el arnes para medir el ahorro
- * de `--bench-natural --display-off` (tests/natural_evidence.py: 0 px con el panel
- * oscuro contra una cuenta por fila con la pantalla encendida). */
+/* Instrumentos del redibujo offscreen (issue #13, OPT-2 #148):
+ *  - `offscreen_redraws`: refrescos de la cascada que corrieron (mismo contrato
+ *    del issue #13: 1 por fila con el panel encendido, 0 con el panel apagado).
+ *    Lo lee `--bench-natural --display-off` (tests/natural_evidence.py).
+ *  - `rasterized_px`: pixeles efectivamente mapeados (division + paleta). Con el
+ *    anillo es WIDTH por fila nueva en reposo, contra WIDTH*height por fila del
+ *    baseline; en una reconstruccion completa vuelve a WIDTH*height.
+ *  - `full_rebuilds`: cuantas reconstrucciones completas corrieron. */
 static uint32_t         offscreen_redraws = 0;
+static uint64_t         rasterized_px = 0;
+static uint32_t         full_rebuilds = 0;
 
 
 static void refresh_waterfall( void * arg);
 static void draw_middle_line();
-static void redraw_cb(lv_event_t * e);
+static void render_row(uint16_t dst_y, const waterfall_cache_row_t *row);
+static void render_all();
+static void render_pending(uint32_t count);
 static void on_fg_freq_change(Subject *subj, void *user_data);
 static void on_grid_min_change(Subject *subj, void *user_data);
 static void on_grid_max_change(Subject *subj, void *user_data);
@@ -126,6 +156,17 @@ static void scroll_down() {
 }
 
 void waterfall_data(float *data_buf, uint16_t size, bool tx) {
+    /* Limites (issue #148): sin alto no hay anillo, y `size` no puede pasar la
+     * capacidad real del array de la fila (WATERFALL_NFFT). El ROM garantiza
+     * size <= WATERFALL_NFFT (dsp.cpp: waterfall_avg_data->size()), pero el
+     * modulo no depende de esa precondicion para no escribir fuera del buffer. */
+    if (height == 0 || waterfall_cache == NULL) {
+        return;
+    }
+    if (size > WATERFALL_NFFT) {
+        size = WATERFALL_NFFT;
+    }
+
     scroll_down();
 
     float min, max;
@@ -152,6 +193,10 @@ void waterfall_data(float *data_buf, uint16_t size, bool tx) {
         uint8_t id = v * 255;
         waterfall_cache[last_row_id].data[x] = id;
     }
+
+    /* El hilo de radio solo publica la fila; el rasterizado corre en el hilo de
+     * GUI (scheduler_put_noargs -> refresh_waterfall), como en el baseline. */
+    pending_rows++;
     scheduler_put_noargs(refresh_waterfall);
 }
 
@@ -176,7 +221,36 @@ void waterfall_set_height(lv_coord_t h) {
 
     height = lv_obj_get_height(obj);
 
+    /* Resize seguro (issue #148): liberar el frame/cache/img anteriores antes de
+     * rearmar, para que una segunda llamada no filtre ni deje el objeto viejo. */
+    if (img != NULL) {
+        lv_obj_del(img);
+        img = NULL;
+    }
+    if (frame != NULL) {
+        lv_img_buf_free(frame);
+        frame = NULL;
+    }
+    if (waterfall_cache != NULL) {
+        free(waterfall_cache);
+        waterfall_cache = NULL;
+    }
+
+    render_head = 0;
+    pending_rows = 0;
+    rendered_valid = false;
+
+    /* Alto 0 (limite): no hay imagen; el resto del modulo queda inerte. */
+    if (height <= 0) {
+        return;
+    }
+
     frame = lv_img_buf_alloc(WIDTH, height, LV_IMG_CF_TRUE_COLOR);
+
+    if (frame == NULL) {
+        height = 0;
+        return;
+    }
 
     img = lv_img_create(obj);
     lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
@@ -185,7 +259,14 @@ void waterfall_set_height(lv_coord_t h) {
     last_row_id = 0;
 
     waterfall_cache = calloc(sizeof(waterfall_cache[0]), height);
-    memset(waterfall_cache, 0, sizeof(waterfall_cache[0]) * height);
+
+    if (waterfall_cache == NULL) {
+        lv_img_buf_free(frame);
+        frame = NULL;
+        height = 0;
+        return;
+    }
+
     for (size_t i = 0; i < height; i++) {
         waterfall_cache[i].center_freq = radio_center_freq;
         waterfall_cache[i].width_hz = width_hz;
@@ -302,42 +383,73 @@ void waterfall_set_battery_mode(bool enabled) {
     refresh_period = enabled ? 4 : 1;
 }
 
-static void redraw_cb(lv_event_t * e) {
-    int32_t src_x_offset;
-    int16_t src_y, src_x0, dst_y, dst_x;
+/* Rasteriza UNA fila del anillo a la fila `dst_y` del frame. El mapeo es el
+ * mismo del baseline (el viejo `redraw_cb`): no cambia ni un pixel, solo CUANDO
+ * se corre cada fila. `rasterized_px` cuenta los px efectivamente mapeados
+ * (division + lookup de paleta) para medir el ahorro sin vender el flush. */
+static void render_row(uint16_t dst_y, const waterfall_cache_row_t *row) {
+    int32_t hz_to_pix_divisor = width_hz / WIDTH;
+
+    /* Ancho en Hz estrecho: `width_hz / WIDTH` nunca puede ser divisor 0
+     * (issue #148). Con menos de 800 Hz de span el mapeo queda saturado a 1 px/Hz
+     * en vez de dividir por cero (UB en el baseline). */
+    if (hz_to_pix_divisor < 1) {
+        hz_to_pix_divisor = 1;
+    }
 
     lv_color_t black = lv_color_black();
-    lv_color_t px_color;
+    lv_color_t *dst = (lv_color_t *) frame->data + (size_t) dst_y * WIDTH;
 
-    int32_t hz_to_pix_divisor = width_hz / WIDTH;
-    for (src_y = 0; src_y < height; src_y++) {
-        dst_y = ((height - src_y + last_row_id) % height);
+    int32_t left_freq = row->center_freq - (int32_t) row->width_hz / 2;
+    int32_t right_freq = left_freq + (int32_t) row->width_hz;
 
-        int32_t left_freq = waterfall_cache[src_y].center_freq - waterfall_cache[src_y].width_hz / 2;
-        int32_t right_freq = left_freq + waterfall_cache[src_y].width_hz;
+    left_freq -= wf_center_freq;
+    right_freq -= wf_center_freq;
 
-        left_freq -= wf_center_freq;
-        right_freq -= wf_center_freq;
+    // hz to px
+    left_freq = left_freq / hz_to_pix_divisor + WIDTH / 2;
+    right_freq = right_freq / hz_to_pix_divisor + WIDTH / 2;
+    int32_t src_w = right_freq - left_freq;
 
-        // hz to px
-        left_freq = left_freq / hz_to_pix_divisor + WIDTH / 2;
-        right_freq = right_freq / hz_to_pix_divisor + WIDTH / 2;
-        uint16_t src_w = right_freq - left_freq;
+    if ((right_freq < 0) || (left_freq > WIDTH) || (src_w <= 0)) {
+        /* Fila fuera de vista (o mapeo degenerado): negra, como el baseline. */
+        memset(dst, 0, WIDTH * PX_BYTES);
+        return;
+    }
 
-        if ((right_freq < 0) || (left_freq > WIDTH)) {
-            memset((lv_color_t *)frame->data + dst_y * WIDTH, 0, WIDTH * PX_BYTES);
+    for (int32_t dst_x = 0; dst_x < WIDTH; dst_x++) {
+        uint16_t src_x = (dst_x - left_freq) * WATERFALL_NFFT / src_w;
+        lv_color_t px_color;
+        if ((src_x < 0) || (src_x >= WATERFALL_NFFT - 1)) {
+            px_color = black;
         } else {
-            for (dst_x = 0; dst_x < WIDTH; dst_x++) {
-                uint16_t src_x = (dst_x - left_freq) * WATERFALL_NFFT / src_w;
-                if ((src_x < 0) || (src_x >= WATERFALL_NFFT - 1)) {
-                    px_color = black;
-                } else {
-                    uint8_t y_p = waterfall_cache[src_y].data[src_x];
-                    px_color = (lv_color_t)wf_palette[y_p];
-                }
-                *((lv_color_t*)frame->data + (dst_y * WIDTH + dst_x)) = px_color;
-            }
+            uint8_t y_p = row->data[src_x];
+            px_color = (lv_color_t)wf_palette[y_p];
         }
+        dst[dst_x] = px_color;
+    }
+
+    rasterized_px += WIDTH;
+}
+
+/* Reconstruccion completa: rasteriza las `height` filas visibles (la ventana
+ * termina en `last_row_id`). `render_head` no cambia: la fila mas nueva sigue en
+ * su slot. */
+static void render_all() {
+    for (int32_t j = 0; j < height; j++) {
+        uint16_t cache_id = (uint16_t) ((last_row_id + height - j) % height);
+        uint16_t slot = (uint16_t) ((render_head + j) % height);
+        render_row(slot, &waterfall_cache[cache_id]);
+    }
+}
+
+/* Camino incremental: rasteriza solo las `count` filas nuevas (de la mas vieja a
+ * la mas nueva), cada una en el slot nuevo del anillo. */
+static void render_pending(uint32_t count) {
+    for (uint32_t k = 0; k < count; k++) {
+        uint16_t cache_id = (uint16_t) ((last_row_id + height - count + 1 + k) % height);
+        render_head = (uint16_t) ((render_head + height - 1) % height);
+        render_row(render_head, &waterfall_cache[cache_id]);
     }
 }
 
@@ -352,22 +464,85 @@ static void refresh_waterfall( void * arg) {
 
     /* Pantalla apagada (issue #13, UI-07 remanente): `backlight_switch()` apago
      * la invalidacion del display (src/backlight.c), asi que el redibujo de la
-     * paleta fuera de pantalla no llega a ningun lado. Son ~800 x height px de
-     * trabajo de software por fila (~196000 px) a 25 filas/s mientras el DSP
-     * siga alimentando. Se saltea mientras el panel esta oscuro; al volver a
-     * encender, la proxima fila redibuja con la cache al dia (el refresh del
-     * scheduler sigue disparandose). */
+     * paleta fuera de pantalla no llega a ningun lado. Se saltea mientras el
+     * panel esta oscuro; al volver a encender, el proximo refresh rasteriza
+     * TODAS las filas pendientes (no se pierde ninguna). */
     if (!backlight_is_on()) {
         return;
     }
 
-    redraw_cb(NULL);
+    if (height == 0 || frame == NULL || waterfall_cache == NULL) {
+        return;
+    }
+
     offscreen_redraws++;
+
+    /* Reconstruir solo cuando el mapeo por fila cambio: centro (scroll o salto),
+     * ancho de FFT, paleta/tema, primer render, o el historial es incompatible
+     * (llegaron >= height filas sin refrescar, asi que algunas ya se pisaron).
+     * min/max y TX NO exigen reconstruir: los ids de la cache ya estan
+     * normalizados al escribir la fila, y el ancho/centro de la fila TX viajan
+     * en la propia fila. */
+    bool params_changed = !rendered_valid
+        || wf_center_freq != rendered_center_freq
+        || width_hz != rendered_width_hz
+        || memcmp(wf_palette, rendered_palette, sizeof(rendered_palette)) != 0;
+
+    uint32_t pending = pending_rows;
+    pending_rows = 0;
+
+    if (params_changed || pending >= (uint32_t) height) {
+        render_all();
+        full_rebuilds++;
+        rendered_valid = true;
+    } else if (pending > 0) {
+        render_pending(pending);
+        rendered_valid = true;
+    } else {
+        return;   /* nada nuevo que mostrar */
+    }
+
+    rendered_center_freq = wf_center_freq;
+    rendered_width_hz = width_hz;
+    memcpy(rendered_palette, wf_palette, sizeof(rendered_palette));
+
+    /* Scroll por indexacion: el offset de LVGL envuelve el anillo (ver el
+     * comentario de `render_head`). `lv_img_set_offset_y` ya invalida el objeto. */
+    lv_img_set_offset_y(img, (height - render_head) % height);
     lv_obj_invalidate(img);
 }
 
 uint32_t waterfall_offscreen_redraw_count(void) {
     return offscreen_redraws;
+}
+
+/* Instrumento OPT-2 (#148): pixeles mapeados (division + paleta) desde el
+ * arranque. El arnes lo reporta en el bloque `natural`. */
+uint64_t waterfall_rasterized_px(void) {
+    return rasterized_px;
+}
+
+/* Reconstrucciones completas de la paleta (mapeo cambiado / historial
+ * incompatible), para el informe A/B. */
+uint32_t waterfall_full_rebuild_count(void) {
+    return full_rebuilds;
+}
+
+/* Indice de la fila mas nueva dentro del frame (la ventana visible empieza ahi),
+ * para que los fixtures aserten el offset del anillo. */
+uint16_t waterfall_render_head(void) {
+    return render_head;
+}
+
+/* La imagen rasterizada del anillo (WIDTH x height px, TRUE_COLOR 32 bits) y su
+ * alto, para que los fixtures OPT-2 (#148) comparen el framebuffer interno byte
+ * a byte contra el baseline. NULL si todavia no se armo. */
+const lv_color_t *waterfall_frame_pixels(void) {
+    return (frame != NULL) ? (const lv_color_t *) frame->data : NULL;
+}
+
+lv_coord_t waterfall_frame_height(void) {
+    return height;
 }
 
 static void on_fg_freq_change(Subject *subj, void *user_data) {

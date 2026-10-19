@@ -1,0 +1,189 @@
+{
+  "budget": {
+    "max_dispersion_cv_pct": 25.0,
+    "max_flushes_delta_pct": 20.0,
+    "max_p95_delta_pct": 25.0,
+    "max_redrawn_area_delta_pct": 20.0,
+    "min_frames": 12,
+    "repeats": 5,
+    "rounds": 4,
+    "warmup_frames": 3
+  },
+  "comparisons": [
+    {
+      "a": {
+        "dispersion_cv_pct": 8.263,
+        "draw_ms_mean": 3.7491,
+        "flush_ms_mean": 0.5083,
+        "flushes_mean": 1.0,
+        "fps": 259.72,
+        "frames": 25,
+        "memory": {
+          "peak_rss_bytes": 10657792,
+          "peak_vm_bytes": 82337792,
+          "pss_bytes": 10645504,
+          "rss_bytes": 10657792
+        },
+        "redrawn_area_mean": 384000.0,
+        "render_mean_ms": 4.2575,
+        "render_p50_ms": 3.8503,
+        "render_p95_ms": 6.4809,
+        "render_p99_ms": 6.5731,
+        "render_stdev_ms": 0.9962,
+        "scenario": "bench-render",
+        "unique_redrawn_mean": 384000.0
+      },
+      "b": {
+        "dispersion_cv_pct": 5.745,
+        "draw_ms_mean": 3.6829,
+        "flush_ms_mean": 0.4835,
+        "flushes_mean": 1.0,
+        "fps": 264.87,
+        "frames": 25,
+        "memory": {
+          "peak_rss_bytes": 10588160,
+          "peak_vm_bytes": 82337792,
+          "pss_bytes": 10575872,
+          "rss_bytes": 10522624
+        },
+        "redrawn_area_mean": 384000.0,
+        "render_mean_ms": 4.1665,
+        "render_p50_ms": 3.7754,
+        "render_p95_ms": 6.0329,
+        "render_p99_ms": 6.159,
+        "render_stdev_ms": 0.8117,
+        "scenario": "bench-render",
+        "unique_redrawn_mean": 384000.0
+      },
+      "flushes_delta_pct": 0.0,
+      "host_noise": false,
+      "p95_delta_pct": -6.912,
+      "reasons": [],
+      "redrawn_area_delta_pct": 0.0,
+      "scenario": "bench-render",
+      "status": "PASS"
+    },
+    {
+      "a": {
+        "dispersion_cv_pct": 4.265,
+        "draw_ms_mean": 3.8949,
+        "flush_ms_mean": 0.5248,
+        "flushes_mean": 1.0,
+        "fps": 269.08,
+        "frames": 25,
+        "memory": {
+          "peak_rss_bytes": 10592256,
+          "peak_vm_bytes": 82337792,
+          "pss_bytes": 10579968,
+          "rss_bytes": 10526720
+        },
+        "redrawn_area_mean": 384000.0,
+        "render_mean_ms": 4.4197,
+        "render_p50_ms": 3.7164,
+        "render_p95_ms": 7.3786,
+        "render_p99_ms": 7.3981,
+        "render_stdev_ms": 1.4478,
+        "scenario": "main-espectro-agua",
+        "unique_redrawn_mean": 384000.0
+      },
+      "b": {
+        "dispersion_cv_pct": 5.866,
+        "draw_ms_mean": 3.9893,
+        "flush_ms_mean": 0.5405,
+        "flushes_mean": 1.0,
+        "fps": 265.55,
+        "frames": 25,
+        "memory": {
+          "peak_rss_bytes": 10424320,
+          "peak_vm_bytes": 82337792,
+          "pss_bytes": 10412032,
+          "rss_bytes": 10358784
+        },
+        "redrawn_area_mean": 384000.0,
+        "render_mean_ms": 4.5298,
+        "render_p50_ms": 3.7658,
+        "render_p95_ms": 7.5431,
+        "render_p99_ms": 8.2092,
+        "render_stdev_ms": 1.5322,
+        "scenario": "main-espectro-agua",
+        "unique_redrawn_mean": 384000.0
+      },
+      "flushes_delta_pct": 0.0,
+      "host_noise": false,
+      "p95_delta_pct": 2.229,
+      "reasons": [],
+      "redrawn_area_delta_pct": 0.0,
+      "scenario": "main-espectro-agua",
+      "status": "PASS"
+    },
+    {
+      "a": {
+        "dispersion_cv_pct": 3.766,
+        "draw_ms_mean": 3.271,
+        "flush_ms_mean": 0.4652,
+        "flushes_mean": 1.0,
+        "fps": 279.44,
+        "frames": 25,
+        "memory": {
+          "peak_rss_bytes": 10616832,
+          "peak_vm_bytes": 82337792,
+          "pss_bytes": 10579968,
+          "rss_bytes": 10592256
+        },
+        "redrawn_area_mean": 384000.0,
+        "render_mean_ms": 3.7362,
+        "render_p50_ms": 3.5786,
+        "render_p95_ms": 4.18,
+        "render_p99_ms": 4.8736,
+        "render_stdev_ms": 0.3478,
+        "scenario": "main-natural",
+        "unique_redrawn_mean": 384000.0
+      },
+      "b": {
+        "dispersion_cv_pct": 11.295,
+        "draw_ms_mean": 3.8261,
+        "flush_ms_mean": 0.5095,
+        "flushes_mean": 1.0,
+        "fps": 262.8,
+        "frames": 25,
+        "memory": {
+          "peak_rss_bytes": 10706944,
+          "peak_vm_bytes": 82337792,
+          "pss_bytes": 10686464,
+          "rss_bytes": 10633216
+        },
+        "redrawn_area_mean": 384000.0,
+        "render_mean_ms": 4.3356,
+        "render_p50_ms": 3.8052,
+        "render_p95_ms": 6.7511,
+        "render_p99_ms": 7.2042,
+        "render_stdev_ms": 1.2703,
+        "scenario": "main-natural",
+        "unique_redrawn_mean": 384000.0
+      },
+      "flushes_delta_pct": 0.0,
+      "host_noise": true,
+      "p95_delta_pct": 61.51,
+      "reasons": [
+        "p95 render +61.5% (budget 25.0%): 4.180 -> 6.751 ms \u2014 host noise: the deterministic proxies are unchanged (flushes 0.0%, redrawn area 0.0%), so this is runner preemption, not a render change"
+      ],
+      "redrawn_area_delta_pct": 0.0,
+      "scenario": "main-natural",
+      "status": "INCONCLUSIVE"
+    }
+  ],
+  "environment": "x86 host: relative regression proxy, not the Cortex-A7",
+  "exit_code": 3,
+  "experiment_id": "BENCH-OPT2-148-FOCUS",
+  "kind": "benchmark-comparison",
+  "revisions": {
+    "a": "020904541eed5228efbcb741bc6492681475e2a4",
+    "b": "576d2df3fbc2a499054c14985f2baf776c6e43b3"
+  },
+  "scenarios": [
+    "bench-render",
+    "main-natural",
+    "main-espectro-agua"
+  ],
+  "status": "INCONCLUSIVE"
+}

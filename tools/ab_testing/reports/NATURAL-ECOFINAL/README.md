@@ -56,3 +56,27 @@ una de cada dos, así que casi todos los frames llevan una región de datos y lo
 dos rectángulos de los timers de 2 s (band info, BT) llegan dentro de ellas y
 LVGL los une (`joined_px = 1372000`). Siguen apareciendo —y son los que el
 control de delimitación (`--natural-static`) reporta—: 7 band info y 1 BT.
+
+## Re-baseline 2026-10-19 — rasterizado incremental del waterfall (OPT-2 #148)
+
+El anillo de filas de `src/waterfall.c` (576d2df3) agrega dos instrumentos al
+bloque `natural` que `tests/natural_evidence.py` exige y esta evidencia se
+re-generó con el binario de la rama (HEAD `d2beb6c6`):
+
+| campo | `main-natural` (QUALITY) | `main-natural-eco` (ECO) | `--display-off` |
+|---|---|---|---|
+| `waterfall_rasterized_px` | 32000 (40 filas x 800 px) | 32000 | 0 |
+| `waterfall_full_rebuilds` | 0 | 0 | 0 |
+
+Una fila nueva en reposo rasteriza **800 px** en vez de las 245 filas (196000
+px) del baseline; no hay ninguna reconstrucción completa porque el fixture no
+cambia centro, zoom ni paleta. El **área invalidada/flusheada no cambia** (el
+scroll mueve todos los píxeles visibles): los totales del bloque `natural`
+siguen siendo 11223840 px / 67 rectángulos en QUALITY. Con el panel oscuro el
+anillo saltea el render entero (`waterfall_rasterized_px = 0`).
+
+Los PNG de la captura común también cambiaron respecto de la corrida anterior:
+entre `02c1311` y esta base entraron cambios de UI ajenos a OPT-2 (el A/B
+OPT-2 `02090454` vs `576d2df3` es pixel-identical sobre 89 escenarios). El
+bloque `natural` no cambió; sólo la imagen (`framebuffer_fnv1a`/`png_bytes`) y
+los dos campos nuevos. Ver `sha256.txt`.
