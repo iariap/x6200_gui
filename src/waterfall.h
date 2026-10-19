@@ -30,6 +30,25 @@ void waterfall_set_battery_mode(bool enabled);
  * con `--bench-natural --display-off`. */
 uint32_t waterfall_offscreen_redraw_count(void);
 
+/* Instrumento OPT-2 (#148): pixeles mapeados (division + lookup de paleta) por
+ * el rasterizado del waterfall desde el arranque. Con el anillo de filas es
+ * WIDTH por fila nueva en reposo, contra WIDTH*height por fila del baseline. */
+uint64_t waterfall_rasterized_px(void);
+
+/* Reconstrucciones completas de la paleta (mapeo cambiado o historial
+ * incompatible), para el informe A/B de #148. */
+uint32_t waterfall_full_rebuild_count(void);
+
+/* Indice de la fila mas nueva dentro del frame del anillo (la ventana visible
+ * empieza ahi); los fixtures de #148 aserten el offset del anillo. */
+uint16_t waterfall_render_head(void);
+
+/* La imagen rasterizada del anillo (WIDTH x height px, TRUE_COLOR 32 bits) y su
+ * alto, para que los fixtures OPT-2 (#148) comparen el framebuffer interno byte
+ * a byte contra el baseline. NULL si todavia no se armo. */
+const lv_color_t *waterfall_frame_pixels(void);
+lv_coord_t waterfall_frame_height(void);
+
 /* Linea central del waterfall (issue #140): el objeto vivo, para que el arnes de
  * UI codifique su geometria (largo = alto del waterfall, centrada, oculta con el
  * parametro apagado). NULL si todavia no se creo. */

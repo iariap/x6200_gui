@@ -184,6 +184,22 @@ def check_natural(checker: Checker, doc: dict, rom_frame_ms: int) -> None:
         f"waterfall_offscreen_redraws = {natural['waterfall_offscreen_redraws']}, expected "
         f"{expected_drives(total_ms, WATERFALL_FPS_MS)} (one per new row at QUALITY)",
     )
+    # OPT-2 (#148): el anillo rasteriza UNA fila por refresco (800 px), no las
+    # `height` filas del baseline (196000 px). El fixture natural no cambia el
+    # centro ni el zoom, asi que no hay ninguna reconstruccion completa: es la
+    # medicion de que el ahorro de software es real y no de invalidacion (el
+    # area flusheada no cambia, ver los totals de arriba).
+    rows = expected_drives(total_ms, WATERFALL_FPS_MS)
+    checker.check(
+        natural["waterfall_rasterized_px"] == rows * 800,
+        f"waterfall_rasterized_px = {natural['waterfall_rasterized_px']}, expected "
+        f"{rows * 800} (800 px per new row: the ring rasterizes one row, not height)",
+    )
+    checker.check(
+        natural["waterfall_full_rebuilds"] == 0,
+        f"waterfall_full_rebuilds = {natural['waterfall_full_rebuilds']}, expected 0 "
+        "(no center/zoom/palette change in the natural fixture)",
+    )
 
     frames = natural["per_frame"]
     checker.check(len(frames) == FRAMES, f"per_frame has {len(frames)} entries")
@@ -361,6 +377,12 @@ def check_display_off(checker: Checker, off: dict, natural_doc: dict, lit_doc: d
         natural["waterfall_offscreen_redraws"] == 0,
         f"display off: the waterfall ran {natural['waterfall_offscreen_redraws']} offscreen "
         "redraw(s) with the panel dark (the palette computation must be skipped)",
+    )
+    # OPT-2 (#148): el anillo tampoco rasteriza una sola fila con el panel oscuro.
+    checker.check(
+        natural["waterfall_rasterized_px"] == 0,
+        f"display off: the waterfall rasterized {natural['waterfall_rasterized_px']} px "
+        "with the panel dark (the ring must skip the whole render)",
     )
     for key, value in totals.items():
         checker.check(

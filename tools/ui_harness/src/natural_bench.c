@@ -60,6 +60,14 @@ static uint32_t waterfall_rows;
  * medicion de que el panel oscuro no hace el trabajo de software. */
 static uint32_t offscreen_redraws;
 
+/* OPT-2 (#148): pixeles efectivamente mapeados (division + paleta) por el
+ * rasterizado del waterfall durante la corrida, y cuantas reconstrucciones
+ * completas corrieron. Es la medida honesta del trabajo de software: el area
+ * invalidada/flusheada NO cambia con el anillo (el scroll mueve todos los
+ * pixeles visibles), pero el rasterizado si. */
+static uint64_t wf_rasterized_px;
+static uint32_t wf_full_rebuilds;
+
 static uint32_t area_size(const lv_area_t *area)
 {
     return (uint32_t) (area->x2 - area->x1 + 1) * (uint32_t) (area->y2 - area->y1 + 1);
@@ -149,6 +157,8 @@ void natural_bench_run(const scenario_t *scenario, int count)
     }
 
     uint32_t offscreen_start = waterfall_offscreen_redraw_count();
+    uint64_t rasterized_start = waterfall_rasterized_px();
+    uint32_t rebuilds_start = waterfall_full_rebuild_count();
 
     for (current_frame = 0; current_frame < total_frames; current_frame++) {
         frame_open = true;
@@ -159,6 +169,8 @@ void natural_bench_run(const scenario_t *scenario, int count)
     }
 
     offscreen_redraws = waterfall_offscreen_redraw_count() - offscreen_start;
+    wf_rasterized_px = waterfall_rasterized_px() - rasterized_start;
+    wf_full_rebuilds = waterfall_full_rebuild_count() - rebuilds_start;
 }
 
 void natural_bench_flush(const lv_area_t *area, const lv_disp_drv_t *drv)
@@ -269,6 +281,9 @@ void natural_bench_write_json(FILE *f)
     fprintf(f, "    \"spectrum_frames\": %u,\n", spectrum_frames);
     fprintf(f, "    \"waterfall_rows\": %u,\n", waterfall_rows);
     fprintf(f, "    \"waterfall_offscreen_redraws\": %u,\n", offscreen_redraws);
+    fprintf(f, "    \"waterfall_rasterized_px\": %llu,\n",
+            (unsigned long long) wf_rasterized_px);
+    fprintf(f, "    \"waterfall_full_rebuilds\": %u,\n", wf_full_rebuilds);
     fprintf(f, "    \"per_frame\": [\n");
 
     for (int i = 0; i < total_frames; i++) {
