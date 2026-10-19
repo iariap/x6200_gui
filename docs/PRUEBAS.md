@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 19/10 ~10:40 (hora host) | (sin radio; ARM **4893b8f39bf3**, 13.783.700 B) | `ade36bbb` (#146) | — | — | 0 | **CB 27 MHz: gates de host + arnés + banco QEMU** ✓ (sin desplegar, sin flashear y **sin transmitir**): nativos 0 fallos (RED→GREEN de `test_cb`, 85 comprobaciones), `check_wcag`/`check_cfg_fills`/`check_actions` OK, determinismo PASS, ruff/format/ty/pytest (incl. 13 e2e) OK, A/B `AB-CB146` PASS (B=`ade36bbb`), y el banco muestra `CH 19`/`CH --`/`CH 23`/`CH 24` con `tx=false`. **F0 (RF real) requiere radio**. Evidencia: [`2026-10-19-cb-27mhz-146/`](evidencia/2026-10-19-cb-27mhz-146/README.md) |
 | 18/10 ~12:40 (hora radio) | GUI **ffef63df58cb** (build limpio; **NO desplegado**) | `94b9989` | (sin radio) | — | 0 | **Radio inalcanzable en las dos redes** ✗: build limpio + gate #86 OK (`ffef63df58cb`, 13.757.724 B, 3/3 marcas), pero `tools/prueba-gui-en-radio.sh` abortó porque `radio_ip()` no encontró la radio. **#133/#114/#121 quedan SIN VEREDICTO**: no se pudo correr ninguna de las tres pruebas. La 4.ª caída del #121 sigue sin recuperación (necesita ciclo de energía; la batería estaba en 8,6 V, anotado en el #121). Evidencia: [`2026-10-18-qa-radio-backlog/`](evidencia/2026-10-18-qa-radio-backlog/README.md) |
 | 17/10 ~22:20 (hora radio) | ROM `c640645d810c` + GUI **b1ba67520079** | `63dbf7a4` (#130) | **SWRScan** | **23 ok** | 0 (1 crash, ya en #131) | **VALIDADA EN RADIO la U del #130** ✓✓: build limpio desde el tip + gate #86 + deploy (idempotente, ya corría el mismo md5). Con el dial en la resonancia (~7.000) la curva es una **U**: base `y=398` en `x=255` (interior), bordes suben **+94/+168 px**; reproducido en 2ª pasada (`x=232`, +80/+174) y con span 200 kHz/Log (`x=238`, +140/+233). **Hallazgo nuevo**: `tests/swrscan_curve_evidence.py` del #125 **no corre sobre una captura de radio** (pide 2 args, no 1; su umbral `min≥180` no ve la curva del tema del owner `Redshift` = RGB(255,179,160)) → **issue nuevo**. Sigue `Error: timeout de RF` (`n≈44/51`, nunca `Completed`). Evidencia `docs/evidencia/2026-10-17-qa-radio-swr125/` |
 | 20/10 ~03:50 | ROM `c640645d810c` + GUI 9a094c421b0e (races) | `1e3a1e4` | (no corrido) | (no corrido) | 0 | **Estable 18h24min** ✓ (pid 13127, uptime 66246 s, CRASHLOG 0). Overflows 0. Batería 8600 mV. 0 merges |
@@ -867,10 +868,150 @@ a mano, el medidor pasó a `#f08080` y **3.64:1**. Quedó documentado en el issu
 
 ---
 
+## 19/10 ~10:40 (hora host) — rama `factory/cb-27mhz-146` (#146): cierre (F4-fix), gates completos y banco QEMU; **F0 requiere radio**
+
+**Qué se probó:** el módulo CB 27 MHz completo (F1–F5 + el fix de F4) sobre la base
+`1e3a1e49`, HEAD `ade36bbb`, **sin desplegar, sin flashear y sin transmitir**. La RF real
+(F0) queda pendiente y la hace el owner con autorización.
+
+**Fix de esta corrida** (`ade36bbb`): `cb_split_cache_cb` reconoce el cambio de banda de
+`cfg/band.c` por el pk de la banda (`cfg_cur.band->vfo.pk`) y no por `cfg.band_id` —en la
+entrada directa de frecuencia el split de la banda destino se cargaba antes de que cambiara
+`cfg.band_id` y pisaba el split a restaurar—, y los hooks de CB no llaman al control de la
+radio si la BASE no respondió (`radio_control_ok`), que colgaba el banco al entrar a CB con
+`xit != 0`.
+
+**Medido (comandos reales):**
+
+```
+$ tests/native/run_native_tests.sh
+  18708 comprobaciones, 0 fallos
+  == CB 27 MHz (#146): _4_cb_bands sobre una base real en memoria ==
+  42 comprobaciones, 0 fallos
+$ RED->GREEN de tests/native/test_cb.c (cb degenerado vs src/cb.c)
+  RED:   test_cb: 85 comprobaciones, 56 fallos
+  GREEN: test_cb: 85 comprobaciones, 0 fallos
+$ python3 tests/check_wcag.py
+  pares OK: 1052 | exentos: 170 | informativos: 90 | FALLAS: 0
+$ python3 tests/check_cfg_fills.py .
+  OK: los 70 campos se inicializan, en orden
+$ python3 tests/check_actions.py
+  todas las acciones ofrecidas tienen manejador
+$ tests/check_harness_determinism.sh
+  PASS: deterministic (identical PNGs for every fixture)
+$ python3 tests/audita-pruebas.py
+  OK: estructura y evidencia en orden
+$ cd tools/ab_testing && uv run ruff check . && uv run ruff format --check . && uv run ty check
+  All checks passed! / 178 files already formatted / All checks passed!
+$ uv run pytest -m "not e2e" -q
+  227 passed, 13 deselected
+$ uv run pytest -m "e2e" -q
+  13 passed, 227 deselected
+$ uv run x6200-ab compare --a 1e3a1e49 --b ade36bbb --experiment-id AB-CB146
+  experiment AB-CB146: PASS (exit 0)  (B = ade36bbb)
+  Functional PASS — 87 scenarios captured on both revisions
+  Visual Regression PASS — captures are pixel-identical to the baseline
+  Quality Contract PASS — 893 contract checks passed on the candidate
+  Performance PASS — render-cost proxy within budget
+$ BUILDROOT=... tools/compila-gui.sh   (ARM cross-compile)
+  binario: md5 4893b8f39bf3   (13.783.700 B)
+```
+
+**Arnés de UI (seis temas).** La celda VFO de 56 px muestra `CH 19` sin recorte en los seis
+temas, medido con `--inspect` (`text_natural`) y la familia tipográfica que nombra cada
+tema: inter 41, ibmplexsans 47, sourcesans3 40, robotocondensed 35, notosans 48, ibmplexsans
+47; `text_truncated=false` y `text_overflow=false` en los seis (máximo 48 px ≤ 56).
+Detalle en
+[`evidencia/2026-10-19-cb-27mhz-146/arnes-temas-ch19.json`](evidencia/2026-10-19-cb-27mhz-146/arnes-temas-ch19.json).
+
+**Banco QEMU (gate #86).** Binario ARM `4893b8f39bf3` (13.783.700 B, 3/3 marcas del port).
+Capturas y estado en
+[`evidencia/2026-10-19-cb-27mhz-146/`](evidencia/2026-10-19-cb-27mhz-146/README.md):
+
+- 27.185 MHz → `CH 19` (`banco-ch19.png`), AM, **TX power 4.0 W** (la base tenía 5.0 W y el
+  módulo la recortó);
+- 27.000 MHz → `CH --` (`banco-ch--.png`), AM;
+- 27.255 MHz → `CH 23` y 27.235 MHz → `CH 24` (`banco-ch23.png`/`banco-ch24.png`): el dial
+  cuenta canales, por eso 23→24 sube el número y **baja** la frecuencia;
+- 26.100 / 26.600 / 27.300 / 27.450 → `CB A` / `CB B` / `CB C` / `CB D`, todos en **AM**;
+- rangos migrados en `/mnt/params.db` = `sql/bands_cb.csv`; al arrancar en CB con `xit=100`
+  y `split=1` en 203 la GUI los deja en **0/0**;
+- `tx=false` en todas las consultas: no se envió ningún comando de TX.
+
+El control remoto no tiene comando para inyectar eventos del rotativo, así que el banco mide
+la **celda de canal** en las frecuencias del plan; el conteo 1 detent = 1 canal está medido
+en el test nativo (`cb_step_channel`) y en el fixture del arnés.
+
+**No medido (requires-radio):** RF real en 27 MHz, potencia y armónicos con carga fantasma,
+PTT del micrófono y ATU. El TX **no** queda declarado validado.
+
+---
+
+## 18/10 ~23:55 (hora host) — rama `factory/cb-27mhz-146` (#146): gates de host y banco QEMU; **F0 requiere radio**
+
+**Qué se probó:** el módulo CB 27 MHz completo (F1–F5) sobre la base `1e3a1e49`, **sin
+desplegar, sin flashear y sin transmitir**: cuatro grids de 40 canales, migración `_4_cb_bands`,
+dial por canal con `CH nn`/`CH --`, políticas de entrada (split/modo/potencia/XIT) e interlock
+de TX. La RF real (F0) queda pendiente y la hace el owner con autorización.
+
+**Medido en el host y en el banco (comandos reales):**
+
+```
+$ tests/native/run_native_tests.sh
+  18708 comprobaciones, 0 fallos
+  == CB 27 MHz (#146): _4_cb_bands sobre una base real en memoria ==
+  42 comprobaciones, 0 fallos
+
+$ python3 tests/check_wcag.py
+  pares OK: 1052 | exentos: 170 | informativos: 90 | FALLAS: 0
+$ python3 tests/check_cfg_fills.py
+  OK: los 70 campos se inicializan, en orden
+$ python3 tests/check_actions.py
+  todas las acciones ofrecidas tienen manejador
+$ SKIP_BUILD=1 tests/check_harness_determinism.sh
+  PASS: deterministic (identical PNGs for every fixture)
+
+$ cd tools/ab_testing
+$ uv run x6200-ab compare --a 1e3a1e49 --b factory/cb-27mhz-146 --experiment-id AB-CB146
+  experiment AB-CB146: PASS (exit 0)
+  Functional PASS — 87 scenarios captured on both revisions
+  Visual Regression PASS — captures are pixel-identical to the baseline
+  Quality Contract PASS — 893 contract checks passed on the candidate
+  Performance PASS — render-cost proxy within budget
+```
+
+**Arnés de UI (seis temas).** La celda VFO de 56 px muestra `CH 19` sin recorte en Aurora (41 px),
+Cathode (47), Redshift (40), Sprint (35), Sunlit (48) y Trail (47); `text_truncated=false` y
+`text_overflow=false` en los seis. El detalle está en
+[`evidencia/2026-10-18-cb-27mhz-146/arnes-temas-ch19.json`](evidencia/2026-10-18-cb-27mhz-146/arnes-temas-ch19.json).
+
+**Compilación ARM y banco QEMU.** Cross-compile con el toolchain de la ROM: binario
+`882e1023493c`, 13.783.668 B. El gate #86 lo acepta como firmware del port (ELF32 ARM, 3/3
+marcas). En el banco:
+
+- 27.185 MHz → `CH 19`, AM, **TX power 4.0 W** (la base tenía 5.0 W y el módulo la recortó);
+- 27.000 MHz → `CH --`, AM;
+- 26.100 / 26.600 / 27.450 → `CB A` / `CB B` / `CB D`, todos en **AM** (el bug de que A/B/D
+  quedaran en USB se encontró y se corrigió en esta corrida);
+- 27.300 MHz → `CB C` con los rangos **migrados** (con los viejos, 27.205–27.405 no tenía banda);
+- al arrancar con la base sembrada en CB con `xit=100` y `split=1`, la GUI los deja en **0/0**
+  (`xit` y `split` de 203), que es la política de entrada del arranque;
+- `tx=false` en todas las consultas: no se envió ningún comando de TX.
+
+Evidencia: [`evidencia/2026-10-18-cb-27mhz-146/README.md`](evidencia/2026-10-18-cb-27mhz-146/README.md),
+[`banco-ch19.png`](evidencia/2026-10-18-cb-27mhz-146/banco-ch19.png) y
+[`banco-ch--.png`](evidencia/2026-10-18-cb-27mhz-146/banco-ch--.png).
+
+**No medido (requires-radio):** RF real en 27 MHz, potencia y armónicos con carga fantasma, PTT
+del micrófono y ATU. El TX **no** queda declarado validado.
+
+---
+
 ## Anexo B: lo que **no** está medido
 
 | Pendiente | Por qué no está fundado | Qué haría falta |
 |---|---|---|
+| **CB 27 MHz: TX/RF real (F0 del #146)** | En esta corrida **no se transmitió, no se desplegó y no se flasheó**. El módulo CB, el dial y el interlock están medidos en host y en el banco QEMU (`tx=false`), pero no hay medición de RF en la radio. | Con autorización del owner y carga fantasma: TX en 27,185 (AM y FM), potencia real contra `cb_pwr_max`, armónicos, PTT del micrófono y ATU. Checklist §10.3 del issue |
 | **Transmisión (TX) y RF** | Intentado el 15/10 y **no medido**: la app del barrido de ROE no se puede abrir por el control remoto (issue #78), así que `radio_start_swrscan()` nunca corrió. La antena es de 40 m. | Que el remoto pueda abrir esa app; después, un barrido de ROE con la potencia al mínimo |
 | **Estabilidad de horas** | La vigilancia más larga pasó a **300 s** el 15/10 17:11 (0 caídas), todavía lejos de "horas". | Dejar la radio corriendo varias horas y contar caídas |
 | **El #63 con spots reales decodificados** | Se abrió WSPR y quedó viva, pero no se esperó un ciclo completo con decodificación. | Dejarla en WSPR varios ciclos y mirar el log |

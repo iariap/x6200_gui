@@ -52,6 +52,7 @@
 #include "cfg/memory.h"
 #include "adaptive_tuning.h"
 #include "autotune_ui.h"
+#include "cb.h"
 #include "band_plan.h"
 #include "screen_rec.h"
 #include "dialog_wspr.h"
@@ -1066,6 +1067,18 @@ static void freq_shift(int16_t diff) {
     }
 
     int32_t freq = subject_get_int(cfg_cur.fg_freq);
+
+    /* En CB (27 MHz) el dial cuenta CANALES de 40, no Hz: 1 detent = 1 canal, sin
+     * aceleracion y sin wrap (issue #146, seccion 5.3). Fuera de canal la primera
+     * vuelta engancha el primer canal en la direccion del giro. */
+    cb_plan_t plan;
+    if (cb_plan_of_freq(freq, &plan)) {
+        int ch = cb_step_channel(plan, freq, diff);
+        subject_set_int(cfg_cur.fg_freq, cb_freq_of_channel(plan, ch));
+        voice_say_text_fmt("Channel %i", ch);
+        return;
+    }
+
     int32_t df = diff * subject_get_int(cfg_cur.freq_step) * freq_accel(abs(diff));
     freq = align_int(freq + df, abs(df));
     subject_set_int(cfg_cur.fg_freq, freq);
@@ -1118,9 +1131,25 @@ static void main_screen_rotary_enhanced_cb(lv_event_t * e) {
     rotary_event_enhanced_t *enhanced = (rotary_event_enhanced_t *)lv_event_get_param(e);
     float multiplier = adaptive_multiplier_gate(enhanced->multiplier,
                                                 (adaptive_accel_t) params.freq_accel.x);
-    
+
+    int32_t freq = subject_get_int(cfg_cur.fg_freq);
+
+    /* En CB el dial cuenta canales: 1 detent = 1 canal, SIN multiplicador adaptativo
+     * (issue #146, seccion 5.3). El indicador "xN" se omite porque no hay
+     * aceleracion que mostrar. */
+    cb_plan_t plan;
+    if (cb_plan_of_freq(freq, &plan)) {
+        if (!subject_get_int(freq_lock)) {
+            int ch = cb_step_channel(plan, freq, enhanced->raw_diff);
+            subject_set_int(cfg_cur.fg_freq, cb_freq_of_channel(plan, ch));
+            voice_say_text_fmt("Channel %i", ch);
+        }
+        dialog_rotary(enhanced->raw_diff);
+        free(enhanced);
+        return;
+    }
+
     if (!subject_get_int(freq_lock)) {
-        int32_t freq = subject_get_int(cfg_cur.fg_freq);
         int32_t base_step = subject_get_int(cfg_cur.freq_step);
         
         // Calculate adaptive step using the multiplier

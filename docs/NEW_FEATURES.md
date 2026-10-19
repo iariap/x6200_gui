@@ -8,6 +8,7 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | Decodificados FT8/FT4 por **UDP** (GridTracker, JTAlert) | ✅ | [FT8_UDP.md](FT8_UDP.md) |
 | **Aviso de nueva versión** | ✅ | §2 |
 | **Aguja de S-meter** | ✅ | §3 |
+| **CB 27 MHz**: dial por canal (4 grids A–D), `CH nn` y TX con tope/interlock | 🔶 RX y dial medidos en host/banco; TX (RF real) `requires-radio` (F0) | §42 |
 | **Band plan IARU** sobre el waterfall | ✅ | §4 |
 | **Grabación de pantalla** (AVI: video MJPEG + audio de RX) | ✅ | §5 |
 | **Bluetooth CAT** (SPP, hasta 3 clientes) | ✅ | §6 |
@@ -1757,3 +1758,113 @@ siempre manda), y sin ella la línea se descarta en silencio.
   tarjeta.
 - **`{"cmd":"cluster_feed","text":"<linea>"}`**: mete una línea del cluster sin servidor.
 - **`X6200_VOICE_TEST="texto"`**: dice una frase por voz al arrancar.
+
+---
+
+## 42. Módulo CB 27 MHz (Banda Ciudadana): dial por canal y TX con interlock (issue #146)
+
+La banda ciudadana de 27 MHz se usa **sin app nueva**: las cuatro bandas `CB A`–`CB D` ya
+existen en la base de bandas y se llega con los `UP/DOWN` largos, como a cualquier banda. Lo
+que agrega este módulo es que el **dial cuente canales de 40**, que la barra de información
+diga en qué canal estás y que el TX en 27 MHz tenga **tope de potencia e interlock**.
+
+### 42.1 Los cuatro grids y el plan de 40 canales
+
+Cada grid es un plan CEPT/FCC/Argentina completo de 40 canales con paso nominal de 10 kHz,
+cinco huecos (26,995 / 27,045 / 27,095 / 27,145 / 27,195) y los canales **23, 24 y 25 fuera de
+orden** (23 = 27,255; 24 = 27,235; 25 = 27,245). La misma secuencia de offsets vale para los
+cuatro grids, cada uno desde su canal 1:
+
+| Grid | Banda | Canal 1 | Canal 40 |
+|---|---|---|---|
+| A | `CB A` (id 201) | 26,065 | 26,505 |
+| B | `CB B` (id 202) | 26,515 | 26,955 |
+| **C** | `CB C` (id 203) | **26,965** | **27,405** |
+| D | `CB D` (id 204) | 27,415 | 27,855 |
+
+El grid C es el **SBC argentino / CEPT / FCC**. No se agregaron grids E–H: E empieza en 27,865 y
+se solaparía con 10 m (28,000).
+
+La lógica vive en `src/cb.c` / `src/cb.h` (`cb_plan_of_freq`, `cb_channel_of_freq`,
+`cb_freq_of_channel`, `cb_step_channel`, `cb_tx_allowed`), sin LVGL, sin subjects y sin SQLite;
+`tests/native/test_cb.c` la cubre en el host.
+
+### 42.2 Cómo se usa
+
+- **Dial**: en CB cada detent mueve **un canal**, sin aceleración y sin wrap. En los extremos
+  1 y 40 no da la vuelta.
+- **Canal 23 → 24**: el número sube y la frecuencia **baja** (27,255 → 27,235). Es correcto: el
+  dial cuenta canales, no Hz.
+- **Fuera de canal** (un hueco o una frecuencia entrada a mano): la celda VFO muestra `CH --`.
+  El primer giro **engancha** el primer canal en la dirección del giro (no el más cercano).
+- **Celda VFO** de la barra: `CH 19` si la frecuencia es un canal exacto; fuera de CB sigue
+  mostrando `VFO-A` / `SPL-B`. La fila grande de frecuencia no cambia.
+- **Voz**: al cambiar de canal dice `Channel 19`.
+- **Espectro/waterfall, CAT, memorias y entrada directa de frecuencia** siguen funcionando por
+  frecuencia; el canal se deriva. Cargar una memoria en un canal exacto muestra su número.
+
+### 42.3 Entrada y salida de CB (políticas)
+
+Al entrar a un grid CB:
+
+1. **Split = off** (se guarda y se restaura al salir) para que el PTT no termine en otro
+   VFO/banda.
+2. **Modo AM** si el modo actual no es AM/SAM/NFM; un FM elegido por el usuario se respeta.
+3. **Potencia** recortada a `cb_pwr_max` (4,0 W por defecto).
+4. **XIT a 0** y bloqueado mientras esté en CB (mueve el TX ±1,5 kHz y saca del canal sin que el
+   operador lo vea). El **RIT** sigue disponible.
+
+La política de modo/split se reaplica al cambiar de grid (A↔B↔C↔D). Al salir se restauran el
+split y la potencia que había antes; el modo lo recarga la banda destino. En el arranque, si la
+última banda guardada es CB, la entrada se aplica una vez.
+
+### 42.4 Parámetros (sin UI en v1)
+
+| Parámetro | Tipo | Default | Significado |
+|---|---|---|---|
+| `cb_tx_scope` | int 0..2 | `0` | 0 = solo SBC argentino (26,960–27,410); 1 = cualquier grid A–D; 2 = sin interlock |
+| `cb_pwr_max` | float | `4.0` | Tope de potencia en CB, en watts |
+
+Se guardan en `/mnt/params.db` como el resto y se editan por el **configurador web / SQLite**
+(no hay fila en Ajustes). El interlock actúa sobre el **PTT de software** (teclado y apps
+digitales): trabaja por ventana de frecuencia, no exige canal exacto. Fuera de 26–28 MHz no toca
+nada, así que las bandas de aficionado quedan iguales. Si bloquea, muestra
+`TX blocked: not a CB channel`, lo dice por voz y apaga el PTT.
+
+### 42.5 Migración de una radio actualizada en el lugar
+
+Las radios que ya tienen `/mnt/params.db` conservan la base. La migración **`_4_cb_bands`**
+(`src/params/migrations.c`) corrige los cuatro rangos a los grids canónicos y recorta a la base
+del grid la frecuencia guardada que quedó fuera; es idempotente y no toca ninguna otra tabla. Una
+base nueva ya trae los rangos corregidos desde `sql/bands_cb.csv` (canal 1 de `CB A` = 26,065).
+
+### 42.6 Límites legales (Argentina) — leer antes de transmitir
+
+- El **SBC** ocupa **26,960–27,410 MHz** y exige **autorización por estación** y **equipo
+  homologado/registrado** (Res. SC 47/1982; CABFRA 2025 de ENACOM; alta con formularios
+  F1/F2/F23, D3/COPITEC y responsable técnico).
+- El **X6200 no es un equipo CB homologado**: transmitir en 27 MHz con él queda fuera del
+  régimen del SBC y fuera del servicio de aficionados. Modificar el firmware **no** cambia la
+  homologación.
+- Los grids **A, B y D** (26,065–26,955 y 27,415–27,855) **no** son SBC argentino: el default
+  `cb_tx_scope = 0` los deja en recepción.
+- Los modos y la potencia del SBC argentino **no están confirmados**; se usan AM/FM y 4 W como
+  valores conservadores. El tope es configurable.
+- **El PTT del micrófono** probablemente lo maneja el MCU y el interlock de software no
+  necesariamente lo frena: hay que medirlo en la radio (F0). La protección real es no
+  sintonizar fuera de canal.
+- **No se publica el TX como validado** hasta completar F0 y medir armónicos con carga fantasma.
+
+### 42.7 Fuera de alcance en v1
+
+Escaneo de canales, memorias de canal 1–40, comando CAT de canal, regla de canales en la franja
+del plan de banda, listar CB en la app Bands y grids E–H. Tampoco se toca el baseband/MCU ni el
+flag `fullband-tx` (no está en esta ROM).
+
+### 42.8 Estado de la verificación
+
+Medido en el host y en el banco QEMU: tests nativos de los cuatro grids, de los cinco huecos y
+del orden 23/24/25; celda `CH 19` en los seis temas sin recorte; migración sobre una base real;
+dial/`CH --`/modo AM/potencia 4,0 W y `tx=false` en el banco. **F0 (RF real en 27 MHz,
+armónicos, potencia medida y PTT del micrófono) queda `requires-radio`** y lo hace el owner con
+autorización: este módulo **no** declara el TX validado.

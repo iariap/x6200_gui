@@ -8,6 +8,7 @@
 #include "radio.h"
 #include "main.h"
 #include "btaudio.h"
+#include "cb.h"
 #include "gpio_safe.h"
 
 #include "cfg/atu.h"
@@ -47,6 +48,11 @@ static pthread_mutex_t  control_mux;
 static x6200_flow_t     *pack;
 
 static radio_state_t    state = RADIO_RX;
+/* El control de la radio queda inicializado al final de radio_init(). Si la BASE
+ * no responde, radio_init() sale antes y el lock tambien queda sin inicializar:
+ * los hooks de CB no pueden llamar al control en ese caso (el banco QEMU, que
+ * corre sin radio, se colgaba al entrar a CB). */
+static bool             radio_control_ok = false;
 static uint64_t         now_time;
 static uint64_t         prev_time;
 static uint64_t         idle_time;
@@ -608,6 +614,7 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
     idle_time = prev_time;
 
     pthread_mutex_init(&control_mux, NULL);
+    radio_control_ok = true;
 
     pthread_t thread;
 
@@ -799,6 +806,160 @@ void radio_set_pwr(float d) {
     WITH_RADIO_LOCK(x6200_control_txpwr_set(d));
 }
 
+/* --- CB 27 MHz (issue #146): entrada/salida de la banda ---------------------
+ *
+ * Dentro de CB el split se apaga (para que el PTT no termine en otro VFO/banda),
+ * el modo cae a AM si no es AM/SAM/NFM, la potencia se recorta a params.cb_pwr_max
+ * y el XIT se fuerza a 0 (mueve el TX +-1,5 kHz y saca del canal sin que el
+ * operador lo vea). Al salir se restauran el split y la potencia que habia antes.
+ *
+ * El split de la banda anterior se cachea mientras se esta FUERA de CB: el
+ * observer de cfg.band_id de src/cfg/band.c corre antes que el nuestro (se
+ * registro primero) y ya reemplazo el split por el de la banda nueva cuando
+ * llega este callback. La potencia es global (cfg.pwr), asi que se guarda al
+ * entrar.
+ *
+ * Sin timers ni polling: solo observers de subjects, que es el mecanismo que ya
+ * usa la pantalla principal. */
+
+#define CB_BAND_FIRST 201
+#define CB_BAND_LAST  204
+
+static bool  cb_active;        /* la banda actual es un grid CB */
+static bool  cb_boot_done;     /* ya paso el arranque: el control de la radio existe */
+static int   cb_saved_split;   /* split de la ultima banda fuera de CB */
+static float cb_saved_pwr;     /* potencia de la banda anterior, para restaurar */
+static int32_t cb_last_band_id; /* banda vista por ultimo, para detectar el cambio en curso */
+
+static bool cb_in_band(void) {
+    int32_t id = subject_get_int(cfg.band_id.val);
+
+    return id >= CB_BAND_FIRST && id <= CB_BAND_LAST;
+}
+
+static float cb_pwr_limit(void) {
+    /* Un valor no positivo (base editada a mano) cae al default conservador. */
+    return params.cb_pwr_max.x > 0.0f ? params.cb_pwr_max.x : 4.0f;
+}
+
+static void cb_split_cache_cb(Subject *subj, void *user_data) {
+    /* Mientras cfg/band.c carga la banda nueva, el subject del split cambia al
+     * valor de la banda DESTINO. Ese cambio no es del usuario y no tiene que
+     * pisar el split que hay que restaurar. Se reconoce porque band.c ya movio
+     * el pk de la banda (cfg_cur.band->vfo.pk) al destino, mientras que
+     * cb_last_band_id sigue siendo la banda que este modulo vio por ultima vez;
+     * en un cambio del usuario (o al arrancar) los dos coinciden. */
+    if (!cb_active && cfg_cur.band->vfo.pk == cb_last_band_id) {
+        cb_saved_split = subject_get_int(subj);
+    }
+}
+
+/* Tope de potencia mientras se esta en CB. Este observer se registra ANTES que
+ * el de radio_init() que manda cfg.pwr al control, asi que el recorte ocurre
+ * antes de que la potencia llegue al equipo (no hay overshoot). */
+static void cb_pwr_limit_cb(Subject *subj, void *user_data) {
+    if (!cb_active) {
+        return;
+    }
+
+    float max = cb_pwr_limit();
+
+    if (subject_get_float(subj) > max + 0.001f) {
+        subject_set_float(cfg.pwr.val, max);
+        msg_update_text_fmt("Power limited to %.1f W in CB", max);
+        voice_say_text_fmt("Power limited to %i watts", (int) (max + 0.5f));
+    }
+}
+
+static void cb_apply_entry(bool save_state) {
+    cb_active = true;
+
+    if (save_state) {
+        cb_saved_pwr = subject_get_float(cfg.pwr.val);
+    }
+
+    /* Split off: se restaura al salir. */
+    subject_set_int(cfg_cur.band->split.val, 0);
+
+    /* Modo: AM salvo que ya sea AM/SAM/NFM (un FM elegido por el usuario se
+     * respeta). Al salir, la banda destino recarga el suyo. */
+    x6200_mode_t mode = subject_get_int(cfg_cur.mode);
+
+    if (mode != x6200_mode_am && mode != x6200_mode_sam && mode != x6200_mode_nfm) {
+        subject_set_int(cfg_cur.mode, x6200_mode_am);
+    }
+
+    /* Tope de potencia. */
+    float max = cb_pwr_limit();
+
+    if (subject_get_float(cfg.pwr.val) > max) {
+        subject_set_float(cfg.pwr.val, max);
+    }
+
+    /* XIT a 0. En el arranque la radio todavia no esta inicializada (radio_init()
+     * corre despues): se deja el parametro en 0 y radio_init() lo manda al
+     * equipo. En un cambio de banda en runtime se manda aca mismo. */
+    if (params.xit != 0) {
+        params_lock();
+        params.xit = 0;
+        params_unlock(&params.dirty.xit);
+        lv_msg_send(MSG_PARAM_CHANGED, NULL);
+    }
+
+    if (cb_boot_done && radio_control_ok) {
+        WITH_RADIO_LOCK(x6200_control_xit_set(0));
+    }
+}
+
+static void cb_leave(void) {
+    cb_active = false;
+
+    subject_set_float(cfg.pwr.val, cb_saved_pwr);
+    subject_set_int(cfg_cur.band->split.val, cb_saved_split);
+}
+
+static void cb_band_cb(Subject *subj, void *user_data) {
+    int32_t id = subject_get_int(cfg.band_id.val);
+    bool    in = cb_in_band();
+
+    if (in) {
+        /* Cada cambio a un grid CB aplica la politica de la banda (el modo y el
+         * split que acaba de cargar cfg/band.c pueden ser los guardados de ese
+         * grid). De A a B no se vuelve a guardar la potencia: ya esta recortada
+         * y hay que restaurar la de ANTES de entrar a CB, no la recortada. */
+        cb_apply_entry(!cb_active);
+    } else if (cb_active) {
+        cb_leave();
+    }
+
+    cb_last_band_id = id;
+
+    /* Fuera de CB, el split vigente es el de esta banda: es el que hay que
+     * devolver si se entra a CB desde aca. */
+    if (!in) {
+        cb_saved_split = subject_get_int(cfg_cur.band->split.val);
+    }
+}
+
+void cb_hooks_init(void) {
+    /* Ultimo split conocido de una banda fuera de CB (al arrancar, el de la banda
+     * guardada). */
+    cb_last_band_id = subject_get_int(cfg.band_id.val);
+    cb_saved_split = subject_get_int(cfg_cur.band->split.val);
+
+    subject_add_observer(cfg_cur.band->split.val, cb_split_cache_cb, NULL);
+    subject_add_observer(cfg.pwr.val, cb_pwr_limit_cb, NULL);
+    subject_add_observer(cfg.band_id.val, cb_band_cb, NULL);
+
+    /* En el arranque el observer de cfg.band_id no dispara: si la ultima banda
+     * guardada es CB, se aplica la entrada una vez. */
+    if (cb_in_band()) {
+        cb_apply_entry(true);
+    }
+
+    cb_boot_done = true;
+}
+
 x6200_mic_sel_t radio_change_mic(int16_t d) {
     if (d == 0) {
         return params.mic;
@@ -905,6 +1066,18 @@ radio_charger_t radio_change_charger(int16_t d) {
 }
 
 void radio_set_ptt(bool tx) {
+    /* Interlock de CB (issue #146, seccion 7.2): trabaja por VENTANA de
+     * frecuencia, no exige canal exacto. Fuera de 26-28 MHz no toca nada, asi
+     * que las bandas de aficionado siguen iguales. */
+    if (tx && !cb_tx_allowed(subject_get_int(cfg_cur.fg_freq), params.cb_tx_scope.x)) {
+        msg_update_text_fmt("TX blocked: not a CB channel");
+        voice_say_text_fmt("TX blocked, not a C B channel");
+
+        /* Nunca se deja el PTT prendido: se apaga explicito. */
+        WITH_RADIO_LOCK(x6200_control_ptt_set(false));
+        return;
+    }
+
     WITH_RADIO_LOCK(x6200_control_ptt_set(tx));
 }
 
@@ -945,6 +1118,22 @@ int16_t radio_change_rit(int16_t d) {
 }
 
 int16_t radio_change_xit(int16_t d) {
+    /* En CB el XIT esta bloqueado (issue #146, seccion 5.5): mueve el TX
+     * +-1,5 kHz y saca del canal sin que el operador lo vea. El RIT sigue
+     * disponible. */
+    if (cb_in_band()) {
+        if (params.xit != 0) {
+            params_lock();
+            params.xit = 0;
+            params_unlock(&params.dirty.xit);
+            lv_msg_send(MSG_PARAM_CHANGED, NULL);
+            if (radio_control_ok) {
+                WITH_RADIO_LOCK(x6200_control_xit_set(0));
+            }
+        }
+        return 0;
+    }
+
     if (d == 0) {
         return params.xit;
     }

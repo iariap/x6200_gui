@@ -564,6 +564,21 @@ void scenario_settle(const scenario_t *scenario)
 {
     settle_waterfall_center_line(scenario);
 
+    /* CB 27 MHz (issue #146): lo que cada fixture significa. La celda VFO de la
+     * barra tiene que mostrar el canal, no el rotulo VFO-A/SPL-B; si el texto no
+     * esta en pantalla el arnes corta en vez de capturar otra cosa y reportar
+     * verde. El recorte del texto (no solo la visibilidad) se mide aparte con
+     * --inspect (text_truncated / text_natural), que es lo que usa la evidencia
+     * de los seis temas. */
+    if (!strcmp(scenario->name, "home-cb") && !label_on_screen(lv_scr_act(), "CH 19")) {
+        fprintf(stderr, "home-cb: la celda VFO no muestra 'CH 19' (¿se perdio el enganche CB?)\n");
+        exit(1);
+    }
+    if (!strcmp(scenario->name, "home-cb-offchannel") && !label_on_screen(lv_scr_act(), "CH --")) {
+        fprintf(stderr, "home-cb-offchannel: la celda VFO no muestra 'CH --' en 27.000 MHz\n");
+        exit(1);
+    }
+
     if (!strcmp(scenario->screen, "main-foco")) {
         /* Move the focus once the timers have run and the group is populated. */
         lv_group_focus_next(keyboard_group);

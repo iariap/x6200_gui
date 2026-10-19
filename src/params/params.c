@@ -89,6 +89,12 @@ params_t params = {
     .spmode                 = { .x = false,             .name = "spmode",           .voice = "Speaker mode" },
     .freq_accel             = { .x = FREQ_ACCEL_LITE,   .name = "freq_accel",       .voice = "Frequency acceleration" },
 
+    /* CB 27 MHz (issue #146): default conservador, SBC argentino (26,960-27,410)
+     * y 4,0 W (FCC 95.967 para AM/FM; el texto de la Res. 47/82 no esta online,
+     * por eso el tope es configurable). */
+    .cb_tx_scope            = { .x = 0, .min = 0, .max = 2, .name = "cb_tx_scope" },
+    .cb_pwr_max             = { .x = 4.0f, .name = "cb_pwr_max" },
+
     .vox                    = false,
     .vox_ag                 = 0,
     .vox_delay              = 100,
@@ -356,6 +362,8 @@ static bool params_load() {
         if (params_load_uint8(&params.voice_pitch, name, i)) continue;
         if (params_load_uint8(&params.voice_volume, name, i)) continue;
         if (params_load_uint8(&params.freq_accel, name, i)) continue;
+        if (params_load_uint8(&params.cb_tx_scope, name, i)) continue;
+        if (params_load_float(&params.cb_pwr_max, name, f)) continue;
         if (params_load_uint8(&params.visual_profile, name, i)) continue;
 
         if (params_load_uint16(&params.js8_tx_freq, name, i)) continue;
@@ -507,6 +515,8 @@ static void params_save() {
     params_save_uint8(&params.voice_pitch);
     params_save_uint8(&params.voice_volume);
     params_save_uint8(&params.freq_accel);
+    params_save_uint8(&params.cb_tx_scope);
+    params_save_float(&params.cb_pwr_max);
 
     params_save_uint16(&params.js8_tx_freq);
     params_save_bool(&params.js8_hold_offset);

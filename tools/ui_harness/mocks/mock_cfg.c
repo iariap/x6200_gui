@@ -216,6 +216,12 @@ uint32_t cfg_band_read_all_bands(band_info_t **results, int32_t *cap)
         { "SSB", 28225000, 29700000 },
         { "CW", 50000000, 50100000 }, { "SSB", 50100000, 50300000 }, { "DIG", 50300000, 50400000 },
         { "BCN", 50400000, 50500000 }, { "SSB", 50500000, 52000000 },
+        /* CB 27 MHz (issue #146): los cuatro grids canonicos de 40 canales, los mismos
+         * rangos que sql/bands_cb.csv. Con el fixture `home-cb` (27,185 MHz, span de
+         * 100 kHz) la franja de bandas sobre el waterfall dibuja "CB C", igual que en
+         * la radio con la base migrada. */
+        { "CB A", 26065000, 26505000 }, { "CB B", 26515000, 26955000 },
+        { "CB C", 26965000, 27405000 }, { "CB D", 27415000, 27855000 },
     };
     size_t n = sizeof(segs) / sizeof(segs[0]);
 
