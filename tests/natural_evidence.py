@@ -434,7 +434,7 @@ def check_display_off(checker: Checker, off: dict, natural_doc: dict, lit_doc: d
         )
 
     # La captura: el repaint de pantalla completa que el arnes hace antes de la
-    # corrida es justo lo que no ocurre. Los 743680 px de la captura son los que
+    # corrida es justo lo que no ocurre. Los 727840 px de la captura son los que
     # se pintaron ANTES de apretar la tecla (el panel conserva el ultimo frame).
     metrics = off["metrics"]
     checker.check(

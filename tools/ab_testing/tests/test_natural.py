@@ -81,7 +81,10 @@ def test_evidence_is_profiled_delimited_and_deterministic() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
     assert "spectrum 132000 px x 27 frames" in result.stdout
     assert "waterfall 196000 px x 39 rows" in result.stdout
-    assert "clock 15840 px x 1 tick(s)" in result.stdout
+    # OPT-4 #150: the clock's equality guard (src/clock.c) suppresses every tick
+    # whose text did not change, and the harness pins time(), so the clock
+    # invalidates 0 times in the natural run (before the guard: 1).
+    assert "clock 15840 px x 0 tick(s)" in result.stdout
 
 
 def test_natural_section_is_extra_and_carries_no_wall_clock() -> None:
@@ -102,8 +105,11 @@ def test_natural_section_is_extra_and_carries_no_wall_clock() -> None:
         "png_bytes",
     }
     totals = document["natural"]["totals"]
-    assert document["metrics"]["flushes"] == 6 + totals["flushes"]
-    assert document["metrics"]["flushed_pixels"] == 1127680 + totals["flushed_px"]
+    # OPT-4 #150: the equality guards removed the settled capture's last clock
+    # tick (15840 px, 1 flush): the pair is 5 / 1111840, before the guards it was
+    # 6 / 1127680. The rendered PNG is byte-identical.
+    assert document["metrics"]["flushes"] == 5 + totals["flushes"]
+    assert document["metrics"]["flushed_pixels"] == 1111840 + totals["flushed_px"]
 
 
 def test_forced_mode_is_unchanged_by_the_natural_one() -> None:
@@ -117,7 +123,7 @@ def test_forced_mode_is_unchanged_by_the_natural_one() -> None:
 
 
 def test_static_control_has_no_data_regions() -> None:
-    """With the drive off only the clock/BT/band-info rectangles remain."""
+    """With the drive off only the band-info rectangles remain (OPT-4 #150)."""
     control = _load("static")["natural"]
     assert control["data_drive"] is False
     assert control["spectrum_frames"] == 0
@@ -132,7 +138,7 @@ def test_display_off_evidence_renders_nothing() -> None:
     La propiedad la mide el `natural` block (todo en cero) y el test nativo del
     backlight; aca queda pineada sobre la evidencia, porque la captura de la
     pantalla apagada es exactamente un repaint de pantalla completa mas liviana
-    (1127680 - 384000 = 743680 px) y el mismo PNG que con la pantalla encendida. El
+    (1111840 - 384000 = 727840 px) y el mismo PNG que con la pantalla encendida. El
     instrumento del redibujo offscreen de la cascada (src/waterfall.c) queda en 0
     contra una por fila con la pantalla encendida: el panel oscuro saltea el computo
     de la paleta (~196000 px por fila) en vez de hacerlo para nada.
@@ -143,7 +149,9 @@ def test_display_off_evidence_renders_nothing() -> None:
     assert natural["spectrum_frames"] > 0 and natural["waterfall_rows"] > 0
     assert natural["waterfall_offscreen_redraws"] == 0
     assert set(natural["totals"].values()) == {0}
-    assert document["metrics"]["flushes"] == 6 - 1
-    assert document["metrics"]["flushed_pixels"] == 1127680 - 800 * 480
+    # OPT-4 #150: 5 is the settle capture after the clock equality guard removed
+    # its last tick (before the guard: 6).
+    assert document["metrics"]["flushes"] == 5 - 1
+    assert document["metrics"]["flushed_pixels"] == 1111840 - 800 * 480
     lit = _load("forced")["metrics"]["framebuffer_fnv1a"]
     assert document["metrics"]["framebuffer_fnv1a"] == lit

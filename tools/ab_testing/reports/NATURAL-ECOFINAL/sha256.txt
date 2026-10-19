@@ -42,3 +42,19 @@ main-natural-eco 1f8180d1c9e6297144915249a947f48509004b244259186c0b0194b41fd19c7
 # natural.json           revision=d2beb6c6 framebuffer_fnv1a=0x182ac64b59f610ec natural_invalidated_px=11223840 waterfall_rasterized_px=32000 waterfall_full_rebuilds=0
 # off.json               revision=d2beb6c6 framebuffer_fnv1a=0xb046b4b882f4b48d natural_invalidated_px=0 flushes=5 flushed_pixels=743680 waterfall_rasterized_px=0 waterfall_full_rebuilds=0
 # main-natural-eco.json  revision=d2beb6c6 natural_invalidated_px=2861240 waterfall_rasterized_px=32000 waterfall_full_rebuilds=0
+
+# Re-baseline 2026-10-19 (OPT-4 #150, HEAD cbaaf72f): las guardas de igualdad de
+# los updaters (923e4dea) apagan las invalidaciones cuyo valor vivo no cambia.
+# En el arnes time() esta fijo (mocks/mock_ui_deps.c), asi que el reloj
+# (src/clock.c) y el icono BT (src/info.c) dejan de invalidar: el histograma del
+# bloque `natural` pierde el rectangulo del reloj (580,0,220,72) y el control
+# `--natural-static` queda solo con el band-info. La captura comun (settle)
+# tambien pierde su tick de reloj suelto. NINGUN PNG CAMBIA: los sha256 de arriba
+# siguen valiendo (las guardas solo suprimen invalidaciones que no cambiaban un
+# pixel). Lo que se movio es el JSON (flushes/px invalidados); la evidencia cruda
+# se re-genero con el binario de la rama.
+#
+# natural.json           revision=cbaaf72f natural_invalidated_px=11208000 invalidated_rects=66 flushes=66 clock_rects=0 metrics.flushes=71 metrics.flushed_pixels=12319840
+# static.json            revision=cbaaf72f natural_invalidated_px=190400 invalidated_rects=7 (solo band-info)
+# off.json               revision=cbaaf72f natural_invalidated_px=0 flushes=4 flushed_pixels=727840
+# main-natural-eco.json  revision=cbaaf72f natural_invalidated_px=2796800 invalidated_rects=20 metrics.flushes=24 metrics.flushed_pixels=3776640
