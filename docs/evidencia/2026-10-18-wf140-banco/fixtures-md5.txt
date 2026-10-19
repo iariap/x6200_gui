@@ -1,4 +1,6 @@
 # md5 de las 85 fixtures renderizadas con el arnes host en dc45d924 (src/waterfall.c + assert en tools/ui_harness/src/screens.c)
+# (captura pre-rebase: dc45d924 es hoy d2dd92a3 y el arnes del trunk ya tiene 87 fixtures; el compare
+#  b3c873c7 -> d2dd92a3 da las 87 byte-identicas — ver README y ../2026-10-18-wf140-contraste/gates-ab.log)
 # comando: docker run ... x6200-uiharness -lc 'for f in ../fixtures/*.scn; do n=$(basename $f .scn); ./ui_harness --scenario $f --png /out/final/$n.png --json /out/final/$n.json; done'
 # comparacion con la corrida previa al fix (85 PNG): 0 diferencias
 2d38ac4c4a2db949624d7daa8e2a80a4  app-bands.png

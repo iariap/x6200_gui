@@ -15,6 +15,20 @@ El md5 del RED salió del binario que quedó en el chroot. El del GREEN se repro
 independiente del mismo commit (volumen `sigsegv131-build-output`, matriz de gates): mismo hash de
 fuentes (`0b8eb9…`), mismo tamaño y mismos 12 hex que el log de la captura (ver “Contingencias”).
 
+**Rebase corto (2026-10-18)**: esta evidencia se capturó antes del rebase (base del banco: `94c2c6ab`);
+después la rama se rebaseó sobre el trunk `b3c873c7`, así que los commits de código que se citan acá son
+hoy `d2dd92a3` (antes `dc45d924`) y `6cad2bf6` (antes `a297de8b`). Los SHA y los md5 de los logs quedan
+como se capturaron. Lo que el rebase trae al árbol son los archivos del AUTO de CW del #139/#142
+(`src/cw.cpp`, `src/cw_autotune.{c,h}`, `src/controls.cpp`, `src/buttons.cpp`, `src/cfg/cfg.*`,
+`src/cw_decoder.{c,h}`, `src/knobs.c`, `src/mfk.{cpp,h}`, `src/CMakeLists.txt`): **ninguno toca
+`src/waterfall.*` ni `src/theme.*`**, que es lo que esta evidencia mide, y el parche de esos dos commits
+es el mismo antes y después del rebase (`git diff dc45d924 d2dd92a3 -- src | grep -ci waterfall` = 0). El
+banco **no** se volvió a correr con el árbol rebaseado —el chroot del banco no está en este worktree y la
+matriz lo reporta `BLOCKED`—, así que el md5 del binario y el hash de fuentes de la tabla de arriba son
+los del build pre-rebase. Lo que sí se regeneró post-rebase es el arnés host: el `compare` del trunk
+(`b3c873c7`) contra `d2dd92a3` da las **87** fixtures byte-idénticas y el del #140 pasa con 893 chequeos
+de contrato (`../2026-10-18-wf140-contraste/gates-ab.log`).
+
 **Gate fail-closed #86** (lo corre el banco sobre el binario copiado antes de arrancar la GUI), en
 las dos corridas:
 
@@ -124,8 +138,12 @@ Los números completos de cada captura están en `medicion-<captura>.txt`.
   de la línea (x=396..404)**. Los 1636 están en `y=7..50, x=637..751`: es el **reloj** de arriba a
   la derecha (las capturas son de distinto minuto). La geometría y el color de la línea son
   idénticos.
-- **arnés host, 85 fixtures**: los 85 PNG renderizados en `dc45d924` son **byte-idénticos** a los de
-  antes del fix (0 diferencias de md5; md5 de cada uno en [`fixtures-md5.txt`](fixtures-md5.txt)).
+- **arnés host, 85 fixtures** (el arnés del pre-rebase): los 85 PNG renderizados en `dc45d924` son
+  **byte-idénticos** a los de antes del fix (0 diferencias de md5; md5 de cada uno en
+  [`fixtures-md5.txt`](fixtures-md5.txt)). Tras el rebase el arnés tiene **87** (el trunk trae las dos
+  del AUTO de CW del #139/#142) y el `compare` de su base `b3c873c7` contra `d2dd92a3` da las 87
+  byte-idénticas (`captures are pixel-identical to the baseline`) ⇒ el invariante sigue sin cambiar un
+  píxel con la suite crecida (`../2026-10-18-wf140-contraste/gates-ab.log`).
 - **goldens comprometidas**: las 11 PNG de `tools/ab_testing/golden/` son **idénticas** a las
   fixtures recién renderizadas ([`goldens.txt`](goldens.txt)) ⇒ **no hay re-baseline**.
 

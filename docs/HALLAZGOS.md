@@ -2901,7 +2901,9 @@ lo atribuye a que la `lv_line` se crea con **alto 0** y nadie vuelve a fijar sus
 `lv_line_set_points()` (`codigo: src/waterfall.c:201-208` en `94c2c6ab`). Ademas la linea y las filas
 del waterfall comparten `height`: si midiera 0, el waterfall tambien, y el waterfall se ve.
 
-Medido en el banco QEMU (`cortex-a7`, tema Sunlit, binario del trunk `2a0be37fdb29`, 13.773.024 B):
+Medido en el banco QEMU (`cortex-a7`, tema Sunlit, binario del trunk `2a0be37fdb29`, 13.773.024 B;
+el banco se corrió **antes** del rebase corto sobre el trunk, con el trunk de entonces — la nota del
+rebase y qué queda pendiente están en el README de esa evidencia):
 
 ```
 $ CHROOT=/tmp/opencode/vfix3-wf140 RECONSTRUIR=si ESPERA=12 tools/captura-banco.sh red-trunk.png '{"cmd":"get"}'
@@ -2927,7 +2929,7 @@ sobre `main-tema-sunlit-agua.scn` muestra la `lv_line` viva con `w=3 h=243` en `
 **Correccion de lo que decia antes este registro**: nada del registro previo; el #92 ya habia medido
 la linea de 3 px el 2026-10-15. Lo que se corrige es la premisa del issue #140.
 
-**Arreglo** (endurecimiento del invariante, sin cambio de render; commit `dc45d924`):
+**Arreglo** (endurecimiento del invariante, sin cambio de render; commit `d2dd92a3`):
 
 - `draw_middle_line()` crea la linea **una sola vez por `obj`** (una llamada de mas dejaba la linea
   vieja con el alto viejo y el callback duplicado), recalcula el punto inferior en cada llamada y
@@ -2942,8 +2944,12 @@ la linea de 3 px el 2026-10-15. Lo que se corrige es la premisa del issue #140.
 
 - **A/B sin cambio de render**: el trunk y el fix dan la misma banda del waterfall y las mismas
   columnas de la linea (0 px distintos en `y>=240` y en `x=396..404`; los 1636 px que difieren son el
-  reloj, capturas de distinto minuto). Las 85 fixtures del arnes dan PNG byte-identicos antes y
-  despues, y las 11 goldens de `tools/ab_testing/golden/` quedan identicas (sin re-baseline).
+  reloj, capturas de distinto minuto). Las **87** fixtures del arnes dan PNG byte-identicos antes y
+  despues (`x6200-ab compare --a b3c873c7 --b d2dd92a3`: `captures are pixel-identical to the
+  baseline`, 87 escenarios capturados en las dos revisiones; eran 85 antes del rebase corto, que trae
+  las dos del AUTO de CW del #139/#142), y las 11 goldens de `tools/ab_testing/golden/` quedan
+  identicas (sin re-baseline; re-verificadas 11/11 contra las capturas del compare en
+  `docs/evidencia/2026-10-18-wf140-contraste/gates-ab.log`).
 - **Parametro**: con `waterfall_center_line=0` la linea no se dibuja (0/208 filas, `x=400` negro) y
   con `=1` vuelve (3 px).
 - **Reconstruccion**: abrir `Status` y cerrarlo deja la home **byte-identica** a la pristina
@@ -3010,7 +3016,7 @@ $ uv run x6200-ab themes
     OK   waterfall_center_line on main-tema-sunlit-agua = 14.51:1 (min 3.0:1) [object darker; #162436 vs #f1f7fb]
 ```
 
-**Arreglo** (commit `a297de8b`): la linea usa `TC(text)` del tema a `LV_OPA_COVER`, sin blending, y
+**Arreglo** (commit `6cad2bf6`): la linea usa `TC(text)` del tema a `LV_OPA_COVER`, sin blending, y
 el ancho por default pasa de 1 a 3 px (`src/theme.c` `use_base()`, clave `waterfall_signal_width`,
 clamp 1..8). El invariante queda codificado en el arnes (`tools/ui_harness/src/screens.c`,
 `settle_waterfall_center_line`: ancho == el del tema, `LV_OPA_COVER` y `TC(text)`); con el parametro

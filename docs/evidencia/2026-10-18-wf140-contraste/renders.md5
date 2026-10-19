@@ -1,5 +1,7 @@
 # md5 de los renders del harness usados en la evidencia del #140 (issue: la linea central del waterfall).
-# Revision de las dos pasadas: 9872b614 (+ el fix del #140 sin commitear en el worktree).
+# Revision de las dos pasadas: 9872b614 (+ el fix del #140 sin commitear en el worktree), que tras el
+# rebase corto sobre el trunk (b3c873c7) es e2356b25; los 14 md5 de aca se reproducen byte a byte en las
+# revisiones rebaseadas (columnas A y B del compare AB-wf140-final, ver gates-ab.log).
 # Los 7 renders de on/ salen de los fixtures main-espectro-agua y main-tema-<tema>-agua; los de off/
 # son los mismos con waterfall_center_line apagado. Los off/ son identicos en las dos pasadas: el cambio
 # esta confinado a la linea.

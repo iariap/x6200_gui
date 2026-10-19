@@ -1,24 +1,76 @@
+# Salida real de los gates del arnes A/B sobre la revision de esta evidencia.
+#
+# Regenerado tras el rebase corto sobre el trunk (`b3c873c7`, 2026-10-18): los commits de
+# codigo del #140 son hoy `d2dd92a3` (invariante de la linea, sin cambio de render) y
+# `6cad2bf6` (color y ancho de la linea); las revisiones de este log son las rebaseadas.
+# La revision del compare es el mismo par que el log previo al rebase (`9872b614` -> `HEAD`),
+# que hoy es `e2356b25` -> `e598040d`. El `--b` es esa revision (y no el commit de codigo `6cad2bf6`
+# suelto) porque el gate de regresion visual necesita las declaraciones de contrato del commit
+# `34d81ae9` (`quality/contracts.yaml` + `quality/nontext.yaml`); `6cad2bf6` esta incluido en `e598040d`.
+# El arnes del trunk crecio a **87 fixtures** con las dos
+# del AUTO de CW (#139/#142), que no tocan el waterfall: el compare las captura en las dos
+# revisiones y el contrato pasa con 893 chequeos (antes 873, con 85 fixtures).
+
 $ uv run x6200-ab themes
 themes PASS: 10 palette(s) (4 base + 6 file(s)), 9 pair(s) declared, 90 pair(s) checked, 0 failure(s)
   non-text (WCAG 1.4.11, pixels): 19 object(s) measured, 0 failure(s)
+    OK   s_meter_arc on main-foco = 6.23:1 (min 3.0:1) [object lighter; #ffb2aa vs #363e4f]
+    OK   waterfall_signal on main-foco = 6.57:1 (min 3.0:1) [object lighter; #79b3d2 vs #2a1f4c]
+    OK   s_meter_arc on main-espectro-agua = 6.23:1 (min 3.0:1) [object lighter; #ffb2aa vs #363e4f]
+    OK   waterfall_signal on main-espectro-agua = 7.12:1 (min 3.0:1) [object lighter; #71b4cd vs #23193e]
     OK   waterfall_center_line on main-espectro-agua = 14.58:1 (min 3.0:1) [object lighter; #f8eeff vs #23193e]
+    OK   waterfall_signal on main-tema-sprint = 8.31:1 (min 3.0:1) [object lighter; #7fc7ab vs #0e2038]
+    OK   s_meter_arc on main-tema-sprint = 5.46:1 (min 3.0:1) [object lighter; #ff9f87 vs #323e4e]
+    OK   focus_indicator on settings-home = 3.85:1 (min 3.0:1) [object lighter; #9da6ad vs #384757]
+    OK   s_meter_arc on main-tema-sunlit = 3.66:1 (min 3.0:1) [object lighter; #ffc9b8 vs #606c76]
+    OK   waterfall_signal on main-tema-sunlit = 8.89:1 (min 3.0:1) [object darker; #144472 vs #eaf3f8]
+    OK   s_meter_arc on main-tema-sunlit-agua = 3.66:1 (min 3.0:1) [object lighter; #ffc9b8 vs #606c76]
+    OK   waterfall_signal on main-tema-sunlit-agua = 9.16:1 (min 3.0:1) [object darker; #14426f vs #eaf3f8]
     OK   waterfall_center_line on main-tema-sunlit-agua = 14.51:1 (min 3.0:1) [object darker; #162436 vs #f1f7fb]
+    OK   waterfall_signal on main-tema-aurora = 6.57:1 (min 3.0:1) [object lighter; #79b3d2 vs #2a1f4c]
+    OK   s_meter_arc on main-tema-aurora = 6.23:1 (min 3.0:1) [object lighter; #ffb2aa vs #363e4f]
+    OK   waterfall_signal on main-tema-cathode = 6.82:1 (min 3.0:1) [object lighter; #cc9044 vs #1c0f07]
+    OK   s_meter_arc on main-tema-cathode = 8.11:1 (min 3.0:1) [object lighter; #ffd6a0 vs #323d48]
+    OK   cw_tune_bars on cw-tune-tuner = 20.67:1 (min 3.0:1) [object lighter; #ffffff vs #050202]
+    OK   cw_tune_bars on cw-tune-tema-sunlit = 5.02:1 (min 3.0:1) [object darker; #000000 vs #7d7c77]
+  exempt (WCAG 1.4.3, disabled/incidental): 7 role(s) — btn_off_text, text_mute, text_faint, icon_off, switch_off, off, track
+# (recorte: el detalle de los 90 pares de paletas, todos OK, queda fuera de este log)
 
-$ uv run x6200-ab contracts --repo ../.. --revision HEAD
-contracts 2a371fc1a707: PASS — 873 checks, 0 failure(s), 0 unchanged baseline defect(s)
+$ uv run x6200-ab contracts --repo ../.. --revision e598040d
+contracts e598040d43ef: PASS — 893 checks, 0 failure(s), 0 unchanged baseline defect(s)
 
-$ uv run x6200-ab audit --repo ../.. --revision HEAD
-audited 2a371fc1a707: 11 known issues — 0 reproduced, 9 unverified; structural inspection REAL over 9462 objects on 85 scenario(s): 0 structural finding(s)
+$ uv run x6200-ab audit --repo ../.. --revision e598040d
+audited e598040d43ef: 11 known issues — 0 reproduced, 9 unverified; structural inspection REAL over 9636 objects on 87 scenario(s): 0 structural finding(s)
 
-$ uv run x6200-ab compare --repo ../.. --a 9872b614 --b HEAD
+$ uv run x6200-ab compare --repo ../.. --a e2356b25 --b e598040d --experiment-id AB-wf140-final
 experiment AB-wf140-final: PASS (exit 0)
-  Functional         PASS            (required) — 85 scenarios captured on both revisions
+  Functional         PASS            (required) — 87 scenarios captured on both revisions
   Visual Regression  PASS            (required) — no unexplained visual regressions
-  Quality Contract   PASS            (required) — 873 contract checks passed on the candidate
+  Quality Contract   PASS            (required) — 893 contract checks passed on the candidate
   Performance        PASS            (required) — render-cost proxy within budget
   Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
   Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
-report: /tmp/wf140/reports/AB-wf140-final
+report: /home/pablo/desa/asf/state/worktrees/x6200/wf-line-140-coder/tools/ab_testing/reports/AB-wf140-final
+
+# El mismo commit de codigo `d2dd92a3`, contra su base (el trunk `b3c873c7`): el invariante NO cambia
+# un pixel. Las 87 fixtures salen byte-identicas (el gate lo dice con esas palabras) y el reporte queda
+# fuera del repo, en /tmp: lo que se commitea es el del #140 (AB-wf140-final).
+$ uv run x6200-ab compare --repo ../.. --a b3c873c7 --b d2dd92a3 --experiment-id AB-wf140-sinrender --reports-dir /tmp/opencode/wf140-ab/reports2
+experiment AB-wf140-sinrender: PASS (exit 0)
+  Functional         PASS            (required) — 87 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — captures are pixel-identical to the baseline
+  Quality Contract   PASS            (required) — 893 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+report: /tmp/opencode/wf140-ab/reports2/AB-wf140-sinrender
 
 $ uv run ty check $(git ls-files "src/**/*.py" "tests/**/*.py")
 All checks passed!
+
+# Comprobacion de las 11 goldens comprometidas contra las capturas B del compare (md5, una por una):
+# 11/11 byte-identicas (cw-tune-tema-sunlit, cw-tune-tuner, main-espectro-agua, main-foco,
+# main-tema-aurora, main-tema-cathode, main-tema-sprint, main-tema-sunlit-agua, main-tema-sunlit,
+# settings-home, settings-perfil) => el rebase no movio ningun golden.
+# Y las dos pasadas de `renders.md5` (7 renders `on/` antes y despues) se reproducen byte a byte en
+# `e2356b25` (columna A del compare) y en `e598040d` (columna B): 14/14 md5 iguales.

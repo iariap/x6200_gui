@@ -5,7 +5,7 @@ sintonizando; no se ve la línea"*.
 
 La línea existe (issue #140) pero, dibujada como estaba, no se leía:
 
-| | antes (HEAD `9872b614`) | después (este fix) |
+| | antes (HEAD `e2356b25`) | después (este fix) |
 | --- | --- | --- |
 | color | `TC(panel_border)` del tema | `TC(text)` del tema |
 | opacidad | `LV_OPA_60` (60 %) | `LV_OPA_COVER` (100 %) |
@@ -341,7 +341,7 @@ vale es la del control por columna (0 px de tinta esperada), no el md5.
 
 ### Matriz de gates
 
-`scripts/apps/x6200/check-matrix.sh 9872b614 HEAD <worktree>` — **exit 0**:
+`scripts/apps/x6200/check-matrix.sh e2356b25 HEAD <worktree>` — **exit 0**:
 tests nativos, los 8 chequeos estáticos, `check_wcag`, ruff/format/pytest del
 framework A/B y el gate de determinismo del arnés, todo `ok`
 ([`matrix.log`](matrix.log)). El bloque del banco QEMU reporta **BLOCKED** (no
@@ -353,22 +353,32 @@ de arriba (`banco/`): mismo binario, gate #86 `3/3 marcas`, 6 capturas.
 
 Encima corren los gates del arnés A/B que el `check-matrix` no incluye (los corre
 el CI), más `ty` (que también corre el CI y no la matriz). La salida real está en
-[`gates-ab.log`](gates-ab.log), generada sobre esta revisión de código y
-agregada en el commit siguiente de la rama (que sólo toca `docs/evidencia/**`).
+[`gates-ab.log`](gates-ab.log), regenerada **después del rebase corto** sobre el
+trunk (`b3c873c7`): las revisiones de ese log son las rebaseadas (`e2356b25` →
+`e598040d`, los mismos commits que `9872b614` → `HEAD` antes del rebase) y el
+reporte del compare queda commiteado en `tools/ab_testing/reports/AB-wf140-final/`.
 Resumen:
 
 | Gate | Resultado |
 | --- | --- |
 | `x6200-ab themes` | PASS — 19 objetos no-texto, 0 fallas (`waterfall_center_line` 14.58:1 en Aurora y 14.51:1 en Sunlit) |
-| `x6200-ab contracts --revision HEAD` | PASS — 873 checks, 0 fallas, 0 defectos de baseline |
-| `x6200-ab audit --revision HEAD` | 0 reproducciones, 0 hallazgos estructurales (9462 objetos, 85 escenarios) |
-| `x6200-ab compare --a 9872b614 --b HEAD` | **PASS** — Functional / Visual Regression / Quality Contract / Performance en PASS; Hardware y Energy BLOCKED (advisory: no hay equipo) |
+| `x6200-ab contracts --revision e598040d` | PASS — 893 checks, 0 fallas, 0 defectos de baseline |
+| `x6200-ab audit --revision e598040d` | 0 reproducciones, 0 hallazgos estructurales (9636 objetos, 87 escenarios) |
+| `x6200-ab compare --a e2356b25 --b e598040d` | **PASS** — Functional / Visual Regression / Quality Contract / Performance en PASS; Hardware y Energy BLOCKED (advisory: no hay equipo) |
+| `x6200-ab compare --a b3c873c7 --b d2dd92a3` (el invariante solo) | **PASS** — `captures are pixel-identical to the baseline`: las 87 fixtures |
 | `ty check` (todos los `.py` de `src`/`tests`) | All checks passed! |
 
-El **compare** A vs B es el que cubre la superficie compartida: 85 escenarios
-capturados en las dos revisiones, **sin regresión visual no explicada** — o sea
-el cambio de render queda dentro de lo que declara el contrato `AB-WF140` de
-`quality/contracts.yaml`.
+El **compare** A vs B es el que cubre la superficie compartida: **87** escenarios
+capturados en las dos revisiones (las 85 de antes del rebase más las dos del AUTO
+de CW del #139/#142, que el trunk trae y no tocan el waterfall), **sin regresión
+visual no explicada** — o sea el cambio de render queda dentro de lo que declara
+el contrato `AB-WF140` de `quality/contracts.yaml`; los 8 escenarios con píxeles
+distintos son exactamente los que dibujan la línea (`waterfall_center_line true`),
+y los otros 79 quedan byte-idénticos. El segundo compare, contra la base del
+trunk, es el que re-funda «el invariante no cambia un píxel» con la suite ya
+crecida. Las 11 goldens comprometidas se verificaron una por una contra las
+capturas B del primer compare: 11/11 byte-idénticas (el rebase no movió ningún
+golden).
 
 ## Archivos
 
@@ -389,8 +399,13 @@ el cambio de render queda dentro de lo que declara el contrato `AB-WF140` de
 | `medicion-piso-derivado.txt` | salida real de `derivar-piso.py` (Tabla 4) |
 | `recortes.py` | crop ×4 de la columna central de una captura |
 | `banco/` | las 6 capturas del banco (3 temas × on/off) con sus 6 logs, `docker-ps-antes.txt` y los crops ×4 |
-| `matrix.log` | salida real de `scripts/apps/x6200/check-matrix.sh 9872b614 HEAD <worktree>` |
-| `gates-ab.log` | salida real de `themes`, `contracts`, `audit`, `compare` y `ty check` |
+| `matrix.log` | salida real de `scripts/apps/x6200/check-matrix.sh e2356b25 HEAD <worktree>` |
+| `gates-ab.log` | salida real de `themes`, `contracts`, `audit`, los dos `compare` y `ty check`, regenerada tras el rebase |
+
+El reporte completo del compare (`report.html`, `report.md`, `results.json`,
+capturas A y B, diffs y logs) está commiteado en
+[`tools/ab_testing/reports/AB-wf140-final/`](../../../tools/ab_testing/reports/AB-wf140-final/),
+con las revisiones `e2356b25` y `e598040d` en su metadata.
 
 ## Límites de esta evidencia
 
