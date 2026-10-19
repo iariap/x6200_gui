@@ -259,6 +259,20 @@ target_include_directories(disp_buf_probe PRIVATE
     ${REPO})                      # lvgl/lvgl.h
 target_link_libraries(disp_buf_probe PRIVATE lvgl m)
 
+# --- Waterfall image format probe (issue #148, OPT-2, option B) --------------
+# Measures the LVGL 8.3.11 draw cost of a 32-bit TRUE_COLOR image against an
+# INDEXED_8BIT + palette one, same geometry and content: the data the option-B
+# comparison of the experiment rests on. A measurement instrument, not linked
+# into ui_harness. Run: wf_format_probe [reps].
+add_executable(wf_format_probe ${CMAKE_CURRENT_SOURCE_DIR}/probe/wf_format_probe.c)
+target_compile_options(wf_format_probe PRIVATE -D_GNU_SOURCE -Wall
+    $<$<COMPILE_LANGUAGE:C>:-Werror=implicit-function-declaration>)
+target_include_directories(wf_format_probe PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}   # harness lv_conf.h
+    ${REPO})                      # lvgl/lvgl.h
+target_compile_definitions(wf_format_probe PRIVATE LV_CONF_INCLUDE_SIMPLE=1)
+target_link_libraries(wf_format_probe PRIVATE lvgl m)
+
 # --- Waterfall incremental rasterization fixtures (issue #148, OPT-2) --------
 # Compiles the REAL src/waterfall.c against the stock LVGL 8.3.11 and a small
 # stub layer (tests/waterfall/stubs/) that replaces the radio: params,

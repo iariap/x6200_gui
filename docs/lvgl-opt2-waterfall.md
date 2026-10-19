@@ -126,12 +126,124 @@ migración a LVGL 9.6, DSP/FFT/RF/TX, kernel/DTS/GPU, el servidor remoto (#157).
 
 ## Resultados
 
-(pendiente: se agregan tras medir, sin reescribir la hipótesis)
+### Baseline natural (A = `02090454`)
+
+`main-natural.scn` (seed 13, 40 frames, un frame = un periodo de refresco de la
+ROM, 50 ms), `--bench-natural`:
+
+- `waterfall_rows` = **40**; `waterfall_offscreen_redraws` = **40**.
+- Área invalidada = área flusheada = **11 223 840 px** en 67 rectángulos
+  (waterfall `800x245` × 39 = 7 644 000; espectro 132 000 × 27; reloj 15 840).
+- **Rasterizado** (mapeo + paleta): cada refresco reconstruye `WIDTH*height =
+  800*245 = 196 000 px` ⇒ **40 × 196 000 = 7 840 000 px** por corrida. Es exacto
+  (el `redraw_cb` del baseline recorre las `height` filas por refresco) y está
+  confirmado por la cuenta de refrescos (40).
+- Framebuffer `png sha256 = 16e1038e…` / `fnv1a = 0x182ac64b59f610ec`.
+
+### Candidato (B = `576d2df3`, anillo)
+
+Mismo fixture, mismos 40 frames:
+
+- `waterfall_rows` = 40, `waterfall_offscreen_redraws` = **40** (mismo contrato
+  del issue #13), `waterfall_full_rebuilds` = **0**.
+- **Rasterizado = 32 000 px** (40 filas × 800 px): **245× menos, −99.6 %**.
+- Área invalidada/flusheada **idéntica** (11 223 840 px): el scroll mueve todos
+  los píxeles visibles, así que **no** se reduce la invalidación (H3).
+- **PNG byte a byte idéntico** al baseline (`cmp` OK, mismo `fnv1a`).
+
+| Métrica (40 frames naturales) | Baseline A | Candidato B | Δ |
+|---|---|---|---|
+| px rasterizados (mapeo+paleta) | 7 840 000 | 32 000 | **−99.6 %** |
+| reconstrucciones completas | 0 | 0 | = |
+| px invalidados | 11 223 840 | 11 223 840 | = |
+| px flusheados | 11 223 840 | 11 223 840 | = |
+| PNG | — | — | idéntico |
+
+### Opción B (índices `uint8_t` + paleta) — medida y descartada
+
+Probe `wf_format_probe` (LVGL 8.3.11 real, 800×200, host x86, `reps=300`):
+
+| Formato | p50 | p95 |
+|---|---|---|
+| `LV_IMG_CF_TRUE_COLOR` 32 bits | 0,298 ms | 0,372 ms |
+| `LV_IMG_CF_INDEXED_8BIT` + paleta | 1,515 ms | 1,808 ms |
+
+El flush de la imagen indexada es **~5× más lento** (la conversión de paleta por
+píxel del decodificador contra el `memcpy` del camino rápido de TRUE_COLOR,
+`lv_draw_sw_img.c:66`). Además, sin el anillo el cómputo por píxel (la división
+`src_x`) seguiría ocurriendo por refresco; con el anillo ya no aporta nada.
+**No es competitiva**: no se implementa (el issue la condiciona a que lo sea).
+
+### Fixtures deterministas (`tests/waterfall`, gate `tests/check_waterfall_incremental.sh`)
+
+`waterfall_test` compila el `src/waterfall.c` real contra LVGL 8.3.11 real y un
+stub de radio; el oráculo de imagen es independiente del módulo (reimplementa el
+mapeo del baseline) y compara la ventana visible (`waterfall_frame_pixels` +
+`waterfall_render_head`). **186 checks, 0 fallas**, en build normal **y** bajo
+ASan+UBSan:
+
+| Fixture | Qué prueba | Resultado |
+|---|---|---|
+| 20 vueltas de anillo (H=8, 160 filas) | imagen por fila + offset (`render_head`), 160×800 px, 0 rebuilds | PASS |
+| cambio de centro durante el scroll | camino real `do_scroll_cb` → reconstrucción completa y ventana correcta | PASS |
+| zoom 100 kHz→30 kHz→100 kHz | reconstrucción por ancho de FFT | PASS |
+| cambio de paleta | reconstrucción por paleta (memcmp) | PASS |
+| RX↔TX | la fila TX viaja con su ancho, sin rebuild | PASS |
+| ECO (1/4) + pantalla OFF/ON | ninguna fila se pierde; 0 px rasterizados con el panel oscuro | PASS |
+| límites 0/1/512, size>NFFT, ancho estrecho, reserva fallida | sin divisores cero, sin desborde, inerte sin crash | PASS |
+
+### A/B + contratos + benchmark
+
+- **`compare` (A `02090454` vs B `576d2df3`)**: **PASS** — 89 escenarios en
+  ambas revisiones, **pixel-identical**; gates Functional / Visual Regression /
+  Quality Contract (913 checks) / Performance en PASS; Hardware y Energy BLOCKED
+  (advisory, sin equipo físico). Informe en `tools/ab_testing/reports/AB-OPT2-148`.
+- **`contracts --revision 576d2df3`**: PASS (913 checks).
+- **`audit --revision 576d2df3`**: PASS (sin defectos nuevos).
+- **`benchmark` A vs B**: (números abajo).
+- **Gate natural** (`tests/check_harness_natural.sh`): **PASS**, y ahora cruza el
+  instrumento: 800 px por fila nueva, 0 reconstrucciones en reposo y 0 px con el
+  panel oscuro.
+- **Tests nativos** (`tests/native/run_native_tests.sh`): PASS (ASan/UBSan, 0
+  fallos; incluye TSan del espectro de #149).
+
+### Memoria
+
+El anillo reutiliza el **mismo** buffer `800*height*4` (784 000 B con
+`height=245`): no hay buffer 2× ni copias extra. `RSS/PSS` del banco forzado
+(`bench-render`, host) queda dentro del ruido (A ≈ 10,6/7,6 MB, B ≈
+10,5/9,7 MB); el `PSS` de B sale más alto en esa corrida por ruido de medición
+del host, no por el cambio (el frame no crece).
 
 ## Riesgos y rollback
 
-(pendiente)
+- **Riesgo principal**: un anillo mal indexado mostraría la fila equivocada de
+  forma persistente (no se autocorrige como el render completo del baseline).
+  Mitigado por el oráculo independiente (160 ventanas comparadas fila a fila),
+  por la reconstrucción completa ante cualquier cambio de mapeo y por el A/B
+  pixel-identical de 89 escenarios. **No mitigado en hardware** (banco BLOCKED).
+- **Riesgo secundario**: con `offset_y > 0` LVGL dibuja la imagen en **dos
+  tiles** en vez de uno; el área es la misma pero hay una llamada extra de
+  `lv_draw_img` por frame. El A/B de benchmark lo acota (dentro del presupuesto).
+- **Riesgo terciario**: `pending_rows` lo escribe el hilo de radio y lo lee el de
+  GUI; es el **mismo modelo de hilos del baseline** (que ya lee `last_row_id` y
+  la cache desde el callback del scheduler) y no agrega una clase de carrera
+  nueva. Un snapshot lock-free como el de #149 queda como PENDIENTE.
+- **Rollback**: revertir el commit. No hay migración, ni estado persistente, ni
+  cambio de ABI; el frame sigue siendo `800 x height`.
 
 ## PENDIENTES
 
-(pendiente)
+1. **Gate de hardware/QEMU**: el banco quedó **BLOCKED** — falta el chroot
+   `../.vfix3`, falta compilar `tools/remote/x6200-remote`, y el volumen de build
+   está en carrera (hay un `banco-apps` de otra corrida). No se midió el binario
+   ARM completo ni el panel físico. Como en #147, no se extrapola QEMU a
+   Cortex-A7 ni a energía.
+2. **Medición en Cortex-A7**: los tiempos son proxy x86. Falta el perfil real
+   (p95 de redraw, CPU, energía) en la radio.
+3. **Snapshot lock-free del waterfall**: aplicar al waterfall el patrón de #149
+   (frame compartido bajo mutex + copia al hilo de GUI) si se quiere eliminar la
+   carrera preexistente entre `waterfall_data` (radio) y `refresh_waterfall`
+   (GUI).
+4. **Wiring del gate** `check_waterfall_incremental.sh` en el check-matrix del
+   harness (`scripts/apps/x6200/`), como quedó pendiente el gate de #147.
