@@ -1,0 +1,104 @@
+[12:26:37] PRE get
+{"t":"state","vfo":"A","freq":14285000,"freq_bg":14300000,"mode":"CW","band":"20m SSB","filter":2820,"flo":190,"fhi":3010,"rfgain":0,"sql":0,"vol":0,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-112,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+[12:26:37] PRE screenshot
+docs/evidencia/2026-10-19-cb-tx-cualitativo/00-antes.png: (800, 480)
+[12:27:03] STEP1 freq 27185000
+{"t":"ok"}
+[12:27:03] STEP1 abrir CW
+{"t":"ok"}
+[12:27:06] STEP1 pwr 40
+{"t":"ok"}
+[12:27:07] STEP1 get
+{"t":"state","vfo":"A","freq":27185000,"freq_bg":27185000,"mode":"CW","band":"CB C","filter":2820,"flo":190,"fhi":3010,"rfgain":0,"sql":0,"vol":0,"pre":1,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":0,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+docs/evidencia/2026-10-19-cb-tx-cualitativo/01-cb19-antes-tx.png: (800, 480)
+[12:27:30] STEP2 cw_send PARIS PARIS
+{"t":"ok"}
+[12:27:31] STEP2 t=1 tx=true db=-121 cw=1
+[12:27:32] STEP2 t=2 tx=true db=-121 cw=1
+[12:27:32] STEP2 t=3 tx=false db=-121 cw=1
+[12:27:33] STEP2 t=4 tx=true db=-121 cw=1
+[12:27:33] STEP2 t=5 tx=true db=-121 cw=1
+[12:27:34] STEP2 t=6 tx=true db=-121 cw=1
+[12:27:34] STEP2 t=7 tx=false db=-121 cw=1
+[12:27:35] STEP2 t=8 tx=false db=-121 cw=1
+[12:27:35] STEP2 t=9 tx=true db=-121 cw=1
+[12:27:35] STEP2 t=10 tx=true db=-121 cw=1
+[12:27:36] STEP2 t=11 tx=true db=-121 cw=1
+[12:27:36] STEP2 t=12 tx=false db=-121 cw=1
+[12:27:37] STEP2 t=13 tx=true db=-121 cw=1
+[12:27:37] STEP2 t=14 tx=true db=-121 cw=1
+[12:27:37] STEP2 cw_stop
+{"t":"ok"}
+[12:27:39] STEP2 get
+{"t":"state","vfo":"A","freq":27185000,"freq_bg":27185000,"mode":"CW","band":"CB C","filter":2820,"flo":190,"fhi":3010,"rfgain":0,"sql":0,"vol":0,"pre":1,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":0,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+[12:27:40] STEP3a freq 26515000
+{"t":"ok"}
+[12:27:42] STEP3a get (banda/modo)
+{"t":"state","vfo":"A","freq":26515000,"freq_bg":26715722,"mode":"AM","band":"CB B","filter":6000,"flo":0,"fhi":6000,"rfgain":0,"sql":0,"vol":0,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":0,"wpm":15,"rx_wpm":15,"dec":0,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+[12:27:42] STEP3a abrir CW (fuerza modo CW)
+{"t":"ok"}
+[12:27:45] STEP3a get pre-send
+{"t":"state","vfo":"A","freq":26515000,"freq_bg":26715722,"mode":"AM","band":"CB B","filter":6000,"flo":0,"fhi":6000,"rfgain":0,"sql":0,"vol":0,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":0,"wpm":15,"rx_wpm":15,"dec":0,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+[12:27:45] STEP3a cw_send PARIS
+{"t":"ok"}
+[12:27:46] STEP3a t=1 tx=false cw=0
+[12:27:47] STEP3a t=2 tx=false cw=0
+[12:27:47] STEP3a t=3 tx=false cw=0
+[12:27:48] STEP3a t=4 tx=false cw=0
+[12:27:48] STEP3a t=5 tx=false cw=0
+[12:27:49] STEP3a t=6 tx=false cw=0
+[12:27:49] STEP3a t=7 tx=false cw=0
+[12:27:50] STEP3a t=8 tx=false cw=0
+[12:27:51] STEP3a t=9 tx=false cw=0
+[12:27:51] STEP3a t=10 tx=false cw=0
+docs/evidencia/2026-10-19-cb-tx-cualitativo/03-interlock-26515.png: (800, 480)
+[12:28:15] STEP3a cw_stop
+{"t":"ok"}
+[12:28:16] STEP3b freq 27185000
+{"t":"ok"}
+[12:28:17] STEP3b abrir CW
+{"t":"ok"}
+[12:28:20] STEP3b get
+{"t":"state","vfo":"A","freq":27185000,"freq_bg":27185000,"mode":"AM","band":"CB C","filter":6000,"flo":0,"fhi":6000,"rfgain":0,"sql":0,"vol":0,"pre":1,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-118,"tx":false,"app":"CW","ax":{"cw":0,"wpm":15,"rx_wpm":15,"dec":0,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+[12:28:20] STEP3b cw_send PARIS PARIS
+{"t":"ok"}
+[12:28:24] STEP3b t=1 tx=false
+[12:28:24] STEP3b t=2 tx=false
+[12:28:25] STEP3b t=3 tx=false
+[12:28:25] STEP3b t=4 tx=false
+[12:28:26] STEP3b t=5 tx=false
+[12:28:26] STEP3b t=6 tx=false
+[12:28:27] STEP3b t=7 tx=false
+[12:28:27] STEP3b t=8 tx=false
+[12:28:28] STEP3b t=9 tx=false
+[12:28:28] STEP3b t=10 tx=false
+[12:28:28] STEP3b cw_stop
+{"t":"ok"}
+[12:28:29] STEP4 freq 28074000
+{"t":"ok"}
+[12:28:30] STEP4 get
+{"t":"state","vfo":"A","freq":28074000,"freq_bg":28650000,"mode":"USB","band":"10m","filter":3960,"flo":10,"fhi":3970,"rfgain":0,"sql":0,"vol":0,"pre":1,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-106,"tx":false,"app":"CW","ax":{"cw":0,"wpm":15,"rx_wpm":15,"dec":0,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+[12:28:31] STEP4 abrir CW
+{"t":"ok"}
+[12:28:33] STEP4 get pre-send
+{"t":"state","vfo":"A","freq":28074000,"freq_bg":28650000,"mode":"USB","band":"10m","filter":3960,"flo":10,"fhi":3970,"rfgain":0,"sql":0,"vol":0,"pre":1,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-106,"tx":false,"app":"CW","ax":{"cw":0,"wpm":15,"rx_wpm":15,"dec":0,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+[12:28:34] STEP4 cw_send PARIS
+{"t":"ok"}
+[12:28:35] STEP4 t=1 tx=false
+[12:28:35] STEP4 t=2 tx=false
+[12:28:36] STEP4 t=3 tx=false
+[12:28:36] STEP4 t=4 tx=false
+[12:28:37] STEP4 t=5 tx=false
+[12:28:37] STEP4 t=6 tx=false
+[12:28:38] STEP4 t=7 tx=false
+[12:28:38] STEP4 t=8 tx=false
+[12:28:39] STEP4 t=9 tx=false
+[12:28:39] STEP4 t=10 tx=false
+docs/evidencia/2026-10-19-cb-tx-cualitativo/04-10m-28074.png: (800, 480)
+[12:29:05] STEP4 cw_stop
+{"t":"ok"}
+[12:29:05] STEP5 app off
+{"t":"ok"}
+RESTORE_TARGET={"t":"state","vfo":"A","freq":14285000,"freq_bg":14300000,"mode":"CW","band":"20m SSB","filter":2820,"flo":190,"fhi":3010,"rfgain":0,"sql":0,"vol":0,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-112,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+[12:29:07] STEP5 (restaurar) — ver script restore
+DONE

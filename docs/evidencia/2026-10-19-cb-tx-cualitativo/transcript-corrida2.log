@@ -1,0 +1,76 @@
+[12:29:48] == 10-interlock-26515: app off ==
+{"t":"ok"}
+[12:29:50] == 10-interlock-26515: freq 26515000 ==
+{"t":"ok"}
+[12:29:52] == 10-interlock-26515: abrir CW ==
+{"t":"ok"}
+[12:29:55] == 10-interlock-26515: pwr 40 ==
+{"t":"ok"}
+[12:29:57] == 10-interlock-26515: get pre ==
+{"t":"state","vfo":"A","freq":26515000,"freq_bg":26515000,"mode":"CW","band":"CB B","filter":2820,"flo":190,"fhi":3010,"rfgain":0,"sql":0,"vol":0,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":0,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+[12:29:58] == 10-interlock-26515: cw_send 'PARIS' ==
+{"t":"ok"}
+[12:29:59] == 10-interlock-26515 t=1 tx=true cw=1 ==
+[12:30:00] == 10-interlock-26515 t=2 tx=true cw=1 ==
+[12:30:00] == 10-interlock-26515 t=3 tx=true cw=1 ==
+[12:30:01] == 10-interlock-26515 t=4 tx=true cw=1 ==
+[12:30:02] == 10-interlock-26515 t=5 tx=true cw=1 ==
+[12:30:02] == 10-interlock-26515 t=6 tx=false cw=1 ==
+[12:30:03] == 10-interlock-26515 t=7 tx=false cw=1 ==
+[12:30:03] == 10-interlock-26515 t=8 tx=false cw=1 ==
+[12:30:04] == 10-interlock-26515 t=9 tx=false cw=1 ==
+[12:30:04] == 10-interlock-26515 t=10 tx=false cw=1 ==
+docs/evidencia/2026-10-19-cb-tx-cualitativo/10-interlock-26515.png: (800, 480)
+[12:30:29] == 10-interlock-26515: cw_stop ==
+{"t":"ok"}
+[12:30:30] == 11-control-27185: app off ==
+{"t":"ok"}
+[12:30:32] == 11-control-27185: freq 27185000 ==
+connect (¿esta la GUI andando?): Connection refused
+[12:30:33] == 11-control-27185: abrir CW ==
+{"t":"ok"}
+[12:30:36] == 11-control-27185: pwr 40 ==
+{"t":"ok"}
+[12:30:37] == 11-control-27185: get pre ==
+{"t":"state","vfo":"A","freq":26515000,"freq_bg":26515000,"mode":"CW","band":"CB B","filter":2820,"flo":190,"fhi":3010,"rfgain":0,"sql":0,"vol":0,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":0,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+[12:30:38] == 11-control-27185: cw_send 'PARIS PARIS' ==
+{"t":"ok"}
+[12:30:39] == 11-control-27185 t=1 tx=true cw=1 ==
+[12:30:40] == 11-control-27185 t=2 tx=true cw=1 ==
+[12:30:41] == 11-control-27185 t=3 tx=true cw=1 ==
+[12:30:41] == 11-control-27185 t=4 tx=false cw=1 ==
+[12:30:42] == 11-control-27185 t=5 tx=false cw=1 ==
+[12:30:42] == 11-control-27185 t=6 tx=true cw=1 ==
+[12:30:43] == 11-control-27185 t=7 tx=true cw=1 ==
+[12:30:43] == 11-control-27185 t=8 tx=true cw=1 ==
+[12:30:44] == 11-control-27185 t=9 tx=false cw=1 ==
+[12:30:44] == 11-control-27185 t=10 tx=true cw=1 ==
+docs/evidencia/2026-10-19-cb-tx-cualitativo/11-control-27185.png: (800, 480)
+[12:31:07] == 11-control-27185: cw_stop ==
+{"t":"ok"}
+[12:31:09] == 12-10m-28074: app off ==
+{"t":"ok"}
+[12:31:10] == 12-10m-28074: freq 28074000 ==
+connect (¿esta la GUI andando?): Connection refused
+[12:31:11] == 12-10m-28074: abrir CW ==
+{"t":"ok"}
+[12:31:14] == 12-10m-28074: pwr 40 ==
+{"t":"ok"}
+[12:31:15] == 12-10m-28074: get pre ==
+{"t":"state","vfo":"A","freq":26515000,"freq_bg":26515000,"mode":"CW","band":"CB B","filter":2820,"flo":190,"fhi":3010,"rfgain":0,"sql":0,"vol":0,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":0,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+[12:31:16] == 12-10m-28074: cw_send 'PARIS' ==
+{"t":"ok"}
+[12:31:17] == 12-10m-28074 t=1 tx=true cw=1 ==
+[12:31:17] == 12-10m-28074 t=2 tx=true cw=1 ==
+[12:31:18] == 12-10m-28074 t=3 tx=false cw=1 ==
+[12:31:18] == 12-10m-28074 t=4 tx=true cw=1 ==
+[12:31:19] == 12-10m-28074 t=5 tx=false cw=1 ==
+[12:31:20] == 12-10m-28074 t=6 tx=true cw=1 ==
+[12:31:20] == 12-10m-28074 t=7 tx=false cw=1 ==
+[12:31:21] == 12-10m-28074 t=8 tx=false cw=1 ==
+[12:31:21] == 12-10m-28074 t=9 tx=false cw=1 ==
+[12:31:21] == 12-10m-28074 t=10 tx=false cw=1 ==
+docs/evidencia/2026-10-19-cb-tx-cualitativo/12-10m-28074.png: (800, 480)
+[12:31:46] == 12-10m-28074: cw_stop ==
+{"t":"ok"}
+DONE
