@@ -52,6 +52,7 @@ typedef enum {
     ACTION_WF_MODE,
     ACTION_APP_BANDS,
     ACTION_ATUNE,
+    ACTION_APP_PROPAGATION,
 } press_action_t;
 
 typedef struct {

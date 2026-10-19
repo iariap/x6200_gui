@@ -65,6 +65,7 @@ dialog_t *dialog_callsign = NULL;
 dialog_t *dialog_recorder = NULL;
 dialog_t *dialog_wifi     = NULL;
 dialog_t *dialog_swrscan  = NULL;
+dialog_t *dialog_propagation = NULL;
 
 void buttons_press(uint8_t n, bool hold) { (void)n; (void)hold; }
 void buttons_load_page_group(buttons_group_t group) { (void)group; }
@@ -138,3 +139,6 @@ int  dialog_navtex_remote_state(char *buf, size_t size) { (void)buf; (void)size;
 void dialog_swrscan_remote(const char *cmd, int32_t val, const char *text) { (void)cmd; (void)val; (void)text; }
 int  dialog_swrscan_remote_state(char *buf, size_t size) { (void)buf; (void)size; return 0; }
 bool dialog_swrscan_remote_run(bool start) { (void)start; return false; }
+void dialog_propagation_remote(const char *cmd, int32_t val, const char *text) { (void)cmd; (void)val; (void)text; }
+int  dialog_propagation_remote_state(char *buf, size_t size) { (void)buf; (void)size; return 0; }
+bool dialog_propagation_remote_run(bool start) { (void)start; return false; }
