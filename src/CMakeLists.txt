@@ -25,6 +25,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     adaptive_tuning.c
     autotune.c autotune_ui.c
     visual_policy.c
+    sql_policy.c
     audio_enhancement.c
     wspr/wspr.c wspr/wsprnet.c
     theme.c cJSON.c app_frame.c station.c tx_level.c

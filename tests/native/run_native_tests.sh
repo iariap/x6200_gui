@@ -455,6 +455,37 @@ $CC $BASEFLAGS -fanalyzer -I"$SRC" \
 
 "$OUT/lastbreath_tests"
 
+# --- Squelch del DSP (issue #166) ---------------------------------------------
+# src/sql_policy.c incluye `sql_policy.h`, que a su vez incluye
+# <aether_radio/x6200_control/control.h>. En el host no esta la lib real: se
+# compila contra el stub de tests/native/stubs_sql/ (solo el modo y los tres
+# setters del squelch) y el registro de llamadas de sql_policy_stubs.c.
+# El test cubre la funcion pura sql_should_enable() y el camino de radio: el
+# enable se llama con el valor correcto en cada transicion 0<->>0, una sola vez
+# por cambio. Ademas lee src/radio.c (SQL_RADIO_C_PATH) y afirma que radio_tick()
+# -el camino por tick- no toca el squelch.
+echo "== Squelch (#166): la politica habilita el squelch del DSP =="
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$DIR/stubs_sql" -I"$SRC" \
+        -DSQL_RADIO_C_PATH="\"$SRC/radio.c\"" \
+        "$SRC/sql_policy.c" "$DIR/sql_policy_stubs.c" "$DIR/test_sql_policy.c" \
+        "$DIR/test_framework.c" "$DIR/sql_policy_test_main.c" -o "$OUT/sql_policy_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$DIR/stubs_sql" -I"$SRC" \
+        -DSQL_RADIO_C_PATH="\"$SRC/radio.c\"" \
+        "$SRC/sql_policy.c" "$DIR/sql_policy_stubs.c" "$DIR/test_sql_policy.c" \
+        "$DIR/test_framework.c" "$DIR/sql_policy_test_main.c" -o "$OUT/sql_policy_tests"
+fi
+
+echo "== Squelch: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$DIR/stubs_sql" -I"$SRC" \
+    -c "$SRC/sql_policy.c" -o "$OUT/sql_policy.o" || true
+
+"$OUT/sql_policy_tests"
+
 # --- HKEY put thread-safe (issue #131) ---------------------------------------
 # src/hkey.c se incluye con `#include "..."` (hkey.h, events.h, scheduler.h,
 # keyboard.h) y para un include entre comillas manda el directorio del archivo
