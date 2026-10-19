@@ -354,6 +354,8 @@ static button_item_t btn_bands      = make_app_btn("Bands", ACTION_APP_BANDS);
 static button_item_t btn_cw_kbd     = make_app_btn("CW\nKbd", ACTION_APP_CW_KBD);
 static button_item_t btn_cw_trainer = make_app_btn("CW\nTrainer", ACTION_APP_CWTRAINER);
 static button_item_t btn_status     = make_app_btn("Status", ACTION_APP_STATUS);
+/* App Propagacion (issue #145): beacons IBP/IARU R2 de la banda actual, RX. */
+static button_item_t btn_propagation = make_app_btn("Propagation", ACTION_APP_PROPAGATION);
 
 static button_item_t  btn_wifi   = make_app_btn("WiFi", ACTION_APP_WIFI);
 /* El de Bluetooth va al lado del de WiFi: es la UX para elegir a que dispositivo emparejarse
@@ -500,7 +502,7 @@ static buttons_page_t page_app_4 = {   /* herramientas */
     {&btn_app_p4, &btn_cw_kbd, &btn_cw_trainer, &btn_eq, &btn_status}
 };
 static buttons_page_t page_app_5 = {   /* configuracion */
-    {&btn_app_p5, &btn_settings, &btn_callsign, &btn_qth}
+    {&btn_app_p5, &btn_settings, &btn_callsign, &btn_qth, &btn_propagation}
 };
 static buttons_page_t page_app_6 = {   /* radio y red */
     {&btn_app_p6, &btn_wifi, &btn_bt, &btn_swr, &btn_atune}

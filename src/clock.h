@@ -34,6 +34,11 @@ lv_obj_t * clock_init(lv_obj_t * parent);
 void clock_update_power(float ext, float bat, uint8_t cap, bool charge);
 bool clock_get_power(clock_power_t *out);
 
+/* True cuando el reloj del sistema fue sincronizado por NTP (el marcador
+ * /var/run/time-sync que tambien mira este modulo). La app Propagacion usa el
+ * turno GPS de los beacons: sin NTP el slot puede estar corrido. */
+bool clock_time_synced(void);
+
 void clock_set_view(clock_view_t x);
 void clock_set_time_timeout(uint8_t sec);
 void clock_set_power_timeout(uint8_t sec);

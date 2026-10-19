@@ -41,6 +41,7 @@
 #include "dialog_qth.h"
 #include "dialog_recorder.h"
 #include "dialog_callsign.h"
+#include "dialog_propagation.h"
 #include "dialog_wifi.h"
 #include "dialog_eq.h"
 #include "backlight.h"
@@ -193,6 +194,7 @@ static const char *app_label(press_action_t action) {
         case ACTION_APP_BANDS:     return "Bands";
         case ACTION_APP_QTH:       return "QTH";
         case ACTION_APP_CALLSIGN:  return "Callsign";
+        case ACTION_APP_PROPAGATION: return "Propagation";
         default:                   return "home";
     }
 }
@@ -346,6 +348,11 @@ void main_screen_start_app(press_action_t app_action) {
             voice_say_text_fmt("Callsign window");
             break;
 
+        case ACTION_APP_PROPAGATION:
+            dialog_construct(dialog_propagation, obj);
+            voice_say_text_fmt("Propagation window");
+            break;
+
         default:
             break;
     }
@@ -491,6 +498,7 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_BANDS:
         case ACTION_APP_QTH:
         case ACTION_APP_CALLSIGN:
+        case ACTION_APP_PROPAGATION:
             main_screen_start_app(action);
             break;
     }

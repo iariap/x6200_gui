@@ -26,6 +26,7 @@ cómo se usa y en qué estado está. Se actualiza a medida que se suman features
 | **Teclados USB/Bluetooth** (detección y *rollover*) | 🔶 entrada ✅ y app **CW Keyboard** ✅ (§21); falta la UI de pairing | §18 |
 | **Control remoto en vivo** (socket para la página `/remote`) | ✅ sin control remoto de FT8 | §19 |
 | **DRM/KMS** + perilla con hilo propio | ❌ pendiente | [X6100_FEATURE_GAP.md](X6100_FEATURE_GAP.md) §5 |
+| **Propagación** (beacons IBP/IARU R2, solo RX) | ✅ | §43 |
 
 **Leyenda:** ✅ hecho · 🔶 parcial (dice qué falta) · ❌ pendiente. El detalle de cada pendiente y de
 cada parcial está en [X6100_FEATURE_GAP.md](X6100_FEATURE_GAP.md) §5.
@@ -1868,3 +1869,97 @@ del orden 23/24/25; celda `CH 19` en los seis temas sin recorte; migración sobr
 dial/`CH --`/modo AM/potencia 4,0 W y `tx=false` en el banco. **F0 (RF real en 27 MHz,
 armónicos, potencia medida y PTT del micrófono) queda `requires-radio`** y lo hace el owner con
 autorización: este módulo **no** declara el TX validado.
+---
+
+## 43. Propagación: beacons IBP/IARU R2 por banda actual (solo RX)
+
+App nueva (issue #145): se abre desde la página **APP 5:6** o por control remoto
+(`{"cmd":"app","text":"Propagation"}`), corre **a demanda** y mide los beacons del
+**IBP (NCDXF/IARU)** de la **banda actual**. **Nunca transmite**; al terminar,
+cancelar o cerrar devuelve el VFO (frecuencia y modo) exactamente como estaba.
+
+### Qué se muestra
+
+- **Paso 1/4 · Preparando**: la banda actual (nombre del registro de bandas), cuántos
+  beacons IBP aplican y el plan de los próximos cinco slots.
+- **Paso 2/4 · Sincronizando**: estado del reloj NTP y qué beacon está
+  transmitiendo en ese instante (`propagation_slot()`).
+- **Paso 3/4 · Midiendo**: beacon por beacon, con la cuenta regresiva a su slot,
+  barra de progreso y la escalera **100 → 10 → 1 → 0.1 W** en vivo (✓/✗ y SNR).
+  **Cancelar** está siempre en la barra de botones.
+- **Paso 4/4 · Resultado**: veredicto **ABIERTA / MARGINAL / CERRADA**, cobertura
+  sobre los 18 beacons de la banda, evidencia por beacon (indicativo, frecuencia,
+  SNR, escalera y hora UTC del slot) y **dirección** (DXCC + grilla → rumbo y
+  distancia desde el QTH de Ajustes).
+
+La banda dice la verdad en los casos raros: **40/30/80 m no tienen beacons IBP**
+(la IARU no los respalda debajo de 14 MHz) y la app lo dice, con los spots
+recientes del cluster como fuente complementaria y su edad; **sin NTP** avisa que
+el turno puede estar corrido; un **slot no escuchado** se informa como
+"no se escuchó" (el silencio no se convierte en "banda cerrada").
+
+### Registro y turno (sin red)
+
+- **IBP**: 18 beacons, 5 bandas (14.100 / 18.110 / 21.150 / 24.930 / 28.200 MHz),
+  slots de 10 s y ciclo de 15 min para las cinco bandas. El turno implementado
+  (`(slot − banda) mod 18`) es el de la tabla oficial de NCDXF/IARU, que se fija
+  en `tests/native/test_propagation.c` con casos conocidos (00:00 = 4U1UN en
+  14.100, 00:00 = YV5B en 18.110, 00:40 = 4U1UN en 28.200).
+- **IARU R2 (10 m)**: tabla empaquetada generada desde el ODS oficial
+  (`https://storage.iaru-r2.org/index.php/s/mDCqpdaf8AXt3An`, sha256
+  `72e9dab3...ef0628`) con `tools/gen_propagation_iaru.py`: **983 radiofaros,
+  313 activos**, ordenados por frecuencia. Se descartan solo los marcadores que
+  no son radiofaros (`TENTATIVE`, `K7RA(SK)`) y los indicativos de más de 10
+  caracteres; la O con barra (`Ø`) de dos indicativos se normaliza a cero (el
+  registro tiene campo de 10 bytes, así que entran los indicativos largos como
+  `HI7/N2CQR`). No hay consultas a internet.
+
+### Medicion
+
+- **SNR** = S-meter (dBm) − piso de ruido. El piso se mide **a +5 kHz** de la
+  frecuencia del beacon: la banda del IBP tiene un beacon en **todos** los slots,
+  así que no hay un hueco libre en la propia frecuencia donde medir ruido.
+- **Escalera**: el indicativo y el primer dash van a 100 W y el slot cierra con
+  tres dashes de 1 s a 10, 1 y 0.1 W. La v1 usa **ventanas fijas** (0–5 s para
+  100 W, 5–6 s, 7–8 s y 9–10 s para el resto; `propagation_ladder_window()`) y
+  cuenta **escalones seguidos** por encima del piso de detección (3 dB). Es una
+  **heurística declarada**: queda pendiente validar el formato real de los dashes
+  en la radio (`requires-radio`); si no coincide, se corrige la ventana en
+  `src/propagation.c` y no se toca la UI.
+- **Umbrales**: presets 12/6 (fábrica), 15/8, 18/10, 21/12 y 9/4 dB, persistidos en
+  `params.db` (`propagation_open_db`, `propagation_marginal_db`). El botón
+  **Umbrales** los recorre y, si ya hay resultado, reinterpreta el veredicto sin
+  volver a barrer.
+- **Params**: además de los umbrales, `propagation_run_on_open` (por defecto
+  **apagado**: abrir la app no mueve el VFO sin pedirlo) y `propagation_cluster`
+  (por defecto encendido: usa los spots ya en memoria como evidencia secundaria).
+
+### Hilo, timer y consumo
+
+El barrido corre en un **hilo aparte** y no toca LVGL: publica el progreso bajo un
+mutex y despierta a la GUI con `scheduler_put_noargs()`. No se usa `lv_async_call()`
+porque en LVGL 8 crea un timer desde el hilo que llama y no es thread-safe
+(docs/HALLAZGOS.md 58). El **único timer** de la app (1 s) se crea al arrancar el
+barrido y se borra al terminar/cancelar/cerrar: con la app cerrada no queda timer
+ni hilo propio.
+
+El dial queda **bloqueado** mientras la app está abierta (frecuencia, banda y
+modo); el volumen y los botones siguen andando. El barrido sintoniza por hardware
+(`radio_set_freq`, solo RX) y al final vuelve a la frecuencia guardada; el modo lo
+devuelve el snapshot del marco de diálogos (#94). **Escuchar** sintoniza el mejor
+beacon escuchado hasta que el operador pare, repita o cierre; cerrar siempre
+devuelve el VFO.
+
+### Control remoto y tests
+
+- `{"cmd":"cmd","name":"propagation","val":1|0}`: Run / Cancelar (idempotente,
+  solo con la ventana abierta). El estado va en el campo `ax` de `{"cmd":"get"}`
+  (`propagation_state`, `propagation_band`, `propagation_plan`, `propagation_done`,
+  `propagation_heard`, `propagation_snr`, `propagation_ladder`,
+  `propagation_listening`).
+- `tests/native/test_propagation.c`: registro IBP (18/5, frecuencias y unicidad),
+  tabla oficial, bordes de slot y ciclo, `propagation_snr()`, veredicto
+  abierta/marginal/cerrada y sin datos, banda sin IBP, ventanas y escalera,
+  plan, posiciones/rumbo y registro IARU R2 (983/313, indicativos de 10).
+- `tests/check_actions.py` y `tests/check_apps_menu.py` cubren el enganche en
+  Ajustes/menú; `tests/check_manual_apps.py` exige la sección del manual.

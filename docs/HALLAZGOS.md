@@ -76,6 +76,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 55. [La linea central del waterfall del #140: la geometria estaba, el color no (medido por tema)](#55-la-linea-central-del-waterfall-del-140-la-geometria-estaba-el-color-no-medido-por-tema)
 56. [El SIGSEGV del #131: el hilo de radio tocaba LVGL con las teclas del panel (hkey_put)](#56-el-sigsegv-del-131-el-hilo-de-radio-tocaba-lvgl-con-las-teclas-del-panel-hkey_put)
 57. [El espectro del #149: el dibujo leia los buffers sin lock (carrera confirmada con TSan)](#57-el-espectro-del-149-el-dibujo-leia-los-buffers-sin-lock-carrera-confirmada-con-tsan)
+58. [lv_async_call no es thread-safe en LVGL 8: la app de Propagacion usa el scheduler](#58-lv_async_call-no-es-thread-safe-en-lvgl-8-la-app-de-propagacion-usa-el-scheduler)
 
 ---
 
@@ -3222,3 +3223,21 @@ ticket si la cola esta llena). LVGL se sigue tocando solo desde el hilo de GUI
 (no hay ningun crash atribuido a esto: lo que se fundo es la carrera y la mezcla de generaciones, con
 el test determinista y con TSan, no en hardware). Tampoco se midio el costo de la copia del snapshot
 en el Cortex-A7 (solo en el host).
+
+---
+
+## 58. `lv_async_call` no es thread-safe en LVGL 8: la app de Propagacion usa el scheduler
+
+**Codigo** (`lvgl/src/misc/lv_async.c`): `lv_async_call()` llama `lv_mem_alloc()` y
+`lv_timer_create()` desde el hilo que la invoca, sin ningun lock; `lv_async_call_cancel()` recorre
+la lista de timers de LVGL, tambien sin lock. En LVGL 8.3.11 el "async" es un timer de un solo
+disparo, no una cola con mutex.
+
+**Codigo** (`src/scheduler.cpp`, `src/scheduler.h`): `scheduler_put()` / `scheduler_put_noargs()`
+encolan bajo `std::mutex` y `scheduler_work()` las ejecuta en el hilo principal. Es el mecanismo
+que ya usan Field Ops y SWR Scan para volver de un hilo de trabajo a LVGL.
+
+**Consecuencia**: actualizar la UI con `lv_async_call()` desde el hilo del barrido (lo que sugeria
+el boceto del issue #145) crea timers de LVGL desde ese hilo y puede corromper su lista. La app
+Propagation no lo hace: publica el progreso bajo su mutex y despierta a la GUI con
+`scheduler_put_noargs()`; su unico timer (1 s) se crea y se borra desde el hilo de LVGL.

@@ -270,3 +270,7 @@ static time_t get_last_sync_time() {
     }
     return 0;
 }
+
+bool clock_time_synced(void) {
+    return get_last_sync_time() != 0;
+}

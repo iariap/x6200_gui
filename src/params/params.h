@@ -81,6 +81,10 @@ typedef enum {
      * dialogo, corre sobre la pantalla principal (mueve el dial) y se despacha en
      * main_screen_action() desde el boton "Auto Tune" de la pagina APP 6. */
     ACTION_ATUNE,
+
+    /* App Propagacion (issue #145): al FINAL del enum para no correr las acciones
+     * ya guardadas en la configuracion de cada equipo. */
+    ACTION_APP_PROPAGATION,
 } press_action_t;
 
 typedef enum {
@@ -254,6 +258,14 @@ typedef struct {
     /* WiFi / BT */
 
     params_bool_t       wifi_enabled;
+
+    /* Propagacion (issue #145): umbrales del veredicto, arranque al abrir y uso
+     * del cluster como evidencia complementaria. */
+
+    params_int32_t       propagation_open_db;      /* abierta >= este SNR */
+    params_int32_t       propagation_marginal_db;  /* marginal >= este SNR */
+    params_bool_t        propagation_run_on_open;
+    params_bool_t        propagation_cluster;
 
     /* Theme */
 

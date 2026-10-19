@@ -175,7 +175,7 @@ cambia de página: son **6**, con 3 o 4 apps cada una.
 | **APP 2:6** | SSTV, WeFax, NavTex, Clúster |
 | **APP 3:6** | Recorder, **Field Ops**, GPS, Bandas |
 | **APP 4:6** | CW Kbd, CW Trainer, Eq, Status |
-| **APP 5:6** | Ajustes, Callsign, QTH |
+| **APP 5:6** | Ajustes, Callsign, QTH, Propagation |
 | **APP 6:6** | WiFi, Bluetooth, SWR Scan |
 
 Además de las páginas, **cada app está en la lista de acciones** de *Ajustes → Acciones* y se puede
@@ -453,6 +453,39 @@ tenés la lista completa de acciones, incluidas todas las apps: `APP FT8`, `APP 
 `APP Bluetooth`, `APP Callsign`, `APP Cluster`, `APP CW Keyboard`, `APP CW Trainer`, `APP EQ` y
 las demás. Con eso te armás el equipo a tu manera: FT8 a un toque corto, el entrenador CW a una
 pulsación larga, y así.
+
+### 6.24 Propagation (beacons IBP/IARU R2)
+
+![Propagation](img/00-app-pages.png)
+
+La app **Propagation** dice si la **banda actual** está abierta midiendo los
+**beacons del IBP** (NCDXF/IARU) que transmiten en los próximos slots, **solo RX**
+(nunca transmite). Está en la página **APP 5:6** y también por control remoto
+(`{"cmd":"app","text":"Propagation"}`).
+
+**Cómo se usa:** abrí la app en la banda que querés evaluar y pulsá **Run**
+(también puede arrancar sola al abrirse, con el parámetro *run on open*). La app
+bloquea el dial mientras está abierta y muestra el barrido en cuatro pasos:
+**1/4 Preparando** (banda y beacons aplicables), **2/4 Sincronizando** (reloj NTP y
+"transmitiendo ahora"), **3/4 Midiendo** (beacon por beacon, con la escalera
+100/10/1/0.1 W y una barra de progreso) y **4/4 Resultado** (veredicto, evidencia,
+cobertura y dirección).
+
+- **ABIERTA / MARGINAL / CERRADA** sale del mejor SNR medido contra el piso de
+  ruido, con umbrales configurables (el botón **Umbrales** recorre 12/6, 15/8,
+  18/10, 21/12 y 9/4 dB).
+- **Cancelar** está siempre disponible durante el barrido y devuelve el VFO. Al
+  terminar, cancelar o cerrar, la frecuencia y el modo vuelven exactamente como
+  estaban.
+- **Escuchar** sintoniza el mejor beacon escuchado y lo deja hasta que pulses
+  **Parar** o cierres (cerrar siempre devuelve el VFO).
+- **40/30/80 m no tienen beacons IBP** (la IARU no los respalda debajo de 14 MHz):
+  la app lo dice y muestra los spots recientes del cluster de esa banda, con su
+  edad.
+- El **reloj sin NTP** se avisa en pantalla: el turno de los beacons puede estar
+  corrido. La app no puede forzar la sincronización (la hace el sistema).
+- El registro **IARU R2 de 10 m** (983 radiofaros, 313 activos en la lista del
+  2026-10-18) va empaquetado en el firmware; no consulta internet.
 
 ## 7. Guías avanzadas
 
