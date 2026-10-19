@@ -199,8 +199,16 @@ ASan+UBSan:
   Quality Contract (913 checks) / Performance en PASS; Hardware y Energy BLOCKED
   (advisory, sin equipo físico). Informe en `tools/ab_testing/reports/AB-OPT2-148`.
 - **`contracts --revision 576d2df3`**: PASS (913 checks).
-- **`audit --revision 576d2df3`**: PASS (sin defectos nuevos).
-- **`benchmark` A vs B**: (números abajo).
+- **`audit --revision 576d2df3`**: PASS — 11 issues conocidos (0 reproducidos, 9
+  sin verificar), 0 hallazgos estructurales sobre 9810 objetos en 89 escenarios.
+- **`benchmark` A vs B**: el barrido completo (89 escenarios) sale
+  **INCONCLUSIVE** por dispersión del host (contenedores de otras corridas en
+  paralelo), pero **`flushes Δ = 0.0 %` y `area Δ = 0.0 %` en todos**: no hay
+  cambio estructural. El foco en los escenarios del waterfall
+  (`BENCH-OPT2-148-FOCUS`, 5 rondas) da **PASS** en `bench-render` (p95 Δ
+  **−6,9 %**, el candidato queda igual o mejor: el segundo tile del offset no
+  cuesta) y `main-espectro-agua` (+2,2 %); `main-natural` queda INCONCLUSIVE por
+  un p95 de ruido (p50 3,58→3,81 ms) con los proxies deterministas en 0 %.
 - **Gate natural** (`tests/check_harness_natural.sh`): **PASS**, y ahora cruza el
   instrumento: 800 px por fila nueva, 0 reconstrucciones en reposo y 0 px con el
   panel oscuro.
@@ -224,7 +232,8 @@ del host, no por el cambio (el frame no crece).
   pixel-identical de 89 escenarios. **No mitigado en hardware** (banco BLOCKED).
 - **Riesgo secundario**: con `offset_y > 0` LVGL dibuja la imagen en **dos
   tiles** en vez de uno; el área es la misma pero hay una llamada extra de
-  `lv_draw_img` por frame. El A/B de benchmark lo acota (dentro del presupuesto).
+  `lv_draw_img` por frame. Medido: `bench-render` (el forzado con el waterfall)
+  queda en p95 Δ **−6,9 %** — sin regresión.
 - **Riesgo terciario**: `pending_rows` lo escribe el hilo de radio y lo lee el de
   GUI; es el **mismo modelo de hilos del baseline** (que ya lee `last_row_id` y
   la cache desde el callback del scheduler) y no agrega una clase de carrera
