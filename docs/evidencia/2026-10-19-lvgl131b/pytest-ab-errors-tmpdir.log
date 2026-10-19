@@ -1,0 +1,592 @@
+.................................................EEEEEEEEEEEEE.......... [ 30%]
+........................................................................ [ 60%]
+........................................................................ [ 90%]
+........................                                                 [100%]
+==================================== ERRORS ====================================
+____________________ ERROR at setup of test_a_vs_a_is_pass _____________________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+_________ ERROR at setup of test_regression_is_detected_with_evidence __________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+_________________ ERROR at setup of test_fix_is_an_improvement _________________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+______ ERROR at setup of test_regression_of_a_fixed_issue_is_a_regression ______
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+______ ERROR at setup of test_ui009_battery_symbol_fix_is_an_improvement _______
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+_____________ ERROR at setup of test_all_fixtures_can_be_captured ______________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+__________ ERROR at setup of test_audit_uses_the_real_instrumentation __________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+____________ ERROR at setup of test_audit_detects_a_clipped_element ____________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+_____ ERROR at setup of test_audit_detects_text_glyph_and_contrast_defects _____
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+_____ ERROR at setup of test_audit_detects_a_widget_out_of_the_focus_group _____
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+______________ ERROR at setup of test_contracts_pass_on_the_base _______________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+________ ERROR at setup of test_benchmark_measures_the_real_render_cost ________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+_______ ERROR at setup of test_benchmark_detects_a_controlled_regression _______
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f8ff317f6f0>, _basetemp=PosixPath('/tmp/pytest-of-pablo/pytest-9'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="session")
+    def revisions(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Revisions]:
+        if not _docker_ready():
+            pytest.skip(f"Docker image {HARNESS_IMAGE} is not available")
+        base = _base_revision()
+        cache_dir = tmp_path_factory.mktemp("ab-cache")
+        _seed_cache(cache_dir)
+>       regression = _ephemeral(REPO_ROOT, base, "regression", _shift_button_bar_and_show_multiplier)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_e2e.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_e2e.py:93: in _ephemeral
+    mutate(scratch)
+tests/test_e2e.py:133: in _shift_button_bar_and_show_multiplier
+    _shift_button_bar(worktree)
+tests/test_e2e.py:115: in _shift_button_bar
+    text = path.read_text()
+           ^^^^^^^^^^^^^^^^
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'), mode = 'r'
+buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/abtest-regression-ww03fo1j/src/buttons.cpp'
+
+/home/pablo/.local/share/uv/python/cpython-3.14.2-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+=========================== short test summary info ============================
+ERROR tests/test_e2e.py::test_a_vs_a_is_pass - FileNotFoundError: [Errno 2] N...
+ERROR tests/test_e2e.py::test_regression_is_detected_with_evidence - FileNotF...
+ERROR tests/test_e2e.py::test_fix_is_an_improvement - FileNotFoundError: [Err...
+ERROR tests/test_e2e.py::test_regression_of_a_fixed_issue_is_a_regression - F...
+ERROR tests/test_e2e.py::test_ui009_battery_symbol_fix_is_an_improvement - Fi...
+ERROR tests/test_e2e.py::test_all_fixtures_can_be_captured - FileNotFoundErro...
+ERROR tests/test_e2e.py::test_audit_uses_the_real_instrumentation - FileNotFo...
+ERROR tests/test_e2e.py::test_audit_detects_a_clipped_element - FileNotFoundE...
+ERROR tests/test_e2e.py::test_audit_detects_text_glyph_and_contrast_defects
+ERROR tests/test_e2e.py::test_audit_detects_a_widget_out_of_the_focus_group
+ERROR tests/test_e2e.py::test_contracts_pass_on_the_base - FileNotFoundError:...
+ERROR tests/test_e2e.py::test_benchmark_measures_the_real_render_cost - FileN...
+ERROR tests/test_e2e.py::test_benchmark_detects_a_controlled_regression - Fil...
+227 passed, 13 errors in 9.30s

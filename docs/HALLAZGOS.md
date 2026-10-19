@@ -3313,12 +3313,19 @@ etiquetas de los botones; solo cambia **en que hilo** corre cada cuerpo.
 - **Chequeos estaticos** (`tests/check_*.py` + `audita-pruebas.py` + `check_cw_tune_feed.py`):
   10/10 OK. `check_cw_tune_feed.py` se actualizo: ahora exige que el accesor y `cw_tune_set_freq()`
   **no** tengan `lv_` y que el pedido use `scheduler_put`.
-- **A/B `AB-LVGL131B`** (`b50303ed` contra el commit del fix): PASS, escenarios pixel-identicos y
-  contratos.
-- **Determinismo del arnes de UI** y **temas**: PASS.
+- **A/B `AB-LVGL131B`** (`b50303ed` contra `260602c5`, perfil `host-ui`): **PASS** (exit 0), 89
+  escenarios pixel-identicos, 913 contratos; Hardware/Energy BLOCKED (advisory). Reporte en
+  `tools/ab_testing/reports/AB-LVGL131B/`.
+- **Determinismo del arnes de UI** (`check_harness_determinism.sh`): PASS (PNG identicos por
+  fixture). **Temas** (`x6200-ab themes`): exit 0.
+- **ruff / format / ty / pytest** (`tools/ab_testing`): todo OK; `pytest` **240 passed**.
 - **`audita-hallazgos.sh`**: exit 0.
-- **ARM cross-compile**: build completo y linkeado.
-- **Banco QEMU**: smoke + ordenes de banda/filtro/modo, GUI viva y sin `crash.txt`.
+- **ARM cross-compile**: `make x6200-gui-dirclean && make x6200-gui-rebuild` en un volumen privado
+  (`x6200-build-output-lvgl131b`); binario `ELF32 ARM`, **13.854.112 B**, **`md5
+  2ddef0bebd7312bafe44b243dc401054`**; pasa `verifica-firmware-port.py`.
+- **Banco QEMU** (ARM emulado `cortex-a7`, chroot propio): smoke OK (captura 20.891 B / 210
+  colores) y **120 ordenes** de `freq`/`mode`/`band`/`filter` (6 rondas de 20), **0 errores**, GUI
+  viva, framebuffer 8.388.608 B y **sin `crash.txt`**.
 
 **Lo que el banco no puede probar, y receta para la radio**: el banco no tiene flow ni placa de
 sonido, asi que no corre `radio_tick()` (teclas del panel), ni `cw_put_audio_samples()` (hilo de
