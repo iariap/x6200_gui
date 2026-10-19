@@ -34,6 +34,7 @@ void test_visual_policy(void);
 void test_cw_decoder(void);
 void test_cw_autotune(void);
 void test_roe_curve(void);
+void test_cb(void);
 
 /* SWR Scan multipasada (issue #125): el motor puro (src/swr_session.[ch]) y los fixtures del
  * owner. El dialogo tiene su propio binario (tests/native/test_swrscan.c). */
@@ -73,6 +74,7 @@ int main(void) {
     test_cw_decoder();
     test_cw_autotune();
     test_roe_curve();
+    test_cb();
 
     test_swr_grid();
     test_swr_aggregation();
