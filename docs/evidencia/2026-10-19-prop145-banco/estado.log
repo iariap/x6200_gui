@@ -1,54 +1,59 @@
 {"t":"ok"}
-app= freq=14074000 mode=USB tx=False state=None done=None heard=None snr=None ladder=None
-app= freq=14074000 mode=USB tx=False state=None done=None heard=None snr=None ladder=None
+app= freq=14030000 mode=LSB tx=False state=None done=None heard=None snr=None ladder=None
+app= freq=14030000 mode=LSB tx=False state=None done=None heard=None snr=None ladder=None
 {"t":"ok"}
-app=Propagation freq=14074000 mode=USB tx=False state=Idle done=0 heard=0 snr=0 ladder=0
+app=Propagation freq=14030000 mode=LSB tx=False state=Idle done=0 heard=0 snr=0 ladder=0
 {"t":"ok"}
-app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-1 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-2 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-3 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-4 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-5 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-6 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-7 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-8 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-9 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-10 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-11 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-12 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-13 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-14 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-15 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-16 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-17 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-18 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-19 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-20 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-21 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-22 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-23 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-24 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-25 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-26 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-27 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-28 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-29 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-30 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-31 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-32 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-33 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-34 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-35 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-36 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-37 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-38 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-39 app=Propagation freq=14074000 mode=USB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
-40 app=Propagation freq=14074000 mode=USB tx=False state=Result done=5 heard=0 snr=-1 ladder=0
+app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+{"t":"ok"}
+app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+vol durante el barrido: 30 -> 37 (pedido 37)
+1 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+2 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+3 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+4 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+5 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+6 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+7 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+8 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+9 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+10 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+11 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+12 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+13 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+14 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+15 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+16 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+17 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+18 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+19 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+20 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+21 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+22 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+23 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+24 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+25 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+26 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+27 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+28 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+29 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+30 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+31 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+32 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+33 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+34 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+35 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+36 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+37 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+38 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+39 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+40 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+41 app=Propagation freq=14030000 mode=LSB tx=False state=Measuring done=0 heard=0 snr=0 ladder=0
+42 app=Propagation freq=14030000 mode=LSB tx=False state=Result done=5 heard=0 snr=-1 ladder=0
 {"t":"ok"}
 {"t":"ok"}
-app=Propagation freq=14074000 mode=USB tx=False state=Cancelled done=0 heard=0 snr=0 ladder=0
+app=Propagation freq=14030000 mode=LSB tx=False state=Cancelled done=0 heard=0 snr=0 ladder=0
 {"t":"ok"}
-app= freq=14074000 mode=USB tx=False state=None done=None heard=None snr=None ladder=None
+app= freq=14030000 mode=LSB tx=False state=None done=None heard=None snr=None ladder=None
   CRASHLOG: 0

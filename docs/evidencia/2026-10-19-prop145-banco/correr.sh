@@ -2,8 +2,14 @@
 #
 # Evidencia del banco QEMU para la app Propagation (issue #145).
 #
-#   CHROOT=/home/pablo/desa/x6200/.vfix3 VOLUMEN=x6200-build-output \
+#   CHROOT=/home/pablo/desa/x6200/.vfix3 VOLUMEN=x6200-build-output-prop145 \
 #       docs/evidencia/2026-10-19-prop145-banco/correr.sh
+#
+# El volumen es el DEDICADO a esta corrida: el compartido (x6200-build-output) lo
+# pisan otras corridas de la fabrica (medido: el binario cambio a las 13:10 con
+# otro build), asi que la evidencia no seria reproducible. El binario del volumen
+# dedicado es el de este codigo (md5 61faf46a4e60, el mismo que produce un build
+# limpio de este commit).
 #
 # Corre el binario ARM real del worktree en el chroot del banco, abre la app por
 # el socket, arranca el barrido, mide el `tx` en cada sondeo, cancela un barrido,
@@ -21,7 +27,7 @@ AQUI=$(cd "$(dirname -- "$0")" && pwd)
 REPO=$(cd "$AQUI/../../.." && pwd)
 
 CHROOT=${CHROOT:-/home/pablo/desa/x6200/.vfix3}
-VOLUMEN=${VOLUMEN:-x6200-build-output}
+VOLUMEN=${VOLUMEN:-x6200-build-output-prop145}
 IMAGEN=${IMAGEN:-x6200-buildroot}
 QEMU_CPU=${QEMU_CPU:-cortex-a7}
 ESPERA_BOOT=${ESPERA_BOOT:-90}
@@ -151,6 +157,21 @@ captura "$SALIDA/02a-sincronizando.png"
 sleep 2
 estado | tee -a "$SALIDA/estado.log"
 captura "$SALIDA/02-midiendo.png"
+
+# La GUI sigue atendiendo durante el barrido (los encoders y el resto andan): se
+# cambia el volumen por el socket MIENTRAS corre el barrido y se lee de vuelta. El
+# volumen va por el mismo camino que el encoder de volumen (radio_change_vol), asi
+# que si cambia con el barrido en curso, el hilo de LVGL no esta bloqueado.
+echo "== GUI responsive durante el barrido (volumen) =="
+vol_ini=$(get | python3 -c 'import json,sys; print(json.load(sys.stdin).get("vol"))')
+vol_new=$(( (vol_ini + 7) % 100 ))
+orden "{\"cmd\":\"vol\",\"val\":$vol_new}" | tee -a "$SALIDA/estado.log"
+sleep 1
+estado | tee -a "$SALIDA/estado.log"
+vol_ahora=$(get | python3 -c 'import json,sys; print(json.load(sys.stdin).get("vol"))')
+echo "vol durante el barrido: $vol_ini -> $vol_ahora (pedido $vol_new)" | tee -a "$SALIDA/estado.log"
+[ "$vol_ahora" = "$vol_new" ] || fallar "la GUI no respondio al volumen durante el barrido"
+orden "{\"cmd\":\"vol\",\"val\":$vol_ini}" >/dev/null || true
 
 # Sondeo del tx durante todo el barrido: tiene que quedar en false siempre.
 echo "== sondeo del barrido (tx y estado) =="
