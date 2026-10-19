@@ -229,6 +229,11 @@ filas del banco el ratio "vs piso" coincide con el "vs vecino" porque el piso y
 los vecinos son negro; en la radio el piso (percentil 10 a la izquierda) y el
 vecino inmediato no son lo mismo.
 
+Las 7..12 filas por captura que no llegan al hex exacto están **todas en
+`y>=429`**: es la **barra de botones translúcida**, que tiñe el trazo (la misma
+salvedad de abajo de la Tabla 1). De `y=240` a `y=428` los tres temas dan
+**189/189** filas con la tinta exacta: la línea está de punta a punta.
+
 Los tres controles `off` dan **0 px** del color esperado en `x=398..400`: la
 misma pantalla, el mismo binario, el mismo tema, sin la línea.
 
