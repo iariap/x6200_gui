@@ -42,5 +42,11 @@
 #define LV_USE_ASSERT_NULL 0
 #define LV_USE_ASSERT_MALLOC 0
 
+/* Same as the ROM's lv_conf.h: the software-rotation temp buffer. The harness
+ * itself never rotates (it draws landscape into a full-screen buffer), so this
+ * is inert here; the draw-buffer probe (probe/disp_buf_probe.c) needs it to
+ * model the firmware's ROT_90 path with the same chunk size. */
+#define LV_DISP_ROT_MAX_BUF (4 * 800 * 50)
+
 /* info.c subscribes to WiFi state messages (LVGL's lv_msg). */
 #define LV_USE_MSG 1

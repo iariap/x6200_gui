@@ -193,6 +193,13 @@ Complete removal of voice synthesis functionality using RHVoice library to elimi
 #define DISP_BUF_SIZE (800 * 480 * 4)  // 1.5 MB, 4 bytes per pixel
 ```
 
+> **Corrección (issue #147, 2026-10-19).** El cuarto argumento de
+> `lv_disp_draw_buf_init` es `size_in_px_cnt`: **píxeles**, no bytes. `(800 *
+> 480 * 4)` reservaba 4 pantallas (5,86 MiB), no 1,5 MB, y el `* 4` no tiene
+> nada que ver con `LV_COLOR_DEPTH` (el `lv_color_t` de 32 bits ya son 4 bytes
+> por píxel). Un buffer parcial alcanza: `DISP_BUF_LINES 128` (400 KiB) rinde el
+> mismo framebuffer físico. Medición y prueba: `docs/lvgl-opt1-drawbuf.md`.
+
 #### 3.1.2 Why 16-bit Was Reverted
 A previous attempt to reduce color depth to 16-bit (RGB565) caused a **black screen** on the device. Root cause:
 
@@ -565,8 +572,13 @@ Expected results:
 
 #### Black Screen After Flashing
 **Cause:** `LV_COLOR_DEPTH` mismatch with hardware framebuffer
-**Details:** The X6200 framebuffer runs at 32bpp. If `LV_COLOR_DEPTH` is set to anything other than 32, or `DISP_BUF_SIZE` doesn't use `* 4`, the display will be black.
-**Solution:** Ensure `lv_conf.h` has `LV_COLOR_DEPTH 32` and `main.c` has `DISP_BUF_SIZE (800 * 480 * 4)`.
+**Details:** The X6200 framebuffer runs at 32bpp. If `LV_COLOR_DEPTH` is set to anything other than 32, the display will be black.
+**Solution:** Ensure `lv_conf.h` has `LV_COLOR_DEPTH 32`.
+
+> **Corrección (issue #147, 2026-10-19).** `DISP_BUF_SIZE` **no** necesita el
+> `* 4`: es una cuenta de píxeles, no de bytes. El único requisito real es que
+> el buffer sostenga al menos una línea lógica completa (800 px) para que
+> `get_max_row()` no devuelva 0. Ver `docs/lvgl-opt1-drawbuf.md`.
 
 #### About Dialog Not Appearing
 **Cause:** The About dialog is only accessible via the long-press action system.

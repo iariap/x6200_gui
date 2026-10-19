@@ -88,6 +88,7 @@ run cw_tune_feed python3 "$DIR/check_cw_tune_feed.py"
 run curve_evidence python3 "$DIR/test_swrscan_curve_evidence.py"
 
 run host sh "$DIR/native/run_native_tests.sh"
+run drawbuf_partial sh "$DIR/check_drawbuf_partial.sh"
 run wspr sh "$DIR/native/run_wspr_tests.sh"
 run sstv sh "$DIR/native/run_sstv_tests.sh"
 run wefax sh "$DIR/native/run_wefax_tests.sh"

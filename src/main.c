@@ -55,7 +55,29 @@
 #include "lastbreath.h"
 #include "clock.h"
 
-#define DISP_BUF_SIZE (800 * 480 * 4)
+/* Draw buffer, in lv_color_t (issue #147). `size_in_px_cnt` is a *pixel* count,
+ * not bytes: the old `(800 * 480 * 4)` was meant as "4 bytes per pixel" but
+ * landed on the pixel count, so it reserved 4 full screens (5.86 MiB) where a
+ * line-sized buffer does the job.
+ *
+ * The display is logical landscape 800x480 and LVGL rotates it in software to
+ * the 480x800 panel (disp_drv.sw_rotate + LV_DISP_ROT_90), so the buffer only
+ * has to hold whole logical lines: LVGL splits the invalidated area with
+ * get_max_row() and flushes it in parts. A partial buffer renders the *same*
+ * physical framebuffer as a full one (proven byte-for-byte by
+ * tools/ui_harness/probe/disp_buf_probe.c, tests/check_drawbuf_partial.sh).
+ *
+ * Measured candidates (docs/lvgl-opt1-drawbuf.md): 480 lines = one full screen
+ * (-75%, zero change in flushes), 128 lines (-93.3%, 400 KiB), 64 (-96.7%),
+ * 32 (-98.3%). 128 is the chosen candidate: byte-identical framebuffer, the
+ * flush contract preserved, host render time flat and the same flush count as
+ * the old buffer on the spectrum strip (the hottest region). */
+#define DISP_BUF_LINES 128
+#define DISP_BUF_SIZE  (800 * DISP_BUF_LINES)
+
+/* A partial buffer must hold at least one full logical line (800 px): with less
+ * than one line get_max_row() returns 0 and LVGL renders nothing. */
+_Static_assert(DISP_BUF_SIZE >= 800, "draw buffer smaller than one logical line");
 
 rotary_t                    *vol;
 encoder_t                   *mfk;
