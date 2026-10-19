@@ -163,6 +163,14 @@ params_t params = {
 
     .wifi_enabled           = { .x = false, .name="wifi_enabled" },
 
+    /* Propagacion (issue #145). Arrancar al abrir queda APAGADO por defecto: abrir
+     * una app no deberia mover el VFO sin que el operador lo pida. El cluster se
+     * usa como evidencia complementaria (dato local, ya en memoria). */
+    .propagation_open_db       = { .x = 12,    .name = "propagation_open_db" },
+    .propagation_marginal_db   = { .x = 6,     .name = "propagation_marginal_db" },
+    .propagation_run_on_open   = { .x = false, .name = "propagation_run_on_open" },
+    .propagation_cluster       = { .x = true,  .name = "propagation_cluster" },
+
     .theme                  = { .x = THEME_SIMPLE, .name="theme"},
     /* Default de la coleccion (issue #74): Aurora. El built-in IU1WXY dejo de existir como tema;
      * un valor guardado de un tema legado o DATA lo migra al arranque src/params/migrations.c. */
@@ -389,6 +397,12 @@ static bool params_load() {
 
         if (params_load_str(&params.callsign, name, t)) continue;
         if (params_load_bool(&params.wifi_enabled, name, i)) continue;
+
+        if (params_load_int32(&params.propagation_open_db, name, i)) continue;
+        if (params_load_int32(&params.propagation_marginal_db, name, i)) continue;
+        if (params_load_bool(&params.propagation_run_on_open, name, i)) continue;
+        if (params_load_bool(&params.propagation_cluster, name, i)) continue;
+
         if (params_load_uint8(&params.theme, name, i)) continue;
         if (params_load_str(&params.theme_name, name, t)) continue;
         if (params_load_uint8(&params.font, name, i)) continue;
@@ -558,6 +572,10 @@ static void params_save() {
     params_save_str(&params.qth);
     params_save_str(&params.callsign);
     params_save_bool(&params.wifi_enabled);
+    params_save_int32(&params.propagation_open_db);
+    params_save_int32(&params.propagation_marginal_db);
+    params_save_bool(&params.propagation_run_on_open);
+    params_save_bool(&params.propagation_cluster);
     params_save_uint8(&params.theme);
     params_save_str(&params.theme_name);
     params_save_uint8(&params.font);

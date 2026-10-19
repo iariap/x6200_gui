@@ -1,0 +1,4 @@
+cerrada-1 20s: voluntary_ctxt_switches:	3996 nonvoluntary_ctxt_switches:	37  -> voluntary_ctxt_switches:	7547 nonvoluntary_ctxt_switches:	92 
+abierta-idle 20s: voluntary_ctxt_switches:	8032 nonvoluntary_ctxt_switches:	149  -> voluntary_ctxt_switches:	12361 nonvoluntary_ctxt_switches:	221 
+barrido: voluntary_ctxt_switches:	12389 nonvoluntary_ctxt_switches:	221  -> voluntary_ctxt_switches:	21260 nonvoluntary_ctxt_switches:	589 
+cerrada-2 20s: voluntary_ctxt_switches:	22846 nonvoluntary_ctxt_switches:	686  -> voluntary_ctxt_switches:	26385 nonvoluntary_ctxt_switches:	776 

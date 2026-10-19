@@ -40,6 +40,7 @@ NOMBRE_EN_EL_MANUAL = {
     "ACTION_APP_SWRSCAN": "SWR Scan",
     "ACTION_APP_CALLSIGN": "Callsign",
     "ACTION_APP_QTH": "QTH",
+    "ACTION_APP_PROPAGATION": "Propagation",
     "ACTION_APP_ABOUT": "About",
     "ACTION_APP_SETTINGS": "Ajustes",
 }

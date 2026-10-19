@@ -66,6 +66,7 @@ dialog_t *dialog_js8        = &mock_dialog;
 dialog_t *dialog_msg_cw     = &mock_dialog;
 dialog_t *dialog_msg_voice  = &mock_dialog;
 dialog_t *dialog_navtex     = &mock_dialog;
+dialog_t *dialog_propagation = &mock_dialog;
 dialog_t *dialog_qth        = &mock_dialog;
 dialog_t *dialog_recorder   = &mock_dialog;
 dialog_t *dialog_sstv       = &mock_dialog;

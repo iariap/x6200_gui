@@ -36,6 +36,10 @@ void test_cw_autotune(void);
 void test_roe_curve(void);
 void test_cb(void);
 
+/* App Propagacion (issue #145): el turno de los beacons IBP, el SNR, el veredicto
+ * de la banda y el registro IARU Region 2. Todo puro (src/propagation.c). */
+void test_propagation(void);
+
 /* SWR Scan multipasada (issue #125): el motor puro (src/swr_session.[ch]) y los fixtures del
  * owner. El dialogo tiene su propio binario (tests/native/test_swrscan.c). */
 void test_swr_grid(void);
@@ -75,6 +79,7 @@ int main(void) {
     test_cw_autotune();
     test_roe_curve();
     test_cb();
+    test_propagation();
 
     test_swr_grid();
     test_swr_aggregation();
