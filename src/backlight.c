@@ -111,6 +111,16 @@ void backlight_switch() {
         lv_disp_enable_invalidation(lv_disp_get_default(), false);
     } else {
         lv_disp_enable_invalidation(lv_disp_get_default(), true);
+
+        /* OPT-4 #150 (display OFF->ON): mientras el panel estuvo apagado
+         * `_lv_inv_area()` descartaba cada invalidacion (lv_refr.c), asi que los
+         * pixeles que cambiaron con la pantalla apagada (reloj, banda, cualquier
+         * updater) no quedaron pendientes y el panel mostraba el ultimo frame
+         * viejo al volver. Rehabilitar la invalidacion NO repinta nada por si
+         * solo, asi que la primera invalidacion tras despertar tiene que cubrir
+         * toda la pantalla: se invalida el screen entero. */
+        lv_obj_invalidate(lv_scr_act());
+
         set_power(true);
 
         /* El nivel de vuelta pasa por la unica puerta con cap (UI-08 incr. 5),

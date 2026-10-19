@@ -8,7 +8,10 @@ modes of the gate and verifies, on the produced numbers:
   invalidates 132000 px per FFT frame, the waterfall 196000 px per new row and
   the clock 15840 px every 500 ms, and *every* rectangle the run reports is one
   of the regions a firmware timer invalidates (the bench invalidates nothing on
-  its own);
+  its own). OPT-4 #150: the clock's equality guard (src/clock.c) suppresses the
+  ticks whose text did not change, so the clock rectangle no longer shows up in
+  the harness (time() is pinned) and the gate checks it is 0; the guard leaves
+  the framebuffer byte-identical;
 * that one natural frame is one refresh period of the ROM (`frame_ms` must be
   the `LV_DISP_DEF_REFR_PERIOD` of the ROM's lv_conf.h, read here from the same
   file the harness' CMake reads at build time: #56's cross-check, applied to
@@ -79,11 +82,14 @@ def rom_refresh_period_ms(root: Path) -> int:
     return int(match.group(1))
 
 
-# The settled capture of main-natural: 6 flushes and 1127680 px (the same
-# numbers the 18 fixtures of the A/B suite report); the natural run adds its own
-# flushes on top, it never replaces them.
-SETTLE_FLUSHES = 6
-SETTLE_PX = 1127680
+# The settled capture of main-natural: 5 flushes and 1111840 px; the natural run
+# adds its own flushes on top, it never replaces them. OPT-4 #150: the clock's
+# equality guard (src/clock.c) removed the settled capture's last needless clock
+# tick (15840 px, 1 flush) — before the guard the pair was 6 / 1127680. The
+# rendered PNG is byte-identical (the guard only skips an invalidation that
+# changed no pixel).
+SETTLE_FLUSHES = 5
+SETTLE_PX = 1111840
 FULL_SCREEN_PX = 800 * 480
 
 # How many times each rectangle appears in the 40 frames (deterministic: seed 13,
@@ -93,11 +99,18 @@ FULL_SCREEN_PX = 800 * 480
 # and the spectrum every other frame, so almost every frame carries a data
 # rectangle and the 2 s-timer rectangles are joined into them (they are counted
 # in RECT_COUNTS of the static control, below in check_static).
+#
+# OPT-4 #150: the clock's equality guard drops its rectangle from this histogram
+# (see check_natural). Before the guard the clock tick landed once here (the
+# other ticks were joined into the spectrum); the guard suppresses every tick
+# whose text did not change, and the harness pins time() (mock_ui_deps.c), so in
+# the harness none of the 4 ticks of the run changes the text and the clock
+# invalidates 0 times. On the radio the clock text changes once per second, so
+# the guard halves its invalidations (2 ticks/s -> 1).
 RECT_COUNTS = Counter(
     {
-        (0, 235, 800, 245): 39,  # waterfall: one row per frame (40 rows, one shares with the clock)
+        (0, 235, 800, 245): 39,  # waterfall: one row per frame
         (0, 0, 800, 165): 27,  # spectrum: 28 FFT frames, one shares the cycle with the clock
-        (580, 0, 220, 72): 1,  # clock: the other tick lands inside the spectrum
     }
 )
 
@@ -258,6 +271,16 @@ def check_natural(checker: Checker, doc: dict, rom_frame_ms: int) -> None:
     checker.check(
         counts == RECT_COUNTS, f"rectangle histogram moved: {dict(counts)} != {dict(RECT_COUNTS)}"
     )
+    # OPT-4 #150: la guarda de igualdad del reloj (src/clock.c) apaga su
+    # invalidacion cuando el texto no cambia. El arnes fija time()
+    # (mocks/mock_ui_deps.c), asi que las 4 muestras de 500 ms de la corrida
+    # dicen el mismo texto y el reloj tiene que invalidar 0 veces. Sin la guarda
+    # el rectangulo (580,0,220,72) aparece (15840 px) en el histograma.
+    checker.check(
+        counts[(580, 0, 220, 72)] == 0,
+        f"the clock invalidated {counts[(580, 0, 220, 72)]} time(s) with an unchanged text: "
+        "the OPT-4 #150 equality guard (src/clock.c) is not suppressing it",
+    )
     for key, value in totals.items():
         checker.check(
             natural["totals"][key] == value,
@@ -305,6 +328,15 @@ def check_static(checker: Checker, static: dict, natural_doc: dict) -> None:
         f"the drive only explains {100 * control['totals']['invalidated_px'] / natural['totals']['invalidated_px']:.0f}% "
         "of the natural area: the control does not delimit the measurement",
     )
+    # OPT-4 #150: con el drive apagado quedan solo los timers de 2 s del
+    # firmware. Las guardas de igualdad del reloj (src/clock.c) y del icono BT
+    # (src/info.c) apagan los dos: sin ellas el control invalidaba 4 ticks de
+    # reloj (4 x 15840 px) y 1 de BT (1080 px) aunque el valor no cambiara.
+    # Despues de las guardas el control es solo el band-info (7 x 27200 px).
+    checker.check(
+        (580, 0, 220, 72) not in rects and (152, 23, 30, 36) not in rects,
+        f"the equality guards (OPT-4 #150) did not suppress the identical-value timers: {rects}",
+    )
     checker.check(
         static["metrics"]["framebuffer_fnv1a"] != natural_doc["metrics"]["framebuffer_fnv1a"],
         "the natural run and the control rendered the same framebuffer: the driven frames never "
@@ -313,7 +345,8 @@ def check_static(checker: Checker, static: dict, natural_doc: dict) -> None:
     checker.note(
         f"  delimitation: drive off -> {control['totals']['invalidated_px']} px "
         f"({100 * control['totals']['invalidated_px'] / natural['totals']['invalidated_px']:.1f}% of the "
-        f"{natural['totals']['invalidated_px']} px with the drive), only clock/BT/band-info rectangles"
+        f"{natural['totals']['invalidated_px']} px with the drive), only band-info rectangles "
+        "(the OPT-4 #150 equality guards removed the clock/BT ticks)"
     )
 
 

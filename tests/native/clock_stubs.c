@@ -56,6 +56,17 @@ static lv_obj_t   labels[MAX_LABELS];
 static char       label_text[MAX_LABELS][MAX_LABEL_TEXT];
 static int        label_count;
 
+/* OPT-4 #150: el estilo resuelto de cada objeto, para que las guardas de
+ * src/clock.c (set_state) lean el valor vivo y no lo reescriban si no cambio. */
+static const lv_font_t *label_font[MAX_LABELS];
+static lv_coord_t       label_pad[MAX_LABELS] = { -1, -1, -1, -1 };
+
+/* Contadores de escrituras: el test de OPT-4 #150 comprueba que una segunda
+ * vuelta con el mismo valor NO vuelve a escribir. */
+static int label_set_calls;
+static int style_font_calls;
+static int style_pad_calls;
+
 static lv_timer_t timer;
 
 /* clock_init() registers the clock callback first (show_time, 500 ms) and the
@@ -93,15 +104,25 @@ void lv_obj_add_style(lv_obj_t * obj, const lv_style_t * style, uint32_t selecto
 }
 
 void lv_obj_set_style_text_font(lv_obj_t * obj, const lv_font_t * font, uint32_t selector) {
-    (void) obj;
-    (void) font;
     (void) selector;
+    label_font[label_index(obj)] = font;
+    style_font_calls++;
 }
 
 void lv_obj_set_style_pad_ver(lv_obj_t * obj, lv_coord_t value, uint32_t selector) {
-    (void) obj;
-    (void) value;
     (void) selector;
+    label_pad[label_index(obj)] = value;
+    style_pad_calls++;
+}
+
+const lv_font_t * lv_obj_get_style_text_font(const lv_obj_t * obj, uint32_t selector) {
+    (void) selector;
+    return label_font[label_index(obj)];
+}
+
+lv_coord_t lv_obj_get_style_pad_top(const lv_obj_t * obj, uint32_t selector) {
+    (void) selector;
+    return label_pad[label_index(obj)];
 }
 
 void lv_obj_set_style_text_align(lv_obj_t * obj, lv_text_align_t align, uint32_t selector) {
@@ -124,6 +145,11 @@ void lv_obj_set_style_bg_img_opa(lv_obj_t * obj, lv_opa_t value, uint32_t select
 
 void lv_label_set_text(lv_obj_t * obj, const char * text) {
     snprintf(label_text[label_index(obj)], MAX_LABEL_TEXT, "%s", text);
+    label_set_calls++;
+}
+
+const char * lv_label_get_text(const lv_obj_t * obj) {
+    return label_text[label_index(obj)];
 }
 
 lv_timer_t * lv_timer_create(void (*timer_cb)(lv_timer_t *), uint32_t period, void * user_data) {
@@ -184,4 +210,18 @@ void clock_stub_run_timers(void) {
     for (int i = 0; i < timer_count; i++) {
         timer_cbs[i](&timer);
     }
+}
+
+/* Contadores de escritura del stub (OPT-4 #150): el test comprueba que una
+ * segunda vuelta con el mismo valor no vuelve a escribir. */
+int clock_stub_label_set_calls(void) {
+    return label_set_calls;
+}
+
+int clock_stub_style_font_calls(void) {
+    return style_font_calls;
+}
+
+int clock_stub_style_pad_calls(void) {
+    return style_pad_calls;
 }

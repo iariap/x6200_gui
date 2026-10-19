@@ -58,6 +58,11 @@ lv_obj_t * lv_label_create(lv_obj_t * parent);
 void lv_obj_add_style(lv_obj_t * obj, const lv_style_t * style, uint32_t selector);
 void lv_obj_set_style_text_font(lv_obj_t * obj, const lv_font_t * font, uint32_t selector);
 void lv_obj_set_style_pad_ver(lv_obj_t * obj, lv_coord_t value, uint32_t selector);
+/* OPT-4 #150: src/clock.c guarda set_state()/show_time() leyendo el estilo y el
+ * texto vivos del objeto; el stub los devuelve (ver clock_stubs.c). */
+const lv_font_t * lv_obj_get_style_text_font(const lv_obj_t * obj, uint32_t selector);
+lv_coord_t lv_obj_get_style_pad_top(const lv_obj_t * obj, uint32_t selector);
+const char * lv_label_get_text(const lv_obj_t * obj);
 void lv_obj_set_style_text_align(lv_obj_t * obj, lv_text_align_t align, uint32_t selector);
 void lv_obj_set_style_text_opa(lv_obj_t * obj, lv_opa_t value, uint32_t selector);
 void lv_obj_set_style_bg_img_opa(lv_obj_t * obj, lv_opa_t value, uint32_t selector);
