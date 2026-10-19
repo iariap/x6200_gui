@@ -25,3 +25,12 @@ typedef struct {
 } cfg_t;
 
 extern cfg_t cfg;
+
+/* Live radio state: src/cw_encoder.c reads cfg_cur.fg_freq for the CB TX
+ * interlock (issue #160). Only that member is needed here; the rest of the real
+ * cfg_cur_t is not used by the keyer. */
+typedef struct {
+    Subject *fg_freq;
+} cfg_cur_t;
+
+extern cfg_cur_t cfg_cur;

@@ -13,10 +13,12 @@
 
 void test_cw_encoder_null(void);
 void test_cw_encoder_send(void);
+void test_cw_encoder_interlock(void);
 
 int main(void) {
     test_cw_encoder_null();
     test_cw_encoder_send();
+    test_cw_encoder_interlock();
 
     printf("%d comprobaciones, %d fallos\n", tests_run, tests_failed);
 

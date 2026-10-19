@@ -1,0 +1,18 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output-int160: ok
+  chroot /home/pablo/desa/x6200/.vint160: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  aviso: el hash de los fuentes cambio, pero RECONSTRUIR=no: se prueba el binario que ya esta
+OK: /home/pablo/desa/x6200/.vint160/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13853612 B, 3/3 marcas)
+  respuesta: {"t":"ok"}
+  captura: docs/evidencia/2026-10-19-int160-banco/banco-cw.png (257 colores distintos)
+  version: 59871960 CW (#160): todos los caminos de TX de software pasa
+  fuente: md5 c92e8b8e4f22 (src/ + lvgl/src)
+  binario: md5 40d94ab49aff   qemu-cpu: cortex-a7
+  captura util (20396 bytes)

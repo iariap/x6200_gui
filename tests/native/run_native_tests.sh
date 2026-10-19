@@ -369,23 +369,29 @@ $CC $BASEFLAGS -fanalyzer -I"$EV_STAGE" -I"$DIR" \
 # inside strdup, both in libc) when the CW messages window (empty msg_cw table)
 # handed the keyer a NULL message.
 echo "== CW encoder (#116): cw_encoder_send(NULL) no desreferencia NULL =="
+echo "== CW encoder (#160): el keyer respeta el interlock de CB =="
 CWENC_STAGE="$OUT/cwenc_src"
 rm -rf "$CWENC_STAGE"
 mkdir -p "$CWENC_STAGE/cfg" "$CWENC_STAGE/params" "$CWENC_STAGE/lvgl"
 cp "$SRC/cw_encoder.c" "$SRC/cw_encoder.h" "$SRC/cw_decoder.h" "$CWENC_STAGE/"
+# #160: the keyer calls the REAL cb_tx_allowed(); cb.c is pure (no LVGL, no
+# subjects, no SQLite) and is staged next to the keyer so the test drives the
+# real gate with cfg_cur.fg_freq / params.cb_tx_scope stubbed.
+cp "$SRC/cb.c" "$SRC/cb.h" "$CWENC_STAGE/"
 cp "$DIR/stubs_cwenc/cfg/cfg.h" "$DIR/stubs_cwenc/cfg/cfg_api.h" "$CWENC_STAGE/cfg/"
 cp "$DIR/stubs_cwenc/params/params.h" "$CWENC_STAGE/params/"
-cp "$DIR/stubs_cwenc/radio.h" "$DIR/stubs_cwenc/msg.h" "$DIR/stubs_cwenc/buttons.h" "$CWENC_STAGE/"
+cp "$DIR/stubs_cwenc/radio.h" "$DIR/stubs_cwenc/msg.h" "$DIR/stubs_cwenc/buttons.h" \
+   "$DIR/stubs_cwenc/voice.h" "$CWENC_STAGE/"
 cp "$DIR/stubs_cwenc/lvgl/lvgl.h" "$CWENC_STAGE/lvgl/"
 if [ "$SAN_OK" = yes ]; then
     # shellcheck disable=SC2086
     $CC $BASEFLAGS $SAN -I"$CWENC_STAGE" \
-        "$CWENC_STAGE/cw_encoder.c" "$DIR/cwenc_stubs.c" "$DIR/test_cw_encoder.c" \
+        "$CWENC_STAGE/cw_encoder.c" "$CWENC_STAGE/cb.c" "$DIR/cwenc_stubs.c" "$DIR/test_cw_encoder.c" \
         "$DIR/test_framework.c" "$DIR/cwenc_test_main.c" -o "$OUT/cwenc_tests"
 else
     # shellcheck disable=SC2086
     $CC $BASEFLAGS -I"$CWENC_STAGE" \
-        "$CWENC_STAGE/cw_encoder.c" "$DIR/cwenc_stubs.c" "$DIR/test_cw_encoder.c" \
+        "$CWENC_STAGE/cw_encoder.c" "$CWENC_STAGE/cb.c" "$DIR/cwenc_stubs.c" "$DIR/test_cw_encoder.c" \
         "$DIR/test_framework.c" "$DIR/cwenc_test_main.c" -o "$OUT/cwenc_tests"
 fi
 
@@ -393,6 +399,9 @@ echo "== CW encoder: analisis estatico (gcc -fanalyzer) =="
 # shellcheck disable=SC2086
 $CC $BASEFLAGS -fanalyzer -I"$CWENC_STAGE" \
     -c "$CWENC_STAGE/cw_encoder.c" -o "$OUT/cw_encoder.o" || true
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$CWENC_STAGE" \
+    -c "$CWENC_STAGE/cb.c" -o "$OUT/cb_cwenc.o" || true
 
 "$OUT/cwenc_tests"
 
