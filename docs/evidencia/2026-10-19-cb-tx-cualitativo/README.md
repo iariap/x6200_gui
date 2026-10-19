@@ -169,9 +169,11 @@ el problema es que **ese camino de TX no lo consulta**.
    `x6200_log_2026-10-19_15-30-31.txt` y `…15-31-10.txt` de la radio. Eso invalidó el primer
    intento de los pasos 3/4 (el `freq` dio `Connection refused`); se repitieron (corrida 2).
 2. **La radio quedó inalcanzable** ("No route to host", 0 hosts SSH en 192.168.0.0/24 y
-   192.168.18.0/24) al terminar el paso 4, **antes** de poder ejecutar el control positivo por FT8
-   y la restauración. Es la firma del **#121** (cuelgue que suele necesitar ciclo de energía).
-   **No se pudo dejar la radio como estaba** por eso; queda anotado como pendiente.
+   192.168.18.0/24) al terminar el paso 4, **antes** de poder ejecutar el control positivo por FT8.
+   Es la firma del **#121** (cuelgue). Volvió **sin reinicio** (uptime continuo, mismo PID 18416) a
+   los ~10 min; entonces **se restauró** frecuencia/modo/app (14.285 MHz, CW, 20m SSB, app off) y la
+   potencia a **1,5 W** (último valor conocido, del arranque de las 15:18), con `tx:false`.
+   Captura: [`99-restaurado.png`](99-restaurado.png) (abajo, `TX power: 1.5 W`).
 
 ---
 
@@ -203,22 +205,21 @@ el problema es que **ese camino de TX no lo consulta**.
 | [`01-metro-rx-zoom.png`](01-metro-rx-zoom.png) | El medidor en RX (S-meter) para contrastar |
 | [`10-interlock-26515-fb.png`](10-interlock-26515-fb.png) · [`10-metro-interlock-zoom.png`](10-metro-interlock-zoom.png) | **26.515, CH 1, TX sin bloqueo** (clave del hallazgo) |
 | [`12-10m-28074-fb.png`](12-10m-28074-fb.png) | 28.074 (10 m), TX, sin celda `CH` |
+| [`99-restaurado.png`](99-restaurado.png) | Estado final **restaurado** (14.285 MHz, CW, `TX power: 1.5 W`, app cerrada) |
 
 - **Build**: GUI `67387bfc4391cf9b1d6c4c1aa3b0d56f` (13.849.516 B). **No lo desplegó esta QA**:
   lo desplegó otra sesión a las 15:18 (hora radio), después de que esta corrida empezara sobre
   `9a094c421b0e` (que **no** tenía el módulo CB). Esta QA **no flasheó ni desplegó** nada.
-- **Estado de la radio al cortar**: no se pudo restaurar (radio caída, §5). Antes de caer quedó en
-  28.074 MHz / CW / app CW; el objetivo de restauración era el estado previo
-  `14.285 MHz / CW / 20m SSB / app off`.
+- **Estado de la radio al terminar**: **restaurada** al estado previo
+  `14.285 MHz / CW / 20m SSB / app off / pwr 1,5 W / tx:false` (verificado por socket y por la
+  pantalla, [`99-restaurado.png`](99-restaurado.png)); volvió sola tras el corte de red (§5).
 
 ## 8. Pendientes
 
 1. **Decidir el fix del interlock del keyer**: que `radio_set_morse_key()` (o el keyer) consulte
-   `cb_tx_allowed()` como `radio_set_ptt()`. Issue nuevo cargado.
+   `cb_tx_allowed()` como `radio_set_ptt()`. Issue nuevo cargado (#160).
 2. **Control positivo del interlock por un camino que sí lo use** (FT8/PTT físico/CAT) en 26.515:
-   no se pudo correr (la radio cayó antes). Confirmaría que el interlock funciona y que el hueco es
-   sólo del keyer.
-3. **Restaurar la radio** (frecuencia/modo/potencia/app) cuando vuelva; y medir el uptime para saber
-   si el #121 reinició o quedó colgada.
-4. **F0 con instrumentos** (#156) para potencia real y armónicos; y confirmar el setpoint `pwr`
+   no se pudo correr (la radio quedó inalcanzable antes). Confirmaría que el interlock funciona y que
+   el hueco es sólo del keyer.
+3. **F0 con instrumentos** (#156) para potencia real y armónicos; y confirmar el setpoint `pwr`
    cuando #157 esté desplegado.

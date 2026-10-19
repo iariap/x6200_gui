@@ -268,9 +268,10 @@ interlock (strings `TX blocked`/`cb_tx_scope`); es el **camino de TX** el que no
 
 **Incidencias de la corrida:** la GUI se cayó 2 veces por el **#131** (`CRASHLOG sig=11
 pc=0xb6186ae8`) durante los cambios de frecuencia/modo; y la **radio quedó inalcanzable** al final
-(firma del **#121**), así que **no se pudo restaurar** frecuencia/modo/potencia/app ni correr el
-control positivo por FT8. **No se desplegó ni flasheó** (el build `67387bfc4391` lo desplegó otra
-sesión a las 15:18, después de que esta corrida empezara sobre `9a094c421b0e`, que no tenía CB).
+(firma del **#121**), por lo que no se pudo correr el control positivo por FT8. Volvió **sin
+reinicio** a los ~10 min y **se restauró** frecuencia/modo/app (14.285 MHz, CW, app off) y la
+potencia a 1,5 W (`tx:false`). **No se desplegó ni flasheó** (el build `67387bfc4391` lo desplegó
+otra sesión a las 15:18, después de que esta corrida empezara sobre `9a094c421b0e`, que no tenía CB).
 
 **Veredicto:** TX en CB **✓** (medido); interlock del keyer **✗** (defecto, issue nuevo); 10 m
 intacto **✓**. La F0 con instrumentos (#156) sigue pendiente de potencia real y armónicos. Detalle,
