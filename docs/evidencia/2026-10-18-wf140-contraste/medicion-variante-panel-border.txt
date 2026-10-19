@@ -1,0 +1,27 @@
+| Tema | fixture | antes gate | antes peor fila | despues gate | despues peor fila |
+| --- | --- | --- | --- | --- | --- |
+| Aurora | `main-tema-aurora-agua` | 14.58:1 | 2.76:1 (min 2.47, 13% >= 3) | 4.28:1 | 1.26:1 (min 1.11, 0% >= 3) |
+| Cathode | `main-tema-cathode-agua` | 14.29:1 | 4.17:1 (min 3.71, 100% >= 3) | 3.13:1 | 1.12:1 (min 1.00, 0% >= 3) |
+| Redshift | `main-tema-redshift-agua` | 11.93:1 | 7.41:1 (min 7.00, 100% >= 3) | 3.86:1 | 2.40:1 (min 2.27, 0% >= 3) |
+| Sprint | `main-tema-sprint-agua` | 16.55:1 | 2.89:1 (min 2.59, 31% >= 3) | 3.35:1 | 1.71:1 (min 1.15, 0% >= 3) |
+| Sunlit | `main-tema-sunlit-agua` | 14.51:1 | 5.97:1 (min 5.48, 100% >= 3) | 9.21:1 | 3.79:1 (min 3.48, 100% >= 3) |
+| Trail | `main-tema-trail-agua` | 13.63:1 | 2.69:1 (min 2.43, 11% >= 3) | 3.33:1 | 1.52:1 (min 1.00, 0% >= 3) |
+
+Aurora: tinta #f8eeff -> #8a7ba8 sobre #23193e; ancho 3 px -> 3 px
+  antes   4ec5fd33949620780715072d97dc54df  /tmp/wf140/despues/on/main-tema-aurora-agua.png
+  despues 9aaa299de3d6392e355ec1190ac49563  /tmp/wf140/var-panel-border/main-tema-aurora-agua.png
+Cathode: tinta #f9d9aa -> #87562d sobre #150c06; ancho 3 px -> 3 px
+  antes   469e65aeb8edc86926ef87cb581442d2  /tmp/wf140/despues/on/main-tema-cathode-agua.png
+  despues 4808c945170866191fceaa3a464ce526  /tmp/wf140/var-panel-border/main-tema-cathode-agua.png
+Redshift: tinta #ffb3a0 -> #9a5a50 sobre #0a0203; ancho 3 px -> 3 px
+  antes   39934f6afc3ae3f175e1c4ce130e7c97  /tmp/wf140/despues/on/main-tema-redshift-agua.png
+  despues e6b6bf3c777cd4500b2a99d2ad941ebc  /tmp/wf140/var-panel-border/main-tema-redshift-agua.png
+Sprint: tinta #f5f7f9 -> #4a6e96 sobre #0a182d; ancho 3 px -> 3 px
+  antes   f6b956a2d329ba11c5000c5f985c23b1  /tmp/wf140/despues/on/main-tema-sprint-agua.png
+  despues 5f214b147fbbcdd38103f463e5883b3e  /tmp/wf140/var-panel-border/main-tema-sprint-agua.png
+Sunlit: tinta #162436 -> #14456f sobre #f1f7fb; ancho 3 px -> 3 px
+  antes   c37b128b9928738af9d2bc8a8aebcc2b  /tmp/wf140/despues/on/main-tema-sunlit-agua.png
+  despues 8aa5e4932a15a0b0956b308dc6415ae1  /tmp/wf140/var-panel-border/main-tema-sunlit-agua.png
+Trail: tinta #f2eed8 -> #5e7a55 sobre #142618; ancho 3 px -> 3 px
+  antes   9cfe3224c8bbd60370b189e4a8e6f024  /tmp/wf140/despues/on/main-tema-trail-agua.png
+  despues 1ce3ee50ce646959ef070d1027363ff0  /tmp/wf140/var-panel-border/main-tema-trail-agua.png

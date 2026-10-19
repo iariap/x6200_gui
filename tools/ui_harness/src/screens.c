@@ -35,12 +35,14 @@
 #include "rtty.h"
 #include "signal_gen.h"
 #include "styles.h"
+#include "theme.h"
 #include "visual_policy.h"
 
 #include "autotune_ui.h"
 #include "swr_backend.h"
 #include "cw_tune_ui.h"
 #include "virtual_time.h"
+#include "waterfall.h"
 
 #include "mock_harness.h"
 #include "mock_radio.h"
@@ -439,8 +441,129 @@ static void autotune_found_slice(void *arg)
     meter_update((int16_t) (-60 - d / 100), 0.0f);
 }
 
+/* Linea central del waterfall (issue #140). El issue reporta una linea de largo
+ * cero; en el trunk no se reproduce (medido en el banco: 3 px de punta a punta),
+ * pero el invariante es geometrico, exacto y barato de codificar, y es lo que
+ * evita que vuelva: con `waterfall_center_line` encendido la linea existe, no esta
+ * oculta, mide el alto del waterfall mas su propio trazo, esta centrada
+ * horizontalmente y es el ultimo hijo del waterfall (se dibuja sobre la paleta);
+ * con el parametro apagado no se ve. Se mide sobre los objetos vivos de cada
+ * render, no sobre pixeles, y el arnes corta aca en vez de capturar una pantalla
+ * sin linea y dar verde. */
+static void settle_waterfall_center_line(const scenario_t *scenario)
+{
+    lv_obj_t *line = waterfall_middle_line();
+
+    if (!params.waterfall_center_line.x) {
+        if (line != NULL && !lv_obj_has_flag(line, LV_OBJ_FLAG_HIDDEN)) {
+            fprintf(stderr,
+                    "%s: la linea central del waterfall se ve con el parametro apagado "
+                    "(src/waterfall.c, draw_middle_line)\n",
+                    scenario->name);
+            exit(1);
+        }
+        return;
+    }
+
+    if (line == NULL) {
+        fprintf(stderr,
+                "%s: no hay linea central del waterfall con el parametro encendido "
+                "(src/waterfall.c, draw_middle_line)\n",
+                scenario->name);
+        exit(1);
+    }
+
+    lv_obj_t *wf = lv_obj_get_parent(line);
+
+    /* El estilo no es decoracion: es el fix del owner del 2026-10-18. La linea
+     * tiene que salir con el ancho del tema (3 px por default, 1..8 si el archivo
+     * lo pide), a opacidad plena y con el rol `text` del tema, que es el que mide
+     * >= 3:1 contra el fondo del waterfall en los seis temas (docs/THEMES.md,
+     * tools/ab_testing/quality/nontext.yaml). Un cambio de color, ancho u opacidad
+     * que vuelva a dejar la linea invisible tiene que romper aca, no en la radio. */
+    lv_coord_t ancho = lv_obj_get_style_line_width(line, LV_PART_MAIN);
+
+    if (ancho != theme_shape.waterfall_signal_width) {
+        fprintf(stderr,
+                "%s: la linea central mide %d px y el tema pide %d ("
+                "src/waterfall.c, waterfall_init)\n",
+                scenario->name, (int) ancho, (int) theme_shape.waterfall_signal_width);
+        exit(1);
+    }
+
+    lv_opa_t opa = lv_obj_get_style_line_opa(line, LV_PART_MAIN);
+
+    if (opa != LV_OPA_COVER) {
+        fprintf(stderr,
+                "%s: la linea central sale con opacidad %d, no LV_OPA_COVER: se lava "
+                "contra el waterfall (src/waterfall.c, waterfall_init)\n",
+                scenario->name, (int) opa);
+        exit(1);
+    }
+
+    lv_color_t color = lv_obj_get_style_line_color(line, LV_PART_MAIN);
+    lv_color_t esperado = lv_color_hex(theme_hex(TC_text));
+
+    if (color.full != esperado.full) {
+        fprintf(stderr,
+                "%s: la linea central no usa el rol text del tema (#%06x vs #%06x): "
+                "no alcanza el 3:1 contra el fondo del waterfall (src/waterfall.c)\n",
+                scenario->name, (unsigned) color.full, (unsigned) esperado.full);
+        exit(1);
+    }
+
+    if (lv_obj_has_flag(line, LV_OBJ_FLAG_HIDDEN)) {
+        fprintf(stderr,
+                "%s: la linea central del waterfall esta oculta con el parametro encendido "
+                "(src/waterfall.c, middle_line_cb)\n",
+                scenario->name);
+        exit(1);
+    }
+
+    /* El objeto linea mide, por su tamano propio, el punto mas lejano de sus
+     * puntos mas el ancho del trazo (lv_line, LV_EVENT_GET_SELF_SIZE). Si los
+     * puntos siguen en (0,0)/(0,0) mide solo el trazo, no el waterfall: ese es
+     * exactamente el defecto del issue #140. */
+    lv_coord_t trazo = lv_obj_get_style_line_width(line, LV_PART_MAIN);
+    lv_coord_t alto = lv_obj_get_height(wf);
+
+    if (lv_obj_get_height(line) != alto + trazo) {
+        fprintf(stderr,
+                "%s: la linea central mide %d px y el waterfall %d (+%d de trazo): largo cero "
+                "o alto viejo (issue #140, src/waterfall.c draw_middle_line)\n",
+                scenario->name, (int) lv_obj_get_height(line), (int) alto, (int) trazo);
+        exit(1);
+    }
+
+    lv_area_t linea, wf_area;
+
+    lv_obj_get_coords(line, &linea);
+    lv_obj_get_coords(wf, &wf_area);
+
+    int centro_linea = linea.x1 + (linea.x2 - linea.x1 + 1) / 2;
+    int centro_wf    = wf_area.x1 + (wf_area.x2 - wf_area.x1 + 1) / 2;
+
+    if (centro_linea - centro_wf > 1 || centro_wf - centro_linea > 1) {
+        fprintf(stderr,
+                "%s: la linea central quedo en x=%d y el centro del waterfall es x=%d "
+                "(src/waterfall.c, draw_middle_line)\n",
+                scenario->name, centro_linea, centro_wf);
+        exit(1);
+    }
+
+    if (lv_obj_get_child(wf, lv_obj_get_child_cnt(wf) - 1) != line) {
+        fprintf(stderr,
+                "%s: la linea central no es el ultimo hijo del waterfall (se dibuja debajo "
+                "de la paleta: no se veria)\n",
+                scenario->name);
+        exit(1);
+    }
+}
+
 void scenario_settle(const scenario_t *scenario)
 {
+    settle_waterfall_center_line(scenario);
+
     if (!strcmp(scenario->screen, "main-foco")) {
         /* Move the focus once the timers have run and the group is populated. */
         lv_group_focus_next(keyboard_group);

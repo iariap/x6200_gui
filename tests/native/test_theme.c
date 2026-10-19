@@ -321,10 +321,12 @@ static void test_cathode(void) {
     unsetenv("THEMES_DIR_SHIPPED");
 }
 
-/* `waterfall_signal_width` (decision del owner, 2026-10-15): el ancho de la linea
- * central del waterfall (la marca de senal sobre la paleta, src/waterfall.c) es una
- * clave de tema en px. Default 1 y clamp 1..8: los temas outdoor la piden en 3 y un
- * tema que no la define queda en 1 px, retrocompatible. */
+/* `waterfall_signal_width` (decision del owner, 2026-10-15; default a 3 px por
+ * orden del owner, 2026-10-18): el ancho de la linea central del waterfall (la
+ * marca de senal sobre la paleta, src/waterfall.c) es una clave de tema en px.
+ * Default 3 y clamp 1..8: un tema que no la define queda en 3 px (el ancho que el
+ * owner eligio para outdoor y que ahora quiere en todos) y un tema puede seguir
+ * pidiendo 1 px. */
 static void test_waterfall_signal_width(void) {
     const char *dir = getenv("X6200_SHIPPED_THEMES");
 
@@ -333,39 +335,41 @@ static void test_waterfall_signal_width(void) {
         setenv("THEMES_DIR", "/tmp/test_themes_sin_usuario", 1);
     }
 
-    /* El default del struct (via use_base) y de un tema que no define la clave: 1 px.
+    /* El default del struct (via use_base) y de un tema que no define la clave: 3 px.
      * Un nombre retirado (IU1WXY, Classic) cae al default de la colección (Aurora),
-     * que tampoco define la clave, así que también da 1 px. */
+     * que tampoco define la clave, así que también da 3 px. */
     theme_init("IU1WXY");
-    CHECK(theme_shape.waterfall_signal_width == 1);
+    CHECK(theme_shape.waterfall_signal_width == 3);
 
     theme_init("Classic");
-    CHECK(theme_shape.waterfall_signal_width == 1);
+    CHECK(theme_shape.waterfall_signal_width == 3);
 
     if (dir == NULL || *dir == 0) {
         return;                     /* el runner no los pasó: nada que comprobar */
     }
 
-    /* Los dos temas outdoor la traen mas gruesa (3 px). */
+    /* Los dos temas outdoor la piden en 3: el mismo default, explicito. */
     theme_init("Sunlit");
     CHECK(theme_shape.waterfall_signal_width == 3);
 
     theme_init("Trail");
     CHECK(theme_shape.waterfall_signal_width == 3);
 
-    /* Un tema que no la define queda en 1 px: nada cambia para el resto. */
+    /* Un tema que no la define hereda los 3 px del default. */
     theme_init("Redshift");
-    CHECK(theme_shape.waterfall_signal_width == 1);
+    CHECK(theme_shape.waterfall_signal_width == 3);
 
     theme_init("Aurora");
-    CHECK(theme_shape.waterfall_signal_width == 1);
+    CHECK(theme_shape.waterfall_signal_width == 3);
 
-    /* El clamp 1..8 del parser: 0 (o negativo) cae a 1, por encima de 8 cae a 8. */
+    /* El clamp 1..8 del parser: 0 (o negativo) cae a 1 (la linea no puede
+     * desaparecer), por encima de 8 cae a 8; 1 y 3 son validos. */
     mkdir(DIR, 0777);
     setenv("THEMES_DIR", DIR, 1);
 
     write_file(DIR "/width0.json", "{\n  \"waterfall_signal_width\": 0\n}\n");
     write_file(DIR "/widthneg.json", "{\n  \"waterfall_signal_width\": -5\n}\n");
+    write_file(DIR "/width1.json", "{\n  \"waterfall_signal_width\": 1\n}\n");
     write_file(DIR "/width9.json", "{\n  \"waterfall_signal_width\": 9\n}\n");
     write_file(DIR "/width3.json", "{\n  \"waterfall_signal_width\": 3\n}\n");
 
@@ -373,6 +377,9 @@ static void test_waterfall_signal_width(void) {
     CHECK(theme_shape.waterfall_signal_width == 1);
 
     theme_init("widthneg");
+    CHECK(theme_shape.waterfall_signal_width == 1);
+
+    theme_init("width1");
     CHECK(theme_shape.waterfall_signal_width == 1);
 
     theme_init("width9");
@@ -383,6 +390,7 @@ static void test_waterfall_signal_width(void) {
 
     unlink(DIR "/width0.json");
     unlink(DIR "/widthneg.json");
+    unlink(DIR "/width1.json");
     unlink(DIR "/width9.json");
     unlink(DIR "/width3.json");
     rmdir(DIR);

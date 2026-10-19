@@ -253,3 +253,45 @@ encuentra (35 avisos `draw_bg_img: Couldn't read the background image`) y el ren
 dorado en **371 387 px** (medido). El camino del A/B captura adentro del contenedor, donde `/src`
 existe: es el que produce estos dorados.
 
+
+## 2026-10-18 — `main-espectro-agua.png` y `main-tema-sunlit-agua.png` regeneradas (AB-WF140)
+
+La **línea central del waterfall** deja de salir en `TC(panel_border)` al 60 % con
+`LV_BLEND_MODE_ADDITIVE` y pasa a `TC(text)` a `LV_OPA_COVER`, sin blend mode, con el ancho del
+tema (`waterfall_signal_width`, **3 px** por default desde esta orden; antes 1). Orden directa del
+owner del 2026-10-18: *"no veo la frecuencia que estoy sintonizando; no se ve la línea"*
+(`src/waterfall.c`, `waterfall_init`; el detalle del fix y la medición por tema están en
+`docs/THEMES.md` y en `docs/evidencia/2026-10-18-wf140-contraste/README.md`).
+
+Sólo cambian las dos fixtures de este directorio que **dibujan** la línea
+(`waterfall_center_line` encendido): `main-espectro-agua` (Aurora, el tema del reporte) y
+`main-tema-sunlit-agua` (Sunlit). Las otras nueve quedan **byte-idénticas** (md5 antes/después
+en `docs/evidencia/2026-10-18-wf140-contraste/renders.md5`; los renders con el parámetro apagado
+son byte-idénticos en las dos revisiones).
+
+| Golden | md5 antes | md5 después | px que se mueven | bbox |
+| --- | --- | --- | --- | --- |
+| `main-espectro-agua.png` | `daca186274d8b2167ecb101eb3491990` | `4ec5fd33949620780715072d97dc54df` | 703 (534 en `waterfall`, 169 en `botones`) | x=398..400, y=240..479 |
+| `main-tema-sunlit-agua.png` | `7e3ee2df0dd79f7acd38cd3a0f38e2b3` | `c37b128b9928738af9d2bc8a8aebcc2b` | 698 (534 en `waterfall`, 164 en `botones`) | x=398..400, y=240..478 |
+
+Los píxeles que se mueven son **la propia línea**: 1 px en `x=400` antes, 3 px en `x=398..400`
+después, en toda la altura de la cascada y los 62 px de la barra de botones (el objeto del
+waterfall llega hasta y=480 y la línea se pinta ahí; esa franja ya la declaran las entradas de
+`ajustes_dialogo`/`ajustes_perfil`/`botones` de AB-SETEN109 y AB-FONTS). El objeto no-texto que
+este directorio mide sobre la **columna** del waterfall (`waterfall_signal`) no toca la línea
+central: sigue en 7.12:1 (Aurora) y 9.16:1 (Sunlit).
+
+El objeto no-texto nuevo —`waterfall_center_line`, declarado en `quality/nontext.yaml` sobre
+estas dos fixtures— **antes fallaba** en Sunlit (2.40:1 < 3:1) y ahora mide **14.58:1** (Aurora) y
+**14.51:1** (Sunlit): es la medida que funda el fix. El cambio de píxeles lo declara
+`quality/contracts.yaml` (`expected_changes`, AB-WF140).
+
+Regeneradas con el mismo camino que usa el A/B (Docker, repo montado en `/src`, que es el que
+resuelve las imágenes del tema), con el harness del worktree del fix:
+
+```bash
+docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" -v "$PWD:/src" \
+    -w /src/tools/ui_harness/build x6200-uiharness \
+    -lc "./ui_harness --scenario ../fixtures/main-espectro-agua.scn --png out/main-espectro-agua.png"
+# ídem main-tema-sunlit-agua.scn; después se copian a tools/ab_testing/golden/
+```

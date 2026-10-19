@@ -1,0 +1,11 @@
+piso del waterfall por tema (theme.c make_palette, steps=0 -> palette[0] = waterfall[0])
+y contraste WCAG 1.4.11 de la linea sobre ese piso (el piso real de la radio sin senal)
+
+| Tema | `waterfall[0]` (piso) | tinta antes (trunk) | ratio antes | tinta despues (`text`) | ratio despues |
+| --- | --- | --- | --- | --- | --- |
+| Aurora | `#140d22` | `#665686` = `#8a7ba8` × 153/256 + piso | 2.92:1 | `#f8eeff` | **16.81:1** |
+| Cathode | `#090605` | `#59391f` = `#87562d` × 153/256 + piso | 1.95:1 | `#f9d9aa` | **14.94:1** |
+| Redshift | `#000000` | `#5c352f` = `#9a5a50` × 153/256 + piso | 2.01:1 | `#ffb3a0` | **12.21:1** |
+| Sprint | `#030a17` | `#2f4b70` = `#4a6e96` × 153/256 + piso | 2.23:1 | `#f5f7f9` | **18.45:1** |
+| Sunlit | `#ffffff` | `#ffffff` = `#14456f` × 153/256 + piso | 1.00:1 | `#162436` | **15.67:1** |
+| Trail | `#0a150d` | `#425d3f` = `#5e7a55` × 153/256 + piso | 2.55:1 | `#f2eed8` | **15.98:1** |

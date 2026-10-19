@@ -1,0 +1,22 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output-wf140: ok
+  chroot /tmp/opencode/vfix3-wf140: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  buildroot: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  limpiando la GUI (dirclean): el rebuild reusa una copia propia del repo
+  reconstruyendo la GUI: RECONSTRUIR=si
+OK: /tmp/opencode/vfix3-wf140/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13773024 B, 3/3 marcas)
+  el banco no contesta o la GUI no esta viva; reiniciando...
+  respuesta: {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+  captura: docs/evidencia/2026-10-18-wf140-banco/red-trunk.png (264 colores distintos)
+  version: 94c2c6ab QA: REPRODUCIDO el SIGSEGV del #131 - mismo pc/lr/s
+  fuente: md5 37f55d16fed4 (src/ + lvgl/src)
+  binario: md5 2a0be37fdb29   qemu-cpu: cortex-a7
+  captura util (19884 bytes)
+exit=0

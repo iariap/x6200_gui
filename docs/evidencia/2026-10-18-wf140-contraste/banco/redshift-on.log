@@ -1,0 +1,15 @@
+tinta del tema Redshift (rol text): #ffb3a0
+== estado del chroot ==
+theme_name|Redshift
+binario: md5 e39cbe000d6dcb677d9478128e2135ce (13773040 B)
+OK: /tmp/opencode/vfix3-wf140/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13773040 B, 3/3 marcas)
+esperando: el socket de control -> ok (16 s)
+esperando: la respuesta de {"cmd":"get"} -> ok (0 s)
+get: {"t":"state","vfo":"A","freq":6991334,"freq_bg":166850000,"mode":"LSB","band":"","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,
+esperando: el repintado despues del cambio de frecuencia -> ok (0 s)
+esperando: que el aviso de arranque salga de pantalla -> ok (1 s)
+esperando: la medicion de la tinta en la columna central (estado on) -> ok (0 s)
+tinta #ffb3a0 en x=398..400 (y=240 478): 688 px (estado on)
+captura: /tmp/wf140/banco/redshift-on.png
+md5 final del binario en el chroot: e39cbe000d6dcb677d9478128e2135ce
+contenedores banco-apps vivos al cerrar: 0
