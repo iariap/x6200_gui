@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -181,21 +182,34 @@ def _inject_structural_defects(worktree: Path) -> None:
       paints a placeholder box (missing glyph);
     * the WiFi cell paints its text with the cell's own background colour, so the
       pair is illegible (contrast 1:1).
+
+    Each mutation rewrites only the *value* an updater feeds the widget, never
+    the setter call itself. The OPT-4 equality guards (#150, src/ui_set.h)
+    renamed the calls (`lv_label_set_text` -> `ui_label_set_text`,
+    `lv_obj_set_style_text_color` -> `ui_obj_set_text_color`), so anchoring on
+    the function name made this fixture assert the helper's spelling instead of
+    the defect it is meant to inject (it broke the moment #150 landed). Anchoring
+    on the widget the updater writes (`items[INFO_MODE]`, `items[INFO_WIFI]`)
+    keeps the injected defect valid whatever helper wraps it.
     """
     path = worktree / "src" / "info.c"
     text = path.read_text()
 
-    mode = "lv_label_set_text(items[INFO_MODE], info_params_mode_label_get());"
-    assert mode in text
-    text = text.replace(mode, 'lv_label_set_text(items[INFO_MODE], "VERYLONGMODENAME");')
+    # A text far longer than the fixed 56x26 mode cell: replace the argument the
+    # updater passes to whichever setter writes items[INFO_MODE].
+    mode = re.compile(r"(items\[INFO_MODE\], )info_params_mode_label_get\(\)")
+    assert mode.search(text), "no updater feeds items[INFO_MODE] from the mode label getter"
+    text = mode.sub(lambda m: m.group(1) + '"VERYLONGMODENAME"', text)
 
-    glyph = "lv_label_set_text(items[INFO_WIFI], LV_SYMBOL_WIFI);"
-    assert glyph in text
-    text = text.replace(glyph, 'lv_label_set_text(items[INFO_WIFI], "\\xEF\\x8A\\x93");')
+    # A glyph no font in the chain has: replace the symbol written to the WiFi cell.
+    glyph = re.compile(r"(items\[INFO_WIFI\], )LV_SYMBOL_WIFI")
+    assert glyph.search(text), "no updater writes the WiFi symbol into items[INFO_WIFI]"
+    text = glyph.sub(lambda m: m.group(1) + '"\\xEF\\x8A\\x93"', text)
 
-    contrast = "lv_obj_set_style_text_color(items[INFO_WIFI], TC(text_dim), 0);"
-    assert contrast in text
-    text = text.replace(contrast, "lv_obj_set_style_text_color(items[INFO_WIFI], TC(bar), 0);")
+    # Text painted with the cell's own background colour (contrast 1:1).
+    contrast = re.compile(r"(items\[INFO_WIFI\], )TC\(text_dim\)")
+    assert contrast.search(text), "no updater paints items[INFO_WIFI] with TC(text_dim)"
+    text = contrast.sub(lambda m: m.group(1) + "TC(bar)", text)
 
     path.write_text(text)
 
