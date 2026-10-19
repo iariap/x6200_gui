@@ -177,6 +177,9 @@ jobs:
         run: |
           docker build -t "$HARNESS_IMAGE" -t x6200-uiharness-ci --target ci tools/ui_harness
 
+      - name: Draw buffer partial (sw-rotate 90) gate
+        run: tests/check_drawbuf_partial.sh
+
       - name: Resolve the baseline revision
         id: baseline
         run: |

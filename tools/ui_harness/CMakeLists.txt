@@ -240,3 +240,17 @@ pkg_check_modules(NM REQUIRED libnm)
 
 target_include_directories(ui_harness PRIVATE ${NM_INCLUDE_DIRS})
 target_link_libraries(ui_harness PRIVATE lvgl PNG::PNG ${NM_LIBRARIES} m pthread)
+
+# --- Draw-buffer / software-rotation probe (issue #147) ---------------------
+# Links the same stock LVGL 8.3.11 and models the firmware's display exactly
+# (480x800, sw_rotate, ROT_90) to prove that a partial draw buffer renders the
+# same physical framebuffer. It is a measurement instrument: not linked into
+# ui_harness, not shipped, no radio/network/GPU. See probe/disp_buf_probe.c and
+# tests/check_drawbuf_partial.sh.
+add_executable(disp_buf_probe ${CMAKE_CURRENT_SOURCE_DIR}/probe/disp_buf_probe.c)
+target_compile_options(disp_buf_probe PRIVATE -D_GNU_SOURCE -Wall -Wextra
+    $<$<COMPILE_LANGUAGE:C>:-Werror=implicit-function-declaration>)
+target_include_directories(disp_buf_probe PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}   # harness lv_conf.h
+    ${REPO})                      # lvgl/lvgl.h
+target_link_libraries(disp_buf_probe PRIVATE lvgl m)
