@@ -36,6 +36,11 @@ void mock_params_init(void)
     params.mag_freq.x          = false;
     params.mag_info.x          = false;
     params.freq_accel.x        = FREQ_ACCEL_NONE;
+    /* CB 27 MHz (issue #146): los defaults de src/params/params.c. El arnes no
+     * ejerce las politicas de radio (radio.c es un mock), pero la estructura
+     * tiene que traer los valores de la radio. */
+    params.cb_tx_scope.x       = 0;
+    params.cb_pwr_max.x        = 4.0f;
     /* AUTOMATICO por defecto, como src/params/params.c: el arnes no tiene un
      * perfil fijado. */
     params.visual_profile.x    = VP_PARAM_AUTO;

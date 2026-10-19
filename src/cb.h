@@ -76,3 +76,10 @@ bool cb_tx_allowed(int32_t freq, int tx_scope);
  * la frecuencia no es CB: ahi la celda sigue con su rotulo de siempre (VFO-A /
  * SPL-B). `buf_len` tiene que alcanzar para "CH --". */
 bool cb_channel_label(int32_t freq, char *buf, size_t buf_len);
+
+/* Enganches de la GUI/radio (issue #146): entrada/salida de CB (split, modo,
+ * potencia, XIT) y tope de potencia. Se implementan en src/radio.c porque
+ * necesitan los subjects y el control de la radio; se llaman desde main()
+ * DESPUES de params_init(), para que el observer de cfg.band_id corra despues
+ * del de src/cfg/band.c. Este header no arrastra LVGL: cb.c sigue siendo puro. */
+void cb_hooks_init(void);

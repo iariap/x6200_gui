@@ -26,6 +26,7 @@
 #include "remote_server.h"
 #include "fonts/font_select.h"
 #include "radio.h"
+#include "cb.h"
 #include "dsp.h"
 #include "util.h"
 #include "keyboard.h"
@@ -532,6 +533,12 @@ int main(int argc, char **argv) {
     boot_mark("entradas");
     params_init();
     boot_mark("params_init");
+    /* CB 27 MHz (issue #146): despues de params_init() para que el observer de
+     * cfg.band_id corra despues del de src/cfg/band.c, y antes de radio_init()
+     * para que el tope de potencia se recorte antes de mandar cfg.pwr al equipo.
+     * Con la ultima banda guardada en CB aplica la entrada una vez. */
+    cb_hooks_init();
+    boot_mark("cb_hooks");
     audio_enh_preset_load((audio_enh_preset_t) params.audio_enh_preset.x);
     audio_set_play_vol(params.play_gain_db_f.x);
     audio_set_rec_vol(params.rec_gain_db_f.x);
