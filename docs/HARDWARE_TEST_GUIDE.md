@@ -51,6 +51,39 @@ equipo, que es el §3 de ese documento.
 
 ---
 
+## 1b. CB 27 MHz (issue #146) — dial por canal, 4 grids y TX con interlock
+
+> **Advertencia legal (Argentina).** El SBC está en **26,960–27,410 MHz** y exige autorización
+> por estación y equipo homologado/registrado (Res. SC 47/1982; CABFRA 2025 de ENACOM). El
+> X6200 **no es un equipo CB homologado** y transmitir en 27 MHz con él queda fuera del SBC y
+> fuera del servicio de aficionados. Los grids A, B y D no son SBC argentino. **F0 (RF real,
+> potencia, armónicos y PTT del micrófono) la hace el owner con autorización y carga
+> fantasma**; el módulo no declara el TX validado.
+
+Lo que se prueba acá es el módulo CB: el dial por canal, la celda `CH nn`/`CH --` y las
+protecciones de TX. Se llega con `UP`/`DOWN` **largos** hasta `CB A`…`CB D` (la app Bands no las
+lista).
+
+| # | Qué | Cómo | Qué mirar |
+|---|---|---|---|
+| 1 | RX en canal | Ir a 27,185 (o `{"cmd":"freq","val":27185000}`) en AM | Celda **`CH 19`**, audio, S-meter, filtro y squelch normales |
+| 2 | Dial | Girar la perilla en 27,185 | **1 detent = 1 canal**, sin aceleración; en 1 y 40 no da la vuelta; voz `Channel 19` |
+| 3 | Hueco / fuera de canal | Ir a 27,000 o 27,195 | Celda **`CH --`**; el primer giro engancha 4 / 20 según la dirección (no el más cercano) |
+| 4 | Bandas | `UP`/`DOWN` largos A→B→C→D | Arriba dice `CB A`…`CB D`; **AM** en las cuatro; el modo no queda en USB |
+| 5 | Entrada directa / CAT | Entrar `27.185` o mandar CAT a 27,185 | **`CH 19`**; en 27,195 **`CH --`** |
+| 6 | Split | Entrar a CB con split prendido | El split **se apaga**; al salir vuelve como estaba |
+| 7 | Tope de potencia | En CB, subir PWR desde el panel | No pasa de **`cb_pwr_max`** (4,0 W); mensaje + voz al intentar pasarlo; al salir vuelve el valor anterior |
+| 8 | XIT | Intentar mover XIT en CB | Queda en 0; el **RIT** sí funciona |
+| 9 | Interlock | Con `cb_tx_scope=0`, PTT de software en 26,515 / 27,185 / 28,074 | Bloqueado con mensaje y voz / permitido / permitido (10 m intacto) |
+| 10 | PTT del micrófono | PTT físico en 27,185 y en 26,515 | **Documentar qué hace**: el MCU puede no respetar el interlock de software |
+| 11 | Migración | Radio con `/mnt/params.db` viejo | Los 4 rangos quedan canónicos (`sqlite3`: 201 26,065–26,505 … 204 27,415–27,855) y las frecuencias guardadas válidas se conservan |
+| 12 | Consumo | RX y TX en CB contra 10 m | Sin timers nuevos: el consumo no debe cambiar de forma medible |
+
+**F0 (aparte, con autorización del owner):** TX en 27,185 con carga fantasma, potencia real,
+armónicos y PTT del micrófono. Sin esa medición, el estado es **`requires-radio`**.
+
+---
+
 ## 2. Apps nuevas (que no se cuelguen y que vuelvan bien)
 
 Para cada una: abrir, usar lo básico, cerrar. Al cerrar, la pantalla debe volver al waterfall con

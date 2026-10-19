@@ -866,10 +866,71 @@ a mano, el medidor pasó a `#f08080` y **3.64:1**. Quedó documentado en el issu
 
 ---
 
+## 18/10 ~23:55 (hora host) — rama `factory/cb-27mhz-146` (#146): gates de host y banco QEMU; **F0 requiere radio**
+
+**Qué se probó:** el módulo CB 27 MHz completo (F1–F5) sobre la base `ae1ba0fe`, **sin
+desplegar, sin flashear y sin transmitir**: cuatro grids de 40 canales, migración `_4_cb_bands`,
+dial por canal con `CH nn`/`CH --`, políticas de entrada (split/modo/potencia/XIT) e interlock
+de TX. La RF real (F0) queda pendiente y la hace el owner con autorización.
+
+**Medido en el host y en el banco (comandos reales):**
+
+```
+$ tests/native/run_native_tests.sh
+  18708 comprobaciones, 0 fallos
+  == CB 27 MHz (#146): _4_cb_bands sobre una base real en memoria ==
+  42 comprobaciones, 0 fallos
+
+$ python3 tests/check_wcag.py
+  pares OK: 1052 | exentos: 170 | informativos: 90 | FALLAS: 0
+$ python3 tests/check_cfg_fills.py
+  OK: los 70 campos se inicializan, en orden
+$ python3 tests/check_actions.py
+  todas las acciones ofrecidas tienen manejador
+$ SKIP_BUILD=1 tests/check_harness_determinism.sh
+  PASS: deterministic (identical PNGs for every fixture)
+
+$ cd tools/ab_testing
+$ uv run x6200-ab compare --a ae1ba0fe --b factory/cb-27mhz-146 --experiment-id AB-CB146
+  experiment AB-CB146: PASS (exit 0)
+  Functional PASS — 87 scenarios captured on both revisions
+  Visual Regression PASS — captures are pixel-identical to the baseline
+  Quality Contract PASS — 893 contract checks passed on the candidate
+  Performance PASS — render-cost proxy within budget
+```
+
+**Arnés de UI (seis temas).** La celda VFO de 56 px muestra `CH 19` sin recorte en Aurora (41 px),
+Cathode (47), Redshift (40), Sprint (35), Sunlit (48) y Trail (47); `text_truncated=false` y
+`text_overflow=false` en los seis. El detalle está en
+[`evidencia/2026-10-18-cb-27mhz-146/arnes-temas-ch19.json`](evidencia/2026-10-18-cb-27mhz-146/arnes-temas-ch19.json).
+
+**Compilación ARM y banco QEMU.** Cross-compile con el toolchain de la ROM: binario
+`882e1023493c`, 13.783.668 B. El gate #86 lo acepta como firmware del port (ELF32 ARM, 3/3
+marcas). En el banco:
+
+- 27.185 MHz → `CH 19`, AM, **TX power 4.0 W** (la base tenía 5.0 W y el módulo la recortó);
+- 27.000 MHz → `CH --`, AM;
+- 26.100 / 26.600 / 27.450 → `CB A` / `CB B` / `CB D`, todos en **AM** (el bug de que A/B/D
+  quedaran en USB se encontró y se corrigió en esta corrida);
+- 27.300 MHz → `CB C` con los rangos **migrados** (con los viejos, 27.205–27.405 no tenía banda);
+- al arrancar con la base sembrada en CB con `xit=100` y `split=1`, la GUI los deja en **0/0**
+  (`xit` y `split` de 203), que es la política de entrada del arranque;
+- `tx=false` en todas las consultas: no se envió ningún comando de TX.
+
+Evidencia: [`evidencia/2026-10-18-cb-27mhz-146/README.md`](evidencia/2026-10-18-cb-27mhz-146/README.md),
+[`banco-ch19.png`](evidencia/2026-10-18-cb-27mhz-146/banco-ch19.png) y
+[`banco-ch--.png`](evidencia/2026-10-18-cb-27mhz-146/banco-ch--.png).
+
+**No medido (requires-radio):** RF real en 27 MHz, potencia y armónicos con carga fantasma, PTT
+del micrófono y ATU. El TX **no** queda declarado validado.
+
+---
+
 ## Anexo B: lo que **no** está medido
 
 | Pendiente | Por qué no está fundado | Qué haría falta |
 |---|---|---|
+| **CB 27 MHz: TX/RF real (F0 del #146)** | En esta corrida **no se transmitió, no se desplegó y no se flasheó**. El módulo CB, el dial y el interlock están medidos en host y en el banco QEMU (`tx=false`), pero no hay medición de RF en la radio. | Con autorización del owner y carga fantasma: TX en 27,185 (AM y FM), potencia real contra `cb_pwr_max`, armónicos, PTT del micrófono y ATU. Checklist §10.3 del issue |
 | **Transmisión (TX) y RF** | Intentado el 15/10 y **no medido**: la app del barrido de ROE no se puede abrir por el control remoto (issue #78), así que `radio_start_swrscan()` nunca corrió. La antena es de 40 m. | Que el remoto pueda abrir esa app; después, un barrido de ROE con la potencia al mínimo |
 | **Estabilidad de horas** | La vigilancia más larga pasó a **300 s** el 15/10 17:11 (0 caídas), todavía lejos de "horas". | Dejar la radio corriendo varias horas y contar caídas |
 | **El #63 con spots reales decodificados** | Se abrió WSPR y quedó viva, pero no se esperó un ciclo completo con decodificación. | Dejarla en WSPR varios ciclos y mirar el log |

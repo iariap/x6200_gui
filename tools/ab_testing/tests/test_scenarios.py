@@ -151,6 +151,8 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "cw-tune-tema-sunlit",
         "cw-tune-tuner",
         "home-bateria-externa",
+        "home-cb",
+        "home-cb-offchannel",
         "home-frecuencia-extrema",
         "home-usb-20m",
         "main-bateria-baja",

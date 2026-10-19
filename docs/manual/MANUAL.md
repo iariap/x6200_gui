@@ -117,6 +117,22 @@ parámetros:
    red de adaptación.
 3. El resultado queda guardado por banda y modo, así que al volver no tenés que resintonizar.
 
+### 4.6 El dial en CB (banda ciudadana, 27 MHz)
+
+En las bandas **CB A** a **CB D** el dial deja de contar Hz y cuenta **canales de 40**. Se llega
+igual que a cualquier banda: con `UP`/`DOWN` **largos** (la app Bands no las lista).
+
+- Cada detent mueve **un canal**, sin aceleración y sin dar la vuelta en 1 ni en 40.
+- La celda de arriba a la izquierda dice **`CH 19`** si estás en un canal exacto y **`CH --`** si
+  caíste en un hueco o entre canales. El primer giro engancha el canal siguiente en la dirección
+  del giro.
+- El **canal 23 → 24** sube el número y **baja** la frecuencia (27,255 → 27,235): es correcto,
+  el dial cuenta canales.
+- Al entrar, el equipo apaga el **split**, pasa a **AM** si no estaba en AM/SAM/NFM, recorta la
+  potencia a **4 W** y bloquea el **XIT** (el RIT sigue disponible). Al salir restaura el split
+  y la potencia que tenías.
+- **Leé la sección 7.13 antes de transmitir**: el X6200 no es un equipo CB homologado.
+
 ## 5. Ajustes: todos los parámetros
 
 Se entra con la acción *APP Settings* (o desde la página APP 5:6). Los ajustes están **agrupados por
@@ -676,6 +692,47 @@ su frecuencia real (la IF), así que no vas a ver la banda objetivo.
 - Aviso de firmware nuevo en la pantalla de estado (consulta GitHub; no manda datos tuyos).
 - **SSH**: usuario `root`. **Cambiá la contraseña** (la de fábrica es conocida). Los logs están
   en `DATA/app_logs/x6200_log_*.txt` y se escriben al cerrar la GUI.
+
+### 7.13 CB 27 MHz: canales, potencia y marco legal
+
+**Los cuatro grids.** Cada uno es un plan de 40 canales con la misma numeración y los mismos
+offsets; cambia la base:
+
+| Grid | Banda en pantalla | Canal 1 | Canal 40 | Nota |
+|---|---|---|---|---|
+| A | `CB A` | 26,065 | 26,505 | grid bajo |
+| B | `CB B` | 26,515 | 26,955 | grid bajo |
+| **C** | `CB C` | **26,965** | **27,405** | **CEPT / FCC / SBC argentino** |
+| D | `CB D` | 27,415 | 27,855 | grid alto (termina 145 kHz antes de 10 m) |
+
+El plan tiene **cinco huecos** (26,995 / 27,045 / 27,095 / 27,145 / 27,195) y los canales
+**23, 24 y 25 van fuera de orden**: 23 = 27,255; 24 = 27,235; 25 = 27,245. Por eso, al pasar del
+23 al 24, el número de canal sube y la frecuencia **baja**. La celda `CH --` marca justamente un
+hueco o una frecuencia que no es canal. En los extremos 1 y 40 el dial no da la vuelta.
+
+**TX en CB.** El PTT de software pasa por un interlock por ventana de frecuencia:
+
+| `cb_tx_scope` | Qué permite |
+|---|---|
+| `0` (default) | Sólo el SBC argentino: 26,960–27,410 MHz |
+| `1` | Además los grids A, B y D completos |
+| `2` | Sin interlock |
+
+Fuera de 26–28 MHz el interlock no toca nada, así que las bandas de aficionado siguen iguales.
+Si bloquea, la pantalla avisa `TX blocked: not a CB channel`, lo dice por voz y apaga el PTT. La
+potencia en CB tiene un tope configurable (`cb_pwr_max`, 4,0 W por defecto). Los dos parámetros se
+editan en `DATA/params.db` (configurador web/SQLite); no hay fila en Ajustes.
+
+**Advertencia legal (Argentina).** El SBC está en **26,960–27,410 MHz** y exige **autorización
+por estación** y **equipo homologado/registrado** (Res. SC 47/1982; CABFRA 2025 de ENACOM; alta
+con formularios F1/F2/F23, D3/COPITEC y responsable técnico). El X6200 **no es un equipo CB
+homologado**: transmitir en 27 MHz con él queda fuera del régimen del SBC y fuera del servicio de
+aficionados, y modificar el firmware no cambia la homologación. Los grids A, B y D **no** son SBC
+argentino: con el default quedan en recepción. Los modos y la potencia del SBC **no están
+confirmados**; se usan AM/FM y 4 W como valores conservadores. El **PTT del micrófono** lo maneja
+probablemente el MCU y el interlock de software no necesariamente lo frena: la protección real es
+no sintonizar fuera de canal. **No des por validado el TX** hasta medir RF y armónicos con carga
+fantasma (F0, a cargo del owner con autorización).
 
 ## 8. Solución de problemas
 
