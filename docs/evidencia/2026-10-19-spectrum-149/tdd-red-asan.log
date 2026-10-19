@@ -1,0 +1,14 @@
+===== ASan+UBSan sobre el spectrum.c de la BASE (a69ea288), test completo =====
+El caso de bounds llama spectrum_data(buf, 832): la base escribe 32 floats (128 B) fuera
+de spectrum_buf (global de 3200 B) y ASan lo reporta. Con el fix el recorte hace que el
+mismo caso pase (ver native-tests-sanitizers.log).
+
+exit=1
+traza mezclada: 800 lineas principales, A=0 B=99 limpiado=701 desconocido=0
+FALLO tests/native/test_spectrum.c:417: single_generation(counts, lines) == GEN_CLEARED
+backlog: 50 refrescos encolados (pico 50) para 50 frames
+FALLO tests/native/test_spectrum.c:456: spectrum_stub_sched_pending() == 1
+FALLO tests/native/test_spectrum.c:457: spectrum_stub_sched_peak() == 1
+FALLO tests/native/test_spectrum.c:461: spectrum_stub_invalidates == 1
+FALLO tests/native/test_spectrum.c:478: spectrum_stub_invalidates == 3
+/sp/redbase/spectrum.c:338:21: runtime error: index 800 out of bounds for type 'float [800]'

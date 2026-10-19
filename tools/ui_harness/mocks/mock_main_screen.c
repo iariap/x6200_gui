@@ -131,26 +131,27 @@ static int           sched_head;
 static int           sched_tail;
 static int           sched_count;
 
-static void sched_push(scheduler_fn_t fn, void *arg)
+static bool sched_push(scheduler_fn_t fn, void *arg)
 {
     if (!fn || sched_count >= SCHED_QUEUE) {
-        return;
+        return false;
     }
     sched_fn[sched_tail] = fn;
     sched_arg[sched_tail] = arg;
     sched_tail = (sched_tail + 1) % SCHED_QUEUE;
     sched_count++;
+    return true;
 }
 
-void scheduler_put(scheduler_fn_t fn, void *arg, size_t arg_size)
+bool scheduler_put(scheduler_fn_t fn, void *arg, size_t arg_size)
 {
     (void) arg_size;
-    sched_push(fn, arg);
+    return sched_push(fn, arg);
 }
 
-void scheduler_put_noargs(scheduler_fn_t fn)
+bool scheduler_put_noargs(scheduler_fn_t fn)
 {
-    sched_push(fn, NULL);
+    return sched_push(fn, NULL);
 }
 
 void scheduler_work(void)

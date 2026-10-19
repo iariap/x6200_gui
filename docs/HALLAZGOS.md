@@ -75,6 +75,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 54. [La linea central del waterfall del #140: el defecto de alto 0 no existe en el trunk](#54-la-linea-central-del-waterfall-del-140-el-defecto-de-alto-0-no-existe-en-el-trunk)
 55. [La linea central del waterfall del #140: la geometria estaba, el color no (medido por tema)](#55-la-linea-central-del-waterfall-del-140-la-geometria-estaba-el-color-no-medido-por-tema)
 56. [El SIGSEGV del #131: el hilo de radio tocaba LVGL con las teclas del panel (hkey_put)](#56-el-sigsegv-del-131-el-hilo-de-radio-tocaba-lvgl-con-las-teclas-del-panel-hkey_put)
+57. [El espectro del #149: el dibujo leia los buffers sin lock (carrera confirmada con TSan)](#57-el-espectro-del-149-el-dibujo-leia-los-buffers-sin-lock-carrera-confirmada-con-tsan)
 
 ---
 
@@ -3141,3 +3142,83 @@ de este commit:
 corrupcion necesita concurrencia real y el banco no ejecuta `radio_tick`. Tampoco se fundo que el
 trigger sea *solo* el cambio de filtro; los dos crashes tienen el mismo `pc`/`lr` con contextos
 distintos (`on_vfo_mode_change` y `on_high_filter_change`).
+
+---
+
+## 57. El espectro del #149: el dibujo leia los buffers sin lock (carrera confirmada con TSan)
+
+**Sintoma** (issue #149, hallazgo estatico a verificar): `spectrum_data()` publicaba
+`spectrum_buf[]`/`spectrum_peak[]` bajo `pthread_mutex_lock(&data_mux)`, pero `spectrum_draw_cb()`
+los leia **sin** el mutex, y `spectrum_clear()` los reiniciaba sin lock. El issue pedia verificar
+si escritor y lector corren en hilos distintos antes de atribuir nada.
+
+**Los hilos** (codigo, base `a69ea288`): el escritor es `radio_thread` (el `pthread_create` de
+`src/radio.c:614`) → `radio_tick` → `dsp_samples` (`src/dsp.cpp:168`, llamado desde
+`src/radio.c:223`) → `spectrum_data()` (`src/spectrum.c:332`). El lector es el hilo principal, que
+corre el lazo `scheduler_work(); lv_timer_handler();` (`src/main.c:613`) y desde ahi entra
+`spectrum_draw_cb` (`src/spectrum.c:85`). El `data_mux` (`src/spectrum.c:64`) solo lo tomaba
+`spectrum_data()` (`:335`): iban sin lock las lecturas `spectrum_buf[sp_ind]` (`:138`),
+`spectrum_buf[i]` (`:141`), `spectrum_peak[i].val` (`:158`), `spectrum_tx` (`:93`),
+`grid_min/grid_max` (`:98-99`), `width_hz` (`:196`), `filter_from/to` (`:201-202`), `dnf_*`
+(`:212-219`) y `cur_mode` (`:268`), y las escrituras de `spectrum_clear()` (`:398-402`),
+`on_cur_freq_change()` (`:452-462`), `spectrum_update_min/max()` (`:376-391`) y los observers de
+grilla (`:422-431`). Los observers no diferidos notifican en el hilo que hace `set()`
+(`src/cfg/subjects.cpp:169-173`), asi que esas escrituras llegan del hilo de LVGL, del de radio o
+del del CAT segun quien cambie el parametro.
+
+**Carrera confirmada con TSan** (medido, host x86_64 con gcc 13 dentro de `x6200-uiharness`; el
+binario ARM no corre bajo TSan en este arnes, asi que el resultado es del codigo de
+sincronizacion, no del Cortex-A7). Comando y salida completa en
+`docs/evidencia/2026-10-19-spectrum-149/tsan-base.log`; 7 reportes, todos sobre los globales
+`spectrum_buf`/`spectrum_peak`/`spectrum_tx`:
+
+```text
+SUMMARY: ThreadSanitizer: data race /sp/redbase/spectrum.c:141 in spectrum_draw_cb
+  Write of size 4 by thread T7:  spectrum_data  /sp/redbase/spectrum.c:338   [hilo de radio]
+  Previous read of size 4 by T8: spectrum_draw_cb /sp/redbase/spectrum.c:141 [hilo de GUI]
+  Location is global 'spectrum_buf' of size 3200
+SUMMARY: ThreadSanitizer: data race /sp/redbase/spectrum.c:399 in spectrum_clear
+SUMMARY: ThreadSanitizer: data race /sp/redbase/spectrum.c:336 in spectrum_data
+SUMMARY: ThreadSanitizer: data race /sp/redbase/spectrum.c:99 in spectrum_draw_cb
+```
+
+**Fix** (commit `75a48b89`, `src/spectrum.c`): el estado que el dibujo lee (800 muestras, 800
+picos, `grid_min/max`, `width_hz`, `filter_from/to`, `dnf_*`, `mode`, `tx`) pasa a un `frame`
+compartido que **solo** se toca bajo `data_mux`; `spectrum_draw_cb` lo copia entero a un `snapshot`
+privado del hilo de GUI y dibuja de ahi, asi que el mutex se toma para la copia y **no** durante
+las 800 `lv_draw_line`. `spectrum_clear()`, los observers de config, `spectrum_get_min()` y
+`spectrum_update_min/max()` entran al mismo lock; `spectrum_data()` recorta `size > SPECTRUM_SIZE`
+(la base escribia fuera del buffer); y el refresco se coalesce a uno encolado por vez
+(`scheduler_put*()` ahora devuelve si el trabajo quedo encolado, para que el productor rearme el
+ticket si la cola esta llena). LVGL se sigue tocando solo desde el hilo de GUI
+(`scheduler_put_noargs`).
+
+**Verificacion** (todo en `docs/evidencia/2026-10-19-spectrum-149/`):
+
+- **TDD nativo** (`tests/native/test_spectrum.c`, modulo real staged contra `stubs_spectrum/`, con
+  pausa determinista en la linea 700 del dibujo): con el `spectrum.c` de la base, `tdd-red.log` da
+  **11 fallos** y `exit 139` (SIGSEGV: el caso de bounds escribe fuera del buffer y pisa el objeto
+  contiguo; `tdd-red-asan.log` lo dice con UBSan: `runtime error: index 800 out of bounds for type
+  'float [800]'`), con trazas mezcladas (`A=351 B=449`), el rectangulo del filtro de la generacion
+  nueva, `50 refrescos encolados` y `estres: 120 de 120 dibujos con generaciones mezcladas`; con el
+  fix, `65 comprobaciones, 0 fallos` (`native-tests.log`).
+- **Sanitizers** (`native-tests-sanitizers.log`): ASan+UBSan 65/0, **TSan 65/0 sin reportes**, y el
+  fixture de carrera deliberada (`tsan-fixture.log`) reportando `data race` con `exit=66`, o sea que
+  el detector dispara en este entorno.
+- **Suite nativa completa** del host: `exit 0`, con `-fanalyzer` sin observaciones sobre el modulo.
+- **A/B** (`ab-compare.log`): 87 escenarios pixel-identicos y 893 chequeos de contrato, **PASS**. En
+  el banco natural (`natural.log`) el perfil no se mueve: espectro 132000 px x 27 frames y el mismo
+  sha256 de captura. El p95 del host no se usa como evidencia: el control A/A (dos corridas de la
+  misma revision) lo mueve de -42.8 % a +50.7 % con 31/87 escenarios fuera del 25 %, mientras el p50
+  queda en +0.1 % de mediana (ver `ab-benchmark-control.log`).
+- **Banco QEMU** (`banco-smoke.log`, `banco-apps.log`): binario ARM del commit (`fuente md5
+  13b4c4321a5b`, `binario md5 b5ac3b029818`), captura de home con 331 colores, barrido de las 23
+  apps **23/23 vivas y 0 crashes**, y 106 ordenes de banda/filtro/modo/frecuencia confirmadas por el
+  estado. El `SIGABRT` que el banco dejo en `banco-crash.txt` **no es de este cambio**: es el defecto
+  ya registrado en `docs/evidencia/2026-10-14-caidas-aleatorias/README.md` (fortify de glibc en el
+  camino de audio), con la misma firma de PC/LR que dejo el run `factory/cb-27mhz-146` ese mismo dia.
+
+**Sin fundar (anexo A)**: que la carrera haya producido un artefacto visible o un crash en la radio
+(no hay ningun crash atribuido a esto: lo que se fundo es la carrera y la mezcla de generaciones, con
+el test determinista y con TSan, no en hardware). Tampoco se midio el costo de la copia del snapshot
+en el Cortex-A7 (solo en el host).

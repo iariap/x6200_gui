@@ -1,0 +1,38 @@
+===== TSan: modulo de la BASE (a69ea288) =====
+Mismo test, spectrum.c de la base, sin el caso de bounds (en la base ese caso escribe
+fuera del buffer y aborta antes de llegar al estres; ver tdd-red-asan.log).
+
+razas reportadas: 7
+--- resumen por sitio ---
+      2 SUMMARY: ThreadSanitizer: data race /sp/redbase/spectrum.c:399 in spectrum_clear
+      2 SUMMARY: ThreadSanitizer: data race /sp/redbase/spectrum.c:338 in spectrum_data
+      1 SUMMARY: ThreadSanitizer: data race /sp/redbase/spectrum.c:99 in spectrum_draw_cb
+      1 SUMMARY: ThreadSanitizer: data race /sp/redbase/spectrum.c:336 in spectrum_data
+      1 SUMMARY: ThreadSanitizer: data race /sp/redbase/spectrum.c:141 in spectrum_draw_cb
+
+--- primer reporte completo (lector del draw contra el productor) ---
+WARNING: ThreadSanitizer: data race (pid=22)
+  Write of size 4 at 0x563589ecf308 by thread T7:
+    #0 spectrum_clear /sp/redbase/spectrum.c:399 (red_tsan+0x2b47) (BuildId: 2fe09074d02d953113c2bb6abc8a127112bc88a4)
+    #1 stress_config /sp/redbase_test_spectrum.c:531 (red_tsan+0x4a39) (BuildId: 2fe09074d02d953113c2bb6abc8a127112bc88a4)
+
+  Previous read of size 4 at 0x563589ecf308 by thread T8:
+    #0 spectrum_draw_cb /sp/redbase/spectrum.c:141 (red_tsan+0x1af5) (BuildId: 2fe09074d02d953113c2bb6abc8a127112bc88a4)
+    #1 spectrum_stub_draw tests/native/spectrum_stubs.c:600 (red_tsan+0x4091) (BuildId: 2fe09074d02d953113c2bb6abc8a127112bc88a4)
+    #2 stress_gui /sp/redbase_test_spectrum.c:550 (red_tsan+0x497f) (BuildId: 2fe09074d02d953113c2bb6abc8a127112bc88a4)
+
+  Location is global 'spectrum_buf' of size 3200 at 0x563589ecf2e0 (red_tsan+0xc308)
+
+  Thread T7 (tid=30, running) created by main thread at:
+    #0 pthread_create ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1022 (libtsan.so.2+0x5ac1a) (BuildId: 2a13a7710e361d06f7babbea53065ca2be93f738)
+    #1 test_concurrent_stress_keeps_frames_consistent /sp/redbase_test_spectrum.c:577 (red_tsan+0x54a8) (BuildId: 2fe09074d02d953113c2bb6abc8a127112bc88a4)
+    #2 test_spectrum /sp/redbase_test_spectrum.c:671 (red_tsan+0x54a8)
+    #3 main tests/native/spectrum_test_main.c:16 (red_tsan+0x42a2) (BuildId: 2fe09074d02d953113c2bb6abc8a127112bc88a4)
+
+  Thread T8 (tid=31, running) created by main thread at:
+    #0 pthread_create ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1022 (libtsan.so.2+0x5ac1a) (BuildId: 2a13a7710e361d06f7babbea53065ca2be93f738)
+    #1 test_concurrent_stress_keeps_frames_consistent /sp/redbase_test_spectrum.c:578 (red_tsan+0x54e3) (BuildId: 2fe09074d02d953113c2bb6abc8a127112bc88a4)
+    #2 test_spectrum /sp/redbase_test_spectrum.c:671 (red_tsan+0x54e3)
+    #3 main tests/native/spectrum_test_main.c:16 (red_tsan+0x42a2) (BuildId: 2fe09074d02d953113c2bb6abc8a127112bc88a4)
+
+SUMMARY: ThreadSanitizer: data race /sp/redbase/spectrum.c:399 in spectrum_clear
