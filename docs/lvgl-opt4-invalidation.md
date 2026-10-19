@@ -163,7 +163,7 @@ La regresión visual nula en 89 escenarios (6 temas, Settings, menús de apps, T
 simulado, ECO, REC, ventanas superpuestas) es la evidencia de que las guardas
 sólo suprimen invalidaciones que no cambiaban un píxel.
 
-`x6200-ab audit --revision 923e4dea` → **PASS**: 11 issues conocidos, 0
+`x6200-ab audit --revision 923e4dea` → **PASS** (no escribe reporte): 11 issues conocidos, 0
 reproducidos, 9 no verificados; inspección estructural REAL sobre 9810 objetos en
 89 escenarios, **0 hallazgos estructurales**.
 
