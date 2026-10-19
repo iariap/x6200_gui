@@ -48,6 +48,11 @@ static pthread_mutex_t  control_mux;
 static x6200_flow_t     *pack;
 
 static radio_state_t    state = RADIO_RX;
+/* El control de la radio queda inicializado al final de radio_init(). Si la BASE
+ * no responde, radio_init() sale antes y el lock tambien queda sin inicializar:
+ * los hooks de CB no pueden llamar al control en ese caso (el banco QEMU, que
+ * corre sin radio, se colgaba al entrar a CB). */
+static bool             radio_control_ok = false;
 static uint64_t         now_time;
 static uint64_t         prev_time;
 static uint64_t         idle_time;
@@ -609,6 +614,7 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
     idle_time = prev_time;
 
     pthread_mutex_init(&control_mux, NULL);
+    radio_control_ok = true;
 
     pthread_t thread;
 
@@ -837,12 +843,13 @@ static float cb_pwr_limit(void) {
 }
 
 static void cb_split_cache_cb(Subject *subj, void *user_data) {
-    /* Mientras cfg/band.c carga la banda nueva (su observer corre antes que el
-     * nuestro) el subject del split cambia al valor de la banda DESTINO. Ese
-     * cambio no es del usuario y no tiene que pisar el split que hay que
-     * restaurar: se reconoce porque cfg.band_id ya es otro distinto del ultimo
-     * que vio este modulo. */
-    if (!cb_active && subject_get_int(cfg.band_id.val) == cb_last_band_id) {
+    /* Mientras cfg/band.c carga la banda nueva, el subject del split cambia al
+     * valor de la banda DESTINO. Ese cambio no es del usuario y no tiene que
+     * pisar el split que hay que restaurar. Se reconoce porque band.c ya movio
+     * el pk de la banda (cfg_cur.band->vfo.pk) al destino, mientras que
+     * cb_last_band_id sigue siendo la banda que este modulo vio por ultima vez;
+     * en un cambio del usuario (o al arrancar) los dos coinciden. */
+    if (!cb_active && cfg_cur.band->vfo.pk == cb_last_band_id) {
         cb_saved_split = subject_get_int(subj);
     }
 }
@@ -899,7 +906,7 @@ static void cb_apply_entry(bool save_state) {
         lv_msg_send(MSG_PARAM_CHANGED, NULL);
     }
 
-    if (cb_boot_done) {
+    if (cb_boot_done && radio_control_ok) {
         WITH_RADIO_LOCK(x6200_control_xit_set(0));
     }
 }
@@ -1120,7 +1127,9 @@ int16_t radio_change_xit(int16_t d) {
             params.xit = 0;
             params_unlock(&params.dirty.xit);
             lv_msg_send(MSG_PARAM_CHANGED, NULL);
-            WITH_RADIO_LOCK(x6200_control_xit_set(0));
+            if (radio_control_ok) {
+                WITH_RADIO_LOCK(x6200_control_xit_set(0));
+            }
         }
         return 0;
     }
