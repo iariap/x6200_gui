@@ -621,3 +621,74 @@ $CC $BASEFLAGS -fanalyzer -I"$MIG_STAGE/params" -I"$MIG_STAGE" \
     -c "$MIG_STAGE/params/migrations.c" -o "$OUT/migrations_cb.o" || true
 
 "$OUT/migrations_tests"
+
+# --- Remote control state line (issue #157) -----------------------------------
+# src/remote_server.cpp is C++ and includes its siblings with `#include "..."`, and
+# for a quoted include the directory of the including file always wins over -I, so
+# the committed stub headers under tests/native/stubs_remote/ cannot shadow
+# src/cfg/cfg_api.h etc. from their own directory: the real remote_server.cpp is
+# staged next to a copy of the stubs, the same pattern as the
+# clock/backlight/digital-modes/SWR-Scan/restore/events/hkey/spectrum/migrations
+# tests (see tests/native/test_remote.cpp). The test includes the staged
+# remote_server.cpp so its static state_line()/parse_cmd()/apply_cmd() are visible,
+# and links the REAL src/cfg/settings_manager.cpp + src/cfg/subjects.cpp so
+# Param::get()/getf() behave exactly like on the radio.
+#
+# The defect of #157: state.pwr was frozen at 50 (state_line reported
+# cfg_sm.p_pwr.get(), which returns the in-memory value_ = 5) and
+# {"cmd":"mode","val":"NFM"} selected SAM (mode_names[] had 8 entries, "NFM" at
+# index 7, while the enum is SAM = 7 / NFM = 8); in NFM the state line read
+# mode_names[8] out of bounds.
+echo "== Control remoto (#157): mode exacto (sin off-by-one) y pwr real en el estado =="
+CXX="${CXX:-g++}"
+REM_STAGE="$OUT/remote_src"
+rm -rf "$REM_STAGE"
+mkdir -p "$REM_STAGE/cfg" "$REM_STAGE/params" "$REM_STAGE/cluster" "$REM_STAGE/lvgl"
+cp "$SRC/remote_server.cpp" "$SRC/remote_server.h" "$SRC/cJSON.h" "$SRC/cJSON.c" "$REM_STAGE/"
+cp "$SRC/cfg/settings_manager.h" "$SRC/cfg/settings_manager.cpp" "$SRC/cfg/subjects.h" "$SRC/cfg/subjects.cpp" "$REM_STAGE/cfg/"
+cp "$DIR/stubs_remote/cfg/cfg_api.h" "$DIR/stubs_remote/cfg/db.h" "$DIR/stubs_remote/cfg/cfg.h" "$REM_STAGE/cfg/"
+cp "$DIR/stubs_remote/params/params.h" "$REM_STAGE/params/"
+cp "$DIR/stubs_remote/cluster/client.h" "$REM_STAGE/cluster/"
+cp "$DIR/stubs_remote/lvgl/lvgl.h" "$REM_STAGE/lvgl/"
+cp "$DIR/stubs_remote/buttons.h" "$DIR/stubs_remote/dialog.h" "$DIR/stubs_remote/cw_tune_ui.h" \
+   "$DIR/stubs_remote/gps.h" "$DIR/stubs_remote/main_screen.h" "$DIR/stubs_remote/meter.h" \
+   "$DIR/stubs_remote/radio.h" "$DIR/stubs_remote/rtty.h" "$DIR/stubs_remote/scheduler.h" \
+   "$DIR/stubs_remote/util.h" "$DIR/stubs_remote/waterfall.h" "$DIR/stubs_remote"/dialog_*.h "$REM_STAGE/"
+cp "$DIR/test_remote.cpp" "$REM_STAGE/"
+REM_INC="-I$REM_STAGE -I$DIR -I$SRC/../tools/ui_harness/third_party"
+REM_CXXFLAGS="-std=gnu++17 -O1 -g -Wall -Wextra -Wno-unused-parameter -pthread"
+REM_CFLAGS="-std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter -pthread"
+if [ "$SAN_OK" = yes ]; then
+    REM_CXXFLAGS="$REM_CXXFLAGS $SAN"
+    REM_CFLAGS="$REM_CFLAGS $SAN"
+    REM_LINK_SAN="$SAN"
+else
+    REM_LINK_SAN=""
+fi
+# shellcheck disable=SC2086
+$CXX $REM_CXXFLAGS $REM_INC -c "$REM_STAGE/test_remote.cpp" -o "$OUT/remote_test.o"
+# shellcheck disable=SC2086
+$CXX $REM_CXXFLAGS $REM_INC -c "$REM_STAGE/cfg/settings_manager.cpp" -o "$OUT/remote_settings_manager.o"
+# shellcheck disable=SC2086
+$CXX $REM_CXXFLAGS $REM_INC -c "$REM_STAGE/cfg/subjects.cpp" -o "$OUT/remote_subjects.o"
+# shellcheck disable=SC2086
+$CXX $REM_CXXFLAGS $REM_INC -c "$DIR/remote_stubs.cpp" -o "$OUT/remote_stubs_cpp.o"
+# shellcheck disable=SC2086
+$CC $REM_CFLAGS $REM_INC -c "$DIR/remote_stubs.c" -o "$OUT/remote_stubs.o"
+# shellcheck disable=SC2086
+$CC $REM_CFLAGS $REM_INC -c "$REM_STAGE/cJSON.c" -o "$OUT/remote_cJSON.o"
+# shellcheck disable=SC2086
+$CC $REM_CFLAGS $REM_INC -c "$DIR/test_framework.c" -o "$OUT/remote_test_framework.o"
+# shellcheck disable=SC2086
+$CC $REM_CFLAGS $REM_INC -c "$DIR/remote_test_main.c" -o "$OUT/remote_test_main.o"
+# shellcheck disable=SC2086
+$CXX "$OUT/remote_test.o" "$OUT/remote_settings_manager.o" "$OUT/remote_subjects.o" \
+    "$OUT/remote_stubs_cpp.o" "$OUT/remote_stubs.o" "$OUT/remote_cJSON.o" \
+    "$OUT/remote_test_framework.o" "$OUT/remote_test_main.o" -lm -ldl $REM_LINK_SAN \
+    -o "$OUT/remote_tests"
+
+echo "== Control remoto: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CXX $REM_CXXFLAGS -fanalyzer $REM_INC -c "$REM_STAGE/remote_server.cpp" -o "$OUT/remote_server.o" || true
+
+"$OUT/remote_tests"

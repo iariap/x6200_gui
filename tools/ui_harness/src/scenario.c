@@ -47,9 +47,9 @@ static bool parse_bool(const char *v, bool *out)
 
 /* The mode the fixture spells. The canonical names are the ones the radio itself
  * lists and accepts (`mode_names[]`, src/remote_server.cpp: LSB, LSB-D, USB,
- * USB-D, CW, CW-R, AM, NFM), so a fixture can use the same string the user would
- * send over the remote control; the enum-ish short forms (`cwr`, `usb_dig`) are
- * kept because the older fixtures use them. */
+ * USB-D, CW, CW-R, AM, SAM, NFM, WFM), so a fixture can use the same string the
+ * user would send over the remote control; the enum-ish short forms (`cwr`,
+ * `usb_dig`) are kept because the older fixtures use them. */
 static bool parse_mode(const char *v, x6200_mode_t *out)
 {
     if (!strcasecmp(v, "usb"))     { *out = x6200_mode_usb;     return true; }
