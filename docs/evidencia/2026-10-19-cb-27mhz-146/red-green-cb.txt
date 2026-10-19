@@ -1,0 +1,5 @@
+# TDD de tests/native/test_cb.c (#146): RED -> GREEN
+# RED: tests/native/test_cb.c compilado contra una implementacion degenerada de cb.c
+test_cb: 85 comprobaciones, 56 fallos
+# GREEN: el mismo test contra src/cb.c real
+test_cb: 85 comprobaciones, 0 fallos
