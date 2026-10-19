@@ -1,0 +1,51 @@
+# md5 de los renders del harness usados en la evidencia del #140 (issue: la linea central del waterfall).
+# Revision de las dos pasadas: 9872b614 (+ el fix del #140 sin commitear en el worktree).
+# Los 7 renders de on/ salen de los fixtures main-espectro-agua y main-tema-<tema>-agua; los de off/
+# son los mismos con waterfall_center_line apagado. Los off/ son identicos en las dos pasadas: el cambio
+# esta confinado a la linea.
+
+## pasada antes (src/ de HEAD, sin el fix)
+antes/daca186274d8b2167ecb101eb3491990  on/main-espectro-agua.png
+antes/daca186274d8b2167ecb101eb3491990  on/main-tema-aurora-agua.png
+antes/11849b825dfb5a593283bbc98943e2b2  on/main-tema-cathode-agua.png
+antes/50cac2f0011b8c7b6e8127509e2593c0  on/main-tema-redshift-agua.png
+antes/baba3aac6055127c71f66cfcdb25b130  on/main-tema-sprint-agua.png
+antes/7e3ee2df0dd79f7acd38cd3a0f38e2b3  on/main-tema-sunlit-agua.png
+antes/cbd4e1f718d0a2566fc4f8eb48f4c766  on/main-tema-trail-agua.png
+antes/aaf861c438c20f6e405caf48430f386c  off/off-aurora.png
+antes/8b235064de7c54e0af30640930615e51  off/off-cathode.png
+antes/aaf861c438c20f6e405caf48430f386c  off/off-espectro.png
+antes/4b57b1e81632f175d18a104dd46e5cc0  off/off-redshift.png
+antes/06758d2cb1c6efd02a4440c81907f6d0  off/off-sprint.png
+antes/caf0b6a80f2e933bf8bf9340e2b06437  off/off-sunlit.png
+antes/504eb4d29885e730ff470695f4963002  off/off-trail.png
+
+## pasada despues (src/ con el fix)
+despues/4ec5fd33949620780715072d97dc54df  on/main-espectro-agua.png
+despues/4ec5fd33949620780715072d97dc54df  on/main-tema-aurora-agua.png
+despues/469e65aeb8edc86926ef87cb581442d2  on/main-tema-cathode-agua.png
+despues/39934f6afc3ae3f175e1c4ce130e7c97  on/main-tema-redshift-agua.png
+despues/f6b956a2d329ba11c5000c5f985c23b1  on/main-tema-sprint-agua.png
+despues/c37b128b9928738af9d2bc8a8aebcc2b  on/main-tema-sunlit-agua.png
+despues/9cfe3224c8bbd60370b189e4a8e6f024  on/main-tema-trail-agua.png
+despues/aaf861c438c20f6e405caf48430f386c  off/off-aurora.png
+despues/8b235064de7c54e0af30640930615e51  off/off-cathode.png
+despues/aaf861c438c20f6e405caf48430f386c  off/off-espectro.png
+despues/4b57b1e81632f175d18a104dd46e5cc0  off/off-redshift.png
+despues/06758d2cb1c6efd02a4440c81907f6d0  off/off-sprint.png
+despues/caf0b6a80f2e933bf8bf9340e2b06437  off/off-sunlit.png
+despues/504eb4d29885e730ff470695f4963002  off/off-trail.png
+
+## variantes de estilo descartadas (renders con el screens.c de HEAD)
+variante-panel-border/9aaa299de3d6392e355ec1190ac49563  var-aurora.png
+variante-panel-border/4808c945170866191fceaa3a464ce526  var-cathode.png
+variante-panel-border/e6b6bf3c777cd4500b2a99d2ad941ebc  var-redshift.png
+variante-panel-border/5f214b147fbbcdd38103f463e5883b3e  var-sprint.png
+variante-panel-border/8aa5e4932a15a0b0956b308dc6415ae1  var-sunlit.png
+variante-panel-border/1ce3ee50ce646959ef070d1027363ff0  var-trail.png
+variante-additive/04e6451dfd83f9280f2dbd15dc7dd836  var-aurora.png
+variante-additive/7ca4f0db25fbd880123447850324a380  var-cathode.png
+variante-additive/cd6cc669b25192d25397fab440ef9ebb  var-redshift.png
+variante-additive/5ba17ce09713b3d5e856b9b9011c69f8  var-sprint.png
+variante-additive/40e010ff15631dcebfd6f929fb0b9f13  var-sunlit.png
+variante-additive/9e40d32e396b114102f192960abc3eb5  var-trail.png

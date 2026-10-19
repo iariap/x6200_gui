@@ -73,6 +73,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 52. [El tono de CW se mide con el signo invertido (y el auto-ajuste lo compensa)](#52-el-tono-de-cw-se-mide-con-el-signo-invertido-y-el-auto-ajuste-lo-compensa)
 53. [El auto-ajuste de peak beta no puede variar con la WPM: el bloque de FFT es mas largo que medio punto](#53-el-auto-ajuste-de-peak-beta-no-puede-variar-con-la-wpm-el-bloque-de-fft-es-mas-largo-que-medio-punto)
 54. [La linea central del waterfall del #140: el defecto de alto 0 no existe en el trunk](#54-la-linea-central-del-waterfall-del-140-el-defecto-de-alto-0-no-existe-en-el-trunk)
+55. [La linea central del waterfall del #140: la geometria estaba, el color no (medido por tema)](#55-la-linea-central-del-waterfall-del-140-la-geometria-estaba-el-color-no-medido-por-tema)
 
 ---
 
@@ -2955,3 +2956,67 @@ Evidencia completa (capturas, mediciones, logs, md5): `docs/evidencia/2026-10-18
 **Sin fundar** (anexo A): lo que **vio** el owner. En el trunk la linea esta, con el ancho del tema;
 desde aca no se puede ver su `params.db` ni su build. Lo que no se veia era su **color**: ver el
 [hallazgo 55](#55-la-linea-central-del-waterfall-del-140-la-geometria-estaba-el-color-no-medido-por-tema).
+
+---
+
+## 55. La linea central del waterfall del #140: la geometria estaba, el color no (medido por tema)
+
+**Sintoma** (orden del owner, 2026-10-18): *"no veo la frecuencia que estoy sintonizando; no se ve la
+linea"*. El [hallazgo 54](#54-la-linea-central-del-waterfall-del-140-el-defecto-de-alto-0-no-existe-en-el-trunk)
+ya mostro que la linea **esta** en el trunk (3 px en Sunlit y Trail, 1 px en el resto, de punta a
+punta). Lo que no se leia era su **color**.
+
+**Causa, medida**: el trunk la dibujaba en el rol `panel_border` del tema, a `LV_OPA_60` (60 %) y con
+`LV_BLEND_MODE_ADDITIVE`. Sobre el piso del waterfall eso da, por tema
+(`medido: docs/evidencia/2026-10-18-wf140-contraste/derivar-piso.py`, que lee los temas del repo y
+compone `piso + (canal * 153) >> 8`; el `>> 8` es lo que reproduce el `(11,41,66)` medido en el
+banco sobre negro):
+
+| Tema | piso del waterfall (`waterfall[0]`) | tinta del trunk | contraste | tinta del fix (`text`, opacidad plena) | contraste |
+| --- | --- | --- | --- | --- | --- |
+| Aurora | `#140d22` | `#665686` | 2.92:1 | `#f8eeff` | 16.81:1 |
+| Cathode | `#090605` | `#59391f` | 1.95:1 | `#f9d9aa` | 14.94:1 |
+| Redshift | `#000000` | `#5c352f` | 2.01:1 | `#ffb3a0` | 12.21:1 |
+| Sprint | `#030a17` | `#2f4b70` | 2.23:1 | `#f5f7f9` | 18.45:1 |
+| Sunlit | `#ffffff` | `#ffffff` | 1.00:1 | `#162436` | 15.67:1 |
+| Trail | `#0a150d` | `#425d3f` | 2.55:1 | `#f2eed8` | 15.98:1 |
+
+El piso del producto **no** es el negro del banco QEMU: el buffer del widget nace en cero
+(`codigo: src/widgets/lv_waterfall.c:69-70` y `:81-88`) y con el waterfall corriendo cada fila se
+pinta con `palette[id]`, el valor minimo con `palette[0] = waterfall[0]`
+(`codigo: src/widgets/lv_waterfall.c:118-121` y `src/theme.c:441-454`); el piso (percentil 10) de los
+seis fixtures del arnes cae en el extremo bajo de cada tema (Sunlit `#f1f7fb`, Redshift `#0a0203`,
+Aurora `#23193e`, ...). En **Sunlit** —el tema claro— el piso es blanco y el 60 % aditivo del borde
+del panel satura a `#ffffff`: la linea se dibujaba **del mismo color que el fondo**.
+
+La composicion queda cruzada contra lo medido: la tinta derivada de Sunlit sobre negro (`#0b2942`) es
+el `RGB(11,41,66)` que el banco mide en el trunk, y la de Redshift sobre el piso del tema
+(`#5c352f`) es el `#5b352f` que aparece en 45 filas de la captura de la radio (1/256 de diferencia
+en rojo).
+
+**Medido en la radio** (Redshift, `docs/evidencia/2026-10-17-qa-radio-swr125/07-restaurado.png`, 1 px
+= el ancho por default del trunk): `medido: medir-banco.py` da 2.27:1 en el par del gate
+(`#6c3934` vs `#000000`) y 1.98:1 contra el vecino inmediato (mediana, tinta `#5b352f`..`#733b36`).
+
+**Verificacion, medida**: el objeto `waterfall_center_line` declarado en
+`tools/ab_testing/quality/nontext.yaml` **rechaza** los renders del trunk y pasa con los del fix:
+
+```
+$ uv run x6200-ab themes --repo ../.. --renders-dir /tmp/wf140/antes/on
+  non-text (WCAG 1.4.11, pixels): 6 object(s) measured, 1 failure(s)
+    FAIL waterfall_center_line on main-tema-sunlit-agua = 2.40:1 (min 3.0:1) [object darker; #51a9df vs #f1f7fb]
+$ uv run x6200-ab themes
+  non-text (WCAG 1.4.11, pixels): 19 object(s) measured, 0 failure(s)
+    OK   waterfall_center_line on main-tema-sunlit-agua = 14.51:1 (min 3.0:1) [object darker; #162436 vs #f1f7fb]
+```
+
+**Arreglo** (commit `a297de8b`): la linea usa `TC(text)` del tema a `LV_OPA_COVER`, sin blending, y
+el ancho por default pasa de 1 a 3 px (`src/theme.c` `use_base()`, clave `waterfall_signal_width`,
+clamp 1..8). El invariante queda codificado en el arnes (`tools/ui_harness/src/screens.c`,
+`settle_waterfall_center_line`: ancho == el del tema, `LV_OPA_COVER` y `TC(text)`); con el parametro
+apagado el arnes exige que la linea no se vea. Los 7 renders con el parametro apagado y las otras 9
+goldens quedan byte-identicas: se re-baselinearon 2 goldens (`main-espectro-agua.png`,
+`main-tema-sunlit-agua.png`), declaradas en `tools/ab_testing/golden/README.md`.
+
+Evidencia completa (renders del arnes, banco QEMU, radio, mediciones, crops x4):
+`docs/evidencia/2026-10-18-wf140-contraste/`.
