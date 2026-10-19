@@ -26,6 +26,7 @@
 #include "events.h"
 #include "scheduler.h"
 #include "visual_policy.h"
+#include "sql_policy.h"
 
 #include <aether_radio/x6200_control/low/flow.h>
 #include <aether_radio/x6200_control/low/gpio.h>
@@ -452,20 +453,15 @@ static void on_high_filter_change(Subject *subj, void *user_data) {
     radio_unlock();
 }
 
+/* Un cambio de squelch aplica el nivel y deja el enable del DSP coherente con
+ * la convencion 0 = abierto / >0 = habilitado (issue #166). Corre una sola vez
+ * por cambio: lo dispara el subject cfg_cur.sql_level, nunca radio_tick(). */
 static void on_change_cur_sql_level(Subject *subj, void *user_data) {
     x6200_mode_t mode = subject_get_int(cfg_cur.mode);
     uint8_t val = subject_get_int(subj);
-    switch (mode)
-    {
-    case x6200_mode_nfm:
-    case x6200_mode_wfm:
-        x6200_control_sql_fm_set(val);
-        break;
-
-    default:
-        x6200_control_sql_set(val);
-        break;
-    }
+    radio_lock();
+    sql_policy_apply(mode, val);
+    radio_unlock();
 }
 
 void radio_bb_reset() {
@@ -533,7 +529,9 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
     subject_add_observer_and_call(cfg.vol.val, on_change_uint8, x6200_control_rxvol_set);
     // subject_add_observer_and_call(cfg.sql.val, on_change_uint8, x6200_control_sql_set);
     // subject_add_observer_and_call(cfg.sql_fm.val, on_change_uint8, x6200_control_sql_fm_set);
-    subject_add_observer_and_call(cfg_cur.sql_level, on_change_cur_sql_level, NULL);
+    /* Sin and_call: el valor persistido se aplica al final del init, cuando el
+     * mutex del control ya existe (el observer toma radio_lock). Ver #166. */
+    subject_add_observer(cfg_cur.sql_level, on_change_cur_sql_level, NULL);
     subject_add_observer_and_call(cfg.pwr.val, on_change_float, x6200_control_txpwr_set);
     subject_add_observer_and_call(cfg.fft_dec.val, on_change_uint8, x6200_control_fft_dec_set);
     subject_add_observer_and_call(cfg.key_tone.val, on_change_uint16, x6200_control_key_tone_set);
@@ -608,13 +606,19 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
     // x6200_control_comp_set(false);
     // x6200_control_comp_level_set(x6200_comp_1_8);
 
-    // x6200_control_sql_enable_set(true);
-
     prev_time = get_time();
     idle_time = prev_time;
 
     pthread_mutex_init(&control_mux, NULL);
     radio_control_ok = true;
+
+    /* El squelch del DSP arranca segun el nivel persistido (issue #166): 0 deja
+     * el squelch abierto (enable off) y >0 lo habilita. Va aca, despues de los
+     * demas setters del registro compartido (spmode/mic) y con el mutex ya
+     * inicializado, para que el ultimo valor escrito sea el del squelch. */
+    radio_lock();
+    sql_policy_apply(subject_get_int(cfg_cur.mode), subject_get_int(cfg_cur.sql_level));
+    radio_unlock();
 
     pthread_t thread;
 
