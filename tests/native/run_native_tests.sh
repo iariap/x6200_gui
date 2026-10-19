@@ -582,3 +582,42 @@ if [ "$TSAN_OK" = yes ]; then
 
     echo "ok: el detector reporto la carrera deliberada ($OUT/spectrum_race_fixture.log)"
 fi
+
+# --- CB 27 MHz bands migration (issue #146) -----------------------------------
+# src/params/migrations.c includes its siblings with `#include "..."` (db.h,
+# ../cfg/digital_modes.h, ../theme.h), and for a quoted include the directory of
+# the including file always wins over -I, so the committed stub headers under
+# tests/native/stubs_migrations/ cannot shadow them from their own directory: the
+# real migrations.c (and its migrations.h) are staged under a params/ dir that
+# mirrors src/params/, next to a copy of the stubs, the same pattern as the
+# clock/backlight/digital-modes/SWR-Scan tests (see tests/native/test_migrations_cb.c).
+# The migration is the only path that fixes radios upgraded in place (a fresh
+# database already carries the corrected ranges from sql/bands_cb.csv), so it runs
+# here against a REAL sqlite3 database, in memory, with the same void-returning
+# migration list that the firmware applies. Host needs sqlite3 dev (-lsqlite3).
+echo "== CB 27 MHz (#146): _4_cb_bands sobre una base real en memoria =="
+MIG_STAGE="$OUT/cb_migrations_src"
+rm -rf "$MIG_STAGE"
+mkdir -p "$MIG_STAGE/params" "$MIG_STAGE/cfg"
+cp "$SRC/params/migrations.c" "$SRC/params/migrations.h" "$MIG_STAGE/params/"
+cp "$DIR/stubs_migrations/db.h" "$MIG_STAGE/params/"
+cp "$DIR/stubs_migrations/theme.h" "$MIG_STAGE/"
+cp "$DIR/stubs_migrations/cfg/digital_modes.h" "$MIG_STAGE/cfg/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$MIG_STAGE/params" -I"$MIG_STAGE" -I"$DIR" \
+        "$MIG_STAGE/params/migrations.c" "$DIR/migrations_stubs.c" "$DIR/test_migrations_cb.c" \
+        "$DIR/test_framework.c" "$DIR/migrations_test_main.c" -lsqlite3 -o "$OUT/migrations_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$MIG_STAGE/params" -I"$MIG_STAGE" -I"$DIR" \
+        "$MIG_STAGE/params/migrations.c" "$DIR/migrations_stubs.c" "$DIR/test_migrations_cb.c" \
+        "$DIR/test_framework.c" "$DIR/migrations_test_main.c" -lsqlite3 -o "$OUT/migrations_tests"
+fi
+
+echo "== CB 27 MHz: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$MIG_STAGE/params" -I"$MIG_STAGE" \
+    -c "$MIG_STAGE/params/migrations.c" -o "$OUT/migrations_cb.o" || true
+
+"$OUT/migrations_tests"

@@ -20,8 +20,6 @@
 
 #define SIZEOF_ARRAY(arr) (sizeof(arr) > 0 ? sizeof(arr) / sizeof(arr[0]) : 0)
 
-static sqlite3_stmt *update_ver_stmt;
-
 static int get_current_version(int * ver);
 static int set_current_version(int ver);
 
@@ -130,12 +128,41 @@ static int _3_migrate_theme_name() {
     return 0;
 }
 
+/* 4: bandas CB a los grids canonicos de 40 canales (issue #146).
+ *
+ * Las filas de `bands_cb.csv` de las ROM viejas traian tramos de 230-240 kHz
+ * (24 posiciones), no los grids de 40 canales (440 kHz): el plan 26,965-27,405
+ * quedaba casi todo afuera de la banda C y `cfg_band_set_freq_for_vfo()` guardaba
+ * parametros bajo pk = -1. Aca se corrigen los cuatro rangos y se recorta a la
+ * base del grid la frecuencia guardada que quedo fuera del rango nuevo (no se
+ * borra ninguna fila: solo se clampan vfoa_freq/vfob_freq).
+ *
+ * Idempotente: un valor ya migrado no se reescribe, y una base nueva (que ya
+ * trae los rangos corregidos por los CSV) no cambia. No toca ninguna otra tabla.
+ * Propios en la seccion 8 del issue. */
+static int _4_cb_bands(void) {
+    static const char *sql =
+        "UPDATE bands SET start_freq=26065000, stop_freq=26505000 WHERE id=201;"
+        "UPDATE bands SET start_freq=26515000, stop_freq=26955000 WHERE id=202;"
+        "UPDATE bands SET start_freq=26965000, stop_freq=27405000 WHERE id=203;"
+        "UPDATE bands SET start_freq=27415000, stop_freq=27855000 WHERE id=204;"
+        /* frecuencias guardadas que quedaron fuera del rango nuevo -> canal 1 */
+        "UPDATE band_params SET val = (SELECT start_freq FROM bands WHERE id = band_params.bands_id) "
+        " WHERE bands_id BETWEEN 201 AND 204 AND name IN ('vfoa_freq','vfob_freq') "
+        "   AND (val < (SELECT start_freq FROM bands WHERE id = band_params.bands_id) "
+        "     OR val > (SELECT stop_freq  FROM bands WHERE id = band_params.bands_id));";
+    int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
+    if (rc != SQLITE_OK) { printf("Cannot migrate CB bands: %s\n", sqlite3_errmsg(db)); return 1; }
+    return 0;
+}
+
 /* Migrations array */
 static int (*migrations[])() = {
     _0_init_migrations,
     _1_create_ftx_table,
     _2_update_atu_freq,
     _3_migrate_theme_name,
+    _4_cb_bands,
 };
 
 int migrations_apply(void) {
@@ -152,10 +179,10 @@ int migrations_apply(void) {
         return 1;
     }
     for (size_t i = ver+1; i < SIZEOF_ARRAY(migrations); i++){
-        printf("Apply migration: %i ...\n", i);
+        printf("Apply migration: %zu ...\n", i);
         rc = (*migrations[i])();
         if (rc != 0) {
-            printf("Can't apply %i migration\n", i);
+            printf("Can't apply %zu migration\n", i);
             break;
         }
         set_current_version(i);
