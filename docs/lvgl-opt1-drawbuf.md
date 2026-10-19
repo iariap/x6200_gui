@@ -175,11 +175,98 @@ framebuffer de hardware ni el gitlink de LVGL.
 **Rollback**: cambiar `DISP_BUF_LINES` (128 → 480 → 1920) es una línea; volver
 al valor actual es `#define DISP_BUF_LINES 1920`. Sin migración ni estado.
 
-### QEMU ARM
+### QEMU ARM — **BLOCKED** (no es PASS)
 
-_(se completa con el resultado del banco; ver más abajo)_
+El banco del skill `pruebas-sin-radio` (binario ARM real, sin radio) **no pudo
+correr** en este entorno. Dos causas independientes, ninguna del cambio:
+
+1. **Falta el chroot preparado.** El chroot del banco (`../.vfix3`) no está en
+   el host (`tools/captura-banco.sh --check` lo reporta `FALTA`). Se armó un
+   chroot ad-hoc copiando `target/` del volumen `x6200-build-output`, pero al
+   preparado le falta `/mnt/params.db` (el script del banco no lo siembra): la
+   GUI abre un `params.db` vacío, falla `params_init: Open params.db` /
+   `Can't apply 1 migration` / `no such table: memory` y muere al arrancar con
+   `CRASHLOG sig=11 fallo=0x10` y `lr` en `Subject::subscribe` — **antes de
+   dibujar nada**, en el camino de params/subjects, no en el de render.
+2. **El volumen de build compartido está en carrera.** El banco reconstruye el
+   GUI desde `/workspace_gui` (este worktree), pero el directorio
+   `build/x6200-gui-custom` del volumen `x6200-build-output` lo recrean también
+   otras corridas en vuelo (se vieron contenedores `make x6200-gui-…` y
+   `banco-apps` corriendo). Un rebuild de la base terminó compilando un
+   `radio.c` que no es de este árbol (`params.cb_pwr_max`, de #146) contra un
+   `params.h` que no lo declara, y falló. Con el volumen mutando en paralelo, un
+   A/B del binario ARM no es reproducible desde acá.
+
+Por eso el gate de hardware/QEMU queda **BLOCKED, no PASS**: no se midió el
+binario ARM con el buffer de 128 líneas. Lo que sí se probó es el **mismo LVGL
+8.3.11 con la misma configuración de display** (probe del arnés), que cubre el
+camino de render y rotación pero **no** el binario cross-compilado ni el panel
+físico. Aun corriendo, QEMU no sería medida de Cortex-A7 ni de batería (regla
+del issue).
 
 ### A/B + contratos
 
-_(se completa; ver más abajo)_
+- **Contratos** (`x6200-ab contracts --revision 5ebb8abe`): **PASS**, 893 checks,
+  0 fallas, 0 defectos de baseline sin cambiar.
+- **A/B visual** (`x6200-ab compare --a a69ea288 --b dcfe1284 --profile host-ui`):
+  **PASS** — 87 escenarios capturados en ambas revisiones, **pixel-identical**;
+  los gates requeridos (Functional, Visual Regression, Quality Contract,
+  Performance) en PASS; Hardware y Energy BLOCKED (sin equipo físico, advisory).
+  El arnés de UI no compila `main.c`, así que el cambio del buffer no puede mover
+  un píxel: el A/B confirma que el render 800×480 (6 temas, fuentes, Settings,
+  foco, diálogo, waterfall/espectro, zoom/rotación, banner REC, TX simulado)
+  queda idéntico.
+- **Benchmark natural** (`tests/check_harness_natural.sh`): **PASS** — el perfil
+  de invalidación del firmware (espectro 132000 px × 27 frames, waterfall
+  196000 px × 39 filas, clock 15840 px) no cambia; el arnés usa su propio draw
+  buffer full-screen, no el del firmware.
+- **Tests nativos** (`tests/native/run_native_tests.sh`): PASS (4851 + el resto
+  de las suites, 0 fallos).
+- **Gate del harness** (`tests/check_harness_determinism.sh`): PASS (PNGs
+  idénticos en todas las fixtures, o sea que agregar `LV_DISP_ROT_MAX_BUF` al
+  `lv_conf.h` del arnés no cambió su salida).
+- **Gate del buffer parcial** (`tests/check_drawbuf_partial.sh`): PASS
+  (framebuffer físico idéntico + contrato de flush en 5 tamaños × 8 fases).
+- **Framework A/B Python**: ruff + ruff format + ty + pytest (227 pasan) OK.
+
+### Riesgos y rollback
+
+- **Riesgo principal**: el buffer es la superficie de render de la radio; un
+  tamaño mal elegido deja la pantalla negra. Mitigado por el probe (framebuffer
+  idéntico byte a byte en 8 fases y 5 tamaños) y por el `_Static_assert` de una
+  línea lógica mínima. **No mitigado en hardware**: el banco ARM quedó BLOCKED
+  (ver arriba), así que la verificación en el panel físico está pendiente.
+- **Riesgo secundario**: más pasadas de bandas ⇒ más `lv_mem_buf_get` de
+  `LV_DISP_ROT_MAX_BUF` (160 KiB) por frame en el espectro/waterfall. Con 128
+  líneas el espectro queda en los mismos 4 flushes de hoy y el waterfall sube de
+  5 a 6; no se midió en Cortex-A7.
+- **Rollback**: una línea. `#define DISP_BUF_LINES 128` → `480` (pantalla
+  completa) o `1920` (el valor actual). No hay migración, ni estado, ni cambio
+  de ABI; el revert del commit alcanza.
+
+### Fuera de alcance (observaciones)
+
+- El backend **DRM** (`lv_drivers/display/drm.c`) rota él mismo de landscape a
+  portrait y su `drm_flush` exige `area->y2 < 480`; con `sw_rotate = 1` +
+  `LV_DISP_ROT_90` (lo que fija `main.c`) LVGL entrega áreas **portrait**
+  (`y2` hasta 799), así que esa combinación descartaría cada área. No se verificó
+  en hardware (DRM es opt-in) y **no se toca** acá: queda como PENDIENTE.
+- No se cambió profundidad de color, framebuffer de hardware, kernel/DTS/GPU,
+  DSP/RF/TX ni el gitlink de LVGL (8.3.11).
+
+### PENDIENTES
+
+1. **Gate de hardware/QEMU**: correr el banco con el chroot preparado y el
+   volumen de build libre de otras corridas, y comparar el binario ARM con
+   `DISP_BUF_LINES` 128 vs 1920 (RSS/PSS del proceso, capturas de varias
+   pantallas, foco, diálogos, espectro/waterfall, banner REC). **BLOCKED** hoy.
+2. **Medición en Cortex-A7**: los tiempos de acá son proxy x86. Falta el perfil
+   real (p95 de redraw, CPU) en la radio.
+3. **DRM**: decidir si el backend DRM debe usar `sw_rotate = 0` (y dejar que el
+   driver rote) o adaptar `drm_flush` a áreas portrait. Fuera de #147.
+4. **Wiring del gate en el check-matrix del harness** (`scripts/apps/x6200/`):
+   el gate corre en `tests/run_all_tests.sh` y en el CI de la app, pero el
+   check-matrix del harness todavía no lo invoca.
+
+
 

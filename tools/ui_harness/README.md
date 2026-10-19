@@ -32,6 +32,13 @@ tools/ui_harness/
     scenario.c          scenario file parser (radio state, theme, seed)
     signal_gen.c        deterministic spectrum/waterfall magnitudes, seeded by the scenario
     coverage.c          REAL/PARTIAL/SYNTHETIC/UNSUPPORTED table
+  probe/
+    disp_buf_probe.c    draw-buffer / software-rotation probe (issue #147): links
+                        the same stock LVGL with the firmware's display config
+                        (480x800, sw_rotate, ROT_90) and reconstructs the
+                        physical framebuffer from the flush callbacks to prove a
+                        partial draw buffer renders the same pixels. Gate:
+                        tests/check_drawbuf_partial.sh.
   mocks/
     mock_radio.c        explicit radio state + a call log (mock_radio_calls)
     mock_cfg.c          cfg / cfg_cur subjects and the band catalogue the components read
