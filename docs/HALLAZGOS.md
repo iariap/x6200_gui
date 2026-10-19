@@ -77,6 +77,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 56. [El SIGSEGV del #131: el hilo de radio tocaba LVGL con las teclas del panel (hkey_put)](#56-el-sigsegv-del-131-el-hilo-de-radio-tocaba-lvgl-con-las-teclas-del-panel-hkey_put)
 57. [El espectro del #149: el dibujo leia los buffers sin lock (carrera confirmada con TSan)](#57-el-espectro-del-149-el-dibujo-leia-los-buffers-sin-lock-carrera-confirmada-con-tsan)
 58. [lv_async_call no es thread-safe en LVGL 8: la app de Propagacion usa el scheduler](#58-lv_async_call-no-es-thread-safe-en-lvgl-8-la-app-de-propagacion-usa-el-scheduler)
+59. [El SIGSEGV del #131 (reabierto): otros tres caminos tocaban LVGL fuera del hilo de GUI](#59-el-sigsegv-del-131-reabierto-otros-tres-caminos-tocaban-lvgl-fuera-del-hilo-de-gui)
 
 ---
 
@@ -3241,3 +3242,92 @@ que ya usan Field Ops y SWR Scan para volver de un hilo de trabajo a LVGL.
 el boceto del issue #145) crea timers de LVGL desde ese hilo y puede corromper su lista. La app
 Propagation no lo hace: publica el progreso bajo su mutex y despierta a la GUI con
 `scheduler_put_noargs()`; su unico timer (1 s) se crea y se borra desde el hilo de LVGL.
+
+---
+
+## 59. El SIGSEGV del #131 (reabierto): otros tres caminos tocaban LVGL fuera del hilo de GUI
+
+**Sintoma**: el `SIGSEGV` de `_lv_event_mark_deleted` / `lv_obj_destructor` reaparecio el 19/10 con
+el build `02090454`, que **ya incluye** el fix del #144 (`hkey_put()` diferido). Es decir: el acceso
+fuera de hilo del teclado del panel era **una** fuente, no la unica. La pila resuelta en #137
+(`liblvgl` `cd30ca6c58ad`) es la misma: `obj_del_core -> _lv_obj_destruct -> lv_obj_destructor ->
+_lv_event_mark_deleted`, y `event_head` (un estatico que solo se toca en `lv_event_send`,
+`lvgl/src/core/lv_event.c:72,78`) queda apuntando a un frame de pila muerto. Eso solo pasa si **dos
+hilos** entran a `lv_event_send` a la vez: uno empuja el frame y lo devuelve, el otro lo recorre en
+`_lv_event_mark_deleted`.
+
+**Auditoria** (codigo, base `b50303ed`): se inventariaron los caminos que tocan LVGL desde hilos que
+no son el de GUI. La tabla separa lo que ya estaba diferido de lo que no:
+
+| Funcion LVGL | Quien la llama | Hilo | Codigo (base) |
+|---|---|---|---|
+| `lv_event_send` (refresh) | `cw_tune_set_freq` | audio (PulseAudio mainloop) | `src/cw_tune_ui.c:126` |
+| `lv_obj_has_flag` | `cw_tune_ui_visible` | audio (idem) | `src/cw_tune_ui.c:209` |
+| `lv_label_set_text`, `lv_obj_set_user_data`, `lv_obj_clear_state`, `lv_obj_get_parent` | `buttons_load_page` / `buttons_unload_page` | keyer CW (`endecode_thread`) y mensajes de voz (`play`/`send`/`beacon`) | `src/cw_encoder.c:135-136`, `src/dialog_msg_voice.c:343-344,370-371,382-383` |
+| `lv_label_set_text` (por `param_changed_cb`) | `lv_msg_send(MSG_PARAM_CHANGED)` | el que llama a `radio_change_*` o al observer de banda (hilo del CAT al cambiar de frecuencia) | `src/radio.c:79,688,700,906,985,1061,1113,1129,1146` |
+| `lv_event_send` (refresh) | `meter_update` | radio | **safe**: usa `event_send` (cola con mutex, `src/events.c`) |
+| `lv_event_send` (refresh) | `tx_info_update` -> `update_tx_info` | radio | **safe**: `scheduler_put_noargs` (`src/tx_info.c:274`) |
+| `lv_obj_invalidate` | `spectrum_data`/`waterfall_data` -> `spectrum_refresh`/`refresh_waterfall` | radio | **safe**: `scheduler_put_noargs` (`src/spectrum.c:407`, `src/waterfall.c:155`) |
+| `lv_event_send` | `dialog_swrscan_update` -> `swrscan_chart_refresh` | radio | **safe**: `event_send` (`src/dialog_swrscan.c:261`) |
+| `lv_event_send` | `notify_tx`/`notify_rx` -> `main_screen_notify_tx/rx` | radio | **safe**: `event_send` (`src/main_screen.c:1530,1535`) |
+| `lv_label_set_text` | `panel_add_text`/`panel_set_info` | CAT/otros | **safe**: `scheduler_put` (`src/panel.cpp:118,122`) |
+| `lv_label_set_text` | `param_changed_cb` (desde el hilo de GUI) | GUI | **safe** |
+| `lv_obj_set_style_*` | `wifi_state_change_cb` | GUI | **safe**: `g_main_context_iteration` corre en un `lv_timer` (`src/wifi.cpp:372`) |
+| `lv_obj_*` | `apply_cmd` (control remoto) | GUI | **safe**: `scheduler_put` (`src/remote_server.cpp:933`) |
+| `lv_obj_*` | observers diferidos (`info.c`, `main_screen.c`, `band_info.c`, `meter.c`, `panel.cpp`) | GUI | **safe**: `observer_delayed_notify_all()` |
+| `lv_*` | updaters del flow (espectro/waterfall/metro/reloj/band_info/spot_marks/cluster_column) | radio/GUI | **safe**: escalares bajo mutex, cola de eventos o `scheduler` |
+
+Los candidatos que el issue listaba (`tx_info_update`, `msg_update_text_fmt`/`voice_say_*`,
+`dialog_*_remote`, `clock_update_power`, `meter_update`, `band_info`, `spot_marks`,
+`cluster_column`) se revisaron uno por uno: **ya estaban diferidos** o no tocan LVGL. Los tres
+caminos que si tocaban LVGL fuera de hilo son los de la tabla marcados con su `file:line`.
+
+**Fix** (base `b50303ed`):
+
+- `src/scheduler.cpp`/`scheduler.h`: `scheduler_thread_init()` (la llama `main()` antes de crear
+  cualquier hilo) y `scheduler_in_main_thread()`. Un modulo que toca LVGL consulta si lo llamo el
+  hilo de GUI y, si no, se difiere con `scheduler_put*`.
+- `src/cw_tune_ui.c`: `cw_tune_ui_visible()` deja de hacer `lv_obj_has_flag()` y lee un
+  `atomic_bool visible` que mantiene `update_visibility()` (observer diferido, hilo de GUI) y
+  `obj_deleted_cb()`. `cw_tune_set_freq()` guarda la frecuencia en un atomico y encola
+  `cw_tune_apply()` con `scheduler_put_noargs()`; `req_pending` coalesce los pedidos (el feed llama
+  por trama) y el cuerpo (colores + `lv_event_send`) corre en el hilo de LVGL.
+- `src/buttons.cpp`: `buttons_load_page()`/`buttons_unload_page()` se auto-difieren cuando los llama
+  un hilo ajeno (el keyer CW, los mensajes de voz), en el mismo orden en que se pidieron; desde el
+  hilo de GUI el comportamiento es identico. `param_changed_cb()` difiere el recorrido de labels si
+  `MSG_PARAM_CHANGED` llega de un hilo ajeno.
+- `src/main.c`: `scheduler_thread_init()` como primera linea de `main()`.
+
+No cambia nada visible: las mismas paginas, el mismo bloque activo del widget de CW, las mismas
+etiquetas de los botones; solo cambia **en que hilo** corre cada cuerpo.
+
+**Verificacion** (todo en `docs/evidencia/2026-10-19-lvgl131b/`):
+
+- **TDD nativo** (`tests/native/test_cw_tune.c`, stubs que registran el hilo de cada primitiva,
+  como #149): con el `cw_tune_ui.c` de la base `35 comprobaciones, 13 fallos` (exit 1); con el fix
+  `35 comprobaciones, 0 fallos` (exit 0). Cubre el pedido de frecuencia desde el hilo de audio, el
+  refresco en el hilo de GUI, la consulta de visibilidad sin LVGL, el modo fuera de CW y la
+  coalescencia de pedidos.
+- **Suite nativa completa** (`tests/native/run_native_tests.sh`): exit 0, con el bloque nuevo y
+  `-fanalyzer` sin observaciones sobre `cw_tune_ui.c`.
+- **Chequeos estaticos** (`tests/check_*.py` + `audita-pruebas.py` + `check_cw_tune_feed.py`):
+  10/10 OK. `check_cw_tune_feed.py` se actualizo: ahora exige que el accesor y `cw_tune_set_freq()`
+  **no** tengan `lv_` y que el pedido use `scheduler_put`.
+- **A/B `AB-LVGL131B`** (`b50303ed` contra el commit del fix): PASS, escenarios pixel-identicos y
+  contratos.
+- **Determinismo del arnes de UI** y **temas**: PASS.
+- **`audita-hallazgos.sh`**: exit 0.
+- **ARM cross-compile**: build completo y linkeado.
+- **Banco QEMU**: smoke + ordenes de banda/filtro/modo, GUI viva y sin `crash.txt`.
+
+**Lo que el banco no puede probar, y receta para la radio**: el banco no tiene flow ni placa de
+sonido, asi que no corre `radio_tick()` (teclas del panel), ni `cw_put_audio_samples()` (hilo de
+audio), ni el keyer. La validacion dinamica es en la radio con el binario del fix, cambiando
+frecuencia/modo con el teclado CW de CB abierto (la corrida del #159) y con el panel, verificando
+`CRASHLOG` 0 y `pid` estable. La receta exacta esta en el README de la evidencia (§6).
+
+**Sin fundar (anexo A)**: cual de los tres caminos disparo *este* crash. Los tres entran a
+`lv_event_send` fuera del hilo de GUI y los tres producen la misma corrupcion de `event_head`; la
+corrupcion es acumulativa y el crash cae en el siguiente borrado de objeto (un cambio de
+frecuencia/modo/banda). El banco no reproduce la concurrencia (no hay flow ni audio), asi que la
+atribucion a uno solo no se puede medir ahi.

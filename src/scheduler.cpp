@@ -10,6 +10,7 @@
 
 #include <queue>
 #include <mutex>
+#include <thread>
 
 extern "C" {
     #include "lvgl/lvgl.h"
@@ -24,6 +25,20 @@ struct item_t {
 
 static std::queue<item_t> queue;
 static std::mutex m_mutex;
+
+/* Hilo de GUI (issue #131): lo fija scheduler_thread_init() desde main(). Antes
+ * de esa llamada se responde true para no diferir nada de la inicializacion. */
+static std::thread::id gui_tid;
+static bool            gui_tid_set = false;
+
+void scheduler_thread_init(void) {
+    gui_tid     = std::this_thread::get_id();
+    gui_tid_set = true;
+}
+
+bool scheduler_in_main_thread(void) {
+    return !gui_tid_set || std::this_thread::get_id() == gui_tid;
+}
 
 bool scheduler_put(scheduler_fn_t fn, void * arg, size_t arg_size) {
     std::lock_guard<std::mutex> lock(m_mutex);
