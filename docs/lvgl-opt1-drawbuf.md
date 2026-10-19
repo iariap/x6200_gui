@@ -97,4 +97,89 @@ LVGL 9.6, DSP/RF/TX, kernel/DTS/GPU.
 
 ## Resultados
 
-_(se completan después de medir; la hipótesis de arriba no se reescribe)_
+### Baseline A (el buffer actual)
+
+`size_in_px_cnt` es una cuenta de píxeles: `(800*480*4)` reserva **4 pantallas**.
+
+- **Reservado (BSS)**: 6 144 000 B = **5,859 MiB** (medido con `nm -S` sobre el
+  símbolo estático `buf`; ver tabla abajo).
+- **Residente (tocado)**: 1 536 000 B = **1,465 MiB**, o sea **25 %** de lo
+  reservado. LVGL nunca escribe más de una pantalla porque `get_max_row()`
+  (`lv_refr.c`) devuelve `size / area_w` acotado por la altura del área
+  invalidada: con una invalidación de pantalla completa da `min(1536000/800,
+  480) = 480` líneas. Las otras 3 pantallas quedan en BSS sin tocar, y el kernel
+  no les da página física. **El costo residente real es ~1,5 MiB, no 5,86 MiB**;
+  el resto es reserva virtual.
+- **Flushes**: una pantalla completa se flushea en 10 llamadas (la rotación por
+  software trocea con `LV_DISP_ROT_MAX_BUF`, que en la ROM son 50 líneas);
+  la franja del espectro (800×165) en 4; la del waterfall (800×245) en 5.
+
+La medición reservado-vs-residente la hace el propio probe con `mmap` + `mincore`
+sobre el buffer (equivalente exacto del array BSS del firmware: páginas anónimas
+zero-on-demand). Ver `--px 1536000` en la evidencia.
+
+### Tabla por tamaño (medida)
+
+`px = 800*N` es `size_in_px_cnt`. Reservado y residente salen del probe; flushes
+y tiempos son del probe sobre el host (proxy x86, **no** Cortex-A7 ni batería).
+
+| Candidato | px | reservado | residente | full redraw | espectro 800×165 | waterfall 800×245 | p50 host (full) |
+|---|---|---|---|---|---|---|---|
+| actual (`800*480*4`) | 1 536 000 | 5,859 MiB | 1,465 MiB | 10 flushes | 4 flushes | 5 flushes | ~2,4 ms |
+| pantalla completa (480) | 384 000 | 1,465 MiB | 1,465 MiB | 10 | 4 | 5 | ~2,4 ms |
+| **128 líneas** | 102 400 | **0,391 MiB** | **0,391 MiB** | 11 | 4 | 6 | ~2,4 ms |
+| 64 líneas | 51 200 | 0,195 MiB | 0,195 MiB | 15 | 5 | 8 | ~2,4 ms |
+| 32 líneas | 25 600 | 0,098 MiB | 0,098 MiB | 15 | 6 | 8 | ~2,4 ms |
+
+Framebuffer físico: **idéntico byte a byte** en los 5 tamaños, en las 8 fases
+(`tests/check_drawbuf_partial.sh`). Contrato de flush: `lv_disp_flush_is_last`
+verdadero exactamente una vez por ciclo, ningún rect fuera del panel físico,
+cada píxel flusheado una sola vez, `covered == flushed` en todas las fases.
+
+Tiempos p50 (3 corridas de 300 repeticiones, mediana): pantalla completa
+2,37–2,46 ms en los 5 tamaños; espectro 0,82–0,85 ms; waterfall 1,23–1,26 ms.
+**No hay regresión de tiempo medible**: la diferencia entre tamaños está dentro
+del ruido del host. (La corrida inicial de cada proceso es más lenta por
+warm-up; se descarta.)
+
+### Ahorro del candidato elegido (128 líneas)
+
+- **Reservado**: 6 144 000 → 409 600 B ⇒ **−5,469 MiB (−93,3 %)**.
+- **Residente**: 1 536 000 → 409 600 B ⇒ **−1,074 MiB (−70,0 %)**. El ahorro
+  físico es ~1 MiB, no los 5,5 MiB de la reserva: el resto del buffer actual
+  nunca se tocaba.
+- **Flushes** (costo por llamada, el área total copiada no cambia): espectro
+  igual (4), waterfall +1 (6), pantalla completa +1 (11).
+- **Tiempo**: sin cambio medible en el host.
+
+### Por qué 128 y no 32/64/full
+
+- **32 y 64** bajan otros ~200–300 KiB de reserva, pero suben los flushes del
+  waterfall (5→8) y del espectro (4→5/6): más pasadas de bandas ⇒ más
+  `lv_mem_buf_get(LV_DISP_ROT_MAX_BUF)` (160 KiB) por frame en el hot path del
+  espectro/waterfall, que corre a ~10-30 fps. El ahorro extra no lo justifica.
+- **Pantalla completa (480)** es el control más conservador: mismo conteo de
+  flushes que el actual y −75 % de reserva, pero deja 1,07 MiB residentes que
+  128 líneas sí liberan.
+- **128** es el equilibrio medido: reserva −93,3 %, residente −70 %, el
+  espectro con los mismos flushes que hoy y sin regresión de tiempo.
+
+### Cambio aplicado
+
+`src/main.c`: `DISP_BUF_LINES 128` + `DISP_BUF_SIZE (800 * DISP_BUF_LINES)` +
+`_Static_assert(DISP_BUF_SIZE >= 800, ...)` (un buffer parcial tiene que
+sostener al menos una línea lógica, o `get_max_row()` devuelve 0 y LVGL no
+dibuja nada). No se toca `lv_conf.h` de la ROM, la profundidad de color, el
+framebuffer de hardware ni el gitlink de LVGL.
+
+**Rollback**: cambiar `DISP_BUF_LINES` (128 → 480 → 1920) es una línea; volver
+al valor actual es `#define DISP_BUF_LINES 1920`. Sin migración ni estado.
+
+### QEMU ARM
+
+_(se completa con el resultado del banco; ver más abajo)_
+
+### A/B + contratos
+
+_(se completa; ver más abajo)_
+
