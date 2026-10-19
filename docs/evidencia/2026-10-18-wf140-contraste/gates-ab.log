@@ -1,0 +1,24 @@
+$ uv run x6200-ab themes
+themes PASS: 10 palette(s) (4 base + 6 file(s)), 9 pair(s) declared, 90 pair(s) checked, 0 failure(s)
+  non-text (WCAG 1.4.11, pixels): 19 object(s) measured, 0 failure(s)
+    OK   waterfall_center_line on main-espectro-agua = 14.58:1 (min 3.0:1) [object lighter; #f8eeff vs #23193e]
+    OK   waterfall_center_line on main-tema-sunlit-agua = 14.51:1 (min 3.0:1) [object darker; #162436 vs #f1f7fb]
+
+$ uv run x6200-ab contracts --repo ../.. --revision HEAD
+contracts 2a371fc1a707: PASS — 873 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --repo ../.. --revision HEAD
+audited 2a371fc1a707: 11 known issues — 0 reproduced, 9 unverified; structural inspection REAL over 9462 objects on 85 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab compare --repo ../.. --a 9872b614 --b HEAD
+experiment AB-wf140-final: PASS (exit 0)
+  Functional         PASS            (required) — 85 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — no unexplained visual regressions
+  Quality Contract   PASS            (required) — 873 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+report: /tmp/wf140/reports/AB-wf140-final
+
+$ uv run ty check $(git ls-files "src/**/*.py" "tests/**/*.py")
+All checks passed!
