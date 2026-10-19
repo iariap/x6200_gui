@@ -175,19 +175,30 @@ framebuffer de hardware ni el gitlink de LVGL.
 **Rollback**: cambiar `DISP_BUF_LINES` (128 → 480 → 1920) es una línea; volver
 al valor actual es `#define DISP_BUF_LINES 1920`. Sin migración ni estado.
 
-### QEMU ARM — **BLOCKED** (no es PASS)
+### ARM — el camino de render, verificado en ARM; el binario completo, BLOCKED
 
-El banco del skill `pruebas-sin-radio` (binario ARM real, sin radio) **no pudo
-correr** en este entorno. Dos causas independientes, ninguna del cambio:
+**Verificado en ARM (`qemu-arm-static`, qemu-user).** El probe se
+cross-compiló con el toolchain de buildroot contra el **`liblvgl.so` del rootfs
+real del port** (no el LVGL del host) y corrió bajo `qemu-arm-static` dentro del
+rootfs: **LVGL 8.3.11**, framebuffer físico **idéntico byte a byte** en los 4
+tamaños candidatos y el contrato de flush intacto (57/57/62/82/82 flushes,
+`last=1` en cada fase, `out_of_area=0`, sin duplicados). Eso cubre el camino real
+de rotación + buffer parcial **con la librería que se flashea**, pero **no** el
+binario completo de la GUI ni el panel físico, y **no** es una medida de
+Cortex-A7 ni de batería.
+
+**El banco con el binario completo quedó BLOCKED.** Dos causas independientes,
+ninguna del cambio:
 
 1. **Falta el chroot preparado.** El chroot del banco (`../.vfix3`) no está en
    el host (`tools/captura-banco.sh --check` lo reporta `FALTA`). Se armó un
-   chroot ad-hoc copiando `target/` del volumen `x6200-build-output`, pero al
+   chroot ad-hoc copiando `target/` del volumen `x6200-build-output`; al
    preparado le falta `/mnt/params.db` (el script del banco no lo siembra): la
    GUI abre un `params.db` vacío, falla `params_init: Open params.db` /
    `Can't apply 1 migration` / `no such table: memory` y muere al arrancar con
    `CRASHLOG sig=11 fallo=0x10` y `lr` en `Subject::subscribe` — **antes de
-   dibujar nada**, en el camino de params/subjects, no en el de render.
+   dibujar nada**, en el camino de params/subjects, no en el de render. (Se
+   sembró `/mnt/params.db` para un reintento.)
 2. **El volumen de build compartido está en carrera.** El banco reconstruye el
    GUI desde `/workspace_gui` (este worktree), pero el directorio
    `build/x6200-gui-custom` del volumen `x6200-build-output` lo recrean también
@@ -197,12 +208,8 @@ correr** en este entorno. Dos causas independientes, ninguna del cambio:
    `params.h` que no lo declara, y falló. Con el volumen mutando en paralelo, un
    A/B del binario ARM no es reproducible desde acá.
 
-Por eso el gate de hardware/QEMU queda **BLOCKED, no PASS**: no se midió el
-binario ARM con el buffer de 128 líneas. Lo que sí se probó es el **mismo LVGL
-8.3.11 con la misma configuración de display** (probe del arnés), que cubre el
-camino de render y rotación pero **no** el binario cross-compilado ni el panel
-físico. Aun corriendo, QEMU no sería medida de Cortex-A7 ni de batería (regla
-del issue).
+Por eso el gate del binario completo queda **BLOCKED, no PASS**.
+
 
 ### A/B + contratos
 

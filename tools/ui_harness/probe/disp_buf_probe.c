@@ -450,7 +450,8 @@ int main(int argc, char **argv)
     fprintf(out, "]}\n");
     fclose(out);
 
-    printf("px=%u lines=%u phases=%d\n", px, px / LOG_W, phase_count);
+    printf("px=%u lines=%u phases=%d lvgl=%d.%d.%d\n", px, px / LOG_W, phase_count,
+           lv_version_major(), lv_version_minor(), lv_version_patch());
     for (int i = 0; i < phase_count; i++) {
         printf("  phase %d: flushes=%u last=%u out=%u flushed_px=%llu\n", i,
                metrics[i].flushes, metrics[i].last_count, metrics[i].out_of_area,
