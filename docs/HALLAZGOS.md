@@ -78,6 +78,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 57. [El espectro del #149: el dibujo leia los buffers sin lock (carrera confirmada con TSan)](#57-el-espectro-del-149-el-dibujo-leia-los-buffers-sin-lock-carrera-confirmada-con-tsan)
 58. [lv_async_call no es thread-safe en LVGL 8: la app de Propagacion usa el scheduler](#58-lv_async_call-no-es-thread-safe-en-lvgl-8-la-app-de-propagacion-usa-el-scheduler)
 59. [El SIGSEGV del #131 (reabierto): otros tres caminos tocaban LVGL fuera del hilo de GUI](#59-el-sigsegv-del-131-reabierto-otros-tres-caminos-tocaban-lvgl-fuera-del-hilo-de-gui)
+60. [El squelch del #166: la lib del control ya habilita el enable (el comentario de radio.c:611 era redundante)](#60-el-squelch-del-166-la-lib-del-control-ya-habilita-el-enable-el-comentario-de-radioc611-era-redundante)
 
 ---
 
@@ -3338,3 +3339,97 @@ frecuencia/modo con el teclado CW de CB abierto (la corrida del #159) y con el p
 corrupcion es acumulativa y el crash cae en el siguiente borrado de objeto (un cambio de
 frecuencia/modo/banda). El banco no reproduce la concurrencia (no hay flow ni audio), asi que la
 atribucion a uno solo no se puede medir ahi.
+
+## 60. El squelch del #166: la lib del control ya habilita el enable (el comentario de radio.c:611 era redundante)
+
+**Sintoma** (issue #166): el squelch no corta el ruido de recepcion. El triage del issue apunta a
+`// x6200_control_sql_enable_set(true);` comentado en `src/radio.c:611` como la causa: "el nivel se
+manda al DSP pero el enable nunca se habilita".
+
+**Lo que dice la lib (codigo)**: la lib `aether-x6200-control` no vive en este repo; el paquete de
+Buildroot la fija en `v0.1.0` (2026-02-10) y su `CMakeLists.txt` declara `VERSION 0.15.3`, que es el
+mismo `.so` que la radio usa (`libaether_x6200_control.so.0.15.3`). En su fuente:
+
+- `src/control.c:303-316` — `x6200_control_sql_set(sql)` escribe el nivel en los bits 8..15 del
+  registro 21 (`x6200_micsel_pttmode_chge_spmode_auxiqgen_sqlthr`) y **llama a
+  `x6200_control_sql_enable_set(sql > 0)`** (linea 315).
+- `src/control.c:318-323` — `x6200_control_sql_fm_set(sql)` escribe los bits 16..23 y tambien llama
+  al enable con `sql > 0` (linea 322).
+- `src/control.c:325-329` — `x6200_control_sql_enable_set(on)` setea el bit 24.
+- `src/low/control.c:459-462` — `x6200_control_get()` devuelve el ultimo valor escrito (cache en
+  RAM, `all_cmd.arg[cmd]`), asi que el read-modify-write del registro no pierde bits.
+- `include/aether_radio/x6200_control/control.h:34` — el rango del nivel es **0..100**
+  (`/* Voice SQL 0 - 100 */`), el mismo que usan la UI (`src/vol.c:64`) y el remoto
+  (`src/remote_server.cpp:766`).
+
+El `.so` desplegado coincide con esa fuente. Desensamblado de
+`libaether_x6200_control.so.0.15.3` (`objdump -d` del toolchain
+`arm-buildroot-linux-gnueabihf`), `x6200_control_sql_set` en `0x3a50`:
+
+```
+3a74: e2540000  subs  r0, r4, #0
+3a78: 13a00001  movne r0, #1
+...
+3a80: eafff932  b     x6200_control_sql_enable_set@plt
+```
+
+Es decir, el enable es `(sql != 0)` y se llama **dentro** del setter.
+
+**Consecuencia**: el enable del DSP **si** se habilita cuando el nivel es >0; el comentario de
+`src/radio.c:611` era redundante, no la causa de "nunca se habilita". El dato que el issue cita (el
+`get` refleja el nivel) tambien es consistente con esto.
+
+**Lo que se cambio igual** (issue #166): la convencion se deja **explicita** en el camino de radio,
+para que no dependa de la version de la lib y para cubrir el arranque:
+
+- `src/sql_policy.[ch]`: `sql_should_enable()` (pura: `level > 0`) y `sql_policy_apply()`, que
+  aplica el nivel segun el modo (voz o FM) y despues el enable.
+- `src/radio.c`: el observer de `cfg_cur.sql_level` usa `sql_policy_apply()` bajo `radio_lock`; el
+  valor persistido se aplica al final de `radio_init()`, despues de los setters del registro
+  compartido (spmode/mic). El `and_call` se quito porque aplicaba antes de inicializar el mutex.
+
+**Verificacion** (corrido en el worktree, base `c6761f80`):
+
+- **TDD nativo** (`tests/native/test_sql_policy.c` con stubs del control en
+  `tests/native/stubs_sql/`): con el enable comentado, `76 comprobaciones, 25 fallos` (exit 1); con
+  el fix, `76 comprobaciones, 0 fallos` (exit 0).
+- **Suite nativa completa** (`tests/native/run_native_tests.sh`): exit 0, con `-fanalyzer` sin
+  observaciones sobre `sql_policy.c`.
+- **Estaticos** (`check_cfg_fills`, `check_actions`, `check_settings_focus`, `check_apps_menu`,
+  `check_app_handlers`, `check_manual_apps`, `check_wcag`, `check_cw_tune_feed`, `audita-pruebas.py`):
+  9/9 OK.
+- **Determinismo del arnes** (`tests/check_harness_determinism.sh`): PASS (PNG identicos por
+  fixture).
+- **A/B `AB-SQL166`** (`c6761f80` contra `0d7da153`, perfil `host-ui`): **PASS** (exit 0), 89
+  escenarios **pixel-identicos** y 913 contratos; Hardware/Energy BLOCKED (advisory). Reporte en
+  `tools/ab_testing/reports/AB-SQL166/`.
+- **`x6200-ab audit`**: exit 0 (11 known issues, 0 reproducidos; 0 hallazgos estructurales sobre
+  9810 objetos en 89 escenarios). **`x6200-ab themes`**: exit 0.
+- **ruff / format / ty / pytest** (`tools/ab_testing`): todo OK; `pytest -m 'not e2e'` **227
+  passed, 13 deselected**. Los 13 `e2e` fallan en el **setup** por un fixture previo
+  (`tools/ab_testing/tests/test_e2e.py:189` espera `lv_label_set_text(...)` en `src/info.c`, que
+  desde `5f3c52fe` dice `ui_label_set_text(...)`): desajuste del fixture, ajeno a este cambio.
+- **ARM cross-compile**: `make x6200-gui-dirclean && make x6200-gui-rebuild` (volumen
+  `x6200-build-output`, worktree montado en `/workspace_gui:ro`); binario `ELF32 ARM`,
+  **13.855.224 B**, **`md5 adb4736f0c6d9b302767b48c61ef2bc6`**, `sql_policy.c.o` en el build, y pasa
+  `verifica-firmware-port.py` (3/3 marcas).
+- **Banco QEMU** (gate #86, chroot privado, `RECONSTRUIR=no` sobre el binario recien compilado):
+  smoke OK (captura 25.888 B / 313 colores); por socket, `mode` USB y barridos de `sql` en
+  0/1/8/50/100 y 0 (voz) mas `sql` en NFM/WFM/USB/LSB: el `get` refleja el valor puesto, GUI viva y
+  **sin `crash.txt`**.
+
+**Lo que el banco no puede probar, y receta para la radio**: el banco no tiene flow ni placa de
+sonido, asi que **no puede medir si el ruido corta** (el audio de recepcion no pasa por el stream de
+la GUI, ver el issue #166). La validacion es en la radio con el binario del fix:
+
+1. Subir el squelch de 0 a 1..8 y verificar que el ruido de recepcion **corta**.
+2. Bajarlo a 0 y verificar que el ruido **vuelve** a abrirse.
+3. Repetir en FM (`NFM`/`WFM`).
+4. Si el DSP mutea solo o hay que esperar el `pack->flag.sql_mute`, dejarlo asentado (el GUI hoy no
+   usa ese flag; solo aparece en un `printf` comentado, `src/radio.c:224`).
+
+**Sin fundar (anexo A)**: por que el owner no escucha el corte. La lib habilita el enable; lo que
+queda sin medir es (a) el nivel de audio real del parlante, (b) si el umbral 0..100 necesita un
+valor alto para cortar el ruido, y (c) el desajuste de bits del comentario de la lib
+(`src/control.c:304-312` muestra al OEM alternando el bit 16 en la voz 0<->1, mientras la lib usa el
+bit 24 para el enable). Nada de eso se puede dirimir sin la radio.
