@@ -159,6 +159,9 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
         # segmentados traen la misma capa de "8 fantasma" que las main-tema-*.
         "dfl-usb-d-tema-sprint",
         "dfl-usb-d-tema-cathode",
+        # Editor DFL (issue #173, PR 2): idem para las fixtures del editor.
+        "dfl-editor-usb-d-tema-sprint",
+        "dfl-editor-usb-d-tema-cathode",
     }
     for exception in exceptions:
         assert exception.path is None
