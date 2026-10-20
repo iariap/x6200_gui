@@ -37,3 +37,19 @@ typedef struct { struct { uint32_t cf : 5; uint32_t always_zero : 3; uint32_t re
 /* Input device data (kbd_rollover.c) */
 typedef enum { LV_INDEV_STATE_RELEASED = 0, LV_INDEV_STATE_PRESSED = 1 } lv_indev_state_t;
 typedef struct { uint32_t key; lv_indev_state_t state; bool continue_reading; } lv_indev_data_t;
+
+/* Event and log types dialog.h needs when params.c pulls it in through
+ * dialog_msg_cw.h (issue #186 host stage: the real ones come from LVGL on the
+ * target, but the host has no submodule). */
+typedef struct _lv_event_t lv_event_t;
+typedef void (*lv_event_cb_t)(lv_event_t * e);
+typedef uint32_t lv_event_code_t;
+
+typedef enum {
+    LV_LOG_LEVEL_TRACE = 0,
+    LV_LOG_LEVEL_INFO,
+    LV_LOG_LEVEL_WARN,
+    LV_LOG_LEVEL_ERROR,
+    LV_LOG_LEVEL_USER,
+    LV_LOG_LEVEL_NONE
+} lv_log_level_t;

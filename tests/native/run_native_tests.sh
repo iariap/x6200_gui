@@ -785,8 +785,17 @@ $CC $BASEFLAGS -fanalyzer -I"$MIG_STAGE/params" -I"$MIG_STAGE" \
 # 0/2/16/255 -> 7 + dirty; a change persists and survives a reload.
 echo "== #186: persistencia de freq_accel_threshold sobre SQLite real =="
 PARAMS_TEST_BIN="$OUT/params_threshold_tests"
-PARAMS_INCLUDES="-DLV_CONF_INCLUDE_SIMPLE -I$DIR/../.. -I$SRC -I$DIR/../../lvgl \
-    -I$DIR/../../tools/ui_harness -I$DIR/../../tools/ui_harness/third_party -I$DIR/stubs"
+# params.c includes dialog_msg_cw.h -> dialog.h, so this stage compiles the real
+# dialog.h and needs LVGL's event/log types. The lvgl/ submodule is NOT checked
+# out by the CI functional job (actions/checkout without `submodules: true`), so
+# the real lvgl/lvgl.h is absent there and a stage that leaned on -I.../lvgl
+# compiled against the stub only in CI and broke (issue #186: unknown type name
+# 'lv_event_cb_t'/'lv_event_t'/'lv_event_code_t'/'lv_log_level_t'). Put the stub
+# FIRST so the host stage is deterministic and self-contained: the same stub
+# lvgl/lvgl.h runs locally and in CI (the stub now declares those types), and the
+# stage no longer depends on the submodule being present.
+PARAMS_INCLUDES="-DLV_CONF_INCLUDE_SIMPLE -I$DIR/stubs -I$DIR/../.. -I$SRC \
+    -I$DIR/../../tools/ui_harness -I$DIR/../../tools/ui_harness/third_party"
 if [ "$SAN_OK" = yes ]; then
     # shellcheck disable=SC2086
     $CC $BASEFLAGS $SAN $PARAMS_INCLUDES \
