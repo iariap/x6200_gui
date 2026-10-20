@@ -31,21 +31,21 @@ roe_curve #125-fix: domo (fit a=-0.0061) -> valle en x=20.00, base 1.00, extremo
 == Propagacion (#145): turno IBP, SNR, veredicto y registro IARU R2 ==
 fixtures: 8 escenarios, 408 puntos agregados comparados contra el oraculo
 flow de fixture: 459 eventos, 153 paquetes stale descartados, 0 atribuidos a la frecuencia nueva, 51x3 muestras validas
-44387 comprobaciones, 0 fallos
+44391 comprobaciones, 0 fallos
 == clock (UI-009): reloj de potencia ==
 == clock: -ftrivial-auto-var-init=pattern (defecto observable) ==
-/tmp/opencode/vfo186/native-build3/clock_src/clock.c: In function ‘clock_init’:
-/tmp/opencode/vfo186/native-build3/clock_src/clock.c:228:1: warning: control reaches end of non-void function [-Wreturn-type]
+/tmp/opencode/vfo186/native-build4/clock_src/clock.c: In function ‘clock_init’:
+/tmp/opencode/vfo186/native-build4/clock_src/clock.c:228:1: warning: control reaches end of non-void function [-Wreturn-type]
   228 | }
       | ^
 16 comprobaciones, 0 fallos
 == backlight (UI-08 incr. 4): el cap en los rewrites del tick/timer ==
-/tmp/opencode/vfo186/native-build3/backlight_src/backlight.c: In function ‘set_brightness’:
-/tmp/opencode/vfo186/native-build3/backlight_src/backlight.c:42:17: warning: unused variable ‘n’ [-Wunused-variable]
+/tmp/opencode/vfo186/native-build4/backlight_src/backlight.c: In function ‘set_brightness’:
+/tmp/opencode/vfo186/native-build4/backlight_src/backlight.c:42:17: warning: unused variable ‘n’ [-Wunused-variable]
    42 |         ssize_t n = write(brightness, str, len);
       |                 ^
-/tmp/opencode/vfo186/native-build3/backlight_src/backlight.c: In function ‘set_power’:
-/tmp/opencode/vfo186/native-build3/backlight_src/backlight.c:51:17: warning: unused variable ‘n’ [-Wunused-variable]
+/tmp/opencode/vfo186/native-build4/backlight_src/backlight.c: In function ‘set_power’:
+/tmp/opencode/vfo186/native-build4/backlight_src/backlight.c:51:17: warning: unused variable ‘n’ [-Wunused-variable]
    51 |         ssize_t n = write(power, str, len);
       |                 ^
 27 comprobaciones, 0 fallos
@@ -112,7 +112,7 @@ barrido #125: 51 puntos por span, paso adaptado, presupuesto 1785 ms de UNA pasa
 golden #173 USB-D from=225 to=3525 span=48000 W=800 -> x=404..459 (contrato 404..459, a la derecha del VFO)
 golden #173 LSB-D from=-3525 to=-225 span=48000 W=800 -> x=341..396 (contrato 341..396, espejo)
 golden #173 AM    from=-4500 to=+4500 span=48000 W=800 -> x=325..475 (simetrico)
-perfil host: dibujo 23.0 us/dibujo; lock visto por spectrum_get_min 18.6 us max; spectrum_data+refresco 0.6 us/frame
+perfil host: dibujo 21.8 us/dibujo; lock visto por spectrum_get_min 14.4 us max; spectrum_data+refresco 0.7 us/frame
 1018 comprobaciones, 0 fallos
 == Editor DFL (#179): modelo puro (pasos, escala adaptativa, hit-test, BW, reset) ==
 == Editor DFL: analisis estatico (gcc -fanalyzer) ==
@@ -197,50 +197,50 @@ PASS: params_threshold
 PASS: params_threshold
     reload (15 tras reinicio): OK
 == Control remoto (#157): mode exacto (sin off-by-one) y pwr real en el estado ==
-In file included from /tmp/opencode/vfo186/native-build3/remote_src/test_remote.cpp:41:
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp: In function ‘void* server_thread(void*)’:
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp:977:69: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+In file included from /tmp/opencode/vfo186/native-build4/remote_src/test_remote.cpp:41:
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp: In function ‘void* server_thread(void*)’:
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp:977:69: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
   977 |         pfd[n++] = (struct pollfd){.fd = listen_fd, .events = POLLIN};
       |                                                                     ^
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp:978:70: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp:978:70: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
   978 |         pfd[n++] = (struct pollfd){.fd = wake_fd[0], .events = POLLIN};
       |                                                                      ^
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp:982:127: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp:982:127: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
   982 |                 pfd[n++] = (struct pollfd){.fd = clients[i].fd, .events = (short)(POLLIN | (clients[i].out_len ? POLLOUT : 0))};
       |                                                                                                                               ^
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp: In function ‘bool remote_sock_attends(const char*, bool*)’:
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp:1165:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp: In function ‘bool remote_sock_attends(const char*, bool*)’:
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp:1165:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
  1165 |     struct sockaddr_un a = {.sun_family = AF_UNIX};
       |                                                  ^
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp: In function ‘void remote_server_init()’:
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp:1192:53: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp: In function ‘void remote_server_init()’:
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp:1192:53: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
  1192 |     struct sockaddr_un addr = {.sun_family = AF_UNIX};
       |                                                     ^
-/tmp/opencode/vfo186/native-build3/remote_src/test_remote.cpp: In function ‘int sock_listen(const char*)’:
-/tmp/opencode/vfo186/native-build3/remote_src/test_remote.cpp:205:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+/tmp/opencode/vfo186/native-build4/remote_src/test_remote.cpp: In function ‘int sock_listen(const char*)’:
+/tmp/opencode/vfo186/native-build4/remote_src/test_remote.cpp:205:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
   205 |     struct sockaddr_un a = {.sun_family = AF_UNIX};
       |                                                  ^
-/tmp/opencode/vfo186/native-build3/remote_src/cfg/subjects.cpp: In function ‘void avisa_subject_nulo(const char*, void*)’:
-/tmp/opencode/vfo186/native-build3/remote_src/cfg/subjects.cpp:95:23: warning: unused variable ‘off’ [-Wunused-variable]
+/tmp/opencode/vfo186/native-build4/remote_src/cfg/subjects.cpp: In function ‘void avisa_subject_nulo(const char*, void*)’:
+/tmp/opencode/vfo186/native-build4/remote_src/cfg/subjects.cpp:95:23: warning: unused variable ‘off’ [-Wunused-variable]
    95 |         unsigned long off = (unsigned long) llamador - (unsigned long) info.dli_fbase;
       |                       ^~~
 == Control remoto: analisis estatico (gcc -fanalyzer) ==
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp: In function ‘void* server_thread(void*)’:
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp:977:69: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp: In function ‘void* server_thread(void*)’:
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp:977:69: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
   977 |         pfd[n++] = (struct pollfd){.fd = listen_fd, .events = POLLIN};
       |                                                                     ^
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp:978:70: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp:978:70: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
   978 |         pfd[n++] = (struct pollfd){.fd = wake_fd[0], .events = POLLIN};
       |                                                                      ^
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp:982:127: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp:982:127: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
   982 |                 pfd[n++] = (struct pollfd){.fd = clients[i].fd, .events = (short)(POLLIN | (clients[i].out_len ? POLLOUT : 0))};
       |                                                                                                                               ^
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp: In function ‘bool remote_sock_attends(const char*, bool*)’:
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp:1165:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp: In function ‘bool remote_sock_attends(const char*, bool*)’:
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp:1165:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
  1165 |     struct sockaddr_un a = {.sun_family = AF_UNIX};
       |                                                  ^
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp: In function ‘void remote_server_init()’:
-/tmp/opencode/vfo186/native-build3/remote_src/remote_server.cpp:1192:53: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp: In function ‘void remote_server_init()’:
+/tmp/opencode/vfo186/native-build4/remote_src/remote_server.cpp:1192:53: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
  1192 |     struct sockaddr_un addr = {.sun_family = AF_UNIX};
       |                                                     ^
 138 comprobaciones, 0 fallos

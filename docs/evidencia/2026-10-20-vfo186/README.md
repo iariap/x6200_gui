@@ -1,7 +1,8 @@
 # #186 — Sintonía adaptativa determinista del dial principal + `Accel threshold` + Settings en inglés
 
 Corrida `factory/vfo-accel-186`. **Base**: `60b9f5b2` (`lu2dsx/x6200-rom`, HEAD observado al
-redactar el issue). **HEAD de la corrida**: `7ee5b5cf` (código) + commit de evidencia.
+redactar el issue). **Rama de la corrida**: `factory/vfo-accel-186` (los commits de código son
+`64a3496b`, `7cfade9b` y `7ee5b5cf`; el HEAD exacto lo fija el PR).
 Un worktree, un writer, un PR. **Sin push en esta corrida** (lo hace el orquestador).
 **La validación física queda fuera**: la prueba en radio real la hace el owner después del merge.
 
@@ -84,7 +85,7 @@ Settings → Operation. Gate #86 `verifica-firmware-port.py`: **3/3 marcas**. `c
 
 ## 5. Tests §6 (salidas reales)
 
-`tests/native/run_native_tests.sh` → **44387 comprobaciones, 0 fallos** (log `logs/native-tests.txt`).
+`tests/native/run_native_tests.sh` → **44391 comprobaciones, 0 fallos** (log `logs/native-tests.txt`).
 Cubre, entre otros:
 
 - **Un detent ±1** exacto en `step = 10/100/500/1000/5000` × None/Lite/Strong; nunca 0 ni 1 Hz.
@@ -111,7 +112,7 @@ Cubre, entre otros:
 
 | Gate | Resultado | Evidencia |
 |---|---|---|
-| Nativos | **PASS** 44387/0 | `logs/native-tests.txt` |
+| Nativos | **PASS** 44391/0 | `logs/native-tests.txt` |
 | `run_all_tests.sh --quick` | **PASS** 15 OK / 0 | `logs/run_all_tests-quick.txt` |
 | ASan/UBSan | **SKIP** | toolchain del host sin libasan (`== sanitizers: NO disponibles en este toolchain`); nunca se declara PASS |
 | ARM/ROM (`compila-gui.sh`) | **PASS** | binario `md5 452735f5d81f`, sello fuente `6f0ac61e433e`, commit `7ee5b5cf` (`logs/rom-build.txt`, `logs/rom-build-rebuild-check.txt`) |
@@ -161,4 +162,5 @@ mocks/mock_radio.c,src/screens.c}`, `docs/evidencia/2026-10-20-vfo186/**`,
 - `64a3496b` — motor, cola, VFO/CB, parámetro, fila Settings, inglés, tests.
 - `7cfade9b` — arnés: `radio_check_freq` del mock valida rango.
 - `7ee5b5cf` — build: `rotary_queue.c` en `src/CMakeLists.txt`.
-- (siguiente) — evidencia + reporte A/B.
+- `8f17a552` — evidencia + reporte A/B `AB-VFO186` + capturas + banco.
+- (HEAD) — verificación estática del reset por umbral/perfil.

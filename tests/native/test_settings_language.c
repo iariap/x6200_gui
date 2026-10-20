@@ -434,6 +434,14 @@ static void test_rotary_wiring(void) {
         CHECK(strstr(cc, "adaptive_tuning_segments") != NULL);
         CHECK(strstr(cc, "EVENT_ROTARY_ENHANCED") != NULL);
         CHECK(strstr(cc, "lv_event_send") != NULL);
+
+        /* Cambio de perfil/umbral con la GUI abierta: el consumidor lee la
+         * configuracion vigente AL PROCESAR y resetea UNA sola vez (primer
+         * detent x1), mas el reset pedido por Settings/los observers. */
+        CHECK(strstr(cc, "params.freq_accel_threshold.x") != NULL);
+        CHECK(strstr(cc, "adaptive_tuning_reset(&main_knob.tuning)") != NULL);
+        CHECK(strstr(cc, "main_knob.reset_pending") != NULL);
+        CHECK(strstr(cc, "rotary_tuning_reset") != NULL);
     }
 
     free(cc);
