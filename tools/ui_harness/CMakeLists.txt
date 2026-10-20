@@ -130,6 +130,11 @@ set(GUI_SRC
     ${REPO}/src/dialog_settings.c
     ${REPO}/src/dialog_bt.c
     ${REPO}/src/bt_devices.c
+    # Editor DFL (issue #173, PR 2): la ventana REAL del editor de filtro, que los
+    # fixtures `dfl-editor-*` abren por el camino del firmware
+    # (main_screen_action(ACTION_APP_DFL_EDITOR) -> dialog_construct(dialog_dfl)).
+    # El modelo puro que consume vive en src/dfl_model.h.
+    ${REPO}/src/dialog_dfl.c
     # El barrido de ROE (issue #125): la ventana REAL, su motor puro de sesion y
     # el resample del chart. Los fixtures `swrscan-*` la abren por el camino del
     # firmware (main_screen_start_app(ACTION_APP_SWRSCAN)) y la manejan con el

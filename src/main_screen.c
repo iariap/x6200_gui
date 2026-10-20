@@ -45,6 +45,7 @@
 #include "dialog_propagation.h"
 #include "dialog_wifi.h"
 #include "dialog_eq.h"
+#include "dialog_dfl.h"
 #include "backlight.h"
 #include "buttons.h"
 #include "recorder.h"
@@ -196,6 +197,7 @@ static const char *app_label(press_action_t action) {
         case ACTION_APP_QTH:       return "QTH";
         case ACTION_APP_CALLSIGN:  return "Callsign";
         case ACTION_APP_PROPAGATION: return "Propagation";
+        case ACTION_APP_DFL_EDITOR:  return "DFLEditor";
         default:                   return "home";
     }
 }
@@ -354,6 +356,16 @@ void main_screen_start_app(press_action_t app_action) {
             voice_say_text_fmt("Propagation window");
             break;
 
+        /* Editor DFL (issue #173, PR 2). No es una app del menu de apps, pero
+         * entra por el mismo dispatcher para no dejar ventanas huerfanas y para
+         * poder abrirse por el control remoto (banco/webserver) como las demas.
+         * El dialogo es modal y no guarda ni restaura el estado de la radio
+         * (restore_radio=false). */
+        case ACTION_APP_DFL_EDITOR:
+            dialog_construct(dialog_dfl, obj);
+            voice_say_text_fmt("DFL editor");
+            break;
+
         default:
             break;
     }
@@ -500,6 +512,16 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_QTH:
         case ACTION_APP_CALLSIGN:
         case ACTION_APP_PROPAGATION:
+            main_screen_start_app(action);
+            break;
+
+        /* Editor DFL (issue #173, PR 2). No es una app del menu de apps: se abre
+         * desde la quinta celda de la pagina DFL y desde el long press fisico
+         * DFL. Entra por el dispatcher de apps (main_screen_start_app) para no
+         * dejar ventanas huerfanas y para poder abrirse por el control remoto
+         * (banco/webserver) como las demas; el dialogo es modal y no guarda ni
+         * restaura el estado de la radio (restore_radio=false). */
+        case ACTION_APP_DFL_EDITOR:
             main_screen_start_app(action);
             break;
     }

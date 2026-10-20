@@ -81,6 +81,12 @@ extern buttons_group_t buttons_group_key;
 extern buttons_group_t buttons_group_dfn;
 extern buttons_group_t buttons_group_dfl;
 
+/* Paginas DFL (issue #173, PR 2): la normal lleva la quinta celda "DFL editor"
+ * y la del editor cambia esa celda por "Cerrar DFL". dialog_dfl.c usa la del
+ * editor como btn_page para no vaciar la barra inferior. */
+extern buttons_page_t buttons_page_dfl_1;
+extern buttons_page_t buttons_page_dfl_editor;
+
 // TODO: move to applications
 extern buttons_group_t buttons_group_msg_cw;
 extern buttons_group_t buttons_group_msg_voice;

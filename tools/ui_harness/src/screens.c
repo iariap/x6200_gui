@@ -25,6 +25,7 @@
 #include "buttons.h"
 #include "clock.h"
 #include "dialog.h"
+#include "dialog_dfl.h"
 #include "dialog_settings.h"
 #include "events.h"
 #include "keyboard.h"
@@ -38,6 +39,9 @@
 #include "styles.h"
 #include "theme.h"
 #include "visual_policy.h"
+
+#include "cfg/cfg.h"
+#include "cfg/mode.h"
 
 #include "autotune_ui.h"
 #include "swr_backend.h"
@@ -264,6 +268,13 @@ static void build_main(const scenario_t *scenario)
     signal_gen_feed(scenario->seed);
 }
 
+/* Utilidades de los fixtures del editor DFL (definidas mas abajo, junto a
+ * scenario_settle): se usan en scenario_build. */
+static void dfl_press_ui(dfl_ui_id_t id);
+static void dfl_drag_ui(int32_t local_x);
+static void dfl_esc_ui(void);
+static void settle_dfl_editor(const scenario_t *scenario);
+
 bool scenario_build(const scenario_t *scenario)
 {
     if (!strcmp(scenario->screen, "main") || !strcmp(scenario->screen, "home-usb-20m")) {
@@ -443,6 +454,63 @@ bool scenario_build(const scenario_t *scenario)
         mock_keyboard_group_up();
         build_main(scenario);
         main_screen_start_app(ACTION_APP_RTTY);
+        return true;
+    }
+
+    if (!strcmp(scenario->screen, "dfl-editor") || !strcmp(scenario->screen, "dfl-editor-tx")
+        || !strcmp(scenario->screen, "dfl-editor-interaction")) {
+        /* Editor DFL (issue #173, PR 2): la ventana REAL, abierta por el camino
+         * del firmware main_screen_action(ACTION_APP_DFL_EDITOR) ->
+         * dialog_construct(dialog_dfl) (src/main_screen.c -> src/dialog.c ->
+         * src/dialog_dfl.c). El fixture distingue USB-D/LSB-D/temas/TX por sus
+         * claves; `dfl-editor-interaction` ademas empuja pulsaciones y un
+         * arrastre por los callbacks reales. El grupo de teclado sube primero
+         * porque el dialogo lo usa si existe. */
+        mock_keyboard_group_up();
+        build_main(scenario);
+        main_screen_action(ACTION_APP_DFL_EDITOR);
+
+        if (!strcmp(scenario->screen, "dfl-editor-interaction")) {
+            dfl_press_ui(DFL_UI_LOW_PLUS);      /* 225 -> 230 */
+            dfl_press_ui(DFL_UI_LOW_PLUS);      /* 230 -> 240 */
+            dfl_drag_ui(300);                   /* HIGH -> 7000 (dominio [0,10000], w=420) */
+            dfl_drag_ui(500);                   /* fuera del grafico: HIGH se recorta a MAX=10000 */
+            dfl_press_ui(DFL_UI_HIGH_PLUS);     /* 10050 > MAX: la guarda rechaza, queda 10000 */
+            dfl_press_ui(DFL_UI_HIGH_PLUS);
+        }
+
+        return true;
+    }
+
+    if (!strcmp(scenario->screen, "dfl-editor-cycles")) {
+        /* 30 ciclos abrir/cerrar del editor con cambios de modo y frecuencia
+         * entre medio, y los tres caminos de cierre (ESC fisico, "Cerrar DFL"
+         * tactil y cierre directo). Queda abierto al final: el arnes captura el
+         * ultimo estado y comprueba que los Subjects/labels no quedaron
+         * desfasados (settle_dfl_editor). */
+        mock_keyboard_group_up();
+        build_main(scenario);
+
+        for (int i = 0; i < 30; i++) {
+            main_screen_action(ACTION_APP_DFL_EDITOR);
+            subject_set_int(cfg_cur.mode, (i % 2) ? x6200_mode_lsb_dig : x6200_mode_usb_dig);
+            subject_set_int(cfg_cur.fg_freq, 14074000 + i * 1000);
+
+            switch (i % 3) {
+                case 0:
+                    dfl_esc_ui();
+                    break;
+                case 1:
+                    buttons_press(4, false);    /* quinta celda: "Cerrar DFL" */
+                    break;
+                default:
+                    dialog_destruct();
+                    break;
+            }
+        }
+
+        subject_set_int(cfg_cur.mode, x6200_mode_usb_dig);
+        main_screen_action(ACTION_APP_DFL_EDITOR);
         return true;
     }
 
@@ -666,10 +734,156 @@ static void settle_waterfall_filter_ticks(const scenario_t *scenario)
     }
 }
 
+/* --- Editor DFL (issue #173, PR 2): utilidades del fixture -------------------
+ * El arnes no tiene touch ni teclado fisico: para probar la INTERACCION por los
+ * callbacks reales del dialogo, el fixture ubica un control por su user_data
+ * (dialog_dfl.h) y le manda el evento, y empuja un punto sintetico por el hook
+ * dialog_dfl_pointer_hook para el arrastre de los handles. */
+static lv_obj_t *find_by_user_data(lv_obj_t *root, intptr_t data)
+{
+    if (root == NULL) {
+        return NULL;
+    }
+
+    if ((intptr_t) lv_obj_get_user_data(root) == data) {
+        return root;
+    }
+
+    uint32_t n = lv_obj_get_child_cnt(root);
+
+    for (uint32_t i = 0; i < n; i++) {
+        lv_obj_t *found = find_by_user_data(lv_obj_get_child(root, (int32_t) i), data);
+
+        if (found) {
+            return found;
+        }
+    }
+
+    return NULL;
+}
+
+static void dfl_press_ui(dfl_ui_id_t id)
+{
+    lv_obj_t *b = find_by_user_data(lv_scr_act(), (intptr_t) id);
+
+    if (!b) {
+        fprintf(stderr, "dfl-editor: no encontre el control %d en el arbol\n", (int) id);
+        exit(1);
+    }
+
+    lv_event_send(b, LV_EVENT_CLICKED, NULL);
+}
+
+static lv_point_t dfl_test_point;
+
+static bool dfl_test_pointer(lv_point_t *out)
+{
+    *out = dfl_test_point;
+    return true;
+}
+
+static void dfl_drag_ui(int32_t local_x)
+{
+    lv_obj_t *g = find_by_user_data(lv_scr_act(), (intptr_t) DFL_UI_GRAPH);
+
+    if (!g) {
+        fprintf(stderr, "dfl-editor: no encontre el grafico en el arbol\n");
+        exit(1);
+    }
+
+    /* El arnes empuja el evento antes de que corra el lazo de LVGL: forzar el
+     * layout para que el grafico tenga sus coordenadas reales (en la radio el
+     * usuario siempre arrastra con la pantalla ya dibujada). */
+    lv_obj_update_layout(lv_scr_act());
+
+    dialog_dfl_pointer_hook = dfl_test_pointer;
+    dfl_test_point.x        = g->coords.x1 + local_x;
+    dfl_test_point.y        = g->coords.y1 + 10;
+
+    lv_event_send(g, LV_EVENT_PRESSED, NULL);
+    lv_event_send(g, LV_EVENT_PRESSING, NULL);
+    lv_event_send(g, LV_EVENT_RELEASED, NULL);
+
+    dialog_dfl_pointer_hook = NULL;
+}
+
+static void dfl_esc_ui(void)
+{
+    uint32_t key = LV_KEY_ESC;
+
+    lv_event_send(dialog_dfl->obj, LV_EVENT_KEY, &key);
+}
+
+/* Lo que cada fixture del editor *significa*: el arnes corta si no lo ve, en vez
+ * de capturar otra pantalla y reportar verde. */
+static void settle_dfl_editor(const scenario_t *scenario)
+{
+    if (strncmp(scenario->screen, "dfl-editor", 10) != 0) {
+        return;
+    }
+
+    if (!label_on_screen(lv_scr_act(), "DFL - Digital Filter")) {
+        fprintf(stderr, "%s: falta el encabezado del editor DFL\n", scenario->name);
+        exit(1);
+    }
+    if (!label_on_screen(lv_scr_act(), "LOW") || !label_on_screen(lv_scr_act(), "HIGH")
+        || !label_on_screen(lv_scr_act(), "BW")) {
+        fprintf(stderr, "%s: faltan los controles LOW/HIGH/BW\n", scenario->name);
+        exit(1);
+    }
+    if (!label_on_screen(lv_scr_act(), "Esquema de banda pasante")) {
+        fprintf(stderr, "%s: falta la etiqueta 'Esquema de banda pasante'\n", scenario->name);
+        exit(1);
+    }
+
+    char buf[32];
+
+    snprintf(buf, sizeof(buf), "%d Hz", subject_get_int(cfg_cur.filter.low));
+    if (!label_on_screen(lv_scr_act(), buf)) {
+        fprintf(stderr, "%s: el label de LOW no muestra '%s'\n", scenario->name, buf);
+        exit(1);
+    }
+
+    snprintf(buf, sizeof(buf), "%d Hz", subject_get_int(cfg_cur.filter.high));
+    if (!label_on_screen(lv_scr_act(), buf)) {
+        fprintf(stderr, "%s: el label de HIGH no muestra '%s'\n", scenario->name, buf);
+        exit(1);
+    }
+
+    if (!strcmp(scenario->screen, "dfl-editor-interaction")) {
+        /* LOW 225 +10 +10 -> 240; HIGH arrastrado a x=300 -> 7000; segundo
+         * arrastre fuera del grafico (x=500) recortado a MAX=10000; los dos + de
+         * HIGH (10050) los rechaza la guarda: el valor queda en 10000, sin valor
+         * optimista. */
+        if (subject_get_int(cfg_cur.filter.low) != 240) {
+            fprintf(stderr, "%s: LOW esperado 240, quedo %d\n", scenario->name,
+                    subject_get_int(cfg_cur.filter.low));
+            exit(1);
+        }
+        if (subject_get_int(cfg_cur.filter.high) != MAX_FILTER_FREQ) {
+            fprintf(stderr, "%s: HIGH esperado %d (el rechazo no debe cambiar el valor), quedo %d\n",
+                    scenario->name, MAX_FILTER_FREQ, subject_get_int(cfg_cur.filter.high));
+            exit(1);
+        }
+    }
+
+    if (!strcmp(scenario->screen, "dfl-editor-tx")) {
+        /* Durante TX los controles de edicion quedan deshabilitados y el modo no
+         * cambio; el estado RX (LOW/HIGH/BW) tampoco. */
+        if (subject_get_int(cfg_cur.filter.low) != 225
+            || subject_get_int(cfg_cur.filter.high) != 3525) {
+            fprintf(stderr, "%s: TX no debe alterar el filtro RX (low=%d high=%d)\n", scenario->name,
+                    subject_get_int(cfg_cur.filter.low), subject_get_int(cfg_cur.filter.high));
+            exit(1);
+        }
+    }
+}
+
 void scenario_settle(const scenario_t *scenario)
 {
     settle_waterfall_center_line(scenario);
     settle_waterfall_filter_ticks(scenario);
+    settle_dfl_editor(scenario);
 
     /* CB 27 MHz (issues #146/#169): lo que cada fixture significa. La celda VFO de
      * la barra tiene que mostrar el canal, no el rotulo VFO-A/SPL-B; y en la fila

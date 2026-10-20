@@ -1,0 +1,228 @@
+/*
+ *  SPDX-License-Identifier: LGPL-2.1-or-later
+ *
+ *  Xiegu X6200 LVGL GUI
+ *
+ *  Modelo puro del editor DFL (issue #173, PR 2).
+ *
+ *  Aca vive TODO lo que el editor de filtro puede decidir sin LVGL y sin
+ *  Subjects: los pasos de edicion de src/vol.c, la cuantizacion, el mapeo de
+ *  Hz del filtro a pixeles del grafico esquematico, los objetivos de LOW/HIGH
+ *  cuando se edita el BW y la legalidad de esos objetivos. El dialogo
+ *  (src/dialog_dfl.c) es el unico consumidor; el test nativo
+ *  (tests/native/test_dfl_editor.c) fija el golden de geometria y las reglas.
+ *
+ *  Es un ESPEJO de la logica vigente del firmware, no una segunda fuente de
+ *  verdad: los pasos salen de src/vol.c, el mapeo de BW de
+ *  src/cfg/mode.c::on_cur_filter_bw_change() y el limite de
+ *  src/cfg/mode.h::MAX_FILTER_FREQ. Si esa logica cambia, esto cambia con ella.
+ *
+ *  SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+#pragma once
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "cfg/mode.h"
+
+/* Pasos de edicion (src/vol.c): LOW 10 Hz siempre; HIGH 50 Hz y 10 Hz en
+ * CW/CWR; BW 20 Hz. */
+#define DFL_STEP_LOW         10
+#define DFL_STEP_HIGH_SSB    50
+#define DFL_STEP_HIGH_CW     10
+#define DFL_STEP_BW          20
+
+/* LOW no es editable en AM/SAM/NFM/WFM: es la misma regla que
+ * cfg_mode_set_low_filter() (devuelve 0 sin tocar el subject). */
+static inline bool dfl_mode_low_editable(x6200_mode_t mode) {
+    switch (mode) {
+        case x6200_mode_am:
+        case x6200_mode_sam:
+        case x6200_mode_nfm:
+        case x6200_mode_wfm:
+            return false;
+        default:
+            return true;
+    }
+}
+
+static inline bool dfl_mode_is_cw(x6200_mode_t mode) {
+    return mode == x6200_mode_cw || mode == x6200_mode_cwr;
+}
+
+/* AM/SAM/NFM/WFM: la respuesta es simetrica (+/- high) y LOW queda en 0. */
+static inline bool dfl_mode_is_symmetric(x6200_mode_t mode) {
+    switch (mode) {
+        case x6200_mode_am:
+        case x6200_mode_sam:
+        case x6200_mode_nfm:
+        case x6200_mode_wfm:
+            return true;
+        default:
+            return false;
+    }
+}
+
+static inline int32_t dfl_step_low(x6200_mode_t mode) {
+    (void) mode;
+    return DFL_STEP_LOW;
+}
+
+static inline int32_t dfl_step_high(x6200_mode_t mode) {
+    return dfl_mode_is_cw(mode) ? DFL_STEP_HIGH_CW : DFL_STEP_HIGH_SSB;
+}
+
+static inline int32_t dfl_step_bw(void) {
+    return DFL_STEP_BW;
+}
+
+/* Cuantiza al paso con la misma semantica que util.cpp::align_int()
+ * (x - x % step, truncando hacia cero): los valores guardados que no son
+ * multiplos NO se tocan al abrir, solo se cuantizan tras una modificacion. */
+static inline int32_t dfl_quantize(int32_t val, int32_t step) {
+    if (step <= 0) {
+        return val;
+    }
+    return val - (val % step);
+}
+
+/* --- Grafico esquematico --------------------------------------------------
+ * El eje es la frecuencia DEL FILTRO (Hz de low/high), con el cero visible, no
+ * las coordenadas del waterfall. El dominio se ajusta al rango admitido del
+ * modo: SSB arranca en 0 (LOW no puede ser negativo); CW/CWR y AM/SAM/NFM/WFM
+ * son simetricos alrededor de cero. */
+typedef struct {
+    int32_t min_hz;
+    int32_t max_hz;
+} dfl_domain_t;
+
+static inline dfl_domain_t dfl_graph_domain(x6200_mode_t mode) {
+    dfl_domain_t d;
+
+    if (dfl_mode_is_cw(mode) || dfl_mode_is_symmetric(mode)) {
+        d.min_hz = -MAX_FILTER_FREQ;
+        d.max_hz = MAX_FILTER_FREQ;
+    } else {
+        d.min_hz = 0;
+        d.max_hz = MAX_FILTER_FREQ;
+    }
+
+    return d;
+}
+
+/* Redondeo al entero mas cercano (el numerador es >= 0: hz >= min_hz). */
+static inline int32_t dfl_round_div(int64_t num, int32_t den) {
+    if (den <= 0) {
+        return (int32_t) num;
+    }
+    return (int32_t) ((num + den / 2) / den);
+}
+
+/* Hz del filtro -> x en el grafico (relativo a x0, ancho w). Se recorta al
+ * rango dibujable; nunca divide por cero (w <= 0 o dominio vacio -> x0). */
+static inline int32_t dfl_graph_x(int32_t hz, dfl_domain_t d, int32_t x0, int32_t w) {
+    if (w <= 0 || d.max_hz <= d.min_hz) {
+        return x0;
+    }
+
+    int64_t span = (int64_t) d.max_hz - d.min_hz;
+    int32_t x    = x0 + dfl_round_div((int64_t) (hz - d.min_hz) * w, (int32_t) span);
+
+    if (x < x0) {
+        x = x0;
+    }
+    if (x > x0 + w) {
+        x = x0 + w;
+    }
+
+    return x;
+}
+
+/* x en el grafico -> Hz del filtro (inverso de dfl_graph_x, sin cuantizar). */
+static inline int32_t dfl_graph_hz(int32_t x, dfl_domain_t d, int32_t x0, int32_t w) {
+    if (w <= 0 || d.max_hz <= d.min_hz) {
+        return d.min_hz;
+    }
+
+    int64_t span = (int64_t) d.max_hz - d.min_hz;
+    int32_t hz   = d.min_hz + dfl_round_div((int64_t) (x - x0) * span, w);
+
+    if (hz < d.min_hz) {
+        hz = d.min_hz;
+    }
+    if (hz > d.max_hz) {
+        hz = d.max_hz;
+    }
+
+    return hz;
+}
+
+/* --- BW -------------------------------------------------------------------
+ * Espejo de src/cfg/mode.c::on_cur_filter_bw_change(): en AM/SAM/NFM/WFM el
+ * BW crece desde LOW (que queda en 0); en el resto LOW/HIGH se recentran
+ * alrededor del centro actual (division entera, truncando hacia cero). */
+static inline void dfl_bw_targets(x6200_mode_t mode, int32_t low, int32_t high, int32_t bw,
+                                  int32_t *new_low, int32_t *new_high) {
+    if (dfl_mode_is_symmetric(mode)) {
+        *new_low  = low;
+        *new_high = low + bw;
+        return;
+    }
+
+    *new_low  = (high + low - bw) / 2;
+    *new_high = *new_low + bw;
+}
+
+/* Un BW es legal si el par LOW/HIGH resultante respeta los limites del modo:
+ * HIGH <= MAX_FILTER_FREQ, HIGH > LOW y, en SSB, LOW no negativo. En CW/CWR el
+ * LOW negativo es valido y en AM/SAM/NFM/WFM LOW queda como estaba (0). */
+static inline bool dfl_bw_legal(x6200_mode_t mode, int32_t new_low, int32_t new_high) {
+    if (new_high > MAX_FILTER_FREQ) {
+        return false;
+    }
+    if (new_high <= new_low) {
+        return false;
+    }
+    if (!dfl_mode_is_cw(mode) && !dfl_mode_is_symmetric(mode) && new_low < 0) {
+        return false;
+    }
+    return true;
+}
+
+/* --- Restablecer predeterminado ------------------------------------------
+ * Los setters reales tienen guardas: cfg_mode_set_high_filter() exige
+ * val > cur_low y cfg_mode_set_low_filter() exige val < cur_high. Para escribir
+ * el par (def_low, def_high) sin que una guarda rechace la segunda escritura,
+ * el orden depende del estado actual: si def_high ya es mayor que cur_low se
+ * puede subir HIGH primero; si no, hay que bajar LOW primero. Devuelve true
+ * cuando LOW va primero. (def_low < def_high siempre, por tabla del firmware.) */
+static inline bool dfl_reset_low_first(int32_t def_low, int32_t def_high, int32_t cur_low, int32_t cur_high) {
+    (void) def_low;
+    (void) cur_high;
+    return !(def_high > cur_low);
+}
+
+/* --- Handles -------------------------------------------------------------- */
+
+typedef enum {
+    DFL_HANDLE_NONE = 0,
+    DFL_HANDLE_LOW,
+    DFL_HANDLE_HIGH,
+} dfl_handle_t;
+
+/* El handle mas cercano a x (para el PRESSED del arrastre). */
+static inline dfl_handle_t dfl_nearest_handle(int32_t x, int32_t low_x, int32_t high_x) {
+    int32_t dl = x - low_x;
+    int32_t dh = x - high_x;
+
+    if (dl < 0) {
+        dl = -dl;
+    }
+    if (dh < 0) {
+        dh = -dh;
+    }
+
+    return (dl <= dh) ? DFL_HANDLE_LOW : DFL_HANDLE_HIGH;
+}

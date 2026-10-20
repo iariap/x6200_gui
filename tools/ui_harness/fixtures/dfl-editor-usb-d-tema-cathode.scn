@@ -1,0 +1,40 @@
+# dfl-editor-usb-d-tema-cathode: editor DFL (issue #173, PR 2) sobre la pantalla real.
+#
+# Abre el dialogo por el camino del firmware
+# (main_screen_action(ACTION_APP_DFL_EDITOR) -> dialog_construct(dialog_dfl)) y
+# lo captura a 800x480. El fixture distingue modo/tema/TX por sus claves; el
+# arnes deriva los bordes reales de RF con el mapeo de src/cfg/mode.c.
+
+name dfl-editor-usb-d-tema-cathode
+screen dfl-editor
+
+seed 173
+theme Cathode
+spectrum_filled true
+spectrum_peak true
+waterfall_center_line true
+
+frequency_hz 14200000
+tx_frequency_hz 14200000
+fft_width_hz 48000
+
+mode USB-D
+filter_low 225
+filter_high 3525
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

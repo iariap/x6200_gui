@@ -146,7 +146,7 @@ static const char *agc_names[]  = {"OFF", "SLOW", "FAST", "AUTO"};
  * (ni desde la pagina /remote del webserver). Los indices importan: FT4 es el 2. Esta lista va en
  * paralelo con actions[] de open_app() (mismo indice); ver el static_assert que las ata. */
 static const char *app_names[]  = {"off", "FT8", "FT4", "JS8", "WSPR", "SSTV", "WeFax", "NavTex", "RTTY", "CW", "Field", "GPS", "Bands", "Settings", "BT",
-                                   "Cluster", "CwTrainer", "Eq", "Status", "QTH", "Callsign", "Recorder", "WiFi", "SWRScan", "Propagation"};
+                                   "Cluster", "CwTrainer", "Eq", "Status", "QTH", "Callsign", "Recorder", "WiFi", "SWRScan", "Propagation", "DFLEditor"};
 static const char *sstv_modes[] = {"R8BW", "R36", "R72", "M1", "M2", "S1", "S2"};
 
 /* Commands of the app that is open: app is current_app() or its start ("FT": FT8 and FT4); a name
@@ -351,7 +351,7 @@ static void open_app(int32_t app) {
                                              ACTION_APP_WSPR,  ACTION_APP_SSTV,     ACTION_APP_WEFAX,    ACTION_APP_NAVTEX,
                                              ACTION_APP_RTTY,  ACTION_APP_CW_KBD,   ACTION_APP_FIELD,    ACTION_APP_GPS, ACTION_APP_BANDS, ACTION_APP_SETTINGS, ACTION_APP_BT,
                                              ACTION_APP_CLUSTER,  ACTION_APP_CWTRAINER, ACTION_APP_EQ, ACTION_APP_STATUS, ACTION_APP_QTH, ACTION_APP_CALLSIGN, ACTION_APP_RECORDER, ACTION_APP_WIFI,
-                                             ACTION_APP_SWRSCAN,  ACTION_APP_PROPAGATION};
+                                             ACTION_APP_SWRSCAN,  ACTION_APP_PROPAGATION, ACTION_APP_DFL_EDITOR};
 
     /* app_names[] y actions[] van en paralelo: el indice que resuelve el comando "app" por
      * nombre tiene que caer en la MISMA accion. El static_assert lo fija en compilacion para

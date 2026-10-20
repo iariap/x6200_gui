@@ -16,6 +16,7 @@
 #include "cfg/cfg.h"
 #include "cfg/memory.h"
 #include "cfg/mode.h"
+#include "cfg/mode.private.h"
 #include "cfg/subjects.h"
 #include "cfg/transverter.h"
 #include "mock_harness.h"
@@ -184,8 +185,100 @@ bool cfg_memory_load(int32_t id) { (void) id; return false; }
 void cfg_memory_save(int32_t id) { (void) id; }
 
 int32_t cfg_mode_change_freq_step(bool up) { (void) up; return 100; }
-int32_t cfg_mode_set_low_filter(int32_t val) { return val; }
-int32_t cfg_mode_set_high_filter(int32_t val) { return val; }
+
+/* Filtros del modo (issue #173, PR 2): copia fiel de las guardas de
+ * src/cfg/mode.c::cfg_mode_set_low_filter()/cfg_mode_set_high_filter(). El editor
+ * DFL las usa y el fixture de interaccion necesita que de verdad cambien el
+ * subject (el binario de la radio no las mockea). */
+int32_t cfg_mode_set_low_filter(int32_t val) {
+    x6200_mode_t mode = subject_get_int(cfg_cur.mode);
+    int32_t      high = subject_get_int(cfg_cur.filter.high);
+
+    switch (mode) {
+        case x6200_mode_am:
+        case x6200_mode_sam:
+        case x6200_mode_nfm:
+        case x6200_mode_wfm:
+            return 0;
+        case x6200_mode_cw:
+        case x6200_mode_cwr:
+            if (val < high) {
+                subject_set_int(cfg_cur.filter.low, val);
+            }
+            break;
+        default:
+            if ((val >= 0) & (val < high)) {
+                subject_set_int(cfg_cur.filter.low, val);
+            }
+    }
+
+    return subject_get_int(cfg_cur.filter.low);
+}
+
+int32_t cfg_mode_set_high_filter(int32_t val) {
+    int32_t low = subject_get_int(cfg_cur.filter.low);
+
+    if ((val <= MAX_FILTER_FREQ) & (val > low)) {
+        subject_set_int(cfg_cur.filter.high, val);
+    }
+
+    return subject_get_int(cfg_cur.filter.high);
+}
+
+/* Tabla de predeterminados por modo, copia fiel de
+ * src/cfg/mode.c::mode_default_values() y xmode_2_db(). El editor DFL las llama
+ * para "Restablecer predeterminado". */
+db_mode_t xmode_2_db(x6200_mode_t mode) {
+    switch (mode) {
+        case x6200_mode_lsb:
+        case x6200_mode_usb:
+            return x6200_mode_lsb;
+        case x6200_mode_lsb_dig:
+        case x6200_mode_usb_dig:
+            return x6200_mode_lsb_dig;
+        case x6200_mode_cw:
+        case x6200_mode_cwr:
+            return x6200_mode_cw;
+        case x6200_mode_am:
+        case x6200_mode_sam:
+            return x6200_mode_am;
+        case x6200_mode_nfm:
+            return x6200_mode_nfm;
+        case x6200_mode_wfm:
+            return x6200_mode_wfm;
+        default:
+            return MODE_UNDEFINED;
+    }
+}
+
+bool mode_default_values(db_mode_t mode, int32_t *low, int32_t *high, uint32_t *step, uint32_t *zoom) {
+    bool result = true;
+
+    switch (mode) {
+        case x6200_mode_lsb:
+        case x6200_mode_lsb_dig:
+            *low = 50;   *high = 2950; *step = 500;  *zoom = 1;
+            break;
+        case x6200_mode_cw:
+            *low = -250; *high = 250;  *step = 100;  *zoom = 4;
+            break;
+        case x6200_mode_am:
+        case x6200_mode_sam:
+            *low = 0;    *high = 4500; *step = 1000; *zoom = 1;
+            break;
+        case x6200_mode_nfm:
+            *low = 0;    *high = 3500; *step = 1000; *zoom = 1;
+            break;
+        case x6200_mode_wfm:
+            *low = 0;    *high = 8000; *step = 1000; *zoom = 1;
+            break;
+        default:
+            result = false;
+            break;
+    }
+
+    return result;
+}
 
 const char *cfg_dnf_label_get(void) { return "Off"; }
 

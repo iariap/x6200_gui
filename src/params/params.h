@@ -85,6 +85,11 @@ typedef enum {
     /* App Propagacion (issue #145): al FINAL del enum para no correr las acciones
      * ya guardadas en la configuracion de cada equipo. */
     ACTION_APP_PROPAGATION,
+
+    /* Editor DFL (issue #173, PR 2): tambien al FINAL. No es una app del menu de
+     * apps: se abre desde la quinta celda de la pagina DFL y desde el long press
+     * fisico DFL, y se despacha en main_screen_action(). */
+    ACTION_APP_DFL_EDITOR,
 } press_action_t;
 
 typedef enum {

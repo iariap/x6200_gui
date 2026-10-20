@@ -53,6 +53,7 @@ typedef enum {
     ACTION_APP_BANDS,
     ACTION_ATUNE,
     ACTION_APP_PROPAGATION,
+    ACTION_APP_DFL_EDITOR,
 } press_action_t;
 
 typedef struct {

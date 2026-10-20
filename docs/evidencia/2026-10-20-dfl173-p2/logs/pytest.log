@@ -1,0 +1,6 @@
+# pytest del arnes A/B (tools/ab_testing), con TMPDIR en disco para e2e
+$ uv run pytest -m "not e2e"
+227 passed, 13 deselected
+
+$ TMPDIR=/home/pablo/desa/asf/state/x6200-e2e-tmp uv run pytest -m e2e
+13 passed, 227 deselected in 400.12s (0:06:40)
