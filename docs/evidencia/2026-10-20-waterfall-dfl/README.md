@@ -25,7 +25,7 @@ Variedad buscada: **dos modos de demodulación distintos** (CW y SSB/AM), **dos 
 # 1) cargar la página DFL y fijar modo/frecuencia/filtro por el socket remoto
 echo '[{"cmd":"page","text":"dfl"},{"cmd":"mode","val":"CW"},
        {"cmd":"freq","val":14030000},{"cmd":"filter","val":50}]' > cmds.json
-./.dfl_run.sh cmds.json          # helper local: manda los comandos al socket /tmp/x6200_remote.sock
+./dfl_run.sh cmds.json          # manda los comandos al socket /tmp/x6200_remote.sock (helper en esta misma carpeta)
 # 2) esperar 4 s (que el waterfall junte tramas) y capturar el framebuffer
 sleep 4
 tools/captura-radio.sh docs/evidencia/2026-10-20-waterfall-dfl/01-cw-50.png
