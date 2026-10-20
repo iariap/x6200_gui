@@ -21,11 +21,14 @@ extern "C" {
     #include "msg.h"
     #include "pannel.h"
     #include "params/params.h"
+    #include "radio.h"
     #include "voice.h"
     #include "pubsub_ids.h"
     #include "cfg/mode.h"
     #include "scheduler.h"
     #include "dfl_inline.h"
+    #include "dfl_presets.h"
+    #include "dfl_context.h"
 }
 
 /* dialog.h trae helpers.h (C++): va FUERA del bloque extern "C". */
@@ -35,6 +38,8 @@ extern "C" {
 
 typedef struct {
     lv_obj_t        *label;
+    lv_obj_t        *obj;       /* la celda de la barra (para la ruta tactil #183) */
+    bool             touch;     /* el item cargado pide touch (favoritos 1-3) */
     button_item_t   *item;
 } button_t;
 
@@ -334,7 +339,7 @@ static button_item_t btn_eq = make_app_btn("Eq", ACTION_APP_EQ);
 /* Quinta celda de la pagina DFL normal (issue #179): abre el editor DFL inline
  * sobre el waterfall. Es una accion, no una app del menu de apps: se despacha en
  * main_screen_action(). */
-static button_item_t btn_dfl_editor = make_action_btn("Filtro\ngrafico", ACTION_APP_DFL_EDITOR);
+static button_item_t btn_dfl_editor = make_action_btn("Grafico", ACTION_APP_DFL_EDITOR);
 
 /* Pagina DFL EXPANDIDA (issue #179, C.2): las tres primeras celdas muestran SOLO
  * nombres y al tocarse SELECCIONAN el parametro para el encoder VOL (no editan
@@ -369,6 +374,513 @@ static void dfl_waterfall_cb(button_item_t *item) {
 
 static button_item_t btn_dfl_waterfall = {
     .type = BTN_TEXT, .label = "Waterfall", .press = dfl_waterfall_cb};
+
+/* ============================== DFL #183 ===================================
+ * Paginas A (Favoritos), D (Mas), E (Confirmar guardado) y F (Elegir origen).
+ * B (Ajustar) es buttons_page_dfl_1 y C (Grafico) es buttons_page_dfl_expanded:
+ * el editor inline las carga por su cuenta (src/dfl_inline.c).
+ *
+ * La pagina actual NO se guarda aparte: se deduce de buttons_get_cur_page().
+ * Todo aplica por src/dfl_presets.c (setters vigentes, sin half-apply) y el
+ * contexto de E/F va en la banda contextual del waterfall (src/dfl_context.c):
+ * cero ventanas, cero popups, cero sexta tecla. */
+
+static buttons_page_t *dfl_prev_page   = NULL;   /* barra previa al DFL corto */
+static int             dfl_pending_slot = 0;     /* ranura de E/F en curso (1..2) */
+static dfl_family_t    dfl_last_family = DFL_FAMILY_NONE;
+static dfl_save_feedback_t dfl_last_save = DFL_SAVE_FEEDBACK_NONE;
+
+/* TX se lee del estado REAL de la radio (no de un flag que pueda quedar viejo):
+ * entrar al DFL en TX tiene que dejar los presets deshabilitados ya. */
+static bool dfl_is_tx(void) {
+    return radio_get_state() != RADIO_RX;
+}
+
+dfl_save_feedback_t buttons_dfl_last_save(void) {
+    return dfl_last_save;
+}
+
+static void dfl_assign_cancel_cb(void);
+
+/* --- Pagina A: FAVORITOS -------------------------------------------------- */
+
+static void dfl_fav_press_cb(button_item_t *item);
+static void dfl_fav_hold_cb(button_item_t *item);
+static void dfl_adj_cb(button_item_t *item);
+static void dfl_more_cb(button_item_t *item);
+static void dfl_mem_press_cb(button_item_t *item);
+static void dfl_save_press_cb(button_item_t *item);
+static void dfl_confirm_cb(button_item_t *item);
+static void dfl_cancel_cb(button_item_t *item);
+static void dfl_volver_cb(button_item_t *item);
+static void dfl_source_press_cb(button_item_t *item);
+
+static const char *dfl_fav_label_1() { return dfl_presets_favorite_label(dfl_current_family(), 1); }
+static const char *dfl_fav_label_2() { return dfl_presets_favorite_label(dfl_current_family(), 2); }
+static const char *dfl_fav_label_3() { return dfl_presets_favorite_label(dfl_current_family(), 3); }
+
+static button_item_t btn_dfl_fav1 = {.type      = BTN_TEXT_FN,
+                                     .label_fn  = dfl_fav_label_1,
+                                     .press     = dfl_fav_press_cb,
+                                     .hold      = dfl_fav_hold_cb,
+                                     .data      = 1,
+                                     .touch_hold = true};
+static button_item_t btn_dfl_fav2 = {.type      = BTN_TEXT_FN,
+                                     .label_fn  = dfl_fav_label_2,
+                                     .press     = dfl_fav_press_cb,
+                                     .hold      = dfl_fav_hold_cb,
+                                     .data      = 2,
+                                     .touch_hold = true};
+static button_item_t btn_dfl_fav3 = {.type      = BTN_TEXT_FN,
+                                     .label_fn  = dfl_fav_label_3,
+                                     .press     = dfl_fav_press_cb,
+                                     .hold      = dfl_fav_hold_cb,
+                                     .data      = 3,
+                                     .touch_hold = true};
+
+static button_item_t btn_dfl_adj  = {.type = BTN_TEXT, .label = "Ajustar", .press = dfl_adj_cb};
+static button_item_t btn_dfl_more = {.type = BTN_TEXT, .label = "Mas", .press = dfl_more_cb};
+
+static buttons_page_t page_dfl_fav = {
+    {&btn_dfl_fav1, &btn_dfl_fav2, &btn_dfl_fav3, &btn_dfl_adj, &btn_dfl_more}
+};
+
+/* --- Pagina D: MAS -------------------------------------------------------- */
+
+static const char *dfl_mem_label_1() { return dfl_presets_memory_label(dfl_current_family(), 1); }
+static const char *dfl_mem_label_2() { return dfl_presets_memory_label(dfl_current_family(), 2); }
+
+static button_item_t btn_dfl_mem1  = {.type     = BTN_TEXT_FN,
+                                      .label_fn = dfl_mem_label_1,
+                                      .press    = dfl_mem_press_cb,
+                                      .data     = 1};
+static button_item_t btn_dfl_mem2  = {.type     = BTN_TEXT_FN,
+                                      .label_fn = dfl_mem_label_2,
+                                      .press    = dfl_mem_press_cb,
+                                      .data     = 2};
+static button_item_t btn_dfl_save1 = {.type = BTN_TEXT, .label = "Guardar\n1", .press = dfl_save_press_cb, .data = 1};
+static button_item_t btn_dfl_save2 = {.type = BTN_TEXT, .label = "Guardar\n2", .press = dfl_save_press_cb, .data = 2};
+static button_item_t btn_dfl_back  = {.type = BTN_TEXT, .label = "Volver", .press = dfl_volver_cb};
+
+static buttons_page_t page_dfl_more = {
+    {&btn_dfl_mem1, &btn_dfl_mem2, &btn_dfl_save1, &btn_dfl_save2, &btn_dfl_back}
+};
+
+/* --- Pagina E: CONFIRMAR GUARDADO ---------------------------------------- */
+
+/* Celdas `--` de la pagina E: por contrato son placeholders deshabilitados (no
+ * hay una quinta operacion). Llevan un handler NO-OP explicito porque un boton
+ * sin `.press` es un boton muerto y el gate tests/check_app_handlers.py no lo
+ * admite; ademas quedan marcadas DIsabled al refrescar la pagina, asi que
+ * buttons_press() ni las llama. */
+static void dfl_noop_cb(button_item_t *item) {
+    (void) item;
+}
+
+static button_item_t btn_dfl_conf    = {.type = BTN_TEXT, .label = "Confirmar", .press = dfl_confirm_cb};
+static button_item_t btn_dfl_cancel  = {.type = BTN_TEXT, .label = "Cancelar", .press = dfl_cancel_cb};
+static button_item_t btn_dfl_none_a  = {.type = BTN_TEXT, .label = "--", .press = dfl_noop_cb};
+static button_item_t btn_dfl_none_b  = {.type = BTN_TEXT, .label = "--", .press = dfl_noop_cb};
+static button_item_t btn_dfl_volver  = {.type = BTN_TEXT, .label = "Volver", .press = dfl_volver_cb};
+
+static buttons_page_t page_dfl_confirm = {
+    {&btn_dfl_conf, &btn_dfl_cancel, &btn_dfl_none_a, &btn_dfl_none_b, &btn_dfl_volver}
+};
+
+/* --- Pagina F: ELEGIR ORIGEN --------------------------------------------- */
+
+static const char *dfl_src_label_1() { return dfl_factory_name(dfl_current_family(), 0); }
+static const char *dfl_src_label_2() { return dfl_factory_name(dfl_current_family(), 1); }
+static const char *dfl_src_label_3() { return dfl_factory_name(dfl_current_family(), 2); }
+
+static button_item_t btn_dfl_src1 = {.type = BTN_TEXT_FN, .label_fn = dfl_src_label_1,
+                                     .press = dfl_source_press_cb, .data = DFL_SRC_FACTORY_1};
+static button_item_t btn_dfl_src2 = {.type = BTN_TEXT_FN, .label_fn = dfl_src_label_2,
+                                     .press = dfl_source_press_cb, .data = DFL_SRC_FACTORY_2};
+static button_item_t btn_dfl_src3 = {.type = BTN_TEXT_FN, .label_fn = dfl_src_label_3,
+                                     .press = dfl_source_press_cb, .data = DFL_SRC_FACTORY_3};
+static button_item_t btn_dfl_srcm1 = {.type = BTN_TEXT, .label = "Mem 1",
+                                      .press = dfl_source_press_cb, .data = DFL_SRC_MEM_1};
+static button_item_t btn_dfl_srcm2 = {.type = BTN_TEXT, .label = "Mem 2",
+                                      .press = dfl_source_press_cb, .data = DFL_SRC_MEM_2};
+
+static buttons_page_t page_dfl_assign = {
+    {&btn_dfl_src1, &btn_dfl_src2, &btn_dfl_src3, &btn_dfl_srcm1, &btn_dfl_srcm2}
+};
+
+/* --- Estado de la pagina -------------------------------------------------- */
+
+bool buttons_dfl_active(void) {
+    return buttons_dfl_page() != DFL_PAGE_NONE;
+}
+
+dfl_page_t buttons_dfl_page(void) {
+    buttons_page_t *p = buttons_get_cur_page();
+
+    if (p == NULL) {
+        return DFL_PAGE_NONE;
+    }
+    if (p == &page_dfl_fav) {
+        return DFL_PAGE_FAVORITES;
+    }
+    if (p == &buttons_page_dfl_1) {
+        return DFL_PAGE_ADJUST;
+    }
+    if (p == &buttons_page_dfl_expanded) {
+        return DFL_PAGE_GRAPH;
+    }
+    if (p == &page_dfl_more) {
+        return DFL_PAGE_MORE;
+    }
+    if (p == &page_dfl_confirm) {
+        return DFL_PAGE_CONFIRM;
+    }
+    if (p == &page_dfl_assign) {
+        return DFL_PAGE_ASSIGN;
+    }
+    return DFL_PAGE_NONE;
+}
+
+/* --- Feedback y aplicacion ------------------------------------------------ */
+
+static void dfl_apply_feedback(dfl_family_t family, int source, dfl_apply_result_t r) {
+    if (r == DFL_APPLY_OK) {
+        int32_t low  = subject_get_int(cfg_cur.filter.low);
+        int32_t high = subject_get_int(cfg_cur.filter.high);
+
+        msg_update_text_fmt("%s - %d Hz", dfl_source_name(family, source), (int) (high - low));
+    } else if (r == DFL_APPLY_INVALID_SOURCE) {
+        msg_update_text_fmt("Memoria vacia");
+    } else if (r == DFL_APPLY_INVALID_VALUES) {
+        msg_update_text_fmt("Preset invalido");
+    } else {
+        msg_update_text_fmt("No se pudo aplicar");
+    }
+}
+
+/* --- Navegacion ----------------------------------------------------------- */
+
+void buttons_dfl_open(void) {
+    dfl_prev_page    = buttons_get_cur_page();
+    dfl_last_family  = dfl_current_family();
+    dfl_pending_slot = 0;   /* sin suboperacion en curso al entrar */
+
+    if (dfl_last_family == DFL_FAMILY_NONE) {
+        /* NFM/WFM/undefined: sin catalogo aprobado, Ajustar directo. */
+        buttons_load_page(&buttons_page_dfl_1);
+    } else {
+        buttons_load_page(&page_dfl_fav);
+    }
+}
+
+void buttons_dfl_short(void) {
+    if (!buttons_dfl_active()) {
+        return;
+    }
+
+    /* DFL corto desde C contrae el editor; desde cualquier otra subpagina
+     * cancela lo pendiente. Siempre termina en A (o en B si no hay catalogo). */
+    if (buttons_dfl_page() == DFL_PAGE_GRAPH) {
+        dfl_inline_collapse();
+    }
+
+    if (dfl_current_family() == DFL_FAMILY_NONE) {
+        buttons_load_page(&buttons_page_dfl_1);
+    } else {
+        buttons_load_page(&page_dfl_fav);
+    }
+}
+
+void buttons_dfl_escape(void) {
+    switch (buttons_dfl_page()) {
+        case DFL_PAGE_GRAPH:
+            dfl_inline_collapse();       /* C -> B */
+            break;
+
+        case DFL_PAGE_CONFIRM:
+            buttons_load_page(&page_dfl_more);   /* E -> D, sin escribir */
+            break;
+
+        case DFL_PAGE_ADJUST:
+        case DFL_PAGE_MORE:
+        case DFL_PAGE_ASSIGN:
+            buttons_load_page(&page_dfl_fav);
+            break;
+
+        case DFL_PAGE_FAVORITES: {
+            buttons_page_t *prev = dfl_prev_page ? dfl_prev_page : &buttons_page_vol_1;
+
+            dfl_prev_page = NULL;
+            buttons_load_page(prev);
+            break;
+        }
+
+        default:
+            break;
+    }
+}
+
+void buttons_dfl_on_mode_change(void) {
+    dfl_family_t now = dfl_current_family();
+
+    if (!buttons_dfl_active()) {
+        dfl_last_family = now;
+        return;
+    }
+
+    /* USB<->LSB, USB-D<->LSB-D, CW<->CWR, AM<->SAM: misma familia, no se toca la
+     * pagina ni la asociacion de favoritos/memorias. */
+    if (now == dfl_last_family) {
+        buttons_dfl_refresh();
+        return;
+    }
+
+    dfl_last_family = now;
+
+    /* Familia nueva: cancela E/F sin persistir ni aplicar, contrae el grafico y
+     * carga la pagina A; si la familia nueva no admite presets, va a B. */
+    if (buttons_dfl_page() == DFL_PAGE_GRAPH) {
+        dfl_inline_collapse();
+    }
+    dfl_pending_slot = 0;
+
+    if (now == DFL_FAMILY_NONE) {
+        buttons_load_page(&buttons_page_dfl_1);
+    } else {
+        buttons_load_page(&page_dfl_fav);
+    }
+}
+
+void buttons_dfl_on_radio(bool tx) {
+    (void) tx;
+
+    if (buttons_dfl_active()) {
+        buttons_dfl_refresh();
+    }
+}
+
+/* --- Callbacks ------------------------------------------------------------ */
+
+static void dfl_fav_press_cb(button_item_t *item) {
+    if (dfl_is_tx()) {
+        return;
+    }
+
+    dfl_family_t family = dfl_current_family();
+    int          slot   = item->data;
+    int          source = dfl_presets_favorite_source(family, slot);
+    dfl_apply_result_t r = dfl_apply_favorite(slot);
+
+    dfl_apply_feedback(family, source, r);
+    buttons_dfl_refresh();
+}
+
+static void dfl_fav_hold_cb(button_item_t *item) {
+    /* Reasignar es una accion poco frecuente: NO aplica el preset primero. */
+    dfl_pending_slot = item->data;
+    buttons_load_page(&page_dfl_assign);
+}
+
+static void dfl_adj_cb(button_item_t *item) {
+    (void) item;
+    buttons_load_page(&buttons_page_dfl_1);
+}
+
+static void dfl_more_cb(button_item_t *item) {
+    (void) item;
+    buttons_load_page(&page_dfl_more);
+}
+
+static void dfl_mem_press_cb(button_item_t *item) {
+    if (dfl_is_tx()) {
+        return;
+    }
+
+    dfl_family_t family = dfl_current_family();
+    int          slot   = item->data;
+
+    if (dfl_apply_memory(slot) == DFL_APPLY_OK) {
+        int32_t low  = subject_get_int(cfg_cur.filter.low);
+        int32_t high = subject_get_int(cfg_cur.filter.high);
+
+        msg_update_text_fmt("Mem %d - %d Hz", slot, (int) (high - low));
+        buttons_load_page(&page_dfl_fav);
+    } else {
+        msg_update_text_fmt("Mem %d vacia", slot);
+        (void) family;
+        buttons_dfl_refresh();
+    }
+}
+
+static void dfl_save_press_cb(button_item_t *item) {
+    dfl_pending_slot = item->data;
+    buttons_load_page(&page_dfl_confirm);
+}
+
+static void dfl_confirm_cb(button_item_t *item) {
+    (void) item;
+
+    if (dfl_pending_slot < 1 || dfl_pending_slot > 2) {
+        buttons_load_page(&page_dfl_more);
+        return;
+    }
+
+    dfl_family_t family = dfl_current_family();
+    int32_t      low    = subject_get_int(cfg_cur.filter.low);
+    int32_t      high   = subject_get_int(cfg_cur.filter.high);
+
+    /* UNA transaccion; si falla, nunca se informa "guardada". */
+    if (dfl_save_memory(family, dfl_pending_slot, low, high)) {
+        dfl_last_save = DFL_SAVE_FEEDBACK_OK;
+        msg_update_text_fmt("Mem %d guardada", dfl_pending_slot);
+        dfl_pending_slot = 0;
+        buttons_load_page(&page_dfl_more);
+    } else {
+        dfl_last_save = DFL_SAVE_FEEDBACK_FAILED;
+        msg_update_text_fmt("No se guardo: %s", dfl_presets_last_error());
+        buttons_dfl_refresh();
+    }
+}
+
+static void dfl_cancel_cb(button_item_t *item) {
+    (void) item;
+    dfl_pending_slot = 0;
+    buttons_load_page(&page_dfl_more);
+}
+
+static void dfl_volver_cb(button_item_t *item) {
+    (void) item;
+    buttons_load_page(&page_dfl_fav);
+}
+
+static void dfl_assign_cancel_cb(void) {
+    /* Accion TACTIL de la banda contextual de F: cancela sin escribir. */
+    dfl_pending_slot = 0;
+    buttons_load_page(&page_dfl_fav);
+}
+
+static void dfl_source_press_cb(button_item_t *item) {
+    dfl_family_t family = dfl_current_family();
+    int          source = item->data;
+
+    if (dfl_assign_favorite(family, dfl_pending_slot, source)) {
+        msg_update_text_fmt("Favorito %d: %s", dfl_pending_slot, dfl_source_name(family, source));
+        dfl_pending_slot = 0;
+        buttons_load_page(&page_dfl_fav);
+    } else {
+        msg_update_text_fmt("No se guardo: %s", dfl_presets_last_error());
+        buttons_dfl_refresh();
+    }
+}
+
+/* --- Refresco ------------------------------------------------------------- */
+
+void buttons_dfl_refresh(void) {
+    dfl_page_t   page   = buttons_dfl_page();
+    dfl_family_t family = dfl_current_family();
+
+    switch (page) {
+        case DFL_PAGE_FAVORITES: {
+            for (int i = 0; i < 3; i++) {
+                buttons_refresh(page_dfl_fav.items[i]);
+                buttons_disabled(page_dfl_fav.items[i], dfl_is_tx());
+            }
+
+            int match = -1;
+
+            if (family != DFL_FAMILY_NONE) {
+                match = dfl_matching_slot(family, subject_get_int(cfg_cur.filter.low),
+                                          subject_get_int(cfg_cur.filter.high));
+            }
+            for (int i = 0; i < 3; i++) {
+                buttons_mark(page_dfl_fav.items[i], (match == i + 1) && !dfl_is_tx());
+            }
+
+            if (family != DFL_FAMILY_NONE && match < 0) {
+                dfl_context_show_text("Personalizado");
+            } else {
+                dfl_context_hide();
+            }
+            break;
+        }
+
+        case DFL_PAGE_MORE:
+            buttons_refresh(&btn_dfl_mem1);
+            buttons_refresh(&btn_dfl_mem2);
+            buttons_disabled(&btn_dfl_mem1, dfl_is_tx() || !dfl_presets_memory_present(family, 1));
+            buttons_disabled(&btn_dfl_mem2, dfl_is_tx() || !dfl_presets_memory_present(family, 2));
+            buttons_disabled(&btn_dfl_save1, dfl_is_tx());
+            buttons_disabled(&btn_dfl_save2, dfl_is_tx());
+            dfl_context_hide();
+            break;
+
+        case DFL_PAGE_CONFIRM: {
+            char ctx[112];
+            int  slot = (dfl_pending_slot >= 1 && dfl_pending_slot <= 2) ? dfl_pending_slot : 1;
+
+            if (dfl_presets_memory_present(family, slot)) {
+                snprintf(ctx, sizeof(ctx), "Guardar Mem %d - LOW %d - HIGH %d - Se reemplazara Mem %d",
+                         slot, (int) subject_get_int(cfg_cur.filter.low),
+                         (int) subject_get_int(cfg_cur.filter.high), slot);
+            } else {
+                snprintf(ctx, sizeof(ctx), "Guardar Mem %d - LOW %d - HIGH %d", slot,
+                         (int) subject_get_int(cfg_cur.filter.low),
+                         (int) subject_get_int(cfg_cur.filter.high));
+            }
+            dfl_context_show_text(ctx);
+
+            buttons_disabled(&btn_dfl_none_a, true);
+            buttons_disabled(&btn_dfl_none_b, true);
+            break;
+        }
+
+        case DFL_PAGE_ASSIGN: {
+            char ctx[48];
+
+            buttons_refresh(&btn_dfl_srcm1);
+            buttons_refresh(&btn_dfl_srcm2);
+            buttons_disabled(&btn_dfl_srcm1, !dfl_presets_memory_present(family, 1));
+            buttons_disabled(&btn_dfl_srcm2, !dfl_presets_memory_present(family, 2));
+
+            snprintf(ctx, sizeof(ctx), "Asignar tecla %d",
+                     (dfl_pending_slot >= 1 && dfl_pending_slot <= 3) ? dfl_pending_slot : 1);
+            dfl_context_show_action(ctx, "Cancelar", dfl_assign_cancel_cb);
+            break;
+        }
+
+        default:
+            dfl_context_hide();
+            break;
+    }
+}
+
+/* Ruta TACTIL de la barra (issue #183): solo las celdas cargadas con
+ * touch_hold (los favoritos 1-3) disparan la pulsacion/hold; en el resto de las
+ * paginas la barra sigue siendo una leyenda de teclas fisicas. */
+static void button_bar_event_cb(lv_event_t *e) {
+    uint8_t i = (uint8_t) (intptr_t) lv_event_get_user_data(e);
+
+    if (i >= BUTTONS || !btn[i].touch) {
+        return;
+    }
+    buttons_press(i, lv_event_get_code(e) == LV_EVENT_LONG_PRESSED);
+}
+
+/* Los Subjects del filtro cambian por el editor inline, por la rueda VOL o por
+ * la aplicacion de un preset: las etiquetas/marcas de las paginas DFL salen de
+ * ahi. Es un observer DIFERIDO (se notifica en el hilo de GUI, como el resto de
+ * buttons.cpp; precedente #131). */
+static ObserverDelayed *dfl_obs_low  = NULL;
+static ObserverDelayed *dfl_obs_high = NULL;
+
+static void dfl_subject_cb(Subject *subj, void *user_data) {
+    (void) subj;
+    (void) user_data;
+
+    if (buttons_dfl_active()) {
+        buttons_dfl_refresh();
+    }
+}
 
 /* APP */
 
@@ -597,7 +1109,7 @@ buttons_group_t buttons_group_dfn = {
 };
 
 buttons_group_t buttons_group_dfl = {
-    &buttons_page_dfl_1,
+    &page_dfl_fav,
 };
 
 
@@ -657,12 +1169,24 @@ void buttons_init(lv_obj_t *parent) {
         lv_obj_set_user_data(f, label);
         lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
+        /* Ruta tactil (#183): la celda avisa su pulsacion/hold SOLO si el item
+         * cargado lo pide (los favoritos 1-3); el resto de las paginas queda
+         * igual. LVGL suprime el CLICKED cuando ya mando LONG_PRESSED. */
+        lv_obj_add_event_cb(f, button_bar_event_cb, LV_EVENT_CLICKED, (void *) (intptr_t) i);
+        lv_obj_add_event_cb(f, button_bar_event_cb, LV_EVENT_LONG_PRESSED, (void *) (intptr_t) i);
+
+        btn[i].obj   = f;
+        btn[i].touch = false;
         btn[i].label = label;
     }
 
 
     parent_obj = parent;
     lv_msg_subscribe(MSG_PARAM_CHANGED, param_changed_cb, NULL);
+
+    /* Las etiquetas de las paginas DFL siguen a los Subjects del filtro. */
+    dfl_obs_low  = subject_add_delayed_observer(cfg_cur.filter.low, dfl_subject_cb, NULL);
+    dfl_obs_high = subject_add_delayed_observer(cfg_cur.filter.high, dfl_subject_cb, NULL);
 }
 
 void buttons_refresh(button_item_t *item) {
@@ -729,6 +1253,16 @@ void buttons_load(uint8_t n, button_item_t *item) {
         lv_label_set_text(label, "");
     }
     btn[n].item = item;
+
+    /* Touch (#183): la celda solo captura toques si el item lo pide. */
+    btn[n].touch = item != NULL && item->touch_hold;
+    if (btn[n].obj != NULL) {
+        if (btn[n].touch) {
+            lv_obj_add_flag(btn[n].obj, LV_OBJ_FLAG_CLICKABLE);
+        } else {
+            lv_obj_clear_flag(btn[n].obj, LV_OBJ_FLAG_CLICKABLE);
+        }
+    }
 }
 
 /* Un hilo ajeno al de LVGL (el keyer CW, los mensajes de voz) llama a estas dos
@@ -769,6 +1303,14 @@ void buttons_load_page(buttons_page_t *page) {
     if (page->items[0] != NULL && page->items[0]->voice != NULL) {
         voice_say_text_fmt("%s", page->items[0]->voice);
     }
+
+    /* Paginas DFL (#183): rearma etiquetas/marcas/disabled y la banda contextual.
+     * Fuera del DFL, la banda contextual se oculta. */
+    if (buttons_dfl_page() != DFL_PAGE_NONE) {
+        buttons_dfl_refresh();
+    } else {
+        dfl_context_hide();
+    }
 }
 
 void buttons_unload_page() {
@@ -783,6 +1325,10 @@ void buttons_unload_page() {
         lv_obj_set_user_data(label, NULL);
         lv_obj_clear_state(lv_obj_get_parent(label), LV_STATE_CHECKED);
         lv_obj_clear_state(lv_obj_get_parent(label), LV_STATE_DISABLED);
+        btn[i].touch = false;
+        if (btn[i].obj != NULL) {
+            lv_obj_clear_flag(btn[i].obj, LV_OBJ_FLAG_CLICKABLE);
+        }
         if (btn[i].item) {
             btn[i].item->label_obj = NULL;
             if (btn[i].item->observer) {
@@ -943,6 +1489,10 @@ void buttons_dfl_expanded_sync(int sel) {
     buttons_mark(&btn_dfl_sel_low, sel == DFL_SEL_LOW);
     buttons_mark(&btn_dfl_sel_high, sel == DFL_SEL_HIGH);
     buttons_mark(&btn_dfl_sel_bw, sel == DFL_SEL_BW);
+}
+
+lv_obj_t *buttons_cell_obj(uint8_t n) {
+    return (n < BUTTONS) ? btn[n].obj : NULL;
 }
 
 static const char * vol_label_getter() {

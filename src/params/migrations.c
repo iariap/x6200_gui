@@ -156,6 +156,39 @@ static int _4_cb_bands(void) {
     return 0;
 }
 
+/* 5: memorias y favoritos de filtro del DFL (issue #183).
+ *
+ * Dos tablas NUEVAS y separadas: no se reutiliza `memory` (memorias de
+ * frecuencia) ni `mode_params` (filter_low/high por modo), y no se renumera
+ * press_action_t. `dfl_filter_memories` guarda los dos pares LOW/HIGH por
+ * familia (1=SSB, 2=DIGI, 3=CW, 4=AM) y `dfl_filter_favorites` el ID de la
+ * fuente (1..3 preset de fabrica, 4=Mem 1, 5=Mem 2) enlazada a cada uno de los
+ * tres botones rapidos; el favorito guarda la REFERENCIA, no una copia.
+ *
+ * Idempotente: CREATE TABLE IF NOT EXISTS. Reejecutarla no borra memorias ni
+ * favoritos, y una base nueva (que ya las trae por sql/params.sql) no cambia.
+ * No toca ninguna tabla existente ni `version` mas alla del numero de version.
+ * Los defaults "sin filas" (favorito n -> preset n) NO se escriben: los resuelve
+ * src/dfl_presets.c en memoria. */
+static int _5_dfl_filter_tables(void) {
+    static const char *sql =
+        "CREATE TABLE IF NOT EXISTS dfl_filter_memories ("
+            "family INTEGER NOT NULL CHECK(family BETWEEN 1 AND 4),"
+            "memory_slot INTEGER NOT NULL CHECK(memory_slot BETWEEN 1 AND 2),"
+            "low_hz INTEGER NOT NULL CHECK(low_hz BETWEEN -10000 AND 9999),"
+            "high_hz INTEGER NOT NULL CHECK(high_hz BETWEEN 1 AND 10000),"
+            "PRIMARY KEY(family, memory_slot),"
+            "CHECK(high_hz > low_hz));"
+        "CREATE TABLE IF NOT EXISTS dfl_filter_favorites ("
+            "family INTEGER NOT NULL CHECK(family BETWEEN 1 AND 4),"
+            "quick_slot INTEGER NOT NULL CHECK(quick_slot BETWEEN 1 AND 3),"
+            "source INTEGER NOT NULL CHECK(source BETWEEN 1 AND 5),"
+            "PRIMARY KEY(family, quick_slot));";
+    int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
+    if (rc != SQLITE_OK) { printf("Cannot create DFL filter tables: %s\n", sqlite3_errmsg(db)); return 1; }
+    return 0;
+}
+
 /* Migrations array */
 static int (*migrations[])() = {
     _0_init_migrations,
@@ -163,6 +196,7 @@ static int (*migrations[])() = {
     _2_update_atu_freq,
     _3_migrate_theme_name,
     _4_cb_bands,
+    _5_dfl_filter_tables,
 };
 
 int migrations_apply(void) {

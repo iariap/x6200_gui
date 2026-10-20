@@ -676,6 +676,42 @@ $CC $BASEFLAGS -fanalyzer -I"$DFL_ROT_STAGE" -I"$DIR/stubs_dfl_rotary" -I"$DIR/s
 
 "$OUT/dfl_rotary_tests"
 
+# --- Presets DFL: modelo, persistencia y aplicacion segura (issue #183) -------
+# src/dfl_presets.c (catalogo + cache + aplicacion por los setters vigentes) y
+# src/dfl_presets_store.c (SQLite) se stagean al lado de stubs minimos de cfg/ y
+# params/ y corren contra una base sqlite3 REAL en memoria con las tablas del
+# contrato. El test ademas CUENTA las escrituras a cfg_cur.filter.bw y al par real
+# RF: el preset nunca los toca (el BW lo derivan los observers de src/cfg/mode.c).
+echo "== Presets DFL (#183): catalogo, memorias/favoritos y aplicacion sin half-apply =="
+DFLP_STAGE="$OUT/dfl_presets_src"
+rm -rf "$DFLP_STAGE"
+mkdir -p "$DFLP_STAGE/cfg" "$DFLP_STAGE/params"
+cp "$SRC/dfl_presets.c" "$SRC/dfl_presets.h" "$SRC/dfl_presets_store.c" "$SRC/dfl_presets_store.h" "$DFLP_STAGE/"
+cp "$DIR/stubs_dfl_presets/cfg/cfg.h" "$DIR/stubs_dfl_presets/cfg/mode.h" \
+   "$DIR/stubs_dfl_presets/cfg/subjects.h" "$DFLP_STAGE/cfg/"
+cp "$DIR/stubs_dfl_presets/params/db.h" "$DFLP_STAGE/params/"
+DFLP_SRC="$DFLP_STAGE/dfl_presets.c $DFLP_STAGE/dfl_presets_store.c \
+$DIR/dfl_presets_stubs.c $DIR/test_dfl_presets.c $DIR/test_framework.c $DIR/dfl_presets_test_main.c"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$DFLP_STAGE" -I"$DFLP_STAGE/params" -I"$DIR/stubs_dfl" -I"$DIR" \
+        $DFLP_SRC -lsqlite3 -o "$OUT/dfl_presets_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$DFLP_STAGE" -I"$DFLP_STAGE/params" -I"$DIR/stubs_dfl" -I"$DIR" \
+        $DFLP_SRC -lsqlite3 -o "$OUT/dfl_presets_tests"
+fi
+
+echo "== Presets DFL: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$DFLP_STAGE" -I"$DFLP_STAGE/params" -I"$DIR/stubs_dfl" \
+    -c "$DFLP_STAGE/dfl_presets.c" -o "$OUT/dfl_presets.o" || true
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$DFLP_STAGE" -I"$DFLP_STAGE/params" \
+    -c "$DFLP_STAGE/dfl_presets_store.c" -o "$OUT/dfl_presets_store.o" || true
+
+"$OUT/dfl_presets_tests"
+
 # --- ThreadSanitizer (issue #149, experimento 6) -----------------------------
 # Cobertura declarada: TSan corre en el HOST (x86_64, gcc). El binario ARM de la
 # radio NO corre bajo TSan en este arnes, asi que estos resultados NO se

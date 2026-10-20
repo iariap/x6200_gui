@@ -1,0 +1,40 @@
+# dfl-presets-fav-tema-aurora: pagina fav de los presets del DFL (issue #183), tema Aurora
+#
+# Se abre con la tecla CORTA DFL del firmware (Home -> A = Favoritos) y, para las
+# paginas B..F, se navega con las cinco teclas fisicas por la ruta real. El modo
+# USB (familia SSB) hace coincidir el filtro con el preset Wide: el favorito 1
+# queda marcado y no aparece el rotulo `Personalizado`.
+
+name dfl-presets-fav-tema-aurora
+screen dfl-presets-fav
+
+seed 183
+theme Aurora
+spectrum_filled true
+spectrum_peak true
+waterfall_center_line true
+
+frequency_hz 14200000
+tx_frequency_hz 14200000
+fft_width_hz 48000
+
+mode USB
+filter_low 100
+filter_high 3400
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

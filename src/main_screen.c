@@ -46,6 +46,8 @@
 #include "dialog_wifi.h"
 #include "dialog_eq.h"
 #include "dfl_inline.h"
+#include "dfl_presets.h"
+#include "dfl_context.h"
 #include "backlight.h"
 #include "buttons.h"
 #include "recorder.h"
@@ -895,14 +897,15 @@ static void main_screen_keypad_cb(lv_event_t * e) {
 
         case KEYPAD_DFL:
             if (keypad->state == KEYPAD_RELEASE) {
-                apps_disable();
-
-                /* Pulsacion corta de DFL: si el editor inline esta expandido, lo
-                 * contrae; si no, carga la pagina habitual. */
-                if (dfl_inline_is_expanded()) {
-                    dfl_inline_collapse();
+                /* Pulsacion corta de DFL (issue #183): con el DFL ya abierto
+                 * cancela lo pendiente y vuelve a Favoritos (contraendo el
+                 * grafico si estaba en C); desde fuera abre Favoritos (o Ajustar
+                 * si el modo no tiene catalogo). NO aplica ningun preset. */
+                if (buttons_dfl_active()) {
+                    buttons_dfl_short();
                 } else {
-                    buttons_load_page_group(buttons_group_dfl);
+                    apps_disable();
+                    buttons_dfl_open();
                 }
                 voice_say_text_fmt("DFL parameters");
             } else if (keypad->state == KEYPAD_LONG) {
@@ -1074,6 +1077,16 @@ static void main_screen_hkey_cb(lv_event_t * e) {
     }
 }
 
+/* Cambio de modo con el DFL abierto (issue #183): misma familia no toca nada;
+ * una familia nueva cancela E/F sin persistir ni aplicar y carga la pagina A (o
+ * B si no admite presets). Nunca aplica un preset por si solo. */
+static void on_dfl_mode_change(Subject *subj, void *user_data) {
+    (void) subj;
+    (void) user_data;
+
+    buttons_dfl_on_mode_change();
+}
+
 static void main_screen_radio_cb(lv_event_t * e) {
     lv_event_code_t code = lv_event_get_code(e);
 
@@ -1085,6 +1098,10 @@ static void main_screen_radio_cb(lv_event_t * e) {
 
     /* El editor DFL inline no es un dialogo: se le avisa TX/RX por separado. */
     dfl_inline_on_radio_event(code);
+
+    /* Con una pagina DFL abierta, TX deshabilita los presets y aplicar Mem
+     * (issue #183); la navegacion y Volver siguen. */
+    buttons_dfl_on_radio(code == EVENT_RADIO_TX);
 }
 
 static void main_screen_update_cb(lv_event_t * e) {
@@ -1327,9 +1344,14 @@ static void spectrum_key_cb(lv_event_t * e) {
             break;
 
         case LV_KEY_ESC:
-            /* Con el editor DFL inline expandido, ESC lo contrae (y no toca el
-             * modo del encoder VOL). Sin el editor, conserva el comportamiento
-             * previo: alterna EDIT/SELECT del encoder de volumen. */
+            /* Con una pagina DFL abierta (issue #183), ESC navega el DFL: A
+             * restaura la barra anterior, B/D/F vuelven a A, C contrae a B y E
+             * vuelve a D. Sin el DFL, conserva el comportamiento previo: alterna
+             * EDIT/SELECT del encoder de volumen. */
+            if (buttons_dfl_active()) {
+                buttons_dfl_escape();
+                break;
+            }
             if (dfl_inline_is_expanded()) {
                 dfl_inline_collapse();
                 break;
@@ -1540,6 +1562,12 @@ lv_obj_t * main_screen() {
      * geometria del objeto real (no hardcodea 240). */
     dfl_inline_init(waterfall);
 
+    /* Presets de filtro del DFL (issue #183): la banda contextual de las paginas
+     * de confirmacion/asignacion y la cache de memorias/favoritos (se leen UNA
+     * vez de params.db; nunca hay SQL desde un callback de dibujo). */
+    dfl_context_init(waterfall);
+    dfl_presets_init();
+
     spot_marks_init(obj, spots_y, spots_y + 4);
 
     /* IARU band plan strip: at the bottom of the spectrum, lined up with the
@@ -1584,6 +1612,10 @@ lv_obj_t * main_screen() {
     subject_add_delayed_observer(freq_lock, on_fg_freq_change, NULL);
     subject_add_delayed_observer(cfg_cur.band->split.val, on_fg_freq_change, NULL);
     subject_add_delayed_observer(cfg_cur.fg_freq, on_fg_freq_change, NULL);
+
+    /* Cambio de modo con el DFL abierto (issue #183): cancela suboperaciones
+     * pendientes y reubica la pagina segun la familia, sin aplicar nada. */
+    subject_add_delayed_observer(cfg_cur.mode, on_dfl_mode_change, NULL);
 
     subject_add_delayed_observer(freq_lock, update_freq_boundaries, NULL);
     // update boundaries on TX with split
