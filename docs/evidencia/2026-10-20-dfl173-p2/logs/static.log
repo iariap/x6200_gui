@@ -1,0 +1,16 @@
+# Estaticos y calidad (salida real)
+$ uv run ruff check .              -> All checks passed!
+$ uv run ruff format --check .     -> 194 files already formatted
+$ uv run ty check                  -> All checks passed!
+
+$ python3 tests/check_actions.py        -> todas las acciones ofrecidas tienen manejador
+$ python3 tests/check_apps_menu.py      -> todas las apps del menu llegan al dispatcher que usa su boton
+$ python3 tests/check_app_handlers.py   -> todos los botones de las apps tienen handler
+$ python3 tests/check_cfg_fills.py      -> OK: los 70 campos se inicializan, en orden
+$ python3 tests/check_settings_focus.py -> OK
+$ python3 tests/check_manual_apps.py    -> todas las apps tienen su seccion (24 apps) [aviso: ACTION_APP_DFL_EDITOR sin nombre mapeado]
+$ python3 tests/check_wcag.py           -> todos los pares cumplen WCAG 2.1 (AA)
+$ python3 tests/check_cw_tune_feed.py   -> ok
+$ python3 tests/check_build_identity.py -> ok
+$ python3 tests/audita-pruebas.py       -> OK: estructura y evidencia en orden
+$ python3 tests/test_swrscan_curve_evidence.py -> PASS: 8 pruebas
