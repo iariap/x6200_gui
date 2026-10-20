@@ -683,6 +683,29 @@ exceptions:
     author: theme-cathode-70
     until: 2027-03-31
 
+  # DFL (issue #173, PR 1): las dos fixtures DFL de los temas con digitos
+  # segmentados (Sprint y Cathode) traen la misma capa de "8 fantasma" de UI-017
+  # que las `main-tema-*` de esos temas: es el diseno de la fila de frecuencia,
+  # no dos textos que se tapan. Un waiver por fixture, como los de arriba.
+  - rule: layout_overlap
+    fixture: dfl-usb-d-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): el tema Sprint pide
+      `font_digits: dseg14`, asi que la fila de frecuencia de la fixture DFL dibuja
+      con la familia segmentada y `src/main_screen.c` arma la etiqueta sombra
+      ("88.888.888") debajo del valor, con su misma caja. Diseno, no defecto.
+    author: dfl-visual-173
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-usb-d-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): el tema Cathode pide
+      `font_digits: dseg14`; misma capa sombra de la fila de frecuencia que la
+      fixture DFL de Sprint. Diseno, no defecto.
+    author: dfl-visual-173
+    until: 2027-10-20
+
 # UI-016 (`layout_clipped` [settings-home]) was withdrawn here in AB-UI016-T1,
 # together with the fix: the Ajustes year field no longer clips its last digit
 # (src/dialog_settings.c, the year spinbox gets the width its four digits need
