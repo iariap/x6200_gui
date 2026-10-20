@@ -47,6 +47,6 @@ tools/captura-radio.sh docs/evidencia/2026-10-20-waterfall-dfl/01-cw-50.png
 
 ## Uso en la wiki
 
-Estas 5 imágenes son la base de la página **Waterfall y filtros DFL** de la wiki del repo
-(`https://github.com/iariap/x6200_gui/wiki`), pensada para rediseñar cómo el waterfall comunica el
-filtro de recepción.
+Publicadas en la wiki del repo: **<https://github.com/iariap/x6200_gui/wiki/Waterfall>**
+(imágenes en `images/dfl/` de la wiki), pensada para rediseñar cómo el waterfall comunica el filtro de
+recepción.
