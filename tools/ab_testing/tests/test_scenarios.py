@@ -155,6 +155,23 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "dfl-editor-cycles",
         "dfl-editor-interaction",
         "dfl-editor-lsb-d",
+        # Editor DFL inline (issue #179): restablecer, la rueda principal
+        # (rotary0) y las selecciones BW/HIGH de los seis temas, sobre el panel
+        # nativo (dfl_inline.c).
+        "dfl-editor-reset",
+        "dfl-editor-rotary0",
+        "dfl-editor-sel-bw-tema-aurora",
+        "dfl-editor-sel-bw-tema-cathode",
+        "dfl-editor-sel-bw-tema-redshift",
+        "dfl-editor-sel-bw-tema-sprint",
+        "dfl-editor-sel-bw-tema-sunlit",
+        "dfl-editor-sel-bw-tema-trail",
+        "dfl-editor-sel-high-tema-aurora",
+        "dfl-editor-sel-high-tema-cathode",
+        "dfl-editor-sel-high-tema-redshift",
+        "dfl-editor-sel-high-tema-sprint",
+        "dfl-editor-sel-high-tema-sunlit",
+        "dfl-editor-sel-high-tema-trail",
         "dfl-editor-tx",
         "dfl-editor-usb-d",
         "dfl-editor-usb-d-tema-aurora",
@@ -166,6 +183,13 @@ def test_repo_fixtures_are_all_parsable() -> None:
         # DFL (issue #173, PR 1): banda pasante RX a escala, USB-D/LSB-D, los seis
         # temas y dos spans distintos.
         "dfl-lsb-d",
+        # Pagina DFL normal (issue #179) en los seis temas.
+        "dfl-page-tema-aurora",
+        "dfl-page-tema-cathode",
+        "dfl-page-tema-redshift",
+        "dfl-page-tema-sprint",
+        "dfl-page-tema-sunlit",
+        "dfl-page-tema-trail",
         "dfl-usb-d",
         "dfl-usb-d-span100k",
         "dfl-usb-d-span50k",
@@ -288,6 +312,13 @@ def test_repo_fixtures_are_all_parsable() -> None:
             "dfl-editor-tx",
             "dfl-editor-interaction",
             "dfl-editor-cycles",
+            # Editor DFL inline (issue #179): restablecer, la rueda principal y
+            # las selecciones BW/HIGH; y la pagina DFL normal.
+            "dfl-editor-reset",
+            "dfl-editor-rotary0",
+            "dfl-editor-sel-bw",
+            "dfl-editor-sel-high",
+            "dfl-page",
         }
         for scenario in suite.scenarios
     )

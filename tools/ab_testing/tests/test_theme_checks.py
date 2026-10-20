@@ -131,8 +131,9 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
     rule tells a by-design alpha layer from two texts hiding each other. The first
     of them is `main-frecuencia-dseg` (the fixture that asks for `digits dseg7`);
     the others are the Sprint and Cathode themes' main-screen fixtures (THEMES
-    v2, #69 and #70) and the two DFL fixtures of those themes (issue #173, PR 1),
-    which carry the same layer because the theme's own
+    v2, #69 and #70) and the DFL fixtures of those themes (issue #173, PR 1; the
+    editor ones in PR 2; and the inline editor and normal-page ones added by
+    issue #179), which carry the same layer because the theme's own
     `font_digits: dseg14` makes
     the frequency row draw with the segmented family. Each one names
     exactly one rule and one fixture (no `path` shadow, so it cannot hide another
@@ -176,6 +177,15 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
         # Editor DFL (issue #173, PR 2): idem para las fixtures del editor.
         "dfl-editor-usb-d-tema-sprint",
         "dfl-editor-usb-d-tema-cathode",
+        # Editor DFL inline (issue #179): las fixtures nuevas del editor inline y
+        # de la pagina DFL normal de los temas con digitos segmentados traen la
+        # MISMA capa de "8 fantasma" de la fila de frecuencia de fondo.
+        "dfl-editor-sel-bw-tema-sprint",
+        "dfl-editor-sel-bw-tema-cathode",
+        "dfl-editor-sel-high-tema-sprint",
+        "dfl-editor-sel-high-tema-cathode",
+        "dfl-page-tema-sprint",
+        "dfl-page-tema-cathode",
     }
     for exception in exceptions:
         assert exception.path is None
