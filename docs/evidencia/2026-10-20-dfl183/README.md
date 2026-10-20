@@ -123,7 +123,8 @@ Comandos y salidas crudas en `logs/`.
 ### Fix del CI (job `x6200-ab contracts`)
 
 El job de contratos del PR marcó dos reglas sobre las fixtures nuevas. Medido localmente
-antes del fix: **2.040 checks, 20 fallos** (12 `layout_overlap`, 8 `layout_touch_target`).
+antes del fix: **2.040 checks, 20 fallos** (13 `layout_overlap` — 12 del fantasma de
+UI-017 y 1 del indicador de la rueda, UI-018 — y 7 `layout_touch_target`, todos del chip).
 Los 20 se cierran en `6c67a82a` y el gate pasa a **2.033 checks, 0 fallos**:
 
 1. **`layout_touch_target` — el objeto de 663,251 128×32 era el `Cancelar` TÁCTIL** del
