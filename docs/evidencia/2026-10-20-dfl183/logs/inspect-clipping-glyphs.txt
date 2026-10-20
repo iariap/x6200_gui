@@ -1,0 +1,5 @@
+fixtures analizados: 54
+labels: 2994
+texto truncado: 0
+glyphs faltantes: 0
+glyphs en fallback: 0
