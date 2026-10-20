@@ -500,6 +500,24 @@ expected_changes:
     author: dfl-visual-173
     until: 2027-10-20
 
+  # AB-DFL173C (issue #173, correccion del owner sobre el editor mergeado en
+  # 39539f93): el editor DFL pierde los botones -/+ y cada fila (LOW/HIGH/BW)
+  # pasa a ser tocable y a quedar resaltada al seleccionarse; la rueda (encoder)
+  # ajusta la fila seleccionada. El modal se dibuja sobre la cascada, asi que sus
+  # pixeles caen dentro de `waterfall`; la region `dfl_editor_dialogo` los aisla.
+  # Todo el cambio vive dentro del cuerpo del modal (bbox del contrato: 720x206
+  # en x=40, y=202): las fixtures que no abren el editor quedan byte-identicas.
+  - region: dfl_editor_dialogo
+    reason: >
+      AB-DFL173C (#173): el editor DFL (src/dialog_dfl.c) cambia de botones -/+ a
+      filas tocables con resaltado del tema (roles sel_bg/sel_border/sel_text) y
+      la rueda ajusta la fila seleccionada (src/dfl_rotary.c). Los pixeles que se
+      mueven son los del cuerpo del modal (las tres filas y el resaltado); el
+      resto de la pantalla de fondo (header, S-meter, espectro, frecuencia,
+      cascada y barra de teclas) queda igual.
+    author: dfl-encoder-173
+    until: 2027-10-20
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.

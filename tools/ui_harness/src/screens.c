@@ -272,6 +272,7 @@ static void build_main(const scenario_t *scenario)
  * scenario_settle): se usan en scenario_build. */
 static void dfl_press_ui(dfl_ui_id_t id);
 static void dfl_drag_ui(int32_t local_x);
+static void dfl_rotary_ui(int32_t diff);
 static void dfl_esc_ui(void);
 static void settle_dfl_editor(const scenario_t *scenario);
 
@@ -471,12 +472,16 @@ bool scenario_build(const scenario_t *scenario)
         main_screen_action(ACTION_APP_DFL_EDITOR);
 
         if (!strcmp(scenario->screen, "dfl-editor-interaction")) {
-            dfl_press_ui(DFL_UI_LOW_PLUS);      /* 225 -> 230 */
-            dfl_press_ui(DFL_UI_LOW_PLUS);      /* 230 -> 240 */
-            dfl_drag_ui(300);                   /* HIGH -> 7000 (dominio [0,10000], w=420) */
+            dfl_rotary_ui(1);                   /* LOW (default): 225 -> 230 */
+            dfl_rotary_ui(1);                   /* LOW 230 -> 240 */
+            dfl_press_ui(DFL_UI_HIGH_ROW);      /* la fila tocada SELECCIONA HIGH */
+            dfl_rotary_ui(1);                   /* HIGH 3525 -> 3550 (paso 50, cuantiza) */
+            dfl_press_ui(DFL_UI_BW_ROW);        /* selecciona BW */
+            dfl_rotary_ui(1);                   /* BW 3300 -> 3320 (paso 20, legal) */
+            dfl_drag_ui(300);                   /* arrastra HIGH -> 7000 y lo selecciona */
             dfl_drag_ui(500);                   /* fuera del grafico: HIGH se recorta a MAX=10000 */
-            dfl_press_ui(DFL_UI_HIGH_PLUS);     /* 10050 > MAX: la guarda rechaza, queda 10000 */
-            dfl_press_ui(DFL_UI_HIGH_PLUS);
+            dfl_rotary_ui(1);                   /* HIGH 10050 > MAX: la guarda rechaza, queda 10000 */
+            dfl_rotary_ui(1);
         }
 
         return true;
@@ -814,6 +819,14 @@ static void dfl_esc_ui(void)
     lv_event_send(dialog_dfl->obj, LV_EVENT_KEY, &key);
 }
 
+/* El arnes no tiene encoder fisico: empuja el paso por el MISMO despachador del
+ * firmware, src/dialog.c::dialog_rotary(), al que main_screen_rotary_enhanced_cb
+ * llama con enhanced->raw_diff (el camino real de la perilla). */
+static void dfl_rotary_ui(int32_t diff)
+{
+    dialog_rotary(diff);
+}
+
 /* Lo que cada fixture del editor *significa*: el arnes corta si no lo ve, en vez
  * de capturar otra pantalla y reportar verde. */
 static void settle_dfl_editor(const scenario_t *scenario)
@@ -851,10 +864,14 @@ static void settle_dfl_editor(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "dfl-editor-interaction")) {
-        /* LOW 225 +10 +10 -> 240; HIGH arrastrado a x=300 -> 7000; segundo
-         * arrastre fuera del grafico (x=500) recortado a MAX=10000; los dos + de
-         * HIGH (10050) los rechaza la guarda: el valor queda en 10000, sin valor
-         * optimista. */
+        /* Rueda sobre LOW (default, paso 10): 225 +10 +10 -> 240. La fila HIGH
+         * tocada la selecciona; rueda (paso 50): 3525 -> 3550. La fila BW tocada
+         * la selecciona; rueda (paso 20): 3300 -> 3320 (el arnes deriva el BW del
+         * par del fixture; el par LOW/HIGH resultante es legal). Despues el
+         * arrastre de HIGH lo lleva a 7000 (x=300) y el segundo arrastre fuera del
+         * grafico (x=500) lo recorta a MAX=10000; la rueda sobre HIGH (10050) la
+         * rechaza la guarda: queda 10000, sin valor optimista. El arrastre
+         * SELECCIONA HIGH, asi que la rueda sigue con el. */
         if (subject_get_int(cfg_cur.filter.low) != 240) {
             fprintf(stderr, "%s: LOW esperado 240, quedo %d\n", scenario->name,
                     subject_get_int(cfg_cur.filter.low));
@@ -863,6 +880,17 @@ static void settle_dfl_editor(const scenario_t *scenario)
         if (subject_get_int(cfg_cur.filter.high) != MAX_FILTER_FREQ) {
             fprintf(stderr, "%s: HIGH esperado %d (el rechazo no debe cambiar el valor), quedo %d\n",
                     scenario->name, MAX_FILTER_FREQ, subject_get_int(cfg_cur.filter.high));
+            exit(1);
+        }
+        if (subject_get_int(cfg_cur.filter.bw) != 3320) {
+            fprintf(stderr, "%s: BW esperado 3320 (paso de la rueda), quedo %d\n", scenario->name,
+                    subject_get_int(cfg_cur.filter.bw));
+            exit(1);
+        }
+
+        snprintf(buf, sizeof(buf), "%d Hz", subject_get_int(cfg_cur.filter.bw));
+        if (!label_on_screen(lv_scr_act(), buf)) {
+            fprintf(stderr, "%s: el label de BW no muestra '%s'\n", scenario->name, buf);
             exit(1);
         }
     }

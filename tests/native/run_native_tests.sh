@@ -641,6 +641,40 @@ $CC $BASEFLAGS -fanalyzer -I"$DIR/stubs_dfl" -I"$SRC" \
 
 "$OUT/dfl_editor_tests"
 
+# --- Editor DFL: motor de la rueda (issue #173, correccion) --------------------
+# src/dfl_rotary.c aplica los cambios del editor por los setters vigentes
+# (cfg_mode_set_low_filter/high_filter y el Subject del BW) y NUNCA devuelve un
+# valor optimista: relee el Subject. El modulo no usa LVGL; el test lo compila
+# contra un stub de cfg_cur/Subjects y un espejo EXACTO de las guardas de
+# src/cfg/mode.c (tests/native/dfl_rotary_stubs.c), y comprueba los pasos por
+# modo, los clamps, que LOW no sea editable en AM/SAM/NFM/WFM, el rechazo del BW
+# ilegal y que el valor aplicado (mensaje y retorno) salga del Subject.
+echo "== Editor DFL (#173): motor de la rueda (pasos, clamps, BW, Subject) =="
+DFL_ROT_STAGE="$OUT/dfl_rotary_src"
+rm -rf "$DFL_ROT_STAGE"
+mkdir -p "$DFL_ROT_STAGE/cfg"
+cp "$SRC/dfl_rotary.c" "$SRC/dfl_rotary.h" "$DFL_ROT_STAGE/"
+cp "$DIR/stubs_dfl_rotary/cfg/cfg.h" "$DFL_ROT_STAGE/cfg/"
+cp "$DIR/stubs_dfl_rotary/msg.h" "$DFL_ROT_STAGE/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$DFL_ROT_STAGE" -I"$DIR/stubs_dfl_rotary" -I"$DIR/stubs_dfl" -I"$SRC" \
+        "$DFL_ROT_STAGE/dfl_rotary.c" "$DIR/dfl_rotary_stubs.c" "$DIR/test_dfl_rotary.c" \
+        "$DIR/test_framework.c" "$DIR/dfl_rotary_test_main.c" -o "$OUT/dfl_rotary_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$DFL_ROT_STAGE" -I"$DIR/stubs_dfl_rotary" -I"$DIR/stubs_dfl" -I"$SRC" \
+        "$DFL_ROT_STAGE/dfl_rotary.c" "$DIR/dfl_rotary_stubs.c" "$DIR/test_dfl_rotary.c" \
+        "$DIR/test_framework.c" "$DIR/dfl_rotary_test_main.c" -o "$OUT/dfl_rotary_tests"
+fi
+
+echo "== Editor DFL: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$DFL_ROT_STAGE" -I"$DIR/stubs_dfl_rotary" -I"$DIR/stubs_dfl" -I"$SRC" \
+    -c "$DFL_ROT_STAGE/dfl_rotary.c" -o "$OUT/dfl_rotary.o" || true
+
+"$OUT/dfl_rotary_tests"
+
 # --- ThreadSanitizer (issue #149, experimento 6) -----------------------------
 # Cobertura declarada: TSan corre en el HOST (x86_64, gcc). El binario ARM de la
 # radio NO corre bajo TSan en este arnes, asi que estos resultados NO se

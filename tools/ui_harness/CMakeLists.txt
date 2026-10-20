@@ -135,6 +135,9 @@ set(GUI_SRC
     # (main_screen_action(ACTION_APP_DFL_EDITOR) -> dialog_construct(dialog_dfl)).
     # El modelo puro que consume vive en src/dfl_model.h.
     ${REPO}/src/dialog_dfl.c
+    # La aplicacion por los setters vigentes (sin LVGL): la comparte el arrastre
+    # del grafico y la rueda.
+    ${REPO}/src/dfl_rotary.c
     # El barrido de ROE (issue #125): la ventana REAL, su motor puro de sesion y
     # el resample del chart. Los fixtures `swrscan-*` la abren por el camino del
     # firmware (main_screen_start_app(ACTION_APP_SWRSCAN)) y la manejan con el

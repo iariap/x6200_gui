@@ -8,17 +8,22 @@
  *  Dialogo modal compacto sobre el waterfall: encabezado "DFL - Digital Filter"
  *  + modo actual + X, un grafico ESQUEMATICO de banda pasante (no una medicion
  *  DSP) con dos handles, y los controles LOW / HIGH / BW con su valor entero
- *  exacto en Hz, botones -/+ y arrastre. Restablece los predeterminados del modo
- *  con mode_default_values() de src/cfg/mode.c, actualizando solo LOW/HIGH.
+ *  exacto en Hz. Cada fila es TOCABLE y queda resaltada al seleccionarse; la
+ *  RUEDA (encoder) ajusta el parametro seleccionado y el arrastre del grafico
+ *  sigue como atajo (arrastrar un handle tambien lo selecciona). Restablece los
+ *  predeterminados del modo con mode_default_values() de src/cfg/mode.c,
+ *  actualizando solo LOW/HIGH.
  *
  *  El dialogo NO es una app: no guarda ni restaura el estado de la radio
  *  (restore_radio = false). Los pasos, limites, geometria y BW viven en
- *  src/dfl_model.h (puro, con test nativo).
+ *  src/dfl_model.h (puro, con test nativo) y la aplicacion por los setters
+ *  vigentes en src/dfl_rotary.c (tambien con test nativo).
  */
 
 #include "dialog_dfl.h"
 
 #include "dfl_model.h"
+#include "dfl_rotary.h"
 
 #include "buttons.h"
 #include "cfg/cfg.h"
@@ -42,6 +47,11 @@
 /* Touch target minimo del contrato de calidad (44 px). */
 #define DFL_BTN          44
 
+/* Fila de control (etiqueta + valor) tocable: x/ancho dentro del dialogo. */
+#define DFL_ROW_X        452
+#define DFL_ROW_W        260
+#define DFL_ROW_H        44
+
 /* Margenes del area de dibujo del grafico. */
 #define GRAPH_PAD_L      6
 #define GRAPH_PAD_R      6
@@ -54,9 +64,9 @@ static dialog_t  dialog;
 static lv_obj_t *graph;
 static lv_obj_t *mode_label;
 static lv_obj_t *tx_label;
-static lv_obj_t *low_value;
-static lv_obj_t *high_value;
-static lv_obj_t *bw_value;
+static lv_obj_t *row[DFL_SEL_COUNT];
+static lv_obj_t *row_name[DFL_SEL_COUNT];
+static lv_obj_t *row_value[DFL_SEL_COUNT];
 static lv_obj_t *btn[DFL_UI_CLOSE + 1];
 
 static ObserverDelayed *obs_mode;
@@ -65,6 +75,7 @@ static ObserverDelayed *obs_high;
 static ObserverDelayed *obs_bw;
 
 static bool         tx_active;
+static dfl_sel_t    sel = DFL_SEL_LOW;
 static dfl_handle_t dragging = DFL_HANDLE_NONE;
 
 /* Seam de test: en la radio queda NULL y el arrastre lee el indev de LVGL. */
@@ -125,7 +136,8 @@ static void set_btn_enabled(lv_obj_t *b, bool on) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Aplicaciones: siempre por los setters/caminos vigentes del firmware. */
+/* Aplicaciones: siempre por los setters/caminos vigentes del firmware, via
+ * src/dfl_rotary.c (que nunca devuelve un valor optimista: relee el Subject). */
 
 static void dfl_refresh(void);
 
@@ -134,7 +146,7 @@ static void dfl_apply_low(int32_t val) {
         return;
     }
 
-    cfg_mode_set_low_filter(val);
+    dfl_set_low(val);
     dfl_refresh();
 }
 
@@ -143,32 +155,31 @@ static void dfl_apply_high(int32_t val) {
         return;
     }
 
-    cfg_mode_set_high_filter(val);
+    dfl_set_high(val);
     dfl_refresh();
 }
 
-/* BW: se valida ANTES de escribir. Si el par LOW/HIGH resultante no es legal
- * (HIGH > MAX_FILTER_FREQ, HIGH <= LOW o LOW negativo en SSB) se bloquea la
- * accion y se conserva el estado; el label sigue leyendo el subject, asi que no
- * queda un valor optimista. */
+/* BW: se valida ANTES de escribir (ver src/dfl_rotary.c). Si el par LOW/HIGH
+ * resultante no es legal se bloquea la accion y se conserva el estado; el label
+ * sigue leyendo el Subject, asi que no queda un valor optimista. */
 static void dfl_apply_bw(int32_t val) {
-    if (tx_active || val < dfl_step_bw()) {
+    if (tx_active) {
         return;
     }
 
-    x6200_mode_t mode = subject_get_int(cfg_cur.mode);
-    int32_t      low  = subject_get_int(cfg_cur.filter.low);
-    int32_t      high = subject_get_int(cfg_cur.filter.high);
-    int32_t      new_low;
-    int32_t      new_high;
+    dfl_set_bw(val);
+    dfl_refresh();
+}
 
-    dfl_bw_targets(mode, low, high, val, &new_low, &new_high);
-
-    if (!dfl_bw_legal(mode, new_low, new_high)) {
+/* La rueda (encoder) ajusta el parametro SELECCIONADO con los pasos reales de
+ * src/vol.c. Durante TX no edita (el dialogo se ve deshabilitado). El mensaje y
+ * el valor salen del Subject, nunca de una posicion optimista. */
+static void rotary_cb(int32_t diff) {
+    if (tx_active || diff == 0) {
         return;
     }
 
-    subject_set_int(cfg_cur.filter.bw, val);
+    dfl_rotary_apply(sel, diff);
     dfl_refresh();
 }
 
@@ -404,6 +415,15 @@ static void graph_event_cb(lv_event_t *e) {
             if (dragging == DFL_HANDLE_LOW && !dfl_mode_low_editable(mode)) {
                 dragging = DFL_HANDLE_HIGH;
             }
+
+            /* Arrastrar un handle SELECCIONA ese parametro: asi la rueda sigue
+             * con el que el usuario acaba de tocar. */
+            if (dragging == DFL_HANDLE_LOW) {
+                sel = DFL_SEL_LOW;
+            } else if (dragging == DFL_HANDLE_HIGH) {
+                sel = DFL_SEL_HIGH;
+            }
+            dfl_refresh();
             break;
         }
 
@@ -426,6 +446,31 @@ static void graph_event_cb(lv_event_t *e) {
     }
 }
 
+/* Una fila tocada selecciona su parametro: queda resaltada (roles del tema) y
+ * la rueda pasa a ajustarla. */
+static dfl_sel_t row_sel_of(dfl_ui_id_t id) {
+    switch (id) {
+        case DFL_UI_LOW_ROW:
+            return DFL_SEL_LOW;
+        case DFL_UI_HIGH_ROW:
+            return DFL_SEL_HIGH;
+        default:
+            return DFL_SEL_BW;
+    }
+}
+
+static void row_cb(lv_event_t *e) {
+    lv_obj_t   *obj = lv_event_get_target(e);
+    dfl_ui_id_t id  = (dfl_ui_id_t)(intptr_t)lv_obj_get_user_data(obj);
+
+    if (tx_active) {
+        return;
+    }
+
+    sel = row_sel_of(id);
+    dfl_refresh();
+}
+
 static void button_cb(lv_event_t *e) {
     lv_obj_t   *obj = lv_event_get_target(e);
     dfl_ui_id_t id  = (dfl_ui_id_t)(intptr_t)lv_obj_get_user_data(obj);
@@ -434,35 +479,7 @@ static void button_cb(lv_event_t *e) {
         return;
     }
 
-    x6200_mode_t mode  = subject_get_int(cfg_cur.mode);
-    int32_t      low   = subject_get_int(cfg_cur.filter.low);
-    int32_t      high  = subject_get_int(cfg_cur.filter.high);
-    int32_t      bw    = subject_get_int(cfg_cur.filter.bw);
-
     switch (id) {
-        case DFL_UI_LOW_MINUS:
-            dfl_apply_low(dfl_quantize(low - dfl_step_low(mode), dfl_step_low(mode)));
-            break;
-        case DFL_UI_LOW_PLUS:
-            dfl_apply_low(dfl_quantize(low + dfl_step_low(mode), dfl_step_low(mode)));
-            break;
-        case DFL_UI_HIGH_MINUS:
-            dfl_apply_high(dfl_quantize(high - dfl_step_high(mode), dfl_step_high(mode)));
-            break;
-        case DFL_UI_HIGH_PLUS:
-            dfl_apply_high(dfl_quantize(high + dfl_step_high(mode), dfl_step_high(mode)));
-            break;
-        case DFL_UI_BW_MINUS: {
-            int32_t v = dfl_quantize(bw - dfl_step_bw(), dfl_step_bw());
-            if (v < dfl_step_bw()) {
-                v = dfl_step_bw();
-            }
-            dfl_apply_bw(v);
-            break;
-        }
-        case DFL_UI_BW_PLUS:
-            dfl_apply_bw(dfl_quantize(bw + dfl_step_bw(), dfl_step_bw()));
-            break;
         case DFL_UI_RESET:
             dfl_reset_default();
             break;
@@ -477,8 +494,39 @@ static void button_cb(lv_event_t *e) {
 /* -------------------------------------------------------------------------- */
 /* Refresh: TODO sale de los Subjects, nunca de una posicion optimista. */
 
+/* Fila: valor del Subject + resaltado del tema cuando esta seleccionada. La
+ * rueda edita la seleccionada; en TX ninguna queda resaltada y el valor va
+ * atenuado (deshabilitado visible). */
+static void dfl_row_refresh(dfl_sel_t s, int32_t value, bool editable) {
+    lv_obj_t *r = row[s];
+
+    if (!r) {
+        return;
+    }
+
+    bool       selected = (s == sel) && !tx_active;
+    lv_color_t fg       = editable ? TC(text) : TC(text_mute);
+    lv_color_t name_fg  = TC(text_dim);
+
+    lv_label_set_text_fmt(row_value[s], "%d Hz", (int) value);
+
+    if (selected) {
+        lv_obj_set_style_bg_color(r, TC(sel_bg), 0);
+        lv_obj_set_style_bg_opa(r, LV_OPA_COVER, 0);
+        lv_obj_set_style_border_color(r, TC(sel_border), 0);
+        fg      = TC(sel_text);
+        name_fg = TC(sel_text);
+    } else {
+        lv_obj_set_style_bg_opa(r, LV_OPA_TRANSP, 0);
+        lv_obj_set_style_border_color(r, TC(popup_border), 0);
+    }
+
+    lv_obj_set_style_text_color(row_name[s], name_fg, 0);
+    lv_obj_set_style_text_color(row_value[s], fg, 0);
+}
+
 static void dfl_refresh(void) {
-    if (!graph || !low_value) {
+    if (!graph || !row[DFL_SEL_LOW]) {
         return;
     }
 
@@ -487,23 +535,13 @@ static void dfl_refresh(void) {
     int32_t      high = subject_get_int(cfg_cur.filter.high);
     int32_t      bw   = subject_get_int(cfg_cur.filter.bw);
 
-    bool low_editable = dfl_mode_low_editable(mode) && !tx_active;
-
-    lv_label_set_text_fmt(low_value, "%d Hz", (int) low);
-    lv_label_set_text_fmt(high_value, "%d Hz", (int) high);
-    lv_label_set_text_fmt(bw_value, "%d Hz", (int) bw);
-
     lv_label_set_text(mode_label, info_params_mode_label_get());
     lv_label_set_text(tx_label, tx_active ? "TX" : "");
 
-    lv_obj_set_style_text_color(low_value, low_editable ? TC(text) : TC(text_mute), 0);
+    dfl_row_refresh(DFL_SEL_LOW, low, dfl_mode_low_editable(mode) && !tx_active);
+    dfl_row_refresh(DFL_SEL_HIGH, high, !tx_active);
+    dfl_row_refresh(DFL_SEL_BW, bw, !tx_active);
 
-    set_btn_enabled(btn[DFL_UI_LOW_MINUS], low_editable);
-    set_btn_enabled(btn[DFL_UI_LOW_PLUS], low_editable);
-    set_btn_enabled(btn[DFL_UI_HIGH_MINUS], !tx_active);
-    set_btn_enabled(btn[DFL_UI_HIGH_PLUS], !tx_active);
-    set_btn_enabled(btn[DFL_UI_BW_MINUS], !tx_active);
-    set_btn_enabled(btn[DFL_UI_BW_PLUS], !tx_active);
     set_btn_enabled(btn[DFL_UI_RESET], !tx_active);
 
     lv_obj_invalidate(graph);
@@ -553,20 +591,36 @@ static lv_obj_t *make_button(lv_obj_t *parent, int32_t x, int32_t y, int32_t w, 
     return b;
 }
 
-static void control_row(lv_obj_t *parent, int32_t y, const char *name, dfl_ui_id_t minus,
-                        dfl_ui_id_t plus, lv_obj_t **value_out) {
-    lv_obj_t *name_l = make_label(parent, 452, y + 13, &sony_18, TC(text_dim), 46);
+/* Fila tocable: etiqueta a la izquierda, valor exacto a la derecha. Sin botones
+ * -/+: la fila entera es el control; tocarla la selecciona y la rueda ajusta la
+ * seleccionada. */
+static void control_row(lv_obj_t *parent, int32_t y, const char *name, dfl_sel_t s, dfl_ui_id_t id) {
+    lv_obj_t *r = lv_obj_create(parent);
+
+    lv_obj_remove_style_all(r);
+    lv_obj_set_size(r, DFL_ROW_W, DFL_ROW_H);
+    lv_obj_set_pos(r, DFL_ROW_X, y);
+    lv_obj_set_style_radius(r, 4, 0);
+    lv_obj_set_style_border_width(r, 1, 0);
+    lv_obj_set_style_bg_opa(r, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_color(r, TC(popup_border), 0);
+    lv_obj_add_flag(r, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(r, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_user_data(r, (void *)(intptr_t) id);
+    lv_obj_add_event_cb(r, row_cb, LV_EVENT_CLICKED, NULL);
+
+    lv_obj_t *name_l = make_label(r, 8, 13, &sony_18, TC(text_dim), 60);
 
     lv_label_set_text(name_l, name);
 
-    lv_obj_t *value = make_label(parent, 498, y + 9, &sony_22, TC(text), 112);
+    lv_obj_t *value = make_label(r, 64, 9, &sony_22, TC(text), 188);
 
     lv_obj_set_style_text_align(value, LV_TEXT_ALIGN_RIGHT, 0);
     lv_label_set_text(value, "0 Hz");
-    *value_out = value;
 
-    make_button(parent, 616, y, DFL_BTN, DFL_BTN, "-", minus);
-    make_button(parent, 664, y, DFL_BTN, DFL_BTN, "+", plus);
+    row[s]       = r;
+    row_name[s]  = name_l;
+    row_value[s] = value;
 }
 
 static void construct_cb(lv_obj_t *parent) {
@@ -620,12 +674,16 @@ static void construct_cb(lv_obj_t *parent) {
     lv_obj_t *hint_label = make_label(dialog.obj, 16, 178, &sony_14, TC(text_dim), 0);
     lv_label_set_text(hint_label, "Esquema de banda pasante");
 
-    control_row(dialog.obj, 54, "LOW", DFL_UI_LOW_MINUS, DFL_UI_LOW_PLUS, &low_value);
-    control_row(dialog.obj, 98, "HIGH", DFL_UI_HIGH_MINUS, DFL_UI_HIGH_PLUS, &high_value);
-    control_row(dialog.obj, 142, "BW", DFL_UI_BW_MINUS, DFL_UI_BW_PLUS, &bw_value);
+    control_row(dialog.obj, 54, "LOW", DFL_SEL_LOW, DFL_UI_LOW_ROW);
+    control_row(dialog.obj, 98, "HIGH", DFL_SEL_HIGH, DFL_UI_HIGH_ROW);
+    control_row(dialog.obj, 142, "BW", DFL_SEL_BW, DFL_UI_BW_ROW);
 
     /* Estado inicial de TX: el fixture/la radio ya lo sabe al abrir. */
     tx_active = (radio_get_state() != RADIO_RX);
+
+    /* Seleccion inicial al abrir: LOW donde es editable; en AM/SAM/NFM/WFM,
+     * donde LOW no es editable, HIGH (ver dfl_default_sel). */
+    sel = dfl_default_sel(subject_get_int(cfg_cur.mode));
 
     lv_obj_add_event_cb(dialog.obj, tx_event_cb, EVENT_RADIO_TX, NULL);
     lv_obj_add_event_cb(dialog.obj, tx_event_cb, EVENT_RADIO_RX, NULL);
@@ -664,11 +722,14 @@ static void destruct_cb(void) {
     }
 
     graph      = NULL;
-    low_value  = NULL;
-    high_value = NULL;
-    bw_value   = NULL;
     mode_label = NULL;
     tx_label   = NULL;
+
+    for (int i = 0; i < DFL_SEL_COUNT; i++) {
+        row[i]       = NULL;
+        row_name[i]  = NULL;
+        row_value[i] = NULL;
+    }
 
     for (int i = 0; i <= DFL_UI_CLOSE; i++) {
         btn[i] = NULL;
@@ -686,7 +747,7 @@ static dialog_t dialog = {
     .construct_cb = construct_cb,
     .destruct_cb  = destruct_cb,
     .audio_cb     = NULL,
-    .rotary_cb    = NULL,
+    .rotary_cb    = rotary_cb,
     .btn_page     = &buttons_page_dfl_editor,
     .prev_page    = NULL,
     .key_cb       = key_cb,

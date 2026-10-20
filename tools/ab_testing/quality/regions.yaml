@@ -129,3 +129,13 @@ regions:
   - name: ajustes_dialogo
     rect: [2, 66, 796, 348]
     description: "Cuerpo del dialogo de Ajustes (dialog_settings.c) sobre el arnes"
+
+  # El cuerpo entero del editor DFL (el `dialog.obj` de dialog_dfl.c: 720x206 en
+  # x=40, y=202, el bbox del contrato). El modal se dibuja sobre la cascada, asi
+  # que sus pixeles caen dentro de `waterfall`: sin region propia, la correccion
+  # del editor (issue #173: sin botones -/+, con la fila seleccionada) se
+  # atribuiria a toda la franja de la cascada. Se dibuja entera en las fixtures
+  # `dfl-editor-*`.
+  - name: dfl_editor_dialogo
+    rect: [40, 202, 720, 206]
+    description: "Editor DFL (dialog_dfl.c): modal 720x206 en x=40, y=202 sobre el arnes"

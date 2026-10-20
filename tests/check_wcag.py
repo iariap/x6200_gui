@@ -377,7 +377,7 @@ USO_TEXTO = {
 # (fg, bg, umbral, requisito, archivo:linea de donde sale el par)
 PARES_ESPECIFICOS = [
     # Seleccion, foco y botones: cada rol de texto tiene su superficie.
-    ("sel_text", "sel_bg", 4.5, None, "dialog_bands.c:87+194, dialog_sstv.c:1833+1840"),
+    ("sel_text", "sel_bg", 4.5, None, "dialog_bands.c:87+194, dialog_sstv.c:1833+1840, dialog_dfl.c (fila seleccionada del editor DFL)"),
     ("sel_text", "near_bg", 4.5, None, "freq_list.c:31+134+144"),
     ("focus_text", "focus", 4.5, None, "theme.h:50-51, styles.c:229-233"),
     ("text", "focus_bg", 4.5, None, "dialog_js8.c:2668-2669"),
