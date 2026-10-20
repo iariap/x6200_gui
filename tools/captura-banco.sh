@@ -125,8 +125,7 @@ mkdir -p "$CHROOT/mnt" "$CHROOT/dev/shm" "$CHROOT/tmp"
 
 # --- 1. ultima version: hash de los fuentes + cambios sin commitear + timestamps ----------------
 hash_fuentes() {
-    { find "$REPO/src" "$REPO/lvgl/src" -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' \) -print0 2>/dev/null \
-        | sort -z | xargs -0 md5sum 2>/dev/null; } | md5sum | cut -d' ' -f1
+    sh "$AQUI/fuente-md5.sh" "$REPO"
 }
 SELLO="$CHROOT/.banco-fuente.md5"
 HASH=$(hash_fuentes)
