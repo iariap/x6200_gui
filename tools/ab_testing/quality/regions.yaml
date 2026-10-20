@@ -35,7 +35,7 @@ regions:
   # (waterfall.c). La region los aisla para que un cambio de los ticks no se
   # atribuya a toda la cascada (que la contiene) ni al reves.
   - name: waterfall_ticks
-    rect: [0, 196, 800, 8]
+    rect: [0, 240, 800, 8]
     description: "Ticks del filtro RX en el borde superior de la cascada (waterfall.c, #173)"
 
   - name: frecuencia

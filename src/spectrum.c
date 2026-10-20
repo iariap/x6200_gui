@@ -31,10 +31,14 @@
 #define VISOR_HEIGHT_RX 100
 #define SPECTRUM_SIZE 800
 
-/* Inset vertical del texto de BW respecto del borde superior del visor: el
- * arco del S-meter llega hasta y~62 y el visor del espectro arranca en y=60, asi
- * que unos px mas abajo el texto queda debajo del medidor (issue #173, PR 1). */
-#define FILTER_BW_TEXT_TOP_PAD 6
+/* Inset vertical de la banda pasante y del texto de BW respecto del borde
+ * superior del visor (y1 + h - visor_height = 60 con el espectro de 160 px y el
+ * visor RX de 100 px). El S-meter tiene fondo transparente y su region llega a
+ * y=66, asi que el relleno/bordes del filtro arrancan en y=66 para no tocar
+ * pixeles del medidor ni de la barra superior (contrato #173, PR 1); el texto
+ * del BW va unos px mas abajo todavia. */
+#define FILTER_BAND_TOP_PAD   6
+#define FILTER_BW_TEXT_TOP_PAD (FILTER_BAND_TOP_PAD + 4)
 #define FILTER_BW_TEXT_MARGIN  4
 
 typedef struct {
@@ -264,7 +268,7 @@ static void spectrum_draw_cb(lv_event_t *e) {
     band_line_dsc.width = 1;
 
     if (band.visible) {
-        lv_coord_t band_y1 = y1 + h - visor_height;
+        lv_coord_t band_y1 = y1 + h - visor_height + FILTER_BAND_TOP_PAD;
         lv_coord_t band_y2 = y1 + h;
 
         /* Relleno discreto: mismo rol del tema que los bordes, opacidad baja. */
