@@ -215,6 +215,19 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "main-tx-simulado",
         "settings-audio",
         "settings-bands",
+        # Paginas de Ajustes del esquema unico de la grilla (issue #175): la
+        # pantalla generica `settings-grupo` + su grupo, y las seis variantes de
+        # tema de la pagina Operation.
+        "settings-grupo-actions",
+        "settings-grupo-display",
+        "settings-grupo-info",
+        "settings-grupo-operation",
+        "settings-grupo-operation-tema-aurora",
+        "settings-grupo-operation-tema-cathode",
+        "settings-grupo-operation-tema-redshift",
+        "settings-grupo-operation-tema-sprint",
+        "settings-grupo-operation-tema-sunlit",
+        "settings-grupo-operation-tema-trail",
         "settings-home",
         "settings-perfil",
         "settings-tema-aurora",
@@ -254,6 +267,8 @@ def test_repo_fixtures_are_all_parsable() -> None:
             "settings-home",
             "settings-perfil",
             "settings-wfbat",
+            # Paginas de Ajustes del esquema unico de la grilla (issue #175).
+            "settings-grupo",
             "settings-bands",
             "app-bands",
             "apps-menu",

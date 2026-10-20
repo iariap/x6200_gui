@@ -293,7 +293,8 @@ bool scenario_build(const scenario_t *scenario)
 
     if (!strcmp(scenario->screen, "settings-home") || !strcmp(scenario->screen, "settings-wfbat")
         || !strcmp(scenario->screen, "settings-perfil")
-        || !strcmp(scenario->screen, "settings-audio")) {
+        || !strcmp(scenario->screen, "settings-audio")
+        || !strcmp(scenario->screen, "settings-grupo")) {
         /* Ajustes on top of the real main screen, opened by the firmware's own
          * path: main_screen_action(ACTION_APP_SETTINGS) -> main_screen_start_app()
          * -> dialog_construct(dialog_settings) (src/main_screen.c -> src/dialog.c
@@ -1087,6 +1088,73 @@ void scenario_settle(const scenario_t *scenario)
         if (mock_audio_last_db() != -7.0f) {
             fprintf(stderr, "settings-audio: el setter de entrada recibio %f en vez de -7\n",
                     (double) mock_audio_last_db());
+            exit(1);
+        }
+    }
+
+    if (!strcmp(scenario->screen, "settings-grupo")) {
+        /* Las 8 paginas (grupos) de Ajustes por el mismo camino que el usuario: el tab
+         * de la barra de abajo llama a settings_goto() (scroll + foco). La tabla es la
+         * de src/dialog_settings.c (tabs_pagina_1/tabs_pagina_2, el orden del issue
+         * #109): la pagina 1 tiene los indices 0..3 y el 4 es "More >"; la pagina 2
+         * tiene los indices 0..3 (Display, Appearance, Actions, Info). Cada grupo lleva
+         * una etiqueta TESTIGO de una de sus filas: el arnes corta si el tab no esta en
+         * la barra o si la fila no quedo en pantalla, asi que un reordenamiento de los
+         * tabs no puede dar una corrida verde capturando otra pagina. */
+        static const struct {
+            const char *tab;
+            bool        pagina2;
+            uint8_t     idx;
+            const char *fila;
+        } grupos[] = {
+            { "Operation",  false, 0, "Freq acceleration" },
+            { "Audio",      false, 1, "Play,Rec gain" },
+            { "Spectrum",   false, 2, "Waterfall battery mode" },
+            { "Clock",      false, 3, "Day, Month, Year" },
+            { "Display",    true,  0, "S-meter needle" },
+            { "Appearance", true,  1, "Theme" },
+            { "Actions",    true,  2, "GEN long press" },
+            { "Info",       true,  3, "Mag Freq, Info, ALC" },
+        };
+        const size_t n = sizeof(grupos) / sizeof(grupos[0]);
+        const char  *fila = NULL;
+        bool         pagina2 = false;
+        uint8_t      idx = 0;
+
+        for (size_t i = 0; i < n; i++) {
+            if (!strcmp(grupos[i].tab, scenario->settings_grupo)) {
+                pagina2 = grupos[i].pagina2;
+                idx     = grupos[i].idx;
+                fila    = grupos[i].fila;
+                break;
+            }
+        }
+
+        if (fila == NULL) {
+            fprintf(stderr,
+                    "settings-grupo: '%s' no es uno de los 8 grupos de Ajustes (Operation, "
+                    "Audio, Spectrum, Clock, Display, Appearance, Actions, Info)\n",
+                    scenario->settings_grupo);
+            exit(1);
+        }
+
+        if (pagina2) {
+            buttons_press(4, false);    /* page 1, index 4: "More >" */
+        }
+
+        if (!label_on_screen(lv_scr_act(), scenario->settings_grupo)) {
+            fprintf(stderr,
+                    "settings-grupo: no hay tab '%s' en la barra de abajo (¿se reordenaron los "
+                    "tabs?)\n", scenario->settings_grupo);
+            exit(1);
+        }
+
+        buttons_press(idx, false);
+
+        if (!label_on_screen(lv_scr_act(), fila)) {
+            fprintf(stderr,
+                    "settings-grupo: la fila testigo '%s' del grupo '%s' no quedo en pantalla "
+                    "despues del tab (¿se movio el grupo?)\n", fila, scenario->settings_grupo);
             exit(1);
         }
     }

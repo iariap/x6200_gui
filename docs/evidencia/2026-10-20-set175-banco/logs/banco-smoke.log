@@ -1,0 +1,20 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output-dfl173: ok
+  chroot /home/pablo/desa/asf/state/set175-chroot: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  buildroot: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  limpiando la GUI (dirclean): el rebuild reusa una copia propia del repo
+  reconstruyendo la GUI: el hash de los fuentes cambio
+OK: /home/pablo/desa/asf/state/set175-chroot/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13869700 B, 3/3 marcas)
+  el banco no contesta o la GUI no esta viva; reiniciando...
+  captura: /tmp/opencode/set175/banco-home.png (287 colores distintos)
+  version: 7af6ebb1 Ajustes: un solo origen para la columna de widgets 
+  fuente: md5 3c7995da8952 (src/ + lvgl/src)
+  binario: md5 8fbefe64ac9d   qemu-cpu: cortex-a7
+  captura util (24278 bytes)

@@ -212,6 +212,12 @@ static bool apply_key(const char *key, const char *value, scenario_t *out)
 
         if (v < 1 || v > 6) { return false; }
         out->apps_page = (int) v;
+    } else if (!strcmp(key, "settings_grupo")) {
+        /* El grupo de Ajustes que el fixture `settings-grupo` abre, por el nombre
+         * del tab de la barra de abajo (src/dialog_settings.c, tabs_items). El
+         * fixture lo valida contra la tabla de screens.c: un nombre que no es uno
+         * de los ocho hace que el arnes corte, nunca que capture otro grupo. */
+        snprintf(out->settings_grupo, sizeof(out->settings_grupo), "%s", value);
     } else if (!strcmp(key, "swr_dataset")) {
         /* SWR Scan (issue #125): the deterministic dataset of
          * tests/fixtures/swrscan/ the fake ROE acquisition backend replays through

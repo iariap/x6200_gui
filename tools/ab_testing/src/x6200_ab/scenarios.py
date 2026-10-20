@@ -79,6 +79,11 @@ KNOWN_KEYS = frozenset(
         "swr_passes",
         "swr_feed",
         "swr_stop",
+        # El grupo de Ajustes que abre un fixture `settings-grupo` (issue #175), por
+        # el nombre del tab de la barra de abajo (Operation, Audio, Spectrum, Clock,
+        # Display, Appearance, Actions, Info). El arnes (screens.c) lo resuelve a la
+        # pagina/indice del tab y verifica la fila testigo del grupo.
+        "settings_grupo",
     }
 )
 
