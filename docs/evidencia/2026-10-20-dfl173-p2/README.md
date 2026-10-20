@@ -3,7 +3,9 @@
 Corrida `factory/dfl-editor-173`. **Base**: `ce77df7a` (trunk tip con el PR 1).
 **Commits de código**: `7184892a` (editor + modelo + acceso), `217701c8` (waivers
 UI-017 del editor) y `c9428204` (el editor entra por el dispatcher de apps y el
-control remoto, para el banco). Alcance **PR 2** del §6 del issue #173.
+control remoto, para el banco). **HEAD de la corrida**: `e4f2b594` (más la
+evidencia `a0dda436` y el fix del stub del test remoto). Alcance **PR 2** del §6
+del issue #173.
 
 ## 1. Exploración previa (§8) — con líneas
 
