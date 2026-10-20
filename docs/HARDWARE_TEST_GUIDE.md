@@ -84,6 +84,26 @@ armónicos y PTT del micrófono. Sin esa medición, el estado es **`requires-rad
 
 ---
 
+## 1c. CB 27 MHz (issue #169) — canal en la fila y barra CB en el plan de banda
+
+Mejora de presentación (solo UI; sin TX). Se prueba que el canal se vea en grande en la fila de
+frecuencia y que la franja del plan de banda se pinte de CB. **Sin transmisión.**
+
+| # | Qué | Cómo | Qué mirar |
+|---|---|---|---|
+| 1 | Fila en CB C | Ir a 27,185 (AM) | Fila **`27.185` · `CH 19` · `CB C`**; barra **violeta `CB`** arriba; **sin** «8» fantasma |
+| 2 | Dial | Girar la perilla en 27,185 | El centro cambia `CH 20`, `CH 21`…; la barra sigue; la voz dice `Channel N` (sin cambios) |
+| 3 | Grids A/B/D | Ir a 26,065 / 26,515 / 27,855 | A la derecha **`CB A` / `CB B` / `CB D`**; `CH 1` en el borde y `CH 40` en el otro; la barra se recorta al cruzar el borde |
+| 4 | Off-channel | Ir a 27,000 | **`27.000` · `CH --` · `CB C`**; el primer giro engancha |
+| 5 | Orden 23/24 | Pasar del 23 al 24 | **`CH 24`** y a la izquierda **`27.235`** |
+| 6 | Temas | Aurora, Cathode, Redshift, Sprint, Sunlit, Trail | En Cathode/Sprint `CH 19` y `CB C` con la familia **normal** y **sin** «8» fantasma; en los seis la barra violeta `CB` |
+| 7 | Ajuste Band plan | Apagar/prender *Display → Band plan* | Apagado: no hay barra (ni en CB ni en aficionados). Prendido: vuelve |
+| 8 | Salir de CB | Ir a 40 m | Vuelve la frecuencia grande + bordes del span + fantasma (si el tema lo tiene); la franja IARU igual que antes |
+| 9 | Celda VFO | En CB | Sigue mostrando **`CH nn`** (no se tocó `info.c`) |
+| 10 | Consumo | RX en CB contra 10 m | Sin timers nuevos ni wakeups extra |
+
+---
+
 ## 2. Apps nuevas (que no se cuelguen y que vuelvan bien)
 
 Para cada una: abrir, usar lo básico, cerrar. Al cerrar, la pantalla debe volver al waterfall con

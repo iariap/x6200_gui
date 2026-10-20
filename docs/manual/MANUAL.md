@@ -126,6 +126,14 @@ igual que a cualquier banda: con `UP`/`DOWN` **largos** (la app Bands no las lis
 - La celda de arriba a la izquierda dice **`CH 19`** si estás en un canal exacto y **`CH --`** si
   caíste en un hueco o entre canales. El primer giro engancha el canal siguiente en la dirección
   del giro.
+- **La fila grande de frecuencia** también muestra el canal, en grande: `27.185` (frecuencia del
+  grid) · `CH 19` (o `CH --`) · `CB C` (el grid). Los tres textos usan la familia tipográfica
+  **normal**, así se leen también en los temas con fuente segmentada (Cathode, Sprint); el «8»
+  fantasma no se dibuja en CB y vuelve al salir a una banda de aficionado.
+- **La franja del plan de banda** (al pie del espectro, arriba de la fila) se pinta **violeta** con
+  el rótulo `CB` mientras el span cae dentro de un grid: es la misma franja donde las bandas de
+  aficionado marcan CW / DIG / ALL MODES. Si el span cruza el borde de un grid, la barra se recorta;
+  si cae en el hueco de 10 kHz entre grids, no se pinta.
 - El **canal 23 → 24** sube el número y **baja** la frecuencia (27,255 → 27,235): es correcto,
   el dial cuenta canales.
 - Al entrar, el equipo apaga el **split**, pasa a **AM** si no estaba en AM/SAM/NFM, recorta la
@@ -742,6 +750,12 @@ El plan tiene **cinco huecos** (26,995 / 27,045 / 27,095 / 27,145 / 27,195) y lo
 **23, 24 y 25 van fuera de orden**: 23 = 27,255; 24 = 27,235; 25 = 27,245. Por eso, al pasar del
 23 al 24, el número de canal sube y la frecuencia **baja**. La celda `CH --` marca justamente un
 hueco o una frecuencia que no es canal. En los extremos 1 y 40 el dial no da la vuelta.
+
+**En pantalla.** En CB la fila grande de frecuencia muestra la frecuencia del grid, el canal y el
+grid (`27.185` · `CH 19` · `CB C`), y la franja del plan de banda (al pie del espectro) se pinta
+violeta con el rótulo `CB`; la celda `CH nn` de la barra sigue mostrando el canal como indicador
+de estado. Fuera de CB la fila vuelve a la frecuencia grande con los bordes del span y la franja
+vuelve a los segmentos IARU.
 
 **TX en CB.** El PTT de software pasa por un interlock por ventana de frecuencia:
 
