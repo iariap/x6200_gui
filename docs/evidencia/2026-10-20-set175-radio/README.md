@@ -30,3 +30,23 @@ antes. Es lo que pide #175.
 ## Estado dejado
 
 - Frecuencia/modo/filtro del dueno restaurados (**7.173.000 LSB BW 2980**), pagina GEN, RX, sin TX.
+
+## Cierre: las 8 paginas de Ajustes (segunda fila de pestanas)
+
+La barra tiene **dos filas**: [Operation · Audio · Spectrum · Clock · More >] y, dentro de "More >",
+[Display · Appearance · Actions · Info · < More]. Se capturaron **las 8** ( + ).
+
+Medicion del borde izquierdo mas frecuente de los controles por pagina:
+
+| Pagina | Borde izq. (px) |
+|---|---|
+| Audio (pag-1) | **499 / 500** |
+| Spectrum (pag-2) | **500 / 499** |
+| Clock (pag-3) | **500** |
+| More (pag-more) | **500** en las filas de control |
+| Display (grupo-0) | **500** |
+| Appearance (grupo-1) | **500** |
+| Actions (grupo-2) | **500** |
+| Info (grupo-3) | **499** |
+
+**Un solo origen** en las 8 paginas: 499-500 px. El viejo origen x=643 ya no aparece.
