@@ -107,7 +107,8 @@ for nombre, cuerpo in paginas:
 # Toda app despachada (por cualquiera de las dos funciones) tiene que estar en una pagina APP:
 # una accion sin boton solo se alcanzaria por long press. El editor DFL (issue #173, PR 2) es la
 # excepcion deliberada: se abre desde la QUINTA CELDA de la pagina DFL (no de una pagina APP) y
-# desde el long press fisico DFL; por eso no vive en `page_app_*`.
+# desde el long press fisico DFL; por eso no vive en `page_app_*` aunque tenga su case en
+# main_screen_start_app (para el control remoto).
 for app in sorted(en_start_app | en_action):
     if app == "ACTION_APP_DFL_EDITOR":
         continue
