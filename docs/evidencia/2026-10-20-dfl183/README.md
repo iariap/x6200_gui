@@ -117,7 +117,56 @@ Comandos y salidas crudas en `logs/`.
 | Framework A/B | `ruff` / `ruff format --check` / `ty` / `pytest -m "not e2e"` | OK / OK / OK / **227 passed** |
 | A/B e2e | `TMPDIR=<disco> pytest -m e2e` | **13 passed** |
 | A/B de UI | `uv run x6200-ab compare --a 26c8e8e7 --b a0fa0250 --experiment-id AB-DFL183` | **PASS** (exit 0): Functional, Visual Regression, Quality Contract (1.480 checks) y Performance PASS; Hardware/Energy BLOCKED (advisory, sin radio). **140 de 142 escenarios idénticos**; los 6 `dfl-page-tema-*` cambian **explicados** dentro de las regiones declaradas (`botones`, `dfl_inline`) por el rótulo nuevo de la quinta celda (`Grafico`) y por llegar a esa página vía `Ajustar`. `ab-DFL183/` |
+| Contratos (CI) | `uv run x6200-ab contracts --revision HEAD` | **PASS** (exit 0): **2.033 checks, 0 fallos, 0 unchanged** (ver *Fix del CI* abajo) |
 | Banco QEMU (#86) | `tools/captura-banco.sh` | preflight OK, `dirclean`+rebuild OK, **gate #86 3/3 marcas**, capturas A–E |
+
+### Fix del CI (job `x6200-ab contracts`)
+
+El job de contratos del PR marcó dos reglas sobre las fixtures nuevas. Medido localmente
+antes del fix: **2.040 checks, 20 fallos** (12 `layout_overlap`, 8 `layout_touch_target`).
+Los 20 se cierran en `6c67a82a` y el gate pasa a **2.033 checks, 0 fallos**:
+
+1. **`layout_touch_target` — el objeto de 663,251 128×32 era el `Cancelar` TÁCTIL** del
+   chip contextual (`src/dfl_context.c`, `action_btn`): tiene `LV_OBJ_FLAG_CLICKABLE`, su
+   callback de `LV_EVENT_CLICKED` y fondo opaco del rol `sel_bg`, así que no es un rótulo:
+   el defecto era la **geometría**. El chip pasa de **340×40 a 340×52** (4 px de margen +
+   los **44 px** del target de campo de `quality/contracts.yaml` + 4) y el botón mide
+   **128×44**; el rótulo del contexto se centra vertical (`LV_ALIGN_LEFT_MID`) para que el
+   chip se vea igual de equilibrado con una línea (F) o dos (E). Caen las 7 fixtures
+   (`dfl-presets-assign-tema-*` y `dfl-presets-touch-hold`, la otra que llega a F).
+2. **`layout_overlap` — el "8 fantasma" (UI-017)**, no un defecto nuevo: las 12 fixtures
+   `dfl-presets-{fav,adj,graph,more,confirm,assign}-tema-{sprint,cathode}` dibujan la fila
+   de frecuencia de la pantalla de fondo con la familia segmentada (`font_digits:
+   dseg14`), igual que `main-tema-*`, `dfl-usb-d-*` (#173), `dfl-editor-*` (#179) y
+   `dfl-page-*` (#179), que ya tienen su excepción. Se suman **12 excepciones acotadas**
+   (regla + fixture + razón + autor `dfl-presets-183` + vencimiento `2027-10-20`) en
+   `tools/ab_testing/quality/contracts.yaml`; **la regla global no se toca**.
+3. **`layout_overlap` en `dfl-presets-rotary0`**: es la primera fixture del corpus que gira
+   la rueda, así que es la primera que deja **visible** el indicador `x%.1f` de la
+   aceleración adaptativa (`src/main_screen.c`, se oculta solo a los 2 s). Su caja cae en el
+   margen derecho libre del panel del reloj de potencia (209×61, texto centrado): la regla
+   mide **cajas, no tinta**, y el reloj conserva sus dos líneas. Se registra como
+   **UI-018** (`status: verified`, con evidencia en `quality/known_issues.yaml`) y su
+   excepción va por fixture; no es el fantasma y no se mezcla con UI-017.
+
+`tests/test_theme_checks.py` sigue validando que cada excepción sea acotada, fechada y
+detrás de un hallazgo verificado del registro (el set esperado de fixtures suma las 13).
+
+Gates corridos sobre `6c67a82a` (logs crudos en `logs/`):
+
+| Gate | Comando | Resultado |
+|---|---|---|
+| Contratos antes | `x6200-ab contracts --revision 8d369f11` | **FAIL** (exit 1): 2.040 checks, **20 fallos** (`logs/contracts-before-fix.log`) |
+| Contratos después | `x6200-ab contracts --revision HEAD` | **PASS** (exit 0): 2.033 checks, **0 fallos** (`logs/contracts-after-fix.log`) |
+| Inspección del chip | `capture … --inspect` | `lv_obj at 663,251 128x44` clickable, chip `340x52` (`logs/inspect-chip-fix.txt`) |
+| Framework A/B | `ruff` / `format --check` / `ty` / `pytest -m "not e2e"` | OK / OK / OK / **227 passed** (`logs/pytest-fix.log`) |
+| Nativos | `sh tests/native/run_native_tests.sh` | **rc 0** (incluye `test_dfl_presets` 175 y migración 62; `logs/native-fix.log`) |
+| Determinismo | `tests/check_harness_determinism.sh` | **PASS**: 196 fixtures × 2 corridas, PNG idénticos con `C` tocado (`logs/determinismo-fix.log`) |
+
+Las capturas de las siete fixtures con chip (`capturas/dfl-presets-assign-tema-*.png` y
+`capturas/dfl-presets-touch-hold.png`) se regeneraron con el chip nuevo; el resto de las
+capturas de la corrida no cambia (la banda contextual solo existe en F y en el hold).
+
 
 ### Banco QEMU (binario ARM real, sin radio)
 
@@ -164,4 +213,9 @@ vuelve a subir la versión.
 * El **primer** intento del A/B abortó por **disco lleno** (`git worktree add` falló con
   8,2 GB libres: el checkout de una revisión pesa 2,3 GB). Se reintentó con el workspace en
   `/var/tmp` y pasó. El host quedó al 100% de uso; se limpiaron los artefactos de esta
-  corrida (salidas intermedias del arnés y workspaces), **no** los del owner.
+  corrida (salidas intermedias del arnés y workspaces), **no** los del owner. **El fix del
+  CI volvió a chocar con lo mismo**: `contracts` no podía materializar la revisión en el
+  workspace temporal (`/tmp` es tmpfs) y fallaba con `git worktree add … unable to write
+  file`; se corrió con `--workspace` en el disco del repo (`state/ab-workspace-183`), que es
+  el mismo workaround que el A/B. Para cualquier corrida futura: **el workspace va en disco,
+  no en `/tmp`**.

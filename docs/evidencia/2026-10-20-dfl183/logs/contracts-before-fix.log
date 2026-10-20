@@ -1,0 +1,21 @@
+contracts 8d369f118134: FAIL — 2040 checks, 20 failure(s), 0 unchanged baseline defect(s)
+  FAIL layout_overlap [dfl-presets-adj-tema-cathode]: text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)
+  FAIL layout_overlap [dfl-presets-adj-tema-sprint]: text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)
+  FAIL layout_touch_target [dfl-presets-assign-tema-aurora]: lv_obj at 663,251 128x32 is 128x32, below the 44px touch target
+  FAIL layout_touch_target [dfl-presets-assign-tema-cathode]: lv_obj at 663,251 128x32 is 128x32, below the 44px touch target
+  FAIL layout_overlap [dfl-presets-assign-tema-cathode]: text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)
+  FAIL layout_touch_target [dfl-presets-assign-tema-redshift]: lv_obj at 663,251 128x32 is 128x32, below the 44px touch target
+  FAIL layout_touch_target [dfl-presets-assign-tema-sprint]: lv_obj at 663,251 128x32 is 128x32, below the 44px touch target
+  FAIL layout_overlap [dfl-presets-assign-tema-sprint]: text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)
+  FAIL layout_touch_target [dfl-presets-assign-tema-sunlit]: lv_obj at 663,251 128x32 is 128x32, below the 44px touch target
+  FAIL layout_touch_target [dfl-presets-assign-tema-trail]: lv_obj at 663,251 128x32 is 128x32, below the 44px touch target
+  FAIL layout_overlap [dfl-presets-confirm-tema-cathode]: text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)
+  FAIL layout_overlap [dfl-presets-confirm-tema-sprint]: text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)
+  FAIL layout_overlap [dfl-presets-fav-tema-cathode]: text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)
+  FAIL layout_overlap [dfl-presets-fav-tema-sprint]: text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)
+  FAIL layout_overlap [dfl-presets-graph-tema-cathode]: text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)
+  FAIL layout_overlap [dfl-presets-graph-tema-sprint]: text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)
+  FAIL layout_overlap [dfl-presets-more-tema-cathode]: text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)
+  FAIL layout_overlap [dfl-presets-more-tema-sprint]: text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)
+  FAIL layout_overlap [dfl-presets-rotary0]: text labels overlap: '\uf240 12.1v\n\uf1e6 13.8v' at 591,0 and 'x1.0' at 769,10 (100% covered)
+  FAIL layout_touch_target [dfl-presets-touch-hold]: lv_obj at 663,251 128x32 is 128x32, below the 44px touch target
