@@ -500,22 +500,20 @@ expected_changes:
     author: dfl-visual-173
     until: 2027-10-20
 
-  # AB-DFL173C (issue #173, correccion del owner sobre el editor mergeado en
-  # 39539f93): el editor DFL pierde los botones -/+ y cada fila (LOW/HIGH/BW)
-  # pasa a ser tocable y a quedar resaltada al seleccionarse; la rueda (encoder)
-  # ajusta la fila seleccionada. El modal se dibuja sobre la cascada, asi que sus
-  # pixeles caen dentro de `waterfall`; la region `dfl_editor_dialogo` los aisla.
-  # Todo el cambio vive dentro del cuerpo del modal (bbox del contrato: 720x206
-  # en x=40, y=202): las fixtures que no abren el editor quedan byte-identicas.
-  - region: dfl_editor_dialogo
+  # AB-DFL179 (issue #179, correccion del #173): el editor DFL deja de ser un
+  # modal y pasa a ser un panel INLINE sobre el waterfall (src/dfl_inline.c). Los
+  # pixeles que se mueven son los del panel (800x150 en y=268, con los 28 px
+  # superiores del waterfall vivos) y la barra inferior expandida
+  # (LOW/HIGH/BW/Eq/Waterfall). El resto de la pantalla (header, S-meter,
+  # espectro, frecuencia y cascada por encima del panel) queda igual.
+  - region: dfl_inline
     reason: >
-      AB-DFL173C (#173): el editor DFL (src/dialog_dfl.c) cambia de botones -/+ a
-      filas tocables con resaltado del tema (roles sel_bg/sel_border/sel_text) y
-      la rueda ajusta la fila seleccionada (src/dfl_rotary.c). Los pixeles que se
-      mueven son los del cuerpo del modal (las tres filas y el resaltado); el
-      resto de la pantalla de fondo (header, S-meter, espectro, frecuencia,
-      cascada y barra de teclas) queda igual.
-    author: dfl-encoder-173
+      AB-DFL179 (#179): el editor DFL pasa de dialogo modal (src/dialog_dfl.c) a
+      panel inline sobre el waterfall (src/dfl_inline.c), con edicion por el
+      encoder de VOLUMEN (rotary1) y touch. La region `dfl_inline` aisla el panel
+      y la barra expandida; las fixtures que no abren el editor quedan
+      byte-identicas.
+    author: dfl-inline-179
     until: 2027-10-20
 
 # Changes confined to these regions are not auto-failed either: they are
@@ -746,6 +744,62 @@ exceptions:
       `font_digits: dseg14`; misma capa sombra de la fila de frecuencia que la
       fixture del editor de Sprint. Diseno, no defecto.
     author: dfl-editor-173
+    until: 2027-10-20
+
+  # Issue #179: las fixtures nuevas del editor DFL inline de los temas con
+  # digitos segmentados (Sprint, Cathode) traen la MISMA capa de "8 fantasma" de
+  # la fila de frecuencia que las de #173; el editor inline no la toca. Un waiver
+  # por fixture, como los de arriba.
+  - rule: layout_overlap
+    fixture: dfl-editor-sel-high-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): tema Sprint (`font_digits:
+      dseg14`), capa sombra de la fila de frecuencia de la pantalla de fondo. El
+      editor DFL inline (src/dfl_inline.c) no la toca. Diseno, no defecto.
+    author: dfl-inline-179
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-editor-sel-high-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): tema Cathode (`font_digits:
+      dseg14`), misma capa sombra de la fila de frecuencia. Diseno, no defecto.
+    author: dfl-inline-179
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-editor-sel-bw-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): tema Sprint (`font_digits:
+      dseg14`), capa sombra de la fila de frecuencia. El editor DFL inline no la
+      toca. Diseno, no defecto.
+    author: dfl-inline-179
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-editor-sel-bw-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): tema Cathode (`font_digits:
+      dseg14`), capa sombra de la fila de frecuencia. Diseno, no defecto.
+    author: dfl-inline-179
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-page-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): tema Sprint (`font_digits:
+      dseg14`), capa sombra de la fila de frecuencia de la pagina DFL normal.
+      Diseno, no defecto.
+    author: dfl-inline-179
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-page-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): tema Cathode (`font_digits:
+      dseg14`), capa sombra de la fila de frecuencia de la pagina DFL normal.
+      Diseno, no defecto.
+    author: dfl-inline-179
     until: 2027-10-20
 
   # Las paginas de Ajustes del esquema unico (issue #175): Operation, Display e
