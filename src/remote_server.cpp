@@ -1127,18 +1127,97 @@ void remote_text(const char *type, const char *s, size_t n) {
     }
 }
 
+/* --- Dueno del socket de control (issue #172) ---------------------------------
+ * Al arrancar, remote_server_init() hacia unlink() a ciegas del path del socket.
+ * Con dos GUI vivas (el daemon la relanza mientras otra instancia ya corre) la
+ * segunda le robaba el socket a la primera: el path quedaba apuntando al inodo de
+ * la segunda y, si esa moria, quedaba un archivo muerto (ECONNREFUSED) aunque la
+ * primera siguiera viva y escuchando (su listener quedaba desvinculado).
+ *
+ * Ahora, antes de tocar el path, se sondea: si existe y alguien atiende del otro
+ * lado (connect OK), la instancia nueva NO arranca el servidor y loguea; el socket
+ * de la instancia viva queda intacto, y los clientes existentes
+ * (tools/remote/x6200-remote, el QA) le siguen hablando al mismo path. Si el path
+ * no existe, o existe pero nadie atiende (socket huerfano), se hace unlink + bind
+ * como siempre. */
+
+/* Decision pura (sin syscalls), testeable:
+ *   path no existe                -> true  (unlink es no-op; bind normal)
+ *   path existe y alguien atiende -> false (instancia viva: NO robarle el socket)
+ *   path existe y nadie atiende   -> true  (huerfano: unlink + bind, como hoy)
+ */
+static bool remote_sock_should_unlink(bool exists, bool attends) {
+    return !(exists && attends);
+}
+
+/* Sonda real: ¿el path existe y hay alguien atendiendo? Solo connect().
+ * connect() a un AF_UNIX muerto da ECONNREFUSED (no SIGPIPE: SIGPIPE es de
+ * write()); el socket va no bloqueante para no colgar el arranque si el backlog
+ * del listener esta lleno (EINPROGRESS -> poll corto + SO_ERROR).
+ *
+ * gcc -fanalyzer modela close()/poll() como si pudieran lanzar excepcion (son
+ * libc, no lanzan) y marca el fd como filtrado en esos caminos: falso positivo
+ * local a esta sonda, se silencia solo aca. */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-fd-leak"
+static bool remote_sock_attends(const char *path, bool *exists) {
+    struct stat        st;
+    struct sockaddr_un a = {.sun_family = AF_UNIX};
+    bool               attends;
+
+    *exists = (stat(path, &st) == 0);
+    if (!*exists)
+        return false;
+
+    int fd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+    if (fd < 0)
+        return false;
+    snprintf(a.sun_path, sizeof(a.sun_path), "%s", path);
+    attends = (connect(fd, (struct sockaddr *)&a, sizeof(a)) == 0);
+    if (!attends && errno == EINPROGRESS) {
+        struct pollfd p = {.fd = fd, .events = POLLOUT, .revents = 0};
+        if (poll(&p, 1, 250) == 1) {
+            int       err = 0;
+            socklen_t len = sizeof(err);
+            attends = (getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &len) == 0 && err == 0);
+        }
+    }
+    close(fd);
+    return attends;
+}
+#pragma GCC diagnostic pop
+
 void remote_server_init() {
     static int         listen_fd;
     struct sockaddr_un addr = {.sun_family = AF_UNIX};
     pthread_t          th;
+    bool               exists  = false;
+    bool               attends = remote_sock_attends(REMOTE_SOCK, &exists);
+
+    /* issue #172: no robarle el socket a una instancia viva. */
+    if (!remote_sock_should_unlink(exists, attends)) {
+        LV_LOG_WARN("remote: %s ya tiene un servidor vivo: esta instancia no arranca el servidor", REMOTE_SOCK);
+        return;
+    }
 
     snprintf(addr.sun_path, sizeof(addr.sun_path), "%s", REMOTE_SOCK);
     unlink(REMOTE_SOCK);
     listen_fd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
-    if (listen_fd < 0 || bind(listen_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0 || listen(listen_fd, 8) < 0) {
+    if (listen_fd < 0) {
         LV_LOG_ERROR("remote: can't listen on %s", REMOTE_SOCK);
-        if (listen_fd >= 0)
-            close(listen_fd);
+        return;
+    }
+    if (bind(listen_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+        /* Sin unlink: si fallo con EADDRINUSE, otra instancia gano la carrera y
+         * el path es suyo (no robarle el socket). */
+        LV_LOG_ERROR("remote: can't bind %s", REMOTE_SOCK);
+        close(listen_fd);
+        return;
+    }
+    if (listen(listen_fd, 8) < 0) {
+        LV_LOG_ERROR("remote: can't listen on %s", REMOTE_SOCK);
+        close(listen_fd);
+        unlink(REMOTE_SOCK);   /* el bind si fue nuestro: no dejar el archivo huerfano */
         return;
     }
     chmod(REMOTE_SOCK, 0600);   /* the webserver runs as root */
