@@ -9,6 +9,7 @@
 
 typedef enum {
     TC_text = 0,
+    TC_vfo_line,
 } theme_color_t;
 
 typedef struct {

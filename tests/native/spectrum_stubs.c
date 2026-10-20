@@ -44,18 +44,24 @@ params_t params;
 
 static pthread_mutex_t stub_mux = PTHREAD_MUTEX_INITIALIZER;
 
-spectrum_stub_line_t spectrum_stub_lines[SPECTRUM_STUB_MAX_LINES];
-unsigned             spectrum_stub_lines_n;
-spectrum_stub_rect_t spectrum_stub_rects[SPECTRUM_STUB_MAX_RECTS];
-unsigned             spectrum_stub_rects_n;
-unsigned             spectrum_stub_foreign_lvgl;
-unsigned             spectrum_stub_invalidates;
+spectrum_stub_line_t  spectrum_stub_lines[SPECTRUM_STUB_MAX_LINES];
+unsigned              spectrum_stub_lines_n;
+spectrum_stub_rect_t  spectrum_stub_rects[SPECTRUM_STUB_MAX_RECTS];
+unsigned              spectrum_stub_rects_n;
+spectrum_stub_label_t spectrum_stub_labels[SPECTRUM_STUB_MAX_LABELS];
+unsigned              spectrum_stub_labels_n;
+unsigned              spectrum_stub_foreign_lvgl;
+unsigned              spectrum_stub_invalidates;
 
 static pthread_t gui_tid;
 static bool      gui_tid_set;
 
 lv_style_t spectrum_style;
 lv_color_t bg_color = { .full = 0x101010u };
+
+/* La fuente que el modulo usa para el texto de BW (styles.h la declara en el
+ * firmware). El test solo necesita un objeto con altura de linea. */
+lv_font_t sony_14 = { .line_height = 14 };
 
 static void note_lvgl(void) {
     pthread_mutex_lock(&stub_mux);
@@ -126,6 +132,22 @@ void lv_draw_line_dsc_init(lv_draw_line_dsc_t *dsc) {
 
 void lv_draw_rect_dsc_init(lv_draw_rect_dsc_t *dsc) {
     memset(dsc, 0, sizeof(*dsc));
+}
+
+void lv_draw_label_dsc_init(lv_draw_label_dsc_t *dsc) {
+    memset(dsc, 0, sizeof(*dsc));
+}
+
+/* Ancho determinista: 7 px por caracter (no depende de una tabla de fuente), la
+ * altura sale del font stub. El test no verifica la metrica del texto, solo que
+ * el modulo no lo dibuje fuera de la banda. */
+void lv_txt_get_size(lv_point_t *size_res, const char *text, const lv_font_t *font,
+                     lv_coord_t letter_space, lv_coord_t line_space,
+                     lv_coord_t max_width, uint32_t flag) {
+    (void) letter_space; (void) line_space; (void) max_width; (void) flag;
+
+    size_res->x = (lv_coord_t) (strlen(text) * 7);
+    size_res->y = (font != NULL) ? font->line_height : 14;
 }
 
 lv_color_t lv_color_hex(uint32_t c) {
@@ -296,6 +318,29 @@ void lv_draw_rect(lv_draw_ctx_t *ctx, const lv_draw_rect_dsc_t *dsc, const lv_ar
     pthread_mutex_unlock(&stub_mux);
 }
 
+void lv_draw_label(lv_draw_ctx_t *ctx, const lv_draw_label_dsc_t *dsc,
+                   const lv_area_t *coords, const char *txt, void *hint) {
+    (void) ctx; (void) txt; (void) hint;
+
+    note_lvgl();
+
+    pthread_mutex_lock(&stub_mux);
+
+    if (spectrum_stub_labels_n < SPECTRUM_STUB_MAX_LABELS) {
+        spectrum_stub_label_t *label = &spectrum_stub_labels[spectrum_stub_labels_n];
+
+        label->color = dsc->color.full;
+        label->x1    = coords->x1;
+        label->y1    = coords->y1;
+        label->x2    = coords->x2;
+        label->y2    = coords->y2;
+    }
+
+    spectrum_stub_labels_n++;
+
+    pthread_mutex_unlock(&stub_mux);
+}
+
 /* --- scheduler falso ------------------------------------------------------- */
 
 #define SCHED_MAX 256
@@ -407,6 +452,7 @@ static Subject subj_mode;
 static Subject subj_fft_width;
 static Subject subj_filter_from;
 static Subject subj_filter_to;
+static Subject subj_filter_bw;
 static Subject subj_grid_min;
 static Subject subj_grid_max;
 static Subject subj_dnf;
@@ -493,6 +539,7 @@ uint32_t theme_hex(theme_color_t c) {
         case TC_text_dim:  return SPECTRUM_STUB_COLOR_MAIN;
         case TC_text_mute: return SPECTRUM_STUB_COLOR_PEAK;
         case TC_tx:        return SPECTRUM_STUB_COLOR_TX;
+        case TC_vfo_line:  return SPECTRUM_STUB_COLOR_BAND;
     }
 
     return 0;
@@ -518,6 +565,7 @@ static void subjects_build(void) {
     subj_fft_width.value   = 100000;
     subj_filter_from.value = 0;
     subj_filter_to.value   = 3000;
+    subj_filter_bw.value   = 3000;
     subj_mode.value        = x6200_mode_usb;
     subj_fg_freq.value     = 14074000;
     subj_grid_min.value    = S4;
@@ -531,6 +579,7 @@ static void subjects_build(void) {
     cfg_cur.fg_freq    = &subj_fg_freq;
     cfg_cur.mode       = &subj_mode;
     cfg_cur.fft_width  = &subj_fft_width;
+    cfg_cur.filter.bw        = &subj_filter_bw;
     cfg_cur.filter.real.from = &subj_filter_from;
     cfg_cur.filter.real.to   = &subj_filter_to;
 
@@ -559,6 +608,7 @@ void spectrum_stub_reset(void) {
     pthread_mutex_lock(&stub_mux);
     spectrum_stub_lines_n = 0;
     spectrum_stub_rects_n = 0;
+    spectrum_stub_labels_n = 0;
     spectrum_stub_foreign_lvgl = 0;
     spectrum_stub_invalidates = 0;
     sched_n = 0;
@@ -587,6 +637,7 @@ void spectrum_stub_clear_records(void) {
     pthread_mutex_lock(&stub_mux);
     spectrum_stub_lines_n = 0;
     spectrum_stub_rects_n = 0;
+    spectrum_stub_labels_n = 0;
     pthread_mutex_unlock(&stub_mux);
 }
 

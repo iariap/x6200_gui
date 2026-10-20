@@ -284,6 +284,9 @@ target_link_libraries(wf_format_probe PRIVATE lvgl m)
 # exist in the baseline revision the A/B builds).
 set(WF_TEST_STAGE ${CMAKE_CURRENT_BINARY_DIR}/waterfall_stage)
 file(COPY ${REPO}/src/waterfall.c ${REPO}/src/waterfall.h DESTINATION ${WF_TEST_STAGE})
+# spectrum.h aporta spectrum_filter_band() inline (issue #173, PR 1): los ticks
+# del filtro del waterfall la comparten con el espectro sin linkear su modulo.
+file(COPY ${REPO}/src/spectrum.h DESTINATION ${WF_TEST_STAGE})
 file(COPY ${REPO}/tests/waterfall/stubs/ DESTINATION ${WF_TEST_STAGE})
 
 add_executable(waterfall_test

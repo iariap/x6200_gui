@@ -8,6 +8,7 @@
 #include "waterfall.h"
 #include "theme.h"
 
+#include "spectrum.h"
 #include "styles.h"
 #include "radio.h"
 #include "events.h"
@@ -20,6 +21,7 @@
 #include "pubsub_ids.h"
 #include "scheduler.h"
 
+#include <stdatomic.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -29,6 +31,11 @@
 #define DEFAULT_MIN S7
 #define DEFAULT_MAX S9_40
 #define WIDTH 800
+
+/* Alto de los dos ticks de la banda pasante RX sobre el borde superior de la
+ * cascada (issue #173, PR 1). Overlay de UI: no toca el buffer de datos ni el
+ * anillo de filas rasterizadas. */
+#define FILTER_TICK_H 6
 
 typedef struct {
     uint8_t data[WATERFALL_NFFT];
@@ -42,6 +49,15 @@ static lv_obj_t         *img;
 static lv_style_t       middle_line_style;
 static lv_obj_t         *middle_line;
 static lv_point_t       middle_line_points[] = { {0, 0}, {0, 0} };
+
+/* Ticks del ancho del filtro RX (issue #173, PR 1): dos marcas verticales finas
+ * en el borde superior de la cascada, en el rol `vfo_line` del tema. Hijos del
+ * objeto del waterfall (overlay), creados ANTES de la linea central para que
+ * esta siga siendo el ultimo hijo (invariante del #140). */
+static lv_style_t       filter_tick_style;
+static lv_obj_t        *filter_tick[2];
+static lv_point_t       filter_tick_points[] = { {0, 0}, {0, FILTER_TICK_H} };
+static atomic_bool      filter_tick_queued;
 
 static lv_coord_t       height;
 static int32_t         width_hz = 100000;
@@ -98,6 +114,10 @@ static uint32_t         full_rebuilds = 0;
 
 static void refresh_waterfall( void * arg);
 static void draw_middle_line();
+static void draw_filter_ticks(bool create);
+static void filter_tick_job(void *arg);
+static void on_filter_from_change(Subject *subj, void *user_data);
+static void on_filter_to_change(Subject *subj, void *user_data);
 static void render_row(uint16_t dst_y, const waterfall_cache_row_t *row);
 static void render_all();
 static void render_pending(uint32_t count);
@@ -127,8 +147,11 @@ lv_obj_t * waterfall_init(lv_obj_t * parent) {
     /* La linea central pertenece a ESTE waterfall: waterfall_init() arma un obj
      * nuevo por pantalla, asi que el puntero que quedo de una pantalla anterior
      * ya no sirve. draw_middle_line() crea la linea una sola vez por obj (issue
-     * #140), y sin este reset reusaria el objeto viejo. */
-    middle_line = NULL;
+     * #140), y sin este reset reusaria el objeto viejo. Los ticks del filtro
+     * siguen el mismo patron. */
+    middle_line   = NULL;
+    filter_tick[0] = NULL;
+    filter_tick[1] = NULL;
 
     lv_obj_add_style(obj, &waterfall_style, 0);
     if (obj) lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
@@ -145,9 +168,18 @@ lv_obj_t * waterfall_init(lv_obj_t * parent) {
     lv_style_set_line_color(&middle_line_style, lv_color_hex(theme_hex(TC_text)));
     lv_style_set_line_opa(&middle_line_style, LV_OPA_COVER);
 
+    /* Ticks del filtro (issue #173, PR 1): finos (1 px), en el rol `vfo_line`
+     * del tema (el mismo de la banda del espectro), opacidad plena. */
+    lv_style_init(&filter_tick_style);
+    lv_style_set_line_width(&filter_tick_style, 1);
+    lv_style_set_line_color(&filter_tick_style, lv_color_hex(theme_hex(TC_vfo_line)));
+    lv_style_set_line_opa(&filter_tick_style, LV_OPA_COVER);
+
     subject_add_observer_and_call(cfg_cur.band->grid.min.val, on_grid_min_change, NULL);
     subject_add_observer_and_call(cfg_cur.band->grid.max.val, on_grid_max_change, NULL);
     subject_add_observer_and_call(cfg_cur.fft_width, on_fft_width_changed, NULL);
+    subject_add_observer_and_call(cfg_cur.filter.real.from, on_filter_from_change, NULL);
+    subject_add_observer_and_call(cfg_cur.filter.real.to, on_filter_to_change, NULL);
     return obj;
 }
 
@@ -222,10 +254,14 @@ void waterfall_set_height(lv_coord_t h) {
     height = lv_obj_get_height(obj);
 
     /* Resize seguro (issue #148): liberar el frame/cache/img anteriores antes de
-     * rearmar, para que una segunda llamada no filtre ni deje el objeto viejo. */
+     * rearmar, para que una segunda llamada no filtre ni deje el objeto viejo.
+     * Los ticks del filtro son hijos de la imagen (issue #173): se borran con
+     * ella, asi que hay que soltar los punteros. */
     if (img != NULL) {
         lv_obj_del(img);
         img = NULL;
+        filter_tick[0] = NULL;
+        filter_tick[1] = NULL;
     }
     if (frame != NULL) {
         lv_img_buf_free(frame);
@@ -276,6 +312,10 @@ void waterfall_set_height(lv_coord_t h) {
 
     waterfall_min_max_reset();
     band_info_init(obj);
+
+    /* Los ticks del filtro se crean ANTES de la linea central: la linea central
+     * tiene que seguir siendo el ultimo hijo del waterfall (invariante #140). */
+    draw_filter_ticks(true);
     draw_middle_line();
 }
 
@@ -330,11 +370,92 @@ static void draw_middle_line() {
     }
 }
 
+/* Posiciona (y, si `create`, crea) los dos ticks del filtro RX en el borde
+ * superior de la cascada. Corre siempre en el hilo de GUI: desde
+ * waterfall_set_height() o desde el job diferido del scheduler. Lee los bordes
+ * reales de RF (cfg_cur.filter.real.from/to) con el MISMO spectrum_filter_band()
+ * que el espectro, asi los dos coinciden; el overlay NUNCA toca el buffer de
+ * datos ni el anillo de filas. */
+static void draw_filter_ticks(bool create) {
+    if (img == NULL || height <= 0) {
+        return;
+    }
+
+    spectrum_filter_band_t band = spectrum_filter_band(subject_get_int(cfg_cur.filter.real.from),
+                                                       subject_get_int(cfg_cur.filter.real.to),
+                                                       (int32_t) width_hz, WIDTH);
+
+    /* Los ticks son hijos de la IMAGEN del waterfall (su superficie de pixeles,
+     * de 800 px, alineada con la del espectro), no del objeto, que tiene padding:
+     * asi el tick cae exactamente en la columna de pixeles de la banda. */
+    for (int i = 0; i < 2; i++) {
+        if (filter_tick[i] == NULL) {
+            if (!create) {
+                continue;
+            }
+
+            filter_tick[i] = lv_line_create(img);
+            lv_obj_add_style(filter_tick[i], &filter_tick_style, 0);
+            lv_obj_clear_flag(filter_tick[i], LV_OBJ_FLAG_CLICKABLE);
+            lv_line_set_points(filter_tick[i], filter_tick_points, 2);
+        }
+
+        if (!band.visible) {
+            lv_obj_add_flag(filter_tick[i], LV_OBJ_FLAG_HIDDEN);
+            continue;
+        }
+
+        lv_obj_clear_flag(filter_tick[i], LV_OBJ_FLAG_HIDDEN);
+        lv_obj_set_pos(filter_tick[i], (i == 0) ? band.left : band.right, 0);
+    }
+}
+
+static void filter_tick_job(void *arg) {
+    (void) arg;
+
+    atomic_store(&filter_tick_queued, false);
+    draw_filter_ticks(false);
+}
+
+/* Coalescing: a lo sumo un job de ticks encolado; si la cola del scheduler esta
+ * llena, se devuelve el ticket. El job corre en el hilo de GUI
+ * (scheduler_put_noargs), nunca desde el observer que notifica. */
+static void request_filter_ticks(void) {
+    if (!atomic_exchange(&filter_tick_queued, true)) {
+        if (!scheduler_put_noargs(filter_tick_job)) {
+            atomic_store(&filter_tick_queued, false);
+        }
+    }
+}
+
+static void on_filter_from_change(Subject *subj, void *user_data) {
+    (void) subj; (void) user_data;
+
+    request_filter_ticks();
+}
+
+static void on_filter_to_change(Subject *subj, void *user_data) {
+    (void) subj; (void) user_data;
+
+    request_filter_ticks();
+}
+
 /* Geometria de la linea central para el arnes de UI (mismo espiritu que
  * waterfall_offscreen_redraw_count): el gate nativo no puede mirar pixeles y el
  * invariante del issue #140 es geometrico (largo = alto del waterfall). */
 lv_obj_t * waterfall_middle_line(void) {
     return middle_line;
+}
+
+/* Ticks del filtro para el arnes de UI (issue #173, PR 1): el arnes verifica que
+ * existan dos, que sean hijos del waterfall y que su geometria corresponda a
+ * spectrum_filter_band(). NULL mientras no se armaron. */
+lv_obj_t * waterfall_filter_tick(int i) {
+    if (i < 0 || i > 1) {
+        return NULL;
+    }
+
+    return filter_tick[i];
 }
 
 void waterfall_min_max_reset() {
@@ -562,6 +683,9 @@ static void on_grid_max_change(Subject *subj, void *user_data) {
 
 static void on_fft_width_changed(Subject *subj, void *user_data) {
     width_hz = subject_get_int(subj);
+
+    /* El span cambia la posicion de los ticks del filtro. */
+    request_filter_ticks();
 }
 
 /* The levels the waterfall is drawing with (the remote scope scales to them) */

@@ -34,6 +34,7 @@
 #include "params/params.h"
 #include "rtty.h"
 #include "signal_gen.h"
+#include "spectrum.h"
 #include "styles.h"
 #include "theme.h"
 #include "visual_policy.h"
@@ -588,9 +589,87 @@ static void settle_waterfall_center_line(const scenario_t *scenario)
     }
 }
 
+/* Ticks del ancho del filtro RX en el borde superior de la cascada (issue #173,
+ * PR 1). El invariante es geometrico: dos objetos linea hijos del waterfall,
+ * sobre su borde de arriba, en las x que da el MISMO spectrum_filter_band() que
+ * usa el firmware (asi el arnes no puede estar de acuerdo con una formula
+ * distinta a la que dibuja). Si la banda no es visible, los dos ticks tienen que
+ * estar ocultos. */
+static void settle_waterfall_filter_ticks(const scenario_t *scenario)
+{
+    lv_obj_t *t0 = waterfall_filter_tick(0);
+    lv_obj_t *t1 = waterfall_filter_tick(1);
+
+    if (t0 == NULL || t1 == NULL) {
+        fprintf(stderr,
+                "%s: no hay ticks del filtro RX (issue #173, src/waterfall.c "
+                "draw_filter_ticks)\n",
+                scenario->name);
+        exit(1);
+    }
+
+    /* Los ticks son hijos de la IMAGEN del waterfall (su superficie de pixeles),
+     * que a su vez es hija del objeto del waterfall. La geometria se mide contra
+     * la imagen, que es donde caen los pixeles de la cascada. */
+    lv_obj_t *surface = lv_obj_get_parent(t0);
+    lv_obj_t *wf      = (surface != NULL) ? lv_obj_get_parent(surface) : NULL;
+
+    if (surface == NULL || wf == NULL || lv_obj_get_parent(t1) != surface) {
+        fprintf(stderr, "%s: los ticks del filtro no son hijos de la imagen del waterfall "
+                "(src/waterfall.c)\n",
+                scenario->name);
+        exit(1);
+    }
+
+    spectrum_filter_band_t band = spectrum_filter_band(subject_get_int(cfg_cur.filter.real.from),
+                                                       subject_get_int(cfg_cur.filter.real.to),
+                                                       subject_get_int(cfg_cur.fft_width),
+                                                       lv_obj_get_width(surface));
+
+    if (!band.visible) {
+        if (!lv_obj_has_flag(t0, LV_OBJ_FLAG_HIDDEN) || !lv_obj_has_flag(t1, LV_OBJ_FLAG_HIDDEN)) {
+            fprintf(stderr, "%s: ticks del filtro visibles sin banda (src/waterfall.c)\n",
+                    scenario->name);
+            exit(1);
+        }
+        return;
+    }
+
+    if (lv_obj_has_flag(t0, LV_OBJ_FLAG_HIDDEN) || lv_obj_has_flag(t1, LV_OBJ_FLAG_HIDDEN)) {
+        fprintf(stderr, "%s: ticks del filtro ocultos con la banda visible (src/waterfall.c)\n",
+                scenario->name);
+        exit(1);
+    }
+
+    lv_area_t a0, a1, sa;
+
+    lv_obj_get_coords(t0, &a0);
+    lv_obj_get_coords(t1, &a1);
+    lv_obj_get_coords(surface, &sa);
+
+    int x0 = a0.x1 - sa.x1;
+    int x1 = a1.x1 - sa.x1;
+
+    if (x0 != band.left || x1 != band.right) {
+        fprintf(stderr,
+                "%s: ticks del filtro en x=%d/%d, esperado %d/%d (issue #173, "
+                "src/waterfall.c draw_filter_ticks)\n",
+                scenario->name, x0, x1, band.left, band.right);
+        exit(1);
+    }
+
+    if (a0.y1 != sa.y1 || a1.y1 != sa.y1) {
+        fprintf(stderr, "%s: los ticks del filtro no estan en el borde superior de la cascada "
+                "(y=%d/%d vs %d)\n",
+                scenario->name, a0.y1, a1.y1, sa.y1);
+        exit(1);
+    }
+}
+
 void scenario_settle(const scenario_t *scenario)
 {
     settle_waterfall_center_line(scenario);
+    settle_waterfall_filter_ticks(scenario);
 
     /* CB 27 MHz (issues #146/#169): lo que cada fixture significa. La celda VFO de
      * la barra tiene que mostrar el canal, no el rotulo VFO-A/SPL-B; y en la fila

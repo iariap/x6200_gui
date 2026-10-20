@@ -42,6 +42,10 @@ KNOWN_KEYS = frozenset(
         "tx_frequency_hz",
         "fft_width_hz",
         "mode",
+        # Filtro DFL (issue #173, PR 1): low/high del modo; el arnes deriva los
+        # bordes reales de RF con el mapeo de src/cfg/mode.c::update_real_filters().
+        "filter_low",
+        "filter_high",
         "vfo",
         "agc",
         "split",

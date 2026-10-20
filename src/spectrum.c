@@ -22,6 +22,7 @@
 #include "util.h"
 
 #include <pthread.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #define DEFAULT_MIN S4
@@ -29,6 +30,16 @@
 #define VISOR_HEIGHT_TX (100 - 61)
 #define VISOR_HEIGHT_RX 100
 #define SPECTRUM_SIZE 800
+
+/* Inset vertical de la banda pasante y del texto de BW respecto del borde
+ * superior del visor (y1 + h - visor_height = 60 con el espectro de 160 px y el
+ * visor RX de 100 px). El S-meter tiene fondo transparente y su region llega a
+ * y=66, asi que el relleno/bordes del filtro arrancan en y=66 para no tocar
+ * pixeles del medidor ni de la barra superior (contrato #173, PR 1); el texto
+ * del BW va unos px mas abajo todavia. */
+#define FILTER_BAND_TOP_PAD   6
+#define FILTER_BW_TEXT_TOP_PAD (FILTER_BAND_TOP_PAD + 4)
+#define FILTER_BW_TEXT_MARGIN  4
 
 typedef struct {
     float    val;
@@ -49,6 +60,7 @@ typedef struct {
     int32_t      width_hz;
     int32_t      filter_from;
     int32_t      filter_to;
+    int32_t      filter_bw;
     int32_t      dnf_mode;
     int32_t      dnf_center;
     int32_t      dnf_width;
@@ -63,6 +75,7 @@ static spectrum_frame_t frame = {
     .grid_max  = DEFAULT_MAX,
     .width_hz  = 100000,
     .filter_to = 3000,
+    .filter_bw = 3000,
 };
 static spectrum_frame_t snapshot;
 
@@ -98,11 +111,25 @@ static uint8_t refresh_counter = 0;
 static void on_fft_width_changed(Subject *subj, void *user_data);
 static void on_real_filter_from_change(Subject *subj, void *user_data);
 static void on_real_filter_to_change(Subject *subj, void *user_data);
+static void on_filter_bw_change(Subject *subj, void *user_data);
 static void on_cur_mode_change(Subject *subj, void *user_data);
 static void on_grid_min_change(Subject *subj, void *user_data);
 static void on_grid_max_change(Subject *subj, void *user_data);
 static void on_int32_val_change(Subject *subj, void *user_data);
 static void on_cur_freq_change(Subject *subj, void *user_data);
+static void spectrum_refresh(void *data);
+
+/* Formato compacto del BW real para el texto del espectro: "3.3k" cuando el
+ * valor es un multiplo exacto de 100 Hz >= 1000 (sin perder un solo Hz, el caso
+ * del golden: 3300 -> "3.3k"), y el entero exacto en Hz en cualquier otro caso
+ * (2990 -> "2990"). Nunca redondea el valor mostrado. */
+static void format_filter_bw(char *buf, size_t n, int32_t bw) {
+    if (bw >= 1000 && bw % 100 == 0) {
+        snprintf(buf, n, "%d.%dk", bw / 1000, (bw % 1000) / 100);
+    } else {
+        snprintf(buf, n, "%d", bw);
+    }
+}
 
 static void spectrum_draw_cb(lv_event_t *e) {
     lv_obj_t          *obj      = lv_event_get_target(e);
@@ -208,30 +235,93 @@ static void spectrum_draw_cb(lv_event_t *e) {
         }
     }
 
-    /* Filter */
+    /* Banda pasante RX a escala (issue #173, PR 1).
+     *
+     * La posicion sale EXCLUSIVAMENTE de los bordes reales de RF que publica
+     * cfg/mode.c::update_real_filters() (f->filter_from/to) y del ancho mostrado
+     * (f->width_hz), con spectrum_filter_band(): el centro del VFO es w/2 y cada
+     * borde cae en w/2 + round(edge * w / span). NO se centra artificialmente una
+     * ventana de BW sobre el VFO. El area es semitransparente y discreta,
+     * delimitada por dos lineas verticales finas (1 px) en el rol de tema
+     * `vfo_line` (el rol que el tema define para "filter band on spectrum /
+     * waterfall"); el exterior al filtro no se oscurece. La marca central del VFO
+     * se dibuja despues y queda visible. */
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_area_t          area;
 
     lv_draw_rect_dsc_init(&rect_dsc);
 
-    rect_dsc.bg_color = bg_color;
-    rect_dsc.bg_opa   = LV_OPA_50;
-
     int32_t w_hz = f->width_hz;
 
     int16_t sign_from = (f->filter_from > 0) ? 1 : -1;
     int16_t sign_to   = (f->filter_to > 0) ? 1 : -1;
 
-    int32_t f1 = (w * f->filter_from) / w_hz;
-    int32_t f2 = (w * f->filter_to) / w_hz;
+    int32_t f1, f2;
 
-    area.x1 = x1 + w / 2 + f1;
-    area.y1 = y1 + h - visor_height;
-    area.x2 = x1 + w / 2 + f2;
-    area.y2 = y1 + h;
+    spectrum_filter_band_t band = spectrum_filter_band(f->filter_from, f->filter_to, w_hz, w);
 
-    lv_draw_rect(draw_ctx, &rect_dsc, &area);
+    lv_draw_line_dsc_t band_line_dsc;
+
+    lv_draw_line_dsc_init(&band_line_dsc);
+    band_line_dsc.color = lv_color_hex(theme_hex(TC_vfo_line));
+    band_line_dsc.width = 1;
+
+    if (band.visible) {
+        lv_coord_t band_y1 = y1 + h - visor_height + FILTER_BAND_TOP_PAD;
+        lv_coord_t band_y2 = y1 + h;
+
+        /* Relleno discreto: mismo rol del tema que los bordes, opacidad baja. */
+        rect_dsc.bg_color = lv_color_hex(theme_hex(TC_vfo_line));
+        rect_dsc.bg_opa   = LV_OPA_20;
+
+        area.x1 = x1 + band.left;
+        area.y1 = band_y1;
+        area.x2 = x1 + band.right;
+        area.y2 = band_y2;
+
+        lv_draw_rect(draw_ctx, &rect_dsc, &area);
+
+        /* Dos lineas verticales finas en los bordes reales del filtro. */
+        main_a.x = x1 + band.left;
+        main_a.y = band_y1;
+        main_b.x = main_a.x;
+        main_b.y = band_y2;
+        lv_draw_line(draw_ctx, &band_line_dsc, &main_a, &main_b);
+
+        main_a.x = x1 + band.right;
+        main_b.x = main_a.x;
+        lv_draw_line(draw_ctx, &band_line_dsc, &main_a, &main_b);
+
+        /* Texto chico con el BW real, SOLO si entra entre las dos lineas sin
+         * tapar el medidor ni la franja IARU; si no entra, se omite. Jamas se
+         * agranda el filtro para que entre. */
+        if (f->filter_bw > 0 && (band.right - band.left) > 2 * FILTER_BW_TEXT_MARGIN) {
+            char                txt[16];
+            lv_point_t          txt_size;
+            lv_draw_label_dsc_t label_dsc;
+
+            format_filter_bw(txt, sizeof(txt), f->filter_bw);
+
+            lv_draw_label_dsc_init(&label_dsc);
+            label_dsc.color = lv_color_hex(theme_hex(TC_vfo_line));
+            label_dsc.font  = &sony_14;
+            label_dsc.align = LV_TEXT_ALIGN_CENTER;
+
+            lv_txt_get_size(&txt_size, txt, label_dsc.font, 0, 0, LV_COORD_MAX, 0);
+
+            if (txt_size.x <= (band.right - band.left) - 2 * FILTER_BW_TEXT_MARGIN) {
+                lv_coord_t ty = band_y1 + FILTER_BW_TEXT_TOP_PAD;
+
+                area.x1 = x1 + band.left + FILTER_BW_TEXT_MARGIN;
+                area.y1 = ty;
+                area.x2 = x1 + band.right - FILTER_BW_TEXT_MARGIN;
+                area.y2 = ty + txt_size.y;
+
+                lv_draw_label(draw_ctx, &label_dsc, &area, txt, NULL);
+            }
+        }
+    }
 
     /* Notch */
     if (f->dnf_mode == x6200_dnf_manual) {
@@ -306,6 +396,26 @@ static void rx_cb(lv_event_t *e) {
     visor_height = VISOR_HEIGHT_RX;
 }
 
+/* Pide un refresco del espectro con el mismo ticket que spectrum_data(): a lo
+ * sumo uno encolado a la vez, y si la cola del scheduler esta llena se devuelve
+ * el ticket para reintentar. Lo usan los observers de config (filtro real, BW,
+ * modo, ancho de FFT): el redibujo se difiere al hilo de GUI y nunca se acumula
+ * una cola sin limite (issue #173, PR 1; contrato de #149). */
+static void spectrum_enqueue_refresh(void) {
+    bool enqueue;
+
+    pthread_mutex_lock(&data_mux);
+    enqueue = !refresh_queued;
+    refresh_queued = true;
+    pthread_mutex_unlock(&data_mux);
+
+    if (enqueue && !scheduler_put_noargs(spectrum_refresh)) {
+        pthread_mutex_lock(&data_mux);
+        refresh_queued = false;
+        pthread_mutex_unlock(&data_mux);
+    }
+}
+
 static void spectrum_refresh(void *data) {
     /* El ticket se libera apenas el hilo de GUI toma el refresco: si la GUI se
      * atrasa, el productor vuelve a encolar y el frame viejo no se dibuja. */
@@ -350,6 +460,7 @@ lv_obj_t *spectrum_init(lv_obj_t *parent) {
     subject_add_observer_and_call(cfg_cur.fft_width, on_fft_width_changed, NULL);
     subject_add_observer_and_call(cfg_cur.filter.real.from, on_real_filter_from_change, NULL);
     subject_add_observer_and_call(cfg_cur.filter.real.to, on_real_filter_to_change, NULL);
+    subject_add_observer_and_call(cfg_cur.filter.bw, on_filter_bw_change, NULL);
     subject_add_observer_and_call(cfg_cur.mode, on_cur_mode_change, NULL);
     subject_add_observer_and_call(cfg_cur.band->grid.min.val, on_grid_min_change, NULL);
     subject_add_observer_and_call(cfg_cur.band->grid.max.val, on_grid_max_change, NULL);
@@ -488,6 +599,7 @@ static void on_fft_width_changed(Subject *subj, void *user_data) {
     pthread_mutex_unlock(&data_mux);
 
     spectrum_clear();
+    spectrum_enqueue_refresh();
 }
 
 static void on_real_filter_from_change(Subject *subj, void *user_data) {
@@ -496,6 +608,8 @@ static void on_real_filter_from_change(Subject *subj, void *user_data) {
     pthread_mutex_lock(&data_mux);
     frame.filter_from = v;
     pthread_mutex_unlock(&data_mux);
+
+    spectrum_enqueue_refresh();
 }
 
 static void on_real_filter_to_change(Subject *subj, void *user_data) {
@@ -504,6 +618,18 @@ static void on_real_filter_to_change(Subject *subj, void *user_data) {
     pthread_mutex_lock(&data_mux);
     frame.filter_to = v;
     pthread_mutex_unlock(&data_mux);
+
+    spectrum_enqueue_refresh();
+}
+
+static void on_filter_bw_change(Subject *subj, void *user_data) {
+    int32_t v = subject_get_int(subj);
+
+    pthread_mutex_lock(&data_mux);
+    frame.filter_bw = v;
+    pthread_mutex_unlock(&data_mux);
+
+    spectrum_enqueue_refresh();
 }
 
 static void on_cur_mode_change(Subject *subj, void *user_data) {
@@ -512,6 +638,8 @@ static void on_cur_mode_change(Subject *subj, void *user_data) {
     pthread_mutex_lock(&data_mux);
     frame.mode = m;
     pthread_mutex_unlock(&data_mux);
+
+    spectrum_enqueue_refresh();
 }
 
 static void on_grid_min_change(Subject *subj, void *user_data) {

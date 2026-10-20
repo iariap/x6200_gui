@@ -46,6 +46,20 @@ typedef struct {
     uint8_t    bg_opa;
 } lv_draw_rect_dsc_t;
 
+/* Fuente opaca para el test: src/spectrum.c solo pasa el puntero a
+ * lv_txt_get_size()/lv_draw_label(). El stub le da una altura de linea fija
+ * para que la medida del texto sea determinista. */
+typedef struct _lv_font_t {
+    lv_coord_t line_height;
+} lv_font_t;
+
+typedef struct {
+    lv_color_t       color;
+    const lv_font_t *font;
+    uint8_t          opa;
+    uint8_t          align;
+} lv_draw_label_dsc_t;
+
 typedef struct _lv_obj_t {
     lv_area_t  coords;
     lv_coord_t w;
@@ -77,7 +91,12 @@ enum {
 };
 
 #define LV_OPA_0    0
+#define LV_OPA_20   51
 #define LV_OPA_50   128
+
+#define LV_COORD_MAX 32767
+
+#define LV_TEXT_ALIGN_CENTER 1
 
 #define LV_MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -97,3 +116,9 @@ void           lv_draw_rect(lv_draw_ctx_t *ctx, const lv_draw_rect_dsc_t *dsc,
 void           lv_obj_invalidate(lv_obj_t *obj);
 lv_color_t     lv_color_hex(uint32_t c);
 lv_color_t     lv_color_white(void);
+void           lv_draw_label_dsc_init(lv_draw_label_dsc_t *dsc);
+void           lv_draw_label(lv_draw_ctx_t *ctx, const lv_draw_label_dsc_t *dsc,
+                              const lv_area_t *coords, const char *txt, void *hint);
+void           lv_txt_get_size(lv_point_t *size_res, const char *text, const lv_font_t *font,
+                               lv_coord_t letter_space, lv_coord_t line_space,
+                               lv_coord_t max_width, uint32_t flag);

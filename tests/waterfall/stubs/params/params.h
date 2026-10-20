@@ -41,6 +41,14 @@ typedef struct {
     Subject   *fg_freq;
     Subject   *fft_width;
     cfg_band_t *band;
+    /* Filtro DFL (issue #173, PR 1): los bordes reales de RF que waterfall.c lee
+     * para los ticks del filtro. */
+    struct {
+        struct {
+            Subject *from;
+            Subject *to;
+        } real;
+    } filter;
 } cfg_cur_t;
 
 extern cfg_cur_t cfg_cur;

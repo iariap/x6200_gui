@@ -150,6 +150,17 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "cw-tune-ssb",
         "cw-tune-tema-sunlit",
         "cw-tune-tuner",
+        # DFL (issue #173, PR 1): banda pasante RX a escala, USB-D/LSB-D, los seis
+        # temas y dos spans distintos.
+        "dfl-lsb-d",
+        "dfl-usb-d",
+        "dfl-usb-d-span100k",
+        "dfl-usb-d-span50k",
+        "dfl-usb-d-tema-cathode",
+        "dfl-usb-d-tema-redshift",
+        "dfl-usb-d-tema-sprint",
+        "dfl-usb-d-tema-sunlit",
+        "dfl-usb-d-tema-trail",
         "home-bateria-externa",
         "home-cb",
         "home-cb-a",

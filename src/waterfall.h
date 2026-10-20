@@ -54,6 +54,11 @@ lv_coord_t waterfall_frame_height(void);
  * parametro apagado). NULL si todavia no se creo. */
 lv_obj_t * waterfall_middle_line(void);
 
+/* Ticks del ancho del filtro RX (issue #173, PR 1): el objeto vivo i (0=izq,
+ * 1=der) sobre el borde superior de la cascada, para que el arnes de UI
+ * codifique su geometria. NULL si no existe o `i` esta fuera de rango. */
+lv_obj_t * waterfall_filter_tick(int i);
+
 /* The levels the waterfall is drawing with, for the remote scope */
 void waterfall_get_levels(bool tx, float *min, float *max);
 

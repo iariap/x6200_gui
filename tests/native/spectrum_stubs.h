@@ -27,9 +27,11 @@
 #define SPECTRUM_STUB_COLOR_MAIN 0x0000DDu
 #define SPECTRUM_STUB_COLOR_PEAK 0x00DD00u
 #define SPECTRUM_STUB_COLOR_TX   0xDD0000u
+#define SPECTRUM_STUB_COLOR_BAND 0xDD00DDu   /* TC_vfo_line: bordes del filtro */
 
 #define SPECTRUM_STUB_MAX_LINES 8192
 #define SPECTRUM_STUB_MAX_RECTS 16
+#define SPECTRUM_STUB_MAX_LABELS 8
 
 typedef struct {
     uint32_t color;
@@ -47,10 +49,20 @@ typedef struct {
     int16_t  y2;
 } spectrum_stub_rect_t;
 
-extern spectrum_stub_line_t spectrum_stub_lines[SPECTRUM_STUB_MAX_LINES];
-extern unsigned             spectrum_stub_lines_n;
-extern spectrum_stub_rect_t spectrum_stub_rects[SPECTRUM_STUB_MAX_RECTS];
-extern unsigned             spectrum_stub_rects_n;
+typedef struct {
+    uint32_t color;
+    int16_t  x1;
+    int16_t  y1;
+    int16_t  x2;
+    int16_t  y2;
+} spectrum_stub_label_t;
+
+extern spectrum_stub_line_t  spectrum_stub_lines[SPECTRUM_STUB_MAX_LINES];
+extern unsigned              spectrum_stub_lines_n;
+extern spectrum_stub_rect_t  spectrum_stub_rects[SPECTRUM_STUB_MAX_RECTS];
+extern unsigned              spectrum_stub_rects_n;
+extern spectrum_stub_label_t spectrum_stub_labels[SPECTRUM_STUB_MAX_LABELS];
+extern unsigned              spectrum_stub_labels_n;
 
 /* LVGL entry points that ran in a thread other than the declared GUI one. */
 extern unsigned spectrum_stub_foreign_lvgl;

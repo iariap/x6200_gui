@@ -38,6 +38,14 @@ typedef struct {
     uint8_t         battery_cap;    /* per cent */
     bool            charging;
     radio_state_t   state;
+    /* Filtro DFL (issue #173, PR 1): el fixture declara low/high del modo y el
+     * arnes calcula cfg_cur.filter.real.from/to con el mapeo de
+     * src/cfg/mode.c::update_real_filters(). `filter_set` distingue "el fixture
+     * lo declara" de "el default historico 0..3000", para no cambiar la banda de
+     * los fixtures que no lo piden. */
+    bool            filter_set;
+    int32_t         filter_low;
+    int32_t         filter_high;
 } mock_radio_state_t;
 
 extern mock_radio_state_t mock_radio;

@@ -41,6 +41,7 @@ typedef struct {
     Subject *mode;
     Subject *fft_width;
     struct {
+        Subject *bw;
         struct {
             Subject *from;
             Subject *to;

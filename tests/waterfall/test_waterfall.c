@@ -548,6 +548,9 @@ int main(void) {
     /* Los subjects que cfg_cur referencia, como los publica la radio. */
     cfg_cur.fg_freq = test_subject_create(14074000);
     cfg_cur.fft_width = test_subject_create(100000);
+    /* Bordes reales del filtro RX (issue #173): USB 300..2700, como la radio. */
+    cfg_cur.filter.real.from = test_subject_create(300);
+    cfg_cur.filter.real.to = test_subject_create(2700);
 
     static cfg_band_t band;
     band.grid.min.val = test_subject_create(S7);
