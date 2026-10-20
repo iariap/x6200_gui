@@ -183,6 +183,9 @@ def test_repo_fixtures_are_all_parsable() -> None:
         # DFL (issue #173, PR 1): banda pasante RX a escala, USB-D/LSB-D, los seis
         # temas y dos spans distintos.
         "dfl-lsb-d",
+        # Espejo USB/LSB del editor DFL inline (issue #182).
+        "dfl-mirror-lsb",
+        "dfl-mirror-usb",
         # Pagina DFL normal (issue #179) en los seis temas.
         "dfl-page-tema-aurora",
         "dfl-page-tema-cathode",
@@ -318,6 +321,8 @@ def test_repo_fixtures_are_all_parsable() -> None:
             "dfl-editor-rotary0",
             "dfl-editor-sel-bw",
             "dfl-editor-sel-high",
+            # Espejo USB/LSB del editor inline (issue #182).
+            "dfl-editor-mirror",
             "dfl-page",
         }
         for scenario in suite.scenarios
