@@ -119,10 +119,12 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
     EXP-1, UI-012's in EXP-2, the UI-010 region exclusion in EXP-3 and UI-016's
     `layout_clipped` in AB-UI016-T1. The invariant is not "no waivers": it is that
     a waiver is never global and never permanent, and that the defect it holds back
-    is recorded. Four of the nine are the Ajustes window's remaining real finding
-    (UI-015, the controls below the 44px field-UX target), one per fixture that
-    renders the rows it lives in — settings-rs-theme (UI-007) renders the same
-    Spectrum/waterfall rows as settings-wfbat, under the RS theme. The other five
+    is recorded. The Ajustes window's remaining real finding (UI-015, the controls
+    below the 44px field-UX target) has one waiver per fixture that renders the
+    rows it lives in: settings-home, settings-wfbat and settings-audio first, and
+    the pages the #175 grid change added to the corpus (settings-grupo-operation/
+    -display/-info and the six theme variants of Operation) with the same reason,
+    because their rows carry the same pre-existing geometry. The rest
     are the digit panels' ghost layer (UI-017, AB-FONTSE): the shadow label of the
     frequency row is stacked under the value on purpose, and `layout_overlap` reads
     that stacking for what it is — two visible labels in the same box — until the
@@ -146,6 +148,18 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
         "settings-audio",
         "settings-home",
         "settings-wfbat",
+        # Paginas de Ajustes del esquema unico de la grilla (issue #175): las
+        # mismas filas de UI-015 (switches 111x30/63x30 y el slider de brillo
+        # 159x13) que ya waiveran las tres de arriba, en las paginas nuevas.
+        "settings-grupo-operation",
+        "settings-grupo-display",
+        "settings-grupo-info",
+        "settings-grupo-operation-tema-aurora",
+        "settings-grupo-operation-tema-cathode",
+        "settings-grupo-operation-tema-redshift",
+        "settings-grupo-operation-tema-sprint",
+        "settings-grupo-operation-tema-sunlit",
+        "settings-grupo-operation-tema-trail",
         "main-frecuencia-dseg",
         "main-tema-sprint",
         "main-tema-sprint-agua",

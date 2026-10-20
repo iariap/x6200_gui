@@ -52,6 +52,13 @@ typedef struct {
      * `buttons_group_app`). 0 means the first page: it selects which page of the
      * app menu the fixture renders, never a pixel of the page itself. */
     int apps_page;
+    /* Grupo de Ajustes que un fixture `settings-grupo` abre, por el NOMBRE del
+     * tab de la barra de abajo ("Operation", "Audio", "Spectrum", "Clock",
+     * "Display", "Appearance", "Actions", "Info"). El fixture lo usa para saltar
+     * a ese grupo con el mismo camino que el usuario (tab -> settings_goto), y el
+     * arnes corta si el tab no esta o si la fila testigo del grupo no quedo en
+     * pantalla. Vacio = la pantalla no es `settings-grupo`. */
+    char settings_grupo[24];
     /* SWR Scan (issue #125): which deterministic dataset of
      * tests/fixtures/swrscan/ the fake ROE acquisition backend replays through
      * the REAL dialog. Empty means the screen is not driven by the backend. */

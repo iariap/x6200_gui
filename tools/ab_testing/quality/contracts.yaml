@@ -730,6 +730,95 @@ exceptions:
     author: dfl-editor-173
     until: 2027-10-20
 
+  # Las paginas de Ajustes del esquema unico (issue #175): Operation, Display e
+  # Info y las seis variantes de tema de Operation son fixtures NUEVAS, asi que
+  # sus filas entran por primera vez a la regla `layout_touch_target` y reportan
+  # la MISMA geometria pre-existente de UI-015 que ya waiveran settings-home/
+  # -wfbat/-audio: los lv_switch de Ajustes miden 111x30 (63x30 los de la fila
+  # "Mag Freq, Info, ALC") y el slider de rango del brillo 159x13. El cambio del
+  # #175 mueve esas cajas de columna (todas arrancan en x=499) pero NO su tamano:
+  # el alto sigue siendo el de LVGL y el de las filas de siempre. Un waiver por
+  # fixture, como los de las otras tres; se retiran en el incremento que arregle
+  # el alto de los controles.
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation
+    reason: >
+      UI-015: los tres switches del grupo Operation (Bluetooth, Discoverable
+      (CAT), Cluster column) miden 111x30, el alto de lv_switch, debajo del target
+      de 44 px. Geometria pre-existente de la fila; el #175 solo la mueve a la
+      columna 1.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-display
+    reason: >
+      UI-015: el grupo Display suma los switches de "S-meter needle" y "Band
+      plan" (111x30) y el slider de rango del brillo (159x13), la misma geometria
+      pre-existente de la fila "Timeout, Brightness" que ya waivera settings-home.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-info
+    reason: >
+      UI-015: los tres switches de "Mag Freq, Info, ALC" miden 63x30 (la caja de
+      dos columnas de la fila), debajo del target de 44 px. Geometria
+      pre-existente; el #175 solo corrige el span declarado (2, el de las filas de
+      tres campos) para que coincida con la caja que ya medía.
+    author: settings-align-175
+    until: 2027-10-20
+
+  # Las seis variantes de tema de la pagina Operation (mismo grupo, misma
+  # geometria): un waiver por fixture.
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation-tema-aurora
+    reason: >
+      UI-015: mismo grupo Operation que `settings-grupo-operation` (tres switches
+      111x30); esta fixture solo cambia el tema.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation-tema-cathode
+    reason: >
+      UI-015: mismo grupo Operation que `settings-grupo-operation` (tres switches
+      111x30); esta fixture solo cambia el tema.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation-tema-redshift
+    reason: >
+      UI-015: mismo grupo Operation que `settings-grupo-operation` (tres switches
+      111x30); esta fixture solo cambia el tema.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation-tema-sprint
+    reason: >
+      UI-015: mismo grupo Operation que `settings-grupo-operation` (tres switches
+      111x30); esta fixture solo cambia el tema.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation-tema-sunlit
+    reason: >
+      UI-015: mismo grupo Operation que `settings-grupo-operation` (tres switches
+      111x30); esta fixture solo cambia el tema.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation-tema-trail
+    reason: >
+      UI-015: mismo grupo Operation que `settings-grupo-operation` (tres switches
+      111x30); esta fixture solo cambia el tema.
+    author: settings-align-175
+    until: 2027-10-20
+
 # UI-016 (`layout_clipped` [settings-home]) was withdrawn here in AB-UI016-T1,
 # together with the fix: the Ajustes year field no longer clips its last digit
 # (src/dialog_settings.c, the year spinbox gets the width its four digits need
