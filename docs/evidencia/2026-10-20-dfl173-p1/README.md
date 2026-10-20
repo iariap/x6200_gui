@@ -137,6 +137,10 @@ codifica en `settle_waterfall_filter_ticks()` (`tools/ui_harness/src/screens.c`)
   objetos): **0 hallazgos** (`ab-audit.log`).
 - `tests/check_harness_determinism.sh`: **PASS** (PNG+JSON idénticos en dos
   corridas de cada fixture, incluidos los `dfl-*`) (`determinism.log`).
+- `tests/run_all_tests.sh`: **14 OK, 0 fallos** (`run-all-tests.log`). Los
+  codecs (wspr/sstv/wefax), js8 y el webserver quedan en **SKIP** hermético
+  (la imagen `x6200-uiharness` en uso es la `ci`, sin `fftw3.h`/`sndfile.h`; el
+  script lo reporta como omitido, nunca como PASS).
 
 ### 5.3 A/B (`AB-DFL173-1`)
 
