@@ -6,8 +6,13 @@
  *  Banda contextual del DFL (issue #183; ver src/dfl_context.h).
  *
  *  Geometria derivada del waterfall real (no hardcodea 240): el chip se apoya en
- *  el borde superior derecho, con 4 px de margen, y mide a lo sumo 340x40 para
- *  no tapar senales del centro del waterfall.
+ *  el borde superior derecho, con 6 px de margen, y mide a lo sumo 340x52 para
+ *  no tapar senales del centro del waterfall. El alto no es libre: la accion
+ *  TACTIL del chip (`Cancelar` de la pagina F, ver dfl_context_show_action) es
+ *  un control que se toca con el dedo y tiene que medir el minimo de la UX de
+ *  campo (44 px, `layout.min_touch_target_px` de
+ *  tools/ab_testing/quality/contracts.yaml, la regla `layout_touch_target`):
+ *  4 px de margen arriba + 44 + 4 abajo.
  */
 
 #include "dfl_context.h"
@@ -16,7 +21,8 @@
 #include "theme.h"
 
 #define DFL_CTX_MARGIN   6
-#define DFL_CTX_H        40
+/* 4 px de margen + 44 px del target tactil + 4 px de margen (ver arriba). */
+#define DFL_CTX_H        52
 #define DFL_CTX_MAX_W    340
 #define DFL_CTX_ACTION_W 128
 
@@ -67,7 +73,9 @@ void dfl_context_init(lv_obj_t *waterfall_widget) {
     text_label = lv_label_create(band);
     lv_obj_set_style_text_font(text_label, &sony_18, 0);
     lv_obj_set_style_text_color(text_label, TC(text), 0);
-    lv_obj_set_pos(text_label, 10, 11);
+    /* Centrado vertical del chip: el contexto de E ocupa dos lineas de 14 px y
+     * el de F una sola; el align se reaplica cuando el texto cambia el alto. */
+    lv_obj_align(text_label, LV_ALIGN_LEFT_MID, 10, 0);
     lv_obj_set_width(text_label, DFL_CTX_MAX_W - 20);
     lv_label_set_text(text_label, "");
     lv_obj_set_user_data(text_label, (void *) (intptr_t) DFL_CTX_LABEL);

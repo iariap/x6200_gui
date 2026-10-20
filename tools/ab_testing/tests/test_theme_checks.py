@@ -133,9 +133,15 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
     the others are the Sprint and Cathode themes' main-screen fixtures (THEMES
     v2, #69 and #70) and the DFL fixtures of those themes (issue #173, PR 1; the
     editor ones in PR 2; and the inline editor and normal-page ones added by
-    issue #179), which carry the same layer because the theme's own
+    issue #179; and the presets pages of #183), which carry the same layer because
+    the theme's own
     `font_digits: dseg14` makes
-    the frequency row draw with the segmented family. Each one names
+    the frequency row draw with the segmented family. The last one is not the
+    ghost: `dfl-presets-rotary0` is the only fixture that turns the wheel, so it
+    is the only one that shows the adaptive tuning `x%.1f` indicator (UI-018),
+    which sits in the free right margin of the power-clock panel (the rule reads
+    boxes, not ink, and the clock's centred text keeps its two lines). Each one
+    names
     exactly one rule and one fixture (no `path` shadow, so it cannot hide another
     node), carries a reason, an author and an expiry, and its reason names the open
     known issue that documents it.
@@ -186,6 +192,23 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
         "dfl-editor-sel-high-tema-cathode",
         "dfl-page-tema-sprint",
         "dfl-page-tema-cathode",
+        # Presets de filtro del DFL (issue #183): las paginas A..E de los temas
+        # con digitos segmentados traen la misma capa de "8 fantasma" de la fila
+        # de fondo, y la fixture que gira la rueda deja visible el indicador xN
+        # del tuning (UI-018), que se apoya en el margen del panel del reloj.
+        "dfl-presets-fav-tema-sprint",
+        "dfl-presets-adj-tema-sprint",
+        "dfl-presets-graph-tema-sprint",
+        "dfl-presets-more-tema-sprint",
+        "dfl-presets-confirm-tema-sprint",
+        "dfl-presets-assign-tema-sprint",
+        "dfl-presets-fav-tema-cathode",
+        "dfl-presets-adj-tema-cathode",
+        "dfl-presets-graph-tema-cathode",
+        "dfl-presets-more-tema-cathode",
+        "dfl-presets-confirm-tema-cathode",
+        "dfl-presets-assign-tema-cathode",
+        "dfl-presets-rotary0",
     }
     for exception in exceptions:
         assert exception.path is None

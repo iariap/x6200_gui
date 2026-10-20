@@ -168,6 +168,37 @@ issues:
       - "tools/ab_testing/reports/AB-FONTSE/ (A/B 11f8d689 -> 562d3f2: main-frecuencia-dseg 4862 px en frecuencia + reloj_potencia)"
       - "tools/ab_testing/quality/contracts.yaml (excepcion de layout_overlap [main-frecuencia-dseg] hasta 2027-03-31, autor fonts-extras)"
 
+  - id: UI-018
+    title: "Indicador xN del tuning adaptativo: overlay sobre el panel del reloj de potencia"
+    severity: minor
+    fixture: dfl-presets-rotary0
+    status: verified
+    note: >
+      Mientras la rueda principal gira, `src/main_screen.c` muestra la etiqueta
+      `x%.1f` de la aceleracion adaptativa (se oculta sola a los 2 s con
+      `hide_multiplier_cb`) alineada arriba a la derecha, -10/10, y el panel del
+      reloj de potencia (`clock_style`) ocupa ese mismo rincon: 209x61 alineado
+      arriba a la derecha (x=591..799, y=0..60), con la hora y la tension
+      CENTRADAS en su caja. La etiqueta del indicador (sony_16) cae entonces
+      dentro de la caja del reloj, en su margen derecho libre, y `layout_overlap`
+      -que mide cajas de etiquetas, no tinta- la lee como dos textos apilados. A
+      la vista no se tapan: en la captura el reloj conserva sus dos lineas
+      (`12.1v` / `13.8v`) y el `x1.0` queda en el rincon vacio del panel. No hay
+      un lugar libre en la barra superior para el indicador (izquierda: VFO/modo/
+      AGC; centro: S-meter; derecha: reloj), asi que el overlay es el diseno
+      vigente del indicador desde el fix de UI-001 (que lo dejo oculto por
+      defecto y solo visible mientras se gira). Queda registrado, con un waiver
+      acotado a la regla y a la fixture, para que el dia que el indicador se mueva
+      de lugar (o que la regla distinga tinta de caja) el waiver se retire; la
+      regla no se debilita. Ningun fixture del corpus lo exponia antes: las
+      fixtures que giran la rueda son nuevas del #183.
+    evidence:
+      - "tools/ui_harness/fixtures/dfl-presets-rotary0.scn (gira rotary0 y captura con el indicador visible)"
+      - "src/main_screen.c (tuning_multiplier_label: LV_ALIGN_TOP_RIGHT, -10, 10) + src/clock.c (clock_style 209x61 TOP_RIGHT)"
+      - "inspeccion estructural: lv_label 'x1.0' at 769,10 dentro de la caja del lv_label del reloj at 591,0 (100% covered)"
+      - "contracts HEAD: 1 x layout_overlap [dfl-presets-rotary0] (exceptuado por UI-018)"
+      - "captura docs/evidencia/2026-10-20-dfl183/capturas/dfl-presets-rotary0.png: el reloj muestra sus dos lineas completas (12.1v / 13.8v) y el x1.0 queda en el margen derecho del panel"
+
   # --- Seeds from the repository history: recorded, not yet reproduced. -------
   # They stay unverified until the harness can reproduce them (pixel-region
   # detector today; structural inspection once the harness emits object bounds).
