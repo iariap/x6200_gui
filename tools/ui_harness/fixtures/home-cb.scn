@@ -1,11 +1,13 @@
 # home-cb: la pantalla principal en la banda CB 27 MHz (issue #146), canal 19
-# (27.185 MHz, AM). La celda VFO de la barra muestra "CH 19" en lugar de
-# "VFO-A", el dial cuenta canales de 40 y la franja de bandas sobre el
-# waterfall dice "CB C" (los cuatro grids salen de mocks/mock_cfg.c, con los
-# mismos rangos canonicos que sql/bands_cb.csv).
+# (27.185 MHz, AM). Con el modulo CB en la fila de frecuencia (issue #169) la fila
+# grande muestra `27.185` · `CH 19` · `CB C` con la familia tipografica NORMAL
+# (no la segmentada del tema) y SIN el "8" fantasma; arriba, la franja del plan de
+# banda pinta la barra violeta `CB`. La celda VFO de la barra sigue mostrando
+# "CH 19" (info.c, redundancia aceptada) y el dial cuenta canales de 40.
 #
-# El span de 100 kHz deja entrar el rotulo "CB C" en la franja (la banda mide
-# 440 kHz); es el mismo valor con el que se midio el texto de la celda.
+# El span de 100 kHz cae entero dentro del grid C, asi que la barra del plan de
+# banda llena la franja y el rotulo `CB` entra; los cuatro grids salen de
+# mocks/mock_cfg.c, con los mismos rangos canonicos que sql/bands_cb.csv.
 #
 # See tools/ui_harness/README.md for the coverage table.
 

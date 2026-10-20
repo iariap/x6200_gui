@@ -77,6 +77,11 @@ bool cb_tx_allowed(int32_t freq, int tx_scope);
  * SPL-B). `buf_len` tiene que alcanzar para "CH --". */
 bool cb_channel_label(int32_t freq, char *buf, size_t buf_len);
 
+/* Nombre del grid para la fila de frecuencia (issue #169): "CB A".."CB D", y ""
+ * para CB_PLAN_NONE (o cualquier valor que no sea un grid). Devuelve un puntero
+ * a un literal estatico: no se libera ni se copia. */
+const char *cb_plan_name(cb_plan_t plan);
+
 /* Enganches de la GUI/radio (issue #146): entrada/salida de CB (split, modo,
  * potencia, XIT) y tope de potencia. Se implementan en src/radio.c porque
  * necesitan los subjects y el control de la radio; se llaman desde main()

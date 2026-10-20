@@ -1858,9 +1858,9 @@ base nueva ya trae los rangos corregidos desde `sql/bands_cb.csv` (canal 1 de `C
 
 ### 42.7 Fuera de alcance en v1
 
-Escaneo de canales, memorias de canal 1–40, comando CAT de canal, regla de canales en la franja
-del plan de banda, listar CB en la app Bands y grids E–H. Tampoco se toca el baseband/MCU ni el
-flag `fullband-tx` (no está en esta ROM).
+Escaneo de canales, memorias de canal 1–40, comando CAT de canal, **regla de canales** (ticks cada
+10 kHz y canal resaltado) en la franja del plan de banda, listar CB en la app Bands y grids E–H.
+Tampoco se toca el baseband/MCU ni el flag `fullband-tx` (no está en esta ROM).
 
 ### 42.8 Estado de la verificación
 
@@ -1869,6 +1869,33 @@ del orden 23/24/25; celda `CH 19` en los seis temas sin recorte; migración sobr
 dial/`CH --`/modo AM/potencia 4,0 W y `tx=false` en el banco. **F0 (RF real en 27 MHz,
 armónicos, potencia medida y PTT del micrófono) queda `requires-radio`** y lo hace el owner con
 autorización: este módulo **no** declara el TX validado.
+
+### 42.9 El canal en la fila de frecuencia y la barra CB del plan de banda (issue #169)
+
+Mejora de presentación, **solo UI** (no cambia el dial, el TX, la potencia, el interlock, la
+migración ni la tabla de canales). En CB, el operador ve de un vistazo el canal que está
+seleccionando y la franja del plan de banda pintada de CB.
+
+- **Fila de frecuencia.** En CB los tres labels pasan a: `27.185` (frecuencia del grid, formato
+  `MHz.kHz`) · `CH 19` (o `CH --` fuera de canal) · `CB C` (el grid, `CB A`..`CB D`). Los tres usan
+  la familia tipográfica **normal** (`sony_30`/`sony_38`), así `CH`, `CB` y `--` se ven también en
+  los temas con `font_digits` (Cathode, Sprint), y el **«8» fantasma** se oculta. La fuente y el
+  fantasma se cambian **solo en la transición** CB ↔ no-CB (un `static bool`), no en cada cambio de
+  frecuencia. En CB no se toca el overlay `msg_tiny`; al salir, la fila vuelve a la frecuencia grande
+  con los bordes del span y el fantasma. La lógica pura `cb_plan_name()` vive en `src/cb.c`/`cb.h`.
+- **Franja del plan de banda.** Se agrega el tipo `BP_CB` y **cuatro segmentos** (los rangos
+  completos de los grids A–D, 26,065–27,855) entre 12 m y 10 m, con color **violeta `0x5A2CA0`** y
+  rótulo `CB`. La barra respeta el ajuste *Band plan*, se recorta en los bordes de un grid y no se
+  dibuja en el hueco de 10 kHz entre grids. `redraw()` y `band_plan_segments()` no cambian.
+- `info.c` **no** se toca: la celda VFO sigue mostrando `CH nn` (redundancia aceptada: estado +
+  valor principal).
+
+Medido: tests nativos de `band_plan_segments` (los seis casos CB, con la geometría de 800 px) y de
+`cb_plan_name`; arnés de UI con las fixtures `home-cb`, `home-cb-offchannel`, `home-cb-cathode`,
+`home-cb-a` y `home-cb-d` (deterministas, A/B con cambios solo en la fila y la franja); banco QEMU
+con capturas en CB C, off-channel, grids A/D y el tema Cathode (con `font_digits`), todas con
+`tx=false`. La etiqueta blanca del segmento CB mide **9,12:1** de contraste sobre el violeta puro
+(11,5:1 sobre fondo oscuro y 5,8:1 sobre fondo claro con la franja al 80 % de opacidad): supera AA.
 ---
 
 ## 43. Propagación: beacons IBP/IARU R2 por banda actual (solo RX)

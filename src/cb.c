@@ -179,6 +179,16 @@ bool cb_tx_allowed(int32_t freq, int tx_scope) {
     return false;
 }
 
+const char *cb_plan_name(cb_plan_t plan) {
+    switch (plan) {
+        case CB_PLAN_A: return "CB A";
+        case CB_PLAN_B: return "CB B";
+        case CB_PLAN_C: return "CB C";
+        case CB_PLAN_D: return "CB D";
+        default:        return "";   /* CB_PLAN_NONE y cualquier valor invalido */
+    }
+}
+
 bool cb_channel_label(int32_t freq, char *buf, size_t buf_len) {
     cb_plan_t plan;
     if (!cb_plan_of_freq(freq, &plan)) {

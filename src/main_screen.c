@@ -1565,6 +1565,38 @@ static void freq_shadow_update(const char *value) {
     ui_label_set_text(freq_shadow, ghost);
 }
 
+/* Fila de frecuencia en CB (issue #169): el canal manda. `true` si `f` cae en un
+ * grid CB; `*plan` queda con el grid y `*ch` con el canal 1..40, o CB_CHANNEL_NONE
+ * si es off-channel (hueco o frecuencia intermedia). */
+static bool cb_row_state(int32_t f, cb_plan_t *plan, int *ch) {
+    if (!cb_plan_of_freq(f, plan)) return false;
+    *ch = cb_channel_of_freq(*plan, f);   /* CB_CHANNEL_NONE = off-channel */
+    return true;
+}
+
+/* Fuente normal (no la segmentada del tema) y fantasma oculto mientras la fila
+ * muestra el canal: la familia `font_digits` es solo digitos y no tiene `CH`,
+ * `CB` ni `--`. Se aplica SOLO en la transicion CB <-> no-CB (`cb_row_on`), no en
+ * cada cambio de frecuencia. Al salir, quitar la fuente local devuelve la del
+ * estilo (`font_digit(...)`) y el fantasma se vuelve a llenar en el camino normal. */
+static bool cb_row_on = false;
+
+static void cb_row_fonts(bool on) {
+    if (on == cb_row_on) return;
+    cb_row_on = on;
+    for (int i = 0; i < 3; i++) {
+        if (on) {
+            lv_obj_set_style_text_font(freq[i], i == 1 ? &sony_38 : &sony_30, 0);
+        } else {
+            lv_obj_remove_local_style_prop(freq[i], LV_STYLE_TEXT_FONT, 0);
+        }
+    }
+    if (freq_shadow != NULL) {
+        if (on) lv_obj_add_flag(freq_shadow, LV_OBJ_FLAG_HIDDEN);
+        else    lv_obj_clear_flag(freq_shadow, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
 static void on_fg_freq_change(Subject *subj, void *user_data) {
     int32_t    f;
     char       value[48];
@@ -1586,6 +1618,35 @@ static void on_fg_freq_change(Subject *subj, void *user_data) {
     }
 
     f = subject_get_int(freq_fg_subj);
+
+    /* Fila en CB (issue #169): 27.185 · CH 19 · CB C. El canal va en grande con
+     * la familia NORMAL (cb_row_fonts), asi que `CH`/`CB`/`--` se ven tambien en
+     * los temas con font_digits; el fantasma se oculta y no se toca msg_tiny (el
+     * overlay taparia la fila). Al salir vuelve el camino de abajo. */
+    cb_plan_t plan;
+    int       ch = CB_CHANNEL_NONE;
+    bool      cb = cb_row_state(f, &plan, &ch);
+
+    cb_row_fonts(cb);
+
+    if (cb) {
+        char     text[32], marked[48];
+        uint16_t mhz_cb, khz_cb, hz_cb;
+
+        split_freq(f, &mhz_cb, &khz_cb, &hz_cb);
+
+        snprintf(marked, sizeof(marked), "#%06X %i.%03i", color, mhz_cb, khz_cb);
+        ui_label_set_text(freq[0], marked);
+
+        if (ch != CB_CHANNEL_NONE) snprintf(text, sizeof(text), "CH %d", ch);
+        else                       snprintf(text, sizeof(text), "CH --");
+        snprintf(marked, sizeof(marked), "#%06X %s", color, text);
+        ui_label_set_text(freq[1], marked);
+
+        snprintf(marked, sizeof(marked), "#%06X %s", color, cb_plan_name(plan));
+        ui_label_set_text(freq[2], marked);
+        return;   /* nada de msg_tiny ni de freq_shadow_update */
+    }
 
     uint16_t    mhz, khz, hz;
 
@@ -1636,6 +1697,18 @@ static void update_freq_boundaries(Subject *subj, void *user_data) {
 
     char boundary[32];
 
+    /* La franja del plan de banda sigue el span SIEMPRE, tambien en CB (issue #169):
+     * el grid se pinta igual que los segmentos de aficionado. */
+    band_plan_update(f, (int32_t) half_width);
+
+    /* En CB los tres labels los escribe on_fg_freq_change() (27.185 / CH 19 / CB C),
+     * que no depende del span: aca no se tocan los extremos. */
+    cb_plan_t plan;
+
+    if (cb_plan_of_freq(f, &plan)) {
+        return;
+    }
+
     split_freq(f - half_width, &mhz, &khz, &hz);
     snprintf(boundary, sizeof(boundary), "#%06X %i.%03i", color, mhz, khz);
     ui_label_set_text(freq[0], boundary);
@@ -1643,9 +1716,6 @@ static void update_freq_boundaries(Subject *subj, void *user_data) {
     split_freq(f + half_width, &mhz, &khz, &hz);
     snprintf(boundary, sizeof(boundary), "#%06X %i.%03i", color, mhz, khz);
     ui_label_set_text(freq[2], boundary);
-
-    /* The band plan strip follows the same span as the frequency labels */
-    band_plan_update(f, (int32_t) half_width);
 }
 
 /* Accepted for the ported app dialogs: without the channels dialog there is no

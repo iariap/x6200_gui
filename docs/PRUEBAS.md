@@ -260,6 +260,59 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 ---
 
 
+## 19/10 (hora host) — rama `factory/cb-ui-169` (#169): canal en la fila y barra CB en el plan de banda; gates completos y banco QEMU (**solo UI, sin TX**)
+
+**Qué se probó:** la ampliación de UI del módulo CB de #146: en CB la fila grande pasa a
+`27.185` · `CH 19` · `CB C` (familia normal, sin «8» fantasma) y la franja del plan de banda se
+pinta violeta con el rótulo `CB` (26,065–27,855). **No se transmitió, no se desplegó y no se
+flasheó.**
+
+**Host (todo verde):**
+
+```text
+$ tests/native/run_native_tests.sh
+  40288 comprobaciones, 0 fallos        (band_plan: 6 casos CB + los de 20 m/wide/clipping)
+  ... 90 comprobaciones de test_cb (cb_plan_name incluido), 0 fallos
+$ python3 tests/check_wcag.py
+  pares OK: 1052 | exentos: 170 | informativos: 90 | FALLAS: 0   (etiqueta blanca sobre el violeta CB: 9,12:1)
+$ python3 tests/check_cfg_fills.py    -> OK: los 70 campos se inicializan, en orden
+$ python3 tests/check_actions.py      -> todas las acciones ofrecidas tienen manejador
+$ tests/check_harness_determinism.sh  -> PASS: deterministic (identical PNGs for every fixture)
+$ cd tools/ab_testing
+$ uv run ruff check . && uv run ruff format --check . && uv run ty check   -> all passed
+$ uv run pytest -m "not e2e" -q  -> 227 passed, 13 deselected
+$ TMPDIR=/var/tmp/pytest-169 uv run pytest -m e2e -q  -> 13 passed
+$ uv run x6200-ab contracts --revision 19ef1ebe  -> PASS — 943 checks, 0 failure(s)
+$ uv run x6200-ab audit --revision 19ef1ebe      -> 0 reproduced, 0 structural findings
+$ uv run x6200-ab themes                          -> 0 failures
+$ uv run x6200-ab compare --a 73fdd055 --b 19ef1ebe --experiment-id AB-CB169
+  experiment AB-CB169: PASS (exit 0)
+  Functional PASS — 89 scenarios captured on both revisions
+  Visual Regression PASS — no unexplained visual regressions
+  Quality Contract PASS — 913 contract checks passed on the candidate
+  Performance PASS — render-cost proxy within budget
+```
+
+El A/B cambia **solo** `home-cb` y `home-cb-offchannel`; las cajas de píxeles distintas caen todas
+en `y=138..160` (franja del plan de banda) y `y=172..190` (fila de frecuencia). Nada de la barra de
+info, el S-meter, el waterfall, los botones ni las apps.
+
+**Compilación ARM y banco QEMU (gate #86).** Cross-compile con el toolchain de la ROM:
+`fuente ff9fadfeb15a`, binario **`c130665e88d6`**, 13.859.408 B. El gate #86 lo acepta (ELF32 ARM,
+3/3 marcas). Capturas (chroot/volumen privados):
+
+- 27.185 (CB C) → `27.185` · `CH 19` · `CB C`, barra violeta `CB`, AM, **TX power 4.0 W**;
+- 27.000 → `27.000` · `CH --` · `CB C`;
+- 26.065 (CB A) → `26.065` · `CH 1` · `CB A`, barra recortada a la mitad derecha;
+- 27.855 (CB D) → `27.855` · `CH 40` · `CB D`, barra recortada a la mitad izquierda;
+- tema **Cathode** (`font_digits`) → `CH 19` y `CB C` con la familia **normal**, sin fantasma;
+- `{"cmd":"get"}` → `"band":"CB D","pwr":40,"tx":false` en todas las consultas (no se envió TX).
+
+Evidencia: [`evidencia/2026-10-19-cb169-banco/README.md`](evidencia/2026-10-19-cb169-banco/README.md).
+
+**Veredicto:** requisitos A y B medidos en host y en el banco; A/B con cambios solo en la fila y la
+franja en los seis temas. **Sin TX**: la F0 de #146 sigue `requires-radio`.
+
 ## 19/10 ~15:2x (hora radio) — TX cualitativa en CB (teclado CW) y el interlock que **no** lo cubre (`67387bfc4391`)
 
 **Qué se probó:** que el equipo **transmite** en un canal CB y que el **interlock** bloquea fuera de

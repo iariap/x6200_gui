@@ -109,6 +109,34 @@ static bool label_on_screen(lv_obj_t *obj, const char *text)
     return false;
 }
 
+/* Como label_on_screen, pero calza cuando el texto visible TERMINA en `suffix`. La
+ * fila de frecuencia lleva el color del tema como markup de recolor de LVGL
+ * (`#RRGGBB 27.185`), asi que el match exacto no la ve; el sufijo si (issue #169). */
+static bool label_suffix_on_screen(lv_obj_t *obj, const char *suffix)
+{
+    if (lv_obj_check_type(obj, &lv_label_class) && !lv_obj_has_flag(obj, LV_OBJ_FLAG_HIDDEN)) {
+        const char *obj_text = lv_label_get_text(obj);
+
+        if (obj_text != NULL && visible_on_screen(obj)) {
+            size_t n = strlen(obj_text), m = strlen(suffix);
+
+            if (m <= n && strcmp(obj_text + (n - m), suffix) == 0) {
+                return true;
+            }
+        }
+    }
+
+    uint32_t children = lv_obj_get_child_cnt(obj);
+
+    for (uint32_t i = 0; i < children; i++) {
+        if (label_suffix_on_screen(lv_obj_get_child(obj, (int32_t) i), suffix)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /* El borde inferior en pantalla de la etiqueta visible con este texto exacto, o -1 si
  * ninguna calza. Es la metrica con la que el fixture de BT (UI-005) mide que la linea
  * de estado no quede debajo de la fila de botones: el defecto historico era texto
@@ -564,18 +592,36 @@ void scenario_settle(const scenario_t *scenario)
 {
     settle_waterfall_center_line(scenario);
 
-    /* CB 27 MHz (issue #146): lo que cada fixture significa. La celda VFO de la
-     * barra tiene que mostrar el canal, no el rotulo VFO-A/SPL-B; si el texto no
-     * esta en pantalla el arnes corta en vez de capturar otra cosa y reportar
-     * verde. El recorte del texto (no solo la visibilidad) se mide aparte con
-     * --inspect (text_truncated / text_natural), que es lo que usa la evidencia
-     * de los seis temas. */
-    if (!strcmp(scenario->name, "home-cb") && !label_on_screen(lv_scr_act(), "CH 19")) {
-        fprintf(stderr, "home-cb: la celda VFO no muestra 'CH 19' (¿se perdio el enganche CB?)\n");
+    /* CB 27 MHz (issues #146/#169): lo que cada fixture significa. La celda VFO de
+     * la barra tiene que mostrar el canal, no el rotulo VFO-A/SPL-B; y en la fila
+     * de frecuencia (issue #169) el label izquierdo lleva la frecuencia del grid
+     * con su color de tema (`#RRGGBB 27.185`), que el match exacto no ve. Si
+     * falta cualquiera de los dos el arnes corta en vez de capturar otra cosa y
+     * reportar verde. El recorte del texto (no solo la visibilidad) se mide aparte
+     * con --inspect (text_truncated / text_natural), que es lo que usa la
+     * evidencia de los seis temas. */
+    if (!strcmp(scenario->name, "home-cb")) {
+        if (!label_on_screen(lv_scr_act(), "CH 19") || !label_suffix_on_screen(lv_scr_act(), "27.185")) {
+            fprintf(stderr, "home-cb: la fila no muestra 27.185 / CH 19 / CB C (¿se perdio el modo CB?)\n");
+            exit(1);
+        }
+    }
+    if (!strcmp(scenario->name, "home-cb-offchannel")) {
+        if (!label_on_screen(lv_scr_act(), "CH --") || !label_suffix_on_screen(lv_scr_act(), "27.000")) {
+            fprintf(stderr, "home-cb-offchannel: la fila no muestra 27.000 / CH -- en 27.000 MHz\n");
+            exit(1);
+        }
+    }
+    if (!strcmp(scenario->name, "home-cb-cathode") && !label_suffix_on_screen(lv_scr_act(), "27.185")) {
+        fprintf(stderr, "home-cb-cathode: la fila no muestra 27.185 con la familia normal en Cathode\n");
         exit(1);
     }
-    if (!strcmp(scenario->name, "home-cb-offchannel") && !label_on_screen(lv_scr_act(), "CH --")) {
-        fprintf(stderr, "home-cb-offchannel: la celda VFO no muestra 'CH --' en 27.000 MHz\n");
+    if (!strcmp(scenario->name, "home-cb-a") && !label_suffix_on_screen(lv_scr_act(), "26.065")) {
+        fprintf(stderr, "home-cb-a: la fila no muestra 26.065 / CH 1 / CB A\n");
+        exit(1);
+    }
+    if (!strcmp(scenario->name, "home-cb-d") && !label_suffix_on_screen(lv_scr_act(), "27.855")) {
+        fprintf(stderr, "home-cb-d: la fila no muestra 27.855 / CH 40 / CB D\n");
         exit(1);
     }
 

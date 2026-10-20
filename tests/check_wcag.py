@@ -38,6 +38,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 THEME_H = RAIZ / "src" / "theme.h"
 THEME_C = RAIZ / "src" / "theme.c"
 CW_TUNE_C = RAIZ / "src" / "cw_tune_ui.c"
+BAND_PLAN_C = RAIZ / "src" / "band_plan.c"
 TEMAS_DIR = RAIZ / "rootfs" / "usr" / "share" / "x6200" / "themes"
 
 
@@ -180,6 +181,54 @@ def leer_formas():
     return forma
 
 
+# La franja del plan de banda (src/band_plan.c) NO usa roles del tema: pinta cada
+# segmento con su constante de `colors[]` y elige la etiqueta (blanca o negra) por
+# la luminancia de ese color. El violeta del CB 27 MHz (issue #169) es una de esas
+# constantes, no un rol de theme JSON: ningun tema lo define. Por eso el par se
+# resuelve leyendo la fuente (como cw_tune_ui.c) y no exigiendo un rol hex_5a2ca0.
+# `colors[]` y `labels[][]` van en el mismo orden: el indice de "CB" en las
+# etiquetas indexa el color.
+_LV_OPA = {
+    "LV_OPA_0": 0, "LV_OPA_10": 25, "LV_OPA_20": 51, "LV_OPA_30": 76,
+    "LV_OPA_40": 102, "LV_OPA_50": 127, "LV_OPA_60": 153, "LV_OPA_70": 178,
+    "LV_OPA_80": 204, "LV_OPA_90": 229, "LV_OPA_100": 255,
+}
+
+
+def leer_band_plan():
+    """El color del segmento CB y la opacidad de la franja, leidos de la fuente.
+
+    Devuelve (color_cb, opa) o (None, None). Lee la constante real del codigo para
+    que cambiar el violeta a un color de bajo contraste haga fallar el chequeo.
+    """
+    texto = BAND_PLAN_C.read_text(errors="surrogateescape")
+
+    m = re.search(r"colors\[\]\s*=\s*\{([^}]*)\}", texto)
+    if not m:
+        fallos.append("src/band_plan.c: no encontre colors[]")
+        return None, None
+    colores = [int(v, 16) for v in re.findall(r"0x[0-9a-fA-F]{6}", m.group(1))]
+
+    ml = re.search(r"labels\[\]\[2\]\s*=\s*\{(.*?)\};", texto, re.S)
+    if not ml:
+        fallos.append("src/band_plan.c: no encontre labels[][]")
+        return None, None
+    etiquetas = re.findall(r'\{\s*"([^"]*)"', ml.group(1))
+    if "CB" not in etiquetas:
+        fallos.append("src/band_plan.c: no encontre el segmento CB en labels[][]")
+        return None, None
+    idx = etiquetas.index("CB")
+    if idx >= len(colores):
+        fallos.append("src/band_plan.c: el indice de CB no cae dentro de colors[]")
+        return None, None
+
+    mo = re.search(r"#define\s+OPA\s+(LV_OPA_\d+)", texto)
+    if not mo or mo.group(1) not in _LV_OPA:
+        fallos.append("src/band_plan.c: no encontre #define OPA LV_OPA_xx")
+        return None, None
+    return colores[idx], _LV_OPA[mo.group(1)]
+
+
 def armar_paletas(colores):
     """Las diez paletas que sirve la ROM (las cuatro base y los seis archivos)."""
     formas = leer_formas()
@@ -243,6 +292,16 @@ def armar_paletas(colores):
         paleta["cw_tune_borde"] = (
             0xFFFFFF if luminancia(paleta["cw_tune_panel"]) < LUM_CORTE else 0x000000
         )
+
+    # El segmento CB del plan de banda es la constante 0x5A2CA0 (issue #169) pintada al
+    # OPA de la franja (`lv_obj_set_style_bg_opa(b, OPA)`, src/band_plan.c:126) sobre lo
+    # que haya debajo; se aproxima por el fondo del tema, como cw_tune. Se mide la
+    # etiqueta blanca contra ese fondo compuesto, que es el que el codigo dibuja de
+    # verdad (puro 9,12:1; al 80% sobre oscuro 11,49:1; sobre claro 5,76:1).
+    color_cb, opa = leer_band_plan()
+    if color_cb is not None:
+        for paleta in paletas.values():
+            paleta["band_plan_cb"] = mezclar(color_cb, paleta["bg"], opa)
 
     return paletas, shapes
 
@@ -394,6 +453,12 @@ PARES_ESPECIFICOS = [
     ("hex_000000", "hex_cc8800", 4.5, None, "band_plan.c:19+93 (etiqueta sobre el naranja de BCN)"),
     ("hex_000000", "hex_888888", 4.5, None, "band_plan.c:19+93 (etiqueta sobre el gris de ALL MODES)"),
     ("hex_ffffff", "hex_3366cc", 4.5, None, "band_plan.c:19+93 (etiqueta sobre el azul de CW)"),
+    # band_plan.c: color del segmento CB 27 MHz (issue #169). El violeta NO es un rol
+    # del tema: es una constante de colors[] (band_plan.c:40). La franja se pinta al
+    # OPA (80%) sobre el fondo del tema y la etiqueta sale blanca porque
+    # rel_lum(0x5A2CA0) = 0.065 < LUM_CORTE. Se mide blanca sobre ese fondo compuesto,
+    # leido de la fuente para que un violeta de bajo contraste haga fallar el chequeo.
+    ("hex_ffffff", "band_plan_cb", 4.5, None, "band_plan.c:40+83+126 (etiqueta blanca sobre el violeta CB al 80% sobre TC(bg), issue #169)"),
     # dialog_field.c:1098: la etiqueta del chip (VOL/MFK) va sobre el fondo del
     # chip, que es TC(bg); con negro literal daba 1.00:1 en Classic.
     ("text", "bg", 4.5, None, "dialog_field.c:1098 (etiqueta del chip sobre TC(bg))"),
@@ -601,6 +666,22 @@ def main():
             "src/cw_tune_ui.c: el borde de las barras inactivas no se elige por la luminancia del "
             "panel (rel_lum(panel_color()) < LUM_CORTE): el color tiene que ser el que mas contraste "
             "tenga contra la superficie que lo rodea"
+        )
+
+    # Misma idea para el segmento CB del plan de banda: el par `band_plan_cb` sale de la constante
+    # de colors[], asi que el codigo tiene que seguir pintando la franja con OPA y eligiendo la
+    # etiqueta por la luminancia del segmento (band_plan.c:83). Si no, el chequeo mediria un color
+    # que nadie dibuja.
+    band_plan = BAND_PLAN_C.read_text(errors="surrogateescape")
+    if not re.search(r"lv_obj_set_style_bg_opa\([^,]+,\s*OPA\b", band_plan):
+        fallos.append(
+            "src/band_plan.c: la franja no se pinta al OPA (#define OPA): el par `band_plan_cb` "
+            "mediria un color que no se dibuja"
+        )
+    if not re.search(r"rel_lum\(lv_color_hex\(colors\[[^)]*\)\)\s*<\s*LUM_CORTE", band_plan):
+        fallos.append(
+            "src/band_plan.c: la etiqueta del plan de banda no se elige por la luminancia del "
+            "segmento (rel_lum(lv_color_hex(colors[...])) < LUM_CORTE)"
         )
 
     print("================ resumen ================")
