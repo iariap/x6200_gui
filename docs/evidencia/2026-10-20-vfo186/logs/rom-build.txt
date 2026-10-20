@@ -1,0 +1,3 @@
+  compilando limpio (objetos de la GUI borrados)...
+  binario: md5 452735f5d81f   (commit 7cfade9b - arnes #186: radio_check_freq valida el rango, no l)
+  fuente:  md5 6f0ac61e433e   (sello .fuente.md5 del volumen)

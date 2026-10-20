@@ -1,0 +1,3 @@
+  sin cambios en los fuentes: se deja el binario que ya esta
+  binario: md5 452735f5d81f   (commit 7ee5b5cf - build #186: compilar rotary_queue.c en el target d)
+  fuente:  md5 6f0ac61e433e   (sello .fuente.md5 del volumen)

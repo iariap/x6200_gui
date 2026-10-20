@@ -139,7 +139,13 @@ void radio_set_freq(int32_t freq)
 bool radio_check_freq(int32_t freq)
 {
     mock_radio_calls.check_freq++;
-    return (uint32_t) freq == mock_radio.frequency_hz;
+
+    /* La radio real valida el RANGO, no la igualdad con la frecuencia actual
+     * (src/radio.c: 500 kHz..55 MHz, o transverter): un candidato valido para
+     * sintonizar es justamente el que todavia NO esta puesto. Devolver la
+     * igualdad rompia el dial de #186, que ahora consulta esta funcion antes de
+     * escribir el Subject. */
+    return freq >= 500000 && freq <= 55000000;
 }
 
 x6200_vfo_t radio_toggle_vfo(void)

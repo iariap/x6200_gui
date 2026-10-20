@@ -36,9 +36,9 @@ cp "$SRC/cw_decoder.c" "$SRC/cw_decoder.h" "$CW_STAGE/"
 cp "$DIR/stubs_cw/pannel.h" "$DIR/stubs_cw/remote_server.h" "$CW_STAGE/"
 cp "$DIR/stubs/lvgl/lvgl.h" "$CW_STAGE/lvgl/"
 
-SOURCES="$SRC/adaptive_tuning.c $SRC/autotune.c $SRC/cw_autotune.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c $SRC/roe_curve.c $SRC/swr_session.c $SRC/cb.c $SRC/propagation.c $SRC/propagation_data.c $CW_STAGE/cw_decoder.c \
+SOURCES="$SRC/adaptive_tuning.c $SRC/rotary_queue.c $SRC/autotune.c $SRC/cw_autotune.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c $SRC/roe_curve.c $SRC/swr_session.c $SRC/cb.c $SRC/propagation.c $SRC/propagation_data.c $CW_STAGE/cw_decoder.c \
 $DIR/stubs/stubs.c $DIR/test_main.c $DIR/test_framework.c \
-$DIR/test_adaptive_tuning.c $DIR/test_autotune.c $DIR/test_cw_autotune.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c $DIR/test_roe_curve.c $DIR/test_swr_session.c $DIR/swrscan_fixtures.c $DIR/test_swrscan_fixtures.c $DIR/test_cb.c $DIR/test_propagation.c \
+$DIR/test_adaptive_tuning.c $DIR/test_rotary_queue.c $DIR/test_settings_language.c $DIR/test_autotune.c $DIR/test_cw_autotune.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c $DIR/test_roe_curve.c $DIR/test_swr_session.c $DIR/swrscan_fixtures.c $DIR/test_swrscan_fixtures.c $DIR/test_cb.c $DIR/test_propagation.c \
 $DIR/test_update_check.c"
 
 echo "== compilador: $($CC --version | head -1) =="
@@ -63,7 +63,7 @@ fi
 echo "== analisis estatico (gcc -fanalyzer) =="
 # wfview_server stays out: it opens the three server sockets on purpose and keeps
 # them for the life of the process, which the leak checker reads as a leak.
-for f in adaptive_tuning autotune cw_autotune audio_enhancement ft8_udp update_check band_plan_data avi_writer bt_devices kbd_rollover cb propagation; do
+for f in adaptive_tuning rotary_queue autotune cw_autotune audio_enhancement ft8_udp update_check band_plan_data avi_writer bt_devices kbd_rollover cb propagation; do
     # shellcheck disable=SC2086
     $CC $BASEFLAGS -fanalyzer -I"$DIR/stubs" -I"$SRC" -c "$SRC/$f.c" -o "$OUT/$f.o" || true
 done
@@ -78,6 +78,17 @@ export X6200_SHIPPED_THEMES="${X6200_SHIPPED_THEMES:-$SRC/../rootfs/usr/share/x6
 export X6200_DIALOG_FIELD_SRC="${X6200_DIALOG_FIELD_SRC:-$SRC/dialog_field.c}"
 # Los fixtures del owner (issue #125, seccion 7) son el oraculo de la multipasada.
 export X6200_SWRSCAN_FIXTURES="${X6200_SWRSCAN_FIXTURES:-$DIR/../fixtures/swrscan}"
+# Issue #186: la verificacion estatica de Settings/cableado lee estas fuentes.
+export X6200_SETTINGS_SRC="${X6200_SETTINGS_SRC:-$SRC/dialog_settings.c}"
+export X6200_PARAMS_SRC="${X6200_PARAMS_SRC:-$SRC/params/params.c}"
+export X6200_PARAMS_H="${X6200_PARAMS_H:-$SRC/params/params.h}"
+export X6200_MAIN_SCREEN_SRC="${X6200_MAIN_SCREEN_SRC:-$SRC/main_screen.c}"
+export X6200_MAIN_SCREEN_H="${X6200_MAIN_SCREEN_H:-$SRC/main_screen.h}"
+export X6200_ROTARY_SRC="${X6200_ROTARY_SRC:-$SRC/rotary.c}"
+export X6200_ROTARY_H="${X6200_ROTARY_H:-$SRC/rotary.h}"
+export X6200_ROTARY_QUEUE_H="${X6200_ROTARY_QUEUE_H:-$SRC/rotary_queue.h}"
+export X6200_VOICE_C="${X6200_VOICE_C:-$SRC/voice.c}"
+export X6200_VOICE_H="${X6200_VOICE_H:-$SRC/voice.h}"
 "$OUT/native_tests"
 
 # --- Clock test (UI-009) ------------------------------------------------------
@@ -800,6 +811,83 @@ $CC $BASEFLAGS -fanalyzer -I"$MIG_STAGE/params" -I"$MIG_STAGE" \
     -c "$MIG_STAGE/params/migrations.c" -o "$OUT/migrations_cb.o" || true
 
 "$OUT/migrations_tests"
+
+# --- freq_accel_threshold persistence (issue #186) ----------------------------
+# params.c is compiled for the host against a REAL in-memory/file SQLite database
+# (params_stubs.c owns the four params_write_* and cfg_init/voice/log stubs). Each
+# case runs in its own process because params_init() starts the firmware's save
+# thread; _Exit() stops it after the assertions, exactly like the radio process
+# ending. Cases from issue #186 section 6: missing key -> 7; 3/7/15 preserved;
+# 0/2/16/255 -> 7 + dirty; a change persists and survives a reload.
+echo "== #186: persistencia de freq_accel_threshold sobre SQLite real =="
+PARAMS_TEST_BIN="$OUT/params_threshold_tests"
+# params.c includes dialog_msg_cw.h -> dialog.h, so this stage compiles the real
+# dialog.h and needs LVGL's event/log types. The lvgl/ submodule is NOT checked
+# out by the CI functional job (actions/checkout without `submodules: true`), so
+# the real lvgl/lvgl.h is absent there and a stage that leaned on -I.../lvgl
+# compiled against the stub only in CI and broke (issue #186: unknown type name
+# 'lv_event_cb_t'/'lv_event_t'/'lv_event_code_t'/'lv_log_level_t'). Put the stub
+# FIRST so the host stage is deterministic and self-contained: the same stub
+# lvgl/lvgl.h runs locally and in CI (the stub now declares those types), and the
+# stage no longer depends on the submodule being present.
+PARAMS_INCLUDES="-DLV_CONF_INCLUDE_SIMPLE -I$DIR/stubs -I$DIR/../.. -I$SRC \
+    -I$DIR/../../tools/ui_harness -I$DIR/../../tools/ui_harness/third_party"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN $PARAMS_INCLUDES \
+        "$SRC/params/params.c" "$SRC/params/common.c" "$SRC/adaptive_tuning.c" \
+        "$DIR/params_stubs.c" "$DIR/test_params_threshold.c" \
+        -lsqlite3 -lm -o "$PARAMS_TEST_BIN"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $PARAMS_INCLUDES \
+        "$SRC/params/params.c" "$SRC/params/common.c" "$SRC/adaptive_tuning.c" \
+        "$DIR/params_stubs.c" "$DIR/test_params_threshold.c" \
+        -lsqlite3 -lm -o "$PARAMS_TEST_BIN"
+fi
+
+params_case() {
+    name=$1
+    seed=$2
+    expect=$3
+    dirty=$4
+    set_value=$5
+    expect_db=$6
+    db="$OUT/params-$name.sqlite"
+    rm -f "$db"
+    PARAMS_TEST_DB="$db" PARAMS_TEST_SEED="$seed" PARAMS_TEST_EXPECT="$expect" \
+        PARAMS_TEST_DIRTY="$dirty" PARAMS_TEST_SET="$set_value" \
+        PARAMS_TEST_EXPECT_DB="$expect_db" "$PARAMS_TEST_BIN" || {
+        echo "    FALLO: caso $name" >&2
+        exit 1
+    }
+    echo "    $name: OK"
+    rm -f "$db"
+}
+
+params_case missing "" 7 0 "" ""
+params_case stored-3 3 3 0 "" ""
+params_case stored-7 7 7 0 "" ""
+params_case stored-15 15 15 0 "" ""
+params_case invalid-0 0 7 1 "" ""
+params_case invalid-2 2 7 1 "" ""
+params_case invalid-16 16 7 1 "" ""
+params_case invalid-255 255 7 1 "" ""
+
+# Cambio + reinicio: el caso `set` deja 15 en la base y `reload` la reabre.
+PARAMS_RELOAD_DB="$OUT/params-reload.sqlite"
+rm -f "$PARAMS_RELOAD_DB"
+PARAMS_TEST_DB="$PARAMS_RELOAD_DB" PARAMS_TEST_SEED=3 PARAMS_TEST_EXPECT=3 \
+    PARAMS_TEST_DIRTY=0 PARAMS_TEST_SET=15 PARAMS_TEST_EXPECT_DB=15 \
+    "$PARAMS_TEST_BIN" || { echo "    FALLO: caso set" >&2; exit 1; }
+echo "    set (3 -> 15): OK"
+PARAMS_TEST_DB="$PARAMS_RELOAD_DB" PARAMS_TEST_EXPECT=15 PARAMS_TEST_DIRTY=0 \
+    PARAMS_TEST_EXPECT_DB=15 "$PARAMS_TEST_BIN" || {
+    echo "    FALLO: caso reload" >&2
+    exit 1
+}
+echo "    reload (15 tras reinicio): OK"
+rm -f "$PARAMS_RELOAD_DB"
 
 # --- Remote control state line (issue #157) -----------------------------------
 # src/remote_server.cpp is C++ and includes its siblings with `#include "..."`, and

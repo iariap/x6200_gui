@@ -32,6 +32,13 @@
 #define VOICE_TEXT_MAX  160
 
 static char            cola[VOICE_QUEUE][VOICE_TEXT_MAX];
+/* Anuncios originados en Settings (regla del owner, 2026-10-20): se dicen en
+ * INGLES y sin pasar por el diccionario, aunque el resto de la GUI siga con el
+ * idioma global. Se marca por entrada de la cola. */
+static bool            cola_en[VOICE_QUEUE];
+/* Settings abierto: las locuciones que disparan sus controles (incluidas las de
+ * params_*_set) tambien salen en ingles. La GUI lo prende/apaga al abrir/cerrar. */
+static bool            settings_abierto;
 static int             cola_cabeza;
 static int             cola_cola;
 static pthread_mutex_t mux = PTHREAD_MUTEX_INITIALIZER;
@@ -86,7 +93,7 @@ static bool puede_hablar(void) {
  * espeak escribe un WAV de 16 bits a 22050 Hz; se saca el bloque de datos, se remuestrea a la
  * frecuencia del stream y se escribe en trozos: audio_play() espera a que haya lugar y con
  * bloques grandes nunca lo encuentra (ver el comentario de dialog_js8.c). */
-static void sintetizar_y_reproducir(const char *texto, bool forzar) {
+static void sintetizar_y_reproducir_lang(const char *texto, bool forzar, const char *lang) {
     char  archivo[] = "/tmp/voice_txt_XXXXXX";
     int   fd;
     int   tubo[2];
@@ -117,7 +124,7 @@ static void sintetizar_y_reproducir(const char *texto, bool forzar) {
         return;
     }
 
-    snprintf(arg_lang, sizeof(arg_lang), "%s", idioma);
+    snprintf(arg_lang, sizeof(arg_lang), "%s", lang != NULL ? lang : idioma);
 
     pid = fork();
 
@@ -213,6 +220,7 @@ static void *hilo_voz(void *arg) {
     while (1) {
         char texto[VOICE_TEXT_MAX];
         char traducido[VOICE_TEXT_MAX * 2];
+        bool en_ingles;
 
         pthread_mutex_lock(&mux);
 
@@ -221,18 +229,25 @@ static void *hilo_voz(void *arg) {
         }
 
         snprintf(texto, sizeof(texto), "%s", cola[cola_cabeza]);
+        en_ingles   = cola_en[cola_cabeza];
         cola_cabeza = (cola_cabeza + 1) % VOICE_QUEUE;
         pthread_mutex_unlock(&mux);
 
-        voice_translate(texto, traducido, sizeof(traducido));
-        sintetizar_y_reproducir(traducido, false);
+        if (en_ingles) {
+            /* Settings: el texto ya esta en ingles y se sintetiza en ingles. */
+            sintetizar_y_reproducir_lang(texto, false, "en");
+        } else {
+            voice_translate(texto, traducido, sizeof(traducido));
+            sintetizar_y_reproducir_lang(traducido, false, NULL);
+        }
     }
 
     return NULL;
 }
 
-/* Encola un texto ya armado */
-static void encolar(const char *texto) {
+/* Encola un texto ya armado. `en_ingles` lo saca del diccionario y lo
+ * sintetiza en ingles (anuncios de Settings). */
+static void encolar_ex(const char *texto, bool en_ingles) {
     if (texto == NULL || *texto == 0) {
         return;
     }
@@ -257,8 +272,32 @@ static void encolar(const char *texto) {
 
     pthread_mutex_lock(&mux);
     snprintf(cola[cola_cola], VOICE_TEXT_MAX, "%s", texto);
+    cola_en[cola_cola] = en_ingles;
     cola_cola = (cola_cola + 1) % VOICE_QUEUE;
     pthread_cond_signal(&hay);
+    pthread_mutex_unlock(&mux);
+}
+
+/* Encola un texto ya armado (idioma global, salvo que Settings este abierto).
+ * `settings_abierto` lo escribe la GUI y lo lee el hilo de voz: se lee bajo el
+ * mismo mutex de la cola para no dejar una carrera de datos. */
+static void encolar(const char *texto) {
+    pthread_mutex_lock(&mux);
+    bool en_ingles = settings_abierto;
+    pthread_mutex_unlock(&mux);
+
+    encolar_ex(texto, en_ingles);
+}
+
+void voice_settings_begin(void) {
+    pthread_mutex_lock(&mux);
+    settings_abierto = true;
+    pthread_mutex_unlock(&mux);
+}
+
+void voice_settings_end(void) {
+    pthread_mutex_lock(&mux);
+    settings_abierto = false;
     pthread_mutex_unlock(&mux);
 }
 
@@ -286,7 +325,7 @@ bool voice_selftest(void) {
         return true;
     }
 
-    sintetizar_y_reproducir(texto, true);
+    sintetizar_y_reproducir_lang(texto, true, NULL);
 
     return true;
 }
@@ -306,7 +345,7 @@ void voice_change_mode(void) {
     params.voice_mode.x = modo;
 
     /* El aviso se dice siempre, aunque el modo nuevo sea Off: si no, no se enteraría */
-    sintetizar_y_reproducir(nombres[modo], true);
+    sintetizar_y_reproducir_lang(nombres[modo], true, NULL);
 }
 
 const char * voice_change(int16_t diff) {
@@ -331,6 +370,21 @@ void voice_say_text_fmt(const char * fmt, ...) {
     vsnprintf(texto, sizeof(texto), fmt, ap);
     va_end(ap);
     encolar(texto);
+}
+
+void voice_say_settings_fmt(const char * fmt, ...) {
+    char    texto[VOICE_TEXT_MAX];
+    va_list ap;
+
+    if (fmt == NULL) {
+        return;
+    }
+
+    va_start(ap, fmt);
+    vsnprintf(texto, sizeof(texto), fmt, ap);
+    va_end(ap);
+
+    encolar_ex(texto, true);
 }
 
 void voice_delay_say_text_fmt(const char * fmt, ...) {

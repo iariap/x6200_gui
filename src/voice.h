@@ -43,6 +43,14 @@ void voice_ready(void);
 bool voice_selftest(void);
 void voice_change_mode(void);
 void voice_say_text_fmt(const char * fmt, ...);
+/* Anuncio originado en Settings: se presenta y se dice SOLO en ingles (regla
+ * del owner, 2026-10-20), sin pasar por el diccionario al espanol. */
+void voice_say_settings_fmt(const char * fmt, ...);
+/* Mientras el dialogo de Settings esta abierto, TODA locucion originada por sus
+ * controles (incluidas las que hace params_*_set) se sintetiza en ingles, sin
+ * pasar por el diccionario. Se cierra en el destruct del dialogo. */
+void voice_settings_begin(void);
+void voice_settings_end(void);
 void voice_delay_say_text_fmt(const char * fmt, ...);
 void voice_say_freq(uint64_t freq);
 void voice_say_bool(const char *prompt, bool x);

@@ -56,6 +56,7 @@
 #include "cfg/mode.h"
 #include "cfg/memory.h"
 #include "adaptive_tuning.h"
+#include "rotary.h"
 #include "autotune_ui.h"
 #include "cb.h"
 #include "band_plan.h"
@@ -1109,24 +1110,59 @@ static void main_screen_update_cb(lv_event_t * e) {
     spectrum_clear();
 }
 
-static uint16_t freq_accel(uint16_t diff) {
-    if (diff < 3) {
-        return 1;
-    }
+/* --- Contexto de sintonia adaptativa (issue #186, seccion 4) ----------------
+ *
+ * El motor vive en src/rotary.c (hilo de la GUI, consumidor de la cola). Aca
+ * solo se pide el reset cuando cambia el contexto, para que el PRIMER detent
+ * posterior sea x1:
+ *   - lock/unlock, paso, VFO A/B, banda, modo, perfil y umbral;
+ *   - cambio EXTERNO de frecuencia (CAT, memoria, app, scan).
+ * El cambio externo se detecta comparando con `expected_freq` (la ultima
+ * frecuencia que dejo el dial o el teclado): los observers corren antes de que
+ * LVGL lea el encoder, asi que el reset llega a tiempo. */
 
-    switch (params.freq_accel.x) {
-        case FREQ_ACCEL_NONE:
-            return 1;
+static struct {
+    bool        valid;
+    int32_t     expected_freq;
+    int32_t     step;
+    int32_t     mode;
+    int32_t     band;
+    int32_t     vfo;
+    bool        lock;
+    bool        cb;
+    uint8_t     profile;
+    uint8_t     threshold;
+} tuning_ctx;
 
-        case FREQ_ACCEL_LITE:
-            return (diff < 6) ? 5 : 10;
+static void on_tuning_freq_change(Subject *subj, void *user_data);
+static void on_tuning_context_change(Subject *subj, void *user_data);
 
-        case FREQ_ACCEL_STRONG:
-            return (diff < 6) ? 10 : 30;
-    }
-    return 1;
+void main_screen_tuning_reset(void) {
+    tuning_ctx.valid = false;
+    rotary_tuning_reset();
 }
 
+/* Cambio externo de frecuencia: si no es la que dejo el dial, el motor arranca
+ * de cero en el proximo detent. */
+static void on_tuning_freq_change(Subject *subj, void *user_data) {
+    (void) subj;
+    (void) user_data;
+
+    if (tuning_ctx.valid && subject_get_int(cfg_cur.fg_freq) != tuning_ctx.expected_freq) {
+        main_screen_tuning_reset();
+    }
+}
+
+/* Lock, paso, modo, banda o VFO: reinicio inmediato. */
+static void on_tuning_context_change(Subject *subj, void *user_data) {
+    (void) subj;
+    (void) user_data;
+
+    main_screen_tuning_reset();
+}
+
+/* Un unico paso EXACTO, sin aceleracion (teclado/HKEY, seccion 4). Misma suma
+ * segura en int64 y misma validacion que el dial. */
 static void freq_shift(int16_t diff) {
     if (subject_get_int(freq_lock)) {
         return;
@@ -1145,41 +1181,59 @@ static void freq_shift(int16_t diff) {
         return;
     }
 
-    int32_t df = diff * subject_get_int(cfg_cur.freq_step) * freq_accel(abs(diff));
-    freq = align_int(freq + df, abs(df));
-    subject_set_int(cfg_cur.fg_freq, freq);
+    int32_t target;
 
-    voice_say_freq(freq);
+    if (!adaptive_tuning_target_freq(freq, diff, subject_get_int(cfg_cur.freq_step), &target)) {
+        return;
+    }
+
+    if (!radio_check_freq(target)) {
+        return;
+    }
+
+    subject_set_int(cfg_cur.fg_freq, target);
+    tuning_ctx.expected_freq = subject_get_int(cfg_cur.fg_freq);
+
+    voice_say_freq(target);
 }
 
-static void update_tuning_multiplier_display(float multiplier) {
+/* Indicador `xN` (issue #186): muestra el multiplicador ENTERO efectivo que
+ * devolvio el motor, nunca velocidad ni fracciones. Mantiene los estilos y el
+ * timeout; ocultarlo NO cambia la frecuencia (el timer solo esconde). */
+static void update_tuning_multiplier_display(uint8_t multiplier) {
     if (!tuning_multiplier_label) return;
 
+    if (multiplier == 0) multiplier = 1;
+
     // Update text (OPT-4 #150: guarda de igualdad; el encoder reescribe el
-    // mismo "x%.1f" al moverse dentro del mismo multiplo)
+    // mismo "xN" al moverse dentro del mismo multiplo)
     char buf[16];
 
-    snprintf(buf, sizeof(buf), "x%.1f", multiplier);
+    snprintf(buf, sizeof(buf), "x%u", (unsigned) multiplier);
     ui_label_set_text(tuning_multiplier_label, buf);
 
     // Update color based on range
     lv_color_t color;
-    if (multiplier < 1.0f) {
-        color = lv_color_hex(theme_hex(TC_info));  // Blue - fine
-    } else if (multiplier < 2.0f) {
-        color = lv_color_white();         // White - normal
-    } else if (multiplier < 10.0f) {
-        color = lv_color_hex(theme_hex(TC_warn));   // Yellow - fast
+    if (multiplier <= 1) {
+        color = lv_color_white();                    // White - normal
+    } else if (multiplier < 10) {
+        color = lv_color_hex(theme_hex(TC_warn));    // Yellow - fast
     } else {
-        color = lv_color_hex(theme_hex(TC_err));   // Red - scan
+        color = lv_color_hex(theme_hex(TC_err));     // Red - scan
     }
     ui_obj_set_text_color(tuning_multiplier_label, color);
     lv_obj_clear_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
-    
+
     // Reset hide timer
     if (multiplier_hide_timer) {
         lv_timer_reset(multiplier_hide_timer);
         lv_timer_resume(multiplier_hide_timer);
+    }
+}
+
+static void hide_tuning_multiplier(void) {
+    if (tuning_multiplier_label) {
+        lv_obj_add_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
     }
 }
 
@@ -1189,63 +1243,104 @@ static void hide_multiplier_cb(lv_timer_t *timer) {
     }
 }
 
-/* The adaptive multiplier is gated by the user "Freq acceleration" setting so
- * that it keeps its original meaning: none = 1x (no acceleration),
- * lite = up to 10x, strong = up to 100x (band scanning). */
+/* Layout equivalence between the persisted selector and the pure engine
+ * (seccion 2.1). */
 _Static_assert(FREQ_ACCEL_NONE == ADAPTIVE_ACCEL_NONE &&
                FREQ_ACCEL_LITE == ADAPTIVE_ACCEL_LITE &&
                FREQ_ACCEL_STRONG == ADAPTIVE_ACCEL_STRONG,
                "freq_accel_t must match adaptive_accel_t");
 
+/* Receptor del dial (seccion 4). El payload es SINCRONICO y vive en el stack
+ * del emisor (src/rotary.c, que llama lv_event_send): no se libera aca.
+ *
+ * `weighted_detents` ya viene con el multiplicador efectivo por detent, en
+ * int64; `raw_diff` es el conteo crudo del tramo de igual signo y se usa tal
+ * cual para CB y para dialog_rotary(). Nunca se netean signos contrarios. */
 static void main_screen_rotary_enhanced_cb(lv_event_t * e) {
     rotary_event_enhanced_t *enhanced = (rotary_event_enhanced_t *)lv_event_get_param(e);
-    float multiplier = adaptive_multiplier_gate(enhanced->multiplier,
-                                                (adaptive_accel_t) params.freq_accel.x);
-
     int32_t freq = subject_get_int(cfg_cur.fg_freq);
 
-    /* En CB el dial cuenta canales: 1 detent = 1 canal, SIN multiplicador adaptativo
-     * (issue #146, seccion 5.3). El indicador "xN" se omite porque no hay
-     * aceleracion que mostrar. */
     cb_plan_t plan;
-    if (cb_plan_of_freq(freq, &plan)) {
-        if (!subject_get_int(freq_lock)) {
+    bool      cb      = cb_plan_of_freq(freq, &plan);
+    bool      lock    = subject_get_int(freq_lock);
+    int32_t   step    = subject_get_int(cfg_cur.freq_step);
+    int32_t   mode    = subject_get_int(cfg_cur.mode);
+    int32_t   band    = subject_get_int(cfg.band_id.val);
+    int32_t   vfo     = subject_get_int(cfg_cur.band->vfo.val);
+    uint8_t   profile = params.freq_accel.x;
+    uint8_t   thresh  = params.freq_accel_threshold.x;
+
+    /* Checks de contexto (por si un cambio no paso por su observer). Cualquier
+     * diferencia invalida el motor: el proximo detent arranca en x1. En el
+     * primer evento (valid == false) NO se pide otro reset: el motor ya viene
+     * reseteado por rotary_main_init()/por el observer que invalido el contexto;
+     * pedirlo aca consumiria un segundo detent en x1. */
+    if (tuning_ctx.valid &&
+        (tuning_ctx.lock != lock ||
+         tuning_ctx.step != step ||
+         tuning_ctx.mode != mode ||
+         tuning_ctx.band != band ||
+         tuning_ctx.vfo != vfo ||
+         tuning_ctx.cb != cb ||
+         tuning_ctx.profile != profile ||
+         tuning_ctx.threshold != thresh ||
+         tuning_ctx.expected_freq != freq)) {
+        main_screen_tuning_reset();
+    }
+
+    tuning_ctx.valid         = true;
+    tuning_ctx.expected_freq = freq;
+    tuning_ctx.step          = step;
+    tuning_ctx.mode          = mode;
+    tuning_ctx.band          = band;
+    tuning_ctx.vfo           = vfo;
+    tuning_ctx.lock          = lock;
+    tuning_ctx.cb            = cb;
+    tuning_ctx.profile       = profile;
+    tuning_ctx.threshold     = thresh;
+
+    /* En CB el dial cuenta canales: 1 detent = 1 canal, SIN multiplicador
+     * adaptativo (issue #146, seccion 5.3). Se ignora `weighted_detents`, se
+     * oculta el indicador y el motor ya se reinicio al entrar/salir de CB. */
+    if (cb) {
+        if (!lock) {
             int ch = cb_step_channel(plan, freq, enhanced->raw_diff);
+
             subject_set_int(cfg_cur.fg_freq, cb_freq_of_channel(plan, ch));
             voice_say_text_fmt("Channel %i", ch);
+
+            tuning_ctx.expected_freq = subject_get_int(cfg_cur.fg_freq);
         }
+
+        hide_tuning_multiplier();
         dialog_rotary(enhanced->raw_diff);
-        free(enhanced);
         return;
     }
 
-    if (!subject_get_int(freq_lock)) {
-        int32_t base_step = subject_get_int(cfg_cur.freq_step);
-        
-        // Calculate adaptive step using the multiplier
-        int32_t adaptive_step = (int32_t)(base_step * multiplier);
-
-        if (adaptive_step < 1) {
-            adaptive_step = 1;
-        }
-        
-        int32_t df = enhanced->raw_diff * adaptive_step;
-
-        /* align_int() takes a uint16_t grid, so for very large scan steps keep
-         * the normal step grid instead of overflowing a cast. */
-        uint16_t grid = (adaptive_step <= 65535) ? (uint16_t)adaptive_step : (uint16_t)base_step;
-        
-        // Apply frequency change (range limits are handled by the cfg subjects)
-        freq = align_int(freq + df, grid);
-        
-        subject_set_int(cfg_cur.fg_freq, freq);
+    if (lock) {
+        /* Con el dial trabado se consumen los pulsos sin mover el VFO y se
+         * reinicia la aceleracion; el movimiento CRUDO sigue llegando al
+         * dialogo abierto, como antes. */
+        main_screen_tuning_reset();
+        hide_tuning_multiplier();
+        dialog_rotary(enhanced->raw_diff);
+        return;
     }
-    
-    // Update multiplier display
-    update_tuning_multiplier_display(multiplier);
-    
+
+    /* delta_hz = weighted_detents x freq_step, TODO en int64. Sin align_int() y
+     * sin redondear al multiplicador: se conserva cualquier offset legitimo de
+     * la frecuencia inicial respecto de la grilla (14.200.003 + 10 = 14.200.013). */
+    int32_t target;
+
+    if (adaptive_tuning_target_freq(freq, enhanced->weighted_detents, step, &target) &&
+        radio_check_freq(target)) {
+        subject_set_int(cfg_cur.fg_freq, target);
+        tuning_ctx.expected_freq = subject_get_int(cfg_cur.fg_freq);
+    }
+
+    update_tuning_multiplier_display(enhanced->last_multiplier);
+
     dialog_rotary(enhanced->raw_diff);
-    free(enhanced);
 }
 
 static void spectrum_key_cb(lv_event_t * e) {
@@ -1595,15 +1690,13 @@ lv_obj_t * main_screen() {
     tuning_multiplier_label = lv_label_create(obj);
     lv_obj_set_style_text_font(tuning_multiplier_label, &sony_16, 0);
     lv_obj_align(tuning_multiplier_label, LV_ALIGN_TOP_RIGHT, -10, 10);
-    lv_label_set_text(tuning_multiplier_label, "x1.0");
+    lv_label_set_text(tuning_multiplier_label, "x1");
     lv_obj_add_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
     
     // Hide timer for multiplier display
     multiplier_hide_timer = lv_timer_create(hide_multiplier_cb, 2000, NULL);
     lv_timer_pause(multiplier_hide_timer);
     
-    // Initialize adaptive tuning
-    adaptive_tuning_init(&g_adaptive_tuning);
 
     cw_tune_init(obj);
 
@@ -1625,6 +1718,18 @@ lv_obj_t * main_screen() {
 
     subject_add_delayed_observer(cfg_cur.bg_freq, on_fg_freq_change, NULL);
     on_fg_freq_change(cfg_cur.bg_freq, NULL);
+
+    /* Resets del motor adaptativo (issue #186): el cambio EXTERNO de frecuencia
+     * y los cambios de contexto invalidan la aceleracion antes de que LVGL lea
+     * el encoder (los delayed observers corren primero en el loop, src/main.c). */
+    subject_add_delayed_observer(cfg_cur.fg_freq, on_tuning_freq_change, NULL);
+    subject_add_delayed_observer(freq_lock, on_tuning_context_change, NULL);
+    subject_add_delayed_observer(cfg_cur.freq_step, on_tuning_context_change, NULL);
+    subject_add_delayed_observer(cfg_cur.mode, on_tuning_context_change, NULL);
+    subject_add_delayed_observer(cfg.band_id.val, on_tuning_context_change, NULL);
+    subject_add_delayed_observer(cfg_cur.band->vfo.val, on_tuning_context_change, NULL);
+
+    tuning_ctx.valid = false;
 
     return obj;
 }

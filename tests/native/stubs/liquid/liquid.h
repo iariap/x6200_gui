@@ -7,6 +7,9 @@
 
 #pragma once
 
+/* Solo el tipo que usa src/util.h; el resto del stub no necesita DSP real. */
+typedef float _Complex liquid_float_complex;
+
 typedef struct firfilt_rrrf_s * firfilt_rrrf;
 
 firfilt_rrrf firfilt_rrrf_create_notch(unsigned int m, float As, float f0);
