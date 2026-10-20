@@ -44,8 +44,10 @@ En CB la fila grande muestra la frecuencia del grid, el canal y el grid:
 | violeta al 80 % de opacidad sobre fondo oscuro | **11,49:1** |
 | violeta al 80 % de opacidad sobre fondo claro | **5,76:1** |
 
-Supera AA (4,5:1) en los tres casos. La constante quedó medida por el gate `tests/check_wcag.py`
-(par `hex_ffffff` sobre `hex_5a2ca0`).
+Supera AA (4,5:1) en los tres casos. La constante quedó medida por el gate
+`tests/check_wcag.py` (par `hex_ffffff` sobre el violeta al 80 % sobre `TC(bg)`, clave
+`band_plan_cb`): el chequeo lee el color de `colors[]` en `src/band_plan.c`, no de un rol de
+tema (el violeta no es un rol del theme JSON).
 
 ## Fixtures del arnés (`tools/ui_harness`)
 
