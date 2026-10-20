@@ -1,0 +1,37 @@
+# home-cb-cathode: el mismo estado CB que `home-cb` (27.185 MHz, AM, span de
+# 100 kHz) bajo el tema Cathode, que nombra `font_digits` (dseg14). Es la prueba
+# de que la fila de frecuencia en CB (issue #169) usa la familia NORMAL en los
+# tres labels: `CH 19` y `CB C` se ven igual (la familia segmentada es solo
+# digitos, no tiene `CH`, `CB` ni `--`) y el "8" fantasma no aparece. La barra
+# violeta `CB` de la franja del plan de banda se pinta igual.
+#
+# See tools/ui_harness/README.md for the coverage table.
+
+name home-cb-cathode
+screen main
+
+theme Cathode
+seed 148
+
+frequency_hz 27185000
+tx_frequency_hz 27185000
+fft_width_hz 100000
+
+mode am
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

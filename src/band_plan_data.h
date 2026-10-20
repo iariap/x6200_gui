@@ -23,6 +23,7 @@ typedef enum {
     BP_DIG,
     BP_ALL,
     BP_BCN,
+    BP_CB,      /* CB 27 MHz (issue #169): al final, el indice indexa colors[]/labels[][] */
 } bp_type_t;
 
 typedef struct {

@@ -1,0 +1,35 @@
+# home-cb-a: la fila de frecuencia en CB en el borde inferior del grid A
+# (26.065 MHz = canal 1, AM). Con el modulo CB (issue #169) la fila muestra
+# `26.065` · `CH 1` · `CB A`. El span de 100 kHz cruza el borde inferior del grid
+# A (que empieza en 26.065), asi que la barra del plan de banda se recorta: el
+# grid A empieza en el medio del span y la franja solo pinta su mitad derecha.
+#
+# See tools/ui_harness/README.md for the coverage table.
+
+name home-cb-a
+screen main
+
+seed 149
+
+frequency_hz 26065000
+tx_frequency_hz 26065000
+fft_width_hz 100000
+
+mode am
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

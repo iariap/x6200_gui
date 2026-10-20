@@ -111,6 +111,64 @@ static void test_segments_clipping(void) {
     }
 }
 
+/* CB 27 MHz (issue #169): the four grids are four BP_CB segments between 12 m and
+ * 10 m, so the strip is painted violet with a "CB" label. Values are exact with
+ * the current geometry (BAND_PLAN_W = 800). */
+static void test_segments_cb(void) {
+    bp_visible_t v[BAND_PLAN_MAX];
+    int          n;
+
+    /* Span inside grid C: the whole strip, one BP_CB segment. */
+    n = band_plan_segments(27185000, 12000, v, BAND_PLAN_MAX);
+    CHECK(n == 1);
+    CHECK(v[0].type == BP_CB);
+    CHECK(v[0].x == 0);
+    CHECK(v[0].w == BAND_PLAN_W);
+
+    /* Grid A starts in the middle of the span: the segment is clipped on the left. */
+    n = band_plan_segments(26065000, 12000, v, BAND_PLAN_MAX);
+    CHECK(n == 1);
+    CHECK(v[0].type == BP_CB);
+    CHECK(v[0].x == 400);
+    CHECK(v[0].w == 400);
+
+    /* Span crossing the A/B gap (10 kHz): two BP_CB segments, one per grid. */
+    n = band_plan_segments(26515000, 20000, v, BAND_PLAN_MAX);
+    CHECK(n == 2);
+    CHECK(v[0].type == BP_CB);
+    CHECK(v[0].x == 0);
+    CHECK(v[0].w == 200);
+    CHECK(v[1].type == BP_CB);
+    CHECK(v[1].x == 400);
+    CHECK(v[1].w == 400);
+
+    /* 6 kHz span inside the C/D gap: nothing is painted. */
+    n = band_plan_segments(27410000, 3000, v, BAND_PLAN_MAX);
+    CHECK(n == 0);
+
+    /* Off-channel (27.000) but inside grid C: still one BP_CB segment. */
+    n = band_plan_segments(27000000, 12000, v, BAND_PLAN_MAX);
+    CHECK(n == 1);
+    CHECK(v[0].type == BP_CB);
+    CHECK(v[0].x == 0);
+    CHECK(v[0].w == BAND_PLAN_W);
+
+    /* Wide span over the whole 26-28 MHz region: several BP_CB segments in order. */
+    n = band_plan_segments(26700000, 800000, v, BAND_PLAN_MAX);
+    CHECK(n >= 3);
+
+    for (int i = 0; i < n; i++) {
+        CHECK(v[i].type == BP_CB);
+        CHECK(v[i].w > 0);
+        CHECK(v[i].x >= 0);
+        CHECK(v[i].x + v[i].w <= BAND_PLAN_W);
+    }
+
+    for (int i = 1; i < n; i++) {
+        CHECK(v[i].x >= v[i - 1].x);
+    }
+}
+
 void test_band_plan(void) {
     test_segments_20m_cw();
     test_segments_centred();
@@ -118,4 +176,5 @@ void test_band_plan(void) {
     test_segments_empty();
     test_segments_edge_cases();
     test_segments_clipping();
+    test_segments_cb();
 }

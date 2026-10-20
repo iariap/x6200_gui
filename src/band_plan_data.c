@@ -30,6 +30,13 @@ static const bp_seg_t plan[] = {
     { 21149000, 21151000, BP_BCN }, { 21151000, 21450000, BP_ALL },
     { 24890000, 24915000, BP_CW  }, { 24915000, 24929000, BP_DIG }, { 24929000, 24931000, BP_BCN },
     { 24931000, 24990000, BP_ALL },
+    /* CB 27 MHz (issue #169): los cuatro grids de 40 canales, entre 12 m y 10 m.
+     * Cada segmento es el rango completo del grid (canal 1 .. canal 40); el hueco
+     * de 10 kHz entre grids queda sin pintar. */
+    { 26065000, 26505000, BP_CB  },   /* CB A */
+    { 26515000, 26955000, BP_CB  },   /* CB B */
+    { 26965000, 27405000, BP_CB  },   /* CB C */
+    { 27415000, 27855000, BP_CB  },   /* CB D */
     { 28000000, 28070000, BP_CW  }, { 28070000, 28190000, BP_DIG }, { 28190000, 28225000, BP_BCN },
     { 28225000, 29700000, BP_ALL },
     { 50000000, 50100000, BP_CW  }, { 50100000, 50300000, BP_ALL }, { 50300000, 50400000, BP_DIG },

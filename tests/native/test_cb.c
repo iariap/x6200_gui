@@ -163,4 +163,12 @@ void test_cb(void) {
     CHECK(cb_channel_label(27195000, label, sizeof(label)) && !strcmp(label, "CH --"));
     CHECK(!cb_channel_label(14074000, label, sizeof(label)));
     CHECK(!cb_channel_label(27185000, NULL, 0));
+
+    /* --- cb_plan_name: el nombre del grid para la fila (issue #169) --------- */
+
+    CHECK(!strcmp(cb_plan_name(CB_PLAN_A), "CB A"));
+    CHECK(!strcmp(cb_plan_name(CB_PLAN_B), "CB B"));
+    CHECK(!strcmp(cb_plan_name(CB_PLAN_C), "CB C"));
+    CHECK(!strcmp(cb_plan_name(CB_PLAN_D), "CB D"));
+    CHECK(!strcmp(cb_plan_name(CB_PLAN_NONE), ""));
 }

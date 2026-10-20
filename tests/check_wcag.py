@@ -394,6 +394,9 @@ PARES_ESPECIFICOS = [
     ("hex_000000", "hex_cc8800", 4.5, None, "band_plan.c:19+93 (etiqueta sobre el naranja de BCN)"),
     ("hex_000000", "hex_888888", 4.5, None, "band_plan.c:19+93 (etiqueta sobre el gris de ALL MODES)"),
     ("hex_ffffff", "hex_3366cc", 4.5, None, "band_plan.c:19+93 (etiqueta sobre el azul de CW)"),
+    # band_plan.c: color del segmento CB 27 MHz (issue #169): rel_lum() < LUM_CORTE,
+    # asi que la etiqueta sale blanca; medido, supera AA con margen.
+    ("hex_ffffff", "hex_5a2ca0", 4.5, None, "band_plan.c:19+93 (etiqueta blanca sobre el violeta CB, issue #169)"),
     # dialog_field.c:1098: la etiqueta del chip (VOL/MFK) va sobre el fondo del
     # chip, que es TC(bg); con negro literal daba 1.00:1 en Classic.
     ("text", "bg", 4.5, None, "dialog_field.c:1098 (etiqueta del chip sobre TC(bg))"),

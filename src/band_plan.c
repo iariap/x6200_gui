@@ -37,9 +37,9 @@ static float rel_lum(lv_color_t c)
 }
 
 /* The strip colours and labels; the X6100 takes these from its theme */
-static const uint32_t colors[] = { 0x3366CC, 0x33AA55, 0x888888, 0xCC8800 };
+static const uint32_t colors[] = { 0x3366CC, 0x33AA55, 0x888888, 0xCC8800, 0x5A2CA0 };
 static const char *const labels[][2] = {
-    { "CW", NULL }, { "DIG", NULL }, { "ALL MODES / SSB", "SSB" }, { "BCN", NULL },
+    { "CW", NULL }, { "DIG", NULL }, { "ALL MODES / SSB", "SSB" }, { "BCN", NULL }, { "CB", NULL },
 };
 
 typedef struct {
