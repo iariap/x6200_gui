@@ -1,189 +1,365 @@
 /*
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  Xiegu X6200 LVGL GUI - Adaptive Tuning Implementation
+ *  Xiegu X6200 LVGL GUI - Adaptive Tuning (issue #186)
+ *
+ *  Curva aprobada (seccion 2): velocidad real en detents/s, niveles discretos,
+ *  umbrales derivados de T y multiplicadores FIJOS. Retirados expresamente los
+ *  submultiplicadores de 0,1x y el tope de 100x del motor anterior.
  *
  *  Copyright (c) 2024 LU2DSX
  */
 
 #include "adaptive_tuning.h"
-#include "lvgl/lvgl.h"
-#include <math.h>
-#include <stdlib.h>
 
-adaptive_tuning_state_t g_adaptive_tuning = {0};
+#include <stddef.h>
+#include <string.h>
 
-void adaptive_tuning_init(adaptive_tuning_state_t *state) {
-    if (!state) return;
-    
-    memset(state, 0, sizeof(adaptive_tuning_state_t));
-    state->current_multiplier = 1.0f;
-    state->smoothed_speed = 0.0f;
-    state->active = true;
-    state->last_update_ms = lv_tick_get();
-    state->last_event_ms = lv_tick_get();
-}
+/* Tabla fija de multiplicadores: [perfil][nivel]. NONE no acelera nunca. */
+static const uint8_t multipliers[3][ADAPTIVE_LEVELS + 1] = {
+    [ADAPTIVE_ACCEL_NONE]   = { 1, 1, 1, 1, 1 },
+    [ADAPTIVE_ACCEL_LITE]   = { 1, 2, 3, 6, 10 },
+    [ADAPTIVE_ACCEL_STRONG] = { 1, 3, 6, 12, 24 },
+};
 
-void adaptive_tuning_add_event(adaptive_tuning_state_t *state, int32_t diff, uint32_t timestamp_ms) {
-    if (!state || !state->active) return;
-    
-    // Add to circular buffer
-    uint8_t idx = state->history_index;
-    state->history[idx].timestamp_ms = timestamp_ms;
-    state->history[idx].diff = diff;
-    
-    state->history_index = (idx + 1) % ADAPTIVE_TUNING_HISTORY_SIZE;
-    
-    if (state->event_count < ADAPTIVE_TUNING_HISTORY_SIZE) {
-        state->event_count++;
-    }
-    
-    state->last_event_ms = timestamp_ms;
-}
-
-float adaptive_tuning_calc_speed(adaptive_tuning_state_t *state) {
-    if (!state || state->event_count < 2) return 0.0f;
-    
-    // Find oldest and newest events
-    uint8_t oldest_idx = (state->history_index + ADAPTIVE_TUNING_HISTORY_SIZE - state->event_count) 
-                         % ADAPTIVE_TUNING_HISTORY_SIZE;
-    uint8_t newest_idx = (state->history_index + ADAPTIVE_TUNING_HISTORY_SIZE - 1) 
-                         % ADAPTIVE_TUNING_HISTORY_SIZE;
-    
-    uint32_t time_span = state->history[newest_idx].timestamp_ms - state->history[oldest_idx].timestamp_ms;
-    
-    if (time_span < 50) return 0.0f;  // Minimum 50ms for valid measurement
-    
-    int32_t total_clicks = 0;
-    for (uint8_t i = 0; i < state->event_count; i++) {
-        uint8_t idx = (oldest_idx + i) % ADAPTIVE_TUNING_HISTORY_SIZE;
-        total_clicks += abs(state->history[idx].diff);
-    }
-    
-    return (float)total_clicks / (time_span / 1000.0f);  // clicks per second
-}
-
-float smooth_speed(float current, float new_reading) {
-    if (current <= 0.0f) return new_reading;  // First reading
-    return (SPEED_SMOOTHING_ALPHA * new_reading) + ((1.0f - SPEED_SMOOTHING_ALPHA) * current);
-}
-
-float speed_to_multiplier(float speed) {
-    if (speed <= 2.0f) {
-        // Ultra-fine tuning: 0.1× (0.1 step increments)
-        return 0.1f;
-    } else if (speed <= 4.0f) {
-        // Fine tuning: 0.1× to 1.0×
-        return 0.1f + (speed - 2.0f) * 0.45f;
-    } else if (speed <= 6.0f) {
-        // Normal: 1.0× to 2.0×
-        return 1.0f + (speed - 4.0f) * 0.5f;
-    } else if (speed <= 10.0f) {
-        // Fast: 2.0× to 5.0×
-        return 2.0f + (speed - 6.0f) * 0.75f;
-    } else if (speed <= 20.0f) {
-        // Very fast: 5.0× to 20.0×
-        return 5.0f + (speed - 10.0f) * 1.5f;
-    } else {
-        // Band scanning: 20.0× to 100.0×, capped
-        float mult = 20.0f + (speed - 20.0f) * 4.0f;
-        return (mult > 100.0f) ? 100.0f : mult;
-    }
-}
-
-float adaptive_multiplier_gate(float multiplier, adaptive_accel_t accel) {
-    if (multiplier < 0.1f) {
-        multiplier = 0.1f;
-    }
-
-    switch (accel) {
-        case ADAPTIVE_ACCEL_NONE:
-            return 1.0f;
-
-        case ADAPTIVE_ACCEL_LITE:
-            return (multiplier > 10.0f) ? 10.0f : multiplier;
-
-        case ADAPTIVE_ACCEL_STRONG:
-        default:
-            return multiplier;
-    }
-}
-
-void adaptive_tuning_update(adaptive_tuning_state_t *state) {
-    if (!state || !state->active) return;
-    
-    uint32_t now = lv_tick_get();
-    state->last_update_ms = now;
-    
-    // Check for timeout (no events for 500ms)
-    if ((now - state->last_event_ms) > EVENT_TIMEOUT_MS) {
-        // Reset to normal speed
-        state->smoothed_speed = 0.0f;
-        state->current_multiplier = 1.0f;
-        state->event_count = 0;
+void adaptive_tuning_reset(adaptive_tuning_state_t *state) {
+    if (state == NULL) {
         return;
     }
-    
-    // Calculate speed
-    float instant_speed = adaptive_tuning_calc_speed(state);
-    
-    // Apply smoothing
-    state->smoothed_speed = smooth_speed(state->smoothed_speed, instant_speed);
-    
-    // Calculate multiplier
-    state->current_multiplier = speed_to_multiplier(state->smoothed_speed);
+
+    memset(state, 0, sizeof(*state));
+    state->last_direction = 0;
+    state->level          = 0;
 }
 
-void adaptive_tuning_decay(adaptive_tuning_state_t *state) {
-    if (!state) return;
-    
-    uint32_t now = lv_tick_get();
-    
-    // Only decay if no recent events
-    if ((now - state->last_event_ms) <= EVENT_TIMEOUT_MS) return;
-    
-    // Decay toward 1.0
-    if (state->current_multiplier > 1.0f) {
-        state->current_multiplier *= MULTIPLIER_DECAY_RATE;
-        if (state->current_multiplier < 1.0f) {
-            state->current_multiplier = 1.0f;
-        }
-    } else if (state->current_multiplier < 1.0f) {
-        state->current_multiplier /= MULTIPLIER_DECAY_RATE;
-        if (state->current_multiplier > 1.0f) {
-            state->current_multiplier = 1.0f;
-        }
-    }
-    
-    // Reset speed when fully decayed
-    if (fabsf(state->current_multiplier - 1.0f) < 0.01f) {
-        state->smoothed_speed = 0.0f;
-        state->event_count = 0;
-    }
+void adaptive_tuning_init(adaptive_tuning_state_t *state) {
+    adaptive_tuning_reset(state);
 }
 
-uint32_t multiplier_to_color(float multiplier) {
-    if (multiplier < 1.0f) {
-        // Blue for fine tuning (×0.1 to ×0.9)
-        uint8_t intensity = (uint8_t)(255 * (multiplier - 0.1f) / 0.9f);
-        return 0x0000FF | (intensity << 16) | (intensity << 8);  // Blue to light blue
-    } else if (multiplier < 2.0f) {
-        // White for normal (×1.0 to ×1.9)
-        return 0xFFFFFF;
-    } else if (multiplier < 10.0f) {
-        // Yellow for fast (×2.0 to ×9.9)
-        uint8_t intensity = (uint8_t)(128 + 127 * (multiplier - 2.0f) / 8.0f);
-        return 0xFFCC00 | (intensity << 16);  // Yellow-orange
+uint8_t adaptive_tuning_threshold_sanitize(uint8_t threshold_dps) {
+    if (threshold_dps < ADAPTIVE_THRESHOLD_MIN || threshold_dps > ADAPTIVE_THRESHOLD_MAX) {
+        return ADAPTIVE_THRESHOLD_DEFAULT;
+    }
+
+    return threshold_dps;
+}
+
+void adaptive_tuning_thresholds(uint8_t threshold_dps, uint8_t out[ADAPTIVE_LEVELS]) {
+    uint16_t t = adaptive_tuning_threshold_sanitize(threshold_dps);
+
+    if (out == NULL) {
+        return;
+    }
+
+    /* ceil(n * T / 7) con aritmetica entera: (n*T + 6) / 7. */
+    out[0] = (uint8_t) t;
+    out[1] = (uint8_t) ((15 * t + 6) / 7);
+    out[2] = (uint8_t) ((30 * t + 6) / 7);
+    out[3] = (uint8_t) ((50 * t + 6) / 7);
+}
+
+uint8_t adaptive_tuning_multiplier(adaptive_accel_t profile, uint8_t level) {
+    if (level > ADAPTIVE_LEVELS) {
+        level = ADAPTIVE_LEVELS;
+    }
+
+    if (profile != ADAPTIVE_ACCEL_LITE && profile != ADAPTIVE_ACCEL_STRONG) {
+        profile = ADAPTIVE_ACCEL_NONE;
+    }
+
+    return multipliers[profile][level];
+}
+
+uint8_t adaptive_tuning_detent(adaptive_tuning_state_t *state, int direction,
+                               uint64_t timestamp_us, adaptive_accel_t profile,
+                               uint8_t threshold_dps) {
+    if (state == NULL) {
+        return 1;
+    }
+
+    /* None = siempre x1 y sin aceleracion retenida. */
+    if (profile != ADAPTIVE_ACCEL_LITE && profile != ADAPTIVE_ACCEL_STRONG) {
+        adaptive_tuning_reset(state);
+        return 1;
+    }
+
+    if (direction > 0) {
+        direction = 1;
+    } else if (direction < 0) {
+        direction = -1;
     } else {
-        // Red for scan mode (×10+)
-        uint8_t intensity = (uint8_t)(255 * ((multiplier > 50.0f) ? 1.0f : multiplier / 50.0f));
-        return 0xFF0000 | ((255 - intensity) << 8);  // Red to bright red
+        /* No es un detent: no toca el estado. */
+        return 1;
     }
+
+    threshold_dps = adaptive_tuning_threshold_sanitize(threshold_dps);
+
+    /* Primer detent (o primero tras un reset): arranca en nivel 0, sin inventar
+     * velocidad. */
+    if (!state->have_timestamp) {
+        state->have_timestamp       = true;
+        state->last_timestamp_us    = timestamp_us;
+        state->last_direction       = (int8_t) direction;
+        state->smoothed_dps         = 0.0f;
+        state->smoothed_valid       = false;
+        state->level                = 0;
+        state->warmup               = 0;
+        return 1;
+    }
+
+    uint64_t ts      = timestamp_us;
+    bool     anomaly = false;
+
+    /* Marca no creciente: separacion virtual minima de 1000 us y ese detent no
+     * puede acelerar por si solo (seccion 2.1). */
+    if (ts <= state->last_timestamp_us) {
+        ts      = state->last_timestamp_us + ADAPTIVE_MIN_DT_US;
+        anomaly = true;
+    }
+
+    uint64_t dt_us = ts - state->last_timestamp_us;
+
+    state->last_timestamp_us = ts;
+
+    /* Inversion de direccion: el primer detent contrario es x1 y descarta la
+     * velocidad anterior. */
+    if (state->last_direction != (int8_t) direction) {
+        state->last_direction = (int8_t) direction;
+        state->smoothed_valid = false;
+        state->smoothed_dps   = 0.0f;
+        state->level          = 0;
+        state->warmup         = 0;
+        return 1;
+    }
+
+    if (anomaly) {
+        state->smoothed_valid = false;
+        state->smoothed_dps   = 0.0f;
+        state->level          = 0;
+        state->warmup         = 0;
+        return 1;
+    }
+
+    /* Freno: a partir de 180 ms el siguiente detent vuelve a precision y pierde
+     * la aceleracion (sin inercia: la frecuencia solo cambia con detents). */
+    if (dt_us >= ADAPTIVE_PAUSE_US) {
+        state->smoothed_valid = false;
+        state->smoothed_dps   = 0.0f;
+        state->level          = 0;
+        state->warmup         = 0;
+        return 1;
+    }
+
+    if (dt_us < ADAPTIVE_MIN_DT_US) {
+        dt_us = ADAPTIVE_MIN_DT_US;
+    }
+
+    /* Velocidad instantanea en detents/s (el float es solo para el filtro: el
+     * resultado que sale del motor es siempre entero). */
+    float v = 1000000.0f / (float) dt_us;
+
+    if (v > ADAPTIVE_MAX_SPEED_DPS) {
+        v = ADAPTIVE_MAX_SPEED_DPS;
+    }
+
+    /* Filtro: subida amortiguada, bajada inmediata (desacelerar sin cola). */
+    if (!state->smoothed_valid) {
+        state->smoothed_dps   = v;
+        state->smoothed_valid = true;
+    } else if (v < state->smoothed_dps) {
+        state->smoothed_dps = v;
+    } else {
+        state->smoothed_dps = ADAPTIVE_SMOOTH_UP * v + (1.0f - ADAPTIVE_SMOOTH_UP) * state->smoothed_dps;
+    }
+
+    if (state->warmup < 0xFF) {
+        state->warmup++;
+    }
+
+    uint8_t thresholds[ADAPTIVE_LEVELS];
+
+    adaptive_tuning_thresholds(threshold_dps, thresholds);
+
+    /* Subidas: entrar al nivel L+1 exige smoothed >= T(L+1). */
+    while (state->level < ADAPTIVE_LEVELS &&
+           state->smoothed_dps >= (float) thresholds[state->level]) {
+        state->level++;
+    }
+
+    /* Bajadas: salir del nivel L cuando smoothed < 0.80 x T(L). */
+    while (state->level > 0 &&
+           state->smoothed_dps < ADAPTIVE_HYSTERESIS * (float) thresholds[state->level - 1]) {
+        state->level--;
+    }
+
+    /* Arranque: en los dos primeros intervalos validos no se pasa de nivel 1. */
+    if (state->warmup <= ADAPTIVE_WARMUP_INTERVALS && state->level > 1) {
+        state->level = 1;
+    }
+
+    return adaptive_tuning_multiplier(profile, state->level);
 }
 
-const char *multiplier_color_name(float multiplier) {
-    if (multiplier < 1.0f) return "fine";
-    if (multiplier < 2.0f) return "normal";
-    if (multiplier < 10.0f) return "fast";
-    return "scan";
+int64_t adaptive_tuning_weighted_event(adaptive_tuning_state_t *state, int32_t diff,
+                                       uint64_t timestamp_us, adaptive_accel_t profile,
+                                       uint8_t threshold_dps, uint8_t *last_multiplier) {
+    if (state == NULL || diff == 0) {
+        return 0;
+    }
+
+    int      direction = diff > 0 ? 1 : -1;
+    int64_t  count     = diff > 0 ? (int64_t) diff : -(int64_t) diff;
+    int64_t  sum       = 0;
+
+    /* Base de la interpolacion: el timestamp del EVENTO anterior. Despues de
+     * procesar un evento completo, el ultimo detent cae exactamente en el
+     * timestamp de ese evento, asi que last_timestamp_us sirve de base. Si no
+     * hay marca anterior (primer evento), todos los detents van al mismo tiempo
+     * y el motor los da x1. */
+    uint64_t base = state->have_timestamp ? state->last_timestamp_us : timestamp_us;
+
+    if (timestamp_us <= base) {
+        base = timestamp_us;        /* marca repetida o no creciente: anomalia */
+    }
+
+    uint64_t span = timestamp_us - base;
+
+    for (int64_t k = 1; k <= count; k++) {
+        uint64_t ts;
+
+        if (span > 0 && count > 1) {
+            /* Reparto uniforme sin desbordar: (span/n)*k + ((span%n)*k)/n */
+            uint64_t n = (uint64_t) count;
+
+            ts = base + (span / n) * (uint64_t) k + ((span % n) * (uint64_t) k) / n;
+        } else {
+            ts = timestamp_us;
+        }
+
+        uint8_t multiplier = adaptive_tuning_detent(state, direction, ts, profile, threshold_dps);
+
+        sum += (int64_t) direction * (int64_t) multiplier;
+
+        if (last_multiplier != NULL) {
+            *last_multiplier = multiplier;
+        }
+    }
+
+    return sum;
+}
+
+/* El payload lleva `raw_diff` en int32: se recorta solo en el borde (una cola
+ * de 512 entradas de EV_REL reales nunca se acerca, pero el contrato prohibe
+ * desbordar en silencio). */
+static int32_t clamp_raw(int64_t raw) {
+    if (raw > INT32_MAX) {
+        return INT32_MAX;
+    }
+
+    if (raw < INT32_MIN) {
+        return INT32_MIN;
+    }
+
+    return (int32_t) raw;
+}
+
+size_t adaptive_tuning_segments_ex(adaptive_tuning_state_t *state,
+                                   const int32_t *diffs, const uint64_t *timestamps_us, size_t n,
+                                   adaptive_accel_t profile, uint8_t threshold_dps,
+                                   rotary_event_enhanced_t *out, size_t out_max,
+                                   uint8_t *event_multipliers, size_t event_multipliers_max) {
+    size_t   written   = 0;
+    int64_t  raw       = 0;
+    int64_t  weighted  = 0;
+    uint8_t  last_mult = 1;
+
+    if (state == NULL || diffs == NULL || timestamps_us == NULL || out == NULL) {
+        return 0;
+    }
+
+    for (size_t i = 0; i < n; i++) {
+        if (event_multipliers != NULL && i < event_multipliers_max) {
+            event_multipliers[i] = 0;
+        }
+
+        /* diff == 0: discontinuidad del reloj (ver src/rotary.c). Resetea y
+         * corta el tramo: no se netean signos ni se inventa un salto. */
+        if (diffs[i] == 0) {
+            adaptive_tuning_reset(state);
+
+            if (raw != 0 && written < out_max) {
+                out[written].raw_diff         = clamp_raw(raw);
+                out[written].weighted_detents = weighted;
+                out[written].last_multiplier  = last_mult;
+                written++;
+            }
+
+            raw       = 0;
+            weighted  = 0;
+            last_mult = 1;
+            continue;
+        }
+
+        /* Cambio de signo: se emite el tramo anterior EN ORDEN, nunca se fusiona
+         * en un neto (una reversa tiene que llegar como dos tramos). */
+        if (raw != 0 && ((diffs[i] > 0) != (raw > 0))) {
+            if (written < out_max) {
+                out[written].raw_diff         = clamp_raw(raw);
+                out[written].weighted_detents = weighted;
+                out[written].last_multiplier  = last_mult;
+                written++;
+            }
+
+            raw      = 0;
+            weighted = 0;
+        }
+
+        uint8_t mult = 1;
+
+        weighted += adaptive_tuning_weighted_event(state, diffs[i], timestamps_us[i],
+                                                   profile, threshold_dps, &mult);
+        raw      += diffs[i];
+        last_mult = mult;
+
+        if (event_multipliers != NULL && i < event_multipliers_max) {
+            event_multipliers[i] = mult;
+        }
+    }
+
+    if (raw != 0 && written < out_max) {
+        out[written].raw_diff         = clamp_raw(raw);
+        out[written].weighted_detents = weighted;
+        out[written].last_multiplier  = last_mult;
+        written++;
+    }
+
+    return written;
+}
+
+size_t adaptive_tuning_segments(adaptive_tuning_state_t *state,
+                                const int32_t *diffs, const uint64_t *timestamps_us, size_t n,
+                                adaptive_accel_t profile, uint8_t threshold_dps,
+                                rotary_event_enhanced_t *out, size_t out_max) {
+    return adaptive_tuning_segments_ex(state, diffs, timestamps_us, n, profile, threshold_dps,
+                                       out, out_max, NULL, 0);
+}
+
+bool adaptive_tuning_target_freq(int32_t current, int64_t weighted_detents,
+                                 int32_t step, int32_t *out) {
+    int64_t target;
+
+    if (out == NULL) {
+        return false;
+    }
+
+    /* Toda la aritmetica en int64: nunca desborda por weighted * step. */
+    target = (int64_t) current + weighted_detents * (int64_t) step;
+
+    if (target < INT32_MIN || target > INT32_MAX) {
+        return false;
+    }
+
+    *out = (int32_t) target;
+
+    return true;
 }

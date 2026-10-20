@@ -143,6 +143,10 @@ void event_init(void)
 
 void event_obj_check(void) {}
 
+/* El motor adaptativo del dial principal vive en src/rotary.c (no se compila en
+ * el arnes): el reset de contexto de main_screen.c es un no-op aca. */
+void rotary_tuning_reset(void) {}
+
 void event_send(lv_obj_t *obj, lv_event_code_t event_code, void *param)
 {
     (void) obj;
@@ -254,6 +258,9 @@ void voice_ready(void) {}
 bool voice_selftest(void) { return false; }
 void voice_change_mode(void) {}
 void voice_say_text_fmt(const char *fmt, ...) { (void) fmt; }
+void voice_say_settings_fmt(const char *fmt, ...) { (void) fmt; }
+void voice_settings_begin(void) {}
+void voice_settings_end(void) {}
 void voice_delay_say_text_fmt(const char *fmt, ...) { (void) fmt; }
 void voice_say_freq(uint64_t freq) { (void) freq; }
 void voice_say_bool(const char *p, bool x) { (void) p; (void) x; }

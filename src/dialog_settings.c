@@ -120,10 +120,12 @@ static lv_obj_t     *min;
 static lv_obj_t     *sec;
 
 /* Anuncia un ajuste: el nombre es la etiqueta de la celda (el primer hijo) y el valor lo pasa
- * quien llama. El diccionario de voice_text.c traduce el nombre al espanol. */
+ * quien llama. Settings es solo ingles (regla del owner, 2026-10-20): voice_say_settings_fmt()
+ * evita el diccionario y sintetiza en ingles. */
 static void anunciar_ajuste(lv_obj_t *widget, const char *valor);
 
 static void construct_cb(lv_obj_t *parent);
+static void settings_destruct_cb(void);
 static void key_cb(lv_event_t * e);
 
 /* --- Los tabs de Ajustes ----------------------------------------------------------------------
@@ -248,7 +250,7 @@ static dialog_t     dialog = {
     .run = false,
     .btn_page = &tabs_pagina_1,
     .construct_cb = construct_cb,
-    .destruct_cb = NULL,
+    .destruct_cb = settings_destruct_cb,
     .audio_cb = NULL,
     .key_cb = key_cb
 };
@@ -282,11 +284,11 @@ static void anunciar_ajuste(lv_obj_t *widget, const char *valor) {
     }
 
     if (nombre != NULL) {
-        voice_say_text_fmt("%s: %s", lv_label_get_text(nombre), valor);
+        voice_say_settings_fmt("%s: %s", lv_label_get_text(nombre), valor);
     } else {
         /* Sin nombre igual se dice el valor: mejor eso que nada */
-        LV_LOG_USER("Ajuste sin etiqueta, se anuncia solo el valor: %s", valor);
-        voice_say_text_fmt("%s", valor);
+        LV_LOG_USER("Setting without a label, announcing only the value: %s", valor);
+        voice_say_settings_fmt("%s", valor);
     }
 }
 
@@ -1840,6 +1842,52 @@ static uint8_t make_freq_accel(uint8_t row) {
     return row + 1;
 }
 
+/* Umbral global de aceleracion (issue #186, seccion 2.3): inmediatamente despues
+ * de "Freq acceleration", en Operation. Un solo parametro: cuantos detents/s
+ * hacen falta para entrar al nivel 1 (3..15, default 7). No reemplaza al
+ * selector None/Lite/Strong: el umbral mueve los cuatro puntos de entrada y los
+ * multiplicadores quedan fijos. Se aplica en el SIGUIENTE movimiento (reset del
+ * motor, sin reboot) y se anuncia por la voz de Settings. */
+static void freq_accel_threshold_apply_cb(lv_event_t * e) {
+    (void) e;
+
+    /* El valor ya quedo guardado por uint8_spinbox_update_cb (params_uint8_set,
+     * que ademas anuncia el numero). Aca solo se invalida la aceleracion: el
+     * primer detent posterior es x1, sin reiniciar la radio. */
+    main_screen_tuning_reset();
+}
+
+static uint8_t make_freq_accel_threshold(uint8_t row) {
+    lv_obj_t    *obj;
+    uint8_t     col = 0;
+
+    row_dsc[row] = 54;
+
+    obj = lv_label_create(grid);
+
+    lv_label_set_text(obj, "Accel threshold");
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    obj = spinbox_uint8(grid, &params.freq_accel_threshold);
+
+    lv_spinbox_set_digit_format(obj, 2, 0);
+    lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
+    lv_obj_set_size(obj, SMALL_2, 56);
+    /* Dos piezas dentro del esquema unico del #175: spinbox en la primera mitad
+     * de la zona de controles y sufijo en la segunda (nada de columnas a mano). */
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_2A, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_add_event_cb(obj, freq_accel_threshold_apply_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    obj = lv_label_create(grid);
+
+    lv_label_set_text(obj, "detents/s");
+    lv_obj_set_style_text_color(obj, TC(text_soft), 0);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_2B, SPAN_2B,
+                         LV_GRID_ALIGN_CENTER, row, 1);
+
+    return row + 1;
+}
+
 static uint8_t make_theme(uint8_t row) {
     lv_obj_t    *obj;
     uint8_t     col = 0;
@@ -2163,7 +2211,13 @@ static uint8_t make_delimiter(uint8_t row) {
     return row + 1;
 }
 
+static void settings_destruct_cb(void) {
+    voice_settings_end();
+}
+
 static void construct_cb(lv_obj_t *parent) {
+    voice_settings_begin();
+
     /* Cuantos items entran al grupo de foco: es la medida de "todo Ajustes se puede navegar".
      * Un widget que no llama a dialog_item() no se puede ni alcanzar (ver docs/HALLAZGOS.md 18),
      * asi que este numero queda en el log para poder compararlo. */
@@ -2209,6 +2263,7 @@ static void construct_cb(lv_obj_t *parent) {
     /* 1. Operation */
     n = lv_obj_get_child_cnt(grid);
     row = make_freq_accel(row);
+    row = make_freq_accel_threshold(row);
     row = make_bluetooth(row);
     row = make_cluster_column(row);
     row = make_wfview(row);
@@ -2282,9 +2337,9 @@ static void construct_cb(lv_obj_t *parent) {
     tabs_marks();
 
     for (uint8_t g = 0; g < GRP_COUNT; g++)
-        LV_LOG_USER("Ajustes grupo %u: hijos %u..%u", g, grp_primero[g], grp_ultimo[g]);
+        LV_LOG_USER("Settings group %u: children %u..%u", g, grp_primero[g], grp_ultimo[g]);
 
-    LV_LOG_USER("Ajustes: %u items navegables (creados en esta apertura)", 
+    LV_LOG_USER("Settings: %u navigable items (created in this opening)",
                 (unsigned) (keyboard_group ? lv_group_get_obj_count(keyboard_group) - items_antes : 0));
 }
 

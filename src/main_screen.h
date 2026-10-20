@@ -58,5 +58,9 @@ void main_screen_lock_ab(bool lock);
 
 void main_screen_set_freq(uint64_t f);
 
+/* Reinicia el motor adaptativo del dial principal (issue #186): el proximo
+ * detent es x1. Lo usa Settings al cambiar `Accel threshold` (sin reboot). */
+void main_screen_tuning_reset(void);
+
 void mem_load(uint16_t id);
 void mem_save(uint16_t id);

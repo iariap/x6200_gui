@@ -36,6 +36,12 @@ void mock_params_init(void)
     params.mag_freq.x          = false;
     params.mag_info.x          = false;
     params.freq_accel.x        = FREQ_ACCEL_NONE;
+    /* Umbral de aceleracion (issue #186, src/params/params.c): 7 detents/s por
+     * defecto, rango 3..15. El arnes no corre el saneador ni la base, asi que
+     * replica el default y el rango para que la fila muestre el valor real. */
+    params.freq_accel_threshold.x   = 7;
+    params.freq_accel_threshold.min = 3;
+    params.freq_accel_threshold.max = 15;
     /* CB 27 MHz (issue #146): los defaults de src/params/params.c. El arnes no
      * ejerce las politicas de radio (radio.c es un mock), pero la estructura
      * tiene que traer los valores de la radio. */

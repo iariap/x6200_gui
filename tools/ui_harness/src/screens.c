@@ -895,22 +895,18 @@ static void dfl_esc_ui(void)
 }
 
 /* Empuja un giro de la rueda PRINCIPAL (rotary0) por el MISMO evento que arma
- * src/rotary.c (EVENT_ROTARY_ENHANCED sobre la pantalla). Devuelve nada: el
- * handler real de main_screen.c lo consume y libera. */
+ * src/rotary.c (EVENT_ROTARY_ENHANCED sobre la pantalla). El payload es
+ * SINCRONICO y vive en el stack: el handler real de main_screen.c lo consume
+ * dentro de lv_event_send() y NO lo libera (issue #186). */
 static void dfl_rotary0_ui(int32_t diff)
 {
-    rotary_event_enhanced_t *enhanced = malloc(sizeof(*enhanced));
+    rotary_event_enhanced_t enhanced = {
+        .raw_diff         = diff,
+        .weighted_detents = diff,       /* un detent x1 en el arnes */
+        .last_multiplier  = 1,
+    };
 
-    if (!enhanced) {
-        fprintf(stderr, "dfl-editor: sin memoria para el evento de rotary0\n");
-        exit(1);
-    }
-
-    enhanced->raw_diff       = diff;
-    enhanced->multiplier     = 1.0f;
-    enhanced->effective_step = 0.0f;
-
-    lv_event_send(lv_scr_act(), EVENT_ROTARY_ENHANCED, enhanced);
+    lv_event_send(lv_scr_act(), EVENT_ROTARY_ENHANCED, &enhanced);
 }
 
 /* Lo que cada fixture del editor *significa*: el arnes corta si no lo ve, en vez

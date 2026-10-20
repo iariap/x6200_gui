@@ -20,6 +20,8 @@
  * perfil visual, UI-08 incr. 5). El modulo de la politica no incluye params.h:
  * esta dependencia es de una sola direccion. */
 #include "../visual_policy.h"
+/* Solo por adaptive_tuning_threshold_sanitize() (issue #186). */
+#include "../adaptive_tuning.h"
 
 #include "lvgl/lvgl.h"
 
@@ -89,6 +91,10 @@ params_t params = {
     .moni                   = 59,
     .spmode                 = { .x = false,             .name = "spmode",           .voice = "Speaker mode" },
     .freq_accel             = { .x = FREQ_ACCEL_LITE,   .name = "freq_accel",       .voice = "Frequency acceleration" },
+    /* Issue #186: detents/s de entrada al nivel 1. Se valida a 3..15 y se sanea
+     * (0/fuera de rango => 7 + dirty) en params_init(); sin voz en init. */
+    .freq_accel_threshold   = { .x = 7, .min = 3, .max = 15, .name = "freq_accel_threshold",
+                                .voice = "Acceleration starts at" },
 
     /* CB 27 MHz (issue #146): default conservador, SBC argentino (26,960-27,410)
      * y 4,0 W (FCC 95.967 para AM/FM; el texto de la Res. 47/82 no esta online,
@@ -374,6 +380,7 @@ static bool params_load() {
         if (params_load_uint8(&params.voice_pitch, name, i)) continue;
         if (params_load_uint8(&params.voice_volume, name, i)) continue;
         if (params_load_uint8(&params.freq_accel, name, i)) continue;
+        if (params_load_uint8(&params.freq_accel_threshold, name, i)) continue;
         if (params_load_uint8(&params.cb_tx_scope, name, i)) continue;
         if (params_load_float(&params.cb_pwr_max, name, f)) continue;
         if (params_load_uint8(&params.visual_profile, name, i)) continue;
@@ -533,6 +540,7 @@ static void params_save() {
     params_save_uint8(&params.voice_pitch);
     params_save_uint8(&params.voice_volume);
     params_save_uint8(&params.freq_accel);
+    params_save_uint8(&params.freq_accel_threshold);
     params_save_uint8(&params.cb_tx_scope);
     params_save_float(&params.cb_pwr_max);
 
@@ -602,6 +610,22 @@ static void * params_thread(void *arg) {
     }
 }
 
+/* Saneo del umbral de aceleracion (issue #186, seccion 2.3): un valor 0 o fuera
+ * de 3..15 se reemplaza EN MEMORIA por 7 y se marca dirty para que la rutina
+ * normal lo persista. Se usa params_unlock() (no una asignacion directa) para
+ * armar el temporizador de guardado: sin eso el dirty quedaba marcado pero
+ * params_ready_to_save() nunca lo veia y la correccion no llegaba al disco.
+ * Ninguna rama dispara voz durante el arranque. */
+static void params_freq_accel_threshold_sanitize(void) {
+    uint8_t saneado = adaptive_tuning_threshold_sanitize(params.freq_accel_threshold.x);
+
+    if (saneado != params.freq_accel_threshold.x) {
+        params_lock();
+        params.freq_accel_threshold.x = saneado;
+        params_unlock(&params.freq_accel_threshold.dirty);
+    }
+}
+
 void params_init() {
     int rc;
     if (database_init()) {
@@ -616,6 +640,8 @@ void params_init() {
             LV_LOG_ERROR("Load params: se sigue con los valores por defecto");
         }
         boot_mark("params_load");
+
+        params_freq_accel_threshold_sanitize();
 
         if (rc != SQLITE_OK) {
             LV_LOG_ERROR("Prepare write");

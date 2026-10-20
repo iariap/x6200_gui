@@ -143,6 +143,11 @@ typedef struct {
     params_bool_t       spmode;
     params_uint8_t      freq_accel;
 
+    /* Umbral global de aceleracion del dial (issue #186, seccion 2.3): detents/s
+     * de entrada al nivel 1. 3..15, default 7. Unico parametro nuevo; NO cambia
+     * `freq_accel` (None/Lite/Strong) ni migra SQL: key/value ya existe. */
+    params_uint8_t      freq_accel_threshold;
+
     /* CB 27 MHz (issue #146). Sin UI en v1: se editan por el configurador
      * web/SQLite, como el resto de params. */
     params_uint8_t      cb_tx_scope;    /* 0 = solo SBC AR (26,960-27,410),

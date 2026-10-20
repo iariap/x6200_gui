@@ -12,6 +12,8 @@
 
 
 void test_adaptive_tuning(void);
+void test_rotary_queue(void);
+void test_settings_language(void);
 void test_autotune(void);
 void test_audio_enhancement(void);
 void test_ft8_udp(void);
@@ -56,6 +58,8 @@ void test_swr_fixture_delayed_flow(void);
 
 int main(void) {
     test_adaptive_tuning();
+    test_rotary_queue();
+    test_settings_language();
     test_autotune();
     test_audio_enhancement();
     test_ft8_udp();
