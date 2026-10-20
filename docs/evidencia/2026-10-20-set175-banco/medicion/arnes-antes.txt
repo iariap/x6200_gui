@@ -1,0 +1,73 @@
+# Bordes izquierdos de los controles, medidos por pixeles (arnes, ANTES)
+# mide-bordes.py: primera columna con borde vertical claro en cada fila del dialogo
+
+arnes/antes/settings-grupo-operation.png: 269 filas con borde
+   x=498..504  filas=56
+   x=552..552  filas=17
+   x=601..602  filas=3
+   x=642..648  filas=192
+
+arnes/antes/settings-audio.png: 309 filas con borde
+   x=498..504  filas=253
+   x=642..648  filas=56
+
+arnes/antes/settings-wfbat.png: 294 filas con borde
+   x=498..504  filas=182
+   x=642..648  filas=112
+
+arnes/antes/settings-home.png: 297 filas con borde
+   x=498..504  filas=294
+   x=784..784  filas=3
+
+arnes/antes/settings-grupo-display.png: 294 filas con borde
+   x=498..504  filas=182
+   x=642..648  filas=112
+
+# Todas las columnas de borde (mide-columnas.py), para ver los origenes
+
+== arnes/antes/settings-grupo-operation.png (bordes verticales por columna) ==
+   x=498..507  filas=128
+   x=552..556  filas=73
+   x=559..595  filas=289
+   x=601..715  filas=2972
+   x=756..769  filas=164
+   x=775..785  filas=725
+   x=790..792  filas=35
+
+== arnes/antes/settings-audio.png (bordes verticales por columna) ==
+   x=498..572  filas=1745
+   x=583..699  filas=3440
+   x=704..786  filas=2289
+   x=790..792  filas=73
+
+== arnes/antes/settings-wfbat.png (bordes verticales por columna) ==
+   x=498..507  filas=778
+   x=513..527  filas=407
+   x=531..542  filas=178
+   x=583..604  filas=129
+   x=611..625  filas=261
+   x=631..652  filas=1906
+   x=657..671  filas=530
+   x=675..699  filas=376
+   x=741..752  filas=62
+   x=756..769  filas=339
+   x=775..786  filas=1296
+   x=790..792  filas=74
+
+== arnes/antes/settings-home.png (bordes verticales por columna) ==
+   x=498..507  filas=1251
+   x=512..555  filas=1170
+   x=562..646  filas=3573
+   x=655..659  filas=73
+   x=662..755  filas=3005
+   x=764..769  filas=26
+   x=775..786  filas=1308
+   x=790..792  filas=74
+
+== arnes/antes/settings-grupo-display.png (bordes verticales por columna) ==
+   x=498..507  filas=775
+   x=511..705  filas=3298
+   x=741..769  filas=499
+   x=775..786  filas=1295
+   x=790..792  filas=74
+

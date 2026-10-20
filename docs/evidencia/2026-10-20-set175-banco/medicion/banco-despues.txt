@@ -1,0 +1,121 @@
+# Bordes izquierdos de los controles, medidos por pixeles (BANCO QEMU, binario ARM real)
+
+banco/banco-actions-Aurora.png: 315 filas con borde
+   x=440..440  filas=15
+   x=443..445  filas=14
+   x=458..458  filas=61
+   x=498..504  filas=222
+   x=784..784  filas=3
+
+banco/banco-actions-Sunlit.png: 260 filas con borde
+   x=440..446  filas=34
+   x=458..460  filas=73
+   x=498..504  filas=150
+   x=784..784  filas=3
+
+banco/banco-appearance-Aurora.png: 297 filas con borde
+   x=440..440  filas=15
+   x=443..445  filas=14
+   x=458..458  filas=61
+   x=498..504  filas=207
+
+banco/banco-appearance-Sunlit.png: 242 filas con borde
+   x=440..446  filas=34
+   x=458..460  filas=73
+   x=498..504  filas=135
+
+banco/banco-audio-Aurora.png: 311 filas con borde
+   x=440..440  filas=15
+   x=443..445  filas=14
+   x=458..458  filas=61
+   x=498..504  filas=221
+
+banco/banco-audio-Sunlit.png: 270 filas con borde
+   x=440..446  filas=34
+   x=458..460  filas=73
+   x=498..504  filas=150
+   x=520..523  filas=4
+   x=534..536  filas=3
+   x=784..786  filas=6
+
+banco/banco-clock-Aurora.png: 300 filas con borde
+   x=440..440  filas=15
+   x=443..445  filas=14
+   x=458..458  filas=61
+   x=498..504  filas=207
+   x=784..784  filas=3
+
+banco/banco-clock-Sunlit.png: 251 filas con borde
+   x=440..446  filas=34
+   x=458..460  filas=73
+   x=498..504  filas=135
+   x=784..786  filas=9
+
+banco/banco-display-Aurora.png: 300 filas con borde
+   x=440..440  filas=15
+   x=443..445  filas=14
+   x=458..458  filas=61
+   x=498..504  filas=207
+   x=784..784  filas=3
+
+banco/banco-display-Sunlit.png: 259 filas con borde
+   x=440..446  filas=34
+   x=458..460  filas=73
+   x=498..504  filas=135
+   x=513..523  filas=14
+   x=784..784  filas=3
+
+banco/banco-info-Aurora.png: 295 filas con borde
+   x=440..440  filas=15
+   x=443..445  filas=14
+   x=458..458  filas=61
+   x=498..504  filas=191
+   x=784..785  filas=14
+
+banco/banco-info-Sunlit.png: 239 filas con borde
+   x=440..446  filas=34
+   x=458..460  filas=73
+   x=498..504  filas=118
+   x=784..785  filas=14
+
+banco/banco-more-Aurora.png: 300 filas con borde
+   x=440..440  filas=15
+   x=443..445  filas=14
+   x=458..458  filas=61
+   x=498..504  filas=207
+   x=784..784  filas=3
+
+banco/banco-more-Sunlit.png: 251 filas con borde
+   x=440..446  filas=34
+   x=458..460  filas=73
+   x=498..504  filas=135
+   x=784..786  filas=9
+
+banco/banco-operation-Aurora.png: 270 filas con borde
+   x=440..440  filas=15
+   x=443..445  filas=14
+   x=458..458  filas=61
+   x=498..504  filas=159
+   x=552..552  filas=17
+   x=601..602  filas=3
+
+banco/banco-operation-Sunlit.png: 243 filas con borde
+   x=440..446  filas=34
+   x=458..460  filas=73
+   x=498..504  filas=92
+   x=513..523  filas=23
+   x=541..541  filas=20
+
+banco/banco-spectrum-Aurora.png: 296 filas con borde
+   x=440..440  filas=15
+   x=443..445  filas=14
+   x=458..458  filas=61
+   x=498..504  filas=205
+
+banco/banco-spectrum-Sunlit.png: 290 filas con borde
+   x=440..446  filas=34
+   x=458..460  filas=73
+   x=498..504  filas=135
+   x=513..523  filas=34
+   x=784..786  filas=14
+

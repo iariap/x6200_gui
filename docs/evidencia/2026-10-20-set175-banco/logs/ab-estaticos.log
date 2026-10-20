@@ -1,0 +1,16 @@
+=== themes ===
+    OK   waterfall_center_line on main-tema-sunlit-agua = 14.51:1 (min 3.0:1) [object darker; #162436 vs #f1f7fb]
+    OK   waterfall_signal on main-tema-aurora = 6.57:1 (min 3.0:1) [object lighter; #79b3d2 vs #2a1f4c]
+    OK   s_meter_arc on main-tema-aurora = 6.23:1 (min 3.0:1) [object lighter; #ffb2aa vs #363e4f]
+    OK   waterfall_signal on main-tema-cathode = 6.82:1 (min 3.0:1) [object lighter; #cc9044 vs #1c0f07]
+    OK   s_meter_arc on main-tema-cathode = 8.11:1 (min 3.0:1) [object lighter; #ffd6a0 vs #323d48]
+    OK   cw_tune_bars on cw-tune-tuner = 20.67:1 (min 3.0:1) [object lighter; #ffffff vs #050202]
+    OK   cw_tune_bars on cw-tune-tema-sunlit = 5.02:1 (min 3.0:1) [object darker; #000000 vs #7d7c77]
+  exempt (WCAG 1.4.3, disabled/incidental): 7 role(s) — btn_off_text, text_mute, text_faint, icon_off, switch_off, off, track
+=== ruff check ===
+All checks passed!
+=== ruff format --check ===
+196 files already formatted
+=== ty check ===
+WARN No python files found under the given path(s)
+All checks passed!
