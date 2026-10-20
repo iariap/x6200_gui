@@ -41,6 +41,27 @@ static void test_steps(void) {
     CHECK(dfl_step_high(x6200_mode_cwr) == 10);
 }
 
+static void test_sel(void) {
+    /* Paso de la rueda por parametro: los mismos de src/vol.c. */
+    CHECK(dfl_sel_step(DFL_SEL_LOW, x6200_mode_usb_dig) == 10);
+    CHECK(dfl_sel_step(DFL_SEL_HIGH, x6200_mode_usb_dig) == 50);
+    CHECK(dfl_sel_step(DFL_SEL_HIGH, x6200_mode_lsb) == 50);
+    CHECK(dfl_sel_step(DFL_SEL_HIGH, x6200_mode_cw) == 10);
+    CHECK(dfl_sel_step(DFL_SEL_HIGH, x6200_mode_cwr) == 10);
+    CHECK(dfl_sel_step(DFL_SEL_BW, x6200_mode_cw) == 20);
+
+    /* Seleccion inicial: LOW donde es editable; en AM/SAM/NFM/WFM, HIGH. */
+    CHECK(dfl_default_sel(x6200_mode_usb_dig) == DFL_SEL_LOW);
+    CHECK(dfl_default_sel(x6200_mode_lsb_dig) == DFL_SEL_LOW);
+    CHECK(dfl_default_sel(x6200_mode_cw) == DFL_SEL_LOW);
+    CHECK(dfl_default_sel(x6200_mode_cwr) == DFL_SEL_LOW);
+
+    CHECK(dfl_default_sel(x6200_mode_am) == DFL_SEL_HIGH);
+    CHECK(dfl_default_sel(x6200_mode_sam) == DFL_SEL_HIGH);
+    CHECK(dfl_default_sel(x6200_mode_nfm) == DFL_SEL_HIGH);
+    CHECK(dfl_default_sel(x6200_mode_wfm) == DFL_SEL_HIGH);
+}
+
 static void test_low_editable(void) {
     CHECK(dfl_mode_low_editable(x6200_mode_usb_dig) == true);
     CHECK(dfl_mode_low_editable(x6200_mode_lsb) == true);
@@ -220,6 +241,7 @@ static void test_reset_order(void) {
 
 void test_dfl_editor(void) {
     test_steps();
+    test_sel();
     test_low_editable();
     test_quantize();
     test_domain();

@@ -28,15 +28,15 @@ extern dialog_t *dialog_dfl;
 
 /* Etiquetas que el arnes usa para ubicar los controles del dialogo por su
  * user_data (mismo mecanismo que src/buttons.cpp) y empujar una pulsacion por
- * el callback real. No son API de la radio. */
+ * el callback real. No son API de la radio.
+ *
+ * Cada fila (LOW/HIGH/BW) es tocable: tocarla la SELECCIONA (queda resaltada con
+ * los roles del tema) y la rueda ajusta la seleccionada. Ya no hay botones -/+. */
 typedef enum {
     DFL_UI_GRAPH = 1,
-    DFL_UI_LOW_MINUS,
-    DFL_UI_LOW_PLUS,
-    DFL_UI_HIGH_MINUS,
-    DFL_UI_HIGH_PLUS,
-    DFL_UI_BW_MINUS,
-    DFL_UI_BW_PLUS,
+    DFL_UI_LOW_ROW,
+    DFL_UI_HIGH_ROW,
+    DFL_UI_BW_ROW,
     DFL_UI_RESET,
     DFL_UI_CLOSE,
 } dfl_ui_id_t;

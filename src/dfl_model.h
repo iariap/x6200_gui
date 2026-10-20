@@ -34,6 +34,15 @@
 #define DFL_STEP_HIGH_CW     10
 #define DFL_STEP_BW          20
 
+/* Parametro del editor sobre el que actua la rueda. La fila tocada lo
+ * selecciona (src/dialog_dfl.c) y el encoder ajusta el seleccionado. */
+typedef enum {
+    DFL_SEL_LOW = 0,
+    DFL_SEL_HIGH,
+    DFL_SEL_BW,
+    DFL_SEL_COUNT,
+} dfl_sel_t;
+
 /* LOW no es editable en AM/SAM/NFM/WFM: es la misma regla que
  * cfg_mode_set_low_filter() (devuelve 0 sin tocar el subject). */
 static inline bool dfl_mode_low_editable(x6200_mode_t mode) {
@@ -76,6 +85,29 @@ static inline int32_t dfl_step_high(x6200_mode_t mode) {
 
 static inline int32_t dfl_step_bw(void) {
     return DFL_STEP_BW;
+}
+
+/* Paso de la rueda segun el parametro seleccionado: son los MISMOS pasos de
+ * src/vol.c, no una tabla nueva. */
+static inline int32_t dfl_sel_step(dfl_sel_t sel, x6200_mode_t mode) {
+    switch (sel) {
+        case DFL_SEL_LOW:
+            return dfl_step_low(mode);
+        case DFL_SEL_HIGH:
+            return dfl_step_high(mode);
+        case DFL_SEL_BW:
+            return dfl_step_bw();
+        default:
+            return 0;
+    }
+}
+
+/* Seleccion inicial al abrir el editor: LOW en los modos donde es editable
+ * (SSB/CW, el borde que mas se ajusta). En AM/SAM/NFM/WFM LOW no es editable
+ * (queda en 0 y el setter lo rechaza), asi que el default es HIGH: la rueda
+ * arranca en el borde util y BW queda a un toque. */
+static inline dfl_sel_t dfl_default_sel(x6200_mode_t mode) {
+    return dfl_mode_low_editable(mode) ? DFL_SEL_LOW : DFL_SEL_HIGH;
 }
 
 /* Cuantiza al paso con la misma semantica que util.cpp::align_int()
