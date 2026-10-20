@@ -3499,8 +3499,10 @@ distingue: lo que fallaba era que la copia no se reponia. El `rm -rf` del QA no 
 - **ARM cross-compile** (volumen privado): `ELF32 ARM`, 13.855.240 B, `md5 b0bf91cff55b`, pasa
   `verifica-firmware-port.py` (3/3 marcas).
 - Gates: nativos (118 comprobaciones, 0 fallos), estaticos (10/10), determinismo del arnes (PASS),
-  `ruff`/`format`/`ty` OK, `pytest -m 'not e2e'` 227 passed, A/B `AB-BUILD165`, contracts/audit/
-  themes.
+  `ruff`/`format`/`ty` OK, `pytest -m 'not e2e'` 227 passed, `pytest -m e2e` 13 passed, A/B
+  `AB-BUILD165` (PASS, 89 pixel-identicos, 913 contratos; reporte en
+  `tools/ab_testing/reports/AB-BUILD165/`), `contracts` 913 checks, `audit` 0 hallazgos, `themes`
+  exit 0.
 
 **Sin fundar (anexo A)**: que la copia del volumen del QA tuviera el mtime mas nuevo que su fuente
 (el mecanismo medido lo explica; el `ls -l` de esa corrida no quedo). Tampoco queda medido cuanto
