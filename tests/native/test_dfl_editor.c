@@ -1,7 +1,7 @@
 /*
  * Native test: modelo puro del editor DFL (issue #173, PR 2).
  *
- * Fija lo que el dialogo (src/dialog_dfl.c) decide sin LVGL ni Subjects:
+ * Fija lo que el editor inline (src/dfl_inline.c) decide sin LVGL ni Subjects:
  *
  *   1. Los pasos de edicion de src/vol.c (LOW 10 Hz; HIGH 50 Hz y 10 Hz en
  *      CW/CWR; BW 20 Hz) y la cuantizacion compatible con util.cpp::align_int().
