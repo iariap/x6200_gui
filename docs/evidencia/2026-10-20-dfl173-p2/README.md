@@ -283,6 +283,15 @@ CHROOT=/home/pablo/desa/asf/state/dfl173-chroot VOLUMEN=x6200-build-output-dfl17
 6. **`check_manual_apps.py`** avisa que `ACTION_APP_DFL_EDITOR` no tiene nombre
    mapeado ni sección en el manual; es informativo (el chequeo pasa). El editor no
    es una app del menú; si el owner quiere una sección en el manual, se agrega.
+7. **ASan en el arnés bloqueado por un defecto previo**: correr `ui_harness` con
+   `-fsanitize=address` aborta en un `global-buffer-overflow` de **`tx_info_init`**
+   (`src/tx_info.c`) **antes** de abrir cualquier ventana; se reprodujo igual con la
+   fixture de baseline `home-usb-20m`, así que **no es de este cambio** (queda
+   anotado para el owner). Por eso la evidencia de “sin leaks” del editor es: (a)
+   el test nativo corre con ASan/UBSan, y (b) la fixture de **30 ciclos**
+   abrir/cerrar no pierde observers (los labels siguen correctos) y no deja
+   `crash.txt` en el banco; el editor borra sus `ObserverDelayed` en `destruct_cb`
+   y sus objetos son hijos de `dialog.obj` (los libera `lv_obj_del`).
 
 ## 11. Cómo deshacer
 
