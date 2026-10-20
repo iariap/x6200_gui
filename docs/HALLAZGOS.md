@@ -79,6 +79,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 58. [lv_async_call no es thread-safe en LVGL 8: la app de Propagacion usa el scheduler](#58-lv_async_call-no-es-thread-safe-en-lvgl-8-la-app-de-propagacion-usa-el-scheduler)
 59. [El SIGSEGV del #131 (reabierto): otros tres caminos tocaban LVGL fuera del hilo de GUI](#59-el-sigsegv-del-131-reabierto-otros-tres-caminos-tocaban-lvgl-fuera-del-hilo-de-gui)
 60. [El squelch del #166: la lib del control ya habilita el enable (el comentario de radio.c:611 era redundante)](#60-el-squelch-del-166-la-lib-del-control-ya-habilita-el-enable-el-comentario-de-radioc611-era-redundante)
+61. [El md5 del build no distinguia commits: `rsync -au` de Buildroot no reponia la copia (#165)](#61-el-md5-del-build-no-distinguia-commits-rsync--au-de-buildroot-no-reponia-la-copia-165)
 
 ---
 
@@ -3433,3 +3434,75 @@ queda sin medir es (a) el nivel de audio real del parlante, (b) si el umbral 0..
 valor alto para cortar el ruido, y (c) el desajuste de bits del comentario de la lib
 (`src/control.c:304-312` muestra al OEM alternando el bit 16 en la voz 0<->1, mientras la lib usa el
 bit 24 para el enable). Nada de eso se puede dirimir sin la radio.
+
+## 61. El md5 del build no distinguia commits: `rsync -au` de Buildroot no reponia la copia (#165)
+
+**Sintoma** (issue #165, del QA): dos commits distintos dieron el MISMO md5 y el mismo tamano. Los
+numeros del issue: el commit A (`1c599025`, fix del #131) y el B (`5f3c52fe`, OPT-4, 7 archivos)
+dieron los dos `9a26b607c67d`, 13.855.068 B, con un rebuild que el QA creyo limpio (`rm -rf` de la
+copia + `make x6200-gui-rebuild`). El QA verifico que la copia tenia el codigo nuevo mirando
+`src/ui_set.h` (el archivo NUEVO del commit) y dio el build por bueno.
+
+**Causa fundada** (mecanismo, medido): el paquete `x6200-gui` de Buildroot usa el override srcdir
+(`local.mk` -> `X6200_GUI_OVERRIDE_SRCDIR=/workspace_gui`) y copia el arbol con `rsync -au`
+(`buildroot/package/pkg-generic.mk:222`). `-u` saltea un archivo si en el destino tiene un timestamp
+igual o mas nuevo, SIN mirar el contenido. Medido en el volumen privado, con el rsync EXACTO de
+Buildroot (destino con `src/info.c` al futuro, fuente modificada):
+
+```
+$ rsync -au --chmod=u=rwX,go=rX --exclude .git ... /workspace_gui/ $DEST
+dest src/info.c mtime = 2030-01-01 (mas nuevo que la fuente) -> NO se copia (el marker no llega)
+dest src/bi165_new.txt (archivo NUEVO)                      -> SI se copia
+```
+
+Los archivos NUEVOS se copian (no existen en el destino) y los MODIFICADOS se saltean: por eso el QA
+veia `ui_set.h` (nuevo) con el codigo nuevo y no veia que `info.c`, `main_screen.c`, `meter.c`,
+`tx_info.c`, `clock.c`, `backlight.c` (modificados por el commit) quedaban viejos.
+
+**Reproducido de punta a punta** (volumen privado `x6200-build-output-bi165`, `tools/compila-gui.sh`
+sin el arreglo; `dirclean` + `rebuild`):
+
+```
+build A (1c599025), copia fresca:                        md5 bd28b95d4426
+build B (5f3c52fe), copia con mtime al futuro:           md5 bd28b95d4426   <- el MISMO (bug)
+  (la copia quedo con el `src/info.c` del commit A: 0 `ui_label_set_text`; el commit B usa 8)
+```
+
+Con la copia fresca los dos commits dan md5 distinto (el B da `9a26b607c67d`), asi que el md5 SI
+distingue: lo que fallaba era que la copia no se reponia. El `rm -rf` del QA no alcanzaba porque el
+`find ... -name '*.o' -delete` y el rebuild rearman la copia con el MISMO `rsync -au`.
+
+**Arreglo**:
+- `tools/fuente-md5.sh` (nuevo): el hash de las fuentes con rutas RELATIVAS (el repo y la copia dan
+  el mismo numero) y `LC_ALL=C`; lo comparten `compila-gui.sh`, `captura-banco.sh` y CMake.
+- `tools/compila-gui.sh`: antes de compilar hace un `rsync -a --checksum` (sin `-u`: compara
+  CONTENIDO) de `/workspace_gui` a la copia, deja el sello `.fuente.md5` en la copia y usa
+  `make x6200-gui-reconfigure` para que CMake relea el sello.
+- Identidad en el binario (lo que pide el issue, punto 2): `CMakeLists.txt` lee el sello y define
+  `X6200_FUENTE_MD5`; `src/CMakeLists.txt` lo aplica al target y `src/main.c` lo loguea al arrancar
+  (`boot_identity()`), una linea, en el log de la GUI y en `/mnt/app_logs/boot.log`.
+
+**Verificacion**:
+- **A/B del md5** (volumen privado, con el arreglo): A (`1c599025`) `521869e4bd27` contra B
+  (`5f3c52fe`) `54cd60858b97`: **distinto** (mismo estado que reproducia el bug: la copia con
+  mtime al futuro). **Reproducibilidad**: dos builds del mismo commit (`16ff4cbc`) dan
+  `b0bf91cff55b` las dos veces.
+- **Identidad embebida** (`strings` del binario ARM): `fuente: %s (x6200_gui)` y el hash
+  `1de404498d032638fa6b3c36b959ff7e` (`strings -a /b/target/usr/sbin/x6200_gui | grep 1de40449`).
+- **Banco QEMU** (gate #86, chroot y volumen privados, `RECONSTRUIR=no`): el log de arranque muestra
+  `fuente: 1de404498d032638fa6b3c36b959ff7e (x6200_gui)` (stdout del `boot_identity` y
+  `boot.log`) y coincide con el sello `.fuente.md5` del volumen
+  (`1de404498d032638fa6b3c36b959ff7e`). La GUI corrio, dibujo (captura 25.888 B / 313 colores) y
+  paso `verifica-firmware-port.py` (3/3 marcas).
+- **Estatico** `tests/check_build_identity.py`: el hash es estable y no depende del cwd; el tooling
+  usa `--checksum`; CMake y `main.c` embeben/loguean el sello.
+- **ARM cross-compile** (volumen privado): `ELF32 ARM`, 13.855.240 B, `md5 b0bf91cff55b`, pasa
+  `verifica-firmware-port.py` (3/3 marcas).
+- Gates: nativos (118 comprobaciones, 0 fallos), estaticos (10/10), determinismo del arnes (PASS),
+  `ruff`/`format`/`ty` OK, `pytest -m 'not e2e'` 227 passed, A/B `AB-BUILD165`, contracts/audit/
+  themes.
+
+**Sin fundar (anexo A)**: que la copia del volumen del QA tuviera el mtime mas nuevo que su fuente
+(el mecanismo medido lo explica; el `ls -l` de esa corrida no quedo). Tampoco queda medido cuanto
+pesa el `--checksum` en un arbol mas grande que el de esta corrida.
+

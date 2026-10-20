@@ -127,6 +127,28 @@ void boot_mark(const char *etapa) {
     }
 }
 
+/* Identidad del build (issue #165): UNA linea al arranque con el hash de las
+ * fuentes que se compilaron. El valor lo embebe CMake en tiempo de build
+ * (X6200_FUENTE_MD5, ver CMakeLists.txt) y es el mismo sello .fuente.md5 que deja
+ * tools/compila-gui.sh, asi que el QA puede comparar el sello del build con el que
+ * corre la radio SIN depender del md5 del binario (que no distingue commits). Va
+ * al log de la GUI y a boot.log (la particion DATA), que es lo que se puede leer
+ * desde la PC. Si el build no lo definio, dice "desconocido". */
+#ifndef X6200_FUENTE_MD5
+#define X6200_FUENTE_MD5 "desconocido"
+#endif
+
+static void boot_identity(void) {
+    LV_LOG_USER("fuente: %s (x6200_gui)", X6200_FUENTE_MD5);
+
+    FILE *b = fopen("/mnt/app_logs/boot.log", "a");
+
+    if (b != NULL) {
+        fprintf(b, "fuente: %s (x6200_gui)\n", X6200_FUENTE_MD5);
+        fclose(b);
+    }
+}
+
 /* --- Ultima respiracion (issue #121) -----------------------------------------
  * Cuatro caidas del equipo entero no dejaron evidencia: el log de la GUI vive
  * en tmpfs y solo se archiva en una salida ordenada, asi que un corte duro se
@@ -405,6 +427,7 @@ int main(int argc, char **argv) {
 
     crash_log_install();
     boot_mark("GUI inicio");
+    boot_identity();
 
     /* Tabla de modulos del CRASHLOG (issue #131): se arma una sola vez, antes
      * de que la GUI pueda crashear. El md5 de las .so se lee aca; el handler

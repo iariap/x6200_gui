@@ -1,5 +1,10 @@
 add_executable(${PROJECT_NAME})
 
+# El sello de las fuentes que compila este binario (issue #165): src/main.c lo
+# loguea al arrancar. Solo al target de la GUI, para que un cambio de hash no
+# recompile lvgl ni los otros targets.
+target_compile_definitions(${PROJECT_NAME} PRIVATE X6200_FUENTE_MD5="${X6200_FUENTE_MD5}")
+
 target_sources(${PROJECT_NAME} PUBLIC
     main.c main_screen.c
     styles.c spectrum.c radio.c dsp.cpp util.cpp
