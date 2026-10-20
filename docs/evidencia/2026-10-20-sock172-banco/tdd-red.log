@@ -1,0 +1,40 @@
+In file included from /tmp/opencode/sock172-out/remote_src/test_remote.cpp:41:
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp: In function ‘void* server_thread(void*)’:
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp:977:69: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+  977 |         pfd[n++] = (struct pollfd){.fd = listen_fd, .events = POLLIN};
+      |                                                                     ^
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp:978:70: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+  978 |         pfd[n++] = (struct pollfd){.fd = wake_fd[0], .events = POLLIN};
+      |                                                                      ^
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp:982:127: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+  982 |                 pfd[n++] = (struct pollfd){.fd = clients[i].fd, .events = (short)(POLLIN | (clients[i].out_len ? POLLOUT : 0))};
+      |                                                                                                                               ^
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp: In function ‘void remote_server_init()’:
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp:1132:53: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+ 1132 |     struct sockaddr_un addr = {.sun_family = AF_UNIX};
+      |                                                     ^
+In file included from /tmp/opencode/sock172-out/remote_src/test_remote.cpp:33:
+/tmp/opencode/sock172-out/remote_src/test_remote.cpp: In function ‘void test_sock_decision()’:
+/tmp/opencode/sock172-out/remote_src/test_remote.cpp:194:11: error: ‘remote_sock_should_unlink’ was not declared in this scope
+  194 |     CHECK(remote_sock_should_unlink(false, false) == true);
+      |           ^~~~~~~~~~~~~~~~~~~~~~~~~
+/home/pablo/desa/asf/state/worktrees/x6200/remote-sock-172/tests/native/test_framework.h:19:17: note: in definition of macro ‘CHECK’
+   19 |     test_check((cond), #cond, __FILE__, __LINE__)
+      |                 ^~~~
+/tmp/opencode/sock172-out/remote_src/test_remote.cpp: In function ‘int sock_listen(const char*)’:
+/tmp/opencode/sock172-out/remote_src/test_remote.cpp:205:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+  205 |     struct sockaddr_un a = {.sun_family = AF_UNIX};
+      |                                                  ^
+/tmp/opencode/sock172-out/remote_src/test_remote.cpp: In function ‘void test_sock_probe_real()’:
+/tmp/opencode/sock172-out/remote_src/test_remote.cpp:234:11: error: ‘remote_sock_attends’ was not declared in this scope
+  234 |     CHECK(remote_sock_attends(live, &exists) == false);
+      |           ^~~~~~~~~~~~~~~~~~~
+/home/pablo/desa/asf/state/worktrees/x6200/remote-sock-172/tests/native/test_framework.h:19:17: note: in definition of macro ‘CHECK’
+   19 |     test_check((cond), #cond, __FILE__, __LINE__)
+      |                 ^~~~
+/tmp/opencode/sock172-out/remote_src/test_remote.cpp:236:11: error: ‘remote_sock_should_unlink’ was not declared in this scope
+  236 |     CHECK(remote_sock_should_unlink(exists, false) == true);
+      |           ^~~~~~~~~~~~~~~~~~~~~~~~~
+/home/pablo/desa/asf/state/worktrees/x6200/remote-sock-172/tests/native/test_framework.h:19:17: note: in definition of macro ‘CHECK’
+   19 |     test_check((cond), #cond, __FILE__, __LINE__)
+      |                 ^~~~

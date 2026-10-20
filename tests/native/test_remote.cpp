@@ -186,6 +186,89 @@ static void test_mode_invalid(void) {
     cJSON_Delete(req);
 }
 
+/* --- Dueno del socket de control (issue #172) -------------------------------- */
+
+/* Decision pura: los tres casos (no existe / existe y atiende / existe y huerfano). */
+static void test_sock_decision(void) {
+    /* No existe: no hay nada que robar; unlink (no-op) + bind. */
+    CHECK(remote_sock_should_unlink(false, false) == true);
+    /* Existe y alguien atiende: instancia viva, NO robarle el socket. */
+    CHECK(remote_sock_should_unlink(true, true) == false);
+    /* Existe y nadie atiende (huerfano): unlink + bind, como hoy. */
+    CHECK(remote_sock_should_unlink(true, false) == true);
+    /* Un path ausente nunca puede "atender": la decision no depende de ese flag. */
+    CHECK(remote_sock_should_unlink(false, true) == true);
+}
+
+/* Listener AF_UNIX en `path`; devuelve el fd o -1. */
+static int sock_listen(const char *path) {
+    struct sockaddr_un a = {.sun_family = AF_UNIX};
+    int                fd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    if (fd < 0)
+        return -1;
+    unlink(path);
+    snprintf(a.sun_path, sizeof(a.sun_path), "%s", path);
+    if (bind(fd, (struct sockaddr *)&a, sizeof(a)) < 0 || listen(fd, 8) < 0) {
+        close(fd);
+        return -1;
+    }
+    return fd;
+}
+
+/* Camino real de la sonda: connect() contra un listener vivo, un huerfano y un
+ * path ausente. Es el syscall que decide, no solo la tabla de verdad. */
+static void test_sock_probe_real(void) {
+    char dir[] = "/tmp/x6200-sock172-XXXXXX";
+    char live[160], orphan[160], plain[160];
+    bool exists;
+    int  fd, ofd;
+
+    CHECK(mkdtemp(dir) != NULL);
+    snprintf(live, sizeof(live), "%s/live.sock", dir);
+    snprintf(orphan, sizeof(orphan), "%s/orphan.sock", dir);
+    snprintf(plain, sizeof(plain), "%s/plain", dir);
+
+    /* 1) no existe: ni archivo ni listener. */
+    exists = true;
+    CHECK(remote_sock_attends(live, &exists) == false);
+    CHECK(exists == false);
+    CHECK(remote_sock_should_unlink(exists, false) == true);
+
+    /* 2) existe y atiende: listener vivo. */
+    fd = sock_listen(live);
+    CHECK(fd >= 0);
+    exists = false;
+    CHECK(remote_sock_attends(live, &exists) == true);
+    CHECK(exists == true);
+    CHECK(remote_sock_should_unlink(exists, true) == false);
+
+    /* 3) existe y es huerfano: el listener se cerro y el archivo quedo. */
+    ofd = sock_listen(orphan);
+    CHECK(ofd >= 0);
+    close(ofd);
+    exists = false;
+    CHECK(remote_sock_attends(orphan, &exists) == false);
+    CHECK(exists == true);
+    CHECK(remote_sock_should_unlink(exists, false) == true);
+
+    /* 4) existe pero no es un socket: no hay a quien robarle nada. */
+    FILE *f = fopen(plain, "w");
+    CHECK(f != NULL);
+    if (f)
+        fclose(f);
+    exists = false;
+    CHECK(remote_sock_attends(plain, &exists) == false);
+    CHECK(exists == true);
+    CHECK(remote_sock_should_unlink(exists, false) == true);
+
+    close(fd);
+    unlink(live);
+    unlink(orphan);
+    unlink(plain);
+    rmdir(dir);
+}
+
 extern "C" void test_remote(void) {
     remote_wire();
 
@@ -193,4 +276,6 @@ extern "C" void test_remote(void) {
     test_mode_roundtrip();
     test_mode_state_bounds();
     test_mode_invalid();
+    test_sock_decision();
+    test_sock_probe_real();
 }
