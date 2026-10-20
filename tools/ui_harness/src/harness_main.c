@@ -481,6 +481,10 @@ int main(int argc, char **argv)
         lv_refr_now(NULL);
     }
 
+    /* Chequeos que necesitan los PIXELES ya renderizados (los handles del editor
+     * DFL no son widgets): corren sobre el framebuffer del settle. */
+    scenario_settle_pixels(&scenario);
+
     if (natural) {
         /* The natural bench runs *after* the settled full repaint above (which
          * is not measured), so every frame of the run only carries the work the

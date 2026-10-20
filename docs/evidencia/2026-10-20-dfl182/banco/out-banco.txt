@@ -1,0 +1,392 @@
+[User]	(681311.345, +681311345)	 boot_identity: fuente: 4e3e7f6d3232689a8b70824bb0f858e3 (x6200_gui) 	(in main.c line #142)
+[User]	(681311.683, +338)	 main: CRASHLOG-MOD-INIT modulos=46 exe_base=0x00400000 exe_md5=88196e442ddc6a67150da4890d9f1ed1 exe=/usr/sbin/x6200_gui (336 ms) 	(in main.c line #445)
+[Warn]	(681311.684, +1)	 lastbreath_init_from_env: LASTBREATH lastbreath v=1 up_s=0 up_ms=0 clean=0 boot=none radio=RX tx=0 app=home bat=na ev=0/4/0 last=msg-update wus=837 msg=X6200 de R1CBU v0.1.2-lu2dsx 	(in main.c line #315)
+[User]	(681311.691, +7)	 main: Display: fbdev 	(in main.c line #487)
+[User]	(681311.722, +31)	 keypad_init: Teclado del panel en /dev/input/event0 	(in keypad.c line #199)
+[User]	(681311.723, +1)	 keypad_init: Teclado del panel en /dev/input/event4 	(in keypad.c line #199)
+Home directory not accessible: Permission denied
+[Warn]	(681311.727, +4)	 audio_init_sync: pulseaudio no disponible (Connection refused): la GUI sigue, pero sin audio 	(in audio.c line #191)
+[User]	(681311.757, +30)	 cfg_params_load_item: Loaded vol=30 (pk=0) 	(in params.c line #52)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load sql 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load sql (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load sql_fm 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load sql_fm (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load pwr 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load pwr (pk=0) 	(in cfg.c line #226)
+[User]	(681311.757, +0)	 cfg_params_load_item: Loaded fft_dec=3 (pk=0) 	(in params.c line #52)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load tx_filter_low 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load tx_filter_low (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load tx_filter_high 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load tx_filter_high (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load field_boot 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load field_boot (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load voice_msg_gain 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load voice_msg_gain (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load cluster_all_bands 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load cluster_all_bands (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load cluster_order 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load cluster_order (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load cluster_column 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load cluster_column (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load wefax_align 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load wefax_align (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load wefax_tilt 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load wefax_tilt (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load wspr_tx_freq 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load wspr_tx_freq (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load wspr_tx_pct 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load wspr_tx_pct (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load wspr_upload 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load wspr_upload (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.757, +0)	 cfg_params_load_item: No results for load key_tone 	(in params.c line #77)
+[User]	(681311.757, +0)	 load_items_from_db: Can't load key_tone (pk=0) 	(in cfg.c line #226)
+[User]	(681311.757, +0)	 cfg_params_load_item: Loaded band=7 (pk=0) 	(in params.c line #52)
+[Warn]	(681311.758, +1)	 cfg_params_load_item: No results for load ant 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load ant (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load atu 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load atu (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load key_speed 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load key_speed (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load key_mode 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load key_mode (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load iambic_mode 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load iambic_mode (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load key_vol 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load key_vol (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load key_train 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load key_train (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load cwt_level 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load cwt_level (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load cwt_group 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load cwt_group (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load qsk_time 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load qsk_time (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load key_ratio 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load key_ratio (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load cw_decoder 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load cw_decoder (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load cw_tune 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load cw_tune (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load cw_decoder_snr_2 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load cw_decoder_snr_2 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load cw_decoder_snr_gist 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load cw_decoder_snr_gist (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load cw_decoder_peak_beta 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load cw_decoder_peak_beta (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load cw_decoder_noise_beta 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load cw_decoder_noise_beta (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load cw_decoder_auto 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load cw_decoder_auto (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load agc_hang 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load agc_hang (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load agc_knee 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load agc_knee (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load agc_slope 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load agc_slope (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load comp 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load comp (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load dnf 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load dnf (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load dnf_center 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load dnf_center (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load dnf_width 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load dnf_width (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load nb 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load nb (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.758, +0)	 cfg_params_load_item: No results for load nb_level 	(in params.c line #77)
+[User]	(681311.758, +0)	 load_items_from_db: Can't load nb_level (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +1)	 cfg_params_load_item: No results for load nb_width 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load nb_width (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load nr 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load nr (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load nr_level 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load nr_level (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load swrscan_linear 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load swrscan_linear (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load swrscan_span 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load swrscan_span (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load ft8_hold_freq 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load ft8_hold_freq (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_rx_en 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_rx_en (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_rx_p1 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_rx_p1 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_rx_p2 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_rx_p2 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_rx_p3 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_rx_p3 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_rx_p4 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_rx_p4 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_rx_p5 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_rx_p5 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_en 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_rx_wfm_en (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p1 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_rx_wfm_p1 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p2 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_rx_wfm_p2 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p3 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_rx_wfm_p3 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p4 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_rx_wfm_p4 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p5 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_rx_wfm_p5 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_mic_en 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_mic_en (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_mic_p1 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_mic_p1 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_mic_p2 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_mic_p2 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_mic_p3 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_mic_p3 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_mic_p4 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_mic_p4 (pk=0) 	(in cfg.c line #226)
+[Warn]	(681311.759, +0)	 cfg_params_load_item: No results for load eq_mic_p5 	(in params.c line #77)
+[User]	(681311.759, +0)	 load_items_from_db: Can't load eq_mic_p5 (pk=0) 	(in cfg.c line #226)
+[Error]	(681311.759, +0)	 cfg_init: Error during loading params 	(in cfg.c line #63)
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+[User]	(681311.769, +10)	 get_band_info_by_pk: Loading band info for id: 7 	(in band.c line #200)
+[User]	(681311.770, +1)	 cfg_band_params_load_item: Loaded vfoa_freq=14200000 (pk=7) 	(in band.c line #452)
+[User]	(681311.770, +0)	 cfg_transverter_get_shift: Can't check transverter freq, not loaded yet 	(in transverter.c line #60)
+[User]	(681311.770, +0)	 cfg_band_params_load_item: Loaded vfoa_mode=1 (pk=7) 	(in band.c line #452)
+[User]	(681311.770, +0)	 cfg_band_params_load_item: Loaded vfoa_agc=3 (pk=7) 	(in band.c line #452)
+[User]	(681311.772, +2)	 cfg_band_params_load_item: Loaded vfoa_pre=0 (pk=7) 	(in band.c line #452)
+[User]	(681311.772, +0)	 cfg_band_params_load_item: Loaded vfoa_att=0 (pk=7) 	(in band.c line #452)
+[User]	(681311.772, +0)	 cfg_band_params_load_item: Copy vfoa freq to vfob 	(in band.c line #437)
+[User]	(681311.772, +0)	 cfg_band_params_load_item: Loaded vfob_freq=14200000 (pk=7) 	(in band.c line #452)
+[User]	(681311.772, +0)	 cfg_band_params_load_item: Loaded vfob_mode=2 (pk=7) 	(in band.c line #452)
+[User]	(681311.772, +0)	 cfg_band_params_load_item: Loaded vfob_agc=3 (pk=7) 	(in band.c line #452)
+[User]	(681311.772, +0)	 cfg_band_params_load_item: Loaded vfob_pre=0 (pk=7) 	(in band.c line #452)
+[User]	(681311.772, +0)	 cfg_band_params_load_item: Loaded vfob_att=0 (pk=7) 	(in band.c line #452)
+[User]	(681311.772, +0)	 cfg_band_params_load_item: Loaded vfo=0 (pk=7) 	(in band.c line #452)
+[User]	(681311.772, +0)	 cfg_band_params_load_item: Loaded split=0 (pk=7) 	(in band.c line #452)
+[User]	(681311.772, +0)	 cfg_band_params_load_item: Loaded rfg=100 (pk=7) 	(in band.c line #452)
+[User]	(681311.772, +0)	 cfg_band_params_load_item: Loaded grid_min=-121 (pk=7) 	(in band.c line #452)
+[User]	(681311.772, +0)	 cfg_band_params_load_item: Loaded grid_max=-73 (pk=7) 	(in band.c line #452)
+[User]	(681311.774, +2)	 cfg_mode_params_load_item: Loaded filter_high=3525 (pk=1) 	(in mode.c line #134)
+[User]	(681311.774, +0)	 update_cur_high_filter: Set current high filter: 3525 	(in mode.c line #535)
+[User]	(681311.774, +0)	 cfg_mode_params_load_item: Loaded filter_low=225 (pk=1) 	(in mode.c line #134)
+[User]	(681311.774, +0)	 update_cur_low_filter: Set current low filter: 225 	(in mode.c line #509)
+[User]	(681311.774, +0)	 cfg_mode_params_load_item: Loaded freq_step=500 (pk=1) 	(in mode.c line #134)
+[User]	(681311.774, +0)	 cfg_mode_params_load_item: Loaded spectrum_factor=3 (pk=1) 	(in mode.c line #134)
+[User]	(681311.777, +3)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+[Warn]	(681312.002, +225)	 audio_set_play_vol: No se pudo preparar el mixer de 'default' 	(in audio.c line #403)
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+[Warn]	(681312.003, +1)	 audio_set_rec_vol: No se pudo preparar el mixer de 'default' 	(in audio.c line #444)
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+[User]	(681312.114, +111)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #627)
+[User]	(681312.114, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #633)
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+Can't open gpio chip 0
+[Error]	(681312.235, +121)	 gpio_safe_prepare: El GPIO no se pudo inicializar: se sigue sin él (no se tocan las líneas, que quedaron sin reservar) 	(in gpio_safe.c line #24)
+Can't open i2c: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+[Warn]	(681312.629, +394)	 audio_set_rec_vol: No se pudo preparar el mixer de 'default' 	(in audio.c line #444)
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+[Warn]	(681312.629, +0)	 audio_set_play_vol: No se pudo preparar el mixer de 'default' 	(in audio.c line #403)
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+[Error]	(681326.743, +14114)	 radio_init: La BASE no respondió: la GUI sigue sin control de la radio 	(in radio.c line #490)
+[Error]	(681326.821, +78)	 setup_nm_client: Could not create NMClient: Could not connect: No such file or directory. 	(in wifi.cpp line #397)
+
+(process:7): GLib-GObject-WARNING **: 20:01:15.291: invalid (NULL) pointer instance
+
+(process:7): GLib-GObject-CRITICAL **: 20:01:15.292: g_signal_connect_data: assertion 'G_TYPE_CHECK_INSTANCE (instance)' failed
+[User]	(681326.823, +2)	 wifi_power_off: Power off wifi/bt 	(in wifi.cpp line #103)
+[Error]	(681326.824, +1)	 cat_init: CAT: no se pudo abrir /dev/ttyS2: la GUI sigue, sin CAT 	(in cat.cpp line #1002)
+[User]	(681326.827, +3)	 qso_log_import_adif: No ADI file to import 	(in qso_log.c line #51)
+[Warn]	(681326.875, +48)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681326.876, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681326.880, +4)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681326.893, +13)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681326.893, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681326.893, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681326.893, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681326.893, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[User]	(681326.895, +2)	 boot_time_log: GUI lista: 0.0 s de uptime 	(in main.c line #343)
+[Warn]	(681326.900, +5)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681326.902, +2)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681327.847, +945)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681327.898, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681327.948, +50)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681327.999, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.004, +5)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.006, +2)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.006, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.006, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.006, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.007, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.007, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.007, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.007, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.008, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.008, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.008, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.049, +41)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.098, +49)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.599, +501)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.648, +49)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.699, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.750, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.801, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681328.851, +50)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681329.850, +999)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681329.850, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681330.849, +999)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681330.849, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681331.850, +1001)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681331.850, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681332.850, +1000)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681332.850, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681333.849, +999)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681333.850, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681334.850, +1000)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681334.850, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681337.852, +3002)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681337.852, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681338.851, +999)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681338.852, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681339.851, +999)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681339.852, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681340.852, +1000)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681340.852, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681341.852, +1000)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681341.853, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681342.855, +1002)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681342.856, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681346.353, +3497)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(681346.353, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)

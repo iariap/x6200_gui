@@ -228,22 +228,16 @@ static void draw_cb(lv_event_t *e) {
      * respuesta esquematica y no como una meseta maciza de borde a borde. */
     int32_t pass_y = top + (base - top) / 4;
 
-    int32_t band_l;
-    int32_t band_r;
-    int32_t hl;
-    int32_t hh;
+    /* UNA sola regla de orientacion (issue #182): el mismo helper dependiente del
+     * modo que usan el hit-test, el inverso del arrastre y las etiquetas. En LSB
+     * el eje se espeja (0 a la derecha, HIGH a la izquierda) y no se asume
+     * low_x < high_x: el relleno, la meseta y los faldones usan band_left/right. */
+    dfl_graph_layout_t L = dfl_graph_layout(mode, low, high, d, px0, pw);
 
-    if (dfl_mode_is_symmetric(mode)) {
-        band_l = dfl_graph_x(-high, d, px0, pw);
-        band_r = dfl_graph_x(high, d, px0, pw);
-        hl     = dfl_graph_x(0, d, px0, pw);
-        hh     = dfl_graph_x(high, d, px0, pw);
-    } else {
-        band_l = dfl_graph_x(low, d, px0, pw);
-        band_r = dfl_graph_x(high, d, px0, pw);
-        hl     = band_l;
-        hh     = band_r;
-    }
+    int32_t band_l = L.band_left;
+    int32_t band_r = L.band_right;
+    int32_t hl     = L.low_x;
+    int32_t hh     = L.high_x;
 
     /* Relleno tematico sutil de la banda pasante (no una meseta maciza). */
     lv_draw_rect_dsc_init(&rect);
@@ -271,7 +265,7 @@ static void draw_cb(lv_event_t *e) {
     b.y = base;
     lv_draw_line(draw_ctx, &line, &a, &b);
 
-    int32_t zero_x = dfl_graph_x(0, d, px0, pw);
+    int32_t zero_x = L.zero_x;
     a.x = zero_x;
     a.y = top;
     b.x = zero_x;
@@ -335,7 +329,10 @@ static void draw_cb(lv_event_t *e) {
     char       txt[16];
     lv_point_t sz;
 
-    snprintf(txt, sizeof(txt), "%d", d.min_hz);
+    /* Extremos del eje en el orden que muestra el modo: USB `0` izq / `M` der;
+     * LSB `M` izq / `0` der. Siempre magnitudes positivas en Hz (nunca MHz ni
+     * frecuencias RF negativas). */
+    snprintf(txt, sizeof(txt), "%d", L.left_hz);
     lv_txt_get_size(&sz, txt, lbl.font, 0, 0, LV_COORD_MAX, 0);
     area.x1 = px0;
     area.y1 = base + 2;
@@ -343,7 +340,7 @@ static void draw_cb(lv_event_t *e) {
     area.y2 = area.y1 + sz.y;
     lv_draw_label(draw_ctx, &lbl, &area, txt, NULL);
 
-    snprintf(txt, sizeof(txt), "%d", d.max_hz);
+    snprintf(txt, sizeof(txt), "%d", L.right_hz);
     lv_txt_get_size(&sz, txt, lbl.font, 0, 0, LV_COORD_MAX, 0);
     area.x1 = px0 + pw - sz.x;
     area.y1 = base + 2;
@@ -359,7 +356,12 @@ static void drag_apply(lv_obj_t *obj, int32_t local_x) {
     x6200_mode_t mode = subject_get_int(cfg_cur.mode);
     dfl_domain_t d    = current_domain(mode);
     int32_t      pw   = lv_obj_get_width(obj) - GRAPH_PAD_L - GRAPH_PAD_R;
-    int32_t      hz   = dfl_graph_hz(local_x, d, GRAPH_PAD_L, pw);
+
+    /* Inverso dependiente del modo (issue #182): en LSB des-espeja antes de
+     * convertir a Hz, asi mover HIGH a la derecha lo acerca a cero (HIGH
+     * disminuye) y mover LOW a la derecha tambien lo disminuye. En USB el
+     * inverso actual no cambia. */
+    int32_t hz = dfl_graph_mode_hz(mode, local_x, d, GRAPH_PAD_L, pw);
 
     if (dragging == DFL_HANDLE_LOW) {
         apply_low(dfl_quantize(hz, dfl_step_low(mode)));
@@ -389,10 +391,13 @@ static void graph_event_cb(lv_event_t *e) {
             int32_t      pw     = lv_obj_get_width(obj) - GRAPH_PAD_L - GRAPH_PAD_R;
             int32_t      low    = subject_get_int(cfg_cur.filter.low);
             int32_t      high   = subject_get_int(cfg_cur.filter.high);
-            int32_t      low_x  = dfl_graph_x(low, d, GRAPH_PAD_L, pw);
-            int32_t      high_x = dfl_graph_x(high, d, GRAPH_PAD_L, pw);
 
-            dragging = dfl_hit_test(p.x - obj->coords.x1, low_x, high_x);
+            /* Mismas coordenadas dependientes del modo que draw_cb (issue #182):
+             * en LSB el hit-test usa las x espejadas, asi tocar el handle que
+             * esta a la izquierda captura HIGH (no LOW). */
+            dfl_graph_layout_t L = dfl_graph_layout(mode, low, high, d, GRAPH_PAD_L, pw);
+
+            dragging = dfl_hit_test(p.x - obj->coords.x1, L.low_x, L.high_x);
 
             if (dragging == DFL_HANDLE_LOW && !dfl_mode_low_editable(mode)) {
                 dragging = DFL_HANDLE_HIGH;
@@ -537,7 +542,9 @@ static void on_subject_change(Subject *subj, void *user_data) {
     }
 }
 
-/* Al cambiar de modo se re-fija el dominio (C.3). */
+/* Al cambiar de modo se re-fija el dominio (C.3) y se CANCELA cualquier drag
+ * activo (issue #182): el cambio USB<->LSB espeja el eje en el mismo frame, asi
+ * que no se pueden reusar las coordenadas/handles del modo anterior. */
 static void on_mode_change(Subject *subj, void *user_data) {
     (void) subj;
     (void) user_data;
@@ -545,6 +552,7 @@ static void on_mode_change(Subject *subj, void *user_data) {
     if (expanded) {
         x6200_mode_t mode = subject_get_int(cfg_cur.mode);
 
+        dragging    = DFL_HANDLE_NONE;
         domain_span = dfl_fit_span(subject_get_int(cfg_cur.filter.low),
                                    subject_get_int(cfg_cur.filter.high));
         (void) mode;

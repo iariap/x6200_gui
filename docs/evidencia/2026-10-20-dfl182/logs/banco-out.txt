@@ -1,0 +1,21 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output-dfl173: ok
+  chroot /home/pablo/desa/asf/state/dfl182-chroot: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  buildroot: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  limpiando la GUI (dirclean): el rebuild reusa una copia propia del repo
+  reconstruyendo la GUI: el hash de los fuentes cambio y un fuente es mas nuevo que el binario
+OK: /home/pablo/desa/asf/state/dfl182-chroot/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13875308 B, 3/3 marcas)
+  respuesta: {"t":"ok"}
+  captura: /tmp/opencode/dfl182/banco/banco-home.png (197 colores distintos)
+  version: 3d8fdc51 DFL #182: registrar las fixtures dfl-mirror en la s
+  fuente: md5 4e3e7f6d3232 (src/ + lvgl/src)
+  binario: md5 88196e442ddc   qemu-cpu: cortex-a7
+  captura util (18681 bytes)
+EXIT=0

@@ -86,6 +86,11 @@ bool scenario_build(const scenario_t *scenario);
  * a pixel on its own. */
 void scenario_settle(const scenario_t *scenario);
 
+/* Fixture checks over the RENDERED framebuffer, after the settled full repaint.
+ * A fixture that needs the pixels (not just the object tree) asserts here; it
+ * never changes a pixel. Called only when the screen was really drawn. */
+void scenario_settle_pixels(const scenario_t *scenario);
+
 /* Pantalla apagada por la ruta de la ROM: la tecla POWER suelta
  * (src/keypad.c -> lv_event_send(lv_scr_act(), EVENT_KEYPAD) ->
  * main_screen_keypad_cb -> backlight_switch(), src/main_screen.c). El callback y

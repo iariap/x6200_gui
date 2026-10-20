@@ -46,6 +46,7 @@
 
 #include "autotune_ui.h"
 #include "adaptive_tuning.h"
+#include "display.h"
 #include "swr_backend.h"
 #include "cw_tune_ui.h"
 #include "virtual_time.h"
@@ -473,6 +474,7 @@ bool scenario_build(const scenario_t *scenario)
 
     if (!strcmp(scenario->screen, "dfl-editor") || !strcmp(scenario->screen, "dfl-editor-tx")
         || !strcmp(scenario->screen, "dfl-editor-interaction")
+        || !strcmp(scenario->screen, "dfl-editor-mirror")
         || !strcmp(scenario->screen, "dfl-editor-rotary0")
         || !strcmp(scenario->screen, "dfl-editor-reset")
         || !strncmp(scenario->screen, "dfl-editor-sel-", 15)) {
@@ -778,6 +780,32 @@ static lv_obj_t *find_by_user_data(lv_obj_t *root, intptr_t data)
     return NULL;
 }
 
+/* Margenes internos del area de dibujo del grafico: los MISMOS de
+ * src/dfl_inline.c (GRAPH_PAD_L/GRAPH_PAD_R). El fixture calcula con ellos la
+ * geometria viva para arrastrar sobre el handle real. */
+#define DFL_GRAPH_PAD_L 8
+#define DFL_GRAPH_PAD_R 8
+
+/* Geometria del grafico del editor para el estado VIVO: la misma funcion pura
+ * (dfl_graph_layout, src/dfl_model.h) que usa draw_cb, con el ancho real del
+ * objeto y el dominio que el editor fija al entrar/cambiar de modo. */
+static dfl_graph_layout_t dfl_live_layout(x6200_mode_t mode, int32_t low, int32_t high)
+{
+    lv_obj_t *g = find_by_user_data(lv_scr_act(), (intptr_t) DFL_UI_GRAPH);
+
+    if (!g) {
+        fprintf(stderr, "dfl-editor: no encontre el grafico en el arbol\n");
+        exit(1);
+    }
+
+    lv_obj_update_layout(lv_scr_act());
+
+    int32_t      pw = lv_obj_get_width(g) - DFL_GRAPH_PAD_L - DFL_GRAPH_PAD_R;
+    dfl_domain_t d  = dfl_domain_fit(mode, low, high);
+
+    return dfl_graph_layout(mode, low, high, d, DFL_GRAPH_PAD_L, pw);
+}
+
 static void dfl_press_ui(dfl_inline_ui_id_t id)
 {
     lv_obj_t *b = find_by_user_data(lv_scr_act(), (intptr_t) id);
@@ -798,7 +826,10 @@ static bool dfl_test_pointer(lv_point_t *out)
     return true;
 }
 
-static void dfl_drag_ui(int32_t local_x)
+/* Empuja UN evento del grafico con el punto sintetico en `local_x` (relativo al
+ * grafico). El hook queda instalado: el llamador decide cuando sacarlo, asi una
+ * secuencia PRESSED/PRESSING/RELEASED ve el mismo puntero. */
+static void dfl_graph_send_local(lv_event_code_t code, int32_t local_x)
 {
     lv_obj_t *g = find_by_user_data(lv_scr_act(), (intptr_t) DFL_UI_GRAPH);
 
@@ -812,15 +843,28 @@ static void dfl_drag_ui(int32_t local_x)
      * usuario siempre arrastra con la pantalla ya dibujada). */
     lv_obj_update_layout(lv_scr_act());
 
-    dfl_inline_pointer_hook = dfl_test_pointer;
-    dfl_test_point.x        = g->coords.x1 + local_x;
-    dfl_test_point.y        = g->coords.y1 + 10;
+    dfl_test_point.x = g->coords.x1 + local_x;
+    dfl_test_point.y = g->coords.y1 + 10;
 
-    lv_event_send(g, LV_EVENT_PRESSED, NULL);
-    lv_event_send(g, LV_EVENT_PRESSING, NULL);
-    lv_event_send(g, LV_EVENT_RELEASED, NULL);
+    lv_event_send(g, code, NULL);
+}
+
+/* Arrastre completo: captura en `from_x` y suelta en `to_x` (en la radio el dedo
+ * se mueve entre PRESSED y RELEASED). */
+static void dfl_drag_at(int32_t from_x, int32_t to_x)
+{
+    dfl_inline_pointer_hook = dfl_test_pointer;
+
+    dfl_graph_send_local(LV_EVENT_PRESSED, from_x);
+    dfl_graph_send_local(LV_EVENT_PRESSING, to_x);
+    dfl_graph_send_local(LV_EVENT_RELEASED, to_x);
 
     dfl_inline_pointer_hook = NULL;
+}
+
+static void dfl_drag_ui(int32_t local_x)
+{
+    dfl_drag_at(local_x, local_x);
 }
 
 /* Un paso del encoder de VOL: se manda el KEY_VOL_* al objeto enfocado del grupo
@@ -1095,6 +1139,195 @@ static void settle_dfl_editor(const scenario_t *scenario)
                     subject_get_int(cfg_cur.filter.high));
             exit(1);
         }
+    }
+
+    if (!strcmp(scenario->screen, "dfl-editor-mirror")) {
+        /* Espejo USB/LSB (issue #182): el fixture corre la MISMA secuencia en los
+         * dos modos y comprueba la INVERSION REAL (no que "aparezca LSB"): el
+         * hit-test y el inverso del arrastre usan las x espejadas, y los textos
+         * LOW/HIGH siguen siendo magnitudes positivas sin intercambiar labels. */
+        x6200_mode_t        mode  = subject_get_int(cfg_cur.mode);
+        bool                lsb   = dfl_mode_is_lsb(mode);
+        x6200_mode_t        modo0 = mode;
+        dfl_graph_layout_t  L     = dfl_live_layout(mode, 225, 3525);
+
+        /* El eje ya esta espejado: en LSB HIGH cae a la IZQUIERDA de LOW. */
+        if (lsb ? !(L.high_x < L.low_x) : !(L.low_x < L.high_x)) {
+            fprintf(stderr, "%s: el eje no esta espejado para el modo (low_x=%d high_x=%d)\n",
+                    scenario->name, (int) L.low_x, (int) L.high_x);
+            exit(1);
+        }
+
+        int32_t left_x  = (L.low_x < L.high_x) ? L.low_x : L.high_x;
+        int32_t right_x = (L.low_x < L.high_x) ? L.high_x : L.low_x;
+
+        /* --- 1) Hit-test: tocar el handle IZQUIERDO mueve el parametro que de
+         * verdad esta ahi (en LSB, HIGH). El otro no se toca. --- */
+        subject_set_int(cfg_cur.filter.low, 225);
+        subject_set_int(cfg_cur.filter.high, 3525);
+        dfl_drag_at(left_x, left_x);
+
+        if (lsb) {
+            if (subject_get_int(cfg_cur.filter.high) != 3500
+                || subject_get_int(cfg_cur.filter.low) != 225) {
+                fprintf(stderr, "%s: el handle izquierdo de LSB debe ser HIGH (high=%d low=%d)\n",
+                        scenario->name, subject_get_int(cfg_cur.filter.high),
+                        subject_get_int(cfg_cur.filter.low));
+                exit(1);
+            }
+        } else {
+            if (subject_get_int(cfg_cur.filter.low) != 220
+                || subject_get_int(cfg_cur.filter.high) != 3525) {
+                fprintf(stderr, "%s: el handle izquierdo de USB debe ser LOW (low=%d high=%d)\n",
+                        scenario->name, subject_get_int(cfg_cur.filter.low),
+                        subject_get_int(cfg_cur.filter.high));
+                exit(1);
+            }
+        }
+
+        /* --- 2) Direccion bidireccional en el eje espejado. Mover el handle
+         * DERECHO a la derecha: en USB (HIGH) AUMENTA; en LSB (LOW) DISMINUYE.
+         * Moverlo a la izquierda hace lo opuesto. --- */
+        subject_set_int(cfg_cur.filter.low, 225);
+        subject_set_int(cfg_cur.filter.high, 3525);
+        dfl_drag_at(right_x, right_x + 20);
+
+        if (lsb) {
+            if (!(subject_get_int(cfg_cur.filter.low) < 225)
+                || subject_get_int(cfg_cur.filter.high) != 3525) {
+                fprintf(stderr, "%s: en LSB mover LOW a la derecha debe acercarlo a cero (low=%d)\n",
+                        scenario->name, subject_get_int(cfg_cur.filter.low));
+                exit(1);
+            }
+        } else {
+            if (!(subject_get_int(cfg_cur.filter.high) > 3525)
+                || subject_get_int(cfg_cur.filter.low) != 225) {
+                fprintf(stderr, "%s: en USB mover HIGH a la derecha debe aumentar (high=%d)\n",
+                        scenario->name, subject_get_int(cfg_cur.filter.high));
+                exit(1);
+            }
+        }
+
+        subject_set_int(cfg_cur.filter.low, 225);
+        subject_set_int(cfg_cur.filter.high, 3525);
+        dfl_drag_at(right_x, right_x - 20);
+
+        if (lsb) {
+            if (!(subject_get_int(cfg_cur.filter.low) > 225)
+                || subject_get_int(cfg_cur.filter.high) != 3525) {
+                fprintf(stderr, "%s: en LSB mover LOW a la izquierda debe crecer (low=%d)\n",
+                        scenario->name, subject_get_int(cfg_cur.filter.low));
+                exit(1);
+            }
+        } else {
+            if (!(subject_get_int(cfg_cur.filter.high) < 3525)
+                || subject_get_int(cfg_cur.filter.low) != 225) {
+                fprintf(stderr, "%s: en USB mover HIGH a la izquierda debe disminuir (high=%d)\n",
+                        scenario->name, subject_get_int(cfg_cur.filter.high));
+                exit(1);
+            }
+        }
+
+        /* --- 3) Toque LEJANO (> 22 px de ambos handles): no pasa nada. --- */
+        subject_set_int(cfg_cur.filter.low, 225);
+        subject_set_int(cfg_cur.filter.high, 3525);
+        int32_t mid = (left_x + right_x) / 2;
+
+        if (mid - left_x <= 22 || right_x - mid <= 22) {
+            fprintf(stderr, "%s: los handles no dejan un punto lejano (left=%d right=%d)\n",
+                    scenario->name, (int) left_x, (int) right_x);
+            exit(1);
+        }
+        dfl_drag_at(mid, mid);
+        if (subject_get_int(cfg_cur.filter.low) != 225
+            || subject_get_int(cfg_cur.filter.high) != 3525) {
+            fprintf(stderr, "%s: un toque lejano no debe tocar el filtro (low=%d high=%d)\n",
+                    scenario->name, subject_get_int(cfg_cur.filter.low),
+                    subject_get_int(cfg_cur.filter.high));
+            exit(1);
+        }
+
+        /* --- 4) VOL: girar "aumentar" AUMENTA el valor numerico de la seleccion
+         * en USB y en LSB (la direccion del encoder NO se invierte). No toca
+         * volumen ni VFO. --- */
+        subject_set_int(cfg_cur.filter.low, 225);
+        subject_set_int(cfg_cur.filter.high, 3525);
+        dfl_press_ui(DFL_UI_HIGH_ROW);          /* selecciona HIGH */
+        int32_t      freq0 = subject_get_int(cfg_cur.fg_freq);
+        unsigned     vol0  = mock_radio_calls.change_vol;
+        int32_t      high0 = subject_get_int(cfg_cur.filter.high);
+
+        dfl_vol_ui(KEY_VOL_RIGHT_EDIT);         /* "aumentar" */
+        if (!(subject_get_int(cfg_cur.filter.high) > high0)) {
+            fprintf(stderr, "%s: VOL a la derecha debe AUMENTAR HIGH en ambos modos (%d -> %d)\n",
+                    scenario->name, (int) high0, subject_get_int(cfg_cur.filter.high));
+            exit(1);
+        }
+        if (subject_get_int(cfg_cur.fg_freq) != freq0 || mock_radio_calls.change_vol != vol0) {
+            fprintf(stderr, "%s: VOL edito el filtro y toco VFO/volumen (freq=%d vol=%u)\n",
+                    scenario->name, (int) subject_get_int(cfg_cur.fg_freq),
+                    mock_radio_calls.change_vol);
+            exit(1);
+        }
+
+        /* --- 5) rotary0 (rueda principal) sigue sintonizando y no toca filtros. --- */
+        int32_t f_before = subject_get_int(cfg_cur.fg_freq);
+        int32_t l_before = subject_get_int(cfg_cur.filter.low);
+        int32_t h_before = subject_get_int(cfg_cur.filter.high);
+
+        dfl_rotary0_ui(3);
+        if (subject_get_int(cfg_cur.fg_freq) == f_before) {
+            fprintf(stderr, "%s: rotary0 no sintonizo con el panel DFL expandido\n", scenario->name);
+            exit(1);
+        }
+        if (subject_get_int(cfg_cur.filter.low) != l_before
+            || subject_get_int(cfg_cur.filter.high) != h_before) {
+            fprintf(stderr, "%s: rotary0 toco los filtros (debe ser solo sintonia)\n", scenario->name);
+            exit(1);
+        }
+        virtual_time_advance(2500, 10);   /* ocultar la etiqueta del multiplicador */
+
+        /* --- 6) Cambio de modo con el panel ABIERTO: cancela el gesto colgado y
+         * re-espeja el eje en el mismo frame. --- */
+        subject_set_int(cfg_cur.mode, x6200_mode_usb_dig);
+        virtual_time_advance(100, 10);
+        subject_set_int(cfg_cur.filter.low, 225);
+        subject_set_int(cfg_cur.filter.high, 3525);
+
+        dfl_graph_layout_t Lu = dfl_live_layout(x6200_mode_usb_dig, 225, 3525);
+        dfl_inline_pointer_hook = dfl_test_pointer;
+        dfl_graph_send_local(LV_EVENT_PRESSED, Lu.low_x);   /* captura LOW sin soltar */
+
+        subject_set_int(cfg_cur.mode, x6200_mode_lsb_dig);
+        virtual_time_advance(100, 10);                       /* observer diferido: cancela el drag */
+
+        int32_t low_hold  = subject_get_int(cfg_cur.filter.low);
+        int32_t high_hold = subject_get_int(cfg_cur.filter.high);
+        dfl_graph_send_local(LV_EVENT_PRESSING, 460);        /* gesto colgado: no debe tocar nada */
+        dfl_graph_send_local(LV_EVENT_RELEASED, 460);
+        dfl_inline_pointer_hook = NULL;
+
+        if (subject_get_int(cfg_cur.filter.low) != low_hold
+            || subject_get_int(cfg_cur.filter.high) != high_hold) {
+            fprintf(stderr, "%s: el gesto colgado tras cambiar de modo toco el filtro (low=%d high=%d)\n",
+                    scenario->name, subject_get_int(cfg_cur.filter.low),
+                    subject_get_int(cfg_cur.filter.high));
+            exit(1);
+        }
+
+        dfl_graph_layout_t Ll = dfl_live_layout(x6200_mode_lsb_dig, low_hold, high_hold);
+        if (!(Ll.high_x < Ll.low_x)) {
+            fprintf(stderr, "%s: tras USB->LSB el eje no quedo espejado (low_x=%d high_x=%d)\n",
+                    scenario->name, (int) Ll.low_x, (int) Ll.high_x);
+            exit(1);
+        }
+
+        /* Dejar el estado como el fixture (mismo modo, mismos LOW/HIGH) para que
+         * la captura 800x480 sea la del contrato. */
+        subject_set_int(cfg_cur.mode, modo0);
+        subject_set_int(cfg_cur.filter.low, 225);
+        subject_set_int(cfg_cur.filter.high, 3525);
+        virtual_time_advance(100, 10);
     }
 }
 
@@ -1840,6 +2073,90 @@ void scenario_settle(const scenario_t *scenario)
          * VFO no quedo en la frecuencia del fixture o si el resultado no quedo congelado. */
         swr_backend_run(scenario);
     }
+}
+
+/* Chequeo sobre los PIXELES renderizados (issue #182). Corre despues del repaint
+ * completo: en la captura de las fixtures `dfl-editor-mirror` busca las dos
+ * columnas verticales de acento del grafico (los handles) y comprueba que estan
+ * en las x que pide el modelo dependiente del modo. Es la parte "dibujo" que el
+ * arbol de objetos no puede ver: los handles no son widgets, son trazos de
+ * draw_cb. */
+static int dfl_accent_run(const lv_color_t *fb, int32_t x, int32_t y1, int32_t y2, lv_color_t accent)
+{
+    int n = 0;
+
+    for (int32_t y = y1; y <= y2; y++) {
+        if (fb[(size_t) y * HARNESS_SCREEN_W + x].full == accent.full) {
+            n++;
+        }
+    }
+
+    return n;
+}
+
+static void dfl_mirror_pixel_check(const scenario_t *scenario)
+{
+    if (strcmp(scenario->screen, "dfl-editor-mirror") != 0) {
+        return;
+    }
+
+    lv_obj_t *g = find_by_user_data(lv_scr_act(), (intptr_t) DFL_UI_GRAPH);
+
+    if (!g) {
+        fprintf(stderr, "%s: no encontre el grafico para el chequeo de pixeles\n", scenario->name);
+        exit(1);
+    }
+
+    lv_area_t ga;
+    lv_obj_get_coords(g, &ga);
+
+    x6200_mode_t       mode = subject_get_int(cfg_cur.mode);
+    int32_t            low  = subject_get_int(cfg_cur.filter.low);
+    int32_t            high = subject_get_int(cfg_cur.filter.high);
+    dfl_graph_layout_t L    = dfl_live_layout(mode, low, high);
+
+    lv_color_t        accent = lv_color_hex(theme_hex(TC_accent));
+    const lv_color_t *fb     = display_framebuffer();
+
+    int32_t ytop  = ga.y1 + 4;
+    int32_t ybase = ga.y2 - 6;
+
+    /* El handle de LOW conserva su identidad aunque cambie de lado: se busca su
+     * columna en la x del modelo, no en el borde izquierdo. */
+    int32_t want[2] = { L.low_x, L.high_x };
+
+    for (int i = 0; i < 2; i++) {
+        int32_t abs_want = ga.x1 + want[i];
+        int32_t best_x   = -1;
+        int     best_n   = 0;
+
+        for (int32_t x = abs_want - 3; x <= abs_want + 3; x++) {
+            if (x < ga.x1 || x > ga.x2) {
+                continue;
+            }
+
+            int n = dfl_accent_run(fb, x, ytop, ybase, accent);
+
+            if (n > best_n) {
+                best_n = n;
+                best_x = x;
+            }
+        }
+
+        /* El handle mide ~72 px de alto: un run largo descarta la meseta
+         * (horizontal, 2 px) y los faldones (diagonales, pocos px por columna). */
+        if (best_x < abs_want - 2 || best_x > abs_want + 2 || best_n < 30) {
+            fprintf(stderr,
+                    "%s: el handle %s no esta dibujado en x=%d (mejor columna x=%d, run=%d)\n",
+                    scenario->name, (i == 0) ? "LOW" : "HIGH", (int) abs_want, (int) best_x, best_n);
+            exit(1);
+        }
+    }
+}
+
+void scenario_settle_pixels(const scenario_t *scenario)
+{
+    dfl_mirror_pixel_check(scenario);
 }
 
 /* La ruta de la ROM para apagar el display (`--display-off`): la tecla POWER
