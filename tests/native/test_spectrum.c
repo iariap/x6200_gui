@@ -734,6 +734,20 @@ static void test_filter_band_geometry(void) {
      * 48.000 Hz, W=800. A la DERECHA del VFO, NO centrado. */
     check_band("golden USB-D", 225, 3525, 48000, 800, true, 404, 459);
 
+    /* Los numeros medidos, para la evidencia (mismo calculo que el CHECK). */
+    {
+        spectrum_filter_band_t g = spectrum_filter_band(225, 3525, 48000, 800);
+        spectrum_filter_band_t m = spectrum_filter_band(-3525, -225, 48000, 800);
+        spectrum_filter_band_t a = spectrum_filter_band(-4500, 4500, 48000, 800);
+
+        printf("golden #173 USB-D from=225 to=3525 span=48000 W=800 -> x=%d..%d "
+               "(contrato 404..459, a la derecha del VFO)\n", g.left, g.right);
+        printf("golden #173 LSB-D from=-3525 to=-225 span=48000 W=800 -> x=%d..%d "
+               "(contrato 341..396, espejo)\n", m.left, m.right);
+        printf("golden #173 AM    from=-4500 to=+4500 span=48000 W=800 -> x=%d..%d "
+               "(simetrico)\n", a.left, a.right);
+    }
+
     /* Espejo LSB-D: -3525..-225 -> x341..396. */
     check_band("golden LSB-D", -3525, -225, 48000, 800, true, 341, 396);
 
