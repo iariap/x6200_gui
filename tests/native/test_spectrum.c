@@ -36,6 +36,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
+#include <limits.h>
 #include <pthread.h>
 #include <stdatomic.h>
 #include <stdio.h>
@@ -47,6 +48,7 @@
 #include "cfg/cfg.h"
 #include "meter.h"
 #include "params/params.h"
+#include "radio.h"
 #include "spectrum_stubs.h"
 #include "test_framework.h"
 
@@ -655,12 +657,227 @@ static void profile_draw_and_lock(void) {
            draw_ms * 1000.0, profile_probe_max_ms * 1000.0, data_ms * 1000.0);
 }
 
+/* ==========================================================================
+ * Geometria de la banda pasante RX a escala (issue #173, PR 1).
+ *
+ * spectrum_filter_band() es pura: se verifica el golden del contrato y los
+ * limites. La posicion sale de los bordes reales de RF (from/to) y del ancho
+ * mostrado (span), con x0 = w/2 y redondeo al entero mas cercano (en los medios,
+ * alejandose del cero): por esa regla el contrato admite +/-1 px.
+ * ========================================================================== */
+
+static void check_band(const char *what, int32_t from, int32_t to, int32_t span, int32_t w,
+                       bool visible, int32_t left, int32_t right) {
+    spectrum_filter_band_t b = spectrum_filter_band(from, to, span, w);
+
+    if (b.visible != visible || (visible && (b.left != left || b.right != right))) {
+        printf("banda %s: from=%d to=%d span=%d w=%d -> visible=%d %d..%d (esperado %d %d..%d)\n",
+               what, from, to, span, w, b.visible, b.left, b.right, visible, left, right);
+    }
+
+    CHECK(b.visible == visible);
+
+    if (visible) {
+        CHECK(b.left == left);
+        CHECK(b.right == right);
+        CHECK(b.left >= 0);
+        CHECK(b.right <= w);
+        CHECK(b.left <= b.right);
+    }
+}
+
+/* Espejo por modo de src/cfg/mode.c::update_real_filters() (la unica fuente de
+ * cfg_cur.filter.real.from/to): el test usa el mapeo DOCUMENTADO del firmware
+ * para alimentar la geometria, no para reimplementarla. */
+static void mode_real_edges(x6200_mode_t mode, int32_t low, int32_t high,
+                            int32_t *from, int32_t *to) {
+    switch (mode) {
+        case x6200_mode_lsb:
+        case x6200_mode_lsb_dig:
+            *from = -high;
+            *to   = -low;
+            break;
+
+        case x6200_mode_usb:
+        case x6200_mode_usb_dig:
+        case x6200_mode_cw:
+        case x6200_mode_cwr:
+            *from = low;
+            *to   = high;
+            break;
+
+        case x6200_mode_am:
+        case x6200_mode_sam:
+        case x6200_mode_nfm:
+        case x6200_mode_wfm:
+            *from = -high;
+            *to   = high;
+            break;
+
+        default:
+            *from = low;
+            *to   = high;
+            break;
+    }
+}
+
+static void check_mode_band(const char *what, x6200_mode_t mode, int32_t low, int32_t high,
+                            int32_t span, int32_t w, int32_t left, int32_t right) {
+    int32_t from, to;
+
+    mode_real_edges(mode, low, high, &from, &to);
+    check_band(what, from, to, span, w, true, left, right);
+}
+
+static void test_filter_band_geometry(void) {
+    /* Golden del contrato (issue #173, seccion 2): USB-D, 14.200.000 Hz, span
+     * 48.000 Hz, W=800. A la DERECHA del VFO, NO centrado. */
+    check_band("golden USB-D", 225, 3525, 48000, 800, true, 404, 459);
+
+    /* Espejo LSB-D: -3525..-225 -> x341..396. */
+    check_band("golden LSB-D", -3525, -225, 48000, 800, true, 341, 396);
+
+    /* El orden de from/to no cambia el resultado (min/max). */
+    check_band("orden invertido", 3525, 225, 48000, 800, true, 404, 459);
+
+    /* Mismo filtro, otros spans. */
+    check_band("span 50 kHz", 225, 3525, 50000, 800, true, 404, 456);
+    check_band("span 100 kHz", 225, 3525, 100000, 800, true, 402, 428);
+
+    /* Redondeo: .5 alejandose del cero. span=1600, W=800 -> 0.5 px/Hz. */
+    check_band("medio +", 1, 3, 1600, 800, true, 401, 402);
+    check_band("medio -", -3, -1, 1600, 800, true, 398, 399);
+
+    /* Division por cero / degenerados: nunca se dibuja. */
+    check_band("span 0", 225, 3525, 0, 800, false, 0, 0);
+    check_band("span negativo", 225, 3525, -48000, 800, false, 0, 0);
+    check_band("w 0", 225, 3525, 48000, 0, false, 0, 0);
+
+    /* Frecuencia fuera de vista: entera a la izquierda o a la derecha. */
+    check_band("fuera izq", -100000, -90000, 48000, 800, false, 0, 0);
+    check_band("fuera der", 90000, 100000, 48000, 800, false, 0, 0);
+
+    /* Recortes parciales y totales. */
+    check_band("recorte izq", -30000, -20000, 48000, 800, true, 0, 67);
+    check_band("recorte der", 20000, 35000, 48000, 800, true, 733, 800);
+    check_band("recorte total", -50000, 50000, 48000, 800, true, 0, 800);
+
+    /* Zoom extremo (span chico): el filtro se sale por la derecha y se recorta. */
+    check_band("zoom span 1 kHz", 225, 3525, 1000, 800, true, 580, 800);
+
+    /* Enteros con signo en los extremos: sin overflow ni UB. */
+    check_band("INT32_MIN", INT32_MIN, INT32_MIN + 1000, 48000, 800, false, 0, 0);
+    check_band("INT32_MAX", INT32_MAX - 1000, INT32_MAX, 48000, 800, false, 0, 0);
+
+    /* Espejos por modo sobre el mismo span del golden (48 kHz, W=800).
+     * USB/LSB con el filtro de la captura del owner (low=225, high=3525). */
+    check_mode_band("USB", x6200_mode_usb, 225, 3525, 48000, 800, 404, 459);
+    check_mode_band("USB-D", x6200_mode_usb_dig, 225, 3525, 48000, 800, 404, 459);
+    check_mode_band("LSB", x6200_mode_lsb, 225, 3525, 48000, 800, 341, 396);
+    check_mode_band("LSB-D", x6200_mode_lsb_dig, 225, 3525, 48000, 800, 341, 396);
+
+    /* AM/SAM/NFM/WFM: simetrico, LOW=0 desde la logica del firmware. */
+    check_mode_band("AM", x6200_mode_am, 0, 4500, 48000, 800, 325, 475);
+    check_mode_band("SAM", x6200_mode_sam, 0, 4500, 48000, 800, 325, 475);
+    check_mode_band("NFM", x6200_mode_nfm, 0, 3500, 48000, 800, 342, 458);
+    check_mode_band("WFM", x6200_mode_wfm, 0, 8000, 48000, 800, 267, 533);
+
+    /* CW/CWR: signo del firmware, LOW negativo incluido. */
+    check_mode_band("CW", x6200_mode_cw, -250, 250, 48000, 800, 396, 404);
+    check_mode_band("CWR", x6200_mode_cwr, -250, 250, 48000, 800, 396, 404);
+    check_mode_band("CW low negativo", x6200_mode_cw, -800, 200, 48000, 800, 387, 403);
+}
+
+/* El callback real dibuja la banda a escala: el relleno y las DOS lineas de
+ * borde en los px del golden, dentro del area del espectro. */
+static void test_filter_band_is_drawn_at_scale(void) {
+    spectrum_stub_reset();
+    spectrum_stub_gui_thread();
+
+    reset_frame();
+    spectrum_stub_subject_set(cfg_cur.fft_width, 48000);
+    spectrum_stub_subject_set(cfg_cur.filter.real.from, 225);
+    spectrum_stub_subject_set(cfg_cur.filter.real.to, 3525);
+    spectrum_stub_subject_set(cfg_cur.filter.bw, 3300);
+
+    spectrum_stub_clear_records();
+    spectrum_stub_draw();
+
+    /* Un relleno (rect) y dos lineas de borde, en x404..459, a la derecha del
+     * centro (x=400) y NO centradas. */
+    CHECK(spectrum_stub_rects_n == 1);
+    if (spectrum_stub_rects_n == 1) {
+        CHECK(spectrum_stub_rects[0].x1 == 404);
+        CHECK(spectrum_stub_rects[0].x2 == 459);
+    }
+
+    int band_lines = 0;
+
+    for (unsigned i = 0; i < spectrum_stub_lines_n; i++) {
+        const spectrum_stub_line_t *l = &spectrum_stub_lines[i];
+
+        if (l->color != SPECTRUM_STUB_COLOR_BAND) {
+            continue;
+        }
+
+        band_lines++;
+        CHECK(l->x1 == l->x2);                 /* verticales */
+        CHECK(l->x1 == 404 || l->x1 == 459);
+    }
+
+    CHECK(band_lines == 2);
+
+    /* El texto de BW real ("3.3k") entra en la banda y se dibuja entre las dos
+     * lineas. */
+    CHECK(spectrum_stub_labels_n == 1);
+    if (spectrum_stub_labels_n == 1) {
+        CHECK(spectrum_stub_labels[0].color == SPECTRUM_STUB_COLOR_BAND);
+        CHECK(spectrum_stub_labels[0].x1 >= 404);
+        CHECK(spectrum_stub_labels[0].x2 <= 459);
+    }
+
+    /* Los subjects son globales del stub: se restauran para no contaminar los
+     * casos de #149 que corren despues con el span por defecto (100 kHz). */
+    spectrum_stub_subject_set(cfg_cur.fft_width, 100000);
+    spectrum_stub_subject_set(cfg_cur.filter.real.from, 0);
+    spectrum_stub_subject_set(cfg_cur.filter.real.to, 3000);
+    spectrum_stub_subject_set(cfg_cur.filter.bw, 3000);
+}
+
+/* Un filtro angosto (o fuera de vista) no dibuja ni relleno ni bordes. */
+static void test_filter_band_hidden_when_out_of_view(void) {
+    spectrum_stub_reset();
+    spectrum_stub_gui_thread();
+
+    reset_frame();
+    spectrum_stub_subject_set(cfg_cur.fft_width, 48000);
+    spectrum_stub_subject_set(cfg_cur.filter.real.from, -100000);
+    spectrum_stub_subject_set(cfg_cur.filter.real.to, -90000);
+
+    spectrum_stub_clear_records();
+    spectrum_stub_draw();
+
+    CHECK(spectrum_stub_rects_n == 0);
+
+    for (unsigned i = 0; i < spectrum_stub_lines_n; i++) {
+        CHECK(spectrum_stub_lines[i].color != SPECTRUM_STUB_COLOR_BAND);
+    }
+
+    spectrum_stub_subject_set(cfg_cur.fft_width, 100000);
+    spectrum_stub_subject_set(cfg_cur.filter.real.from, 0);
+    spectrum_stub_subject_set(cfg_cur.filter.real.to, 3000);
+    spectrum_stub_subject_set(cfg_cur.filter.bw, 3000);
+}
+
 void test_spectrum(void) {
     /* spectrum_init() registra el callback de dibujo y arma los observers; los
      * casos corren despues, cada uno con el estado del stub limpio. */
     spectrum_stub_reset();
     CHECK(spectrum_init(NULL) != NULL);
 
+    test_filter_band_geometry();
+    test_filter_band_is_drawn_at_scale();
+    test_filter_band_hidden_when_out_of_view();
     test_producer_defers_lvgl_to_the_gui_thread();
     test_draw_is_a_single_generation();
     test_clear_during_draw_is_not_mixed();

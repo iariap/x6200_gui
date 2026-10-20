@@ -40,7 +40,53 @@ void mock_radio_init(void)
         .battery_cap     = 76,
         .charging        = false,
         .state           = RADIO_RX,
+        .filter_set      = false,
+        .filter_low      = 0,
+        .filter_high     = 3000,
     };
+}
+
+/* Mapeo por modo de cfg_cur.filter.real.from/to, copia fiel de
+ * src/cfg/mode.c::update_real_filters(): el fixture declara low/high del modo y
+ * el arnes publica los mismos bordes reales de RF que la radio. */
+static void apply_real_filter(void)
+{
+    int32_t from, to;
+
+    switch (mock_radio.mode) {
+        case x6200_mode_lsb:
+        case x6200_mode_lsb_dig:
+            from = -mock_radio.filter_high;
+            to   = -mock_radio.filter_low;
+            break;
+
+        case x6200_mode_usb:
+        case x6200_mode_usb_dig:
+        case x6200_mode_cw:
+        case x6200_mode_cwr:
+            from = mock_radio.filter_low;
+            to   = mock_radio.filter_high;
+            break;
+
+        case x6200_mode_am:
+        case x6200_mode_sam:
+        case x6200_mode_nfm:
+        case x6200_mode_wfm:
+            from = -mock_radio.filter_high;
+            to   = mock_radio.filter_high;
+            break;
+
+        default:
+            from = mock_radio.filter_low;
+            to   = mock_radio.filter_high;
+            break;
+    }
+
+    subject_set_int(cfg_cur.filter.low, mock_radio.filter_low);
+    subject_set_int(cfg_cur.filter.high, mock_radio.filter_high);
+    subject_set_int(cfg_cur.filter.bw, mock_radio.filter_high - mock_radio.filter_low);
+    subject_set_int(cfg_cur.filter.real.from, from);
+    subject_set_int(cfg_cur.filter.real.to, to);
 }
 
 void mock_radio_apply(void)
@@ -57,6 +103,12 @@ void mock_radio_apply(void)
     subject_set_int(cfg_cur.atu->loaded, mock_radio.atu_enabled);
     subject_set_int(cfg.atu_enabled.val, mock_radio.atu_enabled);
     subject_set_int(cfg.ant_id.val, mock_radio.ant);
+
+    /* Solo cuando el fixture declara el filtro: los fixtures historicos conservan
+     * la banda 0..3000 con la que se calibraron sus capturas. */
+    if (mock_radio.filter_set) {
+        apply_real_filter();
+    }
 }
 
 /* --- radio.h surface -------------------------------------------------------

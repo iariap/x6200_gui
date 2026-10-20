@@ -12,3 +12,4 @@
 
 extern lv_style_t spectrum_style;
 extern lv_color_t bg_color;
+extern lv_font_t  sony_14;

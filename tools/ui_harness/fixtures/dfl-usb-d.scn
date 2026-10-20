@@ -1,0 +1,41 @@
+# dfl-usb-d: banda pasante RX a escala (issue #173, PR 1).
+#
+# USB-D, 14.200.000 Hz, span 48 kHz (14.176..14.224), filtro real +225..+3525
+# (low 225 / high 3525): el caso golden del contrato. La banda se dibuja a la
+# DERECHA del VFO (x404..459), NO centrada. El arnes deriva los bordes reales de
+# RF con el mapeo de src/cfg/mode.c::update_real_filters() (mocks/mock_radio.c).
+# Ver tools/ui_harness/README.md y docs/evidencia/2026-10-20-dfl173-p1/.
+
+name dfl-usb-d
+screen main
+
+seed 173
+theme Aurora
+spectrum_filled true
+spectrum_peak true
+waterfall_center_line true
+
+frequency_hz 14200000
+tx_frequency_hz 14200000
+fft_width_hz 48000
+
+mode USB-D
+filter_low 225
+filter_high 3525
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

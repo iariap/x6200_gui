@@ -146,6 +146,15 @@ static bool apply_key(const char *key, const char *value, scenario_t *out)
         mock_radio.fft_width_hz = strtoull(value, NULL, 10);
     } else if (!strcmp(key, "mode")) {
         return parse_mode(value, &mock_radio.mode);
+    } else if (!strcmp(key, "filter_low")) {
+        /* Filtro DFL (issue #173, PR 1): low/high del modo. El arnes calcula los
+         * bordes reales de RF con el mapeo de src/cfg/mode.c::update_real_filters()
+         * (mocks/mock_radio.c), asi la banda del espectro es la de la radio. */
+        mock_radio.filter_low = (int32_t) strtol(value, NULL, 10);
+        mock_radio.filter_set = true;
+    } else if (!strcmp(key, "filter_high")) {
+        mock_radio.filter_high = (int32_t) strtol(value, NULL, 10);
+        mock_radio.filter_set  = true;
     } else if (!strcmp(key, "vfo")) {
         return parse_vfo(value, &mock_radio.vfo);
     } else if (!strcmp(key, "agc")) {

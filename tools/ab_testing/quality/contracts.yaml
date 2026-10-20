@@ -474,6 +474,32 @@ expected_changes:
     author: seten109
     until: 2027-03-31
 
+  # AB-DFL173-1 (issue #173, PR 1): la banda pasante RX a escala cambia el
+  # espectro de todos los fixtures de pantalla principal (spectrum.c) y agrega
+  # los dos ticks del filtro en el borde superior de la cascada (waterfall.c).
+  # El cambio esta confinado a esas dos regiones: la banda (relleno discreto +
+  # dos lineas de 1 px + el texto de BW) vive dentro de `espectro`, y los ticks
+  # dentro de `waterfall_ticks`. Header, S-meter, fila de frecuencia, band plan
+  # y las cinco teclas quedan byte-identicos.
+  - region: espectro
+    reason: >
+      AB-DFL173-1 (issue #173, PR 1): el espectro evoluciona el relleno de filtro
+      existente a una banda pasante a escala (relleno discreto en el rol `vfo_line`
+      + dos lineas verticales de 1 px en los bordes reales de RF + el texto del BW
+      cuando entra), calculada con cfg_cur.filter.real.from/to y cfg_cur.fft_width.
+      El unico cambio de pixeles fuera de `espectro` son los ticks del waterfall.
+    author: dfl-visual-173
+    until: 2027-10-20
+
+  - region: waterfall_ticks
+    reason: >
+      AB-DFL173-1 (issue #173, PR 1): dos ticks sutiles en el borde superior de la
+      cascada marcan el ancho del filtro RX (overlay de UI, sin tocar el buffer ni
+      el anillo de filas). Viven en los 6 px de arriba del waterfall; el resto de
+      la cascada y su linea central (#140) quedan identicos.
+    author: dfl-visual-173
+    until: 2027-10-20
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.

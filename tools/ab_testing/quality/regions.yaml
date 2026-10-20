@@ -30,6 +30,14 @@ regions:
     rect: [0, 46, 800, 114]
     description: "Espectro y franja del band plan IARU (spectrum.c, band_plan.c)"
 
+  # Los dos ticks del ancho del filtro RX sobre el borde superior de la cascada
+  # (issue #173, PR 1): overlay de UI de 6 px en el borde de arriba del waterfall
+  # (waterfall.c). La region los aisla para que un cambio de los ticks no se
+  # atribuya a toda la cascada (que la contiene) ni al reves.
+  - name: waterfall_ticks
+    rect: [0, 196, 800, 8]
+    description: "Ticks del filtro RX en el borde superior de la cascada (waterfall.c, #173)"
+
   - name: frecuencia
     rect: [0, 160, 800, 36]
     description: "Fila de frecuencia: extremos y frecuencia central (main_screen.c)"
