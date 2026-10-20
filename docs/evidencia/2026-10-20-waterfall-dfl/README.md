@@ -43,7 +43,7 @@ tools/captura-radio.sh docs/evidencia/2026-10-20-waterfall-dfl/01-cw-50.png
 - **Estado del dueño restaurado al terminar**: 7.119.914 kHz, LSB, Filter BW 1950, ATT on, página GEN.
 - Antes de capturar hubo que **relanzar la GUI** (kill -9, el daemon la relanzó) porque el socket remoto
   había quedado muerto tras el arranque: dos instancias de GUI se pisaron el archivo del socket
-  ( apuntaba a un inodo sin listener). Queda reportado como issue.
+  (`/tmp/x6200_remote.sock` apuntaba a un inodo sin listener). Queda reportado como issue.
 
 ## Uso en la wiki
 
