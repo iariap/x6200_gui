@@ -802,6 +802,161 @@ exceptions:
     author: dfl-inline-179
     until: 2027-10-20
 
+  # Presets de filtro del DFL (issue #183): las doce fixtures de las paginas
+  # A..E (Favoritos, Ajustar, Grafico, Mas, Confirmar) de los dos temas con
+  # digitos segmentados (Sprint, Cathode) traen la MISMA capa de "8 fantasma" de
+  # la fila de frecuencia de UI-017. La pagina DFL no dibuja esa fila: es la
+  # pantalla principal de fondo (la barra inferior y el chip contextual son lo
+  # unico que cambia), asi que el hallazgo es el mismo diseno ya registrado y no
+  # un texto nuevo del #183. Un waiver por fixture y por tema, como los del
+  # #173/#179: la regla no se debilita y el dia que el fantasma deje de existir
+  # (o que `layout_overlap` distinga una capa de alpha bajo de dos textos que se
+  # tapan) se retiran los trece juntos.
+  - rule: layout_overlap
+    fixture: dfl-presets-fav-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): el tema Sprint pide
+      `font_digits: dseg14`, asi que la fila de frecuencia de la pantalla de fondo
+      de la pagina A del #183 dibuja con la familia segmentada y
+      `src/main_screen.c` arma la etiqueta sombra ("88.888.888" a LV_OPA_30)
+      debajo del valor, con su misma caja. La pagina de favoritos no la toca.
+      Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-adj-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-sprint` (el tema pide `font_digits:
+      dseg14`); esta fixture captura la pagina B (Ajustar) del #183, que reusa la
+      barra del #179 y no toca la fila. Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-graph-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-sprint`; esta fixture captura la pagina
+      C (el editor inline del #179/#182), que se dibuja sobre el waterfall, no
+      sobre la fila. Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-more-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-sprint`; esta fixture captura la pagina
+      D (Mem 1/Mem 2/Guardar), que solo cambia la barra inferior. Diseno, no
+      defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-confirm-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-sprint`; esta fixture captura la pagina
+      E (Confirmar) con su chip contextual sobre el waterfall, lejos de la fila.
+      Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-assign-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-sprint`; esta fixture captura la pagina
+      F (Elegir origen) con el `Cancelar` tactil sobre el waterfall, lejos de la
+      fila. Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-fav-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): el tema Cathode pide
+      `font_digits: dseg14`, asi que la fila de frecuencia de la pantalla de fondo
+      de la pagina A del #183 dibuja con la familia segmentada y
+      `src/main_screen.c` arma la etiqueta sombra ("88.888.888" a LV_OPA_30)
+      debajo del valor, con su misma caja. La pagina de favoritos no la toca.
+      Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-adj-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-cathode`; esta fixture captura la pagina
+      B (Ajustar) del #183, que reusa la barra del #179 y no toca la fila. Diseno,
+      no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-graph-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-cathode`; esta fixture captura la pagina
+      C (el editor inline del #179/#182), que se dibuja sobre el waterfall, no
+      sobre la fila. Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-more-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-cathode`; esta fixture captura la pagina
+      D (Mem 1/Mem 2/Guardar), que solo cambia la barra inferior. Diseno, no
+      defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-confirm-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-cathode`; esta fixture captura la pagina
+      E (Confirmar) con su chip contextual sobre el waterfall, lejos de la fila.
+      Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-assign-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-cathode`; esta fixture captura la pagina
+      F (Elegir origen) con el `Cancelar` tactil sobre el waterfall, lejos de la
+      fila. Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  # Presets de filtro del DFL (issue #183), rueda principal: la fixture
+  # `dfl-presets-rotary0` es la primera del corpus que deja VISIBLE el indicador
+  # `x%.1f` de la aceleracion adaptativa (se muestra mientras se gira y se oculta
+  # solo a los 2 s, src/main_screen.c), asi que cae por primera vez bajo
+  # `layout_overlap`: el rotulo se apoya en el margen superior derecho del panel
+  # del reloj de potencia. Ver UI-018 (hallazgo nuevo, con su ficha) — la regla
+  # no se debilita y el waiver se retira cuando el indicador cambie de lugar.
+  - rule: layout_overlap
+    fixture: dfl-presets-rotary0
+    reason: >
+      UI-018 (indicador `xN` del tuning adaptativo): con la rueda girando,
+      `src/main_screen.c` muestra su etiqueta `x%.1f` en el margen superior derecho
+      del panel del reloj de potencia (`clock_style`, 209x61 alineado arriba a la
+      derecha). La caja del rotulo cae dentro de la caja de la etiqueta del reloj,
+      pero el texto del reloj va centrado y su tinta queda libre: son un overlay de
+      estado de la rueda y la leyenda del reloj, no dos textos que se tapan.
+      `layout_overlap` mide cajas, no tinta, y por eso lo reporta; se declara aca en
+      vez de relajar la regla. Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
   # Las paginas de Ajustes del esquema unico (issue #175): Operation, Display e
   # Info y las seis variantes de tema de Operation son fixtures NUEVAS, asi que
   # sus filas entran por primera vez a la regla `layout_touch_target` y reportan

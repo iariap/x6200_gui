@@ -138,6 +138,11 @@ set(GUI_SRC
     # La aplicacion por los setters vigentes (sin LVGL): la comparte el arrastre
     # del grafico y la rueda.
     ${REPO}/src/dfl_rotary.c
+    # Presets del DFL (issue #183): el catalogo/memorias/favoritos y la banda
+    # contextual. El modelo se compila aca contra el doble en memoria
+    # (mocks/mock_dfl_store.c); el SQL real lo prueba el test nativo.
+    ${REPO}/src/dfl_presets.c
+    ${REPO}/src/dfl_context.c
     # El barrido de ROE (issue #125): la ventana REAL, su motor puro de sesion y
     # el resample del chart. Los fixtures `swrscan-*` la abren por el camino del
     # firmware (main_screen_start_app(ACTION_APP_SWRSCAN)) y la manejan con el

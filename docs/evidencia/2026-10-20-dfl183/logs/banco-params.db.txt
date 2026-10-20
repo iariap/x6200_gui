@@ -1,0 +1,8 @@
+version=5
+tabla dfl_filter_memories
+tabla dfl_filter_favorites
+theme=Sunlit
+mode_params 6 filter_high=6000
+mode_params 6 filter_low=0
+mode_params 6 freq_step=5000
+mode_params 6 spectrum_factor=1

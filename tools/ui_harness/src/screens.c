@@ -25,7 +25,9 @@
 #include "buttons.h"
 #include "clock.h"
 #include "dialog.h"
+#include "dfl_context.h"
 #include "dfl_inline.h"
+#include "dfl_presets.h"
 #include "dialog_settings.h"
 #include "events.h"
 #include "info.h"
@@ -33,6 +35,7 @@
 #include "main.h"
 #include "main_screen.h"
 #include "meter.h"
+#include "msg.h"
 #include "params/params.h"
 #include "rtty.h"
 #include "signal_gen.h"
@@ -279,6 +282,14 @@ static void dfl_vol_ui(uint32_t key);
 static void dfl_esc_ui(void);
 static void settle_dfl_editor(const scenario_t *scenario);
 
+/* Utilidades de los fixtures de presets del DFL (issue #183). */
+static void dfl_keypad_ui(keypad_key_t key, keypad_state_t state);
+static void dfl_short_ui(void);
+static void dfl_cell_ui(int n, bool hold);
+static void dfl_cell_touch_ui(int n, bool hold);
+static void dfl_ctx_touch_ui(void);
+static void settle_dfl_presets(const scenario_t *scenario);
+
 bool scenario_build(const scenario_t *scenario)
 {
     if (!strcmp(scenario->screen, "main") || !strcmp(scenario->screen, "home-usb-20m")) {
@@ -463,12 +474,13 @@ bool scenario_build(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "dfl-page")) {
-        /* Pagina DFL NORMAL (issue #179, C.1): las cinco celdas de siempre
-         * (LOW/HIGH/BW con valores + Eq + Filtro grafico). Se abre con la tecla
-         * corta DFL del firmware. */
+        /* Pagina DFL MANUAL (issue #179, C.1): con el #183 es la pagina B
+         * (Ajustar), a la que se llega desde A con la celda "Ajustar". Se abre
+         * con la tecla corta DFL del firmware y se navega por la ruta real. */
         mock_keyboard_group_up();
         build_main(scenario);
-        buttons_load_page_group(buttons_group_dfl);
+        dfl_short_ui();
+        dfl_cell_ui(3, false);
         return true;
     }
 
@@ -498,8 +510,42 @@ bool scenario_build(const scenario_t *scenario)
         return true;
     }
 
-    if (!strcmp(scenario->screen, "dfl-editor-cycles")) {
-        /* 30 ciclos abrir/cerrar del editor inline con cambios de modo y
+    if (!strncmp(scenario->screen, "dfl-presets-", 12)) {
+        /* Presets de filtro del DFL (issue #183): paginas A (Favoritos), B
+         * (Ajustar), C (Grafico), D (Mas), E (Confirmar) y F (Elegir origen).
+         * El DFL se abre con la TECLA CORTA DFL del firmware (EVENT_KEYPAD ->
+         * main_screen_keypad_cb -> buttons_dfl_open()); las celdas se manejan con
+         * las teclas fisicas F1..F5 (o el toque real, en los fixtures `touch*`).
+         * Las interacciones y sus aserciones viven en settle_dfl_presets(). */
+        const char *variant = scenario->screen + 12;
+
+        mock_keyboard_group_up();
+        build_main(scenario);
+
+        if (!strcmp(variant, "nfm")) {
+            subject_set_int(cfg_cur.mode, x6200_mode_nfm);
+        }
+
+        dfl_short_ui();
+
+        if (!strcmp(variant, "adj")) {
+            dfl_cell_ui(3, false);                                  /* Ajustar -> B */
+        } else if (!strcmp(variant, "graph")) {
+            dfl_cell_ui(3, false);                                  /* A -> B */
+            dfl_cell_ui(4, false);                                  /* Grafico -> C */
+        } else if (!strcmp(variant, "more")) {
+            dfl_cell_ui(4, false);                                  /* Mas -> D */
+        } else if (!strcmp(variant, "confirm")) {
+            dfl_cell_ui(4, false);                                  /* A -> D */
+            dfl_cell_ui(2, false);                                  /* Guardar 1 -> E */
+        } else if (!strcmp(variant, "assign")) {
+            dfl_cell_ui(1, true);                                   /* hold fav 2 -> F */
+        }
+
+        return true;
+    }
+
+    if (!strcmp(scenario->screen, "dfl-editor-cycles")) {        /* 30 ciclos abrir/cerrar del editor inline con cambios de modo y
          * frecuencia entre medio, y los tres caminos de cierre (ESC fisico, la
          * quinta celda "Waterfall" y el cierre directo). Queda abierto al final:
          * el arnes captura el ultimo estado y comprueba que los Subjects/labels
@@ -1345,12 +1391,555 @@ static void settle_dfl_page(const scenario_t *scenario)
     }
 }
 
+/* --- Presets de filtro del DFL (issue #183): utilidades y aserciones ---------
+ * Todo pasa por los caminos REALES del firmware: la tecla corta DFL y las cinco
+ * teclas fisicas F1..F5 llegan como EVENT_KEYPAD a main_screen_keypad_cb; el
+ * toque real de las celdas 1-3 y del chip `Cancelar` llega como LV_EVENT_* a los
+ * objetos LVGL. El arnes corta si algo no se cumple: nunca captura otra cosa y
+ * reporta verde. */
+
+static void dfl_keypad_ui(keypad_key_t key, keypad_state_t state)
+{
+    event_keypad_t ev;
+
+    ev.key   = key;
+    ev.state = state;
+    lv_event_send(lv_scr_act(), EVENT_KEYPAD, &ev);
+}
+
+static void dfl_short_ui(void)
+{
+    dfl_keypad_ui(KEYPAD_DFL, KEYPAD_RELEASE);
+}
+
+static void dfl_cell_ui(int n, bool hold)
+{
+    static const keypad_key_t keys[BUTTONS] = { KEYPAD_F1, KEYPAD_F2, KEYPAD_F3, KEYPAD_F4, KEYPAD_F5 };
+
+    if (n < 0 || n >= BUTTONS) {
+        fprintf(stderr, "dfl-presets: celda %d fuera de rango\n", n);
+        exit(1);
+    }
+    dfl_keypad_ui(keys[n], hold ? KEYPAD_LONG : KEYPAD_RELEASE);
+}
+
+/* Toque real de una celda de la barra (ruta tactil de #183), no la funcion de
+ * negocio: manda el evento LVGL que el usuario produce. */
+static void dfl_cell_touch_ui(int n, bool hold)
+{
+    lv_obj_t *cell = buttons_cell_obj((uint8_t) n);
+
+    if (!cell) {
+        fprintf(stderr, "dfl-presets: no encontre la celda %d\n", n);
+        exit(1);
+    }
+    lv_event_send(cell, hold ? LV_EVENT_LONG_PRESSED : LV_EVENT_CLICKED, NULL);
+}
+
+/* Toque real del chip `Cancelar` de la banda contextual. */
+static void dfl_ctx_touch_ui(void)
+{
+    lv_obj_t *b = find_by_user_data(lv_scr_act(), (intptr_t) DFL_CTX_ACTION);
+
+    if (!b) {
+        fprintf(stderr, "dfl-presets: no encontre la accion de la banda contextual\n");
+        exit(1);
+    }
+    lv_event_send(b, LV_EVENT_CLICKED, NULL);
+}
+
+static const char *dfl_cell_text(int n)
+{
+    lv_obj_t *cell = buttons_cell_obj((uint8_t) n);
+
+    if (!cell) {
+        return NULL;
+    }
+
+    lv_obj_t *label = lv_obj_get_child(cell, 0);
+
+    return label ? lv_label_get_text(label) : NULL;
+}
+
+static void dfl_expect_page(const scenario_t *scenario, dfl_page_t want, const char *what)
+{
+    if (buttons_dfl_page() != want) {
+        fprintf(stderr, "%s: %s: pagina DFL %d (esperaba %d)\n", scenario->name, what,
+                (int) buttons_dfl_page(), (int) want);
+        exit(1);
+    }
+}
+
+static void dfl_expect_filter(const scenario_t *scenario, int32_t low, int32_t high, const char *what)
+{
+    if (subject_get_int(cfg_cur.filter.low) != low || subject_get_int(cfg_cur.filter.high) != high) {
+        fprintf(stderr, "%s: %s: filtro %d/%d (esperaba %d/%d)\n", scenario->name, what,
+                (int) subject_get_int(cfg_cur.filter.low), (int) subject_get_int(cfg_cur.filter.high),
+                (int) low, (int) high);
+        exit(1);
+    }
+}
+
+static void dfl_expect_cell_contains(const scenario_t *scenario, int n, const char *needle, const char *what)
+{
+    const char *text = dfl_cell_text(n);
+
+    if (text == NULL || strstr(text, needle) == NULL) {
+        fprintf(stderr, "%s: %s: la celda %d dice '%s' (esperaba '%s')\n", scenario->name, what, n,
+                text ? text : "(sin label)", needle);
+        exit(1);
+    }
+}
+
+/* Texto de la banda contextual (dfl_context.c). NULL si no esta. */
+static const char *dfl_ctx_text(void)
+{
+    lv_obj_t *l = find_by_user_data(lv_scr_act(), (intptr_t) DFL_CTX_LABEL);
+
+    return l ? lv_label_get_text(l) : NULL;
+}
+
+/* Guardar Mem 1 con el filtro actual: A -> D -> Guardar 1 -> E -> Confirmar. */
+static void dfl_save_mem1_ui(void)
+{
+    dfl_cell_ui(4, false);      /* A -> D */
+    dfl_cell_ui(2, false);      /* Guardar 1 -> E */
+    dfl_cell_ui(0, false);      /* Confirmar -> D */
+}
+
+static void settle_dfl_presets(const scenario_t *scenario)
+{
+    const char *v;
+    int32_t      freq0;
+    unsigned     vol0;
+
+    if (strncmp(scenario->screen, "dfl-presets-", 12) != 0) {
+        return;
+    }
+    v = scenario->screen + 12;
+
+    /* Ninguna pagina DFL abre ventana, popup ni marco: es la barra inferior y,
+     * a lo sumo, la banda contextual del waterfall (issue #183, prohibiciones). */
+    if (dialog_is_run()) {
+        fprintf(stderr, "%s: el DFL abrio un dialogo/ventana\n", scenario->name);
+        exit(1);
+    }
+
+    /* NFM/WFM: sin catalogo, DFL corto abre Ajustar directo. */
+    if (!strcmp(v, "nfm")) {
+        dfl_expect_page(scenario, DFL_PAGE_ADJUST, "NFM: DFL corto abre Ajustar");
+        return;
+    }
+
+    /* Variantes de CAPTURA de B..F: el builder ya dejo la pagina pedida. */
+    if (!strcmp(v, "adj")) {
+        dfl_expect_page(scenario, DFL_PAGE_ADJUST, "pagina B");
+        return;
+    }
+    if (!strcmp(v, "graph")) {
+        dfl_expect_page(scenario, DFL_PAGE_GRAPH, "pagina C");
+        return;
+    }
+    if (!strcmp(v, "more")) {
+        dfl_expect_page(scenario, DFL_PAGE_MORE, "pagina D");
+        return;
+    }
+    if (!strcmp(v, "confirm")) {
+        dfl_expect_page(scenario, DFL_PAGE_CONFIRM, "pagina E");
+        if (!dfl_context_visible()) {
+            fprintf(stderr, "%s: la confirmacion no muestra su contexto\n", scenario->name);
+            exit(1);
+        }
+        return;
+    }
+    if (!strcmp(v, "assign")) {
+        dfl_expect_page(scenario, DFL_PAGE_ASSIGN, "pagina F");
+        if (!dfl_context_visible()) {
+            fprintf(stderr, "%s: la asignacion no muestra su contexto\n", scenario->name);
+            exit(1);
+        }
+        return;
+    }
+
+    /* El resto abre en A (Favoritos). */
+    dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "DFL corto desde Home abre Favoritos");
+
+    if (!strcmp(v, "fav")) {
+        /* Capturas de A en los seis temas: nada se aplico solo (el filtro del
+         * fixture queda intacto) y el chip de contexto solo aparece si el par no
+         * coincide con ningun favorito. */
+        if (subject_get_int(cfg_cur.filter.low) == 100 && subject_get_int(cfg_cur.filter.high) == 3500) {
+            dfl_expect_cell_contains(scenario, 0, "Wide", "favorito 1 = preset 1");
+        }
+        return;
+    }
+
+    if (!strcmp(v, "activo")) {
+        /* El par del fixture ES el del favorito 1: marcado, sin `Personalizado`. */
+        if (!lv_obj_has_state(buttons_cell_obj(0), LV_STATE_CHECKED)) {
+            fprintf(stderr, "%s: el favorito que coincide no quedo marcado\n", scenario->name);
+            exit(1);
+        }
+        if (lv_obj_has_state(buttons_cell_obj(1), LV_STATE_CHECKED)) {
+            fprintf(stderr, "%s: hay mas de un favorito marcado\n", scenario->name);
+            exit(1);
+        }
+        if (dfl_context_visible()) {
+            fprintf(stderr, "%s: con un favorito que coincide no debe aparecer `Personalizado`\n",
+                    scenario->name);
+            exit(1);
+        }
+        return;
+    }
+
+    if (!strcmp(v, "custom")) {
+        /* Ningun favorito coincide: sin marca falsa y `Personalizado` visible. */
+        for (int i = 0; i < 3; i++) {
+            if (lv_obj_has_state(buttons_cell_obj(i), LV_STATE_CHECKED)) {
+                fprintf(stderr, "%s: se marco un favorito que no coincide\n", scenario->name);
+                exit(1);
+            }
+        }
+        if (!dfl_context_visible()) {
+            fprintf(stderr, "%s: falta el rotulo `Personalizado`\n", scenario->name);
+            exit(1);
+        }
+        return;
+    }
+
+    if (!strcmp(v, "digi")) {
+        /* USB-D: el catalogo es el de DIGI (3400/2900/600), no el de SSB. */
+        dfl_expect_cell_contains(scenario, 0, "3400 Hz", "favorito 1 de DIGI");
+        dfl_expect_cell_contains(scenario, 1, "2900 Hz", "favorito 2 de DIGI");
+        dfl_expect_cell_contains(scenario, 2, "Focus", "favorito 3 de DIGI");
+        dfl_expect_cell_contains(scenario, 2, "600 Hz", "favorito 3 de DIGI");
+        return;
+    }
+
+    if (!strcmp(v, "apply")) {
+        freq0 = subject_get_int(cfg_cur.fg_freq);
+
+        dfl_cell_ui(0, false);      /* un toque: aplica Wide 100/3400 */
+
+        dfl_expect_filter(scenario, 100, 3400, "un toque aplica el preset");
+        if (subject_get_int(cfg_cur.filter.bw) != 3300) {
+            fprintf(stderr, "%s: el BW no se derivo del par (bw=%d)\n", scenario->name,
+                    (int) subject_get_int(cfg_cur.filter.bw));
+            exit(1);
+        }
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "tras aplicar, A sigue abierta");
+        if (subject_get_int(cfg_cur.fg_freq) != freq0) {
+            fprintf(stderr, "%s: aplicar un preset movio el VFO (%d -> %d)\n", scenario->name,
+                    (int) freq0, (int) subject_get_int(cfg_cur.fg_freq));
+            exit(1);
+        }
+        if (!lv_obj_has_state(buttons_cell_obj(0), LV_STATE_CHECKED)) {
+            fprintf(stderr, "%s: el favorito aplicado no quedo marcado\n", scenario->name);
+            exit(1);
+        }
+        dfl_expect_cell_contains(scenario, 0, "3300 Hz", "favorito 1 tras aplicar");
+        return;
+    }
+
+    if (!strcmp(v, "touch")) {
+        dfl_cell_touch_ui(0, false);    /* toque REAL de la celda 1 */
+
+        dfl_expect_filter(scenario, 100, 3400, "el toque de la celda aplica");
+        return;
+    }
+
+    if (!strcmp(v, "touch-hold")) {
+        dfl_cell_touch_ui(0, true);     /* hold REAL de la celda 1 */
+
+        dfl_expect_page(scenario, DFL_PAGE_ASSIGN, "el hold abre Elegir origen");
+        if (subject_get_int(cfg_cur.filter.low) == 100 && subject_get_int(cfg_cur.filter.high) == 3400) {
+            fprintf(stderr, "%s: el hold aplico el preset (no debe)\n", scenario->name);
+            exit(1);
+        }
+        return;
+    }
+
+    if (!strcmp(v, "save")) {
+        dfl_expect_filter(scenario, 225, 3525, "filtro del fixture antes de guardar");
+        dfl_save_mem1_ui();
+
+        dfl_expect_page(scenario, DFL_PAGE_MORE, "tras confirmar se vuelve a Mas");
+        if (!dfl_presets_memory_present(DFL_FAMILY_SSB, 1)) {
+            fprintf(stderr, "%s: Mem 1 no quedo guardada\n", scenario->name);
+            exit(1);
+        }
+        dfl_expect_cell_contains(scenario, 0, "3300 Hz", "Mem 1 con el par guardado");
+
+        /* Volver a abrir la confirmacion de la MISMA ranura: el contexto tiene
+         * que advertir la sobrescritura antes de permitir Confirmar. */
+        dfl_cell_ui(2, false);
+        dfl_expect_page(scenario, DFL_PAGE_CONFIRM, "segunda confirmacion de Mem 1");
+        if (dfl_ctx_text() == NULL || strstr(dfl_ctx_text(), "Se reemplazara") == NULL) {
+            fprintf(stderr, "%s: no se advierte la sobrescritura (contexto: '%s')\n", scenario->name,
+                    dfl_ctx_text() ? dfl_ctx_text() : "(sin banda)");
+            exit(1);
+        }
+        dfl_cell_ui(1, false);      /* Cancelar -> D, sin escribir */
+        dfl_expect_page(scenario, DFL_PAGE_MORE, "Cancelar vuelve a Mas");
+        return;
+    }
+
+    if (!strcmp(v, "mode-change")) {
+        /* Cambiar de familia en plena Asignar/Confirmar cancela la operacion sin
+         * persistir ni aplicar; la misma familia no toca la pagina. */
+        dfl_cell_ui(0, true);               /* hold favorito 1 -> F */
+        dfl_expect_page(scenario, DFL_PAGE_ASSIGN, "el hold abre Elegir origen");
+
+        subject_set_int(cfg_cur.mode, x6200_mode_usb_dig);   /* SSB -> DIGI */
+        virtual_time_advance(60, 10);                        /* el observer diferido */
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "cambio de familia cancela Asignar y va a A");
+
+        subject_set_int(cfg_cur.mode, x6200_mode_lsb_dig);   /* USB-D -> LSB-D: misma familia */
+        virtual_time_advance(60, 10);
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "misma familia no cambia la pagina");
+
+        dfl_cell_ui(4, false);              /* A -> D */
+        dfl_cell_ui(2, false);              /* Guardar 1 -> E */
+        dfl_expect_page(scenario, DFL_PAGE_CONFIRM, "Guardar 1 abre la confirmacion");
+
+        subject_set_int(cfg_cur.mode, x6200_mode_am);        /* DIGI -> AM */
+        virtual_time_advance(60, 10);
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "cambio de familia cancela Confirmar");
+        if (dfl_presets_memory_present(DFL_FAMILY_DIGI, 1) || dfl_presets_memory_present(DFL_FAMILY_AM, 1)) {
+            fprintf(stderr, "%s: el cambio de modo escribio una memoria\n", scenario->name);
+            exit(1);
+        }
+
+        subject_set_int(cfg_cur.mode, x6200_mode_nfm);       /* AM -> NFM: sin catalogo */
+        virtual_time_advance(60, 10);
+        dfl_expect_page(scenario, DFL_PAGE_ADJUST, "familia sin catalogo -> Ajustar");
+        return;
+    }
+
+    if (!strcmp(v, "save-cancel")) {
+        dfl_cell_ui(4, false);      /* A -> D */
+        dfl_cell_ui(2, false);      /* Guardar 1 -> E */
+        dfl_expect_page(scenario, DFL_PAGE_CONFIRM, "Guardar 1 abre la confirmacion");
+        dfl_cell_ui(1, false);      /* Cancelar -> D, sin escribir */
+
+        dfl_expect_page(scenario, DFL_PAGE_MORE, "Cancelar vuelve a Mas");
+        if (dfl_presets_memory_present(DFL_FAMILY_SSB, 1)) {
+            fprintf(stderr, "%s: Cancelar escribio la memoria\n", scenario->name);
+            exit(1);
+        }
+        return;
+    }
+
+    if (!strcmp(v, "save-fail")) {
+        mock_dfl_store_fail(true);
+        dfl_save_mem1_ui();
+        mock_dfl_store_fail(false);
+
+        if (dfl_presets_memory_present(DFL_FAMILY_SSB, 1)) {
+            fprintf(stderr, "%s: el fallo de escritura quedo como guardado\n", scenario->name);
+            exit(1);
+        }
+        /* El bus de eventos es mock en el arnes (el overlay de mensajes no se
+         * dibuja): el "feedback veraz" se lee del seam que marca el camino
+         * tomado. Nunca OK si la fila no entro. */
+        if (buttons_dfl_last_save() != DFL_SAVE_FEEDBACK_FAILED) {
+            fprintf(stderr, "%s: el guardado fallido no se informo como fallo (%d)\n", scenario->name,
+                    (int) buttons_dfl_last_save());
+            exit(1);
+        }
+        dfl_expect_page(scenario, DFL_PAGE_CONFIRM, "ante el fallo se queda en Confirmar");
+        return;
+    }
+
+    if (!strcmp(v, "assign-ok")) {
+        int32_t low0;
+
+        dfl_save_mem1_ui();                 /* Mem 1 con el par del fixture */
+        dfl_cell_ui(4, false);              /* Volver -> A */
+        low0 = subject_get_int(cfg_cur.filter.low);
+
+        dfl_cell_ui(0, true);               /* hold favorito 1 -> F */
+        dfl_expect_page(scenario, DFL_PAGE_ASSIGN, "el hold abre Elegir origen");
+        dfl_cell_ui(3, false);              /* Mem 1 como fuente -> A */
+
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "elegir la fuente vuelve a A");
+        if (dfl_presets_favorite_source(DFL_FAMILY_SSB, 1) != DFL_SRC_MEM_1) {
+            fprintf(stderr, "%s: el favorito no quedo enlazado a Mem 1\n", scenario->name);
+            exit(1);
+        }
+        if (subject_get_int(cfg_cur.filter.low) != low0) {
+            fprintf(stderr, "%s: reasignar cambio el filtro\n", scenario->name);
+            exit(1);
+        }
+        dfl_expect_cell_contains(scenario, 0, "Mem 1", "la etiqueta del favorito reasignado");
+        return;
+    }
+
+    if (!strcmp(v, "assign-cancel")) {
+        dfl_cell_ui(0, true);               /* hold favorito 1 -> F */
+        dfl_expect_page(scenario, DFL_PAGE_ASSIGN, "el hold abre Elegir origen");
+        dfl_ctx_touch_ui();                 /* toque REAL de Cancelar */
+
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "Cancelar vuelve a A");
+        if (dfl_presets_favorite_source(DFL_FAMILY_SSB, 1) != DFL_SRC_FACTORY_1) {
+            fprintf(stderr, "%s: Cancelar escribio el enlace del favorito\n", scenario->name);
+            exit(1);
+        }
+        return;
+    }
+
+    if (!strcmp(v, "nav")) {
+        dfl_cell_ui(3, false);
+        dfl_expect_page(scenario, DFL_PAGE_ADJUST, "A -> Ajustar");
+        dfl_esc_ui();
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "ESC en Ajustar vuelve a A");
+
+        dfl_cell_ui(4, false);
+        dfl_expect_page(scenario, DFL_PAGE_MORE, "A -> Mas");
+        dfl_esc_ui();
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "ESC en Mas vuelve a A");
+
+        dfl_cell_ui(3, false);
+        dfl_cell_ui(4, false);
+        dfl_expect_page(scenario, DFL_PAGE_GRAPH, "Ajustar -> Grafico");
+        dfl_esc_ui();
+        dfl_expect_page(scenario, DFL_PAGE_ADJUST, "ESC en Grafico contrae a Ajustar");
+        dfl_short_ui();
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "DFL corto desde Ajustar vuelve a A");
+
+        dfl_cell_ui(3, false);
+        dfl_cell_ui(4, false);
+        dfl_short_ui();
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "DFL corto desde Grafico contrae y va a A");
+
+        dfl_cell_ui(0, true);
+        dfl_short_ui();
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "DFL corto desde Elegir origen vuelve a A");
+
+        dfl_cell_ui(4, false);
+        dfl_cell_ui(2, false);
+        dfl_expect_page(scenario, DFL_PAGE_CONFIRM, "Guardar 1 abre la confirmacion");
+        dfl_esc_ui();
+        dfl_expect_page(scenario, DFL_PAGE_MORE, "ESC en Confirmar vuelve a Mas");
+        dfl_short_ui();
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "DFL corto desde Mas vuelve a A");
+
+        /* ESC en A restaura la barra anterior (Home general). */
+        dfl_esc_ui();
+        if (buttons_dfl_active()) {
+            fprintf(stderr, "%s: ESC en A no salio del DFL\n", scenario->name);
+            exit(1);
+        }
+        return;
+    }
+
+    if (!strcmp(v, "cycles")) {
+        for (int i = 0; i < 30; i++) {
+            subject_set_int(cfg_cur.mode, (i % 2) ? x6200_mode_lsb : x6200_mode_usb);
+            subject_set_int(cfg_cur.fg_freq, 7100000 + i * 1000);
+
+            dfl_short_ui();                 /* entra (o queda) en A */
+            dfl_cell_ui(0, false);          /* aplica favorito 1 */
+            dfl_save_mem1_ui();             /* A->D->E->Confirmar -> D */
+            dfl_cell_ui(4, false);          /* Volver -> A */
+            dfl_cell_ui(1, true);           /* hold -> F */
+            dfl_cell_ui(3, false);          /* Mem 1 -> A */
+            dfl_cell_ui(3, false);          /* Ajustar -> B */
+            dfl_cell_ui(4, false);          /* Grafico -> C */
+            dfl_esc_ui();                   /* C -> B */
+            dfl_short_ui();                 /* B -> A */
+
+            /* Salir a otra pagina principal y volver a entrar. */
+            dfl_keypad_ui(KEYPAD_GEN, KEYPAD_RELEASE);
+            if (buttons_dfl_active()) {
+                fprintf(stderr, "%s: GEN no salio del DFL (iteracion %d)\n", scenario->name, i);
+                exit(1);
+            }
+        }
+
+        subject_set_int(cfg_cur.mode, x6200_mode_usb);
+        dfl_short_ui();
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "30 ciclos: A abierta al final");
+        return;
+    }
+
+    if (!strcmp(v, "tx")) {
+        /* El fixture arma `rxtx tx` ANTES de main_screen(): el estado real de la
+         * radio es TX, igual que si el operador entrara al DFL transmitiendo (no
+         * hace falta el evento: el bus es mock en el arnes). */
+        if (!lv_obj_has_state(buttons_cell_obj(0), LV_STATE_DISABLED)) {
+            fprintf(stderr, "%s: en TX el favorito no quedo deshabilitado\n", scenario->name);
+            exit(1);
+        }
+
+        /* Y no aplica por mas que se la toque. */
+        dfl_cell_ui(0, false);
+        if (subject_get_int(cfg_cur.filter.low) == 100 && subject_get_int(cfg_cur.filter.high) == 3400) {
+            fprintf(stderr, "%s: en TX el preset se aplico igual\n", scenario->name);
+            exit(1);
+        }
+
+        /* La navegacion sigue operativa: Volver a A y Ajustar siguen andando. */
+        dfl_cell_ui(3, false);
+        dfl_expect_page(scenario, DFL_PAGE_ADJUST, "en TX la navegacion sigue");
+        dfl_esc_ui();
+        dfl_expect_page(scenario, DFL_PAGE_FAVORITES, "en TX ESC sigue andando");
+        return;
+    }
+
+    if (!strcmp(v, "rotary0")) {
+        freq0 = subject_get_int(cfg_cur.fg_freq);
+
+        dfl_cell_ui(0, false);              /* aplica Wide */
+        dfl_rotary0_ui(1);                  /* la rueda principal sigue sintonizando */
+
+        if (subject_get_int(cfg_cur.fg_freq) == freq0) {
+            fprintf(stderr, "%s: rotary0 no movio la frecuencia\n", scenario->name);
+            exit(1);
+        }
+        dfl_expect_filter(scenario, 100, 3400, "rotary0 no toca el filtro aplicado");
+        return;
+    }
+
+    if (!strcmp(v, "vol")) {
+        /* En el grafico (C) el encoder VOL edita el parametro seleccionado y no
+         * toca frecuencia ni volumen. */
+        dfl_cell_ui(3, false);              /* A -> B */
+        dfl_cell_ui(4, false);              /* B -> C */
+        dfl_expect_page(scenario, DFL_PAGE_GRAPH, "el grafico esta expandido");
+
+        freq0 = subject_get_int(cfg_cur.fg_freq);
+        vol0  = mock_radio_calls.change_vol;
+
+        dfl_vol_ui(KEY_VOL_RIGHT_EDIT);     /* LOW 225 -> 230 */
+
+        if (subject_get_int(cfg_cur.filter.low) != 230) {
+            fprintf(stderr, "%s: VOL en el grafico no edito LOW (low=%d)\n", scenario->name,
+                    (int) subject_get_int(cfg_cur.filter.low));
+            exit(1);
+        }
+        if (subject_get_int(cfg_cur.fg_freq) != freq0) {
+            fprintf(stderr, "%s: VOL en el grafico movio la frecuencia\n", scenario->name);
+            exit(1);
+        }
+        if (mock_radio_calls.change_vol != vol0) {
+            fprintf(stderr, "%s: VOL en el grafico cambio el volumen\n", scenario->name);
+            exit(1);
+        }
+        return;
+    }
+
+    fprintf(stderr, "dfl-presets: variante desconocida '%s'\n", v);
+    exit(1);
+}
+
 void scenario_settle(const scenario_t *scenario)
 {
     settle_waterfall_center_line(scenario);
     settle_waterfall_filter_ticks(scenario);
     settle_dfl_editor(scenario);
     settle_dfl_page(scenario);
+    settle_dfl_presets(scenario);
 
     /* CB 27 MHz (issues #146/#169): lo que cada fixture significa. La celda VFO de
      * la barra tiene que mostrar el canal, no el rotulo VFO-A/SPL-B; y en la fila

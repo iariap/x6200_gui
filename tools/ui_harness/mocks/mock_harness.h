@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <stdbool.h>
+
 /* mocks/mock_params.c: fills params_t with the values the layout needs. */
 void mock_params_init(void);
 
@@ -39,3 +41,10 @@ mock_audio_setter_t mock_audio_last_setter(void);
 float               mock_audio_last_db(void);
 int                 mock_audio_calls(mock_audio_setter_t which);
 void                mock_audio_reset(void);
+
+/* mocks/mock_dfl_store.c: doble en memoria del almacen de presets del DFL
+ * (issue #183). El arnes no tiene params.db; el SQL real lo cubre el test
+ * nativo. `mock_dfl_store_fail(true)` fuerza el fallo de escritura para el
+ * fixture del feedback veraz. */
+void mock_dfl_store_reset(void);
+void mock_dfl_store_fail(bool on);

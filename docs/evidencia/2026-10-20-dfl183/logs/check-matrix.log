@@ -1,0 +1,41 @@
+==> [check] native tests (tests/native/run_native_tests.sh)
+    ok
+==> [check] check_cfg_fills
+    ok
+==> [check] check_actions
+    ok
+==> [check] check_settings_focus
+    ok
+==> [check] check_apps_menu
+    ok
+==> [check] check_app_handlers
+    ok
+==> [check] check_manual_apps
+    ok
+==> [check] check_wcag
+    ok
+==> [check] check_cw_tune_feed
+    ok
+==> [check] check_build_identity
+    ok
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [check] ruff check (ab_testing)
+    ok
+==> [check] ruff format --check (ab_testing)
+    ok
+==> [check] pytest -m 'not e2e' (ab_testing)
+    ok
+==> [check] bash -n tests/native/run_native_tests.sh
+    ok
+==> [check] harness determinism gate
+    ok
+==> [check] banco QEMU: preflight (tools/captura-banco.sh --check)
+    ok
+==> [check] banco QEMU: params.db generado (idempotencia del rebuild)
+    ok (borrado el params.db generado):
+    /b/build/x6200-gui-custom/params.db
+==> [check] banco QEMU: captura de humo (home)
+    ok
+      captura: /tmp/banco-qemu-home.png (11469 colores distintos)
+      version: 7dc117e5 DFL #183: evidencia (capturas A..F, banco QEMU, A/B
+      binario: md5 fd864a791cb5   qemu-cpu: cortex-a7

@@ -29,6 +29,9 @@ target_sources(${PROJECT_NAME} PUBLIC
     dialog_eq.cpp
     dfl_inline.c
     dfl_rotary.c
+    dfl_presets.c
+    dfl_presets_store.c
+    dfl_context.c
     adaptive_tuning.c
     autotune.c autotune_ui.c
     visual_policy.c

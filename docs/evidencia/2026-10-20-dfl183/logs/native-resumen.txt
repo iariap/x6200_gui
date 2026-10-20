@@ -1,0 +1,20 @@
+== CW tune: analisis estatico (gcc -fanalyzer) ==
+35 comprobaciones, 0 fallos
+--
+== Spectrum: analisis estatico (gcc -fanalyzer) ==
+1018 comprobaciones, 0 fallos
+--
+== Editor DFL: analisis estatico (gcc -fanalyzer) ==
+130 comprobaciones, 0 fallos
+--
+== Editor DFL: analisis estatico (gcc -fanalyzer) ==
+68 comprobaciones, 0 fallos
+--
+== Presets DFL: analisis estatico (gcc -fanalyzer) ==
+175 comprobaciones, 0 fallos
+--
+== CB 27 MHz: analisis estatico (gcc -fanalyzer) ==
+62 comprobaciones, 0 fallos
+--
+== Control remoto: analisis estatico (gcc -fanalyzer) ==
+138 comprobaciones, 0 fallos

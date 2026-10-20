@@ -30,6 +30,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
 |---|---|---|---|---|---|---|
+| 20/10 18:01 (hora host) | (sin radio; ARM **`fd864a791cb5`**, 13.899.984 B; fuente `34bea401…`) | `a0fa0250` (#183) | — | — | 0 | **DFL presets de filtro: gates de host + arnés + banco QEMU** ✓ (sin desplegar, sin flashear y **sin transmitir**): nativos **47.585 comprobaciones, 0 fallos** (`test_dfl_presets` 175 + migración `_5` 62), estáticos **11 OK**, determinismo **PASS** (196 fixtures × 2, PNG idénticos), ruff/format/ty/pytest OK (incl. **13 e2e**), arnés **196 fixtures, 0 fallos** (54 nuevos), `--inspect` **2.994 labels sin truncado ni glyphs faltantes**, A/B **`AB-DFL183` PASS** (140/142 escenarios idénticos; 6 `dfl-page-tema-*` explicados), y el banco muestra **A/B/C/D/E** con el gate #86 **3/3 marcas** y la base del chroot migrada a `version=5`. **Validación física: pendiente del owner** (no bloquea el PR). Evidencia: [`2026-10-20-dfl183/`](evidencia/2026-10-20-dfl183/README.md) |
 | 19/10 ~15:2x (hora radio) | GUI **`67387bfc4391`** (13.849.516 B; ROM SD `c640645d810c`; **desplegado por otra sesión** a las 15:18, no por esta QA) | `02090454` (#154) | **CB TX cualitativo (teclado CW)** | (no corrido) | 2 GUI (#131) + radio caída (#121) | **TX en CB ✓ / interlock ✗ / 10 m ✓**: con `cw_send` (teclado CW) el equipo transmite en **27.185** (CB C, CH 19) y **28.074** (10 m), pero el **interlock NO lo bloquea** en **26.515** (CB B, fuera del SBC): `tx:true`, sin `TX blocked` → el keyer CW usa `radio_set_morse_key()` y **no** pasa por `radio_set_ptt()` (#146 §7.2). Potencia real **NO medida** (sin wattmeter; readback `pwr` roto #157). Evidencia: [`2026-10-19-cb-tx-cualitativo/README.md`](evidencia/2026-10-19-cb-tx-cualitativo/README.md) |
 | 19/10 11:36 (hora radio 14:36 UTC) | GUI **`9a094c421b0e`** (13.844.268 B; ROM SD `c640645d810c`) | `1e3a1e4` | (no corrido) | — | 0 | **F0 CB 27 MHz PARCIAL** ✓✗: **el baseband/MCU NO bloquea el TX en 27 MHz** (medido: `tx:true` y barrido de ROE forzado a 0,1 W con **43/51 muestras entre 26,935 y 27,435 MHz**, min 1,0, alrededor de 1,1 en 27.185). **La F0 NO puede ser PASS**: potencia real y armónicos **NO medidos** (sin carga fantasma ni instrumentos); AM/FM a potencia configurada y PTT del micrófono **no medidos**. Radio restaurada (27.185 MHz LSB, RX, vol 0, misma GUI). Evidencia: [`2026-10-19-f0-cb-tx/README.md`](evidencia/2026-10-19-f0-cb-tx/README.md) |
 | 19/10 ~10:40 (hora host) | (sin radio; ARM **4893b8f39bf3**, 13.783.700 B) | `ade36bbb` (#146) | — | — | 0 | **CB 27 MHz: gates de host + arnés + banco QEMU** ✓ (sin desplegar, sin flashear y **sin transmitir**): nativos 0 fallos (RED→GREEN de `test_cb`, 85 comprobaciones), `check_wcag`/`check_cfg_fills`/`check_actions` OK, determinismo PASS, ruff/format/ty/pytest (incl. 13 e2e) OK, A/B `AB-CB146` PASS (B=`ade36bbb`), y el banco muestra `CH 19`/`CH --`/`CH 23`/`CH 24` con `tx=false`. **F0 (RF real) requiere radio**. Evidencia: [`2026-10-19-cb-27mhz-146/`](evidencia/2026-10-19-cb-27mhz-146/README.md) |
@@ -1223,6 +1224,46 @@ Evidencia: [`evidencia/2026-10-18-cb-27mhz-146/README.md`](evidencia/2026-10-18-
 
 **No medido (requires-radio):** RF real en 27 MHz, potencia y armónicos con carga fantasma, PTT
 del micrófono y ATU. El TX **no** queda declarado validado.
+
+---
+
+## 20/10 18:01 (hora host) — presets de filtro del DFL (#183): binario ARM `fd864a791cb5`
+
+Rama `factory/dfl-presets-183` sobre el trunk `26c8e8e7`, commit **`a0fa0250`**. Corrida de
+**software**: sin radio, sin despliegue, sin flasheo y **sin transmitir**. Lo que se midió:
+
+| Gate | Comando | Salida |
+|---|---|---|
+| Nativos | `sh tests/native/run_native_tests.sh` | rc 0; **47.585 comprobaciones, 0 fallos**. `test_dfl_presets` **175** (catálogo exacto de 4 familias × 3, no auto-aplicar, coincidencia/`Personalizado`, aplicación desde un estado incompatible **sin half-apply**, guardar/recuperar/reasignar por ID, memoria vacía inaccesible, aislamiento por familia, favorito huérfano, fallo de SQL sin éxito, y **0 escrituras** a `cfg_cur.filter.bw` ni al par real) y `test_migrations_cb` **62** (migración `_5`: tablas, CHECKs, idempotencia y `mode_params` intacto) |
+| Estáticos | `check_{cfg_fills,actions,settings_focus,settings_grid,apps_menu,app_handlers,manual_apps,wcag,cw_tune_feed,build_identity}.py` + `audita-pruebas.py` | **11 OK** |
+| Arnés (host) | `ui_harness --scenario …` | **196 fixtures, 0 fallos** (54 nuevos: A..F en los seis temas, estados `activo`/`Personalizado`/DIGI, aplicar/guardar/reasignar/cancelar, TX, cambio de modo, rotary0/VOL y 30 ciclos) |
+| Clipping/glyphs | `ui_harness --inspect` | 54 fixtures, **2.994 labels: 0 truncados, 0 glyphs faltantes, 0 en fallback** |
+| Determinismo | `tests/check_harness_determinism.sh` | **PASS**: 196 fixtures × 2 corridas, PNG idénticos (sha256) |
+| Framework A/B | `ruff` / `ruff format --check` / `ty` / `pytest -m "not e2e"` / `pytest -m e2e` | OK / OK / OK / **227 passed** / **13 passed** |
+| Banco QEMU (#86) | `CHROOT=… BUILDROOT=… tools/captura-banco.sh` | preflight OK, `dirclean`+rebuild OK, **gate #86 3/3 marcas**; `fuente: 34bea401acbf`, `binario: fd864a791cb5`, 13.899.984 B; capturas de **A, B, C, D y E** |
+
+**Banco, medido además en la base del chroot** (`logs/banco-params.db.txt`): `version=5`, las
+dos tablas nuevas (`dfl_filter_memories`, `dfl_filter_favorites`) y `mode_params` del AM con
+`filter_low=0 / filter_high=6000` tras aplicar el preset `Wide` por el control remoto
+(`page dfl` + `btn 0`; el `get` siguiente pasó de `fhi:4500` a `fhi:6000`), con
+`freq_step`/`spectrum_factor` **sin tocar**.
+
+**No medido / pendiente:**
+
+* **Validación física** de la UX y de los presets en la radio: la hará el owner después (el
+  contrato §7 dice que no bloquea el PR/cierre). No se desplegó ni se transmitió.
+* **A/B `AB-DFL183`** — **PASS** (`uv run x6200-ab compare --a 26c8e8e7 --b a0fa0250`):
+  Functional, Visual Regression, Quality Contract (1.480 checks) y Performance PASS;
+  Hardware/Energy BLOCKED (advisory, sin radio). **140 de 142 escenarios idénticos**; los 6
+  `dfl-page-tema-*` cambian **explicados** dentro de las regiones declaradas (`botones`,
+  `dfl_inline`) por el rótulo nuevo de la quinta celda (`Grafico`) y por llegar a esa página
+  vía `Ajustar`. Reporte: [`ab-DFL183/`](evidencia/2026-10-20-dfl183/ab-DFL183/report.md)
+  (el primer intento abortó por disco lleno y se reintentó con el workspace en `/var/tmp`).
+* **Página F en el banco**: el control remoto no tiene comando de **hold** (fuera del alcance
+  de este issue), así que F se captura sólo en el arnés (con `LV_EVENT_LONG_PRESSED` real).
+
+Evidencia: [`evidencia/2026-10-20-dfl183/README.md`](evidencia/2026-10-20-dfl183/README.md)
+(capturas por tema/estado, `banco/` y los logs crudos de cada gate en `logs/`).
 
 ---
 
