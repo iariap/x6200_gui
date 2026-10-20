@@ -105,8 +105,12 @@ for nombre, cuerpo in paginas:
         fallos.append(f"{nombre} tiene {n} botones y el marco admite {limite}")
 
 # Toda app despachada (por cualquiera de las dos funciones) tiene que estar en una pagina APP:
-# una accion sin boton solo se alcanzaria por long press.
+# una accion sin boton solo se alcanzaria por long press. El editor DFL (issue #173, PR 2) es la
+# excepcion deliberada: se abre desde la QUINTA CELDA de la pagina DFL (no de una pagina APP) y
+# desde el long press fisico DFL; por eso no vive en `page_app_*`.
 for app in sorted(en_start_app | en_action):
+    if app == "ACTION_APP_DFL_EDITOR":
+        continue
     if app not in en_menu:
         fallos.append(f"{app} no esta en ninguna pagina APP (solo se llegaria por long press)")
 

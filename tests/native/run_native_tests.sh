@@ -614,6 +614,33 @@ $CC $BASEFLAGS -fanalyzer -I"$SP_STAGE" -I"$DIR" \
 
 "$OUT/spectrum_tests"
 
+# --- Editor DFL: modelo puro (issue #173, PR 2) --------------------------------
+# src/dfl_model.h es puro: pasos de edicion (src/vol.c), cuantizacion, dominio y
+# geometria del grafico esquematico, mapeo/legalidad del BW (espejo de
+# src/cfg/mode.c) y el orden seguro del "restablecer predeterminado". El test lo
+# compila contra un stub de aether_radio (solo los enums de modo/AGC): no hacen
+# falta LVGL ni Subjects. El dialogo real (src/dialog_dfl.c) lo consume y el
+# arnes lo renderiza.
+echo "== Editor DFL (#173 PR 2): modelo puro (pasos, geometria golden, BW, reset) =="
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$DIR/stubs_dfl" -I"$SRC" \
+        "$DIR/test_dfl_editor.c" "$DIR/test_framework.c" "$DIR/dfl_editor_test_main.c" \
+        -o "$OUT/dfl_editor_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$DIR/stubs_dfl" -I"$SRC" \
+        "$DIR/test_dfl_editor.c" "$DIR/test_framework.c" "$DIR/dfl_editor_test_main.c" \
+        -o "$OUT/dfl_editor_tests"
+fi
+
+echo "== Editor DFL: analisis estatico (gcc -fanalyzer) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$DIR/stubs_dfl" -I"$SRC" \
+    -c "$DIR/test_dfl_editor.c" -o "$OUT/test_dfl_editor.o" || true
+
+"$OUT/dfl_editor_tests"
+
 # --- ThreadSanitizer (issue #149, experimento 6) -----------------------------
 # Cobertura declarada: TSan corre en el HOST (x86_64, gcc). El binario ARM de la
 # radio NO corre bajo TSan en este arnes, asi que estos resultados NO se

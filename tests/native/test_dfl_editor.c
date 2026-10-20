@@ -1,0 +1,230 @@
+/*
+ * Native test: modelo puro del editor DFL (issue #173, PR 2).
+ *
+ * Fija lo que el dialogo (src/dialog_dfl.c) decide sin LVGL ni Subjects:
+ *
+ *   1. Los pasos de edicion de src/vol.c (LOW 10 Hz; HIGH 50 Hz y 10 Hz en
+ *      CW/CWR; BW 20 Hz) y la cuantizacion compatible con util.cpp::align_int().
+ *   2. Que LOW no sea editable en AM/SAM/NFM/WFM (la regla de
+ *      cfg_mode_set_low_filter()) y que AM/SAM/NFM/WFM sean simetricos.
+ *   3. El GOLDEN de geometria del grafico y de los handles: el eje es la
+ *      frecuencia DEL FILTRO (Hz de low/high), con el cero visible, y el dominio
+ *      se ajusta al modo (SSB desde 0; CW y AM simetricos). Se verifica el mapeo
+ *      ida y vuelta, el recorte a los bordes y que nunca se divide por cero.
+ *   4. El mapeo de BW de src/cfg/mode.c::on_cur_filter_bw_change() y la
+ *      legalidad del par LOW/HIGH resultante (bloquear fuera de rango, no dejar
+ *      un estado ilegal).
+ *   5. El orden seguro de escritura del "restablecer predeterminado", que tiene
+ *      que pasar las guardas de los dos setters reales.
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+#include "dfl_model.h"
+
+#include "test_framework.h"
+
+/* Ancho util del grafico del dialogo: 432 - 6 - 6 = 420 px, x0 = 6 (los margenes
+ * de src/dialog_dfl.c). El golden usa estos numeros. */
+#define GX0 6
+#define GW  420
+
+static void test_steps(void) {
+    CHECK(dfl_step_low(x6200_mode_usb_dig) == 10);
+    CHECK(dfl_step_low(x6200_mode_cwr) == 10);
+    CHECK(dfl_step_bw() == 20);
+
+    CHECK(dfl_step_high(x6200_mode_usb_dig) == 50);
+    CHECK(dfl_step_high(x6200_mode_lsb) == 50);
+    CHECK(dfl_step_high(x6200_mode_am) == 50);
+    CHECK(dfl_step_high(x6200_mode_cw) == 10);
+    CHECK(dfl_step_high(x6200_mode_cwr) == 10);
+}
+
+static void test_low_editable(void) {
+    CHECK(dfl_mode_low_editable(x6200_mode_usb_dig) == true);
+    CHECK(dfl_mode_low_editable(x6200_mode_lsb) == true);
+    CHECK(dfl_mode_low_editable(x6200_mode_cw) == true);
+    CHECK(dfl_mode_low_editable(x6200_mode_cwr) == true);
+
+    CHECK(dfl_mode_low_editable(x6200_mode_am) == false);
+    CHECK(dfl_mode_low_editable(x6200_mode_sam) == false);
+    CHECK(dfl_mode_low_editable(x6200_mode_nfm) == false);
+    CHECK(dfl_mode_low_editable(x6200_mode_wfm) == false);
+
+    CHECK(dfl_mode_is_symmetric(x6200_mode_am) == true);
+    CHECK(dfl_mode_is_symmetric(x6200_mode_sam) == true);
+    CHECK(dfl_mode_is_symmetric(x6200_mode_nfm) == true);
+    CHECK(dfl_mode_is_symmetric(x6200_mode_wfm) == true);
+    CHECK(dfl_mode_is_symmetric(x6200_mode_usb_dig) == false);
+    CHECK(dfl_mode_is_symmetric(x6200_mode_cw) == false);
+}
+
+static void test_quantize(void) {
+    /* Un valor guardado que NO es multiplo del paso (LOW=225) no se redondea
+     * hasta que hay una modificacion: +10 -> 235 -> 230; -10 -> 215 -> 210. */
+    CHECK(dfl_quantize(225, 10) == 220);
+    CHECK(dfl_quantize(225 + 10, 10) == 230);
+    CHECK(dfl_quantize(225 - 10, 10) == 210);
+
+    CHECK(dfl_quantize(3525, 50) == 3500);
+    CHECK(dfl_quantize(3525 + 50, 50) == 3550);
+    CHECK(dfl_quantize(3300, 20) == 3300);
+    CHECK(dfl_quantize(3310, 20) == 3300);
+
+    /* CW: valores negativos, misma semantica que align_int (trunca hacia cero). */
+    CHECK(dfl_quantize(-250, 10) == -250);
+    CHECK(dfl_quantize(-255, 10) == -250);
+    CHECK(dfl_quantize(-265, 10) == -260);
+
+    /* Paso invalido: no toca el valor (nunca divide por cero). */
+    CHECK(dfl_quantize(123, 0) == 123);
+    CHECK(dfl_quantize(123, -5) == 123);
+}
+
+static void test_domain(void) {
+    dfl_domain_t ssb = dfl_graph_domain(x6200_mode_usb_dig);
+    CHECK(ssb.min_hz == 0);
+    CHECK(ssb.max_hz == MAX_FILTER_FREQ);
+
+    dfl_domain_t lsb = dfl_graph_domain(x6200_mode_lsb);
+    CHECK(lsb.min_hz == 0);
+
+    dfl_domain_t cw = dfl_graph_domain(x6200_mode_cw);
+    CHECK(cw.min_hz == -MAX_FILTER_FREQ);
+    CHECK(cw.max_hz == MAX_FILTER_FREQ);
+
+    dfl_domain_t am = dfl_graph_domain(x6200_mode_am);
+    CHECK(am.min_hz == -MAX_FILTER_FREQ);
+    CHECK(am.max_hz == MAX_FILTER_FREQ);
+}
+
+/* GOLDEN: geometria del grafico y de los handles. */
+static void test_graph_golden(void) {
+    dfl_domain_t ssb = dfl_graph_domain(x6200_mode_usb_dig);
+
+    /* USB-D low=225 high=3525, dominio [0,10000], w=420: x = 6 + round(hz*420/10000). */
+    CHECK(dfl_graph_x(0, ssb, GX0, GW) == 6);
+    CHECK(dfl_graph_x(225, ssb, GX0, GW) == 15);      /* round(9.45)  = 9  */
+    CHECK(dfl_graph_x(3525, ssb, GX0, GW) == 154);    /* round(148.05)= 148 */
+    CHECK(dfl_graph_x(10000, ssb, GX0, GW) == 426);   /* borde derecho */
+
+    /* El handle de LOW cae en el borde de la banda; el de HIGH tambien. */
+    CHECK(dfl_graph_x(225, ssb, GX0, GW) < dfl_graph_x(3525, ssb, GX0, GW));
+
+    /* CW low=-250 high=250, dominio [-10000,10000], w=420:
+     * x = 6 + round((hz+10000)*420/20000). */
+    dfl_domain_t cw = dfl_graph_domain(x6200_mode_cw);
+    CHECK(dfl_graph_x(0, cw, GX0, GW) == 216);        /* centro */
+    CHECK(dfl_graph_x(-250, cw, GX0, GW) == 211);
+    CHECK(dfl_graph_x(250, cw, GX0, GW) == 221);
+    CHECK(dfl_graph_x(-10000, cw, GX0, GW) == 6);
+    CHECK(dfl_graph_x(10000, cw, GX0, GW) == 426);
+
+    /* AM high=4500 simetrico. */
+    dfl_domain_t am = dfl_graph_domain(x6200_mode_am);
+    CHECK(dfl_graph_x(4500, am, GX0, GW) == 311);     /* round(304.5)=305 */
+    CHECK(dfl_graph_x(-4500, am, GX0, GW) == 122);    /* round(115.5)=116 */
+
+    /* Ida y vuelta: el mapeo es de pixeles (un paso vale ~span/w Hz), asi que se
+     * exige estar a menos de un pixel de distancia, no la igualdad exacta. */
+    int32_t back;
+    back = dfl_graph_hz(dfl_graph_x(225, ssb, GX0, GW), ssb, GX0, GW);
+    CHECK(back >= 225 - 24 && back <= 225 + 24);
+    back = dfl_graph_hz(dfl_graph_x(3525, ssb, GX0, GW), ssb, GX0, GW);
+    CHECK(back >= 3525 - 24 && back <= 3525 + 24);
+    back = dfl_graph_hz(dfl_graph_x(-250, cw, GX0, GW), cw, GX0, GW);
+    CHECK(back >= -250 - 48 && back <= -250 + 48);
+    back = dfl_graph_hz(dfl_graph_x(250, cw, GX0, GW), cw, GX0, GW);
+    CHECK(back >= 250 - 48 && back <= 250 + 48);
+
+    /* Recorte a los bordes. */
+    CHECK(dfl_graph_x(-99999, ssb, GX0, GW) == GX0);
+    CHECK(dfl_graph_x(99999, ssb, GX0, GW) == GX0 + GW);
+    CHECK(dfl_graph_hz(GX0 - 1000, ssb, GX0, GW) == 0);
+    CHECK(dfl_graph_hz(GX0 + GW + 1000, ssb, GX0, GW) == MAX_FILTER_FREQ);
+
+    /* Sin ancho o sin dominio: nunca divide por cero. */
+    CHECK(dfl_graph_x(225, ssb, GX0, 0) == GX0);
+    CHECK(dfl_graph_hz(100, ssb, GX0, 0) == 0);
+    dfl_domain_t vacio = { 0, 0 };
+    CHECK(dfl_graph_x(225, vacio, GX0, GW) == GX0);
+    CHECK(dfl_graph_hz(100, vacio, GX0, GW) == 0);
+
+    /* Handles: el mas cercano a x. */
+    CHECK(dfl_nearest_handle(10, 15, 154) == DFL_HANDLE_LOW);
+    CHECK(dfl_nearest_handle(150, 15, 154) == DFL_HANDLE_HIGH);
+    CHECK(dfl_nearest_handle(84, 15, 154) == DFL_HANDLE_LOW);   /* 69 vs 70 */
+    CHECK(dfl_nearest_handle(85, 15, 154) == DFL_HANDLE_HIGH);
+}
+
+static void test_bw_targets(void) {
+    int32_t lo;
+    int32_t hi;
+
+    /* SSB: recentrado (division entera, truncando hacia cero). */
+    dfl_bw_targets(x6200_mode_usb_dig, 225, 3525, 3300, &lo, &hi);
+    CHECK(lo == 225);
+    CHECK(hi == 3525);
+
+    dfl_bw_targets(x6200_mode_lsb, 225, 3525, 3000, &lo, &hi);
+    CHECK(lo == 375);
+    CHECK(hi == 3375);
+
+    /* AM: crece desde LOW (0). */
+    dfl_bw_targets(x6200_mode_am, 0, 4500, 5000, &lo, &hi);
+    CHECK(lo == 0);
+    CHECK(hi == 5000);
+
+    /* CW: tambien recentrado (el case de CW esta comentado en mode.c). */
+    dfl_bw_targets(x6200_mode_cw, -250, 250, 600, &lo, &hi);
+    CHECK(lo == -300);
+    CHECK(hi == 300);
+}
+
+static void test_bw_legal(void) {
+    /* SSB: LOW no negativo, HIGH <= MAX, HIGH > LOW. */
+    CHECK(dfl_bw_legal(x6200_mode_usb_dig, 375, 3375) == true);
+    CHECK(dfl_bw_legal(x6200_mode_usb_dig, -8125, 11875) == false);   /* HIGH > MAX y LOW < 0 */
+    CHECK(dfl_bw_legal(x6200_mode_usb_dig, -100, 2900) == false);     /* LOW < 0 en SSB */
+    CHECK(dfl_bw_legal(x6200_mode_usb_dig, 3000, 3000) == false);     /* HIGH == LOW */
+    CHECK(dfl_bw_legal(x6200_mode_usb_dig, 9000, 10000) == true);
+    CHECK(dfl_bw_legal(x6200_mode_usb_dig, 9500, 10050) == false);    /* HIGH > MAX */
+
+    /* CW: LOW negativo permitido. */
+    CHECK(dfl_bw_legal(x6200_mode_cw, -250, 250) == true);
+    CHECK(dfl_bw_legal(x6200_mode_cwr, -500, 500) == true);
+
+    /* AM: LOW queda como estaba (0), HIGH <= MAX. */
+    CHECK(dfl_bw_legal(x6200_mode_am, 0, 5000) == true);
+    CHECK(dfl_bw_legal(x6200_mode_am, 0, 12000) == false);
+
+    /* Un BW gigante en SSB se bloquea (no genera estado ilegal). */
+    int32_t lo;
+    int32_t hi;
+    dfl_bw_targets(x6200_mode_usb_dig, 225, 3525, 20000, &lo, &hi);
+    CHECK(dfl_bw_legal(x6200_mode_usb_dig, lo, hi) == false);
+}
+
+static void test_reset_order(void) {
+    /* def_high > cur_low: HIGH primero (low_first=false). */
+    CHECK(dfl_reset_low_first(50, 2950, 100, 200) == false);
+    CHECK(dfl_reset_low_first(50, 2950, 0, 30) == false);
+    CHECK(dfl_reset_low_first(0, 4500, 0, 3000) == false);
+
+    /* def_high <= cur_low: LOW primero (si no, la guarda de set_high rechaza). */
+    CHECK(dfl_reset_low_first(50, 2950, 5000, 6000) == true);
+    CHECK(dfl_reset_low_first(50, 2950, 2950, 3000) == true);
+    CHECK(dfl_reset_low_first(-250, 250, 2000, 4000) == true);
+}
+
+void test_dfl_editor(void) {
+    test_steps();
+    test_low_editable();
+    test_quantize();
+    test_domain();
+    test_graph_golden();
+    test_bw_targets();
+    test_bw_legal();
+    test_reset_order();
+}

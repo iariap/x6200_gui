@@ -150,6 +150,19 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "cw-tune-ssb",
         "cw-tune-tema-sunlit",
         "cw-tune-tuner",
+        # Editor DFL (issue #173, PR 2): el dialogo real, USB-D/LSB-D, los seis
+        # temas, TX deshabilitado, interaccion (+/arrastre/rechazo) y 30 ciclos.
+        "dfl-editor-cycles",
+        "dfl-editor-interaction",
+        "dfl-editor-lsb-d",
+        "dfl-editor-tx",
+        "dfl-editor-usb-d",
+        "dfl-editor-usb-d-tema-aurora",
+        "dfl-editor-usb-d-tema-cathode",
+        "dfl-editor-usb-d-tema-redshift",
+        "dfl-editor-usb-d-tema-sprint",
+        "dfl-editor-usb-d-tema-sunlit",
+        "dfl-editor-usb-d-tema-trail",
         # DFL (issue #173, PR 1): banda pasante RX a escala, USB-D/LSB-D, los seis
         # temas y dos spans distintos.
         "dfl-lsb-d",
@@ -255,6 +268,11 @@ def test_repo_fixtures_are_all_parsable() -> None:
             "cw-tune-default",
             "cw-tune-ssb",
             "cw-tune-tuner",
+            # Editor DFL (issue #173, PR 2)
+            "dfl-editor",
+            "dfl-editor-tx",
+            "dfl-editor-interaction",
+            "dfl-editor-cycles",
         }
         for scenario in suite.scenarios
     )

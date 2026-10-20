@@ -27,6 +27,9 @@ extern "C" {
     #include "scheduler.h"
 }
 
+/* dialog.h trae helpers.h (C++): va FUERA del bloque extern "C". */
+#include "dialog.h"
+
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(*arr))
 
 typedef struct {
@@ -327,6 +330,22 @@ static button_item_t btn_nr_level = make_btn(nr_level_label_getter, MFK_NR_LEVEL
 
 static button_item_t btn_eq = make_app_btn("Eq", ACTION_APP_EQ);
 
+/* Quinta celda de la pagina DFL (issue #173, PR 2): abre el editor de filtro.
+ * Es una accion, no una app del menu de apps: se despacha en main_screen_action(). */
+static button_item_t btn_dfl_editor = make_action_btn("DFL editor", ACTION_APP_DFL_EDITOR);
+
+/* Cerrar el editor DFL desde la barra inferior. */
+static void close_dfl_cb(button_item_t *item) {
+    (void) item;
+    dialog_destruct();
+}
+
+static button_item_t btn_close_dfl = {
+    .type  = BTN_TEXT,
+    .label = "Cerrar DFL",
+    .press = close_dfl_cb,
+};
+
 /* APP */
 
 static button_item_t btn_rtty = make_app_btn("RTTY", ACTION_APP_RTTY);
@@ -476,8 +495,12 @@ static buttons_page_t page_dfn_3 = {
 };
 
 /* DFL pages */
-static buttons_page_t page_dfl_1 = {
-    {&btn_flt_low, &btn_flt_high, &btn_flt_bw, &btn_eq}
+buttons_page_t buttons_page_dfl_1 = {
+    {&btn_flt_low, &btn_flt_high, &btn_flt_bw, &btn_eq, &btn_dfl_editor}
+};
+
+buttons_page_t buttons_page_dfl_editor = {
+    {&btn_flt_low, &btn_flt_high, &btn_flt_bw, &btn_eq, &btn_close_dfl}
 };
 
 /* App pages: TODAS las apps de main_screen_start_app tienen que estar aca (el chequeo
@@ -550,7 +573,7 @@ buttons_group_t buttons_group_dfn = {
 };
 
 buttons_group_t buttons_group_dfl = {
-    &page_dfl_1,
+    &buttons_page_dfl_1,
 };
 
 

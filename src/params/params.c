@@ -36,7 +36,8 @@
  * long_f2, cargados por nombre en params_load). El hueco 121 que deja la accion eliminada el
  * 2026-10-14 no se reutiliza (ver params.h): si se reutilizara, o si las acciones que siguen se
  * movieran, cambiaria en silencio la accion guardada de la radio. */
-_Static_assert(ACTION_APP_GPS == 122 && ACTION_APP_BANDS == 128,
+_Static_assert(ACTION_APP_GPS == 122 && ACTION_APP_BANDS == 128 &&
+               ACTION_APP_PROPAGATION == 130 && ACTION_APP_DFL_EDITOR == 131,
                "press_action_t: no muevas los valores de las acciones guardadas (el hueco 121 no se reutiliza)");
 
 params_t params = {
@@ -140,7 +141,10 @@ params_t params = {
     .long_key               = ACTION_NONE,
     .long_msg               = ACTION_RECORDER,
     .long_dfn               = ACTION_VOICE_MODE,
-    .long_dfl               = ACTION_BAT_INFO,
+    /* Editor DFL (issue #173, PR 2): default para instalaciones NUEVAS, sin valor
+     * guardado. Un equipo con long_dfl ya persistido conserva el suyo (params_load
+     * lo pisa por nombre); "Battery info" sigue siendo elegible en Ajustes. */
+    .long_dfl               = ACTION_APP_DFL_EDITOR,
 
     .press_f1               = ACTION_STEP_UP,
     .press_f2               = ACTION_NONE,

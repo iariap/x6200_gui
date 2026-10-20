@@ -1105,6 +1105,9 @@ static action_items_t long_action_items[] = {
     { .label = " APP Callsign", .action = ACTION_APP_CALLSIGN },
     { .label = " APP WiFi", .action = ACTION_APP_WIFI },
     { .label = " APP EQ", .action = ACTION_APP_EQ },
+    /* Editor DFL (issue #173, PR 2): abre el editor de filtro desde el long press
+     * fisico DFL. "Battery info" sigue estando en la lista. */
+    { .label = " APP DFL editor", .action = ACTION_APP_DFL_EDITOR },
     { .label = " APP FT8 ", .action = ACTION_APP_FT8 },
     { .label = " APP SWR Scan ", .action = ACTION_APP_SWRSCAN },
     { .label = " APP Settings", .action = ACTION_APP_SETTINGS },
