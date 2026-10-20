@@ -1,0 +1,3 @@
+audited f5f3f14f06f7: 11 known issues — 0 reproduced, 9 unverified; structural inspection REAL over 11062 objects on 101 scenario(s): 2 structural finding(s)
+  FAIL layout_overlap [dfl-usb-d-tema-cathode]: text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)
+  FAIL layout_overlap [dfl-usb-d-tema-sprint]: text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)

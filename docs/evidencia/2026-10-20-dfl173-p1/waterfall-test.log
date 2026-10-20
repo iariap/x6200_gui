@@ -1,0 +1,10 @@
+fixture: 20 vueltas de anillo (H=8, 160 filas)
+fixture: cambio de frecuencia central durante el scroll
+fixture: cambios de zoom (100 kHz -> 30 kHz -> 100 kHz)
+fixture: cambio de paleta
+fixture: RX <-> TX
+fixture: min/max auto/manual
+fixture: ECO (1/4) y pantalla OFF/ON
+fixture: limites
+fixture: instrumento de rasterizado
+PASS: 195 checks, 0 fallas

@@ -1,0 +1,8 @@
+experiment AB-DFL173-1: PASS (exit 0)
+  Functional         PASS            (required) — 92 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — no unexplained visual regressions
+  Quality Contract   PASS            (required) — 943 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+report: /home/pablo/desa/asf/state/worktrees/x6200/dfl-visual-173/tools/ab_testing/reports/AB-DFL173-1
