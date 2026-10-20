@@ -163,9 +163,11 @@ Gates corridos sobre `6c67a82a` (logs crudos en `logs/`):
 | Nativos | `sh tests/native/run_native_tests.sh` | **rc 0** (incluye `test_dfl_presets` 175 y migración 62; `logs/native-fix.log`) |
 | Determinismo | `tests/check_harness_determinism.sh` | **PASS**: 196 fixtures × 2 corridas, PNG idénticos con `C` tocado (`logs/determinismo-fix.log`) |
 
-Las capturas de las siete fixtures con chip (`capturas/dfl-presets-assign-tema-*.png` y
-`capturas/dfl-presets-touch-hold.png`) se regeneraron con el chip nuevo; el resto de las
-capturas de la corrida no cambia (la banda contextual solo existe en F y en el hold).
+Las capturas de las catorce fixtures que muestran el chip contextual se regeneraron con el
+chip nuevo: las seis `capturas/dfl-presets-assign-tema-*.png` + `capturas/dfl-presets-touch-hold.png`
+(el `Cancelar` de F), las seis `capturas/dfl-presets-confirm-tema-*.png` y
+`capturas/dfl-presets-custom.png` (los textos de E y el `Personalizado` de A). El resto de las
+capturas de la corrida no cambia: la banda contextual solo existe en esas páginas.
 
 
 ### Banco QEMU (binario ARM real, sin radio)
