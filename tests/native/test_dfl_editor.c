@@ -200,6 +200,121 @@ static void test_graph_golden(void) {
     CHECK(dfl_graph_hz(100, vacio, GX0, GW) == 0);
 }
 
+/* GOLDEN del espejo de banda lateral inferior (issue #182).
+ *
+ * El golden del owner es x0=0, w=471, dominio [0,5000]: USB LOW225 -> 21,
+ * HIGH3525 -> 332; LSB HIGH3525 -> 139 (izquierda), LOW225 -> 450 (derecha).
+ * Con el area util real del panel (x0=8, w=471) los mismos valores quedan
+ * desplazados por x0: USB 29/340 y LSB 147/458. */
+static void test_graph_mirror(void) {
+    dfl_domain_t ssb = dfl_domain_fit(x6200_mode_usb_dig, 225, 3525);   /* [0,5000] */
+    dfl_domain_t lsb = dfl_domain_fit(x6200_mode_lsb, 225, 3525);       /* [0,5000] */
+
+    /* El espejo distingue SOLO LSB/LSB-D. */
+    CHECK(dfl_mode_is_lsb(x6200_mode_lsb) == true);
+    CHECK(dfl_mode_is_lsb(x6200_mode_lsb_dig) == true);
+    CHECK(dfl_mode_is_lsb(x6200_mode_usb) == false);
+    CHECK(dfl_mode_is_lsb(x6200_mode_usb_dig) == false);
+    CHECK(dfl_mode_is_lsb(x6200_mode_cw) == false);
+    CHECK(dfl_mode_is_lsb(x6200_mode_cwr) == false);
+    CHECK(dfl_mode_is_lsb(x6200_mode_am) == false);
+    CHECK(dfl_mode_is_lsb(x6200_mode_sam) == false);
+    CHECK(dfl_mode_is_lsb(x6200_mode_nfm) == false);
+    CHECK(dfl_mode_is_lsb(x6200_mode_wfm) == false);
+
+    /* --- GOLDEN del owner con x0=0, w=471. --- */
+    CHECK(dfl_graph_mode_x(x6200_mode_usb_dig, 225, ssb, 0, GW) == 21);
+    CHECK(dfl_graph_mode_x(x6200_mode_usb_dig, 3525, ssb, 0, GW) == 332);
+    CHECK(dfl_graph_mode_x(x6200_mode_lsb, 3525, lsb, 0, GW) == 139);   /* HIGH izq */
+    CHECK(dfl_graph_mode_x(x6200_mode_lsb, 225, lsb, 0, GW) == 450);    /* LOW der */
+    CHECK(dfl_graph_mode_x(x6200_mode_lsb_dig, 0, lsb, 0, GW) == 471);  /* 0 a la derecha */
+    CHECK(dfl_graph_mode_x(x6200_mode_lsb_dig, 5000, lsb, 0, GW) == 0); /* M a la izquierda */
+
+    /* --- Area util real del panel (x0=8, w=471). --- */
+    CHECK(dfl_graph_mode_x(x6200_mode_usb_dig, 225, ssb, GX0, GW) == 29);
+    CHECK(dfl_graph_mode_x(x6200_mode_usb_dig, 3525, ssb, GX0, GW) == 340);
+    CHECK(dfl_graph_mode_x(x6200_mode_lsb, 3525, lsb, GX0, GW) == 147);
+    CHECK(dfl_graph_mode_x(x6200_mode_lsb, 225, lsb, GX0, GW) == 458);
+
+    /* La curva de LSB es la de USB reflejada: mismo ancho esquematico. */
+    CHECK((dfl_graph_mode_x(x6200_mode_lsb, 225, lsb, GX0, GW)
+           - dfl_graph_mode_x(x6200_mode_lsb, 3525, lsb, GX0, GW))
+          == (dfl_graph_mode_x(x6200_mode_usb_dig, 3525, ssb, GX0, GW)
+              - dfl_graph_mode_x(x6200_mode_usb_dig, 225, ssb, GX0, GW)));
+
+    /* Los demas modos NO se espejan: el mapeo actual queda intacto. */
+    dfl_domain_t cw  = dfl_domain_fit(x6200_mode_cw, -250, 250);
+    dfl_domain_t am  = dfl_domain_fit(x6200_mode_am, 0, 4500);
+    x6200_mode_t otros[] = { x6200_mode_usb, x6200_mode_usb_dig, x6200_mode_cw, x6200_mode_cwr,
+                             x6200_mode_am,  x6200_mode_sam,     x6200_mode_nfm, x6200_mode_wfm };
+
+    for (unsigned i = 0; i < sizeof(otros) / sizeof(otros[0]); i++) {
+        CHECK(dfl_graph_mode_x(otros[i], 225, ssb, GX0, GW) == dfl_graph_x(225, ssb, GX0, GW));
+        CHECK(dfl_graph_mode_x(otros[i], -250, cw, GX0, GW) == dfl_graph_x(-250, cw, GX0, GW));
+        CHECK(dfl_graph_mode_hz(otros[i], 244, cw, GX0, GW) == dfl_graph_hz(244, cw, GX0, GW));
+        CHECK(dfl_graph_mode_x(otros[i], 4500, am, GX0, GW) == dfl_graph_x(4500, am, GX0, GW));
+    }
+
+    /* Ida y vuelta x->Hz->x en los dos modos, a menos de un pixel. */
+    int32_t tol_ssb = (ssb.max_hz - ssb.min_hz) / GW + 1;
+    int32_t hz;
+
+    hz = dfl_graph_mode_hz(x6200_mode_usb_dig, dfl_graph_mode_x(x6200_mode_usb_dig, 225, ssb, GX0, GW),
+                           ssb, GX0, GW);
+    CHECK(hz >= 225 - tol_ssb && hz <= 225 + tol_ssb);
+    hz = dfl_graph_mode_hz(x6200_mode_usb_dig, dfl_graph_mode_x(x6200_mode_usb_dig, 3525, ssb, GX0, GW),
+                           ssb, GX0, GW);
+    CHECK(hz >= 3525 - tol_ssb && hz <= 3525 + tol_ssb);
+    hz = dfl_graph_mode_hz(x6200_mode_lsb, dfl_graph_mode_x(x6200_mode_lsb, 225, lsb, GX0, GW),
+                           lsb, GX0, GW);
+    CHECK(hz >= 225 - tol_ssb && hz <= 225 + tol_ssb);
+    hz = dfl_graph_mode_hz(x6200_mode_lsb_dig, dfl_graph_mode_x(x6200_mode_lsb_dig, 3525, lsb, GX0, GW),
+                           lsb, GX0, GW);
+    CHECK(hz >= 3525 - tol_ssb && hz <= 3525 + tol_ssb);
+
+    /* El inverso tambien recorta a los bordes del eje. */
+    CHECK(dfl_graph_mode_hz(x6200_mode_lsb, -999, lsb, GX0, GW) == 5000);  /* fuera izq -> M */
+    CHECK(dfl_graph_mode_hz(x6200_mode_lsb, 9999, lsb, GX0, GW) == 0);    /* fuera der -> 0 */
+    CHECK(dfl_graph_mode_hz(x6200_mode_usb_dig, -999, ssb, GX0, GW) == 0);
+    CHECK(dfl_graph_mode_hz(x6200_mode_usb_dig, 9999, ssb, GX0, GW) == 5000);
+
+    /* El espejo es su propia inversa y nunca divide por cero. */
+    CHECK(dfl_graph_mirror(GX0, GX0, GW) == GX0 + GW);
+    CHECK(dfl_graph_mirror(GX0 + GW, GX0, GW) == GX0);
+    CHECK(dfl_graph_mirror(dfl_graph_mirror(123, GX0, GW), GX0, GW) == 123);
+    CHECK(dfl_graph_mirror(100, GX0, 0) == GX0);
+    CHECK(dfl_graph_mode_x(x6200_mode_lsb, 225, lsb, GX0, 0) == GX0);
+    CHECK(dfl_graph_mode_hz(x6200_mode_lsb, 100, lsb, GX0, 0) == 0);
+
+    /* --- Layout de dibujo: handles, banda ordenada, cero y etiquetas. --- */
+    dfl_graph_layout_t usb_l = dfl_graph_layout(x6200_mode_usb_dig, 225, 3525, ssb, GX0, GW);
+    CHECK(usb_l.low_x == 29);
+    CHECK(usb_l.high_x == 340);
+    CHECK(usb_l.band_left == 29 && usb_l.band_right == 340);   /* LOW izq, HIGH der */
+    CHECK(usb_l.zero_x == GX0);                                 /* 0 a la izquierda */
+    CHECK(usb_l.left_hz == 0 && usb_l.right_hz == 5000);        /* `0` izq / `M` der */
+
+    dfl_graph_layout_t lsb_l = dfl_graph_layout(x6200_mode_lsb, 225, 3525, lsb, GX0, GW);
+    CHECK(lsb_l.high_x == 147);
+    CHECK(lsb_l.low_x == 458);
+    CHECK(lsb_l.high_x < lsb_l.low_x);                          /* HIGH a la izquierda */
+    CHECK(lsb_l.band_left == 147 && lsb_l.band_right == 458);   /* banda ya ordenada */
+    CHECK(lsb_l.zero_x == GX0 + GW);                            /* 0 a la derecha */
+    CHECK(lsb_l.left_hz == 5000 && lsb_l.right_hz == 0);        /* `M` izq / `0` der */
+
+    /* El handle de LOW conserva su identidad aunque cambie de lado. */
+    CHECK(lsb_l.low_x == dfl_graph_mode_x(x6200_mode_lsb, 225, lsb, GX0, GW));
+    CHECK(lsb_l.high_x == dfl_graph_mode_x(x6200_mode_lsb, 3525, lsb, GX0, GW));
+
+    /* AM (simetrico): banda +/- high, LOW en el cero, sin espejo. */
+    dfl_graph_layout_t am_l = dfl_graph_layout(x6200_mode_am, 0, 4500, am, GX0, GW);
+    CHECK(am_l.low_x == dfl_graph_x(0, am, GX0, GW));
+    CHECK(am_l.band_left == dfl_graph_x(-4500, am, GX0, GW));
+    CHECK(am_l.band_right == dfl_graph_x(4500, am, GX0, GW));
+    CHECK(am_l.zero_x == am_l.low_x);
+    CHECK(am_l.left_hz == -5000 && am_l.right_hz == 5000);
+}
+
 /* Hit-test de los handles (issue #179): radio maximo de 22 px y, fuera de eso,
  * NINGUN handle (un toque lejano no modifica nada). */
 static void test_hit_test(void) {
@@ -290,6 +405,7 @@ void test_dfl_editor(void) {
     test_quantize();
     test_domain();
     test_graph_golden();
+    test_graph_mirror();
     test_hit_test();
     test_bw_targets();
     test_bw_legal();

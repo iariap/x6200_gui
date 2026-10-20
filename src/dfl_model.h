@@ -245,6 +245,99 @@ static inline int32_t dfl_graph_hz(int32_t x, dfl_domain_t d, int32_t x0, int32_
     return hz;
 }
 
+/* --- Espejo de banda lateral inferior (issue #182) ------------------------
+ * El espectro muestra USB a la DERECHA del VFO y LSB a la IZQUIERDA, pero la
+ * grafica del editor se dibujaba SIEMPRE con LOW a la izquierda. Para que el
+ * eje del editor exprese la misma orientacion RF, en LSB/LSB-D se espeja el eje
+ * horizontalmente: 0 queda a la DERECHA y M a la izquierda, HIGH a la izquierda
+ * y LOW a la derecha. Es SOLO presentacion + inverso tactil: no cambia ningun
+ * valor de filtro ni el signo de los Subjects (los textos siguen siendo las
+ * magnitudes positivas LOW/HIGH en Hz).
+ *
+ * El espejo distingue EXPLICITAMENTE solo x6200_mode_lsb y x6200_mode_lsb_dig.
+ * CW/CWR y los modos simetricos (AM/SAM/NFM/WFM) NO se espejan: para ellos rige
+ * src/cfg/mode.c::update_real_filters() y el mapeo actual queda intacto (no se
+ * supone por el nombre: CWR incluido). No se altera dfl_graph_x() generico. */
+static inline bool dfl_mode_is_lsb(x6200_mode_t mode) {
+    return mode == x6200_mode_lsb || mode == x6200_mode_lsb_dig;
+}
+
+/* Refleja una x del area util [x0, x0+w] alrededor de su centro. Es su propia
+ * inversa (aplicarla dos veces devuelve la original), asi que sirve tanto para
+ * Hz->x (espejo) como para x->Hz (des-espejo). Nunca divide por cero y recorta
+ * a los bordes; usa int64_t para no desbordar con anchos extremos. */
+static inline int32_t dfl_graph_mirror(int32_t x, int32_t x0, int32_t w) {
+    if (w <= 0) {
+        return x0;
+    }
+
+    int64_t mx = (int64_t) 2 * x0 + w - x;
+
+    if (mx < x0) {
+        mx = x0;
+    }
+    if (mx > (int64_t) x0 + w) {
+        mx = x0 + w;
+    }
+
+    return (int32_t) mx;
+}
+
+/* Hz del filtro -> x, con la orientacion del modo (espejo solo en LSB). Es la
+ * UNICA conversion que dibujo, hit-test y etiquetas deben usar. */
+static inline int32_t dfl_graph_mode_x(x6200_mode_t mode, int32_t hz, dfl_domain_t d, int32_t x0, int32_t w) {
+    int32_t x = dfl_graph_x(hz, d, x0, w);
+
+    return dfl_mode_is_lsb(mode) ? dfl_graph_mirror(x, x0, w) : x;
+}
+
+/* x del grafico -> Hz del filtro, inverso del anterior (des-espeja en LSB). Es
+ * la conversion que el arrastre de los handles debe usar. */
+static inline int32_t dfl_graph_mode_hz(x6200_mode_t mode, int32_t x, dfl_domain_t d, int32_t x0, int32_t w) {
+    int32_t ux = dfl_mode_is_lsb(mode) ? dfl_graph_mirror(x, x0, w) : x;
+
+    return dfl_graph_hz(ux, d, x0, w);
+}
+
+/* Geometria completa del grafico dependiente del modo: los MISMOS x para
+ * dibujo, hit-test, inverso de arrastre y etiquetas de los extremos. Los handles
+ * conservan su identidad semantica (low_x/high_x) aunque cambien de lado en LSB;
+ * band_left/band_right ya vienen ordenados para el relleno, la meseta y los
+ * faldones (en LSB el faldon izquierdo es de HIGH y el derecho de LOW). */
+typedef struct {
+    int32_t low_x;      /* handle LOW (identidad semantica, no lado) */
+    int32_t high_x;     /* handle HIGH */
+    int32_t band_left;  /* borde izquierdo de la banda pasante (ordenado) */
+    int32_t band_right; /* borde derecho de la banda pasante (ordenado) */
+    int32_t zero_x;     /* cero del eje */
+    int32_t left_hz;    /* valor del extremo izquierdo del eje */
+    int32_t right_hz;   /* valor del extremo derecho del eje */
+} dfl_graph_layout_t;
+
+static inline dfl_graph_layout_t dfl_graph_layout(x6200_mode_t mode, int32_t low, int32_t high, dfl_domain_t d,
+                                                  int32_t x0, int32_t w) {
+    dfl_graph_layout_t l;
+
+    if (dfl_mode_is_symmetric(mode)) {
+        /* La respuesta es +/- high y LOW queda en 0 (no editable). */
+        l.low_x      = dfl_graph_mode_x(mode, 0, d, x0, w);
+        l.high_x     = dfl_graph_mode_x(mode, high, d, x0, w);
+        l.band_left  = dfl_graph_mode_x(mode, -high, d, x0, w);
+        l.band_right = l.high_x;
+    } else {
+        l.low_x      = dfl_graph_mode_x(mode, low, d, x0, w);
+        l.high_x     = dfl_graph_mode_x(mode, high, d, x0, w);
+        l.band_left  = (l.low_x < l.high_x) ? l.low_x : l.high_x;
+        l.band_right = (l.low_x < l.high_x) ? l.high_x : l.low_x;
+    }
+
+    l.zero_x   = dfl_graph_mode_x(mode, 0, d, x0, w);
+    l.left_hz  = dfl_graph_mode_hz(mode, x0, d, x0, w);
+    l.right_hz = dfl_graph_mode_hz(mode, x0 + w, d, x0, w);
+
+    return l;
+}
+
 /* --- BW -------------------------------------------------------------------
  * Espejo de src/cfg/mode.c::on_cur_filter_bw_change(): en AM/SAM/NFM/WFM el
  * BW crece desde LOW (que queda en 0); en el resto LOW/HIGH se recentran
