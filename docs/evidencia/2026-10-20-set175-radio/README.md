@@ -34,7 +34,7 @@ antes. Es lo que pide #175.
 ## Cierre: las 8 paginas de Ajustes (segunda fila de pestanas)
 
 La barra tiene **dos filas**: [Operation · Audio · Spectrum · Clock · More >] y, dentro de "More >",
-[Display · Appearance · Actions · Info · < More]. Se capturaron **las 8** ( + ).
+[Display · Appearance · Actions · Info · < More]. Se capturaron **las 8** (`pag-0..4` + `grupo-0..3` + `pag-more`).
 
 Medicion del borde izquierdo mas frecuente de los controles por pagina:
 
