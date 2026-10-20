@@ -152,7 +152,9 @@ Los 20 se cierran en `6c67a82a` y el gate pasa a **2.033 checks, 0 fallos**:
 `tests/test_theme_checks.py` sigue validando que cada excepción sea acotada, fechada y
 detrás de un hallazgo verificado del registro (el set esperado de fixtures suma las 13).
 
-Gates corridos sobre `6c67a82a` (logs crudos en `logs/`):
+Gates corridos sobre `6c67a82a`, y contratos + pytest re-corridos sobre el HEAD final de la
+rama `4e23ed18` (los commits posteriores son sólo evidencia: mismo código). Logs crudos en
+`logs/`:
 
 | Gate | Comando | Resultado |
 |---|---|---|
