@@ -65,6 +65,48 @@ static lv_obj_t     *grid;
 
 /* LV_GRID_FR(1) = la que se lleva el espacio libre (las etiquetas de la columna 0). */
 static lv_coord_t   col_dsc[] = { LV_GRID_FR(1), SMALL_1, SMALL_1, SMALL_1, SMALL_1, SMALL_1, SMALL_1, LV_GRID_TEMPLATE_LAST };
+
+/* --- Esquema unico de la zona de controles (issue #175) ---------------------------------------
+ * La columna 0 (FR) es la de las etiquetas; las columnas 1..6 son la ZONA DE CONTROLES (6
+ * columnas de 45 + 5 gaps de SMALL_PAD = 285 px utiles, de x=499 a x=784 en 800x480).
+ *
+ * Cada fila elige a mano su columna inicial y su span, y eso habia dejado TRES origenes para la
+ * misma "columna derecha": los controles de una sola pieza arrancaban en la columna 1 (x=499) o en
+ * la 4 (x=643), y la fila de 3 campos de Clock en 1/3/5 (499/595/691). Ahora el esquema es UNO:
+ *
+ *   - TODA fila arranca su bloque de controles en la columna 1 (COL_CONTROLES, x=499). Es el unico
+ *     origen de la columna derecha.
+ *   - Los spans son fijos por cantidad de controles y tapan la zona entera:
+ *       1 control   -> span 6                  (285 px)  499..784
+ *       2 controles -> span 3 + span 3         (141 c/u) 499..640 / 643..784
+ *       3 controles -> span 2 + span 2 + span 2 (93 c/u) 499..592 / 595..688 / 691..784
+ *
+ * Los numeros salen de los anchos REALES que declara cada widget (medidos con `ui_harness
+ * --inspect`): el desplegable mas ancho (el del tema, con los nombres de los 6 temas) y el
+ * desplegable de texto libre son SMALL_6=285 (el ancho util de la zona); el spinbox de 4 cifras
+ * ("2026") necesita SMALL_2=93 (2 columnas de 45 + el gap) y por eso las filas de 3 campos usan
+ * span 2; los switches y los sliders de ganancia viven en cajas de SMALL_3=141, que es el medio de
+ * la zona (3+3). El campo "Anio" de `make_date` (issue #110) es el caso que fija SMALL_1=45: 2
+ * columnas de ese ancho son la caja minima de 4 cifras.
+ *
+ * UNICA EXCEPCION (documentada, no tres): la fila "Timeout, Brightness" de `make_backlight` es
+ * 2+4 (span 2 para el spinbox de 3 cifras y span 4 para el slider de brillo). El slider de brillo
+ * es un slider de RANGO (idle..normal) y mide SMALL_4-30=159 px: no entra en la mitad de la zona
+ * (141) sin recortarse, asi que su caja usa la mitad ancha. Su borde izquierdo cae en la columna 3
+ * (x=595), que es una columna real del mismo esquema (la del campo del medio de las filas de 3). */
+
+#define COL_CONTROLES   1   /* el unico origen de la columna derecha (x=499) */
+#define SPAN_1          6   /* una pieza: toda la zona (285 px)               */
+#define SPAN_2A         3   /* dos piezas: la primera ocupa media zona        */
+#define COL_2B          4   /* ... y la segunda arranca en la otra media      */
+#define SPAN_2B         3
+#define SPAN_3          2   /* tres piezas: un tercio cada una (93 px)        */
+                            /* (las filas de 3 arrancan en la col 1 y avanzan de a 2: 1/3/5) */
+
+/* La excepcion de "Timeout, Brightness" (ver arriba): spinbox en la col 1 (span 2) y el slider de
+ * rango en la col 3 (span 4). */
+#define COL_BRILLO      3
+#define SPAN_BRILLO     4
 static lv_coord_t   row_dsc[64] = { 1 };
 
 static time_t       now;
@@ -466,7 +508,7 @@ static uint8_t make_date(uint8_t row) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, datetime_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(obj, datetime_set_rtc_cb, LV_EVENT_FOCUSED, NULL);
 
@@ -483,7 +525,7 @@ static uint8_t make_date(uint8_t row) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, datetime_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(obj, datetime_set_rtc_cb, LV_EVENT_FOCUSED, NULL);
 
@@ -513,7 +555,7 @@ static uint8_t make_date(uint8_t row) {
     lv_obj_set_style_pad_hor(obj, SMALL_PAD, LV_PART_MAIN);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, datetime_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(obj, datetime_set_rtc_cb, LV_EVENT_FOCUSED, NULL);
 
@@ -546,7 +588,7 @@ static uint8_t make_time(uint8_t row) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, datetime_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(obj, datetime_set_rtc_cb, LV_EVENT_FOCUSED, NULL);
 
@@ -563,7 +605,7 @@ static uint8_t make_time(uint8_t row) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, datetime_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(obj, datetime_set_rtc_cb, LV_EVENT_FOCUSED, NULL);
 
@@ -580,7 +622,7 @@ static uint8_t make_time(uint8_t row) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, datetime_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(obj, datetime_set_rtc_cb, LV_EVENT_FOCUSED, NULL);
 
@@ -648,15 +690,18 @@ static uint8_t make_backlight(uint8_t row) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, backlight_timeout_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     /* Brightness */
 
     obj = lv_obj_create(grid);
 
+    /* La unica excepcion del esquema (ver el bloque del encabezado): el slider de brillo es de
+     * rango y mide SMALL_4-30=159, asi que su caja usa la mitad ancha (span 4) y arranca en la
+     * columna 3 -una columna del mismo esquema-, no en la 4. */
     lv_obj_set_size(obj, SMALL_4, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 4, LV_GRID_ALIGN_CENTER, row, 1);   col += 4;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_BRILLO, SPAN_BRILLO, LV_GRID_ALIGN_CENTER, row, 1);   col += SPAN_BRILLO;
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -688,7 +733,7 @@ static uint8_t make_backlight(uint8_t row) {
     dialog_item(&dialog, obj);
 
     lv_obj_set_size(obj, SMALL_6, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_center(obj);
 
     lv_obj_t *list = lv_dropdown_get_list(obj);
@@ -744,7 +789,7 @@ static uint8_t make_visual_profile(uint8_t row) {
     dialog_item(&dialog, obj);
 
     lv_obj_set_size(obj, SMALL_6, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_center(obj);
 
     lv_obj_t *list = lv_dropdown_get_list(obj);
@@ -792,7 +837,7 @@ static uint8_t make_line_gain(uint8_t row) {
     cell = lv_obj_create(grid);
 
     lv_obj_set_size(cell, SMALL_3, 56);
-    lv_obj_set_grid_cell(cell, LV_GRID_ALIGN_START, 1, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(cell, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_2A, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(cell, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(cell, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(cell);
@@ -802,7 +847,7 @@ static uint8_t make_line_gain(uint8_t row) {
     cell = lv_obj_create(grid);
 
     lv_obj_set_size(cell, SMALL_3, 56);
-    lv_obj_set_grid_cell(cell, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(cell, LV_GRID_ALIGN_START, COL_2B, SPAN_2B, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(cell, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(cell, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(cell);
@@ -830,7 +875,7 @@ static uint8_t make_mag(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_2, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -844,7 +889,7 @@ static uint8_t make_mag(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_2, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -858,7 +903,7 @@ static uint8_t make_mag(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_2, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -910,7 +955,7 @@ static uint8_t make_smeter(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -943,7 +988,7 @@ static uint8_t make_band_plan(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -977,7 +1022,7 @@ static uint8_t make_wfview(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -1015,7 +1060,7 @@ static uint8_t make_clock(uint8_t row) {
     dialog_item(&dialog, obj);
 
     lv_obj_set_size(obj, SMALL_6, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_center(obj);
 
     lv_obj_t *list = lv_dropdown_get_list(obj);
@@ -1046,7 +1091,7 @@ static uint8_t make_clock(uint8_t row) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, clock_time_timeout_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     obj = lv_spinbox_create(grid);
@@ -1059,7 +1104,7 @@ static uint8_t make_clock(uint8_t row) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, clock_power_timeout_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     obj = lv_spinbox_create(grid);
@@ -1072,7 +1117,7 @@ static uint8_t make_clock(uint8_t row) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, clock_tx_timeout_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     return row + 1;
@@ -1188,7 +1233,7 @@ static uint8_t make_long_action(uint8_t row) {
         dialog_item(&dialog, obj);
 
         lv_obj_set_size(obj, SMALL_6, 56);
-        lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+        lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
         lv_obj_center(obj);
 
         lv_obj_t *list = lv_dropdown_get_list(obj);
@@ -1304,7 +1349,7 @@ static uint8_t make_hmic_action(uint8_t row) {
         dialog_item(&dialog, obj);
 
         lv_obj_set_size(obj, SMALL_6, 56);
-        lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+        lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
         lv_obj_center(obj);
 
         lv_obj_t *list = lv_dropdown_get_list(obj);
@@ -1382,7 +1427,7 @@ static uint8_t make_audio_gain(uint8_t row) {
     cell = lv_obj_create(grid);
 
     lv_obj_set_size(cell, SMALL_3, 56);
-    lv_obj_set_grid_cell(cell, LV_GRID_ALIGN_START, 1, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(cell, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_2A, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(cell, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(cell, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(cell);
@@ -1392,7 +1437,7 @@ static uint8_t make_audio_gain(uint8_t row) {
     cell = lv_obj_create(grid);
 
     lv_obj_set_size(cell, SMALL_3, 56);
-    lv_obj_set_grid_cell(cell, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(cell, LV_GRID_ALIGN_START, COL_2B, SPAN_2B, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(cell, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(cell, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(cell);
@@ -1420,7 +1465,7 @@ static uint8_t make_audio_enh(uint8_t row) {
                                    audio_enh_update_cb);
 
     lv_obj_set_size(obj, SMALL_6, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_center(obj);
 
     return row + 1;
@@ -1472,7 +1517,7 @@ static uint8_t make_transverter(uint8_t row, uint8_t n) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, transverter_from_update_cb, LV_EVENT_VALUE_CHANGED, transverter);
 
     /* To */
@@ -1487,7 +1532,7 @@ static uint8_t make_transverter(uint8_t row, uint8_t n) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, transverter_to_update_cb, LV_EVENT_VALUE_CHANGED, transverter);
 
     /* Shift */
@@ -1502,7 +1547,7 @@ static uint8_t make_transverter(uint8_t row, uint8_t n) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
     lv_obj_add_event_cb(obj, transverter_shift_update_cb, LV_EVENT_VALUE_CHANGED, transverter);
 
     return row + 1;
@@ -1524,7 +1569,7 @@ static uint8_t make_voice(uint8_t row) {
     obj = dropdown_uint8(grid, &params.voice_mode, " Off \n When LCD off \n Always");
 
     lv_obj_set_size(obj, SMALL_6, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_center(obj);
 
     /* * */
@@ -1542,7 +1587,7 @@ static uint8_t make_voice(uint8_t row) {
     lv_spinbox_set_digit_format(obj, 3, 0);
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
 
     obj = spinbox_uint8(grid, &params.voice_pitch);
 
@@ -1550,14 +1595,14 @@ static uint8_t make_voice(uint8_t row) {
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
 
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
 
     obj = spinbox_uint8(grid, &params.voice_volume);
 
     lv_spinbox_set_digit_format(obj, 3, 0);
     lv_spinbox_set_digit_step_direction(obj, LV_DIR_LEFT);
     lv_obj_set_size(obj, SMALL_2, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, 2, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col, SPAN_3, LV_GRID_ALIGN_CENTER, row, 1);   col += 2;
 
     return row + 1;
 }
@@ -1579,7 +1624,7 @@ static uint8_t make_auto(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_2A, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -1591,7 +1636,7 @@ static uint8_t make_auto(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_2B, SPAN_2B, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -1613,7 +1658,7 @@ static uint8_t make_auto(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_2A, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -1625,7 +1670,7 @@ static uint8_t make_auto(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_2B, SPAN_2B, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -1651,7 +1696,7 @@ static uint8_t make_waterfall_line_zoom(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_2A, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -1663,7 +1708,7 @@ static uint8_t make_waterfall_line_zoom(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_2B, SPAN_2B, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -1689,7 +1734,7 @@ static uint8_t make_waterfall_smooth_scroll(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -1715,7 +1760,7 @@ static uint8_t make_waterfall_battery(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -1753,7 +1798,7 @@ static uint8_t make_sp_mode(uint8_t row) {
     obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -1789,7 +1834,7 @@ static uint8_t make_freq_accel(uint8_t row) {
     obj = dropdown_uint8(grid, &params.freq_accel, " None \n Lite \n Strong");
 
     lv_obj_set_size(obj, SMALL_6, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_center(obj);
 
     return row + 1;
@@ -1845,7 +1890,7 @@ static uint8_t make_theme(uint8_t row) {
     }
 
     lv_obj_set_size(obj, SMALL_6, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_center(obj);
 
     return row + 1;
@@ -1874,7 +1919,7 @@ static uint8_t make_font(uint8_t row) {
     obj = dropdown_uint8_custom_cb(grid, &params.font, font_dropdown_items(), font_update_cb);
 
     lv_obj_set_size(obj, SMALL_6, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_center(obj);
 
     return row + 1;
@@ -1974,7 +2019,7 @@ static lv_obj_t *bt_switch_cell(uint8_t row, bool state, lv_event_cb_t cb) {
     lv_obj_t *obj = lv_obj_create(grid);
 
     lv_obj_set_size(obj, SMALL_3, 54);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
@@ -2039,7 +2084,7 @@ static uint8_t make_bluetooth(uint8_t row) {
     lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_size(obj, SMALL_6, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 6, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     dialog_item(&dialog, obj);
     lv_obj_add_event_cb(obj, bt_devices_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(obj, bt_devices_cb, LV_EVENT_KEY, NULL);
@@ -2054,9 +2099,14 @@ static uint8_t make_bluetooth(uint8_t row) {
 
     obj = lv_dropdown_create(grid);
     lv_dropdown_set_options(obj, " Off \n On \n Shadow");
+    /* Sin esto el desplegable dibuja su flecha por defecto (LV_SYMBOL_DOWN), que no esta en
+     * ninguna fuente del equipo: salia como caja vacia. Estaba tapada porque el desplegable se
+     * recortaba al pasar el borde del dialogo; al entrar en el esquema unico (#175) queda a la
+     * vista, asi que se saca igual que en los otros desplegables de Ajustes. */
+    lv_dropdown_set_symbol(obj, NULL);
     lv_dropdown_set_selected(obj, params.charger);
     lv_obj_set_size(obj, SMALL_6, 56);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_center(obj);
     dialog_item(&dialog, obj);      /* si no, no se puede elegir con las teclas */
     lv_obj_add_event_cb(obj, charger_update_cb, LV_EVENT_VALUE_CHANGED, NULL);
@@ -2087,7 +2137,7 @@ static uint8_t make_cluster_column(uint8_t row) {
 
     obj = lv_obj_create(grid);
     lv_obj_set_size(obj, SMALL_3, 54);
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 4, 3, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
