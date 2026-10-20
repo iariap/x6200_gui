@@ -25,6 +25,7 @@ extern "C" {
     #include "pubsub_ids.h"
     #include "cfg/mode.h"
     #include "scheduler.h"
+    #include "dfl_inline.h"
 }
 
 /* dialog.h trae helpers.h (C++): va FUERA del bloque extern "C". */
@@ -330,21 +331,44 @@ static button_item_t btn_nr_level = make_btn(nr_level_label_getter, MFK_NR_LEVEL
 
 static button_item_t btn_eq = make_app_btn("Eq", ACTION_APP_EQ);
 
-/* Quinta celda de la pagina DFL (issue #173, PR 2): abre el editor de filtro.
- * Es una accion, no una app del menu de apps: se despacha en main_screen_action(). */
-static button_item_t btn_dfl_editor = make_action_btn("DFL editor", ACTION_APP_DFL_EDITOR);
+/* Quinta celda de la pagina DFL normal (issue #179): abre el editor DFL inline
+ * sobre el waterfall. Es una accion, no una app del menu de apps: se despacha en
+ * main_screen_action(). */
+static button_item_t btn_dfl_editor = make_action_btn("Filtro\ngrafico", ACTION_APP_DFL_EDITOR);
 
-/* Cerrar el editor DFL desde la barra inferior. */
-static void close_dfl_cb(button_item_t *item) {
-    (void) item;
-    dialog_destruct();
+/* Pagina DFL EXPANDIDA (issue #179, C.2): las tres primeras celdas muestran SOLO
+ * nombres y al tocarse SELECCIONAN el parametro para el encoder VOL (no editan
+ * ni cambian el volumen); la quinta contrae. Cero numeros duplicados: los valores
+ * exactos viven en las tres filas del panel. */
+static void dfl_sel_cb(button_item_t *item) {
+    dfl_inline_select((dfl_sel_t) item->data);
 }
 
-static button_item_t btn_close_dfl = {
-    .type  = BTN_TEXT,
-    .label = "Cerrar DFL",
-    .press = close_dfl_cb,
-};
+static button_item_t btn_dfl_sel_low = {
+    .type = BTN_TEXT, .label = "LOW", .press = dfl_sel_cb, .data = DFL_SEL_LOW};
+static button_item_t btn_dfl_sel_high = {
+    .type = BTN_TEXT, .label = "HIGH", .press = dfl_sel_cb, .data = DFL_SEL_HIGH};
+static button_item_t btn_dfl_sel_bw = {
+    .type = BTN_TEXT, .label = "BW", .press = dfl_sel_cb, .data = DFL_SEL_BW};
+
+/* Eq en la barra expandida: primero contrae limpio y despues abre Eq. */
+static void dfl_eq_cb(button_item_t *item) {
+    (void) item;
+    dfl_inline_collapse();
+    main_screen_start_app(ACTION_APP_EQ);
+}
+
+static button_item_t btn_eq_expanded = {
+    .type = BTN_TEXT, .label = "Eq", .press = dfl_eq_cb};
+
+/* Waterfall: contrae sin confirmar/deshacer. */
+static void dfl_waterfall_cb(button_item_t *item) {
+    (void) item;
+    dfl_inline_collapse();
+}
+
+static button_item_t btn_dfl_waterfall = {
+    .type = BTN_TEXT, .label = "Waterfall", .press = dfl_waterfall_cb};
 
 /* APP */
 
@@ -499,8 +523,8 @@ buttons_page_t buttons_page_dfl_1 = {
     {&btn_flt_low, &btn_flt_high, &btn_flt_bw, &btn_eq, &btn_dfl_editor}
 };
 
-buttons_page_t buttons_page_dfl_editor = {
-    {&btn_flt_low, &btn_flt_high, &btn_flt_bw, &btn_eq, &btn_close_dfl}
+buttons_page_t buttons_page_dfl_expanded = {
+    {&btn_dfl_sel_low, &btn_dfl_sel_high, &btn_dfl_sel_bw, &btn_eq_expanded, &btn_dfl_waterfall}
 };
 
 /* App pages: TODAS las apps de main_screen_start_app tienen que estar aca (el chequeo
@@ -909,6 +933,16 @@ void buttons_load_page_group(buttons_group_t group) {
 
 buttons_page_t *buttons_get_cur_page() {
     return cur_page;
+}
+
+uint8_t buttons_bar_height(void) {
+    return btn_height;
+}
+
+void buttons_dfl_expanded_sync(int sel) {
+    buttons_mark(&btn_dfl_sel_low, sel == DFL_SEL_LOW);
+    buttons_mark(&btn_dfl_sel_high, sel == DFL_SEL_HIGH);
+    buttons_mark(&btn_dfl_sel_bw, sel == DFL_SEL_BW);
 }
 
 static const char * vol_label_getter() {

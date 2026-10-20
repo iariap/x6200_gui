@@ -1,0 +1,4 @@
+  fuente-md5.sh: estable y sin depender del cwd
+  compila-gui.sh: repone la copia con --checksum y deja el sello
+  CMakeLists + src/main.c: el sello se embebe y se loguea al arrancar
+  captura-banco.sh: usa el mismo hash

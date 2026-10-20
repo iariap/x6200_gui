@@ -24,10 +24,11 @@
 
 #include "test_framework.h"
 
-/* Ancho util del grafico del dialogo: 432 - 6 - 6 = 420 px, x0 = 6 (los margenes
- * de src/dialog_dfl.c). El golden usa estos numeros. */
-#define GX0 6
-#define GW  420
+/* Ancho util del grafico del panel inline (issue #179): DFL_GRAPH_W - PAD_L -
+ * PAD_R = 487 - 8 - 8 = 471 px, x0 = 8 (los margenes de src/dfl_inline.c). El
+ * golden usa estos numeros. */
+#define GX0 8
+#define GW  471
 
 static void test_steps(void) {
     CHECK(dfl_step_low(x6200_mode_usb_dig) == 10);
@@ -104,66 +105,92 @@ static void test_quantize(void) {
 }
 
 static void test_domain(void) {
-    dfl_domain_t ssb = dfl_graph_domain(x6200_mode_usb_dig);
+    /* Adaptativo (issue #179, C.3): el dominio se ajusta al filtro con los
+     * dominios "agradables" 1000 / 2000 / 5000 / 10000. */
+    CHECK(dfl_domain_at(0) == 1000);
+    CHECK(dfl_domain_at(1) == 2000);
+    CHECK(dfl_domain_at(2) == 5000);
+    CHECK(dfl_domain_at(3) == 10000);
+
+    /* GOLDEN del contrato: USB-D 225..3525 -> 0..5000. */
+    CHECK(dfl_fit_span(225, 3525) == 5000);
+    dfl_domain_t ssb = dfl_domain_fit(x6200_mode_usb_dig, 225, 3525);
     CHECK(ssb.min_hz == 0);
-    CHECK(ssb.max_hz == MAX_FILTER_FREQ);
+    CHECK(ssb.max_hz == 5000);
 
-    dfl_domain_t lsb = dfl_graph_domain(x6200_mode_lsb);
+    /* Otros filtros eligen el menor dominio que los contiene. */
+    CHECK(dfl_fit_span(0, 900) == 1000);
+    CHECK(dfl_fit_span(0, 1900) == 2000);
+    CHECK(dfl_fit_span(50, 2950) == 5000);
+    CHECK(dfl_fit_span(50, 9000) == 10000);
+
+    /* LSB-D espejo: mismo dominio [0, M] (LOW no negativo). */
+    dfl_domain_t lsb = dfl_domain_fit(x6200_mode_lsb, 225, 3525);
     CHECK(lsb.min_hz == 0);
+    CHECK(lsb.max_hz == 5000);
 
-    dfl_domain_t cw = dfl_graph_domain(x6200_mode_cw);
-    CHECK(cw.min_hz == -MAX_FILTER_FREQ);
-    CHECK(cw.max_hz == MAX_FILTER_FREQ);
+    /* CW/CWR y simetricos: [-M, +M] con M de la lista que contiene el extremo
+     * (incluso con LOW negativo). */
+    dfl_domain_t cw = dfl_domain_fit(x6200_mode_cw, -250, 250);
+    CHECK(cw.min_hz == -1000);
+    CHECK(cw.max_hz == 1000);
 
-    dfl_domain_t am = dfl_graph_domain(x6200_mode_am);
-    CHECK(am.min_hz == -MAX_FILTER_FREQ);
-    CHECK(am.max_hz == MAX_FILTER_FREQ);
+    dfl_domain_t am = dfl_domain_fit(x6200_mode_am, 0, 4500);
+    CHECK(am.min_hz == -5000);
+    CHECK(am.max_hz == 5000);
+
+    /* Histéresis de ampliacion: nunca reduce; solo crece si el filtro se fue
+     * afuera del dominio fijado. */
+    CHECK(dfl_domain_grow(5000, 225, 3525) == 5000);   /* adentro: no cambia */
+    CHECK(dfl_domain_grow(5000, 225, 6000) == 10000);  /* afuera: crece */
+    CHECK(dfl_domain_grow(10000, 225, 3525) == 10000); /* nunca reduce */
+    CHECK(dfl_domain_grow(1000, -250, 250) == 1000);
 }
 
 /* GOLDEN: geometria del grafico y de los handles. */
 static void test_graph_golden(void) {
-    dfl_domain_t ssb = dfl_graph_domain(x6200_mode_usb_dig);
+    dfl_domain_t ssb = dfl_domain_fit(x6200_mode_usb_dig, 225, 3525);   /* [0,5000] */
 
-    /* USB-D low=225 high=3525, dominio [0,10000], w=420: x = 6 + round(hz*420/10000). */
-    CHECK(dfl_graph_x(0, ssb, GX0, GW) == 6);
-    CHECK(dfl_graph_x(225, ssb, GX0, GW) == 15);      /* round(9.45)  = 9  */
-    CHECK(dfl_graph_x(3525, ssb, GX0, GW) == 154);    /* round(148.05)= 148 */
-    CHECK(dfl_graph_x(10000, ssb, GX0, GW) == 426);   /* borde derecho */
+    /* USB-D low=225 high=3525, dominio [0,5000], w=471: x = 8 + round(hz*471/5000). */
+    CHECK(dfl_graph_x(0, ssb, GX0, GW) == 8);
+    CHECK(dfl_graph_x(225, ssb, GX0, GW) == 29);      /* round(21.195) = 21 */
+    CHECK(dfl_graph_x(3525, ssb, GX0, GW) == 340);    /* round(332.055)= 332 */
+    CHECK(dfl_graph_x(5000, ssb, GX0, GW) == 479);    /* borde derecho */
 
-    /* El handle de LOW cae en el borde de la banda; el de HIGH tambien. */
+    /* El handle de LOW cae a la izquierda del de HIGH. */
     CHECK(dfl_graph_x(225, ssb, GX0, GW) < dfl_graph_x(3525, ssb, GX0, GW));
 
-    /* CW low=-250 high=250, dominio [-10000,10000], w=420:
-     * x = 6 + round((hz+10000)*420/20000). */
-    dfl_domain_t cw = dfl_graph_domain(x6200_mode_cw);
-    CHECK(dfl_graph_x(0, cw, GX0, GW) == 216);        /* centro */
-    CHECK(dfl_graph_x(-250, cw, GX0, GW) == 211);
-    CHECK(dfl_graph_x(250, cw, GX0, GW) == 221);
-    CHECK(dfl_graph_x(-10000, cw, GX0, GW) == 6);
-    CHECK(dfl_graph_x(10000, cw, GX0, GW) == 426);
+    /* CW low=-250 high=250, dominio [-1000,1000], w=471:
+     * x = 8 + round((hz+1000)*471/2000). */
+    dfl_domain_t cw = dfl_domain_fit(x6200_mode_cw, -250, 250);
+    CHECK(dfl_graph_x(0, cw, GX0, GW) == 244);        /* centro */
+    CHECK(dfl_graph_x(-250, cw, GX0, GW) == 185);
+    CHECK(dfl_graph_x(250, cw, GX0, GW) == 302);
+    CHECK(dfl_graph_x(-1000, cw, GX0, GW) == 8);
+    CHECK(dfl_graph_x(1000, cw, GX0, GW) == 479);
 
-    /* AM high=4500 simetrico. */
-    dfl_domain_t am = dfl_graph_domain(x6200_mode_am);
-    CHECK(dfl_graph_x(4500, am, GX0, GW) == 311);     /* round(304.5)=305 */
-    CHECK(dfl_graph_x(-4500, am, GX0, GW) == 122);    /* round(115.5)=116 */
+    /* AM high=4500, dominio [-5000,5000]. */
+    dfl_domain_t am = dfl_domain_fit(x6200_mode_am, 0, 4500);
+    CHECK(dfl_graph_x(4500, am, GX0, GW) == 455);     /* round(447.45)=447 */
+    CHECK(dfl_graph_x(-4500, am, GX0, GW) == 32);     /* round(23.55) = 24 */
 
     /* Ida y vuelta: el mapeo es de pixeles (un paso vale ~span/w Hz), asi que se
      * exige estar a menos de un pixel de distancia, no la igualdad exacta. */
     int32_t back;
     back = dfl_graph_hz(dfl_graph_x(225, ssb, GX0, GW), ssb, GX0, GW);
-    CHECK(back >= 225 - 24 && back <= 225 + 24);
+    CHECK(back >= 225 - 12 && back <= 225 + 12);
     back = dfl_graph_hz(dfl_graph_x(3525, ssb, GX0, GW), ssb, GX0, GW);
-    CHECK(back >= 3525 - 24 && back <= 3525 + 24);
+    CHECK(back >= 3525 - 12 && back <= 3525 + 12);
     back = dfl_graph_hz(dfl_graph_x(-250, cw, GX0, GW), cw, GX0, GW);
-    CHECK(back >= -250 - 48 && back <= -250 + 48);
+    CHECK(back >= -250 - 6 && back <= -250 + 6);
     back = dfl_graph_hz(dfl_graph_x(250, cw, GX0, GW), cw, GX0, GW);
-    CHECK(back >= 250 - 48 && back <= 250 + 48);
+    CHECK(back >= 250 - 6 && back <= 250 + 6);
 
     /* Recorte a los bordes. */
     CHECK(dfl_graph_x(-99999, ssb, GX0, GW) == GX0);
     CHECK(dfl_graph_x(99999, ssb, GX0, GW) == GX0 + GW);
     CHECK(dfl_graph_hz(GX0 - 1000, ssb, GX0, GW) == 0);
-    CHECK(dfl_graph_hz(GX0 + GW + 1000, ssb, GX0, GW) == MAX_FILTER_FREQ);
+    CHECK(dfl_graph_hz(GX0 + GW + 1000, ssb, GX0, GW) == 5000);
 
     /* Sin ancho o sin dominio: nunca divide por cero. */
     CHECK(dfl_graph_x(225, ssb, GX0, 0) == GX0);
@@ -171,12 +198,29 @@ static void test_graph_golden(void) {
     dfl_domain_t vacio = { 0, 0 };
     CHECK(dfl_graph_x(225, vacio, GX0, GW) == GX0);
     CHECK(dfl_graph_hz(100, vacio, GX0, GW) == 0);
+}
 
-    /* Handles: el mas cercano a x. */
-    CHECK(dfl_nearest_handle(10, 15, 154) == DFL_HANDLE_LOW);
-    CHECK(dfl_nearest_handle(150, 15, 154) == DFL_HANDLE_HIGH);
-    CHECK(dfl_nearest_handle(84, 15, 154) == DFL_HANDLE_LOW);   /* 69 vs 70 */
-    CHECK(dfl_nearest_handle(85, 15, 154) == DFL_HANDLE_HIGH);
+/* Hit-test de los handles (issue #179): radio maximo de 22 px y, fuera de eso,
+ * NINGUN handle (un toque lejano no modifica nada). */
+static void test_hit_test(void) {
+    /* Golden SSB: low_x=29, high_x=340. */
+    CHECK(dfl_hit_test(29, 29, 340) == DFL_HANDLE_LOW);
+    CHECK(dfl_hit_test(340, 29, 340) == DFL_HANDLE_HIGH);
+    CHECK(dfl_hit_test(7, 29, 340) == DFL_HANDLE_LOW);      /* dl=22: al limite */
+    CHECK(dfl_hit_test(6, 29, 340) == DFL_HANDLE_NONE);     /* dl=23: fuera */
+    CHECK(dfl_hit_test(362, 29, 340) == DFL_HANDLE_HIGH);   /* dh=22: al limite */
+    CHECK(dfl_hit_test(363, 29, 340) == DFL_HANDLE_NONE);   /* dh=23: fuera */
+    CHECK(dfl_hit_test(200, 29, 340) == DFL_HANDLE_NONE);   /* lejos de ambos */
+    CHECK(dfl_hit_test(0, 29, 340) == DFL_HANDLE_NONE);     /* borde del grafico */
+
+    /* Equidistante (handles a menos de 44 px, para que ambos entren en la zona):
+     * gana LOW (misma regla de desempate del contrato). */
+    CHECK(dfl_hit_test(44, 29, 60) == DFL_HANDLE_LOW);      /* dl=15, dh=16 */
+    CHECK(dfl_hit_test(45, 29, 60) == DFL_HANDLE_HIGH);     /* dl=16, dh=15 */
+
+    /* Handles pegados: gana el mas cercano; muy lejos, ninguno. */
+    CHECK(dfl_hit_test(50, 48, 52) == DFL_HANDLE_LOW);
+    CHECK(dfl_hit_test(90, 48, 52) == DFL_HANDLE_NONE);
 }
 
 static void test_bw_targets(void) {
@@ -246,6 +290,7 @@ void test_dfl_editor(void) {
     test_quantize();
     test_domain();
     test_graph_golden();
+    test_hit_test();
     test_bw_targets();
     test_bw_legal();
     test_reset_order();

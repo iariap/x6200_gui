@@ -27,7 +27,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     screen_rec.c avi_writer.c wfview_server.c
     dialog_wifi.c wifi.cpp controls_encoder.c controls_step.c voice.c voice_text.c controls.cpp usb_devices.cpp
     dialog_eq.cpp
-    dialog_dfl.c
+    dfl_inline.c
     dfl_rotary.c
     adaptive_tuning.c
     autotune.c autotune_ui.c

@@ -5,7 +5,7 @@
  *
  *  Capa de aplicacion del editor DFL (issue #173, PR 2 / correccion del owner).
  *
- *  El dialogo (src/dialog_dfl.c) no escribe los Subjects del filtro: pide aca.
+ *  El editor (src/dfl_inline.c) no escribe los Subjects del filtro: pide aca.
  *  Todo pasa por los caminos vigentes del firmware:
  *
  *    - LOW  -> cfg_mode_set_low_filter()   (valida: high > low, LOW >= 0 en SSB,

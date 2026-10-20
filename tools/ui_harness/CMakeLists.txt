@@ -130,11 +130,11 @@ set(GUI_SRC
     ${REPO}/src/dialog_settings.c
     ${REPO}/src/dialog_bt.c
     ${REPO}/src/bt_devices.c
-    # Editor DFL (issue #173, PR 2): la ventana REAL del editor de filtro, que los
+    # Editor DFL inline (issue #179): el panel REAL del editor de filtro, que los
     # fixtures `dfl-editor-*` abren por el camino del firmware
-    # (main_screen_action(ACTION_APP_DFL_EDITOR) -> dialog_construct(dialog_dfl)).
+    # (main_screen_action(ACTION_APP_DFL_EDITOR) -> dfl_inline_expand()).
     # El modelo puro que consume vive en src/dfl_model.h.
-    ${REPO}/src/dialog_dfl.c
+    ${REPO}/src/dfl_inline.c
     # La aplicacion por los setters vigentes (sin LVGL): la comparte el arrastre
     # del grafico y la rueda.
     ${REPO}/src/dfl_rotary.c

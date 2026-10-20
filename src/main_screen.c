@@ -45,7 +45,7 @@
 #include "dialog_propagation.h"
 #include "dialog_wifi.h"
 #include "dialog_eq.h"
-#include "dialog_dfl.h"
+#include "dfl_inline.h"
 #include "backlight.h"
 #include "buttons.h"
 #include "recorder.h"
@@ -164,6 +164,10 @@ static const char *current_app = "home";
 /* Apaga la app abierta: cierra su dialogo (si lo hay) y RTTY. */
 static void apps_stop() {
     dialog_destruct();
+
+    /* El editor DFL inline no es un dialogo: cambiar de app/pagina lo contrae
+     * limpiamente (issue #179) y devuelve la barra a su pagina normal. */
+    dfl_inline_collapse();
 
     rtty_set_state(RTTY_OFF);
     pannel_visible();
@@ -356,13 +360,13 @@ void main_screen_start_app(press_action_t app_action) {
             voice_say_text_fmt("Propagation window");
             break;
 
-        /* Editor DFL (issue #173, PR 2). No es una app del menu de apps, pero
-         * entra por el mismo dispatcher para no dejar ventanas huerfanas y para
-         * poder abrirse por el control remoto (banco/webserver) como las demas.
-         * El dialogo es modal y no guarda ni restaura el estado de la radio
-         * (restore_radio=false). */
+        /* Editor DFL inline (issue #179). No es una app del menu de apps ni un
+         * dialogo: se abre como panel inline sobre el waterfall, desde la quinta
+         * celda de la pagina DFL y desde el long press fisico DFL. Se despacha
+         * aca (con `case`) para que el control remoto (banco/webserver) tambien
+         * lo pueda abrir; `apps_close()` ya contrajo cualquier DFL previo. */
         case ACTION_APP_DFL_EDITOR:
-            dialog_construct(dialog_dfl, obj);
+            dfl_inline_expand();
             voice_say_text_fmt("DFL editor");
             break;
 
@@ -515,12 +519,10 @@ void main_screen_action(press_action_t action) {
             main_screen_start_app(action);
             break;
 
-        /* Editor DFL (issue #173, PR 2). No es una app del menu de apps: se abre
-         * desde la quinta celda de la pagina DFL y desde el long press fisico
-         * DFL. Entra por el dispatcher de apps (main_screen_start_app) para no
-         * dejar ventanas huerfanas y para poder abrirse por el control remoto
-         * (banco/webserver) como las demas; el dialogo es modal y no guarda ni
-         * restaura el estado de la radio (restore_radio=false). */
+        /* Editor DFL inline (issue #179). Se abre desde la quinta celda de la
+         * pagina DFL y desde el long press fisico DFL. `main_screen_start_app()`
+         * cierra cualquier app/dialogo abierto (no deja ventanas huerfanas) y el
+         * case de arriba expande el panel inline. */
         case ACTION_APP_DFL_EDITOR:
             main_screen_start_app(action);
             break;
@@ -894,10 +896,23 @@ static void main_screen_keypad_cb(lv_event_t * e) {
         case KEYPAD_DFL:
             if (keypad->state == KEYPAD_RELEASE) {
                 apps_disable();
-                buttons_load_page_group(buttons_group_dfl);
+
+                /* Pulsacion corta de DFL: si el editor inline esta expandido, lo
+                 * contrae; si no, carga la pagina habitual. */
+                if (dfl_inline_is_expanded()) {
+                    dfl_inline_collapse();
+                } else {
+                    buttons_load_page_group(buttons_group_dfl);
+                }
                 voice_say_text_fmt("DFL parameters");
             } else if (keypad->state == KEYPAD_LONG) {
-                main_screen_action(params.long_dfl);
+                /* DFL largo: si la accion configurada es el editor DFL, alterna
+                 * (abre/contrae); si no, ejecuta la accion persistida. */
+                if (params.long_dfl == ACTION_APP_DFL_EDITOR) {
+                    dfl_inline_toggle();
+                } else {
+                    main_screen_action(params.long_dfl);
+                }
             }
             break;
 
@@ -1067,6 +1082,9 @@ static void main_screen_radio_cb(lv_event_t * e) {
     lv_event_send(spectrum, code, NULL);
 
     dialog_send(code, NULL);
+
+    /* El editor DFL inline no es un dialogo: se le avisa TX/RX por separado. */
+    dfl_inline_on_radio_event(code);
 }
 
 static void main_screen_update_cb(lv_event_t * e) {
@@ -1239,21 +1257,36 @@ static void spectrum_key_cb(lv_event_t * e) {
 
         case KEY_VOL_LEFT_EDIT:
         case '[':
+            /* Con el editor DFL inline expandido, el encoder VOL (rotary1) edita
+             * el filtro: NO llega a vol_update(), asi que no cambia volumen ni
+             * VFO. */
+            if (key == KEY_VOL_LEFT_EDIT && dfl_inline_on_vol_key(KEY_VOL_LEFT_EDIT)) {
+                break;
+            }
             vol_update(-1, false);
             break;
 
         case KEY_VOL_RIGHT_EDIT:
         case ']':
+            if (key == KEY_VOL_RIGHT_EDIT && dfl_inline_on_vol_key(KEY_VOL_RIGHT_EDIT)) {
+                break;
+            }
             vol_update(+1, false);
             break;
 
         case KEY_VOL_LEFT_SELECT:
         case '{':
+            if (key == KEY_VOL_LEFT_SELECT && dfl_inline_on_vol_key(KEY_VOL_LEFT_SELECT)) {
+                break;
+            }
             vol_change_mode(-1);
             break;
 
         case KEY_VOL_RIGHT_SELECT:
         case '}':
+            if (key == KEY_VOL_RIGHT_SELECT && dfl_inline_on_vol_key(KEY_VOL_RIGHT_SELECT)) {
+                break;
+            }
             vol_change_mode(+1);
             break;
 
@@ -1294,6 +1327,13 @@ static void spectrum_key_cb(lv_event_t * e) {
             break;
 
         case LV_KEY_ESC:
+            /* Con el editor DFL inline expandido, ESC lo contrae (y no toca el
+             * modo del encoder VOL). Sin el editor, conserva el comportamiento
+             * previo: alterna EDIT/SELECT del encoder de volumen. */
+            if (dfl_inline_is_expanded()) {
+                dfl_inline_collapse();
+                break;
+            }
             if (!dialog_is_run() && vol != NULL) {
                 switch (vol->mode) {
                     case ROT_VOL_EDIT_MODE:
@@ -1494,6 +1534,11 @@ lv_obj_t * main_screen() {
 
     lv_obj_set_y(waterfall, y);
     waterfall_set_height(480 - y);
+
+    /* Editor DFL inline (issue #179): panel nativo dentro del rectangulo del
+     * waterfall, creado despues de la imagen para dibujarse encima. Deriva su
+     * geometria del objeto real (no hardcodea 240). */
+    dfl_inline_init(waterfall);
 
     spot_marks_init(obj, spots_y, spots_y + 4);
 

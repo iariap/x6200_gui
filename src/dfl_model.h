@@ -9,7 +9,7 @@
  *  Subjects: los pasos de edicion de src/vol.c, la cuantizacion, el mapeo de
  *  Hz del filtro a pixeles del grafico esquematico, los objetivos de LOW/HIGH
  *  cuando se edita el BW y la legalidad de esos objetivos. El dialogo
- *  (src/dialog_dfl.c) es el unico consumidor; el test nativo
+ *  (src/dfl_inline.c) es el unico consumidor; el test nativo
  *  (tests/native/test_dfl_editor.c) fija el golden de geometria y las reglas.
  *
  *  Es un ESPEJO de la logica vigente del firmware, no una segunda fuente de
@@ -35,7 +35,7 @@
 #define DFL_STEP_BW          20
 
 /* Parametro del editor sobre el que actua la rueda. La fila tocada lo
- * selecciona (src/dialog_dfl.c) y el encoder ajusta el seleccionado. */
+ * selecciona (src/dfl_inline.c) y el encoder ajusta el seleccionado. */
 typedef enum {
     DFL_SEL_LOW = 0,
     DFL_SEL_HIGH,
@@ -122,26 +122,80 @@ static inline int32_t dfl_quantize(int32_t val, int32_t step) {
 
 /* --- Grafico esquematico --------------------------------------------------
  * El eje es la frecuencia DEL FILTRO (Hz de low/high), con el cero visible, no
- * las coordenadas del waterfall. El dominio se ajusta al rango admitido del
- * modo: SSB arranca en 0 (LOW no puede ser negativo); CW/CWR y AM/SAM/NFM/WFM
- * son simetricos alrededor de cero. */
+ * las coordenadas del waterfall. El dominio es ADAPTATIVO (issue #179, C.3): en
+ * vez de dibujar siempre 0..10000 (que hace impracticable ver un filtro de
+ * 2-3 kHz), se elige el menor de los dominios "agradables" 1000 / 2000 / 5000 /
+ * 10000 Hz que contenga los DOS limites. En SSB el dominio es [0, M]; en CW/CWR
+ * y en los modos simetricos (AM/SAM/NFM/WFM) es [-M, +M], incluso con LOW
+ * negativo. Golden del contrato: USB-D 225..3525 -> 0..5000 Hz. */
 typedef struct {
     int32_t min_hz;
     int32_t max_hz;
 } dfl_domain_t;
 
-static inline dfl_domain_t dfl_graph_domain(x6200_mode_t mode) {
+/* Los cuatro dominios del contrato, de menor a mayor. */
+#define DFL_DOMAIN_COUNT 4
+
+static inline int32_t dfl_domain_at(int i) {
+    switch (i) {
+        case 0:
+            return 1000;
+        case 1:
+            return 2000;
+        case 2:
+            return 5000;
+        default:
+            return MAX_FILTER_FREQ;   /* 10000 */
+    }
+}
+
+/* Menor dominio que contiene ambos limites. Si ninguno alcanza (no deberia:
+ * MAX_FILTER_FREQ es el tope del firmware) devuelve el tope. */
+static inline int32_t dfl_fit_span(int32_t low, int32_t high) {
+    int32_t m = (low < 0) ? -low : low;
+    int32_t h = (high < 0) ? -high : high;
+
+    if (h > m) {
+        m = h;
+    }
+
+    for (int i = 0; i < DFL_DOMAIN_COUNT; i++) {
+        if (dfl_domain_at(i) >= m) {
+            return dfl_domain_at(i);
+        }
+    }
+
+    return MAX_FILTER_FREQ;
+}
+
+/* Arma el dominio del modo a partir de la magnitud `span_m`. */
+static inline dfl_domain_t dfl_domain_span(x6200_mode_t mode, int32_t span_m) {
     dfl_domain_t d;
 
     if (dfl_mode_is_cw(mode) || dfl_mode_is_symmetric(mode)) {
-        d.min_hz = -MAX_FILTER_FREQ;
-        d.max_hz = MAX_FILTER_FREQ;
+        d.min_hz = -span_m;
+        d.max_hz = span_m;
     } else {
         d.min_hz = 0;
-        d.max_hz = MAX_FILTER_FREQ;
+        d.max_hz = span_m;
     }
 
     return d;
+}
+
+/* Dominio adaptativo de un filtro concreto (lo que se fija al entrar o al
+ * cambiar de modo). */
+static inline dfl_domain_t dfl_domain_fit(x6200_mode_t mode, int32_t low, int32_t high) {
+    return dfl_domain_span(mode, dfl_fit_span(low, high));
+}
+
+/* Histéresis de ampliacion: NUNCA reduce. Si el filtro se fue fuera del dominio
+ * fijado, salta al menor dominio que lo contenga; si sigue adentro, conserva el
+ * actual (asi el grafico no salta en cada detent). */
+static inline int32_t dfl_domain_grow(int32_t span_m, int32_t low, int32_t high) {
+    int32_t need = dfl_fit_span(low, high);
+
+    return (need > span_m) ? need : span_m;
 }
 
 /* Redondeo al entero mas cercano (el numerador es >= 0: hz >= min_hz). */
@@ -244,8 +298,14 @@ typedef enum {
     DFL_HANDLE_HIGH,
 } dfl_handle_t;
 
-/* El handle mas cercano a x (para el PRESSED del arrastre). */
-static inline dfl_handle_t dfl_nearest_handle(int32_t x, int32_t low_x, int32_t high_x) {
+/* Hit-test de los handles del grafico (issue #179, D/C.2): un toque/arrastre
+ * SOLO captura un handle si cae a `DFL_HANDLE_MAX_DIST` px o menos de su x (la
+ * zona util de toque es >=44x44 px). Un toque lejano NO captura nada: devuelve
+ * DFL_HANDLE_NONE y el filtro no se modifica. Es la correccion del bug del
+ * #173/#177, donde dfl_nearest_handle() siempre devolvia un handle. */
+#define DFL_HANDLE_MAX_DIST 22
+
+static inline dfl_handle_t dfl_hit_test(int32_t x, int32_t low_x, int32_t high_x) {
     int32_t dl = x - low_x;
     int32_t dh = x - high_x;
 
@@ -254,6 +314,10 @@ static inline dfl_handle_t dfl_nearest_handle(int32_t x, int32_t low_x, int32_t 
     }
     if (dh < 0) {
         dh = -dh;
+    }
+
+    if (dl > DFL_HANDLE_MAX_DIST && dh > DFL_HANDLE_MAX_DIST) {
+        return DFL_HANDLE_NONE;
     }
 
     return (dl <= dh) ? DFL_HANDLE_LOW : DFL_HANDLE_HIGH;

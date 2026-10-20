@@ -614,14 +614,15 @@ $CC $BASEFLAGS -fanalyzer -I"$SP_STAGE" -I"$DIR" \
 
 "$OUT/spectrum_tests"
 
-# --- Editor DFL: modelo puro (issue #173, PR 2) --------------------------------
-# src/dfl_model.h es puro: pasos de edicion (src/vol.c), cuantizacion, dominio y
-# geometria del grafico esquematico, mapeo/legalidad del BW (espejo de
-# src/cfg/mode.c) y el orden seguro del "restablecer predeterminado". El test lo
-# compila contra un stub de aether_radio (solo los enums de modo/AGC): no hacen
-# falta LVGL ni Subjects. El dialogo real (src/dialog_dfl.c) lo consume y el
-# arnes lo renderiza.
-echo "== Editor DFL (#173 PR 2): modelo puro (pasos, geometria golden, BW, reset) =="
+# --- Editor DFL: modelo puro (issue #179, correccion del #173) -----------------
+# src/dfl_model.h es puro: pasos de edicion (src/vol.c), cuantizacion, dominio
+# ADAPTATIVO y geometria del grafico esquematico, mapeo/legalidad del BW (espejo
+# de src/cfg/mode.c), el hit-test de los handles (radio maximo de 22 px) y el
+# orden seguro del "restablecer predeterminado". El test lo compila contra un
+# stub de aether_radio (solo los enums de modo/AGC): no hacen falta LVGL ni
+# Subjects. El editor inline real (src/dfl_inline.c) lo consume y el arnes lo
+# renderiza.
+echo "== Editor DFL (#179): modelo puro (pasos, escala adaptativa, hit-test, BW, reset) =="
 if [ "$SAN_OK" = yes ]; then
     # shellcheck disable=SC2086
     $CC $BASEFLAGS $SAN -I"$DIR/stubs_dfl" -I"$SRC" \

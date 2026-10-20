@@ -81,11 +81,21 @@ extern buttons_group_t buttons_group_key;
 extern buttons_group_t buttons_group_dfn;
 extern buttons_group_t buttons_group_dfl;
 
-/* Paginas DFL (issue #173, PR 2): la normal lleva la quinta celda "DFL editor"
- * y la del editor cambia esa celda por "Cerrar DFL". dialog_dfl.c usa la del
- * editor como btn_page para no vaciar la barra inferior. */
+/* Paginas DFL (issue #179): la normal lleva las cinco celdas de siempre
+ * (LOW/HIGH/BW con valores + Eq + "Filtro grafico"), y la expandida cambia las
+ * tres primeras por nombres sin cifras (seleccionan el parametro para el encoder
+ * VOL) y la quinta por "Waterfall" (contrae). dfl_inline.c usa la expandida al
+ * abrir el editor inline. */
 extern buttons_page_t buttons_page_dfl_1;
-extern buttons_page_t buttons_page_dfl_editor;
+extern buttons_page_t buttons_page_dfl_expanded;
+
+/* Alto de la barra de botones (5x160x62): el editor DFL inline lo usa para
+ * derivar su alto real sin hardcodear 240. */
+uint8_t buttons_bar_height(void);
+
+/* Marca en la barra expandida la celda del parametro seleccionado (0=LOW,
+ * 1=HIGH, 2=BW); -1 no marca ninguna. */
+void buttons_dfl_expanded_sync(int sel);
 
 // TODO: move to applications
 extern buttons_group_t buttons_group_msg_cw;
