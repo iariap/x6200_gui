@@ -335,12 +335,15 @@ chmod +x "$INIT_HOST"
 PID_HOST="$WORK/host.pid"
 run_init() { PATH="$BIN_DIR:$PATH" sh "$INIT_HOST" "$1"; }
 
+START_T0=$(date +%s%N)
 run_init start
+START_MS=$(( ($(date +%s%N) - START_T0) / 1000000 ))
 [ -s "$PID_HOST" ] || fail "start no dejo PIDFILE"
 PID1="$(cat "$PID_HOST")"
 pid_alive "$PID1" || fail "start no dejo el animador corriendo"
 [ "$(readlink "/proc/$PID1/exe")" = "$WORK/fake_animator" ] || fail "el PIDFILE no apunta al animador"
-echo "ok: start arranca una instancia y deja el PIDFILE"
+[ "$START_MS" -lt 100 ] || fail "start tardo ${START_MS} ms (contrato: <100 ms tras backgrounding)"
+echo "ok: start vuelve en ${START_MS} ms (contrato: <100 ms, sin sleeps) y deja el PIDFILE"
 
 run_init start
 [ "$(cat "$PID_HOST")" = "$PID1" ] || fail "start arranco una SEGUNDA instancia"

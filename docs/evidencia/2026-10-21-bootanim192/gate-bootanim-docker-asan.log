@@ -8,7 +8,6 @@ fb_test: 88 comprobaciones, 0 fallos
 
 == 3) cesion del framebuffer (procesos reales, identidad por /proc/<pid>/exe) ==
 boot_splash: pid 65 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
-boot_splash: pid 67 del PIDFILE no es /tmp/tmp.RNeDPT4MkP/fake_animator: no se senaliza
 handoff_test: 39 comprobaciones, 0 fallos
 
 == 4) sanitizers (ASan + UBSan) ==
@@ -34,12 +33,12 @@ ok: yoffset distinto de cero -> exit 0 sin escribir en el framebuffer
 ok: line_length demasiado corto -> exit 0 sin escribir en el framebuffer
 ok: smem_len insuficiente -> exit 0 sin escribir en el framebuffer
 ok: mmap fallido -> exit 0 sin escribir en el framebuffer
-ok: sin /dev/fb0 reintenta y sale 0 en silencio (1905 ms)
+ok: sin /dev/fb0 reintenta y sale 0 en silencio (1906 ms)
 ok: framebuffer sin permisos -> exit 0 con aviso en stderr
 
 == 6) script de init S01bootanim ==
 ok: sintaxis, permiso de ejecucion, invocacion del contrato, sin killall ni GUI
-ok: start arranca una instancia y deja el PIDFILE
+ok: start vuelve en 5 ms (contrato: <100 ms, sin sleeps) y deja el PIDFILE
 ok: singleton (un solo animador, un solo start-stop-daemon -S)
 ok: stop termina el animador, limpia el PIDFILE y no usa killall
 ok: un PIDFILE con un PID ajeno no se senaliza ni se mata
