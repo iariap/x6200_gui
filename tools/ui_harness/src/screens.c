@@ -1324,6 +1324,18 @@ static void settle_dfl_editor(const scenario_t *scenario)
         subject_set_int(cfg_cur.mode, x6200_mode_lsb_dig);
         virtual_time_advance(100, 10);                       /* observer diferido: cancela el drag */
 
+        /* El cambio USB-D -> LSB-D es de la MISMA familia (contrato de #183: "no
+         * se toca la pagina"): el editor sigue abierto y la barra sigue en C. Sin
+         * esto el sintoma aguas abajo es una captura sin handles (el panel ya no
+         * esta): se corta aca, con la causa, en vez de en el chequeo de pixeles. */
+        if (!dfl_inline_is_expanded() || buttons_dfl_page() != DFL_PAGE_GRAPH) {
+            fprintf(stderr,
+                    "%s: el cambio de modo de la misma familia cerro el editor "
+                    "(expanded=%d, pagina=%d, esperaba C)\n",
+                    scenario->name, dfl_inline_is_expanded() ? 1 : 0, (int) buttons_dfl_page());
+            exit(1);
+        }
+
         int32_t low_hold  = subject_get_int(cfg_cur.filter.low);
         int32_t high_hold = subject_get_int(cfg_cur.filter.high);
         dfl_graph_send_local(LV_EVENT_PRESSING, 460);        /* gesto colgado: no debe tocar nada */
