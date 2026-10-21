@@ -1,0 +1,13 @@
+render_bench: 2201 cuadros (184800 ms de animacion), pantalla 800x480
+presupuesto: BA_FRAME_MS=84ms, BA_MAX_DIRTY=12, max dirty.count observado=7, overflow=0
+
+fase                    cuadros dirty px avg dirty px max  dirty % max bytes/cuadro render us/cuadro
+intro                        10        10850        17500        4.56%        21700           33.0
+primer cuadro (full)          1       384000       384000      100.00%       768000         1723.8
+lluvia                      204         9576        12940        3.37%        19153           26.7
+beams                       518        13786        16755        4.36%        27573           42.0
+decrypt                      59        14476        16755        4.36%        28952           42.2
+delayed (lluvia, >30s)     1409        10599        16440        4.28%        21199           30.0
+
+(pixeles sucios = suma de las areas de dirty; bytes/cuadro = esos pixeles a 16 bpp;
+ render us/cuadro = modelo + raster puro, sin blit ni hardware; RAM del raster: 1 buffer fijo)

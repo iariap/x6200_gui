@@ -1,0 +1,28 @@
+# Cross-compile del target con el toolchainfile.cmake de Buildroot (issue #204)
+#   sello de fuentes de este arbol (tools/fuente-md5.sh): 18f5458db571b3056efdfa54c0013a05
+#   toolchain: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/host
+#   comando:
+#     cmake -S src/bootanim -B /tmp/opencode/ba-arm-cmake -DCMAKE_TOOLCHAIN_FILE=/home/pablo/desa/x6200/rom-build/clone-buildroot/build/host/share/buildroot/toolchainfile.cmake -DX6200_FUENTE_MD5=18f5458db571b3056efdfa54c0013a05
+#     cmake --build /tmp/opencode/ba-arm-cmake --target x6200_bootanim
+#     cmake --install /tmp/opencode/ba-arm-cmake --prefix /tmp/opencode/ba-stage
+-- The C compiler identification is GNU 12.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/host/bin/arm-buildroot-linux-gnueabihf-gcc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/opencode/ba-arm-cmake
+[ 25%] Building C object CMakeFiles/x6200_bootanim.dir/main.c.o
+[ 50%] Building C object CMakeFiles/x6200_bootanim.dir/renderer.c.o
+[ 75%] Building C object CMakeFiles/x6200_bootanim.dir/fb.c.o
+[100%] Linking C executable x6200_bootanim
+[100%] Built target x6200_bootanim
+-- Install configuration: "Release"
+-- Installing: /tmp/opencode/ba-stage/sbin/x6200_bootanim
+--- archivo instalado ---
+/tmp/opencode/ba-stage/sbin/x6200_bootanim: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, with debug_info, not stripped
+-rwxr-xr-x. 1 pablo pablo 36676 Oct 21 19:41 /tmp/opencode/ba-stage/sbin/x6200_bootanim
+--- sello embebido (esperado: 18f5458db571b3056efdfa54c0013a05) ---
+1
