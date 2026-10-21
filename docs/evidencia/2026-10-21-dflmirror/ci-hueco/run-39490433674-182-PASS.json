@@ -1,0 +1,12 @@
+{
+ "status": "PASS",
+ "exit_code": 0,
+ "revision": "e86a46e283f0f7f80a4e6c9d53fbdf2c3703a3ca",
+ "checks": 1500,
+ "failures": 0,
+ "scenarios_total": 144,
+ "scenarios_dfl_mirror": [
+  "dfl-mirror-lsb",
+  "dfl-mirror-usb"
+ ]
+}

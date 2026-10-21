@@ -1,0 +1,41 @@
+# staticos del repo (los del job UI Functional Tests) — HEAD db6bc31b
+
+$ python3 tests/check_cfg_fills.py
+exit=0
+  fill_cfg_item():      70
+  OK: los 70 campos se inicializan, en orden
+
+$ python3 tests/check_actions.py
+exit=0
+  acciones ofrecidas: 41 | con manejador: 41
+  todas las acciones ofrecidas tienen manejador
+
+$ python3 tests/check_settings_focus.py
+exit=0
+  cada slider mueve el parametro que muestra
+  los campos de la fila de fecha declaran la misma caja
+
+$ python3 tests/check_settings_grid.py
+exit=0
+  formas de fila presentes: 5
+  la zona de controles de Ajustes usa un solo esquema de grilla (origen unico x=499)
+
+$ python3 tests/check_apps_menu.py
+exit=0
+  control remoto: 26 apps en app_names[] | 26 acciones
+  todas las apps del menu llegan al dispatcher que usa su boton
+
+$ python3 tests/check_wcag.py
+exit=0
+  pares OK: 1062 | exentos: 170 | informativos: 90 | FALLAS: 0
+  todos los pares cumplen WCAG 2.1 (AA)
+
+$ python3 tests/check_autotune_v2.py
+exit=0
+  textos: 9 | long_action_items: 37 entradas | ACTION_ATUNE=129
+  contrato estatico de Auto Tune v2 OK
+
+$ python3 tests/check_build_identity.py
+exit=0
+  CMakeLists + src/main.c: el sello se embebe y se loguea al arrancar
+  captura-banco.sh: usa el mismo hash

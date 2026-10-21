@@ -1,0 +1,15 @@
+{
+ "status": "FAIL",
+ "exit_code": 1,
+ "revision": "6542d48f4fcad8b98c6f08ca324a4c27b0453029",
+ "checks": 2033,
+ "failures": [
+  {
+   "rule": "framebuffer_size",
+   "fixture": "dfl-mirror-usb",
+   "detail": "800x480 (expected 800x481)"
+  }
+ ],
+ "unchanged_defects": [],
+ "_note": "el PASS real con status FAIL y una violacion inventada (para ejercitar el camino FAIL)."
+}
