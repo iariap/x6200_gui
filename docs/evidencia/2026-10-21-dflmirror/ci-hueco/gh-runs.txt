@@ -1,0 +1,11 @@
+# CI del repo iariap/x6200_gui, workflow ab-testing.yml (gh run list / gh run view)
+
+$ gh run list --workflow=ab-testing.yml --limit 12 --json databaseId,headBranch,conclusion,headSha
+
+# (recorte de los tres runs que importan)
+# 39644351915  factory/autotune-v2-190  01c5008a  success  <- el run donde el job de contratos quedo VERDE con contracts.json = BLOCKED
+# 39511316773  factory/dfl-presets-183   6542d48f  success  <- el 'contracts PASS - 2033 checks' del reporte de #183
+# 39490433674  factory/dfl-mirror-182    e86a46e2  success  <- el run de #182, que SI evaluo los dos fixtures del espejo
+
+$ gh run view 39644351915 --json conclusion,headSha,jobs --jq '{conclusion, headSha, jobs: [.jobs[] | {name, conclusion}]}'
+{"conclusion":"success","headSha":"01c5008a43bf67b504e5fb8642d6f8af42456c4b","jobs":[{"conclusion":"success","name":"UI Performance (render benchmark, host)"},{"conclusion":"success","name":"UI Visual Regression"},{"conclusion":"success","name":"UI Functional Tests"},{"conclusion":"success","name":"UI Quality Contracts"},{"conclusion":"success","name":"UI A/B Summary"}]}

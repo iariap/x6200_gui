@@ -573,6 +573,21 @@ void buttons_dfl_open(void) {
     }
 }
 
+/* C = Grafico sin pasar por A/B: el editor inline se abre directo por el long
+ * press fisico de DFL (`params.long_dfl`), por la celda `Grafico` y por el
+ * control remoto (main_screen_action), sin que `buttons_dfl_open()` haya corrido
+ * antes. Es la MISMA pagina DFL, asi que la familia vigente se fija aca: sin
+ * esto la proxima comparacion de `buttons_dfl_on_mode_change()` se hace contra
+ * "sin familia" y un cambio de la MISMA familia (USB<->LSB, USB-D<->LSB-D, ...)
+ * se lee como familia nueva, con lo que el editor se contrae y la barra salta a
+ * Favoritos (issue #182/#183). La carga de la pagina queda en un solo lugar. */
+void buttons_dfl_graph_open(void) {
+    dfl_last_family  = dfl_current_family();
+    dfl_pending_slot = 0;   /* el editor entra sin suboperacion en curso */
+
+    buttons_load_page(&buttons_page_dfl_expanded);
+}
+
 void buttons_dfl_short(void) {
     if (!buttons_dfl_active()) {
         return;

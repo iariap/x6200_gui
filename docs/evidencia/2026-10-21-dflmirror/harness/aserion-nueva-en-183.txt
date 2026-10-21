@@ -1,0 +1,24 @@
+# La aserción nueva, corrida sobre la revisión que rompió (#183 = 6666806e)
+
+La aserción que se agregó al `dfl-editor-mirror` (`tools/ui_harness/src/screens.c`, paso 6:
+tras el cambio USB-D -> LSB-D el editor sigue abierto y la barra sigue en C) se aplicó
+TAMBIÉN sobre el árbol de la revisión rota, para que se vea que corta en la causa y no en
+el síntoma:
+
+```
+$ cd /tmp/opencode/dflmirror/rev-6666806e     # git archive 6666806e + la copia de lvgl/
+$ <parche: la misma aserción, sobre tools/ui_harness/src/screens.c>
+$ docker run --rm --entrypoint bash --user $(id -u):$(id -g) -v "$PWD:/src" \
+      -w /src/tools/ui_harness x6200-uiharness -lc 'cd build && make -j$(nproc)'
+build=0
+$ docker run --rm --entrypoint bash --user $(id -u):$(id -g) -v "$PWD:/src" \
+      -w /src/tools/ui_harness/build x6200-uiharness -lc \
+      './ui_harness --scenario ../fixtures/dfl-mirror-lsb.scn --png /tmp/o.png --json /tmp/o.json; echo exit=$?'
+dfl-mirror-lsb: el cambio de modo de la misma familia cerro el editor (expanded=0, pagina=1, esperaba C)
+exit=1
+```
+
+`pagina=1` es `DFL_PAGE_FAVORITES` (A): el editor quedó contraído y la barra en Favoritos.
+
+El mismo fixture, sobre el árbol con el fix y con la aserción nueva, pasa y exporta la
+captura (el gate de determinismo de abajo lo corre para los 197 fixtures).

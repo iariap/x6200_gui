@@ -1,0 +1,29 @@
+# tests/run_all_tests.sh --quick con IMAGE=x6200-uiharness-full (la imagen con las deps de los codecs) — HEAD db6bc31b
+
+$ IMAGE=x6200-uiharness-full tests/run_all_tests.sh --quick
+
+=== navtex ===
+
+================ resumen ================
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  settings_grid: OK   
+  apps_menu: OK     todas las apps del menu llegan al dispatcher que usa su boton
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (24 apps)
+  pruebas: OK     OK: estructura y evidencia en orden
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  cw_tune_feed: OK   
+  autotune_v2: OK   
+  build_identity: OK   
+  curve_evidence: OK   PASS: 8 pruebas de swrscan_curve_evidence
+  host: OK   138 comprobaciones, 0 fallos
+  host_ci_parity: OK   138 comprobaciones, 0 fallos
+  drawbuf_partial: OK   PASS: partial draw buffer renders the identical physical framebuffer (sw-rotate 90)
+  wspr: OK   158 comprobaciones, 0 fallos
+  sstv: OK   all OK
+  wefax: OK   PASS
+  navtex: OK   all OK
+  (omitidos: js8 webserver)
+  20 OK, 0 fallos

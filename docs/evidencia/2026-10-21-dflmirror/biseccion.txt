@@ -1,0 +1,35 @@
+# Biseccion: el arnes compilado en cada merge, corriendo los dos fixtures del espejo
+
+# (arbol extraido con: git -C <worktree> archive <sha> | tar -x -C <dir>  + la copia de lvgl/ del submódulo
+#  pineado 74d0a816 = v8.3.11)
+
+=== revision d32b59e8 (DFL #182: el editor espeja la banda pasante en LSB/LSB-D (HIGH a la izquierda) (#184)) ===
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-lsb.scn --png /tmp/o.png --json /tmp/o.json
+ui_harness: dfl-mirror-lsb -> /tmp/o.png (143881 bytes), flushes=37, flushed_pixels=2426262
+harness_exit=0
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-usb.scn --png /tmp/o.png --json /tmp/o.json
+ui_harness: dfl-mirror-usb -> /tmp/o.png (144028 bytes), flushes=37, flushed_pixels=2426262
+harness_exit=0
+
+=== revision 6666806e (DFL #183: presets al primer toque, ajuste manual con VOL y memorias persistentes (#185)) ===
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-lsb.scn --png /tmp/o.png --json /tmp/o.json
+dfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)
+harness_exit=1
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-usb.scn --png /tmp/o.png --json /tmp/o.json
+dfl-mirror-usb: el handle LOW no esta dibujado en x=37 (mejor columna x=-1, run=0)
+harness_exit=1
+
+=== revision db6bc31b (el fix) ===
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-lsb.scn --png /tmp/o.png --json /tmp/o.json
+ui_harness: dfl-mirror-lsb -> /tmp/o.png (143881 bytes), flushes=37, flushed_pixels=2425682
+harness_exit=0
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-usb.scn --png /tmp/o.png --json /tmp/o.json
+ui_harness: dfl-mirror-usb -> /tmp/o.png (144028 bytes), flushes=37, flushed_pixels=2425682
+harness_exit=0
+
+=== ademas: el PNG de los dos fixtures con el fix es BYTE-IDENTICO al de d32b59e8 (pre-#183) ===
+$ sha256sum (capturas de d32b59e8 y del fix)
+07c37a5770e964fd03385ffe7d1e812e7e6df2e49248046c9d0363108b743dfe  /tmp/opencode/dflmirror/png/d32b59e8-dfl-mirror-lsb.png
+07c37a5770e964fd03385ffe7d1e812e7e6df2e49248046c9d0363108b743dfe  /tmp/opencode/dflmirror/png/fixed-dfl-mirror-lsb.png
+f256512599120074c457e558d6ae83a5bd31d60d50e502eb2b3228b42bb8dfcd  /tmp/opencode/dflmirror/png/d32b59e8-dfl-mirror-usb.png
+f256512599120074c457e558d6ae83a5bd31d60d50e502eb2b3228b42bb8dfcd  /tmp/opencode/dflmirror/png/fixed-dfl-mirror-usb.png

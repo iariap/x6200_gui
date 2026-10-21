@@ -1,0 +1,12 @@
+# tests/native/run_native_tests.sh — HEAD db6bc31b
+
+$ tests/native/run_native_tests.sh
+exit=0
+/home/pablo/desa/asf/state/worktrees/x6200/dfl-mirror-gate/tests/native/build/remote_src/remote_server.cpp:1165:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+ 1165 |     struct sockaddr_un a = {.sun_family = AF_UNIX};
+      |                                                  ^
+/home/pablo/desa/asf/state/worktrees/x6200/dfl-mirror-gate/tests/native/build/remote_src/remote_server.cpp: In function ‘void remote_server_init()’:
+/home/pablo/desa/asf/state/worktrees/x6200/dfl-mirror-gate/tests/native/build/remote_src/remote_server.cpp:1192:53: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+ 1192 |     struct sockaddr_un addr = {.sun_family = AF_UNIX};
+      |                                                     ^
+138 comprobaciones, 0 fallos
