@@ -104,6 +104,24 @@ static float rx_tone_offset;
 
 static pthread_mutex_t  cw_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+/* --- Auto Tune v2 (issue #190): instantanea para el asistente de sintonia ----
+ *
+ * Se publica UNA vez por trama de FFT procesada (update_peak_freq), en este
+ * hilo, con el mutex chico de abajo. No usa LVGL ni scheduler_put: el consumidor
+ * (hilo de GUI) copia y decide alla. `error_hz` es el corrimiento del tono
+ * respecto del PITCH MANUAL ya normalizado (ver src/cw.h). */
+static autotune_sample_t tune_sample;
+static pthread_mutex_t  tune_mutex = PTHREAD_MUTEX_INITIALIZER;
+static uint64_t         tune_sequence;
+static bool             tune_have;
+/* Lo escribe el hilo de GUI (cw_tune_note_dial_write) y lo consume el del DSP:
+ * atomico. Marca que el dial acaba de cambiar por Auto Tune, para invalidar la
+ * primera ventana posterior (puede traer audio de la frecuencia anterior). */
+static std::atomic<bool> tune_dial_written(false);
+/* Relacion marca/ruido de la TRAMA en curso (update_thresholds la calcula; la
+ * usa tune_publish para el gate de validez). */
+static float tune_frame_ratio;
+
 static void dds_dec_init();
 
 static void on_key_tone_change(Subject *subj, void *user_data);
@@ -294,7 +312,10 @@ static void update_thresholds() {
     }
     noise = sum_all - sum_signal;
 
-    float ratio = sum_signal/noise;
+    /* Divisor cero: no hay relacion que calcular (silencio o un unico pico).
+     * Se deja 0: no es una marca, y para Auto Tune v2 es una trama invalida. */
+    float ratio = (noise > 0.0f) ? (sum_signal / noise) : 0.0f;
+    tune_frame_ratio = ratio;
 
     if (ratio > 1) {
         lpf(&peak_filtered, LV_MAX(noise_filtered + cw_decoder_snr, rms_db_max), cw_decoder_peak_beta, S_MIN);
@@ -335,6 +356,49 @@ static void update_thresholds() {
     rms_db_max = S1;
 }
 
+/* Publica la instantanea de Auto Tune v2 (issue #190) de la trama que termina.
+ * `valid` se calcula ACA, en el hilo del DSP: marca CW detectada en la trama,
+ * relacion marca/ruido suficiente, valores finitos y dentro del rango del
+ * estimador de la FFT. La primera trama posterior a una escritura de Auto Tune
+ * se publica igual (avanza secuencia y tiempo, invalida el pico anterior) pero
+ * con valid=false: la ventana puede traer audio de la frecuencia vieja. */
+static void tune_publish(float peak_freq) {
+    autotune_sample_t s;
+    bool             after_write = tune_dial_written.exchange(false);
+
+    s.timestamp_ms  = get_time();
+    s.dds_offset_hz = rx_tone_offset;
+    /* error = A - key_tone = rx_tone_offset - peak_freq (HALLAZGOS 52). */
+    s.error_hz      = cw_tune_error_hz(peak_freq, rx_tone_offset);
+    s.ratio         = tune_frame_ratio;
+    s.valid         = !after_write && at_frame_signal &&
+                      tune_frame_ratio >= 4.0f &&
+                      isfinite(s.error_hz) &&
+                      peak_freq > -400.0f && peak_freq < 400.0f;
+
+    pthread_mutex_lock(&tune_mutex);
+    tune_sequence++;
+    s.sequence = tune_sequence;
+    tune_sample = s;
+    tune_have = true;
+    pthread_mutex_unlock(&tune_mutex);
+}
+
+bool cw_get_tune_sample(autotune_sample_t *out) {
+    if (out == NULL) {
+        return false;
+    }
+    pthread_mutex_lock(&tune_mutex);
+    *out = tune_sample;
+    bool have = tune_have;
+    pthread_mutex_unlock(&tune_mutex);
+    return have;
+}
+
+void cw_tune_note_dial_write(void) {
+    tune_dial_written.store(true);
+}
+
 static void update_peak_freq(float freq) {
     /* Muestra de tono de la ventana AUTO, solo en tramas con senal. El rango es
      * el del mapeo de la FFT (+/-344 Hz): fuera de eso no es un tono. */
@@ -344,6 +408,7 @@ static void update_peak_freq(float freq) {
     if (peak_on) {
         cw_tune_set_freq(freq);
     }
+    tune_publish(freq);
 }
 
 static bool decode(float rms_db) {
@@ -410,7 +475,8 @@ void cw_put_audio_samples(unsigned int n, cfloat *samples) {
 
             max_pos = argmax(audio_psd_squared, FFT);
             // Fix fft order
-            peak_freq = (((float) (FFT - (max_pos + FFT / 2) % FFT) / FFT) - 0.5f) * ((float) AUDIO_CAPTURE_RATE / DECIM_FACTOR);
+            peak_freq = cw_peak_freq_from_bin((int32_t) max_pos, FFT,
+                                              (float) AUDIO_CAPTURE_RATE / DECIM_FACTOR);
             update_peak_freq(peak_freq);
             autotune_tick();
         }

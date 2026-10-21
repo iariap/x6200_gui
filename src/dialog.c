@@ -43,12 +43,14 @@ void dialog_restore_radio_on_close(void) {
 }
 
 void dialog_construct(dialog_t *dialog, lv_obj_t *parent) {
-    /* Una ventana que se abre corta el asistente de sintonia fina (issue #100) y
-     * devuelve el dial a su punto de arranque ANTES del snapshot del frame
-     * (radio_state_save, mas abajo): si el asistente siguiera corriendo por detras,
-     * el snapshot guardaria una frecuencia a medio barrido y al cerrar la ventana el
-     * dial quedaria ahi. Es el punto por el que pasan TODOS los dialogos, incluidos
-     * los que se abren sin main_screen_start_app() (Ajustes por F9, la entrada de
+    /* Una ventana que se abre corta el asistente de sintonia fina CW/CWR
+     * (issue #190, seccion 5.2) ANTES del snapshot del frame (radio_state_save,
+     * mas abajo): si siguiera corriendo por detras, el snapshot guardaria una
+     * frecuencia a medio ajustar. La restauracion es CONDICIONADA: autotune_ui
+     * solo devuelve el dial si sigue en el contexto original, en RX y siendo
+     * dueño de la frecuencia provisional; si el contexto ya cambio, no escribe.
+     * Es el punto por el que pasan TODOS los dialogos, incluidos los que se
+     * abren sin main_screen_start_app() (Ajustes por F9, la entrada de
      * frecuencia, los mensajes). */
     autotune_ui_cancel();
 

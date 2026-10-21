@@ -953,6 +953,11 @@ static void main_screen_keypad_cb(lv_event_t * e) {
         case KEYPAD_PTT:
             switch (keypad->state) {
                 case KEYPAD_PRESS:
+                    /* Antes de activar TX (todavia en RX, mismo contexto): Auto
+                     * Tune cancela y restaura si es dueño del dial provisional
+                     * (issue #190, seccion 5.3). Nunca se difiere un restore que
+                     * pudiera correr estando en TX. */
+                    autotune_ui_cancel_before_tx();
                     radio_set_ptt(true);
 
                     switch (subject_get_int(cfg_cur.mode)) {
@@ -1091,6 +1096,13 @@ static void on_dfl_mode_change(Subject *subj, void *user_data) {
 static void main_screen_radio_cb(lv_event_t * e) {
     lv_event_code_t code = lv_event_get_code(e);
 
+    /* Con TX ya activo Auto Tune solo puede abortar SIN sintonizar (issue #190,
+     * seccion 5.3): jamas se escribe fg_freq desde aca. El cancel previo al TX
+     * lo hace el handler de PTT, que todavia esta en RX. */
+    if (code == EVENT_RADIO_TX) {
+        autotune_ui_abort_on_tx();
+    }
+
     lv_event_send(meter, code, NULL);
     lv_event_send(tx_info, code, NULL);
     lv_event_send(spectrum, code, NULL);
@@ -1164,6 +1176,10 @@ static void on_tuning_context_change(Subject *subj, void *user_data) {
 /* Un unico paso EXACTO, sin aceleracion (teclado/HKEY, seccion 4). Misma suma
  * segura en int64 y misma validacion que el dial. */
 static void freq_shift(int16_t diff) {
+    /* Una orden manual de dial aborta ANTES de aplicarse y sin escribir: lo que
+     * elige el operador nunca se pisa (issue #190, seccion 5.1). */
+    autotune_ui_abort_manual();
+
     if (subject_get_int(freq_lock)) {
         return;
     }
@@ -1259,6 +1275,11 @@ _Static_assert(FREQ_ACCEL_NONE == ADAPTIVE_ACCEL_NONE &&
 static void main_screen_rotary_enhanced_cb(lv_event_t * e) {
     rotary_event_enhanced_t *enhanced = (rotary_event_enhanced_t *)lv_event_get_param(e);
     int32_t freq = subject_get_int(cfg_cur.fg_freq);
+
+    /* El giro del dial (con o sin aceleracion) es una orden manual: aborta la
+     * sesion de Auto Tune ANTES de escribir el VFO y sin restaurar nada
+     * (issue #190, seccion 5.1). La aceleracion del #186 no se toca. */
+    autotune_ui_abort_manual();
 
     cb_plan_t plan;
     bool      cb      = cb_plan_of_freq(freq, &plan);
@@ -1730,6 +1751,11 @@ lv_obj_t * main_screen() {
     subject_add_delayed_observer(cfg_cur.band->vfo.val, on_tuning_context_change, NULL);
 
     tuning_ctx.valid = false;
+
+    /* Asistente de sintonia fina CW/CWR (issue #190): registra su observador de
+     * cambio externo de frecuencia. El asistente queda en reposo hasta que el
+     * operador pulse Auto Tune. */
+    autotune_ui_init();
 
     return obj;
 }
