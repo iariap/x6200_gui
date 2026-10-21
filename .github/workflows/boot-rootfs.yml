@@ -5,20 +5,43 @@ name: boot-rootfs
 # corre en CI, sin docker ni buildroot, los tests deterministas del prune
 # (issue #89): que la lista saque el S95gui del vendor y que los guards
 # fail-closed no borren de mas. Es del PRUNE, no del build completo.
+#
+# Desde el issue #192 este workflow tambien corre el gate del arranque neo-retro
+# (tests/check_bootanim.sh): renderer y backend de framebuffer probados en host,
+# el binario x6200_bootanim REAL contra un /dev/fb0 sintetico (LD_PRELOAD), la
+# cesion del framebuffer y los chequeos del script de init y de la integracion.
 on:
   pull_request:
     paths:
       - "buildroot/**"
       - "CMakeLists.txt"
       - "docs/IMAGE_ROOTFS_PRUNE.md"
+      - "docs/boot-animation.md"
       - ".github/workflows/boot-rootfs.yml"
+      - "rootfs/etc/init.d/**"
+      - "src/bootanim/**"
+      - "src/boot_splash.c"
+      - "src/boot_splash.h"
+      - "src/main.c"
+      - "src/CMakeLists.txt"
+      - "tests/bootanim/**"
+      - "tests/check_bootanim.sh"
   push:
     branches: ["lu2dsx/x6200-rom"]
     paths:
       - "buildroot/**"
       - "CMakeLists.txt"
       - "docs/IMAGE_ROOTFS_PRUNE.md"
+      - "docs/boot-animation.md"
       - ".github/workflows/boot-rootfs.yml"
+      - "rootfs/etc/init.d/**"
+      - "src/bootanim/**"
+      - "src/boot_splash.c"
+      - "src/boot_splash.h"
+      - "src/main.c"
+      - "src/CMakeLists.txt"
+      - "tests/bootanim/**"
+      - "tests/check_bootanim.sh"
   workflow_dispatch:
 
 permissions:
@@ -102,3 +125,30 @@ jobs:
                   echo "- guards fail-closed: comodin / absoluto / .. / path-del-port, rechazados sin borrar"
               } >> "$GITHUB_STEP_SUMMARY"
           fi
+
+  bootanim:
+    name: boot anim gate (deterministic, no docker)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # Gate del issue #192: tests de host del renderer/backend (rotacion 90
+      # grados contra el oraculo de LVGL, formatos, stride, centinelas, casos
+      # negativos), el binario real x6200_bootanim contra un /dev/fb0 sintetico
+      # (shim LD_PRELOAD, sin tocar el hardware), la cesion del framebuffer
+      # (identidad por /proc/<pid>/exe, 100 ms + 20 ms) y los chequeos del
+      # script de init y de la integracion. Sin docker ni buildroot.
+      - name: tests/check_bootanim.sh
+        shell: bash
+        run: bash tests/check_bootanim.sh
+
+      - name: resumen
+        if: always()
+        shell: bash
+        run: |
+          {
+              echo "## boot-rootfs — arranque neo-retro (#192)"
+              echo ""
+              echo "- \`bash tests/check_bootanim.sh\`: ver el log del paso anterior"
+              echo "- sin docker ni /dev/fb0: el framebuffer del binario real es sintetico (LD_PRELOAD)"
+          } >> "$GITHUB_STEP_SUMMARY"
