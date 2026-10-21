@@ -4,6 +4,8 @@
 # No network, no Catch2, no target hardware: LVGL/liquid/Speex are stubbed.
 #
 # Usage: tests/native/run_native_tests.sh [output-dir]
+#        tests/native/run_native_tests.sh --ci-parity [output-dir]
+#          the same suite with lvgl/ hidden: the tree the CI job actually sees
 #
 # Sanitizers are used when the toolchain runtime is available; otherwise the
 # script falls back to plain compilation plus GCC's static analyzer.
@@ -16,6 +18,63 @@ DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 SRC="$DIR/../../src"
 OUT="${1:-$DIR/build}"
 CC="${CC:-gcc}"
+
+# --- Paridad con CI: el build host nunca depende del submodulo lvgl -----------
+# El job `functional` de .github/workflows/ab-testing.yml hace actions/checkout
+# SIN `submodules: true`, asi que en CI no existe lvgl/: cada stage host resuelve
+# `lvgl/lvgl.h` al stub de tests/native/* (el stub tiene que declarar lo mismo
+# que el codigo usa, no mas) y ningun `-I` puede apuntar al directorio que lo
+# contiene. Cuando un stage se apoya en el header real el build deja de ser
+# reproducible local<->CI y el rojo aparece solo alla (fue el rojo del PR #187:
+# src/dialog.h:37 'lv_event_cb_t' y tests/native/params_stubs.c:143
+# 'lv_log_level_t': local resolvia el lvgl del submodulo, CI caia al stub).
+#
+#   tests/native/run_native_tests.sh --ci-parity [out-dir]
+#
+# corre el runner completo con lvgl/ renombrado -- o sea con el arbol que ve el
+# job de CI -- y exige exit 0. Se restaura el submodulo siempre (trap), y si no
+# se lo puede ocultar el modo falla: nunca declara paridad sin haberla medido.
+# La evidencia de la divergencia esta en docs/evidencia/2026-10-21-ciparity/.
+if [ "$1" = "--ci-parity" ]; then
+    shift
+    PARITY_OUT="${1:-$DIR/build/ci-parity}"
+    LVGL_REAL=$(CDPATH= cd -- "$DIR/../.." && pwd)/lvgl
+    LVGL_HIDDEN=""
+    if [ -d "$LVGL_REAL" ]; then
+        if mv "$LVGL_REAL" "$LVGL_REAL.ci-parity-off"; then
+            LVGL_HIDDEN=yes
+        else
+            echo "FALLO ci-parity: no se pudo ocultar $LVGL_REAL; la paridad no se puede medir" >&2
+            exit 1
+        fi
+    fi
+    restore_lvgl() {
+        if [ -n "$LVGL_HIDDEN" ] && [ -d "$LVGL_REAL.ci-parity-off" ]; then
+            mv "$LVGL_REAL.ci-parity-off" "$LVGL_REAL"
+        fi
+    }
+    trap restore_lvgl EXIT
+    trap 'restore_lvgl; exit 130' INT
+    trap 'restore_lvgl; exit 143' TERM
+    trap 'restore_lvgl; exit 129' HUP
+    if [ -n "$LVGL_HIDDEN" ]; then
+        echo "== ci-parity: lvgl/ oculto (el arbol que ve el job functional) =="
+    else
+        echo "== ci-parity: lvgl/ ya ausente (checkout sin submodulos, como en CI) =="
+    fi
+    if sh "$DIR/run_native_tests.sh" "$PARITY_OUT"; then
+        parity_status=0
+    else
+        parity_status=$?
+    fi
+    restore_lvgl
+    if [ "$parity_status" -eq 0 ]; then
+        echo "== ci-parity: OK (build host sin lvgl/) =="
+    else
+        echo "FALLO ci-parity: el build host depende de lvgl/ (ver arriba)" >&2
+    fi
+    exit "$parity_status"
+fi
 
 mkdir -p "$OUT"
 
@@ -826,11 +885,15 @@ PARAMS_TEST_BIN="$OUT/params_threshold_tests"
 # out by the CI functional job (actions/checkout without `submodules: true`), so
 # the real lvgl/lvgl.h is absent there and a stage that leaned on -I.../lvgl
 # compiled against the stub only in CI and broke (issue #186: unknown type name
-# 'lv_event_cb_t'/'lv_event_t'/'lv_event_code_t'/'lv_log_level_t'). Put the stub
-# FIRST so the host stage is deterministic and self-contained: the same stub
-# lvgl/lvgl.h runs locally and in CI (the stub now declares those types), and the
-# stage no longer depends on the submodule being present.
-PARAMS_INCLUDES="-DLV_CONF_INCLUDE_SIMPLE -I$DIR/stubs -I$DIR/../.. -I$SRC \
+# 'lv_event_cb_t'/'lv_event_t'/'lv_event_code_t'/'lv_log_level_t').
+#
+# The repo root ($DIR/../..) is NOT in this list: it is the directory that holds
+# the lvgl/ submodule, so with it in -I the stage resolved the real lvgl/lvgl.h
+# on a developer box and the stub in CI, and the stub drifted under the radar.
+# The only LVGL header a host stage may reach is tests/native/stubs/lvgl/lvgl.h,
+# first in the list; `--ci-parity` runs the whole runner with lvgl/ hidden and
+# fails if any stage goes back to depending on the submodule.
+PARAMS_INCLUDES="-DLV_CONF_INCLUDE_SIMPLE -I$DIR/stubs -I$SRC \
     -I$DIR/../../tools/ui_harness -I$DIR/../../tools/ui_harness/third_party"
 if [ "$SAN_OK" = yes ]; then
     # shellcheck disable=SC2086

@@ -9,6 +9,7 @@
 #   pruebas       docs/PRUEBAS.md: structure and cited evidence exist
 #   curve_evidence the drawn ROE curve on committed PNGs: U / dome / branch
 #   host          the native suite (401 assertions, no container)
+#   host_ci_parity  the same suite with lvgl/ hidden (the tree the CI job sees)
 #   wspr/sstv     codec round trips against the X6100's own test tools
 #   wefax/navtex
 #   js8           the X6100's full JS8 suite (1994 assertions; skipped by --quick)
@@ -90,6 +91,11 @@ run build_identity python3 "$DIR/check_build_identity.py"
 run curve_evidence python3 "$DIR/test_swrscan_curve_evidence.py"
 
 run host sh "$DIR/native/run_native_tests.sh"
+# Paridad host<->CI: el job `functional` de ab-testing.yml no inicializa el
+# submodulo lvgl, asi que el build host tiene que pasar tambien sin el. Si un
+# stage vuelve a apoyarse en el header real, aca se ve en local (en el PR solo se
+# veria en CI). Ver docs/evidencia/2026-10-21-ciparity/.
+run host_ci_parity sh "$DIR/native/run_native_tests.sh" --ci-parity
 run drawbuf_partial sh "$DIR/check_drawbuf_partial.sh"
 run wspr sh "$DIR/native/run_wspr_tests.sh"
 run sstv sh "$DIR/native/run_sstv_tests.sh"
