@@ -8,7 +8,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE X6200_FUENTE_MD5="${X6200_FUE
 target_sources(${PROJECT_NAME} PUBLIC
     main.c main_screen.c
     boot_splash.c
-    styles.c spectrum.c radio.c dsp.cpp util.cpp    waterfall.c rotary.c rotary_queue.c keyboard.c encoder.c kbd_caps.c bt_state.c btaudio.c
+    styles.c spectrum.c radio.c dsp.cpp util.cpp
+    waterfall.c rotary.c rotary_queue.c keyboard.c encoder.c kbd_caps.c bt_state.c btaudio.c
     events.c msg.c msg_tiny.c keypad.c
     crashlog_modules.c
     lastbreath.c
