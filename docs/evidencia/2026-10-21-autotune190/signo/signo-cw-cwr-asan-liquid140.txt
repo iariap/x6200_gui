@@ -1,0 +1,3 @@
+$ docker run --rm --user $(id -u):$(id -g) -v $PWD:/src:ro -v /tmp/opencode/at:/t -w /tmp x6200-uiharness-full sh -c 'cc -std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover -I/src/tests/native -I/src/src /src/src/autotune.c /src/tests/native/test_cw_tune_sign.c /src/tests/native/test_framework.c /src/tests/native/cw_tune_sign_main.c -L/usr/local/lib -Wl,-rpath,/usr/local/lib -lliquid -lm -o sign_14 && ./sign_14'
+
+23 comprobaciones, 0 fallos

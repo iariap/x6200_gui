@@ -1,0 +1,31 @@
+# x6200-ab contracts (el gate del job "UI Quality Contracts" del CI)
+
+## Sobre el HEAD de la rama (volumen/chroot privados de la corrida)
+
+```
+$ VOLUMEN=x6200-build-output-at190 CHROOT=../at190-chroot RECONSTRUIR=no \
+      scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD $PWD
+==> [check] x6200-ab contracts (8d5410168139044e1a0c5f7d8edfac3db5f85f3a)
+    BLOCKED: el gate no evaluó (exit 2). NO es PASS:
+    BLOCKED: harness failed for scenario dfl-mirror-lsb on 8d5410168139 (exit 1):
+    dfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)
+```
+
+## La MISMA evaluacion sobre la revision BASE (02801c0c, sin este cambio)
+
+```
+$ cd tools/ab_testing
+$ uv run x6200-ab contracts --revision 02801c0c --repo <worktree>
+exit=2
+BLOCKED: harness failed for scenario dfl-mirror-lsb on 02801c0c7279 (exit 1):
+dfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)
+```
+
+Tambien en `tests/test_e2e.py::test_all_fixtures_can_be_captured` (marker e2e,
+TMPDIR en disco): 12 passed, 1 failed, con el mismo `status: BLOCKED` y el mismo
+fixture (`ab/pytest-e2e.txt`).
+
+**Conclusion**: el gate no puede evaluar **ni en la base** porque un escenario
+ajeno a este cambio (`dfl-mirror-lsb`, issues #179/#182) hace fallar el arnes. No
+es un PASS ni un fallo del issue #190; la fila queda visible como BLOCKED con su
+razon, como pide la matriz.
