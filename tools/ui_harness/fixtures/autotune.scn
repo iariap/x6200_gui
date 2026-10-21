@@ -1,17 +1,23 @@
-# autotune: the fine-tuning assistant (issue #100) on the real main screen.
-# The APP key loads buttons_group_app (src/main_screen.c, KEYPAD_APP), the page
-# button cycles to page 6 and the "Auto Tune" button (src/buttons.cpp,
-# make_action_btn("Auto\nTune", ACTION_ATUNE)) is pressed, which reaches
-# main_screen_action(ACTION_ATUNE) -> autotune_ui_toggle() -> the scan starts.
+# autotune: the CW fine-tuning assistant (issue #190, "Auto Tune v2") triggered
+# from the real main screen and cancelled by a second press.
 #
-# The harness drives the scan to completion on its virtual clock
-# (src/screens.c, scenario_settle). The S-meter the bank feeds is constant
-# (mock_radio.smeter_db), so no probe beats the start and the scan restores the
-# dial: the capture is the start frequency, never lost. The real "which spot
-# sounds better" correlation is the owner's radio (docs/autotune.md).
+# The route is the user's: the APP key loads buttons_group_app (src/main_screen.c,
+# KEYPAD_APP), the page button cycles to page 6 and the "Auto Tune" button
+# (src/buttons.cpp, make_action_btn("Auto\nTune", ACTION_ATUNE)) is pressed, which
+# reaches main_screen_action(ACTION_ATUNE) -> autotune_ui_toggle() -> the session
+# starts in COLLECT.
 #
-# The radio state matches home-usb-20m / apps-menu-6, so the only difference is
-# the running assistant.
+# The radio is in CW, which is the only family Auto Tune works in. The bank has
+# NO CW tone by default (mocks/mock_cw_tune.c starts with no signal): during
+# COLLECT the dial does NOT move - v2 never sweeps, there is no probe zigzag and
+# no progress bar - and a second press cancels the session. scenario_settle
+# codifies all three facts: the session started, the dial stayed exactly at the
+# fixture frequency while collecting, and the cancel left it there.
+#
+# The other fixtures of the family: `autotune-progress` (the single provisional
+# correction, mid-session), `autotune-found` (the same correction verified) and
+# `autotune-notcw` (the rejection outside CW/CWR). "Tuned" against real RF is the
+# owner's radio: docs/autotune.md.
 
 name autotune
 screen autotune
@@ -22,7 +28,7 @@ frequency_hz 14074000
 tx_frequency_hz 14074000
 fft_width_hz 384000
 
-mode usb
+mode cw
 vfo A
 agc auto
 

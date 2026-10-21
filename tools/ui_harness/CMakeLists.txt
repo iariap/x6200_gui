@@ -102,10 +102,12 @@ set(GUI_SRC
     # "CH nn" de la celda VFO. main_screen.c e info.c lo llaman tal cual; las
     # bandas CB que dibuja la franja salen del catalogo de mocks/mock_cfg.c.
     ${REPO}/src/cb.c
-    # El asistente de sintonia fina (issue #100): el core puro y su driver. El
-    # driver corre sobre el main screen real (mueve cfg_cur.fg_freq y lee
-    # meter_get_raw_db()); el fixture `autotune` lo dispara por el boton y espera
-    # el barrido sobre el reloj virtual.
+    # El asistente de sintonia fina CW/CWR (issue #190, "Auto Tune v2"): el
+    # nucleo puro y su coordinador LVGL. El coordinador corre sobre el main screen
+    # real (mueve cfg_cur.fg_freq y lee la instantanea de CW), y los fixtures
+    # `autotune*` lo disparan por el boton de APP 6 sobre el reloj virtual. La
+    # senal de CW entra por inyeccion SOLO EN TESTS
+    # (mocks/mock_cw_tune.c): src/cw.cpp no se compila aca.
     ${REPO}/src/autotune.c
     ${REPO}/src/autotune_ui.c
     ${REPO}/src/cw_tune_ui.c

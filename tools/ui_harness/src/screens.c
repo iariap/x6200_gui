@@ -57,6 +57,7 @@
 
 #include "mock_harness.h"
 #include "mock_radio.h"
+#include "mock_cw_tune.h"
 
 /* Voltios del fixture -> mV de la politica visual, redondeado: el binario de
  * float daria 11199 para 11.2 V si se truncara. */
@@ -359,16 +360,16 @@ bool scenario_build(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "autotune") || !strcmp(scenario->screen, "autotune-progress")
-        || !strcmp(scenario->screen, "autotune-found")) {
-        /* El asistente de sintonia fina (issue #100): la pantalla principal real con
-         * la pagina APP 6 cargada (radio y red: WiFi / BT / SWR Scan / Auto Tune).
-         * El fixture pulsa el boton "Auto Tune" en scenario_settle, por el mismo
-         * camino que el usuario (button_action_cb -> main_screen_action(ACTION_ATUNE)),
-         * y espera el barrido sobre el reloj virtual. El S-meter del banco es
-         * constante (mock_radio.smeter_db), asi que ningun probe supera al arranque y
-         * el dial vuelve al punto de partida: eso es lo que captura `autotune`.
-         * `autotune-progress` corta el barrido a mitad para capturar el dial en un
-         * probe (el progreso visible). */
+        || !strcmp(scenario->screen, "autotune-found") || !strcmp(scenario->screen, "autotune-notcw")) {
+        /* El asistente de sintonia fina CW/CWR (issue #190): la pantalla principal
+         * real con la pagina APP 6 cargada (radio y red: WiFi / BT / SWR Scan /
+         * Auto Tune). El fixture pulsa el boton "Auto Tune" y las comprobaciones
+         * viven en scenario_settle. No hay barrido: la senal de CW entra por
+         * inyeccion SOLO EN TESTS de la instantanea del DSP (mocks/mock_cw_tune.c),
+         * porque el banco no compila src/cw.cpp (liquid-dsp y el lazo de audio).
+         * `autotune` cancela una sesion sin tono; `autotune-progress` captura la
+         * unica correccion provisional; `autotune-found` corre hasta la
+         * verificacion; `autotune-notcw` comprueba el rechazo fuera de CW/CWR. */
         mock_keyboard_group_up();
         build_main(scenario);
         buttons_load_page_group(buttons_group_app);
@@ -578,26 +579,6 @@ bool scenario_build(const scenario_t *scenario)
 
     fprintf(stderr, "scenario: unknown screen '%s'\n", scenario->screen);
     return false;
-}
-
-/* S-meter sintetico del fixture `autotune-found` (issue #100): un pico en
- * `autotune_peak_hz`, mas fuerte cuanto mas cerca (el mismo modelo que usa el
- * test nativo, con signo de dBm: mas cerca = mas alto). Lo empuja el fixture en
- * cada slice del reloj virtual porque el banco no tiene DSP que actualice el
- * S-meter; el algoritmo que lo consume es el de la radio. */
-static int32_t autotune_peak_hz;
-
-static void autotune_found_slice(void *arg)
-{
-    int32_t d;
-
-    (void) arg;
-
-    d = subject_get_int(cfg_cur.fg_freq) - autotune_peak_hz;
-    if (d < 0) {
-        d = -d;
-    }
-    meter_update((int16_t) (-60 - d / 100), 0.0f);
 }
 
 /* Linea central del waterfall (issue #140). El issue reporta una linea de largo
@@ -2231,7 +2212,9 @@ void scenario_settle(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "autotune") || !strcmp(scenario->screen, "autotune-progress")
-        || !strcmp(scenario->screen, "autotune-found")) {
+        || !strcmp(scenario->screen, "autotune-found") || !strcmp(scenario->screen, "autotune-notcw")) {
+        bool notcw = !strcmp(scenario->screen, "autotune-notcw");
+
         /* El boton que se pulsa es posicional: codificar que es "Auto Tune" antes de
          * pulsarlo, para que reordenar la pagina corte la corrida en vez de pulsar
          * otra app y reportar verde. */
@@ -2242,10 +2225,36 @@ void scenario_settle(const scenario_t *scenario)
             exit(1);
         }
 
+        mock_cw_tune_reset();
+
+        if (notcw) {
+            /* El fixture NO esta en CW/CWR: pulsar la accion tiene que RECHAZAR
+             * ("Auto Tune: CW/CWR only"), no abrir sesion y no tocar el dial. */
+            buttons_press(4, false);    /* (APP 6:6) index 4: "Auto Tune" */
+            if (autotune_ui_running()) {
+                fprintf(stderr,
+                        "autotune-notcw: la accion arranco una sesion fuera de CW/CWR "
+                        "(el rechazo por modo no corre)\n");
+                exit(1);
+            }
+            if (subject_get_int(cfg_cur.fg_freq) != (int32_t) mock_radio.frequency_hz) {
+                fprintf(stderr,
+                        "autotune-notcw: el dial se movio a %d en un modo no soportado\n",
+                        (int) subject_get_int(cfg_cur.fg_freq));
+                exit(1);
+            }
+            if (mock_cw_tune_frames() != 0) {
+                fprintf(stderr, "autotune-notcw: se pidieron muestras CW sin sesion\n");
+                exit(1);
+            }
+            virtual_time_advance(400, 10);
+            return;
+        }
+
         buttons_press(4, false);    /* (APP 6:6) index 4: "Auto Tune" */
 
         /* Lo que el fixture *significa*: pulsar el boton arranca el asistente
-         * (main_screen_action(ACTION_ATUNE) -> autotune_ui_start). Codificado sobre
+         * (main_screen_action(ACTION_ATUNE) -> autotune_ui_toggle). Codificado sobre
          * el estado real del firmware: sin esto el banco capturaria un dial quieto
          * y reportaria verde. */
         if (!autotune_ui_running()) {
@@ -2255,75 +2264,87 @@ void scenario_settle(const scenario_t *scenario)
             exit(1);
         }
 
-        if (!strcmp(scenario->screen, "autotune-progress")) {
-            /* Cortar a mitad: unos 350 ms dejan el dial en el primer probe
-             * (start +/- 500 Hz), el progreso visible. El barrido sigue corriendo;
-             * el capture es un instante fijo del reloj virtual. */
+        if (!strcmp(scenario->screen, "autotune")) {
+            /* Cancelacion explicita (segundo pulsado) con el banco SIN tono: la
+             * sesion estaba juntando tramas, no habia escrito nada y el dial tiene
+             * que quedar EXACTAMENTE en la frecuencia del fixture. */
             virtual_time_advance(350, 5);
-
-            /* Lo que el fixture *significa*: a mitad del barrido el dial YA se movio
-             * del arranque (el progreso visible) y el asistente sigue corriendo. Si
-             * alguien saca el retuneo por probe, esto corta en vez de capturar un
-             * dial quieto y reportar verde. */
-            if (subject_get_int(cfg_cur.fg_freq) == (int32_t) mock_radio.frequency_hz) {
+            if (subject_get_int(cfg_cur.fg_freq) != (int32_t) mock_radio.frequency_hz) {
                 fprintf(stderr,
-                        "autotune-progress: el dial sigue en el arranque a los 350 ms "
-                        "(no hay progreso visible)\n");
+                        "autotune: durante COLLECT el dial se movio a %d (v2 no barre)\n",
+                        (int) subject_get_int(cfg_cur.fg_freq));
+                exit(1);
+            }
+
+            buttons_press(4, false);    /* segundo pulsado: cancela */
+
+            if (autotune_ui_running()) {
+                fprintf(stderr, "autotune: el segundo pulsado no cancelo la sesion\n");
+                exit(1);
+            }
+            if (subject_get_int(cfg_cur.fg_freq) != (int32_t) mock_radio.frequency_hz) {
+                fprintf(stderr,
+                        "autotune: el dial quedo en %d y no en el arranque %d (cancelacion)\n",
+                        (int) subject_get_int(cfg_cur.fg_freq), (int) mock_radio.frequency_hz);
+                exit(1);
+            }
+            virtual_time_advance(400, 10);
+        } else if (!strcmp(scenario->screen, "autotune-progress")) {
+            /* La UNICA correccion provisional: el banco inyecta un tono 35 Hz por
+             * encima del pitch, el asistente corrige una vez y se queda
+             * verificando. El capture es ese instante: el dial a start + 35 y la
+             * sesion viva. Es el reemplazo honesto del "progreso del barrido" v1:
+             * en v2 no hay barrido ni barra de progreso. */
+            int32_t want = (int32_t) mock_radio.frequency_hz + 35;
+
+            mock_cw_tune_set_tone(35.0f, 20.0f);
+
+            for (int i = 0; i < 100 && autotune_ui_running() &&
+                                subject_get_int(cfg_cur.fg_freq) == (int32_t) mock_radio.frequency_hz;
+                 i++) {
+                virtual_time_advance(50, 5);
+            }
+
+            if (subject_get_int(cfg_cur.fg_freq) != want) {
+                fprintf(stderr,
+                        "autotune-progress: el dial quedo en %d y no en la correccion %d "
+                        "(una sola correccion por invocacion)\n",
+                        (int) subject_get_int(cfg_cur.fg_freq), (int) want);
                 exit(1);
             }
             if (!autotune_ui_running()) {
                 fprintf(stderr,
-                        "autotune-progress: el barrido ya termino a los 350 ms "
-                        "(¿se acorto el plan?)\n");
+                        "autotune-progress: la sesion ya habia terminado cuando el dial se movio "
+                        "(no se captura la provisional)\n");
                 exit(1);
             }
-        } else if (!strcmp(scenario->screen, "autotune-found")) {
-            /* El banco no tiene DSP que actualice el S-meter (es constante,
-             * mock_radio.smeter_db), asi que este fixture lo empuja por slice con un
-             * pico sintetico a `start - 1500 Hz`: el barrido lo encuentra y el dial
-             * se queda en el mejor spot. Es la evidencia del camino "spot recogido"
-             * con el mismo algoritmo que corre en la radio. */
-            autotune_peak_hz = (int32_t) mock_radio.frequency_hz - 1500;
-
-            for (int i = 0; i < 1000 && autotune_ui_running(); i++) {
-                virtual_time_advance_step(50, 5, autotune_found_slice, NULL);
-            }
-            if (autotune_ui_running()) {
-                fprintf(stderr, "autotune-found: el barrido no termino (¿timer colgado?)\n");
-                exit(1);
-            }
-            if (subject_get_int(cfg_cur.fg_freq) != autotune_peak_hz) {
-                fprintf(stderr,
-                        "autotune-found: el dial quedo en %d y no en el pico %d "
-                        "(el barrido no encontro el mejor spot)\n",
-                        (int) subject_get_int(cfg_cur.fg_freq), (int) autotune_peak_hz);
-                exit(1);
-            }
-            virtual_time_advance(400, 10);
         } else {
-            /* Correr el barrido entero sobre el reloj virtual. El tope corta una
-             * corrida que no termina (un timer que no se apaga) en vez de colgar el
-             * arnes; si el tope se alcanza, el fixture falla en vez de capturar a
-             * mitad. */
+            /* `autotune-found`: mismo tono sintetico, corrido hasta el final. El
+             * dial tiene que quedar en la correccion y la sesion cerrada. Si la
+             * verificacion hubiera fallado, el rollback la devuelve al arranque:
+             * que el dial quede en start + 35 ES la prueba de que verifico. */
+            int32_t want = (int32_t) mock_radio.frequency_hz + 35;
+
+            mock_cw_tune_set_tone(35.0f, 20.0f);
+
             for (int i = 0; i < 1000 && autotune_ui_running(); i++) {
                 virtual_time_advance(50, 5);
             }
             if (autotune_ui_running()) {
-                fprintf(stderr, "autotune: el barrido no termino (¿timer colgado?)\n");
+                fprintf(stderr, "autotune-found: la sesion no termino (¿timer colgado?)\n");
                 exit(1);
             }
-
-            /* Lo que el fixture *significa*: con el S-meter constante nadie supera al
-             * arranque, asi que el dial tiene que quedar EXACTAMENTE en la frecuencia
-             * del fixture (el punto de partida, nunca perdido). */
-            if (subject_get_int(cfg_cur.fg_freq) != (int32_t) mock_radio.frequency_hz) {
+            if (subject_get_int(cfg_cur.fg_freq) != want) {
                 fprintf(stderr,
-                        "autotune: el dial quedo en %d y no volvio al arranque %d "
-                        "(el restore no corrio)\n",
-                        (int) subject_get_int(cfg_cur.fg_freq), (int) mock_radio.frequency_hz);
+                        "autotune-found: el dial quedo en %d y no en la correccion verificada %d\n",
+                        (int) subject_get_int(cfg_cur.fg_freq), (int) want);
                 exit(1);
             }
-
+            if (mock_cw_tune_frames() == 0) {
+                fprintf(stderr,
+                        "autotune-found: no se pidio ninguna trama CW (¿el fixture no armo el tono?)\n");
+                exit(1);
+            }
             /* Dejar asentar el mensaje final (fade-in de 250 ms) antes del capture. */
             virtual_time_advance(400, 10);
         }
