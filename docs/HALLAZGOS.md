@@ -80,6 +80,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 59. [El SIGSEGV del #131 (reabierto): otros tres caminos tocaban LVGL fuera del hilo de GUI](#59-el-sigsegv-del-131-reabierto-otros-tres-caminos-tocaban-lvgl-fuera-del-hilo-de-gui)
 60. [El squelch del #166: la lib del control ya habilita el enable (el comentario de radio.c:611 era redundante)](#60-el-squelch-del-166-la-lib-del-control-ya-habilita-el-enable-el-comentario-de-radioc611-era-redundante)
 61. [El md5 del build no distinguia commits: `rsync -au` de Buildroot no reponia la copia (#165)](#61-el-md5-del-build-no-distinguia-commits-rsync--au-de-buildroot-no-reponia-la-copia-165)
+62. [DFL: el editor inline se cerraba al cambiar de modo dentro de la MISMA familia (y el gate que lo vio estaba rojo con el CI en verde)](#62-dfl-el-editor-inline-se-cerraba-al-cambiar-de-modo-dentro-de-la-misma-familia-y-el-gate-que-lo-vio-estaba-rojo-con-el-ci-en-verde)
 
 ---
 
@@ -3507,4 +3508,87 @@ distingue: lo que fallaba era que la copia no se reponia. El `rm -rf` del QA no 
 **Sin fundar (anexo A)**: que la copia del volumen del QA tuviera el mtime mas nuevo que su fuente
 (el mecanismo medido lo explica; el `ls -l` de esa corrida no quedo). Tampoco queda medido cuanto
 pesa el `--checksum` en un arbol mas grande que el de esta corrida.
+
+---
+
+## 62. DFL: el editor inline se cerraba al cambiar de modo dentro de la MISMA familia (y el gate que lo vio estaba rojo con el CI en verde)
+
+**Sintoma**: el gate de determinismo del arnes de UI (`tests/check_harness_determinism.sh`, el que
+corre en la matriz de checks de x6200) quedo **rojo en el trunk** con dos fixtures de #182, y por eso
+`x6200-ab contracts` no podia evaluar (`BLOCKED`, exit 2):
+
+```
+$ SKIP_BUILD=1 tests/check_harness_determinism.sh      # base e6925db6, sin tocar nada
+dfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)
+dfl-mirror-usb: el handle LOW no esta dibujado en x=37 (mejor columna x=-1, run=0)
+```
+
+**Causa, medida** (biseccion, el arnes compilado en cada merge y los dos fixtures corridos con la
+imagen `x6200-uiharness`; evidencia cruda en `docs/evidencia/2026-10-21-dflmirror/biseccion.txt`):
+
+```
+d32b59e8  DFL #182 (merge de #184):  dfl-mirror-lsb exit=0   dfl-mirror-usb exit=0
+6666806e  DFL #183 (merge de #185):  dfl-mirror-lsb exit=1   dfl-mirror-usb exit=1   <- aca se rompe
+```
+
+La rotura la introdujo **#183**, y es de estado, no de pixeles: el editor inline es la pagina **C**
+(`buttons_page_dfl_expanded`) de las paginas DFL de #183, y el editor se abre **directo** por el long
+press fisico de DFL (`params.long_dfl`), por la celda `Grafico` y por el control remoto, sin pasar
+por A/B. `buttons_dfl_open()` fija la familia vigente (`dfl_last_family`), pero `dfl_inline_expand()`
+no: asi el **primer** cambio de modo con el editor abierto se comparaba contra "sin familia", se
+leia como familia NUEVA, y `buttons_dfl_on_mode_change()` contraia el editor y saltaba a Favoritos
+(`codigo: src/buttons.cpp`, `buttons_dfl_on_mode_change`). Un cambio USB-D <-> LSB-D, que #183
+documenta como la MISMA familia ("no se toca la pagina"), cerraba el editor. La captura lo muestra:
+la barra queda en Favoritos (`dfl-presets-*`) con el chip `Personalizado`, sin el panel del editor
+(`docs/evidencia/2026-10-21-dflmirror/png/dfl-mirror-usb-trunk.png`).
+
+**Arreglo**: `buttons_dfl_graph_open()` (src/buttons.cpp, declarado en src/buttons.h) centraliza la
+carga de la pagina C **y** la familia vigente; `dfl_inline_expand()` la usa en lugar de
+`buttons_load_page(&buttons_page_dfl_expanded)`. En el arnes, el paso 6 de `dfl-editor-mirror` ahora
+exige antes de mirar pixeles que, tras el cambio de modo de la misma familia, el editor siga abierto
+y la barra siga en C (`tools/ui_harness/src/screens.c`): el mensaje viejo (`el handle LOW no esta
+dibujado en x=37`) era el sintoma aguas abajo; la misma aserción aplicada al arbol de `6666806e`
+imprime `el cambio de modo de la misma familia cerro el editor (expanded=0, pagina=1, esperaba C)`
+(`docs/evidencia/2026-10-21-dflmirror/harness/aserion-nueva-en-183.txt`).
+
+**Verificacion, medida** (`docs/evidencia/2026-10-21-dflmirror/`):
+
+- `SKIP_BUILD=1 tests/check_harness_determinism.sh` -> **PASS** con los 199 fixtures (PNG identico
+  entre las dos corridas); `dfl-mirror-lsb: 07c37a57...` y `dfl-mirror-usb: f2565125...` son
+  **byte-identicos** a las capturas de `d32b59e8` (pre-#183), o sea que el render volvio exactamente
+  al de #182 (`sha256sum` en `biseccion.txt`).
+- `x6200-ab contracts` sobre el HEAD de la rama (`45bcb383`): **PASS** (exit 0), 199 escenarios (los
+  dos del espejo incluidos), **2056 checks, 0 failure(s)** (`ab/contracts-fix.json`). El mismo gate
+  ya habia dado PASS sobre `db6bc31b` antes de la aserción del arnes.
+- Los dos fixtures corridos en las dos configuraciones de imagen (la local del owner y una construida
+  `--target ci` desde el arbol): rojo en la base (e6925db6) y verde con el fix, identicos entre
+  imagenes (`ci-hueco/dos-configuraciones-base.txt`): la imagen no era la diferencia.
+- `tests/native/run_native_tests.sh` 138 comprobaciones 0 fallos; `tests/run_all_tests.sh --quick`
+  17 OK (0 fallos) con la imagen `ci` y 20 OK con `x6200-uiharness-full`; estaticos 8/8;
+  `ruff`/`format`/`ty` OK; `pytest -m 'not e2e'` 227 passed; `pytest -m e2e` 13 passed; la matriz de
+  checks de x6200 en `exit 0` (el banco QEMU, BLOCKED con su preflight real: sin chroot `.vfix3` en
+  el worktree).
+
+**El agujero del CI (medido con sus propios artefactos)**: el job *UI Quality Contracts* quedaba
+**verde** con `contracts.json` = `BLOCKED` porque el paso de reporte solo fallaba con
+`status == "FAIL"`. Prueba: el run `39644351915` (#191) tiene el job `UI Quality Contracts` en
+`success` y su artefacto `ui-contracts` dice
+`{"status": "BLOCKED", "error": "harness failed for scenario dfl-mirror-lsb ..."}`. El reporte de #183
+(“contracts PASS — 2033 checks, 0 failure(s)”) tampoco cubria los fixtures del espejo: ese run
+(`39511316773`, head `6542d48f`) evaluo **196** escenarios **sin** `dfl-mirror-*` (los agregaba #184,
+que se mergeo despues del punto de rama de #183), contra **144** con los dos del espejo en el run de
+#182 (`39490433674`, head `e86a46e2`). Sumado a que el workflow solo dispara en `pull_request`, el
+trunk no se revalida despues de un merge: el rojo vivio en main sin que ningun run lo mirara.
+
+**Arreglo del agujero**: el paso de reporte (`.github/workflows/ab-testing.yml`) ahora solo deja
+pasar `PASS` (y los estados que el header del workflow declara legitimos, `REVIEW REQUIRED` e
+`INCONCLUSIVE`); `FAIL` y todo lo que no sea un PASS limpio —`BLOCKED`, o un status ausente— fallan
+el job. Verificado corriendo el cuerpo exacto del paso con bash sobre los payloads reales:
+BLOCKED del artefacto de #191 -> exit 1; PASS de #183 -> 0; FAIL sintetico -> 1; `REVIEW REQUIRED` e
+`INCONCLUSIVE` -> 0; `contracts.json` ausente -> 2 (`ci-hueco/paso-reporte.txt`).
+
+**Sin fundar (anexo A)**: no medi que el workflow de main nunca haya corrido `contracts` con los
+fixtures del espejo *despues* del merge de #183 (no hay runs de `push` para mirar); lo medido es que
+el trigger es `pull_request` y que el run de #183 —el que si habria tenido que verlos en su base—
+traia 196 escenarios sin ellos.
 

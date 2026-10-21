@@ -1,0 +1,47 @@
+# Los dos fixtures del espejo, en las DOS configuraciones de imagen, sobre el arbol BASE (e6925db6, SIN el fix)
+
+# La imagen solo aporta dependencias de build: el arnes se compila del arbol montado en /src (mismo
+
+# Dockerfile en las dos: la del CI es tools/ui_harness/Dockerfile --target ci).
+
+# (a) imagen local preexistente del owner: x6200-uiharness  sha256:9eedee0e5605  2026-10-14T17:19:28.459116695-03:00
+# (b) imagen construida AHORA con --target ci desde este arbol:
+#     $ docker build -t x6200-uiharness-dflmirror-ci --target ci tools/ui_harness   (exit 0; log en docker-build-ci.log)
+#     x6200-uiharness-dflmirror-ci  sha256:826eae2c50da  2026-10-21T14:49:20.521935752-03:00
+
+=== configuracion (a): imagen x6200-uiharness (build-a) ===
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-lsb.scn --png /tmp/o.png --json /tmp/o.json
+dfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)
+harness_exit=1
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-usb.scn --png /tmp/o.png --json /tmp/o.json
+dfl-mirror-usb: el handle LOW no esta dibujado en x=37 (mejor columna x=-1, run=0)
+harness_exit=1
+
+=== configuracion (b): imagen x6200-uiharness-dflmirror-ci (build-b) ===
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-lsb.scn --png /tmp/o.png --json /tmp/o.json
+dfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)
+harness_exit=1
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-usb.scn --png /tmp/o.png --json /tmp/o.json
+dfl-mirror-usb: el handle LOW no esta dibujado en x=37 (mejor columna x=-1, run=0)
+harness_exit=1
+
+# Con el fix (db6bc31b), las mismas dos configuraciones de imagen
+
+# $ docker build -t x6200-uiharness-dflmirror-ci --target ci tools/ui_harness  -> x6200-uiharness-dflmirror-ci sha256:826eae2c50da
+
+=== configuracion (a): imagen x6200-uiharness (build) ===
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-lsb.scn --png /tmp/o.png --json /tmp/o.json
+ui_harness: dfl-mirror-lsb -> /tmp/o.png (143881 bytes), flushes=37, flushed_pixels=2425682
+harness_exit=0
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-usb.scn --png /tmp/o.png --json /tmp/o.json
+ui_harness: dfl-mirror-usb -> /tmp/o.png (144028 bytes), flushes=37, flushed_pixels=2425682
+harness_exit=0
+
+=== configuracion (b): imagen x6200-uiharness-dflmirror-ci (build-b) ===
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-lsb.scn --png /tmp/o.png --json /tmp/o.json
+ui_harness: dfl-mirror-lsb -> /tmp/o.png (143881 bytes), flushes=37, flushed_pixels=2425682
+harness_exit=0
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-usb.scn --png /tmp/o.png --json /tmp/o.json
+ui_harness: dfl-mirror-usb -> /tmp/o.png (144028 bytes), flushes=37, flushed_pixels=2425682
+harness_exit=0
+

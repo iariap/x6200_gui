@@ -117,6 +117,12 @@ void       buttons_dfl_open(void);
  * siempre a A (contrae el grafico si estaba en C). */
 void       buttons_dfl_short(void);
 
+/* C = Grafico se carga desde el editor inline (src/dfl_inline.c, que tambien se
+ * abre directo por el long press DFL). Fija la familia vigente y la pagina en un
+ * solo lugar: sin eso un cambio de modo de la MISMA familia se lee como familia
+ * nueva y cierra el editor (issue #182/#183). */
+void       buttons_dfl_graph_open(void);
+
 /* ESC con el DFL abierto. */
 void       buttons_dfl_escape(void);
 

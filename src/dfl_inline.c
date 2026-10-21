@@ -805,7 +805,7 @@ void dfl_inline_expand(void) {
 
     lv_obj_clear_flag(panel, LV_OBJ_FLAG_HIDDEN);
 
-    buttons_load_page(&buttons_page_dfl_expanded);
+    buttons_dfl_graph_open();
     buttons_dfl_expanded_sync((int) sel);
 
     dfl_refresh();

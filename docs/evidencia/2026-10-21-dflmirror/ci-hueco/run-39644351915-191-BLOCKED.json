@@ -1,0 +1,5 @@
+{
+  "status": "BLOCKED",
+  "exit_code": 2,
+  "error": "harness failed for scenario dfl-mirror-lsb on 01c5008a43bf (exit 1): [User]\t(0.000, +0)\t check_live: cfg_sm enlazado (20 par\u00e1metros) \t(in settings_manager.cpp line #147)\n[User]\t(0.000, +0)\t check_live: cfg_sm enlazado (20 par\u00e1metros) \t(in settings_manager.cpp line #147)\n[User]\t(0.000, +0)\t buttons_init: First button in page=0, group=4 press cb is not next \t(in buttons.cpp line #1139)\n[User]\t(0.000, +0)\t buttons_init: First button in page=0, group=4 hold cb is not prev \t(in buttons.cpp line #1145)\ndfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)"
+}

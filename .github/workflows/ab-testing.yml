@@ -131,6 +131,15 @@ jobs:
         run: |
           python3 - contracts.json <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json, pathlib, sys
+          # Result rules (the ones the header of this workflow documents):
+          # PASS is the only clean verdict; REVIEW REQUIRED (aesthetic change) and
+          # INCONCLUSIVE (host noise) are legitimate results of their own and are
+          # NOT "not evaluated". BLOCKED means x6200-ab could not evaluate the
+          # revision (the harness did not render a scenario, the build failed):
+          # like a violation it must fail the job, so a job can never report a
+          # green contract table for a revision that was never checked. Anything
+          # else is unknown and also fails (fail-closed).
+          LEGITIMATE = {"PASS", "REVIEW REQUIRED", "INCONCLUSIVE"}
           print("## UI Quality Contracts")
           print()
           path = pathlib.Path(sys.argv[1])
@@ -138,7 +147,8 @@ jobs:
               print("- status: not evaluated (the check did not produce results)")
               raise SystemExit(2)
           data = json.loads(path.read_text())
-          print(f"- status: **{data.get('status')}** (exit {data.get('exit_code')})")
+          status = data.get("status")
+          print(f"- status: **{status}** (exit {data.get('exit_code')})")
           print(f"- revision: `{data.get('revision', '')}`")
           unchanged = data.get("unchanged_defects", [])
           print(f"- checks: {data.get('checks', 0)}; failures: {len(data.get('failures', []))}; "
@@ -148,7 +158,17 @@ jobs:
           for defect in unchanged:
               print(f"  - UNCHANGED DEFECT `{defect.get('rule')}` [{defect.get('fixture')}] "
                     f"({defect.get('baseline_issue')}): {defect.get('detail')}")
-          if data.get("status") == "FAIL":
+          if data.get("error"):
+              print(f"- not evaluated: {data.get('error')}")
+          if status == "FAIL":
+              print()
+              print("violation of the quality contracts — blocking")
+              raise SystemExit(1)
+          if status not in LEGITIMATE:
+              print()
+              print(f"contracts {status or 'without a status'} (exit {data.get('exit_code')}) "
+                    "— blocking: the gate did not report a clean PASS (`BLOCKED` means the revision "
+                    "was never evaluated: the harness did not render every scenario)")
               raise SystemExit(1)
           PY
 
