@@ -1,0 +1,5 @@
+  cw_tune_ui.c update_visibility: ok
+  cw_tune_ui_visible: ok
+  cw_tune_set_freq: ok
+  cw.cpp feed gate: ok
+  el feed del tono sigue a la visibilidad del widget de CW
