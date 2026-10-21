@@ -1,13 +1,16 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
 /*
- *  Volcado del framebuffer fisico esperado (issue #192): reproduce la animacion
- *  completa con el renderer y el backend REALES y el MISMO ciclo que
- *  src/bootanim/main.c (fondo completo en el primer cuadro y despues solo las
- *  cajas que cambiaron), sobre un buffer con el stride/formato pedidos.
+ *  Volcado del framebuffer fisico esperado (issue #192; ciclo continuo del
+ *  issue #204): reproduce el ciclo completo con el renderer y el backend REALES
+ *  y el MISMO ciclo que src/bootanim/main.c (fondo completo en el primer cuadro
+ *  y despues solo las cajas que cambiaron), sobre un buffer con el
+ *  stride/formato pedidos. El ciclo es continuo: `last` decide cuantos cuadros
+ *  se reproducen (los 30 s ya no terminan nada).
  *
  *  El gate compara byte a byte este volcado con lo que dejo el binario
- *  x6200_bootanim corriendo de verdad: eso prueba, de una sola vez, tiempos,
- *  rasterizado, rotacion, formato, stride y limites.
+ *  x6200_bootanim compilado con -DBOOTANIM_TEST (reloj sintetico + limite de
+ *  cuadros): eso prueba, de una sola vez, tiempos, rasterizado, rotacion,
+ *  formato, stride y limites.
  *
  *  Uso: replay_dump <out> <bpp> <pad> <xoff> <yoff> <rgb|bgr> [ultimo_cuadro]
  */
@@ -114,7 +117,8 @@ int main(int argc, char **argv) {
     surface.h = BA_LOGICAL_H;
 
     /* El mismo ciclo que src/bootanim/main.c: ba_model_at + ba_render + blit de
-     * los rectangulos sucios, con el fondo completo solo en el primer cuadro. */
+     * los rectangulos sucios, con el fondo completo solo en el primer cuadro y
+     * la animacion (lluvia, beams, decrypt) viva sin importar el tiempo. */
     for (frame = 0; frame <= (uint32_t) last; frame++) {
         ba_model_t m;
         ba_dirty_t dirty;
@@ -129,10 +133,6 @@ int main(int argc, char **argv) {
 
         prev      = m;
         have_prev = 1;
-
-        if (m.delayed) {
-            break;
-        }
     }
 
     out = fopen(out_path, "wb");
