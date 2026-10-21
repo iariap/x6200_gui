@@ -1,0 +1,31 @@
+--- addr2line offset 0x2e12c/0x2e11c (PIE base 0x400000)
+cb_hooks_init
+??:?
+cb_hooks_init
+??:?
+--- symbolos cercanos
+0002e0f8 T cb_hooks_init
+0010d8c4 T cfg_band_params_init
+0010b4e0 T cfg_init
+00110198 T cfg_mode_params_init
+0010c6c0 T cfg_params_init
+001098b8 T params_init
+00112e68 T subject_get_int
+--- fuente
+967:void cb_hooks_init(void) {
+968-    /* Ultimo split conocido de una banda fuera de CB (al arrancar, el de la banda
+969-     * guardada). */
+970-    cb_last_band_id = subject_get_int(cfg.band_id.val);
+971-    cb_saved_split = subject_get_int(cfg_cur.band->split.val);
+972-
+973-    subject_add_observer(cfg_cur.band->split.val, cb_split_cache_cb, NULL);
+562:    params_init();
+563-    boot_mark("params_init");
+564-    /* CB 27 MHz (issue #146): despues de params_init() para que el observer de
+565-     * cfg.band_id corra despues del de src/cfg/band.c, y antes de radio_init()
+566-     * para que el tope de potencia se recorte antes de mandar cfg.pwr al equipo.
+631:    if (database_init()) {
+632-        boot_mark("db_init");
+633-        cfg_init(db);
+634-        boot_mark("cfg_init");
+635-        if (!params_load()) {

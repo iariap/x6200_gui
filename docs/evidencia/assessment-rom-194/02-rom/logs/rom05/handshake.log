@@ -1,0 +1,9 @@
+{"t":"state","vfo":"A","freq":10100000,"freq_bg":10100000,"mode":"USB","band":"30m","filter":2800,"flo":100,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":10,"nb_width":10,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+rc=0
+--- socket
+srw-------. 1 nobody nobody 0 Oct 21 18:04 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/tmp/x6200_remote.sock
+--- gui binary in chroot
+7e2e9331c4cbc51727a098996d98e263c45dd57cb8fff8d1f2aea2964c3849c5  /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/sbin/x6200_gui
+1f998c46909307397525c975a712adfd  /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/sbin/x6200_gui
+--- source md5
+964193ae9306b5127845cec44a57d52c

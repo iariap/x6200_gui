@@ -1,0 +1,30 @@
+{
+ "source": "stress-rx-100b.jsonl",
+ "cycles": 100,
+ "steps": 700,
+ "verdicts": {
+  "ok": 700
+ },
+ "responses": {
+  "{\"t\":\"ok\"}": 700
+ },
+ "settle_ms": {
+  "min": 168,
+  "p50": 198.0,
+  "p95": 471,
+  "max": 1471,
+  "mean": 253.0
+ },
+ "command_ms": {
+  "min": 52,
+  "p50": 62.0,
+  "p95": 116,
+  "max": 178,
+  "mean": 67.6
+ },
+ "start_utc": "2026-10-21T21:44:14.021Z",
+ "end_utc": "2026-10-21T21:48:12.995Z",
+ "layer": "QEMU_USER",
+ "coverage": "PARTIAL",
+ "note": "binario ARM del candidato en chroot privado; no hardware"
+}

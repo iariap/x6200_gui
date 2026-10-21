@@ -1,0 +1,72 @@
+--- app_names en remote_server.cpp
+148:static const char *app_names[]  = {"off", "FT8", "FT4", "JS8", "WSPR", "SSTV", "WeFax", "NavTex", "RTTY", "CW", "Field", "GPS", "Bands", "Settings", "BT",
+149-                                   "Cluster", "CwTrainer", "Eq", "Status", "QTH", "Callsign", "Recorder", "WiFi", "SWRScan", "Propagation", "DFLEditor"};
+150-static const char *sstv_modes[] = {"R8BW", "R36", "R72", "M1", "M2", "S1", "S2"};
+151-
+152-/* Commands of the app that is open: app is current_app() or its start ("FT": FT8 and FT4); a name
+153- * can have a row for each app. val in min..max (none when min > max). With val < stop they are
+154- * taken also while the radio transmits. */
+155-static const struct {
+156-    const char *name;
+157-    const char *app;
+158-    void      (*fn)(const char *cmd, int32_t val, const char *text);
+159-    int32_t     min, max, stop;
+160-} app_cmds[] = {
+161-    {"ft8_cq",      "FT",     dialog_ft8_remote,    0, 1,         1},
+162-    {"ft8_stop",    "FT",     dialog_ft8_remote,    0, 1,         1},
+163-    {"ft8_auto",    "FT",     dialog_ft8_remote,    0, 1,         INT32_MIN},
+164-    {"ft8_hold",    "FT",     dialog_ft8_remote,    0, 1,         INT32_MIN},
+165-    {"ft8_txfreq",  "FT",     dialog_ft8_remote,    200, 2900,    INT32_MIN},
+166-    {"ft8_reply",   "FT",     dialog_ft8_remote,    0, INT32_MAX, INT32_MIN},
+167-    {"app_base",    "FT",     dialog_ft8_remote,    0, 1,         INT32_MIN},
+168-
+169-    {"cw_send",     "CW",     dialog_cw_kbd_remote, 1, 0,         INT32_MAX},   /* also while keying */
+170-    {"cw_stop",     "CW",     dialog_cw_kbd_remote, 1, 0,         INT32_MAX},
+171-    {"cw_wpm",      "CW",     dialog_cw_kbd_remote, 5, 60,        INT32_MIN},
+172-    {"cw_dec",      "CW",     dialog_cw_kbd_remote, 0, 1,         INT32_MIN},
+173-
+174-    {"js8_send",    "JS8",    dialog_js8_remote,    1, 0,         INT32_MIN},
+175-    {"js8_cq",      "JS8",    dialog_js8_remote,    1, 0,         INT32_MIN},
+176-    {"js8_hb",      "JS8",    dialog_js8_remote,    1, 0,         INT32_MIN},
+177-    {"js8_stop",    "JS8",    dialog_js8_remote,    1, 0,         INT32_MAX},
+178-    {"wspr_txpct",  "WSPR",   dialog_wspr_remote,   0, 50,        INT32_MIN},
+--
+356:    /* app_names[] y actions[] van en paralelo: el indice que resuelve el comando "app" por
+357-     * nombre tiene que caer en la MISMA accion. El static_assert lo fija en compilacion para
+358-     * que sacar/agregar una app en una sola de las dos listas no desalinee el mapeo. */
+359:    static_assert(sizeof(app_names) / sizeof(app_names[0]) == sizeof(actions) / sizeof(actions[0]),
+360:                  "app_names[] y actions[] deben tener el mismo largo (mapeo por indice)");
+361-    const char *cur = current_app();
+362-
+363-    if (!app) {
+--- FT4 alias
+143-/* "app" values; cont_modes[] order in dialog_sstv.c */
+144-/* Los nombres que acepta `{"cmd":"app","text":...}`: las 22 apps de main_screen_start_app mas el
+145: * alias FT4 (misma accion que FT8). Estaban solo 15, asi que no se podian abrir por control remoto
+146: * (ni desde la pagina /remote del webserver). Los indices importan: FT4 es el 2. Esta lista va en
+147- * paralelo con actions[] de open_app() (mismo indice); ver el static_assert que las ata. */
+148:static const char *app_names[]  = {"off", "FT8", "FT4", "JS8", "WSPR", "SSTV", "WeFax", "NavTex", "RTTY", "CW", "Field", "GPS", "Bands", "Settings", "BT",
+149-                                   "Cluster", "CwTrainer", "Eq", "Status", "QTH", "Callsign", "Recorder", "WiFi", "SWRScan", "Propagation", "DFLEditor"};
+150-static const char *sstv_modes[] = {"R8BW", "R36", "R72", "M1", "M2", "S1", "S2"};
+151-
+152:/* Commands of the app that is open: app is current_app() or its start ("FT": FT8 and FT4); a name
+153- * can have a row for each app. val in min..max (none when min > max). With val < stop they are
+154- * taken also while the radio transmits. */
+--
+317-static const char *current_app() {
+318-    if (dialog_type_is_run(dialog_ft8))
+319:        return cfg_sm.p_ft8_protocol.get() == FTX_PROTOCOL_FT4 ? "FT4" : "FT8";
+320-    if (dialog_type_is_run(dialog_js8))
+321-        return "JS8";
+--
+369-        return;
+--- APPS por defecto del barrido (24, sin DFLEditor)
+47:APPS=${APPS:-"FT8 FT4 JS8 WSPR SSTV WeFax NavTex RTTY CW Field GPS Bands Settings BT Cluster CwTrainer Eq Status QTH Callsign Recorder WiFi SWRScan Propagation"}
+--- conteo de la lista del issue (25 sin off)
+25 ['FT8', 'FT4', 'JS8', 'WSPR', 'SSTV', 'WeFax', 'NavTex', 'RTTY', 'CW', 'Field', 'GPS', 'Bands', 'Settings', 'BT', 'Cluster', 'CwTrainer', 'Eq', 'Status', 'QTH', 'Callsign', 'Recorder', 'WiFi', 'SWRScan', 'Propagation', 'DFLEditor']
+--- main_screen dispatch FT4
+clone-gui/src/main_screen.c:185:        case ACTION_APP_FT8:       return "FT8";
+clone-gui/src/main_screen.c:272:        case ACTION_APP_FT8:
+clone-gui/src/main_screen.c:502:        case ACTION_APP_FT8:
+clone-gui/src/remote_server.cpp:350:    static const press_action_t actions[] = {ACTION_NONE,      ACTION_APP_FT8,      ACTION_APP_FT8,      ACTION_APP_JS8,
+clone-gui/src/remote_server.cpp:370:    if (actions[app] == ACTION_APP_FT8)

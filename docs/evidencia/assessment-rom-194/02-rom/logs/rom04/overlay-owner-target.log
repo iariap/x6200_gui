@@ -1,0 +1,3 @@
+owner=1000:1000 mode=755 size=1869
+--- owner esperado en target
+pulse:x:1000:1000:PulseAudio system daemon:/var/run/pulse:/bin/false

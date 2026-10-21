@@ -1,0 +1,63 @@
+overlay_S02update_sh_n_rc=0
+Files /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/init.d/S02update and clone-gui/tools/release/update-overlay/etc/init.d/S02update differ
+diff_rc=1
+--- wrapper loop
+     1	#!/bin/sh
+     2	mkdir -p /mnt/app_logs/
+     3	# Los assets (4,4 MB) los lee la GUI de /dev/shm/images. Antes se copiaban ahi en cada
+     4	# arranque: esa copia cuesta ~0,24 s y 4,4 MB de RAM. Un bind mount es instantaneo, asi que
+     5	# se engancha la carpeta de la raiz; si el bind falla (kernel sin soporte) se copia como
+     6	# antes, que es lo que se hacia.
+     7	mkdir -p /dev/shm/images
+     8	if ! mountpoint -q /dev/shm/images; then
+     9	    mount --bind /usr/share/x6200/images /dev/shm/images 2>/dev/null || {
+    10	        rm -rf /dev/shm/images
+    11	        cp -R /usr/share/x6200/images /dev/shm/
+    12	    }
+    13	fi
+    14	while true; do
+    15	    /usr/sbin/x6200_gui > /tmp/x6200_log.txt 2>&1 || sync; mv /tmp/x6200_log.txt /mnt/app_logs/x6200_log_$(date +%Y-%m-%d_%H-%M-%S).txt
+    16	done
+--- S20gui seed
+    20		mountpoint -q /dev/shm || mount -t tmpfs -o mode=1777 tmpfs /dev/shm 2>/dev/null || true
+    21		mkdir -p /mnt/app_logs
+    22		printf '%s  GUI arrancando: %s s de uptime\n' "$(date -u +%H:%M:%S)" "$(cut -d" " -f1 /proc/uptime)" >> /mnt/app_logs/boot.log
+    23		[ ! -f /mnt/params.db ] && cp /usr/share/x6200/params.default.db /mnt/params.db
+    24		# shellcheck disable=SC2086 # we need the word splitting
+    25		start-stop-daemon -S -b -q -m -p "$PIDFILE" -x "/usr/sbin/$DAEMON"
+    26		status=$?
+    27		if [ "$status" -eq 0 ]; then
+    28			echo "OK"
+    29		else
+    30			echo "FAIL"
+    31		fi
+    32		return "$status"
+--- inittab order
+17:::sysinit:/bin/mount -t proc proc /proc
+18:::sysinit:/bin/mount -o remount,rw /
+20:::sysinit:/bin/mount -a
+29:::sysinit:/etc/init.d/rcS
+40:::shutdown:/bin/umount -a -r
+--- S01create_data line
+    28	    fi
+    29	    FREE_ARR=(${FREE_INFO//:/ })
+    30	    # Create (or recreate) partition
+    31	    parted -m -s -a opt /dev/mmcblk0 mkpart primary fat32 ${FREE_ARR[1]} ${FREE_ARR[2]}
+    32	    partprobe /dev/mmcblk0
+    33	    # Check if we have a preexisting DATA partition
+--- S04 line
+    11	backup() {
+    12	  if [[ ! -d ${BACKUP_DIR} ]] then
+    13	    mkdir -p ${BACKUP_DIR}
+    14	  fi
+    15	  tar c -avf ${BACKUP_PATH} /etc/NetworkManager/system-connections/* /etc/ssh/*_key* /root/.ssh/*
+--- fstab
+     1	# <file system>	<mount pt>	<type>	<options>	<dump>	<pass>
+     2	/dev/root	/		ext2	rw,noauto	0	1
+     3	proc		/proc		proc	defaults	0	0
+     4	devpts		/dev/pts	devpts	defaults,gid=5,mode=620,ptmxmode=0666	0	0
+     5	tmpfs		/dev/shm	tmpfs	mode=0777	0	0
+     6	tmpfs		/tmp		tmpfs	mode=1777	0	0
+     7	tmpfs		/run		tmpfs	mode=0755,nosuid,nodev	0	0
+     8	sysfs		/sys		sysfs	defaults	0	0
+     9	/dev/mmcblk0p3	/mnt		ext4	rw		0	2

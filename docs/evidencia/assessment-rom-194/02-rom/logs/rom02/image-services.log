@@ -1,0 +1,60 @@
+--- init.d gui
+-rwxr-xr-x. 1 pablo pablo 1623 Oct 21 15:23 S20gui
+--- S95gui anywhere
+0
+--- S20gui content marker
+/home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/init.d/S20gui
+--- watchdog
+/home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/udev/hwdb.bin
+lrwxrwxrwx. 1 pablo pablo 14 Oct 21 16:17 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/sbin/watchdog -> ../bin/busybox
+--- daemons in sbin
+aserver
+dbus-binding-tool
+dbus-cleanup-sockets
+dbus-daemon
+dbus-launch
+dbus-monitor
+dbus-run-session
+dbus-send
+dbus-test-tool
+dbus-triggerd
+dbus-update-activation-environment
+dbus-uuidgen
+dbusxx-introspect
+dbusxx-xml2cpp
+gdbserver
+gdbus
+ntpdate
+ntpdc
+pulseaudio
+sntp
+x6100_webserver
+NetworkManager
+ntpd
+sshd
+x6200_daemon
+--- world writable
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/arch
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/ash
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/base32
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/base64
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/cat
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/chgrp
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/chmod
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/chown
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/cp
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/cpio
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/date
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/dd
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/df
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/dnsdomainname
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/dumpkmap
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/echo
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/egrep
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/false
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/fdflush
+777 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/fgrep
+--- setuid real extract
+4755 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/busybox 842952
+4750 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/libexec/dbus-daemon-launch-helper 47132
+4711 pablo:pablo /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/libexec/ssh-keysign 554536

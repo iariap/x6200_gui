@@ -1,0 +1,14 @@
+--- parted de la imagen (ARM, qemu)
+BYT;
+/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sdcard.img:571MB:file:512:512:msdos::;
+1:1049kB:34.6MB:33.6MB:fat16::boot, lba;
+2:34.6MB:571MB:537MB:ext4::;
+--- guard tal cual lo corre bash
+grep_fat32_output=[] rc=1
+--- copia agrandada y espacio libre (target parted)
+2:34.6MB:571MB:537MB:ext4::;
+1:571MB:2147MB:1576MB:free;
+--- parsing con el bash de la imagen
+mkpart_start=571MB mkpart_end=2147MB
+--- findmnt de la imagen
+ls: cannot access '/home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/bin/findmnt': No such file or directory

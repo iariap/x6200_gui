@@ -1,0 +1,19 @@
+0
+232M	/work/clone-buildroot/build/images/rootfs.tar
+==> extrayendo el rootfs
+==> aplicando el overlay de la actualización
+    etc/init.d/S02update
+==> armando la lista (solo archivos y enlaces, sin ./ ni directorios)
+    5466 entradas
+==> creando /work/scratch-196/update/x6200_r1cbu_196.tgz
+==> comprobaciones
+    tamaño:            102736632 bytes
+    entradas:          5466
+    directorios:       0 (tiene que ser 0)
+    entrada ./:        0 (tiene que ser 0)
+    setuid:            3 (tienen que ser 5)
+    GUI ejecutable:    -rwxr-xr-x
+FALLA: se perdieron bits setuid
+make_update_exit=1
+total 100332
+-rw-r--r--. 1 nobody nobody 102736632 Oct 21 18:29 x6200_r1cbu_196.tgz

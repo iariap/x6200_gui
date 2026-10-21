@@ -1,0 +1,50 @@
+rcS                          rc=0 
+rcK                          rc=0 
+S01boot_time                 rc=0 
+S01create_data               rc=2 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/init.d/S01create_data: line 29: syntax error: unexpected "(" (expecting "}") 
+S01seedrng                   rc=0 
+S01syslogd                   rc=0 
+S02klogd                     rc=0 
+S02sysctl                    rc=0 
+S02update                    rc=0 
+S03tune_cache                rc=0 
+S04restore_backup_config     rc=2 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/init.d/S04restore_backup_config: line 14: syntax error: unexpected "fi" (expecting "then") 
+S10udev                      rc=0 
+S11radio_daemon              rc=0 
+S20gui                       rc=0 
+S30dbus                      rc=0 
+S39btpairings                rc=0 
+S40bluetoothd                rc=0 
+S40network                   rc=0 
+S45network-manager           rc=0 
+S48sntp                      rc=0 
+S49ntp                       rc=0 
+S50alsa                      rc=0 
+S50pulseaudio                rc=0 
+S50sshd                      rc=0 
+S94btcat                     rc=0 
+S96webserver                 rc=0 
+--- x6200_daemon
+rc=0
+--- busybox version/config
+BusyBox v1.36.1 (2026-10-21 19:16:55 UTC) multi-call binary.
+BusyBox is copyrighted by many authors between 1998-2015.
+--- line numbers
+    24	    retVal=$?
+    25	    if [ $retVal -ne 0 ]; then
+    26	        echo "No free space available"
+    27	        return
+    28	    fi
+    29	    FREE_ARR=(${FREE_INFO//:/ })
+    30	    # Create (or recreate) partition
+    31	    parted -m -s -a opt /dev/mmcblk0 mkpart primary fat32 ${FREE_ARR[1]} ${FREE_ARR[2]}
+    32	    partprobe /dev/mmcblk0
+    10	
+    11	backup() {
+    12	  if [[ ! -d ${BACKUP_DIR} ]] then
+    13	    mkdir -p ${BACKUP_DIR}
+    14	  fi
+    15	  tar c -avf ${BACKUP_PATH} /etc/NetworkManager/system-connections/* /etc/ssh/*_key* /root/.ssh/*
+    16	}
+    17	
+    18	restore() {

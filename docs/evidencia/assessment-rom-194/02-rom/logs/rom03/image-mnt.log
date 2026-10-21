@@ -1,0 +1,22 @@
+--- /mnt en la imagen ext4
+debugfs 1.47.3 (8-Jul-2025)
+    933   40755 (2)      0      0    4096 21-Oct-2026 15:23 .
+      2   40755 (2)      0      0    4096 21-Oct-2026 17:53 ..
+
+--- /dev/shm
+debugfs 1.47.3 (8-Jul-2025)
+    101   40755 (2)      0      0    4096 21-Oct-2026 15:23 .
+     97   40755 (2)      0      0    4096 21-Oct-2026 15:23 ..
+
+--- seed en rootfs
+-rw-r--r--. 1 pablo pablo 102400 Oct 21 17:52 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/share/x6200/params.default.db
+--- stats
+/home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/mnt 86
+total 128
+drwxr-xr-x. 1 pablo  pablo      86 Oct 21 18:26 .
+drwxr-xr-x. 1 pablo  pablo     186 Oct 21 18:04 ..
+drwxr-xr-x. 1 pablo  pablo      34 Oct 21 18:04 app_logs
+-rw-r--r--. 1 nobody nobody    148 Oct 21 18:26 lastbreath
+-rw-r--r--. 1 pablo  pablo  102400 Oct 21 18:09 params.db
+-rw-r--r--. 1 nobody nobody  24576 Oct 21 18:04 qso_log.db
+drwxr-xr-x. 1 nobody nobody    136 Oct 21 18:04 themes

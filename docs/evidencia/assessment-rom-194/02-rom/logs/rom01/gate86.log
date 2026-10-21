@@ -1,0 +1,7 @@
+OK: /home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/rootfs.tar es el firmware del port (ELF32 ARM, 13407624 B, 3/3 marcas)
+gate86_exit=0
+{
+  "min_bytes": 8000000,
+  "marcas": [
+    "/tmp/x6200_remote.sock",
+    "x6200-pota-spots",

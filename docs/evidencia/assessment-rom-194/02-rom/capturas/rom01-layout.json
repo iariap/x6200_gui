@@ -1,0 +1,31 @@
+{
+ "image": "sdcard.img",
+ "sectorsize": 512,
+ "label": "dos",
+ "image_bytes": 571473920,
+ "partitions": [
+  {
+   "node": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sdcard.img1",
+   "start_sector": 2048,
+   "sectors": 65536,
+   "start_bytes": 1048576,
+   "bytes": 33554432,
+   "type": "c",
+   "bootable": true
+  },
+  {
+   "node": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sdcard.img2",
+   "start_sector": 67584,
+   "sectors": 1048576,
+   "start_bytes": 34603008,
+   "bytes": 536870912,
+   "type": "83",
+   "bootable": false
+  }
+ ],
+ "release_script_assumption": {
+  "rootfs_offset_mib": 33,
+  "rootfs_size_mib": 512
+ },
+ "matches_release_script": true
+}

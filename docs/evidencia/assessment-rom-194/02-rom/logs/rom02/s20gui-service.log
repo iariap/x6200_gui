@@ -1,0 +1,23 @@
+808d30bca76554b49c2c02ae95d7d07237df771dcdee08a798b572f2dbef422e
+socket_after=17s
+--- DB sembrada
+-rw-r--r--. 1 nobody nobody 102400 Oct 21 18:39 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs2/tree/mnt/params.db
+9c13dd983f18043217c77178ff43703c5679c3f24a32e4a27ddd3b7fcd988a36  /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs2/tree/mnt/params.db
+--- state
+ERROR: ld.so: object '/lib/libfakefb.so' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored.
+ERROR: ld.so: object '/lib/libcrash.so' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored.
+ERROR: ld.so: object '/lib/libx6200trace.so' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored.
+{"t":"state","vfo":"A","freq":10100000,"freq_bg":10100000,"mode":"USB","band":"30m","filter":2800,"flo":100,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":10,"nb_width":10,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+
+--- wrapper log
+[Error]	(773614.369, +1)	 cat_init: CAT: no se pudo abrir /dev/ttyS2: la GUI sigue, sin CAT 	(in cat.cpp line #1002)
+[User]	(773614.371, +2)	 qso_log_import_adif: No ADI file to import 	(in qso_log.c line #51)
+[User]	(773614.418, +47)	 boot_time_log: GUI lista: 0.0 s de uptime 	(in main.c line #343)
+--- stop
+ERROR: ld.so: object '/lib/libfakefb.so' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored.
+ERROR: ld.so: object '/lib/libcrash.so' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored.
+ERROR: ld.so: object '/lib/libx6200trace.so' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored.
+Stopping x6200_daemon: OK
+killall: x6200_gui: no process killed
+srw-------. 1 nobody nobody 0 Oct 21 18:39 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs2/tree/tmp/x6200_remote.sock
+done

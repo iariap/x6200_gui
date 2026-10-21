@@ -1,0 +1,6 @@
+mount from util-linux 2.38 (libmount 2.38.0: btrfs, namespaces, assert, debug)
+mount: /dev/mmcblk0p3 mounted on /mnt.
+rc=0
+--- findmnt host de la misma fstab
+SOURCE         TARGET FSTYPE
+/dev/mmcblk0p3 /mnt   ext4
