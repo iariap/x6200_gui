@@ -1,10 +1,13 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
 /*
- *  x6200_bootanim: dibujante temprano del arranque (issue #192).
+ *  x6200_bootanim: dibujante temprano del arranque (issue #192; ciclo continuo
+ *  del issue #204).
  *
  *  Ocupa /dev/fb0 desde el primer momento seguro en userspace y lo suelta cuando
  *  la GUI se lo pide (src/boot_splash.c, justo antes del primer
- *  lv_timer_handler) o cuando pasan 30 s (un cuadro > STARTUP DELAYED_ y sale).
+ *  lv_timer_handler). El ciclo (intro, lluvia, BEAMS, DECRYPT) es continuo hasta
+ *  esa cesion: a los 30 s SOLO cambia el texto del pie a `> STARTUP DELAYED_` y
+ *  la animacion sigue; el proceso nunca termina solo.
  *
  *  Limites del contrato (seccion 3): sin LVGL, sin radio, sin red, sin shell,
  *  sin GPIO, sin /mnt/params.db, sin threads ni subprocesos. Los handlers de
@@ -36,6 +39,23 @@ static uint16_t ba_surface_px[BA_LOGICAL_W * BA_LOGICAL_H];
 
 static volatile sig_atomic_t ba_stop = 0;
 
+/* ---------------------------------------------------------------------------
+ * Banco de host (tests/check_bootanim.sh): con -DBOOTANIM_TEST el ciclo usa un
+ * reloj SINTETICO (cada iteracion avanza exactamente BA_FRAME_MS, sin reloj real
+ * ni nanosleep) y presenta hasta el cuadro BA_TEST_FRAME_LIMIT, para que el
+ * cuadro N sea reproducible byte a byte contra tests/bootanim/replay_dump.c.
+ *
+ * El macro lo define SOLO el gate del host: la ROM y el CMake de produccion no
+ * lo definen (el gate lo verifica sobre el preprocesado), asi que el splash real
+ * no tiene ningun flag, env ni condicion que lo detenga antes de la cesion.
+ * --------------------------------------------------------------------------- */
+#ifdef BOOTANIM_TEST
+#ifndef BA_TEST_FRAME_LIMIT
+#define BA_TEST_FRAME_LIMIT 600u
+#endif
+static uint32_t ba_test_frame = 0;
+#endif
+
 static void ba_on_signal(int sig) {
     (void) sig; /* async-signal-safe: solo la bandera */
     ba_stop = 1;
@@ -53,6 +73,7 @@ static void ba_install_signals(void) {
     (void) sigaction(SIGTERM, &sa, NULL);
 }
 
+#ifndef BOOTANIM_TEST
 static uint64_t ba_elapsed_ms(const struct timespec *t0) {
     struct timespec now;
     time_t          sec;
@@ -75,6 +96,18 @@ static uint64_t ba_elapsed_ms(const struct timespec *t0) {
     }
 
     return (uint64_t) sec * 1000u + (uint64_t) nsec / 1000000u;
+}
+#endif /* !BOOTANIM_TEST */
+
+/* Reloj del ciclo: monotono real (o sintetico, solo bajo -DBOOTANIM_TEST). */
+static uint64_t ba_now_ms(const struct timespec *t0) {
+#ifdef BOOTANIM_TEST
+    (void) t0;
+
+    return (uint64_t) ba_test_frame * BA_FRAME_MS;
+#else
+    return ba_elapsed_ms(t0);
+#endif
 }
 
 /* Espera relativa (reintentos de /dev/fb0): nada de busy-wait y sale enseguida
@@ -102,8 +135,10 @@ static void ba_sleep_ms(uint32_t ms) {
     }
 }
 
-/* Espera absoluta: los cuadros quedan clavados en la grilla de 8 fps (sin
- * acumular deriva) y una senal corta la espera. */
+/* Espera absoluta: los cuadros quedan clavados en la grilla de 12 fps (sin
+ * acumular deriva) y una senal corta la espera. En el banco de host no existe:
+ * ahi el reloj es sintetico y no se espera nada. */
+#ifndef BOOTANIM_TEST
 static void ba_wait_until(const struct timespec *t0, uint32_t offset_ms) {
     struct timespec ts = *t0;
 
@@ -123,6 +158,7 @@ static void ba_wait_until(const struct timespec *t0, uint32_t offset_ms) {
         }
     }
 }
+#endif /* !BOOTANIM_TEST */
 
 /* Rasteriza el cuadro al buffer logico y copia al framebuffer SOLO los
  * rectangulos que cambiaron (el fondo completo, una sola vez, en el primero). */
@@ -197,21 +233,15 @@ int main(void) {
     }
 
     while (!ba_stop) {
-        uint64_t   elapsed = ba_elapsed_ms(&t0);
+        uint64_t   elapsed = ba_now_ms(&t0);
         uint32_t   frame   = (uint32_t) (elapsed / BA_FRAME_MS);
         ba_model_t model;
 
         ba_model_at(frame, elapsed, &model);
 
-        if (model.delayed) {
-            /* A los 30 s: un solo cuadro > STARTUP DELAYED_ y se termina (no se
-             * queda ocupando CPU ni la pantalla indefinidamente). */
-            ba_present(&fb, &model, have_prev ? &prev : NULL, !have_prev);
-            break;
-        }
-
-        /* Nunca mas de un cuadro por ventana de 125 ms (8 fps maximo): si el
-         * reloj ya paso a la ventana siguiente, ese cuadro se saltea. */
+        /* Nunca mas de un cuadro por ventana de 84 ms (12 fps maximo): si el
+         * reloj ya paso a la ventana siguiente, ese cuadro se saltea. A los 30 s
+         * solo cambia el texto del pie: el ciclo sigue hasta ba_stop. */
         if (!have_prev || frame != last_frame) {
             ba_present(&fb, &model, have_prev ? &prev : NULL, !have_prev);
             prev       = model;
@@ -219,7 +249,17 @@ int main(void) {
             last_frame = frame;
         }
 
+#ifdef BOOTANIM_TEST
+        /* Banco de host: termina solo, en el cuadro pedido (el ciclo de
+         * produccion NO tiene esta salida). */
+        if (frame >= BA_TEST_FRAME_LIMIT) {
+            break;
+        }
+
+        ba_test_frame++;
+#else
         ba_wait_until(&t0, (frame + 1u) * BA_FRAME_MS);
+#endif
     }
 
     ba_fb_detach(&fb);
