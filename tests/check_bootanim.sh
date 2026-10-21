@@ -464,6 +464,31 @@ grep -q 'tests/check_bootanim.sh' "$ROOT/.github/workflows/boot-rootfs.yml" ||
 	fail "el gate no esta integrado en .github/workflows/boot-rootfs.yml"
 echo "ok: el gate esta integrado en .github/workflows/boot-rootfs.yml"
 
+# Los limites del contrato (seccion 3) se codifican: el animador no puede tener
+# LVGL, subprocesos, shell, red, radio, SQLite/params.db ni threads, y sus
+# senales van por volatile sig_atomic_t. Se mira el CODIGO sin comentarios: los
+# comentarios si pueden nombrar LVGL o el archivo de fbdev.
+python3 - "$SRC" <<'PY' || fail "el animador usa algo prohibido por el contrato (issue #192)"
+import re
+import sys
+from pathlib import Path
+
+prohibidos = ["system(", "popen", "execl", "execv", "fork(", "pthread", "lv_", "LV_",
+              "sqlite", "params.db", "socket(", "connect(", "gpio"]
+violaciones = []
+for path in sorted(Path(sys.argv[1]).glob("*.[ch]")):
+    code = re.sub(r"/\*.*?\*/", " ", path.read_text(encoding="utf-8"), flags=re.S)
+    code = re.sub(r"//[^\n]*", " ", code)
+    for item in prohibidos:
+        if item in code:
+            violaciones.append(f"{path.name}: {item}")
+if violaciones:
+    print("  " + "\n  ".join(violaciones))
+    sys.exit(1)
+PY
+grep -q 'volatile sig_atomic_t' "$SRC/main.c" || fail "el handler de senales no usa volatile sig_atomic_t"
+echo "ok: sin LVGL, subprocesos, shell, red, radio, SQLite ni threads; banderas volatile sig_atomic_t"
+
 echo
 if [ "$SAN_OK" -eq 1 ]; then
 	echo "PASS: boot anim neo-retro (#192) - unitarios + ASan/UBSan + binario real con fb sintetico + init + integracion"

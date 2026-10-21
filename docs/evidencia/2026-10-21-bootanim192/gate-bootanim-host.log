@@ -7,8 +7,8 @@ renderer_test: 172 comprobaciones, 0 fallos
 fb_test: 88 comprobaciones, 0 fallos
 
 == 3) cesion del framebuffer (procesos reales, identidad por /proc/<pid>/exe) ==
-boot_splash: pid 579048 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
-boot_splash: pid 579050 del PIDFILE no es /tmp/tmp.gNuyFVoRsp/fake_animator: no se senaliza
+boot_splash: pid 597253 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: pid 597263 del PIDFILE no es /tmp/tmp.u9WIY8Fklt/fake_animator: no se senaliza
 handoff_test: 39 comprobaciones, 0 fallos
 
 == 4) sanitizers (ASan + UBSan) ==
@@ -33,7 +33,7 @@ ok: yoffset distinto de cero -> exit 0 sin escribir en el framebuffer
 ok: line_length demasiado corto -> exit 0 sin escribir en el framebuffer
 ok: smem_len insuficiente -> exit 0 sin escribir en el framebuffer
 ok: mmap fallido -> exit 0 sin escribir en el framebuffer
-ok: sin /dev/fb0 reintenta y sale 0 en silencio (1907 ms)
+ok: sin /dev/fb0 reintenta y sale 0 en silencio (1906 ms)
 ok: framebuffer sin permisos -> exit 0 con aviso en stderr
 
 == 6) script de init S01bootanim ==
@@ -52,5 +52,6 @@ ok: el prune sigue sacando el S95gui del vendor y no toca S01bootanim
 ok: handoff antes de drm_init y del primer lv_timer_handler, marcas nuevas, screen_rec_flush intacto
 ok: CMake integra el animador y boot_splash, con -std=c11 -Wall -Wextra -Werror e install en sbin
 ok: el gate esta integrado en .github/workflows/boot-rootfs.yml
+ok: sin LVGL, subprocesos, shell, red, radio, SQLite ni threads; banderas volatile sig_atomic_t
 
 PASS (parcial): boot anim neo-retro (#192) - unitarios + binario real con fb sintetico + init + integracion; ASan/UBSan SKIP por falta de soporte del compilador

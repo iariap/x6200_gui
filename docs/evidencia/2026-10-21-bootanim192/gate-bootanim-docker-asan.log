@@ -38,7 +38,7 @@ ok: framebuffer sin permisos -> exit 0 con aviso en stderr
 
 == 6) script de init S01bootanim ==
 ok: sintaxis, permiso de ejecucion, invocacion del contrato, sin killall ni GUI
-ok: start vuelve en 5 ms (contrato: <100 ms, sin sleeps) y deja el PIDFILE
+ok: start vuelve en 4 ms (contrato: <100 ms, sin sleeps) y deja el PIDFILE
 ok: singleton (un solo animador, un solo start-stop-daemon -S)
 ok: stop termina el animador, limpia el PIDFILE y no usa killall
 ok: un PIDFILE con un PID ajeno no se senaliza ni se mata
@@ -52,5 +52,6 @@ ok: el prune sigue sacando el S95gui del vendor y no toca S01bootanim
 ok: handoff antes de drm_init y del primer lv_timer_handler, marcas nuevas, screen_rec_flush intacto
 ok: CMake integra el animador y boot_splash, con -std=c11 -Wall -Wextra -Werror e install en sbin
 ok: el gate esta integrado en .github/workflows/boot-rootfs.yml
+ok: sin LVGL, subprocesos, shell, red, radio, SQLite ni threads; banderas volatile sig_atomic_t
 
 PASS: boot anim neo-retro (#192) - unitarios + ASan/UBSan + binario real con fb sintetico + init + integracion
