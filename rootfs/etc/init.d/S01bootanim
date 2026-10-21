@@ -1,0 +1,104 @@
+#!/bin/sh
+#
+# Animacion textual neo-retro del arranque (issue #192).
+#
+# Arranca UN solo dibujante nativo temprano (x6200_bootanim), que ocupa /dev/fb0
+# desde el primer momento seguro en userspace hasta que la GUI esta lista: la
+# GUI le pide la cesion justo antes de su primer dibujo (src/boot_splash.c) y
+# desde ahi es la unica escritora del framebuffer. Este script NO arranca la GUI
+# (eso lo sigue haciendo su propio script de init) y no toca la radio.
+#
+# Reglas del contrato:
+#   - `start` vuelve enseguida (backgrounding), sin sleeps y sin bloquear rcS:
+#     si el ejecutable no esta o no arranca, se sigue el boot normal;
+#   - una sola instancia: un PIDFILE con un PID vivo DEL MISMO ejecutable no
+#     arranca nada nuevo;
+#   - `stop` termina unicamente al PID del propio ejecutable (identidad leida de
+#     /proc/<pid>/exe), limpia el PIDFILE y nunca usa killall ni mata un PID
+#     reciclado por otro proceso.
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+DAEMON="x6200_bootanim"
+BIN="/usr/sbin/$DAEMON"
+PIDFILE="/var/run/$DAEMON.pid"
+
+# Identidad de un PID: el mismo criterio que usa src/boot_splash.c. Un PID
+# reciclado no se confunde con el animador.
+exe_of() {
+	readlink "/proc/$1/exe" 2>/dev/null | sed 's/ (deleted)$//'
+}
+
+# Imprime el PID del animador si el PIDFILE apunta a un proceso vivo del mismo
+# ejecutable; si no, devuelve 1 (y no toca nada).
+animator_pid() {
+	[ -f "$PIDFILE" ] || return 1
+
+	pid=$(cat "$PIDFILE" 2>/dev/null) || return 1
+
+	case "$pid" in
+		''|*[!0-9]*) return 1 ;;
+	esac
+
+	[ "$(exe_of "$pid")" = "$BIN" ] || return 1
+
+	# Un zombi ya no dibuja: no cuenta como instancia viva.
+	stat=$(cat "/proc/$pid/stat" 2>/dev/null) || return 1
+	state=${stat##*') '}
+	state=${state%% *}
+
+	[ "$state" != "Z" ] || return 1
+
+	printf '%s' "$pid"
+}
+
+start() {
+	if [ ! -x "$BIN" ]; then
+		echo "S01bootanim: $BIN no es ejecutable: se arranca sin animacion" >&2
+		return 0
+	fi
+
+	if animator_pid >/dev/null; then
+		return 0
+	fi
+
+	# PIDFILE viejo, vacio o de otro proceso: es basura, no se senaliza a nadie.
+	rm -f "$PIDFILE"
+
+	start-stop-daemon -S -b -q -m -p "$PIDFILE" -x "$BIN"
+	rc=$?
+
+	if [ "$rc" -ne 0 ]; then
+		echo "S01bootanim: no se pudo iniciar $DAEMON (rc=$rc): se arranca sin animacion" >&2
+	fi
+
+	return 0
+}
+
+stop() {
+	pid=$(animator_pid) || pid=""
+
+	if [ -n "$pid" ]; then
+		# Solo el PID del PIDFILE, y solo si su identidad ya se verifico
+		# (arriba). Nunca killall, nunca la GUI.
+		start-stop-daemon -K -q -p "$PIDFILE"
+	fi
+
+	rm -f "$PIDFILE"
+
+	return 0
+}
+
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+	start|stop|restart)
+		"$1" ;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+		;;
+esac

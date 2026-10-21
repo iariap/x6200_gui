@@ -7,8 +7,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE X6200_FUENTE_MD5="${X6200_FUE
 
 target_sources(${PROJECT_NAME} PUBLIC
     main.c main_screen.c
-    styles.c spectrum.c radio.c dsp.cpp util.cpp
-    waterfall.c rotary.c rotary_queue.c keyboard.c encoder.c kbd_caps.c bt_state.c btaudio.c
+    boot_splash.c
+    styles.c spectrum.c radio.c dsp.cpp util.cpp    waterfall.c rotary.c rotary_queue.c keyboard.c encoder.c kbd_caps.c bt_state.c btaudio.c
     events.c msg.c msg_tiny.c keypad.c
     crashlog_modules.c
     lastbreath.c
@@ -51,6 +51,9 @@ target_sources(${PROJECT_NAME} PUBLIC
 
 add_subdirectory(fonts)
 add_subdirectory(ft8)
+# Dibujante temprano del arranque (issue #192): ejecutable aparte, sin LVGL ni
+# dependencias, que la GUI detiene antes de su primer dibujo (src/boot_splash.c).
+add_subdirectory(bootanim)
 add_subdirectory(widgets)
 add_subdirectory(params)
 add_subdirectory(qth)
