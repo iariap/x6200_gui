@@ -700,6 +700,84 @@ static void test_open_negatives(void) {
     BA_CHECK_EQ_INT(fb.fd, -1);
 }
 
+/* Fixture geometrico de la lluvia (issue #204): las cuatro cajas del contrato,
+ * tal como las declara el renderer, se copian al framebuffer fisico byte a byte
+ * contra el oraculo y sin escribir nada fuera de ellas (rotacion 90 grados y
+ * stride con padding incluidos). */
+static void test_rain_boxes(void) {
+    ba_surface_t surface;
+    fake_fb_t    fb;
+    int          i, lane;
+
+    for (i = 0; i < BA_LOGICAL_W * BA_LOGICAL_H; i++) {
+        img[i] = (uint16_t) (0x2000u + (uint16_t) (i % 251u));
+    }
+
+    surface.px = img;
+    surface.w  = BA_LOGICAL_W;
+    surface.h  = BA_LOGICAL_H;
+
+    fake_fb_init(&fb, 16, 64, 0, 0, 0);
+
+    {
+        size_t  len      = fb.fb.map_len;
+        uint8_t *esperado = malloc(len);
+
+        if (esperado == NULL) {
+            printf("FAIL: sin memoria\n");
+            exit(1);
+        }
+
+        for (lane = 0; lane < BA_RAIN_LANES; lane++) {
+            ba_rect_t box = ba_rain_box(lane);
+
+            /* Cada lane se prueba por separado: el mapeo vuelve al patron inicial
+             * (0x5A) para que la comparacion sea solo de esa caja. */
+            memset(fb.fb.mem, 0x5A, len);
+
+            /* Cada lane tiene la geometria exacta del contrato y cabe entera. */
+            BA_CHECK_EQ_INT(box.y1, 112);
+            BA_CHECK_EQ_INT(box.y2, 347);
+            BA_CHECK_EQ_INT(box.x2 - box.x1 + 1, 10);
+            BA_CHECK(ba_rect_inside(&box, &(ba_rect_t) { 0, 0, BA_LOGICAL_W - 1, BA_LOGICAL_H - 1 }));
+
+            expected_blit(esperado, len, &fb.fb.geom, &surface, &box);
+            BA_CHECK(ba_fb_blit(&fb.fb, &surface, &box));
+            BA_CHECK_MSG(memcmp(fb.fb.mem, esperado, len) == 0, "lane %d difiere del oraculo", lane);
+
+            /* Los centinelas de afuera del mapeo siguen intactos. */
+            {
+                int tocados = 0;
+
+                for (i = 0; i < SENTINEL; i++) {
+                    if (fb.raw[i] != 0x5A || fb.raw[SENTINEL + len + (size_t) i] != 0x5A) {
+                        tocados++;
+                    }
+                }
+
+                BA_CHECK_MSG(tocados == 0, "lane %d toco los centinelas (%d bytes)", lane, tocados);
+            }
+
+            /* El mapeo fisico del lane es el de LVGL: (x,y) -> (y, 799-x). */
+            {
+                int32_t fx, fy;
+
+                ba_fb_map_point(box.x1, box.y1, &fx, &fy);
+                BA_CHECK_EQ_INT(fx, box.y1);
+                BA_CHECK_EQ_INT(fy, BA_LOGICAL_W - 1 - box.x1);
+
+                ba_fb_map_point(box.x2, box.y2, &fx, &fy);
+                BA_CHECK_EQ_INT(fx, box.y2);
+                BA_CHECK_EQ_INT(fy, BA_LOGICAL_W - 1 - box.x2);
+            }
+        }
+
+        free(esperado);
+    }
+
+    fake_fb_free(&fb);
+}
+
 static void test_palette(void) {
     /* Los tres colores del contrato redondeados a 5/6/5. */
     BA_CHECK_EQ_INT(BA_COLOR_BG, 0x0882);        /* #0B1012 */
@@ -714,6 +792,7 @@ int main(void) {
     test_blit_padding_and_formats();
     test_blit_invalid();
     test_open_negatives();
+    test_rain_boxes();
     test_palette();
     BA_TEST_SUMMARY("fb_test");
 }

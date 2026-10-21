@@ -121,6 +121,21 @@ static char ba_scramble_char(uint32_t frame_index, int pos) {
     return BA_ALPHABET[(size_t) (((uint64_t) frame_index * 7u + (uint64_t) pos * 11u) % len)];
 }
 
+/* Caracter de la lluvia (contrato): alphabet[(frame*7 + lane*11 + trail*5) % len]. */
+static char ba_rain_char(uint32_t frame_index, int lane, int trail) {
+    size_t len = strlen(BA_ALPHABET);
+
+    return BA_ALPHABET[(size_t) (((uint64_t) frame_index * 7u + (uint64_t) lane * 11u +
+                                  (uint64_t) trail * 5u) %
+                                 len)];
+}
+
+/* Fila superior del glifo lider de un lane (contrato):
+ * head_y = BA_RAIN_Y1 + ((step * 6 + lane * 41) % 236). */
+static int32_t ba_rain_head_y(int step, int lane) {
+    return BA_RAIN_Y1 + (step * 6 + lane * 41) % 236;
+}
+
 void ba_model_at(uint32_t frame_index, uint64_t elapsed_ms, ba_model_t *out) {
     int pos;
 
@@ -129,6 +144,9 @@ void ba_model_at(uint32_t frame_index, uint64_t elapsed_ms, ba_model_t *out) {
     }
 
     memset(out, 0, sizeof(*out));
+
+    out->frame_index = frame_index;
+    out->beam_cell   = -1;
 
     for (pos = 0; pos < BA_LOGO_LEN; pos++) {
         uint16_t lock = ba_logo_lock_ms(pos);
@@ -145,7 +163,39 @@ void ba_model_at(uint32_t frame_index, uint64_t elapsed_ms, ba_model_t *out) {
         out->cursor_visible = (((elapsed_ms - BA_LOGO_FULL_MS) / BA_CURSOR_MS) % 2u) == 0u;
     }
 
+    /* A los 30 s SOLO cambia el texto del pie: el ciclo sigue igual. */
     out->delayed = elapsed_ms >= (uint64_t) BA_TIMEOUT_MS;
+
+    /* Ciclo continuo posterior a la intro (no la reejecuta: las cinco marcas de
+     * bloqueo ya quedaron atras). */
+    if (elapsed_ms >= (uint64_t) BA_LOGO_FULL_MS) {
+        uint64_t cycle = (elapsed_ms - BA_LOGO_FULL_MS) % BA_CYCLE_MS;
+
+        out->rain_active = true;
+        out->rain_step   = (int) (((elapsed_ms - BA_LOGO_FULL_MS) / BA_FRAME_MS) % BA_RAIN_STEPS);
+
+        if (cycle >= BA_BEAMS_MS && cycle < BA_BEAMS_END_MS) {
+            /* BEAMS: un haz de izquierda a derecha; el caracter no cambia, solo
+             * su tinta (el render lee beam_cell). */
+            uint64_t cell = (cycle - BA_BEAMS_MS) / BA_BEAM_STEP_MS;
+
+            out->beam_cell = (int) (cell >= BA_LOGO_LEN ? BA_LOGO_LEN - 1 : cell);
+        } else if (cycle >= BA_DECRYPT_MS && cycle < BA_DECRYPT_END_MS) {
+            /* DECRYPT: EXACTAMENTE una posicion provisional a la vez; las otras
+             * cuatro siguen fijas en X6200 y al avanzar la anterior se restaura. */
+            uint64_t cell = (cycle - BA_DECRYPT_MS) / BA_DECRYPT_STEP_MS;
+            int      active = (int) (cell >= BA_LOGO_LEN ? BA_LOGO_LEN - 1 : cell);
+
+            out->logo_locked[active] = false;
+            out->logo[active]        = ba_scramble_char(frame_index, active);
+        }
+    }
+
+    /* Con STARTUP DELAYED el subrayado final queda fijo: el cursor no parpadea y
+     * por lo tanto no se genera un dirty de ba_cursor_cell(). */
+    if (out->delayed) {
+        out->cursor_visible = true;
+    }
 }
 
 /* ---------------------------------------------------------------------------
@@ -287,6 +337,22 @@ ba_rect_t ba_cursor_cell(void) {
     return box;
 }
 
+/* Caja logica de una lane de lluvia (contrato, limites INCLUSIVOS): dos columnas
+ * en cada lateral del logo. La geometria vive aca una sola vez y los tests la
+ * verifican contra el issue. */
+ba_rect_t ba_rain_box(int lane) {
+    static const int32_t x1[BA_RAIN_LANES] = { 116, 182, 608, 676 };
+    ba_rect_t            box;
+    int                  i = lane < 0 ? 0 : (lane >= BA_RAIN_LANES ? BA_RAIN_LANES - 1 : lane);
+
+    box.x1 = x1[i];
+    box.y1 = BA_RAIN_Y1;
+    box.x2 = x1[i] + BA_RAIN_BOX_W - 1;
+    box.y2 = BA_RAIN_Y2;
+
+    return box;
+}
+
 ba_rect_t ba_screen_box(void) {
     ba_rect_t box;
 
@@ -394,18 +460,58 @@ static void ba_draw_footer(ba_surface_t *s, const ba_model_t *m) {
                    BA_FOOTER_CY - BA_GLYPH_H * BA_TEXT_SCALE / 2, BA_COLOR_PRIMARY);
 }
 
+/* Tinta de una celda del logo: destello unicamente en la celda que el haz de
+ * BEAMS esta atravesando (nunca se contamina BA_COLOR_PRIMARY). */
+static uint16_t ba_logo_color(const ba_model_t *m, int pos) {
+    return (m->beam_cell == pos) ? BA_COLOR_HIGHLIGHT : BA_COLOR_PRIMARY;
+}
+
 static void ba_draw_logo(ba_surface_t *s, const ba_model_t *m) {
     int32_t pos;
 
     for (pos = 0; pos < BA_LOGO_LEN; pos++) {
         int32_t cell_x = ba_logo_cell(pos).x1;
 
-        ba_draw_glyph(s, m->logo[pos], BA_LOGO_SCALE, cell_x, ba_logo_glyph_y(), BA_COLOR_PRIMARY);
+        ba_draw_glyph(s, m->logo[pos], BA_LOGO_SCALE, cell_x, ba_logo_glyph_y(), ba_logo_color(m, pos));
+    }
+}
+
+/* Un lane de lluvia: hasta tres glifos 5x7 a escala 2 (lider + dos estelas
+ * separadas 22 px), y SOLO si la caja completa [y, y+13] entra en la lane (no
+ * hay clipping implicito hacia areas ajenas). El modelo aporta el paso vertical
+ * y el frame (de ahi salen el caracter y el color). */
+static void ba_draw_rain_lane(ba_surface_t *s, const ba_model_t *m, int lane) {
+    ba_rect_t box    = ba_rain_box(lane);
+    int32_t   head_y = ba_rain_head_y(m->rain_step, lane);
+    int       trail;
+
+    for (trail = 0; trail < BA_RAIN_TRAILS; trail++) {
+        ba_rect_t glyph;
+
+        glyph.x1 = box.x1;
+        glyph.y1 = head_y - trail * BA_RAIN_GAP;
+        glyph.x2 = glyph.x1 + BA_RAIN_BOX_W - 1;
+        glyph.y2 = glyph.y1 + BA_RAIN_BOX_H - 1;
+
+        if (!ba_rect_inside(&glyph, &box)) {
+            continue;
+        }
+
+        ba_draw_glyph(s, ba_rain_char(m->frame_index, lane, trail), BA_RAIN_SCALE, glyph.x1, glyph.y1,
+                      trail == 0 ? BA_COLOR_PRIMARY : BA_COLOR_SECONDARY);
     }
 }
 
 static void ba_push(ba_dirty_t *dirty, const ba_rect_t *r) {
-    if (dirty == NULL || dirty->count >= BA_MAX_DIRTY) {
+    if (dirty == NULL) {
+        return;
+    }
+
+    if (dirty->count >= BA_MAX_DIRTY) {
+        /* El contrato no pierde rectangulos en silencio: el limite alcanzado es
+         * un error que el banco verifica con dirty.overflow. */
+        dirty->overflow = true;
+
         return;
     }
 
@@ -415,9 +521,11 @@ static void ba_push(ba_dirty_t *dirty, const ba_rect_t *r) {
 void ba_render(ba_surface_t *s, const ba_model_t *m, const ba_model_t *prev, bool full, ba_dirty_t *dirty) {
     ba_rect_t screen = ba_screen_box();
     int32_t   pos;
+    int       lane;
 
     if (dirty != NULL) {
-        dirty->count = 0;
+        dirty->count    = 0;
+        dirty->overflow = false;
     }
 
     if (s == NULL || s->px == NULL || m == NULL) {
@@ -439,19 +547,29 @@ void ba_render(ba_surface_t *s, const ba_model_t *m, const ba_model_t *prev, boo
         ba_draw_footer(s, m);
         ba_draw_logo(s, m);
 
+        /* Un repintado completo de un cuadro con lluvia tiene que dejar el mismo
+         * dibujo que la secuencia incremental (el modelo es puro). */
+        if (m->rain_active) {
+            for (lane = 0; lane < BA_RAIN_LANES; lane++) {
+                ba_draw_rain_lane(s, m, lane);
+            }
+        }
+
         ba_push(dirty, &screen);
 
         return;
     }
 
     /* Cuadros siguientes: solo las cajas del logo/cursor/pie que cambiaron,
-     * borrando al color de fondo antes de reimprimir. */
+     * borrando al color de fondo antes de reimprimir. Una celda se repinta si
+     * cambio su caracter/estado o si es (o era) la celda iluminada por BEAMS. */
     for (pos = 0; pos < BA_LOGO_LEN; pos++) {
-        if (m->logo[pos] != prev->logo[pos] || m->logo_locked[pos] != prev->logo_locked[pos]) {
+        if (m->logo[pos] != prev->logo[pos] || m->logo_locked[pos] != prev->logo_locked[pos] ||
+            m->beam_cell == pos || prev->beam_cell == pos) {
             ba_rect_t cell = ba_logo_cell(pos);
 
             ba_fill(s, &cell, BA_COLOR_BG);
-            ba_draw_glyph(s, m->logo[pos], BA_LOGO_SCALE, cell.x1, ba_logo_glyph_y(), BA_COLOR_PRIMARY);
+            ba_draw_glyph(s, m->logo[pos], BA_LOGO_SCALE, cell.x1, ba_logo_glyph_y(), ba_logo_color(m, pos));
             ba_push(dirty, &cell);
         }
     }
@@ -468,5 +586,22 @@ void ba_render(ba_surface_t *s, const ba_model_t *m, const ba_model_t *prev, boo
         ba_fill(s, &cell, BA_COLOR_BG);
         ba_draw_footer(s, m);
         ba_push(dirty, &cell);
+    }
+
+    /* Lluvia: las cuatro cajas fijas de la lane se limpian y se repintan una vez
+     * por cuadro mientras la lluvia este activa (y en el cuadro en que se
+     * apaga). No se superponen entre si ni con el pie ni con el logo. */
+    if (m->rain_active || prev->rain_active) {
+        for (lane = 0; lane < BA_RAIN_LANES; lane++) {
+            ba_rect_t box = ba_rain_box(lane);
+
+            ba_fill(s, &box, BA_COLOR_BG);
+
+            if (m->rain_active) {
+                ba_draw_rain_lane(s, m, lane);
+            }
+
+            ba_push(dirty, &box);
+        }
     }
 }

@@ -4,7 +4,9 @@
  *  /dev/fb0: intercepta open() para redirigir /dev/fb0 a un archivo del banco,
  *  ioctl() para devolver fb_fix_screeninfo/fb_var_screeninfo sinteticas (config
  *  por variables de entorno) y, opcionalmente, el reloj monotono para correr la
- *  animacion acelerada y probar de verdad el corte de los 30 s.
+ *  animacion acelerada: asi el gate llega de verdad a los 30 s (pie
+ *  `> STARTUP DELAYED_`) y comprueba que el proceso SIGA VIVO y animando, porque
+ *  la salida solo la produce SIGUSR1/SIGTERM.
  *
  *  NO es parte de la ROM: vive en tests/bootanim y solo lo carga el gate.
  *
