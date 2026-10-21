@@ -3544,19 +3544,30 @@ la barra queda en Favoritos (`dfl-presets-*`) con el chip `Personalizado`, sin e
 
 **Arreglo**: `buttons_dfl_graph_open()` (src/buttons.cpp, declarado en src/buttons.h) centraliza la
 carga de la pagina C **y** la familia vigente; `dfl_inline_expand()` la usa en lugar de
-`buttons_load_page(&buttons_page_dfl_expanded)`.
+`buttons_load_page(&buttons_page_dfl_expanded)`. En el arnes, el paso 6 de `dfl-editor-mirror` ahora
+exige antes de mirar pixeles que, tras el cambio de modo de la misma familia, el editor siga abierto
+y la barra siga en C (`tools/ui_harness/src/screens.c`): el mensaje viejo (`el handle LOW no esta
+dibujado en x=37`) era el sintoma aguas abajo; la misma aserción aplicada al arbol de `6666806e`
+imprime `el cambio de modo de la misma familia cerro el editor (expanded=0, pagina=1, esperaba C)`
+(`docs/evidencia/2026-10-21-dflmirror/harness/aserion-nueva-en-183.txt`).
 
 **Verificacion, medida** (`docs/evidencia/2026-10-21-dflmirror/`):
 
-- `SKIP_BUILD=1 tests/check_harness_determinism.sh` -> **PASS** con los 197 fixtures (PNG identico
+- `SKIP_BUILD=1 tests/check_harness_determinism.sh` -> **PASS** con los 199 fixtures (PNG identico
   entre las dos corridas); `dfl-mirror-lsb: 07c37a57...` y `dfl-mirror-usb: f2565125...` son
   **byte-identicos** a las capturas de `d32b59e8` (pre-#183), o sea que el render volvio exactamente
   al de #182 (`sha256sum` en `biseccion.txt`).
-- `x6200-ab contracts --revision db6bc31b`: **PASS**, 197 escenarios (los dos del espejo incluidos),
-  **2056 checks, 0 failure(s)** (`ab/contracts-fix.txt`).
+- `x6200-ab contracts` sobre el HEAD de la rama (`45bcb383`): **PASS** (exit 0), 199 escenarios (los
+  dos del espejo incluidos), **2056 checks, 0 failure(s)** (`ab/contracts-fix.json`). El mismo gate
+  ya habia dado PASS sobre `db6bc31b` antes de la aserción del arnes.
 - Los dos fixtures corridos en las dos configuraciones de imagen (la local del owner y una construida
   `--target ci` desde el arbol): rojo en la base (e6925db6) y verde con el fix, identicos entre
   imagenes (`ci-hueco/dos-configuraciones-base.txt`): la imagen no era la diferencia.
+- `tests/native/run_native_tests.sh` 138 comprobaciones 0 fallos; `tests/run_all_tests.sh --quick`
+  17 OK (0 fallos) con la imagen `ci` y 20 OK con `x6200-uiharness-full`; estaticos 8/8;
+  `ruff`/`format`/`ty` OK; `pytest -m 'not e2e'` 227 passed; `pytest -m e2e` 13 passed; la matriz de
+  checks de x6200 en `exit 0` (el banco QEMU, BLOCKED con su preflight real: sin chroot `.vfix3` en
+  el worktree).
 
 **El agujero del CI (medido con sus propios artefactos)**: el job *UI Quality Contracts* quedaba
 **verde** con `contracts.json` = `BLOCKED` porque el paso de reporte solo fallaba con
