@@ -151,7 +151,10 @@ static long dirty_area(const ba_dirty_t *dirty) {
     int  d;
 
     for (d = 0; d < dirty->count; d++) {
-        total += (long) (dirty->rect[d].x2 - dirty->rect[d].x1 + 1) * (long) (dirty->rect[d].y2 - dirty->rect[d].y1 + 1);
+        long w = (long) (dirty->rect[d].x2 - dirty->rect[d].x1 + 1);
+        long h = (long) (dirty->rect[d].y2 - dirty->rect[d].y1 + 1);
+
+        total += w * h;
     }
 
     return total;
