@@ -1,0 +1,11 @@
+WS=/home/pablo/desa/x6200/assessment-194/scratch/no-webserver
+WS_ABSENT (runner omite webserver antes de tocar el volumen)
+--- runner decision lines ---
+70:  (omitidos: wspr sstv wefax js8 webserver)
+--- shared volume (NO usado) ---
+x6200-build-output /var/lib/docker/volumes/x6200-build-output/_data
+--- webserver checkout candidato (solo lectura de metadatos, NO usado) ---
+7bf44f849aa47b9906577de3be86e1d69a04f66d
+0
+--- target python en imagen ---
+NO_TARGET_PY

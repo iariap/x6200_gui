@@ -1,0 +1,174 @@
+{
+  "label": "orchestrator",
+  "img_dir": "/home/pablo/desa/x6200/rom-build/clone-buildroot/build/images",
+  "artifacts": {
+    "sdcard.img": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/sdcard.img",
+      "bytes": 571473920,
+      "sha256": "17dc49ed553b953b8a2ec2fb94d95d2ec74ed07099c8db1d7c7d929a72eb8779",
+      "mtime_utc": "2026-10-21T20:47:33Z"
+    },
+    "rootfs.tar": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/rootfs.tar",
+      "bytes": 242821120,
+      "sha256": "966bfc44312cd7c54e0337f6d37c2be89e2c5c849724daebafde099c710d8c0d",
+      "mtime_utc": "2026-10-21T20:47:33Z"
+    },
+    "rootfs.ext4": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/rootfs.ext4",
+      "bytes": 536870912,
+      "sha256": "d0ccb33cd2a07af8dc428d580c64f61167862523d8670abcc0e3a02131440c86",
+      "mtime_utc": "2026-10-21T20:47:30Z"
+    },
+    "boot.vfat": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/boot.vfat",
+      "bytes": 33554432,
+      "sha256": "1e844a43a5c821ceb56471762ca47139e4905427dd5e3ca87f57adeaf0729d59",
+      "mtime_utc": "2026-10-21T20:47:33Z"
+    },
+    "u-boot-sunxi-with-spl.bin": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/u-boot-sunxi-with-spl.bin",
+      "bytes": 556120,
+      "sha256": "dee634c858bfef2ff7232ea9405636dfff5185e85922d421dbccb4708416412c",
+      "mtime_utc": "2026-10-21T20:33:31Z"
+    },
+    "zImage": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/zImage",
+      "bytes": 5567352,
+      "sha256": "67922cc8187c8f967434c1f886b9a2560c8aa78c7d2637be8867791f30a4529f",
+      "mtime_utc": "2026-10-21T20:38:50Z"
+    },
+    "sun8i-r16-x6200.dtb": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/sun8i-r16-x6200.dtb",
+      "bytes": 26544,
+      "sha256": "4d73f8a5d5f846c21e4ac30550a5811443a01666f9ee57880b5316e78627cc38",
+      "mtime_utc": "2026-10-21T20:38:50Z"
+    }
+  },
+  "checks": {
+    "gate_86": {
+      "exit": 0,
+      "stdout": "OK: /home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/rootfs.tar es el firmware del port (ELF32 ARM, 13412248 B, 3/3 marcas)",
+      "stderr": ""
+    },
+    "fuente_md5_candidate": "964193ae9306b5127845cec44a57d52c",
+    "fuente_md5_staged": null,
+    "tar_extract_exit": 0,
+    "debugfs_dump_exit": 0,
+    "gui_tar": {
+      "bytes": 13412248,
+      "md5": "3b22a03a3b7850e5c546c564125d0eb0",
+      "sha256": "db4a67a70638675fde0876d7e06b0e0386d681989277712a355196f2a79fd732"
+    },
+    "gui_ext4": {
+      "bytes": 13412248,
+      "md5": "3b22a03a3b7850e5c546c564125d0eb0",
+      "sha256": "db4a67a70638675fde0876d7e06b0e0386d681989277712a355196f2a79fd732"
+    },
+    "gui_tar_equals_ext4": true,
+    "file": "/tmp/art195-s7usrugz/x6200_gui.from-tar: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, stripped",
+    "readelf_h": "ELF Header:\n  Magic:   7f 45 4c 46 01 01 01 03 00 00 00 00 00 00 00 00 \n  Class:                             ELF32\n  Data:                              2's complement, little endian\n  Version:                           1 (current)\n  OS/ABI:                            UNIX - GNU\n  ABI Version:                       0\n  Type:                              DYN (Position-Independent Executable file)\n  Machine:                           ARM\n  Version:                           0x1\n  Entry point address:               0x24efc\n  Start of program headers:          52 (bytes into file)\n  Start of section headers:          13411088 (bytes into file)\n  Flags:                             0x5000400, Version5 EABI, hard-float ABI\n  Size of this header:               52 (bytes)\n  Size of program headers:           32 (bytes)\n  Number of program headers:         10\n  Size of section headers:           40 (bytes)\n  Number of section headers:         29\n  Section header string table index: 28",
+    "readelf_d": "Dynamic section at offset 0xcbbe24 contains 54 entries:\n  Tag        Type                         Name/Value\n 0x00000001 (NEEDED)                     Shared library: [liblv_drivers.so]\n 0x00000001 (NEEDED)                     Shared library: [libaether_x6200_control.so.0]\n 0x00000001 (NEEDED)                     Shared library: [libliquid.so]\n 0x00000001 (NEEDED)                     Shared library: [libft8.so]\n 0x00000001 (NEEDED)                     Shared library: [libjpeg.so.8]\n 0x00000001 (NEEDED)                     Shared library: [libfftw3f.so.3]\n 0x00000001 (NEEDED)                     Shared library: [libnm.so.0]\n 0x00000001 (NEEDED)                     Shared library: [libgio-2.0.so.0]\n 0x00000001 (NEEDED)                     Shared library: [libdbus-glib-1.so.2]\n 0x00000001 (NEEDED)                     Shared library: [libdbus-1.so.3]\n 0x00000001 (NEEDED)                     Shared library: [libgobject-2.0.so.0]\n 0x00000001 (NEEDED)                     Shared library: [libglib-2.0.so.0]\n 0x00000001 (NEEDED)                     Shared library: [libsqlite3.so.0]\n 0x00000001 (NEEDED)                     Shared library: [libpng16.so.16]\n 0x00000001 (NEEDED)                     Shared library: [libsndfile.so.1]\n 0x00000001 (NEEDED)                     Shared library: [libudev.so.1]\n 0x00000001 (NEEDED)                     Shared library: [libpulse-simple.so.0]\n 0x00000001 (NEEDED)                     Shared library: [libpulse.so.0]\n 0x00000001 (NEEDED)                     Shared library: [libasound.so.2]\n 0x00000001 (NEEDED)                     Shared library: [libspeexdsp.so.1]\n 0x00000001 (NEEDED)                     Shared library: [libdrm.so.2]\n 0x00000001 (NEEDED)                     Shared library: [liblvgl.so]\n 0x00000001 (NEEDED)                     Shared library: [libxkbcommon.so.0]\n 0x00000001 (NEEDED)                     Shared library: [libstdc++.so.6]\n 0x00000001 (NEEDED)                     Shared library: [libm.so.6]\n 0x00000001 (NEEDED)                     Shared library: [libgcc_s.so.1]\n 0x00000001 (NEEDED)                     Shared library: [libc.so.6]\n 0x00000001 (NEEDED)                     Shared library: [ld-linux-armhf.so.3]\n 0x0000000c (INIT)                       0x1be68\n 0x0000000d (FINI)                       0x1c87cc\n 0x00000019 (INIT_ARRAY)                 0xcc4280\n 0x0000001b (INIT_ARRAYSZ)               52 (bytes)\n 0x0000001a (FINI_ARRAY)                 0xcc42b4\n 0x0000001c (FINI_ARRAYSZ)               4 (bytes)\n 0x00000004 (HASH)                       0x1b0\n 0x6ffffef5 (GNU_HASH)                   0x22a4\n 0x00000005 (STRTAB)                     0x6690\n 0x00000006 (SYMTAB)                     0x2350\n 0x0000000a (STRSZ)                      23142 (bytes)\n 0x0000000b (SYMENT)                     16 (bytes)\n 0x00000015 (DEBUG)                      0x0\n 0x00000003 (PLTGOT)                     0xccc000\n 0x00000002 (PLTRELSZ)                   7632 (bytes)\n 0x00000014 (PLTREL)                     REL\n 0x00000017 (JMPREL)                     0x1a098\n 0x00000011 (REL)                        0xcd30\n 0x00000012 (RELSZ)                      54120 (bytes)\n 0x00000013 (RELENT)                     8 (bytes)\n 0x6ffffffb (FLAGS_1)                    Flags: PIE\n 0x6ffffffe (VERNEED)                    0xc960\n 0x6fffffff (VERNEEDNUM)                 13\n 0x6ffffff0 (VERSYM)                     0xc0f6\n 0x6ffffffa (RELCOUNT)                   5969\n 0x00000000 (NULL)                       0x0",
+    "fuente_md5_in_binary": false,
+    "hex32_in_binary": [
+      "a576d48d9994efd3e28b9f1438fa7b24"
+    ],
+    "fstab": {
+      "exit": 0,
+      "content": "# <file system>\t<mount pt>\t<type>\t<options>\t<dump>\t<pass>\n/dev/root\t/\t\text2\trw,noauto\t0\t1\nproc\t\t/proc\t\tproc\tdefaults\t0\t0\ndevpts\t\t/dev/pts\tdevpts\tdefaults,gid=5,mode=620,ptmxmode=0666\t0\t0\ntmpfs\t\t/dev/shm\ttmpfs\tmode=0777\t0\t0\ntmpfs\t\t/tmp\t\ttmpfs\tmode=1777\t0\t0\ntmpfs\t\t/run\t\ttmpfs\tmode=0755,nosuid,nodev\t0\t0\nsysfs\t\t/sys\t\tsysfs\tdefaults\t0\t0\n/dev/mmcblk0p3\t/mnt\t\text4\trw\t\t0\t2\n"
+    },
+    "fstab_ext4_mmcblk0p3": true,
+    "s01create_data": {
+      "exit": 0,
+      "has_DATA_ya_existe": true,
+      "bytes": 1810
+    },
+    "init_d_present": [
+      "./etc/init.d/",
+      "./etc/init.d/S01boot_time",
+      "./etc/init.d/S01bootanim",
+      "./etc/init.d/S01create_data",
+      "./etc/init.d/S01seedrng",
+      "./etc/init.d/S01syslogd",
+      "./etc/init.d/S02klogd",
+      "./etc/init.d/S02sysctl",
+      "./etc/init.d/S02update",
+      "./etc/init.d/S03tune_cache",
+      "./etc/init.d/S04restore_backup_config",
+      "./etc/init.d/S10udev",
+      "./etc/init.d/S11radio_daemon",
+      "./etc/init.d/S20gui",
+      "./etc/init.d/S30dbus",
+      "./etc/init.d/S39btpairings",
+      "./etc/init.d/S40bluetoothd",
+      "./etc/init.d/S40network",
+      "./etc/init.d/S45network-manager",
+      "./etc/init.d/S48sntp",
+      "./etc/init.d/S49ntp",
+      "./etc/init.d/S50alsa",
+      "./etc/init.d/S50pulseaudio",
+      "./etc/init.d/S50sshd",
+      "./etc/init.d/S94btcat",
+      "./etc/init.d/S96webserver",
+      "./etc/init.d/rcK",
+      "./etc/init.d/rcS"
+    ],
+    "gui_member": true,
+    "libs_present": [
+      "./usr/lib/libNE10.so",
+      "./usr/lib/libNE10_test.so",
+      "./usr/lib/libaether_x6200_control.so",
+      "./usr/lib/libaio.so",
+      "./usr/lib/libasound.so",
+      "./usr/lib/libatopology.so",
+      "./usr/lib/libbacktrace.so",
+      "./usr/lib/libblkid.so",
+      "./usr/lib/libbluetooth.so",
+      "./usr/lib/libcom_err.so",
+      "./usr/lib/libcpupower.so",
+      "./usr/lib/libcrypto.so",
+      "./usr/lib/libcurl.so",
+      "./usr/lib/libcurses.so",
+      "./usr/lib/libdbus-1.so",
+      "./usr/lib/libdbus-c++-1.so",
+      "./usr/lib/libdbus-c++-glib-1.so",
+      "./usr/lib/libdbus-glib-1.so",
+      "./usr/lib/libdrm.so",
+      "./usr/lib/libdt-utils.so",
+      "./usr/lib/libe2p.so",
+      "./usr/lib/libespeak.so",
+      "./usr/lib/libevdev.so",
+      "./usr/lib/libevemu.so",
+      "./usr/lib/libevent.so",
+      "./usr/lib/libevent_core.so",
+      "./usr/lib/libevent_extra.so",
+      "./usr/lib/libevent_openssl.so",
+      "./usr/lib/libevent_pthreads.so",
+      "./usr/lib/libexpat.so",
+      "./usr/lib/libext2fs.so",
+      "./usr/lib/libfdisk.so",
+      "./usr/lib/libffi.so",
+      "./usr/lib/libfftw3f.so",
+      "./usr/lib/libform.so",
+      "./usr/lib/libfreebl3.so",
+      "./usr/lib/libfreeblpriv3.so",
+      "./usr/lib/libft8.so",
+      "./usr/lib/libgif.so",
+      "./usr/lib/libgio-2.0.so"
+    ],
+    "log_x6200-gui": [],
+    "log_rsync": [
+      "rsync -a --ignore-times --exclude .svn --exclude .git --exclude .hg --exclude .bzr --exclude CVS --chmod=u=rwX,go=rX --exclude .empty --exclude '*~' system/skeleton/ /home/pablo/desa/x6200/rom-build/clone-buildroot/build",
+      "rsync -a --ignore-times --exclude .svn --exclude .git --exclude .hg --exclude .bzr --exclude CVS --chmod=u=rwX,go=rX --exclude .empty --exclude '*~' system/skeleton/ /home/pablo/desa/x6200/rom-build/clone-buildroot/build",
+      "rsync -a --ignore-times --exclude .svn --exclude .git --exclude .hg --exclude .bzr --exclude CVS --chmod=u=rwX,go=rX --exclude .empty --exclude '*~' package/skeleton-init-sysv//skeleton/ /home/pablo/desa/x6200/rom-build/"
+    ],
+    "log_fuente": []
+  }
+}

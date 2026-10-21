@@ -1,0 +1,335 @@
+cov_id,kind,name,route,test_or_tool,layer,coverage,owner_unit,status,notes
+APP-01,app,RTTY,src/main_screen.c:249; src/rtty.c,"manual_apps, app_handlers, buttons page RTTY",HOST,PARTIAL,#197,PENDING,Ventana no-dialogo; sin fixture de harness propio
+APP-02,app,Settings,src/main_screen.c:262; src/dialog_settings.c,"check_settings_focus, check_settings_grid, fixtures settings-*",HOST,REAL,#197,PASS,Grupos/tabs verificados estaticamente y renderizados en harness (fixtures)
+APP-03,app,SWR Scan,src/main_screen.c:267; src/dialog_swrscan.c,"test_swrscan*, swrscan_curve_evidence, fixtures swrscan-*",HOST,REAL,#196,PASS,Curva ROE sintetica; barrido real transmite (PENDING_HARDWARE)
+APP-04,app,FT8,src/main_screen.c:272; src/dialog_ft8.c,"test_ft8_qso (CTest BLOCKED), test_ft8_udp",HOST,PARTIAL,#196,BLOCKED,CTest ft8/qth no corre: falta ft8lib/constants.h
+APP-05,app,FT4 (alias),src/main_screen.c:272; src/remote_server.cpp app_names[2],test_ft8_udp; app_names alias,HOST,PARTIAL,#196,PENDING,ALIAS explicito de FT8 (misma accion); no es app separada
+APP-06,app,WSPR,src/main_screen.c:277; src/dialog_wspr.c,run_wspr_tests.sh (loopback),HOST,REAL,#195,PASS,158 comprobaciones en imagen full; SKIP con imagen minimal
+APP-07,app,NavTex,src/main_screen.c:281; src/dialog_navtex.c,run_navtex_tests.sh,HOST,REAL,#195,PASS,SITOR-B loopback
+APP-08,app,SSTV,src/main_screen.c:285; src/dialog_sstv.c,run_sstv_tests.sh,HOST,REAL,#195,PASS,"7 modos, correlacion 0.92-0.98"
+APP-09,app,WeFax,src/main_screen.c:289; src/dialog_wefax.c,run_wefax_tests.sh,HOST,REAL,#195,PASS,"300/300 lineas, correlacion 0.995"
+APP-10,app,Cluster,src/main_screen.c:293; src/dialog_cluster.c,"test_cluster, test_cluster (native)",HOST,REAL,#196,PASS,Logica de spots; red real no medida
+APP-11,app,Field Ops,src/main_screen.c:297; src/dialog_field.c,test_field,HOST,REAL,#196,PASS,Refs/bandas/RBN/flog; red real no medida
+APP-12,app,JS8,src/main_screen.c:301; src/dialog_js8.c,run_js8_tests.sh,HOST,REAL,#195,PASS,1994 aserciones (suite X6100) con imagen full
+APP-13,app,CW Keyboard,src/main_screen.c:305; src/dialog_cw_kbd.c,"test_cw_encoder, test_cw_decoder, test_cw_tune",HOST,REAL,#197,PASS,Keyer/decoder host; keying fisico PENDING_HARDWARE
+APP-14,app,CW Trainer,src/main_screen.c:309; src/dialog_cw_trainer.c,test_cw_tune (parcial),HOST,PARTIAL,#197,PENDING,Sin fixture de harness propio
+APP-15,app,Bluetooth,src/main_screen.c:313; src/dialog_bt.c,"test_bt_devices, fixtures bt-dialog-*",HOST,SYNTHETIC,#197,PENDING,Logica de dispositivos; radio BT real PENDING_HARDWARE
+APP-16,app,GPS,src/main_screen.c:317; src/dialog_gps.c,test_gps_format,HOST,PARTIAL,#199,PENDING_HARDWARE,Formato NMEA host; GPS fisico no medido
+APP-17,app,Status,src/main_screen.c:321; src/dialog_status.c,"manual_apps, app_handlers",HOST,PARTIAL,#197,PENDING,Sin fixture propio
+APP-18,app,Recorder,src/main_screen.c:325; src/dialog_recorder.c,test_avi_writer,HOST,PARTIAL,#198,PENDING,Contenedor AVI host; audio real PENDING_HARDWARE
+APP-19,app,WiFi,src/main_screen.c:330; src/dialog_wifi.c,"manual_apps, app_handlers",HOST,PARTIAL,#199,PENDING_HARDWARE,WiFi real no medido; radio del owner intocable en #195
+APP-20,app,EQ,src/main_screen.c:335; src/dialog_eq.cpp,"manual_apps, app_handlers",HOST,PARTIAL,#197,PENDING,Sin fixture de harness propio
+APP-21,app,Bands,src/main_screen.c:340; src/dialog_bands.c,"test_band_plan, fixture app-bands",HOST,REAL,#197,PASS,Plan de bandas host + fixture
+APP-22,app,QTH,src/main_screen.c:351; src/dialog_qth.c,test_qth (CTest BLOCKED),HOST,UNSUPPORTED,#196,BLOCKED,CTest no corre: falta ft8lib/constants.h + libasan host
+APP-23,app,Callsign,src/main_screen.c:356; src/dialog_callsign.c,"manual_apps, app_handlers",HOST,PARTIAL,#197,PENDING,Sin fixture propio
+APP-24,app,Propagation,src/main_screen.c:361; src/dialog_propagation.c,test_propagation,HOST,REAL,#196,PASS,"8 fixtures IARU R2, 408 puntos"
+APP-25,app,DFL Editor (inline),src/main_screen.c:371; src/dfl_inline.c,"test_dfl_editor, fixtures dfl-editor-*",HOST,REAL,#197,PASS,No es app del menu APPS; figura en remoto (app_names[25]) y en barra DFL
+APP-26,app,Home / main screen,src/main_screen.c; src/main_screen.c,"fixtures main-*, home-*, check_wcag",HOST,REAL,#197,PASS,"Pantalla principal, spectrum/waterfall, temas"
+ACT-01,action,ACTION_NONE,src/params/params.h:30,tests/check_actions.py (handler de cada accion ofrecida),HOST,UNSUPPORTED,#197,UNSUPPORTED,sin accion; no ofrecida al operador (no portada)
+ACT-02,action,ACTION_SCREENSHOT,src/params/params.h:31,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"screenshot.c; check_actions solo verifica que exista handler, no el efecto"
+ACT-03,action,ACTION_SCREEN_REC,src/params/params.h:32,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"screen_rec.c; check_actions solo verifica que exista handler, no el efecto"
+ACT-04,action,ACTION_RECORDER,src/params/params.h:33,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"recorder.c on/off; check_actions solo verifica que exista handler, no el efecto"
+ACT-05,action,ACTION_MUTE,src/params/params.h:34,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"radio_change_mute; check_actions solo verifica que exista handler, no el efecto"
+ACT-06,action,ACTION_STEP_UP,src/params/params.h:35,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"controls_step.c; check_actions solo verifica que exista handler, no el efecto"
+ACT-07,action,ACTION_STEP_DOWN,src/params/params.h:36,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"controls_step.c; check_actions solo verifica que exista handler, no el efecto"
+ACT-08,action,ACTION_VOICE_MODE,src/params/params.h:37,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"voice_change_mode; check_actions solo verifica que exista handler, no el efecto"
+ACT-09,action,ACTION_BAT_INFO,src/params/params.h:38,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"info.c / battery; check_actions solo verifica que exista handler, no el efecto"
+ACT-10,action,ACTION_NR_TOGGLE,src/params/params.h:39,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"dsp NR; check_actions solo verifica que exista handler, no el efecto"
+ACT-11,action,ACTION_NB_TOGGLE,src/params/params.h:40,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"dsp NB; check_actions solo verifica que exista handler, no el efecto"
+ACT-12,action,ACTION_APP_RTTY,src/params/params.h:42,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app RTTY; check_actions solo verifica que exista handler, no el efecto"
+ACT-13,action,ACTION_APP_FT8,src/params/params.h:43,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app FT8; check_actions solo verifica que exista handler, no el efecto"
+ACT-14,action,ACTION_APP_WSPR,src/params/params.h:44,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app WSPR; check_actions solo verifica que exista handler, no el efecto"
+ACT-15,action,ACTION_APP_NAVTEX,src/params/params.h:45,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app NavTex; check_actions solo verifica que exista handler, no el efecto"
+ACT-16,action,ACTION_APP_SSTV,src/params/params.h:46,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app SSTV; check_actions solo verifica que exista handler, no el efecto"
+ACT-17,action,ACTION_APP_WEFAX,src/params/params.h:47,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app WeFax; check_actions solo verifica que exista handler, no el efecto"
+ACT-18,action,ACTION_APP_CLUSTER,src/params/params.h:48,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app Cluster; check_actions solo verifica que exista handler, no el efecto"
+ACT-19,action,ACTION_APP_FIELD,src/params/params.h:49,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app Field Ops; check_actions solo verifica que exista handler, no el efecto"
+ACT-20,action,ACTION_APP_JS8,src/params/params.h:50,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app JS8; check_actions solo verifica que exista handler, no el efecto"
+ACT-21,action,ACTION_APP_CW_KBD,src/params/params.h:51,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app CW Keyboard; check_actions solo verifica que exista handler, no el efecto"
+ACT-22,action,ACTION_APP_CWTRAINER,src/params/params.h:52,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app CW Trainer; check_actions solo verifica que exista handler, no el efecto"
+ACT-23,action,ACTION_APP_BT,src/params/params.h:53,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app Bluetooth; check_actions solo verifica que exista handler, no el efecto"
+ACT-24,action,ACTION_APP_STATUS,src/params/params.h:54,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app Status; check_actions solo verifica que exista handler, no el efecto"
+ACT-25,action,ACTION_THEME,src/params/params.h:55,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"theme change; check_actions solo verifica que exista handler, no el efecto"
+ACT-26,action,ACTION_APP_SWRSCAN,src/params/params.h:56,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app SWR Scan; check_actions solo verifica que exista handler, no el efecto"
+ACT-27,action,ACTION_APP_SETTINGS,src/params/params.h:57,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app Settings; check_actions solo verifica que exista handler, no el efecto"
+ACT-28,action,ACTION_APP_RECORDER,src/params/params.h:58,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app Recorder; check_actions solo verifica que exista handler, no el efecto"
+ACT-29,action,ACTION_APP_QTH,src/params/params.h:59,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app QTH Grid; check_actions solo verifica que exista handler, no el efecto"
+ACT-30,action,ACTION_APP_CALLSIGN,src/params/params.h:60,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app Callsign; check_actions solo verifica que exista handler, no el efecto"
+ACT-31,action,ACTION_APP_WIFI,src/params/params.h:61,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app WiFi; check_actions solo verifica que exista handler, no el efecto"
+ACT-32,action,ACTION_APP_EQ,src/params/params.h:62,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app EQ; check_actions solo verifica que exista handler, no el efecto"
+ACT-33,action,ACTION_APP_GPS,src/params/params.h:72,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app GPS; check_actions solo verifica que exista handler, no el efecto"
+ACT-34,action,ACTION_ATT_TOGGLE,src/params/params.h:73,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"ATT; check_actions solo verifica que exista handler, no el efecto"
+ACT-35,action,ACTION_PRE_TOGGLE,src/params/params.h:74,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"PRE; check_actions solo verifica que exista handler, no el efecto"
+ACT-36,action,ACTION_ATU_TOGGLE,src/params/params.h:75,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"ATU on/off; check_actions solo verifica que exista handler, no el efecto"
+ACT-37,action,ACTION_ATU_TUNE,src/params/params.h:76,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"ATU tune (transmite); check_actions solo verifica que exista handler, no el efecto"
+ACT-38,action,ACTION_WF_MODE,src/params/params.h:77,tests/check_actions.py (handler de cada accion ofrecida),HOST,UNSUPPORTED,#197,UNSUPPORTED,WF mode (no ofrecida: no portada); no ofrecida al operador (no portada)
+ACT-39,action,ACTION_APP_BANDS,src/params/params.h:78,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app Bands; check_actions solo verifica que exista handler, no el efecto"
+ACT-40,action,ACTION_ATUNE,src/params/params.h:83,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"Auto Tune v2 (issue #190); check_actions solo verifica que exista handler, no el efecto"
+ACT-41,action,ACTION_APP_PROPAGATION,src/params/params.h:87,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"app Propagation; check_actions solo verifica que exista handler, no el efecto"
+ACT-42,action,ACTION_APP_DFL_EDITOR,src/params/params.h:92,tests/check_actions.py (handler de cada accion ofrecida),HOST,PARTIAL,#197,PASS,"editor DFL inline; check_actions solo verifica que exista handler, no el efecto"
+SET-G1,settings_group,Operation,src/dialog_settings.c::construct_cb (Operation),"check_settings_focus, check_settings_grid, fixtures settings-*",HOST,PARTIAL,#197,PASS,Navegacion/foco y grilla verificados; interaccion completa es de #197
+SET-I01,settings_item,Freq acceleration,src/dialog_settings.c make_*/Freq acceleration,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I02,settings_item,Accel threshold,src/dialog_settings.c make_*/Accel threshold,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I03,settings_item,Bluetooth,src/dialog_settings.c make_*/Bluetooth,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I04,settings_item,Cluster column,src/dialog_settings.c make_*/Cluster column,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I05,settings_item,wfview server,src/dialog_settings.c make_*/wfview server,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I06,settings_item,Transverter 1..4,src/dialog_settings.c make_*/Transverter 1..4,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-G2,settings_group,Audio,src/dialog_settings.c::construct_cb (Audio),"check_settings_focus, check_settings_grid, fixtures settings-*",HOST,PARTIAL,#197,PASS,Navegacion/foco y grilla verificados; interaccion completa es de #197
+SET-I07,settings_item,"Line-in, Line-out","src/dialog_settings.c make_*/Line-in, Line-out",fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I08,settings_item,"Play,Rec gain","src/dialog_settings.c make_*/Play,Rec gain",fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I09,settings_item,Audio enhance,src/dialog_settings.c make_*/Audio enhance,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I10,settings_item,Speaker mode,src/dialog_settings.c make_*/Speaker mode,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I11,settings_item,Voice mode,src/dialog_settings.c make_*/Voice mode,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I12,settings_item,"Voice rate, pitch, volume","src/dialog_settings.c make_*/Voice rate, pitch, volume",fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-G3,settings_group,Spectrum,src/dialog_settings.c::construct_cb (Spectrum),"check_settings_focus, check_settings_grid, fixtures settings-*",HOST,PARTIAL,#197,PASS,Navegacion/foco y grilla verificados; interaccion completa es de #197
+SET-I13,settings_item,"Spectrum auto min, max","src/dialog_settings.c make_*/Spectrum auto min, max",fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I14,settings_item,"Waterfall auto min, max","src/dialog_settings.c make_*/Waterfall auto min, max",fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I15,settings_item,"Waterfall line, zoom","src/dialog_settings.c make_*/Waterfall line, zoom",fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I16,settings_item,Waterfall smooth scroll,src/dialog_settings.c make_*/Waterfall smooth scroll,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I17,settings_item,Waterfall battery mode,src/dialog_settings.c make_*/Waterfall battery mode,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-G4,settings_group,Clock,src/dialog_settings.c::construct_cb (Clock),"check_settings_focus, check_settings_grid, fixtures settings-*",HOST,PARTIAL,#197,PASS,Navegacion/foco y grilla verificados; interaccion completa es de #197
+SET-I18,settings_item,"Day, Month, Year","src/dialog_settings.c make_*/Day, Month, Year",fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I19,settings_item,"Hour, Min, Sec","src/dialog_settings.c make_*/Hour, Min, Sec",fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I20,settings_item,Clock view,src/dialog_settings.c make_*/Clock view,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I21,settings_item,"Timeout Clock, Power, TX","src/dialog_settings.c make_*/Timeout Clock, Power, TX",fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-G5,settings_group,Display,src/dialog_settings.c::construct_cb (Display),"check_settings_focus, check_settings_grid, fixtures settings-*",HOST,PARTIAL,#197,PASS,Navegacion/foco y grilla verificados; interaccion completa es de #197
+SET-I22,settings_item,"Timeout, Brightness","src/dialog_settings.c make_*/Timeout, Brightness",fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I23,settings_item,Buttons brightness,src/dialog_settings.c make_*/Buttons brightness,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I24,settings_item,S-meter needle,src/dialog_settings.c make_*/S-meter needle,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I25,settings_item,Band plan,src/dialog_settings.c make_*/Band plan,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-G6,settings_group,Appearance,src/dialog_settings.c::construct_cb (Appearance),"check_settings_focus, check_settings_grid, fixtures settings-*",HOST,PARTIAL,#197,PASS,Navegacion/foco y grilla verificados; interaccion completa es de #197
+SET-I26,settings_item,Theme,src/dialog_settings.c make_*/Theme,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I27,settings_item,Font,src/dialog_settings.c make_*/Font,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I28,settings_item,Visual profile,src/dialog_settings.c make_*/Visual profile,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-G7,settings_group,Actions,src/dialog_settings.c::construct_cb (Actions),"check_settings_focus, check_settings_grid, fixtures settings-*",HOST,PARTIAL,#197,PASS,Navegacion/foco y grilla verificados; interaccion completa es de #197
+SET-I29,settings_item,Long press gen/app/key/msg/dfn/dfl,src/dialog_settings.c make_*/Long press gen/app/key/msg/dfn/dfl,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-I30,settings_item,HMIC action,src/dialog_settings.c make_*/HMIC action,fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+SET-G8,settings_group,Info,src/dialog_settings.c::construct_cb (Info),"check_settings_focus, check_settings_grid, fixtures settings-*",HOST,PARTIAL,#197,PASS,Navegacion/foco y grilla verificados; interaccion completa es de #197
+SET-I31,settings_item,"Mag Freq, Info, ALC","src/dialog_settings.c make_*/Mag Freq, Info, ALC",fixtures settings-* (render),HOST,PARTIAL,#197,PENDING,Render cubierto por fixture; efecto en runtime (params/radio) sin medicion
+BTN-P01,buttons_page,pagina VOL 1 (VOL/SQL/RFG/PWR),src/buttons.cpp::buttons_page_vol_1,"test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P02,buttons_page,pagina VOL 2 (mic/comp/monitor),src/buttons.cpp::page_vol_2,"test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P03,buttons_page,pagina VOL 3 (voz),src/buttons.cpp::page_vol_3,"test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P04,buttons_page,pagina MFK 1 (AGC/ATT/PRE/COMP),src/buttons.cpp::page_mfk_1,"test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P05,buttons_page,pagina MFK 2 (spectrum min/max/FFT/beta),src/buttons.cpp::page_mfk_2,"test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P06,buttons_page,pagina MFK 3 (fill/peak/hold/speed),src/buttons.cpp::page_mfk_3,"test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P07,buttons_page,pagina MFK 4 (charger/ant/RIT/XIT),src/buttons.cpp::page_mfk_4,"test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P08,buttons_page,pagina MEM 1 (mem 1-4),src/buttons.cpp::page_mem_1,"test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P09,buttons_page,pagina MEM 2 (mem 5-8),src/buttons.cpp::page_mem_2,"test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P10,buttons_page,paginas APP 1-6 (24 apps),"src/buttons.cpp::page_app_1, page_app_2, page_app_3, page_app_4, page_app_5, page_app_6","test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P11,buttons_page,paginas KEY 1-2 (keyer),"src/buttons.cpp::page_key_1, page_key_2","test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P12,buttons_page,paginas CW decoder 1-2,"src/buttons.cpp::page_cw_decoder_1, page_cw_decoder_2","test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P13,buttons_page,paginas DFN 1-3 (DNF/NB/NR),"src/buttons.cpp::page_dfn_1, page_dfn_2, page_dfn_3","test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P14,buttons_page,pagina RTTY,src/buttons.cpp::buttons_page_rtty,"test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P15,buttons_page,paginas DFL A-F (favoritos/ajustar/grafico/mas/confirmar/asignar),"src/buttons.cpp::buttons_page_dfl_1, buttons_page_dfl_expanded, page_dfl_fav, page_dfl_more, page_dfl_confirm, page_dfl_assign","test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+BTN-P16,buttons_page,paginas mensajes CW / voz,"src/buttons.cpp::dialog_msg_cw.c, dialog_msg_voice.c","test_dfl_* (native), fixtures dfl-presets-*",HOST,PARTIAL,#197,PENDING,Barra inferior; pulsacion fisica no accionable en host
+IN-01,physical_input,F1..F5 pulsacion corta,keypad.c/buttons.c,tests/native (logica) / harness (eventos LVGL),HOST,PARTIAL,#197,PENDING,Mecanica real del equipo no accionable sin hardware
+IN-02,physical_input,F1..F5 long press (acciones configurables),buttons.cpp long_action,tests/native (logica) / harness (eventos LVGL),HOST,PARTIAL,#197,PENDING,Mecanica real del equipo no accionable sin hardware
+IN-03,physical_input,Touch barra inferior (CLICKED/LONG_PRESSED),buttons.cpp touch_hold; fixtures dfl-presets-touch*,tests/native (logica) / harness (eventos LVGL),HOST,REAL,#197,PENDING,Eventos LVGL inyectados por harness
+IN-04,physical_input,Rotary 0 VFO (adaptive_tuning/rotary_queue),"src/adaptive_tuning.c, rotary_queue.c; test_adaptive_tuning, test_rotary_queue",tests/native (logica) / harness (eventos LVGL),HOST,REAL,#197,PENDING,Eventos LVGL inyectados por harness
+IN-05,physical_input,Rotary 1 VOL,"src/vol.c, controls_encoder.c",tests/native (logica) / harness (eventos LVGL),HOST,PARTIAL,#197,PENDING,Mecanica real del equipo no accionable sin hardware
+IN-06,physical_input,Rotary 2 MFK,src/mfk.cpp,tests/native (logica) / harness (eventos LVGL),HOST,PARTIAL,#197,PENDING,Mecanica real del equipo no accionable sin hardware
+IN-07,physical_input,Rotary 3 MFK interno,"src/rotary.c, mfk_inner",tests/native (logica) / harness (eventos LVGL),HOST,PARTIAL,#197,PENDING,Mecanica real del equipo no accionable sin hardware
+IN-08,physical_input,Teclado fisico / hkey,"src/hkey.c, keyboard.c; test_hkey, test_keyboard",tests/native (logica) / harness (eventos LVGL),HOST,REAL,#197,PENDING,Eventos LVGL inyectados por harness
+IN-09,physical_input,Touch pantalla (LVGL indev),"src/mouse.c, input_dev.c",tests/native (logica) / harness (eventos LVGL),HOST,PARTIAL,#197,PENDING,Mecanica real del equipo no accionable sin hardware
+IN-10,physical_input,PTT / microfono,radio/A33 GPIO,ninguno,HARDWARE,UNSUPPORTED,#199,PENDING_HARDWARE,Mecanica real del equipo no accionable sin hardware
+SYS-01,subsystem,RX path / sintonia,"src/radio.c, controls.c, cfg/mode.c",ninguno,HARDWARE,UNSUPPORTED,#199,PENDING_HARDWARE,RX real solo en fase fisica #199
+SYS-02,subsystem,TX / PTT / keyer RF,"src/radio.c, cw.c",ninguno (prohibido transmitir),HARDWARE,UNSUPPORTED,#199,PENDING_HARDWARE,Requiere autorizacion/instrumentacion; fuera de #195
+SYS-03,subsystem,Filtros / DFL / editor inline,"src/dfl_*.c, buttons.cpp","test_dfl_editor, test_dfl_presets, test_dfl_rotary, fixtures dfl-*",HOST,REAL,#197,PASS,Cobertura nativa + harness extensa
+SYS-04,subsystem,Presets DFL / memoria de filtros,"src/dfl_presets_store.c, sql",test_dfl_presets,HOST,REAL,#197,PASS,Persistencia SQLite de presets
+SYS-05,subsystem,Memoria de canales / VFO / split,"src/cfg/memory.c, mem_load/save",test_cfg_fills (parcial),HOST,PARTIAL,#196,PENDING,Sin test de round-trip de memoria
+SYS-06,subsystem,RIT / XIT,"src/buttons.cpp btn_rit/btn_xit, radio",ninguno,HOST,UNSUPPORTED,#197,PENDING,Sin test; efecto en radio no medido
+SYS-07,subsystem,Lock freq/mode/AB,src/main_screen.c main_screen_lock_*,ninguno,HOST,UNSUPPORTED,#197,PENDING,Sin test
+SYS-08,subsystem,CB 27 MHz,"src/cb.c, params cb_*",test_cb,HOST,REAL,#196,PASS,Reglas/interlock host
+SYS-09,subsystem,CW decoder / encoder / QSK,"src/cw_decoder.c, cw_encoder.c","test_cw_decoder, test_cw_encoder",HOST,REAL,#197,PASS,Decodificador y encoder
+SYS-10,subsystem,Auto Tune v2 (CW/CWR),"src/autotune.c, cw_autotune.c, autotune_ui.c","test_autotune, test_cw_autotune, check_autotune_v2, fixtures autotune-*",HOST,REAL,#197,PASS,Alcance RX verificado por QA previo en radio (historico)
+SYS-11,subsystem,DSP / audio enhancement,"src/dsp.cpp, audio_enhancement.c",test_audio_enhancement,HOST,REAL,#198,PASS,Perfiles de audio host; audio real PENDING_HARDWARE
+SYS-12,subsystem,Voz / espeak / voice_text,"src/voice.c, voice_text.c",test_voice,HOST,REAL,#198,PASS,Textos y modo; sintesis real no medida
+SYS-13,subsystem,Modos digitales (FT8/FT4/JS8/WSPR/SSTV/WeFax/NavTex),"src/ft8/, js8/, wspr/, sstv/, wefax/, navtex/","run_*_tests.sh, test_ft8_udp",HOST,REAL,#195,PASS,Codecs loopback; operacion en aire PENDING_HARDWARE
+SYS-14,subsystem,CAT (serial/USB),"src/cat.cpp, btcat/",ninguno,HARDWARE,UNSUPPORTED,#199,PENDING_HARDWARE,Requiere equipo/adaptador
+SYS-15,subsystem,USB devices,src/usb_devices.cpp,ninguno,HARDWARE,UNSUPPORTED,#199,PENDING_HARDWARE,Depende de hardware
+SYS-16,subsystem,Control remoto (socket),src/remote_server.cpp,tests/native/test_remote.cpp,HOST,REAL,#196,PASS,Protocolo/socket host; sin HW
+SYS-17,subsystem,wfview server,src/wfview_server.c,test_wfview,HOST,REAL,#196,PASS,UDP real entre procesos host
+SYS-18,subsystem,Web configurator (19 paginas),br2_external/package/x6100-webserver,tests/run_pages_test.py (SKIP: sin checkout/volumen),HOST,UNSUPPORTED,#196,SKIP,No se uso el volumen compartido x6200-build-output
+SYS-19,subsystem,WiFi / wpa_supplicant,"src/wifi.cpp, overlay wpa_supplicant",ninguno,HARDWARE,UNSUPPORTED,#199,PENDING_HARDWARE,Red de la radio intocable en #195
+SYS-20,subsystem,Bluetooth / btaudio,"src/btaudio.c, bt_devices.c, S39/S94",test_bt_devices,HOST,SYNTHETIC,#197,PENDING,Logica; stack BT real PENDING_HARDWARE
+SYS-21,subsystem,GPS,"src/gps.c, gps_format.c",test_gps_format,HOST,PARTIAL,#199,PENDING_HARDWARE,Formato NMEA; GPS fisico no medido
+SYS-22,subsystem,Cluster / spots,"src/cluster/, dialog_cluster.c",test_cluster,HOST,REAL,#196,PASS,Parser/logica; red real no medida
+SYS-23,subsystem,Recorder / AVI / screen rec,"src/recorder.c, avi_writer.c, screen_rec.c",test_avi_writer,HOST,PARTIAL,#198,PENDING,Contenedor AVI; captura real de audio/video PENDING_HARDWARE
+SYS-24,subsystem,QSO log / ADIF,"src/qso_log.c, adif.c",ninguno,HOST,UNSUPPORTED,#196,PENDING,Sin test dedicado
+SYS-25,subsystem,SQLite / migraciones / params,"src/cfg/db.cpp, src/params/db.c, migrations.c","test_migrations_cb, test_sql_policy",HOST,REAL,#196,PASS,Migraciones y politica SQL
+SYS-26,subsystem,Boot / init / S20gui / daemon,"rootfs/etc/init.d/S20gui, rcS, x6200_daemon","boot-rootfs.yml (prune), ninguno de arranque",QEMU_USER,UNSUPPORTED,#196,PENDING,Arranque real no ejecutado en #195
+SYS-27,subsystem,Watchdog / last breath / crashlog,"src/lastbreath.c, crashlog_modules.c","test_lastbreath, test_crashlog_modules",HOST,REAL,#196,PASS,Modulos host
+SYS-28,subsystem,Apagado / reinicio,"rootfs, power",ninguno,HARDWARE,UNSUPPORTED,#196,PENDING_HARDWARE,Cortes de energia prohibidos en #195
+SYS-29,subsystem,Update / S02update / tgz,"br2_external/.../S02update, tools/release/",tools/release/test_update.sh (requiere rootfs+sudo),QEMU_USER,PARTIAL,#196,BLOCKED,No ejecutado en #195 (requiere rootfs y sudo)
+SYS-30,subsystem,DATA partition / S01create_data / backup,"br2_external overlay S01create_data, S04restore_backup_config",ninguno,QEMU_USER,UNSUPPORTED,#196,PENDING,Sin prueba de particion en #195
+SYS-31,subsystem,Temas (6 JSON) / WCAG,rootfs/usr/share/x6200/themes,"test_theme, check_wcag",HOST,REAL,#197,PASS,Aurora/Cathode/Redshift/Sprint/Sunlit/Trail; AA verificado
+SYS-32,subsystem,Band plan / bandas,"src/band_plan*.c, sql/bands_*.csv",test_band_plan,HOST,REAL,#197,PASS,Datos IARU y busqueda
+SYS-33,subsystem,Propagacion / IARU R2,src/propagation*.c,test_propagation,HOST,REAL,#196,PASS,Oraculo IARU R2
+SYS-34,subsystem,Spectrum / waterfall,"src/spectrum.c, waterfall.c","test_spectrum (TSan host omitido), check_waterfall_incremental",HOST,PARTIAL,#198,PENDING,TSan no disponible en host; benchmark en #198
+SYS-35,subsystem,Backlight / clock de potencia,"src/backlight.c, clock.c","test_backlight, test_clock",HOST,REAL,#198,PASS,Politicas de brillo/reloj
+SYS-36,subsystem,Bateria / visual policy / ECO,"src/visual_policy.c, params","test_visual_policy, fixtures *-eco",HOST,REAL,#198,PASS,Perfiles; consumo real PENDING_HARDWARE
+SYS-37,subsystem,Update checker,src/update_check.c,test_update_check,HOST,REAL,#196,PASS,Comparacion de version
+SYS-38,subsystem,Screenshot,src/screenshot.c,ninguno,HARDWARE,UNSUPPORTED,#197,PENDING_HARDWARE,Requiere framebuffer real
+SYS-39,subsystem,SWR scan / ROE,"src/swr_session.c, roe_curve.c, dialog_swrscan.c","test_swrscan*, swrscan_curve_evidence",HOST,SYNTHETIC,#196,PASS,Modelo de curva; barrido real transmite
+SYS-40,subsystem,ATU (toggle/tune),"src/cfg/atu.c, radio",ninguno,HARDWARE,UNSUPPORTED,#199,PENDING_HARDWARE,Tune transmite; fuera de alcance
+SYS-41,subsystem,Field ops / POTA/SOTA,src/field/,test_field,HOST,REAL,#196,PASS,"Refs, bandas, log; red real no medida"
+SYS-42,subsystem,QTH / grid,src/qth/,test_qth (CTest BLOCKED),HOST,UNSUPPORTED,#196,BLOCKED,Dependencia ft8lib/constants.h + libasan
+SYS-43,subsystem,Teclado / hkey / rollover,"src/keyboard.c, hkey.c, kbd_*.c","test_keyboard, test_hkey, test_kbd_caps, test_kbd_rollover?",HOST,REAL,#197,PASS,Mapeo de teclas y rollover
+SYS-44,subsystem,Encoder / rotary queue,"src/rotary.c, rotary_queue.c, controls_encoder.c","test_rotary_queue, fixtures dfl-*-rotary0",HOST,REAL,#197,PASS,Cola de detents host
+SYS-45,subsystem,Gestion de energia (idle/wakeups),"src/main.c, scheduler.cpp","natural_evidence.py, wakeup_evidence.py (requieren harness/banco)",HOST,SYNTHETIC,#198,PENDING,Requiere banco/harness; #198
+SYS-46,subsystem,Identidad de build / fuente-md5 / gate #86,"tools/fuente-md5.sh, tools/verifica-firmware-port.py","check_build_identity.py, test_verifica_firmware_port.py (pytest), gate #86",HOST,REAL,#195,PENDING,Ejecutado en #195 sobre artefactos de esta corrida
+SYS-47,subsystem,Paridad host<->CI (sin lvgl),tests/native/run_native_tests.sh --ci-parity,run_all_tests.sh host_ci_parity,HOST,REAL,#195,PASS,"138 comprobaciones, 0 fallos"
+SYS-48,subsystem,Documentacion / auditoria de pruebas,"docs/PRUEBAS.md, tests/audita-pruebas.py","audita-pruebas.py, check_manual_apps.py",HOST,REAL,#199,PASS,Estructura y evidencia citada; revision final en #199
+SYS-49,subsystem,Build ROM / rootfs / sdcard.img,Buildroot d084e287 + GUI c888308e,.github/workflows/main.yml (referencia),HOST,REAL,#195,PENDING,Receta reproducida en sandbox privado; resultado en este informe
+SCR-01,screen,dialog_freq (entrada de frecuencia/memoria),src/dialog_freq.c; abierto por tecla FREQ/MEM,"check_wcag.py (pares de color), contrato de teclado compartido",HOST,PARTIAL,#197,PENDING,Sin fixture de render; no hay test de la ventana
+SCR-02,screen,dialog_msg_cw (editor de mensajes CW),src/dialog_msg_cw.c; paginas mensajes CW,"check_wcag.py (pares de color); test_cw_encoder (codec, no ventana)",HOST,PARTIAL,#197,PENDING,Sin fixture de render; edicion real no instrumentada
+SCR-03,screen,dialog_msg_voice (mensajes de voz),src/dialog_msg_voice.c; pagina voz,check_wcag.py (pares de color); test_voice (TTS host),HOST,PARTIAL,#197,PENDING,Sin fixture de render; reproduccion real no instrumentada
+SRV-01,service,rcS (arranque de scripts init.d),rootfs/etc/init.d/rcS,inspeccion del artefacto,HOST,UNSUPPORTED,#196,PENDING,Arranque real no ejecutado en #195 (sin kernel/init)
+SRV-02,service,S01boot_time (hora de arranque),rootfs/etc/init.d/S01boot_time,inspeccion del artefacto,HOST,UNSUPPORTED,#196,PENDING,Requiere arranque; no ejecutado
+SRV-03,service,S20gui (arranque del GUI/daemon),rootfs/etc/init.d/S20gui,inspeccion del artefacto,HOST,UNSUPPORTED,#196,PENDING,Requiere arranque; no ejecutado
+SRV-04,service,S39btpairings (restaura emparejamientos BT),rootfs/etc/init.d/S39btpairings,inspeccion del artefacto,HOST,UNSUPPORTED,#196,PENDING,Requiere BT real; #199
+SRV-05,service,S94btcat (puente BT CAT),rootfs/etc/init.d/S94btcat; rootfs/etc/default/btcat,inspeccion del artefacto,HOST,UNSUPPORTED,#196,PENDING,Requiere BT/CAT reales; #199
+SRV-06,service,S01create_data (crea/monta DATA),br2_external/board/X6200/linux/rootfs-overlay/etc/init.d/S01create_data,inspeccion del artefacto (chequeo 'DATA ya existe'),HOST,PARTIAL,#196,PENDING,Contenido verificable en rootfs; creacion real de particion no ejecutada
+SRV-07,service,S02update (update desde /mnt/*.tgz),br2_external/board/X6200/linux/rootfs-overlay/etc/init.d/S02update,inspeccion del artefacto,HOST,UNSUPPORTED,#196,PENDING,Update real no ejecutado ni autorizado
+SRV-08,service,btaudio-ctl (control de audio BT),rootfs/usr/sbin/btaudio-ctl,inspeccion del artefacto,HOST,UNSUPPORTED,#199,PENDING_HARDWARE,Requiere audio BT real
+SRV-09,service,btcat-ctl / btcat-setup (CAT por BT),"rootfs/usr/sbin/btcat-ctl, btcat-setup; rootfs/etc/default/btcat",inspeccion del artefacto,HOST,UNSUPPORTED,#199,PENDING_HARDWARE,Requiere CAT/BT reales
+SRV-10,service,x6200-field (helper de Field Ops),rootfs/usr/sbin/x6200-field,inspeccion del artefacto,HOST,PARTIAL,#196,PENDING,Logica cubierta por test_field en host; ejecucion en target no
+SRV-11,service,x6200-pota-spots (descarga de spots POTA/SOTA),rootfs/usr/sbin/x6200-pota-spots,inspeccion del artefacto,HOST,UNSUPPORTED,#199,PENDING_HARDWARE,Requiere red real
+SRV-12,service,x6200_daemon (daemon de la GUI),rootfs/usr/sbin/x6200_daemon,inspeccion del artefacto,HOST,UNSUPPORTED,#196,PENDING,Arranque real no ejecutado en #195
+SRV-13,service,S03tune_cache (sysctl vm.*),br2_external/.../init.d/S03tune_cache,inspeccion del artefacto,HOST,UNSUPPORTED,#196,PENDING,Requiere arranque; no ejecutado
+SRV-14,service,S04restore_backup_config (restaura/backup /mnt/backups),br2_external/.../init.d/S04restore_backup_config,inspeccion del artefacto,HOST,UNSUPPORTED,#196,PENDING,Toca DATA/backup; solo #196 con copia privada
+SRV-15,service,S11radio_daemon (DNS + BASE board /dev/ttyS1),br2_external/.../init.d/S11radio_daemon,inspeccion del artefacto,HOST,UNSUPPORTED,#199,PENDING_HARDWARE,Requiere BASE board real
+SRV-16,service,S50alsa (alsactl restore),br2_external/.../init.d/S50alsa,inspeccion del artefacto,HOST,UNSUPPORTED,#199,PENDING_HARDWARE,Requiere codec de audio real
+SRV-17,service,S50pulseaudio (pulseaudio --system),br2_external/.../init.d/S50pulseaudio,inspeccion del artefacto,HOST,UNSUPPORTED,#199,PENDING_HARDWARE,Requiere audio real
+SRV-18,service,S96webserver (x6100_webserver --db /mnt/params.db),br2_external/.../init.d/S96webserver,inspeccion del artefacto,HOST,UNSUPPORTED,#199,SKIP,Webserver omitido en #195 (volumen compartido)
+PKG-01,build_package,x6200-gui (override local al candidato),br2_external/package/x6200-gui/x6200_gui.mk,build privado con X6200_GUI_OVERRIDE_SRCDIR; fuente-md5 en el artefacto,HOST,PARTIAL,#195,PENDING,El paquete vendor apunta a v0.1.0; el override es imprescindible
+PKG-02,build_package,ft8lib (headers+lib para FT8/QTH),br2_external/package/ft8lib/ft8lib.mk,build ARM; CTest la requiere,HOST,PARTIAL,#196,PENDING,Su ausencia en host bloquea CTest (S4-CTEST)
+PKG-03,build_package,aether-x6200-control (control de radio),br2_external/package/aether-x6200-control/,build ARM,HOST,UNSUPPORTED,#196,PENDING,Sin instrumento de control en #195
+PKG-04,build_package,x6100-webserver (webserver),br2_external/package/x6100-webserver/,build ARM; WS no ejecutado,HOST,UNSUPPORTED,#199,SKIP,Requiere checkout web + python3 de target; no se adjudica a la GUI
+PKG-05,build_package,rhvoice (TTS de voz),br2_external/package/rhvoice/,build ARM; test_voice (host),HOST,PARTIAL,#197,PENDING,TTS real en target no ejecutado
+PKG-06,build_package,rtw88 / rtl8723du (WiFi),br2_external/package/rtw88/,build ARM,HOST,UNSUPPORTED,#199,PENDING_HARDWARE,WiFi real solo en fase fisica
+PKG-07,build_package,python-bottle-sqlite (dep. webserver),br2_external/package/python-bottle-sqlite/,build ARM,HOST,UNSUPPORTED,#199,SKIP,Dependencia del webserver omitido
+BLD-01,build_config,X6200_defconfig,br2_external/configs/X6200_defconfig,br_config.sh; .config del build privado,HOST,PARTIAL,#195,PASS,Generado en el build privado (warning de override LIQUID_DSP registrado)
+BLD-02,build_config,"genimage.cfg (BOOT + rootfs, sin DATA)",br2_external/board/X6200/genimage.cfg,inspeccion del artefacto,HOST,REAL,#196,PENDING,DATA no viene precargada; la crea S01create_data
+BLD-03,build_config,post-build.sh,br2_external/board/X6200/post-build.sh,inspeccion del artefacto,HOST,PARTIAL,#196,PENDING,Se aplica al rootfs; verificacion en el artefacto
+BLD-04,build_config,"rootfs-overlay (fstab, init.d)",br2_external/board/X6200/linux/rootfs-overlay/,inspeccion del artefacto (fstab ext4 / DATA),HOST,REAL,#196,PENDING,Contenido verificado en el artefacto de esta corrida
+ENV-01,ci_environment,CI ab-testing.yml (functional/contracts/visual/performance),.github/workflows/ab-testing.yml,PR paths tools/**; ultima corrida del candidato: PR #193 head 08d604d9 run 39649140152 success,HOST,REAL,#195,PASS,No hay corrida sobre el merge c888308e (push no dispara ab-testing)
+ENV-02,ci_environment,CI boot-rootfs.yml (prune),.github/workflows/boot-rootfs.yml,"push/PR paths buildroot/**, CMakeLists.txt, docs/IMAGE_ROOTFS_PRUNE.md",HOST,PARTIAL,#196,PENDING,"En el tip nuevo 50bf8ab0 la corrida 39653588113 fallo (#200, fuera del candidato)"
+ENV-03,ci_environment,CI main.yml (imagen completa),.github/workflows/main.yml,solo tags/workflow_dispatch; usa repo upstream por defecto,HOST,PARTIAL,#195,PENDING,Un verde de CI no prueba el par congelado; se reproduce localmente
+ENV-04,ci_environment,Version de toolchain host,"gcc 16.2.1, cmake 4.3.0, python 3.14.7, uv 0.9.18, docker 29.8.2",registrado en logs/step1-toolchain.log,HOST,REAL,#195,PASS,ninja y fakeroot ausentes en host; sanitizers ausentes
+ENV-05,ci_environment,Imagen docker x6200-buildroot:latest,sha256:b3e7601313d64284645a5224c60fb40f39ea58e0bfc68f42fd9bb0dad13a1189,contenedor privado assessment195-build (usuario 1000),HOST,REAL,#195,PASS,No se uso el volumen compartido x6200-build-output
+ENV-06,ci_environment,Imagen docker x6200-uiharness-full:latest,sha256:33fc1ed113e31978c600df82375628fe9d979d5c3408b4e16a42f43ae2f9312c,codecs + sanitizers gcc 13,HOST,REAL,#195,PASS,Usada solo como complemento de la baseline
+TST-001,test,audita-pruebas.py,tests/audita-pruebas.py,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-002,test,check_actions.py,tests/check_actions.py,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-003,test,check_app_handlers.py,tests/check_app_handlers.py,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-004,test,check_apps_menu.py,tests/check_apps_menu.py,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-005,test,check_autotune_v2.py,tests/check_autotune_v2.py,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-006,test,check_build_identity.py,tests/check_build_identity.py,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-007,test,check_cfg_fills.py,tests/check_cfg_fills.py,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-008,test,check_cw_tune_feed.py,tests/check_cw_tune_feed.py,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-009,test,check_drawbuf_partial.sh,tests/check_drawbuf_partial.sh,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-010,test,check_harness_determinism.sh,tests/check_harness_determinism.sh,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-011,test,check_harness_natural.sh,tests/check_harness_natural.sh,run_all_tests.sh (checks estaticos/host),HOST,REAL,#198,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-012,test,check_harness_swrscan_curve.sh,tests/check_harness_swrscan_curve.sh,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-013,test,check_harness_wakeups.sh,tests/check_harness_wakeups.sh,run_all_tests.sh (checks estaticos/host),HOST,REAL,#198,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-014,test,check_manual_apps.py,tests/check_manual_apps.py,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-015,test,check_settings_focus.py,tests/check_settings_focus.py,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-016,test,check_settings_grid.py,tests/check_settings_grid.py,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-017,test,check_waterfall_incremental.sh,tests/check_waterfall_incremental.sh,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-018,test,check_wcag.py,tests/check_wcag.py,run_all_tests.sh (checks estaticos/host),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-019,test,e2e_chroot.sh,tests/e2e_chroot.sh,run_all_tests.sh / manual,HOST,PARTIAL,#196,PENDING,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-020,test,codec_docker.sh,tests/native/codec_docker.sh,run_all_tests.sh / manual,HOST,PARTIAL,#195,PENDING,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-021,test,run_js8_tests.sh,tests/native/run_js8_tests.sh,suite de codec en imagen full,HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-022,test,run_native_tests.sh,tests/native/run_native_tests.sh,suite de codec en imagen full,HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-023,test,run_navtex_tests.sh,tests/native/run_navtex_tests.sh,suite de codec en imagen full,HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-024,test,run_sstv_tests.sh,tests/native/run_sstv_tests.sh,suite de codec en imagen full,HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-025,test,run_wefax_tests.sh,tests/native/run_wefax_tests.sh,suite de codec en imagen full,HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-026,test,run_wspr_tests.sh,tests/native/run_wspr_tests.sh,suite de codec en imagen full,HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-027,test,test_adaptive_tuning.c,tests/native/test_adaptive_tuning.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-028,test,test_audio_enhancement.c,tests/native/test_audio_enhancement.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-029,test,test_autotune.c,tests/native/test_autotune.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-030,test,test_avi_writer.c,tests/native/test_avi_writer.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-031,test,test_backlight.c,tests/native/test_backlight.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-032,test,test_band_plan.c,tests/native/test_band_plan.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-033,test,test_bt_devices.c,tests/native/test_bt_devices.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-034,test,test_cb.c,tests/native/test_cb.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-035,test,test_clock.c,tests/native/test_clock.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-036,test,test_cluster.c,tests/native/test_cluster.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-037,test,test_controls.c,tests/native/test_controls.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-038,test,test_crashlog_modules.c,tests/native/test_crashlog_modules.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-039,test,test_cw_autotune.c,tests/native/test_cw_autotune.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-040,test,test_cw_decoder.c,tests/native/test_cw_decoder.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-041,test,test_cw_encoder.c,tests/native/test_cw_encoder.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-042,test,test_cw_tune.c,tests/native/test_cw_tune.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-043,test,test_cw_tune_sign.c,tests/native/test_cw_tune_sign.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-044,test,test_dfl_editor.c,tests/native/test_dfl_editor.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-045,test,test_dfl_presets.c,tests/native/test_dfl_presets.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-046,test,test_dfl_rotary.c,tests/native/test_dfl_rotary.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-047,test,test_dialog_restore.c,tests/native/test_dialog_restore.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-048,test,test_digital_modes.c,tests/native/test_digital_modes.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-049,test,test_dxcc.c,tests/native/test_dxcc.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-050,test,test_events.c,tests/native/test_events.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-051,test,test_field.c,tests/native/test_field.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-052,test,test_flags.c,tests/native/test_flags.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-053,test,test_framework.c,tests/native/test_framework.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-054,test,test_ft8_udp.c,tests/native/test_ft8_udp.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-055,test,test_gps_format.c,tests/native/test_gps_format.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-056,test,test_hkey.c,tests/native/test_hkey.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-057,test,test_js8_suite.cpp,tests/native/test_js8_suite.cpp,run_js8_tests.sh (imagen full),HOST,REAL,#195,PASS,1994 aserciones en 88 casos
+TST-058,test,test_kbd_caps.c,tests/native/test_kbd_caps.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-059,test,test_keyboard.c,tests/native/test_keyboard.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-060,test,test_lastbreath.c,tests/native/test_lastbreath.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-061,test,test_main.c,tests/native/test_main.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-062,test,test_migrations_cb.c,tests/native/test_migrations_cb.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-063,test,test_navtex_loopback.cpp,tests/native/test_navtex_loopback.cpp,run_navtex_tests.sh,HOST,REAL,#195,PASS,all OK
+TST-064,test,test_params_threshold.c,tests/native/test_params_threshold.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-065,test,test_propagation.c,tests/native/test_propagation.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-066,test,test_remote.cpp,tests/native/test_remote.cpp,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-067,test,test_roe_curve.c,tests/native/test_roe_curve.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-068,test,test_rotary_queue.c,tests/native/test_rotary_queue.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-069,test,test_settings_language.c,tests/native/test_settings_language.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-070,test,test_spectrum.c,tests/native/test_spectrum.c,run_native_tests.sh (spectrum),HOST,PARTIAL,#195,PASS,TSan omitido en host; TSan cubierto en contenedor (S4B-SANITIZERS)
+TST-071,test,test_sql_policy.c,tests/native/test_sql_policy.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-072,test,test_sstv_loopback.c,tests/native/test_sstv_loopback.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-073,test,test_swr_session.c,tests/native/test_swr_session.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-074,test,test_swrscan.c,tests/native/test_swrscan.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-075,test,test_swrscan_fixtures.c,tests/native/test_swrscan_fixtures.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-076,test,test_swrscan_multipass.c,tests/native/test_swrscan_multipass.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-077,test,test_theme.c,tests/native/test_theme.c,run_native_tests.sh (suite nativa),HOST,REAL,#197,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-078,test,test_update_check.c,tests/native/test_update_check.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-079,test,test_visual_policy.c,tests/native/test_visual_policy.c,run_native_tests.sh (suite nativa),HOST,REAL,#197,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-080,test,test_voice.c,tests/native/test_voice.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-081,test,test_wefax_loopback.c,tests/native/test_wefax_loopback.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-082,test,test_wfview.c,tests/native/test_wfview.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-083,test,test_wspr.c,tests/native/test_wspr.c,run_wspr_tests.sh (imagen full),HOST,REAL,#195,PASS,158 comprobaciones
+TST-084,test,test_wspr_main.c,tests/native/test_wspr_main.c,run_native_tests.sh (suite nativa),HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-085,test,natural_evidence.py,tests/natural_evidence.py,run_all_tests.sh / manual,HOST,PARTIAL,#198,PENDING,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-086,test,run_all_tests.sh,tests/run_all_tests.sh,run_all_tests.sh / manual,HOST,PARTIAL,#195,PENDING,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-087,test,swrscan_curve_evidence.py,tests/swrscan_curve_evidence.py,run_all_tests.sh / manual,HOST,PARTIAL,#195,PENDING,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-088,test,test_ft8_qso.cpp,tests/test_ft8_qso.cpp,CTest (run_tests.sh),HOST,UNSUPPORTED,#196,BLOCKED,CTest no corre: falta ft8lib/constants.h + libasan; ver S4-CTEST
+TST-089,test,test_qth.cpp,tests/test_qth.cpp,CTest (run_tests.sh),HOST,UNSUPPORTED,#196,BLOCKED,CTest no corre: falta ft8lib/constants.h + libasan; ver S4-CTEST
+TST-090,test,test_swrscan_curve_evidence.py,tests/test_swrscan_curve_evidence.py,run_all_tests.sh / manual,HOST,PARTIAL,#195,PENDING,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-091,test,wakeup_evidence.py,tests/wakeup_evidence.py,run_all_tests.sh / manual,HOST,PARTIAL,#198,PENDING,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-092,test,test_waterfall.c,tests/waterfall/test_waterfall.c,check_waterfall_incremental.sh (waterfall_test),HOST,PARTIAL,#198,PENDING,No ejecutado en #195 (requiere imagen/harness); #198
+TST-093,test,conftest.py,tools/ab_testing/tests/conftest.py,uv run pytest -m 'not e2e',HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-094,test,helpers.py,tools/ab_testing/tests/helpers.py,uv run pytest -m 'not e2e',HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-095,test,test_barrido_apps.py,tools/ab_testing/tests/test_barrido_apps.py,uv run pytest -m 'not e2e',HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-096,test,test_bench_host_noise.py,tools/ab_testing/tests/test_bench_host_noise.py,uv run pytest -m 'not e2e',HOST,REAL,#198,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-097,test,test_cli.py,tools/ab_testing/tests/test_cli.py,uv run pytest -m 'not e2e',HOST,REAL,#196,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-098,test,test_contracts.py,tools/ab_testing/tests/test_contracts.py,uv run pytest -m 'not e2e',HOST,REAL,#197,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-099,test,test_e2e.py,tools/ab_testing/tests/test_e2e.py,pytest -m 'not e2e',HOST,PARTIAL,#196,SKIP,deseleccionado por marcador e2e (docker+git); dueño #196
+TST-100,test,test_evaluator.py,tools/ab_testing/tests/test_evaluator.py,uv run pytest -m 'not e2e',HOST,REAL,#196,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-101,test,test_git_scaffolding.py,tools/ab_testing/tests/test_git_scaffolding.py,uv run pytest -m 'not e2e',HOST,REAL,#196,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-102,test,test_known_issues.py,tools/ab_testing/tests/test_known_issues.py,uv run pytest -m 'not e2e',HOST,REAL,#196,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-103,test,test_layout_checks.py,tools/ab_testing/tests/test_layout_checks.py,uv run pytest -m 'not e2e',HOST,REAL,#197,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-104,test,test_natural.py,tools/ab_testing/tests/test_natural.py,uv run pytest -m 'not e2e',HOST,REAL,#198,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-105,test,test_nontext_checks.py,tools/ab_testing/tests/test_nontext_checks.py,uv run pytest -m 'not e2e',HOST,REAL,#197,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-106,test,test_performance.py,tools/ab_testing/tests/test_performance.py,uv run pytest -m 'not e2e',HOST,REAL,#198,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-107,test,test_performance_exceptions.py,tools/ab_testing/tests/test_performance_exceptions.py,uv run pytest -m 'not e2e',HOST,REAL,#198,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-108,test,test_scenarios.py,tools/ab_testing/tests/test_scenarios.py,uv run pytest -m 'not e2e',HOST,REAL,#196,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-109,test,test_theme_checks.py,tools/ab_testing/tests/test_theme_checks.py,uv run pytest -m 'not e2e',HOST,REAL,#197,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-110,test,test_theme_files.py,tools/ab_testing/tests/test_theme_files.py,uv run pytest -m 'not e2e',HOST,REAL,#197,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-111,test,test_typography_checks.py,tools/ab_testing/tests/test_typography_checks.py,uv run pytest -m 'not e2e',HOST,REAL,#197,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-112,test,test_verifica_firmware_port.py,tools/ab_testing/tests/test_verifica_firmware_port.py,uv run pytest -m 'not e2e',HOST,REAL,#195,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-113,test,test_visual_diff.py,tools/ab_testing/tests/test_visual_diff.py,uv run pytest -m 'not e2e',HOST,REAL,#197,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas
+TST-114,test,test_wakeups.py,tools/ab_testing/tests/test_wakeups.py,uv run pytest -m 'not e2e',HOST,REAL,#198,PASS,Inventario de pruebas existentes; no se crean pruebas nuevas

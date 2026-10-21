@@ -1,0 +1,8 @@
+tall 1000x1000 -> 800 lines
+WEFAX AUTO: APT START DETECTED - provisional fax (300.0 Hz, line=0.996)
+WEFAX AUTO: FAX CONFIRMED
+WEFAX AUTO: PHASING aligned - pulse at x=1731..11 (width 90 px, 5/5 groups agree), white bar moved to the right border
+WEFAX AUTO: APT STOP DETECTED (432.0 Hz, line=0.859)
+start generations 1, confirmed 1, stop 1, rows kept 393
+phasing pulse at column 0, picture from kept row 58, 300 of 300 lines, correlation 0.9953, mean abs error 1.8
+PASS

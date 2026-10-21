@@ -1,0 +1,34 @@
+=== branch tip now ===
+50bf8ab0faef117a02d3a2d8c9b6bec4befafba6
+50bf8ab0faef117a02d3a2d8c9b6bec4befafba6 2026-10-21 15:32:02 -0300 [BOOT][UX] Neo-retro animated text boot with safe waterfall handoff (#200)
+90aebad51c753e2537548b6db46373a7595b7b6b 2026-10-21 15:19:21 -0300 QA: verificado #193 en la radio: el editor DFL inline sigue abierto al cambiar USB<->LSB y re-espeja
+bafb28a906304d87614c90e29eb0913fdaebf912 2026-10-21 15:14:10 -0300 QA: verificado en la radio el Auto Tune v2 (#190/#191) alcance RX: action en APP 6, en CW sin senal no mueve el dial, fuera de CW tampoco
+=== candidate ancestry ===
+ANCESTOR_YES
+=== production files changed candidate..tip ===
+.github/workflows/boot-rootfs.yml
+CMakeLists.txt
+rootfs/etc/init.d/S01bootanim
+src/CMakeLists.txt
+src/boot_splash.c
+src/boot_splash.h
+src/bootanim/CMakeLists.txt
+src/bootanim/fb.c
+src/bootanim/fb.h
+src/bootanim/main.c
+src/bootanim/renderer.c
+src/bootanim/renderer.h
+src/main.c
+tests/bootanim/fake_animator.c
+tests/bootanim/fake_fb.c
+tests/bootanim/fb_test.c
+tests/bootanim/handoff_test.c
+tests/bootanim/renderer_test.c
+tests/bootanim/replay_dump.c
+tests/bootanim/start-stop-daemon.sh
+tests/bootanim/test_util.h
+tests/check_bootanim.sh
+=== diffstat production ===
+ tests/bootanim/test_util.h          |  67 ++++
+ tests/check_bootanim.sh             | 497 +++++++++++++++++++++++++
+ 22 files changed, 4654 insertions(+), 1 deletion(-)

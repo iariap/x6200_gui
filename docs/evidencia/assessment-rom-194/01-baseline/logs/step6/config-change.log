@@ -1,0 +1,42 @@
+# Cambio de config local del build privado (paso 6 #195)
+# Fecha UTC: 2026-10-21T20:50:56Z
+# Motivo: X6200_defconfig (d084e287) fija BR2_PACKAGE_PULSEAUDIO_DAEMON=y sin BR2_PACKAGE_PULSEAUDIO=y;
+# kconfig descarta el simbolo y con el a LIBSPULSE/LIBSNDFILE, que el CMake del GUI exige (pkg_check_modules).
+# Sin este cambio, x6200-gui falla en configure (ver logs/step6/make-resume3.log).
+# El .config "antes" se reconstruye revirtiendo deterministicamente las lineas cambiadas
+# (no se guardo el archivo original fuera del build; el contenido es el del defconfig).
+
+$ sed -i "s|^# BR2_PACKAGE_PULSEAUDIO is not set|BR2_PACKAGE_PULSEAUDIO=y|" build/.config && make olddefconfig
+
+--- scratch/logs/step6-config-before-pulse.config	2026-10-21 17:50:56.921694671 -0300
++++ scratch/logs/step6-config-after-pulse.config	2026-10-21 17:50:56.860549876 -0300
+@@ -648,8 +648,9 @@
+ # BR2_PACKAGE_OPUS_TOOLS is not set
+ # BR2_PACKAGE_PIPEWIRE is not set
+ BR2_PACKAGE_PULSEAUDIO_HAS_ATOMIC=y
+-# BR2_PACKAGE_PULSEAUDIO_ENABLE_ATOMIC is not set
+-# BR2_PACKAGE_PULSEAUDIO is not set
++BR2_PACKAGE_PULSEAUDIO_ENABLE_ATOMIC=y
++BR2_PACKAGE_PULSEAUDIO=y
++# BR2_PACKAGE_PULSEAUDIO_DAEMON is not set
+ # BR2_PACKAGE_SOX is not set
+ # BR2_PACKAGE_SPEECHD is not set
+ # BR2_PACKAGE_SQUEEZELITE is not set
+@@ -818,7 +819,7 @@
+ # BR2_PACKAGE_GREP is not set
+ # BR2_PACKAGE_JO is not set
+ # BR2_PACKAGE_JQ is not set
+-# BR2_PACKAGE_LIBTOOL is not set
++BR2_PACKAGE_LIBTOOL=y
+ # BR2_PACKAGE_MAKE is not set
+ # BR2_PACKAGE_MAWK is not set
+ # BR2_PACKAGE_PATCH is not set
+@@ -1983,7 +1984,7 @@
+ # BR2_PACKAGE_LIBSAMPLERATE is not set
+ # BR2_PACKAGE_LIBSIDPLAY2 is not set
+ # BR2_PACKAGE_LIBSILK is not set
+-# BR2_PACKAGE_LIBSNDFILE is not set
++BR2_PACKAGE_LIBSNDFILE=y
+ # BR2_PACKAGE_LIBSOUNDTOUCH is not set
+ # BR2_PACKAGE_LIBSOXR is not set
+ BR2_PACKAGE_LIBVORBIS=y

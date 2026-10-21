@@ -1,0 +1,4 @@
+X6200_GUI_OVERRIDE_SRCDIR=/home/pablo/desa/x6200/assessment-194/clone-gui
+X6200_GUI_SITE=https://github.com/gdyuldin/x6200_gui
+X6200_GUI_SITE_METHOD=git
+X6200_GUI_VERSION=custom
