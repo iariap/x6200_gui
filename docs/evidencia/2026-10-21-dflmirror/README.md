@@ -161,6 +161,16 @@ de `45bcb383` ese path sí cambia y el gate corre dentro de la matriz.
 - No se corrió un **A/B visual** (`x6200-ab compare`) ni el **benchmark**: no son gates de
   este fix y el render es byte-idéntico al de `d32b59e8` (medido con `sha256sum`), así que
   no hay cambio estético ni de costo de render que comparar.
+- **Cross-compile ARM del GUI: SKIP razonado.** Se intentó con el volumen del owner montado
+  **read-only** (`docker run --entrypoint "" -v <worktree>:/w:ro -v x6200-build-output:/b:ro
+  x6200-buildroot` + `-DCMAKE_TOOLCHAIN_FILE=/b/host/share/buildroot/toolchainfile.cmake`):
+  el `pkgconf` del toolchain no resuelve el sysroot (`/b/host/bin/pkgconf: error while
+  loading shared libraries: libpkgconf.so.3`, y sin `PKG_CONFIG_PATH`/`SYSROOT` no encuentra
+  `libnm`/`sqlite3`/etc.), que es justo el trabajo que hace el recetario del banco
+  (`tools/compila-gui.sh` + `tools/captura-banco.sh`) y que acá no se pudo completar sin
+  escribir en el volumen del owner. `src/buttons.cpp` y `src/dfl_inline.c` sí se compilan en
+  los gates que se corrieron (el arnés los compila con g++ host y LVGL real, y el binario
+  del gate existe): es la misma unidad de traducción.
 - **Sin fundar**: que el workflow de main nunca haya corrido `contracts` con estos fixtures
   después del merge de #183 (no hay runs de `push` para mirar). Lo medido es el trigger
   `pull_request` y los 196 escenarios del run de #183.
