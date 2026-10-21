@@ -1,0 +1,17 @@
+# docker images + containers + qemu (2026-10-21T21:45:00Z)
+## tag x6200-uiharness (owner check)
+sha256:9eedee0e5605a774dc13851518a9100422d6da4678ffc1763d315fc4ff224be4 created=2026-10-14T17:19:28.459116695-03:00 tags=[x6200-uiharness-ci:latest x6200-uiharness:latest]
+sha256:33fc1ed113e31978c600df82375628fe9d979d5c3408b4e16a42f43ae2f9312c created=2026-10-13T22:05:14.469986697-03:00 tags=[x6200-uiharness-full:latest]
+sha256:9eedee0e5605a774dc13851518a9100422d6da4678ffc1763d315fc4ff224be4 created=2026-10-14T17:19:28.459116695-03:00 tags=[x6200-uiharness-ci:latest x6200-uiharness:latest]
+## containers named banco-*
+banco-apps	x6200-buildroot	Up 4 hours	2026-10-21 17:25:57 +0000 UTC
+## qemu
+which: no qemu-user-static in (/home/pablo/.local/bin:/home/pablo/.kimi-code/bin:/home/pablo/.npm-global/bin:/home/pablo/.cargo/bin:/home/pablo/.opencode/bin:/home/pablo/.bun/bin:/home/pablo/.pyenv/plugins/pyenv-virtualenv/shims:/home/pablo/.pyenv/shims:/home/pablo/.pyenv/bin:/home/pablo/.local/bin:/home/pablo/.kimi-code/bin:/home/pablo/.npm-global/bin:/home/pablo/.cargo/bin:/home/pablo/.opencode/bin:/home/pablo/.bun/bin:/home/pablo/.pyenv/plugins/pyenv-virtualenv/shims:/home/pablo/.pyenv/bin:/home/pablo/.local/bin:/home/pablo/bin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/home/pablo/.lmstudio/bin:/home/pablo/flutter/bin:/home/pablo/.lmstudio/bin:/home/pablo/flutter/bin:/home/pablo/.lmstudio/bin)
+/usr/bin/qemu-system-x86_64
+## host
+16
+               total        used        free      shared  buff/cache   available
+Mem:              89          45           5           3          43          44
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs            45G   36G  9.6G  79% /tmp
+/dev/nvme0n1p3  953G  832G  110G  89% /home

@@ -1,0 +1,31 @@
+# uv sync --frozen  2026-10-21T21:45:04Z
+Using CPython 3.14.2
+Creating virtual environment at: /tmp/opencode/assessment197/uv-venv
+   Building x6200-ab @ file:///tmp/opencode/assessment197/clone-gui/tools/ab_testing
+Downloading pygments (1.2MiB)
+Downloading ruff (9.9MiB)
+Downloading numpy (15.9MiB)
+Downloading pillow (6.6MiB)
+ Downloaded pygments
+Downloading ty (13.8MiB)
+      Built x6200-ab @ file:///tmp/opencode/assessment197/clone-gui/tools/ab_testing
+ Downloaded pillow
+ Downloaded ruff
+ Downloaded numpy
+ Downloaded ty
+Prepared 11 packages in 2.13s
+Installed 11 packages in 11ms
+ + iniconfig==2.3.1
+ + numpy==2.5.4
+ + packaging==26.3
+ + pillow==12.3.0
+ + pluggy==1.6.0
+ + pygments==2.21.0
+ + pytest==9.1.1
+ + pyyaml==6.0.3
+ + ruff==0.17.0
+ + ty==0.0.87
+ + x6200-ab==0.1.0 (from file:///tmp/opencode/assessment197/clone-gui/tools/ab_testing)
+exit=0
+## versions
+x6200_ab OK 3.14.2 (main, Dec  9 2025, 19:03:28) [Clang 21.1.4 ]

@@ -1,0 +1,99 @@
+{
+  "unit": "#197 UI/UX assessment evidence",
+  "epic": "iariap/x6200_gui#194",
+  "campaign": "assessment pre-release ROM #194",
+  "measured_candidate": "c888308eede71205605c06383432ee7e165f202e",
+  "candidate_fuente_md5": "964193ae9306b5127845cec44a57d52c",
+  "gui_sha": "c888308eede71205605c06383432ee7e165f202e",
+  "lvgl_gitlink": "74d0a816a440eea53e030c4f1af842a94f7ce3d3",
+  "lvgl_version": "v8.3.11",
+  "buildroot_sha": "d084e2870a00b64d9c57474e7eceeef80f43f25b",
+  "buildroot_repo": "iariap/AetherX6200Buildroot (lu2dsx/x6200-rom)",
+  "integration_branch": "assessment/rom-194",
+  "integration_branch_tip": "230b20634fd240fe5836cd7d10e39646c83cd93a",
+  "report_branch": "assessment/197-evidence",
+  "report_base": "230b20634fd240fe5836cd7d10e39646c83cd93a",
+  "measurement_checkout": {
+    "path": "/home/pablo/desa/asf/state/worktrees/x6200/assessment-197-cand/clone-gui",
+    "head": "c888308eede71205605c06383432ee7e165f202e",
+    "clean": true,
+    "submodules": "lvgl 74d0a816a440eea53e030c4f1af842a94f7ce3d3 (v8.3.11)",
+    "note": "clon privado y limpio del candidato congelado; submodulos inicializados"
+  },
+  "containers": {
+    "harness_image_tag": "x6200-uiharness (= x6200-uiharness-ci)",
+    "harness_image_id": "sha256:9eedee0e5605a774dc13851518a9100422d6da4678ffc1763d315fc4ff224be4",
+    "harness_image_created": "2026-10-14T17:19:28-03:00",
+    "full_image_id": "sha256:33fc1ed113e31978c600df82375628fe9d979d5c3408b4e16a42f43ae2f9312c",
+    "ownership": "tag preexistente (preexistente a esta campana, registrado por #195); no se reconstruyo ni se retagueo"
+  },
+  "toolchain": {
+    "git": "2.55.0",
+    "gh": "2.101.0",
+    "python": "3.14.7",
+    "uv": "0.9.18",
+    "cmake": "4.3.0",
+    "gcc_host": "16.2.1",
+    "docker": "29.8.2",
+    "qemu": "qemu-system-x86_64 presente; qemu-user-static ausente"
+  },
+  "harness_binary": {
+    "path": "tools/ui_harness/build/ui_harness",
+    "bytes": 4613240,
+    "sha256": "786a58d06c28f39c57795546463b881a0e31101dbdd9b88fab836de71f5d0a8c"
+  },
+  "artifacts": {
+    "captures_png_json": {
+      "dir": "captures/",
+      "count": 199
+    },
+    "inspection_gz": {
+      "dir": "inspection/",
+      "audit": 199,
+      "contracts": 199,
+      "note": "arbol de objetos LVGL (--inspect) por fixture, gzip sin perdida"
+    },
+    "seeds": [
+      7,
+      11,
+      13,
+      20,
+      31,
+      44,
+      55,
+      146,
+      147,
+      148,
+      149,
+      150,
+      173,
+      182,
+      183
+    ]
+  },
+  "rom_artifacts": {
+    "note": "no se reconstruyo ROM en #197; se referencian los artefactos del #195 (misma base congelada)",
+    "rootfs_tar_sha256": "7c26c76b6fc27bc12dc8d5e012e51d5c2c0568fa72a8e02cad5432dfcd36a2dd",
+    "sdcard_img_sha256": "d0ff4435ad1d068e25bf2c357a4e93478463b187e7745a9a54844488e44e33a5",
+    "gui_rootfs_md5": "1f998c46909307397525c975a712adfd"
+  },
+  "dependency_196": {
+    "satisfied": false,
+    "evidence": "git ls-tree -r origin/assessment/rom-194 docs/evidencia/assessment-rom-194 -> solo 01-baseline/",
+    "consequence": "todo lo que exigia capturas/estado de apps del #196 queda BLOCKED con causa"
+  },
+  "isolation": {
+    "banco_apps": "Ocupado (x6200-buildroot, Up 4h) -> no usado, no detenido; BLOCKED para escenarios que lo requieran",
+    "banco_audio": "no presente",
+    "foreign_paths_touched": "ninguno; no se toco /home/pablo/desa/x6200/assessment-194 ni la radio",
+    "tmp_space_issue": "el scratch se movio de /tmp/opencode (tmpfs con ~9.6 GB libres por otra sesion) a /home/.../assessment-197-cand"
+  },
+  "limitations": [
+    "dependencia #196 no integrada: dialogos que el host no compila quedan BLOCKED",
+    "22 constructores de dialogo inertes en el harness (mocks/mock_main_screen.c)",
+    "sin FFT en el harness y sin RF: Auto Tune sin medida confiable no se puede forzar",
+    "determinismo medido solo A/A (no contra firmware anterior)",
+    "contrastes calculados != legibilidad al sol / LCD real",
+    "touch/encoders/audio/RF en radio quedan PENDING_HARDWARE (fase #199)"
+  ]
+}

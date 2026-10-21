@@ -1,0 +1,20 @@
+# identity / preflight  (2026-10-21T21:45:00Z)
+## clone
+pwd=/tmp/opencode/assessment197/clone-gui
+HEAD=c888308eede71205605c06383432ee7e165f202e
+origin=https://github.com/iariap/x6200_gui.git
+branch=HEAD
+160000 commit 74d0a816a440eea53e030c4f1af842a94f7ce3d3	lvgl
+ 74d0a816a440eea53e030c4f1af842a94f7ce3d3 lvgl ()
+clean=0 paths
+## candidate vs integration branch
+230b20634fd240fe5836cd7d10e39646c83cd93a
+c888308e DFL: el editor inline ya no se cierra al cambiar de modo en la misma familia (regresion de #183) + el gate de contratos no pasa como verde si no evaluo (#193)
+## toolchain
+git version 2.55.0
+gh version 2.101.0 (2026-09-15)
+Python 3.14.7
+uv 0.9.18
+cmake version 4.3.0
+gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)
+29.8.2
