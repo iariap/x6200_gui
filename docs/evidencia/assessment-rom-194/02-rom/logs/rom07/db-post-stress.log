@@ -1,0 +1,29 @@
+292a21aa9371839d1a9ed21dee4a0c76244c400087b624956f5a11c3bd2ec7c9  /home/pablo/desa/x6200/assessment-194/scratch-196/data/params-post-stress.db
+ok
+9
+5
+--- params
+band|7
+freq_accel_threshold|7
+spectrum_beta|70
+spectrum_factor|1
+voice_pitch|100
+voice_rate|100
+voice_volume|100
+vol|30
+wifi_enabled|0
+--- band_params 7
+grid_max|-73
+grid_min|-121
+rfg|100
+split|0
+vfo|0
+vfoa_agc|3
+vfoa_att|0
+vfoa_freq|14074000
+vfoa_mode|4
+vfoa_pre|0
+vfob_agc|3
+vfob_att|0
+vfob_mode|2
+vfob_pre|0

@@ -1,0 +1,7 @@
+container=assessment196-loop (corrupt DB en chroot privado)
+duracion=10 s
+n_files=20
+n_crashlog=19
+boot_bytes=18360
+firma=CRASHLOG sig=11 fallo=0x13c pc=0x42e12c lr=0x4161ae58 sp=0x40800b88 base=0x41f324
+wrapper=while true sin backoff (usr/sbin/x6200_daemon:14-16)
