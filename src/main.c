@@ -20,6 +20,7 @@
 
 #include "main.h"
 #include "main_screen.h"
+#include "boot_splash.h"
 #include "styles.h"
 #include "theme.h"
 #include "voice.h"
@@ -463,6 +464,9 @@ int main(int argc, char **argv) {
     boot_mark("audio_init");
 
     if (voice_selftest()) {
+        /* La prueba de voz sale sin pintar pantalla: el dibujante temprano no
+         * puede quedar ocupando el framebuffer (issue #192). */
+        boot_splash_stop();
         exit(0);
     }
 
@@ -476,6 +480,20 @@ int main(int argc, char **argv) {
         const char *env = getenv("X6200_DRM");
 
         use_drm = env && env[0] && strcmp(env, "0") != 0;
+    }
+
+    if (use_drm) {
+        /* DRM puede tomar el display: el animador temprano suelta el
+         * framebuffer ANTES de drm_init() (issue #192). Si DRM falla y se cae a
+         * fbdev no se lo reinicia: la GUI sigue igual, con la pantalla estatica
+         * hasta que ella pinte. */
+        boot_mark("bootanim stop");
+
+        if (boot_splash_stop()) {
+            boot_mark("bootanim handoff");
+        } else {
+            LV_LOG_ERROR("bootanim: no se pudo confirmar la cesion del framebuffer antes de DRM");
+        }
     }
 
     if (use_drm && drm_init()) {
@@ -662,6 +680,24 @@ int main(int argc, char **argv) {
     /* Primer registro de esta corrida (clean=0) y latido cada
      * lastbreath_period_ms. */
     lastbreath_start();
+
+    /* Cesion del framebuffer (issue #192): hasta aca el unico escritor de /dev/fb0
+     * era x6200_bootanim; desde la primera iteracion de abajo lo es LVGL. Se le
+     * pide que suelte la pantalla justo antes del primer lv_timer_handler(), sin
+     * esperas cosmeticas, y no se flusha nada mientras el proceso identificado
+     * siga vivo (boot_splash_stop() lo verifica por /proc/<pid>/exe).
+     * lv_scr_load(main_obj) ya invalido la pantalla completa (lv_disp.c:
+     * scr_load_internal termina en lv_obj_invalidate(scr)), asi que el primer
+     * lv_timer_handler repinta todo y no queda nada del splash. */
+    if (!use_drm) {
+        boot_mark("bootanim stop");
+
+        if (boot_splash_stop()) {
+            boot_mark("bootanim handoff");
+        } else {
+            LV_LOG_ERROR("bootanim: handoff no verificado (el framebuffer podria seguir ocupado)");
+        }
+    }
 
     while (1) {
         loop_start_time = get_time();
