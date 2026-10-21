@@ -230,28 +230,32 @@ static const coverage_entry_t app_close[] = {
               "DX cluster column is not rendered (no cluster data on the host)"),
 };
 
-/* The `autotune` / `autotune-progress` / `autotune-found` scenarios (issue
- * #100): the real main screen with the "Auto Tune" button of the APP 6 page
- * pressed. The assistant core (src/autotune.c) and its driver
- * (src/autotune_ui.c) are the real firmware sources, run by the fixture on the
- * virtual clock; the S-meter they consume is the harness' explicit mock
- * (mock_radio.smeter_db), and `autotune-found` pushes a synthetic peak because
- * the bank has no DSP to update it. The final message is not drawn: the
+/* The `autotune` / `autotune-progress` / `autotune-found` / `autotune-notcw`
+ * scenarios (issue #190, "Auto Tune v2"): the real main screen with the "Auto
+ * Tune" button of the APP 6 page pressed. The assistant core (src/autotune.c)
+ * and its coordinator (src/autotune_ui.c) are the real firmware sources, run by
+ * the fixture on the virtual clock. There is NO RSSI sweep and no S-meter in the
+ * policy anymore: the CW tone sample the core consumes comes from
+ * mocks/mock_cw_tune.c, a TEST-ONLY injection of the DSP snapshot (the bank does
+ * not compile src/cw.cpp: it needs liquid-dsp and the audio thread). The exact
+ * UX texts are compared on the source by tests/check_autotune_v2.py because the
  * harness' event_send() is a documented no-op (mocks/mock_ui_deps.c). */
 static const coverage_entry_t autotune_screen[] = {
     MAIN_COMPONENTS,
     COMPONENT("autotune.c", COVERAGE_REAL,
-              "src/autotune.c compiled; the real scoring, the zigzag plan and the deterministic restore run over the probe frequencies the fixture walks"),
+              "src/autotune.c compiled; the real sample gate, the robust median, the single <=300 Hz correction, the CW/CWR sign, the freshness/timing contract and the dial-ownership rule run over the samples the fixture injects"),
     COMPONENT("autotune_ui.c", COVERAGE_REAL,
-              "src/autotune_ui.c compiled; the real driver retunes cfg_cur.fg_freq probe by probe and reads the S-meter, on the fixture's virtual clock"),
+              "src/autotune_ui.c compiled; the real coordinator drives COLLECT -> one provisional write -> VERIFY on cfg_cur.fg_freq over the virtual clock, and the exact contract messages are pinned on the source by tests/check_autotune_v2.py"),
     COMPONENT("main_screen.c (ACTION_ATUNE)", COVERAGE_REAL,
               "src/main_screen.c compiled; the APP 6 Auto Tune button reaches main_screen_action(ACTION_ATUNE) -> autotune_ui_toggle(), the same dispatcher the radio uses"),
-    COMPONENT("meter.c (S-meter)", COVERAGE_PARTIAL,
-              "src/meter.c compiled; meter_get_raw_db() is the signal the assistant scores, but the level is the fixture's (mock_radio.smeter_db, constant; autotune-found pushes a synthetic peak), not a real RF reading"),
-    COMPONENT("msg.c (final message)", COVERAGE_UNSUPPORTED,
-              "the final message goes through event_send(), a documented no-op on the host (mocks/mock_ui_deps.c): it is not drawn in the bank, so the dial is the fixture's evidence"),
+    COMPONENT("cw.cpp (cw_get_tune_sample)", COVERAGE_UNSUPPORTED,
+              "src/cw.cpp is not compiled here (liquid-dsp + the audio thread): the fixture injects the DSP snapshot instead (mocks/mock_cw_tune.c). The real conversion and its sign are measured by tests/native/test_cw_tune_sign.c, which links liquid and runs the same FFT on a synthetic tone"),
+    COMPONENT("meter.c (S-meter)", COVERAGE_UNSUPPORTED,
+              "the S-meter is NOT part of Auto Tune v2 (issue #190): it stays a rendered component of the main screen but the assistant no longer reads it"),
+    COMPONENT("msg.c (session messages)", COVERAGE_UNSUPPORTED,
+              "the session messages go through event_send(), a documented no-op on the host (mocks/mock_ui_deps.c): they are not drawn in the bank, so the dial and the session state are the fixture's evidence and the exact texts are checked on the source"),
     COMPONENT("dialog.c (cancel on open)", COVERAGE_UNSUPPORTED,
-              "src/dialog.c compiled and autotune_ui_cancel() is wired into dialog_construct(); these fixtures open no dialog, so that path is not exercised here"),
+              "src/dialog.c compiled and autotune_ui_cancel() is wired into dialog_construct(); these fixtures open no dialog, so that path is not exercised here (the native suite covers the context/broken rule, and the manual/CAT/TX paths are wired in main_screen.c)"),
     COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
               "the assistant opens no dialog; it runs over the main screen"),
     COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
@@ -362,7 +366,7 @@ const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
         return cw_tune;
     }
     if (screen && (!strcmp(screen, "autotune") || !strcmp(screen, "autotune-progress")
-                   || !strcmp(screen, "autotune-found"))) {
+                   || !strcmp(screen, "autotune-found") || !strcmp(screen, "autotune-notcw"))) {
         *count = (int) (sizeof(autotune_screen) / sizeof(autotune_screen[0]));
         return autotune_screen;
     }

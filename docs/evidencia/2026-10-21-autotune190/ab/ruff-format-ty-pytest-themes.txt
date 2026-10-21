@@ -1,0 +1,31 @@
+# desde tools/ab_testing (uv sync implicito), el mismo comando que el CI
+
+$ uv run ruff check .
+All checks passed!
+exit=0
+
+$ uv run ruff format --check .
+199 files already formatted
+exit=0
+
+$ uv run ty check src tests
+WARN No python files found under the given path(s)
+All checks passed!
+exit=0
+
+$ uv run pytest -m 'not e2e' -q
+........................................................................ [ 31%]
+........................................................................ [ 63%]
+........................................................................ [ 95%]
+...........                                                              [100%]
+227 passed, 13 deselected in 3.66s
+exit=0
+
+$ uv run x6200-ab themes
+    OK   s_meter_arc on main-tema-aurora = 6.23:1 (min 3.0:1) [object lighter; #ffb2aa vs #363e4f]
+    OK   waterfall_signal on main-tema-cathode = 6.82:1 (min 3.0:1) [object lighter; #cc9044 vs #1c0f07]
+    OK   s_meter_arc on main-tema-cathode = 8.11:1 (min 3.0:1) [object lighter; #ffd6a0 vs #323d48]
+    OK   cw_tune_bars on cw-tune-tuner = 20.67:1 (min 3.0:1) [object lighter; #ffffff vs #050202]
+    OK   cw_tune_bars on cw-tune-tema-sunlit = 5.02:1 (min 3.0:1) [object darker; #000000 vs #7d7c77]
+  exempt (WCAG 1.4.3, disabled/incidental): 7 role(s) — btn_off_text, text_mute, text_faint, icon_off, switch_off, off, track
+exit=0

@@ -87,6 +87,7 @@ run manual_apps python3 "$DIR/check_manual_apps.py"
 run pruebas python3 "$DIR/audita-pruebas.py"
 run wcag python3 "$DIR/check_wcag.py"
 run cw_tune_feed python3 "$DIR/check_cw_tune_feed.py"
+run autotune_v2 python3 "$DIR/check_autotune_v2.py"
 run build_identity python3 "$DIR/check_build_identity.py"
 run curve_evidence python3 "$DIR/test_swrscan_curve_evidence.py"
 

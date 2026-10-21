@@ -1173,6 +1173,10 @@ static action_items_t long_action_items[] = {
     { .label = " APP CW Trainer", .action = ACTION_APP_CWTRAINER },
     { .label = " APP Bluetooth", .action = ACTION_APP_BT },
     { .label = " APP Status", .action = ACTION_APP_STATUS },
+    /* Asistente de sintonia fina CW/CWR (issue #190): ACTION_ATUNE ya existia y
+     * ya se despacha en main_screen_action(); aca se ofrece ademas como accion
+     * asignable a las pulsaciones largas fisicas. No cambia ningun default. */
+    { .label = " Auto Tune ", .action = ACTION_ATUNE },
     { .label = " APP Propagation", .action = ACTION_APP_PROPAGATION },
     { .label = " Theme", .action = ACTION_THEME },
     { .label = NULL, .action = ACTION_NONE }

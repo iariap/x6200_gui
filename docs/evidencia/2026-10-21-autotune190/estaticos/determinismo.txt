@@ -1,0 +1,61 @@
+# $ SKIP_BUILD=1 tests/check_harness_determinism.sh
+
+running every fixture 2 times...
+dfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)
+dfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)
+dfl-mirror-usb: el handle LOW no esta dibujado en x=37 (mejor columna x=-1, run=0)
+dfl-mirror-usb: el handle LOW no esta dibujado en x=37 (mejor columna x=-1, run=0)
+app-bands: 61ba946b0968341c0ca637d6686d75423bb9f8cdaaabc489e4d0240493ef4bda
+app-close-home: 384ee0dfc0b0676ae8f18f2d335e9af2baeb17c5c817b3cb1729aa4cc06ebe6a
+apps-menu-1: 57e61fc12c211f40fdb5f62ed135952aa7b7d46f6236f962e0f2303f5577e5cf
+apps-menu-2: 0049f9809fe7795bd05caefbe499b0ab6f5f5a9603722de3cc7a0b292e691541
+apps-menu-3: 73c4d1a039c056d77c4aa44642f99f5c4655cda197cb2bd2e7e6f2b391d4df4b
+apps-menu-4: c4ccddbe5fc709e77907540bb173a18d1efe787d0ecf6a96be7acecb004141de
+apps-menu-5: 7044b51f8ee307410580e4c9a209daa0fb4499ecd15d232d98b74815b0babd6d
+apps-menu-6: 606cfedc2fb3992d763bb2927d3b772a74e759147e93e38ce447fb3fcc67e451
+autotune-found: 8e95c8dffdb432bb42a012c10cfd1e7e0fd57cc1be921e464531ed629d04cc7a
+autotune-notcw: 606cfedc2fb3992d763bb2927d3b772a74e759147e93e38ce447fb3fcc67e451
+autotune-progress: 8e95c8dffdb432bb42a012c10cfd1e7e0fd57cc1be921e464531ed629d04cc7a
+autotune: 07924cacf6d6b2ff317739a7298b5d6f48d4f2dbd54d3c8c3f9398c9fecc1969
+bench-render: 6f193dc868f5a30fbb4ca07dc2016ab909fcde205a0c51c8b5325fc479f9ff0d
+bt-dialog: f94b3366ca9d2a92f28dcf48e5249c8f7164efaf820f48153799638fb8a56c6f
+bt-dialog-tema-aurora: f94b3366ca9d2a92f28dcf48e5249c8f7164efaf820f48153799638fb8a56c6f
+bt-dialog-tema-cathode: cb02f63b8e27c1ab5017d2bdf3f263e7cec99ea2c347973383287b670a1d4fdb
+bt-dialog-tema-redshift: af3a79e56f047ec589dabd1a130dd6d172a50b287753a43cdc36427e8d763ff0
+bt-dialog-tema-sprint: 83c8933fd716f8a43c16287e3e9bd1cff3450be23b16a3d393ba91b2e8728642
+bt-dialog-tema-sunlit: b89c154730dc3f3994918b39143d32d0042a0b6a6596ca58d11d05b9d6c2dbfa
+bt-dialog-tema-trail: 0ca84521c8a1dadb3f636d30a565054acd65b7d4a75a9a9d492fe38aafa3c88c
+cw-autotune-off: 92acf28620eef4c2dd2881e72ba391771afab14c285e395456d2c94fa54c7f24
+cw-autotune-on: 4bc009dd21c067257146bb63aa4cdf86ee690b1ed2aab2ff05038681373156c7
+cw-tune-default: c18ab951f5547315281fc3f7d2af25e1cb26799476331dadb2d914701002e70f
+cw-tune-ssb: cc40d90c203c168942a19e037aea4d7b5691e33ce9ce29e584ce7da42ce260f9
+cw-tune-tema-sunlit: 2440d9eb749f889d666b2bbe3d290e7bcf0aedf9a2ecfed17e5462fbd0a5fd37
+cw-tune-tuner: 301c856944492f9c5a03a75866d84aa98c5114a2b0996d794524703978687e51
+dfl-editor-cycles: 71cc1cbc51f925b9821be2913f7ce422ca756181996f6ecce3f3169c74ca00e3
+dfl-editor-interaction: 96da6077ba630b75a52383fa6588f42d8f0bbda9b127fc72f94d7d0da94eebd9
+dfl-editor-lsb-d: 1c10cc2baa1c042cc1a18641bc599c2465e9f015b9deb45eb8be58d15e6b8757
+dfl-editor-reset: 0a14e1fe0eeb9d1856776249d4cb55bce6d35ce388265e14070017112f686f54
+dfl-editor-rotary0: 02d82bb21a2c922d300447e396ec011db712a2f7f8f180d3b73f686c7f020a6c
+dfl-editor-sel-bw-tema-aurora: f1df8217cbc998efd7f4409074602e390cb8c28ac1c966331214e322144b8ac5
+dfl-editor-sel-bw-tema-cathode: 0edbba2c88de51910b5946810462aa38ca91ace0a6cb399adf61639d6b6e923a
+dfl-editor-sel-bw-tema-redshift: b9d65f0071d308b3930fb4eeead9c6eee42ec4d9a90e6550db98c91d42082773
+dfl-editor-sel-bw-tema-sprint: 3469762141c7015402b80c375357d6bfd0db4c7ae911b1f020b6179e3a98694d
+dfl-editor-sel-bw-tema-sunlit: 2163e2a32cb190045f79b947569769e7504e981404fe9a61f8ff073ad780fb25
+dfl-editor-sel-bw-tema-trail: ad798c4553eda677f66d43b12f8edeb013b4b0fa979018d49ce95fa546bb61e3
+dfl-editor-sel-high-tema-aurora: 52d3568670193c163b23b6fbd720fad7b70b45ea06fe8734d6c652ca27305540
+dfl-editor-sel-high-tema-cathode: 5df366333f96bc27fa8016c69dfc89b8c982ff611c1fd642f76821c382f62742
+dfl-editor-sel-high-tema-redshift: 073199c0bc45d2fcdeab2bb31baa154717658718485ed069b5edb440a171355a
+dfl-editor-sel-high-tema-sprint: 8ddf3e8510a299db04fc951caf7759a4a985bf3f92e1a560d7a3a0e0ca34b12c
+dfl-editor-sel-high-tema-sunlit: e57471722854d695e45041a502061cdff0e44cb2ca19d166f48c1332da74ef67
+dfl-editor-sel-high-tema-trail: 4c74e636a993ef133564d97c2c4c15e5aba2093e34b2ae3130ff79e46b1f68d7
+dfl-editor-tx: 74e7cbfb87e69246ef9d5323fb24be100bbf2d2cf33489b89b43f016ad27b7fc
+dfl-editor-usb-d: 36179315ddfd7a1bb6a8f0a13115056c8ec8e73c5f47d3c316efc69c8947362d
+dfl-editor-usb-d-tema-aurora: 36179315ddfd7a1bb6a8f0a13115056c8ec8e73c5f47d3c316efc69c8947362d
+dfl-editor-usb-d-tema-cathode: d51f2588b643d0e281c0d858bbd14b48b474ae01d4fc91947353c5f42d1ec6d6
+dfl-editor-usb-d-tema-redshift: 7adae39234ad379ff8b71c46ba2ba03294970eb5017cca724d1b43aa2d817ffe
+dfl-editor-usb-d-tema-sprint: efb4d9793c4709b16595fe68af4022a015161b3e302a6d4222fe70ce4ba96cd5
+dfl-editor-usb-d-tema-sunlit: 5a6a81ec14e068c5fa81686fb5b1cc4e82d3af730fce9559d78acbfe78da98b4
+dfl-editor-usb-d-tema-trail: aab1de68e4695b940f051e99f70853c0202194ef4788a3440cd508e44b537e21
+dfl-lsb-d: 000081b545bf5b25d7674edb908b96f58dd72e6ba62c8b4f7a097e33d7d21169
+FAIL: missing /home/pablo/desa/asf/state/worktrees/x6200/autotune-v2-190/tools/ui_harness/build/out/determinism/dfl-mirror-lsb-1.png
+exit=1

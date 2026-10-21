@@ -782,6 +782,43 @@ $CC $BASEFLAGS -fanalyzer -I"$DFLP_STAGE" -I"$DFLP_STAGE/params" \
 
 "$OUT/dfl_presets_tests"
 
+# --- Auto Tune v2 (issue #190): signo del tono CW/CWR con la FFT real --------
+# El test mide el signo con la MISMA cadena que src/cw.cpp (DDS + decimacion +
+# ventana Hann + FFT de 128 + cw_peak_freq_from_bin + cw_tune_error_hz) sobre un
+# tono complejo sintetico: un test que inyecte un error ya normalizado no
+# comprobaria la orientacion real (el crudo de la FFT es el NEGATIVO del
+# corrimiento del tono, docs/HALLAZGOS.md 52). Necesita liquid-dsp 1.4.0, la misma
+# que linkea el firmware; si el host no la tiene, el stage queda en SKIP con la
+# razon (el contenedor x6200-uiharness y el job functional del CI si la tienen).
+echo "== Auto Tune v2 (#190): signo del tono (FFT real, liquid) =="
+if echo '#include <liquid/liquid.h>' | $CC -x c - -c -o "$OUT/.liquid_probe.o" >/dev/null 2>&1; then
+    # Preferencia por liquid 1.4.0 (la que linkea el firmware) cuando el
+    # contenedor la tiene en /usr/local: la 1.6 de Ubuntu/Debian FILTRA 72 B por
+    # cada dds_cccf_create (reproducido con un programa de 5 lineas que solo
+    # crea y destruye; el leak es de libliquid, no de este test), asi que con esa
+    # version el binario con ASan reporta el leak de la libreria.
+    LIQUID_LINK=""
+    if [ -f /usr/local/lib/libliquid.so ]; then
+        LIQUID_LINK="-L/usr/local/lib -Wl,-rpath,/usr/local/lib"
+    fi
+    if [ "$SAN_OK" = yes ]; then
+        # shellcheck disable=SC2086
+        $CC $BASEFLAGS $SAN -I"$DIR" -I"$SRC" $LIQUID_LINK \
+            "$SRC/autotune.c" "$DIR/test_cw_tune_sign.c" "$DIR/test_framework.c" \
+            "$DIR/cw_tune_sign_main.c" -lliquid -lm -o "$OUT/cw_tune_sign_tests"
+    else
+        # shellcheck disable=SC2086
+        $CC $BASEFLAGS -I"$DIR" -I"$SRC" $LIQUID_LINK \
+            "$SRC/autotune.c" "$DIR/test_cw_tune_sign.c" "$DIR/test_framework.c" \
+            "$DIR/cw_tune_sign_main.c" -lliquid -lm -o "$OUT/cw_tune_sign_tests"
+    fi
+    "$OUT/cw_tune_sign_tests"
+else
+    echo "SKIP: liquid-dsp no esta instalada en este host (no se puede medir el signo)."
+    echo "      El contenedor x6200-uiharness y el job functional del CI si la tienen;"
+    echo "      el comando exacto esta en docs/evidencia/2026-10-21-autotune190/README.md."
+fi
+
 # --- ThreadSanitizer (issue #149, experimento 6) -----------------------------
 # Cobertura declarada: TSan corre en el HOST (x86_64, gcc). El binario ARM de la
 # radio NO corre bajo TSan en este arnes, asi que estos resultados NO se

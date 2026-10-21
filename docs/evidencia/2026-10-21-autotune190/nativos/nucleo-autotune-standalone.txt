@@ -1,0 +1,3 @@
+$ gcc ... src/autotune.c tests/native/test_autotune.c tests/native/test_framework.c <main> -lm && ./tests
+
+== 169 comprobaciones, 0 fallos

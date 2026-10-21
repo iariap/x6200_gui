@@ -1,11 +1,17 @@
-# autotune-found: the fine-tuning assistant (issue #100) finding a better spot.
-# Same trigger as `autotune` (page APP 6, "Auto Tune" button -> the scan runs),
-# but this fixture pushes a synthetic S-meter with a peak 1500 Hz below the dial
-# (src/screens.c, autotune_found_slice; the bank has no DSP to update the real
-# S-meter). The scan measures every probe and leaves the dial on the peak:
-# 14.072.500. This is the "spot picked up" path, with the same algorithm that
-# runs on the radio; the real "which spot sounds better" correlation is the
-# owner's radio (docs/autotune.md).
+# autotune-found: Auto Tune v2 (issue #190) run to the end: the correction is
+# verified with three NEW frames after the 300 ms guard, so the session closes
+# with the dial on the corrected frequency.
+#
+# Same trigger and same TEST-ONLY CW tone injection as `autotune-progress`
+# (mocks/mock_cw_tune.c: a tone 35 Hz above the pitch, so the CW correction is
+# +35 Hz). scenario_settle runs the session to completion and asserts the dial
+# stayed on the correction: a failed verification rolls the dial back to the
+# start, so landing on start + 35 is the evidence that the verify phase passed
+# with fresh frames - not a fixture that just kept the first write.
+#
+# The real "tuned" against RF (a stable carrier 35 Hz high/low, CWR reversed,
+# CW Decoder AUTO on/off) is the owner's radio: docs/autotune.md. The bank has no
+# RF and no DSP.
 
 name autotune-found
 screen autotune-found
@@ -16,7 +22,7 @@ frequency_hz 14074000
 tx_frequency_hz 14074000
 fft_width_hz 384000
 
-mode usb
+mode cw
 vfo A
 agc auto
 

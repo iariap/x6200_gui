@@ -1,0 +1,24 @@
+# Cross-compile ARM del firmware (el binario que corre la radio), con el toolchain de Buildroot:
+#   -DCMAKE_TOOLCHAIN_FILE=$VOLUMEN/host/share/buildroot/toolchainfile.cmake
+#   -DX6200_FUENTE_MD5=$(tools/fuente-md5.sh)  (el sello del issue #165)
+# volumen privado de esta corrida: x6200-build-output-at190
+
+FUENTE_MD5=d9dcd060e20a25aaf3691b2e55418bff
+-- x6200_gui: fuente md5 d9dcd060e20a25aaf3691b2e55418bff
+== warnings/errors del build ARM ==
+1241:/w/src/remote_server.cpp:1162:32: warning: unknown option after ‘#pragma GCC diagnostic’ kind [-Wpragmas]
+1543:/w/src/widgets/lv_waterfall.c:72:26: warning: passing argument 1 of ‘memset’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+1559:/w/src/widgets/lv_waterfall.c:86:26: warning: passing argument 1 of ‘memset’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+1566:/w/src/widgets/lv_waterfall.c:104:23: warning: passing argument 1 of ‘memmove’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+(fin)
+[100%] Linking CXX executable x6200_gui
+[100%] Built target x6200_gui
+9dcde687764a1facf0b60b18feb89274  /b/target/usr/sbin/x6200_gui
+exit=0
+
+# Warnings del build completo (solo los PREEXISTENTES de otros archivos):
+1241:/w/src/remote_server.cpp:1162:32: warning: unknown option after ‘#pragma GCC diagnostic’ kind [-Wpragmas]
+1543:/w/src/widgets/lv_waterfall.c:72:26: warning: passing argument 1 of ‘memset’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+1559:/w/src/widgets/lv_waterfall.c:86:26: warning: passing argument 1 of ‘memset’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+1566:/w/src/widgets/lv_waterfall.c:104:23: warning: passing argument 1 of ‘memmove’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+(sin warnings de src/autotune*, src/cw.cpp)

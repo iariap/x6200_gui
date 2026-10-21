@@ -70,6 +70,7 @@ jobs:
           python3 tests/check_settings_grid.py
           python3 tests/check_apps_menu.py
           python3 tests/check_wcag.py
+          python3 tests/check_autotune_v2.py
           python3 tests/check_build_identity.py
 
       - name: Native (host) unit tests
@@ -86,7 +87,7 @@ jobs:
             echo ""
             echo "- Job status: \`${{ job.status }}\`"
             echo "- Python framework: ruff + ruff format + ty + pytest (unit)"
-            echo "- Static checks: check_cfg_fills, check_actions, check_settings_focus, check_settings_grid, check_apps_menu, check_wcag, check_build_identity"
+            echo "- Static checks: check_cfg_fills, check_actions, check_settings_focus, check_settings_grid, check_apps_menu, check_wcag, check_autotune_v2, check_build_identity"
             echo "- x6200-ab themes: static WCAG pairs over the shipped theme JSON files"
             echo "- Native host tests: tests/native/run_native_tests.sh"
           } >> "$GITHUB_STEP_SUMMARY"

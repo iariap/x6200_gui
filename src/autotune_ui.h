@@ -1,24 +1,25 @@
 /*
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  Xiegu X6200 LVGL GUI - Fine-tuning assistant UI (issue #100)
+ *  Xiegu X6200 LVGL GUI - Fine-tuning assistant UI (issue #190)
  *
  *  Copyright (c) 2024 LU2DSX
  *
- *  Drives the deterministic core (src/autotune.c) over the live radio: it
- *  walks the probe plan on an LVGL timer, retuning the dial at every probe so
- *  the operator sees the search (the frequency row moves), feeds the S-meter
- *  level of each probe and, when done, moves the dial to the best spot - or
- *  restores the start frequency when nobody beats it. RX only: it never keys
- *  the radio.
+ *  LVGL-side coordinator of the CW/CWR fine-tuning assistant. The policy lives in
+ *  src/autotune.c (pure, native-tested); here live the subjects, the clock, the
+ *  timer and the message bar. It never keys the radio and never touches the RF or
+ *  TX path: Auto Tune is strictly RX.
  *
- *  Restore discipline (the house pattern of issue #102,
- *  radio_state_save/radio_state_restore in src/radio.c): the assistant is an
- *  action, not an app, so it does not go through the app frame's snapshot.
- *  It saves its own anchor - the dial at start - and puts it back
- *  deterministically whenever the search does not beat it or is abandoned
- *  (the operator presses the button again, or opens an app / a dialog, which
- *  would otherwise move the dial behind the window).
+ *  Ownership discipline (issue #190, section 5): this layer only gathers the
+ *  context (band/VFO/mode/pitch/frequency/RX/lock/RIT) and asks the core whether
+ *  it still owns the dial. It writes a frequency ONLY through own_write(), which
+ *  asks first. Every abort path that follows an external order says so: a manual
+ *  dial move, CAT, a memory, a band/VFO/mode change or a key-up always wins and
+ *  is never overwritten.
+ *
+ *  The timer is created on demand and destroyed by every terminal path (success,
+ *  failure, cancel, dialog/app hook, TX), so no callback can run over a freed
+ *  screen: it only pokes subjects and the message bar, never the widgets.
  */
 
 #pragma once
@@ -29,16 +30,31 @@
 extern "C" {
 #endif
 
-/* Plan a scan around the current dial and start it (no-op if already running). */
-void autotune_ui_start(void);
+/* Registra el observador de cambio externo de frecuencia y deja el asistente en
+ * reposo. Lo llama main_screen() una sola vez. */
+void autotune_ui_init(void);
 
-/* Start a scan, or cancel the running one and restore the dial. */
+/* ACTION_ATUNE: arranca una sesion (o rechaza con causa) o, si ya corria,
+ * cancela con restauracion condicionada. */
 void autotune_ui_toggle(void);
 
-/* Stop the scan and put the dial back at the start frequency. */
+/* Hook de apertura de app/dialogo: cancela restaurando el origen SOLO si sigue
+ * el contexto original, en RX y con el dial en manos de Auto Tune (5.2). */
 void autotune_ui_cancel(void);
 
-/* True while a scan is running (used by the harness fixture to wait it out). */
+/* Hook de una orden manual de dial resuelta en GUI (rueda, teclas +/-/HKEY, CB):
+ * aborta ANTES de que la orden se aplique y nunca restaura encima (5.1). */
+void autotune_ui_abort_manual(void);
+
+/* Hook previo a activar TX desde un handler de GUI: cancela y restaura solo si
+ * todavia estamos en RX, con el contexto original y el dial propio (5.3). */
+void autotune_ui_cancel_before_tx(void);
+
+/* EVENT_RADIO_TX / cambio externo de estado con TX ya activo: aborta SIN
+ * sintonizar jamas (5.3). */
+void autotune_ui_abort_on_tx(void);
+
+/* true mientras hay una sesion activa (lo usa la fixture del banco). */
 bool autotune_ui_running(void);
 
 #ifdef __cplusplus
