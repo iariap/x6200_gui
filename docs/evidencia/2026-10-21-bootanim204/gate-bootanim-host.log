@@ -8,8 +8,7 @@ renderer_test: 15002 comprobaciones, 0 fallos
 fb_test: 132 comprobaciones, 0 fallos
 
 == 3) cesion del framebuffer (procesos reales, identidad por /proc/<pid>/exe) ==
-boot_splash: pid 1975449 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
-boot_splash: pid 1975451 del PIDFILE no es /tmp/tmp.DTsZlX4jWN/fake_animator: no se senaliza
+boot_splash: pid 1986940 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
 handoff_test: 39 comprobaciones, 0 fallos
 
 == 4) sanitizers (ASan + UBSan) ==
@@ -31,7 +30,7 @@ ok: los 30 s son solo texto (cuadros 357/358/500 identicos al volcado)
 ok: paleta del contrato (con destello), cajas del ciclo respetadas y ultimo cuadro conservado
 ok: vivo y animando pasado 30 s virtuales; SIGUSR1 -> salida en 2 ms con codigo 0
 ok: paleta del contrato (con destello), cajas del ciclo respetadas y ultimo cuadro conservado
-ok: SIGTERM en el arranque -> salida en 7 ms con codigo 0, cuadro del revelado intacto
+ok: SIGTERM en el arranque -> salida en 9 ms con codigo 0, cuadro del revelado intacto
 ok: paleta del contrato (con destello), cajas del ciclo respetadas y ultimo cuadro conservado
 ok: SIGTERM despues de los 30 s -> salida en 1 ms con codigo 0, cuadro intacto
 ok: consumo real 20 ms de CPU en 3002 ms de reloj (0%): sin busy-wait
@@ -42,25 +41,25 @@ ok: yoffset distinto de cero -> exit 0 sin escribir en el framebuffer
 ok: line_length demasiado corto -> exit 0 sin escribir en el framebuffer
 ok: smem_len insuficiente -> exit 0 sin escribir en el framebuffer
 ok: mmap fallido -> exit 0 sin escribir en el framebuffer
-ok: sin /dev/fb0 reintenta y sale 0 en silencio (1908 ms)
+ok: sin /dev/fb0 reintenta y sale 0 en silencio (1907 ms)
 ok: framebuffer sin permisos -> exit 0 con aviso en stderr
 render_bench: 2201 cuadros (184800 ms de animacion), pantalla 800x480
 presupuesto: BA_FRAME_MS=84ms, BA_MAX_DIRTY=12, max dirty.count observado=7, overflow=0
 
 fase                    cuadros dirty px avg dirty px max  dirty % max bytes/cuadro render us/cuadro
-intro                        10        10850        17500        4.56%        21700           41.0
-primer cuadro (full)          1       384000       384000      100.00%       768000         1531.2
-lluvia                      204         9576        12940        3.37%        19153           33.3
-beams                       518        13786        16755        4.36%        27573           52.5
-decrypt                      59        14476        16755        4.36%        28952           56.6
-delayed (lluvia, >30s)     1409        10599        16440        4.28%        21199           37.2
+intro                        10        10850        17500        4.56%        21700           36.2
+primer cuadro (full)          1       384000       384000      100.00%       768000         1475.5
+lluvia                      204         9576        12940        3.37%        19153           34.5
+beams                       518        13786        16755        4.36%        27573           56.8
+decrypt                      59        14476        16755        4.36%        28952           54.2
+delayed (lluvia, >30s)     1409        10599        16440        4.28%        21199           41.3
 
 (pixeles sucios = suma de las areas de dirty; bytes/cuadro = esos pixeles a 16 bpp;
  render us/cuadro = modelo + raster puro, sin blit ni hardware; RAM del raster: 1 buffer fijo)
 
 == 6) script de init S01bootanim ==
 ok: sintaxis, permiso de ejecucion, invocacion del contrato, sin killall ni GUI
-ok: start vuelve en 18 ms (contrato: <100 ms, sin sleeps) y deja el PIDFILE
+ok: start vuelve en 11 ms (contrato: <100 ms, sin sleeps) y deja el PIDFILE
 ok: singleton (un solo animador, un solo start-stop-daemon -S)
 ok: stop termina el animador, limpia el PIDFILE y no usa killall
 ok: un PIDFILE con un PID ajeno no se senaliza ni se mata

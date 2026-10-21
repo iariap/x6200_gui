@@ -21,11 +21,9 @@
 ==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
 ==> [SKIP] ruff del framework A/B: sin cambios en tools/ab_testing/**/*.py
 ==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/**
-==> [check] uv sync (ab_testing)
-    ok
 ==> [check] x6200-ab themes
     ok
-==> [check] x6200-ab contracts (b5e9864ec8df8edc5e628559b3c08b20fe1f4b94)
+==> [check] x6200-ab contracts (bd1269e301ace1ba4f94c5ca850dea5542e1836d)
     ok
 ==> [check] bash -n tests/check_bootanim.sh
     ok
