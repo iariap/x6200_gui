@@ -1,0 +1,7 @@
+Hace falta root: el rootfs tiene archivos setuid y hay que preservarlos.
+  sudo clone-gui/tools/release/make_update_tgz.sh /home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/rootfs.tar /home/pablo/desa/x6200/assessment-194/scratch-196/update/x6200_r1cbu_test.tgz
+make_update_rc=1
+--- test_update
+Hace falta root: sudo clone-gui/tools/release/test_update.sh
+test_update_rc=1
+total 0

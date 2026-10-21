@@ -1,0 +1,15 @@
+292a21aa9371839d1a9ed21dee4a0c76244c400087b624956f5a11c3bd2ec7c9  /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs2/tree/mnt/params.db
+a25472563729a1fa2d9b083e40e0f18f7c03405b64833768fa806f4e99136f6c
+socket_after=17s
+--- state tras reinicio
+{"t":"state","vfo":"A","freq":14074000,"freq_bg":14074000,"mode":"CW","band":"20m SSB","filter":500,"flo":-250,"fhi":250,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":10,"nb_width":10,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+
+--- DB después
+292a21aa9371839d1a9ed21dee4a0c76244c400087b624956f5a11c3bd2ec7c9  /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs2/tree/mnt/params.db
+band|7
+vol|30
+vfoa_freq|14074000
+vfoa_mode|4
+--- CRASHLOG
+0
+done

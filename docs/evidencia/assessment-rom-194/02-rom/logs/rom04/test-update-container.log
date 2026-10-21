@@ -1,0 +1,25 @@
+0
+==> armando el sistema destino (rootfs de la imagen)
+    GUI en la imagen:   7e2e9331c4cbc517…
+==> marcando el binario de la GUI (simula la versión vieja)
+==> (prueba) instalando el S02update del overlay (/work/clone-gui/tools/release/update-overlay), como haría el tgz
+==> poniendo el tgz en /mnt del destino
+==> corriendo el S02update REAL (dentro del chroot, con el busybox de la imagen)
+Creating backup from /mnt/x6200_r1cbu_196.tgz
+Backup kept in /mnt/backup_x6200_r1cbu_196.tgz
+Update from /mnt/x6200_r1cbu_196.tgz
+==> comprobaciones
+    backup: backup_x6200_r1cbu_196.tgz  96587048 bytes
+    el backup trae la versión vieja: SI
+    entradas en el backup: 5466
+    GUI tras la actualización: 7e2e9331c4cbc517…
+    el tgz se aplicó
+    el firmware borró el tgz de /mnt
+    setuid tras actualizar: 3
+    archivos: 4548
+==> LIMPIO
+test_update_exit=0
+total 100332
+drwxr-xr-x. 1 pablo  pablo         38 Oct 21 18:31 .
+drwxr-xr-x. 1 pablo  pablo         98 Oct 21 18:13 ..
+-rw-r--r--. 1 nobody nobody 102736632 Oct 21 18:29 x6200_r1cbu_196.tgz

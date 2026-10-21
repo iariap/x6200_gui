@@ -1,0 +1,13 @@
+--- backup del S02update VIEJO (imagen): zcat | tar -tf | xargs tar -cvf - | gzip
+old_backup_bytes=102744967
+old_backup_entries=3464
+tar: stdout: write error
+old_backup_tiene_GUI=si
+--- backup del S02update CORREGIDO (overlay): lista + un solo tar
+list_entries=5466
+new_backup_bytes=102745035
+new_backup_entries=5466
+tar: stdout: write error
+new_backup_tiene_GUI=si
+--- limpieza
+/dev/nvme0n1p3  953G  828G  115G  88% /home/pablo/desa/x6200

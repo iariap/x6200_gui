@@ -1,0 +1,206 @@
+[
+    {
+        "Id": "cd53815bfd32ee869bc19bace099ce92279e2b4293ec02639d47838fd2ce7180",
+        "Created": "2026-10-21T21:04:21.801227388Z",
+        "Path": "sh",
+        "Args": [
+            "-c",
+            "chroot /t /bin/busybox env LD_PRELOAD=/lib/libfakefb.so:/lib/libcrash.so:/lib/libx6200trace.so /usr/sbin/x6200_gui > /t/out-banco.txt 2>&1"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 745638,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-10-21T21:04:21.832081326Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:b3e7601313d64284645a5224c60fb40f39ea58e0bfc68f42fd9bb0dad13a1189",
+        "ResolvConfPath": "/var/lib/docker/containers/cd53815bfd32ee869bc19bace099ce92279e2b4293ec02639d47838fd2ce7180/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/cd53815bfd32ee869bc19bace099ce92279e2b4293ec02639d47838fd2ce7180/hostname",
+        "HostsPath": "/var/lib/docker/containers/cd53815bfd32ee869bc19bace099ce92279e2b4293ec02639d47838fd2ce7180/hosts",
+        "LogPath": "/var/lib/docker/containers/cd53815bfd32ee869bc19bace099ce92279e2b4293ec02639d47838fd2ce7180/cd53815bfd32ee869bc19bace099ce92279e2b4293ec02639d47838fd2ce7180-json.log",
+        "Name": "/assessment196-qemu",
+        "RestartCount": 0,
+        "Driver": "overlay2",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "/home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree:/t"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "bridge",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": [],
+            "BlkioDeviceWriteBps": [],
+            "BlkioDeviceReadIOps": [],
+            "BlkioDeviceWriteIOps": [],
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "GraphDriver": {
+            "Data": {
+                "ID": "cd53815bfd32ee869bc19bace099ce92279e2b4293ec02639d47838fd2ce7180",
+                "LowerDir": "/var/lib/docker/overlay2/abca786911269d0b92b432989397fb83069f3fd5becdcef613d769bb845aff96-init/diff:/var/lib/docker/overlay2/f5389ok0s750in7pybod5re57/diff:/var/lib/docker/overlay2/0c20v5hrcu4ttr05w4sl7nbhq/diff:/var/lib/docker/overlay2/rem5tvwalsay1hxbm3261yqnl/diff:/var/lib/docker/overlay2/zfmk4nbcbo88dyn6gt8ty62k3/diff:/var/lib/docker/overlay2/byxqeklxotcaqv0di49dabv8r/diff:/var/lib/docker/overlay2/iaytycuysbcgvcwhlh1yx5yfz/diff:/var/lib/docker/overlay2/ckq683wnegkz1uwdew67m7rq9/diff:/var/lib/docker/overlay2/e952212d813e5164235d8bb7f8a62ecba0ff4688bed0929b87104d4016229bdc/diff",
+                "MergedDir": "/var/lib/docker/overlay2/abca786911269d0b92b432989397fb83069f3fd5becdcef613d769bb845aff96/merged",
+                "UpperDir": "/var/lib/docker/overlay2/abca786911269d0b92b432989397fb83069f3fd5becdcef613d769bb845aff96/diff",
+                "WorkDir": "/var/lib/docker/overlay2/abca786911269d0b92b432989397fb83069f3fd5becdcef613d769bb845aff96/work"
+            },
+            "Name": "overlay2"
+        },
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree",
+                "Destination": "/t",
+                "Mode": "",
+                "RW": true,
+                "Propagation": "rprivate"
+            }
+        ],
+        "Config": {
+            "Hostname": "cd53815bfd32",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "QEMU_CPU=cortex-a7",
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "TZ=UTC",
+                "LANG=en_US.utf8"
+            ],
+            "Cmd": [
+                "sh",
+                "-c",
+                "chroot /t /bin/busybox env LD_PRELOAD=/lib/libfakefb.so:/lib/libcrash.so:/lib/libx6200trace.so /usr/sbin/x6200_gui > /t/out-banco.txt 2>&1"
+            ],
+            "Image": "x6200-buildroot",
+            "Volumes": null,
+            "WorkingDir": "/workspace",
+            "Entrypoint": null,
+            "Labels": {
+                "org.opencontainers.image.ref.name": "ubuntu",
+                "org.opencontainers.image.version": "24.04"
+            }
+        },
+        "NetworkSettings": {
+            "SandboxID": "48f899a3bf0a50bfb060794ff1c4e9ce5117e7e9419f2a1d83c7ad5b866492ab",
+            "SandboxKey": "/var/run/docker/netns/48f899a3bf0a",
+            "Ports": {},
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "a92e0abf5d67641426555e059fe1b89d7b0d6bfcc701e1ebd377ed3151ff33bb",
+                    "EndpointID": "7b84481af219ad8e46bd3d2c6685110997ff6e4027b0db9602c74bd3c4653c1b",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.15",
+                    "MacAddress": "4a:3c:b2:5f:55:74",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": null
+                }
+            }
+        }
+    }
+]

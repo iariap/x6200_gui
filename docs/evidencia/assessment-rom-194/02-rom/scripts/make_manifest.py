@@ -1,0 +1,233 @@
+#!/usr/bin/env python3
+"""Genera artifact-manifest.json de la unidad #196.
+
+Recomputa SHA256 de los artefactos y de las entradas de configuración, y falla si alguno no
+coincide con el manifiesto de #195 (procedencia). Los valores de las corridas se leen de los
+JSONL de evidencia. No inventa métricas: los escenarios no ejecutados quedan BLOCKED.
+"""
+import hashlib
+import json
+import re
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent.parent
+ROOT = Path("/home/pablo/desa/x6200/assessment-194")
+IMG = ROOT / "clone-buildroot/build/images"
+CAP = BASE / "capturas"
+
+
+def sha256(p):
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for b in iter(lambda: f.read(1 << 20), b""):
+            h.update(b)
+    return h.hexdigest()
+
+
+expected = {
+    "sdcard.img": "d0ff4435ad1d068e25bf2c357a4e93478463b187e7745a9a54844488e44e33a5",
+    "rootfs.tar": "7c26c76b6fc27bc12dc8d5e012e51d5c2c0568fa72a8e02cad5432dfcd36a2dd",
+    "rootfs.ext4": "9365b52f9aef33e0623ae8271aaf415483fe72e1afbc8ef99f93e15437bc620a",
+    "boot.vfat": "914f07eb00d1e5afee56ab795ce6b7b1d4410d774a3534881da494319c30b17d",
+    "zImage": "660c94c6f7231e7dc262fefb295aae1a8dfcf9b9c2b46cdc1eced2c3296bcc14",
+    "sun8i-r16-x6200.dtb": "4d73f8a5d5f846c21e4ac30550a5811443a01666f9ee57880b5316e78627cc38",
+}
+artifacts = {}
+for name, exp in expected.items():
+    p = IMG / name
+    real = sha256(p)
+    if real != exp:
+        sys.exit(f"FALLA DE PROCEDENCIA: {name} sha256 {real} != {exp}")
+    artifacts[name] = {"path": str(p), "bytes": p.stat().st_size, "sha256": real,
+                       "matches_baseline_195": True}
+
+inputs = {
+    "build_local_mk": ROOT / "clone-buildroot/build/local.mk",
+    "build_dot_config": ROOT / "clone-buildroot/build/.config",
+    "x6200_defconfig": ROOT / "clone-buildroot/br2_external/configs/X6200_defconfig",
+    "genimage_cfg": ROOT / "clone-buildroot/br2_external/board/X6200/genimage.cfg",
+    "rootfs_overlay_fstab": ROOT / "clone-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/fstab",
+    "rootfs_overlay_S01create_data": ROOT / "clone-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/init.d/S01create_data",
+    "image_S02update": ROOT / "scratch-196/rootfs/tree/etc/init.d/S02update",
+    "update_overlay_S02update": ROOT / "clone-gui/tools/release/update-overlay/etc/init.d/S02update",
+    "params_default_db": ROOT / "scratch-196/rootfs/tree/usr/share/x6200/params.default.db",
+    "boot_scr": IMG / "boot.scr",
+}
+input_meta = {k: {"path": str(v), "bytes": v.stat().st_size, "sha256": sha256(v)}
+              for k, v in inputs.items()}
+
+stress_a = [json.loads(l) for l in open(CAP / "stress-rx-100.jsonl")]
+stress = [json.loads(l) for l in open(CAP / "stress-rx-100b.jsonl")]
+idle_a = [json.loads(l) for l in open(CAP / "idle-3600-partial-external-stop.jsonl")]
+idle = ([json.loads(l) for l in open(CAP / "idle-3600b.jsonl")] +
+        [json.loads(l) for l in open(CAP / "idle-3600b-extra.jsonl")])
+neg = [json.loads(l) for l in open(CAP / "negatives.jsonl")]
+
+
+def samp(key):
+    vals = []
+    for r in idle:
+        m = re.search(rf"{key}:?=(\d+)", r["raw_sample"])
+        if m:
+            vals.append(int(m.group(1)))
+    return vals
+
+
+manifest = {
+    "campaign": "assessment-rom-194",
+    "unit": 196,
+    "role": "evidencia; no implementacion",
+    "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "report_branch": "assessment/196-evidence",
+    "integration_branch": {"name": "assessment/rom-194",
+                           "sha": "230b2063 (merge #201 = baseline #195)",
+                           "base_for_pr": "origin/assessment/rom-194"},
+    "candidate": {
+        "gui_sha": "c888308eede71205605c06383432ee7e165f202e",
+        "development_branch": "lu2dsx/x6200-rom",
+        "lvgl_gitlink": "74d0a816440eea53e030c4f1af842a94f7ce3d3",
+        "buildroot_sha": "d084e2870a00b64d9c57474e7eceeef80f43f25b",
+        "buildroot_submodule": "cc34b5b2abf2588f0ef55e46a4fe85a60c19ba1f",
+        "source_md5": "964193ae9306b5127845cec44a57d52c",
+        "source_md5_equals_checkout_staged_embedded": True,
+        "measurement_checkout": "/home/pablo/desa/x6200/assessment-194/clone-gui (detached)",
+    },
+    "tip_divergence": {
+        "at_start": "50bf8ab0faef117a02d3a2d8c9b6bec4befafba6",
+        "at_close": "0d00e7fcaad5ad8c1423aaaff41efd2543042af2",
+        "candidate_is_ancestor": True,
+        "production_files_changed_vs_candidate": 24,
+        "examples": ["src/bootanim/*", "src/boot_splash.c", "src/main.c", "rootfs/etc/init.d/S01bootanim",
+                     ".github/workflows/main.yml", "u-boot/u-boot-sunxi-with-spl.bin (deleted)"],
+        "stale": True,
+        "stale_for": ["50bf8ab0", "0d00e7fc"],
+        "coverage_to_repeat": ["build ARM/ROM e identidad", "layout/MBR y DATA", "prune/rootfs e init",
+                               "arranque real", "estrés/reposo", "empaquetado de update"],
+    },
+    "build": {
+        "sandbox": str(ROOT),
+        "container_image": "x6200-buildroot:latest",
+        "container_image_id": "sha256:b3e7601313d64284645a5224c60fb40f39ea58e0bfc68f42fd9bb0dad13a1189",
+        "buildroot_checkout": str(ROOT / "clone-buildroot"),
+        "gui_checkout": str(ROOT / "clone-gui"),
+        "override_mechanism": "X6200_GUI_OVERRIDE_SRCDIR en build/local.mk",
+        "recipe": "br_config.sh; make lame mpg123; make libsndfile-dirclean; make",
+        "config_deviation": {
+            "defconfig_lacks": ["BR2_PACKAGE_PULSEAUDIO", "BR2_PACKAGE_LIBSNDFILE"],
+            "enabled_in_private_dot_config": ["BR2_PACKAGE_PULSEAUDIO=y", "BR2_PACKAGE_LIBSNDFILE=y",
+                                              "BR2_PACKAGE_PULSEAUDIO_ENABLE_ATOMIC=y", "BR2_PACKAGE_LIBTOOL=y"],
+            "defconfig_edited": False, "package_mk_edited": False,
+            "note": "el par congelado no compila el GUI desde cero sin este ajuste"}
+    },
+    "artifacts": artifacts,
+    "inputs": input_meta,
+    "rootfs": {
+        "uuid": "79bb870e-5334-47c8-a825-3f1510b356ed", "label": "rootfs", "bytes": 536870912,
+        "e2fsck": {"exit": 0, "inodes_used": 5375, "inodes_total": 32768,
+                   "blocks_used": 65878, "blocks_total": 131072, "block_size": 4096,
+                   "bytes_used": 269836288, "bytes_free": 267034624},
+        "tar_entries": {"files": 4053, "dirs": 391, "symlinks": 920, "hardlinks": 493},
+        "setuid": ["bin/busybox 4755", "usr/libexec/dbus-daemon-launch-helper 4750 (root:101)",
+                   "usr/libexec/ssh-keysign 4711"],
+        "setgid": 0, "device_nodes": 0,
+        "packages": 142, "shared_libs": 363, "init_scripts": 26, "kernel_modules": 410,
+        "kernel_modules_version": "6.1.82",
+    },
+    "boot_partition": {"files": 3, "bytes_used": 5594638, "bytes_free": 27873280,
+                       "fat_type": "FAT16", "label": "BOOT"},
+    "binary": {
+        "path_in_rootfs": "/usr/sbin/x6200_gui", "bytes": 13407624,
+        "md5": "1f998c46909307397525c975a712adfd",
+        "sha256": "7e2e9331c4cbc51727a098996d98e263c45dd57cb8fff8d1f2aea2964c3849c5",
+        "elf": "ELF 32-bit LSB pie executable ARM EABI5, stripped",
+        "needed_libs": 28,
+        "loader_list": {"resolved": 47, "missing": 0, "exit": 0,
+                        "method": "QEMU_LD_PREFIX=<rootfs> qemu-arm-static <rootfs>/lib/ld-linux-armhf.so.3 --list"},
+    },
+    "tools": {
+        "host": "Linux 7.2.8 x86_64, 16 cores, 89 GB RAM",
+        "qemu_arm": "qemu-arm 10.2.2", "e2fsprogs": "1.47.3", "util_linux": "2.41.5",
+        "python": "3.14.7", "sqlite": "3.51.2", "pillow": "12.3.0", "docker": "29.8.2",
+        "fakeroot": "absent", "ninja": "absent", "sudo": "unavailable (no-new-privileges)",
+        "container_image_id": "sha256:b3e7601313d64284645a5224c60fb40f39ea58e0bfc68f42fd9bb0dad13a1189",
+    },
+    "qemu_user": {
+        "container": "assessment196-soak",
+        "container_id": "d2cd6ae7334efa6701079b6f70403ac626065624d125ca2e6e27c07b5da23e47",
+        "cpu": "cortex-a7",
+        "chroot": str(ROOT / "scratch-196/rootfs/tree"),
+        "mounts": [{"source": str(ROOT / "scratch-196/rootfs/tree"), "dest": "/t", "rw": True}],
+        "shared_volumes": [],
+        "note": "contenedor propio; no es banco-apps ni usa x6200-build-output",
+    },
+    "runs": {
+        "stress_rx": {"cycles": len({r["cycle"] for r in stress}), "steps": len(stress),
+                      "ok": sum(1 for r in stress if r["verdict"] == "ok"),
+                      "crashes": 0, "timeouts": 0,
+                      "start_utc": stress[0]["start_utc"], "end_utc": stress[-1]["end_utc"]},
+        "stress_rx_a": {"cycles": len({r["cycle"] for r in stress_a}), "steps": len(stress_a),
+                        "ok": sum(1 for r in stress_a if r["verdict"] == "ok"),
+                        "start_utc": stress_a[0]["start_utc"], "end_utc": stress_a[-1]["end_utc"]},
+        "idle_a_partial": {"minutes": len(idle_a), "gets_ok": sum(r["gets_ok"] for r in idle_a),
+                           "gets_err": sum(r["gets_err"] for r in idle_a),
+                           "stop_reason": "container stopped externally (exit 137, no CRASHLOG/OOM)"},
+        "idle": {"samples": len(idle), "gets_ok": sum(r["gets_ok"] for r in idle),
+                 "gets_err": sum(r["gets_err"] for r in idle), "elapsed_s": 3605,
+                 "rss_kb": [min(samp("VmRSS")), max(samp("VmRSS"))],
+                 "threads": [min(samp("Threads")), max(samp("Threads"))],
+                 "fds": [min(samp("fds")), max(samp("fds"))],
+                 "crashlog": 0, "overflow": 0,
+                 "log_bytes": 296731,
+                 "measurement_note": "idle JSONL log_bytes/crash/overflow leyeron out-banco.txt por path hardcodeado; log real out-soak.txt medido directo (0 crash/overflow, 296731 B)"},
+        "negatives": {"cases": len(neg), "ok": sum(1 for n in neg if n["verdict"] == "ok"),
+                      "crashes": 0},
+        "db_failures": {"corrupt": {"runs": 2, "exit": 139, "pc": "0x42e12c"},
+                        "read_only": {"runs": 1, "exit": 139, "pc": "0x42e12c"},
+                        "missing": {"runs": 1, "exit": 139, "pc": "0x42e12c"},
+                        "crashloop_wrapper": {"seconds": 10, "gui_starts": 34, "crashlog": 19,
+                                              "log_files": 20, "boot_log_bytes": 18360}},
+    },
+    "banks": {"banco-apps": "running/ocupado (no usado)", "banco-audio": "inexistente",
+              "sweeps": "BLOCKED", "reason": "scripts con nombre y volumen fijos; exclusión mutua"},
+    "update": {
+        "execution": "root en contenedor privado (host sin sudo); no SD/hardware",
+        "generated_tgz": {"path": str(ROOT / "scratch-196/update/x6200_r1cbu_196.tgz"),
+                          "bytes": 102736632,
+                          "sha256": "239b49bba9233585d4b196734e951ac8c5711cf17100f05c99699dcbb60c29d0",
+                          "entries": 5466, "dirs": 0, "dot_entries": 0, "setuid": 3,
+                          "gui_sha256": "7e2e9331c4cbc51727a098996d98e263c45dd57cb8fff8d1f2aea2964c3849c5",
+                          "S02update_sha256": "d3c7d76b4c8c72f8a412e30ca12619a99f4976b12a50dadb677bf42fb2026213",
+                          "S02update_owner": "1000:1000",
+                          "S02update_owner_after_target_extract": "1000:1000 (pulse)"},
+        "make_update_tgz": {"exit": 1, "reason": "assert setuid 5 vs 3"},
+        "test_update": {"exit": 0, "backup_entries": 5466, "gui_sha256": "7e2e9331…",
+                        "setuid_after": 3, "files_after": 4548,
+                        "note": "preinstala el overlay: camino posterior, no la primera actualización"},
+        "first_update_backup_entries": 706, "full_entries": 5466,
+        "first_update_host_xargs_entries": 3464,
+        "fixed_backup_entries": 5466,
+        "first_update_executed": True,
+        "checksum_verification": False, "rollback": "no automático"},
+    "limitations": [
+        "Sin arranque kernel/init real ni QEMU system: boot, montajes reales, watchdog y servicios PENDING_HARDWARE.",
+        "Tres barridos de apps BLOCKED por banco ocupado; no hay capturas por app en esta unidad.",
+        "Update ejecutado en contenedor privado como root, no en SD/hardware; primera actualización emulada, no aplicada.",
+        "El tgz de update lleva etc/init.d/S02update con owner 1000:1000 (uid 1000 = pulse en el target).",
+        "Crashes de DB reproducidos en QEMU_USER con fixtures privados; no confirmados en hardware.",
+        "Sin RF, audio, FFT, energía ni tiempos Cortex-A7.",
+        "No se afirma reproducibilidad bit a bit; build con desviación de .config.",
+        "Dossier STALE para 50bf8ab0 y 0d00e7fc.",
+        "La imagen no trae p3; el flasheo sobre una SD con DATA depende de un procedimiento externo no inspeccionado.",
+        "Tarjeta nueva: S01create_data crea p3 vfat y mount /dev/mmcblk0p3 resuelve ext4 por fstab; el primer boot no monta /mnt (segundo boot sí, vfat).",
+        "/bin/sh es bash 5.2.15: los init scripts usan arrays y [[ ]]; con BusyBox ash fallarían S01 y S04 (dependencia no declarada).",
+    ],
+}
+
+out = BASE / "artifact-manifest.json"
+json.dump(manifest, open(out, "w"), indent=1, ensure_ascii=False)
+print(f"wrote {out}")
+print(f"stress={manifest['runs']['stress_rx']}")
+print(f"idle={manifest['runs']['idle']}")

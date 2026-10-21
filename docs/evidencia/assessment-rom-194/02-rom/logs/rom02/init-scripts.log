@@ -1,0 +1,1185 @@
+===== rcK =====
+#!/bin/sh
+
+
+# Stop all init scripts in /etc/init.d
+# executing them in reversed numerical order.
+#
+for i in $(ls -r /etc/init.d/S??*) ;do
+
+     # Ignore dangling symlinks (if any).
+     [ ! -f "$i" ] && continue
+
+     case "$i" in
+	*.sh)
+	    # Source shell script for speed.
+	    (
+		trap - INT QUIT TSTP
+		set stop
+		. $i
+	    )
+	    ;;
+	*)
+	    # No sh extension, so fork subprocess.
+	    $i stop
+	    ;;
+    esac
+done
+
+===== rcS =====
+#!/bin/sh
+#
+# Corre los scripts de arranque en orden y anota dos cosas en /mnt/app_logs/:
+#
+#   boot_scripts.log   cuanto tarda cada script (antes no se sabia: ver docs/HALLAZGOS.md 9)
+#   (lo demas lo escriben los propios scripts y la GUI)
+#
+# Es el rcS de buildroot con la medicion agregada y con la prioridad de los scripts que corren
+# despues de la GUI. El original esta en el buildroot del proyecto
+# (buildroot/package/busybox/skeleton/etc/init.d/rcS): si se actualiza el buildroot, hay que
+# volver a traerlo. La copia original de la radio queda en /etc/init.d/rcS.orig.
+#
+BOOT_SCRIPTS_LOG=/mnt/app_logs/boot_scripts.log
+
+marca() {
+    mkdir -p /mnt/app_logs 2>/dev/null
+    printf '%s %s\n' "$(cut -d' ' -f1 /proc/uptime 2>/dev/null)" "$*" >> "$BOOT_SCRIPTS_LOG" 2>/dev/null
+}
+
+marca "== arranque: empiezan los scripts =="
+
+for i in /etc/init.d/S??* ;do
+
+     # Ignore dangling symlinks (if any).
+     [ ! -f "$i" ] && continue
+
+     marca "inicio $(basename "$i")"
+
+     case "$i" in
+	*.sh)
+	    # Source shell script for speed.
+	    (
+		trap - INT QUIT TSTP
+		set start
+		. $i
+	    )
+	    ;;
+	*)
+	    # No sh extension, so fork subprocess.
+	    #
+	    # Se probo correr los scripts posteriores a la GUI con `nice -n 19` para que no le
+	    # peleen la CPU mientras dibuja el primer cuadro. Medido (una muestra por lado):
+	    # `GUI lista` 6,9 -> 6,7 s, dentro del rango de 6,6-7,2 s que se ve entre arranques, y
+	    # los scripts secundarios terminaban ~1 s mas tarde. Con esa evidencia no se sostiene:
+	    # se dejo como estaba.
+	    "$i" start
+	    ;;
+    esac
+
+    marca "fin    $(basename "$i")"
+done
+
+marca "== arranque: terminaron los scripts =="
+===== S01boot_time =====
+#!/bin/sh
+#
+# Anota el instante en que el kernel le pasa el control a los scripts, para poder medir el
+# arranque completo. La GUI agrega su propia linea cuando ya esta dibujando (S20gui tambien).
+# El resultado queda en /mnt/app_logs/boot.log
+#
+
+mkdir -p /mnt/app_logs
+printf '%s  kernel listo: %s s de uptime\n' "$(date -u +%H:%M:%S)" "$(cut -d' ' -f1 /proc/uptime)" >> /mnt/app_logs/boot.log
+exit 0
+===== S01create_data =====
+#!/bin/sh
+
+start() {
+    # Si ya existe una particion DATA (ext4 o vfat, segun la tarjeta), montarla con su
+    # tipo real y salir. Evita que este script recree la tabla de particiones o formatee
+    # una DATA existente: antes, al no encontrar "fat32", podia terminar en mkfs -t vfat.
+    existingData=$(blkid -L DATA)
+    if [ -n "$existingData" ]; then
+        existingType=$(blkid -o value -s TYPE "$existingData" 2>/dev/null)
+        [ -n "$existingType" ] || existingType=$(blkid "$existingData" | sed 's/.*TYPE="\([^"]*\)".*/\1/')
+        echo "DATA ya existe ($existingData, $existingType): la monto y no toco la tabla"
+        grep -q " /mnt " /proc/mounts || mount -t "$existingType" "$existingData" /mnt 2>/dev/null
+        return
+    fi
+    # Check fat32 not exists
+    parted -m -s /dev/mmcblk0 print | grep fat32
+    retVal=$?
+    if [ $retVal -eq 0 ]; then
+        echo "Fat32 partition already exists"
+        return
+    fi
+    # Get free space info
+    FREE_INFO=$(parted -sm /dev/mmcblk0 print free | tail -n1 | grep free)
+    retVal=$?
+    if [ $retVal -ne 0 ]; then
+        echo "No free space available"
+        return
+    fi
+    FREE_ARR=(${FREE_INFO//:/ })
+    # Create (or recreate) partition
+    parted -m -s -a opt /dev/mmcblk0 mkpart primary fat32 ${FREE_ARR[1]} ${FREE_ARR[2]}
+    partprobe /dev/mmcblk0
+    # Check if we have a preexisting DATA partition
+    dataPartition=$(blkid -L DATA)
+    if [ -n "$dataPartition" ]; then
+        echo "Mount existing data partition"
+        # Mount partition
+        mount $dataPartition
+        return
+    fi
+    # Format partition
+    mkfs -t vfat -n DATA /dev/mmcblk0p3
+    # Mount partition
+    mount /dev/mmcblk0p3
+}
+
+
+case "$1" in
+    start)
+        start;;
+    stop)
+        ;;
+    *)
+        echo "Usage: $0 {start}"
+    exit 1
+esac
+===== S01seedrng =====
+#! /bin/sh
+#
+# Preserve the random seed between reboots. See urandom(4).
+#
+# This script can be called multiple times during operation (e.g. with
+# "reload" argument) to refresh the seed.
+
+# The following arguments can be added to SEEDRNG_ARGS in
+# /etc/default/seedrng:
+#   --seed-dir=/path/to/seed/directory
+#     Path to the directory where the seed and the lock files are stored.
+#     for optimal operation, this should be a persistent, writeable
+#     location. Default is /var/lib/seedrng
+#
+#  --skip-credit
+#     Set this to true only if you do not want seed files to actually
+#     credit the RNG, for example if you plan to replicate this file
+#     system image and do not have the wherewithal to first delete the
+#     contents of /var/lib/seedrng.
+#
+# Example:
+# SEEDRNG_ARGS="--seed-dir=/data/seedrng --skip-credit"
+#
+
+DAEMON="seedrng"
+SEEDRNG_ARGS=""
+
+# shellcheck source=/dev/null
+[ -r "/etc/default/$DAEMON" ] && . "/etc/default/$DAEMON"
+
+case "$1" in
+	start|stop|restart|reload)
+		# Never fail, as this isn't worth making a fuss
+		# over if it doesn't go as planned.
+		# shellcheck disable=SC2086 # we need the word splitting
+		seedrng $SEEDRNG_ARGS || true;;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload}"
+		exit 1
+esac
+===== S01syslogd =====
+#!/bin/sh
+
+DAEMON="syslogd"
+PIDFILE="/var/run/$DAEMON.pid"
+
+SYSLOGD_ARGS=""
+
+# shellcheck source=/dev/null
+[ -r "/etc/default/$DAEMON" ] && . "/etc/default/$DAEMON"
+
+# BusyBox' syslogd does not create a pidfile, so pass "-n" in the command line
+# and use "-m" to instruct start-stop-daemon to create one.
+start() {
+	printf 'Starting %s: ' "$DAEMON"
+	# shellcheck disable=SC2086 # we need the word splitting
+	start-stop-daemon -b -m -S -q -p "$PIDFILE" -x "/sbin/$DAEMON" \
+		-- -n $SYSLOGD_ARGS
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+stop() {
+	printf 'Stopping %s: ' "$DAEMON"
+	start-stop-daemon -K -q -p "$PIDFILE"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		rm -f "$PIDFILE"
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+case "$1" in
+	start|stop|restart)
+		"$1";;
+	reload)
+		# Restart, since there is no true "reload" feature.
+		restart;;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload}"
+		exit 1
+esac
+===== S02klogd =====
+#!/bin/sh
+
+DAEMON="klogd"
+PIDFILE="/var/run/$DAEMON.pid"
+
+KLOGD_ARGS=""
+
+# shellcheck source=/dev/null
+[ -r "/etc/default/$DAEMON" ] && . "/etc/default/$DAEMON"
+
+# BusyBox' klogd does not create a pidfile, so pass "-n" in the command line
+# and use "-m" to instruct start-stop-daemon to create one.
+start() {
+	printf 'Starting %s: ' "$DAEMON"
+	# shellcheck disable=SC2086 # we need the word splitting
+	start-stop-daemon -b -m -S -q -p "$PIDFILE" -x "/sbin/$DAEMON" \
+		-- -n $KLOGD_ARGS
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+stop() {
+	printf 'Stopping %s: ' "$DAEMON"
+	start-stop-daemon -K -q -p "$PIDFILE"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		rm -f "$PIDFILE"
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+case "$1" in
+	start|stop|restart)
+		"$1";;
+	reload)
+		# Restart, since there is no true "reload" feature.
+		restart;;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload}"
+		exit 1
+esac
+===== S02sysctl =====
+#!/bin/sh
+#
+# This script is used by busybox and procps-ng.
+#
+# With procps-ng, the "--system" option of sysctl also enables "--ignore", so
+# errors are not reported via syslog. Use the run_logger function to mimic the
+# --system behavior, still reporting errors via syslog. Users not interested
+# on error reports can add "-e" to SYSCTL_ARGS.
+#
+# busybox does not have a "--system" option neither reports errors via syslog,
+# so the scripting provides a consistent behavior between the implementations.
+# Testing the busybox sysctl exit code is fruitless, as at the moment, since
+# its exit status is zero even if errors happen. Hopefully this will be fixed
+# in a future busybox version.
+
+PROGRAM="sysctl"
+
+SYSCTL_ARGS=""
+
+# shellcheck source=/dev/null
+[ -r "/etc/default/$PROGRAM" ] && . "/etc/default/$PROGRAM"
+
+# Files are read from directories in the SYSCTL_SOURCES list, in the given
+# order. A file may be used more than once, since there can be multiple
+# symlinks to it. No attempt is made to prevent this.
+SYSCTL_SOURCES="/etc/sysctl.d/ /usr/local/lib/sysctl.d/ /usr/lib/sysctl.d/ /lib/sysctl.d/ /etc/sysctl.conf"
+
+# If the logger utility is available all messages are sent to syslog, except
+# for the final status. The file redirections do the following:
+#
+# - stdout is redirected to syslog with facility.level "kern.info"
+# - stderr is redirected to syslog with facility.level "kern.err"
+# - file dscriptor 4 is used to pass the result to the "start" function.
+#
+run_logger() {
+	# shellcheck disable=SC2086 # we need the word splitting
+	find $SYSCTL_SOURCES -maxdepth 1 -name '*.conf' -print0 2> /dev/null | \
+	xargs -0 -r -n 1 readlink -f | {
+		prog_status="OK"
+		while :; do
+			read -r file || {
+				echo "$prog_status" >&4
+				break
+			}
+			echo "* Applying $file ..."
+			/sbin/sysctl -p "$file" $SYSCTL_ARGS || prog_status="FAIL"
+		done 2>&1 >&3 | /usr/bin/logger -t sysctl -p kern.err
+	} 3>&1 | /usr/bin/logger -t sysctl -p kern.info
+}
+
+# If logger is not available all messages are sent to stdout/stderr.
+run_std() {
+	# shellcheck disable=SC2086 # we need the word splitting
+	find $SYSCTL_SOURCES -maxdepth 1 -name '*.conf' -print0 2> /dev/null | \
+	xargs -0 -r -n 1 readlink -f | {
+		prog_status="OK"
+		while :; do
+			read -r file || {
+				echo "$prog_status" >&4
+				break
+			}
+			echo "* Applying $file ..."
+			/sbin/sysctl -p "$file" $SYSCTL_ARGS || prog_status="FAIL"
+		done
+	}
+}
+
+if [ -x /usr/bin/logger ]; then
+	run_program="run_logger"
+else
+	run_program="run_std"
+fi
+
+start() {
+	printf '%s %s: ' "$1" "$PROGRAM"
+	status=$("$run_program" 4>&1)
+	echo "$status"
+	if [ "$status" = "OK" ]; then
+		return 0
+	fi
+	return 1
+}
+
+case "$1" in
+	start)
+		start "Running";;
+	restart|reload)
+		start "Rerunning";;
+	stop)
+		:;;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload}"
+		exit 1
+esac
+===== S02update =====
+#!/bin/sh
+
+start() {
+    cd /
+
+    for i in /mnt/x6200_r1cbu_*.tgz; do
+        [ ! -f "$i" ] && continue
+        echo "Creating backup from $i"
+        zcat $i | tar -tf - | xargs tar -cvf - | gzip > /mnt/backup_$(basename $i)
+        echo "Update from $i"
+        zcat $i | tar -xf -
+        rm $i
+    done
+}
+
+case "$1" in
+    start)
+        start;;
+    stop)
+        ;;
+    *)
+        echo "Usage: $0 {start}"
+    exit 1
+esac
+===== S03tune_cache =====
+#!/bin/sh
+
+start() {
+    sysctl -w vm.vfs_cache_pressure=50
+    sysctl -w vm.swappiness=1
+}
+
+case "$1" in
+    start)
+        start;;
+    stop)
+        ;;
+    *)
+        echo "Usage: $0 {start}"
+    exit 1
+esac
+===== S04restore_backup_config =====
+#!/bin/sh
+#
+# Restore and backup configs
+#
+
+set -e
+
+BACKUP_PATH="/mnt/backups/backup.tgz"
+BACKUP_DIR=$(dirname ${BACKUP_PATH})
+
+backup() {
+  if [[ ! -d ${BACKUP_DIR} ]] then
+    mkdir -p ${BACKUP_DIR}
+  fi
+  tar c -avf ${BACKUP_PATH} /etc/NetworkManager/system-connections/* /etc/ssh/*_key* /root/.ssh/*
+}
+
+restore() {
+  if [[ -f ${BACKUP_PATH} ]] then
+    tar x -avf ${BACKUP_PATH} -C /
+  fi
+}
+
+case "$1" in
+  start)
+    restore
+    ;;
+  stop)
+    backup
+    ;;
+  *)
+    echo "Usage: $0 {start|stop}"
+    exit 1
+esac
+
+exit $?
+===== S10udev =====
+#!/bin/sh
+#
+# udev	This is a minimal non-LSB version of a UDEV startup script.  It
+#	was derived by stripping down the udev-058 LSB version for use
+#	with buildroot on embedded hardware using Linux 2.6.34+ kernels.
+#
+#	You may need to customize this for your system's resource limits
+#	(including startup time!) and administration.  For example, if
+#	your early userspace has a custom initramfs or initrd you might
+#	need /dev much earlier; or without hotpluggable busses (like USB,
+#	PCMCIA, MMC/SD, and so on) your /dev might be static after boot.
+#
+#	This script assumes your system boots right into the eventual root
+#	filesystem, and that init runs this udev script before any programs
+#	needing more device nodes than the bare-bones set -- /dev/console,
+#	/dev/zero, /dev/null -- that's needed to boot and run this script.
+#
+
+# Check for config file and read it
+UDEV_CONFIG=/etc/udev/udev.conf
+test -r $UDEV_CONFIG || exit 6
+. $UDEV_CONFIG
+
+case "$1" in
+    start)
+        printf "Populating %s using udev: " "${udev_root:-/dev}"
+        [ -e /proc/sys/kernel/hotplug ] && printf '\000\000\000\000' > /proc/sys/kernel/hotplug
+        /sbin/udevd -d || { echo "FAIL"; exit 1; }
+        udevadm trigger --type=subsystems --action=add
+        udevadm trigger --type=devices --action=add
+        udevadm settle --timeout=30 || echo "udevadm settle failed"
+        echo "done"
+        ;;
+    stop)
+        # Stop execution of events
+        udevadm control --stop-exec-queue
+        killall udevd
+        ;;
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+        ;;
+esac
+
+
+exit 0
+===== S11radio_daemon =====
+#!/bin/sh
+
+case "$1" in
+    start)
+        # create DNS soft link
+        ln -sf /run/NetworkManager/resolv.conf /etc/resolv.conf
+        # show power on wellcome screen
+        ;;
+    stop)
+        # Turn off BASE board
+        stty -F /dev/ttyS1 1152000
+        echo s > /dev/ttyS1
+        ;;
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+        ;;
+esac
+
+exit 0
+===== S20gui =====
+#!/bin/sh
+#
+# Starts X6200 GUI daemon (S20: temprano, para que la pantalla aparezca antes que la red)
+#
+
+DAEMON="x6200_daemon"
+PIDFILE="/var/run/$DAEMON.pid"
+
+# shellcheck source=/dev/null
+[ -r "/etc/default/$DAEMON" ] && . "/etc/default/$DAEMON"
+
+start() {
+	printf 'Starting %s: ' "$DAEMON"
+	echo 0 > /sys/class/graphics/fbcon/cursor_blink
+	# Corre en S20: antes de la red, del NTP y del Bluetooth. La GUI solo necesita DATA,
+	# udev y el daemon de radio, asi que la pantalla aparece en segundos y lo lento sigue
+	# despues. El daemon engancha los assets en /dev/shm (bind mount): /dev/shm tiene que
+	# existir antes.
+	mkdir -p /dev/shm
+	mountpoint -q /dev/shm || mount -t tmpfs -o mode=1777 tmpfs /dev/shm 2>/dev/null || true
+	mkdir -p /mnt/app_logs
+	printf '%s  GUI arrancando: %s s de uptime\n' "$(date -u +%H:%M:%S)" "$(cut -d" " -f1 /proc/uptime)" >> /mnt/app_logs/boot.log
+	[ ! -f /mnt/params.db ] && cp /usr/share/x6200/params.default.db /mnt/params.db
+	# shellcheck disable=SC2086 # we need the word splitting
+	start-stop-daemon -S -b -q -m -p "$PIDFILE" -x "/usr/sbin/$DAEMON"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+stop() {
+	printf 'Stopping %s: ' "$DAEMON"
+	start-stop-daemon -K -q -p "$PIDFILE"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		rm -f "$PIDFILE"
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	killall x6200_gui
+	return "$status"
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+case "$1" in
+	start|stop|restart)
+		"$1";;
+	reload)
+		# Restart, since there is no true "reload" feature.
+		restart;;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload}"
+		exit 1
+esac
+===== S30dbus =====
+#!/bin/sh
+#
+# messagebus:   The D-BUS systemwide message bus
+#
+# chkconfig: 345 97 03
+# description:  This is a daemon which broadcasts notifications of system events \
+#               and other messages. See http://www.freedesktop.org/software/dbus/
+#
+# processname: dbus-daemon
+# pidfile: /run/messagebus.pid
+#
+
+# Create needed directories.
+[ -d /run/dbus ] || mkdir -p /run/dbus
+[ -d /var/lock/subsys ] || mkdir -p /var/lock/subsys
+[ -d /tmp/dbus ] || mkdir -p /tmp/dbus
+
+RETVAL=0
+
+start() {
+    printf "Starting system message bus: "
+
+    dbus-uuidgen --ensure
+    dbus-daemon --system
+    RETVAL=$?
+    echo "done"
+    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/dbus-daemon
+}
+
+stop() {
+    printf "Stopping system message bus: "
+
+    ## we don't want to kill all the per-user $processname, we want
+    ## to use the pid file *only*; because we use the fake nonexistent 
+    ## program name "$servicename" that should be safe-ish
+    killall dbus-daemon
+    RETVAL=$?
+    echo "done"
+    if [ $RETVAL -eq 0 ]; then
+        rm -f /var/lock/subsys/dbus-daemon
+        rm -f /run/messagebus.pid
+    fi
+}
+
+# See how we were called.
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    condrestart)
+        if [ -f /var/lock/subsys/$servicename ]; then
+            stop
+            start
+        fi
+        ;;
+    reload)
+        echo "Message bus can't reload its configuration, you have to restart it"
+        RETVAL=$?
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|condrestart|reload}"
+        ;;
+esac
+exit $RETVAL
+===== S39btpairings =====
+#!/bin/sh
+# Ported from the X6100 firmware by IU1WXY (LGPL-2.1-or-later).
+#
+# Restores the Bluetooth pairings saved on /mnt by btaudio-ctl, before
+# bluetoothd starts (S40): a new image would otherwise forget them.
+#
+
+case "$1" in
+  start)
+    [ -f /mnt/backups/bluetooth.tgz ] && tar xzf /mnt/backups/bluetooth.tgz -C /
+    # Bluetooth keyboards: classic ones go through hidp, Low Energy ones (HOGP) through uhid
+    modprobe hidp 2>/dev/null
+    modprobe uhid 2>/dev/null
+    ;;
+esac
+
+exit 0
+===== S40bluetoothd =====
+#!/bin/sh
+
+DAEMON="bluetoothd"
+PIDFILE="/var/run/$DAEMON.pid"
+
+BLUETOOTHD_ARGS="-n"
+
+# shellcheck source=/dev/null
+[ -r "/etc/default/$DAEMON" ] && . "/etc/default/$DAEMON"
+
+start() {
+	printf 'Starting %s: ' "$DAEMON"
+	# shellcheck disable=SC2086 # we need the word splitting
+	start-stop-daemon -S -q -m -b -p "$PIDFILE" -x "/usr/libexec/bluetooth/$DAEMON" \
+		-- $BLUETOOTHD_ARGS
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+stop() {
+	printf 'Stopping %s: ' "$DAEMON"
+	start-stop-daemon -K -q -p "$PIDFILE"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+reload() {
+	printf 'Reloading %s: ' "$DAEMON"
+	start-stop-daemon -K -s HUP -q -p "$PIDFILE"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+case "$1" in
+	start|stop|restart|reload)
+		"$1";;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload}"
+		exit 1
+esac
+===== S40network =====
+#!/bin/sh
+#
+# Start the network....
+#
+
+# Debian ifupdown needs the /run/network lock directory
+mkdir -p /run/network
+
+case "$1" in
+  start)
+	printf "Starting network: "
+	/sbin/ifup -a
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+	;;
+  stop)
+	printf "Stopping network: "
+	/sbin/ifdown -a
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+	;;
+  restart|reload)
+	"$0" stop
+	"$0" start
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
+
+===== S45network-manager =====
+#!/bin/sh
+
+# Allow a few customizations from a config file
+test -r /etc/default/NetworkManager && . /etc/default/NetworkManager
+
+PID=`pidof NetworkManager`
+case "$1" in
+	start)
+		printf "Starting NetworkManager ... "
+		[ ! -d /var/run/NetworkManager ] && install -d /var/run/NetworkManager
+		if [ -z "$PID" ]; then
+			/usr/sbin/NetworkManager $NETWORKMANAGER_ARGS
+		fi
+		if [ ! -z "$PID" -o $? -gt 0 ]; then
+			echo "failed!"
+		else
+			echo "done."
+		fi
+		;;
+	stop)
+		printf "Stopping NetworkManager ... "
+			[ ! -z "$PID" ] && kill $PID > /dev/null 2>&1
+		if [ $? -gt 0 ]; then
+			echo "failed!"
+		else
+			echo "done."
+		fi
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	*)
+		echo "usage: $0 {start|stop|restart|sleep|wake}"
+		;;
+esac
+exit 0
+
+
+
+===== S48sntp =====
+#!/bin/sh
+
+DAEMON="sntp"
+# sntp uses all the IPs resolved for the hostname (i.e. pool.ntp.org has 4).
+# It will try each until they either all timeout or time has been set. Thus
+# default to only providing one NTP pool host.
+SNTP_SERVERS="pool.ntp.org"
+# Step if time delta is greater then 128ms, otherwise slew
+SNTP_ARGS="-Ss -M 128"
+SNTP_KEY_CACHE="/tmp/kod"
+
+# shellcheck source=/dev/null
+[ -r "/etc/default/$DAEMON" ] && . "/etc/default/$DAEMON"
+
+start() {
+	printf 'Starting %s: ' "$DAEMON"
+	# Create key cache file to prevents warning that file is missing
+	touch $SNTP_KEY_CACHE
+	# shellcheck disable=SC2086 # we need the word splitting
+	/usr/bin/$DAEMON $SNTP_ARGS -K $SNTP_KEY_CACHE $SNTP_SERVERS
+	# sntp behavior
+	# - Does not background
+	# - Does not infinitely block
+	# - Time-out w/o network = ~2 sec
+	# - Time-out w/ network = ~5sec * # of servers
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+stop() {
+	echo "Nothing to do, $DAEMON is not a daemon."
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+reload() {
+	echo "Nothing to do, $DAEMON does not support reload."
+}
+
+case "$1" in
+	start|stop|restart|reload)
+		"$1";;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload}"
+		exit 1
+esac
+===== S49ntp =====
+#!/bin/sh
+#
+# Starts Network Time Protocol daemon
+#
+
+DAEMON="ntpd"
+PIDFILE="/var/run/$DAEMON.pid"
+
+NTPD_ARGS=" -g"
+
+# shellcheck source=/dev/null
+[ -r "/etc/default/$DAEMON" ] && . "/etc/default/$DAEMON"
+
+start() {
+	printf 'Starting %s: ' "$DAEMON"
+	# shellcheck disable=SC2086 # we need the word splitting
+	start-stop-daemon -S -q -p "$PIDFILE" -x "/usr/sbin/$DAEMON" \
+		-- $NTPD_ARGS -p "$PIDFILE"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+stop() {
+	printf 'Stopping %s: ' "$DAEMON"
+	start-stop-daemon -K -q -p "$PIDFILE"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		rm -f "$PIDFILE"
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+case "$1" in
+	start|stop|restart)
+		"$1";;
+	reload)
+		# Restart, since there is no true "reload" feature.
+		restart;;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload}"
+		exit 1
+esac
+===== S50alsa =====
+#!/bin/sh
+#
+# Alsa config
+#
+
+source /etc/profile
+
+start() {
+    printf "Restore alsa"
+    alsactl restore
+    echo "OK"
+}
+
+stop() {
+    printf "Store alsa"
+#   alsactl store
+    echo "OK"
+}
+
+restart() {
+    stop
+    start
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart|reload)
+    restart
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
+exit $?
+===== S50pulseaudio =====
+#!/bin/sh
+#
+# Starts pulseaudio.
+#
+
+
+start() {
+	printf "Starting pulseaudio: "
+	umask 007
+	/usr/bin/pulseaudio \
+		--system \
+		--daemonize \
+		--disallow-exit \
+		--exit-idle-time=-1 \
+		--use-pid-file \
+		--disable-shm
+	echo "OK"
+}
+stop() {
+	printf "Stopping pulseaudio: "
+	PULSE_RUNTIME_PATH=/var/run/pulse /usr/bin/pulseaudio --kill
+	echo "OK"
+}
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	restart
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
+
+===== S50sshd =====
+#!/bin/sh
+#
+# sshd        Starts sshd.
+#
+
+# Make sure the ssh-keygen progam exists
+[ -f /usr/bin/ssh-keygen ] || exit 0
+
+umask 077
+
+start() {
+	# Create any missing keys
+	/usr/bin/ssh-keygen -A
+
+	printf "Starting sshd: "
+	/usr/sbin/sshd
+	touch /var/lock/sshd
+	echo "OK"
+}
+stop() {
+	printf "Stopping sshd: "
+	killall sshd
+	rm -f /var/lock/sshd
+	echo "OK"
+}
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	restart
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
+
+===== S94btcat =====
+#!/bin/sh
+# Ported from the X6100 firmware by IU1WXY (LGPL-2.1-or-later).
+#
+# Bluetooth SPP bridge for CAT (btcat). Must start before S95gui.
+#
+
+PIDFILE="/var/run/btcat.pid"
+BTCAT_ENABLE=yes
+
+[ -r /etc/default/btcat ] && . /etc/default/btcat
+[ -r /mnt/btcat.conf ] && . /mnt/btcat.conf
+
+start() {
+	[ "$BTCAT_ENABLE" = "yes" ] || return 0
+	printf 'Starting btcat: '
+	modprobe rfcomm 2>/dev/null
+	start-stop-daemon -S -b -q -m -p "$PIDFILE" -x /bin/sh -- -c "exec /usr/sbin/btcat 2>>/tmp/btcat.log"
+	status=$?
+	# give btcat time to bind the pty over /dev/ttyS2 before the GUI opens it
+	for i in 1 2 3 4 5 6 7 8 9 10; do
+		grep -q " /dev/ttyS2 " /proc/self/mountinfo && break
+		usleep 200000
+	done
+	( /usr/sbin/btcat-setup >/tmp/btcat-setup.log 2>&1 & )
+	[ "$status" -eq 0 ] && echo "OK" || echo "FAIL"
+	return "$status"
+}
+
+stop() {
+	printf 'Stopping btcat: '
+	start-stop-daemon -K -q -p "$PIDFILE"
+	rm -f "$PIDFILE" /tmp/btcat.clients
+	killall bt-agent 2>/dev/null
+	umount -l /dev/ttyS2 2>/dev/null
+	echo "OK"
+}
+
+case "$1" in
+	start|stop) "$1";;
+	restart) stop; sleep 1; start;;
+	*) echo "Usage: $0 {start|stop|restart}"; exit 1;;
+esac
+===== S96webserver =====
+#!/bin/sh
+#
+# Starts webserver.
+#
+
+DAEMON="x6100_webserver"
+PIDFILE="/var/run/$DAEMON.pid"
+ARGS="--db /mnt/params.db --host 0.0.0.0 --port 80 --filebrowser-path /mnt/"
+# HTTPS con certificado autofirmado (se genera con openssl la primera vez)
+ARGS="$ARGS --https-port 443 --cert-dir /mnt/https"
+
+start() {
+	printf "Starting $DAEMON: "
+	# Sleep for finishing migration
+	sleep 3
+	start-stop-daemon -S -b -q -m -p "$PIDFILE" -x "/usr/bin/$DAEMON" -- $ARGS
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+stop() {
+	printf 'Stopping %s: ' "$DAEMON"
+	start-stop-daemon -K -q -p "$PIDFILE"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		rm -f "$PIDFILE"
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	restart
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
+

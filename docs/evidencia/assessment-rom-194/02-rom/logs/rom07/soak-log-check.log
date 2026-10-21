@@ -1,0 +1,7 @@
+archivo: out-soak.txt (comprimido en logs/rom07/gui-run-soak-full.log.gz)
+         compressed        uncompressed  ratio uncompressed_name
+              15203              296731  94.9% /home/pablo/desa/x6200/assessment-194/wt-assessment-196/docs/evidencia/assessment-rom-194/02-rom/logs/rom07/gui-run-soak-full.log
+crashlog_sig=0
+overflow=0
+lineas=2857
+sha256_gz=8963212d2114be0abc6005cf1c452bda80cf0c5da08c01571a9dbd84574f95d6

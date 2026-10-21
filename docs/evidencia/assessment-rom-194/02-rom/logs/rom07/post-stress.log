@@ -1,0 +1,21 @@
+      1       0  1884    1 Ss   sh              sh -c chroot /t /bin/busybox env LD_PRELOAD=/lib/libfakefb.so:/lib/libcrash.so:/lib/libx6200trace.so /usr/sbin/x6200_gui > /t/out-banco.txt 2>&1
+      7       1 60248   11 Sl   x6200_gui       /usr/bin/qemu-arm-static /usr/sbin/x6200_gui
+PID=1
+Name:	sh
+State:	S (sleeping)
+FDSize:	64
+VmRSS:	    1884 kB
+Threads:	1
+fds=5
+--- crashlog real
+0
+--- overflow
+0
+--- log bytes
+321260
+--- last lines
+[User]	(771815.999, +0)	 construct_cb: Settings group 5: children 81..87 	(in dialog_settings.c line #2344)
+[User]	(771815.999, +0)	 construct_cb: Settings group 6: children 87..107 	(in dialog_settings.c line #2344)
+[User]	(771815.999, +0)	 construct_cb: Settings group 7: children 107..111 	(in dialog_settings.c line #2344)
+[User]	(771815.999, +0)	 construct_cb: Settings: 66 navigable items (created in this opening) 	(in dialog_settings.c line #2346)
+[User]	(771824.135, +8136)	 cfg_band_params_save_item: Saved vfoa_mode=4 (pk=7) 	(in band.c line #531)

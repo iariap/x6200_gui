@@ -1,0 +1,38 @@
+--- /bin/sh symlink
+-rwxr-xr-x. 1 pablo pablo 981728 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/bash
+lrwxrwxrwx. 1 pablo pablo      4 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/bin/sh -> bash
+--- bash version
+GNU bash, version 5.2.15(1)-release (arm-buildroot-linux-gnueabihf)
+--- parse con el interprete real /bin/sh (bash)
+rcS                          rc=0 
+rcK                          rc=0 
+S01boot_time                 rc=0 
+S01create_data               rc=0 
+S01seedrng                   rc=0 
+S01syslogd                   rc=0 
+S02klogd                     rc=0 
+S02sysctl                    rc=0 
+S02update                    rc=0 
+S03tune_cache                rc=0 
+S04restore_backup_config     rc=0 
+S10udev                      rc=0 
+S11radio_daemon              rc=0 
+S20gui                       rc=0 
+S30dbus                      rc=0 
+S39btpairings                rc=0 
+S40bluetoothd                rc=0 
+S40network                   rc=0 
+S45network-manager           rc=0 
+S48sntp                      rc=0 
+S49ntp                       rc=0 
+S50alsa                      rc=0 
+S50pulseaudio                rc=0 
+S50sshd                      rc=0 
+S94btcat                     rc=0 
+S96webserver                 rc=0 
+--- x6200_daemon
+rc=0
+--- S01 rama con bash (sin ejecutar): syntax + expansion de arrays
+22 33
+2 3
+bash_arrays_rc=0

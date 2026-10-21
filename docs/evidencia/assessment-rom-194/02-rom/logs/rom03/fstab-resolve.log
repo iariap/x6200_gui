@@ -1,0 +1,35 @@
+--- p1 filesystem según parted
+BYT;
+/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sdcard.img:571MB:file:512:512:msdos::;
+1:1049kB:34.6MB:33.6MB:fat16::boot, lba;
+2:34.6MB:571MB:537MB:ext4::;
+--- guard grep fat32 sobre la imagen real
+grep_fat32_rc=1 (1 = no matchea, el script sigue)
+--- fstab p3
+SOURCE         TARGET   FSTYPE OPTIONS
+/dev/root      /        ext2   rw,noauto
+proc           /proc    proc   defaults
+devpts         /dev/pts devpts defaults,gid=5,mode=620,ptmxmode=0666
+tmpfs          /dev/shm tmpfs  mode=0777
+tmpfs          /tmp     tmpfs  mode=1777
+tmpfs          /run     tmpfs  mode=0755,nosuid,nodev
+sysfs          /sys     sysfs  defaults
+/dev/mmcblk0p3 /mnt     ext4   rw
+--- mount -f (sin syscall) resuelve p3
+mount: /dev/mmcblk0p3 mounted on /mnt.
+mount_fake_rc=0
+--- copia privada agrandada a 2 GiB para ver espacio libre
+1:1049kB:34.6MB:33.6MB:fat16::boot, lba;
+2:34.6MB:571MB:537MB:ext4::;
+1:571MB:2147MB:1576MB:free;
+free_line=1:571MB:2147MB:1576MB:free;
+mkpart_argv_1=571MB argv_2=2147MB
+--- binarios que usa el script
+-rwxr-xr-x. 1 pablo pablo 104544 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/sbin/blkid
+-rwxr-xr-x. 1 pablo pablo   9732 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/sbin/mkfs
+-rwxr-xr-x. 1 pablo pablo  55528 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/sbin/mkfs.fat
+-rwxr-xr-x. 1 pablo pablo  75920 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/sbin/parted
+-rwxr-xr-x. 1 pablo pablo   9728 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/sbin/partprobe
+--- PATH de un shell de la imagen (no es el del init)
+PATH=/home/pablo/.local/bin:/home/pablo/.kimi-code/bin:/home/pablo/.npm-global/bin:/home/pablo/.cargo/bin:/home/pablo/.opencode/bin:/home/pablo/.bun/bin:/home/pablo/.pyenv/plugins/pyenv-virtualenv/shims:/home/pablo/.pyenv/shims:/home/pablo/.pyenv/bin:/home/pablo/.local/opt/deepseek-harness/squashfs-root:/home/pablo/.local/opt/deepseek-harness/squashfs-root/usr/sbin:/home/pablo/.local/bin:/home/pablo/bin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/home/pablo/.lmstudio/bin:/home/pablo/flutter/bin:/home/pablo/.lmstudio/bin:/home/pablo/.lmstudio/bin
+/usr/bin/parted
