@@ -1,0 +1,56 @@
+
+== 1) compilacion host (-std=c11 -Wall -Wextra -Werror) ==
+ok: renderer, backend, handoff, animador, volcado y shim compilan sin avisos
+
+== 2) tests unitarios (modelo, layout, raster, framebuffer) ==
+renderer_test: 172 comprobaciones, 0 fallos
+fb_test: 88 comprobaciones, 0 fallos
+
+== 3) cesion del framebuffer (procesos reales, identidad por /proc/<pid>/exe) ==
+boot_splash: pid 523559 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: pid 523561 del PIDFILE no es /tmp/tmp.dm6r2qP05X/fake_animator: no se senaliza
+handoff_test: 39 comprobaciones, 0 fallos
+
+== 4) sanitizers (ASan + UBSan) ==
+SKIP: este entorno no puede linkear los sanitizers con cc:
+      /usr/bin/ld.bfd: cannot find /usr/lib64/libasan.so.8.0.0: No such file or directory
+/usr/bin/ld.bfd: cannot find /usr/lib64/libubsan.so.1.0.0: No such file or directory
+collect2: error: ld returned 1 exit status
+
+== 5) el binario REAL contra un /dev/fb0 sintetico (shim LD_PRELOAD) ==
+ok: 16bpp line_length=1024 (819200 bytes) rgb: identico byte a byte al volcado independiente
+ok: 16bpp line_length=960 (768000 bytes) rgb: identico byte a byte al volcado independiente
+ok: 32bpp line_length=1920 (1536000 bytes) rgb: identico byte a byte al volcado independiente
+ok: 32bpp line_length=1920 (1536000 bytes) bgr: identico byte a byte al volcado independiente
+ok: el animador loguea su sello de fuentes (x6200_bootanim: fuente desconocido)
+ok: el cuadro final es el de los 30 s (STARTUP DELAYED_), no uno anterior
+ok: paleta del contrato, cajas respetadas y ultimo cuadro conservado
+ok: SIGUSR1 -> salida en 1 ms con codigo 0, cuadro final intacto
+ok: resolucion que no es 480x800 -> exit 0 sin escribir en el framebuffer
+ok: bpp no soportado (24) -> exit 0 sin escribir en el framebuffer
+ok: xoffset distinto de cero -> exit 0 sin escribir en el framebuffer
+ok: yoffset distinto de cero -> exit 0 sin escribir en el framebuffer
+ok: line_length demasiado corto -> exit 0 sin escribir en el framebuffer
+ok: smem_len insuficiente -> exit 0 sin escribir en el framebuffer
+ok: mmap fallido -> exit 0 sin escribir en el framebuffer
+ok: sin /dev/fb0 reintenta y sale 0 en silencio (1905 ms)
+ok: framebuffer sin permisos -> exit 0 con aviso en stderr
+
+== 6) script de init S01bootanim ==
+ok: sintaxis, permiso de ejecucion, invocacion del contrato, sin killall ni GUI
+ok: start arranca una instancia y deja el PIDFILE
+ok: singleton (un solo animador, un solo start-stop-daemon -S)
+ok: stop termina el animador, limpia el PIDFILE y no usa killall
+ok: un PIDFILE con un PID ajeno no se senaliza ni se mata
+ok: PIDFILE corrupto, vacio o ausente: stop limpia y no rompe
+ok: arrancar/detener dos veces deja todo limpio y nunca toca la GUI
+ok: sin ejecutable el init no bloquea el boot (exit 0 + aviso en stderr)
+
+== 7) integracion (rootfs, prune, handoff en la GUI, CMake, workflow) ==
+ok: S95gui ausente del rootfs del port, S20gui unico y S01boot_time preservado
+ok: el prune sigue sacando el S95gui del vendor y no toca S01bootanim
+ok: handoff antes de drm_init y del primer lv_timer_handler, marcas nuevas, screen_rec_flush intacto
+ok: CMake integra el animador y boot_splash, con -std=c11 -Wall -Wextra -Werror e install en sbin
+ok: el gate esta integrado en .github/workflows/boot-rootfs.yml
+
+PASS (parcial): boot anim neo-retro (#192) - unitarios + binario real con fb sintetico + init + integracion; ASan/UBSan SKIP por falta de soporte del compilador

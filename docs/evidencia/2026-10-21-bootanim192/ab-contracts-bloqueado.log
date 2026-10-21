@@ -1,0 +1,6 @@
+BLOCKED: git worktree add failed for fb859bb682f0: error: unable to write file tools/verifica-radio.sh
+error: unable to write file u-boot/u-boot-sunxi-with-spl.bin
+Updating files: 100% (22607/22607)
+Updating files: 100% (22607/22607), done.
+fatal: Could not reset index file to revision 'HEAD'.
+AB EXIT=2
