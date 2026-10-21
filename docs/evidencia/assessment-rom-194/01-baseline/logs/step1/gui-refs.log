@@ -1,0 +1,23 @@
+e1476ecef355e8c3e5084e577ecc35689d4f326d	HEAD
+c888308eede71205605c06383432ee7e165f202e	refs/heads/assessment/rom-194
+50bf8ab0faef117a02d3a2d8c9b6bec4befafba6	refs/heads/lu2dsx/x6200-rom
+---candidate object---
+commit
+commit
+---ancestry---
+c888308e IS ancestor of 90aebad5
+---docs-only divergence---
+docs/PRUEBAS.md
+docs/evidencia/2026-10-21-autotune191-radio/01-pagina6-menu.png
+docs/evidencia/2026-10-21-autotune191-radio/02-autotune-lsb.png
+docs/evidencia/2026-10-21-autotune191-radio/03-cw-autotune-inicio.png
+docs/evidencia/2026-10-21-autotune191-radio/04-cw-autotune-3s.png
+docs/evidencia/2026-10-21-autotune191-radio/README.md
+docs/evidencia/2026-10-21-dfl193-regresion/02-usb-panel-abierto.png
+docs/evidencia/2026-10-21-dfl193-regresion/03-ajustar.png
+docs/evidencia/2026-10-21-dfl193-regresion/04-editor-lsb.png
+docs/evidencia/2026-10-21-dfl193-regresion/05-editor-usb.png
+docs/evidencia/2026-10-21-dfl193-regresion/06-editor-vuelta-lsb.png
+docs/evidencia/2026-10-21-dfl193-regresion/README.md
+---non-doc files in divergence---
+NONE

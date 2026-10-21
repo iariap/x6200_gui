@@ -1,0 +1,48 @@
++ git --version
+git version 2.55.0
++ gh --version
++ head -1
+gh version 2.101.0 (2026-09-15)
++ python3 --version
+Python 3.14.7
++ uv --version
+uv 0.9.18
++ cmake --version
++ head -1
+cmake version 4.3.0
++ gcc --version
++ head -1
+gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)
++ g++ --version
++ head -1
+g++ (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)
++ make --version
++ head -1
+GNU Make 4.4.1
++ docker --version
+Docker version 29.8.2, build 7fc2dff
++ docker image inspect x6200-buildroot:latest --format '{{.Id}} {{.Created}} {{.Size}}'
+sha256:b3e7601313d64284645a5224c60fb40f39ea58e0bfc68f42fd9bb0dad13a1189 2026-02-11T00:28:36.802605696-03:00 6473152937
++ qemu-arm-static --version
++ head -1
+qemu-arm version 10.2.2 (qemu-10.2.2-1.fc44)
++ uname -a
+Linux fedora 7.2.8-200.fc44.x86_64 #1 SMP PREEMPT_DYNAMIC Fri Sep 25 21:05:44 UTC 2026 x86_64 GNU/Linux
++ nproc
+16
++ free -g
++ head -2
+               total        used        free      shared  buff/cache   available
+Mem:              89          41           2           0          47          48
++ df -h /home/pablo/desa/x6200
++ tail -1
+/dev/nvme0n1p3  953G  812G  127G  87% /home/pablo/desa/x6200
++ command -v ninja
++ echo 'ninja MISSING'
+ninja MISSING
++ command -v fakeroot
++ echo 'host fakeroot MISSING'
+host fakeroot MISSING
++ command -v patchelf
++ echo 'patchelf MISSING'
+patchelf MISSING

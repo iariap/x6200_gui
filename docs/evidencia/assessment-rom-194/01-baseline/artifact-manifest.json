@@ -1,0 +1,287 @@
+{
+  "campaign": "assessment-rom-194",
+  "unit": 195,
+  "role": "evidencia; no implementacion",
+  "generated_utc": "2026-10-21T20:57:13Z",
+  "candidate": {
+    "gui_sha": "c888308eede71205605c06383432ee7e165f202e",
+    "development_branch": "lu2dsx/x6200-rom",
+    "lvgl_gitlink": "74d0a816a440eea53e030c4f1af842a94f7ce3d3",
+    "buildroot_sha": "d084e2870a00b64d9c57474e7eceeef80f43f25b",
+    "buildroot_submodule": "cc34b5b2abf2588f0ef55e46a4fe85a60c19ba1f"
+  },
+  "integration_branch": {
+    "name": "assessment/rom-194",
+    "sha": "c888308eede71205605c06383432ee7e165f202e"
+  },
+  "report_branch": "assessment/195-evidence",
+  "source_md5": {
+    "candidate": "964193ae9306b5127845cec44a57d52c",
+    "staged_buildroot_copy": null,
+    "staged_source_computed": "964193ae9306b5127845cec44a57d52c",
+    "embebido_en_binario": true,
+    "algorithm": "tools/fuente-md5.sh (rutas relativas, LC_ALL=C)"
+  },
+  "build": {
+    "sandbox": "/home/pablo/desa/x6200/assessment-194",
+    "container": "assessment195-build",
+    "container_image": "x6200-buildroot:latest",
+    "container_image_id": "sha256:b3e7601313d64284645a5224c60fb40f39ea58e0bfc68f42fd9bb0dad13a1189",
+    "buildroot_checkout": "/home/pablo/desa/x6200/assessment-194/clone-buildroot",
+    "buildroot_head": "d084e2870a00b64d9c57474e7eceeef80f43f25b",
+    "gui_checkout": "/home/pablo/desa/x6200/assessment-194/clone-gui",
+    "gui_head": "c888308eede71205605c06383432ee7e165f202e",
+    "override_mechanism": "X6200_GUI_OVERRIDE_SRCDIR en build/local.mk (sin editar el .mk del paquete)",
+    "local_mk_content": "X6200_GUI_OVERRIDE_SRCDIR = /home/pablo/desa/x6200/assessment-194/clone-gui",
+    "recipe": "br_config.sh; make lame mpg123; make libsndfile-dirclean; make (receta de .github/workflows/main.yml)",
+    "logs": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images",
+    "status": "complete (make final exit 0; build interrumpido y reanudado 4 veces; ver logs/step6/)",
+    "config_deviation": {
+      "reason": "X6200_defconfig fija BR2_PACKAGE_PULSEAUDIO_DAEMON=y sin BR2_PACKAGE_PULSEAUDIO=y; kconfig lo descarta y el CMake del GUI exige sndfile/libpulse",
+      "symbols_enabled_in_build_local_config": [
+        "BR2_PACKAGE_PULSEAUDIO=y",
+        "BR2_PACKAGE_PULSEAUDIO_ENABLE_ATOMIC=y",
+        "BR2_PACKAGE_LIBSNDFILE=y",
+        "BR2_PACKAGE_LIBTOOL=y"
+      ],
+      "defconfig_edited": false,
+      "package_mk_edited": false,
+      "evidence": "logs/step6/config-change.log; logs/step6/config-build-final.config; logs/step6/make-resume3.log.gz"
+    }
+  },
+  "toolchain": {
+    "host": "gcc 16.2.1, make 4.4.1, cmake 4.3.0, python 3.14.7, docker 29.8.2",
+    "arm_cross": "arm-buildroot-linux-gnueabihf-gcc 12.3.0 (host-gcc-final del Buildroot congelado)",
+    "debugfs": "1.47.3",
+    "container": "sha256:b3e7601313d64284645a5224c60fb40f39ea58e0bfc68f42fd9bb0dad13a1189",
+    "qemu": "qemu-arm-static 10.2.2 (no usado en #195: capa HOST)",
+    "ninja": "ausente en host (no se uso)"
+  },
+  "inputs": {
+    "local_mk": {
+      "path": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/local.mk",
+      "sha256": "6b9a8ef9e2be3291a8d05c835bc49cd5b9ded6965b7de0c7e7c79f02cc2c152e",
+      "bytes": 76
+    },
+    "build_dot_config": {
+      "path": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/.config",
+      "sha256": "752370d7dc01dd088758adda364c8a421a53462b852678ace1869f607b95d2d3",
+      "bytes": 151626
+    },
+    "x6200_defconfig": {
+      "path": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/br2_external/configs/X6200_defconfig",
+      "sha256": "775dd38d25cdb525c06d3e81ca5ffbb442ff79a0b36cf0d64a8757c39846f4c1",
+      "bytes": 7145
+    },
+    "params_default_db": {
+      "path": "/home/pablo/desa/x6200/assessment-194/clone-gui/tests/params.default.db",
+      "sha256": null,
+      "missing": true
+    }
+  },
+  "artifacts": {
+    "sdcard.img": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sdcard.img",
+      "bytes": 571473920,
+      "sha256": "d0ff4435ad1d068e25bf2c357a4e93478463b187e7745a9a54844488e44e33a5",
+      "mtime_utc": "2026-10-21T20:53:21Z"
+    },
+    "rootfs.tar": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/rootfs.tar",
+      "bytes": 242790400,
+      "sha256": "7c26c76b6fc27bc12dc8d5e012e51d5c2c0568fa72a8e02cad5432dfcd36a2dd",
+      "mtime_utc": "2026-10-21T20:53:21Z"
+    },
+    "rootfs.ext4": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/rootfs.ext4",
+      "bytes": 536870912,
+      "sha256": "9365b52f9aef33e0623ae8271aaf415483fe72e1afbc8ef99f93e15437bc620a",
+      "mtime_utc": "2026-10-21T20:53:19Z"
+    },
+    "boot.vfat": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/boot.vfat",
+      "bytes": 33554432,
+      "sha256": "914f07eb00d1e5afee56ab795ce6b7b1d4410d774a3534881da494319c30b17d",
+      "mtime_utc": "2026-10-21T20:53:21Z"
+    },
+    "u-boot-sunxi-with-spl.bin": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/u-boot-sunxi-with-spl.bin",
+      "bytes": 556112,
+      "sha256": "dd96b0ca1eda2c98b318ed35f284d873e64eca795a51f1d9b944115a77de0381",
+      "mtime_utc": "2026-10-21T20:39:16Z"
+    },
+    "zImage": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/zImage",
+      "bytes": 5567760,
+      "sha256": "660c94c6f7231e7dc262fefb295aae1a8dfcf9b9c2b46cdc1eced2c3296bcc14",
+      "mtime_utc": "2026-10-21T20:48:23Z"
+    },
+    "sun8i-r16-x6200.dtb": {
+      "present": true,
+      "path": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sun8i-r16-x6200.dtb",
+      "bytes": 26544,
+      "sha256": "4d73f8a5d5f846c21e4ac30550a5811443a01666f9ee57880b5316e78627cc38",
+      "mtime_utc": "2026-10-21T20:48:23Z"
+    }
+  },
+  "binary": {
+    "path_in_rootfs": "/usr/sbin/x6200_gui",
+    "bytes": 13407624,
+    "md5": "1f998c46909307397525c975a712adfd",
+    "sha256": "7e2e9331c4cbc51727a098996d98e263c45dd57cb8fff8d1f2aea2964c3849c5",
+    "source": "rootfs.tar",
+    "elf": "ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, stripped",
+    "readelf_h": "ELF Header:\n  Magic:   7f 45 4c 46 01 01 01 03 00 00 00 00 00 00 00 00 \n  Class:                             ELF32\n  Data:                              2's complement, little endian\n  Version:                           1 (current)\n  OS/ABI:                            UNIX - GNU\n  ABI Version:                       0\n  Type:                              DYN (Position-Independent Executable file)\n  Machine:                           ARM\n  Version:                           0x1\n  Entry point address:               0x24d8c\n  Start of program headers:          52 (bytes into file)\n  Start of section headers:          13406464 (bytes into file)\n  Flags:                             0x5000400, Version5 EABI, hard-float ABI\n  Size of this header:               52 (bytes)\n  Size of program headers:           32 (bytes)\n  Number of program headers:         10\n  Size of section headers:           40 (bytes)\n  Number of section headers:         29\n  Section header string table index: 28",
+    "needed_libs": [
+      "liblv_drivers.so",
+      "libaether_x6200_control.so.0",
+      "libliquid.so",
+      "libft8.so",
+      "libjpeg.so.8",
+      "libfftw3f.so.3",
+      "libnm.so.0",
+      "libgio-2.0.so.0",
+      "libdbus-glib-1.so.2",
+      "libdbus-1.so.3",
+      "libgobject-2.0.so.0",
+      "libglib-2.0.so.0",
+      "libsqlite3.so.0",
+      "libpng16.so.16",
+      "libsndfile.so.1",
+      "libudev.so.1",
+      "libpulse-simple.so.0",
+      "libpulse.so.0",
+      "libasound.so.2",
+      "libspeexdsp.so.1",
+      "libdrm.so.2",
+      "liblvgl.so",
+      "libxkbcommon.so.0",
+      "libstdc++.so.6",
+      "libm.so.6",
+      "libgcc_s.so.1",
+      "libc.so.6",
+      "ld-linux-armhf.so.3"
+    ]
+  },
+  "artifact_checks": {
+    "gate_86": {
+      "exit": 0,
+      "stdout": "OK: /home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/rootfs.tar es el firmware del port (ELF32 ARM, 13407624 B, 3/3 marcas)",
+      "stderr": ""
+    },
+    "fstab_ext4_mmcblk0p3": true,
+    "s01create_data_DATA_ya_existe": true,
+    "gui_tar_equals_ext4": true,
+    "init_d_present": [
+      "./etc/init.d/",
+      "./etc/init.d/S01boot_time",
+      "./etc/init.d/S01create_data",
+      "./etc/init.d/S01seedrng",
+      "./etc/init.d/S01syslogd",
+      "./etc/init.d/S02klogd",
+      "./etc/init.d/S02sysctl",
+      "./etc/init.d/S02update",
+      "./etc/init.d/S03tune_cache",
+      "./etc/init.d/S04restore_backup_config",
+      "./etc/init.d/S10udev",
+      "./etc/init.d/S11radio_daemon",
+      "./etc/init.d/S20gui",
+      "./etc/init.d/S30dbus",
+      "./etc/init.d/S39btpairings",
+      "./etc/init.d/S40bluetoothd",
+      "./etc/init.d/S40network",
+      "./etc/init.d/S45network-manager",
+      "./etc/init.d/S48sntp",
+      "./etc/init.d/S49ntp",
+      "./etc/init.d/S50alsa",
+      "./etc/init.d/S50pulseaudio",
+      "./etc/init.d/S50sshd",
+      "./etc/init.d/S94btcat",
+      "./etc/init.d/S96webserver",
+      "./etc/init.d/rcK",
+      "./etc/init.d/rcS"
+    ]
+  },
+  "coverage": {
+    "rows": 334,
+    "by_coverage": {
+      "PARTIAL": 138,
+      "REAL": 151,
+      "SYNTHETIC": 4,
+      "UNSUPPORTED": 41
+    },
+    "by_owner": {
+      "#197": 142,
+      "#196": 51,
+      "#195": 102,
+      "#199": 21,
+      "#198": 18
+    },
+    "inventory_audit": "logs/step2/coverage-audit.log (PASS)"
+  },
+  "tests_run": {
+    "host_suite": "17 OK, 0 fallos, 5 omitidos (4 codecs por imagen minimal + webserver)",
+    "codecs_full_image": "WSPR 158, SSTV all OK, WeFAX 300/300, JS8 1994/88",
+    "ab_testing": "227 passed, 13 deselected",
+    "sanitizers": "ASan+UBSan y TSan en contenedor full; fixture de carrera dispara",
+    "ctest": "BLOCKED (ft8lib/constants.h + libasan del host)"
+  },
+  "seed": "2684456789 (Catch2 de JS8); el resto de las suites es determinista con fixtures",
+  "cross_check_build": {
+    "img_dir": "/home/pablo/desa/x6200/rom-build/clone-buildroot/build/images",
+    "gui_md5": "3b22a03a3b7850e5c546c564125d0eb0",
+    "gui_bytes": 13412248,
+    "gate_86_exit": 0,
+    "fuente_md5_embedded": "a576d48d9994efd3e28b9f1438fa7b24",
+    "gui_source": "clone-gui shallow en 50bf8ab0 (tip, incluye #200); paquete .mk editado a SITE local",
+    "not_candidate": true,
+    "artifacts": {
+      "sdcard.img": {
+        "bytes": 571473920,
+        "sha256": "17dc49ed553b953b8a2ec2fb94d95d2ec74ed07099c8db1d7c7d929a72eb8779"
+      },
+      "rootfs.tar": {
+        "bytes": 242821120,
+        "sha256": "966bfc44312cd7c54e0337f6d37c2be89e2c5c849724daebafde099c710d8c0d"
+      },
+      "rootfs.ext4": {
+        "bytes": 536870912,
+        "sha256": "d0ccb33cd2a07af8dc428d580c64f61167862523d8670abcc0e3a02131440c86"
+      },
+      "boot.vfat": {
+        "bytes": 33554432,
+        "sha256": "1e844a43a5c821ceb56471762ca47139e4905427dd5e3ca87f57adeaf0729d59"
+      },
+      "u-boot-sunxi-with-spl.bin": {
+        "bytes": 556120,
+        "sha256": "dee634c858bfef2ff7232ea9405636dfff5185e85922d421dbccb4708416412c"
+      },
+      "zImage": {
+        "bytes": 5567352,
+        "sha256": "67922cc8187c8f967434c1f886b9a2560c8aa78c7d2637be8867791f30a4529f"
+      },
+      "sun8i-r16-x6200.dtb": {
+        "bytes": 26544,
+        "sha256": "4d73f8a5d5f846c21e4ac30550a5811443a01666f9ee57880b5316e78627cc38"
+      }
+    }
+  },
+  "layer_limits": "Solo HOST en #195; QEMU_USER y HARDWARE son de #196/#199",
+  "limitations": [
+    "El build ARM/ROM corre en un contenedor privado; su estado (completo/PARTIAL) se declara en build.status y en results.csv.",
+    "No se ejecuto kernel/init real: arranque, DATA y update quedan para #196/#199.",
+    "El webserver se omite por diseno (no se usa el volumen compartido de otra sesion).",
+    "CTest test_ft8_qso/test_qth no corre en host: falta ft8lib/constants.h y libasan/libubsan.",
+    "No hay corrida de CI del commit de merge c888308e; se usa el head del PR #193 como referencia.",
+    "El tip de lu2dsx/x6200-rom avanzo a 50bf8ab0 (#200) con cambios de produccion: STALE para ese tip.",
+    "El ROM del orquestador (rom-build) se construyo con el GUI del tip 50bf8ab0 (fuente-md5 a576d48d), no del candidato; se registra como control cruzado, no como identidad c888308e.",
+    "La imagen de esta unidad requirio habilitar BR2_PACKAGE_PULSEAUDIO=y en el .config del build (desviacion declarada); el defconfig congelado no alcanza para configurar el GUI.",
+    "No se toco la radio ni se transmitio; nada de RF/energia/audio analogico fue medido."
+  ]
+}
