@@ -1,0 +1,1 @@
+f02-corrupt        FALLO (exit 2)

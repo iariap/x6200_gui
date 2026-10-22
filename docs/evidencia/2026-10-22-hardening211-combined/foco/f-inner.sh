@@ -53,12 +53,12 @@ mount_proc() { mountpoint -q "$T/proc" 2>/dev/null || mount --bind /proc "$T/pro
 
 # --- GUI ----------------------------------------------------------------------
 gui_bg() {   # $1 = archivo de salida
-    rm -f "$T/tmp/x6200_remote.sock" "$T/tmp/crash.txt"
+    rm -f "$T/tmp/x6200_remote.sock" "$T/crash.txt"
     ( cd "$T/tmp" && chroot "$T" /bin/busybox env LD_PRELOAD="$PRELOAD" QEMU_CPU=cortex-a7 /usr/sbin/x6200_gui ) >> "$1" 2>&1 &
     GUI=$!
 }
 gui_fg() {   # $1 = timeout, $2 = salida ; imprime el rc
-    rm -f "$T/tmp/x6200_remote.sock" "$T/tmp/crash.txt"
+    rm -f "$T/tmp/x6200_remote.sock" "$T/crash.txt"
     ( cd "$T/tmp" && timeout "$1" chroot "$T" /bin/busybox env LD_PRELOAD="$PRELOAD" QEMU_CPU=cortex-a7 /usr/sbin/x6200_gui ) > "$2" 2>&1
     echo $?
 }
@@ -124,7 +124,7 @@ f02-corrupt)
     en_out "Persistence unavailable: check DATA and params.db" "$OUTF"
     check "$([ "$(sha "$T/mnt/params.db")" = "$ANTES" ]; echo $?)" "los bytes de la base corrupta quedan idénticos"
     check "$([ ! -S "$T/tmp/x6200_remote.sock" ]; echo $?)" "no abrió el socket de control (no inicializó radio/CAT)"
-    check "$([ ! -f "$T/tmp/crash.txt" ]; echo $?)" "sin archivo de crash (no hubo SIGSEGV)"
+    check "$([ ! -f "$T/crash.txt" ]; echo $?)" "sin archivo de crash (no hubo SIGSEGV)"
     ;;
 
 f02-nomount)
@@ -191,10 +191,11 @@ f04-daemon-exit78)
     check "$([ "$NEXIT" -ge 1 ]; echo $?)" "el supervisor informa el exit 78 del hijo SQLite"
     check "$([ "$NEXIT" -le 2 ]; echo $?)" "sin lazo rápido: ≤2 arranques en 11 s (repo pre-fix: 34 en 10 s)"
     en_out "GUI restart in 60s" "$DAEMONOUT"
-    LOGS=$(ls "$T/mnt/app_logs" 2>/dev/null | wc -l)
-    note "   logs en /mnt/app_logs: $LOGS [$(ls "$T/mnt/app_logs" 2>/dev/null | tr '\n' ' ')]"
+    TODOS=$(ls "$T/mnt/app_logs" 2>/dev/null | wc -l)
+    LOGS=$(ls "$T/mnt/app_logs"/x6200_log_*_p*_r*.txt 2>/dev/null | wc -l)
+    note "   archivos en /mnt/app_logs: $TODOS (logs propios del supervisor: $LOGS) [$(ls "$T/mnt/app_logs" 2>/dev/null | tr '\n' ' ')]"
     check "$([ "$LOGS" -ge 1 ]; echo $?)" "el supervisor dejó el log de la corrida en DATA"
-    UNIQ=$(ls "$T/mnt/app_logs" 2>/dev/null | grep -c '^x6200_log_[0-9_-]*_p[0-9]*_r[0-9]*\.txt$')
+    UNIQ=$(ls "$T/mnt/app_logs"/x6200_log_*_p*_r*.txt 2>/dev/null | sed 's|.*/||' | grep -c '^x6200_log_[0-9_-]*_p[0-9]*_r[0-9]*\.txt$')
     check "$([ "$LOGS" -ge 1 ] && [ "$UNIQ" = "$LOGS" ]; echo $?)" "nombre único por corrida (timestamp+pid+nº ejecución)"
     kill -TERM "$WGUI" 2>/dev/null
     sleep 2
@@ -226,13 +227,20 @@ f01f03-chain)
     # F-01 -> F-03 -> persistencia: cadena que ningún hijo probó por separado.
     if mnt_ext4_img /tmp/data.img; then
         EXT4=si
+        MODO=remontaje
     else
         EXT4=no
-        skip "no se pudo montar una imagen ext4 con loop: se cae a tmpfs (sin persistencia entre arranques)"
+        MODO=mismo-montaje
+        skip "sin loop device: DATA = tmpfs (el 'reinicio' es stop+start de la GUI sin remontar; la persistencia en filesystem la cubre el banco de #212 con la tarjeta real)"
         mnt_tmpfs || bad "no se pudo montar /mnt"
+        mkdir -p "$T/mnt/app_logs"
     fi
-    check "$(mountpoint -q "$T/mnt"; echo $?)" "DATA (ext4=${EXT4}) montada en /mnt"
+    check "$(mountpoint -q "$T/mnt"; echo $?)" "DATA montada en /mnt (ext4=${EXT4}, modo=$MODO)"
     check "$([ ! -e "$T/mnt/params.db" ]; echo $?)" "DATA recién creada, sin params.db"
+
+    # Evidencia cruda de la corrida anterior (mismo path): se descarta para no
+    # confundir un intento con el siguiente.
+    rm -f "$OUTDIR"/chain-boot1.out "$OUTDIR"/chain-boot2.out "$OUTDIR"/chain-boot1.state "$OUTDIR"/chain-boot2.state
 
     OUTF1="$OUTDIR/chain-boot1.out"
     gui_bg "$OUTF1"
@@ -241,7 +249,9 @@ f01f03-chain)
     check "$([ -n "$SEG1" ]; echo $?)" "boot 1: la GUI arranca sobre la DATA nueva"
     en_out "seeding from /usr/share/x6200/params.default.db" "$OUTF1"
     estado '{"cmd":"freq","val":14074000}' > "$OUTDIR/chain-set.txt" 2>&1
-    sleep 1
+    # El guardado de params es del hilo de persistencia (dirty -> saver): se le da
+    # la misma ventana de 8 s que usó el QA de #213 antes de parar la GUI.
+    sleep 8
     estado '{"cmd":"get"}' > "$OUTDIR/chain-boot1.state" 2>&1
     F1=$(freq_of "$OUTDIR/chain-boot1.state")
     note "   boot 1: freq por socket = ${F1:-?}"
@@ -250,11 +260,13 @@ f01f03-chain)
     stop_gui
     sync
 
-    umount "$T/mnt" || bad "no se pudo desmontar la DATA"
-    mount -t ext4 -o loop "$T/tmp/data.img" "$T/mnt" 2>/dev/null || mount -t tmpfs tmpfs "$T/mnt" || true
-    OTRA=$(sha "$T/mnt/params.db")
-    note "   sha de params.db: boot1=$sha1db reboot=$OTRA"
-    check "$([ "$sha1db" = "$OTRA" ]; echo $?)" "la base persiste byte a byte tras el remontaje"
+    if [ "$MODO" = remontaje ]; then
+        umount "$T/mnt" || bad "no se pudo desmontar la DATA"
+        mount -t ext4 -o loop "$T/tmp/data.img" "$T/mnt" 2>/dev/null || bad "no se pudo remontar la DATA"
+        OTRA=$(sha "$T/mnt/params.db")
+        note "   sha de params.db: boot1=$sha1db reboot=$OTRA"
+        check "$([ "$sha1db" = "$OTRA" ]; echo $?)" "la base persiste byte a byte tras el remontaje (filesystem)"
+    fi
 
     OUTF2="$OUTDIR/chain-boot2.out"
     gui_bg "$OUTF2"
@@ -267,6 +279,67 @@ f01f03-chain)
     F2=$(freq_of "$OUTDIR/chain-boot2.state")
     note "   boot 2: freq por socket = ${F2:-?}"
     check "$([ -n "$F2" ] && [ "$F1" = "$F2" ]; echo $?)" "boot 2: la frecuencia persistida sobrevive al reinicio"
+    stop_gui
+    ;;
+
+f-cycles)
+    # 100 órdenes de parámetros por el socket sobre el par integrado (repetición
+    # del caso `cycles` de #213 sobre el tip): la GUI tiene que seguir viva y la
+    # base íntegra.
+    mnt_tmpfs || bad "no se pudo montar el tmpfs de /mnt"
+    OUTF="$OUTDIR/f-cycles.out"
+    gui_bg "$OUTF"
+    SEG=$(wait_socket)
+    check "$([ -n "$SEG" ]; echo $?)" "la GUI arranca para el ciclo de 100 órdenes"
+    i=0
+    ERR=0
+    while [ "$i" -lt 100 ]; do
+        F=$((7000000 + i * 1000))
+        estado "{\"cmd\":\"freq\",\"val\":$F}" > /dev/null 2>&1 || ERR=$((ERR + 1))
+        i=$((i + 1))
+    done
+    note "   100 órdenes enviadas, errores de cliente: $ERR"
+    check "$([ "$ERR" = 0 ]; echo $?)" "las 100 órdenes se enviaron sin error de socket"
+    sleep 1
+    estado '{"cmd":"get"}' > "$OUTDIR/f-cycles.state" 2>&1
+    FZ=$(freq_of "$OUTDIR/f-cycles.state")
+    note "   freq final por socket: ${FZ:-?}"
+    check "$([ -n "$FZ" ]; echo $?)" "la GUI sigue contestando después de 100 órdenes"
+    INTEG=$(db_query "$T/mnt/params.db" "PRAGMA integrity_check;")
+    check "$([ "$INTEG" = ok ]; echo $?)" "PRAGMA integrity_check = ${INTEG:-?}"
+    check "$([ ! -f "$T/crash.txt" ]; echo $?)" "sin crash durante los 100 ciclos"
+    stop_gui
+    ;;
+
+f-soak)
+    # Soak: GUI viva sin radio durante SOAK_MIN minutos, con muestras de RSS y
+    # CPU por minuto (el log queda con las muestras aunque el caso no termine).
+    SOAK_MIN=${SOAK_MIN:-60}
+    mnt_tmpfs || bad "no se pudo montar el tmpfs de /mnt"
+    OUTF="$OUTDIR/f-soak.out"
+    gui_bg "$OUTF"
+    SEG=$(wait_socket)
+    check "$([ -n "$SEG" ]; echo $?)" "la GUI arranca para el soak (${SOAK_MIN} min)"
+    PID=$(pgrep -f 'usr/sbin/x6200_gui' | head -1)
+    note "   pid de la GUI: ${PID:-?}"
+    M=0
+    while [ "$M" -lt "$SOAK_MIN" ]; do
+        sleep 60
+        M=$((M + 1))
+        if [ -n "$PID" ] && [ -r "/proc/$PID/status" ]; then
+            RSS=$(awk '/VmRSS/{print $2}' "/proc/$PID/status")
+            THR=$(awk '/Threads/{print $2}' "/proc/$PID/status")
+            note "   soak min $M: rss=${RSS}kB hilos=$THR"
+        else
+            note "   soak min $M: la GUI ya no está viva"
+            break
+        fi
+    done
+    VIVAS=$(gui_procs)
+    check "$([ "$VIVAS" -ge 1 ]; echo $?)" "la GUI quedó viva tras ${M} min de soak"
+    check "$([ ! -f "$T/crash.txt" ]; echo $?)" "sin crash durante el soak"
+    INTEG=$(db_query "$T/mnt/params.db" "PRAGMA integrity_check;")
+    check "$([ "$INTEG" = ok ]; echo $?)" "PRAGMA integrity_check tras el soak = ${INTEG:-?}"
     stop_gui
     ;;
 

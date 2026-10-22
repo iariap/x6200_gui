@@ -18,7 +18,7 @@ WT=${WT:-/home/pablo/desa/asf/state/worktrees/x6200/next-211-combined}
 OUT=${OUT:-/home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out}
 IMG=${IMG:-x6200-buildroot}
 SB=${SB:-/home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/f-combined}
-E="$DIR"
+E="$(CDPATH= cd -- "$DIR/.." && pwd)"      # dir de evidencia (padre de foco/)
 CHROOT="$SB/chroot"
 FIX="$SB/fixtures"
 
@@ -42,8 +42,10 @@ docker run --rm --entrypoint "" -v "$CHROOT":/t -v "$WT/tools/bench":/b:ro "$IMG
     || fail "no se pudieron copiar las libs del banco al chroot"
 
 echo "== compilando el cliente de control remoto para ARM (dentro del chroot) =="
-docker run --rm --entrypoint "" -v "$CHROOT":/t -v "$WT/tools/remote":/w:ro -v "$OUT/host/bin":/hb:ro "$IMG" \
-    sh -c '/hb/arm-buildroot-linux-gnueabihf-gcc -O2 -o /t/tmp/x6200-remote /w/x6200-remote.c' \
+# El wrapper del toolchain de Buildroot resuelve sus rutas desde /proc/self/exe
+# (espera estar en <host>/bin), así que el host tree se monta como /host.
+docker run --rm --entrypoint "" -v "$CHROOT":/t -v "$WT/tools/remote":/w:ro -v "$OUT/host":/host:ro "$IMG" \
+    sh -c '/host/bin/arm-buildroot-linux-gnueabihf-gcc -O2 -o /t/tmp/x6200-remote /w/x6200-remote.c' \
     || fail "no se pudo compilar x6200-remote para ARM"
 
 echo "== fixtures (a partir de la plantilla del propio rootfs) =="
@@ -70,7 +72,10 @@ SELLO=$(sh "$WT/tools/fuente-md5.sh" "$WT")
 FAILED=0
 : > "$E/matrix.txt"
 for c in $CASES; do
-    docker run --rm --cap-add SYS_ADMIN --device /dev/loop-control --entrypoint "" \
+    # --privileged: el caso de la cadena F-01/F-03 monta una imagen ext4 propia con
+    # loop device (los casos nunca referencian un dispositivo del host; el log de
+    # cada caso registra qué dispositivos de bloque ve el contenedor).
+    docker run --rm --privileged --entrypoint "" \
         -v "$CHROOT":/t -v "$FIX":/f -v "$EVID/..":/e \
         "$IMG" sh /e/foco/f-inner.sh "$c" > "$EVID/$c.stdout" 2>&1
     rc=$?

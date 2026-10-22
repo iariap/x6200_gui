@@ -1,0 +1,8 @@
+== caso: f-soak (capa QEMU_USER)
+   binario medido: e7776e227b81317e074f0998e26a459784efd47d645293acd88969678da1eb26
+   init.d en la rootfs: rcK rcS S01bootanim S01boot_time S01create_data S01seedrng S01syslogd S02klogd S02sysctl S02update S03tune_cache S04restore_backup_config S10udev S11radio_daemon S12pulseaudio S20gui S30dbus S39btpairings S40bluetoothd S40network S45network-manager S48sntp S49ntp S50alsa S50sshd S94btcat S96webserver 
+   herramientas del target: mountpoint=/t/bin/mountpoint, mkfs.ext4=/t/sbin/mkfs.ext4 parted=/t/usr/sbin/parted
+   dispositivos de bloque visibles en el contenedor: /dev/nvme0 /dev/nvme0n1 /dev/nvme0n1p1 /dev/nvme0n1p2 /dev/nvme0n1p3 (ninguno es usado por este caso)
+  ok: la GUI arranca para el soak (60 min)
+   pid de la GUI: 41
+   soak min 1: rss=60512kB hilos=12

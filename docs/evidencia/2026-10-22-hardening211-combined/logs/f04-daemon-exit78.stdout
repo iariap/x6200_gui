@@ -1,0 +1,15 @@
+== caso: f04-daemon-exit78 (capa QEMU_USER)
+   binario medido: e7776e227b81317e074f0998e26a459784efd47d645293acd88969678da1eb26
+   init.d en la rootfs: rcK rcS S01bootanim S01boot_time S01create_data S01seedrng S01syslogd S02klogd S02sysctl S02update S03tune_cache S04restore_backup_config S10udev S11radio_daemon S12pulseaudio S20gui S30dbus S39btpairings S40bluetoothd S40network S45network-manager S48sntp S49ntp S50alsa S50sshd S94btcat S96webserver 
+   herramientas del target: mountpoint=/t/bin/mountpoint, mkfs.ext4=/t/sbin/mkfs.ext4 parted=/t/usr/sbin/parted
+   dispositivos de bloque visibles en el contenedor: /dev/nvme0 /dev/nvme0n1 /dev/nvme0n1p1 /dev/nvme0n1p2 /dev/nvme0n1p3 (ninguno es usado por este caso)
+   'GUI exited: code 78' en ~11 s: 1
+  ok: el supervisor informa el exit 78 del hijo SQLite
+  ok: sin lazo rápido: ≤2 arranques en 11 s (repo pre-fix: 34 en 10 s)
+  ok: salida contiene: GUI restart in 60s
+   archivos en /mnt/app_logs: 2 (logs propios del supervisor: 1) [boot.log x6200_log_2026-10-22_17-43-14_p43_r1.txt ]
+  ok: el supervisor dejó el log de la corrida en DATA
+  ok: nombre único por corrida (timestamp+pid+nº ejecución)
+   procesos x6200_gui vivos tras SIGTERM: 0
+  ok: tras SIGTERM no queda ninguna GUI viva (no relanza)
+== resultado: f04-daemon-exit78 FAILS=0

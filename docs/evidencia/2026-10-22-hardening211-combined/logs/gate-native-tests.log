@@ -112,7 +112,7 @@ barrido #125: 51 puntos por span, paso adaptado, presupuesto 1785 ms de UNA pasa
 golden #173 USB-D from=225 to=3525 span=48000 W=800 -> x=404..459 (contrato 404..459, a la derecha del VFO)
 golden #173 LSB-D from=-3525 to=-225 span=48000 W=800 -> x=341..396 (contrato 341..396, espejo)
 golden #173 AM    from=-4500 to=+4500 span=48000 W=800 -> x=325..475 (simetrico)
-perfil host: dibujo 22.6 us/dibujo; lock visto por spectrum_get_min 12.8 us max; spectrum_data+refresco 0.7 us/frame
+perfil host: dibujo 20.1 us/dibujo; lock visto por spectrum_get_min 43.8 us max; spectrum_data+refresco 0.7 us/frame
 1018 comprobaciones, 0 fallos
 == Editor DFL (#179): modelo puro (pasos, escala adaptativa, hit-test, BW, reset) ==
 == Editor DFL: analisis estatico (gcc -fanalyzer) ==
@@ -268,3 +268,4 @@ Apply migration: 1 ...
 Cannot migrate: UNIQUE constraint failed: digital_modes.freq, digital_modes.type
 Can't apply 1 migration
 141 comprobaciones, 0 fallos
+NATIVE_RC=0
