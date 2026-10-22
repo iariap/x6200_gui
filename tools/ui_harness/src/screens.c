@@ -982,8 +982,8 @@ static void settle_dfl_editor(const scenario_t *scenario)
         fprintf(stderr, "%s: faltan los controles LOW/HIGH/BW\n", scenario->name);
         exit(1);
     }
-    if (!label_on_screen(lv_scr_act(), "Restablecer")) {
-        fprintf(stderr, "%s: falta el boton Restablecer del instrumento\n", scenario->name);
+    if (!label_on_screen(lv_scr_act(), "Reset")) {
+        fprintf(stderr, "%s: falta el boton Reset del instrumento\n", scenario->name);
         exit(1);
     }
 

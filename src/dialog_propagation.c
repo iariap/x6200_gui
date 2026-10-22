@@ -518,7 +518,7 @@ static void fill_direction(const prop_status_t *st) {
 
     if (!qth_grid_check(params.qth.x)) {
         snprintf(status.direction, sizeof(status.direction),
-                 "Sin QTH configurado (Ajustes > QTH): no se puede dar la direccion.");
+                 "Set QTH in Settings to calculate direction.");
         return;
     }
 
@@ -602,7 +602,7 @@ static void build_result(bool cancelled) {
                      "banda cerrada (puede ser QRM/QRN).");
         } else if (!status.clock_synced) {
             snprintf(status.note, sizeof(status.note),
-                     "Reloj sin NTP: el turno de los beacons puede estar corrido.");
+                     "Clock not synchronized: beacon timing may be inaccurate.");
         } else {
             snprintf(status.note, sizeof(status.note),
                      "Umbrales: abierta >= %d dB, marginal >= %d dB.", open, marg);
@@ -614,7 +614,7 @@ static void build_result(bool cancelled) {
     if (status.band < 0 && status.cluster_n == 0) {
         snprintf(status.note + strlen(status.note),
                  sizeof(status.note) - strlen(status.note),
-                 " Sin spots recientes del cluster: sin datos para esta banda.");
+                 " No recent cluster spots for this band.");
     }
 
     fill_direction(&status);
@@ -1059,7 +1059,7 @@ static const char *verdict_es(propagation_verdict_t v) {
         case PROPAGATION_VERDICT_NO_DATA:  break;
     }
 
-    return "SIN DATOS";
+    return "NO DATA";
 }
 
 static void evidence_text(const prop_status_t *st, int i, char *buf, size_t size) {

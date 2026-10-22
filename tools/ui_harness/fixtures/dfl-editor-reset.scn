@@ -1,4 +1,4 @@
-# dfl-editor-reset: editor DFL inline tras girar VOL y pulsar Restablecer (Aurora)
+# dfl-editor-reset: editor DFL inline tras girar VOL y pulsar Reset (Aurora)
 #
 # Fixture de la evidencia de #179 (editor DFL inline). Generada a partir de
 # dfl-editor-usb-d.scn; el arnes abre el editor por el camino del firmware y

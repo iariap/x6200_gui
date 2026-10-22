@@ -48,7 +48,7 @@
 #define DFL_RIGHT_W      286         /* 505..790 */
 
 #define DFL_HEAD_Y       4
-#define DFL_HEAD_H       44          /* target tactil de la cabecera/Restablecer */
+#define DFL_HEAD_H       44          /* target tactil de la cabecera/Reset */
 
 #define DFL_GRAPH_X      DFL_LEFT_X
 #define DFL_GRAPH_Y      52
@@ -583,7 +583,7 @@ static lv_obj_t *make_reset_button(lv_obj_t *parent) {
 
     lv_obj_set_style_text_font(l, &sony_18, 0);
     lv_obj_set_style_text_color(l, TC(text), 0);
-    lv_label_set_text(l, "Restablecer");
+    lv_label_set_text(l, "Reset");
     lv_obj_center(l);
 
     return b;
@@ -708,7 +708,7 @@ void dfl_inline_init(lv_obj_t *waterfall_widget) {
     lv_obj_t *esq = make_label(graph, DFL_GRAPH_W - 78, 54, &sony_14, TC(text_dim), 72);
 
     lv_obj_set_style_text_align(esq, LV_TEXT_ALIGN_RIGHT, 0);
-    lv_label_set_text(esq, "Esquema");
+    lv_label_set_text(esq, "Schematic");
 
     make_row(panel, DFL_ROW_Y(0), "LOW", DFL_SEL_LOW, DFL_UI_LOW_ROW);
     make_row(panel, DFL_ROW_Y(1), "HIGH", DFL_SEL_HIGH, DFL_UI_HIGH_ROW);
