@@ -1,0 +1,8 @@
+=== 01-baseline
+sha256sum_c_exit=0 entries=80 files=81
+=== 02-rom
+sha256sum_c_exit=0 entries=102 files=103
+=== 03-ui-ux
+sha256sum_c_exit=0 entries=815 files=816
+=== 04-performance
+sha256sum_c_exit=0 entries=272 files=273

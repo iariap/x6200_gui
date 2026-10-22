@@ -1,0 +1,27 @@
+production diff candidate..tip:
+CMakeLists.txt
+.github/workflows/boot-rootfs.yml
+.github/workflows/main.yml
+rootfs/etc/init.d/S01bootanim
+src/bootanim/CMakeLists.txt
+src/bootanim/fb.c
+src/bootanim/fb.h
+src/bootanim/main.c
+src/bootanim/renderer.c
+src/bootanim/renderer.h
+src/boot_splash.c
+src/boot_splash.h
+src/CMakeLists.txt
+src/main.c
+tests/bootanim/fake_animator.c
+tests/bootanim/fake_fb.c
+tests/bootanim/fb_test.c
+tests/bootanim/handoff_test.c
+tests/bootanim/render_bench.c
+tests/bootanim/renderer_test.c
+tests/bootanim/replay_dump.c
+tests/bootanim/start-stop-daemon.sh
+tests/bootanim/test_util.h
+tests/check_bootanim.sh
+u-boot/u-boot-sunxi-with-spl.bin
+count=25
