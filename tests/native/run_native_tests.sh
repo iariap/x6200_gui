@@ -1186,3 +1186,50 @@ rm -rf "$DB_PERSIST_DIR"
 # Ver docs/evidencia/2026-10-22-next218/README.md.
 echo "== WiFi ocioso (#218): pump de GLib con la radio apagada (250 ms) y encendida (30 ms) =="
 sh "$DIR/run_wifi_idle_timer.sh" "$OUT/wifi-idle"
+# --- radio_thread fail-slow sin BASE (issue #219, evidencia F-08 del #198) ----
+# src/radio.c se compila POR INCLUSION (RADIO_C_PATH) para poder observar el
+# estatico radio_thread() y su estado privado: radio_tick() no se stubea, se
+# controla por su unica entrada observable, x6200_flow_read() (stub en
+# tests/native/radio_stubs.c). El stub de usleep corta el lazo con longjmp, asi
+# que el test es determinista y una version con el defecto (que no duerme cuando
+# radio_tick() devuelve false) FALLA en el CHECK en vez de girar para siempre.
+# El radio.c se stagea en un directorio PROPIO (sin los headers reales al lado):
+# sus `#include "..."` caen al stage (los headers reales que necesita en su
+# totalidad: radio.h, visual_policy.h, cb.h, pubsub_ids.h, cfg/*) o a los stubs
+# minimos de tests/native/stubs_radio/ y a las copias del SDK que viven ahi (el
+# mismo patron de staging que clock/backlight/hkey). Ver
+# tests/native/stubs_radio/README.md. --gc-sections evita linkear el resto de
+# radio.c (radio_init, observers de VFO, CB): solo queda el lazo y sus
+# dependencias.
+echo "== #219: radio_thread duerme en cada vuelta del sondeo =="
+RT_STAGE="$OUT/radio_src"
+rm -rf "$RT_STAGE"
+mkdir -p "$RT_STAGE/cfg" "$RT_STAGE/params" "$RT_STAGE/lvgl" \
+         "$RT_STAGE/aether_radio/x6200_control/low"
+# Headers reales que radio.c necesita enteros (mismo contrato que sus tipos).
+cp "$SRC/radio.h" "$SRC/visual_policy.h" "$SRC/cb.h" "$SRC/pubsub_ids.h" "$RT_STAGE/"
+cp "$SRC/cfg/subjects.h" "$SRC/cfg/common.h" "$SRC/cfg/band.h" "$SRC/cfg/atu.h" \
+   "$SRC/cfg/transverter.h" "$SRC/cfg/cfg.h" "$RT_STAGE/cfg/"
+# Stubs minimos y copias del SDK.
+cp "$DIR/stubs_radio/"*.h "$RT_STAGE/"
+cp "$DIR/stubs_radio/params/params.h" "$RT_STAGE/params/"
+cp "$DIR/stubs_radio/lvgl/lvgl.h" "$RT_STAGE/lvgl/"
+cp "$DIR/stubs_radio/aether_radio/x6200_control/"*.h "$RT_STAGE/aether_radio/x6200_control/"
+cp "$DIR/stubs_radio/aether_radio/x6200_control/low/"*.h "$RT_STAGE/aether_radio/x6200_control/low/"
+cp "$SRC/radio.c" "$RT_STAGE/radio.c"
+RT_INC="-I$RT_STAGE -I$DIR"
+RT_FLAGS="$BASEFLAGS -ffunction-sections -fdata-sections"
+RT_LINK="-Wl,--gc-sections"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $RT_FLAGS $SAN $RT_INC -DRADIO_C_PATH="\"$RT_STAGE/radio.c\"" $RT_LINK \
+        "$DIR/test_radio_thread.c" "$DIR/radio_stubs.c" "$DIR/test_framework.c" \
+        "$DIR/radio_thread_test_main.c" -o "$OUT/radio_thread_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $RT_FLAGS $RT_INC -DRADIO_C_PATH="\"$RT_STAGE/radio.c\"" $RT_LINK \
+        "$DIR/test_radio_thread.c" "$DIR/radio_stubs.c" "$DIR/test_framework.c" \
+        "$DIR/radio_thread_test_main.c" -o "$OUT/radio_thread_tests"
+fi
+
+"$OUT/radio_thread_tests"

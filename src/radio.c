@@ -318,9 +318,15 @@ static void * radio_thread(void *arg) {
     while (true) {
         now_time = get_time();
 
-        if (radio_tick()) {
-            usleep(15000);
-        }
+        /* El sondeo del flow duerme SIEMPRE, sin mirar lo que devuelve radio_tick()
+         * (issue #219, F-08): antes el sleep dependia de ese valor de retorno, asi
+         * que la rama que no dormia giraba en vacio consumiendo CPU (medido en
+         * QEMU_USER: ~99.8% de un core host y ~630k read()/s). Con el sleep fijo
+         * el lazo corre a ~67 iteraciones/s (15000 us) en todas las rutas, el mismo
+         * ritmo que ya tenia la ruta que dormia, y el sleep va FUERA del lock de
+         * radio (radio_tick no lo retiene al volver). */
+        radio_tick();
+        usleep(15000);
 
         int32_t idle = now_time - idle_time;
 
