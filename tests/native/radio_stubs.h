@@ -55,4 +55,19 @@ extern int      radio_stub_dsp_calls;
 extern int      radio_stub_idle_marks[RADIO_STUB_IDLE_MARKS];
 extern int      radio_stub_idle_marks_n;
 
+/* --- audio de recepcion (issue #244) -------------------------------------- */
+
+/* radio.c lee dos Subjects con subject_get_int() en el camino del volumen y los distingue por
+ * puntero: el test deja cfg.vol.val y cfg_cur.mode en valores propios y estos son los valores
+ * que devuelve el stub (cualquier otro Subject sigue devolviendo 0). */
+extern int32_t  radio_stub_vol;                /* subject_get_int(cfg.vol.val) */
+extern int32_t  radio_stub_mode;               /* subject_get_int(cfg_cur.mode) */
+extern int32_t  radio_stub_subject_set_last;   /* ultimo valor de subject_set_int() */
+extern int      radio_stub_subject_set_calls;
+
+/* Registro 14 del BASE (nivel de audio de recepcion) y mute por auriculares A2DP. */
+extern int      radio_stub_rxvol_calls;
+extern uint8_t  radio_stub_rxvol_last;
+extern bool     radio_stub_bt_muted;
+
 void radio_stub_reset(void);
