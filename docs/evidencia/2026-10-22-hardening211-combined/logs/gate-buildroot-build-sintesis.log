@@ -32,3 +32,8 @@ ebd02e5a7bec119f4fa81fd05699cdaf73b137a5f766c51988ca54b91cf719de  rootfs.tar
 binario GUI en la rootfs: e7776e227b81317e074f0998e26a459784efd47d645293acd88969678da1eb26  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out/target/usr/sbin/x6200_gui
 sello embebido: 1c3577610cdee7059a6d17769fe52e85
 make rc=0 (log: 1)
+
+== inspección del contenedor del build ==
+ExitCode=0 OOMKilled=false StartedAt=2026-10-22T16:40:41.124953182Z FinishedAt=2026-10-22T17:36:02.14598039Z Image=x6200-buildroot:latest
+comando: cd /workspace && ./br_config.sh && cd build && make -j12
+mounts: /workspace=<clon Buildroot tip> /workspace/buildroot=<upstream cc34b5b2> /workspace/buildroot/dl=<dl propio> /workspace/build=<out privada> /root/.buildroot-ccache=<ccache privado> /workspace_gui=<worktree GUI tip :ro>
