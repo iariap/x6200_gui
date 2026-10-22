@@ -1,0 +1,63 @@
+# Handoff test bajo carga extrema: 24 busy-loops sobre 16 nucleos, test fijado a 1 core y nice 19
+# (el runner ocupado que produjo el falso rojo original). 30 corridas.
+$ uptime:  09:14:27 up 9 days, 21:48,  1 user,  load average: 6.09, 5.79, 4.62
+run 1: rc=1
+boot_splash: pid 3451903 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: no se pudo confirmar la salida del animador (pid 3451943)
+FAIL tests/bootanim/handoff_test.c:405: boot_splash_stop() == true
+FAIL tests/bootanim/handoff_test.c:409: boot_splash_test_waited_ms() <= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (el handoff espero de mas (140 ms))
+handoff_test: 45 comprobaciones, 2 fallos
+run 2: rc=1
+boot_splash: pid 3452044 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: no se pudo confirmar la salida del animador (pid 3452088)
+FAIL tests/bootanim/handoff_test.c:435: boot_splash_stop() == true
+handoff_test: 45 comprobaciones, 1 fallos
+run 3: rc=1
+boot_splash: pid 3452103 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: no se pudo confirmar la salida del animador (pid 3452271)
+FAIL tests/bootanim/handoff_test.c:435: boot_splash_stop() == true
+handoff_test: 45 comprobaciones, 1 fallos
+run 8: rc=1
+boot_splash: pid 3452597 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: no se pudo confirmar la salida del animador (pid 3452665)
+boot_splash: no se pudo confirmar la salida del animador (pid 3452712)
+FAIL tests/bootanim/handoff_test.c:405: boot_splash_stop() == true
+FAIL tests/bootanim/handoff_test.c:409: boot_splash_test_waited_ms() <= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (el handoff espero de mas (140 ms))
+FAIL tests/bootanim/handoff_test.c:435: boot_splash_stop() == true
+handoff_test: 45 comprobaciones, 3 fallos
+run 9: rc=1
+boot_splash: pid 3452795 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: no se pudo confirmar la salida del animador (pid 3452845)
+boot_splash: no se pudo confirmar la salida del animador (pid 3452869)
+FAIL tests/bootanim/handoff_test.c:405: boot_splash_stop() == true
+FAIL tests/bootanim/handoff_test.c:409: boot_splash_test_waited_ms() <= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (el handoff espero de mas (140 ms))
+FAIL tests/bootanim/handoff_test.c:435: boot_splash_stop() == true
+handoff_test: 45 comprobaciones, 3 fallos
+run 11: rc=1
+boot_splash: pid 3453088 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+FAIL tests/bootanim/handoff_test.c:409: boot_splash_test_waited_ms() <= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (el handoff espero de mas (140 ms))
+handoff_test: 45 comprobaciones, 1 fallos
+run 14: rc=1
+boot_splash: pid 3453305 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: no se pudo confirmar la salida del animador (pid 3453392)
+FAIL tests/bootanim/handoff_test.c:435: boot_splash_stop() == true
+handoff_test: 45 comprobaciones, 1 fallos
+run 15: rc=1
+boot_splash: pid 3453492 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+FAIL tests/bootanim/handoff_test.c:409: boot_splash_test_waited_ms() <= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (el handoff espero de mas (140 ms))
+handoff_test: 45 comprobaciones, 1 fallos
+run 20: rc=1
+boot_splash: pid 3453804 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: no se pudo confirmar la salida del animador (pid 3453838)
+FAIL tests/bootanim/handoff_test.c:435: boot_splash_stop() == true
+handoff_test: 45 comprobaciones, 1 fallos
+run 22: rc=1
+boot_splash: pid 3453924 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+FAIL tests/bootanim/handoff_test.c:409: boot_splash_test_waited_ms() <= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (el handoff espero de mas (140 ms))
+handoff_test: 45 comprobaciones, 1 fallos
+run 23: rc=1
+boot_splash: pid 3454004 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: no se pudo confirmar la salida del animador (pid 3454055)
+FAIL tests/bootanim/handoff_test.c:435: boot_splash_stop() == true
+handoff_test: 45 comprobaciones, 1 fallos
+30 corridas bajo carga extrema: 11 fallos
