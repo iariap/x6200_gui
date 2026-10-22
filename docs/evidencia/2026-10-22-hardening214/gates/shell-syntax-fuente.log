@@ -1,0 +1,6 @@
+$ tools/fuente-md5.sh .
+18f5458db571b3056efdfa54c0013a05
+$ bash -n rootfs/usr/sbin/x6200_daemon
+bash -n OK
+$ dash -n rootfs/usr/sbin/x6200_daemon (image x6200-buildroot, /bin/sh=dash)
+dash -n OK
