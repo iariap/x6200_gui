@@ -154,7 +154,10 @@ Corolario útil: si el #232 afecta algo audible en CW es la **calidad** del tono
    (toggle). **Un cambio de modo no escribe el nivel**: no hay ningún camino que ligue el modo a
    `cfg.vol.val` (barrido de writers en §3). O sea: si el mute del dueño fue el nivel, algo **externo
    al cambio de modo** lo puso en 0 ese mismo rato (la sesión de pruebas automáticas contra la radio
-   viva es la candidata con medición: 3 de 4 corridas quedaron en 0).
+   viva es la candidata con medición: 3 de 4 corridas quedaron en 0). El propio tooling de aceptación
+   ya lo vigila: `test-ui-remote.sh` (del host del owner, editado el 22/10 18:35) lee `vol` al
+   empezar y, si cambió durante la prueba, lo restaura con un `bad` ("el sweep no debe dejarlo
+   distinto"), y su chequeo AUDIO-ALIVE advierte "NO abrir issue solo por esto (ver issue #244)".
 2. **La contradicción del power-cycle**: con `vol=0` persistido, un arranque vuelve a mandar 0
    (`src/radio.c:535` → registro 14), así que el arranque **no** explica la recuperación que el
    dueño reporta. Ese es el dato que separa "fue el nivel" de "fue un estado del BASE", y es
