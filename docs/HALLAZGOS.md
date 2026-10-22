@@ -3752,10 +3752,11 @@ volumen (`src/vol.c:39`, y las de los diálogos de CW: `src/dialog_cw_trainer.c:
 `src/dialog_cw_kbd.c:355`, `src/dialog_msg_cw.c:224`), del remoto (`src/remote_server.cpp:420`) y del
 CAT (`src/cat.cpp:574`).
 
-**Un cambio de modo no escribe el nivel** (código): el barrido de escritores de `cfg.vol.val` en esta
-base da `src/radio.c:667` (perilla/remoto), `src/cat.cpp:574`, `cfg/settings_manager.cpp` (Ajustes y
-remoto) y `radio_change_mute()` — ninguno depende del modo. Si el mute del dueño fue el nivel, algo
-ajeno al viaje a CW lo puso en 0 en ese rato.
+**Un cambio de modo no escribe el nivel** (código): el barrido de escritores de `cfg.vol.val` da
+`src/radio.c:667` (perilla y remoto), `src/cat.cpp:574` y `cfg/settings_manager.cpp` (Ajustes y
+remoto), y quien escribe el **registro** en 0 es `radio_change_mute()` (`src/radio.c:684`).
+Ninguno de esos caminos depende del modo. Si el mute del dueño fue el nivel, algo ajeno al viaje a
+CW lo puso en 0 en ese rato.
 
 **Lo que sí está medido** (por la sesión del #247, copiado de §64 y del cuerpo del PR; los comandos
 completos están allá):
