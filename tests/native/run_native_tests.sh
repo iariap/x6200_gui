@@ -475,6 +475,45 @@ $CC $BASEFLAGS -fanalyzer -I"$CWENC_STAGE" \
 
 "$OUT/cwenc_tests"
 
+# --- CW keyboard idle render (#217) -----------------------------------------
+# src/dialog_cw_kbd.c se incluye con `#include "..."` (dialog_cw_kbd.h, styles.h,
+# lvgl/lvgl.h, ...) y para un include con comillas el directorio del archivo que
+# lo incluye siempre gana sobre -I: los headers stub de tests/native/stubs_cwkbd/
+# no pueden tapar los de src/ desde su propio directorio. El fuente real se
+# estaciona al lado de una copia de los stubs, el mismo patron que el keyer de CW
+# y el SWR Scan.
+#
+# El test mide que el dialogo no repinta en reposo (100 ticks del timer de 100 ms
+# sin cambio: 0 escrituras de label/estilo) y que cada cambio real (modo, ON AIR,
+# cursor de enviado, WPM, teclado, tema, historial/cola) sigue repintando con el
+# MISMO texto, sin alterar el keyer ni el decodificador.
+echo "== CW keyboard (#217): sin repintado en reposo, keyer y decoder intactos =="
+CWKBD_STAGE="$OUT/cwkbd_src"
+rm -rf "$CWKBD_STAGE"
+mkdir -p "$CWKBD_STAGE/cfg" "$CWKBD_STAGE/params" "$CWKBD_STAGE/lvgl"
+cp "$SRC/dialog_cw_kbd.c" "$SRC/dialog_cw_kbd.h" "$CWKBD_STAGE/"
+cp "$DIR/stubs_cwkbd/cfg/cfg.h" "$DIR/stubs_cwkbd/cfg/cfg_api.h" "$CWKBD_STAGE/cfg/"
+cp "$DIR/stubs_cwkbd/params/params.h" "$CWKBD_STAGE/params/"
+cp "$DIR/stubs_cwkbd/lvgl/lvgl.h" "$CWKBD_STAGE/lvgl/"
+cp "$DIR/stubs_cwkbd/buttons.h" "$DIR/stubs_cwkbd/dialog.h" "$DIR/stubs_cwkbd/events.h" \
+   "$DIR/stubs_cwkbd/keyboard.h" "$DIR/stubs_cwkbd/textarea_window.h" "$DIR/stubs_cwkbd/msg.h" \
+   "$DIR/stubs_cwkbd/radio.h" "$DIR/stubs_cwkbd/remote_server.h" "$DIR/stubs_cwkbd/cJSON.h" \
+   "$DIR/stubs_cwkbd/cw.h" "$DIR/stubs_cwkbd/cw_encoder.h" "$DIR/stubs_cwkbd/styles.h" \
+   "$DIR/stubs_cwkbd/theme.h" "$CWKBD_STAGE/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$CWKBD_STAGE" -I"$DIR" \
+        "$CWKBD_STAGE/dialog_cw_kbd.c" "$DIR/cwkbd_stubs.c" "$DIR/test_cw_kbd.c" \
+        "$DIR/test_framework.c" "$DIR/cwkbd_test_main.c" -lm -o "$OUT/cwkbd_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$CWKBD_STAGE" -I"$DIR" \
+        "$CWKBD_STAGE/dialog_cw_kbd.c" "$DIR/cwkbd_stubs.c" "$DIR/test_cw_kbd.c" \
+        "$DIR/test_framework.c" "$DIR/cwkbd_test_main.c" -lm -o "$OUT/cwkbd_tests"
+fi
+
+"$OUT/cwkbd_tests"
+
 # --- CRASHLOG module table (issue #131) -------------------------------------
 # El handler de crashes solo puede resolver un PC que cae en una libreria si el
 # log dice que .so y en que base estaba cargada. El bloque CRASHLOG-MOD se arma
@@ -1133,6 +1172,20 @@ mkdir -p "$DB_PERSIST_DIR"
 DB_PERSIST_DIR="$DB_PERSIST_DIR" "$DBP_BIN"
 rm -rf "$DB_PERSIST_DIR"
 
+# --- WiFi ocioso: el pump de GLib (issue #218, F-06) -------------------------
+# src/wifi.cpp (etapa de WiFi/BT) crea un loop_timer de LVGL cuyo callback corre
+# g_main_context_iteration() para despachar las callbacks async de NetworkManager: es el
+# unico pump de GLib del proceso, asi que se conserva con la radio apagada (las
+# desconexiones tardias lo necesitan) y lo que cambia por estado es su periodo (250 ms OFF,
+# 30 ms ON). El stage compila el modulo REAL contra un motor de timers que espeja
+# lvgl/src/misc/lv_timer.c mas un pump de GLib con reloj virtual (tests/native/stubs_wifi/,
+# tests/native/wifi_idle_stubs.cpp), y deja dos cosas: el contrato (un solo timer, 250/30,
+# callbacks, scan y estado visible intactos) y la MEDICION -vueltas del pump en 10 s de
+# WiFi ociosa, 40 OFF contra 333 ON-. Ojo: es SOLO este timer, no el total del sistema, y no
+# afirma nada sobre watts (PENDING_HARDWARE).
+# Ver docs/evidencia/2026-10-22-next218/README.md.
+echo "== WiFi ocioso (#218): pump de GLib con la radio apagada (250 ms) y encendida (30 ms) =="
+sh "$DIR/run_wifi_idle_timer.sh" "$OUT/wifi-idle"
 # --- radio_thread fail-slow sin BASE (issue #219, evidencia F-08 del #198) ----
 # src/radio.c se compila POR INCLUSION (RADIO_C_PATH) para poder observar el
 # estatico radio_thread() y su estado privado: radio_tick() no se stubea, se

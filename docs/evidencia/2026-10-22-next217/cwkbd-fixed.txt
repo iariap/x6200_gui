@@ -1,0 +1,3 @@
+  [medicion] reposo, 100 ticks identicos: label_writes=0 style_writes=0
+  [medicion] cambio de tema: label_writes=3 style_writes=2
+52 comprobaciones, 0 fallos
