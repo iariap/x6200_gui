@@ -115,7 +115,10 @@ d605747eb1fed5101b4926b61c78fd8bde57e56753d7164edcbef0c328c7a3ab  ./hardware-rem
 d2f05238cac20b73b985be171db86f16027bf406385c939b90e8a96498e19158  ./hardware-remote/raw/logs/run.log
 bc0eed8b457162161769e04e44541db9904ba622adec78c9d5eae94619eb8bae  ./hardware-remote/README.md
 951c55c11e0dd7b203cbe736e4c8841240c2a799ca10f5ca3abb5881506230a5  ./hardware-remote/results.csv
+25e3a7ac53c8d6b12302dd9c517a5f2ce82b111bf8a0ff191febe661feea671a  ./hardware-remote/scripts/fase-b-README.md
+0fb0bf3018d2a98b18b6c5ca96c46fb621e102a3905b0f943545765f0af193f1  ./hardware-remote/scripts/phase-b-remote.sh
 da4fc3f41961724ad40f97c850dd9c8a3319f4844243617309a045cc14dbf83d  ./history.md
+b1760722ff56e670270bb5c0fd35a37edc250a21a3618f64233b4a273dfa7084  ./history/orchestration-log.md
 5318bee345a63cc3521f70e3e3c17e8b9adc7c33bf0a7f56ac1867e99a2fc44c  ./index.json
 31cbb8d8b64cdd2335f91dbd23eab2d38d0a62d413281491e5e1ca54da8ba4b2  ./logs/build-coverage.log
 90229bbca05466a82273f139976ed4ac7d7b8d3cdcd53127fda40becddcd2158  ./logs/build-findings.log
