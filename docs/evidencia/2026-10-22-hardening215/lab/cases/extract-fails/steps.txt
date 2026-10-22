@@ -1,0 +1,19 @@
+/lab/work/pkg/x6200_r1cbu_fails.tgz: 243195904 bytes, sha256 265222a6e79b96879daaf6aedf84e933bf20bcbd093f60de4e64e298607d3916
+ok   rc=1
+ok   stdout dice 'Update failed: package retained; restore backup manually'
+ok   el paquete x6200_r1cbu_fails.tgz sigue en /mnt
+ok   el sidecar de x6200_r1cbu_fails.tgz sigue en /mnt
+ok   nada bajo / cambió
+ok   la GUI quedó la de antes
+ok   el backup quedó
+ok   rc=1
+ok   stdout dice 'Update failed: package retained; restore backup manually'
+ok   el paquete x6200_r1cbu_fails.tgz sigue en /mnt
+ok   el sidecar de x6200_r1cbu_fails.tgz sigue en /mnt
+ok   el backup identico se reusó sin cambios
+ok   no quedó .partial
+ok   rc=1
+ok   stdout dice 'Update backup failed'
+ok   stderr tiene 'different content'
+ok   el paquete x6200_r1cbu_fails.tgz sigue en /mnt
+ok   el sidecar de x6200_r1cbu_fails.tgz sigue en /mnt

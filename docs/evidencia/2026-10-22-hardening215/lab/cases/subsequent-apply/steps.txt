@@ -1,0 +1,10 @@
+ok   rc=0
+ok   stdout dice 'Update applied'
+ok   el paquete x6200_r1cbu_v215.tgz se consumió
+ok   el sidecar de x6200_r1cbu_v215.tgz se consumió
+ok   el paquete x6200_r1cbu_v215ext.tgz se consumió
+ok   el sidecar de x6200_r1cbu_v215ext.tgz se consumió
+ok   la GUI instalada es la del paquete
+ok   setuid: los 3 auditados
+ok   backup del primer paquete
+ok   backup del segundo paquete

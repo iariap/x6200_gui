@@ -1,0 +1,29 @@
+==> extrayendo el rootfs
+==> aplicando el overlay de la actualización
+    etc/init.d/S02update
+==> comprobando el inventario setuid en staging
+    bin/busybox 4755 0 0
+    usr/libexec/dbus-daemon-launch-helper 4750 0 101
+    usr/libexec/ssh-keysign 4711 0 0
+==> armando la lista (solo archivos y enlaces, sin ./ ni directorios)
+    5484 entradas
+==> creando /lab/work/pkg/x6200_r1cbu_vabs.tgz
+==> comprobaciones
+    tamaño:            102262965 bytes
+    entradas:          5484
+    directorios:       0 (tiene que ser 0)
+    entrada ./:        0 (tiene que ser 0)
+    setuid:            3 (tienen que ser 3)
+      bin/busybox -rwsr-xr-x 0/0
+      usr/libexec/dbus-daemon-launch-helper -rwsr-x--- 0/101
+      usr/libexec/ssh-keysign -rws--x--x 0/0
+    S02update:         -rwxr-xr-x 0/0 (tiene que ser -rwxr-xr-x 0/0)
+    GUI ejecutable:    -rwxr-xr-x 0/0
+==> sidecar sha256
+    d544a0b3b84e17913424d46965fb7253efef9c5f9159b51dbcb50197e0399398  x6200_r1cbu_vabs.tgz
+==> listo: /lab/work/pkg/x6200_r1cbu_vabs.tgz y /lab/work/pkg/x6200_r1cbu_vabs.tgz.sha256
+ok   no rechaza targets absolutos
+ok   rc=0
+ok   stdout dice 'Update applied'
+ok   el symlink quedó instalado
+ok   con su target absoluto

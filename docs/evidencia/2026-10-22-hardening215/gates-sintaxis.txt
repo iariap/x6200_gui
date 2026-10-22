@@ -1,0 +1,45 @@
+# gates: sintaxis
+# 2026-10-22T12:01:23-03:00
+
+## el S02update (los dos repos) con el BusyBox del target y con su bash
+--- hardening-215/tools/release/update-overlay/etc/init.d/S02update
+busybox sh -n (1.36.1 del target): OK
+bash -n (el /bin/sh real del target): OK
+--- hardening-215-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/init.d/S02update
+busybox sh -n (1.36.1 del target): OK
+bash -n (el /bin/sh real del target): OK
+
+## las herramientas host (bash -n)
+hardening-215/tools/release/check_updater_parity.sh          OK
+hardening-215/tools/release/make_release_assets.sh           OK
+hardening-215/tools/release/make_update_tgz.sh               OK
+hardening-215/tools/release/publish_release.sh               OK
+hardening-215/tools/release/test_update.sh                   OK
+hardening-215/tests/release/test_safe_update.sh              OK
+
+## la tabla de la regla de tipos/enlaces (awk real del S02update)
+ok  dev/fd           target=../proc/self/fd      veredicto=se admite
+ok  dev/stdin        target=../proc/self/fd/0    veredicto=se admite
+ok  dev/log          target=../tmp/log           veredicto=se admite
+ok  x2               target=etc/x                veredicto=se admite
+ok  deeper/link3     target=../etc               veredicto=se admite
+ok  opt/abs          target=/etc/x               veredicto=se admite
+ok  etc/alsa/conf.d/50-arcam-av-ctl.conf target=/usr/share/alsa/alsa.conf.d/50-arcam-av-ctl.conf veredicto=se admite
+ok  opt/h215-link    target=../../etc/h215       veredicto=link with a .. target that escapes the rootfs: opt/h215-link
+ok  x                target=../etc               veredicto=link with a .. target that escapes the rootfs: x
+ok  deeper/link      target=../../../etc         veredicto=link with a .. target that escapes the rootfs: deeper/link
+ok  deeper/link2     target=../../etc            veredicto=link with a .. target that escapes the rootfs: deeper/link2
+ok  bin/busybox      target=-                    veredicto=se admite
+ok  opt/x            target=-                    veredicto=se admite
+ok  dev              target=-                    veredicto=entry would replace the mount point /dev
+ok  mnt              target=-                    veredicto=entry would replace the mount point /mnt
+ok  tmp              target=-                    veredicto=entry would replace the mount point /tmp
+ok  opt/fifo         target=-                    veredicto=fifo entry opt/fifo
+ok  opt/dev          target=-                    veredicto=device entry opt/dev
+ok  opt/dir          target=-                    veredicto=directory entry opt/dir
+
+19/19 casos de la tabla de tipos/enlaces OK
+rc=0
+
+## fixture S02update de la imagen historica (banco)
+2a210d93d63ee570371ff24b2d24710ee5ef1492b82fd1f7e8333847fa3a9abb  hardening-215/tests/release/fixtures/S02update.image-stock

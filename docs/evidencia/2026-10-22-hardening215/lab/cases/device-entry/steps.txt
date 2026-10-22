@@ -1,0 +1,9 @@
+/lab/work/pkg/x6200_r1cbu_device-entry.tgz: 6656 bytes, sha256 f9cd74daa2533d722bf92411588bdaad22680164adb06c561bbc1025c41fd47e
+ok   rc=1
+ok   stdout dice 'Update verification failed'
+ok   stderr tiene 'device entry'
+ok   el paquete x6200_r1cbu_device-entry.tgz sigue en /mnt
+ok   el sidecar de x6200_r1cbu_device-entry.tgz sigue en /mnt
+ok   nada bajo / cambió
+ok   la GUI quedó la de antes
+ok   no quedó backup ni .partial

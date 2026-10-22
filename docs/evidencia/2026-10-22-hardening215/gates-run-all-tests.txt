@@ -1,0 +1,71 @@
+# gate: sh tests/run_all_tests.sh --quick
+# 2026-10-22T12:26:45-03:00  HEAD=00d13160572a2900c74f221e43140b42a14d3006
+
+
+=== config ===
+
+=== actions ===
+
+=== settings_focus ===
+
+=== settings_grid ===
+
+=== apps_menu ===
+
+=== app_handlers ===
+
+=== manual_apps ===
+
+=== pruebas ===
+
+=== wcag ===
+
+=== cw_tune_feed ===
+
+=== autotune_v2 ===
+
+=== build_identity ===
+
+=== curve_evidence ===
+
+=== host ===
+
+=== host_ci_parity ===
+
+=== drawbuf_partial ===
+
+=== wspr ===
+    SKIP: wspr: la imagen x6200-uiharness no trae /usr/include/fftw3.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+
+=== sstv ===
+    SKIP: sstv: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+
+=== wefax ===
+    SKIP: wefax: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+
+=== navtex ===
+
+================ resumen ================
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  settings_grid: OK   
+  apps_menu: OK     todas las apps del menu llegan al dispatcher que usa su boton
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (24 apps)
+  pruebas: OK     OK: estructura y evidencia en orden
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  cw_tune_feed: OK   
+  autotune_v2: OK   
+  build_identity: OK   
+  curve_evidence: OK   PASS: 8 pruebas de swrscan_curve_evidence
+  host: OK   138 comprobaciones, 0 fallos
+  host_ci_parity: OK   138 comprobaciones, 0 fallos
+  drawbuf_partial: OK   PASS: partial draw buffer renders the identical physical framebuffer (sw-rotate 90)
+  wspr: SKIP SKIP: wspr: la imagen x6200-uiharness no trae /usr/include/fftw3.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  sstv: SKIP SKIP: sstv: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  wefax: SKIP SKIP: wefax: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  navtex: OK   all OK
+  (omitidos: wspr sstv wefax js8 webserver)
+  17 OK, 0 fallos
+rc=0
