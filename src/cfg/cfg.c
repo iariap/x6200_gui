@@ -60,8 +60,12 @@ int cfg_init(sqlite3 *db) {
 
     rc = init_params_cfg(db);
     if (rc != 0) {
-        LV_LOG_ERROR("Error during loading params");
-        // return rc;
+        /* Fatal (issue #213, punto 5): con los items de configuracion a medias no se
+         * registran observers ni se arranca el hilo de guardado; el arranque lo
+         * corta main.c con EX_CONFIG (78). NO es fatal que falte una clave en la
+         * base: eso lo resuelve load_items_from_db() con el default en memoria. */
+        LV_LOG_ERROR("Error during loading params (%d): refusing to continue", rc);
+        return rc;
     }
     boot_mark("cfg:items");
     // rc = init_band_cfg(db);
@@ -212,9 +216,18 @@ void init_items(cfg_item_t *cfg_arr, uint32_t count, int (*load)(struct cfg_item
 }
 /**
  * Load items from db
+ *
+ * Devuelve 0 si todos los items se pudieron intentar cargar: una clave AUSENTE
+ * (-1, el `cfg_params_load_item` de params.c) es normal -- una radio actualizada
+ * en el lugar no tiene las claves de las ultimas versiones y cada item conserva su
+ * default en memoria -- y no puede tumbar el arranque. Cualquier otro rc (bind o
+ * consulta fallida) es un error DURO: init_params_cfg() lo devuelve y cfg_init()
+ * frena, porque seguir con subjects incompletos es lo que dejaba la GUI sin
+ * persistencia y sin diagnostico (issue #213, punto 5).
  */
 int load_items_from_db(cfg_item_t *cfg_arr, uint32_t count) {
     int rc;
+    int hard_error = 0;
     for (size_t i = 0; i < count; i++) {
         if (cfg_arr[i].db_name == NULL || cfg_arr[i].val == NULL || cfg_arr[i].dirty == NULL) {
             continue;
@@ -224,12 +237,15 @@ int load_items_from_db(cfg_item_t *cfg_arr, uint32_t count) {
         rc = cfg_arr[i].load(&cfg_arr[i]);
         if (rc != 0) {
             LV_LOG_USER("Can't load %s (pk=%i)", cfg_arr[i].db_name, cfg_arr[i].pk);
+            if (rc != -1) {
+                hard_error = rc;
+            }
         } else {
 
         }
         cfg_arr[i].dirty->val = ITEM_STATE_CLEAN;
     }
-    return rc;
+    return hard_error;
 }
 
 /**

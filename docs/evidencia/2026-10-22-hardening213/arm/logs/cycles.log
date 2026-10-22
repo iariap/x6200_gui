@@ -1,0 +1,6 @@
+    socket de control remoto: I=16s
+    ok: arranco (socket presente)
+    ok: sigue contestando despues de 100 ciclos
+    ok: el proceso sigue vivo
+    ok: sin CRASHLOG SIGSEGV
+    sha256 base: bc18ba10ca503b518771fa9c9a5649644f675d7ff0b8c87d03940969f64c2867 -> 63ad0b6cb205ad64128bba0e0df0e6d555ef8c7413090cc6ec687b74b6d3f9d8

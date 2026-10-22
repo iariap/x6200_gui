@@ -97,6 +97,9 @@ run host sh "$DIR/native/run_native_tests.sh"
 # stage vuelve a apoyarse en el header real, aca se ve en local (en el PR solo se
 # veria en CI). Ver docs/evidencia/2026-10-21-ciparity/.
 run host_ci_parity sh "$DIR/native/run_native_tests.sh" --ci-parity
+# Persistencia fail-closed con /mnt REAL (issue #213): namespace + chroot
+# privados. Declara SKIP (exit 77) si el host no permite user namespaces.
+run db_failclosed sh "$DIR/native/run_db_failclosed.sh"
 run drawbuf_partial sh "$DIR/check_drawbuf_partial.sh"
 run wspr sh "$DIR/native/run_wspr_tests.sh"
 run sstv sh "$DIR/native/run_sstv_tests.sh"
