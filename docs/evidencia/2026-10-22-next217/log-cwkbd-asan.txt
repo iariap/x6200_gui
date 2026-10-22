@@ -1,0 +1,45 @@
+/src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c: In function 'construct_cb':
+/src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c:83:57: warning: '%d' directive output may be truncated writing between 1 and 10 bytes into a region of size 6 [-Wformat-truncation=]
+   83 |     snprintf(p_label[0], sizeof(p_label[0]), "(CW KBD 1:%d)", pages);
+      |                                                         ^~
+In function 'msgs_load',
+    inlined from 'construct_cb' at /src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c:421:5:
+/src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c:83:46: note: directive argument in the range [-536870911, 536870912]
+   83 |     snprintf(p_label[0], sizeof(p_label[0]), "(CW KBD 1:%d)", pages);
+      |                                              ^~~~~~~~~~~~~~~
+In file included from /usr/include/stdio.h:980,
+                 from /src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c:26:
+In function 'snprintf',
+    inlined from 'msgs_load' at /src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c:83:5,
+    inlined from 'construct_cb' at /src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c:421:5:
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:54:10: note: '__builtin___snprintf_chk' output between 13 and 22 bytes into a destination of size 16
+   54 |   return __builtin___snprintf_chk (__s, __n, __USE_FORTIFY_LEVEL - 1,
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   55 |                                    __glibc_objsize (__s), __fmt,
+      |                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   56 |                                    __va_arg_pack ());
+      |                                    ~~~~~~~~~~~~~~~~~
+/src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c: In function 'construct_cb':
+/src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c:88:67: warning: '%d' directive output may be truncated writing between 1 and 11 bytes into a region of size 8 [-Wformat-truncation=]
+   88 |         snprintf(p_label[k + 1], sizeof(p_label[k + 1]), "(CW KBD %d:%d)", k + 2, pages);
+      |                                                                   ^~
+In function 'msgs_load',
+    inlined from 'construct_cb' at /src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c:421:5:
+/src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c:88:58: note: directive argument in the range [-2147483644, 3]
+   88 |         snprintf(p_label[k + 1], sizeof(p_label[k + 1]), "(CW KBD %d:%d)", k + 2, pages);
+      |                                                          ^~~~~~~~~~~~~~~~
+/src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c:88:58: note: directive argument in the range [-536870911, 536870912]
+In function 'snprintf',
+    inlined from 'msgs_load' at /src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c:88:9,
+    inlined from 'construct_cb' at /src/tests/native/build/cwkbd_asan/stage/dialog_cw_kbd.c:421:5:
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:54:10: note: '__builtin___snprintf_chk' output between 13 and 32 bytes into a destination of size 16
+   54 |   return __builtin___snprintf_chk (__s, __n, __USE_FORTIFY_LEVEL - 1,
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   55 |                                    __glibc_objsize (__s), __fmt,
+      |                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   56 |                                    __va_arg_pack ());
+      |                                    ~~~~~~~~~~~~~~~~~
+  [medicion] reposo, 100 ticks identicos: label_writes=0 style_writes=0
+  [medicion] cambio de tema: label_writes=3 style_writes=2
+52 comprobaciones, 0 fallos
+ASAN_RUN_OK

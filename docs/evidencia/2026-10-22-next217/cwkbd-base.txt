@@ -1,0 +1,21 @@
+  [medicion] reposo, 100 ticks identicos: label_writes=400 style_writes=200
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:85: cwkbd_stub_label_writes() == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:86: cwkbd_stub_style_writes() == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:103: cwkbd_stub_label_writes() == 1
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:111: cwkbd_stub_label_writes() == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:112: cwkbd_stub_style_writes() == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:119: cwkbd_stub_label_writes() == 1
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:126: cwkbd_stub_label_writes() == 1
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:134: cwkbd_stub_label_writes() == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:135: cwkbd_stub_style_writes() == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:146: cwkbd_stub_label_writes() == 1
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:148: cwkbd_stub_style_writes() == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:153: cwkbd_stub_label_writes() == 1
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:160: cwkbd_stub_label_writes() == 0
+  [medicion] cambio de tema: label_writes=4 style_writes=2
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:188: cwkbd_stub_label_writes() == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:189: cwkbd_stub_style_writes() == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:198: cwkbd_stub_label_writes() == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:216: cwkbd_stub_label_writes() == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/next-217/tests/native/test_cw_kbd.c:217: cwkbd_stub_style_writes() == 0
+52 comprobaciones, 18 fallos

@@ -32,6 +32,16 @@ extern "C" {
 #define WLAN_IFACE "wlan0"
 #define EMPTY_SSID_STR "--"
 
+/* Periodo del pump de GLib (issue #218, F-06): loop_iterations_cb() corre
+ * g_main_context_iteration() para despachar las callbacks async de NetworkManager, y es el
+ * UNICO pump del proceso, asi que el timer existe con la WiFi encendida y apagada -no se
+ * borra al apagar, o se perderian las desconexiones tardias-. Lo unico que cambia por estado
+ * es su periodo: 30 ms con la WiFi encendida (el ritmo de siempre, ~33 vueltas/s, que es el
+ * que atiende scan/conexion) y 250 ms con la WiFi apagada (~4/s, donde no hay adaptador ni
+ * scan que atender). El callback GLib no cambia. */
+#define LOOP_PERIOD_ON_MS  30
+#define LOOP_PERIOD_OFF_MS 250
+
 static GMainLoop *loop;
 static NMClient  *client = NULL;
 static NMDevice  *device = NULL;
@@ -81,12 +91,19 @@ void wifi_power_setup() {
             setup_wifi_device();
         }
     }
-    loop_timer = lv_timer_create(loop_iterations_cb, 30, NULL);
+    loop_timer = lv_timer_create(loop_iterations_cb,
+                                 params.wifi_enabled.x ? LOOP_PERIOD_ON_MS : LOOP_PERIOD_OFF_MS, NULL);
 
     if (params.wifi_enabled.x)
         wifi_power_on();
     else
         wifi_power_off();
+
+    /* Si wifi_power_on()/wifi_power_off() corrieron antes de que el timer existiera (una
+     * inicializacion temprana), el periodo se sincroniza aca: siempre el del estado. */
+    if (loop_timer) {
+        lv_timer_set_period(loop_timer, params.wifi_enabled.x ? LOOP_PERIOD_ON_MS : LOOP_PERIOD_OFF_MS);
+    }
 }
 
 void wifi_power_on() {
@@ -97,6 +114,9 @@ void wifi_power_on() {
         set_status(WIFI_STARTING);
     }
     lv_msg_send(MSG_WIFI_STATE_CHANGED, NULL);
+    if (loop_timer) {
+        lv_timer_set_period(loop_timer, LOOP_PERIOD_ON_MS);
+    }
 }
 
 void wifi_power_off() {
@@ -112,6 +132,11 @@ void wifi_power_off() {
         scan_timer = NULL;
     }
     scanning = false;
+    /* El loop_timer NO se borra: solo baja el ritmo. Sin el, las callbacks async que lleguen
+     * despues del OFF no se despacharian nunca. */
+    if (loop_timer) {
+        lv_timer_set_period(loop_timer, LOOP_PERIOD_OFF_MS);
+    }
 }
 
 // void wifi_set_change_ap_callbacks(wifi_ap_change_cb add_cb, wifi_ap_change_cb del_cb) {
