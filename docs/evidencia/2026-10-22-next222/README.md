@@ -232,7 +232,11 @@ y `docs/INTEGRATION_AUDIT.md`, **sin** reemplazar los números históricos.
 | Framework A/B | `uv sync` + `ruff check` + `ruff format --check` + `ty check` + `pytest -m "not e2e"` | **OK** — 233 passed, 13 deselected | `logs/gate-ab-*.txt` |
 | Temas (contraste) | `uv run x6200-ab themes` | **PASS** — 10 paletas, 90 pares, 0 fallas | `logs/gate-ab-themes.txt` |
 | Benchmark A/A | `uv run x6200-ab benchmark --a f825fe4b --b f825fe4b` | **PASS** — 205 escenarios | `logs/gate-bench-aa.txt` |
-| Matriz del harness | `scripts/apps/x6200/check-matrix.sh` | ver §9 (pendiente del orquestador) | — |
+| Matriz del harness | `scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD <worktree>` | **rc=0** — 4 checks `ok` (themes, contracts sobre `6d793160`, `bash -n` de los dos scripts); 0 FAIL/BLOCKED; SKIP por paths no tocados | `logs/gate-check-matrix.txt` |
+
+> La matriz **no** corre `check_dialog_coverage` todavía: su lista de checks está en el repo `asf`
+> (`scripts/apps/x6200/check-matrix.sh`) y agregarla ahí es riesgo alto / fuera del alcance del
+> ejecutor (§8.2). Localmente lo corre `tests/run_all_tests.sh` y en el CI el job `functional`.
 
 ### 6.1 Benchmark A/A (mismo SHA, host)
 
