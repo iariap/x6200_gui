@@ -34,7 +34,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     dfl_presets_store.c
     dfl_context.c
     adaptive_tuning.c
-    autotune.c autotune_ui.c
+    autotune.c autotune_ui.c autotune_spectrum.c
     visual_policy.c
     sql_policy.c
     audio_enhancement.c
