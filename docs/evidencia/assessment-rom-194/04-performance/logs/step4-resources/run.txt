@@ -1,0 +1,4 @@
+start_utc=2026-10-21T23:25:10Z
+container=assessment198-res chroot=/home/pablo/desa/x6200/assessment-194/scratch-198/rootfs-res reps=3 stab=10 win=60
+container_pid=2573947 image=sha256:b3e7601313d64284645a5224c60fb40f39ea58e0bfc68f42fd9bb0dad13a1189
+end_utc=2026-10-22T00:02:43Z

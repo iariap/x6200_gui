@@ -1,0 +1,36 @@
+utc=2026-10-21T23:25:13Z
+tip_ref=refs/heads/lu2dsx/x6200-rom
+tip_sha=d4fb57f8ff8ccbcfdef13fc191cc9977511b6845
+candidate=c888308eede71205605c06383432ee7e165f202e
+d4fb57f8 [BOOT][UX] Continuous Decrypt, Beams and Rain until GUI handoff (#206)
+dadb1705 QA: ROM sin logo de kernel verificada en la radio (arranque final OK)
+2a6059b5 QA: arranque de la ROM nueva OK; causa de la imagen vieja de boot = logo del kernel (PR buildroot#3)
+f3f381fd QA: imagen nueva (c8ce5bd0) flasheada en la SD; incidente de p3 reparado con sectores exactos sin perdida de datos
+0d00e7fc QA: arranque de la ROM del tip validado; reparado defecto de MBR (p3 512 KiB corta) sin perdida de datos
+9ed25fa9 chore: remove the old prebuilt vendor u-boot image
+--- production files vs candidate
+.github/workflows/boot-rootfs.yml
+.github/workflows/main.yml
+CMakeLists.txt
+rootfs/etc/init.d/S01bootanim
+src/CMakeLists.txt
+src/boot_splash.c
+src/boot_splash.h
+src/bootanim/CMakeLists.txt
+src/bootanim/fb.c
+src/bootanim/fb.h
+src/bootanim/main.c
+src/bootanim/renderer.c
+src/bootanim/renderer.h
+src/main.c
+tests/bootanim/fake_animator.c
+tests/bootanim/fake_fb.c
+tests/bootanim/fb_test.c
+tests/bootanim/handoff_test.c
+tests/bootanim/render_bench.c
+tests/bootanim/renderer_test.c
+tests/bootanim/replay_dump.c
+tests/bootanim/start-stop-daemon.sh
+tests/bootanim/test_util.h
+tests/check_bootanim.sh
+u-boot/u-boot-sunxi-with-spl.bin

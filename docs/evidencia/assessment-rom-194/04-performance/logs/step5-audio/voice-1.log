@@ -1,0 +1,29 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen assessment198-build: ok
+  chroot /home/pablo/desa/x6200/assessment-194/scratch-198/rootfs-audio: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  audio: pulseaudio en el chroot: ok
+  audio: parec en el chroot: ok
+  qemu-arm-static ejecutando ARM: ok
+  aviso: el hash de los fuentes cambio, pero RECONSTRUIR=no: se prueba el binario que ya esta
+OK: /home/pablo/desa/x6200/assessment-194/scratch-198/rootfs-audio/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13407624 B, 3/3 marcas)
+== audio del banco (modo CAP_AUDIO) ==
+  sink: alsa_output.platform-sound.stereo-fallback   ventana: 8s   voz: prueba de audio del banco   parte B: no
+  0	alsa_output.platform-sound.stereo-fallback	module-null-sink.c	s16le 2ch 44100Hz	IDLE
+  	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+  BANCO-AUDIO: captura lista
+  version: c888308e DFL: el editor inline ya no se cierra al cambiar de
+  fuente: md5 964193ae9306 (src/ + lvgl/src)
+  binario: md5 1f998c469093   qemu-cpu: cortex-a7
+  wav: /home/pablo/desa/x6200/assessment-194/scratch-198/rootfs-audio/tmp/banco-audio/capture.wav -> /home/pablo/desa/x6200/assessment-194/wt-assessment-198/docs/evidencia/assessment-rom-194/04-performance/audio/voice-1.wav (277256 muestras por canal, 2 canal(es), 44100 Hz, 6.29 s, 1109024 bytes)
+  canal 0: RMS -26.53 dBFS   pico -3.70 dBFS   distinto de 0: 67974 de 277256 (24.5%)
+  canal 1: RMS -26.53 dBFS   pico -3.70 dBFS   distinto de 0: 67974 de 277256 (24.5%)
+  captura util (/home/pablo/desa/x6200/assessment-194/wt-assessment-198/docs/evidencia/assessment-rom-194/04-performance/audio/voice-1.wav)
+  mixer del GUI: [Warn]	(779650.369, +887)	 audio_set_rec_vol: No se pudo preparar el mixer de 'default' 	(in audio.c line #444)
+  mixer del GUI: [Warn]	(779650.370, +1)	 audio_set_play_vol: No se pudo preparar el mixer de 'default' 	(in audio.c line #403)
+  config y logs en /home/pablo/desa/x6200/assessment-194/scratch-198/rootfs-audio/tmp/banco-audio/ (arranca-audio.sh, pulse-banco.pa, pulse.log, gui.log)

@@ -1,0 +1,11 @@
+wrote /home/pablo/desa/x6200/assessment-194/wt-assessment-198/docs/evidencia/assessment-rom-194/04-performance/capturas/resources-summary.csv (30 windows) and /home/pablo/desa/x6200/assessment-194/wt-assessment-198/docs/evidencia/assessment-rom-194/04-performance/capturas/resources-summary.json
+  cw-decoder         cpu=108.561% main=9.033% other=99.479% ctxt/s=207.41 rss=58020.0kB pss=57692.0kB rtt50=333.0us rtt95=441.44999999999993us
+  dfl-editor         cpu=101.176% main=1.675% other=99.501% ctxt/s=212.72 rss=58020.0kB pss=57692.0kB rtt50=335.0us rtt95=470.0999999999999us
+  home-rx            cpu=101.096% main=1.675% other=99.498% ctxt/s=220.26 rss=58020.0kB pss=57693.0kB rtt50=Noneus rtt95=Noneus
+  home-rx-get1hz     cpu=101.216% main=1.691% other=99.474% ctxt/s=203.17 rss=58020.0kB pss=57692.0kB rtt50=320.0us rtt95=492.54999999999995us
+  home-rx-get5hz     cpu=101.083% main=1.303% other=99.797% ctxt/s=205.14 rss=58020.0kB pss=57696.0kB rtt50=304.0us rtt95=413.05us
+  prop-cancel        cpu=101.034% main=1.37% other=99.646% ctxt/s=209.17 rss=58020.0kB pss=57696.0kB rtt50=333.0us rtt95=475.49999999999983us
+  prop-open          cpu=101.157% main=1.641% other=99.55% ctxt/s=201.29 rss=58020.0kB pss=57692.0kB rtt50=328.5us rtt95=448.6999999999999us
+  prop-sweep         cpu=102.441% main=2.859% other=99.559% ctxt/s=189.53 rss=58020.0kB pss=57696.0kB rtt50=340.5us rtt95=455.94999999999993us
+  recorder-idle      cpu=101.255% main=1.759% other=99.574% ctxt/s=222.32 rss=58020.0kB pss=57692.0kB rtt50=322.5us rtt95=466.09999999999997us
+  settings           cpu=101.159% main=1.708% other=99.489% ctxt/s=200.45 rss=58020.0kB pss=57692.0kB rtt50=330.5us rtt95=486.04999999999984us
