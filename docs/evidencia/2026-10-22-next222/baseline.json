@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "contrato": "iariap/x6200_gui#222 (epica #216)",
+  "fecha_utc": "2026-10-22T20:09:23Z",
+  "gui": {
+    "sha": "f825fe4bc1ec6477a83bf509d6524d91353a4313",
+    "rama": "factory/next-222",
+    "fuente_md5": "da8ea582a4cacea79089b00bf6fd1941",
+    "archivos_sucios_en_src": 0,
+    "lvgl_gitlink": "74d0a816a440eea53e030c4f1af842a94f7ce3d3",
+    "lvgl_describe": "v8.3.11"
+  },
+  "buildroot": {
+    "estado": "PENDING: sin clon de Buildroot (pasar BR=<clon>)"
+  },
+  "artefactos": {
+    "gui": {
+      "estado": "PENDING: sin binario de la GUI (pasar OUT=<salida Buildroot> o BIN=<ruta>)"
+    },
+    "imagenes": {
+      "estado": "PENDING: sin directorio de artefactos (pasar ARTEFACTOS=<dir>)"
+    }
+  },
+  "capa_qemu": {
+    "qemu_cpu": "cortex-a7",
+    "imagen": "x6200-buildroot",
+    "contenedor": "x6200-next222-qemu",
+    "volumen": "x6200-next222-build",
+    "seed": "PENDING: sin seed de la corrida (las fixtures del arnes lo fijan por escenario)"
+  },
+  "inventario": {
+    "fixtures_host": 205,
+    "dialogos_inertes": 22,
+    "capturas_qemu_contrato": "3 rondas x 25 apps (tests/qemu/run_apps_qemu.sh)"
+  },
+  "capas": {
+    "HOST": "arnes de UI en x86 (sintetico)",
+    "QEMU_USER": "binario ARM real en chroot privado; kernel del host",
+    "HARDWARE": "PENDING_HARDWARE (pipeline fisico separado)"
+  }
+}

@@ -1,0 +1,24 @@
+== benchmark A/A (mismo SHA) — resumen de la salida cruda del CLI ==
+(el JSON completo de las comparaciones queda en
+ reports/BENCH-AA-next222/results.json, byte-identico a esta salida: aca va el
+ resumen para no duplicar la evidencia)
+
+status: PASS (exit 0)
+revisions: a=f825fe4bc1ec6477a83bf509d6524d91353a4313 b=f825fe4bc1ec6477a83bf509d6524d91353a4313
+scenarios: 205
+budget: {"warmup_frames": 3, "repeats": 5, "rounds": 4, "min_frames": 12, "max_dispersion_cv_pct": 25.0, "max_p95_delta_pct": 25.0, "max_flushes_delta_pct": 20.0, "max_redrawn_area_delta_pct": 20.0}
+environment: x86 host: relative regression proxy, not the Cortex-A7
+statuses: {'PASS': 205}
+
+p95_delta_pct:            min=-19.8810 mediana=1.2140 max=24.1480 n=205
+flushes_delta_pct:        min=0.0000 mediana=0.0000 max=0.0000 n=205
+redrawn_area_delta_pct:   min=0.0000 mediana=0.0000 max=0.0000 n=205
+
+dispersion_cv_pct (a):    min=0.2310 mediana=0.8670 max=3.6530 n=205
+render_p50_ms (a):        min=2.9009 mediana=3.3932 max=6.4468 n=205
+render_p95_ms (a):        min=2.9589 mediana=3.6057 max=7.8892 n=205
+flushes_mean (a):         min=1.0000 mediana=1.0000 max=1.0000 n=205
+redrawn_area_mean (a):    min=384000.0000 mediana=384000.0000 max=384000.0000 n=205
+fps (a):                  min=155.1200 mediana=294.7100 max=344.7200 n=205
+
+bench rc=0

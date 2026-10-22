@@ -1,0 +1,50 @@
+# Cobertura HOST vs QEMU de los 22 dialogos que el arnes de host NO renderiza
+# (tools/ui_harness/mocks/mock_main_screen.c los declara como un descriptor inerte).
+#
+# Issue iariap/x6200_gui#222 (epica #216). Este archivo es la fuente de verdad de la
+# tabla de cobertura; `tests/check_dialog_coverage.py` lo valida contra el codigo real
+# (los mocks del arnes, las fuentes de cada dialogo y `remote_server.cpp::app_names`).
+#
+# Columnas:
+#   dialog          nombre operator-facing del dialogo
+#   symbol          el descriptor `dialog_t *dialog_<x>` (el que el mock hace no-op)
+#   source          archivo de PRODUCCION que define el descriptor real
+#   host_status     cobertura en el arnes de host: INERT = hay descriptor mock (no-op),
+#                   el arnes NO renderiza esa ventana. NUNCA se cambia a REAL: el
+#                   harness de host sigue siendo sintetico para estos 22.
+#   host_fixture    fixture del host que llega al camino de ese dialogo (`-` = ninguno).
+#                   Llegar al camino no es renderizar la ventana: el fixture prueba la
+#                   ruta, no el dialogo.
+#   qemu_app        nombre de `{"cmd":"app","text":...}` que abre ese dialogo (`-` = no
+#                   es una app del menu).
+#   qemu_expected   lo que el barrido QEMU deberia producir: REAL (ventana real
+#                   capturada y controles ejercitados) / PARTIAL (la ventana se
+#                   renderiza pero la funcion necesita un servicio o periferico que el
+#                   chroot no tiene: foto del mensaje controlado, nunca PASS del
+#                   dispositivo) / UNSUPPORTED (no lo alcanza el barrido de las 25 apps).
+#   qemu_status     lo MEDIDO: REAL / PARTIAL / UNSUPPORTED / BLOCKED.
+#   qemu_evidence   ruta de la captura real dentro del directorio de la corrida, o `-`.
+#   qemu_reason     la razon exacta cuando no hay REAL/PARTIAL (nunca vacia en ese caso).
+dialog,symbol,source,host_status,host_fixture,qemu_app,qemu_expected,qemu_status,qemu_evidence,qemu_reason
+Bands,dialog_bands,src/dialog_bands.c,INERT,app-bands,Bands,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+Callsign,dialog_callsign,src/dialog_callsign.c,INERT,-,Callsign,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+Cluster,dialog_cluster,src/dialog_cluster.c,INERT,-,Cluster,PARTIAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+CW Keyboard,dialog_cw_kbd,src/dialog_cw_kbd.c,INERT,-,CW,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+CW Trainer,dialog_cw_trainer,src/dialog_cw_trainer.c,INERT,-,CwTrainer,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+EQ,dialog_eq,src/dialog_eq.cpp,INERT,-,Eq,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+Field Ops,dialog_field,src/dialog_field.c,INERT,-,Field,PARTIAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+Frequency entry,dialog_freq,src/dialog_freq.c,INERT,-,-,UNSUPPORTED,UNSUPPORTED,-,UNSUPPORTED: se abre por HKEY_FINP (tecla larga) y el protocolo de control no inyecta teclas; no lo alcanza el barrido de las 25 apps
+FT8,dialog_ft8,src/dialog_ft8.c,INERT,-,FT8,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+GPS,dialog_gps,src/dialog_gps.c,INERT,-,GPS,PARTIAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+JS8,dialog_js8,src/dialog_js8.c,INERT,-,JS8,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+CW messages,dialog_msg_cw,src/dialog_msg_cw.c,INERT,-,-,UNSUPPORTED,UNSUPPORTED,-,UNSUPPORTED: se abre por pulsacion larga del boton de modo en CW y el protocolo de control no inyecta teclas; no lo alcanza el barrido de las 25 apps
+Voice messages,dialog_msg_voice,src/dialog_msg_voice.c,INERT,-,-,UNSUPPORTED,UNSUPPORTED,-,UNSUPPORTED: se abre por pulsacion larga del boton de modo en SSB/AM/NFM y el protocolo de control no inyecta teclas; no lo alcanza el barrido de las 25 apps
+NavTex,dialog_navtex,src/dialog_navtex.c,INERT,-,NavTex,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+Propagation,dialog_propagation,src/dialog_propagation.c,INERT,-,Propagation,PARTIAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+QTH,dialog_qth,src/dialog_qth.c,INERT,-,QTH,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+Recorder,dialog_recorder,src/dialog_recorder.c,INERT,-,Recorder,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+SSTV,dialog_sstv,src/dialog_sstv.c,INERT,-,SSTV,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+Status,dialog_status,src/dialog_status.c,INERT,-,Status,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+WeFax,dialog_wefax,src/dialog_wefax.c,INERT,-,WeFax,REAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+WiFi,dialog_wifi,src/dialog_wifi.c,INERT,-,WiFi,PARTIAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)
+WSPR,dialog_wspr,src/dialog_wspr.c,INERT,-,WSPR,PARTIAL,BLOCKED,-,BLOCKED: el barrido QEMU no corrio en esta corrida (preflight tests/qemu/run_apps_qemu.sh --check: faltan el volumen privado de build de la GUI y el chroot privado)

@@ -103,8 +103,9 @@ sistema)</a></li>
 <li><a href="#bluetooth" id="toc-bluetooth">6.20 Bluetooth</a></li>
 <li><a href="#swr-scan-barrido-de-roe"
 id="toc-swr-scan-barrido-de-roe">6.21 SWR Scan (barrido de ROE)</a></li>
-<li><a href="#about-acerca-de" id="toc-about-acerca-de">6.22 About
-(acerca de)</a></li>
+<li><a href="#dfl-editor-forma-del-filtro"
+id="toc-dfl-editor-forma-del-filtro">6.22 DFL editor (forma del
+filtro)</a></li>
 <li><a href="#ajustes" id="toc-ajustes">6.23 Ajustes</a></li>
 </ul></li>
 <li><a href="#guías-avanzadas" id="toc-guías-avanzadas">7. Guías
@@ -432,8 +433,8 @@ desplazamiento suave y ahorro en batería</td>
 </tr>
 <tr>
 <td><strong>Clock</strong></td>
-<td>Day, Month, Year / Hour, Min, Sec / Clock view / Timeout Clock,
-Power, TX</td>
+<td>Day, Month, Year / Hour, Min, Sec / Clock view / Clock / Power / TX
+(s)</td>
 <td>Hora UTC de los decodificados (también la ajusta el NTP si hay red)
 y qué muestra el reloj</td>
 </tr>
@@ -454,8 +455,8 @@ reiniciar)</td>
 <td><strong>Actions</strong></td>
 <td>APP long press / MIC long press</td>
 <td>Asignar acciones a las pulsaciones largas: Screenshot, Screen rec,
-Mute, Voice mode, Battery info, ATT, PRE, ATU, ATU tune, APP Bands y las
-demás apps</td>
+Recorder on/off, Mute, Voice mode, Battery info, ATT, PRE, ATU, ATU tune,
+APP Bands, <strong>APP DFL editor</strong> y las demás apps</td>
 </tr>
 <tr>
 <td><strong>Info</strong></td>
@@ -511,9 +512,12 @@ son <strong>6</strong>, con 3 o 4 apps cada una.</p>
 </table>
 <p>Además de las páginas, <strong>cada app está en la lista de
 acciones</strong> de <em>Ajustes → Acciones</em> y se puede asignar a un
-botón o a una pulsación larga. Es el camino para las que no tienen botón
-propio en las páginas: <strong>About</strong>, por ejemplo, se abre
-desde ahí (o asignándola).</p>
+botón o a una pulsación larga; la lista también trae acciones que no son
+apps (<strong>Screenshot</strong>, <strong>Screen rec</strong>,
+<strong>Recorder on/off</strong>, <strong>Mute</strong>, <strong>Voice
+mode</strong>, <strong>Battery info</strong>, <strong>ATT</strong>,
+<strong>PRE</strong>, <strong>ATU</strong>, <strong>ATU
+tune</strong>).</p>
 <h3 id="ft8-ft4">6.1 FT8 / FT4</h3>
 <figure>
 <img src="img/01-ft8.png" alt="FT8" />
@@ -852,16 +856,24 @@ es la antena o el equipo.</p>
 que barre. <strong>Usalo con la antena conectada</strong> (la medición
 necesita RF) y, como siempre: <strong>nunca transmitas sin antena o
 carga fantasma</strong>.</p>
-<h3 id="about-acerca-de">6.22 About (acerca de)</h3>
-<p>La <strong>versión</strong> del firmware (<code>v0.1.2-lu2dsx</code>)
-y los <strong>créditos</strong> de todo el software libre con el que
-está hecho el equipo. Es el dato que hay que mandar cuando se reporta un
-problema: sin la versión, no se puede saber qué código estabas
-corriendo.</p>
-<p><strong>Cómo se usa:</strong> no tiene botón propio en las páginas
-APP: se abre desde <em>Ajustes → Acciones</em> (asignándola a una
-pulsación larga) o desde el menú de la app de Ajustes. Se lee y se
-cierra.</p>
+<h3 id="dfl-editor-forma-del-filtro">6.22 DFL editor (forma del
+filtro)</h3>
+<p>El <strong>editor DFL</strong> muestra la <strong>forma del
+filtro</strong> que está pasando en este momento y deja moverla con el
+dedo. Tiene tres filas — <strong>LOW</strong>, <strong>HIGH</strong> y
+<strong>BW</strong> — con el valor exacto en <strong>Hz</strong> de cada
+borde y del ancho, y una gráfica de la forma.</p>
+<p><strong>Cómo se usa:</strong> se abre con la <strong>pulsación larga
+de la tecla DFL</strong> del equipo, o asignando la acción <strong>APP
+DFL editor</strong> en <em>Ajustes → Acciones</em>. Se arrastra el borde
+que se quiere mover (o se elige la fila con la perilla);
+<strong>Reset</strong> vuelve a la forma por defecto del modo, y en
+<strong>TX</strong> el editor no deja tocar nada. En
+<strong>AM/SAM/NFM/WFM</strong> el borde <strong>LOW</strong> no es
+editable y la fila se ve apagada: esos modos son simétricos alrededor de
+la portadora.</p>
+<p>La gráfica es <strong>esquemática</strong>: muestra la forma del
+filtro, no una medición del equipo.</p>
 <h3 id="ajustes">6.23 Ajustes</h3>
 <figure>
 <img src="img/12-settings.png" alt="Ajustes" />
