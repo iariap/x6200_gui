@@ -110,6 +110,10 @@ set(GUI_SRC
     # (mocks/mock_cw_tune.c): src/cw.cpp no se compila aca.
     ${REPO}/src/autotune.c
     ${REPO}/src/autotune_ui.c
+    # Las politicas puras del Auto Tune multimodo (issue #205): AM/SAM y USB/LSB.
+    # No usan LVGL ni la radio, y el coordinador las consume tal cual corre en la
+    # radio (el banco solo inyecta la instantanea espectral, mock_dsp.c).
+    ${REPO}/src/autotune_spectrum.c
     ${REPO}/src/cw_tune_ui.c
     # La politica visual de bateria (UI-08 incr. 1): modulo puro que todavia no
     # llama nadie; se compila aca para que el -Wall del arnes lo cubra desde ya.

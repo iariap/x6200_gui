@@ -58,6 +58,7 @@
 #include "mock_harness.h"
 #include "mock_radio.h"
 #include "mock_cw_tune.h"
+#include "mock_spectrum.h"
 
 /* Voltios del fixture -> mV de la politica visual, redondeado: el binario de
  * float daria 11199 para 11.2 V si se truncara. */
@@ -360,16 +361,25 @@ bool scenario_build(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "autotune") || !strcmp(scenario->screen, "autotune-progress")
-        || !strcmp(scenario->screen, "autotune-found") || !strcmp(scenario->screen, "autotune-notcw")) {
-        /* El asistente de sintonia fina CW/CWR (issue #190): la pantalla principal
-         * real con la pagina APP 6 cargada (radio y red: WiFi / BT / SWR Scan /
-         * Auto Tune). El fixture pulsa el boton "Auto Tune" y las comprobaciones
-         * viven en scenario_settle. No hay barrido: la senal de CW entra por
-         * inyeccion SOLO EN TESTS de la instantanea del DSP (mocks/mock_cw_tune.c),
-         * porque el banco no compila src/cw.cpp (liquid-dsp y el lazo de audio).
+        || !strcmp(scenario->screen, "autotune-found")
+        || !strcmp(scenario->screen, "autotune-digital") || !strcmp(scenario->screen, "autotune-am")
+        || !strcmp(scenario->screen, "autotune-usb") || !strcmp(scenario->screen, "autotune-lsb")
+        || !strcmp(scenario->screen, "autotune-usb-applied")
+        || !strcmp(scenario->screen, "autotune-usb-timeout")) {
+        /* Auto Tune (issues #190 y #205): la pantalla principal real con la pagina
+         * APP 6 cargada (radio y red: WiFi / BT / SWR Scan / Auto Tune). El fixture
+         * pulsa el boton "Auto Tune" y las comprobaciones viven en scenario_settle.
+         * No hay barrido: la senal entra por inyeccion SOLO EN TESTS de la
+         * instantanea del DSP - el tono CW en mocks/mock_cw_tune.c (el banco no
+         * compila src/cw.cpp: liquid-dsp y el lazo de audio) y el espectro en
+         * mocks/mock_dsp.c (carrier/voz), el mismo tipo que publica la radio.
          * `autotune` cancela una sesion sin tono; `autotune-progress` captura la
          * unica correccion provisional; `autotune-found` corre hasta la
-         * verificacion; `autotune-notcw` comprueba el rechazo fuera de CW/CWR. */
+         * verificacion; `autotune-digital` comprueba el rechazo del modo digital;
+         * `autotune-am` el centrado aproximado de una portadora; `autotune-usb` y
+         * `autotune-lsb` la propuesta que NO mueve el dial; `autotune-usb-applied`
+         * la confirmacion y el Undo; `autotune-usb-timeout` el vencimiento del
+         * PREVIEW sin escritura. */
         mock_keyboard_group_up();
         build_main(scenario);
         buttons_load_page_group(buttons_group_app);
@@ -2224,8 +2234,15 @@ void scenario_settle(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "autotune") || !strcmp(scenario->screen, "autotune-progress")
-        || !strcmp(scenario->screen, "autotune-found") || !strcmp(scenario->screen, "autotune-notcw")) {
-        bool notcw = !strcmp(scenario->screen, "autotune-notcw");
+        || !strcmp(scenario->screen, "autotune-found")
+        /* Familia multimodo (issue #205): AM/SAM con portadora, USB/LSB con
+         * propuesta y confirmacion, y el rechazo del modo digital que reemplaza
+         * al `autotune-notcw` de #190 (AM y USB/LSB ya no se rechazan). */
+        || !strcmp(scenario->screen, "autotune-digital") || !strcmp(scenario->screen, "autotune-am")
+        || !strcmp(scenario->screen, "autotune-usb") || !strcmp(scenario->screen, "autotune-lsb")
+        || !strcmp(scenario->screen, "autotune-usb-applied")
+        || !strcmp(scenario->screen, "autotune-usb-timeout")) {
+        bool digital = !strcmp(scenario->screen, "autotune-digital");
 
         /* El boton que se pulsa es posicional: codificar que es "Auto Tune" antes de
          * pulsarlo, para que reordenar la pagina corte la corrida en vez de pulsar
@@ -2238,25 +2255,27 @@ void scenario_settle(const scenario_t *scenario)
         }
 
         mock_cw_tune_reset();
+        mock_spectrum_reset();
 
-        if (notcw) {
-            /* El fixture NO esta en CW/CWR: pulsar la accion tiene que RECHAZAR
-             * ("Auto Tune: CW/CWR only"), no abrir sesion y no tocar el dial. */
+        if (digital) {
+            /* Un modo digital (USB-D) no tiene Auto Tune: pulsar la accion tiene que
+             * RECHAZAR ("Auto Tune: mode unsupported"), no abrir sesion, no pedir
+             * ninguna publicacion espectral y no tocar el dial de datos. */
             buttons_press(4, false);    /* (APP 6:6) index 4: "Auto Tune" */
             if (autotune_ui_running()) {
                 fprintf(stderr,
-                        "autotune-notcw: la accion arranco una sesion fuera de CW/CWR "
+                        "autotune-digital: la accion arranco una sesion en un modo digital "
                         "(el rechazo por modo no corre)\n");
                 exit(1);
             }
             if (subject_get_int(cfg_cur.fg_freq) != (int32_t) mock_radio.frequency_hz) {
                 fprintf(stderr,
-                        "autotune-notcw: el dial se movio a %d en un modo no soportado\n",
+                        "autotune-digital: el dial se movio a %d en un modo no soportado\n",
                         (int) subject_get_int(cfg_cur.fg_freq));
                 exit(1);
             }
-            if (mock_cw_tune_frames() != 0) {
-                fprintf(stderr, "autotune-notcw: se pidieron muestras CW sin sesion\n");
+            if (mock_cw_tune_frames() != 0 || mock_spectrum_frames() != 0) {
+                fprintf(stderr, "autotune-digital: se pidieron muestras sin sesion\n");
                 exit(1);
             }
             virtual_time_advance(400, 10);
@@ -2330,7 +2349,7 @@ void scenario_settle(const scenario_t *scenario)
                         "(no se captura la provisional)\n");
                 exit(1);
             }
-        } else {
+        } else if (!strcmp(scenario->screen, "autotune-found")) {
             /* `autotune-found`: mismo tono sintetico, corrido hasta el final. El
              * dial tiene que quedar en la correccion y la sesion cerrada. Si la
              * verificacion hubiera fallado, el rollback la devuelve al arranque:
@@ -2358,6 +2377,158 @@ void scenario_settle(const scenario_t *scenario)
                 exit(1);
             }
             /* Dejar asentar el mensaje final (fade-in de 250 ms) antes del capture. */
+            virtual_time_advance(400, 10);
+        } else if (!strcmp(scenario->screen, "autotune-am")) {
+            /* AM/SAM (issue #205): el banco inyecta una portadora 376 Hz arriba del
+             * dial (mocks/mock_dsp.c) en la vista de 96 kHz. La politica aplica UNA
+             * correccion acotada y la verifica con cuatro tramas NUEVAS despues de la
+             * guarda de 300 ms; el capture es el instante en que la correccion quedo
+             * verificada y la ventana de Undo (5000 ms) esta viva. Si la verificacion
+             * hubiera fallado, el rollback devolveria el dial al arranque: que el dial
+             * quede en start + 376 ES la prueba de que se midio con tramas frescas. */
+            int32_t want = (int32_t) mock_radio.frequency_hz + 376;
+
+            mock_spectrum_set_carrier(376.0f, -60.0f);
+
+            /* Hasta que el dial se mueva (la unica escritura). */
+            for (int i = 0; i < 100 && autotune_ui_running() &&
+                                subject_get_int(cfg_cur.fg_freq) == (int32_t) mock_radio.frequency_hz;
+                 i++) {
+                virtual_time_advance(50, 5);
+            }
+            if (subject_get_int(cfg_cur.fg_freq) != want) {
+                fprintf(stderr,
+                        "autotune-am: el dial quedo en %d y no en el centrado aproximado %d\n",
+                        (int) subject_get_int(cfg_cur.fg_freq), (int) want);
+                exit(1);
+            }
+            /* Y la verificacion (tramas nuevas + guarda de 300 ms) tiene que cerrar
+             * dentro de la ventana: se avanza y la sesion sigue viva en Undo. */
+            virtual_time_advance(1500, 10);
+            if (subject_get_int(cfg_cur.fg_freq) != want) {
+                fprintf(stderr,
+                        "autotune-am: la verificacion no sostuvo el destino (el dial quedo en %d)\n",
+                        (int) subject_get_int(cfg_cur.fg_freq));
+                exit(1);
+            }
+            if (!autotune_ui_running()) {
+                fprintf(stderr,
+                        "autotune-am: la sesion termino y no quedo la ventana de Undo de 5000 ms\n");
+                exit(1);
+            }
+            if (mock_spectrum_frames() == 0) {
+                fprintf(stderr,
+                        "autotune-am: no se pidio ninguna publicacion espectral "
+                        "(¿el fixture no armo la portadora?)\n");
+                exit(1);
+            }
+            /* Dejar asentar el mensaje antes del capture. */
+            virtual_time_advance(400, 10);
+        } else if (!strcmp(scenario->screen, "autotune-usb")
+                   || !strcmp(scenario->screen, "autotune-lsb")) {
+            /* USB/LSB (issue #205): la banda lateral de voz NO tiene portadora, asi
+             * que la unica salida segura es proponer y esperar. El banco inyecta una
+             * masa de voz fuera del pasante (mocks/mock_dsp.c) y el fixture avanza MAS
+             * alla del plazo de COLLECT (3000 ms): una sesion que sigue viva y con el
+             * dial EXACTAMENTE donde estaba solo puede estar en PREVIEW (dentro de los
+             * 5000 ms de la propuesta). Retunear la voz sin la segunda pulsacion
+             * moveria el dial y seria un fallo; un COLLECT que no propone nada
+             * terminaria la sesion y tambien. */
+            bool lsb = !strcmp(scenario->screen, "autotune-lsb");
+
+            if (lsb) {
+                mock_spectrum_set_voice(-2850.0f, 1500.0f, -75.0f);
+            } else {
+                mock_spectrum_set_voice(2850.0f, 1500.0f, -75.0f);
+            }
+
+            virtual_time_advance(3500, 10);
+
+            if (subject_get_int(cfg_cur.fg_freq) != (int32_t) mock_radio.frequency_hz) {
+                fprintf(stderr,
+                        "%s: el dial se movio a %d SIN la segunda pulsacion "
+                        "(la voz no se retunea sola)\n",
+                        scenario->screen, (int) subject_get_int(cfg_cur.fg_freq));
+                exit(1);
+            }
+            if (!autotune_ui_running()) {
+                fprintf(stderr,
+                        "%s: la sesion no quedo esperando la confirmacion "
+                        "(¿no llego a PREVIEW, o vencio antes?)\n",
+                        scenario->screen);
+                exit(1);
+            }
+            if (mock_spectrum_frames() == 0) {
+                fprintf(stderr,
+                        "%s: no se pidio ninguna publicacion espectral "
+                        "(¿el fixture no armo la voz?)\n", scenario->screen);
+                exit(1);
+            }
+        } else if (!strcmp(scenario->screen, "autotune-usb-applied")) {
+            /* El ciclo completo de confirmacion y Undo (issue #205, seccion 6):
+             * primera pulsacion -> PREVIEW sin mover el dial; segunda -> aplica UNA
+             * escritura al destino sugerido y deja viva la ventana de Undo; tercera ->
+             * restaura el origen y termina. */
+            int32_t start = (int32_t) mock_radio.frequency_hz;
+            int32_t want = start + 752;
+
+            mock_spectrum_set_voice(2850.0f, 1500.0f, -75.0f);
+            virtual_time_advance(1200, 10);         /* COLLECT -> PREVIEW */
+
+            if (subject_get_int(cfg_cur.fg_freq) != start) {
+                fprintf(stderr,
+                        "autotune-usb-applied: el dial se movio a %d antes de confirmar\n",
+                        (int) subject_get_int(cfg_cur.fg_freq));
+                exit(1);
+            }
+
+            buttons_press(4, false);                /* segunda pulsacion: aplica */
+
+            if (subject_get_int(cfg_cur.fg_freq) != want) {
+                fprintf(stderr,
+                        "autotune-usb-applied: el dial quedo en %d y no en la propuesta %d\n",
+                        (int) subject_get_int(cfg_cur.fg_freq), (int) want);
+                exit(1);
+            }
+            if (!autotune_ui_running()) {
+                fprintf(stderr,
+                        "autotune-usb-applied: no quedo la ventana de Undo tras aplicar\n");
+                exit(1);
+            }
+
+            buttons_press(4, false);                /* tercera pulsacion: deshace */
+
+            if (subject_get_int(cfg_cur.fg_freq) != start) {
+                fprintf(stderr,
+                        "autotune-usb-applied: el Undo dejo el dial en %d y no en el origen %d\n",
+                        (int) subject_get_int(cfg_cur.fg_freq), (int) start);
+                exit(1);
+            }
+            if (autotune_ui_running()) {
+                fprintf(stderr, "autotune-usb-applied: el Undo no cerro la sesion\n");
+                exit(1);
+            }
+            virtual_time_advance(400, 10);
+        } else {
+            /* `autotune-usb-timeout`: la propuesta se muestra y el operador NUNCA
+             * confirma. Vencidos los 5000 ms de la ventana la sesion vuelve a IDLE y
+             * el dial tiene que seguir EXACTAMENTE en la frecuencia del fixture: no
+             * hay auto-apply ni auto-undo. */
+            mock_spectrum_set_voice(2850.0f, 1500.0f, -75.0f);
+            virtual_time_advance(7000, 10);
+
+            if (subject_get_int(cfg_cur.fg_freq) != (int32_t) mock_radio.frequency_hz) {
+                fprintf(stderr,
+                        "autotune-usb-timeout: el dial quedo en %d despues de vencer la propuesta\n",
+                        (int) subject_get_int(cfg_cur.fg_freq));
+                exit(1);
+            }
+            if (autotune_ui_running()) {
+                fprintf(stderr,
+                        "autotune-usb-timeout: la sesion sigue viva despues de la ventana "
+                        "(¿no vence el PREVIEW?)\n");
+                exit(1);
+            }
             virtual_time_advance(400, 10);
         }
     }

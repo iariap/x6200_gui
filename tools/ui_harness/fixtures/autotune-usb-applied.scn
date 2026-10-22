@@ -1,0 +1,48 @@
+# autotune-usb-applied: Auto Tune multimode (issue #205) APPLYING a confirmed
+# suggestion and then UNDOING it inside the 5000 ms window.
+#
+# The whole SSB flow of section 6, driven through the user's own button:
+#
+#   1st press  -> COLLECT -> PREVIEW, the dial does NOT move
+#   2nd press  -> APPLY: exactly one write to start + 752 and the session stays
+#                 alive in the 5000 ms Undo window ("applied - press again to
+#                 undo")
+#   3rd press  -> UNDO: back to start, session over ("restored")
+#
+# scenario_settle codifies all three instants, so this fixture fails if the first
+# press silently retunes, if the second press does not apply, if the apply happens
+# twice, or if the Undo does not restore. The voice mass is the same TEST-ONLY one
+# as `autotune-usb` (mocks/mock_dsp.c): 2850 Hz above the dial, +752 Hz suggested.
+#
+# No intelligibility claim is made anywhere: the suggestion is a gross alignment
+# of occupied energy, and the operator is the one who confirms it.
+
+name autotune-usb-applied
+screen autotune-usb-applied
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 96000
+
+mode usb
+filter_low 0
+filter_high 3000
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

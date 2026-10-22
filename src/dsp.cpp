@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <numeric>
 #include <mutex>
+#include <stddef.h>
 
 extern "C" {
     #include "audio.h"
@@ -133,9 +134,66 @@ static bool last_tx = false;
 
 static x6200_mode_t cur_mode;
 
+/* --- instantanea espectral para Auto Tune multimodo (issue #205) -----------
+ *
+ * Un solo mutex guarda la copia publicada, su secuencia, su epoch y el contexto
+ * vigente (frecuencia, modo y ancho de FFT). Los observers del GUI escriben el
+ * contexto; el hilo del DSP solo lee esos campos para publicar. Se retiene
+ * unicamente para copiar ~3.2 KB: nunca para procesar ni para dibujar, y el hilo
+ * del DSP no accede a ningun Subject. */
+static dsp_autotune_spectrum_t atune_snapshot;
+static std::mutex             atune_mutex;
+static uint64_t               atune_sequence;
+static uint64_t               atune_epoch;
+static int32_t                atune_center;
+static int32_t                atune_mode;
+static int32_t                atune_width;
+
+static void atune_context_set(int32_t *field, int32_t value) {
+    const std::lock_guard<std::mutex> lock(atune_mutex);
+
+    if (*field == value) {
+        return;
+    }
+    *field = value;
+    /* Un cambio de contexto invalida la publicacion vigente: ninguna trama
+     * anterior al cambio puede mezclarse con las posteriores. */
+    atune_epoch++;
+    atune_snapshot.epoch = atune_epoch;
+    atune_snapshot.valid = false;
+}
+
+static void dsp_autotune_publish(const float *db, size_t n, bool tx) {
+    const std::lock_guard<std::mutex> lock(atune_mutex);
+    bool ok = !tx && db != NULL && n == (size_t) SPECTRUM_NFFT && atune_width > 0;
+
+    for (size_t i = 0; i < (size_t) SPECTRUM_NFFT; i++) {
+        float v = (i < n && db != NULL) ? db[i] : 0.0f;
+
+        atune_snapshot.db[i] = v;
+        if (!isfinite(v)) {
+            ok = false;
+        }
+    }
+
+    atune_sequence++;
+    atune_snapshot.sequence = atune_sequence;
+    atune_snapshot.timestamp_ms = get_time();
+    atune_snapshot.center_freq_hz = atune_center;
+    atune_snapshot.mode = atune_mode;
+    atune_snapshot.width_hz = atune_width;
+    atune_snapshot.tx = tx;
+    /* Publicacion invalida (TX, sin datos, ancho no positivo o un valor no
+     * finito): avanza su secuencia y queda marcada como no medible. El epoch lo
+     * mueve el cambio de contexto (o dsp_autotune_invalidate()), no una trama
+     * basura: una sola publicacion mala no tiene que tirar abajo una fase. */
+    atune_snapshot.valid = ok;
+}
+
 static void dsp_update_min_max(float *data_buf, uint16_t size);
 static void on_cur_freq_change(Subject *subj, void *user_data);
 static void on_cur_mode_change(Subject *subj, void *user_data);
+static void on_cur_fft_width_change(Subject *subj, void *user_data);
 
 
 /* * */
@@ -151,6 +209,11 @@ void dsp_init() {
 
     cfg_cur.fg_freq->subscribe(on_cur_freq_change);
     cfg_cur.mode->subscribe(on_cur_mode_change)->notify();
+    /* Ancho de FFT (issue #205): el contexto de la instantanea espectral tiene
+     * que llevar el ancho VIGENTE, no una suposicion fija de 100 kHz; con el
+     * observer, un zoom durante una medicion se ve como cambio de contexto. */
+    cfg_cur.fft_width->subscribe(on_cur_fft_width_change)->notify();
+    atune_center = subject_get_int(cfg_cur.fg_freq);
     ready = true;
 }
 
@@ -172,6 +235,8 @@ void dsp_samples(float *buf_samples, uint16_t size, bool tx, int16_t dbm) {
         last_tx = tx;
         spectrum_avg_psd.reset();
         waterfall_avg_psd.reset();
+        /* TX/RX: la instantanea vigente deja de valer (issue #205, seccion 4). */
+        dsp_autotune_invalidate();
     }
 
     spectrum_avg_psd.add_samples(buf_samples);
@@ -183,6 +248,10 @@ void dsp_samples(float *buf_samples, uint16_t size, bool tx, int16_t dbm) {
     if ((now - spectrum_time > spectrum_fps_ms)) {
         auto spectrum_avg_data = spectrum_avg_psd.get();
         if (spectrum_avg_data){
+            // Instantanea para el Auto Tune multimodo (issue #205): la MISMA PSD
+            // promediada, en dB y ANTES del suavizado visual del waterfall. No
+            // hay FFT nueva ni cadencia nueva; el publicador no toca LVGL.
+            dsp_autotune_publish(spectrum_avg_data->data(), spectrum_avg_data->size(), tx);
             // Decrease beta for high zoom
             float new_beta = powf(spectrum_beta, ((float)spectrum_factor - 1.0f) / 2.0f + 1.0f);
             lpf_block(spectrum_psd_filtered, spectrum_avg_data->data(), new_beta, SPECTRUM_NFFT);
@@ -215,10 +284,38 @@ static void on_cur_freq_change(Subject *subj, void *user_data) {
     psd_delay = 3;
     waterfall_avg_psd.reset();
     spectrum_avg_psd.reset();
+    /* VFO/frecuencia nueva: la instantanea del Auto Tune queda invalidada. */
+    atune_context_set(&atune_center, new_freq);
 }
 
 static void on_cur_mode_change(Subject *subj, void *user_data) {
     cur_mode = (x6200_mode_t)subject_get_int(cfg_cur.mode);
+    atune_context_set(&atune_mode, (int32_t) cur_mode);
+}
+
+static void on_cur_fft_width_change(Subject *subj, void *user_data) {
+    atune_context_set(&atune_width, subject_get_int(cfg_cur.fft_width));
+}
+
+bool dsp_autotune_get_spectrum(dsp_autotune_spectrum_t *out) {
+    if (out == NULL) {
+        return false;
+    }
+    const std::lock_guard<std::mutex> lock(atune_mutex);
+
+    if (atune_sequence == 0) {
+        return false;   /* el DSP todavia no publico ninguna trama */
+    }
+    *out = atune_snapshot;
+    return true;
+}
+
+void dsp_autotune_invalidate(void) {
+    const std::lock_guard<std::mutex> lock(atune_mutex);
+
+    atune_epoch++;
+    atune_snapshot.epoch = atune_epoch;
+    atune_snapshot.valid = false;
 }
 
 float dsp_get_spectrum_beta() {
