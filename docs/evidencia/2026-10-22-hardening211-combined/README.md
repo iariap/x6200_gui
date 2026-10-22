@@ -201,7 +201,7 @@ rootfs **del par integrado** (binario ARM real, scripts de init instalados),
 `qemu-arm` por `binfmt_misc` del host (flag `F`), contenedor privado y desechable
 (`--privileged` para poder montar una imagen ext4 con loop; los casos **no**
 referencian ningún dispositivo del host y cada log registra qué dispositivos de
-bloque ve el contenedor). Matriz cruda: [`foco/matrix.txt`](foco/matrix.txt).
+bloque ve el contenedor). Matriz cruda: [`foco/matrix.txt`](foco/matrix.txt); identidad del par medida por la pasada: [`foco/pasada-combinada-identidad.txt`](foco/pasada-combinada-identidad.txt).
 
 | Escenario (dossier #194) | Caso | Capa | Cobertura | Medición |
 | --- | --- | --- | --- | --- |
