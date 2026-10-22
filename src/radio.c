@@ -338,6 +338,10 @@ static void * radio_thread(void *arg) {
     }
 }
 
+/* Audio de recepcion (#244): ver radio_vol_apply() y on_cur_mode_change_vol() mas abajo. */
+static void on_volume_change(Subject *subj, void *user_data);
+static void on_cur_mode_change_vol(Subject *subj, void *user_data);
+
 static void on_change_bool(Subject *subj, void *user_data) {
     int32_t new_val = subject_get_int(subj);
     void (*fn)(bool) = (void (*)(bool))user_data;
@@ -532,12 +536,16 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
     subject_add_observer_and_call(cfg_cur.filter.low, on_low_filter_change, NULL);
     subject_add_observer_and_call(cfg_cur.filter.high, on_high_filter_change, NULL);
 
-    subject_add_observer_and_call(cfg.vol.val, on_change_uint8, x6200_control_rxvol_set);
+    /* Sin and_call, por lo mismo que el squelch (#166): el observer toma radio_lock y el valor
+     * persistido se aplica al final del init, con el mutex ya creado (#244). */
+    subject_add_observer(cfg.vol.val, on_volume_change, NULL);
     // subject_add_observer_and_call(cfg.sql.val, on_change_uint8, x6200_control_sql_set);
     // subject_add_observer_and_call(cfg.sql_fm.val, on_change_uint8, x6200_control_sql_fm_set);
     /* Sin and_call: el valor persistido se aplica al final del init, cuando el
      * mutex del control ya existe (el observer toma radio_lock). Ver #166. */
     subject_add_observer(cfg_cur.sql_level, on_change_cur_sql_level, NULL);
+    /* #244: al salir de CW/CWR se re-manda el nivel de audio (ver on_cur_mode_change_vol). */
+    subject_add_observer(cfg_cur.mode, on_cur_mode_change_vol, NULL);
     subject_add_observer_and_call(cfg.pwr.val, on_change_float, x6200_control_txpwr_set);
     subject_add_observer_and_call(cfg.fft_dec.val, on_change_uint8, x6200_control_fft_dec_set);
     subject_add_observer_and_call(cfg.key_tone.val, on_change_uint16, x6200_control_key_tone_set);
@@ -626,6 +634,11 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
     sql_policy_apply(subject_get_int(cfg_cur.mode), subject_get_int(cfg_cur.sql_level));
     radio_unlock();
 
+    /* Nivel de audio de recepcion con el estado persistido (#244): es el mismo write que antes
+     * hacia el and_call del observer de cfg.vol.val, pero ahora va despues de crear el mutex
+     * (el observer toma radio_lock) y pasa por la funcion que compone los mutes. */
+    radio_vol_apply();
+
     pthread_t thread;
 
     pthread_create(&thread, NULL, radio_thread, NULL);
@@ -653,6 +666,37 @@ bool radio_check_freq(int32_t freq) {
     return cfg_transverter_get_shift(freq) != 0;
 }
 
+/* Nivel de audio de recepcion que va al registro 14 del BASE (issue #244).
+ *
+ * Es la UNICA funcion que decide ese valor, y lo hace a partir del estado y no de una
+ * transicion: `mute` (el del usuario) y el mute por auriculares A2DP se componen, y el
+ * nivel guardado es el que manda cuando ninguno de los dos esta activo. Antes el valor
+ * se calculaba con un toggle (`mute = !mute`) y la perilla limpiaba `mute` sin volver a
+ * mandar el registro cuando el nivel no podia moverse (tope 0/100), asi que la GUI podia
+ * quedar creyendo que NO estaba muda con el equipo en 0 (silencio sin causa visible).
+ * El X6100 de referencia ya lo hace asi: radio_vol_refresh() en .x6100_ref/src/radio.c.
+ *
+ * Cualquier camino que cambie `mute`, el mute de BT o cfg.vol.val tiene que terminar en
+ * radio_vol_apply(); es barato (un write de 6 bytes por I2C). */
+static uint16_t radio_vol_value(void) {
+    if (mute || btaudio_speaker_muted()) {
+        return 0;
+    }
+
+    return (uint16_t) limit(subject_get_int(cfg.vol.val), VOL_MIN, VOL_MAX);
+}
+
+void radio_vol_apply(void) {
+    WITH_RADIO_LOCK(x6200_control_rxvol_set(radio_vol_value()));
+}
+
+static void on_volume_change(Subject *subj, void *user_data) {
+    (void) subj;
+    (void) user_data;
+
+    radio_vol_apply();
+}
+
 uint16_t radio_change_vol(int16_t df) {
     int32_t vol = subject_get_int(cfg.vol.val);
     if (df == 0) {
@@ -661,7 +705,7 @@ uint16_t radio_change_vol(int16_t df) {
 
     mute = false;
 
-    uint16_t new_val = limit(vol + df, 0, 100);
+    uint16_t new_val = limit(vol + df, VOL_MIN, VOL_MAX);
 
     if (new_val != vol) {
         subject_set_int(cfg.vol.val, new_val);
@@ -670,6 +714,11 @@ uint16_t radio_change_vol(int16_t df) {
          * (el sink de PulseAudio, via btaudio-ctl volume): si no, no habia forma de cambiarlo
          * (docs/HALLAZGOS.md 23). */
         btaudio_headphone_volume(new_val);
+    } else {
+        /* El nivel no se movio (tope del rango) pero el mute del usuario si se limpio: hay que
+         * re-mandar el registro igual o el equipo queda en 0 y la GUI dice que no esta muda
+         * (issue #244). */
+        radio_vol_apply();
     };
 
     return new_val;
@@ -681,7 +730,34 @@ bool radio_is_muted() {
 
 void radio_change_mute() {
     mute = !mute;
-    x6200_control_rxvol_set(mute ? 0 : subject_get_int(cfg.vol.val));
+    radio_vol_apply();
+}
+
+/* #244: ir a CW y volver deja el audio de RX mudo hasta un power-cycle (medido por el
+ * dueño dos veces el 22/10; el estado del BASE no lo revierte ningun otro camino). Lo
+ * unico que la GUI tiene con formato verificado es el write del registro 14 —el que usa
+ * la perilla y que se sabe que cambia el nivel—, asi que al SALIR de CW/CWR se re-manda
+ * el nivel. Es una mitigacion barata (un write de 6 bytes) y NO un arreglo probado: si el
+ * BASE quedo en un estado mas profundo que el registro de volumen, esto no lo saca (ver
+ * docs/HALLAZGOS.md 64 y el anexo A). No toca el mute del usuario ni el de BT porque el
+ * valor sale de radio_vol_value(). */
+static void on_cur_mode_change_vol(Subject *subj, void *user_data) {
+    static x6200_mode_t prev;
+    static bool         prev_set = false;
+
+    (void) user_data;
+
+    x6200_mode_t mode = subject_get_int(subj);
+    bool de_cw  = prev_set && (prev == x6200_mode_cw || prev == x6200_mode_cwr);
+    bool a_cw   = (mode == x6200_mode_cw || mode == x6200_mode_cwr);
+
+    prev     = mode;
+    prev_set = true;
+
+    if (de_cw && !a_cw) {
+        LV_LOG_USER("Radio vol re-sync al salir de CW (#244)");
+        radio_vol_apply();
+    }
 }
 
 uint16_t radio_change_moni(int16_t df) {
