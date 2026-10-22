@@ -36,6 +36,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 | 19/10 ~10:40 (hora host) | (sin radio; ARM **4893b8f39bf3**, 13.783.700 B) | `ade36bbb` (#146) | — | — | 0 | **CB 27 MHz: gates de host + arnés + banco QEMU** ✓ (sin desplegar, sin flashear y **sin transmitir**): nativos 0 fallos (RED→GREEN de `test_cb`, 85 comprobaciones), `check_wcag`/`check_cfg_fills`/`check_actions` OK, determinismo PASS, ruff/format/ty/pytest (incl. 13 e2e) OK, A/B `AB-CB146` PASS (B=`ade36bbb`), y el banco muestra `CH 19`/`CH --`/`CH 23`/`CH 24` con `tx=false`. **F0 (RF real) requiere radio**. Evidencia: [`2026-10-19-cb-27mhz-146/`](evidencia/2026-10-19-cb-27mhz-146/README.md) |
 | 18/10 ~12:40 (hora radio) | GUI **ffef63df58cb** (build limpio; **NO desplegado**) | `94b9989` | (sin radio) | — | 0 | **Radio inalcanzable en las dos redes** ✗: build limpio + gate #86 OK (`ffef63df58cb`, 13.757.724 B, 3/3 marcas), pero `tools/prueba-gui-en-radio.sh` abortó porque `radio_ip()` no encontró la radio. **#133/#114/#121 quedan SIN VEREDICTO**: no se pudo correr ninguna de las tres pruebas. La 4.ª caída del #121 sigue sin recuperación (necesita ciclo de energía; la batería estaba en 8,6 V, anotado en el #121). Evidencia: [`2026-10-18-qa-radio-backlog/`](evidencia/2026-10-18-qa-radio-backlog/README.md) |
 | 17/10 ~22:20 (hora radio) | ROM `c640645d810c` + GUI **b1ba67520079** | `63dbf7a4` (#130) | **SWRScan** | **23 ok** | 0 (1 crash, ya en #131) | **VALIDADA EN RADIO la U del #130** ✓✓: build limpio desde el tip + gate #86 + deploy (idempotente, ya corría el mismo md5). Con el dial en la resonancia (~7.000) la curva es una **U**: base `y=398` en `x=255` (interior), bordes suben **+94/+168 px**; reproducido en 2ª pasada (`x=232`, +80/+174) y con span 200 kHz/Log (`x=238`, +140/+233). **Hallazgo nuevo**: `tests/swrscan_curve_evidence.py` del #125 **no corre sobre una captura de radio** (pide 2 args, no 1; su umbral `min≥180` no ve la curva del tema del owner `Redshift` = RGB(255,179,160)) → **issue nuevo**. Sigue `Error: timeout de RF` (`n≈44/51`, nunca `Completed`). Evidencia `docs/evidencia/2026-10-17-qa-radio-swr125/` |
+| 22/10 (UTC) | (sin radio; candidato GUI **`c888308eede712`**, 13.407.624 B; Buildroot `d084e287`; fuente `964193ae…`) | `c888308e` (#193) | **no ejecutado** (fase A sin radio) | **no ejecutado** (BLOCKED por banco ocupado) | — | **ASSESSMENT #194: CONDITIONAL / NO_GO de release** — evidencia software 01..04 integrada y auditada (334 ítems, 1.025 métricas, SHA256SUMS OK, gate #86 PASS); **hardware BLOCKED/PENDING_HARDWARE** con causa (fase A documental; sin sesión exclusiva ni identidad del binario instalado). P1 fundados: DATA nueva vfat/primer boot sin `/mnt`, SIGSEGV de DB corrupta/RO/faltante, update con owner 1000 y backup 706/5466, sin watchdog. STALE para el tip GUI `d4fb57f8` (25 archivos de producción) y Buildroot `f23d14f`. Evidencia: [`assessment-rom-194/05-summary/`](evidencia/assessment-rom-194/05-summary/README.md) · [dossier](evidencia/assessment-rom-194/05-summary/ASSESSMENT_ROM_194.md) · [findings](evidencia/assessment-rom-194/05-summary/findings.csv) · [hardware-plan](evidencia/assessment-rom-194/05-summary/hardware-plan.csv) |
 | 22/10 ~10:12 | **ROM 03c6f9e6… (sin logo de kernel)** en la radio | `2a6059b5` | — | — | 0 | **ARRANQUE FINAL VERIFICADO** ✓✓: GUI 3b22a03a… ✓, boot_identity a576d48d… ✓, **bootanim stop/handoff 15,4 s + GUI lista 15,5 s** ✓, **imagen vieja de boot ELIMINADA** ✓✓ (kernel `# CONFIG_LOGO is not set`; owner: "arranco OK") ✓, 1 GUI + daemon ✓, **CRASHLOG 0** ✓, **/mnt ext4 rw** ✓, params 118.784 B ✓, kernel 6.1.82 ✓, radio en 192.168.0.236 ✓. Incluye PR Buildroot #2 (defconfig compila) y #3 (sin logo) ✓. Imagen: sdcard.img sha256 03c6f9e6e5ad75ec271125caf17bfe7f7721d9aaf0924c676b43f257ef4ecce5 ✓ |
 | 22/10 ~09:10 | ROM c8ce5bd0… flasheada + DATA ext4 | `f3f381fd` | — | — | 0 | **ARRANQUE OK** ✓: GUI 3b22a03a… (13.412.248 B) ✓, boot_identity a576d48d… ✓, **bootanim #200 stop/handoff 14,6 s + GUI lista 14,7 s** ✓, 1 GUI + daemon ✓, CRASHLOG 0 ✓, **/mnt ext4 rw** ✓, params 118.784 B ✓ (la GUI lo reescribió al arrancar ✓). **Hallazgo del owner**: en boot se ve **la imagen anterior** ✗ → **causa medida**: el kernel dibuja **`logo.png`** (BR2_LINUX_KERNEL_CUSTOM_LOGO_PATH, 800x480, LOGO_LINUX_CLUT224) ✗; U-Boot no dibuja nada ✓ y #200 arranca en S01bootanim ✓ → **PR AetherX6200Buildroot#3** para quitar el logo del kernel ✓ (queda el rebuild+flash pendiente al merge ✓). Radio ahora en **192.168.18.67** ✓ |
 | 22/10 ~08:47 | **ROM c8ce5bd0…** (tip 0d00e7fc + BR d084e287) flasheada en la SD | `9ed25fa9` | — | — | 0 | **FLASHEO CON IMAGEN NUEVA** ✓ (sha256 c8ce5bd05206cdfe…, 571.473.920 B): GUI 13.412.248 B md5 3b22a03a… ✓, fstab ext4 ✓, S01create_data ✓, S01bootanim #200 ✓, gate #86 PASS ✓. **Incidente**: el dd deja la 3ra entrada MBR inconsistente → p3 desapareció de la tabla ✗ **pero los datos intactos** ✓ (dd solo 545 MiB) → reparado recreando p3 con **sectores exactos** (`parted unit s mkpart primary 1116160 7744511`) ✓ → p3 3.393.716.224 B, LABEL=DATA, UUID 9facdaea ✓, mount ro OK ✓. Ojo: `parted ... 100%` **alinea al MiB** y deja p3 512 KiB corta ✗ (primer intento). params.db 118.784 B md5 3de650e3 ✓ (la radio lo había reescrito ✓) + backup fresco ✓. Script de flasheo actualizado ✓. **Pendiente**: arranque y verificación en la radio |
@@ -1335,3 +1336,48 @@ Evidencia: [`evidencia/2026-10-20-dfl183/README.md`](evidencia/2026-10-20-dfl183
 **SWR Scan**, que no está en la lista de apps del control remoto (`src/remote_server.cpp:285-292`,
 12 entradas; probadas 5 variantes del nombre, todas `Unknown app`). Ver issue
 [#78](https://github.com/iariap/x6200_gui/issues/78).
+
+
+## 22/10 (UTC) — Assessment pre-release #194: dossier `c888308e` (sin radio)
+
+**Qué se probó:** la campaña completa de evidencia #194 (unidades #195..#199) sobre el candidato
+GUI `c888308eede71205605c06383432ee7e165f202e` + Buildroot
+`d084e2870a00b64d9c57474e7eceeef80f43f25b` + LVGL `74d0a816…`, con el artefacto de #195
+(`sdcard.img` `d0ff4435…`, `rootfs.tar` `7c26c76b…`, GUI md5 `1f998c46…`, fuente-md5
+`964193ae…`, gate #86 PASS). **No se desplegó, flasheó, transmitió ni se tocó la radio**; esta fase
+es consolidación documental. El hardware queda **BLOCKED/PENDING_HARDWARE** con causa.
+
+**Medido (HOST/QEMU_USER):** 334 ítems de inventario; 1.025 filas de resultados (PASS 933,
+INCONCLUSIVE 24, REVIEW_REQUIRED 21, FAIL 15, BLOCKED 13, PENDING_HARDWARE 12, SKIP 5,
+UNSUPPORTED 2); 199 capturas UI, 26.455 objetos, 2.056 checks de contrato y 90 pares WCAG;
+3.980 frames de render (p50 4,2946 ms / p95 5,3839 ms / MAD-CV mediana 7,579 %); 10 estados de
+recursos QEMU; 3 pares de audio digital null-sink. `sha256sum -c` de 01..04: **OK**
+(80/102/815/272).
+
+**Código (sin ejecutar):** timers WiFi de 30 ms incondicionales (~41,8 wakeups/s); ausencia de
+watchdog y wrapper `while true` sin backoff; migración 2 no idempotente; `/bin/sh`→bash con arrays
+en init scripts.
+
+**No medido (hardware/instrumentos):** energía/térmica, boot-to-ready real, LCD/input físico,
+audio analógico/mixer/dropouts, FFT/carga DSP, RX/TX reales, update/rollback con corte de energía,
+DB llena/RO en el equipo, servicios residentes. Todo tiene caso y criterio en
+[`hardware-plan.csv`](evidencia/assessment-rom-194/05-summary/hardware-plan.csv).
+
+**Hallazgos fundados P1:** tarjeta nueva crea DATA vfat y el primer boot no monta `/mnt`; DB
+corrupta/RO/faltante → SIGSEGV determinista + crash-loop; empaquetador de update exit 1 y
+`S02update` owner 1000 (`pulse`); primera update con backup 706/5466 y sin checksum/rollback; sin
+watchdog. Los P2/P3 y las **hipótesis separadas** están en
+[`findings.csv`](evidencia/assessment-rom-194/05-summary/findings.csv) /
+[`findings.md`](evidencia/assessment-rom-194/05-summary/findings.md). No se abrió ningún ticket.
+
+**Limitaciones:** sin radio; #197 se ejecutó antes del merge de #196 (su `DEP-196` quedó superado,
+pero los 22 diálogos inertes siguen sin captura); no hay CI del SHA candidato; el defconfig
+congelado no reproduce el artefacto desde cero (F-11 resuelto en Buildroot PR #2, sin reconstruir);
+el dossier es **STALE** para el tip GUI `d4fb57f8` (25 archivos de producción) y Buildroot
+`f23d14f`. Detalle y repeticiones en
+[`stale.md`](evidencia/assessment-rom-194/05-summary/stale.md).
+
+**Veredicto:** **CONDITIONAL** para el alcance software; **NO_GO de release** hasta ejecutar la
+fase B con identidad exacta y disponer de los P1. Cierre de recolección **no** es aprobación de
+producto ni autorización de deployment. Evidencia completa:
+[`05-summary/README.md`](evidencia/assessment-rom-194/05-summary/README.md).
