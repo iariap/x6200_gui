@@ -1,0 +1,6 @@
+items 334
+coverage {'PARTIAL': 138, 'REAL': 151, 'SYNTHETIC': 4, 'UNSUPPORTED': 41}
+owner {'#197': 142, '#196': 51, '#195': 102, '#199': 21, '#198': 18}
+status_final {'REVIEW_REQUIRED': 76, 'PASS': 174, 'PENDING_HARDWARE': 62, 'BLOCKED': 13, 'UNSUPPORTED': 3, 'FAIL': 6}
+tests_final {'PASS': 94, 'REVIEW_REQUIRED': 17, 'BLOCKED': 3}
+ui_rows 142 ui_in_inventory 142

@@ -1,0 +1,182 @@
+{
+  "dossier": "assessment-rom-194/05-summary",
+  "campaign": "iariap/x6200_gui#194",
+  "unit": 199,
+  "phase": "A_documental",
+  "generated_utc": "2026-10-22T00:19:16Z",
+  "candidate_gui": "c888308eede71205605c06383432ee7e165f202e",
+  "buildroot": "d084e2870a00b64d9c57474e7eceeef80f43f25b",
+  "lvgl": "74d0a816440eea53e030c4f1af842a94f7ce3d3",
+  "recommendation": "CONDITIONAL (software); NO_GO de release en el estado actual",
+  "hardware_status": "BLOCKED/PENDING_HARDWARE",
+  "files": [
+    {
+      "path": "ASSESSMENT_ROM_194.md",
+      "bytes": 10148
+    },
+    {
+      "path": "PRUEBAS-row.md",
+      "bytes": 5034
+    },
+    {
+      "path": "README.md",
+      "bytes": 21334
+    },
+    {
+      "path": "acceptance-manifest.json",
+      "bytes": 4660
+    },
+    {
+      "path": "artifact-manifest.json",
+      "bytes": 5801
+    },
+    {
+      "path": "commands.jsonl",
+      "bytes": 5924
+    },
+    {
+      "path": "coverage-final.csv",
+      "bytes": 84535
+    },
+    {
+      "path": "coverage.md",
+      "bytes": 6218
+    },
+    {
+      "path": "findings.csv",
+      "bytes": 19449
+    },
+    {
+      "path": "findings.md",
+      "bytes": 9625
+    },
+    {
+      "path": "hardware-plan.csv",
+      "bytes": 15107
+    },
+    {
+      "path": "hardware-plan.md",
+      "bytes": 11958
+    },
+    {
+      "path": "hardware-remote/README.md",
+      "bytes": 2318
+    },
+    {
+      "path": "hardware-remote/artifact-manifest.json",
+      "bytes": 1156
+    },
+    {
+      "path": "hardware-remote/results.csv",
+      "bytes": 2572
+    },
+    {
+      "path": "history.md",
+      "bytes": 4933
+    },
+    {
+      "path": "logs/build-coverage.log",
+      "bytes": 365
+    },
+    {
+      "path": "logs/build-findings.log",
+      "bytes": 181
+    },
+    {
+      "path": "logs/build-hardware-plan.log",
+      "bytes": 54
+    },
+    {
+      "path": "logs/provenance/artifact-hashes.log",
+      "bytes": 716
+    },
+    {
+      "path": "logs/provenance/audita-pruebas.log",
+      "bytes": 973
+    },
+    {
+      "path": "logs/provenance/check-links.log",
+      "bytes": 64
+    },
+    {
+      "path": "logs/provenance/file-counts.log",
+      "bytes": 117
+    },
+    {
+      "path": "logs/provenance/gate86.log",
+      "bytes": 142
+    },
+    {
+      "path": "logs/provenance/git-refs.log",
+      "bytes": 377
+    },
+    {
+      "path": "logs/provenance/gui-hash.log",
+      "bytes": 166
+    },
+    {
+      "path": "logs/provenance/merge-counts.log",
+      "bytes": 124
+    },
+    {
+      "path": "logs/provenance/production-diff.log",
+      "bytes": 59
+    },
+    {
+      "path": "logs/provenance/sha256sums.log",
+      "bytes": 221
+    },
+    {
+      "path": "logs/provenance/tip-diff.log",
+      "bytes": 666
+    },
+    {
+      "path": "provenance-audit.md",
+      "bytes": 5866
+    },
+    {
+      "path": "scripts/build_coverage_final.py",
+      "bytes": 14750
+    },
+    {
+      "path": "scripts/build_findings.py",
+      "bytes": 31350
+    },
+    {
+      "path": "scripts/build_hardware_plan.py",
+      "bytes": 19599
+    },
+    {
+      "path": "scripts/build_manifests.py",
+      "bytes": 12034
+    },
+    {
+      "path": "scripts/check_links.py",
+      "bytes": 1451
+    },
+    {
+      "path": "scripts/run_verifications.sh",
+      "bytes": 5179
+    },
+    {
+      "path": "stale.md",
+      "bytes": 4933
+    }
+  ],
+  "file_count": 38,
+  "key_files": [
+    "README.md",
+    "coverage-final.csv",
+    "findings.csv",
+    "hardware-plan.csv",
+    "hardware-remote/results.csv",
+    "provenance-audit.md",
+    "stale.md",
+    "ASSESSMENT_ROM_194.md",
+    "PRUEBAS-row.md",
+    "acceptance-manifest.json",
+    "artifact-manifest.json",
+    "commands.jsonl",
+    "SHA256SUMS"
+  ]
+}
