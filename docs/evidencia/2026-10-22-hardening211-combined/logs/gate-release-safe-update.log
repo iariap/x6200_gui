@@ -1,0 +1,30 @@
+==> banco privado: contenedor h215-x6200-update-lab, lab /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/h215-lab
+==> banco de actualizacion verificada (issue #215), GUI b798f13b
+==> fixture: /fixtures/x6200_r1cbu_v0.1.2-lu2dsx.tgz
+==> qemu-arm-static: qemu-arm version 7.2.22 (Debian 1:7.2+dfsg-7+deb12u18+b3)
+==> extrayendo el fixture /fixtures/x6200_r1cbu_v0.1.2-lu2dsx.tgz
+==> paquetes buenos (con el empaquetador arreglado)
+==> extrayendo el rootfs
+==> aplicando el overlay de la actualización
+    etc/init.d/S02update
+==> comprobando el inventario setuid en staging
+    bin/busybox 4755 0 0
+    usr/libexec/dbus-daemon-launch-helper 4750 0 101
+    usr/libexec/ssh-keysign 4711 0 0
+==> armando la lista (solo archivos y enlaces, sin ./ ni directorios)
+    5483 entradas
+==> creando /lab/work/pkg/x6200_r1cbu_v215.tgz
+==> comprobaciones
+    tamaño:            102262385 bytes
+    entradas:          5483
+    directorios:       0 (tiene que ser 0)
+    entrada ./:        0 (tiene que ser 0)
+    setuid:            3 (tienen que ser 3)
+      bin/busybox -rwsr-xr-x 0/0
+      usr/libexec/dbus-daemon-launch-helper -rwsr-x--- 0/101
+      usr/libexec/ssh-keysign -rws--x--x 0/0
+    S02update:         -rwxr-xr-x 0/0 (tiene que ser -rwxr-xr-x 0/0)
+    GUI ejecutable:    -rwxr-xr-x 0/0
+==> sidecar sha256
+    e34aac6de83890aecbbdfe55a70530efe70bd79c0915a2f45a9556918f0e0030  x6200_r1cbu_v215.tgz
+==> listo: /lab/work/pkg/x6200_r1cbu_v215.tgz y /lab/work/pkg/x6200_r1cbu_v215.tgz.sha256

@@ -1,0 +1,75 @@
+WARNING: The requested image's platform (linux/arm/v7) does not match the detected host platform (linux/amd64/v4) and no specific platform was requested
+== preflight del banco
+   /etc/fstab del contenedor: 1 entrada(s) para DATA
+   nodos del /dev privado antes de armar tarjetas: console fd full loop-control null random stderr stdin stdout tty urandom zero
+   dispositivo con label DATA visible: 'ninguno'
+
+== caso estaticos: el script del PR cumple las reglas estaticas del contrato
+  ok    sin 'fat32' en el script
+  ok    sin mkfs vfat en el script
+  ok    usa exactamente: mkfs.ext4 -F -m 0 -L DATA $DATA
+  ok    monta la DATA existente con -t <tipo real>
+  ok    fstab sin cambios: /dev/mmcblk0p3 /mnt ext4 rw
+  ok    el init script es ejecutable (0755, como el resto de /etc/init.d)
+  ok    sintaxis ok con bash en modo POSIX (argv[0]=sh, como en la ROM)
+  ok    sintaxis ok con bash -n
+   -> OK (8 ok, 0 fail)
+
+== caso fresh-first-boot: SD nueva (p1+p2 y 256 MiB al final): crea p3 ext4 y la monta en el primer boot
+  ok    exit=0
+  ok    stdout exacto: DATA ready (ext4)
+  ok    invoco: parted -m -s -a none /dev/mmcblk0 unit s mkpart primary ext4 1116160s 1640447s
+  ok    invoco: partprobe /dev/mmcblk0
+  ok    invoco: blockdev --getsize64 /dev/mmcblk0p3
+  ok    invoco: mkfs.ext4 -F -m 0 -L DATA /dev/mmcblk0p3
+  ok    invoco: mount -t ext4 /dev/mmcblk0p3 /mnt
+  ok    no invoco: mkfs.vfat
+  ok    p3 quedo ext4 (blkid)
+  ok    p3 quedo con label DATA
+  ok    /mnt montado desde /dev/mmcblk0p3
+  ok    /mnt tipo ext4
+  ok    /mnt rw
+  ok    region p1 intacta (4c9a9a1fd5a3a81b842c6da988b79a0351048bb3c31f3fee62cf83a521d22f2a)
+  ok    region p2 intacta (7d2c8a1eccbb5e64cd223cb2d9b5ff416e0e88fcfd7a649fee8af8439f23bec4)
+  ok    tabla de la copia: 1 2 3
+   -> OK (16 ok, 0 fail)
+
+== caso second-boot-idempotent: segundo boot sobre la misma tarjeta: no re-particiona, no formatea, conserva el contenido
+  ok    exit=0
+  ok    stdout exacto: DATA ready (ext4)
+  ok    no invoco: parted 
+  ok    no invoco: partprobe 
+  ok    no invoco: mkfs
+  ok    no invoco: mke2fs 
+  ok    invoco: mount -t ext4 /dev/mmcblk0p3 /mnt
+  ok    /mnt montado desde /dev/mmcblk0p3
+  ok    /mnt tipo ext4
+  ok    /mnt rw
+  ok    el contenido escrito en el primer boot sigue en DATA
+  ok    region p1 intacta (4c9a9a1fd5a3a81b842c6da988b79a0351048bb3c31f3fee62cf83a521d22f2a)
+  ok    region p2 intacta (7d2c8a1eccbb5e64cd223cb2d9b5ff416e0e88fcfd7a649fee8af8439f23bec4)
+   -> OK (13 ok, 0 fail)
+
+== caso existing-ext4-content: DATA ext4 existente con contenido, symlink e ids: se monta y no se toca
+  ok    p3 es ext4 antes del boot
+  ok    p3 con label DATA antes del boot
+  ok    exit=0
+  ok    stdout exacto: DATA ready (ext4)
+  ok    no invoco: parted 
+  ok    no invoco: partprobe 
+  ok    no invoco: mkfs
+  ok    no invoco: mke2fs 
+  ok    invoco: mount -t ext4 /dev/mmcblk0p3 /mnt
+  ok    /mnt montado desde /dev/mmcblk0p3
+  ok    /mnt tipo ext4
+  ok    /mnt rw
+  ok    DATA ext4 existente: /mnt/params.db legible e intacto
+  ok    DATA ext4 existente: symlink /mnt/link-params -> params.db intacto
+  ok    DATA ext4 existente: ids/modo de /mnt/keep.bin intactos (1234:5678:640)
+  ok    DATA ext4 existente: /mnt/backups/backup.tgz presente
+  ok    p3 sigue ext4 con label DATA despues del boot
+  ok    region p1 intacta (4c9a9a1fd5a3a81b842c6da988b79a0351048bb3c31f3fee62cf83a521d22f2a)
+  ok    region p2 intacta (7d2c8a1eccbb5e64cd223cb2d9b5ff416e0e88fcfd7a649fee8af8439f23bec4)
+   -> OK (19 ok, 0 fail)
+
+== caso legacy-vfat-preserved: DATA vfat legacy (tarjeta anterior a la conversion): se monta como vfat y no se toca
