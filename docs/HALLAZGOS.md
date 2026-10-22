@@ -81,6 +81,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 60. [El squelch del #166: la lib del control ya habilita el enable (el comentario de radio.c:611 era redundante)](#60-el-squelch-del-166-la-lib-del-control-ya-habilita-el-enable-el-comentario-de-radioc611-era-redundante)
 61. [El md5 del build no distinguia commits: `rsync -au` de Buildroot no reponia la copia (#165)](#61-el-md5-del-build-no-distinguia-commits-rsync--au-de-buildroot-no-reponia-la-copia-165)
 62. [DFL: el editor inline se cerraba al cambiar de modo dentro de la MISMA familia (y el gate que lo vio estaba rojo con el CI en verde)](#62-dfl-el-editor-inline-se-cerraba-al-cambiar-de-modo-dentro-de-la-misma-familia-y-el-gate-que-lo-vio-estaba-rojo-con-el-ci-en-verde)
+63. [La radio se desconectaba por roaming a un segundo AP DharmaNet cuyo handshake WPA falla](#63-la-radio-se-desconectaba-por-roaming-a-un-segundo-ap-dharmanet-cuyo-handshake-wpa-falla)
 
 ---
 
@@ -3592,3 +3593,65 @@ fixtures del espejo *despues* del merge de #183 (no hay runs de `push` para mira
 el trigger es `pull_request` y que el run de #183 —el que si habria tenido que verlos en su base—
 traia 196 escenarios sin ellos.
 
+## 63. La radio se desconectaba por roaming a un segundo AP DharmaNet cuyo handshake WPA falla
+
+**Sintoma**: el dueño reportó "no sé por qué se desconecta cada tanto" y, en la prueba del 22/10 a las
+20:10Z, "wifi got disconnected": la radio quedó **sin red ~40 s** y volvió sola. Medido con el logger de
+10 s en la radio (`/mnt/wifi-watch4.log`) y `dmesg`:
+
+```
+20:10:11Z  dormant  (roaming: sale del AP bueno)
+20:10:21Z  dormant  (asociada al AP 14:eb:b6:dc:ff:6c)
+20:10:31Z  down     "Not connected."
+20:10:41Z  down
+20:10:52Z  up       (vuelve al AP 62:c9:e3:49:b2:a8)
+```
+
+**Causa, medida** (`dmesg`, uptime 6662→6693 s; y `/mnt/iw-event.log`):
+
+```
+$ dmesg | grep -aE "wlan0"
+[ 6662.559194] wlan0: deauthenticating from 62:c9:e3:49:b2:a8 by local choice (Reason: 3=DEAUTH_LEAVING)
+[ 6665.482223] wlan0: authenticate with 14:eb:b6:dc:ff:6c
+[ 6665.926494] wlan0: associating to AP 14:eb:b6:dc:ff:6c with corrupt probe response
+[ 6666.092241] wlan0: associated
+[ 6675.301201] wlan0: deauthenticated from 14:eb:b6:dc:ff:6c (Reason: 15=4WAY_HANDSHAKE_TIMEOUT)
+[ 6692.961136] wlan0: authenticate with 62:c9:e3:49:b2:a8
+[ 6693.591814] wlan0: associated
+
+$ tail /mnt/iw-event.log
+1792692860.566769: wlan0 (phy #0): scan started
+1792692864.123107: wlan0 (phy #0): scan finished: 2412 ... 2462, "DharmaNet"
+1792692868.897858: wlan0 (phy #0): CQM event: RSSI (-61 dBm) went above threshold
+1792692933.902284: wlan0: del station 62:c9:e3:49:b2:a8
+```
+
+Es **roaming**: hay **dos AP con el mismo SSID "DharmaNet"** — el bueno `62:c9:e3:49:b2:a8`
+(es el que usaba, `-61 dBm`) y otro `14:eb:b6:dc:ff:6c` al que NM roamea cuando el RSSI baja
+(`CQM ... went below threshold`) y **cuyo 4-way handshake falla** (`Reason: 15`), por eso la radio se
+queda sin red hasta que vuelve al AP bueno. El otro AP además responde con `corrupt probe response`.
+
+**Arreglo**: anclar la conexión al BSSID bueno en el perfil de NetworkManager (el perfil vive en el
+rootfs, `/etc/NetworkManager/system-connections/DharmaNet.nmconnection`):
+
+```
+$ sed -i '/^\[wifi\]/a bssid=62:c9:e3:49:b2:a8' DharmaNet.nmconnection
+$ grep -A2 '^\[wifi\]' DharmaNet.nmconnection
+[wifi]
+bssid=62:c9:e3:49:b2:a8
+mode=infrastructure
+$ /etc/init.d/S45network-manager restart   # Stopping NetworkManager ... done. / Starting NetworkManager ... done.
+```
+
+Backup del perfil previo: `/mnt/nm-profile-backup-201406.nmconnection`.
+
+**Verificación, medida**: tras el restart, `iw dev wlan0 link` → `Connected to 62:c9:e3:49:b2:a8`
+(y `ssid=DharmaNet`) a las 20:14Z; monitor de BSSID cada 10 s en curso. *Pendiente de confirmar en
+ventana más larga que no vuelva a roamear.*
+
+**Nota**: el lock es **de la radio actual**: un reflash de la ROM lo pierde (el perfil está en el
+rootfs). Para que quede permanente hay que llevarlo al overlay del Buildroot (decisión del dueño).
+
+**Sin fundar (anexo A)**: por qué el AP `14:eb:b6:dc:ff:6c` falla el 4-way handshake (¿repetidor o
+WPA3 mal configurado?) y si el corte largo de 17:58 del mismo día (5 min 23 s, **sin deauth**, con
+`authentication ... timed out` y con BT encendido) es el mismo problema o otro.
