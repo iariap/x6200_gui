@@ -1,0 +1,30 @@
+== blast radius: quien llama al modulo y quien mas usa el contexto GLib ==
+
+-- callers de wifi_power_setup/on/off en src/ --
+src/dialog_wifi.c:279:        wifi_power_off();
+src/dialog_wifi.c:286:        wifi_power_on();
+src/main.c:657:    wifi_power_setup();
+src/wifi.h:49:void wifi_power_setup();
+src/wifi.h:54:void wifi_power_on();
+src/wifi.h:59:void wifi_power_off();
+
+-- orden en src/main.c (el modulo arranca antes del resto de la GUI) --
+650:    gpio_safe_prepare();
+657:    wifi_power_setup();
+658:    backlight_init();
+659:    cat_init();
+
+-- usuarios del contexto GLib por defecto fuera de wifi.cpp --
+(ninguno: el unico pump de GLib de la GUI es el de wifi.cpp)
+
+-- quien lee el estado de WiFi (interfaz publica, sin cambios) --
+src/dialog_cluster.c:167:    bool up = wifi_get_status() == WIFI_CONNECTED;
+src/dialog_cluster.c:475:    if (wifi_get_status() != WIFI_CONNECTED) {
+src/dialog_wifi.c:296:    status = wifi_get_status();
+src/dialog_wifi.c:299:    if (wifi_scanning()) {
+src/dialog_wifi.c:313:    switch (wifi_get_status()) {
+src/dialog_wifi.c:380:    switch (wifi_get_status()) {
+src/dialog_wifi.c:392:    status = wifi_get_status();
+src/dialog_wifi.c:395:    return wifi_scanning() ? "Scanning..." : "Scan";
+src/dialog_wifi.c:399:    switch (wifi_get_status()) {
+src/dialog_wifi.c:416:    switch (wifi_get_status()) {

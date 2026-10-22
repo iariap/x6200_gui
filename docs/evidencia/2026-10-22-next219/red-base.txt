@@ -1,0 +1,13 @@
+# Mismo test (tests/native/test_radio_thread.c) contra el radio.c de la base b798f13b
+# (rama factory/next-219, gate determinista, reloj falso)
+FALLO tests/native/test_radio_thread.c:85: radio_stub_flow_reads == 1000
+FALLO tests/native/test_radio_thread.c:86: radio_stub_sleep_calls == 1000
+FALLO tests/native/test_radio_thread.c:87: radio_stub_sleep_us_total == 1000ull * 15000ull
+FALLO tests/native/test_radio_thread.c:124: radio_stub_flow_reads == 102
+FALLO tests/native/test_radio_thread.c:125: radio_stub_sleep_calls == 102
+FALLO tests/native/test_radio_thread.c:126: radio_stub_sleep_us_total == 102ull * 15000ull
+FALLO tests/native/test_radio_thread.c:141: radio_stub_idle_marks_n == 14
+FALLO tests/native/test_radio_thread.c:187: radio_stub_flow_reads == (uint64_t) reads_before + 1
+FALLO tests/native/test_radio_thread.c:188: radio_stub_sleep_calls == 301
+23 comprobaciones, 9 fallos
+exit=1

@@ -307,6 +307,16 @@ bool scenario_build(const scenario_t *scenario)
         return true;
     }
 
+    if (!strcmp(scenario->screen, "locked-feedback")) {
+        /* Home real (issue #220). Los locks los pone el firmware al abrir una app
+         * (src/dialog_ft8.c / src/dialog_cw_trainer.c -> main_screen_lock_*), asi
+         * que el fixture los arma igual y despues empuja los eventos de tecla y
+         * de dial; las comprobaciones viven en scenario_settle. */
+        mock_keyboard_group_up();
+        build_main(scenario);
+        return true;
+    }
+
     if (!strcmp(scenario->screen, "settings-home") || !strcmp(scenario->screen, "settings-wfbat")
         || !strcmp(scenario->screen, "settings-perfil")
         || !strcmp(scenario->screen, "settings-audio")
@@ -1932,6 +1942,261 @@ static void settle_dfl_presets(const scenario_t *scenario)
     exit(1);
 }
 
+/* --- Feedback de controles bloqueados (issue #220) ---------------------------
+ *
+ * El fixture empuja los MISMOS eventos que la radio (EVENT_KEYPAD sobre la
+ * pantalla para BAND/MODE/A-B/PRE, EVENT_ROTARY_ENHANCED para el dial) con los
+ * locks que el firmware arma al abrir una app, y comprueba en los labels REALES
+ * de src/msg.c y src/msg_tiny.c el texto exacto del aviso y que la accion
+ * bloqueada no cambio el estado. El arnes corta apenas una asercion falla: nunca
+ * captura otra pantalla y reporta verde.
+ */
+
+static lv_obj_t *label_find(lv_obj_t *obj, const char *text)
+{
+    if (lv_obj_check_type(obj, &lv_label_class) && !lv_obj_has_flag(obj, LV_OBJ_FLAG_HIDDEN)) {
+        const char *obj_text = lv_label_get_text(obj);
+
+        if (obj_text != NULL && strcmp(obj_text, text) == 0) {
+            return obj;
+        }
+    }
+
+    uint32_t children = lv_obj_get_child_cnt(obj);
+
+    for (uint32_t i = 0; i < children; i++) {
+        lv_obj_t *found = label_find(lv_obj_get_child(obj, (int32_t) i), text);
+
+        if (found != NULL) {
+            return found;
+        }
+    }
+
+    return NULL;
+}
+
+/* Borra el texto de un aviso. El label de src/msg.c conserva el ultimo texto (el
+ * fade solo baja la opacidad), asi que "volvio a avisar" solo se ve si se limpia
+ * antes: sin esto, una asercion negativa pasaria por el texto viejo. */
+static void message_clear(const char *text)
+{
+    lv_obj_t *label = label_find(lv_scr_act(), text);
+
+    if (label != NULL) {
+        lv_label_set_text(label, "");
+    }
+}
+
+static bool message_shown(const char *text)
+{
+    return label_on_screen(lv_scr_act(), text);
+}
+
+static void expect_message(const scenario_t *scenario, const char *text)
+{
+    if (!message_shown(text)) {
+        fprintf(stderr, "%s: no aparecio el aviso '%s'\n", scenario->name, text);
+        exit(1);
+    }
+}
+
+static void expect_no_message(const scenario_t *scenario, const char *text)
+{
+    if (message_shown(text)) {
+        fprintf(stderr, "%s: aparecio el aviso '%s' y no debia\n", scenario->name, text);
+        exit(1);
+    }
+}
+
+static void settle_locked_feedback(const scenario_t *scenario)
+{
+    if (strcmp(scenario->screen, "locked-feedback") != 0) {
+        return;
+    }
+
+    /* Desde aca el arnes entrega el EVENT_MSG_UPDATE a los labels reales, que es
+     * lo que este fixture necesita leer (ver mock_ui_deps.c). */
+    mock_event_bus_set_live(true);
+    mock_cfg_calls_reset();
+
+    /* 1) BAND trabada: la tecla avisa y la accion de banda NO se pide. */
+    int32_t band0 = subject_get_int(cfg.band_id.val);
+
+    main_screen_lock_band(true);
+    dfl_keypad_ui(KEYPAD_BAND_UP, KEYPAD_RELEASE);
+    virtual_time_advance(50, 10);
+    expect_message(scenario, "Band locked");
+
+    if (mock_cfg_band_load_next_calls() != 0) {
+        fprintf(stderr, "%s: con band_lock, BAND_UP ejecuto cfg_band_load_next\n", scenario->name);
+        exit(1);
+    }
+    if (subject_get_int(cfg.band_id.val) != band0) {
+        fprintf(stderr, "%s: con band_lock la banda cambio\n", scenario->name);
+        exit(1);
+    }
+
+    /* Destrabada: el comportamiento de siempre (la accion se pide). */
+    main_screen_lock_band(false);
+    dfl_keypad_ui(KEYPAD_BAND_UP, KEYPAD_RELEASE);
+    if (mock_cfg_band_load_next_calls() != 1) {
+        fprintf(stderr, "%s: sin band_lock, BAND_UP no ejecuto cfg_band_load_next\n", scenario->name);
+        exit(1);
+    }
+
+    /* 2) MODE trabado: solo el release y el long press avisan; el press no. */
+    int32_t mode0 = subject_get_int(cfg_cur.mode);
+
+    main_screen_lock_mode(true);
+
+    dfl_keypad_ui(KEYPAD_MODE_SSB, KEYPAD_PRESS);
+    virtual_time_advance(50, 10);
+    expect_no_message(scenario, "Mode locked");
+
+    dfl_keypad_ui(KEYPAD_MODE_SSB, KEYPAD_RELEASE);
+    virtual_time_advance(50, 10);
+    expect_message(scenario, "Mode locked");
+
+    if (subject_get_int(cfg_cur.mode) != mode0) {
+        fprintf(stderr, "%s: con mode_lock el modo cambio\n", scenario->name);
+        exit(1);
+    }
+
+    message_clear("Mode locked");
+    dfl_keypad_ui(KEYPAD_MODE_SSB, KEYPAD_LONG);
+    virtual_time_advance(50, 10);
+    expect_message(scenario, "Mode locked");
+
+    message_clear("Mode locked");
+    main_screen_lock_mode(false);
+    dfl_keypad_ui(KEYPAD_MODE_SSB, KEYPAD_RELEASE);
+    if (subject_get_int(cfg_cur.mode) == mode0) {
+        fprintf(stderr, "%s: sin mode_lock el modo no cambio\n", scenario->name);
+        exit(1);
+    }
+
+    /* 3) VFO A/B trabado: avisa y no togglea el VFO. */
+    unsigned vfo_calls0 = mock_radio_calls.toggle_vfo;
+
+    main_screen_lock_ab(true);
+    dfl_keypad_ui(KEYPAD_AB, KEYPAD_RELEASE);
+    virtual_time_advance(50, 10);
+    expect_message(scenario, "VFO locked");
+
+    if (mock_radio_calls.toggle_vfo != vfo_calls0) {
+        fprintf(stderr, "%s: con ab_lock la tecla A/B toggleo el VFO\n", scenario->name);
+        exit(1);
+    }
+
+    main_screen_lock_ab(false);
+    dfl_keypad_ui(KEYPAD_AB, KEYPAD_RELEASE);
+    if (mock_radio_calls.toggle_vfo == vfo_calls0) {
+        fprintf(stderr, "%s: sin ab_lock la tecla A/B no toggleo el VFO\n", scenario->name);
+        exit(1);
+    }
+
+    /* 4) Dial trabado: avisa y no mueve la frecuencia, con throttle de 2 s. */
+    int32_t freq0 = subject_get_int(cfg_cur.fg_freq);
+
+    main_screen_lock_freq(true);
+    dfl_rotary0_ui(3);
+    virtual_time_advance(50, 10);
+    expect_message(scenario, "Frequency locked");
+
+    if (subject_get_int(cfg_cur.fg_freq) != freq0) {
+        fprintf(stderr, "%s: con freq_lock el dial movio la frecuencia\n", scenario->name);
+        exit(1);
+    }
+
+    /* Volver a trabar reinicia el throttle (issue #220): el primer intento de la
+     * sesion nueva avisa enseguida aunque el ultimo aviso haya sido hace < 2 s. */
+    message_clear("Frequency locked");
+    virtual_time_advance(500, 10);
+    main_screen_lock_freq(false);
+    main_screen_lock_freq(true);
+    dfl_rotary0_ui(3);
+    virtual_time_advance(50, 10);
+    expect_message(scenario, "Frequency locked");
+
+    /* 1999 ms despues de ESE aviso: todavia NO avisa. */
+    message_clear("Frequency locked");
+    virtual_time_advance(1949, 10);
+    dfl_rotary0_ui(3);
+    virtual_time_advance(10, 10);
+    expect_no_message(scenario, "Frequency locked");
+
+    /* Sesion nueva: en el borde exacto de 2000 ms el dial vuelve a avisar. */
+    main_screen_lock_freq(false);
+    main_screen_lock_freq(true);
+    dfl_rotary0_ui(3);
+    virtual_time_advance(50, 10);
+    expect_message(scenario, "Frequency locked");
+
+    message_clear("Frequency locked");
+    virtual_time_advance(1950, 10);
+    dfl_rotary0_ui(3);
+    virtual_time_advance(10, 10);
+    expect_message(scenario, "Frequency locked");
+
+    if (subject_get_int(cfg_cur.fg_freq) != freq0) {
+        fprintf(stderr, "%s: con freq_lock el dial movio la frecuencia (2)\n", scenario->name);
+        exit(1);
+    }
+
+    /* Destrabado: el dial vuelve a sintonizar (cero QSY colateral solo con lock). */
+    main_screen_lock_freq(false);
+    dfl_rotary0_ui(3);
+    if (subject_get_int(cfg_cur.fg_freq) == freq0) {
+        fprintf(stderr, "%s: sin freq_lock el dial no movio la frecuencia\n", scenario->name);
+        exit(1);
+    }
+
+    /* 5) En TX el control trabado no pisa el aviso de error/interlock. */
+    main_screen_lock_band(true);
+    message_clear("Band locked");
+    mock_radio.state = RADIO_TX;
+    dfl_keypad_ui(KEYPAD_BAND_UP, KEYPAD_RELEASE);
+    virtual_time_advance(50, 10);
+    expect_no_message(scenario, "Band locked");
+    mock_radio.state = RADIO_RX;
+    main_screen_lock_band(false);
+
+    /* 6) PRE/ATT: activar uno apaga el otro y el aviso lo dice. */
+    params.mag_info.x = true;   /* el arnes lo trae apagado; el aviso tiny depende de esto */
+    subject_set_int(cfg_cur.pre, x6200_pre_off);
+    subject_set_int(cfg_cur.att, x6200_att_on);
+    dfl_keypad_ui(KEYPAD_PRE, KEYPAD_RELEASE);
+    expect_message(scenario, "Preamplifier On / Attenuator Off");
+
+    if (subject_get_int(cfg_cur.pre) != x6200_pre_on || subject_get_int(cfg_cur.att) != x6200_att_off) {
+        fprintf(stderr, "%s: PRE no quedo On / ATT Off\n", scenario->name);
+        exit(1);
+    }
+
+    subject_set_int(cfg_cur.pre, x6200_pre_on);
+    subject_set_int(cfg_cur.att, x6200_att_off);
+    dfl_keypad_ui(KEYPAD_PRE, KEYPAD_LONG);
+    expect_message(scenario, "Attenuator On / Preamplifier Off");
+
+    if (subject_get_int(cfg_cur.att) != x6200_att_on || subject_get_int(cfg_cur.pre) != x6200_pre_off) {
+        fprintf(stderr, "%s: ATT no quedo On / PRE Off\n", scenario->name);
+        exit(1);
+    }
+
+    /* El PNG del fixture deja un aviso de control bloqueado VISIBLE (la barra de
+     * src/msg.c tarda 250 ms en llegar a opacidad plena): primero se deja vencer
+     * el aviso tiny de PRE/ATT Y el indicador `xN` del dial que mostro el ultimo
+     * giro destrabado (auto-ocultado a los 2 s, UI-001; si queda visible se
+     * apila sobre el reloj y lo reporta `layout_overlap`), y recien despues se
+     * pulsa BAND trabado. Asi la captura evidencia el antes/despues del #220. */
+    virtual_time_advance(2200, 10);
+    main_screen_lock_band(true);
+    message_clear("Band locked");
+    dfl_keypad_ui(KEYPAD_BAND_UP, KEYPAD_RELEASE);
+    virtual_time_advance(300, 10);
+    expect_message(scenario, "Band locked");
+}
+
 void scenario_settle(const scenario_t *scenario)
 {
     settle_waterfall_center_line(scenario);
@@ -1939,6 +2204,7 @@ void scenario_settle(const scenario_t *scenario)
     settle_dfl_editor(scenario);
     settle_dfl_page(scenario);
     settle_dfl_presets(scenario);
+    settle_locked_feedback(scenario);
 
     /* CB 27 MHz (issues #146/#169): lo que cada fixture significa. La celda VFO de
      * la barra tiene que mostrar el canal, no el rotulo VFO-A/SPL-B; y en la fila

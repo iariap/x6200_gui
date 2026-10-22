@@ -599,7 +599,7 @@ int main(int argc, char **argv) {
      * Con la ultima banda guardada en CB aplica la entrada una vez. */
     cb_hooks_init();
     boot_mark("cb_hooks");
-    audio_enh_preset_load((audio_enh_preset_t) params.audio_enh_preset.x);
+    audio_enh_apply_mode_preset();   /* perfil efectivo segun el modo (CW: NR off) */
     audio_set_play_vol(params.play_gain_db_f.x);
     audio_set_rec_vol(params.rec_gain_db_f.x);
     mfk_change_mode(0);

@@ -24,6 +24,7 @@ extern "C" {
     #include "dialog_msg_voice.h"
     #include "meter.h"
     #include "recorder.h"
+    #include "audio_enhancement.h"
     #include "rtty.h"
     #include "spectrum.h"
     #include "waterfall.h"
@@ -289,6 +290,7 @@ static void on_cur_freq_change(Subject *subj, void *user_data) {
 }
 
 static void on_cur_mode_change(Subject *subj, void *user_data) {
+    audio_enh_apply_mode_preset();   /* CW/CWR: perfil CW (NR off) */
     cur_mode = (x6200_mode_t)subject_get_int(cfg_cur.mode);
     atune_context_set(&atune_mode, (int32_t) cur_mode);
 }

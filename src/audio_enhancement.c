@@ -8,6 +8,10 @@
 
 #include "audio_enhancement.h"
 #include "lvgl/lvgl.h"
+#include "cfg/cfg.h"
+#include "cfg/subjects.h"
+#include "radio.h"
+#include "params/params.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -310,6 +314,33 @@ static void apply_noise_reduction(float *samples, size_t nsamples) {
         for (size_t i = 0; i < AUDIO_ENH_FRAME_SIZE; i++) {
             samples[off + i] = temp_buffer[i] / 32767.0f;
         }
+    }
+}
+
+
+/* En CW/CWR el preset de voz (NR Speex + nivelador AF) bombea y enmascara el tono: el
+ * decodificador pierde pulsos y el Recorder, que graba DESPUES de este procesamiento
+ * (audio.c: audio_enh_process() antes de dsp_put_audio_samples()), guardaba audio
+ * entrecortado. Medido en la radio con preset SSB_VOICE en modo CW: captura continua
+ * (parec 441000 B en 5 s exactos, sin clicks ni silencio) pero envolvente con 12.9% de
+ * bloques por debajo de la mitad de la mediana.
+ *
+ * Se usa el perfil CW (NR off para preservar el tono) sin tocar la preferencia guardada:
+ * en SSB/AM/etc. sigue aplicando el preset que eligio el usuario. OFF y DIGITAL son
+ * intenciones explicitas de no procesar y se respetan tambien en CW. */
+void audio_enh_apply_mode_preset(void) {
+    audio_enh_preset_t user = (audio_enh_preset_t) params.audio_enh_preset.x;
+    x6200_mode_t       mode = (x6200_mode_t) subject_get_int(cfg_cur.mode);
+    audio_enh_preset_t effective = user;
+
+    if (mode == x6200_mode_cw || mode == x6200_mode_cwr) {
+        if (user != AUDIO_ENH_PRESET_OFF && user != AUDIO_ENH_PRESET_DIGITAL) {
+            effective = AUDIO_ENH_PRESET_CW_WEAK;
+        }
+    }
+
+    if (effective != g_audio_enh.current_preset) {
+        audio_enh_preset_load(effective);
     }
 }
 

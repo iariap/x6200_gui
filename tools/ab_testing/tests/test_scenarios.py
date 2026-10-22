@@ -273,6 +273,9 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "home-cb-offchannel",
         "home-frecuencia-extrema",
         "home-usb-20m",
+        # Feedback del operador con controles trabados (issue #220): la home real
+        # con los locks de banda/modo/VFO/frecuencia y el dial.
+        "locked-feedback",
         "main-bateria-baja",
         "main-espectro-agua",
         "main-foco",
@@ -354,6 +357,8 @@ def test_repo_fixtures_are_all_parsable() -> None:
         in {
             "main",
             "main-foco",
+            # Feedback de controles trabados (issue #220).
+            "locked-feedback",
             "settings-audio",
             "settings-home",
             "settings-perfil",

@@ -1,0 +1,47 @@
+==> [check] native tests (tests/native/run_native_tests.sh)
+    ok
+==> [check] check_cfg_fills
+    ok
+==> [check] check_actions
+    ok
+==> [check] check_settings_focus
+    ok
+==> [check] check_apps_menu
+    ok
+==> [check] check_app_handlers
+    ok
+==> [check] check_manual_apps
+    ok
+==> [check] check_wcag
+    ok
+==> [check] check_cw_tune_feed
+    ok
+==> [check] check_build_identity
+    ok
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [SKIP] ruff del framework A/B: sin cambios en tools/ab_testing/**/*.py
+==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/**
+==> [check] uv sync (ab_testing)
+    ok
+==> [check] x6200-ab themes
+    ok
+==> [check] x6200-ab contracts (438df0dfbd2b9115989e1d6aead375c0e575ad5e)
+    ok
+==> [check] bash -n tests/native/run_native_tests.sh
+    ok
+==> [SKIP] harness determinism gate: sin cambios en tools/ui_harness/
+==> [check] banco QEMU: preflight (tools/captura-banco.sh --check)
+    BLOCKED: falta entorno (corre en el host del owner, no en el runner):
+    == comprobando el banco ==
+      docker: ok
+      imagen x6200-buildroot: ok
+      FALTA: falta el volumen x6200-build-output (build del GUI)
+      FALTA: falta el chroot (/home/pablo/desa/asf/state/worktrees/x6200/next-217/../.vfix3): extraer el rootfs de la imagen, ver docs/TESTING.md nivel 4
+      FALTA: el chroot no parece un rootfs (sin /bin/busybox)
+      FALTA: el chroot no tiene /lib
+      python3: ok
+      PIL: ok
+      FALTA: falta /home/pablo/desa/asf/state/worktrees/x6200/next-217/tools/remote/x6200-remote (compilar con /home/pablo/desa/asf/state/worktrees/x6200/next-217/tools/remote/compila.sh)
+      buildroot: ok
+      libs del banco: ok
+    == 5 cosa(s) faltan: el banco no puede correr ==
