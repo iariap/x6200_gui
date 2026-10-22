@@ -25,7 +25,7 @@ cd build
 cmake .. -DHARNESS_REVISION={sha} >/dev/null
 # Cap the parallel compiler count: -j"$(nproc)" on a many-core host opens one
 # compiler per core and their concurrent peaks are what drove the host into OOM.
-JOBS="${X6200_AB_JOBS:-$(nproc)}"
+JOBS="${{X6200_AB_JOBS:-$(nproc)}}"
 if [ "$JOBS" -gt 8 ]; then JOBS=8; fi
 make -j"$JOBS"
 """

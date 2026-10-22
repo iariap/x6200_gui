@@ -57,6 +57,18 @@ def test_base_argv_keeps_the_mount_layout() -> None:
 
 
 def test_build_script_caps_the_parallelism() -> None:
-    assert 'JOBS="${X6200_AB_JOBS:-$(nproc)}"' in BUILD_SCRIPT
-    assert 'make -j"$JOBS"' in BUILD_SCRIPT
-    assert 'make -j"$(nproc)"' not in BUILD_SCRIPT
+    rendered = BUILD_SCRIPT.format(sha="deadbeef")
+    assert 'JOBS="${X6200_AB_JOBS:-$(nproc)}"' in rendered
+    assert 'make -j"$JOBS"' in rendered
+    assert 'make -j"$(nproc)"' not in rendered
+
+
+def test_build_script_renders_with_the_sha_kwarg_alone() -> None:
+    # `str.format` reads `{...}` as a replacement field, so the shell
+    # `${VAR:-default}` braces have to be doubled. The check-matrix gate caught
+    # the KeyError this raises when they are not.
+    rendered = BUILD_SCRIPT.format(sha="deadbeef")
+    assert "-DHARNESS_REVISION=deadbeef" in rendered
+    assert 'JOBS="${X6200_AB_JOBS:-$(nproc)}"' in rendered
+    assert 'make -j"$JOBS"' in rendered
+    assert 'make -j"$(nproc)"' not in rendered
