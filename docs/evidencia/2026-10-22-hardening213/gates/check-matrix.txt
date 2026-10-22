@@ -23,7 +23,7 @@
 ==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/**
 ==> [check] x6200-ab themes
     ok
-==> [check] x6200-ab contracts (bcea1547a410416630eeed87d2266ac9efe81901)
+==> [check] x6200-ab contracts (1a6bc3bb90634f54360f12210f8fcf831b651991)
     ok
 ==> [check] bash -n tests/native/run_db_failclosed.sh
     ok
@@ -49,4 +49,3 @@
       libs del banco: ok
     == 4 cosa(s) faltan: el banco no puede correr ==
 check-matrix exit=0
-17
