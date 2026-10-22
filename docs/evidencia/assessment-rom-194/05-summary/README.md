@@ -310,3 +310,11 @@ prueba, nunca en la SD/DATA del owner.
   y [`provenance-audit.md`](provenance-audit.md).
 - Enlaces locales y hashes: [`scripts/check_links.py`](scripts/check_links.py) + `SHA256SUMS`.
 - Comandos exactos/UTC/exit: [`commands.jsonl`](commands.jsonl).
+
+### 7.1 Fase B remota RX EJECUTADA (2026-10-22, sobre el tip)
+
+Con autorización del owner se ejecutó **HR-01..HR-06** sobre la ROM **instalada = tip** (GUI `3b22a03a…`, fuente
+`a576d48d…`, kernel 6.1.82): **6/6 PASS** (exclusividad, baseline, 8/8 apps, 20/20 QSY reversibles, 60 min RX estables
+sin reinicios ni CRASHLOG y con RSS/fds/threads constantes, cierre/restauración). Sesión exclusiva, sin TX, sin flash.
+Detalle y crudo en [`hardware-remote/`](hardware-remote/README.md). **HW-01..HW-08 siguen BLOCKED/PENDING_HARDWARE**
+(instrumentos, TX autorizado, medios de prueba de update/DB, 8 h). La medición es del tip, no del candidato `1f998c46…`.

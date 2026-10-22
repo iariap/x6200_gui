@@ -1,0 +1,21 @@
+== identidad ==
+boot_id=cdd42e40-075b-485a-b644-1acd2d3b5b7b
+uptime=15563.34
+kernel=6.1.82
+gui_pid=323
+daemon_pid=312
+gui_md5=3b22a03a3b7850e5c546c564125d0eb0
+gui_size=13412248
+boot_identity=[User]	(10.148, +10148)	 boot_identity: fuente: a576d48d9994efd3e28b9f1438fa7b24 (x6200_gui) 	(in main.c line #143)
+== montajes ==
+/dev/mmcblk0p2 on / type ext4 (rw,relatime)
+/dev/mmcblk0p3 on /mnt type ext4 (rw,relatime)
+== lastbreath ==
+lastbreath v=1 up_s=15558 up_ms=15558280 clean=0 boot=cdd42e40 radio=RX tx=0 app=home bat_mv=8600 ext_mv=10800 cap=90 chg=1 ev=0/17/0 last=refresh wus=21723 msg=Time is synchronized with NTP
+
+== crashlog ==
+0
+== espacio ==
+Filesystem                Size      Used Available Use% Mounted on
+/dev/root               487.6M    233.3M    218.5M  52% /
+/dev/mmcblk0p3            3.0G     43.3M      3.0G   1% /mnt
