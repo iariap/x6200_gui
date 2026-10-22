@@ -82,6 +82,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 61. [El md5 del build no distinguia commits: `rsync -au` de Buildroot no reponia la copia (#165)](#61-el-md5-del-build-no-distinguia-commits-rsync--au-de-buildroot-no-reponia-la-copia-165)
 62. [DFL: el editor inline se cerraba al cambiar de modo dentro de la MISMA familia (y el gate que lo vio estaba rojo con el CI en verde)](#62-dfl-el-editor-inline-se-cerraba-al-cambiar-de-modo-dentro-de-la-misma-familia-y-el-gate-que-lo-vio-estaba-rojo-con-el-ci-en-verde)
 63. [La radio se desconectaba por roaming a un segundo AP DharmaNet cuyo handshake WPA falla](#63-la-radio-se-desconectaba-por-roaming-a-un-segundo-ap-dharmanet-cuyo-handshake-wpa-falla)
+64. [El audio de RX mudo al ir a CW y volver: lo que escribe la GUI y el nivel en 0 que quedó en la radio](#64-el-audio-de-rx-mudo-al-ir-a-cw-y-volver-lo-que-escribe-la-gui-y-el-nivel-en-0-que-quedó-en-la-radio)
 65. [El audio de RX mudo al ir a CW y volver: el disparo no esta identificado, y el preset del #232 no es la causa](#65-el-audio-de-rx-mudo-al-ir-a-cw-y-volver-el-disparo-no-esta-identificado-y-el-preset-del-232-no-es-la-causa)
 
 ---
@@ -764,6 +765,12 @@ con lo que haría falta para fundarlas.
 | "La app de SWR Scan se cierra sola al terminar el barrido" (#119, defecto 2) | El cierre no está en el código del fin de barrido (§46) y no quedó el log de la GUI de esa corrida; el candidato (el `app off` del control remoto, que sí se acepta con el barrido transmitiendo) está fundado **en el código**, no en esa corrida | Correr el barrido con el log de la GUI a mano (`/tmp/x6200_log.txt` → `/mnt/app_logs/`), el `pid` de la GUI y el estado `app` del control remoto; y revisar el script de la corrida por si manda `{"cmd":"app","text":"off"}` |
 | El bucle de reinicio del CW Trainer (issue #51) se rearma en el arranque "por sí solo" | El banco no tiene camino de audio y el chroot no estaba armado, así que no se pudo medir la cadencia en el equipo | Medir en la radio el `PID` de la GUI por 150 s tras un reset (issue #15), con `key_train` en `params.db` |
 | El paso exacto por el que `hkey_put()` fuera de hilo corrompió `event_head` (issue #131), y que el trigger sea sólo el cambio de filtro | Está fundado que `hkey_put()` corría en el hilo de radio y tocaba LVGL (§56), pero **no** la escritura concreta que deja el frame muerto en la lista de eventos: el banco no tiene flow y no ejecuta `radio_tick`, y la corrupción necesita concurrencia real. Los dos crashes tienen el mismo `pc`/`lr` con contextos distintos (`on_vfo_mode_change` y `on_high_filter_change`) | Correr en la radio la receta de §56 (200 ciclos de tecla + filtro + modo + banda) con el fix y mirar `CRASHLOG`; si vuelve, guardar el log vivo completo y `/mnt/lastbreath` del momento |
+
+| El mute del dueño lo disparó el viaje a CW (estado del BASE) | El power-cycle lo restaura (dicho por el dueño), pero en el `params.db` de la radio el nivel de audio estaba en **0** y con `vol=0` el registro 14 va a 0: el síntoma se explica sin que el BASE tenga nada roto. No hay medición que separe las dos causas (§64) | Reproducir el mute con el nivel distinto de 0, leer el registro 14 y el 21 del BASE por I2C y comparar con el estado sano |
+| El BASE latchea el bloque de 54 registros que manda `x6200_control_idle()` cada 1000 ms | Que la función lo mande está en el código (`.x6200_ctl/src/low/control.c:480`), pero no se midió que el MCU del BASE lo acepte (son 218 bytes en una transacción I2C); si lo ignora, el registro 14 sólo se escribe cuando cambia el volumen | Leer el registro 14 por I2C después de cambiar el volumen y de un `idle()`, o capturar el bus con un analizador |
+| El re-sync de `rxvol` al salir de CW destraba el audio | Se implementó como mitigación (§64) y no se probó en la radio: reproducir el mute requiere dejar la radio muda a propósito y el dueño la está usando | Con la radio sana: nivel audible, ir a CW y volver, y ver si el audio sigue; si se mutea, correr el binario con el re-sync y comparar |
+| El rango del registro 14 es 0..100 | La GUI manda 0..100 (`VOL_MIN`/`VOL_MAX`) y el control remoto también, pero el CAT de esta GUI mapea 0..55 (`src/cat.cpp:572-574`) y la referencia del X6100 clampea a 55 (`.x6100_ref/src/radio.c:357`). Cuál es el real no se midió | Mandar 56..100 con la radio sana y medir si el nivel cambia o satura |
+| La captura del códec distingue el estado mudo (RMS 141,2 vs 2450,7) | El propio registro del 22/10 dice que con el audio funcionando la captura también dio 141,2 (`assessment-194/scratch/audio-failure-2210.md`), o sea que no hay A/B que sostenga el discriminante; el chequeo AUDIO-ALIVE de `test-ui-remote.sh` se apoya en eso | Medir la captura 5 veces en estado sano y 5 en el mudo, con el mismo `parec` y el mismo nivel de audio |
 
 **Estimaciones explícitas** (dichas como tales, no son hallazgos): el "~20 s" del banco rápido y el
 "~3 s" del diagnóstico de voz no se cronometraron con precisión; y el "~1 s" de daemon + enlace
@@ -3692,6 +3699,135 @@ rootfs). Para que quede permanente hay que llevarlo al overlay del Buildroot (de
 **Sin fundar (anexo A)**: por qué el AP `14:eb:b6:dc:ff:6c` falla el 4-way handshake (¿repetidor o
 WPA3 mal configurado?) y si el corte largo de 17:58 del mismo día (5 min 23 s, **sin deauth**, con
 `authentication ... timed out` y con BT encendido) es el mismo problema u otro.
+
+---
+
+## 64. El audio de RX mudo al ir a CW y volver: lo que escribe la GUI y el nivel en 0 que quedó en la radio
+
+**Síntoma** (reportado por el dueño, dos veces el 22/10): ir al modo CW y volver a otro modo deja
+**el audio de recepción mudo** hasta un power-cycle (issue #244). Que el power-cycle lo restaura lo
+dijo el dueño y quedó anotado en `assessment-194/scratch/audio-failure-2210.md`; la cadena
+PulseAudio/códec estaba sana en las dos mediciones de ese archivo.
+
+**Lo que la GUI le manda al BASE al entrar o salir de CW** (código). El BASE se controla por I2C
+(`/dev/i2c-0`, dirección `0x72`, registro = número de comando × 4:
+`.x6200_ctl/src/low/control.c`, `x6200_control_cmd()`). Un cambio de modo escribe esto y nada más:
+
+| Qué | Registro | Dónde |
+|---|---|---|
+| modo del VFO | `x6200_vfoa_mode` = 4 | `src/radio.c:389` (`on_vfo_mode_change`) |
+| ancho del filtro RX | `x6200_rxfilter` = 30 | `src/radio.c:443` → `set_rx_filters()` de la lib |
+| filtro de CW | `x6200_filter_cw` = 47 | idem |
+| squelch (nivel + enable) | `x6200_micsel_…_sqlthr` = 21, bits 8-15 y 24 | `src/cfg/cfg.c:441` → `src/sql_policy.c:15` |
+
+Ninguno de esos cuatro registros es un mute ni un volumen: el audio de recepción es el registro
+**14** (`x6200_rxvol`) y en este árbol sólo lo escribe el camino del volumen (`src/radio.c:689`,
+`radio_vol_apply()`), que no depende del modo.
+
+**El reenvío que propone el issue ya ocurre una vez por segundo** (código): `radio_thread()` llama a
+`x6200_control_idle()` cada `IDLE_TIMEOUT` = 1000 ms (`src/radio.c:334`) y esa función reescribe
+**los 54 registros** en una sola transacción (`.x6200_ctl/src/low/control.c:480`, `send_regs(&all_cmd,
+sizeof(all_cmd))`), registro 14 incluido. Si el mute fuera un *valor* de esos registros, ya se
+reescribe una vez por segundo; reenviar `rxvol` al salir de CW no agrega nada. (Que el BASE acepte y
+latchee ese bloque de 218 bytes **no está medido**: anexo A.)
+
+Las líneas de la lib son del checkout local `.x6200_ctl` (v0.15.3); la ROM enlaza el paquete de
+Buildroot **v0.1.0** (`rom-build/clone-buildroot/br2_external/package/aether-x6200-control/…mk:7`).
+Las dos versiones de `x6200_control_idle()` y `x6200_control_rxvol_set()` son idénticas (diff de las
+dos funciones: sin diferencias; en v0.1.0 `idle()` está en `src/low/control.c:473`).
+
+**Medido: el nivel de audio persistido estaba en 0** (22/10 21:25Z, copia del `params.db` de la
+radio):
+
+```
+$ scp root@192.168.0.236:/mnt/params.db params-radio-2125.db
+$ sqlite3 -readonly params-radio-2125.db \
+    "select name,val from params where name in ('vol','sql','spmode','key_train','comp','nr','dnf','eq_rx_en','audio_enh_preset','moni') order by name;"
+audio_enh_preset|2
+comp|1
+dnf|1
+eq_rx_en|1
+key_train|0
+moni|13
+nr|1
+spmode|0
+sql|0
+vol|0
+```
+
+`vol` es exactamente el valor que va al registro 14 (`src/radio.c:541` registra el observer y
+`radio_vol_value()` lo manda), y **0 es el valor con el que `radio_change_mute()` mutea**
+(`src/radio.c:731`). O sea: con `vol=0` y todo lo demás sano se ve el síntoma completo —silencio
+total, PulseAudio con el sink `RUNNING`, códec sin mutes y CRASHLOG 0—, sin que el BASE tenga nada
+roto.
+
+**Medido: las corridas automáticas de la UI dejaron la radio en 0 y ahí quedó** (`get` del control
+remoto, campo `vol`):
+
+```
+$ for d in ui-test-*; do printf "%-26s %s\n" "$d" "$(grep -o '"vol":[0-9]*' $d/json/get-inicial.json | head -1)"; done
+ui-test-cycle-163050       "vol":0
+ui-test-postdeploy-162111  "vol":0
+ui-test-task-164008        "vol":0
+ui-test-task-174220        "vol":14
+```
+
+Tres corridas seguidas (16:21, 16:21 y 16:40 locales = 19:21Z a 19:40Z) con el equipo a 0, y una
+cuarta a 14. Las 18 lecturas del campo `vol` en esos directorios dan 0 salvo las 6 de
+`ui-test-task-174220`, que dan 14.
+
+**Medido: el log de la sesión que quedó muda no tiene ningún error de audio**
+(`/mnt/app_logs/x6200_log_2026-10-22_21-02-59_p347_r3.txt`, 598 KB, sesión de la segunda
+reproducción). La ida y vuelta a CW está y no dispara nada:
+
+```
+[User] (5496.482) on_vfo_mode_change: Radio set vfo 1 mode=4      <- entra a CW
+[User] (5497.078) on_vfo_mode_change: Radio set vfo 1 mode=0      <- 0,6 s después, sale a LSB
+```
+
+En todo el archivo no hay una sola línea de ALSA, PulseAudio, `mixer` ni "no acepta datos".
+
+**Defecto de código, fundado en el mismo lugar**: el mute del usuario y el nivel compartían el mismo
+registro y se calculaban por *transición*, no por estado, y cada camino escribía (o no) el registro
+por su cuenta:
+
+- `radio_change_mute()` hacía `mute = !mute; rxvol_set(mute ? 0 : vol)` (toggle).
+- `radio_change_vol()` limpiaba `mute` y, si el nivel no se podía mover (tope 0 o 100), **no**
+  reenviaba el registro: la GUI quedaba diciendo "no estoy muda" con el equipo en 0.
+- `src/cat.cpp:574` y `src/remote_server.cpp:420` cambian `cfg.vol.val` sin tocar `mute`.
+- El mute por auriculares A2DP (`src/btaudio.c`) se hacía con el mismo toggle y se protegía con
+  `if (!radio_is_muted())`, así que "auriculares desconectados" sólo devolvía el audio si el flag no
+  se había desincronizado.
+
+La referencia del X6100 (`.x6100_ref/src/radio.c:365-378`) no tiene ese problema porque calcula el
+valor desde el estado (`radio_vol_refresh()`), que es el patrón que se portó acá.
+
+**Arreglo** (rama `lu2dsx/244-cw-mute`):
+
+1. `radio_vol_value()` + `radio_vol_apply()` (`src/radio.c:681,689`) son el **único** lugar que
+   decide y escribe el registro 14: `0` si está muteado el usuario (`mute`) **o** los auriculares
+   A2DP (`btaudio_speaker_muted()`), y el nivel guardado (clampeado a `VOL_MIN..VOL_MAX`) si no.
+2. `radio_change_mute()` y la perilla pasan por ahí; la perilla reenvía el registro también cuando el
+   nivel no se movió, y el observer de `cfg.vol.val` ya no usa el `and_call` (el mutex del control se
+   crea después; mismo criterio que el #166), el valor persistido se aplica al final del `radio_init`.
+3. `btaudio.c` deja de togglear el mute del usuario: el mute de BT es un flag propio
+   (`btaudio_speaker_muted()`) que se compone con el del usuario.
+4. **Mitigación del #244**: al salir de CW/CWR se re-manda el nivel (`on_cur_mode_change_vol()`,
+   `src/radio.c:744`). Es el único write de audio con formato verificado (el de la perilla) y es
+   barato (6 bytes). **No es un arreglo probado**: si el BASE queda en un estado más profundo que el
+   registro de volumen, esto no lo saca.
+
+**Verificación, medida** (host, `tests/native/run_native_tests.sh`): suite completa `EXIT=0`, y el
+stage de `radio.c` (`tests/native/test_radio_thread.c` + `radio_stubs.c`, con el `radio.c` real
+compilado por inclusión) da **57 comprobaciones, 0 fallos** (36 antes del cambio), de las cuales 21 son nuevas y cubren:
+la composición de los dos mutes, que desmutear con auriculares puestos no devuelva el altavoz, la
+perilla en el tope (reenvía el registro aunque el nivel no cambie), y el re-sync al salir de CW
+(escribe al salir, no al entrar, y no escribe 0 si no corresponde). El registro 14 se observa por el
+stub `x6200_control_rxvol_set()` (`tests/native/radio_stubs.c`).
+
+**Sin fundar (anexo A)**: qué disparó exactamente el mute del dueño; si el BASE latchea el bloque de
+54 registros de `idle()`; si el re-sync al salir de CW alcanza para destrabarlo; qué hace el BASE con
+un `rxvol` de 56 a 100; y si la captura del códec sirve para distinguir el estado mudo.
 
 ---
 

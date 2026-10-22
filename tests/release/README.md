@@ -25,6 +25,14 @@ contenedor corre como root porque el chroot y los montajes (`/mnt` tmpfs, `/proc
 lo necesitan. Al terminar deja el laboratorio a tu nombre y saca el scratch
 pesado.
 
+**Cotas de recursos (issue #231):** el `docker run` del banco lleva
+`--pids-limit` (default 512, `X6200_LAB_PIDS_LIMIT`) y `--memory`/
+`--memory-swap` (default 6g, `X6200_LAB_DOCKER_MEMORY`), los mismos nombres que
+el arnés A/B. El banco corre el `S02update` del target, que puede re-ejecutarse a
+sí mismo: sin cota, un lazo de procesos se lleva la RAM y el slab **del host**
+(medido en el issue: 70 GB, 2502 procesos) y tumba la máquina. Con las cotas el
+lazo se corta por fork (EAGAIN) y la memoria del cgroup queda acotada.
+
 Sin fixture (o sin `docker`) imprime `SKIP:` y sale **77**, que
 `tests/run_all_tests.sh` cuenta como omitido, nunca como pase.
 
@@ -46,6 +54,7 @@ Sin fixture (o sin `docker`) imprime `SKIP:` y sale **77**, que
 | `symlink-dotdot` | symlink relativo que se sale del rootfs | rechazo |
 | `symlink-absolute-admitted` | symlink con target absoluto (la rootfs auditada los trae: `etc/alsa/conf.d/*`) | se admite y se aplica |
 | `updater-uid-1000` | `S02update` con uid 1000 (el bug del empaquetador viejo) | rechazo antes de tocar `/` |
+| `updater-reentry` | la re-entrada del pase (el shell re-parseando la cola del script recién instalado, issue #231): se corre con la marca del pase que ya corrió | `S02UPDATE_PASS` no vacío ⇒ no toca nada y sale con el estado de ese pase; sin marca (arranque nuevo) el update corre normal |
 | `extract-fails` | tar que falla al extraer | `Update failed: package retained; restore backup manually`, paquete y backup retenidos; el backup idéntico se reusa y un backup con otro contenido da error cerrado |
 | `no-space` | `/mnt` de 48 MiB | `Update backup failed`, no se extrae |
 | `readonly-mnt` | `/mnt` montado read-only | `Update backup failed` |

@@ -1,0 +1,17 @@
+== 0. cotas del contenedor y contención de un fork bomb
+pids.max=64  memory.max=536870912
+
+== 1. el tar del target reemplaza el inodo
+antes:  inode=70410652 size=1869
+después:inode=70410655 size=25587  <- inodo nuevo = reemplazado
+
+== 2. la re-entrada: el shell re-parsea [L, fin) del script recién instalado
+   (L = el largo del script que corría antes; acá el stock publicado; la marca del pase se fuerza)
+--- base: cola de 21941 bytes, desde el offset 1869
+    rc=1
+    stdout=[Update verification failed]
+    stderr=[/frag.sh: line 1: package: No such file or directory|  reason: the package has no x6200_r1cbu_prueba.tgz.sha256 sidecar next to it|]
+--- after: cola de 23718 bytes, desde el offset 1869
+    rc=0
+    stdout=[]
+    stderr=[/frag.sh: line 1: package: No such file or directory|]
