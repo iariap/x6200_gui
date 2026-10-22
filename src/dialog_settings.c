@@ -1080,7 +1080,10 @@ static uint8_t make_clock(uint8_t row) {
 
     obj = lv_label_create(grid);
 
-    lv_label_set_text(obj, "Timeout Clock, Power, TX");
+    /* Los tres spinboxes son el timeout de Clock, Power y TX en SEGUNDOS: src/clock.c los
+     * multiplica por 1000 para usarlos en milisegundos, que es la unica unidad que ve el
+     * operador. El label lleva la unidad para que el valor no se lea sin escala (issue #221). */
+    lv_label_set_text(obj, "Clock / Power / TX (s)");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
     obj = lv_spinbox_create(grid);
