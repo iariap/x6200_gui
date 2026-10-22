@@ -82,6 +82,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 61. [El md5 del build no distinguia commits: `rsync -au` de Buildroot no reponia la copia (#165)](#61-el-md5-del-build-no-distinguia-commits-rsync--au-de-buildroot-no-reponia-la-copia-165)
 62. [DFL: el editor inline se cerraba al cambiar de modo dentro de la MISMA familia (y el gate que lo vio estaba rojo con el CI en verde)](#62-dfl-el-editor-inline-se-cerraba-al-cambiar-de-modo-dentro-de-la-misma-familia-y-el-gate-que-lo-vio-estaba-rojo-con-el-ci-en-verde)
 63. [La radio se desconectaba por roaming a un segundo AP DharmaNet cuyo handshake WPA falla](#63-la-radio-se-desconectaba-por-roaming-a-un-segundo-ap-dharmanet-cuyo-handshake-wpa-falla)
+65. [El audio de RX mudo al ir a CW y volver: el disparo no esta identificado, y el preset del #232 no es la causa](#65-el-audio-de-rx-mudo-al-ir-a-cw-y-volver-el-disparo-no-esta-identificado-y-el-preset-del-232-no-es-la-causa)
 
 ---
 
@@ -741,8 +742,11 @@ con lo que haría falta para fundarlas.
 
 | Hipótesis | Por qué no está fundada | Qué haría falta |
 |---|---|---|
-| "El audio de recepción sale por el DSP propio del equipo, no por el camino del SoC" | No hay medición ni esquema: sólo se sabe que la recepción se escucha y que la GUI no | Esquema del equipo o medir la señal en el DSP |
+| "El audio de recepción sale por el DSP propio del equipo, no por el camino del SoC" | No hay medición ni esquema: **código** confirma una mitad (la GUI no lo lleva al parlante: `read_callback()` sólo alimenta el screen-recorder y el DSP, `src/audio.c:57-69`, y el stream de reproducción lo escribe sólo `audio_play()`, `src/audio.c:281`; ver §65), pero que el audio de recepción salga del DSP del equipo no | Esquema del equipo o medir la señal en el DSP |
 | "No suena por el parlante porque el códec del SoC no está cableado a la salida" | Se midió que la cadena está configurada y que no suena; **el porqué** no | Documentación del códec/placa o medir la salida del códec |
+| El mute del dueño del #244 lo disparó la sesión de pruebas automáticas que corría contra la radio viva (remoto/CAT, mismo camino que la perilla) | Hay medición de que 3 de 4 corridas de aceptación quedaron con `vol` 0 (§64) y código de que el remoto pasa por `radio_change_vol()` (`src/remote_server.cpp:420`), pero **no** el cruce temporal con el log de la sesión muda: los comandos del remoto no dejan una línea con el nivel | Correr el sweep con los comandos y el reloj marcados y quedarse con `/mnt/app_logs/x6200_log_*.txt` del mismo rango; o loggear el nivel aplicado en `radio_vol_apply()` |
+| El power-cycle del #244 restaura el audio porque el BASE queda en un estado interno que sólo el reset de la placa limpia | Con `vol=0` persistido el arranque de la GUI vuelve a mandar 0 (`src/radio.c:535` → registro 14), así que el arranque **no** explica la recuperación que reporta el dueño, y "reiniciar sólo la GUI" no se probó nunca | Reproducir el mute y reiniciar **sólo la GUI** (`kill $(pidof x6200_gui)`, el daemon la levanta): si con `vol` ≠ 0 el audio no vuelve ni así, el estado está dentro del BASE |
+| El flag `sql_mute`/`sql_fm_mute` del flow dice si el BASE está muteando por squelch | El flag existe y está parseado (`x6200_flow_flags_t` de `aether_radio/x6200_control/low/flow.h`) pero la GUI lo descarta: en `src/radio.c:224` es un `printf` comentado, y el flag nunca se midió en la radio | Loggear el flag por cambio de valor (dos líneas, mismo lugar del `printf` comentado) y leerlo durante un mute con `vol` ≠ 0 |
 | "Es una limitación de plataforma, no del código" | Conclusión causal; podría haber un control de mezcla o una ruta no encontrada | Probar la cadena con un sink que consuma (A2DP) y con la GUI parada |
 | "Bluetooth A2DP es el único camino audible" | No se probó: **medido** que el adaptador `hci0` está `UP` y `bluealsa` corre, pero `bluetoothctl devices` no lista **ningún** dispositivo emparejado, así que no hay sink A2DP que probar | Emparejar auriculares y medir |
 | El primer intento de `S02update` se cortó por un corte de energía | Es relato del usuario; no hay log | Log del intento / estado del equipo |
@@ -3687,4 +3691,120 @@ rootfs). Para que quede permanente hay que llevarlo al overlay del Buildroot (de
 
 **Sin fundar (anexo A)**: por qué el AP `14:eb:b6:dc:ff:6c` falla el 4-way handshake (¿repetidor o
 WPA3 mal configurado?) y si el corte largo de 17:58 del mismo día (5 min 23 s, **sin deauth**, con
-`authentication ... timed out` y con BT encendido) es el mismo problema o otro.
+`authentication ... timed out` y con BT encendido) es el mismo problema u otro.
+
+---
+
+## 65. El audio de RX mudo al ir a CW y volver: el disparo no esta identificado, y el preset del #232 no es la causa
+
+**Síntoma** (reportado por el dueño, dos veces el 22/10, issue #244): ir al modo CW y volver a otro
+modo deja el audio de recepción mudo hasta un power-cycle. **El arreglo de la clase de silencio y las
+mediciones de la radio están en §64 (PR #247)**; esta sección cubre lo que ese PR deja abierto —qué
+disparó el mute— y no repite el arreglo. Evidencia de esta corrida, con los comandos y su salida:
+`docs/evidencia/2026-10-22-cwaudio244/README.md` y `docs/evidencia/2026-10-22-cwaudio244/gates.txt`.
+
+**Lo que la GUI le escribe al BASE al entrar o salir de CW** (código, base `35918ec6`). El BASE se
+controla por I2C (`/dev/i2c-0`, `0x72`; registro = comando × 4, `.x6200_ctl/src/low/control.c`,
+`x6200_control_cmd()`). Un cambio de modo escribe esto y nada más:
+
+| Qué | Registro | Dónde |
+|---|---|---|
+| modo del VFO | `x6200_vfoa_mode` = 4 | `src/radio.c:385` (`on_vfo_mode_change`) → `src/radio.c:388` |
+| ancho de filtro + filtro del modo | `x6200_rxfilter` = 30, `x6200_filter_cw` = 47 | `src/radio.c:419`, `src/radio.c:439` → `set_rx_filters()` (`.x6200_ctl/src/control.c:99`) |
+| squelch (nivel + enable) | reg 21, bits 8-15 y 24 | `src/cfg/cfg.c:441` → `src/radio.c:465` → `src/sql_policy.c:15` |
+| modo vigente + perfil de enhancement (lado DSP) | — | `src/dsp.cpp:292` (`on_cur_mode_change`) |
+
+Ninguno es un volumen ni un mute: el nivel de audio de recepción es el registro **14**
+(`x6200_rxvol`), que en esta base sólo escriben el camino del volumen (`src/radio.c:535`) y
+`radio_change_mute()` (`src/radio.c:684`).
+
+**El preset del PR #232 no es la causa** (código). El #232 (mergeado 2026-10-22T17:49:42Z) agregó
+`audio_enh_apply_mode_preset()` (`src/audio_enhancement.c:331`) y la llama desde el cambio de modo
+(`src/dsp.cpp:293`), el arranque (`src/main.c:602`) y Ajustes (`src/dialog_settings.c:398`); las dos
+reproducciones del dueño son posteriores y con la ROM `0f4f4bae`, que lo incluye. No es la causa:
+
+- `src/audio_enhancement.c` no tiene **ninguna** llamada a `x6200_control_*` (0 ocurrencias) ni a
+  ALSA/PulseAudio (`pa_*`, `snd_*`, `amixer`: 0 ocurrencias; sus includes son LVGL, cfg/subjects,
+  radio, params, math/stdlib/string y liquid).
+- Su único efecto de audio es `audio_enh_process()`, llamado sólo desde `read_callback()`
+  (`src/audio.c:62`), sobre el buffer de **captura**, antes del screen-recorder y del DSP.
+- Ese buffer no va al parlante: `read_callback()` (`src/audio.c:57-69`) escribe a
+  `audio_enh_process()`, `screen_rec_put_audio_samples()` y `dsp_put_audio_samples()`, y el stream
+  de reproducción lo escribe sólo `audio_play()` (`src/audio.c:281`), cuyos llamadores son las apps
+  de audio digital, los mensajes de voz, el recorder y `tx_player` (audio que la GUI **le manda a la
+  radio**; `src/audio.c:75`: `// Play level from app to radio (for FT8)`).
+- Con el perfil CW el camino a la ganancia es `apply_af_leveler()`, acotado a ±30 dB
+  (`src/audio_enhancement.c:246-292`): cambia nivel/limpieza, no apaga.
+
+**El reenvío de `rxvol` que pide el issue ya ocurre cada segundo** (código). `radio_thread()` llama a
+`x6200_control_idle()` cada `IDLE_TIMEOUT` = 1000 ms (`src/radio.c:334`) y esa función reescribe los
+54 registros en una transacción (`.x6200_ctl/src/low/control.c:480`), registro 14 incluido. Por eso
+la mitigación del #247 no agrega un reenvío periódico: agrega uno **inmediato después del cambio de
+modo**. Que el BASE latchee ese bloque de 218 bytes no está medido (anexo A).
+
+**Los caminos que sí pueden dejar el audio en 0** (código): `radio_change_mute()` (`src/radio.c:682`)
+hace un **toggle** y escribe 0; `radio_change_vol()` (`src/radio.c:655`) limpia `mute` y **no**
+reenvía el registro cuando el nivel no se puede mover (`if (new_val != vol)`), así que la GUI puede
+quedar diciendo "no estoy muda" con el equipo en 0. Es la clase de "silencio sin causa visible" que
+arregla el #247 (por estado, `radio_vol_apply()`), y es el único camino de la GUI que deja silencio
+total con PulseAudio, códec y log sanos. Los demás caminos del nivel salen de la perilla/teclas de
+volumen (`src/vol.c:39`, y las de los diálogos de CW: `src/dialog_cw_trainer.c:1065`,
+`src/dialog_cw_kbd.c:355`, `src/dialog_msg_cw.c:224`), del remoto (`src/remote_server.cpp:420`) y del
+CAT (`src/cat.cpp:574`).
+
+**Un cambio de modo no escribe el nivel** (código): el barrido de escritores de `cfg.vol.val` en esta
+base da `src/radio.c:667` (perilla/remoto), `src/cat.cpp:574`, `cfg/settings_manager.cpp` (Ajustes y
+remoto) y `radio_change_mute()` — ninguno depende del modo. Si el mute del dueño fue el nivel, algo
+ajeno al viaje a CW lo puso en 0 en ese rato.
+
+**Lo que sí está medido** (por la sesión del #247, copiado de §64 y del cuerpo del PR; los comandos
+completos están allá):
+
+```
+$ scp root@192.168.0.236:/mnt/params.db params-radio-2125.db     # 22/10 21:25Z
+$ sqlite3 -readonly params-radio-2125.db \
+    "select name,val from params where name in ('vol','sql','spmode','key_train','comp','nr','dnf','eq_rx_en','audio_enh_preset','moni') order by name;"
+audio_enh_preset|2
+comp|1
+dnf|1
+eq_rx_en|1
+key_train|0
+moni|13
+nr|1
+spmode|0
+sql|0
+vol|0
+```
+
+y el `vol` del control remoto (`{"cmd":"get"}`) en cuatro corridas de aceptación del 22/10: 0, 0, 0 y
+14. Con `vol=0` la GUI manda 0 al registro 14, que el SDK documenta como **"Speaker volume"**
+(`aether_radio/x6200_control/control.h:43`); por ese bloque compartido pasan el audio de recepción y
+el que genera la GUI, así que un solo valor explica el silencio en las dos direcciones. **Corrección
+de una lectura del registro de evidencia del 22/10**: "la salida no suena (ni tonos)" se leyó como
+una segunda falla de la salida; con el escenario compartido es consistente con una sola causa (el
+nivel en 0) y no es prueba de una falla de hardware.
+
+**Arreglo**: no en esta rama. Está en el PR #247 (§64): `radio_vol_value()`/`radio_vol_apply()` como
+único escritor por estado, el mute de auriculares A2DP como flag propio, y el reenvío al salir de
+CW/CWR.
+
+**Verificación, medida** (del arreglo en vuelo, corrida por esta sesión sobre el commit `16976863`):
+
+```
+$ sh tests/native/run_native_tests.sh            -> EXIT=0; stage de radio.c: 57 comprobaciones, 0 fallos
+$ sh tests/native/run_native_tests.sh --ci-parity -> EXIT=0; == ci-parity: OK (build host sin lvgl/) ==
+$ sh tests/run_all_tests.sh --quick               -> EXIT=0; 20 OK, 0 fallos
+$ scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD <worktree> -> EXIT=0; 16 checks ok
+```
+
+La base (`35918ec6`) da `EXIT=0` con 36 comprobaciones en ese stage: el arreglo no agrega
+observaciones del compilador (la advertencia `-Wreturn-type` de `radio_src/radio.c:339` está en las
+dos). Los sanitizers no están en este toolchain (el runner lo dice y lo omite) y el banco QEMU queda
+BLOCKED por entorno: no son verdes.
+
+**Sin fundar (anexo A)**: qué camino puso el nivel en 0 (y si el mute del dueño fue el nivel o un
+estado interno del BASE, que es lo que separa reiniciar sólo la GUI de un power-cycle); si el BASE
+latchea el bloque de 54 registros de `idle()`; si el reenvío al salir de CW destraba un BASE ya mudo;
+el rango real del registro 14 (la GUI manda 0..100, el CAT de esta GUI mapea 0..55); si la captura
+del códec distingue el estado mudo (el propio registro tiene una lectura de RMS 141,2 con el audio
+funcionando); y si el flag `sql_mute`/`sql_fm_mute` del flow dice si el BASE está muteando.
