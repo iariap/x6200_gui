@@ -1,0 +1,60 @@
+== arranque (ultimo bloque del boot.log) ==
+  00:00:03  kernel listo: 3.31 s de uptime
+  00:00:07  GUI arrancando: 7.73 s de uptime
+    GUI inicio     10.1 s de uptime  (+0.00 s)
+  fuente: a576d48d9994efd3e28b9f1438fa7b24 (x6200_gui)
+    crashlog modulos 13.0 s de uptime  (+2.84 s)
+    lv_init        13.0 s de uptime  (+0.00 s)
+    lastbreath init 13.0 s de uptime  (+0.00 s)
+    audio_init     13.0 s de uptime  (+0.00 s)
+    display init   13.0 s de uptime  (+0.02 s)
+    eventos/usb    13.0 s de uptime  (+0.00 s)
+    display        13.0 s de uptime  (+0.00 s)
+    keyboard       13.0 s de uptime  (+0.00 s)
+    entradas       13.0 s de uptime  (+0.00 s)
+    db_init        13.0 s de uptime  (+0.02 s)
+    cfg:items      13.0 s de uptime  (+0.01 s)
+    cfg:band       13.0 s de uptime  (+0.01 s)
+    cfg:mode       13.0 s de uptime  (+0.00 s)
+    cfg:sm         13.0 s de uptime  (+0.00 s)
+    cfg:atu        13.1 s de uptime  (+0.00 s)
+    cfg:transv     13.1 s de uptime  (+0.00 s)
+    cfg:mem        13.1 s de uptime  (+0.00 s)
+    cfg:digi       13.1 s de uptime  (+0.00 s)
+    cfg_init       13.1 s de uptime  (+0.00 s)
+    params_load    13.1 s de uptime  (+0.00 s)
+    params_init    13.1 s de uptime  (+0.00 s)
+    cb_hooks       13.1 s de uptime  (+0.00 s)
+    fuentes y estilos 14.0 s de uptime  (+0.98 s)
+    pantalla principal 14.1 s de uptime  (+0.04 s)
+    cw/rtty        14.2 s de uptime  (+0.14 s)
+    radio          14.4 s de uptime  (+0.21 s)
+    cat/qso_log    14.5 s de uptime  (+0.07 s)
+    wfview         14.5 s de uptime  (+0.01 s)
+    control remoto 14.5 s de uptime  (+0.00 s)
+    bootanim stop  15.4 s de uptime  (+0.86 s)
+    bootanim handoff 15.4 s de uptime  (+0.01 s)
+  GUI lista: 15.5 s
+== GUI ==
+  OK   x6200_gui corriendo (pid 323)
+== assets (bind mount en /dev/shm/images) ==
+  OK   /dev/shm/images es un punto de montaje
+  OK   /dev/shm casi vacio (0 kB usados): no se copiaron los 4,4 MB
+  OK   los 16 assets se leen por /dev/shm/images
+== entrada (los mismos dispositivos de siempre) ==
+        1 /dev/input/event0
+        1 /dev/input/event1
+        1 /dev/input/event2
+        1 /dev/input/event3
+        2 /dev/input/event4
+  OK   6 dispositivos de entrada abiertos
+  OK   los assets del bind mount son los mismos que /usr/share
+  OK   la GUI no reporta errores al abrir archivos
+== audio (la voz necesita el grupo y el sink real) ==
+  OK   pulse esta en el grupo audio
+  0	alsa_output.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	SUSPENDED
+  OK   PulseAudio tiene el sink real
+== crash? ==
+  OK   sin senales de crash en los logs
+
+TODO OK

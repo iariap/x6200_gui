@@ -147,3 +147,12 @@ revisión/merge del PR final por el maintainer.
 
 *Válido para `c888308e` + `d084e287` + artefacto con los hashes de este dossier, a la fecha
 2026-10-22 UTC. Revalidar tips antes de usarlo.*
+
+### 8.1 Fase B remota RX ejecutada (sobre el tip)
+
+HR-01..HR-06 se ejecutaron el 2026-10-22 sobre la ROM instalada (tip `03c6f9e6`/GUI `3b22a03a`), con autorización del
+owner y sesión exclusiva: **6/6 PASS** (8/8 apps, 20/20 QSY reversibles, 60 min RX sin reinicios ni CRASHLOG,
+restauración verificada). No hubo TX/flash. **HW-01..HW-08 siguen bloqueados** por instrumentos/autorización.
+Evidencia: [`05-summary/hardware-remote/`](05-summary/hardware-remote/README.md). La recomendación global no cambia:
+**CONDITIONAL / NO_GO de release** hasta completar el hardware completo y decidir el tip (el dossier es del candidato
+`c888308e`, STALE para el tip).

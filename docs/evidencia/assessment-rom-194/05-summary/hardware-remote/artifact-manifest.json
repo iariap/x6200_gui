@@ -1,25 +1,36 @@
 {
-  "campaign": "assessment-rom-194",
-  "unit": 199,
-  "phase": "A_documental",
-  "folder": "05-summary/hardware-remote",
-  "executed": false,
-  "status": "BLOCKED",
-  "commands_executed": 0,
-  "cases_planned": 6,
-  "cases_executed": 0,
-  "results_file": "results.csv",
   "blocker": "Fase A documental por directiva del orquestador: la radio no se contacto (sin SSH/socket/RF); no hay sesion exclusiva verificada, ni identidad del binario instalado, ni snapshot. La fase B la coordina el owner.",
-  "not_a_candidate_failure": true,
+  "campaign": "assessment-rom-194",
   "candidate": {
-    "gui_sha": "c888308eede71205605c06383432ee7e165f202e",
     "artifact_rootfs_tar_sha256": "7c26c76b6fc27bc12dc8d5e012e51d5c2c0568fa72a8e02cad5432dfcd36a2dd",
-    "gui_binary_md5_in_rootfs": "1f998c46909307397525c975a712adfd"
+    "gui_binary_md5_in_rootfs": "1f998c46909307397525c975a712adfd",
+    "gui_sha": "c888308eede71205605c06383432ee7e165f202e"
   },
+  "cases_executed": 0,
+  "cases_planned": 6,
+  "commands_executed": 0,
+  "executed": false,
+  "folder": "05-summary/hardware-remote",
   "installed_radio_note": {
-    "source": "assessment-194/ORCHESTRATION.md (externo, no revalidado en fase A)",
+    "consequence": "La evidencia fisica de la fase B seria del software instalado, no del candidato, salvo que el owner autorice una SD/prueba con el artefacto exacto.",
     "gui_md5_reported": "3b22a03a3b7850e5c546c564125d0eb0",
     "is_candidate": false,
-    "consequence": "La evidencia fisica de la fase B seria del software instalado, no del candidato, salvo que el owner autorice una SD/prueba con el artefacto exacto."
-  }
+    "source": "assessment-194/ORCHESTRATION.md (externo, no revalidado en fase A)"
+  },
+  "not_a_candidate_failure": true,
+  "phase": "A_documental",
+  "phase_b": {
+    "boot_id": "cdd42e40-075b-485a-b644-1acd2d3b5b7b",
+    "boot_identity": "a576d48d9994efd3e28b9f1438fa7b24",
+    "executed_utc": "2026-10-22T02:24-03:35",
+    "gui_bytes": 13412248,
+    "gui_md5": "3b22a03a3b7850e5c546c564125d0eb0",
+    "hw": "HW-01..HW-08 BLOCKED/PENDING_HARDWARE",
+    "kernel": "6.1.82",
+    "measured": "tip instalado",
+    "results": "HR-01..HR-06 PASS"
+  },
+  "results_file": "results.csv",
+  "status": "BLOCKED",
+  "unit": 199
 }
