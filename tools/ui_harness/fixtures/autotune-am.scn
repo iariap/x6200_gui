@@ -1,0 +1,51 @@
+# autotune-am: Auto Tune multimode (issue #205) centering an AM carrier.
+#
+# The radio is in AM with the 96 kHz spectrum view (the usual wide view; the
+# policy requires width <= 100 kHz and a resolution of width/512 <= 250 Hz) and
+# the APP 6 "Auto Tune" button is pressed through the user's path.
+#
+# scenario_settle arms a TEST-ONLY carrier 376 Hz above the dial
+# (mocks/mock_dsp.c + mocks/mock_spectrum.h): the AM policy detects a narrow,
+# single, dominant carrier, applies ONE bounded correction (the candidate is
+# quantized to the 512-bin resolution, 188 Hz at this width: 376 Hz is exactly
+# two steps) and verifies it with four NEW frames after the 300 ms guard,
+# discarding the first three published spectra. After that it holds the
+# destination and opens the 5000 ms Undo window, so the session is still alive
+# when the capture happens.
+#
+# What the fixture *means*: the dial lands on start + 376 and stays there with
+# the session live. If the correction were not verified the rollback would return
+# the dial to the start, so landing on the correction IS the proof that the
+# verify phase passed with fresh frames - not a fixture that kept the first
+# write. The real AM carrier at +/-390 Hz and at +/-780 Hz, weak/QRM carriers and
+# the CW/CWR precision are the owner's radio (docs/autotune.md).
+
+name autotune-am
+screen autotune-am
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 96000
+
+mode am
+filter_low 0
+filter_high 3000
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

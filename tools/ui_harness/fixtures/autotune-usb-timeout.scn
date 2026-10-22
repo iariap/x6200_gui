@@ -1,0 +1,43 @@
+# autotune-usb-timeout: Auto Tune multimode (issue #205) - the PREVIEW expires
+# and the dial stays exactly where it was.
+#
+# The suggestion is shown ("Auto Tune: suggested +752 Hz - press again") and the
+# operator never confirms it. The preview window is 5000 ms from the suggestion
+# (not from the trigger), so the fixture advances the virtual clock well past it
+# and codifies the only acceptable outcome: the session is over and the dial is
+# still on the fixture frequency. There is no auto-apply on expiry and no
+# auto-undo either - the assistant simply goes back to IDLE.
+#
+# It also rules out the opposite failure: a session that never left COLLECT would
+# have ended on its own 3000 ms timeout, and one that is still alive after the
+# preview window would mean the expiry is not wired.
+
+name autotune-usb-timeout
+screen autotune-usb-timeout
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 96000
+
+mode usb
+filter_low 0
+filter_high 3000
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx
