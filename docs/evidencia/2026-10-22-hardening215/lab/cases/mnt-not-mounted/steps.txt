@@ -1,0 +1,8 @@
+ok   rc=1
+ok   stdout dice 'Update backup failed'
+ok   stderr tiene 'not a separate mount point'
+ok   el paquete x6200_r1cbu_v215.tgz sigue en /mnt
+ok   el sidecar de x6200_r1cbu_v215.tgz sigue en /mnt
+ok   no quedó backup ni .partial
+ok   nada bajo / cambió
+ok   la GUI quedó la de antes

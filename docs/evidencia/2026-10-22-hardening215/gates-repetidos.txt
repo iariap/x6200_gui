@@ -1,0 +1,46 @@
+# gates repetidos (cierre de los 3 casos pendientes)
+# 2026-10-22T12:26:23-03:00  HEAD=00d13160572a2900c74f221e43140b42a14d3006
+
+## sh tests/native/run_native_tests.sh
+ 1192 |     struct sockaddr_un addr = {.sun_family = AF_UNIX};
+      |                                                     ^
+138 comprobaciones, 0 fallos
+rc=0
+
+## python3 tests/audita-pruebas.py
+  builds en la tabla: 237 | secciones: 14 | enlaces: 50
+  para revisar a mano (31):
+    ? 3: Que una versión **funcione** no se sostiene con "debería andar": se sostiene con corridas de prueba
+    ? 21: Un número redondeado está bien **si está dicho como redondeo**. Lo que no puede aparecer es un
+    ? 416: ## 19/10 ~15:2x (hora radio) — TX cualitativa en CB (teclado CW) y el interlock que **no** lo cubre 
+    ? 448: reinicio** a los ~10 min y **se restauró** frecuencia/modo/app (14.285 MHz, CW, app off) y la
+    ? 509: ## 18/10 ~12:40 (hora radio) — `ffef63df58cb` (#133/#114/#121): la radio no responde; **pruebas NO e
+    ? 550: ## 17/10 ~22:20 (hora radio) — `63dbf7a4` (#130): la parábola de ROE en la radio es una **U** ✓ (cie
+    ? 614: (TX medida ~2,3-2,6 s). Ya anotado en #119 y por el otro QA; sigue abierto.
+    ? 631: ## 16/10 ~23:40 — ROM nueva flasheada en la SD: `c640645d810c` (GUI e294229dd32d)
+  OK: estructura y evidencia en orden
+rc=0
+
+## tools/release/check_types_rule.py (regla de tipos/enlaces)
+ok  dev/fd           target=../proc/self/fd      veredicto=se admite
+ok  dev/stdin        target=../proc/self/fd/0    veredicto=se admite
+ok  dev/log          target=../tmp/log           veredicto=se admite
+ok  x2               target=etc/x                veredicto=se admite
+ok  deeper/link3     target=../etc               veredicto=se admite
+ok  opt/abs          target=/etc/x               veredicto=se admite
+ok  etc/alsa/conf.d/50-arcam-av-ctl.conf target=/usr/share/alsa/alsa.conf.d/50-arcam-av-ctl.conf veredicto=se admite
+ok  opt/h215-link    target=../../etc/h215       veredicto=link with a .. target that escapes the rootfs: opt/h215-link
+ok  x                target=../etc               veredicto=link with a .. target that escapes the rootfs: x
+ok  deeper/link      target=../../../etc         veredicto=link with a .. target that escapes the rootfs: deeper/link
+ok  deeper/link2     target=../../etc            veredicto=link with a .. target that escapes the rootfs: deeper/link2
+ok  bin/busybox      target=-                    veredicto=se admite
+ok  opt/x            target=-                    veredicto=se admite
+ok  dev              target=-                    veredicto=entry would replace the mount point /dev
+ok  mnt              target=-                    veredicto=entry would replace the mount point /mnt
+ok  tmp              target=-                    veredicto=entry would replace the mount point /tmp
+ok  opt/fifo         target=-                    veredicto=fifo entry opt/fifo
+ok  opt/dev          target=-                    veredicto=device entry opt/dev
+ok  opt/dir          target=-                    veredicto=directory entry opt/dir
+
+19/19 casos de la tabla de tipos/enlaces OK
+rc=0

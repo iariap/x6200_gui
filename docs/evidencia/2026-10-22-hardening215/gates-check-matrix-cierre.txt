@@ -1,0 +1,27 @@
+# gate (al cierre): scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD <worktree>
+# 2026-10-22T12:55:25-03:00  HEAD=ffe181e46c023eb5e52fd1cc1840cf5e9f96a717
+
+==> [SKIP] firmware / nativo: sin cambios en src/**, lv_conf.h, lv_drv_conf.h ni CMakeLists.txt
+==> [SKIP] check_build_identity: sin cambios en la identidad del build
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [SKIP] ruff del framework A/B: sin cambios en tools/ab_testing/**/*.py
+==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/**
+==> [check] x6200-ab themes
+    ok
+==> [check] x6200-ab contracts (ffe181e46c023eb5e52fd1cc1840cf5e9f96a717)
+    ok
+==> [check] bash -n tests/release/test_safe_update.sh
+    ok
+==> [check] bash -n tools/release/check_updater_parity.sh
+    ok
+==> [check] bash -n tools/release/make_release_assets.sh
+    ok
+==> [check] bash -n tools/release/make_update_tgz.sh
+    ok
+==> [check] bash -n tools/release/publish_release.sh
+    ok
+==> [check] bash -n tools/release/test_update.sh
+    ok
+==> [SKIP] harness determinism gate: sin cambios en tools/ui_harness/
+==> [SKIP] banco QEMU: sin cambios en src/**, lv_conf.h ni tools/ui_harness/
+rc=0

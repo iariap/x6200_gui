@@ -1,0 +1,7 @@
+f02-corrupt        ok
+f02-nomount        ok
+f03-absent         ok
+f03-writefail      ok
+f04-daemon-exit78  ok
+f04-daemon-nomnt   ok
+f01f03-chain       ok

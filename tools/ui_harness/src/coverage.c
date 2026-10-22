@@ -230,28 +230,34 @@ static const coverage_entry_t app_close[] = {
               "DX cluster column is not rendered (no cluster data on the host)"),
 };
 
-/* The `autotune` / `autotune-progress` / `autotune-found` / `autotune-notcw`
- * scenarios (issue #190, "Auto Tune v2"): the real main screen with the "Auto
- * Tune" button of the APP 6 page pressed. The assistant core (src/autotune.c)
- * and its coordinator (src/autotune_ui.c) are the real firmware sources, run by
- * the fixture on the virtual clock. There is NO RSSI sweep and no S-meter in the
- * policy anymore: the CW tone sample the core consumes comes from
- * mocks/mock_cw_tune.c, a TEST-ONLY injection of the DSP snapshot (the bank does
- * not compile src/cw.cpp: it needs liquid-dsp and the audio thread). The exact
- * UX texts are compared on the source by tests/check_autotune_v2.py because the
- * harness' event_send() is a documented no-op (mocks/mock_ui_deps.c). */
+/* The `autotune*` scenarios (issues #190 and #205, "Auto Tune v2" and its
+ * multimode extension): the real main screen with the "Auto Tune" button of the
+ * APP 6 page pressed. The policy modules (src/autotune.c for CW/CWR and
+ * src/autotune_spectrum.c for AM/SAM and USB/LSB) and their coordinator
+ * (src/autotune_ui.c) are the real firmware sources, run by the fixtures on the
+ * virtual clock. There is NO RSSI sweep and no S-meter in the policy: the CW
+ * tone sample the core consumes comes from mocks/mock_cw_tune.c and the spectrum
+ * snapshot (carrier/voice) from mocks/mock_dsp.c, both TEST-ONLY injections of
+ * the DSP surface (the bank does not compile src/cw.cpp nor src/dsp.cpp: they
+ * need liquid-dsp and the audio/radio threads). The exact UX texts are compared
+ * on the source by tests/check_autotune_v2.py because the harness' event_send()
+ * is a documented no-op (mocks/mock_ui_deps.c). */
 static const coverage_entry_t autotune_screen[] = {
     MAIN_COMPONENTS,
     COMPONENT("autotune.c", COVERAGE_REAL,
               "src/autotune.c compiled; the real sample gate, the robust median, the single <=300 Hz correction, the CW/CWR sign, the freshness/timing contract and the dial-ownership rule run over the samples the fixture injects"),
+    COMPONENT("autotune_spectrum.c", COVERAGE_REAL,
+              "src/autotune_spectrum.c compiled; the real AM/SAM carrier policy (narrow, unique and dominant peak, quantized to the 512-bin resolution, four consistent frames), the USB/LSB occupied-energy suggestion (five consistent frames, |d| <= 800 Hz, confirmation required), the freshness/context gate and the phase windows run over the synthetic spectra the fixture injects"),
     COMPONENT("autotune_ui.c", COVERAGE_REAL,
-              "src/autotune_ui.c compiled; the real coordinator drives COLLECT -> one provisional write -> VERIFY on cfg_cur.fg_freq over the virtual clock, and the exact contract messages are pinned on the source by tests/check_autotune_v2.py"),
+              "src/autotune_ui.c compiled; the real coordinator drives COLLECT -> one provisional write -> VERIFY (AM) and COLLECT -> PREVIEW -> apply/undo (USB/LSB) on cfg_cur.fg_freq over the virtual clock, and the exact contract messages are pinned on the source by tests/check_autotune_v2.py"),
     COMPONENT("main_screen.c (ACTION_ATUNE)", COVERAGE_REAL,
               "src/main_screen.c compiled; the APP 6 Auto Tune button reaches main_screen_action(ACTION_ATUNE) -> autotune_ui_toggle(), the same dispatcher the radio uses"),
     COMPONENT("cw.cpp (cw_get_tune_sample)", COVERAGE_UNSUPPORTED,
               "src/cw.cpp is not compiled here (liquid-dsp + the audio thread): the fixture injects the DSP snapshot instead (mocks/mock_cw_tune.c). The real conversion and its sign are measured by tests/native/test_cw_tune_sign.c, which links liquid and runs the same FFT on a synthetic tone"),
+    COMPONENT("dsp.cpp (dsp_autotune_get_spectrum)", COVERAGE_UNSUPPORTED,
+              "the PSD publisher of src/dsp.cpp is not compiled here (it needs liquid and the radio thread): the fixtures inject the spectrum snapshot through mocks/mock_dsp.c, with the same fields the radio publishes. That the 800 bins interpolate 512 physical ones and that the resolution is width/512 is verified by tests/native/test_autotune_spectrum.c"),
     COMPONENT("meter.c (S-meter)", COVERAGE_UNSUPPORTED,
-              "the S-meter is NOT part of Auto Tune v2 (issue #190): it stays a rendered component of the main screen but the assistant no longer reads it"),
+              "the S-meter is NOT part of Auto Tune (issues #190/#205): it stays a rendered component of the main screen but the assistant never reads it"),
     COMPONENT("msg.c (session messages)", COVERAGE_UNSUPPORTED,
               "the session messages go through event_send(), a documented no-op on the host (mocks/mock_ui_deps.c): they are not drawn in the bank, so the dial and the session state are the fixture's evidence and the exact texts are checked on the source"),
     COMPONENT("dialog.c (cancel on open)", COVERAGE_UNSUPPORTED,
@@ -365,8 +371,12 @@ const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
         *count = (int) (sizeof(cw_tune) / sizeof(cw_tune[0]));
         return cw_tune;
     }
-    if (screen && (!strcmp(screen, "autotune") || !strcmp(screen, "autotune-progress")
-                   || !strcmp(screen, "autotune-found") || !strcmp(screen, "autotune-notcw"))) {
+    if (screen
+        && (!strcmp(screen, "autotune") || !strcmp(screen, "autotune-progress")
+            || !strcmp(screen, "autotune-found") || !strcmp(screen, "autotune-digital")
+            || !strcmp(screen, "autotune-am") || !strcmp(screen, "autotune-usb")
+            || !strcmp(screen, "autotune-lsb") || !strcmp(screen, "autotune-usb-applied")
+            || !strcmp(screen, "autotune-usb-timeout"))) {
         *count = (int) (sizeof(autotune_screen) / sizeof(autotune_screen[0]));
         return autotune_screen;
     }

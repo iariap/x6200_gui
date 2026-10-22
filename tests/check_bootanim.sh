@@ -13,7 +13,9 @@
 #      offsets, casos negativos de geometry, mmap y permisos, guard bytes
 #      centinela, fixture de las lanes de lluvia) y de la cesion del framebuffer
 #      (PIDFILE, identidad por /proc/<pid>/exe, 100 ms + 20 ms, SIGTERM/SIGKILL),
-#      en build normal y bajo ASan/UBSan;
+#      en build normal y bajo ASan/UBSan. La cesion NO se juzga por tiempo de
+#      pared: el test cuenta los sondeos de la espera (boot_splash_test_*, solo
+#      bajo -DBOOTANIM_TEST) y afirma QUE espero, no cuanto tardo;
 #   2. el binario REAL x6200_bootanim corriendo en el host con un shim
 #      (LD_PRELOAD, tests/bootanim/fake_fb.c) que le da un /dev/fb0 sintetico:
 #      a) el binario determinista del gate (-DBOOTANIM_TEST, reloj sintetico y
@@ -92,7 +94,7 @@ step "1) compilacion host (-std=c11 -Wall -Wextra -Werror)"
 # ---------------------------------------------------------------------------
 $CC $CFLAGS_COMMON -o "$WORK/renderer_test" "$T/renderer_test.c" "$SRC/renderer.c"
 $CC $CFLAGS_COMMON -o "$WORK/fb_test" "$T/fb_test.c" "$SRC/fb.c" "$SRC/renderer.c"
-$CC $CFLAGS_COMMON -o "$WORK/handoff_test" "$T/handoff_test.c" "$ROOT/src/boot_splash.c"
+$CC $CFLAGS_COMMON -DBOOTANIM_TEST -o "$WORK/handoff_test" "$T/handoff_test.c" "$ROOT/src/boot_splash.c"
 $CC $CFLAGS_COMMON -o "$WORK/fake_animator" "$T/fake_animator.c"
 $CC $CFLAGS_COMMON -o "$WORK/x6200_bootanim" "$SRC/renderer.c" "$SRC/fb.c" "$SRC/main.c"
 $CC $CFLAGS_COMMON -o "$WORK/replay_dump" "$T/replay_dump.c" "$SRC/renderer.c" "$SRC/fb.c"
@@ -114,6 +116,16 @@ step "2) tests unitarios (modelo, layout, raster, framebuffer)"
 "$WORK/fb_test"
 
 step "3) cesion del framebuffer (procesos reales, identidad por /proc/<pid>/exe)"
+# El test se compila con -DBOOTANIM_TEST para ver la instrumentacion de sondeos
+# de boot_splash.c: los asserts de espera son deterministicos (numero de sondeos)
+# y no dependen de la velocidad del runner.
+#
+# La restriccion se codifica: la cesion se juzga por sondeos, nunca por tiempo
+# de pared; si el test vuelve a mirar el reloj, el gate falla (el reloj de un
+# runner cargado no es determinista).
+if grep -qE 'clock_gettime|now_ms' "$T/handoff_test.c"; then
+	fail "handoff_test.c mide tiempo de pared: la cesion tiene que juzgarse por sondeos"
+fi
 "$WORK/handoff_test" "$WORK/fake_animator"
 
 # ---------------------------------------------------------------------------
@@ -126,7 +138,7 @@ if SAN_ERR="$(echo 'int main(void){return 0;}' | $CC -x c -fsanitize=address,und
 		"$T/renderer_test.c" "$SRC/renderer.c"
 	$CC $CFLAGS_COMMON -fsanitize=address,undefined -fno-omit-frame-pointer -o "$WORK/fb_test_asan" \
 		"$T/fb_test.c" "$SRC/fb.c" "$SRC/renderer.c"
-	$CC $CFLAGS_COMMON -fsanitize=address,undefined -fno-omit-frame-pointer -o "$WORK/handoff_test_asan" \
+	$CC $CFLAGS_COMMON -DBOOTANIM_TEST -fsanitize=address,undefined -fno-omit-frame-pointer -o "$WORK/handoff_test_asan" \
 		"$T/handoff_test.c" "$ROOT/src/boot_splash.c"
 	ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 "$WORK/renderer_test_asan" ||
 		fail "renderer_test fallo bajo ASan/UBSan"
@@ -718,6 +730,20 @@ if grep -rq 'BOOTANIM_TEST' "$ROOT/CMakeLists.txt" "$ROOT/src/CMakeLists.txt" "$
 	fail "CMake define el macro del banco: la ROM no puede tener esa salida"
 fi
 echo "ok: el limite de cuadros vive solo en -DBOOTANIM_TEST (el preprocesado de produccion no lo ve) y CMake no lo define"
+
+# La instrumentacion de sondeos de boot_splash.c (asserts deterministicos de la
+# cesion) tambien vive solo bajo -DBOOTANIM_TEST: se comprueba sobre el
+# preprocesado que el build de produccion no ve NADA de ella.
+SPLASH_PROD_CPP="$WORK/boot_splash-prod.i"
+SPLASH_TEST_CPP="$WORK/boot_splash-test.i"
+$CC $CFLAGS_COMMON -E "$ROOT/src/boot_splash.c" >"$SPLASH_PROD_CPP"
+if grep -q 'boot_splash_test_' "$SPLASH_PROD_CPP"; then
+	fail "el build de produccion ve la instrumentacion de sondeos del banco"
+fi
+$CC $CFLAGS_COMMON -DBOOTANIM_TEST -E "$ROOT/src/boot_splash.c" >"$SPLASH_TEST_CPP"
+grep -q 'boot_splash_test_waits' "$SPLASH_TEST_CPP" ||
+	fail "la instrumentacion de sondeos no llega al preprocesado del gate"
+echo "ok: la instrumentacion de sondeos vive solo en -DBOOTANIM_TEST (el preprocesado de produccion no la ve)"
 
 echo
 if [ "$SAN_OK" -eq 1 ]; then

@@ -54,9 +54,13 @@ void mock_params_init(void)
     snprintf(params.theme_name.x, sizeof(params.theme_name.x), "%s", "Aurora");
 }
 
-void params_init(void)
+/* La firma tiene que seguir a src/params/params.h (issue #213: el arranque
+ * fail-closed devuelve bool). El arnes no corre el arranque de la radio: replica
+ * los valores y declara que la persistencia "esta bien". */
+bool params_init(void)
 {
     mock_params_init();
+    return true;
 }
 
 void params_lock(void)

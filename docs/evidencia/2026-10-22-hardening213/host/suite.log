@@ -1,0 +1,72 @@
+-- valid (la salida esperada del binario es PASS)
+fixture=valid
+template=valid
+case=valid init=true bytes_unchanged=true version=5
+case=valid result=PASS
+valid                exit=0  esperado=ok
+-- corrupt (la salida esperada del binario es PASS)
+template=valid
+case=corrupt init=false bytes_unchanged=true
+case=corrupt result=PASS
+corrupt              exit=0  esperado=rejected
+-- no-mount (la salida esperada del binario es PASS)
+template=valid
+case=no-mount init=false created=false
+case=no-mount result=PASS
+no-mount             exit=0  esperado=rejected
+-- absent (la salida esperada del binario es PASS)
+template=valid
+case=absent init=true seeded_from_template=true mode=0644
+case=absent result=PASS
+absent               exit=0  esperado=ok
+-- absent-no-template (la salida esperada del binario es PASS)
+template=none
+case=absent-no-template init=false created=false
+case=absent-no-template result=PASS
+absent-no-template   exit=0  esperado=rejected
+-- ro (la salida esperada del binario es PASS)
+fixture=valid
+template=valid
+case=ro init=false bytes_unchanged=true
+case=ro result=PASS
+ro                   exit=0  esperado=rejected
+-- schema-incomplete (la salida esperada del binario es PASS)
+fixture=no-bands
+template=valid
+case=schema-incomplete init=false bytes_unchanged=true
+case=schema-incomplete result=PASS
+schema-incomplete    exit=0  esperado=rejected
+-- version-missing (la salida esperada del binario es PASS)
+fixture=no-version-row
+template=valid
+The version table has no row: database state is ambiguous, refusing to migrate
+Cannot get current version
+case=version-missing init=false bytes_unchanged=true
+case=version-missing result=PASS
+version-missing      exit=0  esperado=rejected
+-- v1-atu (la salida esperada del binario es PASS)
+fixture=v1-atu-index
+template=valid
+Apply migration: 2 ...
+Apply migration: 3 ...
+Apply migration: 4 ...
+Apply migration: 5 ...
+case=v1-atu init=true version=5 freq=175000,275000
+case=v1-atu result=PASS
+v1-atu               exit=0  esperado=ok
+-- v1-atu-mixed (la salida esperada del binario es PASS)
+fixture=v1-atu-mixed
+template=valid
+Apply migration: 2 ...
+atu has 1 rows in Hz and 1 in the old index form: ambiguous provenance, refusing to convert
+Can't apply 2 migration
+case=v1-atu-mixed init=false bytes_unchanged=true version=1
+case=v1-atu-mixed result=PASS
+v1-atu-mixed         exit=0  esperado=rejected
+-- full (la salida esperada del binario es PASS)
+fixture=valid
+template=valid
+case=full init=true write_failed=true dirty_kept=true errors=1
+case=full result=PASS
+full                 exit=0  esperado=ok
+todos los casos corrieron y afirmaron su resultado (matriz: /tmp/opencode/h213-host/matrix.txt)

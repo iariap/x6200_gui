@@ -90,6 +90,11 @@ docker build -t x6200-uiharness tools/ui_harness
 docker build -t x6200-uiharness-ci --target ci tools/ui_harness
 ```
 
+The `full` stage builds liquid-dsp and Catch2 from source. Its parallelism is
+capped by the `JOBS` build arg (default `8`, not `nproc`): on a many-core host
+the concurrent compiler peaks are what drove the build — and the host — into OOM.
+Override it with `--build-arg JOBS=<n>` (e.g. `JOBS=1` on a small machine).
+
 Configure and build the harness (run from the repository root):
 
 ```sh

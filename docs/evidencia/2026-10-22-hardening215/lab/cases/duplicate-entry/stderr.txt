@@ -1,0 +1,1 @@
+  reason: duplicated entry usr/share/x6200/minimal.txt

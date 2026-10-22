@@ -1,0 +1,8 @@
+variante	ventana	wall_ms	iteraciones	sleeps	cpu_ms	cpu_pct
+base	1	10000	421697209	0	9962.9	99.63
+head	1	10003	663	663	8.0	0.08
+base	2	10000	294663166	0	9873.3	98.73
+head	2	10002	663	663	8.1	0.08
+base	3	10000	353295332	0	9897.6	98.98
+head	3	10006	660	660	9.7	0.10
+bench rc=0

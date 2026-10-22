@@ -1,0 +1,35 @@
+# sello de fuentes y paridad del updater
+# 2026-10-22T12:01:23-03:00
+# base GUI:       d4fb57f8ff8ccbcfdef13fc191cc9977511b6845
+# base Buildroot: f0ff620a3052b8cd56bcb33b1374dc24d80d8379
+
+## sha256 de los dos S02update
+1a225ddb0de38ac4552172f4de255358ea274beeb23324694303a3868cd4d65f  hardening-215/tools/release/update-overlay/etc/init.d/S02update
+1a225ddb0de38ac4552172f4de255358ea274beeb23324694303a3868cd4d65f  hardening-215-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/init.d/S02update
+
+## cmp (byte a byte)
+cmp: identicos (rc=0)
+
+## gate de paridad (ruta explicita)
+==> GUI:       1a225ddb0de38ac4552172f4de255358ea274beeb23324694303a3868cd4d65f  /home/pablo/desa/asf/state/worktrees/x6200/hardening-215/tools/release/update-overlay/etc/init.d/S02update
+==> Buildroot: 1a225ddb0de38ac4552172f4de255358ea274beeb23324694303a3868cd4d65f  hardening-215-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/init.d/S02update
+==> paridad OK (mismo archivo, mismo hash)
+rc=0
+
+## gate de paridad sin ruta (no adivina un checkout ajeno)
+falta la ruta del S02update de AetherX6200Buildroot
+  uso: hardening-215/tools/release/check_updater_parity.sh <ruta al S02update de Buildroot | checkout de AetherX6200Buildroot>
+  (o poné BUILDROOT_S02UPDATE=/ruta/al/S02update)
+  no adivino un checkout hermano a propósito: hay varios worktrees en vuelo y uno ajeno
+  daría un FAIL falso.
+rc=2
+
+## gate de paridad con un archivo distinto (tiene que fallar)
+==> GUI:       1a225ddb0de38ac4552172f4de255358ea274beeb23324694303a3868cd4d65f  /home/pablo/desa/asf/state/worktrees/x6200/hardening-215/tools/release/update-overlay/etc/init.d/S02update
+==> Buildroot: 83c681fa75ef44fe67b1b4baf7115e874d02c061ab6e837c356f661e3a78d15e  /tmp/h215_s02_distinto
+FALLA: el S02update de los dos puntos de instalación no es el mismo archivo
+rc=1
+
+## fixture publicado (copia, read-only)
+-rw-r--r--. 1 pablo pablo 102266238 Oct 13 14:53 /home/pablo/desa/x6200/images/x6200_r1cbu_v0.1.2-lu2dsx.tgz
+7d6179dd83e0015a8144cce597c7ffc61c90ce76abbc8c37cf26335fbaf08460  /home/pablo/desa/x6200/images/x6200_r1cbu_v0.1.2-lu2dsx.tgz

@@ -1,0 +1,6 @@
+    exit=78
+    ok: exit 78 (EX_CONFIG)
+    ok: sin CRASHLOG SIGSEGV
+    ok: no se creo /mnt/params.db sobre el rootfs
+    ok: el mensaje de persistencia esta en la salida
+    ok: el motivo es DATA sin montar

@@ -1,0 +1,8 @@
+    socket de control remoto: I=16s
+    ok: arranco (socket presente)
+    ok: contesta el handshake
+    ok: sin CRASHLOG SIGSEGV
+    ok: se creo la base
+    ok: sembro la plantilla versionada (no creo un esquema vacio)
+    ok: modo 0644
+    sha256 base:  -> a3acadecb8e896e5bca815a33c11b84f1a4c04101f0658b0549c781fe1a158e1

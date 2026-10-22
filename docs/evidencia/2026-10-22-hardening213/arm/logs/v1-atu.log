@@ -1,0 +1,7 @@
+    socket de control remoto: I=16s
+    ok: arranco despues de migrar (socket presente)
+    ok: contesta el handshake
+    ok: sin CRASHLOG SIGSEGV
+    ok: corrio la migracion 2 (ATU)
+    ok: la migracion escribio (version y ATU)
+    sha256 base: 292f0652dc1cf3740bb667b2f5373622ae1a76e07862ec710b31b3298b331b82 -> b25e177a4ee253b1748a4d162c3a58bf76bac3e187eacf85453d72ddaa1a280e

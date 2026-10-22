@@ -113,6 +113,12 @@ bool audio_enh_nr_is_enabled(void);
 
 /* Presets */
 void audio_enh_preset_load(audio_enh_preset_t preset);
+
+/* Recalcula el perfil EFECTIVO según el modo: en CW/CWR se usa el perfil CW (NR off) salvo
+ * que el preset guardado sea OFF o DIGITAL. La preferencia del usuario (params.audio_enh_preset)
+ * no se modifica: sólo cambia el procesamiento. Llamar al arrancar, al cambiar de modo y al
+ * cambiar el preset en Settings. */
+void audio_enh_apply_mode_preset(void);
 void audio_enh_preset_reset(void);
 audio_enh_preset_t audio_enh_preset_get_current(void);
 const char *audio_enh_preset_get_name(audio_enh_preset_t preset);

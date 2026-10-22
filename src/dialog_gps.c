@@ -144,7 +144,7 @@ static void actualizar(lv_timer_t *t) {
 
     if (!hay) {
         lv_label_set_text(fijacion, "None");
-        lv_label_set_text(antiguedad, "sin datos");
+        lv_label_set_text(antiguedad, "No data");
         lv_label_set_text(lat, "N/A");
         lv_label_set_text(lon, "N/A");
         lv_label_set_text(qth_lbl, "N/A");

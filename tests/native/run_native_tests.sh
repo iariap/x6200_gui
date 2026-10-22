@@ -95,9 +95,9 @@ cp "$SRC/cw_decoder.c" "$SRC/cw_decoder.h" "$CW_STAGE/"
 cp "$DIR/stubs_cw/pannel.h" "$DIR/stubs_cw/remote_server.h" "$CW_STAGE/"
 cp "$DIR/stubs/lvgl/lvgl.h" "$CW_STAGE/lvgl/"
 
-SOURCES="$SRC/adaptive_tuning.c $SRC/rotary_queue.c $SRC/autotune.c $SRC/cw_autotune.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c $SRC/roe_curve.c $SRC/swr_session.c $SRC/cb.c $SRC/propagation.c $SRC/propagation_data.c $CW_STAGE/cw_decoder.c \
-$DIR/stubs/stubs.c $DIR/test_main.c $DIR/test_framework.c \
-$DIR/test_adaptive_tuning.c $DIR/test_rotary_queue.c $DIR/test_settings_language.c $DIR/test_autotune.c $DIR/test_cw_autotune.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c $DIR/test_roe_curve.c $DIR/test_swr_session.c $DIR/swrscan_fixtures.c $DIR/test_swrscan_fixtures.c $DIR/test_cb.c $DIR/test_propagation.c \
+SOURCES="$SRC/adaptive_tuning.c $SRC/rotary_queue.c $SRC/autotune.c $SRC/autotune_spectrum.c $SRC/cw_autotune.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c $SRC/roe_curve.c $SRC/swr_session.c $SRC/cb.c $SRC/propagation.c $SRC/propagation_data.c $CW_STAGE/cw_decoder.c \
+$DIR/stubs/stubs.c $DIR/audio_enh_stubs.c $DIR/test_main.c $DIR/test_framework.c \
+$DIR/test_adaptive_tuning.c $DIR/test_rotary_queue.c $DIR/test_settings_language.c $DIR/test_autotune.c $DIR/test_autotune_spectrum.c $DIR/test_cw_autotune.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c $DIR/test_roe_curve.c $DIR/test_swr_session.c $DIR/swrscan_fixtures.c $DIR/test_swrscan_fixtures.c $DIR/test_cb.c $DIR/test_propagation.c \
 $DIR/test_update_check.c"
 
 echo "== compilador: $($CC --version | head -1) =="
@@ -111,20 +111,30 @@ else
     echo "== sanitizers: NO disponibles en este toolchain (se omite) =="
 fi
 
+# El stage principal resuelve el SDK de la radio y ft8_lib con los headers ya
+# vendorizados del buildroot (tools/ui_harness/third_party, copiados verbatim; es
+# el mismo -I que usa el stage del #186). Desde el #232 la cadena de
+# audio_enhancement.c incluye cfg/cfg.h -> cfg/band.h y params/params.h, y esos dos
+# citan <aether_radio/x6200_control/control.h> (SDK, ausente en el host) y
+# <ft8lib/constants.h> (ft8_lib): sin este -I el stage no compila. Se reusa el
+# arbol vendorizado en vez de duplicar los headers en tests/native/stubs/ y en
+# vez de agregar -I.../stubs_radio (que arrastraria al stage lvgl/, sqlite3.h y
+# params/params.h ajenos a este build).
+MAIN_INCLUDES="-I$DIR/stubs -I$SRC -I$DIR/../../tools/ui_harness/third_party"
 if [ "$SAN_OK" = yes ]; then
     # shellcheck disable=SC2086
-    $CC $BASEFLAGS $SAN -I"$DIR/stubs" -I"$SRC" $SOURCES -lm -lpng -o "$OUT/native_tests"
+    $CC $BASEFLAGS $SAN $MAIN_INCLUDES $SOURCES -lm -lpng -o "$OUT/native_tests"
 else
     # shellcheck disable=SC2086
-    $CC $BASEFLAGS -I"$DIR/stubs" -I"$SRC" $SOURCES -lm -lpng -o "$OUT/native_tests"
+    $CC $BASEFLAGS $MAIN_INCLUDES $SOURCES -lm -lpng -o "$OUT/native_tests"
 fi
 
 echo "== analisis estatico (gcc -fanalyzer) =="
 # wfview_server stays out: it opens the three server sockets on purpose and keeps
 # them for the life of the process, which the leak checker reads as a leak.
-for f in adaptive_tuning rotary_queue autotune cw_autotune audio_enhancement ft8_udp update_check band_plan_data avi_writer bt_devices kbd_rollover cb propagation; do
+for f in adaptive_tuning rotary_queue autotune autotune_spectrum cw_autotune audio_enhancement ft8_udp update_check band_plan_data avi_writer bt_devices kbd_rollover cb propagation; do
     # shellcheck disable=SC2086
-    $CC $BASEFLAGS -fanalyzer -I"$DIR/stubs" -I"$SRC" -c "$SRC/$f.c" -o "$OUT/$f.o" || true
+    $CC $BASEFLAGS -fanalyzer $MAIN_INCLUDES -c "$SRC/$f.c" -o "$OUT/$f.o" || true
 done
 
 echo "== ejecutando =="
@@ -474,6 +484,45 @@ $CC $BASEFLAGS -fanalyzer -I"$CWENC_STAGE" \
     -c "$CWENC_STAGE/cb.c" -o "$OUT/cb_cwenc.o" || true
 
 "$OUT/cwenc_tests"
+
+# --- CW keyboard idle render (#217) -----------------------------------------
+# src/dialog_cw_kbd.c se incluye con `#include "..."` (dialog_cw_kbd.h, styles.h,
+# lvgl/lvgl.h, ...) y para un include con comillas el directorio del archivo que
+# lo incluye siempre gana sobre -I: los headers stub de tests/native/stubs_cwkbd/
+# no pueden tapar los de src/ desde su propio directorio. El fuente real se
+# estaciona al lado de una copia de los stubs, el mismo patron que el keyer de CW
+# y el SWR Scan.
+#
+# El test mide que el dialogo no repinta en reposo (100 ticks del timer de 100 ms
+# sin cambio: 0 escrituras de label/estilo) y que cada cambio real (modo, ON AIR,
+# cursor de enviado, WPM, teclado, tema, historial/cola) sigue repintando con el
+# MISMO texto, sin alterar el keyer ni el decodificador.
+echo "== CW keyboard (#217): sin repintado en reposo, keyer y decoder intactos =="
+CWKBD_STAGE="$OUT/cwkbd_src"
+rm -rf "$CWKBD_STAGE"
+mkdir -p "$CWKBD_STAGE/cfg" "$CWKBD_STAGE/params" "$CWKBD_STAGE/lvgl"
+cp "$SRC/dialog_cw_kbd.c" "$SRC/dialog_cw_kbd.h" "$CWKBD_STAGE/"
+cp "$DIR/stubs_cwkbd/cfg/cfg.h" "$DIR/stubs_cwkbd/cfg/cfg_api.h" "$CWKBD_STAGE/cfg/"
+cp "$DIR/stubs_cwkbd/params/params.h" "$CWKBD_STAGE/params/"
+cp "$DIR/stubs_cwkbd/lvgl/lvgl.h" "$CWKBD_STAGE/lvgl/"
+cp "$DIR/stubs_cwkbd/buttons.h" "$DIR/stubs_cwkbd/dialog.h" "$DIR/stubs_cwkbd/events.h" \
+   "$DIR/stubs_cwkbd/keyboard.h" "$DIR/stubs_cwkbd/textarea_window.h" "$DIR/stubs_cwkbd/msg.h" \
+   "$DIR/stubs_cwkbd/radio.h" "$DIR/stubs_cwkbd/remote_server.h" "$DIR/stubs_cwkbd/cJSON.h" \
+   "$DIR/stubs_cwkbd/cw.h" "$DIR/stubs_cwkbd/cw_encoder.h" "$DIR/stubs_cwkbd/styles.h" \
+   "$DIR/stubs_cwkbd/theme.h" "$CWKBD_STAGE/"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$CWKBD_STAGE" -I"$DIR" \
+        "$CWKBD_STAGE/dialog_cw_kbd.c" "$DIR/cwkbd_stubs.c" "$DIR/test_cw_kbd.c" \
+        "$DIR/test_framework.c" "$DIR/cwkbd_test_main.c" -lm -o "$OUT/cwkbd_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$CWKBD_STAGE" -I"$DIR" \
+        "$CWKBD_STAGE/dialog_cw_kbd.c" "$DIR/cwkbd_stubs.c" "$DIR/test_cw_kbd.c" \
+        "$DIR/test_framework.c" "$DIR/cwkbd_test_main.c" -lm -o "$OUT/cwkbd_tests"
+fi
+
+"$OUT/cwkbd_tests"
 
 # --- CRASHLOG module table (issue #131) -------------------------------------
 # El handler de crashes solo puede resolver un PC que cae en una libreria si el
@@ -1091,3 +1140,106 @@ echo "== Control remoto: analisis estatico (gcc -fanalyzer) =="
 $CXX $REM_CXXFLAGS -fanalyzer $REM_INC -c "$REM_STAGE/remote_server.cpp" -o "$OUT/remote_server.o" || true
 
 "$OUT/remote_tests"
+
+# --- Persistencia fail-closed de params.db (issue #213) ----------------------
+# El test incluye src/params/db.c (para llamar a sus funciones internas de la
+# guarda de persistencia con rutas y fixtures propios; mismo patron que
+# tests/native/test_remote.cpp con src/remote_server.cpp) y linkea el
+# src/params/migrations.c real staged como en el bloque de CB. Corre sobre SQLite
+# REAL del host y NO necesita montajes: la parte que exige un /mnt de verdad
+# (montaje ausente/RO, base llena, arranque del binario ARM) esta en
+# tests/native/run_db_failclosed.sh y en la suite QEMU.
+echo "== #213: persistencia fail-closed (guarda de DATA, plantilla, migraciones, escrituras) =="
+DBP_STAGE="$OUT/db_persist_src"
+rm -rf "$DBP_STAGE"
+mkdir -p "$DBP_STAGE/params" "$DBP_STAGE/cfg"
+cp "$SRC/params/migrations.c" "$SRC/params/migrations.h" "$DBP_STAGE/params/"
+cp "$DIR/stubs_migrations/db.h" "$DBP_STAGE/params/"
+cp "$DIR/stubs_migrations/theme.h" "$DBP_STAGE/"
+cp "$DIR/stubs_migrations/cfg/digital_modes.h" "$DBP_STAGE/cfg/"
+DBP_BIN="$OUT/db_persistence_tests"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$DIR/stubs_db" -I"$DBP_STAGE/params" -I"$DBP_STAGE" -I"$DIR" \
+        "$DIR/test_db_persistence.c" "$DIR/db_fixtures.c" "$DBP_STAGE/params/migrations.c" \
+        "$DIR/db_test_stubs.c" "$DIR/test_framework.c" \
+        -lsqlite3 -o "$DBP_BIN"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$DIR/stubs_db" -I"$DBP_STAGE/params" -I"$DBP_STAGE" -I"$DIR" \
+        "$DIR/test_db_persistence.c" "$DIR/db_fixtures.c" "$DBP_STAGE/params/migrations.c" \
+        "$DIR/db_test_stubs.c" "$DIR/test_framework.c" \
+        -lsqlite3 -o "$DBP_BIN"
+fi
+
+echo "== persistencia: analisis estatico (gcc -fanalyzer sobre src/params/db.c) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$DIR/stubs_db" -c "$SRC/params/db.c" -o "$OUT/db_persist_analyzer.o" || true
+
+DB_PERSIST_DIR="$OUT/db_persist_data"
+rm -rf "$DB_PERSIST_DIR"
+mkdir -p "$DB_PERSIST_DIR"
+DB_PERSIST_DIR="$DB_PERSIST_DIR" "$DBP_BIN"
+rm -rf "$DB_PERSIST_DIR"
+
+# --- WiFi ocioso: el pump de GLib (issue #218, F-06) -------------------------
+# src/wifi.cpp (etapa de WiFi/BT) crea un loop_timer de LVGL cuyo callback corre
+# g_main_context_iteration() para despachar las callbacks async de NetworkManager: es el
+# unico pump de GLib del proceso, asi que se conserva con la radio apagada (las
+# desconexiones tardias lo necesitan) y lo que cambia por estado es su periodo (250 ms OFF,
+# 30 ms ON). El stage compila el modulo REAL contra un motor de timers que espeja
+# lvgl/src/misc/lv_timer.c mas un pump de GLib con reloj virtual (tests/native/stubs_wifi/,
+# tests/native/wifi_idle_stubs.cpp), y deja dos cosas: el contrato (un solo timer, 250/30,
+# callbacks, scan y estado visible intactos) y la MEDICION -vueltas del pump en 10 s de
+# WiFi ociosa, 40 OFF contra 333 ON-. Ojo: es SOLO este timer, no el total del sistema, y no
+# afirma nada sobre watts (PENDING_HARDWARE).
+# Ver docs/evidencia/2026-10-22-next218/README.md.
+echo "== WiFi ocioso (#218): pump de GLib con la radio apagada (250 ms) y encendida (30 ms) =="
+sh "$DIR/run_wifi_idle_timer.sh" "$OUT/wifi-idle"
+# --- radio_thread fail-slow sin BASE (issue #219, evidencia F-08 del #198) ----
+# src/radio.c se compila POR INCLUSION (RADIO_C_PATH) para poder observar el
+# estatico radio_thread() y su estado privado: radio_tick() no se stubea, se
+# controla por su unica entrada observable, x6200_flow_read() (stub en
+# tests/native/radio_stubs.c). El stub de usleep corta el lazo con longjmp, asi
+# que el test es determinista y una version con el defecto (que no duerme cuando
+# radio_tick() devuelve false) FALLA en el CHECK en vez de girar para siempre.
+# El radio.c se stagea en un directorio PROPIO (sin los headers reales al lado):
+# sus `#include "..."` caen al stage (los headers reales que necesita en su
+# totalidad: radio.h, visual_policy.h, cb.h, pubsub_ids.h, cfg/*) o a los stubs
+# minimos de tests/native/stubs_radio/ y a las copias del SDK que viven ahi (el
+# mismo patron de staging que clock/backlight/hkey). Ver
+# tests/native/stubs_radio/README.md. --gc-sections evita linkear el resto de
+# radio.c (radio_init, observers de VFO, CB): solo queda el lazo y sus
+# dependencias.
+echo "== #219: radio_thread duerme en cada vuelta del sondeo =="
+RT_STAGE="$OUT/radio_src"
+rm -rf "$RT_STAGE"
+mkdir -p "$RT_STAGE/cfg" "$RT_STAGE/params" "$RT_STAGE/lvgl" \
+         "$RT_STAGE/aether_radio/x6200_control/low"
+# Headers reales que radio.c necesita enteros (mismo contrato que sus tipos).
+cp "$SRC/radio.h" "$SRC/visual_policy.h" "$SRC/cb.h" "$SRC/pubsub_ids.h" "$RT_STAGE/"
+cp "$SRC/cfg/subjects.h" "$SRC/cfg/common.h" "$SRC/cfg/band.h" "$SRC/cfg/atu.h" \
+   "$SRC/cfg/transverter.h" "$SRC/cfg/cfg.h" "$RT_STAGE/cfg/"
+# Stubs minimos y copias del SDK.
+cp "$DIR/stubs_radio/"*.h "$RT_STAGE/"
+cp "$DIR/stubs_radio/params/params.h" "$RT_STAGE/params/"
+cp "$DIR/stubs_radio/lvgl/lvgl.h" "$RT_STAGE/lvgl/"
+cp "$DIR/stubs_radio/aether_radio/x6200_control/"*.h "$RT_STAGE/aether_radio/x6200_control/"
+cp "$DIR/stubs_radio/aether_radio/x6200_control/low/"*.h "$RT_STAGE/aether_radio/x6200_control/low/"
+cp "$SRC/radio.c" "$RT_STAGE/radio.c"
+RT_INC="-I$RT_STAGE -I$DIR"
+RT_FLAGS="$BASEFLAGS -ffunction-sections -fdata-sections"
+RT_LINK="-Wl,--gc-sections"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $RT_FLAGS $SAN $RT_INC -DRADIO_C_PATH="\"$RT_STAGE/radio.c\"" $RT_LINK \
+        "$DIR/test_radio_thread.c" "$DIR/radio_stubs.c" "$DIR/test_framework.c" \
+        "$DIR/radio_thread_test_main.c" -o "$OUT/radio_thread_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $RT_FLAGS $RT_INC -DRADIO_C_PATH="\"$RT_STAGE/radio.c\"" $RT_LINK \
+        "$DIR/test_radio_thread.c" "$DIR/radio_stubs.c" "$DIR/test_framework.c" \
+        "$DIR/radio_thread_test_main.c" -o "$OUT/radio_thread_tests"
+fi
+
+"$OUT/radio_thread_tests"

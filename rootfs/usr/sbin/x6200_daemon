@@ -1,16 +1,276 @@
 #!/bin/sh
-mkdir -p /mnt/app_logs/
-# Los assets (4,4 MB) los lee la GUI de /dev/shm/images. Antes se copiaban ahi en cada
-# arranque: esa copia cuesta ~0,24 s y 4,4 MB de RAM. Un bind mount es instantaneo, asi que
-# se engancha la carpeta de la raiz; si el bind falla (kernel sin soporte) se copia como
-# antes, que es lo que se hacia.
-mkdir -p /dev/shm/images
-if ! mountpoint -q /dev/shm/images; then
-    mount --bind /usr/share/x6200/images /dev/shm/images 2>/dev/null || {
-        rm -rf /dev/shm/images
-        cp -R /usr/share/x6200/images /dev/shm/
-    }
-fi
-while true; do
-    /usr/sbin/x6200_gui > /tmp/x6200_log.txt 2>&1 || sync; mv /tmp/x6200_log.txt /mnt/app_logs/x6200_log_$(date +%Y-%m-%d_%H-%M-%S).txt
-done
+#
+# x6200_daemon — supervisor del proceso de la GUI del X6200 (issue #214, epic #211).
+#
+# Arranca /usr/sbin/x6200_gui, guarda el log de cada corrida y lo vuelve a
+# arrancar con backoff determinista si se cayó. NO es un watchdog: sólo
+# supervisa el proceso de la GUI. El watchdog del SoC y el PIT quedan igual.
+#
+# Invariantes del contrato (#214):
+#   - Backoff por fallos consecutivos: 2 s, 5 s, 15 s, 60 s (60 s siempre para
+#     el exit 78 de la base SQLite, que es error de configuración, no éxito).
+#   - Si la corrida anterior vivió >= 300 s, el contador de fallos se resetea
+#     ANTES de calcular el próximo delay (no se castiga una corrida sana).
+#   - Logs únicos por corrida: timestamp UTC + PID del wrapper + número de
+#     ejecución. Primero /tmp; a /mnt/app_logs sólo si /mnt está montada y es
+#     escribible. Sin `sync` global en el lazo de fallos.
+#   - SIGTERM/SIGINT/SIGHUP: se señala al hijo, se lo espera y el wrapper sale
+#     sin relanzar. Una sola instancia (respeta el PIDFILE de start-stop-daemon).
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+set -u
+
+GUI=/usr/sbin/x6200_gui
+IMAGES=/usr/share/x6200/images
+SHM_IMAGES=/dev/shm/images
+DATADIR=/mnt
+LOGDIR=/mnt/app_logs
+TMPLOG=/tmp/x6200_log.txt
+TMPDIR=/tmp
+PIDFILE=/var/run/x6200_daemon.pid
+LOCKDIR=/var/run/x6200_daemon.lock
+
+# PATH del target. Si init ya lo dejó puesto (o un test puso dobles adelante) no
+# se pisa: sólo se asegura el default cuando llega vacío.
+PATH=${PATH:+$PATH:}/sbin:/usr/sbin:/bin:/usr/bin
+export PATH
+
+LONG_RUN=300        # s: por arriba de esto, el reinicio cuenta como corrida sana
+MAX_TMP_LOGS=4      # retención máxima de logs propios en /tmp si DATA no escribe
+
+child=0
+waiter=0
+lock_held=0
+stop_requested=0
+
+is_int() {
+    case "$1" in
+        ''|*[!0-9]*) return 1 ;;
+    esac
+    return 0
+}
+
+# Reloj monótono en segundos: /proc/uptime cuando existe (es el único que no
+# salta con cambios de hora), `date +%s` como fallback (chroot sin /proc).
+now() {
+    if [ -r /proc/uptime ]; then
+        read -r up _ < /proc/uptime 2>/dev/null || up=
+        case "$up" in
+            ''|*[!0-9.]*) : ;;
+            *)
+                printf '%s\n' "${up%%.*}"
+                return 0
+                ;;
+        esac
+    fi
+    date +%s
+}
+
+# Un pid es "nuestro daemon" si vive y (cuando hay /proc) su cmdline lo nombra:
+# evita confundir un PID reciclado por otro proceso.
+is_daemon() {
+    kill -0 "$1" 2>/dev/null || return 1
+    if [ -r "/proc/$1/cmdline" ]; then
+        grep -qa 'x6200_daemon' "/proc/$1/cmdline" 2>/dev/null || return 1
+    fi
+    return 0
+}
+
+# Delay de backoff por fallos consecutivos. Determinista, sin jitter.
+delay_for() {
+    case "$1" in
+        1) echo 2 ;;
+        2) echo 5 ;;
+        3) echo 15 ;;
+        *) echo 60 ;;
+    esac
+}
+
+# Respeta el PIDFILE que maneja start-stop-daemon: si apunta a otra instancia
+# viva, no se arranca una segunda.
+pidfile_guard() {
+    [ -f "$PIDFILE" ] || return 0
+    p=$(cat "$PIDFILE" 2>/dev/null || true)
+    is_int "$p" || return 0
+    [ "$p" = "$$" ] && return 0
+    if is_daemon "$p"; then
+        echo "x6200_daemon: already running (pid $p), not starting another" >&2
+        return 1
+    fi
+    return 0
+}
+
+# Lock propio (mkdir es atómico): cierra la carrera cuando el wrapper se invoca
+# sin start-stop-daemon. Un lock viejo (dueño muerto) se recicla.
+take_lock() {
+    if mkdir "$LOCKDIR" 2>/dev/null; then
+        printf '%s\n' "$$" > "$LOCKDIR/pid" 2>/dev/null
+        lock_held=1
+        return 0
+    fi
+    old=$(cat "$LOCKDIR/pid" 2>/dev/null || true)
+    if [ -n "$old" ] && is_daemon "$old"; then
+        return 1
+    fi
+    rm -rf "$LOCKDIR" 2>/dev/null
+    mkdir "$LOCKDIR" 2>/dev/null || return 1
+    printf '%s\n' "$$" > "$LOCKDIR/pid" 2>/dev/null
+    lock_held=1
+    return 0
+}
+
+release_lock() {
+    [ "$lock_held" = 1 ] || return 0
+    rm -rf "$LOCKDIR" 2>/dev/null
+    lock_held=0
+}
+
+# El trap sólo pide la parada y señala a los hijos: el `wait` de abajo se
+# interrumpe al instante, así que no hay que esperar a que termine el `sleep`.
+on_signal() {
+    stop_requested=1
+    if [ "$child" -gt 0 ]; then
+        kill -TERM "$child" 2>/dev/null
+    fi
+    if [ "$waiter" -gt 0 ]; then
+        kill -TERM "$waiter" 2>/dev/null
+    fi
+}
+
+cleanup() {
+    if [ "$child" -gt 0 ]; then
+        kill -TERM "$child" 2>/dev/null
+    fi
+    if [ "$waiter" -gt 0 ]; then
+        kill -TERM "$waiter" 2>/dev/null
+    fi
+    release_lock
+}
+
+# /mnt/app_logs es destino SÓLO si /mnt está montada de verdad y es escribible:
+# si DATA no está, no se escribe nada sobre el rootfs.
+dest_ready() {
+    mountpoint -q "$DATADIR" 2>/dev/null || return 1
+    mkdir -p "$LOGDIR" 2>/dev/null || return 1
+    [ -d "$LOGDIR" ] && [ -w "$LOGDIR" ] || return 1
+    return 0
+}
+
+# Mueve a DATA los logs propios que quedaron retenidos en /tmp.
+flush_tmp_logs() {
+    for f in "$TMPDIR"/x6200_log_*_p"$$"_r*.txt; do
+        [ -f "$f" ] || continue
+        mv "$f" "$LOGDIR/" 2>/dev/null || true
+    done
+}
+
+# Conserva en /tmp hasta MAX_TMP_LOGS logs PROPIOS (nunca toca los ajenos).
+prune_tmp_logs() {
+    kept=0
+    for f in $(ls -1t "$TMPDIR"/x6200_log_*_p"$$"_r*.txt 2>/dev/null); do
+        kept=$((kept + 1))
+        [ "$kept" -le "$MAX_TMP_LOGS" ] && continue
+        rm -f "$f"
+    done
+}
+
+# Guarda el log de la corrida con un nombre único (UTC + pid + nº de ejecución,
+# no sólo resolución de segundos). Primero /tmp; si /mnt es escribible, se mueve.
+save_log() {
+    ts=$(date -u +%Y-%m-%d_%H-%M-%S)
+    name="x6200_log_${ts}_p$$_r$1.txt"
+    if dest_ready; then
+        if mv "$TMPLOG" "$LOGDIR/$name" 2>/dev/null; then
+            flush_tmp_logs
+            return 0
+        fi
+    fi
+    mv "$TMPLOG" "$TMPDIR/$name" 2>/dev/null || cp "$TMPLOG" "$TMPDIR/$name" 2>/dev/null || true
+    prune_tmp_logs
+    echo "x6200_daemon: $DATADIR not writable, keeping log at $TMPDIR/$name" >&2
+}
+
+# Assets de la GUI en /dev/shm: bind mount instantáneo y, si el kernel no lo
+# soporta, la copia de antes. Es lo mismo que hacía el script original.
+prepare_images() {
+    mkdir -p "$SHM_IMAGES"
+    if ! mountpoint -q "$SHM_IMAGES"; then
+        mount --bind "$IMAGES" "$SHM_IMAGES" 2>/dev/null || {
+            rm -rf "$SHM_IMAGES"
+            cp -R "$IMAGES" "$TMPDIR/../dev/shm/"
+        }
+    fi
+}
+
+main() {
+    trap 'on_signal' TERM INT HUP
+    trap 'cleanup' EXIT
+
+    pidfile_guard || exit 0
+    if ! take_lock; then
+        echo "x6200_daemon: another instance is alive, not starting" >&2
+        exit 0
+    fi
+
+    prepare_images
+
+    fails=0
+    run=0
+    while :; do
+        [ "$stop_requested" = 1 ] && break
+
+        run=$((run + 1))
+        started=$(now)
+
+        "$GUI" > "$TMPLOG" 2>&1 &
+        child=$!
+        wait "$child"
+        rc=$?
+        child=0
+
+        if [ "$stop_requested" = 1 ]; then
+            break
+        fi
+
+        ended=$(now)
+
+        if [ "$rc" -gt 128 ]; then
+            echo "GUI terminated: signal $((rc - 128))" >&2
+        else
+            echo "GUI exited: code $rc" >&2
+        fi
+
+        save_log "$run"
+
+        # 6 min sano: el contador se resetea ANTES de calcular el próximo delay.
+        lived=0
+        if is_int "$started" && is_int "$ended" && [ "$ended" -ge "$started" ]; then
+            lived=$((ended - started))
+        fi
+        if [ "$lived" -ge "$LONG_RUN" ]; then
+            fails=0
+        fi
+
+        fails=$((fails + 1))
+        if [ "$rc" -eq 78 ]; then
+            delay=60        # error de configuración (SQLite): backoff máximo ya
+        else
+            delay=$(delay_for "$fails")
+        fi
+
+        echo "GUI restart in ${delay}s" >&2
+
+        # La espera va en segundo plano y se cuelga de `wait`: un trap de
+        # señal la corta al instante (un `sleep` en primer plano no se
+        # interrumpe). No se escribe nada durante la espera.
+        sleep "$delay" &
+        waiter=$!
+        wait "$waiter"
+        waiter=0
+        child=0
+    done
+
+    child=0
+}
+
+main "$@"

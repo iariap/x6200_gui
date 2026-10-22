@@ -62,3 +62,6 @@ __pycache__/
 
 # Font pipeline: downloaded TTFs and the pinned lv_font_conv (tools/fonts/README.md)
 tools/fonts/.cache/
+
+# Suite del supervisor de la GUI (issue #214)
+tests/daemon/build/

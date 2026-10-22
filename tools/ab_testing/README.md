@@ -60,6 +60,23 @@ The harness image must exist (see `tools/ui_harness/README.md`):
 docker build -t x6200-uiharness tools/ui_harness
 ```
 
+## Resource limits
+
+Every `docker run` is capped so a runaway build or lab cannot exhaust the
+**host** (a single build once peaked at 83.4 GB and triggered a kernel OOM; a lab
+whose init script recursed reached 70 GB of slab before it was killed). The
+limits are read from the environment at run time and per-`DockerRunner` field,
+with safe, machine-independent defaults:
+
+| Variable | Default | Effect |
+|---|---|---|
+| `X6200_AB_PIDS_LIMIT` | `512` | `docker run --pids-limit`: ceiling on processes/threads inside the container |
+| `X6200_AB_DOCKER_MEMORY` | `4g` | `docker run --memory` and `--memory-swap`: RAM ceiling, no swap fallback |
+| `X6200_AB_JOBS` | `$(nproc)`, clamped to `8` | parallelism of the in-container `make` (compiler peaks are what drove the OOM) |
+
+Raise them explicitly on a machine that has the headroom, e.g.
+`X6200_AB_DOCKER_MEMORY=16g X6200_AB_JOBS=16 uv run x6200-ab compare ...`.
+
 ## Usage
 
 ```sh

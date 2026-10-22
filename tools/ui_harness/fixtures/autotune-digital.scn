@@ -1,0 +1,47 @@
+# autotune-digital: Auto Tune multimode (issue #205) REFUSING to run in a digital
+# mode.
+#
+# The radio is in USB-D (the data mode FT8/JS8/WSPR use) and the same APP 6
+# "Auto Tune" button is pressed through the user's path (button_action_cb ->
+# main_screen_action(ACTION_ATUNE) -> autotune_ui_toggle()). Digital modes are
+# explicitly out of scope: the action must reject with
+# "Auto Tune: mode unsupported", open NO session, request NO spectrum frame and
+# leave the dial untouched - the FT8/JS8/WSPR dial and the nominal data
+# frequencies are never moved.
+#
+# This fixture replaces `autotune-notcw` of issue #190: back then AM was
+# unsupported too, now AM/SAM and USB/LSB are supported and the refusal that has
+# to stay codified is the digital/FM one (issue #205 section 7).
+#
+# scenario_settle codifies exactly that: the session never started, the dial is
+# still the fixture frequency and no spectrum frame was ever requested. Without
+# those checks the bank would capture a quiet dial and report green for a
+# function that silently retunes in a digital mode.
+
+name autotune-digital
+screen autotune-digital
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb-dig
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

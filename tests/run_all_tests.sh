@@ -92,11 +92,18 @@ run build_identity python3 "$DIR/check_build_identity.py"
 run curve_evidence python3 "$DIR/test_swrscan_curve_evidence.py"
 
 run host sh "$DIR/native/run_native_tests.sh"
+# Supervisor de la GUI (issue #214): backoff, logs unicos, una sola instancia y
+# senales, contra el rootfs/usr/sbin/x6200_daemon REAL en un chroot privado.
+# Sin user namespaces el stage sale 77 (SKIP), nunca PASS.
+run daemon sh "$DIR/daemon/run_daemon_tests.sh"
 # Paridad host<->CI: el job `functional` de ab-testing.yml no inicializa el
 # submodulo lvgl, asi que el build host tiene que pasar tambien sin el. Si un
 # stage vuelve a apoyarse en el header real, aca se ve en local (en el PR solo se
 # veria en CI). Ver docs/evidencia/2026-10-21-ciparity/.
 run host_ci_parity sh "$DIR/native/run_native_tests.sh" --ci-parity
+# Persistencia fail-closed con /mnt REAL (issue #213): namespace + chroot
+# privados. Declara SKIP (exit 77) si el host no permite user namespaces.
+run db_failclosed sh "$DIR/native/run_db_failclosed.sh"
 run drawbuf_partial sh "$DIR/check_drawbuf_partial.sh"
 run wspr sh "$DIR/native/run_wspr_tests.sh"
 run sstv sh "$DIR/native/run_sstv_tests.sh"

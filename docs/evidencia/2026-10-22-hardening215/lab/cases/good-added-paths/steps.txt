@@ -1,0 +1,8 @@
+ok   rc=0
+ok   stdout dice 'Update applied'
+ok   el paquete x6200_r1cbu_v215ext.tgz se consumió
+ok   el sidecar de x6200_r1cbu_v215ext.tgz se consumió
+ok   el archivo nuevo se instaló
+ok   stdout no dice 'Update verification failed'
+ok   la lista de rutas nuevas es la esperada
+ok   el backup no incluye rutas nuevas
