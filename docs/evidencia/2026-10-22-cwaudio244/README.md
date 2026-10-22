@@ -184,9 +184,9 @@ r "od -An -td2 -v /tmp/a.raw | awk '{for(i=1;i<=NF;i++){v=\$i<0?-\$i:\$i; s+=v; 
 ```
 
 **Sano esperado**: `vol` ≠ 0 (el nivel del dueño), `sql` 0, `spmode` 0; la captura con pico alto y
-media alta, como el estado sano que midió el issue (RMS 2450,7 / pico 12192); en estado mudo el pico
-cae a ~144 y la media queda clavada en ~141. Ojo: la captura **no** es un discriminante por sí sola
-(§4).
+media alta, como el estado sano que midió el issue (RMS 2450,7 / pico 12192); en el estado mudo que
+el issue midió, el pico cae a 144 y la media queda clavada en 141,2. Ojo: la captura **no** es un
+discriminante por sí sola (§4).
 
 ### 5.2 Reproducir el mute
 
@@ -207,7 +207,7 @@ cae a ~144 y la media queda clavada en ~141. Ojo: la captura **no** es un discri
 | Mute, `vol` = 0 | El silencio **es el nivel**: el disparo es quien puso el nivel en 0 (perilla/teclas de volumen en el contexto de CW, remoto o CAT). Si además el `vol` del `params.db` ya era 0 **antes** de la reproducción, el "mute" estaba puesto desde antes y el viaje a CW no lo causó |
 | Mute, `vol` > 0 y **la GUI reiniciada lo destraba** | El estado vive en lo que la GUI re-aplica en el arranque (registro 14 y/o 21): se puede acotar leyendo `vol` antes y después del reinicio |
 | Mute, `vol` > 0 y **sólo el power-cycle lo destraba** | El estado está **dentro del BASE** (firmware). La GUI sólo puede mitigar: es el caso para escalar al fabricante con este registro, no para inventar un workaround nuevo |
-| Con `vol` ≥ 1 la captura sigue constante (RMS ~141) y el parlante mudo | El mute no es el nivel: la medición que falta es el registro 14/21 **del BASE** (no hay readback de registros en el SDK: sólo se pueden mirar los flags del flow) |
+| Con `vol` ≥ 1 la captura sigue constante (RMS 141,2) y el parlante mudo | El mute no es el nivel: la medición que falta es el registro 14/21 **del BASE** (no hay readback de registros en el SDK: sólo se pueden mirar los flags del flow) |
 
 ### 5.3 Medición que falta y que cerraría el caso
 
