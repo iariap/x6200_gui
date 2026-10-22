@@ -4,7 +4,8 @@
 (hijo 1/6 de la épica [#216](https://github.com/iariap/x6200_gui/issues/216)).
 **Rama:** `factory/next-217` · **base:** `b798f13b57ae4c6e0ec5a935a9dba2d4b2ca16bd`
 (tip de `origin/lu2dsx/x6200-rom`, con el hardening #211 ya integrado) ·
-**HEAD de esta evidencia:** `438df0dfbd2b9115989e1d6aead375c0e575ad5e`.
+**HEAD de código:** `438df0dfbd2b9115989e1d6aead375c0e575ad5e` (la matriz de
+§5 corre sobre este commit; esta evidencia es el commit de `docs/` que le sigue).
 
 Objetivo: que `src/dialog_cw_kbd.c` no repinte la UI con el diálogo en reposo,
 sin alterar el keyer ni el decodificador de CW (condición explícita del issue).
