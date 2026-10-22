@@ -3,8 +3,11 @@
 - **Issue**: [`iariap/x6200_gui#222`](https://github.com/iariap/x6200_gui/issues/222) — hijo **6/6** de la épica
   [`#216`](https://github.com/iariap/x6200_gui/issues/216).
 - **Rama**: `factory/next-222` (worktree `state/worktrees/x6200/next-222`, harness ASF).
-- **Base**: `f825fe4b` = tip de `origin/lu2dsx/x6200-rom`, con los cinco hijos integrados
-  (#217 `a01598b0`, #218 `9e571d89`, #219 `85bf06fb`, #220 `fea0960b`, #221 `f825fe4b`).
+- **Base**: `f825fe4b` = tip de `origin/lu2dsx/x6200-rom` **al arrancar**, con los cinco hijos
+  integrados (#217 `a01598b0`, #218 `9e571d89`, #219 `85bf06fb`, #220 `fea0960b`, #221 `f825fe4b`).
+  ⚠️ **Durante la corrida el remoto avanzó** a `37ec3b54` (`QA: UI actualizada por SSH (sin
+  flashear)…`): mi rama queda sobre `f825fe4b` (merge-base), el diff del PR es sólo el de este
+  hijo y el rebase/retarget lo maneja el orquestador.
 - **Capa de esta corrida**: **HOST + CI** (y el runner de QEMU_USER, con su preflight real).
   **HARDWARE** sigue `PENDING_HARDWARE` (pipeline físico separado).
 - **Alcance ejecutado**: tests, datos de cobertura y documentación. **No se tocó `src/**`**, ni
@@ -232,7 +235,7 @@ y `docs/INTEGRATION_AUDIT.md`, **sin** reemplazar los números históricos.
 | Framework A/B | `uv sync` + `ruff check` + `ruff format --check` + `ty check` + `pytest -m "not e2e"` | **OK** — 233 passed, 13 deselected | `logs/gate-ab-*.txt` |
 | Temas (contraste) | `uv run x6200-ab themes` | **PASS** — 10 paletas, 90 pares, 0 fallas | `logs/gate-ab-themes.txt` |
 | Benchmark A/A | `uv run x6200-ab benchmark --a f825fe4b --b f825fe4b` | **PASS** — 205 escenarios | `logs/gate-bench-aa.txt` |
-| Matriz del harness | `scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD <worktree>` | **rc=0** — 4 checks `ok` (themes, contracts sobre `6d793160`, `bash -n` de los dos scripts); 0 FAIL/BLOCKED; SKIP por paths no tocados | `logs/gate-check-matrix.txt` |
+| Matriz del harness | `scripts/apps/x6200/check-matrix.sh f825fe4b HEAD <worktree>` | **rc=0** — 4 checks `ok` (themes, contracts sobre `f2c5b239`, `bash -n` de los dos scripts); 0 FAIL/BLOCKED; SKIP por paths no tocados | `logs/gate-check-matrix.txt` |
 
 > La matriz **no** corre `check_dialog_coverage` todavía: su lista de checks está en el repo `asf`
 > (`scripts/apps/x6200/check-matrix.sh`) y agregarla ahí es riesgo alto / fuera del alcance del

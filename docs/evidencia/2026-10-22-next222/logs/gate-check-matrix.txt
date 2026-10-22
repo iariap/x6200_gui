@@ -1,5 +1,5 @@
-== comando: scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD <worktree> ==
-== rc=0 · 4 checks ok (themes, contracts sobre 6d793160, bash -n de los dos scripts) · 0 FAIL/BLOCKED ==
+== comando: scripts/apps/x6200/check-matrix.sh f825fe4b HEAD <worktree> ==
+== rc=0 · 4 checks ok (themes, contracts sobre f2c5b239, bash -n de los dos scripts nuevos) · 0 FAIL/BLOCKED ==
 == los SKIP son por paths: src/**, tools/ab_testing/**, tools/ui_harness/** y rootfs/**/themes/*.json no cambiaron en este hijo ==
 
 ==> [SKIP] firmware / nativo: sin cambios en src/**, lv_conf.h, lv_drv_conf.h ni CMakeLists.txt
@@ -9,7 +9,7 @@
 ==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/**
 ==> [check] x6200-ab themes
     ok
-==> [check] x6200-ab contracts (6d7931608de5c76cdefe853182db2c6bf4353f46)
+==> [check] x6200-ab contracts (f2c5b2395e73a5e14c8d3b2d689ca95bc42cac3b)
     ok
 ==> [check] bash -n tests/qemu/run_apps_qemu.sh
     ok
