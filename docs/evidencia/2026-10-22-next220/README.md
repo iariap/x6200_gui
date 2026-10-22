@@ -112,7 +112,74 @@ Ver `gates.md` para la salida literal de cada uno. Resumen:
 | `sh tests/check_waterfall_incremental.sh` | PASS |
 | `sh tests/run_all_tests.sh` | PASS (19 OK, 0 fallos; 5 SKIP herméticos de la imagen `ci`) |
 | `scripts/apps/x6200/check-matrix.sh` (matriz) | PASS/EXIT=0; banco QEMU BLOCKED |
+| `pytest -m "not e2e"` (ab_testing) | PASS (233 passed, 13 deselected) — fix del rojo de CI, ver abajo |
 | banco QEMU / teclas físicas | PENDING_HARDWARE (recursos privados del banco: no usados) |
+
+## Fix del rojo de CI (job `UI Functional Tests`, run 39821158267)
+
+El head `1e3860b5` falló en `tests/test_scenarios.py::test_repo_fixtures_are_all_parsable`:
+
+```
+At index 135 diff: 'locked-feedback' != 'main-bateria-baja'
+Left contains one more item: 'swrscan-wide-zoom'
+1 failed, 232 passed, 13 deselected
+```
+
+Causa: el fixture nuevo no estaba en el **inventario versionado** de
+`tools/ab_testing/tests/test_scenarios.py` (la suite valida que el set real de
+`tools/ui_harness/fixtures/*.scn` coincida con esa lista y con el set de
+`screen` conocidas). La matriz local no lo vio porque corre el pytest A/B sólo
+cuando el diff toca `^tools/ab_testing/`, y este cambio toca `tools/ui_harness/**`
+(hueco de la matriz, ya anotado por el orquestador; no se toca acá).
+
+Fix (`tools/ab_testing/tests/test_scenarios.py`), en el lugar que el orden real
+exige (índice 135, entre `home-usb-20m` y `main-bateria-baja`; la posición la
+dijo el propio suite, no se adivinó):
+
+```python
+        "home-frecuencia-extrema",
+        "home-usb-20m",
+        # Feedback del operador con controles trabados (issue #220): la home real
+        # con los locks de banda/modo/VFO/frecuencia y el dial.
+        "locked-feedback",
+        "main-bateria-baja",
+```
+
+y el set de pantallas conocidas del mismo test:
+
+```python
+        in {
+            "main",
+            "main-foco",
+            # Feedback de controles trabados (issue #220).
+            "locked-feedback",
+```
+
+Salida real:
+
+```
+cd tools/ab_testing && uv run pytest -m "not e2e" -q
+233 passed, 13 deselected in 2.28s
+EXIT=0
+uv run ruff check .        -> All checks passed! (exit 0)
+uv run ruff format --check . -> 200 files already formatted (exit 0)
+python3 tests/check_autotune_v2.py -> contrato estatico de Auto Tune (CW v2 + multimodo) OK (exit 0)
+```
+
+Gate re-corridos tras el fix: determinismo (PASS), `x6200-ab contracts`
+(`7dc6aea7f42c: PASS — 2116 checks`) , `tests/run_all_tests.sh --quick`
+(19 OK, 0 fallos) y `check-matrix.sh b798f13b HEAD` (**EXIT=0**, ahora con el
+pytest A/B disparado: `ruff check`, `ruff format`, `pytest -m 'not e2e'` y
+`x6200-ab contracts` en `ok`) — ver `gates.md`. Log del pytest:
+`logs/ab-testing-pytest.log`.
+
+La matriz se corrió con base `b798f13b` (merge-base real de la rama): el ref
+`origin/lu2dsx/x6200-rom` avanzó a `9e571d89` (#233/#234) durante la corrida, y
+usarlo como base mostraría como "borrados" los archivos de esos hijos.
+
+`x6200-ab contracts` y la matriz se corrieron sobre el sha de código
+`7dc6aea7f42c` (mismo `src/` + `tools/` que el HEAD final; los commits
+posteriores sólo agregan/ajustan `docs/evidencia/**`, que los gates no evalúan).
 
 ## Cómo reproducir
 

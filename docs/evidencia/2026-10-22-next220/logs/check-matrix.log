@@ -19,11 +19,15 @@
 ==> [check] check_build_identity
     ok
 ==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
-==> [SKIP] ruff del framework A/B: sin cambios en tools/ab_testing/**/*.py
-==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/**
+==> [check] ruff check (ab_testing)
+    ok
+==> [check] ruff format --check (ab_testing)
+    ok
+==> [check] pytest -m 'not e2e' (ab_testing)
+    ok
 ==> [check] x6200-ab themes
     ok
-==> [check] x6200-ab contracts (fdf7a6bc0dac39ca06d43a7ab4823285b1e9da94)
+==> [check] x6200-ab contracts (7dc6aea7f42c64d0814400f573d70511c1b09554)
     ok
 ==> [SKIP] bash -n de los .sh tocados: sin cambios en tests/**/*.sh ni tools/**/*.sh
 ==> [check] harness determinism gate

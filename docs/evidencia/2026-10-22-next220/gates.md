@@ -57,3 +57,47 @@ pasaron; el harness corta con exit 1 y el mensaje de la aserción si alguna fall
 - `sh tests/check_waterfall_incremental.sh`: PASS — `PASS: waterfall incremental fixtures + ASan/UBSan (#148)`
 - `sh tests/run_all_tests.sh`: PASS — `19 OK, 0 fallos` + SKIPs herméticos por la imagen `ci` (sin fftw3/sndfile): `wspr sstv wefax js8 webserver`
 - `scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD <worktree>`: EXIT=0 — native tests + 9 checks estáticos + build_identity + `x6200-ab themes` + `x6200-ab contracts` + harness determinism gate: todos `ok`. Banco QEMU: **BLOCKED** por entorno (`falta el volumen x6200-build-output`, `falta el chroot`, `falta tools/remote/x6200-remote` — recursos privados del owner que este hijo no usa por la política de laboratorio).
+
+## Actualización — fix del rojo de CI (head `7dc6aea7`)
+
+El job `UI Functional Tests` (run 39821158267, head `1e3860b5`) falló en
+`tests/test_scenarios.py::test_repo_fixtures_are_all_parsable` porque
+`locked-feedback` no estaba en el inventario versionado. Fix en
+`tools/ab_testing/tests/test_scenarios.py` (lista ordenada índice 135 + set de
+`screens` conocidas). Gates re-corridos:
+
+```
+cd tools/ab_testing && uv run pytest -m "not e2e" -q
+233 passed, 13 deselected in 2.28s
+EXIT=0
+
+uv run ruff check .            -> All checks passed! (exit 0)
+uv run ruff format --check .   -> 200 files already formatted (exit 0)
+python3 tests/check_autotune_v2.py -> contrato estatico de Auto Tune (CW v2 + multimodo) OK (exit 0)
+
+SKIP_BUILD=1 sh tests/check_harness_determinism.sh
+PASS: deterministic (identical PNGs for every fixture)
+determinism EXIT=0
+
+x6200-ab contracts --revision 7dc6aea7
+contracts 7dc6aea7f42c: PASS — 2116 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+sh tests/run_all_tests.sh --quick
+19 OK, 0 fallos
+run_all_quick EXIT=0
+
+check-matrix.sh b798f13b HEAD <worktree>
+==> [check] pytest -m 'not e2e' (ab_testing)
+    ok
+==> [check] x6200-ab contracts (7dc6aea7f42c64d0814400f573d70511c1b09554)
+    ok
+==> [check] harness determinism gate
+    ok
+matrix EXIT=0 (todos los checks `ok`; banco QEMU BLOCKED por entorno, ver arriba)
+```
+
+Nota: la matriz de esta actualización se corrió con base `b798f13b` (el
+merge-base real de la rama). El ref `origin/lu2dsx/x6200-rom` avanzó a
+`9e571d89` (#233/#234) durante la corrida; usar ese ref como base mostraría como
+"borrados" los archivos de #217/#218 y ensuciaría el gate (los cambios de la rama
+siguen siendo sólo los de este hijo).
