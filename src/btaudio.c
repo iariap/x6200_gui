@@ -95,8 +95,15 @@ void btaudio_headphone_volume(int pct) {
     btaudio_run("volume %i", pct);
 }
 
-/* El mute que puso esta politica (no el del usuario) */
+/* El mute que puso esta politica (no el del usuario). Se compone con el del usuario en
+ * radio_vol_apply() (#244): antes los dos compartian el toggle radio_change_mute(), asi que
+ * "auriculares desconectados" solo devolvia el audio si el usuario no lo habia muteado a mano
+ * y el flag no se desincronizara. */
 static bool mudo_por_bt = false;
+
+bool btaudio_speaker_muted(void) {
+    return mudo_por_bt;
+}
 
 void btaudio_follow_state(void) {
     static bool con_antes = false;
@@ -111,24 +118,24 @@ void btaudio_follow_state(void) {
     con_antes = con;
 
     if (con && mudo) {
-        if (!radio_is_muted()) {
-            radio_change_mute();
+        if (!mudo_por_bt) {
             mudo_por_bt = true;
+            radio_vol_apply();
             btaudio_log("auriculares conectados: altavoz a 0 (BTAUDIO_MUTE=yes)");
         }
     } else if (!con && mudo_por_bt) {
-        radio_change_mute();
         mudo_por_bt = false;
+        radio_vol_apply();
         btaudio_log("auriculares desconectados: altavoz de vuelta");
     }
 }
 
 void btaudio_speaker_mute(bool on) {
-    /* El equipo ya sabe mutearse (radio_change_mute apaga el volumen de recepcion): se usa eso en
-     * vez de guardar y restaurar el volumen por aca. */
-    if (on != radio_is_muted()) {
-        radio_change_mute();
+    /* El equipo ya sabe mutearse: radio_vol_apply() deja el audio de recepcion en 0 sin tocar
+     * el mute del usuario (docs/HALLAZGOS.md 23, 64). */
+    if (on != mudo_por_bt) {
         mudo_por_bt = on;
+        radio_vol_apply();
         btaudio_log("altavoz %s (mute del equipo)", on ? "apagado" : "encendido");
     }
 }

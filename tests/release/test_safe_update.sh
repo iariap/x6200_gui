@@ -26,6 +26,11 @@
 # espacio, /mnt read-only, /mnt sin montar, symlinks con target absoluto o "..",
 # y el primer update de una imagen historica (UNSUPPORTED/UNSAFE_LEGACY).
 #
+# Tambien la re-entrada del pase (issue #231): este archivo es el que la
+# actualizacion reemplaza, asi que el shell que lo lee puede re-parsear la cola
+# del script instalado y re-correr el despacho. La marca del pase
+# (S02UPDATE_PASS) tiene que hacer esa re-entrada inerte.
+#
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 set -u
@@ -49,7 +54,19 @@ if [ ! -e /.dockerenv ]; then
         docker build -t h215-x6200-update-lab "$HERE" || exit 2
     fi
     echo "==> banco privado: contenedor h215-x6200-update-lab, lab $LAB"
+    # Cotas de recursos (issue iariap/x6200_gui#231): este banco corre el
+    # S02update del target, que puede re-ejecutarse a sí mismo. Sin cota, un lazo
+    # de procesos se lleva la RAM y el slab del HOST (medido en el issue: 70 GB y
+    # 2502 procesos) y tumba la máquina. Con --pids-limit el lazo se corta por
+    # fork (EAGAIN dentro del contenedor) y con --memory/--memory-swap la memoria
+    # del cgroup queda acotada: el banco falla visible, no se lleva el host.
+    # Mismos nombres de variables que el arnés A/B (tools/ab_testing).
+    PIDS_LIMIT=${X6200_LAB_PIDS_LIMIT:-512}
+    MEMORY=${X6200_LAB_DOCKER_MEMORY:-6g}
+    echo "    cotas: pids-limit=$PIDS_LIMIT memory=$MEMORY (override: X6200_LAB_PIDS_LIMIT / X6200_LAB_DOCKER_MEMORY)"
     exec docker run --rm --privileged \
+        --pids-limit "$PIDS_LIMIT" \
+        --memory "$MEMORY" --memory-swap "$MEMORY" \
         -v "$GUI":/repo:ro \
         -v "$(cd "$(dirname "$FIXTURE")" && pwd)":/fixtures:ro \
         -v "$LAB":/lab \
@@ -215,6 +232,20 @@ run_updater() {
 }
 
 gui_hash() { sha256sum "$1/usr/sbin/x6200_gui" | awk '{ print $1 }'; }
+
+# Como run_updater, pero con la marca de un pase que ya corrió en el mismo árbol
+# de procesos: es la re-entrada (issue iariap/x6200_gui#231, ver el caso
+# updater-reentry).
+reentry_updater() {
+    GUI_BEFORE=$(sha256sum "$TARGET/usr/sbin/x6200_gui" | awk '{ print $1 }')
+    TREE_BEFORE=$(tree_state)
+    S02UPDATE_PASS=0 chroot "$TARGET" /bin/sh /etc/init.d/S02update start >"$CASE_LOG/stdout.txt" 2>"$CASE_LOG/stderr.txt"
+    RC=$?
+    cp "$CASE_LOG/stdout.txt" "$CASE_LOG/stdout.raw"
+    say "    rc=$RC"
+    say "    stdout: $(tr '\n' '|' < "$CASE_LOG/stdout.txt")"
+    say "    stderr: $(tr '\n' '|' < "$CASE_LOG/stderr.txt")"
+}
 
 assert_rc() {
     [ "$RC" = "$1" ] && ok "rc=$RC" || bad "rc=$RC (esperaba $1)"
@@ -548,6 +579,40 @@ assert_out "Update verification failed"
 assert_err_has "travels as"
 assert_pkg_kept "$pkg"
 assert_unchanged
+finish
+
+# ---------------------------------------------------------------------------
+# N16: re-entrada del pase de actualización (issue iariap/x6200_gui#231)
+# ---------------------------------------------------------------------------
+# Este archivo es el que la actualización reemplaza. El shell que lo está
+# leyendo puede volver a parsear la cola del script recién instalado y re-correr
+# el despacho: una re-entrada en el MISMO árbol de procesos (la misma marca de
+# entorno, el mismo fork). Sin guardia esa re-entrada vuelve a correr la
+# actualización entera -- y cada pasada vuelve a extraer el paquete y a leer el
+# archivo, así que no tiene tope: es el fork bomb del issue. Con la marca, la
+# re-entrada no toca nada y sale con el estado del pase que ya corrió (acá 0).
+# El segundo tramo verifica lo otro: un arranque NUEVO (sin marca) sigue
+# actualizando normal, o sea que la guardia no cambia la semántica del update.
+begin updater-reentry "re-entrada del pase (misma marca de entorno): no aplica de nuevo y sale con el estado del pase"
+reset_target "$WORK/image-new.tar"
+mount_mnt 1024
+put_pkg "$PKG/$GOOD"
+reentry_updater
+assert_rc 0
+if [ -s "$CASE_LOG/stdout.txt" ]; then
+    bad "la re-entrada no debe escribir ninguna línea de estado y dice '$(tr '\n' '|' < "$CASE_LOG/stdout.txt")'"
+else
+    ok "la re-entrada no escribe ninguna línea de estado"
+fi
+[ -s "$CASE_LOG/stderr.txt" ] && bad "la re-entrada no debe escribir nada en stderr" || ok "stderr vacío"
+assert_pkg_kept "$GOOD"
+assert_unchanged
+assert_no_backup
+# Sin marca (arranque nuevo): el pase corre normal y consume el paquete.
+run_updater
+assert_rc 0
+assert_out "Update applied"
+assert_pkg_gone "$GOOD"
 finish
 
 # ---------------------------------------------------------------------------

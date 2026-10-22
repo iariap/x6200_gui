@@ -74,6 +74,15 @@ int      radio_stub_dsp_calls;
 int      radio_stub_idle_marks[RADIO_STUB_IDLE_MARKS];
 int      radio_stub_idle_marks_n;
 
+/* Audio de recepcion (issue #244), ver radio_stubs.h. */
+int32_t  radio_stub_vol;
+int32_t  radio_stub_mode;
+int32_t  radio_stub_subject_set_last;
+int      radio_stub_subject_set_calls;
+int      radio_stub_rxvol_calls;
+uint8_t  radio_stub_rxvol_last;
+bool     radio_stub_bt_muted;
+
 void radio_stub_reset(void) {
     radio_stub_clock          = RADIO_STUB_CLOCK_FAKE;
     radio_stub_fake_ms        = 0;
@@ -94,6 +103,13 @@ void radio_stub_reset(void) {
     radio_stub_swrscan_updates = 0;
     radio_stub_dsp_calls      = 0;
     radio_stub_idle_marks_n   = 0;
+    radio_stub_vol            = 0;
+    radio_stub_mode           = 0;
+    radio_stub_subject_set_last = 0;
+    radio_stub_subject_set_calls = 0;
+    radio_stub_rxvol_calls    = 0;
+    radio_stub_rxvol_last     = 0;
+    radio_stub_bt_muted       = false;
 }
 
 /* --- clock ---------------------------------------------------------------- */
@@ -273,6 +289,15 @@ void btaudio_headphone_volume(int pct) {
     (void) pct;
 }
 
+bool btaudio_speaker_muted(void) {
+    return radio_stub_bt_muted;
+}
+
+void x6200_control_rxvol_set(uint8_t vol) {
+    radio_stub_rxvol_calls++;
+    radio_stub_rxvol_last = vol;
+}
+
 void voice_say_text_fmt(const char *fmt, ...) {
     (void) fmt;
 }
@@ -311,14 +336,25 @@ void lastbreath_mark_clean_now(void) {
 
 /* --- Subject observers used by radio_tick -------------------------------- */
 
+/* El camino del volumen (#244) lee dos Subjects: se distinguen por puntero y el resto sigue
+ * devolviendo 0, que es lo que esperan los casos del #219. */
 int32_t subject_get_int(Subject *subj) {
-    (void) subj;
+    if (subj != NULL && subj == cfg.vol.val) {
+        return radio_stub_vol;
+    }
+
+    if (subj != NULL && subj == cfg_cur.mode) {
+        return radio_stub_mode;
+    }
 
     return 0;
 }
 
 void subject_set_int(Subject *subj, int32_t val) {
-    (void) subj; (void) val;
+    (void) subj;
+
+    radio_stub_subject_set_last = val;
+    radio_stub_subject_set_calls++;
 }
 
 float subject_get_float(Subject *subj) {

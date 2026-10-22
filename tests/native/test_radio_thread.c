@@ -2,6 +2,11 @@
  * Test nativo del fail-slow de radio_thread sin BASE (issue #219, evidencia F-08
  * del dossier #194).
  *
+ * Desde el #244 el mismo binario cubre ademas el camino del audio de recepcion
+ * (radio_change_mute / radio_change_vol / radio_vol_apply / re-sync al salir de CW):
+ * el valor que llega a x6200_control_rxvol_set() —o sea al registro 14 del BASE— se
+ * observa con el stub de tests/native/radio_stubs.c. Ver docs/HALLAZGOS.md 64.
+ *
  * Hallazgo: src/radio.c::radio_thread() solo dormia cuando radio_tick() devolvia
  * true (`if (radio_tick()) usleep(15000);`). Cuando devolvia false el hilo giraba
  * tan rapido como permitiera la plataforma: en QEMU_USER sin BASE se midieron
@@ -25,6 +30,7 @@
  */
 
 #include <setjmp.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <string.h>
 
@@ -190,6 +196,110 @@ static void test_recupera_al_volver_el_paquete(void) {
     CHECK(state == RADIO_RX);         /* el estado no se perdio */
 }
 
+/* --- Audio de recepcion (#244) -------------------------------------------- */
+
+/* Estos casos llaman a las funciones REALES de src/radio.c (compilado por inclusion) y miran
+ * que valor le llega a x6200_control_rxvol_set(), o sea al registro 14 del BASE. El defecto que
+ * cubren: el nivel se calculaba con un toggle y cada camino que cambiaba el mute escribia (o no)
+ * el registro por su cuenta, asi que la GUI podia quedar diciendo "no estoy muda" con el equipo
+ * en 0 — el sintoma del #244 (silencio total sin causa visible).
+ *
+ * cfg.vol.val y cfg_cur.mode son Subjects de mentira (los valores los da el stub, ver
+ * radio_stubs.h), asi que no se dereferencian. */
+static void vol_setup(void) {
+    static bool mux_init = false;
+
+    /* radio_vol_apply() toma radio_lock(); radio_init() no corre en el test, asi que el mutex se
+     * crea aca una vez. */
+    if (!mux_init) {
+        pthread_mutex_init(&control_mux, NULL);
+        mux_init = true;
+    }
+
+    radio_stub_reset();
+
+    cfg.vol.val    = (Subject *) 0x1;
+    cfg_cur.mode   = (Subject *) 0x2;
+    radio_stub_vol = 40;
+}
+
+static void test_vol_composicion_de_mutes(void) {
+    vol_setup();
+    mute = false;
+
+    /* Sin mutes: el nivel guardado va tal cual. */
+    radio_vol_apply();
+    CHECK(radio_stub_rxvol_calls == 1);
+    CHECK(radio_stub_rxvol_last == 40);
+
+    /* Mute del usuario: 0; y al desmutear vuelve el nivel guardado (no el toggle a ciegas). */
+    radio_change_mute();
+    CHECK(radio_is_muted() == true);
+    CHECK(radio_stub_rxvol_last == 0);
+    radio_change_mute();
+    CHECK(radio_is_muted() == false);
+    CHECK(radio_stub_rxvol_last == 40);
+
+    /* Mute por auriculares A2DP: se COMPONE con el del usuario. Con el altavoz muteado por BT,
+     * desmutear a mano no puede devolver el audio (antes mandaba 40: el altavoz sonaba con los
+     * auriculares puestos). */
+    radio_stub_bt_muted = true;
+    radio_change_mute();                       /* usuario mutea */
+    CHECK(radio_stub_rxvol_last == 0);
+    radio_change_mute();                       /* usuario desmutea: sigue en 0 por BT */
+    CHECK(radio_is_muted() == false);
+    CHECK(radio_stub_rxvol_last == 0);
+
+    /* Al desconectarse los auriculares, la politica de BT re-aplica y vuelve el nivel. */
+    radio_stub_bt_muted = false;
+    radio_vol_apply();
+    CHECK(radio_stub_rxvol_last == 40);
+}
+
+static void test_vol_perilla_en_el_tope_no_desincroniza(void) {
+    vol_setup();
+    radio_stub_vol = 0;
+    mute = true;
+
+    radio_vol_apply();
+    int writes = radio_stub_rxvol_calls;
+
+    /* Nivel 0 y el usuario baja: el nivel no se mueve (limit), pero el mute se limpia. Antes el
+     * registro no se volvia a mandar y la GUI quedaba "no muda" con el equipo en 0. */
+    CHECK(radio_change_vol(-1) == 0);
+    CHECK(radio_stub_subject_set_calls == 0);      /* el nivel no cambio */
+    CHECK(radio_is_muted() == false);
+    CHECK(radio_stub_rxvol_calls == writes + 1);   /* pero el registro se re-mando */
+    CHECK(radio_stub_rxvol_last == 0);
+}
+
+static void test_vol_resync_al_salir_de_cw(void) {
+    vol_setup();
+
+    radio_stub_vol  = 40;
+    radio_stub_mode = x6200_mode_usb;
+    on_cur_mode_change_vol(cfg_cur.mode, NULL);            /* arranca en USB: no escribe */
+    CHECK(radio_stub_rxvol_calls == 0);
+
+    radio_stub_mode = x6200_mode_cw;
+    on_cur_mode_change_vol(cfg_cur.mode, NULL);            /* entra a CW: no escribe */
+    CHECK(radio_stub_rxvol_calls == 0);
+
+    radio_stub_mode = x6200_mode_lsb;
+    on_cur_mode_change_vol(cfg_cur.mode, NULL);            /* SALE de CW: re-manda el nivel */
+    CHECK(radio_stub_rxvol_calls == 1);
+    CHECK(radio_stub_rxvol_last == 40);
+
+    /* Con el usuario muteado el re-sync no puede devolver el audio. */
+    mute = true;
+    radio_stub_mode = x6200_mode_cw;
+    on_cur_mode_change_vol(cfg_cur.mode, NULL);
+    radio_stub_mode = x6200_mode_usb;
+    on_cur_mode_change_vol(cfg_cur.mode, NULL);
+    CHECK(radio_stub_rxvol_calls == 2);
+    CHECK(radio_stub_rxvol_last == 0);
+}
+
 void test_radio_thread(void) {
     test_tick_false_duerme_siempre();
     test_tick_true_misma_secuencia();
@@ -197,4 +307,8 @@ void test_radio_thread(void) {
     test_idle_respeta_timeout();
     test_swrscan_poll_cada_iteracion();
     test_recupera_al_volver_el_paquete();
+
+    test_vol_composicion_de_mutes();
+    test_vol_perilla_en_el_tope_no_desincroniza();
+    test_vol_resync_al_salir_de_cw();
 }

@@ -28,8 +28,13 @@ void btaudio_headphone_volume(int pct);
 
 /* Honra BTAUDIO_MUTE: mientras hay auriculares conectados el script espera que la GUI deje el
  * audio del equipo en 0 (el loopback manda la recepcion a los auriculares y el altavoz seguiria
- * sonando). Usa el mute que ya tiene el equipo (radio_change_mute). */
+ * sonando). Deja el flag en btaudio_speaker_muted() y lo aplica con radio_vol_apply(), que
+ * compone este mute con el del usuario (#244). */
 void btaudio_speaker_mute(bool on);
+
+/* true si el altavoz esta en 0 por esta politica (auriculares A2DP) y no por el mute del
+ * usuario: radio_vol_apply() lo consulta para decidir el nivel que va al equipo. */
+bool btaudio_speaker_muted(void);
 
 /* Se llama desde el timer que ya mira el estado de BT (info.c): cuando los auriculares se
  * conectan y BTAUDIO_MUTE esta en yes, deja el audio del equipo en 0; al desconectarse lo

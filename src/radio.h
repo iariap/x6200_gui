@@ -15,6 +15,13 @@
 
 #define RADIO_SAMPLES   (512)
 
+/* Rango del nivel de audio de recepcion (registro 14 del BASE). El techo es 100 porque es el que
+ * ya usan la perilla (src/vol.c), el control remoto (`vol` 0..100 en src/remote_server.cpp) y el
+ * propio registro; el CAT de esta GUI mapea 0..55 (src/cat.cpp), asi que el rango real del equipo
+ * queda como hipotesis en el anexo A de docs/HALLAZGOS.md (#244). */
+#define VOL_MIN         (0)
+#define VOL_MAX         (100)
+
 typedef enum {
     RADIO_RX = 0,
     RADIO_TX,
@@ -55,6 +62,12 @@ bool radio_change_spmode(int16_t df);
 
 void radio_change_mute();
 bool radio_is_muted();
+
+/* Manda al BASE el nivel de audio de recepcion que corresponde al estado actual (mute del
+ * usuario, mute por auriculares A2DP y cfg.vol.val). Es el unico camino que escribe ese
+ * registro; la llama la perilla, el boton de mute, la politica de BT y el re-sync al salir de
+ * CW (issue #244). */
+void radio_vol_apply(void);
 
 void radio_set_pwr(float d);
 
