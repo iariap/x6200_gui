@@ -9,6 +9,8 @@
 #include "main_screen.h"
 
 #include "styles.h"
+#include "ui_set.h"         /* guardas de igualdad (OPT-4 #150) */
+#include "ui_tokens.h"      /* la geometria de la fila de frecuencia (issue #10, UI-05) */
 #include "spectrum.h"
 #include "waterfall.h"
 #include "util.h"
@@ -37,12 +39,15 @@
 #include "dialog_msg_voice.h"
 #include "dialog_swrscan.h"
 #include "dialog_ft8.h"
-#include "dialog_gps.h"
 #include "dialog_qth.h"
 #include "dialog_recorder.h"
 #include "dialog_callsign.h"
+#include "dialog_propagation.h"
 #include "dialog_wifi.h"
 #include "dialog_eq.h"
+#include "dfl_inline.h"
+#include "dfl_presets.h"
+#include "dfl_context.h"
 #include "backlight.h"
 #include "buttons.h"
 #include "recorder.h"
@@ -50,14 +55,39 @@
 #include "pubsub_ids.h"
 #include "cfg/mode.h"
 #include "cfg/memory.h"
+#include "adaptive_tuning.h"
+#include "rotary.h"
+#include "autotune_ui.h"
+#include "cb.h"
+#include "band_plan.h"
+#include "screen_rec.h"
+#include "dialog_wspr.h"
+#include "dialog_navtex.h"
+#include "dialog_sstv.h"
+#include "dialog_wefax.h"
+#include "dialog_cluster.h"
+#include "dialog_field.h"
+#include "dialog_js8.h"
+#include "dialog_cw_kbd.h"
+#include "dialog_cw_trainer.h"
+#include "dialog_bt.h"
+#include "dialog_status.h"
+#include "controls.h"
+#include "dialog_gps.h"
+#include "dialog_bands.h"
+#include "spot_marks.h"
+#include "cluster_column.h"
+#include "theme.h"
+#include "fonts/font_select.h"
 
 #include <unistd.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 
 static uint16_t     spectrum_height = (480 / 3);
-static uint16_t     freq_height = 36;
+static uint16_t     freq_height = UI_FREQ_ROW_H;
 static lv_obj_t     *obj;
 static Subject      *freq_lock;
 static bool         mode_lock = false;
@@ -66,11 +96,16 @@ static bool         band_lock = false;
 
 static lv_obj_t     *spectrum;
 static lv_obj_t     *freq[3];
+/* El "8 fantasma" del centro de la fila (ver freq_shadow_update): NULL mientras no
+ * haya familia segmentada. */
+static lv_obj_t     *freq_shadow;
 static lv_obj_t     *waterfall;
 static lv_obj_t     *msg;
 static lv_obj_t     *msg_tiny;
 static lv_obj_t     *meter;
 static lv_obj_t     *tx_info;
+static lv_obj_t     *tuning_multiplier_label;
+static lv_timer_t   *multiplier_hide_timer;
 
 static void freq_shift(int16_t diff);
 static void next_freq_step(bool up);
@@ -111,18 +146,113 @@ static void next_freq_step(bool up) {
     voice_say_text_fmt("Frequency step %i herz", new_step);
 }
 
-static void apps_disable() {
+/* The theme applies when the windows are built: restart so it is taken */
+static void restart_cb(lv_timer_t *t) {
+    (void) t;
+
+    exit(0);
+}
+
+/* La pagina de la barra que estaba antes de abrir una app que NO es dialogo
+ * (hoy, RTTY): cerrar la app la devuelve en vez de dejar pegada la suya. Un
+ * dialogo guarda su pagina previa en dialog_t.prev_page; RTTY no tiene
+ * descriptor, asi que la suya vive aca (menu-hygiene 5 y 6). */
+static buttons_page_t *app_prev_page = NULL;
+
+/* Nombre corto de la app abierta (issue #121): sin dialogos abiertos es "home".
+ * Lo escribe el dispatcher, que es el unico camino de apertura, y lo lee el
+ * registro de ultima respiracion. */
+static const char *current_app = "home";
+
+/* Apaga la app abierta: cierra su dialogo (si lo hay) y RTTY. */
+static void apps_stop() {
     dialog_destruct();
+
+    /* El editor DFL inline no es un dialogo: cambiar de app/pagina lo contrae
+     * limpiamente (issue #179) y devuelve la barra a su pagina normal. */
+    dfl_inline_collapse();
 
     rtty_set_state(RTTY_OFF);
     pannel_visible();
+    current_app = "home";
+}
+
+/* Etiqueta corta para el registro de ultima respiracion. Las apps se nombran
+ * igual que en el menu, sin espacios (el record es de una linea). */
+static const char *app_label(press_action_t action) {
+    switch (action) {
+        case ACTION_APP_RTTY:      return "RTTY";
+        case ACTION_APP_FT8:       return "FT8";
+        case ACTION_APP_SWRSCAN:   return "SWRScan";
+        case ACTION_APP_SETTINGS:  return "Settings";
+        case ACTION_APP_WSPR:      return "WSPR";
+        case ACTION_APP_NAVTEX:    return "NavTex";
+        case ACTION_APP_SSTV:      return "SSTV";
+        case ACTION_APP_WEFAX:     return "WeFax";
+        case ACTION_APP_CLUSTER:   return "Cluster";
+        case ACTION_APP_FIELD:     return "Field";
+        case ACTION_APP_JS8:       return "JS8";
+        case ACTION_APP_CW_KBD:    return "CW-Kbd";
+        case ACTION_APP_CWTRAINER: return "CWTrainer";
+        case ACTION_APP_BT:        return "BT";
+        case ACTION_APP_GPS:       return "GPS";
+        case ACTION_APP_STATUS:    return "Status";
+        case ACTION_APP_RECORDER:  return "Recorder";
+        case ACTION_APP_WIFI:      return "WiFi";
+        case ACTION_APP_EQ:        return "EQ";
+        case ACTION_APP_BANDS:     return "Bands";
+        case ACTION_APP_QTH:       return "QTH";
+        case ACTION_APP_CALLSIGN:  return "Callsign";
+        case ACTION_APP_PROPAGATION: return "Propagation";
+        case ACTION_APP_DFL_EDITOR:  return "DFLEditor";
+        default:                   return "home";
+    }
+}
+
+/* Cierra la app abierta porque el usuario pasa a una pagina de la barra de casa
+ * (teclas GEN/APP/KEY/DFN/DFL): se suelta la pagina previa de la app, que ya no
+ * aplica, porque lo que sigue carga la del grupo pedido. */
+static void apps_disable() {
+    apps_stop();
+
+    app_prev_page = NULL;
+}
+
+/* Cierra la app abierta y devuelve la barra a la pagina previa a su apertura.
+ * Es el camino del "off" del control remoto (main_screen_close_app) y el de
+ * abrir una app, que cierra la anterior -y su barra- antes de que la nueva tome
+ * la pagina: asi el dialogo que se abra encima guarda la de casa y no la de la
+ * app que se cierra (menu-hygiene 5 y 6). */
+static void apps_close() {
+    buttons_page_t *prev = app_prev_page;
+
+    apps_stop();
+
+    app_prev_page = NULL;
+    if (prev) {
+        buttons_load_page(prev);
+    }
 }
 
 void main_screen_start_app(press_action_t app_action) {
-    apps_disable();
+    apps_close();
+
+    current_app = app_label(app_action);
+
+    /* Abrir una app corta el asistente de sintonia fina (issue #100) y devuelve el
+     * dial al punto de arranque: el asistente corre sobre la pantalla principal y no
+     * debe seguir moviendo la frecuencia por detras de una ventana. Cubre tambien a
+     * RTTY, que no es un dialogo (no pasa por dialog_construct()). */
+    autotune_ui_cancel();
 
     switch (app_action) {
         case ACTION_APP_RTTY:
+            /* La barra antes de RTTY: cerrarla la devuelve. Si la barra ya es la
+             * de RTTY (se reabre teniendo RTTY abierto) se conserva la guardada
+             * en la primera apertura. */
+            if (buttons_get_cur_page() != &buttons_page_rtty) {
+                app_prev_page = buttons_get_cur_page();
+            }
             buttons_load_page(&buttons_page_rtty);
             rtty_set_state(RTTY_RX);
             pannel_visible();
@@ -144,9 +274,52 @@ void main_screen_start_app(press_action_t app_action) {
             voice_say_text_fmt("FT8 window");
             break;
 
+        case ACTION_APP_WSPR:
+            dialog_construct(dialog_wspr, obj);
+            break;
+
+        case ACTION_APP_NAVTEX:
+            dialog_construct(dialog_navtex, obj);
+            break;
+
+        case ACTION_APP_SSTV:
+            dialog_construct(dialog_sstv, obj);
+            break;
+
+        case ACTION_APP_WEFAX:
+            dialog_construct(dialog_wefax, obj);
+            break;
+
+        case ACTION_APP_CLUSTER:
+            dialog_construct(dialog_cluster, obj);
+            break;
+
+        case ACTION_APP_FIELD:
+            dialog_construct(dialog_field, obj);
+            break;
+
+        case ACTION_APP_JS8:
+            dialog_construct(dialog_js8, obj);
+            break;
+
+        case ACTION_APP_CW_KBD:
+            dialog_construct(dialog_cw_kbd, obj);
+            break;
+
+        case ACTION_APP_CWTRAINER:
+            dialog_construct(dialog_cw_trainer, obj);
+            break;
+
+        case ACTION_APP_BT:
+            dialog_construct(dialog_bt, obj);
+            break;
+
         case ACTION_APP_GPS:
             dialog_construct(dialog_gps, obj);
-            voice_say_text_fmt("GPS window");
+            break;
+
+        case ACTION_APP_STATUS:
+            dialog_construct(dialog_status, obj);
             break;
 
         case ACTION_APP_RECORDER:
@@ -164,6 +337,42 @@ void main_screen_start_app(press_action_t app_action) {
             voice_say_text_fmt("EQ window");
             break;
 
+        case ACTION_APP_BANDS:
+            /* La app Bands entra por aca, como el resto: el boton del menu de apps
+             * (buttons.cpp, make_app_btn) y el long press de Ajustes llegan los dos
+             * a main_screen_start_app(), despues de apps_disable(). Antes esta
+             * accion se despachaba solo en main_screen_action() construyendo el
+             * dialogo sobre lo que estuviera abierto: el boton del menu (que llama
+             * a esta funcion) no hacia nada y por el long press la ventana anterior
+             * quedaba abierta y huerfana. */
+            dialog_construct(dialog_bands, obj);
+            break;
+
+        case ACTION_APP_QTH:
+            dialog_construct(dialog_qth, obj);
+            voice_say_text_fmt("QTH window");
+            break;
+
+        case ACTION_APP_CALLSIGN:
+            dialog_construct(dialog_callsign, obj);
+            voice_say_text_fmt("Callsign window");
+            break;
+
+        case ACTION_APP_PROPAGATION:
+            dialog_construct(dialog_propagation, obj);
+            voice_say_text_fmt("Propagation window");
+            break;
+
+        /* Editor DFL inline (issue #179). No es una app del menu de apps ni un
+         * dialogo: se abre como panel inline sobre el waterfall, desde la quinta
+         * celda de la pagina DFL y desde el long press fisico DFL. Se despacha
+         * aca (con `case`) para que el control remoto (banco/webserver) tambien
+         * lo pueda abrir; `apps_close()` ya contrajo cualquier DFL previo. */
+        case ACTION_APP_DFL_EDITOR:
+            dfl_inline_expand();
+            voice_say_text_fmt("DFL editor");
+            break;
+
         default:
             break;
     }
@@ -177,6 +386,10 @@ void main_screen_action(press_action_t action) {
 
         case ACTION_SCREENSHOT:
             screenshot_take();
+            break;
+
+        case ACTION_SCREEN_REC:
+            screen_rec_toggle();
             break;
 
         case ACTION_RECORDER:
@@ -195,6 +408,29 @@ void main_screen_action(press_action_t action) {
 
         case ACTION_VOICE_MODE:
             voice_change_mode();
+            break;
+
+        /* Las funciones ya existian; faltaba poder asignarlas a un boton (como en el X6100) */
+        case ACTION_ATT_TOGGLE:
+            controls_toggle_att(NULL);
+            msg_update_text_fmt("#%06X ATT: %s", theme_hex(TC_text),
+                                subject_get_int(cfg_cur.att) ? "On" : "Off");
+            break;
+
+        case ACTION_PRE_TOGGLE:
+            controls_toggle_pre(NULL);
+            msg_update_text_fmt("#%06X PRE: %s", theme_hex(TC_text),
+                                subject_get_int(cfg_cur.pre) ? "On" : "Off");
+            break;
+
+        case ACTION_ATU_TOGGLE:
+            toggle_atu_enabled();
+            msg_update_text_fmt("#%06X ATU: %s", theme_hex(TC_text),
+                                subject_get_int(cfg.atu_enabled.val) ? "On" : "Off");
+            break;
+
+        case ACTION_ATU_TUNE:
+            radio_start_atu();
             break;
 
         case ACTION_BAT_INFO:
@@ -216,6 +452,39 @@ void main_screen_action(press_action_t action) {
             msg_update_text_fmt("#FFFFFF NR: %s", b ? "On" : "Off");
             break;
 
+        case ACTION_THEME: {
+            char names[16][32];
+            int  n = theme_list(names, 16);
+            int  cur = 0;
+
+            for (int i = 0; i < n; i++) {
+                if (strcmp(names[i], params.theme_name.x) == 0) {
+                    cur = i;
+                }
+            }
+
+            if (n > 0) {
+                const char *next = names[(cur + 1) % n];
+
+                params_str_set(&params.theme_name, next);
+                params_flush();
+
+                /* Every window takes its colours when it is built, so the GUI
+                 * restarts to apply the theme, exactly as the X6100 does (the
+                 * x6200_daemon starts it again). */
+                msg_update_text_fmt("Theme: %s - restarting", next);
+
+                lv_timer_t *restart = lv_timer_create(restart_cb, 1200, NULL);
+
+                if (restart) {
+                    lv_timer_set_repeat_count(restart, 1);
+                } else {
+                    exit(0);
+                }
+            }
+            break;
+        }
+
         case ACTION_NB_TOGGLE:
             b = subject_get_int(cfg.nb.val);
             b = !b;
@@ -223,24 +492,42 @@ void main_screen_action(press_action_t action) {
             msg_update_text_fmt("#FFFFFF NB: %s", b ? "On" : "Off");
             break;
 
+        /* Asistente de sintonia fina (issue #100): arranca el barrido alrededor del
+         * dial, o lo cancela y restaura si ya estaba corriendo. RX only. */
+        case ACTION_ATUNE:
+            autotune_ui_toggle();
+            break;
+
         case ACTION_APP_RTTY:
         case ACTION_APP_FT8:
         case ACTION_APP_SWRSCAN:
-        case ACTION_APP_GPS:
         case ACTION_APP_SETTINGS:
+        case ACTION_APP_WSPR:
+        case ACTION_APP_NAVTEX:
+        case ACTION_APP_SSTV:
+        case ACTION_APP_WEFAX:
+        case ACTION_APP_CLUSTER:
+        case ACTION_APP_FIELD:
+        case ACTION_APP_JS8:
+        case ACTION_APP_CW_KBD:
+        case ACTION_APP_CWTRAINER:
+        case ACTION_APP_BT:
+        case ACTION_APP_STATUS:
         case ACTION_APP_RECORDER:
         case ACTION_APP_WIFI:
+        case ACTION_APP_BANDS:
+        case ACTION_APP_QTH:
+        case ACTION_APP_CALLSIGN:
+        case ACTION_APP_PROPAGATION:
             main_screen_start_app(action);
             break;
 
-        case ACTION_APP_QTH:
-            dialog_construct(dialog_qth, obj);
-            voice_say_text_fmt("QTH window");
-            break;
-
-        case ACTION_APP_CALLSIGN:
-            dialog_construct(dialog_callsign, obj);
-            voice_say_text_fmt("Callsign window");
+        /* Editor DFL inline (issue #179). Se abre desde la quinta celda de la
+         * pagina DFL y desde el long press fisico DFL. `main_screen_start_app()`
+         * cierra cualquier app/dialogo abierto (no deja ventanas huerfanas) y el
+         * case de arriba expande el panel inline. */
+        case ACTION_APP_DFL_EDITOR:
+            main_screen_start_app(action);
             break;
     }
 }
@@ -570,7 +857,7 @@ static void main_screen_keypad_cb(lv_event_t * e) {
                     case x6200_mode_cw:
                     case x6200_mode_cwr:
                         if (!dialog_type_is_run(dialog_msg_cw)) {
-                            apps_disable();
+                            apps_close();
                         }
 
                         pannel_hide();
@@ -583,7 +870,7 @@ static void main_screen_keypad_cb(lv_event_t * e) {
                     case x6200_mode_am:
                     case x6200_mode_nfm:
                         if (!dialog_type_is_run(dialog_msg_voice)) {
-                            apps_disable();
+                            apps_close();
                         }
 
                         pannel_hide();
@@ -611,11 +898,25 @@ static void main_screen_keypad_cb(lv_event_t * e) {
 
         case KEYPAD_DFL:
             if (keypad->state == KEYPAD_RELEASE) {
-                apps_disable();
-                buttons_load_page_group(buttons_group_dfl);
+                /* Pulsacion corta de DFL (issue #183): con el DFL ya abierto
+                 * cancela lo pendiente y vuelve a Favoritos (contraendo el
+                 * grafico si estaba en C); desde fuera abre Favoritos (o Ajustar
+                 * si el modo no tiene catalogo). NO aplica ningun preset. */
+                if (buttons_dfl_active()) {
+                    buttons_dfl_short();
+                } else {
+                    apps_disable();
+                    buttons_dfl_open();
+                }
                 voice_say_text_fmt("DFL parameters");
             } else if (keypad->state == KEYPAD_LONG) {
-                main_screen_action(params.long_dfl);
+                /* DFL largo: si la accion configurada es el editor DFL, alterna
+                 * (abre/contrae); si no, ejecuta la accion persistida. */
+                if (params.long_dfl == ACTION_APP_DFL_EDITOR) {
+                    dfl_inline_toggle();
+                } else {
+                    main_screen_action(params.long_dfl);
+                }
             }
             break;
 
@@ -652,6 +953,11 @@ static void main_screen_keypad_cb(lv_event_t * e) {
         case KEYPAD_PTT:
             switch (keypad->state) {
                 case KEYPAD_PRESS:
+                    /* Antes de activar TX (todavia en RX, mismo contexto): Auto
+                     * Tune cancela y restaura si es dueño del dial provisional
+                     * (issue #190, seccion 5.3). Nunca se difiere un restore que
+                     * pudiera correr estando en TX. */
+                    autotune_ui_cancel_before_tx();
                     radio_set_ptt(true);
 
                     switch (subject_get_int(cfg_cur.mode)) {
@@ -777,14 +1083,38 @@ static void main_screen_hkey_cb(lv_event_t * e) {
     }
 }
 
+/* Cambio de modo con el DFL abierto (issue #183): misma familia no toca nada;
+ * una familia nueva cancela E/F sin persistir ni aplicar y carga la pagina A (o
+ * B si no admite presets). Nunca aplica un preset por si solo. */
+static void on_dfl_mode_change(Subject *subj, void *user_data) {
+    (void) subj;
+    (void) user_data;
+
+    buttons_dfl_on_mode_change();
+}
+
 static void main_screen_radio_cb(lv_event_t * e) {
     lv_event_code_t code = lv_event_get_code(e);
+
+    /* Con TX ya activo Auto Tune solo puede abortar SIN sintonizar (issue #190,
+     * seccion 5.3): jamas se escribe fg_freq desde aca. El cancel previo al TX
+     * lo hace el handler de PTT, que todavia esta en RX. */
+    if (code == EVENT_RADIO_TX) {
+        autotune_ui_abort_on_tx();
+    }
 
     lv_event_send(meter, code, NULL);
     lv_event_send(tx_info, code, NULL);
     lv_event_send(spectrum, code, NULL);
 
     dialog_send(code, NULL);
+
+    /* El editor DFL inline no es un dialogo: se le avisa TX/RX por separado. */
+    dfl_inline_on_radio_event(code);
+
+    /* Con una pagina DFL abierta, TX deshabilita los presets y aplicar Mem
+     * (issue #183); la navegacion y Volver siguen. */
+    buttons_dfl_on_radio(code == EVENT_RADIO_TX);
 }
 
 static void main_screen_update_cb(lv_event_t * e) {
@@ -792,43 +1122,246 @@ static void main_screen_update_cb(lv_event_t * e) {
     spectrum_clear();
 }
 
-static uint16_t freq_accel(uint16_t diff) {
-    if (diff < 3) {
-        return 1;
-    }
+/* --- Contexto de sintonia adaptativa (issue #186, seccion 4) ----------------
+ *
+ * El motor vive en src/rotary.c (hilo de la GUI, consumidor de la cola). Aca
+ * solo se pide el reset cuando cambia el contexto, para que el PRIMER detent
+ * posterior sea x1:
+ *   - lock/unlock, paso, VFO A/B, banda, modo, perfil y umbral;
+ *   - cambio EXTERNO de frecuencia (CAT, memoria, app, scan).
+ * El cambio externo se detecta comparando con `expected_freq` (la ultima
+ * frecuencia que dejo el dial o el teclado): los observers corren antes de que
+ * LVGL lea el encoder, asi que el reset llega a tiempo. */
 
-    switch (params.freq_accel.x) {
-        case FREQ_ACCEL_NONE:
-            return 1;
+static struct {
+    bool        valid;
+    int32_t     expected_freq;
+    int32_t     step;
+    int32_t     mode;
+    int32_t     band;
+    int32_t     vfo;
+    bool        lock;
+    bool        cb;
+    uint8_t     profile;
+    uint8_t     threshold;
+} tuning_ctx;
 
-        case FREQ_ACCEL_LITE:
-            return (diff < 6) ? 5 : 10;
+static void on_tuning_freq_change(Subject *subj, void *user_data);
+static void on_tuning_context_change(Subject *subj, void *user_data);
 
-        case FREQ_ACCEL_STRONG:
-            return (diff < 6) ? 10 : 30;
-    }
-    return 1;
+void main_screen_tuning_reset(void) {
+    tuning_ctx.valid = false;
+    rotary_tuning_reset();
 }
 
+/* Cambio externo de frecuencia: si no es la que dejo el dial, el motor arranca
+ * de cero en el proximo detent. */
+static void on_tuning_freq_change(Subject *subj, void *user_data) {
+    (void) subj;
+    (void) user_data;
+
+    if (tuning_ctx.valid && subject_get_int(cfg_cur.fg_freq) != tuning_ctx.expected_freq) {
+        main_screen_tuning_reset();
+    }
+}
+
+/* Lock, paso, modo, banda o VFO: reinicio inmediato. */
+static void on_tuning_context_change(Subject *subj, void *user_data) {
+    (void) subj;
+    (void) user_data;
+
+    main_screen_tuning_reset();
+}
+
+/* Un unico paso EXACTO, sin aceleracion (teclado/HKEY, seccion 4). Misma suma
+ * segura en int64 y misma validacion que el dial. */
 static void freq_shift(int16_t diff) {
+    /* Una orden manual de dial aborta ANTES de aplicarse y sin escribir: lo que
+     * elige el operador nunca se pisa (issue #190, seccion 5.1). */
+    autotune_ui_abort_manual();
+
     if (subject_get_int(freq_lock)) {
         return;
     }
 
     int32_t freq = subject_get_int(cfg_cur.fg_freq);
-    int32_t df = diff * subject_get_int(cfg_cur.freq_step) * freq_accel(abs(diff));
-    freq = align_int(freq + df, abs(df));
-    subject_set_int(cfg_cur.fg_freq, freq);
 
-    voice_say_freq(freq);
+    /* En CB (27 MHz) el dial cuenta CANALES de 40, no Hz: 1 detent = 1 canal, sin
+     * aceleracion y sin wrap (issue #146, seccion 5.3). Fuera de canal la primera
+     * vuelta engancha el primer canal en la direccion del giro. */
+    cb_plan_t plan;
+    if (cb_plan_of_freq(freq, &plan)) {
+        int ch = cb_step_channel(plan, freq, diff);
+        subject_set_int(cfg_cur.fg_freq, cb_freq_of_channel(plan, ch));
+        voice_say_text_fmt("Channel %i", ch);
+        return;
+    }
+
+    int32_t target;
+
+    if (!adaptive_tuning_target_freq(freq, diff, subject_get_int(cfg_cur.freq_step), &target)) {
+        return;
+    }
+
+    if (!radio_check_freq(target)) {
+        return;
+    }
+
+    subject_set_int(cfg_cur.fg_freq, target);
+    tuning_ctx.expected_freq = subject_get_int(cfg_cur.fg_freq);
+
+    voice_say_freq(target);
 }
 
-static void main_screen_rotary_cb(lv_event_t * e) {
-    int32_t *diff = (int32_t *) lv_event_get_param(e);
+/* Indicador `xN` (issue #186): muestra el multiplicador ENTERO efectivo que
+ * devolvio el motor, nunca velocidad ni fracciones. Mantiene los estilos y el
+ * timeout; ocultarlo NO cambia la frecuencia (el timer solo esconde). */
+static void update_tuning_multiplier_display(uint8_t multiplier) {
+    if (!tuning_multiplier_label) return;
 
-    freq_shift(*diff);
-    dialog_rotary(*diff);
-    free(diff);
+    if (multiplier == 0) multiplier = 1;
+
+    // Update text (OPT-4 #150: guarda de igualdad; el encoder reescribe el
+    // mismo "xN" al moverse dentro del mismo multiplo)
+    char buf[16];
+
+    snprintf(buf, sizeof(buf), "x%u", (unsigned) multiplier);
+    ui_label_set_text(tuning_multiplier_label, buf);
+
+    // Update color based on range
+    lv_color_t color;
+    if (multiplier <= 1) {
+        color = lv_color_white();                    // White - normal
+    } else if (multiplier < 10) {
+        color = lv_color_hex(theme_hex(TC_warn));    // Yellow - fast
+    } else {
+        color = lv_color_hex(theme_hex(TC_err));     // Red - scan
+    }
+    ui_obj_set_text_color(tuning_multiplier_label, color);
+    lv_obj_clear_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
+
+    // Reset hide timer
+    if (multiplier_hide_timer) {
+        lv_timer_reset(multiplier_hide_timer);
+        lv_timer_resume(multiplier_hide_timer);
+    }
+}
+
+static void hide_tuning_multiplier(void) {
+    if (tuning_multiplier_label) {
+        lv_obj_add_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+static void hide_multiplier_cb(lv_timer_t *timer) {
+    if (tuning_multiplier_label) {
+        lv_obj_add_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+/* Layout equivalence between the persisted selector and the pure engine
+ * (seccion 2.1). */
+_Static_assert(FREQ_ACCEL_NONE == ADAPTIVE_ACCEL_NONE &&
+               FREQ_ACCEL_LITE == ADAPTIVE_ACCEL_LITE &&
+               FREQ_ACCEL_STRONG == ADAPTIVE_ACCEL_STRONG,
+               "freq_accel_t must match adaptive_accel_t");
+
+/* Receptor del dial (seccion 4). El payload es SINCRONICO y vive en el stack
+ * del emisor (src/rotary.c, que llama lv_event_send): no se libera aca.
+ *
+ * `weighted_detents` ya viene con el multiplicador efectivo por detent, en
+ * int64; `raw_diff` es el conteo crudo del tramo de igual signo y se usa tal
+ * cual para CB y para dialog_rotary(). Nunca se netean signos contrarios. */
+static void main_screen_rotary_enhanced_cb(lv_event_t * e) {
+    rotary_event_enhanced_t *enhanced = (rotary_event_enhanced_t *)lv_event_get_param(e);
+    int32_t freq = subject_get_int(cfg_cur.fg_freq);
+
+    /* El giro del dial (con o sin aceleracion) es una orden manual: aborta la
+     * sesion de Auto Tune ANTES de escribir el VFO y sin restaurar nada
+     * (issue #190, seccion 5.1). La aceleracion del #186 no se toca. */
+    autotune_ui_abort_manual();
+
+    cb_plan_t plan;
+    bool      cb      = cb_plan_of_freq(freq, &plan);
+    bool      lock    = subject_get_int(freq_lock);
+    int32_t   step    = subject_get_int(cfg_cur.freq_step);
+    int32_t   mode    = subject_get_int(cfg_cur.mode);
+    int32_t   band    = subject_get_int(cfg.band_id.val);
+    int32_t   vfo     = subject_get_int(cfg_cur.band->vfo.val);
+    uint8_t   profile = params.freq_accel.x;
+    uint8_t   thresh  = params.freq_accel_threshold.x;
+
+    /* Checks de contexto (por si un cambio no paso por su observer). Cualquier
+     * diferencia invalida el motor: el proximo detent arranca en x1. En el
+     * primer evento (valid == false) NO se pide otro reset: el motor ya viene
+     * reseteado por rotary_main_init()/por el observer que invalido el contexto;
+     * pedirlo aca consumiria un segundo detent en x1. */
+    if (tuning_ctx.valid &&
+        (tuning_ctx.lock != lock ||
+         tuning_ctx.step != step ||
+         tuning_ctx.mode != mode ||
+         tuning_ctx.band != band ||
+         tuning_ctx.vfo != vfo ||
+         tuning_ctx.cb != cb ||
+         tuning_ctx.profile != profile ||
+         tuning_ctx.threshold != thresh ||
+         tuning_ctx.expected_freq != freq)) {
+        main_screen_tuning_reset();
+    }
+
+    tuning_ctx.valid         = true;
+    tuning_ctx.expected_freq = freq;
+    tuning_ctx.step          = step;
+    tuning_ctx.mode          = mode;
+    tuning_ctx.band          = band;
+    tuning_ctx.vfo           = vfo;
+    tuning_ctx.lock          = lock;
+    tuning_ctx.cb            = cb;
+    tuning_ctx.profile       = profile;
+    tuning_ctx.threshold     = thresh;
+
+    /* En CB el dial cuenta canales: 1 detent = 1 canal, SIN multiplicador
+     * adaptativo (issue #146, seccion 5.3). Se ignora `weighted_detents`, se
+     * oculta el indicador y el motor ya se reinicio al entrar/salir de CB. */
+    if (cb) {
+        if (!lock) {
+            int ch = cb_step_channel(plan, freq, enhanced->raw_diff);
+
+            subject_set_int(cfg_cur.fg_freq, cb_freq_of_channel(plan, ch));
+            voice_say_text_fmt("Channel %i", ch);
+
+            tuning_ctx.expected_freq = subject_get_int(cfg_cur.fg_freq);
+        }
+
+        hide_tuning_multiplier();
+        dialog_rotary(enhanced->raw_diff);
+        return;
+    }
+
+    if (lock) {
+        /* Con el dial trabado se consumen los pulsos sin mover el VFO y se
+         * reinicia la aceleracion; el movimiento CRUDO sigue llegando al
+         * dialogo abierto, como antes. */
+        main_screen_tuning_reset();
+        hide_tuning_multiplier();
+        dialog_rotary(enhanced->raw_diff);
+        return;
+    }
+
+    /* delta_hz = weighted_detents x freq_step, TODO en int64. Sin align_int() y
+     * sin redondear al multiplicador: se conserva cualquier offset legitimo de
+     * la frecuencia inicial respecto de la grilla (14.200.003 + 10 = 14.200.013). */
+    int32_t target;
+
+    if (adaptive_tuning_target_freq(freq, enhanced->weighted_detents, step, &target) &&
+        radio_check_freq(target)) {
+        subject_set_int(cfg_cur.fg_freq, target);
+        tuning_ctx.expected_freq = subject_get_int(cfg_cur.fg_freq);
+    }
+
+    update_tuning_multiplier_display(enhanced->last_multiplier);
+
+    dialog_rotary(enhanced->raw_diff);
 }
 
 static void spectrum_key_cb(lv_event_t * e) {
@@ -857,21 +1390,36 @@ static void spectrum_key_cb(lv_event_t * e) {
 
         case KEY_VOL_LEFT_EDIT:
         case '[':
+            /* Con el editor DFL inline expandido, el encoder VOL (rotary1) edita
+             * el filtro: NO llega a vol_update(), asi que no cambia volumen ni
+             * VFO. */
+            if (key == KEY_VOL_LEFT_EDIT && dfl_inline_on_vol_key(KEY_VOL_LEFT_EDIT)) {
+                break;
+            }
             vol_update(-1, false);
             break;
 
         case KEY_VOL_RIGHT_EDIT:
         case ']':
+            if (key == KEY_VOL_RIGHT_EDIT && dfl_inline_on_vol_key(KEY_VOL_RIGHT_EDIT)) {
+                break;
+            }
             vol_update(+1, false);
             break;
 
         case KEY_VOL_LEFT_SELECT:
         case '{':
+            if (key == KEY_VOL_LEFT_SELECT && dfl_inline_on_vol_key(KEY_VOL_LEFT_SELECT)) {
+                break;
+            }
             vol_change_mode(-1);
             break;
 
         case KEY_VOL_RIGHT_SELECT:
         case '}':
+            if (key == KEY_VOL_RIGHT_SELECT && dfl_inline_on_vol_key(KEY_VOL_RIGHT_SELECT)) {
+                break;
+            }
             vol_change_mode(+1);
             break;
 
@@ -912,7 +1460,19 @@ static void spectrum_key_cb(lv_event_t * e) {
             break;
 
         case LV_KEY_ESC:
-            if (!dialog_is_run()) {
+            /* Con una pagina DFL abierta (issue #183), ESC navega el DFL: A
+             * restaura la barra anterior, B/D/F vuelven a A, C contrae a B y E
+             * vuelve a D. Sin el DFL, conserva el comportamiento previo: alterna
+             * EDIT/SELECT del encoder de volumen. */
+            if (buttons_dfl_active()) {
+                buttons_dfl_escape();
+                break;
+            }
+            if (dfl_inline_is_expanded()) {
+                dfl_inline_collapse();
+                break;
+            }
+            if (!dialog_is_run() && vol != NULL) {
                 switch (vol->mode) {
                     case ROT_VOL_EDIT_MODE:
                         vol->mode = ROT_VOL_SELECT_MODE;
@@ -1022,7 +1582,7 @@ lv_obj_t * main_screen() {
 
     obj = lv_obj_create(NULL);
 
-    lv_obj_add_event_cb(obj, main_screen_rotary_cb, EVENT_ROTARY, NULL);
+    lv_obj_add_event_cb(obj, main_screen_rotary_enhanced_cb, EVENT_ROTARY_ENHANCED, NULL);
     lv_obj_add_event_cb(obj, main_screen_keypad_cb, EVENT_KEYPAD, NULL);
     lv_obj_add_event_cb(obj, main_screen_hkey_cb, EVENT_HKEY, NULL);
     lv_obj_add_event_cb(obj, main_screen_radio_cb, EVENT_RADIO_TX, NULL);
@@ -1045,27 +1605,66 @@ lv_obj_t * main_screen() {
 
     y += spectrum_height;
 
+    /* Fila de frecuencia: un contenedor flex (LV_FLEX_ROW) del ancho del panel
+     * (UI_FREQ_SCREEN_W) cuyos tres labels se colocan por flex, en vez de la x
+     * calculada a mano por label (incremento 3). Mismo idioma que la barra de
+     * info (incremento 2): el flex gobierna SOLO el eje X. Las anchuras siguen
+     * saliendo de freq_style / freq_main_style (150/500/150) y los hijos no
+     * llevan flex_grow: flex coloca, no redimensiona, asi que la tesela
+     * 150+500+150 = 800 se mantiene sola. El Y no lo toca el flex: el
+     * contenedor se ancla en el MISMO cursor `y` del layout apilado (debajo del
+     * espectro, `y += spectrum_height`) y, con pad/borde 0, deja a los labels en
+     * el mismo cursor que tenian (el espectro y el flujo vertical no se tocan). */
+    /* El "8 fantasma" del label central, creado ANTES de freq_row para quedar
+     * debajo en el z-order (el hermano posterior se dibuja encima). Va como hijo de
+     * la pantalla y NO del flex: un cuarto hijo correria las teselas 150+500+150.
+     * La geometria la da freq_main_style (500x36, texto centrado y mismo pad_ver
+     * que el label del valor), asi que el fantasma cae digito a digito sobre la
+     * frecuencia. */
+    if (font_digit_active()) {
+        freq_shadow = lv_label_create(obj);
+        lv_obj_add_style(freq_shadow, &freq_main_style, 0);
+        lv_obj_set_style_text_opa(freq_shadow, UI_DIGIT_SHADOW_OPA, 0);
+        lv_obj_set_pos(freq_shadow, UI_FREQ_CENTER_X, y);
+    }
+
+    lv_obj_t *freq_row = lv_obj_create(obj);
+
+    lv_obj_clear_flag(freq_row, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_opa(freq_row, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_radius(freq_row, 0, 0);
+    lv_obj_set_style_border_width(freq_row, 0, 0);
+    lv_obj_set_style_pad_all(freq_row, 0, 0);
+    lv_obj_set_style_pad_column(freq_row, 0, 0);
+    lv_obj_set_size(freq_row, UI_FREQ_SCREEN_W, freq_height);
+    lv_obj_set_pos(freq_row, UI_FREQ_LEFT_X, y);
+    lv_obj_set_layout(freq_row, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(freq_row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(freq_row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+
     lv_obj_t *f;
 
-    f = lv_label_create(obj);
+    f = lv_label_create(freq_row);
     lv_obj_add_style(f, &freq_style, 0);
-    lv_obj_set_pos(f, 0, y);
     lv_label_set_recolor(f, true);
     freq[0] = f;
 
-    f = lv_label_create(obj);
+    f = lv_label_create(freq_row);
     lv_obj_add_style(f, &freq_main_style, 0);
-    lv_obj_set_pos(f, 800/2 - 500/2, y);
     lv_label_set_recolor(f, true);
     freq[1] = f;
 
-    f = lv_label_create(obj);
+    f = lv_label_create(freq_row);
     lv_obj_add_style(f, &freq_style, 0);
-    lv_obj_set_pos(f, 800 - 150, y);
     lv_label_set_recolor(f, true);
     freq[2] = f;
 
     y += freq_height;
+
+    /* Franja de spots del cluster arriba del waterfall (X6100): se reserva su alto */
+    lv_coord_t spots_y = y;
+
+    y += SPOT_MARKS_H;
 
     waterfall = waterfall_init(obj);
 
@@ -1073,6 +1672,27 @@ lv_obj_t * main_screen() {
 
     lv_obj_set_y(waterfall, y);
     waterfall_set_height(480 - y);
+
+    /* Editor DFL inline (issue #179): panel nativo dentro del rectangulo del
+     * waterfall, creado despues de la imagen para dibujarse encima. Deriva su
+     * geometria del objeto real (no hardcodea 240). */
+    dfl_inline_init(waterfall);
+
+    /* Presets de filtro del DFL (issue #183): la banda contextual de las paginas
+     * de confirmacion/asignacion y la cache de memorias/favoritos (se leen UNA
+     * vez de params.db; nunca hay SQL desde un callback de dibujo). */
+    dfl_context_init(waterfall);
+    dfl_presets_init();
+
+    spot_marks_init(obj, spots_y, spots_y + 4);
+
+    /* IARU band plan strip: at the bottom of the spectrum, lined up with the
+     * frequency row (created after the waterfall so it stays on top). */
+    band_plan_init(obj, spectrum_height - BAND_PLAN_H);
+
+    /* DX cluster spots down the right edge (Settings -> Cluster column) */
+    cluster_column_init(obj, y);
+    cluster_column_layout(y);
 
     buttons_init(obj);
     buttons_load_page(&buttons_page_vol_1);
@@ -1086,6 +1706,18 @@ lv_obj_t * main_screen() {
 
     meter = meter_init(obj);
     tx_info = tx_info_init(obj);
+    
+    // Tuning multiplier display (adaptive tuning)
+    tuning_multiplier_label = lv_label_create(obj);
+    lv_obj_set_style_text_font(tuning_multiplier_label, &sony_16, 0);
+    lv_obj_align(tuning_multiplier_label, LV_ALIGN_TOP_RIGHT, -10, 10);
+    lv_label_set_text(tuning_multiplier_label, "x1");
+    lv_obj_add_flag(tuning_multiplier_label, LV_OBJ_FLAG_HIDDEN);
+    
+    // Hide timer for multiplier display
+    multiplier_hide_timer = lv_timer_create(hide_multiplier_cb, 2000, NULL);
+    lv_timer_pause(multiplier_hide_timer);
+    
 
     cw_tune_init(obj);
 
@@ -1095,6 +1727,10 @@ lv_obj_t * main_screen() {
     subject_add_delayed_observer(cfg_cur.band->split.val, on_fg_freq_change, NULL);
     subject_add_delayed_observer(cfg_cur.fg_freq, on_fg_freq_change, NULL);
 
+    /* Cambio de modo con el DFL abierto (issue #183): cancela suboperaciones
+     * pendientes y reubica la pagina segun la familia, sin aplicar nada. */
+    subject_add_delayed_observer(cfg_cur.mode, on_dfl_mode_change, NULL);
+
     subject_add_delayed_observer(freq_lock, update_freq_boundaries, NULL);
     // update boundaries on TX with split
     subject_add_delayed_observer(cfg_cur.fg_freq, update_freq_boundaries, NULL);
@@ -1103,6 +1739,23 @@ lv_obj_t * main_screen() {
 
     subject_add_delayed_observer(cfg_cur.bg_freq, on_fg_freq_change, NULL);
     on_fg_freq_change(cfg_cur.bg_freq, NULL);
+
+    /* Resets del motor adaptativo (issue #186): el cambio EXTERNO de frecuencia
+     * y los cambios de contexto invalidan la aceleracion antes de que LVGL lea
+     * el encoder (los delayed observers corren primero en el loop, src/main.c). */
+    subject_add_delayed_observer(cfg_cur.fg_freq, on_tuning_freq_change, NULL);
+    subject_add_delayed_observer(freq_lock, on_tuning_context_change, NULL);
+    subject_add_delayed_observer(cfg_cur.freq_step, on_tuning_context_change, NULL);
+    subject_add_delayed_observer(cfg_cur.mode, on_tuning_context_change, NULL);
+    subject_add_delayed_observer(cfg.band_id.val, on_tuning_context_change, NULL);
+    subject_add_delayed_observer(cfg_cur.band->vfo.val, on_tuning_context_change, NULL);
+
+    tuning_ctx.valid = false;
+
+    /* Asistente de sintonia fina CW/CWR (issue #190): registra su observador de
+     * cambio externo de frecuencia. El asistente queda en reposo hasta que el
+     * operador pulse Auto Tune. */
+    autotune_ui_init();
 
     return obj;
 }
@@ -1117,9 +1770,73 @@ void main_screen_notify_rx()
     event_send(obj, EVENT_RADIO_RX, NULL);
 }
 
+/* El "8 fantasma": la capa de segmentos apagados del look Casio (issue #9, decision
+ * 1). La familia segmentada trae los siete segmentos de cada digito, asi que un `8`
+ * dibujado con su glifo enciende TODOS: el fantasma es el texto del valor con cada
+ * digito cambiado por `8`, dibujado a alpha bajo y por DEBAJO del label del valor
+ * (`freq_shadow` se crea antes que `freq_row`). Los separadores y el largo se
+ * conservan, y eso es lo que hace que el fantasma caiga sobre los mismos digitos.
+ *
+ * Se llama SIEMPRE junto con el texto del valor: si el valor cambia de forma (split,
+ * el dial trabado) los dos textos tienen que decir lo mismo o el fantasma queda
+ * corrido. Sin familia segmentada la etiqueta no existe y esto no hace nada. */
+static void freq_shadow_update(const char *value) {
+    if (freq_shadow == NULL) return;
+
+    /* El buffer del valor mas largo: "%i.%03i.%03i / %i.%03i.%03i" son 26 caracteres. */
+    char    ghost[48];
+    size_t  i = 0;
+
+    for (; value[i] != '\0' && i < sizeof(ghost) - 1; i++) {
+        ghost[i] = (value[i] >= '0' && value[i] <= '9') ? '8' : value[i];
+    }
+    ghost[i] = '\0';
+
+    ui_label_set_text(freq_shadow, ghost);
+}
+
+/* Fila de frecuencia en CB (issue #169): el canal manda. `true` si `f` cae en un
+ * grid CB; `*plan` queda con el grid y `*ch` con el canal 1..40, o CB_CHANNEL_NONE
+ * si es off-channel (hueco o frecuencia intermedia). */
+static bool cb_row_state(int32_t f, cb_plan_t *plan, int *ch) {
+    if (!cb_plan_of_freq(f, plan)) return false;
+    *ch = cb_channel_of_freq(*plan, f);   /* CB_CHANNEL_NONE = off-channel */
+    return true;
+}
+
+/* Fuente normal (no la segmentada del tema) y fantasma oculto mientras la fila
+ * muestra el canal: la familia `font_digits` es solo digitos y no tiene `CH`,
+ * `CB` ni `--`. Se aplica SOLO en la transicion CB <-> no-CB (`cb_row_on`), no en
+ * cada cambio de frecuencia. Al salir, quitar la fuente local devuelve la del
+ * estilo (`font_digit(...)`) y el fantasma se vuelve a llenar en el camino normal. */
+static bool cb_row_on = false;
+
+static void cb_row_fonts(bool on) {
+    if (on == cb_row_on) return;
+    cb_row_on = on;
+    for (int i = 0; i < 3; i++) {
+        if (on) {
+            lv_obj_set_style_text_font(freq[i], i == 1 ? &sony_38 : &sony_30, 0);
+        } else {
+            lv_obj_remove_local_style_prop(freq[i], LV_STYLE_TEXT_FONT, 0);
+        }
+    }
+    if (freq_shadow != NULL) {
+        if (on) lv_obj_add_flag(freq_shadow, LV_OBJ_FLAG_HIDDEN);
+        else    lv_obj_clear_flag(freq_shadow, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
 static void on_fg_freq_change(Subject *subj, void *user_data) {
     int32_t    f;
-    uint32_t    color = subject_get_int(freq_lock) ? 0xBBBBBB : 0xFFFFFF;
+    char       value[48];
+    /* El color viaja en el markup de recolor del label (`#RRGGBB `), y ese markup PISA el
+     * text_color del estilo: un blanco cableado aca deja la fila de frecuencia blanco sobre
+     * blanco en el tema claro Outdoor (UI-010, region `frecuencia` con content 0.0000). Los
+     * roles del tema son el color correcto: `text` normalmente y `text_soft` ("inactive knob /
+     * lock", su comentario en theme.h) con el dial trabado, que en IU1WXY vale exactamente el
+     * 0xBBBBBB de antes. `%06X` porque LVGL solo acepta el parametro si mide 6 digitos. */
+    uint32_t    color = theme_hex(subject_get_int(freq_lock) ? TC_text_soft : TC_text);
 
     bool split = subject_get_int(cfg_cur.band->split.val);
     Subject *freq_fg_subj = cfg_cur.fg_freq;
@@ -1131,6 +1848,35 @@ static void on_fg_freq_change(Subject *subj, void *user_data) {
     }
 
     f = subject_get_int(freq_fg_subj);
+
+    /* Fila en CB (issue #169): 27.185 · CH 19 · CB C. El canal va en grande con
+     * la familia NORMAL (cb_row_fonts), asi que `CH`/`CB`/`--` se ven tambien en
+     * los temas con font_digits; el fantasma se oculta y no se toca msg_tiny (el
+     * overlay taparia la fila). Al salir vuelve el camino de abajo. */
+    cb_plan_t plan;
+    int       ch = CB_CHANNEL_NONE;
+    bool      cb = cb_row_state(f, &plan, &ch);
+
+    cb_row_fonts(cb);
+
+    if (cb) {
+        char     text[32], marked[48];
+        uint16_t mhz_cb, khz_cb, hz_cb;
+
+        split_freq(f, &mhz_cb, &khz_cb, &hz_cb);
+
+        snprintf(marked, sizeof(marked), "#%06X %i.%03i", color, mhz_cb, khz_cb);
+        ui_label_set_text(freq[0], marked);
+
+        if (ch != CB_CHANNEL_NONE) snprintf(text, sizeof(text), "CH %d", ch);
+        else                       snprintf(text, sizeof(text), "CH --");
+        snprintf(marked, sizeof(marked), "#%06X %s", color, text);
+        ui_label_set_text(freq[1], marked);
+
+        snprintf(marked, sizeof(marked), "#%06X %s", color, cb_plan_name(plan));
+        ui_label_set_text(freq[2], marked);
+        return;   /* nada de msg_tiny ni de freq_shadow_update */
+    }
 
     uint16_t    mhz, khz, hz;
 
@@ -1150,10 +1896,19 @@ static void on_fg_freq_change(Subject *subj, void *user_data) {
 
         split_freq(f2, &mhz2, &khz2, &hz2);
 
-        lv_label_set_text_fmt(freq[1], "#%03X %i.%03i.%03i / %i.%03i.%03i", color, mhz, khz, hz, mhz2, khz2, hz2);
+        snprintf(value, sizeof(value), "%i.%03i.%03i / %i.%03i.%03i", mhz, khz, hz, mhz2, khz2, hz2);
     } else {
-        lv_label_set_text_fmt(freq[1], "#%03X %i.%03i.%03i", color, mhz, khz, hz);
+        snprintf(value, sizeof(value), "%i.%03i.%03i", mhz, khz, hz);
     }
+
+    /* El color va en el markup del valor, que pisa el text_color del estilo; el
+     * fantasma va sin markup, para que la unica diferencia entre los dos sea la
+     * alpha (y en el tema claro Outdoor el fantasma no quede invisible). */
+    char marked[64];
+
+    snprintf(marked, sizeof(marked), "#%06X %s", color, value);
+    ui_label_set_text(freq[1], marked);
+    freq_shadow_update(value);
 }
 
 static void update_freq_boundaries(Subject *subj, void *user_data) {
@@ -1167,11 +1922,91 @@ static void update_freq_boundaries(Subject *subj, void *user_data) {
 
     uint16_t    mhz, khz, hz;
     uint32_t    half_width = subject_get_int(cfg_cur.fft_width) / 2;
-    uint32_t    color = subject_get_int(freq_lock) ? 0xBBBBBB : 0xFFFFFF;
+    /* Los extremos de la fila usan los mismos roles del tema que la frecuencia central (UI-010) */
+    uint32_t    color = theme_hex(subject_get_int(freq_lock) ? TC_text_soft : TC_text);
+
+    char boundary[32];
+
+    /* La franja del plan de banda sigue el span SIEMPRE, tambien en CB (issue #169):
+     * el grid se pinta igual que los segmentos de aficionado. */
+    band_plan_update(f, (int32_t) half_width);
+
+    /* En CB los tres labels los escribe on_fg_freq_change() (27.185 / CH 19 / CB C),
+     * que no depende del span: aca no se tocan los extremos. */
+    cb_plan_t plan;
+
+    if (cb_plan_of_freq(f, &plan)) {
+        return;
+    }
 
     split_freq(f - half_width, &mhz, &khz, &hz);
-    lv_label_set_text_fmt(freq[0], "#%03X %i.%03i", color, mhz, khz);
+    snprintf(boundary, sizeof(boundary), "#%06X %i.%03i", color, mhz, khz);
+    ui_label_set_text(freq[0], boundary);
 
     split_freq(f + half_width, &mhz, &khz, &hz);
-    lv_label_set_text_fmt(freq[2], "#%03X %i.%03i", color, mhz, khz);
+    snprintf(boundary, sizeof(boundary), "#%06X %i.%03i", color, mhz, khz);
+    ui_label_set_text(freq[2], boundary);
+}
+
+/* Accepted for the ported app dialogs: without the channels dialog there is no
+ * overlay to draw, so the name is shown as a message. */
+void channel_overlay_show(const char *name) {
+    if (name && *name) {
+        msg_schedule_text_fmt("%s", name);
+    }
+}
+
+/* The ported app dialogs call this to close themselves */
+const char *main_screen_current_app(void) {
+    return current_app;
+}
+
+void main_screen_close_app(void) {
+    /* Cierra la app abierta de verdad: su dialogo (si lo hay) y RTTY, que no es
+     * un dialogo, y devuelve la barra a la pagina previa a la apertura. Es el
+     * camino de {"cmd":"app","text":"off"} del control remoto: con la sola
+     * dialog_destruct() RTTY seguia encendida y "app" no quedaba en "" (#50,
+     * menu-hygiene 5). */
+    apps_close();
+}
+
+bool main_screen_freq_locked(void) {
+    return subject_get_int(freq_lock);
+}
+
+bool main_screen_mode_locked(void) {
+    return mode_lock;
+}
+
+bool main_screen_band_locked(void) {
+    return false;
+}
+
+void main_screen_agc_next(void) {
+    x6200_agc_t agc = (x6200_agc_t) subject_get_int(cfg_cur.agc);
+
+    switch (agc) {
+        case x6200_agc_off:  agc = x6200_agc_slow; break;
+        case x6200_agc_slow: agc = x6200_agc_fast; break;
+        case x6200_agc_fast: agc = x6200_agc_auto; break;
+        default:             agc = x6200_agc_off;  break;
+    }
+
+    subject_set_int(cfg_cur.agc, agc);
+    msg_tiny_set_text_fmt("AGC: %s", cfg_mode_agc_label(agc));
+}
+
+/* The X6100 has an encoder state machine (edit/select per control); this GUI's
+ * vol/mfk modules keep the mode and apply the turning directly, so these map to
+ * the closest behaviour available. */
+void main_screen_mfk(int dir) {
+    if (dir) {
+        mfk_change_mode(dir);
+    } else {
+        mfk_update(0, false);
+    }
+}
+
+void main_screen_vol_press(void) {
+    vol_change_mode(1);
 }

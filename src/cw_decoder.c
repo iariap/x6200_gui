@@ -9,11 +9,16 @@
 /* Based on idea Michael A. Maynard, a.k.a. "K4ICY" */
 
 #include <math.h>
+#include <stdint.h>
 #include "lvgl/lvgl.h"
 #include "cw_decoder.h"
+#include "remote_server.h"
 #include "pannel.h"
 
 #define HIST_SIZE       10
+
+static void (*sink_text)(const char *);
+static void (*sink_wpm)(int);
 
 static uint32_t debounce_factor = 15;
 static uint32_t thr_mean = 139;
@@ -51,6 +56,14 @@ static float    compare_factor = 2.0;
 static bool     character_step = false;
 static bool     word_step = false;
 static char     elements[128];
+
+/* The longest Morse in cw_characters is 9 elements ("...---...", <SOS>), so a run
+ * anywhere near this bound is not a character: it is a stuck signal or corrupted
+ * audio. The append is sheared at the buffer bound (decode what came in and start
+ * over) so `elements` cannot overrun. Without this, a run of key events with no
+ * character boundary grows `elements` past 128 and glibc fortify aborts the
+ * process inside strcat (issue #51; the CW Trainer keeps the decoder fed). */
+_Static_assert(sizeof(elements) >= 16, "elements must hold the longest Morse plus the NUL");
 
 cw_characters_t cw_characters[] = {
     { .morse = ".-",        .character = "A" },
@@ -128,7 +141,12 @@ void cw_decoder_init() {
 }
 
 static void cw_decoder_ans(const char *ans) {
-    pannel_add_text(ans);
+    if (sink_text) {
+        sink_text(ans);
+    } else {
+        pannel_add_text(ans);
+        remote_text("cw_text", ans, strlen(ans));
+    }
 }
 
 static void cw_decoder_wpm(uint16_t wpm) {
@@ -147,6 +165,21 @@ static void cw_decoder_dict() {
     }
 
     cw_decoder_ans("<?>");
+}
+
+/* Append one element (dot/dash) to the character being collected, bounded to the
+ * buffer: a full buffer is treated as a character boundary (see the static
+ * assert on `elements`). */
+static void cw_decoder_element(char e) {
+    size_t n = strlen(elements);
+
+    if (n + 1 >= sizeof(elements)) {
+        cw_decoder_dict();
+        n = 0;
+    }
+
+    elements[n]     = e;
+    elements[n + 1] = 0;
 }
 
 static void cw_decoder_calc_wpm() {
@@ -225,7 +258,7 @@ static void cw_decoder_inner_space() {
 
         if (character_step) {
             cw_decoder_dict();
-            strcpy(elements, "");
+            elements[0] = 0;
 
             character_step = false;
         }
@@ -287,11 +320,7 @@ void cw_decoder_signal(bool on, float ms) {
 
             /* Classify and add most likely Dots or Dashes to a string for eventual character decoding */
 
-            if (key_line_event_new <= thr_mean) {
-                strcat(elements, ".");
-            } else {
-                strcat(elements, "-");
-            }
+            cw_decoder_element((uint32_t) key_line_event_new <= thr_mean ? '.' : '-');
 
             character_step = true;
             word_step = true;
@@ -302,3 +331,16 @@ void cw_decoder_signal(bool on, float ms) {
     }
 }
 
+int cw_decoder_get_wpm(void) {
+    /* `wpm` es uint32_t y sale de 6360/suma: sin un par punto/raya todavia vale
+     * 0. Se satura a int para que el llamador no vea un negativo por cast. */
+    if (wpm > INT32_MAX) {
+        return INT32_MAX;
+    }
+    return (int) wpm;
+}
+
+void cw_decoder_set_sink(void (*text)(const char *), void (*wpm)(int)) {
+    sink_text = text;
+    sink_wpm  = wpm;
+}

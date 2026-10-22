@@ -1,0 +1,27 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output: ok
+  chroot /home/pablo/desa/x6200/.vfix3: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  audio: pulseaudio en el chroot: ok
+  audio: parec en el chroot: ok
+  qemu-arm-static ejecutando ARM: ok
+  aviso: el hash de los fuentes cambio y un fuente es mas nuevo que el binario, pero RECONSTRUIR=no: se prueba el binario que ya esta
+== audio del banco (modo CAP_AUDIO) ==
+  sink: alsa_output.platform-sound.stereo-fallback   ventana: 8s   voz: prueba de audio del banco   parte B: no
+  0	alsa_output.platform-sound.stereo-fallback	module-null-sink.c	s16le 2ch 44100Hz	IDLE
+  	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+  BANCO-AUDIO: captura lista
+  version: 02c1311 Decisiones 5/6/7: app-off cierra RTTY de verdad, cie
+  binario: md5 67b41837e0f4   qemu-cpu: cortex-a7
+  wav: /home/pablo/desa/x6200/.vfix3/tmp/banco-audio/capture.wav -> docs/evidencia/2026-10-15-banco-audio/captura-voz.wav (205778 muestras por canal, 2 canal(es), 44100 Hz, 4.67 s, 823112 bytes)
+  canal 0: RMS -25.23 dBFS   pico -3.70 dBFS   distinto de 0: 67974 de 205778 (33.0%)
+  canal 1: RMS -25.23 dBFS   pico -3.70 dBFS   distinto de 0: 67974 de 205778 (33.0%)
+  captura util (docs/evidencia/2026-10-15-banco-audio/captura-voz.wav)
+  mixer del GUI: [Warn]	(0.000, +0)	 audio_set_rec_vol: No se pudo preparar el mixer de 'default' 	(in audio.c line #444)
+  mixer del GUI: [Warn]	(0.000, +0)	 audio_set_play_vol: No se pudo preparar el mixer de 'default' 	(in audio.c line #403)
+  config y logs en /home/pablo/desa/x6200/.vfix3/tmp/banco-audio/ (arranca-audio.sh, pulse-banco.pa, pulse.log, gui.log)

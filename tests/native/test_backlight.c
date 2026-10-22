@@ -1,0 +1,149 @@
+/*
+ * Native test for the increment 4 enforcement wire in src/backlight.c.
+ *
+ * The module is compiled here for real (see tests/native/run_native_tests.sh:
+ * src/backlight.c is staged next to the stub headers under
+ * tests/native/stubs_backlight/, the clock-test pattern) because no other gate
+ * touches it: the UI harness mocks backlight (tools/ui_harness/mocks/
+ * mock_ui_deps.c) and the host has no aether SDK.
+ *
+ * The observation point is the policy query of the increment 4:
+ * visual_policy_brightness_rewrite() (tests/native/backlight_stubs.c records
+ * it). The test drives the two rewrites that used to bypass the cap:
+ *
+ *   - backlight_tick() (input) has to hand it params.brightness_normal;
+ *   - the idle timer has to hand it params.brightness_idle;
+ *   - the OFF/ON switch, on the way back on, has to hand it
+ *     params.brightness_normal (increment 5: the cap survives the toggle).
+ *
+ * Reverting either line to a direct backlight_set_brightness() call leaves the
+ * recorder empty and this test red: that is the anti-false-green of the
+ * enforcement (the clamp itself, and that both sides yield the same number, is
+ * covered in tests/native/test_visual_policy.c). The params setting is only
+ * read: it must come out of the rewrites untouched.
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+#include "test_framework.h"
+
+#include "backlight.h"
+#include "params/params.h"
+
+/* Registro del stub de la politica (tests/native/backlight_stubs.c). */
+void    test_rewrite_reset(void);
+int     test_rewrite_calls(void);
+int16_t test_rewrite_last(void);
+bool    test_rewrite_last_valid(void);
+
+/* Registro de lv_disp_enable_invalidation() (tests/native/backlight_stubs.c):
+ * la ruta de pantalla apagada. */
+void test_invalidation_reset(void);
+int  test_invalidation_calls(void);
+bool test_invalidation_last(void);
+
+/* OPT-4 #150: registro de lv_obj_invalidate(lv_scr_act()) en el OFF->ON. */
+void test_screen_invalidations_reset(void);
+int  test_screen_invalidations(void);
+
+/* Dispara el callback de idle que backlight_tick() registro. */
+void test_backlight_run_idle_timer(void);
+
+void test_backlight(void) {
+    /* Los settings del usuario como en la radio (params.c: normal 9, idle 1). */
+    params.brightness_normal = 9;
+    params.brightness_idle = 1;
+    params.brightness_timeout = 10;
+    params.brightness_buttons = BUTTONS_DARK;
+
+    /* --- Tick por input: no hay timer, el modulo reescribe el nivel normal. El
+     * nivel sale de params y va por la politica (el cap lo aplica ella). --- */
+    test_rewrite_reset();
+    backlight_tick();
+    CHECK(test_rewrite_calls() == 1);
+    CHECK(test_rewrite_last_valid());
+    CHECK(test_rewrite_last() == params.brightness_normal);
+
+    /* El setting del usuario no se escribe: sigue en params. */
+    CHECK(params.brightness_normal == 9);
+    CHECK(params.brightness_idle == 1);
+
+    /* --- Mientras el timer vive, un tick solo lo resetea: no hay rewrite (el
+     * nivel normal ya esta puesto y el cap no se re-aplica de mas). --- */
+    backlight_tick();
+    CHECK(test_rewrite_calls() == 1);
+
+    /* --- Timeout idle: el callback registrado baja al nivel de reposo y el
+     * rewrite tambien pasa por la politica. --- */
+    test_rewrite_reset();
+    test_backlight_run_idle_timer();
+    CHECK(test_rewrite_calls() == 1);
+    CHECK(test_rewrite_last_valid());
+    CHECK(test_rewrite_last() == params.brightness_idle);
+
+    /* --- Tras el idle, el proximo input vuelve a reescribir el normal: el otro
+     * camino, con el mismo cap vigente. --- */
+    test_rewrite_reset();
+    backlight_tick();
+    CHECK(test_rewrite_calls() == 1);
+    CHECK(test_rewrite_last() == params.brightness_normal);
+
+    /* Ningun rewrite toco los settings. */
+    CHECK(params.brightness_normal == 9);
+    CHECK(params.brightness_idle == 1);
+
+    /* --- Switch OFF/ON (UI-08 incr. 5): al volver a encender, el nivel pasa por
+     * la politica (asi el cap del perfil vigente sobrevive al toggle) en vez de
+     * un backlight_set_brightness() directo. El apagado no emite luz, asi que no
+     * pasa por el cap. Empieza encendido (arranque del modulo). --- */
+    test_rewrite_reset();
+    test_invalidation_reset();
+    test_screen_invalidations_reset();
+    backlight_switch();                 /* encendido -> apagado: sin rewrite */
+    CHECK(test_rewrite_calls() == 0);
+    /* Apagar no repinta: la invalidacion del screen solo va en el ON. */
+    CHECK(test_screen_invalidations() == 0);
+
+    /* El apagado corta la invalidacion del display (issue #13, UI-07
+     * remanente): con el panel oscuro no queda trabajo de render. El banco lo
+     * mide con `--bench-natural --display-off`: 0 px invalidados y 0 flush
+     * contra los 6745720 px con la pantalla encendida. Si el apagado volviera a
+     * dejar la invalidacion prendida, esto queda rojo. */
+    CHECK(test_invalidation_calls() == 1);
+    CHECK(test_invalidation_last() == false);
+
+    /* El estado de pantalla que consume la cascada (issue #13: el corte del
+     * redibujo offscreen, src/waterfall.c usa backlight_is_on()) tiene que seguir
+     * el MISMO switch que la invalidacion: si el apagado dejara backlight_is_on()
+     * en true, la cascada seguiria computando la paleta de ~196000 px con el panel
+     * oscuro. */
+    CHECK(!backlight_is_on());
+
+    test_rewrite_reset();
+    test_invalidation_reset();
+    test_screen_invalidations_reset();
+    backlight_switch();                 /* apagado -> encendido: un rewrite */
+    CHECK(test_rewrite_calls() == 1);
+    CHECK(test_rewrite_last_valid());
+    CHECK(test_rewrite_last() == params.brightness_normal);
+
+    /* Y al volver la pantalla se vuelve a invalidar. */
+    CHECK(test_invalidation_calls() == 1);
+    CHECK(test_invalidation_last() == true);
+
+    /* OPT-4 #150: la primera invalidacion tras despertar cubre toda la pantalla.
+     * Mientras el panel estuvo apagado, _lv_inv_area() (lv_refr.c) descarto las
+     * invalidaciones, asi que los pixeles que cambiaron (reloj, banda, updaters)
+     * no quedaron pendientes; rehabilitar la invalidacion no repinta sola, hay
+     * que invalidar el screen. Sin esa linea, esto queda en 0 y el panel
+     * mostraria el frame viejo. */
+    CHECK(test_screen_invalidations() == 1);
+
+    /* Y el estado que gatea el redibujo offscreen vuelve a encendido junto con la
+     * invalidacion: la cascada redibuja de nuevo en la proxima fila. */
+    CHECK(backlight_is_on());
+
+    /* El switch tampoco toca los settings del usuario. */
+    CHECK(params.brightness_normal == 9);
+    CHECK(params.brightness_idle == 1);
+}

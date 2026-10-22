@@ -19,6 +19,13 @@
 static vol_mode_t   vol_mode = VOL_VOL;
 
 void vol_update(int16_t diff, bool voice) {
+    /* Sin encoder de volumen (rotary_init() devolvió NULL porque el dispositivo no está
+     * o el equipo lo numera distinto) no hay nada que mostrar ni que cambiar: antes esta
+     * función lo desreferenciaba y la GUI se moría acá, justo después de params_init. */
+    if (vol == NULL) {
+        return;
+    }
+
     int32_t     x;
     float       f;
     char        *s;
@@ -235,5 +242,18 @@ void vol_change_mode(int16_t dir) {
 
 void vol_set_mode(vol_mode_t mode) {
     vol_mode = mode;
-    vol->mode = ROT_VOL_EDIT_MODE;
+
+    /* Sin encoder (rotary_init devolvió NULL) no hay nada que marcar. */
+    if (vol != NULL) {
+        vol->mode = ROT_VOL_EDIT_MODE;
+    }
+}
+
+vol_mode_t vol_get_mode(void) {
+    return vol_mode;
+}
+
+/* See vol.h: choosing the control is what this GUI calls changing the mode */
+void vol_change_ctrl(int16_t dir) {
+    vol_change_mode(dir);
 }

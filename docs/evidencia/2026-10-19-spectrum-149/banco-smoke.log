@@ -1,0 +1,19 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output: ok
+  chroot /home/pablo/desa/x6200/.vfix-opt3149: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  buildroot: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  limpiando la GUI (dirclean): el rebuild reusa una copia propia del repo
+  reconstruyendo la GUI: RECONSTRUIR=si
+OK: /home/pablo/desa/x6200/.vfix-opt3149/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13798740 B, 3/3 marcas)
+  captura: /tmp/opencode/banco-home-opt3149.png (331 colores distintos)
+  version: 75a48b89 Spectrum: snapshot por frame y sincronizacion del p
+  fuente: md5 13b4c4321a5b (src/ + lvgl/src)
+  binario: md5 b5ac3b029818   qemu-cpu: cortex-a7
+  captura util (25217 bytes)

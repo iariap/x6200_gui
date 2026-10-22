@@ -1,3 +1,5 @@
+extern void cfg_sm_init_live(void);       /* settings_manager.cpp */
+
 #include "cfg.private.h"
 
 #include "atu.private.h"
@@ -61,15 +63,25 @@ int cfg_init(sqlite3 *db) {
         LV_LOG_ERROR("Error during loading params");
         // return rc;
     }
+    boot_mark("cfg:items");
     // rc = init_band_cfg(db);
     // if (rc != 0) {
     //     LV_LOG_ERROR("Error during loading band params");
     //     return rc;
     // }
     cfg_band_params_init(db);
+    boot_mark("cfg:band");
     cfg_cur.band = &cfg_band;
 
     cfg_mode_params_init(db);
+    boot_mark("cfg:mode");
+
+    /* Ya existen los items de cfg (init_params_cfg) y los subjects cfg_cur.* (los dos
+     * cfg_*_params_init de más arriba): rehacer el mapeo de cfg_sm, que como global corrió
+     * su constructor antes que todo esto y quedó apuntando a NULL (ver init_persisted e
+     * init_live en settings_manager.cpp; el puente está porque este archivo es C). */
+    cfg_sm_init_live();
+    boot_mark("cfg:sm");
     // rc = init_mode_cfg(db);
     // if (rc != 0) {
     //     LV_LOG_ERROR("Error during loading mode params");
@@ -77,14 +89,16 @@ int cfg_init(sqlite3 *db) {
     // }
 
     cfg_atu_init(db);
+    boot_mark("cfg:atu");
     cfg_cur.atu = &atu_network;
 
     cfg_transverter_init(db);
+    boot_mark("cfg:transv");
     cfg_memory_init(db);
+    boot_mark("cfg:mem");
     cfg_digital_modes_init(db);
-
+    boot_mark("cfg:digi");
     bind_observers();
-
     pthread_t thread;
     pthread_create(&thread, NULL, params_save_thread, NULL);
     pthread_detach(thread);
@@ -173,6 +187,14 @@ static void on_sql_level_change(Subject *subj, void *user_data) {
 void init_items(cfg_item_t *cfg_arr, uint32_t count, int (*load)(struct cfg_item_t *item),
                 int (*save)(struct cfg_item_t *item)) {
     for (size_t i = 0; i < count; i++) {
+        /* La struct config se recorre como arreglo de cfg_item_t: si un campo quedó sin
+         * fill_cfg_item(), sus punteros son NULL y tocarlos mata el proceso (pasaba con
+         * cwt_level y cwt_group, olvidados al agregarlos). Se saltea. */
+        if (cfg_arr[i].db_name == NULL || cfg_arr[i].val == NULL) {
+            LV_LOG_WARN("Item de config sin inicializar (indice %zu): se saltea", i);
+            continue;
+        }
+
         cfg_arr[i].load       = load;
         cfg_arr[i].save       = save;
         cfg_arr[i].dirty      = malloc(sizeof(*cfg_arr[i].dirty));
@@ -187,6 +209,10 @@ void init_items(cfg_item_t *cfg_arr, uint32_t count, int (*load)(struct cfg_item
 int load_items_from_db(cfg_item_t *cfg_arr, uint32_t count) {
     int rc;
     for (size_t i = 0; i < count; i++) {
+        if (cfg_arr[i].db_name == NULL || cfg_arr[i].val == NULL || cfg_arr[i].dirty == NULL) {
+            continue;
+        }
+
         cfg_arr[i].dirty->val = ITEM_STATE_LOADING;
         rc = cfg_arr[i].load(&cfg_arr[i]);
         if (rc != 0) {
@@ -282,6 +308,20 @@ static int init_params_cfg(sqlite3 *db) {
 
     fill_cfg_item(&cfg.fft_zoom_cw, subject_create_int(0), "fft_zoom_cw");
 
+    /* WSPR: 1500 Hz is the centre of the 200 Hz WSPR window */
+    fill_cfg_item(&cfg.tx_filter_low, subject_create_int(300), "tx_filter_low");
+    fill_cfg_item(&cfg.tx_filter_high, subject_create_int(2700), "tx_filter_high");
+    fill_cfg_item(&cfg.field_boot, subject_create_int(0), "field_boot");
+    fill_cfg_item(&cfg.voice_msg_gain, subject_create_int(100), "voice_msg_gain");
+    fill_cfg_item(&cfg.cluster_all_bands, subject_create_int(0), "cluster_all_bands");
+    fill_cfg_item(&cfg.cluster_order, subject_create_int(0), "cluster_order");
+    fill_cfg_item(&cfg.cluster_column, subject_create_int(0), "cluster_column");
+    fill_cfg_item(&cfg.wefax_align, subject_create_int(0), "wefax_align");
+    fill_cfg_item(&cfg.wefax_tilt, subject_create_int(0), "wefax_tilt");
+    fill_cfg_item(&cfg.wspr_tx_freq, subject_create_int(1500), "wspr_tx_freq");
+    fill_cfg_item(&cfg.wspr_tx_pct, subject_create_int(20), "wspr_tx_pct");
+    fill_cfg_item(&cfg.wspr_upload, subject_create_int(1), "wspr_upload");
+
     fill_cfg_item(&cfg.key_tone   , subject_create_int(700), "key_tone");
     fill_cfg_item(&cfg.band_id    , subject_create_int(5), "band");
     fill_cfg_item(&cfg.ant_id     , subject_create_int(1), "ant");
@@ -292,6 +332,8 @@ static int init_params_cfg(sqlite3 *db) {
     fill_cfg_item(&cfg.iambic_mode, subject_create_int(x6200_iambic_a), "iambic_mode");
     fill_cfg_item(&cfg.key_vol, subject_create_int(10), "key_vol");
     fill_cfg_item(&cfg.key_train, subject_create_int(false), "key_train");
+    fill_cfg_item(&cfg.cwt_level, subject_create_int(5), "cwt_level");
+    fill_cfg_item(&cfg.cwt_group, subject_create_int(1), "cwt_group");
     fill_cfg_item(&cfg.qsk_time, subject_create_int(100), "qsk_time");
     fill_cfg_item_float(&cfg.key_ratio, subject_create_float(3.0f), 0.1f, "key_ratio");
 
@@ -302,6 +344,9 @@ static int init_params_cfg(sqlite3 *db) {
     fill_cfg_item_float(&cfg.cw_decoder_snr_gist, subject_create_float(1.0f), 0.1f, "cw_decoder_snr_gist");
     fill_cfg_item_float(&cfg.cw_decoder_peak_beta, subject_create_float(0.10f), 0.01f, "cw_decoder_peak_beta");
     fill_cfg_item_float(&cfg.cw_decoder_noise_beta, subject_create_float(0.80f), 0.01f, "cw_decoder_noise_beta");
+    /* AUTO (issue #139) nace apagado: sin tocar el boton, el decodificador usa
+     * los valores manuales tal cual (comportamiento de siempre). */
+    fill_cfg_item(&cfg.cw_decoder_auto, subject_create_int(false), "cw_decoder_auto");
 
     //
     fill_cfg_item(&cfg.agc_hang, subject_create_int(false), "agc_hang");

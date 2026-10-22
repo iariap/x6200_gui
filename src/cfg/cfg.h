@@ -27,6 +27,24 @@ typedef struct {
 
     cfg_item_t fft_zoom_cw;
 
+    /* WSPR (digital modes) */
+    cfg_item_t tx_filter_low;      /* TX passband, restored when an app closes */
+    cfg_item_t tx_filter_high;
+
+    cfg_item_t field_boot;         /* Field Ops: start the RBN feed at boot */
+    cfg_item_t voice_msg_gain;     /* voice messages: playback gain */
+
+    cfg_item_t cluster_all_bands;   /* DX cluster: spots of every band */
+    cfg_item_t cluster_order;       /* DX cluster: spot order */
+    cfg_item_t cluster_column;      /* DX cluster: spots over the waterfall */
+
+    cfg_item_t wefax_align;     /* WeFax image alignment */
+    cfg_item_t wefax_tilt;      /* WeFax skew */
+
+    cfg_item_t wspr_tx_freq;    /* audio offset of the transmission */
+    cfg_item_t wspr_tx_pct;     /* TX duty cycle, per cent of the cycles */
+    cfg_item_t wspr_upload;     /* upload spots to WSPRnet */
+
     cfg_item_t key_tone;
     cfg_item_t band_id;
     cfg_item_t ant_id;
@@ -38,6 +56,8 @@ typedef struct {
     cfg_item_t iambic_mode;
     cfg_item_t key_vol;
     cfg_item_t key_train;
+    cfg_item_t cwt_level;          /* CW trainer: how many characters */
+    cfg_item_t cwt_group;          /* CW trainer: which character set */
     cfg_item_t qsk_time;
     cfg_item_t key_ratio;
 
@@ -48,6 +68,7 @@ typedef struct {
     cfg_item_t cw_decoder_snr_gist;
     cfg_item_t cw_decoder_peak_beta;
     cfg_item_t cw_decoder_noise_beta;
+    cfg_item_t cw_decoder_auto;
 
     cfg_item_t agc_hang;
     cfg_item_t agc_knee;

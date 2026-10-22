@@ -1,0 +1,35 @@
+# Evidencia ALSA del 2026-10-15 (corrida factory/banco-audio). Comandos reales y su salida.
+# Se corre con la libasound del HOST y configs propias (ALSA_CONFIG_PATH): el pcm que se abre
+# es el plugin 'file' sobre un slave 'null' (nunca una placa real); el mixer va aparte.
+
+## 1. el tono de prueba (lo genera el propio banco de la corrida)
+$ python3 -c "wave 44100 mono s16, 1 s, amplitud 13000, 1000 Hz"  -> tono.wav
+
+## 2. el plugin 'type file' captura exacto lo que se le manda
+$ ALSA_CONFIG_PATH=/tmp/banco-audio/banco.conf aplay -D banco_file tono.wav
+Playing WAVE 'tono.wav' : Signed 16 bit Little Endian, Rate 44100 Hz, Mono
+cap.wav ->
+  49608 muestras, 1 canal, 44100 Hz, RMS 8666.7 (-11.55 dBFS), pico 12999
+  esperado: 1,000 s de tono (RMS 9192,4 = -11,04 dBFS) + 0,125 s de silencio del arranque:
+           9192,4/sqrt(1,125) = 8666,7  <- medido arriba: el plugin no toca las muestras
+
+## 3. el mixer de la GUI en el banco: 'default' no tiene ctl (no hay tarjeta)
+$ ALSA_CONFIG_PATH=/tmp/banco-audio/banco.conf amixer -D default
+ALSA lib control.c:1575:(snd_ctl_open_noupdate) [error.control] Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+  (el log del GUI del banco dice exactamente lo mismo: "Invalid CTL default" + 
+   "audio_set_play_vol: No se pudo preparar el mixer de default")
+
+## 4. softvol (la unica forma de tener un elemento de mixer sin hardware) necesita una tarjeta
+$ ALSA_CONFIG_PATH=/tmp/banco-audio/alsa-softvol-sin-card.conf aplay -D default tono.wav
+ALSA lib control.c:1575:(snd_ctl_open_noupdate) [error.control] Invalid CTL hw:9
+ALSA lib pcm_softvol.c:783:(softvol_load_control) [error.pcm] Cannot open CTL hw:9
+aplay: main:850: audio open error: No such file or directory
+  => sin tarjeta no hay elemento "AIF1 DA0": audio_set_play_vol() no puede aplicar el volumen.
+     Por eso el volumen del mixer no se puede medir en el banco (Parte B: snd-aloop da la tarjeta).
+
+## 5. el plugin 'file' sin reloj: no sirve como captura del banco
+$ # (medido en el chroot, slave null)  pulsaudio -> module-alsa-sink device=default -> file:
+  3.588.764.428 bytes en 6 s  (~573 MB/s, todo silencio)
+  2.590.433.280 bytes en 5 s mas (~518 MB/s)  [variante con loopback de PulseAudio]
+  El sink nulo de PulseAudio, en cambio, consume a ritmo real (176 KB/s en estereo 44100).

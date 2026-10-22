@@ -1,0 +1,34 @@
+# swrscan-3pass-p3: la misma sesion de 3 pasadas, capturada a mitad de la
+# tercera (51 + 51 + 25 puntos). El estado muestra "Scanning pass 3/3".
+
+name swrscan-3pass-p3
+screen swrscan
+
+seed 20
+
+swr_dataset single_valley_3pass
+swr_passes 3
+swr_feed 127
+
+frequency_hz 7100000
+tx_frequency_hz 7100000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

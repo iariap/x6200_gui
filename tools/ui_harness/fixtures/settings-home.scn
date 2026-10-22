@@ -1,0 +1,43 @@
+# settings-home: the real main screen with the firmware's real Ajustes window
+# open over it. The path is the firmware's own:
+# main_screen_action(ACTION_APP_SETTINGS) -> src/main_screen.c
+# (main_screen_start_app) -> src/dialog.c (dialog_construct/dialog_init) ->
+# src/dialog_settings.c (the whole grid: date/time, clock, backlight, info,
+# audio, spectrum, waterfall, operations, appearance and the action dropdowns).
+#
+# The dialog opens on its first group, which after the utility ordering of
+# issue #109 is Operation, so the fixture jumps to the Clock group the way the
+# user does: `buttons_press(3)` presses the page 1 "Clock" tab, which calls
+# settings_goto() (scroll + focus). The render therefore shows the date/time and
+# clock rows plus the tab bar, the same screen this fixture has always measured
+# (src/screens.c, scenario_settle, codifies that the date row is on screen).
+# Deterministic: the date/time fields read the harness' fixed clock, not the
+# host's (tools/ui_harness/CMakeLists.txt links with `--wrap=time`).
+
+name settings-home
+screen settings-home
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

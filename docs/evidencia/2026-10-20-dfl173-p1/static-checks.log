@@ -1,0 +1,11 @@
+check_actions: OK
+check_settings_focus: OK
+check_apps_menu: OK
+check_app_handlers: OK
+check_manual_apps: OK
+audita-pruebas: OK
+check_wcag: OK
+check_cw_tune_feed: OK
+check_build_identity: OK
+test_swrscan_curve_evidence: OK
+check_cfg_fills: OK

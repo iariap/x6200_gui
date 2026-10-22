@@ -14,6 +14,7 @@
 #include "dialog.h"
 #include "dialog_msg_cw.h"
 #include "styles.h"
+#include "theme.h"
 #include "params/params.h"
 #include "events.h"
 #include "util.h"
@@ -170,15 +171,18 @@ static void construct_cb(lv_obj_t *parent) {
     lv_obj_set_style_border_width(table, 0, LV_PART_ITEMS);
 
     lv_obj_set_style_bg_opa(table, LV_OPA_TRANSP, LV_PART_ITEMS);
-    lv_obj_set_style_text_color(table, lv_color_white(), LV_PART_ITEMS);
+    lv_obj_set_style_text_color(table, TC(text), LV_PART_ITEMS);
     lv_obj_set_style_pad_top(table, 5, LV_PART_ITEMS);
     lv_obj_set_style_pad_bottom(table, 5, LV_PART_ITEMS);
     lv_obj_set_style_pad_left(table, 0, LV_PART_ITEMS);
     lv_obj_set_style_pad_right(table, 0, LV_PART_ITEMS);
 
-    lv_obj_set_style_text_color(table, lv_color_black(), LV_PART_ITEMS | LV_STATE_EDITED);
-    lv_obj_set_style_bg_color(table, lv_color_white(), LV_PART_ITEMS | LV_STATE_EDITED);
-    lv_obj_set_style_bg_opa(table, 128, LV_PART_ITEMS | LV_STATE_EDITED);
+    lv_obj_set_style_text_color(table, TC(focus_text), LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_bg_color(table, TC(focus), LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_text_color(table, TC(sel_text), LV_PART_ITEMS | LV_STATE_EDITED);
+    lv_obj_set_style_bg_color(table, TC(sel_bg), LV_PART_ITEMS | LV_STATE_EDITED);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_EDITED);
 
     lv_obj_add_event_cb(table, key_cb, LV_EVENT_KEY, NULL);
     lv_group_add_obj(keyboard_group, table);
@@ -278,6 +282,12 @@ void dialog_msg_cw_append(uint32_t id, const char *val) {
 void dialog_msg_cw_send_cb(button_item_t *item) {
     const char *msg = get_msg();
 
+    /* Sin mensaje (tabla msg_cw vacia) no hay nada que mandar: pasarselo NULL al
+     * keyer lo hacia strdup(NULL) -> strlen(NULL) y la GUI moria. issue #116. */
+    if (msg == NULL || msg[0] == 0) {
+        return;
+    }
+
     cw_encoder_send(msg, false);
     buttons_unload_page();
     buttons_load(1, &btn_send_stop);
@@ -291,6 +301,12 @@ static void send_stop_cb(button_item_t *item) {
 
 void dialog_msg_cw_beacon_cb(button_item_t *item) {
     const char *msg = get_msg();
+
+    /* Mismo caso que el Send (issue #116): sin mensaje seleccionado no se arranca
+     * el beacon; el NULL que llegaba al keyer mataba la GUI. */
+    if (msg == NULL || msg[0] == 0) {
+        return;
+    }
 
     cw_encoder_send(msg, true);
     buttons_unload_page();

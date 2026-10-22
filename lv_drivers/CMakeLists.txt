@@ -18,6 +18,10 @@ add_library(lvgl::drivers ALIAS lv_drivers)
 
 target_include_directories(lv_drivers SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+# The DRM backend (display/drm.c, built when USE_DRM) includes xf86drm.h, which
+# includes drm.h from libdrm's own directory
+target_include_directories(lv_drivers PRIVATE ${CMAKE_SYSROOT}/usr/include/libdrm)
+
 find_package(PkgConfig)
 target_link_libraries(lv_drivers PUBLIC lvgl xkbcommon)
 

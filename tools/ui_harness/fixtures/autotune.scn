@@ -1,0 +1,48 @@
+# autotune: the CW fine-tuning assistant (issue #190, "Auto Tune v2") triggered
+# from the real main screen and cancelled by a second press.
+#
+# The route is the user's: the APP key loads buttons_group_app (src/main_screen.c,
+# KEYPAD_APP), the page button cycles to page 6 and the "Auto Tune" button
+# (src/buttons.cpp, make_action_btn("Auto\nTune", ACTION_ATUNE)) is pressed, which
+# reaches main_screen_action(ACTION_ATUNE) -> autotune_ui_toggle() -> the session
+# starts in COLLECT.
+#
+# The radio is in CW, which is the only family Auto Tune works in. The bank has
+# NO CW tone by default (mocks/mock_cw_tune.c starts with no signal): during
+# COLLECT the dial does NOT move - v2 never sweeps, there is no probe zigzag and
+# no progress bar - and a second press cancels the session. scenario_settle
+# codifies all three facts: the session started, the dial stayed exactly at the
+# fixture frequency while collecting, and the cancel left it there.
+#
+# The other fixtures of the family: `autotune-progress` (the single provisional
+# correction, mid-session), `autotune-found` (the same correction verified) and
+# `autotune-notcw` (the rejection outside CW/CWR). "Tuned" against real RF is the
+# owner's radio: docs/autotune.md.
+
+name autotune
+screen autotune
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode cw
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

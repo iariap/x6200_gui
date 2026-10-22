@@ -1,0 +1,24 @@
+## Estado del radio
+IP: 192.168.0.236
+uptime (post-restore): 36509.35
+pid GUI: 3931
+md5 GUI: b1ba67520079904449b6932a112d3c78  /usr/sbin/x6200_gui
+
+## get post-restore
+{"t":"state","vfo":"A","freq":7030000,"freq_bg":7040000,"mode":"LSB","band":"40m CW","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":0,"pre":1,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-75,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+
+
+## params persistentes (sqlite /mnt/params.db)
+atu|1
+cw_decoder|0
+cw_tune|0
+key_train|0
+pwr|1
+swrscan_linear|1
+swrscan_span|500000
+theme_name|Redshift
+vol|0
+
+## CRASHLOG observado durante la corrida (app_log 22-38-46)
+CRASHLOG sig=11 fallo=0xf363 pc=0xb6186ae8 lr=0xb618d4f0 sp=0xbed77ba0 base=0x47ea8c
+(este crash ya esta reportado en el issue #131; el log vivo post-relanzamiento tiene 0 CRASHLOG, por eso verifica-radio dice 'sin senales')

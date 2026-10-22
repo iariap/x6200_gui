@@ -1,0 +1,48 @@
+# app-close-home: menu-hygiene decisions 5 and 6.
+#
+# Decision 5: `{"cmd":"app","text":"off"}` really closes RTTY. RTTY is not a
+# dialog, so `main_screen_close_app()` (the function the remote control calls,
+# src/remote_server.cpp -> open_app()) has to close it too, and the button bar
+# has to go back to the page it had before the app opened.
+#
+# Decision 6: closing a dialog goes back to the bar's pre-open state, not to the
+# "stuck" page of the previous app. The repro (#50): open RTTY, then a dialog ->
+# on close the bar stayed on RTTY's page instead of the home page.
+#
+# The route is the firmware's own: scenario_build opens RTTY with
+# main_screen_start_app(ACTION_APP_RTTY); scenario_settle closes it with
+# main_screen_close_app(), then opens RTTY again, opens the real Ajustes window
+# over it (main_screen_action(ACTION_APP_SETTINGS)) and closes the dialog.
+# scenario_settle codifies both checkpoints (RTTY off, bar back on the home page)
+# and stops the run instead of capturing a green screen if they do not hold.
+#
+# The radio state matches home-usb-20m so the only difference is the route and
+# the bar it leaves behind.
+
+name app-close-home
+screen app-close-home
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

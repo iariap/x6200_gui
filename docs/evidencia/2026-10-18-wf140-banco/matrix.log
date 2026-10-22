@@ -1,0 +1,35 @@
+==> [check] native tests (tests/native/run_native_tests.sh)
+    ok
+==> [check] check_cfg_fills
+    ok
+==> [check] check_actions
+    ok
+==> [check] check_settings_focus
+    ok
+==> [check] check_apps_menu
+    ok
+==> [check] check_app_handlers
+    ok
+==> [check] check_manual_apps
+    ok
+==> [check] check_wcag
+    ok
+==> [check] check_cw_tune_feed
+    ok
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [SKIP] framework A/B (ruff + pytest): sin cambios en tools/ab_testing/**/*.py
+==> [SKIP] bash -n de los .sh tocados: sin cambios en tests/**/*.sh ni tools/**/*.sh
+==> [check] harness determinism gate
+    ok
+==> [check] banco QEMU: preflight (tools/captura-banco.sh --check)
+    ok
+==> [check] banco QEMU: params.db generado (idempotencia del rebuild)
+    ok (borrado el params.db generado):
+    /b/build/x6200-gui-custom/params.db
+==> [check] banco QEMU: captura de humo (home)
+    ok
+      reconstruyendo la GUI: el hash de los fuentes cambio y un fuente es mas nuevo que el binario
+      captura: /tmp/banco-qemu-home.png (339 colores distintos)
+      version: dc45d924 waterfall: la linea central se crea una vez, sigue 
+      binario: md5 d8c059178386   qemu-cpu: cortex-a7
+exit=0

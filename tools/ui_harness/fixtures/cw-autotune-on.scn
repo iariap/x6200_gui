@@ -1,0 +1,41 @@
+# cw-autotune-on: la misma pagina (CW 2:2) que cw-autotune-off con el boton
+# "Auto" pulsado (issue #139).
+#
+# La ruta es la del usuario: KEY -> boton-pagina x3 -> (CW 2:2), y despues el
+# boton "Auto" (indice 3), que corre button_action_cb ->
+# controls_toggle_cw_decoder_auto -> cfg.cw_decoder_auto (src/buttons.cpp,
+# src/controls.cpp). scenario_settle codifica que el parametro queda en 1 y que
+# el rotulo pasa a "Auto: On"; los valores Peak/Noise no cambian porque el
+# arnes no compila src/cw.cpp (el unico que los mueve con AUTO encendido).
+#
+# No hay DSP en el arnes: la convergencia real de los parametros con una senal
+# de CW es requires-radio (el procedimiento esta en el reporte del #139).
+
+name cw-autotune-on
+screen cw-autotune-on
+
+theme Redshift
+seed 20
+
+frequency_hz 7030000
+tx_frequency_hz 7030000
+fft_width_hz 384000
+
+mode cw
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

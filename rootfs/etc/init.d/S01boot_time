@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+# Anota el instante en que el kernel le pasa el control a los scripts, para poder medir el
+# arranque completo. La GUI agrega su propia linea cuando ya esta dibujando (S20gui tambien).
+# El resultado queda en /mnt/app_logs/boot.log
+#
+
+mkdir -p /mnt/app_logs
+printf '%s  kernel listo: %s s de uptime\n' "$(date -u +%H:%M:%S)" "$(cut -d' ' -f1 /proc/uptime)" >> /mnt/app_logs/boot.log
+exit 0

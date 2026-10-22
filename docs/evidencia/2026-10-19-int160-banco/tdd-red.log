@@ -1,0 +1,9 @@
+== RED: src/cw_encoder.c de la base ec5e2730 (sin el gate) ==
+FALLO tests/native/test_cw_encoder.c:116: cwenc_stub_key_toggles() == 0
+FALLO tests/native/test_cw_encoder.c:117: cwenc_stub_msg_updates() == 1
+FALLO tests/native/test_cw_encoder.c:118: cwenc_stub_voice_announcements() == 1
+FALLO tests/native/test_cw_encoder.c:169: cwenc_stub_key_toggles() == 0
+FALLO tests/native/test_cw_encoder.c:170: cwenc_stub_msg_updates() == 1
+33 comprobaciones, 5 fallos
+exit=1
+

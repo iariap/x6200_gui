@@ -1,0 +1,4 @@
+  (aviso) page_app_6 usa btn_atune, que no es una app
+  apps en las paginas APP: 23 | make_app_btn -> main_screen_start_app(): 21/21 | make_action_btn -> main_screen_action(): 2/2 | paginas: 6
+  control remoto: 26 apps en app_names[] | 26 acciones
+  todas las apps del menu llegan al dispatcher que usa su boton

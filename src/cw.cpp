@@ -8,6 +8,7 @@
 #include "cw.h"
 
 
+#include <atomic>
 #include <math.h>
 
 #include "util.h"
@@ -20,6 +21,7 @@ extern "C" {
     #include "audio.h"
     #include "params/params.h"
     #include "cw_decoder.h"
+    #include "cw_autotune.h"
     #include "pannel.h"
     #include "meter.h"
     #include "cw_tune_ui.h"
@@ -67,15 +69,69 @@ static float   cw_decoder_noise_beta;
 static float   cw_decoder_snr;
 static float   cw_decoder_snr_gist;
 static bool    cw_decoder;
-static bool    cw_tune;
+static bool                 trainer = false;
+
+/* AUTO (issue #139). La ventana acumula una muestra por trama de FFT (unas
+ * 5,4 por segundo): nivel de marca, piso de ruido y offset del tono. Se
+ * acumula siempre (es barato y deja una ventana lista para la calibracion
+ * inmediata al encender AUTO); se evalua cada ~5 s y solo con AUTO encendido. */
+#define AUTOTUNE_WINDOW_MS  5000
+#define AUTOTUNE_MIN_MARK   3
+
+static cw_autotune_state_t at_state;
+
+static float    at_mark[CW_AUTOTUNE_MAX_WINDOW];
+static float    at_noise[CW_AUTOTUNE_MAX_WINDOW];
+static float    at_peak[CW_AUTOTUNE_MAX_WINDOW];
+static int      at_mark_n;
+static int      at_noise_n;
+static int      at_peak_n;
+static float    at_ratio;
+static bool     at_frame_signal;
+static bool     at_first_threshold = true;
+static bool     at_window_open;
+static uint64_t at_window_start;
+
+/* El AUTO los escribe el hilo de la GUI (boton/observador) y los lee el hilo
+ * del DSP: atomicos para no depender del azar. */
+static std::atomic<bool> cw_decoder_auto(false);
+static std::atomic<bool> at_request(false);
+
+/* Corrimiento del centro del DDS del decodificador RX respecto del tono manual
+ * (`key_tone`). Es SOLO del receptor: `cfg.key_tone` —el tono de TX, que la
+ * radio usa para el sidetone— no se toca nunca desde AUTO. */
+static float rx_tone_offset;
 
 static pthread_mutex_t  cw_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+/* --- Auto Tune v2 (issue #190): instantanea para el asistente de sintonia ----
+ *
+ * Se publica UNA vez por trama de FFT procesada (update_peak_freq), en este
+ * hilo, con el mutex chico de abajo. No usa LVGL ni scheduler_put: el consumidor
+ * (hilo de GUI) copia y decide alla. `error_hz` es el corrimiento del tono
+ * respecto del PITCH MANUAL ya normalizado (ver src/cw.h). */
+static autotune_sample_t tune_sample;
+static pthread_mutex_t  tune_mutex = PTHREAD_MUTEX_INITIALIZER;
+static uint64_t         tune_sequence;
+static bool             tune_have;
+/* Lo escribe el hilo de GUI (cw_tune_note_dial_write) y lo consume el del DSP:
+ * atomico. Marca que el dial acaba de cambiar por Auto Tune, para invalidar la
+ * primera ventana posterior (puede traer audio de la frecuencia anterior). */
+static std::atomic<bool> tune_dial_written(false);
+/* Relacion marca/ruido de la TRAMA en curso (update_thresholds la calcula; la
+ * usa tune_publish para el gate de validez). */
+static float tune_frame_ratio;
 
 static void dds_dec_init();
 
 static void on_key_tone_change(Subject *subj, void *user_data);
+static void on_auto_change(Subject *subj, void *user_data);
 static void on_val_float_change(Subject *subj, void *user_data);
 static void on_val_bool_change(Subject *subj, void *user_data);
+
+void cw_trainer_set(bool on) {
+    trainer = on;
+}
 
 void cw_init() {
     cfg.key_tone.val->subscribe(on_key_tone_change)->notify();
@@ -84,7 +140,10 @@ void cw_init() {
     cfg.cw_decoder_snr.val->subscribe(on_val_float_change, (void*)&cw_decoder_snr)->notify();
     cfg.cw_decoder_snr_gist.val->subscribe(on_val_float_change, (void*)&cw_decoder_snr_gist)->notify();
     cfg.cw_decoder.val->subscribe(on_val_bool_change, (void*)&cw_decoder)->notify();
-    cfg.cw_tune.val->subscribe(on_val_bool_change, (void*)&cw_tune)->notify();
+    cfg.cw_decoder_auto.val->subscribe(on_auto_change)->notify();
+    cw_autotune_reset(&at_state);
+    /* `cfg.cw_tune` ya no se observa aca: el parametro del boton "Tuner" no gatea ni la visibilidad
+     * del widget (src/cw_tune_ui.c) ni este feed (issue #122). El boton sigue existiendo. */
 
     input_cbuf = cbuffercf_create(10000);
     wrms = wrms_create(16, 4);
@@ -117,10 +176,99 @@ static void dds_dec_init() {
     if (ds_dec != NULL) {
         dds_cccf_destroy(ds_dec);
     }
-    float rel_freq = (float) key_tone / AUDIO_CAPTURE_RATE;
+    /* El centro del DDS es el tono manual mas el corrimiento que haya medido
+     * AUTO; con AUTO apagado el corrimiento es 0 y el DDS queda como siempre. */
+    float rel_freq = ((float) key_tone + rx_tone_offset) / AUDIO_CAPTURE_RATE;
     float bw = (float) MAX_CW_BW / AUDIO_CAPTURE_RATE;
     ds_dec = dds_cccf_create(NUM_STAGES, rel_freq, bw, 60.0f);
     pthread_mutex_unlock(&cw_mutex);
+}
+
+/* --- AUTO (issue #139): ventana de estadisticas y aplicacion ----------------- */
+
+static void autotune_push(float *buf, int *n, float value) {
+    if (*n < CW_AUTOTUNE_MAX_WINDOW) {
+        buf[(*n)++] = value;
+    }
+}
+
+static void autotune_window_reset(uint64_t now) {
+    at_mark_n = 0;
+    at_noise_n = 0;
+    at_peak_n = 0;
+    at_ratio = 0.0f;
+    at_frame_signal = false;
+    at_window_start = now;
+    at_window_open = true;
+}
+
+/* Una ventana valida -> sugerencia -> subjects (los mismos que usan los botones)
+ * y, si corresponde, el centro del DDS del decodificador RX. Nada mas: el modo,
+ * el tono de TX y el resto de la configuracion no se tocan. */
+static void autotune_apply() {
+    cw_autotune_stats_t  stats = {};
+    cw_autotune_result_t result;
+    int                  wpm;
+
+    stats.noise_db       = cw_autotune_mean(at_noise, at_noise_n);
+    stats.mark_db        = cw_autotune_percentile(at_mark, at_mark_n, 0.90f);
+    stats.noise_var_db2  = cw_autotune_variance(at_noise, at_noise_n);
+    stats.mark_var_db2   = cw_autotune_variance(at_mark, at_mark_n);
+    stats.signal_ratio   = at_ratio;
+    /* Bloque de FFT: 128 muestras a AUDIO_CAPTURE_RATE/DECIM_FACTOR = 689,06 Hz. */
+    stats.block_dt_s     = ((float) FFT) / ((float) AUDIO_CAPTURE_RATE / (float) DECIM_FACTOR);
+    stats.peak_freq_hz   = cw_autotune_percentile(at_peak, at_peak_n, 0.5f);
+    stats.peak_valid     = at_peak_n > 0;
+    stats.mark_valid     = at_mark_n > 0;
+
+    /* La WPM medida por el decodificador manda; si todavia no midio (0) o se
+     * fue de rango, se usa la velocidad configurada (la del keyer). */
+    wpm = cw_decoder_get_wpm();
+    if (wpm < CW_AUTOTUNE_WPM_MIN || wpm > CW_AUTOTUNE_WPM_MAX) {
+        wpm = cw_get_wpm();
+    }
+    stats.wpm = wpm;
+
+    cw_autotune_compute(&at_state, &stats, &result);
+    if (!result.adapt) {
+        return;
+    }
+    if (result.apply_snr) {
+        subject_set_float(cfg.cw_decoder_snr.val, result.snr);
+    }
+    if (result.apply_gist) {
+        subject_set_float(cfg.cw_decoder_snr_gist.val, result.gist);
+    }
+    if (result.apply_peak_beta) {
+        subject_set_float(cfg.cw_decoder_peak_beta.val, result.peak_beta);
+    }
+    if (result.apply_noise_beta) {
+        subject_set_float(cfg.cw_decoder_noise_beta.val, result.noise_beta);
+    }
+    if (result.apply_freq) {
+        rx_tone_offset = result.freq_offset_hz;
+        dds_dec_init();
+    }
+}
+
+/* Corre una vez por trama de FFT (~5,4 Hz). Evalua al cumplirse la ventana de
+ * 5 s o cuando el boton acaba de encender AUTO (calibracion inmediata). Con
+ * AUTO apagado solo rota la ventana: no escribe nada. */
+static void autotune_tick() {
+    uint64_t now     = get_time();
+    bool     request = at_request.exchange(false);
+
+    if (!at_window_open) {
+        autotune_window_reset(now);
+        return;
+    }
+    if (!request && (now - at_window_start) < AUTOTUNE_WINDOW_MS) {
+        return;
+    }
+    if (cw_decoder_auto.load() && at_mark_n >= AUTOTUNE_MIN_MARK && at_noise_n > 0) {
+        autotune_apply();
+    }
+    autotune_window_reset(now);
 }
 
 static int compare_fft_items(const void *p1, const void *p2) {
@@ -164,9 +312,28 @@ static void update_thresholds() {
     }
     noise = sum_all - sum_signal;
 
-    if (sum_signal/noise > 1) {
+    /* Divisor cero: no hay relacion que calcular (silencio o un unico pico).
+     * Se deja 0: no es una marca, y para Auto Tune v2 es una trama invalida. */
+    float ratio = (noise > 0.0f) ? (sum_signal / noise) : 0.0f;
+    tune_frame_ratio = ratio;
+
+    if (ratio > 1) {
         lpf(&peak_filtered, LV_MAX(noise_filtered + cw_decoder_snr, rms_db_max), cw_decoder_peak_beta, S_MIN);
         threshold_pulse = 0;
+        /* Muestra de marca de la ventana AUTO: el maximo RMS entre esta trama y
+         * la anterior. Los sentinelas (-121/-127) no son niveles: se filtran. */
+        at_frame_signal = true;
+        /* La mejor relacion de la ventana, no la de la ultima trama: una
+         * ventana de 5 s que termina en un espacio sigue teniendo senal. */
+        if (ratio > at_ratio) {
+            at_ratio = ratio;
+        }
+        /* La primera trama lee rms_db_max=0 (el cero de las estaticas), no un
+         * nivel: no entra en la ventana. No se toca el valor que usa el
+         * decodificador (sin AUTO el umbral queda como siempre). */
+        if (!at_first_threshold && rms_db_max > -100.0f && rms_db_max < 20.0f) {
+            autotune_push(at_mark, &at_mark_n, rms_db_max);
+        }
     } else {
         lpf(&noise_filtered, LV_MIN(-3.0f, rms_db_min), cw_decoder_noise_beta, S_MIN);
         peak_filtered -= 0.3f;
@@ -175,18 +342,73 @@ static void update_thresholds() {
         }
         // Increase threshold for no signal
         threshold_pulse = 1;
+        /* Muestra del piso: el valor crudo que alimenta al LPF de ruido. */
+        at_frame_signal = false;
+        if (LV_MIN(-3.0f, rms_db_min) > -100.0f) {
+            autotune_push(at_noise, &at_noise_n, LV_MIN(-3.0f, rms_db_min));
+        }
     }
     float low = noise_filtered + cw_decoder_snr;
     threshold_pulse += LV_MAX(low, peak_filtered  - 3.0f);
     threshold_silence = threshold_pulse - cw_decoder_snr_gist;
+    at_first_threshold = false;
     rms_db_min = 0.0f;
     rms_db_max = S1;
 }
 
+/* Publica la instantanea de Auto Tune v2 (issue #190) de la trama que termina.
+ * `valid` se calcula ACA, en el hilo del DSP: marca CW detectada en la trama,
+ * relacion marca/ruido suficiente, valores finitos y dentro del rango del
+ * estimador de la FFT. La primera trama posterior a una escritura de Auto Tune
+ * se publica igual (avanza secuencia y tiempo, invalida el pico anterior) pero
+ * con valid=false: la ventana puede traer audio de la frecuencia vieja. */
+static void tune_publish(float peak_freq) {
+    autotune_sample_t s;
+    bool             after_write = tune_dial_written.exchange(false);
+
+    s.timestamp_ms  = get_time();
+    s.dds_offset_hz = rx_tone_offset;
+    /* error = A - key_tone = rx_tone_offset - peak_freq (HALLAZGOS 52). */
+    s.error_hz      = cw_tune_error_hz(peak_freq, rx_tone_offset);
+    s.ratio         = tune_frame_ratio;
+    s.valid         = !after_write && at_frame_signal &&
+                      tune_frame_ratio >= 4.0f &&
+                      isfinite(s.error_hz) &&
+                      peak_freq > -400.0f && peak_freq < 400.0f;
+
+    pthread_mutex_lock(&tune_mutex);
+    tune_sequence++;
+    s.sequence = tune_sequence;
+    tune_sample = s;
+    tune_have = true;
+    pthread_mutex_unlock(&tune_mutex);
+}
+
+bool cw_get_tune_sample(autotune_sample_t *out) {
+    if (out == NULL) {
+        return false;
+    }
+    pthread_mutex_lock(&tune_mutex);
+    *out = tune_sample;
+    bool have = tune_have;
+    pthread_mutex_unlock(&tune_mutex);
+    return have;
+}
+
+void cw_tune_note_dial_write(void) {
+    tune_dial_written.store(true);
+}
+
 static void update_peak_freq(float freq) {
+    /* Muestra de tono de la ventana AUTO, solo en tramas con senal. El rango es
+     * el del mapeo de la FFT (+/-344 Hz): fuera de eso no es un tono. */
+    if (at_frame_signal && freq > -400.0f && freq < 400.0f) {
+        autotune_push(at_peak, &at_peak_n, freq);
+    }
     if (peak_on) {
         cw_tune_set_freq(freq);
     }
+    tune_publish(freq);
 }
 
 static bool decode(float rms_db) {
@@ -208,7 +430,14 @@ void cw_put_audio_samples(unsigned int n, cfloat *samples) {
     if (!ready) {
         return;
     }
-    if ((!cw_decoder) && (!cw_tune)) {
+    /* El feed alimenta al decodificador CW, al trainer y al widget de sintonia (mas abajo,
+     * update_peak_freq -> cw_tune_set_freq, que mueve el bloque que marca donde esta el tono):
+     * corre si alguno lo necesita. Antes miraba `cw_tune` —el parametro del boton "Tuner", que
+     * arranca en 0 (src/cfg/cfg.c:349)—: con el widget ya visible en CW/CWR sin depender de ese
+     * parametro (issue #122), el gate sigue a la visibilidad del widget, que es lo que el feed
+     * tiene que alimentar. Esta funcion solo se llama en CW/CWR (src/dsp.cpp:251), que es
+     * exactamente donde el widget se muestra, asi que el feed corre siempre que se lo pueda ver. */
+    if ((!cw_decoder) && (!trainer) && (!cw_tune_ui_visible())) {
         return;
     }
     cfloat sample;
@@ -246,8 +475,10 @@ void cw_put_audio_samples(unsigned int n, cfloat *samples) {
 
             max_pos = argmax(audio_psd_squared, FFT);
             // Fix fft order
-            peak_freq = (((float) (FFT - (max_pos + FFT / 2) % FFT) / FFT) - 0.5f) * ((float) AUDIO_CAPTURE_RATE / DECIM_FACTOR);
+            peak_freq = cw_peak_freq_from_bin((int32_t) max_pos, FFT,
+                                              (float) AUDIO_CAPTURE_RATE / DECIM_FACTOR);
             update_peak_freq(peak_freq);
+            autotune_tick();
         }
 
         // Process RMS
@@ -334,4 +565,22 @@ static void on_val_float_change(Subject *subj, void *user_data) {
 
 static void on_val_bool_change(Subject *subj, void *user_data) {
     *(bool*)user_data = static_cast<SubjectT<int32_t>*>(subj)->get();
+}
+
+/* Enciende/apaga AUTO. Al encender se pide una evaluacion ya mismo (la ventana
+ * acumulada alcanza: "calibracion inmediata" del issue). Al apagar se vuelve al
+ * comportamiento de siempre: ningun parametro se toca mas y el DDS RX vuelve al
+ * tono manual (corrimiento 0). Los valores que AUTO dejo quedan en los params:
+ * visibles y editables a mano. */
+static void on_auto_change(Subject *subj, void *user_data) {
+    bool on  = subject_get_int(subj) != 0;
+    bool was = cw_decoder_auto.exchange(on);
+
+    if (on && !was) {
+        at_request.store(true);
+    } else if (!on && was) {
+        cw_autotune_reset(&at_state);
+        rx_tone_offset = 0.0f;
+        dds_dec_init();
+    }
 }

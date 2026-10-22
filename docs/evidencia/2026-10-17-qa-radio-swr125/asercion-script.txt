@@ -1,0 +1,42 @@
+### 1) El comando que documenta el re-test del #125 (1 argumento):
+$ python3 tests/swrscan_curve_evidence.py /tmp/qa-sw125/scan-7000000.png
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+
+exit=2
+
+### 2) RED/GREEN del arnes (trunk): domo del owner -> valle + valle real:
+$ python3 tests/swrscan_curve_evidence.py docs/evidencia/2026-10-17-swr125-direction-banco/03-harness-domo-valle.png docs/evidencia/2026-10-17-swr125-direction-banco/04-harness-valle-real.png
+       -- domo del owner -> valle (03-harness-domo-valle.png) --
+       curva x=10..680 (670 px de 800); banda y=69..399; cuarto inferior y>=316
+       valle: y=398 en x=284; bordes: izq y=191 (x=10), der y=121 (x=680)
+  ok   domo del owner -> valle: la curva cruza el chart (670 px)
+  ok   domo del owner -> valle: base en el cuarto inferior (y=398 >= 316)
+  ok   domo del owner -> valle: valle interior (x=284, bordes 10..680)
+  ok   domo del owner -> valle: borde izquierdo sube 207 px sobre la base (>=50)
+  ok   domo del owner -> valle: borde derecho sube 277 px sobre la base (>=50)
+       -- valle real del owner -> valle (04-harness-valle-real.png) --
+       curva x=10..789 (779 px de 800); banda y=69..399; cuarto inferior y>=316
+       valle: y=398 en x=149; bordes: izq y=378 (x=10), der y=386 (x=789)
+  ok   valle real del owner -> valle: la curva cruza el chart (779 px)
+  ok   valle real del owner -> valle: base en el cuarto inferior (y=398 >= 316)
+  ok   valle real del owner -> valle: valle interior (x=149, bordes 10..789)
+  ok   valle real del owner -> valle: borde izquierdo sube 20 px sobre la base (>=3)
+  ok   valle real del owner -> valle: borde derecho sube 12 px sobre la base (>=3)
+PASS: la curva dibujada es un valle (base abajo, puntas hacia arriba)
+exit=0
+
+### 3) El mismo script con la captura REAL de la radio (valle real) como 2do argumento:
+$ python3 tests/swrscan_curve_evidence.py docs/evidencia/2026-10-17-swr125-direction-banco/03-harness-domo-valle.png /tmp/qa-sw125/scan-7000000.png
+       -- domo del owner -> valle (03-harness-domo-valle.png) --
+       curva x=10..680 (670 px de 800); banda y=69..399; cuarto inferior y>=316
+       valle: y=398 en x=284; bordes: izq y=191 (x=10), der y=121 (x=680)
+  ok   domo del owner -> valle: la curva cruza el chart (670 px)
+  ok   domo del owner -> valle: base en el cuarto inferior (y=398 >= 316)
+  ok   domo del owner -> valle: valle interior (x=284, bordes 10..680)
+  ok   domo del owner -> valle: borde izquierdo sube 207 px sobre la base (>=50)
+  ok   domo del owner -> valle: borde derecho sube 277 px sobre la base (>=50)
+       -- valle real del owner -> valle (scan-7000000.png) --
+  FAIL valle real del owner -> valle: no encontre la curva dibujada
+FAIL: 1 comprobacion(es) de forma
+exit=1

@@ -1,0 +1,4 @@
+Theme image /usr/share/x6100/field/bands_96.png: No such file or directory
+Theme image /usr/share/x6100/field/pota_96.png: No such file or directory
+Theme image /usr/share/x6100/field/sota_96.png: No such file or directory
+[Error]	(6999.839, +47)Theme image /usr/share/x6100/field/sota_96.png: No such file or directory

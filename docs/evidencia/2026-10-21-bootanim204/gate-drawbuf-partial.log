@@ -1,0 +1,14 @@
+building disp_buf_probe (revision dadb17053542ab6a5a54ea0d9c74dfdf9076b219)...
+running the probe for every draw-buffer size...
+framebuffer comparison (vs px=1536000, the current firmware buffer):
+  px=384000 (lines=480): IDENTICAL
+  px=102400 (lines=128): IDENTICAL
+  px=51200 (lines=64): IDENTICAL
+  px=25600 (lines=32): IDENTICAL
+flush contract (last==1, out_of_area==0, dup_px==0, covered_px==flushed_px):
+  px=1536000 (lines=1920): ok (8 phases, 57 flushes)
+  px=384000 (lines=480): ok (8 phases, 57 flushes)
+  px=102400 (lines=128): ok (8 phases, 62 flushes)
+  px=51200 (lines=64): ok (8 phases, 82 flushes)
+  px=25600 (lines=32): ok (8 phases, 82 flushes)
+PASS: partial draw buffer renders the identical physical framebuffer (sw-rotate 90)

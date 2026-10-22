@@ -1,0 +1,22 @@
+MEDICION DEL FLICKERING Y LA CPU - imagen flasheada el 2026-10-15 (md5 sdcard.img 25e38412aefc3293a288cf7317c964c2)
+
+1) DOS scripts de init arrancan el mismo daemon:
+   /etc/init.d/S20gui  (1623 B, del repo: commit 29c5896 'Boot: start the GUI at S20')
+   /etc/init.d/S95gui  (1020 B, NO esta en el repo: resto del rootfs del vendor)
+   los dos con: DAEMON="x6200_daemon"
+
+2) DOS daemons y DOS GUIs, los dos con el framebuffer abierto:
+   pid 295 ppid 1   {x6200_daemon} /bin/sh /usr/sbin/x6200_daemon
+   pid 307 ppid 295 /usr/sbin/x6200_gui      fd 3 -> /dev/fb0
+   pid 533 ppid 1   {x6200_daemon} /bin/sh /usr/sbin/x6200_daemon
+   pid 542 ppid 533 /usr/sbin/x6200_gui      fd 3 -> /dev/fb0
+
+3) CPU (muestreo de /proc/<pid>/stat, 3 s):
+   x6200_gui pid=542  ~20.7% CPU
+   x6200_gui pid=307  ~23.3% CPU   (el doble por la duplicacion)
+   kworker/u8:2-events_unbound pid=83  ~97.7% CPU   (sin determinar)
+
+4) El framebuffer cambia: 24 lecturas consecutivas de /dev/fb0 -> 6 hashes distintos
+   6 cuadros distintos guardados en una rafaga; entre u2 y u3 cambia el 10.4% de los pixeles (el pie, zona estatica, 0.8%)
+
+Entorno: 192.168.18.67, uptime 30 s, GUI md5 cb2da072b7b0, DATA montada (params.db y themes intactos)

@@ -1,0 +1,351 @@
+# Known issues of the X6200 UI, as the A/B framework sees them.
+#
+# Rule (docs/AB_TESTING_PLAN.md, and the seeds in the milestone-2 brief): an
+# issue is only trusted when the *harness reproduces it*. An issue without a
+# detector is a recorded hypothesis — it never fails and never passes, and stays
+# listed here (and in the report) as `unverified`.
+#
+# Fields:
+#   status:  fixed       -> was fixed before; if it shows again on B it is a REGRESSION
+#            verified    -> reproducible now
+#            unverified  -> recorded from the repository, no detector yet
+#   detector:region_content_above  -> the region must stay near-uniform; content
+#            there means the element it should hide is being drawn.
+#   detector:leading_glyph_range   -> the label whose text matches `text_pattern`
+#            (the power clock) must start with a code point inside `glyph_range`;
+#            the text comes from the harness' structural inspection, never OCR.
+#   exclusions: scoped by fixture and region, with an expiry date and a reason.
+#            Never global, never permanent.
+
+version: 1
+
+issues:
+  - id: UI-001
+    title: "Etiqueta del multiplicador de tuning visible sobre la barra superior"
+    severity: major
+    fixture: home-usb-20m
+    region: multiplicador
+    status: fixed
+    note: >
+      ROM_REVIEW.md §5.3: la etiqueta `x%.1f` del tuning adaptativo se creaba visible y
+      tapaba la barra de estado (clima/voltaje). El fix la deja con
+      LV_OBJ_FLAG_HIDDEN. El arnes la reproduce: si la etiqueta se dibuja, la region
+      `multiplicador` deja de ser fondo puro y el detector la marca.
+    evidence:
+      - "docs/ROM_REVIEW.md §5.3"
+      - "src/main_screen.c: crear la etiqueta y ocultarla (LV_OBJ_FLAG_HIDDEN)"
+    detector:
+      kind: region_content_above
+      region: multiplicador
+      pixel_tolerance: 24
+      max_content: 0.05
+    exclusions: []
+
+  - id: UI-009
+    title: "Reloj de potencia: simbolo de bateria con puntero sin inicializar (glifos basura)"
+    severity: major
+    fixture: home-bateria-externa
+    region: reloj_potencia
+    status: fixed
+    note: >
+      src/clock.c, show_time() rama CLOCK_POWER: `bat_sym` se declaraba sin
+      inicializar y el `switch ((uint8_t)(v_bat * 10))` solo cubria 0..100. Con
+      v_bat > 10.2 (p.ej. 12.1 V con fuente externa -> 121 tras el cast) ningun
+      case pisaba el puntero y `snprintf` leia la pila: glifos basura en pantalla
+      ("EHE 12.1v" en las capturas del toolchain aceptado) y comportamiento
+      indefinido (segfault reproducido con gcc 12 en Debian). El fix inicializa
+      el puntero a LV_SYMBOL_BATTERY_FULL. El arnes lo reproduce: el detector
+      `leading_glyph_range` exige que el texto del reloj arranque con un glifo de
+      la familia battery (U+F2xx) y no con ASCII.
+    evidence:
+      - "src/clock.c (show_time, CLOCK_POWER)"
+      - "tools/ui_harness/fixtures/home-bateria-externa.scn"
+      - "tests/native/test_clock.c"
+      - "tools/ab_testing/reports/AB-e2e-ui009/"
+    detector:
+      kind: leading_glyph_range
+      region: reloj_potencia
+      text_pattern: '\d\.\dv\n'
+      glyph_range: [0xF200, 0xF2FF]
+    exclusions: []
+
+  - id: UI-015
+    title: "Ajustes: los switches y el slider quedan por debajo del target tactil de 44 px"
+    severity: minor
+    fixture: settings-wfbat
+    status: verified
+    note: >
+      Los controles del dialogo de Ajustes son mas bajos que el target de campo
+      que pide AGENTS.md (44 px): los ocho lv_switch miden 111x30 (LVGL fija el
+      alto del switch) y el lv_slider del brillo del backlight 159x13. Medido con
+      la inspeccion estructural del arnes (--inspect, sin OCR) sobre las dos
+      fixtures nuevas. La regla `layout_touch_target` de quality/contracts.yaml los
+      marca; el contrato NO se relaja: la excepcion acotada (regla+fixture, con
+      fecha) los mantiene a la vista en el reporte de `contracts`/`audit` mientras
+      la geometria de las filas de Ajustes este fuera del alcance de la corrida.
+      Arreglar el alto de los controles (o fijar el target que la radio realmente
+      usa) es el incremento de UX de Ajustes.
+    evidence:
+      - "tools/ui_harness/fixtures/settings-wfbat.scn (8 switches 111x30 en el grupo Espectro)"
+      - "tools/ui_harness/fixtures/settings-home.scn (slider del backlight 610,373 159x13)"
+      - "audit HEAD --suite visual: 8 x layout_touch_target [settings-wfbat] + 1 x layout_touch_target [settings-home]"
+      - "tools/ab_testing/quality/contracts.yaml (excepcion de layout_touch_target por fixture, hasta 2027-03-31)"
+
+  - id: UI-016
+    title: "Ajustes: el campo Año recorta 4 px el valor de 4 digitos"
+    severity: minor
+    fixture: settings-home
+    region: ajustes_anio
+    status: fixed
+    note: >
+      La etiqueta del spinbox del año ("2026", sony_36) medía 84 px de texto y el
+      area de contenido de la caja de 2 columnas (SMALL_2 = 93 menos el padding
+      horizontal del textarea, 11 px por lado, y el borde) le dejaba 67: los
+      ultimos 4 px del ultimo digito quedaban recortados contra el borde. Medido en
+      la inspeccion estructural (text_natural.w 84 contra el box visible de 80;
+      `text_overflow` NO lo veia porque mide contra el box sin recortar).
+      FIX (AB-UI016-T1): en src/dialog_settings.c el campo Año baja su padding
+      horizontal al de la grilla (SMALL_PAD; el padding del textarea es para el
+      cursor y un spinbox no edita texto libre) y toma el ancho que piden sus 4
+      cifras con la fuente vigente, medido en runtime con lv_txt_get_size (el mismo
+      idioma que el resto del codigo usa para medir labels, sin un ancho clavado).
+      Medido: la caja pasa de 93 a 94 px, la etiqueta queda 696,113 84x28 y su box
+      visible es 84x28 (ya no se recorta); Dia y Mes no se tocan. La excepcion
+      acotada de `layout_clipped` en quality/contracts.yaml se retiro en el mismo
+      cambio: sin waiver, una reaparicion vuelve a fallar la corrida. El fix mueve
+      pixeles solo dentro de `ajustes_anio` (regions.yaml), declarado en
+      `expected_changes`.
+      #110 (AB-YEAR110, 2026-10-16): ese ancho por contenido se reemplazo por la
+      caja de la fila. Con la fuente vigente el helper pedia 70 px (el peor caso de
+      4 cifras, "0000", mide 60 con sony_36, mas el padding de la grilla y el
+      borde) y el campo quedaba 23 px mas angosto que Dia y Mes; pasa a SMALL_2 = 93
+      (caja util 83, margen de 23 px para el "2026") y el helper `ancho_campo_cifras`
+      se retiro, sin uso. `tests/check_settings_focus.py` comprueba que los tres
+      campos de la fila declaren la misma caja.
+    evidence:
+      - "tools/ui_harness/fixtures/settings-home.scn"
+      - "inspeccion estructural ANTES (ccfe1f5): lv_label '2026' 704,113 84x28 visible 704,113 80x28 (lost 4x0), spinbox 691,100 93x56"
+      - "inspeccion estructural DESPUES (fix): lv_label '2026' 696,113 84x28 visible 696,113 84x28, spinbox 691,100 94x56"
+      - "inspeccion estructural ANTES/DESPUES (#110): spinbox del ano 691,100 70x56 -> 691,100 93x56; label '2026' 696,113 60x28 (natural 60) -> 696,113 83x28"
+      - "src/dialog_settings.c (el campo Año: caja SMALL_2 y pad_hor SMALL_PAD; el helper ancho_campo_cifras retirado en #110)"
+      - "tests/check_settings_focus.py (los tres campos de make_date declaran la misma caja)"
+      - "audit HEAD --suite visual: 0 structural findings (sin el waiver de UI-016)"
+      - "tools/ab_testing/reports/AB-UI016-T1/ (capturas A/B, diff, overlay, results.json)"
+      - "tools/ab_testing/reports/AB-YEAR110/ (358 px de diff en settings-home, dentro de `ajustes_anio`)"
+      - "docs/evidencia/2026-10-16-year110-banco/ (captura del banco QEMU + medicion PIL)"
+      - "tools/ab_testing/quality/contracts.yaml (excepcion de layout_clipped retirada; expected_change acotado a `ajustes_anio`)"
+
+  - id: UI-017
+    title: "Paneles de digitos: el \"8 fantasma\" se apila por diseno debajo del valor"
+    severity: minor
+    fixture: main-frecuencia-dseg
+    status: verified
+    note: >
+      El look Casio de los paneles segmentados (issue #9, decision 1): detras del
+      valor va la capa de segmentos apagados -el mismo texto con cada digito en su
+      forma de 8, que es el digito que enciende los siete segmentos- a
+      LV_OPA_30, en la misma caja y dibujada ANTES del valor, asi que a la vista
+      solo quedan los segmentos que el valor no enciende. La regla
+      `layout_overlap` de quality/contracts.yaml la mide como lo que es -dos
+      etiquetas con texto visible y la misma caja, una sobre otra- y el hallazgo
+      se declara con una excepcion acotada a la regla y a la fixture, con fecha,
+      mientras la regla no distinga un apilado por diseno (una capa de alpha baja)
+      de dos textos que se tapan: el contrato NO se relaja, el hallazgo queda a la
+      vista en los reportes de `contracts`/`audit`. Solo hay una fixture en el
+      corpus con familia segmentada (`digits dseg7`), y sin ella el fantasma no se
+      crea (seria un digito mas). El solapamiento del reloj no llega a la regla
+      porque la etiqueta del valor conserva `bg_img_src` (la imagen de la barra,
+      con `bg_img_opa` en LV_OPA_TRANSP) y `_opaque` mira la presencia de la
+      imagen, no su opacidad: mismo diseno, distinto camino. Eso es una
+      imprecision de la regla, no una diferencia del look: el fantasma del reloj
+      se ve en los pixeles (`reports/AB-FONTSE`, region `reloj_potencia`).
+    evidence:
+      - "tools/ui_harness/fixtures/main-frecuencia-dseg.scn (digits dseg7 + clock_view time)"
+      - "src/main_screen.c (freq_shadow_update) + src/styles.h (UI_DIGIT_SHADOW_OPA = LV_OPA_30)"
+      - "inspeccion estructural: lv_label sombra 150,160 500x36 opa=76 \"88.888.888\" debajo del valor \"#FFFFFF 14.074.000\""
+      - "contracts HEAD: 1 x layout_overlap [main-frecuencia-dseg] (unico hallazgo, exceptuado por UI-017)"
+      - "audit HEAD --suite visual: 0 structural finding(s) sobre 4037 objetos / 35 escenarios"
+      - "tools/ab_testing/reports/AB-FONTSE/ (A/B 11f8d689 -> 562d3f2: main-frecuencia-dseg 4862 px en frecuencia + reloj_potencia)"
+      - "tools/ab_testing/quality/contracts.yaml (excepcion de layout_overlap [main-frecuencia-dseg] hasta 2027-03-31, autor fonts-extras)"
+
+  - id: UI-018
+    title: "Indicador xN del tuning adaptativo: overlay sobre el panel del reloj de potencia"
+    severity: minor
+    fixture: dfl-presets-rotary0
+    status: verified
+    note: >
+      Mientras la rueda principal gira, `src/main_screen.c` muestra la etiqueta
+      `x%.1f` de la aceleracion adaptativa (se oculta sola a los 2 s con
+      `hide_multiplier_cb`) alineada arriba a la derecha, -10/10, y el panel del
+      reloj de potencia (`clock_style`) ocupa ese mismo rincon: 209x61 alineado
+      arriba a la derecha (x=591..799, y=0..60), con la hora y la tension
+      CENTRADAS en su caja. La etiqueta del indicador (sony_16) cae entonces
+      dentro de la caja del reloj, en su margen derecho libre, y `layout_overlap`
+      -que mide cajas de etiquetas, no tinta- la lee como dos textos apilados. A
+      la vista no se tapan: en la captura el reloj conserva sus dos lineas
+      (`12.1v` / `13.8v`) y el `x1.0` queda en el rincon vacio del panel. No hay
+      un lugar libre en la barra superior para el indicador (izquierda: VFO/modo/
+      AGC; centro: S-meter; derecha: reloj), asi que el overlay es el diseno
+      vigente del indicador desde el fix de UI-001 (que lo dejo oculto por
+      defecto y solo visible mientras se gira). Queda registrado, con un waiver
+      acotado a la regla y a la fixture, para que el dia que el indicador se mueva
+      de lugar (o que la regla distinga tinta de caja) el waiver se retire; la
+      regla no se debilita. Ningun fixture del corpus lo exponia antes: las
+      fixtures que giran la rueda son nuevas del #183.
+    evidence:
+      - "tools/ui_harness/fixtures/dfl-presets-rotary0.scn (gira rotary0 y captura con el indicador visible)"
+      - "src/main_screen.c (tuning_multiplier_label: LV_ALIGN_TOP_RIGHT, -10, 10) + src/clock.c (clock_style 209x61 TOP_RIGHT)"
+      - "inspeccion estructural: lv_label 'x1.0' at 769,10 dentro de la caja del lv_label del reloj at 591,0 (100% covered)"
+      - "contracts HEAD: 1 x layout_overlap [dfl-presets-rotary0] (exceptuado por UI-018)"
+      - "captura docs/evidencia/2026-10-20-dfl183/capturas/dfl-presets-rotary0.png: el reloj muestra sus dos lineas completas (12.1v / 13.8v) y el x1.0 queda en el margen derecho del panel"
+
+  # --- Seeds from the repository history: recorded, not yet reproduced. -------
+  # They stay unverified until the harness can reproduce them (pixel-region
+  # detector today; structural inspection once the harness emits object bounds).
+
+  - id: UI-002
+    title: "Menu de apps: las apps solo vivian en el long-press de Ajustes"
+    severity: major
+    fixture: apps-menu-1
+    status: fixed
+    note: >
+      Hallazgos 17 y 29. El defecto (las apps alcanzables solo por el long-press
+      asignado, 9 de 23 con boton) se arreglo en el issue #46: las paginas APP
+      pasaron a 6 y las 23 apps (22 desde que About se elimino) tienen boton. El
+      arnes ahora SI abre el menu: los seis fixtures `apps-menu-1..6`
+      (tools/ui_harness/fixtures/) cargan `buttons_group_app` por el mismo camino
+      que la tecla APP (src/main_screen.c, KEYPAD_APP) y ciclan las seis paginas
+      con el boton-pagina (src/buttons.cpp). La inspeccion estructural de los seis
+      renders cubre las 22 celdas de app (con texto y caja), y `scenario_settle`
+      codifica, leyendo la tabla real `buttons_group_app`, que el rotulo
+      "(APP n:6)" y las apps de cada pagina son los que quedaron en la barra: una
+      pagina reordenada corta la corrida en vez de capturar otra cosa y salir
+      verde. No reproduce ningun defecto: la semilla pasa a `fixed` y la guarda es
+      el chequeo estatico `tests/check_apps_menu.py` (23 apps, 23 en el menu, 6
+      paginas) mas la codificacion del fixture.
+    evidence:
+      - "docs/HALLAZGOS.md 17, 29"
+      - "tools/ui_harness/fixtures/apps-menu-1.scn .. apps-menu-6.scn (las 6 paginas, 22 apps)"
+      - "src/main_screen.c (KEYPAD_APP -> buttons_load_page_group(buttons_group_app)) + src/buttons.cpp (page_app_1..6, button_next_page_cb)"
+      - "tools/ui_harness/src/screens.c (scenario_build/apps-menu + scenario_settle: lee buttons_group_app y exige el rotulo y las apps de la pagina)"
+      - "tests/check_apps_menu.py (23 apps, 23 en el menu, 6 paginas)"
+
+  - id: UI-003
+    title: "WCAG 2.1: pares texto/fondo por debajo de 4.5:1 o 3:1"
+    severity: major
+    fixture: home-usb-20m
+    status: unverified
+    note: >
+      Hallazgos 24/26/27/28. El arnes calcula el contraste de cada par texto/fondo
+      opaco de la pantalla real (typography_contrast). Desde UI-02 corre ademas
+      sobre los temas de la
+      ROM (built-in y los JSON RS, Holo y Material 3) y sigue sin encontrar
+      ningun par por debajo de 4.5:1/3:1: las violaciones historicas ya estaban
+      corregidas (hallazgo 24).
+      VISION no entra todavia (sus fuentes escaladas muestran otros hallazgos).
+      Desde UI-03 los temas JSON que van en la imagen (Holo, Material 3, RS) pasan
+      ademas el chequeo ESTATICO nuevo `x6200-ab themes` con las parejas de
+      quality/theme_pairs.yaml, que resuelve la herencia del `base` como
+      src/theme.c.
+      El verificador de la ROM (tests/check_wcag.py) sigue corriendo sobre las
+      paletas y los JSON.
+    evidence:
+      - "docs/HALLAZGOS.md 24, 26, 27, 28"
+      - "tests/check_wcag.py"
+      - "tools/ab_testing/quality/theme_pairs.yaml + tools/ab_testing/tests/test_theme_files.py"
+      - "tools/ui_harness/fixtures/main-tema-rs.scn, main-tema-outdoor-negative.scn, main-tema-classic.scn, main-tema-holo.scn, main-tema-material-3.scn"
+      - "tools/ab_testing/reports/AB-e2e-structural/audit-base.json"
+
+  - id: UI-004
+    title: "Ajustes: widgets que no se podian alcanzar con el foco"
+    severity: major
+    fixture: settings-home
+    status: fixed
+    note: >
+      Hallazgo 18: tres widgets de Ajustes (los dos switches de Bluetooth y el
+      desplegable Charger) no llamaban a `dialog_item()` y quedaban fuera de
+      `keyboard_group`, sin poder alcanzarlos ni cambiarlos con las teclas. Se
+      arreglaron con `dialog_item()` en los tres. El detector renderizado que
+      faltaba es ahora el contrato `layout_focus_unreachable`
+      (tools/ab_testing/src/x6200_ab/layout_checks.py): el inspector emite, por
+      nodo, la pertenencia a `keyboard_group` (`--inspect`;
+      tools/ui_harness/src/ui_inspector.c) y la regla marca todo control de una clase
+      que el usuario cambia con las teclas (switch/slider/dropdown/spinbox/textarea/
+      roller/checkbox/table/btn/btnmatrix) que este visible y NO este en el grupo.
+      Corrida sobre los fixtures que abren Ajustes (`settings-home`,
+      `settings-wfbat`, `settings-perfil`, `settings-audio`, `settings-rs-theme`) y
+      sobre `bt-dialog`/`main-foco`/`apps-menu-*`: **0 hallazgos** (todos los
+      controles alcanzables estan en el grupo). La regla solo corre cuando la
+      captura tiene el grupo (los fixtures `main` no lo crean). Guarda permanente:
+      el propio contrato (la autocprueba de `tests/test_e2e.py` quita el
+      `lv_group_add_obj()` de `dialog_item()` en una revision efimera y exige el
+      hallazgo) mas el chequeo estatico `tests/check_settings_focus.py` (28 widgets
+      creados, 28 registrados).
+    evidence:
+      - "docs/HALLAZGOS.md 18"
+      - "src/dialog.c (dialog_item: lv_group_add_obj(keyboard_group, obj))"
+      - "tools/ui_harness/src/ui_inspector.c (in_keyboard_group por nodo + keyboard_group en la inspeccion)"
+      - "tools/ab_testing/src/x6200_ab/layout_checks.py (layout_focus_unreachable)"
+      - "settings-home/-wfbat/-perfil/-audio/-rs-theme + bt-dialog + main-foco: 0 hallazgos layout_focus_unreachable"
+      - "tests/check_settings_focus.py"
+
+  - id: UI-005
+    title: "Dialogo viejo: texto constante tapado por los botones"
+    severity: minor
+    fixture: bt-dialog
+    status: fixed
+    note: >
+      Hallazgo 21: la linea de estado del dialogo de BT (y las de WeFax/SSTV) se
+      apoyaba en las constantes viejas DIALOG_H (372) / DIALOG_Y (108) y quedaba
+      tapada por la fila de botones (que empieza en 480 - 62). Se arreglo con la
+      geometria real (DIALOG_BOX_H 348, DIALOG_Y 66, src/styles.h). El arnes ahora
+      SI renderiza el dialogo de BT: el fixture `bt-dialog`
+      (tools/ui_harness/fixtures/bt-dialog.scn) abre el dialogo real por el camino
+      del firmware (main_screen_start_app(ACTION_APP_BT) -> src/dialog_bt.c), con
+      `btaudio-ctl` reemplazado por un mock que siembra la lista de dispositivos
+      (/tmp/bt_ui_list.txt) y `system()` envuelto a un no-op
+      (mocks/mock_btaudio.c). Medido con la inspeccion estructural: la linea de
+      estado "no headphones, RX off" queda en y=380, 17 px de alto -> y2=396,
+      ARRIBA de la fila de botones (y=418): 21 px de aire. NO reproduce el defecto.
+      La semilla pasa a `fixed`; la guarda es `scenario_settle`, que exige que esa
+      linea exista y que su y2 quede por encima de 418 (una reaparicion corta la
+      corrida), mas el contrato `typography_text_truncated` (que ademas encontro y
+      cerro un recorte real de la nota del mismo dialogo, ver la nota del NOTE_W en
+      src/dialog_bt.c).
+    evidence:
+      - "docs/HALLAZGOS.md 21"
+      - "tools/ui_harness/fixtures/bt-dialog.scn + tools/ui_harness/src/screens.c (scenario_settle: y2 de la linea de estado < 418)"
+      - "src/dialog_bt.c (DIALOG_BOX_H, NOTE_W) + src/styles.h (DIALOG_BOX_H 348, DIALOG_Y 66)"
+      - "tools/ui_harness/mocks/mock_btaudio.c (__wrap_system + lista sembrada)"
+      - "inspeccion structural del render: 'no headphones, RX off' y2=396 < 418 (21 px)"
+
+  - id: UI-006
+    title: "Icono BT: el glifo U+F293 no existe en sony_20 (rectangulo vacio)"
+    severity: minor
+    fixture: home-usb-20m
+    status: unverified
+    note: >
+      Hallazgo 19. El arnes ya detecta glifos ausentes de toda la cadena de
+      fuentes (typography_missing_glyph) y la autocprueba de defecto deliberado lo
+      verifica; pero la pantalla principal ya no dibuja ese glifo: el icono BT se
+      dibuja con lv_line (src/info.c), asi que no hay nada que reproducir en la
+      fixture actual.
+    evidence:
+      - "docs/HALLAZGOS.md 19"
+      - "src/info.c (la runa se dibuja con lv_line)"
+
+  - id: UI-008
+    title: "CMA: 128 MB reservados para GPU no usada (presupuesto del firmware, fuera del alcance de la UI)"
+    severity: info
+    fixture: home-usb-20m
+    status: out-of-scope
+    note: >
+      docs/RESOURCE_USAGE.md. NO es un defecto de la UI: es un presupuesto de
+      recursos del firmware (el pool CMA de 128 MB del DTS, atado a una GPU que el
+      firmware no usa), y el arnes de UI no mide memoria del sistema. No lleva
+      fixture ni fake-trick: queda `out-of-scope` declarado, con la decision escrita
+      en docs/UI_KNOWN_ISSUES.md (seccion UI-008). El monitoreo queda en
+      docs/RESOURCE_USAGE.md, que es donde vive el presupuesto.
+    evidence:
+      - "docs/RESOURCE_USAGE.md"
+      - "docs/UI_KNOWN_ISSUES.md (UI-008: decision out-of-scope)"

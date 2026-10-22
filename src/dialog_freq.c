@@ -62,7 +62,7 @@ static void construct_cb(lv_obj_t *parent) {
     lv_textarea_set_max_length(text, 9);
     lv_textarea_set_placeholder_text(text, "Freq in MHz");
 
-    lv_obj_clear_flag(text, LV_OBJ_FLAG_SCROLLABLE);
+    if (text) lv_obj_clear_flag(text, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_text_font(text, &sony_44, 0);
 
     lv_group_add_obj(keyboard_group, text);

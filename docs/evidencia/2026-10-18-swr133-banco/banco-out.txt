@@ -1,0 +1,569 @@
+[User]	(455064.961, +455064961)	 main: Display: fbdev 	(in main.c line #216)
+Home directory not accessible: Permission denied
+[User]	(455064.988, +27)	 keypad_init: Teclado del panel en /dev/input/event0 	(in keypad.c line #199)
+[User]	(455064.989, +1)	 keypad_init: Teclado del panel en /dev/input/event4 	(in keypad.c line #199)
+[Warn]	(455064.989, +0)	 audio_init_sync: pulseaudio no disponible (Connection refused): la GUI sigue, pero sin audio 	(in audio.c line #191)
+[User]	(455065.033, +44)	 cfg_params_load_item: Loaded vol=30 (pk=0) 	(in params.c line #52)
+[User]	(455065.033, +0)	 cfg_params_load_item: Loaded sql=0 (pk=0) 	(in params.c line #52)
+[Warn]	(455065.033, +0)	 cfg_params_load_item: No results for load sql_fm 	(in params.c line #77)
+[User]	(455065.033, +0)	 load_items_from_db: Can't load sql_fm (pk=0) 	(in cfg.c line #226)
+[User]	(455065.033, +0)	 cfg_params_load_item: Loaded pwr=8.000000 (pk=0) 	(in params.c line #67)
+[User]	(455065.034, +1)	 cfg_params_load_item: Loaded fft_dec=3 (pk=0) 	(in params.c line #52)
+[Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load tx_filter_low 	(in params.c line #77)
+[User]	(455065.034, +0)	 load_items_from_db: Can't load tx_filter_low (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load tx_filter_high 	(in params.c line #77)
+[User]	(455065.034, +0)	 load_items_from_db: Can't load tx_filter_high (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load field_boot 	(in params.c line #77)
+[User]	(455065.034, +0)	 load_items_from_db: Can't load field_boot (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load voice_msg_gain 	(in params.c line #77)
+[User]	(455065.034, +0)	 load_items_from_db: Can't load voice_msg_gain (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load cluster_all_bands 	(in params.c line #77)
+[User]	(455065.034, +0)	 load_items_from_db: Can't load cluster_all_bands (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load cluster_order 	(in params.c line #77)
+[User]	(455065.034, +0)	 load_items_from_db: Can't load cluster_order (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load cluster_column 	(in params.c line #77)
+[User]	(455065.034, +0)	 load_items_from_db: Can't load cluster_column (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load wefax_align 	(in params.c line #77)
+[User]	(455065.034, +0)	 load_items_from_db: Can't load wefax_align (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load wefax_tilt 	(in params.c line #77)
+[User]	(455065.034, +0)	 load_items_from_db: Can't load wefax_tilt (pk=0) 	(in cfg.c line #226)
+ALSA lib confmisc.c:855:(parse_card) [Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load wspr_tx_freq 	(in params.c line #77)
+[User]	(455065.034, +0)	 load_items_from_db: Can't load wspr_tx_freq (pk=0) 	(in cfg.c line #226)
+[User]	(455065.034, +0)	 cfg_params_load_item: Loaded wspr_tx_pct=0 (pk=0) 	(in params.c line #52)
+cannot find card '0'[Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load wspr_upload 	(in params.c line #77)
+[User]	(455065.034, +0)	 load_items_from_db: Can't load wspr_upload (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load key_tone 	(in params.c line #77)
+
+[User]	(455065.034, +0)	 load_items_from_db: Can't load key_tone (pk=0) 	(in cfg.c line #226)
+[User]	(455065.034, +0)	 cfg_params_load_item: Loaded band=-1 (pk=0) 	(in params.c line #52)
+[User]	(455065.034, +0)	 cfg_params_load_item: Loaded ant=1 (pk=0) 	(in params.c line #52)
+[User]	(455065.034, +0)	 cfg_params_load_item: Loaded atu=1 (pk=0) 	(in params.c line #52)
+[Warn]	(455065.034, +0)	 cfg_params_load_item: No results for load key_speed 	(in params.c line #77)
+[User]	(455065.034, +0)	 load_items_from_db: Can't load key_speed (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.035, +1)	 cfg_params_load_item: No results for load key_mode 	(in params.c line #77)
+[User]	(455065.035, +0)	 load_items_from_db: Can't load key_mode (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load iambic_mode 	(in params.c line #77)
+[User]	(455065.035, +0)	 load_items_from_db: Can't load iambic_mode (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load key_vol 	(in params.c line #77)
+[User]	(455065.035, +0)	 load_items_from_db: Can't load key_vol (pk=0) 	(in cfg.c line #226)
+[User]	(455065.035, +0)	 cfg_params_load_item: Loaded key_train=1 (pk=0) 	(in params.c line #52)
+[Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load cwt_level 	(in params.c line #77)
+[User]	(455065.035, +0)	 load_items_from_db: Can't load cwt_level (pk=0) 	(in cfg.c line #226)
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+[Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load cwt_group 	(in params.c line #77)
+[User]	(455065.035, +0)	 load_items_from_db: ALSA lib confmisc.c:422:(snd_func_concat) Can't load cwt_group (pk=0)error evaluating strings 	(in cfg.c line #226)
+
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+[Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load qsk_timeALSA lib confmisc.c:1334:(snd_func_refer)  	(in params.c line #77)
+error evaluating name
+[User]	(455065.035, +0)	 load_items_from_db: Can't load qsk_time (pk=0) 	(in cfg.c line #226)
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+[Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load key_ratio 	(in params.c line #77)
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+[User]	(455065.035, +0)	 load_items_from_db: Can't load key_ratio (pk=0) 	(in cfg.c line #226)
+[User]	(455065.035, +0)	 cfg_params_load_item: Loaded cw_decoder=1 (pk=0) 	(in params.c line #52)
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+[User]	(455065.035, +0)	 cfg_params_load_item: Loaded cw_tune=1 (pk=0) 	(in params.c line #52)
+[Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load cw_decoder_snr_2 	(in params.c line #77)
+[User]	(455065.035, +0)	 load_items_from_db: Can't load cw_decoder_snr_2 (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load cw_decoder_snr_gist 	(in params.c line #77)
+[User]	(455065.035, +0)	 load_items_from_db: Can't load cw_decoder_snr_gist (pk=0) 	(in cfg.c line #226)
+amixer: [Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load cw_decoder_peak_beta 	(in params.c line #77)
+[User]	(455065.035, +0)	 load_items_from_db: Can't load cw_decoder_peak_beta (pk=0) 	(in cfg.c line #226)
+Mixer attach default error: No such file or directory[Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load cw_decoder_noise_beta 	(in params.c line #77)
+[User]	(455065.035, +0)	 load_items_from_db: Can't load cw_decoder_noise_beta (pk=0) 	(in cfg.c line #226)
+
+[Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load agc_hang 	(in params.c line #77)
+[User]	(455065.035, +0)	 load_items_from_db: Can't load agc_hang (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load agc_knee 	(in params.c line #77)
+[User]	(455065.035, +0)	 load_items_from_db: Can't load agc_knee (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.035, +0)	 cfg_params_load_item: No results for load agc_slope 	(in params.c line #77)
+[User]	(455065.035, +0)	 load_items_from_db: Can't load agc_slope (pk=0) 	(in cfg.c line #226)
+[User]	(455065.035, +0)	 cfg_params_load_item: Loaded comp=1 (pk=0) 	(in params.c line #52)
+[User]	(455065.035, +0)	 cfg_params_load_item: Loaded dnf=2 (pk=0) 	(in params.c line #52)
+[User]	(455065.035, +0)	 cfg_params_load_item: Loaded dnf_center=1000 (pk=0) 	(in params.c line #52)
+[User]	(455065.035, +0)	 cfg_params_load_item: Loaded dnf_width=50 (pk=0) 	(in params.c line #52)
+[User]	(455065.035, +0)	 cfg_params_load_item: Loaded nb=1 (pk=0) 	(in params.c line #52)
+[User]	(455065.035, +0)	 cfg_params_load_item: Loaded nb_level=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.036, +1)	 cfg_params_load_item: Loaded nb_width=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded nr=1 (pk=0) 	(in params.c line #52)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded nr_level=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded swrscan_linear=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded swrscan_span=50000 (pk=0) 	(in params.c line #52)
+[Warn]	(455065.036, +0)	 cfg_params_load_item: No results for load ft8_hold_freq 	(in params.c line #77)
+[User]	(455065.036, +0)	 load_items_from_db: Can't load ft8_hold_freq (pk=0) 	(in cfg.c line #226)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded eq_rx_en=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded eq_rx_p1=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded eq_rx_p2=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded eq_rx_p3=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded eq_rx_p4=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded eq_rx_p5=0 (pk=0) 	(in params.c line #52)
+[Warn]	(455065.036, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_en 	(in params.c line #77)
+[User]	(455065.036, +0)	 load_items_from_db: Can't load eq_rx_wfm_en (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.036, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p1 	(in params.c line #77)
+[User]	(455065.036, +0)	 load_items_from_db: Can't load eq_rx_wfm_p1 (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.036, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p2 	(in params.c line #77)
+[User]	(455065.036, +0)	 load_items_from_db: Can't load eq_rx_wfm_p2 (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.036, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p3 	(in params.c line #77)
+[User]	(455065.036, +0)	 load_items_from_db: Can't load eq_rx_wfm_p3 (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.036, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p4 	(in params.c line #77)
+[User]	(455065.036, +0)	 load_items_from_db: Can't load eq_rx_wfm_p4 (pk=0) 	(in cfg.c line #226)
+[Warn]	(455065.036, +0)	 cfg_params_load_item: No results for load eq_rx_wfm_p5 	(in params.c line #77)
+[User]	(455065.036, +0)	 load_items_from_db: Can't load eq_rx_wfm_p5 (pk=0) 	(in cfg.c line #226)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded eq_mic_en=0 (pk=0) 	(in params.c line #52)
+[Warn]	(455065.036, +0)	 cfg_params_load_item: No results for load eq_mic_p1 	(in params.c line #77)
+[User]	(455065.036, +0)	 load_items_from_db: Can't load eq_mic_p1 (pk=0) 	(in cfg.c line #226)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded eq_mic_p2=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded eq_mic_p3=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.036, +0)	 cfg_params_load_item: Loaded eq_mic_p4=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.037, +1)	 cfg_params_load_item: Loaded eq_mic_p5=0 (pk=0) 	(in params.c line #52)
+[User]	(455065.053, +16)	 cfg_band_params_load_item: Loaded vfoa_freq=166850000 (pk=-1) 	(in band.c line #452)
+[User]	(455065.053, +0)	 get_band_info_by_freq: Loading band info for freq: 166850000 	(in band.c line #237)
+[User]	(455065.059, +6)	 cfg_transverter_get_shift: Can't check transverter freq, not loaded yet 	(in transverter.c line #60)
+[User]	(455065.059, +0)	 cfg_band_params_load_item: Loaded vfoa_mode=5 (pk=-1) 	(in band.c line #452)
+[User]	(455065.059, +0)	 cfg_band_params_load_item: Loaded vfoa_agc=3 (pk=-1) 	(in band.c line #452)
+[User]	(455065.059, +0)	 cfg_band_params_load_item: Loaded vfoa_pre=1 (pk=-1) 	(in band.c line #452)
+[User]	(455065.059, +0)	 cfg_band_params_load_item: Loaded vfoa_att=0 (pk=-1) 	(in band.c line #452)
+[User]	(455065.059, +0)	 cfg_band_params_load_item: Loaded vfob_freq=6991334 (pk=-1) 	(in band.c line #452)
+[User]	(455065.059, +0)	 get_band_info_by_freq: Loading band info for freq: 6991334 	(in band.c line #237)
+[User]	(455065.060, +1)	 cfg_band_params_load_item: Loaded vfob_mode=1 (pk=-1) 	(in band.c line #452)
+[User]	(455065.060, +0)	 cfg_band_params_load_item: Loaded vfob_agc=3 (pk=-1) 	(in band.c line #452)
+[User]	(455065.060, +0)	 cfg_band_params_load_item: Loaded vfob_pre=0 (pk=-1) 	(in band.c line #452)
+[User]	(455065.060, +0)	 cfg_band_params_load_item: Loaded vfob_att=0 (pk=-1) 	(in band.c line #452)
+[User]	(455065.060, +0)	 cfg_band_params_load_item: Loaded vfo=1 (pk=-1) 	(in band.c line #452)
+[User]	(455065.060, +0)	 cfg_transverter_get_shift: Can't check transverter freq, not loaded yet 	(in transverter.c line #60)
+[User]	(455065.060, +0)	 get_band_info_by_freq: Loading band info for freq: 166850000 	(in band.c line #237)
+[User]	(455065.060, +0)	 cfg_band_params_load_item: Loaded split=0 (pk=-1) 	(in band.c line #452)
+[User]	(455065.060, +0)	 cfg_band_params_load_item: Loaded rfg=80 (pk=-1) 	(in band.c line #452)
+[User]	(455065.060, +0)	 cfg_band_params_load_item: Loaded grid_min=-121 (pk=-1) 	(in band.c line #452)
+[User]	(455065.061, +1)	 cfg_band_params_load_item: Loaded grid_max=-73 (pk=-1) 	(in band.c line #452)
+[User]	(455065.062, +1)	 cfg_mode_params_load_item: Loaded filter_high=3000 (pk=1) 	(in mode.c line #134)
+[User]	(455065.062, +0)	 update_cur_high_filter: Set current high filter: 3000 	(in mode.c line #535)
+[User]	(455065.065, +3)	 cfg_mode_params_load_item: Loaded filter_low=200 (pk=1) 	(in mode.c line #134)
+[User]	(455065.066, +1)	 update_cur_low_filter: Set current low filter: 200 	(in mode.c line #509)
+[User]	(455065.066, +0)	 cfg_mode_params_load_item: Loaded freq_step=500 (pk=1) 	(in mode.c line #134)
+[User]	(455065.066, +0)	 cfg_mode_params_load_item: Loaded spectrum_factor=1 (pk=1) 	(in mode.c line #134)
+[User]	(455065.068, +2)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+[Warn]	(455065.099, +31)	 audio_set_play_vol: No se pudo preparar el mixer de 'default' 	(in audio.c line #403)
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+[Warn]	(455065.099, +0)	 audio_set_rec_vol: No se pudo preparar el mixer de 'default' 	(in audio.c line #444)
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+[User]	(455065.195, +96)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #567)
+[User]	(455065.195, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #573)
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+Can't open gpio chip 0
+[Error]	(455065.319, +124)	 gpio_safe_prepare: El GPIO no se pudo inicializar: se sigue sin él (no se tocan las líneas, que quedaron sin reservar) 	(in gpio_safe.c line #24)
+Can't open i2c: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+amixer: Mixer attach default error: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+[Warn]	(455065.600, +281)	 audio_set_rec_vol: No se pudo preparar el mixer de 'default' 	(in audio.c line #444)
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5180:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5703:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib control.c:1528:(snd_ctl_open_noupdate) Invalid CTL default
+[Warn]	(455065.601, +1)	 audio_set_play_vol: No se pudo preparar el mixer de 'default' 	(in audio.c line #403)
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+Can't open i2c: No such file or directory
+[Error]	(455079.826, +14225)	 radio_init: La BASE no respondió: la GUI sigue sin control de la radio 	(in radio.c line #456)
+[Error]	(455079.860, +34)	 setup_nm_client: Could not create NMClient: Could not connect: No such file or directory. 	(in wifi.cpp line #397)
+
+(process:7): GLib-GObject-WARNING **: 05:04:08.035: invalid (NULL) pointer instance
+
+(process:7): GLib-GObject-CRITICAL **: 05:04:08.035: g_signal_connect_data: assertion 'G_TYPE_CHECK_INSTANCE (instance)' failed
+[User]	(455079.861, +1)	 wifi_power_on: Power on wifi/bt 	(in wifi.cpp line #93)
+[Error]	(455079.861, +0)	 cat_init: CAT: no se pudo abrir /dev/ttyS2: la GUI sigue, sin CAT 	(in cat.cpp line #1002)
+[User]	(455079.863, +2)	 qso_log_import_adif: No ADI file to import 	(in qso_log.c line #51)
+[Warn]	(455079.890, +27)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455079.890, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455079.890, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455079.890, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455079.891, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455079.891, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455079.891, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455079.893, +2)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[User]	(455079.898, +5)	 boot_time_log: GUI lista: 0.0 s de uptime 	(in main.c line #116)
+[Warn]	(455079.924, +26)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455079.925, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455080.372, +447)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455080.372, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455080.870, +498)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455080.921, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455080.921, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455080.921, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455080.971, +50)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.021, +50)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.071, +50)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.122, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.372, +250)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.372, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.626, +254)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.676, +50)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.727, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.776, +49)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.827, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.876, +49)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.877, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.878, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455081.878, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455082.372, +494)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455082.373, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455082.872, +499)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455082.873, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.047, +174)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.047, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.047, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.048, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.048, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.048, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.048, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.048, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.048, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.049, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.049, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.049, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.049, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.049, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.049, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.049, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.050, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.050, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.373, +323)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.373, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.374, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.872, +498)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.922, +50)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.922, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455083.922, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+Can't write to i2c, not opened
+[User]	(455084.375, +453)	 cfg_mode_params_load_item: Loaded filter_high=2900 (pk=0) 	(in mode.c line #134)
+[User]	(455084.375, +0)	 update_cur_high_filter: Set current high filter: 2900 	(in mode.c line #535)
+[User]	(455084.375, +0)	 cfg_mode_params_load_item: Loaded filter_low=230 (pk=0) 	(in mode.c line #134)
+[User]	(455084.375, +0)	 update_cur_low_filter: Set current low filter: 230 	(in mode.c line #509)
+[User]	(455084.375, +0)	 cfg_mode_params_load_item: Loaded freq_step=100 (pk=0) 	(in mode.c line #134)
+[User]	(455084.375, +0)	 cfg_mode_params_load_item: Loaded spectrum_factor=1 (pk=0) 	(in mode.c line #134)
+[User]	(455084.375, +0)	 update_cur_low_filter: Set current low filter: 230 	(in mode.c line #509)
+[User]	(455084.375, +0)	 update_cur_high_filter: Set current high filter: 2900 	(in mode.c line #535)
+Can't write to i2c, not opened
+Can't write to i2c, not opened
+[Warn]	(455084.376, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455084.376, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455084.377, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455084.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455084.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455084.426, +49)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455084.876, +450)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455084.876, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455084.876, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[User]	(455085.077, +201)	 cfg_band_params_save_item: Saved vfob_mode=0 (pk=-1) 	(in band.c line #531)
+[Warn]	(455085.375, +298)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455085.376, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455085.376, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455085.872, +496)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455085.923, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455085.923, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455085.923, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455086.376, +453)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455086.376, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455086.376, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455086.876, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455086.876, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455086.876, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455087.376, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455087.376, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455087.377, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455087.871, +494)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455087.921, +50)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455087.922, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455087.922, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455088.376, +454)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455088.377, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455088.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455088.875, +498)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455088.876, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455088.876, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455089.376, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455089.376, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455089.376, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455089.872, +496)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455089.923, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455089.923, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455089.923, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455090.377, +454)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455090.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455090.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455090.877, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455090.877, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455090.877, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455091.377, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455091.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455091.378, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455091.871, +493)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455091.922, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455091.922, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455091.922, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455092.377, +455)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455092.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455092.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455092.877, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455092.877, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455092.877, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455093.377, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455093.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455093.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455093.872, +495)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455093.922, +50)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455093.922, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455093.923, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455094.377, +454)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455094.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455094.378, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455094.876, +498)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455094.877, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455094.877, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455095.377, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455095.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455095.378, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455095.872, +494)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455095.921, +49)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455095.922, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455095.922, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+Can't write to i2c, not opened
+Can't write to i2c, not opened
+[User]	(455096.120, +198)	 cfg_mode_params_load_item: Loaded filter_high=3000 (pk=1) 	(in mode.c line #134)
+[User]	(455096.120, +0)	 update_cur_high_filter: Set current high filter: 3000 	(in mode.c line #535)
+[User]	(455096.120, +0)	 cfg_mode_params_load_item: Loaded filter_low=200 (pk=1) 	(in mode.c line #134)
+[User]	(455096.120, +0)	 update_cur_low_filter: Set current low filter: 200 	(in mode.c line #509)
+[User]	(455096.120, +0)	 cfg_mode_params_load_item: Loaded freq_step=500 (pk=1) 	(in mode.c line #134)
+[User]	(455096.121, +1)	 cfg_mode_params_load_item: Loaded spectrum_factor=1 (pk=1) 	(in mode.c line #134)
+[User]	(455096.121, +0)	 update_cur_low_filter: Set current low filter: 200 	(in mode.c line #509)
+[User]	(455096.121, +0)	 update_cur_high_filter: Set current high filter: 3000 	(in mode.c line #535)
+Can't write to i2c, not opened
+[User]	(455096.121, +0)	 get_band_info_by_freq: Loading band info for freq: 6991334 	(in band.c line #237)
+[Warn]	(455096.122, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455096.122, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455096.173, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455096.377, +204)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455096.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455096.378, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455096.878, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455096.878, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455096.878, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.377, +499)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.377, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.378, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+Can't write to i2c, not opened
+[Warn]	(455097.778, +400)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.778, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.778, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.778, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.778, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.779, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.780, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.780, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.780, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.780, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.780, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.877, +97)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.877, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.878, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.927, +49)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455097.927, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455098.380, +453)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455098.381, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455098.881, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455098.881, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455099.380, +499)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455099.381, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455099.872, +491)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455099.922, +50)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455099.923, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455100.381, +458)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455100.381, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455100.881, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455100.881, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455101.381, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455101.381, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455101.872, +491)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455101.923, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455101.923, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455102.380, +457)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455102.381, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455102.881, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455102.881, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455103.381, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455103.382, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455103.872, +490)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455103.923, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455103.923, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455104.381, +458)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455104.382, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455104.881, +499)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455104.881, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[User]	(455105.078, +197)	 cfg_band_params_save_item: Saved vfob_mode=1 (pk=-1) 	(in band.c line #531)
+[Warn]	(455105.381, +303)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455105.382, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455105.871, +489)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455105.922, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455105.922, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455106.382, +460)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455106.382, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455106.881, +499)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455106.882, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455107.382, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455107.382, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455107.872, +490)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455107.923, +51)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455107.923, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455108.382, +459)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455108.383, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455108.882, +499)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455108.883, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455109.383, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455109.384, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455109.872, +488)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455109.922, +50)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455109.923, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455110.385, +462)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455110.385, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455110.885, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455110.885, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455111.385, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455111.385, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455111.872, +487)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455111.921, +49)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455111.921, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455112.384, +463)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455112.385, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455112.884, +499)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455112.885, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455113.385, +500)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455113.385, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455113.872, +487)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455113.921, +49)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455113.922, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455114.384, +462)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455114.385, +1)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455114.884, +499)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)
+[Warn]	(455114.884, +0)	 draw_bg_img: Couldn't read the background image 	(in lv_draw_sw_rect.c line #397)

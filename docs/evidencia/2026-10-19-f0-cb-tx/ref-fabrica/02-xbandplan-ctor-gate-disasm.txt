@@ -1,0 +1,194 @@
+== XBandPlan::XBandPlan()  /usr/app_qt/x6200_ui_v100 ==
+binario: /usr/app_qt/x6200_ui_v100 (ELF32 ARM, no stripped)
+simbolo: _ZN9XBandPlanC1Ev = 0x8f708, tamano 13792 (0x35e0)
+fuente (string en .rodata): ../x6200_ui_v100/xbandplan.cpp
+
+Mecanismo de direccionamiento: PIC PC-relativo. El compilador carga un offset
+desde un literal pool y calcula la direccion como  target = (pc_de_la_instruccion_add + 8) + literal.
+Tabla de referencias verificadas en esta funcion (vaddr de .rodata = fileoffset + 0x10000):
+  insn add      vaddr destino   string
+  0x8f778       0x10f04f        "/etc/xgradio/xgradio.conf"
+  0x8f7a8       0x10f069        "mods"
+  0x8f7cc       0x10d19f        "fullband-tx"          <- QString de contains()
+  0x8f808       0x10f06e        "../x6200_ui_v100/xbandplan.cpp"   (qDebug)
+  0x8f820       0x10f038        "_ZZN9XBandPlanC4EvE19__PRETTY_FUNCTION__" (qDebug, +0x1c)
+  0x8f840       0x10f08d        "found [mods] fullband-tx:"
+  0x8f860       0x10d19f        "fullband-tx"          <- QString de value()
+  0x8f8e8       0x10d19f        "fullband-tx"          <- QString de value()(2)
+  0x8f934       0x10c6eb        "enable"               (sufijo de "sql_enable" fusionado por el linker)
+  0x8f998       0x10f0a7        "bands-cfg"
+
+== desensamblado crudo 0x8f708-0x8f9a0 ==
+
+root/usr/app_qt/x6200_ui_v100:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+0008f708 <_ZN9XBandPlanC1Ev>:
+   8f708:	e59f3848 	ldr	r3, [pc, #2120]	@ 8ff58 <_ZN9XBandPlanC1Ev+0x850>
+   8f70c:	e92d4ff0 	push	{r4, r5, r6, r7, r8, r9, sl, fp, lr}
+   8f710:	e24ddf4b 	sub	sp, sp, #300	@ 0x12c
+   8f714:	e08f3003 	add	r3, pc, r3
+   8f718:	e28d40e0 	add	r4, sp, #224	@ 0xe0
+   8f71c:	e58d3014 	str	r3, [sp, #20]
+   8f720:	e59d2014 	ldr	r2, [sp, #20]
+   8f724:	e59f3830 	ldr	r3, [pc, #2096]	@ 8ff5c <_ZN9XBandPlanC1Ev+0x854>
+   8f728:	e58d0010 	str	r0, [sp, #16]
+   8f72c:	e7927003 	ldr	r7, [r2, r3]
+   8f730:	e1a03000 	mov	r3, r0
+   8f734:	e59f1824 	ldr	r1, [pc, #2084]	@ 8ff60 <_ZN9XBandPlanC1Ev+0x858>
+   8f738:	e4837004 	str	r7, [r3], #4
+   8f73c:	e58d3020 	str	r3, [sp, #32]
+   8f740:	e2803008 	add	r3, r0, #8
+   8f744:	e58d303c 	str	r3, [sp, #60]	@ 0x3c
+   8f748:	e280300c 	add	r3, r0, #12
+   8f74c:	e58d3040 	str	r3, [sp, #64]	@ 0x40
+   8f750:	e2803010 	add	r3, r0, #16
+   8f754:	e58d3044 	str	r3, [sp, #68]	@ 0x44
+   8f758:	e3a03000 	mov	r3, #0
+   8f75c:	e5807004 	str	r7, [r0, #4]
+   8f760:	e5807008 	str	r7, [r0, #8]
+   8f764:	e580700c 	str	r7, [r0, #12]
+   8f768:	e5807010 	str	r7, [r0, #16]
+   8f76c:	e5c0301c 	strb	r3, [r0, #28]
+   8f770:	e5803018 	str	r3, [r0, #24]
+   8f774:	e1a00004 	mov	r0, r4
+   8f778:	e08f1001 	add	r1, pc, r1
+   8f77c:	ebfe7f00 	bl	2f384 <_ZN7QStringC1EPKc>
+   8f780:	e28d60b0 	add	r6, sp, #176	@ 0xb0
+   8f784:	e3a03000 	mov	r3, #0
+   8f788:	e3a02001 	mov	r2, #1
+   8f78c:	e1a01004 	mov	r1, r4
+   8f790:	e1a00006 	mov	r0, r6
+   8f794:	ebfe66b6 	bl	29274 <_ZN9QSettingsC1ERK7QStringNS_6FormatEP7QObject@plt>
+   8f798:	e1a00004 	mov	r0, r4
+   8f79c:	ebfe6c06 	bl	2a7bc <_ZN7QStringD1Ev>
+   8f7a0:	e59f17bc 	ldr	r1, [pc, #1980]	@ 8ff64 <_ZN9XBandPlanC1Ev+0x85c>
+   8f7a4:	e1a00004 	mov	r0, r4
+   8f7a8:	e08f1001 	add	r1, pc, r1
+   8f7ac:	ebfe7ef4 	bl	2f384 <_ZN7QStringC1EPKc>
+   8f7b0:	e1a01004 	mov	r1, r4
+   8f7b4:	e1a00006 	mov	r0, r6
+   8f7b8:	ebfe5a83 	bl	261cc <_ZN9QSettings10beginGroupERK7QString@plt>
+   8f7bc:	e1a00004 	mov	r0, r4
+   8f7c0:	ebfe6bfd 	bl	2a7bc <_ZN7QStringD1Ev>
+   8f7c4:	e59f179c 	ldr	r1, [pc, #1948]	@ 8ff68 <_ZN9XBandPlanC1Ev+0x860>
+   8f7c8:	e1a00004 	mov	r0, r4
+   8f7cc:	e08f1001 	add	r1, pc, r1
+   8f7d0:	ebfe7eeb 	bl	2f384 <_ZN7QStringC1EPKc>
+   8f7d4:	e1a01004 	mov	r1, r4
+   8f7d8:	e1a00006 	mov	r0, r6
+   8f7dc:	ebfe5cd8 	bl	26b44 <_ZNK9QSettings8containsERK7QString@plt>
+   8f7e0:	e1a05000 	mov	r5, r0
+   8f7e4:	e1a00004 	mov	r0, r4
+   8f7e8:	ebfe6bf3 	bl	2a7bc <_ZN7QStringD1Ev>
+   8f7ec:	e3550000 	cmp	r5, #0
+   8f7f0:	e28d50a8 	add	r5, sp, #168	@ 0xa8
+   8f7f4:	0a000065 	beq	8f990 <_ZN9XBandPlanC1Ev+0x288>
+   8f7f8:	e59f376c 	ldr	r3, [pc, #1900]	@ 8ff6c <_ZN9XBandPlanC1Ev+0x864>
+   8f7fc:	e3a08002 	mov	r8, #2
+   8f800:	e300911e 	movw	r9, #286	@ 0x11e
+   8f804:	e1a01004 	mov	r1, r4
+   8f808:	e08f3003 	add	r3, pc, r3
+   8f80c:	e1a00005 	mov	r0, r5
+   8f810:	e58d30e8 	str	r3, [sp, #232]	@ 0xe8
+   8f814:	e59f3754 	ldr	r3, [pc, #1876]	@ 8ff70 <_ZN9XBandPlanC1Ev+0x868>
+   8f818:	e1cd8ef0 	strd	r8, [sp, #224]	@ 0xe0
+   8f81c:	e08f3003 	add	r3, pc, r3
+   8f820:	e283301c 	add	r3, r3, #28
+   8f824:	e58d30ec 	str	r3, [sp, #236]	@ 0xec
+   8f828:	e59f3744 	ldr	r3, [pc, #1860]	@ 8ff74 <_ZN9XBandPlanC1Ev+0x86c>
+   8f82c:	e08f3003 	add	r3, pc, r3
+   8f830:	e58d30f0 	str	r3, [sp, #240]	@ 0xf0
+   8f834:	ebfe5b3f 	bl	26538 <_ZNK14QMessageLogger5debugEv@plt>
+   8f838:	e59f1738 	ldr	r1, [pc, #1848]	@ 8ff78 <_ZN9XBandPlanC1Ev+0x870>
+   8f83c:	e1a00005 	mov	r0, r5
+   8f840:	e08f1001 	add	r1, pc, r1
+   8f844:	ebfe6bf4 	bl	2a81c <_ZN6QDebuglsEPKc>
+   8f848:	e5903000 	ldr	r3, [r0]
+   8f84c:	e28d80ac 	add	r8, sp, #172	@ 0xac
+   8f850:	e59f1724 	ldr	r1, [pc, #1828]	@ 8ff7c <_ZN9XBandPlanC1Ev+0x874>
+   8f854:	e1a00008 	mov	r0, r8
+   8f858:	e593200c 	ldr	r2, [r3, #12]
+   8f85c:	e58d30a4 	str	r3, [sp, #164]	@ 0xa4
+   8f860:	e08f1001 	add	r1, pc, r1
+   8f864:	e2822001 	add	r2, r2, #1
+   8f868:	e583200c 	str	r2, [r3, #12]
+   8f86c:	ebfe7ec4 	bl	2f384 <_ZN7QStringC1EPKc>
+   8f870:	e3a03102 	mov	r3, #-2147483648	@ 0x80000000
+   8f874:	e28d90b8 	add	r9, sp, #184	@ 0xb8
+   8f878:	e58d30d0 	str	r3, [sp, #208]	@ 0xd0
+   8f87c:	e28da0c8 	add	sl, sp, #200	@ 0xc8
+   8f880:	e3a03000 	mov	r3, #0
+   8f884:	e28d20ac 	add	r2, sp, #172	@ 0xac
+   8f888:	e58d30c8 	str	r3, [sp, #200]	@ 0xc8
+   8f88c:	e1a01006 	mov	r1, r6
+   8f890:	e1a0300a 	mov	r3, sl
+   8f894:	e1a00009 	mov	r0, r9
+   8f898:	ebfe646b 	bl	28a4c <_ZNK9QSettings5valueERK7QStringRK8QVariant@plt>
+   8f89c:	e28db09c 	add	fp, sp, #156	@ 0x9c
+   8f8a0:	e1a02009 	mov	r2, r9
+   8f8a4:	e28d10a4 	add	r1, sp, #164	@ 0xa4
+   8f8a8:	e1a0000b 	mov	r0, fp
+   8f8ac:	ebfe5e3c 	bl	271a4 <_Zls6QDebugRK8QVariant@plt>
+   8f8b0:	e1a0000b 	mov	r0, fp
+   8f8b4:	ebfe62e7 	bl	28458 <_ZN6QDebugD1Ev@plt>
+   8f8b8:	e1a00009 	mov	r0, r9
+   8f8bc:	ebfe5e32 	bl	2718c <_ZN8QVariantD1Ev@plt>
+   8f8c0:	e28d00c8 	add	r0, sp, #200	@ 0xc8
+   8f8c4:	ebfe5e30 	bl	2718c <_ZN8QVariantD1Ev@plt>
+   8f8c8:	e1a00008 	mov	r0, r8
+   8f8cc:	ebfe6bba 	bl	2a7bc <_ZN7QStringD1Ev>
+   8f8d0:	e28d00a4 	add	r0, sp, #164	@ 0xa4
+   8f8d4:	ebfe62df 	bl	28458 <_ZN6QDebugD1Ev@plt>
+   8f8d8:	e1a00005 	mov	r0, r5
+   8f8dc:	ebfe62dd 	bl	28458 <_ZN6QDebugD1Ev@plt>
+   8f8e0:	e59f1698 	ldr	r1, [pc, #1688]	@ 8ff80 <_ZN9XBandPlanC1Ev+0x878>
+   8f8e4:	e1a00008 	mov	r0, r8
+   8f8e8:	e08f1001 	add	r1, pc, r1
+   8f8ec:	ebfe7ea4 	bl	2f384 <_ZN7QStringC1EPKc>
+   8f8f0:	e3a03102 	mov	r3, #-2147483648	@ 0x80000000
+   8f8f4:	e28d80c8 	add	r8, sp, #200	@ 0xc8
+   8f8f8:	e58d30e8 	str	r3, [sp, #232]	@ 0xe8
+   8f8fc:	e28da0ac 	add	sl, sp, #172	@ 0xac
+   8f900:	e3a03000 	mov	r3, #0
+   8f904:	e1a0200a 	mov	r2, sl
+   8f908:	e58d30e0 	str	r3, [sp, #224]	@ 0xe0
+   8f90c:	e1a01006 	mov	r1, r6
+   8f910:	e1a03004 	mov	r3, r4
+   8f914:	e1a00008 	mov	r0, r8
+   8f918:	ebfe644b 	bl	28a4c <_ZNK9QSettings5valueERK7QStringRK8QVariant@plt>
+   8f91c:	e1a01008 	mov	r1, r8
+   8f920:	e1a00005 	mov	r0, r5
+   8f924:	ebfe5efc 	bl	2751c <_ZNK8QVariant8toStringEv@plt>
+   8f928:	e59f1654 	ldr	r1, [pc, #1620]	@ 8ff84 <_ZN9XBandPlanC1Ev+0x87c>
+   8f92c:	e28db0b8 	add	fp, sp, #184	@ 0xb8
+   8f930:	e1a0000b 	mov	r0, fp
+   8f934:	e08f1001 	add	r1, pc, r1
+   8f938:	ebfe7e91 	bl	2f384 <_ZN7QStringC1EPKc>
+   8f93c:	e3a03000 	mov	r3, #0
+   8f940:	e1a0100b 	mov	r1, fp
+   8f944:	e1a02003 	mov	r2, r3
+   8f948:	e1a00005 	mov	r0, r5
+   8f94c:	e28d90b8 	add	r9, sp, #184	@ 0xb8
+   8f950:	ebfe6161 	bl	27edc <_ZNK7QString7indexOfERKS_iN2Qt15CaseSensitivityE@plt>
+   8f954:	e1a0b000 	mov	fp, r0
+   8f958:	e1a00009 	mov	r0, r9
+   8f95c:	ebfe6b96 	bl	2a7bc <_ZN7QStringD1Ev>
+   8f960:	e1a00005 	mov	r0, r5
+   8f964:	ebfe6b94 	bl	2a7bc <_ZN7QStringD1Ev>
+   8f968:	e1a00008 	mov	r0, r8
+   8f96c:	ebfe5e06 	bl	2718c <_ZN8QVariantD1Ev@plt>
+   8f970:	e1a00004 	mov	r0, r4
+   8f974:	ebfe5e04 	bl	2718c <_ZN8QVariantD1Ev@plt>
+   8f978:	e1a0000a 	mov	r0, sl
+   8f97c:	ebfe6b8e 	bl	2a7bc <_ZN7QStringD1Ev>
+   8f980:	e37b0001 	cmn	fp, #1
+   8f984:	13a03001 	movne	r3, #1
+   8f988:	159d2010 	ldrne	r2, [sp, #16]
+   8f98c:	15c2301c 	strbne	r3, [r2, #28]
+   8f990:	e59f15f0 	ldr	r1, [pc, #1520]	@ 8ff88 <_ZN9XBandPlanC1Ev+0x880>
+   8f994:	e1a00004 	mov	r0, r4
+   8f998:	e08f1001 	add	r1, pc, r1
+   8f99c:	ebfe7e78 	bl	2f384 <_ZN7QStringC1EPKc>

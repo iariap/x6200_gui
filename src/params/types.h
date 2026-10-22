@@ -82,10 +82,17 @@ typedef struct {
     bool        dirty;
 } params_uint64_t;
 
+/* Un `params_str_t` guarda cadenas de hasta `sizeof(x) - 1` caracteres
+ * (`params_str_set`/`params_load_str`, src/params/params.c). El ancho es el de la
+ * cadena mas larga que el parametro tenga que sostener, y `theme_name` tiene que
+ * conservar entero cualquier nombre que ofrezca `theme_list()` (src/theme.c), que
+ * admite hasta 31 caracteres: con los 16 bytes de antes, "Outdoor-Negative" (16)
+ * no entraba, el store lo truncaba a "Outdoor-Negativ" y `theme_init()` caia a
+ * IU1WXY sin decirlo, perdiendo ademas la seleccion del desplegable (UI-013). */
 typedef struct {
     char        *name;
     char        *voice;
-    char        x[16];
+    char        x[32];
     uint8_t     max_len;
     bool        dirty;
 } params_str_t;

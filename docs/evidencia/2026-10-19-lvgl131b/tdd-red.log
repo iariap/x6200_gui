@@ -1,0 +1,16 @@
+$ tests/native/test_cw_tune.c contra src/cw_tune_ui.c de la base (b50303ed)
+FALLO tests/native/test_cw_tune.c:93: cw_tune_stub_lvgl_calls() == 0
+FALLO tests/native/test_cw_tune.c:94: cw_tune_stub_lvgl_foreign_calls() == 0
+FALLO tests/native/test_cw_tune.c:95: cw_tune_stub_refresh_events() == 0
+FALLO tests/native/test_cw_tune.c:96: scheduler_pending() == 1
+FALLO tests/native/test_cw_tune.c:102: cw_tune_stub_refresh_foreign() == 0
+FALLO tests/native/test_cw_tune.c:103: cw_tune_stub_lvgl_foreign_calls() == 0
+FALLO tests/native/test_cw_tune.c:114: cw_tune_stub_lvgl_calls() == 0
+FALLO tests/native/test_cw_tune.c:115: cw_tune_stub_lvgl_foreign_calls() == 0
+FALLO tests/native/test_cw_tune.c:125: cw_tune_stub_lvgl_foreign_calls() == 0
+FALLO tests/native/test_cw_tune.c:131: cw_tune_stub_lvgl_foreign_calls() == 0
+FALLO tests/native/test_cw_tune.c:144: scheduler_pending() == 1
+FALLO tests/native/test_cw_tune.c:145: cw_tune_stub_lvgl_foreign_calls() == 0
+FALLO tests/native/test_cw_tune.c:151: cw_tune_stub_refresh_foreign() == 0
+35 comprobaciones, 13 fallos
+exit=1

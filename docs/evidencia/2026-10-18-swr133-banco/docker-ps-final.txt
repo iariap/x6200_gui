@@ -1,0 +1,15 @@
+# 2026-10-18T02:05:12-03:00 docker ps antes de limpiar (contenedores del banco)
+banco-apps-swr133	Up About a minute
+
+# docker rm -f banco-apps-swr133
+banco-apps-swr133
+
+# 2026-10-18T02:05:12-03:00 docker ps después de limpiar (no debe quedar ninguno)
+(sin contenedores banco-*)
+
+# además, la captura de humo de check-matrix dejó banco-apps; también se limpia:
+# docker rm -f banco-apps
+banco-apps
+
+# 2026-10-18T02:06:10-03:00 docker ps después de limpiar (no debe quedar ninguno)
+(sin contenedores banco-*)

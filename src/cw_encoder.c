@@ -6,13 +6,16 @@
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
 #include "cw_encoder.h"
+#include "cfg/cfg_api.h"
 
+#include "cb.h"
 #include "cw_decoder.h"
 #include "params/params.h"
 #include "cfg/cfg.h"
 #include "radio.h"
 #include "msg.h"
 #include "buttons.h"
+#include "voice.h"
 
 #include "lvgl/lvgl.h"
 #include <unistd.h>
@@ -46,6 +49,40 @@ static uint8_t get_morse(char *str, char **morse) {
     return 0;
 }
 
+static bool need_train;
+
+void cw_encoder_require_train(bool on) {
+    need_train = on;
+}
+
+/* CB TX interlock (issue #160). The keyer closes the morse line through
+ * radio_set_morse_key() (a GPIO), which does NOT go through radio_set_ptt() --
+ * the only place that consulted cb_tx_allowed() -- so cw_send could transmit
+ * outside the SBC window (measured at 26.515 MHz with cb_tx_scope = 0). This is
+ * the same gate: outside 26-28 MHz it is always allowed (ham bands unchanged);
+ * inside, cb_tx_allowed() decides by cb_tx_scope. */
+static bool tx_allowed(void) {
+    return cb_tx_allowed(subject_get_int(cfg_cur.fg_freq), params.cb_tx_scope.x);
+}
+
+/* Closes the key; with the train requirement and no train, it does not key */
+static bool key_down(void) {
+    if (need_train && !param_i_get(cfg_key_train)) {
+        return false;
+    }
+
+    /* Per-element guard: if the dial moves out of the window mid-message (or
+     * mid-beacon), the key stops closing. The notice is emitted once, at arm
+     * time (cw_encoder_send), so this stays silent. */
+    if (!tx_allowed()) {
+        return false;
+    }
+
+    radio_set_morse_key(true);
+
+    return true;
+}
+
 static void send_morse(char *str, time_t dit_nsec, time_t dah_nsec) {
     struct timespec t;
     t.tv_sec = 0;
@@ -53,16 +90,18 @@ static void send_morse(char *str, time_t dit_nsec, time_t dah_nsec) {
         switch (*str) {
             case '.':
                 t.tv_nsec = dit_nsec;
-                radio_set_morse_key(true);
-                nanosleep(&t, NULL);
-                radio_set_morse_key(false);
+                if (key_down()) {
+                    nanosleep(&t, NULL);
+                    radio_set_morse_key(false);
+                }
                 break;
 
             case '-':
                 t.tv_nsec = dah_nsec;
-                radio_set_morse_key(true);
-                nanosleep(&t, NULL);
-                radio_set_morse_key(false);
+                if (key_down()) {
+                    nanosleep(&t, NULL);
+                    radio_set_morse_key(false);
+                }
                 break;
 
             default:
@@ -125,6 +164,8 @@ static void * endecode_thread(void *arg) {
             }
         }
     }
+
+    return NULL;
 }
 
 void cw_encoder_stop() {
@@ -138,6 +179,25 @@ void cw_encoder_stop() {
 }
 
 void cw_encoder_send(const char *text, bool beacon) {
+    /* Sin mensaje no hay nada que mandar: strdup() no acepta NULL y la GUI moria
+     * con fallo=(nil) dentro de strlen() cuando la ventana de mensajes de CW
+     * (tabla msg_cw vacia) le pasaba NULL al keyer. issue #116, docs/HALLAZGOS.md.
+     * El mensaje vacio tambien se descarta: endecode_thread avanza el puntero mas
+     * alla del terminador y lee fuera del buffer de strdup("") (lo destapo el ASan
+     * del suite nativo; get_msg() devuelve "" cuando la celda no es valida). */
+    if (text == NULL || text[0] == 0) {
+        return;
+    }
+
+    /* CB TX interlock (issue #160): the same message + voice as radio_set_ptt().
+     * Refusing here (before arming) keeps the encoder IDLE, so the app never
+     * shows ON AIR and the bench can tell a blocked send from a real one. */
+    if (!tx_allowed()) {
+        msg_update_text_fmt("TX blocked: not a CB channel");
+        voice_say_text_fmt("TX blocked, not a C B channel");
+        return;
+    }
+
     cw_encoder_stop();
 
     if (current_msg) {
@@ -148,17 +208,31 @@ void cw_encoder_send(const char *text, bool beacon) {
     current_char = current_msg;
     state = beacon ? CW_ENCODER_BEACON : CW_ENCODER_SEND;
 
-    int rc;
     pthread_attr_t attr;
     struct sched_param param;
-    rc = pthread_attr_init (&attr);
-    rc = pthread_attr_getschedparam (&attr, &param);
-    param.sched_priority += 5;
-    rc = pthread_attr_setschedparam (&attr, &param);
+
+    /* The priority bump only makes sense if the attributes could be read back:
+     * reading param uninitialized would be undefined behaviour. */
+    pthread_attr_init(&attr);
+
+    if (pthread_attr_getschedparam(&attr, &param) == 0) {
+        param.sched_priority += 5;
+        pthread_attr_setschedparam(&attr, &param);
+    }
 
     pthread_create(&thread, &attr, endecode_thread, NULL);
 }
 
+/* How many characters of the message in progress have gone out already */
+int cw_encoder_sent() {
+    return state == CW_ENCODER_IDLE || !current_msg ? 0 : (int) (current_char - current_msg);
+}
+
 cw_encoder_state_t cw_encoder_state() {
     return state;
+}
+
+/* See the note in cw.h: the configured speed */
+int cw_get_wpm() {
+    return subject_get_int(cfg.key_speed.val);
 }

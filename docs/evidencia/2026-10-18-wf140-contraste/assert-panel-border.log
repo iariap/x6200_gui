@@ -1,0 +1,5 @@
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #567)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #573)
+main-tema-aurora-agua: la linea central no usa el rol text del tema (#ff8a7ba8 vs #fff8eeff): no alcanza el 3:1 contra el fondo del waterfall (src/waterfall.c)

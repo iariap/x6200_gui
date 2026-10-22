@@ -1,0 +1,8 @@
+experiment AB-HANG121: PASS (exit 0)
+  Functional         PASS            (required) — 85 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — captures are pixel-identical to the baseline
+  Quality Contract   PASS            (required) — 873 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+report: /home/pablo/desa/asf/state/worktrees/x6200/hang-121/tools/ab_testing/reports/AB-HANG121

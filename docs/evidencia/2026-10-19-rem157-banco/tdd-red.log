@@ -1,0 +1,19 @@
+== RED: test_remote.cpp contra el src/remote_server.cpp de la base (8b4d44ef) ==
+
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:115: strstr(buf, want) != NULL
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:115: strstr(buf, want) != NULL
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:115: strstr(buf, want) != NULL
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:115: strstr(buf, want) != NULL
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:139: err == NULL
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:141: cmd.val == kModes[i].mode
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:145: subject_get_int(cfg_cur.mode) == kModes[i].mode
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:150: strstr(buf, want) != NULL
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:141: cmd.val == kModes[i].mode
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:145: subject_get_int(cfg_cur.mode) == kModes[i].mode
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:139: err == NULL
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:141: cmd.val == kModes[i].mode
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:145: subject_get_int(cfg_cur.mode) == kModes[i].mode
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:150: strstr(buf, want) != NULL
+FALLO /tmp/opencode/rem157/red_stage/test_remote.cpp:164: strstr(buf, want) != NULL
+/bin/bash: line 4: 4049979 Segmentation fault         (core dumped) stdbuf -oL /tmp/opencode/rem157/red_stage/remote_tests
+exit=139

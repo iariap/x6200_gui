@@ -1,0 +1,35 @@
+# main-tema-sprint-eco: the Sprint theme on a nearly flat battery with no
+# external supply (main-bateria-baja's state: the clock drops to the
+# battery-percentage view because the external supply is below 3 V, and 10.6 V
+# without a source puts the visual policy in VP_ECO, so the waterfall runs at its
+# saved cadence). Same radio state as that fixture with the theme as the only
+# variable, so the render is Sprint's low-battery/ECO state.
+
+name main-tema-sprint-eco
+screen main
+
+theme Sprint
+seed 44
+
+frequency_hz 7100000
+tx_frequency_hz 7100000
+fft_width_hz 384000
+
+mode lsb
+vfo A
+agc slow
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -95
+
+battery_v 10.6
+external_v 0.0
+battery_cap 7
+charging false
+
+rxtx rx

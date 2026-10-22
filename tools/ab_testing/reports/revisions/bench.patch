@@ -1,0 +1,10 @@
+diff --git a/tools/ui_harness/fixtures/bench-render.scn b/tools/ui_harness/fixtures/bench-render.scn
+index 713d4af..720757c 100644
+--- a/tools/ui_harness/fixtures/bench-render.scn
++++ b/tools/ui_harness/fixtures/bench-render.scn
+@@ -40,4 +40,4 @@ rxtx rx
+ 
+ bench_warmup 3
+ bench_repeats 5
+-bench_redraw_passes 1
++bench_redraw_passes 3

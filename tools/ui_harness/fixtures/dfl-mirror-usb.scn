@@ -1,0 +1,42 @@
+# dfl-mirror-usb: espejo USB/LSB del editor DFL inline (issue #182).
+#
+# La MISMA secuencia de interaccion que `dfl-mirror-lsb`, en USB-D: el eje va
+# 0..5000 (LOW a la izquierda, HIGH a la derecha). `scenario_settle` comprueba
+# el hit-test, el inverso del arrastre, la direccion bidireccional, el toque
+# lejano, el contrato de VOL/rotary0 y el cambio de modo con el panel abierto;
+# `scenario_settle_pixels` confirma en la captura 800x480 que los handles se
+# dibujan en las x del modelo.
+
+name dfl-mirror-usb
+screen dfl-editor-mirror
+
+seed 182
+theme Aurora
+spectrum_filled true
+spectrum_peak true
+waterfall_center_line true
+
+frequency_hz 14200000
+tx_frequency_hz 14200000
+fft_width_hz 48000
+
+mode USB-D
+filter_low 225
+filter_high 3525
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

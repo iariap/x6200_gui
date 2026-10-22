@@ -1,0 +1,21 @@
+$ python3 tests/check_autotune_v2.py
+
+# (verde)
+  textos: 9 | long_action_items: 37 entradas | ACTION_ATUNE=129
+  contrato estatico de Auto Tune v2 OK
+exit=0
+
+# Ciclo rojo -> verde: se rompen dos cosas y el chequeo las nombra.
+
+$ sed -i 's/"Auto Tune: tuned"/"Auto Tune: tuned!!"/' src/autotune_ui.c
+$ printf '... autotune_probe_freq ...' >> src/autotune.c
+$ python3 tests/check_autotune_v2.py
+  textos: 9 | long_action_items: 37 entradas | ACTION_ATUNE=129
+  FALLO: falta el texto exacto "Auto Tune: tuned" en src/autotune_ui.c
+  FALLO: src/autotune.c todavia menciona 'autotune_probe_freq' (el barrido v1 tiene que estar fuera)
+exit=1
+
+$ (restaurado) python3 tests/check_autotune_v2.py
+  textos: 9 | long_action_items: 37 entradas | ACTION_ATUNE=129
+  contrato estatico de Auto Tune v2 OK
+exit=0

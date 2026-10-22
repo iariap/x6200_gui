@@ -1,0 +1,140 @@
+# Semantic regions of the 800x480 main screen, overlaid on the pixel diff.
+#
+# The rectangles come from the layout in `src/main_screen.c` (spectrum_height =
+# 480/3 = 160, freq_height = 36, SPOT_MARKS_H = 44, button bar = 62). Regions may
+# overlap: the S-meter sits inside the top-bar band and the multiplier sits on
+# top of the clock, and that overlap is the point — it is where defects show.
+#
+# The top band (`barra_superior`/`reloj_potencia`) reaches y=62, not 46: the
+# info cells are 56x26 at y5 and y27 (info.c) and the power clock is two lines,
+# which with a scaled font (`fonts_scale`, the retired VISION theme) is ~61 px
+# tall. The old 46 was the non-scaled fit and left the second clock line / the
+# WiFi cell inside `espectro`, so a change there was reported outside its own region.
+#
+# Coordinates are [x, y, width, height].
+
+framebuffer:
+  width: 800
+  height: 480
+
+regions:
+  - name: barra_superior
+    rect: [0, 0, 800, 62]
+    description: "Barra superior (info.c: VFO, modo, AGC, PRE/ATT, ATU, WiFi/BT, reloj)"
+
+  - name: s_metro
+    rect: [230, 0, 340, 66]
+    description: "S-meter analogico (meter.c): arco, aguja y etiqueta en dB"
+
+  - name: espectro
+    rect: [0, 46, 800, 114]
+    description: "Espectro y franja del band plan IARU (spectrum.c, band_plan.c)"
+
+  # Los dos ticks del ancho del filtro RX sobre el borde superior de la cascada
+  # (issue #173, PR 1): overlay de UI de 6 px en el borde de arriba del waterfall
+  # (waterfall.c). La region los aisla para que un cambio de los ticks no se
+  # atribuya a toda la cascada (que la contiene) ni al reves.
+  - name: waterfall_ticks
+    rect: [0, 240, 800, 8]
+    description: "Ticks del filtro RX en el borde superior de la cascada (waterfall.c, #173)"
+
+  - name: frecuencia
+    rect: [0, 160, 800, 36]
+    description: "Fila de frecuencia: extremos y frecuencia central (main_screen.c)"
+
+  - name: waterfall
+    rect: [0, 196, 800, 222]
+    description: "Franja de spots y cascada (waterfall.c, spot_marks.c)"
+
+  - name: botones
+    rect: [0, 418, 800, 62]
+    description: "Barra de botones inferior (buttons.cpp)"
+
+  - name: multiplicador
+    rect: [758, 8, 40, 16]
+    description: "Esquina superior derecha donde main_screen.c crea la etiqueta del multiplicador (oculta)"
+
+  - name: reloj_potencia
+    rect: [591, 0, 209, 62]
+    description: "Reloj de potencia (clock.c, CLOCK_POWER): simbolo de bateria y tensiones en la esquina superior derecha"
+
+  # El dialogo de Ajustes se dibuja sobre la pantalla principal: la region del
+  # campo Año (fila Day/Month/Year de src/dialog_settings.c, el spinbox de 4
+  # cifras) vive dentro de `espectro` y sin una region propia el diff de UI-016
+  # se atribuiria a toda la banda del espectro. La caja del campo es 691..784
+  # (94x56) en el render del arnes; la region la cubre con un pixel de margen.
+  - name: ajustes_anio
+    rect: [689, 98, 98, 60]
+    description: "Campo Año del dialogo de Ajustes (dialog_settings.c, fila Day/Month/Year) sobre el arnes"
+
+  # La fila "Visual profile" (UI-08 incr. 5) vive en el grupo Apariencia del
+  # dialogo de Ajustes: su caja va del pad del dialogo (x=20, donde arrancan las
+  # etiquetas) al borde del desplegable (x=784), y la fila ocupa y=199..255 (el
+  # desplegable a y=199, la etiqueta a y=213, alturas 56/28, medido con
+  # --inspect sobre el render de settings-perfil). El rect la cubre con un pixel
+  # de margen por lado y por la derecha se detiene en x=784 para no solaparse con
+  # la barra de scroll (`ajustes_scrollbar`). Se dibuja entera en la fixture
+  # settings-perfil.
+  - name: ajustes_perfil
+    rect: [20, 197, 764, 60]
+    description: "Fila 'Visual profile' de Ajustes (dialog_settings.c, grupo Apariencia) sobre el arnes"
+
+  # La barra de scroll de la grilla de Ajustes, en el borde derecho del dialogo
+  # (x=785..791, el ancho de 7 px que fija construct_cb con pad_right 14). Solo
+  # se ve en las fixtures que scrollean la grilla (settings-wfbat,
+  # settings-perfil); su pulgar depende de la altura del contenido, asi que una
+  # fila nueva la mueve. La region la aísla para que ese cambio no se atribuya a
+  # `waterfall`, que la contiene.
+  - name: ajustes_scrollbar
+    rect: [785, 75, 8, 330]
+    description: "Barra de scroll vertical de la grilla de Ajustes (dialog_settings.c) sobre el arnes"
+
+  # La fila "Play,Rec gain" del grupo Audio de Ajustes (issue #26): su etiqueta
+  # va del pad del dialogo (x=20, donde arrancan las etiquetas) al borde de la
+  # segunda celda de slider (x=784), y las dos celdas ocupan y=140..196 (56 px de
+  # alto, medido con --inspect sobre el render de settings-audio). Como el
+  # dialogo se dibuja sobre la pantalla principal, la fila cae dentro de
+  # `espectro`: sin region propia el cambio de sus dos sliders -y de las
+  # etiquetas que muestran la ganancia- se atribuiria a toda la banda del
+  # espectro. El rect la cubre con 2 px de margen y se detiene en x=784 para no
+  # solaparse con la barra de scroll (`ajustes_scrollbar`). Se dibuja entera en
+  # la fixture settings-audio, que ademas mueve el slider de Rec gain.
+  - name: ajustes_audio_ganancia
+    rect: [20, 138, 764, 60]
+    description: "Fila 'Play,Rec gain' de Ajustes (dialog_settings.c, grupo Audio) sobre el arnes"
+
+  # La fila "Theme" del grupo Apariencia de Ajustes (issue #73): su etiqueta va del
+  # pad del dialogo (x=20) al borde del desplegable (x=784), y la fila ocupa
+  # y=81..137 (el desplegable a y=81, alto 56, medido con --inspect sobre el render
+  # de settings-perfil). El selector six-only del #73 y el default Aurora del #74
+  # cambian el TEXTO que el desplegable muestra, asi que sin region propia el cambio
+  # se atribuiria a la banda
+  # `espectro` (que la contiene) y pareceria de la migracion de fuentes. El rect la
+  # cubre con un pixel de margen y por la derecha se detiene en x=784 para no
+  # solaparse con la barra de scroll (`ajustes_scrollbar`). Se dibuja entera en la
+  # fixture settings-perfil.
+  - name: ajustes_tema
+    rect: [20, 79, 764, 60]
+    description: "Fila 'Theme' de Ajustes (dialog_settings.c, grupo Apariencia) sobre el arnes"
+
+  # El cuerpo entero del dialogo de Ajustes (el `dialog.obj` de
+  # dialog_settings.c: dialog_init lo centra en x=2, y=66, 796x348, medido con
+  # --inspect sobre el render de settings-home). Las filas del dialogo caen
+  # dentro de las bandas de la pantalla principal (`espectro`, `frecuencia`,
+  # `waterfall`), asi que sin region propia un movimiento del CONTENIDO —no de
+  # una fila— se atribuiria a esas bandas y pareceria un cambio de la pantalla
+  # de atras. El issue #109 scrollea el dialogo a su grupo (los tabs cambiaron
+  # de orden) y el contenido entero se corre unos px: esta region aisla ese
+  # movimiento. No cubre la barra de tabs (`botones`, debajo de y=414).
+  - name: ajustes_dialogo
+    rect: [2, 66, 796, 348]
+    description: "Cuerpo del dialogo de Ajustes (dialog_settings.c) sobre el arnes"
+
+  # El editor DFL inline (issue #179): el panel nativo sobre el waterfall
+  # (src/dfl_inline.c) ocupa x=0..799, y=268..417 (el waterfall arranca en y=240
+  # y se dejan vivos sus 28 px superiores), y la barra inferior expandida
+  # (LOW/HIGH/BW/Eq/Waterfall) y=418..479. La region cubre las dos. Se dibuja
+  # entera en las fixtures `dfl-editor-*`; las demas quedan byte-identicas.
+  - name: dfl_inline
+    rect: [0, 268, 800, 212]
+    description: "Editor DFL inline (dfl_inline.c): panel 800x150 en y=268 + barra expandida y=418..479"

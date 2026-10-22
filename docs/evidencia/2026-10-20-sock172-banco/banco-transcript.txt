@@ -1,0 +1,35 @@
+== #172: banco QEMU, dos instancias de la GUI ==
+== binario ==
+d2afdf771fd8bd0c11b2315e70f56bd6  /b/target/usr/sbin/x6200_gui
+13869700 B
+sello:
+819579203ccd94ff257d8d4d6eefcb8f
+== arrancando la instancia 1 ==
+OK: /home/pablo/desa/x6200/.vsock172/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13869700 B, 3/3 marcas)
+38d51b1d80fc4e9863a081521907d543ef6ead79d38a3c4f1eabba272302303b
+  banco listo (socket y handshake)
+-- instancia 1 viva --
+pidof x6200_gui : 7
+inodo del path  : 29703197
+listener        : 298855182 /tmp/x6200_remote.sock
+get             : {"t":"state","vfo":"A","freq":27185000,"freq_bg":27053800,"mode":"AM","band":"CB C","filter":4500,"flo":0,"fhi":4500,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":40,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+
+== lanzando la instancia 2 (simula el relanzador duplicado) ==
+-- tras la instancia 2 --
+pidof x6200_gui : 111
+7
+inodo del path  : 29703197
+listener        : 298855182 /tmp/x6200_remote.sock
+get             : {"t":"state","vfo":"A","freq":27185000,"freq_bg":27053800,"mode":"AM","band":"CB C","filter":4500,"flo":0,"fhi":4500,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":40,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+
+== veredicto ==
+  dos instancias de GUI corriendo: si (111
+7)
+  el path NO cambio de inodo: si (29703197)
+  el listener de /proc/net/unix es el mismo: si
+  el cliente sigue conectando y contestando: si
+
+== log de la instancia 2 (yield esperado) ==
+[Warn]	(666352.666, +0)	 remote_server_init: remote: /tmp/x6200_remote.sock ya tiene un servidor vivo: esta instancia no arranca el servidor 	(in remote_server.cpp line #1199)
+
+== listo: /home/pablo/desa/asf/state/worktrees/x6200/remote-sock-172/docs/evidencia/2026-10-20-sock172-banco ==

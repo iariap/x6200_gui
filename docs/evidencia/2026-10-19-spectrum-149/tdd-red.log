@@ -1,0 +1,23 @@
+# TDD RED: el mismo test contra el spectrum.c de la base (a69ea288)
+#
+#   git show a69ea288:src/spectrum.c > /tmp/redbase/spectrum.c  (+ stubs_spectrum/, spectrum.h y scheduler.h del fix)
+#   gcc -std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter -pthread -I/tmp/redbase -Itests/native \
+#       /tmp/redbase/spectrum.c tests/native/spectrum_stubs.c tests/native/test_spectrum.c \
+#       tests/native/test_framework.c tests/native/spectrum_test_main.c -o /tmp/spectrum_tests_base
+
+traza mezclada: 800 lineas principales, A=351 B=449 limpiado=0 desconocido=0
+FALLO tests/native/test_spectrum.c:340: single_generation(counts, lines) == GEN_A
+FALLO tests/native/test_spectrum.c:360: peak_other == 0
+FALLO tests/native/test_spectrum.c:366: spectrum_stub_rects[0].x1 == FILTER_A_X1
+FALLO tests/native/test_spectrum.c:367: spectrum_stub_rects[0].x2 == FILTER_A_X2
+traza mezclada: 800 lineas principales, A=701 B=0 limpiado=99 desconocido=0
+FALLO tests/native/test_spectrum.c:392: single_generation(counts, lines) == GEN_A
+traza mezclada: 800 lineas principales, A=0 B=99 limpiado=701 desconocido=0
+FALLO tests/native/test_spectrum.c:417: single_generation(counts, lines) == GEN_CLEARED
+backlog: 50 refrescos encolados (pico 50) para 50 frames
+FALLO tests/native/test_spectrum.c:456: spectrum_stub_sched_pending() == 1
+FALLO tests/native/test_spectrum.c:457: spectrum_stub_sched_peak() == 1
+FALLO tests/native/test_spectrum.c:461: spectrum_stub_invalidates == 1
+FALLO tests/native/test_spectrum.c:478: spectrum_stub_invalidates == 3
+/bin/bash: line 1: 269642 Segmentation fault         (core dumped) stdbuf -o0 -e0 /tmp/opencode/sp/spectrum_tests_base 2>&1
+exit=139

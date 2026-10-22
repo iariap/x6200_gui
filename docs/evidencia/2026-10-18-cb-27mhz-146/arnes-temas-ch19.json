@@ -1,0 +1,115 @@
+{
+  "fixture": "home-cb",
+  "freq_hz": 27185000,
+  "label": "CH 19",
+  "themes": [
+    {
+      "theme": "Aurora",
+      "cell_w": 56,
+      "cell_h": 26,
+      "text_box": {
+        "w": 56,
+        "h": 16
+      },
+      "text_natural": {
+        "w": 41,
+        "h": 18
+      },
+      "text_wrapped_h": 18,
+      "text_overflow": false,
+      "text_truncated": false,
+      "text_color": "#F8EEFF",
+      "bg_color": "#2C213E"
+    },
+    {
+      "theme": "Cathode",
+      "cell_w": 56,
+      "cell_h": 26,
+      "text_box": {
+        "w": 56,
+        "h": 16
+      },
+      "text_natural": {
+        "w": 47,
+        "h": 18
+      },
+      "text_wrapped_h": 18,
+      "text_overflow": false,
+      "text_truncated": false,
+      "text_color": "#F9D9AA",
+      "bg_color": "#24170C"
+    },
+    {
+      "theme": "Redshift",
+      "cell_w": 56,
+      "cell_h": 26,
+      "text_box": {
+        "w": 56,
+        "h": 16
+      },
+      "text_natural": {
+        "w": 40,
+        "h": 17
+      },
+      "text_wrapped_h": 17,
+      "text_overflow": false,
+      "text_truncated": false,
+      "text_color": "#FFB3A0",
+      "bg_color": "#140809"
+    },
+    {
+      "theme": "Sprint",
+      "cell_w": 56,
+      "cell_h": 26,
+      "text_box": {
+        "w": 56,
+        "h": 16
+      },
+      "text_natural": {
+        "w": 35,
+        "h": 17
+      },
+      "text_wrapped_h": 17,
+      "text_overflow": false,
+      "text_truncated": false,
+      "text_color": "#F5F7F9",
+      "bg_color": "#11233E"
+    },
+    {
+      "theme": "Sunlit",
+      "cell_w": 56,
+      "cell_h": 26,
+      "text_box": {
+        "w": 56,
+        "h": 16
+      },
+      "text_natural": {
+        "w": 48,
+        "h": 17
+      },
+      "text_wrapped_h": 17,
+      "text_overflow": false,
+      "text_truncated": false,
+      "text_color": "#162436",
+      "bg_color": "#E7E4D8"
+    },
+    {
+      "theme": "Trail",
+      "cell_w": 56,
+      "cell_h": 26,
+      "text_box": {
+        "w": 56,
+        "h": 16
+      },
+      "text_natural": {
+        "w": 47,
+        "h": 18
+      },
+      "text_wrapped_h": 18,
+      "text_overflow": false,
+      "text_truncated": false,
+      "text_color": "#F2EED8",
+      "bg_color": "#203126"
+    }
+  ]
+}

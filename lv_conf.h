@@ -78,20 +78,32 @@
  *====================*/
 
 /*Default display refresh period. LVG will redraw changed areas with this period time*/
-#define LV_DISP_DEF_REFR_PERIOD 30      /*[ms]*/
+#define LV_DISP_DEF_REFR_PERIOD 50      /*[ms] - power efficient 20 FPS*/
 
 /*Input device read period in milliseconds*/
 #define LV_INDEV_DEF_READ_PERIOD 10     /*[ms]*/
 
 /*Use a custom tick source that tells the elapsed time in milliseconds.
  *It removes the need to manually update the tick with `lv_tick_inc()`)*/
-#define LV_TICK_CUSTOM 0
+/* Decidido en la corrida eco-final (issue #13, UI-07 remanente): la ROM mide el
+ * tiempo con CLOCK_MONOTONIC (src/util.cpp: get_time()), asi que el tick de LVGL
+ * sale del mismo reloj y el hilo que hacia `usleep(5*1000) + lv_tick_inc(5)`
+ * (src/main.c) desaparece. Medido en el arnes: ese hilo era el 93.5% de los
+ * wakeups del hilo de GUI (200 de 214/s en la ventana de 1 s). La resolucion del
+ * tick no cambia: 1 ms monotonicos, los mismos que el hilo declaraba con
+ * `lv_tick_inc(5)` cada 5 ms. La macro se define en el lv_conf.h del PROYECTO;
+ * `lvgl/` (pinned) no se toca. */
+#define LV_TICK_CUSTOM 1
 #if LV_TICK_CUSTOM
-    #define LV_TICK_CUSTOM_INCLUDE "Arduino.h"         /*Header for the system time function*/
-    #define LV_TICK_CUSTOM_SYS_TIME_EXPR (millis())    /*Expression evaluating to current system time in ms*/
-    /*If using lvgl as ESP32 component*/
-    // #define LV_TICK_CUSTOM_INCLUDE "esp_timer.h"
-    // #define LV_TICK_CUSTOM_SYS_TIME_EXPR ((esp_timer_get_time() / 1000LL))
+    #define LV_TICK_CUSTOM_INCLUDE <time.h>            /*Header for the system time function*/
+    /* Milisegundos monotonicos. La statement-expression es una extension de GCC
+     * que el ROM ya usa (p. ej. `case a ... b:` en los menus); evalua el reloj en
+     * el punto de uso, asi que no hace falta el hilo del tick. */
+    #define LV_TICK_CUSTOM_SYS_TIME_EXPR                                        \
+        ({ struct timespec _lvgl_now;                                           \
+           clock_gettime(CLOCK_MONOTONIC, &_lvgl_now);                          \
+           (uint32_t) ((uint64_t) _lvgl_now.tv_sec * 1000u +                    \
+                       (uint64_t) _lvgl_now.tv_nsec / 1000000u); })
 #endif   /*LV_TICK_CUSTOM*/
 
 /*Default Dot Per Inch. Used to initialize default sizes such as widgets sized, style paddings.
@@ -272,8 +284,8 @@
 #define LV_USE_ASSERT_OBJ           0   /*Check the object's type and existence (e.g. not deleted). (Slow)*/
 
 /*Add a custom handler when assert happens e.g. to restart the MCU*/
-#define LV_ASSERT_HANDLER_INCLUDE <stdint.h>
-#define LV_ASSERT_HANDLER while(1);   /*Halt by default*/
+#define LV_ASSERT_HANDLER_INCLUDE <stdio.h>
+#define LV_ASSERT_HANDLER (fprintf(stderr, "LVGLASSERT %s:%d caller=%p\n", __FILE__, __LINE__, __builtin_return_address(0)), fflush(stderr), __builtin_trap());
 
 /*-------------
  * Others

@@ -6,6 +6,7 @@
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
 
+#include <stdatomic.h>
 #include <stdlib.h>
 #include <aether_radio/x6200_control/low/flow.h>
 #include "lvgl/lvgl.h"
@@ -14,14 +15,31 @@
 #include "events.h"
 #include "backlight.h"
 #include "keyboard.h"
+#include "scheduler.h"
 
 #define HKEY_LONG_TIME 1000
 
 static event_hkey_t     event = { .state = HKEY_RELEASE };
 static lv_timer_t       *timer = NULL;
 
-static void hkey_event() {
+/*
+ * hkey_put() lo llama radio_tick() desde el hilo de radio (issue #131), pero la
+ * maquina de estados, los lv_timer y backlight_tick() son de LVGL. hkey_put()
+ * solo publica la tecla en el scheduler y el cuerpo corre en el hilo de LVGL.
+ *
+ * key_armed evita encolar los ceros que manda el flow cuando no hay tecla
+ * apretada: lo prende el productor al publicar una tecla y lo apaga el
+ * consumidor al procesar el release. El test lo fija en
+ * tests/native/test_hkey.c.
+ */
+static atomic_bool      key_armed = false;
+
+static void hkey_event(void) {
     event_hkey_t    *e = malloc(sizeof(event_hkey_t));
+
+    if (e == NULL) {
+        return;
+    }
 
     *e = event;
     event_send(lv_scr_act(), EVENT_HKEY, (void*) e);
@@ -41,7 +59,8 @@ static void hkey_timer(lv_timer_t *t) {
     timer = NULL;
 }
 
-void hkey_put(uint32_t key) {
+/* Cuerpo real: corre en el hilo de LVGL, drenado por scheduler_work(). */
+static void hkey_process(uint32_t key) {
     switch (key) {
         case 0:
             switch (event.state) {
@@ -246,4 +265,26 @@ void hkey_put(uint32_t key) {
         default:
             break;
     }
+}
+
+static void hkey_entry(void *arg) {
+    uint32_t key = *(uint32_t *) arg;
+
+    if (key == 0) {
+        atomic_store(&key_armed, false);
+    }
+
+    hkey_process(key);
+}
+
+void hkey_put(uint32_t key) {
+    if (key == 0 && !atomic_load(&key_armed)) {
+        return;
+    }
+
+    if (key != 0) {
+        atomic_store(&key_armed, true);
+    }
+
+    scheduler_put(hkey_entry, &key, sizeof(key));
 }

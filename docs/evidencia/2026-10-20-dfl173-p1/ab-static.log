@@ -1,0 +1,6 @@
+=== ruff check . ===
+All checks passed!
+=== ruff format --check . ===
+194 files already formatted
+=== ty check ===
+All checks passed!

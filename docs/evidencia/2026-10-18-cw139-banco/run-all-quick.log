@@ -1,0 +1,52 @@
+
+=== config ===
+
+=== actions ===
+
+=== settings_focus ===
+
+=== apps_menu ===
+
+=== app_handlers ===
+
+=== manual_apps ===
+
+=== pruebas ===
+
+=== wcag ===
+
+=== cw_tune_feed ===
+
+=== curve_evidence ===
+
+=== host ===
+
+=== wspr ===
+    SKIP: wspr: la imagen x6200-uiharness no trae /usr/include/fftw3.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+
+=== sstv ===
+    SKIP: sstv: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+
+=== wefax ===
+    SKIP: wefax: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+
+=== navtex ===
+
+================ resumen ================
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  apps_menu: OK     todas las apps del menu llegan al dispatcher que usa su boton
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (22 apps)
+  pruebas: OK     OK: estructura y evidencia en orden
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  cw_tune_feed: OK   
+  curve_evidence: OK   PASS: 8 pruebas de swrscan_curve_evidence
+  host: OK   48 comprobaciones, 0 fallos
+  wspr: SKIP SKIP: wspr: la imagen x6200-uiharness no trae /usr/include/fftw3.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  sstv: SKIP SKIP: sstv: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  wefax: SKIP SKIP: wefax: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  navtex: OK   all OK
+  (omitidos: wspr sstv wefax js8 webserver)
+  12 OK, 0 fallos

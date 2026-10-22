@@ -8,6 +8,7 @@
 
 
 #include "wifi.h"
+#include "gpio_safe.h"
 #include "cfg/cfg.h"
 
 extern "C" {
@@ -91,7 +92,7 @@ void wifi_power_setup() {
 void wifi_power_on() {
     LV_LOG_USER("Power on wifi/bt");
     params_bool_set(&params.wifi_enabled, true);
-    x6200_gpio_set(x6200_pin_wifi, 0);
+    gpio_safe_set(x6200_pin_wifi, 0);
     if (!device) {
         set_status(WIFI_STARTING);
     }
@@ -105,7 +106,7 @@ void wifi_power_off() {
         device = NULL;
     }
     params_bool_set(&params.wifi_enabled, false);
-    x6200_gpio_set(x6200_pin_wifi, 1);
+    gpio_safe_set(x6200_pin_wifi, 1);
     if (scan_timer) {
         lv_timer_del(scan_timer);
         scan_timer = NULL;
@@ -341,6 +342,14 @@ void wifi_disconnect() {
 
 bool wifi_get_ipaddr(char **ip_addr, char **gateway) {
     NMIPConfig *ip_cfg;
+
+    /* El contrato es "punteros a buffers del que llama": si vienen NULL (o apuntan a NULL), el
+     * strcpy de abajo escribia en la direccion 0. Se avisa y se sale. docs/HALLAZGOS.md 38. */
+    if (ip_addr == NULL || gateway == NULL || *ip_addr == NULL || *gateway == NULL) {
+        LV_LOG_WARN("wifi_get_ipaddr: hace falta un buffer para la IP y el gateway");
+        return false;
+    }
+
     if (device) {
         ip_cfg = nm_device_get_ip4_config(device);
         if (ip_cfg) {

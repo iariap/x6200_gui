@@ -1,0 +1,40 @@
+# swrscan-5pass-outliers: 5 pasadas (Fine) sobre `outliers_5pass`: la
+# pasada 1 tiene una muestra baja falsa en el punto 6 y la pasada 3 una alta falsa
+# en el 25. La mediana por frecuencia las descarta, asi que el minimo medido sigue
+# siendo el valle real de 7.100.000 Hz.
+#
+# Es la prueba visual de la agregacion robusta: el fixture muestra el resultado y
+# el test nativo (tests/native/test_swrscan_multipass.c) es el que compara los
+# numeros contra el oraculo del owner (swr_expected_aggregates.csv). 5 pasadas son
+# TX multipasada: requires-radio.
+
+name swrscan-5pass-outliers
+screen swrscan
+
+seed 20
+
+swr_dataset outliers_5pass
+swr_passes 5
+
+frequency_hz 7100000
+tx_frequency_hz 7100000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

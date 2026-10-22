@@ -1,0 +1,15 @@
+== 2026-10-18T01:35:34-03:00 ==
+host: wlp2s0           UP             192.168.0.195/24 fe80::3d23:8074:f702:8a90/64 
+radio conocida 192.168.0.236:
+PING 192.168.0.236 (192.168.0.236) 56(84) bytes of data.
+
+--- 192.168.0.236 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1042ms
+
+
+ssh:
+ssh: connect to host 192.168.0.236 port 22: No route to host
+rc=255
+
+hosts con puerto 22 en 192.168.0.0/24:
+(fin)

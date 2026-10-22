@@ -1,0 +1,70 @@
+# Bordes izquierdos de los controles, medidos por pixeles (arnes, DESPUES)
+
+arnes/despues/settings-grupo-operation.png: 269 filas con borde
+   x=498..504  filas=248
+   x=552..552  filas=17
+   x=601..602  filas=3
+
+arnes/despues/settings-audio.png: 309 filas con borde
+   x=498..504  filas=309
+
+arnes/despues/settings-wfbat.png: 294 filas con borde
+   x=498..504  filas=294
+
+arnes/despues/settings-home.png: 297 filas con borde
+   x=498..504  filas=294
+   x=784..784  filas=3
+
+arnes/despues/settings-grupo-display.png: 294 filas con borde
+   x=498..504  filas=294
+
+# Todas las columnas de borde
+
+== arnes/despues/settings-grupo-operation.png (bordes verticales por columna) ==
+   x=498..507  filas=947
+   x=513..527  filas=299
+   x=531..542  filas=135
+   x=552..556  filas=73
+   x=559..595  filas=289
+   x=601..715  filas=2464
+   x=775..785  filas=383
+   x=790..792  filas=35
+
+== arnes/despues/settings-audio.png (bordes verticales por columna) ==
+   x=498..572  filas=2046
+   x=583..699  filas=3562
+   x=704..786  filas=1869
+   x=790..792  filas=73
+
+== arnes/despues/settings-wfbat.png (bordes verticales por columna) ==
+   x=498..507  filas=1255
+   x=513..527  filas=598
+   x=531..542  filas=240
+   x=583..608  filas=191
+   x=611..625  filas=448
+   x=630..651  filas=1908
+   x=657..671  filas=340
+   x=675..699  filas=314
+   x=758..769  filas=153
+   x=775..786  filas=820
+   x=790..792  filas=74
+
+== arnes/despues/settings-home.png (bordes verticales por columna) ==
+   x=498..507  filas=1251
+   x=512..555  filas=1170
+   x=562..646  filas=3573
+   x=655..659  filas=73
+   x=662..755  filas=3005
+   x=764..769  filas=26
+   x=775..786  filas=1308
+   x=790..792  filas=74
+
+== arnes/despues/settings-grupo-display.png (bordes verticales por columna) ==
+   x=498..507  filas=1251
+   x=511..661  filas=3324
+   x=669..705  filas=337
+   x=753..755  filas=58
+   x=764..769  filas=84
+   x=775..786  filas=854
+   x=790..792  filas=74
+

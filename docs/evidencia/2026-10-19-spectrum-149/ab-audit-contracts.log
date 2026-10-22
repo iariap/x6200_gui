@@ -1,0 +1,6 @@
+=== A/B audit + contracts (75a48b89) ===
+$ uv run x6200-ab audit --revision 75a48b89 --suite visual
+audited 75a48b8966f3: 11 known issues — 0 reproduced, 9 unverified; structural inspection REAL over 9636 objects on 87 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab contracts --revision 75a48b89
+contracts 75a48b8966f3: PASS — 893 checks, 0 failure(s), 0 unchanged baseline defect(s)

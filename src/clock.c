@@ -19,6 +19,7 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 
 typedef enum {
@@ -27,7 +28,11 @@ typedef enum {
 } clock_state_t;
 
 static lv_obj_t         *obj;
-static pthread_mutex_t  power_mux;
+/* El "8 fantasma" del reloj (ver clock_shadow_update): la etiqueta hermana que va
+ * DEBAJO del valor. NULL cuando no hay familia segmentada, que es el caso en el que
+ * no se crea. */
+static lv_obj_t         *shadow;
+static pthread_mutex_t  power_mux = PTHREAD_MUTEX_INITIALIZER;
 
 static clock_state_t    state = CLOCK_TIME;
 static uint64_t         timeout;
@@ -45,19 +50,56 @@ static char             str[32];
 static void check_time_sync_cb(lv_timer_t * t);
 static time_t get_last_sync_time();
 
+/* El texto del "8 fantasma": la capa de segmentos apagados del look Casio (issue #9,
+ * decision 1). En el reloj de hora el valor es SIEMPRE "%02i:%02i:%02i" (ocho
+ * caracteres, digitos y dos puntos), asi que el fantasma es la constante "88:88:88"
+ * y no hace falta transformar el texto del valor. En el de potencia el valor es el
+ * simbolo de bateria mas los voltios: no hay segmentos apagados que mostrar, asi
+ * que el fantasma queda vacio y la sombra solo aporta el fondo del reloj (que es de
+ * ella: el valor no lleva la imagen, ver clock_init). */
+static void clock_shadow_update() {
+    if (shadow == NULL) return;
+
+    const char *txt = state == CLOCK_TIME ? "88:88:88" : "";
+
+    /* Guarda de igualdad (OPT-4 #150): lv_label_set_text invalida el objeto
+     * aunque el texto sea el mismo, y show_time corre cada 500 ms mientras el
+     * fantasma solo cambia con el estado. Se compara contra el texto vivo de la
+     * etiqueta, sin cache: el tema/fuente no la pueden dejar desactualizada. */
+    if (strcmp(lv_label_get_text(shadow), txt) != 0) {
+        lv_label_set_text(shadow, txt);
+    }
+}
+
 static void set_state(clock_state_t new_state) {
     state = new_state;
 
-    switch (state) {
-        case CLOCK_TIME:
-            lv_obj_set_style_text_font(obj, &sony_38, 0);
-            lv_obj_set_style_pad_ver(obj, 18, 0);
-            break;
+    const lv_font_t *font = state == CLOCK_TIME ? font_digit(&sony_38) : font_digit(&sony_30);
+    lv_coord_t       pad = state == CLOCK_TIME ? 18 : 5;
 
-        case CLOCK_POWER:
-            lv_obj_set_style_text_font(obj, &sony_30, 0);
-            lv_obj_set_style_pad_ver(obj, 5, 0);
-            break;
+    /* El valor y su fantasma miden igual: el fantasma solo enciende los segmentos
+     * que el valor apaga, asi que la metrica (fuente y pad) tiene que ser la misma
+     * en las dos etiquetas.
+     *
+     * Guarda de igualdad (OPT-4 #150): lv_obj_set_style_* invalida el objeto
+     * aunque el valor sea el mismo (LVGL 8 no compara) y con
+     * CLOCK_TIME_ALLWAYS set_state() corre en cada tick de 500 ms. Se lee el
+     * estilo resuelto del objeto (no un cache) para que un cambio de tema o de
+     * fuente siga aplicandose. */
+    if (lv_obj_get_style_text_font(obj, 0) != font) {
+        lv_obj_set_style_text_font(obj, font, 0);
+    }
+    if (lv_obj_get_style_pad_top(obj, 0) != pad) {
+        lv_obj_set_style_pad_ver(obj, pad, 0);
+    }
+
+    if (shadow != NULL) {
+        if (lv_obj_get_style_text_font(shadow, 0) != font) {
+            lv_obj_set_style_text_font(shadow, font, 0);
+        }
+        if (lv_obj_get_style_pad_top(shadow, 0) != pad) {
+            lv_obj_set_style_pad_ver(shadow, pad, 0);
+        }
     }
 }
 
@@ -102,7 +144,7 @@ static void show_time() {
 
         case CLOCK_POWER:
             pthread_mutex_lock(&power_mux);
-            const char * bat_sym;
+            const char * bat_sym = LV_SYMBOL_BATTERY_FULL;
             const char * ext_sym;
             switch ((uint8_t)(v_bat * 10)) {
                 case 0 ... 56:
@@ -137,16 +179,43 @@ static void show_time() {
             break;
     }
 
-    lv_label_set_text(obj, str);
+    /* Guarda de igualdad (OPT-4 #150): show_time corre cada 500 ms y el texto
+     * de la hora solo cambia una vez por segundo (y el de potencia, rara vez),
+     * asi que la mitad de los ticks reescribian el mismo texto e invalidaban el
+     * reloj al pedo. Se compara contra el texto vivo de la etiqueta: no hay
+     * cache que un cambio de tema/fuente pueda invalidar. */
+    if (strcmp(lv_label_get_text(obj), str) != 0) {
+        lv_label_set_text(obj, str);
+    }
+    clock_shadow_update();
 }
 
 lv_obj_t * clock_init(lv_obj_t * parent) {
-    pthread_mutex_init(&power_mux, NULL);
+    /* power_mux se inicializa estaticamente (PTHREAD_MUTEX_INITIALIZER): el
+     * registro de ultima respiracion puede leer la muestra desde el arranque,
+     * antes de que exista la pantalla. */
+
+    /* El fondo del reloj (clock_style.bg_img_src: la imagen del panel de arriba) lo
+     * dibuja la SOMBRA, que se crea primero y queda debajo. Si lo dibujara el valor
+     * -opaco- taparia al fantasma. Las dos etiquetas llevan clock_style, asi que
+     * miden y se alinean igual (209x61, arriba a la derecha) y el fondo cae en el
+     * mismo rect: no hay cambio de pixeles, solo la capa nueva en el medio. Sin
+     * familia segmentada no hay sombra y el fondo se queda donde estaba (el valor). */
+    if (font_digit_active()) {
+        shadow = lv_label_create(parent);
+        lv_obj_add_style(shadow, &clock_style, 0);
+        lv_obj_set_style_text_align(shadow, LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_set_style_text_opa(shadow, UI_DIGIT_SHADOW_OPA, 0);
+    }
 
     obj = lv_label_create(parent);
 
     lv_obj_add_style(obj, &clock_style, 0);
     lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, 0);
+
+    if (shadow != NULL) {
+        lv_obj_set_style_bg_img_opa(obj, LV_OPA_TRANSP, 0);
+    }
 
     set_state(CLOCK_TIME);
     timeout = get_time() + params.clock_time_timeout * 1000;
@@ -165,6 +234,22 @@ void clock_update_power(float ext, float bat, uint8_t cap, bool charge_flag) {
     cap_bat = cap;
     charging = charge_flag;
     pthread_mutex_unlock(&power_mux);
+}
+
+bool clock_get_power(clock_power_t *out) {
+    if (out == NULL) {
+        return false;
+    }
+
+    pthread_mutex_lock(&power_mux);
+    out->ext_v    = v_ext;
+    out->bat_v    = v_bat;
+    out->cap      = cap_bat;
+    out->charging = charging;
+    out->valid    = v_bat > 0.0f;
+    pthread_mutex_unlock(&power_mux);
+
+    return out->valid;
 }
 
 void clock_set_view(clock_view_t x) {
@@ -214,4 +299,8 @@ static time_t get_last_sync_time() {
         return attr.st_atime;
     }
     return 0;
+}
+
+bool clock_time_synced(void) {
+    return get_last_sync_time() != 0;
 }

@@ -1,0 +1,57 @@
+== handshake ==
+{"t":"state","vfo":"A","freq":27185000,"freq_bg":27053800,"mode":"CW","band":"CB C","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+
+== abrir app CW ==
+{"t":"ok"}
+================================================================
+== freq 26515000 ==
+{"t":"ok"}
+{"t":"ok"}
+-- estado antes de cw_send --
+{"t":"state","vfo":"A","freq":26515000,"freq_bg":26745000,"mode":"CW","band":"CB B","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+
+-- cw_send --
+{"t":"ok"}
+
+-- get #1 -- {"t":"state","vfo":"A","freq":26515000,"freq_bg":26745000,"mode":"CW","band":"CB B","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #2 -- {"t":"state","vfo":"A","freq":26515000,"freq_bg":26745000,"mode":"CW","band":"CB B","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #3 -- {"t":"state","vfo":"A","freq":26515000,"freq_bg":26745000,"mode":"CW","band":"CB B","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #4 -- {"t":"state","vfo":"A","freq":26515000,"freq_bg":26745000,"mode":"CW","band":"CB B","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #5 -- {"t":"state","vfo":"A","freq":26515000,"freq_bg":26745000,"mode":"CW","band":"CB B","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #6 -- {"t":"state","vfo":"A","freq":26515000,"freq_bg":26745000,"mode":"CW","band":"CB B","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+{"t":"ok"}
+================================================================
+== freq 27185000 ==
+{"t":"ok"}
+{"t":"ok"}
+-- estado antes de cw_send --
+{"t":"state","vfo":"A","freq":27185000,"freq_bg":27053800,"mode":"CW","band":"CB C","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+
+-- cw_send --
+{"t":"ok"}
+
+-- get #1 -- {"t":"state","vfo":"A","freq":27185000,"freq_bg":27053800,"mode":"CW","band":"CB C","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":1,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #2 -- {"t":"state","vfo":"A","freq":27185000,"freq_bg":27053800,"mode":"CW","band":"CB C","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":1,"sent":2,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #3 -- {"t":"state","vfo":"A","freq":27185000,"freq_bg":27053800,"mode":"CW","band":"CB C","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":1,"sent":4,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #4 -- {"t":"state","vfo":"A","freq":27185000,"freq_bg":27053800,"mode":"CW","band":"CB C","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":1,"sent":6,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #5 -- {"t":"state","vfo":"A","freq":27185000,"freq_bg":27053800,"mode":"CW","band":"CB C","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":1,"sent":6,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #6 -- {"t":"state","vfo":"A","freq":27185000,"freq_bg":27053800,"mode":"CW","band":"CB C","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":1,"sent":8,"queue":0},"cwt":null,"logrev":0,"did":""}
+{"t":"ok"}
+================================================================
+== freq 28074000 ==
+{"t":"ok"}
+{"t":"ok"}
+-- estado antes de cw_send --
+{"t":"state","vfo":"A","freq":28074000,"freq_bg":28453000,"mode":"CW","band":"10m","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":0,"sent":0,"queue":0},"cwt":null,"logrev":0,"did":""}
+
+-- cw_send --
+{"t":"ok"}
+
+-- get #1 -- {"t":"state","vfo":"A","freq":28074000,"freq_bg":28453000,"mode":"CW","band":"10m","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":1,"sent":1,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #2 -- {"t":"state","vfo":"A","freq":28074000,"freq_bg":28453000,"mode":"CW","band":"10m","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":1,"sent":2,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #3 -- {"t":"state","vfo":"A","freq":28074000,"freq_bg":28453000,"mode":"CW","band":"10m","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":1,"sent":4,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #4 -- {"t":"state","vfo":"A","freq":28074000,"freq_bg":28453000,"mode":"CW","band":"10m","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":1,"sent":6,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #5 -- {"t":"state","vfo":"A","freq":28074000,"freq_bg":28453000,"mode":"CW","band":"10m","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":1,"sent":7,"queue":0},"cwt":null,"logrev":0,"did":""}
+-- get #6 -- {"t":"state","vfo":"A","freq":28074000,"freq_bg":28453000,"mode":"CW","band":"10m","filter":600,"flo":1300,"fhi":1900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"CW","ax":{"cw":1,"wpm":15,"rx_wpm":15,"dec":1,"busy":1,"sent":8,"queue":0},"cwt":null,"logrev":0,"did":""}
+{"t":"ok"}
+== fin ==

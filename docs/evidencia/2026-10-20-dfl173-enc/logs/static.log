@@ -1,0 +1,20 @@
+== estaticos del repo (checkout 8d783dd7) ==
+check_wcag             OK
+check_actions          OK
+check_app_handlers     OK
+check_apps_menu        OK
+check_settings_focus   OK
+check_manual_apps      OK
+check_cw_tune_feed     OK
+check_build_identity   OK
+check_cfg_fills        OK
+
+== ruff / format (tools/ab_testing) ==
+All checks passed!
+196 files already formatted
+
+== bash -n de los .sh tocados ==
+tests/native/run_native_tests.sh OK
+
+== ty check (tools/ab_testing) ==
+All checks passed!

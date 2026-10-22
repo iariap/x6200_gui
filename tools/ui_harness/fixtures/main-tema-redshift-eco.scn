@@ -1,0 +1,33 @@
+# main-tema-redshift-eco: the main screen under the "Redshift" theme with the
+# pack in ECO (src/visual_policy.h: 11.2 V without an external source, the same
+# band as main-natural-eco) so the battery/warning roles are drawn on a real
+# render. Same state as main-natural-eco, with the theme as the only variable.
+
+name main-tema-redshift-eco
+screen main
+
+theme Redshift
+seed 13
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 11.2
+external_v 0.0
+battery_cap 76
+charging false
+
+rxtx rx

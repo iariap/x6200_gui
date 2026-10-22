@@ -1,0 +1,38 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output-dfl173: ok
+  chroot /home/pablo/desa/x6200/.vfix3: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  buildroot: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  limpiando la GUI (dirclean): el rebuild reusa una copia propia del repo
+  reconstruyendo la GUI: el hash de los fuentes cambio
+OK: /home/pablo/desa/x6200/.vfix3/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13893020 B, 3/3 marcas)
+  captura: docs/evidencia/2026-10-20-vfo186/banco/01-home.png (11469 colores distintos)
+  version: 7ee5b5cf build #186: compilar rotary_queue.c en el target de
+  fuente: md5 6f0ac61e433e (src/ + lvgl/src)
+  binario: md5 452735f5d81f   qemu-cpu: cortex-a7
+  captura util (141333 bytes)
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output-dfl173: ok
+  chroot /home/pablo/desa/x6200/.vfix3: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  buildroot: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+OK: /home/pablo/desa/x6200/.vfix3/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13893020 B, 3/3 marcas)
+  el banco no contesta o la GUI no esta viva; reiniciando...
+  respuesta: {"t":"ok"}
+  captura: docs/evidencia/2026-10-20-vfo186/banco/02-settings-operation.png (14048 colores distintos)
+  version: 7ee5b5cf build #186: compilar rotary_queue.c en el target de
+  fuente: md5 6f0ac61e433e (src/ + lvgl/src)
+  binario: md5 452735f5d81f   qemu-cpu: cortex-a7
+  captura util (404682 bytes)

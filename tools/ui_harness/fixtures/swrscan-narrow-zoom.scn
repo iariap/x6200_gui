@@ -1,0 +1,35 @@
+# swrscan-narrow-zoom: 3 pasadas sobre `narrow_zoom_3pass`: span de 50 kHz
+# (paso de 1 kHz), que resuelve el valle agudo de 7.103.000 Hz. El span lo fija el
+# backend con el del dataset, asi que el fixture no puede pedir una grilla que no
+# sea la de los datos. requires-radio (TX multipasada).
+
+name swrscan-narrow-zoom
+screen swrscan
+
+seed 20
+
+swr_dataset narrow_zoom_3pass
+swr_passes 3
+
+frequency_hz 7100000
+tx_frequency_hz 7100000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

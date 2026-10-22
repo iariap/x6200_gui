@@ -1,0 +1,37 @@
+# cw-tune-tema-sunlit: the CW tune widget under the shipped "Sunlit" theme
+# (rootfs/usr/share/x6200/themes/Sunlit.json), the only light theme of the six:
+# the bars used to fall at 1.01:1 against the widget's own panel and disappear
+# (docs/HALLAZGOS.md 49). Same route and same state as cw-tune-tuner — the CW page
+# of the button bar, the Tuner button pressed, a synthetic 8 Hz tone so the active
+# block is drawn — and the theme is the only variable, so the render is the
+# daylight identity of the widget. This is the fixture that measures the fix: the
+# inactive bars carry the high-contrast border and the active block keeps its own.
+
+name cw-tune-tema-sunlit
+screen cw-tune-tuner
+
+theme Sunlit
+seed 20
+
+frequency_hz 7030000
+tx_frequency_hz 7030000
+fft_width_hz 384000
+
+mode cw
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

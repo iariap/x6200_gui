@@ -1,0 +1,9 @@
+{
+ "status": "REVIEW REQUIRED",
+ "exit_code": 0,
+ "revision": "6542d48f4fcad8b98c6f08ca324a4c27b0453029",
+ "checks": 2033,
+ "failures": [],
+ "unchanged_defects": [],
+ "_note": "un PASS real con status REVIEW REQUIRED (el header lo declara legitimo)."
+}

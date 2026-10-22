@@ -1,0 +1,13 @@
+| Caso (banco QEMU, ARM real) | color | ancho | filas con la linea | ratio vs vecino | ratio vs piso (gate) |
+| --- | --- | --- | --- | --- | --- |
+| Aurora (después, banco) | `#f8eeff` | 3 px | 227/239 (95.0 %) | 18.67:1 (min 12.76) | **18.67:1** (#f8eeff vs #000000) |
+| Sunlit (después, banco) | `#162436` | 3 px | 226/239 (94.6 %) | 1.34:1 (min 1.02) | **1.34:1** (#162436 vs #000000) |
+| Redshift (después, banco) | `#ffb3a0` | 3 px | 232/239 (97.1 %) | 12.21:1 (min 2.96) | **12.21:1** (#ffb3a0 vs #000000) |
+| Sunlit (antes, trunk) | `#0b2942` | 3 px | 226/239 (94.6 %) | 1.41:1 (min 1.04) | **1.41:1** (#0b2942 vs #000000) |
+| Redshift (antes, radio) | `#733b36` | 1 px | 45/239 (18.8 %) | 1.98:1 (min 1.92) | **2.27:1** (#6c3934 vs #000000) |
+
+Aurora (después, banco): banco/aurora-on.png + control banco/aurora-off.png — lineas por ancho {3: 221, 1: 4, 2: 2}, px del color esperado en la columna del control (x=398..400): 0
+Sunlit (después, banco): banco/sunlit-on.png + control banco/sunlit-off.png — lineas por ancho {3: 222, 1: 1, 2: 3}, px del color esperado en la columna del control (x=398..400): 0
+Redshift (después, banco): banco/redshift-on.png + control banco/redshift-off.png — lineas por ancho {3: 225, 1: 5, 2: 2}, px del color esperado en la columna del control (x=398..400): 0
+Sunlit (antes, trunk): ../2026-10-18-wf140-banco/red-trunk.png + control ../2026-10-18-wf140-banco/param-off.png — lineas por ancho {3: 222, 1: 1, 2: 3}, px del color esperado en la columna del control (x=398..400): 0
+Redshift (antes, radio): ../2026-10-17-qa-radio-swr125/07-restaurado.png + control sin control — lineas por ancho {1: 45}, px del color esperado en la columna del control (x=398..400): —

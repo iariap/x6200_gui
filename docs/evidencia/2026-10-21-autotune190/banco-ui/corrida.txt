@@ -1,0 +1,11 @@
+# Fixtures de Auto Tune v2 en el banco de UI (sin RF, sin DSP).
+# $ docker run --rm --entrypoint bash --user $(id -u):$(id -g) -v $PWD:/src -w /src/tools/ui_harness x6200-uiharness -lc 'cd build && for f in autotune autotune-progress autotune-found autotune-notcw; do ./ui_harness --scenario ../fixtures/$f.scn --png out/$f.png --json out/$f.json; echo "exit=$? $(basename $f)"; done'
+
+ui_harness: autotune -> out/autotune.png (249304 bytes), flushes=6, flushed_pixels=1243840
+exit=0 autotune
+ui_harness: autotune-progress -> out/autotune-progress.png (249850 bytes), flushes=9, flushed_pixels=1313064
+exit=0 autotune-progress
+ui_harness: autotune-found -> out/autotune-found.png (249850 bytes), flushes=10, flushed_pixels=1509064
+exit=0 autotune-found
+ui_harness: autotune-notcw -> out/autotune-notcw.png (248668 bytes), flushes=6, flushed_pixels=1243840
+exit=0 autotune-notcw

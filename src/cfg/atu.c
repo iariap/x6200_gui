@@ -70,6 +70,31 @@ void cfg_atu_init(sqlite3 *database) {
 
 int cfg_atu_save_network(uint32_t network) {
     int     rc;
+
+    /* Sin las sentencias preparadas (cfg_atu_init no corrió, o falló) sqlite3_bind_int recibe
+     * un puntero NULL y el proceso muere: cambiar de banda desde el control remoto hacía
+     * exactamente eso. Se avisa y no se guarda. */
+    if (insert_stmt == NULL || update_stmt == NULL) {
+        LV_LOG_ERROR("ATU: sin sentencias preparadas, no se guarda la red (la GUI sigue)");
+        return -1;
+    }
+
+    /* La caché la llena la carga del ATU: sin ella find_atu_for_freq() la recorre y el
+     * proceso muere. Pasa cuando se cambia de banda desde el control remoto antes de que el
+     * ATU tenga datos. */
+    if (atu_network_cache == NULL || atu_network_cache_size == 0) {
+        LV_LOG_WARN("ATU: sin redes cargadas, no se guarda la red (la GUI sigue)");
+        return -1;
+    }
+
+    /* Los dos subjects del ATU los crea cfg_atu_init: si no están, escribir la red termina en
+     * un subject_set_int sobre un puntero NULL (fue lo que se vio al cambiar de banda desde el
+     * control remoto: la carga de [r5+0x2c] falló con dirección 0x2c). */
+    if (atu_network.loaded == NULL || atu_network.network == NULL) {
+        LV_LOG_ERROR("ATU: sin subjects inicializados, no se guarda la red (la GUI sigue)");
+        return -1;
+    }
+
     int32_t ant_id = subject_get_int(cfg.ant_id.val);
     int32_t freq   = subject_get_int(cfg_cur.fg_freq);
 
@@ -78,7 +103,7 @@ int cfg_atu_save_network(uint32_t network) {
     sqlite3_stmt *stmt;
     int32_t       atu_pos = find_atu_for_freq(freq);
     pthread_mutex_lock(&write_mutex);
-    if (atu_pos >= 0) {
+    if (atu_pos >= 0 && (uint32_t) atu_pos < atu_network_cache_size) {
         stmt = update_stmt;
         rc = sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, ":prev_freq"), atu_network_cache[atu_pos].freq);
         if (rc != SQLITE_OK) {
@@ -158,6 +183,14 @@ static void add_atu_net_to_cache(int32_t freq, uint32_t network) {
     if (atu_network_cache_size >= atu_network_cache_allocated) {
         atu_network_cache_allocated += 10;
         atu_network_cache = realloc(atu_network_cache, sizeof(*atu_network_cache) * atu_network_cache_allocated);
+
+    if (atu_network_cache == NULL) {
+        /* Sin memoria no hay dónde guardar la red: antes quedaba NULL y la escritura
+         * siguiente mataba el proceso (visto al cambiar de banda desde el control remoto). */
+        LV_LOG_ERROR("ATU: no se pudo agrandar la caché, no se guarda la red (la GUI sigue)");
+        atu_network_cache_allocated = 0;
+        return;
+    }
     }
     atu_network_cache[atu_network_cache_size].freq    = freq;
     atu_network_cache[atu_network_cache_size].network = network;

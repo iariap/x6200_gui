@@ -1,0 +1,47 @@
+# Gates #160 — HEAD 59871960 (base ec5e2730)
+
+TDD nativo (seam cw_encoder/radio + src/cb.c real):
+  RED   (src/cw_encoder.c de la base ec5e2730):  5 fallos / 33 comprobaciones
+  GREEN (fix):                                   33 comprobaciones, 0 fallos
+
+Suite nativa completa + -fanalyzer: exit 0 (bloque #160: 33/0)
+
+Estaticos de la app (10) + bash -n: 10/10 OK
+
+Determinismo del arnes de UI: PASS (PNG identicos por fixture)
+
+A/B:
+experiment AB-INT160: PASS (exit 0)
+  Functional         PASS            (required) — 89 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — captures are pixel-identical to the baseline
+  Quality Contract   PASS            (required) — 913 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached
+  Energy             BLOCKED         (advisory) — no power measurement
+
+contracts:
+contracts 59871960daac: PASS — 913 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+audit:
+audited 59871960daac: 11 known issues — 0 reproduced, 9 unverified; structural inspection REAL
+over 9810 objects on 89 scenario(s): 0 structural finding(s)
+
+themes: PASS (WCAG 2.1 AA sobre las paletas servidas)
+
+pytest:       227 passed
+pytest -m e2e: 13 passed
+ruff check / ruff format --check / ty check: todo OK
+
+ARM build (dirclean + rebuild, toolchain buildroot):
+  [ 52%] Building C object src/CMakeFiles/x6200_gui.dir/radio.c.o
+  [ 57%] Building C object src/CMakeFiles/x6200_gui.dir/cw_encoder.c.o
+  [100%] Built target x6200_gui
+  md5 40d94ab49aff27ea0cda8ea06eb16745  /b/target/usr/sbin/x6200_gui
+
+Banco QEMU (gate #86, volumen privado x6200-build-output-int160, chroot .vint160):
+  OK: /home/pablo/desa/x6200/.vint160/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13853612 B, 3/3 marcas)
+  26.515 (CB B, scope 0): cw_send -> ax.busy=0, ax.sent=0  (BLOQUEADO; "TX blocked: not a CB channel", READY)
+  27.185 (CB C, scope 0): cw_send -> ax.busy=1, sent 0->2->4->6->8  (KEYEA; ON AIR)
+  28.074 (10 m):          cw_send -> ax.busy=1, sent 1->2->4->6->8  (KEYEA; sin interlock)
+
+requires-radio: ver README.md seccion 6.

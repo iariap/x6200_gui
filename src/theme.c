@@ -1,0 +1,508 @@
+/*
+ *  SPDX-License-Identifier: LGPL-2.1-or-later
+ *
+ *  Themes: built-in tables and JSON files in /mnt/themes/ (docs/THEMES.md).
+ */
+
+#include "theme.h"
+
+#include "cJSON.h"
+#include "fonts/font_select.h"
+
+#include <png.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+
+#ifndef THEMES_DIR
+#define THEMES_DIR "/mnt/themes"
+#endif
+
+/* $THEMES_DIR overrides it so the tests do not touch /mnt */
+static const char *themes_dir(void) {
+    const char *p = getenv("THEMES_DIR");
+
+    return p && *p ? p : THEMES_DIR;
+}
+
+/* Los temas que vienen con la ROM son los seis archivos JSON de
+ * rootfs/usr/share/x6200/themes (docs/THEMES.md). Se buscan en los dos directorios: el de DATA
+ * primero, así un tema del usuario con el mismo nombre gana. No hay built-ins: `theme_list()`
+ * ofrece esos seis y nada más, y `theme_init()` sólo carga un archivo. */
+#ifndef THEMES_DIR_SHIPPED
+#define THEMES_DIR_SHIPPED "/usr/share/x6200/themes"
+#endif
+
+static const char *themes_dir_shipped(void) {
+    const char *p = getenv("THEMES_DIR_SHIPPED");
+
+    return p && *p ? p : THEMES_DIR_SHIPPED;
+}
+
+static const char *themes_dir_n(int i) {
+    return i == 0 ? themes_dir() : themes_dir_shipped();
+}
+
+/* El default de la colección (issue #74): el tema con el que arranca la GUI cuando no hay
+ * `theme_name` guardado, cuando el guardado no es uno de los seis (un tema legado o un DATA que el
+ * selector ya no ofrece) o cuando su archivo no se puede leer. Nunca un built-in: IU1WXY dejó de
+ * ser el fallback (lo era) y el default es Aurora (THEME_DEFAULT, theme.h). */
+
+/* Las cuatro paletas base del esquema: las columnas de THEME_COLORS(X) (theme.h). Son plantillas
+ * internas, NO temas: `base_index()` resuelve el `base` de un archivo JSON y `use_base()` lo
+ * aplica. Tres de los seis temas heredan de una (Aurora de IU1WXY, Sunlit de Outdoor,
+ * Cathode/Redshift/Sprint/Trail de Classic); ninguna se ofrece ni se carga por nombre (retirar los
+ * temas legados como temas es el #74; la data queda privada para no romper la herencia). */
+enum { BASE_IU1WXY, BASE_LEGACY, BASE_OUTDOOR, BASE_CLASSIC, BASE_COUNT };
+
+static const char *const base_names[BASE_COUNT] = {"IU1WXY", "Legacy", "Outdoor", "Classic"};
+
+static const uint32_t base_colors[BASE_COUNT][TC_COUNT] = {
+#define COL(name, a, b, c, d) a,
+    {THEME_COLORS(COL)},
+#undef COL
+#define COL(name, a, b, c, d) b,
+    {THEME_COLORS(COL)},
+#undef COL
+#define COL(name, a, b, c, d) c,
+    {THEME_COLORS(COL)},
+#undef COL
+#define COL(name, a, b, c, d) d,
+    {THEME_COLORS(COL)},
+#undef COL
+};
+
+static const char *const color_names[TC_COUNT] = {
+#define NAME(name, a, b, c, d) #name,
+    THEME_COLORS(NAME)
+#undef NAME
+};
+
+static const theme_shape_t base_shapes[BASE_COUNT] = {
+    [BASE_IU1WXY]  = {.radius = 7, .radius_btn = 10, .radius_popup = 10, .border = 1, .box_gradient = true,
+                      .images = 1, .font = -1, .waterfall_table = 0},
+    [BASE_LEGACY]  = {.radius = 7, .radius_btn = 10, .radius_popup = 10, .border = 1, .box_gradient = true,
+                      .images = 2, .font = -1, .waterfall_table = 1},
+    /* Light and high contrast for the sun, in grey: the noise light, weak signals already mid grey,
+     * then darker at an even pace up to black, so a strong signal shows how strong it is */
+    [BASE_OUTDOOR] = {.radius = 6, .radius_btn = 8, .radius_popup = 8, .border = 2, .focus_solid = true,
+                      .font = -1, .meter_gradient = true, .mono_cluster = true,
+                      .waterfall = {0xfafafa, 0xe6e6e6, 0xc8c8c8, 0xa0a0a0, 0x787878, 0x585858, 0x3c3c3c, 0x282828,
+                                    0x181818, 0x0a0a0a, 0x000000},
+                      .waterfall_n = 11},
+    [BASE_CLASSIC] = {.radius = 3, .radius_btn = 4, .radius_popup = 4, .border = 1, .btn_gradient = true,
+                      .focus_solid = true, .font = FONT_ROBOTO,
+                      .waterfall = {0x000000, 0x000060, 0x0040e0, 0x00c8ff, 0xffff00, 0xff6000, 0xffffff},
+                      .waterfall_n = 7},
+};
+
+extern const uint32_t wf_palette_gauss[256], wf_palette_legacy[256];   /* styles.c */
+
+static uint32_t      colors[TC_COUNT];
+static uint32_t      palette[256];
+theme_shape_t        theme_shape;
+
+static const char *const image_names[TI_COUNT] = {"bg", "btn", "btn_active", "btn_off", "btn_page", "bar", "strip", "dialog", "mark", "mark_active"};
+
+static struct {
+    char path[600];
+    int16_t slice[4];       /* left, top, right, bottom */
+} images[TI_COUNT];
+
+uint32_t theme_hex(theme_color_t c) {
+    return c < TC_COUNT ? colors[c] : 0xff00ff;
+}
+
+/* El índice de una paleta base por nombre: lo usa `load_file()` para resolver el `base` de un
+ * archivo JSON. No es un catálogo de temas: un nombre fuera de la tabla es un `base` desconocido y
+ * el archivo arranca de la base por defecto. */
+static int base_index(const char *name) {
+    for (int i = 0; i < BASE_COUNT; i++) {
+        if (name && strcasecmp(name, base_names[i]) == 0) return i;
+    }
+    return -1;
+}
+
+/* Aplica una plantilla base: la paleta y la forma que hereda el `base` de un archivo. Sólo la usan
+ * `load_file()` (la herencia) y `theme_init()` (último recurso si el archivo del default no se
+ * puede leer, para no dejar la GUI sin tema). No fija `theme_shape.name`: un built-in ya no es un
+ * tema. */
+static void use_base(int b) {
+    if (b < 0 || b >= BASE_COUNT) b = BASE_IU1WXY;
+
+    memcpy(colors, base_colors[b], sizeof(colors));
+    theme_shape = base_shapes[b];
+    /* Las plantillas base (y la base de todo archivo JSON, que pasa por aca) llevan la
+     * linea central del waterfall en 3 px: es el default de `waterfall_signal_width`
+     * desde la orden del owner del 2026-10-18 (el ancho que ya usaban los temas
+     * outdoor, porque 1 px no se ve sobre la cascada) y lo que un tema que no la
+     * define hereda. Un tema que la quiera fina la pide en 1. */
+    theme_shape.waterfall_signal_width = 3;
+}
+
+/* "#rrggbb" or "rrggbb" */
+static bool parse_color(const cJSON *j, uint32_t *out) {
+    const char *s = cJSON_GetStringValue(j);
+    char       *end;
+
+    if (!s) return false;
+    if (*s == '#') s++;
+    unsigned long v = strtoul(s, &end, 16);
+    if (end - s != 6 || *end) return false;
+    *out = (uint32_t)v;
+    return true;
+}
+
+static void get_int(const cJSON *root, const char *key, int16_t *out) {
+    const cJSON *j = cJSON_GetObjectItemCaseSensitive(root, key);
+    if (cJSON_IsNumber(j)) *out = (int16_t)j->valueint;
+}
+
+static void get_bool(const cJSON *root, const char *key, bool *out) {
+    const cJSON *j = cJSON_GetObjectItemCaseSensitive(root, key);
+    if (cJSON_IsBool(j)) *out = cJSON_IsTrue(j);
+}
+
+/* "images": {"btn": {"file": "btn.png", "slice": [l, t, r, b]}, ...}, files next to the JSON */
+static void get_images(const cJSON *root, const char *dir) {
+    const cJSON *j, *imgs = cJSON_GetObjectItemCaseSensitive(root, "images");
+
+    cJSON_ArrayForEach(j, imgs) {
+        int         i;
+        const char *file = cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(j, "file"));
+        const cJSON *sl  = cJSON_GetObjectItemCaseSensitive(j, "slice");
+
+        for (i = 0; i < TI_COUNT && strcmp(j->string, image_names[i]) != 0; i++) {}
+        if (i == TI_COUNT || !file) {
+            fprintf(stderr, "Theme: bad image %s\n", j->string);
+            continue;
+        }
+        if (snprintf(images[i].path, sizeof(images[i].path), "%s/%s", dir, file) >=
+            (int) sizeof(images[i].path)) {
+            continue;       /* too long a path: skip this image */
+        }
+        for (int k = 0; k < 4; k++) {
+            const cJSON *v = cJSON_GetArrayItem(sl, k);
+            images[i].slice[k] = cJSON_IsNumber(v) ? v->valueint : 0;
+        }
+    }
+}
+
+/* A theme file, THEMES_DIR/<name>.json or THEMES_DIR/<name>/theme.json (a
+ * folder with its images): a base theme with the colours and shapes it sets */
+static bool load_file(const char *name) {
+    char  path[600], dir[600];
+    FILE *f;
+
+    f = NULL;
+    dir[0] = 0;
+
+    for (int di = 0; di < 2 && !f; di++) {
+        const char *base = themes_dir_n(di);
+
+        if (snprintf(path, sizeof(path), "%s/%s.json", base, name) >= (int) sizeof(path)) {
+            return false;       /* the path does not fit: not a theme we can read */
+        }
+
+        f = fopen(path, "r");
+
+        if (!f) {
+            if (snprintf(dir, sizeof(dir), "%s/%s", base, name) >= (int) sizeof(dir) ||
+                snprintf(path, sizeof(path), "%s/theme.json", dir) >= (int) sizeof(path)) {
+                return false;
+            }
+
+            f = fopen(path, "r");
+
+            if (f) {
+                continue;       /* found in a folder: dir is the folder */
+            }
+
+            snprintf(dir, sizeof(dir), "%s", base);     /* found as <name>.json: dir is base */
+        }
+    }
+    if (!f) return false;
+    fseek(f, 0, SEEK_END);
+    long len = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    char *text = len > 0 && len < 65536 ? malloc(len + 1) : NULL;
+    if (text) {
+        text[fread(text, 1, len, f)] = 0;
+    }
+    fclose(f);
+    cJSON *root = text ? cJSON_Parse(text) : NULL;
+    free(text);
+    if (!root) {
+        fprintf(stderr, "Theme %s: not valid JSON\n", path);
+        return false;
+    }
+
+    int b = base_index(cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(root, "base")));
+    use_base(b < 0 ? BASE_IU1WXY : b);
+    snprintf(theme_shape.name, sizeof(theme_shape.name), "%s", name);
+
+    const cJSON *c, *cols = cJSON_GetObjectItemCaseSensitive(root, "colors");
+    cJSON_ArrayForEach(c, cols) {
+        int i;
+        for (i = 0; i < TC_COUNT && strcmp(c->string, color_names[i]) != 0; i++) {}
+        if (i == TC_COUNT || !parse_color(c, &colors[i])) {
+            fprintf(stderr, "Theme %s: bad colour %s\n", name, c->string);
+        }
+    }
+
+    int16_t v;
+    get_int(root, "radius", &theme_shape.radius);
+    get_int(root, "radius_btn", &theme_shape.radius_btn);
+    get_int(root, "radius_popup", &theme_shape.radius_popup);
+    get_int(root, "border", &theme_shape.border);
+    get_bool(root, "btn_gradient", &theme_shape.btn_gradient);
+    get_bool(root, "box_gradient", &theme_shape.box_gradient);
+    get_bool(root, "focus_solid", &theme_shape.focus_solid);
+    get_int(root, "pill_border", &theme_shape.pill_border);
+    get_bool(root, "mode_box", &theme_shape.mode_box);
+    get_int(root, "btn_gap", &theme_shape.btn_gap);
+    theme_shape.btn_gap = theme_shape.btn_gap < 0 ? 0 : theme_shape.btn_gap > 4 ? 4 : theme_shape.btn_gap;
+    get_bool(root, "rule", &theme_shape.rule);
+    v = theme_shape.waterfall_steps;
+    get_int(root, "waterfall_steps", &v);
+    theme_shape.waterfall_steps = v;
+
+    /* La linea central del waterfall (la marca de senal sobre la paleta): el tema la
+     * pide en px. Clamp 1..8 — 0 la dejaria invisible y un valor alto taparia la
+     * cascada. Un archivo que no la define conserva los 3 px del base (use_base). */
+    v = theme_shape.waterfall_signal_width;
+    get_int(root, "waterfall_signal_width", &v);
+    theme_shape.waterfall_signal_width = v < 1 ? 1 : v > 8 ? 8 : v;
+
+    const char *digits = cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(root, "font_digits"));
+    if (digits) {
+        /* The digit panels of this theme (frequency row, clock) draw with a
+         * segmented family; anything that is not a digit family keeps the
+         * default. See src/fonts/font_select.h. */
+        int digit_family = font_digit_by_id(digits);
+        theme_shape.font_digits = (int8_t) (digit_family < 0 ? FONT_DIGIT_NONE : digit_family);
+    }
+    const char *font = cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(root, "font"));
+    if (font) {
+        /* The ids are the generated font_ids[] (fonts/font_families.h): a theme
+         * names the family with the same id the Ajustes dropdown shows. */
+        theme_shape.font = (int8_t) font_family_by_id(font);
+    }
+    const cJSON *wf = cJSON_GetObjectItemCaseSensitive(root, "waterfall");
+    if (cJSON_IsArray(wf) && cJSON_GetArraySize(wf) >= 2) {
+        int n = 0;
+        cJSON_ArrayForEach(c, wf) {
+            if (n < 16 && parse_color(c, &theme_shape.waterfall[n])) n++;
+        }
+        theme_shape.waterfall_n = n;
+    }
+    const cJSON *mark = cJSON_GetObjectItemCaseSensitive(root, "mark");
+    for (int k = 0; k < 3 && cJSON_GetArraySize(mark) == 3; k++) {
+        theme_shape.mark[k] = cJSON_GetArrayItem(mark, k)->valueint;
+    }
+    get_images(root, dir);
+    cJSON_Delete(root);
+    return true;
+}
+
+/* ---- Images ---- */
+
+static uint8_t *load_png(const char *path, int *w, int *h) {
+    png_image im;
+    uint8_t  *buf;
+
+    memset(&im, 0, sizeof(im));
+    im.version = PNG_IMAGE_VERSION;
+    if (!png_image_begin_read_from_file(&im, path)) {
+        fprintf(stderr, "Theme image %s: %s\n", path, im.message);
+        return NULL;
+    }
+    im.format = PNG_FORMAT_BGRA;    /* lv_color32_t order */
+    buf = malloc(PNG_IMAGE_SIZE(im));
+    if (!buf || !png_image_finish_read(&im, NULL, buf, 0, NULL)) {
+        fprintf(stderr, "Theme image %s: %s\n", path, im.message);
+        free(buf);
+        png_image_free(&im);
+        return NULL;
+    }
+    *w = im.width;
+    *h = im.height;
+    return buf;
+}
+
+/* Source coordinate of x in [0, size): the insets a and b as drawn, the
+ * middle stretched (pixel centres, so the stretch is symmetric) */
+static float slice_map(int x, int size, int src, int a, int b) {
+    if (a + b >= src || a + b >= size) return (x + 0.5f) * src / size - 0.5f;
+    if (x < a) return x;
+    if (x >= size - b) return src - (size - x);
+    return a + (x - a + 0.5f) * (src - a - b) / (size - a - b) - 0.5f;
+}
+
+static void bilinear(const uint8_t *src, int sw, int sh, float fx, float fy, uint8_t *out) {
+    int   x0, y0, x1, y1;
+    float tx, ty;
+
+    if (fx < 0) fx = 0;
+    if (fy < 0) fy = 0;
+    if (fx > sw - 1) fx = sw - 1;
+    if (fy > sh - 1) fy = sh - 1;
+    x0 = (int)fx;
+    y0 = (int)fy;
+    x1 = x0 + 1 < sw ? x0 + 1 : x0;
+    y1 = y0 + 1 < sh ? y0 + 1 : y0;
+    tx = fx - x0;
+    ty = fy - y0;
+    for (int c = 0; c < 4; c++) {
+        float a = src[(y0 * sw + x0) * 4 + c] * (1 - tx) + src[(y0 * sw + x1) * 4 + c] * tx;
+        float b = src[(y1 * sw + x0) * 4 + c] * (1 - tx) + src[(y1 * sw + x1) * 4 + c] * tx;
+        out[c] = (uint8_t)(a * (1 - ty) + b * ty + 0.5f);
+    }
+}
+
+static struct {
+    theme_image_t img;
+    lv_coord_t    w, h;
+    lv_img_dsc_t  dsc;
+} cache[16];
+static int cached;
+
+const lv_img_dsc_t *theme_image(theme_image_t img, lv_coord_t w, lv_coord_t h) {
+    int sw, sh;
+
+    if (img >= TI_COUNT || !images[img].path[0] || w <= 0 || h <= 0) return NULL;
+    for (int i = 0; i < cached; i++) {
+        if (cache[i].img == img && cache[i].w == w && cache[i].h == h) return &cache[i].dsc;
+    }
+    if (cached == 16) return NULL;
+
+    uint8_t *src = load_png(images[img].path, &sw, &sh);
+    uint8_t *dst = src ? malloc((size_t)w * h * 4) : NULL;
+    if (!dst) {
+        free(src);
+        return NULL;
+    }
+    const int16_t *s = images[img].slice;
+    for (int y = 0; y < h; y++) {
+        float fy = slice_map(y, h, sh, s[1], s[3]);
+        for (int x = 0; x < w; x++) {
+            bilinear(src, sw, sh, slice_map(x, w, sw, s[0], s[2]), fy, &dst[(y * w + x) * 4]);
+        }
+    }
+    free(src);
+
+    lv_img_dsc_t *d = &cache[cached].dsc;
+    memset(d, 0, sizeof(*d));
+    d->header.cf     = LV_IMG_CF_TRUE_COLOR_ALPHA;
+    d->header.w      = w;
+    d->header.h      = h;
+    d->data_size     = (uint32_t)w * h * 4;
+    d->data          = dst;
+    cache[cached].img = img;
+    cache[cached].w   = w;
+    cache[cached].h   = h;
+    cached++;
+    return d;
+}
+
+const lv_img_dsc_t *theme_png(const char *path) {
+    static struct {
+        char path[600];
+        lv_img_dsc_t dsc;
+    } pngs[24];
+    static int n;
+    int        w, h;
+
+    for (int i = 0; i < n; i++) {
+        if (!strcmp(pngs[i].path, path)) return &pngs[i].dsc;
+    }
+    if (n == 24) return NULL;
+    uint8_t *data = load_png(path, &w, &h);
+    if (!data) return NULL;
+
+    lv_img_dsc_t *d = &pngs[n].dsc;
+    snprintf(pngs[n].path, sizeof(pngs[n].path), "%s", path);
+    memset(d, 0, sizeof(*d));
+    d->header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
+    d->header.w  = w;
+    d->header.h  = h;
+    d->data_size = (uint32_t)w * h * 4;
+    d->data      = data;
+    n++;
+    return d;
+}
+
+/* 256 colours through the stops, smooth or in flat bands */
+static void make_palette(void) {
+    const uint32_t *s = theme_shape.waterfall;
+    int             n = theme_shape.waterfall_n, steps = theme_shape.waterfall_steps;
+
+    for (int i = 0; i < 256; i++) {
+        int lvl = steps > 1 ? (i * steps / 256) * 255 / (steps - 1) : i;   /* 0..255 */
+        int pos = lvl * (n - 1), seg = pos / 255, t = pos % 255;
+
+        if (seg >= n - 1) {
+            seg = n - 2;
+            t   = 255;
+        }
+        uint32_t c = 0;
+        for (int sh = 0; sh <= 16; sh += 8) {
+            int a = (s[seg] >> sh) & 0xff, b = (s[seg + 1] >> sh) & 0xff;
+            c |= (uint32_t)(a + (b - a) * t / 255) << sh;
+        }
+        palette[i] = c;
+    }
+}
+
+void theme_init(const char *name) {
+    memset(images, 0, sizeof(images));
+    for (int i = 0; i < cached; i++) {
+        free((void *)cache[i].dsc.data);
+    }
+    cached = 0;
+
+    /* El catálogo son los seis archivos (docs/THEMES.md): un nombre vacío, un legado (IU1WXY,
+     * Outdoor, ...) o un DATA que el selector no ofrece NO cargan un tema por nombre; caen al
+     * default. Sólo si el propio archivo del default no se puede leer se usa la plantilla base
+     * IU1WXY como último recurso, para no dejar la GUI sin tema (issue #74). */
+    if (!name || !*name || !load_file(name)) {
+        if (name && *name) fprintf(stderr, "Theme %s not found, using %s\n", name, THEME_DEFAULT);
+        if (!load_file(THEME_DEFAULT)) {
+            fprintf(stderr, "Theme %s not found, using the IU1WXY base\n", THEME_DEFAULT);
+            use_base(BASE_IU1WXY);
+        }
+    }
+    if (theme_shape.waterfall_n >= 2) make_palette();
+}
+
+const uint32_t *theme_waterfall(void) {
+    if (theme_shape.waterfall_n >= 2) return palette;
+    return theme_shape.waterfall_table == 1 ? wf_palette_legacy : wf_palette_gauss;
+}
+
+/* El catálogo de Ajustes: SOLO los seis temas v2 (issue #73), que son la colección completa
+ * (docs/THEMES.md). Los temas viejos (los built-ins IU1WXY, Legacy, Outdoor, Outdoor-Negative,
+ * Classic y VISION, y los archivos Holo, Material 3 y RS) ya NO existen como temas: `theme_init()`
+ * no los carga por nombre (un `theme_name` guardado que los nombre migra a Aurora, ver
+ * src/params/migrations.c) y sus archivos salieron de la ROM. Un tema propio del usuario (DATA)
+ * tampoco se lista: se conserva su archivo pero no aparece en el menú. `theme_offered()` es la
+ * misma lista, para la migración. */
+static const char *const offered_names[] = {"Sunlit", "Redshift", "Sprint", "Cathode", "Trail", "Aurora"};
+
+int theme_list(char names[][32], int max) {
+    int n = 0;
+
+    for (size_t i = 0; i < sizeof(offered_names) / sizeof(offered_names[0]) && n < max; i++) {
+        snprintf(names[n++], 32, "%s", offered_names[i]);
+    }
+
+    return n;
+}
+
+bool theme_offered(const char *name) {
+    for (size_t i = 0; i < sizeof(offered_names) / sizeof(offered_names[0]); i++) {
+        if (name && strcmp(name, offered_names[i]) == 0) return true;
+    }
+    return false;
+}

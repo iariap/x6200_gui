@@ -1,0 +1,43 @@
+# dfl-mirror-lsb: espejo USB/LSB del editor DFL inline (issue #182).
+#
+# La MISMA secuencia de interaccion que `dfl-mirror-usb`, en LSB-D: el eje va
+# 5000..0 (HIGH a la izquierda, LOW a la derecha) y la curva es la de USB
+# reflejada. `scenario_settle` comprueba que el handle izquierdo es HIGH y el
+# derecho LOW, que mover a la derecha acerca a cero, el toque lejano, el
+# contrato de VOL/rotary0 y el cambio de modo; `scenario_settle_pixels` confirma
+# las x de los handles en la captura 800x480. Los textos siguen siendo
+# LOW 225 Hz / HIGH 3525 Hz / BW 3300 Hz (magnitudes positivas, sin intercambio).
+
+name dfl-mirror-lsb
+screen dfl-editor-mirror
+
+seed 182
+theme Aurora
+spectrum_filled true
+spectrum_peak true
+waterfall_center_line true
+
+frequency_hz 14200000
+tx_frequency_hz 14200000
+fft_width_hz 48000
+
+mode LSB-D
+filter_low 225
+filter_high 3525
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

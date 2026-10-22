@@ -43,6 +43,12 @@ void dsp_reset();
 float dsp_get_spectrum_beta();
 void dsp_set_spectrum_beta(float x);
 
+/* The X6100 apps hide the spectrum and the waterfall while they run. In this
+ * GUI an app is a full dialog drawn over the main screen, so there is nothing
+ * to hide; the calls are accepted and ignored. */
+void dsp_set_spectrum_enabled(bool enabled);
+void dsp_set_waterfall_enabled(bool enabled);
+
 void dsp_put_audio_samples(size_t nsamples, int16_t *samples);
 #ifdef __cplusplus
 }

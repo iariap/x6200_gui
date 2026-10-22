@@ -1,0 +1,16 @@
+=== ty check . ===
+WARN No python files found under the given path(s)
+All checks passed!
+=== pytest -m 'not e2e' ===
+E         'settings-grupo-operation-tema-redshift'
+E         'settings-grupo-operation-tema-trail'
+E         'settings-grupo-operation-tema-sunlit'
+E         'settings-grupo-display'...
+E         
+E         ...Full output truncated (5 lines hidden), use '-vv' to show
+
+tests/test_theme_checks.py:145: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_scenarios.py::test_repo_fixtures_are_all_parsable - Asserti...
+FAILED tests/test_theme_checks.py::test_every_repo_exception_is_scoped_dated_and_recorded
+2 failed, 225 passed, 13 deselected in 3.15s

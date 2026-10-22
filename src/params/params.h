@@ -29,6 +29,7 @@ typedef enum {
 typedef enum {
     ACTION_NONE = 0,
     ACTION_SCREENSHOT,
+    ACTION_SCREEN_REC,
     ACTION_RECORDER,
     ACTION_MUTE,
     ACTION_STEP_UP,
@@ -40,14 +41,55 @@ typedef enum {
 
     ACTION_APP_RTTY = 100,
     ACTION_APP_FT8,
+    ACTION_APP_WSPR,
+    ACTION_APP_NAVTEX,
+    ACTION_APP_SSTV,
+    ACTION_APP_WEFAX,
+    ACTION_APP_CLUSTER,
+    ACTION_APP_FIELD,
+    ACTION_APP_JS8,
+    ACTION_APP_CW_KBD,
+    ACTION_APP_CWTRAINER,
+    ACTION_APP_BT,
+    ACTION_APP_STATUS,
+    ACTION_THEME,
     ACTION_APP_SWRSCAN,
-    ACTION_APP_GPS,
     ACTION_APP_SETTINGS,
     ACTION_APP_RECORDER,
     ACTION_APP_QTH,
     ACTION_APP_CALLSIGN,
     ACTION_APP_WIFI,
     ACTION_APP_EQ,
+
+    /* ACTION_APP_ABOUT (121) se elimino: About fuera (orden del owner, 2026-10-14). El hueco
+     * 121 queda libre a proposito: las acciones se guardan por su valor crudo en los campos
+     * uint8 de params (long_gen/long_app/long_key/long_msg/long_dfn/long_dfl y
+     * press_f1/press_f2/long_f1/long_f2), que se cargan por nombre en params.c; mover las que
+     * siguen les cambiaria la accion guardada en el equipo. Ver el _Static_assert en params.c. */
+
+    /* Agregadas al final: los valores de las existentes no se mueven (estan guardados en la
+     * configuracion de cada equipo). */
+    ACTION_APP_GPS = 122,
+    ACTION_ATT_TOGGLE,
+    ACTION_PRE_TOGGLE,
+    ACTION_ATU_TOGGLE,
+    ACTION_ATU_TUNE,
+    ACTION_WF_MODE,
+    ACTION_APP_BANDS,
+
+    /* Asistente de sintonia fina (issue #100). No es una ACTION_APP_*: no abre
+     * dialogo, corre sobre la pantalla principal (mueve el dial) y se despacha en
+     * main_screen_action() desde el boton "Auto Tune" de la pagina APP 6. */
+    ACTION_ATUNE,
+
+    /* App Propagacion (issue #145): al FINAL del enum para no correr las acciones
+     * ya guardadas en la configuracion de cada equipo. */
+    ACTION_APP_PROPAGATION,
+
+    /* Editor DFL (issue #173, PR 2): tambien al FINAL. No es una app del menu de
+     * apps: se abre desde la quinta celda de la pagina DFL y desde el long press
+     * fisico DFL, y se despacha en main_screen_action(). */
+    ACTION_APP_DFL_EDITOR,
 } press_action_t;
 
 typedef enum {
@@ -76,6 +118,14 @@ typedef struct {
     uint16_t            brightness_timeout; /* seconds */
     buttons_light_t     brightness_buttons;
 
+    /* Perfil visual de bateria (UI-08 incr. 5): 0..VP_PROFILE_COUNT-1 = un perfil
+     * fijado por el usuario (override manual), VP_PARAM_AUTO = automatico. La
+     * politica (src/visual_policy.c) lo lee pero NUNCA lo escribe; el unico que
+     * lo guarda es la fila "Visual profile" de Ajustes (src/dialog_settings.c).
+     * Distinto de `waterfall_battery` (el toggle de usuario del modo Ahorro): el
+     * perfil es la capa por encima del toggle, no el toggle. */
+    params_uint8_t      visual_profile;
+
     /* radio */
 
     int16_t             band_id;
@@ -92,6 +142,17 @@ typedef struct {
     int16_t             moni;
     params_bool_t       spmode;
     params_uint8_t      freq_accel;
+
+    /* Umbral global de aceleracion del dial (issue #186, seccion 2.3): detents/s
+     * de entrada al nivel 1. 3..15, default 7. Unico parametro nuevo; NO cambia
+     * `freq_accel` (None/Lite/Strong) ni migra SQL: key/value ya existe. */
+    params_uint8_t      freq_accel_threshold;
+
+    /* CB 27 MHz (issue #146). Sin UI en v1: se editan por el configurador
+     * web/SQLite, como el resto de params. */
+    params_uint8_t      cb_tx_scope;    /* 0 = solo SBC AR (26,960-27,410),
+                                         * 1 = grids A-D, 2 = sin interlock */
+    params_float_t      cb_pwr_max;     /* tope de potencia en CB, W (default 4,0) */
 
     /* VOX */
 
@@ -114,9 +175,12 @@ typedef struct {
     params_bool_t       waterfall_smooth_scroll;
     params_bool_t       waterfall_center_line;
     params_bool_t       waterfall_zoom;
+    params_bool_t       waterfall_battery;      /* skip 3 of 4 waterfall frames */
     params_bool_t       mag_freq;
     params_bool_t       mag_info;
     params_bool_t       mag_alc;
+    params_bool_t       smeter_needle;          /* analog needle instead of bars */
+    params_bool_t       band_plan;              /* IARU band plan strip */
     clock_view_t        clock_view;
     uint8_t             clock_time_timeout;     /* seconds */
     uint8_t             clock_power_timeout;    /* seconds */
@@ -140,6 +204,24 @@ typedef struct {
 
     bool                ft8_show_all;
     ftx_protocol_t      ft8_protocol;
+    /* JS8 */
+    params_uint16_t     js8_tx_freq;
+    params_bool_t       js8_hold_offset;
+    params_bool_t       js8_auto;
+    params_bool_t       js8_hb;
+    params_bool_t       js8_hb_ack;
+    params_bool_t       js8_relay;
+    params_uint16_t     js8_hb_interval;
+    params_uint16_t     js8_cq_interval;
+    params_bool_t       js8_log_prompt;
+    params_uint8_t      js8_log_activation;
+    params_uint8_t      js8_alerts;
+    params_uint8_t      js8_speed;
+    params_bool_t       js8_rx_all;
+    params_bool_t       js8_ghostnet;
+    params_bool_t       js8_custom_on;
+    params_int32_t      js8_custom_hz;
+
     params_uint16_t     ft8_tx_freq;
     params_bool_t       ft8_auto;
     params_str_t        ft8_cq_modifier;
@@ -168,6 +250,10 @@ typedef struct {
     params_float_t      play_gain_db_f;
     params_float_t      rec_gain_db_f;
 
+    /* Audio enhancement */
+
+    params_uint8_t      audio_enh_preset;
+
     /* Voice */
 
     params_uint8_t      voice_mode;
@@ -183,9 +269,19 @@ typedef struct {
 
     params_bool_t       wifi_enabled;
 
+    /* Propagacion (issue #145): umbrales del veredicto, arranque al abrir y uso
+     * del cluster como evidencia complementaria. */
+
+    params_int32_t       propagation_open_db;      /* abierta >= este SNR */
+    params_int32_t       propagation_marginal_db;  /* marginal >= este SNR */
+    params_bool_t        propagation_run_on_open;
+    params_bool_t        propagation_cluster;
+
     /* Theme */
 
     params_uint8_t       theme;
+    params_str_t         theme_name;     /* X6100-style theme: IU1WXY, Legacy, ... or a JSON file */
+    params_uint8_t       font;           /* family: see fonts/font_select.h */
 
     /* durty flags */
 
@@ -256,13 +352,22 @@ extern params_t params;
 
 void params_init();
 
+/* Writes the changed parameters now (the saver also runs on its own timer) */
+void params_flush();
+
 void params_bool_set(params_bool_t *var, bool x);
 void params_uint8_set(params_uint8_t *var, uint8_t x);
 void params_uint16_set(params_uint16_t *var, uint16_t x);
+void params_int32_set(params_int32_t *var, int32_t x);
 void params_str_set(params_str_t *var, const char *x);
 void params_float_set(params_float_t *var, float x);
 
 uint8_t params_uint8_change(params_uint8_t *var, int16_t df);
+
+#define PARAMS_MSG_CW_LEN 65
+
+/* The saved CW messages, for the CW keyboard app */
+int  params_msg_cw_list(char (*out)[PARAMS_MSG_CW_LEN], int max);
 
 void params_msg_cw_load();
 void params_msg_cw_new(const char *val);

@@ -1,0 +1,573 @@
+{
+  "meta": {
+    "commit": "75a48b8966f31db3bdd5cdf3a98a09080053cc9b",
+    "commit_corto": "75a48b89 Spectrum: snapshot por frame y sincronizacion del productor (#149)",
+    "binario_md5": "b5ac3b029818",
+    "dwell_s": "6",
+    "qemu_cpu": "cortex-a7",
+    "imagen": "x6200-buildroot",
+    "volumen": "x6200-build-output",
+    "apps_solicitadas": "23",
+    "reintentar": "si"
+  },
+  "apps": [
+    {
+      "app": "FT8",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "FT8",
+          "app_estado": "FT8",
+          "captura": "capturas/FT8-1.png",
+          "colores": 267,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/FT8-1.txt",
+          "log_lineas": 113,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "FT4",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "FT4",
+          "app_estado": "FT4",
+          "captura": "capturas/FT4-1.png",
+          "colores": 267,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/FT4-1.txt",
+          "log_lineas": 112,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "JS8",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "JS8",
+          "app_estado": "JS8",
+          "captura": "capturas/JS8-1.png",
+          "colores": 307,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/JS8-1.txt",
+          "log_lineas": 262,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "WSPR",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "WSPR",
+          "app_estado": "WSPR",
+          "captura": "capturas/WSPR-1.png",
+          "colores": 280,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/WSPR-1.txt",
+          "log_lineas": 281,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "SSTV",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "SSTV",
+          "app_estado": "SSTV",
+          "captura": "capturas/SSTV-1.png",
+          "colores": 272,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/SSTV-1.txt",
+          "log_lineas": 87,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "WeFax",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "WeFax",
+          "app_estado": "WeFax",
+          "captura": "capturas/WeFax-1.png",
+          "colores": 272,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/WeFax-1.txt",
+          "log_lineas": 64,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "NavTex",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "NavTex",
+          "app_estado": "NavTex",
+          "captura": "capturas/NavTex-1.png",
+          "colores": 272,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/NavTex-1.txt",
+          "log_lineas": 64,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "RTTY",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "RTTY",
+          "app_estado": "RTTY",
+          "captura": "capturas/RTTY-1.png",
+          "colores": 291,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/RTTY-1.txt",
+          "log_lineas": 41,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "CW",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "CW",
+          "app_estado": "CW",
+          "captura": "capturas/CW-1.png",
+          "colores": 391,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/CW-1.txt",
+          "log_lineas": 479,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "Field",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "Field",
+          "app_estado": "Field",
+          "captura": "capturas/Field-1.png",
+          "colores": 521,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/Field-1.txt",
+          "log_lineas": 72,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "GPS",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "GPS",
+          "app_estado": "GPS",
+          "captura": "capturas/GPS-1.png",
+          "colores": 355,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/GPS-1.txt",
+          "log_lineas": 115,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "Bands",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "Bands",
+          "app_estado": "Bands",
+          "captura": "capturas/Bands-1.png",
+          "colores": 329,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/Bands-1.txt",
+          "log_lineas": 77,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "Settings",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "Settings",
+          "app_estado": "Settings",
+          "captura": "capturas/Settings-1.png",
+          "colores": 469,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/Settings-1.txt",
+          "log_lineas": 75,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "BT",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "BT",
+          "app_estado": "BT",
+          "captura": "capturas/BT-1.png",
+          "colores": 286,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/BT-1.txt",
+          "log_lineas": 68,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "Cluster",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "Cluster",
+          "app_estado": "Cluster",
+          "captura": "capturas/Cluster-1.png",
+          "colores": 367,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/Cluster-1.txt",
+          "log_lineas": 201,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "CwTrainer",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "CwTrainer",
+          "app_estado": "CwTrainer",
+          "captura": "capturas/CwTrainer-1.png",
+          "colores": 401,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/CwTrainer-1.txt",
+          "log_lineas": 214,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "Eq",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "Eq",
+          "app_estado": "Eq",
+          "captura": "capturas/Eq-1.png",
+          "colores": 451,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/Eq-1.txt",
+          "log_lineas": 38,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "Status",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "Status",
+          "app_estado": "Status",
+          "captura": "capturas/Status-1.png",
+          "colores": 427,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/Status-1.txt",
+          "log_lineas": 71,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "QTH",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "QTH",
+          "app_estado": "QTH",
+          "captura": "capturas/QTH-1.png",
+          "colores": 416,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/QTH-1.txt",
+          "log_lineas": 38,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "Callsign",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "Callsign",
+          "app_estado": "Callsign",
+          "captura": "capturas/Callsign-1.png",
+          "colores": 388,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/Callsign-1.txt",
+          "log_lineas": 40,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "Recorder",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "Recorder",
+          "app_estado": "Recorder",
+          "captura": "capturas/Recorder-1.png",
+          "colores": 340,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/Recorder-1.txt",
+          "log_lineas": 74,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "WiFi",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "WiFi",
+          "app_estado": "WiFi",
+          "captura": "capturas/WiFi-1.png",
+          "colores": 446,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/WiFi-1.txt",
+          "log_lineas": 86,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    },
+    {
+      "app": "SWRScan",
+      "resultado": "viva",
+      "intentos": [
+        {
+          "abre": "{\"t\":\"ok\"}",
+          "app": "SWRScan",
+          "app_estado": "SWRScan",
+          "captura": "capturas/SWRScan-1.png",
+          "colores": 321,
+          "contenedor": true,
+          "crash": false,
+          "crash_senal": "",
+          "dwell_s": 6.0,
+          "handshake": true,
+          "intento": 1,
+          "log_archivo": "logs/SWRScan-1.txt",
+          "log_lineas": 65,
+          "ok": true,
+          "resultado": "viva",
+          "segundos": 6.1
+        }
+      ]
+    }
+  ],
+  "resumen": {
+    "apps": 23,
+    "intentos": 23,
+    "vivas": 23,
+    "falladas": []
+  }
+}

@@ -1,22 +1,29 @@
 /*
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  Xiegu X6200 LVGL GUI
+ *  Xiegu X6200 LVGL GUI - GPS position (not available in this build).
  *
- *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
+ *  The X6200 firmware this ROM is based on has no GPS stack (gpsd was removed),
+ *  so the station locator always falls back to the saved QTH. The ported app
+ *  code asks for a fix; these return "no fix".
  */
 
 #pragma once
 
-#include <gps.h>
+#include <stdbool.h>
 
-typedef enum {
-    GPS_STATUS_WAITING=0,
-    GPS_STATUS_WORKING,
-    GPS_STATUS_RESTARTING,
-    GPS_STATUS_EXITED,
-} gps_status_t;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void gps_init();
+bool gps_last_fix(double *lat, double *lon, int *age_s);
+bool gps_phone_fix(double *lat, double *lon, int *age_s);
 
-gps_status_t gps_status();
+/* The position a phone or the web configurator sends (the QTH falls back to
+ * it when the radio has no GPS). */
+void gps_phone_set(double lat, double lon);
+void gps_phone_clear(void);
+
+#ifdef __cplusplus
+}
+#endif

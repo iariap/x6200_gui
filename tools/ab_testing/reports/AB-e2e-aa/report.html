@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>A/B report AB-e2e-aa</title>
+<style>body{font-family:system-ui,sans-serif;margin:2rem;max-width:60rem}table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{border:1px solid #ccc;padding:.35rem .6rem;text-align:left;font-size:.92rem}img{max-width:100%;border:1px solid #ccc;margin:.4rem 0}.pill{padding:.2rem .7rem;border-radius:1rem;color:#fff;font-weight:600}</style>
+</head><body>
+<h1>A/B UI report — AB-e2e-aa</h1>
+<p><span class="pill" style="background:#1b7f3b">PASS</span> exit 0</p>
+<ul>
+<li>Date: 2026-10-13</li>
+<li>A: <code>ec1b0a58ec30270ece2a6b490ae41ed341133755</code></li>
+<li>B: <code>ec1b0a58ec30270ece2a6b490ae41ed341133755</code></li>
+<li>Docker image: <code>x6200-uiharness</code></li>
+<li>Scenarios: home-usb-20m</li>
+</ul>
+<h2>Gates</h2>
+<table><tr><th>Gate</th><th>Required</th><th>Status</th><th>Summary</th></tr>
+<tr><td>Functional</td><td>yes</td><td>PASS</td><td>1 scenarios captured on both revisions</td></tr>
+<tr><td>Visual Regression</td><td>yes</td><td>PASS</td><td>captures are pixel-identical to the baseline</td></tr>
+<tr><td>Quality Contract</td><td>yes</td><td>PASS</td><td>9 contract checks passed on the candidate</td></tr>
+<tr><td>Performance</td><td>yes</td><td>PASS</td><td>render-cost proxy within budget</td></tr>
+<tr><td>Hardware</td><td>advisory</td><td>BLOCKED</td><td>no physical X6200 attached; hardware behaviour is not measured</td></tr>
+<tr><td>Energy</td><td>advisory</td><td>BLOCKED</td><td>no power measurement; energy evidence must be physical</td></tr>
+</table>
+<h2>Visual diff</h2>
+<table><tr><th>Scenario</th><th>Changed px</th><th>Area</th><th>Regions</th></tr>
+<tr><td>home-usb-20m</td><td>0</td><td>0.000%</td><td>—</td></tr>
+</table>
+<h2>Coverage (declared by the harness)</h2>
+<table><tr><th>Scenario</th><th>REAL</th><th>PARTIAL</th><th>SYNTHETIC</th><th>UNSUPPORTED</th></tr>
+<tr><td>home-usb-20m</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+</table>
+<h2>Known issues</h2>
+<table><tr><th>Issue</th><th>Fixture</th><th>A</th><th>B</th><th>Classification</th></tr>
+<tr><td>UI-001</td><td>home-usb-20m</td><td>no</td><td>no</td><td>NOT_REPRODUCED</td></tr>
+<tr><td>UI-009</td><td>home-bateria-externa</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-010</td><td>main-otro-tema</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-002</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-003</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-004</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-005</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-006</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-007</td><td>main-otro-tema</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-008</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+</table>
+<h2>Quality contracts</h2>
+<p>9 checks, 0 failure(s), 0 unchanged baseline defect(s).</p>
+<h2>Gates without instrumentation</h2><ul>
+<li><strong>Hardware</strong>: no physical X6200 attached; hardware behaviour is not measured</li>
+<li><strong>Energy</strong>: no power measurement; energy evidence must be physical</li>
+</ul>
+</body></html>

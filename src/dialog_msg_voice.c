@@ -23,6 +23,7 @@
 #include "dialog.h"
 #include "dialog_msg_voice.h"
 #include "styles.h"
+#include "theme.h"
 #include "params/params.h"
 #include "events.h"
 #include "util.h"
@@ -32,7 +33,17 @@
 #include "msg.h"
 #include "meter.h"
 
+#include <stdlib.h>
+
 #define BUF_SIZE 1024
+
+/* Longest voice message, like the X6100 */
+#define REC_MAX_S       60
+
+/* The recorded messages are WAV: the libsndfile in this image is built without
+ * MPEG support (MP3 could neither be written nor read here), and WAV avoids the
+ * encoder's CPU cost on a battery-powered radio. */
+#define VOICE_EXT       "wav"
 
 typedef enum {
     VOICE_BEACON_OFF = 0,
@@ -43,6 +54,9 @@ typedef enum {
 static msg_voice_state_t    state = MSG_VOICE_OFF;
 static voice_beacon_t       beacon = VOICE_BEACON_OFF;
 static char                 *path = "/mnt/msg";
+
+static char                 rec_name[32];       /* the message being recorded */
+static long                 rec_frames;
 
 static lv_obj_t             *table;
 static int16_t              table_rows = 0;
@@ -200,31 +214,42 @@ static void load_table() {
     }
 }
 
-static bool create_file() {
+static void voice_path(const char *name, char *dst, size_t size) {
+    snprintf(dst, size, "%s/%s." VOICE_EXT, path, name);
+}
+
+/* name == NULL: the dialog's own recording, with the date in the name */
+static bool create_file(const char *name) {
     SF_INFO sfinfo;
 
     memset(&sfinfo, 0, sizeof(sfinfo));
 
     sfinfo.samplerate = AUDIO_CAPTURE_RATE;
     sfinfo.channels = 1;
-    sfinfo.format = SF_FORMAT_MPEG | SF_FORMAT_MPEG_LAYER_III;
+    sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
-    char        filename[64];
-    time_t      now = time(NULL);
-    struct tm   *t = localtime(&now);
+    char filename[128];
 
-    snprintf(filename, sizeof(filename),
-        "%s/MSG_%04i%02i%02i_%02i%02i%02i.mp3",
-        path, t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec
-    );
+    if (name) {
+        snprintf(rec_name, sizeof(rec_name), "%s", name);
+        voice_path(name, filename, sizeof(filename));
+    } else {
+        time_t    now = time(NULL);
+        struct tm *t   = localtime(&now);
+
+        snprintf(rec_name, sizeof(rec_name), "MSG_%04i%02i%02i_%02i%02i%02i",
+                 t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+        voice_path(rec_name, filename, sizeof(filename));
+    }
 
     file = sf_open(filename, SFM_WRITE, &sfinfo);
 
     if (file == NULL) {
-        const char* err = sf_strerror(NULL);
-        LV_LOG_ERROR("Problem with create file: %s", err);
+        LV_LOG_ERROR("Problem with create file: %s", sf_strerror(NULL));
         return false;
     }
+
+    rec_frames = 0;
 
     return true;
 }
@@ -250,6 +275,49 @@ static const char* get_item() {
     return lv_table_get_cell_value(table, row, col);
 }
 
+/* Play a file through the audio path. The caller decides whether it goes to the
+ * speaker or over the air: sending keys PTT first, exactly as the dialog's own
+ * Send button does. */
+static bool play_file(const char *filename) {
+    SF_INFO sfinfo;
+
+    memset(&sfinfo, 0, sizeof(sfinfo));
+
+    SNDFILE *f = sf_open(filename, SFM_READ, &sfinfo);
+
+    if (!f) {
+        return false;
+    }
+
+    long     n   = (long) sfinfo.frames * (sfinfo.channels > 0 ? sfinfo.channels : 1);
+    int16_t *buf = malloc((size_t) n * sizeof(int16_t));
+
+    if (!buf) {
+        sf_close(f);
+        return false;
+    }
+
+    n = sf_read_short(f, buf, n);
+    sf_close(f);
+
+    state = MSG_VOICE_PLAY;
+    audio_play_en(true);
+
+    for (long off = 0; off < n && state == MSG_VOICE_PLAY; off += BUF_SIZE) {
+        uint32_t chunk = (uint32_t) LV_MIN((long) BUF_SIZE, n - off);
+
+        audio_play(buf + off, chunk);
+    }
+
+    audio_play_wait();
+    audio_play_en(false);
+
+    free(buf);
+    state = MSG_VOICE_OFF;
+
+    return true;
+}
+
 static void play_item() {
     const char *item = get_item();
 
@@ -257,35 +325,10 @@ static void play_item() {
         return;
     }
 
-    char filename[64];
+    char filename[128];
 
-    strcpy(filename, path);
-    strcat(filename, "/");
-    strcat(filename, item);
-
-    SF_INFO sfinfo;
-
-    memset(&sfinfo, 0, sizeof(sfinfo));
-
-    SNDFILE *file = sf_open(filename, SFM_READ, &sfinfo);
-
-    if (!file) {
-        return;
-    }
-
-    state = MSG_VOICE_PLAY;
-    while (state == MSG_VOICE_PLAY) {
-        int res = sf_read_short(file, samples_buf, BUF_SIZE);
-
-        if (res > 0) {
-            audio_play(samples_buf, res);
-        } else {
-            state = MSG_VOICE_OFF;
-        }
-    }
-
-    sf_close(file);
-    audio_play_wait();
+    snprintf(filename, sizeof(filename), "%s/%s", path, item);
+    play_file(filename);
 }
 
 static void * play_thread(void *arg) {
@@ -302,15 +345,26 @@ static void * play_thread(void *arg) {
     }
 }
 
+/* arg: the file to send, or NULL for the row selected in the dialog */
 static void * send_thread(void *arg) {
+    char *filename = arg;
+
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
     msg_update_text_fmt("Sending message");
 
     radio_set_ptt(true);
-    play_item();
+
+    if (filename) {
+        play_file(filename);
+    } else {
+        play_item();
+    }
+
     radio_set_ptt(false);
+
+    free(filename);
 
     if (dialog.run) {
         buttons_unload_page();
@@ -418,15 +472,18 @@ static void construct_cb(lv_obj_t *parent) {
     lv_obj_set_style_border_width(table, 0, LV_PART_ITEMS);
 
     lv_obj_set_style_bg_opa(table, LV_OPA_TRANSP, LV_PART_ITEMS);
-    lv_obj_set_style_text_color(table, lv_color_white(), LV_PART_ITEMS);
+    lv_obj_set_style_text_color(table, TC(text), LV_PART_ITEMS);
     lv_obj_set_style_pad_top(table, 5, LV_PART_ITEMS);
     lv_obj_set_style_pad_bottom(table, 5, LV_PART_ITEMS);
     lv_obj_set_style_pad_left(table, 0, LV_PART_ITEMS);
     lv_obj_set_style_pad_right(table, 0, LV_PART_ITEMS);
 
-    lv_obj_set_style_text_color(table, lv_color_black(), LV_PART_ITEMS | LV_STATE_EDITED);
-    lv_obj_set_style_bg_color(table, lv_color_white(), LV_PART_ITEMS | LV_STATE_EDITED);
-    lv_obj_set_style_bg_opa(table, 128, LV_PART_ITEMS | LV_STATE_EDITED);
+    lv_obj_set_style_text_color(table, TC(focus_text), LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_bg_color(table, TC(focus), LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_text_color(table, TC(sel_text), LV_PART_ITEMS | LV_STATE_EDITED);
+    lv_obj_set_style_bg_color(table, TC(sel_bg), LV_PART_ITEMS | LV_STATE_EDITED);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_EDITED);
 
     lv_obj_add_event_cb(table, key_cb, LV_EVENT_KEY, NULL);
     lv_group_add_obj(keyboard_group, table);
@@ -544,7 +601,7 @@ void dialog_msg_voice_period_cb(button_item_t *item) {
 
 void dialog_msg_voice_rec_cb(button_item_t *item) {
     if (state == MSG_VOICE_OFF) {
-        if (create_file()) {
+        if (create_file(NULL)) {
             audio_play_en(true);
             state = MSG_VOICE_RECORD;
 
@@ -554,13 +611,18 @@ void dialog_msg_voice_rec_cb(button_item_t *item) {
     }
 }
 
+static void stop_recording() {
+    audio_play_en(false);
+    state = MSG_VOICE_OFF;
+    close_file();
+    rec_frames = 0;
+}
+
 static void rec_stop_cb(button_item_t *item) {
     buttons_unload_page();
     buttons_load_page(&page_msg_voice_2);
 
-    audio_play_en(false);
-    state = MSG_VOICE_OFF;
-    close_file();
+    stop_recording();
     load_table();
 }
 
@@ -620,4 +682,79 @@ void dialog_msg_voice_put_audio_samples(size_t nsamples, int16_t *samples) {
     peak = S1 + (peak / 32768.0) * (S9_40 - S1);
     meter_update(peak, 0.25f);
     sf_write_short(file, samples, nsamples);
+}
+
+/* Record "name" now, or stop the recording in progress (the Field Ops CQ) */
+bool msg_voice_rec_toggle(const char *name) {
+    if (state == MSG_VOICE_RECORD) {
+        stop_recording();
+        load_table();
+
+        return false;
+    }
+
+    if (state == MSG_VOICE_OFF && name && create_file(name)) {
+        audio_play_en(true);
+        state = MSG_VOICE_RECORD;
+
+        return true;
+    }
+
+    return false;
+}
+
+bool msg_voice_exists(const char *name) {
+    char p[128];
+
+    if (!name) {
+        return false;
+    }
+
+    voice_path(name, p, sizeof(p));
+
+    return access(p, R_OK) == 0;
+}
+
+/* Send the recorded message in SSB; a second call stops it */
+bool msg_voice_send_toggle(const char *name) {
+    if (state == MSG_VOICE_PLAY) {
+        state = MSG_VOICE_OFF;   /* the playback loop stops and PTT drops */
+
+        return false;
+    }
+
+    if (!name || state != MSG_VOICE_OFF || !msg_voice_exists(name)) {
+        return false;
+    }
+
+    char  p[128];
+    char *arg;
+
+    voice_path(name, p, sizeof(p));
+    arg = strdup(p);
+
+    if (!arg) {
+        return false;
+    }
+
+    pthread_t t;
+
+    if (pthread_create(&t, NULL, send_thread, arg) != 0) {
+        free(arg);
+
+        return false;
+    }
+
+    pthread_detach(t);
+
+    return true;
+}
+
+/* Called from the main loop: stop a recording that ran too long */
+void msg_voice_poll(bool closing) {
+    if (state == MSG_VOICE_RECORD &&
+        (closing || rec_frames >= (long) REC_MAX_S * AUDIO_CAPTURE_RATE)) {
+        stop_recording();
+        load_table();
+    }
 }

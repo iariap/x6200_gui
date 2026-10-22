@@ -1,0 +1,123 @@
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_rsynced
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_staging_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_target_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_images_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_host_installed
+rm -f /workspace/build/build/x6200-gui-custom/.stamp_built
+>>> x6200-gui custom Syncing from source dir /workspace_gui
+rsync -au --chmod=u=rwX,go=rX  --exclude .svn --exclude .git --exclude .hg --exclude .bzr --exclude CVS /workspace_gui/ /workspace/build/build/x6200-gui-custom
+>>> x6200-gui custom Building
+GIT_DIR=. PATH="/workspace/build/host/bin:/workspace/build/host/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"  /usr/bin/make   -C /workspace/build/build/x6200-gui-custom/
+[  1%] Built target QTH
+[  0%] Built target params_sqlite
+[  0%] Built target wsprd
+[  1%] Built target btcat
+[  1%] Built target FT8
+[  2%] Built target js8core
+[ 22%] Built target lvgl
+[ 24%] Built target JS8
+[ 25%] Built target lv_drivers
+[ 25%] Built target JS8TestSignal
+[ 32%] Built target lvgl_demos
+[ 51%] Built target lvgl_examples
+[ 51%] Building C object src/CMakeFiles/x6200_gui.dir/main_screen.c.o
+[ 52%] Building C object src/CMakeFiles/x6200_gui.dir/styles.c.o
+[ 51%] Building C object src/CMakeFiles/x6200_gui.dir/spectrum.c.o
+[ 52%] Building C object src/CMakeFiles/x6200_gui.dir/main.c.o
+[ 52%] Building C object src/CMakeFiles/x6200_gui.dir/radio.c.o
+[ 52%] Building CXX object src/CMakeFiles/x6200_gui.dir/dsp.cpp.o
+[ 52%] Building C object src/CMakeFiles/x6200_gui.dir/rotary.c.o
+[ 52%] Building C object src/CMakeFiles/x6200_gui.dir/encoder.c.o
+[ 52%] Building C object src/CMakeFiles/x6200_gui.dir/waterfall.c.o
+[ 52%] Building C object src/CMakeFiles/x6200_gui.dir/btaudio.c.o
+[ 52%] Building C object src/CMakeFiles/x6200_gui.dir/events.c.o
+[ 52%] Building C object src/CMakeFiles/x6200_gui.dir/msg.c.o
+[ 52%] Building C object src/CMakeFiles/x6200_gui.dir/keypad.c.o
+[ 52%] Building C object src/CMakeFiles/x6200_gui.dir/msg_tiny.c.o
+[ 52%] Building C object src/CMakeFiles/x6200_gui.dir/hkey.c.o
+[ 53%] Building C object src/CMakeFiles/x6200_gui.dir/clock.c.o
+[ 53%] Building C object src/CMakeFiles/x6200_gui.dir/info.c.o
+[ 53%] Building C object src/CMakeFiles/x6200_gui.dir/meter.c.o
+[ 53%] Building C object src/CMakeFiles/x6200_gui.dir/band_info.c.o
+[ 53%] Building C object src/CMakeFiles/x6200_gui.dir/tx_info.c.o
+[ 53%] Building C object src/CMakeFiles/x6200_gui.dir/audio.c.o
+[ 53%] Building CXX object src/CMakeFiles/x6200_gui.dir/mfk.cpp.o
+[ 53%] Building CXX object src/CMakeFiles/x6200_gui.dir/cw.cpp.o
+[ 54%] Building C object src/CMakeFiles/x6200_gui.dir/pannel.c.o
+[ 54%] Building C object src/CMakeFiles/x6200_gui.dir/rtty.c.o
+[ 54%] Building C object src/CMakeFiles/x6200_gui.dir/backlight.c.o
+[ 54%] Building CXX object src/CMakeFiles/x6200_gui.dir/cat.cpp.o
+[ 54%] Building C object src/CMakeFiles/x6200_gui.dir/dialog.c.o
+[ 54%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_settings.c.o
+[ 54%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_ft8.c.o
+[ 54%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_swrscan.c.o
+[ 55%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_freq.c.o
+[ 55%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_msg_cw.c.o
+[ 55%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_msg_voice.c.o
+[ 55%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_recorder.c.o
+[ 55%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_qth.c.o
+[ 55%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_gps.c.o
+[ 55%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_callsign.c.o
+[ 55%] Building C object src/CMakeFiles/x6200_gui.dir/textarea_window.c.o
+[ 56%] Building C object src/CMakeFiles/x6200_gui.dir/cw_encoder.c.o
+[ 56%] Building CXX object src/CMakeFiles/x6200_gui.dir/buttons.cpp.o
+[ 56%] Building C object src/CMakeFiles/x6200_gui.dir/recorder.c.o
+[ 56%] Building C object src/CMakeFiles/x6200_gui.dir/vol.c.o
+[ 56%] Building C object src/CMakeFiles/x6200_gui.dir/cw_tune_ui.c.o
+[ 57%] Building C object src/CMakeFiles/x6200_gui.dir/band_plan.c.o
+[ 57%] Building C object src/CMakeFiles/x6200_gui.dir/screen_rec.c.o
+[ 57%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_wifi.c.o
+[ 57%] Building CXX object src/CMakeFiles/x6200_gui.dir/wifi.cpp.o
+[ 57%] Building C object src/CMakeFiles/x6200_gui.dir/controls_encoder.c.o
+[ 57%] Building C object src/CMakeFiles/x6200_gui.dir/voice.c.o
+[ 57%] Building CXX object src/CMakeFiles/x6200_gui.dir/dialog_eq.cpp.o
+[ 57%] Building CXX object src/CMakeFiles/x6200_gui.dir/controls.cpp.o
+[ 58%] Building C object src/CMakeFiles/x6200_gui.dir/theme.c.o
+[ 58%] Building C object src/CMakeFiles/x6200_gui.dir/app_frame.c.o
+[ 58%] Building C object src/CMakeFiles/x6200_gui.dir/station.c.o
+[ 58%] Building C object src/CMakeFiles/x6200_gui.dir/tx_player.c.o
+[ 58%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_wspr.c.o
+[ 59%] Building C object src/CMakeFiles/x6200_gui.dir/freq_list.c.o
+[ 59%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_navtex.c.o
+[ 59%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_sstv.c.o
+[ 59%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_wefax.c.o
+[ 59%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_cluster.c.o
+[ 60%] Building CXX object src/CMakeFiles/x6200_gui.dir/remote_server.cpp.o
+[ 60%] Building CXX object src/CMakeFiles/x6200_gui.dir/cfg/settings_manager.cpp.o
+[ 60%] Building C object src/CMakeFiles/x6200_gui.dir/cfg/cxx_bridge.c.o
+[ 60%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_field.c.o
+[ 61%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_bands.c.o
+[ 61%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_js8.c.o
+[ 61%] Building C object src/CMakeFiles/x6200_gui.dir/js8_map.c.o
+[ 61%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_cw_kbd.c.o
+[ 61%] Building CXX object src/CMakeFiles/x6200_gui.dir/panel.cpp.o
+[ 61%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_cw_trainer.c.o
+[ 61%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_bt.c.o
+[ 61%] Building C object src/CMakeFiles/x6200_gui.dir/cluster_column.c.o
+[ 61%] Building C object src/CMakeFiles/x6200_gui.dir/spot_marks.c.o
+[ 61%] Building C object src/CMakeFiles/x6200_gui.dir/dialog_status.c.o
+[ 61%] Building C object src/CMakeFiles/x6200_gui.dir/params/migrations.c.o
+[ 61%] Building C object src/CMakeFiles/x6200_gui.dir/params/params.c.o
+params/migrations.c: In function ‘_3_migrate_theme_name’:
+params/migrations.c:118:50: warning: implicit declaration of function ‘theme_offered’ [-Wimplicit-function-declaration]
+  118 |         retire = val != NULL && *val != '\0' && !theme_offered(val);
+      |                                                  ^~~~~~~~~~~~~
+params/migrations.c:125:52: error: expected ‘)’ before ‘THEME_DEFAULT’
+  125 |     rc = sqlite3_exec(db, "UPDATE params SET val='" THEME_DEFAULT "' WHERE name='theme_name'", NULL, NULL, NULL);
+      |                      ~                             ^~~~~~~~~~~~~~
+      |                                                    )
+params/migrations.c:125:10: error: too few arguments to function ‘sqlite3_exec’
+  125 |     rc = sqlite3_exec(db, "UPDATE params SET val='" THEME_DEFAULT "' WHERE name='theme_name'", NULL, NULL, NULL);
+      |          ^~~~~~~~~~~~
+In file included from params/db.h:13,
+                 from params/migrations.c:13:
+../../../host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/sqlite3.h:425:16: note: declared here
+  425 | SQLITE_API int sqlite3_exec(
+      |                ^~~~~~~~~~~~
+make[4]: *** [src/CMakeFiles/x6200_gui.dir/build.make:6208: src/CMakeFiles/x6200_gui.dir/params/migrations.c.o] Error 1
+make[4]: *** Waiting for unfinished jobs....
+make[3]: *** [CMakeFiles/Makefile2:448: src/CMakeFiles/x6200_gui.dir/all] Error 2
+make[2]: *** [Makefile:136: all] Error 2
+make[1]: *** [package/pkg-generic.mk:283: /workspace/build/build/x6200-gui-custom/.stamp_built] Error 2
+make: *** [Makefile:23: _all] Error 2

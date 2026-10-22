@@ -1,0 +1,67 @@
+{
+  "budget": {
+    "max_dispersion_cv_pct": 25.0,
+    "min_frames": 12,
+    "repeats": 5,
+    "rounds": 4,
+    "warmup_frames": 3
+  },
+  "environment": "x86 host: relative regression proxy, not the Cortex-A7",
+  "exit_code": 0,
+  "experiment_id": "BENCH-AURORA72-CLASSIC-R2",
+  "kind": "benchmark-measurement",
+  "measurements": [
+    {
+      "dispersion_cv_pct": 1.059,
+      "draw_ms_mean": 3.0363,
+      "flush_ms_mean": 0.4428,
+      "flushes_mean": 1.0,
+      "fps": 290.88,
+      "frames": 20,
+      "memory": {
+        "peak_rss_bytes": 10436608,
+        "peak_vm_bytes": 82198528,
+        "pss_bytes": 8220672,
+        "rss_bytes": 10436608
+      },
+      "redrawn_area_mean": 384000.0,
+      "render_mean_ms": 3.479,
+      "render_p50_ms": 3.4379,
+      "render_p95_ms": 3.6641,
+      "render_p99_ms": 3.7393,
+      "render_stdev_ms": 0.1014,
+      "scenario": "main-tema-aurora",
+      "unique_redrawn_mean": 384000.0
+    },
+    {
+      "dispersion_cv_pct": 1.982,
+      "draw_ms_mean": 3.134,
+      "flush_ms_mean": 0.4311,
+      "flushes_mean": 1.0,
+      "fps": 283.78,
+      "frames": 20,
+      "memory": {
+        "peak_rss_bytes": 10498048,
+        "peak_vm_bytes": 82194432,
+        "pss_bytes": 8249344,
+        "rss_bytes": 10432512
+      },
+      "redrawn_area_mean": 384000.0,
+      "render_mean_ms": 3.5651,
+      "render_p50_ms": 3.5238,
+      "render_p95_ms": 3.9035,
+      "render_p99_ms": 3.9849,
+      "render_stdev_ms": 0.141,
+      "scenario": "main-tema-classic",
+      "unique_redrawn_mean": 384000.0
+    }
+  ],
+  "revisions": {
+    "revision": "5ff37274d8d413d2c92a1527ce204f36550fd651"
+  },
+  "scenarios": [
+    "main-tema-aurora",
+    "main-tema-classic"
+  ],
+  "status": "PASS"
+}

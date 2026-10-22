@@ -1,0 +1,23 @@
+# Comparaciones pixel a pixel de las capturas de esta carpeta (PIL, RGB).
+# Banco QEMU cortex-a7, tema Sunlit, 800x480, todas con ESPERA=12 y una orden {"cmd":"get"}
+# para que el aviso de arranque "X6200 de R1CBU v0.1.2-lu2dsx" (msg.c, DURATION=2000 ms) ya
+# se haya apagado: sin eso la captura cambia segun cuando le toque el turno al aviso en la cola.
+
+red-trunk.png vs green-home.png: 1636 px distintos
+  banda del waterfall (y>=240): 0 px | columnas de la linea (x=396..404): 0 px
+  bbox de las diferencias: y=7..50 x=637..751
+  la unica zona distinta es el reloj de arriba a la derecha (otro minuto)
+
+red-trunk.png vs green-app-cerrada.png: 1636 px distintos
+  banda del waterfall (y>=240): 0 px | columnas de la linea (x=396..404): 0 px
+  bbox de las diferencias: y=7..50 x=637..751
+
+green-home.png vs green-app-cerrada.png: 0 px distintos
+  banda del waterfall (y>=240): 0 px | columnas de la linea (x=396..404): 0 px
+  byte-identicas: cerrar la app reconstruye la misma pantalla
+
+green-home.png vs param-off.png: 2339 px distintos
+  banda del waterfall (y>=240): 698 px | columnas de la linea (x=396..404): 698 px
+  bbox de las diferencias: y=7..478 x=398..752
+  675 de las 698 son RGB(11,41,66) -> RGB(0,0,0): la linea desaparece
+

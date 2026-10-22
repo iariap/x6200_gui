@@ -1,0 +1,34 @@
+# El paso de reporte del job (el cuerpo EXACTO del workflow) sobre payloads reales
+# (el de la base e6925db6 incluido, para ver el agujero)
+
+$ docs/evidencia/2026-10-21-dflmirror/ci-hueco/repro-paso-reporte.sh
+
+== paso del arbol (con el fix) ==
+--- blocked-real.json
+    exit (resultado del job) = 1
+    - status: **BLOCKED** (exit 2)
+    contracts BLOCKED (exit 2) — blocking: the gate did not report a clean PASS (`BLOCKED` means the revision was never evaluated: the harness did not
+--- pass-real.json
+    exit (resultado del job) = 0
+    - status: **PASS** (exit 0)
+--- fail-synthetic.json
+    exit (resultado del job) = 1
+    - status: **FAIL** (exit 1)
+    violation of the quality contracts — blocking
+--- review-required.json
+    exit (resultado del job) = 0
+    - status: **REVIEW REQUIRED** (exit 0)
+--- inconclusive.json
+    exit (resultado del job) = 0
+    - status: **INCONCLUSIVE** (exit 3)
+--- MISSING
+    exit (resultado del job) = 2
+    - status: not evaluated (the check did not produce results)
+
+== paso de la base e6925db6 (sin el fix: el agujero) ==
+--- blocked-real.json
+    exit (resultado del job) = 0
+    - status: **BLOCKED** (exit 2)
+--- pass-real.json
+    exit (resultado del job) = 0
+    - status: **PASS** (exit 0)

@@ -16,6 +16,7 @@
 #include "params/params.h"
 #include "scheduler.h"
 #include "styles.h"
+#include "ui_set.h"         /* guardas de igualdad (OPT-4 #150) */
 #include "util.h"
 
 #define NUM_PWR_ITEMS 6
@@ -35,6 +36,12 @@ static float alc;
 static uint8_t msg_id;
 
 static uint64_t prev_ui_update = 0;
+
+/* Ultimo estado dibujado del panel de TX (OPT-4 #150). */
+static bool     tx_drawn_valid;
+static float    tx_drawn_pwr;
+static float    tx_drawn_vswr;
+static float    tx_drawn_alc;
 
 static x6200_mode_t cur_mode;
 
@@ -193,26 +200,40 @@ static void tx_cb(lv_event_t *e) {
     vswr = 0.0f;
     alc  = 0.0f;
 
-    lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
     lv_obj_move_foreground(obj);
 }
 
 static void rx_cb(lv_event_t *e) {
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
 }
 
 static void update_tx_info(void *arg) {
     if (lv_obj_has_flag(obj, LV_OBJ_FLAG_HIDDEN)) {
         return;
     }
+    /* Guarda de igualdad (OPT-4 #150): el panel de TX se refresca cada 40 ms
+     * (UPDATE_UI_MS) mientras transmite; si pwr/vswr/alc no cambiaron no hay
+     * pixel nuevo y se salta la invalidacion y el label. */
+    if (tx_drawn_valid && pwr == tx_drawn_pwr && vswr == tx_drawn_vswr && alc == tx_drawn_alc) {
+        return;
+    }
+    tx_drawn_valid = true;
+    tx_drawn_pwr   = pwr;
+    tx_drawn_vswr  = vswr;
+    tx_drawn_alc   = alc;
+
     lv_obj_invalidate(obj);
     if (params.mag_alc.x) {
         msg_tiny_set_text_fmt("ALC: %.1f", alc);
     }
     if (dialog_is_run() || !params.mag_alc.x) {
-        lv_label_set_text_fmt(alc_label, "ALC: %1.1f", alc);
+        char buf[16];
+
+        snprintf(buf, sizeof(buf), "ALC: %1.1f", alc);
+        ui_label_set_text(alc_label, buf);
     } else {
-        lv_label_set_text(alc_label, "");
+        ui_label_set_text(alc_label, "");
     }
 }
 
@@ -222,7 +243,7 @@ lv_obj_t *tx_info_init(lv_obj_t *parent) {
     lv_obj_add_style(obj, &tx_info_style, 0);
     lv_obj_set_scrollbar_mode(obj, LV_SCROLLBAR_MODE_OFF);
 
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_event_cb(obj, tx_cb, EVENT_RADIO_TX, NULL);
     lv_obj_add_event_cb(obj, rx_cb, EVENT_RADIO_RX, NULL);
     lv_obj_add_event_cb(obj, tx_info_draw_cb, LV_EVENT_DRAW_MAIN_END, NULL);

@@ -18,8 +18,26 @@ typedef enum {
     CLOCK_POWER_ALLWAYS
 } clock_view_t;
 
+/* Ultima muestra del pack publicada por radio.c. La usa el registro de ultima
+ * respiracion (issue #121) para saber que tension de bateria habia cuando el
+ * equipo dejo de responder. `valid` es false hasta el primer paquete del flow:
+ * el reloj arranca mostrando 0.0 V. */
+typedef struct {
+    float   ext_v;
+    float   bat_v;
+    uint8_t cap;
+    bool    charging;
+    bool    valid;
+} clock_power_t;
+
 lv_obj_t * clock_init(lv_obj_t * parent);
 void clock_update_power(float ext, float bat, uint8_t cap, bool charge);
+bool clock_get_power(clock_power_t *out);
+
+/* True cuando el reloj del sistema fue sincronizado por NTP (el marcador
+ * /var/run/time-sync que tambien mira este modulo). La app Propagacion usa el
+ * turno GPS de los beacons: sin NTP el slot puede estar corrido. */
+bool clock_time_synced(void);
 
 void clock_set_view(clock_view_t x);
 void clock_set_time_timeout(uint8_t sec);

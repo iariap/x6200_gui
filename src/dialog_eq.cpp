@@ -200,7 +200,11 @@ static dialog_t dialog = {
 dialog_t *dialog_eq = &dialog;
 
 static void construct_cb(lv_obj_t *parent) {
-    mfk_inner->mode = ROT_MFK_INNER_INVERSE_MODE;
+    /* Sin encoder interno del MFK (el equipo puede numerar distinto los /dev/input)
+     * no hay nada que marcar: antes se desreferenciaba y abrir el EQ mataba la GUI. */
+    if (mfk_inner != NULL) {
+        mfk_inner->mode = ROT_MFK_INNER_INVERSE_MODE;
+    }
     eq_type_t rx_eq_type = get_rx_eq_type();
     controls.set_type(rx_eq_type);
     buttons_mark(&btn_rx_eq, true);
@@ -264,7 +268,9 @@ static void construct_cb(lv_obj_t *parent) {
 }
 
 static void destruct_cb() {
-    mfk_inner->mode = ROT_MFK_INNER_DEFAULT_MODE;
+    if (mfk_inner != NULL) {
+        mfk_inner->mode = ROT_MFK_INNER_DEFAULT_MODE;
+    }
     controls.clear_observers();
     controls.clear_sliders_labels();
     for (auto &&o : observers){

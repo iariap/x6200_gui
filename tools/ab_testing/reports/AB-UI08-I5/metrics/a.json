@@ -1,0 +1,186 @@
+{
+  "app-bands": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0xd80228e1b1bc385d",
+    "png_sha256": "5781b1f17a972051925f34c23a2de4518e0710b573cfda5dd1b595752a8044c3",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "bench-render": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xbe859c351af4880a",
+    "png_sha256": "5ba21bea6dcd30cffeea0bf171f578ba3fb51c811e44aa22c875c5fc74378beb",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "home-bateria-externa": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xf038ddd9676b3d07",
+    "png_sha256": "2c83b8b73c887409abb6030e130c87db1d01656fb095294699e905a759450985",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "home-frecuencia-extrema": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x7ebe06bac5db635b",
+    "png_sha256": "f11829c36da2a3dc0731c5590d1855b554ed2e9c4b184faaeb48b1b96b7aa56b",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "home-usb-20m": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x03b7c93f651cc1a1",
+    "png_sha256": "a656e0961a41c890bd6663a46dc3d36d2606df4f0b56eae126a88ac32bb974f9",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-bateria-baja": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x0bacfebc319e8d20",
+    "png_sha256": "975a45e584dc95bccc5cffb30421c481e2a5b1ab4b815c94f7f5a1d095935ef4",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-espectro-agua": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x7547f830f77afbe6",
+    "png_sha256": "41cc0d5051a0625040150e4372fe93a6e3a3ba57e0a2cee6e7ca66df7d31595b",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-foco": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x03b7c93f651cc1a1",
+    "png_sha256": "a656e0961a41c890bd6663a46dc3d36d2606df4f0b56eae126a88ac32bb974f9",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-natural": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x6f0b9749e63207f0",
+    "png_sha256": "3986bc9a6047744aa2cd8db1c9879d73e71e16e45d7737b0d7035c06e22ec821",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-natural-eco": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xb20395cbf33886de",
+    "png_sha256": "6297ef99d8b3babfd844749206afb87aaf59e7c52b5830446a46170357b01292",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-otro-tema": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xd7201d0b36a48e03",
+    "png_sha256": "8592ccff35e3e40d983aa1fd6c68ff0d16b3787f7fe151837322c144a2b9ac7e",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-classic": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x6f7973591f7e8e5e",
+    "png_sha256": "b251bbe844bab5e3fcc33420b36e158c68b83539b359f79fadcb4ac8f532e25c",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-holo": {
+    "flushed_pixels": 1128266,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x1b902ed5e74fc8b6",
+    "png_sha256": "d52d097e71fa8d36a0ea6815a677d914ff7c5f04245555ba76a9240c42ac2b19",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-material-3": {
+    "flushed_pixels": 1128266,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x966f86344c6efe35",
+    "png_sha256": "7d3a101696f6f7620a2da9c1686248b1258de2aa6507de9178735ecd93ab6936",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-outdoor-negative": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xc253a4ea4674f628",
+    "png_sha256": "31ea5cccb8c076e693ad3af419d7a2362357295fd842e65bc7a0eb058bcbe72d",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-rs": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x91a901346febc894",
+    "png_sha256": "5708b66e956bdc0746957c12bd2bbd68811ae7f8cc9b303be49a9b49fbdf3a29",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-vision": {
+    "flushed_pixels": 1128266,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xf00d4bd10e01b30d",
+    "png_sha256": "626412d8b6f47f1ce76f0ec700dd16b1d2f4e975a9c81ffc698cdffd25de609a",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-vision-cwr": {
+    "flushed_pixels": 1128266,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xb0e029af834383f2",
+    "png_sha256": "25fd0585073f3c1218df046055bc7778c29f688b68f7550364e15ff12c1720b9",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-tema-vision-usbd": {
+    "flushed_pixels": 1128266,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0x2678652ccf9d76e2",
+    "png_sha256": "aab452ee2ca0f143efbeaf6dc9159448dd706e9dedf565420b2748bbefbf96d6",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "main-tx-simulado": {
+    "flushed_pixels": 1127680,
+    "flushes": 6,
+    "framebuffer_fnv1a": "0xaca7f34cefddfce0",
+    "png_sha256": "e0281c2320943a1121c7dad1741e638ce026794fcdc215f48a2ec99b6f5e7459",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "settings-bands": {
+    "flushed_pixels": 1259680,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0xd80228e1b1bc385d",
+    "png_sha256": "5781b1f17a972051925f34c23a2de4518e0710b573cfda5dd1b595752a8044c3",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "settings-home": {
+    "flushed_pixels": 1135170,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x787ac1445517b3be",
+    "png_sha256": "d83f57b39ff7706dffc7ad041269781c7e2a1520f7b27e35f05232b5e63b5395",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  },
+  "settings-wfbat": {
+    "flushed_pixels": 1135170,
+    "flushes": 7,
+    "framebuffer_fnv1a": "0x465018b97f1b368a",
+    "png_sha256": "c456422d50c408d5cd416b17a1a2c720bd26080cb255473f9642e49fa50b8aae",
+    "revision": "688e393220d67899e8cf9dd9a46ba9ab557087ba",
+    "virtual_time_ms": 2200
+  }
+}

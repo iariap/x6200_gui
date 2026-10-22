@@ -1,0 +1,12 @@
+== /usr/firmware/x6200_mcu_20250111134652.xgf ==
+root/usr/firmware/x6200_mcu_20250111134652.xgf: data
+dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3  root/usr/firmware/x6200_mcu_20250111134652.xgf
+tamano: 524288
+entropia: 7.7484 bits/byte (7.75 ~ datos cifrados/comprimidos; texto plano ~4.5-5.5)
+primeros 32 bytes: 087d23fa0a47006d9dde743e1b55db4a6339539d557bb01f4414d74026796b0f
+bytes 0x00: 1619
+strings ASCII >=8 legibles (no basura):
+ total runs: 84 | ejemplos: ['T2;&xp.nH<', 'MwsH(rm7', '.CPaw4ngE', 'ubiDy<\\6Q', 'v#p@ceKY']
+
+== unicos firmwares de radio en el rootfs ==
+root/usr/firmware/x6200_mcu_20250111134652.xgf

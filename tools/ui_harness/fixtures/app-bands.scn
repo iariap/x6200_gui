@@ -1,0 +1,44 @@
+# app-bands: the real main screen with the app menu the APP key opens (APP 3:6,
+# Recorder / Field Ops / GPS / Bands) and the "Bands" button pressed.
+#
+# This is the route the owner reported: APP -> app pages -> Bands -> nothing.
+# The path is the firmware's own: the APP key loads buttons_group_app
+# (src/main_screen.c, KEYPAD_APP), the page button cycles the pages and the
+# "Bands" button is make_app_btn("Bands") (src/buttons.cpp) -> button_app_page_cb
+# -> main_screen_start_app(ACTION_APP_BANDS).
+#
+# `dialog_bands` is an inert mock on the host (tools/ui_harness/mocks/
+# mock_main_screen.c), so the window itself is not rendered: this fixture
+# measures whether the button reaches the Bands path at all (src/screens.c,
+# scenario_settle) and stops the run if it does not, instead of capturing a
+# green capture of a screen where nothing happened.
+#
+# The radio state matches home-usb-20m so the only difference is the button bar.
+
+name app-bands
+screen app-bands
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

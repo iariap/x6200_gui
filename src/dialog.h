@@ -35,11 +35,21 @@ typedef struct {
     buttons_page_t          *btn_page;
     buttons_page_t          *prev_page;
     lv_event_cb_t           key_cb;
+    /* The apps that change the radio on open ask for its state to be restored
+     * when they close (issue #94): the frame saves it in radio_state_save() and
+     * puts it back in radio_state_restore() (src/radio.c). */
+    bool                    restore_radio;
     bool                    run;
 } dialog_t;
 
 void dialog_construct(dialog_t *dialog, lv_obj_t *parent);
 void dialog_destruct();
+
+/* Save the radio state now and put it back when the dialog closes */
+void dialog_restore_radio_on_close(void);
+
+/* Put the mode back to `mode` when the dialog closes, if it is still `forced` */
+void dialog_restore_mode_on_close(int32_t mode, int32_t forced);
 
 bool dialog_key(dialog_t *dialog, lv_event_t * e);
 void dialog_send(lv_event_code_t event_code, void *param);

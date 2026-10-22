@@ -1,0 +1,6 @@
+# docker ps (solo los contenedores del x6200 y el del banco)
+hopeful_saha	x6200-buildroot	Up About an hour
+relaxed_ritchie	x6200-buildroot	Up 2 hours
+heuristic_elbakyan	x6200-buildroot	Up 46 hours
+objective_williamson	x6200-buildroot:latest	Up 3 days
+practical_cerf	x6200-buildroot	Up 4 days

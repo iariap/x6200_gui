@@ -1,0 +1,15 @@
+main link=0x1ea8c  base(runtime)=0x47ea8c  base de carga del ELF=0x460000
+liblvgl base (fijada por pc/lr) = 0xb6170000
+
+== pc/lr dentro de liblvgl ==
+pc=0xb6186ae8 -> liblvgl+0x16ae8 : _lv_event_mark_deleted+0x30
+lr=0xb618d4f0 -> liblvgl+0x1d4f0 : lv_obj_destructor+0x10
+
+== palabras altas de la pila dentro de liblvgl ==
+0xb618db48 -> liblvgl+0x1db48 : _lv_obj_destruct+0x14
+0xb6196128 -> liblvgl+0x26128 : obj_del_core.part.0+0x114
+0xb619605c -> liblvgl+0x2605c : obj_del_core.part.0+0x48
+
+== palabras de la pila dentro del ejecutable (enlace = main + (palabra - base)) ==
+0x00510b7c -> enlace 0xb0b7c : _ZL9apply_cmdPv+0x0
+0x00612848 -> enlace 0x1b2848 : __func__.0+0x0

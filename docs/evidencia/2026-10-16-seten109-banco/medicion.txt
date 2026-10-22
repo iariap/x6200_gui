@@ -1,0 +1,43 @@
+=== medir-tabs.py (barra de tabs, sin OCR: tinta clara en la banda del texto) ===
+--- banco-pag1.png ---
+# banco/banco-pag1.png  (800x480)  banda y=428..463
+labels detectados: 5
+  1: x=20..140  ancho=121  centro=80
+  2: x=205..273  ancho=69  centro=239
+  3: x=342..456  ancho=115  centro=399
+  4: x=529..591  ancho=63  centro=560
+  5: x=679..761  ancho=83  centro=720
+--- banco-pag2.png ---
+# banco/banco-pag2.png  (800x480)  banda y=428..463
+labels detectados: 5
+  1: x=39..124  ancho=86  centro=81
+  2: x=167..312  ancho=146  centro=239
+  3: x=356..443  ancho=88  centro=399
+  4: x=536..582  ancho=47  centro=559
+  5: x=677..761  ancho=85  centro=719
+
+=== medir-fecha.py (fila Day/Month/Year, bordes del widget) ===
+# banco/banco-fecha.png  (800x480)  banda y=100..154
+columnas de borde (grupos): [(499, 500), (590, 591), (595, 596), (686, 687), (691, 692), (782, 783)]
+  Dia : span externo x=499..591  ancho=93
+  Mes : span externo x=595..687  ancho=93
+  Anio: span externo x=691..783  ancho=93
+  tinta '2026' en el Anio: 698,110 60x20  (margen al borde interno: izq=5 px, der=24 px)
+
+=== cross-check: harness con el MISMO font (Sunlit=notosans) ===
+--- harness settings-home --font notosans (pagina 1) ---
+# harness-home-notosans.png  (800x480)  banda y=428..463
+labels detectados: 5
+  1: x=20..140  ancho=121  centro=80
+  2: x=205..273  ancho=69  centro=239
+  3: x=342..456  ancho=115  centro=399
+  4: x=528..591  ancho=64  centro=559
+  5: x=678..761  ancho=84  centro=719
+--- harness settings-tema-sunlit (pagina 2) ---
+# harness-sunlit.png  (800x480)  banda y=428..463
+labels detectados: 5
+  1: x=38..124  ancho=87  centro=81
+  2: x=158..322  ancho=165  centro=240
+  3: x=355..443  ancho=89  centro=399
+  4: x=536..582  ancho=47  centro=559
+  5: x=677..762  ancho=86  centro=719

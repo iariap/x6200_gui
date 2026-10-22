@@ -1,0 +1,103 @@
+== compilador: gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2) ==
+== sanitizers: NO disponibles en este toolchain (se omite) ==
+In file included from /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_theme.c:20:
+/home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/../../src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+== analisis estatico (gcc -fanalyzer) ==
+== ejecutando ==
+Theme no-such-theme not found, using Aurora
+Theme IU1WXY not found, using Aurora
+Theme Classic not found, using Aurora
+Theme Outdoor not found, using Aurora
+Theme Outdoor-Negative not found, using Aurora
+Theme Legacy not found, using Aurora
+Theme VISION not found, using Aurora
+Theme Holo not found, using Aurora
+Theme Material 3 not found, using Aurora
+Theme RS not found, using Aurora
+Theme Holo not found, using Aurora
+Theme Material 3 not found, using Aurora
+Theme RS not found, using Aurora
+Theme IU1WXY not found, using Aurora
+Theme Classic not found, using Aurora
+Theme no-such-theme-91 not found, using Aurora
+Theme no-such-theme-91 not found, using Aurora
+Theme no-such-theme-91 not found, using Aurora
+Theme /tmp/test_themes/roto91.json: not valid JSON
+Theme roto91 not found, using Aurora
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:42: cw_autotune_tau_peak_ms(10) ~= 60.0f (got 0.0000, want 60.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:43: cw_autotune_tau_peak_ms(20) ~= 30.0f (got 0.0000, want 30.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:44: cw_autotune_tau_peak_ms(30) ~= 20.0f (got 0.0000, want 20.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:45: cw_autotune_tau_peak_ms(60) ~= 10.0f (got 0.0000, want 10.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:48: cw_autotune_tau_peak_ms(1) ~= 120.0f (got 0.0000, want 120.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:49: cw_autotune_tau_peak_ms(200) ~= 10.0f (got 0.0000, want 10.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:50: cw_autotune_tau_peak_ms(0) ~= 30.0f (got 0.0000, want 30.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:51: cw_autotune_tau_peak_ms(-5) ~= 30.0f (got 0.0000, want 30.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:58: cw_autotune_percentile(v, 10, 0.9f) ~= 9.0f (got 0.0000, want 9.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:59: cw_autotune_percentile(v, 10, 0.5f) ~= 5.0f (got 0.0000, want 5.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:60: cw_autotune_percentile(v, 10, 0.0f) ~= 1.0f (got 0.0000, want 1.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:61: cw_autotune_percentile(v, 10, 1.0f) ~= 10.0f (got 0.0000, want 10.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:71: cw_autotune_mean(v, 4) ~= 2.5f (got 0.0000, want 2.5000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:73: cw_autotune_variance(v, 4) ~= 1.25f (got 0.0000, want 1.2500 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:88: r.adapt
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:90: r.snr ~= 10.0f (got 0.0000, want 10.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:92: r.gist ~= 2.5f (got 0.0000, want 2.5000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:96: r.peak_beta ~= 0.10f (got 0.0000, want 0.1000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:98: r.noise_beta ~= 0.90f (got 0.0000, want 0.9000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:100: r.apply_snr && r.apply_gist && r.apply_peak_beta && r.apply_noise_beta && r.apply_freq
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:102: r.freq_offset_hz ~= -30.0f (got 0.0000, want -30.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:125: r.adapt
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:127: r.snr ~= 3.5f (got 0.0000, want 3.5000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:129: r.gist ~= 0.9f (got 0.0000, want 0.9000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:130: r.freq_offset_hz ~= 20.0f (got 0.0000, want 20.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:184: r.adapt
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:185: r.noise_beta ~= want[i] (got 0.0000, want 0.9000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:184: r.adapt
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:185: r.noise_beta ~= want[i] (got 0.0000, want 0.8000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:184: r.adapt
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:185: r.noise_beta ~= want[i] (got 0.0000, want 0.5000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:184: r.adapt
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:185: r.noise_beta ~= want[i] (got 0.0000, want 0.5000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:201: r.peak_beta ~= 0.10f (got 0.0000, want 0.1000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:201: r.peak_beta ~= 0.10f (got 0.0000, want 0.1000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:201: r.peak_beta ~= 0.10f (got 0.0000, want 0.1000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:201: r.peak_beta ~= 0.10f (got 0.0000, want 0.1000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:201: r.peak_beta ~= 0.10f (got 0.0000, want 0.1000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:201: r.peak_beta ~= 0.10f (got 0.0000, want 0.1000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:212: r.peak_beta ~= 0.95f (got 0.0000, want 0.9500 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:217: r.peak_beta ~= 0.81f (got 0.0000, want 0.8100 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:223: r.peak_beta ~= 0.10f (got 0.0000, want 0.1000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:236: r.adapt
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:237: r.snr ~= 3.1f (got 0.0000, want 3.1000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:245: r.snr ~= 10.0f (got 0.0000, want 10.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:257: r.snr ~= 10.0f (got 0.0000, want 10.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:264: r.adapt
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:266: r.snr ~= 10.0f (got 0.0000, want 10.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:280: r.snr ~= 10.0f (got 0.0000, want 10.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:288: r.adapt
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:289: r.snr ~= 7.0f (got 0.0000, want 7.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:290: r.apply_snr
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:294: r.snr ~= 5.5f (got 0.0000, want 5.5000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:304: r.freq_offset_hz ~= -30.0f (got 0.0000, want -30.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:309: r.freq_offset_hz ~= 30.0f (got 0.0000, want 30.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:317: r.apply_freq
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:317: r.apply_freq
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:317: r.apply_freq
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:317: r.apply_freq
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:317: r.apply_freq
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:317: r.apply_freq
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:317: r.apply_freq
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:317: r.apply_freq
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:317: r.apply_freq
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:317: r.apply_freq
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:319: r.freq_offset_hz ~= -300.0f (got 0.0000, want -300.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:337: r.freq_offset_hz ~= -30.0f (got 0.0000, want -30.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:343: r.freq_offset_hz ~= -30.0f (got 0.0000, want -30.0000 +-0.0010)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:372: r.adapt
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/cw-autotune-139/tests/native/test_cw_autotune.c:373: r.apply_snr && r.apply_noise_beta
+roe_curve #113: readout min = muestra 9 (SWR 1.715); vertice del fit = x 10.00 (SWR 1.800); delta 1.00 muestras
+roe_curve #125-fix: domo (fit a=-0.0061) -> valle en x=20.00, base 1.00, extremos 3.43 / 4.19
+fixtures: 8 escenarios, 408 puntos agregados comparados contra el oraculo
+flow de fixture: 459 eventos, 153 paquetes stale descartados, 0 atribuidos a la frecuencia nueva, 51x3 muestras validas
+18621 comprobaciones, 70 fallos

@@ -9,6 +9,8 @@
 #pragma once
 
 #include <stdint.h>
+
+#include <stdint.h>
 #include "lvgl/lvgl.h"
 #include "events.h"
 
@@ -23,3 +25,6 @@ typedef struct {
 } keypad_t;
 
 keypad_t * keypad_init(char *dev_name);
+
+/* How long a press must last to be "long" */
+void keypad_set_long_time(uint32_t ms);

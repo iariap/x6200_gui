@@ -1,0 +1,67 @@
+== compilador: gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2) ==
+== sanitizers: NO disponibles en este toolchain (se omite) ==
+In file included from /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_theme.c:20:
+/home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/../../src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+== analisis estatico (gcc -fanalyzer) ==
+== ejecutando ==
+Theme no-such-theme not found, using Aurora
+Theme IU1WXY not found, using Aurora
+Theme Classic not found, using Aurora
+Theme Outdoor not found, using Aurora
+Theme Outdoor-Negative not found, using Aurora
+Theme Legacy not found, using Aurora
+Theme VISION not found, using Aurora
+Theme Holo not found, using Aurora
+Theme Material 3 not found, using Aurora
+Theme RS not found, using Aurora
+Theme Holo not found, using Aurora
+Theme Material 3 not found, using Aurora
+Theme RS not found, using Aurora
+Theme IU1WXY not found, using Aurora
+Theme Classic not found, using Aurora
+Theme no-such-theme-91 not found, using Aurora
+Theme no-such-theme-91 not found, using Aurora
+Theme no-such-theme-91 not found, using Aurora
+Theme /tmp/test_themes/roto91.json: not valid JSON
+Theme roto91 not found, using Aurora
+roe_curve #113: readout min = muestra 9 (SWR 1.715); vertice del fit = x 10.00 (SWR 1.800); delta 1.00 muestras
+roe_curve #125-fix: domo (fit a=-0.0061) -> valle en x=20.00, base 1.00, extremos 3.43 / 4.19
+== Propagacion (#145): turno IBP, SNR, veredicto y registro IARU R2 ==
+  (t=0 banda 1: beacon 1, esperaba 17)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:167: beacon == cases[i].beacon
+  (t=10 banda 1: beacon 2, esperaba 0)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:167: beacon == cases[i].beacon
+  (t=20 banda 1: beacon 3, esperaba 1)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:167: beacon == cases[i].beacon
+  (t=0 banda 4: beacon 4, esperaba 14)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:167: beacon == cases[i].beacon
+  (t=10 banda 4: beacon 5, esperaba 15)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:167: beacon == cases[i].beacon
+  (t=20 banda 4: beacon 6, esperaba 16)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:167: beacon == cases[i].beacon
+  (t=30 banda 4: beacon 7, esperaba 17)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:167: beacon == cases[i].beacon
+  (t=40 banda 4: beacon 8, esperaba 0)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:167: beacon == cases[i].beacon
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:182: beacon == ((0 - b) % 18 + 18) % 18
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:188: beacon == ((1 - b) % 18 + 18) % 18
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:182: beacon == ((0 - b) % 18 + 18) % 18
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:188: beacon == ((1 - b) % 18 + 18) % 18
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:182: beacon == ((0 - b) % 18 + 18) % 18
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:188: beacon == ((1 - b) % 18 + 18) % 18
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:182: beacon == ((0 - b) % 18 + 18) % 18
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:188: beacon == ((1 - b) % 18 + 18) % 18
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:242: start == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:243: wait == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:246: start == 20
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:247: wait == 20
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:412: plan[k] == k
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:412: plan[k] == k
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:412: plan[k] == k
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:412: plan[k] == k
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/propagation-145/tests/native/test_propagation.c:412: plan[k] == k
+fixtures: 8 escenarios, 408 puntos agregados comparados contra el oraculo
+flow de fixture: 459 eventos, 153 paquetes stale descartados, 0 atribuidos a la frecuencia nueva, 51x3 muestras validas
+40158 comprobaciones, 25 fallos

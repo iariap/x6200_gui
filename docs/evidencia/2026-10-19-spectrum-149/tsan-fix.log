@@ -1,0 +1,6 @@
+=== TSan: modulo del espectro del fix (75a48b89) ===
+Mismo binario del test, -fsanitize=thread, dentro de x6200-uiharness (host x86_64):
+
+== TSan: el modulo del espectro no reporta razas ==
+perfil host: dibujo 617.3 us/dibujo; lock visto por spectrum_get_min 321.3 us max; spectrum_data+refresco 14.8 us/frame
+65 comprobaciones, 0 fallos

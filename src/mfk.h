@@ -35,7 +35,6 @@ typedef enum {
     MFK_KEY_TRAIN,
     MFK_QSK_TIME,
     MFK_KEY_RATIO,
-    MFK_CW_ZOOM,
 
     MFK_DNF,
     MFK_DNF_CENTER,
@@ -64,6 +63,15 @@ typedef enum {
     MFK_ATT,
     MFK_PRE,
     MFK_COMP,
+    /* Append-only: los ids son bits de params.mfk_modes y se persisten. */
+    MFK_CW_DECODER_AUTO,
+    /* CW zoom viene del upstream v0.1.2, que lo inserto a media lista (entre
+     * MFK_KEY_RATIO y MFK_DNF). Aca va al final a proposito: insertarlo en el
+     * medio corre en uno todos los ids siguientes y reinterpreta el bitmask
+     * `params.mfk_modes` que ya esta guardado en params.db (el usuario perderia
+     * sus MFK: un DNF elegido pasaria a ser otra tecla). Misma regla que el
+     * comentario de arriba. */
+    MFK_CW_ZOOM,
 
     MFK_LAST,
 
@@ -83,8 +91,16 @@ typedef enum {
 extern mfk_state_t  mfk_state;
 
 void mfk_update(int16_t diff, bool voice);
+
+/* The X6100 puts the encoder into EDIT mode on one of the app buttons
+ * (WeFax align/tilt). The control registry is not ported yet, so the call is
+ * accepted and ignored: the values are still adjustable through params. */
+void mfk_set_ctrl(int ctrl);
 void mfk_change_mode(int16_t dir);
 void mfk_set_mode(mfk_mode_t mode);
+
+/* The mode the encoder is on (the apps draw their own knob tags) */
+mfk_mode_t mfk_get_mode(void);
 
 #ifdef __cplusplus
 }

@@ -7,6 +7,7 @@
  */
 
 #include "styles.h"
+#include "theme.h"
 
 #define PATH "A:/dev/shm/"
 
@@ -123,33 +124,44 @@ void styles_init(themes_t theme) {
     lv_style_init(&background_style);
 
     lv_style_init(&spectrum_style);
-    lv_style_set_bg_color(&spectrum_style, lv_color_hex(0x000000));
+    lv_style_set_bg_color(&spectrum_style, TC(bg));
     lv_style_set_bg_opa(&spectrum_style, LV_OPA_COVER);
-    lv_style_set_border_color(&spectrum_style, lv_color_hex(0xAAAAAA));
+    lv_style_set_border_color(&spectrum_style, TC(panel_border));
     lv_style_set_border_width(&spectrum_style, 0);
     lv_style_set_radius(&spectrum_style, 0);
     lv_style_set_width(&spectrum_style, 800);
     lv_style_set_x(&spectrum_style, 0);
 
+    /* La fila de frecuencia dibuja sobre el fondo de la pantalla, asi que su color sale del
+     * tema (TC_text) y no de un blanco fijo: en el tema Outdoor el fondo es blanco y el texto
+     * negro, y un blanco cableado deja la frecuencia invisible (UI-010). El color que se ve lo
+     * escribe main_screen.c en el markup de recolor de cada label, que pisa este text_color; el
+     * estilo pide el mismo rol para que la pareja sea coherente. Es el mismo idioma que
+     * pide theme.h: el codigo no escribe un color, pide un rol. */
     lv_style_init(&freq_style);
-    lv_style_set_text_color(&freq_style, lv_color_white());
-    lv_style_set_text_font(&freq_style, &sony_30);
+    lv_style_set_text_color(&freq_style, TC(text));
+    /* Los tres labels de la fila son paneles de digitos: con una familia segmentada
+     * los dibuja ella (font_digit(); sin familia es el slot, o sea el mismo
+     * sony_30/38 de siempre). Tiene que ser ACA y no en main_screen.c porque los
+     * estilos se resuelven una vez, con la familia ya elegida (main.c la setea
+     * antes de styles_init()). */
+    lv_style_set_text_font(&freq_style, font_digit(&sony_30));
     lv_style_set_pad_ver(&freq_style, 7);
     lv_style_set_width(&freq_style, 150);
     lv_style_set_height(&freq_style, 36);
     lv_style_set_text_align(&freq_style, LV_TEXT_ALIGN_CENTER);
 
     lv_style_init(&freq_main_style);
-    lv_style_set_text_color(&freq_main_style, lv_color_white());
-    lv_style_set_text_font(&freq_main_style, &sony_38);
+    lv_style_set_text_color(&freq_main_style, TC(text));
+    lv_style_set_text_font(&freq_main_style, font_digit(&sony_38));
     lv_style_set_pad_ver(&freq_main_style, 5);
     lv_style_set_width(&freq_main_style, 500);
     lv_style_set_height(&freq_main_style, 36);
     lv_style_set_text_align(&freq_main_style, LV_TEXT_ALIGN_CENTER);
 
     lv_style_init(&waterfall_style);
-    lv_style_set_bg_color(&waterfall_style, lv_color_hex(0x000000));
-    lv_style_set_border_color(&waterfall_style, lv_color_hex(0xAAAAAA));
+    lv_style_set_bg_color(&waterfall_style, TC(bg));
+    lv_style_set_border_color(&waterfall_style, TC(panel_border));
     lv_style_set_border_width(&waterfall_style, 0);
     lv_style_set_radius(&waterfall_style, 0);
     lv_style_set_clip_corner(&waterfall_style, true);
@@ -166,13 +178,13 @@ void styles_init(themes_t theme) {
     lv_style_set_bg_opa(&btn_style, LV_OPA_0);
 
     lv_style_init(&btn_active_style);
-    lv_style_set_bg_img_recolor(&btn_active_style, lv_color_hex(0x00FF00));
+    lv_style_set_bg_img_recolor(&btn_active_style, TC(btn_mark_active));
     lv_style_set_bg_img_recolor_opa(&btn_active_style, LV_OPA_20);
 
     lv_style_init(&btn_disabled_style);
-    lv_style_set_bg_img_recolor(&btn_disabled_style, lv_color_hex(0x000000));
+    lv_style_set_bg_img_recolor(&btn_disabled_style, TC(bg));
     lv_style_set_bg_img_recolor_opa(&btn_disabled_style, LV_OPA_20);
-    lv_style_set_text_color(&btn_disabled_style, lv_color_hex(0x101010));
+    lv_style_set_text_color(&btn_disabled_style, TC(text_mute));
 
     /* Message style */
     lv_style_init(&msg_style);
@@ -213,7 +225,7 @@ void styles_init(themes_t theme) {
     lv_style_set_text_color(&dialog_style, lv_color_white());
     lv_style_set_text_font(&dialog_style, &sony_36);
     lv_style_set_width(&dialog_style, 796);
-    lv_style_set_height(&dialog_style, 348);
+    lv_style_set_height(&dialog_style, DIALOG_BOX_H);
     lv_style_set_x(&dialog_style, 800 / 2 - (796 / 2));
     lv_style_set_y(&dialog_style, 66);
     lv_style_set_radius(&dialog_style, 0);
@@ -296,6 +308,42 @@ void styles_init(themes_t theme) {
 
 }
 
+void styles_switch_init(lv_obj_t *sw) {
+    /* Pista / relleno / perilla con pares que el chequeo WCAG valida en los 9 temas: la pista usa
+     * control_border (el rol que el tema define para switches y sliders) y la perilla el color de
+     * fondo, asi que la perilla se distingue del fondo del dialogo. El estado lo indica la POSICION
+     * de la perilla, no un relleno de color.
+     *
+     * Hay que pisar los cuatro selectores: el tema de LVGL trae su propio estilo para
+     * LV_STATE_CHECKED del switch y, al ser mas especifico que un estilo local sin estado, ganaba y
+     * el switch prendido quedaba con su azul #2196F3 (medido en el framebuffer de la radio, no es
+     * el azul del tema). Y antes el riel era #E0E0E0 = 2.78:1 contra el dialogo (docs/HALLAZGOS.md 28). */
+    static const lv_state_t estados[] = { 0, LV_STATE_CHECKED, LV_STATE_PRESSED, LV_STATE_CHECKED | LV_STATE_PRESSED };
+
+    for (size_t i = 0; i < sizeof(estados) / sizeof(estados[0]); i++) {
+        lv_obj_set_style_bg_color(sw, TC(control_border), LV_PART_MAIN | estados[i]);
+        lv_obj_set_style_bg_opa(sw, LV_OPA_COVER, LV_PART_MAIN | estados[i]);
+        lv_obj_set_style_border_width(sw, 0, LV_PART_MAIN | estados[i]);
+        lv_obj_set_style_bg_opa(sw, LV_OPA_TRANSP, LV_PART_INDICATOR | estados[i]);   /* sin relleno */
+        lv_obj_set_style_bg_color(sw, TC(panel), LV_PART_KNOB | estados[i]);
+        lv_obj_set_style_bg_opa(sw, LV_OPA_COVER, LV_PART_KNOB | estados[i]);
+    }
+}
+
+void styles_slider_init(lv_obj_t *sl) {
+    static const lv_state_t estados[] = { 0, LV_STATE_PRESSED };
+
+    for (size_t i = 0; i < sizeof(estados) / sizeof(estados[0]); i++) {
+        lv_obj_set_style_bg_color(sl, TC(control_border), LV_PART_MAIN | estados[i]);
+        lv_obj_set_style_bg_opa(sl, LV_OPA_COVER, LV_PART_MAIN | estados[i]);
+        lv_obj_set_style_bg_opa(sl, LV_OPA_TRANSP, LV_PART_INDICATOR | estados[i]);
+        lv_obj_set_style_bg_color(sl, TC(panel), LV_PART_KNOB | estados[i]);
+        lv_obj_set_style_bg_opa(sl, LV_OPA_COVER, LV_PART_KNOB | estados[i]);
+        lv_obj_set_style_border_width(sl, 2, LV_PART_KNOB | estados[i]);
+        lv_obj_set_style_border_color(sl, TC(control_border), LV_PART_KNOB | estados[i]);
+    }
+}
+
 void styles_set_theme(themes_t theme) {
     switch (theme) {
         case THEME_LEGACY:
@@ -309,9 +357,11 @@ void styles_set_theme(themes_t theme) {
 }
 
 static void setup_theme_legacy() {
-    wf_palette = wf_palette_legacy;
+    /* The theme may bring its own waterfall palette (the JSON ones do) */
+    wf_palette = theme_shape.waterfall_n > 0 ? theme_waterfall() : wf_palette_legacy;
 
-    bg_color = lv_color_hex(0x0040A0);
+    /* The background follows the theme (JSON themes, NEW_FEATURES 17/28) */
+    bg_color = TC(bg);
     lv_style_set_bg_color(&background_style, bg_color);
 
     lv_style_set_bg_img_src(&btn_style, PATH "images/btn.bin");
@@ -341,9 +391,9 @@ static void setup_theme_legacy() {
 }
 
 static void setup_theme_simple() {
-    wf_palette = wf_palette_gauss;
+    wf_palette = theme_shape.waterfall_n > 0 ? theme_waterfall() : wf_palette_gauss;
 
-    bg_color = lv_color_hex(0x27313a);
+    bg_color = TC(bg);
     lv_style_set_bg_color(&background_style, bg_color);
 
     lv_style_set_bg_img_src(&btn_style, PATH "images/btn_dark.bin");

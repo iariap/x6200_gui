@@ -1,0 +1,6 @@
+# pytest -m e2e (tools/ab_testing), TMPDIR en disco (/tmp/opencode/ab-e2e) — HEAD db6bc31b
+
+$ TMPDIR=/tmp/opencode/ab-e2e uv run pytest -m e2e -q
+
+.............                                                            [100%]
+13 passed, 227 deselected in 286.25s (0:04:46)

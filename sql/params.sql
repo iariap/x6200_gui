@@ -78,6 +78,26 @@ CREATE TABLE digital_modes(
 CREATE INDEX digital_modes_type_idx ON digital_modes (type);
 CREATE INDEX digital_modes_freq_idx ON digital_modes (freq);
 
+-- Presets de filtro del DFL (issue #183): memorias personales y enlaces de los
+-- tres favoritos rapidos, por familia (1=SSB, 2=DIGI, 3=CW, 4=AM). Tablas
+-- separadas de `memory` y de `mode_params`; la migracion _5 las crea igual en
+-- una radio que actualiza en el lugar.
+CREATE TABLE dfl_filter_memories(
+    family      INTEGER NOT NULL CHECK(family BETWEEN 1 AND 4),
+    memory_slot INTEGER NOT NULL CHECK(memory_slot BETWEEN 1 AND 2),
+    low_hz      INTEGER NOT NULL CHECK(low_hz BETWEEN -10000 AND 9999),
+    high_hz     INTEGER NOT NULL CHECK(high_hz BETWEEN 1 AND 10000),
+    PRIMARY KEY (family, memory_slot),
+    CHECK (high_hz > low_hz)
+);
+
+CREATE TABLE dfl_filter_favorites(
+    family     INTEGER NOT NULL CHECK(family BETWEEN 1 AND 4),
+    quick_slot INTEGER NOT NULL CHECK(quick_slot BETWEEN 1 AND 3),
+    source     INTEGER NOT NULL CHECK(source BETWEEN 1 AND 5),
+    PRIMARY KEY (family, quick_slot)
+);
+
 .separator ","
 .import digital_modes.csv digital_modes
 

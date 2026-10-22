@@ -1,0 +1,142 @@
+# Gates — #121 (2026-10-18)
+
+Base: `07d73541` · HEAD de código: `befcf155` · binario ARM: `2a0be37fdb29`
+
+## Nativos (host) + `-fanalyzer`
+
+```
+$ tests/native/run_native_tests.sh
+...
+== CRASHLOG-MOD (#131): tabla de modulos y md5 ==
+26 comprobaciones, 0 fallos
+== Last breath (#121): formato, rename atomico y LASTBREATH ==
+== Last breath: analisis estatico (gcc -fanalyzer) ==
+48 comprobaciones, 0 fallos
+(exit 0)
+```
+
+Log: `tdd-green.log`. RED (sin `src/lastbreath.c`): `tdd-red.log`.
+
+## Estaticos (8/8) + extras
+
+```
+$ python3 tests/check_cfg_fills.py       OK: los 69 campos se inicializan, en orden
+$ python3 tests/check_actions.py         todas las acciones ofrecidas tienen manejador
+$ python3 tests/check_settings_focus.py  todos los widgets de Ajustes estan en el grupo de foco
+$ python3 tests/check_apps_menu.py       todas las apps del menu llegan al dispatcher
+$ python3 tests/check_app_handlers.py    todos los botones de las apps tienen handler
+$ python3 tests/check_manual_apps.py     todas las apps tienen su seccion (22 apps)
+$ python3 tests/check_wcag.py            pares OK: 1052 | FALLAS: 0
+$ python3 tests/check_cw_tune_feed.py    el feed del tono sigue a la visibilidad del widget
+```
+
+Extra: `check_manual_apps` + `audita-pruebas` OK (estructura y evidencia) + `test_swrscan_curve_evidence`
+PASS (8 pruebas). Log completo: `estaticos.log`.
+
+## Determinismo
+
+```
+$ tests/check_harness_determinism.sh
+PASS: deterministic (identical PNGs for every fixture)
+```
+
+Log: `determinism.log`.
+
+## A/B `AB-HANG121` (A = `07d73541`, B = `befcf155`)
+
+```
+$ cd tools/ab_testing
+$ uv run x6200-ab compare --a 07d73541 --b befcf155 --experiment-id AB-HANG121
+experiment AB-HANG121: PASS (exit 0)
+  Functional         PASS            (required) — 85 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — captures are pixel-identical to the baseline
+  Quality Contract   PASS            (required) — 873 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached
+  Energy             BLOCKED         (advisory) — no power measurement
+report: tools/ab_testing/reports/AB-HANG121
+```
+
+**Declaración**: se esperaba pixel-idéntico porque el cambio no toca el render (sólo registro de
+estado, log y el mensaje de batería, que no aparece en los fixtures). Se cumplió.
+
+## Contracts / audit / themes
+
+```
+$ uv run x6200-ab contracts --revision befcf155
+contracts befcf155244a: PASS — 873 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision befcf155
+audited befcf155244a: 11 known issues — 0 reproduced, 9 unverified; structural inspection REAL
+over 9462 objects on 85 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab themes
+OK (pares estaticos de los 6 temas; exentos WCAG 1.4.3 declarados)
+```
+
+Logs: `contracts.log`, `audit.log`, `themes.log`.
+
+## Python (ruff / format / ty / pytest + e2e)
+
+```
+$ uv run ruff check .              All checks passed!
+$ uv run ruff format --check .     176 files already formatted
+$ uv run ty check src tests        All checks passed! (ty 0.0.87 avisa "No python files found
+                                    under the given path(s)" para directorios; no es un fallo
+                                    introducido por este cambio)
+$ uv run pytest -m "not e2e" -q    227 passed, 13 deselected in 2.50s
+$ uv run pytest -m e2e -q          13 passed, 227 deselected in 195.63s (0:03:15)
+```
+
+Logs: `py-gates.log`, `pytest.log`, `pytest-e2e.log`.
+
+## Cross-compile ARM
+
+```
+$ docker run ... make x6200-gui-dirclean && make x6200-gui-rebuild
+$ md5sum target/usr/sbin/x6200_gui
+2a0be37fdb293383b605316a9881c932
+$ tools/verifica-firmware-port.py target/usr/sbin/x6200_gui
+OK: ... es el firmware del port (ELF32 ARM, 13773024 B, 3/3 marcas)
+```
+
+Log: `cross-build.log`, resumen: `cross-build-info.txt`.
+
+## Banco QEMU (ARM real emulado)
+
+```
+binario: md5 2a0be37fdb29   qemu-cpu: cortex-a7
+captura: banco-lastbreath.png (20093 bytes, 264 colores)
+```
+
+- Registro crudo antes del corte (`lastbreath-antes-del-corte.txt`):
+
+  ```
+  lastbreath v=1 up_s=487256 up_ms=487256330 clean=0 boot=12ad7621 radio=RX tx=0
+  app=home bat=na ev=0/4/0 last=msg-update wus=2711 msg=X6200 de R1CBU v0.1.2-lu2dsx
+  ```
+
+- Tras `docker rm -f` (SIGKILL, sin atexit) y nuevo arranque,
+  `out-banco-lastbreath.txt` línea 2:
+
+  ```
+  [Warn] (457665.554, +1) lastbreath_init_from_env: LASTBREATH lastbreath v=1 up_s=487256
+  up_ms=487256330 clean=0 boot=12ad7621 radio=RX tx=0 app=home bat=na ev=0/4/0
+  last=msg-update wus=2711 msg=X6200 de R1CBU v0.1.2-lu2dsx  (in main.c line #270)
+  ```
+
+- Registro de la corrida siguiente (`lastbreath-despues-del-reinicio.txt`):
+
+  ```
+  lastbreath v=1 up_s=487288 up_ms=487288320 clean=0 boot=12ad7621 radio=RX tx=0
+  app=home bat=na ev=0/4/0 last=msg-update wus=3197 msg=X6200 de R1CBU v0.1.2-lu2dsx
+  ```
+
+`bat=na` es lo esperado en el banco (no hay radio que publique el pack). El formato con batería
+está cubierto por el test nativo y por `costo-host.txt`.
+
+## Costo medido
+
+- 180 B por línea; 6 líneas/min ⇒ **1.080 B/min** (`costo-host.txt`).
+- Host: 0,32 µs/formateo; 19,1 µs/escritura atómica (200 ops, ext4 con `fdatasync`).
+- QEMU `cortex-a7`: `wus=1021..3197` µs por escritura (auto-medido por el propio registro).

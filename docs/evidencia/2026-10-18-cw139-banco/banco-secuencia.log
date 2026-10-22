@@ -1,0 +1,16 @@
+== ruta del usuario: GEN -> KEY -> (CW 2:2)
+  -> {"cmd":"page","text":"gen"}
+     {"t":"ok"}
+  -> {"cmd":"page","text":"key"}
+     {"t":"ok"}
+  -> {"cmd":"btn","val":0}
+     {"t":"ok"}
+  -> {"cmd":"btn","val":0}
+     {"t":"ok"}
+  -> {"cmd":"btn","val":0}
+     {"t":"ok"}
+  captura: docs/evidencia/2026-10-18-cw139-banco/06-banco-cw2-auto-off.png
+== pulsar Auto (indice 3)
+  -> {"cmd":"btn","val":3}
+     {"t":"ok"}
+  captura: docs/evidencia/2026-10-18-cw139-banco/07-banco-cw2-auto-on.png

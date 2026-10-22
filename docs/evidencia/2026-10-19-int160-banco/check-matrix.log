@@ -1,0 +1,60 @@
+== Estaticos de la app (tests/check_*.py) ==
+
+--- check_cfg_fills.py ---
+  campos en cfg_t:      70
+  fill_cfg_item():      70
+  OK: los 70 campos se inicializan, en orden
+
+--- check_actions.py ---
+  acciones ofrecidas: 39 | con manejador: 40
+  todas las acciones ofrecidas tienen manejador
+
+--- check_settings_focus.py ---
+  widgets de foco creados: 29 | dialog_item(): 30
+  sliders con parametro propio: 4
+  campos de la fila de fecha: 3
+  todos los widgets de Ajustes estan en el grupo de foco
+  cada slider mueve el parametro que muestra
+  los campos de la fila de fecha declaran la misma caja
+
+--- check_apps_menu.py ---
+  (aviso) page_app_6 usa btn_atune, que no es una app
+  apps en las paginas APP: 23 | make_app_btn -> main_screen_start_app(): 21/21 | make_action_btn -> main_screen_action(): 2/2 | paginas: 6
+  control remoto: 25 apps en app_names[] | 25 acciones
+  todas las apps del menu llegan al dispatcher que usa su boton
+
+--- check_app_handlers.py ---
+  botones en paginas: 275 | paginas: 62 | sin handler: 0
+  todos los botones de las apps tienen handler
+
+--- check_manual_apps.py ---
+  apps en el firmware: 23 | secciones de apps en el manual: 24
+  todas las apps tienen su seccion (23 apps)
+
+--- audita-pruebas.py ---
+    ? 332: ## 17/10 ~22:20 (hora radio) — `63dbf7a4` (#130): la parábola de ROE en la radio es una **U** ✓ (cie
+    ? 396: (TX medida ~2,3-2,6 s). Ya anotado en #119 y por el otro QA; sigue abierto.
+    ? 413: ## 16/10 ~23:40 — ROM nueva flasheada en la SD: `c640645d810c` (GUI e294229dd32d)
+    ? 453: ## 16/10 ~17:30 — `3604cece0e43` (merge `2392624`, issue #110): el campo de año de Ajustes
+    ? 487: ## 16/10 ~00:45 — `f88813ae85e3` (tip `c60af91`): el #95 de temas y el #99 de la curva
+  OK: estructura y evidencia en orden
+
+--- check_wcag.py ---
+  Redshift         129 pares aplicables
+  Sprint           130 pares aplicables
+  Sunlit           130 pares aplicables
+  Trail            129 pares aplicables
+  pares OK: 1052 | exentos: 170 | informativos: 90 | FALLAS: 0
+  todos los pares cumplen WCAG 2.1 (AA)
+
+--- check_cw_tune_feed.py ---
+  cw_tune_ui.c update_visibility: ok
+  cw_tune_ui_visible: ok
+  cw.cpp feed gate: ok
+  el feed del tono sigue a la visibilidad del widget de CW
+
+--- test_swrscan_curve_evidence.py ---
+PASS: 8 pruebas de swrscan_curve_evidence
+
+== bash -n de los scripts tocados/relacionados ==
+  run_native_tests.sh: OK

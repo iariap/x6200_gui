@@ -1,0 +1,20 @@
+[Error]	(19638.575, +75)	 event_send: Overflow 	(in event*** buffer overflow detected ***: terminated
+CRASHLOG sig=6 fallo=0x669b pc=0xb5dc6dd4 lr=0xb5dc6dc8 sp=0xb46fe838 base=0x4c9804
+*** buffer overflow detected ***: terminated
+CRASHLOG sig=6 fallo=0x6d86 pc=0xb5de6dd4 lr=0xb5de6dc8 sp=0xb46fe838 base=0x4f9804
+*** buffer overflow detected ***: terminated
+CRASHLOG sig=6 fallo=0x6e0e pc=0xb5db6dd4 lr=0xb5db6dc8 sp=0xb46fe838 base=0x4a9804
+*** buffer overflow detected ***: terminated
+CRASHLOG sig=6 fallo=0x6e7f pc=0xb5e06dd4 lr=0xb5e06dc8 sp=0xb46fe838 base=0x4c9804
+*** buffer overflow detected ***: terminated
+CRASHLOG sig=6 fallo=0x6f1c pc=0xb5d86dd4 lr=0xb5d86dc8 sp=0xb46fe838 base=0x419804
+*** buffer overflow detected ***: terminated
+CRASHLOG sig=6 fallo=0x6f9b pc=0xb5d86dd4 lr=0xb5d86dc8 sp=0xb46fe838 base=0x4c9804
+*** buffer overflow detected ***: terminated
+CRASHLOG sig=6 fallo=0x7026 pc=0xb5d36dd4 lr=0xb5d36dc8 sp=0xb46fe838 base=0x4d9804
+*** buffer overflow detected ***: terminated
+CRASHLOG sig=6 fallo=0x708c pc=0xb5da6dd4 lr=0xb5da6dc8 sp=0xb46fe838 base=0x489804
+*** buffer overflow detected ***: terminated
+CRASHLOG sig=6 fallo=0x70f8 pc=0xb5d36dd4 lr=0xb5d36dc8 sp=0xb46fe838 base=0x4e9804
+[User]	(8.580, +5)	 cfg_band_params_load_item*** buffer overflow detected ***: terminated
+[Warn]	(73.820, +1010)	 buttons_refresh: Button item label obj is null 	(in button*** buffer overflow detected ***: terminated

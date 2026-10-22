@@ -1,0 +1,237 @@
+# Non-text contrast (WCAG 1.4.11) over the *pixels* the harness renders.
+#
+# The static pairs (`theme_pairs.yaml`) are roles read from src/theme.h and the
+# theme files; the rendered `typography_contrast` contract reads the live LVGL
+# object tree. This table is the third case: informative graphics whose ink or
+# whose surface is not a role the framework can introspect — the S-meter arc is
+# drawn by hand over a bitmap (images/top_long.bin), the waterfall column is the
+# DSP palette. Only the pixels know
+# their real contrast, so the measurement is over the committed renders in
+# `tools/ab_testing/golden/` (the `.scn` fixtures rendered by the harness) and
+# `--renders-dir` points it at a fresh capture.
+#
+# Each object declares two fixed rectangles, the same idiom the `region_*`
+# contracts use:
+#   object:      [x, y, width, height] around the informative graphic;
+#   background:  the surface it is read against, next to it.
+# The object's colour is the `foreground_percentile` pixel of its rectangle
+# (luminance-sorted) and the surface's is the `background_percentile` pixel of
+# its own; the object may be lighter or darker than the surface, and the ratio
+# reported is the pairing that separates them (the one the eye uses).
+#
+# A rectangle that is mostly surface cannot be mistaken for ink: the percentile
+# only reaches the object when the object fills enough of the region, and the
+# self-tests in `tests/test_nontext_checks.py` pin both directions with synthetic
+# images. `fixture` is the `.scn` name; `theme` is what that fixture renders.
+#
+# `min_ratio` is 3.0 for every object: the WCAG 1.4.11 threshold for graphical
+# objects required to understand the content.
+
+foreground_percentile: 90
+background_percentile: 10
+
+objects:
+  # --- S-meter: the +20/+40 arc, TC(meter_over), over the meter's bitmap face ---
+  # meter.c:116-119 draws the arc width 5 in TC(meter_over) at r+2; the face is
+  # images/top_long.bin (a binary surface the static check only knows by name).
+  # The arc geometry is fixed (it does not move with the value), so the same rect
+  # measures it on every fixture that paints it.
+  - name: s_meter_arc
+    fixture: main-foco
+    theme: Aurora
+    object: [481, 28, 10, 12]
+    background: [481, 17, 10, 9]
+    min_ratio: 3.0
+    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
+
+  - name: s_meter_arc
+    fixture: main-espectro-agua
+    theme: Aurora
+    object: [481, 28, 10, 12]
+    background: [481, 17, 10, 9]
+    min_ratio: 3.0
+    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
+
+  - name: waterfall_signal
+    fixture: main-foco
+    theme: Aurora
+    object: [383, 255, 22, 150]
+    background: [220, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
+
+  - name: waterfall_signal
+    fixture: main-espectro-agua
+    theme: Aurora
+    object: [396, 255, 6, 150]
+    background: [220, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
+
+  - name: waterfall_signal
+    fixture: main-tema-sprint
+    theme: Sprint
+    object: [383, 255, 22, 150]
+    background: [220, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
+
+  - name: s_meter_arc
+    fixture: main-tema-sprint
+    theme: Sprint
+    object: [481, 28, 10, 12]
+    background: [481, 17, 10, 9]
+    min_ratio: 3.0
+    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
+
+  # --- Focus indicator: the focused field surface against the dialog ---
+  # styles.c paints the focused cell with TC(focus); on settings-home the focus is
+  # on the day field. The dialog is the surface it is read against.
+  - name: focus_indicator
+    fixture: settings-home
+    theme: Aurora
+    object: [505, 112, 86, 26]
+    background: [400, 300, 40, 20]
+    min_ratio: 3.0
+    where: "styles.c (celda con foco, TC(focus)) contra el dialogo"
+
+  # --- Sunlit (issue #67, THEMES v2) ---------------------------------------
+  # The S-meter face is the theme-independent bitmap (top_long.bin), so a light
+  # theme cannot recolour it: the arc `TC(meter_over)` has to be a light ink to
+  # clear 3:1 (meter.c:116-119). Sunlit's own waterfall palette (dark navy signal
+  # over a near-white floor, waterfall.c) is measured on the two fixtures that
+  # render it; the column moves with the seed, so each fixture carries its rect.
+  - name: s_meter_arc
+    fixture: main-tema-sunlit
+    theme: Sunlit
+    object: [481, 28, 10, 12]
+    background: [481, 17, 10, 9]
+    min_ratio: 3.0
+    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
+
+  - name: waterfall_signal
+    fixture: main-tema-sunlit
+    theme: Sunlit
+    object: [316, 255, 9, 150]
+    background: [100, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
+
+  - name: s_meter_arc
+    fixture: main-tema-sunlit-agua
+    theme: Sunlit
+    object: [481, 28, 10, 12]
+    background: [481, 17, 10, 9]
+    min_ratio: 3.0
+    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
+
+  - name: waterfall_signal
+    fixture: main-tema-sunlit-agua
+    theme: Sunlit
+    object: [216, 255, 8, 150]
+    background: [300, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
+
+  # --- Aurora (THEMES v2, issue #72): the same two objects, measured on the
+  # theme's own golden render. Aurora ships its own waterfall table (the JSON
+  # `waterfall` stops, theme.c make_palette) and its own `meter_over` (the +20/+40
+  # arc over the meter's bitmap face), so the pixels answer what the static check
+  # cannot: the arc and the signal column reach 3:1 with Aurora's roles.
+  - name: waterfall_signal
+    fixture: main-tema-aurora
+    theme: Aurora
+    object: [383, 255, 22, 150]
+    background: [220, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
+
+  - name: s_meter_arc
+    fixture: main-tema-aurora
+    theme: Aurora
+    object: [481, 28, 10, 12]
+    background: [481, 17, 10, 9]
+    min_ratio: 3.0
+    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
+
+  # --- Cathode (THEMES v2, issue #70): the same two objects the other themes
+  # declare, measured on Cathode's own golden render. Cathode ships its own
+  # waterfall table (the JSON `waterfall` stops, theme.c make_palette: black ->
+  # espresso -> burnt umber -> copper -> amber -> parchment cream) and its own
+  # `meter_over` (the +20/+40 arc over the meter's bitmap face), so the pixels
+  # answer what the static check cannot: the arc and the signal column reach 3:1
+  # with Cathode's roles.
+  - name: waterfall_signal
+    fixture: main-tema-cathode
+    theme: Cathode
+    object: [383, 255, 22, 150]
+    background: [220, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c palette (columna de senal sobre el piso de ruido)"
+
+  - name: s_meter_arc
+    fixture: main-tema-cathode
+    theme: Cathode
+    object: [481, 28, 10, 12]
+    background: [481, 17, 10, 9]
+    min_ratio: 3.0
+    where: "meter.c:116-119 (arco TC(meter_over) del S-meter sobre top_long.bin)"
+
+  # --- CW tune widget (issue #122, docs/HALLAZGOS.md 49): the inactive bars of the
+  # tuning widget against the widget's own panel. Neither colour is a role the
+  # static check can resolve: the panel is black at 50% over the theme's bg
+  # (`lv_style_set_opa(&cw_tune_style, LV_OPA_50)`, src/styles.c) and the bars are a
+  # fixed grey literal at 50% over that panel, so on the light theme the fill lands
+  # on the same grey as the panel (1.01:1 measured on the radio's own binary, Sunlit)
+  # and the bars disappear. The fix gives them a 1 px border of the colour that
+  # contrasts most with the panel (white over a dark panel, black over a light one,
+  # src/cw_tune_ui.c update_cb): that border is the component's boundary, and it is
+  # what these two objects measure — the object rectangle is the centre bar (i=7,
+  # `h = 37*2/(|i-7|+2)`, bottom-aligned at HEIGHT-1, x = SPACING + i*(BLOCK_W+SPACING)
+  # of the widget at (30,70)) and the surface is the panel above the shorter bars.
+  # The Redshift object is the radio's own theme; the Sunlit one is the light theme
+  # that reported the finding.
+  - name: cw_tune_bars
+    fixture: cw-tune-tuner
+    theme: Redshift
+    object: [97, 72, 5, 38]
+    background: [40, 70, 8, 3]
+    min_ratio: 3.0
+    where: "cw_tune_ui.c:update_cb (borde de las barras inactivas vs el panel del widget)"
+
+  - name: cw_tune_bars
+    fixture: cw-tune-tema-sunlit
+    theme: Sunlit
+    object: [97, 72, 5, 38]
+    background: [40, 70, 8, 3]
+    min_ratio: 3.0
+    where: "cw_tune_ui.c:update_cb (borde de las barras inactivas vs el panel del widget)"
+
+  # --- La linea central del waterfall (issue #140, orden del owner 2026-10-18) -----
+  # El owner reporto "no veo la frecuencia que estoy sintonizando; no se ve la linea".
+  # La linea existe (issue #140) pero medía 1 px en cinco temas y salia a LV_OPA_60
+  # con LV_BLEND_MODE_ADDITIVE sobre TC(panel_border): 1.2:1..3.2:1 contra el piso del
+  # waterfall (Aurora 1.9:1 en el arnes) y en Sunlit satuaba a blanco. Ahora sale a
+  # `waterfall_signal_width` (3 px por default), a LV_OPA_COVER y en TC(text), que es
+  # el rol mas claro/oscuro de cada tema. Estos dos objetos son la superficie que la
+  # linea usa para leerse: el objeto es el trazo de 3 px en la columna central del
+  # waterfall (x=398..400) y el fondo es el piso de ruido a su izquierda, la misma
+  # convencion que `waterfall_signal`. Aurora (main-espectro-agua) es el tema del
+  # owner; Sunlit es el caso claro (piso claro + tinta oscura). El resto de los temas
+  # no tiene render comprometido: su tabla medida esta en
+  # docs/THEMES.md y docs/evidencia/2026-10-18-wf140-contraste/README.md.
+  - name: waterfall_center_line
+    fixture: main-espectro-agua
+    theme: Aurora
+    object: [398, 255, 3, 150]
+    background: [220, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c:waterfall_init (linea central TC(text) sobre el piso del waterfall)"
+
+  - name: waterfall_center_line
+    fixture: main-tema-sunlit-agua
+    theme: Sunlit
+    object: [398, 255, 3, 150]
+    background: [220, 255, 40, 150]
+    min_ratio: 3.0
+    where: "waterfall.c:waterfall_init (linea central TC(text) sobre el piso del waterfall)"

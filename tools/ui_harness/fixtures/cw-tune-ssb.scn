@@ -1,0 +1,40 @@
+# cw-tune-ssb: the control of the other half of the visibility rule of the CW tune
+# widget (issue #122): outside CW/CWR the widget is not shown.
+#
+# The widget is created for the main screen whatever the mode is (src/main_screen.c
+# calls cw_tune_init()), so this fixture builds the plain main screen in USB with
+# the Tuner parameter at its boot value and codifies that the object is there but
+# hidden — and that cw_tune_ui_visible() (the gate the tone feed of src/cw.cpp
+# consults) says so too. Without this fixture the rule "shown in CW/CWR" would be
+# the only half covered, and a widget shown in every mode would pass.
+#
+# The theme is the radio's own (Redshift), same as the CW fixtures.
+
+name cw-tune-ssb
+screen cw-tune-ssb
+
+theme Redshift
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

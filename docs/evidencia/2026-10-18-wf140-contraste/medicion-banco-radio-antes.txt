@@ -1,0 +1,5 @@
+captura: ../2026-10-17-qa-radio-swr125/07-restaurado.png (800x480)
+banda del waterfall: y=240..479 (240 filas)
+columna central x=400 vs x-4 y x+4: 217/217 filas medibles con diferencia = 100.0 %
+sobre toda la banda (incluye filas tapadas por texto/controles): 217/240 = 90.4 %
+corrida constante sobre x=400: 7/240 filas, color RGB(91, 53, 47); x-1=RGB(9, 2, 2) x+1=RGB(9, 2, 2)

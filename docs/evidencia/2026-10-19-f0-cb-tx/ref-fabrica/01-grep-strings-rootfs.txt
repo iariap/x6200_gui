@@ -1,0 +1,16 @@
+== strings -a -t x /usr/app_qt/x6200_ui_v100 | grep -E 'fullband|xgradio.conf|isHamBand|isTxEnable' ==
+  fd19f fullband-tx
+  ff04f /etc/xgradio/xgradio.conf
+  ff08d found [mods] fullband-tx:
+
+== strings -a -t x /usr/app_qt/x6100_ui_v100 | grep fullband ==
+  b9422 fullband-tx
+  bae2f /etc/xgradio/xgradio.conf
+  bae6d found [mods] fullband-tx:
+
+== grep -arl sobre el rootfs extraido ==
+root/etc/xgradio/xgradio.conf
+root/usr/app_qt/x6100_ui_v100
+root/usr/app_qt/x6200_ui_v100
+== grep -arl isHamBand ==
+root/usr/app_qt/x6200_ui_v100

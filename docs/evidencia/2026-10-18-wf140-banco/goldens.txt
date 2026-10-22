@@ -1,0 +1,14 @@
+# Las 11 goldens comprometidas en tools/ab_testing/golden/ contra las fixtures recien renderizadas en dc45d924
+# (captura pre-rebase: dc45d924 es hoy d2dd92a3. Tras el rebase las 11 se re-verificaron una por una
+#  contra las capturas B del compare AB-wf140-final: 11/11 byte-identicas — ver gates-ab.log)
+IGUAL    cw-tune-tema-sunlit.png  cfa98f197f7f8cd1c50a0251d9c31e21
+IGUAL    cw-tune-tuner.png  b1170a414dc2b42b67c5afe8ae27142e
+IGUAL    main-espectro-agua.png  daca186274d8b2167ecb101eb3491990
+IGUAL    main-foco.png  fea8424d4d024b91985a7a7752302084
+IGUAL    main-tema-aurora.png  fea8424d4d024b91985a7a7752302084
+IGUAL    main-tema-cathode.png  0286a90692ff4aea0abf6c8353244b78
+IGUAL    main-tema-sprint.png  0f2c581857e9162703ae9f007fbf8e81
+IGUAL    main-tema-sunlit-agua.png  7e3ee2df0dd79f7acd38cd3a0f38e2b3
+IGUAL    main-tema-sunlit.png  43d41337ac2348c3bb2e8c6c13a24e23
+IGUAL    settings-home.png  03fea21e28774d52e262e91dff153af5
+IGUAL    settings-perfil.png  b3994991a1b859b288760fd213c0c068

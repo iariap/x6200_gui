@@ -1,0 +1,10 @@
+main link=0x1ea74  base(runtime)=0x44ea74  base de carga del ELF=0x430000
+libc base (fijada por pc/lr) = 0xb5d40000
+
+== pc/lr dentro de libc (offsets relativos a la base) ==
+pc=0xb5de0064 -> libc+0xa0064 : strlen@@GLIBC_2.4+0x23
+lr=0xb5ddf714 -> libc+0x9f714 : __strdup@@GLIBC_2.4+0xc
+
+== cadenas de la pila dentro del binario (enlace = main + (palabra - base)) ==
+0x0047dacc -> enlace 0x4dacc : cw_encoder_send+0x68
+0x004773cc -> enlace 0x473cc : dialog_msg_cw_beacon_cb+0x50

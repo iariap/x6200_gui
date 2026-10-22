@@ -1,0 +1,60 @@
+# PNG sha256 de la evidencia del banco natural (host x86). Los PNG de la
+# captura comun (forced/static/off) son byte a byte los del corpus previo a la
+# alineacion del periodo (decision 8): poner la ROM en el refr_timer no mueve un
+# pixel de la captura; natural/natural-eco si cambian, porque la corrida natural
+# avanza 50 ms por frame en vez de 30 (2000 ms de ventana en vez de 1200).
+#
+# Fixture `main-natural` (QUALITY, 12.1 V + fuente externa):
+#   run1/natural: las dos corridas del gate con las mismas rutas (idempotencia
+#                 de tests/check_harness_natural.sh).
+#   forced: `--bench`; static: `--bench-natural --natural-static`; cli:
+#           `--bench-natural 10`; off: `--bench-natural --display-off` (el PNG es
+#           el de la captura comun: la misma imagen, menos trabajo).
+# Fixture `main-natural-eco` (ECO, 11.2 V sin fuente): main-natural-eco, la
+# corrida que mide la cadencia del espectro y de la cascada en ECO.
+run1 16e1038e8aa8ea6377e61e9503c47da570c89243fa861512fd1c15eaa0d9aa8c
+natural 16e1038e8aa8ea6377e61e9503c47da570c89243fa861512fd1c15eaa0d9aa8c
+forced 9ac7766338851ca81921d55cd084af343e5557e4ec23c7347fd4d87c802048a2
+static 0c9e56d8f218182067bcb3b957fe903e8ddad3de4c4d030f4c8b22bd9645b331
+cli 5b8fb43cd4b6b058a82700fb1ae3649218afe90c45c020a717919256282e5025
+off 9ac7766338851ca81921d55cd084af343e5557e4ec23c7347fd4d87c802048a2
+main-natural-eco 1f8180d1c9e6297144915249a947f48509004b244259186c0b0194b41fd19c79
+
+# Re-baseline 2026-10-15 (corrida fonts-libre, decision 8): el harness pasa a
+# medir un frame natural con el periodo de refresco de la ROM (50 ms,
+# LV_DISP_DEF_REFR_PERIOD) en vez del default de LVGL del arnes (30 ms). Los
+# numeros de abajo son los medidos despues; entre parentesis, los de antes.
+#
+# natural.json           revision=02c1311 framebuffer_fnv1a=0xb535965fe9df81d3 natural_invalidated_px=11223840 (6745720) waterfall_offscreen_redraws=40 (24)
+# off.json               revision=02c1311 framebuffer_fnv1a=0x6f0b9749e63207f0 natural_invalidated_px=0 flushes=5 flushed_pixels=743680 waterfall_offscreen_redraws=0
+# main-natural-eco.json  revision=02c1311 natural_invalidated_px=2861240 (1758360) waterfall_offscreen_redraws=10 (6)
+
+# Re-baseline 2026-10-19 (OPT-2 #148, HEAD d2beb6c6): el rasterizado incremental
+# del waterfall (anillo de filas, 576d2df3) agrega dos instrumentos al bloque
+# `natural` (`waterfall_rasterized_px`, `waterfall_full_rebuilds`) que el checker
+# tests/natural_evidence.py exige; la evidencia cruda se re-genero con el binario
+# de la rama. Los PNG de la captura comun tambien se movieron: entre la corrida
+# `02c1311` y esta base (02090454) entraron cambios de UI ajenos a OPT-2 (el A/B
+# OPT-2 02090454 vs 576d2df3 es pixel-identical sobre 89 escenarios). Los numeros
+# del bloque `natural` no cambiaron; solo la imagen (fnv1a/png_bytes) y los dos
+# campos nuevos.
+#
+# natural.json           revision=d2beb6c6 framebuffer_fnv1a=0x182ac64b59f610ec natural_invalidated_px=11223840 waterfall_rasterized_px=32000 waterfall_full_rebuilds=0
+# off.json               revision=d2beb6c6 framebuffer_fnv1a=0xb046b4b882f4b48d natural_invalidated_px=0 flushes=5 flushed_pixels=743680 waterfall_rasterized_px=0 waterfall_full_rebuilds=0
+# main-natural-eco.json  revision=d2beb6c6 natural_invalidated_px=2861240 waterfall_rasterized_px=32000 waterfall_full_rebuilds=0
+
+# Re-baseline 2026-10-19 (OPT-4 #150, HEAD cbaaf72f): las guardas de igualdad de
+# los updaters (923e4dea) apagan las invalidaciones cuyo valor vivo no cambia.
+# En el arnes time() esta fijo (mocks/mock_ui_deps.c), asi que el reloj
+# (src/clock.c) y el icono BT (src/info.c) dejan de invalidar: el histograma del
+# bloque `natural` pierde el rectangulo del reloj (580,0,220,72) y el control
+# `--natural-static` queda solo con el band-info. La captura comun (settle)
+# tambien pierde su tick de reloj suelto. NINGUN PNG CAMBIA: los sha256 de arriba
+# siguen valiendo (las guardas solo suprimen invalidaciones que no cambiaban un
+# pixel). Lo que se movio es el JSON (flushes/px invalidados); la evidencia cruda
+# se re-genero con el binario de la rama.
+#
+# natural.json           revision=cbaaf72f natural_invalidated_px=11208000 invalidated_rects=66 flushes=66 clock_rects=0 metrics.flushes=71 metrics.flushed_pixels=12319840
+# static.json            revision=cbaaf72f natural_invalidated_px=190400 invalidated_rects=7 (solo band-info)
+# off.json               revision=cbaaf72f natural_invalidated_px=0 flushes=4 flushed_pixels=727840
+# main-natural-eco.json  revision=cbaaf72f natural_invalidated_px=2796800 invalidated_rects=20 metrics.flushes=24 metrics.flushed_pixels=3776640
