@@ -1,0 +1,4 @@
+== determinismo del instrumento: dos corridas del MISMO binario, misma salida
+a6d2d0dc13403e2470ef321fba47d8d9c56b2d44009493e36dcca056def8df0a  /tmp/opencode/det1.txt
+a6d2d0dc13403e2470ef321fba47d8d9c56b2d44009493e36dcca056def8df0a  /tmp/opencode/det2.txt
+IDENTICOS: la medicion es determinista (reloj virtual, sin reloj de pared)

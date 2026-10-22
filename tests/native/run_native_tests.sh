@@ -1171,3 +1171,18 @@ rm -rf "$DB_PERSIST_DIR"
 mkdir -p "$DB_PERSIST_DIR"
 DB_PERSIST_DIR="$DB_PERSIST_DIR" "$DBP_BIN"
 rm -rf "$DB_PERSIST_DIR"
+
+# --- WiFi ocioso: el pump de GLib (issue #218, F-06) -------------------------
+# src/wifi.cpp (etapa de WiFi/BT) crea un loop_timer de LVGL cuyo callback corre
+# g_main_context_iteration() para despachar las callbacks async de NetworkManager: es el
+# unico pump de GLib del proceso, asi que se conserva con la radio apagada (las
+# desconexiones tardias lo necesitan) y lo que cambia por estado es su periodo (250 ms OFF,
+# 30 ms ON). El stage compila el modulo REAL contra un motor de timers que espeja
+# lvgl/src/misc/lv_timer.c mas un pump de GLib con reloj virtual (tests/native/stubs_wifi/,
+# tests/native/wifi_idle_stubs.cpp), y deja dos cosas: el contrato (un solo timer, 250/30,
+# callbacks, scan y estado visible intactos) y la MEDICION -vueltas del pump en 10 s de
+# WiFi ociosa, 40 OFF contra 333 ON-. Ojo: es SOLO este timer, no el total del sistema, y no
+# afirma nada sobre watts (PENDING_HARDWARE).
+# Ver docs/evidencia/2026-10-22-next218/README.md.
+echo "== WiFi ocioso (#218): pump de GLib con la radio apagada (250 ms) y encendida (30 ms) =="
+sh "$DIR/run_wifi_idle_timer.sh" "$OUT/wifi-idle"
