@@ -96,7 +96,7 @@ cp "$DIR/stubs_cw/pannel.h" "$DIR/stubs_cw/remote_server.h" "$CW_STAGE/"
 cp "$DIR/stubs/lvgl/lvgl.h" "$CW_STAGE/lvgl/"
 
 SOURCES="$SRC/adaptive_tuning.c $SRC/rotary_queue.c $SRC/autotune.c $SRC/autotune_spectrum.c $SRC/cw_autotune.c $SRC/audio_enhancement.c $SRC/ft8_udp.c $SRC/update_check.c $SRC/band_plan_data.c $SRC/avi_writer.c $SRC/wfview_server.c $SRC/cluster/spots.c $SRC/cluster/client.c $SRC/field/refs.c $SRC/field/flog.c $SRC/field/bands.c $SRC/field/rbn.c $SRC/theme.c $SRC/cJSON.c $SRC/kbd_rollover.c $SRC/kbd_caps.c $SRC/bt_devices.c $SRC/dxcc.c $SRC/flags.c $SRC/controls_step.c $SRC/voice_text.c $SRC/gps_format.c $SRC/visual_policy.c $SRC/roe_curve.c $SRC/swr_session.c $SRC/cb.c $SRC/propagation.c $SRC/propagation_data.c $CW_STAGE/cw_decoder.c \
-$DIR/stubs/stubs.c $DIR/test_main.c $DIR/test_framework.c \
+$DIR/stubs/stubs.c $DIR/audio_enh_stubs.c $DIR/test_main.c $DIR/test_framework.c \
 $DIR/test_adaptive_tuning.c $DIR/test_rotary_queue.c $DIR/test_settings_language.c $DIR/test_autotune.c $DIR/test_autotune_spectrum.c $DIR/test_cw_autotune.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c $DIR/test_roe_curve.c $DIR/test_swr_session.c $DIR/swrscan_fixtures.c $DIR/test_swrscan_fixtures.c $DIR/test_cb.c $DIR/test_propagation.c \
 $DIR/test_update_check.c"
 
@@ -111,12 +111,22 @@ else
     echo "== sanitizers: NO disponibles en este toolchain (se omite) =="
 fi
 
+# El stage principal resuelve el SDK de la radio y ft8_lib con los headers ya
+# vendorizados del buildroot (tools/ui_harness/third_party, copiados verbatim; es
+# el mismo -I que usa el stage del #186). Desde el #232 la cadena de
+# audio_enhancement.c incluye cfg/cfg.h -> cfg/band.h y params/params.h, y esos dos
+# citan <aether_radio/x6200_control/control.h> (SDK, ausente en el host) y
+# <ft8lib/constants.h> (ft8_lib): sin este -I el stage no compila. Se reusa el
+# arbol vendorizado en vez de duplicar los headers en tests/native/stubs/ y en
+# vez de agregar -I.../stubs_radio (que arrastraria al stage lvgl/, sqlite3.h y
+# params/params.h ajenos a este build).
+MAIN_INCLUDES="-I$DIR/stubs -I$SRC -I$DIR/../../tools/ui_harness/third_party"
 if [ "$SAN_OK" = yes ]; then
     # shellcheck disable=SC2086
-    $CC $BASEFLAGS $SAN -I"$DIR/stubs" -I"$SRC" $SOURCES -lm -lpng -o "$OUT/native_tests"
+    $CC $BASEFLAGS $SAN $MAIN_INCLUDES $SOURCES -lm -lpng -o "$OUT/native_tests"
 else
     # shellcheck disable=SC2086
-    $CC $BASEFLAGS -I"$DIR/stubs" -I"$SRC" $SOURCES -lm -lpng -o "$OUT/native_tests"
+    $CC $BASEFLAGS $MAIN_INCLUDES $SOURCES -lm -lpng -o "$OUT/native_tests"
 fi
 
 echo "== analisis estatico (gcc -fanalyzer) =="
@@ -124,7 +134,7 @@ echo "== analisis estatico (gcc -fanalyzer) =="
 # them for the life of the process, which the leak checker reads as a leak.
 for f in adaptive_tuning rotary_queue autotune autotune_spectrum cw_autotune audio_enhancement ft8_udp update_check band_plan_data avi_writer bt_devices kbd_rollover cb propagation; do
     # shellcheck disable=SC2086
-    $CC $BASEFLAGS -fanalyzer -I"$DIR/stubs" -I"$SRC" -c "$SRC/$f.c" -o "$OUT/$f.o" || true
+    $CC $BASEFLAGS -fanalyzer $MAIN_INCLUDES -c "$SRC/$f.c" -o "$OUT/$f.o" || true
 done
 
 echo "== ejecutando =="
