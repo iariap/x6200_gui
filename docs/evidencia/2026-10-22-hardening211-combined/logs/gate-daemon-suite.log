@@ -1,0 +1,83 @@
+
+== caso: backoff ==
+  ok: backoff determinista 2 5 15 60 60
+  ok: informa 'GUI exited: code 1'
+  ok: informa 'GUI restart in 2s'
+  ok: reloj por date +%s (fallback sin /proc)
+-- backoff: PASS
+
+== caso: exit78 ==
+  ok: exit 78 ⇒ 60 s desde el primer fallo
+  ok: informa el 78
+-- exit78: PASS
+
+== caso: uniquelogs ==
+  ok: 2 logs archivados en /mnt/app_logs
+  ok: nombres únicos con el mismo segundo: x6200_log_2026-10-22_00-00-00_p14_r1.txt x6200_log_2026-10-22_00-00-00_p14_r2.txt 
+-- uniquelogs: PASS
+
+== caso: single ==
+  ok: el segundo arranque sale 0
+  ok: avisa que ya hay una instancia
+  ok: una sola GUI (el segundo no relanzó)
+-- single: PASS
+
+== caso: mntabsent ==
+  ok: 0 archivos bajo /mnt (no escribió el rootfs)
+  ok: log retenido en /tmp
+  ok: diagnóstico en stderr
+-- mntabsent: PASS
+
+== caso: mntro ==
+  ok: 0 archivos bajo /mnt RO
+  ok: log retenido en /tmp
+-- mntro: PASS
+
+== caso: sigtermgui ==
+  ok: sale en 3 ms al recibir SIGTERM
+  ok: no relanzó la GUI tras el SIGTERM
+  ok: no anunció reinicio
+-- sigtermgui: PASS
+
+== caso: sigtermbackoff ==
+  ok: cortó el backoff de 2 s en 3 ms
+  ok: no relanzó tras cortar el backoff
+-- sigtermbackoff: PASS
+
+== caso: longrun ==
+  ok: contador reseteado tras corrida ≥300 s (2 2 2)
+-- longrun: PASS
+
+== caso: procuptime ==
+  ok: usó el reloj de /proc/uptime
+  ok: backoff normal con /proc/uptime estático
+-- procuptime: PASS
+
+== caso: imagesexisting ==
+  ok: no tocó /dev/shm/images ya montado
+-- imagesexisting: PASS
+
+== caso: imagesbind ==
+  ok: bind de los assets a /dev/shm/images
+-- imagesbind: PASS
+
+== caso: imagescopy ==
+  ok: fallback: copió los assets
+-- imagescopy: PASS
+
+== caso: s20gui ==
+  ok: S20gui start imprimió OK
+  ok: S20gui dejó el PIDFILE
+  ok: el daemon arrancó una GUI
+  ok: S20gui stop salió 0
+  ok: S20gui stop imprimió OK
+  ok: el PIDFILE se limpió
+-- s20gui: PASS
+
+== caso: instant10 ==
+  ok: ≤3 invocaciones de la GUI en 10 s (n=3)
+  ok: los dos primeros delays son 2 s y 5 s
+-- instant10: PASS
+
+============ resumen ============
+  all OK: 15 casos, 0 fallos

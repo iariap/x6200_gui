@@ -1,0 +1,154 @@
+=== identidad del par ===
+GUI HEAD          f3e5d2394fcb9f0b1b332c6a814849720e81cf98   rama factory/next-211-combined
+Buildroot HEAD    e5a6393000b83ce2d9433b3e0560beaf1364536a   rama lu2dsx/x6200-rom
+GUI base (epic)   d4fb57f8ff8ccbcfdef13fc191cc9977511b6845
+BR  base (epic)   f23d14f975f2d12466274aeeb4932bd191f6f6e5
+submodulo GUI     74d0a816a440eea53e030c4f1af842a94f7ce3d3 = v8.3.11
+submodulo BR      cc34b5b2abf2588f0ef55e46a4fe85a60c19ba1f (gitlink; version del arbol upstream)
+sello fuente GUI  1c3577610cdee7059a6d17769fe52e85
+arbol GUI sucio?  0 archivos con cambios en src/ + lvgl/src
+arbol BR sucio?   0 archivos (debe ser 0)
+
+=== fuentes de los cambios de los hijos (hashes de archivo) ===
+044596da2643b6392e63ab95d9a450e42a2151a3852a7bc4804c4cb8dec0a0b7  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/init.d/S01create_data
+1a225ddb0de38ac4552172f4de255358ea274beeb23324694303a3868cd4d65f  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/init.d/S02update
+31d158a78754aef665a5c86315c19d79286acaf64951c50be5eebb19714a2ad8  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/fstab
+07c431cceaf28ac3e5b7f630d36c70f7d04b9af3cb19f078c0728c7f53c99877  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined/rootfs/usr/sbin/x6200_daemon
+1a225ddb0de38ac4552172f4de255358ea274beeb23324694303a3868cd4d65f  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined/tools/release/update-overlay/etc/init.d/S02update
+283ae46897ebe9769bc31102795b8375ec2825cd4d622ca718b82009dd2cfda6  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-buildroot/br2_external/tests/test_S01create_data.sh
+6e63004a5300da3d6871c7715141a7157d6493bf73ca63ed9d942594039fdc24  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined/tests/daemon/run_daemon_tests.sh
+66dbfa208fafb9a0205239f4ce519fed8dedeffa666360cbb8c2eff0eb857fe9  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined/tests/release/test_safe_update.sh
+
+=== paridad del updater (#215: un solo archivo en los dos puntos de instalacion) ===
+cmp GUI <-> Buildroot: IDENTICOS
+==> GUI:       1a225ddb0de38ac4552172f4de255358ea274beeb23324694303a3868cd4d65f  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined/tools/release/update-overlay/etc/init.d/S02update
+==> Buildroot: 1a225ddb0de38ac4552172f4de255358ea274beeb23324694303a3868cd4d65f  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/init.d/S02update
+==> paridad OK (mismo archivo, mismo hash)
+check_updater_parity rc=0
+
+=== artefactos de la reconstruccion (salida privada) ===
+total 768224
+drwxr-xr-x. 1 root  root        360 Oct 22 14:36 .
+drwxr-xr-x. 1 pablo pablo       532 Oct 22 14:36 ..
+drwxr-xr-x. 1 root  root        506 Oct 22 14:22 bnx2x
+-rwxr-xr-x. 1 root  root        334 Oct 22 14:29 boot.scr
+-rw-r--r--. 1 root  root   33554432 Oct 22 14:36 boot.vfat
+drwxr-xr-x. 1 root  root        240 Oct 22 14:22 cxgb4
+drwxr-xr-x. 1 root  root         90 Oct 22 14:22 e100
+drwxr-xr-x. 1 root  root          6 Oct 22 14:22 intel
+drwxr-xr-x. 1 root  root        136 Oct 22 14:22 microchip
+drwxr-xr-x. 1 root  root        840 Oct 22 14:22 qed
+-rw-r--r--. 1 root  root  536870912 Oct 22 14:36 rootfs.ext2
+lrwxrwxrwx. 1 root  root         11 Oct 22 14:36 rootfs.ext4 -> rootfs.ext2
+-rw-r--r--. 1 root  root  242821120 Oct 22 14:36 rootfs.tar
+drwxr-xr-x. 1 root  root        446 Oct 22 14:22 rtl_bt
+drwxr-xr-x. 1 root  root        750 Oct 22 14:22 rtl_nic
+drwxr-xr-x. 1 root  root        494 Oct 22 14:22 rtlwifi
+drwxr-xr-x. 1 root  root        158 Oct 22 14:22 rtw88
+-rw-r--r--. 1 root  root  571473920 Oct 22 14:36 sdcard.img
+-rwxr-xr-x. 1 root  root      26544 Oct 22 14:34 sun8i-r16-x6200.dtb
+drwxr-xr-x. 1 root  root         84 Oct 22 14:22 tigon
+-rw-r--r--. 1 root  root     523280 Oct 22 14:31 u-boot.bin
+-rw-r--r--. 1 root  root     556112 Oct 22 14:31 u-boot-sunxi-with-spl.bin
+-rw-r--r--. 1 root  root    5541304 Oct 22 14:34 zImage
+--- sha256:
+f19231aaa186ff48c5326c6ac8abfd66733f60e6df549c72282f09fee50c9456  sdcard.img
+ebd02e5a7bec119f4fa81fd05699cdaf73b137a5f766c51988ca54b91cf719de  rootfs.tar
+784ce581a9800995448e69f00d00ff764e8d9328270eb50f8bb73decf3729cd6  boot.vfat
+--- target (rootfs) ---
+e7776e227b81317e074f0998e26a459784efd47d645293acd88969678da1eb26  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out/target/usr/sbin/x6200_gui
+tamano: 13428656 B
+sello embebido en el binario: 1c3577610cdee7059a6d17769fe52e85
+--- scripts instalados en la rootfs ---
+044596da2643b6392e63ab95d9a450e42a2151a3852a7bc4804c4cb8dec0a0b7  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out/target/etc/init.d/S01create_data
+1a225ddb0de38ac4552172f4de255358ea274beeb23324694303a3868cd4d65f  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out/target/etc/init.d/S02update
+31d158a78754aef665a5c86315c19d79286acaf64951c50be5eebb19714a2ad8  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out/target/etc/fstab
+--- comparacion instalado vs fuente ---
+etc/init.d/S01create_data: instalado == fuente del repo
+etc/init.d/S02update: instalado == fuente del repo
+etc/fstab: instalado == fuente del repo
+--- init.d de la rootfs construida ---
+rcK
+rcS
+S01bootanim
+S01boot_time
+S01create_data
+S01seedrng
+S01syslogd
+S02klogd
+S02sysctl
+S02update
+S03tune_cache
+S04restore_backup_config
+S10udev
+S11radio_daemon
+S12pulseaudio
+S20gui
+S30dbus
+S39btpairings
+S40bluetoothd
+S40network
+S45network-manager
+S48sntp
+S49ntp
+S50alsa
+S50sshd
+S94btcat
+S96webserver
+
+=== inventario de init.d: imagen historica vs rootfs construida ===
+historica (x6200_r1cbu_v0.1.2-lu2dsx.tgz):
+  rcK
+  rcS
+  S01boot_time
+  S01create_data
+  S01seedrng
+  S01syslogd
+  S02klogd
+  S02sysctl
+  S02update
+  S03tune_cache
+  S04restore_backup_config
+  S10udev
+  S11radio_daemon
+  S20gui
+  S30dbus
+  S39btpairings
+  S40bluetoothd
+  S40network
+  S45network-manager
+  S48sntp
+  S49ntp
+  S50alsa
+  S50pulseaudio
+  S50sshd
+  S94btcat
+  S96webserver
+construida:
+  rcK
+  rcS
+  S01bootanim
+  S01boot_time
+  S01create_data
+  S01seedrng
+  S01syslogd
+  S02klogd
+  S02sysctl
+  S02update
+  S03tune_cache
+  S04restore_backup_config
+  S10udev
+  S11radio_daemon
+  S12pulseaudio
+  S20gui
+  S30dbus
+  S39btpairings
+  S40bluetoothd
+  S40network
+  S45network-manager
+  S48sntp
+  S49ntp
+  S50alsa
+  S50sshd
+  S94btcat
+  S96webserver
