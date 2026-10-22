@@ -81,7 +81,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 60. [El squelch del #166: la lib del control ya habilita el enable (el comentario de radio.c:611 era redundante)](#60-el-squelch-del-166-la-lib-del-control-ya-habilita-el-enable-el-comentario-de-radioc611-era-redundante)
 61. [El md5 del build no distinguia commits: `rsync -au` de Buildroot no reponia la copia (#165)](#61-el-md5-del-build-no-distinguia-commits-rsync--au-de-buildroot-no-reponia-la-copia-165)
 62. [DFL: el editor inline se cerraba al cambiar de modo dentro de la MISMA familia (y el gate que lo vio estaba rojo con el CI en verde)](#62-dfl-el-editor-inline-se-cerraba-al-cambiar-de-modo-dentro-de-la-misma-familia-y-el-gate-que-lo-vio-estaba-rojo-con-el-ci-en-verde)
-63. [La radio se desconectaba por roaming a un segundo AP DharmaNet cuyo handshake WPA falla](#63-la-radio-se-desconectaba-por-roaming-a-un-segundo-ap-dharmanet-cuyo-handshake-wpa-falla)
+63. [La radio se desconectaba al saltar a otro perfil WiFi (DharmaNet 2.4) con un AP que falla](#63-la-radio-se-desconectaba-al-saltar-a-otro-perfil-wifi-dharmanet-24-con-un-ap-que-falla)
 64. [El audio de RX mudo al ir a CW y volver: lo que escribe la GUI y el nivel en 0 que quedó en la radio](#64-el-audio-de-rx-mudo-al-ir-a-cw-y-volver-lo-que-escribe-la-gui-y-el-nivel-en-0-que-quedó-en-la-radio)
 65. [El audio de RX mudo al ir a CW y volver: el disparo no esta identificado, y el preset del #232 no es la causa](#65-el-audio-de-rx-mudo-al-ir-a-cw-y-volver-el-disparo-no-esta-identificado-y-el-preset-del-232-no-es-la-causa)
 
@@ -765,6 +765,8 @@ con lo que haría falta para fundarlas.
 | "La app de SWR Scan se cierra sola al terminar el barrido" (#119, defecto 2) | El cierre no está en el código del fin de barrido (§46) y no quedó el log de la GUI de esa corrida; el candidato (el `app off` del control remoto, que sí se acepta con el barrido transmitiendo) está fundado **en el código**, no en esa corrida | Correr el barrido con el log de la GUI a mano (`/tmp/x6200_log.txt` → `/mnt/app_logs/`), el `pid` de la GUI y el estado `app` del control remoto; y revisar el script de la corrida por si manda `{"cmd":"app","text":"off"}` |
 | El bucle de reinicio del CW Trainer (issue #51) se rearma en el arranque "por sí solo" | El banco no tiene camino de audio y el chroot no estaba armado, así que no se pudo medir la cadencia en el equipo | Medir en la radio el `PID` de la GUI por 150 s tras un reset (issue #15), con `key_train` en `params.db` |
 | El paso exacto por el que `hkey_put()` fuera de hilo corrompió `event_head` (issue #131), y que el trigger sea sólo el cambio de filtro | Está fundado que `hkey_put()` corría en el hilo de radio y tocaba LVGL (§56), pero **no** la escritura concreta que deja el frame muerto en la lista de eventos: el banco no tiene flow y no ejecuta `radio_tick`, y la corrupción necesita concurrencia real. Los dos crashes tienen el mismo `pc`/`lr` con contextos distintos (`on_vfo_mode_change` y `on_high_filter_change`) | Correr en la radio la receta de §56 (200 ciclos de tecla + filtro + modo + banda) con el fix y mirar `CRASHLOG`; si vuelve, guardar el log vivo completo y `/mnt/lastbreath` del momento |
+| Por qué el AP bueno `62:c9:e3:49:b2:a8` manda `deauth Reason 7` y deja de responder auth (20:39:23, 20:54:05), disparando el failover de NM (§63) | El disparador está medido; la causa no: puede ser el AP/repetidor o el driver rtw88 | Log del AP o captura de tramas en la radio; A/B con otro cliente |
+| Por qué el AP `14:eb:b6:dc:ff:6c` a veces completa el 4-way (20:54:24, lease 192.168.18.67) y a veces no (20:29:40/20:30:05, `association took too long`) (§63) | El AP es inestable; no se midió su configuración | Log del AP; comparar PSK y modo WPA |
 
 | El mute del dueño lo disparó el viaje a CW (estado del BASE) | El power-cycle lo restaura (dicho por el dueño), pero en el `params.db` de la radio el nivel de audio estaba en **0** y con `vol=0` el registro 14 va a 0: el síntoma se explica sin que el BASE tenga nada roto. No hay medición que separe las dos causas (§64) | Reproducir el mute con el nivel distinto de 0, leer el registro 14 y el 21 del BASE por I2C y comparar con el estado sano |
 | El BASE latchea el bloque de 54 registros que manda `x6200_control_idle()` cada 1000 ms | Que la función lo mande está en el código (`.x6200_ctl/src/low/control.c:480`), pero no se midió que el MCU del BASE lo acepte (son 218 bytes en una transacción I2C); si lo ignora, el registro 14 sólo se escribe cuando cambia el volumen | Leer el registro 14 por I2C después de cambiar el volumen y de un `idle()`, o capturar el bus con un analizador |
@@ -3604,7 +3606,7 @@ fixtures del espejo *despues* del merge de #183 (no hay runs de `push` para mira
 el trigger es `pull_request` y que el run de #183 —el que si habria tenido que verlos en su base—
 traia 196 escenarios sin ellos.
 
-## 63. La radio se desconectaba por roaming a un segundo AP DharmaNet cuyo handshake WPA falla
+## 63. La radio se desconectaba al saltar a otro perfil WiFi (DharmaNet 2.4) con un AP que falla
 
 **Sintoma**: el dueño reportó "no sé por qué se desconecta cada tanto" y, en la prueba del 22/10 a las
 20:10Z, "wifi got disconnected": la radio quedó **sin red ~40 s** y volvió sola. Medido con el logger de
@@ -3693,12 +3695,113 @@ de BSSID cada 10 s + logger de la radio); **si vuelve a roamear, el roam es del 
 pasa por otro lado (p. ej. parche al `rtw_8723du` o desactivar autoconnect del perfil y conectar con
 BSSID explícito). *Esto último es hipótesis: va al anexo A hasta medirlo.*
 
+**Corrección (22/10 21:30Z): no era roaming ni el driver; era NM cambiando de perfil.**
+**Corrección del título**: decía "por roaming a un segundo AP DharmaNet"; el AP
+`14:eb:b6:dc:ff:6c` es el del SSID `DharmaNet 2.4`, el otro perfil guardado, y el salto lo hace NM,
+no el supplicant.
+
+El `tail /mnt/iw-event.log` de arriba es de las **18:14Z** (mtime 18:15:33) y de un arranque anterior:
+`/mnt/wifi-watch4.log` muestra el reinicio de `dmesg` en 18:20:28 (`[   20.059077]`), y el lock de
+BSSID se aplicó a las 20:14:59Z (log `bssid-lock-171456.log`). Ese log no documenta los eventos de
+20:10/20:29/20:54; sus eventos CQM/scan son de antes del lock.
+
+Lo que sí está en `/var/log/messages` (NM 1.40.10, arranque de 18:20) es la cadena del 20:29 y del
+20:54 (extracto; hora y mensaje):
+
+```
+$ grep -E "Activation: (starting|failed)|auto-activating|Connected to wireless|address=|association took too long|state change: activated -> failed|Config: added '(ssid|bssid|bgscan)'|wlan0: authenticate" /var/log/messages
+20:29:37 ... Activation: failed for connection 'DharmaNet'
+20:29:39 ... policy: auto-activating connection 'DharmaNet 2.4' (1a5b1a5f-...)
+20:29:39 ... Activation: starting connection 'DharmaNet 2.4' (...)
+20:29:39 ... Config: added 'ssid' value 'DharmaNet 2.4'
+20:29:39 ... Config: added 'bgscan' value 'simple:30:-70:86400'   # y no hay 'bssid'
+20:29:39 ... wlan0: authenticate with 14:eb:b6:dc:ff:6c
+20:30:05 ... Activation: (wifi) association took too long
+20:30:05 ... Activation: failed for connection 'DharmaNet 2.4'
+20:54:22 ... state change: activated -> failed (reason 'ssid-not-found')
+20:54:22 ... Activation: failed for connection 'DharmaNet'
+20:54:23 ... policy: auto-activating connection 'DharmaNet 2.4'
+20:54:23 ... wlan0: authenticate with 14:eb:b6:dc:ff:6c
+20:54:24 ... Activation: (wifi) ... Connected to wireless network "DharmaNet 2.4"
+20:54:25 ... dhcp4 (wlan0): state changed new lease, address=192.168.18.67
+20:55:03 ... Activation: failed for connection 'DharmaNet 2.4'
+20:59:23 ... policy: auto-activating connection 'DharmaNet'
+20:59:23 ... Config: added 'bssid' value '62:C9:E3:49:B2:A8'
+```
+
+Es decir: el `14:eb:b6:dc:ff:6c` **no es un segundo AP del SSID `DharmaNet`**: es el AP con el que se
+asocia el perfil **`DharmaNet 2.4`**, otro SSID y otra red (el lease es `192.168.18.67`, no
+`192.168.0.236`). El "roam" es la política de autoconexión de NM: cuando el perfil pinneado falla
+(`supplicant-timeout` a las 20:29, `ssid-not-found` a las 20:54), NM activa el otro perfil guardado.
+No hay evidencia de que `14:eb` emita el SSID `DharmaNet`.
+
+El lock de BSSID **sí funciona**. Medido a las 21:15Z, el supplicant vivo tiene una sola red, con
+`bssid` y sin `bgscan`:
+
+```
+$ gdbus call --system --dest fi.w1.wpa_supplicant1 \
+    --object-path /fi/w1/wpa_supplicant1/Interfaces/0/Networks/0 \
+    --method org.freedesktop.DBus.Properties.GetAll fi.w1.wpa_supplicant1.Network
+{'Properties': <{'ssid': <'"DharmaNet"'>, 'scan_ssid': <'1'>, 'bssid': <'62:c9:e3:49:b2:a8'>, ...
+$ gdbus call ... fi.w1.wpa_supplicant1.Interface | grep Bgscan
+'Bgscan': <''>
+```
+
+NM solo agrega `bgscan` cuando el perfil **no** tiene `bssid` (código: `nm-supplicant-config.c` de NM
+1.40.10, `nm_supplicant_config_add_bgscan()` sale si hay `bssid`; y
+`nm_supplicant_config_add_setting_wireless()` agrega `bssid`). En el log de ese arranque,
+`Config: added 'bgscan'` aparece 2 veces y las 2 son de `DharmaNet 2.4`; `Config: added 'bssid'`
+aparece 3 veces y las 3 son de `DharmaNet`:
+
+```
+$ grep -o "Config: added '[a-z_]*'" /var/log/messages* | sort | uniq -c
+      2 Config: added 'bgscan'
+      3 Config: added 'bssid'
+```
+
+El `bgscan=` del perfil pinneado era innecesario (NM no lo lee) y no era la causa. El driver
+`rtw_8723du` es el rtw88 con mac80211 (código: `mac80211.c`, `const struct ieee80211_ops rtw_ops`);
+no tiene lógica propia de join/roam, así que no hay parche de driver que hacer.
+
+**Arreglo propuesto (NO aplicado: la radio está en uso)**. Desactivar la autoconexión del perfil
+`DharmaNet 2.4`, que es el que lleva a `14:eb`/192.168.18.x:
+
+```
+$ cp -a "/etc/NetworkManager/system-connections/DharmaNet 2.4.nmconnection" \
+        "/mnt/nm-profile-backup-DharmaNet24-$(date +%Y%m%d-%H%M).nmconnection"
+$ f="/etc/NetworkManager/system-connections/DharmaNet 2.4.nmconnection"
+$ grep -q '^autoconnect=' "$f" || sed -i '/^\[connection\]/a autoconnect=false' "$f"
+$ sed -i 's/^autoconnect=.*/autoconnect=false/' "$f"
+$ grep -A4 '^\[connection\]' "$f"
+[connection]
+autoconnect=false
+id=DharmaNet 2.4
+uuid=1a5b1a5f-ad78-4998-8ecb-c1a7bf43021a
+type=wifi
+```
+
+Después, coordinado con el dueño, recargar NM (`/etc/init.d/S45network-manager restart`).
+Trade-off: `DharmaNet 2.4` deja de conectarse sola; si se usa, hay que arreglar ese AP/PSK y volver a
+habilitarla. La alternativa es borrar el perfil (con backup), pero se pierde la configuración.
+
+**Verificación**:
+
+```
+$ iw dev wlan0 link | grep -E 'Connected to|SSID|signal'
+Connected to 62:c9:e3:49:b2:a8 ...
+$ grep "auto-activating connection 'DharmaNet 2.4'" /var/log/messages
+(sin líneas nuevas después de aplicar)
+```
+
 **Nota**: el lock es **de la radio actual**: un reflash de la ROM lo pierde (el perfil está en el
 rootfs). Para que quede permanente hay que llevarlo al overlay del Buildroot (decisión del dueño).
 
-**Sin fundar (anexo A)**: por qué el AP `14:eb:b6:dc:ff:6c` falla el 4-way handshake (¿repetidor o
-WPA3 mal configurado?) y si el corte largo de 17:58 del mismo día (5 min 23 s, **sin deauth**, con
-`authentication ... timed out` y con BT encendido) es el mismo problema u otro.
+**Sin fundar (anexo A)**: por qué el AP `14:eb:b6:dc:ff:6c` falla el 4-way handshake cuando falla
+(¿repetidor o WPA3 mal configurado?), por qué a veces sí lo completa (20:54:24, lease
+`192.168.18.67`) y a veces no (20:29:40/20:30:05, `association took too long`), por qué el AP bueno
+`62:c9:e3:49:b2:a8` manda `deauth Reason 7` y deja de responder auth (20:39:23 y 20:54:05), que es el
+disparador del failover, y si el corte largo de 17:58 del mismo día (5 min 23 s, **sin deauth**, con
+`authentication ... timed out` y con BT encendido) es el mismo problema o otro.
 
 ---
 
