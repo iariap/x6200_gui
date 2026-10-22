@@ -1,0 +1,10 @@
+    socket de control remoto: I=16s
+    ok: primer arranque
+    socket de control remoto: I=16s
+    ok: segundo arranque
+    arranque 1: freq=14074000 filtro=500
+    arranque 2: freq=14074000 filtro=500
+    ok: la frecuencia se conserva entre arranques
+    ok: el filtro se conserva entre arranques
+    ok: sin CRASHLOG SIGSEGV
+    sha256 base: bc18ba10ca503b518771fa9c9a5649644f675d7ff0b8c87d03940969f64c2867 -> 93bc105c51c9645f68f7bf66b94c45c1ac9a38f5f6236f1e4cad932f83e3163f

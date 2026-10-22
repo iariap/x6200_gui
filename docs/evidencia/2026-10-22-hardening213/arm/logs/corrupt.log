@@ -1,0 +1,9 @@
+    exit=78
+    ok: exit 78 (EX_CONFIG)
+    ok: sin CRASHLOG SIGSEGV
+    ok: la base quedo intacta (mismos bytes)
+    ok: el mensaje de persistencia esta en la salida
+    ok: no llego a inicializar el control remoto
+    ok: el motivo del rechazo es el esperado (params.db: invalid database)
+    ok: NO se inicializo la radio (boot.log sin 'radio')
+    sha256 base: 5c3cef89ea8e728eced3a82d3b80d09249e94970cafff4093eb72413e2b8fa00 -> 5c3cef89ea8e728eced3a82d3b80d09249e94970cafff4093eb72413e2b8fa00

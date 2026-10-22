@@ -1091,3 +1091,44 @@ echo "== Control remoto: analisis estatico (gcc -fanalyzer) =="
 $CXX $REM_CXXFLAGS -fanalyzer $REM_INC -c "$REM_STAGE/remote_server.cpp" -o "$OUT/remote_server.o" || true
 
 "$OUT/remote_tests"
+
+# --- Persistencia fail-closed de params.db (issue #213) ----------------------
+# El test incluye src/params/db.c (para llamar a sus funciones internas de la
+# guarda de persistencia con rutas y fixtures propios; mismo patron que
+# tests/native/test_remote.cpp con src/remote_server.cpp) y linkea el
+# src/params/migrations.c real staged como en el bloque de CB. Corre sobre SQLite
+# REAL del host y NO necesita montajes: la parte que exige un /mnt de verdad
+# (montaje ausente/RO, base llena, arranque del binario ARM) esta en
+# tests/native/run_db_failclosed.sh y en la suite QEMU.
+echo "== #213: persistencia fail-closed (guarda de DATA, plantilla, migraciones, escrituras) =="
+DBP_STAGE="$OUT/db_persist_src"
+rm -rf "$DBP_STAGE"
+mkdir -p "$DBP_STAGE/params" "$DBP_STAGE/cfg"
+cp "$SRC/params/migrations.c" "$SRC/params/migrations.h" "$DBP_STAGE/params/"
+cp "$DIR/stubs_migrations/db.h" "$DBP_STAGE/params/"
+cp "$DIR/stubs_migrations/theme.h" "$DBP_STAGE/"
+cp "$DIR/stubs_migrations/cfg/digital_modes.h" "$DBP_STAGE/cfg/"
+DBP_BIN="$OUT/db_persistence_tests"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$DIR/stubs_db" -I"$DBP_STAGE/params" -I"$DBP_STAGE" -I"$DIR" \
+        "$DIR/test_db_persistence.c" "$DIR/db_fixtures.c" "$DBP_STAGE/params/migrations.c" \
+        "$DIR/db_test_stubs.c" "$DIR/test_framework.c" \
+        -lsqlite3 -o "$DBP_BIN"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$DIR/stubs_db" -I"$DBP_STAGE/params" -I"$DBP_STAGE" -I"$DIR" \
+        "$DIR/test_db_persistence.c" "$DIR/db_fixtures.c" "$DBP_STAGE/params/migrations.c" \
+        "$DIR/db_test_stubs.c" "$DIR/test_framework.c" \
+        -lsqlite3 -o "$DBP_BIN"
+fi
+
+echo "== persistencia: analisis estatico (gcc -fanalyzer sobre src/params/db.c) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$DIR/stubs_db" -c "$SRC/params/db.c" -o "$OUT/db_persist_analyzer.o" || true
+
+DB_PERSIST_DIR="$OUT/db_persist_data"
+rm -rf "$DB_PERSIST_DIR"
+mkdir -p "$DB_PERSIST_DIR"
+DB_PERSIST_DIR="$DB_PERSIST_DIR" "$DBP_BIN"
+rm -rf "$DB_PERSIST_DIR"

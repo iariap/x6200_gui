@@ -1,0 +1,31 @@
+valid              ok
+corrupt            ok
+no-mount           ok
+absent             ok
+ro                 ok
+schema-incomplete  ok
+version-missing    ok
+v1-atu             ok
+v1-atu-mixed       ok
+full               ok
+cycles             ok
+reboot             ok
+    ok  valid          SELECT id FROM version = 5
+    ok  valid          presets/identificadores identicos a la plantilla
+    ok  absent         SELECT id FROM version = 5
+    ok  absent         presets/identificadores identicos a la plantilla
+    ok  v1-atu         SELECT id FROM version = 5
+    ok  v1-atu         SELECT freq FROM atu WHERE ant=1 AND val=100 = 175000
+    ok  v1-atu         SELECT freq FROM atu WHERE ant=1 AND val=200 = 275000
+    ok  v1-atu-mixed   SELECT id FROM version = 1
+    ok  v1-atu-mixed   SELECT freq FROM atu WHERE ant=1 AND val=100 = 3
+    ok  v1-atu-mixed   SELECT freq FROM atu WHERE ant=1 AND val=200 = 7025000
+    ok  full           SELECT count(*) FROM params WHERE name='probe_full' = 0
+    ok  full           SELECT val FROM params WHERE name='freq_accel_threshold' = 0
+    ok  cycles         PRAGMA integrity_check = ok
+    ok  full           PRAGMA integrity_check = ok
+    ok  corrupt        la base corrupta quedo con sus bytes
+    nota absente/valid: sha256 aqui vs plantilla de la ROM:
+      absent   caso=a3acadecb8e896e5bca815a33c11b84f1a4c04101f0658b0549c781fe1a158e1 plantilla=bc18ba10ca503b518771fa9c9a5649644f675d7ff0b8c87d03940969f64c2867
+      valid    caso=a3acadecb8e896e5bca815a33c11b84f1a4c04101f0658b0549c781fe1a158e1 plantilla=bc18ba10ca503b518771fa9c9a5649644f675d7ff0b8c87d03940969f64c2867
+-- matriz

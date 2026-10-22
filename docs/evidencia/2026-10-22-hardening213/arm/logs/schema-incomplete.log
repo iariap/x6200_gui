@@ -1,0 +1,9 @@
+    exit=78
+    ok: exit 78 (EX_CONFIG)
+    ok: sin CRASHLOG SIGSEGV
+    ok: la base quedo intacta (mismos bytes)
+    ok: el mensaje de persistencia esta en la salida
+    ok: no llego a inicializar el control remoto
+    ok: el motivo del rechazo es el esperado (incomplete schema)
+    ok: NO se inicializo la radio (boot.log sin 'radio')
+    sha256 base: b8343175bc6b18f43952e16dc6f94133c2584e1bc402528705c355c15444a79b -> b8343175bc6b18f43952e16dc6f94133c2584e1bc402528705c355c15444a79b

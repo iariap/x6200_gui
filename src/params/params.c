@@ -592,7 +592,13 @@ static void params_save() {
     params_save_str(&params.theme_name);
     params_save_uint8(&params.font);
 
-    sql_query_exec("COMMIT");
+    if (!sql_query_exec("COMMIT")) {
+        /* El COMMIT es donde SQLite escribe el journal: si falla (base llena, RO de
+         * golpe), lo que hay en memoria no quedo persistido. Los `dirty` de cada
+         * escritura ya se limpiaron solo con SQLITE_DONE, asi que este aviso es la
+         * unica senal visible. */
+        LV_LOG_ERROR("Persistence commit failed: this flush was not persisted");
+    }
 }
 
 /* * */
@@ -626,58 +632,77 @@ static void params_freq_accel_threshold_sanitize(void) {
     }
 }
 
-void params_init() {
+/* Arranque fail-closed (issue #213). Cualquier fallo de la persistencia corta el
+ * arranque ANTES de crear el hilo de guardado: los statements se validan antes de
+ * cfg_init() (que es el que registra observers y arranca SU hilo de guardado), y el
+ * hilo de los parametros solo existe si la base quedo abierta, con esquema completo
+ * y con todo preparado. Nunca se sigue con subjects incompletos (cfg_init es fatal)
+ * ni afirmando que los parametros se guardan cuando no se puede escribir. */
+bool params_init(void) {
     int rc;
-    if (database_init()) {
-        boot_mark("db_init");
-        cfg_init(db);
-        boot_mark("cfg_init");
-        if (!params_load()) {
-            /* No se cierra la base ni se deja `db` en NULL: los statements que se
-             * preparan más abajo se arman sobre ella (y sobre NULL quedan en NULL, que
-             * después se usan sin chequear: comportamiento indefinido). Lo que falte
-             * queda en su valor por defecto. */
-            LV_LOG_ERROR("Load params: se sigue con los valores por defecto");
-        }
-        boot_mark("params_load");
 
-        params_freq_accel_threshold_sanitize();
-
-        if (rc != SQLITE_OK) {
-            LV_LOG_ERROR("Prepare write");
-        }
-
-        rc = sqlite3_prepare_v2(db, "INSERT INTO mode_params(mode, name, val) VALUES(?, ?, ?)", -1, &write_mode_stmt, 0);
-
-        if (rc != SQLITE_OK) {
-            LV_LOG_ERROR("Prepare mode write");
-        }
-
-        rc = sqlite3_prepare_v2(db,
-            "SELECT id,name,start_freq,stop_freq,type FROM bands "
-                "WHERE (stop_freq BETWEEN ? AND ?) OR (start_freq BETWEEN ? AND ?) OR (start_freq <= ? AND stop_freq >= ?) "
-                "ORDER BY start_freq ASC",
-                -1, &bands_find_all_stmt, 0
-        );
-
-        if (rc != SQLITE_OK) {
-            LV_LOG_ERROR("Prepare bands all find");
-        }
-
-        rc = sqlite3_prepare_v2(db,  "SELECT id,name,start_freq,stop_freq,type FROM bands WHERE (? BETWEEN start_freq AND stop_freq)", -1, &bands_find_stmt, 0);
-
-        if (rc != SQLITE_OK) {
-            LV_LOG_ERROR("Prepare bands find");
-        }
-
-    } else {
-        LV_LOG_ERROR("Open params.db");
+    if (!database_init()) {
+        LV_LOG_ERROR("params.db unavailable: cannot initialize parameters");
+        return false;
     }
+    boot_mark("db_init");
+
+    rc = sqlite3_prepare_v2(db, "INSERT INTO mode_params(mode, name, val) VALUES(?, ?, ?)", -1, &write_mode_stmt, 0);
+
+    if (rc != SQLITE_OK) {
+        LV_LOG_ERROR("Prepare mode write: %s", sqlite3_errmsg(db));
+        return false;
+    }
+
+    rc = sqlite3_prepare_v2(db,
+        "SELECT id,name,start_freq,stop_freq,type FROM bands "
+            "WHERE (stop_freq BETWEEN ? AND ?) OR (start_freq BETWEEN ? AND ?) OR (start_freq <= ? AND stop_freq >= ?) "
+            "ORDER BY start_freq ASC",
+            -1, &bands_find_all_stmt, 0
+    );
+
+    if (rc != SQLITE_OK) {
+        LV_LOG_ERROR("Prepare bands all find: %s", sqlite3_errmsg(db));
+        return false;
+    }
+
+    rc = sqlite3_prepare_v2(db,  "SELECT id,name,start_freq,stop_freq,type FROM bands WHERE (? BETWEEN start_freq AND stop_freq)", -1, &bands_find_stmt, 0);
+
+    if (rc != SQLITE_OK) {
+        LV_LOG_ERROR("Prepare bands find: %s", sqlite3_errmsg(db));
+        return false;
+    }
+
+    rc = cfg_init(db);
+
+    if (rc != 0) {
+        /* cfg_init() no registra observers ni arranca su hilo de guardado cuando
+         * los items de configuracion no se pudieron inicializar. */
+        LV_LOG_ERROR("cfg_init failed (%d): cannot initialize parameters", rc);
+        return false;
+    }
+    boot_mark("cfg_init");
+
+    if (!params_load()) {
+        /* No se cierra la base ni se deja `db` en NULL: los statements que se
+         * preparan más arriba se arman sobre ella (y sobre NULL quedan en NULL, que
+         * después se usan sin chequear: comportamiento indefinido). Lo que falte
+         * queda en su valor por defecto. */
+        LV_LOG_ERROR("Load params: se sigue con los valores por defecto");
+    }
+    boot_mark("params_load");
+
+    params_freq_accel_threshold_sanitize();
 
     pthread_t thread;
 
-    pthread_create(&thread, NULL, params_thread, NULL);
+    if (pthread_create(&thread, NULL, params_thread, NULL) != 0) {
+        LV_LOG_ERROR("Cannot start the params saver thread");
+        return false;
+    }
     pthread_detach(thread);
+
+    return true;
 }
 
 void params_msg_cw_load() {

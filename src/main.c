@@ -57,6 +57,10 @@
 #include "lastbreath.h"
 #include "clock.h"
 
+/* Codigo de salida cuando la persistencia no es valida (guard de arranque, issue
+ * #213). 78 es EX_CONFIG de <sysexits.h>, sin depender de ese header. */
+#define EXIT_PERSISTENCE_UNAVAILABLE 78
+
 /* Draw buffer, in lv_color_t (issue #147). `size_in_px_cnt` is a *pixel* count,
  * not bytes: the old `(800 * 480 * 4)` was meant as "4 bytes per pixel" but
  * landed on the pixel count, so it reserved 4 full screens (5.86 MiB) where a
@@ -577,7 +581,17 @@ int main(int argc, char **argv) {
     }
 
     boot_mark("entradas");
-    params_init();
+
+    if (!params_init()) {
+        /* Persistencia no valida (DATA sin montar o en RO, params.db corrupta o
+         * ausente sin plantilla valida, esquema incompleto, migracion fallida):
+         * no se inicializa radio, CAT, audio ni TX, y la animacion de arranque
+         * sigue hasta que el proceso termina. El reintento es del supervisor
+         * (issue #214). */
+        fprintf(stderr, "Persistence unavailable: check DATA and params.db\n");
+        LV_LOG_ERROR("Persistence unavailable: check DATA and params.db");
+        exit(EXIT_PERSISTENCE_UNAVAILABLE);
+    }
     boot_mark("params_init");
     /* CB 27 MHz (issue #146): despues de params_init() para que el observer de
      * cfg.band_id corra despues del de src/cfg/band.c, y antes de radio_init()
