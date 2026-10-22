@@ -1,0 +1,12 @@
+{
+  "min_bytes": 8000000,
+  "marcas": [
+    "/tmp/x6200_remote.sock",
+    "x6200-pota-spots",
+    "repos/iariap/x6200_gui"
+  ],
+  "marcas_requeridas": 2,
+  "tamano_port": 13737784,
+  "tamano_port_stripped": 13248936,
+  "tamano_main": 776884
+}

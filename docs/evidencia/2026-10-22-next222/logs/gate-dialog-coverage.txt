@@ -1,0 +1,1 @@
+  OK: 22 dialogos inertes (mock y tabla coinciden), 19 apps con fila y 6 excepciones verificadas sobre las 25 apps del barrido

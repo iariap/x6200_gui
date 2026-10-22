@@ -1,0 +1,1 @@
+  OK: el manifiesto es reproducible (dos corridas sobre el mismo arbol coinciden)
