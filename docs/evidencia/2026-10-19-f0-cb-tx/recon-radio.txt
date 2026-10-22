@@ -1,0 +1,893 @@
+TRANSCRIPCION CRUDA - RECON READ-ONLY RADIO X6200 (192.168.0.236)
+Fecha local de ejecucion: 2026-10-19T10:59:02-03:00  |  Ejecutado desde: /home/pablo/desa/x6200/x6200_qa
+Metodo: sshpass -p 123 ssh -F /dev/null -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=8 -o LogLevel=ERROR -o PreferredAuthentications=password -o PubkeyAuthentication=no root@192.168.0.236 '<comando>'
+Solo lectura. No se transmitio, no se escribio nada en la radio, no se reinicio nada.
+
+### 0) identificacion y estado inicial (date/uptime/uname)
+
+$ date; uptime; uname -a
+Mon Oct 19 13:59:02 UTC 2026
+ 13:59:02 up 18:13,  load average: 0.84, 0.99, 0.99
+Linux X6200 6.1.82 #2 SMP PREEMPT Mon Oct 12 00:11:44 UTC 2026 armv7l GNU/Linux
+[exit: 0]
+
+### 1) config de la app: /etc/xgradio y /etc
+
+$ ls -la /etc/xgradio/
+ls: /etc/xgradio/: No such file or directory
+[exit: 1]
+
+$ ls /etc | head -40
+NetworkManager
+alsa
+asound.conf
+bash_completion.d
+dbus-1
+default
+fstab
+group
+hostname
+hosts
+init.d
+inittab
+inputrc
+issue
+keyutils
+libinput
+libnl
+localtime
+mke2fs.conf
+modprobe.d
+mtab
+network
+nsswitch.conf
+ntp.conf
+os-release
+passwd
+profile
+profile.d
+protocols
+pulse
+qtkmsconfig.json
+request-key.conf
+request-key.d
+resolv.conf
+services
+shadow
+shells
+ssh
+ssl
+timezone
+[exit: 0]
+
+$ ls -la /etc/xgradio* 2>/dev/null; find /etc -maxdepth 2 -iname "*xgrad*" 2>/dev/null
+[exit: 0]
+
+$ cat /etc/os-release 2>/dev/null; cat /etc/version 2>/dev/null
+NAME=Buildroot
+VERSION=2023.02.11
+ID=buildroot
+VERSION_ID=2023.02.11
+PRETTY_NAME="Buildroot 2023.02.11"
+[exit: 1]
+
+### 2) buscar el knob fullband en texto plano
+
+$ grep -rn "fullband" /etc /usr/local /opt /usr/share /lib 2>/dev/null | head -20
+[exit: 0]
+
+$ grep -r -a -l "fullband" /usr /lib /etc /opt 2>/dev/null | head -20
+[exit: 0]
+
+### 3) procesos xgradio
+
+$ ps aux | grep -i xgradio | grep -v grep
+[exit: 1]
+
+### 4) arranque de la GUI: S20gui, binario y md5
+
+$ cat /etc/init.d/S20gui
+#!/bin/sh
+#
+# Starts X6200 GUI daemon (S20: temprano, para que la pantalla aparezca antes que la red)
+#
+
+DAEMON="x6200_daemon"
+PIDFILE="/var/run/$DAEMON.pid"
+
+# shellcheck source=/dev/null
+[ -r "/etc/default/$DAEMON" ] && . "/etc/default/$DAEMON"
+
+start() {
+	printf 'Starting %s: ' "$DAEMON"
+	echo 0 > /sys/class/graphics/fbcon/cursor_blink
+	# Corre en S20: antes de la red, del NTP y del Bluetooth. La GUI solo necesita DATA,
+	# udev y el daemon de radio, asi que la pantalla aparece en segundos y lo lento sigue
+	# despues. El daemon engancha los assets en /dev/shm (bind mount): /dev/shm tiene que
+	# existir antes.
+	mkdir -p /dev/shm
+	mountpoint -q /dev/shm || mount -t tmpfs -o mode=1777 tmpfs /dev/shm 2>/dev/null || true
+	mkdir -p /mnt/app_logs
+	printf '%s  GUI arrancando: %s s de uptime\n' "$(date -u +%H:%M:%S)" "$(cut -d" " -f1 /proc/uptime)" >> /mnt/app_logs/boot.log
+	[ ! -f /mnt/params.db ] && cp /usr/share/x6200/params.default.db /mnt/params.db
+	# shellcheck disable=SC2086 # we need the word splitting
+	start-stop-daemon -S -b -q -m -p "$PIDFILE" -x "/usr/sbin/$DAEMON"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+stop() {
+	printf 'Stopping %s: ' "$DAEMON"
+	start-stop-daemon -K -q -p "$PIDFILE"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		rm -f "$PIDFILE"
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	killall x6200_gui
+	return "$status"
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+case "$1" in
+	start|stop|restart)
+		"$1";;
+	reload)
+		# Restart, since there is no true "reload" feature.
+		restart;;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload}"
+		exit 1
+esac
+[exit: 0]
+
+$ ls -la /usr/sbin/x6200_gui
+-rwxr-xr-x    1 root     root      13844268 Oct 19 13:10 /usr/sbin/x6200_gui
+[exit: 0]
+
+$ md5sum /usr/sbin/x6200_gui
+9a094c421b0eb05c103abf782ea00db6  /usr/sbin/x6200_gui
+[exit: 0]
+
+$ ls -la /etc/init.d/ | head -40
+total 112
+drwxr-xr-x    2 root     root          4096 Feb 11  2026 .
+drwxr-xr-x   19 root     root          4096 Jan  1  1970 ..
+-rwxr-xr-x    1 root     root           402 Oct 16 21:45 S01boot_time
+-rwxr-xr-x    1 root     root          1081 Feb 10  2026 S01create_data
+-rwxr-xr-x    1 root     root          1243 Feb 11  2026 S01seedrng
+-rwxr-xr-x    1 root     root          1012 Feb 10  2026 S01syslogd
+-rwxr-xr-x    1 root     root          1004 Feb 10  2026 S02klogd
+-rwxr-xr-x    1 root     root          2804 Feb 10  2026 S02sysctl
+-rwxr-xr-x    1 root     root           428 Feb 10  2026 S02update
+-rwxr-xr-x    1 root     root           210 Feb 10  2026 S03tune_cache
+-rwxr-xr-x    1 root     root           527 Feb 10  2026 S04restore_backup_config
+-rwxr-xr-x    1 root     root          1594 Feb 10  2026 S10udev
+-rwxr-xr-x    1 root     root           379 Feb 10  2026 S11radio_daemon
+-rwxr-xr-x    1 root     root          1623 Oct 16 21:45 S20gui
+-rwxr-xr-x    1 root     root          1619 Feb 10  2026 S30dbus
+-rwxr-xr-x    1 root     root           494 Oct 16 21:45 S39btpairings
+-rwxr-xr-x    1 root     root          1001 Feb 10  2026 S40bluetoothd
+-rwxr-xr-x    1 root     root           438 Feb 10  2026 S40network
+-rwxr-xr-x    1 root     root           751 Feb 11  2026 S45network-manager
+-rwxr-xr-x    1 root     root          1240 Feb 10  2026 S48sntp
+-rwxr-xr-x    1 root     root           918 Feb 10  2026 S49ntp
+-rwxr-xr-x    1 root     root           397 Feb 10  2026 S50alsa
+-rwxr-xr-x    1 root     root           527 Feb 10  2026 S50pulseaudio
+-rwxr-xr-x    1 root     root           532 Feb 11  2026 S50sshd
+-rwxr-xr-x    1 root     root          1134 Oct 16 21:45 S94btcat
+-rwxr-xr-x    1 root     root           925 Oct 12 00:39 S96webserver
+-rwxr-xr-x    1 root     root           423 Feb 10  2026 rcK
+-rwxr-xr-x    1 root     root          1667 Oct 16 21:45 rcS
+[exit: 0]
+
+### 5) arranque, montajes, particiones
+
+$ cat /proc/cmdline
+console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait panic=10 fbcon=rotate:3 video=VGA:480x800
+[exit: 0]
+
+$ mount | grep -iE "rootfs|ubi|mtd|mmc"
+/dev/mmcblk0p2 on / type ext4 (rw,relatime)
+/dev/mmcblk0p3 on /mnt type vfat (rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro)
+/dev/mmcblk0p2 on /dev/shm/images type ext4 (rw,relatime)
+[exit: 0]
+
+$ cat /proc/partitions
+major minor  #blocks  name
+
+ 179        0    3872256 mmcblk0
+ 179        1      32768 mmcblk0p1
+ 179        2     524288 mmcblk0p2
+ 179        3    3314176 mmcblk0p3
+ 179        8    7634944 mmcblk2
+ 179        9      49152 mmcblk2p1
+ 179       10    7569408 mmcblk2p2
+ 179       16       4096 mmcblk2boot0
+ 179       24       4096 mmcblk2boot1
+[exit: 0]
+
+$ cat /proc/mtd
+cat: can't open '/proc/mtd': No such file or directory
+[exit: 1]
+
+$ df -h | head -20
+Filesystem                Size      Used Available Use% Mounted on
+/dev/root               487.6M    234.4M    217.4M  52% /
+devtmpfs                436.7M         0    436.7M   0% /dev
+tmpfs                   501.2M         0    501.2M   0% /dev/shm
+tmpfs                   501.2M     15.5M    485.7M   3% /tmp
+tmpfs                   501.2M    232.0K    501.0M   0% /run
+/dev/mmcblk0p3            3.2G     35.3M      3.1G   1% /mnt
+/dev/root               487.6M    234.4M    217.4M  52% /dev/shm/images
+[exit: 0]
+
+### 6) blkid / fdisk (solo lectura)
+
+$ blkid
+/dev/mmcblk2p1: SEC_TYPE="msdos" UUID="005C-B8BD" BLOCK_SIZE="512" TYPE="vfat" PARTUUID="a4ca3d2f-01"
+/dev/mmcblk2p2: UUID="68c7cb26-5afd-436d-a98c-7cca6d784b53" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="a4ca3d2f-02"
+/dev/mmcblk0p2: LABEL="rootfs" UUID="2cc2fe75-3306-45ce-a8e1-dcfa19ad9963" BLOCK_SIZE="4096" TYPE="ext4"
+/dev/mmcblk0p3: LABEL_FATBOOT="DATA" LABEL="DATA" UUID="1CC2-C434" BLOCK_SIZE="512" TYPE="vfat"
+/dev/mmcblk0p1: SEC_TYPE="msdos" LABEL_FATBOOT="BOOT" LABEL="BOOT" UUID="479D-4108" BLOCK_SIZE="512" TYPE="vfat"
+[exit: 0]
+
+$ fdisk -l /dev/mmcblk0
+Disk /dev/mmcblk0: 3.69 GiB, 3965190144 bytes, 7744512 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x00000000
+
+Device         Boot   Start     End Sectors  Size Id Type
+/dev/mmcblk0p1 *       2048   67583   65536   32M  c W95 FAT32 (LBA)
+/dev/mmcblk0p2        67584 1116159 1048576  512M 83 Linux
+/dev/mmcblk0p3      1116160 7744511 6628352  3.2G  c W95 FAT32 (LBA)
+[exit: 0]
+
+### 7) archivos/carpetas con nombre xgradio o fullband
+
+$ find / -xdev \( -iname "*xgradio*" -o -iname "*fullband*" \) 2>/dev/null | head
+[exit: 0]
+
+### 8) restos del rootfs de fabrica / recovery / firmware
+
+$ ls -la /usr/app_qt 2>/dev/null; ls -la /usr/app_qt* 2>/dev/null; ls -la /usr/share | head -30
+total 392
+drwxr-xr-x   24 root     root          4096 Feb 10  2026 .
+drwxr-xr-x    7 root     root          4096 Oct 16 22:41 ..
+drwxr-xr-x    3 root     root          4096 Feb 10  2026 X11
+drwxr-xr-x    8 root     root          4096 Feb 10  2026 alsa
+drwxr-xr-x    4 root     root          4096 Feb 10  2026 bash-completion
+drwxr-xr-x    7 root     root          4096 Feb 11  2026 dbus-1
+drwxr-xr-x    3 root     root          4096 Oct 12 22:29 espeak-data
+drwxr-xr-x    2 root     root          4096 Feb 10  2026 et
+drwxr-xr-x    3 root     root          4096 Feb 10  2026 gettext
+drwxr-xr-x    5 root     root          4096 Feb 10  2026 glib-2.0
+drwxr-xr-x    2 root     root          4096 Feb 10  2026 hwdata
+drwxr-xr-x    2 root     root          4096 Oct 16 22:41 keyutils
+drwxr-xr-x    2 root     root          4096 Feb 11  2026 libinput
+drwxr-xr-x    2 root     root          4096 Feb 11  2026 locale
+drwxr-xr-x    2 root     root          4096 Oct 16 22:41 mime
+-rw-r--r--    1 root     root        302559 Feb 10  2026 pci.ids.gz
+drwxr-xr-x    3 root     root          4096 Feb 11  2026 pulseaudio
+drwxr-xr-x    3 root     root          4096 Feb 10  2026 snmp
+drwxr-xr-x    3 root     root          4096 Feb 10  2026 sounds
+drwxr-xr-x    2 root     root          4096 Feb 10  2026 ss
+drwxr-xr-x    9 root     root          4096 Feb 10  2026 terminfo
+drwxr-xr-x    3 root     root          4096 Oct 16 22:41 udhcpc
+drwxr-xr-x    6 root     root          4096 Oct 16 22:34 x6200
+drwxr-xr-x    3 root     root          4096 Feb 10  2026 xml
+drwxr-xr-x    4 root     root          4096 Feb 11  2026 zoneinfo
+[exit: 0]
+
+$ find /lib/firmware /usr/share -type f 2>/dev/null | head -50
+/lib/firmware/qed/qed_init_values_zipped-8.42.2.0.bin
+/lib/firmware/qed/qed_init_values_zipped-8.4.2.0.bin
+/lib/firmware/qed/qed_init_values_zipped-8.15.3.0.bin
+/lib/firmware/qed/qed_init_values_zipped-8.33.11.0.bin
+/lib/firmware/qed/qed_init_values_zipped-8.10.10.0.bin
+/lib/firmware/qed/qed_init_values_zipped-8.7.3.0.bin
+/lib/firmware/qed/qed_init_values_zipped-8.59.1.0.bin
+/lib/firmware/qed/qed_init_values_zipped-8.37.7.0.bin
+/lib/firmware/qed/qed_init_values_zipped-8.33.1.0.bin
+/lib/firmware/qed/qed_init_values_zipped-8.20.0.0.bin
+/lib/firmware/qed/qed_init_values_zipped-8.37.2.0.bin
+/lib/firmware/qed/qed_init_values_zipped-8.10.5.0.bin
+/lib/firmware/rtw88/rtw8822b_fw.bin
+/lib/firmware/rtw88/rtw8723d_fw.bin
+/lib/firmware/rtw88/rtw8821c_fw.bin
+/lib/firmware/rtw88/rtw8822c_wow_fw.bin
+/lib/firmware/rtw88/rtw8822c_fw.bin
+/lib/firmware/regulatory.db
+/lib/firmware/e100/d102e_ucode.bin
+/lib/firmware/e100/d101s_ucode.bin
+/lib/firmware/e100/d101m_ucode.bin
+/lib/firmware/rtl_bt/rtl8723bs_fw.bin
+/lib/firmware/rtl_bt/rtl8723d_fw.bin
+/lib/firmware/rtl_bt/rtl8761b_fw.bin
+/lib/firmware/rtl_bt/rtl8723d_config.bin
+/lib/firmware/rtl_bt/rtl8723a_fw.bin
+/lib/firmware/rtl_bt/rtl8723b_fw.bin
+/lib/firmware/rtl_bt/rtl8761a_fw.bin
+/lib/firmware/rtl_bt/rtl8761b_config.bin
+/lib/firmware/rtl_bt/rtl8761bu_config.bin
+/lib/firmware/rtl_bt/rtl8723bs_config-OBDA8723.bin
+/lib/firmware/rtl_bt/rtl8761bu_fw.bin
+/lib/firmware/regulatory.db.p7s
+/lib/firmware/intel/ice/ddp/ice-1.3.30.0.pkg
+/lib/firmware/rtlwifi/rtl8723befw.bin
+/lib/firmware/rtlwifi/rtl8723bu_ap_wowlan.bin
+/lib/firmware/rtlwifi/rtl8723bu_nic.bin
+/lib/firmware/rtlwifi/rtl8723aufw_B.bin
+/lib/firmware/rtlwifi/rtl8723fw_B.bin
+/lib/firmware/rtlwifi/rtl8723fw.bin
+/lib/firmware/rtlwifi/rtl8723bs_bt.bin
+/lib/firmware/rtlwifi/rtl8723aufw_B_NoBT.bin
+/lib/firmware/rtlwifi/rtl8712u.bin
+/lib/firmware/rtlwifi/rtl8723bu_wowlan.bin
+/lib/firmware/rtlwifi/rtl8723aufw_A.bin
+/lib/firmware/tigon/tg3.bin
+/lib/firmware/tigon/tg3_tso.bin
+/lib/firmware/tigon/tg357766.bin
+/lib/firmware/tigon/tg3_tso5.bin
+/lib/firmware/cxgb4/t5fw-1.27.0.0.bin
+[exit: 0]
+
+$ fw_printenv 2>/dev/null | head
+[exit: 0]
+
+$ ls -la /dev/ | grep -iE "mmc|mtd|ubi"
+brw-rw----    1 root     disk      179,   0 Jan  1  1970 mmcblk0
+brw-rw----    1 root     disk      179,   1 Jan  1  1970 mmcblk0p1
+brw-rw----    1 root     disk      179,   2 Jan  1  1970 mmcblk0p2
+brw-rw----    1 root     disk      179,   3 Jan  1  1970 mmcblk0p3
+brw-rw----    1 root     disk      179,   8 Jan  1  1970 mmcblk2
+brw-rw----    1 root     disk      179,  16 Jan  1  1970 mmcblk2boot0
+brw-rw----    1 root     disk      179,  24 Jan  1  1970 mmcblk2boot1
+brw-rw----    1 root     disk      179,   9 Jan  1  1970 mmcblk2p1
+brw-rw----    1 root     disk      179,  10 Jan  1  1970 mmcblk2p2
+[exit: 0]
+
+$ ls -la /dev/mmcblk0boot* /dev/mmcblk0p* /dev/mtd* 2>&1
+ls: /dev/mmcblk0boot*: No such file or directory
+ls: /dev/mtd*: No such file or directory
+brw-rw----    1 root     disk      179,   1 Jan  1  1970 /dev/mmcblk0p1
+brw-rw----    1 root     disk      179,   2 Jan  1  1970 /dev/mmcblk0p2
+brw-rw----    1 root     disk      179,   3 Jan  1  1970 /dev/mmcblk0p3
+[exit: 1]
+
+$ ls -la /dev/disk/by-partlabel 2>&1; cat /dev/disk/by-partlabel/* 2>/dev/null | head
+ls: /dev/disk/by-partlabel: No such file or directory
+[exit: 0]
+
+### 9) lectura raw del BOOT /dev/mmcblk0p1 (solo lectura)
+
+$ ls -la /dev/mmcblk0p1; grep -a -i -o "xgradio\|fullband" /dev/mmcblk0p1 2>/dev/null | sort | uniq -c
+brw-rw----    1 root     disk      179,   1 Jan  1  1970 /dev/mmcblk0p1
+[exit: 0]
+
+### 10) estado actual de la GUI (para dejarla como estaba)
+
+$ tail -60 /tmp/x6200_log.txt
+[User]	(64904.962, +139)	 on_vfo_freq_change: Radio set vfo 0 freq=27161844 (27161844) 	(in radio.c line #369)
+[User]	(64905.093, +131)	 on_vfo_freq_change: Radio set vfo 0 freq=27161856 (27161856) 	(in radio.c line #369)
+[User]	(64905.262, +169)	 on_vfo_freq_change: Radio set vfo 0 freq=27162663 (27162663) 	(in radio.c line #369)
+[User]	(64905.865, +603)	 on_vfo_freq_change: Radio set vfo 0 freq=27163100 (27163100) 	(in radio.c line #369)
+[User]	(64905.984, +119)	 on_vfo_freq_change: Radio set vfo 0 freq=27163960 (27163960) 	(in radio.c line #369)
+[User]	(64906.098, +114)	 on_vfo_freq_change: Radio set vfo 0 freq=27164754 (27164754) 	(in radio.c line #369)
+[User]	(64906.268, +170)	 on_vfo_freq_change: Radio set vfo 0 freq=27165495 (27165495) 	(in radio.c line #369)
+[User]	(64906.649, +381)	 on_vfo_freq_change: Radio set vfo 0 freq=27163944 (27163944) 	(in radio.c line #369)
+[User]	(64907.243, +594)	 on_vfo_freq_change: Radio set vfo 0 freq=27164544 (27164544) 	(in radio.c line #369)
+[User]	(64908.117, +874)	 on_vfo_freq_change: Radio set vfo 0 freq=27164775 (27164775) 	(in radio.c line #369)
+[User]	(64909.289, +1172)	 on_vfo_freq_change: Radio set vfo 0 freq=27164145 (27164145) 	(in radio.c line #369)
+[User]	(64910.839, +1550)	 on_vfo_freq_change: Radio set vfo 0 freq=27164214 (27164214) 	(in radio.c line #369)
+[User]	(64911.066, +227)	 cfg_band_params_save_item: Saved vfoa_freq=27164214 (pk=203) 	(in band.c line #531)
+[User]	(64911.067, +1)	 on_vfo_freq_change: Radio set vfo 0 freq=27164313 (27164313) 	(in radio.c line #369)
+[User]	(64911.302, +235)	 on_vfo_freq_change: Radio set vfo 0 freq=27164350 (27164350) 	(in radio.c line #369)
+[User]	(64911.481, +179)	 on_vfo_freq_change: Radio set vfo 0 freq=27164400 (27164400) 	(in radio.c line #369)
+[User]	(64911.689, +208)	 on_vfo_freq_change: Radio set vfo 0 freq=27164450 (27164450) 	(in radio.c line #369)
+[User]	(64911.785, +96)	 on_vfo_freq_change: Radio set vfo 0 freq=27164500 (27164500) 	(in radio.c line #369)
+[User]	(64911.886, +101)	 on_vfo_freq_change: Radio set vfo 0 freq=27164600 (27164600) 	(in radio.c line #369)
+[User]	(64911.987, +101)	 on_vfo_freq_change: Radio set vfo 0 freq=27165114 (27165114) 	(in radio.c line #369)
+[User]	(64912.089, +102)	 on_vfo_freq_change: Radio set vfo 0 freq=27165852 (27165852) 	(in radio.c line #369)
+[User]	(64912.200, +111)	 on_vfo_freq_change: Radio set vfo 0 freq=27165908 (27165908) 	(in radio.c line #369)
+[User]	(64912.320, +120)	 on_vfo_freq_change: Radio set vfo 0 freq=27166620 (27166620) 	(in radio.c line #369)
+[User]	(64912.621, +301)	 on_vfo_freq_change: Radio set vfo 0 freq=27166728 (27166728) 	(in radio.c line #369)
+[User]	(64912.721, +100)	 on_vfo_freq_change: Radio set vfo 0 freq=27167283 (27167283) 	(in radio.c line #369)
+[User]	(64912.820, +99)	 on_vfo_freq_change: Radio set vfo 0 freq=27168426 (27168426) 	(in radio.c line #369)
+[User]	(64912.886, +66)	 on_vfo_freq_change: Radio set vfo 0 freq=27169256 (27169256) 	(in radio.c line #369)
+[User]	(64913.036, +150)	 on_vfo_freq_change: Radio set vfo 0 freq=27170796 (27170796) 	(in radio.c line #369)
+[User]	(64913.199, +163)	 on_vfo_freq_change: Radio set vfo 0 freq=27172500 (27172500) 	(in radio.c line #369)
+[User]	(64913.388, +189)	 on_vfo_freq_change: Radio set vfo 0 freq=27172660 (27172660) 	(in radio.c line #369)
+[User]	(64913.609, +221)	 on_vfo_freq_change: Radio set vfo 0 freq=27173119 (27173119) 	(in radio.c line #369)
+[User]	(64913.734, +125)	 on_vfo_freq_change: Radio set vfo 0 freq=27173458 (27173458) 	(in radio.c line #369)
+[User]	(64913.905, +171)	 on_vfo_freq_change: Radio set vfo 0 freq=27173809 (27173809) 	(in radio.c line #369)
+[User]	(64914.092, +187)	 on_vfo_freq_change: Radio set vfo 0 freq=27174482 (27174482) 	(in radio.c line #369)
+[User]	(64914.267, +175)	 on_vfo_freq_change: Radio set vfo 0 freq=27175204 (27175204) 	(in radio.c line #369)
+[User]	(64914.435, +168)	 on_vfo_freq_change: Radio set vfo 0 freq=27176430 (27176430) 	(in radio.c line #369)
+[User]	(64914.585, +150)	 on_vfo_freq_change: Radio set vfo 0 freq=27177524 (27177524) 	(in radio.c line #369)
+[User]	(64914.667, +82)	 on_vfo_freq_change: Radio set vfo 0 freq=27177999 (27177999) 	(in radio.c line #369)
+[User]	(64914.777, +110)	 on_vfo_freq_change: Radio set vfo 0 freq=27178272 (27178272) 	(in radio.c line #369)
+[User]	(64915.075, +298)	 on_vfo_freq_change: Radio set vfo 0 freq=27179467 (27179467) 	(in radio.c line #369)
+[User]	(64915.234, +159)	 on_vfo_freq_change: Radio set vfo 0 freq=27180319 (27180319) 	(in radio.c line #369)
+[User]	(64915.370, +136)	 on_vfo_freq_change: Radio set vfo 0 freq=27181440 (27181440) 	(in radio.c line #369)
+[User]	(64915.435, +65)	 on_vfo_freq_change: Radio set vfo 0 freq=27182426 (27182426) 	(in radio.c line #369)
+[User]	(64915.571, +136)	 on_vfo_freq_change: Radio set vfo 0 freq=27183750 (27183750) 	(in radio.c line #369)
+[User]	(64916.428, +857)	 on_vfo_freq_change: Radio set vfo 0 freq=27184540 (27184540) 	(in radio.c line #369)
+[User]	(64916.513, +85)	 on_vfo_freq_change: Radio set vfo 0 freq=27185327 (27185327) 	(in radio.c line #369)
+[User]	(64916.629, +116)	 on_vfo_freq_change: Radio set vfo 0 freq=27185472 (27185472) 	(in radio.c line #369)
+[User]	(64916.741, +112)	 on_vfo_freq_change: Radio set vfo 0 freq=27185963 (27185963) 	(in radio.c line #369)
+[User]	(64917.244, +503)	 on_vfo_freq_change: Radio set vfo 0 freq=27184854 (27184854) 	(in radio.c line #369)
+[User]	(64917.397, +153)	 on_vfo_freq_change: Radio set vfo 0 freq=27183807 (27183807) 	(in radio.c line #369)
+[User]	(64918.009, +612)	 on_vfo_freq_change: Radio set vfo 0 freq=27184122 (27184122) 	(in radio.c line #369)
+[User]	(64918.481, +472)	 on_vfo_freq_change: Radio set vfo 0 freq=27184500 (27184500) 	(in radio.c line #369)
+[User]	(64920.471, +1990)	 on_vfo_freq_change: Radio set vfo 0 freq=27184528 (27184528) 	(in radio.c line #369)
+[User]	(64921.093, +622)	 cfg_band_params_save_item: Saved vfoa_freq=27184528 (pk=203) 	(in band.c line #531)
+[User]	(64921.538, +445)	 on_vfo_freq_change: Radio set vfo 0 freq=27184680 (27184680) 	(in radio.c line #369)
+[User]	(64922.378, +840)	 on_vfo_freq_change: Radio set vfo 0 freq=27184725 (27184725) 	(in radio.c line #369)
+[User]	(64923.231, +853)	 on_vfo_freq_change: Radio set vfo 0 freq=27184750 (27184750) 	(in radio.c line #369)
+[User]	(64924.218, +987)	 on_vfo_freq_change: Radio set vfo 0 freq=27184800 (27184800) 	(in radio.c line #369)
+[User]	(64924.790, +572)	 on_vfo_freq_change: Radio set vfo 0 freq=27184850 (27184850) 	(in radio.c line #369)
+[User]	(6492[exit: 0]
+
+$ grep -a -i "version\|build" /tmp/x6200_log.txt 2>/dev/null | head -10
+BASE fw version: 1.0.6
+[exit: 0]
+
+$ ps aux | grep x6200_gui | grep -v grep
+13127 root     /usr/sbin/x6200_gui
+[exit: 0]
+
+$ date; uptime
+Mon Oct 19 14:05:38 UTC 2026
+ 14:05:38 up 18:19,  load average: 1.86, 1.73, 1.36
+[exit: 0]
+
+### 11) strings del binario desplegado y librerias
+
+$ grep -a -c "fullband" /usr/sbin/x6200_gui
+0
+[exit: 1]
+
+$ grep -a -c "xgradio" /usr/sbin/x6200_gui
+0
+[exit: 1]
+
+$ strings /usr/sbin/x6200_gui 2>/dev/null | grep -i "fullband\|xgradio" | head -20
+[exit: 0]
+
+$ find /usr/lib /lib -name "lib*lvgl*" -o -name "libx6200*" 2>/dev/null
+/usr/lib/liblvgl.so
+[exit: 0]
+
+$ for f in $(find /usr/lib /lib -name "lib*lvgl*" -o -name "libx6200*" 2>/dev/null); do echo "== $f"; echo -n "  fullband: "; grep -a -c "fullband" "$f"; echo -n "  xgradio : "; grep -a -c "xgradio" "$f"; done
+== /usr/lib/liblvgl.so
+  fullband: 0
+  xgradio : 0
+[exit: 1]
+
+### 12) chequeos finales de solo-lectura (sin escribir nada)
+
+$ ls -la /usr/sbin/ | head -40
+total 23008
+drwxr-xr-x    2 root     root          4096 Oct 19 13:10 .
+drwxr-xr-x    7 root     root          4096 Oct 16 22:41 ..
+-rwxr-xr-x    1 root     root       2941040 Oct 16 22:41 NetworkManager
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 addgroup -> ../../bin/busybox
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 adduser -> ../../bin/busybox
+-rwxr-xr-x    1 root     root         35453 Feb 10  2026 alsaconf
+-rwxr-xr-x    1 root     root        113936 Oct 16 22:41 alsactl
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 arping -> ../../bin/busybox
+-rwxr-xr-x    1 root     root         11234 Oct 16 21:45 btaudio-ctl
+-rwxr-xr-x    1 root     root         13812 Oct 16 22:41 btcat
+-rwxr-xr-x    1 root     root          1080 Oct 16 21:45 btcat-ctl
+-rwxr-xr-x    1 root     root           785 Oct 16 21:45 btcat-setup
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 chroot -> ../../bin/busybox
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 crond -> ../../bin/busybox
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 delgroup -> ../../bin/busybox
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 deluser -> ../../bin/busybox
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 dnsd -> ../../bin/busybox
+-rwxr-xr-x    1 root     root         13776 Oct 16 22:41 eeprog
+-rwxr-xr-x    1 root     root         18032 Oct 16 22:41 escapesrc
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 ether-wake -> ../../bin/busybox
+-rwxr-xr-x    1 root     root         34404 Oct 16 22:41 fbset
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 fdformat -> ../../bin/busybox
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 fsfreeze -> ../../bin/busybox
+-rwxr-xr-x    1 root     root          5585 Feb 10  2026 i2c-stub-from-dump
+-rwxr-xr-x    1 root     root         17988 Oct 16 22:41 i2cdetect
+-rwxr-xr-x    1 root     root         18012 Oct 16 22:41 i2cdump
+-rwxr-xr-x    1 root     root         17996 Oct 16 22:41 i2cget
+-rwxr-xr-x    1 root     root         18008 Oct 16 22:41 i2cset
+-rwxr-xr-x    1 root     root         17976 Oct 16 22:41 i2ctransfer
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 inetd -> ../../bin/busybox
+-rwxr-xr-x    1 root     root        240160 Oct 16 22:41 iw
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 killall5 -> ../../bin/busybox
+-rwxr-xr-x    1 root     root         26276 Oct 16 22:41 ldattach
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 loadfont -> ../../bin/busybox
+-rwxr-xr-x    1 root     root        757784 Oct 16 22:41 lshw
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 mim -> ../../bin/busybox
+lrwxrwxrwx    1 root     root            17 Feb 10  2026 nologin -> ../../bin/busybox
+-rwxr-xr-x    1 root     root        868560 Oct 16 22:41 ntpd
+-rwxr-xr-x    1 root     root         75920 Oct 16 22:41 parted
+[exit: 0]
+
+$ ls -la /usr/lib/ 2>/dev/null | head -30
+total 80348
+drwxr-xr-x   16 root     root         12288 Oct 18 19:35 .
+drwxr-xr-x    7 root     root          4096 Oct 16 22:41 ..
+drwxr-xr-x    7 root     root          4096 Feb 11  2026 NetworkManager
+drwxr-xr-x    2 root     root          4096 Oct 16 22:41 alsa-lib
+drwxr-xr-x    3 root     root          4096 Feb 11  2026 firewalld
+drwxr-xr-x    3 root     root          4096 Feb 10  2026 giomm-2.68
+drwxr-xr-x    4 root     root          4096 Feb 10  2026 glibmm-2.68
+drwxr-xr-x    3 root     root          4096 Feb 10  2026 icu
+lrwxrwxrwx    1 root     root            13 Feb 11  2026 libNE10.so -> libNE10.so.10
+-rwxr-xr-x    1 root     root        207712 Oct 16 22:41 libNE10.so.10
+lrwxrwxrwx    1 root     root            18 Feb 11  2026 libNE10_test.so -> libNE10_test.so.10
+-rwxr-xr-x    1 root     root        207724 Oct 16 22:41 libNE10_test.so.10
+lrwxrwxrwx    1 root     root            28 Feb 11  2026 libaether_x6200_control.so -> libaether_x6200_control.so.0
+lrwxrwxrwx    1 root     root            33 Feb 11  2026 libaether_x6200_control.so.0 -> libaether_x6200_control.so.0.15.3
+-rwxr-xr-x    1 root     root         21836 Oct 16 22:41 libaether_x6200_control.so.0.15.3
+lrwxrwxrwx    1 root     root            15 Feb 11  2026 libaio.so -> libaio.so.1.0.2
+lrwxrwxrwx    1 root     root            15 Feb 11  2026 libaio.so.1 -> libaio.so.1.0.2
+-rwxr-xr-x    1 root     root          5376 Oct 16 22:41 libaio.so.1.0.2
+lrwxrwxrwx    1 root     root            18 Feb 10  2026 libasound.so -> libasound.so.2.0.0
+lrwxrwxrwx    1 root     root            18 Feb 10  2026 libasound.so.2 -> libasound.so.2.0.0
+-rwxr-xr-x    1 root     root        922332 Oct 16 22:41 libasound.so.2.0.0
+lrwxrwxrwx    1 root     root            21 Feb 10  2026 libatopology.so -> libatopology.so.2.0.0
+lrwxrwxrwx    1 root     root            21 Feb 10  2026 libatopology.so.2 -> libatopology.so.2.0.0
+-rwxr-xr-x    1 root     root        113360 Oct 16 22:41 libatopology.so.2.0.0
+lrwxrwxrwx    1 root     root            21 Feb 11  2026 libbacktrace.so -> libbacktrace.so.0.0.0
+lrwxrwxrwx    1 root     root            21 Feb 11  2026 libbacktrace.so.0 -> libbacktrace.so.0.0.0
+-rwxr-xr-x    1 root     root         71108 Oct 16 22:41 libbacktrace.so.0.0.0
+lrwxrwxrwx    1 root     root            27 Feb 10  2026 libblkid.so -> ../../lib/libblkid.so.1.1.0
+lrwxrwxrwx    1 root     root            22 Feb 10  2026 libbluetooth.so -> libbluetooth.so.3.19.7
+[exit: 0]
+
+### 13) segundo dispositivo eMMC (mmcblk2) - sondas de solo lectura (item 8: restos de fabrica)
+
+$ cat /etc/fstab
+# <file system>	<mount pt>	<type>	<options>	<dump>	<pass>
+/dev/root	/		ext2	rw,noauto	0	1
+proc		/proc		proc	defaults	0	0
+devpts		/dev/pts	devpts	defaults,gid=5,mode=620,ptmxmode=0666	0	0
+tmpfs		/dev/shm	tmpfs	mode=0777	0	0
+tmpfs		/tmp		tmpfs	mode=1777	0	0
+tmpfs		/run		tmpfs	mode=0755,nosuid,nodev	0	0
+sysfs		/sys		sysfs	defaults	0	0
+/dev/mmcblk0p3	/mnt		vfat	rw		0	0
+[exit: 0]
+
+$ ls -la /sys/block/; for d in mmcblk0 mmcblk2; do echo "== $d"; cat /sys/block/$d/size 2>/dev/null; cat /sys/block/$d/device/name 2>/dev/null; done
+total 0
+drwxr-xr-x    2 root     root             0 Jan  1  1970 .
+dr-xr-xr-x   12 root     root             0 Jan  1  1970 ..
+lrwxrwxrwx    1 root     root             0 Jan  1  1970 mmcblk0 -> ../devices/platform/soc/1c0f000.mmc/mmc_host/mmc0/mmc0:aaaa/block/mmcblk0
+lrwxrwxrwx    1 root     root             0 Jan  1  1970 mmcblk2 -> ../devices/platform/soc/1c11000.mmc/mmc_host/mmc2/mmc2:0001/block/mmcblk2
+lrwxrwxrwx    1 root     root             0 Oct 19 14:04 mmcblk2boot0 -> ../devices/platform/soc/1c11000.mmc/mmc_host/mmc2/mmc2:0001/block/mmcblk2/mmcblk2boot0
+lrwxrwxrwx    1 root     root             0 Oct 19 14:04 mmcblk2boot1 -> ../devices/platform/soc/1c11000.mmc/mmc_host/mmc2/mmc2:0001/block/mmcblk2/mmcblk2boot1
+== mmcblk0
+7744512
+SS04G
+== mmcblk2
+15269888
+8GTF4R
+[exit: 0]
+
+$ which debugfs dumpe2fs e2ls 2>&1; ls -la /sbin/debugfs /usr/sbin/debugfs 2>&1
+/sbin/dumpe2fs
+ls: /sbin/debugfs: No such file or directory
+ls: /usr/sbin/debugfs: No such file or directory
+[exit: 1]
+
+$ grep -a -i -o "xgradio\|fullband" /dev/mmcblk2p1 2>/dev/null | sort | uniq -c
+[exit: 0]
+
+$ dd if=/dev/mmcblk2p2 bs=4096 count=1 2>/dev/null | od -A x -t x1 | sed -n "1,3p"; echo "---"; dd if=/dev/mmcblk2p2 bs=1M count=32 2>/dev/null | grep -a -i -o "xgradio\|fullband\|EXT4-fs\|BusyBox" | sort | uniq -c
+000000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+*
+000400 c0 38 07 00 00 e0 1c 00 99 71 01 00 58 8a 1a 00
+---
+
+[nota: la ultima ejecucion de la seccion 13 (sonda acotada dd 32MiB + grep) se corto por timeout del cliente a los 180 s; el dd quedo huerfano en la radio y fue terminado despues. NO se escribio nada en la radio. Resultados complementarios en secciones 14 y 15.]
+
+### 14) barrido RAW de la eMMC interna de fabrica mmcblk2 (item 8). SOLO LECTURA
+Nota: la eMMC interna (mmcblk2, '8GTF4R', 8 GB) NO esta montada. blkid/dumpe2fs muestran
+mmcblk2p1 vfat 48M y mmcblk2p2 ext4 1892352 bloques de 4K (~7,2 GiB, 'Last mounted on: /',
+fs limpio, creado 1970-01-01 = imagen de fabrica). Se barre en crudo buscando los literales.
+NO se monto la particion; solo lectura secuencial del dispositivo de bloque.
+
+$ for d in /dev/mmcblk2boot0 /dev/mmcblk2boot1; do echo "== $d"; timeout 120 grep -a -i -o "xgradio\|fullband" $d | sort | uniq -c; echo "  (fin $d)"; done
+ssh: connect to host 192.168.0.236 port 22: Connection timed out
+[exit: 255]
+
+$ timeout 900 grep -a -i -o "xgradio\|fullband" /dev/mmcblk2p2 | sort | uniq -c; rc=$?; echo "rc_grep=$rc"
+bash: line 1: timeout: command not found
+rc_grep=0
+[exit: 0]
+
+### 15) saneamiento de las sondas anteriores + estado de sshd + velocidad eMMC (solo lectura)
+Nota: 'timeout' NO existe en el busybox de la radio (ver seccion 14: 'timeout: command not found'),
+por eso el barrido de la seccion 14 quedo sin ejecutar y se repite en la seccion 16 sin wrapper.
+
+$ ls -ld /proc/15840 2>&1; ps aux | grep -E "dd if|grep -a" | grep -v grep; echo "---"; ps aux | grep sshd | grep -v grep
+ls: /proc/15840: No such file or directory
+---
+  486 root     sshd: /usr/sbin/sshd [listener] 0 of 10-100 startups
+15886 root     sshd: root@notty
+15939 root     sshd: root@notty
+15943 root     sshd: root@notty
+[exit: 0 (intento 3)]
+
+$ cat /proc/loadavg; cat /proc/uptime
+0.36 0.94 1.19 2/134 15959
+66493.36 200411.74
+[exit: 0 (intento 1)]
+
+$ dumpe2fs -h /dev/mmcblk2p2 2>/dev/null | head -22
+Filesystem volume name:   <none>
+Last mounted on:          /
+Filesystem UUID:          68c7cb26-5afd-436d-a98c-7cca6d784b53
+Filesystem magic number:  0xEF53
+Filesystem revision #:    1 (dynamic)
+Filesystem features:      has_journal ext_attr resize_inode dir_index filetype extent 64bit flex_bg sparse_super large_file huge_file dir_nlink extra_isize metadata_csum
+Filesystem flags:         unsigned_directory_hash 
+Default mount options:    user_xattr acl
+Filesystem state:         clean
+Errors behavior:          Continue
+Filesystem OS type:       Linux
+Inode count:              473280
+Block count:              1892352
+Reserved block count:     94617
+Free blocks:              1739352
+Free inodes:              465320
+First block:              0
+Block size:               4096
+Fragment size:            4096
+Group descriptor size:    64
+Reserved GDT blocks:      923
+Blocks per group:         32768
+[exit: 0 (intento 1)]
+
+$ t0=$(date +%s); dd if=/dev/mmcblk2p2 bs=1M count=64 of=/dev/null 2>&1; t1=$(date +%s); echo "seg_lectura_64MiB=$((t1-t0))"
+64+0 records in
+64+0 records out
+seg_lectura_64MiB=1
+[exit: 0 (intento 1)]
+
+$ for d in /dev/mmcblk2boot0 /dev/mmcblk2boot1; do echo "== $d"; grep -a -i -o "xgradio\|fullband" $d | sort | uniq -c; echo "FIN_$d"; done
+== /dev/mmcblk2boot0
+FIN_/dev/mmcblk2boot0
+== /dev/mmcblk2boot1
+FIN_/dev/mmcblk2boot1
+[exit: 0 (intento 1)]
+
+### 16) barrido RAW completo de mmcblk2p2 (rootfs de fabrica, ~7,2 GiB). SOLO LECTURA, sin montar
+Un solo pase secuencial sobre el dispositivo de bloque; se cuentan ocurrencias de los literales.
+
+[nota: el barrido RAW completo de mmcblk2p2 (~7,2 GiB) de la seccion 16 fue ABORTADO a pedido del Lead
+ (cliente cortado a los 180 s y otro agente ya estaba barriendo el mismo eMMC); no se completo y no se
+ repite completo. La respuesta al item 8 se obtuvo por lectura selectiva de metadata ext4 (seccion 17).]
+
+### 17) LECTURA SELECTIVA DE METADATA ext4 DEL ROOTFS DE FABRICA (mmcblk2p2, NO montado) - SOLO LECTURA
+Nota: `debugfs` NO existe en la radio (seccion 13: `which debugfs dumpe2fs e2ls` -> solo /sbin/dumpe2fs).
+NO se monto la particion, NO se escribio nada en la radio. Se leyeron bloques puntuales de 4096 bytes
+con dd sobre el dispositivo de bloque y se parseo la metadata ext4 localmente.
+
+Comandos ejecutados (N = numero de bloque; la salida de dd es BINARIA, por eso no se vuelca aqui):
+$ sshpass -p 123 ssh -F /dev/null -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=12 -o LogLevel=ERROR -o PreferredAuthentications=password -o PubkeyAuthentication=no root@192.168.0.236 'dd if=/dev/mmcblk2p2 bs=4096 skip=N count=1 2>/dev/null'
+bloques leidos (N): 0, 1 (count=2), 957, 966, 9117, 9122, 9253, 9257, 524325, 524335, 524338,
+524360, 532681, 532705, 1048608, 1057129. Copia local cruda de esos bloques (auditoria, fuera de la radio):
+/tmp/f0_emmc_blocks/blk_*.bin (4096 u 8192 bytes cada uno).
+
+El UUID leido del superbloque (68c7cb26-5afd-436d-a98c-7cca6d784b53) coincide con el que blkid reporta
+para /dev/mmcblk2p2, lo que identifica la particion leida. Salida del parseo:
+
+$ python3 /tmp/f0_factory_ls.py
+SUPERBLOCK: bs=4096 inode_size=256 inodes_per_group=8160 first_data_block=0 64bit=True uuid=68c7cb265afd436da98c7cca6d784b53
+GDT @blk 1, desc_size=64, inode_table_g0=957
+ROOT (inodo 2, size=4096): .(2) ..(2) bin(130561) boot(261121) dev(261124) etc(130642) home(261132) lib(261134) lib32(11) libexec(12) linuxrc(14) media(15) mnt(16) opt(17) proc(18) root(19) run(20) sbin(23) sys(142) tmp(143) usr(145) var(130809) .config(584) .esd_auth(586) .cache(658)
+/etc (inodo 130642, size=4096): . .. NetworkManager alsa asound.conf asound.conf.old bluetooth cron.d dbus-1 dhcpcd.conf e2scrub.conf fonts fstab gpib.conf group hostname hosts init.d inittab inputrc issue libnl localtime lvm mke2fs.conf mtab network nginx nsswitch.conf ntp.conf ofono os-release passwd profile profile.d protocols pulse qtkmsconfig.json request-key.conf request-key.d resolv.conf resolvconf.conf services shadow shells slsh.rc ssh ssl timezone ts.conf udev vsftpd.conf wifi.conf wireguard wpa_supplicant.conf xattr.conf xgradio monitrc adjtime
+/usr (inodo 145, size=4096): . .. app_qt bin firmware include lib lib32 libexec qml qtvirtualkeyboard sbin share tmp
+/boot (inodo 261121, size=4096): . .. sun8i-r16-x6200.dtb zImage
+CHECK /etc/xgradio: EXISTE inodo 130807
+/etc/xgradio (inodo 130807, size=4096): .(130807) ..(130642) xgradio.conf(130808) wfserver.ini(131204) xgradio.conf.save(131205) xgradio.conf.save.1(131206) man.conf.ouBKDB(131207) man.conf(130857) mcontext.conf(130856)
+  FILE xgradio.conf: mode=0o100644 size=132
+  CONTENIDO xgradio.conf:
+# XG Radio配置文件
+# fullband-tx: 全频段发射开关
+# +            enable
+# +            disable
+
+[mods]
+fullband-tx=enable
+
+  FILE wfserver.ini: mode=0o100644 size=434
+  CONTENIDO wfserver.ini:
+[General]
+AudioSystem=0
+
+[Radios]
+1\AudioInput=mixcapture
+1\AudioOutput=mixplayback
+1\ForceRTSasPTT=false
+1\GUID={5dcef525-ea9f-47d7-91c8-45dd1fed6f5f}
+1\RigCIVuInt=0
+1\RigName=X6200
+1\SerialPortBaud=115200
+1\SerialPortRadio=ttyVirtual0
+1\WaterfallFormat=1
+size=1
+
+[Server]
+ServerAudioPort=50003
+ServerCivPort=50002
+ServerControlPort=50001
+ServerEnabled=true
+Users\1\Password=123
+Users\1\UserType=0
+Users\1\Username=user
+Users\size=1
+
+  FILE xgradio.conf.save: mode=0o100600 size=170
+  CONTENIDO xgradio.conf.save:
+login
+logroot
+123
+l# XG Radio配置文件
+# fullband-tx: 全频段发射开关
+# +            enable
+# +            disable
+
+[mods]
+fullband-tx=disablfullband-tx=enable
+
+
+  FILE xgradio.conf.save.1: mode=0o100600 size=135
+  CONTENIDO xgradio.conf.save.1:
+# XG Radio配置文件
+# fullband-tx: 全频段发射开关
+# +            enable
+# +            disable
+
+[mods]
+fullband-tx=enable
+x
+
+
+  FILE man.conf.ouBKDB: mode=0o100644 size=31
+  CONTENIDO man.conf.ouBKDB:
+[manufacture]
+exec-counter=233
+
+  FILE man.conf: mode=0o100644 size=80
+  CONTENIDO man.conf:
+[manufacture]
+exec-counter=392
+fbtx-open-time=2025-12-13 19:53:25
+fullband-tx=1
+
+  FILE mcontext.conf: mode=0o100666 size=211
+  CONTENIDO mcontext.conf:
+[DISPLAY]
+pageIndex=0
+
+[DISP_1]
+buttonIndex=14
+
+[DISP_2]
+buttonIndex=11
+
+[RADIOSETTING1]
+pageIndex=0
+
+[RADIOSETTING2]
+pageIndex=0
+
+[RS1_EQ]
+buttonIndex=17
+
+[RS1_GENERAL]
+buttonIndex=1
+
+[RS2_MISCS]
+buttonIndex=5
+
+CHECK /usr/app_qt: EXISTE inodo 146
+/usr/app_qt (inodo 146, size=4096): .(146) ..(145) x6100_ui_v100(147) x6200_ui_v100(148) xparam.db(6074) .config(6157) .tmp_cfg_file(6040) voice(6183)
+FIN_OK
+
+### 18) ESTADO DE LA RADIO AL CIERRE (solo lectura; no se dejo nada corriendo)
+$ date; uptime
+Mon Oct 19 14:26:01 UTC 2026
+ 14:26:01 up 18:40,  load average: 3.06, 2.05, 1.56
+
+$ ps aux | grep -E "x6200_(gui|daemon)" | grep -v grep
+  298 root     {x6200_daemon} /bin/sh /usr/sbin/x6200_daemon
+13127 root     /usr/sbin/x6200_gui
+
+$ grep -a -iE "power|mode|tx|transmit" /tmp/x6200_log.txt | tail -25
+[User]	(64864.162, +0)	 update_cur_low_filter: Set current low filter: 10 	(in mode.c line #509)
+[User]	(64864.162, +0)	 update_cur_high_filter: Set current high filter: 3970 	(in mode.c line #535)
+[User]	(64864.163, +1)	 on_vfo_mode_change: Radio set vfo 0 mode=0 	(in radio.c line #376)
+[User]	(64864.166, +1)	 cfg_band_params_load_item: Loaded vfob_mode=2 (pk=203) 	(in band.c line #452)
+[User]	(64864.983, +0)	 cfg_band_params_load_item: Loaded vfoa_mode=6 (pk=204) 	(in band.c line #452)
+[User]	(64864.983, +0)	 cfg_mode_params_load_item: Loaded filter_high=6000 (pk=6) 	(in mode.c line #134)
+[User]	(64864.983, +0)	 update_cur_low_filter: Set current low filter: 0 	(in mode.c line #509)
+[User]	(64864.983, +0)	 update_cur_high_filter: Set current high filter: 6000 	(in mode.c line #535)
+[User]	(64864.986, +3)	 cfg_mode_params_load_item: Loaded filter_low=0 (pk=6) 	(in mode.c line #134)
+[User]	(64864.986, +0)	 cfg_mode_params_load_item: Loaded freq_step=5000 (pk=6) 	(in mode.c line #134)
+[User]	(64864.986, +0)	 cfg_mode_params_load_item: Loaded spectrum_factor=1 (pk=6) 	(in mode.c line #134)
+[User]	(64864.986, +0)	 update_cur_high_filter: Set current high filter: 6000 	(in mode.c line #535)
+[User]	(64864.987, +1)	 on_vfo_mode_change: Radio set vfo 0 mode=6 	(in radio.c line #376)
+[User]	(64864.989, +0)	 cfg_band_params_load_item: Loaded vfob_mode=2 (pk=204) 	(in band.c line #452)
+[User]	(64868.827, +0)	 cfg_band_params_load_item: Loaded vfoa_mode=0 (pk=203) 	(in band.c line #452)
+[User]	(64868.827, +0)	 cfg_mode_params_load_item: Loaded filter_high=3970 (pk=0) 	(in mode.c line #134)
+[User]	(64868.827, +0)	 update_cur_high_filter: Set current high filter: 3970 	(in mode.c line #535)
+[User]	(64868.829, +2)	 cfg_mode_params_load_item: Loaded filter_low=10 (pk=0) 	(in mode.c line #134)
+[User]	(64868.829, +0)	 update_cur_low_filter: Set current low filter: 10 	(in mode.c line #509)
+[User]	(64868.830, +1)	 cfg_mode_params_load_item: Loaded freq_step=500 (pk=0) 	(in mode.c line #134)
+[User]	(64868.830, +0)	 cfg_mode_params_load_item: Loaded spectrum_factor=1 (pk=0) 	(in mode.c line #134)
+[User]	(64868.830, +0)	 update_cur_low_filter: Set current low filter: 10 	(in mode.c line #509)
+[User]	(64868.830, +0)	 update_cur_high_filter: Set current high filter: 3970 	(in mode.c line #535)
+[User]	(64868.831, +1)	 on_vfo_mode_change: Radio set vfo 0 mode=0 	(in radio.c line #376)
+[User]	(64868.834, +1)	 cfg_band_params_load_item: Loaded vfob_mode=2 (pk=203) 	(in band.c line #452)
+
+$ tail -3 /tmp/x6200_log.txt
+[User]	(64924.218, +987)	 on_vfo_freq_change: Radio set vfo 0 freq=27184800 (27184800) 	(in radio.c line #369)
+[User]	(64924.790, +572)	 on_vfo_freq_change: Radio set vfo 0 freq=27184850 (27184850) 	(in radio.c line #369)
+[User]	(6492[exit: 0]
+
+$ ls -la /tmp/x6200_log.txt
+-rw-r--r--    1 root     root        301775 Oct 19 13:47 /tmp/x6200_log.txt
+
+$ ls -la /usr/sbin/x6200_gui; md5sum /usr/sbin/x6200_gui
+-rwxr-xr-x    1 root     root      13844268 Oct 19 13:10 /usr/sbin/x6200_gui
+9a094c421b0eb05c103abf782ea00db6  /usr/sbin/x6200_gui
+
+$ ps aux | grep -E "mmcblk2p2" | grep -v grep
+(vacio: no quedaron procesos de lectura de este recon)
+
+Nota estado: el log no tiene lineas de potencia ni de TX; su ultimo evento es VFO A en 27.184.850 Hz,
+mode=0 (segun log), y el archivo de log tiene mtime 2026-10-19 13:47 UTC. No se transmitio ni se
+modifico nada desde este recon.
+
+### HALLAZGOS
+1) /etc/xgradio NO existe en el rootfs que corre el port (mmcblk0p2, montado en /): `ls -la /etc/xgradio/`
+   da "No such file or directory" y `find / -xdev -iname '*xgrad*' -o -iname '*fullband*'` no devuelve nada (secciones 1 y 7).
+2) El literal "fullband" no aparece en el sistema del port: grep -rn en /etc /usr/local /opt /usr/share /lib y
+   grep -r -a -l en /usr /lib /etc /opt no devuelven nada; /usr/sbin/x6200_gui y /usr/lib/liblvgl.so dan 0 ocurrencias
+   de "fullband" y de "xgradio" (secciones 2 y 11).
+3) SI hay rootfs de FABRICA en la eMMC interna /dev/mmcblk2p2 (~7,2 GiB ext4, UUID 68c7cb26-..., NO montado,
+   fs limpio, /boot/sun8i-r16-x6200.dtb + zImage, /usr/app_qt/x6200_ui_v100): ese rootfs de fabrica SI tiene
+   /etc/xgradio (inodo 130807) con xgradio.conf, xgradio.conf.save, xgradio.conf.save.1, man.conf, man.conf.ouBKDB,
+   mcontext.conf y wfserver.ini (seccion 17).
+4) En ESTA radio, el /etc/xgradio/xgradio.conf de fabrica (132 bytes) dice `fullband-tx=enable`; y
+   /etc/xgradio/man.conf registra `fullband-tx=1`, `fbtx-open-time=2025-12-13 19:53:25` y `exec-counter=392`
+   (seccion 17). O sea: el sistema de fabrica de esta radio ya tenia habilitado full-band TX.
+5) Particiones (fdisk/blkid/proc): mmcblk0 = microSD 4 GB (SS04G): p1 BOOT 32M vfat, p2 rootfs 512M ext4
+   (montado /), p3 DATA 3,2G vfat (/mnt); mmcblk2 = eMMC 8 GB (8GTF4R): p1 48M vfat, p2 ext4 7,2GiB (fabrica,
+   sin montar), boot0/boot1 4M c/u. No hay mtd/ubi (/proc/mtd no existe), no hay mmcblk0boot*. El port arranca
+   desde la SD: cmdline root=/dev/mmcblk0p2 (secciones 5, 6 y 13).
+6) Binario desplegado: /usr/sbin/x6200_gui 13.844.268 bytes, mtime 2026-10-19 13:10 UTC,
+   md5 9a094c421b0eb05c103abf782ea00db6; el log reporta "BASE fw version: 1.0.6". GUI PID 13127 y daemon PID 298
+   corriendo (secciones 4, 10 y 18).
+7) Estado al cierre: VFO A en 27.184.850 Hz, mode=0 (ultimo evento del log, mtime 13:47 UTC), sin lineas de
+   potencia ni de TX; no se transmitio desde este recon (seccion 18).
+8) Metodo: todo READ-ONLY. No se monto nada, no se escribio nada, no se reinicio nada, no se toco /mnt ni params.
+   La eMMC interna se leyo por bloques puntuales con dd + parseo local; el barrido completo de 7,2 GiB se aborto
+   a pedido del Lead. `debugfs` no existe en la radio (solo /sbin/dumpe2fs), por eso no se uso (secciones 13, 16 y 17).

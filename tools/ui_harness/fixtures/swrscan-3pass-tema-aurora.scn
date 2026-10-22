@@ -1,0 +1,38 @@
+# swrscan-3pass-tema-aurora: la misma sesion completa de 3 pasadas bajo el
+# tema "Aurora" que shippea la ROM. El tema es la unica variable: los colores del
+# chart, del marco del dialogo y de los botones salen de Aurora, y el resto del
+# fixture es identico a swrscan-3pass. Es la pata "temas" del A/B visual del issue
+# #125 (junto con swrscan-3pass-tema-cathode). requires-radio (TX multipasada).
+
+name swrscan-3pass-tema-aurora
+screen swrscan
+
+seed 20
+
+theme Aurora
+
+swr_dataset single_valley_3pass
+swr_passes 3
+
+frequency_hz 7100000
+tx_frequency_hz 7100000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

@@ -1,347 +1,110 @@
 /*
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  Xiegu X6200 LVGL GUI
+ *  Xiegu X6200 LVGL GUI - posicion (la app GPS del X6100, adaptada).
  *
- *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
+ *  El X6200 no tiene receptor GPS (no hay nodo en el device tree y el firmware base sacó gpsd),
+ *  asi que la posicion sale de lo que mande el telefono o el configurador web por el socket de
+ *  control remoto ({"cmd":"location","text":"45.0,7.7"}). La app lo dice tal cual y muestra la
+ *  posicion, la grilla QTH y su antiguedad.
  */
+
 #include "dialog_gps.h"
 
-#include "gps.h"
-#include "dialog.h"
-#include "styles.h"
 #include "events.h"
-#include "radio.h"
+
+#include "fonts/font_select.h"
+#include "gps.h"
+#include "gps_format.h"
 #include "keyboard.h"
 #include "qth/qth.h"
-#include "params/params.h"
-#include "msg.h"
+#include "radio.h"
+#include "styles.h"
+#include "theme.h"
+
 #include "lvgl/lvgl.h"
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <math.h>
+#include <string.h>
+#include <time.h>
 
-#define HEIGHT 42
-#define LABEL_WIDTH 300
+#define ROWS        7
+#define HEIGHT      ((DIALOG_H - 12) / ROWS)
+#define LABEL_WIDTH 340
+#define VALUE_X     (30 + LABEL_WIDTH + 10)
+#define VALUE_W     (796 - VALUE_X - 20)
 
 static void construct_cb(lv_obj_t *parent);
-static void destruct_cb();
-static void key_cb(lv_event_t * e);
+static void destruct_cb(void);
+static void key_cb(lv_event_t *e);
 
-typedef enum {
-    deg_dd,
-    deg_ddmm,
-    deg_ddmmss
-} deg_str_type;
-
-static deg_str_type         deg_type = deg_ddmm;
-
-static lv_obj_t             *satellites_cnt;
-static lv_obj_t             *fix;
-static lv_obj_t             *date;
-static lv_obj_t             *lat;
-static lv_obj_t             *lon;
-static lv_obj_t             *qth;
-static lv_obj_t             *status;
-
-static lv_timer_t           *status_update_timer;
-
-static dialog_t             dialog = {
+static dialog_t   dialog = {
     .run = false,
     .construct_cb = construct_cb,
     .destruct_cb = destruct_cb,
     .audio_cb = NULL,
-    .key_cb = key_cb
+    .key_cb = key_cb,
 };
+static lv_obj_t  *estado;
+static lv_obj_t  *fijacion;
+static lv_obj_t  *antiguedad;
+static lv_obj_t  *fecha;
+static lv_obj_t  *lat;
+static lv_obj_t  *lon;
+static lv_obj_t  *qth_lbl;
+static lv_timer_t *timer;
 
-dialog_t                    *dialog_gps = &dialog;
-
-char *deg_to_str2(deg_str_type type, double f, char *buf, unsigned int buf_size, const char *suffix_pos, const char *suffix_neg) {
-    int dsec, sec, deg, min;
-    double fdsec, fsec, fdeg, fmin;
-    const char *suffix = "";
-
-    if (20 > buf_size) {
-        strncpy(buf, "Err", buf_size);
-        return buf;
-    }
-
-    if (!isfinite(f) || 360.0 < fabs(f)) {
-        strncpy(buf, "N/A", buf_size);
-        return buf;
-    }
-
-    /* suffix? */
-    if (0.0 > f) {
-        f = -f;
-        if (NULL != suffix_neg) {
-            suffix = suffix_neg;
-        }
-    } else if (NULL != suffix_pos) {
-        suffix = suffix_pos;
-    }
-
-    /* add rounding quanta */
-    /* IEEE 754 wants round to nearest even.
-     * We cheat and just round to nearest.
-     * Intel trying to kill off round to nearest even. */
-    switch (type) {
-        default:
-            /* huh? */
-            type = deg_dd;
-            /* It's not worth battling fallthrough warnings just for two lines */
-            f += 0.5 * 1e-8;              /* round up */
-            break;
-
-        case deg_dd:
-            /* DD.dddddddd */
-            f += 0.5 * 1e-8;              /* round up */
-            break;
-
-        case deg_ddmm:
-            /* DD MM.mmmmmm */
-            f += (0.5 * 1e-6) / 60;       /* round up */
-            break;
-
-        case deg_ddmmss:
-            f += (0.5 * 1e-5) / 3600;     /* round up */
-            break;
-    }
-
-    fmin = modf(f, &fdeg);
-    deg = (int)fdeg;
-
-    if (360 == deg) {
-        /* fix round-up roll-over */
-        deg = 0;
-        fmin = 0.0;
-    }
-
-    if (deg_dd == type) {
-        /* DD.dddddddd */
-        long frac_deg = (long)(fmin * 100000000.0);
-        /* cm level accuracy requires the %08ld */
-        snprintf(buf, buf_size, "%d.%08ld%s", deg, frac_deg, suffix);
-        return buf;
-    }
-
-    fsec = modf(fmin * 60, &fmin);
-    min = (int)fmin;
-
-    if (deg_ddmm == type) {
-        /* DD MM.mmmmmm */
-        sec = (int)(fsec * 1000000.0);
-        snprintf(buf, buf_size, "%d %s %02d.%06d'", deg, suffix, min, sec);
-        return buf;
-    }
-
-    /* else DD MM SS.sss */
-    fdsec = modf(fsec * 60.0, &fsec);
-    sec = (int)fsec;
-    dsec = (int)(fdsec * 100000.0);
-    snprintf(buf, buf_size, "%d %s %02d' %02d.%05d\"", deg, suffix, min, sec, dsec);
-
-    return buf;
-}
-
-static void gps_cb(lv_event_t * e) {
-    struct gps_data_t   *msg = lv_event_get_param(e);
-    char                str[64];
-
-    if (msg->set & SATELLITE_SET) {
-        lv_label_set_text_fmt(satellites_cnt, "%i/%i", msg->satellites_visible, msg->satellites_used);
-    }
-
-    switch (msg->fix.mode) {
-        case MODE_3D:
-            lv_label_set_text(fix, "3D");
-            break;
-
-        case MODE_2D:
-            lv_label_set_text(fix, "2D");
-            break;
-
-        case MODE_NO_FIX:
-            lv_label_set_text(fix, "None");
-            break;
-
-        default:
-            break;
-    }
-
-    if (msg->set & TIME_SET) {
-        timespec_to_iso8601(msg->fix.time, str, sizeof(str));
-        lv_label_set_text(date, str);
-    } else {
-        lv_label_set_text(date, "N/A");
-    }
-
-    if (msg->fix.mode >= MODE_2D) {
-        deg_to_str2(deg_type, msg->fix.latitude, str, sizeof(str), "N", "S");
-        lv_label_set_text(lat, str);
-
-        deg_to_str2(deg_type, msg->fix.longitude, str, sizeof(str), "E", "W");
-        lv_label_set_text(lon, str);
-
-        char qth_val[9];
-        qth_pos_to_str(msg->fix.latitude, msg->fix.longitude, qth_val);
-        lv_label_set_text(qth, qth_val);
-
-        int saved_qth_len = strlen(params.qth.x);
-        if ((saved_qth_len == 0) || (strncmp(qth_val, params.qth.x, saved_qth_len) != 0)) {
-            params_str_set(&params.qth, qth_val);
-            msg_schedule_text_fmt("QTH updated: %s", params.qth.x);
-        }
-    } else {
-        lv_label_set_text(lat, "N/A");
-        lv_label_set_text(lon, "N/A");
-        lv_label_set_text(qth, "N/A");
-    }
-}
-
-static void gps_status_update_timer(lv_timer_t * timer)
-{
-    static char*  gps_status_str[] = {
-        "waiting",
-        "working",
-        "restarting",
-        "exited",
-    };
-    lv_label_set_text_fmt(status, "%s", gps_status_str[gps_status()]);
-}
+static void actualizar(lv_timer_t *t);
 
 static void construct_cb(lv_obj_t *parent) {
-    lv_obj_t    *label;
-    lv_coord_t  y = 32;
+    lv_obj_t   *label;
+    lv_coord_t  y = 6;
 
     dialog.obj = dialog_init(parent);
+    lv_obj_set_style_text_font(dialog.obj, &sony_28, 0);
 
     lv_group_add_obj(keyboard_group, dialog.obj);
-    lv_obj_add_event_cb(dialog.obj, key_cb, LV_EVENT_KEY, NULL);
-    lv_obj_add_event_cb(dialog.obj, gps_cb, EVENT_GPS, NULL);
 
-    /* Working, satellites count */
+    struct {
+        const char *texto;
+        lv_obj_t  **destino;
+    } filas[ROWS] = {
+        {"Position source:", &estado},
+        {"Fix:", &fijacion},
+        {"Age:", &antiguedad},
+        {"Date, time:", &fecha},
+        {"Latitude:", &lat},
+        {"Longitude:", &lon},
+        {"QTH Grid:", &qth_lbl},
+    };
 
-    label = lv_label_create(dialog.obj);
+    for (int i = 0; i < ROWS; i++) {
+        label = lv_label_create(dialog.obj);
+        lv_label_set_text(label, filas[i].texto);
+        lv_obj_set_size(label, LABEL_WIDTH, HEIGHT);
+        lv_obj_set_pos(label, 30, y);
 
-    lv_label_set_text(label, "Sat in view/in use:");
-    lv_obj_set_size(label, LABEL_WIDTH, HEIGHT);
-    lv_obj_set_pos(label, 30, y);
+        *filas[i].destino = lv_label_create(dialog.obj);
+        lv_label_set_text(*filas[i].destino, "N/A");
+        lv_obj_set_size(*filas[i].destino, VALUE_W, HEIGHT);
+        lv_obj_set_pos(*filas[i].destino, VALUE_X, y);
 
-    satellites_cnt = lv_label_create(dialog.obj);
+        y += HEIGHT;
+    }
 
-    lv_label_set_text(satellites_cnt, "N/A");
-    lv_obj_set_size(satellites_cnt, 450, HEIGHT);
-    lv_obj_set_pos(satellites_cnt, LABEL_WIDTH + 50, y);
-
-    y += HEIGHT;
-
-    /* Fix */
-
-    label = lv_label_create(dialog.obj);
-
-    lv_label_set_text(label, "Fix:");
-    lv_obj_set_size(label, LABEL_WIDTH, HEIGHT);
-    lv_obj_set_pos(label, 30, y);
-
-    fix = lv_label_create(dialog.obj);
-
-    lv_label_set_text(fix, "N/A");
-    lv_obj_set_size(fix, 450, HEIGHT);
-    lv_obj_set_pos(fix, LABEL_WIDTH + 50, y);
-
-    y += HEIGHT;
-
-    /* Date, time */
-
-    label = lv_label_create(dialog.obj);
-
-    lv_label_set_text(label, "Date, time:");
-    lv_obj_set_size(label, LABEL_WIDTH, HEIGHT);
-    lv_obj_set_pos(label, 30, y);
-
-    date = lv_label_create(dialog.obj);
-
-    lv_label_set_text(date, "N/A");
-    lv_obj_set_size(date, 450, HEIGHT);
-    lv_obj_set_pos(date, LABEL_WIDTH + 50, y);
-
-    y += HEIGHT;
-
-    /* Lat */
-
-    label = lv_label_create(dialog.obj);
-
-    lv_label_set_text(label, "Latitude:");
-    lv_obj_set_size(label, LABEL_WIDTH, HEIGHT);
-    lv_obj_set_pos(label, 30, y);
-
-    lat = lv_label_create(dialog.obj);
-
-    lv_label_set_text(lat, "N/A");
-    lv_obj_set_size(lat, 450, HEIGHT);
-    lv_obj_set_pos(lat, LABEL_WIDTH + 50, y);
-
-    y += HEIGHT;
-
-    /* Lon */
-
-    label = lv_label_create(dialog.obj);
-
-    lv_label_set_text(label, "Longitude:");
-    lv_obj_set_size(label, LABEL_WIDTH, HEIGHT);
-    lv_obj_set_pos(label, 30, y);
-
-    lon = lv_label_create(dialog.obj);
-
-    lv_label_set_text(lon, "N/A");
-    lv_obj_set_size(lon, LABEL_WIDTH, HEIGHT);
-    lv_obj_set_pos(lon, LABEL_WIDTH + 50, y);
-
-    y += HEIGHT;
-
-    /* QTH Grid */
-
-    label = lv_label_create(dialog.obj);
-
-    lv_label_set_text(label, "QTH Grid:");
-    lv_obj_set_size(label, LABEL_WIDTH, HEIGHT);
-    lv_obj_set_pos(label, 30, y);
-
-    qth = lv_label_create(dialog.obj);
-
-    lv_label_set_text(qth, "N/A");
-    lv_obj_set_size(qth, 450, HEIGHT);
-    lv_obj_set_pos(qth, LABEL_WIDTH + 50, y);
-
-    y += HEIGHT;
-
-    /* GPS status */
-
-    label = lv_label_create(dialog.obj);
-
-    lv_label_set_text(label, "GPS status");
-    lv_obj_set_size(label, LABEL_WIDTH, HEIGHT);
-    lv_obj_set_pos(label, 30, y);
-
-    status = lv_label_create(dialog.obj);
-
-    lv_label_set_text_fmt(status, "%s", "");
-    lv_obj_set_size(status, 450, HEIGHT);
-    lv_obj_set_pos(status, LABEL_WIDTH + 50, y);
-
-    status_update_timer = lv_timer_create(gps_status_update_timer, 500,  NULL);
-    lv_timer_ready(status_update_timer);
+    timer = lv_timer_create(actualizar, 500, NULL);
+    lv_timer_ready(timer);
 }
 
-static void destruct_cb() {
-    lv_timer_del(status_update_timer);
+static void destruct_cb(void) {
+    if (timer != NULL) {
+        lv_timer_del(timer);
+        timer = NULL;
+    }
 }
 
-static void key_cb(lv_event_t * e) {
-    uint32_t key = *((uint32_t *)lv_event_get_param(e));
+static void key_cb(lv_event_t *e) {
+    uint32_t key = *((uint32_t *) lv_event_get_param(e));
 
     switch (key) {
         case LV_KEY_ESC:
@@ -359,3 +122,67 @@ static void key_cb(lv_event_t * e) {
             break;
     }
 }
+
+/* Se refresca cada 500 ms: la posicion del telefono cambia sin avisar */
+static void actualizar(lv_timer_t *t) {
+    double   la = 0.0, lo = 0.0;
+    int      age = -1;
+    bool     hay = false;
+    bool     del_telefono = false;
+    lv_obj_t *dummy;
+
+    (void) t;
+
+    if (gps_last_fix(&la, &lo, &age)) {
+        hay = true;
+    } else if (gps_phone_fix(&la, &lo, &age)) {
+        hay          = true;
+        del_telefono = true;
+    }
+
+    lv_label_set_text(estado, hay && del_telefono ? "Phone / web" : "None: this radio has no GPS");
+
+    if (!hay) {
+        lv_label_set_text(fijacion, "None");
+        lv_label_set_text(antiguedad, "sin datos");
+        lv_label_set_text(lat, "N/A");
+        lv_label_set_text(lon, "N/A");
+        lv_label_set_text(qth_lbl, "N/A");
+    } else {
+        char buf[64];
+
+        lv_label_set_text(fijacion, del_telefono ? "Phone" : "Internal");
+        gps_format_age(age, buf, sizeof(buf));
+        lv_label_set_text(antiguedad, buf);
+
+        gps_format_coord(la, "N", "S", buf, sizeof(buf));
+        lv_label_set_text(lat, buf);
+
+        gps_format_coord(lo, "E", "W", buf, sizeof(buf));
+        lv_label_set_text(lon, buf);
+
+        char grid[9];
+
+        qth_pos_to_str(la, lo, grid);
+        lv_label_set_text(qth_lbl, grid);
+    }
+
+    /* La hora del equipo (la pone el NTP, no hay RTC) */
+    time_t    ahora = time(NULL);
+    struct tm tm;
+
+    localtime_r(&ahora, &tm);
+
+    char fecha_txt[32];
+
+    if (strftime(fecha_txt, sizeof(fecha_txt), "%Y-%m-%d %H:%M:%S", &tm) > 0) {
+        lv_label_set_text(fecha, fecha_txt);
+    } else {
+        lv_label_set_text(fecha, "N/A");
+    }
+
+    dummy = NULL;   /* (sin uso: deja claro que no hay mas widgets) */
+    (void) dummy;
+}
+
+dialog_t *dialog_gps = &dialog;

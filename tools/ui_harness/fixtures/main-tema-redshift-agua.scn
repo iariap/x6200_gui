@@ -1,0 +1,36 @@
+# main-tema-redshift-agua: the spectrum and the "moving" waterfall under the
+# "Redshift" theme, with peaks on and the centre line drawn (the same knobs as
+# main-espectro-agua). It is the fixture that measures the theme's own garnet
+# waterfall palette and the spectrum roles on a real render.
+
+name main-tema-redshift-agua
+screen main
+
+theme Redshift
+seed 7
+spectrum_peak true
+waterfall_center_line true
+spectrum_filled true
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -90
+
+battery_v 12.3
+external_v 13.8
+battery_cap 84
+charging false
+
+rxtx rx

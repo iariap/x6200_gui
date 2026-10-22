@@ -1,0 +1,56 @@
+# settings-audio: the real Ajustes window opened on the Audio group, over the
+# real main screen. Same real path as the other settings fixtures
+# (main_screen_action(ACTION_APP_SETTINGS) -> dialog_construct ->
+# src/dialog_settings.c); the fixture then presses the "Audio" tab of the bottom
+# bar (page 1, index 1), which calls settings_goto() to scroll the grid to the
+# group and move the focus there. The group holds, in order, the "Line-in,
+# Line-out" row, the "Play,Rec gain" row (the two sliders this fixture is
+# about), "Audio enhance", SP mode and the voice rows.
+#
+# Geometry of the row it measures: the label sits in grid column 0 and the two
+# sliders in two 3-column cells, each with the value label to its right (the
+# 159 px wide slider and the "+3.0"/"-4.0" label it prints). The two sliders look
+# identical on purpose: what tells them apart is the parameter behind each one,
+# which is why the fixture gives them different values (see below) and then
+# drags the Rec one.
+#
+# Play/rec gains: distinct, non-zero, so the two sliders of the row can be told
+# apart in the render (each one shows its own value) and so a slider that moves
+# the *other* one is visible. The radio loads them from params.db
+# (src/params/params.c, params_load_float); the fixture sets the same field.
+# With the callback of Rec gain wired to the output function -the copy/paste of
+# issue #26- this fixture stops the run (see scenario_settle in src/screens.c).
+#
+# Deterministic: the date/time fields read the harness' fixed clock, not the
+# host's (tools/ui_harness/CMakeLists.txt links with `--wrap=time`).
+
+name settings-audio
+screen settings-audio
+
+seed 20
+
+play_gain_db 3
+rec_gain_db -4
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

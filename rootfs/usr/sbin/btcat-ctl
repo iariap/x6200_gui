@@ -1,0 +1,44 @@
+#!/bin/sh
+# Ported from the X6100 firmware by IU1WXY (LGPL-2.1-or-later).
+# btcat-ctl bt on|off | discoverable on|off | apply | status
+CONF=/mnt/btcat.conf
+BTCAT_BT=yes
+BTCAT_DISCOVERABLE=yes
+[ -r /etc/default/btcat ] && . /etc/default/btcat
+[ -r $CONF ] && . $CONF
+
+set_kv() {
+	touch $CONF
+	if grep -q "^$1=" $CONF; then
+		sed -i "s/^$1=.*/$1=$2/" $CONF
+	else
+		echo "$1=$2" >> $CONF
+	fi
+	sync
+	eval "$1=$2"
+}
+
+yn() { [ "$1" = "on" ] && echo yes || echo no; }
+
+apply() {
+	if [ "$BTCAT_BT" = "yes" ]; then
+		bluetoothctl power on
+		if [ "$BTCAT_DISCOVERABLE" = "yes" ]; then
+			bluetoothctl discoverable-timeout 0
+			bluetoothctl discoverable on
+		else
+			bluetoothctl discoverable off
+		fi
+	else
+		bluetoothctl discoverable off
+		bluetoothctl power off
+	fi
+}
+
+case "$1" in
+	bt)           set_kv BTCAT_BT "$(yn $2)"; apply;;
+	discoverable) set_kv BTCAT_DISCOVERABLE "$(yn $2)"; apply;;
+	apply)        apply;;
+	status)       echo "BTCAT_BT=$BTCAT_BT"; echo "BTCAT_DISCOVERABLE=$BTCAT_DISCOVERABLE";;
+	*) echo "Usage: $0 {bt on|off|discoverable on|off|apply|status}"; exit 1;;
+esac

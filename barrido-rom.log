@@ -1,0 +1,302 @@
+== prueba de apps contra 192.168.0.236 ==
+  uptime inicial: 1601.63 s
+  FT8        CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 1626.00 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  FT4        CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 1653.56 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  JS8        CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 1681.48 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  WSPR       CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 1709.24 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  SSTV       CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 1739.61 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  WeFax      CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 1767.10 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  NavTex     REINICIO (dejo de responder)                 (abre: , cierra: )
+      volvio con uptime 1813.48 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  RTTY       CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 1841.11 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  CW         CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 1868.78 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  Field      CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 1896.29 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  GPS        CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 1935.99 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  Bands      REINICIO (dejo de responder)                 (abre: , cierra: )
+      volvio con uptime 2006.13 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  Settings   CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 2036.30 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  BT         CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 2066.69 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  Cluster    CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 2094.74 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  CwTrainer  REINICIO (dejo de responder)                 (abre: , cierra: )
+      volvio con uptime 2141.16 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  Eq         CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 2171.25 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  Status     CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 2199.09 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  QTH        CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 2226.53 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  Callsign   CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 2254.11 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  Recorder   CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 2281.99 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  WiFi       CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 2311.53 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+  SWRScan    CUELGUE (sin respuesta del control remoto)   (abre: , cierra: )
+      volvio con uptime 2339.32 s
+      -rwxr-xr-x    1 root     root        135888 Oct 16 22:01 x6200_log_2026-10-16_22-01-44.txt
+      -rwxr-xr-x    1 root     root        108316 Oct 16 22:19 x6200_log_2026-10-16_22-24-52.txt
+      -rwxr-xr-x    1 root     root         18204 Oct 16 22:28 x6200_log_2026-10-16_22-30-51.txt
+      -rwxr-xr-x    1 root     root         50972 Oct 16 22:41 x6200_log_2026-10-16_22-56-05.txt
+      -rwxr-xr-x    1 root     root         55068 Oct 16 22:56 x6200_log_2026-10-16_22-57-10.txt
+      --- ultimas lineas de boot.log ---
+        radio          10.1 s de uptime  (+0.21 s)
+        cat/qso_log    10.2 s de uptime  (+0.10 s)
+        wfview         10.2 s de uptime  (+0.00 s)
+        control remoto 10.2 s de uptime  (+0.00 s)
+      GUI lista: 10.3 s
+== fin (detalle en /home/pablo/desa/x6200/x6200_qa/barrido-rom.log) ==

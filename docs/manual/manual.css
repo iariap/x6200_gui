@@ -1,0 +1,33 @@
+:root { --ink:#1b1f24; --dim:#5b6570; --line:#d8dee5; --accent:#0b6bcb; --bg:#ffffff; --code:#f4f6f8; }
+* { box-sizing: border-box; }
+body { font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+       color: var(--ink); background: var(--bg); max-width: 900px; margin: 0 auto; padding: 28px 22px 60px; }
+h1 { font-size: 1.9em; margin: 0 0 .2em; letter-spacing: -.01em; }
+h2 { font-size: 1.35em; margin: 1.8em 0 .5em; padding-bottom: .25em; border-bottom: 2px solid var(--line); }
+h3 { font-size: 1.1em; margin: 1.4em 0 .4em; color: #22303c; }
+p, li { color: var(--ink); }
+img { max-width: 100%; height: auto; display: block; margin: 14px auto; border: 1px solid var(--line);
+      border-radius: 8px; box-shadow: 0 2px 10px rgba(20,30,40,.08); }
+table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: .95em; }
+th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: #f7f9fb; font-weight: 600; }
+tr:nth-child(even) td { background: #fcfdfe; }
+code { background: var(--code); padding: .12em .35em; border-radius: 4px; font-size: .92em;
+       font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+pre { background: var(--code); padding: 12px 14px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--line); }
+pre code { background: none; padding: 0; }
+blockquote { margin: 14px 0; padding: 10px 16px; border-left: 4px solid var(--accent);
+             background: #f2f8ff; border-radius: 0 8px 8px 0; color: #22303c; }
+blockquote p { margin: .3em 0; }
+a { color: var(--accent); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+.title { font-size: 1.9em; font-weight: 700; margin-bottom: .1em; }
+.subtitle { color: var(--dim); font-size: 1.05em; margin-bottom: .2em; }
+.author, .date { color: var(--dim); font-size: .9em; }
+@media print {
+  body { max-width: none; padding: 0; font-size: 11.5pt; }
+  h2 { page-break-after: avoid; } h3 { page-break-after: avoid; }
+  img { box-shadow: none; page-break-inside: avoid; max-height: 78vh; }
+  table, blockquote { page-break-inside: avoid; }
+  a { color: var(--ink); text-decoration: none; }
+}

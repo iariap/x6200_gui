@@ -1,0 +1,17 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output-lvgl131b: ok
+  chroot /home/pablo/desa/asf/state/worktrees/x6200/lvgl131b-chroot: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  aviso: el hash de los fuentes cambio, pero RECONSTRUIR=no: se prueba el binario que ya esta
+OK: /home/pablo/desa/asf/state/worktrees/x6200/lvgl131b-chroot/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13854112 B, 3/3 marcas)
+  captura: docs/evidencia/2026-10-19-lvgl131b/banco-home.png (270 colores distintos)
+  version: 260602c5 lvgl131b: difiere al hilo de GUI los caminos que to
+  fuente: md5 f62173a31cab (src/ + lvgl/src)
+  binario: md5 2ddef0bebd73   qemu-cpu: cortex-a7
+  captura util (23711 bytes)

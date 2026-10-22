@@ -1,0 +1,21 @@
+# Salida de {"cmd":"get"} en el banco QEMU (binario 4893b8f39bf3, commit ade36bbb)
+freq=27185000  band=CB C mode=AM tx=False
+freq=27000000  band=CB C mode=AM tx=False
+freq=27255000  band=CB C mode=AM tx=False
+freq=27235000  band=CB C mode=AM tx=False
+freq=26100000  band=CB A mode=AM tx=False
+freq=26600000  band=CB B mode=AM tx=False
+freq=27300000  band=CB C mode=AM tx=False
+freq=27450000  band=CB D mode=AM tx=False
+
+# Rangos migrados en /mnt/params.db del chroot (mismos que sql/bands_cb.csv)
+201|CB A|26065000|26505000
+202|CB B|26515000|26955000
+203|CB C|26965000|27405000
+204|CB D|27415000|27855000
+# vfoa_mode=6 (AM) en los cuatro grids; vfoa_freq de 201 = 26065000 (la migracion
+# corrigio el valor viejo que caia fuera del rango nuevo)
+# Politica de entrada al arrancar en CB (base sembrada con xit=100 y split=1 en 203):
+boot: freq=27185000 band=CB C mode=AM tx=False
+xit=0
+split203=0

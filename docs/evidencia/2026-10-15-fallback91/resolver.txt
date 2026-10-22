@@ -1,0 +1,40 @@
+# Evidencia #91 — el fallback del resolver de temas, medido sobre el trunk rebasado.
+#
+# Base: 7032d3bb (trunk con #103 = cierre del epic THEMES v2). Fecha: 2026-10-16.
+#
+# El instrumento es el resolver REAL (src/theme.c + src/cJSON.c) enlazado en el host, sin
+# qemu y sin radio: el mismo codigo que corre la GUI. No se commitea como codigo del arbol
+# (es el instrumento de la medicion); queda aca para que la medicion sea reproducible.
+#
+# $ gcc -std=gnu11 -O1 -g -Itests/native/stubs -Isrc resolver91.c src/theme.c src/cJSON.c \
+#       tests/native/stubs/stubs.c -lpng -lm -o resolver91
+# $ THEMES_DIR_SHIPPED=$PWD/rootfs/usr/share/x6200/themes THEMES_DIR=/tmp/sin-temas-usuario ./resolver91
+
+TC_COUNT=122 default=Aurora
+theme_name=no-such-theme-91 -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=IU1WXY           -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=Outdoor          -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=Classic          -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=Holo             -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=Material 3       -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=RS               -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=                 -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+theme_name=(NULL)           -> name='Aurora' roles_distintos_del_default=0 waterfall=si
+idempotente: roles_distintos=0 name_a='Aurora' name_b='Aurora'
+
+# (el stderr del resolver son los avisos "Theme %s not found, using Aurora" de cada intento:
+#  es el propio fallback avisando. Con THEMES_DIR apuntando a un directorio sin temas del
+#  usuario, la unica fuente es rootfs/usr/share/x6200/themes.)
+
+# --- El test muerde: la mutacion del fallback (no se commitea) --------------------
+#
+# Se rompe el fallback a mano en src/theme.c (deja el tema anterior en pantalla en vez de
+# cargar THEME_DEFAULT):
+#
+#     if (name && *name) fprintf(stderr, "Theme %s not found, using %s\n", name, THEME_DEFAULT);
+#     if (0 && !load_file(THEME_DEFAULT)) {          <-- la mutacion
+#
+# $ tests/native/run_native_tests.sh | grep comprobaciones
+1512 comprobaciones, 124 fallos
+# (contra 1512 comprobaciones, 0 fallos del arbol sin mutar: los 122 roles + el nombre +
+#  el radio del default. La mutacion se revierte; src/ queda intacto.)

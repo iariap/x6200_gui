@@ -1,5 +1,7 @@
 #include "subjects.h"
 
+#include <dlfcn.h>
+
 extern "C" {
     #include "../lvgl/lvgl.h"
     #include <stdint.h>
@@ -80,19 +82,58 @@ Subject *subject_create_float(float val) {
     return new SubjectT(val);
 }
 
+
+/* Un subject NULL no se puede leer: antes se desreferenciaba y el proceso moría (se veía al
+ * abrir apps que leen un subject que no quedó inicializado). Ahora se avisa -con quién llamó,
+ * para poder arreglar la causa- y se devuelve un valor neutro. */
+static void avisa_subject_nulo(const char *cual, void *llamador) {
+    Dl_info info;
+
+    if (llamador != NULL && dladdr(llamador, &info)) {
+        /* dli_sname sólo está para símbolos dinámicos; los estáticos no aparecen, así que
+         * se registra el offset dentro del ejecutable y se traduce con addr2line. */
+        unsigned long off = (unsigned long) llamador - (unsigned long) info.dli_fbase;
+
+        LV_LOG_ERROR("%s con sujeto NULL (llamador en offset 0x%lx%s%s)", cual, off,
+                     info.dli_sname ? " - " : "", info.dli_sname ? info.dli_sname : "");
+    } else {
+        LV_LOG_ERROR("%s con sujeto NULL", cual);
+    }
+}
+
 int32_t subject_get_int(Subject *subj) {
+    if (subj == NULL) {
+        avisa_subject_nulo("subject_get_int", __builtin_return_address(0));
+        return 0;
+    }
+
     return static_cast<SubjectT<int32_t>*>(subj)->get();
 }
 
 uint64_t subject_get_uint64(Subject *subj) {
+    if (subj == NULL) {
+        avisa_subject_nulo("subject_get_uint64", __builtin_return_address(0));
+        return 0;
+    }
+
     return static_cast<SubjectT<uint64_t>*>(subj)->get();
 }
 
 float subject_get_float(Subject *subj) {
+    if (subj == NULL) {
+        avisa_subject_nulo("subject_get_float", __builtin_return_address(0));
+        return 0;
+    }
+
     return static_cast<SubjectT<float>*>(subj)->get();
 }
 
 void subject_set_int(Subject *subj, int32_t val) {
+    if (subj == NULL) {
+        avisa_subject_nulo("subject_set_int", __builtin_return_address(0));
+        return;
+    }
+
     if (subj->dtype() == DTYPE_INT) {
         static_cast<SubjectT<int32_t>*>(subj)->set(val);
     } else {
@@ -100,6 +141,11 @@ void subject_set_int(Subject *subj, int32_t val) {
     }
 }
 void subject_set_uint64(Subject *subj, uint64_t val) {
+    if (subj == NULL) {
+        avisa_subject_nulo("subject_set_uint64", __builtin_return_address(0));
+        return;
+    }
+
     if (subj->dtype() == DTYPE_UINT64) {
         static_cast<SubjectT<uint64_t>*>(subj)->set(val);
     } else {
@@ -108,6 +154,11 @@ void subject_set_uint64(Subject *subj, uint64_t val) {
 }
 
 void subject_set_float(Subject *subj, float val) {
+    if (subj == NULL) {
+        avisa_subject_nulo("subject_set_float", __builtin_return_address(0));
+        return;
+    }
+
     if (subj->dtype() == DTYPE_FLOAT) {
         static_cast<SubjectT<float>*>(subj)->set(val);
     } else {

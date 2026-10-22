@@ -1,0 +1,29 @@
+== sanitizers: NO disponibles (se omite) ==
+In file included from /tmp/opencode/sock172-out/remote_src/test_remote.cpp:41:
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp: In function ‘void* server_thread(void*)’:
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp:977:69: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+  977 |         pfd[n++] = (struct pollfd){.fd = listen_fd, .events = POLLIN};
+      |                                                                     ^
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp:978:70: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+  978 |         pfd[n++] = (struct pollfd){.fd = wake_fd[0], .events = POLLIN};
+      |                                                                      ^
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp:982:127: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+  982 |                 pfd[n++] = (struct pollfd){.fd = clients[i].fd, .events = (short)(POLLIN | (clients[i].out_len ? POLLOUT : 0))};
+      |                                                                                                                               ^
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp: In function ‘bool remote_sock_attends(const char*, bool*)’:
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp:1159:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+ 1159 |     struct sockaddr_un a = {.sun_family = AF_UNIX};
+      |                                                  ^
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp: In function ‘void remote_server_init()’:
+/tmp/opencode/sock172-out/remote_src/remote_server.cpp:1185:53: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+ 1185 |     struct sockaddr_un addr = {.sun_family = AF_UNIX};
+      |                                                     ^
+/tmp/opencode/sock172-out/remote_src/test_remote.cpp: In function ‘int sock_listen(const char*)’:
+/tmp/opencode/sock172-out/remote_src/test_remote.cpp:205:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+  205 |     struct sockaddr_un a = {.sun_family = AF_UNIX};
+      |                                                  ^
+/tmp/opencode/sock172-out/remote_src/cfg/subjects.cpp: In function ‘void avisa_subject_nulo(const char*, void*)’:
+/tmp/opencode/sock172-out/remote_src/cfg/subjects.cpp:95:23: warning: unused variable ‘off’ [-Wunused-variable]
+   95 |         unsigned long off = (unsigned long) llamador - (unsigned long) info.dli_fbase;
+      |                       ^~~
+138 comprobaciones, 0 fallos

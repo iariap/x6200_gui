@@ -1,0 +1,18 @@
+# sha256 del contenido de este directorio (host x86, revision ec89fc3).
+# Idempotencia de `--bench-wakeups`: las dos corridas con las mismas rutas de
+# salida dieron el mismo JSON byte a byte y el mismo PNG:
+#   run1.json == wakeups.json  79317298f912e4d99ee18c8db91fc51a953448cb2d87dc4d7b58f740d7e9af38
+#   run1.png == wakeups.png    c1c66701b47c8926adbb37221406705404e82be85c574ce8108c71d3dd6428ae
+# El PNG no es la evidencia de este modo (los numeros lo son): se guardan como
+# prueba de que la corrida es reproducible byte a byte.
+
+79317298f912e4d99ee18c8db91fc51a953448cb2d87dc4d7b58f740d7e9af38  wakeups.json
+79317298f912e4d99ee18c8db91fc51a953448cb2d87dc4d7b58f740d7e9af38  run1.json
+d14dd6220f0797b921614fefac5e2d4c58a2b7e1e0a8752391e30475b7b2f209  window.json
+885a1c0b2b95f2eb8ef12d244a05bf9f330e5de1d7cdfc3e83615810cb2f2305  plain.json
+c1c66701b47c8926adbb37221406705404e82be85c574ce8108c71d3dd6428ae  wakeups.png
+bfdea9e4666fedbe7aae239fa1a341983affca0500b1abae965b713f377b7b99  window.png
+3986bc9a6047744aa2cd8db1c9879d73e71e16e45d7737b0d7035c06e22ec821  plain.png
+
+# Plano: la captura comun (plain.json/plain.png) NO lleva bloque `wakeups` y su
+# PNG es el de siempre (3986bc9a…) — el modo es aditivo.

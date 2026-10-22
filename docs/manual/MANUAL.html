@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="iariap (LU2DSX)" />
+  <title>Manual del operador</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="manual.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Manual del operador</h1>
+<p class="subtitle">Con las funciones del X6100 de IU1WXY, explicadas
+para radioaficionados</p>
+<p class="author">iariap (LU2DSX)</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#manual-del-operador-rom-lu2dsx-para-xiegu-x6200"
+id="toc-manual-del-operador-rom-lu2dsx-para-xiegu-x6200">Manual del
+operador — ROM LU2DSX para Xiegu X6200</a>
+<ul>
+<li><a href="#antes-de-empezar" id="toc-antes-de-empezar">1. Antes de
+empezar</a></li>
+<li><a href="#instalación" id="toc-instalación">2. Instalación</a>
+<ul>
+<li><a href="#instalación-completa-imagen"
+id="toc-instalación-completa-imagen">2.1 Instalación completa
+(imagen)</a></li>
+<li><a href="#actualización-en-el-lugar"
+id="toc-actualización-en-el-lugar">2.2 Actualización en el
+lugar</a></li>
+</ul></li>
+<li><a href="#la-pantalla-principal" id="toc-la-pantalla-principal">3.
+La pantalla principal</a></li>
+<li><a href="#los-controles" id="toc-los-controles">4. Los controles</a>
+<ul>
+<li><a href="#el-dial-rueda-grande" id="toc-el-dial-rueda-grande">4.1 El
+dial (rueda grande)</a></li>
+<li><a href="#la-rueda-de-volumen-izquierda-12-modos"
+id="toc-la-rueda-de-volumen-izquierda-12-modos">4.2 La rueda de volumen
+(izquierda) — 12 modos</a></li>
+<li><a href="#el-mfk-rueda-multifunción-abajo-la-perilla-de-todo"
+id="toc-el-mfk-rueda-multifunción-abajo-la-perilla-de-todo">4.3 El MFK
+(rueda multifunción, abajo) — la perilla de todo</a></li>
+<li><a href="#el-botón-de-power" id="toc-el-botón-de-power">4.4 El botón
+de power</a></li>
+<li><a href="#el-atu" id="toc-el-atu">4.5 El ATU</a></li>
+</ul></li>
+<li><a href="#ajustes-todos-los-parámetros"
+id="toc-ajustes-todos-los-parámetros">5. Ajustes: todos los
+parámetros</a></li>
+<li><a href="#las-aplicaciones" id="toc-las-aplicaciones">6. Las
+aplicaciones</a>
+<ul>
+<li><a href="#ft8-ft4" id="toc-ft8-ft4">6.1 FT8 / FT4</a></li>
+<li><a href="#wspr" id="toc-wspr">6.2 WSPR</a></li>
+<li><a href="#js8" id="toc-js8">6.3 JS8</a></li>
+<li><a href="#sstv" id="toc-sstv">6.4 SSTV</a></li>
+<li><a href="#wefax" id="toc-wefax">6.5 WeFax</a></li>
+<li><a href="#navtex" id="toc-navtex">6.6 NavTex</a></li>
+<li><a href="#clúster-dx" id="toc-clúster-dx">6.7 Clúster DX</a></li>
+<li><a href="#posición-gps" id="toc-posición-gps">6.8 Posición
+(GPS)</a></li>
+<li><a href="#field-ops-sotapota" id="toc-field-ops-sotapota">6.9 Field
+Ops (SOTA/POTA)</a></li>
+<li><a href="#rtty" id="toc-rtty">6.10 RTTY</a></li>
+<li><a href="#cw-keyboard-la-app-cw" id="toc-cw-keyboard-la-app-cw">6.11
+CW Keyboard (la app <code>CW</code>)</a></li>
+<li><a href="#cw-trainer" id="toc-cw-trainer">6.12 CW Trainer</a></li>
+<li><a href="#bandas" id="toc-bandas">6.13 Bandas</a></li>
+<li><a href="#recorder-grabador" id="toc-recorder-grabador">6.14
+Recorder (grabador)</a></li>
+<li><a href="#eq-ecualizador-del-micrófono"
+id="toc-eq-ecualizador-del-micrófono">6.15 EQ (ecualizador del
+micrófono)</a></li>
+<li><a href="#callsign-indicativo" id="toc-callsign-indicativo">6.16
+Callsign (indicativo)</a></li>
+<li><a href="#qth-tu-ubicación" id="toc-qth-tu-ubicación">6.17 QTH (tu
+ubicación)</a></li>
+<li><a href="#status-estado-del-sistema"
+id="toc-status-estado-del-sistema">6.18 Status (estado del
+sistema)</a></li>
+<li><a href="#wifi" id="toc-wifi">6.19 WiFi</a></li>
+<li><a href="#bluetooth" id="toc-bluetooth">6.20 Bluetooth</a></li>
+<li><a href="#swr-scan-barrido-de-roe"
+id="toc-swr-scan-barrido-de-roe">6.21 SWR Scan (barrido de ROE)</a></li>
+<li><a href="#about-acerca-de" id="toc-about-acerca-de">6.22 About
+(acerca de)</a></li>
+<li><a href="#ajustes" id="toc-ajustes">6.23 Ajustes</a></li>
+</ul></li>
+<li><a href="#guías-avanzadas" id="toc-guías-avanzadas">7. Guías
+avanzadas</a>
+<ul>
+<li><a href="#control-remoto-desde-el-teléfono"
+id="toc-control-remoto-desde-el-teléfono">7.1 Control remoto desde el
+teléfono</a></li>
+<li><a href="#configurador-web" id="toc-configurador-web">7.2
+Configurador web</a></li>
+<li><a href="#bluetooth-1" id="toc-bluetooth-1">7.3 Bluetooth</a></li>
+<li><a href="#el-clúster-paso-a-paso"
+id="toc-el-clúster-paso-a-paso">7.4 El clúster, paso a paso</a></li>
+<li><a href="#wfview-la-radio-como-ic-705-en-la-red"
+id="toc-wfview-la-radio-como-ic-705-en-la-red">7.5 wfview: la radio como
+IC-705 en la red</a></li>
+<li><a href="#temas" id="toc-temas">7.6 Temas</a></li>
+<li><a href="#anuncios-por-voz-tts-en-español"
+id="toc-anuncios-por-voz-tts-en-español">7.7 Anuncios por voz (TTS en
+español)</a></li>
+<li><a href="#field-ops-con-qrz" id="toc-field-ops-con-qrz">7.8 Field
+Ops con QRZ</a></li>
+<li><a href="#grabación-de-pantalla-y-capturas"
+id="toc-grabación-de-pantalla-y-capturas">7.9 Grabación de pantalla y
+capturas</a></li>
+<li><a href="#motor-de-video-drmkms" id="toc-motor-de-video-drmkms">7.10
+Motor de video DRM/KMS</a></li>
+<li><a href="#transverter-trabajar-vhfuhf-con-el-equipo"
+id="toc-transverter-trabajar-vhfuhf-con-el-equipo">7.11 Transverter:
+trabajar VHF/UHF con el equipo</a></li>
+<li><a href="#actualizaciones-y-ssh" id="toc-actualizaciones-y-ssh">7.12
+Actualizaciones y SSH</a></li>
+</ul></li>
+<li><a href="#solución-de-problemas" id="toc-solución-de-problemas">8.
+Solución de problemas</a></li>
+<li><a href="#referencia" id="toc-referencia">9. Referencia</a></li>
+<li><a href="#créditos" id="toc-créditos">9. Créditos</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="manual-del-operador-rom-lu2dsx-para-xiegu-x6200">Manual del
+operador — ROM LU2DSX para Xiegu X6200</h1>
+<p>Esta ROM nace del firmware del X6200 (GUI LVGL + Buildroot) y le
+incorpora las funciones del X6100 de IU1WXY que la plataforma permite.
+La idea es tener <strong>un QRP de campo completo</strong>: los
+digitales, CW, el clúster, SOTA/POTA y todo lo que hace falta cuando
+estás en un cerro con una batería y un cable de 20 metros.</p>
+<figure>
+<img src="img/radio-principal.png" alt="La radio operando" />
+<figcaption aria-hidden="true">La radio operando</figcaption>
+</figure>
+<p><strong>Lo que vas a encontrar acá:</strong> el equipo con 8 temas,
+plan de banda IARU, S-meter con aguja, WFM, grabación, Bluetooth (CAT y
+auriculares), wfview, configurador web, control remoto desde el
+teléfono, FT8/FT4, WSPR, JS8, SSTV, WeFax, NavTex, RTTY, CW Keyboard y
+CW Trainer, clúster DX con spots sobre el waterfall, Field Ops
+(SOTA/POTA) y anuncios por voz en español.</p>
+<h2 id="antes-de-empezar">1. Antes de empezar</h2>
+<p><strong>Lo que necesitás</strong></p>
+<ul>
+<li>La Xiegu X6200 y una <strong>microSD</strong>. Ojo: la microSD va
+<strong>dentro del adaptador</strong>; si no queda bien asentada, la
+radio arranca su firmware interno y parece que “no bootea”.</li>
+<li>Una PC con cualquier herramienta de imágenes (para la instalación
+completa).</li>
+<li><strong>Cargador</strong>, si vas a actualizar en el lugar: si se
+corta a mitad, el equipo no arranca.</li>
+</ul>
+<p><strong>Regla de oro:</strong> todo lo tuyo vive en la partición
+<strong><code>DATA</code></strong> (<code>params.db</code> con los
+ajustes, <code>qso_log.db</code> con los contactos,
+<code>themes/</code>, <code>msg/</code>, <code>rec/</code> y
+<code>app_logs/</code>). <strong>Esa partición nunca se toca al
+actualizar.</strong> Igual, respaldala antes de cada actualización.</p>
+<h2 id="instalación">2. Instalación</h2>
+<h3 id="instalación-completa-imagen">2.1 Instalación completa
+(imagen)</h3>
+<ol type="1">
+<li><strong>Respaldá <code>DATA</code></strong> a la PC.</li>
+<li><strong>Grabá el <code>.img</code></strong> en la microSD
+(<code>dd</code>, balenaEtcher, Raspberry Pi Imager). Trae dos
+particiones: <code>BOOT</code> (arranque) y <code>rootfs</code> (el
+sistema).</li>
+<li><strong>Ponela en la radio y encendé.</strong> En el primer arranque
+el equipo crea la partición <code>DATA</code>. Si ya existe una
+<code>DATA</code> con formato FAT, la monta <strong>sin
+formatear</strong>: tus datos sobreviven.</li>
+<li><strong>Restaurá tus datos</strong> en <code>DATA</code> y
+reiniciá.</li>
+</ol>
+<h3 id="actualización-en-el-lugar">2.2 Actualización en el lugar</h3>
+<ol type="1">
+<li>Copiá <code>x6200_r1cbu_&lt;version&gt;.tgz</code> a la raíz de
+<code>DATA</code>.</li>
+<li><strong>Con el cargador puesto</strong>, encendé. El script
+<code>S02update</code> respalda (<code>backup_*.tgz</code>), aplica la
+actualización y borra el tgz.</li>
+<li>Esperá a que termine y arranque.</li>
+</ol>
+<h2 id="la-pantalla-principal">3. La pantalla principal</h2>
+<figure>
+<img src="img/00-principal.png" alt="Pantalla principal" />
+<figcaption aria-hidden="true">Pantalla principal</figcaption>
+</figure>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Zona</th>
+<th>Qué te dice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arriba a la izquierda</td>
+<td>VFO (<code>VFO-A</code>/<code>VFO-B</code>), modo
+(LSB/USB/CW/CWR/AM/FM/DIG), <code>AUTO</code>, <code>PRE</code>
+(preamplificador) y <code>ATU1</code></td>
+</tr>
+<tr>
+<td>Arriba a la derecha</td>
+<td>Hora <strong>UTC</strong></td>
+</tr>
+<tr>
+<td>El arco</td>
+<td><strong>S-meter</strong> de S1 a +40 dB, con la lectura en dBm</td>
+</tr>
+<tr>
+<td>La franja de colores</td>
+<td><strong>Plan de banda IARU</strong>: CW, DIG y ALL MODES, con los
+segmentos de la banda</td>
+</tr>
+<tr>
+<td>Los números grandes</td>
+<td>Los extremos de la banda y, en el centro, la frecuencia del VFO</td>
+</tr>
+<tr>
+<td>La zona oscura</td>
+<td><strong>Waterfall</strong>; arriba, la franja con las <strong>marcas
+de los spots</strong> del clúster</td>
+</tr>
+<tr>
+<td>Los botones de abajo</td>
+<td>Volumen, Squelch, RF gain, TX power y las páginas de botones de
+función</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Las páginas de botones.</strong> La fila de abajo tiene 5
+botones y el primero es el <strong>cambiador de página</strong>:
+apretarlo pasa a la página siguiente, mantenerlo vuelve a la anterior.
+Hay varios grupos de páginas (VOL, MFK, MEM y <strong>APP</strong>) y se
+cambian con la <strong>tecla APP</strong>. En las <strong>6 páginas
+APP</strong> están <strong>todas las aplicaciones</strong>, 4 por página
+(la tabla está en la sección 6).</p>
+<h2 id="los-controles">4. Los controles</h2>
+<h3 id="el-dial-rueda-grande">4.1 El dial (rueda grande)</h3>
+<p>Cambia la frecuencia del VFO activo y <strong>anuncia la frecuencia
+por voz</strong> si el modo de voz está activo. Con
+<code>Freq acceleration</code> activado, girando rápido salta más. El
+paso se cambia con las acciones <em>Step up</em> / <em>Step down</em> (o
+desde las páginas de botones).</p>
+<h3 id="la-rueda-de-volumen-izquierda-12-modos">4.2 La rueda de volumen
+(izquierda) — 12 modos</h3>
+<p>Girala para el modo activo y apretala para cambiar de modo. Los modos
+son:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Modo</th>
+<th>Qué ajusta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>VOL</strong></td>
+<td>Volumen de audio</td>
+</tr>
+<tr>
+<td><strong>RFG</strong></td>
+<td>RF gain del receptor</td>
+</tr>
+<tr>
+<td><strong>SQL</strong></td>
+<td>Squelch</td>
+</tr>
+<tr>
+<td><strong>FILTER LOW / HIGH / BW</strong></td>
+<td>Filtro de recepción: corte bajo, corte alto y ancho</td>
+</tr>
+<tr>
+<td><strong>PWR</strong></td>
+<td>Potencia de transmisión</td>
+</tr>
+<tr>
+<td><strong>MIC / HMIC / IMIC</strong></td>
+<td>Ganancia de micrófono: general, de mano y de línea</td>
+</tr>
+<tr>
+<td><strong>MONI</strong></td>
+<td>Nivel del monitor (te escuchás en TX)</td>
+</tr>
+<tr>
+<td><strong>VOICE LANG</strong></td>
+<td>Idioma de los anuncios (español / inglés)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="el-mfk-rueda-multifunción-abajo-la-perilla-de-todo">4.3 El MFK
+(rueda multifunción, abajo) — la perilla de todo</h3>
+<p>Girala para cambiar el valor del modo activo, apretala para cambiar
+de modo. Los modos y sus parámetros:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Grupo</th>
+<th>Modos del MFK</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Espectro</strong></td>
+<td>Min level, Max level, FFT decimation, FFT width, Spectrum beta, Peak
+hold, Peak speed, Spectrum fill, Spectrum peak</td>
+</tr>
+<tr>
+<td><strong>Recepción</strong></td>
+<td>DNF (center frequency, width), NB (level, width), NR (level), AGC
+(control, hang, knee level, slope level), ATT switcher, Antenna
+selector</td>
+</tr>
+<tr>
+<td><strong>CW</strong></td>
+<td>CW key speed, CW key mode, Iambic mode, CW key tone, CW key volume,
+CW key QSK time, CW key ratio, CW key train, CW tune, CW decoder (SNR
+level, noise beta, peak beta)</td>
+</tr>
+<tr>
+<td><strong>Otros</strong></td>
+<td>Comp (compresor de audio), Charger mode, Peak hold time</td>
+</tr>
+</tbody>
+</table>
+<h3 id="el-botón-de-power">4.4 El botón de power</h3>
+<ul>
+<li><strong>Toque corto:</strong> apaga <strong>sólo la
+pantalla</strong>. El equipo sigue operando; es lo que usa el ajuste de
+voz <em>When LCD off</em> para hablarte sin encender nada.</li>
+<li><strong>Pulsación larga:</strong> apaga la radio.</li>
+</ul>
+<h3 id="el-atu">4.5 El ATU</h3>
+<ol type="1">
+<li>Apretá <code>ATU</code> para habilitarlo (aparece
+<code>ATU1</code>).</li>
+<li>Mantené apretado <code>ATU</code> (o usá la acción <em>ATU
+tune</em>) para sintonizar; el equipo busca la mejor red de
+adaptación.</li>
+<li>El resultado queda guardado por banda y modo, así que al volver no
+tenés que resintonizar.</li>
+</ol>
+<h2 id="ajustes-todos-los-parámetros">5. Ajustes: todos los
+parámetros</h2>
+<p>Se entra con la acción <em>APP Settings</em> (o desde la página APP
+5:6). Los ajustes están <strong>agrupados por tema en 8
+secciones</strong> y la fila de botones de abajo son
+<strong>tabs</strong>: cada botón salta a su sección, que queda arriba
+de todo y con el foco en su primer campo. El tab en el que estás queda
+marcado. Los nombres de los tabs están en <strong>inglés de ham
+radio</strong> (<code>Clock</code>, <code>Display</code>,
+<code>Spectrum</code>…): es el idioma de la terminología del equipo.</p>
+<p>Son 8 tabs y en la fila entran 4 más el botón de página, así que hay
+dos páginas: la primera tiene
+<code>Operation · Audio · Spectrum · Clock · More &gt;</code> y la
+segunda <code>Display · Appearance · Actions · Info · &lt; More</code>.
+El botón de la punta pasa a la otra página de tabs.</p>
+<p><strong>El orden es por utilidad para hacer contactos</strong>:
+primero lo que se toca mientras se opera, después lo ergonómico y al
+final lo eventual. El detalle de cada decisión está en
+<code>docs/settings-order.md</code>.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tab</th>
+<th>Parámetros</th>
+<th>Para qué</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Operation</strong></td>
+<td>Freq acceleration / Charger / Cluster column / Bluetooth /
+Discoverable (CAT) / Devices / wfview server / Transverter</td>
+<td>Aceleración del dial, cargador, columna del clúster, Bluetooth y su
+panel de dispositivos, servidor wfview y transverter</td>
+</tr>
+<tr>
+<td><strong>Audio</strong></td>
+<td>Line-in, Line-out / audio gain / Audio enhance / Speaker mode /
+Voice mode, rate, pitch, volume</td>
+<td>Entradas y ganancias, realce de audio, modo del parlante y los
+anuncios de voz</td>
+</tr>
+<tr>
+<td><strong>Spectrum</strong></td>
+<td>Spectrum auto min, max / Waterfall auto min, max / Waterfall line,
+zoom / Waterfall smooth scroll / Waterfall battery mode</td>
+<td>Ajuste automático de niveles, líneas y zoom del waterfall,
+desplazamiento suave y ahorro en batería</td>
+</tr>
+<tr>
+<td><strong>Clock</strong></td>
+<td>Day, Month, Year / Hour, Min, Sec / Clock view / Timeout Clock,
+Power, TX</td>
+<td>Hora UTC de los decodificados (también la ajusta el NTP si hay red)
+y qué muestra el reloj</td>
+</tr>
+<tr>
+<td><strong>Display</strong></td>
+<td>Timeout, Brightness / Buttons brightness / S-meter needle / Band
+plan</td>
+<td>Apagado automático, brillo de pantalla y de botones, aguja del
+S-meter y plan de banda</td>
+</tr>
+<tr>
+<td><strong>Appearance</strong></td>
+<td>Theme / Font</td>
+<td>Los <strong>8 temas</strong> y la familia de fuente (se aplican al
+reiniciar)</td>
+</tr>
+<tr>
+<td><strong>Actions</strong></td>
+<td>APP long press / MIC long press</td>
+<td>Asignar acciones a las pulsaciones largas: Screenshot, Screen rec,
+Mute, Voice mode, Battery info, ATT, PRE, ATU, ATU tune, APP Bands y las
+demás apps</td>
+</tr>
+<tr>
+<td><strong>Info</strong></td>
+<td>Mag Freq, Info, ALC</td>
+<td>Qué muestra cada zona de la barra superior</td>
+</tr>
+</tbody>
+</table>
+<h2 id="las-aplicaciones">6. Las aplicaciones</h2>
+<p>Se abre con el botón <code>APP</code> (o asignando la acción del app
+a un botón). En las capturas se ve el diálogo del app sobre la pantalla
+principal, tal como queda en el equipo.</p>
+<figure>
+<img src="img/00-app-pages.png" alt="Las páginas APP" />
+<figcaption aria-hidden="true">Las páginas APP</figcaption>
+</figure>
+<p><strong>Todas las apps están alcanzables.</strong> La <strong>tecla
+APP</strong> entra al grupo y el primer botón de abajo cambia de página:
+son <strong>6</strong>, con 3 o 4 apps cada una.</p>
+<table>
+<thead>
+<tr>
+<th>Página</th>
+<th>Apps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>APP 1:6</strong></td>
+<td>FT8 (y FT4), JS8, WSPR, RTTY</td>
+</tr>
+<tr>
+<td><strong>APP 2:6</strong></td>
+<td>SSTV, WeFax, NavTex, Clúster</td>
+</tr>
+<tr>
+<td><strong>APP 3:6</strong></td>
+<td>Recorder, <strong>Field Ops</strong>, GPS, Bandas</td>
+</tr>
+<tr>
+<td><strong>APP 4:6</strong></td>
+<td>CW Kbd, CW Trainer, Eq, Status</td>
+</tr>
+<tr>
+<td><strong>APP 5:6</strong></td>
+<td>Ajustes, Callsign, QTH</td>
+</tr>
+<tr>
+<td><strong>APP 6:6</strong></td>
+<td>WiFi, Bluetooth, SWR Scan</td>
+</tr>
+</tbody>
+</table>
+<p>Además de las páginas, <strong>cada app está en la lista de
+acciones</strong> de <em>Ajustes → Acciones</em> y se puede asignar a un
+botón o a una pulsación larga. Es el camino para las que no tienen botón
+propio en las páginas: <strong>About</strong>, por ejemplo, se abre
+desde ahí (o asignándola).</p>
+<h3 id="ft8-ft4">6.1 FT8 / FT4</h3>
+<figure>
+<img src="img/01-ft8.png" alt="FT8" />
+<figcaption aria-hidden="true">FT8</figcaption>
+</figure>
+<p>El modo digital más usado: ciclos de 15 segundos, decodificado y
+transmisión automática o asistida. Sirve para hacer contactos con
+señales que no escucharías ni en sueños, con 5 W y un cable
+cualquiera.</p>
+<p><strong>Cómo se usa:</strong> elegí banda y modo <code>DIG</code>;
+poné tu <strong>indicativo</strong> en Ajustes (Callsign); abrí FT8 y
+elegí la frecuencia de llamada de la banda; para llamar CQ usá el botón
+de CQ, y para contestar tocá una fila de la lista de decodificados. El
+app arma la secuencia y transmite sola. Podés subir los decodificados
+por UDP a un programa de la PC (ver <code>docs/FT8_UDP.md</code>).</p>
+<h3 id="wspr">6.2 WSPR</h3>
+<figure>
+<img src="img/02-wspr.png" alt="WSPR" />
+<figcaption aria-hidden="true">WSPR</figcaption>
+</figure>
+<p>Baliza débil señal: transmite y escucha reportes de 2 minutos para
+ver hasta dónde llega tu señal con muy poca potencia. Es la mejor forma
+de probar una antena nueva.</p>
+<p><strong>Cómo se usa:</strong> elegí el porcentaje de tiempo de TX
+(<code>wspr_txpct</code>) y la banda; el app transmite en los slots
+elegidos y decodifica el resto. Subí los spots a
+<strong>WSPRnet</strong> con tu indicativo y grilla; los reportes quedan
+en el log del app.</p>
+<h3 id="js8">6.3 JS8</h3>
+<figure>
+<img src="img/03-js8.png" alt="JS8" />
+<figcaption aria-hidden="true">JS8</figcaption>
+</figure>
+<p>Mensajería digital de teclado a teclado, tolerante a señales flojas,
+con modos de velocidad normal, rápido y turbo. Sirve para pasar un
+mensaje corto o tu posición a otro colega.</p>
+<p><strong>Cómo se usa:</strong> elegí el grupo de llamada y la banda, y
+escribí en el teclado; el app decodifica las estaciones que te responden
+y muestra el mapa de estaciones conocidas. Permite mandar tu
+<strong>posición</strong> (la toma del teléfono o del web) y guardar el
+QSO en el log.</p>
+<h3 id="sstv">6.4 SSTV</h3>
+<figure>
+<img src="img/04-sstv.png" alt="SSTV" />
+<figcaption aria-hidden="true">SSTV</figcaption>
+</figure>
+<p>Imágenes por radio en modo analógico: mandás y recibís una foto
+dibujada línea por línea. Los modos más usados son R36 y R72 (los que se
+usan en 20 metros).</p>
+<p><strong>Cómo se usa:</strong> abrí la app y elegí el modo
+(<code>R8BW</code>, <code>R36</code>, <code>R72</code>, <code>M1</code>,
+<code>M2</code>, <code>S1</code>, <code>S2</code>); para recibir, sólo
+dejá el receptor en la frecuencia y el app va dibujando la imagen; para
+transmitir, elegí la imagen y arrancá la TX (el app respeta el PTT). Las
+imágenes quedan guardadas en <code>DATA</code>.</p>
+<h3 id="wefax">6.5 WeFax</h3>
+<figure>
+<img src="img/05-wefax.png" alt="WeFax" />
+<figcaption aria-hidden="true">WeFax</figcaption>
+</figure>
+<p>Facsímil meteorológico: las cartas que transmiten las estaciones de
+radiofax en HF. Se reciben en blanco y negro y se leen como un mapa del
+tiempo.</p>
+<p><strong>Cómo se usa:</strong> elegí la frecuencia de la estación y el
+modo (blanco/negro o escala de grises), y esperá el comienzo de la
+carta; el app alinea la imagen. Con la <strong>perilla del MFK</strong>
+(o los botones <em>Align</em> y <em>Tilt</em>) corregís el
+<strong>alineado</strong> y la <strong>inclinación</strong>: girando se
+ve cómo se endereza la imagen; después guardás el PNG.</p>
+<h3 id="navtex">6.6 NavTex</h3>
+<figure>
+<img src="img/06-navtex.png" alt="NavTex" />
+<figcaption aria-hidden="true">NavTex</figcaption>
+</figure>
+<p>Avisos marítimos en 518 kHz: meteorología, avisos a los navegantes y
+búsquedas. Es la versión en texto del radiofax y con muy poco ancho de
+banda.</p>
+<p><strong>Cómo se usa:</strong> sintonizá la frecuencia de la estación
+y abrí el app; el texto decodificado aparece en pantalla y se guarda por
+estación. Es útil también en la costa para saber el estado del mar.</p>
+<h3 id="clúster-dx">6.7 Clúster DX</h3>
+<figure>
+<img src="img/07-cluster.png" alt="Clúster" />
+<figcaption aria-hidden="true">Clúster</figcaption>
+</figure>
+<p>Los spots de DX en vivo: qué estaciones están en el aire y en qué
+frecuencia. Es la herramienta de caza mayor, y con la columna y las
+marcas sobre el waterfall se convierte en un radar.</p>
+<p><strong>Cómo se usa:</strong> configurá <strong>servidor</strong>,
+<strong>puerto</strong> y tu <strong>indicativo</strong> (el clúster lo
+pide para entrar), elegí los filtros (modos, bandas, actividad y
+antigüedad) y conectá. Los spots aparecen en la <strong>columna</strong>
+de la derecha: al tocar uno, el equipo <strong>sintoniza</strong> esa
+frecuencia y ajusta el modo. Las <strong>marcas sobre el
+waterfall</strong> muestran los que caen dentro del ancho que estás
+viendo.</p>
+<h3 id="posición-gps">6.8 Posición (GPS)</h3>
+<figure>
+<img src="img/08-gps.png" alt="GPS" />
+<figcaption aria-hidden="true">GPS</figcaption>
+</figure>
+<p>Muestra de dónde viene la posición y la grilla QTH, que es lo que
+Field Ops y JS8 necesitan para reportar dónde estás. El X6200 <strong>no
+trae receptor GPS</strong>: la posición la manda el teléfono o el
+configurador web.</p>
+<p><strong>Cómo se usa:</strong> mandá la posición desde el teléfono
+(<code>{"cmd":"location","text":"-34.60,-58.38"}</code>) o desde el web.
+El app muestra la <strong>fuente</strong> (Phone / None), la
+<strong>edad</strong> del dato, la fecha y hora, latitud, longitud y la
+<strong>grilla</strong>; si no hay nada, lo dice tal cual en vez de
+inventar satélites.</p>
+<h3 id="field-ops-sotapota">6.9 Field Ops (SOTA/POTA)</h3>
+<figure>
+<img src="img/09-field.png" alt="Field Ops" />
+<figcaption aria-hidden="true">Field Ops</figcaption>
+</figure>
+<p>La app para salir al campo: referencias SOTA y POTA, log de contactos
+y self-spot. Está pensada para que en la cumbre no tengas que pelear con
+nada. <strong>Está en APP 3:6.</strong></p>
+<p><strong>Cómo se usa:</strong> elegí la <strong>referencia</strong>
+(la lista viene incluida, se puede usar sin internet), poné tu
+<strong>indicativo</strong>, y activá el <strong>self-spot</strong> para
+avisar a pota.app en qué frecuencia estás. Cada contacto se guarda en el
+log ADIF (exportable y subible a <strong>QRZ</strong>). El <strong>CQ de
+voz</strong> graba tu llamado una vez y lo emite por PTT cuando lo
+pedís.</p>
+<h3 id="rtty">6.10 RTTY</h3>
+<figure>
+<img src="img/10-rtty.png" alt="RTTY" />
+<figcaption aria-hidden="true">RTTY</figcaption>
+</figure>
+<p>El digital clásico de los concursos: Baudot a 45 baudios, con shift
+de 170 Hz. Todavía se escucha en 40 y 20 metros y sigue siendo divertido
+de decodificar.</p>
+<p><strong>Cómo se usa:</strong> elegí centro, shift y velocidad
+(<code>rtty_center</code>, <code>rtty_shift</code>,
+<code>rtty_rate</code>), escribí en el teclado y el app transmite; lo
+que llega se decodifica en pantalla. Es ideal para probar el filtro
+angosto del receptor.</p>
+<h3 id="cw-keyboard-la-app-cw">6.11 CW Keyboard (la app
+<code>CW</code>)</h3>
+<figure>
+<img src="img/11-cw.png" alt="CW Keyboard" />
+<figcaption aria-hidden="true">CW Keyboard</figcaption>
+</figure>
+<p>Telegrafía sin manipulador: escribís en un <strong>teclado USB o
+Bluetooth</strong> y el equipo sale al aire en CW con tu velocidad, tono
+y peso. Ideal para el campo (nada que enchufar), para quien no puede
+usar la paleta por una lesión, o para mandar un texto largo sin
+equivocarse.</p>
+<p><strong>Cómo se usa:</strong> abrí la app (página <strong>APP
+4:6</strong>, o la acción <em>APP CW Keyboard</em>), escribí y mandá.
+Una línea sale con <strong>Enter</strong>; lo que llega se decodifica en
+pantalla. La velocidad, el tono y el peso se ajustan con el MFK
+(<strong>CW key speed</strong>, <strong>CW key tone</strong>, <strong>CW
+key ratio</strong>).</p>
+<table>
+<thead>
+<tr>
+<th>Botón del pie</th>
+<th>Qué hace</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Send</strong></td>
+<td>Manda la línea escrita</td>
+</tr>
+<tr>
+<td><strong>Stop</strong></td>
+<td>Corta la transmisión</td>
+</tr>
+<tr>
+<td><strong>Clear</strong></td>
+<td>Borra el texto</td>
+</tr>
+<tr>
+<td><strong>Close</strong></td>
+<td>Cierra la app</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cw-trainer">6.12 CW Trainer</h3>
+<figure>
+<img src="img/11-cw.png" alt="CW Trainer" />
+<figcaption aria-hidden="true">CW Trainer</figcaption>
+</figure>
+<p>Para practicar recepción: el equipo <strong>te toca CW</strong> y vos
+copiás. Arranca con el modo <strong>Learn (Koch)</strong> —el clásico
+para aprender por etapas, sin contar puntos— y sube la velocidad a
+medida que acertás. <strong>Corre en el modo <em>train</em> del keyer:
+usa el sidetone y NO transmite</strong>, así que no sales al aire
+mientras practicás.</p>
+<p><strong>Cómo se usa:</strong> abrí la app (página <strong>APP
+4:6</strong> o la acción <em>APP CW Trainer</em>) y elegí en el pie el
+modo y la dificultad; hay 3 páginas de botones (<code>CWT 1:3</code>,
+<code>2:3</code> y <code>3:3</code>). Antes de empezar, poné el keyer en
+modo train (<strong>CW key train</strong> en el MFK, grupo CW).</p>
+<blockquote>
+<p><strong>Aviso (defecto conocido).</strong> En esta versión, usar el
+CW Trainer deja el equipo en un <strong>bucle de reinicio de la
+GUI</strong>: la pantalla se reinicia cada medio minuto y se pierde lo
+que estabas haciendo. Está identificado y reportado (issue
+<strong>#19</strong> del repositorio), con la causa medida: un desborde
+de buffer en el camino de audio al decodificador CW. Si te pasa: salí de
+la app y <strong>reiniciá el equipo</strong>; mientras no se arregle,
+conviene practicar recién arrancado, o usar el CW Keyboard para
+transmitir y practicar la recepción “en el aire”.</p>
+</blockquote>
+<h3 id="bandas">6.13 Bandas</h3>
+<figure>
+<img src="img/13-bands.png" alt="Bandas" />
+<figcaption aria-hidden="true">Bandas</figcaption>
+</figure>
+<p>La vista de bandas: los límites de cada banda, la
+<strong>propagación</strong> estimada y los parámetros guardados por
+banda y modo. Sirve para moverse rápido entre bandas sin pasar por el
+dial.</p>
+<p><strong>Cómo se usa:</strong> abrí la app (página <strong>APP
+3:6</strong>), mirá las barras de cada banda (HIGH / FAIR / GOOD, con
+los spots del clúster y del RBN de los últimos minutos) y tocá la banda;
+el equipo cambia manteniendo el modo y sus ajustes. Cada banda recuerda
+su última frecuencia, filtro y estado del ATU. <strong>Use band</strong>
+cambia a la banda elegida, y <strong>Test beacon</strong> emite un CQ de
+prueba para que el <strong>RBN</strong> te escuche y veas hasta dónde
+llegás (transmite: hacelo con antena conectada).</p>
+<h3 id="recorder-grabador">6.14 Recorder (grabador)</h3>
+<p>Graba el <strong>audio del receptor</strong> y lo reproduce, para
+dejar registrado un contacto difícil, un identificador de baliza o una
+señal rara y escucharla con calma después (o mandarla a un colega).</p>
+<p><strong>Cómo se usa:</strong> abrí la app (página <strong>APP
+3:6</strong>) y usá el pie: <strong>Rec</strong> y <strong>Rec
+Stop</strong> graban, <strong>Play</strong> y <strong>Play Stop</strong>
+reproducen, <strong>Rename</strong> le pone nombre y
+<strong>Delete</strong> borra. Los archivos quedan en
+<code>DATA/rec/</code>.</p>
+<h3 id="eq-ecualizador-del-micrófono">6.15 EQ (ecualizador del
+micrófono)</h3>
+<p>Cinco bandas para tu <strong>audio de transmisión</strong>: si te
+reportan que salís muy grave (“gordo”) o muy chillón (“finito”), se
+corrige acá. Es el ecualizador de la <strong>entrada</strong>, así que
+se nota en tu señal de SSB y de AM, no en lo que escuchás.</p>
+<p><strong>Cómo se usa:</strong> abrí la app (página <strong>APP
+4:6</strong> o la acción <em>APP EQ</em>), prendé el ecualizador y movés
+las bandas. Queda guardado y se aplica al equipo.</p>
+<h3 id="callsign-indicativo">6.16 Callsign (indicativo)</h3>
+<p>Tu <strong>indicativo</strong>, en un solo lugar. Lo usan las apps
+digitales (FT8/FT4, WSPR, JS8, RTTY), el clúster DX y Field Ops, así que
+conviene cargarlo <strong>antes</strong> de estrenar cualquier modo
+digital.</p>
+<p><strong>Cómo se usa:</strong> abrí la app (página <strong>APP
+5:6</strong>), escribilo con el teclado y guardá. Si sale en mayúsculas
+y sin errores, mejor: es lo que va a salir al aire y a los spots.</p>
+<h3 id="qth-tu-ubicación">6.17 QTH (tu ubicación)</h3>
+<p>Tu <strong>grilla</strong> (locator, por ejemplo <code>GF05xx</code>)
+y tu QTH. Sin la grilla, WSPR y el clúster no pueden ubicarte y los
+reportes pierden la mitad de la gracia.</p>
+<p><strong>Cómo se usa:</strong> abrí la app (página <strong>APP
+5:6</strong>), cargá la grilla de 6 caracteres y el texto de tu QTH, y
+guardá. Podés calcular tu grilla en cualquier página de locator o
+directamente en el configurador web.</p>
+<h3 id="status-estado-del-sistema">6.18 Status (estado del sistema)</h3>
+<p>Todo lo que el equipo “cree que tiene”, en una pantalla: la
+<strong>versión</strong> del firmware (<code>v0.1.2-lu2dsx</code>), el
+kernel, el <strong>adaptador Bluetooth</strong> y los emparejamientos
+guardados, el nivel de TX, el <strong>espacio libre</strong> en
+<code>DATA</code>, si <strong>wfview</strong> está prendido y el puerto,
+y si hay <strong>IP</strong> web. Es la pantalla para diagnosticar por
+teléfono o por radio: cuando reportes un problema, mirá acá los datos y
+anotalos.</p>
+<p><strong>Cómo se usa:</strong> abrí la app (página <strong>APP
+4:6</strong>). Se lee, no se toca; <strong>Close</strong> para
+salir.</p>
+<h3 id="wifi">6.19 WiFi</h3>
+<p>Para conectar el equipo a la red de tu casa o al hotspot del
+teléfono. Con WiFi andando tenés: <strong>control remoto</strong>
+(<code>http://&lt;ip&gt;/remote</code>), <strong>configurador
+web</strong> (<code>https://&lt;ip&gt;/</code>),
+<strong>wfview</strong>, <strong>clúster DX</strong> y la hora por
+NTP.</p>
+<p><strong>Cómo se usa:</strong> abrí la app (página <strong>APP
+6:6</strong>), elegí la red de la lista, escribí la clave y conectá.
+Anotá la <strong>IP</strong> que te asigna: es la que vas a escribir en
+el teléfono y en la PC. Si no aparece tu red, revisá que el equipo esté
+cerca del router o usá el hotspot del teléfono.</p>
+<h3 id="bluetooth">6.20 Bluetooth</h3>
+<p>Para las tres cosas que hace el Bluetooth acá: <strong>CAT</strong>
+(puente serie para la PC), <strong>auriculares A2DP</strong> (escuchar
+sin cables) y <strong>teclado</strong> (para el CW Keyboard y los
+menús). El paso a paso del pareado —que es donde se traba todo el mundo—
+está en la <strong>sección 7.3</strong>; acá van los botones de la app
+(página <strong>APP 6:6</strong>):</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Botón</th>
+<th>Qué hace</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scan</strong></td>
+<td>Busca dispositivos (15 s, con cuenta regresiva)</td>
+</tr>
+<tr>
+<td><strong>RX to HP</strong></td>
+<td>Manda la recepción a los auriculares</td>
+</tr>
+<tr>
+<td><strong>Speaker</strong></td>
+<td>Apaga o prende el altavoz del equipo (para no escuchar doble)</td>
+</tr>
+<tr>
+<td><strong>Auto</strong></td>
+<td>Pulsando: auto-conexión del equipo elegido. Manteniendo:
+desempareja</td>
+</tr>
+<tr>
+<td><strong>Close</strong></td>
+<td>Cierra la app</td>
+</tr>
+</tbody>
+</table>
+<h3 id="swr-scan-barrido-de-roe">6.21 SWR Scan (barrido de ROE)</h3>
+<p>Mide la <strong>ROE</strong> (relación de ondas estacionarias) en
+<strong>50 puntos</strong> a lo largo de la banda y dibuja la curva:
+sirve para ver <strong>dónde resuena</strong> tu antena, cuánto ancho
+tiene y si conviene el ATU. Es la forma rápida de saber si el problema
+es la antena o el equipo.</p>
+<p><strong>Cómo se usa:</strong> abrí la app (página <strong>APP
+6:6</strong>) y pulsá <strong>Run</strong>; la curva se dibuja a medida
+que barre. <strong>Usalo con la antena conectada</strong> (la medición
+necesita RF) y, como siempre: <strong>nunca transmitas sin antena o
+carga fantasma</strong>.</p>
+<h3 id="about-acerca-de">6.22 About (acerca de)</h3>
+<p>La <strong>versión</strong> del firmware (<code>v0.1.2-lu2dsx</code>)
+y los <strong>créditos</strong> de todo el software libre con el que
+está hecho el equipo. Es el dato que hay que mandar cuando se reporta un
+problema: sin la versión, no se puede saber qué código estabas
+corriendo.</p>
+<p><strong>Cómo se usa:</strong> no tiene botón propio en las páginas
+APP: se abre desde <em>Ajustes → Acciones</em> (asignándola a una
+pulsación larga) o desde el menú de la app de Ajustes. Se lee y se
+cierra.</p>
+<h3 id="ajustes">6.23 Ajustes</h3>
+<figure>
+<img src="img/12-settings.png" alt="Ajustes" />
+<figcaption aria-hidden="true">Ajustes</figcaption>
+</figure>
+<p>La app de <strong>Ajustes</strong> es la puerta a todo lo que vimos
+en la <strong>sección 5</strong>: reloj, pantalla, info, audio,
+espectro, operación, apariencia y las <strong>acciones</strong>
+asignables a las pulsaciones largas. Está en la página <strong>APP
+5:6</strong> y el pie funciona como <strong>tabs</strong> (cada botón
+salta a su sección).</p>
+<p><strong>Todas las apps se pueden asignar a un botón o a una pulsación
+larga.</strong> En <em>Ajustes → Acciones</em> tenés la lista completa
+de acciones, incluidas todas las apps: <code>APP FT8</code>,
+<code>APP Bands</code>, <code>APP Bluetooth</code>,
+<code>APP Callsign</code>, <code>APP Cluster</code>,
+<code>APP CW Keyboard</code>, <code>APP CW Trainer</code>,
+<code>APP EQ</code> y las demás. Con eso te armás el equipo a tu manera:
+FT8 a un toque corto, el entrenador CW a una pulsación larga, y así.</p>
+<h2 id="guías-avanzadas">7. Guías avanzadas</h2>
+<h3 id="control-remoto-desde-el-teléfono">7.1 Control remoto desde el
+teléfono</h3>
+<p>El equipo abre un socket en <code>/tmp/x6200_remote.sock</code> con
+unos 65 comandos.</p>
+<ol type="1">
+<li>Conectá el equipo al WiFi (Ajustes → Bluetooth/WiFi) y averiguá la
+IP.</li>
+<li>Abrí <code>http://&lt;ip&gt;/remote</code> en el teléfono.</li>
+<li>Comandos útiles: <code>{"cmd":"app","text":"FT8"}</code> abre una
+app; <code>{"cmd":"app","text":"off"}</code> la cierra (también a
+RTTY, que no tiene diálogo);
+<code>{"cmd":"band","val":1}</code> cambia de banda;
+<code>{"cmd":"mode","val":1}</code> cambia el modo;
+<code>{"cmd":"freq","val":14074000}</code> sintoniza;
+<code>{"cmd":"location","text":"-34.6037,-58.3816"}</code> manda tu
+posición.</li>
+<li>Diagnóstico:
+<code>{"cmd":"cluster_feed","text":"DX de LU1ABC:  14074.0  LU2DSX  FT8  2313Z GF05"}</code>
+inyecta un spot del clúster (la línea necesita la hora
+<code>HHMMZ</code>).</li>
+</ol>
+<h3 id="configurador-web">7.2 Configurador web</h3>
+<ol type="1">
+<li>Averiguá la IP y abrí <code>https://&lt;ip&gt;/</code> (certificado
+autofirmado: aceptá la excepción).</li>
+<li>Tiene 15 páginas: estado, RF, audio, clúster, digitales, temas,
+WiFi, Bluetooth, actualizaciones y el control remoto.</li>
+</ol>
+<h3 id="bluetooth-1">7.3 Bluetooth</h3>
+<p>Sirve para tres cosas: <strong>CAT</strong> (puente serie para la
+PC), <strong>auriculares A2DP</strong> y <strong>teclado</strong>. El
+estado se ve en la barra de arriba, al lado del WiFi: la
+<strong>runa</strong> queda invisible con el Bluetooth apagado, gris
+cuando está prendido y <strong>blanca</strong> con auriculares
+conectados.</p>
+<p><strong>Encenderlo:</strong> Ajustes → <strong>Bluetooth</strong> (el
+interruptor de arriba). Marcá <strong>Discoverable (CAT)</strong> si vas
+a usarlo desde la PC.</p>
+<p><strong>CAT (SPP):</strong> vinculá la PC y elegí el puerto serie que
+aparece (19200 8N1 o lo que pida tu programa). Sirve para cualquier
+logger o programa CAT.</p>
+<p><strong>Auriculares (A2DP):</strong> entrá con el botón
+<strong>BT</strong> (al lado de WiFi, página <strong>APP 6:6</strong>) o
+desde Ajustes → Bluetooth → <strong>Devices</strong>.</p>
+<figure>
+<img src="img/07-bt.png" alt="La app de Bluetooth" />
+<figcaption aria-hidden="true">La app de Bluetooth</figcaption>
+</figure>
+<ol type="1">
+<li>Pulsá <strong>Scan</strong> (15 s). El botón queda gris con la
+cuenta regresiva (<code>Scan 13s</code>) para que veas que está
+trabajando, y al terminar dice <code>Scan done: N device(s)</code> o
+<code>Scan done: nothing found</code>.</li>
+<li>Poné los auriculares en <strong>modo vinculación</strong> y
+<strong>desconectalos del teléfono</strong>: si el teléfono está cerca
+vuelven a él y dejan de anunciarse (el síntoma es que no aparecen o sale
+<code>Pairing failed</code>).</li>
+<li>Tocá la fila de los auriculares: <strong>parean y se
+conectan</strong>. Si piden un código, aparece en pantalla para
+escribirlo en el teclado.</li>
+<li>Pulsá <strong>RX to HP</strong> para que la
+<strong>recepción</strong> salga por los auriculares.</li>
+<li>El <strong>volumen</strong> de los auriculares se mueve con la
+<strong>rueda de volumen</strong> del equipo.</li>
+<li><strong>Speaker</strong> apaga el altavoz mientras los usás, para no
+escuchar doble.</li>
+</ol>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Botón de la app</th>
+<th>Qué hace</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scan</strong></td>
+<td>Busca dispositivos (con cuenta regresiva)</td>
+</tr>
+<tr>
+<td><strong>RX to HP</strong></td>
+<td>Manda la recepción a los auriculares</td>
+</tr>
+<tr>
+<td><strong>Speaker</strong></td>
+<td>Apaga o prende el altavoz del equipo</td>
+</tr>
+<tr>
+<td><strong>Auto</strong></td>
+<td>Pulsando: prende/apaga el <strong>auto-conexión</strong> del equipo
+elegido. Manteniéndolo: <strong>desempareja</strong>
+(<code>Unpair</code>)</td>
+</tr>
+<tr>
+<td><strong>Close</strong></td>
+<td>Cierra la app</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Teclado:</strong> vinculá un teclado Bluetooth o conectá uno
+USB; se usa en el CW Keyboard y para navegar los menús.</p>
+<h3 id="el-clúster-paso-a-paso">7.4 El clúster, paso a paso</h3>
+<ol type="1">
+<li>Conseguí los datos del servidor (por ejemplo un nodo DXSpider) y tu
+indicativo.</li>
+<li>Abrí la app <strong>Clúster</strong> → configurá servidor, puerto e
+indicativo → conectá.</li>
+<li>Ajustá los <strong>filtros</strong>: modos, bandas, actividad y
+antigüedad máxima.</li>
+<li>Activá la <strong>columna</strong> del clúster en Ajustes si querés
+verla siempre.</li>
+<li>Tocá un spot de la columna para sintonizarlo, o mirá las
+<strong>marcas</strong> sobre el waterfall.</li>
+</ol>
+<h3 id="wfview-la-radio-como-ic-705-en-la-red">7.5 wfview: la radio como
+IC-705 en la red</h3>
+<p>El equipo se anuncia y responde el <strong>protocolo LAN de
+Icom</strong>, así que se comporta como un <strong>IC-705</strong> y se
+puede manejar con <strong>wfview</strong> desde la PC: el waterfall, el
+audio del receptor y el control de frecuencia y modo, todo por la
+red.</p>
+<p><strong>Qué habla</strong></p>
+<table>
+<thead>
+<tr>
+<th>Puerto</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>UDP 50001</strong></td>
+<td>Control (y el descubrimiento que hace wfview)</td>
+</tr>
+<tr>
+<td><strong>UDP 50002</strong></td>
+<td>CI-V (el CAT de la radio por red)</td>
+</tr>
+<tr>
+<td><strong>UDP 50003</strong></td>
+<td>Audio (LPCM 16 bits, mono)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Paso 1 — Preparar la radio</strong></p>
+<ol type="1">
+<li><p>Conectá el equipo a la <strong>misma red</strong> que la PC
+(Ajustes → WiFi).</p></li>
+<li><p>Anotá la <strong>IP</strong> del equipo (pantalla de estado, o la
+lista del router).</p></li>
+<li><p>Ajustes → <strong>wfview server</strong> → activar. Al activarlo
+se escribe su configuración en
+<strong><code>/mnt/wfview.conf</code></strong>:</p>
+<pre><code>enabled=1
+user=x6200
+pass=&lt;tu clave&gt;</code></pre></li>
+<li><p>Si querés, cambiá el <strong>usuario</strong> y la
+<strong>clave</strong> desde el <strong>configurador web</strong>
+(página de wfview); la clave se guarda <strong>hasheada</strong>, no en
+texto plano. Anotá lo que pongas: es lo que vas a cargar en
+wfview.</p></li>
+</ol>
+<p><strong>Paso 2 — Instalar wfview en la PC</strong></p>
+<p>Instalá wfview desde <a href="https://wfview.org">wfview.org</a> o el
+paquete de tu distribución. Sirve también cualquier cliente que hable el
+protocolo LAN de Icom.</p>
+<p><strong>Paso 3 — Registrar el equipo (el paso que
+importa)</strong></p>
+<ol type="1">
+<li><p>Abrí wfview y andá a <strong>Settings → Radios</strong>.</p></li>
+<li><p>wfview <strong>escanea la red</strong> y suele encontrar la radio
+sola: aparece listada como <strong>IC-705</strong> (es lo que emula el
+equipo). Tocá <strong>Connect</strong>.</p></li>
+<li><p>Si <strong>no aparece</strong> (hay routers que filtran el
+<em>broadcast</em> del descubrimiento), agregala a mano con
+<strong>Manual / Add</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Qué poner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Radio Name</strong></td>
+<td><code>X6200</code> (el que quieras)</td>
+</tr>
+<tr>
+<td><strong>IP Address</strong></td>
+<td>la IP del equipo (paso 1)</td>
+</tr>
+<tr>
+<td><strong>Control Port</strong></td>
+<td><code>50001</code></td>
+</tr>
+<tr>
+<td><strong>Username</strong></td>
+<td><code>x6200</code> (o el que hayas puesto en el conf)</td>
+</tr>
+<tr>
+<td><strong>Password</strong></td>
+<td>la clave del <code>wfview.conf</code></td>
+</tr>
+<tr>
+<td><strong>Model</strong></td>
+<td><strong>IC-705</strong></td>
+</tr>
+<tr>
+<td><strong>CI-V Address</strong></td>
+<td><code>A4</code> (la del IC-705)</td>
+</tr>
+</tbody>
+</table></li>
+<li><p><strong>Guárdala</strong>: queda <strong>registrada</strong> para
+las próximas veces, ya no hay que buscarla de nuevo.</p></li>
+</ol>
+<p><strong>Paso 4 — Usar</strong></p>
+<ol type="1">
+<li>Conectá. En la ventana principal vas a ver el <strong>espectro y el
+waterfall</strong>, y podés cambiar frecuencia y modo (el CAT viaja por
+red y se comparte con el UART: lo que cambies en la PC o en la radio se
+refleja en los dos lados).</li>
+<li>Elegí el dispositivo de <strong>audio</strong> de la PC para
+escuchar el receptor.</li>
+<li><strong>Un cliente a la vez</strong>: el servidor atiende una
+conexión.</li>
+</ol>
+<p><strong>Si algo no anda</strong></p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Síntoma</th>
+<th>Qué revisar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No aparece en la lista</td>
+<td>Que esté en la misma red y que el <strong>firewall</strong> de la PC
+no bloquee <strong>UDP 50001–50003</strong>. Si el router no deja pasar
+el <em>broadcast</em>, agregala a mano (paso 3.3)</td>
+</tr>
+<tr>
+<td>Conecta pero no suena</td>
+<td>El dispositivo de audio elegido en wfview</td>
+</tr>
+<tr>
+<td>No hay waterfall</td>
+<td>Que el espectro esté activado en el cliente</td>
+</tr>
+<tr>
+<td>Pide clave y no la sabés</td>
+<td>Mirá <code>/mnt/wfview.conf</code> (o volvé a ponerla desde el
+configurador web)</td>
+</tr>
+<tr>
+<td>Se corta</td>
+<td>Es UDP: usá WiFi con buena señal o cable, y evitá otras aplicaciones
+pesadas en el equipo</td>
+</tr>
+</tbody>
+</table>
+<h3 id="temas">7.6 Temas</h3>
+<p>Hay <strong>8</strong>: los incorporados (IU1WXY, Outdoor, Classic,
+Outdoor-Negative y Vision) y los del X6100 que van como archivos (Holo,
+Material 3 y RS).</p>
+<ol type="1">
+<li>Ajustes → <strong>Theme</strong> → elegí uno; el equipo guarda y
+<strong>se reinicia</strong> para aplicar los colores.</li>
+<li><strong>Tu propio tema:</strong> copiá un <code>.json</code> a
+<code>DATA/themes/</code> (tomá <code>Holo.json</code> como modelo) y
+aparece en la lista. También puede ser una <strong>carpeta</strong> con
+un <code>theme.json</code> adentro, como <code>RS/</code>.</li>
+</ol>
+<p><strong>Accesibilidad:</strong> los temas están medidos para
+<strong>WCAG 2.1 AA</strong>: cada par de colores que se dibuja junto
+(texto sobre su fondo, bordes, el switch y el slider de Ajustes, la
+barra de estado) tiene contraste <strong>≥ 4.5:1</strong> para texto
+normal y <strong>≥ 3:1</strong> para texto grande, bordes e indicadores.
+Un chequeo automático recorre todos los pares declarados en cada
+compilación, así que un tema nuevo no puede quedar por debajo.</p>
+<blockquote>
+<p><strong>Una salvedad medida en el equipo:</strong> el <strong>medidor
+(S-meter) del tema RS</strong> queda en <strong>2,4:1</strong> contra el
+fondo real sobre el que se dibuja, por debajo del 3:1 que pide el
+criterio 1.4.11. Está reportado (issue <strong>#44</strong>) y se
+explica porque el color sale de la tabla compilada y no del archivo del
+tema. En los demás temas y elementos, el contraste es el medido por el
+chequeo.</p>
+</blockquote>
+<h3 id="anuncios-por-voz-tts-en-español">7.7 Anuncios por voz (TTS en
+español)</h3>
+<ol type="1">
+<li>Ajustes → <strong>Voice mode</strong> → <strong>Off</strong>,
+<strong>When LCD off</strong> o <strong>Always</strong>. <em>When LCD
+off</em> es lo más cómodo en el campo: habla justo cuando no estás
+mirando la pantalla.</li>
+<li>Con la pantalla apagada, girando el dial o cambiando una opción te
+dice qué estás cambiando.</li>
+<li><strong>Nunca habla mientras transmitís</strong>, para no salir al
+aire.</li>
+<li>Podés ajustar velocidad, tono y volumen en la misma página, y el
+idioma con el modo <strong>VOICE LANG</strong> de la rueda de
+volumen.</li>
+</ol>
+<h3 id="field-ops-con-qrz">7.8 Field Ops con QRZ</h3>
+<ol type="1">
+<li>Poné tu indicativo en Ajustes → Callsign.</li>
+<li>Abrí Field Ops, elegí la referencia SOTA o POTA y activá el
+self-spot.</li>
+<li>Cada QSO se guarda en <code>DATA/qso_log.db</code>; exportá el ADIF
+y subilo a QRZ con tu cuenta.</li>
+</ol>
+<h3 id="grabación-de-pantalla-y-capturas">7.9 Grabación de pantalla y
+capturas</h3>
+<ul>
+<li><strong>Captura:</strong> acción <em>Screenshot</em> → un PNG en
+<code>DATA</code>.</li>
+<li><strong>Grabación:</strong> acción <em>Screen rec</em> → video MJPEG
++ <strong>audio del receptor</strong> en un AVI en
+<code>DATA</code>.</li>
+</ul>
+<h3 id="motor-de-video-drmkms">7.10 Motor de video DRM/KMS</h3>
+<p>Está portado y <strong>apagado por defecto</strong>. Se activa
+creando <code>/mnt/use_drm</code> y reiniciando. Si algo no se ve bien,
+borralo y volvés al motor clásico.</p>
+<h3 id="transverter-trabajar-vhfuhf-con-el-equipo">7.11 Transverter:
+trabajar VHF/UHF con el equipo</h3>
+<p>Un <strong>transverter</strong> es un conversor que traslada otra
+banda a la que trabaja tu equipo. El X6200 es de HF y 6 m, así que con
+un transverter de <strong>2 m</strong> (o de 70 cm, o de 4 m) podés
+trabajar esas bandas: el equipo sigue sintonizando en su banda de
+<strong>IF</strong> —casi siempre <strong>28 MHz</strong> (10 m)— y el
+transverter hace el resto. Es la forma clásica de subir a VHF/UHF con un
+equipo de HF.</p>
+<p><strong>Cómo lo maneja la GUI.</strong> Vos ves y sintonizás la
+<strong>frecuencia real</strong> de la banda objetivo (por ejemplo
+<code>144.300</code>) y el firmware, por dentro, pone el hardware en la
+<strong>IF</strong> (<code>28.300</code>). Se ve en el propio log:</p>
+<pre><code>Radio set vfo 0 freq=144300000 (28300000)
+                    ^ la que ves          ^ la que sintoniza el equipo</code></pre>
+<p><strong>Configuración:</strong> <em>Ajustes → Operación →
+<strong>Transverter</strong></em>. Hay <strong>3</strong> transverters
+cargados, cada uno con tres campos:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Qué es</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>From</strong> / <strong>To</strong></td>
+<td>La <strong>ventana</strong> de la banda objetivo en la que el shift
+se aplica (en MHz enteros)</td>
+</tr>
+<tr>
+<td><strong>Shift</strong></td>
+<td>La diferencia entre la banda objetivo y la IF:
+<code>frecuencia objetivo − IF</code></td>
+</tr>
+</tbody>
+</table>
+<p>Los valores de fábrica suponen <strong>IF de 28 MHz</strong> (las
+tres bandas típicas de un equipo de HF):</p>
+<table>
+<thead>
+<tr>
+<th>From</th>
+<th>To</th>
+<th>Shift</th>
+<th>Banda</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>70 MHz</td>
+<td>72 MHz</td>
+<td>42 MHz</td>
+<td>4 m</td>
+</tr>
+<tr>
+<td>144 MHz</td>
+<td>150 MHz</td>
+<td>116 MHz</td>
+<td>2 m</td>
+</tr>
+<tr>
+<td>432 MHz</td>
+<td>438 MHz</td>
+<td>404 MHz</td>
+<td>70 cm</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Para tu transverter:</strong> si el tuyo tiene la IF en 28
+MHz, los valores ya sirven; si no, poné
+<code>Shift = banda objetivo − IF</code>. Por ejemplo, un transverter de
+2 m con IF en 50 MHz usa <code>Shift = 94</code>. Cuando la frecuencia
+en la que estás <strong>cae dentro</strong> de la ventana
+<code>From</code>..<code>To</code> el shift se aplica; fuera de ella no
+pasa nada (shift 0) y el equipo vuelve a la banda de HF.</p>
+<p><strong>Ojo con dos cosas:</strong> los tres campos se editan en
+<strong>MHz enteros</strong> (no hay decimales), y la ventana tiene que
+cubrir el segmento que vas a usar. Si sintonizás fuera de la ventana, el
+equipo trabaja en su frecuencia real (la IF), así que no vas a ver la
+banda objetivo.</p>
+<h3 id="actualizaciones-y-ssh">7.12 Actualizaciones y SSH</h3>
+<ul>
+<li>Aviso de firmware nuevo en la pantalla de estado (consulta GitHub;
+no manda datos tuyos).</li>
+<li><strong>SSH</strong>: usuario <code>root</code>. <strong>Cambiá la
+contraseña</strong> (la de fábrica es conocida). Los logs están en
+<code>DATA/app_logs/x6200_log_*.txt</code> y se escriben al cerrar la
+GUI.</li>
+</ul>
+<h2 id="solución-de-problemas">8. Solución de problemas</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Síntoma</th>
+<th>Qué hacer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sólo el logo y no arranca</strong></td>
+<td>Casi siempre la actualización cortada a mitad o la microSD mal
+asentada. Revisá el adaptador; si sigue, grabá la imagen completa.</td>
+</tr>
+<tr>
+<td><strong>Arranca el firmware viejo</strong></td>
+<td>La tarjeta no está siendo leída: revisá el adaptador y el
+contacto.</td>
+</tr>
+<tr>
+<td><strong>“No medium found” al grabar</strong></td>
+<td>La microSD no está dentro del adaptador.</td>
+</tr>
+<tr>
+<td><strong>No se oyen los anuncios</strong></td>
+<td><em>Voice mode</em> en Off, o estás transmitiendo.</td>
+</tr>
+<tr>
+<td><strong>Un tema no aparece</strong></td>
+<td>Tiene que estar en <code>DATA/themes/</code> con el JSON
+válido.</td>
+</tr>
+<tr>
+<td><strong>El clúster no muestra spots</strong></td>
+<td>Revisá servidor, indicativo y filtros; una línea de prueba necesita
+la hora <code>HHMMZ</code>.</td>
+</tr>
+<tr>
+<td><strong>Sin espacio en <code>DATA</code></strong></td>
+<td>Borrá <code>rec/</code>, capturas viejas o los
+<code>backup_*.tgz</code>.</td>
+</tr>
+<tr>
+<td><strong>Ajustes raros tras actualizar</strong></td>
+<td>Restaurá el respaldo de <code>params.db</code> o borralo (perdés los
+ajustes, no el log).</td>
+</tr>
+<tr>
+<td><strong>No encuentro una app</strong></td>
+<td>Están todas en las <strong>6 páginas APP</strong> (tecla APP); la
+tabla está en la sección 6.</td>
+</tr>
+<tr>
+<td><strong>El Bluetooth no encuentra los auriculares</strong></td>
+<td>Tienen que estar en modo vinculación <strong>y desconectados del
+teléfono</strong>: si el teléfono está cerca vuelven a él y dejan de
+anunciarse.</td>
+</tr>
+<tr>
+<td><strong>Sale <code>Pairing failed</code></strong></td>
+<td>Lo mismo: ponelos en vinculación y reintentá (la app avisa cuando
+falla, antes quedaba muda).</td>
+</tr>
+<tr>
+<td><strong>No se oye la radio en los auriculares</strong></td>
+<td>Pulsá <strong>RX to HP</strong> en la app de Bluetooth y subí el
+volumen con la rueda del equipo.</td>
+</tr>
+<tr>
+<td><strong>Se escucha doble (altavoz y auriculares)</strong></td>
+<td>Pulsá <strong>Speaker</strong> en la app de Bluetooth.</td>
+</tr>
+<tr>
+<td><strong>Subís el volumen y no cambia nada</strong></td>
+<td>Defecto conocido y reportado (issue <strong>#30</strong>): el ajuste
+se guarda en <code>params.db</code> pero no se aplica al audio. No es tu
+equipo: está en estudio. Mientras tanto, la única forma de subir el
+nivel es la ganancia (<em>Ajustes → Audio</em>, <code>Play gain</code>,
+hasta +10 dB).</td>
+</tr>
+<tr>
+<td><strong>La GUI se reinicia cada medio minuto</strong></td>
+<td>Defecto conocido y reportado (issue <strong>#19</strong>): pasa
+después de usar el <strong>CW Trainer</strong> (o las apps de CW). Salí
+de la app y <strong>reiniciá el equipo</strong>; no es una falla del
+hardware ni del suministro.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="referencia">9. Referencia</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Partición</th>
+<th>Contenido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BOOT</code> (32 MB, vfat, arrancable)</td>
+<td><code>zImage</code>, device tree y <code>boot.scr</code></td>
+</tr>
+<tr>
+<td><code>rootfs</code> (512 MB, ext4)</td>
+<td>El sistema y la GUI</td>
+</tr>
+<tr>
+<td><code>DATA</code> (vfat, etiqueta <code>DATA</code>)</td>
+<td><strong>Tus datos</strong>: ajustes, log, temas, mensajes,
+grabaciones y logs</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Qué es</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATA/params.db</code></td>
+<td>Todos los ajustes</td>
+</tr>
+<tr>
+<td><code>DATA/qso_log.db</code></td>
+<td>El log de contactos</td>
+</tr>
+<tr>
+<td><code>DATA/themes/</code></td>
+<td>Tus temas</td>
+</tr>
+<tr>
+<td><code>DATA/msg/</code></td>
+<td>Mensajes de voz (WAV) para el CQ de voz</td>
+</tr>
+<tr>
+<td><code>DATA/rec/</code></td>
+<td>Grabaciones y capturas</td>
+</tr>
+<tr>
+<td><code>DATA/app_logs/</code></td>
+<td>Logs de la GUI</td>
+</tr>
+</tbody>
+</table>
+<h2 id="créditos">9. Créditos</h2>
+<p>Esta ROM es el trabajo de mucha gente, encadenado. En orden de abajo
+hacia arriba:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Quién</th>
+<th>Qué aportó</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Xiegu</strong></td>
+<td>El hardware X6200 y la documentación del CAT</td>
+</tr>
+<tr>
+<td><strong>Belousov Oleg (R1CBU)</strong></td>
+<td>El firmware alternativo original (X6200 y X6100): la arquitectura,
+la GUI LVGL, el CAT, los modos digitales. La base de todo</td>
+</tr>
+<tr>
+<td><strong>Georgy Dyuldin (R2RFE)</strong> — <a
+href="https://github.com/gdyuldin/x6200_gui">gdyuldin</a></td>
+<td>El port del firmware de R1CBU al X6200 con buildroot</td>
+</tr>
+<tr>
+<td><strong>iariap (LU2DSX)</strong></td>
+<td>El fork base (<a
+href="https://github.com/iariap/x6200_gui">iariap/x6200_gui</a> y <a
+href="https://github.com/iariap/AetherX6200Buildroot">iariap/AetherX6200Buildroot</a>)
+<strong>y esta ROM</strong>: el port de las funciones del X6100 al
+X6200, las correcciones y este manual</td>
+</tr>
+<tr>
+<td><strong>IU1WXY</strong></td>
+<td>El firmware del X6100 (<a
+href="https://github.com/IU1WXY/X6100-IU1WXY">IU1WXY/X6100-IU1WXY</a>)
+del que se portaron las funciones: aviso de actualización, S-meter, plan
+de banda IARU, grabación de pantalla, Bluetooth (CAT, auriculares y
+teclados), wfview, configurador web, FT8/FT4, WSPR, JS8, SSTV, WeFax,
+NavTex, RTTY, CW Keyboard y Trainer, clúster DX, Field Ops, temas, GPS y
+los anuncios por voz</td>
+</tr>
+<tr>
+<td><strong>Adrian Grzeca (SQ5FOX)</strong></td>
+<td>Aportes al firmware base</td>
+</tr>
+</tbody>
+</table>
+<p>Y las bibliotecas y proyectos de software libre con los que se
+construye:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Proyecto</th>
+<th>Para qué</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LVGL</strong></td>
+<td>La biblioteca gráfica de toda la interfaz</td>
+</tr>
+<tr>
+<td><strong>Buildroot</strong></td>
+<td>La compilación cruzada y el armado de la imagen</td>
+</tr>
+<tr>
+<td><strong>Dave Gamble y colaboradores (cJSON)</strong> y
+<strong>jansson</strong></td>
+<td>JSON (clúster, temas, web, control remoto)</td>
+</tr>
+<tr>
+<td><strong>Equipo de wfview</strong></td>
+<td>El protocolo y el cliente para controlar el equipo desde la PC</td>
+</tr>
+<tr>
+<td><strong>Jonathan Duddington y el equipo de espeak</strong></td>
+<td>El sintetizador de voz de los anuncios</td>
+</tr>
+<tr>
+<td><strong>liquid-dsp</strong>, <strong>FFTW</strong>,
+<strong>GSL</strong></td>
+<td>Procesamiento digital: espectro, modems y filtros</td>
+</tr>
+<tr>
+<td><strong>PulseAudio</strong>, <strong>ALSA</strong>, <strong>BlueZ /
+bluealsa</strong>, <strong>Speex</strong>, <strong>mpg123</strong>,
+<strong>LAME</strong>, <strong>libvorbis</strong></td>
+<td>Audio y Bluetooth</td>
+</tr>
+<tr>
+<td><strong>OpenSSL</strong>, <strong>libcurl</strong>,
+<strong>NTP</strong>, <strong>NetworkManager</strong>,
+<strong>wpa_supplicant</strong>, <strong>OpenSSH</strong></td>
+<td>Red, hora, seguridad y SSH</td>
+</tr>
+<tr>
+<td><strong>e2fsprogs</strong>, <strong>dosfstools</strong>,
+<strong>util-linux</strong>, <strong>parted</strong></td>
+<td>Particiones y sistemas de archivos</td>
+</tr>
+<tr>
+<td>Y todos los demás paquetes de software libre del buildroot</td>
+<td>Lo que hace que el equipo ande</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Licencias:</strong> el firmware es
+<strong>LGPL-2.1-or-later</strong> (la GUI y los archivos portados
+conservan su atribución original en sus cabeceras); cada biblioteca
+mantiene la suya.</p>
+<blockquote>
+<p>Documento generado desde <code>docs/NEW_FEATURES.md</code> y
+<code>docs/X6100_FEATURE_GAP.md</code>, con capturas reales del firmware
+(banco de pruebas y equipo). Las secciones de las aplicaciones (nombres,
+botones de cada pie y ajustes que usan) se verificaron además contra el
+propio código (<code>src/buttons.cpp</code>, <code>src/dialog_*.c</code>
+y <code>src/params/params.c</code>), no sólo contra la documentación
+previa.</p>
+</blockquote>
+</body>
+</html>

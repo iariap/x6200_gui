@@ -1,0 +1,15 @@
+# docker events --since 30m --until 1s --filter type=volume (capturado 2026-10-18 19:57, -03)
+# Recortado a los volumenes del banco x6200. Muestra que x6200-build-output-wf140 (el volumen
+# privado de esta corrida para el binario ARM) lo borro y recreo otra corrida concurrente:
+2026-10-18T19:56:34.881414404-03:00 volume destroy x6200-build-output-wf140 (driver=local)
+2026-10-18T19:56:35.956411336-03:00 volume mount x6200-build-output (container=93506e1c2212142216b92a855bdb0b12c618ba4a57e7c7a27935cec6947a908d, destination=/b, driver=local, propagation=, read/write=true)
+2026-10-18T19:56:36.179740533-03:00 volume unmount x6200-build-output (container=93506e1c2212142216b92a855bdb0b12c618ba4a57e7c7a27935cec6947a908d, destination=/b, driver=local, propagation=, read/write=true)
+2026-10-18T19:56:36.236170347-03:00 volume mount x6200-build-output (container=47a544c13181c4ff7dfe8bd704baf4aead2cff4e07828214fa655069886c01ef, destination=/b, driver=local, propagation=, read/write=true)
+2026-10-18T19:56:36.448307942-03:00 volume unmount x6200-build-output (container=47a544c13181c4ff7dfe8bd704baf4aead2cff4e07828214fa655069886c01ef, destination=/b, driver=local, propagation=, read/write=true)
+2026-10-18T19:56:51.322335771-03:00 volume create x6200-build-output-wf140 (driver=local)
+2026-10-18T19:56:51.387645716-03:00 volume mount x6200-build-output-wf140 (container=ef1e11d24bf2d9174a0e96f69eeedce315e00d0162b91ed48b6dff730cb3596a, destination=/b, driver=local, propagation=, read/write=true)
+2026-10-18T19:56:51.617013881-03:00 volume unmount x6200-build-output-wf140 (container=ef1e11d24bf2d9174a0e96f69eeedce315e00d0162b91ed48b6dff730cb3596a, destination=/b, driver=local, propagation=, read/write=true)
+
+# El volumen x6200-build-output (compartido) estuvo en uso por otra corrida (rebuild de
+# cw-autotune-139) durante toda esta evidencia; por eso el binario ARM se construyo en el
+# volumen privado y las capturas no dependen de lo que hubiera en el compartido.

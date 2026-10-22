@@ -1,0 +1,38 @@
+.....F.......                                                            [100%]
+=================================== FAILURES ===================================
+______________________ test_all_fixtures_can_be_captured _______________________
+
+tmp_path = PosixPath('/tmp/opencode/at/tmp/pytest-of-pablo/pytest-0/test_all_fixtures_can_be_captu0')
+revisions = Revisions(base='8d5410168139044e1a0c5f7d8edfac3db5f85f3a', regression='270a98610e17dd3c794291ce31817605df031031', defe...6da9c4ac02422e9db467f15cb1dc6970d0d83', cache_dir=PosixPath('/tmp/opencode/at/tmp/pytest-of-pablo/pytest-0/ab-cache0'))
+
+    def test_all_fixtures_can_be_captured(tmp_path: Path, revisions: Revisions) -> None:
+        out = _reports_root(tmp_path) / "captures-e2e"
+        code = main(
+            [
+                "capture",
+                "--revision",
+                revisions.base,
+                "--repo",
+                str(REPO_ROOT),
+                "--out",
+                str(out),
+                "--workspace",
+                str(tmp_path / "ws-capture"),
+                "--cache-dir",
+                str(revisions.cache_dir),
+                "--json",
+            ]
+        )
+>       assert code == 0
+E       assert 2 == 0
+
+tests/test_e2e.py:461: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+  "status": "BLOCKED",
+  "exit_code": 2,
+  "error": "harness failed for scenario dfl-mirror-lsb on 8d5410168139 (exit 1): [User]\t(0.000, +0)\t check_live: cfg_sm enlazado (20 par\u00e1metros) \t(in settings_manager.cpp line #147)\n[User]\t(0.000, +0)\t check_live: cfg_sm enlazado (20 par\u00e1metros) \t(in settings_manager.cpp line #147)\n[User]\t(0.000, +0)\t buttons_init: First button in page=0, group=4 press cb is not next \t(in buttons.cpp line #1139)\n[User]\t(0.000, +0)\t buttons_init: First button in page=0, group=4 hold cb is not prev \t(in buttons.cpp line #1145)\ndfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)"
+}
+=========================== short test summary info ============================
+FAILED tests/test_e2e.py::test_all_fixtures_can_be_captured - assert 2 == 0
+1 failed, 12 passed, 227 deselected in 257.22s (0:04:17)

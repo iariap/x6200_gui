@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-15",
+  "docker_image": "x6200-uiharness",
+  "experiment_id": "AB-FONTSE-BENCH-R2",
+  "framework_version": "0.1.0",
+  "host": "fedora",
+  "numpy_version": "2.5.4",
+  "pillow_version": "12.3.0",
+  "platform": "Linux-7.2.8-200.fc44.x86_64-x86_64-with-glibc2.43",
+  "python_version": "3.14.2",
+  "scenario_fixtures": {
+    "main-frecuencia-dseg": "main-frecuencia-dseg.scn"
+  },
+  "scenarios_removed_in_b": []
+}

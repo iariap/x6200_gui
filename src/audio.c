@@ -23,9 +23,12 @@
 #include "meter.h"
 #include "dsp.h"
 #include "params/params.h"
+#include "audio_enhancement.h"
+#include "screen_rec.h"
 
 #define AUDIO_RATE_MS   100
 
+static bool                  audio_up = false;     /* pulseaudio en condiciones */
 static pa_threaded_mainloop *mloop;
 static pa_mainloop_api      *mlapi;
 static pa_context           *ctx;
@@ -37,6 +40,11 @@ static pa_stream            *capture_stm;
 static char                 *capture_device = "alsa_input.platform-sound.stereo-fallback";
 
 static pa_stream            *monitor_stm = NULL;
+
+/* Cuando el stream de reproducción no acepta datos (el sink real no consume: ver HALLAZGOS),
+ * se anota hasta cuándo no insistir. Sin esto, cada bloque de audio de FT8/JS8/voz pagaría su
+ * propio tope de 2 s y el que manda audio se quedaría esperando minutos. */
+static uint64_t              play_sin_lugar_hasta = 0;
 
 static float                peak_db = -60.0f;
 
@@ -50,6 +58,13 @@ static void read_callback(pa_stream *s, size_t nbytes, void *udata) {
     int16_t *buf = NULL;
 
     pa_stream_peek(s, (const void**) &buf, &nbytes);
+    
+    // Apply audio enhancement processing
+    audio_enh_process(buf, nbytes / 2);
+
+    // Screen recorder: keeps the RX audio next to the video frames
+    screen_rec_put_audio_samples(nbytes / 2, buf);
+    
     dsp_put_audio_samples(nbytes / 2, buf);
     pa_stream_drop(s);
 }
@@ -76,8 +91,81 @@ static void mixer_setup() {
     audio_set_play_vol(0.0f);
 }
 
-void audio_init() {
+static void * mixer_setup_thread(void *arg) {
     mixer_setup();
+    return NULL;
+}
+
+/* La conexion con PulseAudio -y la espera a que el contexto este listo- tardaba 1,7 s medidos
+ * en la radio, y todo eso pasaba ANTES del primer dibujo: la pantalla se quedaba en el logo.
+ * Ahora va en su propio hilo y la GUI dibuja de inmediato. Mientras el audio no este listo,
+ * audio_play() devuelve -1 (no entro nada) y no pasa nada: se pierden los primeros anuncios de
+ * voz, que es bastante mejor que mirar el logo. Se devuelve -1 y no 0 porque el que llama cuenta
+ * lo que de verdad entro al stream (ver la voz): un 0 se leia como "se mando". */
+void audio_init_sync(void);      /* el cuerpo que ahora corre en un hilo */
+
+static void *audio_init_thread(void *arg) {
+    (void) arg;
+
+    audio_init_sync();
+    return NULL;
+}
+
+void audio_init() {
+    pthread_t t;
+
+    if (pthread_create(&t, NULL, audio_init_thread, NULL) == 0) {
+        pthread_detach(t);
+    } else {
+        LV_LOG_WARN("No se pudo lanzar el hilo del audio; se inicializa en el hilo principal");
+        audio_init_sync();
+    }
+}
+
+bool audio_wait_ready(unsigned timeout_ms) {
+    uint64_t limite = pa_rtclock_now() + (uint64_t) timeout_ms * 1000;
+
+    /* No alcanza con que el contexto este arriba: hay que esperar a que el STREAM este READY.
+     * Medido el 13/10: con audio_up en true pero el stream todavia sin aceptar, la primera frase
+     * se descartaba entera ("al audio 0 de 73204"), porque audio_play() aguanta 2 s y despues
+     * tira el bloque. */
+    while (pa_rtclock_now() < limite) {
+        bool listo;
+
+        if (mloop != NULL) {
+            pa_threaded_mainloop_lock(mloop);
+        }
+
+        listo = audio_up && play_stm != NULL && pa_stream_get_state(play_stm) == PA_STREAM_READY;
+
+        if (mloop != NULL) {
+            pa_threaded_mainloop_unlock(mloop);
+        }
+
+        if (listo) {
+            return true;
+        }
+
+        usleep(20000);      /* 20 ms */
+    }
+
+    return false;
+}
+
+void audio_init_sync(void) {
+    /* Los diez `amixer` y el mixer de ALSA de mixer_setup() pueden tardar, trabarse, o
+     * abortar el proceso si el elemento no existe -y todo eso pasaba antes del primer
+     * dibujo, con la pantalla quedándose en el logo del equipo-. Va en su propio hilo:
+     * la GUI dibuja siempre y los niveles se aplican cuando se pueden. */
+    pthread_t mixer_thread;
+
+    if (pthread_create(&mixer_thread, NULL, mixer_setup_thread, NULL) == 0) {
+        pthread_detach(mixer_thread);
+    } else {
+        LV_LOG_WARN("No se pudo lanzar el hilo del mixer");
+    }
+
+    audio_enh_init();
     mloop = pa_threaded_mainloop_new();
     pa_threaded_mainloop_start(mloop);
 
@@ -89,9 +177,25 @@ void audio_init() {
     pa_context_connect(ctx, NULL, 0, NULL);
     pa_threaded_mainloop_unlock(mloop);
 
-    while (PA_CONTEXT_READY != pa_context_get_state(ctx))  {
+    /* Si pulseaudio no está -por ejemplo arrancado en modo sistema sin el usuario
+     * `pulse`, que es lo que pasaba en la radio- el contexto pasa a FAILED. Esta
+     * espera no terminaba nunca: la GUI se quedaba en el logo del equipo sin dibujar.
+     * Ahora se corta, avisa y la GUI sigue andando, sin audio. */
+    while (true) {
+        pa_context_state_t st = pa_context_get_state(ctx);
+
+        if (st == PA_CONTEXT_READY) {
+            break;
+        }
+        if (!PA_CONTEXT_IS_GOOD(st)) {
+            LV_LOG_WARN("pulseaudio no disponible (%s): la GUI sigue, pero sin audio",
+                        pa_strerror(pa_context_errno(ctx)));
+            return;
+        }
         pa_threaded_mainloop_wait(mloop);
     }
+
+    audio_up = true;
 
     LV_LOG_USER("Conected");
 
@@ -132,19 +236,46 @@ void audio_init() {
 }
 
 int audio_play(int16_t *samples_buf, size_t samples) {
-    while (true) {
-        size_t size;
+    if (!audio_up || play_stm == NULL) {
+        /* Todavia no hay stream (el audio arranca en un hilo): no entro nada, y se dice. */
+        return -1;
+    }
 
-        pa_threaded_mainloop_lock(mloop);
-        size = pa_stream_writable_size(play_stm);
-        pa_threaded_mainloop_unlock(mloop);
+    /* Ya se comprobó hace poco que no acepta: no hacer esperar a nadie (ver arriba). */
+    if (play_sin_lugar_hasta != 0 && pa_rtclock_now() < play_sin_lugar_hasta) {
+        return -1;
+    }
 
-        if (size >= (samples * 2)) {
+    /* Espera a que haya lugar. NO se puede esperar al mainloop sin tope: si el stream no se
+     * destraba (pasa cuando el sink real no consume, ver HALLAZGOS), `pa_threaded_mainloop_wait()`
+     * no vuelve nunca y el tope de abajo jamás se evalúa: la GUI quedaba colgada en futex_wait.
+     * Se duerme 1 ms y se vuelve a preguntar, así el tope es de verdad. */
+    bool     hay_lugar = false;
+    uint64_t limite    = pa_rtclock_now() + 2000000;      /* 2 s */
+
+    pa_threaded_mainloop_lock(mloop);
+    while (pa_rtclock_now() < limite) {
+        if (pa_stream_writable_size(play_stm) >= (samples * 2)) {
+            hay_lugar = true;
             break;
         }
 
+        pa_threaded_mainloop_unlock(mloop);
         usleep(1000);
+        pa_threaded_mainloop_lock(mloop);
     }
+    pa_threaded_mainloop_unlock(mloop);
+
+    if (!hay_lugar) {
+        /* -1 y no 0: el que llama (la voz, por ejemplo) tiene que poder cortar en vez de
+         * mandar bloque tras bloque que se descartan uno por uno. Y se recuerda por 5 s para
+         * que el resto de los bloques de la misma frase/transmisión no paguen el tope. */
+        play_sin_lugar_hasta = pa_rtclock_now() + 5000000;
+        LV_LOG_WARN("El stream de reproducción no acepta datos: se descarta el bloque");
+        return -1;
+    }
+
+    play_sin_lugar_hasta = 0;
 
     pa_threaded_mainloop_lock(mloop);
     int res = pa_stream_write(play_stm, samples_buf, samples * 2, NULL, 0, PA_SEEK_RELATIVE);
@@ -158,6 +289,11 @@ int audio_play(int16_t *samples_buf, size_t samples) {
 }
 
 void audio_play_wait() {
+    if (!audio_up || play_stm == NULL) {
+        return;
+    }
+
+
     pa_operation *op;
     int r;
 
@@ -165,17 +301,30 @@ void audio_play_wait() {
     op = pa_stream_drain(play_stm, NULL, NULL);
     pa_threaded_mainloop_unlock(mloop);
 
-    while (true) {
-        pa_threaded_mainloop_lock(mloop);
+    if (op == NULL) {
+        LV_LOG_WARN("No se pudo drenar el stream de reproducción");
+        return;
+    }
+
+    /* Lo mismo: el drenaje se espera con un tope real, no con un wait sin timeout. */
+    uint64_t limite = pa_rtclock_now() + 2000000;         /* 2 s */
+
+    pa_threaded_mainloop_lock(mloop);
+    while (pa_rtclock_now() < limite) {
         r = pa_operation_get_state(op);
-        pa_threaded_mainloop_unlock(mloop);
 
         if (r == PA_OPERATION_DONE || r == PA_OPERATION_CANCELLED) {
             break;
         }
-
-        usleep(1000);
+        if (r == PA_OPERATION_RUNNING) {
+            pa_threaded_mainloop_unlock(mloop);
+            usleep(1000);
+            pa_threaded_mainloop_lock(mloop);
+        } else {
+            break;
+        }
     }
+    pa_threaded_mainloop_unlock(mloop);
 
     pa_operation_unref(op);
 }
@@ -219,6 +368,11 @@ void audio_gain_db_transition(int16_t *buf, size_t samples, float gain1, float g
 }
 
 void audio_play_en(bool on) {
+    if (!audio_up || play_stm == NULL) {
+        return;
+    }
+
+
     if (on) {
         x6200_control_hmic_set(0);
         x6200_control_imic_set(0);
@@ -236,15 +390,33 @@ float audio_set_play_vol(float db) {
     const char *card = "default";
     const char *selem_name = "AIF1 DA0";
 
-    snd_mixer_open(&handle, 0);
-    snd_mixer_attach(handle, card);
-    snd_mixer_selem_register(handle, NULL, NULL);
-    snd_mixer_load(handle);
+    /* Los retornos se checan: si la tarjeta no está (o el mixer no se puede abrir),
+     * seguir con el handle es usar memoria sin inicializar. Antes se llamaba a
+     * snd_mixer_attach con lo que hubiera quedado en `handle`. */
+    if (snd_mixer_open(&handle, 0) < 0 || handle == NULL) {
+        LV_LOG_WARN("No se pudo abrir el mixer (%s)", card);
+        return db;
+    }
+    if (snd_mixer_attach(handle, card) < 0 ||
+        snd_mixer_selem_register(handle, NULL, NULL) < 0 ||
+        snd_mixer_load(handle) < 0) {
+        LV_LOG_WARN("No se pudo preparar el mixer de '%s'", card);
+        snd_mixer_close(handle);
+        return db;
+    }
 
     snd_mixer_selem_id_alloca(&sid);
     snd_mixer_selem_id_set_index(sid, 0);
     snd_mixer_selem_id_set_name(sid, selem_name);
     snd_mixer_elem_t* elem = snd_mixer_find_selem(handle, sid);
+
+    /* Si el elemento no existe (p.ej. el mixer de "default" es el de pulseaudio y no
+     * expone los del codec), ALSA aborta el proceso con una aserción. */
+    if (elem == NULL) {
+        LV_LOG_WARN("No hay elemento '%s' en el mixer: se deja el volumen como estaba", selem_name);
+        snd_mixer_close(handle);
+        return db;
+    }
 
     snd_mixer_selem_set_playback_dB_all(elem, (long)(db * 100.0f), 0);
     long db_long;
@@ -259,15 +431,31 @@ float audio_set_rec_vol(float db) {
     const char *card = "default";
     const char *selem_name = "ADC";
 
-    snd_mixer_open(&handle, 0);
-    snd_mixer_attach(handle, card);
-    snd_mixer_selem_register(handle, NULL, NULL);
-    snd_mixer_load(handle);
+    /* Los retornos se checan: si la tarjeta no está (o el mixer no se puede abrir),
+     * seguir con el handle es usar memoria sin inicializar. Antes se llamaba a
+     * snd_mixer_attach con lo que hubiera quedado en `handle`. */
+    if (snd_mixer_open(&handle, 0) < 0 || handle == NULL) {
+        LV_LOG_WARN("No se pudo abrir el mixer (%s)", card);
+        return db;
+    }
+    if (snd_mixer_attach(handle, card) < 0 ||
+        snd_mixer_selem_register(handle, NULL, NULL) < 0 ||
+        snd_mixer_load(handle) < 0) {
+        LV_LOG_WARN("No se pudo preparar el mixer de '%s'", card);
+        snd_mixer_close(handle);
+        return db;
+    }
 
     snd_mixer_selem_id_alloca(&sid);
     snd_mixer_selem_id_set_index(sid, 0);
     snd_mixer_selem_id_set_name(sid, selem_name);
     snd_mixer_elem_t* elem = snd_mixer_find_selem(handle, sid);
+
+    if (elem == NULL) {
+        LV_LOG_WARN("No hay elemento '%s' en el mixer: se deja el volumen como estaba", selem_name);
+        snd_mixer_close(handle);
+        return db;
+    }
 
     snd_mixer_selem_set_capture_dB_all(elem, (long)(db * 100.0f), 0);
     long db_long;
@@ -298,6 +486,11 @@ static void monitor_cb(pa_stream *stream, size_t length, void *udata) {
 
 
 static void record_monitor_setup() {
+    if (!audio_up || ctx == NULL) {
+        return;
+    }
+
+
 
     pa_sample_spec  spec = {
         .format = PA_SAMPLE_S16NE,

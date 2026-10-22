@@ -1,0 +1,35 @@
+# main-espectro-agua: the waterfall in "movement" with a fixed seed and the
+# Aurora theme (its own 256-colour table, docs/THEMES.md), peaks on and the
+# centre line drawn.
+
+name main-espectro-agua
+screen main
+
+seed 7
+theme Aurora
+spectrum_peak true
+waterfall_center_line true
+spectrum_filled true
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -90
+
+battery_v 12.3
+external_v 13.8
+battery_cap 84
+charging false
+
+rxtx rx

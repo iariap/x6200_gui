@@ -1,0 +1,54 @@
+# Banco QEMU (binario ARM real, sin radio) — comandos de esta corrida
+#
+# Chroot y volumen PRIVADOS de la corrida (copias con --reflink, para no tocar
+# los del owner):
+#   CHROOT=state/worktrees/x6200/at190-chroot        (copia de /home/pablo/desa/x6200/.vfix3)
+#   VOLUMEN=x6200-build-output-at190                 (copia de x6200-build-output)
+#
+# El binario se cross-compiló de estas fuentes con el sello del issue #165
+# (§7 de este README) y el banco lo verificó con el gate #86 antes de correrlo.
+
+# 0) preflight (no toca nada)
+$ CHROOT=../at190-chroot VOLUMEN=x6200-build-output-at190 tools/captura-banco.sh --check
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output-at190: ok
+  chroot .../at190-chroot: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  buildroot: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+== todo listo para el banco (no se toco nada) ==
+
+# 1) arranca el banco sobre la página APP (y verifica el firmware del port)
+$ CHROOT=../at190-chroot VOLUMEN=x6200-build-output-at190 RECONSTRUIR=no ESPERA=1 \
+      tools/captura-banco.sh /tmp/opencode/at/qemu-home-app1.png '{"cmd":"page","text":"app"}'
+  aviso: el hash de los fuentes cambio y hay cambios sin commitear, pero RECONSTRUIR=no: se prueba el binario que ya esta
+OK: .../at190-chroot/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13923332 B, 3/3 marcas)
+  respuesta: {"t":"ok"}
+  captura: /tmp/opencode/at/qemu-home-app1.png (9743 colores distintos)
+  version: 314644ad Docs (#190): reescribir autotune.md para v2 y dejar
+  fuente: md5 d9dcd060e20a (src/ + lvgl/src)
+  binario: md5 9dcde687764a   qemu-cpu: cortex-a7
+
+# 2) las cinco capturas (socket de control de la GUI, un comando por linea; el
+#    framebuffer falso se convierte a PNG con el mismo criterio que
+#    tools/captura-banco.sh). Los comandos se mandaron con `docker exec banco-apps
+#    chroot /t /tmp/x6200-remote '<json>'` para poder cronometrar la captura
+#    dentro de la ventana de 2 s del mensaje.
+#
+#    {"cmd":"btn","val":0}  x5   -> (APP 1:6) .. (APP 6:6)      => qemu-190-1-accion-visible.png
+#    {"cmd":"freq","val":14074000} + {"cmd":"mode","val":"CW"}
+#    {"cmd":"btn","val":4}       -> Auto Tune en CW             => qemu-190-2-activacion.png
+#    (esperar 3.5 s: la fase vence sin señal)
+#    {"cmd":"btn","val":4} x2    -> arranca y cancela           => qemu-190-3-cancelacion.png
+#    {"cmd":"mode","val":"AM"} + {"cmd":"btn","val":4}          => qemu-190-4-rechazo.png
+#    {"cmd":"mode","val":"CW"} + {"cmd":"btn","val":4}, 3.2 s   => qemu-190-5-sin-senal.png
+#
+#    En las cinco, el estado del socket dio dial = 14074000 (no se movió).
+
+# 3) fin
+$ docker rm -f banco-apps

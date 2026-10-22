@@ -1,0 +1,46 @@
+# bt-dialog: the real Bluetooth window (src/dialog_bt.c) over the real main
+# screen. The path is the firmware's own: main_screen_start_app(ACTION_APP_BT) ->
+# dialog_construct(dialog_bt) -> src/dialog_bt.c builds the header, the device
+# table, the status line and the Scan/RX/Speaker/Auto/Close button row.
+#
+# UI-005: the historical defect was the dialog's status line ("no headphones, RX
+# off") sitting on the old dialog geometry (DIALOG_H 372 / DIALOG_Y 108) and being
+# covered by the bottom button row (which starts at 480 - 62). This fixture renders
+# the window and scenario_settle codifies the metric: the status label's bottom has
+# to end above the button row (y=418); if it drops below again the run stops
+# instead of capturing a covered line green.
+#
+# The host has no btaudio-ctl: `system()` is wrapped to a no-op and the file the
+# script would leave is seeded with a fixed device list (mocks/mock_btaudio.c), so
+# the table draws a real row ("Living Room TV", headphones, not connected).
+#
+# Deterministic: the dialog reads the harness' virtual clock (get_time()), never the
+# host's.
+
+name bt-dialog
+screen bt-dialog
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

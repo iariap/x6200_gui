@@ -16,6 +16,12 @@
 #include "../vol.h"
 #include "../dialog_msg_cw.h"
 #include "../qth/qth.h"
+/* Solo por VP_PARAM_AUTO/VP_PROFILE_COUNT (el valor reservado del parametro del
+ * perfil visual, UI-08 incr. 5). El modulo de la politica no incluye params.h:
+ * esta dependencia es de una sola direccion. */
+#include "../visual_policy.h"
+/* Solo por adaptive_tuning_threshold_sanitize() (issue #186). */
+#include "../adaptive_tuning.h"
 
 #include "lvgl/lvgl.h"
 
@@ -27,6 +33,15 @@
 
 #define BAND_NOT_LOADED -10
 
+/* Los valores del enum press_action_t se guardan por su numero en el equipo (los campos uint8
+ * de params: long_gen/long_app/long_key/long_msg/long_dfn/long_dfl y press_f1/press_f2/long_f1/
+ * long_f2, cargados por nombre en params_load). El hueco 121 que deja la accion eliminada el
+ * 2026-10-14 no se reutiliza (ver params.h): si se reutilizara, o si las acciones que siguen se
+ * movieran, cambiaria en silencio la accion guardada de la radio. */
+_Static_assert(ACTION_APP_GPS == 122 && ACTION_APP_BANDS == 128 &&
+               ACTION_APP_PROPAGATION == 130 && ACTION_APP_DFL_EDITOR == 131,
+               "press_action_t: no muevas los valores de las acciones guardadas (el hueco 121 no se reutiliza)");
+
 params_t params = {
     .vol_modes              = (1 << VOL_VOL) | (1 << VOL_RFG) | (1 << VOL_FILTER_LOW) | (1 << VOL_FILTER_HIGH) | (1 << VOL_PWR) | (1 << VOL_HMIC),
     .mfk_modes              = (1 << MFK_FFT_DECIM) | (1 << MFK_SPECTRUM_BETA) | (1 << MFK_PEAK_HOLD) | (1<< MFK_PEAK_SPEED),
@@ -35,6 +50,10 @@ params_t params = {
     .brightness_idle        = 1,
     .brightness_timeout     = 10,
     .brightness_buttons     = BUTTONS_TEMPORARILY,
+
+    /* Por defecto la politica decide (AUTO). Un perfil fijado se guarda como su
+     * indice (0..VP_PROFILE_COUNT-1); VP_PARAM_AUTO es el modo automatico. */
+    .visual_profile         = { .x = VP_PARAM_AUTO, .min = 0, .max = VP_PROFILE_COUNT - 1, .name = "visual_profile" },
 
     .spectrum_beta          = 70,
     .spectrum_filled        = true,
@@ -48,9 +67,12 @@ params_t params = {
     .waterfall_smooth_scroll= { .x = false,  .name = "waterfall_smooth_scroll",  .voice = "Waterfall smooth scroll"},
     .waterfall_center_line  = { .x = true,  .name = "waterfall_center_line",    .voice = "Waterfall center line"},
     .waterfall_zoom         = { .x = true,  .name = "waterfall_zoom",           .voice = "Waterfall zoom"},
+    .waterfall_battery      = { .x = false, .name = "waterfall_battery",        .voice = "Waterfall battery mode"},
     .mag_freq               = { .x = true,  .name = "mag_freq",                 .voice = "Magnification of frequency" },
     .mag_info               = { .x = true,  .name = "mag_info",                 .voice = "Magnification of info" },
     .mag_alc                = { .x = true,  .name = "mag_alc",                  .voice = "Magnification of A L C" },
+    .smeter_needle          = { .x = false, .name = "smeter_needle",            .voice = "S meter needle" },
+    .band_plan              = { .x = true,  .name = "band_plan",                .voice = "Band plan" },
     .clock_view             = CLOCK_TIME_POWER,
     .clock_time_timeout     = 5,
     .clock_power_timeout    = 3,
@@ -69,6 +91,16 @@ params_t params = {
     .moni                   = 59,
     .spmode                 = { .x = false,             .name = "spmode",           .voice = "Speaker mode" },
     .freq_accel             = { .x = FREQ_ACCEL_LITE,   .name = "freq_accel",       .voice = "Frequency acceleration" },
+    /* Issue #186: detents/s de entrada al nivel 1. Se valida a 3..15 y se sanea
+     * (0/fuera de rango => 7 + dirty) en params_init(); sin voz en init. */
+    .freq_accel_threshold   = { .x = 7, .min = 3, .max = 15, .name = "freq_accel_threshold",
+                                .voice = "Acceleration starts at" },
+
+    /* CB 27 MHz (issue #146): default conservador, SBC argentino (26,960-27,410)
+     * y 4,0 W (FCC 95.967 para AM/FM; el texto de la Res. 47/82 no esta online,
+     * por eso el tope es configurable). */
+    .cb_tx_scope            = { .x = 0, .min = 0, .max = 2, .name = "cb_tx_scope" },
+    .cb_pwr_max             = { .x = 4.0f, .name = "cb_pwr_max" },
 
     .vox                    = false,
     .vox_ag                 = 0,
@@ -87,6 +119,24 @@ params_t params = {
 
     .ft8_show_all           = true,
     .ft8_protocol           = FTX_PROTOCOL_FT8,
+    /* JS8 (same defaults as the X6100 firmware) */
+    .js8_tx_freq            = { .x = 1500,      .name = "js8_tx_freq" },
+    .js8_hold_offset        = { .x = false,     .name = "js8_hold_offset" },
+    .js8_auto               = { .x = false,     .name = "js8_auto" },
+    .js8_hb                 = { .x = false,     .name = "js8_hb" },
+    .js8_hb_ack             = { .x = false,     .name = "js8_hb_ack" },
+    .js8_relay              = { .x = true,      .name = "js8_relay" },
+    .js8_hb_interval        = { .x = 30,        .name = "js8_hb_interval" },
+    .js8_cq_interval        = { .x = 1,         .name = "js8_cq_interval" },
+    .js8_log_prompt         = { .x = true,      .name = "js8_log_prompt" },
+    .js8_log_activation     = { .x = 0, .min = 0, .max = 2, .name = "js8_log_activation" },
+    .js8_alerts             = { .x = 7, .min = 0, .max = 31, .name = "js8_alerts" },
+    .js8_speed              = { .x = 0, .min = 0, .max = 3, .name = "js8_speed" },
+    .js8_rx_all             = { .x = true,      .name = "js8_rx_all" },
+    .js8_ghostnet           = { .x = false,     .name = "js8_ghostnet" },
+    .js8_custom_on          = { .x = false,     .name = "js8_custom_on" },
+    .js8_custom_hz          = { .x = 0,         .name = "js8_custom_hz" },
+
     .ft8_tx_freq            = { .x = 1325,      .name = "ft8_tx_freq" },
     .ft8_auto               = { .x = true,      .name = "ft8_auto" },
     .ft8_output_gain_offset = { .x = 0.0f,      .name = "ft8_output_gain_offset" },
@@ -97,7 +147,10 @@ params_t params = {
     .long_key               = ACTION_NONE,
     .long_msg               = ACTION_RECORDER,
     .long_dfn               = ACTION_VOICE_MODE,
-    .long_dfl               = ACTION_BAT_INFO,
+    /* Editor DFL (issue #173, PR 2): default para instalaciones NUEVAS, sin valor
+     * guardado. Un equipo con long_dfl ya persistido conserva el suyo (params_load
+     * lo pisa por nombre); "Battery info" sigue siendo elegible en Ajustes. */
+    .long_dfl               = ACTION_APP_DFL_EDITOR,
 
     .press_f1               = ACTION_STEP_UP,
     .press_f2               = ACTION_NONE,
@@ -106,6 +159,8 @@ params_t params = {
 
     .play_gain_db_f         = { .x = 0.0f, .name = "play_gain_db_f"},
     .rec_gain_db_f          = { .x = 0.0f, .name = "rec_gain_db_f"},
+
+    .audio_enh_preset       = { .x = 0, .max = 4, .name = "audio_enh_preset", .voice = "Audio enhancement" },
 
     .voice_mode             = { .x = VOICE_LCD,                                 .name = "voice_mode" },
     .voice_lang             = { .x = 0,   .min = 0,  .max = (VOICES_NUM - 1),   .name = "voice_lang" },
@@ -118,7 +173,19 @@ params_t params = {
 
     .wifi_enabled           = { .x = false, .name="wifi_enabled" },
 
+    /* Propagacion (issue #145). Arrancar al abrir queda APAGADO por defecto: abrir
+     * una app no deberia mover el VFO sin que el operador lo pida. El cluster se
+     * usa como evidencia complementaria (dato local, ya en memoria). */
+    .propagation_open_db       = { .x = 12,    .name = "propagation_open_db" },
+    .propagation_marginal_db   = { .x = 6,     .name = "propagation_marginal_db" },
+    .propagation_run_on_open   = { .x = false, .name = "propagation_run_on_open" },
+    .propagation_cluster       = { .x = true,  .name = "propagation_cluster" },
+
     .theme                  = { .x = THEME_SIMPLE, .name="theme"},
+    /* Default de la coleccion (issue #74): Aurora. El built-in IU1WXY dejo de existir como tema;
+     * un valor guardado de un tema legado o DATA lo migra al arranque src/params/migrations.c. */
+    .theme_name             = { .x = "Aurora", .max_len = sizeof(params.theme_name.x) - 1, .name="theme_name"},
+    .font                   = { .x = 255, .min = 0, .max = 3, .name="font"},
 };
 
 static sqlite3_stmt     *write_mode_stmt;
@@ -138,6 +205,15 @@ static bool params_load_bool(params_bool_t *var, const char *name, const int32_t
 }
 
 static bool params_load_uint8(params_uint8_t *var, const char *name, const int32_t x) {
+    if (strcmp(name, var->name) == 0) {
+        var->x = x;
+        return true;
+    }
+
+    return false;
+}
+
+static bool params_load_int32(params_int32_t *var, const char *name, const int32_t x) {
     if (strcmp(name, var->name) == 0) {
         var->x = x;
         return true;
@@ -278,10 +354,13 @@ static bool params_load() {
 
         if (params_load_float(&params.play_gain_db_f, name, f)) continue;
         if (params_load_float(&params.rec_gain_db_f, name, f)) continue;
+        if (params_load_uint8(&params.audio_enh_preset, name, i)) continue;
 
         if (params_load_bool(&params.mag_freq, name, i)) continue;
         if (params_load_bool(&params.mag_info, name, i)) continue;
         if (params_load_bool(&params.mag_alc, name, i)) continue;
+        if (params_load_bool(&params.smeter_needle, name, i)) continue;
+        if (params_load_bool(&params.band_plan, name, i)) continue;
         if (params_load_bool(&params.spectrum_auto_min, name, i)) continue;
         if (params_load_bool(&params.spectrum_auto_max, name, i)) continue;
         if (params_load_bool(&params.waterfall_auto_min, name, i)) continue;
@@ -289,6 +368,7 @@ static bool params_load() {
         if (params_load_bool(&params.waterfall_smooth_scroll, name, i)) continue;
         if (params_load_bool(&params.waterfall_center_line, name, i)) continue;
         if (params_load_bool(&params.waterfall_zoom, name, i)) continue;
+        if (params_load_bool(&params.waterfall_battery, name, i)) continue;
         if (params_load_bool(&params.spmode, name, i)) continue;
         if (params_load_bool(&params.ft8_auto, name, i)) continue;
         if (params_load_float(&params.ft8_output_gain_offset, name, f)) continue;
@@ -300,6 +380,27 @@ static bool params_load() {
         if (params_load_uint8(&params.voice_pitch, name, i)) continue;
         if (params_load_uint8(&params.voice_volume, name, i)) continue;
         if (params_load_uint8(&params.freq_accel, name, i)) continue;
+        if (params_load_uint8(&params.freq_accel_threshold, name, i)) continue;
+        if (params_load_uint8(&params.cb_tx_scope, name, i)) continue;
+        if (params_load_float(&params.cb_pwr_max, name, f)) continue;
+        if (params_load_uint8(&params.visual_profile, name, i)) continue;
+
+        if (params_load_uint16(&params.js8_tx_freq, name, i)) continue;
+        if (params_load_bool(&params.js8_hold_offset, name, i)) continue;
+        if (params_load_bool(&params.js8_auto, name, i)) continue;
+        if (params_load_bool(&params.js8_hb, name, i)) continue;
+        if (params_load_bool(&params.js8_hb_ack, name, i)) continue;
+        if (params_load_bool(&params.js8_relay, name, i)) continue;
+        if (params_load_uint16(&params.js8_hb_interval, name, i)) continue;
+        if (params_load_uint16(&params.js8_cq_interval, name, i)) continue;
+        if (params_load_bool(&params.js8_log_prompt, name, i)) continue;
+        if (params_load_uint8(&params.js8_log_activation, name, i)) continue;
+        if (params_load_uint8(&params.js8_alerts, name, i)) continue;
+        if (params_load_uint8(&params.js8_speed, name, i)) continue;
+        if (params_load_bool(&params.js8_rx_all, name, i)) continue;
+        if (params_load_bool(&params.js8_ghostnet, name, i)) continue;
+        if (params_load_bool(&params.js8_custom_on, name, i)) continue;
+        if (params_load_int32(&params.js8_custom_hz, name, i)) continue;
 
         if (params_load_uint16(&params.ft8_tx_freq, name, i)) continue;
 
@@ -307,7 +408,15 @@ static bool params_load() {
 
         if (params_load_str(&params.callsign, name, t)) continue;
         if (params_load_bool(&params.wifi_enabled, name, i)) continue;
+
+        if (params_load_int32(&params.propagation_open_db, name, i)) continue;
+        if (params_load_int32(&params.propagation_marginal_db, name, i)) continue;
+        if (params_load_bool(&params.propagation_run_on_open, name, i)) continue;
+        if (params_load_bool(&params.propagation_cluster, name, i)) continue;
+
         if (params_load_uint8(&params.theme, name, i)) continue;
+        if (params_load_str(&params.theme_name, name, t)) continue;
+        if (params_load_uint8(&params.font, name, i)) continue;
     }
 
     sqlite3_finalize(stmt);
@@ -332,6 +441,12 @@ static void params_save_uint16(params_uint16_t *var) {
     }
 }
 
+static void params_save_int32(params_int32_t *var) {
+    if (var->dirty) {
+        params_write_int(var->name, var->x, &var->dirty);
+    }
+}
+
 static void params_save_float(params_float_t *var) {
     if (var->dirty) {
         params_write_float(var->name, var->x, &var->dirty);
@@ -342,6 +457,12 @@ static void params_save_str(params_str_t *var) {
     if (var->dirty) {
         params_write_text(var->name, var->x, &var->dirty);
     }
+}
+
+static void params_save();
+
+void params_flush() {
+    params_save();
 }
 
 static void params_save() {
@@ -387,6 +508,8 @@ static void params_save() {
     if (params.dirty.brightness_timeout)    params_write_int("brightness_timeout", params.brightness_timeout, &params.dirty.brightness_timeout);
     if (params.dirty.brightness_buttons)    params_write_int("brightness_buttons", params.brightness_buttons, &params.dirty.brightness_buttons);
 
+    params_save_uint8(&params.visual_profile);
+
     if (params.dirty.clock_view)            params_write_int("clock_view", params.clock_view, &params.dirty.clock_view);
     if (params.dirty.clock_time_timeout)    params_write_int("clock_time_timeout", params.clock_time_timeout, &params.dirty.clock_time_timeout);
     if (params.dirty.clock_power_timeout)   params_write_int("clock_power_timeout", params.clock_power_timeout, &params.dirty.clock_power_timeout);
@@ -409,6 +532,7 @@ static void params_save() {
 
     params_save_float(&params.play_gain_db_f);
     params_save_float(&params.rec_gain_db_f);
+    params_save_uint8(&params.audio_enh_preset);
 
     params_save_uint8(&params.voice_mode);
     params_save_uint8(&params.voice_lang);
@@ -416,12 +540,34 @@ static void params_save() {
     params_save_uint8(&params.voice_pitch);
     params_save_uint8(&params.voice_volume);
     params_save_uint8(&params.freq_accel);
+    params_save_uint8(&params.freq_accel_threshold);
+    params_save_uint8(&params.cb_tx_scope);
+    params_save_float(&params.cb_pwr_max);
+
+    params_save_uint16(&params.js8_tx_freq);
+    params_save_bool(&params.js8_hold_offset);
+    params_save_bool(&params.js8_auto);
+    params_save_bool(&params.js8_hb);
+    params_save_bool(&params.js8_hb_ack);
+    params_save_bool(&params.js8_relay);
+    params_save_uint16(&params.js8_hb_interval);
+    params_save_uint16(&params.js8_cq_interval);
+    params_save_bool(&params.js8_log_prompt);
+    params_save_uint8(&params.js8_log_activation);
+    params_save_uint8(&params.js8_alerts);
+    params_save_uint8(&params.js8_speed);
+    params_save_bool(&params.js8_rx_all);
+    params_save_bool(&params.js8_ghostnet);
+    params_save_bool(&params.js8_custom_on);
+    params_save_int32(&params.js8_custom_hz);
 
     params_save_uint16(&params.ft8_tx_freq);
 
     params_save_bool(&params.mag_freq);
     params_save_bool(&params.mag_info);
     params_save_bool(&params.mag_alc);
+    params_save_bool(&params.smeter_needle);
+    params_save_bool(&params.band_plan);
     params_save_bool(&params.spectrum_auto_min);
     params_save_bool(&params.spectrum_auto_max);
     params_save_bool(&params.waterfall_auto_min);
@@ -429,6 +575,7 @@ static void params_save() {
     params_save_bool(&params.waterfall_smooth_scroll);
     params_save_bool(&params.waterfall_center_line);
     params_save_bool(&params.waterfall_zoom);
+    params_save_bool(&params.waterfall_battery);
     params_save_bool(&params.spmode);
     params_save_bool(&params.ft8_auto);
     params_save_float(&params.ft8_output_gain_offset);
@@ -437,7 +584,13 @@ static void params_save() {
     params_save_str(&params.qth);
     params_save_str(&params.callsign);
     params_save_bool(&params.wifi_enabled);
+    params_save_int32(&params.propagation_open_db);
+    params_save_int32(&params.propagation_marginal_db);
+    params_save_bool(&params.propagation_run_on_open);
+    params_save_bool(&params.propagation_cluster);
     params_save_uint8(&params.theme);
+    params_save_str(&params.theme_name);
+    params_save_uint8(&params.font);
 
     sql_query_exec("COMMIT");
 }
@@ -457,15 +610,38 @@ static void * params_thread(void *arg) {
     }
 }
 
+/* Saneo del umbral de aceleracion (issue #186, seccion 2.3): un valor 0 o fuera
+ * de 3..15 se reemplaza EN MEMORIA por 7 y se marca dirty para que la rutina
+ * normal lo persista. Se usa params_unlock() (no una asignacion directa) para
+ * armar el temporizador de guardado: sin eso el dirty quedaba marcado pero
+ * params_ready_to_save() nunca lo veia y la correccion no llegaba al disco.
+ * Ninguna rama dispara voz durante el arranque. */
+static void params_freq_accel_threshold_sanitize(void) {
+    uint8_t saneado = adaptive_tuning_threshold_sanitize(params.freq_accel_threshold.x);
+
+    if (saneado != params.freq_accel_threshold.x) {
+        params_lock();
+        params.freq_accel_threshold.x = saneado;
+        params_unlock(&params.freq_accel_threshold.dirty);
+    }
+}
+
 void params_init() {
     int rc;
     if (database_init()) {
+        boot_mark("db_init");
         cfg_init(db);
+        boot_mark("cfg_init");
         if (!params_load()) {
-            LV_LOG_ERROR("Load params");
-            sqlite3_close(db);
-            db = NULL;
+            /* No se cierra la base ni se deja `db` en NULL: los statements que se
+             * preparan más abajo se arman sobre ella (y sobre NULL quedan en NULL, que
+             * después se usan sin chequear: comportamiento indefinido). Lo que falte
+             * queda en su valor por defecto. */
+            LV_LOG_ERROR("Load params: se sigue con los valores por defecto");
         }
+        boot_mark("params_load");
+
+        params_freq_accel_threshold_sanitize();
 
         if (rc != SQLITE_OK) {
             LV_LOG_ERROR("Prepare write");
@@ -522,6 +698,25 @@ void params_msg_cw_load() {
     }
 
     sqlite3_finalize(stmt);
+}
+
+int params_msg_cw_list(char (*out)[PARAMS_MSG_CW_LEN], int max) {
+    sqlite3_stmt *stmt;
+    int           n = 0;
+
+    if (sqlite3_prepare_v2(db, "SELECT val FROM msg_cw ORDER BY id", -1, &stmt, 0) != SQLITE_OK) {
+        return 0;
+    }
+
+    while (n < max && sqlite3_step(stmt) == SQLITE_ROW) {
+        const char *val = (const char *) sqlite3_column_text(stmt, 0);
+
+        snprintf(out[n++], PARAMS_MSG_CW_LEN, "%s", val ? val : "");
+    }
+
+    sqlite3_finalize(stmt);
+
+    return n;
 }
 
 void params_msg_cw_new(const char *val) {
@@ -593,6 +788,16 @@ void params_uint8_set(params_uint8_t *var, uint8_t x) {
 }
 
 void params_uint16_set(params_uint16_t *var, uint16_t x) {
+    params_lock();
+    var->x = x;
+    params_unlock(&var->dirty);
+
+    if (var->voice) {
+        voice_say_int(var->voice, var->x);
+    }
+}
+
+void params_int32_set(params_int32_t *var, int32_t x) {
     params_lock();
     var->x = x;
     params_unlock(&var->dirty);

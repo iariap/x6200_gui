@@ -1,0 +1,64 @@
+#!/bin/sh
+#
+# Starts X6200 GUI daemon (S20: temprano, para que la pantalla aparezca antes que la red)
+#
+
+DAEMON="x6200_daemon"
+PIDFILE="/var/run/$DAEMON.pid"
+
+# shellcheck source=/dev/null
+[ -r "/etc/default/$DAEMON" ] && . "/etc/default/$DAEMON"
+
+start() {
+	printf 'Starting %s: ' "$DAEMON"
+	echo 0 > /sys/class/graphics/fbcon/cursor_blink
+	# Corre en S20: antes de la red, del NTP y del Bluetooth. La GUI solo necesita DATA,
+	# udev y el daemon de radio, asi que la pantalla aparece en segundos y lo lento sigue
+	# despues. El daemon engancha los assets en /dev/shm (bind mount): /dev/shm tiene que
+	# existir antes.
+	mkdir -p /dev/shm
+	mountpoint -q /dev/shm || mount -t tmpfs -o mode=1777 tmpfs /dev/shm 2>/dev/null || true
+	mkdir -p /mnt/app_logs
+	printf '%s  GUI arrancando: %s s de uptime\n' "$(date -u +%H:%M:%S)" "$(cut -d" " -f1 /proc/uptime)" >> /mnt/app_logs/boot.log
+	[ ! -f /mnt/params.db ] && cp /usr/share/x6200/params.default.db /mnt/params.db
+	# shellcheck disable=SC2086 # we need the word splitting
+	start-stop-daemon -S -b -q -m -p "$PIDFILE" -x "/usr/sbin/$DAEMON"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	return "$status"
+}
+
+stop() {
+	printf 'Stopping %s: ' "$DAEMON"
+	start-stop-daemon -K -q -p "$PIDFILE"
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		rm -f "$PIDFILE"
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+	killall x6200_gui
+	return "$status"
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+case "$1" in
+	start|stop|restart)
+		"$1";;
+	reload)
+		# Restart, since there is no true "reload" feature.
+		restart;;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload}"
+		exit 1
+esac

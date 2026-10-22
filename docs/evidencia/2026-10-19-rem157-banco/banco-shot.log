@@ -1,0 +1,19 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output-rem157: ok
+  chroot /home/pablo/desa/x6200/.vrem157: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  aviso: el hash de los fuentes cambio, pero RECONSTRUIR=no: se prueba el binario que ya esta
+OK: /home/pablo/desa/x6200/.vrem157/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13803904 B, 3/3 marcas)
+  el banco no contesta o la GUI no esta viva; reiniciando...
+  respuesta: {"t":"ok"}
+  captura: docs/evidencia/2026-10-19-rem157-banco/banco-get.png (288 colores distintos)
+  version: 9309774b Control remoto (#157): state.pwr real y mapeo de mo
+  fuente: md5 5c43d131f354 (src/ + lvgl/src)
+  binario: md5 98f18ff4d6ae   qemu-cpu: cortex-a7
+  captura util (20355 bytes)

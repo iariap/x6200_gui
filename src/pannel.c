@@ -84,11 +84,24 @@ static void pannel_update_cb(const char *text) {
     lv_label_set_text_static(obj, buf);
 }
 
+/* Cuando la pantalla se reconstruye (por ejemplo al abrir una app) el objeto se destruye pero los
+ * observadores del modo siguen vivos: sin limpiar el puntero quedaba colgado y el primer cambio de
+ * modo mataba la GUI en lv_obj_add_flag -> lv_obj_has_flag_any (medido con el core,
+ * docs/HALLAZGOS.md 34). */
+static void obj_deleted_cb(lv_event_t *e) {
+    /* Solo si el que muere es el objeto que apuntamos: cuando la pantalla se reconstruye, el viejo
+     * se destruye despues de crear el nuevo y no hay que borrar el puntero nuevo. */
+    if (obj == (lv_obj_t *) lv_event_get_target(e)) {
+        obj = NULL;
+    }
+}
+
 lv_obj_t * pannel_init(lv_obj_t *parent) {
     obj = lv_label_create(parent);
+    lv_obj_add_event_cb(obj, obj_deleted_cb, LV_EVENT_DELETE, NULL);
 
     lv_obj_add_style(obj, &pannel_style, 0);
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
 
     subject_add_delayed_observer(cfg_cur.mode, update_visibility, NULL);
     subject_add_delayed_observer_and_call(cfg.cw_decoder.val, update_visibility, NULL);
@@ -100,7 +113,11 @@ void pannel_add_text(const char * text) {
 }
 
 void pannel_hide() {
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    if (obj == NULL) {
+        return;
+    }
+
+    if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
 }
 
 void pannel_visible() {
@@ -125,12 +142,16 @@ void pannel_visible() {
         strcpy(buf, "");
         last_line = (char *) &buf;
         lv_label_set_text_static(obj, buf);
-        lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
+        if (obj) lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
     } else {
-        lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+        if (obj) lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
     }
 }
 
 static void update_visibility(Subject *subj, void *user_data) {
+    if (obj == NULL) {
+        return;                     /* la pantalla no esta: nada que mostrar u ocultar */
+    }
+
     pannel_visible();
 }

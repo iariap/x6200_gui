@@ -1,0 +1,32 @@
+# home-usb-20m: the firmware's main screen, 20 m USB, S9 signal, on battery.
+# The screen is built by the real src/main_screen.c; the spectrum/waterfall
+# magnitudes come from the deterministic generator seeded below (no SDR).
+# See tools/ui_harness/README.md for the coverage table.
+
+name home-usb-20m
+screen main
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

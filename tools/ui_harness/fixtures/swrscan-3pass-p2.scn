@@ -1,0 +1,36 @@
+# swrscan-3pass-p2: la misma sesion de 3 pasadas, capturada a mitad de la
+# segunda (51 + 25 puntos; el barrido 2/3 va de arriba hacia abajo, como el
+# contrato del dataset). El estado muestra "Scanning pass 2/3" y la grafica tiene
+# los 51 puntos de la pasada 1 mas 25 de la 2.
+
+name swrscan-3pass-p2
+screen swrscan
+
+seed 20
+
+swr_dataset single_valley_3pass
+swr_passes 3
+swr_feed 76
+
+frequency_hz 7100000
+tx_frequency_hz 7100000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

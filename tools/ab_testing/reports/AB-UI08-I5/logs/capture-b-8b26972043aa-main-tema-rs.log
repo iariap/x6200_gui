@@ -1,0 +1,4 @@
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #564)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #570)
+[Error]	(0.010, +10)	 _lv_inv_area: detected modifying dirty areas in render 	(in lv_refr.c line #213)
+ui_harness: main-tema-rs -> /out/main-tema-rs.png (224783 bytes), flushes=6, flushed_pixels=1127680

@@ -1,0 +1,118 @@
+# Chequeos estaticos del repo (los mismos que el job functional del CI).
+
+$ python3 tests/check_cfg_fills.py $PWD
+  campos en cfg_t:      70
+  fill_cfg_item():      70
+  OK: los 70 campos se inicializan, en orden
+exit=0
+
+$ python3 tests/check_actions.py
+  acciones ofrecidas: 41 | con manejador: 41
+  todas las acciones ofrecidas tienen manejador
+exit=0
+
+$ python3 tests/check_settings_focus.py
+  widgets de foco creados: 29 | dialog_item(): 30
+  sliders con parametro propio: 4
+  campos de la fila de fecha: 3
+  todos los widgets de Ajustes estan en el grupo de foco
+  cada slider mueve el parametro que muestra
+  los campos de la fila de fecha declaran la misma caja
+exit=0
+
+$ python3 tests/check_settings_grid.py
+  macros del esquema: 8/8
+  filas de control colocadas: 52 | etiquetas: 34
+  formas de fila presentes: 5
+  la zona de controles de Ajustes usa un solo esquema de grilla (origen unico x=499)
+exit=0
+
+$ python3 tests/check_apps_menu.py
+  (aviso) page_app_6 usa btn_atune, que no es una app
+  apps en las paginas APP: 23 | make_app_btn -> main_screen_start_app(): 21/21 | make_action_btn -> main_screen_action(): 2/2 | paginas: 6
+  control remoto: 26 apps en app_names[] | 26 acciones
+  todas las apps del menu llegan al dispatcher que usa su boton
+exit=0
+
+$ python3 tests/check_app_handlers.py
+  botones en paginas: 301 | paginas: 67 | sin handler: 0
+  todos los botones de las apps tienen handler
+exit=0
+
+$ python3 tests/check_manual_apps.py
+  apps en el firmware: 24 | secciones de apps en el manual: 24
+  apps sin nombre mapeado (revisar el chequeo): ACTION_APP_DFL_EDITOR
+  todas las apps tienen su seccion (24 apps)
+exit=0
+
+$ python3 tests/check_wcag.py
+  roles en src/theme.h: 122 (4 valores cada uno)
+  temas: 10 | pares definidos: 139
+
+  IU1WXY           sin fallas
+  Legacy           sin fallas
+  Outdoor          sin fallas
+  Classic          sin fallas
+  Aurora           sin fallas
+  Cathode          sin fallas
+  Redshift         sin fallas
+  Sprint           sin fallas
+  Sunlit           sin fallas
+  Trail            sin fallas
+  === exenciones WCAG 1.4.3 y pares informativos (no fallan) ===
+                   cw_tune_barra sobre cw_tune_panel    1.00  peor en Outdoor  [cw_tune_ui.c:60-63 (relleno de las barras al 50%)]
+                   track sobre bar                      1.00  peor en IU1WXY  [theme.h:105]
+                   off sobre bar                        1.09  peor en Legacy  [theme.h:107]
+                   icon_off sobre bar                   1.11  peor en Classic  [theme.h:109 (iconos apagados de la barra)]
+                   btn_off_text sobre btn               1.20  peor en Classic  [theme.h:44 (boton deshabilitado)]
+                   track sobre panel                    1.36  peor en Redshift  [theme.h:105, app_frame.c:36 (riel de la barra)]
+                   btn_text sobre lvgl_focuskey         1.70  peor en Redshift  [lv_keyboard: btnmatrix pinta la tecla con FOCUS_KEY (lv_btnmatrix.c:756)]
+                   text_mute sobre bar                  1.73  peor en Legacy  [info.c:260 (modo bloqueado)]
+                   off sobre panel                      1.80  peor en Aurora  [theme.h:107 (barras sin encender)]
+                   text sobre lvgl_focuskey             1.82  peor en Redshift  [lv_table.c:791 + lv_theme_default.c:349 (celda con foco de teclado, azul #2196F3)]
+                   text_faint sobre bg                  1.84  peor en Legacy  [dialog_wspr.c:464, js8_map.c]
+                   text sobre lvgl_focused              2.14  peor en Redshift  [lv_table.c:790 + lv_theme_default.c:349 (celda elegida, rojo #F44336)]
+                   text_mute sobre bg                   2.37  peor en Legacy  [theme.h:76, spectrum.c:101]
+                   btn_off_text sobre btn_grad          2.40  peor en Aurora  [theme.h:44]
+                   switch_off sobre panel               2.53  peor en Sunlit  [theme.h:108 (switch de Ajustes apagado)]
+                   text_value sobre lvgl_focused        2.63  peor en Redshift  [lv_table.c:790 (valor sobre el rojo de LVGL)]
+                   text_faint sobre list                2.87  peor en Classic  [theme.h:77]
+                   text_faint sobre panel               3.04  peor en Classic  [theme.h:77 (en cola, idle)]
+                   text_mute sobre list                 4.13  peor en IU1WXY  [theme.h:76, styles.c:176]
+                   text_mute sobre side                 4.34  peor en Aurora  [cluster_column.c:64]
+                   text_mute sobre panel                4.46  peor en Redshift  [theme.h:76 (items grises)]
+
+================ resumen ================
+  IU1WXY           134 pares aplicables
+  Legacy           134 pares aplicables
+  Outdoor          132 pares aplicables
+  Classic          132 pares aplicables
+  Aurora           137 pares aplicables
+  Cathode          131 pares aplicables
+  Redshift         130 pares aplicables
+  Sprint           131 pares aplicables
+  Sunlit           131 pares aplicables
+  Trail            130 pares aplicables
+  pares OK: 1062 | exentos: 170 | informativos: 90 | FALLAS: 0
+  todos los pares cumplen WCAG 2.1 (AA)
+exit=0
+
+$ python3 tests/check_cw_tune_feed.py
+  cw_tune_ui.c update_visibility: ok
+  cw_tune_ui_visible: ok
+  cw_tune_set_freq: ok
+  cw.cpp feed gate: ok
+  el feed del tono sigue a la visibilidad del widget de CW
+exit=0
+
+$ python3 tests/check_autotune_v2.py
+  textos: 9 | long_action_items: 37 entradas | ACTION_ATUNE=129
+  contrato estatico de Auto Tune v2 OK
+exit=0
+
+$ python3 tests/check_build_identity.py
+  fuente-md5.sh: estable y sin depender del cwd
+  compila-gui.sh: repone la copia con --checksum y deja el sello
+  CMakeLists + src/main.c: el sello se embebe y se loguea al arrancar
+  captura-banco.sh: usa el mismo hash
+exit=0

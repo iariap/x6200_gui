@@ -1,0 +1,26 @@
+# Inspeccion estructural del chip contextual (fix del CI, 6c67a82a)
+# capture --revision HEAD --scenario dfl-presets-assign-tema-sprint --inspect
+# Regla layout_touch_target: un control tactil tiene que medir >= 44 px de alto.
+# Antes del fix: el boton tactil era 663,251 128x32 (FAIL de la regla).
+# Despues: 128x44 (PASS). El chip pasa de 340x40 a 340x52.
+# class x,y wxh  text  clickable  bg_opa
+
+lv_obj at 0,0 800x480  text=''  clickable=True  bg_opa=255
+lv_obj at 0,0 800x160  text=''  clickable=True  bg_opa=255
+lv_obj at 0,160 800x36  text=''  clickable=True  bg_opa=0
+lv_obj at 0,240 800x240  text=''  clickable=True  bg_opa=255
+lv_obj at 0,246 800x24  text=''  clickable=True  bg_opa=0
+lv_obj at 0,268 800x150  text=''  clickable=True  bg_opa=255
+lv_obj at 367,272 128x44  text=''  clickable=True  bg_opa=255
+lv_obj at 8,320 487x96  text=''  clickable=True  bg_opa=0
+lv_obj at 505,272 286x44  text=''  clickable=True  bg_opa=255
+lv_obj at 505,320 286x44  text=''  clickable=True  bg_opa=0
+lv_obj at 505,368 286x44  text=''  clickable=True  bg_opa=0
+lv_label at 465,265 320x14  text='Asignar tecla 2'  clickable=False  bg_opa=0
+lv_obj at 663,251 128x44  text=''  clickable=True  bg_opa=255
+lv_label at 705,266 44x14  text='Cancelar'  clickable=False  bg_opa=0
+lv_obj at 0,0 209x61  text=''  clickable=True  bg_opa=0
+lv_obj at 15,5 172x26  text=''  clickable=True  bg_opa=0
+lv_obj at 15,27 172x26  text=''  clickable=True  bg_opa=0
+lv_obj at 210,0 380x61  text=''  clickable=True  bg_opa=0
+lv_obj at 210,0 380x123  text=''  clickable=True  bg_opa=0

@@ -1,0 +1,10 @@
+== ronda 1 ==
+== ronda 2 ==
+== ronda 3 ==
+== ronda 4 ==
+== ronda 5 ==
+== ronda 6 ==
+estado final: {"t":"state","vfo":"A","freq":28400000,"freq_bg":28400000,"mode":"LSB","band":"10m","filter":200,"flo":1400,"fhi":1600,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":10,"nb_width":10,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+framebuffer: 8388608 bytes
+ordenes=120 errores=0
+OK: sin crash.txt, GUI viva y framebuffer completo

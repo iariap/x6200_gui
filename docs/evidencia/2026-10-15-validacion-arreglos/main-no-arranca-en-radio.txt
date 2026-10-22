@@ -1,0 +1,4 @@
+Deploy del build de main (6a087879b479) en la radio d9ccb7d4c224 -> la GUI no arranca:
+/usr/sbin/x6200_gui: error while loading shared libraries: libRHVoice.so.5: cannot open shared object file
+logs: x6200_log_2026-10-15_21-18-06.txt y _21-18-07.txt (1 linea cada uno, el daemon reintentando)
+rollback aplicado: /usr/sbin/x6200_gui vuelto a d9ccb7d4c224, /usr/lib/liblvgl.so a cd30ca6c58ad

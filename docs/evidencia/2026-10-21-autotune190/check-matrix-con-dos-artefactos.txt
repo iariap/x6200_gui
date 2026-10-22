@@ -1,0 +1,83 @@
+==> [check] native tests (tests/native/run_native_tests.sh)
+    ok
+==> [check] check_cfg_fills
+    ok
+==> [check] check_actions
+    ok
+==> [check] check_settings_focus
+    ok
+==> [check] check_apps_menu
+    ok
+==> [check] check_app_handlers
+    ok
+==> [check] check_manual_apps
+    ok
+==> [check] check_wcag
+    ok
+==> [check] check_cw_tune_feed
+    ok
+==> [check] check_build_identity
+    ok
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [check] ruff check (ab_testing)
+    ok
+==> [check] ruff format --check (ab_testing)
+    ok
+==> [check] pytest -m 'not e2e' (ab_testing)
+    ok
+==> [check] x6200-ab themes
+    ok
+==> [check] x6200-ab contracts (314644ada0aa80bd3471e28dffd145d209902c46)
+    BLOCKED: el gate no evaluó (exit 2). NO es PASS:
+    BLOCKED: harness failed for scenario dfl-mirror-lsb on 314644ada0aa (exit 1): [User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+    [User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+    [User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1139)
+    [User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1145)
+    dfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)
+==> [check] bash -n tests/native/run_native_tests.sh
+    ok
+==> [check] bash -n tests/run_all_tests.sh
+    ok
+==> [check] harness determinism gate
+    FAIL:
+    dfl-editor-sel-bw-tema-redshift: b9d65f0071d308b3930fb4eeead9c6eee42ec4d9a90e6550db98c91d42082773
+    dfl-editor-sel-bw-tema-sprint: 3469762141c7015402b80c375357d6bfd0db4c7ae911b1f020b6179e3a98694d
+    dfl-editor-sel-bw-tema-sunlit: 2163e2a32cb190045f79b947569769e7504e981404fe9a61f8ff073ad780fb25
+    dfl-editor-sel-bw-tema-trail: ad798c4553eda677f66d43b12f8edeb013b4b0fa979018d49ce95fa546bb61e3
+    dfl-editor-sel-high-tema-aurora: 52d3568670193c163b23b6fbd720fad7b70b45ea06fe8734d6c652ca27305540
+    dfl-editor-sel-high-tema-cathode: 5df366333f96bc27fa8016c69dfc89b8c982ff611c1fd642f76821c382f62742
+    dfl-editor-sel-high-tema-redshift: 073199c0bc45d2fcdeab2bb31baa154717658718485ed069b5edb440a171355a
+    dfl-editor-sel-high-tema-sprint: 8ddf3e8510a299db04fc951caf7759a4a985bf3f92e1a560d7a3a0e0ca34b12c
+    dfl-editor-sel-high-tema-sunlit: e57471722854d695e45041a502061cdff0e44cb2ca19d166f48c1332da74ef67
+    dfl-editor-sel-high-tema-trail: 4c74e636a993ef133564d97c2c4c15e5aba2093e34b2ae3130ff79e46b1f68d7
+    dfl-editor-tx: 74e7cbfb87e69246ef9d5323fb24be100bbf2d2cf33489b89b43f016ad27b7fc
+    dfl-editor-usb-d: 36179315ddfd7a1bb6a8f0a13115056c8ec8e73c5f47d3c316efc69c8947362d
+    dfl-editor-usb-d-tema-aurora: 36179315ddfd7a1bb6a8f0a13115056c8ec8e73c5f47d3c316efc69c8947362d
+    dfl-editor-usb-d-tema-cathode: d51f2588b643d0e281c0d858bbd14b48b474ae01d4fc91947353c5f42d1ec6d6
+    dfl-editor-usb-d-tema-redshift: 7adae39234ad379ff8b71c46ba2ba03294970eb5017cca724d1b43aa2d817ffe
+    dfl-editor-usb-d-tema-sprint: efb4d9793c4709b16595fe68af4022a015161b3e302a6d4222fe70ce4ba96cd5
+    dfl-editor-usb-d-tema-sunlit: 5a6a81ec14e068c5fa81686fb5b1cc4e82d3af730fce9559d78acbfe78da98b4
+    dfl-editor-usb-d-tema-trail: aab1de68e4695b940f051e99f70853c0202194ef4788a3440cd508e44b537e21
+    dfl-lsb-d: 000081b545bf5b25d7674edb908b96f58dd72e6ba62c8b4f7a097e33d7d21169
+    FAIL: missing /home/pablo/desa/asf/state/worktrees/x6200/autotune-v2-190/tools/ui_harness/build/out/determinism/dfl-mirror-lsb-1.png
+==> [check] banco QEMU: preflight (tools/captura-banco.sh --check)
+    ok
+==> [check] banco QEMU: params.db generado (idempotencia del rebuild)
+    ok (borrado el params.db generado):
+    /b/build/x6200-gui-custom/params.db
+==> [check] banco QEMU: captura de humo (home)
+    FAIL:
+    == comprobando el banco ==
+      docker: ok
+      imagen x6200-buildroot: ok
+      volumen x6200-build-output-at190: ok
+      chroot /home/pablo/desa/asf/state/worktrees/x6200/at190-chroot: ok
+      python3: ok
+      PIL: ok
+      cliente de control: ok
+      buildroot: ok
+      libs del banco: ok
+      qemu-arm-static ejecutando ARM: ok
+      limpiando la GUI (dirclean): el rebuild reusa una copia propia del repo
+    ERROR: fallo la limpieza (make x6200-gui-dirclean)
+exit=1

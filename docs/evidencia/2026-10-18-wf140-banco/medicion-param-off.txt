@@ -1,0 +1,5 @@
+captura: param-off.png (800x480)
+banda del waterfall: y=240..479 (240 filas)
+columna central x=400 vs x-4 y x+4: 0/208 filas medibles con diferencia = 0.0 %
+sobre toda la banda (incluye filas tapadas por texto/controles): 0/240 = 0.0 %
+corrida constante sobre x=400: 189/240 filas, color RGB(0, 0, 0); x-1=RGB(0, 0, 0) x+1=RGB(0, 0, 0)

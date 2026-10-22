@@ -24,6 +24,11 @@ static lv_anim_t    fade;
 static bool         fade_run = false;
 static uint32_t     timer_end=0;
 
+/* Ultimo texto que llego a la pantalla (issue #121): el registro de ultima
+ * respiracion lo guarda para saber que aviso mostraba la GUI. Se escribe en el
+ * hilo de LVGL, en msg_show_timer, y se copia al vuelo. */
+static char         last_text[128] = "none";
+
 enum msg_type_t {
     MSG_UPDATE,
     MSG_SCHEDULE,
@@ -55,6 +60,7 @@ static void msg_show_timer(lv_timer_t *t) {
         lv_timer_del(fade_out_timer);
     }
     lv_label_set_text(obj, msg->text);
+    snprintf(last_text, sizeof(last_text), "%s", msg->text);
     lv_obj_move_foreground(obj);
     lv_anim_set_values(&fade, lv_obj_get_style_opa(obj, 0), LV_OPA_COVER);
     fade_run = true;
@@ -112,6 +118,10 @@ void msg_update_text_fmt(const char * fmt, ...) {
     va_end(args);
 
     event_send(obj, EVENT_MSG_UPDATE, (void*)msg);
+}
+
+const char * msg_last_text(void) {
+    return last_text;
 }
 
 void msg_schedule_text_fmt(const char * fmt, ...) {

@@ -1,0 +1,47 @@
+# Thresholds fixed *before* a comparison runs (rule 5 of docs/AB_TESTING_PLAN.md).
+# Editing them to make a run pass is exactly what the plan forbids, so they live
+# next to the code and are reviewed like code.
+
+visual:
+  # Summed |dR| + |dG| + |dB| above which a pixel counts as changed. 12 keeps
+  # single-bit noise and antialiasing jitter out of the report.
+  pixel_tolerance: 12
+  # Ignore connected components smaller than this many pixels.
+  min_box_pixels: 6
+  # A change covering more than this percent of the framebuffer is reported as
+  # major (informational; the gate itself is region-based).
+  major_change_pct: 1.0
+
+performance:
+  # Relative render-cost proxy on the x86 host (not battery, not the Cortex-A7):
+  # the harness exposes flushed pixels and flush counts under virtual time, and
+  # the candidate may not increase them beyond these budgets.
+  max_flushed_pixels_delta_pct: 10.0
+  max_flushes_delta_pct: 20.0
+
+benchmark:
+  # Real-clock render benchmark (CLOCK_MONOTONIC, still an x86 host proxy). The
+  # sampling plan is fixed here, before any run:
+  #   - warm-up frames are discarded (allocator/caches settle);
+  #   - each harness run measures this many frames;
+  #   - A and B alternate over this many rounds, so slow CI drift hits both;
+  #   - a side with fewer frames than `min_frames` is INCONCLUSIVE.
+  warmup_frames: 3
+  repeats: 5
+  rounds: 4
+  min_frames: 12
+  # A side whose dispersion exceeds this is too variable to trust: the comparison
+  # is INCONCLUSIVE, never a PASS on noise. The figure is the median-based (MAD)
+  # coefficient of variation (src/x6200_ab/performance.py,
+  # robust_dispersion_cv_pct), not stdev/mean: a shared host that preempts the
+  # container a few times leaves a handful of frames far above the rest and
+  # stdev/mean let one of them dominate the figure even though it cannot move a
+  # p95 (measured: a quiet 20-frame run reads ~1.5%, and one 10 ms frame among
+  # twenty pushed stdev/mean to ~38%). A sample with a non-trivial fraction of
+  # outliers still reads far above this, as before.
+  max_dispersion_cv_pct: 25.0
+  # Relative budgets for the candidate. A controlled regression that triples the
+  # per-frame redraw work lands far above these; host noise stays well below.
+  max_p95_delta_pct: 25.0
+  max_flushes_delta_pct: 20.0
+  max_redrawn_area_delta_pct: 20.0

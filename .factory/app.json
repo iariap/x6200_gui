@@ -1,0 +1,7 @@
+{
+  "id": "x6200",
+  "aliases": [],
+  "branch": "lu2dsx/x6200-rom",
+  "checks": "scripts/apps/x6200/check-matrix.sh",
+  "description": "ROM de radio en C para el Xiegu X6200 (GUI LVGL 8.3.11 sobre firmware): arnes de UI host (C + Docker), framework A/B Python (tools/ab_testing) y suite de tests nativos/estaticos. Corre en hardware; sin despliegues cloud ni metrics."
+}

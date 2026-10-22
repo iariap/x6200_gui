@@ -1,0 +1,39 @@
+# dfl-editor-sel-high-tema-sprint: editor DFL inline con HIGH seleccionado, tema Sprint
+#
+# Fixture de la evidencia de #179 (editor DFL inline). Generada a partir de
+# dfl-editor-usb-d.scn; el arnes abre el editor por el camino del firmware y
+# scenario_settle verifica que es inline (sin ventana) y con la seleccion pedida.
+
+name dfl-editor-sel-high-tema-sprint
+screen dfl-editor-sel-high
+
+seed 173
+theme Sprint
+spectrum_filled true
+spectrum_peak true
+waterfall_center_line true
+
+frequency_hz 14200000
+tx_frequency_hz 14200000
+fft_width_hz 48000
+
+mode USB-D
+filter_low 225
+filter_high 3525
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

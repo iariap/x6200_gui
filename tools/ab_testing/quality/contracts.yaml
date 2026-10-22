@@ -1,0 +1,1054 @@
+# Quality contracts (the "C" of docs/AB_TESTING_PLAN.md): rules the candidate
+# must satisfy on its own, independent of the baseline. A pixel diff of zero is
+# not proof of quality; these rules are checked against B alone.
+#
+# Every check is derived from the capture PNG or the harness JSON, so it is
+# reproducible and does not need the device.
+
+# Minimum fraction of non-background pixels each screen region must keep. A
+# component that is missing, blanked or pushed off screen drops to ~0 here even
+# when the diff to A would look "small". Thresholds are deliberately coarse: the
+# question is "is there content", not "did it change".
+region_min_content:
+  barra_superior: 0.02
+  s_metro: 0.02
+  espectro: 0.02
+  frecuencia: 0.02
+  waterfall: 0.02
+  botones: 0.02
+
+coverage:
+  # The coverage table must stay honest (rule 1 of the plan): only these levels.
+  allowed_levels: [REAL, PARTIAL, SYNTHETIC, UNSUPPORTED]
+  # Components the main-screen fixtures must actually declare.
+  required_components:
+    - main_screen.c
+    - theme.c
+    - styles.c
+
+# Layout rules over the harness' structural inspection (`ui_harness --inspect`):
+# absolute bounding boxes, the box visible after clipping and the real widget
+# class. They catch what a pixel diff cannot state.
+layout:
+  # Minimum touch target for an interactive control (AGENTS.md: usable field UX).
+  min_touch_target_px: 44
+  # Slack when comparing the visible box against the object box (rounding).
+  clip_tolerance_px: 0
+
+# Text-legibility rules, from LVGL's own font metrics and glyph resolution
+# (lv_txt_get_size / lv_font_get_glyph_dsc); never OCR.
+typography:
+  # WCAG 2.1 contrast thresholds, normal and large text.
+  min_contrast_ratio: 4.5
+  large_text_min_contrast_ratio: 3.0
+  large_text_px: 24
+  # Icon glyphs are meant to come from the Sony fallback (the alternate fonts are
+  # ASCII-only), so falling back is not a defect. A glyph missing from *every*
+  # font (a placeholder box on screen) is, always.
+  allow_fallback_glyphs: true
+
+# A visual change stops being a regression only if it is a fix of a known issue
+# or is listed here. Each entry needs a reason, an author and an expiry date —
+# never a global, permanent exemption.
+#
+# The four entries below declare where the pixels of one fix move: UI-011,
+# UI-012 and UI-014 are structural findings of VISION (`typography_missing_glyph`,
+# `typography_text_overflow`), whose rule says *what* is wrong but never where
+# the pixels move, and UI-010 was a pixel-region finding of the light Outdoor
+# theme whose scoped exclusion was withdrawn from known_issues.yaml in the same
+# change as the fix. The region is declared here, scoped and dated like every
+# other waiver; several entries may name the same region (the top band holds
+# three fixes) and the gate reads them as a set.
+expected_changes:
+  # AB-UI04-EXP1 (UI-011): restoring the icon glyph ranges of the scaled VISION
+  # fonts redraws the power clock (region `reloj_potencia`, inside the top band)
+  # and the top-bar WiFi icon, both within `barra_superior`.
+  - region: barra_superior
+    reason: >
+      UI-011: fonts_scale() keeps the icon glyph ranges of the original slot as
+      the fallback of the scaled font, so the VISION power clock and the top-bar
+      icons come back. The only pixels that move are the restored glyphs inside
+      the top bar; every other fixture stays byte-identical.
+    author: ui04-tipografia
+    until: 2027-03-31
+
+  # AB-UI04-EXP2 (UI-012): the VFO cell of the top bar goes back to the font size
+  # of the other themes, the only cell whose text did not fit the fixed 56x26 once
+  # fonts_scale() widened it.
+  - region: barra_superior
+    reason: >
+      UI-012: under VISION the VFO cell (src/info.c) draws with the font size of
+      the other themes, because `VFO-A` did not fit the fixed 56x26 cell of the
+      bar bitmap once fonts_scale() made it 66 px wide (it wrapped to a second
+      line the cell clipped). Only the VFO cell's glyphs change, still inside the
+      top bar; the other five cells and every other fixture stay byte-identical.
+    author: ui04-tipografia
+    until: 2027-03-31
+
+  # AB-UI04-EXP3 (UI-010): the frequency row of the main screen stops writing a
+  # white text colour and asks the theme for it (TC(text)), so under the light
+  # Outdoor theme the digits are black on white instead of white on white.
+  - region: frecuencia
+    reason: >
+      UI-010: the three labels of the main screen's frequency row
+      (src/main_screen.c, region `frecuencia`) carried their colour in the label's
+      recolor markup (`"#%03X ..."`, 0xFFFFFF) and src/styles.c wrote the same
+      white as the style default, so under the light Outdoor theme the digits were
+      white on the white background and the region measured content 0.0000 (the
+      information was missing, not just low contrast). Both now ask the theme for
+      it: `theme_hex(TC_text)` in the markup (and `TC_text_soft`, the theme's own
+      "lock" role, when the dial is locked) with `#%06X`, the width LVGL requires,
+      plus `TC(text)` on the two styles — the theme role the pixels are drawn on.
+      So Outdoor paints them black (region `frecuencia` of
+      `main-otro-tema`). The only other theme whose `text` role is not white is
+      Material 3 (#e2e2e9), whose three labels move by that same 29/255 step; the
+      other fourteen fixtures are byte-identical.
+    author: ui04-tipografia
+    until: 2027-03-31
+
+  # AB-UI04-EXP5 (UI-014): the mode cell of the top bar also goes back to the font
+  # size of the other themes under VISION, next to the VFO cell UI-012 fixed. The
+  # 4-character mode `CW-R` measured exactly the cell width (0 px of margin, the
+  # `CW-RAUTO` pegging of issue #28); the widest mode (`USB-D`) overflowed it.
+  - region: barra_superior
+    reason: >
+      UI-014: the top bar's mode cell (src/info.c, items[INFO_MODE]) joins the VFO
+      cell in drawing with the font size of the other themes under VISION, because
+      once fonts_scale() widened the label `CW-R` it measured exactly the 56 px of
+      the fixed cell (0 px of margin, which is why `CW-R` pegs to the AGC cell's
+      `AUTO` and the two read as `CW-RAUTO`, the finding of issue #28) and `USB-D`
+      measured 66 px and wrapped to a second line the cell clipped. Measured: `CW-R`
+      goes from 56 to 42 px and `USB-D` from 66 to 52 px in the 56 px cell. The only
+      pixels that move are the mode cell's glyphs inside `barra_superior` (three
+      VISION fixtures: the mode cell is drawn with the smaller font whichever the
+      mode), and every other fixture stays byte-identical.
+    author: ui04-tipografia
+    until: 2027-03-31
+
+  # wcag-full (WCAG 1.4.11, issue #12): the RS S-meter arc (`TC(meter_over)`) went
+  # from #ff4040 to #ff5252 so it reaches 3:1 over the meter's bitmap face. The
+  # pixel measurement of the arc (tools/ab_testing/quality/nontext.yaml) read
+  # 2.96:1 with the old colour, below the non-text minimum; #ff5252 reads 3.22:1.
+  # The change is confined to the S-meter band (`s_metro`) of the RS fixture; the
+  # other nine golden renders stay byte-identical.
+  - region: s_metro
+    reason: >
+      wcag-full: hallazgo no-texto del arco del S-meter en el tema RS. El arco
+      TC(meter_over) = #ff4040 sobre la cara del medidor (bar.png de RS) daba
+      2.96:1, por debajo del 3:1 de WCAG 1.4.11. RS/theme.json lo sube a #ff5252
+      (3.22:1 medido). Solo se mueven los pixeles del arco dentro de `s_metro`.
+    author: wcag-full
+    until: 2027-03-31
+
+  # AB-UI016-T1 (UI-016): the Ajustes year field stops clipping its last digit.
+  - region: ajustes_anio
+    reason: >
+      UI-016: el campo Año de Ajustes (src/dialog_settings.c, fila Day/Month/Year)
+      dibujaba "2026" con 84 px de texto en un área de contenido de 67 (la caja de
+      2 columnas con el padding horizontal del textarea) y la caja le recortaba
+      los últimos 4 px contra su borde. El fix le baja el padding horizontal (el
+      del cursor de un textarea, que un spinbox no usa) y le da el ancho que piden
+      sus 4 cifras con la fuente vigente, medido en runtime; el campo pasa a 94x56
+      y el "2026" se ve completo. Sobre la fixture settings-home solo se mueven los
+      pixeles del campo, dentro de `ajustes_anio`; los otros 21 fixtures de la
+      suite quedan byte-idénticos respecto de la revisión anterior al fix.
+    author: ui016-year-field
+    until: 2027-03-31
+
+  # AB-YEAR110 (issue #110): the Ajustes year field gets the box of the row.
+  - region: ajustes_anio
+    reason: >
+      #110: en la fila Day/Month/Year el campo Año quedaba 23 px mas angosto que
+      Día y Mes. Se dimensionaba por contenido (el helper `ancho_campo_cifras`, el
+      fix de UI-016) y con la fuente vigente ese ancho colapsa a 70 px: el peor
+      caso de 4 cifras ("0000", el '0' es la cifra mas ancha) mide 60 px y el
+      padding de la grilla (3) y el borde (2) suman 10. El campo pasa a la caja de
+      dos columnas de la grilla (SMALL_2 = 93), igual que Día y Mes, y conserva el
+      padding de la grilla: la caja útil queda 83 y el "2026" (60 px) entra con
+      23 px de margen. Sobre la fixture settings-home se mueven 358 px (el borde
+      derecho del campo: de x=759 a x=782, medido por pixeles), dentro de
+      `ajustes_anio`; los otros 63 fixtures de la suite quedan byte-idénticos.
+    author: settings-year-110
+    until: 2027-03-31
+
+  # AB-UI08-I5 (UI-08 incr. 5): the new Ajustes row makes the grid one row taller,
+  # so the scrollbar thumb of the scrolled fixture (settings-wfbat) gets shorter.
+  - region: ajustes_scrollbar
+    reason: >
+      UI-08 incr. 5: la fila "Visual profile" (src/dialog_settings.c, grupo
+      Apariencia) agrega una fila (54+5 px) al contenido de la grilla de Ajustes,
+      asi que el pulgar de la barra de scroll queda mas corto. Es la unica region
+      que se mueve en settings-wfbat: la fila nueva es del grupo Apariencia (no
+      del Espectro que esa fixture muestra), asi que sus switches y la cascada
+      detras del dialogo quedan byte-identicos. Los pixeles de la fila los captura
+      la fixture nueva settings-perfil (region ajustes_perfil), que la revision A
+      no tiene y por eso no aparece en el diff A/B.
+    author: ui08-incr5
+    until: 2027-03-31
+
+
+  # AB-FONTS (issue #9, decision 1): el ROM deja de dibujar con la familia
+  # propietaria (Sony) y dibuja con una libre (Fira Sans; tools/fonts/README.md,
+  # docs/THIRD_PARTY.md). Cambia la forma de TODOS los glifos de la GUI, asi que el
+  # diff de pixeles es el texto entero de la pantalla: las regiones de abajo son
+  # todas las que dibujan texto. No cambia ninguna regla de layout: el tamano de
+  # cada familia se elige por slot para reproducir la line height de la familia que
+  # reemplaza (tools/fonts/fonts.py plan), y las cajas de texto medidas derivan -21%
+  # de ancho en promedio (las libres son mas angostas a la misma altura) con 0
+  # etiquetas que desbordan o se truncan sobre las 8 fixtures de la matriz
+  # (tools/ab_testing/reports/AB-FONTS, tools/fonts/README.md).
+  - region: barra_superior
+    reason: >
+      AB-FONTS: las celdas de la barra superior (VFO, modo, AGC, PRE/ATT, ATU, WiFi: src/info.c) y la etiqueta del S-meter escriben con la familia migrada; cada glifo cambia de forma.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: s_metro
+    reason: >
+      AB-FONTS: la etiqueta en dB del S-meter (src/meter.c) es texto sobre el arco: cambia con la fuente, el arco no.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: espectro
+    reason: >
+      AB-FONTS: las etiquetas del band plan (src/band_plan.c) y el texto del pannel que cae sobre la banda (el dialogo de Ajustes se dibuja encima) son texto.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: frecuencia
+    reason: >
+      AB-FONTS: los tres labels de la fila de frecuencia (src/main_screen.c) son los digitos mas grandes de la pantalla; el ancho de cada cadena cambia (-21% medido) y el texto queda centrado en la misma caja de 150/500/150 px.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: waterfall
+    reason: >
+      AB-FONTS: la etiqueta del panel de texto decodificado (src/pannel.c) y los rotulos de la cascada son texto.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: botones
+    reason: >
+      AB-FONTS: la barra inferior (buttons.cpp) rotula cada boton con texto; las etiquetas de dos lineas (Volume/Squelch/RF gain/TX power) son las mas sensibles al cambio de metricas.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: reloj_potencia
+    reason: >
+      AB-FONTS: el reloj de potencia (src/clock.c) dibuja hora y tension (13.8v) con la familia migrada, mas el simbolo de bateria del slot de iconos.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: ajustes_anio
+    reason: >
+      AB-FONTS: el campo Anio de Ajustes (src/dialog_settings.c) es un spinbox de 4 cifras: cambia el ancho del texto, no la caja.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: ajustes_perfil
+    reason: >
+      AB-FONTS: la fila 'Visual profile' rotula su etiqueta y su desplegable con la familia migrada.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: ajustes_audio_ganancia
+    reason: >
+      AB-FONTS: las etiquetas de la fila 'Play,Rec gain' y los valores de los sliders son texto.
+    author: fonts-libre
+    until: 2027-03-31
+
+  - region: ajustes_scrollbar
+    reason: >
+      AB-FONTS: el pulgar de la barra de scroll de Ajustes cambia de unos pixeles porque la altura del contenido de la grilla depende de la linea de las etiquetas (la fuente migrada tiene la misma line height por slot, +-1 px).
+    author: fonts-libre
+    until: 2027-03-31
+
+  # AB-FONTSE (fonts-extras, issue #9): la capa del "8 fantasma" y la familia
+  # segmentada en los dos paneles de digitos. Cambia pixeles solo en
+  # `main-frecuencia-dseg`, la unica fixture con familia segmentada.
+  - region: frecuencia
+    reason: >
+      AB-FONTSE: la fila de frecuencia pasa a dibujar con la familia de digitos
+      (font_digit(&sony_30)/font_digit(&sony_38) en freq_style/freq_main_style,
+      src/styles.c) — antes usaba los slots crudos, asi que en esta fixture los
+      tres labels se dibujaban con la familia por defecto mientras el reloj ya
+      usaba la segmentada — y el label central estrena su "8 fantasma" (la
+      etiqueta sombra de src/main_screen.c, texto del valor con cada digito en 8
+      a LV_OPA_30 por debajo). Los pixeles que se mueven son los glifos de la
+      fila, dentro de `frecuencia`; las otras 21 fixtures de la suite no tienen
+      familia segmentada y quedan byte-identicas.
+    author: fonts-extras
+    until: 2027-03-31
+
+  - region: reloj_potencia
+    reason: >
+      AB-FONTSE: el reloj lleva su "8 fantasma" (src/clock.c: la etiqueta sombra
+      con "88:88:88" por debajo del valor, que hereda el fondo del reloj porque el
+      valor queda transparente) y la fixture pide `clock_view time`, que es la
+      vista donde el fantasma tiene digitos que mostrar (el reloj de potencia
+      dibuja el simbolo de bateria y los voltios). Todo cae dentro de
+      `reloj_potencia`; las otras fixtures siguen en el reloj de potencia y sin
+      sombra.
+    author: fonts-extras
+    until: 2027-03-31
+
+  # THEMES v2 #74 (default Aurora + retiro de los legados): el default de la
+  # coleccion pasa de IU1WXY a Aurora y los temas legados dejan de existir. Las
+  # fixtures que NO fijan un `theme` (main-foco, settings-*, home-*, apps-*, ...)
+  # renderizan el default, asi que TODAS sus superficies pintadas con roles del
+  # tema cambian: es el cambio declarado del #74, no una regresion. La revision A
+  # (la base, con IU1WXY) y la B (Aurora) difieren en el color, no en el layout.
+  # La revision estetica del default es del owner con el epic de PRUEBAS #66; el
+  # gate de pixeles solo tiene que no confundir el cambio declarado con un defecto.
+  # Las fixtures que si fijan su `theme` (los seis v2) quedan byte-identicas.
+  - region: barra_superior
+    reason: >
+      THEMES v2 #74: el default pasa a Aurora. Las cajas de la barra superior
+      (src/info.c) y su texto se pintan con los roles del tema, que cambian.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: s_metro
+    reason: >
+      THEMES v2 #74: el arco y la etiqueta del S-meter (src/meter.c) usan
+      TC(meter_over)/TC(meter_bar) del default, que pasa a Aurora.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: espectro
+    reason: >
+      THEMES v2 #74: el fondo del espectro y las etiquetas del band plan
+      (src/spectrum.c, band_plan.c) se apoyan en el fondo del tema (Aurora).
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: frecuencia
+    reason: >
+      THEMES v2 #74: la fila de frecuencia (src/main_screen.c) pide los roles del
+      tema (TC(text)/TC(text_soft)); con Aurora el color del texto cambia.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: waterfall
+    reason: >
+      THEMES v2 #74: la cascada dibuja la paleta del tema; Aurora trae su propia
+      tabla de 256 colores (theme.c make_palette), distinta de la de IU1WXY.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: botones
+    reason: >
+      THEMES v2 #74: la barra inferior (buttons.cpp) rotula con los roles del
+      tema y el recolor de boton activo/deshabilitado; con Aurora cambian.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: reloj_potencia
+    reason: >
+      THEMES v2 #74: el reloj de potencia (src/clock.c) escribe con los roles del
+      tema; el default Aurora cambia su color.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: ajustes_tema
+    reason: >
+      THEMES v2 #74: la fila "Theme" de Ajustes dibuja el nombre del tema activo.
+      Con el default migrado a Aurora (un tema ofrecido) la fila es coherente; el
+      texto cambia respecto de la caida a la primera opcion del #73.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: ajustes_perfil
+    reason: >
+      THEMES v2 #74: el dialogo de Ajustes se pinta con los roles del tema; el
+      default Aurora cambia sus superficies y su texto.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: ajustes_scrollbar
+    reason: >
+      THEMES v2 #74: el pulgar de la barra de scroll de Ajustes es una superficie
+      del tema; con el default Aurora cambia de color.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: ajustes_anio
+    reason: >
+      THEMES v2 #74: el campo Año de Ajustes se pinta con los roles del tema; el
+      default Aurora cambia su color.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  - region: ajustes_audio_ganancia
+    reason: >
+      THEMES v2 #74: las filas de audio de Ajustes se pintan con los roles del
+      tema; el default Aurora cambia sus colores.
+    author: themes-removal-74
+    until: 2027-03-31
+
+  # AB-WFWIDTH (feedback del owner, 2026-10-15): la linea central del waterfall
+  # deja de estar fija en 1 px y pasa a ser una clave de tema
+  # (`waterfall_signal_width`, default 1, clamp 1..8). Los dos temas outdoor la
+  # piden en 3, asi que solo las fixtures que DIBUJAN esa linea cambian.
+  - region: waterfall
+    reason: >
+      AB-WFWIDTH (feedback directo del owner, 2026-10-15): "los temas outdoor
+      deberian traer la barra del waterfall mas gruesa porque al ser tan fina (1
+      px) no se distingue bien del resto". El ancho de la linea central del
+      waterfall (src/waterfall.c, draw_middle_line) pasa a ser la clave de tema
+      `waterfall_signal_width` (default 1, clamp 1..8); themes/Sunlit.json y
+      themes/Trail.json la fijan en 3 y los temas que no la definen quedan en 1 px
+      (retrocompatible). Los pixeles que se mueven son la propia linea: 356 px
+      dentro de `waterfall` (un pixel a la izquierda del centro) mas los px de la
+      MISMA linea que caen en las bandas `botones` y `ajustes_perfil` —el objeto
+      del waterfall llega hasta y=480 y la linea se pinta ahi, como ya hacia con 1
+      px— que esas bandas ya las declaran las entradas de AB-FONTS. Solo cambian
+      las fixtures `-agua` de Sunlit y Trail (las que dibujan la linea, con
+      `waterfall_center_line` encendido); los demas fixtures de la suite quedan
+      byte-identicos.
+    author: waterfall-width-outdoor
+    until: 2027-03-31
+
+  # AB-WF140 (orden del owner, 2026-10-18): la linea central del waterfall deja
+  # de salir en TC(panel_border) al 60% con LV_BLEND_MODE_ADDITIVE y pasa a
+  # TC(text), LV_OPA_COVER y 3 px por default (waterfall_signal_width). Solo
+  # cambian los px de la MISMA linea (x=398..400, y=240..479), en las fixtures
+  # que la dibujan: `main-espectro-agua` (Aurora) y `main-tema-sunlit-agua`.
+  - region: waterfall
+    reason: >
+      AB-WF140 (orden directa del owner, 2026-10-18): "no veo la frecuencia que
+      estoy sintonizando; no se ve la linea". La linea central del waterfall
+      (src/waterfall.c, waterfall_init) existia pero no se leia: salia en
+      TC(panel_border) a LV_OPA_60 con LV_BLEND_MODE_ADDITIVE, y sobre el piso del
+      waterfall media 2.40:1..11.66:1 (1.23:1..3.16:1 contra el pixel vecino, el
+      peor caso) — en Sunlit ademas se lavaba a blanco. Ahora sale en TC(text) a
+      LV_OPA_COVER, sin blend mode, con el ancho de tema `waterfall_signal_width`
+      (3 px por default desde esta orden; antes 1). Los pixeles que se mueven son
+      los de la propia linea: x=398..400 en y=240..479 (703 px en
+      `main-espectro-agua`: 534 dentro de `waterfall` y 169 en la franja de
+      `botones`; 698 en `main-tema-sunlit-agua`, 164 en `botones`), porque el objeto
+      del waterfall llega hasta y=480 y la linea se pinta ahi — esas franjas y los
+      rectangulos de Ajustes que las cubren ya los declaran las entradas de AB-FONTS
+      y AB-SETEN109.
+      Solo cambian las dos fixtures que dibujan la linea con
+      `waterfall_center_line` encendido (`main-espectro-agua` y
+      `main-tema-sunlit-agua`); los renders de la suite con el parametro apagado
+      quedan byte-identicos (md5 antes/despues en
+      docs/evidencia/2026-10-18-wf140-contraste/renders.md5).
+    author: waterfall-center-line
+    until: 2027-03-31
+
+  # AB-SETEN109 (issue #109, orden del owner): los tabs de Ajustes pasan a
+  # ingles de ham radio y se reordenan por utilidad para hacer contactos. Dos
+  # regiones se mueven: la barra de tabs (labels + orden) y el cuerpo del
+  # dialogo de la fixture `settings-home`, que ahora navega al grupo Clock con
+  # el tab (el dialogo abre en Operation, el primero del orden nuevo).
+  - region: botones
+    reason: >
+      AB-SETEN109 (issue #109): la barra de tabs de Ajustes (src/dialog_settings.c,
+      tabs_items/tabs_pagina_1/2) rotula en ingles de ham radio (Reloj->Clock,
+      Pantalla->Display, Espectro->Spectrum, Operacion->Operation,
+      Apariencia->Appearance, Acciones->Actions, Mas >->More >, < Mas->< More) y se
+      reordena por utilidad QSO (Operation, Audio, Spectrum, Clock, Display,
+      Appearance, Actions, Info). La barra redibuja cada boton en TODAS las
+      fixtures que abren Ajustes (settings-home/-wfbat/-perfil/-audio/-tema-*).
+      Ademas `settings-wfbat` deja de pasar por "More >": su grupo (Spectrum) ahora
+      es el tab indice 2 de la pagina 1, asi que la barra queda en la pagina 1 y no
+      en la 2 — mismo contenido en pantalla, barra distinta.
+    author: seten109
+    until: 2027-03-31
+
+  - region: ajustes_dialogo
+    reason: >
+      AB-SETEN109 (issue #109): el dialogo de Ajustes abre en su PRIMER grupo, que
+      con el orden nuevo es Operation; la fixture `settings-home` mide la fila de
+      fecha/hora (grupo Clock) y ahora llega ahi como el usuario, con el tab
+      `buttons_press(3)` -> settings_goto(), que scrollea la grilla para dejar la
+      primera fila del grupo arriba del viewport. La apertura vieja quedaba en
+      scroll 0 (el padding superior de la grilla a la vista), asi que el contenido
+      entero del dialogo se corre ~19 px: es un movimiento del CUERPO del dialogo,
+      dentro de `ajustes_dialogo`, y no de una fila. Las otras fixtures de Ajustes
+      ya navegaban con settings_goto (settings-wfbat/-perfil/-audio/-tema-*) y
+      conservan su contenido: su unico cambio esta en `botones`. Los demas fixtures
+      de la suite quedan byte-identicos.
+    author: seten109
+    until: 2027-03-31
+
+  # AB-DFL173-1 (issue #173, PR 1): la banda pasante RX a escala cambia el
+  # espectro de todos los fixtures de pantalla principal (spectrum.c) y agrega
+  # los dos ticks del filtro en el borde superior de la cascada (waterfall.c).
+  # El cambio esta confinado a esas dos regiones: la banda (relleno discreto +
+  # dos lineas de 1 px + el texto de BW) vive dentro de `espectro`, y los ticks
+  # dentro de `waterfall_ticks`. Header, S-meter, fila de frecuencia, band plan
+  # y las cinco teclas quedan byte-identicos.
+  - region: espectro
+    reason: >
+      AB-DFL173-1 (issue #173, PR 1): el espectro evoluciona el relleno de filtro
+      existente a una banda pasante a escala (relleno discreto en el rol `vfo_line`
+      + dos lineas verticales de 1 px en los bordes reales de RF + el texto del BW
+      cuando entra), calculada con cfg_cur.filter.real.from/to y cfg_cur.fft_width.
+      El unico cambio de pixeles fuera de `espectro` son los ticks del waterfall.
+    author: dfl-visual-173
+    until: 2027-10-20
+
+  - region: waterfall_ticks
+    reason: >
+      AB-DFL173-1 (issue #173, PR 1): dos ticks sutiles en el borde superior de la
+      cascada marcan el ancho del filtro RX (overlay de UI, sin tocar el buffer ni
+      el anillo de filas). Viven en los 6 px de arriba del waterfall; el resto de
+      la cascada y su linea central (#140) quedan identicos.
+    author: dfl-visual-173
+    until: 2027-10-20
+
+  # AB-DFL179 (issue #179, correccion del #173): el editor DFL deja de ser un
+  # modal y pasa a ser un panel INLINE sobre el waterfall (src/dfl_inline.c). Los
+  # pixeles que se mueven son los del panel (800x150 en y=268, con los 28 px
+  # superiores del waterfall vivos) y la barra inferior expandida
+  # (LOW/HIGH/BW/Eq/Waterfall). El resto de la pantalla (header, S-meter,
+  # espectro, frecuencia y cascada por encima del panel) queda igual.
+  - region: dfl_inline
+    reason: >
+      AB-DFL179 (#179): el editor DFL pasa de dialogo modal (src/dialog_dfl.c) a
+      panel inline sobre el waterfall (src/dfl_inline.c), con edicion por el
+      encoder de VOLUMEN (rotary1) y touch. La region `dfl_inline` aisla el panel
+      y la barra expandida; las fixtures que no abren el editor quedan
+      byte-identicas.
+    author: dfl-inline-179
+    until: 2027-10-20
+
+# Changes confined to these regions are not auto-failed either: they are
+# reported as REVIEW REQUIRED, because "different" there needs a human eye (an
+# aesthetic change), not a machine verdict. Empty on purpose.
+review_regions: []
+
+# Scoped, dated waivers for structural findings: they name the rule and the
+# fixture (optionally one node `path`) and carry a reason, an author and an
+# expiry. Never global, never permanent.
+#
+# UI-013 was the last one for a while: `theme_list()` offers names up to 31
+# characters and `params.theme_name` (a `params_str_t`, src/params/types.h) holds
+# 31 too, so `theme_name_fits_params` passes on its own fixture and its waiver was
+# withdrawn in UI-04/AB-UI04-EXP4, together with the fix — the same way the UI-011
+# waiver went in EXP-1, UI-012 in EXP-2 and the UI-010 region exclusion in EXP-3.
+# With no waiver left, a truncation that comes back fails the run again and no
+# recorded issue explains it.
+#
+# The two below are what is left of the Ajustes window's UI-015 (UI-016 was fixed
+# and its waiver withdrawn by AB-UI016-T1); see their `reason`.
+exceptions:
+  # Ajustes (`settings-home` / `settings-wfbat`): the REAL UI-015 defect of the
+  # Ajustes window (controls below the 44px field-UX target). Each waiver is
+  # scoped to one rule and one fixture (never global), carries a reason and an
+  # expiry, and stays visible in the `contracts`/`audit` report; the check itself
+  # is not weakened. Withdraw each one in the same change that fixes the defect.
+  - rule: layout_touch_target
+    fixture: settings-wfbat
+    reason: >
+      UI-015: the eight Ajustes switches are 111x30 — LVGL's lv_switch height —
+      below the 44px field-UX target. Pre-existing row geometry of the firmware;
+      the fixture change does not alter it.
+    author: ajustes-fixture
+    until: 2027-03-31
+
+  - rule: layout_touch_target
+    fixture: settings-home
+    reason: >
+      UI-015: the Ajustes backlight slider is 159x13 tall, below the 44px target.
+      Same pre-existing row geometry as the switches.
+    author: ajustes-fixture
+    until: 2027-03-31
+
+  # settings-audio (issue #26): the Audio group's own rows of the same window. The
+  # four sliders of "Line-in, Line-out" and "Play,Rec gain" (46..51x13) and the
+  # "Speaker mode" switch (111x30, LVGL's lv_switch height) are the same
+  # pre-existing row geometry as the controls the other two fixtures waive; the
+  # fixture measures the row (it fires the Rec gain slider) and does not alter it.
+  - rule: layout_touch_target
+    fixture: settings-audio
+    reason: >
+      UI-015: the four sliders of the Ajustes Audio group (the "Line-in, Line-out"
+      and "Play,Rec gain" rows) are 13 px tall and the "Speaker mode" switch is
+      111x30, all below the 44px field-UX target. Pre-existing row geometry of the
+      firmware, the same one the settings-home/-wfbat waivers hold back.
+    author: audio-vol-recgain
+    until: 2027-03-31
+
+  # main-frecuencia-dseg: el "8 fantasma" del label central de la fila de
+  # frecuencia (src/main_screen.c) se dibuja DEBAJO del valor y con su misma caja
+  # de 500x36: la regla de solapamiento lo lee como dos etiquetas apiladas (el
+  # unico caso del corpus, porque la capa solo existe con familia segmentada). Es
+  # el diseno, no un defecto: el fantasma enciende los segmentos que el valor
+  # apaga, a LV_OPA_30, y el valor se dibuja encima a opacidad plena. El
+  # solapamiento del reloj no llega a la regla porque la etiqueta del valor
+  # conserva `bg_img_src` (con la imagen en LV_OPA_TRANSP) y `_opaque` mira la
+  # presencia de la imagen, no su opacidad: mismo diseno, distinto camino.
+  #
+  # Se retira cuando el fantasma deje de existir o cuando la regla distinga un
+  # apilado por diseno (una capa de alpha bajo) de dos textos que se tapan.
+  - rule: layout_overlap
+    fixture: main-frecuencia-dseg
+    reason: >
+      UI-017 (el "8 fantasma", AB-FONTSE): la etiqueta sombra de la fila de
+      frecuencia se apila a proposito debajo del valor, con la misma caja, y el
+      valor la tapa solo donde enciende sus segmentos. `layout_overlap` mide el
+      apilado de dos etiquetas con texto visible; aca es la capa que da el look de
+      segmentos apagados, no dos textos que se esconden. Ver el `reason` de la
+      region `frecuencia` en `expected_changes` y la ficha UI-017.
+    author: fonts-extras
+    until: 2027-03-31
+
+  # Sprint (THEMES v2, issue #69): las cuatro fixtures de pantalla principal del
+  # tema traen `font_digits: dseg14` en su JSON (es el requisito del issue: los
+  # paneles de digitos dibujan con la familia segmentada en los slots reales
+  # 30/38), asi que traen la MISMA capa de "8 fantasma" de UI-017 que
+  # `main-frecuencia-dseg` y la regla la lee igual: dos etiquetas con texto
+  # visible apiladas en la caja de 500x36 de la fila de frecuencia. Es el diseno
+  # (la sombra enciende los segmentos que el valor apaga, a LV_OPA_30, y el valor
+  # se dibuja encima a opacidad plena), no dos textos que se tapan. Un waiver por
+  # fixture, como los de Ajustes: la regla no se debilita y el dia que la sombra
+  # deje de existir (o que la regla distinga una capa de alpha de dos textos) se
+  # retiran los cinco.
+  - rule: layout_overlap
+    fixture: main-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): el tema Sprint pide
+      `font_digits: dseg14`, asi que la fila de frecuencia dibuja con la familia
+      segmentada y `src/main_screen.c` arma la etiqueta sombra ("88.888.888" a
+      LV_OPA_30) debajo del valor, con su misma caja. Es la capa que da el look
+      de segmentos apagados, no dos textos que se esconden; ver el `reason` de la
+      region `frecuencia` y la ficha UI-017.
+    author: theme-sprint-69
+    until: 2027-03-31
+
+  - rule: layout_overlap
+    fixture: main-tema-sprint-agua
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `main-tema-sprint` (el tema pide `font_digits: dseg14`); esta
+      fixture cambia el estado del waterfall, no la fila. Diseno, no defecto.
+    author: theme-sprint-69
+    until: 2027-03-31
+
+  - rule: layout_overlap
+    fixture: main-tema-sprint-eco
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `main-tema-sprint` (el tema pide `font_digits: dseg14`); esta
+      fixture cambia el estado de bateria/ECO, no la fila. Diseno, no defecto.
+    author: theme-sprint-69
+    until: 2027-03-31
+
+  - rule: layout_overlap
+    fixture: main-tema-sprint-tx
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `main-tema-sprint` (el tema pide `font_digits: dseg14`); en TX
+      la sombra lleva el split ("88.888.888 / 88.888.888") debajo del valor. Diseno,
+      no defecto.
+    author: theme-sprint-69
+    until: 2027-03-31
+
+  # Cathode (THEMES v2, issue #70): las cuatro fixtures de pantalla principal del
+  # tema traen `font_digits: dseg14` en su JSON (es el requisito del issue: los
+  # paneles de digitos dibujan con la familia segmentada en los slots reales
+  # 30/38), asi que traen la MISMA capa de "8 fantasma" de UI-017 que
+  # `main-frecuencia-dseg` y la regla la lee igual: dos etiquetas con texto
+  # visible apiladas en la caja de 500x36 de la fila de frecuencia. Es el diseno
+  # (la sombra enciende los segmentos que el valor apaga, a LV_OPA_30, y el valor
+  # se dibuja encima a opacidad plena), no dos textos que se tapan. Un waiver por
+  # fixture, como los de Ajustes: la regla no se debilita y el dia que la sombra
+  # deje de existir (o que la regla distinga una capa de alpha de dos textos) se
+  # retiran los cinco.
+  - rule: layout_overlap
+    fixture: main-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): el tema Cathode pide
+      `font_digits: dseg14`, asi que la fila de frecuencia dibuja con la familia
+      segmentada y `src/main_screen.c` arma la etiqueta sombra ("88.888.888" a
+      LV_OPA_30) debajo del valor, con su misma caja. Es la capa que da el look
+      de segmentos apagados, no dos textos que se esconden; ver el `reason` de la
+      region `frecuencia` y la ficha UI-017.
+    author: theme-cathode-70
+    until: 2027-03-31
+
+  - rule: layout_overlap
+    fixture: main-tema-cathode-agua
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `main-tema-cathode` (el tema pide `font_digits: dseg14`); esta
+      fixture cambia el estado del waterfall, no la fila. Diseno, no defecto.
+    author: theme-cathode-70
+    until: 2027-03-31
+
+  - rule: layout_overlap
+    fixture: main-tema-cathode-eco
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `main-tema-cathode` (el tema pide `font_digits: dseg14`); esta
+      fixture cambia el estado de bateria/ECO, no la fila. Diseno, no defecto.
+    author: theme-cathode-70
+    until: 2027-03-31
+
+  - rule: layout_overlap
+    fixture: main-tema-cathode-tx
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `main-tema-cathode` (el tema pide `font_digits: dseg14`); en TX
+      la sombra lleva el split ("88.888.888 / 88.888.888") debajo del valor. Diseno,
+      no defecto.
+    author: theme-cathode-70
+    until: 2027-03-31
+
+  # DFL (issue #173, PR 1): las dos fixtures DFL de los temas con digitos
+  # segmentados (Sprint y Cathode) traen la misma capa de "8 fantasma" de UI-017
+  # que las `main-tema-*` de esos temas: es el diseno de la fila de frecuencia,
+  # no dos textos que se tapan. Un waiver por fixture, como los de arriba.
+  - rule: layout_overlap
+    fixture: dfl-usb-d-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): el tema Sprint pide
+      `font_digits: dseg14`, asi que la fila de frecuencia de la fixture DFL dibuja
+      con la familia segmentada y `src/main_screen.c` arma la etiqueta sombra
+      ("88.888.888") debajo del valor, con su misma caja. Diseno, no defecto.
+    author: dfl-visual-173
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-usb-d-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): el tema Cathode pide
+      `font_digits: dseg14`; misma capa sombra de la fila de frecuencia que la
+      fixture DFL de Sprint. Diseno, no defecto.
+    author: dfl-visual-173
+    until: 2027-10-20
+
+  # Editor DFL (issue #173, PR 2): las fixtures del editor de los temas con
+  # digitos segmentados traen la misma capa de "8 fantasma" de la fila de
+  # frecuencia (no la dibuja el editor: es la pantalla de fondo). Un waiver por
+  # fixture, como los de PR 1.
+  - rule: layout_overlap
+    fixture: dfl-editor-usb-d-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): el tema Sprint pide
+      `font_digits: dseg14`, asi que la fila de frecuencia de la pantalla de fondo
+      dibuja con la familia segmentada y `src/main_screen.c` arma la etiqueta
+      sombra ("88.888.888") debajo del valor, con su misma caja. El editor DFL no
+      la toca. Diseno, no defecto.
+    author: dfl-editor-173
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-editor-usb-d-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): el tema Cathode pide
+      `font_digits: dseg14`; misma capa sombra de la fila de frecuencia que la
+      fixture del editor de Sprint. Diseno, no defecto.
+    author: dfl-editor-173
+    until: 2027-10-20
+
+  # Issue #179: las fixtures nuevas del editor DFL inline de los temas con
+  # digitos segmentados (Sprint, Cathode) traen la MISMA capa de "8 fantasma" de
+  # la fila de frecuencia que las de #173; el editor inline no la toca. Un waiver
+  # por fixture, como los de arriba.
+  - rule: layout_overlap
+    fixture: dfl-editor-sel-high-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): tema Sprint (`font_digits:
+      dseg14`), capa sombra de la fila de frecuencia de la pantalla de fondo. El
+      editor DFL inline (src/dfl_inline.c) no la toca. Diseno, no defecto.
+    author: dfl-inline-179
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-editor-sel-high-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): tema Cathode (`font_digits:
+      dseg14`), misma capa sombra de la fila de frecuencia. Diseno, no defecto.
+    author: dfl-inline-179
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-editor-sel-bw-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): tema Sprint (`font_digits:
+      dseg14`), capa sombra de la fila de frecuencia. El editor DFL inline no la
+      toca. Diseno, no defecto.
+    author: dfl-inline-179
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-editor-sel-bw-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): tema Cathode (`font_digits:
+      dseg14`), capa sombra de la fila de frecuencia. Diseno, no defecto.
+    author: dfl-inline-179
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-page-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): tema Sprint (`font_digits:
+      dseg14`), capa sombra de la fila de frecuencia de la pagina DFL normal.
+      Diseno, no defecto.
+    author: dfl-inline-179
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-page-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): tema Cathode (`font_digits:
+      dseg14`), capa sombra de la fila de frecuencia de la pagina DFL normal.
+      Diseno, no defecto.
+    author: dfl-inline-179
+    until: 2027-10-20
+
+  # Presets de filtro del DFL (issue #183): las doce fixtures de las paginas
+  # A..E (Favoritos, Ajustar, Grafico, Mas, Confirmar) de los dos temas con
+  # digitos segmentados (Sprint, Cathode) traen la MISMA capa de "8 fantasma" de
+  # la fila de frecuencia de UI-017. La pagina DFL no dibuja esa fila: es la
+  # pantalla principal de fondo (la barra inferior y el chip contextual son lo
+  # unico que cambia), asi que el hallazgo es el mismo diseno ya registrado y no
+  # un texto nuevo del #183. Un waiver por fixture y por tema, como los del
+  # #173/#179: la regla no se debilita y el dia que el fantasma deje de existir
+  # (o que `layout_overlap` distinga una capa de alpha bajo de dos textos que se
+  # tapan) se retiran los trece juntos.
+  - rule: layout_overlap
+    fixture: dfl-presets-fav-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): el tema Sprint pide
+      `font_digits: dseg14`, asi que la fila de frecuencia de la pantalla de fondo
+      de la pagina A del #183 dibuja con la familia segmentada y
+      `src/main_screen.c` arma la etiqueta sombra ("88.888.888" a LV_OPA_30)
+      debajo del valor, con su misma caja. La pagina de favoritos no la toca.
+      Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-adj-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-sprint` (el tema pide `font_digits:
+      dseg14`); esta fixture captura la pagina B (Ajustar) del #183, que reusa la
+      barra del #179 y no toca la fila. Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-graph-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-sprint`; esta fixture captura la pagina
+      C (el editor inline del #179/#182), que se dibuja sobre el waterfall, no
+      sobre la fila. Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-more-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-sprint`; esta fixture captura la pagina
+      D (Mem 1/Mem 2/Guardar), que solo cambia la barra inferior. Diseno, no
+      defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-confirm-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-sprint`; esta fixture captura la pagina
+      E (Confirmar) con su chip contextual sobre el waterfall, lejos de la fila.
+      Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-assign-tema-sprint
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #69): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-sprint`; esta fixture captura la pagina
+      F (Elegir origen) con el `Cancelar` tactil sobre el waterfall, lejos de la
+      fila. Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-fav-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): el tema Cathode pide
+      `font_digits: dseg14`, asi que la fila de frecuencia de la pantalla de fondo
+      de la pagina A del #183 dibuja con la familia segmentada y
+      `src/main_screen.c` arma la etiqueta sombra ("88.888.888" a LV_OPA_30)
+      debajo del valor, con su misma caja. La pagina de favoritos no la toca.
+      Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-adj-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-cathode`; esta fixture captura la pagina
+      B (Ajustar) del #183, que reusa la barra del #179 y no toca la fila. Diseno,
+      no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-graph-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-cathode`; esta fixture captura la pagina
+      C (el editor inline del #179/#182), que se dibuja sobre el waterfall, no
+      sobre la fila. Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-more-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-cathode`; esta fixture captura la pagina
+      D (Mem 1/Mem 2/Guardar), que solo cambia la barra inferior. Diseno, no
+      defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-confirm-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-cathode`; esta fixture captura la pagina
+      E (Confirmar) con su chip contextual sobre el waterfall, lejos de la fila.
+      Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  - rule: layout_overlap
+    fixture: dfl-presets-assign-tema-cathode
+    reason: >
+      UI-017 (el "8 fantasma", THEMES v2 #70): misma capa sombra de la fila de
+      frecuencia que `dfl-presets-fav-tema-cathode`; esta fixture captura la pagina
+      F (Elegir origen) con el `Cancelar` tactil sobre el waterfall, lejos de la
+      fila. Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  # Presets de filtro del DFL (issue #183), rueda principal: la fixture
+  # `dfl-presets-rotary0` es la primera del corpus que deja VISIBLE el indicador
+  # `x%.1f` de la aceleracion adaptativa (se muestra mientras se gira y se oculta
+  # solo a los 2 s, src/main_screen.c), asi que cae por primera vez bajo
+  # `layout_overlap`: el rotulo se apoya en el margen superior derecho del panel
+  # del reloj de potencia. Ver UI-018 (hallazgo nuevo, con su ficha) — la regla
+  # no se debilita y el waiver se retira cuando el indicador cambie de lugar.
+  - rule: layout_overlap
+    fixture: dfl-presets-rotary0
+    reason: >
+      UI-018 (indicador `xN` del tuning adaptativo): con la rueda girando,
+      `src/main_screen.c` muestra su etiqueta `x%.1f` en el margen superior derecho
+      del panel del reloj de potencia (`clock_style`, 209x61 alineado arriba a la
+      derecha). La caja del rotulo cae dentro de la caja de la etiqueta del reloj,
+      pero el texto del reloj va centrado y su tinta queda libre: son un overlay de
+      estado de la rueda y la leyenda del reloj, no dos textos que se tapan.
+      `layout_overlap` mide cajas, no tinta, y por eso lo reporta; se declara aca en
+      vez de relajar la regla. Diseno, no defecto.
+    author: dfl-presets-183
+    until: 2027-10-20
+
+  # Las paginas de Ajustes del esquema unico (issue #175): Operation, Display e
+  # Info y las seis variantes de tema de Operation son fixtures NUEVAS, asi que
+  # sus filas entran por primera vez a la regla `layout_touch_target` y reportan
+  # la MISMA geometria pre-existente de UI-015 que ya waiveran settings-home/
+  # -wfbat/-audio: los lv_switch de Ajustes miden 111x30 (63x30 los de la fila
+  # "Mag Freq, Info, ALC") y el slider de rango del brillo 159x13. El cambio del
+  # #175 mueve esas cajas de columna (todas arrancan en x=499) pero NO su tamano:
+  # el alto sigue siendo el de LVGL y el de las filas de siempre. Un waiver por
+  # fixture, como los de las otras tres; se retiran en el incremento que arregle
+  # el alto de los controles.
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation
+    reason: >
+      UI-015: los tres switches del grupo Operation (Bluetooth, Discoverable
+      (CAT), Cluster column) miden 111x30, el alto de lv_switch, debajo del target
+      de 44 px. Geometria pre-existente de la fila; el #175 solo la mueve a la
+      columna 1.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-display
+    reason: >
+      UI-015: el grupo Display suma los switches de "S-meter needle" y "Band
+      plan" (111x30) y el slider de rango del brillo (159x13), la misma geometria
+      pre-existente de la fila "Timeout, Brightness" que ya waivera settings-home.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-info
+    reason: >
+      UI-015: los tres switches de "Mag Freq, Info, ALC" miden 63x30 (la caja de
+      dos columnas de la fila), debajo del target de 44 px. Geometria
+      pre-existente; el #175 solo corrige el span declarado (2, el de las filas de
+      tres campos) para que coincida con la caja que ya medía.
+    author: settings-align-175
+    until: 2027-10-20
+
+  # Las seis variantes de tema de la pagina Operation (mismo grupo, misma
+  # geometria): un waiver por fixture.
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation-tema-aurora
+    reason: >
+      UI-015: mismo grupo Operation que `settings-grupo-operation` (tres switches
+      111x30); esta fixture solo cambia el tema.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation-tema-cathode
+    reason: >
+      UI-015: mismo grupo Operation que `settings-grupo-operation` (tres switches
+      111x30); esta fixture solo cambia el tema.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation-tema-redshift
+    reason: >
+      UI-015: mismo grupo Operation que `settings-grupo-operation` (tres switches
+      111x30); esta fixture solo cambia el tema.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation-tema-sprint
+    reason: >
+      UI-015: mismo grupo Operation que `settings-grupo-operation` (tres switches
+      111x30); esta fixture solo cambia el tema.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation-tema-sunlit
+    reason: >
+      UI-015: mismo grupo Operation que `settings-grupo-operation` (tres switches
+      111x30); esta fixture solo cambia el tema.
+    author: settings-align-175
+    until: 2027-10-20
+
+  - rule: layout_touch_target
+    fixture: settings-grupo-operation-tema-trail
+    reason: >
+      UI-015: mismo grupo Operation que `settings-grupo-operation` (tres switches
+      111x30); esta fixture solo cambia el tema.
+    author: settings-align-175
+    until: 2027-10-20
+
+# UI-016 (`layout_clipped` [settings-home]) was withdrawn here in AB-UI016-T1,
+# together with the fix: the Ajustes year field no longer clips its last digit
+# (src/dialog_settings.c, the year spinbox gets the width its four digits need
+# with the current font), so `layout_clipped` passes on its own and no waiver
+# explains a reappearance. The fix moves pixels inside `ajustes_anio` only; that
+# is declared in `expected_changes` above, not waived here.

@@ -1,0 +1,95 @@
+# Desensamblado de la pila resuelta del #131
+# liblvgl.so md5 cd30ca6c58ad42f06caad930b65f0ee2, base de carga 0xb6170000
+
+## pc = 0xb6186ae8 -> liblvgl+0x16ae8 = _lv_event_mark_deleted+0x30
+##     ldr r2, [r3, #4]  (fallo=0xf363 -> r3 = 0xf35f)
+
+/tmp/opencode/sigsegv131/lib/usr/lib/liblvgl.so:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00016ab8 <_lv_event_mark_deleted>:
+   16ab8:	e59f3044 	ldr	r3, [pc, #68]	; 16b04 <_lv_event_mark_deleted+0x4c>
+   16abc:	e08f3003 	add	r3, pc, r3
+   16ac0:	e5933000 	ldr	r3, [r3]
+   16ac4:	e3530000 	cmp	r3, #0
+   16ac8:	1a000006 	bne	16ae8 <_lv_event_mark_deleted+0x30>
+   16acc:	e12fff1e 	bx	lr
+   16ad0:	e5932000 	ldr	r2, [r3]
+   16ad4:	e1520000 	cmp	r2, r0
+   16ad8:	0a000005 	beq	16af4 <_lv_event_mark_deleted+0x3c>
+   16adc:	e5933014 	ldr	r3, [r3, #20]
+   16ae0:	e3530000 	cmp	r3, #0
+   16ae4:	012fff1e 	bxeq	lr
+   16ae8:	e5932004 	ldr	r2, [r3, #4]
+   16aec:	e1520000 	cmp	r2, r0
+   16af0:	1afffff6 	bne	16ad0 <_lv_event_mark_deleted+0x18>
+   16af4:	e5d32018 	ldrb	r2, [r3, #24]
+   16af8:	e3822001 	orr	r2, r2, #1
+   16afc:	e5c32018 	strb	r2, [r3, #24]
+   16b00:	eafffff5 	b	16adc <_lv_event_mark_deleted+0x24>
+   16b04:	000881f0 	.word	0x000881f0
+
+## lr = 0xb618d4f0 -> liblvgl+0x1d4f0 = lv_obj_destructor+0x10
+##     retorno del bl _lv_event_mark_deleted@plt (0x1d4ec)
+
+/tmp/opencode/sigsegv131/lib/usr/lib/liblvgl.so:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+0001d4e0 <lv_obj_destructor>:
+   1d4e0:	e92d4010 	push	{r4, lr}
+   1d4e4:	e1a00001 	mov	r0, r1
+   1d4e8:	e1a04001 	mov	r4, r1
+   1d4ec:	ebffe086 	bl	1570c <_lv_event_mark_deleted@plt>
+   1d4f0:	e3a00000 	mov	r0, #0
+   1d4f4:	ebffdc7c 	bl	146ec <lv_obj_enable_style_refresh@plt>
+
+## pila[1] = 0xb618db48 -> liblvgl+0x1db48 = _lv_obj_destruct+0x14
+##     retorno del blx r3 (destructor_cb) en 0x1db44
+
+/tmp/opencode/sigsegv131/lib/usr/lib/liblvgl.so:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+0001db34 <_lv_obj_destruct>:
+   1db34:	e92d4010 	push	{r4, lr}
+   1db38:	e1a04000 	mov	r4, r0
+   1db3c:	e5900000 	ldr	r0, [r0]
+   1db40:	ea000005 	b	1db5c <_lv_obj_destruct+0x28>
+   1db44:	e12fff33 	blx	r3
+   1db48:	e5943000 	ldr	r3, [r4]
+   1db4c:	e5930000 	ldr	r0, [r3]
+
+## pila[3] = 0xb6196128 -> liblvgl+0x26128 = obj_del_core.part.0+0x114
+##     retorno del bl _lv_obj_destruct@plt (0x26124)
+
+/tmp/opencode/sigsegv131/lib/usr/lib/liblvgl.so:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00026118 <obj_del_core.part.0+0x104>:
+   26118:	e2504000 	subs	r4, r0, #0
+   2611c:	1affffe6 	bne	260bc <obj_del_core.part.0+0xa8>
+   26120:	e1a00005 	mov	r0, r5
+   26124:	ebffba90 	bl	14b6c <_lv_obj_destruct@plt>
+   26128:	e5954004 	ldr	r4, [r5, #4]
+   2612c:	e3540000 	cmp	r4, #0
+
+## pila[9] = 0xb619605c -> liblvgl+0x2605c = obj_del_core.part.0+0x48
+##     retorno del bl obj_del_core (0x26058), borrado recursivo de un hijo
+
+/tmp/opencode/sigsegv131/lib/usr/lib/liblvgl.so:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00026050 <obj_del_core.part.0+0x3c>:
+   26050:	e3510000 	cmp	r1, #0
+   26054:	0a000022 	beq	260e4 <obj_del_core.part.0+0xd0>
+   26058:	ebffffed 	bl	26014 <obj_del_core.part.0>
+   2605c:	e3a01000 	mov	r1, #0

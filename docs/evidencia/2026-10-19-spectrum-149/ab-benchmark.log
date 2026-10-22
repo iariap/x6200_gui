@@ -1,0 +1,41 @@
+=== A/B benchmark (a69ea288 -> 75a48b89) ===
+# Render benchmark — BENCH-OPT3-149
+
+- Status: **INCONCLUSIVE** (exit 3)
+- Date: 2026-10-19
+- a: `a69ea2883328dc4df4c993e3e83d48f473e9617d`
+- b: `75a48b8966f31db3bdd5cdf3a98a09080053cc9b`
+
+> x86 host proxy (CLOCK_MONOTONIC): relative regression detection only, not the Cortex-A7 frame budget nor battery life.
+
+| Scenario | Status | p50 (ms) | p95 (ms) | p99 (ms) | FPS | p95 Δ | flushes Δ | area Δ |
+|---|---|---|---|---|---|---|---|---|
+| app-bands | PASS | 3.1936 | 3.4204 | 3.4389 | 313.13 | -15.765% | 0.0% | 0.0% |
+| app-close-home | PASS | 3.2873 | 3.4082 | 3.4118 | 304.2 | -5.067% | 0.0% | 0.0% |
+| apps-menu-1 | PASS | 3.2807 | 3.6444 | 3.8423 | 304.81 | 6.423% | 0.0% | 0.0% |
+| apps-menu-2 | PASS | 3.2649 | 3.4238 | 3.5192 | 306.28 | -24.465% | 0.0% | 0.0% |
+| apps-menu-3 | PASS | 3.296 | 3.7737 | 4.0171 | 303.4 | 1.801% | 0.0% | 0.0% |
+| apps-menu-4 | PASS | 3.2788 | 3.3579 | 3.4437 | 304.99 | -17.991% | 0.0% | 0.0% |
+| apps-menu-5 | PASS | 3.2361 | 3.3861 | 4.5268 | 309.02 | 1.21% | 0.0% | 0.0% |
+| apps-menu-6 | PASS | 3.303 | 3.66 | 3.8926 | 302.76 | 5.832% | 0.0% | 0.0% |
+| autotune | INCONCLUSIVE | 3.3537 | 4.3593 | 4.7408 | 298.18 | 26.895% | 0.0% | 0.0% |
+| autotune-found | PASS | 3.3136 | 4.0186 | 5.0732 | 301.79 | 18.9% | 0.0% | 0.0% |
+| autotune-progress | PASS | 3.3434 | 3.5857 | 3.5987 | 299.1 | -3.177% | 0.0% | 0.0% |
+| bench-render | INCONCLUSIVE | 3.5847 | 4.6415 | 5.2071 | 278.96 | 27.566% | 0.0% | 0.0% |
+| bt-dialog | PASS | 6.6789 | 7.0558 | 7.2694 | 149.73 | -12.822% | 0.0% | 0.0% |
+| bt-dialog-tema-aurora | PASS | 6.6341 | 7.0384 | 7.0787 | 150.74 | -7.027% | 0.0% | 0.0% |
+| bt-dialog-tema-cathode | PASS | 6.5499 | 9.8249 | 9.9975 | 152.67 | 18.9% | 0.0% | 0.0% |
+| bt-dialog-tema-redshift | INCONCLUSIVE | 6.5737 | 11.4354 | 12.4983 | 152.12 | 59.157% | 0.0% | 0.0% |
+| bt-dialog-tema-sprint | INCONCLUSIVE | 6.309 | 10.845 | 11.3296 | 158.5 | 54.846% | 0.0% | 0.0% |
+| bt-dialog-tema-sunlit | INCONCLUSIVE | 6.7662 | 10.2155 | 10.6484 | 147.79 | 31.612% | 0.0% | 0.0% |
+| bt-dialog-tema-trail | INCONCLUSIVE | 6.676 | 10.2271 | 10.6729 | 149.79 | 53.183% | 0.0% | 0.0% |
+| cw-autotune-off | INCONCLUSIVE | 3.4177 | 5.0235 | 5.0547 | 292.59 | 43.815% | 0.0% | 0.0% |
+| cw-autotune-on | INCONCLUSIVE | 3.2687 | 5.4962 | 5.5791 | 305.93 | 56.579% | 0.0% | 0.0% |
+| cw-tune-default | INCONCLUSIVE | 3.3435 | 5.5079 | 5.5625 | 299.09 | 57.349% | 0.0% | 0.0% |
+| cw-tune-ssb | PASS | 3.3462 | 5.0965 | 5.1573 | 298.84 | 23.526% | 0.0% | 0.0% |
+| cw-tune-tema-sunlit | INCONCLUSIVE | 3.3557 | 5.5981 | 5.7574 | 298.0 | 65.828% | 0.0% | 0.0% |
+| cw-tune-tuner | INCONCLUSIVE | 3.2641 | 5.8161 | 5.8646 | 306.36 | 69.495% | 0.0% | 0.0% |
+| home-bateria-externa | INCONCLUSIVE | 3.3677 | 5.6886 | 5.8444 | 296.94 | 64.59% | 0.0% | 0.0% |
+| home-frecuencia-extrema | INCONCLUSIVE | 3.2778 | 5.112 | 6.1514 | 305.09 | 32.836% | 0.0% | 0.0% |
+| home-usb-20m | INCONCLUSIVE | 3.351 | 5.4369 | 5.482 | 298.42 | 42.333% | 0.0% | 0.0% |
+| main-bateria-baja | INCONCLUSIVE | 3.3188 | 5.4579 | 5.5136 | 301.31 | 53.559% | 0.0% | 0.0% |

@@ -1,0 +1,28 @@
+# Cross-compile del target con el toolchainfile.cmake de Buildroot (issue #192)
+#   sello de fuentes de este arbol (tools/fuente-md5.sh): 5c48c798937da256391f193338d7b8c1
+#   comando (dentro de la imagen x6200-buildroot, volumen x6200-build-output montado en /b):
+#     cmake -S /src/src/bootanim -B /tmp/ba-arm -DCMAKE_TOOLCHAIN_FILE=/b/host/share/buildroot/toolchainfile.cmake -DX6200_FUENTE_MD5=5c48c798937da256391f193338d7b8c1
+#     cmake --build /tmp/ba-arm --target x6200_bootanim
+#     cmake --install /tmp/ba-arm --prefix /tmp/ba-stage
+-- The C compiler identification is GNU 12.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /b/host/bin/arm-buildroot-linux-gnueabihf-gcc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Configuring done (0.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/ba-arm
+[ 25%] Building C object CMakeFiles/x6200_bootanim.dir/main.c.o
+[ 50%] Building C object CMakeFiles/x6200_bootanim.dir/renderer.c.o
+[ 75%] Building C object CMakeFiles/x6200_bootanim.dir/fb.c.o
+[100%] Linking C executable x6200_bootanim
+[100%] Built target x6200_bootanim
+-- Install configuration: "Release"
+-- Installing: /tmp/ba-stage/sbin/x6200_bootanim
+--- archivo instalado ---
+/tmp/ba-stage/sbin/x6200_bootanim: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, with debug_info, not stripped
+total 32
+-rwxr-xr-x. 1 root root 32380 Oct 21 18:09 x6200_bootanim
+--- sello embebido (esperado: 5c48c798937da256391f193338d7b8c1) ---
+1

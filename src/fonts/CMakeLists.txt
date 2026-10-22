@@ -1,7 +1,7 @@
-target_sources(${PROJECT_NAME} PUBLIC
-    sony_8.c sony_10.c sony_12.c sony_14.c sony_16.c
-    sony_18.c sony_20.c sony_22.c sony_24.c sony_26.c
-    sony_28.c sony_30.c sony_32.c sony_34.c sony_36.c
-    sony_38.c sony_40.c sony_42.c sony_44.c
-    sony_60.c
-)
+# The font families are generated (tools/fonts/fonts.py) and the list is data:
+# src/fonts/font_families.h carries the families, their FONT_* values and their
+# symbols, and this directory holds one .c per family and size. Globbing them
+# keeps a new candidate from being compiled-but-unnamed (or named but not
+# compiled), which a hand-written list of ~270 files would not.
+file(GLOB FONT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
+target_sources(${PROJECT_NAME} PUBLIC ${FONT_SOURCES})

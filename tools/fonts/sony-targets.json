@@ -1,0 +1,122 @@
+{
+  "10": {
+    "advance_sum": 451,
+    "base_line": 2,
+    "cap_height": 5,
+    "line_height": 9
+  },
+  "12": {
+    "advance_sum": 541,
+    "base_line": 2,
+    "cap_height": 7,
+    "line_height": 11
+  },
+  "14": {
+    "advance_sum": 631,
+    "base_line": 2,
+    "cap_height": 7,
+    "line_height": 11
+  },
+  "16": {
+    "advance_sum": 722,
+    "base_line": 2,
+    "cap_height": 8,
+    "line_height": 12
+  },
+  "18": {
+    "advance_sum": 811,
+    "base_line": 3,
+    "cap_height": 9,
+    "line_height": 14
+  },
+  "20": {
+    "advance_sum": 898,
+    "base_line": 3,
+    "cap_height": 9,
+    "line_height": 17
+  },
+  "22": {
+    "advance_sum": 992,
+    "base_line": 3,
+    "cap_height": 11,
+    "line_height": 17
+  },
+  "24": {
+    "advance_sum": 1082,
+    "base_line": 4,
+    "cap_height": 12,
+    "line_height": 19
+  },
+  "26": {
+    "advance_sum": 1172,
+    "base_line": 4,
+    "cap_height": 13,
+    "line_height": 20
+  },
+  "28": {
+    "advance_sum": 1262,
+    "base_line": 4,
+    "cap_height": 13,
+    "line_height": 20
+  },
+  "30": {
+    "advance_sum": 1347,
+    "base_line": 5,
+    "cap_height": 15,
+    "line_height": 25
+  },
+  "32": {
+    "advance_sum": 1443,
+    "base_line": 5,
+    "cap_height": 16,
+    "line_height": 25
+  },
+  "34": {
+    "advance_sum": 1532,
+    "base_line": 6,
+    "cap_height": 17,
+    "line_height": 28
+  },
+  "36": {
+    "advance_sum": 1622,
+    "base_line": 6,
+    "cap_height": 17,
+    "line_height": 28
+  },
+  "38": {
+    "advance_sum": 1713,
+    "base_line": 7,
+    "cap_height": 19,
+    "line_height": 30
+  },
+  "40": {
+    "advance_sum": 1803,
+    "base_line": 7,
+    "cap_height": 20,
+    "line_height": 31
+  },
+  "42": {
+    "advance_sum": 1893,
+    "base_line": 7,
+    "cap_height": 21,
+    "line_height": 33
+  },
+  "44": {
+    "advance_sum": 1984,
+    "base_line": 7,
+    "cap_height": 21,
+    "line_height": 33
+  },
+  "60": {
+    "advance_sum": 2704,
+    "base_line": 10,
+    "cap_height": 29,
+    "line_height": 45
+  },
+  "8": {
+    "advance_sum": 361,
+    "base_line": 2,
+    "cap_height": 4,
+    "line_height": 7
+  }
+}

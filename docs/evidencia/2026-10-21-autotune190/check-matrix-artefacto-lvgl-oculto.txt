@@ -1,0 +1,53 @@
+==> [check] native tests (tests/native/run_native_tests.sh)
+    ok
+==> [check] check_cfg_fills
+    ok
+==> [check] check_actions
+    ok
+==> [check] check_settings_focus
+    ok
+==> [check] check_apps_menu
+    ok
+==> [check] check_app_handlers
+    ok
+==> [check] check_manual_apps
+    ok
+==> [check] check_wcag
+    ok
+==> [check] check_cw_tune_feed
+    ok
+==> [check] check_build_identity
+    ok
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [check] ruff check (ab_testing)
+    ok
+==> [check] ruff format --check (ab_testing)
+    ok
+==> [check] pytest -m 'not e2e' (ab_testing)
+    ok
+==> [check] x6200-ab themes
+    ok
+==> [check] x6200-ab contracts (8d5410168139044e1a0c5f7d8edfac3db5f85f3a)
+    BLOCKED: el gate no evaluó (exit 2). NO es PASS:
+    BLOCKED: harness failed for scenario dfl-mirror-lsb on 8d5410168139 (exit 1): [User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+    [User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+    [User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1139)
+    [User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1145)
+    dfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)
+==> [check] bash -n tests/native/run_native_tests.sh
+    ok
+==> [check] bash -n tests/run_all_tests.sh
+    ok
+==> [check] harness determinism gate
+    FAIL: submódulo lvgl sin inicializar (/home/pablo/desa/asf/state/worktrees/x6200/autotune-v2-190/lvgl)
+    acción: git -C /home/pablo/desa/asf/state/worktrees/x6200/autotune-v2-190 submodule update --init lvgl
+==> [check] banco QEMU: preflight (tools/captura-banco.sh --check)
+    ok
+==> [check] banco QEMU: params.db generado (idempotencia del rebuild)
+    ok (no había params.db generado)
+==> [check] banco QEMU: captura de humo (home)
+    ok
+      captura: /tmp/banco-qemu-home.png (15602 colores distintos)
+      version: 8d541016 Docs (#190): evidencia cruda de la corrida (gates, 
+      binario: md5 9dcde687764a   qemu-cpu: cortex-a7
+exit=1

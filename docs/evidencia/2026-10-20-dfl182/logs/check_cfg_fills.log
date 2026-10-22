@@ -1,0 +1,3 @@
+  campos en cfg_t:      70
+  fill_cfg_item():      70
+  OK: los 70 campos se inicializan, en orden

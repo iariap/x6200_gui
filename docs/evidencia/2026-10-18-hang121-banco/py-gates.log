@@ -1,0 +1,7 @@
+$ uv run ruff check .
+All checks passed!
+$ uv run ruff format --check .
+176 files already formatted
+$ uv run ty check src tests
+WARN No python files found under the given path(s)
+All checks passed!

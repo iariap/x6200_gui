@@ -1,0 +1,205 @@
+El byte XBandPlan+0x1c (m_fullbandTx) se lee desde XParamAdmin+0xf0 (XParamAdmin contiene XBandPlan en +0xd4).
+Readers encontrados (grep 'ldrb ..., [rX, #240]'): 0x5ad68, 0x5e928, 0x776b0, 0x7857c.
+
+### 1) MainWidget::updateBandEdge() lo copia al pack de BaseCommIIC (offset 0x120) ###
+
+root/usr/app_qt/x6200_ui_v100:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+0005ad40 <_ZN10MainWidget14updateBandEdgeEv+0x434>:
+   5ad40:	e5902014 	ldr	r2, [r0, #20]
+   5ad44:	e58321f9 	str	r2, [r3, #505]	@ 0x1f9
+   5ad48:	e59403fc 	ldr	r0, [r4, #1020]	@ 0x3fc
+   5ad4c:	e28000d4 	add	r0, r0, #212	@ 0xd4
+   5ad50:	eb008903 	bl	7d164 <_ZN9XBandPlan8bandItemEi>
+   5ad54:	e5d02030 	ldrb	r2, [r0, #48]	@ 0x30
+   5ad58:	e594337c 	ldr	r3, [r4, #892]	@ 0x37c
+   5ad5c:	e58321fd 	str	r2, [r3, #509]	@ 0x1fd
+   5ad60:	e594337c 	ldr	r3, [r4, #892]	@ 0x37c
+   5ad64:	e59423fc 	ldr	r2, [r4, #1020]	@ 0x3fc
+   5ad68:	e5d220f0 	ldrb	r2, [r2, #240]	@ 0xf0
+   5ad6c:	e5c32120 	strb	r2, [r3, #288]	@ 0x120
+   5ad70:	e8bd8010 	pop	{r4, pc}
+
+### 2) MainWidget::slot_atuTune() - si fullband-tx=1 no bloquea ATU fuera de banda ham ###
+
+root/usr/app_qt/x6200_ui_v100:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+0005e918 <_ZN10MainWidget12slot_atuTuneEv+0x68>:
+   5e918:	ebff6496 	bl	37b78 <_ZN11xgnamespace13xparam_item_tD1Ev>
+   5e91c:	e1a00006 	mov	r0, r6
+   5e920:	ebff2fa5 	bl	2a7bc <_ZN7QStringD1Ev>
+   5e924:	e59a03fc 	ldr	r0, [sl, #1020]	@ 0x3fc
+   5e928:	e5d030f0 	ldrb	r3, [r0, #240]	@ 0xf0
+   5e92c:	e3530000 	cmp	r3, #0
+   5e930:	1a00013f 	bne	5ee34 <_ZN10MainWidget12slot_atuTuneEv+0x584>
+   5e934:	e1a02008 	mov	r2, r8
+   5e938:	e28000d4 	add	r0, r0, #212	@ 0xd4
+   5e93c:	e1a03fc8 	asr	r3, r8, #31
+   5e940:	eb00c2e5 	bl	8f4dc <_ZNK9XBandPlan9isHamBandEx>
+   5e944:	e3500000 	cmp	r0, #0
+   5e948:	1a000139 	bne	5ee34 <_ZN10MainWidget12slot_atuTuneEv+0x584>
+
+### 3) MainWidget ctor: muestra/oculta ui->labelFullbandTxe segun el flag ###
+
+root/usr/app_qt/x6200_ui_v100:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+000776a0 <_ZN10MainWidgetC1EP7QWidget+0x3adc>:
+   776a0:	e594301c 	ldr	r3, [r4, #28]
+   776a4:	e59300b4 	ldr	r0, [r3, #180]	@ 0xb4
+   776a8:	e2843a02 	add	r3, r4, #8192	@ 0x2000
+   776ac:	e59333fc 	ldr	r3, [r3, #1020]	@ 0x3fc
+   776b0:	e5d330f0 	ldrb	r3, [r3, #240]	@ 0xf0
+   776b4:	e3530000 	cmp	r3, #0
+   776b8:	0a000001 	beq	776c4 <_ZN10MainWidgetC1EP7QWidget+0x3b00>
+   776bc:	ebfec020 	bl	27744 <_ZN7QWidget4showEv@plt>
+   776c0:	ea000000 	b	776c8 <_ZN10MainWidgetC1EP7QWidget+0x3b04>
+   776c4:	ebfebb8f 	bl	26508 <_ZN7QWidget4hideEv@plt>
+
+### 3b) Ui_MainWidget::setupUi(): crea el QLabel con objectName 'labelFullbandTxe' (borde rojo) ###
+
+root/usr/app_qt/x6200_ui_v100:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+000807d4 <_ZN13Ui_MainWidget7setupUiEP7QWidget+0x284c>:
+   807d4:	e1a08000 	mov	r8, r0
+   807d8:	ebfe966c 	bl	26190 <_ZN6QLabelC1EP7QWidget6QFlagsIN2Qt10WindowTypeEE@plt>
+   807dc:	e59f18f4 	ldr	r1, [pc, #2292]	@ 810d8 <_ZN13Ui_MainWidget7setupUiEP7QWidget+0x3150>
+   807e0:	e28d7098 	add	r7, sp, #152	@ 0x98
+   807e4:	e58480b4 	str	r8, [r4, #180]	@ 0xb4
+   807e8:	e3e02000 	mvn	r2, #0
+   807ec:	e08f1001 	add	r1, pc, r1
+   807f0:	e1a00007 	mov	r0, r7
+   807f4:	ebfee925 	bl	3ac90 <_ZN7QString8fromUtf8EPKci>
+   807f8:	e1a01007 	mov	r1, r7
+   807fc:	e1a00008 	mov	r0, r8
+
+### 4) man.conf [manufacture]: si el flag esta activo, estampa fbtx-open-time y fullband-tx=1 ###
+
+root/usr/app_qt/x6200_ui_v100:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00078574 <_ZN10MainWidgetC1EP7QWidget+0x49b0>:
+   78574:	e2843a02 	add	r3, r4, #8192	@ 0x2000
+   78578:	e59333fc 	ldr	r3, [r3, #1020]	@ 0x3fc
+   7857c:	e5d330f0 	ldrb	r3, [r3, #240]	@ 0xf0
+   78580:	e3530000 	cmp	r3, #0
+   78584:	0a000041 	beq	78690 <_ZN10MainWidgetC1EP7QWidget+0x4acc>
+   78588:	e51f1ba8 	ldr	r1, [pc, #-2984]	@ 779e8 <_ZN10MainWidgetC1EP7QWidget+0x3e24>
+   7858c:	e1a00006 	mov	r0, r6
+   78590:	e08f1001 	add	r1, pc, r1
+   78594:	ebfedb7a 	bl	2f384 <_ZN7QStringC1EPKc>
+   78598:	e28d6d07 	add	r6, sp, #448	@ 0x1c0
+   7859c:	e28d0f52 	add	r0, sp, #328	@ 0x148
+   785a0:	e1a01006 	mov	r1, r6
+   785a4:	ebfeb966 	bl	26b44 <_ZNK9QSettings8containsERK7QString@plt>
+   785a8:	e1a07000 	mov	r7, r0
+   785ac:	e1a00006 	mov	r0, r6
+   785b0:	ebfec881 	bl	2a7bc <_ZN7QStringD1Ev>
+   785b4:	e3570000 	cmp	r7, #0
+   785b8:	1a000022 	bne	78648 <_ZN10MainWidgetC1EP7QWidget+0x4a84>
+   785bc:	e51f1bd8 	ldr	r1, [pc, #-3032]	@ 779ec <_ZN10MainWidgetC1EP7QWidget+0x3e28>
+   785c0:	e28d0f4e 	add	r0, sp, #312	@ 0x138
+   785c4:	e08f1001 	add	r1, pc, r1
+   785c8:	ebfedb6d 	bl	2f384 <_ZN7QStringC1EPKc>
+   785cc:	e28d0d05 	add	r0, sp, #320	@ 0x140
+   785d0:	ebfec0d2 	bl	28920 <_ZN9QDateTime15currentDateTimeEv@plt>
+   785d4:	e51f1bec 	ldr	r1, [pc, #-3052]	@ 779f0 <_ZN10MainWidgetC1EP7QWidget+0x3e2c>
+   785d8:	e28d7f56 	add	r7, sp, #344	@ 0x158
+   785dc:	e1a00007 	mov	r0, r7
+   785e0:	e08f1001 	add	r1, pc, r1
+   785e4:	ebfedb66 	bl	2f384 <_ZN7QStringC1EPKc>
+   785e8:	e28d6f4f 	add	r6, sp, #316	@ 0x13c
+   785ec:	e1a02007 	mov	r2, r7
+   785f0:	e28d1d05 	add	r1, sp, #320	@ 0x140
+   785f4:	e1a00006 	mov	r0, r6
+   785f8:	ebfec218 	bl	28e60 <_ZNK9QDateTime8toStringERK7QString@plt>
+   785fc:	e28d7d07 	add	r7, sp, #448	@ 0x1c0
+   78600:	e1a01006 	mov	r1, r6
+   78604:	e1a00007 	mov	r0, r7
+   78608:	ebfeb66e 	bl	25fc8 <_ZN8QVariantC1ERK7QString@plt>
+   7860c:	e1a02007 	mov	r2, r7
+   78610:	e28d1f4e 	add	r1, sp, #312	@ 0x138
+   78614:	e28d0f52 	add	r0, sp, #328	@ 0x148
+   78618:	e28d6d07 	add	r6, sp, #448	@ 0x1c0
+   7861c:	ebfec089 	bl	28848 <_ZN9QSettings8setValueERK7QStringRK8QVariant@plt>
+   78620:	e1a00006 	mov	r0, r6
+   78624:	ebfebad8 	bl	2718c <_ZN8QVariantD1Ev@plt>
+   78628:	e28d0f4f 	add	r0, sp, #316	@ 0x13c
+   7862c:	ebfec862 	bl	2a7bc <_ZN7QStringD1Ev>
+   78630:	e28d0f56 	add	r0, sp, #344	@ 0x158
+   78634:	ebfec860 	bl	2a7bc <_ZN7QStringD1Ev>
+   78638:	e28d0d05 	add	r0, sp, #320	@ 0x140
+   7863c:	ebfebd81 	bl	27c48 <_ZN9QDateTimeD1Ev@plt>
+   78640:	e28d0f4e 	add	r0, sp, #312	@ 0x138
+   78644:	ebfec85c 	bl	2a7bc <_ZN7QStringD1Ev>
+   78648:	e51f1c5c 	ldr	r1, [pc, #-3164]	@ 779f4 <_ZN10MainWidgetC1EP7QWidget+0x3e30>
+   7864c:	e28d0f56 	add	r0, sp, #344	@ 0x158
+   78650:	e08f1001 	add	r1, pc, r1
+   78654:	ebfedb4a 	bl	2f384 <_ZN7QStringC1EPKc>
+   78658:	e28d8d07 	add	r8, sp, #448	@ 0x1c0
+   7865c:	e3a01001 	mov	r1, #1
+   78660:	e1a00008 	mov	r0, r8
+   78664:	ebfebc21 	bl	276f0 <_ZN8QVariantC1Ei@plt>
+   78668:	e28d7f56 	add	r7, sp, #344	@ 0x158
+   7866c:	e1a02008 	mov	r2, r8
+   78670:	e1a01007 	mov	r1, r7
+   78674:	e28d0f52 	add	r0, sp, #328	@ 0x148
+   78678:	e28d6d07 	add	r6, sp, #448	@ 0x1c0
+   7867c:	ebfec071 	bl	28848 <_ZN9QSettings8setValueERK7QStringRK8QVariant@plt>
+   78680:	e1a00006 	mov	r0, r6
+   78684:	ebfebac0 	bl	2718c <_ZN8QVariantD1Ev@plt>
+   78688:	e1a00007 	mov	r0, r7
+   7868c:	ebfec84a 	bl	2a7bc <_ZN7QStringD1Ev>
+
+### 5) slot_basebandStateChanged(): loguea 'FullBandTx: %d' leyendo el pack en BaseCommIIC+0x120 ###
+
+root/usr/app_qt/x6200_ui_v100:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+0005d4f0 <_ZN10MainWidget25slot_basebandStateChangedEi+0x350>:
+   5d4f0:	e59f1364 	ldr	r1, [pc, #868]	@ 5d85c <_ZN10MainWidget25slot_basebandStateChangedEi+0x6bc>
+   5d4f4:	e1a00004 	mov	r0, r4
+   5d4f8:	e08f1001 	add	r1, pc, r1
+   5d4fc:	ebff2cdd 	bl	28878 <_ZNK14QMessageLogger5debugEPKcz@plt>
+   5d500:	e59f1358 	ldr	r1, [pc, #856]	@ 5d860 <_ZN10MainWidget25slot_basebandStateChangedEi+0x6c0>
+   5d504:	e300360e 	movw	r3, #1550	@ 0x60e
+   5d508:	e58d3014 	str	r3, [sp, #20]
+   5d50c:	e1a00004 	mov	r0, r4
+   5d510:	e596337c 	ldr	r3, [r6, #892]	@ 0x37c
+   5d514:	e58d8010 	str	r8, [sp, #16]
+   5d518:	e58d701c 	str	r7, [sp, #28]
+   5d51c:	e58d9020 	str	r9, [sp, #32]
+   5d520:	e58da018 	str	sl, [sp, #24]
+   5d524:	e08f1001 	add	r1, pc, r1
+   5d528:	e5d32120 	ldrb	r2, [r3, #288]	@ 0x120
+   5d52c:	ebff2cd1 	bl	28878 <_ZNK14QMessageLogger5debugEPKcz@plt>
+
+### 6) BaseCommIIC::updateCalibrateData() es llamado inmediatamente despues de updateBandEdge() ###
+
+root/usr/app_qt/x6200_ui_v100:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+0005d69c <_ZN10MainWidget25slot_basebandStateChangedEi+0x4fc>:
+   5d69c:	e1a0000b 	mov	r0, fp
+   5d6a0:	ebfffc95 	bl	5c8fc <_ZN10MainWidget20updateBasebandParamsEv>
+   5d6a4:	e1a0000b 	mov	r0, fp
+   5d6a8:	ebfff497 	bl	5a90c <_ZN10MainWidget14updateBandEdgeEv>
+   5d6ac:	e596037c 	ldr	r0, [r6, #892]	@ 0x37c
+   5d6b0:	eb0222da 	bl	e6220 <_ZN11BaseCommIIC19updateCalibrateDataEv>

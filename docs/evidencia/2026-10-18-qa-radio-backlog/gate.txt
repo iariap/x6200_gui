@@ -1,0 +1,2 @@
+OK: .tmp-backlog/x6200_gui es el firmware del port (ELF32 ARM, 13757724 B, 3/3 marcas)
+gate_exit=0

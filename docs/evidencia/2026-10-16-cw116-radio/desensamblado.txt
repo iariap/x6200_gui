@@ -1,0 +1,31 @@
+### libc __strdup (0x9f708): lr=0x9f714 es el retorno del blx strlen
+0009f708 <__strdup@@GLIBC_2.4>:
+   9f708:	e92d4070 	push	{r4, r5, r6, lr}
+   9f70c:	e1a05000 	mov	r5, r0
+   9f710:	fa00024a 	blx	a0040 <strlen@@GLIBC_2.4>
+   9f714:	e2804001 	add	r4, r0, #1
+   9f718:	e1a00004 	mov	r0, r4
+
+### libc strlen (Thumb, 0xa0040): pc=0xa0064 es el ldrd que lee [r1], r1 = r0 & ~7
+
+000a005c <strlen@@GLIBC_2.4+0x1c>:
+   a005c:	f04f 0400 	mov.w	r4, #0
+   a0060:	f06f 0007 	mvn.w	r0, #7
+   a0064:	e9d1 2300 	ldrd	r2, r3, [r1]
+   a0068:	f891 f040 	pld	[r1, #64]	; 0x40
+
+### x6200_gui cw_encoder_send (0x4da64): sp[5]=0x4dacc es el retorno del bl strdup
+
+0004dac0 <cw_encoder_send+0x5c>:
+   4dac0:	e1a00006 	mov	r0, r6
+   4dac4:	e28d6004 	add	r6, sp, #4
+   4dac8:	ebff3d0b 	bl	1cefc <strdup@plt>
+   4dacc:	e08f5005 	add	r5, pc, r5
+
+### x6200_gui dialog_msg_cw_beacon_cb (0x4737c): sp[21]=0x473cc es el retorno del bl cw_encoder_send
+000473bc <dialog_msg_cw_beacon_cb+0x40>:
+   473bc:	e5940000 	ldr	r0, [r4]
+   473c0:	ebff57ab 	bl	1d274 <lv_table_get_cell_value@plt>
+   473c4:	e3a01001 	mov	r1, #1
+   473c8:	eb0019a5 	bl	4da64 <cw_encoder_send>
+   473cc:	eb00201b 	bl	4f440 <buttons_unload_page>

@@ -1,0 +1,34 @@
+== Banco QEMU (gate #86) - editor DFL (#173, correccion) ==
+imagen:  x6200-buildroot
+volumen: x6200-build-output-dfl173 (privado del issue)
+chroot:  /home/pablo/desa/asf/state/dfl173-chroot
+qemu:    qemu-arm-static, QEMU_CPU=cortex-a7
+
+== captura final (USB-D) ==
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output-dfl173: ok
+  chroot /home/pablo/desa/asf/state/dfl173-chroot: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+OK: /home/pablo/desa/asf/state/dfl173-chroot/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13870048 B, 3/3 marcas)
+  el banco no contesta o la GUI no esta viva; reiniciando...
+  respuesta: {"t":"ok"}
+  captura: /tmp/opencode/dfl173enc/final.png (197 colores distintos)
+  version: 8d783dd7 DFL #173: la rueda ajusta la fila seleccionada (sin
+  fuente: md5 f1a21d6f8a02 (src/ + lvgl/src)
+  binario: md5 c8eda34bac1a   qemu-cpu: cortex-a7
+  captura util (18613 bytes)
+
+== sello de fuentes (#165) ==
+sello .fuente.md5 del chroot: f1a21d6f8a02732c5070bac3e28e8db2
+[User]	(664151.563, +664151563)	 boot_identity: fuente: f1a21d6f8a02732c5070bac3e28e8db2 (x6200_gui) 	(in main.c line #142)
+exe_md5 del binario que corrio:
+  exe_md5=c8eda34bac1a1ab71bd0af45e95e3489
+
+== crash.txt ==
+no hay crash.txt

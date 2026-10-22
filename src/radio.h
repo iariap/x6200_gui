@@ -54,6 +54,7 @@ uint16_t radio_change_moni(int16_t df);
 bool radio_change_spmode(int16_t df);
 
 void radio_change_mute();
+bool radio_is_muted();
 
 void radio_set_pwr(float d);
 
@@ -68,9 +69,29 @@ void radio_start_atu();
 bool radio_start_swrscan();
 void radio_stop_swrscan();
 
+/* Snapshot del estado del equipo (dial, modo, agc/pre/att y potencia) para las apps que lo mutan
+ * al abrirse: guardarlo al abrir y devolverlo al cerrar (issue #94). Lo llama el marco de
+ * dialogos; no toca la senal de RF, solo el estado. */
+void radio_state_save();
+void radio_state_restore();
+
 void radio_poweroff();
 void radio_set_ptt(bool tx);
-// void radio_set_modem(bool tx);
+void radio_set_modem(bool tx);
+
+/* The Settings "Charger" row: only On charges while running; Shadow charges when
+ * the radio is switched off (see radio_poweroff) */
+void radio_set_charger(radio_charger_t v);
+
+/* The X6200 control library has no TX filter or RX DSP on/off command (the
+ * X6100 one did). The JS8 app asks for both; they are accepted and ignored so
+ * the app works with the radio's own filter settings. */
+void radio_set_tx_filter(uint16_t low, uint16_t high);
+void radio_set_rx_dsp_off(bool off);
+
+/* The app asks for the speaker to follow the transmission; this GUI drives the
+ * playback volume itself, so the call is accepted and ignored. */
+void radio_speaker_play(bool on);
 
 
 int16_t radio_change_xit(int16_t d);

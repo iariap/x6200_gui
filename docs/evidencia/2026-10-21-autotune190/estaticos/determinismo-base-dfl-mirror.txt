@@ -1,0 +1,11 @@
+# Reproduccion en la revision BASE (02801c0c, sin mi cambio) de los dos fixtures que rompen el gate:
+# $ git archive 02801c0c | tar -x -C /tmp/opencode/base190 && cp -a lvgl/. /tmp/opencode/base190/lvgl/
+# $ docker run --rm --entrypoint bash --user $(id -u):$(id -g) -v /tmp/opencode/base190:/src -w /src/tools/ui_harness x6200-uiharness -lc '<cmake+make>'
+
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-lsb.scn --png /tmp/dfl-mirror-lsb.png --json /tmp/dfl-mirror-lsb.json
+exit=1
+dfl-mirror-lsb: el gesto colgado tras cambiar de modo toco el filtro (low=200 high=3525)
+
+$ ./ui_harness --scenario ../fixtures/dfl-mirror-usb.scn --png /tmp/dfl-mirror-usb.png --json /tmp/dfl-mirror-usb.json
+exit=1
+dfl-mirror-usb: el handle LOW no esta dibujado en x=37 (mejor columna x=-1, run=0)

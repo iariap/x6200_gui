@@ -1,0 +1,39 @@
+# settings-grupo-operation-tema-aurora: la pantalla real de Ajustes sobre la pantalla principal real, en el grupo
+# "Operation" de la grilla (src/dialog_settings.c). El camino es el del usuario:
+# main_screen_action(ACTION_APP_SETTINGS) -> dialog_construct(dialog_settings) y despues el tab
+# de la barra de abajo, que llama a settings_goto() (scroll + foco). La tabla de tabs/grupos y
+# la fila testigo que el arnes verifica estan en tools/ui_harness/src/screens.c (scenario_settle).
+# Es una de las paginas del esquema unico de la zona de controles (issue #175).
+#
+# Deterministic: the date/time fields read the harness' fixed clock, not the
+# host's (tools/ui_harness/CMakeLists.txt links with `--wrap=time`).
+
+name settings-grupo-operation-tema-aurora
+screen settings-grupo
+settings_grupo Operation
+theme Aurora
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

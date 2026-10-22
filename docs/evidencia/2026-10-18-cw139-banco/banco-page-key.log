@@ -1,0 +1,19 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output: ok
+  chroot /tmp/opencode/vfix3-cw139: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  aviso: el hash de los fuentes cambio, pero RECONSTRUIR=no: se prueba el binario que ya esta
+OK: /tmp/opencode/vfix3-cw139/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13778464 B, 3/3 marcas)
+  el banco no contesta o la GUI no esta viva; reiniciando...
+  respuesta: {"t":"ok"}
+  captura: docs/evidencia/2026-10-18-cw139-banco/02-banco-cw1.png (270 colores distintos)
+  version: edc67af2 CW (#139): auto-ajuste de los parametros del decodi
+  fuente: md5 20ed5d783084 (src/ + lvgl/src)
+  binario: md5 0236f2e221a1   qemu-cpu: cortex-a7
+  captura util (20581 bytes)

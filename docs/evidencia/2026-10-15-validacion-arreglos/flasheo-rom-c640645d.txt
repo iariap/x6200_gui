@@ -1,0 +1,24 @@
+FLASHEO DE LA ROM NUEVA - 2026-10-16 20:12
+
+imagen: sdcard.img 571473920 bytes md5 c640645d810c1488682668eae62204f3
+  (build: HEAD 223b30a; incluye #117 SWR parabolico, #110, #100, #92, #95, #99, #86)
+  init.d dentro del rootfs: solo ./etc/init.d/S20gui  (fix del #89)
+  GUI en la imagen: 13257128 bytes md5 e294229dd32d
+  lib en la imagen: md5 5ed07c1719f8
+
+flasheo: dd 571473920 bytes, 118 s, 4.6 MB/s
+verificacion por md5 leido de vuelta: c640645d810c1488682668eae62204f3 (IGUAL a la imagen)
+
+DATA: se re-declaro en el slot 3 desde el sector 1116160 (size 6628352, type 0x0c)
+  /proc/partitions: sda3 3314176 bloques (== 6628352 sectores)
+  contenido verificado desde el mount del host:
+    params.db 106496 bytes, 78 parametros
+    theme_name=Redshift  vol=66  swrscan_span=50000  nb=0
+    themes: Aurora Holo 'Material 3' Redshift RS Sprint Sunlit Trail
+    app_logs: 662 archivos
+
+NOTA: el md5 de los primeros 571 MB ahora es f1ac0dc42452fde034041319bae59dc2,
+distinto de la imagen, porque se reescribio el MBR (offset 478) para la DATA.
+
+PENDIENTE: poner la SD en la radio, prenderla y validar (GUI e294229dd32d, init.d S20gui,
+barrido de apps, y ver si el audio arranca: el race del #116 es bug de codigo).

@@ -1,0 +1,18 @@
+### after2: md5=5a6e561e502f15f65c0c32906c5deaa0
+$ x6200-remote '{"cmd":"app","text":"Field"}'
+{"t":"ok"}
+  estado: "app":"Field"
+  estado: "scr":"HOME"
+colores=792 bytes=27657
+$ x6200-remote '{"cmd":"field_screen","text":"BANDS"}'
+  estado: "scr":"BANDS"
+colores=329 bytes=25455
+$ x6200-remote '{"cmd":"field_screen","text":"SOTA"}'
+  estado: "scr":"PROG"
+colores=307 bytes=21331
+  errores 'Theme image' en la secuencia: 8
+      1 Theme image /usr/share/x6100/field/bands_64.png: No such file or directory
+      1 Theme image /usr/share/x6100/field/bands_96.png: No such file or directory
+      1 Theme image /usr/share/x6100/field/pota_96.png: No such file or directory
+      4 Theme image /usr/share/x6100/field/sota_64.png: No such file or directory
+      1 Theme image /usr/share/x6100/field/sota_96.png: No such file or directory

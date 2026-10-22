@@ -1,0 +1,7 @@
+# md5 y datos del binario que corrio el banco
+991bb0e2fabc26f7f7e2c803e8b40530  /tmp/opencode/vfix3-swr133/usr/sbin/x6200_gui
+bytes=13757724 mtime=2026-10-18 02:03:12.446566391 -0300
+gate #86:
+OK: /tmp/opencode/vfix3-swr133/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13757724 B, 3/3 marcas)
+HEAD: 33522a308e35fbdd75ab948cbe6053763b8b8d1e
+HEAD corto: 33522a30 fix(swrscan): el Stop repinta el chart (Stopped, curva congelada) sin tocar objetos muertos

@@ -14,6 +14,7 @@
 #include "lvgl/lvgl.h"
 #include "dialog.h"
 #include "styles.h"
+#include "theme.h"
 #include "params/params.h"
 #include "cfg/digital_modes.h"
 #include "radio.h"
@@ -35,8 +36,11 @@
 #include <ft8lib/message.h>
 #include "ft8/worker.h"
 #include "adif.h"
+#include "dxcc.h"
+#include "flags.h"
 #include "qso_log.h"
 #include "scheduler.h"
+#include "ft8_udp.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -90,6 +94,7 @@ typedef enum {
 typedef struct {
     ft8_cell_type_t cell_type;
     int16_t         dist;
+    int16_t         flag;       /* country flag of the station, -1 none */
     bool            odd;
     ftx_msg_meta_t  meta;
     char            text[64];
@@ -106,6 +111,33 @@ typedef struct {
 static ft8_state_t          state = RX_PROCESS;
 static bool                 tx_enabled=true;
 static bool                 cq_enabled=false;
+
+/* --- Remote control (the web /remote page) --------------------------------
+ * The server sends ft8_cq, ft8_stop, ft8_auto, ft8_hold, ft8_txfreq and
+ * ft8_reply. A reply has to name a decoded message, so the last ones are kept
+ * with an id (the same scheme as the X6100). */
+#define REMOTE_RX_N 64
+
+static struct {
+    int32_t        id;
+    bool           odd;
+    ftx_msg_meta_t meta;
+} remote_rx[REMOTE_RX_N];
+static int32_t         remote_rx_id;
+static pthread_mutex_t remote_rx_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+static void remote_rx_event(bool odd, const ftx_msg_meta_t *meta) {
+    pthread_mutex_lock(&remote_rx_mutex);
+    int32_t id = ++remote_rx_id;
+
+    remote_rx[id % REMOTE_RX_N].id   = id;
+    remote_rx[id % REMOTE_RX_N].odd  = odd;
+    remote_rx[id % REMOTE_RX_N].meta = *meta;
+    pthread_mutex_unlock(&remote_rx_mutex);
+}
+
+static void start_qso(cell_data_t *cell_data);
+
 static bool                 tx_time_slot;
 
 static ftx_tx_msg_t         tx_msg;
@@ -200,6 +232,81 @@ static dialog_t dialog = {
 
 dialog_t *dialog_ft8 = &dialog;
 
+/* ---- WSJT-X datagrams over UDP (ft8_udp.c, ported from the X6100 firmware) ----
+ * GridTracker, JTAlert, Log4OM and friends listen on UDP 2237. Status is sent
+ * whenever something they display changes (RX/TX, audio offset, dial frequency,
+ * station worked) and with every heartbeat: one 250 ms timer compares and sends.
+ * Configuration lives in /mnt/ft8_udp.conf (created with defaults on first run). */
+
+#define UDP_POLL_MS         250
+#define UDP_HEARTBEAT_POLLS 60      /* 15 s, as WSJT-X */
+
+static lv_timer_t *udp_timer;
+static uint32_t    udp_polls;
+static int         udp_last_state = -1;
+static int32_t     udp_last_df    = -1;
+static int64_t     udp_last_freq  = -1;
+static char        udp_last_dx[16];
+
+static const char *udp_mode_str(void) {
+    return params.ft8_protocol == FTX_PROTOCOL_FT8 ? "FT8" : "FT4";
+}
+
+/* The station being worked: the pending TX message starts with it
+ * ("DXCALL MYCALL ..."), but a CQ message does not identify a station yet. */
+static void udp_current_dx_call(char *out, size_t out_sz) {
+    size_t i = 0;
+
+    while (tx_msg.msg[i] && tx_msg.msg[i] != ' ' && i < out_sz - 1) {
+        out[i] = tx_msg.msg[i];
+        i++;
+    }
+
+    out[i] = '\0';
+
+    if (strcmp(out, "CQ") == 0) {
+        out[0] = '\0';
+    }
+}
+
+static void udp_status_send(void) {
+    char     dx_call[16];
+    int32_t  freq = subject_get_int(cfg_cur.fg_freq);
+    uint32_t df   = params.ft8_tx_freq.x;
+
+    udp_current_dx_call(dx_call, sizeof(dx_call));
+
+    ft8_udp_send_status((uint64_t)freq, udp_mode_str(), params.callsign.x, params.qth.x,
+                        dx_call, df, df, state == TX_PROCESS, state != TX_PROCESS);
+
+    udp_last_state = (int)state;
+    udp_last_df    = (int32_t)df;
+    udp_last_freq  = (int64_t)freq;
+
+    snprintf(udp_last_dx, sizeof(udp_last_dx), "%s", dx_call);
+}
+
+static void udp_timer_cb(lv_timer_t *t) {
+    char    dx_call[16];
+    int32_t freq = subject_get_int(cfg_cur.fg_freq);
+
+    (void)t;
+
+    if (++udp_polls >= UDP_HEARTBEAT_POLLS) {
+        udp_polls = 0;
+        ft8_udp_send_heartbeat();
+        udp_status_send();
+        return;
+    }
+
+    udp_current_dx_call(dx_call, sizeof(dx_call));
+
+    if ((int)state != udp_last_state || (int32_t)params.ft8_tx_freq.x != udp_last_df ||
+        (int64_t)freq != udp_last_freq || strcmp(dx_call, udp_last_dx) != 0) {
+        udp_status_send();
+    }
+}
+
 static void save_qso(const char *remote_callsign, const char *remote_grid, const int r_snr, const int s_snr) {
     time_t now = time(NULL);
 
@@ -217,6 +324,11 @@ static void save_qso(const char *remote_callsign, const char *remote_grid, const
 
     // Save QSO to sqlite log
     qso_log_record_save(qso);
+
+    /* To WSJT-X listeners (GridTracker, JTAlert...): structured QSO + ADIF */
+    ft8_udp_log_qso(now, qso.remote_call, remote_grid, (uint64_t)subject_get_int(cfg_cur.fg_freq),
+                    udp_mode_str(), s_snr, r_snr, (int)subject_get_float(cfg.pwr.val),
+                    params.callsign.x, params.qth.x);
 
     msg_schedule_text_fmt("QSO saved");
     lv_finder_clear_cursor(finder);
@@ -353,6 +465,39 @@ static void table_draw_part_begin_cb(lv_event_t * e) {
         uint32_t    col = dsc->id - row * lv_table_get_col_cnt(obj);
         cell_data_t *cell_data = lv_table_get_cell_user_data(obj, row, col);
 
+        /* The country flag sits in the row's left padding */
+        if (cell_data && cell_data->flag >= 0) {
+            const lv_img_dsc_t *img = flags_image(cell_data->flag);
+
+            /* draw_img puede faltar en el contexto de dibujo (LVGL lo deja en NULL para
+             * algunas pantallas): llamarlo igual mataba la GUI al redibujar la tabla, así
+             * que se avisa una vez y se sigue sin la bandera. */
+            if (dsc->draw_ctx && dsc->draw_ctx->draw_img == NULL) {
+                static bool avisado;
+
+                if (!avisado) {
+                    avisado = true;
+                    LV_LOG_WARN("El contexto de dibujo no tiene draw_img: las banderas no se "
+                                "dibujan (la GUI sigue)");
+                }
+            }
+
+            if (img && dsc->draw_ctx && dsc->draw_ctx->draw_img) {
+                lv_area_t a = *dsc->draw_area;
+
+                a.x1 += 4;
+                a.x2  = a.x1 + img->header.w - 1;
+                a.y1  = (a.y1 + a.y2) / 2 - img->header.h / 2;
+                a.y2  = a.y1 + img->header.h - 1;
+
+                lv_draw_img_dsc_t img_dsc;
+
+                lv_draw_img_dsc_init(&img_dsc);
+                img_dsc.opa = LV_OPA_COVER;
+                dsc->draw_ctx->draw_img(dsc->draw_ctx, &img_dsc, &a, img);
+            }
+        }
+
         dsc->rect_dsc->bg_opa = LV_OPA_50;
 
         if (cell_data == NULL) {
@@ -476,10 +621,18 @@ static void destruct_cb() {
     keyboard_close();
     worker_done();
 
+    /* After the decoder thread, which also sends datagrams */
+    if (udp_timer) {
+        lv_timer_del(udp_timer);
+        udp_timer = NULL;
+    }
+
+    ft8_udp_deinit();
+
     firdecim_crcf_destroy(decim);
     free(audio_buf);
 
-    mem_load(MEM_BACKUP_ID);
+    radio_state_restore();
 
     main_screen_lock_mode(false);
     main_screen_lock_ab(false);
@@ -608,7 +761,7 @@ static void construct_cb(lv_obj_t *parent) {
     waterfall = lv_waterfall_create(dialog.obj);
 
     lv_obj_add_style(waterfall, &waterfall_style, 0);
-    lv_obj_clear_flag(waterfall, LV_OBJ_FLAG_SCROLLABLE);
+    if (waterfall) lv_obj_clear_flag(waterfall, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_waterfall_set_palette(waterfall, (lv_color_t*)wf_palette, 256);
     lv_waterfall_set_size(waterfall, WIDTH, 325);
@@ -655,16 +808,25 @@ static void construct_cb(lv_obj_t *parent) {
 
     lv_obj_set_style_border_width(table, 0, LV_PART_ITEMS);
 
-    lv_obj_set_style_bg_opa(table, 192, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(table, lv_color_black(), LV_PART_MAIN);
+    /* Fondo de la tabla con el rol del tema y opaco: las celdas se pintan al 50% sobre el
+     * (table_draw_part_begin_cb) y con el negro fijo que habia antes cada tema daba un fondo
+     * distinto al que el chequeo WCAG mide (docs/HALLAZGOS.md 26). */
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(table, TC(panel), LV_PART_MAIN);
     lv_obj_set_style_border_width(table, 1, LV_PART_MAIN);
-    lv_obj_set_style_border_color(table, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_border_color(table, TC(panel_border), LV_PART_MAIN);
     lv_obj_set_style_border_opa(table, 128, LV_PART_MAIN);
 
-    lv_obj_set_style_text_color(table, lv_color_hex(0xC0C0C0), LV_PART_ITEMS);
+    /* El texto lo pinta el rol del tema, no un gris a mano: sobre las celdas de color (CQ,
+     * to_me, TX) el #C0C0C0 daba 2.33:1 en Outdoor. */
+    lv_obj_set_style_text_color(table, TC(text), LV_PART_ITEMS);
+    lv_obj_set_style_bg_opa(table, LV_OPA_TRANSP, LV_PART_ITEMS);
+    lv_obj_set_style_bg_color(table, TC(sel_bg), LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_bg_opa(table, LV_OPA_COVER, LV_PART_ITEMS | LV_STATE_FOCUSED);
+    lv_obj_set_style_text_color(table, TC(sel_text), LV_PART_ITEMS | LV_STATE_FOCUSED);
     lv_obj_set_style_pad_top(table, 3, LV_PART_ITEMS);
     lv_obj_set_style_pad_bottom(table, 3, LV_PART_ITEMS);
-    lv_obj_set_style_pad_left(table, 5, LV_PART_ITEMS);
+    lv_obj_set_style_pad_left(table, 26, LV_PART_ITEMS);   /* room for the flag */
     lv_obj_set_style_pad_right(table, 0, LV_PART_ITEMS);
 
     lv_table_set_cell_value(table, 0, 0, "Wait sync");
@@ -684,7 +846,7 @@ static void construct_cb(lv_obj_t *parent) {
 
     reload_buttons();
 
-    mem_save(MEM_BACKUP_ID);
+    radio_state_save();
     load_band(0);
 
     filter_low = subject_get_int(cfg_cur.filter.low);
@@ -703,6 +865,14 @@ static void construct_cb(lv_obj_t *parent) {
 
     /* Logger */
     ft8_log = adif_log_init("/mnt/ft_log.adi");
+
+    /* WSJT-X datagrams over UDP (GridTracker, JTAlert...): /mnt/ft8_udp.conf */
+    ft8_udp_init();
+    udp_polls      = 0;
+    udp_last_state = -1;
+    ft8_udp_send_heartbeat();
+    udp_status_send();
+    udp_timer = lv_timer_create(udp_timer_cb, UDP_POLL_MS, NULL);
 
     if (subject_get_float(cfg.pwr.val) > MAX_PWR) {
         radio_set_pwr(MAX_PWR);
@@ -896,39 +1066,58 @@ static void load_page(struct button_item_t *btn) {
     reload_buttons();
 }
 
+/* Start a QSO with a decoded message: the row press and the remote server's
+ * ft8_reply both come through here */
+static void start_qso(cell_data_t *cell_data) {
+    ftx_qso_processor_start_qso(qso_processor, &cell_data->meta, &tx_msg);
+
+    if (strlen(tx_msg.msg) > 0) {
+        lv_finder_set_cursor(finder, cell_data->meta.freq_hz);
+
+        if (!subject_get_int(cfg.ft8_hold_freq.val)) {
+            set_freq(cell_data->meta.freq_hz);
+        }
+
+        tx_time_slot = !cell_data->odd;
+        tx_enabled   = true;
+        reload_buttons();
+
+        /* The country, from the cty.dat that ships in the image */
+        const char *cty_name = NULL;
+        const char *cty_pfx  = NULL;
+
+        if (dxcc_lookup(cell_data->meta.call_de, &cty_name, &cty_pfx) && cty_name) {
+            add_info("Start QSO with %s (%s)", cell_data->meta.call_de, cty_name);
+        } else {
+            add_info("Start QSO with %s", cell_data->meta.call_de);
+        }
+        msg_schedule_text_fmt("Next TX: %s", tx_msg.msg);
+    } else {
+        msg_schedule_text_fmt("Invalid message");
+        tx_call_off();
+    }
+}
 static void cell_press_cb(lv_event_t * e) {
     if (state == TX_PROCESS) {
         tx_call_off();
+
+        return;
+    }
+
+    uint16_t row;
+    uint16_t col;
+
+    lv_table_get_selected_cell(table, &row, &col);
+
+    cell_data_t *cell_data = lv_table_get_cell_user_data(table, row, col);
+
+    if ((cell_data == NULL) ||
+        (cell_data->cell_type == CELL_TX_MSG) ||
+        (cell_data->cell_type == CELL_RX_INFO)
+    ) {
+        msg_schedule_text_fmt("What should I do about it?");
     } else {
-        uint16_t     row;
-        uint16_t     col;
-
-        lv_table_get_selected_cell(table, &row, &col);
-
-        cell_data_t  *cell_data = lv_table_get_cell_user_data(table, row, col);
-
-        if ((cell_data == NULL) ||
-            (cell_data->cell_type == CELL_TX_MSG) ||
-            (cell_data->cell_type == CELL_RX_INFO)
-        ) {
-            msg_schedule_text_fmt("What should I do about it?");
-        } else {
-            ftx_qso_processor_start_qso(qso_processor, &cell_data->meta, &tx_msg);
-            if (strlen(tx_msg.msg) > 0) {
-                lv_finder_set_cursor(finder, cell_data->meta.freq_hz);
-                if (!subject_get_int(cfg.ft8_hold_freq.val)) {
-                    set_freq(cell_data->meta.freq_hz);
-                }
-                tx_time_slot = !cell_data->odd;
-                tx_enabled = true;
-                reload_buttons();
-                add_info("Start QSO with %s", cell_data->meta.call_de);
-                msg_schedule_text_fmt("Next TX: %s", tx_msg.msg);
-            } else {
-                msg_schedule_text_fmt("Invalid message");
-                tx_call_off();
-            }
-        }
+        start_qso(cell_data);
     }
 }
 
@@ -1132,6 +1321,7 @@ static void add_rx_text(int16_t snr, const char * text, slot_info_t *s_info, flo
     ftx_msg_meta_t meta;
     meta.freq_hz = freq_hz;
     meta.time_sec = time_sec;
+    remote_rx_event(s_info->odd, &meta);
     char * old_msg = strdup(tx_msg.msg);
     ftx_qso_processor_add_rx_text(qso_processor, text, snr, &meta, &tx_msg);
 
@@ -1173,6 +1363,22 @@ static void add_rx_text(int16_t snr, const char * text, slot_info_t *s_info, flo
     strncpy(cell_data.text, text, sizeof(cell_data.text) - 1);
     cell_data.meta = meta;
     cell_data.odd = s_info->odd;
+
+    /* The country, for the flag next to the row */
+    cell_data.flag = -1;
+
+    {
+        const char *cty_name = NULL;
+        const char *cty_pfx  = NULL;
+
+        if (dxcc_lookup(meta.call_de, &cty_name, &cty_pfx) && cty_pfx) {
+            int idx = -1;
+
+            if (flags_index_of_prefix(cty_pfx, &idx)) {
+                cell_data.flag = (int16_t) idx;
+            }
+        }
+    }
     if (params.qth.x[0] != 0) {
         if (strlen(meta.grid) > 0) {
             double lat, lon;
@@ -1189,6 +1395,10 @@ static void add_rx_text(int16_t snr, const char * text, slot_info_t *s_info, flo
 
 static void received_message_cb(const char *text, int snr, float freq_hz, float time_sec, void *user_data) {
     slot_info_t *s_info = (slot_info_t *)user_data;
+
+    /* To WSJT-X listeners first (decoder thread; the socket is non-blocking) */
+    ft8_udp_send_decode(true, udp_mode_str(), text, snr, time_sec, (uint32_t)(freq_hz + 0.5f));
+
     add_rx_text(snr, text, s_info, freq_hz, time_sec);
 }
 
@@ -1279,4 +1489,60 @@ static void * decode_thread(void *arg) {
     }
 
     return NULL;
+}
+
+/* --- Remote control: the commands the server sends ----------------------- */
+
+void dialog_ft8_remote(const char *cmd, int32_t val, const char *text) {
+    (void) text;
+
+    if (!strcmp(cmd, "ft8_cq")) {
+        if ((val != 0) != cq_enabled) {
+            tx_cq_en_dis_cb(NULL);
+        }
+    } else if (!strcmp(cmd, "ft8_stop")) {
+        tx_call_off();
+        cq_enabled     = false;
+        tx_msg.msg[0]  = '\0';
+    } else if (!strcmp(cmd, "ft8_auto")) {
+        if ((val != 0) != params.ft8_auto.x) {
+            mode_auto_cb(NULL);
+        }
+    } else if (!strcmp(cmd, "ft8_hold")) {
+        if ((val != 0) != (subject_get_int(cfg.ft8_hold_freq.val) != 0)) {
+            hold_tx_freq_cb(NULL);
+        }
+    } else if (!strcmp(cmd, "ft8_txfreq")) {
+        set_freq(limit(val, filter_low,
+                       filter_high - (params.ft8_protocol == FTX_PROTOCOL_FT8 ? FT8_WIDTH_HZ : FT4_WIDTH_HZ)));
+    } else if (!strcmp(cmd, "ft8_reply")) {
+        cell_data_t cd = { .cell_type = CELL_RX_MSG };
+        bool        found;
+
+        pthread_mutex_lock(&remote_rx_mutex);
+        found = remote_rx[val % REMOTE_RX_N].id == val;
+
+        if (found) {
+            cd.odd  = remote_rx[val % REMOTE_RX_N].odd;
+            cd.meta = remote_rx[val % REMOTE_RX_N].meta;
+        }
+
+        pthread_mutex_unlock(&remote_rx_mutex);
+
+        if (found) {
+            start_qso(&cd);
+        } else {
+            msg_update_text_fmt("FT8: that message is too old");
+        }
+    } else if (!strcmp(cmd, "app_base")) {
+        load_band(0);
+    }
+}
+
+int dialog_ft8_remote_state(char *buf, size_t size) {
+    return snprintf(buf, size,
+                    "{\"cq\":%i,\"txen\":%i,\"txing\":%i,\"auto\":%i,\"hold\":%i,\"txfreq\":%i,\"base\":%i}",
+                    cq_enabled ? 1 : 0, tx_enabled ? 1 : 0, state == TX_PROCESS,
+                    params.ft8_auto.x, subject_get_int(cfg.ft8_hold_freq.val) != 0,
+                    params.ft8_tx_freq.x, (int) cfg_digital_freq_get());
 }

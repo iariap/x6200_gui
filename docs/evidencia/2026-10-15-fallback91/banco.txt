@@ -1,0 +1,27 @@
+Banco (tools/captura-banco.sh, CHROOT=.vfix3, RECONSTRUIR=no, QEMU cortex-a7)
+version ea1cd8b, binario md5 bb40ea94dedd, fuente md5 8cd56acbe053
+
+OJO: estas capturas son de la base 5e252dfb, ANTES del #74 (cuando `Outdoor` todavia era un
+built-in y el default de la coleccion era `IU1WXY`). Se conservan como el registro del repro.
+En el trunk rebasado (7032d3bb, con #103) `theme_name=Outdoor` migra a `Aurora` y el fallback
+cae al default completo: ver docs/fallback91.md §1/§2 y
+docs/evidencia/2026-10-15-themes-removal-74/gates.txt (la migracion medida sobre el binario
+real). El banco no se re-corrio en esta pasada: el volumen x6200-build-output esta compartido
+con otros contenedores del host.
+
+params.db (mnt/params.db, tabla params, name=theme_name):
+
+  theme_name ausente (default IU1WXY en esa base) -> banco-default-iu1wxy.png
+      bg (39,49,58) = #27313A = IU1WXY (oscuro). 330 colores.
+  theme_name = "Outdoor"             -> banco-tema-outdoor.png
+      bg #FFFFFF (160855 px) + bar #F2F2F2 (6425 px) = Outdoor (claro) -> "lavado".
+      Reproduce la captura de la radio (13-tras-fix89.png: #FFFFFF + #F2F2F2).
+  theme_name = "no-such-theme-91"    -> banco-tema-invalido.png
+      log: "Theme no-such-theme-91 not found, using IU1WXY".
+      PNG byte-identico a banco-default-iu1wxy.png (mismo md5): el fallback deja el
+      default COMPLETO, sin estado mitad-y-mitad ni redibujo raro.
+
+CPU (proxy): `docker stats` del contenedor banco-apps, 3 muestras de 3 s:
+  Outdoor  ~100.6%   IU1WXY ~100.7%
+  QEMU satura el core del host en los dos: no separa (el A33 real no se modela).
+  El ~1,2 nucleos de la radio queda para la radio (ver docs/fallback91.md §5).

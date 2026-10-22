@@ -689,6 +689,21 @@ void mfk_update(int16_t diff, bool voice) {
             }
             break;
 
+        case MFK_CW_DECODER_AUTO:
+            b = subject_get_int(cfg.cw_decoder_auto.val);
+            if (diff) {
+                b = !b;
+                subject_set_int(cfg.cw_decoder_auto.val, b);
+            }
+            msg_update_text_fmt("#%3X CW auto tune: %s", color, b ? "On" : "Off");
+
+            if (diff) {
+                voice_say_bool("CW auto tune", b);
+            } else if (voice) {
+                voice_say_text_fmt("CW auto tune switcher");
+            }
+            break;
+
         case MFK_CW_DECODER_PEAK_BETA:
             f = subject_get_float(cfg.cw_decoder_peak_beta.val);
             if (diff) {
@@ -775,6 +790,10 @@ void mfk_change_mode(int16_t dir) {
     mfk_update(0, true);
 }
 
+extern "C" mfk_mode_t mfk_get_mode(void) {
+    return mfk_mode;
+}
+
 void mfk_set_mode(mfk_mode_t mode) {
     mfk_mode = mode;
     mfk_state = MFK_STATE_EDIT;
@@ -790,4 +809,9 @@ template <typename T> static T loop_items(std::vector<T> items, T cur, bool next
     }
     id = (id + len + (next ? 1 : -1)) % len;
     return items[id];
+}
+
+/* Accepted for the ported app dialogs; see the note in mfk.h */
+extern "C" void mfk_set_ctrl(int ctrl) {
+    (void) ctrl;
 }

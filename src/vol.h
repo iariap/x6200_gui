@@ -35,3 +35,9 @@ typedef enum {
 void vol_update(int16_t diff, bool voice);
 void vol_change_mode(int16_t dir);
 void vol_set_mode(vol_mode_t mode);
+
+/* The mode the encoder is on (the apps draw their own knob tags) */
+vol_mode_t vol_get_mode(void);
+
+/* The X6100's name for choosing the control the encoder is on */
+void vol_change_ctrl(int16_t dir);

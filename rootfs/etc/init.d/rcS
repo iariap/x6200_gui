@@ -1,0 +1,53 @@
+#!/bin/sh
+#
+# Corre los scripts de arranque en orden y anota dos cosas en /mnt/app_logs/:
+#
+#   boot_scripts.log   cuanto tarda cada script (antes no se sabia: ver docs/HALLAZGOS.md 9)
+#   (lo demas lo escriben los propios scripts y la GUI)
+#
+# Es el rcS de buildroot con la medicion agregada y con la prioridad de los scripts que corren
+# despues de la GUI. El original esta en el buildroot del proyecto
+# (buildroot/package/busybox/skeleton/etc/init.d/rcS): si se actualiza el buildroot, hay que
+# volver a traerlo. La copia original de la radio queda en /etc/init.d/rcS.orig.
+#
+BOOT_SCRIPTS_LOG=/mnt/app_logs/boot_scripts.log
+
+marca() {
+    mkdir -p /mnt/app_logs 2>/dev/null
+    printf '%s %s\n' "$(cut -d' ' -f1 /proc/uptime 2>/dev/null)" "$*" >> "$BOOT_SCRIPTS_LOG" 2>/dev/null
+}
+
+marca "== arranque: empiezan los scripts =="
+
+for i in /etc/init.d/S??* ;do
+
+     # Ignore dangling symlinks (if any).
+     [ ! -f "$i" ] && continue
+
+     marca "inicio $(basename "$i")"
+
+     case "$i" in
+	*.sh)
+	    # Source shell script for speed.
+	    (
+		trap - INT QUIT TSTP
+		set start
+		. $i
+	    )
+	    ;;
+	*)
+	    # No sh extension, so fork subprocess.
+	    #
+	    # Se probo correr los scripts posteriores a la GUI con `nice -n 19` para que no le
+	    # peleen la CPU mientras dibuja el primer cuadro. Medido (una muestra por lado):
+	    # `GUI lista` 6,9 -> 6,7 s, dentro del rango de 6,6-7,2 s que se ve entre arranques, y
+	    # los scripts secundarios terminaban ~1 s mas tarde. Con esa evidencia no se sostiene:
+	    # se dejo como estaba.
+	    "$i" start
+	    ;;
+    esac
+
+    marca "fin    $(basename "$i")"
+done
+
+marca "== arranque: terminaron los scripts =="

@@ -1,0 +1,23 @@
+== Banco QEMU (gate #86) — editor DFL (#173 PR 2) ==
+imagen:  x6200-buildroot
+volumen: x6200-build-output-dfl173  (privado del issue)
+chroot:  /home/pablo/desa/asf/state/dfl173-chroot
+qemu:    qemu-arm-static, QEMU_CPU=cortex-a7
+
+gate fail-closed firmware del port: OK (ELF32 ARM, 13869700 B, 3/3 marcas)
+version: c9428204 DFL #173 (PR 2): el editor entra por el dispatcher
+fuente:  md5 29f0e8f882cc   (src/ + lvgl/src)
+binario: md5 7b623b231417
+boot_identity (main.c:142): fuente: 29f0e8f882ccf39f2cbb55ef3a983176
+sello .fuente.md5 (volumen): 29f0e8f882ccf39f2cbb55ef3a983176   -> COINCIDE
+crash.txt: no
+
+capturas (carpeta banco/):
+  banco-usbd-aurora-oscuro.png  tema Aurora (oscuro), modo USB-D, 225/3525/3300 Hz
+  banco-lsbd-aurora-oscuro.png  tema Aurora (oscuro), modo LSB-D, 225/3525/3300 Hz
+  banco-usbd-sunlit-claro.png   tema Sunlit (claro),  modo USB-D, 225/3525/3300 Hz
+
+apertura del editor por control remoto:
+  {"cmd":"app","text":"DFLEditor"}  -> {"t":"ok"}
+  (mismo camino que el webserver; el editor tambien se abre por la quinta celda
+   de la pagina DFL y por el long press fisico DFL)

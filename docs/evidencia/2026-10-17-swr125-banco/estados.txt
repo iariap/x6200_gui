@@ -1,0 +1,44 @@
+# Banco QEMU (issue #125) — respuestas del control remoto, tal como salieron.
+# Binario: md5 a931216d9592 (13.753.312 B, "es el firmware del port", 3/3 marcas)
+# Fuente: src/ + lvgl/src md5 31e3f713ca17 · QEMU_CPU cortex-a7
+# Comandos (dentro del contenedor banco-apps, como documenta el skill):
+#   docker exec banco-apps sh -c 'chroot /t /tmp/x6200-remote "<cmd>"'
+
+## abrir la app ({"cmd":"app","text":"SWRScan"}) -> {"t":"ok"}
+## captura 01-swrscan-abierto.png: "Idle", "sin datos medidos", boton "Run",
+## "Passes: 1" (el binario de la ROM NO habilita la multipasada)
+
+## Run: {"cmd":"btn","val":0} -> {"t":"ok"}
+## estado 1.2 s despues de Run ({"cmd":"get"}):
+{"t":"state","vfo":"A","freq":21250000,"freq_bg":21010000,"mode":"LSB","band":"15m","filter":2670,"flo":230,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":50,"db":-121,"tx":true,"app":"SWRScan","ax":{},"cwt":null,"logrev":0,"did":""}
+## captura 02-barriendo.png: "Scanning pass 1/1  p 1/51", el boton ahora dice "Stop"
+
+## El barrido arranco de verdad (tx=true, la radio quedo en el modo del barrido: LSB),
+## pero el banco no tiene radio: no hay paquetes del flow y el VFO no se mueve
+## (sigue en 21.250.000). La sesion queda en "p 1/51".
+
+## Crash: NO (no existe crash.txt ni en el chroot ni en el tmp/).
+##   ls $CHROOT/crash.txt -> No such file or directory
+
+## Watchdog de estancamiento: NO se disparo en el banco, y esta medido por que.
+##   grep -c "Flow reset" $CHROOT/out-banco.txt -> 0
+## "Flow reset" es la unica marca del camino SIN paquetes de radio_tick()
+## (src/radio.c, el else de x6200_flow_read). Con 0 ocurrencias, ese camino no
+## corrio nunca en el banco: x6200_flow_read() no devuelve false sin equipo, asi
+## que el hilo de la radio no llega al else y dialog_swrscan_poll() no corre.
+## En la radio real, cuando el flow deja de mandar paquetes, ese else SI corre
+## (es el camino que el watchdog usa); la logica esta cubierta por el test nativo
+## sobre el reloj virtual (tests/native/test_swrscan_multipass.c). requires-radio.
+
+## Stop por el control remoto con el barrido corriendo: la orden se DESCARTA.
+## Es el hallazgo ya documentado del #119 (docs/evidencia/2026-10-16-roe119-banco/README.md):
+## apply_cmd() (src/remote_server.cpp) solo deja pasar los comandos de parada
+## mientras la radio transmite, y "btn" no es uno de ellos. Por eso el camino
+## Stop/cierre no se puede ejercitar por el control remoto: queda cubierto por el
+## test nativo (stop parcial) y por el fixture swrscan-3pass-stop del arnes de UI.
+
+## Nota de convivencia: el banco es compartido. Una sesion concurrente del mismo
+## arnes (worktree cw-tune-122, issue #122) volvio a levantar el contenedor
+## banco-apps en medio de esta corrida y lo sigue usando; por eso las capturas
+## 01/02 se tomaron con el contenedor propio y NO se borro el contenedor al final
+## (habria cortado la corrida ajena).

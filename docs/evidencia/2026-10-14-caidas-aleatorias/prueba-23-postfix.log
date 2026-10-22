@@ -1,0 +1,86 @@
+== prueba de apps contra 192.168.18.67 ==
+  uptime inicial: 37938.52 s
+  FT8        ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  FT4        ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  JS8        ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  WSPR       ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  SSTV       ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  WeFax      ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  NavTex     ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  RTTY       ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  CW         ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  Field      ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  GPS        ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  Bands      ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  Settings   ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  BT         ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  About      ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  Cluster    ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  CwTrainer  SE CAYO Y VOLVIO LA GUI (pid 26267 -> 28038) (abre: {"t":"ok"}, cierra: {"t":"ok"})
+      volvio con uptime 38231.89 s
+      -rwxr-xr-x    1 root     root        366576 Oct 14 11:40 boot.log
+      -rwxr-xr-x    1 root     root          4922 Oct 14 01:03 boot_scripts.log
+      -rwxr-xr-x    1 root     root          1036 Oct 14 11:39 bt.log
+      -rwxr-xr-x    1 root     root        108688 Oct 14 11:40 voice.log
+      -rwxr-xr-x    1 root     root        262566 Oct 14 11:40 x6200_log_2026-10-14_11-40-37.txt
+      --- ultimas lineas de boot.log ---
+        radio          38224.2 s de uptime  (+0.22 s)
+        cat/qso_log    38224.3 s de uptime  (+0.07 s)
+        wfview         38224.3 s de uptime  (+0.00 s)
+        control remoto 38224.3 s de uptime  (+0.00 s)
+      GUI lista: 38224.3 s
+  Eq         SE CAYO Y VOLVIO LA GUI (pid 28038 -> 28174) (abre: {"t":"ok"}, cierra: {"t":"ok"})
+      volvio con uptime 38258.29 s
+      -rwxr-xr-x    1 root     root          4922 Oct 14 01:03 boot_scripts.log
+      -rwxr-xr-x    1 root     root          1036 Oct 14 11:39 bt.log
+      -rwxr-xr-x    1 root     root        108910 Oct 14 11:41 voice.log
+      -rwxr-xr-x    1 root     root        262566 Oct 14 11:40 x6200_log_2026-10-14_11-40-37.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 11:41 x6200_log_2026-10-14_11-41-05.txt
+      --- ultimas lineas de boot.log ---
+        radio          38251.8 s de uptime  (+0.23 s)
+        cat/qso_log    38251.9 s de uptime  (+0.08 s)
+        wfview         38251.9 s de uptime  (+0.00 s)
+        control remoto 38251.9 s de uptime  (+0.00 s)
+      GUI lista: 38252.0 s
+  Status     SE CAYO Y VOLVIO LA GUI (pid 28174 -> 28287) (abre: {"t":"ok"}, cierra: {"t":"ok"})
+      volvio con uptime 38286.22 s
+      -rwxr-xr-x    1 root     root          1036 Oct 14 11:39 bt.log
+      -rwxr-xr-x    1 root     root        109078 Oct 14 11:41 voice.log
+      -rwxr-xr-x    1 root     root        262566 Oct 14 11:40 x6200_log_2026-10-14_11-40-37.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 11:41 x6200_log_2026-10-14_11-41-05.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 11:41 x6200_log_2026-10-14_11-41-31.txt
+      --- ultimas lineas de boot.log ---
+        radio          38277.5 s de uptime  (+0.23 s)
+        cat/qso_log    38277.6 s de uptime  (+0.08 s)
+        wfview         38277.6 s de uptime  (+0.00 s)
+        control remoto 38277.6 s de uptime  (+0.00 s)
+      GUI lista: 38277.7 s
+  QTH        ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+  Callsign   SE CAYO Y VOLVIO LA GUI (pid 28287 -> 28444) (abre: {"t":"ok"}, cierra: {"t":"ok"})
+      volvio con uptime 38332.59 s
+      -rwxr-xr-x    1 root     root        109246 Oct 14 11:42 voice.log
+      -rwxr-xr-x    1 root     root        262566 Oct 14 11:40 x6200_log_2026-10-14_11-40-37.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 11:41 x6200_log_2026-10-14_11-41-05.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 11:41 x6200_log_2026-10-14_11-41-31.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 11:42 x6200_log_2026-10-14_11-42-08.txt
+      --- ultimas lineas de boot.log ---
+        radio          38314.4 s de uptime  (+0.23 s)
+        cat/qso_log    38314.5 s de uptime  (+0.07 s)
+        wfview         38314.5 s de uptime  (+0.00 s)
+        control remoto 38314.5 s de uptime  (+0.00 s)
+      GUI lista: 38314.6 s
+  Recorder   SE CAYO Y VOLVIO LA GUI (pid 28444 -> 28571) (abre: {"t":"ok"}, cierra: {"t":"ok"})
+      volvio con uptime 38358.94 s
+      -rwxr-xr-x    1 root     root        262566 Oct 14 11:40 x6200_log_2026-10-14_11-40-37.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 11:41 x6200_log_2026-10-14_11-41-05.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 11:41 x6200_log_2026-10-14_11-41-31.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 11:42 x6200_log_2026-10-14_11-42-08.txt
+      -rwxr-xr-x    1 root     root         15692 Oct 14 11:42 x6200_log_2026-10-14_11-42-35.txt
+      --- ultimas lineas de boot.log ---
+        radio          38341.5 s de uptime  (+0.22 s)
+        cat/qso_log    38341.6 s de uptime  (+0.07 s)
+        wfview         38341.6 s de uptime  (+0.00 s)
+        control remoto 38341.6 s de uptime  (+0.00 s)
+      GUI lista: 38341.7 s
+  WiFi       ok                                           (abre: {"t":"ok"}, cierra: {"t":"ok"})
+== fin (detalle en /home/pablo/desa/x6200/x6200_gui/prueba-23-postfix.log) ==

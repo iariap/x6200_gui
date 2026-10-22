@@ -1,0 +1,14 @@
+== 2026-10-18T01:36:46-03:00 (red 2.4 GHz, host 192.168.18.68/24) ==
+radio conocida 192.168.18.67:
+PING 192.168.18.67 (192.168.18.67) 56(84) bytes of data.
+
+--- 192.168.18.67 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1014ms
+
+
+ssh:
+ssh: connect to host 192.168.18.67 port 22: No route to host
+rc=255
+
+hosts con puerto 22 en 192.168.18.0/24:
+(fin)

@@ -120,14 +120,13 @@ typedef enum {
 //  LV_KEY_DEL              = 127,
 } keys_t;
 
-extern uint32_t EVENT_ROTARY;
+extern uint32_t EVENT_ROTARY_ENHANCED;
 extern uint32_t EVENT_KEYPAD;
 extern uint32_t EVENT_HKEY;
 extern uint32_t EVENT_RADIO_TX;
 extern uint32_t EVENT_RADIO_RX;
 extern uint32_t EVENT_SCREEN_UPDATE;
 extern uint32_t EVENT_MSG_UPDATE;
-extern uint32_t EVENT_GPS;
 extern uint32_t EVENT_BAND_UP;
 extern uint32_t EVENT_BAND_DOWN;
 
@@ -136,3 +135,25 @@ void event_init();
 void event_obj_check();
 void event_send(lv_obj_t *obj, lv_event_code_t event_code, void *param);
 void event_send_key(int32_t key);
+
+/* --- Instrumentacion de la cola de eventos (#111) -------------------------
+ * La cola descarta eventos cuando el productor supera al consumidor. Estos
+ * contadores (solo numeros: nunca el contenido de un evento) fundan quien
+ * satura la cola y acotan el log del descarte, que antes escribia una linea
+ * por evento perdido (issue #111: ~2,4 lineas/s sostenidas en la SD). */
+
+typedef struct {
+    uint32_t    pending;    /* eventos encolados sin procesar en este momento */
+    uint32_t    peak;       /* ocupacion pico de la cola desde el ultimo reset */
+    uint32_t    capacity;   /* capacidad util de la cola (QUEUE_SIZE - 1) */
+    uint32_t    dropped;    /* eventos descartados (cola llena o sin memoria) */
+} event_queue_stats_t;
+
+void     event_queue_stats_get(event_queue_stats_t *out);
+uint32_t event_queue_drops_of(uint32_t event_code);
+void     event_queue_stats_reset(void);
+
+/* Ultimo evento procesado por el loop de la GUI (issue #121): numero y nombre
+ * corto. Sin heap: el nombre es una constante. */
+uint32_t    event_last_code(void);
+const char *event_last_name(void);

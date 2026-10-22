@@ -1,0 +1,17 @@
+# Binario ARM real bajo qemu-arm-static (issue #192): no hay chroot del banco en este entorno,
+# asi que se corre el x6200_bootanim ARM con el MISMO shim de framebuffer sintetico que usa el gate de host,
+# pero compilado para ARM y linkeado dentro del binario de prueba (LD_PRELOAD no sirve: lo aplicaria a qemu,
+# que es x86_64). El binario que se prueba es el MISMO codigo (src/bootanim/**) que se instala en la imagen.
+#
+# comando (imagen x6200-buildroot, con el sysroot del volumen y qemu-arm-static del host):
+#   arm-gcc ... -o x6200_bootanim_arm_test src/bootanim/{renderer.c,fb.c,main.c} tests/bootanim/fake_fb.c
+#   head -c 819200 /dev/zero | tr '\0' '\132' > fb-arm.bin      # 0x5A: mismo patron que el volcado esperado
+#   BA_TEST_FB=/out/fb-arm.bin BA_TEST_BPP=16 BA_TEST_PAD=64 BA_TEST_SPEED=100 qemu-arm-static -L sysroot ...
+/out/x6200_bootanim_arm_test: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, with debug_info, not stripped
+== corrida completa (reloj acelerado 100x: 30 s de animacion en ~0,3 s) ==
+x6200_bootanim: fuente qemu-arm
+exit=0
+== cuadro final (colores del contrato) ==
+ 82 08 82 08 82 08 82 08
+== comparacion byte a byte contra el oraculo del host (mismo geometry) ==
+IDENTICO (819200 bytes)

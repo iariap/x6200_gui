@@ -1,0 +1,38 @@
+# main-tema-aurora-agua: the Aurora theme on the waterfall-in-movement state of
+# main-espectro-agua (peaks on, the centre line drawn, spectrum filled). It is
+# the same radio state as that fixture with the theme as the only variable, so
+# the waterfall carries Aurora's own 256-colour table (theme.c make_palette over
+# the JSON `waterfall` stops: deep aubergine -> indigo -> lavender -> turquoise ->
+# coral) and the band plan / spectrum are read against it.
+
+name main-tema-aurora-agua
+screen main
+
+theme Aurora
+seed 7
+spectrum_peak true
+waterfall_center_line true
+spectrum_filled true
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -90
+
+battery_v 12.3
+external_v 13.8
+battery_cap 84
+charging false
+
+rxtx rx

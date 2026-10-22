@@ -1,0 +1,50 @@
+barrido #125: 51 puntos por span, paso adaptado, presupuesto 1785 ms de UNA pasada
+  span  50000 Hz -> 51 puntos, paso  1000 Hz, 1785 ms de barrido
+  span 100000 Hz -> 51 puntos, paso  2000 Hz, 1785 ms de barrido
+  span 200000 Hz -> 51 puntos, paso  4000 Hz, 1785 ms de barrido
+  span 500000 Hz -> 51 puntos, paso 10000 Hz, 1785 ms de barrido
+  potencia del barrido: 0.1 W (1 decimas: el piso del control del equipo)
+#119 forma dibujada (dataset real de 496 puntos, 51 muestras del barrido):
+  paso maximo entre puntos dibujados: 1 px (la escalera del #104 da 8 px)
+  caida maxima a la izquierda/derecha del valle: 0 / 0 px (escalera: decenas)
+  valle dibujado en la muestra 48.88, minimo medido en la muestra 11 (delta 37.88)
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:876: dialog_swrscan_remote_state(state, sizeof(state)) > 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:877: strstr(state, "\"swrscan_state\":\"Idle\"") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:878: strstr(state, "\"points\":51") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:879: strstr(state, "\"swrscan_tx\":false") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:895: dialog_swrscan_remote_run(true) == true
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:896: swrscan_stub_started() == 1
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:897: swrscan_stub_freq_count() == 1
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:899: strcmp(run->label, "Stop") == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:900: strstr(dialog_swrscan_state_text(), "Scanning") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:902: dialog_swrscan_remote_state(state, sizeof(state)) > 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:903: strstr(state, "\"swrscan_state\":\"Scanning\"") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:904: strstr(state, "\"passes\":1") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:905: strstr(state, "\"pass\":1") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:906: strstr(state, "\"points\":51") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:907: strstr(state, "\"swrscan_tx\":true") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:912: dialog_swrscan_remote_run(true) == true
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:913: swrscan_stub_started() == 1
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:915: strcmp(run->label, "Stop") == 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:922: radio_get_state() == RADIO_SWRSCAN
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:924: dialog_swrscan_remote_run(false) == true
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:925: swrscan_stub_stopped() == 1
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:928: strstr(dialog_swrscan_state_text(), "Stopped") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:929: swrscan_stub_freq(swrscan_stub_freq_count() - 1) == center
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:931: dialog_swrscan_remote_state(state, sizeof(state)) > 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:932: strstr(state, "\"swrscan_state\":\"Stopped\"") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:933: strstr(state, "\"swrscan_tx\":false") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:938: dialog_swrscan_remote_run(false) == true
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:942: dialog_swrscan_remote_run(true) == true
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:943: swrscan_stub_started() == 2
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:949: strstr(dialog_swrscan_state_text(), "Completed") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:950: dialog_swrscan_remote_state(state, sizeof(state)) > 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:951: strstr(state, "\"swrscan_state\":\"Completed\"") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:952: strstr(state, "\"swrscan_tx\":false") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:956: dialog_swrscan_remote_run(false) == true
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:986: strstr(dialog_swrscan_state_text(), "Error") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:987: dialog_swrscan_remote_state(state, sizeof(state)) > 0
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:988: strstr(state, "\"swrscan_state\":\"Error\"") != NULL
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:996: dialog_swrscan_remote_run(true) == true
+FALLO /home/pablo/desa/asf/state/worktrees/x6200/swrscan-remote-133/tests/native/test_swrscan.c:997: swrscan_stub_started() == started_before + 1
+457 comprobaciones, 39 fallos

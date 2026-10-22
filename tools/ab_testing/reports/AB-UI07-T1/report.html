@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>A/B report AB-UI07-T1</title>
+<style>body{font-family:system-ui,sans-serif;margin:2rem;max-width:60rem}table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{border:1px solid #ccc;padding:.35rem .6rem;text-align:left;font-size:.92rem}img{max-width:100%;border:1px solid #ccc;margin:.4rem 0}.pill{padding:.2rem .7rem;border-radius:1rem;color:#fff;font-weight:600}</style>
+</head><body>
+<h1>A/B UI report — AB-UI07-T1</h1>
+<p><span class="pill" style="background:#1b7f3b">PASS</span> exit 0</p>
+<ul>
+<li>Date: 2026-10-14</li>
+<li>A: <code>d9c63b2d92b5d685396276d877c1df79ecd46845</code></li>
+<li>B: <code>d9c63b2d92b5d685396276d877c1df79ecd46845</code></li>
+<li>Docker image: <code>x6200-uiharness</code></li>
+<li>Scenarios: bench-render, dialog-about, home-bateria-externa, home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco, main-otro-tema, main-tema-classic, main-tema-holo, main-tema-material-3, main-tema-outdoor-negative, main-tema-rs, main-tema-vision, main-tema-vision-cwr, main-tema-vision-usbd, main-tx-simulado</li>
+</ul>
+<h2>Gates</h2>
+<table><tr><th>Gate</th><th>Required</th><th>Status</th><th>Summary</th></tr>
+<tr><td>Functional</td><td>yes</td><td>PASS</td><td>18 scenarios captured on both revisions</td></tr>
+<tr><td>Visual Regression</td><td>yes</td><td>PASS</td><td>captures are pixel-identical to the baseline</td></tr>
+<tr><td>Quality Contract</td><td>yes</td><td>PASS</td><td>180 contract checks passed on the candidate</td></tr>
+<tr><td>Performance</td><td>yes</td><td>PASS</td><td>render-cost proxy within budget</td></tr>
+<tr><td>Hardware</td><td>advisory</td><td>BLOCKED</td><td>no physical X6200 attached; hardware behaviour is not measured</td></tr>
+<tr><td>Energy</td><td>advisory</td><td>BLOCKED</td><td>no power measurement; energy evidence must be physical</td></tr>
+</table>
+<h2>Visual diff</h2>
+<table><tr><th>Scenario</th><th>Changed px</th><th>Area</th><th>Regions</th></tr>
+<tr><td>bench-render</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>dialog-about</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>home-bateria-externa</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>home-frecuencia-extrema</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>home-usb-20m</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-bateria-baja</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-espectro-agua</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-foco</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-otro-tema</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-classic</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-holo</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-material-3</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-outdoor-negative</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-rs</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-vision</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-vision-cwr</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tema-vision-usbd</td><td>0</td><td>0.000%</td><td>—</td></tr>
+<tr><td>main-tx-simulado</td><td>0</td><td>0.000%</td><td>—</td></tr>
+</table>
+<h2>Coverage (declared by the harness)</h2>
+<table><tr><th>Scenario</th><th>REAL</th><th>PARTIAL</th><th>SYNTHETIC</th><th>UNSUPPORTED</th></tr>
+<tr><td>bench-render</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>dialog-about</td><td>16</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>home-bateria-externa</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>home-frecuencia-extrema</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>home-usb-20m</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-bateria-baja</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-espectro-agua</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-foco</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-otro-tema</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-tema-classic</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-tema-holo</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-tema-material-3</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-tema-outdoor-negative</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-tema-rs</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-tema-vision</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-tema-vision-cwr</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-tema-vision-usbd</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>main-tx-simulado</td><td>14</td><td>4</td><td>3</td><td>4</td></tr>
+</table>
+<h2>Known issues</h2>
+<table><tr><th>Issue</th><th>Fixture</th><th>A</th><th>B</th><th>Classification</th></tr>
+<tr><td>UI-001</td><td>home-usb-20m</td><td>no</td><td>no</td><td>NOT_REPRODUCED</td></tr>
+<tr><td>UI-009</td><td>home-bateria-externa</td><td>no</td><td>no</td><td>NOT_REPRODUCED</td></tr>
+<tr><td>UI-010</td><td>main-otro-tema</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-011</td><td>main-tema-vision</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-012</td><td>main-tema-vision</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-013</td><td>main-tema-outdoor-negative</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-014</td><td>main-tema-vision-usbd</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-002</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-003</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-004</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-005</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-006</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-007</td><td>main-otro-tema</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-008</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+</table>
+<h2>Quality contracts</h2>
+<p>180 checks, 0 failure(s), 0 unchanged baseline defect(s).</p>
+<h2>Gates without instrumentation</h2><ul>
+<li><strong>Hardware</strong>: no physical X6200 attached; hardware behaviour is not measured</li>
+<li><strong>Energy</strong>: no power measurement; energy evidence must be physical</li>
+</ul>
+</body></html>

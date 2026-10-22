@@ -1,0 +1,17 @@
+# sha256 del contenido de este directorio (host x86, revision 84f9f08).
+# Idempotencia del modo natural sobre el fixture nuevo: las dos corridas
+# (mismo seed 13, 40 frames) dieron el mismo sha256 de PNG y de JSON:
+#   eco-r1.png/eco-r2.png  d1e241a1977df702a6a0c0938a652f8eee8fa925b5e3709bc33d58ce0c3c79e1
+#   eco-r1.json/eco-r2.json 31c407ce6aff1c845c470f77ff67b2d7e1ab0ef4b09e6665b1529ab952102eaa
+
+36bd08402e60faf7db0e4294dfd6c7704e85b5f3b5dcb22cd981d720cef83638  README.md
+31c407ce6aff1c845c470f77ff67b2d7e1ab0ef4b09e6665b1529ab952102eaa  eco.json
+d1e241a1977df702a6a0c0938a652f8eee8fa925b5e3709bc33d58ce0c3c79e1  eco.png
+fd99227ff4cce3cf7d103cee92e1c3897a6947d1a094bc4cec98a6aeb2798168  plain-eco.json
+6297ef99d8b3babfd844749206afb87aaf59e7c52b5830446a46170357b01292  plain-eco.png
+fca405b1cbfb951516e82da2e4f9d6565f71825ececbf4994bd39a406ca1c97a  plain-natural.json
+3986bc9a6047744aa2cd8db1c9879d73e71e16e45d7737b0d7035c06e22ec821  plain-natural.png
+90f2a2fb234c3b2d5178a515500a7e272cb9c88ed9fe0363c3548cbd9799f959  quality.json
+8ec631215c28e27fb901f186273fe6afa0fd6b9470550cf810cb1988f84273fd  quality.png
+c3c84a89d58d424d82b7ca0addd95108925e40ddf3d644ec37a9085c7886aa82  baja.json
+9b6c197080de70f261b2643e331d9a7e59132ce720227e0a38bff09c3776427c  ext.json

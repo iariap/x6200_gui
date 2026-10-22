@@ -1,0 +1,38 @@
+# home-cb-offchannel: la misma pantalla CB que `home-cb`, pero en 27,000 MHz,
+# que cae entre el canal 3 (26.985) y el 4 (27.005): no es un canal del plan.
+# Con el modulo CB en la fila de frecuencia (issue #169) la fila grande muestra
+# `27.000` · `CH --` · `CB C` (la frecuencia sigue siendo CB aunque no sea un
+# canal exacto) y la franja del plan de banda pinta la barra violeta `CB` (el
+# span sigue dentro del grid C). La celda VFO de la barra muestra "CH --"
+# (issue #146, seccion 6.2) y el primer giro del dial engancha el canal
+# siguiente en la direccion del giro.
+#
+# See tools/ui_harness/README.md for the coverage table.
+
+name home-cb-offchannel
+screen main
+
+seed 147
+
+frequency_hz 27000000
+tx_frequency_hz 27000000
+fft_width_hz 100000
+
+mode am
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

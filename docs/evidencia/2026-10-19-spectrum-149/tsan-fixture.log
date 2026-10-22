@@ -1,0 +1,25 @@
+===== TSan: fixture de carrera deliberada (escritor con mutex, lector sin mutex) =====
+Prueba que el detector DISPARA en este entorno: si este fixture saliera limpio, el
+resultado del modulo del espectro bajo TSan no valdria nada.
+
+exit=66
+==================
+WARNING: ThreadSanitizer: data race (pid=14)
+  Read of size 4 at 0x55a43016f0a0 by thread T2:
+    #0 reader tests/native/spectrum_race_fixture.c:55 (fixture+0x13fc) (BuildId: 5fdbff8b0f5fdb1fcd620c110a1ab4d0e5775e23)
+
+  Previous write of size 4 at 0x55a43016f0a0 by thread T1 (mutexes: write M0):
+    #0 writer tests/native/spectrum_race_fixture.c:39 (fixture+0x1386) (BuildId: 5fdbff8b0f5fdb1fcd620c110a1ab4d0e5775e23)
+
+  Location is global 'shared' of size 3200 at 0x55a43016f0a0 (fixture+0x40a0)
+
+  Mutex M0 (0x55a43016f060) created at:
+    #0 pthread_mutex_lock ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1341 (libtsan.so.2+0x59a13) (BuildId: 2a13a7710e361d06f7babbea53065ca2be93f738)
+    #1 writer tests/native/spectrum_race_fixture.c:36 (fixture+0x135e) (BuildId: 5fdbff8b0f5fdb1fcd620c110a1ab4d0e5775e23)
+
+  Thread T2 (tid=17, running) created by main thread at:
+    #0 pthread_create ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1022 (libtsan.so.2+0x5ac1a) (BuildId: 2a13a7710e361d06f7babbea53065ca2be93f738)
+    #1 main tests/native/spectrum_race_fixture.c:73 (fixture+0x14be) (BuildId: 5fdbff8b0f5fdb1fcd620c110a1ab4d0e5775e23)
+
+  Thread T1 (tid=16, running) created by main thread at:
+    #0 pthread_create ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1022 (libtsan.so.2+0x5ac1a) (BuildId: 2a13a7710e361d06f7babbea53065ca2be93f738)

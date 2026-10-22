@@ -1,0 +1,14 @@
+== rebuild del banco (dirclean + rebuild) del commit de codigo final
+[100%] Linking CXX executable x6200_gui
+[100%] Built target x6200_gui
+-- Installing: /workspace/build/target/usr/sbin/x6200_gui
+
+== gate #86 + version/fuente/binario (tools/captura-banco.sh)
+OK: /tmp/opencode/vfix3-cw139/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13778528 B, 3/3 marcas)
+  version: e989c040 CW (#139): auto-ajuste de los parametros del decodi
+  fuente: md5 e4707f319ac8 (src/ + lvgl/src)
+  binario: md5 ccaa60d94315   qemu-cpu: cortex-a7
+
+== binario en el chroot del banco
+ccaa60d9431590bf06d1349369a9e006  /tmp/opencode/vfix3-cw139/usr/sbin/x6200_gui
+13778528 bytes

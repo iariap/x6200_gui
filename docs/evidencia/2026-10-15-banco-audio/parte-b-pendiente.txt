@@ -1,0 +1,19 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output: ok
+  chroot /home/pablo/desa/x6200/.vfix3: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  audio: pulseaudio en el chroot: ok
+  audio: parec en el chroot: ok
+  qemu-arm-static ejecutando ARM: ok
+  aviso: el hash de los fuentes cambio y un fuente es mas nuevo que el binario, pero RECONSTRUIR=no: se prueba el binario que ya esta
+== audio del banco (modo CAP_AUDIO) ==
+  sink: alsa_output.platform-sound.stereo-fallback   ventana: 8s   voz: prueba de audio del banco   parte B: si
+  BANCO-AUDIO: PENDIENTE parte B: el chroot no tiene /dev/snd. En el host:
+    sudo modprobe snd-aloop
+    y montar /dev/snd en el chroot del contenedor (-v /dev/snd:/t/dev/snd; ver docs/banco-audio.md)
+  PENDIENTE (Parte B): el paso de arriba es del owner (sudo); la Parte A no lo necesita

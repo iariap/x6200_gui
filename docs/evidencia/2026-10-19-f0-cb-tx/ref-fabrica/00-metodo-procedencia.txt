@@ -1,0 +1,45 @@
+== Procedencia (solo lectura, no se flasheo nada) ==
+fecha: 2026-10-19
+sdcard.img: /home/pablo/lenovo_vieja/Downloads/radio/x6200/2025-01-15_Xiegu_X6200_update_V1.0.6/sdcard.img
+e507e7ad98b3ca4e30407177f579717318e9718b1542c48c7532556627734514  /home/pablo/lenovo_vieja/Downloads/radio/x6200/2025-01-15_Xiegu_X6200_update_V1.0.6/sdcard.img
+(coincide con el SHA256 publicado en ReleaseNote-250114001(EN_CHS).txt: e507e7ad98b3ca4e30407177f579717318e9718b1542c48c7532556627734514)
+
+== sfdisk -d ==
+label: dos
+label-id: 0x00000000
+device: /home/pablo/lenovo_vieja/Downloads/radio/x6200/2025-01-15_Xiegu_X6200_update_V1.0.6/sdcard.img
+unit: sectors
+sector-size: 512
+
+/home/pablo/lenovo_vieja/Downloads/radio/x6200/2025-01-15_Xiegu_X6200_update_V1.0.6/sdcard.img1 : start=        2048, size=       32768, type=c, bootable
+/home/pablo/lenovo_vieja/Downloads/radio/x6200/2025-01-15_Xiegu_X6200_update_V1.0.6/sdcard.img2 : start=       34816, size=      819200, type=83
+/home/pablo/lenovo_vieja/Downloads/radio/x6200/2025-01-15_Xiegu_X6200_update_V1.0.6/sdcard.img3 : start=      854016, size=      819200, type=c
+
+== dd de p2 (rootfs ext4) ==
+dd if=sdcard.img of=rootfs.ext4 bs=512 skip=34816 count=819200
+fc330714466f64e0e15f3c5d60926e6815823fe7166bd582a47d704738278936  rootfs.ext4
+rootfs.ext4: Linux rev 1.0 ext4 filesystem data, UUID=653a142c-a3e4-40df-8050-0fdb3285d601 (extents) (large files) (huge files)
+
+== inodos relevantes (debugfs) ==
+debugfs 1.47.3 (8-Jul-2025)
+    269   40755 (2)      0      0    1024  5-Jun-2023 02:16 .
+    104   40755 (2)      0      0    1024 14-Jan-2025 03:16 ..
+    270  100644 (1)      0      0     133  9-Nov-2022 01:53 xgradio.conf
+
+debugfs 1.47.3 (8-Jul-2025)
+   1517   40755 (2)      0      0    1024 13-Sep-2024 01:24 .
+   1516   40755 (2)      0      0    1024 14-Jan-2025 03:16 ..
+   1518  100775 (1)      0      0   929312 14-Jan-2025 03:15 x6100_ui_v100
+   1519  100775 (1)      0      0   1649256 14-Jan-2025 03:14 x6200_ui_v100
+
+debugfs 1.47.3 (8-Jul-2025)
+   2014   40755 (2)      0      0    1024 11-Jan-2025 02:47 .
+   1516   40755 (2)      0      0    1024 14-Jan-2025 03:16 ..
+   2015  100600 (1)      0      0   524288 11-Jan-2025 02:46 x6200_mcu_20250111134652.xgf
+
+
+== sha256 de artefactos clave extraidos ==
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b  root/usr/app_qt/x6200_ui_v100
+a3d13459fb209bce32e4dde8fcbfc08d7c758ec69a15f77f3a5bb21e99d8b5eb  root/usr/app_qt/x6100_ui_v100
+c5dac539af300130567adc1b3c5c959a61c0d1bf2f77d51e71ccf8466e67fb8d  root/etc/xgradio/xgradio.conf
+dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3  root/usr/firmware/x6200_mcu_20250111134652.xgf

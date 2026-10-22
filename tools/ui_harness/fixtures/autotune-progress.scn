@@ -1,0 +1,44 @@
+# autotune-progress: Auto Tune v2 (issue #190) captured at its ONLY provisional
+# correction.
+#
+# Same trigger as `autotune` (APP 6, "Auto Tune" -> main_screen_action(ACTION_ATUNE)),
+# but here scenario_settle arms a TEST-ONLY CW tone sample (mocks/mock_cw_tune.c:
+# 35 Hz above the configured pitch, mark/noise 20) because the bank cannot compile
+# src/cw.cpp (liquid-dsp + the audio thread) and fabricating an RSSI would be
+# faking the production path. The three fresh, stable, valid frames of COLLECT
+# make the core decide one correction of +35 Hz in CW; the dial steps there once
+# and the session goes on to VERIFY.
+#
+# What the fixture *means*: in v2 there is no sweep and no progress bar - the
+# "progress" is a single correction of at most +/-300 Hz - and the capture is that
+# instant (the corrected dial with the session still running). scenario_settle
+# fails if the dial does not land exactly on the correction or if the session had
+# already ended, so a second correction or a silent sweep cannot pass unnoticed.
+
+name autotune-progress
+screen autotune-progress
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode cw
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

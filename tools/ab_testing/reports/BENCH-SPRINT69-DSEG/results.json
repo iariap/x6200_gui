@@ -1,0 +1,67 @@
+{
+  "budget": {
+    "max_dispersion_cv_pct": 25.0,
+    "min_frames": 12,
+    "repeats": 5,
+    "rounds": 4,
+    "warmup_frames": 3
+  },
+  "environment": "x86 host: relative regression proxy, not the Cortex-A7",
+  "exit_code": 0,
+  "experiment_id": "BENCH-SPRINT69-DSEG",
+  "kind": "benchmark-measurement",
+  "measurements": [
+    {
+      "dispersion_cv_pct": 1.584,
+      "draw_ms_mean": 2.9407,
+      "flush_ms_mean": 0.4191,
+      "flushes_mean": 1.0,
+      "fps": 300.2,
+      "frames": 20,
+      "memory": {
+        "peak_rss_bytes": 10424320,
+        "peak_vm_bytes": 82194432,
+        "pss_bytes": 10412032,
+        "rss_bytes": 10424320
+      },
+      "redrawn_area_mean": 384000.0,
+      "render_mean_ms": 3.3598,
+      "render_p50_ms": 3.3312,
+      "render_p95_ms": 3.5236,
+      "render_p99_ms": 3.6067,
+      "render_stdev_ms": 0.0871,
+      "scenario": "main-foco",
+      "unique_redrawn_mean": 384000.0
+    },
+    {
+      "dispersion_cv_pct": 2.016,
+      "draw_ms_mean": 2.9858,
+      "flush_ms_mean": 0.4124,
+      "flushes_mean": 1.0,
+      "fps": 301.83,
+      "frames": 20,
+      "memory": {
+        "peak_rss_bytes": 10547200,
+        "peak_vm_bytes": 82194432,
+        "pss_bytes": 10534912,
+        "rss_bytes": 10481664
+      },
+      "redrawn_area_mean": 384000.0,
+      "render_mean_ms": 3.3982,
+      "render_p50_ms": 3.3131,
+      "render_p95_ms": 3.5336,
+      "render_p99_ms": 4.6167,
+      "render_stdev_ms": 0.3469,
+      "scenario": "main-frecuencia-dseg",
+      "unique_redrawn_mean": 384000.0
+    }
+  ],
+  "revisions": {
+    "revision": "3d8a3ae9f9a733019c4e398d1bb47ea8756afd10"
+  },
+  "scenarios": [
+    "main-foco",
+    "main-frecuencia-dseg"
+  ],
+  "status": "PASS"
+}

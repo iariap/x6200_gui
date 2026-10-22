@@ -1,0 +1,8 @@
+## Binario / gate #86 / md5
+commit trunk: b8441a6d3742c5831007b91d433758984ee3f35a (QA: detectado y reportado un SIGSEGV nuevo (fallo=0xf363) de)
+hash fuentes (src+lvgl/src, rutas relativas): 90f0638247da7ba8d1bfbcc093986468
+build limpio: tools/compila-gui.sh -> md5 b1ba67520079 (13753408 B)
+gate #86 sobre el binario del volumen:
+OK: /tmp/qa-sw125/x6200_gui-build es el firmware del port (ELF32 ARM, 13753408 B, 3/3 marcas)
+gate exit=0
+md5 desplegado en la radio: b1ba67520079904449b6932a112d3c78  /usr/sbin/x6200_gui

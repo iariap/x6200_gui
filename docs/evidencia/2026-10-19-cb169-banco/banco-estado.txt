@@ -1,0 +1,19 @@
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-cb146-private: ok
+  chroot /var/tmp/x6200-cb169-chroot: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+  aviso: el hash de los fuentes cambio, pero RECONSTRUIR=no: se prueba el binario que ya esta
+OK: /var/tmp/x6200-cb169-chroot/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13859408 B, 3/3 marcas)
+  el banco no contesta o la GUI no esta viva; reiniciando...
+  respuesta: {"t":"state","vfo":"A","freq":27855000,"freq_bg":27515000,"mode":"AM","band":"CB D","filter":4500,"flo":0,"fhi":4500,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":1,"nb_level":0,"nb_width":0,"nr_level":0,"pwr":40,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+  captura: docs/evidencia/2026-10-19-cb169-banco/banco-estado.png (262 colores distintos)
+  version: 19ef1ebe CB 27 MHz: canal en la fila de frecuencia y barra C
+  fuente: md5 ff9fadfeb15a (src/ + lvgl/src)
+  binario: md5 c130665e88d6   qemu-cpu: cortex-a7
+  captura util (19630 bytes)

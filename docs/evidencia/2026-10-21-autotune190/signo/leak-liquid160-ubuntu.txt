@@ -1,0 +1,11 @@
+$ cc ... -lliquid  # con la liquid del sistema (1.6.0, la de Ubuntu 24.04)
+
+
+=================================================================
+==17==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 4320 byte(s) in 60 object(s) allocated from:
+    #0 0x7f4f9b7d79c7 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0x7f4f9b69e275 in qs1dsearch_create (/lib/x86_64-linux-gnu/libliquid.so.1+0xb6275) (BuildId: 232e18557ae97d22399ad6d7223441c8181bdccd)
+
+SUMMARY: AddressSanitizer: 4320 byte(s) leaked in 60 allocation(s).

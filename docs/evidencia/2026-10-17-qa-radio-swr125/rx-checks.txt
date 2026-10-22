@@ -1,0 +1,24 @@
+## Chequeos de RX (no RF)
+vol inicial:
+"vol":0
+set vol 30 ->
+{"t":"ok"}
+"vol":30
+restore vol 0 ->
+{"t":"ok"}
+"vol":0
+
+dial digits: freq 7010000, 7020000, 7030000
+"freq":7010000
+"freq":7020000
+"freq":7030000
+
+NB toggle (issue #114): nb 0 -> 1 -> 0
+{"t":"ok"}
+"nb":1
+{"t":"ok"}
+"nb":0
+uptime tras NB: 36673.87  pid=3931
+
+## estado final
+{"t":"state","vfo":"A","freq":7030000,"freq_bg":7040000,"mode":"LSB","band":"40m CW","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":0,"pre":1,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":50,"nr_level":0,"pwr":50,"db":-75,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}

@@ -1,0 +1,145 @@
+>>>   Finalizing host directory
+>>>   Finalizing target directory
+mkdir -p /workspace/build/host/etc/meson
+sed -e "s%@TARGET_CFLAGS@%'-D_LARGEFILE_SOURCE', '-D_LARGEFILE64_SOURCE', '-D_FILE_OFFSET_BITS=64', '-O3', '-g0', '-D_FORTIFY_SOURCE=1'@PKG_TARGET_CFLAGS@%g" -e "s%@TARGET_LDFLAGS@%@PKG_TARGET_LDFLAGS@%g" -e "s%@TARGET_CXXFLAGS@%'-D_LARGEFILE_SOURCE', '-D_LARGEFILE64_SOURCE', '-D_FILE_OFFSET_BITS=64', '-O3', '-g0', '-D_FORTIFY_SOURCE=1'@PKG_TARGET_CXXFLAGS@%g" -e "s%@TARGET_FCFLAGS@%'-O3', '-g0'@PKG_TARGET_FCFLAGS@%g"         -e "s%@TARGET_CC@%/workspace/build/host/bin/arm-buildroot-linux-gnueabihf-gcc%g" -e "s%@TARGET_CXX@%/workspace/build/host/bin/arm-buildroot-linux-gnueabihf-g++%g" -e "s%@TARGET_AR@%/workspace/build/host/bin/arm-buildroot-linux-gnueabihf-gcc-ar%g" -e "s%@TARGET_FC@%/bin/false%g" -e "s%@TARGET_STRIP@%/workspace/build/host/bin/arm-buildroot-linux-gnueabihf-strip%g" -e "s%@TARGET_ARCH@%arm%g" -e "s%@TARGET_CPU@%cortex-a7%g" -e "s%@TARGET_ENDIAN@%little%g" -e "s%@TARGET_FCFLAGS@%%g" -e "s%@TARGET_CFLAGS@%%g" -e "s%@TARGET_LDFLAGS@%%g" -e "s%@TARGET_CXXFLAGS@%%g" -e "s%@BR2_CMAKE@%/usr/bin/cmake%g" -e "s%@PKGCONF_HOST_BINARY@%/workspace/build/host/bin/pkgconf%g" -e "s%@HOST_DIR@%/workspace/build/host%g" -e "s%@STAGING_DIR@%/workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot%g" -e "s%@STATIC@%false%g" /workspace/buildroot/support/misc/cross-compilation.conf.in > /workspace/build/host/etc/meson/cross-compilation.conf.in
+sed         -e "s%@TARGET_CC@%/workspace/build/host/bin/arm-buildroot-linux-gnueabihf-gcc%g" -e "s%@TARGET_CXX@%/workspace/build/host/bin/arm-buildroot-linux-gnueabihf-g++%g" -e "s%@TARGET_AR@%/workspace/build/host/bin/arm-buildroot-linux-gnueabihf-gcc-ar%g" -e "s%@TARGET_FC@%/bin/false%g" -e "s%@TARGET_STRIP@%/workspace/build/host/bin/arm-buildroot-linux-gnueabihf-strip%g" -e "s%@TARGET_ARCH@%arm%g" -e "s%@TARGET_CPU@%cortex-a7%g" -e "s%@TARGET_ENDIAN@%little%g" -e "s%@TARGET_FCFLAGS@%'-O3', '-g0'%g" -e "s%@TARGET_CFLAGS@%'-D_LARGEFILE_SOURCE', '-D_LARGEFILE64_SOURCE', '-D_FILE_OFFSET_BITS=64', '-O3', '-g0', '-D_FORTIFY_SOURCE=1'%g" -e "s%@TARGET_LDFLAGS@%%g" -e "s%@TARGET_CXXFLAGS@%'-D_LARGEFILE_SOURCE', '-D_LARGEFILE64_SOURCE', '-D_FILE_OFFSET_BITS=64', '-O3', '-g0', '-D_FORTIFY_SOURCE=1'%g" -e "s%@BR2_CMAKE@%/usr/bin/cmake%g" -e "s%@PKGCONF_HOST_BINARY@%/workspace/build/host/bin/pkgconf%g" -e "s%@HOST_DIR@%/workspace/build/host%g" -e "s%@STAGING_DIR@%/workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot%g" -e "s%@STATIC@%false%g" /workspace/buildroot/support/misc/cross-compilation.conf.in > /workspace/build/host/etc/meson/cross-compilation.conf
+grep -qsE '^/bin/bash$' /workspace/build/target/etc/shells || echo "/bin/bash" >> /workspace/build/target/etc/shells
+/usr/bin/sed -i -e '/# GENERIC_SERIAL$/s~^.*#~console::respawn:/sbin/getty -L  console 0 vt100 #~' /workspace/build/target/etc/inittab
+/usr/bin/sed -i -e '/^#.*-o remount,rw \/$/s~^#\+~~' /workspace/build/target/etc/inittab
+if grep -q CONFIG_ASH=y /workspace/build/build/busybox-1.36.1/.config; then grep -qsE '^/bin/ash$' /workspace/build/target/etc/shells || echo "/bin/ash" >> /workspace/build/target/etc/shells; fi
+if grep -q CONFIG_HUSH=y /workspace/build/build/busybox-1.36.1/.config; then grep -qsE '^/bin/hush$' /workspace/build/target/etc/shells || echo "/bin/hush" >> /workspace/build/target/etc/shells; fi
+/workspace/build/host/bin/udevadm hwdb --update --root /workspace/build/target
+rm -f /workspace/build/target/usr/share/glib-2.0/schemas/*.xml /workspace/build/target/usr/share/glib-2.0/schemas/*.dtd
+/workspace/build/host/bin/glib-compile-schemas /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/share/glib-2.0/schemas --targetdir=/workspace/build/target/usr/share/glib-2.0/schemas
+No schema files found: doing nothing.
+PYTHONPATH="/workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/lib/python3.11/" /workspace/build/host/bin/python3.11 /workspace/build/build/python3-3.11.8/Lib/compileall.py -q -b -s /workspace/build/target -p / /workspace/build/target/usr/lib/python3.11
+find /workspace/build/target/usr/lib/python3.11 -name '*.py'  -print0 | xargs -0 --no-run-if-empty rm -f
+find /workspace/build/target/usr/lib/python3.11 -name '*.opt-1.pyc' -print0 -o -name '*.opt-2.pyc' -print0 | xargs -0 --no-run-if-empty rm -f
+mkdir -p /workspace/build/target/etc
+echo "X6200" > /workspace/build/target/etc/hostname
+/usr/bin/sed -i -e '$a \127.0.1.1\tX6200' -e '/^127.0.1.1/d' /workspace/build/target/etc/hosts
+mkdir -p /workspace/build/target/etc
+echo "Welcome to the X6200 de R1CBU" > /workspace/build/target/etc/issue
+/usr/bin/sed -i -e s,^root:[^:]*:,root:"`/workspace/build/host/bin/mkpasswd -m "sha-256" "123"`":, /workspace/build/target/etc/shadow
+grep -qsE '^/bin/sh$' /workspace/build/target/etc/shells || echo "/bin/sh" >> /workspace/build/target/etc/shells
+ln -sf bash /workspace/build/target/bin/sh
+/usr/bin/sed -i -e '/^root:/s,[^/]*$,bash,' /workspace/build/target/etc/passwd
+if [ -x /workspace/build/target/sbin/swapon -a -x /workspace/build/target/sbin/swapoff ]; then /usr/bin/sed -i -e '/^#.*\/sbin\/swap/s/^#\+[[:blank:]]*//' /workspace/build/target/etc/inittab; else /usr/bin/sed -i -e '/^[^#].*\/sbin\/swap/s/^/#/' /workspace/build/target/etc/inittab; fi
+if test -d /workspace/build/target/lib/modules/`MAKEFLAGS='-j16 --jobserver-auth=3,4 --no-print-directory' /usr/bin/make  HOSTCC="/workspace/build/host/bin/ccache /usr/bin/gcc -O2 -isystem /workspace/build/host/include -L/workspace/build/host/lib -Wl,-rpath,/workspace/build/host/lib" ARCH=arm INSTALL_MOD_PATH=/workspace/build/target CROSS_COMPILE="/workspace/build/host/bin/arm-buildroot-linux-gnueabihf-" WERROR=0 REGENERATE_PARSERS=1 DEPMOD=/workspace/build/host/sbin/depmod INSTALL_MOD_STRIP=1 -C /workspace/build/build/linux-6.1.82 --no-print-directory -s kernelrelease 2>/dev/null` && grep -q "CONFIG_MODULES=y" /workspace/build/build/linux-6.1.82/.config; then /workspace/build/host/sbin/depmod -a -b /workspace/build/target `MAKEFLAGS='-j16 --jobserver-auth=3,4 --no-print-directory' /usr/bin/make  HOSTCC="/workspace/build/host/bin/ccache /usr/bin/gcc -O2 -isystem /workspace/build/host/include -L/workspace/build/host/lib -Wl,-rpath,/workspace/build/host/lib" ARCH=arm INSTALL_MOD_PATH=/workspace/build/target CROSS_COMPILE="/workspace/build/host/bin/arm-buildroot-linux-gnueabihf-" WERROR=0 REGENERATE_PARSERS=1 DEPMOD=/workspace/build/host/sbin/depmod INSTALL_MOD_STRIP=1 -C /workspace/build/build/linux-6.1.82 --no-print-directory -s kernelrelease 2>/dev/null`; fi
+printf '%s\n' C en_US locale-archive > /workspace/build/build/locales.nopurge
+for dir in /workspace/build/target/usr/share/locale /workspace/build/target/usr/share/X11/locale /workspace/build/target/usr/lib/locale; do if [ ! -d $dir ]; then continue; fi; for langdir in $dir/*; do if [ -e "${langdir}" ]; then grep -qx "${langdir##*/}" /workspace/build/build/locales.nopurge || rm -rf $langdir; fi done; done
+if [ -d /workspace/build/target/usr/share/X11/locale ]; then for lang in C en_US; do if [ -f /workspace/build/target/usr/share/X11/locale/$lang/XLC_LOCALE ]; then echo "$lang/XLC_LOCALE: $lang"; fi done > /workspace/build/target/usr/share/X11/locale/locale.dir; fi
+rm -rf /workspace/build/target/usr/include /workspace/build/target/usr/share/aclocal \
+	/workspace/build/target/usr/lib/pkgconfig /workspace/build/target/usr/share/pkgconfig \
+	/workspace/build/target/usr/lib/cmake /workspace/build/target/usr/share/cmake \
+	/workspace/build/target/usr/lib/rpm /workspace/build/target/usr/doc
+find /workspace/build/target/usr/{lib,share}/ -name '*.cmake' -print0 | xargs -0 rm -f
+find /workspace/build/target/lib/ /workspace/build/target/usr/lib/ /workspace/build/target/usr/libexec/ \
+	\( -name '*.a' -o -name '*.la' -o -name '*.prl' \) -print0 | xargs -0 rm -f
+rm -rf /workspace/build/target/usr/share/zsh
+rm -rf /workspace/build/target/usr/man /workspace/build/target/usr/share/man
+rm -rf /workspace/build/target/usr/info /workspace/build/target/usr/share/info
+rm -rf /workspace/build/target/usr/doc /workspace/build/target/usr/share/doc
+rm -rf /workspace/build/target/usr/share/gtk-doc
+rmdir /workspace/build/target/usr/share 2>/dev/null || true
+rm -rf /workspace/build/target/lib/debug /workspace/build/target/usr/lib/debug
+find /workspace/build/target   -type f \( -perm /111 -o -name '*.so*' \) -not \( -name 'libpthread*.so*' -o -name 'ld-*.so*' -o -name '*.ko' \) -print0 | xargs -0 /workspace/build/host/bin/arm-buildroot-linux-gnueabihf-strip --remove-section=.comment --remove-section=.note 2>/dev/null || true
+find /workspace/build/target   \( -name 'ld-*.so*' -o -name 'libpthread*.so*' \) -print0 | xargs -0 -r /workspace/build/host/bin/arm-buildroot-linux-gnueabihf-strip --remove-section=.comment --remove-section=.note --strip-debug 2>/dev/null || true
+test -f /workspace/build/target/etc/ld.so.conf && \
+	{ echo "ERROR: we shouldn't have a /etc/ld.so.conf file"; exit 1; } || true
+test -d /workspace/build/target/etc/ld.so.conf.d && \
+	{ echo "ERROR: we shouldn't have a /etc/ld.so.conf.d directory"; exit 1; } || true
+mkdir -p /workspace/build/target/etc
+( \
+	echo "NAME=Buildroot"; \
+	echo "VERSION=2023.02.11"; \
+	echo "ID=buildroot"; \
+	echo "VERSION_ID=2023.02.11"; \
+	echo "PRETTY_NAME=\"Buildroot 2023.02.11\"" \
+) >  /workspace/build/target/usr/lib/os-release
+ln -sf ../usr/lib/os-release /workspace/build/target/etc
+>>>   Sanitizing RPATH in target tree
+PER_PACKAGE_DIR=/workspace/build/per-package /workspace/buildroot/support/scripts/fix-rpath target
+>>>   Copying overlay /workspace/br2_external/board/X6200/linux/rootfs-overlay
+>>>   Executing post-build script /workspace/br2_external/board/X6200/post-build.sh
+espeak-data: 1.2M
+touch /workspace/build/target/usr
+>>>   Generating root filesystems common tables
+rm -rf /workspace/build/build/buildroot-fs
+mkdir -p /workspace/build/build/buildroot-fs
+printf '   	dbus -1 dbus -1 * /run/dbus - dbus DBus messagebus user\n 	sshd -1 sshd -1 * /var/empty - - SSH drop priv user\n 	- - input -1 * - - - Input device group\n	- - kvm -1 * - - - kvm nodes\n\n' >> /workspace/build/build/buildroot-fs/full_users_table.txt
+printf '   	/bin/busybox                     f 4755 0  0 - - - - -\n 	/usr/libexec/dbus-daemon-launch-helper f 4750 0 dbus - - - - -\n 	/var/empty d 755 root root - - - - -\n\n' > /workspace/build/build/buildroot-fs/full_devices_table.txt
+cat system/device_table.txt >> /workspace/build/build/buildroot-fs/full_devices_table.txt
+>>>   Generating filesystem image rootfs.ext2
+mkdir -p /workspace/build/images
+rm -rf /workspace/build/build/buildroot-fs/ext2
+mkdir -p /workspace/build/build/buildroot-fs/ext2
+rsync -auH --exclude=/THIS_IS_NOT_YOUR_ROOT_FILESYSTEM /workspace/build/target/ /workspace/build/build/buildroot-fs/ext2/target
+echo '#!/bin/sh' > /workspace/build/build/buildroot-fs/ext2/fakeroot
+echo "set -e" >> /workspace/build/build/buildroot-fs/ext2/fakeroot
+echo "chown -h -R 0:0 /workspace/build/build/buildroot-fs/ext2/target" >> /workspace/build/build/buildroot-fs/ext2/fakeroot
+PATH="/workspace/build/host/bin:/workspace/build/host/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" /workspace/buildroot/support/scripts/mkusers /workspace/build/build/buildroot-fs/full_users_table.txt /workspace/build/build/buildroot-fs/ext2/target >> /workspace/build/build/buildroot-fs/ext2/fakeroot
+echo "/workspace/build/host/bin/makedevs -d /workspace/build/build/buildroot-fs/full_devices_table.txt /workspace/build/build/buildroot-fs/ext2/target" >> /workspace/build/build/buildroot-fs/ext2/fakeroot
+printf '   	rm -rf /workspace/build/build/buildroot-fs/ext2/target/usr/lib/udev/hwdb.d/ /workspace/build/build/buildroot-fs/ext2/target/etc/udev/hwdb.d/\n' >> /workspace/build/build/buildroot-fs/ext2/fakeroot
+echo "find /workspace/build/build/buildroot-fs/ext2/target/run/ -mindepth 1 -prune -print0 | xargs -0r rm -rf --" >> /workspace/build/build/buildroot-fs/ext2/fakeroot
+echo "find /workspace/build/build/buildroot-fs/ext2/target/tmp/ -mindepth 1 -prune -print0 | xargs -0r rm -rf --" >> /workspace/build/build/buildroot-fs/ext2/fakeroot
+printf '   \n' >> /workspace/build/build/buildroot-fs/ext2/fakeroot
+printf '   \n' >> /workspace/build/build/buildroot-fs/ext2/fakeroot
+printf '   	rm -f /workspace/build/images/rootfs.ext2\n	/workspace/build/host/sbin/mkfs.ext4 -d /workspace/build/build/buildroot-fs/ext2/target -r 1 -N 0 -m 5 -L "rootfs" -I 256 -O ^64bit /workspace/build/images/rootfs.ext2 "512M" || { ret=$?; echo "*** Maybe you need to increase the filesystem size (BR2_TARGET_ROOTFS_EXT2_SIZE)" 1>&2; exit $ret; }\n' >> /workspace/build/build/buildroot-fs/ext2/fakeroot
+chmod a+x /workspace/build/build/buildroot-fs/ext2/fakeroot
+PATH="/workspace/build/host/bin:/workspace/build/host/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" FAKEROOTDONTTRYCHOWN=1 /workspace/build/host/bin/fakeroot -- /workspace/build/build/buildroot-fs/ext2/fakeroot
+rootdir=/workspace/build/build/buildroot-fs/ext2/target
+table='/workspace/build/build/buildroot-fs/full_devices_table.txt'
+mke2fs 1.46.5 (30-Dec-2021)
+Creating regular file /workspace/build/images/rootfs.ext2
+64-bit filesystem support is not enabled.  The larger fields afforded by this feature enable full-strength checksumming.  Pass -O 64bit to rectify.
+Creating filesystem with 131072 4k blocks and 32768 inodes
+Filesystem UUID: b04879c1-90aa-4e2e-a3a1-ce10518e2f2d
+Superblock backups stored on blocks: 
+	32768, 98304
+
+Allocating group tables: 0/4   done                            
+Writing inode tables: 0/4   done                            
+Creating journal (4096 blocks): done
+Copying files into the device: done
+Writing superblocks and filesystem accounting information: 0/4   done
+
+ln -sf rootfs.ext2 /workspace/build/images/rootfs.ext4
+>>>   Generating filesystem image rootfs.tar
+mkdir -p /workspace/build/images
+rm -rf /workspace/build/build/buildroot-fs/tar
+mkdir -p /workspace/build/build/buildroot-fs/tar
+rsync -auH --exclude=/THIS_IS_NOT_YOUR_ROOT_FILESYSTEM /workspace/build/target/ /workspace/build/build/buildroot-fs/tar/target
+echo '#!/bin/sh' > /workspace/build/build/buildroot-fs/tar/fakeroot
+echo "set -e" >> /workspace/build/build/buildroot-fs/tar/fakeroot
+echo "chown -h -R 0:0 /workspace/build/build/buildroot-fs/tar/target" >> /workspace/build/build/buildroot-fs/tar/fakeroot
+PATH="/workspace/build/host/bin:/workspace/build/host/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" /workspace/buildroot/support/scripts/mkusers /workspace/build/build/buildroot-fs/full_users_table.txt /workspace/build/build/buildroot-fs/tar/target >> /workspace/build/build/buildroot-fs/tar/fakeroot
+echo "/workspace/build/host/bin/makedevs -d /workspace/build/build/buildroot-fs/full_devices_table.txt /workspace/build/build/buildroot-fs/tar/target" >> /workspace/build/build/buildroot-fs/tar/fakeroot
+printf '   	rm -rf /workspace/build/build/buildroot-fs/tar/target/usr/lib/udev/hwdb.d/ /workspace/build/build/buildroot-fs/tar/target/etc/udev/hwdb.d/\n' >> /workspace/build/build/buildroot-fs/tar/fakeroot
+echo "find /workspace/build/build/buildroot-fs/tar/target/run/ -mindepth 1 -prune -print0 | xargs -0r rm -rf --" >> /workspace/build/build/buildroot-fs/tar/fakeroot
+echo "find /workspace/build/build/buildroot-fs/tar/target/tmp/ -mindepth 1 -prune -print0 | xargs -0r rm -rf --" >> /workspace/build/build/buildroot-fs/tar/fakeroot
+printf '   \n' >> /workspace/build/build/buildroot-fs/tar/fakeroot
+printf '   \n' >> /workspace/build/build/buildroot-fs/tar/fakeroot
+printf '   	(cd /workspace/build/build/buildroot-fs/tar/target; find -print0 | LC_ALL=C sort -z | tar  --pax-option=exthdr.name=%%d/PaxHeaders/%%f,atime:=0,ctime:=0 -cf /workspace/build/images/rootfs.tar --null --xattrs-include='\''*'\'' --no-recursion -T - --numeric-owner)\n' >> /workspace/build/build/buildroot-fs/tar/fakeroot
+chmod a+x /workspace/build/build/buildroot-fs/tar/fakeroot
+PATH="/workspace/build/host/bin:/workspace/build/host/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" FAKEROOTDONTTRYCHOWN=1 /workspace/build/host/bin/fakeroot -- /workspace/build/build/buildroot-fs/tar/fakeroot
+rootdir=/workspace/build/build/buildroot-fs/tar/target
+table='/workspace/build/build/buildroot-fs/full_devices_table.txt'
+>>>   Executing post-image script support/scripts/genimage.sh
+INFO: cmd: "mkdir -p "/workspace/build/build/genimage.tmp"" (stderr):
+INFO: cmd: "rm -rf "/workspace/build/build/genimage.tmp"/*" (stderr):
+INFO: cmd: "mkdir -p "/workspace/build/build/genimage.tmp"" (stderr):
+INFO: cmd: "cp -a "/tmp/tmp.AWShvviIae" "/workspace/build/build/genimage.tmp/root"" (stderr):
+INFO: cmd: "mkdir -p "/workspace/build/images"" (stderr):
+INFO: vfat(boot.vfat): cmd: "mkdosfs -n 'BOOT'  '/workspace/build/images/boot.vfat'" (stderr):
+INFO: vfat(boot.vfat): adding file 'zImage' as 'zImage' ...
+INFO: vfat(boot.vfat): cmd: "MTOOLS_SKIP_CHECK=1 mcopy -sp -i '/workspace/build/images/boot.vfat' '/workspace/build/images/zImage' '::'" (stderr):
+INFO: vfat(boot.vfat): adding file 'sun8i-r16-x6200.dtb' as 'sun8i-r16-x6200.dtb' ...
+INFO: vfat(boot.vfat): cmd: "MTOOLS_SKIP_CHECK=1 mcopy -sp -i '/workspace/build/images/boot.vfat' '/workspace/build/images/sun8i-r16-x6200.dtb' '::'" (stderr):
+INFO: vfat(boot.vfat): adding file 'boot.scr' as 'boot.scr' ...
+INFO: vfat(boot.vfat): cmd: "MTOOLS_SKIP_CHECK=1 mcopy -sp -i '/workspace/build/images/boot.vfat' '/workspace/build/images/boot.scr' '::'" (stderr):
+INFO: hdimage(sdcard.img): adding partition 'u-boot' from 'u-boot-sunxi-with-spl.bin' ...
+INFO: hdimage(sdcard.img): adding partition 'boot' (in MBR) from 'boot.vfat' ...
+INFO: hdimage(sdcard.img): adding partition 'rootfs' (in MBR) from 'rootfs.ext4' ...
+INFO: hdimage(sdcard.img): adding partition '[MBR]' ...
+INFO: hdimage(sdcard.img): writing MBR

@@ -1,0 +1,102 @@
+# Gates — #131 (2026-10-18)
+
+Base: `07321a5b` · HEAD de código: `57bfec09` (`CRASHLOG: tabla de modulos con base y md5 al arrancar (#131)`)
+
+## Nativos (host) + -fanalyzer
+
+```
+$ tests/native/run_native_tests.sh
+...
+== CRASHLOG-MOD (#131): tabla de modulos y md5 ==
+== CRASHLOG-MOD: analisis estatico (gcc -fanalyzer) ==
+26 comprobaciones, 0 fallos
+(exit 0)
+```
+
+Log completo: `tdd-green.log`. RED (sin `src/crashlog_modules.c`): `tdd-red.log`.
+
+## Estaticos (7/7)
+
+```
+$ python3 tests/check_cfg_fills.py       OK: los 69 campos se inicializan, en orden
+$ python3 tests/check_actions.py         todas las acciones ofrecidas tienen manejador
+$ python3 tests/check_settings_focus.py  cada slider mueve el parametro que muestra
+$ python3 tests/check_apps_menu.py       todas las apps del menu llegan al dispatcher
+$ python3 tests/check_app_handlers.py    todos los botones de las apps tienen handler
+$ python3 tests/check_wcag.py            pares OK: 1052 | FALLAS: 0
+$ python3 tests/check_cw_tune_feed.py    el feed del tono sigue a la visibilidad del widget
+```
+
+Extra (no forman los 7): `check_manual_apps.py` OK (22/22 apps), `audita-pruebas.py` OK.
+
+## Determinismo
+
+```
+$ tests/check_harness_determinism.sh
+PASS: deterministic (identical PNGs for every fixture)
+```
+
+## A/B `AB-SWR131` (B = `57bfec09`)
+
+```
+$ cd tools/ab_testing && uv run x6200-ab compare --a 07321a5b --b 57bfec09 --experiment-id AB-SWR131
+experiment AB-SWR131: PASS (exit 0)
+  Functional         PASS (required) — 85 scenarios captured on both revisions
+  Visual Regression  PASS (required) — captures are pixel-identical to the baseline
+  Quality Contract   PASS (required) — 873 contract checks passed on the candidate
+  Performance        PASS (required) — render-cost proxy within budget
+  Hardware           BLOCKED (advisory) — no physical X6200 attached
+  Energy             BLOCKED (advisory) — no power measurement
+report: tools/ab_testing/reports/AB-SWR131
+```
+
+## Contracts / audit / themes
+
+```
+$ uv run x6200-ab contracts --revision 57bfec09 --repo <worktree>
+contracts 57bfec09bd42: PASS — 873 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+$ uv run x6200-ab audit --revision 57bfec09 --repo <worktree>
+audited 57bfec09bd42: 11 known issues — 0 reproduced, 9 unverified; structural inspection REAL
+over 9462 objects on 85 scenario(s): 0 structural finding(s)
+
+$ uv run x6200-ab themes
+(OK: pares estaticos de los 6 temas; 0 fallas)
+```
+
+## Python (ruff / format / ty / pytest + e2e)
+
+```
+$ uv run ruff check .              All checks passed!
+$ uv run ruff format --check .     (sin diferencias)
+$ uv run ty check src tests        All checks passed!
+$ uv run pytest -m "not e2e" -q    227 passed, 13 deselected
+$ uv run pytest -m e2e -q          13 passed, 227 deselected in 214.35s
+```
+
+## Cross-compile ARM
+
+```
+$ docker run ... make x6200-gui-dirclean && make x6200-gui-rebuild
+$ md5sum target/usr/sbin/x6200_gui
+5f5bfb3b9381aa7ccfdeb1919b0cee46  target/usr/sbin/x6200_gui
+```
+
+Es ELF32 ARM; el guard `verifica-firmware-port.py` lo acepta:
+`OK: ... es el firmware del port (ELF32 ARM, 13762952 B, 3/3 marcas)`.
+
+## Banco QEMU (ARM real emulado)
+
+```
+$ VOLUMEN=sigsegv131-build-output CHROOT=/home/pablo/desa/x6200/.vfix3 \
+  RECONSTRUIR=no tools/captura-banco.sh banco-home.png
+  binario: md5 5f5bfb3b9381   qemu-cpu: cortex-a7
+  captura util (26226 bytes)
+  out-banco.txt: main: CRASHLOG-MOD-INIT modulos=46 exe_base=0x00400000 \
+                 exe_md5=5f5bfb3b9381aa7ccfdeb1919b0cee46 exe=/usr/sbin/x6200_gui (305 ms)
+  boot.log:      crashlog modulos ... (+0.31 s)
+```
+
+SIGSEGV inducido (`kill -SEGV`, sin `libcrash` para que corra el handler nuestro):
+44 líneas `CRASHLOG-MOD` y después `CRASHLOG-STACK`, en ese orden
+(`banco-crash-selftest.txt`).

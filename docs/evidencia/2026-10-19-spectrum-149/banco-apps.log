@@ -1,0 +1,92 @@
+  banco: reconstruyendo/verificando y arrancando (captura-banco.sh)
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  volumen x6200-build-output: ok
+  chroot /home/pablo/desa/x6200/.vfix-opt3149: ok
+  python3: ok
+  PIL: ok
+  cliente de control: ok
+  libs del banco: ok
+  qemu-arm-static ejecutando ARM: ok
+OK: /home/pablo/desa/x6200/.vfix-opt3149/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13798740 B, 3/3 marcas)
+  el banco no contesta o la GUI no esta viva; reiniciando...
+  respuesta: {"t":"ok"}
+  captura: /tmp/tmp.51Myw2C73F/base.png (309 colores distintos)
+  version: 75a48b89 Spectrum: snapshot por frame y sincronizacion del p
+  fuente: md5 13b4c4321a5b (src/ + lvgl/src)
+  binario: md5 b5ac3b029818   qemu-cpu: cortex-a7
+  captura util (25066 bytes)
+== barrido de apps (23 apps, dwell 6s) ==
+  [intento 1] FT8: abriendo
+  [intento 1] FT8: viva (app_estado=FT8, colores=267, handshake=si, contenedor=si, crash=no)
+  [intento 1] FT4: abriendo
+  [intento 1] FT4: viva (app_estado=FT4, colores=267, handshake=si, contenedor=si, crash=no)
+  [intento 1] JS8: abriendo
+  [intento 1] JS8: viva (app_estado=JS8, colores=307, handshake=si, contenedor=si, crash=no)
+  [intento 1] WSPR: abriendo
+  [intento 1] WSPR: viva (app_estado=WSPR, colores=280, handshake=si, contenedor=si, crash=no)
+  [intento 1] SSTV: abriendo
+  [intento 1] SSTV: viva (app_estado=SSTV, colores=272, handshake=si, contenedor=si, crash=no)
+  [intento 1] WeFax: abriendo
+  [intento 1] WeFax: viva (app_estado=WeFax, colores=272, handshake=si, contenedor=si, crash=no)
+  [intento 1] NavTex: abriendo
+  [intento 1] NavTex: viva (app_estado=NavTex, colores=272, handshake=si, contenedor=si, crash=no)
+  [intento 1] RTTY: abriendo
+  [intento 1] RTTY: viva (app_estado=RTTY, colores=291, handshake=si, contenedor=si, crash=no)
+  [intento 1] CW: abriendo
+  [intento 1] CW: viva (app_estado=CW, colores=391, handshake=si, contenedor=si, crash=no)
+  [intento 1] Field: abriendo
+  [intento 1] Field: viva (app_estado=Field, colores=521, handshake=si, contenedor=si, crash=no)
+  [intento 1] GPS: abriendo
+  [intento 1] GPS: viva (app_estado=GPS, colores=355, handshake=si, contenedor=si, crash=no)
+  [intento 1] Bands: abriendo
+  [intento 1] Bands: viva (app_estado=Bands, colores=329, handshake=si, contenedor=si, crash=no)
+  [intento 1] Settings: abriendo
+  [intento 1] Settings: viva (app_estado=Settings, colores=469, handshake=si, contenedor=si, crash=no)
+  [intento 1] BT: abriendo
+  [intento 1] BT: viva (app_estado=BT, colores=286, handshake=si, contenedor=si, crash=no)
+  [intento 1] Cluster: abriendo
+  [intento 1] Cluster: viva (app_estado=Cluster, colores=367, handshake=si, contenedor=si, crash=no)
+  [intento 1] CwTrainer: abriendo
+  [intento 1] CwTrainer: viva (app_estado=CwTrainer, colores=401, handshake=si, contenedor=si, crash=no)
+  [intento 1] Eq: abriendo
+  [intento 1] Eq: viva (app_estado=Eq, colores=451, handshake=si, contenedor=si, crash=no)
+  [intento 1] Status: abriendo
+  [intento 1] Status: viva (app_estado=Status, colores=427, handshake=si, contenedor=si, crash=no)
+  [intento 1] QTH: abriendo
+  [intento 1] QTH: viva (app_estado=QTH, colores=416, handshake=si, contenedor=si, crash=no)
+  [intento 1] Callsign: abriendo
+  [intento 1] Callsign: viva (app_estado=Callsign, colores=388, handshake=si, contenedor=si, crash=no)
+  [intento 1] Recorder: abriendo
+  [intento 1] Recorder: viva (app_estado=Recorder, colores=340, handshake=si, contenedor=si, crash=no)
+  [intento 1] WiFi: abriendo
+  [intento 1] WiFi: viva (app_estado=WiFi, colores=446, handshake=si, contenedor=si, crash=no)
+  [intento 1] SWRScan: abriendo
+  [intento 1] SWRScan: viva (app_estado=SWRScan, colores=321, handshake=si, contenedor=si, crash=no)
+  app        resultado  app_estado intentos colores  segundos 
+  FT8        viva       FT8        1        267      6.1      
+  FT4        viva       FT4        1        267      6.1      
+  JS8        viva       JS8        1        307      6.1      
+  WSPR       viva       WSPR       1        280      6.1      
+  SSTV       viva       SSTV       1        272      6.1      
+  WeFax      viva       WeFax      1        272      6.1      
+  NavTex     viva       NavTex     1        272      6.1      
+  RTTY       viva       RTTY       1        291      6.1      
+  CW         viva       CW         1        391      6.1      
+  Field      viva       Field      1        521      6.1      
+  GPS        viva       GPS        1        355      6.1      
+  Bands      viva       Bands      1        329      6.1      
+  Settings   viva       Settings   1        469      6.1      
+  BT         viva       BT         1        286      6.1      
+  Cluster    viva       Cluster    1        367      6.1      
+  CwTrainer  viva       CwTrainer  1        401      6.1      
+  Eq         viva       Eq         1        451      6.1      
+  Status     viva       Status     1        427      6.1      
+  QTH        viva       QTH        1        416      6.1      
+  Callsign   viva       Callsign   1        388      6.1      
+  Recorder   viva       Recorder   1        340      6.1      
+  WiFi       viva       WiFi       1        446      6.1      
+  SWRScan    viva       SWRScan    1        321      6.1      
+  23 apps, 23 intentos: 23 vivas, 0 falladas
+== evidencia en /tmp/opencode/barrido-opt3149-2/barrido.json ==

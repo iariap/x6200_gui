@@ -1,0 +1,8 @@
+# Bluetooth CAT (SPP) defaults. Runtime state (set from the GUI menu)
+# is stored in /mnt/btcat.conf and overrides these values.
+BTCAT_ENABLE=yes
+# Bluetooth adapter power
+BTCAT_BT=yes
+# yes = always visible, no = only already paired devices can connect
+BTCAT_DISCOVERABLE=yes
+BTCAT_ALIAS="X6200"

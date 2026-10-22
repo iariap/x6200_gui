@@ -1,0 +1,10 @@
+Banda y=69..399 ; cuarto inferior y>=316 ; margen interior=20 px
+Color de la curva en la radio (tema Redshift): RGB(255,179,160)  min=160 < 180 (umbral del script)
+
+scan-7000000.png                 -> {'xl': 10, 'xr': 696, 'span': 686, 'vy': 398, 'xv': 255, 'left': 304, 'right': 230, 'left_rise': 94, 'right_rise': 168, 'quarter_ok': True, 'interior': True}
+04-scan-50k-resonancia-2da.png   -> {'xl': 10, 'xr': 680, 'span': 670, 'vy': 398, 'xv': 232, 'left': 318, 'right': 224, 'left_rise': 80, 'right_rise': 174, 'quarter_ok': True, 'interior': True}
+08-domo-repro-200k.png           -> {'xl': 10, 'xr': 664, 'span': 654, 'vy': 398, 'xv': 238, 'left': 258, 'right': 165, 'left_rise': 140, 'right_rise': 233, 'quarter_ok': True, 'interior': True}
+06-domo-repro-despues.png        -> {'xl': 10, 'xr': 679, 'span': 669, 'vy': 398, 'xv': 273, 'left': 227, 'right': 167, 'left_rise': 171, 'right_rise': 231, 'quarter_ok': True, 'interior': True}
+00-estado-inicial.png            -> {'xl': 10, 'xr': 679, 'span': 669, 'vy': 398, 'xv': 224, 'left': 341, 'right': 283, 'left_rise': 57, 'right_rise': 115, 'quarter_ok': True, 'interior': True}
+03-scan-50k-completo.png         -> {'xl': 10, 'xr': 664, 'span': 654, 'vy': 398, 'xv': 10, 'left': 398, 'right': 388, 'left_rise': 0, 'right_rise': 10, 'quarter_ok': True, 'interior': False}
+scan-7040000.png                 -> {'xl': 10, 'xr': 679, 'span': 669, 'vy': 398, 'xv': 10, 'left': 398, 'right': 398, 'left_rise': 0, 'right_rise': 0, 'quarter_ok': True, 'interior': False}

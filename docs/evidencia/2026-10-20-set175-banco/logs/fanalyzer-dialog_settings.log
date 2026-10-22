@@ -1,0 +1,5 @@
+/src/src/dialog_settings.c:827:18: warning: unused variable 'obj' [-Wunused-variable]
+/src/src/dialog_settings.c:1417:18: warning: unused variable 'obj' [-Wunused-variable]
+/src/lvgl/src/misc/lv_log.h:115:31: warning: leak of file descriptor 'rtc' [CWE-775] [-Wanalyzer-fd-leak]
+/src/src/dialog_settings.c:1274:16: warning: dereference of possibly-NULL 'param' [CWE-690] [-Wanalyzer-possible-null-dereference]
+/src/src/dialog_settings.c:1375:16: warning: dereference of possibly-NULL 'param' [CWE-690] [-Wanalyzer-possible-null-dereference]

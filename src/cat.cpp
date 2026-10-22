@@ -27,6 +27,7 @@ extern "C" {
     #include "meter.h"
     #include "params/params.h"
     #include "radio.h"
+#include "gpio_safe.h"
     #include "scheduler.h"
     #include "spectrum.h"
     #include "waterfall.h"
@@ -962,6 +963,11 @@ static uint8_t counter = 0;
 //     free(data);
 // }
 
+/* Defined at the end of the file: the CAT thread and the frequency transceive
+ * path need them, and the network entry points live next to the engine. */
+static void (*net_sink)(const uint8_t *data, size_t len);
+static Frame *process_req_locked(const Frame *req);
+
 static void cat_thread() {
     while (true) {
         bool sleep = true;
@@ -970,7 +976,7 @@ static void cat_thread() {
         if (req) {
             sleep = false;
             conn->send(req);
-            auto resp = process_req(req);
+            auto resp = process_req_locked(req);
             // resp->log("resp");
             conn->send(resp);
         }
@@ -988,27 +994,25 @@ static void cat_thread() {
 
 void cat_init() {
     /* UART */
-    x6200_gpio_set(x6200_pin_usb, 1); /* USB -> CAT */
+    gpio_safe_set(x6200_pin_usb, 1); /* USB -> CAT */
 
     int fd = open("/dev/ttyS2", O_RDWR | O_NONBLOCK | O_NOCTTY);
 
-    if (fd > 0) {
-        struct termios attr;
+    if (fd < 0) {
+        LV_LOG_ERROR("CAT: no se pudo abrir /dev/ttyS2: la GUI sigue, sin CAT");
+        return;
+    }
 
-        tcgetattr(fd, &attr);
+    struct termios attr;
 
-        cfsetispeed(&attr, B19200);
-        cfsetospeed(&attr, B19200);
-        // cfsetispeed(&attr, B115200);
-        // cfsetospeed(&attr, B115200);
-        cfmakeraw(&attr);
+    cfsetispeed(&attr, B19200);
+    cfsetospeed(&attr, B19200);
+    cfmakeraw(&attr);
 
-        if (tcsetattr(fd, 0, &attr) < 0) {
-            close(fd);
-            LV_LOG_ERROR("UART set speed");
-        }
-    } else {
-        LV_LOG_ERROR("UART open");
+    if (tcsetattr(fd, 0, &attr) < 0) {
+        LV_LOG_ERROR("CAT: no se pudo configurar el UART: la GUI sigue, sin CAT");
+        close(fd);
+        return;
     }
 
     conn = new Connection(fd);
@@ -1026,5 +1030,34 @@ static void on_fg_freq_change(Subject *s, void *user_data) {
     // bcd len - 5 bytes
     frame.set_payload_len(6);
     to_bcd(frame.data.data(), new_freq, 10);
-    send_queue.push(frame.dump());
+    auto data = frame.dump();
+    if (net_sink)
+        net_sink((const uint8_t *)data.data(), data.size());
+    send_queue.push(data);
+}
+
+/* Network clients (wfview server, web configurator) share the CAT engine with
+ * the UART, so requests are serialised on one mutex. */
+static std::mutex req_mutex;
+
+static Frame *process_req_locked(const Frame *req) {
+    std::lock_guard<std::mutex> lock(req_mutex);
+    return process_req(req);
+}
+
+size_t cat_process_frame(const uint8_t *req, size_t len, uint8_t *resp, size_t resp_max) {
+    if (len < FRAME_ADD_LEN + 1 || req[0] != FRAME_PRE || req[1] != FRAME_PRE || req[len - 1] != FRAME_END)
+        return 0;
+    Frame  frame((const char *)req, len);
+    Frame *r    = process_req_locked(&frame);
+    auto   data = r->dump();
+    delete r;
+    if (data.size() > resp_max)
+        return 0;
+    memcpy(resp, data.data(), data.size());
+    return data.size();
+}
+
+void cat_set_net_sink(void (*sink)(const uint8_t *data, size_t len)) {
+    net_sink = sink;
 }

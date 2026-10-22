@@ -1,0 +1,12 @@
+### rebuild aislado de 23926241 (volumen privado cw116-build-output, checkout propio)
+-- Set non-toolchain portion of runtime path of "/workspace/build/target/usr/sbin/x6200_gui" to ""
+-rwxr-xr-x. 1 root root 13742964 Oct 16 23:09 /b/target/usr/sbin/x6200_gui
+3604cece0e4382229a2de328d9baa614  /b/target/usr/sbin/x6200_gui
+
+### rebuild aislado del fix (mismo volumen, worktree actual)
+-- Installing: /workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/sbin/x6200_gui
+-- Set non-toolchain portion of runtime path of "/workspace/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/sbin/x6200_gui" to ""
+-- Installing: /workspace/build/target/usr/sbin/x6200_gui
+-- Set non-toolchain portion of runtime path of "/workspace/build/target/usr/sbin/x6200_gui" to ""
+-rwxr-xr-x. 1 root root 13743188 Oct 16 23:22 /b/target/usr/sbin/x6200_gui
+6d23c0906c808f8f9b046ce359b31a0e  /b/target/usr/sbin/x6200_gui

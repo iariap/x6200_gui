@@ -15,8 +15,10 @@
 
 #include "lvgl/lvgl.h"
 #include "backlight.h"
+#include "gpio_safe.h"
 #include "util.h"
 #include "voice.h"
+#include "visual_policy.h"
 
 static int          power;
 static int          brightness;
@@ -25,8 +27,10 @@ static bool         on = true;
 static lv_timer_t   *timer = NULL;
 
 static void backlight_timer(lv_timer_t *t) {
-    backlight_set_brightness(params.brightness_idle);
-    x6200_gpio_set(x6200_pin_light, params.brightness_buttons == BUTTONS_LIGHT ? 1 : 0);
+    /* Nivel de reposo (timeout idle): pasa por el cap vigente del perfil
+     * (UI-08 incr. 4); el setting de params queda intacto. */
+    visual_policy_brightness_rewrite(params.brightness_idle);
+    gpio_safe_set(x6200_pin_light, params.brightness_buttons == BUTTONS_LIGHT ? 1 : 0);
     timer = NULL;
 }
 
@@ -64,8 +68,11 @@ void backlight_tick() {
         timer = lv_timer_create(backlight_timer, params.brightness_timeout * 1000, NULL);
         lv_timer_set_repeat_count(timer, 1);
 
-        backlight_set_brightness(params.brightness_normal);
-        x6200_gpio_set(x6200_pin_light, params.brightness_buttons == BUTTONS_DARK ? 0 : 1);
+        /* Nivel normal (rewrite por input): pasa por el cap vigente del perfil
+         * (UI-08 incr. 4) para que el recorte del perfil no se pierda en el
+         * proximo input; el setting de params queda intacto. */
+        visual_policy_brightness_rewrite(params.brightness_normal);
+        gpio_safe_set(x6200_pin_light, params.brightness_buttons == BUTTONS_DARK ? 0 : 1);
     }
 }
 
@@ -88,26 +95,44 @@ void backlight_set_buttons(buttons_light_t value) {
     params.brightness_buttons = value;
     params_unlock(&params.dirty.brightness_buttons);
 
-    x6200_gpio_set(x6200_pin_light, value == BUTTONS_DARK ? 0 : 1);
+    gpio_safe_set(x6200_pin_light, value == BUTTONS_DARK ? 0 : 1);
 }
 
 void backlight_switch() {
     if (on) {
+        /* Apagado: el PWM sube al maximo para reducir ruido con el panel oscuro;
+         * no hace falta el cap porque no se emite luz (UI-08 incr. 5). */
         set_power(false);
         set_brightness(9);
-        x6200_gpio_set(x6200_pin_light, 0);
+        gpio_safe_set(x6200_pin_light, 0);
 
         on = false;
         voice_say_text_fmt("Display off");
         lv_disp_enable_invalidation(lv_disp_get_default(), false);
     } else {
         lv_disp_enable_invalidation(lv_disp_get_default(), true);
+
+        /* OPT-4 #150 (display OFF->ON): mientras el panel estuvo apagado
+         * `_lv_inv_area()` descartaba cada invalidacion (lv_refr.c), asi que los
+         * pixeles que cambiaron con la pantalla apagada (reloj, banda, cualquier
+         * updater) no quedaron pendientes y el panel mostraba el ultimo frame
+         * viejo al volver. Rehabilitar la invalidacion NO repinta nada por si
+         * solo, asi que la primera invalidacion tras despertar tiene que cubrir
+         * toda la pantalla: se invalida el screen entero. */
+        lv_obj_invalidate(lv_scr_act());
+
         set_power(true);
-        set_brightness(params.brightness_normal);
-        x6200_gpio_set(x6200_pin_light, params.brightness_buttons == BUTTONS_DARK ? 0 : 1);
+
+        /* El nivel de vuelta pasa por la unica puerta con cap (UI-08 incr. 5),
+         * como el resto del brillo: asi el recorte del perfil vigente sobrevive
+         * al OFF/ON en vez de saltar al setting crudo. `on` se pone antes porque
+         * backlight_set_brightness() solo escribe con el display encendido. */
+        on = true;
+        visual_policy_brightness_rewrite(params.brightness_normal);
+
+        gpio_safe_set(x6200_pin_light, params.brightness_buttons == BUTTONS_DARK ? 0 : 1);
 
         voice_say_text_fmt("Display on");
-        on = true;
     }
 }
 

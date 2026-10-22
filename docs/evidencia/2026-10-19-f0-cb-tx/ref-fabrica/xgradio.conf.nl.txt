@@ -1,0 +1,7 @@
+     1	# XG Radio配置文件
+     2	# fullband-tx: 全频段发射开关
+     3	# +            enable
+     4	# +            disable
+     5	
+     6	[mods]
+     7	fullband-tx=disable

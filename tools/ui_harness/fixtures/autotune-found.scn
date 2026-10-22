@@ -1,0 +1,42 @@
+# autotune-found: Auto Tune v2 (issue #190) run to the end: the correction is
+# verified with three NEW frames after the 300 ms guard, so the session closes
+# with the dial on the corrected frequency.
+#
+# Same trigger and same TEST-ONLY CW tone injection as `autotune-progress`
+# (mocks/mock_cw_tune.c: a tone 35 Hz above the pitch, so the CW correction is
+# +35 Hz). scenario_settle runs the session to completion and asserts the dial
+# stayed on the correction: a failed verification rolls the dial back to the
+# start, so landing on start + 35 is the evidence that the verify phase passed
+# with fresh frames - not a fixture that just kept the first write.
+#
+# The real "tuned" against RF (a stable carrier 35 Hz high/low, CWR reversed,
+# CW Decoder AUTO on/off) is the owner's radio: docs/autotune.md. The bank has no
+# RF and no DSP.
+
+name autotune-found
+screen autotune-found
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode cw
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

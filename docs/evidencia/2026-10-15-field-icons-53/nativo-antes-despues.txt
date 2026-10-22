@@ -1,0 +1,21 @@
+== El chequeo nativo nuevo contra los dos prefijos ==
+
+tests/native/test_field.c:test_icons_shipped() lee FIELD_ICONS de src/dialog_field.c
+y abre en rootfs/ los 8 PNG que el diálogo pide (sota/pota/bands/log x 64/96).
+
+$ sed -i 's|/usr/share/x6200/field|/usr/share/x6100/field|' src/dialog_field.c   # el prefijo del issue
+$ sh tests/native/run_native_tests.sh | grep -E 'FALLO|comprobaciones'
+FALLO tests/native/test_field.c:244: icon != NULL
+FALLO tests/native/test_field.c:244: icon != NULL
+FALLO tests/native/test_field.c:244: icon != NULL
+FALLO tests/native/test_field.c:244: icon != NULL
+FALLO tests/native/test_field.c:244: icon != NULL
+FALLO tests/native/test_field.c:244: icon != NULL
+FALLO tests/native/test_field.c:244: icon != NULL
+FALLO tests/native/test_field.c:244: icon != NULL
+819 comprobaciones, 8 fallos
+
+$ sh tests/native/run_native_tests.sh | grep -E 'FALLO|comprobaciones'   # con el fix
+819 comprobaciones, 0 fallos
+7 comprobaciones, 0 fallos
+25 comprobaciones, 0 fallos

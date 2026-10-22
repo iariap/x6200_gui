@@ -1,0 +1,44 @@
+# Gates #157 — commit 9309774b (base 8b4d44ef)
+
+TDD nativo:
+  RED   (remote_server.cpp de la base): 15 fallos / 118 comprobaciones + SIGSEGV (mode_names[9])
+  GREEN (fix):                          118 comprobaciones, 0 fallos
+
+Suite nativa completa + -fanalyzer: exit 0 (bloque nuevo: 118/0)
+
+Estaticos de la app (10) + bash -n: 10/10 OK
+
+Determinismo del arnes de UI: PASS (PNG identicos por fixture)
+
+A/B:
+experiment AB-REM157: PASS (exit 0)
+  Functional         PASS            (required) — 89 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — captures are pixel-identical to the baseline
+  Quality Contract   PASS            (required) — 913 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached
+  Energy             BLOCKED         (advisory) — no power measurement
+
+contracts:
+contracts 9309774b9fd1: PASS — 913 checks, 0 failure(s), 0 unchanged baseline defect(s)
+
+audit:
+audited 9309774b9fd1: 11 known issues — 0 reproduced, 9 unverified; structural inspection REAL
+over 9810 objects on 89 scenario(s): 0 structural finding(s)
+
+themes: PASS (WCAG 2.1 AA sobre las paletas servidas)
+
+pytest:      240 passed
+pytest -m e2e: 13 passed
+ruff check / ruff format --check / ty check: todo OK
+
+ARM build (dirclean + rebuild, toolchain buildroot):
+  [ 63%] Building CXX object src/CMakeFiles/x6200_gui.dir/remote_server.cpp.o
+  [100%] Linking CXX executable x6200_gui
+  [100%] Built target x6200_gui
+  md5 98f18ff4d6aec2aa142fa54e71c65737  /b/target/usr/sbin/x6200_gui
+
+Banco QEMU (gate #86):
+  OK: /home/pablo/desa/x6200/.vrem157/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13803904 B, 3/3 marcas)
+  pwr: CB C 50/100 -> get 40 (tope #155); 40m SSB 100 -> 100, 50 -> 50
+  mode: LSB, LSB-D, USB, USB-D, CW, CW-R, AM, SAM, NFM, WFM ida y vuelta exacta

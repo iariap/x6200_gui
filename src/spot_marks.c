@@ -1,0 +1,304 @@
+/*
+ *  SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+#include "spot_marks.h"
+
+#include "cluster/client.h"
+#include "cluster_column.h"
+#include "remote_server.h"
+#include "waterfall.h"
+#include "styles.h"
+#include "theme.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define WIDTH    800
+#define ROWS     2
+#define ROW_H    (SPOT_MARKS_H / ROWS)
+#define POOL     24
+#define GAP      6      /* between labels of a row */
+#define LINE_W   4      /* the line from a call to its frequency */
+#define SPOT_COLOR theme_hex(TC_ok)      /* el cian de la referencia */
+#define SPOT_FONT  sony_22   /* line height 17: fits ROW_H */
+#define REMOTE_SPOTS 100        /* newest first, for X6100 Link */
+#define REMOTE_S     10         /* resent this often: a phone that connects gets them soon */
+
+typedef struct {
+    lv_obj_t *label;
+    lv_obj_t *line;
+} mark_t;
+
+static mark_t         marks[POOL];
+static int32_t        shown_hz[POOL];   /* the spots drawn now, for the tuning snap */
+static int            shown_n;
+static bool           ready;
+static lv_coord_t     line_y0, tag_y0;
+static int32_t        span_center, span_half;
+static cluster_spot_t spots[CLUSTER_MAX_SPOTS];
+static int            spots_n;
+static uint32_t       spots_gen;
+static uint16_t       last_min = 0xFFFF;
+static uint32_t       last_fgen;
+
+static uint16_t utc_now_min(void) {
+    time_t    now = time(NULL);
+    struct tm tm;
+
+    gmtime_r(&now, &tm);
+    return (uint16_t)(tm.tm_hour * 60 + tm.tm_min);
+}
+
+/* Las marcas viven en la pantalla principal, pero el timer y el observador que las redibujan son
+ * globales: si la pantalla se destruye, los punteros de marks[] quedan colgados y el primer
+ * redibujado (1 s despues) mata la GUI en lv_obj_add_flag -> lv_obj_has_flag_any. Medido con el
+ * core y con el llamador instrumentado: era redraw() de este archivo (docs/HALLAZGOS.md 34). */
+static void parent_deleted_cb(lv_event_t *e) {
+    (void) e;
+
+    for (int i = 0; i < POOL; i++) {
+        marks[i].line  = NULL;
+        marks[i].label = NULL;
+    }
+
+    ready = false;
+}
+
+static void redraw(void) {
+    if (!ready) {
+        return;                     /* la pantalla no esta: las marcas ya no existen */
+    }
+
+    int      n = 0;
+    lv_coord_t end[ROWS][POOL];
+    lv_coord_t start[ROWS][POOL];
+    int      cnt[ROWS] = {0};
+    int32_t  left = span_center - span_half;
+    uint16_t now  = utc_now_min();
+    const cluster_filter_t *flt = cluster_filter();
+    lv_area_t col;
+    /* The cluster column covers the calls' rows on the right: calls keep out of it */
+    bool      has_col = cluster_column_area(&col) && tag_y0 + ROWS * ROW_H > col.y1;
+
+    last_fgen = flt->gen;
+
+    if (span_half > 0) {
+        /* Newest first: they win the free places */
+        for (int i = spots_n - 1; i >= 0 && n < POOL; i--) {
+            const cluster_spot_t *s = &spots[i];
+            int64_t   dx = (int64_t)(s->freq_hz - left) * WIDTH / (2 * span_half);
+            lv_coord_t x = dx, lx, w;
+            int       row;
+
+            if (dx < 0 || dx >= WIDTH || !cluster_filter_pass(flt, s, now)) {
+                continue;
+            }
+            w  = lv_txt_get_width(s->dx, strlen(s->dx), &SPOT_FONT, 0, LV_TEXT_FLAG_NONE) + 4;
+            lx = (x + w > WIDTH) ? x - w + 1 : x;  /* right-aligned at the right edge */
+
+            uint32_t color = cluster_alert_match(flt, s) >= 0 ? theme_hex(TC_err) : SPOT_COLOR      /* la alerta en rosa */;
+
+            if (has_col && lx + w > col.x1) {
+                if (x < col.x1) {
+                    lx = x - w + 1;     /* ends at its frequency, left of the column */
+                } else {
+                    /* Under the column (which lists it): only the tick down to the column top */
+                    mark_t *m = &marks[n++];
+
+                    lv_obj_add_flag(m->label, LV_OBJ_FLAG_HIDDEN);
+                    shown_hz[n - 1] = s->freq_hz;
+                    lv_obj_set_pos(m->line, x - LINE_W / 2, line_y0);
+                    lv_obj_set_height(m->line, LV_MAX(col.y1 - line_y0, 1));
+                    lv_obj_set_style_bg_color(m->line, lv_color_hex(color), 0);
+                    lv_obj_clear_flag(m->line, LV_OBJ_FLAG_HIDDEN);
+                    continue;
+                }
+            }
+
+            for (row = 0; row < ROWS; row++) {
+                int k;
+                for (k = 0; k < cnt[row]; k++) {
+                    if (lx < end[row][k] + GAP && lx + w + GAP > start[row][k]) {
+                        break;
+                    }
+                }
+                if (k == cnt[row]) {
+                    break;
+                }
+            }
+            if (row == ROWS) {
+                continue;
+            }
+            start[row][cnt[row]] = lx;
+            end[row][cnt[row]++] = lx + w;
+
+            /* Cyan on the waterfall; an alert call stays pink */
+            mark_t  *m     = &marks[n++];
+
+            lv_label_set_text(m->label, s->dx);
+            lv_obj_set_pos(m->label, lx, tag_y0 + row * ROW_H);
+            lv_obj_set_style_text_color(m->label, lv_color_hex(color), 0);
+            lv_obj_clear_flag(m->label, LV_OBJ_FLAG_HIDDEN);
+
+            shown_hz[n - 1] = s->freq_hz;
+            /* From the frequency on the top bar down to its call, either row */
+            lv_obj_set_pos(m->line, x - LINE_W / 2, line_y0);
+            lv_obj_set_height(m->line, tag_y0 + row * ROW_H - line_y0 + 2);
+            lv_obj_set_style_bg_color(m->line, lv_color_hex(color), 0);
+            lv_obj_clear_flag(m->line, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+    shown_n = n;
+    for (; n < POOL; n++) {
+        lv_obj_add_flag(marks[n].label, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(marks[n].line, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+/* The spots that pass the radio's filters, newest first, to the remote clients:
+ * {"t":"cluster","spots":[[Hz,"call","mode",age min,alert 0/1],...]} */
+static void send_remote(uint16_t now) {
+    static const char *mode[] = {"CW", "LSB", "USB", "DIG", "AM", "FM"};   /* cluster_mode_t */
+    const cluster_filter_t *flt = cluster_filter();
+    cJSON *o = cJSON_CreateObject();
+    cJSON *a;
+    int    n = 0;
+
+    cJSON_AddStringToObject(o, "t", "cluster");
+    a = cJSON_AddArrayToObject(o, "spots");
+    for (int i = spots_n - 1; i >= 0 && n < REMOTE_SPOTS; i--) {
+        const cluster_spot_t *s = &spots[i];
+        cJSON                *r;
+
+        if (!cluster_filter_pass(flt, s, now)) {
+            continue;
+        }
+        r = cJSON_CreateArray();
+        cJSON_AddItemToArray(r, cJSON_CreateNumber(s->freq_hz));
+        cJSON_AddItemToArray(r, cJSON_CreateString(s->dx));
+        cJSON_AddItemToArray(r, cJSON_CreateString(mode[cluster_guess_mode(s)]));
+        cJSON_AddItemToArray(r, cJSON_CreateNumber(cluster_age_min(s->utc_min, now)));
+        cJSON_AddItemToArray(r, cJSON_CreateNumber(cluster_alert_match(flt, s) >= 0));
+        cJSON_AddItemToArray(a, r);
+        n++;
+    }
+    remote_event(o);
+}
+
+/* 1 Hz: new spots or a new minute (the colours age) */
+static void timer_cb(lv_timer_t *t) {
+    static time_t sent;
+    int32_t  vista_centro = 0, vista_mitad = 0;
+
+    /* La vista la da el waterfall: si no hay spots o la vista no cambio, redraw() no hace nada */
+    waterfall_view(&vista_centro, &vista_mitad);
+    spot_marks_update(vista_centro, vista_mitad);
+
+    int      n   = cluster_client_snapshot(spots, CLUSTER_MAX_SPOTS, &spots_gen);
+    uint16_t min = utc_now_min();
+    bool     changed = n >= 0 || min != last_min || cluster_filter()->gen != last_fgen;
+
+    if (n >= 0) {
+        spots_n = n;
+    }
+    if (changed) {
+        last_min = min;
+        redraw();
+    }
+    /* Al control remoto solo si hay spots o cambiaron: no gastar bateria avisando de nada */
+    if (spots_n > 0 && (changed || time(NULL) - sent >= REMOTE_S)) {
+        sent = time(NULL);
+        send_remote(min);
+    }
+}
+
+/* The call drawn 1 px around in the panel colour (black, white in Outdoor) before the label
+ * draws it in colour */
+static void outline_cb(lv_event_t *e) {
+    static const int8_t off[8][2] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
+    lv_obj_t           *l = lv_event_get_target(e);
+    lv_draw_label_dsc_t dsc;
+    lv_area_t           a;
+
+    if (lv_event_get_code(e) == LV_EVENT_REFR_EXT_DRAW_SIZE) {
+        lv_event_set_ext_draw_size(e, 1);
+        return;
+    }
+    if (lv_event_get_code(e) != LV_EVENT_DRAW_MAIN_BEGIN) {
+        return;
+    }
+    lv_draw_label_dsc_init(&dsc);
+    lv_obj_init_draw_label_dsc(l, LV_PART_MAIN, &dsc);
+    dsc.color = TC(panel);
+    for (int i = 0; i < 8; i++) {
+        lv_obj_get_content_coords(l, &a);
+        lv_area_move(&a, off[i][0], off[i][1]);
+        lv_draw_label(lv_event_get_draw_ctx(e), &dsc, &a, lv_label_get_text(l), NULL);
+    }
+}
+
+void spot_marks_layout(lv_coord_t line_y, lv_coord_t tag_y) {
+    line_y0 = line_y;
+    tag_y0  = tag_y;
+    if (ready) {
+        redraw();
+    }
+}
+
+void spot_marks_init(lv_obj_t *parent, lv_coord_t line_y, lv_coord_t tag_y) {
+    line_y0 = line_y;
+    tag_y0  = tag_y;
+
+    /* All the lines first: every call is drawn over the lines that cross its row */
+    for (int i = 0; i < POOL; i++) {
+        lv_obj_t *l = lv_obj_create(parent);
+        lv_obj_remove_style_all(l);
+        lv_obj_set_width(l, LINE_W);
+        lv_obj_set_style_bg_opa(l, LV_OPA_COVER, 0);
+        lv_obj_clear_flag(l, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_flag(l, LV_OBJ_FLAG_HIDDEN);
+        marks[i].line = l;
+    }
+    for (int i = 0; i < POOL; i++) {
+        lv_obj_t *l = lv_label_create(parent);
+        lv_obj_set_style_text_font(l, &SPOT_FONT, 0);
+        lv_obj_set_style_pad_hor(l, 2, 0);
+        /* Readable on the waterfall in every theme: an outline */
+        lv_obj_add_event_cb(l, outline_cb, LV_EVENT_ALL, NULL);
+        lv_obj_refresh_ext_draw_size(l);
+        lv_obj_add_flag(l, LV_OBJ_FLAG_HIDDEN);
+        marks[i].label = l;
+    }
+    ready = true;
+    lv_obj_add_event_cb(parent, parent_deleted_cb, LV_EVENT_DELETE, NULL);
+    lv_timer_create(timer_cb, 1000, NULL);
+    timer_cb(NULL);
+}
+
+bool spot_marks_crossed(int32_t from, int32_t to, int32_t *spot_hz) {
+    bool found = false;
+
+    for (int i = 0; i < shown_n; i++) {
+        int32_t f = shown_hz[i];
+        bool    past = to > from ? (f > from && f <= to) : (f < from && f >= to);
+
+        /* The first one on the way */
+        if (past && (!found || abs(f - from) < abs(*spot_hz - from))) {
+            *spot_hz = f;
+            found    = true;
+        }
+    }
+    return found;
+}
+
+void spot_marks_update(int32_t center, int32_t half_width) {
+    if (!ready || (center == span_center && half_width == span_half)) {
+        return;
+    }
+    span_center = center;
+    span_half   = half_width;
+    redraw();
+}
