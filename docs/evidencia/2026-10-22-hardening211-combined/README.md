@@ -9,6 +9,11 @@ Corrida de **verificación** (no implementación) de la épica
 [#214](https://github.com/iariap/x6200_gui/issues/214) (supervisor),
 [#215](https://github.com/iariap/x6200_gui/issues/215) (update/backup).
 
+> **Nota de conteo (issue [#240](https://github.com/iariap/x6200_gui/issues/240)):**
+> el cuerpo del PR [#239](https://github.com/iariap/x6200_gui/pull/239) declaró
+> «60 archivos» para este directorio; el conteo verificado es **50 archivos**.
+> Detalle, desglose y comandos en §12.
+
 | | |
 | --- | --- |
 | Fecha | 2026-10-22 |
@@ -355,3 +360,53 @@ Por eso se propone **`READY_FOR_REMOTE_QA`** para el par
 - La revisión de los PRs por el owner ya ocurrió (los 4 PRs están mergeados, §1);
   esta corrida agrega la verificación combinada, con la evidencia en este
   directorio (commits locales, **sin push**).
+
+## 12. Nota de conteo (issue #240)
+
+El cuerpo del PR [#239](https://github.com/iariap/x6200_gui/pull/239) declara que
+esta evidencia son **60 archivos**; el conteo verificado es **50 archivos**, todos
+bajo `docs/evidencia/2026-10-22-hardening211-combined/**`. La corrección queda acá
+porque el PR ya está mergeado y su cuerpo no se editó (issue
+[#240](https://github.com/iariap/x6200_gui/issues/240)).
+
+Verificación (2026-10-22, sobre el merge `a1b21dc1` y sobre el tip del fork al
+momento de la corrección, `37ec3b54`):
+
+```bash
+$ gh pr view 239 --repo iariap/x6200_gui --json files --jq '.files|length'
+50
+$ git show --stat --oneline a1b21dc1 | tail -1
+50 files changed, 4405 insertions(+)
+$ git ls-tree -r --name-only a1b21dc1 -- docs/evidencia/2026-10-22-hardening211-combined | wc -l
+50
+$ git ls-tree -r --name-only 37ec3b54 -- docs/evidencia/2026-10-22-hardening211-combined | wc -l
+50
+$ find docs/evidencia/2026-10-22-hardening211-combined -type f | wc -l
+50
+```
+
+Desglose: `README.md` 1 + `foco/` 5 + `manifiesto/` 2 + `logs/` 42 = **50**.
+
+Conteos alternativos probados; ninguno da 60:
+
+| Criterio | Conteo |
+| --- | ---: |
+| Archivos (`find -type f` / `git ls-tree -r`) | **50** |
+| Entradas incluyendo los 4 directorios | 54 |
+| Entradas incluyendo el directorio raíz | 55 |
+| Archivos tocados alguna vez en la rama del PR | 54 |
+| Máximo de archivos en un commit intermedio de la rama (`332b2fd5`) | 52 |
+| Archivos del PR según GitHub (`files`) | 50 |
+
+Los 4 archivos que se tocaron y no llegaron al merge no explican el 60 (tampoco
+suman 10): `README-f-combined.txt`, `foco/README-f-combined.txt` y
+`matrix.txt` (borrados en `63eb6102`) y `foco/logs/f02-corrupt.stdout` (borrado
+en el mismo commit; el `logs/f02-corrupt.stdout` final es otro archivo). No hay
+carpeta ni criterio de conteo que produzca 60: **el “60” del cuerpo del PR #239
+es un conteo manual incorrecto** y no se repite como conteo de archivos en la
+evidencia. No hay divergencia funcional: los 50 archivos son los que entraron en
+el merge.
+
+Texto sugerido para el cuerpo del PR #239 (si el owner lo edita): reemplazar
+«`docs/evidencia/2026-10-22-hardening211-combined/**`, 60 archivos» por
+«`docs/evidencia/2026-10-22-hardening211-combined/**`, 50 archivos».
