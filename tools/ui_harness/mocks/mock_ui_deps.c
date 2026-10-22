@@ -147,11 +147,25 @@ void event_obj_check(void) {}
  * el arnes): el reset de contexto de main_screen.c es un no-op aca. */
 void rotary_tuning_reset(void) {}
 
+/* El aviso que un fixture tiene que LEER (issue #220). Por defecto el arnes no
+ * entrega ningun evento (ver la cabecera): la GUI empuja el estado directo y
+ * ningun label de mensaje se pinta, asi que las capturas de todos los fixtures
+ * salen sin mensajes. Un fixture que necesita comprobar el texto de un aviso
+ * pide este modo, que entrega SOLO el EVENT_MSG_UPDATE de forma sincrona al
+ * mismo objeto que el firmware eligio (src/msg.c o src/msg_tiny.c). Los demas
+ * eventos siguen siendo no-ops, asi que ningun otro fixture cambia de pixeles. */
+static bool event_bus_live = false;
+
+void mock_event_bus_set_live(bool live)
+{
+    event_bus_live = live;
+}
+
 void event_send(lv_obj_t *obj, lv_event_code_t event_code, void *param)
 {
-    (void) obj;
-    (void) event_code;
-    (void) param;
+    if (event_bus_live && obj != NULL && event_code == EVENT_MSG_UPDATE) {
+        lv_event_send(obj, event_code, param);
+    }
 }
 
 void event_send_key(int32_t key)

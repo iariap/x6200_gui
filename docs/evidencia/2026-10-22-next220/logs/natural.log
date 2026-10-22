@@ -1,0 +1,464 @@
+building ui_harness (revision fdf7a6bc0dac39ca06d43a7ab4823285b1e9da94)...
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/tools/ui_harness/src/swr_backend.c:12:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/tools/ui_harness/src/harness_main.c:61:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/tools/ui_harness/src/scenario.c:15:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/tools/ui_harness/src/screens.c:25:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dialog.h:13,
+                 from /src/tools/ui_harness/mocks/mock_main_screen.c:20:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/tools/ui_harness/mocks/mock_params.c:17:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/tools/ui_harness/build/styles_host.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/clock.c:11:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/meter.c:11:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/info.c:18:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/main_screen.h:12,
+                 from /src/src/main_screen.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/backlight.h:14,
+                 from /src/src/band_info.c:11:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/band_info.c: In function 'band_info_draw_cb':
+/src/src/band_info.c:45:21: warning: unused variable 'code' [-Wunused-variable]
+   45 |     lv_event_code_t code     = lv_event_get_code(e);
+      |                     ^~~~
+/src/src/clock.c: In function 'clock_init':
+/src/src/clock.c:228:1: warning: control reaches end of non-void function [-Wreturn-type]
+  228 | }
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/waterfall.c:12:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/main_screen.c: In function 'main_screen_action':
+/src/src/main_screen.c:391:5: warning: enumeration value 'ACTION_APP_EQ' not handled in switch [-Wswitch]
+  391 |     switch (action) {
+      |     ^~~~~~
+/src/src/main_screen.c:391:5: warning: enumeration value 'ACTION_APP_GPS' not handled in switch [-Wswitch]
+/src/src/main_screen.c:391:5: warning: enumeration value 'ACTION_WF_MODE' not handled in switch [-Wswitch]
+/src/src/main_screen.c: At top level:
+/src/src/main_screen.c:1332:32: warning: comparison between 'enum <anonymous>' and 'enum <anonymous>' [-Wenum-compare]
+ 1332 | _Static_assert(FREQ_ACCEL_NONE == ADAPTIVE_ACCEL_NONE &&
+      |                                ^~
+/src/src/main_screen.c:1333:32: warning: comparison between 'enum <anonymous>' and 'enum <anonymous>' [-Wenum-compare]
+ 1333 |                FREQ_ACCEL_LITE == ADAPTIVE_ACCEL_LITE &&
+      |                                ^~
+/src/src/main_screen.c:1334:34: warning: comparison between 'enum <anonymous>' and 'enum <anonymous>' [-Wenum-compare]
+ 1334 |                FREQ_ACCEL_STRONG == ADAPTIVE_ACCEL_STRONG,
+      |                                  ^~
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dialog.h:13,
+                 from /src/src/tx_info.c:13:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/spectrum.c:15:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/band_plan.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/pannel.c:12:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/tx_info.c: In function 'tx_info_draw_cb':
+/src/src/tx_info.c:91:16: warning: unused variable 'h' [-Wunused-variable]
+   91 |     lv_coord_t h = lv_obj_get_height(obj) - 1;
+      |                ^
+/src/src/tx_info.c: At top level:
+/src/src/tx_info.c:38:17: warning: 'prev_ui_update' defined but not used [-Wunused-variable]
+   38 | static uint64_t prev_ui_update = 0;
+      |                 ^~~~~~~~~~~~~~
+In file included from /src/src/params/params.h:20,
+                 from /src/src/vol.c:14:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/msg.c:11:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/pannel.c: In function 'pannel_visible':
+/src/src/pannel.c:127:5: warning: enumeration value 'x6200_mode_am' not handled in switch [-Wswitch]
+  127 |     switch (mode) {
+      |     ^~~~~~
+/src/src/pannel.c:127:5: warning: enumeration value 'x6200_mode_sam' not handled in switch [-Wswitch]
+/src/src/pannel.c:127:5: warning: enumeration value 'x6200_mode_nfm' not handled in switch [-Wswitch]
+/src/src/pannel.c:127:5: warning: enumeration value 'x6200_mode_wfm' not handled in switch [-Wswitch]
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/msg_tiny.c:11:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/vol.c: In function 'vol_update':
+/src/src/vol.c:33:17: warning: unused variable 'freq' [-Wunused-variable]
+   33 |     int32_t     freq;
+      |                 ^~~~
+/src/src/vol.c:32:17: warning: unused variable 'b' [-Wunused-variable]
+   32 |     bool        b;
+      |                 ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/autotune_ui.c:45:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dialog.h:13,
+                 from /src/src/dialog_settings.h:11,
+                 from /src/src/dialog_settings.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/cw_tune_ui.c:15:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dialog.h:13,
+                 from /src/src/dialog.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/backlight.h:14,
+                 from /src/src/backlight.c:17:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dialog.h:13,
+                 from /src/src/dialog_bt.h:9,
+                 from /src/src/dialog_bt.c:12:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dfl_inline.c:23:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dialog.h:13,
+                 from /src/src/dialog_swrscan.h:15,
+                 from /src/src/dialog_swrscan.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/dialog_settings.c: In function 'make_line_gain':
+/src/src/dialog_settings.c:829:18: warning: unused variable 'obj' [-Wunused-variable]
+  829 |     lv_obj_t    *obj;
+      |                  ^~~
+/src/src/dialog_settings.c: In function 'make_audio_gain':
+/src/src/dialog_settings.c:1423:18: warning: unused variable 'obj' [-Wunused-variable]
+ 1423 |     lv_obj_t    *obj;
+      |                  ^~~
+/src/src/backlight.c: In function 'set_brightness':
+/src/src/backlight.c:42:17: warning: unused variable 'n' [-Wunused-variable]
+   42 |         ssize_t n = write(brightness, str, len);
+      |                 ^
+/src/src/backlight.c: In function 'set_power':
+/src/src/backlight.c:51:17: warning: unused variable 'n' [-Wunused-variable]
+   51 |         ssize_t n = write(power, str, len);
+      |                 ^
+/src/src/dfl_inline.c:162:13: warning: 'apply_bw' defined but not used [-Wunused-function]
+  162 | static void apply_bw(int32_t val) {
+      |             ^~~~~~~~
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/dfl_context.c:20:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/buttons.cpp:8:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/controls.h:3,
+                 from /src/src/controls.cpp:1:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/mfk.cpp:20:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/cfg/../params/params.h:20,
+                 from /src/src/cfg/settings_manager.cpp:11:
+/src/src/cfg/../params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/lvgl/lvgl.h:25,
+                 from /src/src/buttons.h:19:
+/src/src/buttons.cpp: In function 'void buttons_init(lv_obj_t*)':
+/src/src/buttons.cpp:1154:29: warning: format '%u' expects argument of type 'unsigned int', but argument 6 has type 'size_t' {aka 'long unsigned int'} [-Wformat=]
+ 1154 |                 LV_LOG_USER("First button in page=%u, group=%u press cb is not next", j, i);
+      |                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  ~
+      |                                                                                       |
+      |                                                                                       size_t {aka long unsigned int}
+/src/lvgl/src/misc/lv_log.h:123:91: note: in definition of macro 'LV_LOG_USER'
+  123 | #    define LV_LOG_USER(...) _lv_log_add(LV_LOG_LEVEL_USER, __FILE__, __LINE__, __func__, __VA_ARGS__)
+      |                                                                                           ^~~~~~~~~~~
+/src/src/buttons.cpp:1154:52: note: format string is defined here
+ 1154 |                 LV_LOG_USER("First button in page=%u, group=%u press cb is not next", j, i);
+      |                                                   ~^
+      |                                                    |
+      |                                                    unsigned int
+      |                                                   %lu
+/src/src/buttons.cpp:1154:29: warning: format '%u' expects argument of type 'unsigned int', but argument 7 has type 'size_t' {aka 'long unsigned int'} [-Wformat=]
+ 1154 |                 LV_LOG_USER("First button in page=%u, group=%u press cb is not next", j, i);
+      |                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     ~
+      |                                                                                          |
+      |                                                                                          size_t {aka long unsigned int}
+/src/lvgl/src/misc/lv_log.h:123:91: note: in definition of macro 'LV_LOG_USER'
+  123 | #    define LV_LOG_USER(...) _lv_log_add(LV_LOG_LEVEL_USER, __FILE__, __LINE__, __func__, __VA_ARGS__)
+      |                                                                                           ^~~~~~~~~~~
+/src/src/buttons.cpp:1154:62: note: format string is defined here
+ 1154 |                 LV_LOG_USER("First button in page=%u, group=%u press cb is not next", j, i);
+      |                                                             ~^
+      |                                                              |
+      |                                                              unsigned int
+      |                                                             %lu
+/src/src/buttons.cpp:1160:29: warning: format '%u' expects argument of type 'unsigned int', but argument 6 has type 'size_t' {aka 'long unsigned int'} [-Wformat=]
+ 1160 |                 LV_LOG_USER("First button in page=%u, group=%u hold cb is not prev", j, i);
+      |                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  ~
+      |                                                                                      |
+      |                                                                                      size_t {aka long unsigned int}
+/src/lvgl/src/misc/lv_log.h:123:91: note: in definition of macro 'LV_LOG_USER'
+  123 | #    define LV_LOG_USER(...) _lv_log_add(LV_LOG_LEVEL_USER, __FILE__, __LINE__, __func__, __VA_ARGS__)
+      |                                                                                           ^~~~~~~~~~~
+/src/src/buttons.cpp:1160:52: note: format string is defined here
+ 1160 |                 LV_LOG_USER("First button in page=%u, group=%u hold cb is not prev", j, i);
+      |                                                   ~^
+      |                                                    |
+      |                                                    unsigned int
+      |                                                   %lu
+/src/src/buttons.cpp:1160:29: warning: format '%u' expects argument of type 'unsigned int', but argument 7 has type 'size_t' {aka 'long unsigned int'} [-Wformat=]
+ 1160 |                 LV_LOG_USER("First button in page=%u, group=%u hold cb is not prev", j, i);
+      |                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     ~
+      |                                                                                         |
+      |                                                                                         size_t {aka long unsigned int}
+/src/lvgl/src/misc/lv_log.h:123:91: note: in definition of macro 'LV_LOG_USER'
+  123 | #    define LV_LOG_USER(...) _lv_log_add(LV_LOG_LEVEL_USER, __FILE__, __LINE__, __func__, __VA_ARGS__)
+      |                                                                                           ^~~~~~~~~~~
+/src/src/buttons.cpp:1160:62: note: format string is defined here
+ 1160 |                 LV_LOG_USER("First button in page=%u, group=%u hold cb is not prev", j, i);
+      |                                                             ~^
+      |                                                              |
+      |                                                              unsigned int
+      |                                                             %lu
+/src/src/buttons.cpp: In function 'const char* vol_label_getter()':
+/src/src/buttons.cpp:1515:30: warning: format '%zi' expects argument of type 'signed size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1515 |     sprintf(buf, "Volume:\n%zi", subject_get_int(cfg.vol.val));
+      |                            ~~^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                              |                  |
+      |                              long int           int32_t {aka int}
+      |                            %i
+/src/src/buttons.cpp: In function 'const char* sql_label_getter()':
+/src/src/buttons.cpp:1521:31: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1521 |     sprintf(buf, "Squelch:\n%zu", subject_get_int(cfg_cur.sql_level));
+      |                             ~~^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                               |                  |
+      |                               long unsigned int  int32_t {aka int}
+      |                             %u
+/src/src/buttons.cpp: In function 'const char* rfg_label_getter()':
+/src/src/buttons.cpp:1527:31: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1527 |     sprintf(buf, "RF gain:\n%zu", subject_get_int(cfg_cur.band->rfg.val));
+      |                             ~~^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                               |                  |
+      |                               long unsigned int  int32_t {aka int}
+      |                             %u
+/src/src/buttons.cpp: In function 'const char* h_mic_gain_label_getter()':
+/src/src/buttons.cpp:1564:34: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int' [-Wformat=]
+ 1564 |     sprintf(buf, "H-Mic gain:\n%zu", params.hmic);
+      |                                ~~^   ~~~~~~~~~~~
+      |                                  |          |
+      |                                  |          int
+      |                                  long unsigned int
+      |                                %u
+/src/src/buttons.cpp: In function 'const char* i_mic_gain_label_getter()':
+/src/src/buttons.cpp:1570:34: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int' [-Wformat=]
+ 1570 |     sprintf(buf, "I-Mic gain:\n%zu", params.imic);
+      |                                ~~^   ~~~~~~~~~~~
+      |                                  |          |
+      |                                  |          int
+      |                                  long unsigned int
+      |                                %u
+/src/src/buttons.cpp: In function 'const char* moni_level_label_getter()':
+/src/src/buttons.cpp:1576:34: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int' [-Wformat=]
+ 1576 |     sprintf(buf, "Moni level:\n%zu", params.moni);
+      |                                ~~^   ~~~~~~~~~~~
+      |                                  |          |
+      |                                  |          int
+      |                                  long unsigned int
+      |                                %u
+/src/src/buttons.cpp: In function 'const char* rit_label_getter()':
+/src/src/buttons.cpp:1589:28: warning: format '%zi' expects argument of type 'signed size_t', but argument 3 has type 'int' [-Wformat=]
+ 1589 |     sprintf(buf, "RIT:\n%+zi", params.rit);
+      |                         ~~~^   ~~~~~~~~~~
+      |                            |          |
+      |                            long int   int
+      |                         %+i
+/src/src/buttons.cpp: In function 'const char* xit_label_getter()':
+/src/src/buttons.cpp:1595:28: warning: format '%zi' expects argument of type 'signed size_t', but argument 3 has type 'int' [-Wformat=]
+ 1595 |     sprintf(buf, "XIT:\n%+zi", params.xit);
+      |                         ~~~^   ~~~~~~~~~~
+      |                            |          |
+      |                            long int   int
+      |                         %+i
+/src/src/buttons.cpp: In function 'const char* key_speed_label_getter()':
+/src/src/buttons.cpp:1626:29: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1626 |     sprintf(buf, "Speed:\n%zu wpm", subject_get_int(cfg.key_speed.val));
+      |                           ~~^       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                             |                      |
+      |                             long unsigned int      int32_t {aka int}
+      |                           %u
+/src/src/buttons.cpp: In function 'const char* key_volume_label_getter()':
+/src/src/buttons.cpp:1632:30: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1632 |     sprintf(buf, "Volume:\n%zu", subject_get_int(cfg.key_vol.val));
+      |                            ~~^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                              |                  |
+      |                              long unsigned int  int32_t {aka int}
+      |                            %u
+/src/src/buttons.cpp: In function 'const char* key_tone_label_getter()':
+/src/src/buttons.cpp:1644:28: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1644 |     sprintf(buf, "Tone:\n%zu Hz", subject_get_int(cfg.key_tone.val));
+      |                          ~~^      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                            |                     |
+      |                            long unsigned int     int32_t {aka int}
+      |                          %u
+/src/src/buttons.cpp: In function 'const char* qsk_time_label_getter()':
+/src/src/buttons.cpp:1662:32: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1662 |     sprintf(buf, "QSK time:\n%zu ms", subject_get_int(cfg.qsk_time.val));
+      |                              ~~^      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                |                     |
+      |                                long unsigned int     int32_t {aka int}
+      |                              %u
+/src/src/buttons.cpp: In function 'const char* dnf_center_label_getter()':
+/src/src/buttons.cpp:1716:32: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1716 |     sprintf(buf, "DNF freq:\n%zu Hz", subject_get_int(cfg.dnf_center.val));
+      |                              ~~^      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                |                     |
+      |                                long unsigned int     int32_t {aka int}
+      |                              %u
+/src/src/buttons.cpp: In function 'const char* dnf_width_label_getter()':
+/src/src/buttons.cpp:1722:33: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1722 |     sprintf(buf, "DNF width:\n%zu Hz", subject_get_int(cfg.dnf_width.val));
+      |                               ~~^      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                 |                     |
+      |                                 long unsigned int     int32_t {aka int}
+      |                               %u
+/src/src/buttons.cpp: In function 'const char* nb_level_label_getter()':
+/src/src/buttons.cpp:1735:32: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1735 |     sprintf(buf, "NB level:\n%zu", subject_get_int(cfg.nb_level.val));
+      |                              ~~^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                |                  |
+      |                                long unsigned int  int32_t {aka int}
+      |                              %u
+/src/src/buttons.cpp: In function 'const char* nb_width_label_getter()':
+/src/src/buttons.cpp:1741:32: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1741 |     sprintf(buf, "NB width:\n%zu Hz", subject_get_int(cfg.nb_width.val));
+      |                              ~~^      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                |                     |
+      |                                long unsigned int     int32_t {aka int}
+      |                              %u
+/src/src/buttons.cpp: In function 'const char* nr_level_label_getter()':
+/src/src/buttons.cpp:1753:32: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1753 |     sprintf(buf, "NR level:\n%zu", subject_get_int(cfg.nr_level.val));
+      |                              ~~^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                |                  |
+      |                                long unsigned int  int32_t {aka int}
+      |                              %u
+/src/src/mfk.cpp: In instantiation of 'T loop_items(std::vector<_Tp>, T, bool) [with T = x6200_key_mode_t]':
+/src/src/mfk.cpp:218:31:   required from here
+/src/src/mfk.cpp:787:21: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long unsigned int'} [-Wsign-compare]
+  787 |     for (id = 0; id < len; id++) {
+      |                  ~~~^~~~~
+/src/src/mfk.cpp: In instantiation of 'T loop_items(std::vector<_Tp>, T, bool) [with T = x6200_iambic_mode_t]':
+/src/src/mfk.cpp:235:31:   required from here
+/src/src/mfk.cpp:787:21: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long unsigned int'} [-Wsign-compare]
+running the natural bench on main-natural...
+  profile: spectrum 132000 px x 27 frames, waterfall 196000 px x 39 rows, clock 15840 px x 0 tick(s)
+  natural totals: invalidated 11208000 px in 66 rectangles / 66 flushes over 39/40 frames
+  delimitation: drive off -> 190400 px (1.7% of the 11208000 px with the drive), only band-info rectangles (the OPT-4 #150 equality guards removed the clock/BT ticks)
+  forced mode: 3 frames x 1 flush x 384000 px (natural: 11208000 px in 40 frames)
+  CLI override: --bench-natural 10 ran 10 frames (the fixture says 40)
+  display off: 0 px in 40 frames (against 11208000 px lit) and a capture 384000 px lighter
+PASS: natural bench deterministic, profiled and delimited (main-natural)
+  png sha256: 0f676954bc7fd6854e3945de5e5aed436613d0191c5e963c6d265b2a512c77f3
+natural EXIT=0
