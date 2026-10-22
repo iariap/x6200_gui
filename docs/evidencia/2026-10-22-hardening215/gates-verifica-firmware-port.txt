@@ -1,0 +1,5 @@
+# gate: tools/verifica-firmware-port.py --tar <paquete publicado> (read-only)
+# (el binario GUI que viaja en el paquete)
+
+OK: /home/pablo/desa/x6200/images/x6200_r1cbu_v0.1.2-lu2dsx.tgz es el firmware del port (ELF32 ARM, 11114008 B, 2/3 marcas)
+rc=0

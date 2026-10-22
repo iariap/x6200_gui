@@ -70,57 +70,111 @@ Lo que sigue necesitando la radio (🔌) está listado en
 
 ```bash
 cd x6200_gui
-sudo tools/release/make_release_assets.sh <imagen.img> <versión>   # imagen + tgz + SHA256SUMS
+sudo tools/release/make_release_assets.sh <imagen.img> <versión>   # imagen + tgz + tgz.sha256 + SHA256SUMS
 tools/release/publish_release.sh <tag> <versión>              # ensayo: verifica y muestra el comando
 tools/release/publish_release.sh <tag> <versión> --publish    # publica
 ```
 
-El segundo **verifica antes de publicar**: que existan los tres artefactos y que los checksums
-coincidan, que el tgz de actualización traiga **el mismo binario GUI** que la imagen (así una
-actualización en el lugar instala exactamente lo que instala la imagen), que el árbol esté limpio y
-pusheado, que la suite pase y que las notas del release existan. Sin `--publish` se detiene después
-de las verificaciones y **muestra el comando que ejecutaría**, así se puede ensayar.
+El segundo **verifica antes de publicar**: que existan la imagen, el tgz y su sidecar, que los
+checksums coincidan, que el tgz de actualización traiga **el mismo binario GUI** que la imagen (así
+una actualización en el lugar instala exactamente lo que instala la imagen), que el árbol esté
+limpio y pusheado, que la suite pase y que las notas del release existan. Sin `--publish` se detiene
+después de las verificaciones y **muestra el comando que ejecutaría**, así se puede ensayar.
 
-**El tgz de actualización necesita root** (`sudo`), porque el rootfs trae cinco archivos setuid
-(`busybox`, `mount`, `umount`, `dbus-daemon-launch-helper`, `ssh-keysign`) y hay que preservarlos:
-extrayéndolo como usuario común se pierden y una actualización en el lugar rompería esos binarios.
-`tools/release/make_update_tgz.sh` lo arma y lo comprueba.
+`make_release_assets.sh` corre además el **gate de paridad del updater**
+([`check_updater_parity.sh`](../tools/release/check_updater_parity.sh)): el `S02update` del overlay
+de este repo y el de la imagen de `AetherX6200Buildroot` tienen que ser **el mismo archivo**. Si no
+hay checkout de Buildroot a mano lo informa como `SKIP` (visible, nunca como pase) y la integración
+lo corre con la ruta explícita.
 
-Hay una prueba del camino completo, que corre el `S02update` **real** de la imagen dentro de un
-chroot sobre una copia del rootfs (marca un archivo, aplica el tgz, y comprueba que el backup
-traiga lo reemplazado y que el tgz se haya aplicado):
+**El tgz de actualización necesita root** (`sudo`), porque el rootfs trae archivos setuid y hay que
+preservarlos: extrayéndolo como usuario común se pierden y una actualización en el lugar rompería
+esos binarios. `tools/release/make_update_tgz.sh` lo arma y comprueba el **inventario setuid exacto
+de la imagen auditada** (3): `bin/busybox` 4755 root:root, `usr/libexec/dbus-daemon-launch-helper`
+4750 root:101 y `usr/libexec/ssh-keysign` 4711 root:root. `bin/mount` y `bin/umount` son **0755**:
+la aserción vieja de "5 bits setuid" era falsa y abortaba la herramienta sobre la imagen buena.
+
+### Actualización en el lugar: qué viaja y qué se verifica
+
+Cada paquete viaja con **su sidecar** `<tgz>.sha256` (una línea `<hash>  <nombre>`), y los dos
+archivos van juntos a `/mnt` de la radio:
 
 ```bash
-sudo x6200_gui/tools/release/test_update.sh [rootfs.tar] [actualización.tgz]
+cp x6200_r1cbu_<versión>.tgz x6200_r1cbu_<versión>.tgz.sha256 /mnt/
 ```
 
-**El backup**: el `S02update` del firmware base lo hace con
-`zcat $i | tar -tf - | xargs tar -cvf - | gzip > /mnt/backup_...`, y `xargs` parte la lista en
-varios `tar` que escriben al mismo stdout: el resultado son varios archivos tar concatenados, de
-los que sólo se puede leer el primero (~700 de 5313 archivos), así que no sirve para volver atrás.
+`etc/init.d/S02update` es **el mismo script en los dos puntos de instalación** (el overlay de este
+repo, que viaja dentro del tgz, y `rootfs-overlay` de `AetherX6200Buildroot`, que es el que corre
+una tarjeta recién grabada). Antes de tocar `/`, para cada `/mnt/x6200_r1cbu_*.tgz`:
 
-Por eso **el tgz lleva su propio `S02update`** (`tools/release/update-overlay/etc/init.d/`): la
-lista va a un archivo temporal y se arma **un solo** tar, con lo que el backup queda completo y
-legible (verificado con esta prueba: 5313 entradas y el archivo reemplazado adentro). Se instala al
-aplicar una actualización, no está en la imagen: una tarjeta recién grabada usa el script del
-firmware en su primera actualización y a partir de ahí el corregido. Si el backup llegara a fallar,
-la actualización sigue igual.
+1. exige `/mnt` como **montaje propio y escribible** (si no, el backup caería en el rootfs);
+2. exige el **sidecar** y que su SHA256 sea el del paquete, que el gzip esté completo (`gzip -t`) y
+   que el tar se recorra entero;
+3. hace un **preflight de la lista del propio paquete**: nombres relativos, sin `.` ni `..`, sin
+   duplicados, sólo archivos, symlinks y hard links (nada de directorios, nodos ni fifos), sin poder
+   reemplazar **el punto de montaje** `/mnt`, `/dev`, `/proc`, `/sys`, `/run` ni `/tmp` (los hijos sí
+   viajan: la rootfs auditada trae symlinks bajo `/dev`), con un listado que salga **limpio** (el tar
+   del target avisa por stderr cuando tiene que recortar un `/` inicial o un `../` de un nombre, que
+   es justo lo que el contrato prohíbe), los enlaces relativos que puedan salirse del rootfs
+   (un `..` se admite mientras el destino quede adentro: la imagen auditada trae
+   `dev/fd -> ../proc/self/fd`), el inventario setuid exacto de la imagen y el propio `S02update`
+   como `root:root 0755`;
+4. hace **UN** backup con el tar del target (nunca `xargs`, que parte la lista y deja un archivo con
+   varios tar concatenados de los que sólo se lee el primero): va a
+   `/mnt/backup_<tgz>.partial`, se verifica (mismas rutas, y el contenido de cada archivo igual al
+   de disco) y recién ahí se renombra a `/mnt/backup_<tgz>`. Las rutas que el paquete **agrega**
+   quedan listadas en `/mnt/new_<tgz>.list` para poder sacarlas a mano;
+5. recién entonces descomprime sobre `/` con `gzip -dc | tar -x` y `pipefail`, así el exit de los
+   dos lados es real. Si falla: `Update failed: package retained; restore backup manually`, no borra
+   nada y no sigue con otro paquete;
+6. después compara el árbol instalado con el paquete (mismo listado y mismo hash del contenido
+   concatenado), exige el updater en `root:root 0755` y que la GUI sea un ELF de al menos 1 MiB;
+   **sólo entonces** borra el tgz y el sidecar. El backup verificado queda.
 
-En resumen: para volver atrás de una tarjeta recién grabada, la imagen de la release anterior; con
-el script corregido instalado, `/mnt/backup_x6200_r1cbu_*.tgz`.
+Los mensajes al operador son cuatro, en inglés: `Update applied`, `Update verification failed`,
+`Update backup failed` y `Update failed: package retained; restore backup manually`.
 
-**El tgz lleva sólo archivos y enlaces**: ni `./` ni entradas de directorio. No es un capricho, el
-`S02update` del firmware hace el backup así:
+**Lo que esto no es**: no hay A/B, no hay firma (el SHA256 con sidecar detecta corrupción
+accidental, no prueba autenticidad) y no hay rollback automático. Un corte de energía **en medio**
+de descomprimir sobre el único rootfs **no** está garantizado como recuperable: para volver atrás
+hay que restaurar a mano desde `/mnt/backup_<tgz>` (o reimagenar la SD con la imagen anterior).
 
-```sh
-zcat $i | tar -tf - | xargs tar -cvf - | gzip > /mnt/backup_...
+### El primer update de una imagen histórica
+
+Una imagen que todavía corre el `S02update` **viejo** (el stock de Buildroot, `xargs`) ejecuta **su
+propio** script en el primer update en el lugar: ese script no mira el sidecar, deja el backup
+truncado y borra el tgz sin comprobarlo. Por eso **el primer update de una imagen histórica NO queda
+protegido por este contrato** y se reporta `UNSUPPORTED/UNSAFE_LEGACY`, nunca como pase de
+seguridad. La recomendación es **reimagenar** una tarjeta de laboratorio (con backup y restauración
+manual) en vez de migrar por update en el lugar. Después de ese primer update la imagen queda con el
+updater nuevo y **las actualizaciones siguientes sí quedan protegidas**.
+
+### Las pruebas del camino de actualización
+
+En un chroot sobre una copia del rootfs, con el bash y el BusyBox del target:
+
+```bash
+sudo x6200_gui/tools/release/test_update.sh <rootfs.tar> <paquete.tgz> [directorio de trabajo]
 ```
 
-Con una entrada `./` ese `tar` recibe `./` y archiva el sistema **entero** —incluido `/mnt`, donde
-está escribiendo el backup—. Con sólo archivos, el backup contiene exactamente los archivos que se
-reemplazan (5313 entradas, 0 directorios). Verificado extrayendo el tgz con el **busybox de la
-imagen**: extrae, crea las carpetas que falten, conserva dueño, permisos y los cinco setuid, y deja
-un binario GUI idéntico al de la imagen.
+Corre los dos escenarios (A: imagen ya compatible → contrato completo; B: imagen histórica →
+`UNSUPPORTED/UNSAFE_LEGACY`) y exige el sidecar junto al paquete. No borra nada por su cuenta: si le
+pasás un directorio de trabajo, tiene que estar vacío. El directorio no puede tener datos reales.
+
+El banco **hermético y privado** de la matriz de casos (contenedor desechable con qemu-user, chroot
+con el rootfs real, sin tocar la radio ni los volúmenes compartidos) está en
+[`tests/release/test_safe_update.sh`](../tests/release/test_safe_update.sh) con su
+[README](../tests/release/README.md): paquete bueno, segunda aplicación, rutas nuevas, backup
+verificado y restaurado a mano, sidecar faltante / con hash malo / con otro nombre, tgz truncado,
+entradas absolutas / `..` / `./` / duplicadas / bajo `/mnt` `/dev` `/tmp`, nodos, setuid de más,
+updater con uid 1000, tar que falla al extraer, reuso del backup idéntico, conflicto de backup, sin
+espacio, `/mnt` read-only, `/mnt` sin montar y el primer update de una imagen histórica.
+
+**El tgz lleva sólo archivos y enlaces**: ni `./` ni entradas de directorio. Con una entrada `./` el
+backup del script stock recibe `./` y archiva el sistema **entero** —incluido `/mnt`, donde está
+escribiendo el backup—. Con sólo archivos, el backup contiene exactamente los archivos que se
+reemplazan (0 directorios), y el preflight del updater nuevo rechaza cualquier paquete que se salga
+de eso.
 
 ### Análisis estático
 

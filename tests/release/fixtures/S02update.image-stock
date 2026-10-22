@@ -1,0 +1,24 @@
+#!/bin/sh
+
+start() {
+    cd /
+
+    for i in /mnt/x6200_r1cbu_*.tgz; do
+        [ ! -f "$i" ] && continue
+        echo "Creating backup from $i"
+        zcat $i | tar -tf - | xargs tar -cvf - | gzip > /mnt/backup_$(basename $i)
+        echo "Update from $i"
+        zcat $i | tar -xf -
+        rm $i
+    done
+}
+
+case "$1" in
+    start)
+        start;;
+    stop)
+        ;;
+    *)
+        echo "Usage: $0 {start}"
+    exit 1
+esac
