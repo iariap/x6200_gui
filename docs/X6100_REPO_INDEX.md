@@ -34,7 +34,7 @@ cd .x6100_ref && git submodule update --init --recursive --depth 1   # lvgl (for
 | `boot/` | `logo.png` | 24 KB | ➖ |
 | `lv_drivers/` | Drivers LVGL (fbdev, etc.) | 116 KB | 📖 |
 | `lvgl/` | Submódulo: fork NEON de gdyuldin | — | 📖 el nuestro también es un fork |
-| `u-boot/` | `u-boot-sunxi-with-spl.bin` | 572 KB | ➖ el nuestro ya funciona |
+| `u-boot/` | — | — | ➖ **removido**: el boot se construye desde fuente en el Buildroot (`uboot-2023.01`, 556.120 B, md5 cd22949d…). El prebuilt vendor viejo (584.708 B, md5 4512f2ba…) no se usaba (paso de CI comentado) |
 | `buildroot/` | Scripts de build de la app (`build.sh`, `bt_start.sh`) | 20 KB | 📖 |
 
 ## `tools/` — lo más valioso

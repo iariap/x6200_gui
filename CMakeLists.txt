@@ -52,7 +52,7 @@ else()
         add_subdirectory(btcat)
         add_subdirectory(lv_drivers)
         add_subdirectory(sql)
-        install(TARGETS ${PROJECT_NAME} btcat DESTINATION sbin)
+        install(TARGETS ${PROJECT_NAME} btcat x6200_bootanim DESTINATION sbin)
         install(DIRECTORY rootfs/
                 DESTINATION /
                 USE_SOURCE_PERMISSIONS

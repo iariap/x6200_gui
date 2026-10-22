@@ -1,0 +1,24 @@
+== toolchain: arm-buildroot-linux-gnueabihf-gcc.br_real (Buildroot 2023.02.11-dirty) 12.3.0
+== sello de fuentes del arbol: 18f5458db571b3056efdfa54c0013a05
+== compilacion ARM (target Linux 6.1 armv7l, sysroot de Buildroot)
+/tmp/opencode/ba-arm/arm_det240: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, with debug_info, not stripped
+/tmp/opencode/ba-arm/arm_prod:   ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, with debug_info, not stripped
+
+== 1) cuadro 240 (20.160 ms: logo fijo + lluvia) con 16bpp y stride +64 ==
+x6200_bootanim: fuente 18f5458db571b3056efdfa54c0013a05
+exit=0
+IDENTICO al oraculo del host (819200 bytes)
+
+== 2) cuadro 358 (30.072 ms: STARTUP DELAYED y ciclo vivo) ==
+x6200_bootanim: fuente 18f5458db571b3056efdfa54c0013a05
+exit=0
+IDENTICO al oraculo del host (819200 bytes, >30 s y con el ciclo viv)
+
+== 3) produccion ARM: vivo pasado 30 s virtuales y corte por SIGUSR1 ==
+vivo y animando pasado 30 s virtuales; SIGUSR1 -> exit=0 en 3 ms reales
+x6200_bootanim: fuente 18f5458db571b3056efdfa54c0013a05
+
+== 4) el cuadro final del ARM sigue siendo del ciclo (paleta + cajas) ==
+ok: paleta del contrato (con destello), cajas del ciclo y cuadro final conservado
+
+PASS: animador ARM (qemu-arm-static) identico al oraculo del host y vivo hasta la cesion
