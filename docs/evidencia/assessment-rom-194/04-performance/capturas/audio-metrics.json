@@ -1,0 +1,185 @@
+{
+  "layer": "QEMU_USER",
+  "coverage": "SYNTHETIC",
+  "source": "GUI voice test (X6200_VOICE_TEST) -> PulseAudio null sink -> parec",
+  "files": [
+    {
+      "file": "silence-1.wav",
+      "bytes": 1778128,
+      "sha256": "45cd3f0d56136ce05d72d92b0a32c08b7c8e908c27f53fff43aef1da1f23ac03",
+      "sample_rate_hz": 44100,
+      "channels": 2,
+      "frames": 444521,
+      "duration_s": 10.0798,
+      "channels_identical": true,
+      "channels_metrics": [
+        {
+          "channel": 0,
+          "rms_dbfs": null,
+          "peak_dbfs": null,
+          "nonzero": 0,
+          "samples": 444521
+        },
+        {
+          "channel": 1,
+          "rms_dbfs": null,
+          "peak_dbfs": null,
+          "nonzero": 0,
+          "samples": 444521
+        }
+      ],
+      "flac_file": "silence-1.flac",
+      "flac_bytes": 9648,
+      "flac_sha256": "70745b9ff7d524db2704cc9aba2bf8f7250f241525c3631925444ad55eb756e6"
+    },
+    {
+      "file": "silence-2.wav",
+      "bytes": 1778168,
+      "sha256": "469bda72c4cde181da242787558912887b3b1501e8969a98debf50ec092f6a23",
+      "sample_rate_hz": 44100,
+      "channels": 2,
+      "frames": 444531,
+      "duration_s": 10.0801,
+      "channels_identical": true,
+      "channels_metrics": [
+        {
+          "channel": 0,
+          "rms_dbfs": null,
+          "peak_dbfs": null,
+          "nonzero": 0,
+          "samples": 444531
+        },
+        {
+          "channel": 1,
+          "rms_dbfs": null,
+          "peak_dbfs": null,
+          "nonzero": 0,
+          "samples": 444531
+        }
+      ],
+      "flac_file": "silence-2.flac",
+      "flac_bytes": 9648,
+      "flac_sha256": "f2de5d849efb3da68697954106b65b4c33430702a7ce87f7c587f0f12cd74f9b"
+    },
+    {
+      "file": "silence-3.wav",
+      "bytes": 1711116,
+      "sha256": "a67d6ed05cc00bf627051f5dfd05d34c5bc52882e60090789e7a5b2a798f4045",
+      "sample_rate_hz": 44100,
+      "channels": 2,
+      "frames": 427768,
+      "duration_s": 9.7,
+      "channels_identical": true,
+      "channels_metrics": [
+        {
+          "channel": 0,
+          "rms_dbfs": null,
+          "peak_dbfs": null,
+          "nonzero": 0,
+          "samples": 427768
+        },
+        {
+          "channel": 1,
+          "rms_dbfs": null,
+          "peak_dbfs": null,
+          "nonzero": 0,
+          "samples": 427768
+        }
+      ],
+      "flac_file": "silence-3.flac",
+      "flac_bytes": 9592,
+      "flac_sha256": "82fb6e6623cda01d117b7bdb84697edb61a53d89a6c4fa504602ecf910af70cd"
+    },
+    {
+      "file": "voice-1.wav",
+      "bytes": 1109068,
+      "sha256": "e8c6d5f864c23ac1f375ec6398ed991ba3c6b796a4a1fa8f0d6c8dabec2d6194",
+      "sample_rate_hz": 44100,
+      "channels": 2,
+      "frames": 277256,
+      "duration_s": 6.287,
+      "channels_identical": true,
+      "channels_metrics": [
+        {
+          "channel": 0,
+          "rms_dbfs": -26.528,
+          "peak_dbfs": -3.697,
+          "nonzero": 67974,
+          "samples": 277256
+        },
+        {
+          "channel": 1,
+          "rms_dbfs": -26.528,
+          "peak_dbfs": -3.697,
+          "nonzero": 67974,
+          "samples": 277256
+        }
+      ],
+      "flac_file": "voice-1.flac",
+      "flac_bytes": 83057,
+      "flac_sha256": "cb59b58013adad49def370f2050512bc73f604e9f22d1075868abf537239abe3"
+    },
+    {
+      "file": "voice-2.wav",
+      "bytes": 1110488,
+      "sha256": "f9f2a8bd21bd30ddeec3ce5f6dbd46cad71ae242750a03b9015681a0b5b36140",
+      "sample_rate_hz": 44100,
+      "channels": 2,
+      "frames": 277611,
+      "duration_s": 6.295,
+      "channels_identical": true,
+      "channels_metrics": [
+        {
+          "channel": 0,
+          "rms_dbfs": -26.534,
+          "peak_dbfs": -3.697,
+          "nonzero": 67974,
+          "samples": 277611
+        },
+        {
+          "channel": 1,
+          "rms_dbfs": -26.534,
+          "peak_dbfs": -3.697,
+          "nonzero": 67974,
+          "samples": 277611
+        }
+      ],
+      "flac_file": "voice-2.flac",
+      "flac_bytes": 83057,
+      "flac_sha256": "698005cc0d725e64b5c958f8e017edcce9e7308d8f088e3e950e31487e7a75b2"
+    },
+    {
+      "file": "voice-3.wav",
+      "bytes": 1109452,
+      "sha256": "e2353ab947553a039327b533dad487f27dbefdda2ba893641aa2b69f72fb6c17",
+      "sample_rate_hz": 44100,
+      "channels": 2,
+      "frames": 277352,
+      "duration_s": 6.2892,
+      "channels_identical": true,
+      "channels_metrics": [
+        {
+          "channel": 0,
+          "rms_dbfs": -26.53,
+          "peak_dbfs": -3.697,
+          "nonzero": 67974,
+          "samples": 277352
+        },
+        {
+          "channel": 1,
+          "rms_dbfs": -26.53,
+          "peak_dbfs": -3.697,
+          "nonzero": 67974,
+          "samples": 277352
+        }
+      ],
+      "flac_file": "voice-3.flac",
+      "flac_bytes": 83056,
+      "flac_sha256": "258d80fa868f6101fcf9c6fdbd7c88f8d366a0b6735905bb3387022e0227dd70"
+    }
+  ],
+  "lossless_conversion": "ffmpeg -v error -i <name>.wav <name>.flac (FLAC, lossless); the WAVs are kept in assessment-194/scratch-198/audio/ and their SHA256/size are in this JSON",
+  "note": "Las métricas RMS/pico/nonzero se calcularon sobre el WAV original; el FLAC del repo es la misma señal comprimida sin pérdida.",
+  "flac_verified": "voice-1.flac y silence-1.flac decodificados a PCM s16le y comparados byte a byte con el WAV original: idénticos (cmp).",
+  "wav_retention": "Los WAV originales no se conservan como archivo: se convirtieron sin pérdida a FLAC y se registran aquí su SHA256 y tamaño. El PCM decodificado del FLAC se comparó con el WAV original (s16le, cmp) y es idéntico; el hash de archivo WAV no se reproduce porque la cabecera RIFF del decodificador no es la misma."
+}
