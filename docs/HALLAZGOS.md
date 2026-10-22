@@ -3649,6 +3649,39 @@ Backup del perfil previo: `/mnt/nm-profile-backup-201406.nmconnection`.
 (y `ssid=DharmaNet`) a las 20:14Z; monitor de BSSID cada 10 s en curso. *Pendiente de confirmar en
 ventana más larga que no vuelva a roamear.*
 
+
+**Corrección (22/10 20:40Z): el lock de BSSID solo no alcanzó.** Medido: a las 20:29:29Z la radio
+volvió a roamear al AP roto y quedó `down` de **20:32:49 a 20:34:30** con `dmesg`:
+
+```
+[ 7826.669160] wlan0: authenticate with 14:eb:b6:dc:ff:6c
+[ 7827.117585] wlan0: associating to AP 14:eb:b6:dc:ff:6c with corrupt probe response
+[ 7847.797937] wlan0: authenticate with 14:eb:b6:dc:ff:6c      # segundo intento
+[ 7852.219550] wlan0: deauthenticating from 14:eb:b6:dc:ff:6c by local choice (Reason: 3)
+```
+
+El perfil seguía con `bssid=62:c9:e3:49:b2:a8` (verificado) y el chip es un **RTL8723DU** (driver
+`rtw_8723du`, USB; el mismo chip hace el Bluetooth, `uevent: DRIVER=rtw_8723du`). El driver no expone
+parámetro de roaming (`/sys/module/rtw_core/parameters/` = `debug_mask`, `disable_lps_deep`,
+`support_bf`; `/sys/module/rtw_usb/parameters/switch_usb_mode`), así que el roam viene del
+**background scan del supplicant** o del propio driver.
+
+**Segundo ajuste aplicado** (20:41Z): `bgscan=` vacío en el perfil (desactiva el background-scan del
+supplicant) + `/etc/init.d/S45network-manager restart`; el perfil quedó:
+
+```
+[wifi]
+bssid=62:c9:e3:49:b2:a8
+bgscan=
+mode=infrastructure
+ssid=DharmaNet
+```
+
+Backup previo: `/mnt/nm-profile-backup-2014xx-prebgscan.nmconnection`. Verificación en curso (monitor
+de BSSID cada 10 s + logger de la radio); **si vuelve a roamear, el roam es del driver** y el arreglo
+pasa por otro lado (p. ej. parche al `rtw_8723du` o desactivar autoconnect del perfil y conectar con
+BSSID explícito). *Esto último es hipótesis: va al anexo A hasta medirlo.*
+
 **Nota**: el lock es **de la radio actual**: un reflash de la ROM lo pierde (el perfil está en el
 rootfs). Para que quede permanente hay que llevarlo al overlay del Buildroot (decisión del dueño).
 
