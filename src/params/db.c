@@ -362,13 +362,17 @@ static bool db_install_template(const char *path, const char *tmpl, char *why, s
 
     /* La base es del root (asi corre la GUI en la radio) y 0644: nunca
      * world-writable. Sin privilegios (build de prueba del host) fchown() falla
-     * y se ignora: lo que importa es que el archivo quede escribible por quien
-     * corre la GUI. */
+     * con EPERM y el archivo queda del usuario que corre la GUI: no es fatal,
+     * pero el valor de retorno NO se ignora (glibc lo marca warn_unused_result) y
+     * cualquier otro error se reporta. */
     if (ok) {
         ok = fchmod(tmp_fd, 0644) == 0;
     }
     if (ok) {
-        (void) fchown(tmp_fd, 0, 0);
+        errno = 0;
+        if (fchown(tmp_fd, 0, 0) != 0 && errno != EPERM) {
+            LV_LOG_WARN("params.db: cannot make %.160s root-owned: %.64s", tmp, strerror(errno));
+        }
     }
     if (ok) {
         ok = fsync(tmp_fd) == 0;

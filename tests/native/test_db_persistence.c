@@ -421,14 +421,16 @@ static void test_template_install(void) {
 
 static bool db_open_rw(const char *path) {
     db = NULL;
+    insert_stmt = NULL;
     return sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE, NULL) == SQLITE_OK;
 }
 
+/* Cerrar SIEMPRE con el helper de db.c: finaliza `insert_stmt` antes del
+ * sqlite3_close(). Al reves, sqlite3_close() devuelve SQLITE_BUSY (la conexion
+ * sigue abierta con su memoria interna) y LSan lo ve como leak indirecto de
+ * libsqlite3 -- el rojo del stage con ASan+LSan en CI (issue #213). */
 static void db_close(void) {
-    if (db != NULL) {
-        sqlite3_close(db);
-        db = NULL;
-    }
+    db_close_resources();
 }
 
 static void test_migrations_healthy(void) {
@@ -539,9 +541,14 @@ static bool db_prepare_insert(const char *path, bool readonly) {
     int flags = readonly ? SQLITE_OPEN_READONLY : SQLITE_OPEN_READWRITE;
 
     if (sqlite3_open_v2(path, &db, flags, NULL) != SQLITE_OK) {
+        db_close_resources();
         return false;
     }
-    return sqlite3_prepare_v2(db, "INSERT INTO params(name, val) VALUES(?, ?)", -1, &insert_stmt, 0) == SQLITE_OK;
+    if (sqlite3_prepare_v2(db, "INSERT INTO params(name, val) VALUES(?, ?)", -1, &insert_stmt, 0) != SQLITE_OK) {
+        db_close_resources();
+        return false;
+    }
+    return true;
 }
 
 static void test_write_success(void) {
