@@ -148,7 +148,7 @@ Todos con salida real en `logs/`; capa HOST salvo indicación.
 | 4.8 | Auditoría de pruebas/documentación | `python3 tests/audita-pruebas.py` | **0** | **OK** — `OK: estructura y evidencia en orden` (237 builds, 14 secciones, 59 enlaces) | `logs/gate-audita-pruebas.log` |
 | 4.9 | Identidad del port | `python3 tools/verifica-firmware-port.py <binario>` · `--tar rootfs.tar` | **0** · **0** | **PASS** — `es el firmware del port (ELF32 ARM, 13428656 B, 3/3 marcas)`; idem validando `usr/sbin/x6200_gui` dentro de `rootfs.tar` | `logs/gate-verifica-firmware-port.log` |
 | 4.10 | Suites focalizadas de cada hijo | §5 | **0** | **PASS** (todas) | `logs/gate-212-banco-data.log`, `logs/gate-212-banco-instalado.log`, `logs/gate-db-failclosed.log`, `logs/gate-daemon-suite.log`, `logs/gate-release-safe-update.log` |
-| 4.11 | Negativos QEMU / rootfs / MBR / fstab / update / arranque GUI en chroot | pasada combinada F-01..F-05 (§6) + bancos #212 y #215 | **0** | **PASS** — 7/7 casos + 100 ciclos; soak parcial (§6.2) | `logs/`, `foco/` |
+| 4.11 | Negativos QEMU / rootfs / MBR / fstab / update / arranque GUI en chroot | pasada combinada F-01..F-05 (§6) + bancos #212 y #215 + MBR/fstab/rootfs del artefacto | **0** | **PASS** — 7/7 casos + 100 ciclos; soak parcial (§6.2); MBR del `sdcard.img`: p1 BOOT FAT32 (2048+65536 sectores) + p2 rootfs Linux (67584+1048576), **sin p3** (DATA se crea en el primer boot, diseño de #212) y `fstab` instalado `…/mmcblk0p3 /mnt ext4 rw 0 2` | `logs/`, `foco/`, `logs/gate-mbr-fstab-rootfs.log` |
 | 4.12 | Extra (no pedido por el epic): camino de CI con ASan/LSan | `docker run … x6200-uiharness-full … sh tests/native/run_native_tests.sh` con libliquid 1.4.0 | **0** | **PASS** — suite completa bajo ASan+LSan sin leak | `logs/extra-native-tests-asan-liquid14.log` |
 
 Método de 4.5–4.7: se construyó una imagen propia `x6200-uiharness-211combo`
@@ -246,9 +246,14 @@ Casos extra de la pasada:
 
 ### 6.2 Soak y límites de ventana
 
-El soak (`f-soak`, 60 min) se lanza como caso aparte con el mismo chroot: sus
-muestras quedan en `logs/f-soak.log` minuto a minuto, con la GUI viva, `RSS`,
-hilos y `integrity_check` al final. El estado al cerrar la corrida está en §11.
+El soak (`f-soak`, objetivo 60 min) se lanzó como caso aparte con el mismo chroot
+y muestrea por minuto la GUI viva (`logs/f-soak.log`). **Medido: 22 minutos**
+(1–22), con `RSS` **plano en 60 512 kB** todo el tramo (sin crecimiento), 12 hilos
+hasta el minuto 19 y 11 desde el 20 (un hilo de trabajo terminó; `RSS` sin
+cambio), sin crash y sin re-siembra. El tramo restante hasta los 60 min **no se
+completó en la ventana de esta corrida** y se declara **PENDING** con esa razón
+(el caso no alcanza a imprimir su veredicto final; las muestras crudas quedan como
+evidencia parcial). No se declara PASS de soak completo.
 
 ## 7. Coherencia de la integración (observaciones del tip)
 
@@ -339,9 +344,9 @@ Por eso se propone **`READY_FOR_REMOTE_QA`** para el par
 
 - **No** es `GO` de release: no hay validación en radio, ni cortes de energía, ni
   update in-place (esos siguen `PENDING_HARDWARE`, §10).
-- El soak de ~1 h (§6.2) se reporta con la ventana efectivamente medida; si al
-  cerrar la corrida quedó incompleto, se declara esa parte como **PENDING** con su
-  razón, sin bloquear los gates ya aprobados.
+- **Soak parcial**: se midieron 22 de los 60 minutos (§6.2) con `RSS` plano y sin
+  crash; el tramo restante queda **PENDING** por ventana de la corrida. Es el
+  único punto de la lista del epic que no se completó.
 - El primer update de una imagen histórica se mantiene
   **`UNSUPPORTED/UNSAFE_LEGACY`**: el QA remoto debe usar reimagen de SD de
   laboratorio, no update in-place.

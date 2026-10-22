@@ -6,3 +6,24 @@
   ok: la GUI arranca para el soak (60 min)
    pid de la GUI: 41
    soak min 1: rss=60512kB hilos=12
+   soak min 2: rss=60512kB hilos=12
+   soak min 3: rss=60512kB hilos=12
+   soak min 4: rss=60512kB hilos=12
+   soak min 5: rss=60512kB hilos=12
+   soak min 6: rss=60512kB hilos=12
+   soak min 7: rss=60512kB hilos=12
+   soak min 8: rss=60512kB hilos=12
+   soak min 9: rss=60512kB hilos=12
+   soak min 10: rss=60512kB hilos=12
+   soak min 11: rss=60512kB hilos=12
+   soak min 12: rss=60512kB hilos=12
+   soak min 13: rss=60512kB hilos=12
+   soak min 14: rss=60512kB hilos=12
+   soak min 15: rss=60512kB hilos=12
+   soak min 16: rss=60512kB hilos=12
+   soak min 17: rss=60512kB hilos=12
+   soak min 18: rss=60512kB hilos=12
+   soak min 19: rss=60512kB hilos=12
+   soak min 20: rss=60512kB hilos=11
+   soak min 21: rss=60512kB hilos=11
+   soak min 22: rss=60512kB hilos=11
