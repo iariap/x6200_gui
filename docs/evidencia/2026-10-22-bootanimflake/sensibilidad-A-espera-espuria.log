@@ -1,0 +1,15 @@
+# SENSIBILIDAD A: se inyecta una espera espuria en el camino 'sin PIDFILE / PID corrupto'
+# (bug simulado: el codigo sondea cuando no debe). El assert nuevo TIENE que fallar.
+$ cc ... -DBOOTANIM_TEST handoff_test.c boot_splash.c && ./handoff_test fake_animator
+boot_splash: pid 3515297 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+FAIL tests/bootanim/handoff_test.c:67: boot_splash_test_waits() == 0 && boot_splash_test_waited_ms() == 0 (sin PIDFILE: no tiene que esperar (sondeos=1, 10 ms))
+FAIL tests/bootanim/handoff_test.c:67: boot_splash_test_waits() == 0 && boot_splash_test_waited_ms() == 0 (: no tiene que esperar (sondeos=1, 10 ms))
+FAIL tests/bootanim/handoff_test.c:67: boot_splash_test_waits() == 0 && boot_splash_test_waited_ms() == 0 (abc: no tiene que esperar (sondeos=1, 10 ms))
+FAIL tests/bootanim/handoff_test.c:67: boot_splash_test_waits() == 0 && boot_splash_test_waited_ms() == 0 (0: no tiene que esperar (sondeos=1, 10 ms))
+FAIL tests/bootanim/handoff_test.c:67: boot_splash_test_waits() == 0 && boot_splash_test_waited_ms() == 0 (1: no tiene que esperar (sondeos=1, 10 ms))
+FAIL tests/bootanim/handoff_test.c:67: boot_splash_test_waits() == 0 && boot_splash_test_waited_ms() == 0 (-5: no tiene que esperar (sondeos=1, 10 ms))
+FAIL tests/bootanim/handoff_test.c:67: boot_splash_test_waits() == 0 && boot_splash_test_waited_ms() == 0 (12abc: no tiene que esperar (sondeos=1, 10 ms))
+FAIL tests/bootanim/handoff_test.c:67: boot_splash_test_waits() == 0 && boot_splash_test_waited_ms() == 0 (  : no tiene que esperar (sondeos=1, 10 ms))
+FAIL tests/bootanim/handoff_test.c:67: boot_splash_test_waits() == 0 && boot_splash_test_waited_ms() == 0 (99999999999999999999: no tiene que esperar (sondeos=1, 10 ms))
+FAIL tests/bootanim/handoff_test.c:67: boot_splash_test_waits() == 0 && boot_splash_test_waited_ms() == 0 (PID vivo con sufijo corrupto: no tiene que esperar (sondeos=1, 10 ms))
+handoff_test: 45 comprobaciones, 10 fallos

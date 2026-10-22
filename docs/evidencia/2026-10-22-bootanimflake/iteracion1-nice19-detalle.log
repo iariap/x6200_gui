@@ -1,0 +1,58 @@
+# NEW con nice 19 y 24 hogs (runner ocupado): detalle de los fallos residuales
+$ uptime:  09:17:07 up 9 days, 21:50,  1 user,  load average: 18.62, 12.85, 7.58
+--- corrida 4 (rc=1) ---
+boot_splash: pid 3464597 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: no se pudo confirmar la salida del animador (pid 3464615)
+FAIL tests/bootanim/handoff_test.c:435: boot_splash_stop() == true
+handoff_test: 45 comprobaciones, 1 fallos
+--- corrida 6 (rc=1) ---
+boot_splash: pid 3464730 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: no se pudo confirmar la salida del animador (pid 3464768)
+FAIL tests/bootanim/handoff_test.c:405: boot_splash_stop() == true
+FAIL tests/bootanim/handoff_test.c:409: boot_splash_test_waited_ms() <= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (el handoff espero de mas (140 ms))
+handoff_test: 45 comprobaciones, 2 fallos
+--- corrida 18 (rc=1) ---
+boot_splash: pid 3466025 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: no se pudo confirmar la salida del animador (pid 3466034)
+FAIL tests/bootanim/handoff_test.c:405: boot_splash_stop() == true
+FAIL tests/bootanim/handoff_test.c:409: boot_splash_test_waited_ms() <= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (el handoff espero de mas (140 ms))
+handoff_test: 45 comprobaciones, 2 fallos
+--- corrida 23 (rc=1) ---
+boot_splash: pid 3466308 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+FAIL tests/bootanim/handoff_test.c:379: boot_splash_test_waited_ms() <= BOOT_SPLASH_USR1_WAIT_MS (la cesion espero de mas (120 ms de ventana))
+handoff_test: 45 comprobaciones, 1 fallos
+--- corrida 31 (rc=1) ---
+boot_splash: pid 3466883 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+boot_splash: no se pudo confirmar la salida del animador (pid 3466893)
+FAIL tests/bootanim/handoff_test.c:435: boot_splash_stop() == true
+handoff_test: 45 comprobaciones, 1 fallos
+-- OLD en las mismas condiciones --
+--- corrida 1 (rc=1) ---
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:293: dt >= BOOT_SPLASH_USR1_WAIT_MS (no espero los 100 ms de SIGUSR1 (32 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:299: WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM (salio con 10)
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:321: dt >= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (no espero las dos ventanas (21 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:327: WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL (salio con 10)
+handoff_test: 39 comprobaciones, 4 fallos
+--- corrida 3 (rc=1) ---
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:321: dt >= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (no espero las dos ventanas (36 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:327: WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL (salio con 10)
+handoff_test: 39 comprobaciones, 2 fallos
+--- corrida 4 (rc=1) ---
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:293: dt >= BOOT_SPLASH_USR1_WAIT_MS (no espero los 100 ms de SIGUSR1 (32 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:299: WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM (salio con 10)
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:321: dt >= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (no espero las dos ventanas (18 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:327: WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL (salio con 10)
+handoff_test: 39 comprobaciones, 4 fallos
+--- corrida 5 (rc=1) ---
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:293: dt >= BOOT_SPLASH_USR1_WAIT_MS (no espero los 100 ms de SIGUSR1 (34 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:299: WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM (salio con 10)
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:321: dt >= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (no espero las dos ventanas (27 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:327: WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL (salio con 10)
+handoff_test: 39 comprobaciones, 4 fallos
+--- corrida 6 (rc=1) ---
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:245: now_ms() - t0 < 50 (un zombi no tiene que hacer esperar)
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:293: dt >= BOOT_SPLASH_USR1_WAIT_MS (no espero los 100 ms de SIGUSR1 (34 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:299: WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM (salio con 10)
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:321: dt >= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (no espero las dos ventanas (22 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:327: WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL (salio con 10)
+handoff_test: 39 comprobaciones, 5 fallos

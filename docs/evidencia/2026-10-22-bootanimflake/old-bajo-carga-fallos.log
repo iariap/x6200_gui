@@ -1,0 +1,28 @@
+# Fallos del test ORIGINAL (35bad790) bajo carga (runner ocupado): el falso rojo.
+# Se corre hasta juntar 6 fallos. Los asserts son los de tiempo de pared.
+$ uptime:  09:15:58 up 9 days, 21:49,  1 user,  load average: 22.97, 11.32, 6.69
+--- corrida 6 (rc=1) ---
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:293: dt >= BOOT_SPLASH_USR1_WAIT_MS (no espero los 100 ms de SIGUSR1 (11 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:299: WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM (salio con 10)
+handoff_test: 39 comprobaciones, 2 fallos
+--- corrida 11 (rc=1) ---
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:293: dt >= BOOT_SPLASH_USR1_WAIT_MS (no espero los 100 ms de SIGUSR1 (10 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:299: WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM (salio con 10)
+handoff_test: 39 comprobaciones, 2 fallos
+--- corrida 15 (rc=1) ---
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:321: dt >= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (no espero las dos ventanas (10 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:327: WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL (salio con 10)
+handoff_test: 39 comprobaciones, 2 fallos
+--- corrida 19 (rc=1) ---
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:321: dt >= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (no espero las dos ventanas (10 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:327: WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL (salio con 10)
+handoff_test: 39 comprobaciones, 2 fallos
+--- corrida 22 (rc=1) ---
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:321: dt >= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (no espero las dos ventanas (11 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:327: WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL (salio con 10)
+handoff_test: 39 comprobaciones, 2 fallos
+--- corrida 23 (rc=1) ---
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:293: dt >= BOOT_SPLASH_USR1_WAIT_MS (no espero los 100 ms de SIGUSR1 (11 ms))
+FAIL /tmp/tmp.I2rkZOiZGi/old/handoff_test.c:299: WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM (salio con 10)
+handoff_test: 39 comprobaciones, 2 fallos
+(se corto a los 6 fallos)
