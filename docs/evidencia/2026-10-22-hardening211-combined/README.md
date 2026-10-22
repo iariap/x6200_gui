@@ -31,12 +31,12 @@ commit del repo correspondiente que quedó en el tip.
 
 | Hijo | Repo | PR | Commit fusionado (head de rama) | Base del PR | Cambio (`--stat`) | Resultado verificado en el tip |
 | --- | --- | --- | --- | --- | --- | --- |
-| #212 DATA ext4 (SD nueva / existente) | **Buildroot** | [#4](https://github.com/iariap/AetherX6200Buildroot/pull/4) | `f0ff620a` (head `486ae98f`) | `f23d14f9` | 3 archivos, +1538/−43 (`S01create_data` +347, banco +1135, README +99) | **PASS**: banco 17/17 con el script del repo y **17/17 con el script instalado** (§5.1) |
+| #212 DATA ext4 (SD nueva / existente) | **Buildroot** | [#4](https://github.com/iariap/AetherX6200Buildroot/pull/4) | `f0ff620a` (head `486ae98f`) | `f23d14f9` | 3 archivos, +1538/−43 (`S01create_data` +347, banco +1135, README +99) | **PASS**: banco 17/17 con el script del repo y **17/17 con el script instalado** (§5, fila #212) |
 | #212 evidencia GUI | GUI | [#224](https://github.com/iariap/x6200_gui/pull/224) | `35bad790` (head `109da8cc`) | `d4fb57f8` | 1 archivo (+287, sólo docs) | fusionado (docs) |
-| #213 SQLite fail-closed | GUI | [#225](https://github.com/iariap/x6200_gui/pull/225) | `20a78062` (head `e2c321fd`) | `35bad790` | 78 archivos, +7376/−100 | **PASS**: `run_db_failclosed` 11/11, QEMU exit 78 sin SIGSEGV (§5.2) |
-| #214 supervisor/backoff | GUI | [#226](https://github.com/iariap/x6200_gui/pull/226) | `d31e6df0` (head `e7926ba9`) | `20a78062` | 14 archivos, +1668/−15 | **PASS**: banco del supervisor 15/15 + QEMU real (§5.3) |
-| #215 update verificado + backups (GUI) | GUI | [#229](https://github.com/iariap/x6200_gui/pull/229) | `32f938d9` (head `330816db`) | `a7907eb7` | 134 archivos, +3326/−166 | **PASS**: banco 26 PASS/0 FAIL/1 UNSUPPORTED-UNSAFE_LEGACY (§5.4) |
-| #215 update verificado + backups (Buildroot) | **Buildroot** | [#5](https://github.com/iariap/AetherX6200Buildroot/pull/5) | `e5a63930` (head `3344971e`) | `f0ff620a` | 2 archivos, +605/−12 (`S02update` +596) | **PASS**: paridad GUI↔Buildroot (mismo sha256) + `S02update` instalado == fuente (§5.4) |
+| #213 SQLite fail-closed | GUI | [#225](https://github.com/iariap/x6200_gui/pull/225) | `20a78062` (head `e2c321fd`) | `35bad790` | 78 archivos, +7376/−100 | **PASS**: `run_db_failclosed` 11/11, QEMU exit 78 sin SIGSEGV (§5, fila #213) |
+| #214 supervisor/backoff | GUI | [#226](https://github.com/iariap/x6200_gui/pull/226) | `d31e6df0` (head `e7926ba9`) | `20a78062` | 14 archivos, +1668/−15 | **PASS**: banco del supervisor 15/15 + QEMU real (§5, fila #214) |
+| #215 update verificado + backups (GUI) | GUI | [#229](https://github.com/iariap/x6200_gui/pull/229) | `32f938d9` (head `330816db`) | `a7907eb7` | 134 archivos, +3326/−166 | **PASS**: banco 26 PASS/0 FAIL/1 UNSUPPORTED-UNSAFE_LEGACY (§5, filas #215) |
+| #215 update verificado + backups (Buildroot) | **Buildroot** | [#5](https://github.com/iariap/AetherX6200Buildroot/pull/5) | `e5a63930` (head `3344971e`) | `f0ff620a` | 2 archivos, +605/−12 (`S02update` +596) | **PASS**: paridad GUI↔Buildroot (mismo sha256) + `S02update` instalado == fuente (§5, filas #215) |
 
 CI de los PRs (consultado, no re-ejecutado): #225, #226 y #229 → todos los jobs
 (`UI Functional Tests`, `UI Quality Contracts`, `UI Visual Regression`, `UI
@@ -137,7 +137,7 @@ Todos con salida real en `logs/`; capa HOST salvo indicación.
 
 | # | Gate (lista textual del epic) | Comando | rc | Resultado | Log |
 | --- | --- | --- | --- | --- | --- |
-| 4.1 | Reconstrucción reproducible GUI+Buildroot desde fuentes y submódulo correcto | `./br_config.sh && cd build && make -j12` con `X6200_GUI_OVERRIDE_SRCDIR=<worktree GUI>` + `X6200_FUENTE_MD5` | **0** | **PASS** — 1565 estapas de paquete, `make rc=0`, `ExitCode=0`, `OOMKilled=false`; artefactos + SHA256 en §3; sello embebido == sello de fuentes | `logs/gate-buildroot-build-sintesis.log` (log completo 45 MB en el lab: `next-211-combined-lab/logs/build.log`) |
+| 4.1 | Reconstrucción reproducible GUI+Buildroot desde fuentes y submódulo correcto | `./br_config.sh && cd build && make -j12` con `X6200_GUI_OVERRIDE_SRCDIR=<worktree GUI>` + `X6200_FUENTE_MD5` | **0** | **PASS** — 1565 etapas de paquete, `make rc=0`, `ExitCode=0`, `OOMKilled=false`; artefactos + SHA256 en §3; sello embebido == sello de fuentes | `logs/gate-buildroot-build-sintesis.log` (log completo 45 MB en el lab: `next-211-combined-lab/logs/build.log`) |
 | 4.2 | Suite nativa | `sh tests/native/run_native_tests.sh` | **0** | **PASS** — 47 etapas, cierra con `#213 … 141 comprobaciones, 0 fallos` | `logs/gate-native-tests.log` |
 | 4.3 | Paridad con CI (sin submódulo lvgl) | `sh tests/native/run_native_tests.sh --ci-parity` | **0** | **PASS** — `== ci-parity: OK (build host sin lvgl/)`; `lvgl/` restaurado | `logs/gate-native-tests-ci-parity.log` |
 | 4.4 | Suite completa | `sh tests/run_all_tests.sh` | **0** | **PASS** — `19 OK, 0 fallos`; **SKIP(77)**: `wspr sstv wefax js8` (la imagen `--target ci` no trae fftw3/sndfile) y `webserver` (no hay checkout) | `logs/gate-run-all-tests.log` |
@@ -149,7 +149,7 @@ Todos con salida real en `logs/`; capa HOST salvo indicación.
 | 4.9 | Identidad del port | `python3 tools/verifica-firmware-port.py <binario>` · `--tar rootfs.tar` | **0** · **0** | **PASS** — `es el firmware del port (ELF32 ARM, 13428656 B, 3/3 marcas)`; idem validando `usr/sbin/x6200_gui` dentro de `rootfs.tar` | `logs/gate-verifica-firmware-port.log` |
 | 4.10 | Suites focalizadas de cada hijo | §5 | **0** | **PASS** (todas) | `logs/gate-212-banco-data.log`, `logs/gate-212-banco-instalado.log`, `logs/gate-db-failclosed.log`, `logs/gate-daemon-suite.log`, `logs/gate-release-safe-update.log` |
 | 4.11 | Negativos QEMU / rootfs / MBR / fstab / update / arranque GUI en chroot | pasada combinada F-01..F-05 (§6) + bancos #212 y #215 + MBR/fstab/rootfs del artefacto | **0** | **PASS** — 7/7 casos + 100 ciclos; soak parcial (§6.2); MBR del `sdcard.img`: p1 BOOT FAT32 (2048+65536 sectores) + p2 rootfs Linux (67584+1048576), **sin p3** (DATA se crea en el primer boot, diseño de #212) y `fstab` instalado `…/mmcblk0p3 /mnt ext4 rw 0 2` | `logs/`, `foco/`, `logs/gate-mbr-fstab-rootfs.log` |
-| 4.12 | Extra (no pedido por el epic): camino de CI con ASan/LSan | `docker run … x6200-uiharness-full … sh tests/native/run_native_tests.sh` con libliquid 1.4.0 | **0** | **PASS** — suite completa bajo ASan+LSan sin leak | `logs/extra-native-tests-asan-liquid14.log` |
+| 4.12 | Extra (no pedido por el epic): camino de CI con ASan/LSan | `docker run … x6200-uiharness-211combo … sh tests/native/run_native_tests.sh` con libliquid 1.4.0 | **0** | **PASS** — suite completa bajo ASan+LSan sin leak | `logs/extra-native-tests-asan-liquid14.log` |
 
 Método de 4.5–4.7: se construyó una imagen propia `x6200-uiharness-211combo`
 (`--target ci`, igual que el CI) para no pisar la etiqueta compartida
@@ -191,7 +191,7 @@ de la ROM por esto; sí es un dato de entorno para el job.
 | #214 | Banco del supervisor (wrapper real, chroot privado, reloj virtual, GUI sustituta) | `sh tests/daemon/run_daemon_tests.sh` | **0** | **PASS 15/15** — `all OK: 15 casos, 0 fallos` (`logs/gate-daemon-suite.log`) |
 | #215 | Banco hermético del update (contenedor privado + chroot sobre copia del rootfs + BusyBox/bash del target; fixture = `x6200_r1cbu_v0.1.2-lu2dsx.tgz` del owner, sólo lectura) | `sh tests/release/test_safe_update.sh <tgz> <lab>` | **0** | **PASS** — `PASS: 26  FAIL: 0  UNSUPPORTED/UNSAFE_LEGACY: 1` (`legacy-first-update`, por contrato) (`logs/gate-release-safe-update.log`) |
 | #215 | Paridad GUI ↔ Buildroot del updater | `BUILDROOT_S02UPDATE=… tools/release/check_updater_parity.sh` | **0** | **PASS** — mismo archivo, mismo sha256 `1a225ddb…` (`manifiesto/manifiesto.txt`) |
-| #213/#215 | Stage nativo nuevo del hijo | dentro de `run_native_tests.sh` | **0** | **PASS** — `141 comprobaciones, 0 fallos` (§4.2) |
+| #213/#215 | Stage nativo nuevo del hijo | dentro de `run_native_tests.sh` | **0** | **PASS** — `141 comprobaciones, 0 fallos` (§4, fila 4.2) |
 
 ## 6. Pasada combinada F-01..F-05 (capa y cobertura por caso)
 
@@ -209,7 +209,7 @@ bloque ve el contenedor). Matriz cruda: [`foco/matrix.txt`](foco/matrix.txt); id
 | **F-02** DB inválida → sin crash-loop | `f02-corrupt`, `f02-nomount`, `f04-daemon-exit78` | QEMU_USER | **PARTIAL** | **PASS** — DB corrupta: `rc=78` + `Persistence unavailable: check DATA and params.db`, bytes intactos, **sin socket**, **sin crash** (0 SIGSEGV); `/mnt` sin montar: `rc=78` + `DATA is not mounted` y **no** crea `/mnt/params.db` sobre el rootfs |
 | **F-03** escritura persistente / error que propaga | `f03-absent`, `f03-writefail`, `f01f03-chain` | QEMU_USER | **PARTIAL** | **PASS** — siembra atómica desde la plantilla y arranque; `/mnt` lleno: `Persistence write failed` y la base existente sigue `integrity_check=ok` con la GUI viva; cambio de frecuencia persistido y **leído de nuevo tras “reinicio” (remontaje del ext4)** |
 | **F-04** supervisor con backoff y logs únicos | `f04-daemon-exit78`, `f04-daemon-nomnt` | QEMU_USER | **PARTIAL** | **PASS** — 1 solo `GUI exited: code 78` y `GUI restart in 60s` en ~11 s (pre-fix: 34 arranques/10 s), log de corrida en `/mnt/app_logs` con nombre único `x6200_log_<UTC>_p<pid>_r1.txt`, SIGTERM ⇒ 0 GUI vivas; `/mnt` ausente ⇒ **0 archivos** en el rootfs y log retenido en `/tmp` con diagnóstico |
-| **F-04/F-05** update verificado con backup completo | banco #215 (§5.4) + paridad + hash del `S02update` instalado | HOST/QEMU_USER | **PARTIAL** | **PASS** — 26 casos OK (sidecar/hash/truncado/preflight/backup verificado/`tar` que falla ⇒ paquete retenido/`/mnt` RO o ausente/uid 1000/setuid exacto). El primer update de una **imagen histórica** queda **`UNSUPPORTED/UNSAFE_LEGACY`** por contrato (no es PASS) |
+| **F-04/F-05** update verificado con backup completo | banco #215 (§5, filas #215) + paridad + hash del `S02update` instalado | HOST/QEMU_USER | **PARTIAL** | **PASS** — 26 casos OK (sidecar/hash/truncado/preflight/backup verificado/`tar` que falla ⇒ paquete retenido/`/mnt` RO o ausente/uid 1000/setuid exacto). El primer update de una **imagen histórica** queda **`UNSUPPORTED/UNSAFE_LEGACY`** por contrato (no es PASS) |
 | **F-05** watchdog del SoC | inventario de `init.d` (built vs histórica) + backoff medido | HOST (+QEMU_USER) | **UNSUPPORTED** para el WDT de kernel (no se tocó; no se declara que no exista) | La imagen no agrega **ningún** servicio de watchdog; la mitigación del lazo es el supervisor (#214), medida arriba |
 
 Casos extra de la pasada:
