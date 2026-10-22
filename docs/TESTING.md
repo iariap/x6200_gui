@@ -26,6 +26,64 @@ da `tools/captura-banco.sh`: prueba la **ultima version** (reconstruye si el fue
 imprime commit + md5) y usa el **socket correcto** (limpia socket/framebuffer viejos y hace handshake
 `{"cmd":"get"}` antes de mandar nada).
 
+### Barrido QEMU de las 25 apps con recursos privados (issue #222)
+
+`tests/qemu/run_apps_qemu.sh` corre las **25 apps** de `remote_server.cpp::app_names[]` (sin
+`off`) en **3 rondas** contra el **binario ARM real** en un chroot propio, con el framebuffer
+falso y el socket de control del banco. No es un harness nuevo: reusa el binario, `libfakefb`,
+`x6200-remote`, el socket y las primitivas de captura; lo que cambia es el **aislamiento**.
+
+```bash
+tests/qemu/run_apps_qemu.sh --check          # preflight: dice exactamente que falta (no toca nada)
+RONDAS=3 DWELL=2 tests/qemu/run_apps_qemu.sh # el contrato completo del issue #222
+```
+
+- **Recursos privados**: contenedor, volumen de build y laboratorio propios de la corrida
+  (`CONT`/`VOL`/`LAB`, por defecto `x6200-next222-qemu` / `x6200-next222-build` /
+  `/tmp/x6200-next222-qemu`). El script **se frena** si le apuntan `banco-apps`, `banco-audio`,
+  `x6200-build-output` o un worktree de otra corrida: el aislamiento es un chequeo, no un
+  comentario.
+- **Capa**: `QEMU_USER` (userland armv7 por `binfmt_misc`, kernel del host). No hay kernel/init
+  real, no hay radio, no hay RF y no se toca la SD del owner.
+- **Por app** (`tests/qemu/barrido_qemu.py`): `get` del estado inicial, `app <nombre>`,
+  confirmacion de que la app quedo abierta, PNG real 800x480, permanencia, `app off`,
+  confirmacion de la home y estabilidad de PID, `boot_id`, `logrev`, freq/mode/band y de la
+  cuenta de fds/hilos. Un paso de mas de 5 s, un `CRASHLOG`, un `SIGSEGV`, una TX no solicitada,
+  un estado persistido cambiado o una fuga de fds/hilos son **FAIL**.
+- **Nunca PASS sin salida real**: sin handshake, sin captura con dibujo o sin la app abierta el
+  resultado es `FAIL` o `BLOCKED`, y el runner sale 1/77 en vez de 0. Las apps que necesitan un
+  periferico o servicio ausente (GPS, WiFi, Bluetooth, red) se declaran `PARTIAL`: foto real del
+  mensaje controlado, **nunca** PASS del dispositivo.
+- **Sin el entorno privado** el runner declara `SKIP` (exit 77) con la lista exacta de lo que
+  falta: no corre a medias ni cambia un SKIP por un verde. El banco del owner
+  (`tools/captura-banco.sh`) sigue siendo el camino canonico cuando sus recursos estan libres.
+
+### Cobertura de los 22 dialogos inertes (issue #222)
+
+El arnes de host declara **22** constructores de dialogo como no-op
+(`tools/ui_harness/mocks/mock_main_screen.c`), asi que esas ventanas no se renderizan en el
+host. La tabla `tests/qemu/dialog-coverage.csv` registra, por dialogo, la fuente de produccion,
+el fixture de host que llega a su camino (si hay), la app del barrido que lo abre y el resultado
+QEMU esperado/medido, con la captura o la razon exacta de bloqueo. El gate
+`tests/check_dialog_coverage.py` (en `tests/run_all_tests.sh` y en el CI) falla si el mock, las
+fuentes o `app_names[]` cambian sin actualizar la tabla, y si una fila declara cobertura real
+sin captura. El harness de host **sigue siendo sintetico** para esos 22: su etiqueta no se
+promueve a REAL.
+
+### Baseline reproducible del release (issue #222)
+
+`tests/release/baseline_manifest.py` emite el manifiesto de identidad (`GUI_SHA`,
+`Buildroot_SHA`, `LVGL_gitlink`, `fuente-md5`, md5/sha256 del binario, hashes de
+`sdcard`/`rootfs`, `QEMU_CPU`, imagen/contenedor, seed) y `--verify` comprueba que el manifiesto
+es **reproducible** (dos corridas sobre el mismo arbol dan el mismo documento). Lo que no esta
+disponible se declara `PENDING` con su razon; un campo ausente nunca se lee como cero.
+
+```bash
+tests/release/baseline_manifest.py --txt
+tests/release/baseline_manifest.py --verify
+WT=<worktree> BR=<clon Buildroot> OUT=<salida> ARTEFACTOS=<dir> tests/release/baseline_manifest.py > baseline.json
+```
+
 ## QA en la radio: monitoreo, pruebas, triage, issue y evidencia
 
 El ciclo completo —monitorear la rama del port, compilar limpio, desplegar por WiFi, probar en el
@@ -55,6 +113,14 @@ Corre y resume, dejando el log de cada suite en `/tmp/<nombre>.log`:
 | `navtex` | SITOR-B a +10 y +5 dB (el caso de 0 dB es informativo) | **all OK** |
 | `js8` | **la suite completa del X6100** contra nuestro port | **1994 aserciones en 88 casos** |
 | `webserver` | las 19 páginas/endpoints del web configurator, con el python del propio equipo | **19 comprobaciones, 0 fallos** |
+
+> **Conteos al 2026-10-22** (tip `f825fe4b`, corrida de #222; la tabla de arriba es el estado
+> del 2026-10-12 y se deja como historico): `tests/native/run_native_tests.sh` = **52.946
+> comprobaciones, 0 fallos** en 24 etapas (incluye Propagacion #145 con 44.738 y SWR Scan #125
+> con 4.851); `--ci-parity` da lo mismo con `lvgl/` oculto. `tests/run_all_tests.sh --quick` =
+> **20 OK, 0 fallos** con 6 omitidos (`wspr`, `sstv`, `wefax` y `js8` por las deps de codec de la
+> imagen `ci`, `webserver` sin checkout, `qemu_apps` sin banco privado). Los numeros viejos de
+> la tabla son de su fecha y **no** se reemplazan: cada uno vale para el SHA que midio.
 
 La parte del webserver usa el python **del target** (ARM, vía binfmt) porque es el que trae
 `bottle`; el runner lo omite si no encuentra el checkout o la imagen de build.
