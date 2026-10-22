@@ -101,8 +101,12 @@ float audio_set_rec_vol(float db) { return audio_record(MOCK_AUDIO_REC, db); }
  * The Ajustes "Audio enhance" dropdown loads a DSP preset (src/
  * audio_enhancement.c, speex + liquid). No FFT/DSP runs on the host, so the
  * preset load is a no-op; the parameter the dropdown writes (params.
- * audio_enh_preset) is the mock store's. */
+ * audio_enh_preset) is the mock store's. #232 made the dropdown call
+ * audio_enh_apply_mode_preset() (the effective profile depends on the mode)
+ * instead of audio_enh_preset_load() directly; on the host that resolves to
+ * the same no-op preset load, so the mock stays a no-op. */
 void audio_enh_preset_load(audio_enh_preset_t preset) { (void) preset; }
+void audio_enh_apply_mode_preset(void) { }
 
 /* --- wfview (Icom LAN) server ---------------------------------------------
  * The real wfview_server reads /mnt/wfview.conf and opens UDP ports (pulse,
