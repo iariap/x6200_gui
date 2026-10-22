@@ -1,0 +1,7 @@
+ok   el script stock salió 0 (no valida nada)
+ok   stdout tiene 'Creating backup from'
+ok   el script stock dejó el sidecar en /mnt (no lo usa)
+ok   el script stock borró el paquete sin verificar
+ok   dejó un backup (el de xargs)
+ok   el backup stock quedó truncado (705 de 5483 entradas)
+caso	legacy-first-update	desc	imagen historica: la corre SU script stock, el sidecar no protege nada	veredicto	UNSUPPORTED/UNSAFE_LEGACY

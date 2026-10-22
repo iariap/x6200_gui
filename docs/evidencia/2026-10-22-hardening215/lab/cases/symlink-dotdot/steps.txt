@@ -1,0 +1,9 @@
+/lab/work/pkg/x6200_r1cbu_symlink-dotdot.tgz: 6656 bytes, sha256 5895a751241aba38ce4d0d227eb1d258c085ffeabbcb0e99d21bbed70e62f248
+ok   rc=1
+ok   stdout dice 'Update verification failed'
+ok   stderr tiene '.. target'
+ok   el paquete x6200_r1cbu_symlink-dotdot.tgz sigue en /mnt
+ok   el sidecar de x6200_r1cbu_symlink-dotdot.tgz sigue en /mnt
+ok   nada bajo / cambió
+ok   la GUI quedó la de antes
+ok   no quedó backup ni .partial

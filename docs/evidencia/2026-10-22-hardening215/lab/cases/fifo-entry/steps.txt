@@ -1,0 +1,9 @@
+/lab/work/pkg/x6200_r1cbu_fifo-entry.tgz: 6656 bytes, sha256 69c5e2ce34020144e7670ed05b70666ee64e5fe832b874b3a9a80169d51d4cd5
+ok   rc=1
+ok   stdout dice 'Update verification failed'
+ok   stderr tiene 'fifo entry'
+ok   el paquete x6200_r1cbu_fifo-entry.tgz sigue en /mnt
+ok   el sidecar de x6200_r1cbu_fifo-entry.tgz sigue en /mnt
+ok   nada bajo / cambió
+ok   la GUI quedó la de antes
+ok   no quedó backup ni .partial

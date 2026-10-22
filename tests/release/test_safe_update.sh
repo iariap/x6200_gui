@@ -585,34 +585,73 @@ begin extract-fails "tar que falla al extraer: paquete y backup retenidos, mensa
 reset_target "$WORK/image-new.tar"
 mount_mnt 1024
 pkg=x6200_r1cbu_fails.tgz
-python3 "$REPO/tests/release/mkpkg.py" from "$PKG/$GOOD" "$WORK/pkg/$pkg" --mutate usr-sbin-file --first >>"$CASE_LOG/steps.txt" 2>&1
+# Un archivo cuyo directorio padre es un archivo en el target (etc/passwd): pasa
+# el preflight, pasa el backup (la ruta no existe, no entra al backup) y el tar
+# de la extraccion falla con "Not a directory".
+python3 "$REPO/tests/release/mkpkg.py" from "$PKG/$GOOD" "$WORK/pkg/$pkg" --mutate nested-under-file --first >>"$CASE_LOG/steps.txt" 2>&1
 put_pkg "$WORK/pkg/$pkg"
 run_updater
 assert_rc 1
 assert_out "Update failed: package retained; restore backup manually"
 assert_pkg_kept "$pkg"
-[ -f "$TARGET/mnt/backup_$pkg" ] && ok "el backup quedó" || bad "no quedó el backup"
 # La entrada que falla va primero: BusyBox tar aborta ahi y no escribe nada.
 assert_unchanged
-BK_HASH=$(sha256sum "$TARGET/mnt/backup_$pkg" | awk '{ print $1 }')
+if [ -f "$TARGET/mnt/backup_$pkg" ]; then
+    ok "el backup quedó"
+    BK_HASH=$(sha256sum "$TARGET/mnt/backup_$pkg" | awk '{ print $1 }')
+else
+    bad "no quedó el backup (sin backup no tiene sentido probar el reuso)"
+    BK_HASH=""
+fi
 # Segunda corrida con el mismo paquete: el backup identico se reusa, no se
 # sobrescribe ni se duplica.
 run_updater
 assert_rc 1
 assert_out "Update failed: package retained; restore backup manually"
 assert_pkg_kept "$pkg"
-[ "$(sha256sum "$TARGET/mnt/backup_$pkg" | awk '{ print $1 }')" = "$BK_HASH" ] &&
-    ok "el backup identico se reusó sin cambios" || bad "el backup cambió"
+if [ -n "$BK_HASH" ]; then
+    [ "$(sha256sum "$TARGET/mnt/backup_$pkg" | awk '{ print $1 }')" = "$BK_HASH" ] &&
+        ok "el backup identico se reusó sin cambios" || bad "el backup cambió"
+fi
 npartial=$(find "$TARGET/mnt" -maxdepth 1 -name '*.partial' | wc -l)
 [ "$npartial" = "0" ] && ok "no quedó .partial" || bad "quedaron $npartial .partial"
 # Un backup preexistente con otro contenido: error cerrado, no se sobrescribe.
-printf 'no soy un tar\n' > "$TARGET/mnt/backup_$pkg.otro"
-mv "$TARGET/mnt/backup_$pkg.otro" "$TARGET/mnt/backup_$pkg"
+if [ -n "$BK_HASH" ]; then
+    printf 'no soy un tar\n' > "$TARGET/mnt/backup_$pkg.otro"
+    mv "$TARGET/mnt/backup_$pkg.otro" "$TARGET/mnt/backup_$pkg"
+    run_updater
+    assert_rc 1
+    assert_out "Update backup failed"
+    assert_err_has "different content"
+    assert_pkg_kept "$pkg"
+fi
+finish
+
+# ---------------------------------------------------------------------------
+# R3: entrada que es un directorio en el sistema (hallazgo del banco)
+# ---------------------------------------------------------------------------
+# El contrato pide que el preflight rechace lo que no se puede aplicar. Un
+# paquete que declara un ARCHIVO en una ruta que en el sistema es un DIRECTORIO
+# (usr/sbin) hoy no lo rechaza el preflight: la ruta existe, entra al backup, y
+# el tar del target lista el directorio con barra ("usr/sbin/"), asi que la
+# verificacion del backup no coincide y el updater corta con "Update backup
+# failed". Es fail-closed (no se toca /, el paquete y el sidecar quedan), pero la
+# diagnosis apunta al backup y no al paquete. Este caso fija ese comportamiento
+# observado (y queda como hallazgo en la evidencia).
+begin entry-over-directory "entrada que es un directorio en el sistema: la corta el backup (fail-closed, diagnosis mejorable)"
+reset_target "$WORK/image-new.tar"
+mount_mnt 1024
+pkg=x6200_r1cbu_overdir.tgz
+python3 "$REPO/tests/release/mkpkg.py" from "$PKG/$GOOD" "$WORK/pkg/$pkg" --mutate usr-sbin-file --first >>"$CASE_LOG/steps.txt" 2>&1
+put_pkg "$WORK/pkg/$pkg"
+[ -d "$TARGET/usr/sbin" ] && ok "en el sistema usr/sbin es un directorio" || bad "el fixture no tiene usr/sbin como directorio"
 run_updater
 assert_rc 1
 assert_out "Update backup failed"
-assert_err_has "different content"
+assert_err_has "does not list the same paths"
 assert_pkg_kept "$pkg"
+assert_unchanged
+assert_no_backup
 finish
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,8 @@
+/lab/work/pkg/x6200_r1cbu_uid1000.tgz: 6144 bytes, sha256 425a1e9611d67ecf44020d3a06a37445aa950548513ba87daefc3ea87d9c6188
+ok   rc=1
+ok   stdout dice 'Update verification failed'
+ok   stderr tiene 'travels as'
+ok   el paquete x6200_r1cbu_uid1000.tgz sigue en /mnt
+ok   el sidecar de x6200_r1cbu_uid1000.tgz sigue en /mnt
+ok   nada bajo / cambió
+ok   la GUI quedó la de antes

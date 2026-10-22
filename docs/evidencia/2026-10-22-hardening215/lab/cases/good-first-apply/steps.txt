@@ -1,0 +1,16 @@
+ok   el paquete lleva todas las entradas de la imagen (5483)
+ok   la GUI del paquete es la de la imagen
+ok   rc=0
+ok   stdout dice 'Update applied'
+ok   el paquete x6200_r1cbu_v215.tgz se consumió
+ok   el sidecar de x6200_r1cbu_v215.tgz se consumió
+ok   la GUI instalada es la del paquete
+ok   setuid: los 3 auditados
+ok   el updater quedó root:root 0755
+ok   quedó backup_x6200_r1cbu_v215.tgz
+ok   quedó la lista de rutas nuevas
+ok   sin rutas nuevas (paquete de reemplazo puro)
+ok   no quedó .partial
+ok   el backup trae la GUI vieja (7f524ab7)
+ok   el backup lista las mismas rutas que el paquete
+ok   restaurar el backup a mano devuelve la GUI previa

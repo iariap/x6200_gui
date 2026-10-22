@@ -1,0 +1,1 @@
+  reason: /mnt is not a separate mount point (unreadable), so a backup there would land on the root filesystem

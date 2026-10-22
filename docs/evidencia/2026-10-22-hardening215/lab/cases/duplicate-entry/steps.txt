@@ -1,0 +1,9 @@
+/lab/work/pkg/x6200_r1cbu_duplicate-entry.tgz: 7168 bytes, sha256 02fcda0b1c0b4881dd736d323ab2edf0071770aadcadeefd9c73724ee0793399
+ok   rc=1
+ok   stdout dice 'Update verification failed'
+ok   stderr tiene 'duplicated entry'
+ok   el paquete x6200_r1cbu_duplicate-entry.tgz sigue en /mnt
+ok   el sidecar de x6200_r1cbu_duplicate-entry.tgz sigue en /mnt
+ok   nada bajo / cambió
+ok   la GUI quedó la de antes
+ok   no quedó backup ni .partial

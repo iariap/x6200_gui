@@ -1,0 +1,10 @@
+/lab/work/pkg/x6200_r1cbu_overdir.tgz: 243195904 bytes, sha256 049ce7b9d649b3a69665e955303a8b7eaf73691207ace390d60387e0b069c56b
+ok   en el sistema usr/sbin es un directorio
+ok   rc=1
+ok   stdout dice 'Update backup failed'
+ok   stderr tiene 'does not list the same paths'
+ok   el paquete x6200_r1cbu_overdir.tgz sigue en /mnt
+ok   el sidecar de x6200_r1cbu_overdir.tgz sigue en /mnt
+ok   nada bajo / cambió
+ok   la GUI quedó la de antes
+ok   no quedó backup ni .partial

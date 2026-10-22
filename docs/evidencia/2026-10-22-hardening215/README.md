@@ -121,17 +121,20 @@ Los casos con las condiciones, los comandos y el efecto observado están en
 | `unexpected-setuid` | un setuid de mas (inventario exacto de la imagen) | PASS |
 | `symlink-dotdot` | symlink relativo cuyo target se sale del rootfs | PASS |
 | `updater-uid-1000` | `S02update` con uid 1000 (el bug del empaquetador viejo) | PASS |
-| `symlink-absolute-admitted` | paquete con un symlink de target absoluto (como `etc/alsa/conf.d/*`) | no verificado en la revision final (corrida 11 interrumpida); la admision esta cubierta por `types-rule` (19/19) y por el paquete bueno, que trae targets absolutos |
-| `extract-fails` | tar que falla al extraer (paquete y backup retenidos, mensaje de restauracion, reuso del backup identico y conflicto) | no verificado en la revision final; en las corridas 6-8 fallaba por los dos bugs del camino bueno (ya corregidos) y el camino del fallo de extraccion no cambio |
-| `no-space` | `/mnt` de 150 MiB: el paquete entra, el backup no | no verificado en la revision final; antes fallaba en el preflight por los bugs del camino bueno (ya corregidos) y el chequeo de espacio corre antes del backup |
-| `readonly-mnt` | `/mnt` montado read-only | PASS (corridas 7 y 8; el camino de /mnt no cambió) |
-| `mnt-not-mounted` | `/mnt` sin montar | PASS (corridas 7 y 8; el camino no cambió) |
-| `legacy-first-update` | imagen historica: la corre el `S02update` stock (xargs) | UNSUPPORTED/UNSAFE_LEGACY (corridas 6-8: backup truncado de ~704 de 5483 entradas, tgz borrado sin verificar, sidecar tirado) |
+| `symlink-absolute-admitted` | paquete (armado con el empaquetador real) con un symlink de target absoluto, como `etc/alsa/conf.d/*` de la rootfs | **PASS** (rc=0, `Update applied`, el symlink queda con su target) |
+| `extract-fails` | tar que falla al extraer **despues** del preflight y del backup (fixture: un archivo bajo `etc/passwd`, que en el sistema es un archivo) | **PASS** (`Update failed: package retained; restore backup manually`, paquete y backup retenidos, nada bajo `/` cambia, reuso del backup identico y conflicto con otro contenido) |
+| `entry-over-directory` | paquete que declara un **archivo** en una ruta que en el sistema es un **directorio** (`usr/sbin`) | PASS (fija el comportamiento observado: `Update backup failed`, fail-closed; ver el hallazgo) |
+| `no-space` | `/mnt` de 150 MiB: el paquete (100 MiB) entra, el backup (250 MiB) no | **PASS** (`Update backup failed`, no se extrae, el paquete queda) |
+| `readonly-mnt` | `/mnt` montado read-only | PASS |
+| `mnt-not-mounted` | `/mnt` sin montar | PASS |
+| `legacy-first-update` | imagen historica: la corre el `S02update` stock (xargs) | UNSUPPORTED/UNSAFE_LEGACY (backup truncado de ~704 de 5483 entradas, tgz borrado sin verificar, sidecar tirado) |
 
 ## Gates
 
 | gate | comando | resultado |
 | --- | --- | --- |
+| gates repetidos al cierre | nativos + `audita-pruebas` + regla de tipos | ver `gates-repetidos.txt` (138/0, OK, 19/19) |
+| matriz de la app (al cierre) | `scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD <wt>` sobre el commit de cierre | **rc=0** (`themes` ok, `contracts` ok, `bash -n` de los 6 scripts ok; SKIPs con motivo; ver `gates-check-matrix-cierre.txt`) |
 | sintaxis del target | `busybox sh -n` (BusyBox 1.36.1 del target, vía qemu) y `bash -n` | ver `gates-sintaxis.txt` |
 | sintaxis de las herramientas | `bash -n` de los 6 scripts de `tools/release/` | ver `gates-sintaxis.txt` |
 | tests nativos | `sh tests/native/run_native_tests.sh` | ver `gates-native.txt` |
@@ -139,7 +142,7 @@ Los casos con las condiciones, los comandos y el efecto observado están en
 | identidad del firmware | `python3 tools/verifica-firmware-port.py --tar <paquete>` | ver `gates-verifica-firmware-port.txt` |
 | paridad del updater | `tools/release/check_updater_parity.sh <buildroot>/…` | ver `sello-y-paridad.txt` |
 | matriz de la app | `scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD <worktree>` | ver `gates-check-matrix.txt` |
-| suite del repo | `sh tests/run_all_tests.sh --quick` | PENDIENTE (ver notas; el host se reinició durante el banco) |
+| suite del repo | `sh tests/run_all_tests.sh --quick` | **rc=0, 17 OK, 0 fallos** (SKIP declarados: wspr/sstv/wefax por la imagen mínima sin `fftw3.h`/`sndfile.h`, js8 por `--quick`, webserver por falta del checkout; ver `gates-run-all-tests.txt`) |
 | banco del contrato | `tests/release/test_safe_update.sh <fixture> <lab>` | ver `lab/run.log` + `lab/results.tsv` |
 
 ### SKIP / BLOCKED / PENDIENTE razonados
@@ -149,12 +152,13 @@ Los casos con las condiciones, los comandos y el efecto observado están en
   varios worktrees en vuelo y uno ajeno daría un FAIL falso. En el release,
   `make_release_assets.sh` avisa con un `SKIP` visible. En esta corrida el gate
   se corrió con la ruta explícita (`sello-y-paridad.txt`).
-- **`sh tests/run_all_tests.sh --quick`**: PENDIENTE. Necesita las imágenes
-  docker `x6200-uiharness` (que el propio runner construye) y `x6200-buildroot`
-  más las suites de codecs, y el host de esta corrida se reinició varias veces
-  durante el banco. Quedaron corridos los gates equivalentes y baratos: la suite
-  nativa (`138 comprobaciones, 0 fallos`), el registro de pruebas, el gate de
-  identidad del firmware, la sintaxis, la paridad y la matriz del contrato.
+- **`sh tests/run_all_tests.sh --quick`**: corrido al cierre → **rc=0, 17 OK, 0
+  fallos**. Tres SKIP legítimos de los *codecs*: `wspr` ("la imagen
+  x6200-uiharness no trae /usr/include/fftw3.h: build full: docker build -t
+  x6200-uiharness tools/ui_harness"), `sstv` y `wefax` (idem por
+  `/usr/include/sndfile.h`): son las deps que sólo instala el stage *full* de la
+  imagen y el runner los cuenta como omitidos, nunca como pase. Más `js8`
+  (omitido por `--quick`) y `webserver` (sin el checkout del configurador).
 - **`x6200-ab contracts`** (dentro de `check-matrix.sh`): si falta la imagen
   `x6200-uiharness` y no puede construirla en el runner, la matriz de la app lo
   reporta como `BLOCKED` con su salida real (nunca como pase).
@@ -162,14 +166,43 @@ Los casos con las condiciones, los comandos y el efecto observado están en
   porque el diff no toca `src/**` ni `tools/ui_harness/**`; la matriz de la app
   lo informa como SKIP con ese motivo.
 - **Radio**: `PENDING_HARDWARE` (pipeline de QA remoto separado).
-- **Corrida del banco**: el host se reinició varias veces en medio del banco
-  (corridas 9, 10 y 11). Las corridas 9 y 10 llegaron a 21 de 26 casos con **cero
-  líneas `FAIL`** (incluidos los tres casos del camino bueno, con `rc=0` y
-  `Update applied`); la 11 quedó interrumpida en los primeros casos. Los logs
-  crudos de las corridas 6 a 11 están en `corridas/` (comprimidos) y la matriz
-  dice, caso por caso, en qué corrida quedó verificado cada uno. La revisión final
-  del banco queda como pendiente para el orquestador (el mismo comando, ~20
-  minutos).
+- **Corrida del banco (cierre)**: la corrida final (D) corrió los **27 casos**
+  completos con **exit=0**: **26 PASS, 0 FAIL y 1 `UNSUPPORTED/UNSAFE_LEGACY`**
+  (`lab/results.tsv`, `lab/run-final-D.log.gz`, `lab/cases/<caso>/…`). Las dos
+  corridas anteriores (9 y 10) habían quedado cortadas por reinicios del host con
+  21 casos verdes y cero `FAIL`; sus logs quedan en `corridas/`.
+- **`extract-fails` cambió de fixture**: el que usaba antes (un archivo en la
+  ruta de un directorio del sistema, `usr/sbin`) no llegaba a la extracción: la
+  interceptaba el backup (ver el hallazgo de abajo). Ahora usa un archivo bajo
+  `etc/passwd` (un archivo en el sistema): pasa el preflight, pasa el backup y el
+  tar de la extracción falla con "Not a directory", que es lo que el contrato
+  pide. El fixture viejo quedó como caso propio (`entry-over-directory`).
+
+### Hallazgo del banco: un paquete que declara un archivo donde el sistema tiene un directorio
+
+Fixture: un paquete armado con el empaquetador real que declara `usr/sbin` como
+**archivo**, sobre un sistema donde `usr/sbin` es un **directorio**. Salida real
+del updater (caso `entry-over-directory`, `lab/cases/entry-over-directory/`):
+
+    stdout: Update backup failed
+    stderr:   reason: the backup does not list the same paths it was given
+
+Por qué: la ruta existe, así que entra a la lista del backup; el tar del target
+lista un directorio con barra final (`usr/sbin/`) y la comparación de nombres del
+backup no coincide, así que el updater corta ahí. Efecto: **fail-closed** — nada
+bajo `/` cambia, el paquete y el sidecar quedan, no se crea backup ni `.partial`
+— que es lo que el contrato quiere ante un paquete que no se puede aplicar. Lo
+mejorable es la **diagnosis**: el preflight no cruza los tipos del paquete contra
+el sistema, así que el mensaje apunta al backup y no al paquete (con el contrato
+en la mano, lo correcto sería `Update verification failed` en el preflight).
+
+No se cambió el updater por esto: los PRs ya estaban publicados, el contrato fija
+los cuatro mensajes y el caso no puede darse con un paquete del empaquetador real
+(sólo emite entradas de archivo/enlace de la misma rootfs). Queda como hallazgo
+para el orquestador (un chequeo de preflight "esta ruta es un directorio en el
+sistema y el paquete la declara como archivo" lo rechazaría antes de armar el
+backup) y el comportamiento observado queda **fijado por el caso
+`entry-over-directory`**, para que no se degrade sin que se vea.
 
 ## Interpretaciones del contrato (lo que la realidad del árbol obligó a precisar)
 

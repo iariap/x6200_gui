@@ -98,9 +98,15 @@ MUTATIONS = {
     # symlink con target absoluto / con ..
     "symlink-abs": lambda: entry("opt/h215-link", b"", mode=0o777, typeflag="2", linkname="/etc/h215"),
     "symlink-dotdot": lambda: entry("opt/h215-link", b"", mode=0o777, typeflag="2", linkname="../../etc/h215"),
-    # un archivo regular donde el target tiene un directorio: el tar de la
-    # extraccion falla despues del preflight y del backup
+    # un archivo regular donde el target tiene un directorio. El backup lo
+    # intercepta (el tar lista el directorio con barra: "usr/sbin/") y el updater
+    # corta ahi con "Update backup failed", sin tocar /: es el caso
+    # `entry-over-directory` del banco.
     "usr-sbin-file": lambda: entry("usr/sbin", b"not a directory\n"),
+    # un archivo cuyo DIRECTORIO PADRE es un archivo en el target: el preflight y
+    # el backup pasan (la ruta no existe) y el tar de la extraccion falla
+    # ("Not a directory"), que es lo que pide el contrato (`extract-fails`).
+    "nested-under-file": lambda: entry("etc/passwd/h215-nested", b"x\n"),
 }
 
 
