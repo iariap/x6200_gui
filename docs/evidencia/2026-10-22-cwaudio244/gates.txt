@@ -152,3 +152,37 @@ EXIT=0
 # Los SKIP son por paths (el fix toca src/radio.c, src/radio.h, src/btaudio.c/h y tests/native:
 # no toca rootfs, tools/ab_testing ni tools/ui_harness) y el banco QEMU queda BLOCKED con su
 # motivo real. Ni SKIP ni BLOCKED son "paso": el detalle esta en cada linea.
+
+== 6) Gates de ESTA rama (HEAD = 63f246a2, solo docs/*.md y docs/evidencia/**) ==
+
+# El cambio de esta rama es de documentacion: la matriz lo reporta como SKIP por paths (ninguno
+# de los checks de firmware/arnes/banco se activa) y el gate que si cubre docs/PRUEBAS.md y la
+# evidencia citada es el de run_all_tests.sh --quick (`pruebas`).
+
+$ /home/pablo/desa/asf/scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD \
+      /home/pablo/desa/asf/state/worktrees/x6200/cw-audio-mute-244
+==> [SKIP] firmware / nativo: sin cambios en src/**, lv_conf.h, lv_drv_conf.h ni CMakeLists.txt
+==> [SKIP] inventario del arnes de host (autotune_v2 + dialog_coverage): sin cambios en src/**, tests/** ni tools/ui_harness/**
+==> [SKIP] check_build_identity: sin cambios en la identidad del build
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [SKIP] ruff del framework A/B: sin cambios en tools/ab_testing/**/*.py
+==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/** ni tools/ui_harness/**
+==> [SKIP] gates de x6200-ab (themes + contracts): sin cambios en tools/**, src/**, tests/**, los temas de la imagen ni ab-testing.yml
+==> [SKIP] bash -n de los .sh tocados: sin cambios en tests/**/*.sh ni tools/**/*.sh
+==> [SKIP] harness determinism gate: sin cambios en tools/ui_harness/
+==> [SKIP] banco QEMU: sin cambios en src/**, lv_conf.h ni tools/ui_harness/
+EXIT=0
+
+$ sh tests/run_all_tests.sh --quick
+  pruebas: OK     OK: estructura y evidencia en orden     <- incluye esta evidencia y la fila nueva de docs/PRUEBAS.md
+  host: OK   36 comprobaciones, 0 fallos                 <- la base: esta rama no toca src/
+  host_ci_parity: OK   36 comprobaciones, 0 fallos
+  (omitidos: qemu_apps wspr sstv wefax js8 webserver)
+  20 OK, 0 fallos
+EXIT=0
+
+$ .agents/hallazgos-fundados/scripts/audita-hallazgos.sh docs/HALLAZGOS.md
+resumen: 0 problemas de estructura, 8 lineas para revisar, 0 secciones con numeros sin origen
+# Las 8 lineas para revisar son las de siempre (lineas 54 y 357-609, secciones 32, 3, 10, 12 y
+# 56 del registro): la seccion 65 nueva no agrega ninguna.
+
