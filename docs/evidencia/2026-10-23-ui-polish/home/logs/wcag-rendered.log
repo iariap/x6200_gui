@@ -1,6 +1,6 @@
 == gate de contraste WCAG sobre la superficie renderizada (issue #277) ==
   fixtures: 24 (matriz de 6 temas x 4 estados)
-  construyendo/actualizando el arnes (revision b7660ed04a61a0534191370b523582c5340f9cd5)...
+  construyendo/actualizando el arnes (revision 3cc409e94199f2d2982b5ca4552a0781b666d170)...
   etiquetas medidas: 492 (exentas 0, incidentales 2, no-texto 48)
   declaradas, no medidas: ocluidas 128, sin tinta 4, sin color expuesto (lv_line/lv_arc) 96
   violaciones: 11

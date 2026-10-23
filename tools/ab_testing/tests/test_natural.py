@@ -84,7 +84,10 @@ def test_evidence_is_profiled_delimited_and_deterministic() -> None:
     # OPT-4 #150: the clock's equality guard (src/clock.c) suppresses every tick
     # whose text did not change, and the harness pins time(), so the clock
     # invalidates 0 times in the natural run (before the guard: 1).
-    assert "clock 10272 px x 0 tick(s)" in result.stdout
+    # AB-HOME285 (issue #285): el reloj sube a sony_44 y su etiqueta crece 2 px,
+    # asi que el rectangulo que invalida por tick pasa de 10272 px a 10486 px
+    # (214x49) -- medido con el reloj de pared avanzando con el reloj virtual.
+    assert "clock 10486 px x 0 tick(s)" in result.stdout
 
 
 def test_natural_section_is_extra_and_carries_no_wall_clock() -> None:
@@ -110,8 +113,11 @@ def test_natural_section_is_extra_and_carries_no_wall_clock() -> None:
     # of one two-line power label): 6 / 1100352, it was 5 / 1111840. The natural
     # frames themselves are untouched (the clock does not fire with time()
     # pinned) and the rendered PNG is byte-identical run to run.
+    # AB-HOME285 (issue #285): the clock is taller (font_digit(&sony_44)) and the
+    # status band is a new surface of the panel, so the settle moved again:
+    # 6 / 1100896 (+544 px, the same 6 flushes and the same 66 natural frames).
     assert document["metrics"]["flushes"] == 6 + totals["flushes"]
-    assert document["metrics"]["flushed_pixels"] == 1100352 + totals["flushed_px"]
+    assert document["metrics"]["flushed_pixels"] == 1100896 + totals["flushed_px"]
 
 
 def test_forced_mode_is_unchanged_by_the_natural_one() -> None:
@@ -140,7 +146,7 @@ def test_display_off_evidence_renders_nothing() -> None:
     La propiedad la mide el `natural` block (todo en cero) y el test nativo del
     backlight; aca queda pineada sobre la evidencia, porque la captura de la
     pantalla apagada es exactamente un repaint de pantalla completa mas liviana
-    (AB-HOME250: 1100352 - 384000 = 716352 px) y el mismo PNG que con la pantalla
+    (AB-HOME285, #285: 1100896 - 384000 = 716896 px) y el mismo PNG que con la pantalla
     encendida. El
     instrumento del redibujo offscreen de la cascada (src/waterfall.c) queda en 0
     contra una por fila con la pantalla encendida: el panel oscuro saltea el computo
@@ -156,6 +162,8 @@ def test_display_off_evidence_renders_nothing() -> None:
     # (5 with the old power clock); 1 less is the capture without its full-screen
     # repaint.
     assert document["metrics"]["flushes"] == 6 - 1
-    assert document["metrics"]["flushed_pixels"] == 1100352 - 800 * 480
+    # AB-HOME285: the settle of every mode moved +544 px with the same flushes
+    # (the clock's boot invalidation); see the evidence README of #285.
+    assert document["metrics"]["flushed_pixels"] == 1100896 - 800 * 480
     lit = _load("forced")["metrics"]["framebuffer_fnv1a"]
     assert document["metrics"]["framebuffer_fnv1a"] == lit

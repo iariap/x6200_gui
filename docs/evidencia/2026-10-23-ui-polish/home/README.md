@@ -480,3 +480,98 @@ sin rebasar corre los gates viejos).
   | `python3 tests/check_wcag.py` | **0** | 1062 pares OK, 0 fallas |
   | `python3 tests/check_wcag_rendered.py` | **0** | `PASS`, 11 preexistentes (= las de #286), 0 nuevas, 0 regresiones |
   | `sh tests/run_all_tests.sh --quick` | **0** | 22 OK, 0 fallos (mismos SKIP declarados) |
+
+---
+
+## 12. El CI (`UI Functional Tests`) y la coherencia de la evidencia natural
+
+El primer run del PR (run `40037883146`) pasó **Visual Regression**, **Performance**
+(13m58s), **Quality Contracts** y el gate de contraste, y falló **Functional** en el
+paso `Python framework (ruff, format, ty, unit tests)`:
+
+```text
+FAILED tools/ab_testing/tests/test_natural.py::test_evidence_is_profiled_delimited_and_deterministic
+E  AssertionError: FAIL: metrics.flushed_pixels = 12308352
+   (the settled capture must keep its 1100896 px and the natural frames add their own)
+1 failed, 232 passed, 13 deselected
+```
+
+### 12.1 De dónde sale el valor esperado (son **tres** lugares, no uno)
+
+| dónde | qué es | estado antes del arreglo |
+|---|---|---|
+| `tests/natural_evidence.py::SETTLE_PX` | la **constante** del checker | actualizada por mí a `1100896` |
+| `tools/ab_testing/reports/NATURAL-ECOFINAL/*.json` | el **artefacto de evidencia comprometido** (regenerable) | **viejo**: `metrics.flushed_pixels = 12308352` = `1100352` (settle) + `11208000` (frames) |
+| `tools/ab_testing/tests/test_natural.py` | **pins** del framework (pytest) sobre ese artefacto | **viejos**: `1100352`, `716352`, `clock 10272 px` |
+
+Yo había actualizado solo la constante: el checker (que corre el gate local **y** el
+pytest del CI) pasó a exigir `1100896 + frames` contra un artefacto que seguía
+teniendo el settle viejo ⇒ el CI falló. Los pins del pytest estaban viejos por lo
+mismo.
+
+**Por qué mi `run_all_tests.sh --quick` no lo vio**: ese comando **no** corre el
+pytest del framework; el job del CI corre `uv run pytest -m "not e2e"` (el log del
+CI dice `13 deselected`, y el `--quick` no incluye ese paso). Desde ahora, el
+comando del CI se corre tal cual (§12.3).
+
+### 12.2 El arreglo (regenerar el artefacto + pins coherentes, no "para que pase")
+
+1. **Artefacto regenerado** con el comando documentado (el mismo de las re-baselines
+   anteriores): `sh tests/check_harness_natural.sh` (rebuild + los 5 modos del gate)
+   más `--bench-natural` sobre `main-natural-eco`, copiando las 7 salidas
+   (JSON+PNG) a `tools/ab_testing/reports/NATURAL-ECOFINAL/`, con el bloque nuevo
+   en `sha256.txt` y la sección de re-baseline en su `README.md`.
+2. **Pins del pytest** actualizados **con los números medidos**:
+   `1100352 → 1100896`, `716352 → 716896`, `clock 10272 px → 10486 px`, y los
+   docstrings/comentarios con la procedencia (`AB-HOME285`).
+3. **Dos números de documentación** que la corrida también movía y estaban viejos
+   desde #250: el comentario del gate `tests/check_harness_natural.sh` (reloj
+   10272 → 10486) y la lista de rectángulos del `tools/ui_harness/README.md`
+   (reloj `580,0 220x72`/15840 → `586,0 214x49`/10486; el rectángulo del BT ya no
+   aparece por la guarda de igualdad de OPT-4 #150).
+
+### 12.3 El delta medido (y por qué es el de mi cambio)
+
+Nada del perfil natural se movió; lo único que se movió es el **settle de la
+captura** (`metrics`), y **+544 px en los siete modos, con los mismos flushes**:
+
+| modo | antes (`65f7842c`) | después (`3cc409e9`) | delta |
+|---|---|---|---|
+| `natural`/`run1` | 72 / 12308352 | **72 / 12308896** | +544 px, 0 flushes |
+| `forced` | 9 / 2252352 | **9 / 2252896** | +544 |
+| `static` | 13 / 1290752 | **13 / 1291296** | +544 |
+| `cli` | 21 / 3656352 | **21 / 3656896** | +544 |
+| `off` | 5 / 716352 | **5 / 716896** | +544 |
+| `main-natural-eco` | 24 / 3762602 | **24 / 3763146** | +544 |
+| `natural.totals` (los 40 frames) | 11208000 px / 66 rects / 66 flushes | **idéntico** | 0 |
+
+**Explicación medida, no hipótesis**: los 40 frames naturales **no** dependen del
+reloj (con `time()` fijo el texto no cambia y la guarda de igualdad del #150 apaga
+la invalidación), así que el perfil no se mueve; lo que cambia es la invalidación
+de **arranque** del panel del reloj: la etiqueta de la hora es 2 px más alta
+(`sony_44`) y la banda de estado es una superficie nueva, y esa unión es 544 px
+más grande. El costo **por tick** cuando el segundo cambia (medido con el reloj de
+pared avanzando con el reloj virtual) es **+214 px** (10272 → 10486 px, `214×49`),
+o sea +2.1% de la invalidación del reloj, una vez por segundo en la radio. El
+proxy de flushes sobre las 205 fixtures (§6) sigue en **0.00% de flushes / +0.04%
+de px**, así que el +544 px del settle no es una regresión de operación: es un
+costo de arranque de 544 px (0.05% de la captura).
+
+### 12.4 El comando del CI, corrido tal cual
+
+`working-directory: tools/ab_testing` (`logs/ci-python-framework.log`):
+
+| comando | exit | salida |
+|---|---|---|
+| `uv sync` | 0 | deps del grupo dev instaladas |
+| `uv run ruff check .` | **0** | `All checks passed!` |
+| `uv run ruff format --check .` | **0** | `200 files already formatted` |
+| `uv run ty check src tests` | **0** | `All checks passed!` |
+| `uv run pytest -m "not e2e"` | **0** | **`233 passed, 13 deselected`** (0 failed) |
+
+Y el resto de los gates locales, re-corridos sobre el árbol del arreglo (el arreglo
+solo toca la evidencia, los pins del framework y documentación: **ningún binario de
+la ROM cambia**): `check_info_bar` **0**, `check_wcag` **0**,
+`check_wcag_rendered` **0** (11 preexistentes, PASS), natural/wakeups/determinism
+**PASS**, el proxy de flushes **0 fuera de presupuesto** y
+`sh tests/run_all_tests.sh --quick` **0** (22 OK, 0 fallos).

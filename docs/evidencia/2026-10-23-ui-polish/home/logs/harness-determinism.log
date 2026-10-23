@@ -1,28 +1,3 @@
-building ui_harness (revision 28785016c03d7bcdb06f99ef47edd9593f2333c4)...
-In file included from /src/src/params/params.h:20,
-                 from /src/src/styles.h:42,
-                 from /src/tools/ui_harness/build/styles_host.c:9:
-/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
-   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
-      | ^
-In file included from /src/src/params/params.h:20,
-                 from /src/src/styles.h:42,
-                 from /src/src/clock.c:11:
-/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
-   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
-      | ^
-In file included from /src/src/params/params.h:20,
-                 from /src/src/styles.h:42,
-                 from /src/src/clock.c:11:
-/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
-   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
-      | ^
-In file included from /src/src/params/params.h:20,
-                 from /src/src/styles.h:42,
-                 from /src/tools/ui_harness/build/styles_host.c:9:
-/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
-   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
-      | ^
 running every fixture 2 times...
 app-bands: a1d37e8d6a25cfa922a146e6dd06038dd7520f07d0bb5a479ed86e6fabd2f0ba
 app-close-home: fe70590895f49ce67bfe1043383df9627dc084c91abac1063db3a0c6be3a7c34

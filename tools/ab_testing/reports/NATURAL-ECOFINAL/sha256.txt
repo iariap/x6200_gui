@@ -12,13 +12,13 @@
 #           el de la captura comun: la misma imagen, menos trabajo).
 # Fixture `main-natural-eco` (ECO, 11.2 V sin fuente): main-natural-eco, la
 # corrida que mide la cadencia del espectro y de la cascada en ECO.
-run1 d1ca50fa2fea7071c6f761bc4e5c6c24c4b40ff85991404ba25375053d06b8c9
-natural d1ca50fa2fea7071c6f761bc4e5c6c24c4b40ff85991404ba25375053d06b8c9
-forced 277f3ca9637719d5b1ce52a2b036548779dd15fc1ae7911545e96f4f48ef9cdf
-static 7ca14d12445e7cd77c97e1001adcec61935127cb456bf9748a54d3b6b29ad1fd
-cli 5ff945936f6701d1a0b3dda40501fa0d2e765d31a6eb8ee164980fa72de59d39
-off 277f3ca9637719d5b1ce52a2b036548779dd15fc1ae7911545e96f4f48ef9cdf
-main-natural-eco 98f22d57c541e4d6c22456319456e84a8a35dfa8075961f7ef2aae3ecafd27e1
+run1 f4fda4970cb2800227c15f383e111d6fc7b3896d0add3e8de9b892280d3f2e5f
+natural f4fda4970cb2800227c15f383e111d6fc7b3896d0add3e8de9b892280d3f2e5f
+forced 4d4010da26e321974bd3c3773edd83cf12da594e35c52f6452f070a490411011
+static 8744b26dff3618a3c5526a561a1f94b57ca5d6159bd02f5558fa74ba3e640306
+cli abc68039e35f70a9f10948ee8da226907ccc09028ca5c4689b29e415d462a2bb
+off 4d4010da26e321974bd3c3773edd83cf12da594e35c52f6452f070a490411011
+main-natural-eco e5092a286975917d1df6988bb4cb075798227f1ba621bf09a8464dfc25d3f49f
 
 # Re-baseline 2026-10-15 (corrida fonts-libre, decision 8): el harness pasa a
 # medir un frame natural con el periodo de refresco de la ROM (50 ms,
@@ -80,3 +80,40 @@ main-natural-eco 98f22d57c541e4d6c22456319456e84a8a35dfa8075961f7ef2aae3ecafd27e
 # antes -> 6/1100352 despues (un rectangulo mas y 11488 px menos). El bloque
 # metrics no expone los rectangulos del settle: la decomposicion exacta no se
 # puede citar, y el control --display-off la verifica por diferencia.
+
+# --- Re-baseline 2026-10-23 (#285, epica #284: UI POLISH 1 HOME) -------------
+#
+# El reloj sube a font_digit(&sony_44) (la etiqueta de la hora pasa de 209x31 a
+# 209x33), el porcentaje de bateria sube a &sony_22 y la fila de estado estrena
+# una banda opaca full-width del rol TC(bar) debajo de las etiquetas (src/clock.c),
+# y la runa de BT pasa de un zigzag a DOS trazos (brazos + espina, src/info.c).
+# Los PNG de TODOS los modos cambian por la tinta del panel del reloj (misma caja
+# de 206/209x61); forced y off siguen siendo el mismo byte a byte.
+#
+# La corrida natural NO cambia su perfil: con time() fijo el reloj no cambia su
+# texto y la guarda de igualdad de OPT-4 #150 lo apaga, asi que los 40 frames
+# naturales son identicos (11208000 px / 66 rectangulos / 66 flushes, el control
+# `--natural-static` en 190400 / 7 band-info y `--display-off` en 0).
+#
+# Lo unico que se mueve es el SETTLE de la captura comun (el `metrics`): la
+# invalidacion de arranque del panel del reloj es 2 px mas alta y suma la
+# superficie nueva, asi que sube +544 px en los SIETE modos, con los mismos
+# flushes. El bloque `metrics` no expone los rectangulos del settle: la
+# descomposicion exacta no se puede citar y el control `--display-off` la
+# verifica por diferencia (SETTLE_PX - 384000).
+#
+# natural.json           revision=3cc409e94199f2d2982b5ca4552a0781b666d170 natural_invalidated_px=11208000 invalidated_rects=66 flushes=66 clock_rects=0 metrics.flushes=72 metrics.flushed_pixels=12308896
+# static.json            natural_invalidated_px=190400 invalidated_rects=7 (solo band-info)
+# cli.json               natural_invalidated_px=2556000 invalidated_rects=15 metrics.flushes=21 metrics.flushed_pixels=3656896
+# off.json               natural_invalidated_px=0 flushes=5 flushed_pixels=716896
+# main-natural-eco.json  natural_invalidated_px=2796800 invalidated_rects=20 metrics.flushes=24 metrics.flushed_pixels=3763146
+#
+# Settle de la captura (metrics - natural, fixture main-natural): 6/1100352
+# antes -> 6/1100896 despues (+544 px, +0.049%; los flushes siguen en 6). El
+# reloj invalida 214 px mas por tick de 500 ms cuando el segundo cambia
+# (10486 px, 586,0,214,49, antes 10272), medido con el reloj de pared avanzando
+# con el reloj virtual (parche local de __wrap_time, no versionado): es el mismo
+# costo por tick que documenta tests/natural_evidence.py.
+#
+# Los sha256 de los PNG estan arriba (bloque de lineas `nombre sha`): los siete
+# cambiaron con respecto a la corrida de AB-HOME250.

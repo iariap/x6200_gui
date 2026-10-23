@@ -1,3 +1,16 @@
+building ui_harness (revision 3cc409e94199f2d2982b5ca4552a0781b666d170)...
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/tools/ui_harness/build/styles_host.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/tools/ui_harness/build/styles_host.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
 running the natural bench on main-natural...
   profile: spectrum 132000 px x 27 frames, waterfall 196000 px x 39 rows, clock 10486 px x 0 tick(s)
   natural totals: invalidated 11208000 px in 66 rectangles / 66 flushes over 39/40 frames

@@ -1,0 +1,29 @@
+# Paso 'Python framework (ruff, format, ty, unit tests)' del job 'functional' del CI
+# (.github/workflows/ab-testing.yml, working-directory: tools/ab_testing)
+# Corrido en el arbol FINAL del arreglo (2026-10-23).
+
+$ uv sync
+Resolved 13 packages in 0.77ms
+Audited 11 packages in 0.17ms
+
+$ uv run ruff check .
+All checks passed!
+exit=0
+
+$ uv run ruff format --check .
+200 files already formatted
+exit=0
+
+$ uv run ty check src tests
+WARN No python files found under the given path(s)
+All checks passed!
+exit=0
+
+$ uv run pytest -m "not e2e"
+tests/test_typography_checks.py ...........                              [ 92%]
+tests/test_verifica_firmware_port.py .........                           [ 96%]
+tests/test_visual_diff.py ....                                           [ 98%]
+tests/test_wakeups.py ....                                               [100%]
+
+====================== 233 passed, 13 deselected in 2.48s ======================
+pytest exit=0
