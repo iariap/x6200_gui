@@ -154,8 +154,9 @@ manifest) are the exception to the rules above, on purpose:
   letters are approximations), so they are not in `font_families[]` but in
   `font_digit_families[]`, and the ROM only uses one for the labels that are pure
   digits — the frequency row and the clock;
-* they are generated for `segmented_slots` only (the two slots those labels use),
-  not for the whole size range;
+* they are generated for `segmented_slots` only (the slots the digit labels use:
+  the frequency row's `sony_30`/`sony_38` and the clock's `sony_44` since issue
+  #285), not for the whole size range;
 * they are generated with `match: ink`, not `line_height`: a segment digit is nearly
   as tall as its line height, so matching the line height (what the proportional
   families match) would overflow the 36 px frequency box. The probe reads the ink of

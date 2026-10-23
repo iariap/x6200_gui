@@ -1,0 +1,972 @@
+--> home-aurora
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-aurora -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-aurora.png (253528 bytes), flushes=6, flushed_pixels=1100624
+--> home-cathode
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-cathode -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-cathode.png (231493 bytes), flushes=6, flushed_pixels=1100896
+--> home-redshift
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-redshift -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-redshift.png (215133 bytes), flushes=6, flushed_pixels=1100290
+--> home-sprint
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-sprint -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-sprint.png (246369 bytes), flushes=6, flushed_pixels=1100026
+--> home-sunlit
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-sunlit -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-sunlit.png (242531 bytes), flushes=6, flushed_pixels=1100620
+--> home-trail
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-trail -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-trail.png (241942 bytes), flushes=6, flushed_pixels=1100896
+--> home-bt-off
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-bt-off -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-bt-off.png (253361 bytes), flushes=6, flushed_pixels=1100624
+--> home-bt-on
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-bt-on -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-bt-on.png (253572 bytes), flushes=6, flushed_pixels=1100624
+--> home-bt-connected
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-bt-connected -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-bt-connected.png (253608 bytes), flushes=6, flushed_pixels=1100624
+--> mx-aurora-unknown-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-unknown-none-uncharged -> /scratch/mx-png/mx-aurora-unknown-none-uncharged.png (252216 bytes), flushes=4, flushed_pixels=1096000
+--> mx-aurora-unknown-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-unknown-none-charging -> /scratch/mx-png/mx-aurora-unknown-none-charging.png (252216 bytes), flushes=4, flushed_pixels=1096000
+--> mx-aurora-unknown-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-unknown-ext138-uncharged -> /scratch/mx-png/mx-aurora-unknown-ext138-uncharged.png (253224 bytes), flushes=5, flushed_pixels=1098550
+--> mx-aurora-unknown-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-unknown-ext138-charging -> /scratch/mx-png/mx-aurora-unknown-ext138-charging.png (253224 bytes), flushes=5, flushed_pixels=1098550
+--> mx-aurora-0-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-0-none-uncharged -> /scratch/mx-png/mx-aurora-0-none-uncharged.png (252421 bytes), flushes=5, flushed_pixels=1097972
+--> mx-aurora-0-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-0-none-charging -> /scratch/mx-png/mx-aurora-0-none-charging.png (252421 bytes), flushes=5, flushed_pixels=1097972
+--> mx-aurora-0-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-0-ext138-uncharged -> /scratch/mx-png/mx-aurora-0-ext138-uncharged.png (253393 bytes), flushes=6, flushed_pixels=1100522
+--> mx-aurora-0-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-0-ext138-charging -> /scratch/mx-png/mx-aurora-0-ext138-charging.png (253556 bytes), flushes=6, flushed_pixels=1100692
+--> mx-aurora-9-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-9-none-uncharged -> /scratch/mx-png/mx-aurora-9-none-uncharged.png (252427 bytes), flushes=5, flushed_pixels=1097972
+--> mx-aurora-9-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-9-none-charging -> /scratch/mx-png/mx-aurora-9-none-charging.png (252427 bytes), flushes=5, flushed_pixels=1097972
+--> mx-aurora-9-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-9-ext138-uncharged -> /scratch/mx-png/mx-aurora-9-ext138-uncharged.png (253406 bytes), flushes=6, flushed_pixels=1100522
+--> mx-aurora-9-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-9-ext138-charging -> /scratch/mx-png/mx-aurora-9-ext138-charging.png (253572 bytes), flushes=6, flushed_pixels=1100692
+--> mx-aurora-76-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-76-none-uncharged -> /scratch/mx-png/mx-aurora-76-none-uncharged.png (252568 bytes), flushes=5, flushed_pixels=1098074
+--> mx-aurora-76-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-76-none-charging -> /scratch/mx-png/mx-aurora-76-none-charging.png (252568 bytes), flushes=5, flushed_pixels=1098074
+--> mx-aurora-76-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-76-ext138-uncharged -> /scratch/mx-png/mx-aurora-76-ext138-uncharged.png (253528 bytes), flushes=6, flushed_pixels=1100624
+--> mx-aurora-76-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-76-ext138-charging -> /scratch/mx-png/mx-aurora-76-ext138-charging.png (253674 bytes), flushes=6, flushed_pixels=1100794
+--> mx-aurora-99-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-99-none-uncharged -> /scratch/mx-png/mx-aurora-99-none-uncharged.png (252609 bytes), flushes=5, flushed_pixels=1098108
+--> mx-aurora-99-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-99-none-charging -> /scratch/mx-png/mx-aurora-99-none-charging.png (252609 bytes), flushes=5, flushed_pixels=1098108
+--> mx-aurora-99-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-99-ext138-uncharged -> /scratch/mx-png/mx-aurora-99-ext138-uncharged.png (253566 bytes), flushes=6, flushed_pixels=1100658
+--> mx-aurora-99-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-99-ext138-charging -> /scratch/mx-png/mx-aurora-99-ext138-charging.png (253860 bytes), flushes=6, flushed_pixels=1100828
+--> mx-aurora-100-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-100-none-uncharged -> /scratch/mx-png/mx-aurora-100-none-uncharged.png (252605 bytes), flushes=5, flushed_pixels=1098278
+--> mx-aurora-100-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-100-none-charging -> /scratch/mx-png/mx-aurora-100-none-charging.png (252605 bytes), flushes=5, flushed_pixels=1098278
+--> mx-aurora-100-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-100-ext138-uncharged -> /scratch/mx-png/mx-aurora-100-ext138-uncharged.png (253567 bytes), flushes=6, flushed_pixels=1100828
+--> mx-aurora-100-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-aurora-100-ext138-charging -> /scratch/mx-png/mx-aurora-100-ext138-charging.png (253701 bytes), flushes=6, flushed_pixels=1100998
+--> mx-cathode-unknown-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-unknown-none-uncharged -> /scratch/mx-png/mx-cathode-unknown-none-uncharged.png (230382 bytes), flushes=4, flushed_pixels=1096000
+--> mx-cathode-unknown-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-unknown-none-charging -> /scratch/mx-png/mx-cathode-unknown-none-charging.png (230382 bytes), flushes=4, flushed_pixels=1096000
+--> mx-cathode-unknown-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-unknown-ext138-uncharged -> /scratch/mx-png/mx-cathode-unknown-ext138-uncharged.png (231459 bytes), flushes=5, flushed_pixels=1098788
+--> mx-cathode-unknown-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-unknown-ext138-charging -> /scratch/mx-png/mx-cathode-unknown-ext138-charging.png (231459 bytes), flushes=5, flushed_pixels=1098788
+--> mx-cathode-0-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-0-none-uncharged -> /scratch/mx-png/mx-cathode-0-none-uncharged.png (230407 bytes), flushes=5, flushed_pixels=1097938
+--> mx-cathode-0-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-0-none-charging -> /scratch/mx-png/mx-cathode-0-none-charging.png (230407 bytes), flushes=5, flushed_pixels=1097938
+--> mx-cathode-0-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-0-ext138-uncharged -> /scratch/mx-png/mx-cathode-0-ext138-uncharged.png (231430 bytes), flushes=6, flushed_pixels=1100726
+--> mx-cathode-0-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-0-ext138-charging -> /scratch/mx-png/mx-cathode-0-ext138-charging.png (231576 bytes), flushes=6, flushed_pixels=1100896
+--> mx-cathode-9-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-9-none-uncharged -> /scratch/mx-png/mx-cathode-9-none-uncharged.png (230343 bytes), flushes=5, flushed_pixels=1097938
+--> mx-cathode-9-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-9-none-charging -> /scratch/mx-png/mx-cathode-9-none-charging.png (230343 bytes), flushes=5, flushed_pixels=1097938
+--> mx-cathode-9-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-9-ext138-uncharged -> /scratch/mx-png/mx-cathode-9-ext138-uncharged.png (231429 bytes), flushes=6, flushed_pixels=1100726
+--> mx-cathode-9-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-9-ext138-charging -> /scratch/mx-png/mx-cathode-9-ext138-charging.png (231579 bytes), flushes=6, flushed_pixels=1100896
+--> mx-cathode-76-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-76-none-uncharged -> /scratch/mx-png/mx-cathode-76-none-uncharged.png (230461 bytes), flushes=5, flushed_pixels=1098108
+--> mx-cathode-76-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-76-none-charging -> /scratch/mx-png/mx-cathode-76-none-charging.png (230461 bytes), flushes=5, flushed_pixels=1098108
+--> mx-cathode-76-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-76-ext138-uncharged -> /scratch/mx-png/mx-cathode-76-ext138-uncharged.png (231493 bytes), flushes=6, flushed_pixels=1100896
+--> mx-cathode-76-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-76-ext138-charging -> /scratch/mx-png/mx-cathode-76-ext138-charging.png (231706 bytes), flushes=6, flushed_pixels=1101066
+--> mx-cathode-99-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-99-none-uncharged -> /scratch/mx-png/mx-cathode-99-none-uncharged.png (230461 bytes), flushes=5, flushed_pixels=1098108
+--> mx-cathode-99-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-99-none-charging -> /scratch/mx-png/mx-cathode-99-none-charging.png (230461 bytes), flushes=5, flushed_pixels=1098108
+--> mx-cathode-99-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-99-ext138-uncharged -> /scratch/mx-png/mx-cathode-99-ext138-uncharged.png (231491 bytes), flushes=6, flushed_pixels=1100896
+--> mx-cathode-99-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-99-ext138-charging -> /scratch/mx-png/mx-cathode-99-ext138-charging.png (231705 bytes), flushes=6, flushed_pixels=1101066
+--> mx-cathode-100-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-100-none-uncharged -> /scratch/mx-png/mx-cathode-100-none-uncharged.png (230657 bytes), flushes=5, flushed_pixels=1098346
+--> mx-cathode-100-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-100-none-charging -> /scratch/mx-png/mx-cathode-100-none-charging.png (230657 bytes), flushes=5, flushed_pixels=1098346
+--> mx-cathode-100-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-100-ext138-uncharged -> /scratch/mx-png/mx-cathode-100-ext138-uncharged.png (231584 bytes), flushes=6, flushed_pixels=1101134
+--> mx-cathode-100-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-cathode-100-ext138-charging -> /scratch/mx-png/mx-cathode-100-ext138-charging.png (231727 bytes), flushes=6, flushed_pixels=1101304
+--> mx-redshift-unknown-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-unknown-none-uncharged -> /scratch/mx-png/mx-redshift-unknown-none-uncharged.png (214115 bytes), flushes=4, flushed_pixels=1096000
+--> mx-redshift-unknown-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-unknown-none-charging -> /scratch/mx-png/mx-redshift-unknown-none-charging.png (214115 bytes), flushes=4, flushed_pixels=1096000
+--> mx-redshift-unknown-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-unknown-ext138-uncharged -> /scratch/mx-png/mx-redshift-unknown-ext138-uncharged.png (214848 bytes), flushes=5, flushed_pixels=1098343
+--> mx-redshift-unknown-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-unknown-ext138-charging -> /scratch/mx-png/mx-redshift-unknown-ext138-charging.png (214848 bytes), flushes=5, flushed_pixels=1098343
+--> mx-redshift-0-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-0-none-uncharged -> /scratch/mx-png/mx-redshift-0-none-uncharged.png (214286 bytes), flushes=5, flushed_pixels=1097815
+--> mx-redshift-0-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-0-none-charging -> /scratch/mx-png/mx-redshift-0-none-charging.png (214286 bytes), flushes=5, flushed_pixels=1097815
+--> mx-redshift-0-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-0-ext138-uncharged -> /scratch/mx-png/mx-redshift-0-ext138-uncharged.png (215019 bytes), flushes=6, flushed_pixels=1100158
+--> mx-redshift-0-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-0-ext138-charging -> /scratch/mx-png/mx-redshift-0-ext138-charging.png (214935 bytes), flushes=6, flushed_pixels=1100323
+--> mx-redshift-9-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-9-none-uncharged -> /scratch/mx-png/mx-redshift-9-none-uncharged.png (214297 bytes), flushes=5, flushed_pixels=1097815
+--> mx-redshift-9-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-9-none-charging -> /scratch/mx-png/mx-redshift-9-none-charging.png (214297 bytes), flushes=5, flushed_pixels=1097815
+--> mx-redshift-9-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-9-ext138-uncharged -> /scratch/mx-png/mx-redshift-9-ext138-uncharged.png (215026 bytes), flushes=6, flushed_pixels=1100158
+--> mx-redshift-9-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-9-ext138-charging -> /scratch/mx-png/mx-redshift-9-ext138-charging.png (214940 bytes), flushes=6, flushed_pixels=1100323
+--> mx-redshift-76-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-76-none-uncharged -> /scratch/mx-png/mx-redshift-76-none-uncharged.png (214412 bytes), flushes=5, flushed_pixels=1097947
+--> mx-redshift-76-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-76-none-charging -> /scratch/mx-png/mx-redshift-76-none-charging.png (214412 bytes), flushes=5, flushed_pixels=1097947
+--> mx-redshift-76-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-76-ext138-uncharged -> /scratch/mx-png/mx-redshift-76-ext138-uncharged.png (215133 bytes), flushes=6, flushed_pixels=1100290
+--> mx-redshift-76-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-76-ext138-charging -> /scratch/mx-png/mx-redshift-76-ext138-charging.png (215040 bytes), flushes=6, flushed_pixels=1100455
+--> mx-redshift-99-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-99-none-uncharged -> /scratch/mx-png/mx-redshift-99-none-uncharged.png (214432 bytes), flushes=5, flushed_pixels=1097947
+--> mx-redshift-99-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-99-none-charging -> /scratch/mx-png/mx-redshift-99-none-charging.png (214432 bytes), flushes=5, flushed_pixels=1097947
+--> mx-redshift-99-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-99-ext138-uncharged -> /scratch/mx-png/mx-redshift-99-ext138-uncharged.png (215151 bytes), flushes=6, flushed_pixels=1100290
+--> mx-redshift-99-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-99-ext138-charging -> /scratch/mx-png/mx-redshift-99-ext138-charging.png (215059 bytes), flushes=6, flushed_pixels=1100455
+--> mx-redshift-100-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-100-none-uncharged -> /scratch/mx-png/mx-redshift-100-none-uncharged.png (214469 bytes), flushes=5, flushed_pixels=1098145
+--> mx-redshift-100-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-100-none-charging -> /scratch/mx-png/mx-redshift-100-none-charging.png (214469 bytes), flushes=5, flushed_pixels=1098145
+--> mx-redshift-100-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-100-ext138-uncharged -> /scratch/mx-png/mx-redshift-100-ext138-uncharged.png (215180 bytes), flushes=6, flushed_pixels=1100488
+--> mx-redshift-100-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-redshift-100-ext138-charging -> /scratch/mx-png/mx-redshift-100-ext138-charging.png (215072 bytes), flushes=6, flushed_pixels=1100653
+--> mx-sprint-unknown-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-unknown-none-uncharged -> /scratch/mx-png/mx-sprint-unknown-none-uncharged.png (244995 bytes), flushes=4, flushed_pixels=1096000
+--> mx-sprint-unknown-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-unknown-none-charging -> /scratch/mx-png/mx-sprint-unknown-none-charging.png (244995 bytes), flushes=4, flushed_pixels=1096000
+--> mx-sprint-unknown-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-unknown-ext138-uncharged -> /scratch/mx-png/mx-sprint-unknown-ext138-uncharged.png (246114 bytes), flushes=5, flushed_pixels=1098244
+--> mx-sprint-unknown-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-unknown-ext138-charging -> /scratch/mx-png/mx-sprint-unknown-ext138-charging.png (246114 bytes), flushes=5, flushed_pixels=1098244
+--> mx-sprint-0-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-0-none-uncharged -> /scratch/mx-png/mx-sprint-0-none-uncharged.png (245184 bytes), flushes=5, flushed_pixels=1097650
+--> mx-sprint-0-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-0-none-charging -> /scratch/mx-png/mx-sprint-0-none-charging.png (245184 bytes), flushes=5, flushed_pixels=1097650
+--> mx-sprint-0-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-0-ext138-uncharged -> /scratch/mx-png/mx-sprint-0-ext138-uncharged.png (246264 bytes), flushes=6, flushed_pixels=1099894
+--> mx-sprint-0-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-0-ext138-charging -> /scratch/mx-png/mx-sprint-0-ext138-charging.png (246429 bytes), flushes=6, flushed_pixels=1100059
+--> mx-sprint-9-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-9-none-uncharged -> /scratch/mx-png/mx-sprint-9-none-uncharged.png (245206 bytes), flushes=5, flushed_pixels=1097650
+--> mx-sprint-9-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-9-none-charging -> /scratch/mx-png/mx-sprint-9-none-charging.png (245206 bytes), flushes=5, flushed_pixels=1097650
+--> mx-sprint-9-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-9-ext138-uncharged -> /scratch/mx-png/mx-sprint-9-ext138-uncharged.png (246277 bytes), flushes=6, flushed_pixels=1099894
+--> mx-sprint-9-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-9-ext138-charging -> /scratch/mx-png/mx-sprint-9-ext138-charging.png (246654 bytes), flushes=6, flushed_pixels=1100059
+--> mx-sprint-76-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-76-none-uncharged -> /scratch/mx-png/mx-sprint-76-none-uncharged.png (245354 bytes), flushes=5, flushed_pixels=1097782
+--> mx-sprint-76-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-76-none-charging -> /scratch/mx-png/mx-sprint-76-none-charging.png (245354 bytes), flushes=5, flushed_pixels=1097782
+--> mx-sprint-76-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-76-ext138-uncharged -> /scratch/mx-png/mx-sprint-76-ext138-uncharged.png (246369 bytes), flushes=6, flushed_pixels=1100026
+--> mx-sprint-76-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-76-ext138-charging -> /scratch/mx-png/mx-sprint-76-ext138-charging.png (246527 bytes), flushes=6, flushed_pixels=1100191
+--> mx-sprint-99-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-99-none-uncharged -> /scratch/mx-png/mx-sprint-99-none-uncharged.png (245389 bytes), flushes=5, flushed_pixels=1097782
+--> mx-sprint-99-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-99-none-charging -> /scratch/mx-png/mx-sprint-99-none-charging.png (245389 bytes), flushes=5, flushed_pixels=1097782
+--> mx-sprint-99-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-99-ext138-uncharged -> /scratch/mx-png/mx-sprint-99-ext138-uncharged.png (246408 bytes), flushes=6, flushed_pixels=1100026
+--> mx-sprint-99-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-99-ext138-charging -> /scratch/mx-png/mx-sprint-99-ext138-charging.png (246564 bytes), flushes=6, flushed_pixels=1100191
+--> mx-sprint-100-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-100-none-uncharged -> /scratch/mx-png/mx-sprint-100-none-uncharged.png (245434 bytes), flushes=5, flushed_pixels=1097947
+--> mx-sprint-100-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-100-none-charging -> /scratch/mx-png/mx-sprint-100-none-charging.png (245434 bytes), flushes=5, flushed_pixels=1097947
+--> mx-sprint-100-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-100-ext138-uncharged -> /scratch/mx-png/mx-sprint-100-ext138-uncharged.png (246425 bytes), flushes=6, flushed_pixels=1100191
+--> mx-sprint-100-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sprint-100-ext138-charging -> /scratch/mx-png/mx-sprint-100-ext138-charging.png (246578 bytes), flushes=6, flushed_pixels=1100356
+--> mx-sunlit-unknown-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-unknown-none-uncharged -> /scratch/mx-png/mx-sunlit-unknown-none-uncharged.png (241354 bytes), flushes=4, flushed_pixels=1096000
+--> mx-sunlit-unknown-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-unknown-none-charging -> /scratch/mx-png/mx-sunlit-unknown-none-charging.png (241354 bytes), flushes=4, flushed_pixels=1096000
+--> mx-sunlit-unknown-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-unknown-ext138-uncharged -> /scratch/mx-png/mx-sunlit-unknown-ext138-uncharged.png (242260 bytes), flushes=5, flushed_pixels=1098706
+--> mx-sunlit-unknown-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-unknown-ext138-charging -> /scratch/mx-png/mx-sunlit-unknown-ext138-charging.png (242260 bytes), flushes=5, flushed_pixels=1098706
+--> mx-sunlit-0-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-0-none-uncharged -> /scratch/mx-png/mx-sunlit-0-none-uncharged.png (241504 bytes), flushes=5, flushed_pixels=1097782
+--> mx-sunlit-0-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-0-none-charging -> /scratch/mx-png/mx-sunlit-0-none-charging.png (241504 bytes), flushes=5, flushed_pixels=1097782
+--> mx-sunlit-0-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-0-ext138-uncharged -> /scratch/mx-png/mx-sunlit-0-ext138-uncharged.png (242418 bytes), flushes=6, flushed_pixels=1100488
+--> mx-sunlit-0-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-0-ext138-charging -> /scratch/mx-png/mx-sunlit-0-ext138-charging.png (242559 bytes), flushes=6, flushed_pixels=1100653
+--> mx-sunlit-9-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-9-none-uncharged -> /scratch/mx-png/mx-sunlit-9-none-uncharged.png (241508 bytes), flushes=5, flushed_pixels=1097782
+--> mx-sunlit-9-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-9-none-charging -> /scratch/mx-png/mx-sunlit-9-none-charging.png (241508 bytes), flushes=5, flushed_pixels=1097782
+--> mx-sunlit-9-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-9-ext138-uncharged -> /scratch/mx-png/mx-sunlit-9-ext138-uncharged.png (242417 bytes), flushes=6, flushed_pixels=1100488
+--> mx-sunlit-9-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-9-ext138-charging -> /scratch/mx-png/mx-sunlit-9-ext138-charging.png (242559 bytes), flushes=6, flushed_pixels=1100653
+--> mx-sunlit-76-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-76-none-uncharged -> /scratch/mx-png/mx-sunlit-76-none-uncharged.png (241644 bytes), flushes=5, flushed_pixels=1097914
+--> mx-sunlit-76-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-76-none-charging -> /scratch/mx-png/mx-sunlit-76-none-charging.png (241644 bytes), flushes=5, flushed_pixels=1097914
+--> mx-sunlit-76-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-76-ext138-uncharged -> /scratch/mx-png/mx-sunlit-76-ext138-uncharged.png (242531 bytes), flushes=6, flushed_pixels=1100620
+--> mx-sunlit-76-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-76-ext138-charging -> /scratch/mx-png/mx-sunlit-76-ext138-charging.png (242684 bytes), flushes=6, flushed_pixels=1100785
+--> mx-sunlit-99-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-99-none-uncharged -> /scratch/mx-png/mx-sunlit-99-none-uncharged.png (241643 bytes), flushes=5, flushed_pixels=1097914
+--> mx-sunlit-99-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-99-none-charging -> /scratch/mx-png/mx-sunlit-99-none-charging.png (241643 bytes), flushes=5, flushed_pixels=1097914
+--> mx-sunlit-99-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-99-ext138-uncharged -> /scratch/mx-png/mx-sunlit-99-ext138-uncharged.png (242537 bytes), flushes=6, flushed_pixels=1100620
+--> mx-sunlit-99-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-99-ext138-charging -> /scratch/mx-png/mx-sunlit-99-ext138-charging.png (242691 bytes), flushes=6, flushed_pixels=1100785
+--> mx-sunlit-100-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-100-none-uncharged -> /scratch/mx-png/mx-sunlit-100-none-uncharged.png (241657 bytes), flushes=5, flushed_pixels=1098112
+--> mx-sunlit-100-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-100-none-charging -> /scratch/mx-png/mx-sunlit-100-none-charging.png (241657 bytes), flushes=5, flushed_pixels=1098112
+--> mx-sunlit-100-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-100-ext138-uncharged -> /scratch/mx-png/mx-sunlit-100-ext138-uncharged.png (242557 bytes), flushes=6, flushed_pixels=1100818
+--> mx-sunlit-100-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-sunlit-100-ext138-charging -> /scratch/mx-png/mx-sunlit-100-ext138-charging.png (242698 bytes), flushes=6, flushed_pixels=1100983
+--> mx-trail-unknown-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-unknown-none-uncharged -> /scratch/mx-png/mx-trail-unknown-none-uncharged.png (240712 bytes), flushes=4, flushed_pixels=1096000
+--> mx-trail-unknown-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-unknown-none-charging -> /scratch/mx-png/mx-trail-unknown-none-charging.png (240712 bytes), flushes=4, flushed_pixels=1096000
+--> mx-trail-unknown-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-unknown-ext138-uncharged -> /scratch/mx-png/mx-trail-unknown-ext138-uncharged.png (241920 bytes), flushes=5, flushed_pixels=1098788
+--> mx-trail-unknown-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-unknown-ext138-charging -> /scratch/mx-png/mx-trail-unknown-ext138-charging.png (241920 bytes), flushes=5, flushed_pixels=1098788
+--> mx-trail-0-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-0-none-uncharged -> /scratch/mx-png/mx-trail-0-none-uncharged.png (240623 bytes), flushes=5, flushed_pixels=1097938
+--> mx-trail-0-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-0-none-charging -> /scratch/mx-png/mx-trail-0-none-charging.png (240623 bytes), flushes=5, flushed_pixels=1097938
+--> mx-trail-0-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-0-ext138-uncharged -> /scratch/mx-png/mx-trail-0-ext138-uncharged.png (241813 bytes), flushes=6, flushed_pixels=1100726
+--> mx-trail-0-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-0-ext138-charging -> /scratch/mx-png/mx-trail-0-ext138-charging.png (242004 bytes), flushes=6, flushed_pixels=1100896
+--> mx-trail-9-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-9-none-uncharged -> /scratch/mx-png/mx-trail-9-none-uncharged.png (240627 bytes), flushes=5, flushed_pixels=1097938
+--> mx-trail-9-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-9-none-charging -> /scratch/mx-png/mx-trail-9-none-charging.png (240627 bytes), flushes=5, flushed_pixels=1097938
+--> mx-trail-9-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-9-ext138-uncharged -> /scratch/mx-png/mx-trail-9-ext138-uncharged.png (241811 bytes), flushes=6, flushed_pixels=1100726
+--> mx-trail-9-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-9-ext138-charging -> /scratch/mx-png/mx-trail-9-ext138-charging.png (242006 bytes), flushes=6, flushed_pixels=1100896
+--> mx-trail-76-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-76-none-uncharged -> /scratch/mx-png/mx-trail-76-none-uncharged.png (240784 bytes), flushes=5, flushed_pixels=1098108
+--> mx-trail-76-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-76-none-charging -> /scratch/mx-png/mx-trail-76-none-charging.png (240784 bytes), flushes=5, flushed_pixels=1098108
+--> mx-trail-76-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-76-ext138-uncharged -> /scratch/mx-png/mx-trail-76-ext138-uncharged.png (241942 bytes), flushes=6, flushed_pixels=1100896
+--> mx-trail-76-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-76-ext138-charging -> /scratch/mx-png/mx-trail-76-ext138-charging.png (242101 bytes), flushes=6, flushed_pixels=1101066
+--> mx-trail-99-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-99-none-uncharged -> /scratch/mx-png/mx-trail-99-none-uncharged.png (240789 bytes), flushes=5, flushed_pixels=1098108
+--> mx-trail-99-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-99-none-charging -> /scratch/mx-png/mx-trail-99-none-charging.png (240789 bytes), flushes=5, flushed_pixels=1098108
+--> mx-trail-99-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-99-ext138-uncharged -> /scratch/mx-png/mx-trail-99-ext138-uncharged.png (241946 bytes), flushes=6, flushed_pixels=1100896
+--> mx-trail-99-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-99-ext138-charging -> /scratch/mx-png/mx-trail-99-ext138-charging.png (242153 bytes), flushes=6, flushed_pixels=1101066
+--> mx-trail-100-none-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-100-none-uncharged -> /scratch/mx-png/mx-trail-100-none-uncharged.png (240863 bytes), flushes=5, flushed_pixels=1098346
+--> mx-trail-100-none-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-100-none-charging -> /scratch/mx-png/mx-trail-100-none-charging.png (240863 bytes), flushes=5, flushed_pixels=1098346
+--> mx-trail-100-ext138-uncharged
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-100-ext138-uncharged -> /scratch/mx-png/mx-trail-100-ext138-uncharged.png (241990 bytes), flushes=6, flushed_pixels=1101134
+--> mx-trail-100-ext138-charging
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: mx-trail-100-ext138-charging -> /scratch/mx-png/mx-trail-100-ext138-charging.png (242181 bytes), flushes=6, flushed_pixels=1101304
+--> home-bat-unknown
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-bat-unknown -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-bat-unknown.png (253224 bytes), flushes=5, flushed_pixels=1098550
+--> home-bat-0
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-bat-0 -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-bat-0.png (253393 bytes), flushes=6, flushed_pixels=1100522
+--> home-bat-9
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-bat-9 -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-bat-9.png (253406 bytes), flushes=6, flushed_pixels=1100522
+--> home-bat-76
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-bat-76 -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-bat-76.png (253528 bytes), flushes=6, flushed_pixels=1100624
+--> home-bat-99
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-bat-99 -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-bat-99.png (253566 bytes), flushes=6, flushed_pixels=1100658
+--> home-bat-100
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-bat-100 -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-bat-100.png (253567 bytes), flushes=6, flushed_pixels=1100828
+--> home-ext-none
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-ext-none -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-ext-none.png (252568 bytes), flushes=5, flushed_pixels=1098074
+--> home-bat-100-chg
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-bat-100-chg -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-bat-100-chg.png (253701 bytes), flushes=6, flushed_pixels=1100998
+--> home-dseg
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: home-dseg -> /src/docs/evidencia/2026-10-23-ui-polish/home/png-before/home-dseg.png (251555 bytes), flushes=6, flushed_pixels=1100624

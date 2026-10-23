@@ -1,0 +1,163 @@
+captura,tema,hora_box,hora_ink,ext_box,pct_box,pct_ink,icon_box,icon_ink,banda_box,hueco_caja_icono_pct,hueco_tinta_icono_pct,hueco_ext_icono,hora_ancho_caja,hora_alto_caja,hora_alto_tinta,hora_ancho_tinta,hora_ratio,hora_ratio_p05,hora_fondo,ext_ratio,ext_ratio_p05,ext_fondo,pct_ratio,pct_ratio_p05,pct_fondo,ok
+home-aurora,Aurora,"(591, 5, 800, 36)","(641, 12, 747, 29)","(599, 41, 656, 59)","(768, 46, 792, 59)","(769, 48, 790, 55)","(748, 41, 764, 59)","(748, 46, 763, 54)",,4,6,92,209,31,18,107,9.99,8.54,"(48, 60, 74)",7.1,5.32,"(66, 82, 102)",5.58,5.01,"(78, 98, 122)",sin banda opaca de estado
+home-bat-0,Aurora,"(591, 5, 800, 36)","(641, 12, 747, 29)","(599, 41, 656, 59)","(774, 46, 792, 59)","(775, 48, 790, 55)","(754, 41, 770, 59)","(754, 46, 769, 54)",,4,6,98,209,31,18,107,9.99,8.54,"(48, 60, 74)",7.1,5.32,"(66, 82, 102)",5.47,4.77,"(78, 99, 123)",sin banda opaca de estado
+home-bat-100-chg,Aurora,"(591, 5, 800, 36)","(641, 12, 747, 29)","(599, 41, 661, 59)","(762, 46, 792, 59)","(763, 48, 790, 55)","(742, 41, 758, 59)","(742, 46, 757, 54)",,4,6,81,209,31,18,107,9.99,8.54,"(48, 60, 74)",6.96,5.3,"(66, 83, 103)",5.38,4.94,"(78, 100, 123)",sin banda opaca de estado
+home-bat-100,Aurora,"(591, 5, 800, 36)","(641, 12, 747, 29)","(599, 41, 656, 59)","(762, 46, 792, 59)","(763, 48, 790, 55)","(742, 41, 758, 59)","(742, 46, 757, 54)",,4,6,86,209,31,18,107,9.99,8.54,"(48, 60, 74)",7.1,5.32,"(66, 82, 102)",5.38,4.94,"(78, 100, 123)",sin banda opaca de estado
+home-bat-76,Aurora,"(591, 5, 800, 36)","(641, 12, 747, 29)","(599, 41, 656, 59)","(768, 46, 792, 59)","(769, 48, 790, 55)","(748, 41, 764, 59)","(748, 46, 763, 54)",,4,6,92,209,31,18,107,9.99,8.54,"(48, 60, 74)",7.1,5.32,"(66, 82, 102)",5.58,5.01,"(78, 98, 122)",sin banda opaca de estado
+home-bat-9,Aurora,"(591, 5, 800, 36)","(641, 12, 747, 29)","(599, 41, 656, 59)","(774, 46, 792, 59)","(775, 48, 790, 55)","(754, 41, 770, 59)","(754, 46, 769, 54)",,4,6,98,209,31,18,107,9.99,8.54,"(48, 60, 74)",7.1,5.32,"(66, 82, 102)",5.47,4.77,"(78, 99, 123)",sin banda opaca de estado
+home-bat-99,Aurora,"(591, 5, 800, 36)","(641, 12, 747, 29)","(599, 41, 656, 59)","(767, 46, 792, 59)","(768, 48, 790, 55)","(747, 41, 763, 59)","(747, 46, 762, 54)",,4,6,91,209,31,18,107,9.99,8.54,"(48, 60, 74)",7.1,5.32,"(66, 82, 102)",5.37,4.88,"(78, 100, 123)",sin banda opaca de estado
+home-bat-unknown,Aurora,"(591, 5, 800, 36)","(641, 12, 747, 29)","(599, 41, 656, 59)","(771, 46, 792, 59)","(772, 48, 790, 55)","(751, 41, 767, 59)","(751, 46, 766, 54)",,4,6,95,209,31,18,107,9.99,8.54,"(48, 60, 74)",7.1,5.32,"(66, 82, 102)",3.86,3.65,"(76, 97, 120)",sin banda opaca de estado
+home-bt-connected,Aurora,"(591, 5, 800, 36)","(641, 12, 747, 29)","(599, 41, 656, 59)","(768, 46, 792, 59)","(769, 48, 790, 55)","(748, 41, 764, 59)","(748, 46, 763, 54)",,4,6,92,209,31,18,107,9.99,8.54,"(48, 60, 74)",7.1,5.32,"(66, 82, 102)",5.58,5.01,"(78, 98, 122)",sin banda opaca de estado
+home-bt-off,Aurora,"(591, 5, 800, 36)","(641, 12, 747, 29)","(599, 41, 656, 59)","(768, 46, 792, 59)","(769, 48, 790, 55)","(748, 41, 764, 59)","(748, 46, 763, 54)",,4,6,92,209,31,18,107,9.99,8.54,"(48, 60, 74)",7.1,5.32,"(66, 82, 102)",5.58,5.01,"(78, 98, 122)",sin banda opaca de estado
+home-bt-on,Aurora,"(591, 5, 800, 36)","(641, 12, 747, 29)","(599, 41, 656, 59)","(768, 46, 792, 59)","(769, 48, 790, 55)","(748, 41, 764, 59)","(748, 46, 763, 54)",,4,6,92,209,31,18,107,9.99,8.54,"(48, 60, 74)",7.1,5.32,"(66, 82, 102)",5.58,5.01,"(78, 98, 122)",sin banda opaca de estado
+home-cathode,Cathode,"(591, 5, 800, 24)","(645, 5, 744, 23)","(599, 41, 663, 59)","(767, 48, 792, 59)","(768, 49, 790, 56)","(747, 41, 763, 59)","(747, 45, 762, 53)",,4,6,84,209,19,19,100,9.25,8.33,"(43, 53, 63)",4.76,4.5,"(75, 97, 116)",4.94,4.64,"(72, 95, 112)",sin banda opaca de estado
+home-dseg,Aurora,"(591, 5, 800, 25)","(645, 5, 744, 24)","(599, 41, 656, 59)","(768, 46, 792, 59)","(769, 48, 790, 55)","(748, 41, 764, 59)","(748, 46, 763, 54)",,4,6,92,209,20,20,100,10.59,9.61,"(46, 56, 70)",7.1,5.32,"(66, 82, 102)",5.58,5.01,"(78, 98, 122)",sin banda opaca de estado
+home-ext-none,Aurora,"(591, 5, 800, 36)","(641, 12, 747, 29)",,"(768, 46, 792, 59)","(769, 48, 790, 55)","(748, 41, 764, 59)","(748, 46, 763, 54)",,4,6,,209,31,18,107,9.99,8.54,"(48, 60, 74)",,,,5.58,5.01,"(78, 98, 122)",sin banda opaca de estado
+home-redshift,Redshift,"(591, 5, 800, 34)","(648, 8, 740, 26)","(599, 42, 652, 59)","(770, 46, 792, 59)","(772, 48, 788, 55)","(750, 42, 766, 59)","(750, 45, 765, 53)",,4,7,98,209,29,19,93,6.37,6.08,"(49, 62, 73)",4.0,3.6,"(71, 93, 110)",4.08,3.69,"(68, 92, 108)",sin banda opaca de estado
+home-sprint,Sprint,"(591, 5, 800, 24)","(645, 5, 744, 23)","(599, 42, 649, 59)","(775, 46, 792, 59)","(776, 48, 790, 55)","(755, 42, 771, 59)","(755, 45, 770, 53)",,4,6,106,209,19,19,100,11.34,10.19,"(41, 55, 68)",5.95,5.58,"(73, 98, 120)",5.92,5.6,"(73, 98, 120)",sin banda opaca de estado
+home-sunlit,Sunlit,"(591, 5, 800, 35)","(637, 7, 751, 27)","(599, 42, 663, 59)","(771, 47, 792, 59)","(771, 48, 791, 55)","(751, 42, 767, 59)","(751, 45, 766, 53)",,4,5,88,209,30,21,115,3.1,2.4,"(99, 113, 122)",4.67,3.69,"(121, 143, 161)",4.65,3.88,"(119, 143, 159)",sin banda opaca de estado
+home-trail,Trail,"(591, 5, 800, 35)","(634, 8, 755, 28)","(599, 41, 663, 59)","(767, 48, 792, 59)","(768, 49, 790, 56)","(747, 41, 763, 59)","(747, 45, 762, 53)",,4,6,84,209,30,21,122,8.53,8.07,"(52, 69, 79)",5.24,4.95,"(76, 101, 119)",5.37,4.19,"(74, 99, 117)",sin banda opaca de estado
+mx-aurora-0-ext138-charging,Aurora,"(591, 5, 800, 36)",,"(599, 41, 661, 59)","(774, 46, 792, 59)",,"(754, 41, 770, 59)",,,4,,93,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-0-ext138-uncharged,Aurora,"(591, 5, 800, 36)",,"(599, 41, 656, 59)","(774, 46, 792, 59)",,"(754, 41, 770, 59)",,,4,,98,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-0-none-charging,Aurora,"(591, 5, 800, 36)",,,"(774, 46, 792, 59)",,"(754, 41, 770, 59)",,,4,,,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-0-none-uncharged,Aurora,"(591, 5, 800, 36)",,,"(774, 46, 792, 59)",,"(754, 41, 770, 59)",,,4,,,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-100-ext138-charging,Aurora,"(591, 5, 800, 36)",,"(599, 41, 661, 59)","(762, 46, 792, 59)",,"(742, 41, 758, 59)",,,4,,81,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-100-ext138-uncharged,Aurora,"(591, 5, 800, 36)",,"(599, 41, 656, 59)","(762, 46, 792, 59)",,"(742, 41, 758, 59)",,,4,,86,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-100-none-charging,Aurora,"(591, 5, 800, 36)",,,"(762, 46, 792, 59)",,"(742, 41, 758, 59)",,,4,,,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-100-none-uncharged,Aurora,"(591, 5, 800, 36)",,,"(762, 46, 792, 59)",,"(742, 41, 758, 59)",,,4,,,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-76-ext138-charging,Aurora,"(591, 5, 800, 36)",,"(599, 41, 661, 59)","(768, 46, 792, 59)",,"(748, 41, 764, 59)",,,4,,87,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-76-ext138-uncharged,Aurora,"(591, 5, 800, 36)",,"(599, 41, 656, 59)","(768, 46, 792, 59)",,"(748, 41, 764, 59)",,,4,,92,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-76-none-charging,Aurora,"(591, 5, 800, 36)",,,"(768, 46, 792, 59)",,"(748, 41, 764, 59)",,,4,,,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-76-none-uncharged,Aurora,"(591, 5, 800, 36)",,,"(768, 46, 792, 59)",,"(748, 41, 764, 59)",,,4,,,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-9-ext138-charging,Aurora,"(591, 5, 800, 36)",,"(599, 41, 661, 59)","(774, 46, 792, 59)",,"(754, 41, 770, 59)",,,4,,93,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-9-ext138-uncharged,Aurora,"(591, 5, 800, 36)",,"(599, 41, 656, 59)","(774, 46, 792, 59)",,"(754, 41, 770, 59)",,,4,,98,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-9-none-charging,Aurora,"(591, 5, 800, 36)",,,"(774, 46, 792, 59)",,"(754, 41, 770, 59)",,,4,,,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-9-none-uncharged,Aurora,"(591, 5, 800, 36)",,,"(774, 46, 792, 59)",,"(754, 41, 770, 59)",,,4,,,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-99-ext138-charging,Aurora,"(591, 5, 800, 36)",,"(599, 41, 661, 59)","(767, 46, 792, 59)",,"(747, 41, 763, 59)",,,4,,86,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-99-ext138-uncharged,Aurora,"(591, 5, 800, 36)",,"(599, 41, 656, 59)","(767, 46, 792, 59)",,"(747, 41, 763, 59)",,,4,,91,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-99-none-charging,Aurora,"(591, 5, 800, 36)",,,"(767, 46, 792, 59)",,"(747, 41, 763, 59)",,,4,,,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-99-none-uncharged,Aurora,"(591, 5, 800, 36)",,,"(767, 46, 792, 59)",,"(747, 41, 763, 59)",,,4,,,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-unknown-ext138-charging,Aurora,"(591, 5, 800, 36)",,"(599, 41, 656, 59)","(771, 46, 792, 59)",,"(751, 41, 767, 59)",,,4,,95,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-unknown-ext138-uncharged,Aurora,"(591, 5, 800, 36)",,"(599, 41, 656, 59)","(771, 46, 792, 59)",,"(751, 41, 767, 59)",,,4,,95,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-unknown-none-charging,Aurora,"(591, 5, 800, 36)",,,"(771, 46, 792, 59)",,"(751, 41, 767, 59)",,,4,,,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-aurora-unknown-none-uncharged,Aurora,"(591, 5, 800, 36)",,,"(771, 46, 792, 59)",,"(751, 41, 767, 59)",,,4,,,209,31,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-0-ext138-charging,Cathode,"(591, 5, 800, 24)",,"(599, 41, 668, 59)","(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,86,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-0-ext138-uncharged,Cathode,"(591, 5, 800, 24)",,"(599, 41, 663, 59)","(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,91,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-0-none-charging,Cathode,"(591, 5, 800, 24)",,,"(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-0-none-uncharged,Cathode,"(591, 5, 800, 24)",,,"(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-100-ext138-charging,Cathode,"(591, 5, 800, 24)",,"(599, 41, 668, 59)","(760, 48, 792, 59)",,"(740, 41, 756, 59)",,,4,,72,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-100-ext138-uncharged,Cathode,"(591, 5, 800, 24)",,"(599, 41, 663, 59)","(760, 48, 792, 59)",,"(740, 41, 756, 59)",,,4,,77,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-100-none-charging,Cathode,"(591, 5, 800, 24)",,,"(760, 48, 792, 59)",,"(740, 41, 756, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-100-none-uncharged,Cathode,"(591, 5, 800, 24)",,,"(760, 48, 792, 59)",,"(740, 41, 756, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-76-ext138-charging,Cathode,"(591, 5, 800, 24)",,"(599, 41, 668, 59)","(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,79,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-76-ext138-uncharged,Cathode,"(591, 5, 800, 24)",,"(599, 41, 663, 59)","(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,84,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-76-none-charging,Cathode,"(591, 5, 800, 24)",,,"(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-76-none-uncharged,Cathode,"(591, 5, 800, 24)",,,"(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-9-ext138-charging,Cathode,"(591, 5, 800, 24)",,"(599, 41, 668, 59)","(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,86,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-9-ext138-uncharged,Cathode,"(591, 5, 800, 24)",,"(599, 41, 663, 59)","(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,91,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-9-none-charging,Cathode,"(591, 5, 800, 24)",,,"(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-9-none-uncharged,Cathode,"(591, 5, 800, 24)",,,"(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-99-ext138-charging,Cathode,"(591, 5, 800, 24)",,"(599, 41, 668, 59)","(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,79,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-99-ext138-uncharged,Cathode,"(591, 5, 800, 24)",,"(599, 41, 663, 59)","(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,84,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-99-none-charging,Cathode,"(591, 5, 800, 24)",,,"(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-99-none-uncharged,Cathode,"(591, 5, 800, 24)",,,"(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-unknown-ext138-charging,Cathode,"(591, 5, 800, 24)",,"(599, 41, 663, 59)","(771, 48, 792, 59)",,"(751, 41, 767, 59)",,,4,,88,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-unknown-ext138-uncharged,Cathode,"(591, 5, 800, 24)",,"(599, 41, 663, 59)","(771, 48, 792, 59)",,"(751, 41, 767, 59)",,,4,,88,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-unknown-none-charging,Cathode,"(591, 5, 800, 24)",,,"(771, 48, 792, 59)",,"(751, 41, 767, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-cathode-unknown-none-uncharged,Cathode,"(591, 5, 800, 24)",,,"(771, 48, 792, 59)",,"(751, 41, 767, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-0-ext138-charging,Redshift,"(591, 5, 800, 34)",,"(599, 42, 657, 59)","(776, 46, 792, 59)",,"(756, 42, 772, 59)",,,4,,99,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-0-ext138-uncharged,Redshift,"(591, 5, 800, 34)",,"(599, 42, 652, 59)","(776, 46, 792, 59)",,"(756, 42, 772, 59)",,,4,,104,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-0-none-charging,Redshift,"(591, 5, 800, 34)",,,"(776, 46, 792, 59)",,"(756, 42, 772, 59)",,,4,,,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-0-none-uncharged,Redshift,"(591, 5, 800, 34)",,,"(776, 46, 792, 59)",,"(756, 42, 772, 59)",,,4,,,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-100-ext138-charging,Redshift,"(591, 5, 800, 34)",,"(599, 42, 657, 59)","(764, 46, 792, 59)",,"(744, 42, 760, 59)",,,4,,87,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-100-ext138-uncharged,Redshift,"(591, 5, 800, 34)",,"(599, 42, 652, 59)","(764, 46, 792, 59)",,"(744, 42, 760, 59)",,,4,,92,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-100-none-charging,Redshift,"(591, 5, 800, 34)",,,"(764, 46, 792, 59)",,"(744, 42, 760, 59)",,,4,,,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-100-none-uncharged,Redshift,"(591, 5, 800, 34)",,,"(764, 46, 792, 59)",,"(744, 42, 760, 59)",,,4,,,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-76-ext138-charging,Redshift,"(591, 5, 800, 34)",,"(599, 42, 657, 59)","(770, 46, 792, 59)",,"(750, 42, 766, 59)",,,4,,93,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-76-ext138-uncharged,Redshift,"(591, 5, 800, 34)",,"(599, 42, 652, 59)","(770, 46, 792, 59)",,"(750, 42, 766, 59)",,,4,,98,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-76-none-charging,Redshift,"(591, 5, 800, 34)",,,"(770, 46, 792, 59)",,"(750, 42, 766, 59)",,,4,,,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-76-none-uncharged,Redshift,"(591, 5, 800, 34)",,,"(770, 46, 792, 59)",,"(750, 42, 766, 59)",,,4,,,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-9-ext138-charging,Redshift,"(591, 5, 800, 34)",,"(599, 42, 657, 59)","(776, 46, 792, 59)",,"(756, 42, 772, 59)",,,4,,99,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-9-ext138-uncharged,Redshift,"(591, 5, 800, 34)",,"(599, 42, 652, 59)","(776, 46, 792, 59)",,"(756, 42, 772, 59)",,,4,,104,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-9-none-charging,Redshift,"(591, 5, 800, 34)",,,"(776, 46, 792, 59)",,"(756, 42, 772, 59)",,,4,,,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-9-none-uncharged,Redshift,"(591, 5, 800, 34)",,,"(776, 46, 792, 59)",,"(756, 42, 772, 59)",,,4,,,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-99-ext138-charging,Redshift,"(591, 5, 800, 34)",,"(599, 42, 657, 59)","(770, 46, 792, 59)",,"(750, 42, 766, 59)",,,4,,93,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-99-ext138-uncharged,Redshift,"(591, 5, 800, 34)",,"(599, 42, 652, 59)","(770, 46, 792, 59)",,"(750, 42, 766, 59)",,,4,,98,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-99-none-charging,Redshift,"(591, 5, 800, 34)",,,"(770, 46, 792, 59)",,"(750, 42, 766, 59)",,,4,,,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-99-none-uncharged,Redshift,"(591, 5, 800, 34)",,,"(770, 46, 792, 59)",,"(750, 42, 766, 59)",,,4,,,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-unknown-ext138-charging,Redshift,"(591, 5, 800, 34)",,"(599, 42, 652, 59)","(774, 46, 792, 59)",,"(754, 42, 770, 59)",,,4,,102,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-unknown-ext138-uncharged,Redshift,"(591, 5, 800, 34)",,"(599, 42, 652, 59)","(774, 46, 792, 59)",,"(754, 42, 770, 59)",,,4,,102,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-unknown-none-charging,Redshift,"(591, 5, 800, 34)",,,"(774, 46, 792, 59)",,"(754, 42, 770, 59)",,,4,,,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-redshift-unknown-none-uncharged,Redshift,"(591, 5, 800, 34)",,,"(774, 46, 792, 59)",,"(754, 42, 770, 59)",,,4,,,209,29,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-0-ext138-charging,Sprint,"(591, 5, 800, 24)",,"(599, 42, 654, 59)","(780, 46, 792, 59)",,"(760, 42, 776, 59)",,,4,,106,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-0-ext138-uncharged,Sprint,"(591, 5, 800, 24)",,"(599, 42, 649, 59)","(780, 46, 792, 59)",,"(760, 42, 776, 59)",,,4,,111,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-0-none-charging,Sprint,"(591, 5, 800, 24)",,,"(780, 46, 792, 59)",,"(760, 42, 776, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-0-none-uncharged,Sprint,"(591, 5, 800, 24)",,,"(780, 46, 792, 59)",,"(760, 42, 776, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-100-ext138-charging,Sprint,"(591, 5, 800, 24)",,"(599, 42, 654, 59)","(770, 46, 792, 59)",,"(750, 42, 766, 59)",,,4,,96,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-100-ext138-uncharged,Sprint,"(591, 5, 800, 24)",,"(599, 42, 649, 59)","(770, 46, 792, 59)",,"(750, 42, 766, 59)",,,4,,101,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-100-none-charging,Sprint,"(591, 5, 800, 24)",,,"(770, 46, 792, 59)",,"(750, 42, 766, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-100-none-uncharged,Sprint,"(591, 5, 800, 24)",,,"(770, 46, 792, 59)",,"(750, 42, 766, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-76-ext138-charging,Sprint,"(591, 5, 800, 24)",,"(599, 42, 654, 59)","(775, 46, 792, 59)",,"(755, 42, 771, 59)",,,4,,101,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-76-ext138-uncharged,Sprint,"(591, 5, 800, 24)",,"(599, 42, 649, 59)","(775, 46, 792, 59)",,"(755, 42, 771, 59)",,,4,,106,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-76-none-charging,Sprint,"(591, 5, 800, 24)",,,"(775, 46, 792, 59)",,"(755, 42, 771, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-76-none-uncharged,Sprint,"(591, 5, 800, 24)",,,"(775, 46, 792, 59)",,"(755, 42, 771, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-9-ext138-charging,Sprint,"(591, 5, 800, 24)",,"(599, 42, 654, 59)","(780, 46, 792, 59)",,"(760, 42, 776, 59)",,,4,,106,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-9-ext138-uncharged,Sprint,"(591, 5, 800, 24)",,"(599, 42, 649, 59)","(780, 46, 792, 59)",,"(760, 42, 776, 59)",,,4,,111,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-9-none-charging,Sprint,"(591, 5, 800, 24)",,,"(780, 46, 792, 59)",,"(760, 42, 776, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-9-none-uncharged,Sprint,"(591, 5, 800, 24)",,,"(780, 46, 792, 59)",,"(760, 42, 776, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-99-ext138-charging,Sprint,"(591, 5, 800, 24)",,"(599, 42, 654, 59)","(775, 46, 792, 59)",,"(755, 42, 771, 59)",,,4,,101,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-99-ext138-uncharged,Sprint,"(591, 5, 800, 24)",,"(599, 42, 649, 59)","(775, 46, 792, 59)",,"(755, 42, 771, 59)",,,4,,106,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-99-none-charging,Sprint,"(591, 5, 800, 24)",,,"(775, 46, 792, 59)",,"(755, 42, 771, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-99-none-uncharged,Sprint,"(591, 5, 800, 24)",,,"(775, 46, 792, 59)",,"(755, 42, 771, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-unknown-ext138-charging,Sprint,"(591, 5, 800, 24)",,"(599, 42, 649, 59)","(779, 46, 792, 59)",,"(759, 42, 775, 59)",,,4,,110,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-unknown-ext138-uncharged,Sprint,"(591, 5, 800, 24)",,"(599, 42, 649, 59)","(779, 46, 792, 59)",,"(759, 42, 775, 59)",,,4,,110,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-unknown-none-charging,Sprint,"(591, 5, 800, 24)",,,"(779, 46, 792, 59)",,"(759, 42, 775, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sprint-unknown-none-uncharged,Sprint,"(591, 5, 800, 24)",,,"(779, 46, 792, 59)",,"(759, 42, 775, 59)",,,4,,,209,19,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-0-ext138-charging,Sunlit,"(591, 5, 800, 35)",,"(599, 42, 668, 59)","(777, 47, 792, 59)",,"(757, 42, 773, 59)",,,4,,89,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-0-ext138-uncharged,Sunlit,"(591, 5, 800, 35)",,"(599, 42, 663, 59)","(777, 47, 792, 59)",,"(757, 42, 773, 59)",,,4,,94,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-0-none-charging,Sunlit,"(591, 5, 800, 35)",,,"(777, 47, 792, 59)",,"(757, 42, 773, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-0-none-uncharged,Sunlit,"(591, 5, 800, 35)",,,"(777, 47, 792, 59)",,"(757, 42, 773, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-100-ext138-charging,Sunlit,"(591, 5, 800, 35)",,"(599, 42, 668, 59)","(765, 47, 792, 59)",,"(745, 42, 761, 59)",,,4,,77,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-100-ext138-uncharged,Sunlit,"(591, 5, 800, 35)",,"(599, 42, 663, 59)","(765, 47, 792, 59)",,"(745, 42, 761, 59)",,,4,,82,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-100-none-charging,Sunlit,"(591, 5, 800, 35)",,,"(765, 47, 792, 59)",,"(745, 42, 761, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-100-none-uncharged,Sunlit,"(591, 5, 800, 35)",,,"(765, 47, 792, 59)",,"(745, 42, 761, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-76-ext138-charging,Sunlit,"(591, 5, 800, 35)",,"(599, 42, 668, 59)","(771, 47, 792, 59)",,"(751, 42, 767, 59)",,,4,,83,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-76-ext138-uncharged,Sunlit,"(591, 5, 800, 35)",,"(599, 42, 663, 59)","(771, 47, 792, 59)",,"(751, 42, 767, 59)",,,4,,88,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-76-none-charging,Sunlit,"(591, 5, 800, 35)",,,"(771, 47, 792, 59)",,"(751, 42, 767, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-76-none-uncharged,Sunlit,"(591, 5, 800, 35)",,,"(771, 47, 792, 59)",,"(751, 42, 767, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-9-ext138-charging,Sunlit,"(591, 5, 800, 35)",,"(599, 42, 668, 59)","(777, 47, 792, 59)",,"(757, 42, 773, 59)",,,4,,89,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-9-ext138-uncharged,Sunlit,"(591, 5, 800, 35)",,"(599, 42, 663, 59)","(777, 47, 792, 59)",,"(757, 42, 773, 59)",,,4,,94,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-9-none-charging,Sunlit,"(591, 5, 800, 35)",,,"(777, 47, 792, 59)",,"(757, 42, 773, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-9-none-uncharged,Sunlit,"(591, 5, 800, 35)",,,"(777, 47, 792, 59)",,"(757, 42, 773, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-99-ext138-charging,Sunlit,"(591, 5, 800, 35)",,"(599, 42, 668, 59)","(771, 47, 792, 59)",,"(751, 42, 767, 59)",,,4,,83,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-99-ext138-uncharged,Sunlit,"(591, 5, 800, 35)",,"(599, 42, 663, 59)","(771, 47, 792, 59)",,"(751, 42, 767, 59)",,,4,,88,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-99-none-charging,Sunlit,"(591, 5, 800, 35)",,,"(771, 47, 792, 59)",,"(751, 42, 767, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-99-none-uncharged,Sunlit,"(591, 5, 800, 35)",,,"(771, 47, 792, 59)",,"(751, 42, 767, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-unknown-ext138-charging,Sunlit,"(591, 5, 800, 35)",,"(599, 42, 663, 59)","(775, 47, 792, 59)",,"(755, 42, 771, 59)",,,4,,92,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-unknown-ext138-uncharged,Sunlit,"(591, 5, 800, 35)",,"(599, 42, 663, 59)","(775, 47, 792, 59)",,"(755, 42, 771, 59)",,,4,,92,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-unknown-none-charging,Sunlit,"(591, 5, 800, 35)",,,"(775, 47, 792, 59)",,"(755, 42, 771, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-sunlit-unknown-none-uncharged,Sunlit,"(591, 5, 800, 35)",,,"(775, 47, 792, 59)",,"(755, 42, 771, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-0-ext138-charging,Trail,"(591, 5, 800, 35)",,"(599, 41, 668, 59)","(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,86,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-0-ext138-uncharged,Trail,"(591, 5, 800, 35)",,"(599, 41, 663, 59)","(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,91,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-0-none-charging,Trail,"(591, 5, 800, 35)",,,"(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-0-none-uncharged,Trail,"(591, 5, 800, 35)",,,"(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-100-ext138-charging,Trail,"(591, 5, 800, 35)",,"(599, 41, 668, 59)","(760, 48, 792, 59)",,"(740, 41, 756, 59)",,,4,,72,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-100-ext138-uncharged,Trail,"(591, 5, 800, 35)",,"(599, 41, 663, 59)","(760, 48, 792, 59)",,"(740, 41, 756, 59)",,,4,,77,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-100-none-charging,Trail,"(591, 5, 800, 35)",,,"(760, 48, 792, 59)",,"(740, 41, 756, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-100-none-uncharged,Trail,"(591, 5, 800, 35)",,,"(760, 48, 792, 59)",,"(740, 41, 756, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-76-ext138-charging,Trail,"(591, 5, 800, 35)",,"(599, 41, 668, 59)","(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,79,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-76-ext138-uncharged,Trail,"(591, 5, 800, 35)",,"(599, 41, 663, 59)","(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,84,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-76-none-charging,Trail,"(591, 5, 800, 35)",,,"(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-76-none-uncharged,Trail,"(591, 5, 800, 35)",,,"(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-9-ext138-charging,Trail,"(591, 5, 800, 35)",,"(599, 41, 668, 59)","(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,86,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-9-ext138-uncharged,Trail,"(591, 5, 800, 35)",,"(599, 41, 663, 59)","(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,91,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-9-none-charging,Trail,"(591, 5, 800, 35)",,,"(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-9-none-uncharged,Trail,"(591, 5, 800, 35)",,,"(774, 48, 792, 59)",,"(754, 41, 770, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-99-ext138-charging,Trail,"(591, 5, 800, 35)",,"(599, 41, 668, 59)","(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,79,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-99-ext138-uncharged,Trail,"(591, 5, 800, 35)",,"(599, 41, 663, 59)","(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,84,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-99-none-charging,Trail,"(591, 5, 800, 35)",,,"(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-99-none-uncharged,Trail,"(591, 5, 800, 35)",,,"(767, 48, 792, 59)",,"(747, 41, 763, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-unknown-ext138-charging,Trail,"(591, 5, 800, 35)",,"(599, 41, 663, 59)","(771, 48, 792, 59)",,"(751, 41, 767, 59)",,,4,,88,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-unknown-ext138-uncharged,Trail,"(591, 5, 800, 35)",,"(599, 41, 663, 59)","(771, 48, 792, 59)",,"(751, 41, 767, 59)",,,4,,88,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-unknown-none-charging,Trail,"(591, 5, 800, 35)",,,"(771, 48, 792, 59)",,"(751, 41, 767, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado
+mx-trail-unknown-none-uncharged,Trail,"(591, 5, 800, 35)",,,"(771, 48, 792, 59)",,"(751, 41, 767, 59)",,,4,,,209,30,,,,,,,,,,,,sin banda opaca de estado

@@ -1,0 +1,16 @@
+OK   bar-legacy-home
+FALLA dialog-freq (necesita ui_harness_dialogs o es otra falla)
+FALLA dialog-msg-cw (necesita ui_harness_dialogs o es otra falla)
+FALLA dialog-msg-voice (necesita ui_harness_dialogs o es otra falla)
+OK   net-bt-connected
+OK   net-bt-off
+OK   net-bt-on
+OK   net-bt-wifi-connected
+OK   net-bt-wifi-on
+OK   net-wifi-connected
+OK   net-wifi-off
+OK   net-wifi-on
+OK   vision-home
+OK   dialog-freq (binario ui_harness_dialogs)
+OK   dialog-msg-cw (binario ui_harness_dialogs)
+OK   dialog-msg-voice (binario ui_harness_dialogs)

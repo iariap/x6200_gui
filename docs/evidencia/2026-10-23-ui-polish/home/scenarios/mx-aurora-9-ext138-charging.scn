@@ -1,0 +1,24 @@
+# mx-aurora-9-ext138-charging: matriz de HOME del polish #285 (generado por capturar.py).
+# El componente real es src/clock.c + src/info.c; radio/FFT/parametros son
+# los mocks del arnes. La captura mide layout y contraste, no la radio.
+name mx-aurora-9-ext138-charging
+screen main
+seed 20
+theme Aurora
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+mode usb
+vfo A
+agc auto
+split false
+att false
+pre false
+atu false
+ant 1
+smeter_db -73
+battery_v 12.1
+external_v 13.8
+battery_cap 9
+charging true
+rxtx rx

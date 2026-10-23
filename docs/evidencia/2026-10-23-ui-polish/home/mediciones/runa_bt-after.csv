@@ -1,0 +1,19 @@
+captura,n_lineas,arm_box,spine_box,spine_mas_angosta,mismo_origen,dentro_limites,espina_col_frac,espina_x,espina_en_eje,espina_vertical
+home-aurora,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-bat-0,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-bat-100-chg,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-bat-100,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-bat-76,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-bat-9,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-bat-99,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-bat-unknown,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-bt-connected,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-bt-off,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-bt-on,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-cathode,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-dseg,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-ext-none,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-redshift,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-sprint,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.88,180,True,True
+home-sunlit,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True
+home-trail,2,"(173, 34, 190, 57)","(173, 34, 183, 57)",True,True,True,0.92,180,True,True

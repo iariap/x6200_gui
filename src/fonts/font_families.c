@@ -91,9 +91,9 @@ const char *const font_digit_names[FONT_DIGIT_COUNT] = {
 const lv_font_t *const font_digit_families[FONT_DIGIT_COUNT][FONT_SIZES_N] = {
     { &sony_14, &sony_16, &sony_18, &sony_20, &sony_22, &sony_24, &sony_26, &sony_28, &sony_30, &sony_32, &sony_34, &sony_36, &sony_38, &sony_40, &sony_42, &sony_44, &sony_60 },
     /* FONT_DIGIT_DSEG7: DSEG7 Classic */
-    { &sony_14, &sony_16, &sony_18, &sony_20, &sony_22, &sony_24, &sony_26, &sony_28, &dseg7_30, &sony_32, &sony_34, &sony_36, &dseg7_38, &sony_40, &sony_42, &sony_44, &sony_60 },
+    { &sony_14, &sony_16, &sony_18, &sony_20, &sony_22, &sony_24, &sony_26, &sony_28, &dseg7_30, &sony_32, &sony_34, &sony_36, &dseg7_38, &sony_40, &sony_42, &dseg7_44, &sony_60 },
     /* FONT_DIGIT_DSEG7MINI: DSEG7 Classic Mini */
-    { &sony_14, &sony_16, &sony_18, &sony_20, &sony_22, &sony_24, &sony_26, &sony_28, &dseg7mini_30, &sony_32, &sony_34, &sony_36, &dseg7mini_38, &sony_40, &sony_42, &sony_44, &sony_60 },
+    { &sony_14, &sony_16, &sony_18, &sony_20, &sony_22, &sony_24, &sony_26, &sony_28, &dseg7mini_30, &sony_32, &sony_34, &sony_36, &dseg7mini_38, &sony_40, &sony_42, &dseg7mini_44, &sony_60 },
     /* FONT_DIGIT_DSEG14: DSEG14 Classic */
-    { &sony_14, &sony_16, &sony_18, &sony_20, &sony_22, &sony_24, &sony_26, &sony_28, &dseg14_30, &sony_32, &sony_34, &sony_36, &dseg14_38, &sony_40, &sony_42, &sony_44, &sony_60 },
+    { &sony_14, &sony_16, &sony_18, &sony_20, &sony_22, &sony_24, &sony_26, &sony_28, &dseg14_30, &sony_32, &sony_34, &sony_36, &dseg14_38, &sony_40, &sony_42, &dseg14_44, &sony_60 },
 };

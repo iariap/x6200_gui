@@ -162,3 +162,48 @@ segundo pasa de **15549 px** (`581,0,219,71`, el reloj de potencia de `main` en
 vista hora) a **10272 px** (`586,0,214,48`, la línea del reloj del #250) en
 `main-natural`, y a 7490 px (`586,0,214,35`) en `main-frecuencia-dseg` (dígitos
 segmentados). El reloj permanente invalida menos píxeles por segundo que el viejo.
+
+## Re-baseline 2026-10-23 — UI POLISH 1 HOME (#285, épica #284)
+
+El reloj sube a `font_digit(&sony_44)` (la etiqueta de la hora pasa de 209×31 a
+209×33), el porcentaje de batería sube a `&sony_22` y la fila de estado estrena
+una **banda opaca full-width** del rol `TC(bar)` debajo de las etiquetas
+(`src/clock.c`), y la runa de BT pasa de un zigzag a **dos trazos** (brazos +
+espina, `src/info.c`). La evidencia se re-generó con el binario de esta revisión
+(`tests/check_harness_natural.sh` más `--bench-natural` sobre `main-natural-eco`),
+como las veces anteriores.
+
+Lo que **no** se mueve: el perfil de los 40 frames naturales (espectro 132000 px
+× 27, cascada 196000 px × 39, `natural.totals` 11208000 px en 66 rectángulos / 66
+flushes, el control `--natural-static` en 190400 px con sus 7 band-info y
+`--display-off` en 0 px), la idempotencia (`run1` y `natural` byte a byte) y el
+histograma de rectángulos. Con `time()` fijo el reloj no cambia su texto y la
+guarda de igualdad de OPT-4 #150 lo apaga, así que los frames naturales no
+dependen del reloj: **el costo por tick no entra en esta medición**.
+
+Lo que sí cambia es el **settle de la captura** (el bloque `metrics`) de los
+siete modos: la invalidación de arranque del panel del reloj es 2 px más alta y
+suma la superficie nueva de la banda, así que el settle sube **+544 px** con los
+mismos flushes. El bloque `metrics` no expone los rectángulos del settle, así que
+la descomposición exacta no se puede citar; el número está medido sobre el binario
+de esta revisión y el control `--display-off` lo verifica por diferencia
+(`SETTLE_PX − FULL_SCREEN_PX`).
+
+| campo | antes (#250 `65f7842c`) | después (#285 `3cc409e9`) |
+|---|---|---|
+| `metrics.flushes` (captura `main-natural`) | 72 | **72** (6 + 66, sin cambio) |
+| `metrics.flushed_pixels` (captura `main-natural`) | 12308352 | **12308896** (+544) |
+| `--display-off` `metrics.flushes` / `flushed_pixels` | 5 / 716352 | **5 / 716896** (+544) |
+| `static.json` `metrics.flushes` / `flushed_pixels` | 13 / 1290752 | **13 / 1291296** (+544) |
+| `cli.json` `metrics.flushes` / `flushed_pixels` | 21 / 3656352 | **21 / 3656896** (+544) |
+| `forced.json` `metrics.flushes` / `flushed_pixels` | 9 / 2252352 | **9 / 2252896** (+544) |
+| `main-natural-eco` `metrics.flushes` / `flushed_pixels` | 24 / 3762602 | **24 / 3763146** (+544) |
+| PNG de todos los modos | — | **cambian** (la tinta del panel del reloj) |
+
+El +544 px es el settle de **arranque** de la captura, no costo de operación: con
+el reloj de pared avanzando con el reloj virtual (parche local de `__wrap_time`,
+no versionado) el rectángulo que invalida el reloj cuando cambia el segundo pasa
+de **10272 px** (`586,0,214,48`) a **10486 px** (`586,0,214,49`), o sea **+214 px
+por tick de 500 ms** (+2.1%; son los 2 px de alto que creció la etiqueta de la
+hora), y el reloj invalida una vez por segundo en la radio. Los sha256 nuevos de
+los siete PNG están en `sha256.txt`, junto con este bloque de re-baseline.

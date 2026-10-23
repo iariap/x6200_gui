@@ -1,0 +1,18 @@
+ok   sony (stock: Fira Sans): 20 files, worst line_height delta 1, 9 slot(s) off by 1: [8, 12, 14, 16, 26, 28, 32, 40, 60]
+ok   inter: 17 files, worst line_height delta 1, 9 slot(s) off by 1: [16, 18, 20, 22, 24, 30, 32, 38, 60]
+ok   roboto: 17 files, worst line_height delta 1, 7 slot(s) off by 1: [16, 26, 28, 38, 42, 44, 60]
+ok   robotocondensed: 17 files, worst line_height delta 1, 7 slot(s) off by 1: [16, 26, 28, 38, 42, 44, 60]
+ok   notosans: 17 files, worst line_height delta 1, 9 slot(s) off by 1: [14, 18, 24, 30, 32, 34, 36, 42, 44]
+ok   ibmplexsans: 17 files, worst line_height delta 1, 9 slot(s) off by 1: [16, 20, 22, 26, 28, 34, 36, 40, 60]
+ok   opensans: 17 files, worst line_height delta 1, 9 slot(s) off by 1: [14, 18, 24, 30, 32, 34, 36, 42, 44]
+ok   sourcesans3: 17 files, worst line_height delta 1, 8 slot(s) off by 1: [16, 18, 26, 28, 34, 36, 38, 40]
+ok   ptsans: 17 files, worst line_height delta 1, 8 slot(s) off by 1: [16, 24, 34, 36, 38, 42, 44, 60]
+ok   lato: 17 files, worst line_height delta 1, 8 slot(s) off by 1: [14, 18, 20, 22, 24, 38, 42, 44]
+ok   dejavu: 17 files, worst line_height delta 1, 10 slot(s) off by 1: [14, 20, 22, 24, 30, 32, 34, 36, 40, 60]
+ok   archivo: 17 files, worst line_height delta 1, 7 slot(s) off by 1: [16, 20, 22, 30, 32, 40, 60]
+ok   archivonarrow: 17 files, worst line_height delta 1, 4 slot(s) off by 1: [38, 42, 44, 60]
+ok   ubuntu: 17 files, worst line_height delta 1, 9 slot(s) off by 1: [14, 20, 22, 24, 34, 36, 40, 42, 44]
+ok   jetbrainsmono: 17 files, worst line_height delta 1, 6 slot(s) off by 1: [14, 18, 26, 28, 40, 60]
+ok   dseg7 (digit family): 3 files, worst cap_height delta 0
+ok   dseg7mini (digit family): 3 files, worst cap_height delta 0
+ok   dseg14 (digit family): 3 files, worst cap_height delta 0

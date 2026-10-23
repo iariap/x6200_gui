@@ -10,13 +10,20 @@
  *    style (the value keeps the image only as `bg_img_src` with
  *    `LV_OPA_TRANSP`, which is the documented path that keeps the ghost/value
  *    stacking read as design and not as two stacked texts);
+ * 1b. the STATUS BAND (issue #285): exactly one object below the labels, the
+ *    first child of the container, non-clickable, non-scrollable, full width and
+ *    opaque, filled with the theme's `bar` role (the same one the info cells
+ *    use) — the readable surface the Redshift status line needed;
  * 2. the time is `HH:MM:SS` and is ALWAYS visible: it does not depend on
  *    `params.clock_view`, on any timeout or on `radio_get_state()` (RX, TX,
- *    every persisted view); the ghost `88:88:88` keeps the value's metric;
- *    `localtime()` returning NULL shows `--:--:--`;
+ *    every persisted view); it draws with `font_digit(&sony_44)` (#285, the
+ *    largest digit slot; it was `sony_38`), the ghost `88:88:88` keeps the
+ *    value's metric; `localtime()` returning NULL shows `--:--:--`;
  * 3. the status line: external supply (plug + `%.1f V`) only when `v_ext` is
  *    finite and >= 3.0, and the battery (icon + percentage) on the right, with
- *    the charging glyph when the sample is valid and the source says so;
+ *    the charging glyph when the sample is valid and the source says so; the
+ *    percentage draws with `&sony_22` (#285; it was `sony_16`), the icon and the
+ *    supply line stay on `&sony_20`;
  * 4. a sample is valid only when `v_bat > 0`, finite and `cap <= 100`; invalid
  *    is `--%` with the icon empty/dim (`TC(text_dim)`), never an invented 0%;
  *    a valid sample prints its own percentage (0% included) and only the icon
@@ -75,6 +82,22 @@ void test_clock(void) {
     CHECK((clock_stub_flags(CLOCK_STUB_CONTAINER) & LV_OBJ_FLAG_CLICK_FOCUSABLE) == 0);
     CHECK((clock_stub_flags(CLOCK_STUB_CONTAINER) & LV_OBJ_FLAG_SCROLLABLE) == 0);
 
+    /* ---- 1b. La banda de estado (#285): UNA superficie opaca del rol `bar`,
+     * debajo de todas las etiquetas (es el segundo objeto creado, dentro del
+     * panel), sin input ni scroll. ---- */
+    CHECK(!clock_stub_is_label(CLOCK_STUB_BAND));
+    CHECK(clock_stub_parent(CLOCK_STUB_BAND) == CLOCK_STUB_CONTAINER);
+    CHECK(clock_stub_style_removed(CLOCK_STUB_BAND));
+    CHECK(!clock_stub_style_is_clock(CLOCK_STUB_BAND));
+    CHECK((clock_stub_flags(CLOCK_STUB_BAND) & LV_OBJ_FLAG_CLICKABLE) == 0);
+    CHECK((clock_stub_flags(CLOCK_STUB_BAND) & LV_OBJ_FLAG_SCROLLABLE) == 0);
+    CHECK(clock_stub_bg_opa(CLOCK_STUB_BAND) == LV_OPA_COVER);
+    CHECK(same_color(clock_stub_bg_color(CLOCK_STUB_BAND), TC(bar)));
+    CHECK(clock_stub_align(CLOCK_STUB_BAND) == LV_ALIGN_TOP_MID);
+    CHECK(clock_stub_y_ofs(CLOCK_STUB_BAND) == 40);          /* y40..60 del contrato */
+    CHECK(clock_stub_height(CLOCK_STUB_BAND) == 21);
+    CHECK(clock_stub_width(CLOCK_STUB_BAND) == LV_PCT(100));
+
     for (int i = CLOCK_STUB_GHOST; i < CLOCK_STUB_OBJECTS; i++) {
         CHECK(clock_stub_is_label(i));
         CHECK(clock_stub_parent(i) == CLOCK_STUB_CONTAINER);
@@ -87,7 +110,10 @@ void test_clock(void) {
     CHECK(strcmp(clock_stub_shadow_text(), "88:88:88") == 0);
     CHECK(clock_stub_text_opa(CLOCK_STUB_GHOST) == UI_DIGIT_SHADOW_OPA);
     CHECK(clock_stub_text_opa(CLOCK_STUB_TIME) == LV_OPA_COVER);
-    CHECK(clock_stub_font(CLOCK_STUB_TIME) == font_digit(&sony_38));
+    /* #285: el reloj dibuja con el slot grande de digitos (sony_44) en las seis
+     * familias; el fantasma pide la MISMA fuente (font_digit resuelve la familia
+     * segmentada del tema o devuelve el slot). */
+    CHECK(clock_stub_font(CLOCK_STUB_TIME) == font_digit(&sony_44));
     CHECK(clock_stub_font(CLOCK_STUB_GHOST) == clock_stub_font(CLOCK_STUB_TIME));
     CHECK(clock_stub_width(CLOCK_STUB_GHOST) == clock_stub_width(CLOCK_STUB_TIME));
     CHECK(clock_stub_height(CLOCK_STUB_GHOST) == clock_stub_height(CLOCK_STUB_TIME));
@@ -291,7 +317,9 @@ void test_clock(void) {
     /* ---- 3. Factores de forma de la linea de estado ---- */
     CHECK(clock_stub_font(CLOCK_STUB_EXT) == &sony_20);
     CHECK(clock_stub_font(CLOCK_STUB_ICON) == &sony_20);
-    CHECK(clock_stub_font(CLOCK_STUB_PCT) == &sony_16);
+    /* #285: el porcentaje sube a sony_22 (era sony_16); el icono se queda en
+     * sony_20, el unico slot chico con los glifos U+F240..F244. */
+    CHECK(clock_stub_font(CLOCK_STUB_PCT) == &sony_22);
     CHECK(clock_stub_align(CLOCK_STUB_EXT) == LV_ALIGN_BOTTOM_LEFT);
     CHECK(clock_stub_align(CLOCK_STUB_PCT) == LV_ALIGN_BOTTOM_RIGHT);
     CHECK(clock_stub_aligned_to(CLOCK_STUB_ICON));

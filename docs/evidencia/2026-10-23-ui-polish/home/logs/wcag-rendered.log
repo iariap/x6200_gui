@@ -1,0 +1,20 @@
+== gate de contraste WCAG sobre la superficie renderizada (issue #277) ==
+  fixtures: 24 (matriz de 6 temas x 4 estados)
+  construyendo/actualizando el arnes (revision 3cc409e94199f2d2982b5ca4552a0781b666d170)...
+  etiquetas medidas: 492 (exentas 0, incidentales 2, no-texto 48)
+  declaradas, no medidas: ocluidas 128, sin tinta 4, sin color expuesto (lv_line/lv_arc) 96
+  violaciones: 11
+  --- violaciones medidas ---
+    bt-dialog-tema-sunlit              Sunlit    /43/3          'Row: pair/connect - Au'  1.69:1 < 4.5  (texto normal, tinta #162436 sobre #3B4A57)
+    bt-dialog-tema-sunlit              Sunlit    /43/0          'Bluetooth devices'       1.71:1 < 4.5  (texto normal, tinta #053F80 sobre #516775)
+    main-tema-sunlit                   Sunlit    /5/0           'CW'                      3.78:1 < 4.5  (texto normal, tinta #FFFFFF sobre #5A82D2)
+    main-tema-redshift                 Redshift  /9/0           'ALL MODES / SSB'         4.07:1 < 4.5  (texto normal, tinta #000000 sobre #6E6D6D)
+    bt-dialog-tema-redshift            Redshift  /43/0          'Bluetooth devices'       4.14:1 < 4.5  (texto normal, tinta #FFB39C sobre #445A6A)
+    main-tema-cathode                  Cathode   /10/0          'ALL MODES / SSB'         4.19:1 < 4.5  (texto normal, tinta #000000 sobre #706F6E)
+    bt-dialog-tema-redshift            Redshift  /43/2          'no headphones, RX off'    4.2:1 < 4.5  (texto normal, tinta #E18A78 sobre #303E4A)
+    main-tema-sprint                   Sprint    /10/0          'ALL MODES / SSB'         4.23:1 < 4.5  (texto normal, tinta #000000 sobre #6E7073)
+    main-tema-aurora                   Aurora    /9/0           'ALL MODES / SSB'         4.29:1 < 4.5  (texto normal, tinta #000000 sobre #727074)
+    bt-dialog-tema-aurora              Aurora    /43/0          'Bluetooth devices'       4.31:1 < 4.5  (texto normal, tinta #D7C2FF sobre #425967)
+    main-tema-trail                    Trail     /9/0           'ALL MODES / SSB'         4.38:1 < 4.5  (texto normal, tinta #000000 sobre #707371)
+  solo violaciones preexistentes del baseline (11 entradas): OK
+  PASS: el contraste renderizado no tiene violaciones nuevas ni regresiones

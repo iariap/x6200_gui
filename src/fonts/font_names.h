@@ -274,8 +274,11 @@ static const struct {
     { &jetbrainsmono_60, "jetbrainsmono_60" },
     { &dseg7_30, "dseg7_30" },
     { &dseg7_38, "dseg7_38" },
+    { &dseg7_44, "dseg7_44" },
     { &dseg7mini_30, "dseg7mini_30" },
     { &dseg7mini_38, "dseg7mini_38" },
+    { &dseg7mini_44, "dseg7mini_44" },
     { &dseg14_30, "dseg14_30" },
     { &dseg14_38, "dseg14_38" },
+    { &dseg14_44, "dseg14_44" },
 };

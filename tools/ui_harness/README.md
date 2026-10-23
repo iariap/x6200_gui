@@ -315,9 +315,12 @@ invalidation** — halving the invalidated area of the spectrum moves neither
   asked to flush. With the harness' full-screen draw buffer the two are 1:1.
 * `rects` is the evidence: the invalidated rectangles of that frame, `x,y,w,h`.
   On `main-natural` every one of them is a region a firmware timer invalidates
-  (spectrum `0,0 800x165`, waterfall `0,235 800x245`, clock `580,0 220x72`, band
-  info `0,241 800x34`, BT icon `152,23 30x36`): the bench invalidates nothing on
-  its own.
+  (spectrum `0,0 800x165`, waterfall `0,235 800x245`, clock `586,0 214x49`, band
+  info `0,241 800x34`): the bench invalidates nothing on its own. El reloj y el
+  icono/runa de BT solo dejan su rectangulo cuando el valor cambia: con `time()`
+  fijo y las guardas de igualdad de OPT-4 #150 no aparecen, y sus cajas estan
+  documentadas en `tests/natural_evidence.py` (medidas con el reloj de pared
+  avanzando; la del reloj la movio el reloj mas alto de #285).
 * Nothing in the block is a wall clock value, so two runs with the same seed and
   the same frame count write the same bytes (PNG included).
 * `--natural-static` runs the same loop **without** the data drive: the spectrum
@@ -333,7 +336,8 @@ invalidation** — halving the invalidated area of the spectrum moves neither
 fixture in the four modes, checks the PNG and the whole JSON are identical across
 two natural runs, and checks the produced areas against the profile of UI-07
 increment 1 (spectrum 132000 px per FFT frame, waterfall 196000 px per row, clock
-15840 px per 500 ms tick), the drive cadence against `src/dsp.cpp`'s constants,
+10486 px per 500 ms tick -- re-measured for the permanent clock of #250 and the
+taller one of #285), the drive cadence against `src/dsp.cpp`'s constants,
 and that `--bench` still repaints the whole 384000 px screen. The raw output of a
 run is in `tools/ab_testing/reports/NATURAL-ECOFINAL/`.
 

@@ -1,0 +1,6 @@
+corriendo la suite con el binario before...
+corriendo la suite con el binario after...
+fixtures: 205 | framebuffer identico: 0/205
+peor flushes: app-bands 7->7 (+0.00%, budget +20.0)
+peor px: dfl-usb-d-tema-sunlit 1100620->1101049 (+0.04%, budget +10.0)
+fuera de presupuesto: 0
