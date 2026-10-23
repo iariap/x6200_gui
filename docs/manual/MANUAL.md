@@ -161,7 +161,7 @@ lo ergonómico y al final lo eventual. El detalle de cada decisión está en `do
 | **Operation** | Freq acceleration / Charger / Cluster column / Bluetooth / Discoverable (CAT) / Devices / wfview server / Transverter | Aceleración del dial, cargador, columna del clúster, Bluetooth y su panel de dispositivos, servidor wfview y transverter |
 | **Audio** | Line-in, Line-out / audio gain / Audio enhance / Speaker mode / Voice mode, rate, pitch, volume | Entradas y ganancias, realce de audio, modo del parlante y los anuncios de voz |
 | **Spectrum** | Spectrum auto min, max / Waterfall auto min, max / Waterfall line, zoom / Waterfall smooth scroll / Waterfall battery mode | Ajuste automático de niveles, líneas y zoom del waterfall, desplazamiento suave y ahorro en batería |
-| **Clock** | Day, Month, Year / Hour, Min, Sec / Clock view / Timeout Clock, Power, TX | Hora UTC de los decodificados (también la ajusta el NTP si hay red) y qué muestra el reloj |
+| **Clock** | Day, Month, Year / Hour, Min, Sec | Hora UTC de los decodificados (también la ajusta el NTP si hay red). El reloj de la barra superior muestra siempre la hora, y la alimentación/batería va en una banda compacta debajo (issue #250) |
 | **Display** | Timeout, Brightness / Buttons brightness / S-meter needle / Band plan | Apagado automático, brillo de pantalla y de botones, aguja del S-meter y plan de banda |
 | **Appearance** | Theme / Font | Los **8 temas** y la familia de fuente (se aplican al reiniciar) |
 | **Actions** | APP long press / MIC long press | Asignar acciones a las pulsaciones largas: Screenshot, Screen rec, Mute, Voice mode, Battery info, ATT, PRE, ATU, ATU tune, APP Bands y las demás apps |
