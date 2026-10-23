@@ -1,0 +1,218 @@
+
+== dfl-editor-usb-d.json ==
+   barra 209 px | filas [5, 27] ancho fila [172, 172]
+celda       x    y    w    h fuente   natural  box          visible long/ovf/trunc
+VFO        15    5   56   26 sony_20       48   56            56x26 WRAP/False/False  'VFO-A'
+MODE       73    5   56   26 sony_20       49   56            56x26 WRAP/False/False  'USB-D'
+AGC       131    5   56   26 sony_20       43   56            56x26 WRAP/False/False  'AUTO'
+PRE-ATT    15   27   56   26 sony_20       25   56            56x26 WRAP/False/False  'P/A'
+ATU        73   27   56   26 sony_20       37   56            56x26 WRAP/False/False  'ATU1'
+WIFI      131   27   28   26 sony_20       18   28            28x26 WRAP/False/False  '\uf1eb'
+   gap horizontal: [2, 2, 2, 2]  pitch vertical: [22]  borde derecho ultima celda x=187 (barra 209)  fondo de la ultima fila y=53 (barra 61)
+   runa BT: 159,30 16x22 -> fondo y=52
+
+== home-cb-offchannel.json ==
+   barra 209 px | filas [5, 27] ancho fila [172, 172]
+celda       x    y    w    h fuente   natural  box          visible long/ovf/trunc
+VFO        15    5   56   26 sony_20       40   56            56x26 WRAP/False/False  'CH --'
+MODE       73    5   56   26 sony_20       24   56            56x26 WRAP/False/False  'AM'
+AGC       131    5   56   26 sony_20       43   56            56x26 WRAP/False/False  'AUTO'
+PRE-ATT    15   27   56   26 sony_20       25   56            56x26 WRAP/False/False  'P/A'
+ATU        73   27   56   26 sony_20       37   56            56x26 WRAP/False/False  'ATU1'
+WIFI      131   27   28   26 sony_20       18   28            28x26 WRAP/False/False  '\uf1eb'
+   gap horizontal: [2, 2, 2, 2]  pitch vertical: [22]  borde derecho ultima celda x=187 (barra 209)  fondo de la ultima fila y=53 (barra 61)
+   runa BT: 159,30 16x22 -> fondo y=52
+
+== home-cb.json ==
+   barra 209 px | filas [5, 27] ancho fila [172, 172]
+celda       x    y    w    h fuente   natural  box          visible long/ovf/trunc
+VFO        15    5   56   26 sony_20       41   56            56x26 WRAP/False/False  'CH 19'
+MODE       73    5   56   26 sony_20       24   56            56x26 WRAP/False/False  'AM'
+AGC       131    5   56   26 sony_20       43   56            56x26 WRAP/False/False  'AUTO'
+PRE-ATT    15   27   56   26 sony_20       25   56            56x26 WRAP/False/False  'P/A'
+ATU        73   27   56   26 sony_20       37   56            56x26 WRAP/False/False  'ATU1'
+WIFI      131   27   28   26 sony_20       18   28            28x26 WRAP/False/False  '\uf1eb'
+   gap horizontal: [2, 2, 2, 2]  pitch vertical: [22]  borde derecho ultima celda x=187 (barra 209)  fondo de la ultima fila y=53 (barra 61)
+   runa BT: 159,30 16x22 -> fondo y=52
+
+== home-frecuencia-extrema.json ==
+   barra 209 px | filas [5, 27] ancho fila [172, 172]
+celda       x    y    w    h fuente   natural  box          visible long/ovf/trunc
+VFO        15    5   56   26 sony_20       48   56            56x26 WRAP/False/False  'VFO-A'
+MODE       73    5   56   26 sony_20       31   56            56x26 WRAP/False/False  'USB'
+AGC       131    5   56   26 sony_20       43   56            56x26 WRAP/False/False  'AUTO'
+PRE-ATT    15   27   56   26 sony_20       30   56            56x26 WRAP/False/False  'ATT'
+ATU        73   27   56   26 sony_20       40   56            56x26 WRAP/False/False  'ATU3'
+WIFI      131   27   28   26 sony_20       18   28            28x26 WRAP/False/False  '\uf1eb'
+   gap horizontal: [2, 2, 2, 2]  pitch vertical: [22]  borde derecho ultima celda x=187 (barra 209)  fondo de la ultima fila y=53 (barra 61)
+   runa BT: 159,30 16x22 -> fondo y=52
+
+== home-usb-20m.json ==
+   barra 209 px | filas [5, 27] ancho fila [172, 172]
+celda       x    y    w    h fuente   natural  box          visible long/ovf/trunc
+VFO        15    5   56   26 sony_20       48   56            56x26 WRAP/False/False  'VFO-A'
+MODE       73    5   56   26 sony_20       31   56            56x26 WRAP/False/False  'USB'
+AGC       131    5   56   26 sony_20       43   56            56x26 WRAP/False/False  'AUTO'
+PRE-ATT    15   27   56   26 sony_20       25   56            56x26 WRAP/False/False  'P/A'
+ATU        73   27   56   26 sony_20       37   56            56x26 WRAP/False/False  'ATU1'
+WIFI      131   27   28   26 sony_20       18   28            28x26 WRAP/False/False  '\uf1eb'
+   gap horizontal: [2, 2, 2, 2]  pitch vertical: [22]  borde derecho ultima celda x=187 (barra 209)  fondo de la ultima fila y=53 (barra 61)
+   runa BT: 159,30 16x22 -> fondo y=52
+
+== main-tema-aurora.json ==
+   barra 209 px | filas [5, 27] ancho fila [172, 172]
+celda       x    y    w    h fuente   natural  box          visible long/ovf/trunc
+VFO        15    5   56   26 sony_20       48   56            56x26 WRAP/False/False  'VFO-A'
+MODE       73    5   56   26 sony_20       31   56            56x26 WRAP/False/False  'USB'
+AGC       131    5   56   26 sony_20       43   56            56x26 WRAP/False/False  'AUTO'
+PRE-ATT    15   27   56   26 sony_20       25   56            56x26 WRAP/False/False  'P/A'
+ATU        73   27   56   26 sony_20       37   56            56x26 WRAP/False/False  'ATU1'
+WIFI      131   27   28   26 sony_20       18   28            28x26 WRAP/False/False  '\uf1eb'
+   gap horizontal: [2, 2, 2, 2]  pitch vertical: [22]  borde derecho ultima celda x=187 (barra 209)  fondo de la ultima fila y=53 (barra 61)
+   runa BT: 159,30 16x22 -> fondo y=52
+
+== main-tema-cathode.json ==
+   barra 209 px | filas [5, 27] ancho fila [172, 172]
+celda       x    y    w    h fuente   natural  box          visible long/ovf/trunc
+VFO        15    5   56   26 sony_20       49   56            56x26 WRAP/False/False  'VFO-A'
+MODE       73    5   56   26 sony_20       33   56            56x26 WRAP/False/False  'USB'
+AGC       131    5   56   26 sony_20       44   56            56x26 WRAP/False/False  'AUTO'
+PRE-ATT    15   27   56   26 sony_20       26   56            56x26 WRAP/False/False  'P/A'
+ATU        73   27   56   26 sony_20       42   56            56x26 WRAP/False/False  'ATU1'
+WIFI      131   27   28   26 sony_20       18   28            28x26 WRAP/False/False  '\uf1eb'
+   gap horizontal: [2, 2, 2, 2]  pitch vertical: [22]  borde derecho ultima celda x=187 (barra 209)  fondo de la ultima fila y=53 (barra 61)
+   runa BT: 159,30 16x22 -> fondo y=52
+
+== main-tema-redshift.json ==
+   barra 209 px | filas [5, 27] ancho fila [172, 172]
+celda       x    y    w    h fuente   natural  box          visible long/ovf/trunc
+VFO        15    5   56   26 sony_20       41   56            56x26 WRAP/False/False  'VFO-A'
+MODE       73    5   56   26 sony_20       30   56            56x26 WRAP/False/False  'USB'
+AGC       131    5   56   26 sony_20       40   56            56x26 WRAP/False/False  'AUTO'
+PRE-ATT    15   27   56   26 sony_20       22   56            56x26 WRAP/False/False  'P/A'
+ATU        73   27   56   26 sony_20       36   56            56x26 WRAP/False/False  'ATU1'
+WIFI      131   27   28   26 sony_20       18   28            28x26 WRAP/False/False  '\uf1eb'
+   gap horizontal: [2, 2, 2, 2]  pitch vertical: [22]  borde derecho ultima celda x=187 (barra 209)  fondo de la ultima fila y=53 (barra 61)
+   runa BT: 159,30 16x22 -> fondo y=52
+
+== main-tema-sprint.json ==
+   barra 209 px | filas [5, 27] ancho fila [172, 172]
+celda       x    y    w    h fuente   natural  box          visible long/ovf/trunc
+VFO        15    5   56   26 sony_20       37   56            56x26 WRAP/False/False  'VFO-A'
+MODE       73    5   56   26 sony_20       24   56            56x26 WRAP/False/False  'USB'
+AGC       131    5   56   26 sony_20       34   56            56x26 WRAP/False/False  'AUTO'
+PRE-ATT    15   27   56   26 sony_20       23   56            56x26 WRAP/False/False  'P/A'
+ATU        73   27   56   26 sony_20       32   56            56x26 WRAP/False/False  'ATU1'
+WIFI      131   27   28   26 sony_20       18   28            28x26 WRAP/False/False  '\uf1eb'
+   gap horizontal: [2, 2, 2, 2]  pitch vertical: [22]  borde derecho ultima celda x=187 (barra 209)  fondo de la ultima fila y=53 (barra 61)
+   runa BT: 159,30 16x22 -> fondo y=52
+
+== main-tema-sunlit.json ==
+   barra 209 px | filas [5, 27] ancho fila [172, 172]
+celda       x    y    w    h fuente   natural  box          visible long/ovf/trunc
+VFO        15    5   56   26 sony_20       49   56            56x26 WRAP/False/False  'VFO-A'
+MODE       73    5   56   26 sony_20       32   56            56x26 WRAP/False/False  'USB'
+AGC       131    5   56   26 sony_20       45   56            56x26 WRAP/False/False  'AUTO'
+PRE-ATT    15   27   56   26 sony_20       27   56            56x26 WRAP/False/False  'P/A'
+ATU        73   27   56   26 sony_20       42   56            56x26 WRAP/False/False  'ATU1'
+WIFI      131   27   28   26 sony_20       18   28            28x26 WRAP/False/False  '\uf1eb'
+   gap horizontal: [2, 2, 2, 2]  pitch vertical: [22]  borde derecho ultima celda x=187 (barra 209)  fondo de la ultima fila y=53 (barra 61)
+   runa BT: 159,30 16x22 -> fondo y=52
+
+== main-tema-trail.json ==
+   barra 209 px | filas [5, 27] ancho fila [172, 172]
+celda       x    y    w    h fuente   natural  box          visible long/ovf/trunc
+VFO        15    5   56   26 sony_20       49   56            56x26 WRAP/False/False  'VFO-A'
+MODE       73    5   56   26 sony_20       33   56            56x26 WRAP/False/False  'USB'
+AGC       131    5   56   26 sony_20       44   56            56x26 WRAP/False/False  'AUTO'
+PRE-ATT    15   27   56   26 sony_20       26   56            56x26 WRAP/False/False  'P/A'
+ATU        73   27   56   26 sony_20       42   56            56x26 WRAP/False/False  'ATU1'
+WIFI      131   27   28   26 sony_20       18   28            28x26 WRAP/False/False  '\uf1eb'
+   gap horizontal: [2, 2, 2, 2]  pitch vertical: [22]  borde derecho ultima celda x=187 (barra 209)  fondo de la ultima fila y=53 (barra 61)
+   runa BT: 159,30 16x22 -> fondo y=52
+
+== main-tx-simulado.json ==
+   barra 209 px | filas [5, 27] ancho fila [172, 172]
+celda       x    y    w    h fuente   natural  box          visible long/ovf/trunc
+VFO        15    5   56   26 sony_20       46   56            56x26 WRAP/False/False  'SPL-A'
+MODE       73    5   56   26 sony_20       31   56            56x26 WRAP/False/False  'USB'
+AGC       131    5   56   26 sony_20       39   56            56x26 WRAP/False/False  'FAST'
+PRE-ATT    15   27   56   26 sony_20       29   56            56x26 WRAP/False/False  'PRE'
+ATU        73   27   56   26 sony_20       40   56            56x26 WRAP/False/False  'ATU2'
+WIFI      131   27   28   26 sony_20       18   28            28x26 WRAP/False/False  '\uf1eb'
+   gap horizontal: [2, 2, 2, 2]  pitch vertical: [22]  borde derecho ultima celda x=187 (barra 209)  fondo de la ultima fila y=53 (barra 61)
+   runa BT: 159,30 16x22 -> fondo y=52
+
+12 fixture(s) medidos, 72 incumplimiento(s)
+  FALLA -- dfl-editor-usb-d.json: AGC dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- dfl-editor-usb-d.json: PRE-ATT dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- dfl-editor-usb-d.json: ATU dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- dfl-editor-usb-d.json: gap horizontal [2, 2, 2, 2] (se esperaba 6 px)
+  FALLA -- dfl-editor-usb-d.json: pitch vertical [22] (se esperaba 26)
+  FALLA -- dfl-editor-usb-d.json: las filas se solapan 4 px
+  FALLA -- home-cb-offchannel.json: AGC dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- home-cb-offchannel.json: PRE-ATT dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- home-cb-offchannel.json: ATU dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- home-cb-offchannel.json: gap horizontal [2, 2, 2, 2] (se esperaba 6 px)
+  FALLA -- home-cb-offchannel.json: pitch vertical [22] (se esperaba 26)
+  FALLA -- home-cb-offchannel.json: las filas se solapan 4 px
+  FALLA -- home-cb.json: AGC dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- home-cb.json: PRE-ATT dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- home-cb.json: ATU dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- home-cb.json: gap horizontal [2, 2, 2, 2] (se esperaba 6 px)
+  FALLA -- home-cb.json: pitch vertical [22] (se esperaba 26)
+  FALLA -- home-cb.json: las filas se solapan 4 px
+  FALLA -- home-frecuencia-extrema.json: AGC dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- home-frecuencia-extrema.json: PRE-ATT dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- home-frecuencia-extrema.json: ATU dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- home-frecuencia-extrema.json: gap horizontal [2, 2, 2, 2] (se esperaba 6 px)
+  FALLA -- home-frecuencia-extrema.json: pitch vertical [22] (se esperaba 26)
+  FALLA -- home-frecuencia-extrema.json: las filas se solapan 4 px
+  FALLA -- home-usb-20m.json: AGC dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- home-usb-20m.json: PRE-ATT dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- home-usb-20m.json: ATU dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- home-usb-20m.json: gap horizontal [2, 2, 2, 2] (se esperaba 6 px)
+  FALLA -- home-usb-20m.json: pitch vertical [22] (se esperaba 26)
+  FALLA -- home-usb-20m.json: las filas se solapan 4 px
+  FALLA -- main-tema-aurora.json: AGC dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-aurora.json: PRE-ATT dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-aurora.json: ATU dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-aurora.json: gap horizontal [2, 2, 2, 2] (se esperaba 6 px)
+  FALLA -- main-tema-aurora.json: pitch vertical [22] (se esperaba 26)
+  FALLA -- main-tema-aurora.json: las filas se solapan 4 px
+  FALLA -- main-tema-cathode.json: AGC dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-cathode.json: PRE-ATT dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-cathode.json: ATU dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-cathode.json: gap horizontal [2, 2, 2, 2] (se esperaba 6 px)
+  FALLA -- main-tema-cathode.json: pitch vertical [22] (se esperaba 26)
+  FALLA -- main-tema-cathode.json: las filas se solapan 4 px
+  FALLA -- main-tema-redshift.json: AGC dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-redshift.json: PRE-ATT dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-redshift.json: ATU dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-redshift.json: gap horizontal [2, 2, 2, 2] (se esperaba 6 px)
+  FALLA -- main-tema-redshift.json: pitch vertical [22] (se esperaba 26)
+  FALLA -- main-tema-redshift.json: las filas se solapan 4 px
+  FALLA -- main-tema-sprint.json: AGC dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-sprint.json: PRE-ATT dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-sprint.json: ATU dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-sprint.json: gap horizontal [2, 2, 2, 2] (se esperaba 6 px)
+  FALLA -- main-tema-sprint.json: pitch vertical [22] (se esperaba 26)
+  FALLA -- main-tema-sprint.json: las filas se solapan 4 px
+  FALLA -- main-tema-sunlit.json: AGC dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-sunlit.json: PRE-ATT dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-sunlit.json: ATU dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-sunlit.json: gap horizontal [2, 2, 2, 2] (se esperaba 6 px)
+  FALLA -- main-tema-sunlit.json: pitch vertical [22] (se esperaba 26)
+  FALLA -- main-tema-sunlit.json: las filas se solapan 4 px
+  FALLA -- main-tema-trail.json: AGC dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-trail.json: PRE-ATT dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-trail.json: ATU dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tema-trail.json: gap horizontal [2, 2, 2, 2] (se esperaba 6 px)
+  FALLA -- main-tema-trail.json: pitch vertical [22] (se esperaba 26)
+  FALLA -- main-tema-trail.json: las filas se solapan 4 px
+  FALLA -- main-tx-simulado.json: AGC dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tx-simulado.json: PRE-ATT dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tx-simulado.json: ATU dibuja con sony_20 (se esperaba sony_22)
+  FALLA -- main-tx-simulado.json: gap horizontal [2, 2, 2, 2] (se esperaba 6 px)
+  FALLA -- main-tx-simulado.json: pitch vertical [22] (se esperaba 26)
+  FALLA -- main-tx-simulado.json: las filas se solapan 4 px

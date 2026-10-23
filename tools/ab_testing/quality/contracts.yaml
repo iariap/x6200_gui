@@ -516,6 +516,28 @@ expected_changes:
     author: dfl-inline-179
     until: 2027-10-20
 
+  # AB-HOME251 (issue #251, hijo 2/2 de la epica #249): la barra izquierda de
+  # HOME (src/info.c, src/ui_tokens.h) pasa a 6 px de aire horizontal y 26 de
+  # pitch vertical (antes 2 y 22, con las dos filas solapadas 4 px), el padding
+  # vertical LOCAL de la celda baja a 2 px (26 - 2*2 = 22 utiles: antes la caja de
+  # contenido era 16 con una linea de 18) y AGC/PRE-ATT/ATU dibujan con el slot
+  # grande (`&sony_22`). Los pixeles que se mueven son SOLO los de la barra
+  # izquierda: medido con el arnes, los 12 fixtures de la corrida mueven entre
+  # 2.8k y 3.7k px y **0** fuera de x=0..209 / y=0..61
+  # (docs/evidencia/2026-10-23-home251/logs/diff-regiones.log); el S-meter, el
+  # reloj/bateria, la frecuencia, el espectro, el waterfall y las teclas quedan
+  # byte-identicos.
+  - region: barra_superior
+    reason: >
+      #251: la barra izquierda de info.c agranda el aire entre celdas (2 -> 6 px)
+      y el pitch de los dos renglones (22 -> 26, sin solape), y el texto de cada
+      celda gana su caja (padding vertical local de 2 px). Ademas AGC, PRE/ATT y
+      ATU dibujan con el slot grande de la celda (sony_22; con las familias de la
+      coleccion, medidas, ese slot no agranda el glifo, ver la evidencia). Es el
+      mismo tipo de cambio cosmetico ya declarado por UI-011/UI-012/UI-014: los
+      pixeles se mueven dentro de `barra_superior`, que es su region.
+    author: home-status-legibility-251
+    until: 2027-03-31
   # AB-HOME250 (issue #250, hijo 1/2 de la epica #249): el reloj de la barra
   # superior deja de alternar hora y alimentacion y pasa a ser permanente, con
   # una banda de estado compacta debajo (bateria + fuente externa opcional). El
