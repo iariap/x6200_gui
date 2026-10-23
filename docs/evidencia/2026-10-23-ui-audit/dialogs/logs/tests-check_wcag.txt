@@ -1,0 +1,50 @@
+  roles en src/theme.h: 122 (4 valores cada uno)
+  temas: 10 | pares definidos: 139
+
+  IU1WXY           sin fallas
+  Legacy           sin fallas
+  Outdoor          sin fallas
+  Classic          sin fallas
+  Aurora           sin fallas
+  Cathode          sin fallas
+  Redshift         sin fallas
+  Sprint           sin fallas
+  Sunlit           sin fallas
+  Trail            sin fallas
+  === exenciones WCAG 1.4.3 y pares informativos (no fallan) ===
+                   cw_tune_barra sobre cw_tune_panel    1.00  peor en Outdoor  [cw_tune_ui.c:60-63 (relleno de las barras al 50%)]
+                   track sobre bar                      1.00  peor en IU1WXY  [theme.h:105]
+                   off sobre bar                        1.09  peor en Legacy  [theme.h:107]
+                   icon_off sobre bar                   1.11  peor en Classic  [theme.h:109 (iconos apagados de la barra)]
+                   btn_off_text sobre btn               1.20  peor en Classic  [theme.h:44 (boton deshabilitado)]
+                   track sobre panel                    1.36  peor en Redshift  [theme.h:105, app_frame.c:36 (riel de la barra)]
+                   btn_text sobre lvgl_focuskey         1.70  peor en Redshift  [lv_keyboard: btnmatrix pinta la tecla con FOCUS_KEY (lv_btnmatrix.c:756)]
+                   text_mute sobre bar                  1.73  peor en Legacy  [info.c:260 (modo bloqueado)]
+                   off sobre panel                      1.80  peor en Aurora  [theme.h:107 (barras sin encender)]
+                   text sobre lvgl_focuskey             1.82  peor en Redshift  [lv_table.c:791 + lv_theme_default.c:349 (celda con foco de teclado, azul #2196F3)]
+                   text_faint sobre bg                  1.84  peor en Legacy  [dialog_wspr.c:464, js8_map.c]
+                   text sobre lvgl_focused              2.14  peor en Redshift  [lv_table.c:790 + lv_theme_default.c:349 (celda elegida, rojo #F44336)]
+                   text_mute sobre bg                   2.37  peor en Legacy  [theme.h:76, spectrum.c:101]
+                   btn_off_text sobre btn_grad          2.40  peor en Aurora  [theme.h:44]
+                   switch_off sobre panel               2.53  peor en Sunlit  [theme.h:108 (switch de Ajustes apagado)]
+                   text_value sobre lvgl_focused        2.63  peor en Redshift  [lv_table.c:790 (valor sobre el rojo de LVGL)]
+                   text_faint sobre list                2.87  peor en Classic  [theme.h:77]
+                   text_faint sobre panel               3.04  peor en Classic  [theme.h:77 (en cola, idle)]
+                   text_mute sobre list                 4.13  peor en IU1WXY  [theme.h:76, styles.c:176]
+                   text_mute sobre side                 4.34  peor en Aurora  [cluster_column.c:64]
+                   text_mute sobre panel                4.46  peor en Redshift  [theme.h:76 (items grises)]
+
+================ resumen ================
+  IU1WXY           134 pares aplicables
+  Legacy           134 pares aplicables
+  Outdoor          132 pares aplicables
+  Classic          132 pares aplicables
+  Aurora           137 pares aplicables
+  Cathode          131 pares aplicables
+  Redshift         130 pares aplicables
+  Sprint           131 pares aplicables
+  Sunlit           131 pares aplicables
+  Trail            130 pares aplicables
+  pares OK: 1062 | exentos: 170 | informativos: 90 | FALLAS: 0
+  todos los pares cumplen WCAG 2.1 (AA)
+exit=0
