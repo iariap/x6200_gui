@@ -11,6 +11,8 @@ AGC/PRE-ATT/ATU y 20 en VFO/MODE/WiFi, texto sin envolver, sin truncar y sin
 recorte (caja visible == caja).
 
 Uso: python3 medir.py <dir-con-jsons> [...]
+
+SPDX-License-Identifier: GPL-2.0-or-later
 """
 
 from __future__ import annotations
@@ -71,19 +73,22 @@ def medir(ruta: Path) -> list[str]:
     if len(c) != 6:
         return [f"{linea}: {len(c)} celdas en la barra izquierda (se esperaban 6)"]
     print(f"\n== {ruta.name} ==")
-    print(f"   barra {panel_w} px | filas {[f['y'] for f in filas]} "
-          f"ancho fila {[f['w'] for f in filas]}")
-    print(f"{'celda':8} {'x':>4} {'y':>4} {'w':>4} {'h':>4} {'fuente':8} "
-          f"{'natural':>7} {'box':>4} {'visible':>16} long/ovf/trunc")
+    print(f"   barra {panel_w} px | filas {[f['y'] for f in filas]} ancho fila {[f['w'] for f in filas]}")
+    print(
+        f"{'celda':8} {'x':>4} {'y':>4} {'w':>4} {'h':>4} {'fuente':8} "
+        f"{'natural':>7} {'box':>4} {'visible':>16} long/ovf/trunc"
+    )
     for nombre, i in CELDAS.items():
         n = c[i]
         vis = n.get("visible") or {}
         visible = f"{vis.get('w')}x{vis.get('h')}"
         natural = (n.get("text_natural") or {}).get("w")
         box = (n.get("text_box") or {}).get("w")
-        print(f"{nombre:8} {n['x']:>4} {n['y']:>4} {n['w']:>4} {n['h']:>4} {n['text_font']:8} "
-              f"{natural!s:>7} {box!s:>4} {visible:>16} "
-              f"{n['long_mode']}/{n['text_overflow']}/{n['text_truncated']}  {n['text']!r}")
+        print(
+            f"{nombre:8} {n['x']:>4} {n['y']:>4} {n['w']:>4} {n['h']:>4} {n['text_font']:8} "
+            f"{natural!s:>7} {box!s:>4} {visible:>16} "
+            f"{n['long_mode']}/{n['text_overflow']}/{n['text_truncated']}  {n['text']!r}"
+        )
         if n["text_font"] != FUENTES[nombre]:
             fallos.append(f"{linea}: {nombre} dibuja con {n['text_font']} (se esperaba {FUENTES[nombre]})")
         if n["long_mode"] != "CLIP" and natural is not None and box is not None and natural > box:
@@ -98,14 +103,12 @@ def medir(ruta: Path) -> list[str]:
     pitches = [filas[1]["y"] - filas[0]["y"]] if len(filas) == 2 else []
     borde_x = c[5]["x"] + 56
     y2 = filas[-1]["y"] + 26 if filas else 0
-    runa = [
-        n
-        for n in nodos([panel_info(doc["inspection"]["nodes"]) or {}])
-        if n.get("class") == "lv_line"
-    ]
-    print(f"   gap horizontal: {gaps}  pitch vertical: {pitches}  "
-          f"borde derecho ultima celda x={borde_x} (barra {panel_w})  "
-          f"fondo de la ultima fila y={y2} (barra 61)")
+    runa = [n for n in nodos([panel_info(doc["inspection"]["nodes"]) or {}]) if n.get("class") == "lv_line"]
+    print(
+        f"   gap horizontal: {gaps}  pitch vertical: {pitches}  "
+        f"borde derecho ultima celda x={borde_x} (barra {panel_w})  "
+        f"fondo de la ultima fila y={y2} (barra 61)"
+    )
     if runa:
         r = runa[0]
         print(f"   runa BT: {r['x']},{r['y']} {r['w']}x{r['h']} -> fondo y={r['y'] + r['h']}")

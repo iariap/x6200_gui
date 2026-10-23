@@ -155,7 +155,9 @@ pad_valores = {tokens.get(p, p) for p in pads}
 if len(pads) != 2:
     fallos.append("src/info.c: la celda no fija su pad superior e inferior local (2 llamadas)")
 elif pad_valores != {2}:
-    fallos.append(f"src/info.c: el pad vertical local de la celda es {sorted(pad_valores)} (el contrato pide 2)")
+    fallos.append(
+        f"src/info.c: el pad vertical local de la celda es {sorted(pad_valores)} (el contrato pide 2)"
+    )
 if re.search(r"lv_style_set_\w+\(\s*&info_item_style", texto):
     fallos.append("src/info.c: modifica info_item_style (el estilo compartido por las seis celdas)")
 
@@ -185,9 +187,11 @@ for celda in ("INFO_AGC", "INFO_PRE_ATT", "INFO_ATU"):
 # VFO y modo conservan el arreglo ya probado (UI-012/UI-014): sony_20, y bajo
 # VISION los mismos tres pasos hacia abajo para que el ancho no cambie.
 for celda in ("INFO_VFO", "INFO_MODE"):
-    patron = (rf"lv_obj_set_style_text_font\(items\[{celda}\],\s*"
-              rf"theme_shape\.vision \? font_down\(UI_INFO_FONT, VISION_FONT_STEPS\)"
-              rf" : UI_INFO_FONT,\s*0\)")
+    patron = (
+        rf"lv_obj_set_style_text_font\(items\[{celda}\],\s*"
+        rf"theme_shape\.vision \? font_down\(UI_INFO_FONT, VISION_FONT_STEPS\)"
+        rf" : UI_INFO_FONT,\s*0\)"
+    )
     if not re.search(patron, texto):
         fallos.append(f"src/info.c: {celda} no conserva la fuente de 20 px con el fallback de VISION")
 
@@ -202,14 +206,16 @@ if "lv_style_set_text_font(&info_item_style, &sony_20)" not in STYLES.read_text(
 
 # 2c. La runa de BT conserva su geometria (14x20, width 2) y su x/y salen de los
 # tokens de la rejilla (sigue al WiFi sin tocar la celda de al lado).
-puntos = re.findall(r"\{\s*(\d+),\s*(\d+)\s*\}", texto[texto.find("bt_pts[]"):texto.find("bt_pts[]") + 400])
+puntos = re.findall(r"\{\s*(\d+),\s*(\d+)\s*\}", texto[texto.find("bt_pts[]") : texto.find("bt_pts[]") + 400])
 if not puntos:
     fallos.append("src/info.c: no esta bt_pts[] (la runa de BT)")
 else:
     xs = [int(x) for x, _ in puntos]
     ys = [int(y) for _, y in puntos]
     if max(xs) != RUNA_W or max(ys) != RUNA_H:
-        fallos.append(f"src/info.c: la runa de BT mide {max(xs)}x{max(ys)} (el contrato pide {RUNA_W}x{RUNA_H})")
+        fallos.append(
+            f"src/info.c: la runa de BT mide {max(xs)}x{max(ys)} (el contrato pide {RUNA_W}x{RUNA_H})"
+        )
 if "UI_INFO_BT_LINE_W, 0" not in texto:
     fallos.append("src/info.c: la runa de BT no conserva su ancho de linea (UI_INFO_BT_LINE_W)")
 if not re.search(r"UI_INFO_WIFI_COL \* UI_INFO_COL_PITCH \+ UI_INFO_ORIGIN_X \+ UI_INFO_WIFI_W", texto):

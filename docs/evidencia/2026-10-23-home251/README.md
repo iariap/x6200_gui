@@ -34,6 +34,13 @@ No se tocó `src/clock.c` (#250), ni `src/styles.c`, ni el layout flex de 2 fila
 ni el S-meter, el espectro, el waterfall, las softkeys, los timers, las teclas ni
 el DSP. No se agregó ningún icono, control, setting ni fuente.
 
+Sobre el enforce: los límites de la rejilla quedan como `_Static_assert` en
+`src/ui_tokens.h`, así que **cada compilación** (el build de la ROM, el arnés de
+host y el job `contracts` del CI, que compila el arnés del sha del PR) los
+verifica; `tests/check_info_bar.py` agrega lo que el compilador no ve (pad local,
+fuentes por celda, runa de BT) y corre en `tests/run_all_tests.sh`. No se tocó
+`.github/**` (fuera del alcance del issue).
+
 ### Geometría cerrada (tokens)
 
 ```
@@ -283,13 +290,82 @@ PASS: wakeup profile measured, sourced and delimited (main-natural)        wakeu
 
 ### 6.4 Matriz del harness
 
-_(pendiente de completar)_
+`scripts/apps/x6200/check-matrix.sh origin/main HEAD <worktree>` → **exit 1** por
+**un solo** check, `check_dialog_coverage`, que es un **desajuste preexistente
+entre el harness y `main`**: el script referencia
+`tests/check_dialog_coverage.py`, que existe en el trunk (`origin/lu2dsx/x6200-rom`)
+pero **no en `main`** (por eso está fuera de la épica #249), y el bloque se
+dispara con cualquier cambio en `src/`, `tests/**` o `tools/ui_harness/**`:
+
+```
+==> [check] check_dialog_coverage
+    FAIL:
+    /usr/bin/python3: can't open file '.../tests/check_dialog_coverage.py': [Errno 2] No such file or directory
+```
+
+Evidencia del desajuste (no del diff):
+
+```
+$ git ls-tree --name-only origin/main tests/ | grep -i dialog          # (vacío)
+$ git ls-tree --name-only origin/lu2dsx/x6200-rom tests/ | grep -i dialog
+tests/check_dialog_coverage.py
+```
+
+Ningún otro check de la matriz falló (log completo: `logs/check-matrix.log`):
+
+```
+==> [check] native tests (tests/native/run_native_tests.sh)                 ok
+==> [check] check_cfg_fills / check_actions / check_settings_focus          ok
+==> [check] check_apps_menu / check_app_handlers / check_manual_apps        ok
+==> [check] check_wcag / check_cw_tune_feed / check_settings_grid           ok
+==> [check] check_autotune_v2 / check_build_identity                        ok
+==> [check] check_dialog_coverage                                           FAIL (arriba)
+==> [check] pytest -m 'not e2e' (ab_testing)                                ok
+==> [check] x6200-ab themes                                                 ok
+==> [check] x6200-ab contracts (04f98b79…)                                  ok   <- el gate de geometría (#inspect)
+==> [check] bash -n tests/run_all_tests.sh                                  ok
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [SKIP] ruff del framework A/B: sin cambios en tools/ab_testing/**/*.py
+==> [SKIP] harness determinism gate: sin cambios en tools/ui_harness/
+==> [check] banco QEMU: preflight (tools/captura-banco.sh --check)          BLOCKED (entorno)
+```
+
+`x6200-ab contracts` evaluó el sha `04f98b79…` (materializa el worktree del sha,
+compila el arnés en `x6200-uiharness` y corre **todos** los fixtures con las reglas
+de layout/typography sobre `--inspect`) y dio **ok**: es el "inspect de geometría"
+del pedido. Salida propia en `logs/ab-contracts.log`.
+
+**Banco QEMU (QEMU_USER, ARM real, sin radio): BLOCKED** por entorno, con la salida
+real del preflight (no es un PASS y no se corrió):
+
+```
+FALTA: falta el volumen x6200-build-output (build del GUI)
+FALTA: falta el chroot (../.vfix3): extraer el rootfs de la imagen, ver docs/TESTING.md nivel 4
+FALTA: falta tools/remote/x6200-remote (compilar con tools/remote/compila.sh)
+== 5 cosa(s) faltan: el banco no puede correr ==
+```
+
+Por eso la QA visual RX/TX queda **NO verificada en ARM/QEMU** (§8): lo que hay es
+la simulación de HOST (arnés) y ningún contacto con la radio.
 
 ---
 
 ## 7. Commits
 
-_(pendiente de completar)_
+Identidad `Pablo Iaria <iariap@gmail.com>` (config del repo, sin `-c user.name`).
+Por rutas explícitas (nunca `git add -A`); `.asf-active` queda **sin commitear**.
+**Sin push**: el PR contra `main` lo abre el orquestador.
+
+| Commit | Qué |
+|---|---|
+| 1 — **`04f98b79`** | El cambio: `src/info.c`, `src/ui_tokens.h`, `tests/check_info_bar.py`, `tests/run_all_tests.sh`, `tools/ab_testing/quality/contracts.yaml` y la primera evidencia |
+| 2 — HEAD (`git log -1 --format=%h` del worktree) | Sólo documentación del harness: README final de la evidencia + `logs/{check-matrix,ab-contracts,ab-themes,ab-pytest,harness-gates,native*}.log`, y el formato `ruff` de `tests/check_info_bar.py` |
+
+Los gates de §6.3/§6.4 (matriz y `x6200-ab contracts`) evaluaron el commit 1
+(`04f98b79…` — es el sha que aparece en `logs/check-matrix.log` y
+`logs/ab-contracts.log`); el commit 2 no toca `src/`, y del lado de `tests/` sólo
+trae el formato de `check_info_bar.py`, cuyo chequeo se volvió a correr después
+(OK).
 
 ---
 

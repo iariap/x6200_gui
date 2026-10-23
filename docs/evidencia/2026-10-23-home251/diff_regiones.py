@@ -12,6 +12,8 @@ arranca en x=210 y el reloj/bateria viven en x=591..; cualquier pixel cambiado
 ahi es una regresion.
 
 Uso: python3 diff_regiones.py <dir-antes> <dir-despues>
+
+SPDX-License-Identifier: GPL-2.0-or-later
 """
 
 from __future__ import annotations
