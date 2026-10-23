@@ -46,7 +46,18 @@ rotary_t  *mfk_inner;
  * from a fixture is a no-op instead of a NULL call. `dialog_settings`,
  * `dialog_bt` and `dialog_swrscan` are NOT declared here: their own sources
  * define them (the SWR Scan window is compiled since issue #125, so the
- * `swrscan` fixtures render the real one over the fake acquisition backend). */
+ * `swrscan` fixtures render the real one over the fake acquisition backend).
+ *
+ * Three of the inert descriptors below (Frequency entry, CW messages, Voice
+ * messages) are guarded by `HARNESS_REAL_DIALOGS`: that macro is set only on the
+ * `ui_harness_dialogs` target (CMakeLists.txt), which links the REAL
+ * `src/dialog_freq.c` / `src/dialog_msg_cw.c` / `src/dialog_msg_voice.c` instead
+ * of this no-op. The default `ui_harness` is built without it, so its coverage
+ * table (tests/qemu/dialog-coverage.csv) stays exactly as the epic fixes it
+ * ("host_status: INERT, never promoted to REAL"). The dialogs target is a
+ * measurement instrument for the UI AUDIT gaps run: it renders those three
+ * windows over the same LVGL and the same sources, with their non-UI services
+ * (CW keyer, textarea window, audio/WAV backend) mocked. */
 
 static void mock_construct_cb(lv_obj_t *parent) { (void) parent; }
 
@@ -59,12 +70,16 @@ dialog_t *dialog_cw_kbd     = &mock_dialog;
 dialog_t *dialog_cw_trainer = &mock_dialog;
 dialog_t *dialog_eq         = &mock_dialog;
 dialog_t *dialog_field      = &mock_dialog;
+#ifndef HARNESS_REAL_DIALOGS
 dialog_t *dialog_freq       = &mock_dialog;
+#endif
 dialog_t *dialog_ft8        = &mock_dialog;
 dialog_t *dialog_gps        = &mock_dialog;
 dialog_t *dialog_js8        = &mock_dialog;
+#ifndef HARNESS_REAL_DIALOGS
 dialog_t *dialog_msg_cw     = &mock_dialog;
 dialog_t *dialog_msg_voice  = &mock_dialog;
+#endif
 dialog_t *dialog_navtex     = &mock_dialog;
 dialog_t *dialog_propagation = &mock_dialog;
 dialog_t *dialog_qth        = &mock_dialog;

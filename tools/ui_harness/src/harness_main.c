@@ -392,6 +392,15 @@ int main(int argc, char **argv)
 
     theme_init(scenario.theme[0] ? scenario.theme : params.theme_name.x);
 
+    /* VISION forzado por el fixture (UI AUDIT gaps): el firmware no puede entrar
+     * en VISION (theme_shape.vision no lo fija ningun tema ni ningun setter), asi
+     * que un fixture lo enciende para RENDERIZAR ese layout. Se fija ANTES del
+     * bloque de fuentes, en el mismo orden que src/main.c, y la captura queda
+     * declarada SYNTHETIC. */
+    if (scenario.vision) {
+        theme_shape.vision = true;
+    }
+
     /* Same font choice as the firmware's main(): a theme's own font first, then
      * the parameter. Before this the harness applied params.font only, so a theme
      * that names a font (docs/THEMES.md) drew with the wrong one. */
@@ -436,7 +445,11 @@ int main(int argc, char **argv)
         fonts_set_digit_family((uint8_t) theme_shape.font_digits);
     }
 
-    styles_init(THEME_SIMPLE);
+    /* La variante de estilos: `params.theme` (src/main.c) elige la barra legacy de
+     * 206 px (THEME_LEGACY) o la simple de 209; en la radio ese parametro no lo
+     * escribe ninguna UI, asi que la legacy es una variante NO seleccionable en
+     * runtime. Un fixture puede forzarla (UI AUDIT gaps, captura SYNTHETIC). */
+    styles_init(scenario.legacy_bar ? THEME_LEGACY : params.theme.x);
 
     if (!scenario_build(&scenario)) {
         return 1;

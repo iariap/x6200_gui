@@ -49,6 +49,17 @@ void                mock_audio_reset(void);
  * escriba el label. */
 void mock_event_bus_set_live(bool live);
 
+/* mocks/mock_ui_deps.c: estado de Bluetooth y WiFi que el fixture inyecta por
+ * clave de escenario (`bt_state` / `wifi_status`, UI AUDIT gaps). El arnes NO
+ * compila los modulos reales (src/bt_state.c lee archivos que escribe btcat-ctl;
+ * src/wifi.cpp habla con NetworkManager), asi que hoy el doble los fija en OFF.
+ * Estas funciones permiten RENDERIZAR los estados visibles del icono de la barra
+ * (apagado / prendido / conectado) sin radio; la captura es SYNTHETIC: mide el
+ * layout y el contraste de esos estados, no la funcion real. Devuelven false si
+ * el valor no es uno de los tres (nunca se ignora en silencio). */
+bool mock_bt_state_set(const char *value);      /* "off" | "on" | "connected" */
+bool mock_wifi_state_set(const char *value);    /* "off" | "on" | "connected" */
+
 /* mocks/mock_cfg.c: cuantas veces la GUI pidio las acciones de banda/VFO que el
  * arnes responde con un no-op (issue #220). Es el unico observable de que una
  * tecla bloqueada NO ejecuto la accion; sin los contadores, el no-op haria

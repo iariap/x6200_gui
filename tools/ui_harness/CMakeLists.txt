@@ -264,6 +264,67 @@ pkg_check_modules(NM REQUIRED libnm)
 target_include_directories(ui_harness PRIVATE ${NM_INCLUDE_DIRS})
 target_link_libraries(ui_harness PRIVATE lvgl PNG::PNG ${NM_LIBRARIES} m pthread)
 
+# --- `ui_harness_dialogs`: the three dialogs the remote protocol cannot open --
+# UI AUDIT gaps run: Frequency entry (HKEY_FINP), CW messages and Voice messages
+# are opened on the radio with a key the remote-control protocol does not inject.
+# The default `ui_harness` keeps their descriptors as inert mocks (see
+# mocks/mock_main_screen.c and tests/qemu/dialog-coverage.csv, whose host_status
+# stays INERT by the epic's rule). This second target builds the SAME screen,
+# LVGL and firmware components, but links the REAL src/dialog_freq.c /
+# dialog_msg_cw.c / dialog_msg_voice.c so the three windows can be rendered from
+# a fixture that injects the real event (EVENT_KEYPAD / LV_EVENT_KEY+HKEY_FINP).
+# -DHARNESS_REAL_DIALOGS drops the three inert descriptors; mocks/dialogs/*.c
+# substitutes only their non-UI services (CW keyer, textarea window, CW message
+# store, audio/WAV backend) and mocks/dialogs/sndfile.h stands in for the
+# libsndfile the CI build image does not ship. It is a measurement instrument,
+# not a product binary.
+file(GLOB MOCK_DIALOG_GAPS ${CMAKE_CURRENT_SOURCE_DIR}/mocks/dialogs/*.c)
+
+add_executable(ui_harness_dialogs
+    ${HARNESS_SRC}
+    ${MOCK_SRC}
+    ${MOCK_DIALOG_GAPS}
+    ${CMAKE_CURRENT_BINARY_DIR}/styles_host.c
+    ${REPO}/src/theme.c
+    ${REPO}/src/cJSON.c
+    ${REPO}/src/clock.c
+    ${REPO}/src/info.c
+    ${REPO}/src/meter.c
+    ${REPO}/src/band_info.c
+    ${GUI_SRC}
+    # The REAL dialogs the dialogs target exists for.
+    ${REPO}/src/dialog_freq.c
+    ${REPO}/src/dialog_msg_cw.c
+    ${REPO}/src/dialog_msg_voice.c
+    ${GUI_CXX_SRC}
+    ${FONTS}
+)
+
+target_compile_options(ui_harness_dialogs PRIVATE
+    -D_GNU_SOURCE -Wall
+    $<$<COMPILE_LANGUAGE:C>:-Werror=implicit-function-declaration>)
+target_compile_definitions(ui_harness_dialogs PRIVATE
+    LV_CONF_INCLUDE_SIMPLE=1
+    HARNESS_REVISION="${HARNESS_REVISION}"
+    HARNESS_ROM_TICK_CUSTOM=${HARNESS_ROM_TICK_CUSTOM}
+    HARNESS_ROM_REFR_PERIOD=${HARNESS_ROM_REFR_PERIOD}
+    HARNESS_THEMES_DIR_SHIPPED="${REPO}/rootfs/usr/share/x6200/themes"
+    HARNESS_SWR_FIXTURES_DIR="${REPO}/tests/fixtures/swrscan"
+    SWRSCAN_MULTIPASS_TX_ENABLED=1
+    HARNESS_REAL_DIALOGS=1)
+target_include_directories(ui_harness_dialogs PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/mocks
+    ${CMAKE_CURRENT_SOURCE_DIR}/mocks/dialogs   # the stand-in <sndfile.h>
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
+    ${REPO}
+    ${REPO}/src
+    ${REPO}/third-party/utf8
+    ${NM_INCLUDE_DIRS})
+target_link_options(ui_harness_dialogs PRIVATE -Wl,--wrap=time -Wl,--wrap=system)
+target_link_libraries(ui_harness_dialogs PRIVATE lvgl PNG::PNG ${NM_LIBRARIES} m pthread)
+
 # --- Draw-buffer / software-rotation probe (issue #147) ---------------------
 # Links the same stock LVGL 8.3.11 and models the firmware's display exactly
 # (480x800, sw_rotate, ROT_90) to prove that a partial draw buffer renders the

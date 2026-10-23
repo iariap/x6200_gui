@@ -1,0 +1,35 @@
+# bar-legacy-home: pantalla principal con la barra legacy de 206 px FORZADA (UI
+# AUDIT gaps). `params.theme` (THEME_LEGACY) elige la barra de 206 px en
+# src/styles.c::setup_theme_legacy, pero NINGUNA UI escribe ese parametro (no hay
+# params_uint8_set/change sobre params.theme): es una variante de estilo NO
+# seleccionable en runtime. El arnes la fuerza por clave de escenario y la captura
+# queda SYNTHETIC: muestra la barra de 206 px, NO que la radio la pueda elegir.
+
+name bar-legacy-home
+screen main
+
+seed 20
+bar_theme legacy
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

@@ -1,0 +1,42 @@
+# dialog-msg-voice: la ventana REAL de mensajes de voz (src/dialog_msg_voice.c)
+# sobre la pantalla principal real. Se abre por la tecla MSG del firmware con la
+# radio en SSB: keypad.c -> lv_event_send(lv_scr_act(), EVENT_KEYPAD, KEYPAD_MSG)
+# -> main_screen_keypad_cb (src/main_screen.c) elige voz por cfg_cur.mode ->
+# dialog_construct(dialog_msg_voice).
+#
+# El protocolo de control remoto NO inyecta teclas, por eso el barrido QEMU la
+# declara UNSUPPORTED; el arnes de host si empuja el evento (src/screens.c,
+# settle_dialog_gaps). La captura necesita `ui_harness_dialogs`
+# (-DHARNESS_REAL_DIALOGS, CMakeLists.txt). Si la ventana no se construye, corta.
+#
+# El backend de audio/WAV es un mock declarado: la lista de /mnt/msg queda vacia
+# (el contenedor no la tiene) y la tabla dibuja su estado vacio. Nada se graba ni
+# se reproduce.
+
+name dialog-msg-voice
+screen dialog-msg-voice
+
+seed 20
+
+frequency_hz 14250000
+tx_frequency_hz 14250000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx
