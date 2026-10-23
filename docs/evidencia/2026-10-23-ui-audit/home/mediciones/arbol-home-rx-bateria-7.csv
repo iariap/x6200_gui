@@ -1,0 +1,121 @@
+captura,prof,clase,x,y,w,h,visible,hidden,overflow_visible,scroll_dir,texto,fuente,text_natural,text_box,text_overflow,text_truncado,text_color,bg_color,bg_opa,bg_image,glyphs_faltantes,glyphs_fallback
+home-rx-bateria-7,0,lv_obj,0,0,800,480,"{'x': 0, 'y': 0, 'w': 800, 'h': 480}",False,False,all,,,,,,,#212121,#1A1227,255,False,,
+home-rx-bateria-7,1,lv_obj,0,0,800,160,"{'x': 0, 'y': 0, 'w': 800, 'h': 160}",False,False,all,,,,,,,#212121,#1A1227,255,False,,
+home-rx-bateria-7,1,lv_obj,0,160,800,36,"{'x': 0, 'y': 160, 'w': 800, 'h': 36}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-rx-bateria-7,2,lv_label,0,160,150,36,"{'x': 0, 'y': 160, 'w': 150, 'h': 36}",False,False,all,#F8EEFF 6.908,sony_30,"{'w': 61, 'h': 26}","{'w': 150, 'h': 22}",False,False,#F8EEFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,2,lv_label,150,160,500,36,"{'x': 150, 'y': 160, 'w': 500, 'h': 36}",False,False,all,#F8EEFF 7.100.000,sony_38,"{'w': 112, 'h': 31}","{'w': 500, 'h': 26}",False,False,#F8EEFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,2,lv_label,650,160,150,36,"{'x': 650, 'y': 160, 'w': 150, 'h': 36}",False,False,all,#F8EEFF 7.292,sony_30,"{'w': 56, 'h': 26}","{'w': 150, 'h': 22}",False,False,#F8EEFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,240,800,240,"{'x': 0, 'y': 240, 'w': 800, 'h': 240}",False,False,all,,,,,,,#212121,#1A1227,255,False,,
+home-rx-bateria-7,2,lv_img,0,240,800,240,"{'x': 0, 'y': 240, 'w': 800, 'h': 240}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-rx-bateria-7,3,lv_line,400,240,1,7,"{'x': 400, 'y': 240, 'w': 1, 'h': 7}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-rx-bateria-7,3,lv_line,406,240,1,7,"{'x': 406, 'y': 240, 'w': 1, 'h': 7}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-rx-bateria-7,2,lv_obj,0,246,800,24,"{'x': 0, 'y': 246, 'w': 800, 'h': 24}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-rx-bateria-7,2,lv_line,399,239,3,243,"{'x': 399, 'y': 240, 'w': 3, 'h': 240}",True,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-rx-bateria-7,1,lv_obj,0,268,800,150,"{'x': 0, 'y': 268, 'w': 800, 'h': 150}",True,False,all,,,,,,,#212121,#1B1529,255,False,,
+home-rx-bateria-7,2,lv_obj,499,272,1,142,"{'x': 499, 'y': 272, 'w': 1, 'h': 142}",False,False,all,,,,,,,#212121,#8A7BA8,255,False,,
+home-rx-bateria-7,2,lv_label,8,284,320,15,"{'x': 8, 'y': 284, 'w': 320, 'h': 15}",False,False,all,DFL LSB,sony_18,"{'w': 52, 'h': 15}","{'w': 320, 'h': 15}",False,False,#D7C2FF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,2,lv_obj,367,272,128,44,"{'x': 367, 'y': 272, 'w': 128, 'h': 44}",False,False,all,,,,,,,#212121,#2E2444,255,False,,
+home-rx-bateria-7,3,lv_label,414,287,35,15,"{'x': 414, 'y': 287, 'w': 35, 'h': 15}",False,False,all,Reset,sony_18,"{'w': 35, 'h': 15}","{'w': 35, 'h': 15}",False,False,#F8EEFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,2,lv_obj,8,320,487,96,"{'x': 8, 'y': 320, 'w': 487, 'h': 96}",False,False,all,,,,,,,#212121,#1B1529,0,False,,
+home-rx-bateria-7,3,lv_label,418,375,72,11,"{'x': 418, 'y': 375, 'w': 72, 'h': 11}",False,False,all,Schematic,sony_14,"{'w': 44, 'h': 11}","{'w': 72, 'h': 11}",False,False,#D5C4E0,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,2,lv_obj,505,272,286,44,"{'x': 505, 'y': 272, 'w': 286, 'h': 44}",False,False,all,,,,,,,#212121,#634B85,255,False,,
+home-rx-bateria-7,3,lv_obj,509,281,4,28,"{'x': 509, 'y': 281, 'w': 4, 'h': 28}",False,False,all,,,,,,,#212121,#FFF6FF,255,False,,
+home-rx-bateria-7,3,lv_label,520,286,100,15,"{'x': 520, 'y': 286, 'w': 100, 'h': 15}",False,False,all,LOW,sony_18,"{'w': 30, 'h': 15}","{'w': 100, 'h': 15}",False,False,#FFF6FF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,3,lv_label,616,282,168,18,"{'x': 616, 'y': 282, 'w': 168, 'h': 18}",False,False,all,0 Hz,sony_22,"{'w': 32, 'h': 18}","{'w': 168, 'h': 18}",False,False,#FFF6FF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,2,lv_obj,505,320,286,44,"{'x': 505, 'y': 320, 'w': 286, 'h': 44}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-rx-bateria-7,3,lv_obj,509,329,4,28,"{'x': 509, 'y': 329, 'w': 4, 'h': 28}",True,False,all,,,,,,,#212121,#CDB2FF,255,False,,
+home-rx-bateria-7,3,lv_label,520,334,100,15,"{'x': 520, 'y': 334, 'w': 100, 'h': 15}",False,False,all,HIGH,sony_18,"{'w': 34, 'h': 15}","{'w': 100, 'h': 15}",False,False,#D5C4E0,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,3,lv_label,616,330,168,18,"{'x': 616, 'y': 330, 'w': 168, 'h': 18}",False,False,all,3000 Hz,sony_22,"{'w': 59, 'h': 18}","{'w': 168, 'h': 18}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,2,lv_obj,505,368,286,44,"{'x': 505, 'y': 368, 'w': 286, 'h': 44}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-rx-bateria-7,3,lv_obj,509,377,4,28,"{'x': 509, 'y': 377, 'w': 4, 'h': 28}",True,False,all,,,,,,,#212121,#CDB2FF,255,False,,
+home-rx-bateria-7,3,lv_label,520,382,100,15,"{'x': 520, 'y': 382, 'w': 100, 'h': 15}",False,False,all,BW,sony_18,"{'w': 22, 'h': 15}","{'w': 100, 'h': 15}",False,False,#D5C4E0,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,3,lv_label,616,378,168,18,"{'x': 616, 'y': 378, 'w': 168, 'h': 18}",False,False,all,3000 Hz,sony_22,"{'w': 59, 'h': 18}","{'w': 168, 'h': 18}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,454,246,340,52,"{'x': 454, 'y': 246, 'w': 340, 'h': 52}",True,False,all,,,,,,,#212121,#2E2444,204,False,,
+home-rx-bateria-7,2,lv_label,465,265,320,15,"{'x': 465, 'y': 265, 'w': 320, 'h': 15}",False,False,all,,sony_18,"{'w': 0, 'h': 15}","{'w': 320, 'h': 15}",False,False,#F8EEFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,2,lv_obj,663,251,128,44,"{'x': 663, 'y': 251, 'w': 128, 'h': 44}",True,False,all,,,,,,,#212121,#634B85,255,False,,
+home-rx-bateria-7,3,lv_label,700,266,55,15,"{'x': 700, 'y': 266, 'w': 55, 'h': 15}",False,False,all,Cancelar,sony_18,"{'w': 55, 'h': 15}","{'w': 55, 'h': 15}",False,False,#FFF6FF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,191,138,84,22,"{'x': 191, 'y': 138, 'w': 84, 'h': 22}",False,False,all,,,,,,,#212121,#3366CC,204,False,,
+home-rx-bateria-7,2,lv_label,224,143,19,13,"{'x': 224, 'y': 143, 'w': 19, 'h': 13}",False,False,all,CW,sony_16,"{'w': 19, 'h': 13}","{'w': 19, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,275,138,20,22,"{'x': 275, 'y': 138, 'w': 20, 'h': 22}",False,False,all,,,,,,,#212121,#33AA55,204,False,,
+home-rx-bateria-7,2,lv_label,275,138,23,13,"{'x': 275, 'y': 138, 'w': 20, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#000000,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,295,138,313,22,"{'x': 295, 'y': 138, 'w': 313, 'h': 22}",False,False,all,,,,,,,#212121,#888888,204,False,,
+home-rx-bateria-7,2,lv_label,404,143,94,13,"{'x': 404, 'y': 143, 'w': 94, 'h': 13}",False,False,all,ALL MODES / SSB,sony_16,"{'w': 94, 'h': 13}","{'w': 94, 'h': 13}",False,False,#000000,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-rx-bateria-7,2,lv_label,0,138,23,13,"{'x': 0, 'y': 138, 'w': 23, 'h': 13}",True,False,all,Text,sony_16,"{'w': 23, 'h': 13}","{'w': 23, 'h': 13}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,0,418,160,62,"{'x': 0, 'y': 418, 'w': 160, 'h': 62}",False,False,all,,,,,,,#FFFFFF,#FFFFFF,0,True,,
+home-rx-bateria-7,2,lv_label,33,436,95,26,"{'x': 33, 'y': 436, 'w': 95, 'h': 26}",False,False,all,(VOL 1:3),sony_30,"{'w': 95, 'h': 26}","{'w': 95, 'h': 26}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,160,418,160,62,"{'x': 160, 'y': 418, 'w': 160, 'h': 62}",False,False,all,,,,,,,#FFFFFF,#FFFFFF,0,True,,
+home-rx-bateria-7,2,lv_label,198,423,84,52,"{'x': 198, 'y': 423, 'w': 84, 'h': 52}",False,False,all,"Volume:
+50",sony_30,"{'w': 84, 'h': 52}","{'w': 84, 'h': 52}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,320,418,160,62,"{'x': 320, 'y': 418, 'w': 160, 'h': 62}",False,False,all,,,,,,,#FFFFFF,#FFFFFF,0,True,,
+home-rx-bateria-7,2,lv_label,355,423,91,52,"{'x': 355, 'y': 423, 'w': 91, 'h': 52}",False,False,all,"Squelch:
+0",sony_30,"{'w': 91, 'h': 52}","{'w': 91, 'h': 52}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,480,418,160,62,"{'x': 480, 'y': 418, 'w': 160, 'h': 62}",False,False,all,,,,,,,#FFFFFF,#FFFFFF,0,True,,
+home-rx-bateria-7,2,lv_label,519,423,83,52,"{'x': 519, 'y': 423, 'w': 83, 'h': 52}",False,False,all,"RF gain:
+100",sony_30,"{'w': 83, 'h': 52}","{'w': 83, 'h': 52}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,640,418,160,62,"{'x': 640, 'y': 418, 'w': 160, 'h': 62}",False,False,all,,,,,,,#FFFFFF,#FFFFFF,0,True,,
+home-rx-bateria-7,2,lv_label,667,423,107,52,"{'x': 667, 'y': 423, 'w': 107, 'h': 52}",False,False,all,"TX power:
+5.0 W",sony_30,"{'w': 107, 'h': 52}","{'w': 107, 'h': 52}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_label,3,230,795,182,"{'x': 3, 'y': 230, 'w': 795, 'h': 182}",True,False,all,Text,sony_38,"{'w': 53, 'h': 31}","{'w': 775, 'h': 162}",False,False,#FFFFFF,#FFFFFF,0,True,[],[]
+home-rx-bateria-7,1,lv_label,99,300,603,66,"{'x': 99, 'y': 300, 'w': 603, 'h': 66}",False,False,all,Text,sony_38,"{'w': 53, 'h': 31}","{'w': 603, 'h': 26}",False,False,#FFFFFF,#FFFFFF,0,True,[],[]
+home-rx-bateria-7,1,lv_label,238,145,324,66,"{'x': 238, 'y': 145, 'w': 324, 'h': 66}",False,False,all,Text,sony_60,"{'w': 80, 'h': 46}","{'w': 324, 'h': 42}",False,False,#FFFFFF,#FFFFFF,0,True,[],[]
+home-rx-bateria-7,1,lv_obj,591,0,209,61,"{'x': 591, 'y': 0, 'w': 209, 'h': 61}",False,False,all,,,,,,,#FFFFFF,#FFFFFF,0,True,,
+home-rx-bateria-7,2,lv_label,591,5,209,31,"{'x': 591, 'y': 5, 'w': 209, 'h': 31}",False,False,all,00:00:00,sony_38,"{'w': 110, 'h': 31}","{'w': 209, 'h': 31}",False,False,#F8EEFF,#FFFFFF,0,True,[],[]
+home-rx-bateria-7,2,lv_label,599,41,0,18,,True,False,all,,sony_20,"{'w': 0, 'h': 18}","{'w': 0, 'h': 18}",False,False,#F8EEFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,2,lv_label,775,46,17,13,"{'x': 775, 'y': 46, 'w': 17, 'h': 13}",False,False,all,7%,sony_16,"{'w': 17, 'h': 13}","{'w': 17, 'h': 13}",False,False,#F8EEFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,2,lv_label,756,41,16,18,"{'x': 756, 'y': 41, 'w': 16, 'h': 18}",False,False,all,,sony_20,"{'w': 16, 'h': 18}","{'w': 16, 'h': 18}",False,False,#F8EEFF,#FFFFFF,0,False,[],['U+F244']
+home-rx-bateria-7,1,lv_obj,0,0,209,61,"{'x': 0, 'y': 0, 'w': 209, 'h': 61}",False,False,all,,,,,,,#212121,#FFFFFF,0,True,,
+home-rx-bateria-7,2,lv_obj,15,5,180,26,"{'x': 15, 'y': 5, 'w': 180, 'h': 26}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-rx-bateria-7,3,lv_label,15,5,56,26,"{'x': 15, 'y': 5, 'w': 56, 'h': 26}",False,False,all,VFO-A,sony_20,"{'w': 48, 'h': 18}","{'w': 56, 'h': 22}",False,False,#F8EEFF,#2C213E,255,False,[],[]
+home-rx-bateria-7,3,lv_label,77,5,56,26,"{'x': 77, 'y': 5, 'w': 56, 'h': 26}",False,False,all,LSB,sony_20,"{'w': 29, 'h': 18}","{'w': 56, 'h': 22}",False,False,#F8EEFF,#2C213E,255,False,[],[]
+home-rx-bateria-7,3,lv_label,139,5,56,26,"{'x': 139, 'y': 5, 'w': 56, 'h': 26}",False,False,all,SLOW,sony_22,"{'w': 46, 'h': 18}","{'w': 56, 'h': 22}",False,False,#F8EEFF,#2C213E,255,False,[],[]
+home-rx-bateria-7,2,lv_obj,15,31,180,26,"{'x': 15, 'y': 31, 'w': 180, 'h': 26}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-rx-bateria-7,3,lv_label,15,31,56,26,"{'x': 15, 'y': 31, 'w': 56, 'h': 26}",False,False,all,P/A,sony_22,"{'w': 25, 'h': 18}","{'w': 56, 'h': 22}",False,False,#F8EEFF,#2C213E,255,False,[],[]
+home-rx-bateria-7,3,lv_label,77,31,56,26,"{'x': 77, 'y': 31, 'w': 56, 'h': 26}",False,False,all,ATU1,sony_22,"{'w': 37, 'h': 18}","{'w': 56, 'h': 22}",False,False,#F8EEFF,#2C213E,255,False,[],[]
+home-rx-bateria-7,3,lv_label,139,31,28,26,"{'x': 139, 'y': 31, 'w': 28, 'h': 26}",False,False,all,,sony_20,"{'w': 18, 'h': 18}","{'w': 28, 'h': 22}",False,False,#D5C4E0,#2C213E,255,False,[],['U+F1EB']
+home-rx-bateria-7,2,lv_line,167,34,16,22,"{'x': 167, 'y': 34, 'w': 16, 'h': 22}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-rx-bateria-7,1,lv_obj,210,0,380,61,"{'x': 210, 'y': 0, 'w': 380, 'h': 61}",False,False,all,,,,,,,#212121,#FFFFFF,0,True,,
+home-rx-bateria-7,1,lv_obj,210,0,380,123,"{'x': 210, 'y': 0, 'w': 380, 'h': 123}",True,False,all,,,,,,,#212121,#FFFFFF,0,True,,
+home-rx-bateria-7,2,lv_label,560,98,0,18,,False,False,all,,sony_20,"{'w': 0, 'h': 18}","{'w': 0, 'h': 18}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_label,779,10,11,13,"{'x': 779, 'y': 10, 'w': 11, 'h': 13}",True,False,all,x1,sony_16,"{'w': 11, 'h': 13}","{'w': 11, 'h': 13}",False,False,#212121,#FFFFFF,0,False,[],[]
+home-rx-bateria-7,1,lv_obj,30,70,139,40,"{'x': 30, 'y': 70, 'w': 139, 'h': 40}",True,False,all,,,,,,,#212121,#000000,255,False,,

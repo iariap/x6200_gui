@@ -1,0 +1,37 @@
+# ui-audit-bateria-desconocida: sin muestra valida del pack (battery_v 0.0)
+# para la auditoria de UI (#270). Ver el encabezado de
+# `ui-audit-bateria-0.scn`: mismo estado de radio que `home-usb-20m`, solo cambia
+# la muestra del pack.
+#
+# battery_v 0.0 = `sample_valid()` falso (src/clock.c): la linea de estado NO
+# inventa un 0% -- dibuja "--%" y el icono apagado (TC(text_dim)), que es el
+# caso que el comentario del modulo llama "el defecto que se ve en el home de
+# main". La fuente externa (13.8 V) sigue visible: es una muestra distinta.
+
+name ui-audit-bateria-desconocida
+screen main
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 0.0
+external_v 13.8
+battery_cap 0
+charging false
+
+rxtx rx
