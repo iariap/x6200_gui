@@ -118,6 +118,8 @@ static uint64_t       spectrum_time;
 static cfloat         spectrum_dec_buf[SPECTRUM_NFFT / 2];
 
 static float          waterfall_psd[WATERFALL_NFFT];
+static float          waterfall_psd_mirror[WATERFALL_NFFT];
+static float          spectrum_psd_mirror[SPECTRUM_NFFT];
 static uint8_t        waterfall_fps_ms = (1000 / 25);
 static uint64_t       waterfall_time;
 
@@ -134,6 +136,22 @@ static bool ready = false;
 static bool last_tx = false;
 
 static x6200_mode_t cur_mode;
+
+/* El BASE manda las muestras del espectro en orden de AUDIO, no de RF: en LSB los
+ * bins del espectro quedan espejados respecto de la frecuencia real. Eso hacia que
+ * en LSB la senal audible se dibujara a la derecha de la raya mientras la barra del
+ * passband (que si es RF) se dibuja a la izquierda. En AM/USB el orden coincide
+ * (por eso solo se nota en LSB). Se espeja una copia para no tocar el buffer
+ * promediado que devuelve get(). */
+static bool spectrum_needs_mirror() {
+    return cur_mode == x6200_mode_lsb || cur_mode == x6200_mode_lsb_dig;
+}
+
+static void mirror_copy(float *dst, const float *src, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        dst[i] = src[n - 1 - i];
+    }
+}
 
 /* --- instantanea espectral para Auto Tune multimodo (issue #205) -----------
  *
@@ -252,10 +270,18 @@ void dsp_samples(float *buf_samples, uint16_t size, bool tx, int16_t dbm) {
             // Instantanea para el Auto Tune multimodo (issue #205): la MISMA PSD
             // promediada, en dB y ANTES del suavizado visual del waterfall. No
             // hay FFT nueva ni cadencia nueva; el publicador no toca LVGL.
-            dsp_autotune_publish(spectrum_avg_data->data(), spectrum_avg_data->size(), tx);
+            const float *psd = spectrum_avg_data->data();
+            size_t       n   = spectrum_avg_data->size();
+
+            if (spectrum_needs_mirror()) {
+                mirror_copy(spectrum_psd_mirror, psd, n);
+                psd = spectrum_psd_mirror;
+            }
+
+            dsp_autotune_publish(psd, n, tx);
             // Decrease beta for high zoom
             float new_beta = powf(spectrum_beta, ((float)spectrum_factor - 1.0f) / 2.0f + 1.0f);
-            lpf_block(spectrum_psd_filtered, spectrum_avg_data->data(), new_beta, SPECTRUM_NFFT);
+            lpf_block(spectrum_psd_filtered, psd, new_beta, SPECTRUM_NFFT);
             spectrum_data(spectrum_psd_filtered, SPECTRUM_NFFT, tx);
             spectrum_time = now;
         }
@@ -263,7 +289,15 @@ void dsp_samples(float *buf_samples, uint16_t size, bool tx, int16_t dbm) {
     if ((now - waterfall_time > waterfall_fps_ms)) {
         auto waterfall_avg_data = waterfall_avg_psd.get();
         if (waterfall_avg_data) {
-            waterfall_data(waterfall_avg_data->data(), waterfall_avg_data->size(), tx);
+            const float *wf = waterfall_avg_data->data();
+            size_t       wn = waterfall_avg_data->size();
+
+            if (spectrum_needs_mirror()) {
+                mirror_copy(waterfall_psd_mirror, wf, wn);
+                wf = waterfall_psd_mirror;
+            }
+
+            waterfall_data(wf, wn, tx);
             waterfall_time = now;
 
             // update meter
