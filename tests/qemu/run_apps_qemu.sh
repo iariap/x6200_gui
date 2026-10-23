@@ -122,6 +122,12 @@ comprobar() {
         [ -f "$ROOTFS" ] && nota "rootfs privada: ok ($ROOTFS)" || falta "ROOTFS=$ROOTFS no existe"
     elif [ -x "$CHROOT$BIN" ] || [ -x "$CHROOT/bin/busybox" ] || [ -x "$CHROOT/bin/sh" ]; then
         nota "chroot privado: ok ($CHROOT)"
+    elif [ "$(en_volumen "test -x /b/target$BIN && echo si")" = "si" ]; then
+        # El chroot no esta armado todavia, pero el volumen tiene la GUI: `armar_chroot`
+        # lo extrae de $VOL/target, que es exactamente lo que promete su mensaje. No es
+        # un requisito faltante (antes se declaraba FALTA y el barrido salia 77 aunque
+        # el propio script supiera armarlo).
+        nota "chroot privado: se arma desde $VOL/target al arrancar"
     else
         falta "falta el chroot privado ($CHROOT): pasar ROOTFS=<rootfs.tar privada> o dejar el volumen con target/ (se arma solo)"
     fi
@@ -248,8 +254,16 @@ cola_log() { [ -f "$LOG" ] && tail -5 "$LOG" | sed 's/^/    | /'; }
 arrancar() {
     docker rm -f "$CONT" >/dev/null 2>&1 || true
     rm -f "$FB" "$CHROOT/crash.txt" "$CHROOT/tmp/x6200_remote.sock"
-    docker run -d --name "$CONT" --rm --entrypoint "" -e "QEMU_CPU=$QEMU_CPU" -v "$CHROOT:/t" "$IMAGEN" \
-        sh -c "chroot /t /bin/busybox env LD_PRELOAD=/lib/libfakefb.so:/lib/libcrash.so:/lib/libx6200trace.so $BIN > /t/out-banco.txt 2>&1" >/dev/null \
+    # Montajes que el binario ENDURECIDO exige (issues #211-#215, r3): `src/params/db.c`
+    # aborta con EXIT_PERSISTENCE_UNAVAILABLE (78) si /mnt no es un montaje real rw de un
+    # filesystem distinto de la raiz, y `data_mount_ok()` lee `/proc/self/mountinfo`, asi que
+    # /proc tiene que estar montado dentro del chroot. El contenedor NO trae /proc ni una DATA
+    # real por defecto: se montan aca (receta canonica del QA de #213). El tmpfs de /mnt se
+    # siembra con la plantilla de la ROM (`params.default.db`) para que la GUI arranque como en
+    # la radio. Se aclara con `--cap-add SYS_ADMIN` porque `mount` lo necesita; el aislamiento
+    # (contenedor, volumen, chroot, red y espacio de montaje PROPIOS) no cambia.
+    docker run -d --name "$CONT" --rm --entrypoint "" --cap-add SYS_ADMIN -e "QEMU_CPU=$QEMU_CPU" -v "$CHROOT:/t" "$IMAGEN" \
+        sh -c "mkdir -p /t/proc /t/mnt && mount --bind /proc /t/proc && mount -t tmpfs -o size=64M tmpfs /t/mnt && cp /t/usr/share/x6200/params.default.db /t/mnt/params.db && chroot /t /bin/busybox env LD_PRELOAD=/lib/libfakefb.so:/lib/libcrash.so:/lib/libx6200trace.so $BIN > /t/out-banco.txt 2>&1" >/dev/null \
         || fallar "no pude arrancar el contenedor privado $CONT"
     local i
     for i in $(seq 1 "$ESPERA_SOCKET"); do [ -S "$CHROOT/tmp/x6200_remote.sock" ] && break; sleep 1; done

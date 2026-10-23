@@ -72,6 +72,24 @@ typedef struct {
     int swr_feed;
     /* Press Stop after the last fed sample (the operator's cancel). */
     bool swr_stop;
+    /* Estado de BT/WiFi inyectado por el fixture (UI AUDIT gaps): claves
+     * `bt_state` y `wifi_status`. El doble por defecto queda apagado. El icono de
+     * WiFi de la barra solo se repinta con el mensaje MSG_WIFI_STATE_CHANGED que
+     * manda la radio al cambiar de estado (src/wifi.cpp); el arnes no compila ese
+     * modulo, asi que build_main() lo manda UNA vez cuando el fixture fijo un
+     * estado (por eso ningun fixture existente cambia de pixeles). */
+    bool wifi_status_given;
+    /* VISION forzado (UI AUDIT gaps): el firmware NO tiene forma de entrar en
+     * VISION (theme_shape.vision no lo fija ningun tema ni ningun setter), asi que
+     * un fixture puede forzarlo para RENDERIZAR ese layout. harness_main lo aplica
+     * antes de styles_init(), en el mismo orden que src/main.c, y la captura queda
+     * SYNTHETIC (declarado). */
+    bool vision;
+    /* Barra legacy de 206 px forzada (UI AUDIT gaps): `params.theme`
+     * (THEME_LEGACY) elige la barra de 206 px en styles_init(), pero ninguna UI
+     * escribe ese parametro, asi que en runtime no es alcanzable. Un fixture puede
+     * forzarla (`bar_theme legacy`) para renderizarla; captura SYNTHETIC. */
+    bool legacy_bar;
 } scenario_t;
 
 /* Parses `path`. Unknown keys are an error (a scenario must not silently

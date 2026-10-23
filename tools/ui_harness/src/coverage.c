@@ -355,8 +355,49 @@ static const coverage_entry_t cw_autotune[] = {
               "DX cluster column is not rendered (no cluster data on the host)"),
 };
 
+/* Los `dialog-freq` / `dialog-msg-cw` / `dialog-msg-voice` (UI AUDIT gaps): las
+ * tres ventanas que el protocolo de control remoto no puede abrir porque no
+ * inyecta teclas (entrada de frecuencia, mensajes CW y de voz). El target
+ * `ui_harness_dialogs` (CMakeLists.txt, -DHARNESS_REAL_DIALOGS) linkea las
+ * fuentes REALES de las ventanas y el fixture empuja el evento real
+ * (LV_EVENT_KEY+HKEY_FINP / EVENT_KEYPAD+KEYPAD_MSG); los servicios que no son UI
+ * (keyer CW, ventana de texto, store de mensajes CW, audio/WAV) son mocks
+ * declarados. El binario por defecto mantiene los descriptores inertes. */
+static const coverage_entry_t dialog_gaps[] = {
+    MAIN_COMPONENTS,
+    COMPONENT("dialog.c", COVERAGE_REAL,
+              "src/dialog.c compiled; dialog_construct()/dialog_init() run the real dialog lifecycle over the screen"),
+    COMPONENT("dialog_freq.c", COVERAGE_REAL,
+              "src/dialog_freq.c compiled and drawn; the window opens by the real HKEY_FINP route (LV_EVENT_KEY to the focused spectrum), not by a mock descriptor"),
+    COMPONENT("dialog_msg_cw.c", COVERAGE_REAL,
+              "src/dialog_msg_cw.c compiled and drawn; the window opens by the real KEYPAD_MSG route (EVENT_KEYPAD) with the rig in CW"),
+    COMPONENT("dialog_msg_voice.c", COVERAGE_REAL,
+              "src/dialog_msg_voice.c compiled and drawn; the window opens by the real KEYPAD_MSG route (EVENT_KEYPAD) with the rig in SSB"),
+    COMPONENT("cw_encoder.c", COVERAGE_SYNTHETIC,
+              "the CW keyer is a no-op (mocks/dialogs/mock_dialog_deps.c): the window draws, nothing is keyed"),
+    COMPONENT("textarea_window.c", COVERAGE_SYNTHETIC,
+              "the Rename/Edit editor is a no-op (mocks/dialogs/mock_dialog_deps.c): it is not opened while rendering"),
+    COMPONENT("params (CW message store)", COVERAGE_SYNTHETIC,
+              "params_msg_cw_* are no-ops (mocks/dialogs/mock_dialog_deps.c); the list is empty, so the table renders its empty state"),
+    COMPONENT("audio.c / libsndfile (voice WAV)", COVERAGE_SYNTHETIC,
+              "the audio playback surface and the WAV backend are no-ops (mocks/dialogs/mock_dialog_deps.c + mocks/dialogs/sndfile.h): the voice window draws, nothing is recorded or played"),
+    COMPONENT("radio", COVERAGE_SYNTHETIC,
+              "mocks/mock_radio.c: no device"),
+    COMPONENT("dialogs (other apps)", COVERAGE_UNSUPPORTED,
+              "only these three windows are compiled and opened"),
+    COMPONENT("spot_marks.c", COVERAGE_UNSUPPORTED,
+              "DX cluster spot marks are not rendered (no cluster data on the host)"),
+    COMPONENT("cluster_column.c", COVERAGE_UNSUPPORTED,
+              "DX cluster column is not rendered (no cluster data on the host)"),
+};
+
 const coverage_entry_t *coverage_for_screen(const char *screen, int *count)
 {
+    if (screen && (!strcmp(screen, "dialog-freq") || !strcmp(screen, "dialog-msg-cw")
+                   || !strcmp(screen, "dialog-msg-voice"))) {
+        *count = (int) (sizeof(dialog_gaps) / sizeof(dialog_gaps[0]));
+        return dialog_gaps;
+    }
     if (screen && !strcmp(screen, "swrscan")) {
         *count = (int) (sizeof(swrscan_screen) / sizeof(swrscan_screen[0]));
         return swrscan_screen;

@@ -1,0 +1,20 @@
+$ LAB=/tmp/x6200-gaps-qemu CONT=x6200-gaps-qemu VOL=x6200-gaps-build IMAGEN=x6200-buildroot tests/qemu/run_apps_qemu.sh --check
+
+== comprobando el entorno del barrido QEMU (privado) ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  python3: ok
+  PIL: ok
+  reporteador: ok
+  guard #86: ok
+  libs del banco: ok
+  cliente de control (fuente): ok
+  volumen x6200-gaps-build: tiene la GUI construida
+  chroot privado: ok (/tmp/x6200-gaps-qemu/chroot)
+  binfmt qemu-arm: ok
+== todo listo para el barrido QEMU (no se tocó nada) ==
+  contenedor privado: x6200-gaps-qemu
+  volumen privado:    x6200-gaps-build
+  laboratorio:        /tmp/x6200-gaps-qemu
+  version del repo:   e07ad616 [UI AUDIT] Apps evidence (refs #272) (#273)
+exit=0

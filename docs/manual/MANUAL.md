@@ -188,7 +188,8 @@ cambia de página: son **6**, con 3 o 4 apps cada una.
 
 Además de las páginas, **cada app está en la lista de acciones** de *Ajustes → Acciones* y se puede
 asignar a un botón o a una pulsación larga. Es el camino para las que no tienen botón propio en las
-páginas: **About**, por ejemplo, se abre desde ahí (o asignándola).
+páginas: **el editor DFL**, por ejemplo, también se abre desde ahí (o con la pulsación larga de la
+tecla DFL).
 
 ### 6.1 FT8 / FT4
 
@@ -439,14 +440,38 @@ forma rápida de saber si el problema es la antena o el equipo.
 barre. **Usalo con la antena conectada** (la medición necesita RF) y, como siempre: **nunca
 transmitas sin antena o carga fantasma**.
 
-### 6.22 About (acerca de)
+### 6.22 DFL editor (forma del filtro)
 
-La **versión** del firmware (`v0.1.2-lu2dsx`) y los **créditos** de todo el software libre con el
-que está hecho el equipo. Es el dato que hay que mandar cuando se reporta un problema: sin la
-versión, no se puede saber qué código estabas corriendo.
+El **editor DFL** muestra la **forma del filtro** que está pasando en este momento y deja moverla. No
+es una ventana: es un **panel que se dibuja encima del waterfall** (sin diálogo ni marco), con una
+**gráfica esquemática** de la respuesta y tres filas — **LOW**, **HIGH** y **BW** — con el valor
+exacto en **Hz** de cada borde y del ancho. La gráfica muestra la forma del filtro, **no** una
+medición del equipo.
 
-**Cómo se usa:** no tiene botón propio en las páginas APP: se abre desde *Ajustes → Acciones*
-(asignándola a una pulsación larga) o desde el menú de la app de Ajustes. Se lee y se cierra.
+**Cómo se usa.** Se abre con la **pulsación larga de la tecla DFL** (la acción que esa tecla trae por
+defecto) o con la celda **Grafico** de la página DFL; la acción **APP DFL editor** también está en
+*Ajustes → Acciones* (asignable a una pulsación larga) y en el control remoto
+(`{"cmd":"app","text":"DFLEditor"}`). Se cierra con la celda **Waterfall** de la barra, o con una
+pulsación corta de DFL.
+
+**Se edita con la rueda de volumen y con el dedo.** Girá la **rueda de volumen** para ajustar el
+parámetro seleccionado y apretala para **cambiar de parámetro** (LOW → HIGH → BW). Con el **dedo**,
+tocá una de las tres filas para seleccionar su parámetro, o **arrastrá uno de los bordes** sobre la
+gráfica para moverlo (un toque lejos de los bordes no cambia nada). **La rueda principal (VFO) nunca
+edita el filtro**: sigue sintonizando aunque el editor esté abierto. **Reset** vuelve a la forma por
+defecto del modo.
+
+| Fila | Qué ajusta | Paso de la rueda |
+|---|---|---|
+| **LOW** | Borde inferior del filtro | 10 Hz |
+| **HIGH** | Borde superior del filtro | 50 Hz (10 Hz en CW/CWR) |
+| **BW** | Ancho de banda | 20 Hz |
+
+**Detalles.** En **TX** el editor queda de sólo lectura (las filas se apagan y **Reset** no
+responde). En **AM/SAM/NFM/WFM** el borde **LOW** no es editable (son modos simétricos alrededor de
+la portadora): la fila se ve apagada y la rueda arranca en **HIGH**. En **LSB/LSB-D** la gráfica se
+**espeja** como el espectro (el cero a la derecha, HIGH a la izquierda); en el resto, el cero queda a
+la izquierda.
 
 ### 6.23 Ajustes
 
