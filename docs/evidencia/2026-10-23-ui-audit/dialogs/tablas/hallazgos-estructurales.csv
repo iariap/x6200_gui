@@ -1,0 +1,60 @@
+fixture,rule,detail,path
+dfl-editor-sel-bw-tema-cathode,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-editor-sel-bw-tema-sprint,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-editor-sel-high-tema-cathode,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-editor-sel-high-tema-sprint,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-editor-usb-d-tema-cathode,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-editor-usb-d-tema-sprint,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-page-tema-cathode,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-page-tema-sprint,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-adj-tema-cathode,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-adj-tema-sprint,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-assign-tema-cathode,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-assign-tema-sprint,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-confirm-tema-cathode,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-confirm-tema-sprint,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-fav-tema-cathode,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-fav-tema-sprint,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-graph-tema-cathode,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-graph-tema-sprint,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-more-tema-cathode,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-more-tema-sprint,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-presets-rotary0,layout_overlap,"text labels overlap: '00:00:00' at 591,5 and 'x1' at 779,10 (100% covered)",0/37/0|0/41
+dfl-usb-d-tema-cathode,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F9D9AA 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+dfl-usb-d-tema-sprint,layout_overlap,"text labels overlap: '88.888.888' at 150,160 and '#F5F7F9 14.200.000' at 150,160 (100% covered)",0/1|0/2/1
+settings-audio,layout_touch_target,"lv_slider at 521,103 51x13 is 51x13, below the 44px touch target",0/43/0/30/0
+settings-audio,layout_touch_target,"lv_slider at 665,103 51x13 is 51x13, below the 44px touch target",0/43/0/31/0
+settings-audio,layout_touch_target,"lv_slider at 521,162 46x13 is 46x13, below the 44px touch target",0/43/0/33/0
+settings-audio,layout_touch_target,"lv_slider at 665,162 46x13 is 46x13, below the 44px touch target",0/43/0/34/0
+settings-audio,layout_touch_target,"lv_switch at 514,271 111x30 is 111x30, below the 44px touch target",0/43/0/38/0
+settings-grupo-display,layout_touch_target,"lv_slider at 610,103 159x13 is 159x13, below the 44px touch target",0/43/0/68/0
+settings-grupo-display,layout_touch_target,"lv_switch at 514,212 111x30 is 111x30, below the 44px touch target",0/43/0/72/0
+settings-grupo-display,layout_touch_target,"lv_switch at 514,271 111x30 is 111x30, below the 44px touch target",0/43/0/74/0
+settings-grupo-info,layout_touch_target,"lv_switch at 514,342 63x30 is 63x30, below the 44px touch target",0/43/0/102/0
+settings-grupo-info,layout_touch_target,"lv_switch at 610,342 63x30 is 63x30, below the 44px touch target",0/43/0/103/0
+settings-grupo-info,layout_touch_target,"lv_switch at 706,342 63x30 is 63x30, below the 44px touch target",0/43/0/104/0
+settings-grupo-operation-tema-aurora,layout_touch_target,"lv_switch at 514,212 111x30 is 111x30, below the 44px touch target",0/43/0/6/0
+settings-grupo-operation-tema-aurora,layout_touch_target,"lv_switch at 514,271 111x30 is 111x30, below the 44px touch target",0/43/0/8/0
+settings-grupo-operation-tema-cathode,layout_touch_target,"lv_switch at 514,213 111x30 is 111x30, below the 44px touch target",0/44/0/6/0
+settings-grupo-operation-tema-cathode,layout_touch_target,"lv_switch at 514,272 111x30 is 111x30, below the 44px touch target",0/44/0/8/0
+settings-grupo-operation-tema-redshift,layout_touch_target,"lv_switch at 514,213 111x30 is 111x30, below the 44px touch target",0/43/0/6/0
+settings-grupo-operation-tema-redshift,layout_touch_target,"lv_switch at 514,272 111x30 is 111x30, below the 44px touch target",0/43/0/8/0
+settings-grupo-operation-tema-sprint,layout_touch_target,"lv_switch at 514,212 111x30 is 111x30, below the 44px touch target",0/44/0/6/0
+settings-grupo-operation-tema-sprint,layout_touch_target,"lv_switch at 514,271 111x30 is 111x30, below the 44px touch target",0/44/0/8/0
+settings-grupo-operation-tema-sunlit,layout_touch_target,"lv_switch at 514,213 111x30 is 111x30, below the 44px touch target",0/43/0/6/0
+settings-grupo-operation-tema-sunlit,layout_touch_target,"lv_switch at 514,272 111x30 is 111x30, below the 44px touch target",0/43/0/8/0
+settings-grupo-operation-tema-trail,layout_touch_target,"lv_switch at 514,213 111x30 is 111x30, below the 44px touch target",0/43/0/6/0
+settings-grupo-operation-tema-trail,layout_touch_target,"lv_switch at 514,272 111x30 is 111x30, below the 44px touch target",0/43/0/8/0
+settings-grupo-operation,layout_touch_target,"lv_switch at 514,212 111x30 is 111x30, below the 44px touch target",0/43/0/6/0
+settings-grupo-operation,layout_touch_target,"lv_switch at 514,271 111x30 is 111x30, below the 44px touch target",0/43/0/8/0
+settings-home,layout_touch_target,"lv_slider at 610,236 159x13 is 159x13, below the 44px touch target",0/43/0/68/0
+settings-home,layout_touch_target,"lv_switch at 514,345 111x30 is 111x30, below the 44px touch target",0/43/0/72/0
+settings-home,layout_touch_target,"lv_switch at 514,404 111x30 is 111x30, below the 44px touch target",0/43/0/74/0
+settings-wfbat,layout_touch_target,"lv_switch at 514,94 111x30 is 111x30, below the 44px touch target",0/43/0/46/0
+settings-wfbat,layout_touch_target,"lv_switch at 658,94 111x30 is 111x30, below the 44px touch target",0/43/0/47/0
+settings-wfbat,layout_touch_target,"lv_switch at 514,153 111x30 is 111x30, below the 44px touch target",0/43/0/49/0
+settings-wfbat,layout_touch_target,"lv_switch at 658,153 111x30 is 111x30, below the 44px touch target",0/43/0/50/0
+settings-wfbat,layout_touch_target,"lv_switch at 514,212 111x30 is 111x30, below the 44px touch target",0/43/0/52/0
+settings-wfbat,layout_touch_target,"lv_switch at 658,212 111x30 is 111x30, below the 44px touch target",0/43/0/53/0
+settings-wfbat,layout_touch_target,"lv_switch at 514,271 111x30 is 111x30, below the 44px touch target",0/43/0/55/0
+settings-wfbat,layout_touch_target,"lv_switch at 514,330 111x30 is 111x30, below the 44px touch target",0/43/0/57/0

@@ -1,0 +1,35 @@
+# ui-audit-bateria-85: estado de bateria 85 % para la auditoria de UI (#270).
+# Ver el encabezado de `ui-audit-bateria-0.scn`: mismo estado de radio que
+# `home-usb-20m`, solo cambia la muestra del pack que `screens.c` le pasa a
+# `clock_update_power()`. Este estado existe para el analisis de colision
+# icono/porcentaje: LV_SYMBOL_BATTERY_3 (61..85), segundo estado del mismo simbolo.
+#
+# battery_cap 85 -> nivel 85 del icono (src/clock.c) y el texto "85%".
+
+name ui-audit-bateria-85
+screen main
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.4
+external_v 13.8
+battery_cap 85
+charging false
+
+rxtx rx

@@ -1,0 +1,13 @@
+fixture,filtro_low_hz,filtro_high_hz,meseta_y,meseta_x_ini,meseta_x_fin,meseta_ancho_px,pixeles_color_acento,observacion
+dfl-editor-usb-d,225,3525,343,33,351,319,2103,"meseta a la IZQUIERDA del cero del grafico (0 a la izquierda, HIGH a la derecha): regla de orientacion de la familia USB (dfl_graph_layout, src/dfl_model.h)"
+dfl-editor-lsb-d,225,3525,343,151,469,319,2092,"la MISMA meseta espejada sobre el centro del grafico (x=251,5): meseta 33..351 <-> 151..469. Regla de orientacion LSB (issue #182) confirmada pixel a pixel"
+dfl-mirror-usb,,,343,33,351,319,2104,coincide con dfl-editor-usb-d
+dfl-mirror-lsb,,,343,151,469,319,2093,coincide con dfl-editor-lsb-d
+dfl-editor-sel-bw-tema-aurora,225,3525,343,33,351,319,2103,la celda BW seleccionada no mueve la meseta
+dfl-editor-sel-high-tema-aurora,225,3525,343,33,351,319,2103,la celda HIGH seleccionada no mueve la meseta
+dfl-editor-tx,,,343,41,343,303,959,en TX la meseta cambia de ancho/extremo: la fixture mantiene TX (requires-radio para validar la logica de RF)
+dfl-editor-interaction,,,343,34,353,320,2103,tras la interaccion la meseta queda dentro de 1 px de la de reposo
+dfl-editor-rotary0,,,343,33,351,319,2103,rueda en 0: meseta de reposo
+dfl-editor-reset,,,343,17,297,281,2090,"tras Reset la meseta se corre (filtro por defecto), el ancho cambia: 281 px"
+dfl-usb-d,,,,302,306,4,4,"pagina DFL de #173: no dibuja la meseta del editor inline (el color acento solo aparece en 4 px en 302..306, y=329)"
+dfl-lsb-d,,,,302,306,4,4,idem dfl-usb-d
