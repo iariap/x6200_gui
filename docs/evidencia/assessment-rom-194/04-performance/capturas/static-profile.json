@@ -1,0 +1,455 @@
+{
+  "unit": 198,
+  "layer": "HOST",
+  "coverage": "REAL",
+  "method": "Lectura estática del árbol congelado c888308e (src/, lv_conf.h, rootfs/). Los tamaños de buffer son cuentas exactas sobre los tipos del código; los bytes por frame y los wakeups/s son ESTIMACIONES con fórmula y supuesto declarados, separadas de las medidas de PERF-01..05. No se ejecutó ni modificó firmware.",
+  "candidate": "c888308eede71205605c06383432ee7e165f202e",
+  "render_path": [
+    {
+      "file": "src/main.c",
+      "lines": "76-77",
+      "fact": "DISP_BUF_LINES=128, DISP_BUF_SIZE=800*128=102400 px; buffer único (lv_disp_draw_buf_init(&disp_buf, buf, NULL, ...)) en main.c:495."
+    },
+    {
+      "file": "lv_conf.h",
+      "lines": "27",
+      "fact": "LV_COLOR_DEPTH 32: 4 bytes/px."
+    },
+    {
+      "file": "lv_conf.h",
+      "lines": "81",
+      "fact": "LV_DISP_DEF_REFR_PERIOD 50 ms (tope de 20 FPS de refresco LVGL)."
+    },
+    {
+      "file": "lv_conf.h",
+      "lines": "96-107",
+      "fact": "LV_TICK_CUSTOM 1 sobre clock_gettime/CLOCK_MONOTONIC; el hilo de tick usleep(5 ms)+lv_tick_inc(5) ya no existe (comentario en main.c:634-637)."
+    },
+    {
+      "file": "lv_conf.h",
+      "lines": "52",
+      "fact": "LV_MEM_SIZE 48 KiB de pool LVGL."
+    },
+    {
+      "file": "src/spectrum.c",
+      "lines": "428",
+      "fact": "spectrum_set_refresh_period/refresh_counter: el redibujo se difiere al hilo de GUI y se salta frames según refresh_period."
+    },
+    {
+      "file": "src/waterfall.c",
+      "lines": "504,580",
+      "fact": "ECO fija refresh_period=4; la cascada rasteriza una fila por refresco y respeta refresh_counter."
+    },
+    {
+      "file": "src/dsp.cpp",
+      "lines": "108-119",
+      "fact": "spectrum_fps_ms=1000/15, waterfall_fps_ms=1000/25; SPECTRUM_NFFT=800, WATERFALL_NFFT=512, RADIO_SAMPLES=512 (src/dsp.h:31-32, src/radio.h:16)."
+    }
+  ],
+  "buffers": [
+    {
+      "symbol": "buf[DISP_BUF_SIZE]",
+      "where": "src/main.c:87",
+      "bytes": 409600,
+      "basis": "800*128 px * 4 B (LV_COLOR_DEPTH 32)",
+      "measured": false
+    },
+    {
+      "symbol": "spectrum_psd",
+      "where": "src/dsp.cpp:111",
+      "bytes": 3200,
+      "basis": "800 float",
+      "measured": false
+    },
+    {
+      "symbol": "spectrum_psd_filtered",
+      "where": "src/dsp.cpp:112",
+      "bytes": 3200,
+      "basis": "800 float",
+      "measured": false
+    },
+    {
+      "symbol": "spectrum_dec_buf",
+      "where": "src/dsp.cpp:116",
+      "bytes": 3200,
+      "basis": "400 cfloat (2 float)",
+      "measured": false
+    },
+    {
+      "symbol": "waterfall_psd",
+      "where": "src/dsp.cpp:118",
+      "bytes": 2048,
+      "basis": "512 float",
+      "measured": false
+    },
+    {
+      "symbol": "buf_filtered",
+      "where": "src/dsp.cpp:122",
+      "bytes": 4096,
+      "basis": "512 cfloat",
+      "measured": false
+    },
+    {
+      "symbol": "spectrum_avg_psd",
+      "where": "src/dsp.cpp:106 (AveragedPSD 512->800)",
+      "bytes": 14848,
+      "basis": "psd 512*4 + averaged 800*4 + positions 800*8 + offsets 800*4",
+      "measured": false
+    },
+    {
+      "symbol": "waterfall_avg_psd",
+      "where": "src/dsp.cpp:107 (AveragedPSD 512->512)",
+      "bytes": 10240,
+      "basis": "psd 512*4 + averaged 512*4 + positions 512*8 + offsets 512*4",
+      "measured": false
+    },
+    {
+      "symbol": "dsp_static_total",
+      "where": "src/dsp.cpp",
+      "bytes": 40832,
+      "basis": "suma de los siete buffers DSP de arriba",
+      "measured": false
+    },
+    {
+      "symbol": "tx_player.ptr",
+      "where": "src/tx_player.c:108",
+      "bytes": 4096,
+      "basis": "int16_t ptr[1024*2] en stack",
+      "measured": false
+    },
+    {
+      "symbol": "WSPR decode thread stack",
+      "where": "src/dialog_wspr.c:218-224",
+      "bytes": 8388608,
+      "basis": "pthread_attr_setstacksize(8 << 20); stack virtual, no RSS",
+      "measured": false
+    },
+    {
+      "symbol": "remote client out buffer",
+      "where": "src/remote_server.cpp:101,118,225",
+      "bytes": 32768,
+      "basis": "OUT_SIZE 32 KiB por cliente, hasta MAX_CLIENTS=6",
+      "measured": false
+    }
+  ],
+  "timers_periodic": [
+    {
+      "file": "src/wifi.cpp",
+      "lines": "84,371-373",
+      "period_ms": 30,
+      "wakeups_per_s": 33.3,
+      "persistent": true,
+      "fact": "wifi_power_setup() crea loop_timer SIEMPRE, también con wifi_enabled=false; el callback sólo hace g_main_context_iteration(..., FALSE). Es el timer periódico más rápido del reposo."
+    },
+    {
+      "file": "src/clock.c",
+      "lines": "224",
+      "period_ms": 500,
+      "wakeups_per_s": 2.0,
+      "persistent": true,
+      "fact": "show_time cada 500 ms."
+    },
+    {
+      "file": "src/clock.c",
+      "lines": "227",
+      "period_ms": 200,
+      "wakeups_per_s": 5.0,
+      "persistent": true,
+      "fact": "check_time_sync_cb cada 200 ms."
+    },
+    {
+      "file": "src/info.c",
+      "lines": "167",
+      "period_ms": 2000,
+      "wakeups_per_s": 0.5,
+      "persistent": true,
+      "fact": "bt_state_timer_cb cada 2 s."
+    },
+    {
+      "file": "src/spot_marks.c",
+      "lines": "277",
+      "period_ms": 1000,
+      "wakeups_per_s": 1.0,
+      "persistent": true,
+      "fact": "timer_cb de spot marks cada 1 s."
+    },
+    {
+      "file": "src/cluster_column.c",
+      "lines": "280-287,440",
+      "period_ms": 250,
+      "wakeups_per_s": 4.0,
+      "persistent": "pausado si la columna está oculta/off",
+      "fact": "timer_cb se autopausa (lv_timer_pause) si no hay nada que dibujar; se reanuda al mostrarse."
+    },
+    {
+      "file": "src/dialog_recorder.c",
+      "lines": "341,356",
+      "period_ms": 30,
+      "wakeups_per_s": 33.3,
+      "persistent": "mientras el diálogo está abierto",
+      "fact": "update_level_cb cada 30 ms aun sin grabar; destruct_cb borra el timer."
+    },
+    {
+      "file": "src/dialog_js8.c",
+      "lines": "2019,2148",
+      "period_ms": "5 / 250",
+      "wakeups_per_s": "200 / 4",
+      "persistent": "mientras JS8 está abierto",
+      "fact": "wf_timer cada 5 ms para mirar el reloj; tx_timer cada 250 ms."
+    },
+    {
+      "file": "src/dialog_sstv.c",
+      "lines": "844",
+      "period_ms": 30,
+      "wakeups_per_s": 33.3,
+      "persistent": "mientras SSTV está abierto",
+      "fact": "ui_timer cada 30 ms."
+    },
+    {
+      "file": "src/dialog_wefax.c",
+      "lines": "47,1178",
+      "period_ms": 30,
+      "wakeups_per_s": 33.3,
+      "persistent": "mientras WeFax está abierto",
+      "fact": "preview_timer cada 30 ms."
+    },
+    {
+      "file": "src/dialog_navtex.c",
+      "lines": "38,515",
+      "period_ms": 50,
+      "wakeups_per_s": 20.0,
+      "persistent": "mientras NavTex está abierto",
+      "fact": "ui_timer cada 50 ms."
+    },
+    {
+      "file": "src/dialog_ft8.c",
+      "lines": "241,875",
+      "period_ms": 250,
+      "wakeups_per_s": 4.0,
+      "persistent": "mientras FT8/FT4 está abierto",
+      "fact": "UDP_POLL_MS 250."
+    },
+    {
+      "file": "src/dialog_cw_kbd.c",
+      "lines": "29,433",
+      "period_ms": 100,
+      "wakeups_per_s": 10.0,
+      "persistent": "mientras CW kbd está abierto",
+      "fact": "TIMER_MS 100."
+    },
+    {
+      "file": "src/dialog_wifi.c",
+      "lines": "444,592",
+      "period_ms": "1000 / 100",
+      "wakeups_per_s": "1 / 10",
+      "persistent": "mientras WiFi está abierto",
+      "fact": "refresh AP 1 s y status 100 ms."
+    },
+    {
+      "file": "src/dialog_propagation.c",
+      "lines": "58,790,798",
+      "period_ms": 1000,
+      "wakeups_per_s": 1.0,
+      "persistent": "mientras Propagation está abierto",
+      "fact": "tick_timer 1 s + worker sweep_thread (usleep 20 ms/200 ms en el barrido)."
+    },
+    {
+      "file": "src/screen_rec.c",
+      "lines": "47,439",
+      "period_ms": 125,
+      "wakeups_per_s": 8.0,
+      "persistent": "sólo grabando pantalla",
+      "fact": "SCREEN_REC_FPS 8."
+    },
+    {
+      "file": "src/backlight.c",
+      "lines": "68",
+      "period_ms": "brightness_timeout*1000",
+      "wakeups_per_s": "one-shot",
+      "persistent": false,
+      "fact": "timer de un disparo (set_repeat_count 1) para apagar la luz."
+    }
+  ],
+  "threads": [
+    {
+      "file": "src/radio.c",
+      "lines": "625,318-330",
+      "fact": "radio_thread: lee x6200_flow_read y duerme 15 ms sólo cuando llegó un paquete; el bloqueo del read es de la librería externa. Con paquetes a 15 ms el DSP corre a la cadencia de src/dsp.cpp (15/25 fps de spectrum/waterfall)."
+    },
+    {
+      "file": "src/audio.c",
+      "lines": "107-120,150-170",
+      "fact": "audio_init_thread (detached) + mixer_setup_thread (detached, corre amixer/ALSA); PulseAudio threaded mainloop."
+    },
+    {
+      "file": "src/voice.c",
+      "lines": "225-234",
+      "fact": "hilo de voz con pthread_cond_wait: duerme sin costo en reposo."
+    },
+    {
+      "file": "src/remote_server.cpp",
+      "lines": "967-1048,1229",
+      "fact": "server_thread detached; poll(-1) sin clientes, 50 ms con clientes; estado cada 200 ms y frames de spectrum cada 100 ms a suscriptores."
+    },
+    {
+      "file": "src/wfview_server.c",
+      "lines": "547",
+      "fact": "net_thread sólo si /mnt/wfview.conf lo habilita (wfview_server_init es no-op por defecto)."
+    },
+    {
+      "file": "src/tx_player.c",
+      "lines": "100-130",
+      "fact": "hilo/stream de TX digital; no se ejecuta en RX."
+    },
+    {
+      "file": "src/cw_encoder.c",
+      "lines": "211-223",
+      "fact": "hilo de encoder CW con prioridad/sched param; se cancela y join en cw_encoder_stop()."
+    },
+    {
+      "file": "src/dialog_wspr.c",
+      "lines": "218-224,670",
+      "fact": "decode_thread con stack de 8 MiB + cycle_thread; sólo con WSPR abierto."
+    },
+    {
+      "file": "src/scheduler.cpp",
+      "lines": "23-70",
+      "fact": "cola de 64 items con mutex; scheduler_work() se ejecuta en el hilo de GUI en cada vuelta del lazo, así que un callback lento bloquea el render."
+    }
+  ],
+  "io": [
+    {
+      "file": "src/main.c",
+      "lines": "166,240-270",
+      "fact": "lastbreath cada 10 s por defecto: estado completo + open/write/fdatasync/rename en /mnt/lastbreath (lastbreath.c:152-200). X6200_LASTBREATH_SECS permite 1..3600."
+    },
+    {
+      "file": "src/params",
+      "lines": "-",
+      "fact": "params.db SQLite en /mnt; cfg_params_save_item/cfg_band_params_save_item escriben al cambiar settings/banda (visto en QEMU al fijar freq/mode)."
+    },
+    {
+      "file": "rootfs/usr/sbin/x6200_daemon",
+      "lines": "14-16",
+      "fact": "log de la GUI en /tmp/x6200_log.txt (tmpfs); el wrapper x6200_daemon lo mueve a /mnt/app_logs sólo al terminar el proceso, sin rotación en caliente."
+    },
+    {
+      "file": "rootfs/etc/init.d/S96webserver",
+      "lines": "8-14",
+      "fact": "x6100_webserver (Python) residente con --db /mnt/params.db, HTTP 80 y HTTPS 443; no medido en QEMU_USER."
+    },
+    {
+      "file": "src/remote_server.cpp",
+      "lines": "562-572",
+      "fact": "log_rev() hace opendir(/mnt/field/logs) como mucho cada STATE_MS/2 (100 ms) por cliente de estado; es I/O de directorio en DATA."
+    }
+  ],
+  "services_rootfs": [
+    {
+      "script": "S30dbus",
+      "process": "dbus-daemon",
+      "measured": false
+    },
+    {
+      "script": "S40network",
+      "process": "ifup -a (one-shot)",
+      "measured": false
+    },
+    {
+      "script": "S45network-manager",
+      "process": "NetworkManager",
+      "measured": false
+    },
+    {
+      "script": "S48sntp",
+      "process": "sntp/ntp (one-shot)",
+      "measured": false
+    },
+    {
+      "script": "S49ntp",
+      "process": "ntpd",
+      "measured": false
+    },
+    {
+      "script": "S50alsa",
+      "process": "alsactl restore (one-shot)",
+      "measured": false
+    },
+    {
+      "script": "S50pulseaudio",
+      "process": "pulseaudio --system --daemonize --exit-idle-time=-1",
+      "measured": false
+    },
+    {
+      "script": "S50sshd",
+      "process": "sshd",
+      "measured": false
+    },
+    {
+      "script": "S94btcat",
+      "process": "btcat (pty sobre /dev/ttyS2)",
+      "measured": false
+    },
+    {
+      "script": "S96webserver",
+      "process": "x6100_webserver (Python)",
+      "measured": false
+    }
+  ],
+  "estimates": [
+    {
+      "name": "full_screen_bytes",
+      "value": 1536000,
+      "unit": "bytes",
+      "formula": "800*480 px * 4 B (LV_COLOR_DEPTH 32)",
+      "assumption": "un flush que cubra toda la pantalla"
+    },
+    {
+      "name": "draw_buffer_fill_bytes",
+      "value": 409600,
+      "unit": "bytes",
+      "formula": "800*128 px * 4 B",
+      "assumption": "un llenado del draw buffer parcial"
+    },
+    {
+      "name": "full_screen_fills",
+      "value": 4,
+      "unit": "fills",
+      "formula": "ceil(480/128)",
+      "assumption": "un redibujo completo necesita 4 llenados"
+    },
+    {
+      "name": "spectrum_invalidation_bytes_per_frame",
+      "value": 528000,
+      "unit": "bytes/FTS frame",
+      "formula": "132000 px * 4 B (perfil del gate natural)",
+      "assumption": "cada píxel invalidado se transfiere una vez; no es un flush medido"
+    },
+    {
+      "name": "waterfall_invalidation_bytes_per_row",
+      "value": 784000,
+      "unit": "bytes/row",
+      "formula": "196000 px * 4 B",
+      "assumption": "ídem"
+    },
+    {
+      "name": "clock_invalidation_bytes_per_tick",
+      "value": 63360,
+      "unit": "bytes/500 ms",
+      "formula": "15840 px * 4 B",
+      "assumption": "ídem"
+    },
+    {
+      "name": "idle_wakeups_static_sum",
+      "value": 41.8,
+      "unit": "wakeups/s",
+      "formula": "33.3 (wifi 30 ms) + 5 (clock 200 ms) + 2 (clock 500 ms) + 1 (spot) + 0.5 (info 2 s)",
+      "assumption": "sin apps abiertas, cluster column off; no incluye otros eventos/timers one-shot"
+    }
+  ],
+  "limitations": [
+    "No es un perfil de CPU del Cortex-A7 ni una medición de energía: es lectura de código y aritmética.",
+    "Los bytes por frame suponen LV_COLOR_DEPTH 32 para el framebuffer; el panel puede usar otro formato en el flush real.",
+    "Los servicios residentes del rootfs no se midieron (no hay kernel/init en QEMU_USER ni se usó la radio)."
+  ]
+}

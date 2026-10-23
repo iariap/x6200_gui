@@ -1,0 +1,51 @@
+{
+   "partitiontable": {
+      "label": "dos",
+      "id": "0x00000000",
+      "device": "clone-buildroot/build/images/sdcard.img",
+      "unit": "sectors",
+      "sectorsize": 512,
+      "partitions": [
+         {
+            "node": "clone-buildroot/build/images/sdcard.img1",
+            "start": 2048,
+            "size": 65536,
+            "type": "c",
+            "bootable": true
+         },{
+            "node": "clone-buildroot/build/images/sdcard.img2",
+            "start": 67584,
+            "size": 1048576,
+            "type": "83"
+         }
+      ]
+   }
+}
+--- sfdisk -d
+label: dos
+label-id: 0x00000000
+device: clone-buildroot/build/images/sdcard.img
+unit: sectors
+sector-size: 512
+
+clone-buildroot/build/images/sdcard.img1 : start=        2048, size=       65536, type=c, bootable
+clone-buildroot/build/images/sdcard.img2 : start=       67584, size=     1048576, type=83
+--- fdisk
+Disk clone-buildroot/build/images/sdcard.img: 545 MiB, 571473920 bytes, 1116160 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x00000000
+
+Device                                   Boot Start     End Sectors  Size Id Type
+clone-buildroot/build/images/sdcard.img1 *     2048   67583   65536   32M  c W95 FAT32 (LBA)
+clone-buildroot/build/images/sdcard.img2      67584 1116159 1048576  512M 83 Linux
+--- parted -m print
+BYT;
+/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sdcard.img:571MB:file:512:512:msdos::;
+1:1049kB:34.6MB:33.6MB:fat16::boot, lba;
+2:34.6MB:571MB:537MB:ext4::;
+--- file rootfs
+clone-buildroot/build/images/rootfs.ext2: Linux rev 1.0 ext4 filesystem data, UUID=79bb870e-5334-47c8-a825-3f1510b356ed, volume name "rootfs" (extents) (large files) (huge files)
+clone-buildroot/build/images/boot.vfat:   DOS/MBR boot sector, code offset 0x3c+2, OEM-ID "mkfs.fat", sectors/cluster 4, reserved sectors 4, root entries 512, Media descriptor 0xf8, sectors/FAT 64, sectors/track 32, heads 4, sectors 65536 (volumes > 32 MB), serial number 0x6416a1e8, label: "BOOT       ", FAT (16 bit)

@@ -1,0 +1,81 @@
+---HEAD---
+c888308eede71205605c06383432ee7e165f202e
+---BRANCH---
+* (HEAD detached at c888308e) c888308e DFL: el editor inline ya no se cierra al cambiar de modo en la misma familia (regresion de #183) + el gate de contratos no pasa como verde si no evaluo (#193)
++ assessment/195-evidence     c888308e (/home/pablo/desa/x6200/assessment-194/wt-assessment-195) [origin/assessment/rom-194] DFL: el editor inline ya no se cierra al cambiar de modo en la misma familia (regresion de #183) + el gate de contratos no pasa como verde si no evaluo (#193)
+  assessment/rom-194          c888308e [origin/assessment/rom-194] DFL: el editor inline ya no se cierra al cambiar de modo en la misma familia (regresion de #183) + el gate de contratos no pasa como verde si no evaluo (#193)
+  main                        e1476ece [origin/main] Bump version
+---LOG---
+commit c888308eede71205605c06383432ee7e165f202e
+Author:     Pablo Iaria <iariap@gmail.com>
+AuthorDate: Wed Oct 21 15:06:32 2026 -0300
+Commit:     GitHub <noreply@github.com>
+CommitDate: Wed Oct 21 15:06:32 2026 -0300
+
+    DFL: el editor inline ya no se cierra al cambiar de modo en la misma familia (regresion de #183) + el gate de contratos no pasa como verde si no evaluo (#193)
+    
+    * DFL #182: el editor inline fija su familia al abrirse (no se cierra al cambiar de modo dentro de la familia)
+    
+    El editor inline (pagina C) se abre directo por el long press fisico de DFL,
+    por la celda Grafico y por el control remoto, sin pasar por A/B: la unica pieza
+    de estado que el subsistema de presets no tenia sincronizada era la familia
+    vigente. Asi, el primer cambio de modo con el editor abierto se comparaba
+    contra "sin familia" y se leia como familia nueva, con lo que el editor se
+    contraia y la barra saltaba a Favoritos (un cambio USB-D <-> LSB-D, que es la
+    MISMA familia segun el contrato de #183, cerraba el editor).
+    
+    Lo encontro el gate de determinismo del arnes (fixtures dfl-mirror-lsb/usb de
+    #182), que corria rojo en el trunk sin que el CI lo note: el job de contratos
+    reporta BLOCKED como verde y el PR de #183 no llevaba los fixtures de #184.
+    
+    buttons_dfl_graph_open() centraliza la carga de la pagina C y la sincronizacion
+    de familia; dfl_inline_expand() la usa.
+    
+    * CI: el job de contratos no puede quedar verde si el gate no evaluo (y la evidencia del fix del espejo)
+    
+    El paso de reporte del job UI Quality Contracts solo fallaba con status == "FAIL",
+    asi que un contracts.json BLOCKED ("no evaluado": el arnes no pudo renderizar un
+    escenario) pasaba el job como verde. Prueba: el run 39644351915 (#191) tiene ese job
+    en success con el artefacto ui-contracts diciendo BLOCKED por dfl-mirror-lsb.
+    
+    Ahora solo pasa un PASS limpio, o los estados que el header del workflow ya declara
+    legitimos (REVIEW REQUIRED / INCONCLUSIVE). La semantica documentada no cambia.
+    
+    Verificado con el cuerpo exacto del paso sobre payloads reales (el BLOCKED del
+    artefacto, el PASS de #183, un FAIL, REVIEW REQUIRED, INCONCLUSIVE y el archivo
+    ausente): docs/evidencia/2026-10-21-dflmirror/ci-hueco/.
+    
+    Incluye la evidencia de la corrida del fix del espejo (docs/evidencia/2026-10-21-dflmirror/)
+    y el hallazgo fundado en docs/HALLAZGOS.md 62 (la biseccion #182 -> #183, el artefacto
+    del CI y los gates).
+    
+    * Harness: el fixture del espejo corta en la causa (el cambio de modo de la misma familia no puede cerrar el editor)
+    
+    El chequeo de pixeles de dfl-editor-mirror reportaba el sintoma aguas abajo
+    ('el handle LOW no esta dibujado en x=37') cuando lo que pasaba era que el panel
+    ya no estaba: el editor se cerraba y la barra cambiaba de pagina. La aserción
+    nueva, en el paso 6 del mismo fixture, exige que tras un cambio de modo de la
+    MISMA familia (#183: 'no se toca la pagina') el editor siga abierto y la barra
+    siga en C, y corta ahi con la causa.
+    
+    Corrida sobre el arbol de la revision que rompio (6666806e) imprime el mensaje
+    nuevo (expanded=0, pagina=1) en vez del sintoma: la aserción reproduce el defecto
+    en su causa. Con el fix, el gate de determinismo sigue en PASS para los 197
+    fixtures y los dos del espejo dan el mismo PNG byte-identico de siempre
+    (07c37a57..., f2565125...).
+    
+    * Evidencia: el conteo real de fixtures del gate (199), la aserción del arnés y la matriz final
+    
+    Corrige el conteo (199 fixtures/escenarios, no 197), agrega la corrida de la
+    matriz sobre el ultimo commit de codigo (45bcb383: todo ok, el banco QEMU
+    BLOCKED con su preflight real) y deja el contracts del HEAD como el artefacto
+    de ab/contracts-fix.json.
+    
+    * Evidencia: el SKIP razonado del cross-compile ARM (el pkgconf del toolchain no resuelve el sysroot sin el recetario del banco)
+---LVGLGITLINK---
+160000 commit 74d0a816a440eea53e030c4f1af842a94f7ce3d3	lvgl
+---SUBMODULES---
+ 74d0a816a440eea53e030c4f1af842a94f7ce3d3 lvgl (v8.3.11)
+---DIFF-STAT-CANDIDATE---
+---REMOTE---
+https://github.com/iariap/x6200_gui.git

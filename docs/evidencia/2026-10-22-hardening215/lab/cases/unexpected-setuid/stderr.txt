@@ -1,0 +1,1 @@
+  reason: the package does not carry the audited setuid inventory (got: bin/busybox -rwsr-xr-x 0/0;usr/libexec/dbus-daemon-launch-helper -rwsr-x--- 0/101;usr/libexec/h215-extra -rwsr-xr-x 0/0;usr/libexec/ssh-keysign -rws--x--x 0/0;)

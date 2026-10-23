@@ -1,0 +1,50 @@
+[02:24:53Z] ===== FASE B #199 — QA físico remoto RX (HR-01..06) =====
+[02:24:53Z] salida: /home/pablo/desa/x6200/assessment-194/fase-b/faseB-tip-2
+[02:24:56Z] radio_ip=192.168.0.236 ✓
+[02:24:56Z] --- preparación: cliente de control ARM -> /tmp/x6200-remote ---
+[02:24:57Z]   cliente ya presente ✓
+[02:24:57Z]   get inicial: {"t":"state","vfo":"A","freq":7105008,"freq_bg":7160008,"mode":"LSB","band":"40m SSB","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":0,"pre":0,"att
+[02:24:57Z] --- HR-01: exclusividad, identidad y snapshot (solo lectura) ---
+[02:24:57Z]   conexiones SSH ajenas (no de 192.168.0.195): 0
+    == identidad ==
+    boot_id=cdd42e40-075b-485a-b644-1acd2d3b5b7b
+    uptime=15563.34
+    kernel=6.1.82
+    gui_pid=323
+    daemon_pid=312
+    gui_md5=3b22a03a3b7850e5c546c564125d0eb0
+    gui_size=13412248
+    boot_identity=[User]	(10.148, +10148)	 boot_identity: fuente: a576d48d9994efd3e28b9f1438fa7b24 (x6200_gui) 	(in main.c line #143)
+    == montajes ==
+    /dev/mmcblk0p2 on / type ext4 (rw,relatime)
+    /dev/mmcblk0p3 on /mnt type ext4 (rw,relatime)
+    == lastbreath ==
+    lastbreath v=1 up_s=15558 up_ms=15558280 clean=0 boot=cdd42e40 radio=RX tx=0 app=home bat_mv=8600 ext_mv=10800 cap=90 chg=1 ev=0/17/0 last=refresh wus=21723 msg=Time is synchronized with NTP
+    
+    == crashlog ==
+    0
+    == espacio ==
+    Filesystem                Size      Used Available Use% Mounted on
+    /dev/root               487.6M    233.3M    218.5M  52% /
+    /dev/mmcblk0p3            3.0G     43.3M      3.0G   1% /mnt
+[02:24:59Z] --- HR-02: disponibilidad y baseline física ---
+[02:25:23Z]   captura home-before ✓
+[02:27:05Z]   verifica-radio OK ✓
+[02:27:05Z] --- HR-03: navegación RX verificable (8 apps, 20 s c/u) ---
+[02:27:53Z]   Settings: abierto, capturado, cerrado ✓
+[02:28:42Z]   BT: abierto, capturado, cerrado ✓
+[02:29:30Z]   WiFi: abierto, capturado, cerrado ✓
+[02:30:19Z]   GPS: abierto, capturado, cerrado ✓
+[02:31:09Z]   SSTV: abierto, capturado, cerrado ✓
+[02:31:58Z]   WeFax: abierto, capturado, cerrado ✓
+[02:32:48Z]   CW: abierto, capturado, cerrado ✓
+[02:33:36Z]   FT8: abierto, capturado, cerrado ✓
+[02:33:36Z] --- HR-04: QSY reversible 20 repeticiones ---
+[02:33:36Z]   F0=7105008
+[02:34:41Z]   QSY reversible: 20/20 volvieron a 7105008
+[02:34:41Z] --- HR-05: estabilidad y recursos 60 min RX ---
+[03:35:12Z]   serie: 60 muestras
+[03:35:12Z] --- HR-06: cierre y restauración ---
+[03:35:12Z]   freq restaurada a 7105008 ✓
+[03:35:37Z]   estado final capturado ✓
+[03:35:37Z] ===== FIN HR-01..06. HW-02..HW-08 requieren instrumentos y autorización específica (TX aparte) =====

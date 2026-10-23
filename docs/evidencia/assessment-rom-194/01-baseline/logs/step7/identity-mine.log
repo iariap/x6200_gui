@@ -1,0 +1,132 @@
+# paso 7 #195 — artefactos mine
+# host: Linux 7.2.8-200.fc44.x86_64; python 3.14.7
+sdcard.img: bytes=571473920 sha256=d0ff4435ad1d068e25bf2c357a4e93478463b187e7745a9a54844488e44e33a5 mtime=2026-10-21T20:53:21Z
+rootfs.tar: bytes=242790400 sha256=7c26c76b6fc27bc12dc8d5e012e51d5c2c0568fa72a8e02cad5432dfcd36a2dd mtime=2026-10-21T20:53:21Z
+rootfs.ext4: bytes=536870912 sha256=9365b52f9aef33e0623ae8271aaf415483fe72e1afbc8ef99f93e15437bc620a mtime=2026-10-21T20:53:19Z
+boot.vfat: bytes=33554432 sha256=914f07eb00d1e5afee56ab795ce6b7b1d4410d774a3534881da494319c30b17d mtime=2026-10-21T20:53:21Z
+u-boot-sunxi-with-spl.bin: bytes=556112 sha256=dd96b0ca1eda2c98b318ed35f284d873e64eca795a51f1d9b944115a77de0381 mtime=2026-10-21T20:39:16Z
+zImage: bytes=5567760 sha256=660c94c6f7231e7dc262fefb295aae1a8dfcf9b9c2b46cdc1eced2c3296bcc14 mtime=2026-10-21T20:48:23Z
+sun8i-r16-x6200.dtb: bytes=26544 sha256=4d73f8a5d5f846c21e4ac30550a5811443a01666f9ee57880b5316e78627cc38 mtime=2026-10-21T20:48:23Z
+
+$ /usr/bin/python3 /home/pablo/desa/x6200/assessment-194/clone-gui/tools/verifica-firmware-port.py --tar /home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/rootfs.tar
+[cwd=/home/pablo/desa/x6200/assessment-194]
+OK: /home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/rootfs.tar es el firmware del port (ELF32 ARM, 13407624 B, 3/3 marcas)
+[exit=0]
+# gate #86 exit=0
+
+$ sh /home/pablo/desa/x6200/assessment-194/clone-gui/tools/fuente-md5.sh /home/pablo/desa/x6200/assessment-194/clone-gui
+[cwd=/home/pablo/desa/x6200/assessment-194]
+964193ae9306b5127845cec44a57d52c
+[exit=0]
+# fuente-md5 checkout=964193ae9306b5127845cec44a57d52c staged=None
+# tar -xOf rootfs.tar ./usr/sbin/x6200_gui exit=0 stderr=
+
+$ debugfs -R dump /usr/sbin/x6200_gui /tmp/art195-9lp70w1h/x6200_gui.from-ext4 /home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/rootfs.ext4
+[cwd=/home/pablo/desa/x6200/assessment-194]
+[stderr]
+debugfs 1.47.3 (8-Jul-2025)
+[exit=0]
+# x6200_gui (tar): bytes=13407624 md5=1f998c46909307397525c975a712adfd sha256=7e2e9331c4cbc51727a098996d98e263c45dd57cb8fff8d1f2aea2964c3849c5
+# x6200_gui (ext4): bytes=13407624 md5=1f998c46909307397525c975a712adfd sha256=7e2e9331c4cbc51727a098996d98e263c45dd57cb8fff8d1f2aea2964c3849c5
+
+$ file /tmp/art195-9lp70w1h/x6200_gui.from-tar
+[cwd=/home/pablo/desa/x6200/assessment-194]
+/tmp/art195-9lp70w1h/x6200_gui.from-tar: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, stripped
+[exit=0]
+
+$ readelf -h /tmp/art195-9lp70w1h/x6200_gui.from-tar
+[cwd=/home/pablo/desa/x6200/assessment-194]
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 03 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - GNU
+  ABI Version:                       0
+  Type:                              DYN (Position-Independent Executable file)
+  Machine:                           ARM
+  Version:                           0x1
+  Entry point address:               0x24d8c
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          13406464 (bytes into file)
+  Flags:                             0x5000400, Version5 EABI, hard-float ABI
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         10
+  Size of section headers:           40 (bytes)
+  Number of section headers:         29
+  Section header string table index: 28
+[exit=0]
+
+$ readelf -d /tmp/art195-9lp70w1h/x6200_gui.from-tar
+[cwd=/home/pablo/desa/x6200/assessment-194]
+
+Dynamic section at offset 0xcbae24 contains 54 entries:
+  Tag        Type                         Name/Value
+ 0x00000001 (NEEDED)                     Shared library: [liblv_drivers.so]
+ 0x00000001 (NEEDED)                     Shared library: [libaether_x6200_control.so.0]
+ 0x00000001 (NEEDED)                     Shared library: [libliquid.so]
+ 0x00000001 (NEEDED)                     Shared library: [libft8.so]
+ 0x00000001 (NEEDED)                     Shared library: [libjpeg.so.8]
+ 0x00000001 (NEEDED)                     Shared library: [libfftw3f.so.3]
+ 0x00000001 (NEEDED)                     Shared library: [libnm.so.0]
+ 0x00000001 (NEEDED)                     Shared library: [libgio-2.0.so.0]
+ 0x00000001 (NEEDED)                     Shared library: [libdbus-glib-1.so.2]
+ 0x00000001 (NEEDED)                     Shared library: [libdbus-1.so.3]
+ 0x00000001 (NEEDED)                     Shared library: [libgobject-2.0.so.0]
+ 0x00000001 (NEEDED)                     Shared library: [libglib-2.0.so.0]
+ 0x00000001 (NEEDED)                     Shared library: [libsqlite3.so.0]
+ 0x00000001 (NEEDED)                     Shared library: [libpng16.so.16]
+ 0x00000001 (NEEDED)                     Shared library: [libsndfile.so.1]
+ 0x00000001 (NEEDED)                     Shared library: [libudev.so.1]
+ 0x00000001 (NEEDED)                     Shared library: [libpulse-simple.so.0]
+ 0x00000001 (NEEDED)                     Shared library: [libpulse.so.0]
+ 0x00000001 (NEEDED)                     Shared library: [libasound.so.2]
+ 0x00000001 (NEEDED)                     Shared library: [libspeexdsp.so.1]
+ 0x00000001 (NEEDED)                     Shared library: [libdrm.so.2]
+ 0x00000001 (NEEDED)                     Shared library: [liblvgl.so]
+ 0x00000001 (NEEDED)                     Shared library: [libxkbcommon.so.0]
+ 0x00000001 (NEEDED)                     Shared library: [libstdc++.so.6]
+ 0x00000001 (NEEDED)                     Shared library: [libm.so.6]
+ 0x00000001 (NEEDED)                     Shared library: [libgcc_s.so.1]
+ 0x00000001 (NEEDED)                     Shared library: [libc.so.6]
+ 0x00000001 (NEEDED)                     Shared library: [ld-linux-armhf.so.3]
+ 0x0000000c (INIT)                       0x1be00
+ 0x0000000d (FINI)                       0x1c7f7c
+ 0x00000019 (INIT_ARRAY)                 0xcc3280
+ 0x0000001b (INIT_ARRAYSZ)               52 (bytes)
+ 0x0000001a (FINI_ARRAY)                 0xcc32b4
+ 0x0000001c (FINI_ARRAYSZ)               4 (bytes)
+ 0x00000004 (HASH)                       0x1b0
+ 0x6ffffef5 (GNU_HASH)                   0x2298
+ 0x00000005 (STRTAB)                     0x6654
+ 0x00000006 (SYMTAB)                     0x2344
+ 0x0000000a (STRSZ)                      23127 (bytes)
+ 0x0000000b (SYMENT)                     16 (bytes)
+ 0x00000015 (DEBUG)                      0x0
+ 0x00000003 (PLTGOT)                     0xccb000
+ 0x00000002 (PLTRELSZ)                   7608 (bytes)
+ 0x00000014 (PLTREL)                     REL
+ 0x00000017 (JMPREL)                     0x1a048
+ 0x00000011 (REL)                        0xcce0
+ 0x00000012 (RELSZ)                      54120 (bytes)
+ 0x00000013 (RELENT)                     8 (bytes)
+ 0x6ffffffb (FLAGS_1)                    Flags: PIE
+ 0x6ffffffe (VERNEED)                    0xc910
+ 0x6fffffff (VERNEEDNUM)                 13
+ 0x6ffffff0 (VERSYM)                     0xc0ac
+ 0x6ffffffa (RELCOUNT)                   5969
+ 0x00000000 (NULL)                       0x0
+[exit=0]
+# /etc/fstab exit=0 ext4_mmcblk0p3=True
+# <file system>	<mount pt>	<type>	<options>	<dump>	<pass>
+/dev/root	/		ext2	rw,noauto	0	1
+proc		/proc		proc	defaults	0	0
+devpts		/dev/pts	devpts	defaults,gid=5,mode=620,ptmxmode=0666	0	0
+tmpfs		/dev/shm	tmpfs	mode=0777	0	0
+tmpfs		/tmp		tmpfs	mode=1777	0	0
+tmpfs		/run		tmpfs	mode=0755,nosuid,nodev	0	0
+sysfs		/sys		sysfs	defaults	0	0
+/dev/mmcblk0p3	/mnt		ext4	rw		0	2
+
+# S01create_data exit=0 'DATA ya existe'=True

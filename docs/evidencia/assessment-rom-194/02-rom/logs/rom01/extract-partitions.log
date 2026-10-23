@@ -1,0 +1,9 @@
+914f07eb00d1e5afee56ab795ce6b7b1d4410d774a3534881da494319c30b17d  /home/pablo/desa/x6200/assessment-194/scratch-196/bootfs/p1-boot.vfat
+9365b52f9aef33e0623ae8271aaf415483fe72e1afbc8ef99f93e15437bc620a  /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/p2-rootfs.ext4
+097ce942b1e8eb582798f0f947e5d73a9010429798d170c405fce75599a50d74  /home/pablo/desa/x6200/assessment-194/scratch-196/bootfs/uboot-8k.bin
+914f07eb00d1e5afee56ab795ce6b7b1d4410d774a3534881da494319c30b17d  /home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/boot.vfat
+9365b52f9aef33e0623ae8271aaf415483fe72e1afbc8ef99f93e15437bc620a  /home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/rootfs.ext2
+dd96b0ca1eda2c98b318ed35f284d873e64eca795a51f1d9b944115a77de0381  /home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/u-boot-sunxi-with-spl.bin
+p1_equals_boot.vfat=yes
+p2_equals_rootfs.ext2=yes
+uboot_at_8k_equals=yes

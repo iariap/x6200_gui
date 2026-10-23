@@ -1,0 +1,5 @@
+# carga del host (loadavg) antes/despues del banco
+antes: 7.57 7.78 6.52 9/2685 1833587
+despues: 11.06 8.67 6.90 16/2765 1861731
+# gcc: gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)
+# nproc: 16

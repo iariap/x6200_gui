@@ -1,0 +1,7 @@
+cd53815bfd32ee869bc19bace099ce92279e2b4293ec02639d47838fd2ce7180
+2026-10-21T21:04:21.832081326Z
+x6200-buildroot
+[{"Type": "bind", "Source": "/home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree", "Destination": "/t", "Mode": "", "RW": true, "Propagation": "rprivate"}]
+["QEMU_CPU=cortex-a7", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "TZ=UTC", "LANG=en_US.utf8"]
+--- banco ajeno (solo lectura)
+running 2026-10-21T17:25:57.988433284Z x6200-buildroot

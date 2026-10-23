@@ -1,0 +1,27 @@
+# Prueba negativa del chequeo estatico: cada mutacion tiene que ser un FALLO.
+
+## 1. quitar el texto 'Auto Tune: restored' de src/autotune_ui.c
+  textos: 8 CW + 8 multimodo | long_action_items: 37 entradas | ACTION_ATUNE=129 | pins CW: 3 | fixtures: 9
+  FALLO: falta el texto exacto "Auto Tune: restored" en src/autotune_ui.c
+exit=1
+
+## 2. tocar el nucleo CW (src/autotune.c)
+  textos: 8 CW + 8 multimodo | long_action_items: 37 entradas | ACTION_ATUNE=129 | pins CW: 3 | fixtures: 9
+  FALLO: src/autotune.c cambio (md5 b69059ee969f26bfc0c1e838adc241db != 30814c17da9761b73bcce6423343ffcf): el nucleo CW de #190 no se toca; si el cambio es deliberado, actualiza el pin en el mismo PR y explica por que
+exit=1
+
+## 3. reintroducir el texto viejo 'Auto Tune: CW/CWR only'
+  textos: 8 CW + 8 multimodo | long_action_items: 37 entradas | ACTION_ATUNE=129 | pins CW: 3 | fixtures: 9
+  FALLO: falta el texto exacto "Auto Tune: mode unsupported" en src/autotune_ui.c
+  FALLO: src/autotune_ui.c todavia ofrece "Auto Tune: CW/CWR only": con AM/SAM y USB/LSB soportados, el rechazo por modo es "Auto Tune: mode unsupported"
+exit=1
+
+## 4. devolver el fixture autotune-notcw.scn
+  textos: 8 CW + 8 multimodo | long_action_items: 37 entradas | ACTION_ATUNE=129 | pins CW: 3 | fixtures: 9
+  FALLO: autotune-notcw.scn sigue existiendo: AM ya esta soportado, asi que su premisa ("Auto Tune: CW/CWR only") es falsa; el rechazo vigente es el del modo digital
+exit=1
+
+## estado final (sin mutaciones)
+  textos: 8 CW + 8 multimodo | long_action_items: 37 entradas | ACTION_ATUNE=129 | pins CW: 3 | fixtures: 9
+  contrato estatico de Auto Tune (CW v2 + multimodo) OK
+exit=0

@@ -1,0 +1,63 @@
+== home-rx-r1 2026-10-21T23:22:00Z ==
+  window home-rx-r1 rc=0 samples=60
+== home-rx-get1hz-r1 2026-10-21T23:23:14Z ==
+== home-rx-r1 2026-10-21T23:25:10Z ==
+  window home-rx-r1 rc=0 samples=60
+== home-rx-get1hz-r1 2026-10-21T23:26:24Z ==
+  window home-rx-get1hz-r1 rc=0 samples=60
+== settings-r1 2026-10-21T23:27:39Z ==
+  window settings-r1 rc=0 samples=60
+== dfl-editor-r1 2026-10-21T23:28:54Z ==
+  window dfl-editor-r1 rc=0 samples=60
+== recorder-idle-r1 2026-10-21T23:30:10Z ==
+  window recorder-idle-r1 rc=0 samples=60
+== cw-decoder-r1 2026-10-21T23:31:25Z ==
+  window cw-decoder-r1 rc=0 samples=60
+== prop-open-r1 2026-10-21T23:32:40Z ==
+  window prop-open-r1 rc=0 samples=60
+== prop-sweep-r1 2026-10-21T23:33:55Z ==
+  window prop-sweep-r1 rc=0 samples=60
+== prop-cancel-r1 2026-10-21T23:35:09Z ==
+  window prop-cancel-r1 rc=0 samples=60
+== home-rx-get5hz-r1 2026-10-21T23:36:27Z ==
+  window home-rx-get5hz-r1 rc=0 samples=60
+== home-rx-r2 2026-10-21T23:37:42Z ==
+  window home-rx-r2 rc=0 samples=60
+== home-rx-get1hz-r2 2026-10-21T23:38:56Z ==
+  window home-rx-get1hz-r2 rc=0 samples=60
+== settings-r2 2026-10-21T23:40:11Z ==
+  window settings-r2 rc=0 samples=60
+== dfl-editor-r2 2026-10-21T23:41:26Z ==
+  window dfl-editor-r2 rc=0 samples=60
+== recorder-idle-r2 2026-10-21T23:42:42Z ==
+  window recorder-idle-r2 rc=0 samples=60
+== cw-decoder-r2 2026-10-21T23:43:57Z ==
+  window cw-decoder-r2 rc=0 samples=60
+== prop-open-r2 2026-10-21T23:45:11Z ==
+  window prop-open-r2 rc=0 samples=60
+== prop-sweep-r2 2026-10-21T23:46:26Z ==
+  window prop-sweep-r2 rc=0 samples=60
+== prop-cancel-r2 2026-10-21T23:47:41Z ==
+  window prop-cancel-r2 rc=0 samples=60
+== home-rx-get5hz-r2 2026-10-21T23:48:58Z ==
+  window home-rx-get5hz-r2 rc=0 samples=60
+== home-rx-r3 2026-10-21T23:50:13Z ==
+  window home-rx-r3 rc=0 samples=60
+== home-rx-get1hz-r3 2026-10-21T23:51:27Z ==
+  window home-rx-get1hz-r3 rc=0 samples=60
+== settings-r3 2026-10-21T23:52:41Z ==
+  window settings-r3 rc=0 samples=60
+== dfl-editor-r3 2026-10-21T23:53:56Z ==
+  window dfl-editor-r3 rc=0 samples=60
+== recorder-idle-r3 2026-10-21T23:55:12Z ==
+  window recorder-idle-r3 rc=0 samples=60
+== cw-decoder-r3 2026-10-21T23:56:26Z ==
+  window cw-decoder-r3 rc=0 samples=60
+== prop-open-r3 2026-10-21T23:57:41Z ==
+  window prop-open-r3 rc=0 samples=60
+== prop-sweep-r3 2026-10-21T23:58:55Z ==
+  window prop-sweep-r3 rc=0 samples=60
+== prop-cancel-r3 2026-10-22T00:00:10Z ==
+  window prop-cancel-r3 rc=0 samples=60
+== home-rx-get5hz-r3 2026-10-22T00:01:27Z ==
+  window home-rx-get5hz-r3 rc=0 samples=60

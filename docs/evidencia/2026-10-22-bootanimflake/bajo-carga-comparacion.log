@@ -1,0 +1,5 @@
+# BASE=35bad790 | N=30 por version y escenario |  09:22:18 up 9 days, 21:56,  1 user,  load average: 6.52, 13.32, 9.66
+A runner ocupado (hogs=16, opts=''): OLD 10/30 fallos | NEW 0/30 fallos
+B runner muy ocupado, test en 2 cores (hogs=32, opts='taskset -c 0-1'): OLD 10/30 fallos | NEW 0/30 fallos
+C nice 19 + 24 hogs (hogs=24, opts='nice -n 19'): OLD 29/30 fallos | NEW 0/30 fallos
+D taskset 1 core + nice 19 + 24 hogs (hogs=24, opts='taskset -c 0 nice -n 19'): OLD 30/30 fallos | NEW 0/30 fallos

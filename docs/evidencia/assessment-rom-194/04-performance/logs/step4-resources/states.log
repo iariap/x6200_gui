@@ -1,0 +1,32 @@
+  requested=home-rx observed_app= ax={} lastbreath_app=home
+  requested=home-rx-get1hz observed_app= ax={} lastbreath_app=home
+  requested=home-rx observed_app= ax={} lastbreath_app=home
+  requested=home-rx-get1hz observed_app= ax={} lastbreath_app=home
+  requested=settings observed_app=Settings ax={} lastbreath_app=Settings
+  requested=dfl-editor observed_app= ax={} lastbreath_app=DFLEditor
+  requested=recorder-idle observed_app=Recorder ax={} lastbreath_app=Recorder
+  requested=cw-decoder observed_app=CW ax={"cw": 1, "wpm": 15, "rx_wpm": 15, "dec": 1, "busy": 0, "sent": 0, "queue": 0} lastbreath_app=CW-Kbd
+  requested=prop-open observed_app=Propagation ax={"propagation_state": "Idle", "propagation_band": "20m SSB", "propagation_plan": 5, "propagation_done": 0, "propagation_heard": 0, "propagation_snr": 0, "propagation_ladder": 0, "propagation_listening": false} lastbreath_app=Propagation
+  requested=prop-sweep observed_app=Propagation ax={"propagation_state": "Measuring", "propagation_band": "20m SSB", "propagation_plan": 5, "propagation_done": 0, "propagation_heard": 0, "propagation_snr": 0, "propagation_ladder": 0, "propagation_listening": false} lastbreath_app=Propagation
+  requested=prop-cancel observed_app=Propagation ax={"propagation_state": "Cancelled", "propagation_band": "20m SSB", "propagation_plan": 5, "propagation_done": 0, "propagation_heard": 0, "propagation_snr": 0, "propagation_ladder": 0, "propagation_listening": false} lastbreath_app=Propagation
+  requested=home-rx-get5hz observed_app= ax={} lastbreath_app=home
+  requested=home-rx observed_app= ax={} lastbreath_app=home
+  requested=home-rx-get1hz observed_app= ax={} lastbreath_app=home
+  requested=settings observed_app=Settings ax={} lastbreath_app=Settings
+  requested=dfl-editor observed_app= ax={} lastbreath_app=DFLEditor
+  requested=recorder-idle observed_app=Recorder ax={} lastbreath_app=Recorder
+  requested=cw-decoder observed_app=CW ax={"cw": 1, "wpm": 15, "rx_wpm": 15, "dec": 1, "busy": 0, "sent": 0, "queue": 0} lastbreath_app=CW-Kbd
+  requested=prop-open observed_app=Propagation ax={"propagation_state": "Idle", "propagation_band": "20m SSB", "propagation_plan": 5, "propagation_done": 0, "propagation_heard": 0, "propagation_snr": 0, "propagation_ladder": 0, "propagation_listening": false} lastbreath_app=Propagation
+  requested=prop-sweep observed_app=Propagation ax={"propagation_state": "Measuring", "propagation_band": "20m SSB", "propagation_plan": 5, "propagation_done": 0, "propagation_heard": 0, "propagation_snr": 0, "propagation_ladder": 0, "propagation_listening": false} lastbreath_app=Propagation
+  requested=prop-cancel observed_app=Propagation ax={"propagation_state": "Cancelled", "propagation_band": "20m SSB", "propagation_plan": 5, "propagation_done": 0, "propagation_heard": 0, "propagation_snr": 0, "propagation_ladder": 0, "propagation_listening": false} lastbreath_app=Propagation
+  requested=home-rx-get5hz observed_app= ax={} lastbreath_app=home
+  requested=home-rx observed_app= ax={} lastbreath_app=home
+  requested=home-rx-get1hz observed_app= ax={} lastbreath_app=home
+  requested=settings observed_app=Settings ax={} lastbreath_app=Settings
+  requested=dfl-editor observed_app= ax={} lastbreath_app=DFLEditor
+  requested=recorder-idle observed_app=Recorder ax={} lastbreath_app=Recorder
+  requested=cw-decoder observed_app=CW ax={"cw": 1, "wpm": 15, "rx_wpm": 15, "dec": 1, "busy": 0, "sent": 0, "queue": 0} lastbreath_app=CW-Kbd
+  requested=prop-open observed_app=Propagation ax={"propagation_state": "Idle", "propagation_band": "20m SSB", "propagation_plan": 5, "propagation_done": 0, "propagation_heard": 0, "propagation_snr": 0, "propagation_ladder": 0, "propagation_listening": false} lastbreath_app=Propagation
+  requested=prop-sweep observed_app=Propagation ax={"propagation_state": "Measuring", "propagation_band": "20m SSB", "propagation_plan": 5, "propagation_done": 0, "propagation_heard": 0, "propagation_snr": 0, "propagation_ladder": 0, "propagation_listening": false} lastbreath_app=Propagation
+  requested=prop-cancel observed_app=Propagation ax={"propagation_state": "Cancelled", "propagation_band": "20m SSB", "propagation_plan": 5, "propagation_done": 0, "propagation_heard": 0, "propagation_snr": 0, "propagation_ladder": 0, "propagation_listening": false} lastbreath_app=Propagation
+  requested=home-rx-get5hz observed_app= ax={} lastbreath_app=home

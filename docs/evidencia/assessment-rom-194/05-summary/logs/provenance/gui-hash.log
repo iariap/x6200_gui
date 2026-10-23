@@ -1,0 +1,5 @@
+GUI from rootfs.tar:
+7e2e9331c4cbc51727a098996d98e263c45dd57cb8fff8d1f2aea2964c3849c5  -
+1f998c46909307397525c975a712adfd  -
+fstab:
+/dev/mmcblk0p3	/mnt		ext4	rw		0	2

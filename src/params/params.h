@@ -350,7 +350,11 @@ typedef struct {
 
 extern params_t params;
 
-void params_init();
+/* Arranque fail-closed de los parametros (issue #213): devuelve false -- y en ese
+ * caso NO se dejo ningun hilo de guardado andando -- si la persistencia (DATA,
+ * params.db, esquema o migraciones) no es valida. El que llama (main.c) tiene que
+ * cortar el arranque: sin parametros validos no se inicializa radio ni PTT. */
+bool params_init(void);
 
 /* Writes the changed parameters now (the saver also runs on its own timer) */
 void params_flush();

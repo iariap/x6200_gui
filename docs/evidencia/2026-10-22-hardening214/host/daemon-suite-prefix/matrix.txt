@@ -1,0 +1,21 @@
+
+== caso: backoff ==
+  FAIL: backoff fue: 
+  FAIL: no informó el código de salida
+  FAIL: no informó el reinicio
+  FAIL: no usó el fallback date +%s
+-- backoff: FAIL
+
+== caso: mntabsent ==
+  FAIL: escribió bajo /mnt: /tmp/x6200-daemon-4HYpZH/root/mnt/app_logs/x6200_log_2026-10-22_00-00-00.txt
+  FAIL: no quedó log en /tmp
+  FAIL: sin diagnóstico en stderr
+-- mntabsent: FAIL
+
+== caso: instant10 ==
+  FAIL: 828 invocaciones en 10 s (>3)
+  FAIL: delays en la ventana: 
+-- instant10: FAIL
+
+============ resumen ============
+  3 casos, 3 fallos

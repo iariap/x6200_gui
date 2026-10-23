@@ -10,10 +10,14 @@
 #   x6200_r1cbu_<version>.tgz     the in-place update: what S02update() looks for
 #                                 on the DATA partition (/mnt) and unpacks over /
 #                                 (built by make_update_tgz.sh, which needs root)
+#   x6200_r1cbu_<version>.tgz.sha256  the sidecar the updater demands next to the
+#                                 package before touching anything (issue #215)
 #   SHA256SUMS                    both of the above
 #
 # and verifies: the image's root filesystem is clean (e2fsck), the update tarball
-# carries the same GUI binary as the image, and the boot scripts are inside.
+# carries the same GUI binary as the image, the boot scripts are inside, the
+# sidecar matches the package, and (with BUILDROOT_S02UPDATE=<checkout>) that the
+# S02update is the same file in this repo and in AetherX6200Buildroot.
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
@@ -70,9 +74,33 @@ fi
 echo "    mismo binario GUI que la imagen"
 echo "    S02update (el que aplica la actualización) está dentro"
 
+echo "==> verificando el sidecar del paquete"
+[ -f "$OUT/x6200_r1cbu_$VER.tgz.sha256" ] || {
+    echo "falta $OUT/x6200_r1cbu_$VER.tgz.sha256 (lo arma make_update_tgz.sh)" >&2
+    exit 1
+}
+( cd "$OUT" && sha256sum -c "x6200_r1cbu_$VER.tgz.sha256" ) >/dev/null || {
+    echo "el sidecar no coincide con el tgz" >&2
+    exit 1
+}
+echo "    $(cut -d' ' -f1 < "$OUT/x6200_r1cbu_$VER.tgz.sha256")  el S02update exige este sidecar junto al tgz"
+
 cp -n "$IMG" "$OUT/$(basename "$IMG")" 2>/dev/null || true
 ( cd "$OUT" && sha256sum "$(basename "$IMG")" "x6200_r1cbu_$VER.tgz" > SHA256SUMS )
 
+echo "==> paridad del updater (mismo archivo en GUI y Buildroot)"
+# El gate de release: el S02update del overlay y el de la imagen de Buildroot
+# tienen que ser el mismo archivo. Sin el checkout de Buildroot a mano se saltea
+# acá (lo corre `check_updater_parity.sh` en la integración), pero el release no
+# se publica sin la paridad: ver docs/TESTING.md.
+if [ -n "${BUILDROOT_S02UPDATE:-}" ]; then
+    "$HERE/check_updater_parity.sh" "$BUILDROOT_S02UPDATE"
+else
+    echo "    SKIP: falta BUILDROOT_S02UPDATE con el checkout (o la ruta) del S02update de Buildroot." >&2
+    echo "    Un SKIP visible no es la paridad: la integración corre el gate con la ruta explícita." >&2
+fi
+
 echo "==> listo"
-ls -lh "$OUT"/*.img "$OUT"/x6200_r1cbu_*.tgz "$OUT"/SHA256SUMS | awk '{print "    " $5 "\t" $9}'
+ls -lh "$OUT"/*.img "$OUT"/x6200_r1cbu_*.tgz "$OUT"/x6200_r1cbu_*.tgz.sha256 "$OUT"/SHA256SUMS |
+    awk '{print "    " $5 "\t" $9}'
 cat "$OUT/SHA256SUMS" | sed 's/^/    /'

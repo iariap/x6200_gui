@@ -1,0 +1,80 @@
+
+== 1) compilacion host (-std=c11 -Wall -Wextra -Werror) ==
+ok: renderer, backend, handoff, animador, volcado, mediciones, shim y 6 binarios deterministas compilan sin avisos
+
+== 2) tests unitarios (modelo, layout, raster, framebuffer) ==
+  (raster) area sucia maxima tras la intro: 17500 px de 384000 (4.6%)
+renderer_test: 15002 comprobaciones, 0 fallos
+fb_test: 132 comprobaciones, 0 fallos
+
+== 3) cesion del framebuffer (procesos reales, identidad por /proc/<pid>/exe) ==
+boot_splash: pid 3513017 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+handoff_test: 45 comprobaciones, 0 fallos
+
+== 4) sanitizers (ASan + UBSan) ==
+SKIP: este entorno no puede linkear los sanitizers con cc:
+      /usr/bin/ld.bfd: cannot find /usr/lib64/libasan.so.8.0.0: No such file or directory
+/usr/bin/ld.bfd: cannot find /usr/lib64/libubsan.so.1.0.0: No such file or directory
+collect2: error: ld returned 1 exit status
+
+== 5) el binario REAL contra un /dev/fb0 sintetico (shim LD_PRELOAD) ==
+ok: 16bpp line_length=1024 (819200 bytes) rgb: cuadro 240 identico byte a byte al volcado independiente
+ok: 16bpp line_length=960 (768000 bytes) rgb: cuadro 240 identico byte a byte al volcado independiente
+ok: 32bpp line_length=1920 (1536000 bytes) rgb: cuadro 240 identico byte a byte al volcado independiente
+ok: 32bpp line_length=1920 (1536000 bytes) bgr: cuadro 240 identico byte a byte al volcado independiente
+ok: el animador loguea su sello de fuentes (x6200_bootanim: fuente desconocido)
+ok: cuadro 32 (2688 ms) identico byte a byte al volcado independiente
+ok: cuadro 45 (3780 ms) identico byte a byte al volcado independiente
+ok: entre 29.988 y 30.072 ms solo cambiaron el pie (texto) y la lluvia
+ok: los 30 s son solo texto (cuadros 357/358/500 identicos al volcado)
+ok: paleta del contrato (con destello), cajas del ciclo respetadas y ultimo cuadro conservado
+ok: vivo y animando pasado 30 s virtuales; SIGUSR1 -> salida en 1 ms con codigo 0
+ok: paleta del contrato (con destello), cajas del ciclo respetadas y ultimo cuadro conservado
+ok: SIGTERM en el arranque -> salida en 6 ms con codigo 0, cuadro del revelado intacto
+ok: paleta del contrato (con destello), cajas del ciclo respetadas y ultimo cuadro conservado
+ok: SIGTERM despues de los 30 s -> salida en 1 ms con codigo 0, cuadro intacto
+ok: consumo real 20 ms de CPU en 3002 ms de reloj (0%): sin busy-wait
+ok: resolucion que no es 480x800 -> exit 0 sin escribir en el framebuffer
+ok: bpp no soportado (24) -> exit 0 sin escribir en el framebuffer
+ok: xoffset distinto de cero -> exit 0 sin escribir en el framebuffer
+ok: yoffset distinto de cero -> exit 0 sin escribir en el framebuffer
+ok: line_length demasiado corto -> exit 0 sin escribir en el framebuffer
+ok: smem_len insuficiente -> exit 0 sin escribir en el framebuffer
+ok: mmap fallido -> exit 0 sin escribir en el framebuffer
+ok: sin /dev/fb0 reintenta y sale 0 en silencio (1905 ms)
+ok: framebuffer sin permisos -> exit 0 con aviso en stderr
+render_bench: 2201 cuadros (184800 ms de animacion), pantalla 800x480
+presupuesto: BA_FRAME_MS=84ms, BA_MAX_DIRTY=12, max dirty.count observado=7, overflow=0
+
+fase                    cuadros dirty px avg dirty px max  dirty % max bytes/cuadro render us/cuadro
+intro                        10        10850        17500        4.56%        21700           29.8
+primer cuadro (full)          1       384000       384000      100.00%       768000         1496.6
+lluvia                      204         9576        12940        3.37%        19153           23.5
+beams                       518        13786        16755        4.36%        27573           35.5
+decrypt                      59        14476        16755        4.36%        28952           42.0
+delayed (lluvia, >30s)     1409        10599        16440        4.28%        21199           25.9
+
+(pixeles sucios = suma de las areas de dirty; bytes/cuadro = esos pixeles a 16 bpp;
+ render us/cuadro = modelo + raster puro, sin blit ni hardware; RAM del raster: 1 buffer fijo)
+
+== 6) script de init S01bootanim ==
+ok: sintaxis, permiso de ejecucion, invocacion del contrato, sin killall ni GUI
+ok: start vuelve en 6 ms (contrato: <100 ms, sin sleeps) y deja el PIDFILE
+ok: singleton (un solo animador, un solo start-stop-daemon -S)
+ok: stop termina el animador, limpia el PIDFILE y no usa killall
+ok: un PIDFILE con un PID ajeno no se senaliza ni se mata
+ok: PIDFILE corrupto, vacio o ausente: stop limpia y no rompe
+ok: arrancar/detener dos veces deja todo limpio y nunca toca la GUI
+ok: sin ejecutable el init no bloquea el boot (exit 0 + aviso en stderr)
+
+== 7) integracion (rootfs, prune, handoff en la GUI, CMake, workflow) ==
+ok: S95gui ausente del rootfs del port, S20gui unico y S01boot_time preservado
+ok: el prune sigue sacando el S95gui del vendor y no toca S01bootanim
+ok: handoff antes de drm_init y del primer lv_timer_handler, marcas nuevas, screen_rec_flush intacto
+ok: CMake integra el animador y boot_splash, con -std=c11 -Wall -Wextra -Werror e install en sbin
+ok: el gate esta integrado en .github/workflows/boot-rootfs.yml
+ok: sin LVGL, subprocesos, shell, red, radio, SQLite ni threads; banderas volatile sig_atomic_t
+ok: el limite de cuadros vive solo en -DBOOTANIM_TEST (el preprocesado de produccion no lo ve) y CMake no lo define
+ok: la instrumentacion de sondeos vive solo en -DBOOTANIM_TEST (el preprocesado de produccion no la ve)
+
+PASS (parcial): boot anim neo-retro (#192) - unitarios + binario real con fb sintetico + init + integracion; ASan/UBSan SKIP por falta de soporte del compilador

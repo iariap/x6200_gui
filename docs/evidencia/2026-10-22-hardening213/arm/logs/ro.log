@@ -1,0 +1,9 @@
+    /mnt remontado RO
+    exit=78
+    ok: exit 78 (EX_CONFIG)
+    ok: sin CRASHLOG SIGSEGV
+    ok: la base quedo intacta (mismos bytes)
+    ok: el mensaje de persistencia esta en la salida
+    ok: no llego a inicializar el control remoto
+    ok: el motivo del rechazo es el esperado (is mounted read-only)
+    sha256 base: bc18ba10ca503b518771fa9c9a5649644f675d7ff0b8c87d03940969f64c2867 -> bc18ba10ca503b518771fa9c9a5649644f675d7ff0b8c87d03940969f64c2867

@@ -46,6 +46,22 @@ bool boot_splash_stop(void);
  * /usr/sbin/x6200_bootanim. */
 void boot_splash_set_paths(const char *pidfile, const char *exe);
 
+#ifdef BOOTANIM_TEST
+/* Instrumentacion del banco (issue #192, seccion 5): solo existe bajo
+ * -DBOOTANIM_TEST, la macro que unicamente define el gate del host. Cuenta los
+ * sondeos de la espera para que el test afirme QUE ESPERO (y que NO espero),
+ * en vez de cuanto tardo: el tiempo de pared no es determinista en un runner de
+ * CI cargado. En produccion no queda NADA de esto (el gate lo verifica sobre el
+ * preprocesado).
+ *
+ *   boot_splash_test_waits()      sondeos (llamadas a bs_sleep_ms)
+ *   boot_splash_test_waited_ms()  milisegundos pedidos a esos sondeos
+ */
+void         boot_splash_test_reset_waits(void);
+unsigned int boot_splash_test_waits(void);
+unsigned int boot_splash_test_waited_ms(void);
+#endif /* BOOTANIM_TEST */
+
 #ifdef __cplusplus
 }
 #endif

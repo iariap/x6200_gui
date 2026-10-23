@@ -1,0 +1,39 @@
+== build reproducible del par integrado (log completo: state/worktrees/x6200/next-211-combined-lab/logs/build.log, 45 MB) ==
+comando: ./br_config.sh && cd build && make -j12   (X6200_defconfig del tip Buildroot)
+env: X6200_GUI_OVERRIDE_SRCDIR=/workspace_gui (worktree GUI tip :ro), X6200_FUENTE_MD5=1c3577610cdee7059a6d17769fe52e85
+buildroot upstream: cc34b5b2 (arbol 2023.02.11, gitlink del repo)
+dl privado: copia del dl de la imagen x6200-buildroot (169 entradas) + red para:
+  >>> boost 1.80.0 Downloading
+  >>> espeak 1.48.04 Downloading
+  >>> libpthread-stubs 0.4 Downloading
+  >>> libdrm 2.4.115 Downloading
+  >>> speexdsp 1.2.1 Downloading
+  >>> x6100-webserver 2f842f28540d54153fcc49dd2573b5c8107cbb0b Downloading
+
+paquetes construidos: 1565
+líneas de error NO ignoradas: 0
+
+artefactos:
+-rw-r--r--. 1 root root  33554432 Oct 22 14:36 boot.vfat
+-rw-r--r--. 1 root root 536870912 Oct 22 14:36 rootfs.ext2
+-rw-r--r--. 1 root root 242821120 Oct 22 14:36 rootfs.tar
+-rw-r--r--. 1 root root 571473920 Oct 22 14:36 sdcard.img
+-rw-r--r--. 1 root root    556112 Oct 22 14:31 u-boot-sunxi-with-spl.bin
+-rw-r--r--. 1 root root   5541304 Oct 22 14:34 zImage
+
+sha256:
+f19231aaa186ff48c5326c6ac8abfd66733f60e6df549c72282f09fee50c9456  sdcard.img
+ebd02e5a7bec119f4fa81fd05699cdaf73b137a5f766c51988ca54b91cf719de  rootfs.tar
+784ce581a9800995448e69f00d00ff764e8d9328270eb50f8bb73decf3729cd6  boot.vfat
+56136aaeac972e77f7e39db477d1452cd8d40a3106b947f1369856731c6089ed  rootfs.ext2
+24065e8d83de7b0ad6569c3b03761c17cbeca50c7d9d7a1c377658d95e5e44d9  zImage
+25dc83d5e7085cd8a485599b1c972208fe49af73b98ab2e69e55880cb6064788  u-boot-sunxi-with-spl.bin
+
+binario GUI en la rootfs: e7776e227b81317e074f0998e26a459784efd47d645293acd88969678da1eb26  /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out/target/usr/sbin/x6200_gui
+sello embebido: 1c3577610cdee7059a6d17769fe52e85
+make rc=0 (log: 1)
+
+== inspección del contenedor del build ==
+ExitCode=0 OOMKilled=false StartedAt=2026-10-22T16:40:41.124953182Z FinishedAt=2026-10-22T17:36:02.14598039Z Image=x6200-buildroot:latest
+comando: cd /workspace && ./br_config.sh && cd build && make -j12
+mounts: /workspace=<clon Buildroot tip> /workspace/buildroot=<upstream cc34b5b2> /workspace/buildroot/dl=<dl propio> /workspace/build=<out privada> /root/.buildroot-ccache=<ccache privado> /workspace_gui=<worktree GUI tip :ro>

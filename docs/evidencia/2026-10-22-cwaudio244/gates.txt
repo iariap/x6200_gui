@@ -1,0 +1,188 @@
+# Gates de la corrida del factory para el #244
+#
+# Worktree: state/worktrees/x6200/cw-audio-mute-244 (rama factory/cw-audio-mute-244)
+# Fecha: 2026-10-22. Base: 35918ec6 (= tip de origin/lu2dsx/x6200-rom).
+# Fix verificado (ya en vuelo): 16976863 = rama lu2dsx/244-cw-mute = PR #247.
+# Todos los comandos se corrieron en el worktree, con el arbol en el commit que dice cada bloque.
+
+== 1) tests/native/run_native_tests.sh  (BASE 35918ec6) ==
+
+$ sh tests/native/run_native_tests.sh /tmp/opencode/244-fix/native-base
+...
+== sanitizers: NO disponibles en este toolchain (se omite) ==
+...
+== #219: radio_thread duerme en cada vuelta del sondeo ==
+In file included from .../tests/native/test_radio_thread.c:38:
+/.../radio_src/radio.c:339:1: warning: no return statement in function returning non-void [-Wreturn-type]
+  339 | }
+      | ^
+36 comprobaciones, 0 fallos
+...
+/src/params/params.c:617:1: warning: no return statement in function returning non-void [-Wreturn-type]
+...
+EXIT=0
+
+== 1b) tests/native/run_native_tests.sh  (FIX 16976863) ==
+
+$ sh tests/native/run_native_tests.sh /tmp/opencode/244-fix/native
+...
+== sanitizers: NO disponibles en este toolchain (se omite) ==
+...
+== #219: radio_thread duerme en cada vuelta del sondeo ==
+In file included from .../tests/native/test_radio_thread.c:44:
+/.../radio_src/radio.c:339:1: warning: no return statement in function returning non-void [-Wreturn-type]
+  339 | }
+      | ^
+57 comprobaciones, 0 fallos
+...
+EXIT=0
+
+# Las dos advertencias -Wreturn-type (radio_src/radio.c:339 del stage y params.c:617) estan
+# en la BASE y en el FIX: el fix no agrega ninguna observacion del compilador. Los sanitizers
+# (ASan/UBSan) no estan en este toolchain: el runner los omite y lo dice.
+
+== 2) tests/native/run_native_tests.sh --ci-parity  (FIX 16976863) ==
+
+$ sh tests/native/run_native_tests.sh --ci-parity /tmp/opencode/244-fix/ciparity
+...
+57 comprobaciones, 0 fallos
+== ci-parity: OK (build host sin lvgl/) ==
+EXIT=0
+
+== 3) python3 tests/audita-pruebas.py  (FIX 16976863) ==
+
+$ python3 tests/audita-pruebas.py
+  builds en la tabla: 237 | secciones: 14 | enlaces: 59
+  para revisar a mano (32):
+    ? 3: Que una versión **funcione** no se sostiene con "debería andar": se sostiene con corridas de prueba
+    ...
+  OK: estructura y evidencia en orden
+EXIT=0
+
+== 4) tests/run_all_tests.sh --quick  (FIX 16976863) ==
+
+$ sh tests/run_all_tests.sh --quick
+================ resumen ================
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  settings_grid: OK
+  apps_menu: OK     todas las apps del menu llegan al dispatcher que usa su boton
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (24 apps)
+  pruebas: OK     OK: estructura y evidencia en orden
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  cw_tune_feed: OK
+  autotune_v2: OK
+  build_identity: OK
+  dialog_coverage: OK     OK: 22 dialogos inertes (mock y tabla coinciden), 19 apps con fila y 6 excepciones verificadas sobre las 25 apps del barrido
+  curve_evidence: OK   PASS: 8 pruebas de swrscan_curve_evidence
+  host: OK   57 comprobaciones, 0 fallos
+  daemon: OK     all OK: 15 casos, 0 fallos
+  host_ci_parity: OK   57 comprobaciones, 0 fallos
+  db_failclosed: OK   todos los casos corrieron y afirmaron su resultado
+  qemu_apps: SKIP SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))
+  drawbuf_partial: OK   PASS: partial draw buffer renders the identical physical framebuffer (sw-rotate 90)
+  wspr: SKIP SKIP: wspr: la imagen x6200-uiharness no trae /usr/include/fftw3.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  sstv: SKIP SKIP: sstv: la imagen x6200-uiharness no trae /usr/include/sndfile.h (...)
+  wefax: SKIP SKIP: wefax: la imagen x6200-uiharness no trae /usr/include/sndfile.h (...)
+  navtex: OK   all OK
+  (omitidos: qemu_apps wspr sstv wefax js8 webserver)
+  20 OK, 0 fallos
+EXIT=0
+
+== 5) scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD <worktree>  (HEAD = FIX) ==
+
+$ /home/pablo/desa/asf/scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD \
+      /home/pablo/desa/asf/state/worktrees/x6200/cw-audio-mute-244
+==> [check] native tests (tests/native/run_native_tests.sh)
+    ok
+==> [check] check_cfg_fills
+    ok
+==> [check] check_actions
+    ok
+==> [check] check_settings_focus
+    ok
+==> [check] check_apps_menu
+    ok
+==> [check] check_app_handlers
+    ok
+==> [check] check_manual_apps
+    ok
+==> [check] check_wcag
+    ok
+==> [check] check_cw_tune_feed
+    ok
+==> [check] check_settings_grid
+    ok
+==> [check] check_autotune_v2
+    ok
+==> [check] check_dialog_coverage
+    ok
+==> [check] check_build_identity
+    ok
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [SKIP] ruff del framework A/B: sin cambios en tools/ab_testing/**/*.py
+==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/** ni tools/ui_harness/**
+==> [check] uv sync (ab_testing)
+    ok
+==> [check] x6200-ab themes
+    ok
+==> [check] x6200-ab contracts (16976863278c7302861d39d00a2ae0be8425b1db)
+    ok
+==> [SKIP] bash -n de los .sh tocados: sin cambios en tests/**/*.sh ni tools/**/*.sh
+==> [SKIP] harness determinism gate: sin cambios en tools/ui_harness/
+==> [check] banco QEMU: preflight (tools/captura-banco.sh --check)
+    BLOCKED: falta entorno (corre en el host del owner, no en el runner):
+    == comprobando el banco ==
+      docker: ok
+      imagen x6200-buildroot: ok
+      FALTA: falta el volumen x6200-build-output (build del GUI)
+      FALTA: falta el chroot (.../.vfix3): extraer el rootfs de la imagen, ver docs/TESTING.md nivel 4
+      FALTA: el chroot no parece un rootfs (sin /bin/busybox)
+      FALTA: el chroot no tiene /lib
+      python3: ok
+      PIL: ok
+      FALTA: falta tools/remote/x6200-remote (compilar con tools/remote/compila.sh)
+      buildroot: ok
+      libs del banco: ok
+    == 5 cosa(s) faltan: el banco no puede correr ==
+EXIT=0
+
+# Los SKIP son por paths (el fix toca src/radio.c, src/radio.h, src/btaudio.c/h y tests/native:
+# no toca rootfs, tools/ab_testing ni tools/ui_harness) y el banco QEMU queda BLOCKED con su
+# motivo real. Ni SKIP ni BLOCKED son "paso": el detalle esta en cada linea.
+
+== 6) Gates de ESTA rama (HEAD = 63f246a2, solo docs/*.md y docs/evidencia/**) ==
+
+# El cambio de esta rama es de documentacion: la matriz lo reporta como SKIP por paths (ninguno
+# de los checks de firmware/arnes/banco se activa) y el gate que si cubre docs/PRUEBAS.md y la
+# evidencia citada es el de run_all_tests.sh --quick (`pruebas`).
+
+$ /home/pablo/desa/asf/scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD \
+      /home/pablo/desa/asf/state/worktrees/x6200/cw-audio-mute-244
+==> [SKIP] firmware / nativo: sin cambios en src/**, lv_conf.h, lv_drv_conf.h ni CMakeLists.txt
+==> [SKIP] inventario del arnes de host (autotune_v2 + dialog_coverage): sin cambios en src/**, tests/** ni tools/ui_harness/**
+==> [SKIP] check_build_identity: sin cambios en la identidad del build
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [SKIP] ruff del framework A/B: sin cambios en tools/ab_testing/**/*.py
+==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/** ni tools/ui_harness/**
+==> [SKIP] gates de x6200-ab (themes + contracts): sin cambios en tools/**, src/**, tests/**, los temas de la imagen ni ab-testing.yml
+==> [SKIP] bash -n de los .sh tocados: sin cambios en tests/**/*.sh ni tools/**/*.sh
+==> [SKIP] harness determinism gate: sin cambios en tools/ui_harness/
+==> [SKIP] banco QEMU: sin cambios en src/**, lv_conf.h ni tools/ui_harness/
+EXIT=0
+
+$ sh tests/run_all_tests.sh --quick
+  pruebas: OK     OK: estructura y evidencia en orden     <- incluye esta evidencia y la fila nueva de docs/PRUEBAS.md
+  host: OK   36 comprobaciones, 0 fallos                 <- la base: esta rama no toca src/
+  host_ci_parity: OK   36 comprobaciones, 0 fallos
+  (omitidos: qemu_apps wspr sstv wefax js8 webserver)
+  20 OK, 0 fallos
+EXIT=0
+
+$ .agents/hallazgos-fundados/scripts/audita-hallazgos.sh docs/HALLAZGOS.md
+resumen: 0 problemas de estructura, 8 lineas para revisar, 0 secciones con numeros sin origen
+# Las 8 lineas para revisar son las de siempre (lineas 54 y 357-609, secciones 32, 3, 10, 12 y
+# 56 del registro): la seccion 65 nueva no agrega ninguna.
+

@@ -1,0 +1,1 @@
+  reason: etc/init.d/S02update travels as '-rwxr-xr-x 1000/1000', not -rwxr-xr-x 0/0

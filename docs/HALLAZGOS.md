@@ -34,6 +34,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 13. [Actualizar la radio por WiFi](#13-actualizar-la-radio-por-wifi)
 14. [La GUI se colgaba al mandar audio](#14-la-gui-se-colgaba-al-mandar-audio)
 44. [El barrido de ROE no dibuja un valor fuera de escala](#44-el-barrido-de-roe-no-dibuja-un-valor-fuera-de-escala)
+66. [El audio de RX mudo al ir a CW: el disparo era el write del modo del VFO inactivo](#66-el-audio-de-rx-mudo-al-ir-a-cw-el-disparo-era-el-write-del-modo-del-vfo-inactivo)
 15. [Anexo A: hipótesis sin fundar (no son hallazgos)](#anexo-a-hipótesis-sin-fundar-no-son-hallazgos)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
@@ -81,6 +82,9 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 60. [El squelch del #166: la lib del control ya habilita el enable (el comentario de radio.c:611 era redundante)](#60-el-squelch-del-166-la-lib-del-control-ya-habilita-el-enable-el-comentario-de-radioc611-era-redundante)
 61. [El md5 del build no distinguia commits: `rsync -au` de Buildroot no reponia la copia (#165)](#61-el-md5-del-build-no-distinguia-commits-rsync--au-de-buildroot-no-reponia-la-copia-165)
 62. [DFL: el editor inline se cerraba al cambiar de modo dentro de la MISMA familia (y el gate que lo vio estaba rojo con el CI en verde)](#62-dfl-el-editor-inline-se-cerraba-al-cambiar-de-modo-dentro-de-la-misma-familia-y-el-gate-que-lo-vio-estaba-rojo-con-el-ci-en-verde)
+63. [La radio se desconectaba al saltar a otro perfil WiFi (DharmaNet 2.4) con un AP que falla](#63-la-radio-se-desconectaba-al-saltar-a-otro-perfil-wifi-dharmanet-24-con-un-ap-que-falla)
+64. [El audio de RX mudo al ir a CW y volver: lo que escribe la GUI y el nivel en 0 que quedó en la radio](#64-el-audio-de-rx-mudo-al-ir-a-cw-y-volver-lo-que-escribe-la-gui-y-el-nivel-en-0-que-quedó-en-la-radio)
+65. [El audio de RX mudo al ir a CW y volver: el disparo no esta identificado, y el preset del #232 no es la causa](#65-el-audio-de-rx-mudo-al-ir-a-cw-y-volver-el-disparo-no-esta-identificado-y-el-preset-del-232-no-es-la-causa)
 
 ---
 
@@ -740,8 +744,11 @@ con lo que haría falta para fundarlas.
 
 | Hipótesis | Por qué no está fundada | Qué haría falta |
 |---|---|---|
-| "El audio de recepción sale por el DSP propio del equipo, no por el camino del SoC" | No hay medición ni esquema: sólo se sabe que la recepción se escucha y que la GUI no | Esquema del equipo o medir la señal en el DSP |
+| "El audio de recepción sale por el DSP propio del equipo, no por el camino del SoC" | No hay medición ni esquema: **código** confirma una mitad (la GUI no lo lleva al parlante: `read_callback()` sólo alimenta el screen-recorder y el DSP, `src/audio.c:57-69`, y el stream de reproducción lo escribe sólo `audio_play()`, `src/audio.c:281`; ver §65), pero que el audio de recepción salga del DSP del equipo no | Esquema del equipo o medir la señal en el DSP |
 | "No suena por el parlante porque el códec del SoC no está cableado a la salida" | Se midió que la cadena está configurada y que no suena; **el porqué** no | Documentación del códec/placa o medir la salida del códec |
+| El mute del dueño del #244 lo disparó la sesión de pruebas automáticas que corría contra la radio viva (remoto/CAT, mismo camino que la perilla) | Hay medición de que 3 de 4 corridas de aceptación quedaron con `vol` 0 (§64) y código de que el remoto pasa por `radio_change_vol()` (`src/remote_server.cpp:420`), pero **no** el cruce temporal con el log de la sesión muda: los comandos del remoto no dejan una línea con el nivel | Correr el sweep con los comandos y el reloj marcados y quedarse con `/mnt/app_logs/x6200_log_*.txt` del mismo rango; o loggear el nivel aplicado en `radio_vol_apply()` |
+| El power-cycle del #244 restaura el audio porque el BASE queda en un estado interno que sólo el reset de la placa limpia | Con `vol=0` persistido el arranque de la GUI vuelve a mandar 0 (`src/radio.c:535` → registro 14), así que el arranque **no** explica la recuperación que reporta el dueño, y "reiniciar sólo la GUI" no se probó nunca | Reproducir el mute y reiniciar **sólo la GUI** (`kill $(pidof x6200_gui)`, el daemon la levanta): si con `vol` ≠ 0 el audio no vuelve ni así, el estado está dentro del BASE |
+| El flag `sql_mute`/`sql_fm_mute` del flow dice si el BASE está muteando por squelch | El flag existe y está parseado (`x6200_flow_flags_t` de `aether_radio/x6200_control/low/flow.h`) pero la GUI lo descarta: en `src/radio.c:224` es un `printf` comentado, y el flag nunca se midió en la radio | Loggear el flag por cambio de valor (dos líneas, mismo lugar del `printf` comentado) y leerlo durante un mute con `vol` ≠ 0 |
 | "Es una limitación de plataforma, no del código" | Conclusión causal; podría haber un control de mezcla o una ruta no encontrada | Probar la cadena con un sink que consuma (A2DP) y con la GUI parada |
 | "Bluetooth A2DP es el único camino audible" | No se probó: **medido** que el adaptador `hci0` está `UP` y `bluealsa` corre, pero `bluetoothctl devices` no lista **ningún** dispositivo emparejado, así que no hay sink A2DP que probar | Emparejar auriculares y medir |
 | El primer intento de `S02update` se cortó por un corte de energía | Es relato del usuario; no hay log | Log del intento / estado del equipo |
@@ -759,6 +766,14 @@ con lo que haría falta para fundarlas.
 | "La app de SWR Scan se cierra sola al terminar el barrido" (#119, defecto 2) | El cierre no está en el código del fin de barrido (§46) y no quedó el log de la GUI de esa corrida; el candidato (el `app off` del control remoto, que sí se acepta con el barrido transmitiendo) está fundado **en el código**, no en esa corrida | Correr el barrido con el log de la GUI a mano (`/tmp/x6200_log.txt` → `/mnt/app_logs/`), el `pid` de la GUI y el estado `app` del control remoto; y revisar el script de la corrida por si manda `{"cmd":"app","text":"off"}` |
 | El bucle de reinicio del CW Trainer (issue #51) se rearma en el arranque "por sí solo" | El banco no tiene camino de audio y el chroot no estaba armado, así que no se pudo medir la cadencia en el equipo | Medir en la radio el `PID` de la GUI por 150 s tras un reset (issue #15), con `key_train` en `params.db` |
 | El paso exacto por el que `hkey_put()` fuera de hilo corrompió `event_head` (issue #131), y que el trigger sea sólo el cambio de filtro | Está fundado que `hkey_put()` corría en el hilo de radio y tocaba LVGL (§56), pero **no** la escritura concreta que deja el frame muerto en la lista de eventos: el banco no tiene flow y no ejecuta `radio_tick`, y la corrupción necesita concurrencia real. Los dos crashes tienen el mismo `pc`/`lr` con contextos distintos (`on_vfo_mode_change` y `on_high_filter_change`) | Correr en la radio la receta de §56 (200 ciclos de tecla + filtro + modo + banda) con el fix y mirar `CRASHLOG`; si vuelve, guardar el log vivo completo y `/mnt/lastbreath` del momento |
+| Por qué el AP bueno `62:c9:e3:49:b2:a8` manda `deauth Reason 7` y deja de responder auth (20:39:23, 20:54:05), disparando el failover de NM (§63) | El disparador está medido; la causa no: puede ser el AP/repetidor o el driver rtw88 | Log del AP o captura de tramas en la radio; A/B con otro cliente |
+| Por qué el AP `14:eb:b6:dc:ff:6c` a veces completa el 4-way (20:54:24, lease 192.168.18.67) y a veces no (20:29:40/20:30:05, `association took too long`) (§63) | El AP es inestable; no se midió su configuración | Log del AP; comparar PSK y modo WPA |
+
+| El mute del dueño lo disparó el viaje a CW (estado del BASE) | El power-cycle lo restaura (dicho por el dueño), pero en el `params.db` de la radio el nivel de audio estaba en **0** y con `vol=0` el registro 14 va a 0: el síntoma se explica sin que el BASE tenga nada roto. No hay medición que separe las dos causas (§64) | Reproducir el mute con el nivel distinto de 0, leer el registro 14 y el 21 del BASE por I2C y comparar con el estado sano |
+| El BASE latchea el bloque de 54 registros que manda `x6200_control_idle()` cada 1000 ms | Que la función lo mande está en el código (`.x6200_ctl/src/low/control.c:480`), pero no se midió que el MCU del BASE lo acepte (son 218 bytes en una transacción I2C); si lo ignora, el registro 14 sólo se escribe cuando cambia el volumen | Leer el registro 14 por I2C después de cambiar el volumen y de un `idle()`, o capturar el bus con un analizador |
+| El re-sync de `rxvol` al salir de CW destraba el audio | Se implementó como mitigación (§64) y no se probó en la radio: reproducir el mute requiere dejar la radio muda a propósito y el dueño la está usando | Con la radio sana: nivel audible, ir a CW y volver, y ver si el audio sigue; si se mutea, correr el binario con el re-sync y comparar |
+| El rango del registro 14 es 0..100 | La GUI manda 0..100 (`VOL_MIN`/`VOL_MAX`) y el control remoto también, pero el CAT de esta GUI mapea 0..55 (`src/cat.cpp:572-574`) y la referencia del X6100 clampea a 55 (`.x6100_ref/src/radio.c:357`). Cuál es el real no se midió | Mandar 56..100 con la radio sana y medir si el nivel cambia o satura |
+| La captura del códec distingue el estado mudo (RMS 141,2 vs 2450,7) | El propio registro del 22/10 dice que con el audio funcionando la captura también dio 141,2 (`assessment-194/scratch/audio-failure-2210.md`), o sea que no hay A/B que sostenga el discriminante; el chequeo AUDIO-ALIVE de `test-ui-remote.sh` se apoya en eso | Medir la captura 5 veces en estado sano y 5 en el mudo, con el mismo `parec` y el mismo nivel de audio |
 
 **Estimaciones explícitas** (dichas como tales, no son hallazgos): el "~20 s" del banco rápido y el
 "~3 s" del diagnóstico de voz no se cronometraron con precisión; y el "~1 s" de daemon + enlace
@@ -3592,3 +3607,488 @@ fixtures del espejo *despues* del merge de #183 (no hay runs de `push` para mira
 el trigger es `pull_request` y que el run de #183 —el que si habria tenido que verlos en su base—
 traia 196 escenarios sin ellos.
 
+## 63. La radio se desconectaba al saltar a otro perfil WiFi (DharmaNet 2.4) con un AP que falla
+
+**Sintoma**: el dueño reportó "no sé por qué se desconecta cada tanto" y, en la prueba del 22/10 a las
+20:10Z, "wifi got disconnected": la radio quedó **sin red ~40 s** y volvió sola. Medido con el logger de
+10 s en la radio (`/mnt/wifi-watch4.log`) y `dmesg`:
+
+```
+20:10:11Z  dormant  (roaming: sale del AP bueno)
+20:10:21Z  dormant  (asociada al AP 14:eb:b6:dc:ff:6c)
+20:10:31Z  down     "Not connected."
+20:10:41Z  down
+20:10:52Z  up       (vuelve al AP 62:c9:e3:49:b2:a8)
+```
+
+**Causa, medida** (`dmesg`, uptime 6662→6693 s; y `/mnt/iw-event.log`):
+
+```
+$ dmesg | grep -aE "wlan0"
+[ 6662.559194] wlan0: deauthenticating from 62:c9:e3:49:b2:a8 by local choice (Reason: 3=DEAUTH_LEAVING)
+[ 6665.482223] wlan0: authenticate with 14:eb:b6:dc:ff:6c
+[ 6665.926494] wlan0: associating to AP 14:eb:b6:dc:ff:6c with corrupt probe response
+[ 6666.092241] wlan0: associated
+[ 6675.301201] wlan0: deauthenticated from 14:eb:b6:dc:ff:6c (Reason: 15=4WAY_HANDSHAKE_TIMEOUT)
+[ 6692.961136] wlan0: authenticate with 62:c9:e3:49:b2:a8
+[ 6693.591814] wlan0: associated
+
+$ tail /mnt/iw-event.log
+1792692860.566769: wlan0 (phy #0): scan started
+1792692864.123107: wlan0 (phy #0): scan finished: 2412 ... 2462, "DharmaNet"
+1792692868.897858: wlan0 (phy #0): CQM event: RSSI (-61 dBm) went above threshold
+1792692933.902284: wlan0: del station 62:c9:e3:49:b2:a8
+```
+
+Es **roaming**: hay **dos AP con el mismo SSID "DharmaNet"** — el bueno `62:c9:e3:49:b2:a8`
+(es el que usaba, `-61 dBm`) y otro `14:eb:b6:dc:ff:6c` al que NM roamea cuando el RSSI baja
+(`CQM ... went below threshold`) y **cuyo 4-way handshake falla** (`Reason: 15`), por eso la radio se
+queda sin red hasta que vuelve al AP bueno. El otro AP además responde con `corrupt probe response`.
+
+**Arreglo**: anclar la conexión al BSSID bueno en el perfil de NetworkManager (el perfil vive en el
+rootfs, `/etc/NetworkManager/system-connections/DharmaNet.nmconnection`):
+
+```
+$ sed -i '/^\[wifi\]/a bssid=62:c9:e3:49:b2:a8' DharmaNet.nmconnection
+$ grep -A2 '^\[wifi\]' DharmaNet.nmconnection
+[wifi]
+bssid=62:c9:e3:49:b2:a8
+mode=infrastructure
+$ /etc/init.d/S45network-manager restart   # Stopping NetworkManager ... done. / Starting NetworkManager ... done.
+```
+
+Backup del perfil previo: `/mnt/nm-profile-backup-201406.nmconnection`.
+
+**Verificación, medida**: tras el restart, `iw dev wlan0 link` → `Connected to 62:c9:e3:49:b2:a8`
+(y `ssid=DharmaNet`) a las 20:14Z; monitor de BSSID cada 10 s en curso. *Pendiente de confirmar en
+ventana más larga que no vuelva a roamear.*
+
+
+**Corrección (22/10 20:40Z): el lock de BSSID solo no alcanzó.** Medido: a las 20:29:29Z la radio
+volvió a roamear al AP roto y quedó `down` de **20:32:49 a 20:34:30** con `dmesg`:
+
+```
+[ 7826.669160] wlan0: authenticate with 14:eb:b6:dc:ff:6c
+[ 7827.117585] wlan0: associating to AP 14:eb:b6:dc:ff:6c with corrupt probe response
+[ 7847.797937] wlan0: authenticate with 14:eb:b6:dc:ff:6c      # segundo intento
+[ 7852.219550] wlan0: deauthenticating from 14:eb:b6:dc:ff:6c by local choice (Reason: 3)
+```
+
+El perfil seguía con `bssid=62:c9:e3:49:b2:a8` (verificado) y el chip es un **RTL8723DU** (driver
+`rtw_8723du`, USB; el mismo chip hace el Bluetooth, `uevent: DRIVER=rtw_8723du`). El driver no expone
+parámetro de roaming (`/sys/module/rtw_core/parameters/` = `debug_mask`, `disable_lps_deep`,
+`support_bf`; `/sys/module/rtw_usb/parameters/switch_usb_mode`), así que el roam viene del
+**background scan del supplicant** o del propio driver.
+
+**Segundo ajuste aplicado** (20:41Z): `bgscan=` vacío en el perfil (desactiva el background-scan del
+supplicant) + `/etc/init.d/S45network-manager restart`; el perfil quedó:
+
+```
+[wifi]
+bssid=62:c9:e3:49:b2:a8
+bgscan=
+mode=infrastructure
+ssid=DharmaNet
+```
+
+Backup previo: `/mnt/nm-profile-backup-2014xx-prebgscan.nmconnection`. Verificación en curso (monitor
+de BSSID cada 10 s + logger de la radio); **si vuelve a roamear, el roam es del driver** y el arreglo
+pasa por otro lado (p. ej. parche al `rtw_8723du` o desactivar autoconnect del perfil y conectar con
+BSSID explícito). *Esto último es hipótesis: va al anexo A hasta medirlo.*
+
+**Corrección (22/10 21:30Z): no era roaming ni el driver; era NM cambiando de perfil.**
+**Corrección del título**: decía "por roaming a un segundo AP DharmaNet"; el AP
+`14:eb:b6:dc:ff:6c` es el del SSID `DharmaNet 2.4`, el otro perfil guardado, y el salto lo hace NM,
+no el supplicant.
+
+El `tail /mnt/iw-event.log` de arriba es de las **18:14Z** (mtime 18:15:33) y de un arranque anterior:
+`/mnt/wifi-watch4.log` muestra el reinicio de `dmesg` en 18:20:28 (`[   20.059077]`), y el lock de
+BSSID se aplicó a las 20:14:59Z (log `bssid-lock-171456.log`). Ese log no documenta los eventos de
+20:10/20:29/20:54; sus eventos CQM/scan son de antes del lock.
+
+Lo que sí está en `/var/log/messages` (NM 1.40.10, arranque de 18:20) es la cadena del 20:29 y del
+20:54 (extracto; hora y mensaje):
+
+```
+$ grep -E "Activation: (starting|failed)|auto-activating|Connected to wireless|address=|association took too long|state change: activated -> failed|Config: added '(ssid|bssid|bgscan)'|wlan0: authenticate" /var/log/messages
+20:29:37 ... Activation: failed for connection 'DharmaNet'
+20:29:39 ... policy: auto-activating connection 'DharmaNet 2.4' (1a5b1a5f-...)
+20:29:39 ... Activation: starting connection 'DharmaNet 2.4' (...)
+20:29:39 ... Config: added 'ssid' value 'DharmaNet 2.4'
+20:29:39 ... Config: added 'bgscan' value 'simple:30:-70:86400'   # y no hay 'bssid'
+20:29:39 ... wlan0: authenticate with 14:eb:b6:dc:ff:6c
+20:30:05 ... Activation: (wifi) association took too long
+20:30:05 ... Activation: failed for connection 'DharmaNet 2.4'
+20:54:22 ... state change: activated -> failed (reason 'ssid-not-found')
+20:54:22 ... Activation: failed for connection 'DharmaNet'
+20:54:23 ... policy: auto-activating connection 'DharmaNet 2.4'
+20:54:23 ... wlan0: authenticate with 14:eb:b6:dc:ff:6c
+20:54:24 ... Activation: (wifi) ... Connected to wireless network "DharmaNet 2.4"
+20:54:25 ... dhcp4 (wlan0): state changed new lease, address=192.168.18.67
+20:55:03 ... Activation: failed for connection 'DharmaNet 2.4'
+20:59:23 ... policy: auto-activating connection 'DharmaNet'
+20:59:23 ... Config: added 'bssid' value '62:C9:E3:49:B2:A8'
+```
+
+Es decir: el `14:eb:b6:dc:ff:6c` **no es un segundo AP del SSID `DharmaNet`**: es el AP con el que se
+asocia el perfil **`DharmaNet 2.4`**, otro SSID y otra red (el lease es `192.168.18.67`, no
+`192.168.0.236`). El "roam" es la política de autoconexión de NM: cuando el perfil pinneado falla
+(`supplicant-timeout` a las 20:29, `ssid-not-found` a las 20:54), NM activa el otro perfil guardado.
+No hay evidencia de que `14:eb` emita el SSID `DharmaNet`.
+
+El lock de BSSID **sí funciona**. Medido a las 21:15Z, el supplicant vivo tiene una sola red, con
+`bssid` y sin `bgscan`:
+
+```
+$ gdbus call --system --dest fi.w1.wpa_supplicant1 \
+    --object-path /fi/w1/wpa_supplicant1/Interfaces/0/Networks/0 \
+    --method org.freedesktop.DBus.Properties.GetAll fi.w1.wpa_supplicant1.Network
+{'Properties': <{'ssid': <'"DharmaNet"'>, 'scan_ssid': <'1'>, 'bssid': <'62:c9:e3:49:b2:a8'>, ...
+$ gdbus call ... fi.w1.wpa_supplicant1.Interface | grep Bgscan
+'Bgscan': <''>
+```
+
+NM solo agrega `bgscan` cuando el perfil **no** tiene `bssid` (código: `nm-supplicant-config.c` de NM
+1.40.10, `nm_supplicant_config_add_bgscan()` sale si hay `bssid`; y
+`nm_supplicant_config_add_setting_wireless()` agrega `bssid`). En el log de ese arranque,
+`Config: added 'bgscan'` aparece 2 veces y las 2 son de `DharmaNet 2.4`; `Config: added 'bssid'`
+aparece 3 veces y las 3 son de `DharmaNet`:
+
+```
+$ grep -o "Config: added '[a-z_]*'" /var/log/messages* | sort | uniq -c
+      2 Config: added 'bgscan'
+      3 Config: added 'bssid'
+```
+
+El `bgscan=` del perfil pinneado era innecesario (NM no lo lee) y no era la causa. El driver
+`rtw_8723du` es el rtw88 con mac80211 (código: `mac80211.c`, `const struct ieee80211_ops rtw_ops`);
+no tiene lógica propia de join/roam, así que no hay parche de driver que hacer.
+
+**Arreglo propuesto (NO aplicado: la radio está en uso)**. Desactivar la autoconexión del perfil
+`DharmaNet 2.4`, que es el que lleva a `14:eb`/192.168.18.x:
+
+```
+$ cp -a "/etc/NetworkManager/system-connections/DharmaNet 2.4.nmconnection" \
+        "/mnt/nm-profile-backup-DharmaNet24-$(date +%Y%m%d-%H%M).nmconnection"
+$ f="/etc/NetworkManager/system-connections/DharmaNet 2.4.nmconnection"
+$ grep -q '^autoconnect=' "$f" || sed -i '/^\[connection\]/a autoconnect=false' "$f"
+$ sed -i 's/^autoconnect=.*/autoconnect=false/' "$f"
+$ grep -A4 '^\[connection\]' "$f"
+[connection]
+autoconnect=false
+id=DharmaNet 2.4
+uuid=1a5b1a5f-ad78-4998-8ecb-c1a7bf43021a
+type=wifi
+```
+
+Después, coordinado con el dueño, recargar NM (`/etc/init.d/S45network-manager restart`).
+Trade-off: `DharmaNet 2.4` deja de conectarse sola; si se usa, hay que arreglar ese AP/PSK y volver a
+habilitarla. La alternativa es borrar el perfil (con backup), pero se pierde la configuración.
+
+**Verificación**:
+
+```
+$ iw dev wlan0 link | grep -E 'Connected to|SSID|signal'
+Connected to 62:c9:e3:49:b2:a8 ...
+$ grep "auto-activating connection 'DharmaNet 2.4'" /var/log/messages
+(sin líneas nuevas después de aplicar)
+```
+
+**Nota**: el lock es **de la radio actual**: un reflash de la ROM lo pierde (el perfil está en el
+rootfs). Para que quede permanente hay que llevarlo al overlay del Buildroot (decisión del dueño).
+
+**Sin fundar (anexo A)**: por qué el AP `14:eb:b6:dc:ff:6c` falla el 4-way handshake cuando falla
+(¿repetidor o WPA3 mal configurado?), por qué a veces sí lo completa (20:54:24, lease
+`192.168.18.67`) y a veces no (20:29:40/20:30:05, `association took too long`), por qué el AP bueno
+`62:c9:e3:49:b2:a8` manda `deauth Reason 7` y deja de responder auth (20:39:23 y 20:54:05), que es el
+disparador del failover, y si el corte largo de 17:58 del mismo día (5 min 23 s, **sin deauth**, con
+`authentication ... timed out` y con BT encendido) es el mismo problema o otro.
+
+---
+
+## 64. El audio de RX mudo al ir a CW y volver: lo que escribe la GUI y el nivel en 0 que quedó en la radio
+
+**Síntoma** (reportado por el dueño, dos veces el 22/10): ir al modo CW y volver a otro modo deja
+**el audio de recepción mudo** hasta un power-cycle (issue #244). Que el power-cycle lo restaura lo
+dijo el dueño y quedó anotado en `assessment-194/scratch/audio-failure-2210.md`; la cadena
+PulseAudio/códec estaba sana en las dos mediciones de ese archivo.
+
+**Lo que la GUI le manda al BASE al entrar o salir de CW** (código). El BASE se controla por I2C
+(`/dev/i2c-0`, dirección `0x72`, registro = número de comando × 4:
+`.x6200_ctl/src/low/control.c`, `x6200_control_cmd()`). Un cambio de modo escribe esto y nada más:
+
+| Qué | Registro | Dónde |
+|---|---|---|
+| modo del VFO | `x6200_vfoa_mode` = 4 | `src/radio.c:389` (`on_vfo_mode_change`) |
+| ancho del filtro RX | `x6200_rxfilter` = 30 | `src/radio.c:443` → `set_rx_filters()` de la lib |
+| filtro de CW | `x6200_filter_cw` = 47 | idem |
+| squelch (nivel + enable) | `x6200_micsel_…_sqlthr` = 21, bits 8-15 y 24 | `src/cfg/cfg.c:441` → `src/sql_policy.c:15` |
+
+Ninguno de esos cuatro registros es un mute ni un volumen: el audio de recepción es el registro
+**14** (`x6200_rxvol`) y en este árbol sólo lo escribe el camino del volumen (`src/radio.c:689`,
+`radio_vol_apply()`), que no depende del modo.
+
+**El reenvío que propone el issue ya ocurre una vez por segundo** (código): `radio_thread()` llama a
+`x6200_control_idle()` cada `IDLE_TIMEOUT` = 1000 ms (`src/radio.c:334`) y esa función reescribe
+**los 54 registros** en una sola transacción (`.x6200_ctl/src/low/control.c:480`, `send_regs(&all_cmd,
+sizeof(all_cmd))`), registro 14 incluido. Si el mute fuera un *valor* de esos registros, ya se
+reescribe una vez por segundo; reenviar `rxvol` al salir de CW no agrega nada. (Que el BASE acepte y
+latchee ese bloque de 218 bytes **no está medido**: anexo A.)
+
+Las líneas de la lib son del checkout local `.x6200_ctl` (v0.15.3); la ROM enlaza el paquete de
+Buildroot **v0.1.0** (`rom-build/clone-buildroot/br2_external/package/aether-x6200-control/…mk:7`).
+Las dos versiones de `x6200_control_idle()` y `x6200_control_rxvol_set()` son idénticas (diff de las
+dos funciones: sin diferencias; en v0.1.0 `idle()` está en `src/low/control.c:473`).
+
+**Medido: el nivel de audio persistido estaba en 0** (22/10 21:25Z, copia del `params.db` de la
+radio):
+
+```
+$ scp root@192.168.0.236:/mnt/params.db params-radio-2125.db
+$ sqlite3 -readonly params-radio-2125.db \
+    "select name,val from params where name in ('vol','sql','spmode','key_train','comp','nr','dnf','eq_rx_en','audio_enh_preset','moni') order by name;"
+audio_enh_preset|2
+comp|1
+dnf|1
+eq_rx_en|1
+key_train|0
+moni|13
+nr|1
+spmode|0
+sql|0
+vol|0
+```
+
+`vol` es exactamente el valor que va al registro 14 (`src/radio.c:541` registra el observer y
+`radio_vol_value()` lo manda), y **0 es el valor con el que `radio_change_mute()` mutea**
+(`src/radio.c:731`). O sea: con `vol=0` y todo lo demás sano se ve el síntoma completo —silencio
+total, PulseAudio con el sink `RUNNING`, códec sin mutes y CRASHLOG 0—, sin que el BASE tenga nada
+roto.
+
+**Medido: las corridas automáticas de la UI dejaron la radio en 0 y ahí quedó** (`get` del control
+remoto, campo `vol`):
+
+```
+$ for d in ui-test-*; do printf "%-26s %s\n" "$d" "$(grep -o '"vol":[0-9]*' $d/json/get-inicial.json | head -1)"; done
+ui-test-cycle-163050       "vol":0
+ui-test-postdeploy-162111  "vol":0
+ui-test-task-164008        "vol":0
+ui-test-task-174220        "vol":14
+```
+
+Tres corridas seguidas (16:21, 16:21 y 16:40 locales = 19:21Z a 19:40Z) con el equipo a 0, y una
+cuarta a 14. Las 18 lecturas del campo `vol` en esos directorios dan 0 salvo las 6 de
+`ui-test-task-174220`, que dan 14.
+
+**Medido: el log de la sesión que quedó muda no tiene ningún error de audio**
+(`/mnt/app_logs/x6200_log_2026-10-22_21-02-59_p347_r3.txt`, 598 KB, sesión de la segunda
+reproducción). La ida y vuelta a CW está y no dispara nada:
+
+```
+[User] (5496.482) on_vfo_mode_change: Radio set vfo 1 mode=4      <- entra a CW
+[User] (5497.078) on_vfo_mode_change: Radio set vfo 1 mode=0      <- 0,6 s después, sale a LSB
+```
+
+En todo el archivo no hay una sola línea de ALSA, PulseAudio, `mixer` ni "no acepta datos".
+
+**Defecto de código, fundado en el mismo lugar**: el mute del usuario y el nivel compartían el mismo
+registro y se calculaban por *transición*, no por estado, y cada camino escribía (o no) el registro
+por su cuenta:
+
+- `radio_change_mute()` hacía `mute = !mute; rxvol_set(mute ? 0 : vol)` (toggle).
+- `radio_change_vol()` limpiaba `mute` y, si el nivel no se podía mover (tope 0 o 100), **no**
+  reenviaba el registro: la GUI quedaba diciendo "no estoy muda" con el equipo en 0.
+- `src/cat.cpp:574` y `src/remote_server.cpp:420` cambian `cfg.vol.val` sin tocar `mute`.
+- El mute por auriculares A2DP (`src/btaudio.c`) se hacía con el mismo toggle y se protegía con
+  `if (!radio_is_muted())`, así que "auriculares desconectados" sólo devolvía el audio si el flag no
+  se había desincronizado.
+
+La referencia del X6100 (`.x6100_ref/src/radio.c:365-378`) no tiene ese problema porque calcula el
+valor desde el estado (`radio_vol_refresh()`), que es el patrón que se portó acá.
+
+**Arreglo** (rama `lu2dsx/244-cw-mute`):
+
+1. `radio_vol_value()` + `radio_vol_apply()` (`src/radio.c:681,689`) son el **único** lugar que
+   decide y escribe el registro 14: `0` si está muteado el usuario (`mute`) **o** los auriculares
+   A2DP (`btaudio_speaker_muted()`), y el nivel guardado (clampeado a `VOL_MIN..VOL_MAX`) si no.
+2. `radio_change_mute()` y la perilla pasan por ahí; la perilla reenvía el registro también cuando el
+   nivel no se movió, y el observer de `cfg.vol.val` ya no usa el `and_call` (el mutex del control se
+   crea después; mismo criterio que el #166), el valor persistido se aplica al final del `radio_init`.
+3. `btaudio.c` deja de togglear el mute del usuario: el mute de BT es un flag propio
+   (`btaudio_speaker_muted()`) que se compone con el del usuario.
+4. **Mitigación del #244**: al salir de CW/CWR se re-manda el nivel (`on_cur_mode_change_vol()`,
+   `src/radio.c:744`). Es el único write de audio con formato verificado (el de la perilla) y es
+   barato (6 bytes). **No es un arreglo probado**: si el BASE queda en un estado más profundo que el
+   registro de volumen, esto no lo saca.
+
+**Verificación, medida** (host, `tests/native/run_native_tests.sh`): suite completa `EXIT=0`, y el
+stage de `radio.c` (`tests/native/test_radio_thread.c` + `radio_stubs.c`, con el `radio.c` real
+compilado por inclusión) da **57 comprobaciones, 0 fallos** (36 antes del cambio), de las cuales 21 son nuevas y cubren:
+la composición de los dos mutes, que desmutear con auriculares puestos no devuelva el altavoz, la
+perilla en el tope (reenvía el registro aunque el nivel no cambie), y el re-sync al salir de CW
+(escribe al salir, no al entrar, y no escribe 0 si no corresponde). El registro 14 se observa por el
+stub `x6200_control_rxvol_set()` (`tests/native/radio_stubs.c`).
+
+**Sin fundar (anexo A)**: qué disparó exactamente el mute del dueño; si el BASE latchea el bloque de
+54 registros de `idle()`; si el re-sync al salir de CW alcanza para destrabarlo; qué hace el BASE con
+un `rxvol` de 56 a 100; y si la captura del códec sirve para distinguir el estado mudo.
+
+---
+
+## 65. El audio de RX mudo al ir a CW y volver: el disparo no esta identificado, y el preset del #232 no es la causa
+
+**Síntoma** (reportado por el dueño, dos veces el 22/10, issue #244): ir al modo CW y volver a otro
+modo deja el audio de recepción mudo hasta un power-cycle. **El arreglo de la clase de silencio y las
+mediciones de la radio están en §64 (PR #247)**; esta sección cubre lo que ese PR deja abierto —qué
+disparó el mute— y no repite el arreglo. Evidencia de esta corrida, con los comandos y su salida:
+`docs/evidencia/2026-10-22-cwaudio244/README.md` y `docs/evidencia/2026-10-22-cwaudio244/gates.txt`.
+
+**Lo que la GUI le escribe al BASE al entrar o salir de CW** (código, base `35918ec6`). El BASE se
+controla por I2C (`/dev/i2c-0`, `0x72`; registro = comando × 4, `.x6200_ctl/src/low/control.c`,
+`x6200_control_cmd()`). Un cambio de modo escribe esto y nada más:
+
+| Qué | Registro | Dónde |
+|---|---|---|
+| modo del VFO | `x6200_vfoa_mode` = 4 | `src/radio.c:385` (`on_vfo_mode_change`) → `src/radio.c:388` |
+| ancho de filtro + filtro del modo | `x6200_rxfilter` = 30, `x6200_filter_cw` = 47 | `src/radio.c:419`, `src/radio.c:439` → `set_rx_filters()` (`.x6200_ctl/src/control.c:99`) |
+| squelch (nivel + enable) | reg 21, bits 8-15 y 24 | `src/cfg/cfg.c:441` → `src/radio.c:465` → `src/sql_policy.c:15` |
+| modo vigente + perfil de enhancement (lado DSP) | — | `src/dsp.cpp:292` (`on_cur_mode_change`) |
+
+Ninguno es un volumen ni un mute: el nivel de audio de recepción es el registro **14**
+(`x6200_rxvol`), que en esta base sólo escriben el camino del volumen (`src/radio.c:535`) y
+`radio_change_mute()` (`src/radio.c:684`).
+
+**El preset del PR #232 no es la causa** (código). El #232 (mergeado 2026-10-22T17:49:42Z) agregó
+`audio_enh_apply_mode_preset()` (`src/audio_enhancement.c:331`) y la llama desde el cambio de modo
+(`src/dsp.cpp:293`), el arranque (`src/main.c:602`) y Ajustes (`src/dialog_settings.c:398`); las dos
+reproducciones del dueño son posteriores y con la ROM `0f4f4bae`, que lo incluye. No es la causa:
+
+- `src/audio_enhancement.c` no tiene **ninguna** llamada a `x6200_control_*` (0 ocurrencias) ni a
+  ALSA/PulseAudio (`pa_*`, `snd_*`, `amixer`: 0 ocurrencias; sus includes son LVGL, cfg/subjects,
+  radio, params, math/stdlib/string y liquid).
+- Su único efecto de audio es `audio_enh_process()`, llamado sólo desde `read_callback()`
+  (`src/audio.c:62`), sobre el buffer de **captura**, antes del screen-recorder y del DSP.
+- Ese buffer no va al parlante: `read_callback()` (`src/audio.c:57-69`) escribe a
+  `audio_enh_process()`, `screen_rec_put_audio_samples()` y `dsp_put_audio_samples()`, y el stream
+  de reproducción lo escribe sólo `audio_play()` (`src/audio.c:281`), cuyos llamadores son las apps
+  de audio digital, los mensajes de voz, el recorder y `tx_player` (audio que la GUI **le manda a la
+  radio**; `src/audio.c:75`: `// Play level from app to radio (for FT8)`).
+- Con el perfil CW el camino a la ganancia es `apply_af_leveler()`, acotado a ±30 dB
+  (`src/audio_enhancement.c:246-292`): cambia nivel/limpieza, no apaga.
+
+**El reenvío de `rxvol` que pide el issue ya ocurre cada segundo** (código). `radio_thread()` llama a
+`x6200_control_idle()` cada `IDLE_TIMEOUT` = 1000 ms (`src/radio.c:334`) y esa función reescribe los
+54 registros en una transacción (`.x6200_ctl/src/low/control.c:480`), registro 14 incluido. Por eso
+la mitigación del #247 no agrega un reenvío periódico: agrega uno **inmediato después del cambio de
+modo**. Que el BASE latchee ese bloque de 218 bytes no está medido (anexo A).
+
+**Los caminos que sí pueden dejar el audio en 0** (código): `radio_change_mute()` (`src/radio.c:682`)
+hace un **toggle** y escribe 0; `radio_change_vol()` (`src/radio.c:655`) limpia `mute` y **no**
+reenvía el registro cuando el nivel no se puede mover (`if (new_val != vol)`), así que la GUI puede
+quedar diciendo "no estoy muda" con el equipo en 0. Es la clase de "silencio sin causa visible" que
+arregla el #247 (por estado, `radio_vol_apply()`), y es el único camino de la GUI que deja silencio
+total con PulseAudio, códec y log sanos. Los demás caminos del nivel salen de la perilla/teclas de
+volumen (`src/vol.c:39`, y las de los diálogos de CW: `src/dialog_cw_trainer.c:1065`,
+`src/dialog_cw_kbd.c:355`, `src/dialog_msg_cw.c:224`), del remoto (`src/remote_server.cpp:420`) y del
+CAT (`src/cat.cpp:574`).
+
+**Un cambio de modo no escribe el nivel** (código): el barrido de escritores de `cfg.vol.val` da
+`src/radio.c:667` (perilla y remoto), `src/cat.cpp:574` y `cfg/settings_manager.cpp` (Ajustes y
+remoto), y quien escribe el **registro** en 0 es `radio_change_mute()` (`src/radio.c:684`).
+Ninguno de esos caminos depende del modo. Si el mute del dueño fue el nivel, algo ajeno al viaje a
+CW lo puso en 0 en ese rato.
+
+**Lo que sí está medido** (por la sesión del #247, copiado de §64 y del cuerpo del PR; los comandos
+completos están allá):
+
+```
+$ scp root@192.168.0.236:/mnt/params.db params-radio-2125.db     # 22/10 21:25Z
+$ sqlite3 -readonly params-radio-2125.db \
+    "select name,val from params where name in ('vol','sql','spmode','key_train','comp','nr','dnf','eq_rx_en','audio_enh_preset','moni') order by name;"
+audio_enh_preset|2
+comp|1
+dnf|1
+eq_rx_en|1
+key_train|0
+moni|13
+nr|1
+spmode|0
+sql|0
+vol|0
+```
+
+y el `vol` del control remoto (`{"cmd":"get"}`) en cuatro corridas de aceptación del 22/10: 0, 0, 0 y
+14. Con `vol=0` la GUI manda 0 al registro 14, que el SDK documenta como **"Speaker volume"**
+(`aether_radio/x6200_control/control.h:43`); por ese bloque compartido pasan el audio de recepción y
+el que genera la GUI, así que un solo valor explica el silencio en las dos direcciones. **Corrección
+de una lectura del registro de evidencia del 22/10**: "la salida no suena (ni tonos)" se leyó como
+una segunda falla de la salida; con el escenario compartido es consistente con una sola causa (el
+nivel en 0) y no es prueba de una falla de hardware.
+
+**Arreglo**: no en esta rama. Está en el PR #247 (§64): `radio_vol_value()`/`radio_vol_apply()` como
+único escritor por estado, el mute de auriculares A2DP como flag propio, y el reenvío al salir de
+CW/CWR.
+
+**Verificación, medida** (del arreglo en vuelo, corrida por esta sesión sobre el commit `16976863`):
+
+```
+$ sh tests/native/run_native_tests.sh            -> EXIT=0; stage de radio.c: 57 comprobaciones, 0 fallos
+$ sh tests/native/run_native_tests.sh --ci-parity -> EXIT=0; == ci-parity: OK (build host sin lvgl/) ==
+$ sh tests/run_all_tests.sh --quick               -> EXIT=0; 20 OK, 0 fallos
+$ scripts/apps/x6200/check-matrix.sh origin/lu2dsx/x6200-rom HEAD <worktree> -> EXIT=0; 16 checks ok
+```
+
+La base (`35918ec6`) da `EXIT=0` con 36 comprobaciones en ese stage: el arreglo no agrega
+observaciones del compilador (la advertencia `-Wreturn-type` de `radio_src/radio.c:339` está en las
+dos). Los sanitizers no están en este toolchain (el runner lo dice y lo omite) y el banco QEMU queda
+BLOCKED por entorno: no son verdes.
+
+**Sin fundar (anexo A)**: qué camino puso el nivel en 0 (y si el mute del dueño fue el nivel o un
+estado interno del BASE, que es lo que separa reiniciar sólo la GUI de un power-cycle); si el BASE
+latchea el bloque de 54 registros de `idle()`; si el reenvío al salir de CW destraba un BASE ya mudo;
+el rango real del registro 14 (la GUI manda 0..100, el CAT de esta GUI mapea 0..55); si la captura
+del códec distingue el estado mudo (el propio registro tiene una lectura de RMS 141,2 con el audio
+funcionando); y si el flag `sql_mute`/`sql_fm_mute` del flow dice si el BASE está muteando.
+
+## 66. El audio de RX mudo al ir a CW: el disparo era el write del modo del VFO inactivo
+
+**Síntoma**: al entrar a CW el audio de RX (altavoz y captura del códec) queda mudo, y no vuelve con GUI restart, reboot cálido, reset GPIO del BASE, rebind de códec/card ni con ningún registro accesible por `x6200_control_*`: solo un power-cycle. Reportado por el dueño el 22/10 y 23/10.
+
+**Medido** — captura del códec (`parec` 2 s), mudo ≈ rms 141/pico 144; sano rms > 1000. Aislamiento del disparador (API remota `mode`, build `test/novfob`):
+
+```
+base LSB                 rms=1104
+entrar a CW              rms=141   <- el audio muere al ENTRAR a CW
+CW +5 s                  rms=141
+volver a LSB             rms=141
+
+build sin write del modo del VFO B (test/novfob, commit 57540eb3):
+base LSB                 rms=1079
+entrar a CW              rms=1037  <- NO muteô
+```
+
+Log del fix ya desplegado (`build c4deabb5`, md5 `80040491...`):
+
+```
+$ grep -a "sin escribir (inactivo" /tmp/x6200_log.txt | tail -3
+on_vfo_mode_change: Radio vfo 1 mode=4 sin escribir (inactivo, #244)
+on_vfo_mode_change: Radio vfo 1 mode=0 sin escribir (inactivo, #244)
+```
+
+**Causa**: el BASE apaga el audio de RX cuando recibe un write del modo de un **VFO inactivo** (el VFO B). El port escribía el modo de ambos VFO en cada cambio de modo y en `radio_init` (`subject_add_observer_and_call`); la RX es el VFO A.
+
+**Corrección de lo que decían §64 y §65**: daban el disparo por no identificado. Ahora está identificado y medido: el write del modo del VFO inactivo. El PR #252 (record/mic latcheado, blame `1737bc55`) era un bug latente real pero **no** la causa de este mute.
+
+**Arreglo** — PR #260 (mergeado): `on_vfo_mode_change` escribe siempre el VFO A y el B sólo con split; el modo de B no se manda en `radio_init`; `on_split_mode_sync` manda el modo de B al prender split.
+
+**Verificación, medida** (build `c4deabb5`, md5 `80040491...`, deploy por SSH):
+
+```
+base LSB      rms=1085
+entrar a CW   rms=1035   <- ya no mutea
+salir a LSB   rms=1073
+USB ida/vuelta rms=1073
+2a vez CW->LSB rms=1071
+```
+
+**Sin fundar (anexo A)**: por qué el firmware del BASE mutea al recibir el modo de un VFO inactivo (no medido; haría falta el firmware del BASE), y si un write del VFO B con el mismo valor que ya tiene también mutea (no probado).

@@ -1,0 +1,7 @@
+# SENSIBILIDAD B: se inyecta un bug que NO respeta la ventana de 100 ms de SIGUSR1
+# (escala a SIGTERM enseguida). Los asserts nuevos de la espera TIENEN que fallar.
+$ cc ... -DBOOTANIM_TEST handoff_test.c boot_splash.c && ./handoff_test fake_animator
+boot_splash: pid 3515360 del PIDFILE no es /usr/sbin/x6200_bootanim: no se senaliza
+FAIL tests/bootanim/handoff_test.c:429: boot_splash_test_waited_ms() >= BOOT_SPLASH_USR1_WAIT_MS (no espero los 100 ms de SIGUSR1 (10 ms))
+FAIL tests/bootanim/handoff_test.c:459: boot_splash_test_waited_ms() >= BOOT_SPLASH_USR1_WAIT_MS + BOOT_SPLASH_TERM_WAIT_MS (no espero las dos ventanas (30 ms))
+handoff_test: 45 comprobaciones, 2 fallos

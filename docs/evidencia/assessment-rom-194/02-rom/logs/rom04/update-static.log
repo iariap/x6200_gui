@@ -1,0 +1,14 @@
+--- update-overlay
+d tools/release/update-overlay/etc
+d tools/release/update-overlay/etc/init.d
+f tools/release/update-overlay/etc/init.d/S02update
+overlay_files=1
+--- setuid esperado por make_update_tgz
+-rwsr-xr-x 0/0          842952 2026-10-21 17:53 ./bin/busybox
+-rwsr-x--- 0/101         47132 2026-10-21 17:53 ./usr/libexec/dbus-daemon-launch-helper
+-rws--x--x 0/0          554536 2026-10-21 17:53 ./usr/libexec/ssh-keysign
+setuid_count=3 (el script exige 5)
+--- proyeccion de entradas del tgz (solo archivos y enlaces, sin dirs ni ./)
+entry_count_projected=5466
+74:echo "    setuid:            $SUID (tienen que ser 5)"
+79:[ "$SUID" = "5" ] || { echo "FALLA: se perdieron bits setuid" >&2; exit 1; }

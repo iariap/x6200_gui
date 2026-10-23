@@ -1,0 +1,25 @@
+# coverage.csv: 334 filas; kinds: action=42, app=26, build_config=4, build_package=7, buttons_page=16, ci_environment=6, physical_input=10, screen=3, service=18, settings_group=8, settings_item=31, subsystem=49, test=114
+PASS columnas del contrato — ['cov_id', 'kind', 'name', 'route', 'test_or_tool', 'layer', 'coverage', 'owner_unit', 'status', 'notes']
+PASS cov_id unicos
+PASS sin campos vacios en name/route/coverage/owner
+PASS coverage valida
+PASS status valido
+PASS owner valido
+PASS acciones 1:1 con press_action_t — fuente=42 csv=42; faltan=[] sobran=[]
+PASS apps del dispatcher (24) + Home + alias FT4 — dispatcher=24 csv_apps=26
+PASS FT4 es alias explicito (sin case propio) — ALIAS explicito de FT8 (misma accion); no es app separada
+PASS DFLEditor con fila propia y diferencia remoto/APPS — No es app del menu APPS; figura en remoto (app_names[25]) y en barra DFL
+PASS toda app remota (app_names) mapea a una fila — []
+PASS 8 grupos de Settings — ['Operation', 'Audio', 'Spectrum', 'Clock', 'Display', 'Appearance', 'Actions', 'Info']
+PASS items de Settings >= constructores unicos y <= 2x — builders=27 items=31
+PASS ningun constructor de Settings sin item — builders unicos=27: ['make_audio_enh', 'make_audio_gain', 'make_auto', 'make_backlight', 'make_band_plan', 'make_bluetooth', 'make_clock', 'make_cluster_column', 'make_date', 'make_font', 'make_freq_accel', 'make_freq_accel_threshold', 'make_hmic_action', 'make_line_gain', 'make_long_action', 'make_mag', 'make_smeter', 'make_sp_mode', 'make_theme', 'make_time', 'make_transverter', 'make_visual_profile', 'make_voice', 'make_waterfall_battery', 'make_waterfall_line_zoom', 'make_waterfall_smooth_scroll', 'make_wfview'] (4 constructores generan 2 filas: auto, clock, backlight, voice)
+PASS paginas de botones referenciadas por BTN-* — 29 paginas; sin referencia=[]
+PASS 16 filas de paginas de botones
+PASS cada script init.d / usr/sbin tiene fila de servicio — 19 scripts; sin fila=[]
+PASS cada paquete de br2_external tiene fila PKG — 7 paquetes; sin fila=[]
+PASS config/overlay del Buildroot con fila BLD
+PASS cada dialog_*.c mapea a app o screen — sin fila=[]
+PASS cada prueba versionada tiene fila TST — 114 pruebas versionadas; sin fila=[]
+PASS columns tests.txt coincide — tests.txt se genera con el mismo filtro (git ls-files)
+
+RESULTADO: PASS — 334 filas cubren acciones, apps, Settings, barra, servicios, paquetes y pruebas del candidato

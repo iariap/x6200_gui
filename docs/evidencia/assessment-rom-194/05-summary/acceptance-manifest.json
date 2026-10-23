@@ -1,0 +1,170 @@
+{
+  "campaign": "iariap/x6200_gui#194",
+  "unit": 199,
+  "phase": "A_documental",
+  "generated_utc": "2026-10-22T00:19:16Z",
+  "acceptance": [
+    {
+      "unit": "1/5 baseline",
+      "issue": 195,
+      "pr": 201,
+      "pr_url": "https://github.com/iariap/x6200_gui/pull/201",
+      "commit": "be6088d1",
+      "merge": "230b2063",
+      "merged_at": "2026-10-21T20:58:54Z",
+      "files": 81,
+      "sha256sums_entries": 80,
+      "sha256sums_verified": true,
+      "folder": "01-baseline/"
+    },
+    {
+      "unit": "2/5 ROM/confiabilidad",
+      "issue": 196,
+      "pr": 207,
+      "pr_url": "https://github.com/iariap/x6200_gui/pull/207",
+      "commit": "afa6109b",
+      "merge": "ca1698d1",
+      "merged_at": "2026-10-21T22:51:51Z",
+      "files": 103,
+      "sha256sums_entries": 102,
+      "sha256sums_verified": true,
+      "folder": "02-rom/"
+    },
+    {
+      "unit": "3/5 UI/UX",
+      "issue": 197,
+      "pr": 203,
+      "pr_url": "https://github.com/iariap/x6200_gui/pull/203",
+      "commit": "f82dbadc",
+      "merge": "c41f36b2",
+      "merged_at": "2026-10-21T22:52:51Z",
+      "files": 816,
+      "sha256sums_entries": 815,
+      "sha256sums_verified": true,
+      "folder": "03-ui-ux/"
+    },
+    {
+      "unit": "4/5 performance",
+      "issue": 198,
+      "pr": 208,
+      "pr_url": "https://github.com/iariap/x6200_gui/pull/208",
+      "commit": "2986d04d",
+      "merge": "05020942",
+      "merged_at": "2026-10-22T00:06:43Z",
+      "files": 273,
+      "sha256sums_entries": 272,
+      "sha256sums_verified": true,
+      "folder": "04-performance/"
+    }
+  ],
+  "integration": {
+    "branch": "assessment/rom-194",
+    "head": "05020942127222c934d69ed0b37bea5895c5baaa",
+    "merge_order": [
+      "230b2063",
+      "ca1698d1",
+      "c41f36b2",
+      "05020942"
+    ],
+    "production_diff_candidate_to_integration": 0,
+    "candidate_is_ancestor": true
+  },
+  "coverage": {
+    "items": 334,
+    "class": {
+      "PARTIAL": 138,
+      "REAL": 151,
+      "SYNTHETIC": 4,
+      "UNSUPPORTED": 41
+    },
+    "status_final": {
+      "REVIEW_REQUIRED": 76,
+      "PASS": 174,
+      "PENDING_HARDWARE": 62,
+      "BLOCKED": 13,
+      "UNSUPPORTED": 3,
+      "FAIL": 6
+    },
+    "metric_rows_total": 1025,
+    "metric_rows_by_unit": {
+      "195": 84,
+      "196": 86,
+      "197": 256,
+      "198": 599
+    },
+    "tests": {
+      "items": 114,
+      "status": {
+        "PASS": 94,
+        "REVIEW_REQUIRED": 17,
+        "BLOCKED": 3
+      }
+    }
+  },
+  "findings": {
+    "funded": 18,
+    "hypotheses": 10,
+    "status": {
+      "FAIL": 4,
+      "REVIEW_REQUIRED": 11,
+      "RESOLVED_UPSTREAM": 1,
+      "INCONCLUSIVE": 1,
+      "BLOCKED": 1,
+      "HYPOTHESIS": 10
+    }
+  },
+  "hardware": {
+    "status": "BLOCKED/PENDING_HARDWARE",
+    "cases": 14,
+    "by_status": {
+      "PENDING_HARDWARE": 8,
+      "BLOCKED": 6
+    },
+    "remote_cases_executed": 0,
+    "radio_touched_in_phase_a": false,
+    "cause": "Fase A documental por directiva del orquestador; radio no contactada; sin sesion exclusiva verificada ni identidad/snapshot. Fase B coordinada con el owner."
+  },
+  "stale": {
+    "gui_tip": "d4fb57f8",
+    "gui_tip_production_files": 25,
+    "buildroot_tip": "f23d14f",
+    "repetitions_required": [
+      "build ARM/ROM e identidad",
+      "layout/MBR y DATA primer boot",
+      "init/prune",
+      "arranque real",
+      "estres/reposo",
+      "update/rollback",
+      "UI/contratos",
+      "performance de boot/handoff",
+      "toda la fase hardware"
+    ]
+  },
+  "recommendation": {
+    "software_scope": "CONDITIONAL",
+    "release": "NO_GO en el estado actual",
+    "reasons": [
+      "fase de hardware no ejecutada (HW-01/03/05/06/08 P0/P1)",
+      "P1 candidatos F-01..F-05 sin disposicion del owner",
+      "tip GUI/Buildroot STALE",
+      "sin CI del SHA candidato"
+    ],
+    "not_blocked_globally": "La evidencia software esta integrada y es auditable; el bloqueo es de la fase fisica."
+  },
+  "scope": {
+    "committed_path": "docs/evidencia/assessment-rom-194/05-summary/",
+    "deferred_by_orchestrator": [
+      "docs/ASSESSMENT_ROM_194.md (contenido listo en 05-summary/ASSESSMENT_ROM_194.md)",
+      "fila/seccion en docs/PRUEBAS.md (contenido listo en 05-summary/PRUEBAS-row.md)"
+    ],
+    "reason": "Instruccion explicita del orquestador de commitear solo 05-summary en este PR."
+  },
+  "verification": {
+    "commands": "commands.jsonl",
+    "logs": "logs/provenance/",
+    "sha256sums_units": "OK (80/102/815/272)",
+    "artifact_hashes": "OK (sdcard/rootfs/boot/GUI/fuente)",
+    "gate86": "PASS",
+    "docs_audit": "python3 tests/audita-pruebas.py exit 0 (sin modificar PRUEBAS.md)"
+  }
+}

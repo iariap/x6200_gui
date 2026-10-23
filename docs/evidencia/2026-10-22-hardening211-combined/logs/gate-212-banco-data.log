@@ -1,0 +1,275 @@
+WARNING: The requested image's platform (linux/arm/v7) does not match the detected host platform (linux/amd64/v4) and no specific platform was requested
+== preflight del banco
+   /etc/fstab del contenedor: 1 entrada(s) para DATA
+   nodos del /dev privado antes de armar tarjetas: console fd full loop-control null random stderr stdin stdout tty urandom zero
+   dispositivo con label DATA visible: 'ninguno'
+
+== caso estaticos: el script del PR cumple las reglas estaticas del contrato
+  ok    sin 'fat32' en el script
+  ok    sin mkfs vfat en el script
+  ok    usa exactamente: mkfs.ext4 -F -m 0 -L DATA $DATA
+  ok    monta la DATA existente con -t <tipo real>
+  ok    fstab sin cambios: /dev/mmcblk0p3 /mnt ext4 rw
+  ok    el init script es ejecutable (0755, como el resto de /etc/init.d)
+  ok    sintaxis ok con bash en modo POSIX (argv[0]=sh, como en la ROM)
+  ok    sintaxis ok con bash -n
+   -> OK (8 ok, 0 fail)
+
+== caso fresh-first-boot: SD nueva (p1+p2 y 256 MiB al final): crea p3 ext4 y la monta en el primer boot
+  ok    exit=0
+  ok    stdout exacto: DATA ready (ext4)
+  ok    invoco: parted -m -s -a none /dev/mmcblk0 unit s mkpart primary ext4 1116160s 1640447s
+  ok    invoco: partprobe /dev/mmcblk0
+  ok    invoco: blockdev --getsize64 /dev/mmcblk0p3
+  ok    invoco: mkfs.ext4 -F -m 0 -L DATA /dev/mmcblk0p3
+  ok    invoco: mount -t ext4 /dev/mmcblk0p3 /mnt
+  ok    no invoco: mkfs.vfat
+  ok    p3 quedo ext4 (blkid)
+  ok    p3 quedo con label DATA
+  ok    /mnt montado desde /dev/mmcblk0p3
+  ok    /mnt tipo ext4
+  ok    /mnt rw
+  ok    region p1 intacta (4c9a9a1fd5a3a81b842c6da988b79a0351048bb3c31f3fee62cf83a521d22f2a)
+  ok    region p2 intacta (7d2c8a1eccbb5e64cd223cb2d9b5ff416e0e88fcfd7a649fee8af8439f23bec4)
+  ok    tabla de la copia: 1 2 3
+   -> OK (16 ok, 0 fail)
+
+== caso second-boot-idempotent: segundo boot sobre la misma tarjeta: no re-particiona, no formatea, conserva el contenido
+  ok    exit=0
+  ok    stdout exacto: DATA ready (ext4)
+  ok    no invoco: parted 
+  ok    no invoco: partprobe 
+  ok    no invoco: mkfs
+  ok    no invoco: mke2fs 
+  ok    invoco: mount -t ext4 /dev/mmcblk0p3 /mnt
+  ok    /mnt montado desde /dev/mmcblk0p3
+  ok    /mnt tipo ext4
+  ok    /mnt rw
+  ok    el contenido escrito en el primer boot sigue en DATA
+  ok    region p1 intacta (4c9a9a1fd5a3a81b842c6da988b79a0351048bb3c31f3fee62cf83a521d22f2a)
+  ok    region p2 intacta (7d2c8a1eccbb5e64cd223cb2d9b5ff416e0e88fcfd7a649fee8af8439f23bec4)
+   -> OK (13 ok, 0 fail)
+
+== caso existing-ext4-content: DATA ext4 existente con contenido, symlink e ids: se monta y no se toca
+  ok    p3 es ext4 antes del boot
+  ok    p3 con label DATA antes del boot
+  ok    exit=0
+  ok    stdout exacto: DATA ready (ext4)
+  ok    no invoco: parted 
+  ok    no invoco: partprobe 
+  ok    no invoco: mkfs
+  ok    no invoco: mke2fs 
+  ok    invoco: mount -t ext4 /dev/mmcblk0p3 /mnt
+  ok    /mnt montado desde /dev/mmcblk0p3
+  ok    /mnt tipo ext4
+  ok    /mnt rw
+  ok    DATA ext4 existente: /mnt/params.db legible e intacto
+  ok    DATA ext4 existente: symlink /mnt/link-params -> params.db intacto
+  ok    DATA ext4 existente: ids/modo de /mnt/keep.bin intactos (1234:5678:640)
+  ok    DATA ext4 existente: /mnt/backups/backup.tgz presente
+  ok    p3 sigue ext4 con label DATA despues del boot
+  ok    region p1 intacta (4c9a9a1fd5a3a81b842c6da988b79a0351048bb3c31f3fee62cf83a521d22f2a)
+  ok    region p2 intacta (7d2c8a1eccbb5e64cd223cb2d9b5ff416e0e88fcfd7a649fee8af8439f23bec4)
+   -> OK (19 ok, 0 fail)
+
+== caso legacy-vfat-preserved: DATA vfat legacy (tarjeta anterior a la conversion): se monta como vfat y no se toca
+  ok    exit=0
+  ok    stdout exacto: DATA ready (vfat legacy)
+  ok    no invoco: parted 
+  ok    no invoco: partprobe 
+  ok    no invoco: mkfs
+  ok    no invoco: mke2fs 
+  ok    invoco: mount -t vfat /dev/mmcblk0p3 /mnt
+  ok    /mnt montado desde /dev/mmcblk0p3
+  ok    /mnt tipo vfat
+  ok    /mnt rw
+  ok    contenido vfat legacy legible en /mnt
+  ok    region p3 (vfat legacy) intacta (7c0200bbe5f9ac4bf4ba9db7f926445a1be9bf7c8b712df06f9a6849dc40f6f9)
+   -> OK (12 ok, 0 fail)
+
+== caso p3-without-label: p3 existe sin label DATA: aborta sin mkfs y sin tocar nada
+  ok    exit=1
+  ok    stderr con 'DATA unavailable:'
+  ok    stderr: DATA unavailable: existing partition requires inspection
+  ok    stdout sin 'DATA ready'
+  ok    no invoco: mkpart
+  ok    no invoco: mkfs
+  ok    no invoco: partprobe
+  ok    region p3 (intacta) intacta (87231abba5418f563e579bc71c205e00a911ca9f103dabd8303b7069eed11e66)
+   -> OK (8 ok, 0 fail)
+
+== caso p3-unsupported-fs: p3 con label DATA pero filesystem que no es ext4 ni vfat: pide inspeccion
+  ok    exit=1
+  ok    stderr con 'DATA unavailable:'
+  ok    stderr: DATA unavailable: existing partition requires inspection (the filesystem on /dev/mmcblk0p3 is 'ext3')
+  ok    stdout sin 'DATA ready'
+  ok    no invoco: mkpart
+  ok    no invoco: mkfs
+  ok    region p3 (ext3, intacta) intacta (3a7647b3afec7fa62c38d1b8bf7a643bb3feac05bcbe6c4874ec2d7257324387)
+   -> OK (7 ok, 0 fail)
+
+== caso label-on-other-device: la etiqueta DATA esta en otro dispositivo: no la usa, no particiona nada
+  ok    exit=1
+  ok    stderr con 'DATA unavailable:'
+  ok    stderr: DATA unavailable: existing partition requires inspection (the DATA label is on /dev/mmcblk1p1, not on /dev/mmcblk0p3)
+  ok    stdout sin 'DATA ready'
+  ok    no invoco: mkpart
+  ok    no invoco: mkfs
+  ok    region p1 intacta (4c9a9a1fd5a3a81b842c6da988b79a0351048bb3c31f3fee62cf83a521d22f2a)
+  ok    region p2 intacta (7d2c8a1eccbb5e64cd223cb2d9b5ff416e0e88fcfd7a649fee8af8439f23bec4)
+  ok    region tramo libre (sin p3) intacta (a6d72ac7690f53be6ae46ba88506bd97302a093f7108472bd9efc3cefda06484)
+   -> OK (9 ok, 0 fail)
+
+== caso p3-mounted-readonly: p3 con DATA montada read-only: no remonta, no formatea, falla
+  ok    exit=1
+  ok    stderr con 'DATA unavailable:'
+  ok    stderr: is mounted read-only
+  ok    stdout sin 'DATA ready'
+  ok    no invoco: parted 
+  ok    no invoco: partprobe 
+  ok    no invoco: mkfs
+  ok    no invoco: mke2fs 
+  ok    no invoco: mount -t ext4
+  ok    /mnt montado desde /dev/mmcblk0p3
+  ok    /mnt tipo ext4
+  ok    /mnt ro
+  ok    DATA ro: /mnt/params.db legible e intacto
+  ok    DATA ro: symlink /mnt/link-params -> params.db intacto
+  ok    DATA ro: ids/modo de /mnt/keep.bin intactos (1234:5678:640)
+  ok    DATA ro: /mnt/backups/backup.tgz presente
+  ok    region p3 (intacta) intacta (5572d4b6e1f87671d26240d5822312b39069ab9f88b6fd209bb33bcb4957f45d)
+   -> OK (17 ok, 0 fail)
+
+== caso mount-fails: el montaje falla (/mnt no es un directorio): falla sin formatear
+  ok    exit=1
+  ok    stderr con 'DATA unavailable:'
+  ok    stderr: cannot mount /dev/mmcblk0p3 (ext4) on /mnt
+  ok    stdout sin 'DATA ready'
+  ok    no invoco: parted 
+  ok    no invoco: partprobe 
+  ok    no invoco: mkfs
+  ok    no invoco: mke2fs 
+  ok    el nodo de p3 sigue ahi
+  ok    p3 sigue ext4 con label DATA (no se reformateo)
+  ok    /mnt no quedo montado
+  ok    region p1 intacta (4c9a9a1fd5a3a81b842c6da988b79a0351048bb3c31f3fee62cf83a521d22f2a)
+  ok    region p2 intacta (7d2c8a1eccbb5e64cd223cb2d9b5ff416e0e88fcfd7a649fee8af8439f23bec4)
+   -> OK (13 ok, 0 fail)
+
+== caso parted-fails: parted no puede leer la tabla (disco sin tabla; y sin nodo): falla sin escribir
+  ok    exit=1
+  ok    stderr con 'DATA unavailable:'
+  ok    stderr: cannot read the partition table of /dev/mmcblk0
+  ok    stdout sin 'DATA ready'
+  ok    no invoco: mkpart
+  ok    no invoco: mkfs
+  ok    region MBR/primer MiB intacta (30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58)
+  ok    region region de p1 (sin tabla) intacta (83ee47245398adee79bd9c0a8bc57b821e92aba10f5f9ade8a5d1fae4d8c4302)
+  ok    exit=1
+  ok    stderr con 'DATA unavailable:'
+  ok    stderr: cannot read the partition table of /dev/mmcblk0
+  ok    stdout sin 'DATA ready'
+  ok    no invoco: mkpart
+   -> OK (13 ok, 0 fail)
+
+== caso p3-node-never-appears: el kernel nunca publica /dev/mmcblk0p3: crea la particion, no formatea y falla
+  ok    exit=1
+  ok    stderr con 'DATA unavailable:'
+  ok    stderr: did not appear after creating partition 3
+  ok    stdout sin 'DATA ready'
+  ok    invoco: mkpart
+  ok    invoco: partprobe
+  ok    no invoco: mkfs
+  ok    no invoco: blockdev
+  ok    region p1 intacta (4c9a9a1fd5a3a81b842c6da988b79a0351048bb3c31f3fee62cf83a521d22f2a)
+  ok    region p2 intacta (7d2c8a1eccbb5e64cd223cb2d9b5ff416e0e88fcfd7a649fee8af8439f23bec4)
+  ok    region p3 (creada, sin formato) intacta (a6d72ac7690f53be6ae46ba88506bd97302a093f7108472bd9efc3cefda06484)
+  ok    la tabla quedo con 1 2 3 pero p3 sin filesystem (region en cero)
+   -> OK (12 ok, 0 fail)
+
+== caso free-under-64mib: solo 32 MiB libres al final: aborta antes de tocar la tabla
+  ok    exit=1
+  ok    stderr con 'DATA unavailable:'
+  ok    stderr: only 32 MiB of aligned free space after /dev/mmcblk0p2, need 64 MiB
+  ok    stdout sin 'DATA ready'
+  ok    no invoco: mkpart
+  ok    no invoco: mkfs
+  ok    no invoco: partprobe
+  ok    region p1 intacta (4c9a9a1fd5a3a81b842c6da988b79a0351048bb3c31f3fee62cf83a521d22f2a)
+  ok    region p2 intacta (7d2c8a1eccbb5e64cd223cb2d9b5ff416e0e88fcfd7a649fee8af8439f23bec4)
+  ok    region tramo libre intacta (83ee47245398adee79bd9c0a8bc57b821e92aba10f5f9ade8a5d1fae4d8c4302)
+   -> OK (10 ok, 0 fail)
+
+== caso no-free-region: tarjeta del tamano exacto de la imagen (sin tramo libre): aborta sin escribir
+  ok    exit=1
+  ok    stderr con 'DATA unavailable:'
+  ok    stderr: no free region reaches the end of /dev/mmcblk0
+  ok    stdout sin 'DATA ready'
+  ok    no invoco: mkpart
+  ok    no invoco: mkfs
+  ok    region p1 intacta (4c9a9a1fd5a3a81b842c6da988b79a0351048bb3c31f3fee62cf83a521d22f2a)
+  ok    region MBR/primer MiB intacta (da23c44d77ccd85434e8a35c9a02807da9ddfa52cd889ba9a763da7bc0314304)
+   -> OK (8 ok, 0 fail)
+
+== caso exact-64mib: 64 MiB justos al final: el minimo alcanza y DATA se crea
+  ok    exit=0
+  ok    stdout exacto: DATA ready (ext4)
+  ok    invoco: mkpart primary ext4 1116160s 1247231s
+  ok    invoco: mkfs.ext4 -F -m 0 -L DATA /dev/mmcblk0p3
+  ok    /mnt montado desde /dev/mmcblk0p3
+  ok    /mnt tipo ext4
+  ok    /mnt rw
+  ok    region p1 intacta (4c9a9a1fd5a3a81b842c6da988b79a0351048bb3c31f3fee62cf83a521d22f2a)
+  ok    region p2 intacta (7d2c8a1eccbb5e64cd223cb2d9b5ff416e0e88fcfd7a649fee8af8439f23bec4)
+   -> OK (9 ok, 0 fail)
+
+== caso p4-instead-of-p3: la tabla tiene p1, p2 y p4 (indice distinto de 3): aborta y no toca p4
+  ok    tabla de la copia: 1 2 4
+  ok    exit=1
+  ok    stderr con 'DATA unavailable:'
+  ok    stderr: partition 4 already exists on /dev/mmcblk0
+  ok    stdout sin 'DATA ready'
+  ok    no invoco: mkpart
+  ok    no invoco: mkfs
+  ok    region p4 intacta (87231abba5418f563e579bc71c205e00a911ca9f103dabd8303b7069eed11e66)
+   -> OK (8 ok, 0 fail)
+
+== caso data-on-p3-with-p4: DATA valida en p3 con p4 presente: monta p3 y jamas toca p4
+  ok    tabla de la copia: 1 2 3 4
+  ok    exit=0
+  ok    stdout exacto: DATA ready (vfat legacy)
+  ok    no invoco: parted 
+  ok    no invoco: partprobe 
+  ok    no invoco: mkfs
+  ok    no invoco: mke2fs 
+  ok    invoco: mount -t vfat /dev/mmcblk0p3 /mnt
+  ok    /mnt montado desde /dev/mmcblk0p3
+  ok    /mnt tipo vfat
+  ok    /mnt rw
+  ok    contenido de p3 intacto
+  ok    region p3 (DATA vfat) intacta (7c0200bbe5f9ac4bf4ba9db7f926445a1be9bf7c8b712df06f9a6849dc40f6f9)
+  ok    region p4 (jamas tocada) intacta (87231abba5418f563e579bc71c205e00a911ca9f103dabd8303b7069eed11e66)
+   -> OK (14 ok, 0 fail)
+
+== resumen por caso
+estaticos                OK    rc=rc=0 
+fresh-first-boot         OK    rc=rc=0 blkid,blockdev,findmnt,mkfs.ext4,mount,parted,partprobe
+second-boot-idempotent   OK    rc=rc=0 blkid,findmnt,mount
+existing-ext4-content    OK    rc=rc=0 blkid,findmnt,mount
+legacy-vfat-preserved    OK    rc=rc=0 blkid,findmnt,mount
+p3-without-label         OK    rc=rc=1 blkid,parted
+p3-unsupported-fs        OK    rc=rc=1 blkid
+label-on-other-device    OK    rc=rc=1 blkid
+p3-mounted-readonly      OK    rc=rc=1 blkid,findmnt
+mount-fails              OK    rc=rc=1 blkid,findmnt,mount
+parted-fails             OK    rc=rc=1 blkid,parted
+p3-node-never-appears    OK    rc=rc=1 blkid,findmnt,parted,partprobe
+free-under-64mib         OK    rc=rc=1 blkid,parted
+no-free-region           OK    rc=rc=1 blkid,parted
+exact-64mib              OK    rc=rc=0 blkid,blockdev,findmnt,mkfs.ext4,mount,parted,partprobe
+p4-instead-of-p3         OK    rc=rc=1 blkid,parted
+data-on-p3-with-p4       OK    rc=rc=0 blkid,findmnt,mount
+
+casos: 17, con fallas: 0, checks con FAIL: 0
+  ok    ningun loop device quedo asociado a los archivos del banco
+RESULTADO: PASS

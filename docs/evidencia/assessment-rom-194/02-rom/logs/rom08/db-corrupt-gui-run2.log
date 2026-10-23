@@ -1,0 +1,69 @@
+[User]	(772141.509, +772141509)	 boot_identity: fuente: 964193ae9306b5127845cec44a57d52c (x6200_gui) 	(in main.c line #142)
+[User]	(772141.785, +276)	 main: CRASHLOG-MOD-INIT modulos=48 exe_base=0x00400000 exe_md5=1f998c46909307397525c975a712adfd exe=/usr/sbin/x6200_gui (275 ms) 	(in main.c line #445)
+[User]	(772141.801, +16)	 main: Display: fbdev 	(in main.c line #487)
+Home directory not accessible: Permission denied
+[Warn]	(772141.841, +40)	 audio_init_sync: pulseaudio no disponible (Connection refused): la GUI sigue, pero sin audio 	(in audio.c line #191)
+unable to open keypad interface:: No such file or directory
+unable to open keypad interface:: No such file or directory
+[Error]	(772141.842, +1)	 rotary_main_init: unable to open main knob 	(in rotary.c line #318)
+[Error]	(772141.842, +0)	 rotary_init: unable to open rotary interface: 	(in rotary.c line #90)
+unable to open encoder interface:: No such file or directory
+[Error]	(772141.843, +1)	 rotary_init: unable to open rotary interface: 	(in rotary.c line #90)
+[Error]	(772141.843, +0)	 main: Sin encoder de volumen (/dev/input/event2): se sigue sin el 	(in main.c line #546)
+[Error]	(772141.843, +0)	 main: Sin encoder interno del MFK (/dev/input/event4): se sigue sin el 	(in main.c line #558)
+[Error]	(772141.854, +11)	 errorLogCallback: (26) file is not a database in "CREATE TABLE IF NOT EXISTS version(id INT NOT NULL DEFAULT 0)"
+ 	(in db.c line #24)
+Cannot create versions table: file is not a database
+Cannot get current version
+[Error]	(772141.855, +1)	 params_init: Open params.db 	(in params.c line #674)
+[Error]	(772141.856, +1)	 avisa_subject_nulo: subject_get_int con sujeto NULL (llamador en offset 0x2e11c) 	(in subjects.cpp line #97)
+CRASHLOG sig=11 fallo=0x13c pc=0x42e12c lr=0x4161ae58 sp=0x40800ba8 base=0x41f324
+CRASHLOG-MOD 00400000 1f998c46909307397525c975a712adfd /usr/sbin/x6200_gui
+CRASHLOG-MOD 40850000 ea0515804c12e112f6f418fd9fefe924 /lib/libfakefb.so
+CRASHLOG-MOD 40870000 320e336f3095a3062683f7a754d7d657 /lib/libcrash.so
+CRASHLOG-MOD 40890000 7e9c76904e866bcb27dcb1b159324677 /lib/libx6200trace.so
+CRASHLOG-MOD 408b0000 62d50dfc4ae7521c2541c9e784457bef /usr/lib/liblv_drivers.so
+CRASHLOG-MOD 408d0000 d23fb8a61b864de1a75cb795f94f28be /usr/lib/libaether_x6200_control.so.0
+CRASHLOG-MOD 408f0000 5a43d6540d45adfb0251db332f9feeaa /usr/lib/libliquid.so
+CRASHLOG-MOD 409d0000 54f6bf953d210193c2ea841c7c4614ea /usr/lib/libft8.so
+CRASHLOG-MOD 409f0000 3e4d7685aabe46584a2cf09d694b709b /usr/lib/libjpeg.so.8
+CRASHLOG-MOD 40a60000 bb989f0c431b93d976ddb41ce744a8b8 /usr/lib/libfftw3f.so.3
+CRASHLOG-MOD 40be0000 24758fda2e40bcbefa9b354fac24e600 /usr/lib/libnm.so.0
+CRASHLOG-MOD 40d10000 f8ac3b5087a5e5f33edef0afec84c375 /usr/lib/libgio-2.0.so.0
+CRASHLOG-MOD 40ec0000 24aee1b4e1b9f73f56a74d4f37d41cd0 /usr/lib/libdbus-glib-1.so.2
+CRASHLOG-MOD 40f00000 2de47e5437d3454b1ea61a0bbe9b60ce /usr/lib/libdbus-1.so.3
+CRASHLOG-MOD 40f60000 bac173a7d29734118888338afb1d70fe /usr/lib/libgobject-2.0.so.0
+CRASHLOG-MOD 40fd0000 9cbbb85f8e667db8c38aedb3c699eeb2 /usr/lib/libglib-2.0.so.0
+CRASHLOG-MOD 41110000 e06a38982e3ae4a1114a5fec3807b4d0 /usr/lib/libsqlite3.so.0
+CRASHLOG-MOD 412a0000 975a763f7ccf59e4ede4619359b3864d /usr/lib/libpng16.so.16
+CRASHLOG-MOD 412f0000 57b4c312f315b3e49c1c6a707a1ae1bc /usr/lib/libsndfile.so.1
+CRASHLOG-MOD 41390000 dfca6d4deeb2bc518f1e1e30dbb90355 /lib/libudev.so.1
+CRASHLOG-MOD 413d0000 a5b15a3aa7c31e72a27af25a3e57b9f2 /usr/lib/libpulse-simple.so.0
+CRASHLOG-MOD 413f0000 e3affe2fbdb6037b38235e50583a9905 /usr/lib/libpulse.so.0
+CRASHLOG-MOD 41450000 37fb0b80a9ae2579b0f0e08fc3d0c486 /usr/lib/libasound.so.2
+CRASHLOG-MOD 41550000 7c2335721864f0f7cffc001d428045c1 /usr/lib/libspeexdsp.so.1
+CRASHLOG-MOD 41580000 cedc4c45abe255d08700a501b444e66b /usr/lib/libdrm.so.2
+CRASHLOG-MOD 415b0000 5ed07c1719f87f3de07f6749fc0199be /usr/lib/liblvgl.so
+CRASHLOG-MOD 41650000 af334536c75cde30c5f9b9b2c66b5dc3 /usr/lib/libxkbcommon.so.0
+CRASHLOG-MOD 416b0000 5a97a669fa86421c171e45dfac987f78 /usr/lib/libstdc++.so.6
+CRASHLOG-MOD 418b0000 0c1e98f5a65daae227c199095ac2120f /lib/libm.so.6
+CRASHLOG-MOD 41910000 705d3f3a9ade4759695e03c2397d28d5 /lib/libgcc_s.so.1
+CRASHLOG-MOD 41940000 412df301b11eeecfaaa77847fe63372b /lib/libc.so.6
+CRASHLOG-MOD 40810000 65e067cdf10411be26b4ca23466ce23e /lib/ld-linux-armhf.so.3
+CRASHLOG-MOD 41ae0000 dcbc4af295579b51c3f6720d8406fd3e /usr/lib/libgpiod.so.2
+CRASHLOG-MOD 41b00000 1a315b41444e0e5942b4c834c358e4eb /usr/lib/libgmodule-2.0.so.0
+CRASHLOG-MOD 41b20000 72d4f31ecd7aa61b605072be2507d8c5 /usr/lib/libnss3.so
+CRASHLOG-MOD 41c50000 d16f22e833ff031ab7ff53cf1089efbf /usr/lib/libsmime3.so
+CRASHLOG-MOD 41c90000 0950c217460324c4fc2d323f870da8c8 /usr/lib/libnspr4.so
+CRASHLOG-MOD 41ce0000 54f57cb29c4c24c5648e9557c987d2ea /usr/lib/libz.so.1
+CRASHLOG-MOD 41d10000 a402585bd023f7ea3aa3a96d23833830 /lib/libmount.so.1
+CRASHLOG-MOD 41d80000 806841f87ab49f3d68a2867bf7b879fa /usr/lib/libffi.so.8
+CRASHLOG-MOD 41da0000 3b94158da85cedf1fc5e4320c2703abe /usr/lib/libpcre.so.1
+CRASHLOG-MOD 41e00000 ca788091c4b468076dc2097358b275b5 /usr/lib/libmp3lame.so.0
+CRASHLOG-MOD 41e90000 b0d9b62714511fc0fc94f5e7d423439a /usr/lib/libmpg123.so.0
+CRASHLOG-MOD 41ef0000 4ce01b9317ed323d193ea0387376319c /usr/lib/pulseaudio/libpulsecommon-16.1.so
+CRASHLOG-MOD 41f80000 40101e3e25081d32cb5aeadc388bc2d9 /usr/lib/libnssutil3.so
+CRASHLOG-MOD 41fc0000 ece8f304d3eed48cd0e2f2f32c0833cd /usr/lib/libplc4.so
+CRASHLOG-MOD 41fe0000 197c7303250098df0c6cbf19281be9e8 /usr/lib/libplds4.so
+CRASHLOG-MOD 42000000 d42cf57ae42a6f86bf283880c50f94ff /lib/libblkid.so.1
+CRASHLOG-STACK 010d8fd8 010cb000 40800be0 0041f74c 005c8494 00000030 00400000 01151acc 01151aed 00000000 00000113 00000000 40800be0 00000007 00424f0c 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000004 00000000 40800cb4 40800cb0 40800e04 00000001 00000000 010c32b4 4084a048 0041f324 40849d78 010c32b4 419623b4 41ace000 0041f324 00000001 40800e04 bf880efa be9e2112 40800e04 00000001 00000000 010c32b4 4084a048 0041f324 40849d78 010c32b4 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 40800d18 00000001 004c0036 004cb5ac 01664a90 00000000 40800d30 ffffffff 408105f0 4084a638 00000000 00000000 40800d48 00000001 00000037 00000000 00000000 40807668 00000080 41ace04c 4080e540 4084a048 00000000 00000001 010c32b4 408210b0 4080cba0 00000001 00000001 00000000 408105f0 4082655c 40800e04 00000001 00000000 010c32b4 4084a048 0041f324 00000000 40823554 00000000 00000000 00000000 00000001 010c32b4 419624b4 00424d8c 00000000 00000000 00039f48 00000000 00424d8c 00000000 00000000 00000000 010cb000 00000000 00424dc4 00000000 40814ae4 40800e04 40800ef0 00000000 40800f04 40800f1a 40800f25 40800f67 40800f7a 40800f8a 40800f99

@@ -1,0 +1,177 @@
+===== /etc/inittab =====
+-rw-r--r--. 1 pablo pablo 1281 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/inittab
+# /etc/inittab
+#
+# Copyright (C) 2001 Erik Andersen <andersen@codepoet.org>
+#
+# Note: BusyBox init doesn't support runlevels.  The runlevels field is
+# completely ignored by BusyBox init. If you want runlevels, use
+# sysvinit.
+#
+# Format for each entry: <id>:<runlevels>:<action>:<process>
+#
+# id        == tty to run on, or empty for /dev/console
+# runlevels == ignored
+# action    == one of sysinit, respawn, askfirst, wait, and once
+# process   == program to run
+
+# Startup the system
+::sysinit:/bin/mount -t proc proc /proc
+::sysinit:/bin/mount -o remount,rw /
+::sysinit:/bin/mkdir -p /dev/pts /dev/shm
+::sysinit:/bin/mount -a
+::sysinit:/bin/mkdir -p /run/lock/subsys
+::sysinit:/sbin/swapon -a
+null::sysinit:/bin/ln -sf /proc/self/fd /dev/fd
+null::sysinit:/bin/ln -sf /proc/self/fd/0 /dev/stdin
+null::sysinit:/bin/ln -sf /proc/self/fd/1 /dev/stdout
+null::sysinit:/bin/ln -sf /proc/self/fd/2 /dev/stderr
+::sysinit:/bin/hostname -F /etc/hostname
+# now run any rc scripts
+::sysinit:/etc/init.d/rcS
+
+# Put a getty on the serial port
+console::respawn:/sbin/getty -L  console 0 vt100 # GENERIC_SERIAL
+
+# Stuff to do for the 3-finger salute
+#::ctrlaltdel:/sbin/reboot
+
+# Stuff to do before rebooting
+::shutdown:/etc/init.d/rcK
+::shutdown:/sbin/swapoff -a
+::shutdown:/bin/umount -a -r
+===== /etc/fstab =====
+-rw-r--r--. 1 pablo pablo 368 Oct 21 15:23 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/fstab
+# <file system>	<mount pt>	<type>	<options>	<dump>	<pass>
+/dev/root	/		ext2	rw,noauto	0	1
+proc		/proc		proc	defaults	0	0
+devpts		/dev/pts	devpts	defaults,gid=5,mode=620,ptmxmode=0666	0	0
+tmpfs		/dev/shm	tmpfs	mode=0777	0	0
+tmpfs		/tmp		tmpfs	mode=1777	0	0
+tmpfs		/run		tmpfs	mode=0755,nosuid,nodev	0	0
+sysfs		/sys		sysfs	defaults	0	0
+/dev/mmcblk0p3	/mnt		ext4	rw		0	2
+===== /etc/passwd =====
+-rw-r--r--. 1 pablo pablo 524 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/passwd
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/bin/false
+bin:x:2:2:bin:/bin:/bin/false
+sys:x:3:3:sys:/dev:/bin/false
+sync:x:4:100:sync:/bin:/bin/sync
+mail:x:8:8:mail:/var/spool/mail:/bin/false
+www-data:x:33:33:www-data:/var/www:/bin/false
+operator:x:37:37:Operator:/var:/bin/false
+nobody:x:65534:65534:nobody:/home:/bin/false
+pulse:x:1000:1000:PulseAudio system daemon:/var/run/pulse:/bin/false
+dbus:x:100:101:DBus messagebus user:/run/dbus:/bin/false
+sshd:x:101:102:SSH drop priv user:/var/empty:/bin/false
+===== /etc/group =====
+-rw-r--r--. 1 pablo pablo 377 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/group
+root:x:0:
+daemon:x:1:
+bin:x:2:
+sys:x:3:
+adm:x:4:
+tty:x:5:
+disk:x:6:
+lp:x:7:
+mail:x:8:
+kmem:x:9:
+wheel:x:10:root
+cdrom:x:11:
+dialout:x:18:
+floppy:x:19:
+video:x:28:
+audio:x:29:pulse
+tape:x:32:
+www-data:x:33:
+operator:x:37:
+utmp:x:43:
+plugdev:x:46:
+staff:x:50:
+lock:x:54:
+netdev:x:82:
+users:x:100:
+nobody:x:65534:
+pulse:x:1000:
+sshd:x:102:
+input:x:103:
+kvm:x:104:
+dbus:x:101:dbus
+===== /etc/shadow =====
+-rw-------. 1 pablo pablo 246 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/shadow
+root:$5$6u1yHdh8D$BX3cbgAK5waKCVddZQmVrCi0yFWQ1/noliqv28sKX3.:::::::
+daemon:*:::::::
+bin:*:::::::
+sys:*:::::::
+sync:*:::::::
+mail:*:::::::
+www-data:*:::::::
+operator:*:::::::
+nobody:*:::::::
+pulse:!:19000:0:99999:7:::
+dbus:*:::::::
+sshd:*:::::::
+===== /etc/os-release =====
+lrwxrwxrwx. 1 pablo pablo 21 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/os-release -> ../usr/lib/os-release
+NAME=Buildroot
+VERSION=2023.02.11
+ID=buildroot
+VERSION_ID=2023.02.11
+PRETTY_NAME="Buildroot 2023.02.11"
+===== /etc/hostname =====
+-rw-r--r--. 1 pablo pablo 6 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/hostname
+X6200
+===== /etc/profile =====
+-rw-r--r--. 1 pablo pablo 1128 Oct 21 15:23 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/profile
+export PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/share/support"
+export XGRADIO_TMPDIR="/usr/tmp/xgradio"
+
+if [ "$PS1" ]; then
+	if [ "`id -u`" -eq 0 ]; then
+		export PS1='[\u@\h:$PWD]# '
+	else
+		export PS1='[\u@\h:$PWD]$ '
+	fi
+fi
+
+export PAGER='/bin/less'
+export EDITOR='/usr/bin/mcedit'
+
+# Source configuration files from /etc/profile.d
+for i in /etc/profile.d/*.sh ; do
+	if [ -r "$i" ]; then
+		. $i
+	fi
+done
+unset i
+
+# I don't know how to change the default DPI
+# this physical size barely works
+export QT_QPA_EGLFS_PHYSICAL_WIDTH=78
+export QT_QPA_EGLFS_PHYSICAL_HEIGHT=130
+
+# we use ATOMIC functions here
+export QT_QPA_EGLFS_KMS_ATOMIC=1
+
+# egl screen rotation 
+export QT_QPA_EGLFS_ROTATION=90
+
+# eglfs_kms config files
+export QT_QPA_EGLFS_KMS_CONFIG=/etc/qtkmsconfig.json
+
+# eglfs input devices config
+# export QT_QPA_GENERIC_PLUGINS=libinput
+# export QT_QPA_EVDEV_KEYBOARD_PARAMETERS=grab=1
+# export QT_QPA_EVDEV_MOUSE_PARAMETERS=grab=1
+# export QT_QPA_EGLFS_NO_LIBINPUT=1
+
+export QT_QPA_PLATFORM=eglfs
+export QT_QPA_PLATFORM_PLUGIN_PATH=/usr/lib/qt/plugins
+export QT_QPA_FONTDIR=/usr/share/fonts
+export XDG_RUNTIME_DIR=/tmp
+===== /usr/sbin/x6200_gui =====
+-rwxr-xr-x. 1 pablo pablo 13407624 Oct 21 17:53 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/sbin/x6200_gui
+7e2e9331c4cbc51727a098996d98e263c45dd57cb8fff8d1f2aea2964c3849c5  /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/sbin/x6200_gui
+1f998c46909307397525c975a712adfd  /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/sbin/x6200_gui
+/home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/sbin/x6200_gui: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, stripped

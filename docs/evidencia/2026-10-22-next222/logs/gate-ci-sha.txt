@@ -1,0 +1,21 @@
+== CI sobre el SHA integrado (evidencia de F-13) ==
+$ git rev-parse HEAD
+f825fe4bc1ec6477a83bf509d6524d91353a4313
+$ gh run list --repo iariap/x6200_gui --commit f825fe4bc1ec6477a83bf509d6524d91353a4313 --limit 20
+(sin filas: no hay corrida sobre ese commit)
+
+$ gh run list --repo iariap/x6200_gui --branch lu2dsx/x6200-rom --limit 10
+completed	success	Merge pull request #232 from iariap/fix/audio-enh-cw-profile	boot-rootfs	lu2dsx/x6200-rom	push	39826069429	38s	2026-10-22T17:49:45Z
+completed	success	[RX] Auto Tune multimode: SSB assisted + AM/SAM carrier centering (#228)	boot-rootfs	lu2dsx/x6200-rom	push	39814350405	2m16s	2026-10-22T16:28:21Z
+completed	success	fix(bootanim): el gate del handoff mide sondeos, no reloj (elimina el…	boot-rootfs	lu2dsx/x6200-rom	push	39796134741	12m9s	2026-10-22T14:29:46Z
+completed	success	[ROM][P1] SQLite fail-closed: arranque, recuperacion de DB y escritur…	boot-rootfs	lu2dsx/x6200-rom	push	39778340781	35s	2026-10-22T12:26:23Z
+completed	success	[BOOT][UX] Continuous Decrypt, Beams and Rain until GUI handoff (#206)	boot-rootfs	lu2dsx/x6200-rom	push	39690927144	43s	2026-10-21T23:04:06Z
+completed	failure	[BOOT][UX] Neo-retro animated text boot with safe waterfall handoff (…	boot-rootfs	lu2dsx/x6200-rom	push	39653588113	24s	2026-10-21T18:32:06Z
+completed	success	Build: identidad de fuentes embebida y copia con --checksum (el md5 r…	boot-rootfs	lu2dsx/x6200-rom	push	39360779064	19s	2026-10-20T02:47:02Z
+completed	success	boot: el rootfs lleva un init de vendor doble (S95gui) que lanza 2º G…	boot-rootfs	lu2dsx/x6200-rom	push	38817523477	11s	2026-10-15T22:30:05Z
+completed	success	UI A/B testing harness	UI A/B testing harness	lu2dsx/x6200-rom	workflow_dispatch	38510204457	2m19s	2026-10-14T04:12:34Z
+
+$ gh workflow list --repo iariap/x6200_gui
+UI A/B testing harness	active	383840091
+boot-rootfs	active	386065226
+Build image	active	392455212

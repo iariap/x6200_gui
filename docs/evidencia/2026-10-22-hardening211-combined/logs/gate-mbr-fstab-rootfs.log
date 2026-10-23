@@ -1,0 +1,16 @@
+== MBR/tabla del sdcard.img reconstruido (esperado: p1 BOOT + p2 rootfs, SIN p3: DATA se crea en el primer boot, diseño de #212) ==
+sh: 1: fdisk: not found
+
+== fstab instalado en la rootfs (linea de DATA) ==
+9:/dev/mmcblk0p3	/mnt		ext4	rw		0	2
+
+== /etc/init.d de la rootfs: presencia de los scripts de los hijos ==
+-rwxr-xr-x. 1 pablo pablo 13014 Oct 22 13:39 /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out/target/etc/init.d/S01create_data
+-rwxr-xr-x. 1 pablo pablo 23810 Oct 22 13:39 /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out/target/etc/init.d/S02update
+== MBR del sdcard.img reconstruido (parseo directo, offset 446) ==
+firma 0x55AA: 0x55 0xaa -> OK
+  p1: tipo=0x0c (W95 FAT32 LBA) lba=2048 sectores=65536 MiB=32.0 boot
+  p2: tipo=0x83 (Linux) lba=67584 sectores=1048576 MiB=512.0
+  p3: tipo=0x00 (vacio) lba=0 sectores=0 MiB=0.0
+  p4: tipo=0x00 (vacio) lba=0 sectores=0 MiB=0.0
+=> esperado por diseño de #212: p1 BOOT + p2 rootfs, ningun p3 (DATA se crea en el primer boot)

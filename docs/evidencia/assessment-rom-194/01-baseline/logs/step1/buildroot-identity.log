@@ -1,0 +1,29 @@
+---HEAD---
+d084e2870a00b64d9c57474e7eceeef80f43f25b
+---LOG---
+commit d084e2870a00b64d9c57474e7eceeef80f43f25b
+Author:     Pablo Iaria <iariap@gmail.com>
+AuthorDate: Wed Oct 21 13:08:13 2026 -0300
+Commit:     GitHub <noreply@github.com>
+CommitDate: Wed Oct 21 13:08:13 2026 -0300
+
+    [DATA] DATA en ext4: fstab + S01create_data tolerante al tipo real (ref iariap/x6200_gui#188) (#1)
+    
+    La particion DATA (/dev/mmcblk0p3) era vfat: un corte de energia la deja corrupta
+    (FAT-fs: deleting FAT entry beyond EOF) y el kernel la remonta read-only, con lo que
+    params.db, lastbreath y app_logs dejan de guardarse.
+    
+    - fstab: /dev/mmcblk0p3 /mnt ext4 rw 0 2   (antes vfat rw 0 0)
+    - S01create_data: si ya existe una particion con label DATA, la monta con su tipo real
+      y sale. Antes, al no encontrar 'fat32', podia recrear la particion y formatearla
+      (mkfs -t vfat), destructivo con una DATA ext4.
+    
+    Medido en la radio: /mnt ext4 rw, escritura OK, LASTBREATH y params.db persistiendo.
+    mount -t auto no sirve en este busybox (no auto-detecta): por eso el fstab fija ext4 y
+    S01create_data monta con el tipo real como fallback para tarjetas viejas.
+    
+    Co-authored-by: QA LU2DSX <lu2dsx@users.noreply.github.com>
+---SUBMODULES---
+ cc34b5b2abf2588f0ef55e46a4fe85a60c19ba1f buildroot (2023.02.11)
+---REMOTE---
+https://github.com/iariap/AetherX6200Buildroot.git

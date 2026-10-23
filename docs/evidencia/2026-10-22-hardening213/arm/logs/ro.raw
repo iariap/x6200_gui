@@ -1,0 +1,16 @@
+[User]	(825200.100, +825200100)	 boot_identity: fuente: 51b924875d97a8dfd68a77ae692f64c3 (x6200_gui) 	(in main.c line #147)
+[User]	(825200.393, +293)	 main: CRASHLOG-MOD-INIT modulos=46 exe_base=0x00400000 exe_md5=73ac9331801ae268b132cec516618f59 exe=/usr/sbin/x6200_gui (292 ms) 	(in main.c line #450)
+[User]	(825200.404, +11)	 main: Display: fbdev 	(in main.c line #509)
+unable to open keypad interface:: No such file or directory
+unable to open keypad interface:: No such file or directory
+[Error]	(825200.430, +26)	 rotary_main_init: unable to open main knob 	(in rotary.c line #318)
+[Error]	(825200.430, +0)	 rotary_init: unable to open rotary interface: 	(in rotary.c line #90)
+unable to open encoder interface:: No such file or directory
+[Error]	(825200.430, +0)	 rotary_init: unable to open rotary interface: 	(in rotary.c line #90)
+[Error]	(825200.430, +0)	 main: Sin encoder de volumen (/dev/input/event2): se sigue sin el 	(in main.c line #568)
+[Error]	(825200.430, +0)	 main: Sin encoder interno del MFK (/dev/input/event4): se sigue sin el 	(in main.c line #580)
+[Error]	(825200.431, +1)	 database_init: params.db: DATA unavailable: /mnt is mounted read-only 	(in db.c line #425)
+[Error]	(825200.431, +0)	 params_init: params.db unavailable: cannot initialize parameters 	(in params.c line #645)
+Persistence unavailable: check DATA and params.db
+[Error]	(825200.431, +0)	 main: Persistence unavailable: check DATA and params.db 	(in main.c line #592)
+[Warn]	(825200.438, +7)	 audio_init_sync: pulseaudio no disponible (Connection refused): la GUI sigue, pero sin audio 	(in audio.c line #191)

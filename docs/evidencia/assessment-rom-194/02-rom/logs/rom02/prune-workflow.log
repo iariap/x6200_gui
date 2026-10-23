@@ -1,0 +1,19 @@
+== 1) sintaxis ==
+ok: buildroot/prune-vendor-rootfs.sh parsea
+== 2) rootfs de prueba ==
+total 12
+-rw-r--r--. 1 pablo pablo  9 Oct 21 18:02 S20gui
+-rw-r--r--. 1 pablo pablo 11 Oct 21 18:02 S95gui
+-rw-r--r--. 1 pablo pablo 10 Oct 21 18:02 S99vendor
+== 3) prune (como lo llama el build: sh <script> <rootfs>) ==
+prune-vendor-rootfs: borrado etc/init.d/S95gui
+prune-vendor-rootfs: 1 archivo(s) del vendor fuera de /tmp/tmp.upWPy6ihQU
+== 4) asserts before/after ==
+ok: S20gui queda, S95gui no, S99vendor queda (lista explicita, no patrones)
+== 5) guards fail-closed (rc != 0 y NO borrar nada) ==
+ok: 'comodin' rechazado (rc=2), no borro nada
+ok: 'path absoluto' rechazado (rc=2), no borro nada
+ok: 'traversal (..)' rechazado (rc=2), no borro nada
+ok: 'path que instala el port' rechazado (rc=2), no borro nada
+== resumen ==
+ko: prune OK — S20gui queda, S95gui no, S99vendor queda; los 4 guards rechazados sin borrar

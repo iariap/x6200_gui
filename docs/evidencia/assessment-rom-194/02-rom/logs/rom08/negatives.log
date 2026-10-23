@@ -1,0 +1,16 @@
+== negativas basicas ==
+cmd_inexistente        rc=0 verdict=ok     resp={"t":"err","err":"Unknown command"}
+app_inexistente        rc=0 verdict=ok     resp={"t":"err","err":"Unknown app"}
+mode_invalido          rc=0 verdict=ok     resp={"t":"err","err":"Invalid mode"}
+mode_tipo_invalido     rc=0 verdict=ok     resp={"t":"err","err":"Invalid mode"}
+freq_negativa          rc=0 verdict=ok     resp={"t":"err","err":"Invalid value"}
+pwr_fuera_rango        rc=0 verdict=ok     resp={"t":"err","err":"Invalid value"}
+filter_fuera_rango     rc=0 verdict=ok     resp={"t":"err","err":"Invalid value"}
+json_malformado        rc=0 verdict=ok     resp={"t":"err","err":"Bad request"}
+campo_val_faltante     rc=0 verdict=ok     resp={"t":"err","err":"Invalid value"}
+== off duplicado ==
+== desconexion abrupta (JSON parcial y cierre) ==
+== reconexion: 10 handshakes consecutivos ==
+== estado final ==
+{"t":"state","vfo":"A","freq":10100000,"freq_bg":10100000,"mode":"USB","band":"30m","filter":2800,"flo":100,"fhi":2900,"rfgain":0,"sql":0,"vol":30,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":10,"nb_width":10,"nr_level":0,"pwr":50,"db":-121,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+crashlog_total=0

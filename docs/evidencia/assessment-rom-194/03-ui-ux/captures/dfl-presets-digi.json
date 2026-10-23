@@ -1,0 +1,63 @@
+{
+  "scenario": "dfl-presets-digi",
+  "screen": "dfl-presets-digi",
+  "seed": 183,
+  "revision": "c888308eede71205605c06383432ee7e165f202e",
+  "framebuffer": { "width": 800, "height": 480 },
+  "theme": {
+    "requested": "Aurora",
+    "params_name": "Aurora",
+    "params_max_chars": 31,
+    "active": "Aurora"
+  },
+  "virtual_time_ms": 2200,
+  "coverage": [
+    { "component": "theme.c", "level": "REAL", "note": "src/theme.c compiled; theme_init() sets the scenario's theme (a ROM JSON, docs/THEMES.md)" },
+    { "component": "styles.c", "level": "REAL", "note": "src/styles.c compiled; every object is styled by the real styles" },
+    { "component": "fonts/", "level": "REAL", "note": "every src/fonts/*.c compiled and used by the labels" },
+    { "component": "main_screen.c", "level": "REAL", "note": "src/main_screen.c compiled; main_screen() builds the whole screen" },
+    { "component": "spectrum.c", "level": "PARTIAL", "note": "src/spectrum.c compiled and drawn; the magnitudes come from the seed-driven generator (src/signal_gen.c), not from an FFT/radio" },
+    { "component": "waterfall.c", "level": "PARTIAL", "note": "src/waterfall.c compiled and drawn; the per-row magnitudes come from the seed-driven generator, not from an FFT/radio" },
+    { "component": "band_info.c", "level": "PARTIAL", "note": "src/band_info.c compiled and drawn; the band rows come from the harness catalogue (mock_cfg), not from the SQLite DB" },
+    { "component": "band_plan.c", "level": "REAL", "note": "src/band_plan.c + band_plan_data.c compiled and drawn (IARU strip)" },
+    { "component": "meter.c", "level": "REAL", "note": "src/meter.c compiled and drawn; needle S-meter" },
+    { "component": "info.c", "level": "REAL", "note": "src/info.c compiled and drawn (VFO, mode, AGC, PRE/ATT, ATU, WiFi, BT)" },
+    { "component": "clock.c", "level": "REAL", "note": "src/clock.c compiled and drawn (battery / power view)" },
+    { "component": "tx_info.c", "level": "REAL", "note": "src/tx_info.c compiled and drawn (TX info, hidden while RX)" },
+    { "component": "buttons.cpp", "level": "REAL", "note": "src/buttons.cpp compiled; the bottom button bar is drawn" },
+    { "component": "pannel.c", "level": "REAL", "note": "src/pannel.c compiled and drawn (the overlay panel, empty here)" },
+    { "component": "msg.c", "level": "REAL", "note": "src/msg.c + msg_tiny.c compiled and drawn (empty: the harness sends no messages)" },
+    { "component": "adaptive_tuning.c", "level": "REAL", "note": "src/adaptive_tuning.c compiled and initialised; the tuning-multiplier label is created (hidden)" },
+    { "component": "cw_tune_ui.c", "level": "PARTIAL", "note": "src/cw_tune_ui.c compiled; the widget is built with the main screen and its visibility follows the rig's mode (CW/CWR only, issue #122: the mode decides, not cw_tune), so it is hidden outside CW/CWR" },
+    { "component": "cfg/subjects.cpp", "level": "REAL", "note": "src/cfg/subjects.cpp compiled; the real Subject/observer core backs cfg_cur/cfg" },
+    { "component": "cfg/settings_manager.cpp", "level": "REAL", "note": "src/cfg/settings_manager.cpp compiled; the remote control's mirror of the configuration binds its parameters to the real subjects at boot and is checked there (mocks/mock_settings_manager.cpp): reading it returns the stored value, not the neutral one (issue #30)" },
+    { "component": "cfg (catalogue)", "level": "SYNTHETIC", "note": "no database: mock_cfg owns cfg_t/cfg_cur and its values (no src/cfg/db.cpp)" },
+    { "component": "params", "level": "SYNTHETIC", "note": "src/params/params.c not compiled; harness owns params_t with fixed values" },
+    { "component": "radio", "level": "SYNTHETIC", "note": "mocks/mock_radio.c: explicit radio state, no device" },
+    { "component": "spot_marks.c", "level": "UNSUPPORTED", "note": "DX cluster spot marks are not rendered (no cluster data on the host)" },
+    { "component": "cluster_column.c", "level": "UNSUPPORTED", "note": "DX cluster column is not rendered (no cluster data on the host)" },
+    { "component": "dialogs (dialog_*.c)", "level": "UNSUPPORTED", "note": "app dialogs are not opened; dialog_construct() opens none of them in these fixtures" }
+  ],
+  "radio_calls": {
+    "get_state": 4,
+    "set_freq": 0,
+    "check_freq": 0,
+    "toggle_vfo": 0,
+    "set_ptt": 0,
+    "set_pwr": 0,
+    "change_vol": 0,
+    "change_mic": 0,
+    "change_mute": 0,
+    "start_atu": 0,
+    "start_swrscan": 0,
+    "stop_swrscan": 0,
+    "poweroff": 0
+  },
+  "metrics": {
+    "flushes": 6,
+    "flushed_pixels": 1243840,
+    "framebuffer_fnv1a": "0x283383e21213e817",
+    "png_path": "/out/dfl-presets-digi.png",
+    "png_bytes": 240129
+  }
+}

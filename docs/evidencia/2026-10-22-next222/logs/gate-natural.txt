@@ -1,0 +1,16 @@
+building ui_harness (revision f825fe4bc1ec6477a83bf509d6524d91353a4313)...
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/tools/ui_harness/build/styles_host.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+running the natural bench on main-natural...
+  profile: spectrum 132000 px x 27 frames, waterfall 196000 px x 39 rows, clock 15840 px x 0 tick(s)
+  natural totals: invalidated 11208000 px in 66 rectangles / 66 flushes over 39/40 frames
+  delimitation: drive off -> 190400 px (1.7% of the 11208000 px with the drive), only band-info rectangles (the OPT-4 #150 equality guards removed the clock/BT ticks)
+  forced mode: 3 frames x 1 flush x 384000 px (natural: 11208000 px in 40 frames)
+  CLI override: --bench-natural 10 ran 10 frames (the fixture says 40)
+  display off: 0 px in 40 frames (against 11208000 px lit) and a capture 384000 px lighter
+PASS: natural bench deterministic, profiled and delimited (main-natural)
+  png sha256: 0f676954bc7fd6854e3945de5e5aed436613d0191c5e963c6d265b2a512c77f3

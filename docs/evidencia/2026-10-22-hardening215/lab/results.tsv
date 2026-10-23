@@ -1,0 +1,27 @@
+types-rule	preflight: la regla de tipos y de targets de enlaces (19 casos de tabla)	PASS
+good-first-apply	paquete bueno: se aplica, deja backup verificado y consume paquete y sidecar	PASS
+good-added-paths	paquete con archivos nuevos: se instalan y quedan en /mnt/new_*.list, no en el backup	PASS
+subsequent-apply	segunda aplicacion: los dos paquetes se aplican en orden y cada uno deja su backup	PASS
+sidecar-missing	sin sidecar: no se toca nada y el paquete queda retenido	PASS
+sidecar-bad-hash	sidecar con hash malo: no se toca nada	PASS
+sidecar-wrong-name	sidecar que nombra otro archivo: no se toca nada	PASS
+truncated-tgz	tgz truncado: gzip -t lo detecta y no se toca nada	PASS
+absolute-entry	entrada con nombre absoluto: rechazada	PASS
+dotdot-entry	entrada con componente ..: rechazada	PASS
+dot-entry	entrada con ./: rechazada	PASS
+duplicate-entry	entrada duplicada: rechazada	PASS
+forbidden-mnt	entrada que reemplazaria el punto de montaje /mnt: rechazada	PASS
+forbidden-dev	entrada que reemplazaria el punto de montaje /dev: rechazada	PASS
+forbidden-tmp	entrada que reemplazaria el punto de montaje /tmp: rechazada	PASS
+fifo-entry	fifo en el paquete: rechazada	PASS
+device-entry	nodo de dispositivo en el paquete: rechazado	PASS
+unexpected-setuid	setuid de mas en el paquete: rechazado	PASS
+symlink-dotdot	symlink con target ..: rechazado	PASS
+updater-uid-1000	S02update con uid 1000 en el paquete: rechazado antes de tocar /	PASS
+symlink-absolute-admitted	symlink con target absoluto (como etc/alsa/conf.d/* de la rootfs): se admite y se aplica	PASS
+extract-fails	tar que falla al extraer: paquete y backup retenidos, mensaje de restauracion	PASS
+entry-over-directory	entrada que es un directorio en el sistema: la corta el backup (fail-closed, diagnosis mejorable)	PASS
+no-space	backup sin espacio: no se extrae y el paquete queda	PASS
+readonly-mnt	/mnt read-only: no se toca nada	PASS
+mnt-not-mounted	/mnt sin montar: se rechaza (el backup caeria en el rootfs)	PASS
+legacy-first-update	imagen historica: la corre SU script stock, el sidecar no protege nada	UNSUPPORTED/UNSAFE_LEGACY

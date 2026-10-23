@@ -37,8 +37,10 @@ static int _0_init_migrations() {
 static int _1_create_ftx_table() {
     int rc;
     char *query;
+    /* SIN BEGIN/COMMIT propios: migrations_apply() envuelve cada migracion en
+     * una transaccion y actualiza `version` dentro de la MISMA, asi que o queda
+     * todo o no queda nada (issue #213, punto 4). */
     rc = asprintf(&query,
-        "BEGIN;"
         "CREATE TABLE IF NOT EXISTS digital_modes("
             "id INTEGER PRIMARY KEY AUTOINCREMENT, "
             "label varchar(64) NOT NULL, "
@@ -60,8 +62,7 @@ static int _1_create_ftx_table() {
         "FROM memory AS m1  "
         "INNER JOIN memory AS m2 ON m1.id == m2.id  "
         "INNER JOIN memory AS m3 ON m1.id == m3.id  "
-        "WHERE m1.name='label' AND m2.name='vfoa_freq' AND m3.name = 'vfoa_mode' AND m1.id >= 200; "
-        "COMMIT",
+        "WHERE m1.name='label' AND m2.name='vfoa_freq' AND m3.name = 'vfoa_mode' AND m1.id >= 200;",
         CFG_DIG_TYPE_FT8, CFG_DIG_TYPE_FT4
     );
     if (rc == -1) {
@@ -77,8 +78,44 @@ static int _1_create_ftx_table() {
     return 0;
 }
 
+/* 2: frecuencias del ATU de indice a Hz (formato viejo).
+ *
+ * La transformacion NO se puede repetir: freq*50000+25000 manda los indices
+ * bajos (0..9) a valores que tambien son < 500000, asi que correrla dos veces
+ * multiplica otra vez datos que YA estan en Hz. Como no se puede saber por fila
+ * cual es cual, la guarda mira el conjunto: si no hay ninguna fila en el rango
+ * de indice no hay nada que convertir (idempotente); si hay filas en los dos
+ * rangos la procedencia es ambigua y se ABORTA con error explicito antes de
+ * mutar nada -- preservar la base vale mas que convertir a ciegas. */
 static int _2_update_atu_freq() {
-    int rc;
+    sqlite3_stmt *stmt;
+    int           indices = 0;
+    int           in_hz   = 0;
+    int           rc;
+
+    rc = sqlite3_prepare_v2(db,
+        "SELECT coalesce(sum(freq < 500000), 0), coalesce(sum(freq >= 500000), 0) FROM atu",
+        -1, &stmt, 0);
+    if (rc != SQLITE_OK) {
+        printf("Cannot read atu frequencies: %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        indices = sqlite3_column_int(stmt, 0);
+        in_hz   = sqlite3_column_int(stmt, 1);
+    }
+    sqlite3_finalize(stmt);
+
+    if (indices == 0) {
+        /* atu vacia o ya en Hz: no hay nada que convertir. */
+        return 0;
+    }
+    if (in_hz != 0) {
+        printf("atu has %d rows in Hz and %d in the old index form: ambiguous provenance, "
+               "refusing to convert\n", in_hz, indices);
+        return 1;
+    }
+
     rc = sqlite3_exec(db, "UPDATE atu SET freq=freq * 50000 + 25000 WHERE freq < 500000", NULL, NULL, NULL);
     if (rc != SQLITE_OK) {
         printf("Cannot update ATU frequencies: %s\n", sqlite3_errmsg(db));
@@ -199,60 +236,125 @@ static int (*migrations[])() = {
     _5_dfl_filter_tables,
 };
 
+/* Migration count = the highest known version + 1. */
+#define MIGRATIONS_COUNT SIZEOF_ARRAY(migrations)
+
+/* Cada corrida de migraciones va en UNA transaccion, con la actualizacion de
+ * `version` adentro: o queda TODA la secuencia con su version, o la base queda
+ * exactamente como estaba (ROLLBACK). Esto importa porque las migraciones no son
+ * todas idempotentes (la 2 no lo es: convierte indices a Hz) y una version a
+ * medias dejaria una base que no arranca ni se puede reintentar limpio
+ * (issue #213, punto 4). Nunca se sube el numero de version si algo falla. */
+static int migration_begin(void) {
+    if (sqlite3_exec(db, "BEGIN IMMEDIATE", NULL, NULL, NULL) != SQLITE_OK) {
+        printf("Cannot begin migration transaction: %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    return 0;
+}
+
+static int migration_commit(void) {
+    if (sqlite3_exec(db, "COMMIT", NULL, NULL, NULL) != SQLITE_OK) {
+        printf("Cannot commit migration transaction: %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    return 0;
+}
+
+static void migration_rollback(void) {
+    if (sqlite3_exec(db, "ROLLBACK", NULL, NULL, NULL) != SQLITE_OK) {
+        printf("Cannot roll back migration transaction: %s\n", sqlite3_errmsg(db));
+    }
+}
+
 int migrations_apply(void) {
-    int rc = 0;
     int ver;
+
     if (db == NULL) {
         printf("Database is not opened\n");
         return 1;
     }
 
-    rc = get_current_version(&ver);
-    if (rc != 0) {
+    if (get_current_version(&ver) != 0) {
         printf("Cannot get current version\n");
         return 1;
     }
-    for (size_t i = ver+1; i < SIZEOF_ARRAY(migrations); i++){
-        printf("Apply migration: %zu ...\n", i);
-        rc = (*migrations[i])();
-        if (rc != 0) {
-            printf("Can't apply %zu migration\n", i);
-            break;
-        }
-        set_current_version(i);
+    if (ver > (int) MIGRATIONS_COUNT - 1) {
+        /* Una base que dice ser mas nueva que este firmware se deja intacta: no
+         * se migra hacia atras ni se sigue con un esquema desconocido. */
+        printf("Database version %d is newer than this firmware (%zu): refusing to migrate\n",
+               ver, MIGRATIONS_COUNT - 1);
+        return 1;
     }
-    return rc;
+    if ((size_t) ver + 1 >= MIGRATIONS_COUNT) {
+        return 0;   /* ya al dia: ni se abre una transaccion */
+    }
+
+    if (migration_begin() != 0) {
+        return 1;
+    }
+
+    for (size_t i = (size_t) ver + 1; i < MIGRATIONS_COUNT; i++) {
+        printf("Apply migration: %zu ...\n", i);
+
+        if ((*migrations[i])() != 0) {
+            printf("Can't apply %zu migration\n", i);
+            migration_rollback();
+            return 1;
+        }
+        if (set_current_version((int) i) != 0) {
+            migration_rollback();
+            return 1;
+        }
+    }
+
+    if (migration_commit() != 0) {
+        migration_rollback();
+        return 1;
+    }
+    return 0;
 }
 
 
+/* Version guardada en la tabla `version` (la crea sql/params.sql; una base sin
+ * esa tabla esta incompleta y database_init() ya la rechazo). Sin fila o con un
+ * numero negativo la version es AMBIGUA: no se puede saber que migraciones
+ * corrieron -- y la 2 no es repetible -- asi que se aborta sin tocar nada. */
 static int get_current_version(int * ver) {
-    int rc;
     sqlite3_stmt *stmt;
-    rc = sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS version(id INT NOT NULL DEFAULT 0)", NULL, NULL, NULL);
-    if (rc != SQLITE_OK) {
-        printf("Cannot create versions table: %s\n", sqlite3_errmsg(db));
-        return 1;
-    }
-    rc = sqlite3_prepare_v2(db, "SELECT id from version", -1, &stmt, 0);
+    int           rc = sqlite3_prepare_v2(db, "SELECT id FROM version LIMIT 1", -1, &stmt, 0);
+
     if (rc != SQLITE_OK) {
         printf("Failed prepare statement: %s\n", sqlite3_errmsg(db));
         return 1;
     }
+
     rc = sqlite3_step(stmt);
 
     if (rc == SQLITE_ROW) {
         *ver = sqlite3_column_int(stmt, 0);
+    } else if (rc == SQLITE_DONE) {
+        printf("The version table has no row: database state is ambiguous, refusing to migrate\n");
+        sqlite3_finalize(stmt);
+        return 1;
     } else {
-        *ver = -1;
+        printf("Cannot read the database version: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return 1;
     }
     sqlite3_finalize(stmt);
+
+    if (*ver < 0) {
+        printf("Invalid database version %d: refusing to migrate\n", *ver);
+        return 1;
+    }
     return 0;
 }
 
 static int set_current_version(int ver) {
-    int rc;
     sqlite3_stmt *stmt;
-    rc = sqlite3_prepare_v2(db, "UPDATE version SET id=?", -1, &stmt, 0);
+    int           rc = sqlite3_prepare_v2(db, "UPDATE version SET id=?", -1, &stmt, 0);
+
     if (rc != SQLITE_OK) {
         printf("Failed prepare statement: %s\n", sqlite3_errmsg(db));
         return 1;
@@ -260,5 +362,14 @@ static int set_current_version(int ver) {
     sqlite3_bind_int(stmt, 1, ver);
     rc = sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    if (rc != SQLITE_DONE) {
+        printf("Cannot set version %d: %s\n", ver, sqlite3_errmsg(db));
+        return 1;
+    }
+    if (sqlite3_changes(db) != 1) {
+        printf("Cannot set version %d: the version table changed in %d rows\n", ver, sqlite3_changes(db));
+        return 1;
+    }
     return 0;
 }

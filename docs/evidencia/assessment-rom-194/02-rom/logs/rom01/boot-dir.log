@@ -1,0 +1,22 @@
+--- /boot en rootfs
+total 5468
+-rwxr-xr-x. 1 pablo pablo   26544 Oct 21 17:48 sun8i-r16-x6200.dtb
+-rw-r--r--. 1 pablo pablo 5567760 Oct 21 17:48 zImage
+660c94c6f7231e7dc262fefb295aae1a8dfcf9b9c2b46cdc1eced2c3296bcc14  /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/boot/zImage
+660c94c6f7231e7dc262fefb295aae1a8dfcf9b9c2b46cdc1eced2c3296bcc14  /home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/zImage
+boot_zImage_igual=yes
+--- /boot/vfat no aplica
+sun8i-r16-x6200.dtb 26544
+zImage 5567760
+--- modules dep
+410 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/lib/modules/6.1.82/modules.dep
+extra
+kernel
+modules.alias
+modules.alias.bin
+modules.builtin
+modules.builtin.alias.bin
+modules.builtin.bin
+modules.builtin.modinfo
+modules.dep
+modules.dep.bin

@@ -90,14 +90,30 @@ run wcag python3 "$DIR/check_wcag.py"
 run cw_tune_feed python3 "$DIR/check_cw_tune_feed.py"
 run autotune_v2 python3 "$DIR/check_autotune_v2.py"
 run build_identity python3 "$DIR/check_build_identity.py"
+# Inventario de los 22 dialogos que el arnes de host NO renderiza (issue #222): la
+# tabla tests/qemu/dialog-coverage.csv tiene que coincidir con los mocks, con las
+# fuentes reales de cada dialogo y con las 25 apps de remote_server.cpp::app_names[].
+run dialog_coverage python3 "$DIR/check_dialog_coverage.py"
 run curve_evidence python3 "$DIR/test_swrscan_curve_evidence.py"
 
 run host sh "$DIR/native/run_native_tests.sh"
+# Supervisor de la GUI (issue #214): backoff, logs unicos, una sola instancia y
+# senales, contra el rootfs/usr/sbin/x6200_daemon REAL en un chroot privado.
+# Sin user namespaces el stage sale 77 (SKIP), nunca PASS.
+run daemon sh "$DIR/daemon/run_daemon_tests.sh"
 # Paridad host<->CI: el job `functional` de ab-testing.yml no inicializa el
 # submodulo lvgl, asi que el build host tiene que pasar tambien sin el. Si un
 # stage vuelve a apoyarse en el header real, aca se ve en local (en el PR solo se
 # veria en CI). Ver docs/evidencia/2026-10-21-ciparity/.
 run host_ci_parity sh "$DIR/native/run_native_tests.sh" --ci-parity
+# Persistencia fail-closed con /mnt REAL (issue #213): namespace + chroot
+# privados. Declara SKIP (exit 77) si el host no permite user namespaces.
+run db_failclosed sh "$DIR/native/run_db_failclosed.sh"
+# Barrido QEMU de las 25 apps reales (issue #222): binario ARM real en un chroot
+# PRIVADO (contenedor/volumen/lab propios de la corrida). Sin ese entorno privado
+# declara SKIP (exit 77) con los requisitos exactos: no corre a medias ni declara
+# PASS, y nunca usa los recursos del banco del owner (banco-apps/x6200-build-output).
+run qemu_apps sh "$DIR/qemu/run_apps_qemu.sh"
 run drawbuf_partial sh "$DIR/check_drawbuf_partial.sh"
 run wspr sh "$DIR/native/run_wspr_tests.sh"
 run sstv sh "$DIR/native/run_sstv_tests.sh"

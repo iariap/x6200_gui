@@ -1,0 +1,9 @@
+    exit=78
+    ok: exit 78 (EX_CONFIG)
+    ok: sin CRASHLOG SIGSEGV
+    ok: la base quedo intacta (mismos bytes)
+    ok: el mensaje de persistencia esta en la salida
+    ok: no llego a inicializar el control remoto
+    ok: el motivo del rechazo es el esperado (ambiguous provenance, refusing to convert)
+    ok: NO se inicializo la radio (boot.log sin 'radio')
+    sha256 base: b1c5fafca0009add5045819810c01dae634076ee955e06f5ecd9ee7da60fbaf9 -> b1c5fafca0009add5045819810c01dae634076ee955e06f5ecd9ee7da60fbaf9

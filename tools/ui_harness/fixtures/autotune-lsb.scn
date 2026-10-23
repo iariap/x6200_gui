@@ -1,0 +1,44 @@
+# autotune-lsb: Auto Tune multimode (issue #205) in LSB - the mirrored sideband.
+#
+# Same rule as `autotune-usb` (suggest, never move before the second press), on
+# the other sideband: the fixture is in LSB with the mirrored real filter
+# (-3000..0 Hz, the mapping of src/cfg/mode.c::update_real_filters() that
+# mocks/mock_radio.c publishes) and the TEST-ONLY voice mass sits 2850 Hz BELOW
+# the dial, so the estimated shift is -752 Hz. The sign of the suggestion follows
+# the dial: a negative shift lowers the VFO.
+#
+# scenario_settle codifies the mirror: the dial must not have moved after the
+# COLLECT window (the session stays in PREVIEW; a suggestion that retuned the
+# voice would show the dial on start - 752). The mirrored sign is checked on the
+# source by the native test with synthetic spectra (where the exact value is
+# observable); the bank pins the fact that no write happens.
+
+name autotune-lsb
+screen autotune-lsb
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 96000
+
+mode lsb
+filter_low 0
+filter_high 3000
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

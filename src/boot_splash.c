@@ -24,6 +24,26 @@
 static char bs_pidfile[BS_PATH_MAX + 1] = BS_PIDFILE_DEFAULT;
 static char bs_exe[BS_PATH_MAX + 1]     = BS_EXE_DEFAULT;
 
+#ifdef BOOTANIM_TEST
+/* Instrumentacion del banco (ver boot_splash.h): contadores de sondeos. Solo
+ * bajo -DBOOTANIM_TEST; en produccion no existen. */
+static unsigned int bs_test_waits;
+static unsigned int bs_test_waited_ms;
+
+void boot_splash_test_reset_waits(void) {
+    bs_test_waits     = 0;
+    bs_test_waited_ms = 0;
+}
+
+unsigned int boot_splash_test_waits(void) {
+    return bs_test_waits;
+}
+
+unsigned int boot_splash_test_waited_ms(void) {
+    return bs_test_waited_ms;
+}
+#endif /* BOOTANIM_TEST */
+
 void boot_splash_set_paths(const char *pidfile, const char *exe) {
     if (pidfile != NULL) {
         (void) snprintf(bs_pidfile, sizeof(bs_pidfile), "%s", pidfile);
@@ -36,6 +56,13 @@ void boot_splash_set_paths(const char *pidfile, const char *exe) {
 
 static void bs_sleep_ms(unsigned int ms) {
     struct timespec req;
+
+#ifdef BOOTANIM_TEST
+    /* Instrumentacion del banco: el test afirma cuantas veces sono la espera,
+     * no cuanto tardo (ver boot_splash.h). En produccion no queda nada. */
+    bs_test_waits++;
+    bs_test_waited_ms += ms;
+#endif
 
     req.tv_sec  = (time_t) (ms / 1000u);
     req.tv_nsec = (long) (ms % 1000u) * 1000000L;

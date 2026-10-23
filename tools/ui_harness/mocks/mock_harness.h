@@ -42,6 +42,21 @@ float               mock_audio_last_db(void);
 int                 mock_audio_calls(mock_audio_setter_t which);
 void                mock_audio_reset(void);
 
+/* mocks/mock_ui_deps.c: entrega sincrona del EVENT_MSG_UPDATE (issue #220).
+ * Apagado por defecto: los fixtures de siempre no ven ningun evento y sus
+ * pixeles no cambian. Un fixture que necesita leer el texto de un aviso lo
+ * prende y despues deja correr el reloj virtual para que el timer de src/msg.c
+ * escriba el label. */
+void mock_event_bus_set_live(bool live);
+
+/* mocks/mock_cfg.c: cuantas veces la GUI pidio las acciones de banda/VFO que el
+ * arnes responde con un no-op (issue #220). Es el unico observable de que una
+ * tecla bloqueada NO ejecuto la accion; sin los contadores, el no-op haria
+ * pasar la asercion por vacuidad. */
+void     mock_cfg_calls_reset(void);
+unsigned mock_cfg_band_load_next_calls(void);
+unsigned mock_cfg_vfo_copy_calls(void);
+
 /* mocks/mock_dfl_store.c: doble en memoria del almacen de presets del DFL
  * (issue #183). El arnes no tiene params.db; el SQL real lo cubre el test
  * nativo. `mock_dfl_store_fail(true)` fuerza el fallo de escritura para el

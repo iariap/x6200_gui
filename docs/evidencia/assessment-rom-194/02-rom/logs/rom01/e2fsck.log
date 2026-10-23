@@ -1,0 +1,42 @@
+e2fsck 1.47.3 (8-Jul-2025)
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+rootfs: 5375/32768 files (0.1% non-contiguous), 65878/131072 blocks
+e2fsck_exit=0
+--- dumpe2fs -h
+Filesystem volume name:   rootfs
+Filesystem UUID:          79bb870e-5334-47c8-a825-3f1510b356ed
+Filesystem magic number:  0xEF53
+Filesystem revision #:    1 (dynamic)
+Filesystem features:      has_journal ext_attr resize_inode dir_index filetype extent flex_bg sparse_super large_file huge_file dir_nlink extra_isize metadata_csum
+Filesystem flags:         signed_directory_hash 
+Free blocks:              65194
+Free inodes:              27393
+Block size:               4096
+Fragment size:            4096
+Blocks per group:         32768
+Fragments per group:      32768
+Inodes per group:         8192
+Inode blocks per group:   512
+Flex block group size:    16
+Filesystem created:       Wed Oct 21 17:53:18 2026
+Reserved blocks uid:      0 (user root)
+Reserved blocks gid:      0 (group root)
+First inode:              11
+Inode size:               256
+Required extra isize:     32
+Desired extra isize:      32
+Journal inode:            8
+Default directory hash:   half_md4
+Directory Hash Seed:      225043bf-30ff-4697-8fca-fb59fff2dcf0
+Journal features:         (none)
+Total journal size:       16M
+Total journal blocks:     4096
+Max transaction length:   4096
+Fast commit length:       0
+Journal sequence:         0x00000001
+Journal start:            0
+

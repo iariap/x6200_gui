@@ -1,0 +1,7 @@
+    socket de control remoto: I=16s
+    ok: arranco (socket presente)
+    ok: contesta el handshake
+    ok: sin CRASHLOG SIGSEGV
+    ok: boot.log tiene el sello de fuentes
+    ok: boot.log llega hasta radio
+    sha256 base: bc18ba10ca503b518771fa9c9a5649644f675d7ff0b8c87d03940969f64c2867 -> a3acadecb8e896e5bca815a33c11b84f1a4c04101f0658b0549c781fe1a158e1

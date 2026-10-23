@@ -1,0 +1,4 @@
+$ python3 tests/check_autotune_v2.py
+  textos: 8 CW + 8 multimodo | long_action_items: 37 entradas | ACTION_ATUNE=129 | pins CW: 3 | fixtures: 9
+  contrato estatico de Auto Tune (CW v2 + multimodo) OK
+exit=0

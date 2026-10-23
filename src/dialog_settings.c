@@ -394,7 +394,7 @@ static void audio_enh_update_cb(lv_event_t * e) {
     params_uint8_t  *var = lv_event_get_user_data(e);
 
     params_uint8_set(var, lv_dropdown_get_selected(obj));
-    audio_enh_preset_load((audio_enh_preset_t) var->x);
+    audio_enh_apply_mode_preset();   /* el perfil efectivo depende del modo */
 }
 
 static void waterfall_battery_update_cb(lv_event_t * e) {

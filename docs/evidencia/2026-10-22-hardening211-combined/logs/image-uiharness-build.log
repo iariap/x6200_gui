@@ -1,0 +1,24 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 3.30kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ci 1/2] FROM docker.io/library/ubuntu:24.04
+#4 DONE 0.0s
+
+#5 [ci 2/2] RUN apt-get update -qq     && apt-get install -y -qq --no-install-recommends         build-essential cmake git pkg-config ca-certificates         libpng-dev libnm-dev libsqlite3-dev libliquid-dev libspeexdsp-dev     && rm -rf /var/lib/apt/lists/*
+#5 CACHED
+
+#6 exporting to image
+#6 exporting layers done
+#6 writing image sha256:826eae2c50dafc67409886f576c0d65a365fde882960c0091b2b0f3efee836e4 done
+#6 naming to docker.io/library/x6200-uiharness-211combo done
+#6 DONE 0.0s
