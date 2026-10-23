@@ -8,6 +8,8 @@
 #   manual_apps   every app of the firmware has its own section in the operator manual
 #   pruebas       docs/PRUEBAS.md: structure and cited evidence exist
 #   curve_evidence the drawn ROE curve on committed PNGs: U / dome / branch
+#   wcag          static WCAG pairs over the theme roles (src/theme.h + JSON)
+#   wcag_rendered WCAG 2.1 over the RENDERED surface (harness matrix; issue #277)
 #   host          the native suite (401 assertions, no container)
 #   host_ci_parity  the same suite with lvgl/ hidden (the tree the CI job sees)
 #   wspr/sstv     codec round trips against the X6100's own test tools
@@ -87,6 +89,14 @@ run app_handlers python3 "$DIR/check_app_handlers.py"
 run manual_apps python3 "$DIR/check_manual_apps.py"
 run pruebas python3 "$DIR/audita-pruebas.py"
 run wcag python3 "$DIR/check_wcag.py"
+# Contraste WCAG 2.1 sobre la superficie RENDERIZADA (issue #277, epica #269):
+# `check_wcag.py` compara roles estaticos y queda verde mientras el render de
+# Sunlit mide 2.38:1 (la ventana de Ajustes pinta un bitmap, no el rol `dialog`).
+# Este gate renderiza la matriz de temas x estados con el arnes de host y mide el
+# par tinta/fondo sobre los pixeles; las violaciones preexistentes van en un
+# baseline por par (tests/wcag_rendered_baseline.json) y falla ante una violacion
+# nueva, una regresion o un baseline obsoleto.
+run wcag_rendered python3 "$DIR/check_wcag_rendered.py"
 run cw_tune_feed python3 "$DIR/check_cw_tune_feed.py"
 run autotune_v2 python3 "$DIR/check_autotune_v2.py"
 run build_identity python3 "$DIR/check_build_identity.py"
