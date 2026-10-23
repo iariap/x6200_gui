@@ -286,6 +286,17 @@ def exempt_hexes(bases: dict[str, list[str]]) -> dict[str, str]:
 
 
 def _docker_run(args: list[str], image: str) -> None:
+    """Corre un comando en el arnes con el cwd en `tools/ui_harness` (no en build/).
+
+    El `-w` apunta al dir del harness, que existe siempre, y no a `build/`: docker
+    crea un WORKDIR inexistente como **root** antes de bajar al `--user`, asi que en
+    un checkout limpio (build/ es gitignored) un `-w .../build` dejaba el directorio
+    root-owned y el proceso uid 1000 no podia compilar dentro ("CMake Error: Unable
+    to (re)create the private pkgRedirects directory"). Los otros gates del arnes
+    (`check_drawbuf_partial.sh`, `check_harness_determinism.sh`) ya usan `-w` en el
+    dir del harness y crean `build/` por dentro; este gate hacia lo mismo salvo el
+    `-w`. El build y el render entran a `build/` por su cuenta.
+    """
     cmd = [
         "docker",
         "run",
@@ -297,7 +308,7 @@ def _docker_run(args: list[str], image: str) -> None:
         "-v",
         f"{ROOT}:/src",
         "-w",
-        "/src/tools/ui_harness/build",
+        "/src/tools/ui_harness",
         image,
         *args,
     ]
@@ -430,7 +441,8 @@ def render(image: str) -> None:
     (OUT_DIR / "json").mkdir(exist_ok=True)
     lista = " ".join(fixtures())
     script = (
-        "set -e; OUT=out/wcag-rendered; rm -rf $OUT; mkdir -p $OUT/png $OUT/json; "
+        "set -e; cd /src/tools/ui_harness/build; "
+        "OUT=out/wcag-rendered; rm -rf $OUT; mkdir -p $OUT/png $OUT/json; "
         f"for f in {lista}; do "
         "./ui_harness --scenario ../fixtures/$f.scn "
         "--png $OUT/png/$f.png --json $OUT/json/$f.json --inspect >/dev/null 2>&1 "
