@@ -1,0 +1,9 @@
+experiment CONSOLIDATION-254: PASS (exit 0)
+scenarios REMOVED in B (A's fixture, not shipped by B; left out of the comparison): autotune-notcw
+  Functional         PASS            (required) — 198 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — no unexplained visual regressions
+  Quality Contract   PASS            (required) — 2048 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+report: /home/pablo/desa/asf/state/worktrees/x6200/consolidate-legacy-main/tools/ab_testing/reports/CONSOLIDATION-254

@@ -1,0 +1,192 @@
+================================================================================
+GATES — consolidación legacy -> main (PR #254)
+RUN: 2026-10-23 | worktree: state/worktrees/x6200/consolidate-legacy-main
+HEAD: ed531177b16f0341415ea5b22e7771a959445ba7 (merge)
+Padres: 7877852f0720f893d14370b15f14294f5f243b5e + 936e75e96e9a3eea99775b72c4242a6ecff5fca3
+Base de comparación: origin/main 936e75e9 / legada 7877852f
+Nota de entorno: el submódulo `lvgl` no estaba inicializado en el worktree nuevo; se
+corrió `git submodule update --init lvgl` (74d0a816ae). Sin eso, `drawbuf_partial` y
+el gate de determinismo fallan por un error de cmake ("/src/lvgl does not contain a
+CMakeLists.txt"), no por el cambio.
+================================================================================
+
+--------------------------------------------------------------------------------
+[1] tests/run_all_tests.sh --quick   ->  RC=0   (21 OK, 0 fallos)
+--------------------------------------------------------------------------------
+================ resumen ================
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  settings_grid: OK
+  info_bar: OK
+  apps_menu: OK     todas las apps del menu llegan al dispatcher que usa su boton
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (24 apps)
+  pruebas: OK     OK: estructura y evidencia en orden
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  cw_tune_feed: OK
+  autotune_v2: OK
+  build_identity: OK
+  dialog_coverage: OK     OK: 22 dialogos inertes (mock y tabla coinciden), 19 apps con fila y 6 excepciones verificadas sobre las 25 apps del barrido
+  curve_evidence: OK   PASS: 8 pruebas de swrscan_curve_evidence
+  host: OK   57 comprobaciones, 0 fallos
+  daemon: OK     all OK: 15 casos, 0 fallos
+  host_ci_parity: OK   57 comprobaciones, 0 fallos
+  db_failclosed: OK   todos los casos corrieron y afirmaron su resultado (matriz: .../tests/native/build/db_failclosed/matrix.txt)
+  qemu_apps: SKIP SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))
+  drawbuf_partial: OK   PASS: partial draw buffer renders the identical physical framebuffer (sw-rotate 90)
+  wspr: SKIP SKIP: wspr: la imagen x6200-uiharness no trae /usr/include/fftw3.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  sstv: SKIP SKIP: sstv: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  wefax: SKIP SKIP: wefax: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  navtex: OK   all OK
+  (omitidos: qemu_apps wspr sstv wefax js8 webserver)
+  21 OK, 0 fallos
+
+Clasificación honesta:
+  SKIP qemu_apps    -> necesita entorno privado (docker + imagen + volumen del banco + chroot); NO es PASS.
+  SKIP wspr/sstv/wefax -> la imagen x6200-uiharness es el target `ci` (sin fftw3/sndfile); se corren con la imagen `full`.
+  SKIP js8          -> omitido por `--quick` (1994 aserciones, ~largo).
+  SKIP webserver    -> no está el checkout ../.x6200_webserver.
+
+NOTA (resuelto en esta corrida): el primer `run_all_tests.sh --quick` dio `drawbuf_partial: FALLÓ`
+por el submódulo `lvgl` sin inicializar. Tras `git submodule update --init lvgl` el gate pasó
+(PASS arriba) y la suite dio 21 OK, 0 fallos.
+
+--------------------------------------------------------------------------------
+[2] tests/native/run_native_tests.sh   ->  RC=0
+--------------------------------------------------------------------------------
+... (cada stage imprime "<n> comprobaciones, 0 fallos") ...
+  597 comprobaciones, 0 fallos
+  PASS: un loop_timer, periodo 30/250 ms, pump vivo y NetworkManager intacto
+  57 comprobaciones, 0 fallos
+(warning preexistente de radio.c:347 "no return statement in function returning non-void";
+ no lo introduce este merge)
+
+--------------------------------------------------------------------------------
+[3] tests/native/run_native_tests.sh --ci-parity   ->  RC=0
+--------------------------------------------------------------------------------
+  597 comprobaciones, 0 fallos
+  57 comprobaciones, 0 fallos
+  == ci-parity: OK (build host sin lvgl/)
+
+--------------------------------------------------------------------------------
+[4] tests/check_harness_determinism.sh   ->  RC=0
+--------------------------------------------------------------------------------
+  ... sha256 por fixture (dos corridas idénticas) ...
+  PASS: deterministic (identical PNGs for every fixture)
+
+--------------------------------------------------------------------------------
+[5] tests/check_harness_natural.sh   ->  RC=0
+--------------------------------------------------------------------------------
+  delimitation: drive off -> 190400 px ... only band-info rectangles ...
+  forced mode: 3 frames x 1 flush x 384000 px (natural: 11208000 px in 40 frames)
+  CLI override: --bench-natural 10 ran 10 frames (the fixture says 40)
+  display off: 0 px in 40 frames ... and a capture 384000 px lighter
+  PASS: natural bench deterministic, profiled and delimited (main-natural)
+    png sha256: 245a18bcf88cce356857c50d980219e9236250b9d6c8dfb019aa77459b7d518e
+
+--------------------------------------------------------------------------------
+[6] tests/check_harness_wakeups.sh   ->  RC=0
+--------------------------------------------------------------------------------
+  loop: 14 wakeups with the data drive (11 without it) in 1000 ms; sleeps 10-200 ms
+  tick thread: none (LV_TICK_CUSTOM, lv_conf.h: CLOCK_MONOTONIC) = 0 wakeups in 1000 ms
+  window override: --bench-wakeups 3000 ran 3000 ms with 31 loop wakeups (the default window: 1000 ms)
+  PASS: wakeup profile measured, sourced and delimited (main-natural)
+    png sha256: 21677bd97f98aa9e49cf33ce5ea51a25ef403f2fa69ffb9c12c129f9176c0c01
+
+--------------------------------------------------------------------------------
+[7] python3 tests/audita-pruebas.py   ->  RC=0
+--------------------------------------------------------------------------------
+  builds en la tabla: 237 | secciones: 14 | enlaces: 61
+  para revisar a mano (32): ... (lista de items, informativa)
+  OK: estructura y evidencia en orden
+
+--------------------------------------------------------------------------------
+[8] scripts/apps/x6200/check-matrix.sh origin/main HEAD <worktree>   ->  RC=0
+--------------------------------------------------------------------------------
+==> [check] native tests (tests/native/run_native_tests.sh)      ok
+==> [check] check_cfg_fills                                      ok
+==> [check] check_actions                                        ok
+==> [check] check_settings_focus                                 ok
+==> [check] check_apps_menu                                      ok
+==> [check] check_app_handlers                                   ok
+==> [check] check_manual_apps                                    ok
+==> [check] check_wcag                                           ok
+==> [check] check_cw_tune_feed                                   ok
+==> [check] check_settings_grid                                  ok
+==> [check] check_autotune_v2                                    ok
+==> [check] check_dialog_coverage                                ok
+==> [check] check_build_identity                                 ok
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [check] ruff check (ab_testing)                              ok
+==> [check] ruff format --check (ab_testing)                     ok
+==> [check] pytest -m 'not e2e' (ab_testing)                     ok
+==> [check] x6200-ab themes                                      ok
+==> [check] x6200-ab contracts (ed531177b16f...)                 ok
+==> [check] bash -n <14 scripts tocados>                         ok   (todos)
+==> [check] harness determinism gate                             ok
+==> [check] banco QEMU: preflight                 BLOCKED: falta entorno (host del owner)
+== comprobando el banco ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  FALTA: falta el volumen x6200-build-output (build del GUI)
+  FALTA: falta el chroot (.../.vfix3): extraer el rootfs de la imagen, ver docs/TESTING.md nivel 4
+  FALTA: el chroot no parece un rootfs (sin /bin/busybox)
+  FALTA: el chroot no tiene /lib
+  python3: ok
+  PIL: ok
+  FALTA: falta .../tools/remote/x6200-remote (compilar con .../tools/remote/compila.sh)
+  buildroot: ok
+  libs del banco: ok
+== 5 cosa(s) faltan: el banco no puede correr ==
+
+RC=0 (ningún check FAILED; check_wcag(temas)=SKIP por no haber cambios de temas; banco QEMU=BLOCKED, no FAIL).
+
+NOTA: el owner anticipó que `check_dialog_coverage` podía dar un FAIL preexistente
+(existe en la legada y no en `main`). En esta corrida **pasó** (con `origin/main` como base),
+y también standalone: "22 dialogos inertes (mock y tabla coinciden), 19 apps con fila y
+6 excepciones verificadas sobre las 25 apps del barrido". No hubo FAIL preexistente.
+
+--------------------------------------------------------------------------------
+[9] uv run x6200-ab themes   ->  RC=0
+--------------------------------------------------------------------------------
+  ... todos los pares de contraste OK (ej.: waterfall_signal on main-tema-sunlit = 8.89:1) ...
+  exempt (WCAG 1.4.3, disabled/incidental): 7 role(s) — btn_off_text, text_mute, text_faint,
+    icon_off, switch_off, off, track
+
+--------------------------------------------------------------------------------
+[10] uv run x6200-ab contracts --revision ed531177...   ->  ok (corrido por check-matrix [8])
+--------------------------------------------------------------------------------
+  ==> [check] x6200-ab contracts (ed531177b16f0341415ea5b22e7771a959445ba7)   ok
+
+--------------------------------------------------------------------------------
+[11] uv run x6200-ab compare --a 936e75e9 (main) --b ed531177 (merge)   ->  RC=0 PASS
+--------------------------------------------------------------------------------
+experiment CONSOLIDATION-254: PASS (exit 0)
+scenarios REMOVED in B (A's fixture, not shipped by B; left out of the comparison): autotune-notcw
+  Functional         PASS            (required) — 198 scenarios captured on both revisions
+  Visual Regression  PASS            (required) — no unexplained visual regressions
+  Quality Contract   PASS            (required) — 2048 contract checks passed on the candidate
+  Performance        PASS            (required) — render-cost proxy within budget
+  Hardware           BLOCKED         (advisory) — no physical X6200 attached; hardware behaviour is not measured
+  Energy             BLOCKED         (advisory) — no power measurement; energy evidence must be physical
+report: .../tools/ab_testing/reports/CONSOLIDATION-254  (report.md + metadata.json copiados a este
+        directorio; el árbol de 100 MB con screenshots/diffs NO se versiona)
+
+ALCANCE: este A/B es host-side (render). NO valida la semántica de audio/PSD de `src/dsp.cpp`
+(§4 del README): el Auto Tune #205 sobre el pipeline 1.0.7 sólo se puede juzgar con radio física
+(Hardware/Energy quedan BLOCKED). El PASS de este compare **no** convierte el NO-GO en GO.
+
+--------------------------------------------------------------------------------
+[12] Build ARM / ROM   ->  PENDING (razón)
+--------------------------------------------------------------------------------
+PENDING, sin GO. No se compiló la ROM ARM en esta corrida:
+  - No hay toolchain cross del X6200 en el PATH: `arm-linux-gnueabihf-gcc`/`aarch64-linux-gnu-gcc`
+    no existen (el `arm-linux-gnu-gcc` del sistema no es el sysroot de la radio).
+  - El árbol de buildroot presente (`state/worktrees/x6200/buildroot_new/AetherX6200Buildroot`)
+    NO tiene `output/host` (toolchain sin construir); un build completo de buildroot es de horas.
+  - El único camino que compila ARM es `tools/compila-gui.sh` / el banco QEMU, que escriben en el
+    volumen del owner `x6200-build-output` y montan `x6200-buildroot`; por restricción explícita de
+    esta corrida ("no usar los recursos del banco del owner", cero SSH/flash/TX/sudo) quedaron fuera.
+  - El gate `qemu_apps` / el preflight del banco QEMU reportó BLOCKED por entorno ausente (ver [8]).
+Conclusión: la validación ARM y la física quedan PENDING_HARDWARE para un agente QA aparte.
