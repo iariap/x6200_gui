@@ -46,6 +46,16 @@ tools/ui_harness/
     mock_main_screen.c  the app dialogs (Settings is real; the rest are inert), DX cluster column, scheduler queue, recorder/RTTY surface
     mock_ui_deps.c      event bus, message helpers, voice, BT/WiFi/backlight, audio volume + DSP preset + wfview server surfaces, the fixed wall clock (`__wrap_time`) and the virtual clock
     mock_dsp.c          the DSP setter mfk.cpp calls (no FFT runs)
+    dialogs/            stubs only for the `ui_harness_dialogs` target (see below):
+                        the non-UI services of the three dialogs the remote protocol
+                        cannot open, plus a stand-in <sndfile.h> (the CI image ships
+                        no libsndfile)
+  fixtures/             the standing corpus (rendered by the gates and the A/B suite)
+  fixtures-gaps/        UI AUDIT-gap fixtures: the three key-only dialogs, the injected
+                        BT/WiFi states and the forced VISION / legacy-bar renders.
+                        NOT part of the standing corpus on purpose (the VISION fixture
+                        shows the known UI-012/UI-014 defects; the three dialogs need
+                        the ui_harness_dialogs binary), so it is run by explicit path
   third_party/          vendored build headers (see third_party/README.md)
 ```
 
@@ -568,6 +578,39 @@ and the rendering, **never** that transmitting three or five passes is safe on
 hardware. Enabling multipass TX for real (and any settle window above 0) needs
 the radio: `requires-radio`. The coverage table of each `swrscan` JSON says so
 per component.
+
+## UI AUDIT gap fixtures (`ui_harness_dialogs`, `fixtures-gaps/`)
+
+The UI AUDIT epic (#269) left states the default harness could not reach. This build adds a
+second binary and four scenario keys for them, kept **out** of the standing corpus
+(`fixtures-gaps/`, run by explicit path) so the CI gates and the A/B suite are untouched.
+
+**Scenario keys** (all refused on a bad value, never silently ignored):
+
+* `bt_state` / `wifi_status` — `off` | `on` | `connected`. The real `src/bt_state.c` (reads the
+  files `btcat-ctl` writes) and `src/wifi.cpp` (talks to NetworkManager) are not compiled, so the
+  double in `mocks/mock_ui_deps.c` is fixed to OFF; these keys inject one of the three VISIBLE
+  states of the top-bar icons (`src/info.c`: off = `icon_off`, on = `text_dim`, connected = `text`).
+  A fixture that sets `wifi_status` also makes `build_main()` send `MSG_WIFI_STATE_CHANGED` once —
+  the same message the radio sends on a state change — so the WiFi icon reflects the injected
+  state. Captures are **SYNTHETIC** (layout/contrast of the state, not the radio's function).
+* `vision` — forces `theme_shape.vision` before `styles_init()`, in the order `src/main.c` uses.
+  The firmware cannot enter VISION (no theme sets the flag and no setter exists), so the capture is
+  **SYNTHETIC**.
+* `bar_theme` — `simple` (209 px info bar, dark bitmaps) | `legacy` (206 px, light bitmaps,
+  `src/styles.c::setup_theme_legacy`). `params.theme` (THEME_LEGACY) chooses it in the radio and no
+  UI writes that parameter, so the legacy capture is **SYNTHETIC**.
+
+**`ui_harness_dialogs`** (`-DHARNESS_REAL_DIALOGS=1`) is the second target. It links the REAL
+`src/dialog_freq.c`, `src/dialog_msg_cw.c` and `src/dialog_msg_voice.c` — the three windows the
+remote-control protocol cannot open because it injects no keys. `mocks/mock_main_screen.c` keeps
+those three descriptors inert for the default binary (so `tests/qemu/dialog-coverage.csv` stays the
+table the epic fixes); the dialogs target drops them and adds the non-UI stubs in
+`mocks/dialogs/`. The `dialog-freq` / `dialog-msg-cw` / `dialog-msg-voice` screens open the window
+by the firmware's own route (`LV_EVENT_KEY` + `HKEY_FINP` to the focused spectrum; `EVENT_KEYPAD`
++ `KEYPAD_MSG`) and `scenario_settle` stops the run if the window did not build, so a capture with
+the default binary can never pass. These three captures are **REAL** (the window is the firmware's
+own; only its keyer/textarea/message-store/audio services are mocked).
 
 ## Determinism
 

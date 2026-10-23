@@ -1,0 +1,26 @@
+app,ronda,resultado,app_estado,colores,segundos,captura,motivo
+FT8,1,FAIL,FT8,176,3.92,capturas/FT8-r1.png,FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10136000; estado persistido cambiado sin querer: mode USB -> USB-D
+FT4,1,FAIL,FT4,177,3.9,capturas/FT4-r1.png,FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10140000; estado persistido cambiado sin querer: mode USB -> USB-D
+JS8,1,FAIL,JS8,249,3.91,capturas/JS8-r1.png,FAIL: estado persistido cambiado sin querer: mode USB -> USB-D
+WSPR,1,FAIL,WSPR,227,3.9,capturas/WSPR-r1.png,FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10138700; estado persistido cambiado sin querer: mode USB -> USB-D
+SSTV,1,PASS,SSTV,193,3.9,capturas/SSTV-r1.png,"PASS: app abierta, captura real, home restaurada y GUI estable"
+WeFax,1,PASS,WeFax,180,3.92,capturas/WeFax-r1.png,"PASS: app abierta, captura real, home restaurada y GUI estable"
+NavTex,1,PASS,NavTex,185,3.91,capturas/NavTex-r1.png,"PASS: app abierta, captura real, home restaurada y GUI estable"
+RTTY,1,PASS,RTTY,176,3.9,capturas/RTTY-r1.png,"PASS: app abierta, captura real, home restaurada y GUI estable"
+CW,1,FAIL,CW,301,3.91,capturas/CW-r1.png,FAIL: estado persistido cambiado sin querer: mode USB -> CW
+Field,1,PARTIAL,Field,1856,3.9,capturas/Field-r1.png,PARTIAL: sin red (QRZ/POTA): la consulta no se puede validar (solo el render)
+GPS,1,PARTIAL,GPS,264,3.89,capturas/GPS-r1.png,PARTIAL: sin receptor GNSS en el chroot: se espera el mensaje controlado de la app
+Bands,1,PASS,Bands,222,3.9,capturas/Bands-r1.png,"PASS: app abierta, captura real, home restaurada y GUI estable"
+Settings,1,PASS,Settings,381,3.96,capturas/Settings-r1.png,"PASS: app abierta, captura real, home restaurada y GUI estable"
+BT,1,PARTIAL,BT,210,3.91,capturas/BT-r1.png,PARTIAL: sin adaptador Bluetooth: se espera el estado controlado
+Cluster,1,PARTIAL,Cluster,207,3.92,capturas/Cluster-r1.png,PARTIAL: sin red: la columna de spots no se puede validar (solo el render)
+CwTrainer,1,FAIL,CwTrainer,307,3.92,capturas/CwTrainer-r1.png,FAIL: estado persistido cambiado sin querer: mode USB -> CW
+Eq,1,PASS,Eq,306,3.92,capturas/Eq-r1.png,"PASS: app abierta, captura real, home restaurada y GUI estable"
+Status,1,PASS,Status,223,3.93,capturas/Status-r1.png,"PASS: app abierta, captura real, home restaurada y GUI estable"
+QTH,1,PASS,QTH,242,3.97,capturas/QTH-r1.png,"PASS: app abierta, captura real, home restaurada y GUI estable"
+Callsign,1,PASS,Callsign,241,3.91,capturas/Callsign-r1.png,"PASS: app abierta, captura real, home restaurada y GUI estable"
+Recorder,1,PASS,Recorder,179,3.9,capturas/Recorder-r1.png,"PASS: app abierta, captura real, home restaurada y GUI estable"
+WiFi,1,PARTIAL,WiFi,248,3.93,capturas/WiFi-r1.png,PARTIAL: sin NetworkManager ni adaptador en el chroot: se espera el estado controlado
+SWRScan,1,PASS,SWRScan,215,3.93,capturas/SWRScan-r1.png,"PASS: app abierta, captura real, home restaurada y GUI estable"
+Propagation,1,PARTIAL,Propagation,189,3.91,capturas/Propagation-r1.png,PARTIAL: sin spots de cluster ni NTP: el barrido de beacons no se puede validar
+DFLEditor,1,FAIL,,379,3.92,capturas/DFLEditor-r1.png,FAIL: la app pedida no abrio (app='')
