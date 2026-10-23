@@ -136,7 +136,8 @@ else
     run js8 sh "$DIR/native/run_js8_tests.sh"
 fi
 
-if [ -f "$WS/tests/run_pages_test.py" ] && docker image inspect x6200-buildroot >/dev/null 2>&1; then
+if [ -f "$WS/tests/run_pages_test.py" ] && docker image inspect x6200-buildroot >/dev/null 2>&1 \
+   && docker run --rm --entrypoint="" -v x6200-build-output:/b x6200-buildroot test -x /b/target/usr/bin/python3 >/dev/null 2>&1; then
     run webserver docker run --rm --entrypoint="" -e QEMU_LD_PREFIX=/b/target \
         -e PYTHONDONTWRITEBYTECODE=1 -v "$WS:/repo" -v x6200-build-output:/b \
         x6200-buildroot bash -c 'cd /repo && /b/target/usr/bin/python3 tests/run_pages_test.py tests/params.default.db'
