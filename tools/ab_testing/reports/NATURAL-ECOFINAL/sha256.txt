@@ -12,13 +12,13 @@
 #           el de la captura comun: la misma imagen, menos trabajo).
 # Fixture `main-natural-eco` (ECO, 11.2 V sin fuente): main-natural-eco, la
 # corrida que mide la cadencia del espectro y de la cascada en ECO.
-run1 16e1038e8aa8ea6377e61e9503c47da570c89243fa861512fd1c15eaa0d9aa8c
-natural 16e1038e8aa8ea6377e61e9503c47da570c89243fa861512fd1c15eaa0d9aa8c
-forced 9ac7766338851ca81921d55cd084af343e5557e4ec23c7347fd4d87c802048a2
-static 0c9e56d8f218182067bcb3b957fe903e8ddad3de4c4d030f4c8b22bd9645b331
-cli 5b8fb43cd4b6b058a82700fb1ae3649218afe90c45c020a717919256282e5025
-off 9ac7766338851ca81921d55cd084af343e5557e4ec23c7347fd4d87c802048a2
-main-natural-eco 1f8180d1c9e6297144915249a947f48509004b244259186c0b0194b41fd19c79
+run1 d1ca50fa2fea7071c6f761bc4e5c6c24c4b40ff85991404ba25375053d06b8c9
+natural d1ca50fa2fea7071c6f761bc4e5c6c24c4b40ff85991404ba25375053d06b8c9
+forced 277f3ca9637719d5b1ce52a2b036548779dd15fc1ae7911545e96f4f48ef9cdf
+static 7ca14d12445e7cd77c97e1001adcec61935127cb456bf9748a54d3b6b29ad1fd
+cli 5ff945936f6701d1a0b3dda40501fa0d2e765d31a6eb8ee164980fa72de59d39
+off 277f3ca9637719d5b1ce52a2b036548779dd15fc1ae7911545e96f4f48ef9cdf
+main-natural-eco 98f22d57c541e4d6c22456319456e84a8a35dfa8075961f7ef2aae3ecafd27e1
 
 # Re-baseline 2026-10-15 (corrida fonts-libre, decision 8): el harness pasa a
 # medir un frame natural con el periodo de refresco de la ROM (50 ms,
@@ -58,3 +58,25 @@ main-natural-eco 1f8180d1c9e6297144915249a947f48509004b244259186c0b0194b41fd19c7
 # static.json            revision=cbaaf72f natural_invalidated_px=190400 invalidated_rects=7 (solo band-info)
 # off.json               revision=cbaaf72f natural_invalidated_px=0 flushes=4 flushed_pixels=727840
 # main-natural-eco.json  revision=cbaaf72f natural_invalidated_px=2796800 invalidated_rects=20 metrics.flushes=24 metrics.flushed_pixels=3776640
+
+# --- Re-baseline 2026-10-23 (AB-HOME250, issue #250 / epica #249) -------------
+#
+# El reloj de la barra superior pasa a ser permanente y la bateria/alimentacion
+# baja a una banda de estado compacta (src/clock.c), y la fila `Clock view` y la
+# de los timeouts salen de Ajustes (src/dialog_settings.c). Los PNG de la
+# captura comun (forced/static/off) cambian: la tinta del panel del reloj es
+# otra (la hora 209x31 en la fila de arriba y el estado en la de abajo), dentro
+# de la misma caja de 206/209x61. La corrida natural NO cambia su perfil (el
+# reloj no dispara con time() fijo y las guardas de igualdad): el settle de la
+# captura si (la invalidacion del arranque del reloj nuevo es mas chica y se
+# une distinto con la del espectro).
+#
+# natural.json           revision=8549891e2cfafeaa970afd582bdacd136601a5d0 natural_invalidated_px=11208000 invalidated_rects=66 flushes=66 clock_rects=0 metrics.flushes=72 metrics.flushed_pixels=12308352
+# static.json            natural_invalidated_px=190400 invalidated_rects=7 (solo band-info)
+# off.json               natural_invalidated_px=0 flushes=5 flushed_pixels=716352
+# main-natural-eco.json  natural_invalidated_px=2796800 invalidated_rects=20 metrics.flushes=24 metrics.flushed_pixels=3762602
+#
+# Settle de la captura (metrics - natural, fixture main-natural): 5/1111840
+# antes -> 6/1100352 despues (un rectangulo mas y 11488 px menos). El bloque
+# metrics no expone los rectangulos del settle: la decomposicion exacta no se
+# puede citar, y el control --display-off la verifica por diferencia.

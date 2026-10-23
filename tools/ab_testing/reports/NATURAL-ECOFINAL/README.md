@@ -115,3 +115,50 @@ lo apaga del todo: sólo evita el tick redundante (2 ticks/s → 1). En el arné
 con `time()` congelado, los suprime todos. El perfil natural, el histograma y los
 totales quedan fijados por `tests/natural_evidence.py`; el contrato de
 `tools/ab_testing/tests/test_natural.py` se actualizó con los mismos números.
+
+## Re-baseline 2026-10-23 — reloj permanente + banda de estado (AB-HOME250, issue #250)
+
+El reloj de la barra superior deja de alternar hora y alimentación y pasa a ser
+permanente, con una banda de estado compacta debajo (batería y fuente externa
+opcional) en la misma caja de 206/209 x 61 (`src/clock.c`); la fila `Clock view` y
+la de sus tres timeouts salen de Ajustes (`src/dialog_settings.c`). La evidencia
+se re-generó con el binario de esta revisión (`tests/check_harness_natural.sh`
+más `--bench-natural` sobre `main-natural-eco`).
+
+Lo que **no** se mueve: el perfil de los 40 frames naturales (espectro 132000 px
+x 27, cascada 196000 px x 39, `natural.totals` 11208000 px en 66 rectángulos, el
+control `--natural-static` en 190400 px con sólo band-info) y la idempotencia
+(`run1` y `natural` byte a byte). Con `time()` fijo el reloj no cambia su texto y
+la guarda de igualdad del #150 lo apaga, así que sus rectángulos no aparecen en
+el histograma; el histograma tampoco gana rectángulos.
+
+Lo que sí cambia es el **settle de la captura** (el `metrics` de la captura
+común), porque el reloj pasa de una etiqueta de dos líneas (potencia) a un
+contenedor con la línea del reloj (209 x 31) y la banda de estado: su
+invalidación de arranque es más chica y se une distinto con la del espectro
+(0,0,800,165, que contiene al panel). El bloque `metrics` no expone los
+rectángulos del settle, así que la descomposición exacta no se puede citar; el
+número está medido sobre el binario de esta revisión y el control
+`--display-off` lo verifica por diferencia (`SETTLE_PX - FULL_SCREEN_PX`).
+
+| campo | antes (#150 `cbaaf72f`) | después (#250) |
+|---|---|---|
+| `metrics.flushes` (captura `main-natural`) | 5 | **6** |
+| `metrics.flushed_pixels` (captura `main-natural`) | 1111840 | **1100352** |
+| `--display-off` `metrics.flushes` / `flushed_pixels` | 4 / 727840 | **5 / 716352** |
+| `main-natural-eco` `metrics.flushes` / `flushed_pixels` | 24 / 3776640 | **24 / 3762602** |
+| `main-natural-eco` `natural.totals.invalidated_px` / rects | 2796800 / 20 | 2796800 / 20 |
+| PNG de todos los modos | — | **cambian** (la tinta del panel del reloj) |
+
+El PNG cambia en los cuatro modos porque la captura incluye el panel del reloj
+(la hora grande arriba y el estado abajo, dentro de los mismos 206/209 x 61); el
+fondo del panel (el bitmap de `clock_style`) queda byte a byte igual. Los sha256
+nuevos están en `sha256.txt`.
+
+Medición de costo del reloj, con el reloj de pared avanzando con el reloj virtual
+(un parche local del `__wrap_time` del harness, no versionado) y el mismo camino
+para las dos revisiones: el rectángulo que invalida el reloj cuando cambia el
+segundo pasa de **15549 px** (`581,0,219,71`, el reloj de potencia de `main` en
+vista hora) a **10272 px** (`586,0,214,48`, la línea del reloj del #250) en
+`main-natural`, y a 7490 px (`586,0,214,35`) en `main-frecuencia-dseg` (dígitos
+segmentados). El reloj permanente invalida menos píxeles por segundo que el viejo.

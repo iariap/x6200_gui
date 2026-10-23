@@ -13,6 +13,8 @@
 #define SYMBOL_PLUG_CHARGE "\xEE\x95\x9B" /* U+E55B */
 
 extern lv_style_t clock_style;
+extern lv_font_t sony_16;
+extern lv_font_t sony_20;
 extern lv_font_t sony_30;
 extern lv_font_t sony_38;
 

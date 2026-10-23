@@ -27,7 +27,9 @@ pthread_mutex_t params_mux = PTHREAD_MUTEX_INITIALIZER;
 
 void mock_params_init(void)
 {
-    params.clock_view          = CLOCK_POWER_ALLWAYS; /* battery, no wall clock */
+    /* El parametro persistido del reloj (issue #250: el reloj es permanente y ya
+     * no lo lee; el valor queda como el que guarda la radio). */
+    params.clock_view          = CLOCK_POWER_ALLWAYS;
     params.clock_time_timeout  = 10;
     params.clock_power_timeout = 5;
     params.clock_tx_timeout    = 5;
