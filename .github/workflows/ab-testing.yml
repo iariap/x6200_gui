@@ -21,12 +21,29 @@ name: UI A/B testing harness
 #
 # No hay trigger de `push`: este harness no despliega y el repositorio integra por
 # PR (ver CONTRIBUTING.md), asi que no hace falta una corrida propia sobre el commit
-# que el merge deja en la rama. Cada PR corre sobre su HEAD sha via `pull_request`.
-# Un PASS limpio significa "este sha renderiza y pasa los contratos", nunca "este sha
-# mejoro algo".
+# que el merge deja en la rama. Cada corrida por `pull_request` evalua el HEAD sha del
+# PR. Un PASS limpio significa "este sha renderiza y pasa los contratos", nunca "este
+# sha mejoro algo".
+#
+# OPT-IN POR ETIQUETA (decision del owner, 2026-10-23): estos jobs NO corren en todo
+# PR — costaban ~23 min de runner por PR (Performance 13, Visual 6, Contracts 3,
+# Functional 1) y el despliegue no los usa (`main.yml` integra por tag, no por PR). Por
+# defecto un `pull_request` registra la corrida pero TODOS los jobs quedan SKIPPED (un
+# job salteado por `if` no arranca runner: no consume minutos). Para pedir los gates,
+# agregar la etiqueta `ci` al PR: el trigger incluye `labeled`/`unlabeled` justamente
+# para que agregar la etiqueta dispare la corrida.
+#
+# El camino manual `workflow_dispatch` sigue corriendo SIN etiqueta.
+#
+# Si alguien toca este archivo, NO "arregle" el `if` de los jobs: el gate por etiqueta
+# es intencional (ver CONTRIBUTING.md). Los filtros de `paths` siguen vigentes: la
+# etiqueta no los reemplaza.
 
 on:
   pull_request:
+    # `labeled`/`unlabeled` son necesarios para que agregar la etiqueta `ci` dispare la
+    # corrida; `opened`/`synchronize`/`reopened` mantienen el comportamiento normal.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
     paths:
       - "tools/**"
       - "src/**"
@@ -45,6 +62,8 @@ jobs:
   functional:
     name: UI Functional Tests
     runs-on: ubuntu-22.04
+    # Gate opt-in por etiqueta: sin `ci` (y sin workflow_dispatch) el job queda SKIPPED.
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci')
     steps:
       - uses: actions/checkout@v4
 
@@ -105,6 +124,8 @@ jobs:
   contracts:
     name: UI Quality Contracts
     runs-on: ubuntu-22.04
+    # Gate opt-in por etiqueta: sin `ci` (y sin workflow_dispatch) el job queda SKIPPED.
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci')
     steps:
       - uses: actions/checkout@v4
         with:
@@ -193,6 +214,8 @@ jobs:
   visual:
     name: UI Visual Regression
     runs-on: ubuntu-22.04
+    # Gate opt-in por etiqueta: sin `ci` (y sin workflow_dispatch) el job queda SKIPPED.
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci')
     steps:
       - uses: actions/checkout@v4
         with:
@@ -302,6 +325,8 @@ jobs:
   performance:
     name: UI Performance (render benchmark, host)
     runs-on: ubuntu-22.04
+    # Gate opt-in por etiqueta: sin `ci` (y sin workflow_dispatch) el job queda SKIPPED.
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci')
     steps:
       - uses: actions/checkout@v4
         with:
@@ -445,7 +470,10 @@ jobs:
     name: UI A/B Summary
     runs-on: ubuntu-22.04
     needs: [functional, contracts, visual, performance]
-    if: always()
+    # `always()` para agregar igual cuando algun gate falla, MAS el gate opt-in por
+    # etiqueta: sin `ci` (y sin workflow_dispatch) tampoco corre el summary, asi un PR
+    # sin etiqueta no arranca ningun runner.
+    if: always() && (github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci'))
     steps:
       - name: Download every result artifact
         uses: actions/download-artifact@v4

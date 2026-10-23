@@ -10,8 +10,19 @@ name: boot-rootfs
 # (tests/check_bootanim.sh): renderer y backend de framebuffer probados en host,
 # el binario x6200_bootanim REAL contra un /dev/fb0 sintetico (LD_PRELOAD), la
 # cesion del framebuffer y los chequeos del script de init y de la integracion.
+#
+# OPT-IN POR ETIQUETA (decision del owner, 2026-10-23): este workflow tampoco corre
+# por default en todo PR — aunque es barato (bash sin docker ni buildroot), un PR
+# arranca igual un runner por job. Por defecto un `pull_request` registra la corrida
+# pero los jobs quedan SKIPPED (0 minutos). Para pedirlos, agregar la etiqueta `ci` al
+# PR (el trigger incluye `labeled`/`unlabeled` para que agregarla dispare la corrida);
+# `workflow_dispatch` sigue corriendo sin etiqueta. El despliegue no usa este workflow
+# (ver CONTRIBUTING.md). Los filtros de `paths` siguen vigentes.
 on:
   pull_request:
+    # `labeled`/`unlabeled` son necesarios para que agregar la etiqueta `ci` dispare la
+    # corrida; `opened`/`synchronize`/`reopened` mantienen el comportamiento normal.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
     paths:
       - "buildroot/**"
       - "CMakeLists.txt"
@@ -35,6 +46,8 @@ jobs:
   prune:
     name: rootfs prune guards (deterministic)
     runs-on: ubuntu-22.04
+    # Gate opt-in por etiqueta: sin `ci` (y sin workflow_dispatch) el job queda SKIPPED.
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci')
     steps:
       - uses: actions/checkout@v4
 
@@ -113,6 +126,8 @@ jobs:
   bootanim:
     name: boot anim gate (deterministic, no docker)
     runs-on: ubuntu-22.04
+    # Gate opt-in por etiqueta: sin `ci` (y sin workflow_dispatch) el job queda SKIPPED.
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci')
     steps:
       - uses: actions/checkout@v4
 
