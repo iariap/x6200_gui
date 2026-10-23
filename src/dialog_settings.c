@@ -339,6 +339,39 @@ static void theme_update_cb(lv_event_t * e) {
 
 /* Shared create */
 
+/* Cuanto se come la celda de una etiqueta a cada lado del texto (px). */
+#define ROW_LABEL_PAD 6
+
+/* La etiqueta de una fila de Ajustes: el texto del tema (TC(text)) sobre una celda pintada con
+ * la superficie de contenido del tema (TC(bg)).
+ *
+ * Por que: el cuerpo de la ventana es el bitmap compartido `images/dialog.bin`, que NO es un rol
+ * del tema (queda oscuro con los seis temas). La tinta del tema si lo es, y en los temas oscuros
+ * `TC(text)` es clara y se lee sobre ese bitmap, pero en un tema claro la tinta del tema es oscura
+ * y quedaba oscura sobre oscuro: el audit B midio 2.38:1 en la fila `Theme` y 2.39:1 en
+ * `Freq acceleration` del tema Sunlit (docs/evidencia/2026-10-23-ui-audit/dialogs/, P1 de la
+ * epica #269). Con la celda, el par que se dibuja de verdad es `TC(text)` sobre `TC(bg)`: el mismo
+ * que usa la fila de frecuencia (14.34:1 medido en Sunlit) y el mismo del chip de la app de campo
+ * (dialog_field.c, `TC(bg)` con etiqueta `TC(text)`), y `check_wcag` valida ese par en los seis
+ * temas. Es tambien lo que hace la barra de estado con `TC(bar)` en cada item (docs/HALLAZGOS.md
+ * 28): el bitmap deja de importar porque la etiqueta trae su propia superficie del tema.
+ *
+ * No se aplica a las etiquetas que son VALOR de un control (el desplegable del Bluetooth, el
+ * digito de un spinbox): esas ya dibujan con la tinta blanca del dialogo sobre su propio campo. */
+static lv_obj_t * row_label(lv_obj_t * parent) {
+    lv_obj_t *l = lv_label_create(parent);
+
+    lv_obj_set_style_bg_color(l, TC(bg), 0);
+    lv_obj_set_style_bg_opa(l, LV_OPA_COVER, 0);
+    lv_obj_set_style_pad_hor(l, ROW_LABEL_PAD, 0);
+    /* El relleno de la celda no puede mover el texto: la grilla ubica la caja desde
+     * LV_GRID_ALIGN_START y el texto arranca despues del pad, asi que la etiqueta se corre a la
+     * izquierda lo mismo que se come la celda. Asi la columna de etiquetas queda donde estaba. */
+    lv_obj_set_style_translate_x(l, -ROW_LABEL_PAD, 0);
+
+    return l;
+}
+
 static lv_obj_t * switch_bool(lv_obj_t *parent, params_bool_t *var) {
     lv_obj_t *obj = lv_switch_create(parent);
     styles_switch_init(obj);
@@ -416,7 +449,7 @@ static void slider_with_text(lv_obj_t *cell, int32_t val, int32_t min, int32_t m
     lv_obj_set_width(obj, width);
 
     /*Create a label below the slider*/
-    lv_obj_t *slider_label = lv_label_create(cell);
+    lv_obj_t *slider_label = row_label(cell);
     lv_obj_set_user_data(slider_label, fmt);
     /* La etiqueta se escribe con el mismo `fmt` que el callback usa despues, asi que el
      * formato decide con que tipo se pasa el valor por varargs: "%d" lleva un entero y "%.1f"
@@ -491,7 +524,7 @@ static uint8_t make_date(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Day, Month, Year");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -571,7 +604,7 @@ static uint8_t make_time(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Hour, Min, Sec");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -674,7 +707,7 @@ static uint8_t make_backlight(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Timeout, Brightness");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -724,7 +757,7 @@ static uint8_t make_backlight(uint8_t row) {
     row++;
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Buttons brightness");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -780,7 +813,7 @@ static uint8_t make_visual_profile(uint8_t row) {
      * AUTO lo decide la politica (y en manual lo congela el override), asi que
      * no siempre coincide con lo que muestra el desplegable. Es una foto del
      * estado al abrir Ajustes. */
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
     lv_label_set_text_fmt(obj, "Visual profile (%s)",
                           visual_policy_profile_name(visual_policy_current()));
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -830,7 +863,7 @@ static uint8_t make_line_gain(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    cell = lv_label_create(grid);
+    cell = row_label(grid);
 
     lv_label_set_text(cell, "Line-in, Line-out");
     lv_obj_set_grid_cell(cell, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -866,7 +899,7 @@ static uint8_t make_mag(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Mag Freq, Info, ALC");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -930,7 +963,7 @@ static uint8_t make_smeter(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "S-meter needle");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -963,7 +996,7 @@ static uint8_t make_band_plan(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Band plan");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -997,7 +1030,7 @@ static uint8_t make_wfview(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "wfview server");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1133,7 +1166,7 @@ static uint8_t make_long_action(uint8_t row) {
     for (uint8_t i = 0; i < 6; i++) {
         row_dsc[row] = 54;
 
-        obj = lv_label_create(grid);
+        obj = row_label(grid);
 
         lv_label_set_text(obj, labels[i]);
         lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1249,7 +1282,7 @@ static uint8_t make_hmic_action(uint8_t row) {
     for (uint8_t i = 0; i < items_len; i++) {
         row_dsc[row] = 54;
 
-        obj = lv_label_create(grid);
+        obj = row_label(grid);
 
         lv_label_set_text(obj, items[i].label);
         lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1329,7 +1362,7 @@ static uint8_t make_audio_gain(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    cell = lv_label_create(grid);
+    cell = row_label(grid);
 
     lv_label_set_text(cell, "Play,Rec gain");
     lv_obj_set_grid_cell(cell, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1365,7 +1398,7 @@ static uint8_t make_audio_enh(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Audio enhance");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1410,7 +1443,7 @@ static uint8_t make_transverter(uint8_t row, uint8_t n) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text_fmt(obj, "Transverter %i", n + 1);
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1471,7 +1504,7 @@ static uint8_t make_voice(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Voice mode");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1487,7 +1520,7 @@ static uint8_t make_voice(uint8_t row) {
     row++;
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Voice rate, pitch, volume");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1526,7 +1559,7 @@ static uint8_t make_auto(uint8_t row) {
 
     /* Spectrum */
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Spectrum auto min, max");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1560,7 +1593,7 @@ static uint8_t make_auto(uint8_t row) {
     row++;
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Waterfall auto min, max");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1598,7 +1631,7 @@ static uint8_t make_waterfall_line_zoom(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Waterfall line, zoom");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1636,7 +1669,7 @@ static uint8_t make_waterfall_smooth_scroll(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Waterfall smooth scroll");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1662,7 +1695,7 @@ static uint8_t make_waterfall_battery(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Waterfall battery mode");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1700,7 +1733,7 @@ static uint8_t make_sp_mode(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Speaker mode");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1736,7 +1769,7 @@ static uint8_t make_freq_accel(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Freq acceleration");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1771,7 +1804,7 @@ static uint8_t make_freq_accel_threshold(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Accel threshold");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1786,10 +1819,14 @@ static uint8_t make_freq_accel_threshold(uint8_t row) {
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_2A, LV_GRID_ALIGN_CENTER, row, 1);
     lv_obj_add_event_cb(obj, freq_accel_threshold_apply_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "detents/s");
-    lv_obj_set_style_text_color(obj, TC(text_soft), 0);
+    /* El sufijo de la unidad es texto secundario y va sobre la misma celda que el resto de las
+     * etiquetas de fila: `text_dim` es el rol que el tema define para las notas y los valores
+     * secundarios, y es el que `check_wcag` mide sobre las superficies de contenido (con
+     * `text_soft`, que no esta en esa tabla, la celda lo dejaba en 2.20:1 en Sunlit). */
+    lv_obj_set_style_text_color(obj, TC(text_dim), 0);
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_2B, SPAN_2B,
                          LV_GRID_ALIGN_CENTER, row, 1);
 
@@ -1802,7 +1839,7 @@ static uint8_t make_theme(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Theme");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -1864,7 +1901,7 @@ static uint8_t make_font(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
 
     lv_label_set_text(obj, "Font");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
@@ -2003,7 +2040,7 @@ static uint8_t make_bluetooth(uint8_t row) {
 
     /* Bluetooth on/off */
     row_dsc[row] = 54;
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
     lv_label_set_text(obj, "Bluetooth");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
@@ -2015,7 +2052,7 @@ static uint8_t make_bluetooth(uint8_t row) {
 
     /* Discoverable (for the CAT bridge) */
     row_dsc[row] = 54;
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
     lv_label_set_text(obj, "Discoverable (CAT)");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
@@ -2031,7 +2068,7 @@ static uint8_t make_bluetooth(uint8_t row) {
 
     /* Devices: la UX para elegir a que dispositivo emparejarse (abre dialog_bt) */
     row_dsc[row] = 54;
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
     lv_label_set_text(obj, "Devices");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
@@ -2049,7 +2086,7 @@ static uint8_t make_bluetooth(uint8_t row) {
 
     /* Charger (their Settings keeps it next to Bluetooth) */
     row_dsc[row] = 54;
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
     lv_label_set_text(obj, "Charger");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
@@ -2087,7 +2124,7 @@ static uint8_t make_cluster_column(uint8_t row) {
 
     row_dsc[row] = 54;
 
-    obj = lv_label_create(grid);
+    obj = row_label(grid);
     lv_label_set_text(obj, "Cluster column");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
