@@ -56,9 +56,12 @@
  * inferior).
  *
  * Fila de estado: pegada al borde inferior, dentro de la banda y=41..60, con el
- * mismo margen lateral. El icono y el porcentaje se separan STATUS_GAP px, y el
- * icono se ancla al porcentaje (que es el que fija el borde derecho) para que
- * los dos se muevan juntos cuando el texto cambia de ancho ("100%" -> "--%"). */
+ * mismo margen lateral. El icono y el porcentaje se separan STATUS_GAP px: el
+ * porcentaje fija el borde derecho (LV_ALIGN_BOTTOM_RIGHT) y el icono se re-ancla
+ * a su borde izquierdo en CADA actualizacion de texto (`align_battery_icon()`),
+ * porque su ancho cambia ("--%" -> "100%"). Un ancla de una sola vez (el bug de
+ * #269/#270) dejaba el icono en la posicion del ancho viejo y el primer digito
+ * del porcentaje caia encima. */
 #define CLOCK_LINE_Y     5
 #define STATUS_PAD       8
 #define STATUS_GAP       4
@@ -179,6 +182,21 @@ static void set_hidden(lv_obj_t * label, bool hidden) {
     }
 }
 
+/* El icono se ancla al borde IZQUIERDO de la etiqueta del porcentaje (que es la
+ * que fija el borde derecho de la barra): la separacion es SIEMPRE STATUS_GAP,
+ * con cualquier ancho de texto.
+ *
+ * `lv_obj_align_to` es de UNA sola vez: calcula la posicion ABSOLUTA a partir
+ * del ancho que la base tiene en ese instante. Si la etiqueta del porcentaje
+ * cambia de ancho despues ("--%" -> "100%", el mas ancho) y el icono no se
+ * vuelve a anclar, queda clavado en la posicion del ancho viejo y el primer
+ * digito cae encima del icono (auditoria de UI #269/#270). Por eso se re-ancla
+ * en cada actualizacion del texto, DESPUES de escribirlo: `lv_obj_align_to`
+ * corre el layout antes de leer las cajas, asi que ve el ancho nuevo. */
+static void align_battery_icon(void) {
+    lv_obj_align_to(lb_bat_icon, lb_bat_pct, LV_ALIGN_OUT_LEFT_BOTTOM, -STATUS_GAP, 0);
+}
+
 /* Una etiqueta del reloj: sin el tema por defecto de LVGL (lv_hal_disp.c lo
  * inicializa al registrar el display y le pone color, radio, padding y borde),
  * sin input y sin scroll. Todo lo que dibuja lo pide explicitamente. */
@@ -256,6 +274,10 @@ static void update_status(const power_sample_t * s) {
     set_text(lb_bat_icon, battery_symbol(s));
     set_text_color(lb_bat_pct, color);
     set_text_color(lb_bat_icon, color);
+
+    /* El ancho del porcentaje acaba de (poder) cambiar: el icono se re-ancla al
+     * ancho nuevo para que su caja nunca pise la del texto. */
+    align_battery_icon();
 }
 
 static void show_time() {
@@ -323,8 +345,10 @@ lv_obj_t * clock_init(lv_obj_t * parent) {
     lb_bat_icon = clock_label(obj);
     lv_obj_set_style_text_font(lb_bat_icon, &sony_20, 0);
     lv_obj_set_style_text_color(lb_bat_icon, TC(text), 0);
-    lv_obj_align_to(lb_bat_icon, lb_bat_pct, LV_ALIGN_OUT_LEFT_BOTTOM, -STATUS_GAP, 0);
     lv_label_set_text(lb_bat_icon, "");
+    /* La posicion inicial (vacia) del icono; `show_time()` de abajo la re-ancla
+     * con el texto real de la primera muestra. */
+    align_battery_icon();
 
     /* Primer dibujo y los dos timers de siempre: la hora cada 500 ms y el aviso
      * de sincronizacion NTP cada 200 ms. Ninguno nuevo. */
