@@ -1,0 +1,7 @@
+  widgets de foco creados: 25 | dialog_item(): 26
+  sliders con parametro propio: 4
+  campos de la fila de fecha: 3
+  todos los widgets de Ajustes estan en el grupo de foco
+  cada slider mueve el parametro que muestra
+  los campos de la fila de fecha declaran la misma caja
+exit=0

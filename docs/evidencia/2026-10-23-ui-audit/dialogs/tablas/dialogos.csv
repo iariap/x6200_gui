@@ -1,0 +1,19 @@
+dialogo,fuente,cobertura_host,fixture,estado_auditoria
+Ajustes,src/dialog_settings.c + src/dialog.c,REAL,settings-home/-wfbat/-perfil/-audio/-grupo-*/settings-tema-*,medida (137 capturas)
+DFL inline (editor),src/dfl_inline.c,REAL,"dfl-page-*, dfl-editor-*, dfl-usb-d*, dfl-lsb-d, dfl-mirror-*",medida
+DFL presets (A..F),src/dfl_presets.c,REAL,dfl-presets-*,medida
+Bluetooth,src/dialog_bt.c,REAL,"bt-dialog, bt-dialog-tema-*",medida (6 temas)
+Bands,src/dialog_bands.c,INERT (mock),"app-bands, settings-bands",BLOCKED: la ventana no se renderiza (descriptor inerte); el fixture mide la ruta
+Callsign,src/dialog_callsign.c,INERT,-,BLOCKED: 22 diálogos inertes en el arnés de host (tests/qemu/dialog-coverage.csv)
+Cluster,src/dialog_cluster.c,INERT,-,BLOCKED: idem
+CW Keyboard,src/dialog_cw_kbd.c,INERT,-,BLOCKED: idem (la app CW del menú tampoco se abre en el host)
+CW Trainer,src/dialog_cw_trainer.c,INERT,-,BLOCKED: idem
+EQ,src/dialog_eq.cpp,INERT,-,BLOCKED: idem
+Field Ops,src/dialog_field.c,INERT,-,BLOCKED: idem
+Frequency entry,src/dialog_freq.c,INERT,-,BLOCKED: se abre con HKEY_FINP; el arnés no inyecta la tecla
+FT8,src/dialog_ft8.c,INERT,-,BLOCKED: idem
+GPS,src/dialog_gps.c,INERT,-,BLOCKED: idem
+JS8,src/dialog_js8.c,INERT,-,BLOCKED: idem
+CW messages,src/dialog_msg_cw.c,INERT,-,BLOCKED: se abre con pulsación larga del botón de modo en CW
+SWR Scan,src/dialog_swrscan.c,REAL (otras fixtures),swrscan-* (fuera del alcance B),no auditada acá (transmite: requires-radio)
+Recorder / Msg voice / NavTex / Propagation / QTH / WiFi / WSPR / SSTV / WeFax / RTTY,"dialog_recorder.c, dialog_msg_voice.c, dialog_navtex.c, dialog_propagation.c, dialog_qth.c, ...",INERT,-,BLOCKED: 22 diálogos inertes en el host (ver tests/qemu/dialog-coverage.csv); su barrido real es de la corrida C (#272)
