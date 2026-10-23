@@ -1,0 +1,7 @@
+== tonos dominantes del audio del owner (200..4000 Hz) ==
+  audio4.raw     1.37s | 2301 Hz (-1.4 dB), 2302 Hz (0.0 dB), 2307 Hz (-0.4 dB), 2308 Hz (-0.3 dB)
+  ftAudio.raw    1.37s | 1538 Hz (0.0 dB), 1833 Hz (-2.8 dB), 1913 Hz (-2.8 dB), 2053 Hz (-2.7 dB)
+  ff-LSB.raw     1.37s | 1633 Hz (-0.1 dB), 1637 Hz (-1.0 dB), 1641 Hz (-0.2 dB), 1642 Hz (0.0 dB)
+  ff-USB.raw     1.37s | 1633 Hz (-0.5 dB), 1633 Hz (0.0 dB), 1657 Hz (-0.6 dB), 1660 Hz (-0.9 dB)
+  calAudio.raw   1.37s | 1461 Hz (0.0 dB), 1463 Hz (-1.9 dB), 1473 Hz (-1.7 dB), 1737 Hz (-2.0 dB)
+  fAud.raw       1.37s | 1460 Hz (-3.8 dB), 1460 Hz (0.0 dB), 1909 Hz (-4.9 dB), 1909 Hz (-4.7 dB)

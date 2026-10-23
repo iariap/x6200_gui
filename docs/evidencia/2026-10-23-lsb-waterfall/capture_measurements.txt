@@ -1,0 +1,15 @@
+== Eje calibrado: 60 Hz/px (span 48 kHz / 800 px) ==
+
+-- picos y barra por captura (px/Hz respecto de la raya) --
+  captura-usuario-2252.png   raya x=398 | 413(+15,+900Hz), 425(+27,+1620Hz) | barra[352..397] (-2760..-60Hz)
+  fb-AM.png                  raya x=398 | 411(+13,+780Hz), 526(+128,+7680Hz) | barra[358..442] (-2400..+2640Hz)
+  fbm-LSB.png                raya x=398 | 411(+13,+780Hz), 432(+34,+2040Hz), 476(+78,+4680Hz) | barra[352..397] (-2760..-60Hz)
+  fbm-USB.png                raya x=398 | 418(+20,+1200Hz), 430(+32,+1920Hz), 476(+78,+4680Hz) | barra[403..448] (+300..+3000Hz)
+  fbx-LSB.png                raya x=398 | 372(-26,-1560Hz), 385(-13,-780Hz)
+  fbx-USB.png                raya x=398 | 373(-25,-1500Hz), 425(+27,+1620Hz)
+  fA.raw                     raya x=398 | 423(+25,+1500Hz) | barra[352..397]   [LSB 7.074.000]
+  fB.raw                     raya x=398 | 387(-11,-660Hz) | barra[352..397]   [LSB 7.076.000]
+
+-- corrimientos por correlacion (lag<0: la 2da corrio a la izquierda) --
+  fbx-LSB vs fbx-USB (mismo 7.074)     lag=+0 px (+0 Hz)
+  fA vs fB (calibracion, freq +2 kHz)  lag=-33 px (+1980 Hz)
