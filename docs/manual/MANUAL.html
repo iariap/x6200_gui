@@ -64,6 +64,9 @@ id="toc-el-mfk-rueda-multifunción-abajo-la-perilla-de-todo">4.3 El MFK
 <li><a href="#el-botón-de-power" id="toc-el-botón-de-power">4.4 El botón
 de power</a></li>
 <li><a href="#el-atu" id="toc-el-atu">4.5 El ATU</a></li>
+<li><a href="#el-dial-en-cb-banda-ciudadana-27-mhz"
+id="toc-el-dial-en-cb-banda-ciudadana-27-mhz">4.6 El dial en CB (banda
+ciudadana, 27 MHz)</a></li>
 </ul></li>
 <li><a href="#ajustes-todos-los-parámetros"
 id="toc-ajustes-todos-los-parámetros">5. Ajustes: todos los
@@ -103,9 +106,13 @@ sistema)</a></li>
 <li><a href="#bluetooth" id="toc-bluetooth">6.20 Bluetooth</a></li>
 <li><a href="#swr-scan-barrido-de-roe"
 id="toc-swr-scan-barrido-de-roe">6.21 SWR Scan (barrido de ROE)</a></li>
-<li><a href="#about-acerca-de" id="toc-about-acerca-de">6.22 About
-(acerca de)</a></li>
+<li><a href="#dfl-editor-forma-del-filtro"
+id="toc-dfl-editor-forma-del-filtro">6.22 DFL editor (forma del
+filtro)</a></li>
 <li><a href="#ajustes" id="toc-ajustes">6.23 Ajustes</a></li>
+<li><a href="#propagation-beacons-ibpiaru-r2"
+id="toc-propagation-beacons-ibpiaru-r2">6.24 Propagation (beacons
+IBP/IARU R2)</a></li>
 </ul></li>
 <li><a href="#guías-avanzadas" id="toc-guías-avanzadas">7. Guías
 avanzadas</a>
@@ -137,6 +144,9 @@ id="toc-transverter-trabajar-vhfuhf-con-el-equipo">7.11 Transverter:
 trabajar VHF/UHF con el equipo</a></li>
 <li><a href="#actualizaciones-y-ssh" id="toc-actualizaciones-y-ssh">7.12
 Actualizaciones y SSH</a></li>
+<li><a href="#cb-27-mhz-canales-potencia-y-marco-legal"
+id="toc-cb-27-mhz-canales-potencia-y-marco-legal">7.13 CB 27 MHz:
+canales, potencia y marco legal</a></li>
 </ul></li>
 <li><a href="#solución-de-problemas" id="toc-solución-de-problemas">8.
 Solución de problemas</a></li>
@@ -376,6 +386,43 @@ adaptación.</li>
 <li>El resultado queda guardado por banda y modo, así que al volver no
 tenés que resintonizar.</li>
 </ol>
+<h3 id="el-dial-en-cb-banda-ciudadana-27-mhz">4.6 El dial en CB (banda
+ciudadana, 27 MHz)</h3>
+<p>En las bandas <strong>CB A</strong> a <strong>CB D</strong> el dial
+deja de contar Hz y cuenta <strong>canales de 40</strong>. Se llega
+igual que a cualquier banda: con <code>UP</code>/<code>DOWN</code>
+<strong>largos</strong> (la app Bands no las lista).</p>
+<ul>
+<li>Cada detent mueve <strong>un canal</strong>, sin aceleración y sin
+dar la vuelta en 1 ni en 40.</li>
+<li>La celda de arriba a la izquierda dice
+<strong><code>CH 19</code></strong> si estás en un canal exacto y
+<strong><code>CH --</code></strong> si caíste en un hueco o entre
+canales. El primer giro engancha el canal siguiente en la dirección del
+giro.</li>
+<li><strong>La fila grande de frecuencia</strong> también muestra el
+canal, en grande: <code>27.185</code> (frecuencia del grid) ·
+<code>CH 19</code> (o <code>CH --</code>) · <code>CB C</code> (el grid).
+Los tres textos usan la familia tipográfica <strong>normal</strong>, así
+se leen también en los temas con fuente segmentada (Cathode, Sprint); el
+«8» fantasma no se dibuja en CB y vuelve al salir a una banda de
+aficionado.</li>
+<li><strong>La franja del plan de banda</strong> (al pie del espectro,
+arriba de la fila) se pinta <strong>violeta</strong> con el rótulo
+<code>CB</code> mientras el span cae dentro de un grid: es la misma
+franja donde las bandas de aficionado marcan CW / DIG / ALL MODES. Si el
+span cruza el borde de un grid, la barra se recorta; si cae en el hueco
+de 10 kHz entre grids, no se pinta.</li>
+<li>El <strong>canal 23 → 24</strong> sube el número y
+<strong>baja</strong> la frecuencia (27,255 → 27,235): es correcto, el
+dial cuenta canales.</li>
+<li>Al entrar, el equipo apaga el <strong>split</strong>, pasa a
+<strong>AM</strong> si no estaba en AM/SAM/NFM, recorta la potencia a
+<strong>4 W</strong> y bloquea el <strong>XIT</strong> (el RIT sigue
+disponible). Al salir restaura el split y la potencia que tenías.</li>
+<li><strong>Leé la sección 7.13 antes de transmitir</strong>: el X6200
+no es un equipo CB homologado.</li>
+</ul>
 <h2 id="ajustes-todos-los-parámetros">5. Ajustes: todos los
 parámetros</h2>
 <p>Se entra con la acción <em>APP Settings</em> (o desde la página APP
@@ -433,8 +480,9 @@ desplazamiento suave y ahorro en batería</td>
 <tr>
 <td><strong>Clock</strong></td>
 <td>Day, Month, Year / Hour, Min, Sec</td>
-<td>Hora UTC de los decodificados (también la ajusta el NTP si hay red)
-y qué muestra el reloj</td>
+<td>Hora UTC de los decodificados (también la ajusta el NTP si hay red).
+El reloj de la barra superior muestra siempre la hora, y la
+alimentación/batería va en una banda compacta debajo (issue #250)</td>
 </tr>
 <tr>
 <td><strong>Display</strong></td>
@@ -500,7 +548,7 @@ son <strong>6</strong>, con 3 o 4 apps cada una.</p>
 </tr>
 <tr>
 <td><strong>APP 5:6</strong></td>
-<td>Ajustes, Callsign, QTH</td>
+<td>Ajustes, Callsign, QTH, Propagation</td>
 </tr>
 <tr>
 <td><strong>APP 6:6</strong></td>
@@ -511,8 +559,9 @@ son <strong>6</strong>, con 3 o 4 apps cada una.</p>
 <p>Además de las páginas, <strong>cada app está en la lista de
 acciones</strong> de <em>Ajustes → Acciones</em> y se puede asignar a un
 botón o a una pulsación larga. Es el camino para las que no tienen botón
-propio en las páginas: <strong>About</strong>, por ejemplo, se abre
-desde ahí (o asignándola).</p>
+propio en las páginas: <strong>el editor DFL</strong>, por ejemplo,
+también se abre desde ahí (o con la pulsación larga de la tecla
+DFL).</p>
 <h3 id="ft8-ft4">6.1 FT8 / FT4</h3>
 <figure>
 <img src="img/01-ft8.png" alt="FT8" />
@@ -851,16 +900,68 @@ es la antena o el equipo.</p>
 que barre. <strong>Usalo con la antena conectada</strong> (la medición
 necesita RF) y, como siempre: <strong>nunca transmitas sin antena o
 carga fantasma</strong>.</p>
-<h3 id="about-acerca-de">6.22 About (acerca de)</h3>
-<p>La <strong>versión</strong> del firmware (<code>v0.1.2-lu2dsx</code>)
-y los <strong>créditos</strong> de todo el software libre con el que
-está hecho el equipo. Es el dato que hay que mandar cuando se reporta un
-problema: sin la versión, no se puede saber qué código estabas
-corriendo.</p>
-<p><strong>Cómo se usa:</strong> no tiene botón propio en las páginas
-APP: se abre desde <em>Ajustes → Acciones</em> (asignándola a una
-pulsación larga) o desde el menú de la app de Ajustes. Se lee y se
-cierra.</p>
+<h3 id="dfl-editor-forma-del-filtro">6.22 DFL editor (forma del
+filtro)</h3>
+<p>El <strong>editor DFL</strong> muestra la <strong>forma del
+filtro</strong> que está pasando en este momento y deja moverla. No es
+una ventana: es un <strong>panel que se dibuja encima del
+waterfall</strong> (sin diálogo ni marco), con una <strong>gráfica
+esquemática</strong> de la respuesta y tres filas —
+<strong>LOW</strong>, <strong>HIGH</strong> y <strong>BW</strong> — con
+el valor exacto en <strong>Hz</strong> de cada borde y del ancho. La
+gráfica muestra la forma del filtro, <strong>no</strong> una medición
+del equipo.</p>
+<p><strong>Cómo se usa.</strong> Se abre con la <strong>pulsación larga
+de la tecla DFL</strong> (la acción que esa tecla trae por defecto) o
+con la celda <strong>Grafico</strong> de la página DFL; la acción
+<strong>APP DFL editor</strong> también está en <em>Ajustes →
+Acciones</em> (asignable a una pulsación larga) y en el control remoto
+(<code>{"cmd":"app","text":"DFLEditor"}</code>). Se cierra con la celda
+<strong>Waterfall</strong> de la barra, o con una pulsación corta de
+DFL.</p>
+<p><strong>Se edita con la rueda de volumen y con el dedo.</strong> Girá
+la <strong>rueda de volumen</strong> para ajustar el parámetro
+seleccionado y apretala para <strong>cambiar de parámetro</strong> (LOW
+→ HIGH → BW). Con el <strong>dedo</strong>, tocá una de las tres filas
+para seleccionar su parámetro, o <strong>arrastrá uno de los
+bordes</strong> sobre la gráfica para moverlo (un toque lejos de los
+bordes no cambia nada). <strong>La rueda principal (VFO) nunca edita el
+filtro</strong>: sigue sintonizando aunque el editor esté abierto.
+<strong>Reset</strong> vuelve a la forma por defecto del modo.</p>
+<table>
+<thead>
+<tr>
+<th>Fila</th>
+<th>Qué ajusta</th>
+<th>Paso de la rueda</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LOW</strong></td>
+<td>Borde inferior del filtro</td>
+<td>10 Hz</td>
+</tr>
+<tr>
+<td><strong>HIGH</strong></td>
+<td>Borde superior del filtro</td>
+<td>50 Hz (10 Hz en CW/CWR)</td>
+</tr>
+<tr>
+<td><strong>BW</strong></td>
+<td>Ancho de banda</td>
+<td>20 Hz</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Detalles.</strong> En <strong>TX</strong> el editor queda de
+sólo lectura (las filas se apagan y <strong>Reset</strong> no responde).
+En <strong>AM/SAM/NFM/WFM</strong> el borde <strong>LOW</strong> no es
+editable (son modos simétricos alrededor de la portadora): la fila se ve
+apagada y la rueda arranca en <strong>HIGH</strong>. En
+<strong>LSB/LSB-D</strong> la gráfica se <strong>espeja</strong> como el
+espectro (el cero a la derecha, HIGH a la izquierda); en el resto, el
+cero queda a la izquierda.</p>
 <h3 id="ajustes">6.23 Ajustes</h3>
 <figure>
 <img src="img/12-settings.png" alt="Ajustes" />
@@ -880,6 +981,48 @@ de acciones, incluidas todas las apps: <code>APP FT8</code>,
 <code>APP CW Keyboard</code>, <code>APP CW Trainer</code>,
 <code>APP EQ</code> y las demás. Con eso te armás el equipo a tu manera:
 FT8 a un toque corto, el entrenador CW a una pulsación larga, y así.</p>
+<h3 id="propagation-beacons-ibpiaru-r2">6.24 Propagation (beacons
+IBP/IARU R2)</h3>
+<figure>
+<img src="img/00-app-pages.png" alt="Propagation" />
+<figcaption aria-hidden="true">Propagation</figcaption>
+</figure>
+<p>La app <strong>Propagation</strong> dice si la <strong>banda
+actual</strong> está abierta midiendo los <strong>beacons del
+IBP</strong> (NCDXF/IARU) que transmiten en los próximos slots,
+<strong>solo RX</strong> (nunca transmite). Está en la página
+<strong>APP 5:6</strong> y también por control remoto
+(<code>{"cmd":"app","text":"Propagation"}</code>).</p>
+<p><strong>Cómo se usa:</strong> abrí la app en la banda que querés
+evaluar y pulsá <strong>Run</strong> (también puede arrancar sola al
+abrirse, con el parámetro <em>run on open</em>). La app bloquea el dial
+mientras está abierta y muestra el barrido en cuatro pasos: <strong>1/4
+Preparando</strong> (banda y beacons aplicables), <strong>2/4
+Sincronizando</strong> (reloj NTP y “transmitiendo ahora”), <strong>3/4
+Midiendo</strong> (beacon por beacon, con la escalera 100/10/1/0.1 W y
+una barra de progreso) y <strong>4/4 Resultado</strong> (veredicto,
+evidencia, cobertura y dirección).</p>
+<ul>
+<li><strong>ABIERTA / MARGINAL / CERRADA</strong> sale del mejor SNR
+medido contra el piso de ruido, con umbrales configurables (el botón
+<strong>Umbrales</strong> recorre 12/6, 15/8, 18/10, 21/12 y 9/4
+dB).</li>
+<li><strong>Cancelar</strong> está siempre disponible durante el barrido
+y devuelve el VFO. Al terminar, cancelar o cerrar, la frecuencia y el
+modo vuelven exactamente como estaban.</li>
+<li><strong>Escuchar</strong> sintoniza el mejor beacon escuchado y lo
+deja hasta que pulses <strong>Parar</strong> o cierres (cerrar siempre
+devuelve el VFO).</li>
+<li><strong>40/30/80 m no tienen beacons IBP</strong> (la IARU no los
+respalda debajo de 14 MHz): la app lo dice y muestra los spots recientes
+del cluster de esa banda, con su edad.</li>
+<li>El <strong>reloj sin NTP</strong> se avisa en pantalla: el turno de
+los beacons puede estar corrido. La app no puede forzar la
+sincronización (la hace el sistema).</li>
+<li>El registro <strong>IARU R2 de 10 m</strong> (983 radiofaros, 313
+activos en la lista del 2026-10-18) va empaquetado en el firmware; no
+consulta internet.</li>
+</ul>
 <h2 id="guías-avanzadas">7. Guías avanzadas</h2>
 <h3 id="control-remoto-desde-el-teléfono">7.1 Control remoto desde el
 teléfono</h3>
@@ -890,13 +1033,18 @@ unos 65 comandos.</p>
 IP.</li>
 <li>Abrí <code>http://&lt;ip&gt;/remote</code> en el teléfono.</li>
 <li>Comandos útiles: <code>{"cmd":"app","text":"FT8"}</code> abre una
-app; <code>{"cmd":"app","text":"off"}</code> la cierra (también a
-RTTY, que no tiene diálogo);
-<code>{"cmd":"band","val":1}</code> cambia de banda;
-<code>{"cmd":"mode","val":1}</code> cambia el modo;
+app; <code>{"cmd":"app","text":"off"}</code> la cierra (también a RTTY,
+que no tiene diálogo); <code>{"cmd":"band","val":1}</code> cambia de
+banda; <code>{"cmd":"mode","val":1}</code> cambia el modo;
 <code>{"cmd":"freq","val":14074000}</code> sintoniza;
 <code>{"cmd":"location","text":"-34.6037,-58.3816"}</code> manda tu
-posición.</li>
+posición. Con la app <strong>SWR Scan</strong> abierta,
+<code>{"cmd":"swrscan","val":1}</code> inicia el barrido de ROE y
+<code>{"cmd":"swrscan","val":0}</code> lo detiene. <strong>Ojo: el Run
+transmite</strong> (a 0.1 W): usalo con la antena o una carga conectada
+y con autorización; el <code>get</code> muestra
+<code>swrscan_state</code> y <code>swrscan_tx</code> para saber cuándo
+terminó.</li>
 <li>Diagnóstico:
 <code>{"cmd":"cluster_feed","text":"DX de LU1ABC:  14074.0  LU2DSX  FT8  2313Z GF05"}</code>
 inyecta un spot del clúster (la línea necesita la hora
@@ -1311,6 +1459,118 @@ contraseña</strong> (la de fábrica es conocida). Los logs están en
 <code>DATA/app_logs/x6200_log_*.txt</code> y se escriben al cerrar la
 GUI.</li>
 </ul>
+<h3 id="cb-27-mhz-canales-potencia-y-marco-legal">7.13 CB 27 MHz:
+canales, potencia y marco legal</h3>
+<p><strong>Los cuatro grids.</strong> Cada uno es un plan de 40 canales
+con la misma numeración y los mismos offsets; cambia la base:</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Grid</th>
+<th>Banda en pantalla</th>
+<th>Canal 1</th>
+<th>Canal 40</th>
+<th>Nota</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td><code>CB A</code></td>
+<td>26,065</td>
+<td>26,505</td>
+<td>grid bajo</td>
+</tr>
+<tr>
+<td>B</td>
+<td><code>CB B</code></td>
+<td>26,515</td>
+<td>26,955</td>
+<td>grid bajo</td>
+</tr>
+<tr>
+<td><strong>C</strong></td>
+<td><code>CB C</code></td>
+<td><strong>26,965</strong></td>
+<td><strong>27,405</strong></td>
+<td><strong>CEPT / FCC / SBC argentino</strong></td>
+</tr>
+<tr>
+<td>D</td>
+<td><code>CB D</code></td>
+<td>27,415</td>
+<td>27,855</td>
+<td>grid alto (termina 145 kHz antes de 10 m)</td>
+</tr>
+</tbody>
+</table>
+<p>El plan tiene <strong>cinco huecos</strong> (26,995 / 27,045 / 27,095
+/ 27,145 / 27,195) y los canales <strong>23, 24 y 25 van fuera de
+orden</strong>: 23 = 27,255; 24 = 27,235; 25 = 27,245. Por eso, al pasar
+del 23 al 24, el número de canal sube y la frecuencia
+<strong>baja</strong>. La celda <code>CH --</code> marca justamente un
+hueco o una frecuencia que no es canal. En los extremos 1 y 40 el dial
+no da la vuelta.</p>
+<p><strong>En pantalla.</strong> En CB la fila grande de frecuencia
+muestra la frecuencia del grid, el canal y el grid (<code>27.185</code>
+· <code>CH 19</code> · <code>CB C</code>), y la franja del plan de banda
+(al pie del espectro) se pinta violeta con el rótulo <code>CB</code>; la
+celda <code>CH nn</code> de la barra sigue mostrando el canal como
+indicador de estado. Fuera de CB la fila vuelve a la frecuencia grande
+con los bordes del span y la franja vuelve a los segmentos IARU.</p>
+<p><strong>TX en CB.</strong> El PTT de software pasa por un interlock
+por ventana de frecuencia:</p>
+<table>
+<thead>
+<tr>
+<th><code>cb_tx_scope</code></th>
+<th>Qué permite</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code> (default)</td>
+<td>Sólo el SBC argentino: 26,960–27,410 MHz</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>Además los grids A, B y D completos</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>Sin interlock</td>
+</tr>
+</tbody>
+</table>
+<p>Fuera de 26–28 MHz el interlock no toca nada, así que las bandas de
+aficionado siguen iguales. Si bloquea, la pantalla avisa
+<code>TX blocked: not a CB channel</code>, lo dice por voz y apaga el
+PTT. La potencia en CB tiene un tope configurable
+(<code>cb_pwr_max</code>, 4,0 W por defecto). Los dos parámetros se
+editan en <code>DATA/params.db</code> (configurador web/SQLite); no hay
+fila en Ajustes.</p>
+<p><strong>Advertencia legal (Argentina).</strong> El SBC está en
+<strong>26,960–27,410 MHz</strong> y exige <strong>autorización por
+estación</strong> y <strong>equipo homologado/registrado</strong> (Res.
+SC 47/1982; CABFRA 2025 de ENACOM; alta con formularios F1/F2/F23,
+D3/COPITEC y responsable técnico). El X6200 <strong>no es un equipo CB
+homologado</strong>: transmitir en 27 MHz con él queda fuera del régimen
+del SBC y fuera del servicio de aficionados, y modificar el firmware no
+cambia la homologación. Los grids A, B y D <strong>no</strong> son SBC
+argentino: con el default quedan en recepción. Los modos y la potencia
+del SBC <strong>no están confirmados</strong>; se usan AM/FM y 4 W como
+valores conservadores. El <strong>PTT del micrófono</strong> lo maneja
+probablemente el MCU y el interlock de software no necesariamente lo
+frena: la protección real es no sintonizar fuera de canal. <strong>No
+des por validado el TX</strong> hasta medir RF y armónicos con carga
+fantasma (F0, a cargo del owner con autorización).</p>
 <h2 id="solución-de-problemas">8. Solución de problemas</h2>
 <table>
 <colgroup>
