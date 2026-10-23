@@ -70,6 +70,9 @@ int clock_stub_label_set_calls(void);
 int clock_stub_style_font_calls(void);
 int clock_stub_style_color_calls(void);
 int clock_stub_style_bg_calls(void);
+/* Llamadas a lv_obj_align_to (el re-ancla del icono): el diseno solo re-ancla
+ * cuando el texto del porcentaje cambia, asi que en steady state no sube. */
+int clock_stub_align_to_calls(void);
 
 /* Estado que el test maneja a mano: el reloj de pared (o su fallo), y el estado
  * de la radio. */
