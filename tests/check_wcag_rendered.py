@@ -78,7 +78,15 @@ medido). El gate:
   **regresion** (un par del baseline con peor ratio que el registrado).
 * **FALLA** si el baseline quedo **obsoleto** (un par del baseline ya no viola):
   hay que regenerarlo con `--update-baseline`, que imprime el diff de lo que
-  agrega y de lo que saca (nada se bendice a ciegas).
+  agrega (`+`), de lo que saca (`-`) y de lo que **cambia de ratio** (`~`) —un
+  par que sigue violando pero con otro numero medido— (nada se bendice a ciegas).
+
+El gate compara los ratios **exactos**, sin tolerancia: el render del arnes es
+determinista dentro de la imagen fija y reproducible entre hosts, asi que un
+ratio que se mueve entre revisiones es un cambio de codigo/render real, no ruido
+de medicion (una tolerancia solo taparia regresiones chicas). Cuando el render
+cambia a proposito, la accion correcta es **re-baselinar** las entradas movidas
+con `--update-baseline` (el diff `~` las lista), no aflojar la comparacion.
 
 No hay blanket-skip: el waiver es por par enumerado; nunca "saltear un tema" ni
 "saltear si el ratio < X".
@@ -278,6 +286,17 @@ def exempt_hexes(bases: dict[str, list[str]]) -> dict[str, str]:
 
 
 def _docker_run(args: list[str], image: str) -> None:
+    """Corre un comando en el arnes con el cwd en `tools/ui_harness` (no en build/).
+
+    El `-w` apunta al dir del harness, que existe siempre, y no a `build/`: docker
+    crea un WORKDIR inexistente como **root** antes de bajar al `--user`, asi que en
+    un checkout limpio (build/ es gitignored) un `-w .../build` dejaba el directorio
+    root-owned y el proceso uid 1000 no podia compilar dentro ("CMake Error: Unable
+    to (re)create the private pkgRedirects directory"). Los otros gates del arnes
+    (`check_drawbuf_partial.sh`, `check_harness_determinism.sh`) ya usan `-w` en el
+    dir del harness y crean `build/` por dentro; este gate hacia lo mismo salvo el
+    `-w`. El build y el render entran a `build/` por su cuenta.
+    """
     cmd = [
         "docker",
         "run",
@@ -289,7 +308,7 @@ def _docker_run(args: list[str], image: str) -> None:
         "-v",
         f"{ROOT}:/src",
         "-w",
-        "/src/tools/ui_harness/build",
+        "/src/tools/ui_harness",
         image,
         *args,
     ]
@@ -422,7 +441,8 @@ def render(image: str) -> None:
     (OUT_DIR / "json").mkdir(exist_ok=True)
     lista = " ".join(fixtures())
     script = (
-        "set -e; OUT=out/wcag-rendered; rm -rf $OUT; mkdir -p $OUT/png $OUT/json; "
+        "set -e; cd /src/tools/ui_harness/build; "
+        "OUT=out/wcag-rendered; rm -rf $OUT; mkdir -p $OUT/png $OUT/json; "
         f"for f in {lista}; do "
         "./ui_harness --scenario ../fixtures/$f.scn "
         "--png $OUT/png/$f.png --json $OUT/json/$f.json --inspect >/dev/null 2>&1 "
@@ -772,6 +792,15 @@ def update_baseline(violaciones: list[dict]) -> int:
     nuevo = {key(f): make_entry(f) for f in violaciones}
     added = sorted(set(nuevo) - set(previo))
     removed = sorted(set(previo) - set(nuevo))
+    # Un par que sigue violando pero con OTRO ratio. No es un agregado ni una
+    # baja: el ratio registrado cambio (p. ej. porque un cambio de render
+    # revisado movio el fondo medido bajo el glifo). Sin esta linea, el diff de
+    # `--update-baseline` reescribia el ratio en silencio y la revision no veia
+    # que numero se estaba bendiciendo: el cambio de fondo pasaba como "sin
+    # cambios".
+    changed = sorted(
+        k for k in set(previo) & set(nuevo) if previo[k].get("ratio") != nuevo[k]["ratio"]
+    )
     print("  --- diff del baseline (--update-baseline) ---")
     for k in added:
         e = nuevo[k]
@@ -779,13 +808,19 @@ def update_baseline(violaciones: list[dict]) -> int:
             f"  + {e['fixture']:<34} {e['rule']:<10} {e['path']:<14} "
             f"{e['ratio']:>5}:1 < {e['min']}  {e['text'][:24]!r}"
         )
+    for k in changed:
+        p, n = previo[k], nuevo[k]
+        print(
+            f"  ~ {n['fixture']:<34} {n['rule']:<10} {n['path']:<14} "
+            f"ratio {p['ratio']:>5}:1 -> {n['ratio']:>5}:1  {n['text'][:24]!r}"
+        )
     for k in removed:
         e = previo[k]
         print(
             f"  - {e['fixture']:<34} {e['rule']:<10} {e['path']:<14} "
             f"ratio {e['ratio']}:1  {e.get('text', '')[:24]!r}"
         )
-    if not added and not removed:
+    if not added and not removed and not changed:
         print("  (sin cambios)")
     data = {
         "schema": 1,
@@ -803,7 +838,7 @@ def update_baseline(violaciones: list[dict]) -> int:
     BASELINE.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
     print(
         f"  baseline escrito: {BASELINE.relative_to(ROOT)} "
-        f"({len(nuevo)} entradas, +{len(added)}/-{len(removed)})"
+        f"({len(nuevo)} entradas, +{len(added)}/-{len(removed)}/~{len(changed)})"
     )
     return 0
 
