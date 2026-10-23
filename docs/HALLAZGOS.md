@@ -34,6 +34,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 13. [Actualizar la radio por WiFi](#13-actualizar-la-radio-por-wifi)
 14. [La GUI se colgaba al mandar audio](#14-la-gui-se-colgaba-al-mandar-audio)
 44. [El barrido de ROE no dibuja un valor fuera de escala](#44-el-barrido-de-roe-no-dibuja-un-valor-fuera-de-escala)
+66. [El audio de RX mudo al ir a CW: el disparo era el write del modo del VFO inactivo](#66-el-audio-de-rx-mudo-al-ir-a-cw-el-disparo-era-el-write-del-modo-del-vfo-inactivo)
 15. [Anexo A: hipótesis sin fundar (no son hallazgos)](#anexo-a-hipótesis-sin-fundar-no-son-hallazgos)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
@@ -4048,3 +4049,46 @@ latchea el bloque de 54 registros de `idle()`; si el reenvío al salir de CW des
 el rango real del registro 14 (la GUI manda 0..100, el CAT de esta GUI mapea 0..55); si la captura
 del códec distingue el estado mudo (el propio registro tiene una lectura de RMS 141,2 con el audio
 funcionando); y si el flag `sql_mute`/`sql_fm_mute` del flow dice si el BASE está muteando.
+
+## 66. El audio de RX mudo al ir a CW: el disparo era el write del modo del VFO inactivo
+
+**Síntoma**: al entrar a CW el audio de RX (altavoz y captura del códec) queda mudo, y no vuelve con GUI restart, reboot cálido, reset GPIO del BASE, rebind de códec/card ni con ningún registro accesible por `x6200_control_*`: solo un power-cycle. Reportado por el dueño el 22/10 y 23/10.
+
+**Medido** — captura del códec (`parec` 2 s), mudo ≈ rms 141/pico 144; sano rms > 1000. Aislamiento del disparador (API remota `mode`, build `test/novfob`):
+
+```
+base LSB                 rms=1104
+entrar a CW              rms=141   <- el audio muere al ENTRAR a CW
+CW +5 s                  rms=141
+volver a LSB             rms=141
+
+build sin write del modo del VFO B (test/novfob, commit 57540eb3):
+base LSB                 rms=1079
+entrar a CW              rms=1037  <- NO muteô
+```
+
+Log del fix ya desplegado (`build c4deabb5`, md5 `80040491...`):
+
+```
+$ grep -a "sin escribir (inactivo" /tmp/x6200_log.txt | tail -3
+on_vfo_mode_change: Radio vfo 1 mode=4 sin escribir (inactivo, #244)
+on_vfo_mode_change: Radio vfo 1 mode=0 sin escribir (inactivo, #244)
+```
+
+**Causa**: el BASE apaga el audio de RX cuando recibe un write del modo de un **VFO inactivo** (el VFO B). El port escribía el modo de ambos VFO en cada cambio de modo y en `radio_init` (`subject_add_observer_and_call`); la RX es el VFO A.
+
+**Corrección de lo que decían §64 y §65**: daban el disparo por no identificado. Ahora está identificado y medido: el write del modo del VFO inactivo. El PR #252 (record/mic latcheado, blame `1737bc55`) era un bug latente real pero **no** la causa de este mute.
+
+**Arreglo** — PR #260 (mergeado): `on_vfo_mode_change` escribe siempre el VFO A y el B sólo con split; el modo de B no se manda en `radio_init`; `on_split_mode_sync` manda el modo de B al prender split.
+
+**Verificación, medida** (build `c4deabb5`, md5 `80040491...`, deploy por SSH):
+
+```
+base LSB      rms=1085
+entrar a CW   rms=1035   <- ya no mutea
+salir a LSB   rms=1073
+USB ida/vuelta rms=1073
+2a vez CW->LSB rms=1071
+```
+
+**Sin fundar (anexo A)**: por qué el firmware del BASE mutea al recibir el modo de un VFO inactivo (no medido; haría falta el firmware del BASE), y si un write del VFO B con el mismo valor que ya tiene también mutea (no probado).
