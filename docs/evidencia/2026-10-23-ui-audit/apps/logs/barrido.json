@@ -1,0 +1,3033 @@
+{
+  "capa": "QEMU_USER",
+  "contrato": "iariap/x6200_gui#222",
+  "meta": {
+    "commit": "d0ff5cd196b43ba0190d4ccad03f559a2954daf6",
+    "commit_corto": "d0ff5cd1 Merge pull request #268 from iariap/feat/ui-258-259",
+    "fuente_md5": "4cdc9ae8a7bb756798e0a3c4016e5ab4",
+    "binario_md5": "609554a9729d",
+    "dwell_s": "2",
+    "rondas": "3",
+    "qemu_cpu": "cortex-a7",
+    "imagen": "x6200-buildroot",
+    "contenedor": "x6200-c272-qemu",
+    "volumen": "x6200-c272-build",
+    "apps_solicitadas": "25"
+  },
+  "rondas": [
+    1,
+    2,
+    3
+  ],
+  "apps_solicitadas": 25,
+  "resumen": {
+    "PASS": 12,
+    "PARTIAL": 6,
+    "FAIL": 7,
+    "BLOCKED": 0
+  },
+  "apps": {
+    "FT8": {
+      "app": "FT8",
+      "ronda": 1,
+      "app_estado": "FT8",
+      "segundos": 3.9,
+      "colores": 176,
+      "captura": "capturas/FT8-r1.png",
+      "log_archivo": "logs/FT8-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10136000; estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "FT8 != FT8"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=176"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    "FT4": {
+      "app": "FT4",
+      "ronda": 1,
+      "app_estado": "FT4",
+      "segundos": 3.86,
+      "colores": 177,
+      "captura": "capturas/FT4-r1.png",
+      "log_archivo": "logs/FT4-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10140000; estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "FT4 != FT4"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=177"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    "JS8": {
+      "app": "JS8",
+      "ronda": 1,
+      "app_estado": "JS8",
+      "segundos": 3.87,
+      "colores": 249,
+      "captura": "capturas/JS8-r1.png",
+      "log_archivo": "logs/JS8-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "JS8 != JS8"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=249"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    "WSPR": {
+      "app": "WSPR",
+      "ronda": 1,
+      "app_estado": "WSPR",
+      "segundos": 3.89,
+      "colores": 228,
+      "captura": "capturas/WSPR-r1.png",
+      "log_archivo": "logs/WSPR-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10138700; estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "WSPR != WSPR"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=228"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    "SSTV": {
+      "app": "SSTV",
+      "ronda": 1,
+      "app_estado": "SSTV",
+      "segundos": 3.9,
+      "colores": 193,
+      "captura": "capturas/SSTV-r1.png",
+      "log_archivo": "logs/SSTV-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "SSTV != SSTV"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=193"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    "WeFax": {
+      "app": "WeFax",
+      "ronda": 1,
+      "app_estado": "WeFax",
+      "segundos": 3.88,
+      "colores": 180,
+      "captura": "capturas/WeFax-r1.png",
+      "log_archivo": "logs/WeFax-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "WeFax != WeFax"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=180"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    "NavTex": {
+      "app": "NavTex",
+      "ronda": 1,
+      "app_estado": "NavTex",
+      "segundos": 3.94,
+      "colores": 185,
+      "captura": "capturas/NavTex-r1.png",
+      "log_archivo": "logs/NavTex-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "NavTex != NavTex"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=185"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    "RTTY": {
+      "app": "RTTY",
+      "ronda": 1,
+      "app_estado": "RTTY",
+      "segundos": 3.91,
+      "colores": 176,
+      "captura": "capturas/RTTY-r1.png",
+      "log_archivo": "logs/RTTY-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "RTTY != RTTY"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=176"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    "CW": {
+      "app": "CW",
+      "ronda": 1,
+      "app_estado": "CW",
+      "segundos": 3.88,
+      "colores": 301,
+      "captura": "capturas/CW-r1.png",
+      "log_archivo": "logs/CW-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: mode USB -> CW",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "CW != CW"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=301"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    "Field": {
+      "app": "Field",
+      "ronda": 1,
+      "app_estado": "Field",
+      "segundos": 3.89,
+      "colores": 1855,
+      "captura": "capturas/Field-r1.png",
+      "log_archivo": "logs/Field-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin red (QRZ/POTA): la consulta no se puede validar (solo el render)",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Field != Field"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=1855"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    "GPS": {
+      "app": "GPS",
+      "ronda": 1,
+      "app_estado": "GPS",
+      "segundos": 3.88,
+      "colores": 264,
+      "captura": "capturas/GPS-r1.png",
+      "log_archivo": "logs/GPS-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin receptor GNSS en el chroot: se espera el mensaje controlado de la app",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "GPS != GPS"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=264"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    "Bands": {
+      "app": "Bands",
+      "ronda": 1,
+      "app_estado": "Bands",
+      "segundos": 3.88,
+      "colores": 222,
+      "captura": "capturas/Bands-r1.png",
+      "log_archivo": "logs/Bands-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Bands != Bands"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=222"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    "Settings": {
+      "app": "Settings",
+      "ronda": 1,
+      "app_estado": "Settings",
+      "segundos": 3.87,
+      "colores": 381,
+      "captura": "capturas/Settings-r1.png",
+      "log_archivo": "logs/Settings-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Settings != Settings"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=381"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    "BT": {
+      "app": "BT",
+      "ronda": 1,
+      "app_estado": "BT",
+      "segundos": 3.88,
+      "colores": 210,
+      "captura": "capturas/BT-r1.png",
+      "log_archivo": "logs/BT-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin adaptador Bluetooth: se espera el estado controlado",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "BT != BT"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=210"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    "Cluster": {
+      "app": "Cluster",
+      "ronda": 1,
+      "app_estado": "Cluster",
+      "segundos": 3.89,
+      "colores": 207,
+      "captura": "capturas/Cluster-r1.png",
+      "log_archivo": "logs/Cluster-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin red: la columna de spots no se puede validar (solo el render)",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Cluster != Cluster"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=207"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    "CwTrainer": {
+      "app": "CwTrainer",
+      "ronda": 1,
+      "app_estado": "CwTrainer",
+      "segundos": 3.89,
+      "colores": 307,
+      "captura": "capturas/CwTrainer-r1.png",
+      "log_archivo": "logs/CwTrainer-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: mode USB -> CW",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "CwTrainer != CwTrainer"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=307"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    "Eq": {
+      "app": "Eq",
+      "ronda": 1,
+      "app_estado": "Eq",
+      "segundos": 3.92,
+      "colores": 306,
+      "captura": "capturas/Eq-r1.png",
+      "log_archivo": "logs/Eq-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Eq != Eq"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=306"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    "Status": {
+      "app": "Status",
+      "ronda": 1,
+      "app_estado": "Status",
+      "segundos": 3.91,
+      "colores": 223,
+      "captura": "capturas/Status-r1.png",
+      "log_archivo": "logs/Status-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Status != Status"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=223"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    "QTH": {
+      "app": "QTH",
+      "ronda": 1,
+      "app_estado": "QTH",
+      "segundos": 3.89,
+      "colores": 242,
+      "captura": "capturas/QTH-r1.png",
+      "log_archivo": "logs/QTH-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "QTH != QTH"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=242"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    "Callsign": {
+      "app": "Callsign",
+      "ronda": 1,
+      "app_estado": "Callsign",
+      "segundos": 3.89,
+      "colores": 241,
+      "captura": "capturas/Callsign-r1.png",
+      "log_archivo": "logs/Callsign-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Callsign != Callsign"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=241"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    "Recorder": {
+      "app": "Recorder",
+      "ronda": 1,
+      "app_estado": "Recorder",
+      "segundos": 3.89,
+      "colores": 179,
+      "captura": "capturas/Recorder-r1.png",
+      "log_archivo": "logs/Recorder-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Recorder != Recorder"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=179"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    "WiFi": {
+      "app": "WiFi",
+      "ronda": 1,
+      "app_estado": "WiFi",
+      "segundos": 3.9,
+      "colores": 248,
+      "captura": "capturas/WiFi-r1.png",
+      "log_archivo": "logs/WiFi-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin NetworkManager ni adaptador en el chroot: se espera el estado controlado",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "WiFi != WiFi"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=248"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    "SWRScan": {
+      "app": "SWRScan",
+      "ronda": 1,
+      "app_estado": "SWRScan",
+      "segundos": 3.92,
+      "colores": 215,
+      "captura": "capturas/SWRScan-r1.png",
+      "log_archivo": "logs/SWRScan-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "SWRScan != SWRScan"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=215"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    "Propagation": {
+      "app": "Propagation",
+      "ronda": 1,
+      "app_estado": "Propagation",
+      "segundos": 3.92,
+      "colores": 189,
+      "captura": "capturas/Propagation-r1.png",
+      "log_archivo": "logs/Propagation-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin spots de cluster ni NTP: el barrido de beacons no se puede validar",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Propagation != Propagation"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=189"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    "DFLEditor": {
+      "app": "DFLEditor",
+      "ronda": 1,
+      "app_estado": "",
+      "segundos": 3.92,
+      "colores": 379,
+      "captura": "capturas/DFLEditor-r1.png",
+      "log_archivo": "logs/DFLEditor-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: la app pedida no abrio (app='')",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": false,
+          "detalle": " != DFLEditor"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=379"
+        }
+      ],
+      "resultado": "FAIL"
+    }
+  },
+  "rondas_detalle": [
+    {
+      "app": "FT8",
+      "ronda": 1,
+      "app_estado": "FT8",
+      "segundos": 3.9,
+      "colores": 176,
+      "captura": "capturas/FT8-r1.png",
+      "log_archivo": "logs/FT8-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10136000; estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "FT8 != FT8"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=176"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "FT4",
+      "ronda": 1,
+      "app_estado": "FT4",
+      "segundos": 3.86,
+      "colores": 177,
+      "captura": "capturas/FT4-r1.png",
+      "log_archivo": "logs/FT4-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10140000; estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "FT4 != FT4"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=177"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "JS8",
+      "ronda": 1,
+      "app_estado": "JS8",
+      "segundos": 3.87,
+      "colores": 249,
+      "captura": "capturas/JS8-r1.png",
+      "log_archivo": "logs/JS8-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "JS8 != JS8"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=249"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "WSPR",
+      "ronda": 1,
+      "app_estado": "WSPR",
+      "segundos": 3.89,
+      "colores": 228,
+      "captura": "capturas/WSPR-r1.png",
+      "log_archivo": "logs/WSPR-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10138700; estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "WSPR != WSPR"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=228"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "SSTV",
+      "ronda": 1,
+      "app_estado": "SSTV",
+      "segundos": 3.9,
+      "colores": 193,
+      "captura": "capturas/SSTV-r1.png",
+      "log_archivo": "logs/SSTV-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "SSTV != SSTV"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=193"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "WeFax",
+      "ronda": 1,
+      "app_estado": "WeFax",
+      "segundos": 3.88,
+      "colores": 180,
+      "captura": "capturas/WeFax-r1.png",
+      "log_archivo": "logs/WeFax-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "WeFax != WeFax"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=180"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "NavTex",
+      "ronda": 1,
+      "app_estado": "NavTex",
+      "segundos": 3.94,
+      "colores": 185,
+      "captura": "capturas/NavTex-r1.png",
+      "log_archivo": "logs/NavTex-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "NavTex != NavTex"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=185"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "RTTY",
+      "ronda": 1,
+      "app_estado": "RTTY",
+      "segundos": 3.91,
+      "colores": 176,
+      "captura": "capturas/RTTY-r1.png",
+      "log_archivo": "logs/RTTY-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "RTTY != RTTY"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=176"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "CW",
+      "ronda": 1,
+      "app_estado": "CW",
+      "segundos": 3.88,
+      "colores": 301,
+      "captura": "capturas/CW-r1.png",
+      "log_archivo": "logs/CW-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: mode USB -> CW",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "CW != CW"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=301"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "Field",
+      "ronda": 1,
+      "app_estado": "Field",
+      "segundos": 3.89,
+      "colores": 1855,
+      "captura": "capturas/Field-r1.png",
+      "log_archivo": "logs/Field-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin red (QRZ/POTA): la consulta no se puede validar (solo el render)",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Field != Field"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=1855"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "GPS",
+      "ronda": 1,
+      "app_estado": "GPS",
+      "segundos": 3.88,
+      "colores": 264,
+      "captura": "capturas/GPS-r1.png",
+      "log_archivo": "logs/GPS-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin receptor GNSS en el chroot: se espera el mensaje controlado de la app",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "GPS != GPS"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=264"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "Bands",
+      "ronda": 1,
+      "app_estado": "Bands",
+      "segundos": 3.88,
+      "colores": 222,
+      "captura": "capturas/Bands-r1.png",
+      "log_archivo": "logs/Bands-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Bands != Bands"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=222"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Settings",
+      "ronda": 1,
+      "app_estado": "Settings",
+      "segundos": 3.87,
+      "colores": 381,
+      "captura": "capturas/Settings-r1.png",
+      "log_archivo": "logs/Settings-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Settings != Settings"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=381"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "BT",
+      "ronda": 1,
+      "app_estado": "BT",
+      "segundos": 3.88,
+      "colores": 210,
+      "captura": "capturas/BT-r1.png",
+      "log_archivo": "logs/BT-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin adaptador Bluetooth: se espera el estado controlado",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "BT != BT"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=210"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "Cluster",
+      "ronda": 1,
+      "app_estado": "Cluster",
+      "segundos": 3.89,
+      "colores": 207,
+      "captura": "capturas/Cluster-r1.png",
+      "log_archivo": "logs/Cluster-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin red: la columna de spots no se puede validar (solo el render)",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Cluster != Cluster"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=207"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "CwTrainer",
+      "ronda": 1,
+      "app_estado": "CwTrainer",
+      "segundos": 3.89,
+      "colores": 307,
+      "captura": "capturas/CwTrainer-r1.png",
+      "log_archivo": "logs/CwTrainer-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: mode USB -> CW",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "CwTrainer != CwTrainer"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=307"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "Eq",
+      "ronda": 1,
+      "app_estado": "Eq",
+      "segundos": 3.92,
+      "colores": 306,
+      "captura": "capturas/Eq-r1.png",
+      "log_archivo": "logs/Eq-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Eq != Eq"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=306"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Status",
+      "ronda": 1,
+      "app_estado": "Status",
+      "segundos": 3.91,
+      "colores": 223,
+      "captura": "capturas/Status-r1.png",
+      "log_archivo": "logs/Status-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Status != Status"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=223"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "QTH",
+      "ronda": 1,
+      "app_estado": "QTH",
+      "segundos": 3.89,
+      "colores": 242,
+      "captura": "capturas/QTH-r1.png",
+      "log_archivo": "logs/QTH-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "QTH != QTH"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=242"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Callsign",
+      "ronda": 1,
+      "app_estado": "Callsign",
+      "segundos": 3.89,
+      "colores": 241,
+      "captura": "capturas/Callsign-r1.png",
+      "log_archivo": "logs/Callsign-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Callsign != Callsign"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=241"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Recorder",
+      "ronda": 1,
+      "app_estado": "Recorder",
+      "segundos": 3.89,
+      "colores": 179,
+      "captura": "capturas/Recorder-r1.png",
+      "log_archivo": "logs/Recorder-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Recorder != Recorder"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=179"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "WiFi",
+      "ronda": 1,
+      "app_estado": "WiFi",
+      "segundos": 3.9,
+      "colores": 248,
+      "captura": "capturas/WiFi-r1.png",
+      "log_archivo": "logs/WiFi-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin NetworkManager ni adaptador en el chroot: se espera el estado controlado",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "WiFi != WiFi"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=248"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "SWRScan",
+      "ronda": 1,
+      "app_estado": "SWRScan",
+      "segundos": 3.92,
+      "colores": 215,
+      "captura": "capturas/SWRScan-r1.png",
+      "log_archivo": "logs/SWRScan-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "SWRScan != SWRScan"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=215"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Propagation",
+      "ronda": 1,
+      "app_estado": "Propagation",
+      "segundos": 3.92,
+      "colores": 189,
+      "captura": "capturas/Propagation-r1.png",
+      "log_archivo": "logs/Propagation-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin spots de cluster ni NTP: el barrido de beacons no se puede validar",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Propagation != Propagation"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=189"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "DFLEditor",
+      "ronda": 1,
+      "app_estado": "",
+      "segundos": 3.92,
+      "colores": 379,
+      "captura": "capturas/DFLEditor-r1.png",
+      "log_archivo": "logs/DFLEditor-r1.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: la app pedida no abrio (app='')",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": false,
+          "detalle": " != DFLEditor"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=379"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "FT8",
+      "ronda": 2,
+      "app_estado": "FT8",
+      "segundos": 3.91,
+      "colores": 177,
+      "captura": "capturas/FT8-r2.png",
+      "log_archivo": "logs/FT8-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10136000; estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "FT8 != FT8"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=177"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "FT4",
+      "ronda": 2,
+      "app_estado": "FT4",
+      "segundos": 3.89,
+      "colores": 177,
+      "captura": "capturas/FT4-r2.png",
+      "log_archivo": "logs/FT4-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10140000; estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "FT4 != FT4"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=177"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "JS8",
+      "ronda": 2,
+      "app_estado": "JS8",
+      "segundos": 3.91,
+      "colores": 249,
+      "captura": "capturas/JS8-r2.png",
+      "log_archivo": "logs/JS8-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "JS8 != JS8"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=249"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "WSPR",
+      "ronda": 2,
+      "app_estado": "WSPR",
+      "segundos": 3.91,
+      "colores": 215,
+      "captura": "capturas/WSPR-r2.png",
+      "log_archivo": "logs/WSPR-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10138700; estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "WSPR != WSPR"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=215"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "SSTV",
+      "ronda": 2,
+      "app_estado": "SSTV",
+      "segundos": 3.9,
+      "colores": 193,
+      "captura": "capturas/SSTV-r2.png",
+      "log_archivo": "logs/SSTV-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "SSTV != SSTV"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=193"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "WeFax",
+      "ronda": 2,
+      "app_estado": "WeFax",
+      "segundos": 3.91,
+      "colores": 180,
+      "captura": "capturas/WeFax-r2.png",
+      "log_archivo": "logs/WeFax-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "WeFax != WeFax"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=180"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "NavTex",
+      "ronda": 2,
+      "app_estado": "NavTex",
+      "segundos": 4.0,
+      "colores": 185,
+      "captura": "capturas/NavTex-r2.png",
+      "log_archivo": "logs/NavTex-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "NavTex != NavTex"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=185"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "RTTY",
+      "ronda": 2,
+      "app_estado": "RTTY",
+      "segundos": 4.19,
+      "colores": 176,
+      "captura": "capturas/RTTY-r2.png",
+      "log_archivo": "logs/RTTY-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "RTTY != RTTY"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=176"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "CW",
+      "ronda": 2,
+      "app_estado": "CW",
+      "segundos": 3.95,
+      "colores": 301,
+      "captura": "capturas/CW-r2.png",
+      "log_archivo": "logs/CW-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: mode USB -> CW",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "CW != CW"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=301"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "Field",
+      "ronda": 2,
+      "app_estado": "Field",
+      "segundos": 3.95,
+      "colores": 1855,
+      "captura": "capturas/Field-r2.png",
+      "log_archivo": "logs/Field-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin red (QRZ/POTA): la consulta no se puede validar (solo el render)",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Field != Field"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=1855"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "GPS",
+      "ronda": 2,
+      "app_estado": "GPS",
+      "segundos": 4.01,
+      "colores": 264,
+      "captura": "capturas/GPS-r2.png",
+      "log_archivo": "logs/GPS-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin receptor GNSS en el chroot: se espera el mensaje controlado de la app",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "GPS != GPS"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=264"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "Bands",
+      "ronda": 2,
+      "app_estado": "Bands",
+      "segundos": 3.94,
+      "colores": 222,
+      "captura": "capturas/Bands-r2.png",
+      "log_archivo": "logs/Bands-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Bands != Bands"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=222"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Settings",
+      "ronda": 2,
+      "app_estado": "Settings",
+      "segundos": 3.93,
+      "colores": 381,
+      "captura": "capturas/Settings-r2.png",
+      "log_archivo": "logs/Settings-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Settings != Settings"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=381"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "BT",
+      "ronda": 2,
+      "app_estado": "BT",
+      "segundos": 3.93,
+      "colores": 210,
+      "captura": "capturas/BT-r2.png",
+      "log_archivo": "logs/BT-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin adaptador Bluetooth: se espera el estado controlado",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "BT != BT"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=210"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "Cluster",
+      "ronda": 2,
+      "app_estado": "Cluster",
+      "segundos": 3.94,
+      "colores": 207,
+      "captura": "capturas/Cluster-r2.png",
+      "log_archivo": "logs/Cluster-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin red: la columna de spots no se puede validar (solo el render)",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Cluster != Cluster"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=207"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "CwTrainer",
+      "ronda": 2,
+      "app_estado": "CwTrainer",
+      "segundos": 3.92,
+      "colores": 307,
+      "captura": "capturas/CwTrainer-r2.png",
+      "log_archivo": "logs/CwTrainer-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: mode USB -> CW",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "CwTrainer != CwTrainer"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=307"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "Eq",
+      "ronda": 2,
+      "app_estado": "Eq",
+      "segundos": 3.93,
+      "colores": 306,
+      "captura": "capturas/Eq-r2.png",
+      "log_archivo": "logs/Eq-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Eq != Eq"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=306"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Status",
+      "ronda": 2,
+      "app_estado": "Status",
+      "segundos": 3.94,
+      "colores": 223,
+      "captura": "capturas/Status-r2.png",
+      "log_archivo": "logs/Status-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Status != Status"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=223"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "QTH",
+      "ronda": 2,
+      "app_estado": "QTH",
+      "segundos": 3.94,
+      "colores": 242,
+      "captura": "capturas/QTH-r2.png",
+      "log_archivo": "logs/QTH-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "QTH != QTH"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=242"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Callsign",
+      "ronda": 2,
+      "app_estado": "Callsign",
+      "segundos": 3.94,
+      "colores": 241,
+      "captura": "capturas/Callsign-r2.png",
+      "log_archivo": "logs/Callsign-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Callsign != Callsign"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=241"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Recorder",
+      "ronda": 2,
+      "app_estado": "Recorder",
+      "segundos": 3.96,
+      "colores": 179,
+      "captura": "capturas/Recorder-r2.png",
+      "log_archivo": "logs/Recorder-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Recorder != Recorder"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=179"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "WiFi",
+      "ronda": 2,
+      "app_estado": "WiFi",
+      "segundos": 3.98,
+      "colores": 248,
+      "captura": "capturas/WiFi-r2.png",
+      "log_archivo": "logs/WiFi-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin NetworkManager ni adaptador en el chroot: se espera el estado controlado",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "WiFi != WiFi"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=248"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "SWRScan",
+      "ronda": 2,
+      "app_estado": "SWRScan",
+      "segundos": 3.96,
+      "colores": 215,
+      "captura": "capturas/SWRScan-r2.png",
+      "log_archivo": "logs/SWRScan-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "SWRScan != SWRScan"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=215"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Propagation",
+      "ronda": 2,
+      "app_estado": "Propagation",
+      "segundos": 3.94,
+      "colores": 189,
+      "captura": "capturas/Propagation-r2.png",
+      "log_archivo": "logs/Propagation-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin spots de cluster ni NTP: el barrido de beacons no se puede validar",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Propagation != Propagation"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=189"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "DFLEditor",
+      "ronda": 2,
+      "app_estado": "",
+      "segundos": 3.96,
+      "colores": 376,
+      "captura": "capturas/DFLEditor-r2.png",
+      "log_archivo": "logs/DFLEditor-r2.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: la app pedida no abrio (app='')",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": false,
+          "detalle": " != DFLEditor"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=376"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "FT8",
+      "ronda": 3,
+      "app_estado": "FT8",
+      "segundos": 3.95,
+      "colores": 177,
+      "captura": "capturas/FT8-r3.png",
+      "log_archivo": "logs/FT8-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10136000; estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "FT8 != FT8"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=177"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "FT4",
+      "ronda": 3,
+      "app_estado": "FT4",
+      "segundos": 3.96,
+      "colores": 192,
+      "captura": "capturas/FT4-r3.png",
+      "log_archivo": "logs/FT4-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10140000; estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "FT4 != FT4"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=192"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "JS8",
+      "ronda": 3,
+      "app_estado": "JS8",
+      "segundos": 3.94,
+      "colores": 249,
+      "captura": "capturas/JS8-r3.png",
+      "log_archivo": "logs/JS8-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "JS8 != JS8"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=249"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "WSPR",
+      "ronda": 3,
+      "app_estado": "WSPR",
+      "segundos": 3.9,
+      "colores": 215,
+      "captura": "capturas/WSPR-r3.png",
+      "log_archivo": "logs/WSPR-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10138700; estado persistido cambiado sin querer: mode USB -> USB-D",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "WSPR != WSPR"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=215"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "SSTV",
+      "ronda": 3,
+      "app_estado": "SSTV",
+      "segundos": 3.9,
+      "colores": 193,
+      "captura": "capturas/SSTV-r3.png",
+      "log_archivo": "logs/SSTV-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "SSTV != SSTV"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=193"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "WeFax",
+      "ronda": 3,
+      "app_estado": "WeFax",
+      "segundos": 3.92,
+      "colores": 180,
+      "captura": "capturas/WeFax-r3.png",
+      "log_archivo": "logs/WeFax-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "WeFax != WeFax"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=180"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "NavTex",
+      "ronda": 3,
+      "app_estado": "NavTex",
+      "segundos": 3.91,
+      "colores": 185,
+      "captura": "capturas/NavTex-r3.png",
+      "log_archivo": "logs/NavTex-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "NavTex != NavTex"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=185"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "RTTY",
+      "ronda": 3,
+      "app_estado": "RTTY",
+      "segundos": 3.9,
+      "colores": 176,
+      "captura": "capturas/RTTY-r3.png",
+      "log_archivo": "logs/RTTY-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "RTTY != RTTY"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=176"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "CW",
+      "ronda": 3,
+      "app_estado": "CW",
+      "segundos": 3.91,
+      "colores": 301,
+      "captura": "capturas/CW-r3.png",
+      "log_archivo": "logs/CW-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: mode USB -> CW",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "CW != CW"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=301"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "Field",
+      "ronda": 3,
+      "app_estado": "Field",
+      "segundos": 3.91,
+      "colores": 1857,
+      "captura": "capturas/Field-r3.png",
+      "log_archivo": "logs/Field-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin red (QRZ/POTA): la consulta no se puede validar (solo el render)",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Field != Field"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=1857"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "GPS",
+      "ronda": 3,
+      "app_estado": "GPS",
+      "segundos": 3.9,
+      "colores": 264,
+      "captura": "capturas/GPS-r3.png",
+      "log_archivo": "logs/GPS-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin receptor GNSS en el chroot: se espera el mensaje controlado de la app",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "GPS != GPS"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=264"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "Bands",
+      "ronda": 3,
+      "app_estado": "Bands",
+      "segundos": 3.9,
+      "colores": 222,
+      "captura": "capturas/Bands-r3.png",
+      "log_archivo": "logs/Bands-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Bands != Bands"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=222"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Settings",
+      "ronda": 3,
+      "app_estado": "Settings",
+      "segundos": 3.92,
+      "colores": 381,
+      "captura": "capturas/Settings-r3.png",
+      "log_archivo": "logs/Settings-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Settings != Settings"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=381"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "BT",
+      "ronda": 3,
+      "app_estado": "BT",
+      "segundos": 3.93,
+      "colores": 210,
+      "captura": "capturas/BT-r3.png",
+      "log_archivo": "logs/BT-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin adaptador Bluetooth: se espera el estado controlado",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "BT != BT"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=210"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "Cluster",
+      "ronda": 3,
+      "app_estado": "Cluster",
+      "segundos": 3.94,
+      "colores": 207,
+      "captura": "capturas/Cluster-r3.png",
+      "log_archivo": "logs/Cluster-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin red: la columna de spots no se puede validar (solo el render)",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Cluster != Cluster"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=207"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "CwTrainer",
+      "ronda": 3,
+      "app_estado": "CwTrainer",
+      "segundos": 3.91,
+      "colores": 307,
+      "captura": "capturas/CwTrainer-r3.png",
+      "log_archivo": "logs/CwTrainer-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: estado persistido cambiado sin querer: mode USB -> CW",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "CwTrainer != CwTrainer"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=307"
+        }
+      ],
+      "resultado": "FAIL"
+    },
+    {
+      "app": "Eq",
+      "ronda": 3,
+      "app_estado": "Eq",
+      "segundos": 3.91,
+      "colores": 306,
+      "captura": "capturas/Eq-r3.png",
+      "log_archivo": "logs/Eq-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Eq != Eq"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=306"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Status",
+      "ronda": 3,
+      "app_estado": "Status",
+      "segundos": 3.93,
+      "colores": 223,
+      "captura": "capturas/Status-r3.png",
+      "log_archivo": "logs/Status-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Status != Status"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=223"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "QTH",
+      "ronda": 3,
+      "app_estado": "QTH",
+      "segundos": 3.92,
+      "colores": 242,
+      "captura": "capturas/QTH-r3.png",
+      "log_archivo": "logs/QTH-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "QTH != QTH"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=242"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Callsign",
+      "ronda": 3,
+      "app_estado": "Callsign",
+      "segundos": 3.98,
+      "colores": 241,
+      "captura": "capturas/Callsign-r3.png",
+      "log_archivo": "logs/Callsign-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Callsign != Callsign"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=241"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Recorder",
+      "ronda": 3,
+      "app_estado": "Recorder",
+      "segundos": 3.91,
+      "colores": 179,
+      "captura": "capturas/Recorder-r3.png",
+      "log_archivo": "logs/Recorder-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Recorder != Recorder"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=179"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "WiFi",
+      "ronda": 3,
+      "app_estado": "WiFi",
+      "segundos": 3.89,
+      "colores": 248,
+      "captura": "capturas/WiFi-r3.png",
+      "log_archivo": "logs/WiFi-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin NetworkManager ni adaptador en el chroot: se espera el estado controlado",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "WiFi != WiFi"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=248"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "SWRScan",
+      "ronda": 3,
+      "app_estado": "SWRScan",
+      "segundos": 3.88,
+      "colores": 215,
+      "captura": "capturas/SWRScan-r3.png",
+      "log_archivo": "logs/SWRScan-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PASS: app abierta, captura real, home restaurada y GUI estable",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "SWRScan != SWRScan"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=215"
+        }
+      ],
+      "resultado": "PASS"
+    },
+    {
+      "app": "Propagation",
+      "ronda": 3,
+      "app_estado": "Propagation",
+      "segundos": 3.92,
+      "colores": 189,
+      "captura": "capturas/Propagation-r3.png",
+      "log_archivo": "logs/Propagation-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "PARTIAL: sin spots de cluster ni NTP: el barrido de beacons no se puede validar",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": true,
+          "detalle": "Propagation != Propagation"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=189"
+        }
+      ],
+      "resultado": "PARTIAL"
+    },
+    {
+      "app": "DFLEditor",
+      "ronda": 3,
+      "app_estado": "",
+      "segundos": 3.88,
+      "colores": 376,
+      "captura": "capturas/DFLEditor-r3.png",
+      "log_archivo": "logs/DFLEditor-r3.txt",
+      "capa": "QEMU_USER",
+      "home_px": "distinto",
+      "motivo": "FAIL: la app pedida no abrio (app='')",
+      "checks": [
+        {
+          "check": "app-abrio",
+          "ok": false,
+          "detalle": " != DFLEditor"
+        },
+        {
+          "check": "home-restaurada",
+          "ok": true,
+          "detalle": "app='' despues de `app off`"
+        },
+        {
+          "check": "dibujo",
+          "ok": true,
+          "detalle": "colores=376"
+        }
+      ],
+      "resultado": "FAIL"
+    }
+  ]
+}

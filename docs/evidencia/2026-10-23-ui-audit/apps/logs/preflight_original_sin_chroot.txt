@@ -1,0 +1,15 @@
+== comprobando el entorno del barrido QEMU (privado) ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  python3: ok
+  PIL: ok
+  reporteador: ok
+  guard #86: ok
+  libs del banco: ok
+  cliente de control (fuente): ok
+  volumen x6200-c272-build: tiene la GUI construida
+  FALTA: falta el chroot privado (/tmp/x6200-c272-nolyqemu/chroot): pasar ROOTFS=<rootfs.tar privada> o dejar el volumen con target/ (se arma solo)
+  binfmt qemu-arm: ok
+== 1 cosa(s) faltan: el barrido QEMU no puede correr ==
+SKIP: barrido QEMU sin entorno privado (1 requisito(s) faltante(s))
+sin chroot exit=77

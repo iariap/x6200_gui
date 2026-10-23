@@ -1,0 +1,13 @@
+[User]	(105497.475, +24)	 get_band_info_by_freq: Loading band info for freq: 10100000 	(in band.c line #237)
+[User]	(105497.476, +1)	 cfg_mode_params_load_item: Loaded filter_high=2900 (pk=0) 	(in mode.c line #134)
+[User]	(105497.476, +0)	 update_cur_high_filter: Set current high filter: 2900 	(in mode.c line #535)
+[User]	(105497.476, +0)	 cfg_mode_params_load_item: Loaded filter_low=100 (pk=0) 	(in mode.c line #134)
+[User]	(105497.476, +0)	 update_cur_low_filter: Set current low filter: 100 	(in mode.c line #509)
+[User]	(105497.476, +0)	 cfg_mode_params_load_item: Loaded freq_step=500 (pk=0) 	(in mode.c line #134)
+[User]	(105497.477, +1)	 cfg_mode_params_load_item: Loaded spectrum_factor=1 (pk=0) 	(in mode.c line #134)
+[User]	(105497.477, +0)	 update_cur_low_filter: Set current low filter: 100 	(in mode.c line #509)
+[User]	(105497.477, +0)	 update_cur_high_filter: Set current high filter: 2900 	(in mode.c line #535)
+Can't write to i2c, not opened
+Can't write to i2c, not opened
+Can't write to i2c, not opened
+SSTV: dialog closed; Auto RX and Manual RX reset to defaults

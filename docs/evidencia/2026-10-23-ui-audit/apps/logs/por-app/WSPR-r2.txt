@@ -1,0 +1,17 @@
+[User]	(105618.554, +540)	 cfg_mode_params_save_item: Saved filter_high=3000 (pk=0) 	(in mode.c line #196)
+[User]	(105618.554, +0)	 cfg_mode_params_save_item: Saved filter_low=200 (pk=0) 	(in mode.c line #196)
+[User]	(105618.555, +1)	 cfg_mode_params_load_item: Loaded filter_high=3000 (pk=1) 	(in mode.c line #134)
+[User]	(105618.555, +0)	 cfg_mode_params_load_item: Loaded filter_low=200 (pk=1) 	(in mode.c line #134)
+[User]	(105618.555, +0)	 cfg_mode_params_load_item: Loaded freq_step=500 (pk=1) 	(in mode.c line #134)
+[User]	(105618.555, +0)	 cfg_mode_params_load_item: Loaded spectrum_factor=1 (pk=1) 	(in mode.c line #134)
+[User]	(105618.555, +0)	 update_cur_low_filter: Set current low filter: 200 	(in mode.c line #509)
+[User]	(105618.555, +0)	 update_cur_high_filter: Set current high filter: 3000 	(in mode.c line #535)
+Can't write to i2c, not opened
+[User]	(105620.998, +188)	 get_band_info_by_freq: Loading band info for freq: 10100000 	(in band.c line #237)
+[User]	(105620.999, +1)	 cfg_mode_params_load_item: Loaded filter_high=3000 (pk=0) 	(in mode.c line #134)
+[User]	(105620.999, +0)	 cfg_mode_params_load_item: Loaded filter_low=200 (pk=0) 	(in mode.c line #134)
+[User]	(105620.999, +0)	 cfg_mode_params_load_item: Loaded freq_step=500 (pk=0) 	(in mode.c line #134)
+[User]	(105620.999, +0)	 cfg_mode_params_load_item: Loaded spectrum_factor=1 (pk=0) 	(in mode.c line #134)
+[User]	(105620.999, +0)	 update_cur_low_filter: Set current low filter: 200 	(in mode.c line #509)
+[User]	(105620.999, +0)	 update_cur_high_filter: Set current high filter: 3000 	(in mode.c line #535)
+Can't write to i2c, not opened

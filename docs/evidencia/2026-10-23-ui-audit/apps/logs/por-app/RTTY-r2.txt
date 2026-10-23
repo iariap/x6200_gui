@@ -1,0 +1,5 @@
+Can't write to i2c, not opened
+[User]	(105624.362, +295)	 cfg_band_params_save_item: Saved vfoa_freq=10100000 (pk=5) 	(in band.c line #531)
+[User]	(105624.362, +0)	 cfg_band_params_save_item: Saved vfoa_mode=2 (pk=5) 	(in band.c line #531)
+Can't write to i2c, not opened
+SSTV: dialog closed; Auto RX and Manual RX reset to defaults

@@ -1,0 +1,13 @@
+[User]	(105556.623, +628)	 cfg_mode_params_load_item: Loaded filter_high=2900 (pk=0) 	(in mode.c line #134)
+[User]	(105556.623, +0)	 update_cur_high_filter: Set current high filter: 2900 	(in mode.c line #535)
+[User]	(105556.623, +0)	 cfg_mode_params_load_item: Loaded filter_low=100 (pk=0) 	(in mode.c line #134)
+[User]	(105556.623, +0)	 update_cur_low_filter: Set current low filter: 100 	(in mode.c line #509)
+[User]	(105556.623, +0)	 cfg_mode_params_load_item: Loaded freq_step=500 (pk=0) 	(in mode.c line #134)
+[User]	(105556.623, +0)	 cfg_mode_params_load_item: Loaded spectrum_factor=1 (pk=0) 	(in mode.c line #134)
+[User]	(105556.623, +0)	 update_cur_low_filter: Set current low filter: 100 	(in mode.c line #509)
+[User]	(105556.623, +0)	 update_cur_high_filter: Set current high filter: 2900 	(in mode.c line #535)
+[User]	(105564.358, +262)	 cfg_params_save_item: Saved key_train=0 (pk=0) 	(in params.c line #142)
+[User]	(105564.359, +1)	 cfg_band_params_save_item: Saved vfoa_mode=2 (pk=5) 	(in band.c line #531)
+Can't write to i2c, not opened
+Can't write to i2c, not opened
+Can't write to i2c, not opened

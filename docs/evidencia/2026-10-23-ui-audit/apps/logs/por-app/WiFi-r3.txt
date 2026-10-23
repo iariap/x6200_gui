@@ -1,0 +1,5 @@
+[User]	(105814.372, +269)	 cfg_params_save_item: Saved key_train=0 (pk=0) 	(in params.c line #142)
+[User]	(105814.373, +1)	 cfg_band_params_save_item: Saved vfoa_mode=2 (pk=5) 	(in band.c line #531)
+Can't write to i2c, not opened
+Can't write to i2c, not opened
+Can't write to i2c, not opened

@@ -1,0 +1,5 @@
+Can't write to i2c, not opened
+Can't write to i2c, not opened
+Can't write to i2c, not opened
+Can't write to i2c, not opened
+Can't write to i2c, not opened
