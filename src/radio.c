@@ -603,6 +603,11 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
     x6200_control_mic_set(params.mic);
     x6200_control_hmic_set(params.hmic);
     x6200_control_imic_set(params.imic);
+    /* #244: el ruteo de audio del MCU (record/mic) puede quedar latcheado en modo
+     * record si una reproduccion no alcanzo a restaurarlo (crash/cierre durante el
+     * audio). Restaurarlo en cada arranque de la GUI devuelve el audio de RX sin
+     * power-cycle (antes solo lo sacaba un corte de energia). */
+    x6200_control_record_set(false);
     x6200_control_spmode_set(params.spmode.x);
 
     x6200_control_vox_set(params.vox);

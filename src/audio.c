@@ -368,16 +368,20 @@ void audio_gain_db_transition(int16_t *buf, size_t samples, float gain1, float g
 }
 
 void audio_play_en(bool on) {
-    if (!audio_up || play_stm == NULL) {
-        return;
-    }
-
-
     if (on) {
+        /* Para ENTRAR en modo reproduccion hace falta el stream: si PulseAudio no
+         * esta listo no se toca el ruteo del MCU (no habria que restaurar despues). */
+        if (!audio_up || play_stm == NULL) {
+            return;
+        }
+
         x6200_control_hmic_set(0);
         x6200_control_imic_set(0);
         x6200_control_record_set(true);
     } else {
+        /* La restauracion va SIEMPRE, aunque el stream se haya caido entre el on y
+         * el off (#244): si se saltea, el BASE queda en modo record/mic y el audio de
+         * RX no vuelve hasta un power-cycle. */
         x6200_control_record_set(false);
         x6200_control_hmic_set(params.hmic);
         x6200_control_imic_set(params.imic);
