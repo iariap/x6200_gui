@@ -1,0 +1,13 @@
+  celdas del contrato: 6 | pad vertical local: []
+  FALLA src/ui_tokens.h: UI_INFO_CELL_GAP=2 (el contrato pide 6)
+  FALLA src/ui_tokens.h: UI_INFO_COL_PITCH=58 (el contrato pide 62)
+  FALLA src/ui_tokens.h: UI_INFO_ROW_PITCH=22 (el contrato pide 26)
+  FALLA src/ui_tokens.h: falta UI_INFO_BT_H
+  FALLA src/ui_tokens.h: falta UI_INFO_CELL_PAD_V
+  FALLA src/info.c: la celda no fija su pad superior e inferior local (2 llamadas)
+  FALLA src/info.c: no esta el helper de la fuente grande de los estados
+  FALLA src/ui_tokens.h: la fuente grande de la barra dejo de ser sony_22
+  FALLA src/info.c: INFO_AGC no dibuja con la fuente de estado de 22 px
+  FALLA src/info.c: INFO_PRE_ATT no dibuja con la fuente de estado de 22 px
+  FALLA src/info.c: INFO_ATU no dibuja con la fuente de estado de 22 px
+rc=1
