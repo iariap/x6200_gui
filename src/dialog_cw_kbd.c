@@ -111,6 +111,27 @@ static char history[HISTORY_MAX + 1]; /* sent */
 static char sending[512];             /* being keyed */
 static char queue[512];               /* waiting */
 
+/* Last text/styles actually drawn by update_view(). LVGL's label/style setters
+ * invalidate the object even when the value is identical, and update_view() runs
+ * on a 100 ms timer (the keyer's progress, the queue, the WPM, the mode): at rest
+ * nothing changes, so the dialog used to repaint the log, the header, the keyboard
+ * line and the state chip six times per tick. These buffers are per session --
+ * reset when the dialog is built and when it is torn down, never shared between
+ * two sessions -- and every write below is gated on a real change. The rendered
+ * text is byte-identical: only the redundant writes are gone. */
+static char       drawn_log[HISTORY_MAX + sizeof(sending) + sizeof(queue) + 64];
+static char       drawn_head[64];
+static char       drawn_right[40];
+static char       drawn_state[8];
+static lv_color_t drawn_state_bg;
+static lv_color_t drawn_state_fg;
+static bool       drawn_valid;
+
+static void drawn_reset(void) {
+    drawn_valid = false;
+    drawn_log[0] = drawn_head[0] = drawn_right[0] = drawn_state[0] = 0;
+}
+
 static bool cw_mode(void) {
     int32_t m = cparam_i_get(cfg_cur_mode);
     return m == x6100_mode_cw || m == x6100_mode_cwr;
@@ -135,9 +156,11 @@ static void history_add(const char *text) {
 }
 
 /* The log: sent text dim, the line being keyed white up to where the key is
- * and yellow after, the queue grey */
+ * and yellow after, the queue grey. Each label is written only when its text
+ * differs from what is already on screen (see drawn_log/drawn_head/... above). */
 static void update_view(void) {
     static char buf[HISTORY_MAX + sizeof(sending) + sizeof(queue) + 64];
+    static char head_buf[64];
     int         sent = busy() ? cw_encoder_sent() : 0;
     int         n    = strlen(sending);
 
@@ -146,24 +169,57 @@ static void update_view(void) {
     }
     snprintf(buf, sizeof(buf), "#%06x %s##%06x %.*s##%06x %s# #%06x %s#", COLOR_DIM, history, COLOR_SENT, sent,
              sending, COLOR_NEXT, sending + sent, theme_hex(TC_text_faint), queue);
-    lv_label_set_text(log_lbl, buf);
+    if (!drawn_valid || strcmp(buf, drawn_log) != 0) {
+        lv_label_set_text(log_lbl, buf);
+        snprintf(drawn_log, sizeof(drawn_log), "%s", buf);
+    }
 
-    lv_label_set_text_fmt(head, "CW KEYBOARD - #%06x %i WPM#", theme_hex(TC_text), (int)param_i_get(cfg_key_speed));
-    lv_label_set_text(head_right, keyboard_ready() ? "keyboard ready" : "no keyboard: MFK press");
+    snprintf(head_buf, sizeof(head_buf), "CW KEYBOARD - #%06x %i WPM#", theme_hex(TC_text),
+             (int)param_i_get(cfg_key_speed));
+    if (!drawn_valid || strcmp(head_buf, drawn_head) != 0) {
+        lv_label_set_text(head, head_buf);
+        snprintf(drawn_head, sizeof(drawn_head), "%s", head_buf);
+    }
+
+    const char *right = keyboard_ready() ? "keyboard ready" : "no keyboard: MFK press";
+
+    if (!drawn_valid || strcmp(right, drawn_right) != 0) {
+        lv_label_set_text(head_right, right);
+        snprintf(drawn_right, sizeof(drawn_right), "%s", right);
+    }
+
+    /* The state chip: READY / NOT CW / ON AIR and its colours. It is compared as
+     * a whole (text plus colours), so a live theme change repaints it too instead
+     * of leaving the old palette on screen. */
+    const char *state;
+    lv_color_t  bg;
+    lv_color_t  fg;
 
     if (!cw_mode()) {
-        lv_label_set_text(state_lbl, "NOT CW");
-        lv_obj_set_style_bg_color(state_lbl, TC(warn_bg), 0);
-        lv_obj_set_style_text_color(state_lbl, TC(warn), 0);
+        state = "NOT CW";
+        bg    = TC(warn_bg);
+        fg    = TC(warn);
     } else if (busy()) {
-        lv_label_set_text(state_lbl, "ON AIR");
-        lv_obj_set_style_bg_color(state_lbl, TC(tx_bg), 0);
-        lv_obj_set_style_text_color(state_lbl, TC(text), 0);
+        state = "ON AIR";
+        bg    = TC(tx_bg);
+        fg    = TC(text);
     } else {
-        lv_label_set_text(state_lbl, "READY");
-        lv_obj_set_style_bg_color(state_lbl, TC(chip), 0);
-        lv_obj_set_style_text_color(state_lbl, lv_color_hex(COLOR_HEAD), 0);
+        state = "READY";
+        bg    = TC(chip);
+        fg    = lv_color_hex(COLOR_HEAD);
     }
+
+    if (!drawn_valid || strcmp(state, drawn_state) != 0 || lv_color_to32(bg) != lv_color_to32(drawn_state_bg)
+        || lv_color_to32(fg) != lv_color_to32(drawn_state_fg)) {
+        lv_label_set_text(state_lbl, state);
+        lv_obj_set_style_bg_color(state_lbl, bg, 0);
+        lv_obj_set_style_text_color(state_lbl, fg, 0);
+        snprintf(drawn_state, sizeof(drawn_state), "%s", state);
+        drawn_state_bg = bg;
+        drawn_state_fg = fg;
+    }
+
+    drawn_valid = true;
 }
 
 /* The finished line goes to the log, the queue goes on air */
@@ -430,6 +486,7 @@ static void construct_cb(lv_obj_t *parent) {
     lv_group_focus_obj(dialog.obj);
     lv_group_set_editing(keyboard_group, true);
 
+    drawn_reset();
     timer = lv_timer_create(timer_cb, TIMER_MS, NULL);
     timer_cb(NULL);
 }
@@ -446,6 +503,7 @@ static void destruct_cb(void) {
     }
     lv_group_remove_obj(dialog.obj);
     sending[0] = queue[0] = 0;
+    drawn_reset();
 }
 
 /* Web remote (X6100 Link) */

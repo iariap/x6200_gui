@@ -1,0 +1,6 @@
+ok   rc=1
+ok   stdout dice 'Update verification failed'
+ok   el paquete sigue en /mnt
+ok   nada bajo / cambió
+ok   la GUI quedó la de antes
+ok   no quedó backup ni .partial

@@ -1,0 +1,9 @@
+Falso rojo observado en CI — job `boot anim gate (deterministic, no docker)`
+run 39742568157, sobre el HEAD de OTRO PR (el PR no tocaba tests/bootanim/**).
+
+FAIL .../tests/bootanim/handoff_test.c:174: now_ms() - t0 < 50 (corrupto "1": espero 51 ms)
+FAIL .../tests/bootanim/handoff_test.c:174: now_ms() - t0 < 50 (corrupto "0": espero 60 ms)
+FAIL .../tests/bootanim/handoff_test.c:174: now_ms() - t0 < 50 (corrupto "12abc": espero 80 ms)
+##[error]Process completed with exit code 1
+
+Al re-ejecutar el job, paso: era un flake (tiempo de pared del runner).

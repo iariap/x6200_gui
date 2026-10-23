@@ -1,0 +1,13 @@
+$ python3 tests/audita-pruebas.py
+  builds en la tabla: 237 | secciones: 14 | enlaces: 50
+  para revisar a mano (31):
+    ? 3: Que una versión **funcione** no se sostiene con "debería andar": se sostiene con corridas de prueba
+    ? 21: Un número redondeado está bien **si está dicho como redondeo**. Lo que no puede aparecer es un
+    ? 416: ## 19/10 ~15:2x (hora radio) — TX cualitativa en CB (teclado CW) y el interlock que **no** lo cubre 
+    ? 448: reinicio** a los ~10 min y **se restauró** frecuencia/modo/app (14.285 MHz, CW, app off) y la
+    ? 509: ## 18/10 ~12:40 (hora radio) — `ffef63df58cb` (#133/#114/#121): la radio no responde; **pruebas NO e
+    ? 550: ## 17/10 ~22:20 (hora radio) — `63dbf7a4` (#130): la parábola de ROE en la radio es una **U** ✓ (cie
+    ? 614: (TX medida ~2,3-2,6 s). Ya anotado en #119 y por el otro QA; sigue abierto.
+    ? 631: ## 16/10 ~23:40 — ROM nueva flasheada en la SD: `c640645d810c` (GUI e294229dd32d)
+  OK: estructura y evidencia en orden
+RC=0

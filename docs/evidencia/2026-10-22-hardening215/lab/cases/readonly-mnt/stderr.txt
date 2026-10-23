@@ -1,0 +1,2 @@
+touch: /mnt/.s02update-write-probe.5839: Read-only file system
+  reason: /mnt is not writable (read-only mount or no space)

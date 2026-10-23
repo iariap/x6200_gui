@@ -1,0 +1,28 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/pablo/desa/x6200/assessment-194/clone-gui/tools/ab_testing
+configfile: pyproject.toml
+testpaths: tests
+collected 240 items / 13 deselected / 227 selected
+
+tests/test_barrido_apps.py ...........                                   [  4%]
+tests/test_bench_host_noise.py ..................                        [ 12%]
+tests/test_cli.py ...........                                            [ 17%]
+tests/test_contracts.py .........                                        [ 21%]
+tests/test_evaluator.py ...................                              [ 29%]
+tests/test_git_scaffolding.py .                                          [ 30%]
+tests/test_known_issues.py ..............                                [ 36%]
+tests/test_layout_checks.py ........................                     [ 47%]
+tests/test_natural.py .....                                              [ 49%]
+tests/test_nontext_checks.py ............                                [ 54%]
+tests/test_performance.py ................                               [ 61%]
+tests/test_performance_exceptions.py ...................                 [ 70%]
+tests/test_scenarios.py ..........                                       [ 74%]
+tests/test_theme_checks.py ........                                      [ 77%]
+tests/test_theme_files.py ......................                         [ 87%]
+tests/test_typography_checks.py ...........                              [ 92%]
+tests/test_verifica_firmware_port.py .........                           [ 96%]
+tests/test_visual_diff.py ....                                           [ 98%]
+tests/test_wakeups.py ....                                               [100%]
+
+====================== 227 passed, 13 deselected in 5.29s ======================

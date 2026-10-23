@@ -1,0 +1,9 @@
+    exit=78
+    ok: exit 78 (EX_CONFIG)
+    ok: sin CRASHLOG SIGSEGV
+    ok: la base quedo intacta (mismos bytes)
+    ok: el mensaje de persistencia esta en la salida
+    ok: no llego a inicializar el control remoto
+    ok: el motivo del rechazo es el esperado (The version table has no row)
+    ok: NO se inicializo la radio (boot.log sin 'radio')
+    sha256 base: ec3c16dd9d2daf33f925fe8177eed73b292e43134d46e44a8a932b85e0cf38ba -> ec3c16dd9d2daf33f925fe8177eed73b292e43134d46e44a8a932b85e0cf38ba

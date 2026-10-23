@@ -1,0 +1,42 @@
+{
+ "cycles": 100,
+ "steps": 700,
+ "verdicts": {
+  "ok": 700
+ },
+ "responses": {
+  "{\"t\":\"ok\"}": 700
+ },
+ "command_ms": {
+  "min": 51,
+  "p50": 57.0,
+  "p95": 63,
+  "max": 75,
+  "mean": 57.2
+ },
+ "settle_ms": {
+  "min": 170,
+  "p50": 182.0,
+  "p95": 428,
+  "max": 449,
+  "mean": 216.7
+ },
+ "cycles_no_divergence": 100,
+ "timeouts": 0,
+ "start_utc": "2026-10-21T21:05:58.118Z",
+ "end_utc": "2026-10-21T21:09:24.983Z",
+ "sequence": [
+  "app off",
+  "mode USB",
+  "freq 14074000",
+  "filter 2400",
+  "mode CW",
+  "app Settings",
+  "app off"
+ ],
+ "layer": "QEMU_USER",
+ "coverage": "PARTIAL",
+ "container": "assessment196-qemu",
+ "qemu_cpu": "cortex-a7",
+ "note": "Proceso privado QEMU_USER con el binario ARM del candidato; no es el banco compartido ni hardware. Sin radio/FFT."
+}

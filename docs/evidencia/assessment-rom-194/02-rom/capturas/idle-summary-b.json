@@ -1,0 +1,40 @@
+{
+ "source": [
+  "idle-3600b.jsonl",
+  "idle-3600b-extra.jsonl"
+ ],
+ "samples": 64,
+ "gets_ok": 768,
+ "gets_err": 0,
+ "max_get_latency_ms": 771,
+ "rss_kb": {
+  "min": 59116,
+  "max": 59188
+ },
+ "threads": {
+  "values": {
+   "12": 16,
+   "11": 48
+  }
+ },
+ "fds": {
+  "values": {
+   "25": 64
+  }
+ },
+ "crashlog": 0,
+ "overflow": 0,
+ "soak_log": {
+  "path": "out-soak.txt",
+  "bytes": 296731,
+  "crashlog": 0,
+  "overflow": 0,
+  "source": "logs/rom07/soak-log-check.log",
+  "note": "idle JSONL log_bytes/crash/overflow leyeron out-banco.txt por path hardcodeado"
+ },
+ "start_utc": "2026-10-21T21:49:15.535Z",
+ "end_utc": "2026-10-21T22:48:35.433Z",
+ "elapsed_s": 3605,
+ "layer": "QEMU_USER",
+ "coverage": "PARTIAL"
+}

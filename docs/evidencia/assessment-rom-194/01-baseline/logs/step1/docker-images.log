@@ -1,0 +1,22 @@
+x6200-uiharness-dflmirror-ci:latest sha256:826eae2c50dafc67409886f576c0d65a365fde882960c0091b2b0f3efee836e4 2026-10-21 14:49:20 -0300 -03
+x6200-uiharness-ci:latest sha256:9eedee0e5605a774dc13851518a9100422d6da4678ffc1763d315fc4ff224be4 2026-10-14 17:19:28 -0300 -03
+x6200-uiharness:latest sha256:9eedee0e5605a774dc13851518a9100422d6da4678ffc1763d315fc4ff224be4 2026-10-14 17:19:28 -0300 -03
+x6200-uiharness-full:latest sha256:33fc1ed113e31978c600df82375628fe9d979d5c3408b4e16a42f43ae2f9312c 2026-10-13 22:05:14 -0300 -03
+x6200-buildroot:latest sha256:b3e7601313d64284645a5224c60fb40f39ea58e0bfc68f42fd9bb0dad13a1189 2026-02-11 00:28:36 -0300 -03
+---containers---
+assessment195-build x6200-buildroot:latest Up 10 minutes
+banco-apps x6200-buildroot Up About an hour
+wonderful_engelbart x6200-buildroot Up 27 hours
+stupefied_merkle x6200-buildroot Up 27 hours
+wizardly_cori x6200-buildroot:latest Up 2 days
+hopeful_saha x6200-buildroot Up 2 days
+relaxed_ritchie x6200-buildroot Up 2 days
+heuristic_elbakyan x6200-buildroot Up 4 days
+objective_williamson x6200-buildroot:latest Up 6 days
+practical_cerf x6200-buildroot Up 6 days
+---volumes---
+x6200-build-cache local
+x6200-build-output local
+x6200-build-output-dataro188 local
+x6200-build-output-dfl173 local
+x6200-build-output-qa local

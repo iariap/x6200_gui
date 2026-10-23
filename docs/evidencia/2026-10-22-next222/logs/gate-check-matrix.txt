@@ -1,0 +1,19 @@
+== comando: scripts/apps/x6200/check-matrix.sh f825fe4b HEAD <worktree> ==
+== rc=0 · 4 checks ok (themes, contracts sobre f2c5b239, bash -n de los dos scripts nuevos) · 0 FAIL/BLOCKED ==
+== los SKIP son por paths: src/**, tools/ab_testing/**, tools/ui_harness/** y rootfs/**/themes/*.json no cambiaron en este hijo ==
+
+==> [SKIP] firmware / nativo: sin cambios en src/**, lv_conf.h, lv_drv_conf.h ni CMakeLists.txt
+==> [SKIP] check_build_identity: sin cambios en la identidad del build
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [SKIP] ruff del framework A/B: sin cambios en tools/ab_testing/**/*.py
+==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/**
+==> [check] x6200-ab themes
+    ok
+==> [check] x6200-ab contracts (f2c5b2395e73a5e14c8d3b2d689ca95bc42cac3b)
+    ok
+==> [check] bash -n tests/qemu/run_apps_qemu.sh
+    ok
+==> [check] bash -n tests/run_all_tests.sh
+    ok
+==> [SKIP] harness determinism gate: sin cambios en tools/ui_harness/
+==> [SKIP] banco QEMU: sin cambios en src/**, lv_conf.h ni tools/ui_harness/

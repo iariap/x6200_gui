@@ -1,0 +1,29 @@
+{
+ "host": {
+  "uname": "Linux 7.2.8-200.fc44.x86_64 x86_64 GNU/Linux",
+  "nproc": 16,
+  "mem_total_kb": 94365704,
+  "python": "Python 3.14.7",
+  "gcc": "gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)",
+  "qemu_arm": "qemu-arm version 10.2.2 (qemu-10.2.2-1.fc44)",
+  "e2fsprogs": "e2fsck 1.47.3 (8-Jul-2025)",
+  "util_linux": "sfdisk from util-linux 2.41.5",
+  "sqlite": "3.51.2 2026-01-09 17:27:48 b270f8339eb13b504d0b2ba154ebca966b7dde08e40c3ed7d559749818cbalt1 (64-bit)",
+  "docker": "Docker version 29.8.2, build 7fc2dff",
+  "pillow": "12.3.0",
+  "git": "git version 2.55.0",
+  "gh": "gh version 2.101.0 (2026-09-15)",
+  "fakeroot": "absent",
+  "ninja": "absent"
+ },
+ "containers": {
+  "image_x6200_buildroot": "sha256:b3e7601313d64284645a5224c60fb40f39ea58e0bfc68f42fd9bb0dad13a1189",
+  "assessment196_qemu": "cd53815bfd32ee869bc19bace099ce92279e2b4293ec02639d47838fd2ce7180 x6200-buildroot",
+  "banco_apps": "running x6200-buildroot"
+ },
+ "qemu_user": {
+  "cpu": "cortex-a7",
+  "chroot": "assessment-194/scratch-196/rootfs/tree",
+  "container": "assessment196-qemu"
+ }
+}

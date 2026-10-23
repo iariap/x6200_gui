@@ -1,0 +1,250 @@
+== compilador: gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2) ==
+== sanitizers: NO disponibles en este toolchain (se omite) ==
+In file included from /home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/test_theme.c:20:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+== analisis estatico (gcc -fanalyzer) ==
+== ejecutando ==
+Theme no-such-theme not found, using Aurora
+Theme IU1WXY not found, using Aurora
+Theme Classic not found, using Aurora
+Theme Outdoor not found, using Aurora
+Theme Outdoor-Negative not found, using Aurora
+Theme Legacy not found, using Aurora
+Theme VISION not found, using Aurora
+Theme Holo not found, using Aurora
+Theme Material 3 not found, using Aurora
+Theme RS not found, using Aurora
+Theme Holo not found, using Aurora
+Theme Material 3 not found, using Aurora
+Theme RS not found, using Aurora
+Theme IU1WXY not found, using Aurora
+Theme Classic not found, using Aurora
+Theme no-such-theme-91 not found, using Aurora
+Theme no-such-theme-91 not found, using Aurora
+Theme no-such-theme-91 not found, using Aurora
+Theme /tmp/test_themes/roto91.json: not valid JSON
+Theme roto91 not found, using Aurora
+roe_curve #113: readout min = muestra 9 (SWR 1.715); vertice del fit = x 10.00 (SWR 1.800); delta 1.00 muestras
+roe_curve #125-fix: domo (fit a=-0.0061) -> valle en x=20.00, base 1.00, extremos 3.43 / 4.19
+== Propagacion (#145): turno IBP, SNR, veredicto y registro IARU R2 ==
+fixtures: 8 escenarios, 408 puntos agregados comparados contra el oraculo
+flow de fixture: 459 eventos, 153 paquetes stale descartados, 0 atribuidos a la frecuencia nueva, 51x3 muestras validas
+44513 comprobaciones, 0 fallos
+== clock (UI-009): reloj de potencia ==
+== clock: -ftrivial-auto-var-init=pattern (defecto observable) ==
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/clock_src/clock.c: In function ‘clock_init’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/clock_src/clock.c:228:1: warning: control reaches end of non-void function [-Wreturn-type]
+  228 | }
+      | ^
+16 comprobaciones, 0 fallos
+== backlight (UI-08 incr. 4): el cap en los rewrites del tick/timer ==
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/backlight_src/backlight.c: In function ‘set_brightness’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/backlight_src/backlight.c:42:17: warning: unused variable ‘n’ [-Wunused-variable]
+   42 |         ssize_t n = write(brightness, str, len);
+      |                 ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/backlight_src/backlight.c: In function ‘set_power’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/backlight_src/backlight.c:51:17: warning: unused variable ‘n’ [-Wunused-variable]
+   51 |         ssize_t n = write(power, str, len);
+      |                 ^
+27 comprobaciones, 0 fallos
+== digital modes (#63): cfg_digital_label_get() nunca NULL ==
+== digital modes: analisis estatico (gcc -fanalyzer) ==
+[WARN] No results for load from digital_modes with dir=0, freq=0, type=4
+[WARN] No results for load from digital_modes with dir=0, freq=0, type=2
+[WARN] No results for load from digital_modes with dir=0, freq=14074000, type=4
+12 comprobaciones, 0 fallos
+== SWR Scan (#85): cerrar con el barrido corriendo no desreferencia NULL ==
+== SWR Scan: analisis estatico (gcc -fanalyzer) ==
+barrido #125: 51 puntos por span, paso adaptado, presupuesto 1785 ms de UNA pasada
+  span  50000 Hz -> 51 puntos, paso  1000 Hz, 1785 ms de barrido
+  span 100000 Hz -> 51 puntos, paso  2000 Hz, 1785 ms de barrido
+  span 200000 Hz -> 51 puntos, paso  4000 Hz, 1785 ms de barrido
+  span 500000 Hz -> 51 puntos, paso 10000 Hz, 1785 ms de barrido
+  potencia del barrido: 0.1 W (1 decimas: el piso del control del equipo)
+#119 forma dibujada (dataset real de 496 puntos, 51 muestras del barrido):
+  paso maximo entre puntos dibujados: 1 px (la escalera del #104 da 8 px)
+  caida maxima a la izquierda/derecha del valle: 0 / 0 px (escalera: decenas)
+  valle dibujado en la muestra 48.88, minimo medido en la muestra 11 (delta 37.88)
+461 comprobaciones, 0 fallos
+== SWR Scan (#125): 3/5 pasadas con el backend fake (gate ON solo en este binario) ==
+  single_valley_3pass    3 pasada(s): min 1.2 +/- 0.1 @ 7.100.000 kHz (n=51/51)
+  outliers_5pass         5 pasada(s): min 1.2 +/- 0.1 @ 7.100.000 kHz (n=51/51)
+  narrow_zoom_3pass      3 pasada(s): min 1.2 +/- 0.1 @ 7.103.000 kHz (n=51/51)
+  medium_zoom_3pass      3 pasada(s): min 1.2 +/- 0.1 @ 7.100.000 kHz (n=51/51)
+  wide_zoom_3pass        3 pasada(s): min 3.5 +/- 0.1 @ 6.850.000 kHz (n=51/51)
+  double_valley_3pass    3 pasada(s): min 1.3 +/- 0.1 @ 7.080.000 kHz (n=51/51)
+  flat_3pass             3 pasada(s): min 2.6 +/- 0.1 @ 7.050.000 kHz (n=51/51)
+  moving_5pass           5 pasada(s): min 1.8 +/- 0.5 @ 7.096.000 kHz (n=51/51)
+  comparacion 1/3/5 pasadas (100 kHz, 51 puntos, misma frecuencia central):
+    1 pasada : min 1.1 @ 7.100.000 kHz (n=51/51)
+    3 pasadas: min 1.2 +/- 0.1 @ 7.100.000 kHz (n=51/51)
+    5 pasadas: min 1.2 +/- 0.1 @ 7.100.000 kHz (n=51/51)
+4851 comprobaciones, 0 fallos
+== Restore (#94): el frame devuelve el dial y el modo al cerrar la app ==
+== Restore: analisis estatico (gcc -fanalyzer) ==
+5 comprobaciones, 0 fallos
+== Eventos (#111): la cola no se traba al llenarse y el log acota ==
+== Eventos: analisis estatico (gcc -fanalyzer) ==
+24 comprobaciones, 0 fallos
+== CW encoder (#116): cw_encoder_send(NULL) no desreferencia NULL ==
+== CW encoder (#160): el keyer respeta el interlock de CB ==
+== CW encoder: analisis estatico (gcc -fanalyzer) ==
+33 comprobaciones, 0 fallos
+== CRASHLOG-MOD (#131): tabla de modulos y md5 ==
+== CRASHLOG-MOD: analisis estatico (gcc -fanalyzer) ==
+26 comprobaciones, 0 fallos
+== Last breath (#121): formato, rename atomico y LASTBREATH ==
+== Last breath: analisis estatico (gcc -fanalyzer) ==
+48 comprobaciones, 0 fallos
+== Squelch (#166): la politica habilita el squelch del DSP ==
+== Squelch: analisis estatico (gcc -fanalyzer) ==
+76 comprobaciones, 0 fallos
+== HKEY (#131): hkey_put desde el hilo de radio no toca LVGL ==
+== HKEY: analisis estatico (gcc -fanalyzer) ==
+92 comprobaciones, 0 fallos
+== CW tune (#131): el hilo de audio no toca LVGL ==
+== CW tune: analisis estatico (gcc -fanalyzer) ==
+35 comprobaciones, 0 fallos
+== Spectrum (#149): snapshot por frame, sin lock durante el dibujo ==
+== Spectrum: analisis estatico (gcc -fanalyzer) ==
+golden #173 USB-D from=225 to=3525 span=48000 W=800 -> x=404..459 (contrato 404..459, a la derecha del VFO)
+golden #173 LSB-D from=-3525 to=-225 span=48000 W=800 -> x=341..396 (contrato 341..396, espejo)
+golden #173 AM    from=-4500 to=+4500 span=48000 W=800 -> x=325..475 (simetrico)
+perfil host: dibujo 24.0 us/dibujo; lock visto por spectrum_get_min 17.0 us max; spectrum_data+refresco 1.0 us/frame
+1018 comprobaciones, 0 fallos
+== Editor DFL (#179): modelo puro (pasos, escala adaptativa, hit-test, BW, reset) ==
+== Editor DFL: analisis estatico (gcc -fanalyzer) ==
+215 comprobaciones, 0 fallos
+== Editor DFL (#173): motor de la rueda (pasos, clamps, BW, Subject) ==
+== Editor DFL: analisis estatico (gcc -fanalyzer) ==
+68 comprobaciones, 0 fallos
+== Presets DFL (#183): catalogo, memorias/favoritos y aplicacion sin half-apply ==
+== Presets DFL: analisis estatico (gcc -fanalyzer) ==
+DFL: favorito familia 1 slot 2 apunta a una memoria vacia; uso el preset 2
+175 comprobaciones, 0 fallos
+== Auto Tune v2 (#190): signo del tono (FFT real, liquid) ==
+SKIP: liquid-dsp no esta instalada en este host (no se puede medir el signo).
+      El contenedor x6200-uiharness y el job functional del CI si la tienen;
+      el comando exacto esta en docs/evidencia/2026-10-21-autotune190/README.md.
+== TSan: NO disponible en este host (se omite; cobertura x86_64, no ARM) ==
+== CB 27 MHz (#146): _4_cb_bands sobre una base real en memoria ==
+== CB 27 MHz: analisis estatico (gcc -fanalyzer) ==
+Apply migration: 4 ...
+Apply migration: 5 ...
+Apply migration: 5 ...
+Apply migration: 4 ...
+Apply migration: 5 ...
+62 comprobaciones, 0 fallos
+== #186: persistencia de freq_accel_threshold sobre SQLite real ==
+In file included from /home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.h:20,
+                 from /home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c:10:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c: In function ‘params_load’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c:263:33: warning: pointer targets in initialization of ‘const char *’ from ‘const unsigned char *’ differ in signedness [-Wpointer-sign]
+  263 |         const char      *name = sqlite3_column_text(stmt, 0);
+      |                                 ^~~~~~~~~~~~~~~~~~~
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c:267:30: warning: pointer targets in initialization of ‘const char *’ from ‘const unsigned char *’ differ in signedness [-Wpointer-sign]
+  267 |         const char      *t = sqlite3_column_text(stmt, 1);
+      |                              ^~~~~~~~~~~~~~~~~~~
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c: In function ‘params_thread’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c:611:1: warning: no return statement in function returning non-void [-Wreturn-type]
+  611 | }
+      | ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c: In function ‘params_msg_cw_load’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c:695:28: warning: pointer targets in initialization of ‘const char *’ from ‘const unsigned char *’ differ in signedness [-Wpointer-sign]
+  695 |         const char  *val = sqlite3_column_text(stmt, 1);
+      |                            ^~~~~~~~~~~~~~~~~~~
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c: In function ‘params_charger_str_get’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c:850:1: warning: control reaches end of non-void function [-Wreturn-type]
+  850 | }
+      | ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c: In function ‘params_key_mode_str_get’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c:874:1: warning: control reaches end of non-void function [-Wreturn-type]
+  874 | }
+      | ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c: In function ‘params_iambic_mode_str_ger’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.c:883:1: warning: control reaches end of non-void function [-Wreturn-type]
+  883 | }
+      | ^
+In file included from /home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.h:20,
+                 from /home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/params_stubs.c:26:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/params.h:20,
+                 from /home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/test_params_threshold.c:27:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/../../src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+PASS: params_threshold
+    missing: OK
+PASS: params_threshold
+    stored-3: OK
+PASS: params_threshold
+    stored-7: OK
+PASS: params_threshold
+    stored-15: OK
+PASS: params_threshold
+    invalid-0: OK
+PASS: params_threshold
+    invalid-2: OK
+PASS: params_threshold
+    invalid-16: OK
+PASS: params_threshold
+    invalid-255: OK
+PASS: params_threshold
+    set (3 -> 15): OK
+PASS: params_threshold
+    reload (15 tras reinicio): OK
+== Control remoto (#157): mode exacto (sin off-by-one) y pwr real en el estado ==
+In file included from /home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/test_remote.cpp:41:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp: In function ‘void* server_thread(void*)’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp:977:69: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+  977 |         pfd[n++] = (struct pollfd){.fd = listen_fd, .events = POLLIN};
+      |                                                                     ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp:978:70: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+  978 |         pfd[n++] = (struct pollfd){.fd = wake_fd[0], .events = POLLIN};
+      |                                                                      ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp:982:127: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+  982 |                 pfd[n++] = (struct pollfd){.fd = clients[i].fd, .events = (short)(POLLIN | (clients[i].out_len ? POLLOUT : 0))};
+      |                                                                                                                               ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp: In function ‘bool remote_sock_attends(const char*, bool*)’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp:1165:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+ 1165 |     struct sockaddr_un a = {.sun_family = AF_UNIX};
+      |                                                  ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp: In function ‘void remote_server_init()’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp:1192:53: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+ 1192 |     struct sockaddr_un addr = {.sun_family = AF_UNIX};
+      |                                                     ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/test_remote.cpp: In function ‘int sock_listen(const char*)’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/test_remote.cpp:205:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+  205 |     struct sockaddr_un a = {.sun_family = AF_UNIX};
+      |                                                  ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/cfg/subjects.cpp: In function ‘void avisa_subject_nulo(const char*, void*)’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/cfg/subjects.cpp:95:23: warning: unused variable ‘off’ [-Wunused-variable]
+   95 |         unsigned long off = (unsigned long) llamador - (unsigned long) info.dli_fbase;
+      |                       ^~~
+== Control remoto: analisis estatico (gcc -fanalyzer) ==
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp: In function ‘void* server_thread(void*)’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp:977:69: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+  977 |         pfd[n++] = (struct pollfd){.fd = listen_fd, .events = POLLIN};
+      |                                                                     ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp:978:70: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+  978 |         pfd[n++] = (struct pollfd){.fd = wake_fd[0], .events = POLLIN};
+      |                                                                      ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp:982:127: warning: missing initializer for member ‘pollfd::revents’ [-Wmissing-field-initializers]
+  982 |                 pfd[n++] = (struct pollfd){.fd = clients[i].fd, .events = (short)(POLLIN | (clients[i].out_len ? POLLOUT : 0))};
+      |                                                                                                                               ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp: In function ‘bool remote_sock_attends(const char*, bool*)’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp:1165:50: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+ 1165 |     struct sockaddr_un a = {.sun_family = AF_UNIX};
+      |                                                  ^
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp: In function ‘void remote_server_init()’:
+/home/pablo/desa/x6200/assessment-194/clone-gui/tests/native/build/remote_src/remote_server.cpp:1192:53: warning: missing initializer for member ‘sockaddr_un::sun_path’ [-Wmissing-field-initializers]
+ 1192 |     struct sockaddr_un addr = {.sun_family = AF_UNIX};
+      |                                                     ^
+138 comprobaciones, 0 fallos

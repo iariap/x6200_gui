@@ -1,0 +1,11 @@
+make: Entering directory '/home/pablo/desa/x6200/assessment-194/clone-buildroot/buildroot'
+  GEN     /home/pablo/desa/x6200/assessment-194/clone-buildroot/build/Makefile
+/home/pablo/desa/x6200/assessment-194/clone-buildroot/br2_external/configs/X6200_defconfig:126:warning: override: reassigning to symbol BR2_PACKAGE_LIQUID_DSP
+#
+# configuration written to /home/pablo/desa/x6200/assessment-194/clone-buildroot/build/.config
+#
+make: Leaving directory '/home/pablo/desa/x6200/assessment-194/clone-buildroot/buildroot'
+X6200_GUI_OVERRIDE_SRCDIR = /home/pablo/desa/x6200/assessment-194/clone-gui
+6b9a8ef9e2be3291a8d05c835bc49cd5b9ded6965b7de0c7e7c79f02cc2c152e  local.mk
+-rw-r--r--. 1 ubuntu ubuntu 151577 Oct 21 18:25 .config
+-rw-r--r--. 1 ubuntu ubuntu     76 Oct 21 18:25 local.mk

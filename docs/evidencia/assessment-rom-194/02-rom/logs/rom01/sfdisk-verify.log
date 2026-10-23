@@ -1,0 +1,31 @@
+/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sdcard.img:
+No errors detected.
+verify_rc=0
+{
+   "partitiontable": {
+      "label": "dos",
+      "id": "0x00000000",
+      "device": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sdcard.img",
+      "unit": "sectors",
+      "sectorsize": 512,
+      "partitions": [
+         {
+            "node": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sdcard.img1",
+            "start": 2048,
+            "size": 65536,
+            "type": "c",
+            "bootable": true
+         },{
+            "node": "/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sdcard.img2",
+            "start": 67584,
+            "size": 1048576,
+            "type": "83"
+         }
+      ]
+   }
+}
+
+BYT;
+/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sdcard.img:571473920B:file:512:512:msdos::;
+1:1048576B:34603007B:33554432B:fat16::boot, lba;
+2:34603008B:571473919B:536870912B:ext4::;

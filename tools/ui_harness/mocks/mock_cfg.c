@@ -39,6 +39,8 @@ static const int32_t dflt_shift[TRANSVERTER_NUM] = { 42000000, 116000000, 404000
 
 void mock_cfg_init(void)
 {
+    mock_cfg_calls_reset();
+
     cfg_cur.fg_freq   = subject_create_int(14074000);
     cfg_cur.bg_freq   = subject_create_int(14074000);
     cfg_cur.lo_offset = subject_create_int(0);
@@ -179,10 +181,25 @@ int cfg_atu_save_network(uint32_t value)
 }
 
 /* Band/memory/mode helpers: the harness owns no database, so the calls that
- * would touch it answer with the harness state (a fixed step, no memory). */
+ * would touch it answer with the harness state (a fixed step, no memory).
+ * Los dos de banda/VFO cuentan las llamadas (issue #220): son no-ops, y sin el
+ * contador una asercion de "la tecla bloqueada no ejecuto la accion" pasaria
+ * por vacuidad. */
 
-void cfg_band_vfo_copy(void) {}
-void cfg_band_load_next(bool up) { (void) up; }
+static unsigned band_load_next_calls = 0;
+static unsigned vfo_copy_calls      = 0;
+
+void mock_cfg_calls_reset(void)
+{
+    band_load_next_calls = 0;
+    vfo_copy_calls      = 0;
+}
+
+unsigned mock_cfg_band_load_next_calls(void) { return band_load_next_calls; }
+unsigned mock_cfg_vfo_copy_calls(void)      { return vfo_copy_calls; }
+
+void cfg_band_vfo_copy(void) { vfo_copy_calls++; }
+void cfg_band_load_next(bool up) { (void) up; band_load_next_calls++; }
 
 bool cfg_memory_load(int32_t id) { (void) id; return false; }
 void cfg_memory_save(int32_t id) { (void) id; }

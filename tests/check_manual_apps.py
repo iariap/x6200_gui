@@ -41,7 +41,10 @@ NOMBRE_EN_EL_MANUAL = {
     "ACTION_APP_CALLSIGN": "Callsign",
     "ACTION_APP_QTH": "QTH",
     "ACTION_APP_PROPAGATION": "Propagation",
-    "ACTION_APP_ABOUT": "About",
+    # El editor DFL (issue #173): se abre por la tecla larga DFL o por esta accion.
+    # Estaba sin nombre mapeado, asi que el chequeo lo listaba como "revisar" y no
+    # verificaba su seccion del manual; se documenta en §6.22 (issue #222).
+    "ACTION_APP_DFL_EDITOR": "DFL editor",
     "ACTION_APP_SETTINGS": "Ajustes",
 }
 

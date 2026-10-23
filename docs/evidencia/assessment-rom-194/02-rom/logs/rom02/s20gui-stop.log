@@ -1,0 +1,14 @@
+970b8bdf28eab7edaba4df66504cf0df7f47e5e23b2184aa0a8dbc2a48956e13
+--- procesos antes de stop
+     32       1 x6200_daemon    /usr/bin/qemu-arm-static /bin/sh /usr/sbin/x6200_daemon
+     54      32 x6200_gui       /usr/bin/qemu-arm-static /usr/sbin/x6200_gui
+--- get antes
+{"t":"state","vfo":"A","freq":10100000,"freq_bg":10100000,"mode":"USB","band":"3
+--- stop
+Stopping x6200_daemon: OK
+killall: x6200_gui: no process killed
+--- procesos despues
+     54       1 x6200_gui       /usr/bin/qemu-arm-static /usr/sbin/x6200_gui
+--- get despues
+{"t":"state","vfo":"A","freq":10100000,"freq_bg":10100000,"mode":"USB","band":"30m","filter":2800,"flo":100,"fhi":2900,"
+done

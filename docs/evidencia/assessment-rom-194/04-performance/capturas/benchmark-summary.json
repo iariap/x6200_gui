@@ -1,0 +1,199 @@
+{
+  "status": "INCONCLUSIVE",
+  "exit_code": 3,
+  "scenarios": 199,
+  "frames_per_scenario": [
+    20
+  ],
+  "total_frames": 3980,
+  "unstable_scenarios": [
+    {
+      "scenario": "dfl-presets-graph-tema-redshift",
+      "dispersion_cv_pct": 26.898
+    }
+  ],
+  "distributions": {
+    "render_p50_ms": {
+      "min": 3.6422,
+      "p50": 4.2946,
+      "p95": 7.7864,
+      "max": 9.0663
+    },
+    "render_p95_ms": {
+      "min": 3.8574,
+      "p50": 5.3839,
+      "p95": 10.5582,
+      "max": 11.7862
+    },
+    "render_p99_ms": {
+      "min": 3.8914,
+      "p50": 5.598,
+      "p95": 10.7546,
+      "max": 12.3133
+    },
+    "fps": {
+      "min": 110.3,
+      "p50": 232.85,
+      "p95": 263.5,
+      "max": 274.56
+    },
+    "dispersion_cv_pct": {
+      "min": 1.481,
+      "p50": 7.579,
+      "p95": 19.124,
+      "max": 26.898
+    }
+  },
+  "slowest_p95": [
+    {
+      "scenario": "settings-audio",
+      "p95_ms": 11.7862
+    },
+    {
+      "scenario": "swrscan-flat",
+      "p95_ms": 11.3489
+    },
+    {
+      "scenario": "settings-grupo-operation-tema-cathode",
+      "p95_ms": 11.1432
+    },
+    {
+      "scenario": "bt-dialog-tema-sunlit",
+      "p95_ms": 11.1409
+    },
+    {
+      "scenario": "swrscan-3pass-stop",
+      "p95_ms": 11.0188
+    }
+  ],
+  "rss_bytes_range": [
+    10448896,
+    11075584
+  ],
+  "aa": {
+    "status": "INCONCLUSIVE",
+    "exit_code": 3,
+    "counts": {
+      "PASS": 194,
+      "INCONCLUSIVE": 5
+    },
+    "p95_delta_pct": {
+      "min": -33.017,
+      "p50": -1.645,
+      "max": 54.387
+    },
+    "proxies_unchanged": 199,
+    "worst": [
+      {
+        "scenario": "main-foco",
+        "status": "INCONCLUSIVE",
+        "p95_delta_pct": 54.387,
+        "flushes_delta_pct": 0.0,
+        "redrawn_area_delta_pct": 0.0,
+        "host_noise": true,
+        "reasons": "p95 render +54.4% (budget 25.0%): 4.208 -> 6.496 ms \u2014 host noise: the deterministic proxies are unchanged (flushes 0.0%, redrawn area 0.0%), so this is runner preemption, not a render change",
+        "a_p95_ms": 4.2075,
+        "b_p95_ms": 6.4958
+      },
+      {
+        "scenario": "dfl-presets-more-tema-redshift",
+        "status": "INCONCLUSIVE",
+        "p95_delta_pct": 43.474,
+        "flushes_delta_pct": 0.0,
+        "redrawn_area_delta_pct": 0.0,
+        "host_noise": true,
+        "reasons": "p95 render +43.5% (budget 25.0%): 4.658 -> 6.683 ms \u2014 host noise: the deterministic proxies are unchanged (flushes 0.0%, redrawn area 0.0%), so this is runner preemption, not a render change",
+        "a_p95_ms": 4.6578,
+        "b_p95_ms": 6.6828
+      },
+      {
+        "scenario": "main-tema-sprint-eco",
+        "status": "PASS",
+        "p95_delta_pct": -33.017,
+        "flushes_delta_pct": 0.0,
+        "redrawn_area_delta_pct": 0.0,
+        "host_noise": false,
+        "reasons": "",
+        "a_p95_ms": 5.9913,
+        "b_p95_ms": 4.0131
+      },
+      {
+        "scenario": "dfl-presets-confirm-tema-redshift",
+        "status": "INCONCLUSIVE",
+        "p95_delta_pct": 30.612,
+        "flushes_delta_pct": 0.0,
+        "redrawn_area_delta_pct": 0.0,
+        "host_noise": true,
+        "reasons": "p95 render +30.6% (budget 25.0%): 4.761 -> 6.218 ms \u2014 host noise: the deterministic proxies are unchanged (flushes 0.0%, redrawn area 0.0%), so this is runner preemption, not a render change",
+        "a_p95_ms": 4.7607,
+        "b_p95_ms": 6.2181
+      },
+      {
+        "scenario": "main-espectro-agua",
+        "status": "INCONCLUSIVE",
+        "p95_delta_pct": 28.525,
+        "flushes_delta_pct": 0.0,
+        "redrawn_area_delta_pct": 0.0,
+        "host_noise": true,
+        "reasons": "p95 render +28.5% (budget 25.0%): 4.489 -> 5.770 ms \u2014 host noise: the deterministic proxies are unchanged (flushes 0.0%, redrawn area 0.0%), so this is runner preemption, not a render change",
+        "a_p95_ms": 4.4893,
+        "b_p95_ms": 5.7699
+      },
+      {
+        "scenario": "dfl-presets-fav-tema-sunlit",
+        "status": "INCONCLUSIVE",
+        "p95_delta_pct": 27.341,
+        "flushes_delta_pct": 0.0,
+        "redrawn_area_delta_pct": 0.0,
+        "host_noise": true,
+        "reasons": "p95 render +27.3% (budget 25.0%): 4.565 -> 5.813 ms \u2014 host noise: the deterministic proxies are unchanged (flushes 0.0%, redrawn area 0.0%), so this is runner preemption, not a render change",
+        "a_p95_ms": 4.565,
+        "b_p95_ms": 5.8131
+      },
+      {
+        "scenario": "settings-grupo-operation-tema-sprint",
+        "status": "PASS",
+        "p95_delta_pct": -26.295,
+        "flushes_delta_pct": 0.0,
+        "redrawn_area_delta_pct": 0.0,
+        "host_noise": false,
+        "reasons": "",
+        "a_p95_ms": 10.7271,
+        "b_p95_ms": 7.9064
+      },
+      {
+        "scenario": "dfl-presets-rotary0",
+        "status": "PASS",
+        "p95_delta_pct": -25.251,
+        "flushes_delta_pct": 0.0,
+        "redrawn_area_delta_pct": 0.0,
+        "host_noise": false,
+        "reasons": "",
+        "a_p95_ms": 6.1257,
+        "b_p95_ms": 4.5789
+      },
+      {
+        "scenario": "app-close-home",
+        "status": "PASS",
+        "p95_delta_pct": -25.061,
+        "flushes_delta_pct": 0.0,
+        "redrawn_area_delta_pct": 0.0,
+        "host_noise": false,
+        "reasons": "",
+        "a_p95_ms": 5.1541,
+        "b_p95_ms": 3.8624
+      },
+      {
+        "scenario": "dfl-presets-more-tema-trail",
+        "status": "PASS",
+        "p95_delta_pct": 24.898,
+        "flushes_delta_pct": 0.0,
+        "redrawn_area_delta_pct": 0.0,
+        "host_noise": false,
+        "reasons": "",
+        "a_p95_ms": 3.9963,
+        "b_p95_ms": 4.9913
+      }
+    ]
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "campaign": "assessment-rom-194",
+  "unit": 199,
+  "phase": "A_documental_sin_radio",
+  "generated_utc": "2026-10-22T00:19:16Z",
+  "role": "evidencia; no implementacion; no release approval",
+  "candidate": {
+    "gui_sha": "c888308eede71205605c06383432ee7e165f202e",
+    "gui_branch": "lu2dsx/x6200-rom",
+    "integration_branch": "assessment/rom-194",
+    "integration_head": "05020942127222c934d69ed0b37bea5895c5baaa",
+    "buildroot_sha": "d084e2870a00b64d9c57474e7eceeef80f43f25b",
+    "buildroot_repo": "iariap/AetherX6200Buildroot",
+    "lvgl_gitlink": "74d0a816440eea53e030c4f1af842a94f7ce3d3",
+    "lvgl_version": "v8.3.11",
+    "fuente_md5": "964193ae9306b5127845cec44a57d52c"
+  },
+  "artifact": {
+    "location": "assessment-194/clone-buildroot/build/images/ (fuera de Git por tamano)",
+    "files": {
+      "sdcard.img": {
+        "bytes": 571473920,
+        "sha256": "d0ff4435ad1d068e25bf2c357a4e93478463b187e7745a9a54844488e44e33a5"
+      },
+      "rootfs.tar": {
+        "bytes": 242790400,
+        "sha256": "7c26c76b6fc27bc12dc8d5e012e51d5c2c0568fa72a8e02cad5432dfcd36a2dd"
+      },
+      "rootfs.ext4": {
+        "bytes": 536870912,
+        "sha256": "9365b52f9aef33e0623ae8271aaf415483fe72e1afbc8ef99f93e15437bc620a"
+      },
+      "boot.vfat": {
+        "bytes": 33554432,
+        "sha256": "914f07eb00d1e5afee56ab795ce6b7b1d4410d774a3534881da494319c30b17d"
+      },
+      "zImage": {
+        "bytes": 5567760,
+        "sha256": "660c94c6f7231e7dc262fefb295aae1a8dfcf9b9c2b46cdc1eced2c3296bcc14"
+      },
+      "sun8i-r16-x6200.dtb": {
+        "bytes": 26544,
+        "sha256": "4d73f8a5d5f846c21e4ac30550a5811443a01666f9ee57880b5316e78627cc38"
+      },
+      "u-boot-sunxi-with-spl.bin": {
+        "bytes": 556112,
+        "sha256": "dd96b0ca1eda2c98b318ed35f284d873e64eca795a51f1d9b944115a77de0381"
+      }
+    },
+    "gui_binary": {
+      "name": "usr/sbin/x6200_gui",
+      "bytes": 13407624,
+      "md5": "1f998c46909307397525c975a712adfd",
+      "sha256": "7e2e9331c4cbc51727a098996d98e263c45dd57cb8fff8d1f2aea2964c3849c5"
+    },
+    "fstab_mnt": "ext4",
+    "gate86": "PASS: ELF32 ARM, 13407624 B, 3/3 marcas"
+  },
+  "evidence_base": {
+    "path": "docs/evidencia/assessment-rom-194/",
+    "units": [
+      {
+        "unit": "1/5 baseline",
+        "issue": 195,
+        "pr": 201,
+        "pr_url": "https://github.com/iariap/x6200_gui/pull/201",
+        "commit": "be6088d1",
+        "merge": "230b2063",
+        "merged_at": "2026-10-21T20:58:54Z",
+        "files": 81,
+        "sha256sums_entries": 80,
+        "sha256sums_verified": true,
+        "folder": "01-baseline/"
+      },
+      {
+        "unit": "2/5 ROM/confiabilidad",
+        "issue": 196,
+        "pr": 207,
+        "pr_url": "https://github.com/iariap/x6200_gui/pull/207",
+        "commit": "afa6109b",
+        "merge": "ca1698d1",
+        "merged_at": "2026-10-21T22:51:51Z",
+        "files": 103,
+        "sha256sums_entries": 102,
+        "sha256sums_verified": true,
+        "folder": "02-rom/"
+      },
+      {
+        "unit": "3/5 UI/UX",
+        "issue": 197,
+        "pr": 203,
+        "pr_url": "https://github.com/iariap/x6200_gui/pull/203",
+        "commit": "f82dbadc",
+        "merge": "c41f36b2",
+        "merged_at": "2026-10-21T22:52:51Z",
+        "files": 816,
+        "sha256sums_entries": 815,
+        "sha256sums_verified": true,
+        "folder": "03-ui-ux/"
+      },
+      {
+        "unit": "4/5 performance",
+        "issue": 198,
+        "pr": 208,
+        "pr_url": "https://github.com/iariap/x6200_gui/pull/208",
+        "commit": "2986d04d",
+        "merge": "05020942",
+        "merged_at": "2026-10-22T00:06:43Z",
+        "files": 273,
+        "sha256sums_entries": 272,
+        "sha256sums_verified": true,
+        "folder": "04-performance/"
+      }
+    ],
+    "sha256sums": {
+      "01-baseline": {
+        "entries": 80,
+        "files": 81,
+        "verified": true
+      },
+      "02-rom": {
+        "entries": 102,
+        "files": 103,
+        "verified": true
+      },
+      "03-ui-ux": {
+        "entries": 815,
+        "files": 816,
+        "verified": true
+      },
+      "04-performance": {
+        "entries": 272,
+        "files": 273,
+        "verified": true
+      }
+    }
+  },
+  "measurement_layers": {
+    "HOST": "medido (render/logica/build/documentacion)",
+    "QEMU_USER": "medido (binario ARM con mocks; no kernel/init real)",
+    "HARDWARE": "NO ejecutado: BLOCKED/PENDING_HARDWARE"
+  },
+  "environment": {
+    "host": "AMD Ryzen 7 PRO 8840HS, 16 hilos, 89-96 GB RAM, Fedora 44, kernel 7.2.8",
+    "docker_images": [
+      "x6200-buildroot:latest sha256 b3e7601313d6...",
+      "x6200-uiharness / -ci sha256 9eedee0e5605...",
+      "x6200-uiharness-full sha256 33fc1ed113e3..."
+    ],
+    "qemu": "qemu-arm 10.2.2 / QEMU_CPU=cortex-a7",
+    "radio": "NO contactada en fase A"
+  },
+  "external_context_not_revalidated": {
+    "radio_gui_md5_reported": "3b22a03a3b7850e5c546c564125d0eb0",
+    "source": "assessment-194/ORCHESTRATION.md",
+    "is_candidate": false,
+    "consequence": "La fase B mediria el software instalado, no el candidato, salvo SD/prueba autorizada."
+  },
+  "stale": {
+    "gui_tip": "d4fb57f8ff8ccbcfdef13fc191cc9977511b6845",
+    "production_files_gui_tip": 25,
+    "buildroot_tip": "f23d14f975f2d12466274aeeb4932bd191f6f6e5",
+    "valid_for": [
+      "c888308eede71205605c06383432ee7e165f202e",
+      "d084e2870a00b64d9c57474e7eceeef80f43f25b",
+      "74d0a816440eea53e030c4f1af842a94f7ce3d3"
+    ]
+  },
+  "limitations": [
+    "Sin radio: todo hardware BLOCKED/PENDING_HARDWARE.",
+    "No se reconstruyo el artefacto con el tip ni con Buildroot f23d14f.",
+    "QEMU_USER no es kernel/init/Cortex-A7.",
+    "No hay CI del SHA candidato.",
+    "La adjudicacion de coverage-final.csv es documental, no una nueva corrida."
+  ]
+}

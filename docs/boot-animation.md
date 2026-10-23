@@ -214,7 +214,7 @@ perder un rectángulo en silencio.
 | `tests/check_bootanim.sh` | renderer + backend + cesión (procesos reales) + el **binario real** determinista contra el volcado byte a byte (intro, BEAMS, DECRYPT, 30 s y después) + la versión de producción viva más allá de 30 s virtuales, parada por señal, sin busy-wait + caminos degradados + init + integración | host y CI (`boot-rootfs.yml`, job `bootanim`) |
 | `tests/bootanim/renderer_test.c` | modelo (intro, cursor, lluvia, BEAMS, DECRYPT, bordes de fase, continuidad en 1/3/5/7/15/29/30/31/45/120 s), layout, lanes, higiene de `dirty` (≤12%, ≤12% de píxeles, nada fuera de las cajas), secuencias con cuadros salteados y determinismo | ~15.000 comprobaciones |
 | `tests/bootanim/fb_test.c` | geometry/bpp/bitfields/stride/smem, rotación 90° contra un oráculo independiente de LVGL, 16/32 bpp, padding, offsets, centinelas, casos negativos y el fixture de las cuatro lanes de lluvia | 132 comprobaciones |
-| `tests/bootanim/handoff_test.c` | PIDFILE ausente/corrupto/ajeno/zombi, 100 ms + 20 ms, SIGTERM y SIGKILL de último recurso | 39 comprobaciones |
+| `tests/bootanim/handoff_test.c` | PIDFILE ausente/corrupto/ajeno/zombi, 100 ms + 20 ms, SIGTERM y SIGKILL de último recurso, juzgado por **sondeos** de la espera (no por tiempo de pared) | 45 comprobaciones |
 | `tests/bootanim/fake_fb.c` + `replay_dump.c` | el binario **real** corre en el host con un framebuffer sintético y sus cuadros tienen que ser byte a byte los del volcado independiente | 4 formatos/stride + 5 cuadros del ciclo |
 | `tests/bootanim/render_bench.c` | mediciones reales en host (píxeles sucios y bytes por cuadro por fase) | informativo |
 
@@ -230,6 +230,15 @@ que únicamente define el gate del host: permite comparar el proceso real byte a
 byte contra el volcado. Ni CMake ni la ROM lo definen, y el gate lo verifica sobre
 el preprocesado: el binario de producción no tiene **ninguna** condición que lo
 detenga antes de la cesión (solo `SIGUSR1`/`SIGTERM`).
+
+La **cesión** (`src/boot_splash.c`) tiene la misma instrumentación bajo
+`-DBOOTANIM_TEST`: tres contadores de los sondeos de la espera
+(`boot_splash_test_waits`/`waited_ms`/`reset_waits`). El test afirma **cuántas
+veces esperó** —y que **no** esperó cuando no corresponde (PIDFILE ausente,
+corrupto, ajeno, PID muerto o zombi)—, nunca **cuánto tardó**: un runner de CI
+cargado puede tardar >50 ms en cualquier trabajo sin que el código espere nada.
+El gate comprueba sobre el preprocesado que en producción no queda NADA de esa
+instrumentación.
 
 ## 5. Validación física pendiente
 

@@ -1,0 +1,7 @@
+$ python3 tools/verifica-firmware-port.py /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out/target/usr/sbin/x6200_gui
+OK: /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out/target/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13428656 B, 3/3 marcas)
+rc=0
+
+$ python3 tools/verifica-firmware-port.py --tar /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out/images/rootfs.tar
+OK: /home/pablo/desa/asf/state/worktrees/x6200/next-211-combined-lab/out/images/rootfs.tar es el firmware del port (ELF32 ARM, 13428656 B, 3/3 marcas)
+rc=0

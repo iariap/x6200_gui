@@ -25,7 +25,14 @@ botón; después se mantiene ese botón para abrirla. La lista es `long_action_i
 | `APP CW Keyboard` | telegrafía escribiendo |
 | `Theme` | cambia el tema (rota por los 6 + los JSON de `/mnt/themes`) |
 | `Screen rec`, `Screenshot` | grabación de pantalla |
-| `APP RTTY`, `APP FT8`, `APP SWR Scan`, `APP Settings`, `APP Recorder`, `APP Callsign`, `APP WiFi`, `APP EQ`, `QTH Grid`, `About` | las de siempre |
+| `APP RTTY`, `APP FT8`, `APP SWR Scan`, `APP Settings`, `APP Recorder`, `APP Callsign`, `APP WiFi`, `APP EQ`, `APP DFL editor`, `QTH Grid` | las de siempre |
+
+> **About ya no existe** (retirada por orden del owner, `docs/about-remove-spec.md`): ni la
+> pantalla, ni el botón del menú, ni la fila de *Ajustes → Acciones*, ni el `case` del
+> dispatcher. El manual del operador ya no la documenta y en su lugar (§6.22) documenta el
+> **editor DFL**, que hasta ahora sólo estaba en la lista de acciones (`APP DFL editor`,
+> `src/dialog_settings.c:1160`). El acceso al editor es la **pulsación larga de la tecla DFL**
+> del equipo o esa acción asignada; su gráfica es esquemática (no mide el equipo).
 
 **Corregido en la auditoría**: las entradas de las apps portadas se habían escrito con otro
 formato de línea y **nunca entraron en el array** (ver `NEW_FEATURES.md` §22); tampoco estaban
@@ -116,6 +123,17 @@ desde la web usaba un indicativo vacío. Ahora leen `X6200_*` y el *User-Agent* 
 contra las herramientas del propio X6100 (WSPR, NavTex, SSTV, WeFax), la suite completa de JS8,
 las 19 páginas del web configurator, el protocolo de wfview con sockets reales, la carga de temas
 JSON, el *rollover* del teclado y el formato WAV contra la libsndfile del target.
+
+> **Conteo al 2026-10-22** (tip `f825fe4b`, corrida de #222; el 401 de arriba es de su fecha):
+> `tests/native/run_native_tests.sh` = **52.946 comprobaciones, 0 fallos** (24 etapas; la misma
+> cifra con `--ci-parity` y `lvgl/` oculto). Los conteos viejos quedan como históricos, con su
+> SHA y su fecha.
+>
+> **Los 22 diálogos inertes del arnés de host** (`tools/ui_harness/mocks/mock_main_screen.c`) no
+> se renderizan en el host: su cobertura está tabulada en `tests/qemu/dialog-coverage.csv` y la
+> valida `tests/check_dialog_coverage.py` (mock ↔ fuentes reales ↔ `app_names[]`). La cobertura
+> QEMU de esas ventanas es lo que mide `tests/qemu/run_apps_qemu.sh`; sin banco privado queda
+> `BLOCKED` con la razón exacta, no un PASS.
 
 Antes de recurrir a la consola: **la app `APP Status`** muestra el adaptador Bluetooth y su
 transporte, el nivel de TX, el espacio en `/mnt`, wfview, la dirección del web configurator y el

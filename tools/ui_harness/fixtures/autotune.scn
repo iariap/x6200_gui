@@ -15,9 +15,13 @@
 # fixture frequency while collecting, and the cancel left it there.
 #
 # The other fixtures of the family: `autotune-progress` (the single provisional
-# correction, mid-session), `autotune-found` (the same correction verified) and
-# `autotune-notcw` (the rejection outside CW/CWR). "Tuned" against real RF is the
-# owner's radio: docs/autotune.md.
+# correction, mid-session), `autotune-found` (the same correction verified),
+# `autotune-digital` (the refusal in a digital mode) and, since issue #205,
+# `autotune-am` (carrier centering in AM), `autotune-usb` / `autotune-lsb` (the
+# suggestion that does NOT move the dial until the second press),
+# `autotune-usb-applied` (confirmation + Undo) and `autotune-usb-timeout` (the
+# preview expiring without a write). "Tuned" against real RF is the owner's
+# radio: docs/autotune.md.
 
 name autotune
 screen autotune

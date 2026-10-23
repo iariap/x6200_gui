@@ -1,0 +1,143 @@
+SSTV: opening /tmp/sstv_loopback.wav
+SSTV: VIS=2 -> Robot 8 BW (160x120) at 0.998 s, offset -0.0 Hz
+SSTV TEST: loading WAV into RAM so TEST uses the same decoder path as LIVE RF
+SSTV TEST: decoder dispatch -> Robot 8 BW through common RAM decoder (120283 samples @ 11025 Hz)
+SSTV LIVE: direct RAM decoder dispatch -> Robot 8 BW (120283 samples @ 11025 Hz)
+SSTV: Robot 8 BW decoder start from RAM: samples=120283, 160x120, line=66.667 ms
+SSTV: Robot 8 BW: 123 sync candidates
+SSTV: Robot 8 BW: robust chain points=119 span=119, regression syncs=119/119
+SSTV: Robot 8 BW: nominal line=66.666664 ms, fitted line=66.664726 ms, clock error=-29.1 ppm
+SSTV: Robot 8 BW: reconstructed timing grid rows=120, first=1.977 s, last=9.910 s
+SSTV: Robot 8 BW: decoded row 20/120
+SSTV: Robot 8 BW: decoded row 40/120
+SSTV: Robot 8 BW: decoded row 60/120
+SSTV: Robot 8 BW: decoded row 80/120
+SSTV: Robot 8 BW: decoded row 100/120
+SSTV: Robot 8 BW: decoded row 120/120
+SSTV: Robot 8 BW image decode finished, rows=120
+SSTV TEST: common RAM image decode returned rows=120
+SSTV TX: Robot 36 PCM generated (406933 samples @ 11025 Hz, 36.910 s)
+SSTV: opening /tmp/sstv_loopback.wav
+SSTV: VIS=8 -> Robot 36 (320x240) at 0.997 s, offset +0.0 Hz
+SSTV TEST: loading WAV into RAM so TEST uses the same decoder path as LIVE RF
+SSTV TEST: decoder dispatch -> Robot 36 through common RAM decoder (428983 samples @ 11025 Hz)
+SSTV LIVE: direct RAM decoder dispatch -> Robot 36 (428983 samples @ 11025 Hz)
+SSTV: Robot 36 decoder start from RAM: samples=428983, 320x240, line=150.000 ms
+SSTV: Robot 36: 245 sync candidates
+SSTV: Robot 36: robust chain points=239 span=240, regression syncs=239/239
+SSTV: Robot 36: nominal line=150.000000 ms, fitted line=150.000022 ms, clock error=+0.1 ppm
+SSTV: Robot 36: reconstructed timing grid rows=240, first=1.760 s, last=37.610 s
+SSTV: Robot 36 image decode finished, rows=240
+SSTV TEST: common RAM image decode returned rows=240
+SSTV: opening /tmp/sstv_loopback.wav
+SSTV: VIS=12 -> Robot 72 (320x240) at 0.998 s, offset -0.0 Hz
+SSTV TEST: loading WAV into RAM so TEST uses the same decoder path as LIVE RF
+SSTV TEST: decoder dispatch -> Robot 72 through common RAM decoder (825883 samples @ 11025 Hz)
+SSTV LIVE: direct RAM decoder dispatch -> Robot 72 (825883 samples @ 11025 Hz)
+SSTV: Robot 72 decoder start from RAM: samples=825883, 320x240, line=300.000 ms
+SSTV: Robot 72: 244 sync candidates
+SSTV: Robot 72: robust chain points=239 span=239, regression syncs=239/239
+SSTV: Robot 72: nominal line=300.000000 ms, fitted line=299.999209 ms, clock error=-2.6 ppm
+SSTV: Robot 72: reconstructed timing grid rows=240, first=2.210 s, last=73.910 s
+SSTV: Robot 72: decoded row 32/240
+SSTV: Robot 72: decoded row 64/240
+SSTV: Robot 72: decoded row 96/240
+SSTV: Robot 72: decoded row 128/240
+SSTV: Robot 72: decoded row 160/240
+SSTV: Robot 72: decoded row 192/240
+SSTV: Robot 72: decoded row 224/240
+SSTV: Robot 72: decoded row 240/240
+SSTV: Robot 72 image decode finished, rows=240
+SSTV TEST: common RAM image decode returned rows=240
+SSTV: opening /tmp/sstv_loopback.wav
+SSTV: VIS=44 -> Martin M1 (320x256) at 0.997 s, offset -0.0 Hz
+SSTV TEST: loading WAV into RAM so TEST uses the same decoder path as LIVE RF
+SSTV TEST: decoder dispatch -> Martin M1 through common RAM decoder (1292132 samples @ 11025 Hz)
+SSTV LIVE: direct RAM decoder dispatch -> Martin M1 (1292132 samples @ 11025 Hz)
+SSTV: Martin decoder start from RAM: M1, samples=1292132, channel=146.432 ms line=446.446 ms
+SSTV: Martin: 299 sync candidates
+SSTV: Martin: robust chain points=256, line span=256, first=1.897 s
+SSTV: Martin: nominal line=446.446 ms, fitted line=446.447219 ms
+SSTV: Martin: clock error=+2.7 ppm, regression syncs=256/256, max initial residual=143.45 samples
+SSTV: Martin: reconstructed timing grid rows=256, first=1.910 s, last=115.754 s
+SSTV: Martin: decoded row 32/256
+SSTV: Martin: decoded row 64/256
+SSTV: Martin: decoded row 96/256
+SSTV: Martin: decoded row 128/256
+SSTV: Martin: decoded row 160/256
+SSTV: Martin: decoded row 192/256
+SSTV: Martin: decoded row 224/256
+SSTV: Martin: decoded row 256/256
+SSTV: Martin image decode finished, rows=256
+SSTV TEST: common RAM image decode returned rows=256
+SSTV TX: Martin M2 PCM generated (650147 samples @ 11025 Hz, 58.970 s)
+SSTV: opening /tmp/sstv_loopback.wav
+SSTV: VIS=40 -> Martin M2 (320x256) at 0.998 s, offset +0.0 Hz
+SSTV TEST: loading WAV into RAM so TEST uses the same decoder path as LIVE RF
+SSTV TEST: decoder dispatch -> Martin M2 through common RAM decoder (672197 samples @ 11025 Hz)
+SSTV LIVE: direct RAM decoder dispatch -> Martin M2 (672197 samples @ 11025 Hz)
+SSTV: Martin decoder start from RAM: M2, samples=672197, channel=73.216 ms line=226.798 ms
+SSTV: Martin: 300 sync candidates
+SSTV: Martin: robust chain points=251, line span=252, first=1.676 s
+SSTV: Martin: nominal line=226.798 ms, fitted line=226.798497 ms
+SSTV: Martin: clock error=+2.2 ppm, regression syncs=251/251, max initial residual=75.53 samples
+SSTV: Martin: reconstructed timing grid rows=256, first=1.683 s, last=59.517 s
+SSTV: Martin: decoded row 32/256
+SSTV: Martin: decoded row 64/256
+SSTV: Martin: decoded row 96/256
+SSTV: Martin: decoded row 128/256
+SSTV: Martin: decoded row 160/256
+SSTV: Martin: decoded row 192/256
+SSTV: Martin: decoded row 224/256
+SSTV: Martin: decoded row 256/256
+SSTV: Martin image decode finished, rows=256
+SSTV TEST: common RAM image decode returned rows=256
+SSTV TX: Scottie S1 PCM generated (1218740 samples @ 11025 Hz, 110.543 s)
+SSTV: opening /tmp/sstv_loopback.wav
+SSTV: VIS=60 -> Scottie S1 (320x256) at 0.997 s, offset -0.0 Hz
+SSTV TEST: loading WAV into RAM so TEST uses the same decoder path as LIVE RF
+SSTV TEST: decoder dispatch -> Scottie S1 through common RAM decoder (1240790 samples @ 11025 Hz)
+SSTV LIVE: direct RAM decoder dispatch -> Scottie S1 (1240790 samples @ 11025 Hz)
+SSTV: Scottie S1 decoder start from RAM: samples=1240790, line=428.220 ms
+SSTV: Scottie S1: 264 sync candidates
+SSTV: Scottie S1: robust chain points=256 span=256, regression syncs=256/256
+SSTV: Scottie S1: nominal line=428.220032 ms, fitted line=428.218787 ms, clock error=-2.9 ppm
+SSTV: Scottie S1: reconstructed timing grid rows=256, first=2.199 s, last=111.395 s
+SSTV: Scottie S1: decoded row 32/256
+SSTV: Scottie S1: decoded row 64/256
+SSTV: Scottie S1: decoded row 96/256
+SSTV: Scottie S1: decoded row 128/256
+SSTV: Scottie S1: decoded row 160/256
+SSTV: Scottie S1: decoded row 192/256
+SSTV: Scottie S1: decoded row 224/256
+SSTV: Scottie S1: decoded row 256/256
+SSTV: Scottie S1 image decode finished, rows=256
+SSTV TEST: common RAM image decode returned rows=256
+SSTV: opening /tmp/sstv_loopback.wav
+SSTV: VIS=56 -> Scottie S2 (320x256) at 0.997 s, offset +0.0 Hz
+SSTV TEST: loading WAV into RAM so TEST uses the same decoder path as LIVE RF
+SSTV TEST: decoder dispatch -> Scottie S2 through common RAM decoder (815940 samples @ 11025 Hz)
+SSTV LIVE: direct RAM decoder dispatch -> Scottie S2 (815940 samples @ 11025 Hz)
+SSTV: Scottie S2 decoder start from RAM: samples=815940, line=277.692 ms
+SSTV: Scottie S2: 263 sync candidates
+SSTV: Scottie S2: robust chain points=256 span=256, regression syncs=256/256
+SSTV: Scottie S2: nominal line=277.692017 ms, fitted line=277.691156 ms, clock error=-3.1 ppm
+SSTV: Scottie S2: reconstructed timing grid rows=256, first=1.821 s, last=72.632 s
+SSTV: Scottie S2: decoded row 32/256
+SSTV: Scottie S2: decoded row 64/256
+SSTV: Scottie S2: decoded row 96/256
+SSTV: Scottie S2: decoded row 128/256
+SSTV: Scottie S2: decoded row 160/256
+SSTV: Scottie S2: decoded row 192/256
+SSTV: Scottie S2: decoded row 224/256
+SSTV: Scottie S2: decoded row 256/256
+SSTV: Scottie S2 image decode finished, rows=256
+SSTV TEST: common RAM image decode returned rows=256
+Robot 8 BW  VIS   2 160x120, 120 rows, luma correlation 0.920, mean error 10.6: OK
+Robot 36    VIS   8 320x240, 240 rows, luma correlation 0.959, mean error 6.9: OK
+Robot 72    VIS  12 320x240, 240 rows, luma correlation 0.975, mean error 5.5: OK
+Martin M1   VIS  44 320x256, 256 rows, luma correlation 0.974, mean error 4.5: OK
+Martin M2   VIS  40 320x256, 256 rows, luma correlation 0.939, mean error 7.6: OK
+Scottie S1  VIS  60 320x256, 256 rows, luma correlation 0.982, mean error 3.7: OK
+Scottie S2  VIS  56 320x256, 256 rows, luma correlation 0.956, mean error 5.9: OK
+all OK

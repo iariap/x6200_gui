@@ -1,0 +1,11 @@
+Cannot initialize conversion from codepage 850 to UTF-8: Invalid argument
+Cannot initialize conversion from UTF-8 to codepage 850: Invalid argument
+Using internal CP850 conversion table
+mkfs.fat 4.2 (2021-01-31)
+mkfs_fat_rc=0
+/home/pablo/desa/x6200/assessment-194/scratch-196/tmp/fat.img: DOS/MBR boot sector, code offset 0x3c+2, OEM-ID "mkfs.fat", sectors/cluster 4, reserved sectors 4, root entries 512, sectors 32768 (volumes <=32 MB), Media descriptor 0xf8, sectors/FAT 32, sectors/track 32, serial number 0xd6ea018f, label: "DATA       ", FAT (16 bit)
+         0 hidden sectors
+     32768 sectors total
+Checking for unused clusters.
+/home/pablo/desa/x6200/assessment-194/scratch-196/tmp/fat.img: 1 files, 0/8167 clusters
+/home/pablo/desa/x6200/assessment-194/scratch-196/tmp/fat.img: SEC_TYPE="msdos" LABEL_FATBOOT="DATA" LABEL="DATA" UUID="D6EA-018F" BLOCK_SIZE="512" TYPE="vfat"

@@ -1,0 +1,6 @@
+# Verificacion final del handoff test (criterio deterministico) bajo distintos niveles de carga
+$ uptime:  09:18:35 up 9 days, 21:52,  1 user,  load average: 11.05, 12.72, 8.08
+A runner ocupado (hogs=16 opts=''): NEW 0/40 fallos
+B runner muy ocupado, 2 cores (hogs=32 opts='taskset -c 0-1'): NEW 0/40 fallos
+C nice 19 + 24 hogs (todas las minas) (hogs=24 opts='nice -n 19'): NEW 0/40 fallos
+D taskset 1 core + nice 19 + 24 hogs (starvation extrema) (hogs=24 opts='taskset -c 0 nice -n 19'): NEW 0/40 fallos

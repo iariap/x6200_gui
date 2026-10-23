@@ -1,0 +1,41 @@
+--- u-boot version
+U-Boot SPL 2023.01 (Oct 21 2026 - 20:38:56 +0000)
+U-Boot 2023.01 for sunxi board
+U-Boot 2023.01
+--- fdtfile env
+sun8i-r16-x6200
+fdtfile=sun8i-r16-x6200.dtb
+load_efi_dtb=load ${devtype} ${devnum}:${distro_bootpart} ${fdt_addr_r} ${prefix}${efi_fdtfile}
+scan_dev_for_efi=setenv efi_fdtfile ${fdtfile}; if test -z "${fdtfile}" -a -n "${soc}"; then setenv efi_fdtfile ${soc}-${board}${boardver}.dtb; fi; for prefix in ${efi_dtb_prefixes}; do if test -e ${devtype} ${devnum}:${distro_bootpart} ${prefix}${efi_fdtfile}; then run load_efi_dtb; fi;done;run boot_efi_bootmgr;if test -e ${devtype} ${devnum}:${distro_bootpart} efi/boot/bootarm.efi; then echo Found EFI removable media binary efi/boot/bootarm.efi; run boot_efi_binary; echo EFI LOAD FAILED: continuing...; fi; setenv efi_fdtfile
+bootcmd_dhcp=devtype=dhcp; run boot_net_usb_start; if dhcp ${scriptaddr} ${boot_script_dhcp}; then source ${scriptaddr}; fi;setenv efi_fdtfile ${fdtfile}; if test -z "${fdtfile}" -a -n "${soc}"; then setenv efi_fdtfile ${soc}-${board}${boardver}.dtb; fi; setenv efi_old_vci ${bootp_vci};setenv efi_old_arch ${bootp_arch};setenv bootp_vci PXEClient:Arch:00010:UNDI:003000;setenv bootp_arch 0xa;if dhcp ${kernel_addr_r}; then tftpboot ${fdt_addr_r} dtb/${efi_fdtfile};if fdt addr -q ${fdt_addr_r}; then bootefi ${kernel_addr_r} ${fdt_addr_r}; else bootefi ${kernel_addr_r} ${fdtcontroladdr};fi;fi;setenv bootp_vci ${efi_old_vci};setenv bootp_arch ${efi_old_arch};setenv efi_fdtfile;setenv efi_old_arch;setenv efi_old_vci;
+--- zImage
+/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/zImage: Linux kernel ARM boot executable zImage (kernel >=v4.15) (little-endian)
+--- dtb
+/home/pablo/desa/x6200/assessment-194/clone-buildroot/build/images/sun8i-r16-x6200.dtb: Device Tree Blob version 17, size=26544, boot CPU=0, string block size=2020, DT structure block size=24468
+,XIEGU Tech X6200 Transceiver
+2xiegu,x6200
+allwinner,sun8i-r16
+2allwinner,simple-framebuffer
+2allwinner,sun8i-a33-display-engine
+allwinner,sun8i-a23
+--- modules
+6.1.82
+15M	/home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/lib/modules
+410
+kernel/arch/arm/crypto/aes-arm.ko:
+kernel/arch/arm/crypto/aes-arm-bs.ko: kernel/crypto/crypto_simd.ko kernel/crypto/cryptd.ko
+kernel/arch/arm/crypto/sha1-arm.ko:
+--- boot.scr
+echo "------------ X6200 boot script ------------"
+setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait panic=10 fbcon=rotate:3 video=VGA:480x800
+fatload mmc 0:1 0x46000000 zImage
+fatload mmc 0:1 0x49000000 ${fdtfile}
+bootz 0x46000000 - 0x49000000
+--- debugfs GUI dump
+debugfs 1.47.3 (8-Jul-2025)
+1f998c46909307397525c975a712adfd  /home/pablo/desa/x6200/assessment-194/scratch-196/tmp/gui-from-ext4
+1f998c46909307397525c975a712adfd  /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/usr/sbin/x6200_gui
+--- asound state
+total 8
+-rw-r--r--. 1 pablo pablo 8040 Oct 21 15:23 asound.state
+-rw-r--r--. 1 pablo pablo 1862 Oct 21 15:23 /home/pablo/desa/x6200/assessment-194/scratch-196/rootfs/tree/etc/asound.conf

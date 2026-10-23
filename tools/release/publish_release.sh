@@ -32,18 +32,24 @@ REPO=${REPO:-$(git -C "$GUI" remote get-url fork | sed 's|.*github.com[:/]||; s|
 NOTES="$GUI/docs/RELEASE_NOTES_2026-10-11_features.md"
 IMG=$(ls -t "$IMAGES"/x6200_*.img 2>/dev/null | head -1)
 TGZ=$(ls -t "$IMAGES"/x6200_r1cbu_*.tgz 2>/dev/null | head -1)
+SIDE=${TGZ:+$TGZ.sha256}
 
 echo "==> repositorio: $REPO   tag: $TAG   versión: $VER"
 echo "==> imagen:      ${IMG:-FALTA}"
 echo "==> actualización: ${TGZ:-FALTA}"
+echo "==> sidecar:     ${SIDE:-FALTA}"
 
 [ -f "$IMG" ] || { echo "no hay imagen" >&2; exit 1; }
 [ -f "$TGZ" ] || { echo "no hay tgz de actualización" >&2; exit 1; }
+# El tgz viaja con su <tgz>.sha256: el S02update lo exige en /mnt antes de tocar
+# nada, así que el release tiene que publicar los dos juntos.
+[ -f "$SIDE" ] || { echo "no hay sidecar $TGZ.sha256 (lo arma make_update_tgz.sh)" >&2; exit 1; }
 [ -f "$IMAGES/SHA256SUMS" ] || { echo "no hay SHA256SUMS" >&2; exit 1; }
 [ -f "$NOTES" ] || { echo "no hay notas del release" >&2; exit 1; }
 
 echo "==> checksums"
 ( cd "$IMAGES" && sha256sum -c SHA256SUMS )
+( cd "$IMAGES" && sha256sum -c "$(basename "$SIDE")" )
 
 echo "==> la actualización trae el mismo GUI que la imagen"
 TMP=$(mktemp -d)
@@ -73,7 +79,7 @@ if [ "$MODE" != "--publish" ] && [ "$MODE" != "--draft" ]; then
     echo "  gh release create $TAG \\"
     echo "      --repo $REPO --prerelease --title \"X6200 LU2DSX ROM $VER\" \\"
     echo "      --notes-file $NOTES \\"
-    echo "      $IMG $TGZ $IMAGES/SHA256SUMS"
+    echo "      $IMG $TGZ $SIDE $IMAGES/SHA256SUMS"
     echo
     exit 0
 fi
@@ -92,7 +98,7 @@ else
     echo "==> publicando"
     gh release create "$TAG" --repo "$REPO" --prerelease \
         --title "X6200 LU2DSX ROM $VER" --notes-file "$NOTES" \
-        "$IMG" "$TGZ" "$IMAGES/SHA256SUMS"
+        "$IMG" "$TGZ" "$SIDE" "$IMAGES/SHA256SUMS"
 fi
 
 # With --draft: create it as a draft instead (the assets uploaded, nothing public)

@@ -1,0 +1,48 @@
+bc18ba10ca503b518771fa9c9a5649644f675d7ff0b8c87d03940969f64c2867  /home/pablo/desa/x6200/assessment-194/scratch-196/data/params.default.db
+ok
+delete
+0
+25
+0
+atu                   dfl_filter_memories   msg_cw              
+band_params           digital_modes         params              
+bands                 memory                transverter         
+dfl_filter_favorites  mode_params           version             
+digital_modes_freq_idx|index
+digital_modes_type_idx|index
+sqlite_autoindex_atu_1|index
+sqlite_autoindex_band_params_1|index
+sqlite_autoindex_dfl_filter_favorites_1|index
+sqlite_autoindex_dfl_filter_memories_1|index
+sqlite_autoindex_digital_modes_1|index
+sqlite_autoindex_memory_1|index
+sqlite_autoindex_mode_params_1|index
+sqlite_autoindex_params_1|index
+sqlite_autoindex_transverter_1|index
+atu|table
+band_params|table
+bands|table
+dfl_filter_favorites|table
+dfl_filter_memories|table
+digital_modes|table
+memory|table
+mode_params|table
+msg_cw|table
+params|table
+sqlite_sequence|table
+transverter|table
+version|table
+24
+atu 0
+band_params 40
+bands 33
+dfl_filter_favorites 0
+dfl_filter_memories 0
+digital_modes 31
+memory 0
+mode_params 30
+msg_cw 0
+params 4
+sqlite_sequence 1
+transverter 0
+version 1

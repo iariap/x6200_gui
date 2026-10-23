@@ -1,0 +1,52 @@
+# autotune-usb: Auto Tune multimode (issue #205) SUGGESTING a gross alignment in
+# USB - and NOT moving the dial.
+#
+# This is the fixture of the rule that matters most in SSB: a voice signal has no
+# carrier and no absolute pitch reference, so the assistant only estimates the
+# coarse alignment of the occupied energy inside the sideband and *asks*. The
+# APP 6 "Auto Tune" button is pressed once and the session goes COLLECT (five
+# consistent frames) -> PREVIEW: the dial has to be EXACTLY where it was.
+#
+# scenario_settle arms a TEST-ONLY voice mass centred 2850 Hz above the dial
+# (mocks/mock_dsp.c), i.e. mostly outside the 300..2700 Hz passband of the USB
+# filter, so the best discrete shift is +752 Hz (|d| <= 800 Hz, step 188 Hz).
+# The fixture then advances the virtual clock past the 3000 ms COLLECT window:
+# a session that is still alive AND has not moved the dial after that can only be
+# in PREVIEW (the collect timeout ends the session; the preview expiry is 5000 ms
+# and this fixture stays inside it).
+#
+# What the fixture *means*: "suggested, not tuned". Retuning the voice without
+# the operator's second press would move the dial in the capture and be a failure;
+# so would a session that timed out instead of producing a suggestion. The real
+# USB/LSB voice with a 500 Hz shift, and the two-QSO abstention, are the owner's
+# radio (docs/autotune.md).
+
+name autotune-usb
+screen autotune-usb
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 96000
+
+mode usb
+filter_low 0
+filter_high 3000
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

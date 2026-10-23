@@ -94,6 +94,14 @@ static bool         mode_lock = false;
 static bool         ab_lock = false;
 static bool         band_lock = false;
 
+/* Aviso del dial trabado (issue #220): girar el dial con `freq_lock` consume los
+ * detents, asi que el aviso se emite a lo sumo una vez por ventana de 2 s de
+ * reloj monotono en vez de una vez por detent. 0 = todavia no se aviso en esta
+ * sesion bloqueada, para que el PRIMER intento despues de activar el lock avise
+ * enseguida; volver a 0 al cambiar el lock reinicia el throttle. */
+#define FREQ_LOCK_NOTICE_MS 2000
+static uint64_t     freq_lock_notice_ms = 0;
+
 static lv_obj_t     *spectrum;
 static lv_obj_t     *freq[3];
 /* El "8 fantasma" del centro de la fila (ver freq_shadow_update): NULL mientras no
@@ -657,6 +665,34 @@ static void change_mode(keypad_key_t key, keypad_state_t state) {
     subject_set_int(cfg_cur.mode, next_mode);
 }
 
+/* Feedback de una accion bloqueada (issue #220): una sola frase corta en la
+ * barra de mensajes transitoria que ya existe, sin voz y sin tocar el estado
+ * bloqueado. En TX no se emite: los avisos de error/interlock que la radio pone
+ * en la misma barra son mas criticos y un control trabado no los debe pisar. */
+static void locked_notice(const char *text) {
+    if (radio_get_state() == RADIO_TX) {
+        return;
+    }
+
+    msg_update_text_fmt("%s", text);
+}
+
+/* Aviso del dial principal trabado: a lo sumo uno cada FREQ_LOCK_NOTICE_MS.
+ * El timestamp se reinicia al cambiar el lock (freq_lock_notice_reset()), asi el
+ * primer intento de una sesion bloqueada avisa enseguida. */
+static void freq_lock_notice(void) {
+    uint64_t now = get_time();
+
+    if (freq_lock_notice_ms == 0 || (now - freq_lock_notice_ms) >= FREQ_LOCK_NOTICE_MS) {
+        freq_lock_notice_ms = now;
+        locked_notice("Frequency locked");
+    }
+}
+
+static void freq_lock_notice_reset(void) {
+    freq_lock_notice_ms = 0;
+}
+
 static void main_screen_keypad_cb(lv_event_t * e) {
     event_keypad_t *keypad = lv_event_get_param(e);
 
@@ -675,7 +711,14 @@ static void main_screen_keypad_cb(lv_event_t * e) {
                 //
 
                 if (params.mag_info.x) {
-                    msg_tiny_set_text_fmt("Pre: %s", pre ? "On" : "Off");
+                    /* Activar PRE apaga ATT (issue #220): el aviso nombra las dos
+                     * cosas para que el operador vea que el atenuador se apago.
+                     * Si ATT ya estaba off se conserva el mensaje de siempre. */
+                    if (pre && att) {
+                        msg_tiny_set_text_fmt("Preamplifier On / Attenuator Off");
+                    } else {
+                        msg_tiny_set_text_fmt("Pre: %s", pre ? "On" : "Off");
+                    }
                 }
             } else if (keypad->state == KEYPAD_LONG) {
                 att = !att;
@@ -688,14 +731,24 @@ static void main_screen_keypad_cb(lv_event_t * e) {
                 //
 
                 if (params.mag_info.x) {
-                    msg_tiny_set_text_fmt("Att: %s", att ? "On" : "Off");
+                    /* Activar ATT apaga PRE (issue #220): mismo criterio que PRE
+                     * sobre ATT. Si PRE ya estaba off se conserva el mensaje. */
+                    if (att && pre) {
+                        msg_tiny_set_text_fmt("Attenuator On / Preamplifier Off");
+                    } else {
+                        msg_tiny_set_text_fmt("Att: %s", att ? "On" : "Off");
+                    }
                 }
             }
             break;
 
         case KEYPAD_BAND_UP:
             if (keypad->state == KEYPAD_RELEASE) {
-                if (!band_lock) {
+                if (band_lock) {
+                    /* La banda trabada no cambia en silencio (issue #220). El
+                     * dialog_send preexistente se conserva. */
+                    locked_notice("Band locked");
+                } else {
                     cfg_band_load_next(true);
                 }
                 dialog_send(EVENT_BAND_UP, NULL);
@@ -704,7 +757,9 @@ static void main_screen_keypad_cb(lv_event_t * e) {
 
         case KEYPAD_BAND_DOWN:
             if (keypad->state == KEYPAD_RELEASE) {
-                if (!band_lock) {
+                if (band_lock) {
+                    locked_notice("Band locked");
+                } else {
                     cfg_band_load_next(false);
                 }
                 dialog_send(EVENT_BAND_DOWN, NULL);
@@ -714,7 +769,14 @@ static void main_screen_keypad_cb(lv_event_t * e) {
         case KEYPAD_MODE_AM:
         case KEYPAD_MODE_CW:
         case KEYPAD_MODE_SSB:
-            if (!mode_lock) {
+            if (mode_lock) {
+                /* Solo el release y el long press son intenciones efectivas
+                 * (change_mode los acepta); el press/repeat no avisa, que es el
+                 * mismo filtro que aplica change_mode (issue #220). */
+                if (keypad->state == KEYPAD_RELEASE || keypad->state == KEYPAD_LONG) {
+                    locked_notice("Mode locked");
+                }
+            } else {
                 change_mode(keypad->key, keypad->state);
             }
             break;
@@ -768,6 +830,7 @@ static void main_screen_keypad_cb(lv_event_t * e) {
                 next_freq_step(true);
             } else if (keypad->state == KEYPAD_LONG) {
                 subject_set_int(freq_lock, !subject_get_int(freq_lock));
+                freq_lock_notice_reset();
                 voice_say_text_fmt("Frequency %s", subject_get_int(freq_lock) ? "locked" : "unlocked");
             }
             break;
@@ -921,22 +984,26 @@ static void main_screen_keypad_cb(lv_event_t * e) {
             break;
 
         case KEYPAD_AB:
-            if (!ab_lock) {
-                if (keypad->state == KEYPAD_RELEASE) {
-                    radio_toggle_vfo();
-
-                    spectrum_clear();
-
-                    if (params.mag_info.x) {
-                        msg_tiny_set_text_fmt("%s", info_params_vfo_label_get());
-                    }
-                } else if (keypad->state == KEYPAD_LONG) {
-                    x6200_vfo_t cur_vfo = subject_get_int(cfg_cur.band->vfo.val);
-                    cfg_band_vfo_copy();
-                    // radio_vfo_set();
-                    msg_update_text_fmt("Clone VFO %s", cur_vfo == X6200_VFO_A ? "A->B" : "B->A");
-                    voice_say_text_fmt("V F O cloned %s", cur_vfo == X6200_VFO_A ? "from A to B" : "from B to A");
+            if (ab_lock) {
+                /* VFO A/B trabado (issue #220): release y long press avisan, el
+                 * press/repeat no. El toggle/clone preexistente no corre. */
+                if (keypad->state == KEYPAD_RELEASE || keypad->state == KEYPAD_LONG) {
+                    locked_notice("VFO locked");
                 }
+            } else if (keypad->state == KEYPAD_RELEASE) {
+                radio_toggle_vfo();
+
+                spectrum_clear();
+
+                if (params.mag_info.x) {
+                    msg_tiny_set_text_fmt("%s", info_params_vfo_label_get());
+                }
+            } else if (keypad->state == KEYPAD_LONG) {
+                x6200_vfo_t cur_vfo = subject_get_int(cfg_cur.band->vfo.val);
+                cfg_band_vfo_copy();
+                // radio_vfo_set();
+                msg_update_text_fmt("Clone VFO %s", cur_vfo == X6200_VFO_A ? "A->B" : "B->A");
+                voice_say_text_fmt("V F O cloned %s", cur_vfo == X6200_VFO_A ? "from A to B" : "from B to A");
             }
             break;
 
@@ -1014,6 +1081,7 @@ static void main_screen_hkey_cb(lv_event_t * e) {
         case HKEY_SPCH:
             if (hkey->state == HKEY_RELEASE) {
                 subject_set_int(freq_lock, !subject_get_int(freq_lock));
+                freq_lock_notice_reset();
                 voice_say_text_fmt("Frequency %s", subject_get_int(freq_lock) ? "locked" : "unlocked");
             }
             break;
@@ -1331,6 +1399,10 @@ static void main_screen_rotary_enhanced_cb(lv_event_t * e) {
             voice_say_text_fmt("Channel %i", ch);
 
             tuning_ctx.expected_freq = subject_get_int(cfg_cur.fg_freq);
+        } else {
+            /* Tambien el dial CB trabado avisa (issue #220), con el mismo
+             * throttle: los detents se consumen sin mover el canal. */
+            freq_lock_notice();
         }
 
         hide_tuning_multiplier();
@@ -1341,9 +1413,11 @@ static void main_screen_rotary_enhanced_cb(lv_event_t * e) {
     if (lock) {
         /* Con el dial trabado se consumen los pulsos sin mover el VFO y se
          * reinicia la aceleracion; el movimiento CRUDO sigue llegando al
-         * dialogo abierto, como antes. */
+         * dialogo abierto, como antes. El aviso "Frequency locked" sale a lo
+         * sumo una vez cada 2 s (issue #220). */
         main_screen_tuning_reset();
         hide_tuning_multiplier();
+        freq_lock_notice();
         dialog_rotary(enhanced->raw_diff);
         return;
     }
@@ -1495,6 +1569,7 @@ static void spectrum_key_cb(lv_event_t * e) {
 
         case KEYBOARD_SCRL_LOCK:
             subject_set_int(freq_lock, !subject_get_int(freq_lock));
+            freq_lock_notice_reset();
             break;
 
         case KEYBOARD_PGUP:
@@ -1555,6 +1630,7 @@ void main_screen_keys_enable(bool value) {
 
 void main_screen_lock_freq(bool lock) {
     subject_set_int(freq_lock, lock);
+    freq_lock_notice_reset();
 }
 
 void main_screen_lock_band(bool lock) {

@@ -18,9 +18,30 @@ name: UI A/B testing harness
 #     As soon as either proxy moves the gate is a real FAIL again; the
 #     classification lives in tools/ab_testing/src/x6200_ab/performance.py
 #     (compare_scenario) and the report step below only reads it.
+#
+# Push runs on the integration branch (issue #222, F-13 of the #194 dossier):
+# `lu2dsx/x6200-rom` is the branch every child PR lands on, and a `pull_request`
+# run evaluates the PR HEAD sha, not the commit the merge leaves behind (the
+# squash commit is a different sha). The push trigger below gives that exact
+# integrated commit its own run, so "the CI of the merge" is a real run of the
+# revision that is on the branch. On a push there is no PR base, so the visual job
+# compares the revision against itself (A/A, a PASS that proves nothing improved)
+# and the performance job does a single-revision measurement (never an A/B claim);
+# the contracts job evaluates `github.sha`. A clean PASS means "this sha renders
+# and passes the contracts", never "this sha improved on anything".
 
 on:
   pull_request:
+    paths:
+      - "tools/**"
+      - "src/**"
+      - "tests/**"
+      - "rootfs/usr/share/x6200/themes/**"
+      - ".github/workflows/ab-testing.yml"
+  # El SHA integrado: mismo filtro de paths que el PR, para que el merge de cada
+  # hijo de la epica #216 deje una corrida sobre el commit exacto de la rama.
+  push:
+    branches: ["lu2dsx/x6200-rom"]
     paths:
       - "tools/**"
       - "src/**"
@@ -72,6 +93,10 @@ jobs:
           python3 tests/check_wcag.py
           python3 tests/check_autotune_v2.py
           python3 tests/check_build_identity.py
+          # Inventario de los 22 dialogos inertes del arnes de host (issue #222):
+          # la tabla de cobertura tiene que coincidir con los mocks, con las
+          # fuentes reales y con las 25 apps de remote_server.cpp::app_names[].
+          python3 tests/check_dialog_coverage.py
 
       - name: Native (host) unit tests
         run: |
@@ -87,7 +112,7 @@ jobs:
             echo ""
             echo "- Job status: \`${{ job.status }}\`"
             echo "- Python framework: ruff + ruff format + ty + pytest (unit)"
-            echo "- Static checks: check_cfg_fills, check_actions, check_settings_focus, check_settings_grid, check_apps_menu, check_wcag, check_autotune_v2, check_build_identity"
+            echo "- Static checks: check_cfg_fills, check_actions, check_settings_focus, check_settings_grid, check_apps_menu, check_wcag, check_autotune_v2, check_build_identity, check_dialog_coverage"
             echo "- x6200-ab themes: static WCAG pairs over the shipped theme JSON files"
             echo "- Native host tests: tests/native/run_native_tests.sh"
           } >> "$GITHUB_STEP_SUMMARY"

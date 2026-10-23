@@ -1,0 +1,6 @@
+    /mnt: base 100K + relleno 16268K en un tmpfs de 16M (libre ~16K)
+    socket de control remoto: I=16s
+    ok: arranco (socket presente)
+    ok: sin CRASHLOG SIGSEGV
+    ok: la escritura fallida se reporto
+    sha256 base: cabda0eae5a1be6151c30336ad556eb22d46a05cdf91564e015d352aebda3638 -> 66b04783cfd3cb0a4c12f6359900fa970d945404f5844b9013eb877e2928881d

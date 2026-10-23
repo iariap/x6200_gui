@@ -1,0 +1,657 @@
+# check_harness_determinism.sh  start=2026-10-21T21:45:25Z  image=x6200-uiharness  scratch=/home/pablo/desa/asf/state/worktrees/x6200/assessment-197-cand
+building ui_harness (revision c888308eede71205605c06383432ee7e165f202e)...
+In file included from /src/src/params/params.h:20,
+                 from /src/tools/ui_harness/src/harness_main.c:61:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/tools/ui_harness/src/scenario.c:15:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/tools/ui_harness/src/screens.c:25:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/tools/ui_harness/src/swr_backend.c:12:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dialog.h:13,
+                 from /src/tools/ui_harness/mocks/mock_main_screen.c:20:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/tools/ui_harness/build/styles_host.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/tools/ui_harness/mocks/mock_params.c:17:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/backlight.h:14,
+                 from /src/src/band_info.c:11:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/clock.c:11:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/meter.c:11:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/band_info.c: In function 'band_info_draw_cb':
+/src/src/band_info.c:45:21: warning: unused variable 'code' [-Wunused-variable]
+   45 |     lv_event_code_t code     = lv_event_get_code(e);
+      |                     ^~~~
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/info.c:18:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/main_screen.h:12,
+                 from /src/src/main_screen.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/clock.c: In function 'clock_init':
+/src/src/clock.c:228:1: warning: control reaches end of non-void function [-Wreturn-type]
+  228 | }
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/waterfall.c:12:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/band_plan.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/spectrum.c:15:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/main_screen.c: In function 'main_screen_action':
+/src/src/main_screen.c:383:5: warning: enumeration value 'ACTION_APP_EQ' not handled in switch [-Wswitch]
+  383 |     switch (action) {
+      |     ^~~~~~
+/src/src/main_screen.c:383:5: warning: enumeration value 'ACTION_APP_GPS' not handled in switch [-Wswitch]
+/src/src/main_screen.c:383:5: warning: enumeration value 'ACTION_WF_MODE' not handled in switch [-Wswitch]
+/src/src/main_screen.c: At top level:
+In file included from /src/src/params/params.h:20,
+                 from /src/src/vol.c:14:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/main_screen.c:1264:32: warning: comparison between 'enum <anonymous>' and 'enum <anonymous>' [-Wenum-compare]
+ 1264 | _Static_assert(FREQ_ACCEL_NONE == ADAPTIVE_ACCEL_NONE &&
+      |                                ^~
+/src/src/main_screen.c:1265:32: warning: comparison between 'enum <anonymous>' and 'enum <anonymous>' [-Wenum-compare]
+ 1265 |                FREQ_ACCEL_LITE == ADAPTIVE_ACCEL_LITE &&
+      |                                ^~
+/src/src/main_screen.c:1266:34: warning: comparison between 'enum <anonymous>' and 'enum <anonymous>' [-Wenum-compare]
+ 1266 |                FREQ_ACCEL_STRONG == ADAPTIVE_ACCEL_STRONG,
+      |                                  ^~
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dialog.h:13,
+                 from /src/src/tx_info.c:13:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/vol.c: In function 'vol_update':
+/src/src/vol.c:33:17: warning: unused variable 'freq' [-Wunused-variable]
+   33 |     int32_t     freq;
+      |                 ^~~~
+/src/src/vol.c:32:17: warning: unused variable 'b' [-Wunused-variable]
+   32 |     bool        b;
+      |                 ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/msg_tiny.c:11:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/msg.c:11:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/pannel.c:12:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/tx_info.c: In function 'tx_info_draw_cb':
+/src/src/tx_info.c:91:16: warning: unused variable 'h' [-Wunused-variable]
+   91 |     lv_coord_t h = lv_obj_get_height(obj) - 1;
+      |                ^
+/src/src/tx_info.c: At top level:
+/src/src/tx_info.c:38:17: warning: 'prev_ui_update' defined but not used [-Wunused-variable]
+   38 | static uint64_t prev_ui_update = 0;
+      |                 ^~~~~~~~~~~~~~
+/src/src/pannel.c: In function 'pannel_visible':
+/src/src/pannel.c:127:5: warning: enumeration value 'x6200_mode_am' not handled in switch [-Wswitch]
+  127 |     switch (mode) {
+      |     ^~~~~~
+/src/src/pannel.c:127:5: warning: enumeration value 'x6200_mode_sam' not handled in switch [-Wswitch]
+/src/src/pannel.c:127:5: warning: enumeration value 'x6200_mode_nfm' not handled in switch [-Wswitch]
+/src/src/pannel.c:127:5: warning: enumeration value 'x6200_mode_wfm' not handled in switch [-Wswitch]
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dialog.h:13,
+                 from /src/src/dialog.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dialog.h:13,
+                 from /src/src/dialog_settings.h:11,
+                 from /src/src/dialog_settings.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/autotune_ui.c:17:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/cw_tune_ui.c:15:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dialog.h:13,
+                 from /src/src/dialog_bt.h:9,
+                 from /src/src/dialog_bt.c:12:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/backlight.h:14,
+                 from /src/src/backlight.c:17:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/backlight.c: In function 'set_brightness':
+/src/src/backlight.c:42:17: warning: unused variable 'n' [-Wunused-variable]
+   42 |         ssize_t n = write(brightness, str, len);
+      |                 ^
+/src/src/backlight.c: In function 'set_power':
+/src/src/backlight.c:51:17: warning: unused variable 'n' [-Wunused-variable]
+   51 |         ssize_t n = write(power, str, len);
+      |                 ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dfl_inline.c:23:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+/src/src/dfl_inline.c:162:13: warning: 'apply_bw' defined but not used [-Wunused-function]
+  162 | static void apply_bw(int32_t val) {
+      |             ^~~~~~~~
+/src/src/dialog_settings.c: In function 'make_line_gain':
+/src/src/dialog_settings.c:829:18: warning: unused variable 'obj' [-Wunused-variable]
+  829 |     lv_obj_t    *obj;
+      |                  ^~~
+/src/src/dialog_settings.c: In function 'make_audio_gain':
+/src/src/dialog_settings.c:1423:18: warning: unused variable 'obj' [-Wunused-variable]
+ 1423 |     lv_obj_t    *obj;
+      |                  ^~~
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/src/dfl_context.c:20:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/dialog.h:13,
+                 from /src/src/dialog_swrscan.h:15,
+                 from /src/src/dialog_swrscan.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/buttons.cpp:8:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/cfg/../params/params.h:20,
+                 from /src/src/cfg/settings_manager.cpp:11:
+/src/src/cfg/../params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/buttons.h:20,
+                 from /src/src/controls.h:3,
+                 from /src/src/controls.cpp:1:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/mfk.cpp:20:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/lvgl/lvgl.h:25,
+                 from /src/src/buttons.h:19:
+/src/src/buttons.cpp: In function 'void buttons_init(lv_obj_t*)':
+/src/src/buttons.cpp:1154:29: warning: format '%u' expects argument of type 'unsigned int', but argument 6 has type 'size_t' {aka 'long unsigned int'} [-Wformat=]
+ 1154 |                 LV_LOG_USER("First button in page=%u, group=%u press cb is not next", j, i);
+      |                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  ~
+      |                                                                                       |
+      |                                                                                       size_t {aka long unsigned int}
+/src/lvgl/src/misc/lv_log.h:123:91: note: in definition of macro 'LV_LOG_USER'
+  123 | #    define LV_LOG_USER(...) _lv_log_add(LV_LOG_LEVEL_USER, __FILE__, __LINE__, __func__, __VA_ARGS__)
+      |                                                                                           ^~~~~~~~~~~
+/src/src/buttons.cpp:1154:52: note: format string is defined here
+ 1154 |                 LV_LOG_USER("First button in page=%u, group=%u press cb is not next", j, i);
+      |                                                   ~^
+      |                                                    |
+      |                                                    unsigned int
+      |                                                   %lu
+/src/src/buttons.cpp:1154:29: warning: format '%u' expects argument of type 'unsigned int', but argument 7 has type 'size_t' {aka 'long unsigned int'} [-Wformat=]
+ 1154 |                 LV_LOG_USER("First button in page=%u, group=%u press cb is not next", j, i);
+      |                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     ~
+      |                                                                                          |
+      |                                                                                          size_t {aka long unsigned int}
+/src/lvgl/src/misc/lv_log.h:123:91: note: in definition of macro 'LV_LOG_USER'
+  123 | #    define LV_LOG_USER(...) _lv_log_add(LV_LOG_LEVEL_USER, __FILE__, __LINE__, __func__, __VA_ARGS__)
+      |                                                                                           ^~~~~~~~~~~
+/src/src/buttons.cpp:1154:62: note: format string is defined here
+ 1154 |                 LV_LOG_USER("First button in page=%u, group=%u press cb is not next", j, i);
+      |                                                             ~^
+      |                                                              |
+      |                                                              unsigned int
+      |                                                             %lu
+/src/src/buttons.cpp:1160:29: warning: format '%u' expects argument of type 'unsigned int', but argument 6 has type 'size_t' {aka 'long unsigned int'} [-Wformat=]
+ 1160 |                 LV_LOG_USER("First button in page=%u, group=%u hold cb is not prev", j, i);
+      |                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  ~
+      |                                                                                      |
+      |                                                                                      size_t {aka long unsigned int}
+/src/lvgl/src/misc/lv_log.h:123:91: note: in definition of macro 'LV_LOG_USER'
+  123 | #    define LV_LOG_USER(...) _lv_log_add(LV_LOG_LEVEL_USER, __FILE__, __LINE__, __func__, __VA_ARGS__)
+      |                                                                                           ^~~~~~~~~~~
+/src/src/buttons.cpp:1160:52: note: format string is defined here
+ 1160 |                 LV_LOG_USER("First button in page=%u, group=%u hold cb is not prev", j, i);
+      |                                                   ~^
+      |                                                    |
+      |                                                    unsigned int
+      |                                                   %lu
+/src/src/buttons.cpp:1160:29: warning: format '%u' expects argument of type 'unsigned int', but argument 7 has type 'size_t' {aka 'long unsigned int'} [-Wformat=]
+ 1160 |                 LV_LOG_USER("First button in page=%u, group=%u hold cb is not prev", j, i);
+      |                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     ~
+      |                                                                                         |
+      |                                                                                         size_t {aka long unsigned int}
+/src/lvgl/src/misc/lv_log.h:123:91: note: in definition of macro 'LV_LOG_USER'
+  123 | #    define LV_LOG_USER(...) _lv_log_add(LV_LOG_LEVEL_USER, __FILE__, __LINE__, __func__, __VA_ARGS__)
+      |                                                                                           ^~~~~~~~~~~
+/src/src/buttons.cpp:1160:62: note: format string is defined here
+ 1160 |                 LV_LOG_USER("First button in page=%u, group=%u hold cb is not prev", j, i);
+      |                                                             ~^
+      |                                                              |
+      |                                                              unsigned int
+      |                                                             %lu
+/src/src/buttons.cpp: In function 'const char* vol_label_getter()':
+/src/src/buttons.cpp:1515:30: warning: format '%zi' expects argument of type 'signed size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1515 |     sprintf(buf, "Volume:\n%zi", subject_get_int(cfg.vol.val));
+      |                            ~~^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                              |                  |
+      |                              long int           int32_t {aka int}
+      |                            %i
+/src/src/buttons.cpp: In function 'const char* sql_label_getter()':
+/src/src/buttons.cpp:1521:31: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1521 |     sprintf(buf, "Squelch:\n%zu", subject_get_int(cfg_cur.sql_level));
+      |                             ~~^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                               |                  |
+      |                               long unsigned int  int32_t {aka int}
+      |                             %u
+/src/src/buttons.cpp: In function 'const char* rfg_label_getter()':
+/src/src/buttons.cpp:1527:31: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1527 |     sprintf(buf, "RF gain:\n%zu", subject_get_int(cfg_cur.band->rfg.val));
+      |                             ~~^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                               |                  |
+      |                               long unsigned int  int32_t {aka int}
+      |                             %u
+/src/src/buttons.cpp: In function 'const char* h_mic_gain_label_getter()':
+/src/src/buttons.cpp:1564:34: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int' [-Wformat=]
+ 1564 |     sprintf(buf, "H-Mic gain:\n%zu", params.hmic);
+      |                                ~~^   ~~~~~~~~~~~
+      |                                  |          |
+      |                                  |          int
+      |                                  long unsigned int
+      |                                %u
+/src/src/buttons.cpp: In function 'const char* i_mic_gain_label_getter()':
+/src/src/buttons.cpp:1570:34: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int' [-Wformat=]
+ 1570 |     sprintf(buf, "I-Mic gain:\n%zu", params.imic);
+      |                                ~~^   ~~~~~~~~~~~
+      |                                  |          |
+      |                                  |          int
+      |                                  long unsigned int
+      |                                %u
+/src/src/buttons.cpp: In function 'const char* moni_level_label_getter()':
+/src/src/buttons.cpp:1576:34: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int' [-Wformat=]
+ 1576 |     sprintf(buf, "Moni level:\n%zu", params.moni);
+      |                                ~~^   ~~~~~~~~~~~
+      |                                  |          |
+      |                                  |          int
+      |                                  long unsigned int
+      |                                %u
+/src/src/buttons.cpp: In function 'const char* rit_label_getter()':
+/src/src/buttons.cpp:1589:28: warning: format '%zi' expects argument of type 'signed size_t', but argument 3 has type 'int' [-Wformat=]
+ 1589 |     sprintf(buf, "RIT:\n%+zi", params.rit);
+      |                         ~~~^   ~~~~~~~~~~
+      |                            |          |
+      |                            long int   int
+      |                         %+i
+/src/src/buttons.cpp: In function 'const char* xit_label_getter()':
+/src/src/buttons.cpp:1595:28: warning: format '%zi' expects argument of type 'signed size_t', but argument 3 has type 'int' [-Wformat=]
+ 1595 |     sprintf(buf, "XIT:\n%+zi", params.xit);
+      |                         ~~~^   ~~~~~~~~~~
+      |                            |          |
+      |                            long int   int
+      |                         %+i
+/src/src/buttons.cpp: In function 'const char* key_speed_label_getter()':
+/src/src/buttons.cpp:1626:29: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1626 |     sprintf(buf, "Speed:\n%zu wpm", subject_get_int(cfg.key_speed.val));
+      |                           ~~^       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                             |                      |
+      |                             long unsigned int      int32_t {aka int}
+      |                           %u
+/src/src/buttons.cpp: In function 'const char* key_volume_label_getter()':
+/src/src/buttons.cpp:1632:30: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1632 |     sprintf(buf, "Volume:\n%zu", subject_get_int(cfg.key_vol.val));
+      |                            ~~^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                              |                  |
+      |                              long unsigned int  int32_t {aka int}
+      |                            %u
+/src/src/buttons.cpp: In function 'const char* key_tone_label_getter()':
+/src/src/buttons.cpp:1644:28: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1644 |     sprintf(buf, "Tone:\n%zu Hz", subject_get_int(cfg.key_tone.val));
+      |                          ~~^      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                            |                     |
+      |                            long unsigned int     int32_t {aka int}
+      |                          %u
+/src/src/buttons.cpp: In function 'const char* qsk_time_label_getter()':
+/src/src/buttons.cpp:1662:32: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1662 |     sprintf(buf, "QSK time:\n%zu ms", subject_get_int(cfg.qsk_time.val));
+      |                              ~~^      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                |                     |
+      |                                long unsigned int     int32_t {aka int}
+      |                              %u
+/src/src/buttons.cpp: In function 'const char* dnf_center_label_getter()':
+/src/src/buttons.cpp:1716:32: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1716 |     sprintf(buf, "DNF freq:\n%zu Hz", subject_get_int(cfg.dnf_center.val));
+      |                              ~~^      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                |                     |
+      |                                long unsigned int     int32_t {aka int}
+      |                              %u
+/src/src/buttons.cpp: In function 'const char* dnf_width_label_getter()':
+/src/src/buttons.cpp:1722:33: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1722 |     sprintf(buf, "DNF width:\n%zu Hz", subject_get_int(cfg.dnf_width.val));
+      |                               ~~^      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                 |                     |
+      |                                 long unsigned int     int32_t {aka int}
+      |                               %u
+/src/src/buttons.cpp: In function 'const char* nb_level_label_getter()':
+/src/src/buttons.cpp:1735:32: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1735 |     sprintf(buf, "NB level:\n%zu", subject_get_int(cfg.nb_level.val));
+      |                              ~~^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                |                  |
+      |                                long unsigned int  int32_t {aka int}
+      |                              %u
+/src/src/buttons.cpp: In function 'const char* nb_width_label_getter()':
+/src/src/buttons.cpp:1741:32: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1741 |     sprintf(buf, "NB width:\n%zu Hz", subject_get_int(cfg.nb_width.val));
+      |                              ~~^      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                |                     |
+      |                                long unsigned int     int32_t {aka int}
+      |                              %u
+/src/src/buttons.cpp: In function 'const char* nr_level_label_getter()':
+/src/src/buttons.cpp:1753:32: warning: format '%zu' expects argument of type 'size_t', but argument 3 has type 'int32_t' {aka 'int'} [-Wformat=]
+ 1753 |     sprintf(buf, "NR level:\n%zu", subject_get_int(cfg.nr_level.val));
+      |                              ~~^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                |                  |
+      |                                long unsigned int  int32_t {aka int}
+      |                              %u
+/src/src/mfk.cpp: In instantiation of 'T loop_items(std::vector<_Tp>, T, bool) [with T = x6200_key_mode_t]':
+/src/src/mfk.cpp:218:31:   required from here
+/src/src/mfk.cpp:787:21: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long unsigned int'} [-Wsign-compare]
+  787 |     for (id = 0; id < len; id++) {
+      |                  ~~~^~~~~
+/src/src/mfk.cpp: In instantiation of 'T loop_items(std::vector<_Tp>, T, bool) [with T = x6200_iambic_mode_t]':
+/src/src/mfk.cpp:235:31:   required from here
+/src/src/mfk.cpp:787:21: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long unsigned int'} [-Wsign-compare]
+running every fixture 2 times...
+app-bands: 61ba946b0968341c0ca637d6686d75423bb9f8cdaaabc489e4d0240493ef4bda
+app-close-home: 384ee0dfc0b0676ae8f18f2d335e9af2baeb17c5c817b3cb1729aa4cc06ebe6a
+apps-menu-1: 57e61fc12c211f40fdb5f62ed135952aa7b7d46f6236f962e0f2303f5577e5cf
+apps-menu-2: 0049f9809fe7795bd05caefbe499b0ab6f5f5a9603722de3cc7a0b292e691541
+apps-menu-3: 73c4d1a039c056d77c4aa44642f99f5c4655cda197cb2bd2e7e6f2b391d4df4b
+apps-menu-4: c4ccddbe5fc709e77907540bb173a18d1efe787d0ecf6a96be7acecb004141de
+apps-menu-5: 7044b51f8ee307410580e4c9a209daa0fb4499ecd15d232d98b74815b0babd6d
+apps-menu-6: 606cfedc2fb3992d763bb2927d3b772a74e759147e93e38ce447fb3fcc67e451
+autotune-found: 8e95c8dffdb432bb42a012c10cfd1e7e0fd57cc1be921e464531ed629d04cc7a
+autotune-notcw: 606cfedc2fb3992d763bb2927d3b772a74e759147e93e38ce447fb3fcc67e451
+autotune-progress: 8e95c8dffdb432bb42a012c10cfd1e7e0fd57cc1be921e464531ed629d04cc7a
+autotune: 07924cacf6d6b2ff317739a7298b5d6f48d4f2dbd54d3c8c3f9398c9fecc1969
+bench-render: 6f193dc868f5a30fbb4ca07dc2016ab909fcde205a0c51c8b5325fc479f9ff0d
+bt-dialog: f94b3366ca9d2a92f28dcf48e5249c8f7164efaf820f48153799638fb8a56c6f
+bt-dialog-tema-aurora: f94b3366ca9d2a92f28dcf48e5249c8f7164efaf820f48153799638fb8a56c6f
+bt-dialog-tema-cathode: cb02f63b8e27c1ab5017d2bdf3f263e7cec99ea2c347973383287b670a1d4fdb
+bt-dialog-tema-redshift: af3a79e56f047ec589dabd1a130dd6d172a50b287753a43cdc36427e8d763ff0
+bt-dialog-tema-sprint: 83c8933fd716f8a43c16287e3e9bd1cff3450be23b16a3d393ba91b2e8728642
+bt-dialog-tema-sunlit: b89c154730dc3f3994918b39143d32d0042a0b6a6596ca58d11d05b9d6c2dbfa
+bt-dialog-tema-trail: 0ca84521c8a1dadb3f636d30a565054acd65b7d4a75a9a9d492fe38aafa3c88c
+cw-autotune-off: 92acf28620eef4c2dd2881e72ba391771afab14c285e395456d2c94fa54c7f24
+cw-autotune-on: 4bc009dd21c067257146bb63aa4cdf86ee690b1ed2aab2ff05038681373156c7
+cw-tune-default: c18ab951f5547315281fc3f7d2af25e1cb26799476331dadb2d914701002e70f
+cw-tune-ssb: cc40d90c203c168942a19e037aea4d7b5691e33ce9ce29e584ce7da42ce260f9
+cw-tune-tema-sunlit: 2440d9eb749f889d666b2bbe3d290e7bcf0aedf9a2ecfed17e5462fbd0a5fd37
+cw-tune-tuner: 301c856944492f9c5a03a75866d84aa98c5114a2b0996d794524703978687e51
+dfl-editor-cycles: 71cc1cbc51f925b9821be2913f7ce422ca756181996f6ecce3f3169c74ca00e3
+dfl-editor-interaction: 96da6077ba630b75a52383fa6588f42d8f0bbda9b127fc72f94d7d0da94eebd9
+dfl-editor-lsb-d: 1c10cc2baa1c042cc1a18641bc599c2465e9f015b9deb45eb8be58d15e6b8757
+dfl-editor-reset: 0a14e1fe0eeb9d1856776249d4cb55bce6d35ce388265e14070017112f686f54
+dfl-editor-rotary0: 02d82bb21a2c922d300447e396ec011db712a2f7f8f180d3b73f686c7f020a6c
+dfl-editor-sel-bw-tema-aurora: f1df8217cbc998efd7f4409074602e390cb8c28ac1c966331214e322144b8ac5
+dfl-editor-sel-bw-tema-cathode: 0edbba2c88de51910b5946810462aa38ca91ace0a6cb399adf61639d6b6e923a
+dfl-editor-sel-bw-tema-redshift: b9d65f0071d308b3930fb4eeead9c6eee42ec4d9a90e6550db98c91d42082773
+dfl-editor-sel-bw-tema-sprint: 3469762141c7015402b80c375357d6bfd0db4c7ae911b1f020b6179e3a98694d
+dfl-editor-sel-bw-tema-sunlit: 2163e2a32cb190045f79b947569769e7504e981404fe9a61f8ff073ad780fb25
+dfl-editor-sel-bw-tema-trail: ad798c4553eda677f66d43b12f8edeb013b4b0fa979018d49ce95fa546bb61e3
+dfl-editor-sel-high-tema-aurora: 52d3568670193c163b23b6fbd720fad7b70b45ea06fe8734d6c652ca27305540
+dfl-editor-sel-high-tema-cathode: 5df366333f96bc27fa8016c69dfc89b8c982ff611c1fd642f76821c382f62742
+dfl-editor-sel-high-tema-redshift: 073199c0bc45d2fcdeab2bb31baa154717658718485ed069b5edb440a171355a
+dfl-editor-sel-high-tema-sprint: 8ddf3e8510a299db04fc951caf7759a4a985bf3f92e1a560d7a3a0e0ca34b12c
+dfl-editor-sel-high-tema-sunlit: e57471722854d695e45041a502061cdff0e44cb2ca19d166f48c1332da74ef67
+dfl-editor-sel-high-tema-trail: 4c74e636a993ef133564d97c2c4c15e5aba2093e34b2ae3130ff79e46b1f68d7
+dfl-editor-tx: 74e7cbfb87e69246ef9d5323fb24be100bbf2d2cf33489b89b43f016ad27b7fc
+dfl-editor-usb-d: 36179315ddfd7a1bb6a8f0a13115056c8ec8e73c5f47d3c316efc69c8947362d
+dfl-editor-usb-d-tema-aurora: 36179315ddfd7a1bb6a8f0a13115056c8ec8e73c5f47d3c316efc69c8947362d
+dfl-editor-usb-d-tema-cathode: d51f2588b643d0e281c0d858bbd14b48b474ae01d4fc91947353c5f42d1ec6d6
+dfl-editor-usb-d-tema-redshift: 7adae39234ad379ff8b71c46ba2ba03294970eb5017cca724d1b43aa2d817ffe
+dfl-editor-usb-d-tema-sprint: efb4d9793c4709b16595fe68af4022a015161b3e302a6d4222fe70ce4ba96cd5
+dfl-editor-usb-d-tema-sunlit: 5a6a81ec14e068c5fa81686fb5b1cc4e82d3af730fce9559d78acbfe78da98b4
+dfl-editor-usb-d-tema-trail: aab1de68e4695b940f051e99f70853c0202194ef4788a3440cd508e44b537e21
+dfl-lsb-d: 000081b545bf5b25d7674edb908b96f58dd72e6ba62c8b4f7a097e33d7d21169
+dfl-mirror-lsb: 07c37a5770e964fd03385ffe7d1e812e7e6df2e49248046c9d0363108b743dfe
+dfl-mirror-usb: f256512599120074c457e558d6ae83a5bd31d60d50e502eb2b3228b42bb8dfcd
+dfl-page-tema-aurora: aa60a5f05afcccb6185be61492d1734746cb23a09b0a12cc2f0cdfbb63fe902a
+dfl-page-tema-cathode: b7bccfc8fdd9064e9216d00c61a1e4ccf7ee834200f01fcf53c78d6e16ee93e1
+dfl-page-tema-redshift: 11ad97f20bbab5d0ef231c5fc70d2449c8fc02e31a80983d1bbb3b9cb26a2bc6
+dfl-page-tema-sprint: 117d478e42a76741a317dd733ac68ef8b262b7c5b1e38953e3039b78d5977a9b
+dfl-page-tema-sunlit: 57735753e3853cfc6473f0169096718283af7366aa3ba9c129b8fb785ee11292
+dfl-page-tema-trail: b789aaabf8d4e4a7197a7d06c45bb4431c9c0fa6796dd2133f422aa09cb564cf
+dfl-presets-activo: c62d446b9f30117442d325acf51bf3a0af625ecfc3e4f4d4d63d14423953e3d6
+dfl-presets-adj-tema-aurora: 86ba9e345c0f53cd9440e1670002011dafaa6584bbd10286ea0eff4b8e289742
+dfl-presets-adj-tema-cathode: e3b672885f4b6c66f4a2a538d7130b4c2f566b095067bc86cb0aadea3bb0911d
+dfl-presets-adj-tema-redshift: 95380e9743d39adc990fe654b9735adcdf4ddcfbfca4f8f92664eb324fae12a4
+dfl-presets-adj-tema-sprint: 5f14f4f7c67ac527ac113e831bda816c61cfc08cb7ae56e16fbfdbc16438ff6d
+dfl-presets-adj-tema-sunlit: 550266e01ee49133cc3655c1ab7fb73053bec465e52181412a70d0e00cd0d300
+dfl-presets-adj-tema-trail: a8e8b5548abd880d477098c9310a1b4b55b7372f891d7f5d99a27f743d5f7b25
+dfl-presets-apply: 8d4ec00b54e7797c7639ed12fcd692e099ad46c1e6f24dbe3e0357a13ab2c317
+dfl-presets-assign-cancel: f712f4ea893018bc5adc768e936954154eec282b674a41473819bf30d05de476
+dfl-presets-assign-ok: c217186ad1dabe6a062a21ed12eb0cd8e9c36a86422bf651ab3da9eaea40d70e
+dfl-presets-assign-tema-aurora: 402ff228d93becc5b697ce055119f3ab20af57104f405394a86529c621c838ea
+dfl-presets-assign-tema-cathode: 75274b4b58dbd0413f7512da0c47a87b01d7010e2e1ab8018686c4d9a0ae9516
+dfl-presets-assign-tema-redshift: 48748cf756b6591faa70019ec590d002a081884f6dc853b77a4c911baf47adcd
+dfl-presets-assign-tema-sprint: 95a631efa84f885c9e11dbcab1e86ec6f7cfd2e69452303afc7b25348bdb5fd1
+dfl-presets-assign-tema-sunlit: c03c7a550b1c42e0ded7c6908efc316dd7acd3009fdd37f25739f52e77af199c
+dfl-presets-assign-tema-trail: ac13def3a0e70074521943aafe53ee67aca74ee3f35c3519212feb8de8bb1113
+dfl-presets-confirm-tema-aurora: c96a417d8d22650386e5b800e6be1d3385eb311c56d06ca4711213025edd3e2f
+dfl-presets-confirm-tema-cathode: c1b1629fc31c49606157b87ebdb44521803fa19d779cf1f31e8df91333353900
+dfl-presets-confirm-tema-redshift: 42db4d73f036c832e5f7071c18bbb6c64db4ec21a98a922f5c61316488495200
+dfl-presets-confirm-tema-sprint: d4c66883d4594ac7faad8b23fb97f8ff3f6d0e3cb3e0fb46ac3bb778cd465d68
+dfl-presets-confirm-tema-sunlit: e1aedcd8fc1e14b64b7607a3eaf971f9af1d9f7189a7cf77cfea56ea6fde8fc9
+dfl-presets-confirm-tema-trail: 4cddf34babb041b6e13c86638c753e076ce608e42cbe45166a165b84d5ca0498
+dfl-presets-custom: 1b077847c9fb3b7f0a6988a87a0d7e279c95ab0622aa0fe666faffc526273e68
+dfl-presets-cycles: 09ed89b7a99fd20addad85d8f7f15406de30b1bccf85beff6eb8357ea1aed60a
+dfl-presets-digi: 5813d8feb9dbb8967767d33c7cefe7cf4ab6ee10e609ed5a4f52dcd408b4a880
+dfl-presets-fav-tema-aurora: c62d446b9f30117442d325acf51bf3a0af625ecfc3e4f4d4d63d14423953e3d6
+dfl-presets-fav-tema-cathode: 9b2e537d1786ebd9fda5d01b91a0ee3b9aedd775b97bff43379f5983ccab0c0a
+dfl-presets-fav-tema-redshift: ff0c4423a074e8dff4596fe8a95f36ddb818945dd6764c16812336ddeb26d3e4
+dfl-presets-fav-tema-sprint: a32f144b4a0b8f2b0fb737e21a92b11918cb23b8ecfc0347dcfd381cd690b595
+dfl-presets-fav-tema-sunlit: 116c8eac8f058795846725ec813d68c83ff91a38fa94740689ae40e5d5fc4cfc
+dfl-presets-fav-tema-trail: 660d280537741f63a91774f928140acbaff4175aa0ee21202d6fc420f390210a
+dfl-presets-graph-tema-aurora: 46a323c3c1b2edb2179f1d42d66e34dcac2e2f52e27f3720f5ae74ecf0779ce1
+dfl-presets-graph-tema-cathode: 022db4ab331aff3d6935f58875bc1f84f82a3dcbd584e034014942aaa95b6955
+dfl-presets-graph-tema-redshift: 20eddd5d3a4bbbfacabf122821de451c081b126d6cd75c6fa557cd6548cc2c81
+dfl-presets-graph-tema-sprint: 6f95f05139b5ce752c22ac17276c48309e16f2ca3c4ea483ad9a0bcc057f0915
+dfl-presets-graph-tema-sunlit: 82263e00712ec8c9d4825f4884764c2cd0dda56a91ae0a122d4fe9f2d482136c
+dfl-presets-graph-tema-trail: 51da9fd62e47dc49cfb158ddaa4d1939809c7d835cbc5a03003b226c00170732
+dfl-presets-mode-change: ad0d6d0b60a8a0f3b98baa6124d551a6896d690a9d550069fd6c1cea4ed1715c
+dfl-presets-more-tema-aurora: 80779c1c7947fca40f1733b446feee9db70346839f995469c54034d92044fc6d
+dfl-presets-more-tema-cathode: ccc8cd62ee3469376a25eb851131256c657f42d73e738fc17b96f6e3b4132612
+dfl-presets-more-tema-redshift: d58085407552bf23bc74d8538da70bcb4ff1a30c4af014fb215fb7e9b770f475
+dfl-presets-more-tema-sprint: 1abb05d2b1489ef37ca384bce46628231257501261273c28fdca8da421623131
+dfl-presets-more-tema-sunlit: 7531d846913b6b42dd3e062842c8e8bd64d48817283f5088717c490acd67a2d7
+dfl-presets-more-tema-trail: e6b36be94e64c38e937be71c5bff2a11f0fcd3a9094fe8cbe61f99e9f53b4c07
+dfl-presets-nav: b1be54d2354f59c411aee9476390d0fe7639c5f87f71dbb291dc66ac9879b997
+dfl-presets-nfm: 81c09c8051527f09b840a75aef7b896927ed3634aaba55a997ef223eb5adfdec
+dfl-presets-rotary0: a27f0eb757aef44e45149b85649aaf5dd4b5bc5d1d7a0892d762029cce3aed93
+dfl-presets-save-cancel: f8bd023b2b81fd060e379562e44f513de8c7278c1c5811b42bde6095036ae2f2
+dfl-presets-save-fail: bbb45190ab7167f0675bd8a660e31510837d538b7160cb125149d104eaeb3ad9
+dfl-presets-save: 7eb8e7273efe6da9e7cfce11659c59ba20202ddcadd47b6525930d02be481715
+dfl-presets-touch-hold: f3f09c4cfd3b26f08a07e4496b01a97c339b5e6a67c7e85440f74cfb7d28ec3f
+dfl-presets-touch: 8d4ec00b54e7797c7639ed12fcd692e099ad46c1e6f24dbe3e0357a13ab2c317
+dfl-presets-tx: fe0f280475f10c490ccba01a80bb67f402bd86a98ade321872bbbaf56b39c6ea
+dfl-presets-vol: 0a5641010af93f7491ed34287d717dd4bd8461dbc4bbeeeda85071197799eca3
+dfl-usb-d: 91b27a40b5528ef44bf0f430e20af92ae7f17ab3b0276680e9f282d7c1dca7af
+dfl-usb-d-span100k: 3c13bf816af7a57aa22986c7fbe07c91cebe008b189abd1c86a3c8adcc78c90e
+dfl-usb-d-span50k: 2b92c880ca991da128f88751360040137f1e559b0c05a83f5aebc456a066475d
+dfl-usb-d-tema-cathode: 8c14c36c7e611154ce947a5919b4e44d78ddaa64be0000064f87d81ad2cb8907
+dfl-usb-d-tema-redshift: 1490dd84befb0053c72e9f707fd53b71f3f1b87cf7e453a48224904ae19faaf5
+dfl-usb-d-tema-sprint: 64b96d072d7ea95b824f18d2c079047ffb31041f37ac32736d53e5f2aa65d768
+dfl-usb-d-tema-sunlit: 03a6f03581c526983b45ccf1077e5db8fb2ab520e1304316670545b9ef093961
+dfl-usb-d-tema-trail: f839e5aebbbb68505b90c940e43d21b1d5e4a0b18d1c2d05c4b1eed65e5a9ed4
+home-bateria-externa: cbc7d6b1920550a29ad7399a02d91e645c6608c9b9326ce6074c3ab4201fb72b
+home-cb-a: ad24729627849f9ecda3127aa88f88a19b88a5042fd3d6f9d2ad189492e60fe0
+home-cb-cathode: 4b99daa8a336ce7cbd9c889382b1b0cbf349b02e37422ee01443f1ed899cb6d4
+home-cb-d: 8f6346856931f01a74c99aada7dc5cb24552e2c95c123274106f6e8c6847de41
+home-cb-offchannel: 1f6ed7106b86fa566371c030e7cce815819af45647c369223e5c52cdde11a9f3
+home-cb: 56cf0b0949a5849c38bb3a0d3aa5d62d23d857aee0106bd5b88395501b78a15a
+home-frecuencia-extrema: 3590ae07ff3c1f6aa7d219e6b4d2d2f242a178b16f7ee101dcc9efe0e3af0144
+home-usb-20m: 384ee0dfc0b0676ae8f18f2d335e9af2baeb17c5c817b3cb1729aa4cc06ebe6a
+main-bateria-baja: 4ad69fd3be6c9d2c0001c9249f622dde043f9bc090042228b5e10e5d6d1ed1e5
+main-espectro-agua: 414949fca07e57e270bbf76d0ce4cd30e060e96bf44770a55d27f2f3be17479d
+main-foco: 384ee0dfc0b0676ae8f18f2d335e9af2baeb17c5c817b3cb1729aa4cc06ebe6a
+main-frecuencia-dseg: a61b069677f77a1d4a3ddf241c8a64492ecfe6e3861223b0f58a9e63e0e7ac88
+main-natural-eco: 1b36396f66181687a7eff86b10e7801d67aa5ee7571652b6f6740ac43b335b95
+main-natural: c1d910d39d5b931f1b844117674466427dae97e55470eb9bb9d17c815c26041a
+main-tema-aurora-agua: 414949fca07e57e270bbf76d0ce4cd30e060e96bf44770a55d27f2f3be17479d
+main-tema-aurora-eco: 4ad69fd3be6c9d2c0001c9249f622dde043f9bc090042228b5e10e5d6d1ed1e5
+main-tema-aurora: 384ee0dfc0b0676ae8f18f2d335e9af2baeb17c5c817b3cb1729aa4cc06ebe6a
+main-tema-aurora-tx: 0a77658e342b3da40ca0cf61bfcf5f46243967d6ebef13df1c835c514a0bd663
+main-tema-cathode-agua: 37369f8988ae6fa7647f7970876e744ceaf7e3d262f460907bf18c6df0060f5d
+main-tema-cathode-eco: 2a7bca6d2bca4eea494563e405613851aefd564087f1525d951760fc0cdc52df
+main-tema-cathode: 8f2111f49a7b42c64225ff50605199cca2379a0193e9798b523191c8fe55dcf1
+main-tema-cathode-tx: 9a6e8a4f250871302eb7c54a7426beb0bb9806258ef6b8132f0d5aa32d6bd8fa
+main-tema-redshift-agua: a243425836a8c561ab8c2c44f3cbac2e756a8433c325b086d1d7bb8c1ccc59c4
+main-tema-redshift-eco: 62a416b48f5172cd6aa199da39d5e210cabbe3ca5c88647651c64ef81c025f9a
+main-tema-redshift: cc40d90c203c168942a19e037aea4d7b5691e33ce9ce29e584ce7da42ce260f9
+main-tema-redshift-tx: 11f73c22048277cb5d2f838ea0985c9bb77af1414fd09392a6f9421e8c959363
+main-tema-sprint-agua: c0a4cc54a3f4016608ec2302705488f042766a8f5c6118f168ff1e9d1243f9dc
+main-tema-sprint-eco: 618519acd649408b79258e351c11dc2943bfb97ba38551c7d0dffe433ab3ffe0
+main-tema-sprint: 6f71bfadcf55339ce7fcd481f8bea9ca5c406b79d1ffab1dcce88e1eadbc0561
+main-tema-sprint-tx: a88a1552e2d11b476efad40d871835c75ecce7da6a6395b9316e7c7a11f8fa1b
+main-tema-sunlit-agua: 9c0867b92244b18629db14867199d5d8fb96ca05f9398c87d3ee8b75906d3997
+main-tema-sunlit-eco: 7efe40e66ad872ca8ace4e9abbafc265c73e51490db520a53efa380c323ad378
+main-tema-sunlit: 7fb813a41ef1bef86e284f158dae95bd3741b4f633191d31a912127c70d1f7e3
+main-tema-sunlit-tx: aca04c47d374516a3b87627f42856fb8132e7953ed933fb2bfa73bbb3bb64710
+main-tema-trail-agua: 15aebb60520778bf94d16cb5062e1642923b45e7c12a9580f74897486f76dc69
+main-tema-trail-eco: fe426807de760f1e2d897948f80fcbea33742702df612224f5e82171d6b92fb6
+main-tema-trail: ac061a6fbfa5bc000f517911d42d7d21b27c25c85a588bb4e54728dcf9d4e15a
+main-tema-trail-tx: 570d96de228d8ac35b529e6f2559d83754c6cb098ac8b30c7ea9f65cdac6ffad
+main-tx-simulado: 0a77658e342b3da40ca0cf61bfcf5f46243967d6ebef13df1c835c514a0bd663
+settings-audio: e8aa3a9bf7e44f129a0bc8116545742b7287a3c5e67904b4b294880d7254a3db
+settings-bands: 61ba946b0968341c0ca637d6686d75423bb9f8cdaaabc489e4d0240493ef4bda
+settings-grupo-actions: 24ca525a3678a12f7eb82301f24b7e73167cfda7d6fd4ac835aa27e90f41ea1d
+settings-grupo-display: 2758e41892d8f1d49dcaa34e2b12a5890739a116d5241e9ea94dc9eb98691261
+settings-grupo-info: 987c4015b7b8d8c15227a212b2e032bde512d925ed26a14e9b23ae5bf85acce2
+settings-grupo-operation: 166f7579cb0aa45d3d22d012d9d486ae5b2c5e1ec1858acf3b1c6a1cecf9a3ff
+settings-grupo-operation-tema-aurora: 166f7579cb0aa45d3d22d012d9d486ae5b2c5e1ec1858acf3b1c6a1cecf9a3ff
+settings-grupo-operation-tema-cathode: 46279e85f0a42483a7971cbde2885833021b57c7c48fa588e83ac7a79c3598fb
+settings-grupo-operation-tema-redshift: d686f56639b1a3a85815c34c74c55bae2d6001e48f665bed25b8f4f690361ddf
+settings-grupo-operation-tema-sprint: 81cbca146e9cfe08144baa86c716af1a01a5b5c909b59d80fe48da9c7c511ca0
+settings-grupo-operation-tema-sunlit: f17e0e145744138ee8b519178e7f50de4efde3566c58308474f5be5310ab5b26
+settings-grupo-operation-tema-trail: 2e5074b820063439b83296b94e5024a0e3ea20b74d0f906fda151269aad8ff6c
+settings-home: e0507bfee385d07121ae0762d5ba0e376582441373cd306372f799860d65802d
+settings-perfil: eeefdd8ab10d77e24e1ba46805e93bb0d292a086e1b9ed6ce5f86e5549fb88df
+settings-tema-aurora: eeefdd8ab10d77e24e1ba46805e93bb0d292a086e1b9ed6ce5f86e5549fb88df
+settings-tema-cathode: 5825aad138db0fe77479496f35df02e37519aa28c81eb1b23466d084e362227f
+settings-tema-redshift: dbe429c6a7c9b750e6a857b05fdb2012c57b70835a4d034357ab40c069e85644
+settings-tema-sprint: 48c628f96b48c668f69541bf08b3284605df66a717676973aa5764f18d3874e5
+settings-tema-sunlit: 1e564d1be0973aeae5da19de3d88755d0b4f360680ca00801990c49276bf9a9e
+settings-tema-trail: 460866057a1802a63272975b0ca5c087c8adaebed5f1432f5f0be4735cb57369
+settings-wfbat: 3c664ffa0df8838590cc17c949ef0d9df2179fc6c370e0091a5afb8a7fc682f6
+swrscan-3pass-p1: 77ea926d97294a54c21fceba6b0c83b865a5ade1bb306c99d19cc69990bb5c71
+swrscan-3pass-p2: 7992756c7a0e47aeba5bd80cd6b71e5231cd9ebe2e205e297fe0387776cba04f
+swrscan-3pass-p3: 2f71d6cfe9d9ab1ff0ab7ba4a01780e887297b17e87c4c16d5ea888ce25cac93
+swrscan-3pass: 690ec10e6ba1cdba9e4fe2d4eb91aeea5c7d3f714dc1874177e9fcbb4951de70
+swrscan-3pass-stop: 9e0f50956d6ead97ac3b822dea8bafe9c5bc4435af44ca0f35a615008a27bfc8
+swrscan-3pass-tema-aurora: 690ec10e6ba1cdba9e4fe2d4eb91aeea5c7d3f714dc1874177e9fcbb4951de70
+swrscan-3pass-tema-cathode: 91d8d2580982b2750f9f8af53521143faf2b5afdd142a5f4c5362750eddc12cd
+swrscan-5pass-moving: 7f6647a886793b7580e70928dfcb1902d9d777a1d56bdc8e8d88ec45b94d3943
+swrscan-5pass-outliers: 0de1fe2c49706e781c7546b72db712b281761a013f2c463963703ca2c0a20481
+swrscan-double-valley: c67bdf31fe4ea39af5810af1f07f6053367a24137ac10d3e9c53ebbcf3500347
+swrscan-flat: 57747d83e444d3dda8a342156270a2c8fab6511fea0a68749b986eaf9146fdc5
+swrscan-narrow-zoom: d99c634e6212ebb712a7808c846961fde198c3d6cd7fabc79035ab1f05c012d0
+swrscan-owner-40m-domo: 1565417406c3f60a9be1da39533fcbe2ac40bfdd4873f08966ef76182d2c3b92
+swrscan-owner-40m: 1b36bdb7513acd411f85147fe40e406865bfd1d0908b71170a24a775aace69ed
+swrscan-owner-40m-sweep: 4549a2bbcd1f0d868a38baacf70e3b68fa8e7891a61a592e992d4806d9b2d039
+swrscan-quick: 6a6ea12d574dd31687665b4ed301838bab4bdd1153276fc5404c62c9e0564c02
+swrscan-wide-zoom: ea0451c786932529dae0e4488b79a98ce1e04b83b00ab9c6ff47223ee7163fd2
+PASS: deterministic (identical PNGs for every fixture)
+exit=0  end=2026-10-21T21:46:15Z

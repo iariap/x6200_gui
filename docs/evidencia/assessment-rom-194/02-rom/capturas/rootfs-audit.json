@@ -1,0 +1,2183 @@
+{
+ "archive": "clone-buildroot/build/images/rootfs.tar",
+ "broken_symlinks": [
+  {
+   "name": "dev/fd",
+   "target": "../proc/self/fd"
+  },
+  {
+   "name": "dev/log",
+   "target": "../tmp/log"
+  },
+  {
+   "name": "dev/stderr",
+   "target": "../proc/self/fd/2"
+  },
+  {
+   "name": "dev/stdin",
+   "target": "../proc/self/fd/0"
+  },
+  {
+   "name": "dev/stdout",
+   "target": "../proc/self/fd/1"
+  },
+  {
+   "name": "etc/localtime",
+   "target": "../usr/share/zoneinfo/Etc/UTC"
+  },
+  {
+   "name": "etc/mtab",
+   "target": "../proc/self/mounts"
+  },
+  {
+   "name": "usr/lib/icu/Makefile.inc",
+   "target": "current/Makefile.inc"
+  },
+  {
+   "name": "usr/lib/icu/pkgdata.inc",
+   "target": "current/pkgdata.inc"
+  },
+  {
+   "name": "var/lib/dbus",
+   "target": "/tmp/dbus"
+  },
+  {
+   "name": "var/lock",
+   "target": "../run/lock"
+  }
+ ],
+ "counts_by_type": {
+  "dir": 391,
+  "file": 4053,
+  "lnk": 493,
+  "sym": 920
+ },
+ "device_nodes": [],
+ "elf_binaries": [],
+ "hardlinks": 493,
+ "init_scripts": [
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S01boot_time",
+   "size": 402
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S01create_data",
+   "size": 1810
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S01seedrng",
+   "size": 1243
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S01syslogd",
+   "size": 1012
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S02klogd",
+   "size": 1004
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S02sysctl",
+   "size": 2804
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S02update",
+   "size": 428
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S03tune_cache",
+   "size": 210
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S04restore_backup_config",
+   "size": 527
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S10udev",
+   "size": 1594
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S11radio_daemon",
+   "size": 379
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S20gui",
+   "size": 1623
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S30dbus",
+   "size": 1619
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S39btpairings",
+   "size": 494
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S40bluetoothd",
+   "size": 1001
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S40network",
+   "size": 438
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S45network-manager",
+   "size": 751
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S48sntp",
+   "size": 1240
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S49ntp",
+   "size": 918
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S50alsa",
+   "size": 397
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S50pulseaudio",
+   "size": 527
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S50sshd",
+   "size": 532
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S94btcat",
+   "size": 1134
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/S96webserver",
+   "size": 925
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/rcK",
+   "size": 423
+  },
+  {
+   "mode": "0o755",
+   "name": "etc/init.d/rcS",
+   "size": 1667
+  }
+ ],
+ "largest_files": [
+  [
+   29471920,
+   "usr/lib/libicudata.so.70.1"
+  ],
+  [
+   13407624,
+   "usr/sbin/x6200_gui"
+  ],
+  [
+   9463331,
+   "etc/udev/hwdb.bin"
+  ],
+  [
+   5567760,
+   "boot/zImage"
+  ],
+  [
+   5117163,
+   "usr/share/hwdata/oui.txt"
+  ],
+  [
+   4235252,
+   "usr/lib/libpython3.11.so.1.0"
+  ],
+  [
+   2941040,
+   "usr/sbin/NetworkManager"
+  ],
+  [
+   2742072,
+   "usr/lib/libicui18n.so.70.1"
+  ],
+  [
+   2736608,
+   "usr/bin/perf"
+  ],
+  [
+   2562588,
+   "usr/sbin/wpa_supplicant"
+  ],
+  [
+   2526956,
+   "usr/lib/libgsl.so.25.0.0"
+  ],
+  [
+   2242856,
+   "usr/lib/libcrypto.so.1.1"
+  ],
+  [
+   2110226,
+   "usr/lib/python3.11/ensurepip/_bundled/pip-24.0-py3-none-any.whl"
+  ],
+  [
+   2030452,
+   "usr/lib/libslang.so.2.3.3"
+  ],
+  [
+   1966436,
+   "usr/lib/libstdc++.so.6.0.30"
+  ],
+  [
+   1877796,
+   "usr/lib/libgiomm-2.68.so.1.3.0"
+  ],
+  [
+   1778806,
+   "usr/share/hwdata/iab.txt"
+  ],
+  [
+   1759696,
+   "usr/lib/libicuuc.so.70.1"
+  ],
+  [
+   1710976,
+   "usr/lib/libunistring.so.5.0.0"
+  ],
+  [
+   1644792,
+   "usr/lib/libgio-2.0.so.0.7200.3"
+  ],
+  [
+   1600048,
+   "usr/lib/libgnutls.so.30.37.1"
+  ],
+  [
+   1573500,
+   "lib/libc.so.6"
+  ],
+  [
+   1534052,
+   "usr/lib/libsqlite3.so.0.8.6"
+  ],
+  [
+   1456388,
+   "usr/lib/libfftw3f.so.3.6.10"
+  ],
+  [
+   1339976,
+   "usr/share/hwdata/pci.ids"
+  ]
+ ],
+ "setgid": [],
+ "setuid": [
+  {
+   "gid": 0,
+   "mode": "0o4755",
+   "name": "bin/busybox",
+   "size": 842952,
+   "uid": 0
+  },
+  {
+   "gid": 101,
+   "mode": "0o4750",
+   "name": "usr/libexec/dbus-daemon-launch-helper",
+   "size": 47132,
+   "uid": 0
+  },
+  {
+   "gid": 0,
+   "mode": "0o4711",
+   "name": "usr/libexec/ssh-keysign",
+   "size": 554536,
+   "uid": 0
+  }
+ ],
+ "shared_libs": [
+  {
+   "mode": "0o755",
+   "name": "lib/ld-linux-armhf.so.3",
+   "size": 200864
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libanl.so.1",
+   "size": 5408
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libatomic.so.1.2.0",
+   "size": 30008
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libblkid.so.1.1.0",
+   "size": 297768
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libc.so.6",
+   "size": 1573500
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libcrypt.so.1",
+   "size": 34176
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libdl.so.2",
+   "size": 5408
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libfdisk.so.1.1.0",
+   "size": 419408
+  },
+  {
+   "mode": "0o644",
+   "name": "lib/libgcc_s.so",
+   "size": 132
+  },
+  {
+   "mode": "0o644",
+   "name": "lib/libgcc_s.so.1",
+   "size": 124392
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libm.so.6",
+   "size": 275800
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libmount.so.1.1.0",
+   "size": 335144
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libnss_dns.so.2",
+   "size": 5408
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libnss_files.so.2",
+   "size": 5408
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libpthread.so.0",
+   "size": 7584
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libresolv.so.2",
+   "size": 50824
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/librt.so.1",
+   "size": 5476
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libsmartcols.so.1.1.0",
+   "size": 203136
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libthread_db.so.1",
+   "size": 26252
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libudev.so.1.6.3",
+   "size": 133216
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libutil.so.1",
+   "size": 5408
+  },
+  {
+   "mode": "0o755",
+   "name": "lib/libuuid.so.1.3.0",
+   "size": 26160
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/NetworkManager/1.40.10/libnm-device-plugin-adsl.so",
+   "size": 26264
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/NetworkManager/1.40.10/libnm-device-plugin-wifi.so",
+   "size": 138188
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/alsa-lib/libasound_module_ctl_arcam_av.so",
+   "size": 22100
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/alsa-lib/libasound_module_ctl_bluealsa.so",
+   "size": 34432
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/alsa-lib/libasound_module_ctl_oss.so",
+   "size": 13740
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/alsa-lib/libasound_module_pcm_bluealsa.so",
+   "size": 38708
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/alsa-lib/libasound_module_pcm_oss.so",
+   "size": 9568
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/alsa-lib/libasound_module_pcm_upmix.so",
+   "size": 9792
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/alsa-lib/libasound_module_pcm_vdownmix.so",
+   "size": 9552
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libNE10.so.10",
+   "size": 207712
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libNE10_test.so.10",
+   "size": 207724
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libaether_x6200_control.so.0.15.3",
+   "size": 21836
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libaio.so.1.0.2",
+   "size": 5376
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libasound.so.2.0.0",
+   "size": 922332
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libatopology.so.2.0.0",
+   "size": 113360
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libbacktrace.so.0.0.0",
+   "size": 71108
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libbluetooth.so.3.19.7",
+   "size": 189744
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libcom_err.so.2.1",
+   "size": 9616
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libcpupower.so.0.0.1",
+   "size": 17804
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libcrypto.so.1.1",
+   "size": 2242856
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libcurl.so.4.8.0",
+   "size": 468476
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libdbus-1.so.3.19.17",
+   "size": 273644
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libdbus-c++-1.so.0.0.0",
+   "size": 167128
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libdbus-c++-glib-1.so.0.0.0",
+   "size": 13864
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libdbus-glib-1.so.2.3.5",
+   "size": 150372
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libdrm.so.2.4.0",
+   "size": 71320
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libdt-utils.so.5.0.0",
+   "size": 34388
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libe2p.so.2.3",
+   "size": 31256
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libespeak.so.1.1.48",
+   "size": 312024
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libevdev.so.2.3.0",
+   "size": 71208
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libevemu.so.3.0.4",
+   "size": 22104
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libevent-2.1.so.7.0.1",
+   "size": 322816
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libevent_core-2.1.so.7.0.1",
+   "size": 203356
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libevent_extra-2.1.so.7.0.1",
+   "size": 129236
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libevent_openssl-2.1.so.7.0.1",
+   "size": 22076
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libevent_pthreads-2.1.so.7.0.1",
+   "size": 5424
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libexpat.so.1.9.2",
+   "size": 153028
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libext2fs.so.2.4",
+   "size": 380812
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libffi.so.8.1.2",
+   "size": 34388
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libfftw3f.so.3.6.10",
+   "size": 1456388
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libform.so.6.4",
+   "size": 55368
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libfreebl3.so",
+   "size": 5400
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libfreeblpriv3.so",
+   "size": 587556
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libft8.so",
+   "size": 38284
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgif.so.7.2.0",
+   "size": 30100
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgio-2.0.so.0.7200.3",
+   "size": 1644792
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgiomm-2.68.so.1.3.0",
+   "size": 1877796
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libglib-2.0.so.0.7200.3",
+   "size": 1207468
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libglibmm-2.68.so.1.3.0",
+   "size": 416300
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libglibmm_generate_extra_defs-2.68.so.1.3.0",
+   "size": 142272
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgmodule-2.0.so.0.7200.3",
+   "size": 13660
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgmp.so.10.4.1",
+   "size": 424712
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgmpxx.so.4.6.1",
+   "size": 22012
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgnutls.so.30.37.1",
+   "size": 1600048
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgnutlsxx.so.30.0.0",
+   "size": 47108
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgobject-2.0.so.0.7200.3",
+   "size": 363680
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgpiod.so.2.2.2",
+   "size": 30236
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgpiodcxx.so.1.1.2",
+   "size": 75640
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgsl.so.25.0.0",
+   "size": 2526956
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgslcblas.so.0.0.0",
+   "size": 271568
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libgthread-2.0.so.0.7200.3",
+   "size": 5200
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libhistory.so.8.2",
+   "size": 38444
+  },
+  {
+   "mode": "0o644",
+   "name": "usr/lib/libhogweed.so.6.6",
+   "size": 252168
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libi2c.so.0.1.1",
+   "size": 9420
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libical.so.1.0.1",
+   "size": 294988
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libicalss.so.1.0.1",
+   "size": 71924
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libicalvcal.so.1.0.1",
+   "size": 70684
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libicudata.so.70.1",
+   "size": 29471920
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libicui18n.so.70.1",
+   "size": 2742072
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libicuio.so.70.1",
+   "size": 42656
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libicutest.so.70.1",
+   "size": 68116
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libicutu.so.70.1",
+   "size": 187472
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libicuuc.so.70.1",
+   "size": 1759696
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libinput.so.10.13.0",
+   "size": 285616
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libjansson.so.4.14.0",
+   "size": 50628
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libjpeg.so.8.2.2",
+   "size": 362424
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libkeyutils.so.1.10",
+   "size": 13692
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libkmod.so.2.4.0",
+   "size": 83828
+  },
+  {
+   "mode": "0o644",
+   "name": "usr/lib/libliquid.so",
+   "size": 798548
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/liblog4cpp.so.5.0.6",
+   "size": 232212
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libltdl.so.7.3.1",
+   "size": 38428
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/liblv_drivers.so",
+   "size": 26096
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/liblvgl.so",
+   "size": 586144
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libmd.so.0.0.5",
+   "size": 46824
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libmenu.so.6.4",
+   "size": 26164
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libmp3lame.so.0.0.0",
+   "size": 308988
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libmpg123.so.0.44.12",
+   "size": 252516
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libmtdev.so.1.0.0",
+   "size": 21788
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libncurses.so.6.4",
+   "size": 290208
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libndp.so.0.2.0",
+   "size": 18016
+  },
+  {
+   "mode": "0o644",
+   "name": "usr/lib/libnettle.so.8.6",
+   "size": 321996
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnewt.so.0.52.21",
+   "size": 84036
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnl-3.so.200.26.0",
+   "size": 129292
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnl-genl-3.so.200.26.0",
+   "size": 18432
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnl-idiag-3.so.200.26.0",
+   "size": 26676
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnl-nf-3.so.200.26.0",
+   "size": 78220
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnl-route-3.so.200.26.0",
+   "size": 476640
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnl-xfrm-3.so.200.26.0",
+   "size": 64540
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnm.so.0.1.0",
+   "size": 1138344
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnspr4.so",
+   "size": 229392
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnss3.so",
+   "size": 1125408
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnssckbi-testlib.so",
+   "size": 109892
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnssckbi.so",
+   "size": 385628
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnssdbm3.so",
+   "size": 124844
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libnssutil3.so",
+   "size": 170116
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libogg.so.0.8.5",
+   "size": 30012
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libopus.so.0.8.0",
+   "size": 427872
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libout123.so.0.2.2",
+   "size": 42552
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libpanel.so.6.4",
+   "size": 9448
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libparted-fs-resize.so.0.0.4",
+   "size": 79420
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libparted.so.2.0.4",
+   "size": 352336
+  },
+  {
+   "mode": "0o644",
+   "name": "usr/lib/libpci.so.3.8.0",
+   "size": 42708
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libpcre.so.1.2.13",
+   "size": 271772
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libpcrecpp.so.0.0.2",
+   "size": 30292
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libpcreposix.so.0.0.7",
+   "size": 9484
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libplc4.so",
+   "size": 13676
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libplds4.so",
+   "size": 9532
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libpng16.so.16.39.0",
+   "size": 223100
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libpopt.so.0.0.2",
+   "size": 42936
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libpulse-mainloop-glib.so.0.0.6",
+   "size": 17852
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libpulse-simple.so.0.1.1",
+   "size": 13724
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libpulse.so.0.24.2",
+   "size": 302708
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libpython3.11.so.1.0",
+   "size": 4235252
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libpython3.so",
+   "size": 5300
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libreadline.so.8.2",
+   "size": 281144
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libsbc.so.1.3.1",
+   "size": 67044
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libsigc-3.0.so.0.0.0",
+   "size": 30264
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libslang.so.2.3.3",
+   "size": 2030452
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libsmime3.so",
+   "size": 137928
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libsndfile.so.1.0.35",
+   "size": 531100
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libsoftokn3.so",
+   "size": 286676
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libspeex.so.1.5.2",
+   "size": 120224
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libspeexdsp.so.1.5.2",
+   "size": 79220
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libsqlite3.so.0.8.6",
+   "size": 1534052
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libss.so.2.0",
+   "size": 17960
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libssl.so.1.1",
+   "size": 456904
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libssl3.so",
+   "size": 474664
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libstdc++.so.6.0.30",
+   "size": 1966436
+  },
+  {
+   "mode": "0o644",
+   "name": "usr/lib/libstdc++.so.6.0.30-gdb.py",
+   "size": 2527
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libtasn1.so.6.6.3",
+   "size": 71180
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libts.so.0.10.4",
+   "size": 13740
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libturbojpeg.so.0.2.0",
+   "size": 452608
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libubootenv.so.0.3.3",
+   "size": 17744
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libunistring.so.5.0.0",
+   "size": 1710976
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libusb-1.0.so.0.3.0",
+   "size": 100160
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libuv.so.1.0.0",
+   "size": 170444
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libvorbis.so.0.4.9",
+   "size": 206460
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libvorbisenc.so.2.0.12",
+   "size": 537888
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libvorbisfile.so.3.3.8",
+   "size": 34276
+  },
+  {
+   "mode": "0o644",
+   "name": "usr/lib/libwpa_client.so",
+   "size": 34392
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libxkbcommon.so.0.0.0",
+   "size": 312960
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libxml2.so.2.11.7",
+   "size": 1329444
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/libz.so.1.2.13",
+   "size": 99856
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/mpg123/output_alsa.so",
+   "size": 13660
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/mpg123/output_dummy.so",
+   "size": 5340
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/mpg123/output_oss.so",
+   "size": 9460
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/libpulsecommon-16.1.so",
+   "size": 479500
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/libpulsecore-16.1.so",
+   "size": 762688
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/libpulsedsp.so",
+   "size": 42592
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/libalsa-util.so",
+   "size": 299704
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/libbluez5-util.so",
+   "size": 137136
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/libcli.so",
+   "size": 9488
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/liboss-util.so",
+   "size": 13612
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/libprotocol-cli.so",
+   "size": 9476
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/libprotocol-http.so",
+   "size": 30268
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/libprotocol-native.so",
+   "size": 133552
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/libprotocol-simple.so",
+   "size": 26140
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/libraop.so",
+   "size": 63472
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/librtp.so",
+   "size": 42520
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-allow-passthrough.so",
+   "size": 13612
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-alsa-card.so",
+   "size": 30388
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-alsa-sink.so",
+   "size": 9488
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-alsa-source.so",
+   "size": 9488
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-always-sink.so",
+   "size": 9512
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-always-source.so",
+   "size": 9512
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-augment-properties.so",
+   "size": 13756
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-bluetooth-discover.so",
+   "size": 5328
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-bluetooth-policy.so",
+   "size": 17744
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-bluez5-device.so",
+   "size": 63476
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-bluez5-discover.so",
+   "size": 9560
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-card-restore.so",
+   "size": 21936
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-cli-protocol-tcp.so",
+   "size": 9528
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-cli-protocol-unix.so",
+   "size": 9524
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-cli.so",
+   "size": 9508
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-combine-sink.so",
+   "size": 42776
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-combine.so",
+   "size": 5324
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-console-kit.so",
+   "size": 13680
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-dbus-protocol.so",
+   "size": 202768
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-default-device-restore.so",
+   "size": 9488
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-detect.so",
+   "size": 9552
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-device-manager.so",
+   "size": 38456
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-device-restore.so",
+   "size": 30280
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-echo-cancel.so",
+   "size": 71704
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-equalizer-sink.so",
+   "size": 59896
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-filter-apply.so",
+   "size": 26016
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-filter-heuristics.so",
+   "size": 9460
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-hal-detect.so",
+   "size": 5388
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-http-protocol-tcp.so",
+   "size": 9548
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-http-protocol-unix.so",
+   "size": 9544
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-intended-roles.so",
+   "size": 13620
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-ladspa-sink.so",
+   "size": 46848
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-loopback.so",
+   "size": 50848
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-match.so",
+   "size": 13700
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-mmkbd-evdev.so",
+   "size": 9560
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-native-protocol-fd.so",
+   "size": 5400
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-native-protocol-tcp.so",
+   "size": 9560
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-native-protocol-unix.so",
+   "size": 9556
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-null-sink.so",
+   "size": 17904
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-null-source.so",
+   "size": 13760
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-oss.so",
+   "size": 34440
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-pipe-sink.so",
+   "size": 17936
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-pipe-source.so",
+   "size": 13804
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-position-event-sounds.so",
+   "size": 9484
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-raop-sink.so",
+   "size": 9480
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-remap-sink.so",
+   "size": 22004
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-remap-source.so",
+   "size": 22004
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-rescue-streams.so",
+   "size": 5312
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-role-cork.so",
+   "size": 26004
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-role-ducking.so",
+   "size": 26004
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-rtp-recv.so",
+   "size": 26184
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-rtp-send.so",
+   "size": 22060
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-rygel-media-server.so",
+   "size": 42460
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-simple-protocol-tcp.so",
+   "size": 9540
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-simple-protocol-unix.so",
+   "size": 9536
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-sine-source.so",
+   "size": 13796
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-sine.so",
+   "size": 9556
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-stream-restore.so",
+   "size": 63744
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-suspend-on-idle.so",
+   "size": 21924
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-switch-on-connect.so",
+   "size": 9520
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-switch-on-port-available.so",
+   "size": 13588
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-tunnel-sink-new.so",
+   "size": 26212
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-tunnel-sink.so",
+   "size": 50984
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-tunnel-source-new.so",
+   "size": 26200
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-tunnel-source.so",
+   "size": 46876
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-udev-detect.so",
+   "size": 26168
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-virtual-sink.so",
+   "size": 26184
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-virtual-source.so",
+   "size": 26224
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-virtual-surround-sink.so",
+   "size": 34456
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/pulseaudio/modules/module-volume-restore.so",
+   "size": 5388
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_asyncio.cpython-311-arm-linux-gnueabihf.so",
+   "size": 53784
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_bisect.cpython-311-arm-linux-gnueabihf.so",
+   "size": 13916
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_blake2.cpython-311-arm-linux-gnueabihf.so",
+   "size": 55284
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_contextvars.cpython-311-arm-linux-gnueabihf.so",
+   "size": 5424
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_crypt.cpython-311-arm-linux-gnueabihf.so",
+   "size": 5440
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_csv.cpython-311-arm-linux-gnueabihf.so",
+   "size": 31200
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_ctypes.cpython-311-arm-linux-gnueabihf.so",
+   "size": 102832
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_datetime.cpython-311-arm-linux-gnueabihf.so",
+   "size": 91620
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_elementtree.cpython-311-arm-linux-gnueabihf.so",
+   "size": 61208
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_heapq.cpython-311-arm-linux-gnueabihf.so",
+   "size": 17852
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_json.cpython-311-arm-linux-gnueabihf.so",
+   "size": 35032
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_lsprof.cpython-311-arm-linux-gnueabihf.so",
+   "size": 18144
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_md5.cpython-311-arm-linux-gnueabihf.so",
+   "size": 14012
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_multibytecodec.cpython-311-arm-linux-gnueabihf.so",
+   "size": 31496
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_multiprocessing.cpython-311-arm-linux-gnueabihf.so",
+   "size": 14384
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_opcode.cpython-311-arm-linux-gnueabihf.so",
+   "size": 5536
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_pickle.cpython-311-arm-linux-gnueabihf.so",
+   "size": 97972
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_posixshmem.cpython-311-arm-linux-gnueabihf.so",
+   "size": 9688
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_posixsubprocess.cpython-311-arm-linux-gnueabihf.so",
+   "size": 17960
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_queue.cpython-311-arm-linux-gnueabihf.so",
+   "size": 14124
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_random.cpython-311-arm-linux-gnueabihf.so",
+   "size": 13880
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_sha1.cpython-311-arm-linux-gnueabihf.so",
+   "size": 14012
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_sha256.cpython-311-arm-linux-gnueabihf.so",
+   "size": 18208
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_sha3.cpython-311-arm-linux-gnueabihf.so",
+   "size": 18748
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_sha512.cpython-311-arm-linux-gnueabihf.so",
+   "size": 38736
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_socket.cpython-311-arm-linux-gnueabihf.so",
+   "size": 93396
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_sqlite3.cpython-311-arm-linux-gnueabihf.so",
+   "size": 94832
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_statistics.cpython-311-arm-linux-gnueabihf.so",
+   "size": 5424
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_struct.cpython-311-arm-linux-gnueabihf.so",
+   "size": 35880
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_typing.cpython-311-arm-linux-gnueabihf.so",
+   "size": 5388
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_xxsubinterpreters.cpython-311-arm-linux-gnueabihf.so",
+   "size": 31136
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/_zoneinfo.cpython-311-arm-linux-gnueabihf.so",
+   "size": 26520
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/array.cpython-311-arm-linux-gnueabihf.so",
+   "size": 47784
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/audioop.cpython-311-arm-linux-gnueabihf.so",
+   "size": 38740
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/binascii.cpython-311-arm-linux-gnueabihf.so",
+   "size": 22408
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/cmath.cpython-311-arm-linux-gnueabihf.so",
+   "size": 26472
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/fcntl.cpython-311-arm-linux-gnueabihf.so",
+   "size": 17864
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/grp.cpython-311-arm-linux-gnueabihf.so",
+   "size": 9832
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/math.cpython-311-arm-linux-gnueabihf.so",
+   "size": 64200
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/mmap.cpython-311-arm-linux-gnueabihf.so",
+   "size": 22576
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/resource.cpython-311-arm-linux-gnueabihf.so",
+   "size": 13932
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/select.cpython-311-arm-linux-gnueabihf.so",
+   "size": 26804
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/spwd.cpython-311-arm-linux-gnueabihf.so",
+   "size": 9732
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/syslog.cpython-311-arm-linux-gnueabihf.so",
+   "size": 9688
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/termios.cpython-311-arm-linux-gnueabihf.so",
+   "size": 19932
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/unicodedata.cpython-311-arm-linux-gnueabihf.so",
+   "size": 1122360
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/xxlimited.cpython-311-arm-linux-gnueabihf.so",
+   "size": 9836
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/lib-dynload/xxlimited_35.cpython-311-arm-linux-gnueabihf.so",
+   "size": 9828
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/site-packages/gpiod.so",
+   "size": 44820
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/site-packages/kmod/_util.so",
+   "size": 18152
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/site-packages/kmod/kmod.so",
+   "size": 78588
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/site-packages/kmod/list.so",
+   "size": 22912
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/site-packages/kmod/module.so",
+   "size": 74340
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/site-packages/libmount/pylibmount.so",
+   "size": 74912
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/python3.11/site-packages/smbus.cpython-311-arm-linux-gnueabihf.so",
+   "size": 14196
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/base64-module.so",
+   "size": 9876
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/chksum-module.so",
+   "size": 22460
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/csv-module.so",
+   "size": 14024
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/fcntl-module.so",
+   "size": 5668
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/fork-module.so",
+   "size": 10076
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/histogram-module.so",
+   "size": 18040
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/iconv-module.so",
+   "size": 9824
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/json-module.so",
+   "size": 18096
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/pcre-module.so",
+   "size": 10588
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/png-module.so",
+   "size": 22364
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/rand-module.so",
+   "size": 34864
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/select-module.so",
+   "size": 9572
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/slsmg-module.so",
+   "size": 11372
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/socket-module.so",
+   "size": 23952
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/stats-module.so",
+   "size": 39668
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/sysconf-module.so",
+   "size": 22240
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/termios-module.so",
+   "size": 16260
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/varray-module.so",
+   "size": 9596
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/slang/v2/modules/zlib-module.so",
+   "size": 14540
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/traceevent/plugins/plugin_cfg80211.so",
+   "size": 4788
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/traceevent/plugins/plugin_function.so",
+   "size": 9364
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/traceevent/plugins/plugin_futex.so",
+   "size": 4900
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/traceevent/plugins/plugin_hrtimer.so",
+   "size": 4800
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/traceevent/plugins/plugin_jbd2.so",
+   "size": 4792
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/traceevent/plugins/plugin_kmem.so",
+   "size": 4808
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/traceevent/plugins/plugin_kvm.so",
+   "size": 14424
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/traceevent/plugins/plugin_mac80211.so",
+   "size": 4920
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/traceevent/plugins/plugin_sched_switch.so",
+   "size": 4980
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/traceevent/plugins/plugin_scsi.so",
+   "size": 8948
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/traceevent/plugins/plugin_tlb.so",
+   "size": 4804
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/traceevent/plugins/plugin_xen.so",
+   "size": 5112
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/debounce.so",
+   "size": 5384
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/dejitter.so",
+   "size": 5380
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/evthres.so",
+   "size": 9500
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/iir.so",
+   "size": 5380
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/input.so",
+   "size": 13596
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/invert.so",
+   "size": 5376
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/linear.so",
+   "size": 9504
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/lowpass.so",
+   "size": 5384
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/median.so",
+   "size": 9500
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/pthres.so",
+   "size": 5384
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/skip.so",
+   "size": 9484
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/touchkit.so",
+   "size": 5388
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/variance.so",
+   "size": 9480
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/lib/ts/waveshare.so",
+   "size": 9520
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/libexec/perf-core/dlfilters/dlfilter-show-cycles.so",
+   "size": 5320
+  },
+  {
+   "mode": "0o755",
+   "name": "usr/libexec/perf-core/dlfilters/dlfilter-test-api-v0.so",
+   "size": 9436
+  }
+ ],
+ "symlink_count": 920,
+ "top_level": {
+  "NetworkManager": 9,
+  "alsa": 2,
+  "bash_completion.d": 1,
+  "bin": 2,
+  "boot": 1,
+  "dbus-1": 2,
+  "default": 1,
+  "dev": 1,
+  "empty": 1,
+  "etc": 1,
+  "firmware": 14,
+  "init.d": 1,
+  "keyutils": 1,
+  "lib": 95,
+  "libexec": 5,
+  "libinput": 1,
+  "libnl": 1,
+  "media": 1,
+  "mnt": 1,
+  "modprobe.d": 1,
+  "modules": 89,
+  "network": 5,
+  "opt": 1,
+  "proc": 1,
+  "profile.d": 1,
+  "pts": 1,
+  "pulse": 2,
+  "request-key.d": 1,
+  "root": 1,
+  "run": 1,
+  "sbin": 2,
+  "share": 129,
+  "shm": 1,
+  "ssh": 1,
+  "ssl": 4,
+  "sys": 1,
+  "tmp": 1,
+  "udev": 4,
+  "usr": 1,
+  "var": 1,
+  "www": 1
+ },
+ "total_bytes": 232715615,
+ "uid_gid": {
+  "0:0": 5855,
+  "0:101": 1,
+  "33:33": 1
+ }
+}

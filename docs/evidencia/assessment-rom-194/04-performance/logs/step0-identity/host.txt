@@ -1,0 +1,24 @@
+utc=2026-10-21T22:55:20Z
+uname=Linux fedora 7.2.8-200.fc44.x86_64 #1 SMP PREEMPT_DYNAMIC Fri Sep 25 21:05:44 UTC 2026 x86_64 GNU/Linux
+os=NAME="Fedora Linux" VERSION="44 (Workstation Edition)" RELEASE_TYPE=stable ID=fedora VERSION_ID=44 VERSION_CODENAME="" PRETTY_NAME="Fedora Linux 44 (Workstation Edition)" ANSI_COLOR="0;38;2;60;110;180" LOGO=fedora-logo-icon CPE_NAME="cpe:/o:fedoraproject:fedora:44" DEFAULT_HOSTNAME="fedora" HOME_URL="https://fedoraproject.org/" DOCUMENTATION_URL="https://docs.fedoraproject.org/en-US/fedora/f44/" SUPPORT_URL="https://ask.fedoraproject.org/" BUG_REPORT_URL="https://bugzilla.redhat.com/" REDHAT_BUGZILLA_PRODUCT="Fedora" REDHAT_BUGZILLA_PRODUCT_VERSION=44 REDHAT_SUPPORT_PRODUCT="Fedora" REDHAT_SUPPORT_PRODUCT_VERSION=44 SUPPORT_END=2027-05-19 VARIANT="Workstation Edition" VARIANT_ID=workstation 
+nproc=16
+mem=96630480896
+load=2.15 4.35 6.32 3/5436 12
+CPU(s):                                  16
+On-line CPU(s) list:                     0-15
+Model name:                              AMD Ryzen 7 PRO 8840HS w/ Radeon 780M Graphics
+Thread(s) per core:                      2
+Core(s) per socket:                      8
+Socket(s):                               1
+CPU(s) scaling MHz:                      79%
+CPU max MHz:                             5134.8892
+CPU min MHz:                             419.1750
+NUMA node0 CPU(s):                       0-15
+governor=powersave
+docker=29.8.2
+uv=uv 0.9.18
+python=Python 3.14.7
+gcc=gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)
+cmake=cmake version 4.3.0
+qemu=qemu-arm version 10.2.2 (qemu-10.2.2-1.fc44)
+gh=gh version 2.101.0 (2026-09-15)

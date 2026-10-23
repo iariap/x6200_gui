@@ -1,0 +1,20 @@
+== caso: f01f03-chain (capa QEMU_USER)
+   binario medido: e7776e227b81317e074f0998e26a459784efd47d645293acd88969678da1eb26
+   init.d en la rootfs: rcK rcS S01bootanim S01boot_time S01create_data S01seedrng S01syslogd S02klogd S02sysctl S02update S03tune_cache S04restore_backup_config S10udev S11radio_daemon S12pulseaudio S20gui S30dbus S39btpairings S40bluetoothd S40network S45network-manager S48sntp S49ntp S50alsa S50sshd S94btcat S96webserver 
+   herramientas del target: mountpoint=/t/bin/mountpoint, mkfs.ext4=/t/sbin/mkfs.ext4 parted=/t/usr/sbin/parted
+   dispositivos de bloque visibles en el contenedor: /dev/nvme0 /dev/nvme0n1 /dev/nvme0n1p1 /dev/nvme0n1p2 /dev/nvme0n1p3 (ninguno es usado por este caso)
+  ok: DATA montada en /mnt (ext4=si, modo=remontaje)
+  ok: DATA recién creada, sin params.db
+   boot 1: socket en 16s
+  ok: boot 1: la GUI arranca sobre la DATA nueva
+  ok: salida contiene: seeding from /usr/share/x6200/params.default.db
+   boot 1: freq por socket = 14074000
+  ok: boot 1: la GUI acepta el cambio de frecuencia
+   sha de params.db: boot1=bb337f3ae03d81c3e1d1300bd9c0a73dff3f563de88670c453cb981b3705eb2b reboot=bb337f3ae03d81c3e1d1300bd9c0a73dff3f563de88670c453cb981b3705eb2b
+  ok: la base persiste byte a byte tras el remontaje (filesystem)
+   boot 2: socket en 16s
+  ok: boot 2: la GUI arranca desde la DATA existente
+  ok: salida sin: seeding from
+   boot 2: freq por socket = 14074000
+  ok: boot 2: la frecuencia persistida sobrevive al reinicio
+== resultado: f01f03-chain FAILS=0

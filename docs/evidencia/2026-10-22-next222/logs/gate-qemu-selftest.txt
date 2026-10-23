@@ -1,0 +1,1 @@
+selftest OK: 19 casos del reporteador (capa SELFTEST, no cobertura)

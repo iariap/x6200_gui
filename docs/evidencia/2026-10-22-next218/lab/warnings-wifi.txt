@@ -1,0 +1,20 @@
+== warnings/errores del MISMO compile sobre la fuente de la base y la del arbol
+   (mismo comando, mismas flags; solo cambia la fuente staged)
+
+arbol de trabajo (HEAD): 11 lineas
+b798f13b (antes): 11 lineas
+
+SET IDENTICO: el cambio de src/wifi.cpp no agrega ni saca warnings
+
+-- los del arbol de trabajo (todos preexistentes en wifi.cpp, ninguno en el codigo de #218) --
+warning: narrowing conversion of ‘ap_info_vec.std::vector<wifi_ap_info_t>::size()’ from ‘std::vector<wifi_ap_info_t>::size_type’ {aka ‘long unsigned int’} to ‘unsigned int’ [-Wnarrowing]
+warning: unused variable ‘active_con’ [-Wunused-variable]
+warning: unused variable ‘connection’ [-Wunused-variable]
+warning: unused variable ‘password’ [-Wunused-variable]
+warning: unused variable ‘rsn_flags_str’ [-Wunused-variable]
+warning: unused variable ‘s_con’ [-Wunused-variable]
+warning: unused variable ‘temporary’ [-Wunused-variable]
+warning: unused variable ‘uuid’ [-Wunused-variable]
+warning: unused variable ‘wpa_flags_str’ [-Wunused-variable]
+warning: variable ‘wpa_flags’ set but not used [-Wunused-but-set-variable=]
+warning: ‘void connection_adding_cb(GObject*, GAsyncResult*, gpointer)’ defined but not used [-Wunused-function]
