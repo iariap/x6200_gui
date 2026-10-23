@@ -2,7 +2,7 @@
   "scenario": "main-natural",
   "screen": "main",
   "seed": 13,
-  "revision": "cbaaf72fc896f918c30717ca6e20c8a3dcc5d8e4",
+  "revision": "65f7842c29f124728556d8c54b5644b8ffdefe0a",
   "framebuffer": { "width": 800, "height": 480 },
   "theme": {
     "requested": "Aurora",
@@ -39,7 +39,7 @@
     { "component": "dialogs (dialog_*.c)", "level": "UNSUPPORTED", "note": "app dialogs are not opened; dialog_construct() opens none of them in these fixtures" }
   ],
   "radio_calls": {
-    "get_state": 0,
+    "get_state": 1,
     "set_freq": 0,
     "check_freq": 0,
     "toggle_vfo": 0,
@@ -54,11 +54,11 @@
     "poweroff": 0
   },
   "metrics": {
-    "flushes": 71,
-    "flushed_pixels": 12319840,
-    "framebuffer_fnv1a": "0x182ac64b59f610ec",
+    "flushes": 72,
+    "flushed_pixels": 12308352,
+    "framebuffer_fnv1a": "0x58cb6e3782a3cf52",
     "png_path": "out/natural/natural.png",
-    "png_bytes": 274137
+    "png_bytes": 275608
   },
   "natural": {
     "enabled": true,

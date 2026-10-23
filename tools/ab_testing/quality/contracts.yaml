@@ -516,6 +516,55 @@ expected_changes:
     author: dfl-inline-179
     until: 2027-10-20
 
+  # AB-HOME250 (issue #250, hijo 1/2 de la epica #249): el reloj de la barra
+  # superior deja de alternar hora y alimentacion y pasa a ser permanente, con
+  # una banda de estado compacta debajo (bateria + fuente externa opcional). El
+  # panel de arriba a la derecha conserva su caja (206/209 x 61, al borde
+  # derecho) y su fondo, pero la tinta que lleva adentro es otra: la hora grande
+  # (HH:MM:SS, 24h) en la fila de arriba y el estado en la de abajo. La fila
+  # `Clock view` y la de los tres timeouts salen de Ajustes. Son dos regiones: el
+  # panel del reloj (todas las fixtures que dibujan la pantalla principal) y el
+  # cuerpo del dialogo de Ajustes (las que abren Ajustes y pierden esas dos
+  # filas). Medido con `--inspect` y el diff por region de 18 fixtures: 0 px
+  # fuera de estas dos regiones.
+  - region: reloj_potencia
+    reason: >
+      AB-HOME250 (issue #250, epica #249): `src/clock.c` deja de alternar
+      `CLOCK_TIME`/`CLOCK_POWER` (con `params.clock_view` y los timeouts) y
+      dibuja SIEMPRE la hora `%02d:%02d:%02d` en la fila y=0..40 del panel, mas
+      una banda de estado en y=41..60 con la fuente externa (plug + %.1f V, solo
+      con `v_ext` finito >= 3.0) y la bateria (icono `sony_20` + porcentaje
+      `sony_16`; `--%` y icono dim con `TC(text_dim)` cuando el pack no trae
+      muestra valida, en vez del 0.0v/0% que inventaba el home de main). El
+      panel pasa a ser UN contenedor con `clock_style` (el fondo, una sola vez)
+      y las etiquetas de cada rol adentro; la fila del reloj conserva el "8
+      fantasma" con la familia segmentada. Los pixeles que se mueven son la
+      tinta del panel (la hora y el estado): 1605..2626 px por fixture de
+      pantalla principal, todos dentro de `reloj_potencia` = [591,0,209,62]
+      (medido: bbox x=599..791, y=5..57 en las seis fixtures de tema; 0 px
+      fuera). El fondo del panel (el bitmap de `clock_style`) queda
+      byte-identico. El reloj permanente invalida menos px por segundo que el
+      viejo de potencia en vista hora (10272 contra 15549 en la misma medicion,
+      `tests/natural_evidence.py`).
+    author: home-clock-battery-250
+    until: 2027-04-30
+
+  - region: ajustes_dialogo
+    reason: >
+      AB-HOME250 (issue #250, epica #249): Ajustes pierde dos filas del grupo
+      Clock (`Clock view` y `Timeout Clock, Power, TX`), que no tienen sentido
+      con un reloj permanente; el resto de los controles de fecha/hora/RTC y el
+      foco quedan igual, y `params.clock_view` / los tres timeouts se conservan
+      persistidos (ids, nombres, rangos y tabla DB intactos) aunque el reloj ya
+      no los lea. El contenido del dialogo se acorta dos filas (54 px cada una),
+      asi que el cuerpo que sigue sube y el pulgar de la barra de scroll se
+      corre: todo eso vive dentro de `ajustes_dialogo` = [2,66,796,348], que
+      contiene tambien `ajustes_scrollbar`. Medido en `settings-home`: 27027 px
+      cambiados, 0 fuera de las regiones declaradas (la otra es el panel del
+      reloj, que se dibuja detras del dialogo).
+    author: home-clock-battery-250
+    until: 2027-04-30
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.

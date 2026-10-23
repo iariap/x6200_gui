@@ -161,10 +161,10 @@ lo ergonómico y al final lo eventual. El detalle de cada decisión está en `do
 | **Operation** | Freq acceleration / Charger / Cluster column / Bluetooth / Discoverable (CAT) / Devices / wfview server / Transverter | Aceleración del dial, cargador, columna del clúster, Bluetooth y su panel de dispositivos, servidor wfview y transverter |
 | **Audio** | Line-in, Line-out / audio gain / Audio enhance / Speaker mode / Voice mode, rate, pitch, volume | Entradas y ganancias, realce de audio, modo del parlante y los anuncios de voz |
 | **Spectrum** | Spectrum auto min, max / Waterfall auto min, max / Waterfall line, zoom / Waterfall smooth scroll / Waterfall battery mode | Ajuste automático de niveles, líneas y zoom del waterfall, desplazamiento suave y ahorro en batería |
-| **Clock** | Day, Month, Year / Hour, Min, Sec / Clock view / Clock / Power / TX (s) | Hora UTC de los decodificados (también la ajusta el NTP si hay red) y qué muestra el reloj |
+| **Clock** | Day, Month, Year / Hour, Min, Sec | Hora UTC de los decodificados (también la ajusta el NTP si hay red). El reloj de la barra superior muestra siempre la hora, y la alimentación/batería va en una banda compacta debajo (issue #250) |
 | **Display** | Timeout, Brightness / Buttons brightness / S-meter needle / Band plan | Apagado automático, brillo de pantalla y de botones, aguja del S-meter y plan de banda |
 | **Appearance** | Theme / Font | Los **8 temas** y la familia de fuente (se aplican al reiniciar) |
-| **Actions** | APP long press / MIC long press | Asignar acciones a las pulsaciones largas: Screenshot, Screen rec, Recorder on/off, Mute, Voice mode, Battery info, ATT, PRE, ATU, ATU tune, APP Bands, **APP DFL editor** y las demás apps |
+| **Actions** | APP long press / MIC long press | Asignar acciones a las pulsaciones largas: Screenshot, Screen rec, Mute, Voice mode, Battery info, ATT, PRE, ATU, ATU tune, APP Bands y las demás apps |
 | **Info** | Mag Freq, Info, ALC | Qué muestra cada zona de la barra superior |
 
 ## 6. Las aplicaciones
@@ -187,9 +187,8 @@ cambia de página: son **6**, con 3 o 4 apps cada una.
 | **APP 6:6** | WiFi, Bluetooth, SWR Scan |
 
 Además de las páginas, **cada app está en la lista de acciones** de *Ajustes → Acciones* y se puede
-asignar a un botón o a una pulsación larga; la lista también trae acciones que no son apps
-(**Screenshot**, **Screen rec**, **Recorder on/off**, **Mute**, **Voice mode**, **Battery info**,
-**ATT**, **PRE**, **ATU**, **ATU tune**).
+asignar a un botón o a una pulsación larga. Es el camino para las que no tienen botón propio en las
+páginas: **About**, por ejemplo, se abre desde ahí (o asignándola).
 
 ### 6.1 FT8 / FT4
 
@@ -440,19 +439,14 @@ forma rápida de saber si el problema es la antena o el equipo.
 barre. **Usalo con la antena conectada** (la medición necesita RF) y, como siempre: **nunca
 transmitas sin antena o carga fantasma**.
 
-### 6.22 DFL editor (forma del filtro)
+### 6.22 About (acerca de)
 
-El **editor DFL** muestra la **forma del filtro** que está pasando en este momento y deja moverla
-con el dedo. Tiene tres filas — **LOW**, **HIGH** y **BW** — con el valor exacto en **Hz** de cada
-borde y del ancho, y una gráfica de la forma.
+La **versión** del firmware (`v0.1.2-lu2dsx`) y los **créditos** de todo el software libre con el
+que está hecho el equipo. Es el dato que hay que mandar cuando se reporta un problema: sin la
+versión, no se puede saber qué código estabas corriendo.
 
-**Cómo se usa:** se abre con la **pulsación larga de la tecla DFL** del equipo, o asignando la
-acción **APP DFL editor** en *Ajustes → Acciones*. Se arrastra el borde que se quiere mover (o se
-elige la fila con la perilla); **Reset** vuelve a la forma por defecto del modo, y en **TX** el
-editor no deja tocar nada. En **AM/SAM/NFM/WFM** el borde **LOW** no es editable y la fila se ve
-apagada: esos modos son simétricos alrededor de la portadora.
-
-La gráfica es **esquemática**: muestra la forma del filtro, no una medición del equipo.
+**Cómo se usa:** no tiene botón propio en las páginas APP: se abre desde *Ajustes → Acciones*
+(asignándola a una pulsación larga) o desde el menú de la app de Ajustes. Se lee y se cierra.
 
 ### 6.23 Ajustes
 
