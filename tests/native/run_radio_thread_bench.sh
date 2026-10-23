@@ -8,7 +8,7 @@
 #   tests/native/run_radio_thread_bench.sh [out-dir]
 #
 # Variables: SECONDS_WIN (segundos por ventana, default 10), WINDOWS (default 3),
-# BASE_REF (default origin/lu2dsx/x6200-rom), CC (default gcc).
+# BASE_REF (default origin/main), CC (default gcc).
 #
 # El banco NO es un gate: depende del tiempo y de la carga del host. La evidencia
 # del #219 lo corre con el host descargado y lo archiva en
@@ -24,7 +24,7 @@ SRC="$ROOT/src"
 OUT="${1:-$DIR/build/radio_bench}"
 SECONDS_WIN="${SECONDS_WIN:-10}"
 WINDOWS="${WINDOWS:-3}"
-BASE_REF="${BASE_REF:-origin/lu2dsx/x6200-rom}"
+BASE_REF="${BASE_REF:-origin/main}"
 CC="${CC:-gcc}"
 
 FLAGS="-std=gnu11 -O2 -g -Wall -Wextra -Wno-unused-parameter -pthread -ffunction-sections -fdata-sections"
