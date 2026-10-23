@@ -388,18 +388,14 @@ static void on_vfo_freq_change(Subject *subj, void *user_data) {
 
 /* #244: el BASE apaga el audio de RX cuando se le escribe el modo de un VFO
  * inactivo (medido: entrar a CW con el modo del VFO B escrito mutea el RX hasta
- * el power-cycle; sin ese write el audio sigue sano). Se escribe solo el VFO
- * activo; el B se escribe con split habilitado o cuando pasa a ser el activo
- * (on_active_vfo_mode_sync). */
+ * el power-cycle; sin ese write el audio sigue sano). La RX es el VFO A: se
+ * escribe siempre; el B solo con split habilitado. */
 static bool mode_write_allowed(x6200_vfo_t vfo) {
-    int32_t active = subject_get_int(cfg_cur.band->vfo.val);
-    bool    split  = subject_get_int(cfg_cur.band->split.val) != 0;
-
-    if ((int32_t)vfo == active) {
+    if (vfo == X6200_VFO_A) {
         return true;
     }
 
-    return (vfo == X6200_VFO_B) && split;
+    return subject_get_int(cfg_cur.band->split.val) != 0;
 }
 
 static void on_vfo_mode_change(Subject *subj, void *user_data) {
@@ -413,28 +409,6 @@ static void on_vfo_mode_change(Subject *subj, void *user_data) {
 
     WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, new_val));
     LV_LOG_USER("Radio set vfo %i mode=%i", vfo, new_val);
-}
-
-/* Al cambiar de VFO activo (o al prender el split) hay que mandar el modo del
- * VFO que paso a usarse, porque su observer ya no dispara solo (#244). */
-static void on_active_vfo_mode_sync(Subject *subj, void *user_data) {
-    (void) subj;
-    (void) user_data;
-
-    int32_t active = subject_get_int(cfg_cur.band->vfo.val);
-    bool    split  = subject_get_int(cfg_cur.band->split.val) != 0;
-
-    if (active == X6200_VFO_A || active == X6200_VFO_B) {
-        int32_t mode = subject_get_int(active == X6200_VFO_A
-                                       ? cfg_cur.band->vfo_a.mode.val
-                                       : cfg_cur.band->vfo_b.mode.val);
-        WITH_RADIO_LOCK(x6200_control_vfo_mode_set((x6200_vfo_t)active, mode));
-    }
-
-    if (split) {
-        int32_t b_mode = subject_get_int(cfg_cur.band->vfo_b.mode.val);
-        WITH_RADIO_LOCK(x6200_control_vfo_mode_set(X6200_VFO_B, b_mode));
-    }
 }
 
 static void on_split_mode_sync(Subject *subj, void *user_data) {
@@ -572,7 +546,8 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
     subject_add_observer_and_call(cfg_cur.band->vfo_b.freq.val, on_vfo_freq_change, (void*)X6200_VFO_B);
 
     subject_add_observer_and_call(cfg_cur.band->vfo_a.mode.val, on_vfo_mode_change, (void*)X6200_VFO_A);
-    subject_add_observer_and_call(cfg_cur.band->vfo_b.mode.val, on_vfo_mode_change, (void*)X6200_VFO_B);
+    /* #244: el modo del VFO B no se manda al arrancar; solo con split. */
+    subject_add_observer(cfg_cur.band->vfo_b.mode.val, on_vfo_mode_change, (void*)X6200_VFO_B);
 
     subject_add_observer_and_call(cfg_cur.band->vfo_a.agc.val, on_vfo_agc_change, (void*)X6200_VFO_A);
     subject_add_observer_and_call(cfg_cur.band->vfo_b.agc.val, on_vfo_agc_change, (void*)X6200_VFO_B);
@@ -585,7 +560,6 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
 
     subject_add_observer_and_call(cfg_cur.band->vfo.val, on_change_uint32, x6200_control_vfo_set);
     subject_add_observer_and_call(cfg_cur.band->split.val, on_change_uint8, x6200_control_split_set);
-    subject_add_observer(cfg_cur.band->vfo.val, on_active_vfo_mode_sync, NULL);
     subject_add_observer(cfg_cur.band->split.val, on_split_mode_sync, NULL);
     subject_add_observer_and_call(cfg_cur.band->rfg.val, on_change_uint8, x6200_control_rfg_set);
 
