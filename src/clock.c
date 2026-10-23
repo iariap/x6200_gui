@@ -58,10 +58,10 @@
  * Fila de estado: pegada al borde inferior, dentro de la banda y=41..60, con el
  * mismo margen lateral. El icono y el porcentaje se separan STATUS_GAP px: el
  * porcentaje fija el borde derecho (LV_ALIGN_BOTTOM_RIGHT) y el icono se re-ancla
- * a su borde izquierdo en CADA actualizacion de texto (`align_battery_icon()`),
- * porque su ancho cambia ("--%" -> "100%"). Un ancla de una sola vez (el bug de
- * #269/#270) dejaba el icono en la posicion del ancho viejo y el primer digito
- * del porcentaje caia encima. */
+ * a su borde izquierdo CUANDO el texto del porcentaje cambia (`align_battery_icon()`),
+ * porque su ancho ("--%" -> "100%") es el que mueve la geometria. Un ancla de una
+ * sola vez (el bug de #269/#270) dejaba el icono en la posicion del ancho viejo y
+ * el primer digito del porcentaje caia encima. */
 #define CLOCK_LINE_Y     5
 #define STATUS_PAD       8
 #define STATUS_GAP       4
@@ -155,11 +155,17 @@ static const char * battery_symbol(const power_sample_t * s) {
 /* Escribe solo si el texto cambia (OPT-4 #150): lv_label_set_text invalida el
  * objeto aunque el texto sea el mismo, y show_time corre cada 500 ms mientras la
  * hora cambia una vez por segundo. La comparacion es contra el texto VIVO de la
- * etiqueta: no hay cache que un cambio de tema/fuente pueda dejar vieja. */
-static void set_text(lv_obj_t * label, const char * text) {
-    if (strcmp(lv_label_get_text(label), text) != 0) {
-        lv_label_set_text(label, text);
+ * etiqueta: no hay cache que un cambio de tema/fuente pueda dejar vieja.
+ * Devuelve true si escribio: el icono de bateria re-ancla solo cuando el texto
+ * del porcentaje cambio (ver `align_battery_icon`). */
+static bool set_text(lv_obj_t * label, const char * text) {
+    if (strcmp(lv_label_get_text(label), text) == 0) {
+        return false;
     }
+
+    lv_label_set_text(label, text);
+
+    return true;
 }
 
 /* Misma guarda para el color: se lee el estilo resuelto del objeto (no un cache)
@@ -188,11 +194,17 @@ static void set_hidden(lv_obj_t * label, bool hidden) {
  *
  * `lv_obj_align_to` es de UNA sola vez: calcula la posicion ABSOLUTA a partir
  * del ancho que la base tiene en ese instante. Si la etiqueta del porcentaje
- * cambia de ancho despues ("--%" -> "100%", el mas ancho) y el icono no se
+ * cambia de ancho ("--%" -> "76%" -> "100%", el mas ancho) y el icono no se
  * vuelve a anclar, queda clavado en la posicion del ancho viejo y el primer
- * digito cae encima del icono (auditoria de UI #269/#270). Por eso se re-ancla
- * en cada actualizacion del texto, DESPUES de escribirlo: `lv_obj_align_to`
- * corre el layout antes de leer las cajas, asi que ve el ancho nuevo. */
+ * digito cae encima del icono (auditoria de UI #269/#270).
+ *
+ * Por eso se llama SOLO cuando el texto del porcentaje cambio, justo despues de
+ * escribirlo: `lv_obj_align_to` corre el layout antes de leer las cajas, asi que
+ * ve el ancho nuevo. En steady state (el porcentaje no cambio) no se llama: ni
+ * layout de la base ni invalidacion del icono, y el tick cuesta cero (es el
+ * presupuesto del gate de Performance de x6200-ab, PR #279). El ancho depende
+ * solo del texto: la familia de fuente se fija una vez al arranque
+ * (src/main.c: fonts_apply antes de main_screen), no en caliente. */
 static void align_battery_icon(void) {
     lv_obj_align_to(lb_bat_icon, lb_bat_pct, LV_ALIGN_OUT_LEFT_BOTTOM, -STATUS_GAP, 0);
 }
@@ -270,14 +282,19 @@ static void update_status(const power_sample_t * s) {
         color = TC(text_dim);
     }
 
-    set_text(lb_bat_pct, str);
+    /* El icono de bateria se ancla al borde izquierdo del porcentaje, cuyo ancho
+     * (LV_SIZE_CONTENT) cambia con el texto: se re-ancla solo cuando el
+     * porcentaje cambia, que es cuando la geometria puede quedar invalida
+     * (`align_battery_icon`). En steady state no cuesta nada. */
+    bool pct_changed = set_text(lb_bat_pct, str);
+
     set_text(lb_bat_icon, battery_symbol(s));
     set_text_color(lb_bat_pct, color);
     set_text_color(lb_bat_icon, color);
 
-    /* El ancho del porcentaje acaba de (poder) cambiar: el icono se re-ancla al
-     * ancho nuevo para que su caja nunca pise la del texto. */
-    align_battery_icon();
+    if (pct_changed) {
+        align_battery_icon();
+    }
 }
 
 static void show_time() {

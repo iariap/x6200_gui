@@ -110,11 +110,14 @@ static lv_obj_t   stub_handles[STUB_MAX_OBJ];
 static int        stub_obj_count;
 
 /* Contadores de escrituras: el test de OPT-4 #150 comprueba que una segunda
- * vuelta con el mismo valor NO vuelve a escribir. */
+ * vuelta con el mismo valor NO vuelve a escribir. `align_to_calls` cuenta las
+ * llamadas a `lv_obj_align_to` (el re-ancla del icono de bateria): el mismo test
+ * fija que en steady state (el porcentaje no cambia) NO se re-ancla. */
 static int label_set_calls;
 static int style_font_calls;
 static int style_color_calls;
 static int style_bg_calls;
+static int align_to_calls;
 
 static lv_timer_t stub_timer;
 
@@ -218,6 +221,7 @@ void lv_obj_align_to(lv_obj_t * obj, const lv_obj_t * base, lv_align_t align, lv
     o->y_ofs      = y_ofs;
     o->aligned_to = true;
     o->align_base = stub_index(base);
+    align_to_calls++;
 }
 
 void lv_obj_set_style_text_font(lv_obj_t * obj, const lv_font_t * font, uint32_t selector) {
@@ -505,6 +509,10 @@ int clock_stub_style_color_calls(void) {
 
 int clock_stub_style_bg_calls(void) {
     return style_bg_calls;
+}
+
+int clock_stub_align_to_calls(void) {
+    return align_to_calls;
 }
 
 void clock_stub_set_wall_clock(int hour, int min, int sec) {

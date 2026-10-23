@@ -224,13 +224,16 @@ void test_clock(void) {
     render(13.8f, 0.0f, 0, true);
     CHECK(strcmp(clock_stub_ext_text(), SYMBOL_PLUG " 13.8 V") == 0);
 
-    /* ---- 5. OPT-4 #150: 100 ticks identicos no escriben ni invalidan ---- */
+    /* ---- 5. OPT-4 #150: 100 ticks identicos no escriben ni invalidan, ni
+     * re-anclan el icono de bateria (align_to = layout de la base: el costo por
+     * tick tiene que ser cero; PR #279, gate de Performance de x6200-ab) ---- */
     render(13.8f, 12.1f, 76, false);
 
     int text_calls = clock_stub_label_set_calls();
     int font_calls = clock_stub_style_font_calls();
     int color_calls = clock_stub_style_color_calls();
     int bg_calls = clock_stub_style_bg_calls();
+    int align_calls = clock_stub_align_to_calls();
 
     for (int i = 0; i < 100; i++) {
         clock_stub_run_timers();
@@ -240,20 +243,26 @@ void test_clock(void) {
     CHECK(clock_stub_style_font_calls() == font_calls);
     CHECK(clock_stub_style_color_calls() == color_calls);
     CHECK(clock_stub_style_bg_calls() == bg_calls);
+    CHECK(clock_stub_align_to_calls() == align_calls);
 
-    /* Un cambio real si escribe: el porcentaje y su icono. */
+    /* Un cambio real si escribe el porcentaje y su icono, y RE-ANCLA el icono una
+     * vez (el ancho del porcentaje cambio: es cuando la geometria se invalida). */
     render(13.8f, 12.1f, 20, false);
     CHECK(clock_stub_label_set_calls() == text_calls + 2);
     CHECK(strcmp(clock_stub_bat_pct_text(), "20%") == 0);
+    CHECK(clock_stub_align_to_calls() == align_calls + 1);
 
-    /* Y un segundo nuevo escribe la hora UNA vez (show_time corre cada 500 ms;
-     * con la hora fija, los dos ticks dicen lo mismo y el segundo no escribe). */
+    /* Y un segundo nuevo escribe la hora UNA vez, pero NO re-ancla: el porcentaje
+     * no cambio, asi que la geometria del icono sigue valida (show_time corre
+     * cada 500 ms; con la hora fija, los dos ticks dicen lo mismo y el segundo no
+     * escribe). */
     text_calls = clock_stub_label_set_calls();
     clock_stub_set_wall_clock(13, 0, 0);
     clock_stub_run_timers();
     clock_stub_run_timers();
     CHECK(strcmp(clock_stub_time_text(), "13:00:00") == 0);
     CHECK(clock_stub_label_set_calls() == text_calls + 1);
+    CHECK(clock_stub_align_to_calls() == align_calls + 1);
 
     /* ---- 5. Un solo snapshot del mutex por actualizacion: las caras de la
      * linea de estado son coherentes con el ULTIMO pack ---- */
