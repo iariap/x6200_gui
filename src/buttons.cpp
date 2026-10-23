@@ -79,7 +79,6 @@ static const char * moni_level_label_getter();
 static const char * charger_label_getter();
 static const char * rit_label_getter();
 static const char * xit_label_getter();
-static const char * fft_dec_label_getter();
 
 static const char * agc_label_getter();
 static const char * att_label_getter();
@@ -99,7 +98,6 @@ static const char * key_ratio_label_getter();
 static const char * cw_decoder_label_getter();
 static const char * cw_tuner_label_getter();
 static const char * cw_snr_label_getter();
-static const char * cw_zoom_label_getter();
 
 static const char * cw_peak_beta_label_getter();
 static const char * cw_noise_beta_label_getter();
@@ -225,7 +223,7 @@ static button_item_t btn_comp = {.type     = BTN_TEXT_FN,
 
 static button_item_t btn_spectrum_min_level = make_btn("Min\nLevel", MFK_MIN_LEVEL);
 static button_item_t btn_spectrum_max_level = make_btn("Max\nLevel", MFK_MAX_LEVEL);
-static button_item_t btn_zoom               = make_btn(fft_dec_label_getter, MFK_FFT_DECIM, &cfg_cur.fft_width);
+static button_item_t btn_zoom               = make_btn("FFT\nWidth", MFK_FFT_DECIM);
 static button_item_t btn_spectrum_beta      = make_btn("Spectrum\nBeta", MFK_SPECTRUM_BETA);
 
 /* MFK page 3 */
@@ -291,7 +289,6 @@ static button_item_t btn_cw_tuner   = {.type     = BTN_TEXT_FN,
                                        .data     = MFK_CW_TUNE,
                                        .subj     = &cfg.cw_tune.val};
 static button_item_t btn_cw_snr     = make_btn(cw_snr_label_getter, MFK_CW_DECODER_SNR, &cfg.cw_decoder_snr.val);
-static button_item_t btn_cw_zoom     = make_btn(cw_zoom_label_getter, MFK_CW_ZOOM, &cfg.fft_zoom_cw.val);
 static button_item_t btn_cw_peak_beta =
     make_btn(cw_peak_beta_label_getter, MFK_CW_DECODER_PEAK_BETA, &cfg.cw_decoder_peak_beta.val);
 static button_item_t btn_cw_noise_beta =
@@ -1027,7 +1024,7 @@ static buttons_page_t page_key_2 = {
     {&btn_key_p2, &btn_key_mode, &btn_key_iambic_mode, &btn_key_qsk_time, &btn_key_ratio}
 };
 static buttons_page_t page_cw_decoder_1 = {
-    {&btn_cw_p1, &btn_cw_decoder, &btn_cw_tuner, &btn_cw_snr, &btn_cw_zoom}
+    {&btn_cw_p1, &btn_cw_decoder, &btn_cw_tuner, &btn_cw_snr}
 };
 static buttons_page_t page_cw_decoder_2 = {
     {&btn_cw_p2, &btn_cw_peak_beta, &btn_cw_noise_beta, &btn_cw_auto}
@@ -1586,12 +1583,6 @@ static const char * charger_label_getter() {
     return buf;
 }
 
-static const char * fft_dec_label_getter() {
-    static char buf[22];
-    sprintf(buf, "Span:\n%d kHz", subject_get_int(cfg_cur.fft_width) / 1000);
-    return buf;
-}
-
 
 static const char * rit_label_getter() {
     static char buf[22];
@@ -1693,12 +1684,6 @@ static const char * cw_tuner_label_getter() {
 static const char * cw_snr_label_getter() {
     static char buf[22];
     sprintf(buf, "Dec SNR:\n%0.1f dB", subject_get_float(cfg.cw_decoder_snr.val));
-    return buf;
-}
-
-static const char * cw_zoom_label_getter() {
-    static char buf[22];
-    sprintf(buf, "CW zoom:\n%d", 1 << subject_get_int(cfg.fft_zoom_cw.val));
     return buf;
 }
 

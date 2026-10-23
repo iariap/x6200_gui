@@ -13,10 +13,9 @@
 # This is also the fixture of the "8 fantasma": the unlit-segment layer behind the
 # digits of the frequency row and of the clock, drawn by src/main_screen.c and
 # src/clock.c. The layer only exists with a segmented family (a `8` in the default
-# family is just another digit), so this is the only fixture that has it. Since
-# issue #250 the clock is permanent (HH:MM:SS, the view that has unlit digits to
-# show), so every fixture has the clock's ghost with a segmented family; the
-# `clock_view time` key stays as the persisted value the firmware still stores.
+# family is just another digit), so this is the only fixture that has it, and it
+# carries `clock_view time` because the clock's ghost is the time view (the power
+# clock's value is a battery symbol plus volts: no unlit digits to show).
 #
 # The rest of the candidates are measured with `--font` (every screen); the digit
 # families are measured on this fixture (see tools/fonts/README.md).

@@ -38,7 +38,7 @@ static void on_ab_mode_change(Subject *subj, void *user_data);
 static void update_cur_low_filter(Subject *subj, void *user_data);
 static void update_cur_high_filter(Subject *subj, void *user_data);
 static void on_freq_step_change(Subject *subj, void *user_data);
-static void on_fft_dec_change(Subject *subj, void *user_data);
+static void on_zoom_change(Subject *subj, void *user_data);
 
 static void on_bg_freq_change(Subject *subj, void *user_data);
 static void on_cur_mode_change(Subject *subj, void *user_data);
@@ -46,7 +46,7 @@ static void on_cur_filter_low_change(Subject *subj, void *user_data);
 static void on_cur_filter_high_change(Subject *subj, void *user_data);
 static void on_cur_filter_bw_change(Subject *subj, void *user_data);
 static void on_cur_freq_step_change(Subject *subj, void *user_data);
-static void on_cur_fft_width_change(Subject *subj, void *user_data);
+static void on_cur_zoom_change(Subject *subj, void *user_data);
 
 
 // #define TEST_CFG
@@ -156,6 +156,13 @@ static void on_key_tone_change(Subject *subj, void *user_data) {
     //     subject_set_int(cfg_cur.filter.high, high);
     //     subject_set_int(cfg_cur.filter.low, low);
     // }
+}
+
+/**
+ * Changing fft width
+ */
+static void update_fft_width(Subject *subj, void *user_data) {
+    subject_set_int(cfg_cur.fft_width, FFT_FULL_WIDTH / (1 << subject_get_int(subj)));
 }
 
 /**
@@ -322,7 +329,7 @@ static int init_params_cfg(sqlite3 *db) {
     fill_cfg_item(&cfg.sql_fm, subject_create_int(0), "sql_fm");
     fill_cfg_item_float(&cfg.pwr, subject_create_float(5.0f), 0.1f, "pwr");
 
-    fill_cfg_item(&cfg.fft_zoom_cw, subject_create_int(0), "fft_zoom_cw");
+    fill_cfg_item(&cfg.fft_dec, subject_create_int(0), "fft_dec");
 
     /* WSPR: 1500 Hz is the centre of the 200 Hz WSPR window */
     fill_cfg_item(&cfg.tx_filter_low, subject_create_int(300), "tx_filter_low");
@@ -414,10 +421,12 @@ static int init_params_cfg(sqlite3 *db) {
     fill_cfg_item(&cfg.eq.mic.p5, subject_create_int(0), "eq_mic_p5");
 
 
+    cfg_cur.fft_width = subject_create_int(FFT_FULL_WIDTH);
     cfg_cur.sql_level = subject_create_int(0);
     /* Bind callbacks */
     // subject_add_observer(cfg.band_id.val, on_band_id_change, NULL);
     subject_add_observer(cfg.key_tone.val, on_key_tone_change, NULL);
+    subject_add_observer_and_call(cfg.fft_dec.val, update_fft_width, NULL);
 
     /* Load values from table */
     cfg_item_t *cfg_arr  = (cfg_item_t *)&cfg;

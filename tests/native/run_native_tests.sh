@@ -160,22 +160,18 @@ export X6200_VOICE_C="${X6200_VOICE_C:-$SRC/voice.c}"
 export X6200_VOICE_H="${X6200_VOICE_H:-$SRC/voice.h}"
 "$OUT/native_tests"
 
-# --- Clock test (reloj permanente + banda de estado, issue #250) --------------
+# --- Clock test (UI-009) ------------------------------------------------------
 # src/clock.c includes its sibling firmware headers with `#include "..."`, and
 # for a quoted include the directory of the including file always wins over -I.
 # So the committed stub headers under tests/native/stubs_clock/ cannot shadow
 # src/styles.h etc. from their own directory: the real clock.c is staged next to
 # a copy of the stubs in the build dir, where `#include "styles.h"` resolves to
-# the stub. Every stub header src/clock.c includes has to be in the copy list:
-# one left out is then found through tests/native/stubs_clock/ and, being a
-# different file, it re-includes lvgl/lvgl.h from there -- two `lv_color_t`
-# definitions in one translation unit (a type mismatch, not a warning). See
-# tests/native/test_clock.c and docs/UI_KNOWN_ISSUES.md (UI-009).
-echo "== clock (#250): reloj permanente + bateria compacta =="
-# UI-009 was an *uninitialized pointer read* (undefined behaviour), which a
+# the stub. See tests/native/test_clock.c and docs/UI_KNOWN_ISSUES.md (UI-009).
+echo "== clock (UI-009): reloj de potencia =="
+# The defect was an *uninitialized pointer read* (undefined behaviour), which a
 # normal build may mask with whatever the stack held. `-ftrivial-auto-var-init=pattern`
 # poisons automatic variables that are read before being written, so a
-# reintroduced uninitialized pointer makes this test crash deterministically
+# reintroduced `const char * bat_sym;` makes this test crash deterministically
 # instead of passing by luck. Probed, since it needs gcc>=12 / clang>=8.
 if echo 'int main(void){return 0;}' | $CC -x c - -ftrivial-auto-var-init=pattern -o "$OUT/.pattern_probe" >/dev/null 2>&1; then
     POISON="-ftrivial-auto-var-init=pattern"
@@ -190,7 +186,7 @@ mkdir -p "$CLOCK_STAGE/lvgl" "$CLOCK_STAGE/params"
 cp "$SRC/clock.c" "$SRC/clock.h" "$CLOCK_STAGE/"
 cp "$DIR/stubs_clock/styles.h" "$DIR/stubs_clock/radio.h" "$DIR/stubs_clock/util.h" \
    "$DIR/stubs_clock/backlight.h" "$DIR/stubs_clock/voice.h" "$DIR/stubs_clock/msg.h" \
-   "$DIR/stubs_clock/theme.h" "$CLOCK_STAGE/"
+   "$CLOCK_STAGE/"
 cp "$DIR/stubs_clock/params/params.h" "$CLOCK_STAGE/params/"
 cp "$DIR/stubs_clock/lvgl/lvgl.h" "$CLOCK_STAGE/lvgl/"
 if [ "$SAN_OK" = yes ]; then

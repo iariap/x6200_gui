@@ -57,14 +57,6 @@ issues:
       el puntero a LV_SYMBOL_BATTERY_FULL. El arnes lo reproduce: el detector
       `leading_glyph_range` exige que el texto del reloj arranque con un glifo de
       la familia battery (U+F2xx) y no con ASCII.
-      Issue #250 (epica #249): ese reloj de potencia ya no existe —el reloj es
-      permanente y la bateria vive en la banda de estado, con su icono en una
-      etiqueta aparte (sony_20, gama U+F240..U+F244, en 0..10 vacio, 11..35
-      nivel 1, 36..60 nivel 2, 61..85 nivel 3, 86..100 completo; `--%` y el icono
-      vacio en TC(text_dim) cuando el pack no trae muestra valida)—, asi que en
-      el lado B del A/B el detector no encuentra ninguna etiqueta con el patron
-      `\d\.\dv\n` y la ficha queda FIXED (la cubre el test nativo del reloj, que
-      exige que el icono arranque con un glifo de la familia).
     evidence:
       - "src/clock.c (show_time, CLOCK_POWER)"
       - "tools/ui_harness/fixtures/home-bateria-externa.scn"

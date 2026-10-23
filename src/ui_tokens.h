@@ -33,19 +33,12 @@
 
 /* Celda: la barra se apoya en un bitmap de fondo (images/top_short*.bin) y las
  * seis celdas se pintan encima; el tamano y el pitch son los del bitmap, no una
- * decision de layout libre. El aire horizontal entre celdas y el pitch vertical
- * los fija el issue #251: 6 px de separacion (antes 2) y 26 px de renglon (antes
- * 22, que solapaba las dos filas 4 px). */
+ * decision de layout libre. */
 #define UI_INFO_CELL_W          56
 #define UI_INFO_CELL_H          26
-#define UI_INFO_CELL_GAP        6       /* separacion horizontal entre celdas (#251) */
-#define UI_INFO_COL_PITCH       (UI_INFO_CELL_W + UI_INFO_CELL_GAP)     /* 62 */
-#define UI_INFO_ROW_PITCH       26      /* los renglones ya no se solapan (26 == CELL_H) */
-
-/* Padding vertical local de la celda (#251): el texto de estado de 22 px tiene que
- * entrar en las 26 px de la celda (26 - 2*2 = 22). Se aplica sobre el objeto (en
- * src/info.c), no en info_item_style, que comparten las seis celdas. */
-#define UI_INFO_CELL_PAD_V      2
+#define UI_INFO_CELL_GAP        2       /* separacion horizontal entre celdas */
+#define UI_INFO_COL_PITCH       (UI_INFO_CELL_W + UI_INFO_CELL_GAP)     /* 58 */
+#define UI_INFO_ROW_PITCH       22      /* los renglones se solapan 4 px (26 > 22) */
 
 /* Origen de la rejilla dentro del objeto de la barra. */
 #define UI_INFO_ORIGIN_X        15
@@ -62,44 +55,12 @@
 #define UI_INFO_WIFI_W          (UI_INFO_CELL_W / 2)    /* 28 */
 #define UI_INFO_BT_LINE_W       2
 #define UI_INFO_BT_POINTS       7       /* puntos de la runa: debe coincidir con bt_pts[] */
-#define UI_INFO_BT_H            20      /* alto de la runa (bt_pts[]: 14x20) */
 #define UI_INFO_BT_DY           8       /* la runa baja 8 px dentro de la celda */
 
 /* Fuente por defecto de la celda (la de info_item_style, src/styles.c). Bajo
  * VISION la celda del VFO baja un tamano desde aca (fix UI-012): el token nombra
  * la fuente que el fix EXP-2 tenia cableada. */
 #define UI_INFO_FONT            (&sony_20)
-
-/* La fuente de los tres estados compactos (AGC, PRE/ATT, ATU, #251): el slot
- * "grande" de la celda, el mas ancho que todavia entra en los 56 px. VFO, modo y
- * WiFi NO la usan: sus textos son mas largos -- medidos en el arnes `USB-D` 49 px,
- * `VFO-A` 48, `SPL-A` 46, `CH 19` 41 -- y no tienen ese aire.
- *
- * Nota medida: la migracion de fuentes de #9 genera las familias de los seis temas
- * con los slots 20 y 22 al MISMO tamano de pixel, asi que en la coleccion este
- * cambio de slot no agranda el glifo; con la familia stock del equipo (14 px vs
- * 15 px) si. Lo que #251 cambia siempre es la caja del texto (UI_INFO_CELL_PAD_V)
- * y el aire de la rejilla. Medido en docs/evidencia/2026-10-23-home251/. */
-#define UI_INFO_FONT_BIG        (&sony_22)
-
-/* ------------------------------------------------------------------------ *
- * La rejilla tiene que entrar en el fondo de la barra (`info_style`, 206 px en
- * los bitmaps legacy y 209 en los simples, siempre 61 de alto, src/styles.c) y
- * los dos renglones NO pueden pisarse: era el defecto del issue #251 (pitch 22
- * con celdas de 26 = 4 px de solape). Se verifica en compilacion, sin depender del
- * tema (la barra mas angosta es la legacy de 206 y el alto es 61 en las dos).
- * Los numeros 206/61 se repiten aca a proposito: son la caja del estilo, que no
- * tiene token propio (`info_style`, src/styles.c). */
-_Static_assert(UI_INFO_ROW_PITCH >= UI_INFO_CELL_H,
-               "info: los dos renglones de la barra no pueden solaparse");
-_Static_assert(UI_INFO_ORIGIN_X + UI_INFO_COLS * UI_INFO_CELL_W
-                   + (UI_INFO_COLS - 1) * UI_INFO_CELL_GAP <= 206,
-               "info: la ultima celda se sale del fondo de la barra (206 px)");
-_Static_assert(UI_INFO_ORIGIN_Y + (UI_INFO_ROWS - 1) * UI_INFO_ROW_PITCH + UI_INFO_CELL_H <= 61,
-               "info: la ultima fila se sale del fondo de la barra (61 px)");
-_Static_assert(UI_INFO_ORIGIN_Y + UI_INFO_WIFI_ROW * UI_INFO_ROW_PITCH + UI_INFO_BT_DY
-                   + UI_INFO_BT_H <= 61,
-               "info: la runa de BT se sale del fondo de la barra (61 px)");
 
 /* ------------------------------------------------------------------------ *
  * Fila de frecuencia del dial (src/main_screen.c): los tres labels `freq[]`.

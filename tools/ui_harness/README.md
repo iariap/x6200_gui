@@ -404,13 +404,10 @@ the `theme` and a `seed`, toggle `band_plan`, `spectrum_filled`,
 `spectrum_peak`, `waterfall_center_line` and `waterfall_battery` (the user's
 waterfall battery mode, the Ajustes switch), set the two audio gains of the
 Ajustes Audio group (`play_gain_db`, `rec_gain_db`, the dB the radio loads from
-params.db into `params.play_gain_db_f`/`params.rec_gain_db_f`) and set the
-persisted `clock_view` of the top bar's clock (`time`, `power` — the default — or
-`time-power`, the firmware's `clock_view_t`). Since issue #250 the clock is
-permanent (`HH:MM:SS`, always, with a compact battery/supply band under it), so
-`clock_view` no longer changes what the screen draws: the key stays because the
-firmware still stores it and the fixtures of the digit families pin it.
-`bench_warmup`, `bench_repeats`,
+params.db into `params.play_gain_db_f`/`params.rec_gain_db_f`) and pick the
+`clock_view` of the top bar's clock (`time`, `power` — the default — or
+`time-power`, the firmware's `clock_view_t`), which is what the wall clock of the
+`main` screen shows. `bench_warmup`, `bench_repeats`,
 `bench_redraw_passes` (the forced bench) and `natural_frames` (the natural bench)
 are honoured only in their own mode and never change a rendered pixel.
 
@@ -484,7 +481,7 @@ back to Aurora, and the JSON `active` field says which theme actually rendered.
 | `main-frecuencia-dseg` | the frequency row and the clock drawn with the segmented-digit family (`digits dseg7`) plus the "8 fantasma" layer behind their digits (`clock_view time`, the clock view that has unlit digits to show): the sample screen of the DSEG candidates of issue #9 (a segmented face is digit-only, so it is never a whole-family choice) |
 | `main-natural` | the natural-bench fixture (its own seed, `natural_frames`); the spectrum/waterfall are driven frame by frame by `--bench-natural` |
 | `main-natural-eco` | the natural-bench fixture with the pack on battery at 11.2 V (`external_v 0.0`): the same screen/data as `main-natural`, but the visual policy puts the waterfall in ECO, so `--bench-natural` measures the reduced cadence (UI-08 incr. 2) |
-| `settings-home` | the real main screen with the real Ajustes window open over it (`dialog.c` + `dialog_settings.c`), on its first group (clock: date/time; since issue #250 the group has no `Clock view`/timeouts rows). The wall clock is the harness' fixed epoch, so the date/time fields are deterministic |
+| `settings-home` | the real main screen with the real Ajustes window open over it (`dialog.c` + `dialog_settings.c`), on its first group (clock: date/time, Clock view, timeouts). The wall clock is the harness' fixed epoch, so the date/time fields are deterministic |
 | `settings-wfbat` | Ajustes scrolled to the Spectrum/waterfall group with the waterfall battery mode the user turned on (`waterfall_battery true`); the switch renders checked and the real waterfall runs the saving cadence the visual policy applies |
 | `settings-perfil` | Ajustes scrolled to the Apariencia group, where the "Visual profile" row of UI-08 increment 5 lives. The pack is on battery at 11.2 V (`external_v 0.0`), so the auto policy decides ECO: the dropdown renders `Auto` (the persisted setting) while the row label reads the effective profile (`Visual profile (Eco)`). `scenario_settle` codifies that exact text |
 | `settings-audio` | Ajustes scrolled to the Audio group (the "Audio" tab, page 1 index 3): the "Line-in, Line-out" row, the "Play,Rec gain" row, "Audio enhance", "Speaker mode" and the voice rows. `play_gain_db`/`rec_gain_db` give the two gain sliders different values (the radio loads them from params.db) so each one can be told apart, and `scenario_settle` drags the Rec one and checks with the audio mock's recorder (`mocks/mock_ui_deps.c`) that the setter it ran is `audio_set_rec_vol()`: with the two callbacks wired to the same function (issue #26) the run stops instead of going green |
