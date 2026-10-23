@@ -228,7 +228,10 @@ Gate: un PR con regresión deliberada falla con evidencia.
   `check_cfg_fills/actions/settings_focus/apps_menu/wcag`, `run_native_tests.sh`),
   UI Quality Contracts, UI Visual Regression (A vs B), UI Performance (benchmark
   host) y UI A/B Summary. Corre en PRs con cambios en `tools/**`, `src/**` o
-  `tests/**`. Publica artifacts (screenshots/diffs/reportes) y resumen por
+  `tests/**` **sólo si el PR lleva la etiqueta `ci`** — los gates son opt-in
+  (ver `CONTRIBUTING.md`); `workflow_dispatch` corre sin etiqueta y un PR sin la
+  etiqueta queda *skipped* (0 minutos). Publica artifacts
+  (screenshots/diffs/reportes) y resumen por
   `$GITHUB_STEP_SUMMARY`. Regla: los fallos funcionales/regresiones objetivas
   bloquean; los cambios estéticos son REVIEW REQUIRED y no bloquean solos; un
   benchmark inconcluso se muestra como tal; Hardware/Energy quedan **PENDING**.
