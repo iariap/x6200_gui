@@ -63,6 +63,17 @@ static void bt_state_timer_cb(lv_timer_t *t);
 
 static void wifi_state_change_cb(void *s, lv_msg_t *m);
 
+/* Fuente de los tres estados compactos de la barra (AGC, PRE/ATT, ATU): el slot
+ * grande de la celda (UI_INFO_FONT_BIG, #251; su nota en src/ui_tokens.h deja
+ * medido que en las familias de la coleccion ese slot no agranda el glifo). Bajo
+ * VISION baja los mismos tres pasos que la celda del VFO -- `fonts_scale()` sube
+ * todas las fuentes en VISION_FONT_STEPS -- asi que el tamano efectivo no cambia
+ * al escalar y el texto no envuelve ni recorta en la celda fija de 56x26. Mismo
+ * idioma que `NF()` en src/cluster_column.c. */
+static const lv_font_t *status_font_big(void) {
+    return theme_shape.vision ? font_down(UI_INFO_FONT_BIG, VISION_FONT_STEPS) : UI_INFO_FONT_BIG;
+}
+
 static void vfo_label_update(Subject *subj, void * user_data);
 static void mode_label_update(Subject *subj, void * user_data);
 static void atu_label_update(Subject *subj, void * user_data);
@@ -84,10 +95,10 @@ lv_obj_t * info_init(lv_obj_t * parent) {
         /* Una fila = un contenedor flex (LV_FLEX_ROW): el flex gobierna el eje X
          * de las tres celdas y el gap sale de UI_INFO_CELL_GAP, en vez de sumar
          * UI_INFO_COL_PITCH a mano por celda. El contenedor queda en el origen
-         * exacto de la fila (UI_INFO_ROW_PITCH), asi que las filas siguen
-         * solapandose 4 px (26 > 22) sin margenes negativos: el Y no lo toca el
-         * flex. Las celdas mantienen su tamano fijo (56x26): flex coloca, no
-         * redimensiona (ninguna lleva flex_grow). */
+         * exacto de la fila (UI_INFO_ROW_PITCH), asi que las filas ya no se
+         * solapan: el pitch (26) es el alto de la celda (#251). Las celdas
+         * mantienen su tamano fijo (56x26): flex coloca, no redimensiona
+         * (ninguna lleva flex_grow). */
         lv_obj_t *row = lv_obj_create(obj);
 
         lv_obj_clear_flag(row, LV_OBJ_FLAG_SCROLLABLE);
@@ -109,6 +120,12 @@ lv_obj_t * info_init(lv_obj_t * parent) {
 
             lv_obj_add_style(item, &info_item_style, 0);
             lv_obj_set_style_text_align(item, LV_TEXT_ALIGN_CENTER, 0);
+            /* Padding vertical LOCAL de la celda (#251): info_item_style trae 5 px
+             * por lado y el texto de estado de 22 px necesita las 22 px utiles de
+             * la celda (26 - 2*2). Se fija sobre el objeto para no tocar el estilo
+             * que comparten las seis celdas. */
+            lv_obj_set_style_pad_top(item, UI_INFO_CELL_PAD_V, 0);
+            lv_obj_set_style_pad_bottom(item, UI_INFO_CELL_PAD_V, 0);
 
             /* El fondo de la barra es un bitmap (images/top_short*.bin) con zonas claras y oscuras,
              * asi que un texto fijo no puede cumplir WCAG contra el: medido en una captura, el gris
@@ -143,6 +160,19 @@ lv_obj_t * info_init(lv_obj_t * parent) {
     lv_obj_set_style_text_font(items[INFO_MODE],
                                theme_shape.vision ? font_down(UI_INFO_FONT, VISION_FONT_STEPS) : UI_INFO_FONT,
                                0);
+
+    /* Los otros tres textos son cortos -- medidos en el arnes: `AUTO`/`FAST` 43/39
+     * px, `ATU1` 37, `P/A` 25 -- y son los estados que el operador lee de un
+     * vistazo, asi que dibujan con el slot grande de la celda (sony_22, #251) sin
+     * acercarse al borde de los 56 px. La fuente va sobre el objeto (no en
+     * info_item_style, que comparten las seis celdas) y es `status_font_big()`, que
+     * ademas los mantiene en ese tamano efectivo bajo VISION. La celda de WiFi/BT
+     * NO la usa: el WiFi y la runa de BT conservan su representacion nativa, y el
+     * padding de la celda (UI_INFO_CELL_PAD_V, arriba) les deja el texto de 18 px
+     * de alto en las 22 px utiles. */
+    lv_obj_set_style_text_font(items[INFO_AGC], status_font_big(), 0);
+    lv_obj_set_style_text_font(items[INFO_PRE_ATT], status_font_big(), 0);
+    lv_obj_set_style_text_font(items[INFO_ATU], status_font_big(), 0);
 
     lv_label_set_text(items[INFO_PRE_ATT], "PRE/ATT");
     lv_label_set_text(items[INFO_WIFI], LV_SYMBOL_WIFI);
