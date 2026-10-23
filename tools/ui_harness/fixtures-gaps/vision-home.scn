@@ -1,0 +1,36 @@
+# vision-home: pantalla principal con VISION FORZADO (UI AUDIT gaps). El firmware
+# NO puede entrar en VISION: `theme_shape.vision` es un campo de la forma del tema
+# (src/theme.h:196) que NINGUN tema de los seis setea y que ningun setter ni clave
+# de JSON escribe (src/theme.c solo parsea un subconjunto con get_bool/get_int).
+# El arnes lo enciende por clave de escenario para RENDERIZAR ese layout (fuentes
+# +3 pasos via fonts_scale(VISION_FONT_STEPS), como src/main.c) y la captura queda
+# SYNTHETIC: muestra el layout de VISION, NO que la radio lo pueda seleccionar.
+
+name vision-home
+screen main
+
+seed 20
+vision true
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

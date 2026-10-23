@@ -23,12 +23,16 @@
 #include "lvgl/lvgl.h"
 
 #include "buttons.h"
+#include "bt_state.h"
 #include "clock.h"
 #include "dialog.h"
 #include "dfl_context.h"
 #include "dfl_inline.h"
 #include "dfl_presets.h"
 #include "dialog_settings.h"
+#include "dialog_freq.h"
+#include "dialog_msg_cw.h"
+#include "dialog_msg_voice.h"
 #include "events.h"
 #include "info.h"
 #include "keyboard.h"
@@ -37,6 +41,7 @@
 #include "meter.h"
 #include "msg.h"
 #include "params/params.h"
+#include "pubsub_ids.h"
 #include "rtty.h"
 #include "signal_gen.h"
 #include "spectrum.h"
@@ -54,6 +59,7 @@
 #include "cw_tune_ui.h"
 #include "virtual_time.h"
 #include "waterfall.h"
+#include "wifi.h"
 
 #include "mock_harness.h"
 #include "mock_radio.h"
@@ -274,6 +280,16 @@ static void build_main(const scenario_t *scenario)
 
     /* Feed the components the FFT would: deterministic, seed-driven. */
     signal_gen_feed(scenario->seed);
+
+    /* El icono de WiFi de la barra (src/info.c, wifi_state_change_cb) se repinta
+     * con el mensaje que la radio manda al cambiar de estado (src/wifi.cpp). El
+     * arnes no compila wifi.cpp, asi que si el fixture inyecto un estado
+     * (`wifi_status`) el mensaje se manda una vez, DESPUES de que info_init() se
+     * suscribio (main_screen()) — el mismo camino que la radio. Sin la clave, no
+     * se manda: los fixtures de siempre quedan pixel a pixel iguales. */
+    if (scenario->wifi_status_given) {
+        lv_msg_send(MSG_WIFI_STATE_CHANGED, NULL);
+    }
 }
 
 /* Utilidades de los fixtures del editor DFL (definidas mas abajo, junto a
@@ -594,6 +610,21 @@ bool scenario_build(const scenario_t *scenario)
 
         subject_set_int(cfg_cur.mode, x6200_mode_usb_dig);
         main_screen_action(ACTION_APP_DFL_EDITOR);
+        return true;
+    }
+
+    if (!strcmp(scenario->screen, "dialog-freq")
+        || !strcmp(scenario->screen, "dialog-msg-cw")
+        || !strcmp(scenario->screen, "dialog-msg-voice")) {
+        /* Los tres dialogos que el protocolo de control remoto NO puede abrir
+         * (no inyecta teclas): entrada de frecuencia por HKEY_FINP, mensajes CW y
+         * de voz por la tecla MSG. El arnes de host si empuja el evento real (ver
+         * settle_dialog_gaps). El grupo de teclado real tiene que existir antes de
+         * main_screen(): ahi se registra el espectro, el objeto enfocado que
+         * recibe HKEY_FINP. En el binario por defecto estos tres descriptores son
+         * inertes; el settle corta si la ventana real no se construyo. */
+        mock_keyboard_group_up();
+        build_main(scenario);
         return true;
     }
 
@@ -2197,6 +2228,180 @@ static void settle_locked_feedback(const scenario_t *scenario)
     expect_message(scenario, "Band locked");
 }
 
+/* --- Estado de BT/WiFi inyectado (UI AUDIT gaps): el fixture codifica que el
+ * render refleja el doble. La barra de arriba (src/info.c) pinta el icono de WiFi
+ * y la runa de BT con tres estados: apagado -> icon_off, prendido -> text_dim,
+ * conectado -> text. El arnes no compila los modulos reales (src/bt_state.c,
+ * src/wifi.cpp), asi que los fixtures `net-*` fijan el doble por clave de
+ * escenario y aca se comprueba, sobre el arbol de objetos vivo, que el color
+ * dibujado es el que la regla de info.c pide para ese estado: si la regla cambia
+ * (o el estado deja de llegar), el arnes corta en vez de capturar un icono
+ * equivocado. La captura sigue siendo SYNTHETIC (mide layout/contraste, no la
+ * funcion real de BT/WiFi). */
+
+static lv_obj_t *find_label_with_text(lv_obj_t *obj, const char *text)
+{
+    if (lv_obj_check_type(obj, &lv_label_class)) {
+        const char *t = lv_label_get_text(obj);
+
+        if (t != NULL && strcmp(t, text) == 0) {
+            return obj;
+        }
+    }
+
+    uint32_t n = lv_obj_get_child_cnt(obj);
+
+    for (uint32_t i = 0; i < n; i++) {
+        lv_obj_t *hit = find_label_with_text(lv_obj_get_child(obj, (int32_t) i), text);
+
+        if (hit != NULL) {
+            return hit;
+        }
+    }
+    return NULL;
+}
+
+/* La runa de BT es el unico lv_line con la caja de la barra de arriba (16x22);
+ * las otras lineas del main screen son el centro del waterfall (3x243) y los
+ * ejes del grafico DFL (1x7), todas mas chicas o mas largas. */
+static lv_obj_t *find_bt_rune(lv_obj_t *obj, int *found)
+{
+    if (lv_obj_check_type(obj, &lv_line_class)) {
+        lv_coord_t w = lv_obj_get_width(obj);
+        lv_coord_t h = lv_obj_get_height(obj);
+
+        if (w >= 8 && w <= 24 && h >= 15 && h <= 30) {
+            (*found)++;
+            return obj;
+        }
+    }
+
+    uint32_t n = lv_obj_get_child_cnt(obj);
+
+    for (uint32_t i = 0; i < n; i++) {
+        lv_obj_t *hit = find_bt_rune(lv_obj_get_child(obj, (int32_t) i), found);
+
+        if (hit != NULL) {
+            return hit;
+        }
+    }
+    return NULL;
+}
+
+static void settle_net_state(const scenario_t *scenario)
+{
+    if (strncmp(scenario->name, "net-", 4) != 0) {
+        return;
+    }
+
+    lv_obj_t *wifi = find_label_with_text(lv_scr_act(), LV_SYMBOL_WIFI);
+
+    if (wifi == NULL) {
+        fprintf(stderr, "%s: no encontre el icono de WiFi de la barra (src/info.c)\n",
+                scenario->name);
+        exit(1);
+    }
+
+    lv_color_t want_wifi;
+
+    switch (wifi_get_status()) {
+        case WIFI_CONNECTED: want_wifi = TC(text);     break;
+        case WIFI_OFF:       want_wifi = TC(icon_off); break;
+        default:             want_wifi = TC(text_dim); break;
+    }
+
+    if (lv_obj_get_style_text_color(wifi, 0).full != want_wifi.full) {
+        fprintf(stderr,
+                "%s: el icono de WiFi no tiene el color del estado inyectado "
+                "(src/info.c wifi_state_change_cb)\n", scenario->name);
+        exit(1);
+    }
+
+    int       runas = 0;
+    lv_obj_t *bt    = find_bt_rune(lv_scr_act(), &runas);
+
+    if (bt == NULL || runas != 1) {
+        fprintf(stderr, "%s: no encontre la runa de BT de la barra (%d candidatas, src/info.c)\n",
+                scenario->name, runas);
+        exit(1);
+    }
+
+    lv_color_t want_bt;
+
+    if (!bt_state_on()) {
+        want_bt = TC(icon_off);
+    } else if (bt_state_connected()) {
+        want_bt = TC(text);
+    } else {
+        want_bt = TC(text_dim);
+    }
+
+    if (lv_obj_get_style_line_color(bt, 0).full != want_bt.full) {
+        fprintf(stderr,
+                "%s: la runa de BT no tiene el color del estado inyectado "
+                "(src/info.c bt_state_show)\n", scenario->name);
+        exit(1);
+    }
+}
+
+/* --- Los tres dialogos que el protocolo remoto no puede abrir (UI AUDIT) ----
+ * La entrada de frecuencia (HKEY_FINP), los mensajes CW y los de voz se abren en
+ * la radio con una tecla que el protocolo de control NO inyecta. El arnes de host
+ * si puede: empuja el MISMO evento que el firmware.
+ *   - frecuencia: events.c::event_send_key(HKEY_FINP) manda LV_EVENT_KEY al
+ *     objeto enfocado del grupo de teclado (el espectro) -> spectrum_key_cb ->
+ *     dialog_construct(dialog_freq);
+ *   - mensajes: keypad.c manda EVENT_KEYPAD a lv_scr_act() con KEYPAD_MSG ->
+ *     main_screen_keypad_cb elige CW o voz segun cfg_cur.mode.
+ * Los tres descriptores son inertes en el binario por defecto; solo
+ * `ui_harness_dialogs` (-DHARNESS_REAL_DIALOGS, CMakeLists.txt) linkea las
+ * ventanas REALES. El fixture corta si la ventana no se construyo (obj == NULL),
+ * asi que una corrida con el binario por defecto NUNCA reporta verde. */
+
+static void hkey_finp_ui(void)
+{
+    uint32_t  key     = HKEY_FINP;
+    lv_obj_t *focused = keyboard_group ? lv_group_get_focused(keyboard_group) : NULL;
+
+    if (focused == NULL) {
+        fprintf(stderr, "dialog-freq: no hay objeto enfocado del grupo de teclado para HKEY_FINP\n");
+        exit(1);
+    }
+    lv_event_send(focused, LV_EVENT_KEY, &key);
+}
+
+static void settle_dialog_gaps(const scenario_t *scenario)
+{
+    if (!strcmp(scenario->screen, "dialog-freq")) {
+        hkey_finp_ui();
+
+        if (dialog_freq->obj == NULL) {
+            fprintf(stderr,
+                    "dialog-freq: la ventana real no se construyo (descriptor inerte): "
+                    "esta captura necesita el binario ui_harness_dialogs\n");
+            exit(1);
+        }
+    } else if (!strcmp(scenario->screen, "dialog-msg-cw")) {
+        dfl_keypad_ui(KEYPAD_MSG, KEYPAD_RELEASE);
+
+        if (dialog_msg_cw->obj == NULL) {
+            fprintf(stderr,
+                    "dialog-msg-cw: la ventana real no se construyo (descriptor inerte): "
+                    "esta captura necesita el binario ui_harness_dialogs\n");
+            exit(1);
+        }
+    } else if (!strcmp(scenario->screen, "dialog-msg-voice")) {
+        dfl_keypad_ui(KEYPAD_MSG, KEYPAD_RELEASE);
+
+        if (dialog_msg_voice->obj == NULL) {
+            fprintf(stderr,
+                    "dialog-msg-voice: la ventana real no se construyo (descriptor inerte): "
+                    "esta captura necesita el binario ui_harness_dialogs\n");
+            exit(1);
+        }
+    }
+}
+
 void scenario_settle(const scenario_t *scenario)
 {
     settle_waterfall_center_line(scenario);
@@ -2205,6 +2410,8 @@ void scenario_settle(const scenario_t *scenario)
     settle_dfl_page(scenario);
     settle_dfl_presets(scenario);
     settle_locked_feedback(scenario);
+    settle_dialog_gaps(scenario);
+    settle_net_state(scenario);
 
     /* CB 27 MHz (issues #146/#169): lo que cada fixture significa. La celda VFO de
      * la barra tiene que mostrar el canal, no el rotulo VFO-A/SPL-B; y en la fila

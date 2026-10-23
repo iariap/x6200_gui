@@ -11,6 +11,7 @@
 
 #include "scenario.h"
 #include "mock_radio.h"
+#include "mock_harness.h"
 
 #include "params/params.h"
 
@@ -244,6 +245,37 @@ static bool apply_key(const char *key, const char *value, scenario_t *out)
         out->swr_feed = (int) v;
     } else if (!strcmp(key, "swr_stop")) {
         return parse_bool(value, &out->swr_stop);
+    } else if (!strcmp(key, "bt_state")) {
+        /* Estado de Bluetooth inyectado (UI AUDIT gaps): off | on | connected.
+         * El arnes no compila src/bt_state.c (lee los archivos de btcat-ctl), asi
+         * que el fixture fija el doble para RENDERIZAR el icono de la barra. */
+        return mock_bt_state_set(value);
+    } else if (!strcmp(key, "wifi_status")) {
+        /* Estado de WiFi inyectado (UI AUDIT gaps): off | on | connected. Fija el
+         * doble de wifi_get_status() y marca que build_main() tiene que mandar
+         * MSG_WIFI_STATE_CHANGED (el mismo aviso que manda src/wifi.cpp). */
+        if (!mock_wifi_state_set(value)) {
+            return false;
+        }
+        out->wifi_status_given = true;
+    } else if (!strcmp(key, "vision")) {
+        /* Fuerza el layout VISION (UI AUDIT gaps). El firmware no lo alcanza en
+         * runtime (theme_shape.vision no lo fija ningun tema ni setter); el
+         * fixture lo enciende para RENDERIZARLO, con la captura declarada
+         * SYNTHETIC. */
+        return parse_bool(value, &out->vision);
+    } else if (!strcmp(key, "bar_theme")) {
+        /* Fuerza la barra legacy de 206 px (`params.theme == THEME_LEGACY`,
+         * src/styles.c::setup_theme_legacy). En la radio ese parametro no lo
+         * escribe ninguna UI: es una variante NO seleccionable en runtime. El
+         * fixture la fuerza para renderizarla; captura SYNTHETIC. */
+        if (!strcmp(value, "legacy")) {
+            out->legacy_bar = true;
+        } else if (!strcmp(value, "simple")) {
+            out->legacy_bar = false;
+        } else {
+            return false;
+        }
     } else if (!strcmp(key, "rxtx")) {
         if (!strcasecmp(value, "rx")) { mock_radio.state = RADIO_RX; }
         else if (!strcasecmp(value, "tx")) { mock_radio.state = RADIO_TX; }

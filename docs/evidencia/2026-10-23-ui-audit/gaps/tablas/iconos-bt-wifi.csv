@@ -1,0 +1,9 @@
+png,wifi_cell_icon_off_px,wifi_cell_text_dim_px,wifi_cell_text_px,wifi_cell_roles,bt_rune_icon_off_px,bt_rune_text_dim_px,bt_rune_text_px,bt_rune_roles
+net-bt-connected.png,27,0,0,icon_off,0,0,24,text
+net-bt-off.png,27,0,0,icon_off,39,0,0,icon_off
+net-bt-on.png,27,0,0,icon_off,0,24,0,text_dim
+net-bt-wifi-connected.png,0,0,27,text,0,0,24,text
+net-bt-wifi-on.png,0,27,0,text_dim,0,24,0,text_dim
+net-wifi-connected.png,0,0,27,text,39,0,0,icon_off
+net-wifi-off.png,27,0,0,icon_off,39,0,0,icon_off
+net-wifi-on.png,0,27,0,text_dim,39,0,0,icon_off
