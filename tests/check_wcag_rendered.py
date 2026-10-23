@@ -61,6 +61,10 @@ Que NO mide (declarado)
 * Elementos que **no exponen su color** en el arbol (los `lv_line`, como la runa
   de BT): se declaran no medibles; el inspector no publica su color de trazo.
 * Tinta que no aparece en su bbox (glifos no dibujados): se declaran sin tinta.
+  Si la etiqueta pinta su propio fondo opaco (`bg_opa` COVER, sin imagen), se mide
+  el **par declarado** `text_color`/`bg_color` (que es el renderizado), para que
+  una regresion que lleve la tinta al color del fondo no se escape como "sin
+  tinta" (es el agujero que el defecto del #277 aprovecharia).
 
 Baseline (waiver por par, versionado)
 -------------------------------------
@@ -82,8 +86,18 @@ No hay blanket-skip: el waiver es por par enumerado; nunca "saltear un tema" ni
 Uso
 ---
   python3 tests/check_wcag_rendered.py [--all] [--update-baseline]
-  SKIP_BUILD=1             reusa tools/ui_harness/build
+  SKIP_BUILD=1             reusa tools/ui_harness/build (falla si el binario es
+                           mas viejo que los fuentes: no mide codigo viejo)
   UI_HARNESS_IMAGE=<name>  override de la imagen Docker (default x6200-uiharness)
+
+Frescura del render
+-------------------
+Por default el gate SIEMPRE corre cmake+make (incremental) antes de renderizar,
+asi que el binario refleja el arbol; `SKIP_BUILD=1` reusa el build pero aborta si
+algun fuente (`src/**`, `tools/ui_harness/**`) es mas nuevo que el binario. Es la
+trampa que ya se pago en el gate de determinismo: un build reusado mide codigo
+que ya no esta y da un falso verde (aqui, con el baseline intacto, 29 entradas
+cuando el fix #281 ya habia resuelto 11).
 
 SPDX-License-Identifier: GPL-2.0-or-later
 """
@@ -286,8 +300,90 @@ def _docker_run(args: list[str], image: str) -> None:
         raise SystemExit(f"FALLO: el comando docker del arnes fallo (rc={proc.returncode})")
 
 
-def ensure_harness(image: str) -> None:
-    """Comprueba docker/imagen y construye el arnes si falta el binario."""
+def _newest_input():
+    """El insumo del build mas nuevo (mtime) que alimenta el binario compilado.
+
+    Solo lo que se COMPILA dentro del arnes: los fuentes del firmware (`src/`) y
+    los del arnes (`tools/ui_harness/`, sin `build/` ni `fixtures/` — los
+    escenarios se leen en runtime). Los JSON de tema tambien son runtime: un
+    cambio de color NO necesita recompilar.
+    """
+    newest = None
+    for base in (
+        ROOT / "src",
+        ROOT / "tools" / "ui_harness",
+        ROOT / "CMakeLists.txt",
+        ROOT / "lvgl" / "CMakeLists.txt",
+    ):
+        if not base.exists():
+            continue
+        if base.is_file():
+            candidatos = [base]
+        else:
+            candidatos = []
+            for dirpath, dirnames, filenames in os.walk(base):
+                dirnames[:] = [d for d in dirnames if d not in ("build", ".git", "fixtures")]
+                candidatos.extend(Path(dirpath) / f for f in filenames)
+        for p in candidatos:
+            try:
+                m = p.stat().st_mtime
+            except OSError:
+                continue
+            if newest is None or m > newest[0]:
+                newest = (m, p)
+    return newest
+
+
+def _stale_build() -> str | None:
+    """Path del insumo mas nuevo que el binario, o None si el build esta al dia.
+
+    Es la trampa del build reusado: `HARNESS_BIN.exists()` es cierto aunque la
+    rama haya cambiado `src/**` despues de compilar, asi que reusar el binario
+    mediria codigo que ya no esta en el arbol (falso verde). Un insumo mas nuevo
+    que el binario ⇒ hay que recompilar.
+    """
+    if not HARNESS_BIN.exists():
+        return None
+    newest = _newest_input()
+    if newest is None:
+        return None
+    mtime, path = newest
+    if mtime > HARNESS_BIN.stat().st_mtime:
+        try:
+            return str(path.relative_to(ROOT))
+        except ValueError:
+            return str(path)
+    return None
+
+
+def _build(image: str, motivo: str) -> None:
+    rev = (
+        subprocess.run(
+            ["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True
+        ).stdout.strip()
+        or "unknown"
+    )
+    print(f"  {motivo} (revision {rev})...")
+    _docker_run(
+        [
+            "-lc",
+            "cd /src/tools/ui_harness && mkdir -p build && cd build && "
+            f"cmake .. -DHARNESS_REVISION={rev} >/dev/null && make -j$(nproc) >/dev/null",
+        ],
+        image,
+    )
+    if not HARNESS_BIN.exists():
+        raise SystemExit(f"FALLO: el build no produjo {HARNESS_BIN}")
+
+
+def ensure_harness(image: str, skip_build: bool) -> None:
+    """Comprueba docker/imagen y garantiza un binario del arnes FRESCO.
+
+    Por default SIEMPRE corre cmake+make (incremental: recompila lo que cambio).
+    Con `SKIP_BUILD=1` reusa el binario existente, pero **solo si esta al dia**:
+    si algun fuente es mas nuevo que el binario, aborta en vez de medir codigo
+    viejo (el falso verde que ya se pago en el gate de determinismo).
+    """
     import shutil
 
     if shutil.which("docker") is None:
@@ -297,23 +393,26 @@ def ensure_harness(image: str) -> None:
             f"FALLO: falta la imagen '{image}' "
             f"(construila: docker build -t {image} tools/ui_harness)"
         )
-    if HARNESS_BIN.exists():
+    if skip_build and HARNESS_BIN.exists():
+        viejo = _stale_build()
+        if viejo is not None:
+            raise SystemExit(
+                f"FALLO: SKIP_BUILD=1 reusaria un build VIEJO: {viejo} es mas nuevo que "
+                f"{HARNESS_BIN.relative_to(ROOT)} (el binario no refleja el arbol: se "
+                f"mediria codigo que ya no esta). Corré sin SKIP_BUILD=1 para recompilar."
+            )
+        print("  reusando el arnes ya construido (SKIP_BUILD=1, binario al dia)")
         return
-    rev = (
-        subprocess.run(
-            ["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True
-        ).stdout.strip()
-        or "unknown"
-    )
-    print(f"  construyendo el arnes (revision {rev})...")
-    _docker_run(
-        [
-            "-lc",
-            f"mkdir -p build && cd build && cmake .. -DHARNESS_REVISION={rev} >/dev/null "
-            f"&& make -j$(nproc) >/dev/null",
-        ],
-        image,
-    )
+    if not skip_build:
+        _build(image, "construyendo/actualizando el arnes")
+        viejo = _stale_build()
+        if viejo is not None:
+            raise SystemExit(
+                f"FALLO: tras el build, {viejo} sigue mas nuevo que el binario "
+                f"(el build no lo recompilo)"
+            )
+    else:
+        _build(image, "construyendo el arnes (no habia binario)")
 
 
 def render(image: str) -> None:
@@ -434,6 +533,33 @@ def _ink_and_background(np, node):
     }
 
 
+def _declared_pair(node):
+    """Par declarado cuando NO se detecta la tinta y la etiqueta pinta su fondo.
+
+    Con `bg_opa >= 250` (LV_OPA_COVER), sin imagen de fondo y tinta opaca, el par
+    que el codigo dibuja ES `text_color` sobre `bg_color` (la misma regla que
+    `x6200_ab.typography_checks._contrast_ratio`). Sin este fallback, una regresion
+    que lleve la tinta al color del fondo (contraste ~1:1) no tendria pixeles de
+    tinta que muestrear y quedaria clasificada "sin tinta" en vez de violacion:
+    justo el agujero que el defecto del #277 aprovecharia.
+    """
+    if (node.get("bg_opa", 0) or 0) < 250 or node.get("bg_image"):
+        return None
+    if node.get("text_opa", 255) != 255:
+        return None
+    tc = hex_rgb(node["text_color"])
+    bg = hex_rgb(node["bg_color"])
+    ratio = round(contrast(tc, bg), 2)
+    return {
+        "bg": bg,
+        "ratio": ratio,
+        "p05": ratio,
+        "ink_px": 0,
+        "samples": 0,
+        "method": "declarado (fondo opaco, tinta no detectable)",
+    }
+
+
 def measure_capture(np, image, inspection, fixture, theme, exempt_hex):
     """Mide todos los elementos del arbol de una captura.
 
@@ -506,6 +632,9 @@ def measure_capture(np, image, inspection, fixture, theme, exempt_hex):
         node["_img"] = image
         m = _ink_and_background(np, node)
         if m is None:
+            # Fallback: fondo opaco propio ⇒ el par declarado ES el renderizado.
+            m = _declared_pair(node)
+        if m is None:
             skipped.append(
                 {
                     "fixture": fixture,
@@ -558,6 +687,7 @@ def _classify(node, text, path, fixture, theme, m, exempt_hex):
         "min": minimum,
         "viola": viola,
         "reason": motivo,
+        "method": m.get("method", "render"),
         "font_px": _font_px(node.get("text_font", "")),
     }
 
@@ -700,8 +830,7 @@ def main(argv=None) -> int:
         f"  fixtures: {len(fixtures())} (matriz de {len(THEMES)} temas x "
         f"{len(FIXTURE_STATES)} estados)"
     )
-    if os.environ.get("SKIP_BUILD") != "1" or not HARNESS_BIN.exists():
-        ensure_harness(image)
+    ensure_harness(image, skip_build=os.environ.get("SKIP_BUILD") == "1")
     render(image)
 
     measured, skipped = measure_all(np)
@@ -729,7 +858,7 @@ def main(argv=None) -> int:
             print(
                 f"    {f['fixture']:<34} {f['theme']:<9} {f['path']:<14} "
                 f"{f['text'][:22]!r:<24} {f['ratio']:>5}:1 min {f['min']} "
-                f"[{f['category']}] {mark}"
+                f"[{f['category']}/{f['method']}] {mark}"
             )
 
     print("  --- violaciones medidas ---")
