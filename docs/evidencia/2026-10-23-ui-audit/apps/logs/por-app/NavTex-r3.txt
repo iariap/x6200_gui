@@ -1,0 +1,8 @@
+[User]	(105746.689, +0)	 update_cur_low_filter: Set current low filter: 200 	(in mode.c line #509)
+[User]	(105746.689, +0)	 update_cur_high_filter: Set current high filter: 3000 	(in mode.c line #535)
+Can't write to i2c, not opened
+Can't write to i2c, not opened
+Can't write to i2c, not opened
+SSTV: dialog closed; Auto RX and Manual RX reset to defaults
+[User]	(105754.369, +135)	 cfg_band_params_save_item: Saved vfoa_freq=10100000 (pk=5) 	(in band.c line #531)
+[User]	(105754.369, +0)	 cfg_band_params_save_item: Saved vfoa_mode=2 (pk=5) 	(in band.c line #531)

@@ -1,0 +1,28 @@
+--- /home/pablo/desa/asf/state/worktrees/x6200/ui-audit-apps/tests/qemu/run_apps_qemu.sh	2026-10-23 16:22:10.316539046 -0300
++++ /tmp/x6200-c272-logs/run_apps_qemu_audit.sh	2026-10-23 16:28:57.572142066 -0300
+@@ -38,7 +38,7 @@
+ 
+ AQUI=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+ WT=${WT:-$(CDPATH= cd -- "$AQUI/../.." && pwd)}
+-DATOS="$AQUI/barrido_qemu.py"
++DATOS=${DATOS:-$AQUI/barrido_qemu.py}
+ 
+ LAB=${LAB:-/tmp/x6200-next222-qemu}
+ SALIDA=${SALIDA:-$LAB/out}
+@@ -248,8 +248,14 @@
+ arrancar() {
+     docker rm -f "$CONT" >/dev/null 2>&1 || true
+     rm -f "$FB" "$CHROOT/crash.txt" "$CHROOT/tmp/x6200_remote.sock"
+-    docker run -d --name "$CONT" --rm --entrypoint "" -e "QEMU_CPU=$QEMU_CPU" -v "$CHROOT:/t" "$IMAGEN" \
+-        sh -c "chroot /t /bin/busybox env LD_PRELOAD=/lib/libfakefb.so:/lib/libcrash.so:/lib/libx6200trace.so $BIN > /t/out-banco.txt 2>&1" >/dev/null \
++    # AUDIT PATCH (docs/evidencia/2026-10-23-ui-audit/apps/README.md): el binario endurecido
++    # (#211-#215, r3, SHA d0ff5cd) aborta con EXIT_PERSISTENCE_UNAVAILABLE(78) si /mnt no es un
++    # montaje real rw distinto de la raiz (src/params/db.c data_mount_ok() lee
++    # /proc/self/mountinfo). El runner original no monta /proc ni /mnt, por eso el banco no
++    # arranca. Se agrega --cap-add SYS_ADMIN y se montan /proc y un tmpfs /mnt con la plantilla
++    # de la ROM sembrada, igual que el QA canonico de #213 (run-arm.sh/arm-inner.sh).
++    docker run -d --name "$CONT" --rm --entrypoint "" --cap-add SYS_ADMIN -e "QEMU_CPU=$QEMU_CPU" -v "$CHROOT:/t" "$IMAGEN" \
++        sh -c "mkdir -p /t/proc /t/mnt && mount --bind /proc /t/proc && mount -t tmpfs -o size=64M tmpfs /t/mnt && cp /t/usr/share/x6200/params.default.db /t/mnt/params.db && chroot /t /bin/busybox env LD_PRELOAD=/lib/libfakefb.so:/lib/libcrash.so:/lib/libx6200trace.so $BIN > /t/out-banco.txt 2>&1" >/dev/null \
+         || fallar "no pude arrancar el contenedor privado $CONT"
+     local i
+     for i in $(seq 1 "$ESPERA_SOCKET"); do [ -S "$CHROOT/tmp/x6200_remote.sock" ] && break; sleep 1; done

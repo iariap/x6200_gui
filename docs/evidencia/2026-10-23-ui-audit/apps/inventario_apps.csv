@@ -1,0 +1,29 @@
+app,fuente,cobertura,resultado_barrido,capturas,severidad,valida_render,no_valida,razon_o_nota
+FT8,src/dialog_ft8.c,REAL,FAIL,3,P3,si,funcion/dial,FAIL por contrato del runner: abrir FT8 recuerda su dial (freq 10100000->10136000, mode USB->USB-D); es comportamiento de la app, no defecto visual
+FT4,src/dialog_ft8.c,REAL,FAIL,3,P3,si,funcion/dial,alias de FT8 (app FT4 selecciona el protocolo FT4 sobre dialog_ft8); FAIL por el mismo cambio de dial
+JS8,src/dialog_js8.c,REAL,FAIL,3,P3,si,funcion/dial,FAIL por mode USB->USB-D; ademas el header muestra el label digital viejo "FT4 30m"
+WSPR,src/dialog_wspr.c,PARTIAL,FAIL,3,P3,si,subida a WSPRnet (red),FAIL por freq 10100000->10138700 y mode USB->USB-D; sin red no se valida la subida
+SSTV,src/dialog_sstv.c,REAL,PASS,3,P3,si,-,PASS; canvas idle en blanco puro (glare potencial, medido)
+WeFax,src/dialog_wefax.c,REAL,PASS,3,P3,si,-,PASS; canvas idle en blanco puro (glare potencial, medido)
+NavTex,src/dialog_navtex.c,REAL,PASS,3,P3,si,-,PASS; sin RX no hay mensajes (area de mensajes vacia, esperado)
+RTTY,src/rtty.c,REAL,PASS,3,P3,si,-,PASS; no es un dialogo: ventana sobre la home (buttons_page_rtty); area de texto vacia sin RX
+CW,src/dialog_cw_kbd.c,REAL,FAIL,3,P3,si,funcion/dial,FAIL por mode USB->CW: open_app() fuerza CW por diseno (remote_server.cpp)
+Field,src/dialog_field.c,PARTIAL,FAIL(render REAL),3,P2,si,consulta QRZ/POTA (red),FAIL de estado (app='') solo como artefacto; render REAL y muy completo; header dice "X6100" (src/dialog_field.c:1842)
+GPS,src/dialog_gps.c,PARTIAL,-,3,P2,si,receptor GNSS (no existe en X6200),PARTIAL por diseno: la app dice "None: this radio has no GPS"; el VFO de la home tapa la fila "Age:"
+Bands,src/dialog_bands.c,REAL,PASS,3,P3,si,-,PASS; sin red la actividad/spots quedan en 0/0 (esperado)
+Settings,src/dialog_settings.c,REAL,PASS,3,P2,si,-,PASS; solo la pagina Operation (dwell): el VFO de la home se ve a traves del panel translucido y tapa "Accel threshold"
+BT,src/dialog_bt.c,PARTIAL,PARTIAL,3,P3,si,pairing/adaptador Bluetooth,PARTIAL: sin adaptador; ventana y estado controlado reales ("No devices: press Scan")
+Cluster,src/dialog_cluster.c,PARTIAL,PARTIAL,3,P3,si,spots del cluster (red),PARTIAL: sin red no hay spots; render del header y la fila VFO reales
+CwTrainer,src/dialog_cw_trainer.c,REAL,FAIL,3,P3,si,funcion/dial,FAIL por mode USB->CW: open_app() fuerza CW por diseno; render estable entre rondas (determinista)
+Eq,src/dialog_eq.cpp,REAL,PASS,3,P3,si,-,PASS; 5 sliders (300..2300 Hz); el panel translucido deja ver el VFO de la home
+Status,src/dialog_status.c,REAL,PASS,3,P2,si,-,PASS; el VFO "9.908" se ve a traves del panel y tapa "Kernel ..."; "/mnt 63 MB free of 64 MB" es artefacto del tmpfs del banco
+QTH,src/dialog_qth.c,REAL,PASS,3,P3,si,-,PASS; ventana de texto + teclado en pantalla (textarea_window)
+Callsign,src/dialog_callsign.c,REAL,PASS,3,P3,si,-,PASS; ventana de texto + teclado en pantalla
+Recorder,src/dialog_recorder.c,REAL,PASS,3,P3,si,-,PASS; header y lista vacios, sin titulo visible en pantalla
+WiFi,src/dialog_wifi.c,PARTIAL,PARTIAL,3,P2,si,NetworkManager/adaptador WiFi,PARTIAL: sin adaptador la tabla de AP queda vacia; el VFO de la home tapa "IP address:"
+SWRScan,src/dialog_swrscan.c,REAL,PASS,3,P3,si,-,PASS; estado "Idle"/"sin datos medidos"; sin sesion de barrido no hay curva
+Propagation,src/dialog_propagation.c,PARTIAL,PARTIAL,3,P3,si,beacons IBP (spots/NTP),PARTIAL: sin spots ni NTP no se valida el barrido; UI en espanol (textos de la app)
+DFLEditor,src/dfl_inline.c,REAL,FAIL(artefacto),3,P3,si,-,FAIL de estado: no es un dialogo (panel inline sobre el waterfall) y el campo `app` del protocolo queda vacio; la captura SI prueba el render del editor DFL
+Frequency entry,src/dialog_freq.c,UNSUPPORTED,UNSUPPORTED,0,P3,no,inyeccion de tecla HKEY_FINP,UNSUPPORTED: se abre por HKEY_FINP (tecla larga) y el protocolo de control no inyecta teclas; no lo alcanza el barrido de las 25 apps (dialog-coverage.csv)
+CW messages,src/dialog_msg_cw.c,UNSUPPORTED,UNSUPPORTED,0,P3,no,inyeccion de tecla (pulsacion larga del boton de modo en CW),UNSUPPORTED: se abre por pulsacion larga del boton de modo; el protocolo no inyecta teclas (dialog-coverage.csv)
+Voice messages,src/dialog_msg_voice.c,UNSUPPORTED,UNSUPPORTED,0,P3,no,inyeccion de tecla (pulsacion larga del boton de modo en SSB/AM/NFM),UNSUPPORTED: idem CW messages (dialog-coverage.csv)

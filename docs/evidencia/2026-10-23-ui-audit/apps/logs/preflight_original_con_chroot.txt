@@ -1,0 +1,18 @@
+== comprobando el entorno del barrido QEMU (privado) ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  python3: ok
+  PIL: ok
+  reporteador: ok
+  guard #86: ok
+  libs del banco: ok
+  cliente de control (fuente): ok
+  volumen x6200-c272-build: tiene la GUI construida
+  chroot privado: ok (/tmp/x6200-c272-qemu/chroot)
+  binfmt qemu-arm: ok
+== todo listo para el barrido QEMU (no se tocó nada) ==
+  contenedor privado: x6200-c272-qemu
+  volumen privado:    x6200-c272-build
+  laboratorio:        /tmp/x6200-c272-qemu
+  version del repo:   d0ff5cd1 Merge pull request #268 from iariap/feat/ui-258-259
+con chroot exit=0

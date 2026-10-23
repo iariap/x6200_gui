@@ -1,0 +1,142 @@
+inicio=2026-10-23T16:30:26-03:00
+== comprobando el entorno del barrido QEMU (privado) ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  python3: ok
+  PIL: ok
+  reporteador: ok
+  guard #86: ok
+  libs del banco: ok
+  cliente de control (fuente): ok
+  volumen x6200-c272-build: tiene la GUI construida
+  chroot privado: ok (/tmp/x6200-c272-qemu/chroot)
+  binfmt qemu-arm: ok
+== todo listo para el barrido QEMU (no se tocó nada) ==
+  contenedor privado: x6200-c272-qemu
+  volumen privado:    x6200-c272-build
+  laboratorio:        /tmp/x6200-c272-qemu
+  version del repo:   d0ff5cd1 Merge pull request #268 from iariap/feat/ui-258-259
+  chroot ya armado (/tmp/x6200-c272-qemu/chroot): se refresca el binario y las libs
+OK: /tmp/x6200-c272-qemu/chroot/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13432744 B, 3/3 marcas)
+== barrido QEMU: 25 apps x 3 rondas, dwell 2s ==
+-- ronda 1/3 --
+  ronda 1  FT8: FAIL
+          FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10136000; estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 1  FT4: FAIL
+          FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10140000; estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 1  JS8: FAIL
+          FAIL: estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 1  WSPR: FAIL
+          FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10138700; estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 1  SSTV: PASS
+  ronda 1  WeFax: PASS
+  ronda 1  NavTex: PASS
+  ronda 1  RTTY: PASS
+  ronda 1  CW: FAIL
+          FAIL: estado persistido cambiado sin querer: mode USB -> CW
+  ronda 1  Field: PARTIAL
+          PARTIAL: sin red (QRZ/POTA): la consulta no se puede validar (solo el render)
+  ronda 1  GPS: PARTIAL
+          PARTIAL: sin receptor GNSS en el chroot: se espera el mensaje controlado de la app
+  ronda 1  Bands: PASS
+  ronda 1  Settings: PASS
+  ronda 1  BT: PARTIAL
+          PARTIAL: sin adaptador Bluetooth: se espera el estado controlado
+  ronda 1  Cluster: PARTIAL
+          PARTIAL: sin red: la columna de spots no se puede validar (solo el render)
+  ronda 1  CwTrainer: FAIL
+          FAIL: estado persistido cambiado sin querer: mode USB -> CW
+  ronda 1  Eq: PASS
+  ronda 1  Status: PASS
+  ronda 1  QTH: PASS
+  ronda 1  Callsign: PASS
+  ronda 1  Recorder: PASS
+  ronda 1  WiFi: PARTIAL
+          PARTIAL: sin NetworkManager ni adaptador en el chroot: se espera el estado controlado
+  ronda 1  SWRScan: PASS
+  ronda 1  Propagation: PARTIAL
+          PARTIAL: sin spots de cluster ni NTP: el barrido de beacons no se puede validar
+  ronda 1  DFLEditor: FAIL
+          FAIL: la app pedida no abrio (app='')
+-- ronda 2/3 --
+  ronda 2  FT8: FAIL
+          FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10136000; estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 2  FT4: FAIL
+          FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10140000; estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 2  JS8: FAIL
+          FAIL: estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 2  WSPR: FAIL
+          FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10138700; estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 2  SSTV: PASS
+  ronda 2  WeFax: PASS
+  ronda 2  NavTex: PASS
+  ronda 2  RTTY: PASS
+  ronda 2  CW: FAIL
+          FAIL: estado persistido cambiado sin querer: mode USB -> CW
+  ronda 2  Field: PARTIAL
+          PARTIAL: sin red (QRZ/POTA): la consulta no se puede validar (solo el render)
+  ronda 2  GPS: PARTIAL
+          PARTIAL: sin receptor GNSS en el chroot: se espera el mensaje controlado de la app
+  ronda 2  Bands: PASS
+  ronda 2  Settings: PASS
+  ronda 2  BT: PARTIAL
+          PARTIAL: sin adaptador Bluetooth: se espera el estado controlado
+  ronda 2  Cluster: PARTIAL
+          PARTIAL: sin red: la columna de spots no se puede validar (solo el render)
+  ronda 2  CwTrainer: FAIL
+          FAIL: estado persistido cambiado sin querer: mode USB -> CW
+  ronda 2  Eq: PASS
+  ronda 2  Status: PASS
+  ronda 2  QTH: PASS
+  ronda 2  Callsign: PASS
+  ronda 2  Recorder: PASS
+  ronda 2  WiFi: PARTIAL
+          PARTIAL: sin NetworkManager ni adaptador en el chroot: se espera el estado controlado
+  ronda 2  SWRScan: PASS
+  ronda 2  Propagation: PARTIAL
+          PARTIAL: sin spots de cluster ni NTP: el barrido de beacons no se puede validar
+  ronda 2  DFLEditor: FAIL
+          FAIL: la app pedida no abrio (app='')
+-- ronda 3/3 --
+  ronda 3  FT8: FAIL
+          FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10136000; estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 3  FT4: FAIL
+          FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10140000; estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 3  JS8: FAIL
+          FAIL: estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 3  WSPR: FAIL
+          FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10138700; estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 3  SSTV: PASS
+  ronda 3  WeFax: PASS
+  ronda 3  NavTex: PASS
+  ronda 3  RTTY: PASS
+  ronda 3  CW: FAIL
+          FAIL: estado persistido cambiado sin querer: mode USB -> CW
+  ronda 3  Field: PARTIAL
+          PARTIAL: sin red (QRZ/POTA): la consulta no se puede validar (solo el render)
+  ronda 3  GPS: PARTIAL
+          PARTIAL: sin receptor GNSS en el chroot: se espera el mensaje controlado de la app
+  ronda 3  Bands: PASS
+  ronda 3  Settings: PASS
+  ronda 3  BT: PARTIAL
+          PARTIAL: sin adaptador Bluetooth: se espera el estado controlado
+  ronda 3  Cluster: PARTIAL
+          PARTIAL: sin red: la columna de spots no se puede validar (solo el render)
+  ronda 3  CwTrainer: FAIL
+          FAIL: estado persistido cambiado sin querer: mode USB -> CW
+  ronda 3  Eq: PASS
+  ronda 3  Status: PASS
+  ronda 3  QTH: PASS
+  ronda 3  Callsign: PASS
+  ronda 3  Recorder: PASS
+  ronda 3  WiFi: PARTIAL
+          PARTIAL: sin NetworkManager ni adaptador en el chroot: se espera el estado controlado
+  ronda 3  SWRScan: PASS
+  ronda 3  Propagation: PARTIAL
+          PARTIAL: sin spots de cluster ni NTP: el barrido de beacons no se puede validar
+  ronda 3  DFLEditor: FAIL
+          FAIL: la app pedida no abrio (app='')
+{"PASS": 12, "PARTIAL": 6, "FAIL": 7, "BLOCKED": 0}
+== evidencia en /tmp/x6200-c272-qemu/out (barrido.json, results.csv, index.txt, capturas/, logs/) ==
+AUDIT_RUNNER_EXIT=1
+fin=2026-10-23T16:36:57-03:00

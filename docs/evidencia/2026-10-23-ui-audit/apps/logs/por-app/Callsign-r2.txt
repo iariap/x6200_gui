@@ -1,0 +1,29 @@
+CWDBG panel creado o=0x1888f48
+CWDBG label parent=0x1888f48 font=0x10dd438
+CWDBG label creado l=0x18a7420
+CWDBG label parent=0x1888f48 font=0x10dd588
+CWDBG label creado l=0x18a7500
+CWDBG label parent=0x1888f48 font=0x10dd48c
+CWDBG label creado l=0x18a75c0
+CWDBG label parent=0x17eeba8 font=0x10dd454
+CWDBG label creado l=0x18ab960
+CWDBG show o=0x188a630 on=1
+CWDBG show o=0x1888f48 on=0
+CWDBG show o=0x18a7138 on=0
+CWDBG show o=0x17e3c88 on=0
+CWDBG show o=0x17615e8 on=1
+CWDBG show o=0x18ab6e8 on=1
+CWDBG show o=0x177a3e0 on=1
+CWDBG show o=0x171ea60 on=0
+CWDBG show o=0x18ac6c0 on=1
+CWDBG show o=0x18ac650 on=1
+[User]	(105681.401, +314)	 cfg_mode_params_load_item: Loaded filter_high=3000 (pk=0) 	(in mode.c line #134)
+[User]	(105681.401, +0)	 update_cur_high_filter: Set current high filter: 3000 	(in mode.c line #535)
+[User]	(105681.401, +0)	 cfg_mode_params_load_item: Loaded filter_low=200 (pk=0) 	(in mode.c line #134)
+[User]	(105681.401, +0)	 update_cur_low_filter: Set current low filter: 200 	(in mode.c line #509)
+[User]	(105681.401, +0)	 cfg_mode_params_load_item: Loaded freq_step=500 (pk=0) 	(in mode.c line #134)
+[User]	(105681.401, +0)	 cfg_mode_params_load_item: Loaded spectrum_factor=1 (pk=0) 	(in mode.c line #134)
+[User]	(105681.401, +0)	 update_cur_low_filter: Set current low filter: 200 	(in mode.c line #509)
+[User]	(105681.401, +0)	 update_cur_high_filter: Set current high filter: 3000 	(in mode.c line #535)
+[User]	(105684.365, +279)	 cfg_params_save_item: Saved key_train=0 (pk=0) 	(in params.c line #142)
+[User]	(105684.366, +1)	 cfg_band_params_save_item: Saved vfoa_mode=2 (pk=5) 	(in band.c line #531)

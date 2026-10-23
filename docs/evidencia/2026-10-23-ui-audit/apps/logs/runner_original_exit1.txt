@@ -1,0 +1,29 @@
+inicio=2026-10-23T16:24:44-03:00
+== comprobando el entorno del barrido QEMU (privado) ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  python3: ok
+  PIL: ok
+  reporteador: ok
+  guard #86: ok
+  libs del banco: ok
+  cliente de control (fuente): ok
+  volumen x6200-c272-build: tiene la GUI construida
+  chroot privado: ok (/tmp/x6200-c272-qemu/chroot)
+  binfmt qemu-arm: ok
+== todo listo para el barrido QEMU (no se tocó nada) ==
+  contenedor privado: x6200-c272-qemu
+  volumen privado:    x6200-c272-build
+  laboratorio:        /tmp/x6200-c272-qemu
+  version del repo:   d0ff5cd1 Merge pull request #268 from iariap/feat/ui-258-259
+  chroot ya armado (/tmp/x6200-c272-qemu/chroot): se refresca el binario y las libs
+OK: /tmp/x6200-c272-qemu/chroot/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13432744 B, 3/3 marcas)
+la GUI no creó el socket en 90s:
+    | [Error]	(105122.524, +0)	 params_init: params.db unavailable: cannot initialize parameters 	(in params.c line #645)
+    | Persistence unavailable: check DATA and params.db
+    | [Error]	(105122.525, +1)	 main: Persistence unavailable: check DATA and params.db 	(in main.c line #592)
+    | Home directory not accessible: Permission denied
+    | [Warn]	(105122.529, +4)	 audio_init_sync: pulseaudio no disponible (Connection refused): la GUI sigue, pero sin audio 	(in audio.c line #191)
+ERROR: el banco privado no arrancó
+RUNNER_EXIT=1
+fin=2026-10-23T16:26:16-03:00
