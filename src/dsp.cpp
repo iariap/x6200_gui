@@ -270,7 +270,7 @@ void dsp_samples(float *buf_samples, uint16_t size, bool tx, int16_t dbm) {
             // Instantanea para el Auto Tune multimodo (issue #205): la MISMA PSD
             // promediada, en dB y ANTES del suavizado visual del waterfall. No
             // hay FFT nueva ni cadencia nueva; el publicador no toca LVGL.
-            const float *psd = spectrum_avg_data->data();
+            float *psd = spectrum_avg_data->data();
             size_t       n   = spectrum_avg_data->size();
 
             if (spectrum_needs_mirror()) {
@@ -289,7 +289,7 @@ void dsp_samples(float *buf_samples, uint16_t size, bool tx, int16_t dbm) {
     if ((now - waterfall_time > waterfall_fps_ms)) {
         auto waterfall_avg_data = waterfall_avg_psd.get();
         if (waterfall_avg_data) {
-            const float *wf = waterfall_avg_data->data();
+            float *wf = waterfall_avg_data->data();
             size_t       wn = waterfall_avg_data->size();
 
             if (spectrum_needs_mirror()) {
