@@ -328,7 +328,7 @@ static const char *abort_text(swr_abort_reason_t reason) {
     switch (reason) {
         case SWR_ABORT_USER:            return "Stop";
         case SWR_ABORT_TIMEOUT:         return "timeout de RF";
-        case SWR_ABORT_NO_DATA:         return "sin datos";
+        case SWR_ABORT_NO_DATA:         return "no data";
         case SWR_ABORT_NO_TX:           return "sin TX";
         case SWR_ABORT_STATE_CHANGED:   return "cambio de estado";
         case SWR_ABORT_MULTIPASS_GATED: return "3/5 pasadas requieren validacion RF";
@@ -378,7 +378,7 @@ static void format_readout(char *buf, size_t n) {
     float mad;
 
     if (!swr_session_minimum(&session, &point, &swr, &mad)) {
-        snprintf(buf, n, "sin datos medidos");
+        snprintf(buf, n, "No measurements");
         return;
     }
 

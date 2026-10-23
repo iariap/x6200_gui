@@ -813,7 +813,7 @@ void test_swrscan_readout(void) {
 
     swrscan_stub_draw();
     CHECK(strcmp(dialog_swrscan_state_text(), "Idle") == 0);
-    CHECK(strcmp(swrscan_stub_last_label_text(), "sin datos medidos") == 0);
+    CHECK(strcmp(swrscan_stub_last_label_text(), "No measurements") == 0);
 }
 
 /*

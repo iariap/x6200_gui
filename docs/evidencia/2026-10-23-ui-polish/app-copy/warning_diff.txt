@@ -1,0 +1,7 @@
+# Warning multiset, base (git show HEAD:src/<f>.c) vs working tree
+# toolchain: arm-buildroot-linux-gnueabihf-gcc 12.3.0, firmware flags + strict format
+--- dialog_propagation: base=4 head=3
+2d1
+<       1 warning: ‘%d’ directive output may be truncated writing between 1 and 11 bytes into a region of size between 10 and 20 
+--- dialog_field: base=30 head=30
+--- dialog_swrscan: base=13 head=13

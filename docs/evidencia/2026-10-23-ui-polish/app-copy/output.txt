@@ -1,0 +1,12 @@
+== 1. placeholders (base: eea3ed2022fc0f3be8c0afa1c318e32e42455ce8) ==
+OK   src/dialog_propagation.c: 33 format literals, 77 specifiers preserved
+OK   src/dialog_swrscan.c: 10 format literals, 31 specifiers preserved
+OK   src/dialog_field.c: 100 format literals, 212 specifiers preserved
+== 2. snprintf truncation (worst-case data) ==
+PASS: 0 failure(s)
+== 3. ARM compile of the touched TUs (firmware flags) ==
+dialog_propagation: exit 0 (3 warning(s))
+dialog_field: exit 0 (30 warning(s))
+dialog_swrscan: exit 0 (13 warning(s))
+/tmp/x6200-app-copy-288/dialog_propagation.o: ELF 32-bit LSB relocatable, ARM, EABI5 version 1 (SYSV), not stripped
+== output in /tmp/x6200-app-copy-288 ==
