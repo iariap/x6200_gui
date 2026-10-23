@@ -1,0 +1,6 @@
+== MAIN sin #286 ==
+BUILD_OK
+bench-ok
+== MAIN + #286 ==
+BUILD_OK
+bench-ok
