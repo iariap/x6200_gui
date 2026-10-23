@@ -60,9 +60,19 @@
 #define UI_INFO_WIFI_COL        2
 #define UI_INFO_WIFI_ROW        1
 #define UI_INFO_WIFI_W          (UI_INFO_CELL_W / 2)    /* 28 */
-#define UI_INFO_BT_LINE_W       2
-#define UI_INFO_BT_POINTS       7       /* puntos de la runa: debe coincidir con bt_pts[] */
-#define UI_INFO_BT_H            20      /* alto de la runa (bt_pts[]: 14x20) */
+
+/* La runa de BT (issue #285) son DOS trazos persistentes (src/info.c): los
+ * brazos en zigzag (`bt_arm_pts[]`, path A) y la ESPINA vertical
+ * (`bt_spine_pts[]`, path B). Su ancho de trazo, su cuenta de puntos y su caja
+ * local salen de aca; la x la fija UI_INFO_BT_X_PAD (el aire a la izquierda
+ * dentro de la media celda derecha, 28 px, centro x181) y la y la ecuacion de
+ * la fila. Caja local de los brazos: x3..15, y1..21. */
+#define UI_INFO_BT_LINE_W       2       /* grosor del trazo de las dos lineas */
+#define UI_INFO_BT_ARM_POINTS   7       /* puntos de los brazos: debe coincidir con bt_arm_pts[] */
+#define UI_INFO_BT_SPINE_POINTS 2       /* puntos de la espina: debe coincidir con bt_spine_pts[] */
+#define UI_INFO_BT_W            15      /* max x de los brazos (bt_arm_pts[]) */
+#define UI_INFO_BT_H            21      /* max y de los brazos (bt_arm_pts[]) */
+#define UI_INFO_BT_X_PAD        6       /* aire a la izquierda dentro de la media celda derecha */
 #define UI_INFO_BT_DY           8       /* la runa baja 8 px dentro de la celda */
 
 /* Fuente por defecto de la celda (la de info_item_style, src/styles.c). Bajo
@@ -97,9 +107,29 @@ _Static_assert(UI_INFO_ORIGIN_X + UI_INFO_COLS * UI_INFO_CELL_W
                "info: la ultima celda se sale del fondo de la barra (206 px)");
 _Static_assert(UI_INFO_ORIGIN_Y + (UI_INFO_ROWS - 1) * UI_INFO_ROW_PITCH + UI_INFO_CELL_H <= 61,
                "info: la ultima fila se sale del fondo de la barra (61 px)");
-_Static_assert(UI_INFO_ORIGIN_Y + UI_INFO_WIFI_ROW * UI_INFO_ROW_PITCH + UI_INFO_BT_DY
-                   + UI_INFO_BT_H <= 61,
-               "info: la runa de BT se sale del fondo de la barra (61 px)");
+
+/* La runa de BT (dos trazos, src/info.c) tiene que entrar en la media celda
+ * derecha de la celda WiFi/BT: caja x167..195 y y31..61, con el trazo de 2 px
+ * YA CONTADO -- LVGL suma el line width al tamano del objeto
+ * (`lv_line_get_self_size`, lvgl/src/widgets/lv_line.c), asi que la caja real
+ * es la de los puntos mas UI_INFO_BT_LINE_W. La x sale de la formula de la celda
+ * (la media celda derecha empieza en ORIGIN_X + WIFI_COL*COL_PITCH + WIFI_W, 167
+ * -- el mismo termino que la celda de al lado) y la y de la ecuacion de la fila:
+ * los dos trazos comparten origen, asi que se mueven como una sola unidad.
+ * Los 167/195/31/61 son la media celda y la banda que el contrato fija, y se
+ * repiten aca a proposito. */
+#define UI_INFO_BT_X0   (UI_INFO_ORIGIN_X + UI_INFO_WIFI_COL * UI_INFO_COL_PITCH \
+                         + UI_INFO_WIFI_W + UI_INFO_BT_X_PAD)
+#define UI_INFO_BT_Y0   (UI_INFO_WIFI_ROW * UI_INFO_ROW_PITCH + UI_INFO_BT_DY)
+
+_Static_assert(UI_INFO_BT_X0 >= 167,
+               "info: la runa de BT arranca antes de la media celda derecha (x167)");
+_Static_assert(UI_INFO_BT_X0 + UI_INFO_BT_W + UI_INFO_BT_LINE_W <= 195,
+               "info: la runa de BT se sale de la media celda derecha (x195)");
+_Static_assert(UI_INFO_BT_Y0 >= 31,
+               "info: la runa de BT arranca arriba de la banda de la celda (y31)");
+_Static_assert(UI_INFO_BT_Y0 + UI_INFO_BT_H + UI_INFO_BT_LINE_W <= 61,
+               "info: la runa de BT se sale de la barra (y61) con el trazo de 2 px");
 
 /* ------------------------------------------------------------------------ *
  * Fila de frecuencia del dial (src/main_screen.c): los tres labels `freq[]`.

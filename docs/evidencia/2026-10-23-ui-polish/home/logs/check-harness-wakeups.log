@@ -1,0 +1,7 @@
+running the wakeup profile on main-natural...
+  loop: 14 wakeups with the data drive (11 without it) in 1000 ms; sleeps 10-200 ms
+  tick thread: none (LV_TICK_CUSTOM, lv_conf.h: CLOCK_MONOTONIC) = 0 wakeups in 1000 ms
+  window override: --bench-wakeups 3000 ran 3000 ms with 31 loop wakeups (the default window: 1000 ms)
+  plain capture: no `wakeups` block (the mode is additive) and its 1100896 px settle plus the two passes add up to the run's flushed pixels
+PASS: wakeup profile measured, sourced and delimited (main-natural)
+  png sha256: 426937d7ff086c6b76f41c484a0d24f4d6457f29c5a0724693cec0971502b541

@@ -140,6 +140,9 @@ void lv_obj_set_style_text_align(lv_obj_t * obj, lv_text_align_t align, uint32_t
 void lv_obj_set_style_text_opa(lv_obj_t * obj, lv_opa_t value, uint32_t selector);
 void lv_obj_set_style_bg_img_opa(lv_obj_t * obj, lv_opa_t value, uint32_t selector);
 void lv_obj_set_style_bg_img_src(lv_obj_t * obj, const void * src, uint32_t selector);
+/* La banda de estado del #285 (src/clock.c): el fondo opaco del rol `bar`. */
+void lv_obj_set_style_bg_color(lv_obj_t * obj, lv_color_t color, uint32_t selector);
+void lv_obj_set_style_bg_opa(lv_obj_t * obj, lv_opa_t value, uint32_t selector);
 /* API de la version previa del reloj (issues #9/#150: el `pad_ver 18` del valor y
  * su fantasma). El reloj del #250 ya no la usa, pero el stub la conserva: es el
  * unico camino para compilar la revision ANTERIOR de src/clock.c contra este

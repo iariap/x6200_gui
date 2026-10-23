@@ -1,0 +1,9 @@
+running the natural bench on main-natural...
+  profile: spectrum 132000 px x 27 frames, waterfall 196000 px x 39 rows, clock 10486 px x 0 tick(s)
+  natural totals: invalidated 11208000 px in 66 rectangles / 66 flushes over 39/40 frames
+  delimitation: drive off -> 190400 px (1.7% of the 11208000 px with the drive), only band-info rectangles (the OPT-4 #150 equality guards removed the clock/BT ticks)
+  forced mode: 3 frames x 1 flush x 384000 px (natural: 11208000 px in 40 frames)
+  CLI override: --bench-natural 10 ran 10 frames (the fixture says 40)
+  display off: 0 px in 40 frames (against 11208000 px lit) and a capture 384000 px lighter
+PASS: natural bench deterministic, profiled and delimited (main-natural)
+  png sha256: f4fda4970cb2800227c15f383e111d6fc7b3896d0add3e8de9b892280d3f2e5f

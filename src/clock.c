@@ -33,8 +33,23 @@
  * Estructura (contrato UX/geometry del issue):
  *
  *   contenedor (clock_style: el bitmap del panel, UNA vez, sin input)
- *     fila del reloj  y=0..40    fantasma "88:88:88" (familia segmentada) + valor
+ *     banda de estado y=40..60   superficie opaca TC(bar), DEBAJO de todo (#285)
+ *     fila del reloj  y=0..39    fantasma "88:88:88" (familia segmentada) + valor
  *     fila de estado  y=41..60   [plug + %.1f V] (opcional)   [icono + NN%]
+ *
+ * La hora va con `font_digit(&sony_44)` (issue #285: la mas grande de la
+ * coleccion para los digitos del reloj, en las seis familias; `sony_38` era la
+ * anterior) y el porcentaje de bateria con `&sony_22` (el icono y la fuente
+ * externa siguen en `&sony_20`).
+ *
+ * La banda de estado nace de la auditoria A de la epica #269 (este issue, #285): el
+ * texto de la fila de estado se dibujaba sobre el BITMAP del panel, y en los
+ * temas oscuros con trazos finos el par medido queda por debajo de AA (4.0:1 la
+ * linea de alimentacion y 3.8:1 el porcentaje en Redshift; el gate
+ * tests/check_wcag_rendered.py los tenia en su baseline). La banda pinta el rol
+ * `bar` del tema (el mismo de las celdas de la barra de info) a todo el ancho
+ * del panel y 21 px de alto, DEBAJO de las etiquetas: la mitad de arriba del
+ * panel conserva su bitmap.
  *
  * Nada mas se mueve: el panel sigue midiendo 206/209 x 61 y su x es la del borde
  * derecho (`clock_style`), el S-meter y la fila de frecuencia no se tocan.
@@ -48,10 +63,11 @@
  *
  * Fila del reloj: la caja del valor y de su fantasma, al ancho del panel
  * (`lv_pct(100)`) y con el alto del contenido (la line height de la familia, que
- * cambia con el tema: 30/31 px en las de texto, 19/20 en las segmentadas). El
- * fantasma y el valor miden exactamente lo mismo porque piden la misma fuente y
- * la misma caja, asi que el fantasma cae digito a digito sobre el valor. Los 5 px
- * de arriba la centran en la fila y=0..40 del contrato, sin el `pad_ver 18` del
+ * cambia con el tema: 33 px en las de texto con `sony_44`, 19/20 en las
+ * segmentadas). El fantasma y el valor miden exactamente lo mismo porque piden
+ * la misma fuente y la misma caja, asi que el fantasma cae digito a digito sobre
+ * el valor. Los 3 px de arriba la centran en la fila y=0..39 del contrato (la
+ * caja de 33 px deja 3 px de margen arriba y 3 abajo), sin el `pad_ver 18` del
  * reloj viejo (que dejaba el texto en y=18..43 y solapaba cualquier linea
  * inferior).
  *
@@ -62,10 +78,17 @@
  * porque su ancho ("--%" -> "100%") es el que mueve la geometria. Un ancla de una
  * sola vez (el bug de #269/#270) dejaba el icono en la posicion del ancho viejo y
  * el primer digito del porcentaje caia encima. */
-#define CLOCK_LINE_Y     5
+#define CLOCK_LINE_Y     3
 #define STATUS_PAD       8
 #define STATUS_GAP       4
 #define STATUS_Y         (-2)
+
+/* La banda de estado (#285): superficie opaca del rol `bar`, a todo el ancho del
+ * panel (el alto del panel es el de `clock_style`, 61 px) y en la franja
+ * y=40..60. Se crea ANTES que la hora, el fantasma y las etiquetas de estado,
+ * asi que queda debajo de todas ellas. */
+#define CLOCK_STATUS_Y   40
+#define CLOCK_STATUS_H   21
 
 /* Umbral de la fuente externa: el mismo del reloj de potencia de main (3.0 V),
  * por debajo de eso el `v_ext` del pack es ruido de un pin sin fuente. */
@@ -231,7 +254,7 @@ static lv_obj_t * clock_line_label(lv_obj_t * parent) {
     lv_obj_set_size(label, lv_pct(100), LV_SIZE_CONTENT);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, CLOCK_LINE_Y);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_text_font(label, font_digit(&sony_38), 0);
+    lv_obj_set_style_text_font(label, font_digit(&sony_44), 0);
     lv_obj_set_style_text_color(label, TC(text), 0);
 
     return label;
@@ -309,6 +332,23 @@ static void show_time() {
     update_status(&sample);
 }
 
+/* La banda de estado (#285): la superficie opaca del rol `bar` sobre la que se
+ * dibujan la alimentacion externa, el icono de bateria y el porcentaje. Es un
+ * objeto sin input ni scroll y sin el estilo por defecto de LVGL (el mismo
+ * criterio que el panel y las etiquetas): todo lo que pinta lo pide aca. Se crea
+ * PRIMERO, asi que queda debajo de las tres etiquetas de la fila. */
+static void clock_status_band(lv_obj_t * parent) {
+    lv_obj_t * band = lv_obj_create(parent);
+
+    lv_obj_remove_style_all(band);
+    lv_obj_clear_flag(band, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(band, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_size(band, lv_pct(100), CLOCK_STATUS_H);
+    lv_obj_align(band, LV_ALIGN_TOP_MID, 0, CLOCK_STATUS_Y);
+    lv_obj_set_style_bg_color(band, TC(bar), 0);
+    lv_obj_set_style_bg_opa(band, LV_OPA_COVER, 0);
+}
+
 lv_obj_t * clock_init(lv_obj_t * parent) {
     /* power_mux se inicializa estaticamente (PTHREAD_MUTEX_INITIALIZER): el
      * registro de ultima respiracion puede leer la muestra desde el arranque,
@@ -324,6 +364,11 @@ lv_obj_t * clock_init(lv_obj_t * parent) {
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_CLICK_FOCUSABLE);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+
+    /* La banda de estado va PRIMERO: es el fondo opaco de la fila de estado y
+     * tiene que quedar debajo de las etiquetas (el orden de creacion es el orden
+     * de dibujo en LVGL, `lv_refr.c`). */
+    clock_status_band(obj);
 
     /* El "8 fantasma" se crea primero, asi que queda DEBAJO del valor: sin
      * familia segmentada no hay capa (con la familia por defecto el 8 seria un
@@ -354,7 +399,13 @@ lv_obj_t * clock_init(lv_obj_t * parent) {
     lv_label_set_text(lb_ext, "");
 
     lb_bat_pct = clock_label(obj);
-    lv_obj_set_style_text_font(lb_bat_pct, &sony_16, 0);
+    /* El porcentaje con `sony_22` (#285): es la lectura de la fila de estado, y
+     * con `sony_16` (12 px de caja, ~8 de tinta) quedaba muy por debajo del icono
+     * (sony_20) y, en las familias de trazo fino, con la tinta por debajo de AA
+     * sobre el bitmap del panel (auditoria #269/#270: Redshift 3.8:1). El icono y
+     * la fuente externa se quedan en `sony_20` (el unico slot chico con los
+     * glifos U+F240..F244). */
+    lv_obj_set_style_text_font(lb_bat_pct, &sony_22, 0);
     lv_obj_set_style_text_color(lb_bat_pct, TC(text), 0);
     lv_obj_align(lb_bat_pct, LV_ALIGN_BOTTOM_RIGHT, -STATUS_PAD, STATUS_Y);
     lv_label_set_text(lb_bat_pct, "");

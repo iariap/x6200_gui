@@ -2,11 +2,11 @@
  * Surface of tests/native/clock_stubs.c used by tests/native/test_clock.c.
  *
  * One entry per object src/clock.c::clock_init() creates, in creation order:
- * the panel container, the "8 fantasma" (only with a segmented digit family),
- * the clock line's value, and the status line's three labels. The test reads
- * each role's text, font, colour, flags, alignment and parent from here, so the
- * contract is pinned without modelling LVGL's layout (that is what the
- * tools/ui_harness `--inspect` gates measure with the real LVGL).
+ * the panel container, the status band, the "8 fantasma" (only with a segmented
+ * digit family), the clock line's value, and the status line's three labels. The
+ * test reads each role's text, font, colour, flags, alignment and parent from
+ * here, so the contract is pinned without modelling LVGL's layout (that is what
+ * the tools/ui_harness `--inspect` gates measure with the real LVGL).
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -18,17 +18,19 @@
 
 #include "lvgl/lvgl.h"
 
-/* Orden de creacion (src/clock.c::clock_init). El icono se crea DESPUES del
- * porcentaje porque se ancla a el (LV_ALIGN_OUT_LEFT_BOTTOM): el porcentaje es
- * el que fija el borde derecho de la banda. */
+/* Orden de creacion (src/clock.c::clock_init). La BANDA de estado (#285) se
+ * crea primero dentro del panel (queda debajo de todo) y el icono se crea
+ * DESPUES del porcentaje porque se ancla a el (LV_ALIGN_OUT_LEFT_BOTTOM): el
+ * porcentaje es el que fija el borde derecho de la banda. */
 enum {
     CLOCK_STUB_CONTAINER = 0, /* el panel: clock_style, sin input */
-    CLOCK_STUB_GHOST     = 1, /* "8 fantasma" de la linea del reloj */
-    CLOCK_STUB_TIME      = 2, /* HH:MM:SS */
-    CLOCK_STUB_EXT       = 3, /* alimentacion externa (opcional) */
-    CLOCK_STUB_PCT       = 4, /* porcentaje */
-    CLOCK_STUB_ICON      = 5, /* icono de bateria */
-    CLOCK_STUB_OBJECTS   = 6,
+    CLOCK_STUB_BAND      = 1, /* la banda de estado: fondo opaco TC(bar) */
+    CLOCK_STUB_GHOST     = 2, /* "8 fantasma" de la linea del reloj */
+    CLOCK_STUB_TIME      = 3, /* HH:MM:SS */
+    CLOCK_STUB_EXT       = 4, /* alimentacion externa (opcional) */
+    CLOCK_STUB_PCT       = 5, /* porcentaje */
+    CLOCK_STUB_ICON      = 6, /* icono de bateria */
+    CLOCK_STUB_OBJECTS   = 7,
 };
 
 int clock_stub_object_count(void);
@@ -39,6 +41,8 @@ bool clock_stub_is_label(int index);
 const char * clock_stub_text(int index);
 const lv_font_t * clock_stub_font(int index);
 lv_color_t clock_stub_color(int index);
+lv_color_t clock_stub_bg_color(int index);
+lv_opa_t clock_stub_bg_opa(int index);
 lv_opa_t clock_stub_text_opa(int index);
 bool clock_stub_hidden(int index);
 uint32_t clock_stub_flags(int index);

@@ -89,7 +89,7 @@ extern const struct _lv_font_t *const font_families[FONT_COUNT][FONT_SIZES_N];
  * faces for the frequency row and the clock, never for the letters. They are
  * compiled for the slots of `segmented_slots` only and each of them falls back
  * to the stock family of the same slot for every glyph it does not carry. */
-#define FONT_SEGMENTED_SLOTS(X) X(30) X(38)
+#define FONT_SEGMENTED_SLOTS(X) X(30) X(38) X(44)
 
 #define FONT_DECLARE_DSEG7(n) extern const struct _lv_font_t dseg7_##n;
 #define FONT_DECLARE_DSEG7MINI(n) extern const struct _lv_font_t dseg7mini_##n;

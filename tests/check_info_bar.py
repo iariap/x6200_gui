@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Contrato de la barra izquierda de HOME (issue #251): tokens, pad y tipografia.
+"""Contrato de la barra izquierda de HOME (issue #251) y de la runa de BT (#285).
 
 La barra son 3x2 celdas de 56x26 pintadas sobre el bitmap del fondo (`info_style`,
 206 px legacy / 209 px simple, 61 px de alto). El issue #251 cierra su geometria:
@@ -7,11 +7,17 @@ La barra son 3x2 celdas de 56x26 pintadas sobre el bitmap del fondo (`info_style
 tenian las dos filas), **22 px de fuente en los estados compactos** (AGC, PRE/ATT,
 ATU) y **20 px en VFO, modo y WiFi** -- los textos largos --, con cero clipping.
 
-Este chequeo es el lado determinista y barato de ese contrato: lee los tokens de
+El issue #285 agrega el contrato de la runa de Bluetooth: **DOS trazos
+persistentes** (los brazos en zigzag, `bt_arm_pts[]` 15x21, y la ESPINA vertical,
+`bt_spine_pts[]` 8,1..8,21) de 2 px con extremos redondeados, ubicados como una
+sola unidad en la media celda derecha de la celda WiFi/BT (x167..195, y31..61,
+con el trazo contado).
+
+Este chequeo es el lado determinista y barato de esos contratos: lee los tokens de
 `src/ui_tokens.h` y las decisiones locales de `src/info.c`, y falla si alguno se
 sale de la caja (los limites 206/61 son los del fondo de la barra, `src/styles.c`).
 El otro lado -- las cajas REALES -- lo mide el arnes: `ui_harness --inspect`
-(ver docs/evidencia/2026-10-23-home251/).
+(ver docs/evidencia/2026-10-23-home251/ y docs/evidencia/2026-10-23-ui-polish/home/).
 
 SPDX-License-Identifier: GPL-2.0-or-later
 """
@@ -31,8 +37,14 @@ STYLES = SRC / "styles.c"
 BARRA_W = 206
 BARRA_H = 61
 
-# El ancho y el alto de la runa de BT (bt_pts[], src/info.c): 14x20.
-RUNA_W, RUNA_H = 14, 20
+# El ancho y el alto de la runa de BT (bt_arm_pts[], src/info.c): 15x21 (issue
+# #285; el zigzag de un solo trazo era de 14x20). La espina es vertical: x fija.
+RUNA_W, RUNA_H = 15, 21
+ESPINA_X = 8
+
+# La media celda derecha de la celda WiFi/BT (28 px) y la banda de la celda: la
+# caja donde tienen que entrar los DOS trazos con el trazo de 2 px contado.
+BT_BOX = (167, 195, 31, 61)
 
 # Las seis celdas de la barra, en orden de lectura, y la fuente que el contrato
 # #251 les asigna: 22 px en los tres estados compactos (AGC, PRE/ATT, ATU) y 20 px
@@ -104,7 +116,11 @@ ESPERADOS = {
     "UI_INFO_ORIGIN_Y": 5,
     "UI_INFO_WIFI_W": 28,
     "UI_INFO_WIFI_ROW": 1,
-    "UI_INFO_BT_H": 20,
+    "UI_INFO_BT_H": 21,
+    "UI_INFO_BT_W": 15,
+    "UI_INFO_BT_X_PAD": 6,
+    "UI_INFO_BT_ARM_POINTS": 7,
+    "UI_INFO_BT_SPINE_POINTS": 2,
     "UI_INFO_BT_DY": 8,
     "UI_INFO_CELL_PAD_V": 2,
 }
@@ -124,11 +140,18 @@ if not fallos:
     # Las columnas y las filas tienen que entrar en el fondo de la barra.
     borde_x = x0 + cols * w + (cols - 1) * gap
     borde_y = y0 + (rows - 1) * pitch + h
-    runa_y = y0 + wifi_row * pitch + bt_dy + RUNA_H
+    # La runa (dos trazos, #285): su caja con el trazo de 2 px. La x sale de la
+    # formula de la celda (media celda derecha + UI_INFO_BT_X_PAD) y la y de la
+    # ecuacion de la fila (la misma que la celda de al lado).
+    runa_x = x0 + tokens["UI_INFO_WIFI_COL"] * tokens["UI_INFO_COL_PITCH"] + wifi_w + tokens["UI_INFO_BT_X_PAD"]
+    runa_y = wifi_row * pitch + bt_dy
+    runa_der = runa_x + RUNA_W + tokens["UI_INFO_BT_LINE_W"]
+    runa_fondo = runa_y + RUNA_H + tokens["UI_INFO_BT_LINE_W"]
     print(f"  rejilla: celdas {cols}x{rows} de {w}x{h} en ({x0},{y0})")
     print(f"  gap horizontal {gap} | pitch vertical {pitch} | col pitch {tokens['UI_INFO_COL_PITCH']}")
     print(f"  borde derecho {borde_x} <= {BARRA_W} | fondo de la ultima fila {borde_y} <= {BARRA_H}")
-    print(f"  runa de BT (celda WiFi {wifi_w} px): fondo {runa_y} <= {BARRA_H}")
+    print(f"  runa de BT (media celda {BT_BOX[0]}..{BT_BOX[1]}): x {runa_x}..{runa_der}, "
+          f"y {runa_y}..{runa_fondo}")
 
     if pitch < h:
         fallos.append(f"las filas se solapan {h - pitch} px (pitch {pitch} < celda {h})")
@@ -138,8 +161,12 @@ if not fallos:
         fallos.append(f"la ultima celda llega a x={borde_x}, fuera de la barra ({BARRA_W} px)")
     if borde_y > BARRA_H:
         fallos.append(f"la ultima fila llega a y={borde_y}, fuera de la barra ({BARRA_H} px)")
-    if runa_y > BARRA_H:
-        fallos.append(f"la runa de BT llega a y={runa_y}, fuera de la barra ({BARRA_H} px)")
+    if not (BT_BOX[0] <= runa_x and runa_der <= BT_BOX[1]):
+        fallos.append(f"la runa de BT se sale de la media celda derecha ({runa_x}..{runa_der}, "
+                      f"caja {BT_BOX[0]}..{BT_BOX[1]})")
+    if not (BT_BOX[2] <= runa_y and runa_fondo <= BT_BOX[3]):
+        fallos.append(f"la runa de BT se sale de la banda de la celda ({runa_y}..{runa_fondo}, "
+                      f"caja {BT_BOX[2]}..{BT_BOX[3]})")
     if tokens["UI_INFO_WIFI_COL"] != cols - 1 or wifi_row != rows - 1:
         fallos.append("la celda de WiFi/BT dejo de ser la ultima de la rejilla")
 
@@ -199,28 +226,54 @@ for celda in ("INFO_VFO", "INFO_MODE"):
 # (lo que tambien cubre los dos simbolos). El estilo compartido sigue en sony_20.
 if re.search(r"lv_obj_set_style_text_font\(\s*items\[INFO_WIFI\]", texto):
     fallos.append("src/info.c: la celda de WiFi/BT no debe llevar fuente local (hereda las 20 px del estilo)")
-if re.search(r"lv_obj_set_style_text_font\(\s*bt_item", texto):
+if re.search(r"lv_obj_set_style_text_font\(\s*bt_arm", texto) or \
+   re.search(r"lv_obj_set_style_text_font\(\s*bt_spine", texto):
     fallos.append("src/info.c: la runa de BT no lleva fuente (no es texto)")
 if "lv_style_set_text_font(&info_item_style, &sony_20)" not in STYLES.read_text(errors="surrogateescape"):
     fallos.append("src/styles.c: la celda de la barra dejo de dibujar con sony_20 (info_item_style)")
 
-# 2c. La runa de BT conserva su geometria (14x20, width 2) y su x/y salen de los
-# tokens de la rejilla (sigue al WiFi sin tocar la celda de al lado).
-puntos = re.findall(r"\{\s*(\d+),\s*(\d+)\s*\}", texto[texto.find("bt_pts[]") : texto.find("bt_pts[]") + 400])
-if not puntos:
-    fallos.append("src/info.c: no esta bt_pts[] (la runa de BT)")
+# 2c. La runa de BT (issue #285): DOS trazos persistentes -- los brazos (path A)
+# y la espina vertical (path B) -- que entran en la media celda derecha con el
+# trazo de 2 px contado. La espina tiene que existir y ser vertical: un solo
+# zigzag no era la runa (era el defecto medido en la auditoria #269/#270).
+brazos = re.findall(r"\{\s*(\d+),\s*(\d+)\s*\}",
+                    texto[texto.find("bt_arm_pts[]") : texto.find("bt_spine_pts[]")])
+espina_txt = texto[texto.find("bt_spine_pts[]") : texto.find("bt_spine_pts[]") + 300]
+espina = re.findall(r"\{\s*(\d+),\s*(\d+)\s*\}", espina_txt)
+if not brazos:
+    fallos.append("src/info.c: no estan bt_arm_pts[] (los brazos de la runa de BT)")
 else:
-    xs = [int(x) for x, _ in puntos]
-    ys = [int(y) for _, y in puntos]
+    xs = [int(x) for x, _ in brazos]
+    ys = [int(y) for _, y in brazos]
     if max(xs) != RUNA_W or max(ys) != RUNA_H:
         fallos.append(
-            f"src/info.c: la runa de BT mide {max(xs)}x{max(ys)} (el contrato pide {RUNA_W}x{RUNA_H})"
+            f"src/info.c: los brazos de BT miden {max(xs)}x{max(ys)} (el contrato pide {RUNA_W}x{RUNA_H})"
         )
-if "UI_INFO_BT_LINE_W, 0" not in texto:
-    fallos.append("src/info.c: la runa de BT no conserva su ancho de linea (UI_INFO_BT_LINE_W)")
-if not re.search(r"UI_INFO_WIFI_COL \* UI_INFO_COL_PITCH \+ UI_INFO_ORIGIN_X \+ UI_INFO_WIFI_W", texto):
+    if len(brazos) != tokens["UI_INFO_BT_ARM_POINTS"]:
+        fallos.append(f"src/info.c: los brazos tienen {len(brazos)} puntos y el token dice "
+                      f"{tokens['UI_INFO_BT_ARM_POINTS']}")
+if len(espina) != tokens["UI_INFO_BT_SPINE_POINTS"]:
+    fallos.append(f"src/info.c: la espina tiene {len(espina)} punto(s) y el token dice "
+                  f"{tokens['UI_INFO_BT_SPINE_POINTS']}")
+elif any(int(x) != ESPINA_X for x, _ in espina):
+    fallos.append("src/info.c: la espina de BT no es VERTICAL (los dos puntos no comparten x)")
+else:
+    ys = sorted(int(y) for _, y in espina)
+    if ys != [1, RUNA_H]:
+        fallos.append(f"src/info.c: la espina va de y{ys[0]} a y{ys[-1]} (el contrato pide 1..{RUNA_H})")
+if texto.count("lv_line_create(") != 2:
+    fallos.append("src/info.c: la runa de BT no son DOS objetos lv_line (brazos + espina)")
+if texto.count("UI_INFO_BT_LINE_W, 0") < 2:
+    fallos.append("src/info.c: los dos trazos de la runa de BT tienen que llevar UI_INFO_BT_LINE_W")
+if texto.count("lv_obj_set_style_line_rounded(") < 2:
+    fallos.append("src/info.c: los dos trazos de la runa de BT tienen que llevar extremos redondeados")
+if not re.search(r"UI_INFO_ORIGIN_X \+ UI_INFO_WIFI_COL \* UI_INFO_COL_PITCH", texto):
     fallos.append("src/info.c: la runa de BT no se ubica con la formula de UI_INFO_COL_PITCH")
-if re.search(r"items\[INFO_WIFI\][^\n]*sony_22", texto) or re.search(r"bt_item[^\n]*sony_22", texto):
+if not re.search(r"UI_INFO_WIFI_W \+ UI_INFO_BT_X_PAD", texto):
+    fallos.append("src/info.c: la runa de BT no usa UI_INFO_BT_X_PAD (la centra en la media celda)")
+if not re.search(r"UI_INFO_WIFI_ROW \* UI_INFO_ROW_PITCH \+ UI_INFO_BT_DY", texto):
+    fallos.append("src/info.c: la runa de BT no usa la ecuacion de la fila (UI_INFO_BT_DY)")
+if re.search(r"items\[INFO_WIFI\][^\n]*sony_22", texto) or re.search(r"bt_(arm|spine)[^\n]*sony_22", texto):
     fallos.append("src/info.c: los simbolos de WiFi/BT no van con la fuente de 22 px")
 
 print(f"  celdas del contrato: {len(CELDAS_BARRA)} | pad vertical local: {sorted(pad_valores, key=str)}")
@@ -230,4 +283,4 @@ if fallos:
         print(f"  FALLA {f}")
     sys.exit(1)
 
-print("  la barra izquierda cumple el contrato de #251 (6 px / pitch 26 / 22-20 / sin solape)")
+print("  la barra izquierda cumple el contrato de #251 y la runa de BT de #285")

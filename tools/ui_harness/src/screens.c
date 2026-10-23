@@ -2261,31 +2261,37 @@ static lv_obj_t *find_label_with_text(lv_obj_t *obj, const char *text)
     return NULL;
 }
 
-/* La runa de BT es el unico lv_line con la caja de la barra de arriba (16x22);
- * las otras lineas del main screen son el centro del waterfall (3x243) y los
- * ejes del grafico DFL (1x7), todas mas chicas o mas largas. */
-static lv_obj_t *find_bt_rune(lv_obj_t *obj, int *found)
+/* La runa de BT son DOS lv_line en la media celda derecha de la barra de arriba
+ * (issue #285: los brazos en zigzag + la espina vertical; hasta #285 era un solo
+ * zigzag). La caja de la media celda los distingue de las otras lineas del main
+ * screen (el centro del waterfall, 3x243, y los ejes del grafico DFL, 1x7). */
+#define BT_RUNE_X0 160
+#define BT_RUNE_X1 200
+#define BT_RUNE_Y0 25
+#define BT_RUNE_Y1 65
+
+static void find_bt_runes(lv_obj_t *obj, lv_obj_t *out[2], lv_coord_t widths[2], int *found)
 {
     if (lv_obj_check_type(obj, &lv_line_class)) {
-        lv_coord_t w = lv_obj_get_width(obj);
-        lv_coord_t h = lv_obj_get_height(obj);
+        lv_area_t a;
 
-        if (w >= 8 && w <= 24 && h >= 15 && h <= 30) {
+        lv_obj_get_coords(obj, &a);
+
+        if (a.x1 >= BT_RUNE_X0 && a.x2 <= BT_RUNE_X1 &&
+            a.y1 >= BT_RUNE_Y0 && a.y2 <= BT_RUNE_Y1) {
+            if (*found < 2) {
+                out[*found]    = obj;
+                widths[*found] = a.x2 - a.x1 + 1;
+            }
             (*found)++;
-            return obj;
         }
     }
 
     uint32_t n = lv_obj_get_child_cnt(obj);
 
     for (uint32_t i = 0; i < n; i++) {
-        lv_obj_t *hit = find_bt_rune(lv_obj_get_child(obj, (int32_t) i), found);
-
-        if (hit != NULL) {
-            return hit;
-        }
+        find_bt_runes(lv_obj_get_child(obj, (int32_t) i), out, widths, found);
     }
-    return NULL;
 }
 
 static void settle_net_state(const scenario_t *scenario)
@@ -2317,12 +2323,24 @@ static void settle_net_state(const scenario_t *scenario)
         exit(1);
     }
 
-    int       runas = 0;
-    lv_obj_t *bt    = find_bt_rune(lv_scr_act(), &runas);
+    lv_obj_t  *runes[2]  = { NULL, NULL };
+    lv_coord_t widths[2] = { 0, 0 };
+    int        found     = 0;
 
-    if (bt == NULL || runas != 1) {
-        fprintf(stderr, "%s: no encontre la runa de BT de la barra (%d candidatas, src/info.c)\n",
-                scenario->name, runas);
+    find_bt_runes(lv_scr_act(), runes, widths, &found);
+
+    /* La runa son DOS trazos (brazos + espina): si aparece una sola, el zigzag
+     * volvio; si aparecen mas, hay algo mas dibujado en la celda. La espina es
+     * la mas angosta (una linea vertical), asi que las dos anchuras tienen que
+     * ser distintas. */
+    if (found != 2) {
+        fprintf(stderr, "%s: la runa de BT tiene %d trazo(s), esperaba 2 (brazos + espina, "
+                "src/info.c issue #285)\n", scenario->name, found);
+        exit(1);
+    }
+    if (widths[0] == widths[1]) {
+        fprintf(stderr, "%s: los dos trazos de la runa de BT miden lo mismo (%d px): no hay "
+                "espina vertical (src/info.c issue #285)\n", scenario->name, (int) widths[0]);
         exit(1);
     }
 
@@ -2336,11 +2354,13 @@ static void settle_net_state(const scenario_t *scenario)
         want_bt = TC(text_dim);
     }
 
-    if (lv_obj_get_style_line_color(bt, 0).full != want_bt.full) {
-        fprintf(stderr,
-                "%s: la runa de BT no tiene el color del estado inyectado "
-                "(src/info.c bt_state_show)\n", scenario->name);
-        exit(1);
+    for (int i = 0; i < 2; i++) {
+        if (lv_obj_get_style_line_color(runes[i], 0).full != want_bt.full) {
+            fprintf(stderr,
+                    "%s: el trazo %d de la runa de BT no tiene el color del estado inyectado "
+                    "(src/info.c bt_state_show)\n", scenario->name, i);
+            exit(1);
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 /*
  * Minimal styles.h for the native clock test (tests/native/test_clock.c).
- * src/clock.c uses clock_style, sony_30 and sony_38 plus the plug symbols.
+ * src/clock.c uses clock_style, sony_20, sony_22, sony_44 plus the plug symbols.
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
@@ -15,8 +15,10 @@
 extern lv_style_t clock_style;
 extern lv_font_t sony_16;
 extern lv_font_t sony_20;
+extern lv_font_t sony_22;
 extern lv_font_t sony_30;
 extern lv_font_t sony_38;
+extern lv_font_t sony_44;
 
 /* Opacidad del "8 fantasma" (src/styles.h): el valor real es el mismo LV_OPA_30. */
 #define UI_DIGIT_SHADOW_OPA LV_OPA_30

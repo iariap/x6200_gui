@@ -44,18 +44,29 @@ static Subject *mode_lock;
  * en un hilo y escribe la configuracion un rato despues, y ademas hay cambios que hace btaudio-ctl
  * por fuera de la GUI. Cuesta dos archivos chicos y un access(), y es el mismo patron que ya usa
  * dialog_bt.c (700 ms) porque LVGL no es thread-safe: no se puede avisar desde el hilo. */
-static lv_obj_t *bt_item;
+static lv_obj_t *bt_arm;
+static lv_obj_t *bt_spine;
 
-/* Runa del Bluetooth, en 14x20: un solo trazo de 7 puntos (el glifo LV_SYMBOL_BLUETOOTH no esta en
- * las fuentes del equipo: sony_20 solo trae wifi y bateria, y salia un rectangulo vacio). */
-static lv_point_t bt_pts[] = {
-    {  7,  0 },
-    { 14,  5 },
-    {  0, 15 },
-    {  7, 20 },
-    { 14, 15 },
-    {  0,  5 },
-    {  7,  0 },
+/* La runa de Bluetooth, DOS trazos persistentes que se dibujan como una sola unidad visual (issue
+ * #285): los brazos en zigzag (path A) y la ESPINA vertical central (path B). El glifo
+ * LV_SYMBOL_BLUETOOTH no esta en las fuentes del equipo (sony_20 solo trae wifi y bateria, y salia
+ * un rectangulo vacio) y el zigzag solo (un unico lv_line, hasta #285) no se leia como la runa: le
+ * faltaba la espina. Caja local de los brazos: x3..15, y1..21 (UI_INFO_BT_W/H); los dos trazos
+ * comparten origen, asi que se ubican con la MISMA formula (ver info_init). No hay asignaciones en
+ * el refresco: los puntos son estaticos y `bt_state_show()` solo cambia el color. */
+static lv_point_t bt_arm_pts[] = {
+    {  8,  1 },
+    { 15,  6 },
+    {  3, 16 },
+    {  8, 21 },
+    { 15, 16 },
+    {  3,  6 },
+    {  8,  1 },
+};
+
+static lv_point_t bt_spine_pts[] = {
+    {  8,  1 },
+    {  8, 21 },
 };
 
 static void bt_state_show(void);
@@ -182,16 +193,35 @@ lv_obj_t * info_init(lv_obj_t * parent) {
      * mitad izquierda y el BT ocupa la derecha (el S-meter empieza justo al lado de la barra, no se
      * puede agregar una columna). Tres estados, como el WiFi: apagado (negro), prendido sin
      * auriculares (gris) y con auriculares A2DP conectados (blanco). Se refresca cada 2 s porque
-     * btcat-ctl escribe el estado en un hilo, con un retraso (docs/HALLAZGOS.md 19). */
+     * btcat-ctl escribe el estado en un hilo, con un retraso (docs/HALLAZGOS.md 19).
+     *
+     * La runa son DOS trazos (brazos + espina, issue #285): hasta #285 era un solo zigzag y no se
+     * leia como el icono de Bluetooth. Los dos comparten origen, color y tratamiento de linea. */
     lv_obj_set_size(items[INFO_WIFI], UI_INFO_WIFI_W, UI_INFO_CELL_H);
     lv_obj_set_style_text_align(items[INFO_WIFI], LV_TEXT_ALIGN_LEFT, 0);
 
-    bt_item = lv_line_create(obj);
-    lv_line_set_points(bt_item, bt_pts, UI_INFO_BT_POINTS);
-    lv_obj_set_style_line_width(bt_item, UI_INFO_BT_LINE_W, 0);
-    lv_obj_set_style_line_rounded(bt_item, true, 0);
-    lv_obj_set_pos(bt_item, UI_INFO_WIFI_COL * UI_INFO_COL_PITCH + UI_INFO_ORIGIN_X + UI_INFO_WIFI_W,
-                   UI_INFO_WIFI_ROW * UI_INFO_ROW_PITCH + UI_INFO_BT_DY);
+    bt_arm = lv_line_create(obj);
+    lv_line_set_points(bt_arm, bt_arm_pts, UI_INFO_BT_ARM_POINTS);
+    lv_obj_set_style_line_width(bt_arm, UI_INFO_BT_LINE_W, 0);
+    lv_obj_set_style_line_rounded(bt_arm, true, 0);
+
+    /* La espina, el segundo trazo: mismo origen que los brazos (los dos son una
+     * sola unidad visual) y el mismo tratamiento (2 px, extremos redondeados). */
+    bt_spine = lv_line_create(obj);
+    lv_line_set_points(bt_spine, bt_spine_pts, UI_INFO_BT_SPINE_POINTS);
+    lv_obj_set_style_line_width(bt_spine, UI_INFO_BT_LINE_W, 0);
+    lv_obj_set_style_line_rounded(bt_spine, true, 0);
+
+    /* La ubicacion de la runa: la media celda DERECHA de la celda WiFi/BT (28
+     * px, centro x181), centrada con UI_INFO_BT_X_PAD, y la misma y de la fila
+     * para los dos trazos. Los dos objetos son hijos de la barra (no de la celda)
+     * y comparten coordenada, asi que se mueven como una sola pieza. */
+    lv_coord_t bt_x = UI_INFO_ORIGIN_X + UI_INFO_WIFI_COL * UI_INFO_COL_PITCH
+                      + UI_INFO_WIFI_W + UI_INFO_BT_X_PAD;
+    lv_coord_t bt_y = UI_INFO_WIFI_ROW * UI_INFO_ROW_PITCH + UI_INFO_BT_DY;
+
+    lv_obj_set_pos(bt_arm, bt_x, bt_y);
+    lv_obj_set_pos(bt_spine, bt_x, bt_y);
 
     bt_state_show();
     lv_timer_create(bt_state_timer_cb, 2000, NULL);
@@ -313,7 +343,8 @@ static void wifi_state_change_cb(void *s, lv_msg_t *m) {
 }
 
 /* Icono de Bluetooth: mismo criterio de colores que el WiFi (blanco = listo, gris = a medias,
- * negro = apagado). Con auriculares A2DP conectados queda blanco. */
+ * negro = apagado). Con auriculares A2DP conectados queda blanco. Los DOS trazos de la runa
+ * (brazos y espina) llevan el mismo color: es una sola pieza visual. */
 static void bt_state_show(void) {
     lv_color_t color;
 
@@ -327,9 +358,13 @@ static void bt_state_show(void) {
 
     /* Guarda de igualdad (OPT-4 #150): el timer de 2 s reescribe el color del
      * icono aunque el estado de BT no haya cambiado; set_style invalida siempre.
-     * Se compara contra el color resuelto del objeto (sin cache). */
-    if (bt_item != NULL && lv_obj_get_style_line_color(bt_item, 0).full != color.full) {
-        lv_obj_set_style_line_color(bt_item, color, 0);
+     * Se compara contra el color resuelto del objeto (sin cache) y por separado
+     * para cada trazo, asi que ninguno se invalida de mas. */
+    if (bt_arm != NULL && lv_obj_get_style_line_color(bt_arm, 0).full != color.full) {
+        lv_obj_set_style_line_color(bt_arm, color, 0);
+    }
+    if (bt_spine != NULL && lv_obj_get_style_line_color(bt_spine, 0).full != color.full) {
+        lv_obj_set_style_line_color(bt_spine, color, 0);
     }
 }
 

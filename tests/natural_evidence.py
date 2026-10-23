@@ -52,22 +52,22 @@ from pathlib import Path
 PROFILE: dict[tuple[int, int, int, int], tuple[int, str]] = {
     (0, 0, 800, 165): (132000, "spectrum, one FFT frame (src/spectrum.c)"),
     (0, 235, 800, 245): (196000, "waterfall, one new row (src/waterfall.c)"),
-    # El reloj (issue #250): la linea del reloj es la etiqueta 209x31 de la
-    # fila y=0..40 (591,5 medido con `--inspect`), y la invalidacion del label
-    # es su caja expandida por el `ext_draw_size` de LVGL, recortada al display:
-    # 214x48 = 10272 px en `main-natural` (Aurora, familia de texto) y 214x35 =
-    # 7490 px en `main-frecuencia-dseg` (digits dseg7). Con `time()` fijo (el
-    # harness) la hora nunca cambia y la guarda de igualdad del #150 apaga la
-    # invalidacion, asi que el rectangulo NO aparece en el banco: los dos
-    # numeros se midieron con el reloj de pared avanzando con el reloj virtual
-    # (un parche local del `__wrap_time` del harness, no versionado) y con el
-    # mismo camino se midio el reloj de potencia de main para comparar: 15549 px
-    # (581,0,219,71) en `main-frecuencia-dseg` con `clock_view time`. El reloj
-    # permanente invalida menos pixeles por segundo que el viejo (10272/7490
-    # contra 15549) y el rectangulo de main (580,0,220,72) ya no existe.
-    (586, 0, 214, 48): (10272, "clock, every 500 ms (src/clock.c, #250)"),
+    # El reloj (issue #250; re-medido en #285): la linea del reloj es la etiqueta
+    # 209x33 de la fila y=3..36 (591,3 medido con `--inspect`; con sony_44, issue
+    # #285), y la invalidacion del label es su caja expandida por el
+    # `ext_draw_size` de LVGL, recortada al display: 214x49 = 10486 px en
+    # `main-natural` (Aurora, familia de texto) y 214x36 = 7704 px en
+    # `main-frecuencia-dseg` (digits dseg7). Con `time()` fijo (el harness) la
+    # hora nunca cambia y la guarda de igualdad del #150 apaga la invalidacion,
+    # asi que el rectangulo NO aparece en el banco: los dos numeros se midieron
+    # con el reloj de pared avanzando con el reloj virtual (un parche local del
+    # `__wrap_time` del harness, no versionado). Antes de #285 eran 214x48 =
+    # 10272 y 214x35 = 7490 (el label medía 2 px menos de alto): el reloj del
+    # #285 invalida 214 px mas por tick (+2.1% / +2.9%). (El reloj de potencia de
+    # la main previa al #250 media 15549 px por tick -- 581,0,219,71 en
+    # `main-frecuencia-dseg` con `clock_view time`; ese rectangulo ya no existe.)
+    (586, 0, 214, 49): (10486, "clock, every 500 ms (src/clock.c, #250/#285)"),
     (0, 241, 800, 34): (27200, "band info, fading after the 2 s timer (src/band_info.c)"),
-    (152, 23, 30, 36): (1080, "BT state, the 2 s timer (src/info.c)"),
 }
 
 # The fixture declares `natural_frames 40`; one frame is one LVGL display
@@ -96,7 +96,7 @@ def rom_refresh_period_ms(root: Path) -> int:
     return int(match.group(1))
 
 
-# The settled capture of main-natural: 6 flushes and 1100352 px; the natural run
+# The settled capture of main-natural: 6 flushes and 1100896 px; the natural run
 # adds its own flushes on top, it never replaces them. OPT-4 #150: the clock's
 # equality guard (src/clock.c) removes the settled capture's needless clock
 # ticks; the rendered PNG is byte-identical either way (the guard only skips an
@@ -111,7 +111,13 @@ def rom_refresh_period_ms(root: Path) -> int:
 # numero esta medido sobre el binario de esta revision y el control
 # `--display-off` lo verifica por diferencia (SETTLE_PX - FULL_SCREEN_PX).
 SETTLE_FLUSHES = 6
-SETTLE_PX = 1100352
+# Re-medido en #285: 1100352 -> 1100896 (+544 px, +0.05%). El settle es la union
+# de invalidaciones del arranque, y el reloj es parte de esa union: la etiqueta
+# de la hora crecio 2 px de alto (sony_44) y la banda de estado (#285) es una
+# superficie nueva del panel. El numero se re-midio sobre el binario de esta
+# revision y el control `--display-off` lo verifica por diferencia
+# (SETTLE_PX - FULL_SCREEN_PX = 716896, medido).
+SETTLE_PX = 1100896
 FULL_SCREEN_PX = 800 * 480
 
 # How many times each rectangle appears in the 40 frames (deterministic: seed 13,
@@ -180,6 +186,13 @@ def expected_drives(total_ms: int, fps_ms: int) -> int:
 
 def rects_of(frame: dict) -> list[tuple[int, int, int, int]]:
     return [(int(rect[0]), int(rect[1]), int(rect[2]), int(rect[3])) for rect in frame["rects"]]
+
+
+def _intersecta(rect: tuple[int, int, int, int], region: tuple[int, int, int, int]) -> bool:
+    """¿El rectangulo (x,y,w,h) toca la region (x0,y0,x1,y1)?"""
+    x, y, w, h = rect
+    x0, y0, x1, y1 = region
+    return not (x + w <= x0 or x >= x1 or y + h <= y0 or y >= y1)
 
 
 def check_natural(checker: Checker, doc: dict, rom_frame_ms: int) -> None:
@@ -299,7 +312,7 @@ def check_natural(checker: Checker, doc: dict, rom_frame_ms: int) -> None:
     # dicen el mismo texto y el reloj tiene que invalidar 0 veces. Sin la guarda
     # el rectangulo del reloj (#250: 586,0,214,48 = 10272 px) aparece en el
     # histograma (medido, ver PROFILE).
-    clock_rect = (586, 0, 214, 48)
+    clock_rect = (586, 0, 214, 49)
     checker.check(
         counts[clock_rect] == 0,
         f"the clock invalidated {counts[clock_rect]} time(s) with an unchanged text: "
@@ -325,7 +338,7 @@ def check_natural(checker: Checker, doc: dict, rom_frame_ms: int) -> None:
     checker.note(
         f"  profile: spectrum {PROFILE[(0, 0, 800, 165)][0]} px x {counts[(0, 0, 800, 165)]} frames, "
         f"waterfall {PROFILE[(0, 235, 800, 245)][0]} px x {counts[(0, 235, 800, 245)]} rows, "
-        f"clock {PROFILE[(586, 0, 214, 48)][0]} px x {counts[(586, 0, 214, 48)]} tick(s)"
+        f"clock {PROFILE[(586, 0, 214, 49)][0]} px x {counts[(586, 0, 214, 49)]} tick(s)"
     )
     checker.note(
         f"  natural totals: invalidated {natural['totals']['invalidated_px']} px in "
@@ -353,14 +366,21 @@ def check_static(checker: Checker, static: dict, natural_doc: dict) -> None:
         "of the natural area: the control does not delimit the measurement",
     )
     # OPT-4 #150: con el drive apagado quedan solo los timers de 2 s del
-    # firmware. Las guardas de igualdad del reloj (src/clock.c) y del icono BT
+    # firmware. Las guardas de igualdad del reloj (src/clock.c) y de la runa BT
     # (src/info.c) apagan los dos: sin ellas el control invalidaba los ticks de
-    # reloj (#250: 2 x 10272 px) y 1 de BT (1080 px) aunque el valor no
-    # cambiara. Despues de las guardas el control es solo el band-info
-    # (7 x 27200 px).
+    # reloj y el de BT aunque el valor no cambiara. Despues de las guardas el
+    # control es solo el band-info (7 x 27200 px).
+    #
+    # La runa de BT se chequea por REGION (la media celda derecha de la barra,
+    # x167..195 / y31..61) y no por un rectangulo exacto: #285 movio la runa a
+    # x173..190 / y34..57, asi que una clave medida antes de ese cambio dejaria
+    # la guarda sin verificar de verdad (el rectangulo nuevo no matchearia).
+    bt_region = (167, 31, 195, 61)
+    bt_rects = [r for r in rects if _intersecta(r, bt_region)]
     checker.check(
-        (586, 0, 214, 48) not in rects and (152, 23, 30, 36) not in rects,
-        f"the equality guards (OPT-4 #150) did not suppress the identical-value timers: {rects}",
+        (586, 0, 214, 49) not in rects and not bt_rects,
+        f"the equality guards (OPT-4 #150) did not suppress the identical-value timers: "
+        f"{rects} (BT: {bt_rects})",
     )
     checker.check(
         static["metrics"]["framebuffer_fnv1a"] != natural_doc["metrics"]["framebuffer_fnv1a"],

@@ -1,0 +1,4 @@
+# compilacion + corrida del test nativo del reloj (mismo comando del runner)
+gcc -std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter -pthread -ftrivial-auto-var-init=pattern -I$STAGE -Itests/native/stubs_clock ... -o clock_tests
+137 comprobaciones, 0 fallos
+exit=0

@@ -1,0 +1,35 @@
+sources:
+  ok fontawesome6     af19d135d3a9… fa-solid-900.ttf
+  ok inter            29160a80ff49… Inter[opsz,wght].ttf
+  ok roboto           d7598e12c5db… Roboto[wdth,wght].ttf
+  ok robotocondensed  dace262afcee… RobotoCondensed[wght].ttf
+  ok notosans         bfb7bb691513… NotoSans[wdth,wght].ttf
+  ok ibmplexsans      3b031aa42161… IBMPlexSans[wdth,wght].ttf
+  ok firasans         c29556a2719b… FiraSans-Regular.ttf
+  ok opensans         36643644f318… OpenSans[wdth,wght].ttf
+  ok sourcesans3      042fe2cc0b93… SourceSans3[wght].ttf
+  ok ptsans           9cc831490532… PT_Sans-Web-Regular.ttf
+  ok lato             d636e4683231… Lato-Regular.ttf
+  ok dejavusans       7da195a74c55… DejaVuSans.ttf
+  ok archivo          0e094a7d3c7c… Archivo[wdth,wght].ttf
+  ok archivonarrow    adbe027f625c… ArchivoNarrow[wght].ttf
+  ok ubuntu           3128df86a318… Ubuntu-Regular.ttf
+  ok jetbrainsmono    48715a42ec24… JetBrainsMono[wght].ttf
+  ok dseg7            e3270928ced6… DSEG7Classic-Regular.ttf
+  ok dseg7mini        1a9103b69043… DSEG7ClassicMini-Regular.ttf
+  ok dseg14           0106818dd2e2… DSEG14Classic-Regular.ttf
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/inter/OFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/roboto/OFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/robotocondensed/OFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/notosans/OFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/ibmplexsans/OFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/firasans/OFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/opensans/OFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/sourcesans3/OFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/ptsans/OFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/lato/OFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/archivo/OFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/archivonarrow/OFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ufl/ubuntu/UFL.txt
+  fetching https://raw.githubusercontent.com/google/fonts/94301472b4d809299b4775bc6502592b83dd6934/ofl/jetbrainsmono/OFL.txt
+licence texts written to src/fonts/licenses/

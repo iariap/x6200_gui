@@ -38,8 +38,10 @@ params_t params;
 lv_style_t clock_style;
 lv_font_t sony_16;
 lv_font_t sony_20;
+lv_font_t sony_22;
 lv_font_t sony_30;
 lv_font_t sony_38;
+lv_font_t sony_44;
 
 /* src/fonts/font_select.c is not compiled here: the clock test only needs the
  * identity (the ROM's segmented digit families are host-side data). The active
@@ -64,6 +66,7 @@ uint32_t theme_hex(theme_color_t c) {
         case TC_text:     return 0xFFF8EEFFu;   /* Aurora's text */
         case TC_text_dim: return 0xFFD5C4E0u;   /* Aurora's text_dim */
         case TC_warn:     return 0xFFFFD196u;   /* Aurora's warn */
+        case TC_bar:      return 0xFF2C213Eu;   /* Aurora's bar */
     }
     return 0x00000000u;
 }
@@ -89,6 +92,8 @@ typedef struct {
     char             text[STUB_MAX_LABEL_TEXT];
     const lv_font_t *font;
     lv_color_t       color;
+    lv_color_t       bg_color;
+    lv_opa_t         bg_opa;
     lv_opa_t         text_opa;
     lv_opa_t         bg_img_opa;
     const void      *bg_img_src;
@@ -258,6 +263,21 @@ void lv_obj_set_style_bg_img_src(lv_obj_t * obj, const void * src, uint32_t sele
     style_bg_calls++;
 }
 
+/* La banda de estado (#285): fondo y opacidad. Cuentan en el MISMO contador que
+ * las escrituras de imagen de fondo: el test de OPT-4 #150 fija que en steady
+ * state no hay NINGUNA escritura de fondo por tick. */
+void lv_obj_set_style_bg_color(lv_obj_t * obj, lv_color_t color, uint32_t selector) {
+    (void) selector;
+    stub_objs[stub_index(obj)].bg_color = color;
+    style_bg_calls++;
+}
+
+void lv_obj_set_style_bg_opa(lv_obj_t * obj, lv_opa_t value, uint32_t selector) {
+    (void) selector;
+    stub_objs[stub_index(obj)].bg_opa = value;
+    style_bg_calls++;
+}
+
 /* API de la version previa del reloj (el `pad_ver 18` que centraba el valor y su
  * fantasma): el reloj del #250 no la llama, y el stub la deja sin efecto para
  * poder compilar la revision anterior de src/clock.c con este mismo test. */
@@ -364,17 +384,19 @@ void params_unlock(bool * dirty) {
 
 /* ---- accessors --------------------------------------------------------------- */
 
-/* El orden de creacion de src/clock.c::clock_init(): el contenedor, el "8
+/* El orden de creacion de src/clock.c::clock_init(): el contenedor, la BANDA de
+ * estado (#285: el fondo opaco de la fila de estado, debajo de todo), el "8
  * fantasma" (solo con familia segmentada), la hora, la alimentacion externa, el
  * porcentaje y el icono de bateria (que se ancla al porcentaje). */
 enum {
     CLOCK_STUB_CONTAINER = 0,
-    CLOCK_STUB_GHOST     = 1,
-    CLOCK_STUB_TIME      = 2,
-    CLOCK_STUB_EXT       = 3,
-    CLOCK_STUB_PCT       = 4,
-    CLOCK_STUB_ICON      = 5,
-    CLOCK_STUB_OBJECTS   = 6,
+    CLOCK_STUB_BAND      = 1,
+    CLOCK_STUB_GHOST     = 2,
+    CLOCK_STUB_TIME      = 3,
+    CLOCK_STUB_EXT       = 4,
+    CLOCK_STUB_PCT       = 5,
+    CLOCK_STUB_ICON      = 6,
+    CLOCK_STUB_OBJECTS   = 7,
 };
 
 int clock_stub_object_count(void) {
@@ -403,6 +425,14 @@ const lv_font_t * clock_stub_font(int index) {
 
 lv_color_t clock_stub_color(int index) {
     return stub_objs[index].color;
+}
+
+lv_color_t clock_stub_bg_color(int index) {
+    return stub_objs[index].bg_color;
+}
+
+lv_opa_t clock_stub_bg_opa(int index) {
+    return stub_objs[index].bg_opa;
 }
 
 lv_opa_t clock_stub_text_opa(int index) {
