@@ -213,6 +213,15 @@ jobs:
       - name: Draw buffer partial (sw-rotate 90) gate
         run: tests/check_drawbuf_partial.sh
 
+      # Contraste WCAG 2.1 medido sobre la superficie RENDERIZADA (issue #277):
+      # renderiza la matriz de temas x estados con el arnes y compara contra el
+      # baseline por par (tests/wcag_rendered_baseline.json). Falla ante una
+      # violacion nueva, una regresion o un baseline obsoleto. Corre con el
+      # entorno del framework A/B (uv), que ya trae numpy + Pillow.
+      - name: "Rendered WCAG contrast gate (issue #277)"
+        working-directory: tools/ab_testing
+        run: uv run python "$GITHUB_WORKSPACE/tests/check_wcag_rendered.py"
+
       - name: Resolve the baseline revision
         id: baseline
         run: |
