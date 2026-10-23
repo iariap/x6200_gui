@@ -21,11 +21,12 @@ Nace de la rutina que pidio el dueño el 2026-10-15 y de los errores que ya se c
 6. **TODAS LAS PRUEBAS SE HACEN EN LA RADIO** (regla del owner, 15/10 18:30). No se prueba en el
    banco ni en QEMU: se compila, **se despliega a la radio** y se prueba ahi. O sea: cada build termina
    en un deploy. Y lo que se prueba es **lo ultimo mergeado**: el tip de la rama de integracion
-   (`lu2dsx/x6200-rom`), que es donde entran los PRs.
-   **Ojo con `main`**: `fork/main` es la linea ORIGINAL del X6100 (hoy `e1476ec`), NO tiene los archivos
-   del port y **desplegarla deja la radio sin GUI**: medido el 15/10 18:18, el binario que produce el
-   build de `main` no arranca en el X6200 (`error while loading shared libraries: libRHVoice.so.5`).
-   Si el owner pide probar `main`, avisarle esto ANTES de desplegar.
+   (`main`), que es donde entran los PRs.
+   **Nota**: hasta la consolidacion del port, `fork/main` era la linea ORIGINAL del X6100 (sin los
+   archivos del port) y su build no arrancaba en el X6200 (`libRHVoice.so.5`, medido el 15/10 18:18).
+   Eso ya no aplica: el port se consolido en `main`, asi que hoy `main` **es** la rama que se compila
+   y despliega. El gate del issue #86 (`tools/verifica-firmware-port.py`) sigue abortando cualquier
+   binario que no sea el del port, asi que un build equivocado no llega a la radio.
    **Antes de cada deploy, guardar el par que funciona** (`.rollback/x6200_gui-port` y
    `.rollback/liblvgl.so-port`): si el deploy deja la GUI muerta, restaurar los dos archivos y
    `kill -9 $(pidof x6200_gui)` para que el daemon relance.
@@ -41,7 +42,7 @@ Nace de la rutina que pidio el dueño el 2026-10-15 y de los errores que ya se c
 Se trabaja en un **clon propio** del port, con sus submodulos:
 
 ```bash
-git clone --branch lu2dsx/x6200-rom --recurse-submodules \
+git clone --branch main --recurse-submodules \
     https://github.com/iariap/x6200_gui.git /home/pablo/desa/x6200/x6200_qa    # 39 s, 1.6 GB
 cd /home/pablo/desa/x6200/x6200_qa
 ```
@@ -68,12 +69,11 @@ git fetch fork
 
 ```bash
 cd /home/pablo/desa/x6200/.wt-pruebas && git fetch fork
-git log --oneline HEAD..fork/lu2dsx/x6200-rom      # ¿hay algo nuevo?
+git log --oneline HEAD..fork/main      # ¿hay algo nuevo?
 ```
 
-- La rama que se construye y despliega es **`lu2dsx/x6200-rom`** (el port).
-- **`fork/main` es la linea ORIGINAL** del proyecto (cientos de commits atras): **nunca** construirla ni
-  desplegarla, revertiria el port. `origin/main` es lo mismo.
+- La rama que se construye y despliega es **`main`** (el port, ya consolidado ahi; la legada
+  `lu2dsx/x6200-rom` quedo read-only y es ancestro de `main`).
 - Si no hay nada nuevo: **no recompilar ni re-desplegar**. Solo `tools/verifica-radio.sh` y un resumen.
 - **"Nada nuevo" se mide contra la radio, no solo contra git.** Comparar el md5 desplegado con el build
   del tip. Ya paso (15/10 16:10): el git decia "0 commits nuevos" porque mi HEAD ya era el tip, pero la
@@ -231,7 +231,7 @@ caidas, TX/ROE si se midio, e issues abiertos.
 | **Sondeos que no imprimen nada** | perdi 3 intentos seguidos: en el SSH de la radio un script con `read x y < <(awk ...)` **no corre** (busybox ash no tiene process substitution) y el `2>/dev/null` **ocultaba el error** | escribir el sondeo **POSIX** (`u1=$(awk '{print $14}' /proc/$P/stat)`), **sin process substitution**; **no** redirigir el stderr a /dev/null cuando algo no sale; y si no imprime nada, primero probar el script con un `echo` suelto |
 | **Insertar una seccion en el registro** | me paso 4 veces: el bloque nuevo terminaba con el encabezado del ancla y quedaba `## X## X` en una sola linea | el bloque nuevo **no** debe terminar con el encabezado del ancla (cerrar con `---`), y antes de commitear **verificar**: `grep -c '^## <nuevo>'` == 1 y que no haya lineas con dos `## ` |
 | Traer cuadros del framebuffer con `cat` por SSH | los archivos llegaban cortados (786 KB de 1.5 MB) | usar `scp` o leer hasta completar el tamano |
-| El push rebota | el otro agente empujo a la misma rama mientras yo trabajaba (15/10 17:20) | `git pull --rebase fork lu2dsx/x6200-rom` y volver a pushear; los commits propios quedan encima de los de el |
+| El push rebota | el otro agente empujo a la misma rama mientras yo trabajaba (15/10 17:20) | **ya no aplica**: `main` integra por PR y la legada `lu2dsx/x6200-rom` es read-only, asi que no hay pushes directos a ninguna de las dos. Trabajar en una rama propia y abrir el PR contra `main` |
 
 ## Imagen de SD: armado, flasheo y conservar la DATA
 

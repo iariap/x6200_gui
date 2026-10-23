@@ -62,7 +62,7 @@
       "description": "Actualizar el indice del principio si se agrego una seccion, correr tests y commitear",
       "commands": [
         "cd <repo>/x6200_gui && ./tests/native/run_native_tests.sh",
-        "git add -A && git commit -m 'Findings: <que se fundo>' && git push fork HEAD:lu2dsx/x6200-rom"
+        "git add -A && git commit -m 'Findings: <que se fundo>' && git push fork HEAD:main"
       ]
     }
   ],

@@ -62,8 +62,12 @@ echo "    mismo binario"
 
 echo "==> árbol limpio y pusheado"
 [ -z "$(git -C "$GUI" status --porcelain)" ] || { echo "hay cambios sin commitear" >&2; exit 1; }
-git -C "$GUI" fetch -q fork lu2dsx/x6200-rom
-[ "$(git -C "$GUI" rev-parse HEAD)" = "$(git -C "$GUI" rev-parse fork/lu2dsx/x6200-rom)" ] || {
+# El release se corta sobre la rama de integracion (`main`, la unica rama principal;
+# ver CONTRIBUTING.md). La legada `lu2dsx/x6200-rom` quedo read-only, asi que no se
+# valida contra ella: comparamos el HEAD local con el `main` del remoto para exigir
+# que lo que se publica sea exactamente lo pusheado (nada local sin subir).
+git -C "$GUI" fetch -q fork main
+[ "$(git -C "$GUI" rev-parse HEAD)" = "$(git -C "$GUI" rev-parse fork/main)" ] || {
     echo "HEAD no está pusheado" >&2; exit 1; }
 echo "    $(git -C "$GUI" rev-parse --short HEAD)"
 
