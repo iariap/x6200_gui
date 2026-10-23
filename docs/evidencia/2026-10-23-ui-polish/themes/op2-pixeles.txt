@@ -1,0 +1,25 @@
+== pixeles que se mueven (base -> opcion 2) por fixture ==
+  bt-dialog-tema-aurora                  75998 px  bbox x2..797 y66..413
+  bt-dialog-tema-cathode                 75872 px  bbox x2..797 y66..413
+  bt-dialog-tema-redshift                76548 px  bbox x2..797 y66..413
+  bt-dialog-tema-sprint                  75940 px  bbox x2..797 y66..413
+  bt-dialog-tema-sunlit                  75623 px  bbox x2..797 y66..413
+  bt-dialog-tema-trail                   75872 px  bbox x2..797 y66..413
+  main-tema-aurora                        2079 px  bbox x307..687 y142..156
+  main-tema-cathode                       1932 px  bbox x307..689 y143..155
+  main-tema-redshift                      2220 px  bbox x308..681 y142..156
+  main-tema-sprint                        2086 px  bbox x309..680 y142..156
+  main-tema-sunlit                        1885 px  bbox x308..685 y142..155
+  main-tema-trail                         1930 px  bbox x307..689 y143..155
+  settings-grupo-operation-tema-aurora  222756 px  bbox x2..797 y66..413
+  settings-grupo-operation-tema-cathode  217948 px  bbox x2..797 y66..413
+  settings-grupo-operation-tema-redshift  222539 px  bbox x2..797 y66..413
+  settings-grupo-operation-tema-sprint  225563 px  bbox x2..797 y66..413
+  settings-grupo-operation-tema-sunlit  218204 px  bbox x2..797 y66..413
+  settings-grupo-operation-tema-trail   217948 px  bbox x2..797 y66..413
+  settings-tema-aurora                  247755 px  bbox x2..797 y66..413
+  settings-tema-cathode                 243866 px  bbox x2..797 y66..413
+  settings-tema-redshift                248074 px  bbox x2..797 y66..413
+  settings-tema-sprint                  249493 px  bbox x2..797 y66..413
+  settings-tema-sunlit                  244150 px  bbox x2..797 y66..413
+  settings-tema-trail                   244076 px  bbox x2..797 y66..413

@@ -1,0 +1,22 @@
+== gate de contraste WCAG sobre la superficie renderizada (issue #277) ==
+  fixtures: 24 (matriz de 6 temas x 4 estados)
+  construyendo/actualizando el arnes (revision 6406376c6c46daa1c9b4adf3baa875d5718fe3c6)...
+  etiquetas medidas: 494 (exentas 0, incidentales 2, no-texto 48)
+  declaradas, no medidas: ocluidas 128, sin tinta 2, sin color expuesto (lv_line/lv_arc) 72
+  violaciones: 7
+  --- violaciones medidas ---
+    settings-tema-redshift             Redshift  /37/2          '50%'                     3.78:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #415161)
+    settings-grupo-operation-tema-redshift Redshift  /37/1          '\uf1e6 13.8 V'            4.0:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #425565)
+    bt-dialog-tema-redshift            Redshift  /37/1          '\uf1e6 13.8 V'            4.0:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #425565)
+    main-tema-redshift                 Redshift  /37/1          '\uf1e6 13.8 V'            4.0:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #425565)
+    settings-grupo-operation-tema-redshift Redshift  /37/2          '76%'                     4.08:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #415161)
+    bt-dialog-tema-redshift            Redshift  /37/2          '76%'                     4.08:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #415161)
+    main-tema-redshift                 Redshift  /37/2          '76%'                     4.08:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #415161)
+  --- diff del baseline (--update-baseline) ---
+  - bt-dialog-tema-aurora              text       /43/0          ratio 4.29:1  'Bluetooth devices'
+  - bt-dialog-tema-redshift            text       /43/0          ratio 4.15:1  'Bluetooth devices'
+  - bt-dialog-tema-redshift            text       /43/2          ratio 4.19:1  'no headphones, RX off'
+  - bt-dialog-tema-sunlit              text       /43/0          ratio 1.71:1  'Bluetooth devices'
+  - bt-dialog-tema-sunlit              text       /43/3          ratio 1.69:1  'Row: pair/connect - Auto'
+  baseline escrito: tests/wcag_rendered_baseline.json (7 entradas, +0/-5)
+rc=0

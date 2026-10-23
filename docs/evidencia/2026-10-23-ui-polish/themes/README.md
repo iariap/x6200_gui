@@ -5,213 +5,200 @@ base **`28785016`** (`origin/main`, CI opt-in #289). Fecha: 2026-10-23.
 Epica #284 · contrato #286 · humana #287 (sigue **BLOCKED** hasta que #285 y este mergeen).
 
 Alcance tocado: `src/styles.c` (`dialog_style`), `src/band_plan.c` (fondo de la etiqueta),
-`tests/check_wcag.py` (modelo estatico del band plan + invariantes nuevas), `tests/wcag_rendered_baseline.json`
-(12 entradas), `tests/check_wcag_rendered.py` (el diff del baseline imprime los cambios de ratio).
-**No** se toco `src/clock.c`, `src/info.c`, `src/ui_tokens.h` ni el generador de fuentes (#285).
+`tests/check_wcag.py` (modelo estatico del band plan + invariantes), `tests/wcag_rendered_baseline.json`
+(7 entradas), `tests/check_wcag_rendered.py` (el diff del baseline imprime los cambios de ratio).
+**No** se toco `src/clock.c`, `src/info.c`, `src/ui_tokens.h`, el generador de fuentes (#285),
+`src/dialog.c` ni `src/dialog_bt.c`.
 
 ## 1. Que se cambio
 
-* **A — `src/styles.c::dialog_style`** (superficie compartida por TODAS las apps via
-  `dialog_init`): pasa a pedir fondo del tema **opaco** (`bg_color TC(dialog)`, `bg_opa LV_OPA_COVER`)
-  **debajo** de la imagen del tema que ya pedia, y la tinta heredada sale del rol `TC(text)` en vez
-  de un blanco fijo. Geometria (x2/y66 796x348), `bg_img_opa` y los estados de item/`:focus`
-  quedan igual: `src/dialog.c` y `src/dialog_bt.c` no se tocan.
-* **B — `src/band_plan.c`**: cada `segs[i].label` pinta su **propio fondo opaco** con el **color
-  exacto del segmento** (`LV_OPA_COVER` + `lv_obj_set_style_bg_color(s->label, colors[type])`),
-  relleno interior de 2 px a los costados y 1 px arriba/abajo, sin borde ni radio, sin input.
-  `#define OPA LV_OPA_80` de la franja, la paleta, los datos, los anchos, las posiciones, los
-  textos y la elegibilidad `lv_txt_get_width(...)+6 <= vis[i].w` quedan igual.
+**A — `src/styles.c::dialog_style`** (la superficie que comparten TODAS las apps via `dialog_init`):
+
+```c
+lv_style_set_bg_color(&dialog_style, TC(dialog));
+lv_style_set_bg_opa(&dialog_style, LV_OPA_COVER);
+lv_style_set_bg_img_recolor(&dialog_style, TC(dialog));        /* opcion 2 (orden del coordinador) */
+lv_style_set_bg_img_recolor_opa(&dialog_style, LV_OPA_COVER);
+lv_style_set_text_color(&dialog_style, TC(text));
+```
+
+Geometria (x2/y66 796x348), `bg_img_opa` y los estados de item/`:focus` quedan igual. El
+`bg_color` opaco solo **no** alcanzaba (medido, ver §5): la imagen del tema
+`images/dialog_dark.bin` (795x347, alpha 243/255, tinta gris azulada fija) mandaba en el color
+visible y pesaba ~95%; el recoloreo con el rol del tema -el idioma que ya usa `btn_active_style`-
+hace que la superficie **sea** `TC(dialog)` sin token ni paleta nueva.
+
+**B — `src/band_plan.c`**: cada `segs[i].label` pinta su **propio fondo opaco** con el **color
+exacto del segmento** (+2 px a los costados, +1 px arriba/abajo, sin borde ni radio, sin input).
+`#define OPA LV_OPA_80` de la franja, la paleta, los datos, los anchos, las posiciones, los textos
+y la elegibilidad `lv_txt_get_width(...)+6 <= vis[i].w` quedan igual.
 
 ## 2. Las 18 entradas del baseline: antes -> despues
 
-Fuente de cada medicion: `tests/check_wcag_rendered.py` (pixeles del render real del arnes:
-`--all` sobre las 24 fixtures = 6 temas x 4 estados; tinta del arbol vivo + fondo modal medido bajo
-el glifo). Columna **antes** = ratio registrado en el baseline (el "estado base" medido hoy esta en
+Fuente de cada medicion: `tests/check_wcag_rendered.py` (pixeles del render real del arnes: tinta
+del arbol vivo + fondo modal medido bajo el glifo; matriz de 24 fixtures = 6 temas x 4 estados).
+`antes` = ratio registrado en el baseline (el estado base medido hoy esta en
 `wcag-rendered-antes.log`; 4 pares de Redshift `76%`/`50%` ya medían distinto: 4.08 / 3.78).
-Columna **despues** = la corrida final (`wcag-rendered-despues.log`).
+`despues` = corrida final con la opcion 2 (`wcag-rendered-opcion2-all.log`).
 
 | # | fixture | tema | path | texto | antes | despues | estado | dueno |
 |---|---|---|---|---|---|---|---|---|
-| 1 | `bt-dialog-tema-aurora` | Aurora | `/43/0` | `Bluetooth devices` | 4.31:1 | 4.29:1 | **VIOLA** | #286 (bloqueado) |
+| 1 | `bt-dialog-tema-aurora` | Aurora | `/43/0` | `Bluetooth devices` | 4.31:1 | **10.33:1** | RESUELTO | #286-A |
 | 2 | `bt-dialog-tema-redshift` | Redshift | `/37/1` | ` 13.8 V` | 4.0:1 | 4.0:1 | **VIOLA** | #285 |
 | 3 | `bt-dialog-tema-redshift` | Redshift | `/37/2` | `76%` | 3.8:1 | 4.08:1 | **VIOLA** | #285 |
-| 4 | `bt-dialog-tema-redshift` | Redshift | `/43/0` | `Bluetooth devices` | 4.14:1 | 4.15:1 | **VIOLA** | #286 (bloqueado) |
-| 5 | `bt-dialog-tema-redshift` | Redshift | `/43/2` | `no headphones, RX off` | 4.2:1 | 4.19:1 | **VIOLA** | #286 (bloqueado) |
-| 6 | `bt-dialog-tema-sunlit` | Sunlit | `/43/0` | `Bluetooth devices` | 1.71:1 | 1.71:1 | **VIOLA** | #286 (bloqueado) |
-| 7 | `bt-dialog-tema-sunlit` | Sunlit | `/43/3` | `Row: pair/connect - Auto: hold to unpair` | 1.69:1 | 1.69:1 | **VIOLA** | #286 (bloqueado) |
-| 8 | `main-tema-aurora` | Aurora | `/9/0` | `ALL MODES / SSB` | 4.29:1 | **5.92:1** | RESUELTO | #286 |
-| 9 | `main-tema-cathode` | Cathode | `/10/0` | `ALL MODES / SSB` | 4.19:1 | **5.92:1** | RESUELTO | #286 |
+| 4 | `bt-dialog-tema-redshift` | Redshift | `/43/0` | `Bluetooth devices` | 4.14:1 | **11.40:1** | RESUELTO | #286-A |
+| 5 | `bt-dialog-tema-redshift` | Redshift | `/43/2` | `no headphones, RX off` | 4.2:1 | **7.59:1** | RESUELTO | #286-A |
+| 6 | `bt-dialog-tema-sunlit` | Sunlit | `/43/0` | `Bluetooth devices` | 1.71:1 | **10.35:1** | RESUELTO | #286-A |
+| 7 | `bt-dialog-tema-sunlit` | Sunlit | `/43/3` | `Row: pair/connect - Auto: hold to unpair` | 1.69:1 | **15.67:1** | RESUELTO | #286-A |
+| 8 | `main-tema-aurora` | Aurora | `/9/0` | `ALL MODES / SSB` | 4.29:1 | **5.92:1** | RESUELTO | #286-B |
+| 9 | `main-tema-cathode` | Cathode | `/10/0` | `ALL MODES / SSB` | 4.19:1 | **5.92:1** | RESUELTO | #286-B |
 | 10 | `main-tema-redshift` | Redshift | `/37/1` | ` 13.8 V` | 4.0:1 | 4.0:1 | **VIOLA** | #285 |
 | 11 | `main-tema-redshift` | Redshift | `/37/2` | `76%` | 3.8:1 | 4.08:1 | **VIOLA** | #285 |
-| 12 | `main-tema-redshift` | Redshift | `/9/0` | `ALL MODES / SSB` | 4.07:1 | **5.92:1** | RESUELTO | #286 |
-| 13 | `main-tema-sprint` | Sprint | `/10/0` | `ALL MODES / SSB` | 4.23:1 | **5.92:1** | RESUELTO | #286 |
-| 14 | `main-tema-sunlit` | Sunlit | `/5/0` | `CW` | 3.78:1 | **5.37:1** | RESUELTO | #286 |
-| 15 | `main-tema-trail` | Trail | `/9/0` | `ALL MODES / SSB` | 4.38:1 | **5.92:1** | RESUELTO | #286 |
+| 12 | `main-tema-redshift` | Redshift | `/9/0` | `ALL MODES / SSB` | 4.07:1 | **5.92:1** | RESUELTO | #286-B |
+| 13 | `main-tema-sprint` | Sprint | `/10/0` | `ALL MODES / SSB` | 4.23:1 | **5.92:1** | RESUELTO | #286-B |
+| 14 | `main-tema-sunlit` | Sunlit | `/5/0` | `CW` | 3.78:1 | **5.37:1** | RESUELTO | #286-B |
+| 15 | `main-tema-trail` | Trail | `/9/0` | `ALL MODES / SSB` | 4.38:1 | **5.92:1** | RESUELTO | #286-B |
 | 16 | `settings-grupo-operation-tema-redshift` | Redshift | `/37/1` | ` 13.8 V` | 4.0:1 | 4.0:1 | **VIOLA** | #285 |
 | 17 | `settings-grupo-operation-tema-redshift` | Redshift | `/37/2` | `76%` | 3.8:1 | 4.08:1 | **VIOLA** | #285 |
 | 18 | `settings-tema-redshift` | Redshift | `/37/2` | `50%` | 3.8:1 | 3.78:1 | **VIOLA** | #285 |
 
-**6 de 18 resueltas de verdad** (las 6 del band plan, #286-B): `ALL MODES / SSB` pasa a **5.92:1**
-en los 5 temas (negro sobre el gris opaco `#888888` del segmento) y `CW` en Sunlit a **5.37:1**
-(blanco sobre el azul opaco `#3366CC`). Los otros 12 siguen por debajo de 4.5:1: 7 son de **#285**
-(banda de estado de Redshift) y 5 son los **labels del dialogo BT de #286-A, que NO quedaron
-resueltos** — ver §5, es el bloqueo del contrato.
+**11 de 18 resueltas**: las 6 del band plan (B) y las 5 del dialogo BT (A). Las 7 que quedan
+(3.78-4.08:1) son las de la **banda de estado de Redshift, de #285**, que corre en paralelo.
 
-## 3. Test negativo (sangrado del Home a traves de la superficie del dialogo)
+Ademas de las 5 del baseline, los **mismos cuatro labels del dialogo BT** ahora dan >=4.5:1 en los
+seis temas (no estaban en el baseline porque ya pasaban), medido en
+`wcag-rendered-opcion2-all.log`: `Bluetooth devices` 10.33 Aurora / 11.8 Cathode / 11.4 Redshift /
+11.64 Sprint / 10.35 Sunlit / 11.63 Trail; `no headphones, RX off` 10.13 / 7.5 / 7.59 / 10.43 /
+9.58 / 10.52; `Row: pair/connect...` 14.77 / 12.57 / 11.43 / 15.54 / 15.67 / 12.91.
 
-`docs/evidencia/2026-10-23-ui-polish/themes/bleed_through.py` (reproducible, sin hardware):
-renderiza la misma fixture **cambiando solo la semilla** del generador de senal (20 vs 21, que mueve
-el espectro/waterfall del Home y **nada** del dialogo) y cuenta los pixeles del interior del dialogo
-que difieren: si la superficie es opaca, tienen que ser **0**.
+## 3. Que color tiene ahora la superficie del dialogo (medido, los 6 temas)
 
-| fixture real (x 6 temas) | px con sangrado ANTES | px con sangrado DESPUES |
+Modal de los pixeles de la superficie pelada del dialogo (`bt-dialog-tema-<t>`, banda x300..700
+y80..100, `--inspect`-libre, contado sobre el PNG):
+
+| tema | ANTES (base) | DESPUES (opcion 2) | `TC(dialog)` del tema |
+|---|---|---|---|
+| Aurora | `(66,88,103)` gris del bitmap | `(34,26,51)` (8000/8000 px) | `(34,26,51)` = `#221A33` |
+| Cathode | `(69,92,107)` | `(40,25,14)` (8000/8000 px) | `(40,25,14)` = `#28190E` |
+| Redshift | `(68,90,106)` | `(20,8,9)` (8000/8000 px) | `(20,8,9)` = `#140809` |
+| Sprint | `(69,93,108)` | `(12,30,56)` (8000/8000 px) | `(12,30,56)` = `#0C1E38` |
+| **Sunlit** | `(77,100,113)` | **`(255,255,255)`** (8000/8000 px) | `(255,255,255)` = `#FFFFFF` |
+| Trail | `(68,92,104)` | `(26,42,30)` (8000/8000 px) | `(26,42,30)` = `#1A2A1E` |
+
+El modal es **exactamente el rol** en los seis: la ventana deja de ser un gris fijo y pasa a ser la
+superficie del tema (clara en Sunlit, oscura en los otros cinco). Ver `dialogo-bt-*.png` (los 6) y
+`zoom-sangrado-bt-sunlit.png`.
+
+## 4. Test negativo (sangrado del Home a traves de la superficie del dialogo)
+
+`bleed_through.py`: renderiza la misma fixture **cambiando solo la semilla** del generador de senal
+(20 vs 21, que mueve espectro/waterfall del Home y **nada** del dialogo) y cuenta los pixeles del
+interior del dialogo que difieren: si la superficie es opaca tienen que ser **0**.
+
+| fixtures reales (x 6 temas) | ANTES (base) | DESPUES (opcion 2) |
 |---|---|---|
 | `bt-dialog-tema-*` (Bluetooth) | 6660 (Redshift) .. 14153 (Trail) | **0** |
 | `settings-tema-*` (Ajustes) | 37345 (Cathode) .. 63970 (Aurora) | **0** |
 
-Total: **365653 px con sangrado antes -> 0 px despues** (12 fixtures x 6 temas, `bleed-base.json` /
-`bleed-after.json`). Evidencia visual: `zoom-sangrado-bt-sunlit.png` (las trazas del espectro del
-Home se ven sobre la superficie del dialogo ANTES; superficie limpia DESPUES), `dialogo-bt-*.png`,
-`bandplan-*.png`.
+Total **365653 px -> 0** (`bleed-base.json` / `bleed-opcion2.json`; logs
+`bleed-through-antes.log` / `bleed-through-despues.log`).
 
-**Cobertura y limite declarado.** El arnes de host solo renderiza **2 de los 25 dialogos de verdad**
-(Settings y Bluetooth): los otros 22 son mocks inertes (`tests/check_dialog_coverage.py`: "OK: 22
-dialogos inertes ... sobre las 25 apps"). Por eso la parte multi-app del test negativo (GPS, Status,
-WiFi, DFL, CW, SWRScan en ARM) **queda BLOCKED**, con la causa exacta medida:
+**Limite declarado**: el arnes de host renderiza **2 de los 25 dialogos reales** (Settings y
+Bluetooth); los otros 22 son mocks inertes (`tests/check_dialog_coverage.py`). La parte multi-app
+del test negativo (GPS, Status, WiFi, DFL, CW, SWRScan en ARM) queda **BLOCKED**:
 
 ```
-$ LAB=/tmp/opencode/x6200-contrast284-qemu CONT=x6200-contrast284-qemu \
-  VOL=x6200-contrast284-build tests/qemu/run_apps_qemu.sh --check
-  FALTA: falta el volumen privado x6200-contrast284-build (un build de la GUI; CONSTRUIR=si + BUILDROOT=<clon> para construirlo)
-  FALTA: falta el chroot privado (/tmp/opencode/x6200-contrast284-qemu/chroot): pasar ROOTFS=<rootfs.tar privada> o dejar el volumen con target/ (se arma solo)
+$ LAB=/tmp/opencode/x6200-op2-qemu CONT=x6200-op2-qemu VOL=x6200-op2-build tests/qemu/run_apps_qemu.sh --check
+  FALTA: falta el volumen privado x6200-op2-build (un build de la GUI; CONSTRUIR=si + BUILDROOT=<clon> para construirlo)
+  FALTA: falta el chroot privado (/tmp/opencode/x6200-op2-qemu/chroot): pasar ROOTFS=<rootfs.tar privada> o dejar el volumen con target/ (se arma solo)
   binfmt qemu-arm: ok
 SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))     -> rc=77
 ```
 
-El entorno ARM no es alcanzable en esta corrida: la imagen `x6200-buildroot` trae el arbol de
-Buildroot configurado pero **sin toolchain ni `target/`** (`/workspace/build` vacio), asi que armar
-un volumen privado exige construir Buildroot entero (horas) antes de tocar la GUI; y no hay una
-rootfs privada (`ROOTFS`) disponible. **No se declara hecho ni PASS.** Cuando exista el entorno, el
-barrido de las 25 apps (`RONDAS=1`, 8 apps minimas) es el que cierra esta parte.
+La imagen `x6200-buildroot` trae el arbol de Buildroot configurado pero **sin toolchain ni
+`target/`** (`/workspace/build` vacio): armar un volumen privado exige construir Buildroot entero
+(horas). No se declara PASS ni hecho.
 
-## 4. Baseline: 18 -> 12 entradas
+## 5. Por que la opcion 2 (y que paso con la primera pasada)
+
+La primera pasada del contrato (solo `bg_color` + `bg_opa COVER`) **no** resolvia los 5 pares del
+dialogo BT: medido entonces, el fondo modal bajo los labels se movia **+1/+2 niveles** (Sunlit
+`#516775` -> `#516877`) y los ratios quedaban iguales (1.69/1.71). La causa: la superficie visible
+es la imagen del tema (`images/dialog_dark.bin`, 795x347, **alpha 243/255**, tinta fija en los 6
+temas), asi que el rol del tema que se pinta **debajo** pesa (1-alpha) ~**4.7%** (estimado por
+pixel: `(despues-antes)/(TC(dialog)-pantalla) ~ 0.047`). Ese diagnostico funda el recoloreo
+(opcion 2, orden del coordinador): el idioma ya existe en este archivo (`btn_active_style` usa
+`bg_img_recolor` + `bg_img_recolor_opa`).
+
+## 6. Baseline: 18 -> 7 entradas
 
 `python3 tests/check_wcag_rendered.py --update-baseline` (diff completo en `baseline.diff.txt`):
 
 ```
-- main-tema-aurora    /9/0   ratio 4.29:1  'ALL MODES / SSB'    <- resueltos por #286-B
+- main-tema-aurora    /9/0   ratio 4.29:1  'ALL MODES / SSB'   <- resueltos por #286-B (primera pasada)
 - main-tema-cathode   /10/0  ratio 4.19:1  'ALL MODES / SSB'
 - main-tema-redshift  /9/0   ratio 4.07:1  'ALL MODES / SSB'
 - main-tema-sprint    /10/0  ratio 4.23:1  'ALL MODES / SSB'
 - main-tema-sunlit    /5/0   ratio 3.78:1  'CW'
 - main-tema-trail     /9/0   ratio 4.38:1  'ALL MODES / SSB'
-~ bt-dialog-tema-aurora /43/0  4.31:1 -> 4.29:1 (-0.02)   <- NO resuelto; el ratio medido se registra
-~ bt-dialog-tema-redshift /43/0 4.14:1 -> 4.15:1 (+0.01)  <- idem
-~ bt-dialog-tema-redshift /43/2 4.20:1 -> 4.19:1 (-0.01)  <- idem
-~ bt-dialog-tema-redshift /37/2  3.8:1 -> 4.08:1 (+0.28)  <- drift preexistente de main, no de #286
-~ main-tema-redshift /37/2       3.8:1 -> 4.08:1 (+0.28)  <- idem
-~ settings-grupo-operation-tema-redshift /37/2  3.8:1 -> 4.08:1 (+0.28)  <- idem
-~ settings-tema-redshift /37/2   3.8:1 -> 3.78:1 (-0.02)  <- idem (es el que tenia el gate en ROJO)
-baseline escrito: tests/wcag_rendered_baseline.json (12 entradas, +0/-6)
+- bt-dialog-tema-aurora   /43/0  ratio 4.29:1  'Bluetooth devices'      <- resueltos por #286-A
+- bt-dialog-tema-redshift /43/0  ratio 4.15:1  'Bluetooth devices'         (opcion 2)
+- bt-dialog-tema-redshift /43/2  ratio 4.19:1  'no headphones, RX off'
+- bt-dialog-tema-sunlit   /43/0  ratio 1.71:1  'Bluetooth devices'
+- bt-dialog-tema-sunlit   /43/3  ratio 1.69:1  'Row: pair/connect - Auto'
+baseline escrito: tests/wcag_rendered_baseline.json (7 entradas, +0/-6 /*-5*/)
 ```
 
-Salieron **solo los 6 pares que el cambio resuelve de verdad**. No se debilito ningun umbral
-(siguen 4.5:1), no se agrego ninguna exencion ni blanket-skip, no se marco nada como
-"sin tinta"/"ocluido": los 12 que quedan siguen violando. El `--update-baseline` no agrega entradas
-(+0) y no aparecio **ninguna violacion nueva** por el cambio (0 pares fuera del baseline).
+Salieron **solo los pares que el cambio resuelve de verdad** y **quedan exactamente las 7 de
+#285**: ningun par que #286 resuelva queda en el baseline (requisito del contrato, comprobado
+mirando las 7 filas). No se debilito ningun umbral (siguen 4.5:1), no hay exencion, blanket-skip
+ni "sin tinta"/"ocluido" forzado, y **no hay ninguna violacion nueva** (`+0`).
 
-Dos cosas que **no** son de este cambio y hay que saber:
+Nota sobre el rojo preexistente de `main`: `settings-tema-redshift /37/2` registraba 3.8:1 y mide
+3.78:1 (drift del baseline, se corrige en `factory/gate-tolerance`). El `--update-baseline` de esta
+corrida lo normaliza al valor medido; la logica del gate no se toco por eso.
 
-* **En `main` (`28785016`) el gate ya estaba en ROJO**: `settings-tema-redshift /37/2` registra
-  3.8:1 y hoy mide 3.78:1 -> "REGRESION". Es un drift preexistente del baseline (los tres pares
-  `76%` ya median 4.08 en la base). El update lo normaliza al valor medido; el umbral no se toca.
-* El diff del baseline **no imprimia** los cambios de ratio (solo altas y bajas): un update podia
-  mover un ratio en silencio. `tests/check_wcag_rendered.py` ahora imprime esas lineas `~`
-  (son las tres de arriba), que es lo que hace visible el -0.02 de los pares del dialogo BT.
-
-## 5. BLOQUEO del contrato: los 5 labels del dialogo BT no se resuelven con la solucion A
-
-Medido, no supuesto: tras A, los 5 pares del dialogo BT siguen por debajo de 4.5:1 (1.69 / 1.71 en
-Sunlit, 4.15 / 4.19 en Redshift, 4.29 en Aurora) y dos de ellos bajan **0.02**. Causa raiz medida:
-
-* la superficie que el usuario ve **no** es la mezcla con el Home (como asumia el contrato): es el
-  **bitmap compartido del tema** `images/dialog_dark.bin` que `styles.c::setup_theme_simple()` pone
-  como `bg_img_src` de `dialog_style` — el camino que toman **los seis temas JSON, Sunlit incluido**.
-  Ese bitmap mide **795x347, alpha 243/255 (95.3% opaco)** en el cuerpo, y su tinta es un gris
-  azulado oscuro fijo.
-* por eso el `bg_color TC(dialog)` opaco que pide A queda **debajo** del bitmap y solo pesa
-  (1-alpha) ≈ **4.7%**: medido por pixel, `(despues - antes) / (TC(dialog) - pantalla)` da ~0.047, y
-  el movimiento del fondo modal bajo los labels es de **+1/+2 niveles** (p.ej. Sunlit `#516775` ->
-  `#516877`). En Sunlit el rol `dialog` es `#FFFFFF`, pero la superficie sigue siendo oscura → la
-  tinta oscura del tema (`#053F80`) no se lee.
-* la misma medicion explica el otro resultado: **el sangrado del Home si desaparece** (era el 4.7%
-  de atras; ahora esa capa es el rol del tema), que es exactamente lo que mide el test negativo de §3.
-
-Para llegar al **resultado** que pide el contrato (los 5 labels >= 4.5:1 "via the shared opaque
-semantic `TC(dialog)` dialog background") hay que hacer que la superficie **sea** el rol del tema
-al ~100%, y eso toca la identidad visual de la ventana (hoy el bitmap le da el marco/forma y en
-Sunlit **no** sigue al tema — el propio `dialog_settings.c:348` lo documenta: "el cuerpo de la
-ventana es el bitmap compartido images/dialog.bin, que NO es un rol del tema (queda oscuro con los
-seis temas)"). Las opciones son del coordinador, no mias (el contrato prohibe stickers por etiqueta
-y pide no rediseñar):
-
-1. `lv_style_set_bg_img_opa(&dialog_style, LV_OPA_TRANSP)`: la superficie pasa a ser exactamente
-   `TC(dialog)` (Sunlit claro → los 5 pares suben a ~9:1), pero **desaparece el bitmap** (marco y
-   esquinas) en las seis temas.
-2. `lv_style_set_bg_img_recolor(&dialog_style, TC(dialog))` + `bg_img_recolor_opa LV_OPA_COVER`
-   (idioma ya usado por `btn_active_style`): conserva la **forma** del bitmap (su alpha) pero lo
-   pinta con el rol del tema; mismo efecto de contraste, identidad visual distinta a la actual.
-3. Regenerar el arte por tema (`theme_image(TI_dialog)`, el mecanismo ya existe en `theme.c`):
-   mantiene el bitmap y le da a cada tema su imagen; es trabajo de assets, no de una linea.
-
-Mientras no haya decision, el resultado honesto es **6/18 resueltas, baseline 12 entradas, gate
-verde** (el worktree queda consistente, sin violaciones nuevas y sin nada "salteado").
-
-## 6. Gates: comandos y exit codes
+## 7. Gates: comandos y exit codes
 
 | comando | resultado |
 |---|---|
-| `python3 tests/check_wcag.py` | **0** — 0 fallas, 1062 pares OK; el par `band_plan_label` nuevo mide 9.12:1 y las invariantes nuevas (fondo opaco del dialogo, pill del band plan) pasan y **fallan contra el codigo de HEAD** (verificado) |
-| `python3 tests/check_wcag_rendered.py --all` | **0** — `solo violaciones preexistentes del baseline (12 entradas): OK` |
-| `python3 tests/check_wcag_rendered.py` (sin update) | **1** — es el estado intermedio: baseline obsoleto por los 6 resueltos (`wcag-rendered-sin-update-baseline.log`) |
-| `python3 docs/evidencia/2026-10-23-ui-polish/themes/bleed_through.py` | **0** despues (0 px de sangrado) / **1** antes (365653 px) |
+| `python3 tests/check_wcag.py` | **0** — 1062 pares OK, 0 fallas; el par `band_plan_label` mide 9.12:1 y las invariantes (fondo opaco del dialogo, `TC(text)`, **recoloreo `TC(dialog)` opaco**, pill del band plan) pasan y **fallan contra el codigo de `HEAD`** |
+| `python3 tests/check_wcag_rendered.py --all` | **1** antes del update (baseline obsoleto por 11 pares resueltos) / **0** despues: "solo violaciones preexistentes del baseline (7 entradas): OK" |
+| `python3 docs/.../themes/bleed_through.py` | **0** despues (0 px) / **1** antes (365653 px) |
 | `tests/check_harness_determinism.sh` | **0** — "PASS: deterministic (identical PNGs for every fixture)" |
-| `tests/check_harness_natural.sh` | **1** — **PREEXISTENTE**: falla igual en `HEAD` (`28785016`), mismos numeros (`flushed_pixels = 12308624`, `natural.totals` identicos, `harness-natural-ANTES.log` vs `harness-natural.log`); el cambio no mueve la cuenta |
 | `tests/check_harness_wakeups.sh` | **0** — "PASS: wakeup profile measured, sourced and delimited" |
-| `sh tests/run_all_tests.sh --quick` | **0** — "22 OK, 0 fallos" (wcag OK, wcag_rendered OK; `qemu_apps` SKIP con mis recursos privados, codecs SKIP porque la imagen `x6200-uiharness` es la mínima); log completo en `run-all-quick.log` |
-| `tests/qemu/run_apps_qemu.sh --check` | **77** — SKIP/BLOCKED con la causa exacta (§3) |
+| `tests/check_harness_natural.sh` | **1** — **PREEXISTENTE**: falla igual en `HEAD` con los mismos numeros (`flushed_pixels = 12308624`, `natural.totals` identicos: `harness-natural-ANTES.log` vs `harness-natural.log` / `harness-natural-opcion2.log`) |
+| `sh tests/run_all_tests.sh --quick` | **0** — ver `run-all-quick-opcion2.log` (en la primera pasada: "22 OK, 0 fallos") |
+| `tests/qemu/run_apps_qemu.sh --check` | **77** — SKIP/BLOCKED con la causa exacta (§4) |
 
-Sin recorte ni glifos faltantes: sobre el arbol `--inspect` de las 24 fixtures (labels visibles con
-texto) el cambio deja **0 truncados, 0 con overflow y 0 con glifos faltantes**; el conteo de
-"ocluidos" del gate no cambia (128) y las etiquetas del band plan crecen (texto+4 px) dentro de su
-segmento porque la elegibilidad `texto+6 <= w` se preserva (no hay solape entre pills vecinos).
+Sin recorte ni glifos faltantes: sobre el arbol `--inspect` de las 24 fixtures, **0 labels
+truncados, 0 con overflow, 0 con glifos faltantes**; el conteo de "ocluidos" no cambia (128) y las
+etiquetas del band plan crecen (texto+4 px) dentro de su segmento porque la elegibilidad
+`texto+6 <= w` se preserva. Ademas, los pixeles que se mueven estan **todos** dentro del
+rectangulo del dialogo (x2..797, y66..413) o de la franja del band plan (y142..156): nada mas se
+toca (`op2-pixeles.txt`).
 
-## 7. Costo de render (`--bench`, 21 frames medidos por fixture, 3 de warmup)
+## 8. Costo de render (`--bench`, 21 frames medidos, 3 de warmup)
 
-| fixture | flushes | flushed px | redrawn px | render med p50 | p95 | draw med | rss |
-|---|---|---|---|---|---|---|---|
-| `bt-dialog-tema-sunlit` antes | 33 | 10374119 | 384000 | 6.46 ms | 6.67 ms | 6.06 ms | 10.9 MB |
-| `bt-dialog-tema-sunlit` despues | 33 | 10374119 | 384000 | 6.61 ms | 6.70 ms | 6.21 ms | 11.1 MB |
-| `settings-tema-sunlit` antes | 35 | 9933174 | 384000 | 6.49 ms | 6.83 ms | 6.08 ms | 10.8 MB |
-| `settings-tema-sunlit` despues | 35 | 9933174 | 384000 | 6.67 ms | 6.90 ms | 6.27 ms | 10.9 MB |
-| `main-tema-aurora` antes | 29 | 9932624 | 384000 | 3.37 ms | 3.63 ms | 2.95 ms | 10.8 MB |
-| `main-tema-aurora` despues | 29 | 9932624 | 384000 | 3.41 ms | 3.50 ms | 3.00 ms | 10.7 MB |
+| fixture | flushes | flushed px | redrawn px | render p50 ANTES | opcion 2 | delta | p95 ANTES | opcion 2 | draw p50 ANTES | opcion 2 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `bt-dialog-tema-sunlit` | 33 = 33 | 10374119 = idem | 384000 = idem | 6.46 ms | 7.78 ms | **+20.4%** | 6.67 | 8.29 | 6.06 | 7.39 |
+| `settings-tema-sunlit` | 35 = 35 | 9933174 = idem | idem | 6.49 ms | 7.69 ms | **+18.5%** | 6.83 | 7.77 | 6.08 | 7.31 |
+| `main-tema-aurora` (sin dialogo) | 29 = 29 | 9932624 = idem | idem | 3.37 ms | 3.13 ms | -7.0% | 3.63 | 3.19 | 2.95 | 2.74 |
 
-Los **proxies deterministas** (flushes, flushed px, redrawn px) quedan **identicos** en las tres:
-el cambio no mueve el area ni la cantidad de flushes (la superficie opaca se pinta dentro del
-mismo rectangulo que la imagen). El reloj de pared (host x86, no la Cortex-A7) sube **+1.2% a
-+2.8%** en el `p50` de los dos dialogos (una pasada mas de relleno opaco de 796x348 por frame) y
-+1.2% en la home del band plan; dentro de la banda de ruido del runner y **sin regresion en los
-proxies deterministas**. El frame budget de la radio sigue **PENDING** (no hay unidad fisica).
+Los **proxies deterministas** (flushes, flushed px, redrawn px) quedan **identicos**: el cambio no
+mueve area ni cantidad de flushes. El reloj de pared del host (x86, no la Cortex-A7) sube
+**~+19-20%** en las ventanas con dialogo: el pasada de recoloreo cuesta mas que un blend de imagen
+plano. En el A/B eso no es un FAIL (p95 con ambos proxies deterministas en 0.0% se reporta
+INCONCLUSIVE), pero es un dato real para el owner. El frame budget de la radio sigue **PENDING** (no
+hay unidad fisica).
 
-## 8. Como reproducir
+## 9. Como reproducir
 
 ```bash
-# renders + medicion WCAG (24 fixtures)
+python3 tests/check_wcag.py
 python3 tests/check_wcag_rendered.py --all
-# test negativo del sangrado (0 px despues; 365653 px antes con el codigo de HEAD)
-python3 docs/evidencia/2026-10-23-ui-polish/themes/bleed_through.py --json /tmp/bleed-after.json
-# costo
+python3 docs/evidencia/2026-10-23-ui-polish/themes/bleed_through.py --json /tmp/bleed-op2.json
 docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" -v "$PWD:/src" \
   -w /src/tools/ui_harness/build x6200-uiharness -lc \
   "./ui_harness --scenario ../fixtures/bt-dialog-tema-sunlit.scn \
@@ -219,5 +206,13 @@ docker run --rm --entrypoint bash --user "$(id -u):$(id -g)" -v "$PWD:/src" \
 ```
 
 Los renders de este informe son los que deja el gate en
-`tools/ui_harness/build/out/wcag-rendered/png/`; las copias `antes/` y `despues/` de las 11
-fixtures de las 18 entradas son byte-identicas a esos archivos.
+`tools/ui_harness/build/out/wcag-rendered/png/`; las copias `antes/` y `despues/` son
+byte-identicas a esos archivos (antes = la base `28785016`, despues = la opcion 2).
+
+## 10. Pendiente
+
+* **Rebase sobre #285**: `origin/main` sigue en `28785016` (el worktree de #285 tiene cambios sin
+  commitear). Cuando mergee: rebasar, re-correr los gates y `--update-baseline` -> los 7 pares de
+  Redshift salen y el baseline queda en **0 entradas**.
+* **QEMU/ARM de las 25 apps**: BLOCKED (§4).
+* **Humana #287**: BLOCKED hasta los dos merges.

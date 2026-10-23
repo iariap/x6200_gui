@@ -1,12 +1,10 @@
 == gate de contraste WCAG sobre la superficie renderizada (issue #277) ==
   fixtures: 24 (matriz de 6 temas x 4 estados)
-  construyendo/actualizando el arnes (revision 28785016c03d7bcdb06f99ef47edd9593f2333c4)...
-  etiquetas medidas: 495 (exentas 0, incidentales 2, no-texto 48)
-  declaradas, no medidas: ocluidas 128, sin tinta 1, sin color expuesto (lv_line/lv_arc) 72
-  violaciones: 12
+  construyendo/actualizando el arnes (revision 6406376c6c46daa1c9b4adf3baa875d5718fe3c6)...
+  etiquetas medidas: 494 (exentas 0, incidentales 2, no-texto 48)
+  declaradas, no medidas: ocluidas 128, sin tinta 2, sin color expuesto (lv_line/lv_arc) 72
+  violaciones: 7
   --- violaciones medidas ---
-    bt-dialog-tema-sunlit              Sunlit    /43/3          'Row: pair/connect - Au'  1.69:1 < 4.5  (texto normal, tinta #162436 sobre #3C4A57)
-    bt-dialog-tema-sunlit              Sunlit    /43/0          'Bluetooth devices'       1.71:1 < 4.5  (texto normal, tinta #053F80 sobre #516877)
     settings-tema-redshift             Redshift  /37/2          '50%'                     3.78:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #415161)
     settings-grupo-operation-tema-redshift Redshift  /37/1          '\uf1e6 13.8 V'            4.0:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #425565)
     bt-dialog-tema-redshift            Redshift  /37/1          '\uf1e6 13.8 V'            4.0:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #425565)
@@ -14,9 +12,6 @@
     settings-grupo-operation-tema-redshift Redshift  /37/2          '76%'                     4.08:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #415161)
     bt-dialog-tema-redshift            Redshift  /37/2          '76%'                     4.08:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #415161)
     main-tema-redshift                 Redshift  /37/2          '76%'                     4.08:1 < 4.5  (texto normal, tinta #FFB3A0 sobre #415161)
-    bt-dialog-tema-redshift            Redshift  /43/0          'Bluetooth devices'       4.15:1 < 4.5  (texto normal, tinta #FFB39C sobre #425968)
-    bt-dialog-tema-redshift            Redshift  /43/2          'no headphones, RX off'   4.19:1 < 4.5  (texto normal, tinta #E18A78 sobre #303D49)
-    bt-dialog-tema-aurora              Aurora    /43/0          'Bluetooth devices'       4.29:1 < 4.5  (texto normal, tinta #D7C2FF sobre #435968)
-  solo violaciones preexistentes del baseline (12 entradas): OK
+  solo violaciones preexistentes del baseline (7 entradas): OK
   PASS: el contraste renderizado no tiene violaciones nuevas ni regresiones
 rc=0

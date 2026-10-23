@@ -728,6 +728,23 @@ def main():
             "(lv_style_set_text_color(&dialog_style, TC(text))): un blanco fijo es ilegible en un "
             "tema claro (issue #284)"
         )
+    # Y la imagen del tema NO puede quedar mandando en el color: `images/dialog_dark.bin` es un
+    # bitmap con alpha 243/255 y tinta fija, asi que con el `bg_color` opaco solo pesa (1-alpha)
+    # ~4.7% (medido en #286: Sunlit seguia oscuro con su tinta oscura a 1.71:1). Se la recolorea con
+    # el rol del tema (mismo idioma que btn_active_style), que es lo que hace que la superficie SEA
+    # el rol del tema en los seis.
+    if not re.search(r"lv_style_set_bg_img_recolor\(&dialog_style,\s*TC\(dialog\)\)", styles):
+        fallos.append(
+            "src/styles.c: la imagen del dialogo no se recolorea con el rol del tema "
+            "(lv_style_set_bg_img_recolor(&dialog_style, TC(dialog))): el bitmap queda mandando en "
+            "el color visible y la tinta del tema cae sobre el bitmap oscuro (issue #284)"
+        )
+    if not re.search(r"lv_style_set_bg_img_recolor_opa\(&dialog_style,\s*LV_OPA_COVER\)", styles):
+        fallos.append(
+            "src/styles.c: el recoloreo de la imagen del dialogo no es opaco "
+            "(lv_style_set_bg_img_recolor_opa(&dialog_style, LV_OPA_COVER)): el rol del tema "
+            "volveria a pesar solo una parte y Sunlit no llegaria a 4.5:1 (issue #284)"
+        )
 
     print("================ resumen ================")
     for tema, n in resumen:
