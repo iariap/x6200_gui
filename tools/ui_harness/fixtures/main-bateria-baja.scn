@@ -1,8 +1,5 @@
-# main-bateria-baja: main screen on a nearly flat battery with no external
-# supply. Since issue #250 the clock is permanent (the time is always there) and
-# the 7% cap of this fixture is the low state of the status band (`7%` next to
-# the empty-cell icon); the `external_v 0.0` of the pack keeps the supply label
-# off the panel.
+# main-bateria-baja: main screen on a nearly flat battery (the clock drops to
+# the battery-percentage view because the external supply is below 3 V).
 
 name main-bateria-baja
 screen main

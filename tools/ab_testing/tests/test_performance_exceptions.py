@@ -50,32 +50,10 @@ BAND_6 = (
     "settings-tema-sunlit",
     "settings-tema-trail",
 )
-# AB-HOME250 (issue #250): el reloj permanente y su banda de estado de dos
-# grupos, en la unica fixture con familia segmentada y con el reloj viejo en
-# vista de hora.
-BAND_250 = ("main-frecuencia-dseg",)
-
 # scenario -> (flushed_pixels A, flushed_pixels B, flushes A, flushes B)
 MEASURED: dict[str, tuple[int, int, int, int]] = {
     **dict.fromkeys(BAND_7, (1135170, 1267780, 7, 15)),
     **dict.fromkeys(BAND_6, (1003170, 1135780, 6, 14)),
-    **dict.fromkeys(BAND_250, (1096000, 1100352, 4, 6)),
-}
-
-# La ficha que cada entrada tiene que nombrar en su `reason` (la procedencia de
-# la aceptacion): una entrada sin issue no se puede revisar.
-ISSUE_OF_AUTHOR = {
-    "ajustes-tabs-109": "#109",
-    "home-clock-battery-250": "#250",
-}
-
-# Cuantos flushes mas costaria que el MISMO cambio volviera a ocurrir encima del
-# medido: es el "segundo efecto" con el que el techo se prueba acotado. Para
-# AB-SETEN109 es otro cambio de foco animado (+8 flushes, el propio #109); para
-# AB-HOME250, una banda de estado mas invalidando sus dos grupos (+2).
-SECOND_EFFECT_FLUSHES = {
-    "ajustes-tabs-109": 8.0,
-    "home-clock-battery-250": 2.0,
 }
 
 # The digest of `quality/budgets.yaml` at the moment the registry was added. The
@@ -409,9 +387,7 @@ def test_the_repo_registry_is_scoped_dated_and_names_the_issue() -> None:
     for entry in registry.entries:
         assert entry.scenarios
         assert entry.reason.strip()
-        assert ISSUE_OF_AUTHOR[entry.author] in entry.reason, (
-            f"{entry.scenarios[0]}: el reason tiene que nombrar el issue de la entrada"
-        )
+        assert "#109" in entry.reason
         assert entry.author
         assert date.fromisoformat(entry.expires) >= date(2026, 10, 16)
         assert entry.ceilings.flushed_pixels_delta_pct > 0
@@ -428,12 +404,10 @@ def test_the_repo_registry_admits_the_measured_breach_and_stays_bounded() -> Non
         entry = registry.covering(name)
         assert entry is not None
         assert entry.allows(pixels_delta, flushes_delta), f"{name}: measured delta is not admitted"
-        # Not a free pass: the same effect happening once more lands above the
-        # ceiling (see SECOND_EFFECT_FLUSHES).
-        second_effect = SECOND_EFFECT_FLUSHES[entry.author] * 100.0 / flushes_a
-        assert not entry.allows(pixels_delta, flushes_delta + second_effect), (
-            f"{name}: the ceiling is unbounded"
-        )
+        # Not a free pass: a second focused widget adds the same +8 flushes again
+        # and lands far above the ceiling.
+        second_widget = flushes_delta + 8 * 100.0 / flushes_a
+        assert not entry.allows(pixels_delta, second_widget), f"{name}: the ceiling is unbounded"
 
 
 def test_the_global_budget_file_is_untouched() -> None:

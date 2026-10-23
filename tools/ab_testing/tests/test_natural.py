@@ -84,7 +84,7 @@ def test_evidence_is_profiled_delimited_and_deterministic() -> None:
     # OPT-4 #150: the clock's equality guard (src/clock.c) suppresses every tick
     # whose text did not change, and the harness pins time(), so the clock
     # invalidates 0 times in the natural run (before the guard: 1).
-    assert "clock 10272 px x 0 tick(s)" in result.stdout
+    assert "clock 15840 px x 0 tick(s)" in result.stdout
 
 
 def test_natural_section_is_extra_and_carries_no_wall_clock() -> None:
@@ -105,13 +105,11 @@ def test_natural_section_is_extra_and_carries_no_wall_clock() -> None:
         "png_bytes",
     }
     totals = document["natural"]["totals"]
-    # AB-HOME250 (issue #250): the settle pair was re-measured with the permanent
-    # clock and its compact status band (a container plus per-role labels instead
-    # of one two-line power label): 6 / 1100352, it was 5 / 1111840. The natural
-    # frames themselves are untouched (the clock does not fire with time()
-    # pinned) and the rendered PNG is byte-identical run to run.
-    assert document["metrics"]["flushes"] == 6 + totals["flushes"]
-    assert document["metrics"]["flushed_pixels"] == 1100352 + totals["flushed_px"]
+    # OPT-4 #150: the equality guards removed the settled capture's last clock
+    # tick (15840 px, 1 flush): the pair is 5 / 1111840, before the guards it was
+    # 6 / 1127680. The rendered PNG is byte-identical.
+    assert document["metrics"]["flushes"] == 5 + totals["flushes"]
+    assert document["metrics"]["flushed_pixels"] == 1111840 + totals["flushed_px"]
 
 
 def test_forced_mode_is_unchanged_by_the_natural_one() -> None:
@@ -140,8 +138,7 @@ def test_display_off_evidence_renders_nothing() -> None:
     La propiedad la mide el `natural` block (todo en cero) y el test nativo del
     backlight; aca queda pineada sobre la evidencia, porque la captura de la
     pantalla apagada es exactamente un repaint de pantalla completa mas liviana
-    (AB-HOME250: 1100352 - 384000 = 716352 px) y el mismo PNG que con la pantalla
-    encendida. El
+    (1111840 - 384000 = 727840 px) y el mismo PNG que con la pantalla encendida. El
     instrumento del redibujo offscreen de la cascada (src/waterfall.c) queda en 0
     contra una por fila con la pantalla encendida: el panel oscuro saltea el computo
     de la paleta (~196000 px por fila) en vez de hacerlo para nada.
@@ -152,10 +149,9 @@ def test_display_off_evidence_renders_nothing() -> None:
     assert natural["spectrum_frames"] > 0 and natural["waterfall_rows"] > 0
     assert natural["waterfall_offscreen_redraws"] == 0
     assert set(natural["totals"].values()) == {0}
-    # AB-HOME250 (issue #250): 6 is the settle capture of the permanent clock
-    # (5 with the old power clock); 1 less is the capture without its full-screen
-    # repaint.
-    assert document["metrics"]["flushes"] == 6 - 1
-    assert document["metrics"]["flushed_pixels"] == 1100352 - 800 * 480
+    # OPT-4 #150: 5 is the settle capture after the clock equality guard removed
+    # its last tick (before the guard: 6).
+    assert document["metrics"]["flushes"] == 5 - 1
+    assert document["metrics"]["flushed_pixels"] == 1111840 - 800 * 480
     lit = _load("forced")["metrics"]["framebuffer_fnv1a"]
     assert document["metrics"]["framebuffer_fnv1a"] == lit

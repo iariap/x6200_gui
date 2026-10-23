@@ -28,13 +28,12 @@ static void on_cur_filter_low_change(Subject *subj, void *user_data);
 static void on_cur_filter_high_change(Subject *subj, void *user_data);
 static void on_cur_filter_bw_change(Subject *subj, void *user_data);
 static void on_cur_freq_step_change(Subject *subj, void *user_data);
-static void on_cur_fft_dec_change(Subject *subj, void *user_data);
+static void on_cur_zoom_change(Subject *subj, void *user_data);
 
 static void update_cur_low_filter(Subject *subj, void *user_data);
 static void update_cur_high_filter(Subject *subj, void *user_data);
 static void on_freq_step_change(Subject *subj, void *user_data);
-static void on_fft_dec_change(Subject *subj, void *user_data);
-static void update_fft_width(Subject *subj, void *user_data);
+static void on_zoom_change(Subject *subj, void *user_data);
 
 static void update_real_filters(Subject *subj, void *user_data);
 
@@ -48,8 +47,8 @@ void cfg_mode_params_init(sqlite3 *database) {
     x6200_mode_t mode    = subject_get_int(cfg_cur.mode);
     db_mode_t    db_mode = xmode_2_db(mode);
     int32_t      low, high;
-    uint32_t     step, fft_width;
-    mode_default_values(db_mode, &low, &high, &step, &fft_width);
+    uint32_t     step, zoom;
+    mode_default_values(db_mode, &low, &high, &step, &zoom);
 
     cfg_cur.filter.low  = subject_create_int(low);
     cfg_cur.filter.high = subject_create_int(high);
@@ -59,8 +58,7 @@ void cfg_mode_params_init(sqlite3 *database) {
     cfg_cur.filter.real.to   = subject_create_int(high);
 
     cfg_cur.freq_step = subject_create_int(step);
-    cfg_cur.fft_width = subject_create_int(fft_width);
-    cfg_cur.fft_dec = subject_create_int(0);
+    cfg_cur.zoom      = subject_create_int(zoom);
 
     cfg_cur.lo_offset      = subject_create_int(0);
 
@@ -70,6 +68,7 @@ void cfg_mode_params_init(sqlite3 *database) {
     subject_add_observer(cfg_cur.filter.high, on_cur_filter_high_change, NULL);
     subject_add_observer(cfg_cur.filter.bw, on_cur_filter_bw_change, NULL);
     subject_add_observer(cfg_cur.freq_step, on_cur_freq_step_change, NULL);
+    subject_add_observer(cfg_cur.zoom, on_cur_zoom_change, NULL);
 
     subject_add_observer(cfg_cur.filter.low, update_real_filters, NULL);
     subject_add_observer(cfg_cur.filter.high, update_real_filters, NULL);
@@ -78,7 +77,7 @@ void cfg_mode_params_init(sqlite3 *database) {
     fill_mode_cfg_item(&cfg_mode.filter_low, subject_create_int(low), "filter_low", db_mode);
     fill_mode_cfg_item(&cfg_mode.filter_high, subject_create_int(high), "filter_high", db_mode);
     fill_mode_cfg_item(&cfg_mode.freq_step, subject_create_int(step), "freq_step", db_mode);
-    fill_mode_cfg_item(&cfg_mode.fft_dec, subject_create_int(0), "fft_dec", db_mode);
+    fill_mode_cfg_item(&cfg_mode.zoom, subject_create_int(zoom), "spectrum_factor", db_mode);
 
     subject_add_observer(cfg_mode.filter_low.val, update_cur_low_filter, &cfg_mode.filter_low);
     subject_add_observer(cfg_cur.mode, update_cur_low_filter, &cfg_mode.filter_low);
@@ -89,11 +88,7 @@ void cfg_mode_params_init(sqlite3 *database) {
     subject_add_observer(cfg_mode.freq_step.val, on_freq_step_change, NULL);
 
 
-    subject_add_observer(cfg_cur.fft_dec, on_cur_fft_dec_change, NULL);
-    subject_add_observer(cfg_mode.fft_dec.val, on_fft_dec_change, NULL);
-
-    subject_add_observer(cfg_cur.fft_dec, update_fft_width, NULL);
-    subject_add_observer(cfg.fft_zoom_cw.val, update_fft_width, NULL);
+    subject_add_observer(cfg_mode.zoom.val, on_zoom_change, NULL);
 
     /* Load values from table */
     cfg_item_t *cfg_arr  = (cfg_item_t *)&cfg_mode;
@@ -262,7 +257,7 @@ db_mode_t xmode_2_db(x6200_mode_t mode) {
     }
 }
 
-bool mode_default_values(db_mode_t mode, int32_t *low, int32_t *high, uint32_t *step, uint32_t *fft_width) {
+bool mode_default_values(db_mode_t mode, int32_t *low, int32_t *high, uint32_t *step, uint32_t *zoom) {
     bool result = true;
     switch (mode) {
         case x6200_mode_lsb:
@@ -270,32 +265,32 @@ bool mode_default_values(db_mode_t mode, int32_t *low, int32_t *high, uint32_t *
             *low  = 50;
             *high = 2950;
             *step = 500;
-            *fft_width = FFT_FULL_WIDTH;
+            *zoom = 1;
             break;
         case x6200_mode_cw:
             *low  = -250;
             *high = 250;
             *step = 100;
-            *fft_width = FFT_FULL_WIDTH / 4;
+            *zoom = 4;
             break;
         case x6200_mode_am:
         case x6200_mode_sam:
             *low  = 0;
             *high = 4500;
             *step = 1000;
-            *fft_width = FFT_FULL_WIDTH;
+            *zoom = 1;
             break;
         case x6200_mode_nfm:
             *low  = 0;
             *high = 3500;
             *step = 1000;
-            *fft_width = FFT_FULL_WIDTH;
+            *zoom = 1;
             break;
         case x6200_mode_wfm:
             *low  = 0;
             *high = 8000;
             *step = 1000;
-            *fft_width = FFT_FULL_WIDTH;
+            *zoom = 1;
             break;
         default:
             result = false;
@@ -482,13 +477,12 @@ static void on_cur_freq_step_change(Subject *subj, void *user_data) {
         LV_LOG_USER("Freq step is not initialized, skip updating");
     }
     subject_set_int(cfg_mode.freq_step.val, subject_get_int(subj));
+    ;
 }
 
-static void on_cur_fft_dec_change(Subject *subj, void *user_data) {
-    if (cfg_mode.fft_dec.dirty == NULL) {
-        LV_LOG_USER("FFT dec is not initialized, skip updating");
-    }
-    subject_set_int(cfg_mode.fft_dec.val, subject_get_int(subj));
+static void on_cur_zoom_change(Subject *subj, void *user_data) {
+    subject_set_int(cfg_mode.zoom.val, subject_get_int(subj));
+    ;
 }
 
 /**
@@ -546,19 +540,8 @@ static void on_freq_step_change(Subject *subj, void *user_data) {
     subject_set_int(cfg_cur.freq_step, subject_get_int(subj));
 }
 
-static void on_fft_dec_change(Subject *subj, void *user_data) {
-    uint8_t fft_dec = subject_get_int(subj);
-    subject_set_int(cfg_cur.fft_dec, fft_dec);
-}
-
-static void update_fft_width(Subject *subj, void *user_data) {
-    uint32_t width = FFT_FULL_WIDTH;
-    width /= 1 << subject_get_int(cfg_cur.fft_dec);
-    x6200_mode_t mode = subject_get_int(cfg_cur.mode);
-    if ((mode == x6200_mode_cw) || (mode == x6200_mode_cwr)) {
-        width /= 1 << subject_get_int(cfg.fft_zoom_cw.val);
-    }
-    subject_set_int(cfg_cur.fft_width, width);
+static void on_zoom_change(Subject *subj, void *user_data) {
+    subject_set_int(cfg_cur.zoom, subject_get_int(subj));
 }
 
 /**

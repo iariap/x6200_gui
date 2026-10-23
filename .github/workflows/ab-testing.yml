@@ -19,14 +19,29 @@ name: UI A/B testing harness
 #     classification lives in tools/ab_testing/src/x6200_ab/performance.py
 #     (compare_scenario) and the report step below only reads it.
 #
-# No hay trigger de `push`: este harness no despliega y el repositorio integra por
-# PR (ver CONTRIBUTING.md), asi que no hace falta una corrida propia sobre el commit
-# que el merge deja en la rama. Cada PR corre sobre su HEAD sha via `pull_request`.
-# Un PASS limpio significa "este sha renderiza y pasa los contratos", nunca "este sha
-# mejoro algo".
+# Push runs on the integration branch (issue #222, F-13 of the #194 dossier):
+# `lu2dsx/x6200-rom` is the branch every child PR lands on, and a `pull_request`
+# run evaluates the PR HEAD sha, not the commit the merge leaves behind (the
+# squash commit is a different sha). The push trigger below gives that exact
+# integrated commit its own run, so "the CI of the merge" is a real run of the
+# revision that is on the branch. On a push there is no PR base, so the visual job
+# compares the revision against itself (A/A, a PASS that proves nothing improved)
+# and the performance job does a single-revision measurement (never an A/B claim);
+# the contracts job evaluates `github.sha`. A clean PASS means "this sha renders
+# and passes the contracts", never "this sha improved on anything".
 
 on:
   pull_request:
+    paths:
+      - "tools/**"
+      - "src/**"
+      - "tests/**"
+      - "rootfs/usr/share/x6200/themes/**"
+      - ".github/workflows/ab-testing.yml"
+  # El SHA integrado: mismo filtro de paths que el PR, para que el merge de cada
+  # hijo de la epica #216 deje una corrida sobre el commit exacto de la rama.
+  push:
+    branches: ["lu2dsx/x6200-rom"]
     paths:
       - "tools/**"
       - "src/**"

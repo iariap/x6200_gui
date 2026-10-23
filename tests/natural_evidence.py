@@ -6,8 +6,7 @@ modes of the gate and verifies, on the produced numbers:
 
 * the profile of UI-07 increment 1 (docs/AB_TESTING.md, section 2): the spectrum
   invalidates 132000 px per FFT frame, the waterfall 196000 px per new row and
-  the clock 10272 px every 500 ms (issue #250: the permanent clock's time line,
-  214x48 measured -- see PROFILE), and *every* rectangle the run reports is one
+  the clock 15840 px every 500 ms, and *every* rectangle the run reports is one
   of the regions a firmware timer invalidates (the bench invalidates nothing on
   its own). OPT-4 #150: the clock's equality guard (src/clock.c) suppresses the
   ticks whose text did not change, so the clock rectangle no longer shows up in
@@ -52,20 +51,7 @@ from pathlib import Path
 PROFILE: dict[tuple[int, int, int, int], tuple[int, str]] = {
     (0, 0, 800, 165): (132000, "spectrum, one FFT frame (src/spectrum.c)"),
     (0, 235, 800, 245): (196000, "waterfall, one new row (src/waterfall.c)"),
-    # El reloj (issue #250): la linea del reloj es la etiqueta 209x31 de la
-    # fila y=0..40 (591,5 medido con `--inspect`), y la invalidacion del label
-    # es su caja expandida por el `ext_draw_size` de LVGL, recortada al display:
-    # 214x48 = 10272 px en `main-natural` (Aurora, familia de texto) y 214x35 =
-    # 7490 px en `main-frecuencia-dseg` (digits dseg7). Con `time()` fijo (el
-    # harness) la hora nunca cambia y la guarda de igualdad del #150 apaga la
-    # invalidacion, asi que el rectangulo NO aparece en el banco: los dos
-    # numeros se midieron con el reloj de pared avanzando con el reloj virtual
-    # (un parche local del `__wrap_time` del harness, no versionado) y con el
-    # mismo camino se midio el reloj de potencia de main para comparar: 15549 px
-    # (581,0,219,71) en `main-frecuencia-dseg` con `clock_view time`. El reloj
-    # permanente invalida menos pixeles por segundo que el viejo (10272/7490
-    # contra 15549) y el rectangulo de main (580,0,220,72) ya no existe.
-    (586, 0, 214, 48): (10272, "clock, every 500 ms (src/clock.c, #250)"),
+    (580, 0, 220, 72): (15840, "clock, every 500 ms (src/clock.c)"),
     (0, 241, 800, 34): (27200, "band info, fading after the 2 s timer (src/band_info.c)"),
     (152, 23, 30, 36): (1080, "BT state, the 2 s timer (src/info.c)"),
 }
@@ -96,22 +82,14 @@ def rom_refresh_period_ms(root: Path) -> int:
     return int(match.group(1))
 
 
-# The settled capture of main-natural: 6 flushes and 1100352 px; the natural run
+# The settled capture of main-natural: 5 flushes and 1111840 px; the natural run
 # adds its own flushes on top, it never replaces them. OPT-4 #150: the clock's
-# equality guard (src/clock.c) removes the settled capture's needless clock
-# ticks; the rendered PNG is byte-identical either way (the guard only skips an
-# invalidation that changed no pixel).
-#
-# El par se re-midio con el reloj permanente del #250 (era 5 / 1111840): el
-# panel pasa de una etiqueta de dos lineas (potencia) a un contenedor con la
-# linea del reloj y la banda de estado, asi que las invalidaciones del arranque
-# cambian de forma y de union con las del espectro (0,0,800,165, que contiene al
-# panel): un rectangulo mas y 11488 px menos. El bloque `metrics` no expone los
-# rectangulos del settle, asi que la decomposicion exacta no se puede citar; el
-# numero esta medido sobre el binario de esta revision y el control
-# `--display-off` lo verifica por diferencia (SETTLE_PX - FULL_SCREEN_PX).
-SETTLE_FLUSHES = 6
-SETTLE_PX = 1100352
+# equality guard (src/clock.c) removed the settled capture's last needless clock
+# tick (15840 px, 1 flush) — before the guard the pair was 6 / 1127680. The
+# rendered PNG is byte-identical (the guard only skips an invalidation that
+# changed no pixel).
+SETTLE_FLUSHES = 5
+SETTLE_PX = 1111840
 FULL_SCREEN_PX = 800 * 480
 
 # How many times each rectangle appears in the 40 frames (deterministic: seed 13,
@@ -297,12 +275,10 @@ def check_natural(checker: Checker, doc: dict, rom_frame_ms: int) -> None:
     # invalidacion cuando el texto no cambia. El arnes fija time()
     # (mocks/mock_ui_deps.c), asi que las 4 muestras de 500 ms de la corrida
     # dicen el mismo texto y el reloj tiene que invalidar 0 veces. Sin la guarda
-    # el rectangulo del reloj (#250: 586,0,214,48 = 10272 px) aparece en el
-    # histograma (medido, ver PROFILE).
-    clock_rect = (586, 0, 214, 48)
+    # el rectangulo (580,0,220,72) aparece (15840 px) en el histograma.
     checker.check(
-        counts[clock_rect] == 0,
-        f"the clock invalidated {counts[clock_rect]} time(s) with an unchanged text: "
+        counts[(580, 0, 220, 72)] == 0,
+        f"the clock invalidated {counts[(580, 0, 220, 72)]} time(s) with an unchanged text: "
         "the OPT-4 #150 equality guard (src/clock.c) is not suppressing it",
     )
     for key, value in totals.items():
@@ -325,7 +301,7 @@ def check_natural(checker: Checker, doc: dict, rom_frame_ms: int) -> None:
     checker.note(
         f"  profile: spectrum {PROFILE[(0, 0, 800, 165)][0]} px x {counts[(0, 0, 800, 165)]} frames, "
         f"waterfall {PROFILE[(0, 235, 800, 245)][0]} px x {counts[(0, 235, 800, 245)]} rows, "
-        f"clock {PROFILE[(586, 0, 214, 48)][0]} px x {counts[(586, 0, 214, 48)]} tick(s)"
+        f"clock {PROFILE[(580, 0, 220, 72)][0]} px x {counts[(580, 0, 220, 72)]} tick(s)"
     )
     checker.note(
         f"  natural totals: invalidated {natural['totals']['invalidated_px']} px in "
@@ -354,12 +330,11 @@ def check_static(checker: Checker, static: dict, natural_doc: dict) -> None:
     )
     # OPT-4 #150: con el drive apagado quedan solo los timers de 2 s del
     # firmware. Las guardas de igualdad del reloj (src/clock.c) y del icono BT
-    # (src/info.c) apagan los dos: sin ellas el control invalidaba los ticks de
-    # reloj (#250: 2 x 10272 px) y 1 de BT (1080 px) aunque el valor no
-    # cambiara. Despues de las guardas el control es solo el band-info
-    # (7 x 27200 px).
+    # (src/info.c) apagan los dos: sin ellas el control invalidaba 4 ticks de
+    # reloj (4 x 15840 px) y 1 de BT (1080 px) aunque el valor no cambiara.
+    # Despues de las guardas el control es solo el band-info (7 x 27200 px).
     checker.check(
-        (586, 0, 214, 48) not in rects and (152, 23, 30, 36) not in rects,
+        (580, 0, 220, 72) not in rects and (152, 23, 30, 36) not in rects,
         f"the equality guards (OPT-4 #150) did not suppress the identical-value timers: {rects}",
     )
     checker.check(
