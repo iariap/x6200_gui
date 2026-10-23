@@ -178,8 +178,13 @@ verde** (el worktree queda consistente, sin violaciones nuevas y sin nada "salte
 | `tests/check_harness_determinism.sh` | **0** — "PASS: deterministic (identical PNGs for every fixture)" |
 | `tests/check_harness_natural.sh` | **1** — **PREEXISTENTE**: falla igual en `HEAD` (`28785016`), mismos numeros (`flushed_pixels = 12308624`, `natural.totals` identicos, `harness-natural-ANTES.log` vs `harness-natural.log`); el cambio no mueve la cuenta |
 | `tests/check_harness_wakeups.sh` | **0** — "PASS: wakeup profile measured, sourced and delimited" |
-| `sh tests/run_all_tests.sh --quick` | ver `run-all-quick.log` (log completo del resumen) |
+| `sh tests/run_all_tests.sh --quick` | **0** — "22 OK, 0 fallos" (wcag OK, wcag_rendered OK; `qemu_apps` SKIP con mis recursos privados, codecs SKIP porque la imagen `x6200-uiharness` es la mínima); log completo en `run-all-quick.log` |
 | `tests/qemu/run_apps_qemu.sh --check` | **77** — SKIP/BLOCKED con la causa exacta (§3) |
+
+Sin recorte ni glifos faltantes: sobre el arbol `--inspect` de las 24 fixtures (labels visibles con
+texto) el cambio deja **0 truncados, 0 con overflow y 0 con glifos faltantes**; el conteo de
+"ocluidos" del gate no cambia (128) y las etiquetas del band plan crecen (texto+4 px) dentro de su
+segmento porque la elegibilidad `texto+6 <= w` se preserva (no hay solape entre pills vecinos).
 
 ## 7. Costo de render (`--bench`, 21 frames medidos por fixture, 3 de warmup)
 
