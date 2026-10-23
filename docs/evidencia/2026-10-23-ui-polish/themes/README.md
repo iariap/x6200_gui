@@ -65,11 +65,24 @@ del arbol vivo + fondo modal medido bajo el glifo; matriz de 24 fixtures = 6 tem
 **11 de 18 resueltas**: las 6 del band plan (B) y las 5 del dialogo BT (A). Las 7 que quedan
 (3.78-4.08:1) son las de la **banda de estado de Redshift, de #285**, que corre en paralelo.
 
-Ademas de las 5 del baseline, los **mismos cuatro labels del dialogo BT** ahora dan >=4.5:1 en los
-seis temas (no estaban en el baseline porque ya pasaban), medido en
-`wcag-rendered-opcion2-all.log`: `Bluetooth devices` 10.33 Aurora / 11.8 Cathode / 11.4 Redshift /
-11.64 Sprint / 10.35 Sunlit / 11.63 Trail; `no headphones, RX off` 10.13 / 7.5 / 7.59 / 10.43 /
-9.58 / 10.52; `Row: pair/connect...` 14.77 / 12.57 / 11.43 / 15.54 / 15.67 / 12.91.
+Nota de medicion: en la base habia **4 labels clasificados "sin tinta"** (el glifo no se detectaba
+en su caja) y quedan 2; uno de ellos es `no headphones, RX off` de Sunlit, tinta oscura del tema
+sobre la superficie oscura del bitmap: la tinta no se distinguia del fondo y el gate no podia
+medirla (la violacion existia igual, sin numero). Con la superficie del tema pasa a medirse
+**9.58:1**. Es el mismo defecto del #277 por otro lado: el par declarado era ilegible y el medidor
+lo declaraba no medible.
+
+Ademas de las 5 del baseline, los **cuatro labels del dialogo BT** quedan >=4.5:1 en los seis temas
+(los otros no estaban en el baseline porque ya pasaban), medido en `wcag-rendered-opcion2-all.log`:
+
+| label | Aurora | Cathode | Redshift | Sprint | Sunlit | Trail |
+|---|---|---|---|---|---|---|
+| `Bluetooth devices` | 4.31 -> **10.33** | 4.96 -> **11.8** | 4.14 -> **11.4** | 5.02 -> **11.64** | 1.71 -> **10.35** | 5.46 -> **11.63** |
+| `no headphones, RX off` | 6.49 -> **10.13** | 4.85 -> **7.5** | 4.2 -> **7.59** | 6.8 -> **10.43** | (sin tinta) -> **9.58** | 7.51 -> **10.52** |
+| `Row: pair/connect - Auto: hold to unpair` | 9.49 -> **14.77** | 8.11 -> **12.57** | 6.35 -> **11.43** | 10.06 -> **15.54** | 1.69 -> **15.67** | 9.26 -> **12.91** |
+
+(las **negritas `x -> y`** son base -> opcion 2; los cinco pares del baseline estan marcados en la
+tabla de §2.)
 
 ## 3. Que color tiene ahora la superficie del dialogo (medido, los 6 temas)
 
