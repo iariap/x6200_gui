@@ -1,0 +1,90 @@
+{
+  "seed_a": 20,
+  "seed_b": 21,
+  "fixtures": [
+    {
+      "pixeles_con_sangrado": 0,
+      "pixeles_donde_el_home_cambia": 17801,
+      "fuga_mediana": 0.0,
+      "amplitud_max_sangrado": 0.0,
+      "fixture": "bt-dialog-tema-aurora"
+    },
+    {
+      "pixeles_con_sangrado": 0,
+      "pixeles_donde_el_home_cambia": 17801,
+      "fuga_mediana": 0.0,
+      "amplitud_max_sangrado": 0.0,
+      "fixture": "settings-tema-aurora"
+    },
+    {
+      "pixeles_con_sangrado": 0,
+      "pixeles_donde_el_home_cambia": 15964,
+      "fuga_mediana": 0.0,
+      "amplitud_max_sangrado": 0.0,
+      "fixture": "bt-dialog-tema-cathode"
+    },
+    {
+      "pixeles_con_sangrado": 0,
+      "pixeles_donde_el_home_cambia": 15964,
+      "fuga_mediana": 0.0,
+      "amplitud_max_sangrado": 0.0,
+      "fixture": "settings-tema-cathode"
+    },
+    {
+      "pixeles_con_sangrado": 0,
+      "pixeles_donde_el_home_cambia": 10327,
+      "fuga_mediana": 0.0,
+      "amplitud_max_sangrado": 0.0,
+      "fixture": "bt-dialog-tema-redshift"
+    },
+    {
+      "pixeles_con_sangrado": 0,
+      "pixeles_donde_el_home_cambia": 10327,
+      "fuga_mediana": 0.0,
+      "amplitud_max_sangrado": 0.0,
+      "fixture": "settings-tema-redshift"
+    },
+    {
+      "pixeles_con_sangrado": 0,
+      "pixeles_donde_el_home_cambia": 18644,
+      "fuga_mediana": 0.0,
+      "amplitud_max_sangrado": 0.0,
+      "fixture": "bt-dialog-tema-sprint"
+    },
+    {
+      "pixeles_con_sangrado": 0,
+      "pixeles_donde_el_home_cambia": 18644,
+      "fuga_mediana": 0.0,
+      "amplitud_max_sangrado": 0.0,
+      "fixture": "settings-tema-sprint"
+    },
+    {
+      "pixeles_con_sangrado": 0,
+      "pixeles_donde_el_home_cambia": 75959,
+      "fuga_mediana": 0.0,
+      "amplitud_max_sangrado": 0.0,
+      "fixture": "bt-dialog-tema-sunlit"
+    },
+    {
+      "pixeles_con_sangrado": 0,
+      "pixeles_donde_el_home_cambia": 75959,
+      "fuga_mediana": 0.0,
+      "amplitud_max_sangrado": 0.0,
+      "fixture": "settings-tema-sunlit"
+    },
+    {
+      "pixeles_con_sangrado": 0,
+      "pixeles_donde_el_home_cambia": 19036,
+      "fuga_mediana": 0.0,
+      "amplitud_max_sangrado": 0.0,
+      "fixture": "bt-dialog-tema-trail"
+    },
+    {
+      "pixeles_con_sangrado": 0,
+      "pixeles_donde_el_home_cambia": 19036,
+      "fuga_mediana": 0.0,
+      "amplitud_max_sangrado": 0.0,
+      "fixture": "settings-tema-trail"
+    }
+  ]
+}

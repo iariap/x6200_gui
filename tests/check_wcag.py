@@ -39,6 +39,7 @@ THEME_H = RAIZ / "src" / "theme.h"
 THEME_C = RAIZ / "src" / "theme.c"
 CW_TUNE_C = RAIZ / "src" / "cw_tune_ui.c"
 BAND_PLAN_C = RAIZ / "src" / "band_plan.c"
+STYLES_C = RAIZ / "src" / "styles.c"
 TEMAS_DIR = RAIZ / "rootfs" / "usr" / "share" / "x6200" / "themes"
 
 
@@ -196,37 +197,41 @@ _LV_OPA = {
 
 
 def leer_band_plan():
-    """El color del segmento CB y la opacidad de la franja, leidos de la fuente.
+    """El color del segmento CB, leido de la fuente.
 
-    Devuelve (color_cb, opa) o (None, None). Lee la constante real del codigo para
-    que cambiar el violeta a un color de bajo contraste haga fallar el chequeo.
+    Devuelve el color de la constante de `colors[]` que indexa el segmento "CB", o None. La franja
+    sigue pintandose al OPA (`#define OPA`, que se valida aca para que el chequeo del compuesto no
+    mida un color que nadie dibuja) y desde #284 la ETIQUETA pinta ese MISMO color como su propio
+    fondo opaco, asi que el par de texto del segmento es la tinta sobre el color puro (no sobre la
+    mezcla con el fondo). Lee la constante real del codigo para que cambiar el violeta a un color de
+    bajo contraste haga fallar el chequeo.
     """
     texto = BAND_PLAN_C.read_text(errors="surrogateescape")
 
     m = re.search(r"colors\[\]\s*=\s*\{([^}]*)\}", texto)
     if not m:
         fallos.append("src/band_plan.c: no encontre colors[]")
-        return None, None
+        return None
     colores = [int(v, 16) for v in re.findall(r"0x[0-9a-fA-F]{6}", m.group(1))]
 
     ml = re.search(r"labels\[\]\[2\]\s*=\s*\{(.*?)\};", texto, re.S)
     if not ml:
         fallos.append("src/band_plan.c: no encontre labels[][]")
-        return None, None
+        return None
     etiquetas = re.findall(r'\{\s*"([^"]*)"', ml.group(1))
     if "CB" not in etiquetas:
         fallos.append("src/band_plan.c: no encontre el segmento CB en labels[][]")
-        return None, None
+        return None
     idx = etiquetas.index("CB")
     if idx >= len(colores):
         fallos.append("src/band_plan.c: el indice de CB no cae dentro de colors[]")
-        return None, None
+        return None
 
     mo = re.search(r"#define\s+OPA\s+(LV_OPA_\d+)", texto)
     if not mo or mo.group(1) not in _LV_OPA:
         fallos.append("src/band_plan.c: no encontre #define OPA LV_OPA_xx")
-        return None, None
-    return colores[idx], _LV_OPA[mo.group(1)]
+        return None
+    return colores[idx]
 
 
 def armar_paletas(colores):
@@ -293,15 +298,16 @@ def armar_paletas(colores):
             0xFFFFFF if luminancia(paleta["cw_tune_panel"]) < LUM_CORTE else 0x000000
         )
 
-    # El segmento CB del plan de banda es la constante 0x5A2CA0 (issue #169) pintada al
-    # OPA de la franja (`lv_obj_set_style_bg_opa(b, OPA)`, src/band_plan.c:126) sobre lo
-    # que haya debajo; se aproxima por el fondo del tema, como cw_tune. Se mide la
-    # etiqueta blanca contra ese fondo compuesto, que es el que el codigo dibuja de
-    # verdad (puro 9,12:1; al 80% sobre oscuro 11,49:1; sobre claro 5,76:1).
-    color_cb, opa = leer_band_plan()
+    # El segmento CB del plan de banda es la constante 0x5A2CA0 (issue #169). La FRANJA se pinta al
+    # OPA (#define OPA) sobre lo que haya debajo, pero desde #284 la ETIQUETA lleva su propio fondo
+    # OPACO con ese color exacto (band_plan.c: lv_obj_set_style_bg_opa(l, LV_OPA_COVER) +
+    # lv_obj_set_style_bg_color(s->label, colors[...])), asi que el par de texto que el codigo
+    # dibuja es la tinta (blanca: rel_lum(0x5A2CA0) = 0.065 < LUM_CORTE) sobre el color PURO, no
+    # sobre la mezcla con el waterfall.
+    color_cb = leer_band_plan()
     if color_cb is not None:
         for paleta in paletas.values():
-            paleta["band_plan_cb"] = mezclar(color_cb, paleta["bg"], opa)
+            paleta["band_plan_label"] = color_cb
 
     return paletas, shapes
 
@@ -454,11 +460,11 @@ PARES_ESPECIFICOS = [
     ("hex_000000", "hex_888888", 4.5, None, "band_plan.c:19+93 (etiqueta sobre el gris de ALL MODES)"),
     ("hex_ffffff", "hex_3366cc", 4.5, None, "band_plan.c:19+93 (etiqueta sobre el azul de CW)"),
     # band_plan.c: color del segmento CB 27 MHz (issue #169). El violeta NO es un rol
-    # del tema: es una constante de colors[] (band_plan.c:40). La franja se pinta al
-    # OPA (80%) sobre el fondo del tema y la etiqueta sale blanca porque
-    # rel_lum(0x5A2CA0) = 0.065 < LUM_CORTE. Se mide blanca sobre ese fondo compuesto,
-    # leido de la fuente para que un violeta de bajo contraste haga fallar el chequeo.
-    ("hex_ffffff", "band_plan_cb", 4.5, None, "band_plan.c:40+83+126 (etiqueta blanca sobre el violeta CB al 80% sobre TC(bg), issue #169)"),
+    # del tema: es una constante de colors[] (band_plan.c:40). Desde #284 la etiqueta
+    # pinta ese color OPACO como su propio fondo (LV_OPA_COVER), asi que se mide blanca
+    # sobre el violeta PURO, leido de la fuente para que un violeta de bajo contraste
+    # haga fallar el chequeo.
+    ("hex_ffffff", "band_plan_label", 4.5, None, "band_plan.c:40+86+102 (etiqueta blanca sobre el fondo opaco del violeta CB, issues #169/#284)"),
     # dialog_field.c:1098: la etiqueta del chip (VOL/MFK) va sobre el fondo del
     # chip, que es TC(bg); con negro literal daba 1.00:1 en Classic.
     ("text", "bg", 4.5, None, "dialog_field.c:1098 (etiqueta del chip sobre TC(bg))"),
@@ -668,20 +674,59 @@ def main():
             "tenga contra la superficie que lo rodea"
         )
 
-    # Misma idea para el segmento CB del plan de banda: el par `band_plan_cb` sale de la constante
-    # de colors[], asi que el codigo tiene que seguir pintando la franja con OPA y eligiendo la
-    # etiqueta por la luminancia del segmento (band_plan.c:83). Si no, el chequeo mediria un color
-    # que nadie dibuja.
+    # Misma idea para el segmento CB del plan de banda: el par `band_plan_label` sale de la constante
+    # de colors[], asi que el codigo tiene que seguir pintando la franja con OPA, la etiqueta con SU
+    # propio fondo OPACO de ese color y eligiendo la tinta por la luminancia del segmento
+    # (band_plan.c). Si no, el chequeo mediria un par que nadie dibuja.
     band_plan = BAND_PLAN_C.read_text(errors="surrogateescape")
     if not re.search(r"lv_obj_set_style_bg_opa\([^,]+,\s*OPA\b", band_plan):
         fallos.append(
-            "src/band_plan.c: la franja no se pinta al OPA (#define OPA): el par `band_plan_cb` "
-            "mediria un color que no se dibuja"
+            "src/band_plan.c: la franja no se pinta al OPA (#define OPA): el compuesto de la "
+            "franja mediria un color que no se dibuja"
+        )
+    if not re.search(r"lv_obj_set_style_bg_opa\(l,\s*LV_OPA_COVER", band_plan):
+        fallos.append(
+            "src/band_plan.c: la etiqueta del plan de banda no pinta su propio fondo opaco "
+            "(lv_obj_set_style_bg_opa(l, LV_OPA_COVER)): el par `band_plan_label` mediria un color "
+            "que nadie dibuja (el defecto del #284: la tinta caia sobre la mezcla al OPA de la "
+            "franja con el waterfall)"
+        )
+    if not re.search(r"lv_obj_set_style_bg_color\(s->label,\s*lv_color_hex\(colors\[", band_plan):
+        fallos.append(
+            "src/band_plan.c: el fondo de la etiqueta no es el color del segmento "
+            "(lv_obj_set_style_bg_color(s->label, lv_color_hex(colors[...]))): el par medido no "
+            "seria el del segmento que la franja pinta"
         )
     if not re.search(r"rel_lum\(lv_color_hex\(colors\[[^)]*\)\)\s*<\s*LUM_CORTE", band_plan):
         fallos.append(
             "src/band_plan.c: la etiqueta del plan de banda no se elige por la luminancia del "
             "segmento (rel_lum(lv_color_hex(colors[...])) < LUM_CORTE)"
+        )
+
+    # La superficie del dialogo (src/styles.c::dialog_style, la que usan TODAS las apps via
+    # dialog_init) tiene que pedir el fondo del tema OPACO y la tinta del tema: con solo el bitmap
+    # del tema (`bg_img_opa`) la superficie era la imagen a media opacidad sobre lo que hubiera
+    # detras, y la frecuencia/VFO/waterfall del Home se veian a traves de las filas de texto
+    # (auditoria de apps del 2026-10-23: docs/evidencia/2026-10-23-ui-audit/apps/README.md P2-1).
+    # El texto heredado tiene que salir de un rol y no de un blanco fijo: en un tema claro el
+    # blanco sobre el fondo claro es ilegible (issue #284).
+    styles = STYLES_C.read_text(errors="surrogateescape")
+    if not re.search(r"lv_style_set_bg_opa\(&dialog_style,\s*LV_OPA_COVER\)", styles):
+        fallos.append(
+            "src/styles.c: el estilo del dialogo no pide fondo opaco "
+            "(lv_style_set_bg_opa(&dialog_style, LV_OPA_COVER)): la superficie vuelve a ser el "
+            "bitmap del tema sobre la pantalla de atras"
+        )
+    if not re.search(r"lv_style_set_bg_color\(&dialog_style,\s*TC\(dialog\)\)", styles):
+        fallos.append(
+            "src/styles.c: el estilo del dialogo no pide el fondo del tema "
+            "(lv_style_set_bg_color(&dialog_style, TC(dialog)))"
+        )
+    if not re.search(r"lv_style_set_text_color\(&dialog_style,\s*TC\(text\)\)", styles):
+        fallos.append(
+            "src/styles.c: la tinta heredada del dialogo no sale de un rol del tema "
+            "(lv_style_set_text_color(&dialog_style, TC(text))): un blanco fijo es ilegible en un "
+            "tema claro (issue #284)"
         )
 
     print("================ resumen ================")

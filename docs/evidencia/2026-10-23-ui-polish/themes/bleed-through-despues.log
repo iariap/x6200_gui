@@ -1,0 +1,17 @@
+fixture                                   px.sangrado(A|B)  px.home  fuga  amplitud
+  bt-dialog-tema-aurora                          0    17801     0.0      0.0  OK
+  settings-tema-aurora                           0    17801     0.0      0.0  OK
+  bt-dialog-tema-cathode                         0    15964     0.0      0.0  OK
+  settings-tema-cathode                          0    15964     0.0      0.0  OK
+  bt-dialog-tema-redshift                        0    10327     0.0      0.0  OK
+  settings-tema-redshift                         0    10327     0.0      0.0  OK
+  bt-dialog-tema-sprint                          0    18644     0.0      0.0  OK
+  settings-tema-sprint                           0    18644     0.0      0.0  OK
+  bt-dialog-tema-sunlit                          0    75959     0.0      0.0  OK
+  settings-tema-sunlit                           0    75959     0.0      0.0  OK
+  bt-dialog-tema-trail                           0    19036     0.0      0.0  OK
+  settings-tema-trail                            0    19036     0.0      0.0  OK
+
+  sangrado total: 0 px de 12 fixtures reales (Settings y Bluetooth x 6 temas) -> 0 glifos/ghosts: OK
+  json: /tmp/opencode/contrast-284/bleed-after.json
+rc=0

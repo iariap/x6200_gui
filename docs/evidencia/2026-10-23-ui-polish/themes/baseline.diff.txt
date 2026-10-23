@@ -1,0 +1,15 @@
+  --- diff del baseline (--update-baseline) ---
+  - main-tema-aurora                   text       /9/0           ratio 4.29:1  'ALL MODES / SSB'
+  - main-tema-cathode                  text       /10/0          ratio 4.19:1  'ALL MODES / SSB'
+  - main-tema-redshift                 text       /9/0           ratio 4.07:1  'ALL MODES / SSB'
+  - main-tema-sprint                   text       /10/0          ratio 4.23:1  'ALL MODES / SSB'
+  - main-tema-sunlit                   text       /5/0           ratio 3.78:1  'CW'
+  - main-tema-trail                    text       /9/0           ratio 4.38:1  'ALL MODES / SSB'
+  ~ bt-dialog-tema-aurora              text       /43/0          ratio 4.31:1 -> 4.29:1 (-0.02)  'Bluetooth devices'
+  ~ bt-dialog-tema-redshift            text       /37/2          ratio 3.8:1 -> 4.08:1 (+0.28)  '76%'
+  ~ bt-dialog-tema-redshift            text       /43/0          ratio 4.14:1 -> 4.15:1 (+0.01)  'Bluetooth devices'
+  ~ bt-dialog-tema-redshift            text       /43/2          ratio 4.2:1 -> 4.19:1 (-0.01)  'no headphones, RX off'
+  ~ main-tema-redshift                 text       /37/2          ratio 3.8:1 -> 4.08:1 (+0.28)  '76%'
+  ~ settings-grupo-operation-tema-redshift text       /37/2          ratio 3.8:1 -> 4.08:1 (+0.28)  '76%'
+  ~ settings-tema-redshift             text       /37/2          ratio 3.8:1 -> 3.78:1 (-0.02)  '50%'
+  baseline escrito: tests/wcag_rendered_baseline.json (12 entradas, +0/-6)

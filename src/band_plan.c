@@ -13,11 +13,15 @@
 #include <stddef.h>
 #include <string.h>
 
-#define OPA LV_OPA_80       /* the spectrum shows through a little, labels stay readable */
+/* La FRANJA va translucida a proposito (el espectro se ve un poco a traves); la etiqueta NO: pinta
+ * su propio fondo OPACO con el color exacto del segmento (band_plan_init/redraw), asi el par que
+ * el usuario ve es la tinta sobre ESE color y no sobre la mezcla al OPA con el waterfall. */
+#define OPA LV_OPA_80
 
 /* The X6100 takes these colours from its theme; here they are the strip's
  * identity, so what moves is the label: black or white, whichever has more
- * contrast on the segment.
+ * contrast on the segment. The label paints that same colour opaquely behind the
+ * ink, so the pair that is measured is exactly this crossover's.
  *
  * Crossover from WCAG 2.1: with c = L + 0.05, black gives c / 0.05 and white
  * 1.05 / c, equal at c = sqrt(0.0525) = 0.2291, i.e. L = 0.179. Picking by
@@ -76,6 +80,10 @@ static void redraw(void) {
         lv_obj_set_x(s->box, vis[i].x);
         lv_obj_set_width(s->box, vis[i].w);
         lv_obj_set_style_bg_color(s->box, lv_color_hex(colors[vis[i].type]), 0);
+        /* El fondo de la etiqueta es el color EXACTO del segmento, opaco (el OPA de la franja solo
+         * mueve a la franja): asi la tinta elegida abajo se mide contra el color que el usuario ve
+         * debajo del glifo y no contra la mezcla con el waterfall. */
+        lv_obj_set_style_bg_color(s->label, lv_color_hex(colors[vis[i].type]), 0);
         /* Etiqueta en negro o blanco, el que mas contraste tenga sobre ESE color: el blanco fijo de
          * antes daba 2.96:1 sobre el naranja de BCN y 2.99:1 sobre el verde de DIG (medido,
          * docs/HALLAZGOS.md 26). */
@@ -133,6 +141,17 @@ void band_plan_init(lv_obj_t *parent, lv_coord_t y) {
 
         lv_obj_set_style_text_font(l, &sony_16, 0);
         lv_obj_set_style_text_color(l, lv_color_white(), 0);
+        /* La etiqueta pinta su PROPIO fondo opaco con el color exacto del segmento (lo escribe
+         * redraw() en cada cambio de tipo): sin el, la tinta caia sobre la mezcla al OPA de la
+         * franja con el waterfall, que es impredecible, y el par medido no era el elegido por
+         * rel_lum (medido: 3.78:1 en Sunlit y 4.07-4.38:1 en las grises, issue #284). El relleno
+         * interior (2 px a los costados, 1 px arriba/abajo) separa la tinta del borde del color
+         * crudo; sin borde y sin radio, como la franja. */
+        lv_obj_set_style_bg_opa(l, LV_OPA_COVER, 0);
+        lv_obj_set_style_pad_hor(l, 2, 0);
+        lv_obj_set_style_pad_ver(l, 1, 0);
+        lv_obj_set_style_border_width(l, 0, 0);
+        lv_obj_set_style_radius(l, 0, 0);
         lv_obj_clear_flag(l, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_flag(l, LV_OBJ_FLAG_HIDDEN);
         segs[i].label = l;

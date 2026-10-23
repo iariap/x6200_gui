@@ -221,8 +221,24 @@ void styles_init(themes_t theme) {
     lv_style_set_radius(&pannel_style, 0);
     lv_style_set_bg_img_opa(&pannel_style, LV_OPA_COVER);
 
+    /* La ventana de una app es UNA superficie opaca del tema, dibujada ANTES que la imagen del
+     * tema (bmp/JSON) y que sus hijos. Hasta #284 el estilo solo pedia `bg_img_opa` sin pedir
+     * fondo: la superficie quedaba siendo la imagen a media opacidad sobre lo que hubiera detras,
+     * asi que la frecuencia/VFO/waterfall del Home se veian a traves de las filas de texto (la
+     * auditoria de apps del 2026-10-23, docs/evidencia/2026-10-23-ui-audit/apps/README.md P2-1) y
+     * el fondo medido bajo cada etiqueta era la mezcla con la pantalla de atras, no el tema
+     * (medido: "Bluetooth devices" en Sunlit 1.71:1 sobre #516775, que no es ningun rol). Con el
+     * fondo del tema opaco debajo de la imagen, la superficie deja de depender de lo que haya
+     * detras: es la imagen del tema sobre el fondo del tema, igual en cualquier app (lo que NO
+     * cambia es la imagen, que sigue siendo la que manda en el color visible: ver las mediciones
+     * de #286 en docs/evidencia/2026-10-23-ui-polish/themes/README.md). El texto heredado sale del
+     * rol del tema (`TC(text)`) y no de un blanco fijo: en un tema claro el blanco sobre el fondo
+     * claro es ilegible (mismo idioma que freq_style y theme.h: el codigo no escribe un color, pide
+     * un rol). Geometria y opacidad de la imagen sin cambios. */
     lv_style_init(&dialog_style);
-    lv_style_set_text_color(&dialog_style, lv_color_white());
+    lv_style_set_bg_color(&dialog_style, TC(dialog));
+    lv_style_set_bg_opa(&dialog_style, LV_OPA_COVER);
+    lv_style_set_text_color(&dialog_style, TC(text));
     lv_style_set_text_font(&dialog_style, &sony_36);
     lv_style_set_width(&dialog_style, 796);
     lv_style_set_height(&dialog_style, DIALOG_BOX_H);

@@ -1,0 +1,17 @@
+fixture                                   px.sangrado(A|B)  px.home  fuga  amplitud
+  bt-dialog-tema-aurora                      11242    18135     0.0     5.37  SANGRA
+  settings-tema-aurora                       63970    18135  0.0327     5.37  SANGRA
+  bt-dialog-tema-cathode                      8656    16212     0.0     4.54  SANGRA
+  settings-tema-cathode                      37345    16212   0.037     4.54  SANGRA
+  bt-dialog-tema-redshift                     6660    10664     0.0     4.28  SANGRA
+  settings-tema-redshift                     41392    10664  0.0487     4.28  SANGRA
+  bt-dialog-tema-sprint                      12590    18975     0.0      5.4  SANGRA
+  settings-tema-sprint                       61192    18975    0.03      5.4  SANGRA
+  bt-dialog-tema-sunlit                      11444    76265     0.0     5.39  SANGRA
+  settings-tema-sunlit                       46228    76265  0.0056     5.39  SANGRA
+  bt-dialog-tema-trail                       14153    19301     0.0     5.89  SANGRA
+  settings-tema-trail                        50781    19301   0.031     5.89  SANGRA
+
+  sangrado total: 365653 px de 12 fixtures reales (Settings y Bluetooth x 6 temas) -> FALLA
+  json: /tmp/opencode/contrast-284/bleed-base.json
+rc_bleed=1
