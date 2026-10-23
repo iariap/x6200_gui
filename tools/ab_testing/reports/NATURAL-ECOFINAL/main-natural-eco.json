@@ -2,7 +2,7 @@
   "scenario": "main-natural-eco",
   "screen": "main",
   "seed": 13,
-  "revision": "8549891e2cfafeaa970afd582bdacd136601a5d0",
+  "revision": "65f7842c29f124728556d8c54b5644b8ffdefe0a",
   "framebuffer": { "width": 800, "height": 480 },
   "theme": {
     "requested": "Aurora",

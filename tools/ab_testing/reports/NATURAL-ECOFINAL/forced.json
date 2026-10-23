@@ -2,7 +2,7 @@
   "scenario": "main-natural",
   "screen": "main",
   "seed": 13,
-  "revision": "8549891e2cfafeaa970afd582bdacd136601a5d0",
+  "revision": "65f7842c29f124728556d8c54b5644b8ffdefe0a",
   "framebuffer": { "width": 800, "height": 480 },
   "theme": {
     "requested": "Aurora",
@@ -68,14 +68,14 @@
     "repeats": 3,
     "redraw_passes": 1,
     "frames": [
-      { "render_ms": 3.2391, "flush_ms": 0.3931, "draw_ms": 2.8460, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 },
-      { "render_ms": 3.2543, "flush_ms": 0.3934, "draw_ms": 2.8609, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 },
-      { "render_ms": 3.2130, "flush_ms": 0.3978, "draw_ms": 2.8153, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 }
+      { "render_ms": 3.0753, "flush_ms": 0.3814, "draw_ms": 2.6939, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 },
+      { "render_ms": 3.1643, "flush_ms": 0.3856, "draw_ms": 2.7787, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 },
+      { "render_ms": 3.1434, "flush_ms": 0.3899, "draw_ms": 2.7535, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 }
     ],
     "memory": {
-      "rss_bytes": 10428416,
-      "pss_bytes": 9631744,
-      "peak_rss_bytes": 10493952,
+      "rss_bytes": 10555392,
+      "pss_bytes": 9738240,
+      "peak_rss_bytes": 10620928,
       "peak_vm_bytes": 82427904
     }
   }

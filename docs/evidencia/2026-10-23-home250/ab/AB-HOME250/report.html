@@ -1,0 +1,1051 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>A/B report AB-HOME250</title>
+<style>body{font-family:system-ui,sans-serif;margin:2rem;max-width:60rem}table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{border:1px solid #ccc;padding:.35rem .6rem;text-align:left;font-size:.92rem}img{max-width:100%;border:1px solid #ccc;margin:.4rem 0}.pill{padding:.2rem .7rem;border-radius:1rem;color:#fff;font-weight:600}</style>
+</head><body>
+<h1>A/B UI report — AB-HOME250</h1>
+<p><span class="pill" style="background:#1b7f3b">PASS</span> exit 0</p>
+<ul>
+<li>Date: 2026-10-23</li>
+<li>A: <code>8549891e2cfafeaa970afd582bdacd136601a5d0</code></li>
+<li>B: <code>65f7842c29f124728556d8c54b5644b8ffdefe0a</code></li>
+<li>Docker image: <code>x6200-uiharness</code></li>
+<li>Scenarios: app-bands, app-close-home, apps-menu-1, apps-menu-2, apps-menu-3, apps-menu-4, apps-menu-5, apps-menu-6, autotune, autotune-found, autotune-notcw, autotune-progress, bench-render, bt-dialog, bt-dialog-tema-aurora, bt-dialog-tema-cathode, bt-dialog-tema-redshift, bt-dialog-tema-sprint, bt-dialog-tema-sunlit, bt-dialog-tema-trail, cw-autotune-off, cw-autotune-on, cw-tune-default, cw-tune-ssb, cw-tune-tema-sunlit, cw-tune-tuner, dfl-editor-cycles, dfl-editor-interaction, dfl-editor-lsb-d, dfl-editor-reset, dfl-editor-rotary0, dfl-editor-sel-bw-tema-aurora, dfl-editor-sel-bw-tema-cathode, dfl-editor-sel-bw-tema-redshift, dfl-editor-sel-bw-tema-sprint, dfl-editor-sel-bw-tema-sunlit, dfl-editor-sel-bw-tema-trail, dfl-editor-sel-high-tema-aurora, dfl-editor-sel-high-tema-cathode, dfl-editor-sel-high-tema-redshift, dfl-editor-sel-high-tema-sprint, dfl-editor-sel-high-tema-sunlit, dfl-editor-sel-high-tema-trail, dfl-editor-tx, dfl-editor-usb-d, dfl-editor-usb-d-tema-aurora, dfl-editor-usb-d-tema-cathode, dfl-editor-usb-d-tema-redshift, dfl-editor-usb-d-tema-sprint, dfl-editor-usb-d-tema-sunlit, dfl-editor-usb-d-tema-trail, dfl-lsb-d, dfl-mirror-lsb, dfl-mirror-usb, dfl-page-tema-aurora, dfl-page-tema-cathode, dfl-page-tema-redshift, dfl-page-tema-sprint, dfl-page-tema-sunlit, dfl-page-tema-trail, dfl-presets-activo, dfl-presets-adj-tema-aurora, dfl-presets-adj-tema-cathode, dfl-presets-adj-tema-redshift, dfl-presets-adj-tema-sprint, dfl-presets-adj-tema-sunlit, dfl-presets-adj-tema-trail, dfl-presets-apply, dfl-presets-assign-cancel, dfl-presets-assign-ok, dfl-presets-assign-tema-aurora, dfl-presets-assign-tema-cathode, dfl-presets-assign-tema-redshift, dfl-presets-assign-tema-sprint, dfl-presets-assign-tema-sunlit, dfl-presets-assign-tema-trail, dfl-presets-confirm-tema-aurora, dfl-presets-confirm-tema-cathode, dfl-presets-confirm-tema-redshift, dfl-presets-confirm-tema-sprint, dfl-presets-confirm-tema-sunlit, dfl-presets-confirm-tema-trail, dfl-presets-custom, dfl-presets-cycles, dfl-presets-digi, dfl-presets-fav-tema-aurora, dfl-presets-fav-tema-cathode, dfl-presets-fav-tema-redshift, dfl-presets-fav-tema-sprint, dfl-presets-fav-tema-sunlit, dfl-presets-fav-tema-trail, dfl-presets-graph-tema-aurora, dfl-presets-graph-tema-cathode, dfl-presets-graph-tema-redshift, dfl-presets-graph-tema-sprint, dfl-presets-graph-tema-sunlit, dfl-presets-graph-tema-trail, dfl-presets-mode-change, dfl-presets-more-tema-aurora, dfl-presets-more-tema-cathode, dfl-presets-more-tema-redshift, dfl-presets-more-tema-sprint, dfl-presets-more-tema-sunlit, dfl-presets-more-tema-trail, dfl-presets-nav, dfl-presets-nfm, dfl-presets-rotary0, dfl-presets-save, dfl-presets-save-cancel, dfl-presets-save-fail, dfl-presets-touch, dfl-presets-touch-hold, dfl-presets-tx, dfl-presets-vol, dfl-usb-d, dfl-usb-d-span100k, dfl-usb-d-span50k, dfl-usb-d-tema-cathode, dfl-usb-d-tema-redshift, dfl-usb-d-tema-sprint, dfl-usb-d-tema-sunlit, dfl-usb-d-tema-trail, home-bateria-externa, home-cb, home-cb-a, home-cb-cathode, home-cb-d, home-cb-offchannel, home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco, main-frecuencia-dseg, main-natural, main-natural-eco, main-tema-aurora, main-tema-aurora-agua, main-tema-aurora-eco, main-tema-aurora-tx, main-tema-cathode, main-tema-cathode-agua, main-tema-cathode-eco, main-tema-cathode-tx, main-tema-redshift, main-tema-redshift-agua, main-tema-redshift-eco, main-tema-redshift-tx, main-tema-sprint, main-tema-sprint-agua, main-tema-sprint-eco, main-tema-sprint-tx, main-tema-sunlit, main-tema-sunlit-agua, main-tema-sunlit-eco, main-tema-sunlit-tx, main-tema-trail, main-tema-trail-agua, main-tema-trail-eco, main-tema-trail-tx, main-tx-simulado, settings-audio, settings-bands, settings-grupo-actions, settings-grupo-display, settings-grupo-info, settings-grupo-operation, settings-grupo-operation-tema-aurora, settings-grupo-operation-tema-cathode, settings-grupo-operation-tema-redshift, settings-grupo-operation-tema-sprint, settings-grupo-operation-tema-sunlit, settings-grupo-operation-tema-trail, settings-home, settings-perfil, settings-tema-aurora, settings-tema-cathode, settings-tema-redshift, settings-tema-sprint, settings-tema-sunlit, settings-tema-trail, settings-wfbat, swrscan-3pass, swrscan-3pass-p1, swrscan-3pass-p2, swrscan-3pass-p3, swrscan-3pass-stop, swrscan-3pass-tema-aurora, swrscan-3pass-tema-cathode, swrscan-5pass-moving, swrscan-5pass-outliers, swrscan-double-valley, swrscan-flat, swrscan-narrow-zoom, swrscan-owner-40m, swrscan-owner-40m-domo, swrscan-owner-40m-sweep, swrscan-quick, swrscan-wide-zoom</li>
+</ul>
+<h2>Gates</h2>
+<table><tr><th>Gate</th><th>Required</th><th>Status</th><th>Summary</th></tr>
+<tr><td>Functional</td><td>yes</td><td>PASS</td><td>199 scenarios captured on both revisions</td></tr>
+<tr><td>Visual Regression</td><td>yes</td><td>PASS</td><td>no unexplained visual regressions</td></tr>
+<tr><td>Quality Contract</td><td>yes</td><td>PASS</td><td>2058 contract checks passed on the candidate</td></tr>
+<tr><td>Performance</td><td>yes</td><td>PASS</td><td>render-cost proxy within budget; 1 scenario(s) accepted by a dated exception</td></tr>
+<tr><td>Hardware</td><td>advisory</td><td>BLOCKED</td><td>no physical X6200 attached; hardware behaviour is not measured</td></tr>
+<tr><td>Energy</td><td>advisory</td><td>BLOCKED</td><td>no power measurement; energy evidence must be physical</td></tr>
+</table>
+<h2>Performance (render-cost proxy)</h2>
+<table><tr><th>Scenario</th><th>flushes Δ</th><th>flushed_pixels Δ</th><th>Verdict</th><th>Expires</th></tr>
+<tr><td>main-frecuencia-dseg</td><td>+50.0%</td><td>+0.4%</td><td>PASS (by exception)</td><td>2027-04-30</td></tr>
+</table>
+<p><strong>main-frecuencia-dseg</strong> accepted by <code>home-clock-battery-250</code> until <code>2027-04-30</code>: AB-HOME250 (#250): el reloj de la barra superior deja de alternar hora y alimentacion y pasa a ser permanente, con la bateria y la fuente externa en una banda de estado de dos grupos (izquierda/derecha) en la misma caja de 206/209 x 61. La actualizacion de esa banda cuando llega el pack real (el arnes publica `clock_update_power()` despues de `main_screen()`) invalida dos rectangulos (590,32 75x34 y 747,32 53x34, medidos con un `DIAGFLUSH` temporal en el flush callback del arnes, no versionado) donde el reloj de potencia viejo invalidaba uno: el settle de esta fixture pasa de 4 a 6 flushes (+50.0%) y de 1096000 a 1100352 px (+0.397%). Es un costo de ARRANQUE, no de operacion: con el reloj andando el reloj nuevo invalida menos por segundo que el viejo en esta MISMA fixture (7490 contra 15549 px por tick de 500 ms, medido con el reloj de pared avanzando con el reloj virtual), y el resto de la suite queda dentro del presupuesto (5 -> 6 flushes = +20.0%, exactamente el techo, con ~1% MENOS de pixeles). budget.yaml no se toca.</p>
+<h2>Visual diff</h2>
+<table><tr><th>Scenario</th><th>Changed px</th><th>Area</th><th>Regions</th></tr>
+<tr><td>app-bands</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>app-close-home</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>apps-menu-1</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>apps-menu-2</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>apps-menu-3</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>apps-menu-4</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>apps-menu-5</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>apps-menu-6</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>autotune</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>autotune-found</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>autotune-notcw</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>autotune-progress</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>bench-render</td><td>2270</td><td>0.591%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>bt-dialog</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>bt-dialog-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>bt-dialog-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>bt-dialog-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>bt-dialog-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>bt-dialog-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>bt-dialog-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>cw-autotune-off</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>cw-autotune-on</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>cw-tune-default</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>cw-tune-ssb</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>cw-tune-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>cw-tune-tuner</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-cycles</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-interaction</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-lsb-d</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-reset</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-rotary0</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-sel-bw-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-sel-bw-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-sel-bw-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-sel-bw-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-sel-bw-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-sel-bw-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-sel-high-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-sel-high-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-sel-high-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-sel-high-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-sel-high-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-sel-high-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-tx</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-usb-d</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-usb-d-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-usb-d-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-usb-d-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-usb-d-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-usb-d-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-editor-usb-d-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-lsb-d</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-mirror-lsb</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-mirror-usb</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-page-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-page-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-page-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-page-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-page-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-page-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-activo</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-adj-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-adj-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-adj-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-adj-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-adj-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-adj-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-apply</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-assign-cancel</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-assign-ok</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-assign-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-assign-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-assign-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-assign-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-assign-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-assign-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-confirm-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-confirm-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-confirm-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-confirm-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-confirm-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-confirm-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-custom</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-cycles</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-digi</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-fav-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-fav-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-fav-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-fav-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-fav-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-fav-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-graph-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-graph-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-graph-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-graph-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-graph-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-graph-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-mode-change</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-more-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-more-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-more-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-more-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-more-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-more-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-nav</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-nfm</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-rotary0</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-save</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-save-cancel</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-save-fail</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-touch</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-touch-hold</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-tx</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-presets-vol</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-usb-d</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-usb-d-span100k</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-usb-d-span50k</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-usb-d-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-usb-d-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-usb-d-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-usb-d-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>dfl-usb-d-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>home-bateria-externa</td><td>2413</td><td>0.628%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>home-cb</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>home-cb-a</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>home-cb-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>home-cb-d</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>home-cb-offchannel</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>home-frecuencia-extrema</td><td>2426</td><td>0.632%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>home-usb-20m</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-bateria-baja</td><td>1601</td><td>0.417%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-espectro-agua</td><td>2270</td><td>0.591%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-foco</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-frecuencia-dseg</td><td>2089</td><td>0.544%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-natural</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-natural-eco</td><td>1757</td><td>0.458%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-aurora-agua</td><td>2270</td><td>0.591%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-aurora-eco</td><td>1601</td><td>0.417%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-aurora-tx</td><td>2272</td><td>0.592%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-cathode-agua</td><td>2344</td><td>0.610%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-cathode-eco</td><td>1655</td><td>0.431%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-cathode-tx</td><td>2357</td><td>0.614%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-redshift</td><td>1665</td><td>0.434%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-redshift-agua</td><td>1699</td><td>0.442%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-redshift-eco</td><td>1258</td><td>0.328%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-redshift-tx</td><td>1698</td><td>0.442%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-sprint</td><td>2208</td><td>0.575%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-sprint-agua</td><td>2237</td><td>0.583%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-sprint-eco</td><td>1624</td><td>0.423%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-sprint-tx</td><td>2258</td><td>0.588%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-sunlit</td><td>2510</td><td>0.654%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-sunlit-agua</td><td>2563</td><td>0.667%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-sunlit-eco</td><td>2028</td><td>0.528%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-sunlit-tx</td><td>2580</td><td>0.672%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-trail</td><td>2625</td><td>0.684%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-trail-agua</td><td>2647</td><td>0.689%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-trail-eco</td><td>2084</td><td>0.543%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tema-trail-tx</td><td>2661</td><td>0.693%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>main-tx-simulado</td><td>2272</td><td>0.592%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>settings-audio</td><td>2333</td><td>0.608%</td><td>barra_superior, espectro, frecuencia, waterfall, reloj_potencia, ajustes_scrollbar, ajustes_dialogo</td></tr>
+<tr><td>settings-bands</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>settings-grupo-actions</td><td>2305</td><td>0.600%</td><td>barra_superior, espectro, waterfall, reloj_potencia, ajustes_scrollbar, ajustes_dialogo, dfl_inline</td></tr>
+<tr><td>settings-grupo-display</td><td>2347</td><td>0.611%</td><td>barra_superior, espectro, waterfall, reloj_potencia, ajustes_scrollbar, ajustes_dialogo, dfl_inline</td></tr>
+<tr><td>settings-grupo-info</td><td>2273</td><td>0.592%</td><td>barra_superior, espectro, waterfall, reloj_potencia, ajustes_scrollbar, ajustes_dialogo, dfl_inline</td></tr>
+<tr><td>settings-grupo-operation</td><td>2273</td><td>0.592%</td><td>barra_superior, espectro, reloj_potencia, ajustes_anio, ajustes_scrollbar, ajustes_dialogo</td></tr>
+<tr><td>settings-grupo-operation-tema-aurora</td><td>2273</td><td>0.592%</td><td>barra_superior, espectro, reloj_potencia, ajustes_anio, ajustes_scrollbar, ajustes_dialogo</td></tr>
+<tr><td>settings-grupo-operation-tema-cathode</td><td>2321</td><td>0.604%</td><td>barra_superior, espectro, reloj_potencia, ajustes_anio, ajustes_scrollbar, ajustes_dialogo</td></tr>
+<tr><td>settings-grupo-operation-tema-redshift</td><td>1676</td><td>0.436%</td><td>barra_superior, espectro, reloj_potencia, ajustes_anio, ajustes_scrollbar, ajustes_dialogo</td></tr>
+<tr><td>settings-grupo-operation-tema-sprint</td><td>2219</td><td>0.578%</td><td>barra_superior, espectro, reloj_potencia, ajustes_anio, ajustes_scrollbar, ajustes_dialogo</td></tr>
+<tr><td>settings-grupo-operation-tema-sunlit</td><td>2521</td><td>0.657%</td><td>barra_superior, espectro, reloj_potencia, ajustes_anio, ajustes_scrollbar, ajustes_dialogo</td></tr>
+<tr><td>settings-grupo-operation-tema-trail</td><td>2636</td><td>0.686%</td><td>barra_superior, espectro, reloj_potencia, ajustes_anio, ajustes_scrollbar, ajustes_dialogo</td></tr>
+<tr><td>settings-home</td><td>27011</td><td>7.034%</td><td>barra_superior, espectro, waterfall_ticks, waterfall, reloj_potencia, ajustes_perfil, ajustes_scrollbar, ajustes_dialogo, dfl_inline</td></tr>
+<tr><td>settings-perfil</td><td>1825</td><td>0.475%</td><td>barra_superior, espectro, waterfall, reloj_potencia, ajustes_scrollbar, ajustes_dialogo, dfl_inline</td></tr>
+<tr><td>settings-tema-aurora</td><td>1825</td><td>0.475%</td><td>barra_superior, espectro, waterfall, reloj_potencia, ajustes_scrollbar, ajustes_dialogo, dfl_inline</td></tr>
+<tr><td>settings-tema-cathode</td><td>1858</td><td>0.484%</td><td>barra_superior, espectro, waterfall, reloj_potencia, ajustes_scrollbar, ajustes_dialogo, dfl_inline</td></tr>
+<tr><td>settings-tema-redshift</td><td>1325</td><td>0.345%</td><td>barra_superior, espectro, waterfall, reloj_potencia, ajustes_scrollbar, ajustes_dialogo, dfl_inline</td></tr>
+<tr><td>settings-tema-sprint</td><td>1826</td><td>0.476%</td><td>barra_superior, espectro, waterfall, reloj_potencia, ajustes_scrollbar, ajustes_dialogo, dfl_inline</td></tr>
+<tr><td>settings-tema-sunlit</td><td>2113</td><td>0.550%</td><td>barra_superior, espectro, waterfall, reloj_potencia, ajustes_scrollbar, ajustes_dialogo, dfl_inline</td></tr>
+<tr><td>settings-tema-trail</td><td>2163</td><td>0.563%</td><td>barra_superior, espectro, waterfall, reloj_potencia, ajustes_scrollbar, ajustes_dialogo, dfl_inline</td></tr>
+<tr><td>settings-wfbat</td><td>2347</td><td>0.611%</td><td>barra_superior, espectro, waterfall_ticks, waterfall, reloj_potencia, ajustes_scrollbar, ajustes_dialogo</td></tr>
+<tr><td>swrscan-3pass</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-3pass-p1</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-3pass-p2</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-3pass-p3</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-3pass-stop</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-3pass-tema-aurora</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-3pass-tema-cathode</td><td>2310</td><td>0.602%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-5pass-moving</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-5pass-outliers</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-double-valley</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-flat</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-narrow-zoom</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-owner-40m</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-owner-40m-domo</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-owner-40m-sweep</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-quick</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+<tr><td>swrscan-wide-zoom</td><td>2262</td><td>0.589%</td><td>barra_superior, espectro, reloj_potencia</td></tr>
+</table>
+<h3>app-bands</h3>
+<img src="diffs/app-bands-diff.png" alt="diff">
+<img src="diffs/app-bands-overlay.png" alt="overlay">
+<h3>app-close-home</h3>
+<img src="diffs/app-close-home-diff.png" alt="diff">
+<img src="diffs/app-close-home-overlay.png" alt="overlay">
+<h3>apps-menu-1</h3>
+<img src="diffs/apps-menu-1-diff.png" alt="diff">
+<img src="diffs/apps-menu-1-overlay.png" alt="overlay">
+<h3>apps-menu-2</h3>
+<img src="diffs/apps-menu-2-diff.png" alt="diff">
+<img src="diffs/apps-menu-2-overlay.png" alt="overlay">
+<h3>apps-menu-3</h3>
+<img src="diffs/apps-menu-3-diff.png" alt="diff">
+<img src="diffs/apps-menu-3-overlay.png" alt="overlay">
+<h3>apps-menu-4</h3>
+<img src="diffs/apps-menu-4-diff.png" alt="diff">
+<img src="diffs/apps-menu-4-overlay.png" alt="overlay">
+<h3>apps-menu-5</h3>
+<img src="diffs/apps-menu-5-diff.png" alt="diff">
+<img src="diffs/apps-menu-5-overlay.png" alt="overlay">
+<h3>apps-menu-6</h3>
+<img src="diffs/apps-menu-6-diff.png" alt="diff">
+<img src="diffs/apps-menu-6-overlay.png" alt="overlay">
+<h3>autotune</h3>
+<img src="diffs/autotune-diff.png" alt="diff">
+<img src="diffs/autotune-overlay.png" alt="overlay">
+<h3>autotune-found</h3>
+<img src="diffs/autotune-found-diff.png" alt="diff">
+<img src="diffs/autotune-found-overlay.png" alt="overlay">
+<h3>autotune-notcw</h3>
+<img src="diffs/autotune-notcw-diff.png" alt="diff">
+<img src="diffs/autotune-notcw-overlay.png" alt="overlay">
+<h3>autotune-progress</h3>
+<img src="diffs/autotune-progress-diff.png" alt="diff">
+<img src="diffs/autotune-progress-overlay.png" alt="overlay">
+<h3>bench-render</h3>
+<img src="diffs/bench-render-diff.png" alt="diff">
+<img src="diffs/bench-render-overlay.png" alt="overlay">
+<h3>bt-dialog</h3>
+<img src="diffs/bt-dialog-diff.png" alt="diff">
+<img src="diffs/bt-dialog-overlay.png" alt="overlay">
+<h3>bt-dialog-tema-aurora</h3>
+<img src="diffs/bt-dialog-tema-aurora-diff.png" alt="diff">
+<img src="diffs/bt-dialog-tema-aurora-overlay.png" alt="overlay">
+<h3>bt-dialog-tema-cathode</h3>
+<img src="diffs/bt-dialog-tema-cathode-diff.png" alt="diff">
+<img src="diffs/bt-dialog-tema-cathode-overlay.png" alt="overlay">
+<h3>bt-dialog-tema-redshift</h3>
+<img src="diffs/bt-dialog-tema-redshift-diff.png" alt="diff">
+<img src="diffs/bt-dialog-tema-redshift-overlay.png" alt="overlay">
+<h3>bt-dialog-tema-sprint</h3>
+<img src="diffs/bt-dialog-tema-sprint-diff.png" alt="diff">
+<img src="diffs/bt-dialog-tema-sprint-overlay.png" alt="overlay">
+<h3>bt-dialog-tema-sunlit</h3>
+<img src="diffs/bt-dialog-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/bt-dialog-tema-sunlit-overlay.png" alt="overlay">
+<h3>bt-dialog-tema-trail</h3>
+<img src="diffs/bt-dialog-tema-trail-diff.png" alt="diff">
+<img src="diffs/bt-dialog-tema-trail-overlay.png" alt="overlay">
+<h3>cw-autotune-off</h3>
+<img src="diffs/cw-autotune-off-diff.png" alt="diff">
+<img src="diffs/cw-autotune-off-overlay.png" alt="overlay">
+<h3>cw-autotune-on</h3>
+<img src="diffs/cw-autotune-on-diff.png" alt="diff">
+<img src="diffs/cw-autotune-on-overlay.png" alt="overlay">
+<h3>cw-tune-default</h3>
+<img src="diffs/cw-tune-default-diff.png" alt="diff">
+<img src="diffs/cw-tune-default-overlay.png" alt="overlay">
+<h3>cw-tune-ssb</h3>
+<img src="diffs/cw-tune-ssb-diff.png" alt="diff">
+<img src="diffs/cw-tune-ssb-overlay.png" alt="overlay">
+<h3>cw-tune-tema-sunlit</h3>
+<img src="diffs/cw-tune-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/cw-tune-tema-sunlit-overlay.png" alt="overlay">
+<h3>cw-tune-tuner</h3>
+<img src="diffs/cw-tune-tuner-diff.png" alt="diff">
+<img src="diffs/cw-tune-tuner-overlay.png" alt="overlay">
+<h3>dfl-editor-cycles</h3>
+<img src="diffs/dfl-editor-cycles-diff.png" alt="diff">
+<img src="diffs/dfl-editor-cycles-overlay.png" alt="overlay">
+<h3>dfl-editor-interaction</h3>
+<img src="diffs/dfl-editor-interaction-diff.png" alt="diff">
+<img src="diffs/dfl-editor-interaction-overlay.png" alt="overlay">
+<h3>dfl-editor-lsb-d</h3>
+<img src="diffs/dfl-editor-lsb-d-diff.png" alt="diff">
+<img src="diffs/dfl-editor-lsb-d-overlay.png" alt="overlay">
+<h3>dfl-editor-reset</h3>
+<img src="diffs/dfl-editor-reset-diff.png" alt="diff">
+<img src="diffs/dfl-editor-reset-overlay.png" alt="overlay">
+<h3>dfl-editor-rotary0</h3>
+<img src="diffs/dfl-editor-rotary0-diff.png" alt="diff">
+<img src="diffs/dfl-editor-rotary0-overlay.png" alt="overlay">
+<h3>dfl-editor-sel-bw-tema-aurora</h3>
+<img src="diffs/dfl-editor-sel-bw-tema-aurora-diff.png" alt="diff">
+<img src="diffs/dfl-editor-sel-bw-tema-aurora-overlay.png" alt="overlay">
+<h3>dfl-editor-sel-bw-tema-cathode</h3>
+<img src="diffs/dfl-editor-sel-bw-tema-cathode-diff.png" alt="diff">
+<img src="diffs/dfl-editor-sel-bw-tema-cathode-overlay.png" alt="overlay">
+<h3>dfl-editor-sel-bw-tema-redshift</h3>
+<img src="diffs/dfl-editor-sel-bw-tema-redshift-diff.png" alt="diff">
+<img src="diffs/dfl-editor-sel-bw-tema-redshift-overlay.png" alt="overlay">
+<h3>dfl-editor-sel-bw-tema-sprint</h3>
+<img src="diffs/dfl-editor-sel-bw-tema-sprint-diff.png" alt="diff">
+<img src="diffs/dfl-editor-sel-bw-tema-sprint-overlay.png" alt="overlay">
+<h3>dfl-editor-sel-bw-tema-sunlit</h3>
+<img src="diffs/dfl-editor-sel-bw-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/dfl-editor-sel-bw-tema-sunlit-overlay.png" alt="overlay">
+<h3>dfl-editor-sel-bw-tema-trail</h3>
+<img src="diffs/dfl-editor-sel-bw-tema-trail-diff.png" alt="diff">
+<img src="diffs/dfl-editor-sel-bw-tema-trail-overlay.png" alt="overlay">
+<h3>dfl-editor-sel-high-tema-aurora</h3>
+<img src="diffs/dfl-editor-sel-high-tema-aurora-diff.png" alt="diff">
+<img src="diffs/dfl-editor-sel-high-tema-aurora-overlay.png" alt="overlay">
+<h3>dfl-editor-sel-high-tema-cathode</h3>
+<img src="diffs/dfl-editor-sel-high-tema-cathode-diff.png" alt="diff">
+<img src="diffs/dfl-editor-sel-high-tema-cathode-overlay.png" alt="overlay">
+<h3>dfl-editor-sel-high-tema-redshift</h3>
+<img src="diffs/dfl-editor-sel-high-tema-redshift-diff.png" alt="diff">
+<img src="diffs/dfl-editor-sel-high-tema-redshift-overlay.png" alt="overlay">
+<h3>dfl-editor-sel-high-tema-sprint</h3>
+<img src="diffs/dfl-editor-sel-high-tema-sprint-diff.png" alt="diff">
+<img src="diffs/dfl-editor-sel-high-tema-sprint-overlay.png" alt="overlay">
+<h3>dfl-editor-sel-high-tema-sunlit</h3>
+<img src="diffs/dfl-editor-sel-high-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/dfl-editor-sel-high-tema-sunlit-overlay.png" alt="overlay">
+<h3>dfl-editor-sel-high-tema-trail</h3>
+<img src="diffs/dfl-editor-sel-high-tema-trail-diff.png" alt="diff">
+<img src="diffs/dfl-editor-sel-high-tema-trail-overlay.png" alt="overlay">
+<h3>dfl-editor-tx</h3>
+<img src="diffs/dfl-editor-tx-diff.png" alt="diff">
+<img src="diffs/dfl-editor-tx-overlay.png" alt="overlay">
+<h3>dfl-editor-usb-d</h3>
+<img src="diffs/dfl-editor-usb-d-diff.png" alt="diff">
+<img src="diffs/dfl-editor-usb-d-overlay.png" alt="overlay">
+<h3>dfl-editor-usb-d-tema-aurora</h3>
+<img src="diffs/dfl-editor-usb-d-tema-aurora-diff.png" alt="diff">
+<img src="diffs/dfl-editor-usb-d-tema-aurora-overlay.png" alt="overlay">
+<h3>dfl-editor-usb-d-tema-cathode</h3>
+<img src="diffs/dfl-editor-usb-d-tema-cathode-diff.png" alt="diff">
+<img src="diffs/dfl-editor-usb-d-tema-cathode-overlay.png" alt="overlay">
+<h3>dfl-editor-usb-d-tema-redshift</h3>
+<img src="diffs/dfl-editor-usb-d-tema-redshift-diff.png" alt="diff">
+<img src="diffs/dfl-editor-usb-d-tema-redshift-overlay.png" alt="overlay">
+<h3>dfl-editor-usb-d-tema-sprint</h3>
+<img src="diffs/dfl-editor-usb-d-tema-sprint-diff.png" alt="diff">
+<img src="diffs/dfl-editor-usb-d-tema-sprint-overlay.png" alt="overlay">
+<h3>dfl-editor-usb-d-tema-sunlit</h3>
+<img src="diffs/dfl-editor-usb-d-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/dfl-editor-usb-d-tema-sunlit-overlay.png" alt="overlay">
+<h3>dfl-editor-usb-d-tema-trail</h3>
+<img src="diffs/dfl-editor-usb-d-tema-trail-diff.png" alt="diff">
+<img src="diffs/dfl-editor-usb-d-tema-trail-overlay.png" alt="overlay">
+<h3>dfl-lsb-d</h3>
+<img src="diffs/dfl-lsb-d-diff.png" alt="diff">
+<img src="diffs/dfl-lsb-d-overlay.png" alt="overlay">
+<h3>dfl-mirror-lsb</h3>
+<img src="diffs/dfl-mirror-lsb-diff.png" alt="diff">
+<img src="diffs/dfl-mirror-lsb-overlay.png" alt="overlay">
+<h3>dfl-mirror-usb</h3>
+<img src="diffs/dfl-mirror-usb-diff.png" alt="diff">
+<img src="diffs/dfl-mirror-usb-overlay.png" alt="overlay">
+<h3>dfl-page-tema-aurora</h3>
+<img src="diffs/dfl-page-tema-aurora-diff.png" alt="diff">
+<img src="diffs/dfl-page-tema-aurora-overlay.png" alt="overlay">
+<h3>dfl-page-tema-cathode</h3>
+<img src="diffs/dfl-page-tema-cathode-diff.png" alt="diff">
+<img src="diffs/dfl-page-tema-cathode-overlay.png" alt="overlay">
+<h3>dfl-page-tema-redshift</h3>
+<img src="diffs/dfl-page-tema-redshift-diff.png" alt="diff">
+<img src="diffs/dfl-page-tema-redshift-overlay.png" alt="overlay">
+<h3>dfl-page-tema-sprint</h3>
+<img src="diffs/dfl-page-tema-sprint-diff.png" alt="diff">
+<img src="diffs/dfl-page-tema-sprint-overlay.png" alt="overlay">
+<h3>dfl-page-tema-sunlit</h3>
+<img src="diffs/dfl-page-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/dfl-page-tema-sunlit-overlay.png" alt="overlay">
+<h3>dfl-page-tema-trail</h3>
+<img src="diffs/dfl-page-tema-trail-diff.png" alt="diff">
+<img src="diffs/dfl-page-tema-trail-overlay.png" alt="overlay">
+<h3>dfl-presets-activo</h3>
+<img src="diffs/dfl-presets-activo-diff.png" alt="diff">
+<img src="diffs/dfl-presets-activo-overlay.png" alt="overlay">
+<h3>dfl-presets-adj-tema-aurora</h3>
+<img src="diffs/dfl-presets-adj-tema-aurora-diff.png" alt="diff">
+<img src="diffs/dfl-presets-adj-tema-aurora-overlay.png" alt="overlay">
+<h3>dfl-presets-adj-tema-cathode</h3>
+<img src="diffs/dfl-presets-adj-tema-cathode-diff.png" alt="diff">
+<img src="diffs/dfl-presets-adj-tema-cathode-overlay.png" alt="overlay">
+<h3>dfl-presets-adj-tema-redshift</h3>
+<img src="diffs/dfl-presets-adj-tema-redshift-diff.png" alt="diff">
+<img src="diffs/dfl-presets-adj-tema-redshift-overlay.png" alt="overlay">
+<h3>dfl-presets-adj-tema-sprint</h3>
+<img src="diffs/dfl-presets-adj-tema-sprint-diff.png" alt="diff">
+<img src="diffs/dfl-presets-adj-tema-sprint-overlay.png" alt="overlay">
+<h3>dfl-presets-adj-tema-sunlit</h3>
+<img src="diffs/dfl-presets-adj-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/dfl-presets-adj-tema-sunlit-overlay.png" alt="overlay">
+<h3>dfl-presets-adj-tema-trail</h3>
+<img src="diffs/dfl-presets-adj-tema-trail-diff.png" alt="diff">
+<img src="diffs/dfl-presets-adj-tema-trail-overlay.png" alt="overlay">
+<h3>dfl-presets-apply</h3>
+<img src="diffs/dfl-presets-apply-diff.png" alt="diff">
+<img src="diffs/dfl-presets-apply-overlay.png" alt="overlay">
+<h3>dfl-presets-assign-cancel</h3>
+<img src="diffs/dfl-presets-assign-cancel-diff.png" alt="diff">
+<img src="diffs/dfl-presets-assign-cancel-overlay.png" alt="overlay">
+<h3>dfl-presets-assign-ok</h3>
+<img src="diffs/dfl-presets-assign-ok-diff.png" alt="diff">
+<img src="diffs/dfl-presets-assign-ok-overlay.png" alt="overlay">
+<h3>dfl-presets-assign-tema-aurora</h3>
+<img src="diffs/dfl-presets-assign-tema-aurora-diff.png" alt="diff">
+<img src="diffs/dfl-presets-assign-tema-aurora-overlay.png" alt="overlay">
+<h3>dfl-presets-assign-tema-cathode</h3>
+<img src="diffs/dfl-presets-assign-tema-cathode-diff.png" alt="diff">
+<img src="diffs/dfl-presets-assign-tema-cathode-overlay.png" alt="overlay">
+<h3>dfl-presets-assign-tema-redshift</h3>
+<img src="diffs/dfl-presets-assign-tema-redshift-diff.png" alt="diff">
+<img src="diffs/dfl-presets-assign-tema-redshift-overlay.png" alt="overlay">
+<h3>dfl-presets-assign-tema-sprint</h3>
+<img src="diffs/dfl-presets-assign-tema-sprint-diff.png" alt="diff">
+<img src="diffs/dfl-presets-assign-tema-sprint-overlay.png" alt="overlay">
+<h3>dfl-presets-assign-tema-sunlit</h3>
+<img src="diffs/dfl-presets-assign-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/dfl-presets-assign-tema-sunlit-overlay.png" alt="overlay">
+<h3>dfl-presets-assign-tema-trail</h3>
+<img src="diffs/dfl-presets-assign-tema-trail-diff.png" alt="diff">
+<img src="diffs/dfl-presets-assign-tema-trail-overlay.png" alt="overlay">
+<h3>dfl-presets-confirm-tema-aurora</h3>
+<img src="diffs/dfl-presets-confirm-tema-aurora-diff.png" alt="diff">
+<img src="diffs/dfl-presets-confirm-tema-aurora-overlay.png" alt="overlay">
+<h3>dfl-presets-confirm-tema-cathode</h3>
+<img src="diffs/dfl-presets-confirm-tema-cathode-diff.png" alt="diff">
+<img src="diffs/dfl-presets-confirm-tema-cathode-overlay.png" alt="overlay">
+<h3>dfl-presets-confirm-tema-redshift</h3>
+<img src="diffs/dfl-presets-confirm-tema-redshift-diff.png" alt="diff">
+<img src="diffs/dfl-presets-confirm-tema-redshift-overlay.png" alt="overlay">
+<h3>dfl-presets-confirm-tema-sprint</h3>
+<img src="diffs/dfl-presets-confirm-tema-sprint-diff.png" alt="diff">
+<img src="diffs/dfl-presets-confirm-tema-sprint-overlay.png" alt="overlay">
+<h3>dfl-presets-confirm-tema-sunlit</h3>
+<img src="diffs/dfl-presets-confirm-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/dfl-presets-confirm-tema-sunlit-overlay.png" alt="overlay">
+<h3>dfl-presets-confirm-tema-trail</h3>
+<img src="diffs/dfl-presets-confirm-tema-trail-diff.png" alt="diff">
+<img src="diffs/dfl-presets-confirm-tema-trail-overlay.png" alt="overlay">
+<h3>dfl-presets-custom</h3>
+<img src="diffs/dfl-presets-custom-diff.png" alt="diff">
+<img src="diffs/dfl-presets-custom-overlay.png" alt="overlay">
+<h3>dfl-presets-cycles</h3>
+<img src="diffs/dfl-presets-cycles-diff.png" alt="diff">
+<img src="diffs/dfl-presets-cycles-overlay.png" alt="overlay">
+<h3>dfl-presets-digi</h3>
+<img src="diffs/dfl-presets-digi-diff.png" alt="diff">
+<img src="diffs/dfl-presets-digi-overlay.png" alt="overlay">
+<h3>dfl-presets-fav-tema-aurora</h3>
+<img src="diffs/dfl-presets-fav-tema-aurora-diff.png" alt="diff">
+<img src="diffs/dfl-presets-fav-tema-aurora-overlay.png" alt="overlay">
+<h3>dfl-presets-fav-tema-cathode</h3>
+<img src="diffs/dfl-presets-fav-tema-cathode-diff.png" alt="diff">
+<img src="diffs/dfl-presets-fav-tema-cathode-overlay.png" alt="overlay">
+<h3>dfl-presets-fav-tema-redshift</h3>
+<img src="diffs/dfl-presets-fav-tema-redshift-diff.png" alt="diff">
+<img src="diffs/dfl-presets-fav-tema-redshift-overlay.png" alt="overlay">
+<h3>dfl-presets-fav-tema-sprint</h3>
+<img src="diffs/dfl-presets-fav-tema-sprint-diff.png" alt="diff">
+<img src="diffs/dfl-presets-fav-tema-sprint-overlay.png" alt="overlay">
+<h3>dfl-presets-fav-tema-sunlit</h3>
+<img src="diffs/dfl-presets-fav-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/dfl-presets-fav-tema-sunlit-overlay.png" alt="overlay">
+<h3>dfl-presets-fav-tema-trail</h3>
+<img src="diffs/dfl-presets-fav-tema-trail-diff.png" alt="diff">
+<img src="diffs/dfl-presets-fav-tema-trail-overlay.png" alt="overlay">
+<h3>dfl-presets-graph-tema-aurora</h3>
+<img src="diffs/dfl-presets-graph-tema-aurora-diff.png" alt="diff">
+<img src="diffs/dfl-presets-graph-tema-aurora-overlay.png" alt="overlay">
+<h3>dfl-presets-graph-tema-cathode</h3>
+<img src="diffs/dfl-presets-graph-tema-cathode-diff.png" alt="diff">
+<img src="diffs/dfl-presets-graph-tema-cathode-overlay.png" alt="overlay">
+<h3>dfl-presets-graph-tema-redshift</h3>
+<img src="diffs/dfl-presets-graph-tema-redshift-diff.png" alt="diff">
+<img src="diffs/dfl-presets-graph-tema-redshift-overlay.png" alt="overlay">
+<h3>dfl-presets-graph-tema-sprint</h3>
+<img src="diffs/dfl-presets-graph-tema-sprint-diff.png" alt="diff">
+<img src="diffs/dfl-presets-graph-tema-sprint-overlay.png" alt="overlay">
+<h3>dfl-presets-graph-tema-sunlit</h3>
+<img src="diffs/dfl-presets-graph-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/dfl-presets-graph-tema-sunlit-overlay.png" alt="overlay">
+<h3>dfl-presets-graph-tema-trail</h3>
+<img src="diffs/dfl-presets-graph-tema-trail-diff.png" alt="diff">
+<img src="diffs/dfl-presets-graph-tema-trail-overlay.png" alt="overlay">
+<h3>dfl-presets-mode-change</h3>
+<img src="diffs/dfl-presets-mode-change-diff.png" alt="diff">
+<img src="diffs/dfl-presets-mode-change-overlay.png" alt="overlay">
+<h3>dfl-presets-more-tema-aurora</h3>
+<img src="diffs/dfl-presets-more-tema-aurora-diff.png" alt="diff">
+<img src="diffs/dfl-presets-more-tema-aurora-overlay.png" alt="overlay">
+<h3>dfl-presets-more-tema-cathode</h3>
+<img src="diffs/dfl-presets-more-tema-cathode-diff.png" alt="diff">
+<img src="diffs/dfl-presets-more-tema-cathode-overlay.png" alt="overlay">
+<h3>dfl-presets-more-tema-redshift</h3>
+<img src="diffs/dfl-presets-more-tema-redshift-diff.png" alt="diff">
+<img src="diffs/dfl-presets-more-tema-redshift-overlay.png" alt="overlay">
+<h3>dfl-presets-more-tema-sprint</h3>
+<img src="diffs/dfl-presets-more-tema-sprint-diff.png" alt="diff">
+<img src="diffs/dfl-presets-more-tema-sprint-overlay.png" alt="overlay">
+<h3>dfl-presets-more-tema-sunlit</h3>
+<img src="diffs/dfl-presets-more-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/dfl-presets-more-tema-sunlit-overlay.png" alt="overlay">
+<h3>dfl-presets-more-tema-trail</h3>
+<img src="diffs/dfl-presets-more-tema-trail-diff.png" alt="diff">
+<img src="diffs/dfl-presets-more-tema-trail-overlay.png" alt="overlay">
+<h3>dfl-presets-nav</h3>
+<img src="diffs/dfl-presets-nav-diff.png" alt="diff">
+<img src="diffs/dfl-presets-nav-overlay.png" alt="overlay">
+<h3>dfl-presets-nfm</h3>
+<img src="diffs/dfl-presets-nfm-diff.png" alt="diff">
+<img src="diffs/dfl-presets-nfm-overlay.png" alt="overlay">
+<h3>dfl-presets-rotary0</h3>
+<img src="diffs/dfl-presets-rotary0-diff.png" alt="diff">
+<img src="diffs/dfl-presets-rotary0-overlay.png" alt="overlay">
+<h3>dfl-presets-save</h3>
+<img src="diffs/dfl-presets-save-diff.png" alt="diff">
+<img src="diffs/dfl-presets-save-overlay.png" alt="overlay">
+<h3>dfl-presets-save-cancel</h3>
+<img src="diffs/dfl-presets-save-cancel-diff.png" alt="diff">
+<img src="diffs/dfl-presets-save-cancel-overlay.png" alt="overlay">
+<h3>dfl-presets-save-fail</h3>
+<img src="diffs/dfl-presets-save-fail-diff.png" alt="diff">
+<img src="diffs/dfl-presets-save-fail-overlay.png" alt="overlay">
+<h3>dfl-presets-touch</h3>
+<img src="diffs/dfl-presets-touch-diff.png" alt="diff">
+<img src="diffs/dfl-presets-touch-overlay.png" alt="overlay">
+<h3>dfl-presets-touch-hold</h3>
+<img src="diffs/dfl-presets-touch-hold-diff.png" alt="diff">
+<img src="diffs/dfl-presets-touch-hold-overlay.png" alt="overlay">
+<h3>dfl-presets-tx</h3>
+<img src="diffs/dfl-presets-tx-diff.png" alt="diff">
+<img src="diffs/dfl-presets-tx-overlay.png" alt="overlay">
+<h3>dfl-presets-vol</h3>
+<img src="diffs/dfl-presets-vol-diff.png" alt="diff">
+<img src="diffs/dfl-presets-vol-overlay.png" alt="overlay">
+<h3>dfl-usb-d</h3>
+<img src="diffs/dfl-usb-d-diff.png" alt="diff">
+<img src="diffs/dfl-usb-d-overlay.png" alt="overlay">
+<h3>dfl-usb-d-span100k</h3>
+<img src="diffs/dfl-usb-d-span100k-diff.png" alt="diff">
+<img src="diffs/dfl-usb-d-span100k-overlay.png" alt="overlay">
+<h3>dfl-usb-d-span50k</h3>
+<img src="diffs/dfl-usb-d-span50k-diff.png" alt="diff">
+<img src="diffs/dfl-usb-d-span50k-overlay.png" alt="overlay">
+<h3>dfl-usb-d-tema-cathode</h3>
+<img src="diffs/dfl-usb-d-tema-cathode-diff.png" alt="diff">
+<img src="diffs/dfl-usb-d-tema-cathode-overlay.png" alt="overlay">
+<h3>dfl-usb-d-tema-redshift</h3>
+<img src="diffs/dfl-usb-d-tema-redshift-diff.png" alt="diff">
+<img src="diffs/dfl-usb-d-tema-redshift-overlay.png" alt="overlay">
+<h3>dfl-usb-d-tema-sprint</h3>
+<img src="diffs/dfl-usb-d-tema-sprint-diff.png" alt="diff">
+<img src="diffs/dfl-usb-d-tema-sprint-overlay.png" alt="overlay">
+<h3>dfl-usb-d-tema-sunlit</h3>
+<img src="diffs/dfl-usb-d-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/dfl-usb-d-tema-sunlit-overlay.png" alt="overlay">
+<h3>dfl-usb-d-tema-trail</h3>
+<img src="diffs/dfl-usb-d-tema-trail-diff.png" alt="diff">
+<img src="diffs/dfl-usb-d-tema-trail-overlay.png" alt="overlay">
+<h3>home-bateria-externa</h3>
+<img src="diffs/home-bateria-externa-diff.png" alt="diff">
+<img src="diffs/home-bateria-externa-overlay.png" alt="overlay">
+<h3>home-cb</h3>
+<img src="diffs/home-cb-diff.png" alt="diff">
+<img src="diffs/home-cb-overlay.png" alt="overlay">
+<h3>home-cb-a</h3>
+<img src="diffs/home-cb-a-diff.png" alt="diff">
+<img src="diffs/home-cb-a-overlay.png" alt="overlay">
+<h3>home-cb-cathode</h3>
+<img src="diffs/home-cb-cathode-diff.png" alt="diff">
+<img src="diffs/home-cb-cathode-overlay.png" alt="overlay">
+<h3>home-cb-d</h3>
+<img src="diffs/home-cb-d-diff.png" alt="diff">
+<img src="diffs/home-cb-d-overlay.png" alt="overlay">
+<h3>home-cb-offchannel</h3>
+<img src="diffs/home-cb-offchannel-diff.png" alt="diff">
+<img src="diffs/home-cb-offchannel-overlay.png" alt="overlay">
+<h3>home-frecuencia-extrema</h3>
+<img src="diffs/home-frecuencia-extrema-diff.png" alt="diff">
+<img src="diffs/home-frecuencia-extrema-overlay.png" alt="overlay">
+<h3>home-usb-20m</h3>
+<img src="diffs/home-usb-20m-diff.png" alt="diff">
+<img src="diffs/home-usb-20m-overlay.png" alt="overlay">
+<h3>main-bateria-baja</h3>
+<img src="diffs/main-bateria-baja-diff.png" alt="diff">
+<img src="diffs/main-bateria-baja-overlay.png" alt="overlay">
+<h3>main-espectro-agua</h3>
+<img src="diffs/main-espectro-agua-diff.png" alt="diff">
+<img src="diffs/main-espectro-agua-overlay.png" alt="overlay">
+<h3>main-foco</h3>
+<img src="diffs/main-foco-diff.png" alt="diff">
+<img src="diffs/main-foco-overlay.png" alt="overlay">
+<h3>main-frecuencia-dseg</h3>
+<img src="diffs/main-frecuencia-dseg-diff.png" alt="diff">
+<img src="diffs/main-frecuencia-dseg-overlay.png" alt="overlay">
+<h3>main-natural</h3>
+<img src="diffs/main-natural-diff.png" alt="diff">
+<img src="diffs/main-natural-overlay.png" alt="overlay">
+<h3>main-natural-eco</h3>
+<img src="diffs/main-natural-eco-diff.png" alt="diff">
+<img src="diffs/main-natural-eco-overlay.png" alt="overlay">
+<h3>main-tema-aurora</h3>
+<img src="diffs/main-tema-aurora-diff.png" alt="diff">
+<img src="diffs/main-tema-aurora-overlay.png" alt="overlay">
+<h3>main-tema-aurora-agua</h3>
+<img src="diffs/main-tema-aurora-agua-diff.png" alt="diff">
+<img src="diffs/main-tema-aurora-agua-overlay.png" alt="overlay">
+<h3>main-tema-aurora-eco</h3>
+<img src="diffs/main-tema-aurora-eco-diff.png" alt="diff">
+<img src="diffs/main-tema-aurora-eco-overlay.png" alt="overlay">
+<h3>main-tema-aurora-tx</h3>
+<img src="diffs/main-tema-aurora-tx-diff.png" alt="diff">
+<img src="diffs/main-tema-aurora-tx-overlay.png" alt="overlay">
+<h3>main-tema-cathode</h3>
+<img src="diffs/main-tema-cathode-diff.png" alt="diff">
+<img src="diffs/main-tema-cathode-overlay.png" alt="overlay">
+<h3>main-tema-cathode-agua</h3>
+<img src="diffs/main-tema-cathode-agua-diff.png" alt="diff">
+<img src="diffs/main-tema-cathode-agua-overlay.png" alt="overlay">
+<h3>main-tema-cathode-eco</h3>
+<img src="diffs/main-tema-cathode-eco-diff.png" alt="diff">
+<img src="diffs/main-tema-cathode-eco-overlay.png" alt="overlay">
+<h3>main-tema-cathode-tx</h3>
+<img src="diffs/main-tema-cathode-tx-diff.png" alt="diff">
+<img src="diffs/main-tema-cathode-tx-overlay.png" alt="overlay">
+<h3>main-tema-redshift</h3>
+<img src="diffs/main-tema-redshift-diff.png" alt="diff">
+<img src="diffs/main-tema-redshift-overlay.png" alt="overlay">
+<h3>main-tema-redshift-agua</h3>
+<img src="diffs/main-tema-redshift-agua-diff.png" alt="diff">
+<img src="diffs/main-tema-redshift-agua-overlay.png" alt="overlay">
+<h3>main-tema-redshift-eco</h3>
+<img src="diffs/main-tema-redshift-eco-diff.png" alt="diff">
+<img src="diffs/main-tema-redshift-eco-overlay.png" alt="overlay">
+<h3>main-tema-redshift-tx</h3>
+<img src="diffs/main-tema-redshift-tx-diff.png" alt="diff">
+<img src="diffs/main-tema-redshift-tx-overlay.png" alt="overlay">
+<h3>main-tema-sprint</h3>
+<img src="diffs/main-tema-sprint-diff.png" alt="diff">
+<img src="diffs/main-tema-sprint-overlay.png" alt="overlay">
+<h3>main-tema-sprint-agua</h3>
+<img src="diffs/main-tema-sprint-agua-diff.png" alt="diff">
+<img src="diffs/main-tema-sprint-agua-overlay.png" alt="overlay">
+<h3>main-tema-sprint-eco</h3>
+<img src="diffs/main-tema-sprint-eco-diff.png" alt="diff">
+<img src="diffs/main-tema-sprint-eco-overlay.png" alt="overlay">
+<h3>main-tema-sprint-tx</h3>
+<img src="diffs/main-tema-sprint-tx-diff.png" alt="diff">
+<img src="diffs/main-tema-sprint-tx-overlay.png" alt="overlay">
+<h3>main-tema-sunlit</h3>
+<img src="diffs/main-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/main-tema-sunlit-overlay.png" alt="overlay">
+<h3>main-tema-sunlit-agua</h3>
+<img src="diffs/main-tema-sunlit-agua-diff.png" alt="diff">
+<img src="diffs/main-tema-sunlit-agua-overlay.png" alt="overlay">
+<h3>main-tema-sunlit-eco</h3>
+<img src="diffs/main-tema-sunlit-eco-diff.png" alt="diff">
+<img src="diffs/main-tema-sunlit-eco-overlay.png" alt="overlay">
+<h3>main-tema-sunlit-tx</h3>
+<img src="diffs/main-tema-sunlit-tx-diff.png" alt="diff">
+<img src="diffs/main-tema-sunlit-tx-overlay.png" alt="overlay">
+<h3>main-tema-trail</h3>
+<img src="diffs/main-tema-trail-diff.png" alt="diff">
+<img src="diffs/main-tema-trail-overlay.png" alt="overlay">
+<h3>main-tema-trail-agua</h3>
+<img src="diffs/main-tema-trail-agua-diff.png" alt="diff">
+<img src="diffs/main-tema-trail-agua-overlay.png" alt="overlay">
+<h3>main-tema-trail-eco</h3>
+<img src="diffs/main-tema-trail-eco-diff.png" alt="diff">
+<img src="diffs/main-tema-trail-eco-overlay.png" alt="overlay">
+<h3>main-tema-trail-tx</h3>
+<img src="diffs/main-tema-trail-tx-diff.png" alt="diff">
+<img src="diffs/main-tema-trail-tx-overlay.png" alt="overlay">
+<h3>main-tx-simulado</h3>
+<img src="diffs/main-tx-simulado-diff.png" alt="diff">
+<img src="diffs/main-tx-simulado-overlay.png" alt="overlay">
+<h3>settings-audio</h3>
+<img src="diffs/settings-audio-diff.png" alt="diff">
+<img src="diffs/settings-audio-overlay.png" alt="overlay">
+<h3>settings-bands</h3>
+<img src="diffs/settings-bands-diff.png" alt="diff">
+<img src="diffs/settings-bands-overlay.png" alt="overlay">
+<h3>settings-grupo-actions</h3>
+<img src="diffs/settings-grupo-actions-diff.png" alt="diff">
+<img src="diffs/settings-grupo-actions-overlay.png" alt="overlay">
+<h3>settings-grupo-display</h3>
+<img src="diffs/settings-grupo-display-diff.png" alt="diff">
+<img src="diffs/settings-grupo-display-overlay.png" alt="overlay">
+<h3>settings-grupo-info</h3>
+<img src="diffs/settings-grupo-info-diff.png" alt="diff">
+<img src="diffs/settings-grupo-info-overlay.png" alt="overlay">
+<h3>settings-grupo-operation</h3>
+<img src="diffs/settings-grupo-operation-diff.png" alt="diff">
+<img src="diffs/settings-grupo-operation-overlay.png" alt="overlay">
+<h3>settings-grupo-operation-tema-aurora</h3>
+<img src="diffs/settings-grupo-operation-tema-aurora-diff.png" alt="diff">
+<img src="diffs/settings-grupo-operation-tema-aurora-overlay.png" alt="overlay">
+<h3>settings-grupo-operation-tema-cathode</h3>
+<img src="diffs/settings-grupo-operation-tema-cathode-diff.png" alt="diff">
+<img src="diffs/settings-grupo-operation-tema-cathode-overlay.png" alt="overlay">
+<h3>settings-grupo-operation-tema-redshift</h3>
+<img src="diffs/settings-grupo-operation-tema-redshift-diff.png" alt="diff">
+<img src="diffs/settings-grupo-operation-tema-redshift-overlay.png" alt="overlay">
+<h3>settings-grupo-operation-tema-sprint</h3>
+<img src="diffs/settings-grupo-operation-tema-sprint-diff.png" alt="diff">
+<img src="diffs/settings-grupo-operation-tema-sprint-overlay.png" alt="overlay">
+<h3>settings-grupo-operation-tema-sunlit</h3>
+<img src="diffs/settings-grupo-operation-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/settings-grupo-operation-tema-sunlit-overlay.png" alt="overlay">
+<h3>settings-grupo-operation-tema-trail</h3>
+<img src="diffs/settings-grupo-operation-tema-trail-diff.png" alt="diff">
+<img src="diffs/settings-grupo-operation-tema-trail-overlay.png" alt="overlay">
+<h3>settings-home</h3>
+<img src="diffs/settings-home-diff.png" alt="diff">
+<img src="diffs/settings-home-overlay.png" alt="overlay">
+<h3>settings-perfil</h3>
+<img src="diffs/settings-perfil-diff.png" alt="diff">
+<img src="diffs/settings-perfil-overlay.png" alt="overlay">
+<h3>settings-tema-aurora</h3>
+<img src="diffs/settings-tema-aurora-diff.png" alt="diff">
+<img src="diffs/settings-tema-aurora-overlay.png" alt="overlay">
+<h3>settings-tema-cathode</h3>
+<img src="diffs/settings-tema-cathode-diff.png" alt="diff">
+<img src="diffs/settings-tema-cathode-overlay.png" alt="overlay">
+<h3>settings-tema-redshift</h3>
+<img src="diffs/settings-tema-redshift-diff.png" alt="diff">
+<img src="diffs/settings-tema-redshift-overlay.png" alt="overlay">
+<h3>settings-tema-sprint</h3>
+<img src="diffs/settings-tema-sprint-diff.png" alt="diff">
+<img src="diffs/settings-tema-sprint-overlay.png" alt="overlay">
+<h3>settings-tema-sunlit</h3>
+<img src="diffs/settings-tema-sunlit-diff.png" alt="diff">
+<img src="diffs/settings-tema-sunlit-overlay.png" alt="overlay">
+<h3>settings-tema-trail</h3>
+<img src="diffs/settings-tema-trail-diff.png" alt="diff">
+<img src="diffs/settings-tema-trail-overlay.png" alt="overlay">
+<h3>settings-wfbat</h3>
+<img src="diffs/settings-wfbat-diff.png" alt="diff">
+<img src="diffs/settings-wfbat-overlay.png" alt="overlay">
+<h3>swrscan-3pass</h3>
+<img src="diffs/swrscan-3pass-diff.png" alt="diff">
+<img src="diffs/swrscan-3pass-overlay.png" alt="overlay">
+<h3>swrscan-3pass-p1</h3>
+<img src="diffs/swrscan-3pass-p1-diff.png" alt="diff">
+<img src="diffs/swrscan-3pass-p1-overlay.png" alt="overlay">
+<h3>swrscan-3pass-p2</h3>
+<img src="diffs/swrscan-3pass-p2-diff.png" alt="diff">
+<img src="diffs/swrscan-3pass-p2-overlay.png" alt="overlay">
+<h3>swrscan-3pass-p3</h3>
+<img src="diffs/swrscan-3pass-p3-diff.png" alt="diff">
+<img src="diffs/swrscan-3pass-p3-overlay.png" alt="overlay">
+<h3>swrscan-3pass-stop</h3>
+<img src="diffs/swrscan-3pass-stop-diff.png" alt="diff">
+<img src="diffs/swrscan-3pass-stop-overlay.png" alt="overlay">
+<h3>swrscan-3pass-tema-aurora</h3>
+<img src="diffs/swrscan-3pass-tema-aurora-diff.png" alt="diff">
+<img src="diffs/swrscan-3pass-tema-aurora-overlay.png" alt="overlay">
+<h3>swrscan-3pass-tema-cathode</h3>
+<img src="diffs/swrscan-3pass-tema-cathode-diff.png" alt="diff">
+<img src="diffs/swrscan-3pass-tema-cathode-overlay.png" alt="overlay">
+<h3>swrscan-5pass-moving</h3>
+<img src="diffs/swrscan-5pass-moving-diff.png" alt="diff">
+<img src="diffs/swrscan-5pass-moving-overlay.png" alt="overlay">
+<h3>swrscan-5pass-outliers</h3>
+<img src="diffs/swrscan-5pass-outliers-diff.png" alt="diff">
+<img src="diffs/swrscan-5pass-outliers-overlay.png" alt="overlay">
+<h3>swrscan-double-valley</h3>
+<img src="diffs/swrscan-double-valley-diff.png" alt="diff">
+<img src="diffs/swrscan-double-valley-overlay.png" alt="overlay">
+<h3>swrscan-flat</h3>
+<img src="diffs/swrscan-flat-diff.png" alt="diff">
+<img src="diffs/swrscan-flat-overlay.png" alt="overlay">
+<h3>swrscan-narrow-zoom</h3>
+<img src="diffs/swrscan-narrow-zoom-diff.png" alt="diff">
+<img src="diffs/swrscan-narrow-zoom-overlay.png" alt="overlay">
+<h3>swrscan-owner-40m</h3>
+<img src="diffs/swrscan-owner-40m-diff.png" alt="diff">
+<img src="diffs/swrscan-owner-40m-overlay.png" alt="overlay">
+<h3>swrscan-owner-40m-domo</h3>
+<img src="diffs/swrscan-owner-40m-domo-diff.png" alt="diff">
+<img src="diffs/swrscan-owner-40m-domo-overlay.png" alt="overlay">
+<h3>swrscan-owner-40m-sweep</h3>
+<img src="diffs/swrscan-owner-40m-sweep-diff.png" alt="diff">
+<img src="diffs/swrscan-owner-40m-sweep-overlay.png" alt="overlay">
+<h3>swrscan-quick</h3>
+<img src="diffs/swrscan-quick-diff.png" alt="diff">
+<img src="diffs/swrscan-quick-overlay.png" alt="overlay">
+<h3>swrscan-wide-zoom</h3>
+<img src="diffs/swrscan-wide-zoom-diff.png" alt="diff">
+<img src="diffs/swrscan-wide-zoom-overlay.png" alt="overlay">
+<h2>Coverage (declared by the harness)</h2>
+<table><tr><th>Scenario</th><th>REAL</th><th>PARTIAL</th><th>SYNTHETIC</th><th>UNSUPPORTED</th></tr>
+<tr><td>app-bands</td><td>16</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>app-close-home</td><td>17</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td>apps-menu-1</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-2</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-3</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-4</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-5</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>apps-menu-6</td><td>16</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>autotune</td><td>18</td><td>4</td><td>3</td><td>7</td></tr>
+<tr><td>autotune-found</td><td>18</td><td>4</td><td>3</td><td>7</td></tr>
+<tr><td>autotune-notcw</td><td>18</td><td>4</td><td>3</td><td>7</td></tr>
+<tr><td>autotune-progress</td><td>18</td><td>4</td><td>3</td><td>7</td></tr>
+<tr><td>bench-render</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>bt-dialog</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>bt-dialog-tema-aurora</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>bt-dialog-tema-cathode</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>bt-dialog-tema-redshift</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>bt-dialog-tema-sprint</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>bt-dialog-tema-sunlit</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>bt-dialog-tema-trail</td><td>19</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>cw-autotune-off</td><td>16</td><td>5</td><td>4</td><td>4</td></tr>
+<tr><td>cw-autotune-on</td><td>16</td><td>5</td><td>4</td><td>4</td></tr>
+<tr><td>cw-tune-default</td><td>17</td><td>5</td><td>3</td><td>4</td></tr>
+<tr><td>cw-tune-ssb</td><td>17</td><td>5</td><td>3</td><td>4</td></tr>
+<tr><td>cw-tune-tema-sunlit</td><td>17</td><td>5</td><td>3</td><td>4</td></tr>
+<tr><td>cw-tune-tuner</td><td>17</td><td>5</td><td>3</td><td>4</td></tr>
+<tr><td>dfl-editor-cycles</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-interaction</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-lsb-d</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-reset</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-rotary0</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-sel-bw-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-sel-bw-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-sel-bw-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-sel-bw-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-sel-bw-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-sel-bw-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-sel-high-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-sel-high-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-sel-high-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-sel-high-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-sel-high-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-sel-high-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-usb-d</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-usb-d-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-usb-d-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-usb-d-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-usb-d-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-usb-d-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-editor-usb-d-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-lsb-d</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-mirror-lsb</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-mirror-usb</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-page-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-page-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-page-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-page-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-page-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-page-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-activo</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-adj-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-adj-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-adj-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-adj-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-adj-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-adj-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-apply</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-assign-cancel</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-assign-ok</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-assign-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-assign-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-assign-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-assign-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-assign-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-assign-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-confirm-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-confirm-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-confirm-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-confirm-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-confirm-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-confirm-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-custom</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-cycles</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-digi</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-fav-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-fav-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-fav-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-fav-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-fav-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-fav-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-graph-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-graph-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-graph-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-graph-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-graph-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-graph-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-mode-change</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-more-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-more-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-more-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-more-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-more-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-more-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-nav</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-nfm</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-rotary0</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-save</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-save-cancel</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-save-fail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-touch</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-touch-hold</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-presets-vol</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-usb-d</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-usb-d-span100k</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-usb-d-span50k</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-usb-d-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-usb-d-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-usb-d-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-usb-d-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>dfl-usb-d-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>home-bateria-externa</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>home-cb</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>home-cb-a</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>home-cb-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>home-cb-d</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>home-cb-offchannel</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>home-frecuencia-extrema</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>home-usb-20m</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-bateria-baja</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-espectro-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-foco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-frecuencia-dseg</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-natural</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-natural-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-aurora-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-aurora-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-aurora-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-cathode-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-cathode-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-cathode-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-redshift-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-redshift-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-redshift-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sprint-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sprint-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sprint-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sunlit-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sunlit-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-sunlit-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-trail-agua</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-trail-eco</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tema-trail-tx</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>main-tx-simulado</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-audio</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-bands</td><td>17</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>settings-grupo-actions</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-grupo-display</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-grupo-info</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-grupo-operation</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-grupo-operation-tema-aurora</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-grupo-operation-tema-cathode</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-grupo-operation-tema-redshift</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-grupo-operation-tema-sprint</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-grupo-operation-tema-sunlit</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-grupo-operation-tema-trail</td><td>15</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>settings-home</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-perfil</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-tema-aurora</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-tema-cathode</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-tema-redshift</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-tema-sprint</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-tema-sunlit</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-tema-trail</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>settings-wfbat</td><td>17</td><td>4</td><td>10</td><td>4</td></tr>
+<tr><td>swrscan-3pass</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-3pass-p1</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-3pass-p2</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-3pass-p3</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-3pass-stop</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-3pass-tema-aurora</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-3pass-tema-cathode</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-5pass-moving</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-5pass-outliers</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-double-valley</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-flat</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-narrow-zoom</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-owner-40m</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-owner-40m-domo</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-owner-40m-sweep</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-quick</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+<tr><td>swrscan-wide-zoom</td><td>18</td><td>7</td><td>6</td><td>4</td></tr>
+</table>
+<h2>Known issues</h2>
+<table><tr><th>Issue</th><th>Fixture</th><th>A</th><th>B</th><th>Classification</th></tr>
+<tr><td>UI-001</td><td>home-usb-20m</td><td>no</td><td>no</td><td>NOT_REPRODUCED</td></tr>
+<tr><td>UI-009</td><td>home-bateria-externa</td><td>no</td><td>no</td><td>NOT_REPRODUCED</td></tr>
+<tr><td>UI-015</td><td>settings-wfbat</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-016</td><td>settings-home</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-017</td><td>main-frecuencia-dseg</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-018</td><td>dfl-presets-rotary0</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-002</td><td>apps-menu-1</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-003</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-004</td><td>settings-home</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-005</td><td>bt-dialog</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-006</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+<tr><td>UI-008</td><td>home-usb-20m</td><td>—</td><td>—</td><td>UNVERIFIED</td></tr>
+</table>
+<h2>Quality contracts</h2>
+<p>2058 checks, 0 failure(s), 0 unchanged baseline defect(s).</p>
+<h2>Gates without instrumentation</h2><ul>
+<li><strong>Hardware</strong>: no physical X6200 attached; hardware behaviour is not measured</li>
+<li><strong>Energy</strong>: no power measurement; energy evidence must be physical</li>
+</ul>
+</body></html>

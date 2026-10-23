@@ -25,7 +25,7 @@ main-natural-eco 98f22d57c541e4d6c22456319456e84a8a35dfa8075961f7ef2aae3ecafd27e
 # LV_DISP_DEF_REFR_PERIOD) en vez del default de LVGL del arnes (30 ms). Los
 # numeros de abajo son los medidos despues; entre parentesis, los de antes.
 #
-# natural.json           revision=02c1311 framebuffer_fnv1a=0xb535965fe9df81d3 natural_invalidated_px=11223840 (6745720) waterfall_offscreen_redraws=40 (24)
+# natural.json           revision=65f7842c29f124728556d8c54b5644b8ffdefe0a framebuffer_fnv1a=0xb535965fe9df81d3 natural_invalidated_px=11223840 (6745720) waterfall_offscreen_redraws=40 (24)
 # off.json               revision=02c1311 framebuffer_fnv1a=0x6f0b9749e63207f0 natural_invalidated_px=0 flushes=5 flushed_pixels=743680 waterfall_offscreen_redraws=0
 # main-natural-eco.json  revision=02c1311 natural_invalidated_px=2861240 (1758360) waterfall_offscreen_redraws=10 (6)
 
@@ -39,7 +39,7 @@ main-natural-eco 98f22d57c541e4d6c22456319456e84a8a35dfa8075961f7ef2aae3ecafd27e
 # del bloque `natural` no cambiaron; solo la imagen (fnv1a/png_bytes) y los dos
 # campos nuevos.
 #
-# natural.json           revision=d2beb6c6 framebuffer_fnv1a=0x182ac64b59f610ec natural_invalidated_px=11223840 waterfall_rasterized_px=32000 waterfall_full_rebuilds=0
+# natural.json           revision=65f7842c29f124728556d8c54b5644b8ffdefe0a framebuffer_fnv1a=0x182ac64b59f610ec natural_invalidated_px=11223840 waterfall_rasterized_px=32000 waterfall_full_rebuilds=0
 # off.json               revision=d2beb6c6 framebuffer_fnv1a=0xb046b4b882f4b48d natural_invalidated_px=0 flushes=5 flushed_pixels=743680 waterfall_rasterized_px=0 waterfall_full_rebuilds=0
 # main-natural-eco.json  revision=d2beb6c6 natural_invalidated_px=2861240 waterfall_rasterized_px=32000 waterfall_full_rebuilds=0
 
@@ -54,7 +54,7 @@ main-natural-eco 98f22d57c541e4d6c22456319456e84a8a35dfa8075961f7ef2aae3ecafd27e
 # pixel). Lo que se movio es el JSON (flushes/px invalidados); la evidencia cruda
 # se re-genero con el binario de la rama.
 #
-# natural.json           revision=cbaaf72f natural_invalidated_px=11208000 invalidated_rects=66 flushes=66 clock_rects=0 metrics.flushes=71 metrics.flushed_pixels=12319840
+# natural.json           revision=65f7842c29f124728556d8c54b5644b8ffdefe0a natural_invalidated_px=11208000 invalidated_rects=66 flushes=66 clock_rects=0 metrics.flushes=71 metrics.flushed_pixels=12319840
 # static.json            revision=cbaaf72f natural_invalidated_px=190400 invalidated_rects=7 (solo band-info)
 # off.json               revision=cbaaf72f natural_invalidated_px=0 flushes=4 flushed_pixels=727840
 # main-natural-eco.json  revision=cbaaf72f natural_invalidated_px=2796800 invalidated_rects=20 metrics.flushes=24 metrics.flushed_pixels=3776640
@@ -71,7 +71,7 @@ main-natural-eco 98f22d57c541e4d6c22456319456e84a8a35dfa8075961f7ef2aae3ecafd27e
 # captura si (la invalidacion del arranque del reloj nuevo es mas chica y se
 # une distinto con la del espectro).
 #
-# natural.json           revision=8549891e2cfafeaa970afd582bdacd136601a5d0 natural_invalidated_px=11208000 invalidated_rects=66 flushes=66 clock_rects=0 metrics.flushes=72 metrics.flushed_pixels=12308352
+# natural.json           revision=65f7842c29f124728556d8c54b5644b8ffdefe0a natural_invalidated_px=11208000 invalidated_rects=66 flushes=66 clock_rects=0 metrics.flushes=72 metrics.flushed_pixels=12308352
 # static.json            natural_invalidated_px=190400 invalidated_rects=7 (solo band-info)
 # off.json               natural_invalidated_px=0 flushes=5 flushed_pixels=716352
 # main-natural-eco.json  natural_invalidated_px=2796800 invalidated_rects=20 metrics.flushes=24 metrics.flushed_pixels=3762602
