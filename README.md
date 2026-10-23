@@ -1,11 +1,11 @@
-# X6200 LVGL GUI — rama `lu2dsx/x6200-rom`
+# X6200 LVGL GUI — rama principal `main`
 
 Este repositorio es el fork de [iariap](https://github.com/iariap/x6200_gui) del firmware
-alternativo de R1CBU para el Xiegu X6200. **Esta rama** (`lu2dsx/x6200-rom`) es la ROM de LU2DSX:
+alternativo de R1CBU para el Xiegu X6200. **La rama principal de desarrollo es `main`** y contiene la ROM de LU2DSX:
 el firmware del X6200 con las features del X6100 de
 [IU1WXY](https://github.com/IU1WXY/X6100-IU1WXY) portadas encima.
 
-## Qué trae esta rama
+## Qué trae la ROM
 
 18 features del X6100, más extras, cada una documentada y con tests:
 
@@ -35,7 +35,7 @@ checklist: cómo se llega a cada feature, qué debería pasar y qué datos sirve
 
 ## Instalar
 
-Las releases de esta rama están en
+Las releases del proyecto están en
 [**iariap/x6200_gui/releases**](https://github.com/iariap/x6200_gui/releases). Hay dos caminos.
 
 **Actualización en el lugar** (recomendada: no toca tus datos). El equipo ya sabe actualizarse:
@@ -57,13 +57,13 @@ Verificá lo que bajaste con el `SHA256SUMS` de la release.
 
 ## Compilar
 
-Esta rama se compila con el buildroot del mismo fork:
+La rama principal `main` se compila con el Buildroot del mismo fork, también en `main`. Para nuevas tareas, crear una rama de trabajo desde el HEAD vigente de `main` y abrir el PR contra `main`; no desarrollar ni commitear directamente sobre la rama principal. La antigua `lu2dsx/x6200-rom` es una rama histórica, no la base de tareas nuevas. Antes de desplegar, verificar la compatibilidad concreta GUI / Buildroot / X6200Control / firmware BASE y ejecutar los tests aplicables:
 
 ```
 mkdir x6200
 cd x6200
-git clone -b lu2dsx/x6200-rom https://github.com/iariap/AetherX6200Buildroot
-git clone -b lu2dsx/x6200-rom https://github.com/iariap/x6200_gui
+git clone -b main https://github.com/iariap/AetherX6200Buildroot
+git clone -b main https://github.com/iariap/x6200_gui
 ```
 
 * Build buildroot

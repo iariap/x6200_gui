@@ -49,7 +49,7 @@ void mock_cfg_init(void)
     cfg_cur.att       = subject_create_int(0);
     cfg_cur.pre       = subject_create_int(0);
     cfg_cur.freq_step = subject_create_int(100);
-    cfg_cur.zoom      = subject_create_int(0);
+    cfg_cur.fft_dec   = subject_create_int(0);
     cfg_cur.fft_width = subject_create_int(FFT_FULL_WIDTH);
     cfg_cur.sql_level = subject_create_int(0);
 
@@ -121,6 +121,9 @@ void mock_cfg_init(void)
     /* AUTO del decodificador CW (issue #139): el boton de (CW 2:2) lee este
      * subject; arranca apagado como el firmware (src/cfg/cfg.c). */
     cfg.cw_decoder_auto.val       = subject_create_int(0);
+    /* CW zoom (upstream v0.1.2): el boton de (CW 2:1) lee este item, que en el
+     * firmware nace en 0 (src/cfg/cfg.c). */
+    cfg.fft_zoom_cw.val           = subject_create_int(0);
 
     /* Ajustes (src/dialog_settings.c) reads the cluster column switch, which is
      * a cfg item and not a params_* (the real default is off, src/cfg/cfg.c:323). */
@@ -268,26 +271,26 @@ db_mode_t xmode_2_db(x6200_mode_t mode) {
     }
 }
 
-bool mode_default_values(db_mode_t mode, int32_t *low, int32_t *high, uint32_t *step, uint32_t *zoom) {
+bool mode_default_values(db_mode_t mode, int32_t *low, int32_t *high, uint32_t *step, uint32_t *fft_width) {
     bool result = true;
 
     switch (mode) {
         case x6200_mode_lsb:
         case x6200_mode_lsb_dig:
-            *low = 50;   *high = 2950; *step = 500;  *zoom = 1;
+            *low = 50;   *high = 2950; *step = 500;  *fft_width = FFT_FULL_WIDTH;
             break;
         case x6200_mode_cw:
-            *low = -250; *high = 250;  *step = 100;  *zoom = 4;
+            *low = -250; *high = 250;  *step = 100;  *fft_width = FFT_FULL_WIDTH / 4;
             break;
         case x6200_mode_am:
         case x6200_mode_sam:
-            *low = 0;    *high = 4500; *step = 1000; *zoom = 1;
+            *low = 0;    *high = 4500; *step = 1000; *fft_width = FFT_FULL_WIDTH;
             break;
         case x6200_mode_nfm:
-            *low = 0;    *high = 3500; *step = 1000; *zoom = 1;
+            *low = 0;    *high = 3500; *step = 1000; *fft_width = FFT_FULL_WIDTH;
             break;
         case x6200_mode_wfm:
-            *low = 0;    *high = 8000; *step = 1000; *zoom = 1;
+            *low = 0;    *high = 8000; *step = 1000; *fft_width = FFT_FULL_WIDTH;
             break;
         default:
             result = false;

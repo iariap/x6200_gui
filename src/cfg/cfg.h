@@ -25,7 +25,7 @@ typedef struct {
     cfg_item_t sql_fm;
     cfg_item_t pwr;
 
-    cfg_item_t fft_dec;
+    cfg_item_t fft_zoom_cw;
 
     /* WSPR (digital modes) */
     cfg_item_t tx_filter_low;      /* TX passband, restored when an app closes */
@@ -125,10 +125,10 @@ typedef struct {
         } real;
     } filter;
     Subject       *freq_step;
-    Subject       *zoom;
     atu_network_t *atu;
     cfg_band_t    *band;
 
+    Subject *fft_dec;
     Subject *fft_width;
     Subject *sql_level;  // sql or sql_fm, depending on current mode
 } cfg_cur_t;

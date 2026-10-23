@@ -82,7 +82,11 @@ template <size_t input_size, size_t output_size> class AveragedPSD {
     };
 
     void add_samples(float *samples) {
-        liquid_vectorf_add(psd.data(), samples, psd.size(), psd.data());
+        for (size_t i = 0; i < psd.size(); i++)
+        {
+            // dB to power
+            psd[i] += powf(10.0f, samples[i] * 0.1f);
+        }
         count++;
     };
 
@@ -97,7 +101,7 @@ template <size_t input_size, size_t output_size> class AveragedPSD {
         }
 
         for (size_t i = 0; i < averaged.size(); i++) {
-            averaged[i] = 20.0f * log10f(averaged[i] + 1e-12f) - 30.0f;
+            averaged[i] = 10.0f * log10f(averaged[i] + 1e-12f);
         }
 
         reset();
@@ -108,7 +112,7 @@ template <size_t input_size, size_t output_size> class AveragedPSD {
 static AveragedPSD<RADIO_SAMPLES, SPECTRUM_NFFT> spectrum_avg_psd;
 static AveragedPSD<RADIO_SAMPLES, RADIO_SAMPLES> waterfall_avg_psd;
 
-static uint8_t       spectrum_factor = 1;
+static uint32_t       fft_width = FFT_FULL_WIDTH;
 
 static float          spectrum_psd[SPECTRUM_NFFT];
 static float          spectrum_psd_filtered[SPECTRUM_NFFT];
@@ -195,6 +199,7 @@ static void dsp_update_min_max(float *data_buf, uint16_t size);
 static void on_cur_freq_change(Subject *subj, void *user_data);
 static void on_cur_mode_change(Subject *subj, void *user_data);
 static void on_cur_fft_width_change(Subject *subj, void *user_data);
+static void on_fft_dec_change(Subject *subj, void *user_data);
 
 
 /* * */
@@ -215,6 +220,14 @@ void dsp_init() {
      * observer, un zoom durante una medicion se ve como cambio de contexto. */
     cfg_cur.fft_width->subscribe(on_cur_fft_width_change)->notify();
     atune_center = subject_get_int(cfg_cur.fg_freq);
+
+    /* Consolidacion legacy->main (2026-10-23): quedan suscritos LOS DOS observers
+     * del ancho de FFT: el de la legada (#205, contexto del Auto Tune) y el de
+     * main (#223, `fft_width` de la ruta DSP/medidor del BASE 1.0.7). La PSD que
+     * consume el Auto Tune cambio de escala con ese pipeline, asi que la validez
+     * de la combinacion esta PENDIENTE de decision del owner (NO-GO). Evidencia:
+     * docs/evidencia/2026-10-23-consolidation/README.md */
+    cfg_cur.fft_width->subscribe(on_fft_dec_change)->notify();
     ready = true;
 }
 
@@ -254,8 +267,8 @@ void dsp_samples(float *buf_samples, uint16_t size, bool tx, int16_t dbm) {
             // hay FFT nueva ni cadencia nueva; el publicador no toca LVGL.
             dsp_autotune_publish(spectrum_avg_data->data(), spectrum_avg_data->size(), tx);
             // Decrease beta for high zoom
-            float new_beta = powf(spectrum_beta, ((float)spectrum_factor - 1.0f) / 2.0f + 1.0f);
-            lpf_block(spectrum_psd_filtered, spectrum_avg_data->data(), new_beta, SPECTRUM_NFFT);
+            // float new_beta = powf(spectrum_beta, ((float)spectrum_factor - 1.0f) / 2.0f + 1.0f);
+            lpf_block(spectrum_psd_filtered, spectrum_avg_data->data(), spectrum_beta, SPECTRUM_NFFT);
             spectrum_data(spectrum_psd_filtered, SPECTRUM_NFFT, tx);
             spectrum_time = now;
         }
@@ -272,7 +285,7 @@ void dsp_samples(float *buf_samples, uint16_t size, bool tx, int16_t dbm) {
             // update min/max
             if (!tx) {
                 // Ignore borders
-                dsp_update_min_max(waterfall_avg_data->data() + 16, waterfall_avg_data->size() - 32);
+                dsp_update_min_max(waterfall_avg_data->data() + 8, waterfall_avg_data->size() - 16);
             }
         }
     }
@@ -318,6 +331,10 @@ void dsp_autotune_invalidate(void) {
     atune_epoch++;
     atune_snapshot.epoch = atune_epoch;
     atune_snapshot.valid = false;
+}
+
+static void on_fft_dec_change(Subject *subj, void *user_data) {
+    fft_width = subject_get_int(cfg_cur.fft_width);
 }
 
 float dsp_get_spectrum_beta() {
@@ -366,16 +383,70 @@ static void dsp_update_min_max(float *data_buf, uint16_t size) {
         min_max_delay--;
         return;
     }
-    qsort(data_buf, size, sizeof(float), compare_fft);
-    uint16_t min_nth = size * 10 / 100;
 
-    float min = data_buf[min_nth];
-
-    if (min < S_MIN) {
-        min = S_MIN;
-    } else if (min > S8) {
-        min = S8;
+    // dB to power
+    float psd[size];
+    for (size_t i = 0; i < size; i++)
+    {
+        psd[i] = powf(10.0f, data_buf[i] * 0.1f);
     }
+
+    // Sum power within window
+    size_t window = roundf(2700.0f * RADIO_SAMPLES / fft_width);
+
+    const size_t psd_sum_size = size - window;
+    float psd_sum[psd_sum_size];
+    for (size_t i = 0; i < psd_sum_size; i++)
+    {
+        psd_sum[i] = 0.0f;
+        for (size_t j = 0; j < window; j++)
+        {
+            psd_sum[i] += psd[i + j];
+        }
+    }
+
+    float min = MAXFLOAT;
+    for (size_t i = 0; i < psd_sum_size; i++)
+    {
+        min = LV_MIN(min, psd_sum[i]);
+    }
+
+    min = LV_MAX(min, 1e-20f);
+
+    min = 10.0f * log10f(min);
+
+    // Get Minimum Statistics offset for the noise level
+    float offset;
+    switch (fft_width)
+    {
+    case FFT_FULL_WIDTH:
+        offset = 18.0f;
+        break;
+    case FFT_FULL_WIDTH / 2:
+        offset = 15.0f;
+        break;
+    case FFT_FULL_WIDTH / 4:
+        offset = 12.0f;
+        break;
+    case FFT_FULL_WIDTH / 8:
+        offset = 9.0f;
+        break;
+    case FFT_FULL_WIDTH / 16:
+        offset = 6.0f;
+        break;
+    case FFT_FULL_WIDTH / 32:
+        offset = 3.0f;
+        break;
+    default:
+        offset = 0.0f;
+        break;
+    }
+
+    min = min + offset;
+    meter_set_noise(min);
+
+    min -= 30.0f;
+
     float max = min + 48;
 
     spectrum_update_min(min);

@@ -79,10 +79,10 @@ void mfk_update(int16_t diff, bool voice) {
             break;
 
         case MFK_FFT_DECIM:
-            i = subject_get_int(cfg.fft_dec.val);
+            i = subject_get_int(cfg_cur.fft_dec);
             if (diff != 0) {
                 i = limit(i + diff, 0, 3);
-                subject_set_int(cfg.fft_dec.val, i);
+                subject_set_int(cfg_cur.fft_dec, i);
             }
             {
                 uint16_t fft_width_khz = subject_get_int(cfg_cur.fft_width) / 1000;
@@ -92,6 +92,24 @@ void mfk_update(int16_t diff, bool voice) {
                     voice_say_int("FFT width", fft_width_khz);
                 } else if (voice) {
                     voice_say_text_fmt("FFT width");
+                }
+            }
+            break;
+
+        case MFK_CW_ZOOM:
+            i = subject_get_int(cfg.fft_zoom_cw.val);
+            if (diff != 0) {
+                i = limit(i + diff, 0, 3);
+                subject_set_int(cfg.fft_zoom_cw.val, i);
+            }
+            {
+                uint16_t zoom = 1 << subject_get_int(cfg.fft_zoom_cw.val);
+                msg_update_text_fmt("#%3X CW zoom: %d", color, zoom);
+
+                if (diff) {
+                    voice_say_int("CW zoom", zoom);
+                } else if (voice) {
+                    voice_say_text_fmt("CW zoom");
                 }
             }
             break;

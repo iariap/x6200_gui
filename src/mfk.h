@@ -65,6 +65,13 @@ typedef enum {
     MFK_COMP,
     /* Append-only: los ids son bits de params.mfk_modes y se persisten. */
     MFK_CW_DECODER_AUTO,
+    /* CW zoom viene del upstream v0.1.2, que lo inserto a media lista (entre
+     * MFK_KEY_RATIO y MFK_DNF). Aca va al final a proposito: insertarlo en el
+     * medio corre en uno todos los ids siguientes y reinterpreta el bitmask
+     * `params.mfk_modes` que ya esta guardado en params.db (el usuario perderia
+     * sus MFK: un DNF elegido pasaria a ser otra tecla). Misma regla que el
+     * comentario de arriba. */
+    MFK_CW_ZOOM,
 
     MFK_LAST,
 

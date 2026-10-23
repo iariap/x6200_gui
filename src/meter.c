@@ -308,8 +308,13 @@ lv_obj_t * meter_init(lv_obj_t * parent) {
 
 void meter_update(int16_t db, float beta) {
     // TODO: make adjustable
-    db -= 8;
-    noise_level = spectrum_get_min();
+
+    if(pre) {
+        db -= 14.0f;
+    }
+    if (att) {
+        db += 16.0f;
+    }
 
     if (db < min_db) {
         db = min_db;
@@ -342,9 +347,10 @@ void meter_update(int16_t db, float beta) {
         uint32_t count = (uint32_t) ((meter_db - min_db + METER_SLICE_DB) / METER_SLICE_DB);
 
         count = LV_MIN(count, slices_total);
-        /* El color de cada segmento depende de noise_level (spectrum_get_min()):
-         * aunque el conteo y el pico no cambien, un cambio de ruido repinta la
-         * barra, asi que entra en la comparacion. */
+        /* El color de cada segmento depende de noise_level (lo fija
+         * meter_set_noise() con el minimo del DSP): aunque el conteo y el pico
+         * no cambien, un cambio de ruido repinta la barra, asi que entra en la
+         * comparacion. */
         if (drawn_valid && (int16_t) count == drawn_bar_count && meter_peak == drawn_peak
             && noise_level == drawn_noise_level) {
             return;
@@ -356,6 +362,10 @@ void meter_update(int16_t db, float beta) {
     drawn_valid = true;
 
     event_send(obj, LV_EVENT_REFRESH, NULL);
+}
+
+void meter_set_noise(float db) {
+    noise_level = db;
 }
 
 int16_t meter_get_raw_db() {

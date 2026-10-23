@@ -2162,12 +2162,15 @@ lo que el arnés ya tenía (radio, backlight, waterfall, cluster, voice, teclado
 | `time()` + `localtime()` | los campos Day/Month/Year y Hour/Min/Sec salen del RTC | `--wrap=time` (CMakeLists) + `__wrap_time` con época fija + `TZ=UTC` en `harness_main`: el reloj de pared es otro servicio que el arnés posee, igual que `get_time()` |
 
 El build suma **2 warnings**, los dos de `src/dialog_settings.c` (locales `obj` sin usar,
-líneas 691 y 1270): son del firmware (el ROM compila el mismo código), no del arnés.
+líneas 828 y 1327; en `main` son 829 y 1328, una menos porque el issue #250 quitó el
+`#include "clock.h"` que quedó sin uso): son del firmware (el ROM compila el mismo
+código), no del arnés.
 
 ### Las dos fixtures
 
 - **`settings-home`**: el diálogo abierto por `main_screen_action(ACTION_APP_SETTINGS)` sobre la
-  pantalla principal real (grupo Reloj: fecha/hora, Clock view, timeouts). El grupo de teclado
+  pantalla principal real (grupo Reloj: fecha/hora; desde el issue #250 el grupo ya no trae
+  `Clock view` ni los timeouts). El grupo de teclado
   está creado antes de construir, así que `dialog_item()` registra cada widget como en la radio.
 - **`settings-wfbat`**: Ajustes con el **modo Ahorro del waterfall** encendido (clave de
   escenario nueva `waterfall_battery`, que escribe `params.waterfall_battery.x`) y la vista
