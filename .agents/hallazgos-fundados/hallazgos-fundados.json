@@ -59,10 +59,12 @@
     },
     {
       "name": "cerrar",
-      "description": "Actualizar el indice del principio si se agrego una seccion, correr tests y commitear",
+      "description": "Actualizar el indice del principio si se agrego una seccion, correr tests, commitear en una rama propia y abrir el PR contra main",
       "commands": [
         "cd <repo>/x6200_gui && ./tests/native/run_native_tests.sh",
-        "git add -A && git commit -m 'Findings: <que se fundo>' && git push fork HEAD:main"
+        "git add -A && git commit -m 'Findings: <que se fundo>'",
+        "git push fork HEAD:$(git branch --show-current)",
+        "gh pr create --base main --head $(git branch --show-current)   # el PR contra main; nunca push directo a main"
       ]
     }
   ],
