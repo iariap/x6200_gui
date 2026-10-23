@@ -1,0 +1,19 @@
+== Fixture #292: eje px<->Hz del arnes de host, spectrum.c real ==
+span=48000 Hz | w=800 px | 60 Hz/px | centro x=400
+eje declarado: bin 400 = frecuencia sintonizada; bin i = (i-400)*48000/800 Hz; +Hz a la derecha
+
+-- portador a +1000 Hz (a la DERECHA del centro) --
+AM   | offset portador  +17 px ( +1020 Hz) | pico en x=417 | banda [352..448] px ( -2880.. +2880 Hz) | OK
+LSB  | offset portador  +17 px ( +1020 Hz) | pico en x=417 | banda [352..397] px ( -2880..  -180 Hz) | OK
+USB  | offset portador  +17 px ( +1020 Hz) | pico en x=417 | banda [403..448] px (  +180.. +2880 Hz) | OK
+
+-- portador a -1000 Hz (a la IZQUIERDA del centro) --
+AM   | offset portador  -17 px ( -1020 Hz) | pico en x=383 | banda [352..448] px ( -2880.. +2880 Hz) | OK
+LSB  | offset portador  -17 px ( -1020 Hz) | pico en x=383 | banda [352..397] px ( -2880..  -180 Hz) | OK
+USB  | offset portador  -17 px ( -1020 Hz) | pico en x=383 | banda [403..448] px (  +180.. +2880 Hz) | OK
+
+-- caso del owner: portador a +53 px (offset medido en la captura), LSB --
+LSB  | offset portador  +53 px ( +3180 Hz) | pico en x=453 | banda [352..397] px ( -2880..  -180 Hz) | OK
+
+-- coherencia de escala: portador en el borde del passband de LSB (-150 Hz) --
+LSB  | offset portador   -2 px (  -120 Hz) | pico en x=398 | banda [352..397] px ( -2880..  -180 Hz) | OK
