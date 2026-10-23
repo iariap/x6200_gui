@@ -1,7 +1,20 @@
-# Warning multiset, base (git show HEAD:src/<f>.c) vs working tree
-# toolchain: arm-buildroot-linux-gnueabihf-gcc 12.3.0, firmware flags + strict format
+# Warning multiset, base (eea3ed20:src/<f>.c) vs arbol de trabajo
+# toolchain: arm-buildroot-linux-gnueabihf-gcc 12.3.0, flags de firmware + format estricto
 --- dialog_propagation: base=4 head=3
-2d1
+1,2c1
+<       1 warning: ‘%.0f’ directive output may be truncated writing between 1 and 310 bytes into a region of size between 130 and 141 
 <       1 warning: ‘%d’ directive output may be truncated writing between 1 and 11 bytes into a region of size between 10 and 20 
+---
+>       1 warning: ‘%.0f’ directive output may be truncated writing between 1 and 310 bytes into a region of size between 128 and 140 
 --- dialog_field: base=30 head=30
 --- dialog_swrscan: base=13 head=13
+
+# Notas:
+# - dialog_propagation: el warning de '%d' (thresholds_label_fn) DESAPARECE (buf[32]->buf[48], Fase 1).
+# - dialog_propagation: el warning de '%.0f' de la linea 538 YA EXISTIA en la base (misma linea,
+#   mismo directivo, mismo motivo: %.0f teorico de 310 B en un buffer de 160). Su cota numerica
+#   pasa de '130 and 141' a '128 and 140' porque los literales de esa llamada son mas largos
+#   ("Toward" vs "Hacia": +1 B; "the beacon" vs "el beacon": +2 B). No es un warning nuevo:
+#   el peor caso real de la linea (entidad DXCC <=40, grilla 6, rumbo 3 digitos, km 5) son ~99 B
+#   en 160, medido en truncation_check.c.
+# - dialog_field / dialog_swrscan: sin cambios (mismo multiconjunto).

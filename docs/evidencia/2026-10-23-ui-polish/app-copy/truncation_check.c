@@ -155,6 +155,58 @@ int main(void) {
     ret = snprintf(readout, sizeof(readout), "No measurements");
     CHECK_FITS(readout, sizeof(readout), ret);
 
+    /* --- dialog_swrscan.c: dialog_swrscan_state_text() buf[64] ------------ */
+    /* Every abort reason through "Error: %s" (the two long ones are the worst
+     * case) plus the stopped state. */
+    char state[64];
+    const char *abort_reasons[] = {
+        "Stop",
+        "RF timeout",
+        "no data",
+        "no TX",
+        "state change",
+        "3/5 passes require RF validation",
+        "span/center outside the TX band",
+        "invalid parameters",
+        "",
+    };
+
+    for (size_t i = 0; i < sizeof(abort_reasons) / sizeof(abort_reasons[0]); i++) {
+        ret = snprintf(state, sizeof(state), "Error: %s", abort_reasons[i]);
+        CHECK_FITS(state, sizeof(state), ret);
+    }
+    ret = snprintf(state, sizeof(state), "Stopped (partial)");
+    CHECK_FITS(state, sizeof(state), ret);
+    ret = snprintf(state, sizeof(state), "Scanning pass %d/%d  p %d/%d", INT_MAX, INT_MAX,
+                   INT_MAX, INT_MAX);
+    CHECK_FITS(state, sizeof(state), ret);
+
+    /* --- dialog_propagation.c: status.direction[160] + detail[512] -------- */
+    /* Worst case: 60-char DXCC entity, 6-char grid, 2-char compass, 3-digit
+     * bearing, 5-digit distance (the Earth's circumference needs 5). */
+    char direction[160];
+    const char *entity = "United States of America - Some Very Long Entity Name Here!";
+
+    ret = snprintf(direction, sizeof(direction), "Toward %s (%s): %s %d deg, %.0f km.", entity,
+                   "AA00AA", "NE", 359, 20015.0);
+    CHECK_FITS(direction, sizeof(direction), ret);
+
+    char detail[512];
+
+    /* The real caller formats the 10 m coverage line (worst `buf`) first. */
+    ret = snprintf(buf, sizeof(buf),
+                   "Measured %d/%d IBP beacons, %d heard. IARU R2 "
+                   "(10 m): %d active of %d.",
+                   INT_MAX, INT_MAX, INT_MAX, INT_MAX, INT_MAX);
+    CHECK_FITS(buf, sizeof(buf), ret);
+    ret = snprintf(detail, sizeof(detail), "%s\n%s", buf, direction);
+    CHECK_FITS(detail, sizeof(detail), ret);
+
+    /* The fallbacks that replaced "el beacon". */
+    ret = snprintf(direction, sizeof(direction), "Toward %s (%s): %s %d deg, %.0f km.",
+                   "the beacon", "AA00AA", "NE", 359, 20015.0);
+    CHECK_FITS(direction, sizeof(direction), ret);
+
     /* --- dialog_field.c header label ------------------------------------- */
     const char *header = "X6200";
 

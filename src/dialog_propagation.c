@@ -535,8 +535,8 @@ static void fill_direction(const prop_status_t *st) {
     }
 
     snprintf(status.direction, sizeof(status.direction),
-             "Hacia %s (%s): %s %d deg, %.0f km.",
-             entity ? entity : "el beacon", grid,
+             "Toward %s (%s): %s %d deg, %.0f km.",
+             entity ? entity : "the beacon", grid,
              propagation_compass(bearing), bearing, km);
 }
 
@@ -1053,7 +1053,7 @@ static void power_text(int dw, char *buf, size_t size) {
  * usa el control remoto). */
 static const char *verdict_es(propagation_verdict_t v) {
     switch (v) {
-        case PROPAGATION_VERDICT_OPEN:     return "ABIERTA";
+        case PROPAGATION_VERDICT_OPEN:     return "OPEN";
         case PROPAGATION_VERDICT_MARGINAL: return "MARGINAL";
         case PROPAGATION_VERDICT_CLOSED:   return "CLOSED";
         case PROPAGATION_VERDICT_NO_DATA:  break;
@@ -1335,7 +1335,7 @@ static void render(void) {
 
             pos += snprintf(note + pos, sizeof(note) - (size_t) pos,
                             "Listening to %s at %u.%03u MHz: Stop/Close restores VFO.\n",
-                            call ? call : "el beacon",
+                            call ? call : "the beacon",
                             (unsigned) (propagation_ibp_freq(st.band) / 1000000),
                             (unsigned) (propagation_ibp_freq(st.band) / 1000 % 1000));
         }

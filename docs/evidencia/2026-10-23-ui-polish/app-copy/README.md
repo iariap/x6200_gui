@@ -8,13 +8,13 @@ abrir la corrida, 2026-10-23). **Fecha**: 2026-10-23.
 
 ## Veredicto en una línea
 
-**FASE 1 completa**: se aplicaron los **37 literales visibles** del contrato (más el
-pin de un test) **sin tocar** ADIF/JS8/APIs/comentarios, y la verificación
-**estructural** (compilación ARM de las tres unidades, placeholders `%`, truncación
-de `snprintf` con los peores casos, ASCII) pasa limpia. La evidencia **visual
-antes/después 800×480** queda **PENDIENTE PARA LA FASE 2**, después del rebase sobre
-#285/#286 (ver §8): capturarla antes daría capturas de una superficie visual
-obsoleta.
+**FASES 1 y 1b completas**: se aplicaron los **37 literales visibles** del contrato
+más los **11 de §1bis** que completó el coordinador (más 5 pines de test) **sin
+tocar** ADIF/JS8/APIs/comentarios, y la verificación **estructural** (compilación ARM
+de las tres unidades, placeholders `%`, truncación de `snprintf` con los peores
+casos, ASCII) pasa limpia. La evidencia **visual antes/después 800×480** queda
+**PENDIENTE PARA LA FASE 2**, después del rebase sobre #285/#286 (ver §8):
+capturarla antes daría capturas de una superficie visual obsoleta.
 
 ## 1. Mapeo aplicado (archivo → viejo → nuevo)
 
@@ -117,14 +117,25 @@ Mensajes de `msg_update_text_fmt`:
 "Propagation: no hay un beacon escuchado para sintonizar"   -> "Propagation: no heard beacon available to tune"
 ```
 
-### `tests/native/test_swrscan.c` (1, pin del test de la app)
+### `tests/native/test_swrscan.c` / `test_swrscan_multipass.c` (5 pines de la app)
+
+Los pines que fijaban literales cambiados (el suite compila la **fuente real**
+`src/dialog_swrscan.c` con stubs). Sin estos cambios el suite quedaría en rojo por
+el pin viejo, no por una regresión:
 
 ```
-CHECK(strcmp(..., "sin datos medidos")) -> CHECK(strcmp(..., "No measurements"))
+test_swrscan.c:816          "sin datos medidos"  -> "No measurements"        (readout vacio)
+test_swrscan.c:798          "Stopped (parcial)"  -> "Stopped (partial)"
+test_swrscan.c:853          "Error: timeout de RF" -> "Error: RF timeout"
+test_swrscan.c:720          strstr(..., "validacion RF") -> strstr(..., "RF validation")
+test_swrscan_multipass.c:441 "Stopped (parcial)"  -> "Stopped (partial)"
 ```
 
-Es el único test que fijaba un literal del contrato (`test_swrscan_readout`). Sin
-este cambio el suite nativo quedaría en rojo por el pin viejo, no por una regresión.
+El de `:720` es un `strstr` (no un `strcmp`): el test verifica el **motivo visible**
+del gate de multipasada, así que se actualizó a la subcadena del texto nuevo
+(`"3/5 passes require RF validation"`). Es el que se escapó en la primera pasada y
+lo cazó el suite nativo (`461 comprobaciones, 1 fallos`): quedó registrado acá
+porque es exactamente el tipo de pin que un grep por el literal completo no ve.
 
 ### Ajuste de buffer (derivado de la verificación, no del contrato)
 
@@ -133,6 +144,52 @@ este cambio el suite nativo quedaría en rojo por el pin viejo, no por una regre
 `"Thresholds:"` el peor caso sube a **38 B**: se agrandó a `buf[48]`. El warning
 desaparece (ver §4.1) y el contrato pide explícitamente verificar los destinos de
 `snprintf` sin truncación.
+
+## 1bis. Adiciones del coordinador (vetables)
+
+**Motivo**: la épica #284 manda todo el copy de operador en inglés y el contrato
+tradujo `CERRADA`→`CLOSED` pero **no** `ABIERTA`, así que la misma pantalla habría
+quedado **`ABIERTA` / `MARGINAL` / `CLOSED`** — peor que el estado anterior. Se
+completan los huecos de §3 con **traducción literal** (sin wording creativo). **Son
+una adición del coordinador sobre el contrato del issue #288: vetables.**
+
+### `src/dialog_propagation.c` (4 literales)
+
+```
+"ABIERTA"                                -> "OPEN"                  (par de CLOSED; verdict_es)
+"Hacia %s (%s): %s %d deg, %.0f km."     -> "Toward %s (%s): %s %d deg, %.0f km."   (fill_direction)
+"el beacon"                              -> "the beacon"            (x2: fallback de entity en
+                                                                      fill_direction y de call en
+                                                                      la nota de listening)
+```
+
+### `src/dialog_swrscan.c` (7 literales: motivos de abort y estado visible)
+
+```
+"timeout de RF"                          -> "RF timeout"                            (abort_text)
+"sin TX"                                 -> "no TX"                                 (abort_text)
+"cambio de estado"                       -> "state change"                          (abort_text)
+"3/5 pasadas requieren validacion RF"    -> "3/5 passes require RF validation"      (abort_text)
+"span/centro fuera de la banda de TX"    -> "span/center outside the TX band"       (abort_text)
+"parametros invalidos"                   -> "invalid parameters"                    (abort_text)
+"Stopped (parcial)"                      -> "Stopped (partial)"                     (estado visible)
+```
+
+**Interpretación de las abreviaturas del coordinador**: su mapeo decía
+`"3/5 pasadas…" → "3/5 passes..."` y `"span/centro…" → "span/center..."`. Los
+literales reales son **más largos** (`"3/5 pasadas requieren validacion RF"`,
+`"span/centro fuera de la banda de TX"`); se tradujo el texto **completo**
+(`"3/5 passes require RF validation"`, `"span/center outside the TX band"`) para no
+borrar información (regla del contrato: nunca borrar información en silencio). Si
+el owner prefiere el texto recortado, es un cambio de una línea.
+
+Todos son **runtime-visibles**: `verdict_es` → label del veredicto;
+`fill_direction` → `status.direction` → `lbl_detail`; `abort_text` →
+`dialog_swrscan_state_text()` (`"Error: %s"`) → línea de estado; y el fallback de
+callsign → nota de listening. Ninguno es sólo log ni comentario.
+
+`"sin datos"` **no** se duplicó: ya se había mapeado a `"no data"` en la Fase 1 y
+`abort_text` sigue siendo la **única** fuente del motivo.
 
 ## 2. Qué NO se tocó, y por qué
 
@@ -147,11 +204,13 @@ desaparece (ver §4.1) y el contrato pide explícitamente verificar los destinos
 | `"Run"`, `"Cancel"`, `"Clock not synchronized: beacon timing may be inaccurate."`, `"Set QTH in Settings to calculate direction."` | Ya estaban en inglés correcto. |
 | DSP/GPS/radio/PTT/antena/protocolos/IDs/timing/threads/settings de idioma | Fuera del contrato (sólo presentación). |
 
-Control de que los 37 literales viejos ya no están (sólo sobreviven en **comentarios**,
-que el contrato manda no tocar):
+Control de que los literales viejos ya no están (los 37 del contrato **y** los 11 de
+§1bis; sólo sobreviven en **comentarios**, que el contrato manda no tocar):
 
 ```
-$ grep -n 'X6100"|"sin datos"|sin datos medidos|"Repetir"|...|no hay un beacon' \
+$ grep -n 'X6100"|"sin datos"|sin datos medidos|"Repetir"|...|no hay un beacon|
+           "ABIERTA"|"Hacia |"el beacon"|"timeout de RF"|"sin TX"|"cambio de estado"|
+           "3/5 pasadas|"span/centro|"parametros invalidos"|"Stopped (parcial)"' \
       src/dialog_field.c src/dialog_swrscan.c src/dialog_propagation.c
 src/dialog_propagation.c:6:   *  App a demanda para la banda actual: ...
 src/dialog_propagation.c:256: /* El hilo del barrido avisa a la GUI. ...
@@ -160,23 +219,29 @@ src/dialog_propagation.c:626: /* El equipo dejo de estar en RX (PTT del operador
 src/dialog_propagation.c:725: /* Plan del barrido para la banda actual: ...
 ```
 
-## 3. Huecos del contrato (no inventé wording)
+(En `tests/native/` quedan menciones a `"timeout de RF"`/`"parcial"` sólo en
+comentarios y en las **copias de build** gitignored; los pines de código están
+actualizados, §1.)
 
-Estos literales **españoles visibles** existen en el código pero **no** están en el
-mapeo del contrato. Por la regla "no additional wording without owner approval"
-quedaron **sin tocar**; necesitan orden del owner para la Fase 2:
+## 3. Huecos del contrato — **cerrados en la Fase 1b (§1bis)**
 
-| Archivo:línea | Literal actual | Contexto |
-| --- | --- | --- |
-| `src/dialog_propagation.c:1056` | `"ABIERTA"` | veredicto OPEN (`verdict_es`). El contrato mapea `CERRADA`→`CLOSED` pero no éste: hoy quedaría `ABIERTA / MARGINAL / CLOSED`. |
-| `src/dialog_propagation.c:538` | `"Hacia %s (%s): %s %d deg, %.0f km."` | línea de dirección del mejor beacon |
-| `src/dialog_propagation.c:539` | `"el beacon"` | fallback de `entity` en esa misma línea |
-| `src/dialog_propagation.c:1338` | `"el beacon"` | fallback del callsign en la nota de "Listening to …" |
-| `src/dialog_swrscan.c:330-336` | `"timeout de RF"`, `"sin TX"`, `"cambio de estado"`, `"3/5 pasadas requieren validacion RF"`, `"span/centro fuera de la banda de TX"`, `"parametros invalidos"` | otros motivos de abort (`abort_text`); sólo se mapearon `"sin datos"` |
-| `src/dialog_swrscan.c:357` | `"Stopped (parcial)"` | estado visible (mezcla EN/ES) |
+Estos literales **españoles visibles** existían en el código pero **no** estaban en
+el mapeo del contrato. En la Fase 1 quedaron **sin tocar** (regla "no additional
+wording without owner approval"); el coordinador los completó después con
+traducción literal: **ver §1bis**. La tabla queda como registro de lo detectado:
+
+| Archivo:línea | Literal original | Contexto | Estado |
+| --- | --- | --- | --- |
+| `src/dialog_propagation.c:1056` | `"ABIERTA"` | veredicto OPEN (`verdict_es`) | → `"OPEN"` (§1bis) |
+| `src/dialog_propagation.c:538` | `"Hacia %s (%s): %s %d deg, %.0f km."` | dirección del mejor beacon | → `"Toward …"` (§1bis) |
+| `src/dialog_propagation.c:539` | `"el beacon"` | fallback de `entity` | → `"the beacon"` (§1bis) |
+| `src/dialog_propagation.c:1338` | `"el beacon"` | fallback del callsign en listening | → `"the beacon"` (§1bis) |
+| `src/dialog_swrscan.c:330-336` | `"timeout de RF"`, `"sin TX"`, `"cambio de estado"`, `"3/5 pasadas requieren validacion RF"`, `"span/centro fuera de la banda de TX"`, `"parametros invalidos"` | motivos de abort (`abort_text`) | → 6 literales (§1bis) |
+| `src/dialog_swrscan.c:357` | `"Stopped (parcial)"` | estado visible | → `"Stopped (partial)"` (§1bis) |
 
 No hubo ningún literal del contrato **ausente** ni **cambiado**: los 37 se
-encontraron al SHA de la base.
+encontraron al SHA de la base, y los 11 de §1bis también (verificados uno por uno
+con `grep -n` antes de tocarlos).
 
 ## 4. Verificación estructural
 
@@ -197,17 +262,34 @@ dialog_swrscan:     exit 0 (13 warning(s))
 dialog_propagation.o: ELF 32-bit LSB relocatable, ARM, EABI5 version 1 (SYSV)
 ```
 
-Comparación **antes vs después** del conjunto de warnings (base `HEAD:src/<f>.c`
-vs árbol): idéntico, salvo **un warning que desaparece** — el de truncación de
-`Umbrales:` (§1). Ningún warning nuevo. Evidencia: `warning_diff.txt`.
+Comparación **antes vs después** del conjunto de warnings (base
+`eea3ed20:src/<f>.c` vs árbol): `dialog_field` y `dialog_swrscan` **idénticos**;
+`dialog_propagation` pasa de 4 a 3. Evidencia completa: `warning_diff.txt`.
 
 ```
 --- dialog_propagation: base=4 head=3
-2d1
+1,2c1
+<   1 warning: '%.0f' directive output may be truncated ... region of size between 130 and 141
 <   1 warning: '%d' directive output may be truncated ... region of size between 10 and 20
+---
+>   1 warning: '%.0f' directive output may be truncated ... region of size between 128 and 140
 --- dialog_field: base=30 head=30
 --- dialog_swrscan: base=13 head=13
 ```
+
+Lectura exacta (para que el diff no se lea como un warning nuevo):
+
+- el de **`%d`** (`thresholds_label_fn`) **desaparece** (Fase 1, `buf[48]`);
+- el de **`%.0f`** de la línea 538 (`fill_direction`) **ya existía en la base**:
+  mismo archivo:línea, mismo directivo, misma causa (el `%.0f` teórico de 310 B
+  contra un buffer de 160). Sólo se mueve la **cota numérica** de la región
+  (130..141 → 128..140) porque los literales de esa llamada son más largos
+  (`"Toward"` vs `"Hacia"`: +1 B; `"the beacon"` vs `"el beacon"`: +2 B);
+- **ningún warning nuevo** (ni de clase ni de línea) y el total **baja** de 4 a 3.
+
+No se agrandó `direction[160]` para "apagar" ese warning: el peor caso real de la
+línea (entidad DXCC ≤40, grilla 6, rumbo 3 dígitos, km 5) son ~99 B, medido en
+`truncation_check.c`; agrandar el buffer sólo movería el número del mensaje.
 
 **Límite honesto**: el **link completo** de la GUI ARM no se pudo correr en este
 entorno: el sysroot de Buildroot del host no trae los start files (`Scrt1.o`,
@@ -237,9 +319,12 @@ OK   src/dialog_field.c:      100 format literals, 212 specifiers preserved
 `truncation_check.c` reproduce **cada** `snprintf` cuyo formato cambió, con los
 tamaños de destino **reales** de las fuentes (`status.note[192]`, `buf[256]`,
 `verdict[32]`, `run_label[8]`, `thresholds[48]`, `readout[64]`, `note[512]`,
-`line[256]`) y datos de peor caso: nombre de banda de 31 caracteres,
-`INT_MIN`/`INT_MAX`, `UINT_MAX`, `999` para `%03u`, escalera completa. Cada caso
-exige `ret < size` y `strlen == ret` (nunca "salió truncado"):
+`line[256]`, `state[64]` de `dialog_swrscan_state_text`, `direction[160]` y
+`detail[512]` de Propagation) y datos de peor caso: nombre de banda de 31
+caracteres, **entidad DXCC de 60** + grilla 6 + rumbo 359 + 20015 km para
+`"Toward …"`, los **8 motivos de abort** por `"Error: %s"`, `INT_MIN`/`INT_MAX`,
+`UINT_MAX`, `999` para `%03u`, escalera completa. Cada caso exige `ret < size` y
+`strlen == ret` (nunca "salió truncado"):
 
 ```
 PASS: 0 failure(s)
@@ -259,7 +344,7 @@ Entorno: host Linux, `uv` del repo, venv `tools/ab_testing/.venv` sincronizado.
 | `uv run ruff check .` | `All checks passed!` | **0** |
 | `uv run ruff format --check .` | `200 files already formatted` | **0** |
 | `uv run ty check src tests` | `All checks passed!` (emite además `WARN No python files found under the given path(s)`, comportamiento preexistente del comando en esta versión de `ty`, no del cambio: el diff no toca Python) | **0** |
-| `uv run pytest -m "not e2e"` | **`233 passed, 13 deselected in 2.44s`** | **0** |
+| `uv run pytest -m "not e2e"` | **`233 passed, 13 deselected in 2.50s`** | **0** |
 
 > Se usó el comando **exacto** del job `functional` (`pytest -m "not e2e"`), **no**
 > `--quick`: `--quick` deselecciona 13 tests más, entre ellos `test_natural.py`
@@ -280,7 +365,8 @@ Etapas de las apps del contrato:
 ```
 
 `tests/native/test_swrscan.c` compila la **fuente real** `src/dialog_swrscan.c`
-(con stubs) y es donde vive el pin del readout actualizado.
+(con stubs) y es donde viven los 4 pines actualizados (readout, stopped, timeout y
+el `strstr` del motivo del gate); `test_swrscan_multipass.c` tiene el quinto.
 
 ### 5.3 Suite completa del repo (paso 4 del contrato)
 
@@ -333,6 +419,8 @@ cualquier desalineación tiene que aparecer como rojo ahí, no acá.
 - **No se recorrieron los flujos en vivo** de SWRScan/Propagation (barrido real,
   beacons, red): el comportamiento es el mismo por construcción (sólo cambian
   literales), pero la evidencia visual y funcional en QEMU es de la Fase 2.
+- **Warning preexistente `%.0f` de `fill_direction`** (línea 538): no es de este
+  cambio ni se apaga acá (§4.1). El peor caso real se mide en `truncation_check.c`.
 
 ## 8. Fase 2 (después del rebase sobre #285 y #286) — PENDIENTE
 
@@ -345,13 +433,16 @@ antes/después 800×480 (superficie visual ya aprobada), en esta misma carpeta:
 | App | Capturas |
 | --- | --- |
 | **Field** | idle/cuerpo con el header visible (`X6200  FIELD OPERATIONS`), ambos estados de softkeys |
-| **SWRScan** | idle/estado vacío (`No measurements`), scanning (`Scanning pass X/Y`), completed, stopped, error (motivo de abort) |
-| **Propagation** | idle/paso 1 (`Step 1/4  Preparing`), sync (`Step 2/4  Syncing`, `Beacon on air`), measure (`Step 3/4  Measuring`), result (`Step 4/4  Result`, `Measured …`, `CLOSED`/`NO IBP BEACONS`), listening (`Listening to … Stop/Close restores VFO`), stop/cancelado (`Step 4/4  Cancelled`) |
+| **SWRScan** | idle/estado vacío (`No measurements`), scanning (`Scanning pass X/Y`), completed, stopped (`Stopped (partial)`), error (motivos de abort: `RF timeout`, `no TX`, `state change`, `3/5 passes require RF validation`, `span/center outside the TX band`, `invalid parameters`, `no data`) |
+| **Propagation** | idle/paso 1 (`Step 1/4  Preparing`), sync (`Step 2/4  Syncing`, `Beacon on air`), measure (`Step 3/4  Measuring`), result (`Step 4/4  Result`, `Measured …`, veredictos **`OPEN`/`MARGINAL`/`CLOSED`** y `NO IBP BEACONS`, línea de dirección `Toward …`), listening (`Listening to … Stop/Close restores VFO`), stop/cancelado (`Step 4/4  Cancelled`, `Radio left RX: …`) |
 
 En esa pasada hay que mirar: etiquetas de softkeys, notas de estado, truncación
 (`LV_LABEL_LONG_DOT`) y solapamiento, contraste, y que navegación/acciones no
-cambien. Lo que dependa de RF/periféricos ausentes se marca `PARTIAL`/`BLOCKED`,
-nunca `PASS` fabricado.
+cambien. Los textos que crecieron respecto del español son los que hay que mirar
+con lupa en 800×480: `Band %s  |  %d eligible IBP beacons  |  %d scheduled`,
+`3/5 passes require RF validation`, `span/center outside the TX band` y
+`Toward %s (%s): %s %d deg, %.0f km.`. Lo que dependa de RF/periféricos ausentes se
+marca `PARTIAL`/`BLOCKED`, nunca `PASS` fabricado.
 
 ## 9. Contenido de esta carpeta
 
