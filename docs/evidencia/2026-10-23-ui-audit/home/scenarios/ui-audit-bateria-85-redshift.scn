@@ -1,0 +1,38 @@
+# ui-audit-bateria-85-redshift: 85 % (LV_SYMBOL_BATTERY_3) con el tema Redshift, para la
+# auditoria de UI (#270). Ver el encabezado de `ui-audit-bateria-0.scn`: mismo
+# estado de radio que `main-tema-redshift-tx`/la home del tema, solo cambia la
+# muestra del pack.
+#
+# Existe para medir la colision icono/porcentaje en este tema: junto con la
+# captura del tema al 76 % (`main-tema-redshift`), forma un par del MISMO simbolo con
+# DISTINTO digito inicial (7 vs 8), que es lo que permite aislar la tinta del
+# icono (lo comun a los dos estados) de la tinta del texto.
+
+name ui-audit-bateria-85-redshift
+screen main
+
+theme Redshift
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.4
+external_v 13.8
+battery_cap 85
+charging false
+
+rxtx rx

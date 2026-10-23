@@ -1,0 +1,6 @@
+  rejilla: celdas 3x2 de 56x26 en (15,5)
+  gap horizontal 6 | pitch vertical 26 | col pitch 62
+  borde derecho 195 <= 206 | fondo de la ultima fila 57 <= 61
+  runa de BT (celda WiFi 28 px): fondo 59 <= 61
+  celdas del contrato: 6 | pad vertical local: [2]
+  la barra izquierda cumple el contrato de #251 (6 px / pitch 26 / 22-20 / sin solape)

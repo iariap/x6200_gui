@@ -1,0 +1,121 @@
+captura,prof,clase,x,y,w,h,visible,hidden,overflow_visible,scroll_dir,texto,fuente,text_natural,text_box,text_overflow,text_truncado,text_color,bg_color,bg_opa,bg_image,glyphs_faltantes,glyphs_fallback
+home-tx-tema-sunlit,0,lv_obj,0,0,800,480,"{'x': 0, 'y': 0, 'w': 800, 'h': 480}",False,False,all,,,,,,,#212121,#F7F5EB,255,False,,
+home-tx-tema-sunlit,1,lv_obj,0,0,800,160,"{'x': 0, 'y': 0, 'w': 800, 'h': 160}",False,False,all,,,,,,,#212121,#F7F5EB,255,False,,
+home-tx-tema-sunlit,1,lv_obj,0,160,800,36,"{'x': 0, 'y': 160, 'w': 800, 'h': 36}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,2,lv_label,0,160,150,36,"{'x': 0, 'y': 160, 'w': 150, 'h': 36}",False,False,all,#162436 13.884,sony_30,"{'w': 82, 'h': 26}","{'w': 150, 'h': 22}",False,False,#162436,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,2,lv_label,150,160,500,36,"{'x': 150, 'y': 160, 'w': 500, 'h': 36}",False,False,all,#162436 14.076.000 / 14.074.000,sony_38,"{'w': 331, 'h': 30}","{'w': 500, 'h': 26}",False,False,#162436,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,2,lv_label,650,160,150,36,"{'x': 650, 'y': 160, 'w': 150, 'h': 36}",False,False,all,#162436 14.268,sony_30,"{'w': 82, 'h': 26}","{'w': 150, 'h': 22}",False,False,#162436,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,240,800,240,"{'x': 0, 'y': 240, 'w': 800, 'h': 240}",False,False,all,,,,,,,#212121,#F7F5EB,255,False,,
+home-tx-tema-sunlit,2,lv_img,0,240,800,240,"{'x': 0, 'y': 240, 'w': 800, 'h': 240}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,3,lv_line,400,240,1,7,"{'x': 400, 'y': 240, 'w': 1, 'h': 7}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,3,lv_line,406,240,1,7,"{'x': 406, 'y': 240, 'w': 1, 'h': 7}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,2,lv_obj,0,246,800,24,"{'x': 0, 'y': 246, 'w': 800, 'h': 24}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,2,lv_line,399,239,3,243,"{'x': 399, 'y': 240, 'w': 3, 'h': 240}",True,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,1,lv_obj,0,268,800,150,"{'x': 0, 'y': 268, 'w': 800, 'h': 150}",True,False,all,,,,,,,#212121,#FFFFFF,255,False,,
+home-tx-tema-sunlit,2,lv_obj,499,272,1,142,"{'x': 499, 'y': 272, 'w': 1, 'h': 142}",False,False,all,,,,,,,#212121,#14456F,255,False,,
+home-tx-tema-sunlit,2,lv_label,8,284,320,13,"{'x': 8, 'y': 284, 'w': 320, 'h': 13}",False,False,all,DFL USB,sony_18,"{'w': 52, 'h': 13}","{'w': 320, 'h': 13}",False,False,#053F80,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,2,lv_obj,367,272,128,44,"{'x': 367, 'y': 272, 'w': 128, 'h': 44}",False,False,all,,,,,,,#212121,#E3E7EB,255,False,,
+home-tx-tema-sunlit,3,lv_label,415,288,33,13,"{'x': 415, 'y': 288, 'w': 33, 'h': 13}",False,False,all,Reset,sony_18,"{'w': 33, 'h': 13}","{'w': 33, 'h': 13}",False,False,#162436,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,2,lv_obj,8,320,487,96,"{'x': 8, 'y': 320, 'w': 487, 'h': 96}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,3,lv_label,418,375,72,12,"{'x': 418, 'y': 375, 'w': 72, 'h': 12}",False,False,all,Schematic,sony_14,"{'w': 52, 'h': 12}","{'w': 72, 'h': 12}",False,False,#33475B,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,2,lv_obj,505,272,286,44,"{'x': 505, 'y': 272, 'w': 286, 'h': 44}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,3,lv_obj,509,281,4,28,"{'x': 509, 'y': 281, 'w': 4, 'h': 28}",True,False,all,,,,,,,#212121,#0355A7,255,False,,
+home-tx-tema-sunlit,3,lv_label,520,286,100,13,"{'x': 520, 'y': 286, 'w': 100, 'h': 13}",False,False,all,LOW,sony_18,"{'w': 29, 'h': 13}","{'w': 100, 'h': 13}",False,False,#33475B,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,3,lv_label,616,282,168,17,"{'x': 616, 'y': 282, 'w': 168, 'h': 17}",False,False,all,0 Hz,sony_22,"{'w': 35, 'h': 17}","{'w': 168, 'h': 17}",False,False,#5E6874,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,2,lv_obj,505,320,286,44,"{'x': 505, 'y': 320, 'w': 286, 'h': 44}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,3,lv_obj,509,329,4,28,"{'x': 509, 'y': 329, 'w': 4, 'h': 28}",True,False,all,,,,,,,#212121,#0355A7,255,False,,
+home-tx-tema-sunlit,3,lv_label,520,334,100,13,"{'x': 520, 'y': 334, 'w': 100, 'h': 13}",False,False,all,HIGH,sony_18,"{'w': 33, 'h': 13}","{'w': 100, 'h': 13}",False,False,#33475B,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,3,lv_label,616,330,168,17,"{'x': 616, 'y': 330, 'w': 168, 'h': 17}",False,False,all,3000 Hz,sony_22,"{'w': 65, 'h': 17}","{'w': 168, 'h': 17}",False,False,#5E6874,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,2,lv_obj,505,368,286,44,"{'x': 505, 'y': 368, 'w': 286, 'h': 44}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,3,lv_obj,509,377,4,28,"{'x': 509, 'y': 377, 'w': 4, 'h': 28}",True,False,all,,,,,,,#212121,#0355A7,255,False,,
+home-tx-tema-sunlit,3,lv_label,520,382,100,13,"{'x': 520, 'y': 382, 'w': 100, 'h': 13}",False,False,all,BW,sony_18,"{'w': 20, 'h': 13}","{'w': 100, 'h': 13}",False,False,#33475B,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,3,lv_label,616,378,168,17,"{'x': 616, 'y': 378, 'w': 168, 'h': 17}",False,False,all,3000 Hz,sony_22,"{'w': 65, 'h': 17}","{'w': 168, 'h': 17}",False,False,#5E6874,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,454,246,340,52,"{'x': 454, 'y': 246, 'w': 340, 'h': 52}",True,False,all,,,,,,,#212121,#E3E7EB,204,False,,
+home-tx-tema-sunlit,2,lv_label,465,266,320,13,"{'x': 465, 'y': 266, 'w': 320, 'h': 13}",False,False,all,,sony_18,"{'w': 0, 'h': 13}","{'w': 320, 'h': 13}",False,False,#162436,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,2,lv_obj,663,251,128,44,"{'x': 663, 'y': 251, 'w': 128, 'h': 44}",True,False,all,,,,,,,#212121,#BEDAF6,255,False,,
+home-tx-tema-sunlit,3,lv_label,702,267,51,13,"{'x': 702, 'y': 267, 'w': 51, 'h': 13}",False,False,all,Cancelar,sony_18,"{'w': 51, 'h': 13}","{'w': 51, 'h': 13}",False,False,#112537,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,241,138,146,22,"{'x': 241, 'y': 138, 'w': 146, 'h': 22}",False,False,all,,,,,,,#212121,#3366CC,204,False,,
+home-tx-tema-sunlit,2,lv_label,306,143,17,12,"{'x': 306, 'y': 143, 'w': 17, 'h': 12}",False,False,all,CW,sony_16,"{'w': 17, 'h': 12}","{'w': 17, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,387,138,60,22,"{'x': 387, 'y': 138, 'w': 60, 'h': 22}",False,False,all,,,,,,,#212121,#33AA55,204,False,,
+home-tx-tema-sunlit,2,lv_label,407,143,20,12,"{'x': 407, 'y': 143, 'w': 20, 'h': 12}",False,False,all,DIG,sony_16,"{'w': 20, 'h': 12}","{'w': 20, 'h': 12}",False,False,#000000,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,447,138,5,22,"{'x': 447, 'y': 138, 'w': 5, 'h': 22}",False,False,all,,,,,,,#212121,#CC8800,204,False,,
+home-tx-tema-sunlit,2,lv_label,447,138,22,12,"{'x': 447, 'y': 138, 'w': 5, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#000000,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,452,138,23,22,"{'x': 452, 'y': 138, 'w': 23, 'h': 22}",False,False,all,,,,,,,#212121,#33AA55,204,False,,
+home-tx-tema-sunlit,2,lv_label,452,138,22,12,"{'x': 452, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#000000,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,475,138,325,22,"{'x': 475, 'y': 138, 'w': 325, 'h': 22}",False,False,all,,,,,,,#212121,#888888,204,False,,
+home-tx-tema-sunlit,2,lv_label,592,143,90,12,"{'x': 592, 'y': 143, 'w': 90, 'h': 12}",False,False,all,ALL MODES / SSB,sony_16,"{'w': 90, 'h': 12}","{'w': 90, 'h': 12}",False,False,#000000,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,138,130,22,"{'x': 0, 'y': 138, 'w': 130, 'h': 22}",True,False,all,,,,,,,#212121,#FFFFFF,204,False,,
+home-tx-tema-sunlit,2,lv_label,0,138,22,12,"{'x': 0, 'y': 138, 'w': 22, 'h': 12}",True,False,all,Text,sony_16,"{'w': 22, 'h': 12}","{'w': 22, 'h': 12}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,0,418,160,62,"{'x': 0, 'y': 418, 'w': 160, 'h': 62}",False,False,all,,,,,,,#FFFFFF,#FFFFFF,0,True,,
+home-tx-tema-sunlit,2,lv_label,25,436,110,26,"{'x': 25, 'y': 436, 'w': 110, 'h': 26}",False,False,all,(VOL 1:3),sony_30,"{'w': 110, 'h': 26}","{'w': 110, 'h': 26}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,160,418,160,62,"{'x': 160, 'y': 418, 'w': 160, 'h': 62}",False,False,all,,,,,,,#FFFFFF,#FFFFFF,0,True,,
+home-tx-tema-sunlit,2,lv_label,190,423,101,52,"{'x': 190, 'y': 423, 'w': 101, 'h': 52}",False,False,all,"Volume:
+50",sony_30,"{'w': 101, 'h': 52}","{'w': 101, 'h': 52}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,320,418,160,62,"{'x': 320, 'y': 418, 'w': 160, 'h': 62}",False,False,all,,,,,,,#FFFFFF,#FFFFFF,0,True,,
+home-tx-tema-sunlit,2,lv_label,348,423,104,52,"{'x': 348, 'y': 423, 'w': 104, 'h': 52}",False,False,all,"Squelch:
+0",sony_30,"{'w': 104, 'h': 52}","{'w': 104, 'h': 52}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,480,418,160,62,"{'x': 480, 'y': 418, 'w': 160, 'h': 62}",False,False,all,,,,,,,#FFFFFF,#FFFFFF,0,True,,
+home-tx-tema-sunlit,2,lv_label,511,423,98,52,"{'x': 511, 'y': 423, 'w': 98, 'h': 52}",False,False,all,"RF gain:
+100",sony_30,"{'w': 98, 'h': 52}","{'w': 98, 'h': 52}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,640,418,160,62,"{'x': 640, 'y': 418, 'w': 160, 'h': 62}",False,False,all,,,,,,,#FFFFFF,#FFFFFF,0,True,,
+home-tx-tema-sunlit,2,lv_label,660,423,121,52,"{'x': 660, 'y': 423, 'w': 121, 'h': 52}",False,False,all,"TX power:
+5.0 W",sony_30,"{'w': 121, 'h': 52}","{'w': 121, 'h': 52}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_label,3,230,795,182,"{'x': 3, 'y': 230, 'w': 795, 'h': 182}",True,False,all,Text,sony_38,"{'w': 58, 'h': 30}","{'w': 775, 'h': 162}",False,False,#FFFFFF,#FFFFFF,0,True,[],[]
+home-tx-tema-sunlit,1,lv_label,99,300,603,66,"{'x': 99, 'y': 300, 'w': 603, 'h': 66}",False,False,all,Text,sony_38,"{'w': 58, 'h': 30}","{'w': 603, 'h': 26}",False,False,#FFFFFF,#FFFFFF,0,True,[],[]
+home-tx-tema-sunlit,1,lv_label,238,145,324,66,"{'x': 238, 'y': 145, 'w': 324, 'h': 66}",False,False,all,Text,sony_60,"{'w': 88, 'h': 45}","{'w': 324, 'h': 42}",False,False,#FFFFFF,#FFFFFF,0,True,[],[]
+home-tx-tema-sunlit,1,lv_obj,591,0,209,61,"{'x': 591, 'y': 0, 'w': 209, 'h': 61}",False,False,all,,,,,,,#FFFFFF,#FFFFFF,0,True,,
+home-tx-tema-sunlit,2,lv_label,591,5,209,30,"{'x': 591, 'y': 5, 'w': 209, 'h': 30}",False,False,all,00:00:00,sony_38,"{'w': 118, 'h': 30}","{'w': 209, 'h': 30}",False,False,#162436,#FFFFFF,0,True,[],[]
+home-tx-tema-sunlit,2,lv_label,599,42,64,17,"{'x': 599, 'y': 42, 'w': 64, 'h': 17}",False,False,all, 13.8 V,sony_20,"{'w': 64, 'h': 17}","{'w': 64, 'h': 17}",False,False,#162436,#FFFFFF,0,False,[],['U+F1E6']
+home-tx-tema-sunlit,2,lv_label,771,47,21,12,"{'x': 771, 'y': 47, 'w': 21, 'h': 12}",False,False,all,70%,sony_16,"{'w': 21, 'h': 12}","{'w': 21, 'h': 12}",False,False,#162436,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,2,lv_label,754,42,16,17,"{'x': 754, 'y': 42, 'w': 16, 'h': 17}",False,False,all,,sony_20,"{'w': 16, 'h': 17}","{'w': 16, 'h': 17}",False,False,#162436,#FFFFFF,0,False,[],['U+F241']
+home-tx-tema-sunlit,1,lv_obj,0,0,209,61,"{'x': 0, 'y': 0, 'w': 209, 'h': 61}",False,False,all,,,,,,,#212121,#FFFFFF,0,True,,
+home-tx-tema-sunlit,2,lv_obj,15,5,180,26,"{'x': 15, 'y': 5, 'w': 180, 'h': 26}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,3,lv_label,15,5,56,26,"{'x': 15, 'y': 5, 'w': 56, 'h': 26}",False,False,all,SPL-A,sony_20,"{'w': 45, 'h': 17}","{'w': 56, 'h': 22}",False,False,#162436,#E7E4D8,255,False,[],[]
+home-tx-tema-sunlit,3,lv_label,77,5,56,26,"{'x': 77, 'y': 5, 'w': 56, 'h': 26}",False,False,all,USB,sony_20,"{'w': 32, 'h': 17}","{'w': 56, 'h': 22}",False,False,#162436,#E7E4D8,255,False,[],[]
+home-tx-tema-sunlit,3,lv_label,139,5,56,26,"{'x': 139, 'y': 5, 'w': 56, 'h': 26}",False,False,all,FAST,sony_22,"{'w': 38, 'h': 17}","{'w': 56, 'h': 22}",False,False,#162436,#E7E4D8,255,False,[],[]
+home-tx-tema-sunlit,2,lv_obj,15,31,180,26,"{'x': 15, 'y': 31, 'w': 180, 'h': 26}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,3,lv_label,15,31,56,26,"{'x': 15, 'y': 31, 'w': 56, 'h': 26}",False,False,all,PRE,sony_22,"{'w': 30, 'h': 17}","{'w': 56, 'h': 22}",False,False,#112537,#BEDAF6,255,False,[],[]
+home-tx-tema-sunlit,3,lv_label,77,31,56,26,"{'x': 77, 'y': 31, 'w': 56, 'h': 26}",False,False,all,ATU2,sony_22,"{'w': 42, 'h': 17}","{'w': 56, 'h': 22}",False,False,#112537,#BEDAF6,255,False,[],[]
+home-tx-tema-sunlit,3,lv_label,139,31,28,26,"{'x': 139, 'y': 31, 'w': 28, 'h': 26}",False,False,all,,sony_20,"{'w': 18, 'h': 17}","{'w': 28, 'h': 22}",False,False,#33475B,#E7E4D8,255,False,[],['U+F1EB']
+home-tx-tema-sunlit,2,lv_line,167,34,16,22,"{'x': 167, 'y': 34, 'w': 16, 'h': 22}",False,False,all,,,,,,,#212121,#FFFFFF,0,False,,
+home-tx-tema-sunlit,1,lv_obj,210,0,380,61,"{'x': 210, 'y': 0, 'w': 380, 'h': 61}",False,False,all,,,,,,,#212121,#FFFFFF,0,True,,
+home-tx-tema-sunlit,1,lv_obj,210,0,380,123,"{'x': 210, 'y': 0, 'w': 380, 'h': 123}",True,False,all,,,,,,,#212121,#FFFFFF,0,True,,
+home-tx-tema-sunlit,2,lv_label,560,99,0,17,,False,False,all,,sony_20,"{'w': 0, 'h': 17}","{'w': 0, 'h': 17}",False,False,#FFFFFF,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_label,778,10,12,12,"{'x': 778, 'y': 10, 'w': 12, 'h': 12}",True,False,all,x1,sony_16,"{'w': 12, 'h': 12}","{'w': 12, 'h': 12}",False,False,#212121,#FFFFFF,0,False,[],[]
+home-tx-tema-sunlit,1,lv_obj,30,70,139,40,"{'x': 30, 'y': 70, 'w': 139, 'h': 40}",True,False,all,,,,,,,#212121,#000000,255,False,,
