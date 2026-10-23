@@ -1,0 +1,13 @@
+comparacion byte a byte de fixtures EXISTENTES contra la evidencia ya mergeada (B, #271):
+
+home-usb-20m (control de B):
+1007699c29c6568959a6ccc6b5ff202dcdb4a980e879a1bf516141be2e824440  docs/evidencia/2026-10-23-ui-audit/dialogs/control/home-usb-20m.png
+1007699c29c6568959a6ccc6b5ff202dcdb4a980e879a1bf516141be2e824440  /tmp/x6200-gaps-uiharness/scratch/regress-home2.png
+
+settings-home (B):
+689b17c6812cf7f776b9c2f11a10751e09b5247eff4a30e6a4374f6be6d9df72  docs/evidencia/2026-10-23-ui-audit/dialogs/png/settings-home.png
+689b17c6812cf7f776b9c2f11a10751e09b5247eff4a30e6a4374f6be6d9df72  /tmp/x6200-gaps-uiharness/scratch/regress-settings2.png
+
+bt-dialog (B):
+bac52e132a54a1e633a8cd802ceba0748c6ee5bca50a2c1b82e7143142c46202  docs/evidencia/2026-10-23-ui-audit/dialogs/png/bt-dialog.png
+bac52e132a54a1e633a8cd802ceba0748c6ee5bca50a2c1b82e7143142c46202  /tmp/x6200-gaps-uiharness/scratch/regress-bt.png

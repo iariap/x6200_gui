@@ -1,0 +1,62 @@
+== comprobando el entorno del barrido QEMU (privado) ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  python3: ok
+  PIL: ok
+  reporteador: ok
+  guard #86: ok
+  libs del banco: ok
+  cliente de control (fuente): ok
+  volumen x6200-gaps-build: tiene la GUI construida
+  chroot privado: ok (/tmp/x6200-gaps-qemu/chroot)
+  binfmt qemu-arm: ok
+== todo listo para el barrido QEMU (no se tocó nada) ==
+  contenedor privado: x6200-gaps-qemu
+  volumen privado:    x6200-gaps-build
+  laboratorio:        /tmp/x6200-gaps-qemu
+  version del repo:   e07ad616 [UI AUDIT] Apps evidence (refs #272) (#273)
+  chroot ya armado (/tmp/x6200-gaps-qemu/chroot): se refresca el binario y las libs
+OK: /tmp/x6200-gaps-qemu/chroot/usr/sbin/x6200_gui es el firmware del port (ELF32 ARM, 13432744 B, 3/3 marcas)
+== barrido QEMU: 25 apps x 1 rondas, dwell 2s ==
+-- ronda 1/1 --
+  ronda 1  FT8: FAIL
+          FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10136000; estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 1  FT4: FAIL
+          FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10140000; estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 1  JS8: FAIL
+          FAIL: estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 1  WSPR: FAIL
+          FAIL: estado persistido cambiado sin querer: freq 10100000 -> 10138700; estado persistido cambiado sin querer: mode USB -> USB-D
+  ronda 1  SSTV: PASS
+  ronda 1  WeFax: PASS
+  ronda 1  NavTex: PASS
+  ronda 1  RTTY: PASS
+  ronda 1  CW: FAIL
+          FAIL: estado persistido cambiado sin querer: mode USB -> CW
+  ronda 1  Field: PARTIAL
+          PARTIAL: sin red (QRZ/POTA): la consulta no se puede validar (solo el render)
+  ronda 1  GPS: PARTIAL
+          PARTIAL: sin receptor GNSS en el chroot: se espera el mensaje controlado de la app
+  ronda 1  Bands: PASS
+  ronda 1  Settings: PASS
+  ronda 1  BT: PARTIAL
+          PARTIAL: sin adaptador Bluetooth: se espera el estado controlado
+  ronda 1  Cluster: PARTIAL
+          PARTIAL: sin red: la columna de spots no se puede validar (solo el render)
+  ronda 1  CwTrainer: FAIL
+          FAIL: estado persistido cambiado sin querer: mode USB -> CW
+  ronda 1  Eq: PASS
+  ronda 1  Status: PASS
+  ronda 1  QTH: PASS
+  ronda 1  Callsign: PASS
+  ronda 1  Recorder: PASS
+  ronda 1  WiFi: PARTIAL
+          PARTIAL: sin NetworkManager ni adaptador en el chroot: se espera el estado controlado
+  ronda 1  SWRScan: PASS
+  ronda 1  Propagation: PARTIAL
+          PARTIAL: sin spots de cluster ni NTP: el barrido de beacons no se puede validar
+  ronda 1  DFLEditor: FAIL
+          FAIL: la app pedida no abrio (app='')
+{"PASS": 12, "PARTIAL": 6, "FAIL": 7, "BLOCKED": 0}
+== evidencia en /tmp/x6200-gaps-qemu/out (barrido.json, results.csv, index.txt, capturas/, logs/) ==
+EXIT:1

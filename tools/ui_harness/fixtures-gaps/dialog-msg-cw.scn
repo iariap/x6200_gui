@@ -1,0 +1,41 @@
+# dialog-msg-cw: la ventana REAL de mensajes CW (src/dialog_msg_cw.c) sobre la
+# pantalla principal real. Se abre por la tecla MSG del firmware con la radio en
+# CW: keypad.c -> lv_event_send(lv_scr_act(), EVENT_KEYPAD, KEYPAD_MSG) ->
+# main_screen_keypad_cb (src/main_screen.c) elige CW por cfg_cur.mode ->
+# dialog_construct(dialog_msg_cw).
+#
+# El protocolo de control remoto NO inyecta teclas, por eso el barrido QEMU la
+# declara UNSUPPORTED; el arnes de host si empuja el evento (src/screens.c,
+# settle_dialog_gaps). La captura necesita `ui_harness_dialogs`
+# (-DHARNESS_REAL_DIALOGS, CMakeLists.txt). Si la ventana no se construye, corta.
+#
+# El keyer y el store de mensajes son mocks declarados: la lista queda vacia y la
+# tabla dibuja su estado vacio. Nada se transmite.
+
+name dialog-msg-cw
+screen dialog-msg-cw
+
+seed 20
+
+frequency_hz 14060000
+tx_frequency_hz 14060000
+fft_width_hz 384000
+
+mode cw
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

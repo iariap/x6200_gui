@@ -1,0 +1,40 @@
+# dialog-freq: la ventana REAL de entrada de frecuencia (src/dialog_freq.c) sobre
+# la pantalla principal real. Se abre por la tecla que el firmware usa:
+# events.c::event_send_key(HKEY_FINP) -> LV_EVENT_KEY al espectro enfocado ->
+# spectrum_key_cb (src/main_screen.c) -> dialog_construct(dialog_freq).
+#
+# El protocolo de control remoto NO inyecta teclas, por eso el barrido QEMU la
+# declara UNSUPPORTED; el arnes de host si puede empujar el evento (src/screens.c,
+# settle_dialog_gaps). El descriptor es inerte en el binario por defecto: la
+# captura necesita `ui_harness_dialogs` (-DHARNESS_REAL_DIALOGS, CMakeLists.txt),
+# que linkea la fuente real. Si la ventana no se construye, el fixture corta.
+#
+# Deterministico: el reloj es el del arnes (--wrap=time), no el del host.
+
+name dialog-freq
+screen dialog-freq
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

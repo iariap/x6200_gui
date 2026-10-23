@@ -289,12 +289,65 @@ void voice_say_text(const char *p, const char *x) { (void) p; (void) x; }
 void voice_say_lang(void) {}
 const char *voice_change(int16_t diff) { (void) diff; return NULL; }
 
-/* --- Bluetooth (off), WiFi (off) ------------------------------------------- */
+/* --- Bluetooth (off), WiFi (off) -------------------------------------------
+ * The harness does not compile the real modules: src/bt_state.c reads the files
+ * btcat-ctl writes and src/wifi.cpp talks to NetworkManager, neither of which
+ * exists on the host. The default is OFF (what the real stack reports with no
+ * adapter), and a fixture can now inject one of the three VISIBLE states through
+ * the `bt_state` / `wifi_status` scenario keys. That renders the top-bar icons
+ * (src/info.c: off = icon_off, on = text_dim, connected = text) for a UI AUDIT
+ * gap; the capture is SYNTHETIC, it measures layout and contrast, never the
+ * radio function. `btaudio_follow_state()` stays a no-op. */
 
-bool bt_state_on(void) { return false; }
-bool bt_state_discoverable(void) { return false; }
-bool bt_state_connected(void) { return false; }
-bool bt_state_mute(void) { return false; }
+static bool          mock_bt_on        = false;
+static bool          mock_bt_connected = false;
+static wifi_status_t mock_wifi_status  = WIFI_OFF;
+
+bool mock_bt_state_set(const char *value)
+{
+    if (!strcmp(value, "off")) {
+        mock_bt_on = false;
+        mock_bt_connected = false;
+        return true;
+    }
+    if (!strcmp(value, "on")) {
+        mock_bt_on = true;
+        mock_bt_connected = false;
+        return true;
+    }
+    if (!strcmp(value, "connected")) {
+        mock_bt_on = true;
+        mock_bt_connected = true;
+        return true;
+    }
+    return false;
+}
+
+bool mock_wifi_state_set(const char *value)
+{
+    if (!strcmp(value, "off")) {
+        mock_wifi_status = WIFI_OFF;
+        return true;
+    }
+    if (!strcmp(value, "on")) {
+        /* Powered but not associated: the icon's "half" state (src/info.c maps
+         * any non-OFF, non-CONNECTED status to text_dim). */
+        mock_wifi_status = WIFI_DISCONNECTED;
+        return true;
+    }
+    if (!strcmp(value, "connected")) {
+        mock_wifi_status = WIFI_CONNECTED;
+        return true;
+    }
+    return false;
+}
+
+bool bt_state_on(void) { return mock_bt_on; }
+/* Discoverable (CAT) follows the power state of the injected double: the top bar
+ * draws only on/connected, and the Ajustes switch reads this. */
+bool bt_state_discoverable(void) { return mock_bt_on; }
+bool bt_state_connected(void) { return mock_bt_connected; }
+bool bt_state_mute(void) { return mock_bt_connected; }
 
 void btaudio_log(const char *fmt, ...) { (void) fmt; }
 void btaudio_run(const char *fmt, ...) { (void) fmt; }
@@ -304,7 +357,7 @@ void btaudio_follow_state(void) {}
 
 wifi_status_t wifi_get_status(void)
 {
-    return WIFI_OFF;
+    return mock_wifi_status;
 }
 
 /* --- backlight -------------------------------------------------------------
