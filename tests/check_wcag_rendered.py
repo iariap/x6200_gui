@@ -78,7 +78,15 @@ medido). El gate:
   **regresion** (un par del baseline con peor ratio que el registrado).
 * **FALLA** si el baseline quedo **obsoleto** (un par del baseline ya no viola):
   hay que regenerarlo con `--update-baseline`, que imprime el diff de lo que
-  agrega y de lo que saca (nada se bendice a ciegas).
+  agrega (`+`), de lo que saca (`-`) y de lo que **cambia de ratio** (`~`) —un
+  par que sigue violando pero con otro numero medido— (nada se bendice a ciegas).
+
+El gate compara los ratios **exactos**, sin tolerancia: el render del arnes es
+determinista dentro de la imagen fija y reproducible entre hosts, asi que un
+ratio que se mueve entre revisiones es un cambio de codigo/render real, no ruido
+de medicion (una tolerancia solo taparia regresiones chicas). Cuando el render
+cambia a proposito, la accion correcta es **re-baselinar** las entradas movidas
+con `--update-baseline` (el diff `~` las lista), no aflojar la comparacion.
 
 No hay blanket-skip: el waiver es por par enumerado; nunca "saltear un tema" ni
 "saltear si el ratio < X".
@@ -772,6 +780,15 @@ def update_baseline(violaciones: list[dict]) -> int:
     nuevo = {key(f): make_entry(f) for f in violaciones}
     added = sorted(set(nuevo) - set(previo))
     removed = sorted(set(previo) - set(nuevo))
+    # Un par que sigue violando pero con OTRO ratio. No es un agregado ni una
+    # baja: el ratio registrado cambio (p. ej. porque un cambio de render
+    # revisado movio el fondo medido bajo el glifo). Sin esta linea, el diff de
+    # `--update-baseline` reescribia el ratio en silencio y la revision no veia
+    # que numero se estaba bendiciendo: el cambio de fondo pasaba como "sin
+    # cambios".
+    changed = sorted(
+        k for k in set(previo) & set(nuevo) if previo[k].get("ratio") != nuevo[k]["ratio"]
+    )
     print("  --- diff del baseline (--update-baseline) ---")
     for k in added:
         e = nuevo[k]
@@ -779,13 +796,19 @@ def update_baseline(violaciones: list[dict]) -> int:
             f"  + {e['fixture']:<34} {e['rule']:<10} {e['path']:<14} "
             f"{e['ratio']:>5}:1 < {e['min']}  {e['text'][:24]!r}"
         )
+    for k in changed:
+        p, n = previo[k], nuevo[k]
+        print(
+            f"  ~ {n['fixture']:<34} {n['rule']:<10} {n['path']:<14} "
+            f"ratio {p['ratio']:>5}:1 -> {n['ratio']:>5}:1  {n['text'][:24]!r}"
+        )
     for k in removed:
         e = previo[k]
         print(
             f"  - {e['fixture']:<34} {e['rule']:<10} {e['path']:<14} "
             f"ratio {e['ratio']}:1  {e.get('text', '')[:24]!r}"
         )
-    if not added and not removed:
+    if not added and not removed and not changed:
         print("  (sin cambios)")
     data = {
         "schema": 1,
@@ -803,7 +826,7 @@ def update_baseline(violaciones: list[dict]) -> int:
     BASELINE.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
     print(
         f"  baseline escrito: {BASELINE.relative_to(ROOT)} "
-        f"({len(nuevo)} entradas, +{len(added)}/-{len(removed)})"
+        f"({len(nuevo)} entradas, +{len(added)}/-{len(removed)}/~{len(changed)})"
     )
     return 0
 
