@@ -26,22 +26,6 @@ on:
       - "src/CMakeLists.txt"
       - "tests/bootanim/**"
       - "tests/check_bootanim.sh"
-  push:
-    branches: ["lu2dsx/x6200-rom"]
-    paths:
-      - "buildroot/**"
-      - "CMakeLists.txt"
-      - "docs/IMAGE_ROOTFS_PRUNE.md"
-      - "docs/boot-animation.md"
-      - ".github/workflows/boot-rootfs.yml"
-      - "rootfs/etc/init.d/**"
-      - "src/bootanim/**"
-      - "src/boot_splash.c"
-      - "src/boot_splash.h"
-      - "src/main.c"
-      - "src/CMakeLists.txt"
-      - "tests/bootanim/**"
-      - "tests/check_bootanim.sh"
   workflow_dispatch:
 
 permissions:
