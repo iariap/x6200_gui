@@ -638,6 +638,18 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
      * audio). Restaurarlo en cada arranque de la GUI devuelve el audio de RX sin
      * power-cycle (antes solo lo sacaba un corte de energia). */
     x6200_control_record_set(false);
+
+    /* TEST #292: los registros filter_ssb / filter_ssb_2 nunca se escriben desde el
+     * GUI (solo el rxfilter generico). Ver su valor actual y escribir el default
+     * OEM capturado: low=150, high=2850 -> (150<<16)|2850 = 0x00960B22. */
+    LV_LOG_USER("TEST292 filter_ssb antes=%08x filter_ssb_2 antes=%08x",
+                (unsigned)x6200_control_get(x6200_filter_ssb),
+                (unsigned)x6200_control_get(x6200_filter_ssb_2));
+    x6200_control_cmd(x6200_filter_ssb, 0x00960B22);
+    x6200_control_cmd(x6200_filter_ssb_2, 0x00960B22);
+    LV_LOG_USER("TEST292 filter_ssb despues=%08x filter_ssb_2 despues=%08x",
+                (unsigned)x6200_control_get(x6200_filter_ssb),
+                (unsigned)x6200_control_get(x6200_filter_ssb_2));
     x6200_control_spmode_set(params.spmode.x);
 
     x6200_control_vox_set(params.vox);
