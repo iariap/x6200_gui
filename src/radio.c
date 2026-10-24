@@ -407,8 +407,13 @@ static void on_vfo_mode_change(Subject *subj, void *user_data) {
         return;
     }
 
-    WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, new_val));
-    LV_LOG_USER("Radio set vfo %i mode=%i", vfo, new_val);
+    /* TEST #292: el BASE usa la codificacion XG del modo (civmode2xgmode del
+     * GUI original): LSB=1, USB=2, USB-D=3, CW=4, CWR=5, AM=6, NFM=8, WFM=9.
+     * La lib manda el enum del GUI (LSB=0) y el BASE ignora el 0 -> queda en USB. */
+    int32_t xg_val = (new_val == x6200_mode_lsb || new_val == x6200_mode_lsb_dig) ? 1 : new_val;
+
+    WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, xg_val));
+    LV_LOG_USER("Radio set vfo %i mode=%i (xg=%i)", vfo, new_val, xg_val);
 }
 
 static void on_split_mode_sync(Subject *subj, void *user_data) {
