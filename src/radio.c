@@ -398,6 +398,8 @@ static bool mode_write_allowed(x6200_vfo_t vfo) {
     return subject_get_int(cfg_cur.band->split.val) != 0;
 }
 
+static void radio_i2c_write_pack(void);
+
 static void on_vfo_mode_change(Subject *subj, void *user_data) {
     x6200_vfo_t vfo = (x6200_vfo_t )user_data;
     int32_t new_val = subject_get_int(subj);
@@ -409,6 +411,10 @@ static void on_vfo_mode_change(Subject *subj, void *user_data) {
 
     WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, new_val));
     LV_LOG_USER("Radio set vfo %i mode=%i", vfo, new_val);
+
+    if (vfo == X6200_VFO_A) {
+        radio_i2c_write_pack();
+    }
 }
 
 static void on_split_mode_sync(Subject *subj, void *user_data) {
@@ -506,6 +512,53 @@ void radio_bb_reset() {
     gpio_safe_set(x6200_pin_bb_reset, 1);
     usleep(100000);
     gpio_safe_set(x6200_pin_bb_reset, 0);
+}
+
+/* TEST #292: escribir por I2C el bloque completo de 54 registros (como el GUI
+ * original, reg 0x0000 @ 0x72) tomando los valores del shadow de la lib, pero
+ * con los filtros SSB con signo: para LSB from=-2850, to=-150 en filter_ssb,
+ * filter_ssb_2 y rxfilter. Se llama al cambiar de modo (VFO A) y loguea. */
+static void radio_i2c_write_pack(void) {
+    int fd = open("/dev/i2c-0", O_RDWR);
+
+    if (fd < 0) {
+        LV_LOG_ERROR("TEST292 i2c: no puedo abrir /dev/i2c-0");
+        return;
+    }
+
+    int32_t mode = subject_get_int(cfg_cur.mode);
+    bool lsb = (mode == x6200_mode_lsb || mode == x6200_mode_lsb_dig);
+    uint32_t flt = lsb ? ((((uint32_t)(uint16_t)(int16_t)-2850) << 16) | (uint32_t)(uint16_t)(int16_t)-150)
+                       : ((((uint32_t)150) << 16) | 2850);
+
+    uint8_t buf[2 + 216];
+
+    buf[0] = 0x00;
+    buf[1] = 0x00;
+
+    for (int i = 0; i < 54; i++) {
+        uint32_t v = (uint32_t) x6200_control_get(i);
+
+        if (i == x6200_filter_ssb || i == x6200_filter_ssb_2 || i == x6200_rxfilter) {
+            v = flt;
+        }
+
+        buf[2 + i * 4 + 0] = v & 0xff;
+        buf[2 + i * 4 + 1] = (v >> 8) & 0xff;
+        buf[2 + i * 4 + 2] = (v >> 16) & 0xff;
+        buf[2 + i * 4 + 3] = (v >> 24) & 0xff;
+    }
+
+    struct i2c_msg msg = { .addr = 0x72, .flags = 0, .len = sizeof(buf), .buf = buf };
+    struct i2c_rdwr_ioctl_data data = { .msgs = &msg, .nmsgs = 1 };
+
+    if (ioctl(fd, I2C_RDWR, &data) < 0) {
+        LV_LOG_ERROR("TEST292 i2c: ioctl fallo (mode=%i flt=%08x)", mode, (unsigned)flt);
+    } else {
+        LV_LOG_USER("TEST292 i2c: pack 216B escrito mode=%i flt=%08x", mode, (unsigned)flt);
+    }
+
+    close(fd);
 }
 
 void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
