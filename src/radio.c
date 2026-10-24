@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
+#include <linux/i2c.h>
 
 #include "radio.h"
 #include "main.h"
@@ -402,6 +403,8 @@ static bool mode_write_allowed(x6200_vfo_t vfo) {
 
     return subject_get_int(cfg_cur.band->split.val) != 0;
 }
+
+static void radio_i2c_write_pack(void);
 
 static void on_vfo_mode_change(Subject *subj, void *user_data) {
     x6200_vfo_t vfo = (x6200_vfo_t )user_data;
