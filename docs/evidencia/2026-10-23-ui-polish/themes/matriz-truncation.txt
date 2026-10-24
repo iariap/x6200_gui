@@ -1,0 +1,4 @@
+arbol --inspect de la matriz del gate, con la opcion 2 aplicada (#286):
+fixtures: 24
+labels visibles con texto: 1860
+text_truncated: 0 text_overflow: 0 missing_glyphs: 0

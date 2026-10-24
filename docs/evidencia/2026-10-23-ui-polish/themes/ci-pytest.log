@@ -1,0 +1,30 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/pablo/desa/asf/state/worktrees/x6200/ui-polish-contrast-284/tools/ab_testing
+configfile: pyproject.toml
+testpaths: tests
+collected 246 items / 13 deselected / 233 selected
+
+tests/test_barrido_apps.py ...........                                   [  4%]
+tests/test_bench_host_noise.py ..................                        [ 12%]
+tests/test_cli.py ...........                                            [ 17%]
+tests/test_contracts.py .........                                        [ 21%]
+tests/test_docker_limits.py ......                                       [ 23%]
+tests/test_evaluator.py ...................                              [ 31%]
+tests/test_git_scaffolding.py .                                          [ 32%]
+tests/test_known_issues.py ..............                                [ 38%]
+tests/test_layout_checks.py ........................                     [ 48%]
+tests/test_natural.py .....                                              [ 50%]
+tests/test_nontext_checks.py ............                                [ 55%]
+tests/test_performance.py ................                               [ 62%]
+tests/test_performance_exceptions.py ...................                 [ 70%]
+tests/test_scenarios.py ..........                                       [ 75%]
+tests/test_theme_checks.py ........                                      [ 78%]
+tests/test_theme_files.py ......................                         [ 87%]
+tests/test_typography_checks.py ...........                              [ 92%]
+tests/test_verifica_firmware_port.py .........                           [ 96%]
+tests/test_visual_diff.py ....                                           [ 98%]
+tests/test_wakeups.py ....                                               [100%]
+
+====================== 233 passed, 13 deselected in 2.51s ======================
+rc_pytest=0

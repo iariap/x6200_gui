@@ -221,8 +221,36 @@ void styles_init(themes_t theme) {
     lv_style_set_radius(&pannel_style, 0);
     lv_style_set_bg_img_opa(&pannel_style, LV_OPA_COVER);
 
+    /* La ventana de una app es UNA superficie opaca del tema, dibujada ANTES que la imagen del
+     * tema (bmp/JSON) y que sus hijos. Hasta #284 el estilo solo pedia `bg_img_opa` sin pedir
+     * fondo: la superficie quedaba siendo la imagen a media opacidad sobre lo que hubiera detras,
+     * asi que la frecuencia/VFO/waterfall del Home se veian a traves de las filas de texto (la
+     * auditoria de apps del 2026-10-23, docs/evidencia/2026-10-23-ui-audit/apps/README.md P2-1) y
+     * el fondo medido bajo cada etiqueta era la mezcla con la pantalla de atras, no el tema
+     * (medido: "Bluetooth devices" en Sunlit 1.71:1 sobre #516775, que no es ningun rol). Con el
+     * fondo del tema opaco debajo de la imagen, la superficie deja de depender de lo que haya
+     * detras: es la imagen del tema sobre el fondo del tema, igual en cualquier app. El texto
+     * heredado sale del rol del tema (`TC(text)`) y no de un blanco fijo: en un tema claro el
+     * blanco sobre el fondo claro es ilegible (mismo idioma que freq_style y theme.h: el codigo no
+     * escribe un color, pide un rol). Geometria y opacidad de la imagen sin cambios. */
     lv_style_init(&dialog_style);
-    lv_style_set_text_color(&dialog_style, lv_color_white());
+    lv_style_set_bg_color(&dialog_style, TC(dialog));
+    lv_style_set_bg_opa(&dialog_style, LV_OPA_COVER);
+    /* La imagen del tema NO es opaca ni es un rol: `images/dialog_dark.bin` (795x347) tiene
+     * alpha 243/255 y una tinta gris azulada FIJA en los seis temas, asi que era ella -y no el
+     * fondo- la que mandaba en el color visible: medido en #286, el `bg_color` de abajo pesaba
+     * (1-alpha) ~ 4.7% y por eso Sunlit (rol `dialog` #FFFFFF) seguia con la ventana oscura y sus
+     * etiquetas oscuras por debajo de 4.5:1. Se la RECOLOREA con el rol del tema, el mismo idioma
+     * de `btn_active_style` (bg_img_recolor + bg_img_recolor_opa): la superficie pasa a ser
+     * `TC(dialog)` -clara en Sunlit, oscura en los otros cinco- con la imagen todavia dibujada
+     * (recoloreada, no reemplazada ni quitada). Medido: la superficie pelada es 8000/8000 px del
+     * color exacto del rol en los seis temas, o sea que el arte propio del bitmap ya no aporta
+     * color y la ventana se ve como una placa plana del rol (las mediciones y las capturas de los
+     * seis temas estan en docs/evidencia/2026-10-23-ui-polish/themes/README.md). No hay token ni
+     * paleta nueva: el color sale del rol, como theme.h manda. */
+    lv_style_set_bg_img_recolor(&dialog_style, TC(dialog));
+    lv_style_set_bg_img_recolor_opa(&dialog_style, LV_OPA_COVER);
+    lv_style_set_text_color(&dialog_style, TC(text));
     lv_style_set_text_font(&dialog_style, &sony_36);
     lv_style_set_width(&dialog_style, 796);
     lv_style_set_height(&dialog_style, DIALOG_BOX_H);

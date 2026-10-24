@@ -1,0 +1,10 @@
+capturas: 205  (con ventana modal: 44, sin: 161)
+findings de region_min_content que cambian SOLO por el cambio de contrato:
+  fixtures SIN ventana modal : 0
+  fixtures CON ventana modal : 44
+  bt-dialog-tema-aurora              region_min_content:waterfall     content 0.0396 >= 0.0200 -> content 0.0941 >= 0.0200
+  bt-dialog-tema-cathode             region_min_content:waterfall     content 0.2048 >= 0.0200 -> content 0.4916 >= 0.0200
+  bt-dialog-tema-redshift            region_min_content:waterfall     content 0.0163 >= 0.0200 -> content 0.0480 >= 0.0200
+  bt-dialog-tema-sprint              region_min_content:waterfall     content 0.2137 >= 0.0200 -> content 0.4236 >= 0.0200
+  bt-dialog-tema-sunlit              region_min_content:waterfall     content 0.0418 >= 0.0200 -> content 0.1251 >= 0.0200
+  bt-dialog-tema-trail               region_min_content:waterfall     content 0.0273 >= 0.0200 -> content 0.0652 >= 0.0200

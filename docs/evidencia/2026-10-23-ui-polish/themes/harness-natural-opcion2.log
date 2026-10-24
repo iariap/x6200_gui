@@ -1,0 +1,16 @@
+building ui_harness (revision 6406376c6c46daa1c9b4adf3baa875d5718fe3c6)...
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/tools/ui_harness/build/styles_host.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/tools/ui_harness/build/styles_host.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+running the natural bench on main-natural...
+FAIL: metrics.flushed_pixels = 12308624 (the settled capture must keep its 1100352 px and the natural frames add their own)
+rc=1

@@ -17,6 +17,33 @@ region_min_content:
   waterfall: 0.02
   botones: 0.02
 
+# La ventana modal compartida de las apps (`src/dialog.c::dialog_init` ->
+# `dialog_style`, 796x348 en x2/y66 = `src/styles.h` DIALOG_BOX_H/DIALOG_Y, la misma
+# caja que la region `ajustes_dialogo` de regions.yaml). Es UNA superficie opaca: lo
+# que queda debajo NO es visible.
+#
+# Por que existe `visible_under_modal`: la intencion de `region_min_content` es "el
+# componente SE ESTA DIBUJANDO (no esta en blanco)", y la mide como fraccion de
+# pixeles que se apartan del color modal de la region. La ventana es una PLACA LISA:
+# donde la ventana tapa una banda, esos pixeles ya no dicen nada del componente (y una
+# placa lisa los hace parecer "en blanco"). Antes de #286 la ventana era translucida
+# (el bitmap del tema al 95%) y el waterfall se veia a traves; al hacerla opaca (lo
+# que pide la epica #284) el contenido medido en `bt-dialog-tema-redshift` cayo de
+# 20.2% a 1.63% y el contrato fallaba midiendo pixeles que el usuario no ve. Medido
+# sobre la parte visible, la misma fixture da 7.1%.
+#
+# Se aplica SOLO a las regiones declaradas en `visible_under_modal` (hoy el waterfall:
+# la ventana lo cubre de y196 a y413 y las filas que quedan son el mismo waterfall).
+# `barra_superior`, `s_metro` y `botones` quedan fuera de la ventana; `espectro` y
+# `frecuencia` conservan contenido propio de la ventana en la parte tapada y siguen
+# midiendo la region entera (su comportamiento no cambia). La presencia de la ventana
+# se detecta en el arbol `--inspect` (un objeto con esa caja visible exacta y
+# superficie propia: fondo opaco o la imagen del tema); sin arbol no se asume nada.
+# Un waterfall realmente en blanco sigue midiendo ~0 en la parte visible: control
+# negativo en `tests/test_contracts.py::test_modal_surface_does_not_hide_a_blank_region`.
+modal_surface: [2, 66, 796, 348]
+visible_under_modal: [waterfall]
+
 coverage:
   # The coverage table must stay honest (rule 1 of the plan): only these levels.
   allowed_levels: [REAL, PARTIAL, SYNTHETIC, UNSUPPORTED]

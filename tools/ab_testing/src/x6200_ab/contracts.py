@@ -14,13 +14,14 @@ from datetime import date
 
 from .capture import Capture
 from .findings import ContractFinding
+from .inspection import inspection_of, iter_tree
 from .known_issues import KnownIssue, baseline_issue_for
 from .layout_checks import run_layout_checks
 from .quality_config import QualityContracts
 from .regions import RegionMap
 from .theme_checks import run_theme_checks
 from .typography_checks import run_typography_checks
-from .visual_diff import load_rgb, region_content_fraction
+from .visual_diff import load_rgb, region_content_fraction, region_visible_mask
 
 __all__ = ["ContractFinding", "run_contracts"]
 
@@ -155,12 +156,37 @@ def _region_content(
     if not contracts.region_min_content:
         return []
     array = load_rgb(capture.png)
+    # The shared app window is opaque and sits on top of the screen: while a capture
+    # shows it, the pixels it covers are not visible, so each region's content is
+    # measured over its VISIBLE part. The contract's intent does not change ("is the
+    # component being drawn"): a blank waterfall still scores ~0 on the visible part
+    # (negative control in `tests/test_contracts.py`).
+    modal = _visible_modal_surface(capture, contracts.modal_surface)
     findings: list[ContractFinding] = []
     for name, minimum in sorted(contracts.region_min_content.items()):
         region = region_map.get(name)
+        # Only the regions the contract declares (`visible_under_modal`) are measured
+        # over their visible part: the window is a flat plate, and where it covers a
+        # band the pixels left are the ones the user sees.
+        exclude = modal if modal is not None and name in contracts.modal_visible_regions else None
+        if exclude is not None and not region_visible_mask(region, exclude).any():
+            # Nothing of the region is on screen (the modal covers all of it): the
+            # pixels cannot answer "is it drawn", so it is declared, never failed and
+            # never silently counted as content of the window on top.
+            findings.append(
+                ContractFinding(
+                    rule=f"region_min_content:{name}",
+                    fixture=capture.name,
+                    ok=True,
+                    detail=(
+                        "region fully covered by the modal window: no visible pixels, not measured"
+                    ),
+                )
+            )
+            continue
         # A fixed tolerance: the contract asks "is there content", not "did it
         # change", so a coarse threshold avoids counting compression noise.
-        measured = region_content_fraction(array, region, 24)
+        measured = region_content_fraction(array, region, 24, exclude)
         findings.append(
             ContractFinding(
                 rule=f"region_min_content:{name}",
@@ -170,6 +196,31 @@ def _region_content(
             )
         )
     return findings
+
+
+def _visible_modal_surface(
+    capture: Capture, rect: tuple[int, int, int, int] | None
+) -> tuple[int, int, int, int] | None:
+    """The modal window's rectangle when this capture shows it, else `None`.
+
+    `dialog_init()` creates one window per app with `dialog_style`'s geometry
+    (796x348 at x2/y66, `src/styles.h`): in the `--inspect` tree it is the object
+    whose VISIBLE box is exactly that rectangle and which paints a surface (opaque
+    background or the theme's image). Without an inspection block nothing is
+    assumed: the region is measured whole, exactly as before.
+    """
+    if rect is None:
+        return None
+    inspection = inspection_of(capture)
+    if inspection is None:
+        return None
+    for node, _ancestors, _path in iter_tree(inspection.nodes):
+        box = node.visible
+        if node.hidden or box is None:
+            continue
+        if (box.x, box.y, box.w, box.h) == rect and (node.bg_opa >= 250 or node.bg_image):
+            return rect
+    return None
 
 
 def _coverage_levels(capture: Capture, contracts: QualityContracts) -> ContractFinding:
