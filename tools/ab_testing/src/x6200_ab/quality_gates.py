@@ -18,7 +18,11 @@ from typing import Any
 from .capture import Capture
 from .contracts import ContractFinding
 from .known_issues import IssueObservation
-from .quality_config import NO_PERFORMANCE_EXCEPTIONS, PerformanceExceptions
+from .quality_config import (
+    NO_PERFORMANCE_EXCEPTIONS,
+    ExpectedChange,
+    PerformanceExceptions,
+)
 from .regions import RegionMap
 from .status import Status, combine
 from .visual_diff import DiffResult, unexplained_changed_pixels
@@ -91,6 +95,21 @@ class GateProfile:
         return GateProfile(name="full", required=frozenset(ALL_GATES))
 
 
+@dataclass(frozen=True)
+class FixtureAllowance:
+    """What makes ONE fixture's pixel changes acceptable (never a global set).
+
+    `regions` is what `unexplained_changed_pixels` reads; `changes` and `fixes`
+    are the provenance the report prints: the dated entries that declare those
+    regions for this fixture and the known issues the candidate fixes on it. A
+    region allowed for another fixture never lands here (#296).
+    """
+
+    regions: frozenset[str] = frozenset()
+    changes: tuple[ExpectedChange, ...] = ()
+    fixes: tuple[str, ...] = ()
+
+
 def functional_gate(
     a_captures: dict[str, Capture],
     b_captures: dict[str, Capture],
@@ -124,7 +143,7 @@ def visual_regression_gate(
     diffs: list[DiffResult],
     region_map: RegionMap,
     *,
-    allowed_regions: dict[str, frozenset[str]],
+    allowances: dict[str, FixtureAllowance],
     introduced_issues: list[IssueObservation],
     review_regions: frozenset[str] = frozenset(),
 ) -> GateResult:
@@ -133,10 +152,15 @@ def visual_regression_gate(
     A change confined to a `review_regions` region is not failed: it becomes
     REVIEW REQUIRED, because "different there" may be an aesthetic change that
     only a human can judge.
+
+    `allowances` is per fixture: the regions a change may land in without being
+    a regression are only the ones this fixture's own declarations name, and the
+    report prints which entry (reason, author, expiry) explained them.
     """
     problems: list[str] = []
     evidence: list[str] = []
     explained_changes: list[str] = []
+    explained_by: list[dict[str, Any]] = []
     review: list[str] = []
     for diff in diffs:
         if diff.dimension_mismatch is not None:
@@ -145,7 +169,8 @@ def visual_regression_gate(
             continue
         if diff.identical:
             continue
-        allowed = allowed_regions.get(diff.scenario, frozenset())
+        allowance = allowances.get(diff.scenario, FixtureAllowance())
+        allowed = allowance.regions
         unexplained = unexplained_changed_pixels(diff, region_map, allowed)
         if unexplained > 0:
             review_only = unexplained_changed_pixels(diff, region_map, allowed | review_regions)
@@ -164,10 +189,9 @@ def visual_regression_gate(
                 if diff.overlay_png is not None:
                     evidence.append(str(diff.overlay_png))
         elif allowed:
-            explained_changes.append(
-                f"{diff.scenario}: {diff.changed_pixels} changed pixels, all inside "
-                f"{sorted(allowed)}"
-            )
+            explaining = _explaining(diff, allowance)
+            explained_changes.append(_explained_change(diff, explaining))
+            explained_by.append(_explained_record(diff, explaining))
         else:
             problems.append(
                 f"{diff.scenario}: {diff.changed_pixels} changed pixels outside any "
@@ -201,13 +225,67 @@ def visual_regression_gate(
             name=GateName.VISUAL_REGRESSION,
             status=Status.PASS,
             summary="no unexplained visual regressions",
-            details={"explained_changes": explained_changes},
+            details={"explained_changes": explained_changes, "explained_by": explained_by},
         )
     return GateResult(
         name=GateName.VISUAL_REGRESSION,
         status=Status.PASS,
         summary="captures are pixel-identical to the baseline",
     )
+
+
+def _explaining(diff: DiffResult, allowance: FixtureAllowance) -> FixtureAllowance:
+    """The part of the allowance the diff actually lands on.
+
+    An entry whose region is allowed but did not move does not explain this
+    change: the report names the declarations that cover the changed pixels, not
+    every declaration the fixture has.
+    """
+    changed = set(diff.changed_region_names())
+    regions = frozenset(allowance.regions & changed)
+    if not regions:
+        return allowance
+    return FixtureAllowance(
+        regions=regions,
+        changes=tuple(change for change in allowance.changes if change.region in changed),
+        fixes=allowance.fixes,
+    )
+
+
+def _explained_change(diff: DiffResult, allowance: FixtureAllowance) -> str:
+    """The human line of an explained change, with the entry that explained it."""
+    declared = [
+        f"`{change.region}` declared by `{change.author}` until {change.until}: "
+        f"{one_line(change.reason)}"
+        for change in allowance.changes
+    ]
+    if allowance.fixes:
+        declared.append(f"the fix of {', '.join(allowance.fixes)}")
+    return (
+        f"{diff.scenario}: {diff.changed_pixels} changed pixels, all inside "
+        f"{sorted(allowance.regions)} — {'; '.join(declared)}"
+    )
+
+
+def _explained_record(diff: DiffResult, allowance: FixtureAllowance) -> dict[str, Any]:
+    """The machine-readable provenance of one explained change."""
+    return {
+        "scenario": diff.scenario,
+        "changed_pixels": diff.changed_pixels,
+        "regions": sorted(allowance.regions),
+        "changes": [change.as_dict() for change in allowance.changes],
+        "fixes": list(allowance.fixes),
+    }
+
+
+def one_line(text: str) -> str:
+    """A `reason` collapsed to one line.
+
+    The gate and the report print the same entry text, so both collapse it the
+    same way: a YAML folded scalar arrives with newlines and the tables take one
+    line per entry.
+    """
+    return " ".join(text.split())
 
 
 def quality_contract_gate(findings: list[ContractFinding]) -> GateResult:

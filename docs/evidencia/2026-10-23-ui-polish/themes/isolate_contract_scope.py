@@ -36,6 +36,9 @@ from x6200_ab.scenarios import Scenario
 
 REPO = Path(__file__).resolve().parents[4]
 QUALITY = REPO / "tools" / "ab_testing" / "quality"
+# The fixture names of the suite: `expected_changes` is validated against them
+# (a scope glob has to match at least one, #296).
+FIXTURES = {path.stem for path in (REPO / "tools" / "ui_harness" / "fixtures").glob("*.scn")}
 
 
 def _captures(workspace: Path) -> list[Capture]:
@@ -72,7 +75,7 @@ def _has_modal(capture: Capture, rect: tuple[int, int, int, int]) -> bool:
 def main(argv: list[str]) -> int:
     workspace = Path(argv[1])
     regions = load_regions(QUALITY / "regions.yaml")
-    new = load_contracts(QUALITY / "contracts.yaml", set(regions.regions))
+    new = load_contracts(QUALITY / "contracts.yaml", set(regions.regions), FIXTURES)
     old = replace(new, modal_surface=None, modal_visible_regions=())
     assert new.modal_surface is not None, "contracts.yaml no declara modal_surface"
 

@@ -25,10 +25,12 @@ from .known_issues import (
 from .quality_config import (
     NO_PERFORMANCE_EXCEPTIONS,
     Budgets,
+    ExpectedChange,
     PerformanceExceptions,
     QualityContracts,
 )
 from .quality_gates import (
+    FixtureAllowance,
     GateProfile,
     GateResult,
     energy_gate,
@@ -161,13 +163,13 @@ def evaluate(
     """Run the six gates and combine the required ones into the verdict."""
     day = today or date.today()
     introduced = [issue for issue in data.issues if issue.classification in INTRODUCED]
-    allowed_regions = _allowed_regions(data, contracts, day)
+    allowances = _fixture_allowances(data, contracts, day)
     gates = [
         functional_gate(data.a_captures, data.b_captures, list(data.scenario_names)),
         visual_regression_gate(
             list(data.diffs),
             region_map,
-            allowed_regions=allowed_regions,
+            allowances=allowances,
             introduced_issues=introduced,
             review_regions=frozenset(contracts.review_regions),
         ),
@@ -221,15 +223,34 @@ def evaluate(
     )
 
 
-def _allowed_regions(
+def _fixture_allowances(
     data: ComparisonData, contracts: QualityContracts, day: date
-) -> dict[str, frozenset[str]]:
-    """Per fixture, the regions whose changes are explained (not regressions)."""
-    allowed: dict[str, set[str]] = {}
+) -> dict[str, FixtureAllowance]:
+    """Per fixture, the regions its own declarations explain (never global).
+
+    Only the entries that name the fixture count (`QualityContracts.allowed_for`):
+    two screens that share a rectangle (the app dialog) no longer explain each
+    other's changes (#296). A known issue the candidate fixes keeps its region on
+    the fixture the issue belongs to, as before.
+    """
+    regions: dict[str, set[str]] = {}
+    changes: dict[str, list[ExpectedChange]] = {}
+    fixes: dict[str, list[str]] = {}
     for issue in data.issues:
         if issue.classification is IssueClassification.FIXED and issue.issue.region is not None:
-            allowed.setdefault(issue.issue.fixture, set()).add(issue.issue.region)
-    for change in contracts.active_expectations(day):
-        for name in data.scenario_names:
-            allowed.setdefault(name, set()).add(change.region)
-    return {name: frozenset(regions) for name, regions in allowed.items()}
+            regions.setdefault(issue.issue.fixture, set()).add(issue.issue.region)
+            fixes.setdefault(issue.issue.fixture, []).append(issue.issue.id)
+    for name in data.scenario_names:
+        entries = contracts.allowed_expectations(name, day)
+        if not entries:
+            continue
+        regions.setdefault(name, set()).update(entry.region for entry in entries)
+        changes[name] = list(entries)
+    return {
+        name: FixtureAllowance(
+            regions=frozenset(named),
+            changes=tuple(changes.get(name, ())),
+            fixes=tuple(fixes.get(name, ())),
+        )
+        for name, named in regions.items()
+    }

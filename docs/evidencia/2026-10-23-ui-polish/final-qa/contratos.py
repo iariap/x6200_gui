@@ -69,13 +69,13 @@ def main(argv=None) -> int:
     args.csv = args.csv or base / "mediciones" / f"contratos{sufijo}.csv"
 
     region_map = load_regions(QUALITY / "regions.yaml")
-    contracts = load_contracts(QUALITY / "contracts.yaml", set(region_map.regions))
+    del_repo = {p.stem for p in (ROOT / "tools" / "ui_harness" / "fixtures").glob("*.scn")}
+    del_repo |= {f"gaps-{p.stem}" for p in (ROOT / "tools" / "ui_harness" / "fixtures-gaps").glob("*.scn")}
+    contracts = load_contracts(QUALITY / "contracts.yaml", set(region_map.regions), del_repo)
     known = load_known_issues(QUALITY / "known_issues.yaml", set(region_map.regions))
 
     revision = Revision(label="candidate", sha=SHA, worktree=ROOT)
     capturas = []
-    del_repo = {p.stem for p in (ROOT / "tools" / "ui_harness" / "fixtures").glob("*.scn")}
-    del_repo |= {f"gaps-{p.stem}" for p in (ROOT / "tools" / "ui_harness" / "fixtures-gaps").glob("*.scn")}
     for ruta in sorted((base / "json").glob("*.json")):
         nombre = ruta.stem
         if args.solo_corpus and nombre not in del_repo:

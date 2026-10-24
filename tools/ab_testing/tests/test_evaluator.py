@@ -276,7 +276,7 @@ def test_visual_gate_reports_introduced_issue(region_map: RegionMap) -> None:
     gate = visual_regression_gate(
         [],
         region_map,
-        allowed_regions={},
+        allowances={},
         introduced_issues=[observation],
         review_regions=frozenset(),
     )
@@ -300,7 +300,7 @@ def test_diff_result_with_dimension_mismatch_fails(region_map: RegionMap) -> Non
     gate = visual_regression_gate(
         [diff],
         region_map,
-        allowed_regions={},
+        allowances={},
         introduced_issues=[],
         review_regions=frozenset(),
     )
