@@ -327,13 +327,13 @@ static lv_coord_t calc_y(float vswr) {
 static const char *abort_text(swr_abort_reason_t reason) {
     switch (reason) {
         case SWR_ABORT_USER:            return "Stop";
-        case SWR_ABORT_TIMEOUT:         return "timeout de RF";
-        case SWR_ABORT_NO_DATA:         return "sin datos";
-        case SWR_ABORT_NO_TX:           return "sin TX";
-        case SWR_ABORT_STATE_CHANGED:   return "cambio de estado";
-        case SWR_ABORT_MULTIPASS_GATED: return "3/5 pasadas requieren validacion RF";
-        case SWR_ABORT_RANGE:           return "span/centro fuera de la banda de TX";
-        case SWR_ABORT_INVALID:         return "parametros invalidos";
+        case SWR_ABORT_TIMEOUT:         return "RF timeout";
+        case SWR_ABORT_NO_DATA:         return "no data";
+        case SWR_ABORT_NO_TX:           return "no TX";
+        case SWR_ABORT_STATE_CHANGED:   return "state change";
+        case SWR_ABORT_MULTIPASS_GATED: return "3/5 passes require RF validation";
+        case SWR_ABORT_RANGE:           return "span/center outside the TX band";
+        case SWR_ABORT_INVALID:         return "invalid parameters";
         case SWR_ABORT_NONE:
         default:                        return "";
     }
@@ -354,7 +354,7 @@ const char *dialog_swrscan_state_text(void) {
             break;
 
         case SWR_SESSION_STOPPED:
-            snprintf(buf, sizeof(buf), "Stopped (parcial)");
+            snprintf(buf, sizeof(buf), "Stopped (partial)");
             break;
 
         case SWR_SESSION_ERROR:
@@ -378,7 +378,7 @@ static void format_readout(char *buf, size_t n) {
     float mad;
 
     if (!swr_session_minimum(&session, &point, &swr, &mad)) {
-        snprintf(buf, n, "sin datos medidos");
+        snprintf(buf, n, "No measurements");
         return;
     }
 

@@ -717,7 +717,7 @@ void test_swrscan_multipass_gate(void) {
     CHECK(strcmp(run->label, "Run") == 0);          /* el boton no quedo en Stop */
     CHECK(swrscan_stub_freq_count() == 0);          /* ni movio el VFO */
     CHECK(strstr(dialog_swrscan_state_text(), "Error") != NULL);
-    CHECK(strstr(dialog_swrscan_state_text(), "validacion RF") != NULL);
+    CHECK(strstr(dialog_swrscan_state_text(), "RF validation") != NULL);
 
     passes->press(passes);                          /* 3 -> 5 (Fine) */
     CHECK(strcmp(passes->label_fn(), "Passes:\n5 *") == 0);
@@ -795,7 +795,7 @@ void test_swrscan_readout(void) {
 
     run->press(run);                                /* Stop del operador */
 
-    CHECK(strcmp(dialog_swrscan_state_text(), "Stopped (parcial)") == 0);
+    CHECK(strcmp(dialog_swrscan_state_text(), "Stopped (partial)") == 0);
     CHECK(strcmp(run->label, "Run") == 0);
     CHECK(swrscan_stub_stopped() == 1);
     CHECK(swrscan_stub_chart_refreshes() == refreshes + 1);
@@ -813,7 +813,7 @@ void test_swrscan_readout(void) {
 
     swrscan_stub_draw();
     CHECK(strcmp(dialog_swrscan_state_text(), "Idle") == 0);
-    CHECK(strcmp(swrscan_stub_last_label_text(), "sin datos medidos") == 0);
+    CHECK(strcmp(swrscan_stub_last_label_text(), "No measurements") == 0);
 }
 
 /*
@@ -850,7 +850,7 @@ void test_swrscan_timeout(void) {
 
     swrscan_stub_run_scheduler();
     CHECK(strcmp(run->label, "Run") == 0);
-    CHECK(strcmp(dialog_swrscan_state_text(), "Error: timeout de RF") == 0);
+    CHECK(strcmp(dialog_swrscan_state_text(), "Error: RF timeout") == 0);
 }
 
 /*

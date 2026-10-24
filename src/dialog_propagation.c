@@ -163,12 +163,12 @@ static button_item_t btn_run = {
 };
 static button_item_t btn_repeat = {
     .type  = BTN_TEXT,
-    .label = "Repetir",
+    .label = "Repeat",
     .press = dialog_propagation_repeat_cb,
 };
 static button_item_t btn_listen = {
     .type  = BTN_TEXT,
-    .label = "Escuchar",
+    .label = "Listen",
     .press = dialog_propagation_listen_cb,
 };
 static button_item_t btn_thresholds = {
@@ -178,7 +178,7 @@ static button_item_t btn_thresholds = {
 };
 static button_item_t btn_close = {
     .type  = BTN_TEXT,
-    .label = "Cerrar",
+    .label = "Close",
     .press = dialog_propagation_close_cb,
 };
 
@@ -535,8 +535,8 @@ static void fill_direction(const prop_status_t *st) {
     }
 
     snprintf(status.direction, sizeof(status.direction),
-             "Hacia %s (%s): %s %d deg, %.0f km.",
-             entity ? entity : "el beacon", grid,
+             "Toward %s (%s): %s %d deg, %.0f km.",
+             entity ? entity : "the beacon", grid,
              propagation_compass(bearing), bearing, km);
 }
 
@@ -586,26 +586,26 @@ static void build_result(bool cancelled) {
     if (status.band < 0) {
         status.verdict = PROPAGATION_VERDICT_NO_DATA;
         snprintf(status.note, sizeof(status.note),
-                 "Sin beacons IBP en %s. La IARU no respalda beacons debajo de 14 MHz; "
-                 "abajo van los spots del cluster, si los hay.", status.band_name);
+                 "No IBP beacons on %s. IARU IBP beacons start at 14 MHz; "
+                 "cluster spots follow if available.", status.band_name);
     } else if (measured == 0) {
         status.verdict = cancelled ? PROPAGATION_VERDICT_NO_DATA : PROPAGATION_VERDICT_NO_DATA;
         snprintf(status.note, sizeof(status.note),
-                 cancelled ? "Cancelado por el operador. VFO restaurado."
-                           : "No hubo slot disponible para medir. VFO restaurado.");
+                 cancelled ? "Cancelled by operator. VFO restored."
+                           : "No measurement slot available. VFO restored.");
     } else {
         status.verdict = propagation_verdict(status.best_snr, heard > 0, open, marg);
 
         if (heard == 0) {
             snprintf(status.note, sizeof(status.note),
-                     "No se escucho ningun beacon en su slot: silencio no es prueba de "
-                     "banda cerrada (puede ser QRM/QRN).");
+                     "No beacon heard in its slot. Silence does not prove the band is "
+                     "closed (QRM/QRN possible).");
         } else if (!status.clock_synced) {
             snprintf(status.note, sizeof(status.note),
                      "Clock not synchronized: beacon timing may be inaccurate.");
         } else {
             snprintf(status.note, sizeof(status.note),
-                     "Umbrales: abierta >= %d dB, marginal >= %d dB.", open, marg);
+                     "Thresholds: open >= %d dB, marginal >= %d dB.", open, marg);
         }
     }
 
@@ -631,7 +631,7 @@ static void abort_on_tx(void) {
     pthread_mutex_lock(&lock);
     build_result(true);
     snprintf(status.note, sizeof(status.note),
-             "El equipo dejo de estar en RX: barrido cancelado. VFO restaurado.");
+             "Radio left RX: scan cancelled. VFO restored.");
     status.phase = PROP_PHASE_CANCELLED;
     pthread_mutex_unlock(&lock);
 
@@ -757,7 +757,7 @@ static void start_sweep(void) {
     saved_freq = subject_get_int(cfg_cur.fg_freq);
 
     if (!radio_check_freq(saved_freq)) {
-        msg_update_text_fmt("Propagation: frecuencia actual invalida");
+        msg_update_text_fmt("Propagation: invalid current frequency");
         return;
     }
 
@@ -772,7 +772,7 @@ static void start_sweep(void) {
 
     snprintf(status.band_name, sizeof(status.band_name), "%s", cfg_band_label_get());
     if (status.band_name[0] == '\0') {
-        snprintf(status.band_name, sizeof(status.band_name), "la banda actual");
+        snprintf(status.band_name, sizeof(status.band_name), "current band");
     }
 
     prepare_plan(status.start_epoch);
@@ -797,7 +797,7 @@ static void start_sweep(void) {
 
     if (pthread_create(&worker, NULL, sweep_thread, NULL) != 0) {
         status.phase = PROP_PHASE_IDLE;
-        snprintf(status.note, sizeof(status.note), "No se pudo crear el hilo del barrido.");
+        snprintf(status.note, sizeof(status.note), "Could not start scan worker.");
         join_worker();
         sweep_ui_end();
         render();
@@ -837,7 +837,7 @@ static void listen_stop(void) {
     status.listen_idx = -1;
     pthread_mutex_unlock(&lock);
 
-    button_update_label(&btn_listen, "Escuchar");
+    button_update_label(&btn_listen, "Listen");
 }
 
 static void construct_cb(lv_obj_t *parent) {
@@ -934,7 +934,7 @@ static void construct_cb(lv_obj_t *parent) {
     status.clock_synced = clock_time_synced();
     snprintf(status.band_name, sizeof(status.band_name), "%s", cfg_band_label_get());
     if (status.band_name[0] == '\0') {
-        snprintf(status.band_name, sizeof(status.band_name), "la banda actual");
+        snprintf(status.band_name, sizeof(status.band_name), "current band");
     }
 
     /* El paso 1 muestra el plan desde que se abre: cuantos beacons aplican y
@@ -1053,9 +1053,9 @@ static void power_text(int dw, char *buf, size_t size) {
  * usa el control remoto). */
 static const char *verdict_es(propagation_verdict_t v) {
     switch (v) {
-        case PROPAGATION_VERDICT_OPEN:     return "ABIERTA";
+        case PROPAGATION_VERDICT_OPEN:     return "OPEN";
         case PROPAGATION_VERDICT_MARGINAL: return "MARGINAL";
-        case PROPAGATION_VERDICT_CLOSED:   return "CERRADA";
+        case PROPAGATION_VERDICT_CLOSED:   return "CLOSED";
         case PROPAGATION_VERDICT_NO_DATA:  break;
     }
 
@@ -1108,7 +1108,7 @@ static void evidence_text(const prop_status_t *st, int i, char *buf, size_t size
              (unsigned) (propagation_ibp_freq(st->band) / 1000000),
              (unsigned) (propagation_ibp_freq(st->band) / 1000 % 1000),
              tm.tm_hour, tm.tm_min, tm.tm_sec, m->snr[0], ladder,
-             m->ladder == 0 ? " | no se escucho" : "");
+             m->ladder == 0 ? " | not heard" : "");
 
     lv_obj_set_style_text_color(lbl_evidence[i],
                                 m->ladder > 0 ? TC(ok) : TC(text_dim), 0);
@@ -1135,29 +1135,29 @@ static void render(void) {
     char buf[256];
 
     if (st.band >= 0 && st.plan_n > 0) {
-        snprintf(buf, sizeof(buf), "Banda %s  |  %d beacons IBP aplican  |  %d en el plan",
+        snprintf(buf, sizeof(buf), "Band %s  |  %d eligible IBP beacons  |  %d scheduled",
                  st.band_name, propagation_ibp_beacon_count(), st.plan_n);
     } else if (st.band < 0) {
-        snprintf(buf, sizeof(buf), "Banda %s  |  sin beacons IBP", st.band_name);
+        snprintf(buf, sizeof(buf), "Band %s  |  no IBP beacons", st.band_name);
     } else {
-        snprintf(buf, sizeof(buf), "Banda %s", st.band_name);
+        snprintf(buf, sizeof(buf), "Band %s", st.band_name);
     }
 
     lv_label_set_text(lbl_band, buf);
 
     if (st.phase == PROP_PHASE_IDLE || st.phase == PROP_PHASE_PREPARE) {
-        lv_label_set_text(lbl_step, "Paso 1/4  |  Preparando");
+        lv_label_set_text(lbl_step, "Step 1/4  |  Preparing");
         lv_bar_set_value(bar, 0, LV_ANIM_OFF);
 
         if (st.band < 0) {
             snprintf(buf, sizeof(buf),
-                     "Sin beacons IBP en %s: la IARU no respalda beacons debajo de "
-                     "14 MHz. Abajo van los spots del cluster, si hay.", st.band_name);
+                     "No IBP beacons on %s: the IBP network starts at "
+                     "14 MHz. Cluster spots appear below if available.", st.band_name);
         } else {
             snprintf(buf, sizeof(buf),
-                     "Banda actual y turno de los beacons listos.\n"
-                     "Reloj NTP: %s.\nPulsa Run (o Repetir) para medir.",
-                     st.clock_synced ? "sincronizado" : "SIN sincronizar (el turno puede estar corrido)");
+                     "Current band and IBP schedule ready.\n"
+                     "NTP clock: %s.\nPress Run or Repeat to measure.",
+                     st.clock_synced ? "synchronized" : "NOT synchronized (slot timing may drift)");
         }
 
         lv_label_set_text(lbl_status, buf);
@@ -1180,22 +1180,22 @@ static void render(void) {
         lv_label_set_text(lbl_verdict, "");
         lv_label_set_text(lbl_detail, "");
     } else if (st.phase == PROP_PHASE_SYNC) {
-        lv_label_set_text(lbl_step, "Paso 2/4  |  Sincronizando");
+        lv_label_set_text(lbl_step, "Step 2/4  |  Syncing");
         lv_bar_set_value(bar, 5, LV_ANIM_OFF);
 
         const char *call = (beacon >= 0) ? propagation_ibp_call(beacon) : NULL;
 
         snprintf(buf, sizeof(buf),
-                 "Reloj NTP: %s\nTransmitiendo ahora: %s (%s, quedan %d s)\n%s",
-                 st.clock_synced ? "OK: sincronizado" : "NO: sin sincronizar",
+                 "NTP clock: %s\nBeacon on air: %s (%s, %d s left)\n%s",
+                 st.clock_synced ? "OK: synchronized" : "NO: unsynchronized",
                  call ? call : "-", st.band_name, slot_left,
-                 st.clock_synced ? "Turno alineado con el reloj del equipo."
-                                 : "El turno de los beacons puede estar corrido (sin NTP).");
+                 st.clock_synced ? "Slot aligned with radio clock."
+                                 : "Beacon slot timing may drift without NTP.");
         lv_label_set_text(lbl_status, buf);
         lv_label_set_text(lbl_verdict, "");
         lv_label_set_text(lbl_detail, "");
     } else if (st.phase == PROP_PHASE_MEASURE) {
-        lv_label_set_text(lbl_step, "Paso 3/4  |  Midiendo");
+        lv_label_set_text(lbl_step, "Step 3/4  |  Measuring");
 
         int idx = st.plan_i;
 
@@ -1227,11 +1227,11 @@ static void render(void) {
         int         wait = slot > now ? (int) (slot - now) : 0;
 
         snprintf(buf, sizeof(buf),
-                 "Beacon %d de %d: %s en %u.%03u MHz\n%s\n%s",
+                 "Beacon %d of %d: %s at %u.%03u MHz\n%s\n%s",
                  idx + 1, st.plan_n, call ? call : "-",
                  (unsigned) (propagation_ibp_freq(st.band) / 1000000),
                  (unsigned) (propagation_ibp_freq(st.band) / 1000 % 1000),
-                 wait > 0 ? "Esperando su slot..." : "Slot en curso: midiendo la escalera...",
+                 wait > 0 ? "Waiting for slot..." : "Slot active: measuring power steps...",
                  wait > 0 ? "" : "100 W > 10 W > 1 W > 0.1 W");
         lv_label_set_text(lbl_status, buf);
 
@@ -1258,8 +1258,8 @@ static void render(void) {
         lv_label_set_text(lbl_detail, "");
     } else if (st.phase == PROP_PHASE_RESULT || st.phase == PROP_PHASE_CANCELLED) {
         lv_label_set_text(lbl_step, st.phase == PROP_PHASE_CANCELLED
-                                    ? "Paso 4/4  |  Cancelado"
-                                    : "Paso 4/4  |  Resultado");
+                                    ? "Step 4/4  |  Cancelled"
+                                    : "Step 4/4  |  Result");
         lv_bar_set_value(bar, 100, LV_ANIM_OFF);
 
         lv_label_set_text(lbl_status, st.note);
@@ -1279,7 +1279,7 @@ static void render(void) {
         char verdict[32];
 
         if (st.band < 0) {
-            snprintf(verdict, sizeof(verdict), "SIN BEACONS IBP");
+            snprintf(verdict, sizeof(verdict), "NO IBP BEACONS");
         } else {
             snprintf(verdict, sizeof(verdict), "%s", verdict_es(st.verdict));
         }
@@ -1303,12 +1303,12 @@ static void render(void) {
          * empaquetado en el firmware. */
         if (st.band == 4) {
             snprintf(buf, sizeof(buf),
-                     "Medidos %d de %d beacons IBP, %d escuchados. Registro IARU R2 "
-                     "(10 m): %d activos de %d.",
+                     "Measured %d/%d IBP beacons, %d heard. IARU R2 "
+                     "(10 m): %d active of %d.",
                      st.measured, propagation_ibp_beacon_count(), st.heard,
                      propagation_iaru_active_count(), propagation_iaru_count());
         } else {
-            snprintf(buf, sizeof(buf), "Medidos %d de %d beacons IBP, %d escuchados.",
+            snprintf(buf, sizeof(buf), "Measured %d/%d IBP beacons, %d heard.",
                      st.measured, propagation_ibp_beacon_count(), st.heard);
         }
 
@@ -1334,8 +1334,8 @@ static void render(void) {
             const char *call = propagation_ibp_call(st.listen_idx);
 
             pos += snprintf(note + pos, sizeof(note) - (size_t) pos,
-                            "Escuchando %s en %u.%03u MHz: Parar/Cerrar vuelve al VFO.\n",
-                            call ? call : "el beacon",
+                            "Listening to %s at %u.%03u MHz: Stop/Close restores VFO.\n",
+                            call ? call : "the beacon",
                             (unsigned) (propagation_ibp_freq(st.band) / 1000000),
                             (unsigned) (propagation_ibp_freq(st.band) / 1000 % 1000));
         }
@@ -1446,7 +1446,7 @@ static void dialog_propagation_listen_cb(button_item_t *item) {
     }
 
     if (st.phase != PROP_PHASE_RESULT || st.best < 0 || st.meas[st.best].ladder < 1) {
-        msg_update_text_fmt("Propagation: no hay un beacon escuchado para sintonizar");
+        msg_update_text_fmt("Propagation: no heard beacon available to tune");
         return;
     }
 
@@ -1459,7 +1459,7 @@ static void dialog_propagation_listen_cb(button_item_t *item) {
     status.listen_idx = st.meas[st.best].beacon;
     pthread_mutex_unlock(&lock);
 
-    button_update_label(&btn_listen, "Parar");
+    button_update_label(&btn_listen, "Stop");
     render();
 }
 
@@ -1508,9 +1508,11 @@ static void dialog_propagation_close_cb(button_item_t *item) {
 }
 
 static const char *thresholds_label_fn(void) {
-    static char buf[32];
+    /* Worst case for the two `%d` (11 chars each) plus "Thresholds:\n" and " dB"
+     * is 38 bytes; 48 keeps `snprintf` out of truncation territory. */
+    static char buf[48];
 
-    snprintf(buf, sizeof(buf), "Umbrales:\n%d/%d dB",
+    snprintf(buf, sizeof(buf), "Thresholds:\n%d/%d dB",
              params.propagation_open_db.x, params.propagation_marginal_db.x);
     return buf;
 }

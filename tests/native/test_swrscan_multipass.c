@@ -438,7 +438,7 @@ void test_swrscan_mp_stop_partial(void) {
 
     CHECK(r.points == 2 * SWR_SESSION_POINTS + 20);
 
-    CHECK(strcmp(dialog_swrscan_state_text(), "Stopped (parcial)") == 0);
+    CHECK(strcmp(dialog_swrscan_state_text(), "Stopped (partial)") == 0);
     CHECK(swrscan_stub_started() == 1);
     CHECK(swrscan_stub_stopped() == 1);
     CHECK(swrscan_stub_null_label() == 0);

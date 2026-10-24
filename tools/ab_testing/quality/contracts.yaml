@@ -614,6 +614,45 @@ expected_changes:
     author: home-clock-battery-250
     until: 2027-04-30
 
+  # AB-APCOPY288 (issue #288, epica #284): la app SWRScan pasa el copy de
+  # operador a ingles, y el unico texto que se VE distinto es la linea de estado
+  # del motivo de abort/estado: "Stopped (parcial)" -> "Stopped (partial)" (y los
+  # otros motivos de `abort_text()` / "No measurements" en el readout vacio, que
+  # ninguna fixture del arnes alcanza). La linea de estado vive dentro de la caja
+  # del dialogo compartido, `ajustes_dialogo` = [2,66,796,348] — la misma region
+  # que ya usan #109/#250 para el cuerpo del dialogo, asi que esta entrada NO
+  # habilita ninguna region nueva: solo declara el cambio con su razon.
+  # Medido con el A/B (A=e1807671, B=884841c5, 205 escenarios): 204 fixtures
+  # byte-identicas y `swrscan-3pass-stop` con 238 px cambiados en 3 cajas,
+  # bbox (122,77)-(152,91), todas dentro de la banda de la linea de estado
+  # (y 70..100, x < 400). El recorte x3 esta en
+  # docs/evidencia/2026-10-23-ui-polish/app-copy/crops/: arriba "parcial)",
+  # abajo "partial)", el resto del pixel identico. Contraste del texto sin
+  # cambios (15.74:1 antes y despues, mismo #F8EEFF sobre #1B1529).
+  - region: ajustes_dialogo
+    reason: >
+      AB-APCOPY288 (issue #288, epica #284): el copy de operador de las apps
+      pasa a ingles. En SWRScan el unico literal visible que cambia de longitud
+      es el estado/motivo de abort de `dialog_swrscan.c` (`abort_text()` y
+      `dialog_swrscan_state_text()`): "Stopped (parcial)" -> "Stopped
+      (partial)", "timeout de RF" -> "RF timeout", "sin TX" -> "no TX", "cambio
+      de estado" -> "state change", "3/5 pasadas requieren validacion RF" ->
+      "3/5 passes require RF validation", "span/centro fuera de la banda de TX"
+      -> "span/center outside the TX band", "parametros invalidos" -> "invalid
+      parameters" y "sin datos" -> "no data". Esa linea de estado se dibuja
+      dentro de la caja del dialogo compartido (`ajustes_dialogo` =
+      [2,66,796,348]). Medido con el A/B sobre 205 escenarios: solo
+      `swrscan-3pass-stop` cambia, 238 px en 3 cajas con bbox
+      (122,77)-(152,91) — los glifos de "parcial" -> "partial" y el corrimiento
+      de las dos letras siguientes —, y las otras 204 fixtures quedan
+      byte-identicas. El contraste del texto no cambia (15.74:1 en las dos
+      fases). El resto del mapeo de #288 (Field "X6100" -> "X6200" y toda la
+      ventana de Propagation) no lo renderiza ninguna fixture del arnes: son
+      dialogs inertes por la regla de la epica y su verificacion es estructural
+      (compilacion ARM + metricas de texto), documentada en la misma carpeta.
+    author: ui-polish-app-copy-284
+    until: 2027-04-30
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.
