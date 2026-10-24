@@ -391,11 +391,21 @@ static void on_vfo_freq_change(Subject *subj, void *user_data) {
  * el power-cycle; sin ese write el audio sigue sano). La RX es el VFO A: se
  * escribe siempre; el B solo con split habilitado. */
 static bool mode_write_allowed(x6200_vfo_t vfo) {
-    if (vfo == X6200_VFO_A) {
-        return true;
+    /* #244: escribir el modo del VFO inactivo CON EL RADIO EN CW/CWR apaga el audio
+     * de RX del BASE (medido). Fuera de CW/CWR no pasa. */
+    x6200_mode_t mode = (x6200_mode_t)subject_get_int(cfg_cur.mode);
+
+    if (mode == x6200_mode_cw || mode == x6200_mode_cwr) {
+        if (vfo == X6200_VFO_A) {
+            return true;
+        }
+        return subject_get_int(cfg_cur.band->split.val) != 0;
     }
 
-    return subject_get_int(cfg_cur.band->split.val) != 0;
+    /* #292: en SSB/AM/FM el BASE necesita el modo en el VFO que demodula; si no,
+     * LSB y USB demodulan la misma banda lateral (medido con FT8: el tono audible
+     * cae siempre en las trazas de arriba). Se escribe en los dos. */
+    return true;
 }
 
 static void on_vfo_mode_change(Subject *subj, void *user_data) {
