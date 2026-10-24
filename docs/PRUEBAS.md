@@ -1385,3 +1385,59 @@ el dossier es **STALE** para el tip GUI `d4fb57f8` (25 archivos de producción) 
 fase B con identidad exacta y disponer de los P1. Cierre de recolección **no** es aprobación de
 producto ni autorización de deployment. Evidencia completa:
 [`05-summary/README.md`](evidencia/assessment-rom-194/05-summary/README.md).
+
+---
+
+## 24/10 03:05Z — #292 (LSB demodulaba la banda de arriba): RESUELTO, causa raíz y prueba en la radio
+
+**Causa raíz (fundada):** el BASE demodula con el modo del **VFO ACTIVO**. La GUI escribía
+el modo solo del VFO A (#244; el B se reservaba a split), así que si el VFO activo era B su
+registro de modo quedaba **viejo (USB)** y al pasar a LSB la radio demodulaba la banda de
+arriba. Medido con una portadora real de 790 kHz (banda AM, de noche): en el estado con bug,
+`789-LSB` daba el tono de 1 kHz en **59 dB** (oía la portadora de arriba); escribiendo el modo
+0 en el VFO B bajó a **27 dB** (LSB correcto).
+
+**Fix (rama `fix/292-mode-active-vfo`, commit `a04032e2`):**
+- `mode_write_allowed()` permite el **VFO activo** además de A y split.
+- `radio_sync_active_vfo_mode()` manda `cfg_cur.mode` al VFO activo; se llama al arrancar, al
+  cambiar de modo (observer de `cfg_cur.mode`) y al cambiar de VFO.
+- En CW/CWR **no** se escribe el VFO B: se midió que reproduce el mute de RX de #244
+  (`LSB→CW→LSB` dejó el audio en rms 141 hasta el power-cycle).
+
+**Prueba en la radio (build `b90a1a7b` + guard CW `f4a9d47d`), portadora 790 kHz:**
+
+| dial | modo | tono 1 kHz | veredicto |
+|------|------|-----------|-----------|
+| 789  | LSB  | 26.8 dB   | filtra la banda de arriba ✓ |
+| 789  | USB  | 57.2 dB   | oye ✓ |
+| 791  | LSB  | 57.6 dB   | oye la banda de abajo ✓ |
+| 791  | USB  | 29.1 dB   | filtra ✓ |
+
+Referencia del firmware original (misma prueba): 37.1 / 68.8 / 70.4 / 39.3 dB — mismo patrón.
+
+**Estado:** binario `f4a9d47d` desplegado y GUI oficial arrancando sin CRASHLOG. Queda
+**pendiente la validación del owner por oído** (20m LSB) y **un power-cycle** para limpiar el
+mute de BASE que dejó la prueba de CW con el primer build (el mute de #244 solo se va con
+power-cycle; ni el volumen raw ni el reset GPIO 204 lo limpian — verificado).
+
+### Nota de la prueba: el mute de BASE es del ESTADO, no del fix
+
+Al probar CW con el primer build el BASE quedó en el mute de #244. Se midió que:
+- **con la GUI parada**, escribir la secuencia completa del firmware original por I2C **recupera el audio** (rms 141 → ~15000);
+- **al arrancar la GUI** desde ese estado el audio vuelve a quedar mudo;
+- **el binario oficial `22a4bf6d` (sin el fix) también mutea** en ese estado → el mute **no lo
+  introduce el fix de #292**, es un artefacto del estado del BASE después de re-inicializarlo con
+  la secuencia del stock;
+- las escrituras mínimas (modo A/B, vi_vm, 0x30, rxvol, bloque de calibración `0xF000`, `0xFFFE`)
+  aplicadas con la GUI corriendo **no** lo recuperan; el reset de GPIO 204 tampoco.
+
+Conclusión: el mute se limpia con **power-cycle del equipo** (como documenta #244) y la
+validación final por oído se hace después del power-cycle, con el binario `f4a9d47d` ya desplegado.
+
+### Lectura del BASE por I2C (verificado 24/10)
+
+El BASE se puede LEER por I2C con el mismo framing que usa el GUI original:
+`w2@0x72 <addr BE> rN@0x72`. Direcciones útiles verificadas: `0x0000` = versión ASCII
+("1.0.0", "1.0.6", "Jan 11 2025,13:46:22"), `0x0100` = calibración, `0x1000` = work
+params en curso (freqA como u32), `0x2000` = ready=1. Sirve para diagnóstico sin
+tocar la ROM.
