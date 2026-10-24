@@ -1,7 +1,7 @@
 {
   "status": "PASS",
   "exit_code": 0,
-  "revision": "45e72738e19689913633f4ab3ed9e5d1bc442024",
+  "revision": "60d6d992d827ff4d8ba1a570a9427813ec3c1659",
   "scenarios": [
     "app-bands",
     "app-close-home",

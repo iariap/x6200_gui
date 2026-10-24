@@ -234,7 +234,7 @@ cd tools/ab_testing
 uv run x6200-ab contracts --revision "$(git rev-parse HEAD)" --repo <repo> --json | tee contracts.json
 ```
 
-Resultado: **`status: PASS`, `exit_code: 0`, `revision: 45e72738`, `scenarios: 205`,
+Resultado: **`status: PASS`, `exit_code: 0`, `revision: 60d6d992` (HEAD), `scenarios: 205`,
 `checks: 2118`, `failures: 0`, `unchanged_defects: 0`** (mismo numero de checks que antes: no
 se agrego ni se quito ninguno). JSON completo en `contracts-ci.json`.
 
