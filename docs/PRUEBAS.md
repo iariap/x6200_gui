@@ -1441,3 +1441,27 @@ El BASE se puede LEER por I2C con el mismo framing que usa el GUI original:
 ("1.0.0", "1.0.6", "Jan 11 2025,13:46:22"), `0x0100` = calibración, `0x1000` = work
 params en curso (freqA como u32), `0x2000` = ready=1. Sirve para diagnóstico sin
 tocar la ROM.
+
+---
+
+## 24/10 11:25Z — #292: VALIDACIÓN FINAL tras power-cycle: **PASS**
+
+El dueño apagó/encendió la radio (power-cycle limpia el mute de #244). Con el binario
+`f4a9d47d` (fix mergeado en main, PR #303) y **audio sano (rms 2777)** se corrió
+`tools/lsb-sideband-test.sh`:
+
+| prueba | tono 1 kHz | esperado con LSB/USB correctos | veredicto |
+|---|---|---|---|
+| 789-LSB | **27.0 dB** | filtra la portadora de arriba | ✓ |
+| 789-USB | 57.2 dB | la oye | ✓ |
+| 791-LSB | 56.9 dB | oye la portadora de abajo | ✓ |
+| 791-USB | 26.5 dB | la filtra | ✓ |
+
+**RESULTADO: PASS (LSB y USB demodulan lados opuestos)** — mismo patrón que el firmware
+original medido con la misma portadora (37.1 / 68.8 / 70.4 / 39.3 dB).
+
+La parte FT8 (7.072/7.074) quedó **inconclusiva por diseño**: en 40 m hay señales FT8 a
+ambos lados del dial, así que la energía no discrimina banda; la portadora AM sí.
+
+Radio restaurada: 14.192410 LSB, vol 16, BT off, logger on, CRASHLOG 0.
+Cierra #292.
