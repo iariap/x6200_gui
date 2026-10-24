@@ -33,13 +33,12 @@ SPDX-License-Identifier: GPL-2.0-or-later
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-JSON_DIR = AQUI / "json"
-MED = AQUI / "mediciones"
 
 # Grupo por nombre de captura (el contrato de #287 pide separar home, dialogos
 # y apps). El corpus del arnes no tiene un campo de grupo: se clasifica por el
@@ -100,7 +99,14 @@ def intersect(a, b) -> int:
     return (x1 - x0) * (y1 - y0)
 
 
-def main() -> int:
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument(
+        "--base", type=Path, default=AQUI, help="directorio con json/ (entrada) y mediciones/ (salida)"
+    )
+    args = ap.parse_args(argv)
+    JSON_DIR = args.base / "json"
+    MED = args.base / "mediciones"
     MED.mkdir(exist_ok=True)
     elementos, hallazgos, solapes, alineacion, cobertura = [], [], [], [], []
     resumen: dict[str, dict[str, int]] = {}

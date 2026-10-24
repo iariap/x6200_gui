@@ -1,0 +1,21 @@
+== --bench warmup=3 repeats=7, 14 fixtures x 2 builds ==
+
+  fixture                   render p50 base   actual    delta  flushes   redrawn px
+  home-usb-20m                        1.306    1.315    0.69%    1->1         384000
+  main-tema-aurora                    1.309    1.445   10.39%    1->1         384000
+  main-tema-cathode                   1.361    1.419    4.26%    1->1         384000
+  main-tema-redshift                  1.355    1.352   -0.22%    1->1         384000
+  main-tema-sprint                    1.308    1.361    4.05%    1->1         384000
+  main-tema-sunlit                    1.314    1.318     0.3%    1->1         384000
+  main-tema-trail                     1.303    1.378    5.76%    1->1         384000
+  settings-tema-aurora                2.802    3.631   29.59%    1->1         384000
+  settings-tema-redshift              2.891    3.645   26.08%    1->1         384000
+  bt-dialog-tema-aurora                2.72      3.6   32.35%    1->1         384000
+  bt-dialog-tema-redshift             2.719    3.621   33.17%    1->1         384000
+  dfl-presets-cycles                  1.224    1.238    1.14%    1->1         384000
+  cw-tune-default                     1.415    1.305   -7.77%    1->1         384000
+  swrscan-3pass                       2.878     3.67   27.52%    1->1         384000
+
+  render p50 delta: p50=5.01% min=-7.77% max=33.17%
+  flushes iguales en todas: True
+  redrawn_area igual en todas: True

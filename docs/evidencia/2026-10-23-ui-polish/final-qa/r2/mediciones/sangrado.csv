@@ -1,0 +1,15 @@
+fixture,tema,binario,pixeles_con_sangrado,pixeles_donde_el_home_cambia,fuga_mediana,amplitud_max_sangrado,superficie_medida,rol_dialog,superficie_igual_al_rol,superficie_px
+settings-tema-aurora,aurora,ui_harness,0,20289,0.0,0.0,#221A33,#221A33,1,236577/267920
+settings-tema-cathode,cathode,ui_harness,0,18126,0.0,0.0,#28190E,#28190E,1,232271/267920
+settings-tema-redshift,redshift,ui_harness,0,11555,0.0,0.0,#140809,#140809,1,236482/267920
+settings-tema-sprint,sprint,ui_harness,0,21275,0.0,0.0,#0C1E38,#0C1E38,1,238310/267920
+settings-tema-sunlit,sunlit,ui_harness,0,89001,0.0,0.0,#FFFFFF,#FFFFFF,1,234108/267920
+settings-tema-trail,trail,ui_harness,0,21674,0.0,0.0,#1A2A1E,#1A2A1E,1,232714/267920
+bt-dialog-tema-aurora,aurora,ui_harness,0,20289,0.0,0.0,#1B1529,#221A33,0,178549/267920
+bt-dialog-tema-cathode,cathode,ui_harness,0,18126,0.0,0.0,#140D08,#28190E,0,178369/267920
+bt-dialog-tema-redshift,redshift,ui_harness,0,11555,0.0,0.0,#0A0505,#140809,0,179245/267920
+bt-dialog-tema-sprint,sprint,ui_harness,0,21275,0.0,0.0,#071529,#0C1E38,0,179059/267920
+bt-dialog-tema-sunlit,sunlit,ui_harness,0,89001,0.0,0.0,#FFFFFF,#FFFFFF,1,243012/267920
+bt-dialog-tema-trail,trail,ui_harness,0,21674,0.0,0.0,#132117,#1A2A1E,0,178369/267920
+dialog-msg-cw,aurora,ui_harness_dialogs,0,20289,0.0,0.0,#221A33,#221A33,1,238660/267920
+dialog-msg-voice,aurora,ui_harness_dialogs,0,20289,0.0,0.0,#221A33,#221A33,1,238660/267920

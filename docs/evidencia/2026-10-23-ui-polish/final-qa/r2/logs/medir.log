@@ -1,0 +1,12 @@
+  elementos.csv: 15952 filas
+  hallazgos.csv: 243 filas
+  solapamientos.csv: 866 filas
+  alineacion.csv: 703 filas
+  cobertura.csv: 6544 filas
+  resumen.csv: 4 filas
+
+  resumen por grupo:
+    apps-menu    capturas=  9 labels= 522 overflow=1 truncated=0 missing=0 clip=18 solapes=33
+    dialogos     capturas=154 labels=10731 overflow=0 truncated=0 missing=0 clip=99 solapes=592
+    home         capturas= 64 labels=3770 overflow=0 truncated=0 missing=0 clip=99 solapes=192
+    otros        capturas= 16 labels= 929 overflow=0 truncated=0 missing=0 clip=30 solapes=49

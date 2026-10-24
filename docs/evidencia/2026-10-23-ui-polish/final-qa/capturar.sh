@@ -41,6 +41,8 @@ SOLO_CORPUS=${SOLO_CORPUS:-0}
 
 mkdir -p "$EV_DIR/png" "$EV_DIR/json" "$EV_DIR/logs" "$SCRATCH"
 EV_REL=$(realpath --relative-to="$WT" "$EV_DIR")
+# Las fixtures de estado viven junto a este script (no se duplican por ronda).
+SCN_REL=$(realpath --relative-to="$WT" "$AQUI/scenarios")
 
 LISTA=$SCRATCH/lista.tsv
 : > "$LISTA"
@@ -63,9 +65,9 @@ done
 
 if [ "$SOLO_CORPUS" = "0" ]; then
     # 3. estados propios de este QA (bateria / reloj TX)
-    for f in "$EV_DIR"/scenarios/*.scn; do
+    for f in "$AQUI"/scenarios/*.scn; do
         n=$(basename "$f" .scn)
-        printf '%s\tui_harness\t/src/%s/scenarios/%s.scn\t\n' "$n" "$EV_REL" "$n" >> "$LISTA"
+        printf '%s\tui_harness\t/src/%s/%s.scn\t\n' "$n" "$SCN_REL" "$n" >> "$LISTA"
     done
 
     # 4. reloj de 44 px con las tres familias segmentadas (dseg7, dseg7mini,
@@ -78,7 +80,7 @@ if [ "$SOLO_CORPUS" = "0" ]; then
                 "$d" "$t" "$t" "$d" >> "$LISTA"
         done
     done
-    printf 'finalqa-reloj-dseg7-tx\tui_harness\t/src/%s/scenarios/finalqa-reloj-tx.scn\t--digits dseg7\n' "$EV_REL" >> "$LISTA"
+    printf 'finalqa-reloj-dseg7-tx\tui_harness\t/src/%s/finalqa-reloj-tx.scn\t--digits dseg7\n' "$SCN_REL" >> "$LISTA"
 fi
 
 TOTAL=$(wc -l < "$LISTA")

@@ -1,0 +1,5 @@
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: autotune-lsb -> /src/docs/evidencia/2026-10-23-ui-polish/final-qa/r2/png/autotune-lsb.png (244086 bytes), flushes=17, flushed_pixels=1540096

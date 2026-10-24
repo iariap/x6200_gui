@@ -1,0 +1,24 @@
+== 243 fixtures comunes (base 243, actual 243) ==
+  comparacion-png.csv: 243 filas
+  comparacion-metricas.csv: 243 filas
+  comparacion-contratos.csv: 27 filas
+  comparacion-estructura.csv: 243 filas
+  comparacion-geometria.csv: 0 filas
+
+  PNG que cambian: 243/243
+  delta flushes: suma=-1 min=-1 max=0 p50=0
+  delta flushed_px: suma=8726400 min=35200 max=70400 p50=35200
+  contratos nuevo: 0
+  contratos regresion: 0
+  contratos resuelto: 0
+  contratos persiste: 27
+    finalqa-reloj-dseg14-tema-aurora: layout_overlap
+    finalqa-reloj-dseg14-tema-cathode: layout_overlap
+    finalqa-reloj-dseg14-tema-redshift: layout_overlap
+    finalqa-reloj-dseg14-tema-sprint: layout_overlap
+    finalqa-reloj-dseg14-tema-sunlit: layout_overlap
+    finalqa-reloj-dseg14-tema-trail: layout_overlap
+    finalqa-reloj-dseg7-tema-aurora: layout_overlap
+    finalqa-reloj-dseg7-tema-cathode: layout_overlap
+    finalqa-reloj-dseg7-tema-redshift: layout_overlap
+    finalqa-reloj-dseg7-tema-sprint: layout_overlap

@@ -1,0 +1,20 @@
+building ui_harness (revision faff19ba30dfff720ebdfb49a0333562f452efc2)...
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/tools/ui_harness/build/styles_host.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/tools/ui_harness/build/styles_host.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+running the wakeup profile on main-natural...
+  loop: 14 wakeups with the data drive (11 without it) in 1000 ms; sleeps 10-200 ms
+  tick thread: none (LV_TICK_CUSTOM, lv_conf.h: CLOCK_MONOTONIC) = 0 wakeups in 1000 ms
+  window override: --bench-wakeups 3000 ran 3000 ms with 31 loop wakeups (the default window: 1000 ms)
+  plain capture: no `wakeups` block (the mode is additive) and its 1136096 px settle plus the two passes add up to the run's flushed pixels
+PASS: wakeup profile measured, sourced and delimited (main-natural)
+  png sha256: 94385e5850caed71a19cad028d6773431f6ea5b625aed57e27ccf33afaa4584b

@@ -1,0 +1,11 @@
+  construyendo/actualizando el arnes (revision faff19ba30dfff720ebdfb49a0333562f452efc2)...
+== gate de legibilidad del texto de los WIDGETS en la ventana modal (issue #287) ==
+  fixtures: 18 (matriz de 6 temas x 3 estados de Ajustes/BT)
+  nodos de texto medidos: 138; declarados no medidos: 1152
+  por clase: lv_dropdown 36, lv_label 102
+    declarados, no medidos:   6  no medido: el valor lo dibuja su etiqueta interna
+    declarados, no medidos:  12  no medido: estado transitorio (foco/edicion)
+    declarados, no medidos: 1134  no medido: fuera de vista
+  --- hallazgos ---
+  PASS: todo el texto de la ventana modal dibuja tinta y llega al umbral WCAG
+EXIT=0

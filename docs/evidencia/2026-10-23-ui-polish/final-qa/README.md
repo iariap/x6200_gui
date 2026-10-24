@@ -1,5 +1,9 @@
 # QA final de la épica #284 — matriz 800×480, gates y veredicto (issue #287)
 
+> **Ronda 2 (2026-10-24)**: el `P1` de este documento (Sunlit) fue resuelto por
+> #301 y re-verificado sobre `faff19ba` en [`R2.md`](R2.md) (+ capturas en `r2/`).
+> Este documento se preserva tal como se publicó en la ronda 1.
+
 Corrida de **calificación de release, sólo evidencia**. No se toca código de
 runtime: el diff de esta rama es `docs/evidencia/2026-10-23-ui-polish/final-qa/**`
 y nada más.

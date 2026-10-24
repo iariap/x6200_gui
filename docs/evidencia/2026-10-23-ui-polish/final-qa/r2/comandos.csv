@@ -1,0 +1,29 @@
+comando,invocacion,exit_code,evidencia
+"construir (build out-of-source, SHA cableado)",sh docs/evidencia/2026-10-23-ui-polish/final-qa/construir.sh <WT> /tmp/opencode/qa284-r2 faff19ba…,0,logs/build-construir.log
+"capturar (243 capturas, matriz completa)",EV_DIR=…/r2 sh docs/evidencia/2026-10-23-ui-polish/final-qa/capturar.sh <WT> /tmp/opencode/qa284-r2,0,"logs/capturas.tsv (243 filas, exit_code 0)"
+determinismo (2da corrida completa),capturar.sh (2da vez) + comparacion sha256,0,logs/determinismo-2da-corrida.log
+gate NUEVO de texto de widgets,python3 tests/check_widget_text.py,0,logs/gate-widget-text.log
+gate NUEVO de texto de widgets (--all),python3 tests/check_widget_text.py --all,0,logs/gate-widget-text-all.log
+"WCAG renderizado (24 fixtures x 6 temas, --all)",python3 tests/check_wcag_rendered.py --all,0,logs/gate-wcag-rendered-all.log
+info bar,python3 tests/check_info_bar.py,0,logs/gate-info-bar.log
+settings grid,python3 tests/check_settings_grid.py,0,logs/gate-settings-grid.log
+suite rapida completa (23 OK),sh tests/run_all_tests.sh --quick,0,logs/gate-run-all-quick.log
+nativos,sh tests/native/run_native_tests.sh,0,logs/gate-native.log
+CI: pytest -m 'not e2e',"uv run pytest -m ""not e2e"" (cwd tools/ab_testing)",0,logs/ci-pytest.log
+CI: ruff check,uv run ruff check . (cwd tools/ab_testing),0,logs/ci-ruff.log
+CI: ruff format --check,uv run ruff format --check . (cwd tools/ab_testing),0,logs/ci-ruff-format.log
+CI: ty check,uv run ty check (cwd tools/ab_testing),0,logs/ci-ty.log
+determinismo del arnes,sh tests/check_harness_determinism.sh,0,logs/bench-determinism.log
+natural bench,sh tests/check_harness_natural.sh,1,logs/bench-natural.log
+"natural bench (2da corrida, confirma)",sh tests/check_harness_natural.sh,1,logs/bench-natural-2.log
+wakeups,sh tests/check_harness_wakeups.sh,0,logs/bench-wakeups.log
+QEMU preflight,LAB=/tmp/x6200-qa284r2-qemu CONT=x6200-qa284r2-qemu VOL=x6200-qa284r2-build IMAGEN=x6200-buildroot tests/qemu/run_apps_qemu.sh --check,77,logs/gate-qemu-check.log
+contratos A/B (solo corpus 218),python3 docs/evidencia/2026-10-23-ui-polish/final-qa/contratos.py --base …/r2 --solo-corpus,1,logs/contratos-corpus.log
+"contratos A/B (todas, 243)",python3 docs/evidencia/2026-10-23-ui-polish/final-qa/contratos.py --base …/r2,1,logs/contratos.log
+legibilidad de widgets de la modal (script del QA),python3 docs/evidencia/2026-10-23-ui-polish/final-qa/legibilidad.py --base …/r2,0,logs/legibilidad.log
+sangrado (14 dialogos reales x semilla),QA284_BUILD=/tmp/opencode/qa284-r2/build python3 …/sangrado.py --base …/r2,0,logs/sangrado.log
+inspeccion estructural (arbol LVGL),python3 …/medir.py --base …/r2,0,logs/medir.log
+comparacion ronda 1 (1845cb77) vs ronda 2,python3 …/comparar.py --base …/final-qa --actual …/r2,0,logs/comparar-r1.log
+proxy de costo de render (vs c90453fd),QA284_BUILD=…/qa284-r2/build python3 …/bench.py --base …/r2,0,logs/bench.log
+manifest,python3 …/manifiesto.py --base …/r2,0,logs/manifiesto.log
+crops,python3 …/crops.py --base …/final-qa --actual …/r2,0,logs/crops.log

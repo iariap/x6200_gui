@@ -60,7 +60,7 @@ ROOT = AQUI.parents[3]
 BUILD = Path(os.environ.get("QA284_BUILD", "/tmp/opencode/ui-polish-qa-284/build"))
 IMAGE = os.environ.get("UI_HARNESS_IMAGE", "x6200-uiharness")
 CONT = os.environ.get("CONT", "x6200-qa284-sangrado")
-SALIDA = AQUI / "mediciones" / "sangrado"
+SALIDA = AQUI / "mediciones" / "sangrado"  # se reescribe en main()
 SEED_A, SEED_B = 20, 21
 THEMES = ["aurora", "cathode", "redshift", "sprint", "sunlit", "trail"]
 # Interior de la superficie modal (src/dialog.c: x2/y66 796x348), 4 px de borde.
@@ -164,7 +164,15 @@ def superficie(a: np.ndarray) -> tuple[str, str]:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--reusar", action="store_true", help="no re-renderizar lo que ya existe")
+    ap.add_argument(
+        "--base",
+        type=Path,
+        default=AQUI,
+        help="directorio donde escribir mediciones/sangrado (default: este script)",
+    )
     args = ap.parse_args(argv)
+    global SALIDA
+    SALIDA = args.base / "mediciones" / "sangrado"
 
     if not (BUILD / "ui_harness").exists():
         raise SystemExit(f"FALLO: falta el arnes construido ({BUILD / 'ui_harness'})")
@@ -219,7 +227,7 @@ def main(argv=None) -> int:
             f"  {color}   {rol}  {'SANGRA' if sangra else 'OK'}"
         )
 
-    with (AQUI / "mediciones" / "sangrado.csv").open("w", newline="") as fh:
+    with (args.base / "mediciones" / "sangrado.csv").open("w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(filas[0].keys()))
         w.writeheader()
         w.writerows(filas)
