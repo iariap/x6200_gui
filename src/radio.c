@@ -684,8 +684,6 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
      * audio). Restaurarlo en cada arranque de la GUI devuelve el audio de RX sin
      * power-cycle (antes solo lo sacaba un corte de energia). */
     x6200_control_record_set(false);
-
-    radio_i2c_write_pack();
     x6200_control_spmode_set(params.spmode.x);
 
     x6200_control_vox_set(params.vox);
