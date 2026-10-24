@@ -36,6 +36,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 44. [El barrido de ROE no dibuja un valor fuera de escala](#44-el-barrido-de-roe-no-dibuja-un-valor-fuera-de-escala)
 66. [El audio de RX mudo al ir a CW: el disparo era el write del modo del VFO inactivo](#66-el-audio-de-rx-mudo-al-ir-a-cw-el-disparo-era-el-write-del-modo-del-vfo-inactivo)
 15. [Anexo A: hipótesis sin fundar (no son hallazgos)](#anexo-a-hipótesis-sin-fundar-no-son-hallazgos)
+67. [El firmware original de Xiegu está en la eMMC interna: su GUI habla I2C](#67-el-firmware-original-de-xiegu-está-en-la-emmc-interna-su-gui-habla-i2c)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
@@ -4092,3 +4093,71 @@ USB ida/vuelta rms=1073
 ```
 
 **Sin fundar (anexo A)**: por qué el firmware del BASE mutea al recibir el modo de un VFO inactivo (no medido; haría falta el firmware del BASE), y si un write del VFO B con el mismo valor que ya tiene también mutea (no probado).
+\n
+## 67. El firmware original de Xiegu está en la eMMC interna: su GUI habla I2C con el BASE
+
+**Contexto**: investigando #292 (el audio de RX no distingue LSB/USB). Se buscó el binario original
+de la radio para comparar.
+
+**Medido** (radio, 24/10 01:20Z):
+
+```
+$ cat /proc/partitions
+ 179        8    7634944 mmcblk2
+ 179        9      49152 mmcblk2p1
+ 179       10    7569408 mmcblk2p2
+ 179       16       4096 mmcblk2boot0
+ 179       24       4096 mmcblk2boot1
+$ blkid /dev/mmcblk2p1 /dev/mmcblk2p2
+/dev/mmcblk2p1: SEC_TYPE="msdos" TYPE="vfat"
+/dev/mmcblk2p2: TYPE="ext4"
+```
+
+Montadas en sólo lectura: `mmcblk2p1` = `boot.scr`, `zImage`, `sun8i-r16-x6200.dtb`, `logo.bmp`;
+`mmcblk2p2` = rootfs vendor (`NAME=Buildroot VERSION=2020.02.9`), con:
+
+- `/usr/firmware/x6200_mcu_20250111134652.xgf` (524288 B, **encriptado**: los strings no son legibles).
+- `/usr/app_qt/x6200_ui_v100` (1649256 B, `ELF 32-bit LSB ARM, dynamically linked`), **con símbolos
+  C++** (no está stripped). También `x6100_ui_v100`, `S11xgdaemon`, `socat`, `pacat`.
+
+`nm -C x6200_ui_v100` expone:
+
+```
+T BaseCommIIC::iicWrite(uint32_t, BaseCommIIC::AddressMode, uint8_t*, uint32_t)
+T BaseCommIIC::updateRxFilters(short, short, bool)
+T BaseCommIIC::updateWorkParams(XParamAdmin*, bool)
+T BaseCommIIC::parseParamItem(basecomiic_param_t const&, basecommiic_pack&)
+T XParamAdmin::setMode(int)
+```
+
+`strings` del mismo binario: `/dev/i2c-0`, `/dev/ttyS1`, `basecommiic_pack`,
+`basecommiic_vfo_pack_t`, `basecommiic_wparam_pack_t`, y el apagado del vendor
+`stty -F /dev/ttyS1 1152000 && echo s > /dev/ttyS1 && poweroff`.
+
+**El protocolo del vendor es I2C** (`/dev/i2c-0`, dirección + payload), mientras que la librería
+Aether del port escribe los 54 registros por **`/dev/ttyS1` serial a 1152000**.
+
+`updateRxFilters` desensamblado (0xe5dc0, objdump ARM del toolchain):
+
+```
+r1 = (high & 0xffff) | (low << 16)     ; mismo empaquetado que x6200_control_rx_filter_set
+str r1, [r4, #0x285]                   ; cache
+if (update) {
+  [r4+0x20d] = r1                      ; paquete de parámetro
+  addr = workParamAddr(paquete, &r1)   ; dirección I2C calculada (inlineada)
+  [r4+0x318] = addr ; [r4+0x31c] = ptr ; [r4+0x320] = 4 ; [r4+0x324] = 1 (write)
+}
+```
+
+`xparam.db` (SQLite del vendor): tabla `vfoa` fila `mode` = `pv=6, pdef=2, pprop=1,1,0,9,
+fmt=s,LSB,LSB-DIG,USB,USB-DIG,CW,CWR,AM,SAM,NFM,WFM`; `vfob.mode` = `pv=3`. El **enum de modos es
+el mismo que el de Aether** (LSB=0 … WFM=9).
+
+**Conclusión fundada**: la radio conserva el **firmware de fábrica booteable en la eMMC** (boot.scr +
+zImage + dtb en p1, rootfs vendor en p2, boot0/boot1), con su GUI como binario **con símbolos**, y
+ese GUI controla el BASE por **I2C** — un camino distinto del serial que usa el port. Los valores
+del modo no cambian entre ambos. Para cerrar #292 falta comparar el comportamiento del firmware
+original (sin SD) con el nuestro.
+
+**Sin fundar (anexo A)**: si el BASE responde igual por I2C que por el serial del port; si el
+`.xgf` del 2025-01-11 es más nuevo que el que corre el MCU ahora.
