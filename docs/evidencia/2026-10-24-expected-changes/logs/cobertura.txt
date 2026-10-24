@@ -1,0 +1,13 @@
+# Cuánto del framebuffer (800x480) queda "explicado" por fixture (#296)
+# Medido con el loader real sobre quality/regions.yaml + quality/contracts.yaml.
+
+antes (unión de las 15 regiones de las entradas activas, para toda fixture):
+  cobertura = 100.0% del framebuffer en las 205 fixtures
+
+después (regiones de las entradas que nombran cada fixture):
+  fixtures = 205
+  mediana de área SIN declarar = 73.7%
+  fixtures con >= 10% sin declarar = 174
+  fixtures con >= 25% sin declarar = 163
+  mínimo = 0.0% (las fixtures que están en los scopes de fuentes/temas)
+  máximo = 100.0% (ninguna entrada la nombra)

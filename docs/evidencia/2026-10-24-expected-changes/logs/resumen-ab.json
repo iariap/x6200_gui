@@ -1533,6 +1533,58 @@
    "review": []
   }
  },
+ "AB-296-after-pr": {
+  "changed_fixtures": [],
+  "changed_fixtures_by_region": {},
+  "changed_fixtures_total": 0,
+  "gates": [
+   {
+    "gate": "Functional",
+    "status": "PASS",
+    "summary": "205 scenarios captured on both revisions"
+   },
+   {
+    "gate": "Visual Regression",
+    "status": "PASS",
+    "summary": "captures are pixel-identical to the baseline"
+   },
+   {
+    "gate": "Quality Contract",
+    "status": "PASS",
+    "summary": "2118 contract checks passed on the candidate"
+   },
+   {
+    "gate": "Performance",
+    "status": "PASS",
+    "summary": "render-cost proxy within budget"
+   },
+   {
+    "gate": "Hardware",
+    "status": "BLOCKED",
+    "summary": "no physical X6200 attached; hardware behaviour is not measured"
+   },
+   {
+    "gate": "Energy",
+    "status": "BLOCKED",
+    "summary": "no power measurement; energy evidence must be physical"
+   }
+  ],
+  "revision_a": {
+   "label": "a",
+   "sha": "0d3f9e688d89adf5d6bcec8d1fb2b7ff64ec7427"
+  },
+  "revision_b": {
+   "label": "b",
+   "sha": "1efacfd26ad03a62772dad043014bdee23568845"
+  },
+  "scenarios": 205,
+  "status": "PASS",
+  "visual": {
+   "explained_by": [],
+   "problems": [],
+   "review": []
+  }
+ },
  "AB-296-after-wide": {
   "changed_fixtures": [
    {

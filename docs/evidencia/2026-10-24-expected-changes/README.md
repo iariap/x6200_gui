@@ -67,6 +67,15 @@ apps pasa a ingles. …
    las fixtures que la suite todavía publica. **Ninguna entrada usa `*`** (lo fija
    un test).
 
+### Cuánto cambia la cobertura
+
+Medido con el loader real sobre `regions.yaml` + `contracts.yaml` (detalle en
+`logs/cobertura.txt`): la unión de las regiones de las entradas activas cubría
+**el 100% del framebuffer en las 205 fixtures**; con el scope por fixture, la
+mediana de área **sin ninguna declaración** es **73.7%**, 174 fixtures tienen
+≥10% sin declarar y 163 tienen ≥25%. Las que quedan en 0% son las que están en
+los scopes de fuentes/temas (su cambio de #9/#74 sí tocó toda la pantalla).
+
 ## 3. La migración (45 filas)
 
 La tabla completa, con la fuente de cada scope y los conteos medido/vivas, está en
@@ -95,12 +104,16 @@ Mismo par de revisiones, mismos píxeles; lo único que cambia es la config y el
 código del gate. "Antes" = tool y `contracts.yaml` de `origin/main`; "después" =
 esta rama. Los JSON completos están en `logs/resumen-ab.json` y la sección nueva
 del reporte, tal cual la escribe el tool, en `logs/report-seccion-copy288.md`.
+La última fila es el A/B que corre el factory para el PR (`--a main --b HEAD`, medido
+sobre `1efacfd2`): el cambio es sólo del tool y de la config, así que las capturas son
+idénticas y el veredicto es PASS en las dos configuraciones.
 
 | A/B | Antes | Después | Fixtures explicadas | Entradas que las explican (después) |
 |---|---|---|---|---|
 | `a=e1807671 b=884841c5` — #288, el caso del issue | **PASS** | **PASS** | 1 → 1 (las mismas) | `dfl-visual-173` (espectro); `ui-polish-app-copy-284` (ajustes_dialogo) |
 | `a=db31e24e b=2f646084` — #287, tinta de los items del diálogo | **PASS** | **PASS** | 19 → 19 (las mismas) | `dfl-visual-173` (espectro, waterfall_ticks); `fonts-libre` (ajustes_anio, ajustes_audio_ganancia, ajustes_perfil, espectro, frecuencia, waterfall); `home-clock-battery-250` (ajustes_dialogo); `seten109` (ajustes_dialogo); `settings-year-110` (ajustes_anio); `themes-removal-74` (ajustes_anio, ajustes_audio_ganancia, ajustes_perfil, ajustes_tema, espectro, frecuencia, waterfall); `ui-polish-contrast-284` (ajustes_dialogo); `ui016-year-field` (ajustes_anio) |
 | `a=6ec345aa b=0d3f9e68` — 10 días de UI (8 fixtures comparadas) | **PASS** | **PASS** | 8 → 8 (las mismas) | `dfl-visual-173` (espectro, waterfall_ticks); `fonts-libre` (ajustes_anio, ajustes_audio_ganancia, ajustes_perfil, barra_superior, botones, espectro, frecuencia, reloj_potencia, s_metro, waterfall); `home-clock-battery-250` (reloj_potencia); `home-status-legibility-251` (barra_superior); `themes-removal-74` (ajustes_anio, ajustes_audio_ganancia, ajustes_perfil, ajustes_scrollbar, ajustes_tema, barra_superior, botones, espectro, frecuencia, reloj_potencia, s_metro, waterfall); `waterfall-center-line` (waterfall) |
+| `a=0d3f9e68 b=HEAD` — el A/B del propio PR (205 fixtures) | **PASS** | **PASS** | 0 → 0 (capturas idénticas) | — (este PR no cambia píxeles) |
 | `a=eea3ed20 b=0d3f9e68` — 10 PRs agregados (205 fixtures) | **PASS** | **FAIL** | 205 → 0 | — |
 | | | | **180 fixtures fallan** | ver la observación de la sección 8 |
 

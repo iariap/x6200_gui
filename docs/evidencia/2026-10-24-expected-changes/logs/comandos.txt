@@ -15,6 +15,7 @@
 | `uv run x6200-ab compare a=eea3ed20 b=0d3f9e68 --experiment-id AB-296-after-next` | **1** |
 | `uv run x6200-ab compare a=0d3f9e68 b=9efb3133be5c --scenario autotune-am --experiment-id AB-296-before-inject` | **0** |
 | `uv run x6200-ab compare a=0d3f9e68 b=9efb3133be5c --scenario autotune-am --experiment-id AB-296-after-inject` | **1** |
+| `uv run x6200-ab compare --a 0d3f9e68 --b HEAD --experiment-id AB-296-after-pr` | **0** (205 escenarios, 0 px cambiados) |
 | `uv run x6200-ab contracts --revision 0d3f9e68` | **0** (2118 checks, 0 failures) |
 | `uv run pytest -m "not e2e"` | **0** (255 passed) |
 | `uv run ruff check .` | **0** |
