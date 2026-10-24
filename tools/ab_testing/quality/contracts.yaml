@@ -653,6 +653,38 @@ expected_changes:
     author: ui-polish-app-copy-284
     until: 2027-04-30
 
+  # AB-UI287-EXP1 (issue #287, epica #284): la tinta de los items del dialogo
+  # (desplegables, spinboxes y las etiquetas que se comportan como boton) pasa
+  # del blanco fijo al rol `text` del tema. La superficie es la caja del dialogo
+  # compartido, `ajustes_dialogo` = [2,66,796,348] — la region que ya usan
+  # #109/#250/#288 —, asi que esta entrada NO habilita ninguna region nueva:
+  # solo declara el cambio con su razon. En Sunlit el texto pasa de invisible
+  # (blanco sobre #FFFFFF) a #162436; en los otros cinco temas la tinta pasa del
+  # blanco puro al rol `text` (p. ej. #F8EEFF en Aurora). Medido con el A/B
+  # (A=db31e24e, B=2f646084, 205 escenarios): se mueven solo las fixtures de
+  # Ajustes, 811..2388 px cada una, todos dentro de `ajustes_dialogo`; las otras
+  # 190 quedan byte-identicas y el proxy de render no se mueve (0/205 escenarios
+  # con delta de flushed pixels o flushes).
+  - region: ajustes_dialogo
+    reason: >
+      AB-UI287-EXP1 (issue #287, epica #284): la tinta de los items del dialogo
+      (`dialog_item_style`: desplegables, spinboxes, textareas y las etiquetas
+      que se comportan como boton) deja de ser blanca fija y pide el rol `text`
+      del tema. #286 habia llevado la superficie del dialogo a TC(dialog), que en
+      Sunlit es #FFFFFF: el blanco fijo dejaba el valor del control invisible
+      (7 widgets con 0 px de tinta, medido por el QA final). El cambio vive en
+      `ajustes_dialogo` = [2,66,796,348], la caja del dialogo compartido. Medido
+      con el A/B sobre 205 escenarios: solo se mueven las fixtures de Ajustes
+      (settings-*, 811..2388 px por fixture), todos los pixeles dentro de
+      `ajustes_dialogo`; en Sunlit son los glifos que ahora se ven y en los otros
+      cinco temas el corrimiento de color del blanco puro al rol `text` (p. ej.
+      #F8EEFF en Aurora). Las otras 190 fixtures quedan byte-identicas y el proxy
+      de render no se mueve (0/205 escenarios con delta de flushed pixels o
+      flushes). El contraste medido del texto queda 11.43:1..15.67:1 en los seis
+      temas (gate tests/check_widget_text.py).
+    author: ui-polish-contrast-284
+    until: 2027-04-30
+
 # Changes confined to these regions are not auto-failed either: they are
 # reported as REVIEW REQUIRED, because "different" there needs a human eye (an
 # aesthetic change), not a machine verdict. Empty on purpose.
