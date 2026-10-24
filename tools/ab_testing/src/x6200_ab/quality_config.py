@@ -260,6 +260,12 @@ class QualityContracts:
     coverage_levels: tuple[str, ...]
     expected_changes: tuple[ExpectedChange, ...]
     review_regions: tuple[str, ...] = ()
+    # The shared app window (`src/dialog.c::dialog_init` -> `dialog_style`):
+    # `(x, y, w, h)` of the one opaque surface every app paints its content on.
+    # While a capture shows it, the regions in `modal_visible_regions` are measured
+    # over their VISIBLE part (the region minus this rectangle); see `contracts.yaml`.
+    modal_surface: tuple[int, int, int, int] | None = None
+    modal_visible_regions: tuple[str, ...] = ()
     layout: LayoutRules = LayoutRules(min_touch_target_px=44, clip_tolerance_px=0)
     typography: TypographyRules = TypographyRules(
         min_contrast_ratio=4.5,
@@ -407,6 +413,16 @@ def load_contracts(path: Path, known_regions: set[str]) -> QualityContracts:
         if str(name) not in known_regions:
             raise ConfigError(f"{path}: review_regions names unknown region `{name}`")
         review_regions.append(str(name))
+    visible_under_modal = data.get("visible_under_modal", [])
+    if not isinstance(visible_under_modal, list):
+        raise ConfigError(f"{path}: `visible_under_modal` must be a list of region names")
+    for name in visible_under_modal:
+        if str(name) not in known_regions:
+            raise ConfigError(f"{path}: visible_under_modal names unknown region `{name}`")
+        if str(name) not in region_min_content:
+            raise ConfigError(
+                f"{path}: visible_under_modal names `{name}`, which has no region_min_content"
+            )
     layout = _load_layout(data.get("layout", {}), path)
     typography = _load_typography(data.get("typography", {}), path)
     exceptions = _load_exceptions(data.get("exceptions", []), path)
@@ -416,10 +432,28 @@ def load_contracts(path: Path, known_regions: set[str]) -> QualityContracts:
         coverage_levels=tuple(str(item) for item in levels),
         expected_changes=expected,
         review_regions=tuple(review_regions),
+        modal_surface=_load_modal_surface(data.get("modal_surface"), path),
+        modal_visible_regions=tuple(str(name) for name in visible_under_modal),
         layout=layout,
         typography=typography,
         exceptions=exceptions,
     )
+
+
+def _load_modal_surface(raw: object, path: Path) -> tuple[int, int, int, int] | None:
+    """`(x, y, w, h)` of the shared app window, or `None` when not declared."""
+    if raw is None:
+        return None
+    if (
+        not isinstance(raw, list)
+        or len(raw) != 4
+        or not all(isinstance(item, int) and not isinstance(item, bool) for item in raw)
+    ):
+        raise ConfigError(f"{path}: `modal_surface` must be a list of 4 integers [x, y, w, h]")
+    x, y, width, height = raw
+    if width <= 0 or height <= 0:
+        raise ConfigError(f"{path}: `modal_surface` needs a positive width and height")
+    return (x, y, width, height)
 
 
 def _load_layout(raw: object, path: Path) -> LayoutRules:

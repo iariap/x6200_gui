@@ -193,6 +193,8 @@ def contracts(
     review_regions: tuple[str, ...] = (),
     required_components: tuple[str, ...] = ("main_screen.c", "theme.c"),
     exceptions: tuple = (),
+    modal_surface: tuple[int, int, int, int] | None = None,
+    modal_visible_regions: tuple[str, ...] = (),
 ) -> QualityContracts:
     return QualityContracts(
         region_min_content=region_min_content or {},
@@ -201,6 +203,8 @@ def contracts(
         expected_changes=expected_changes,
         review_regions=review_regions,
         exceptions=exceptions,
+        modal_surface=modal_surface,
+        modal_visible_regions=modal_visible_regions,
     )
 
 

@@ -120,16 +120,47 @@ def changed_mask(a: RgbArray, b: RgbArray, tolerance: int) -> BoolArray:
     return np.abs(a - b).sum(axis=2) > tolerance
 
 
-def region_content_fraction(array: RgbArray, region: Region, tolerance: int) -> float:
-    """Fraction of a region's pixels that deviate from its median colour.
+def region_visible_mask(region: Region, exclude: tuple[int, int, int, int] | None) -> BoolArray:
+    """Mask of the region's pixels that are visible: `exclude` is cut out of it.
+
+    `exclude` is an `(x0, y0, x1, y1)` rectangle with the far edges exclusive. The
+    quality contracts pass the shared app window here: it is opaque and sits on top
+    of the screen, so the pixels it covers are not visible and cannot answer "is
+    this component being drawn".
+    """
+    mask = np.ones((region.height, region.width), dtype=bool)
+    if exclude is not None:
+        x0, y0, x1, y1 = exclude
+        rx0, ry0, rx1, ry1 = region.box
+        cx0, cy0 = max(rx0, x0), max(ry0, y0)
+        cx1, cy1 = min(rx1, x1), min(ry1, y1)
+        if cx1 > cx0 and cy1 > cy0:
+            mask[cy0 - ry0 : cy1 - ry0, cx0 - rx0 : cx1 - rx0] = False
+    return mask
+
+
+def region_content_fraction(
+    array: RgbArray,
+    region: Region,
+    tolerance: int,
+    exclude: tuple[int, int, int, int] | None = None,
+) -> float:
+    """Fraction of a region's VISIBLE pixels that deviate from its median colour.
 
     A blank/uniform region scores ~0; a region with text or graphics scores
     clearly above 0. Used both by the quality contracts ("this region is not
     empty") and by the known-issue detectors ("this region is not showing
     something it should not").
+
+    `exclude` (see `region_visible_mask`) leaves the pixels covered by the shared
+    app window out of both the median and the count: a component that is drawn but
+    covered is not "blank". When nothing of the region is left visible the fraction
+    is 0.0, and the caller is expected to say so instead of failing the region.
     """
     patch = array[region.y : region.y + region.height, region.x : region.x + region.width]
-    flat = patch.reshape(-1, 3)
+    # The patch is clipped to the array (a region may reach past the framebuffer).
+    mask = region_visible_mask(region, exclude)[: patch.shape[0], : patch.shape[1]]
+    flat = patch[mask]
     if flat.size == 0:
         return 0.0
     median = np.median(flat, axis=0)
