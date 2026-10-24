@@ -5,6 +5,12 @@
  *
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/i2c-dev.h>
+#include <linux/i2c.h>
+
 #include "radio.h"
 #include "main.h"
 #include "btaudio.h"
