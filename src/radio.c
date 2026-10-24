@@ -459,12 +459,19 @@ static void on_low_filter_change(Subject *subj, void *user_data) {
         case x6200_mode_wfm:
             break;
 
-        default:
-            LV_LOG_USER("Radio set filter_low=%i", low);
+        default: {
+            /* TEST #292: en LSB mandar los bordes NEGATIVOS (el registro de
+             * filtros es signed; el BASE podría elegir la banda lateral por el
+             * signo). En USB quedan positivos. */
+            int32_t mode = subject_get_int(cfg_cur.mode);
+            int32_t val  = (mode == x6200_mode_lsb || mode == x6200_mode_lsb_dig) ? -low : low;
+
+            LV_LOG_USER("Radio set filter_low=%i (envio %i)", low, val);
             radio_lock();
-            x6200_control_rx_filter_set_low(low);
+            x6200_control_rx_filter_set_low(val);
             radio_unlock();
             break;
+        }
     }
 }
 
@@ -483,10 +490,14 @@ static void on_high_filter_change(Subject *subj, void *user_data) {
             x6200_control_rx_filter_set(-high, high);
             break;
 
-            default:
-            LV_LOG_USER("Radio set filter_high=%i", high);
-            x6200_control_rx_filter_set_high(high);
+            default: {
+            int32_t mode = subject_get_int(cfg_cur.mode);
+            int32_t val  = (mode == x6200_mode_lsb || mode == x6200_mode_lsb_dig) ? -high : high;
+
+            LV_LOG_USER("Radio set filter_high=%i (envio %i)", high, val);
+            x6200_control_rx_filter_set_high(val);
             break;
+        }
     }
     radio_unlock();
 }
