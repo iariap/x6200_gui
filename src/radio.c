@@ -529,6 +529,9 @@ static void radio_ssb_filter_regs(void) {
         v = (((uint32_t)150) << 16) | 2850;
     }
 
+    WITH_RADIO_LOCK(x6200_control_rx_filter_set(
+        (mode == x6200_mode_lsb || mode == x6200_mode_lsb_dig) ? -2850 : 150,
+        (mode == x6200_mode_lsb || mode == x6200_mode_lsb_dig) ? -150 : 2850));
     WITH_RADIO_LOCK(x6200_control_cmd(x6200_filter_ssb, v));
     WITH_RADIO_LOCK(x6200_control_cmd(x6200_filter_ssb_2, v));
     LV_LOG_USER("TEST292 filter_ssb=%08x (%s)", (unsigned)v,
