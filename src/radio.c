@@ -409,6 +409,10 @@ static void on_vfo_mode_change(Subject *subj, void *user_data) {
 
     WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, new_val));
     LV_LOG_USER("Radio set vfo %i mode=%i", vfo, new_val);
+
+    if (vfo == X6200_VFO_A) {
+        radio_ssb_filter_signed();
+    }
 }
 
 static void on_split_mode_sync(Subject *subj, void *user_data) {
@@ -506,6 +510,28 @@ void radio_bb_reset() {
     gpio_safe_set(x6200_pin_bb_reset, 1);
     usleep(100000);
     gpio_safe_set(x6200_pin_bb_reset, 0);
+}
+
+/* TEST #292: el GUI original empaqueta los bordes del filtro como enteros CON
+ * SIGNO (max(from)<<16 | min(to)); para LSB los bordes son negativos:
+ * from=-2850, to=-150 -> (uint16)-2850<<16 | (uint16)-150 = 0xF532FF6A.
+ * Nuestro port siempre manda 150/2850 positivos. Si el BASE usa el signo del
+ * filtro para elegir la banda lateral, esto lo corrige. */
+static void radio_ssb_filter_signed(void) {
+    int32_t mode = subject_get_int(cfg_cur.mode);
+    int16_t lo;
+    int16_t hi;
+
+    if (mode == x6200_mode_lsb || mode == x6200_mode_lsb_dig) {
+        lo = -2850;
+        hi = -150;
+    } else {
+        lo = 150;
+        hi = 2850;
+    }
+
+    WITH_RADIO_LOCK(x6200_control_rx_filter_set(lo, hi));
+    LV_LOG_USER("TEST292 filtro SSB signed: lo=%i hi=%i (mode=%i)", lo, hi, mode);
 }
 
 void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
@@ -638,6 +664,8 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
      * audio). Restaurarlo en cada arranque de la GUI devuelve el audio de RX sin
      * power-cycle (antes solo lo sacaba un corte de energia). */
     x6200_control_record_set(false);
+
+    radio_ssb_filter_signed();
     x6200_control_spmode_set(params.spmode.x);
 
     x6200_control_vox_set(params.vox);
