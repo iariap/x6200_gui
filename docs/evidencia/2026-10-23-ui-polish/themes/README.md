@@ -164,6 +164,7 @@ Comandos EXACTOS del job `functional` de `.github/workflows/ab-testing.yml` (en 
 | `tests/check_harness_determinism.sh` | **0** |
 | `tests/check_harness_wakeups.sh` | **0** |
 | `sh tests/run_all_tests.sh --quick` | **0** — "22 OK, 0 fallos" (wcag OK, wcag_rendered OK; `qemu_apps` SKIP con recursos privados; codecs SKIP por la imagen minima): `run-all-quick-opcion2.log` |
+| `uv run x6200-ab contracts --revision HEAD --repo . --json` (job `contracts` del CI) | **PASS** — `checks: 2118`, `failures: 0`, `exit_code: 0` (§8) |
 | `tests/qemu/run_apps_qemu.sh --check` | **77** — SKIP/BLOCKED (§4) |
 
 Sin recorte ni glifos faltantes: en el arbol `--inspect` de las 24 fixtures, **0 truncados, 0 con
@@ -171,7 +172,91 @@ overflow, 0 con glifos faltantes** (`matriz-truncation.txt`); "ocluidos" sin cam
 los pixeles que se mueven caen dentro del rectangulo del dialogo (x2..797, y66..413) o de la franja
 del band plan (y142..156) (`op2-pixeles.txt`).
 
-## 8. Costo de render post-rebase (`--bench`, 21 frames, main `107c1536` vs main+#286)
+## 8. Contrato `region_min_content`: medir el waterfall donde se VE (#286)
+
+El CI del PR fallo en **un** contrato (`ui-contracts`):
+
+```
+status: FAIL · checks: 2118 · failures: 1
+FAIL region_min_content:waterfall [bt-dialog-tema-redshift]: content 0.0163 >= 0.0200
+```
+
+Causa: el contrato pregunta "el waterfall **se esta dibujando**" como fraccion de pixeles
+que se apartan del color modal de la region, y lo medía sobre la region **entera**
+(`waterfall` = `[0,196,800,222]`). Con la ventana de las apps **opaca** (lo que pide esta
+epica) los pixeles que la ventana tapa ya no son visibles: en esa fixture el numero cayo de
+**20.2% a 1.63%** midiendo una placa lisa que el usuario no ve. El contrato estaba calibrado
+para la ventana translucida anterior.
+
+**Opcion elegida: 1 — medir el AREA VISIBLE** (no se toco el umbral: sigue `0.02`, ni se
+desactivo el contrato, ni skip, ni exencion). Concretamente:
+
+* `quality/contracts.yaml`: `modal_surface: [2, 66, 796, 348]` (la caja de
+  `src/dialog.c::dialog_init` -> `dialog_style`, la misma que la region `ajustes_dialogo`) y
+  `visible_under_modal: [waterfall]`, la lista de regiones que se miden sobre su parte
+  visible cuando la ventana esta en pantalla.
+* `contracts.py`: la ventana se detecta en el arbol `--inspect` (un objeto con esa caja
+  visible **exacta** y superficie propia: fondo opaco o la imagen del tema). Sin arbol no se
+  asume nada y la region se mide entera, como antes. Una region sin un solo pixel visible se
+  **declara** ("fully covered ... not measured"), no se falla.
+* `visual_diff.py`: `region_content_fraction(..., exclude=)` y `region_visible_mask`; la
+  mediana y el conteo se calculan solo sobre los pixeles visibles.
+
+**Por que solo el waterfall**: es la banda que la ventana tapa (`y196..413` de `y196..418`) y
+lo que queda visible son las mismas filas del waterfall, asi que el contrato sigue
+preguntando exactamente donde el usuario mira. `barra_superior`, `s_metro` y `botones` estan
+fuera de la ventana; `espectro` y `frecuencia` conservan contenido propio de la ventana en la
+parte tapada, asi que siguen midiendo la region entera (su comportamiento **no** cambia).
+
+**Medido** (`contracts-ci.json`): `bt-dialog-tema-redshift` **0.0163 -> 0.0480** (umbral
+0.02); las otras fixtures con ventana: aurora 0.0941, cathode 0.4916, sprint 0.4236, sunlit
+0.1251, trail 0.0652.
+
+### Control negativo (obligatorio, con la imagen REAL)
+
+`negative_control_waterfall.py` (captura real + arbol `--inspect` real):
+
+```
+1) captura REAL sin tocar   : ok=True  content 0.0480 >= 0.0200
+2) waterfall entero aplanado : ok=False  content 0.0000 >= 0.0200  (color plano (10, 5, 5))
+  control negativo: OK (la parte visible sigue mandando)
+```
+
+Es decir: excluir el area tapada **no** convierte "el waterfall esta en blanco" en un pase.
+Lo mismo queda codificado como test permanente en `tools/ab_testing/tests/test_contracts.py`
+(`test_modal_surface_does_not_hide_a_blank_region` y companeros: 4 tests nuevos, 237 passed
+en `pytest -m "not e2e"`).
+
+### Comando EXACTO del job `contracts` del CI
+
+```
+cd tools/ab_testing
+uv run x6200-ab contracts --revision "$(git rev-parse HEAD)" --repo <repo> --json | tee contracts.json
+```
+
+Resultado: **`status: PASS`, `exit_code: 0`, `revision: 45e72738`, `scenarios: 205`,
+`checks: 2118`, `failures: 0`, `unchanged_defects: 0`** (mismo numero de checks que antes: no
+se agrego ni se quito ninguno). JSON completo en `contracts-ci.json`.
+
+### Las fixtures SIN ventana no cambian por este fix
+
+`isolate_contract_scope.py` corre las dos semanticas (con y sin `visible_under_modal`) sobre
+las **mismas 205 capturas**, asi la unica variable es el cambio de contrato:
+
+```
+capturas: 205  (con ventana modal: 44, sin: 161)
+findings de region_min_content que cambian SOLO por el cambio de contrato:
+  fixtures SIN ventana modal : 0
+  fixtures CON ventana modal : 44      (una por fixture, siempre `region_min_content:waterfall`)
+```
+
+Las 44 son todas las apps (no solo `bt-dialog-*`/`settings-*`: el GPS, Status, WiFi, DFL, CW,
+SWRScan, etc. abren la misma ventana). Entre `main` y esta rama los valores de `espectro`
+tambien se mueven ~1e-4 en las fixtures de pantalla principal, y eso **no** es de este fix:
+es el render del band plan de #286-B (los pills cambian pixeles dentro de `espectro`); la
+corrida de aislamiento (mismas capturas) da **0** diferencias.
+
+## 9. Costo de render post-rebase (`--bench`, 21 frames, main `107c1536` vs main+#286)
 
 | fixture | flushes | flushed px | render p50 main | +#286 | delta | p95 main | +#286 |
 |---|---|---|---|---|---|---|---|
@@ -185,7 +270,7 @@ imagen plano (medido antes del rebase en +18-20% sobre la base vieja; el numero 
 del host, el proxy determinista no se mueve). En el A/B eso no es FAIL: p95 con ambos proxies en
 0.0% se reporta INCONCLUSIVE. El frame budget de la Cortex-A7 sigue **PENDING** (no hay unidad).
 
-## 9. Como reproducir
+## 10. Como reproducir
 
 ```bash
 python3 tests/check_wcag.py
@@ -193,9 +278,14 @@ python3 tests/check_wcag_rendered.py --all
 python3 docs/evidencia/2026-10-23-ui-polish/themes/bleed_through.py --json /tmp/bleed.json
 cd tools/ab_testing && uv sync && uv run ruff check . && uv run ruff format --check . \
   && uv run ty check src tests && uv run pytest -m "not e2e"
+# contrato del CI (jobs `contracts`), control negativo y aislamiento del alcance
+cd tools/ab_testing && uv run x6200-ab contracts --revision "$(git rev-parse HEAD)" \
+  --repo "$(git rev-parse --show-toplevel)" --json | tee contracts.json
+cd tools/ab_testing && uv run python \
+  ../../docs/evidencia/2026-10-23-ui-polish/themes/negative_control_waterfall.py
 ```
 
-## 10. Pendiente
+## 11. Pendiente
 
 * **QEMU/ARM de las 25 apps**: BLOCKED (§4).
 * **Humana #287**: BLOCKED hasta este merge.

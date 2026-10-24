@@ -1,0 +1,4 @@
+1) captura REAL sin tocar   : ok=True  content 0.0480 >= 0.0200
+2) waterfall entero aplanado : ok=False  content 0.0000 >= 0.0200  (color plano (10, 5, 5))
+
+  control negativo: OK (la parte visible sigue mandando)

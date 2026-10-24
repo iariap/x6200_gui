@@ -1,9 +1,503 @@
 == gate de contraste WCAG sobre la superficie renderizada (issue #277) ==
   fixtures: 24 (matriz de 6 temas x 4 estados)
-  construyendo/actualizando el arnes (revision 0330e6ad58c26652f836333ce11b18c6edb12483)...
+  construyendo/actualizando el arnes (revision 45e72738e19689913633f4ab3ed9e5d1bc442024)...
   etiquetas medidas: 494 (exentas 0, incidentales 2, no-texto 48)
   declaradas, no medidas: ocluidas 128, sin tinta 2, sin color expuesto (lv_line/lv_arc) 96
   violaciones: 0
+    settings-tema-sunlit               Sunlit    /37/1          '00:00:00'                3.12:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /37/1          '00:00:00'                3.12:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /37/1          '00:00:00'                3.12:1 min 3.0 [texto grande/render] ok
+    main-tema-sunlit                   Sunlit    /37/1          '00:00:00'                3.12:1 min 3.0 [texto grande/render] ok
+    main-tema-aurora                   Aurora    /5/0           'CW'                      5.37:1 min 4.5 [texto normal/render] ok
+    main-tema-cathode                  Cathode   /6/0           'CW'                      5.37:1 min 4.5 [texto normal/render] ok
+    main-tema-redshift                 Redshift  /5/0           'CW'                      5.37:1 min 4.5 [texto normal/declarado (fondo opaco, tinta no detectable)] ok
+    main-tema-sprint                   Sprint    /6/0           'CW'                      5.37:1 min 4.5 [texto normal/render] ok
+    main-tema-sunlit                   Sunlit    /5/0           'CW'                      5.37:1 min 4.5 [texto normal/render] ok
+    main-tema-trail                    Trail     /5/0           'CW'                      5.37:1 min 4.5 [texto normal/render] ok
+    main-tema-aurora                   Aurora    /9/0           'ALL MODES / SSB'         5.92:1 min 4.5 [texto normal/render] ok
+    main-tema-cathode                  Cathode   /10/0          'ALL MODES / SSB'         5.92:1 min 4.5 [texto normal/render] ok
+    main-tema-redshift                 Redshift  /9/0           'ALL MODES / SSB'         5.92:1 min 4.5 [texto normal/render] ok
+    main-tema-sprint                   Sprint    /10/0          'ALL MODES / SSB'         5.92:1 min 4.5 [texto normal/render] ok
+    main-tema-sunlit                   Sunlit    /9/0           'ALL MODES / SSB'         5.92:1 min 4.5 [texto normal/render] ok
+    main-tema-trail                    Trail     /9/0           'ALL MODES / SSB'         5.92:1 min 4.5 [texto normal/render] ok
+    settings-tema-redshift             Redshift  /37/1          '00:00:00'                 6.4:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /37/1          '00:00:00'                 6.4:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-redshift            Redshift  /37/1          '00:00:00'                 6.4:1 min 3.0 [texto grande/render] ok
+    main-tema-redshift                 Redshift  /37/1          '00:00:00'                 6.4:1 min 3.0 [texto grande/render] ok
+    main-tema-aurora                   Aurora    /6/0           'DIG'                     7.02:1 min 4.5 [texto normal/render] ok
+    main-tema-cathode                  Cathode   /7/0           'DIG'                     7.02:1 min 4.5 [texto normal/render] ok
+    main-tema-redshift                 Redshift  /6/0           'DIG'                     7.02:1 min 4.5 [texto normal/declarado (fondo opaco, tinta no detectable)] ok
+    main-tema-redshift                 Redshift  /8/0           'DIG'                     7.02:1 min 4.5 [texto normal/declarado (fondo opaco, tinta no detectable)] ok
+    main-tema-sprint                   Sprint    /7/0           'DIG'                     7.02:1 min 4.5 [texto normal/render] ok
+    main-tema-sprint                   Sprint    /9/0           'DIG'                     7.02:1 min 4.5 [texto normal/render] ok
+    main-tema-sunlit                   Sunlit    /6/0           'DIG'                     7.02:1 min 4.5 [texto normal/render] ok
+    main-tema-trail                    Trail     /6/0           'DIG'                     7.02:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-cathode             Cathode   /44/2          'no headphones, RX off'    7.5:1 min 4.5 [texto normal/render] ok
+    settings-tema-sunlit               Sunlit    /38/1/2        '\uf1eb'                  7.52:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /38/1/2        '\uf1eb'                  7.52:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /38/1/2        '\uf1eb'                  7.52:1 min 3.0 [no-texto/render] ok
+    main-tema-sunlit                   Sunlit    /38/1/2        '\uf1eb'                  7.52:1 min 3.0 [no-texto/render] ok
+    settings-tema-redshift             Redshift  /38/1/2        '\uf1eb'                  7.59:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /38/1/2        '\uf1eb'                  7.59:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-redshift            Redshift  /38/1/2        '\uf1eb'                  7.59:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-redshift            Redshift  /43/2          'no headphones, RX off'   7.59:1 min 4.5 [texto normal/render] ok
+    main-tema-redshift                 Redshift  /38/1/2        '\uf1eb'                  7.59:1 min 3.0 [no-texto/render] ok
+    settings-tema-cathode              Cathode   /39/1/2        '\uf1eb'                   7.7:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /39/1/2        '\uf1eb'                   7.7:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-cathode             Cathode   /39/1/2        '\uf1eb'                   7.7:1 min 3.0 [no-texto/render] ok
+    main-tema-cathode                  Cathode   /39/1/2        '\uf1eb'                   7.7:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /43/0/4        'detents/s'               7.82:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /44/0/4        'detents/s'               8.63:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /43/0/4        'detents/s'               8.76:1 min 3.0 [texto grande/render] ok
+    main-tema-sunlit                   Sunlit    /30/0          'Volume:\n50'             9.04:1 min 3.0 [texto grande/render] ok
+    settings-tema-sunlit               Sunlit    /30/0          'Appearance'              9.08:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /32/0          'Auto:\nOff'              9.11:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /29/0          'Operation'               9.12:1 min 3.0 [texto grande/render] ok
+    settings-tema-aurora               Aurora    /38/1/2        '\uf1eb'                  9.18:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /38/1/2        '\uf1eb'                  9.18:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-aurora              Aurora    /38/1/2        '\uf1eb'                  9.18:1 min 3.0 [no-texto/render] ok
+    main-tema-aurora                   Aurora    /38/1/2        '\uf1eb'                  9.18:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /30/0          'RX to HP:\nOff'          9.25:1 min 3.0 [texto grande/render] ok
+    main-tema-sunlit                   Sunlit    /33/0          'TX power:\n5.0 W'        9.26:1 min 3.0 [texto grande/render] ok
+    settings-tema-cathode              Cathode   /38/2          '00:00:00'                9.36:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /38/2          '00:00:00'                9.36:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-cathode             Cathode   /38/2          '00:00:00'                9.36:1 min 3.0 [texto grande/render] ok
+    main-tema-cathode                  Cathode   /38/2          '00:00:00'                9.36:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /43/2          'no headphones, RX off'   9.58:1 min 4.5 [texto normal/render] ok
+    settings-tema-trail                Trail     /38/1/2        '\uf1eb'                  9.59:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-trail Trail     /38/1/2        '\uf1eb'                  9.59:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-trail               Trail     /38/1/2        '\uf1eb'                  9.59:1 min 3.0 [no-texto/render] ok
+    main-tema-trail                    Trail     /38/1/2        '\uf1eb'                  9.59:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /31/0          'Speaker:\nOn'             9.6:1 min 3.0 [texto grande/render] ok
+    main-tema-sunlit                   Sunlit    /31/0          'Squelch:\n0'             9.68:1 min 3.0 [texto grande/render] ok
+    settings-tema-trail                Trail     /37/1          '00:00:00'                9.76:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /37/1          '00:00:00'                9.76:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-trail               Trail     /37/1          '00:00:00'                9.76:1 min 3.0 [texto grande/render] ok
+    main-tema-sunlit                   Sunlit    /32/0          'RF gain:\n100'           9.76:1 min 3.0 [texto grande/render] ok
+    main-tema-trail                    Trail     /37/1          '00:00:00'                9.76:1 min 3.0 [texto grande/render] ok
+    settings-tema-sprint               Sprint    /39/1/2        '\uf1eb'                  9.84:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /39/1/2        '\uf1eb'                  9.84:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-sprint              Sprint    /39/1/2        '\uf1eb'                  9.84:1 min 3.0 [no-texto/render] ok
+    main-tema-sprint                   Sprint    /39/1/2        '\uf1eb'                  9.84:1 min 3.0 [no-texto/render] ok
+    settings-tema-sunlit               Sunlit    /32/0          'Info'                    9.97:1 min 3.0 [texto grande/render] ok
+    settings-tema-aurora               Aurora    /37/1          '00:00:00'               10.01:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /37/1          '00:00:00'               10.01:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-aurora              Aurora    /37/1          '00:00:00'               10.01:1 min 3.0 [texto grande/render] ok
+    main-tema-aurora                   Aurora    /37/1          '00:00:00'               10.01:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /29/0          'Operation'               10.1:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-aurora              Aurora    /43/2          'no headphones, RX off'  10.13:1 min 4.5 [texto normal/render] ok
+    settings-tema-sunlit               Sunlit    /33/0          '< More'                 10.15:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /29/0          'Scan'                   10.19:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /33/0          'More >'                 10.23:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /31/0          'Spectrum'               10.33:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-aurora              Aurora    /43/0          'Bluetooth devices'      10.33:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /43/0          'Bluetooth devices'      10.35:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /30/0          'Operation'              10.38:1 min 3.0 [texto grande/render] ok
+    settings-tema-aurora               Aurora    /30/0          'Appearance'             10.39:1 min 3.0 [texto grande/render] ok
+    settings-tema-cathode              Cathode   /31/0          'Appearance'             10.39:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sprint              Sprint    /44/2          'no headphones, RX off'  10.43:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-trail               Trail     /43/2          'no headphones, RX off'  10.52:1 min 4.5 [texto normal/render] ok
+    settings-tema-trail                Trail     /30/0          'Appearance'             10.55:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /29/0          'Operation'              10.56:1 min 3.0 [texto grande/render] ok
+    settings-tema-sunlit               Sunlit    /31/0          'Actions'                10.66:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /30/0          'Audio'                  10.69:1 min 3.0 [texto grande/render] ok
+    settings-tema-sunlit               Sunlit    /29/0          'Display'                10.79:1 min 3.0 [texto grande/render] ok
+    main-tema-sunlit                   Sunlit    /29/0          '(VOL 1:3)'              10.79:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /30/0          'Operation'              10.91:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /32/0          'Clock'                  10.94:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /33/0          'Close'                  10.94:1 min 3.0 [texto grande/render] ok
+    settings-tema-sprint               Sprint    /31/0          'Appearance'             11.04:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /43/0/4        'detents/s'              11.04:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-redshift            Redshift  /43/0          'Bluetooth devices'       11.4:1 min 4.5 [texto normal/render] ok
+    settings-tema-redshift             Redshift  /37/3          '50%'                    11.43:1 min 4.5 [texto normal/render] ok
+    settings-tema-redshift             Redshift  /37/4          '\uf242'                 11.43:1 min 3.0 [no-texto/render] ok
+    settings-tema-redshift             Redshift  /38/0/0        'VFO-A'                  11.43:1 min 4.5 [texto normal/render] ok
+    settings-tema-redshift             Redshift  /38/0/1        'USB'                    11.43:1 min 4.5 [texto normal/render] ok
+    settings-tema-redshift             Redshift  /38/0/2        'AUTO'                   11.43:1 min 4.5 [texto normal/render] ok
+    settings-tema-redshift             Redshift  /38/1/0        'P/A'                    11.43:1 min 4.5 [texto normal/render] ok
+    settings-tema-redshift             Redshift  /38/1/1        'ATU1'                   11.43:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /37/2          '\uf1e6 13.8 V'          11.43:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /37/3          '76%'                    11.43:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /37/4          '\uf241'                 11.43:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /38/0/0        'VFO-A'                  11.43:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /38/0/1        'USB'                    11.43:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /38/0/2        'AUTO'                   11.43:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /38/1/0        'P/A'                    11.43:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /38/1/1        'ATU1'                   11.43:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-redshift            Redshift  /37/2          '\uf1e6 13.8 V'          11.43:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-redshift            Redshift  /37/3          '76%'                    11.43:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-redshift            Redshift  /37/4          '\uf241'                 11.43:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-redshift            Redshift  /38/0/0        'VFO-A'                  11.43:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-redshift            Redshift  /38/0/1        'USB'                    11.43:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-redshift            Redshift  /38/0/2        'AUTO'                   11.43:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-redshift            Redshift  /38/1/0        'P/A'                    11.43:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-redshift            Redshift  /38/1/1        'ATU1'                   11.43:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-redshift            Redshift  /43/3          'Row: pair/connect - Au' 11.43:1 min 4.5 [texto normal/render] ok
+    main-tema-redshift                 Redshift  /37/2          '\uf1e6 13.8 V'          11.43:1 min 4.5 [texto normal/render] ok
+    main-tema-redshift                 Redshift  /37/3          '76%'                    11.43:1 min 4.5 [texto normal/render] ok
+    main-tema-redshift                 Redshift  /37/4          '\uf241'                 11.43:1 min 3.0 [no-texto/render] ok
+    main-tema-redshift                 Redshift  /38/0/0        'VFO-A'                  11.43:1 min 4.5 [texto normal/render] ok
+    main-tema-redshift                 Redshift  /38/0/1        'USB'                    11.43:1 min 4.5 [texto normal/render] ok
+    main-tema-redshift                 Redshift  /38/0/2        'AUTO'                   11.43:1 min 4.5 [texto normal/render] ok
+    main-tema-redshift                 Redshift  /38/1/0        'P/A'                    11.43:1 min 4.5 [texto normal/render] ok
+    main-tema-redshift                 Redshift  /38/1/1        'ATU1'                   11.43:1 min 4.5 [texto normal/render] ok
+    settings-tema-sprint               Sprint    /38/2          '00:00:00'               11.59:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /38/2          '00:00:00'               11.59:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sprint              Sprint    /38/2          '00:00:00'               11.59:1 min 3.0 [texto grande/render] ok
+    main-tema-sprint                   Sprint    /38/2          '00:00:00'               11.59:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-trail               Trail     /43/0          'Bluetooth devices'      11.63:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sprint              Sprint    /44/0          'Bluetooth devices'      11.64:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /44/0/4        'detents/s'               11.7:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /43/0/4        'detents/s'              11.74:1 min 3.0 [texto grande/render] ok
+    settings-tema-redshift             Redshift  /30/0          'Appearance'             11.75:1 min 3.0 [texto grande/render] ok
+    settings-tema-redshift             Redshift  /43/0/75       'Theme'                  11.77:1 min 3.0 [texto grande/render] ok
+    settings-tema-redshift             Redshift  /43/0/77       'Font'                   11.77:1 min 3.0 [texto grande/render] ok
+    settings-tema-redshift             Redshift  /43/0/79       'Visual profile (Eco)'   11.77:1 min 3.0 [texto grande/render] ok
+    settings-tema-redshift             Redshift  /43/0/81       'GEN long press'         11.77:1 min 3.0 [texto grande/render] ok
+    settings-tema-redshift             Redshift  /43/0/83       'APP long press'         11.77:1 min 3.0 [texto grande/render] ok
+    settings-tema-trail                Trail     /37/3          '50%'                    11.77:1 min 4.5 [texto normal/render] ok
+    settings-tema-trail                Trail     /37/4          '\uf242'                 11.77:1 min 3.0 [no-texto/render] ok
+    settings-tema-trail                Trail     /38/0/0        'VFO-A'                  11.77:1 min 4.5 [texto normal/render] ok
+    settings-tema-trail                Trail     /38/0/1        'USB'                    11.77:1 min 4.5 [texto normal/render] ok
+    settings-tema-trail                Trail     /38/0/2        'AUTO'                   11.77:1 min 4.5 [texto normal/render] ok
+    settings-tema-trail                Trail     /38/1/0        'P/A'                    11.77:1 min 4.5 [texto normal/render] ok
+    settings-tema-trail                Trail     /38/1/1        'ATU1'                   11.77:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /43/0/0        'Freq acceleration'      11.77:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /43/0/2        'Accel threshold'        11.77:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /43/0/5        'Bluetooth'              11.77:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /43/0/7        'Discoverable (CAT)'     11.77:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /43/0/9        'Devices'                11.77:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /43/0/11       'Charger'                11.77:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /37/2          '\uf1e6 13.8 V'          11.77:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-trail Trail     /37/3          '76%'                    11.77:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-trail Trail     /37/4          '\uf241'                 11.77:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-trail Trail     /38/0/0        'VFO-A'                  11.77:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-trail Trail     /38/0/1        'USB'                    11.77:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-trail Trail     /38/0/2        'AUTO'                   11.77:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-trail Trail     /38/1/0        'P/A'                    11.77:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-trail Trail     /38/1/1        'ATU1'                   11.77:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-trail               Trail     /37/2          '\uf1e6 13.8 V'          11.77:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-trail               Trail     /37/3          '76%'                    11.77:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-trail               Trail     /37/4          '\uf241'                 11.77:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-trail               Trail     /38/0/0        'VFO-A'                  11.77:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-trail               Trail     /38/0/1        'USB'                    11.77:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-trail               Trail     /38/0/2        'AUTO'                   11.77:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-trail               Trail     /38/1/0        'P/A'                    11.77:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-trail               Trail     /38/1/1        'ATU1'                   11.77:1 min 4.5 [texto normal/render] ok
+    main-tema-redshift                 Redshift  /1/0           '#FFB3A0 13.882'         11.77:1 min 3.0 [texto grande/render] ok
+    main-tema-redshift                 Redshift  /1/1           '#FFB3A0 14.074.000'     11.77:1 min 3.0 [texto grande/render] ok
+    main-tema-redshift                 Redshift  /1/2           '#FFB3A0 14.266'         11.77:1 min 3.0 [texto grande/render] ok
+    main-tema-trail                    Trail     /37/2          '\uf1e6 13.8 V'          11.77:1 min 4.5 [texto normal/render] ok
+    main-tema-trail                    Trail     /37/3          '76%'                    11.77:1 min 4.5 [texto normal/render] ok
+    main-tema-trail                    Trail     /37/4          '\uf241'                 11.77:1 min 3.0 [no-texto/render] ok
+    main-tema-trail                    Trail     /38/0/0        'VFO-A'                  11.77:1 min 4.5 [texto normal/render] ok
+    main-tema-trail                    Trail     /38/0/1        'USB'                    11.77:1 min 4.5 [texto normal/render] ok
+    main-tema-trail                    Trail     /38/0/2        'AUTO'                   11.77:1 min 4.5 [texto normal/render] ok
+    main-tema-trail                    Trail     /38/1/0        'P/A'                    11.77:1 min 4.5 [texto normal/render] ok
+    main-tema-trail                    Trail     /38/1/1        'ATU1'                   11.77:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-cathode             Cathode   /44/0          'Bluetooth devices'       11.8:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /29/0          'Operation'              11.81:1 min 3.0 [texto grande/render] ok
+    settings-tema-sunlit               Sunlit    /37/3          '50%'                    12.31:1 min 4.5 [texto normal/render] ok
+    settings-tema-sunlit               Sunlit    /37/4          '\uf242'                 12.31:1 min 3.0 [no-texto/render] ok
+    settings-tema-sunlit               Sunlit    /38/0/0        'VFO-A'                  12.31:1 min 4.5 [texto normal/render] ok
+    settings-tema-sunlit               Sunlit    /38/0/1        'USB'                    12.31:1 min 4.5 [texto normal/render] ok
+    settings-tema-sunlit               Sunlit    /38/0/2        'AUTO'                   12.31:1 min 4.5 [texto normal/render] ok
+    settings-tema-sunlit               Sunlit    /38/1/0        'P/A'                    12.31:1 min 4.5 [texto normal/render] ok
+    settings-tema-sunlit               Sunlit    /38/1/1        'ATU1'                   12.31:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /37/2          '\uf1e6 13.8 V'          12.31:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /37/3          '76%'                    12.31:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /37/4          '\uf241'                 12.31:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /38/0/0        'VFO-A'                  12.31:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /38/0/1        'USB'                    12.31:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /38/0/2        'AUTO'                   12.31:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /38/1/0        'P/A'                    12.31:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /38/1/1        'ATU1'                   12.31:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /37/2          '\uf1e6 13.8 V'          12.31:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /37/3          '76%'                    12.31:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /37/4          '\uf241'                 12.31:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /38/0/0        'VFO-A'                  12.31:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /38/0/1        'USB'                    12.31:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /38/0/2        'AUTO'                   12.31:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /38/1/0        'P/A'                    12.31:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /38/1/1        'ATU1'                   12.31:1 min 4.5 [texto normal/render] ok
+    main-tema-sunlit                   Sunlit    /37/2          '\uf1e6 13.8 V'          12.31:1 min 4.5 [texto normal/render] ok
+    main-tema-sunlit                   Sunlit    /37/3          '76%'                    12.31:1 min 4.5 [texto normal/render] ok
+    main-tema-sunlit                   Sunlit    /37/4          '\uf241'                 12.31:1 min 3.0 [no-texto/render] ok
+    main-tema-sunlit                   Sunlit    /38/0/0        'VFO-A'                  12.31:1 min 4.5 [texto normal/render] ok
+    main-tema-sunlit                   Sunlit    /38/0/1        'USB'                    12.31:1 min 4.5 [texto normal/render] ok
+    main-tema-sunlit                   Sunlit    /38/0/2        'AUTO'                   12.31:1 min 4.5 [texto normal/render] ok
+    main-tema-sunlit                   Sunlit    /38/1/0        'P/A'                    12.31:1 min 4.5 [texto normal/render] ok
+    main-tema-sunlit                   Sunlit    /38/1/1        'ATU1'                   12.31:1 min 4.5 [texto normal/render] ok
+    main-tema-aurora                   Aurora    /33/0          'TX power:\n5.0 W'       12.37:1 min 3.0 [texto grande/render] ok
+    main-tema-trail                    Trail     /30/0          'Volume:\n50'            12.41:1 min 3.0 [texto grande/render] ok
+    main-tema-aurora                   Aurora    /30/0          'Volume:\n50'            12.43:1 min 3.0 [texto grande/render] ok
+    main-tema-aurora                   Aurora    /31/0          'Squelch:\n0'            12.44:1 min 3.0 [texto grande/render] ok
+    main-tema-sprint                   Sprint    /31/0          'Volume:\n50'            12.47:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-cathode             Cathode   /44/3          'Row: pair/connect - Au' 12.57:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sprint              Sprint    /33/0          'Auto:\nOff'             12.73:1 min 3.0 [texto grande/render] ok
+    main-tema-cathode                  Cathode   /31/0          'Volume:\n50'            12.81:1 min 3.0 [texto grande/render] ok
+    main-tema-redshift                 Redshift  /30/0          'Volume:\n50'            12.87:1 min 3.0 [texto grande/render] ok
+    main-tema-redshift                 Redshift  /31/0          'Squelch:\n0'            12.87:1 min 3.0 [texto grande/render] ok
+    settings-tema-cathode              Cathode   /38/4          '50%'                    12.91:1 min 4.5 [texto normal/render] ok
+    settings-tema-cathode              Cathode   /38/5          '\uf242'                 12.91:1 min 3.0 [no-texto/render] ok
+    settings-tema-cathode              Cathode   /39/0/0        'VFO-A'                  12.91:1 min 4.5 [texto normal/render] ok
+    settings-tema-cathode              Cathode   /39/0/1        'USB'                    12.91:1 min 4.5 [texto normal/render] ok
+    settings-tema-cathode              Cathode   /39/0/2        'AUTO'                   12.91:1 min 4.5 [texto normal/render] ok
+    settings-tema-cathode              Cathode   /39/1/0        'P/A'                    12.91:1 min 4.5 [texto normal/render] ok
+    settings-tema-cathode              Cathode   /39/1/1        'ATU1'                   12.91:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /38/3          '\uf1e6 13.8 V'          12.91:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /38/4          '76%'                    12.91:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /38/5          '\uf241'                 12.91:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /39/0/0        'VFO-A'                  12.91:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /39/0/1        'USB'                    12.91:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /39/0/2        'AUTO'                   12.91:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /39/1/0        'P/A'                    12.91:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /39/1/1        'ATU1'                   12.91:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-cathode             Cathode   /38/3          '\uf1e6 13.8 V'          12.91:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-cathode             Cathode   /38/4          '76%'                    12.91:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-cathode             Cathode   /38/5          '\uf241'                 12.91:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-cathode             Cathode   /39/0/0        'VFO-A'                  12.91:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-cathode             Cathode   /39/0/1        'USB'                    12.91:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-cathode             Cathode   /39/0/2        'AUTO'                   12.91:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-cathode             Cathode   /39/1/0        'P/A'                    12.91:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-cathode             Cathode   /39/1/1        'ATU1'                   12.91:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-trail               Trail     /43/3          'Row: pair/connect - Au' 12.91:1 min 4.5 [texto normal/render] ok
+    main-tema-cathode                  Cathode   /38/3          '\uf1e6 13.8 V'          12.91:1 min 4.5 [texto normal/render] ok
+    main-tema-cathode                  Cathode   /38/4          '76%'                    12.91:1 min 4.5 [texto normal/render] ok
+    main-tema-cathode                  Cathode   /38/5          '\uf241'                 12.91:1 min 3.0 [no-texto/render] ok
+    main-tema-cathode                  Cathode   /39/0/0        'VFO-A'                  12.91:1 min 4.5 [texto normal/render] ok
+    main-tema-cathode                  Cathode   /39/0/1        'USB'                    12.91:1 min 4.5 [texto normal/render] ok
+    main-tema-cathode                  Cathode   /39/0/2        'AUTO'                   12.91:1 min 4.5 [texto normal/render] ok
+    main-tema-cathode                  Cathode   /39/1/0        'P/A'                    12.91:1 min 4.5 [texto normal/render] ok
+    main-tema-cathode                  Cathode   /39/1/1        'ATU1'                   12.91:1 min 4.5 [texto normal/render] ok
+    main-tema-aurora                   Aurora    /32/0          'RF gain:\n100'          13.03:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-redshift            Redshift  /30/0          'RX to HP:\nOff'          13.1:1 min 3.0 [texto grande/render] ok
+    main-tema-trail                    Trail     /31/0          'Squelch:\n0'            13.12:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-aurora              Aurora    /30/0          'RX to HP:\nOff'         13.16:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-trail               Trail     /32/0          'Auto:\nOff'             13.19:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-trail               Trail     /31/0          'Speaker:\nOn'           13.26:1 min 3.0 [texto grande/render] ok
+    main-tema-trail                    Trail     /33/0          'TX power:\n5.0 W'       13.26:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-trail               Trail     /30/0          'RX to HP:\nOff'         13.31:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-aurora              Aurora    /32/0          'Auto:\nOff'             13.32:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-aurora              Aurora    /31/0          'Speaker:\nOn'           13.35:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sprint              Sprint    /31/0          'RX to HP:\nOff'         13.36:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-redshift            Redshift  /31/0          'Speaker:\nOn'           13.38:1 min 3.0 [texto grande/render] ok
+    settings-tema-aurora               Aurora    /37/3          '50%'                    13.39:1 min 4.5 [texto normal/render] ok
+    settings-tema-aurora               Aurora    /37/4          '\uf242'                 13.39:1 min 3.0 [no-texto/render] ok
+    settings-tema-aurora               Aurora    /38/0/0        'VFO-A'                  13.39:1 min 4.5 [texto normal/render] ok
+    settings-tema-aurora               Aurora    /38/0/1        'USB'                    13.39:1 min 4.5 [texto normal/render] ok
+    settings-tema-aurora               Aurora    /38/0/2        'AUTO'                   13.39:1 min 4.5 [texto normal/render] ok
+    settings-tema-aurora               Aurora    /38/1/0        'P/A'                    13.39:1 min 4.5 [texto normal/render] ok
+    settings-tema-aurora               Aurora    /38/1/1        'ATU1'                   13.39:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /37/2          '\uf1e6 13.8 V'          13.39:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /37/3          '76%'                    13.39:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /37/4          '\uf241'                 13.39:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /38/0/0        'VFO-A'                  13.39:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /38/0/1        'USB'                    13.39:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /38/0/2        'AUTO'                   13.39:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /38/1/0        'P/A'                    13.39:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /38/1/1        'ATU1'                   13.39:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-aurora              Aurora    /37/2          '\uf1e6 13.8 V'          13.39:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-aurora              Aurora    /37/3          '76%'                    13.39:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-aurora              Aurora    /37/4          '\uf241'                 13.39:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-aurora              Aurora    /38/0/0        'VFO-A'                  13.39:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-aurora              Aurora    /38/0/1        'USB'                    13.39:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-aurora              Aurora    /38/0/2        'AUTO'                   13.39:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-aurora              Aurora    /38/1/0        'P/A'                    13.39:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-aurora              Aurora    /38/1/1        'ATU1'                   13.39:1 min 4.5 [texto normal/render] ok
+    main-tema-aurora                   Aurora    /37/2          '\uf1e6 13.8 V'          13.39:1 min 4.5 [texto normal/render] ok
+    main-tema-aurora                   Aurora    /37/3          '76%'                    13.39:1 min 4.5 [texto normal/render] ok
+    main-tema-aurora                   Aurora    /37/4          '\uf241'                 13.39:1 min 3.0 [no-texto/render] ok
+    main-tema-aurora                   Aurora    /38/0/0        'VFO-A'                  13.39:1 min 4.5 [texto normal/render] ok
+    main-tema-aurora                   Aurora    /38/0/1        'USB'                    13.39:1 min 4.5 [texto normal/render] ok
+    main-tema-aurora                   Aurora    /38/0/2        'AUTO'                   13.39:1 min 4.5 [texto normal/render] ok
+    main-tema-aurora                   Aurora    /38/1/0        'P/A'                    13.39:1 min 4.5 [texto normal/render] ok
+    main-tema-aurora                   Aurora    /38/1/1        'ATU1'                   13.39:1 min 4.5 [texto normal/render] ok
+    main-tema-cathode                  Cathode   /32/0          'Squelch:\n0'            13.39:1 min 3.0 [texto grande/render] ok
+    main-tema-redshift                 Redshift  /33/0          'TX power:\n5.0 W'       13.41:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-cathode             Cathode   /33/0          'Auto:\nOff'             13.46:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-redshift            Redshift  /32/0          'Auto:\nOff'             13.47:1 min 3.0 [texto grande/render] ok
+    main-tema-sprint                   Sprint    /32/0          'Squelch:\n0'            13.53:1 min 3.0 [texto grande/render] ok
+    main-tema-sprint                   Sprint    /34/0          'TX power:\n5.0 W'       13.53:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-cathode             Cathode   /32/0          'Speaker:\nOn'           13.54:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-cathode             Cathode   /31/0          'RX to HP:\nOff'         13.57:1 min 3.0 [texto grande/render] ok
+    main-tema-cathode                  Cathode   /34/0          'TX power:\n5.0 W'       13.58:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sprint              Sprint    /32/0          'Speaker:\nOn'           13.65:1 min 3.0 [texto grande/render] ok
+    settings-tema-aurora               Aurora    /32/0          'Info'                   13.91:1 min 3.0 [texto grande/render] ok
+    main-tema-sprint                   Sprint    /33/0          'RF gain:\n100'          13.94:1 min 3.0 [texto grande/render] ok
+    main-tema-redshift                 Redshift  /32/0          'RF gain:\n100'          14.02:1 min 3.0 [texto grande/render] ok
+    main-tema-trail                    Trail     /32/0          'RF gain:\n100'          14.04:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /33/0          'More >'                 14.09:1 min 3.0 [texto grande/render] ok
+    settings-tema-redshift             Redshift  /32/0          'Info'                   14.14:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /34/0          'More >'                 14.24:1 min 3.0 [texto grande/render] ok
+    main-tema-cathode                  Cathode   /33/0          'RF gain:\n100'          14.25:1 min 3.0 [texto grande/render] ok
+    settings-tema-trail                Trail     /33/0          '< More'                 14.29:1 min 3.0 [texto grande/render] ok
+    settings-tema-aurora               Aurora    /29/0          'Display'                 14.3:1 min 3.0 [texto grande/render] ok
+    settings-tema-sunlit               Sunlit    /43/0/75       'Theme'                  14.34:1 min 3.0 [texto grande/render] ok
+    settings-tema-sunlit               Sunlit    /43/0/77       'Font'                   14.34:1 min 3.0 [texto grande/render] ok
+    settings-tema-sunlit               Sunlit    /43/0/79       'Visual profile (Eco)'   14.34:1 min 3.0 [texto grande/render] ok
+    settings-tema-sunlit               Sunlit    /43/0/81       'GEN long press'         14.34:1 min 3.0 [texto grande/render] ok
+    settings-tema-sunlit               Sunlit    /43/0/83       'APP long press'         14.34:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /43/0/0        'Freq acceleration'      14.34:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /43/0/2        'Accel threshold'        14.34:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /43/0/5        'Bluetooth'              14.34:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /43/0/7        'Discoverable (CAT)'     14.34:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /43/0/9        'Devices'                14.34:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sunlit Sunlit    /43/0/11       'Charger'                14.34:1 min 3.0 [texto grande/render] ok
+    main-tema-sunlit                   Sunlit    /1/0           '#162436 13.882'         14.34:1 min 3.0 [texto grande/render] ok
+    main-tema-sunlit                   Sunlit    /1/1           '#162436 14.074.000'     14.34:1 min 3.0 [texto grande/render] ok
+    main-tema-sunlit                   Sunlit    /1/2           '#162436 14.266'         14.34:1 min 3.0 [texto grande/render] ok
+    settings-tema-sprint               Sprint    /33/0          'Info'                   14.36:1 min 3.0 [texto grande/render] ok
+    settings-tema-trail                Trail     /32/0          'Info'                   14.38:1 min 3.0 [texto grande/render] ok
+    settings-tema-aurora               Aurora    /33/0          '< More'                 14.39:1 min 3.0 [texto grande/render] ok
+    settings-tema-trail                Trail     /43/0/75       'Theme'                  14.41:1 min 3.0 [texto grande/render] ok
+    settings-tema-trail                Trail     /43/0/77       'Font'                   14.41:1 min 3.0 [texto grande/render] ok
+    settings-tema-trail                Trail     /43/0/79       'Visual profile (Eco)'   14.41:1 min 3.0 [texto grande/render] ok
+    settings-tema-trail                Trail     /43/0/81       'GEN long press'         14.41:1 min 3.0 [texto grande/render] ok
+    settings-tema-trail                Trail     /43/0/83       'APP long press'         14.41:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /43/0/0        'Freq acceleration'      14.41:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /43/0/2        'Accel threshold'        14.41:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /43/0/5        'Bluetooth'              14.41:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /43/0/7        'Discoverable (CAT)'     14.41:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /43/0/9        'Devices'                14.41:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /43/0/11       'Charger'                14.41:1 min 3.0 [texto grande/render] ok
+    main-tema-trail                    Trail     /1/0           '#F2EED8 13.882'         14.41:1 min 3.0 [texto grande/render] ok
+    main-tema-trail                    Trail     /1/1           '#F2EED8 14.074.000'     14.41:1 min 3.0 [texto grande/render] ok
+    main-tema-trail                    Trail     /1/2           '#F2EED8 14.266'         14.41:1 min 3.0 [texto grande/render] ok
+    settings-tema-sprint               Sprint    /30/0          'Display'                14.43:1 min 3.0 [texto grande/render] ok
+    settings-tema-cathode              Cathode   /34/0          '< More'                 14.44:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /31/0          'Spectrum'               14.44:1 min 3.0 [texto grande/render] ok
+    main-tema-aurora                   Aurora    /29/0          '(VOL 1:3)'              14.44:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /33/0          'More >'                 14.47:1 min 3.0 [texto grande/render] ok
+    settings-tema-cathode              Cathode   /44/0/75       'Theme'                  14.48:1 min 3.0 [texto grande/render] ok
+    settings-tema-cathode              Cathode   /44/0/77       'Font'                   14.48:1 min 3.0 [texto grande/render] ok
+    settings-tema-cathode              Cathode   /44/0/79       'Visual profile (Eco)'   14.48:1 min 3.0 [texto grande/render] ok
+    settings-tema-cathode              Cathode   /44/0/81       'GEN long press'         14.48:1 min 3.0 [texto grande/render] ok
+    settings-tema-cathode              Cathode   /44/0/83       'APP long press'         14.48:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /44/0/0        'Freq acceleration'      14.48:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /44/0/2        'Accel threshold'        14.48:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /44/0/5        'Bluetooth'              14.48:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /44/0/7        'Discoverable (CAT)'     14.48:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /44/0/9        'Devices'                14.48:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /44/0/11       'Charger'                14.48:1 min 3.0 [texto grande/render] ok
+    main-tema-cathode                  Cathode   /1             '88.888.888'             14.48:1 min None [incidental/render] ok
+    main-tema-cathode                  Cathode   /2/0           '#F9D9AA 13.882'         14.48:1 min 3.0 [texto grande/render] ok
+    main-tema-cathode                  Cathode   /2/1           '#F9D9AA 14.074.000'     14.48:1 min 3.0 [texto grande/render] ok
+    main-tema-cathode                  Cathode   /2/2           '#F9D9AA 14.266'         14.48:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-aurora              Aurora    /29/0          'Scan'                    14.5:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /32/0          'Clock'                  14.51:1 min 3.0 [texto grande/render] ok
+    settings-tema-cathode              Cathode   /33/0          'Info'                   14.53:1 min 3.0 [texto grande/render] ok
+    settings-tema-redshift             Redshift  /33/0          '< More'                 14.56:1 min 3.0 [texto grande/render] ok
+    settings-tema-sprint               Sprint    /32/0          'Actions'                14.56:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /33/0          'More >'                 14.57:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /32/0          'Spectrum'               14.58:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /32/0          'Spectrum'               14.59:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /34/0          'More >'                 14.59:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /31/0          'Spectrum'                14.6:1 min 3.0 [texto grande/render] ok
+    settings-tema-trail                Trail     /31/0          'Actions'                14.63:1 min 3.0 [texto grande/render] ok
+    settings-tema-aurora               Aurora    /31/0          'Actions'                14.64:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-redshift            Redshift  /29/0          'Scan'                   14.65:1 min 3.0 [texto grande/render] ok
+    settings-tema-sprint               Sprint    /38/4          '50%'                    14.66:1 min 4.5 [texto normal/render] ok
+    settings-tema-sprint               Sprint    /38/5          '\uf242'                 14.66:1 min 3.0 [no-texto/render] ok
+    settings-tema-sprint               Sprint    /39/0/0        'VFO-A'                  14.66:1 min 4.5 [texto normal/render] ok
+    settings-tema-sprint               Sprint    /39/0/1        'USB'                    14.66:1 min 4.5 [texto normal/render] ok
+    settings-tema-sprint               Sprint    /39/0/2        'AUTO'                   14.66:1 min 4.5 [texto normal/render] ok
+    settings-tema-sprint               Sprint    /39/1/0        'P/A'                    14.66:1 min 4.5 [texto normal/render] ok
+    settings-tema-sprint               Sprint    /39/1/1        'ATU1'                   14.66:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /38/3          '\uf1e6 13.8 V'          14.66:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /38/4          '76%'                    14.66:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /38/5          '\uf241'                 14.66:1 min 3.0 [no-texto/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /39/0/0        'VFO-A'                  14.66:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /39/0/1        'USB'                    14.66:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /39/0/2        'AUTO'                   14.66:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /39/1/0        'P/A'                    14.66:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /39/1/1        'ATU1'                   14.66:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sprint              Sprint    /38/3          '\uf1e6 13.8 V'          14.66:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sprint              Sprint    /38/4          '76%'                    14.66:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sprint              Sprint    /38/5          '\uf241'                 14.66:1 min 3.0 [no-texto/render] ok
+    bt-dialog-tema-sprint              Sprint    /39/0/0        'VFO-A'                  14.66:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sprint              Sprint    /39/0/1        'USB'                    14.66:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sprint              Sprint    /39/0/2        'AUTO'                   14.66:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sprint              Sprint    /39/1/0        'P/A'                    14.66:1 min 4.5 [texto normal/render] ok
+    bt-dialog-tema-sprint              Sprint    /39/1/1        'ATU1'                   14.66:1 min 4.5 [texto normal/render] ok
+    main-tema-sprint                   Sprint    /38/3          '\uf1e6 13.8 V'          14.66:1 min 4.5 [texto normal/render] ok
+    main-tema-sprint                   Sprint    /38/4          '76%'                    14.66:1 min 4.5 [texto normal/render] ok
+    main-tema-sprint                   Sprint    /38/5          '\uf241'                 14.66:1 min 3.0 [no-texto/render] ok
+    main-tema-sprint                   Sprint    /39/0/0        'VFO-A'                  14.66:1 min 4.5 [texto normal/render] ok
+    main-tema-sprint                   Sprint    /39/0/1        'USB'                    14.66:1 min 4.5 [texto normal/render] ok
+    main-tema-sprint                   Sprint    /39/0/2        'AUTO'                   14.66:1 min 4.5 [texto normal/render] ok
+    main-tema-sprint                   Sprint    /39/1/0        'P/A'                    14.66:1 min 4.5 [texto normal/render] ok
+    main-tema-sprint                   Sprint    /39/1/1        'ATU1'                   14.66:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /31/0          'Spectrum'               14.71:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-trail               Trail     /29/0          'Scan'                   14.71:1 min 3.0 [texto grande/render] ok
+    settings-tema-redshift             Redshift  /29/0          'Display'                14.74:1 min 3.0 [texto grande/render] ok
+    settings-tema-sprint               Sprint    /34/0          '< More'                 14.75:1 min 3.0 [texto grande/render] ok
+    settings-tema-trail                Trail     /29/0          'Display'                14.75:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-aurora              Aurora    /43/3          'Row: pair/connect - Au' 14.77:1 min 4.5 [texto normal/render] ok
+    settings-tema-redshift             Redshift  /31/0          'Actions'                14.78:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-aurora              Aurora    /33/0          'Close'                  14.79:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sprint              Sprint    /30/0          'Scan'                   14.79:1 min 3.0 [texto grande/render] ok
+    settings-tema-cathode              Cathode   /32/0          'Actions'                14.81:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-cathode             Cathode   /30/0          'Scan'                   14.87:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /30/0          'Audio'                  14.91:1 min 3.0 [texto grande/render] ok
+    settings-tema-cathode              Cathode   /30/0          'Display'                14.98:1 min 3.0 [texto grande/render] ok
+    main-tema-sprint                   Sprint    /30/0          '(VOL 1:3)'              15.01:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /43/0/3/0      '07'                     15.07:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /43/0/10       'Pair / connect...'      15.07:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /32/0          'Clock'                  15.21:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-redshift            Redshift  /33/0          'Close'                  15.26:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /30/0          'Audio'                  15.27:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-trail Trail     /30/0          'Audio'                  15.28:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-trail               Trail     /33/0          'Close'                  15.29:1 min 3.0 [texto grande/render] ok
+    main-tema-trail                    Trail     /29/0          '(VOL 1:3)'              15.34:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /31/0          'Audio'                  15.37:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /32/0          'Clock'                  15.38:1 min 3.0 [texto grande/render] ok
+    main-tema-redshift                 Redshift  /29/0          '(VOL 1:3)'               15.4:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /33/0          'Clock'                  15.49:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sprint              Sprint    /44/3          'Row: pair/connect - Au' 15.54:1 min 4.5 [texto normal/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /31/0          'Audio'                  15.56:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-cathode             Cathode   /34/0          'Close'                  15.57:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /33/0          'Clock'                  15.58:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sprint              Sprint    /34/0          'Close'                  15.58:1 min 3.0 [texto grande/render] ok
+    main-tema-cathode                  Cathode   /30/0          '(VOL 1:3)'              15.62:1 min 3.0 [texto grande/render] ok
+    bt-dialog-tema-sunlit              Sunlit    /43/3          'Row: pair/connect - Au' 15.67:1 min 4.5 [texto normal/render] ok
+    settings-tema-aurora               Aurora    /43/0/75       'Theme'                  16.09:1 min 3.0 [texto grande/render] ok
+    settings-tema-aurora               Aurora    /43/0/77       'Font'                   16.09:1 min 3.0 [texto grande/render] ok
+    settings-tema-aurora               Aurora    /43/0/79       'Visual profile (Eco)'   16.09:1 min 3.0 [texto grande/render] ok
+    settings-tema-aurora               Aurora    /43/0/81       'GEN long press'         16.09:1 min 3.0 [texto grande/render] ok
+    settings-tema-aurora               Aurora    /43/0/83       'APP long press'         16.09:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /43/0/0        'Freq acceleration'      16.09:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /43/0/2        'Accel threshold'        16.09:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /43/0/5        'Bluetooth'              16.09:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /43/0/7        'Discoverable (CAT)'     16.09:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /43/0/9        'Devices'                16.09:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /43/0/11       'Charger'                16.09:1 min 3.0 [texto grande/render] ok
+    main-tema-aurora                   Aurora    /1/0           '#F8EEFF 13.882'         16.09:1 min 3.0 [texto grande/render] ok
+    main-tema-aurora                   Aurora    /1/1           '#F8EEFF 14.074.000'     16.09:1 min 3.0 [texto grande/render] ok
+    main-tema-aurora                   Aurora    /1/2           '#F8EEFF 14.266'         16.09:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /43/0/3/0      '07'                     16.62:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-aurora Aurora    /43/0/10       'Pair / connect...'      16.62:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /44/0/3/0      '07'                     16.69:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /44/0/10       'Pair / connect...'      16.69:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /44/0/3/0      '07'                      17.0:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-cathode Cathode   /44/0/10       'Pair / connect...'       17.0:1 min 3.0 [texto grande/render] ok
+    settings-tema-sprint               Sprint    /44/0/75       'Theme'                  17.44:1 min 3.0 [texto grande/render] ok
+    settings-tema-sprint               Sprint    /44/0/77       'Font'                   17.44:1 min 3.0 [texto grande/render] ok
+    settings-tema-sprint               Sprint    /44/0/79       'Visual profile (Eco)'   17.44:1 min 3.0 [texto grande/render] ok
+    settings-tema-sprint               Sprint    /44/0/81       'GEN long press'         17.44:1 min 3.0 [texto grande/render] ok
+    settings-tema-sprint               Sprint    /44/0/83       'APP long press'         17.44:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /44/0/0        'Freq acceleration'      17.44:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /44/0/2        'Accel threshold'        17.44:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /44/0/5        'Bluetooth'              17.44:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /44/0/7        'Discoverable (CAT)'     17.44:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /44/0/9        'Devices'                17.44:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-sprint Sprint    /44/0/11       'Charger'                17.44:1 min 3.0 [texto grande/render] ok
+    main-tema-sprint                   Sprint    /1             '88.888.888'             17.44:1 min None [incidental/render] ok
+    main-tema-sprint                   Sprint    /2/0           '#F5F7F9 13.882'         17.44:1 min 3.0 [texto grande/render] ok
+    main-tema-sprint                   Sprint    /2/1           '#F5F7F9 14.074.000'     17.44:1 min 3.0 [texto grande/render] ok
+    main-tema-sprint                   Sprint    /2/2           '#F5F7F9 14.266'         17.44:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /43/0/3/0      '07'                     19.66:1 min 3.0 [texto grande/render] ok
+    settings-grupo-operation-tema-redshift Redshift  /43/0/10       'Pair / connect...'      19.66:1 min 3.0 [texto grande/render] ok
   --- violaciones medidas ---
   solo violaciones preexistentes del baseline (0 entradas): OK
   PASS: el contraste renderizado no tiene violaciones nuevas ni regresiones
