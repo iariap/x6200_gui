@@ -398,6 +398,8 @@ static bool mode_write_allowed(x6200_vfo_t vfo) {
     return subject_get_int(cfg_cur.band->split.val) != 0;
 }
 
+static void radio_ssb_filter_regs(void);
+
 static void on_vfo_mode_change(Subject *subj, void *user_data) {
     x6200_vfo_t vfo = (x6200_vfo_t )user_data;
     int32_t new_val = subject_get_int(subj);
@@ -409,6 +411,10 @@ static void on_vfo_mode_change(Subject *subj, void *user_data) {
 
     WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, new_val));
     LV_LOG_USER("Radio set vfo %i mode=%i", vfo, new_val);
+
+    if (vfo == X6200_VFO_A) {
+        radio_ssb_filter_regs();
+    }
 }
 
 static void on_split_mode_sync(Subject *subj, void *user_data) {
@@ -506,6 +512,27 @@ void radio_bb_reset() {
     gpio_safe_set(x6200_pin_bb_reset, 1);
     usleep(100000);
     gpio_safe_set(x6200_pin_bb_reset, 0);
+}
+
+/* TEST #292: el pack del BASE tiene los filtros SSB con SIGNO en los registros
+ * 44/45 (filter_ssb, filter_ssb_2): el GUI original los llena desde los
+ * text_ssbflt_* (from/to). Para LSB los bordes son from=-2850, to=-150, y para
+ * USB from=150, to=2850. Nuestro port nunca los escribe (quedaban en cero).
+ * Si el BASE elige la banda lateral por el signo del filtro, esto la cambia. */
+static void radio_ssb_filter_regs(void) {
+    int32_t mode = subject_get_int(cfg_cur.mode);
+    uint32_t v;
+
+    if (mode == x6200_mode_lsb || mode == x6200_mode_lsb_dig) {
+        v = (((uint32_t)(uint16_t)(int16_t)-2850) << 16) | (uint32_t)(uint16_t)(int16_t)-150;
+    } else {
+        v = (((uint32_t)150) << 16) | 2850;
+    }
+
+    WITH_RADIO_LOCK(x6200_control_cmd(x6200_filter_ssb, v));
+    WITH_RADIO_LOCK(x6200_control_cmd(x6200_filter_ssb_2, v));
+    LV_LOG_USER("TEST292 filter_ssb=%08x (%s)", (unsigned)v,
+                (mode == x6200_mode_lsb || mode == x6200_mode_lsb_dig) ? "LSB" : "USB");
 }
 
 void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
@@ -638,6 +665,8 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
      * audio). Restaurarlo en cada arranque de la GUI devuelve el audio de RX sin
      * power-cycle (antes solo lo sacaba un corte de energia). */
     x6200_control_record_set(false);
+
+    radio_ssb_filter_regs();
     x6200_control_spmode_set(params.spmode.x);
 
     x6200_control_vox_set(params.vox);
