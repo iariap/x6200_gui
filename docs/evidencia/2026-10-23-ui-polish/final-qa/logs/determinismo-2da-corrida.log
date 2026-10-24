@@ -1,0 +1,7 @@
+== determinismo: dos corridas completas de las 243 capturas ==
+capturas corrida 1: 243
+capturas corrida 2: 243
+sha256 distintos: 0
+
+criterio: mismo sha256 del PNG en las dos corridas para cada fixture.
+resultado: 243/243 identicas.

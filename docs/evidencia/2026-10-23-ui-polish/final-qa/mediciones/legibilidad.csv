@@ -1,0 +1,239 @@
+captura,familia,tema,clase,texto,caja,color_texto,superficie,px_tinta,colores,temas_con_tinta,temas_sin_tinta,hallazgo
+bt-dialog-tema-aurora,bt-dialog,aurora,lv_label,Bluetooth devices,"20,78,129,18",#D7C2FF,#1B1529,952,16,"aurora,default",,0
+bt-dialog-tema-aurora,bt-dialog,aurora,lv_label,"no headphones, RX off","20,380,380,18",#D5C4E0,#1B1529,2960,16,"aurora,cathode,default,trail",,0
+bt-dialog-tema-aurora,bt-dialog,aurora,lv_label,Row: pair/connect - Auto: hold to unpair,"408,380,378,18",#F8EEFF,#1B1529,2944,16,"aurora,cathode,default,trail",,0
+bt-dialog-tema-cathode,bt-dialog,cathode,lv_label,Bluetooth devices,"20,78,137,18",#FFCF91,#140D08,1016,16,"cathode,trail",,0
+bt-dialog-tema-cathode,bt-dialog,cathode,lv_label,"no headphones, RX off","20,380,380,18",#CEA575,#140D08,2960,16,"aurora,cathode,default,trail",,0
+bt-dialog-tema-cathode,bt-dialog,cathode,lv_label,Row: pair/connect - Auto: hold to unpair,"408,380,378,18",#F9D9AA,#140D08,2944,16,"aurora,cathode,default,trail",,0
+bt-dialog-tema-redshift,bt-dialog,redshift,lv_label,Bluetooth devices,"20,78,121,17",#FFB39C,#0A0505,777,12,redshift,,0
+bt-dialog-tema-redshift,bt-dialog,redshift,lv_label,"no headphones, RX off","20,380,380,17",#E18A78,#0A0505,2590,13,"redshift,sprint,sunlit",,0
+bt-dialog-tema-redshift,bt-dialog,redshift,lv_label,Row: pair/connect - Auto: hold to unpair,"408,380,378,17",#FFB3A0,#0A0505,2576,14,"redshift,sprint,sunlit",,0
+bt-dialog-tema-sprint,bt-dialog,sprint,lv_label,Bluetooth devices,"20,78,103,17",#FFD179,#071529,651,16,sprint,,0
+bt-dialog-tema-sprint,bt-dialog,sprint,lv_label,"no headphones, RX off","20,380,380,17",#BDCFDC,#071529,2590,16,"redshift,sprint,sunlit",,0
+bt-dialog-tema-sprint,bt-dialog,sprint,lv_label,Row: pair/connect - Auto: hold to unpair,"408,380,378,17",#F5F7F9,#071529,2576,16,"redshift,sprint,sunlit",,0
+bt-dialog-tema-sunlit,bt-dialog,sunlit,lv_label,Bluetooth devices,"20,78,142,17",#053F80,#FFFFFF,491,16,sunlit,,0
+bt-dialog-tema-sunlit,bt-dialog,sunlit,lv_label,"no headphones, RX off","20,380,380,17",#33475B,#FFFFFF,620,16,"redshift,sprint,sunlit",,0
+bt-dialog-tema-sunlit,bt-dialog,sunlit,lv_label,Row: pair/connect - Auto: hold to unpair,"408,380,378,17",#162436,#FFFFFF,1062,16,"redshift,sprint,sunlit",,0
+bt-dialog-tema-trail,bt-dialog,trail,lv_label,Bluetooth devices,"20,78,137,18",#D8EB91,#132117,1016,16,"cathode,trail",,0
+bt-dialog-tema-trail,bt-dialog,trail,lv_label,"no headphones, RX off","20,380,380,18",#D6DAC1,#132117,2960,16,"aurora,cathode,default,trail",,0
+bt-dialog-tema-trail,bt-dialog,trail,lv_label,Row: pair/connect - Auto: hold to unpair,"408,380,378,18",#F2EED8,#132117,2944,16,"aurora,cathode,default,trail",,0
+bt-dialog,bt-dialog,default,lv_label,Bluetooth devices,"20,78,129,18",#D7C2FF,#1B1529,952,16,"aurora,default",,0
+bt-dialog,bt-dialog,default,lv_label,"no headphones, RX off","20,380,380,18",#D5C4E0,#1B1529,2960,16,"aurora,cathode,default,trail",,0
+bt-dialog,bt-dialog,default,lv_label,Row: pair/connect - Auto: hold to unpair,"408,380,378,18",#F8EEFF,#1B1529,2944,16,"aurora,cathode,default,trail",,0
+settings-audio,settings-audio,default,lv_label,"Line-in, Line-out","16,95,200,28",#F8EEFF,#221A33,3397,16,default,,0
+settings-audio,settings-audio,default,lv_label,0,"597,95,27,28",#F8EEFF,#221A33,299,16,default,,0
+settings-audio,settings-audio,default,lv_label,0,"741,95,27,28",#F8EEFF,#221A33,299,16,default,,0
+settings-audio,settings-audio,default,lv_label,"Play,Rec gain","16,154,167,28",#F8EEFF,#221A33,2801,16,default,,0
+settings-audio,settings-audio,default,lv_label,3.0,"577,154,47,28",#F8EEFF,#221A33,654,16,default,,0
+settings-audio,settings-audio,default,lv_label,-7.0,"713,154,55,28",#F8EEFF,#221A33,799,16,default,,0
+settings-audio,settings-audio,default,lv_label,Audio enhance,"16,213,183,28",#F8EEFF,#221A33,3080,16,default,,0
+settings-audio,settings-audio,default,lv_dropdown,,"499,199,285,56",#FFFFFF,#221A33,276,16,default,,0
+settings-audio,settings-audio,default,lv_label,Speaker mode,"16,272,177,28",#F8EEFF,#221A33,2971,16,default,,0
+settings-audio,settings-audio,default,lv_label,Voice mode,"16,331,148,28",#F8EEFF,#221A33,2447,16,default,,0
+settings-audio,settings-audio,default,lv_dropdown,,"499,317,285,56",#FFFFFF,#221A33,276,16,default,,0
+settings-audio,settings-audio,default,lv_label,"Voice rate, pitch, volume","16,390,297,15",#F8EEFF,#221A33,1424,16,default,,0
+settings-audio,settings-audio,default,lv_label,000,"512,389,67,16",#FFFFFF,#221A33,120,12,default,,0
+settings-audio,settings-audio,default,lv_label,000,"608,389,67,16",#FFFFFF,#221A33,120,12,default,,0
+settings-audio,settings-audio,default,lv_label,000,"704,389,67,16",#FFFFFF,#221A33,120,12,default,,0
+settings-grupo-actions,settings-grupo-actions,default,lv_label,GEN long press,"16,95,189,28",#F8EEFF,#221A33,3189,16,default,,0
+settings-grupo-actions,settings-grupo-actions,default,lv_dropdown,,"499,81,285,56",#000000,#221A33,389,16,default,,0
+settings-grupo-actions,settings-grupo-actions,default,lv_label,APP long press,"16,154,186,28",#F8EEFF,#221A33,3141,16,default,,0
+settings-grupo-actions,settings-grupo-actions,default,lv_dropdown,,"499,140,285,56",#FFFFFF,#221A33,427,16,default,,0
+settings-grupo-actions,settings-grupo-actions,default,lv_label,KEY long press,"16,213,185,28",#F8EEFF,#221A33,3121,16,default,,0
+settings-grupo-actions,settings-grupo-actions,default,lv_dropdown,,"499,199,285,56",#FFFFFF,#221A33,427,16,default,,0
+settings-grupo-actions,settings-grupo-actions,default,lv_label,MSG long press,"16,272,194,28",#F8EEFF,#221A33,3275,16,default,,0
+settings-grupo-actions,settings-grupo-actions,default,lv_dropdown,,"499,258,285,56",#FFFFFF,#221A33,427,16,default,,0
+settings-grupo-actions,settings-grupo-actions,default,lv_label,DFN long press,"16,331,188,28",#F8EEFF,#221A33,3176,16,default,,0
+settings-grupo-actions,settings-grupo-actions,default,lv_dropdown,,"499,317,285,56",#FFFFFF,#221A33,427,16,default,,0
+settings-grupo-actions,settings-grupo-actions,default,lv_label,DFL long press,"16,390,184,15",#F8EEFF,#221A33,866,16,default,,0
+settings-grupo-actions,settings-grupo-actions,default,lv_dropdown,,"499,376,285,29",#FFFFFF,#221A33,102,15,default,,0
+settings-grupo-display,settings-grupo-display,default,lv_label,"Timeout, Brightness","16,95,241,28",#F8EEFF,#221A33,4118,16,default,,0
+settings-grupo-display,settings-grupo-display,default,lv_label,005,"512,94,67,28",#000000,#221A33,1026,16,default,,0
+settings-grupo-display,settings-grupo-display,default,lv_label,Buttons brightness,"16,154,227,28",#F8EEFF,#221A33,3868,16,default,,0
+settings-grupo-display,settings-grupo-display,default,lv_dropdown,,"499,140,285,56",#FFFFFF,#221A33,854,16,default,,0
+settings-grupo-display,settings-grupo-display,default,lv_label,S-meter needle,"16,213,188,28",#F8EEFF,#221A33,3176,16,default,,0
+settings-grupo-display,settings-grupo-display,default,lv_label,Band plan,"16,272,127,28",#F8EEFF,#221A33,2088,16,default,,0
+settings-grupo-display,settings-grupo-display,default,lv_label,Theme,"16,346,91,28",#F8EEFF,#221A33,1448,16,default,,0
+settings-grupo-display,settings-grupo-display,default,lv_dropdown,,"499,332,285,56",#FFFFFF,#221A33,585,16,default,,0
+settings-grupo-display,settings-grupo-display,default,lv_dropdown,,"499,391,285,14",#FFFFFF,#221A33,0,1,,default,0
+settings-grupo-info,settings-grupo-info,default,lv_label,HMic F1 press,"16,92,174,28",#F8EEFF,#221A33,2933,16,default,,0
+settings-grupo-info,settings-grupo-info,default,lv_dropdown,,"499,78,285,56",#FFFFFF,#221A33,427,16,default,,0
+settings-grupo-info,settings-grupo-info,default,lv_label,HMic F2 press,"16,151,179,28",#F8EEFF,#221A33,3020,16,default,,0
+settings-grupo-info,settings-grupo-info,default,lv_dropdown,,"499,137,285,56",#FFFFFF,#221A33,427,16,default,,0
+settings-grupo-info,settings-grupo-info,default,lv_label,HMic F1 long press,"16,210,230,28",#F8EEFF,#221A33,3929,16,default,,0
+settings-grupo-info,settings-grupo-info,default,lv_dropdown,,"499,196,285,56",#FFFFFF,#221A33,427,16,default,,0
+settings-grupo-info,settings-grupo-info,default,lv_label,HMic F2 long press,"16,269,235,28",#F8EEFF,#221A33,4016,16,default,,0
+settings-grupo-info,settings-grupo-info,default,lv_dropdown,,"499,255,285,56",#FFFFFF,#221A33,427,16,default,,0
+settings-grupo-info,settings-grupo-info,default,lv_label,"Mag Freq, Info, ALC","16,343,242,28",#F8EEFF,#221A33,4135,16,default,,0
+settings-grupo-operation-tema-aurora,settings-grupo-operation,aurora,lv_label,Freq acceleration,"16,95,212,28",#F8EEFF,#221A33,3599,16,"aurora,default",,0
+settings-grupo-operation-tema-aurora,settings-grupo-operation,aurora,lv_dropdown,,"499,81,285,56",#000000,#221A33,12650,16,"aurora,default,sprint",,0
+settings-grupo-operation-tema-aurora,settings-grupo-operation,aurora,lv_label,Accel threshold,"16,154,191,28",#F8EEFF,#221A33,3222,16,"aurora,default",,0
+settings-grupo-operation-tema-aurora,settings-grupo-operation,aurora,lv_label,07,"512,153,67,28",#FFFFFF,#221A33,150,16,"aurora,default,sprint",,0
+settings-grupo-operation-tema-aurora,settings-grupo-operation,aurora,lv_label,detents/s,"637,154,120,28",#D5C4E0,#221A33,1959,16,"aurora,default",,0
+settings-grupo-operation-tema-aurora,settings-grupo-operation,aurora,lv_label,Bluetooth,"16,213,120,28",#F8EEFF,#221A33,1951,16,"aurora,default",,0
+settings-grupo-operation-tema-aurora,settings-grupo-operation,aurora,lv_label,Discoverable (CAT),"16,272,238,28",#F8EEFF,#221A33,4052,16,"aurora,default",,0
+settings-grupo-operation-tema-aurora,settings-grupo-operation,aurora,lv_label,Devices,"16,331,104,28",#F8EEFF,#221A33,1671,16,"aurora,default",,0
+settings-grupo-operation-tema-aurora,settings-grupo-operation,aurora,lv_label,Pair / connect...,"499,317,285,56",#FFFFFF,#221A33,980,16,"aurora,default,sprint",,0
+settings-grupo-operation-tema-aurora,settings-grupo-operation,aurora,lv_label,Charger,"16,390,105,15",#F8EEFF,#221A33,471,16,"aurora,default",,0
+settings-grupo-operation-tema-aurora,settings-grupo-operation,aurora,lv_dropdown,,"499,376,285,29",#FFFFFF,#221A33,128,16,"aurora,default,sprint",,0
+settings-grupo-operation-tema-cathode,settings-grupo-operation,cathode,lv_label,Freq acceleration,"16,95,240,29",#F9D9AA,#28190E,4370,16,"cathode,trail",,0
+settings-grupo-operation-tema-cathode,settings-grupo-operation,cathode,lv_dropdown,,"499,82,285,56",#000000,#28190E,12650,16,"cathode,redshift,sunlit,trail",,0
+settings-grupo-operation-tema-cathode,settings-grupo-operation,cathode,lv_label,Accel threshold,"16,154,216,29",#F9D9AA,#28190E,3914,16,"cathode,trail",,0
+settings-grupo-operation-tema-cathode,settings-grupo-operation,cathode,lv_label,07,"512,154,67,29",#FFFFFF,#28190E,159,16,"cathode,redshift,trail",sunlit,0
+settings-grupo-operation-tema-cathode,settings-grupo-operation,cathode,lv_label,detents/s,"637,154,137,29",#CEA575,#28190E,2353,16,"cathode,trail",,0
+settings-grupo-operation-tema-cathode,settings-grupo-operation,cathode,lv_label,Bluetooth,"16,213,141,29",#F9D9AA,#28190E,2489,16,"cathode,sunlit,trail",,0
+settings-grupo-operation-tema-cathode,settings-grupo-operation,cathode,lv_label,Discoverable (CAT),"16,272,259,29",#F9D9AA,#28190E,4731,16,"cathode,trail",,0
+settings-grupo-operation-tema-cathode,settings-grupo-operation,cathode,lv_label,Devices,"16,331,112,29",#F9D9AA,#28190E,1938,16,"cathode,trail",,0
+settings-grupo-operation-tema-cathode,settings-grupo-operation,cathode,lv_label,Pair / connect...,"499,318,285,56",#FFFFFF,#28190E,1200,16,"cathode,redshift,trail",sunlit,0
+settings-grupo-operation-tema-cathode,settings-grupo-operation,cathode,lv_label,Charger,"16,390,115,15",#F9D9AA,#28190E,525,16,"cathode,trail",,0
+settings-grupo-operation-tema-cathode,settings-grupo-operation,cathode,lv_dropdown,,"499,377,285,28",#FFFFFF,#28190E,146,16,"cathode,redshift,trail",sunlit,0
+settings-grupo-operation-tema-redshift,settings-grupo-operation,redshift,lv_label,Freq acceleration,"16,95,212,29",#FFB3A0,#140809,3746,16,redshift,,0
+settings-grupo-operation-tema-redshift,settings-grupo-operation,redshift,lv_dropdown,,"499,82,285,56",#000000,#140809,12650,16,"cathode,redshift,sunlit,trail",,0
+settings-grupo-operation-tema-redshift,settings-grupo-operation,redshift,lv_label,Accel threshold,"16,154,192,29",#FFB3A0,#140809,3394,16,redshift,,0
+settings-grupo-operation-tema-redshift,settings-grupo-operation,redshift,lv_label,07,"512,154,67,29",#FFFFFF,#140809,69,15,"cathode,redshift,trail",sunlit,0
+settings-grupo-operation-tema-redshift,settings-grupo-operation,redshift,lv_label,detents/s,"637,154,121,29",#E18A78,#140809,2062,16,redshift,,0
+settings-grupo-operation-tema-redshift,settings-grupo-operation,redshift,lv_label,Bluetooth,"16,213,127,29",#FFB3A0,#140809,2165,16,redshift,,0
+settings-grupo-operation-tema-redshift,settings-grupo-operation,redshift,lv_label,Discoverable (CAT),"16,272,227,29",#FFB3A0,#140809,4030,16,redshift,,0
+settings-grupo-operation-tema-redshift,settings-grupo-operation,redshift,lv_label,Devices,"16,331,100,29",#FFB3A0,#140809,1652,16,redshift,,0
+settings-grupo-operation-tema-redshift,settings-grupo-operation,redshift,lv_label,Pair / connect...,"499,318,285,56",#FFFFFF,#140809,649,16,"cathode,redshift,trail",sunlit,0
+settings-grupo-operation-tema-redshift,settings-grupo-operation,redshift,lv_label,Charger,"16,390,103,15",#FFB3A0,#140809,460,16,redshift,,0
+settings-grupo-operation-tema-redshift,settings-grupo-operation,redshift,lv_dropdown,,"499,377,285,28",#FFFFFF,#140809,82,16,"cathode,redshift,trail",sunlit,0
+settings-grupo-operation-tema-sprint,settings-grupo-operation,sprint,lv_label,Freq acceleration,"16,95,190,28",#F5F7F9,#0C1E38,3240,16,sprint,,0
+settings-grupo-operation-tema-sprint,settings-grupo-operation,sprint,lv_dropdown,,"499,81,285,56",#000000,#0C1E38,12650,16,"aurora,default,sprint",,0
+settings-grupo-operation-tema-sprint,settings-grupo-operation,sprint,lv_label,Accel threshold,"16,154,173,28",#F5F7F9,#0C1E38,2934,16,sprint,,0
+settings-grupo-operation-tema-sprint,settings-grupo-operation,sprint,lv_label,07,"512,153,67,28",#FFFFFF,#0C1E38,112,16,"aurora,default,sprint",,0
+settings-grupo-operation-tema-sprint,settings-grupo-operation,sprint,lv_label,detents/s,"637,154,112,28",#BDCFDC,#0C1E38,1836,16,sprint,,0
+settings-grupo-operation-tema-sprint,settings-grupo-operation,sprint,lv_label,Bluetooth,"16,213,112,28",#F5F7F9,#0C1E38,1836,16,sprint,,0
+settings-grupo-operation-tema-sprint,settings-grupo-operation,sprint,lv_label,Discoverable (CAT),"16,272,210,28",#F5F7F9,#0C1E38,3600,16,sprint,,0
+settings-grupo-operation-tema-sprint,settings-grupo-operation,sprint,lv_label,Devices,"16,331,92,28",#F5F7F9,#0C1E38,1476,16,sprint,,0
+settings-grupo-operation-tema-sprint,settings-grupo-operation,sprint,lv_label,Pair / connect...,"499,317,285,56",#FFFFFF,#0C1E38,1004,16,"aurora,default,sprint",,0
+settings-grupo-operation-tema-sprint,settings-grupo-operation,sprint,lv_label,Charger,"16,390,93,15",#F5F7F9,#0C1E38,415,15,sprint,,0
+settings-grupo-operation-tema-sprint,settings-grupo-operation,sprint,lv_dropdown,,"499,376,285,29",#FFFFFF,#0C1E38,142,15,"aurora,default,sprint",,0
+settings-grupo-operation-tema-sunlit,settings-grupo-operation,sunlit,lv_label,Freq acceleration,"16,95,239,29",#162436,#FFFFFF,4351,16,sunlit,,0
+settings-grupo-operation-tema-sunlit,settings-grupo-operation,sunlit,lv_dropdown,,"499,82,285,56",#000000,#FFFFFF,544,16,"cathode,redshift,sunlit,trail",,0
+settings-grupo-operation-tema-sunlit,settings-grupo-operation,sunlit,lv_label,Accel threshold,"16,154,212,29",#162436,#FFFFFF,3838,16,sunlit,,0
+settings-grupo-operation-tema-sunlit,settings-grupo-operation,sunlit,lv_label,07,"512,154,67,29",#FFFFFF,#FFFFFF,0,1,"cathode,redshift,trail",sunlit,1
+settings-grupo-operation-tema-sunlit,settings-grupo-operation,sunlit,lv_label,detents/s,"637,154,134,29",#33475B,#FFFFFF,2356,16,sunlit,,0
+settings-grupo-operation-tema-sunlit,settings-grupo-operation,sunlit,lv_label,Bluetooth,"16,213,141,29",#162436,#FFFFFF,2489,16,"cathode,sunlit,trail",,0
+settings-grupo-operation-tema-sunlit,settings-grupo-operation,sunlit,lv_label,Discoverable (CAT),"16,272,255,29",#162436,#FFFFFF,4655,16,sunlit,,0
+settings-grupo-operation-tema-sunlit,settings-grupo-operation,sunlit,lv_label,Devices,"16,331,111,29",#162436,#FFFFFF,1919,16,sunlit,,0
+settings-grupo-operation-tema-sunlit,settings-grupo-operation,sunlit,lv_label,Pair / connect...,"499,318,285,56",#FFFFFF,#FFFFFF,0,1,"cathode,redshift,trail",sunlit,1
+settings-grupo-operation-tema-sunlit,settings-grupo-operation,sunlit,lv_label,Charger,"16,390,120,15",#162436,#FFFFFF,550,16,sunlit,,0
+settings-grupo-operation-tema-sunlit,settings-grupo-operation,sunlit,lv_dropdown,,"499,377,285,28",#FFFFFF,#FFFFFF,0,1,"cathode,redshift,trail",sunlit,1
+settings-grupo-operation-tema-trail,settings-grupo-operation,trail,lv_label,Freq acceleration,"16,95,240,29",#F2EED8,#1A2A1E,4309,16,"cathode,trail",,0
+settings-grupo-operation-tema-trail,settings-grupo-operation,trail,lv_dropdown,,"499,82,285,56",#000000,#1A2A1E,12610,16,"cathode,redshift,sunlit,trail",,0
+settings-grupo-operation-tema-trail,settings-grupo-operation,trail,lv_label,Accel threshold,"16,154,216,29",#F2EED8,#1A2A1E,3860,16,"cathode,trail",,0
+settings-grupo-operation-tema-trail,settings-grupo-operation,trail,lv_label,07,"512,154,67,29",#FFFFFF,#1A2A1E,159,16,"cathode,redshift,trail",sunlit,0
+settings-grupo-operation-tema-trail,settings-grupo-operation,trail,lv_label,detents/s,"637,154,137,29",#D6DAC1,#1A2A1E,2385,16,"cathode,trail",,0
+settings-grupo-operation-tema-trail,settings-grupo-operation,trail,lv_label,Bluetooth,"16,213,141,29",#F2EED8,#1A2A1E,2459,16,"cathode,sunlit,trail",,0
+settings-grupo-operation-tema-trail,settings-grupo-operation,trail,lv_label,Discoverable (CAT),"16,272,259,29",#F2EED8,#1A2A1E,4649,16,"cathode,trail",,0
+settings-grupo-operation-tema-trail,settings-grupo-operation,trail,lv_label,Devices,"16,331,112,29",#F2EED8,#1A2A1E,1904,16,"cathode,trail",,0
+settings-grupo-operation-tema-trail,settings-grupo-operation,trail,lv_label,Pair / connect...,"499,318,285,56",#FFFFFF,#1A2A1E,1200,16,"cathode,redshift,trail",sunlit,0
+settings-grupo-operation-tema-trail,settings-grupo-operation,trail,lv_label,Charger,"16,390,115,15",#F2EED8,#1A2A1E,519,16,"cathode,trail",,0
+settings-grupo-operation-tema-trail,settings-grupo-operation,trail,lv_dropdown,,"499,377,285,28",#FFFFFF,#1A2A1E,146,16,"cathode,redshift,trail",sunlit,0
+settings-grupo-operation,settings-grupo-operation,default,lv_label,Freq acceleration,"16,95,212,28",#F8EEFF,#221A33,3599,16,"aurora,default",,0
+settings-grupo-operation,settings-grupo-operation,default,lv_dropdown,,"499,81,285,56",#000000,#221A33,12650,16,"aurora,default,sprint",,0
+settings-grupo-operation,settings-grupo-operation,default,lv_label,Accel threshold,"16,154,191,28",#F8EEFF,#221A33,3222,16,"aurora,default",,0
+settings-grupo-operation,settings-grupo-operation,default,lv_label,07,"512,153,67,28",#FFFFFF,#221A33,150,16,"aurora,default,sprint",,0
+settings-grupo-operation,settings-grupo-operation,default,lv_label,detents/s,"637,154,120,28",#D5C4E0,#221A33,1959,16,"aurora,default",,0
+settings-grupo-operation,settings-grupo-operation,default,lv_label,Bluetooth,"16,213,120,28",#F8EEFF,#221A33,1951,16,"aurora,default",,0
+settings-grupo-operation,settings-grupo-operation,default,lv_label,Discoverable (CAT),"16,272,238,28",#F8EEFF,#221A33,4052,16,"aurora,default",,0
+settings-grupo-operation,settings-grupo-operation,default,lv_label,Devices,"16,331,104,28",#F8EEFF,#221A33,1671,16,"aurora,default",,0
+settings-grupo-operation,settings-grupo-operation,default,lv_label,Pair / connect...,"499,317,285,56",#FFFFFF,#221A33,980,16,"aurora,default,sprint",,0
+settings-grupo-operation,settings-grupo-operation,default,lv_label,Charger,"16,390,105,15",#F8EEFF,#221A33,471,16,"aurora,default",,0
+settings-grupo-operation,settings-grupo-operation,default,lv_dropdown,,"499,376,285,29",#FFFFFF,#221A33,128,16,"aurora,default,sprint",,0
+settings-home,settings-home,default,lv_label,"Day, Month, Year","16,95,210,28",#F8EEFF,#221A33,3567,16,default,,0
+settings-home,settings-home,default,lv_label,01,"512,94,67,28",#000000,#221A33,1026,16,default,,0
+settings-home,settings-home,default,lv_label,01,"608,94,67,28",#FFFFFF,#221A33,140,16,default,,0
+settings-home,settings-home,default,lv_label,2026,"696,94,83,28",#FFFFFF,#221A33,418,16,default,,0
+settings-home,settings-home,default,lv_label,"Hour, Min, Sec","16,154,180,28",#F8EEFF,#221A33,3033,16,default,,0
+settings-home,settings-home,default,lv_label,00,"512,153,67,28",#FFFFFF,#221A33,195,16,default,,0
+settings-home,settings-home,default,lv_label,00,"608,153,67,28",#FFFFFF,#221A33,195,16,default,,0
+settings-home,settings-home,default,lv_label,00,"704,153,67,28",#FFFFFF,#221A33,195,16,default,,0
+settings-home,settings-home,default,lv_label,"Timeout, Brightness","16,228,241,28",#F8EEFF,#221A33,4118,16,default,,0
+settings-home,settings-home,default,lv_label,005,"512,227,67,28",#FFFFFF,#221A33,304,16,default,,0
+settings-home,settings-home,default,lv_label,Buttons brightness,"16,287,227,28",#F8EEFF,#221A33,3868,16,default,,0
+settings-home,settings-home,default,lv_dropdown,,"499,273,285,56",#FFFFFF,#221A33,854,16,default,,0
+settings-home,settings-home,default,lv_label,S-meter needle,"16,346,188,28",#F8EEFF,#221A33,3176,16,default,,0
+settings-perfil,settings-perfil,default,lv_label,Theme,"16,95,91,28",#F8EEFF,#221A33,1448,16,default,,0
+settings-perfil,settings-perfil,default,lv_dropdown,,"499,81,285,56",#000000,#221A33,521,16,default,,0
+settings-perfil,settings-perfil,default,lv_label,Font,"16,154,62,28",#F8EEFF,#221A33,926,16,default,,0
+settings-perfil,settings-perfil,default,lv_dropdown,,"499,140,285,56",#FFFFFF,#221A33,678,16,default,,0
+settings-perfil,settings-perfil,default,lv_label,Visual profile (Eco),"16,213,229,28",#F8EEFF,#221A33,3900,16,default,,0
+settings-perfil,settings-perfil,default,lv_dropdown,,"499,199,285,56",#FFFFFF,#221A33,359,16,default,,0
+settings-perfil,settings-perfil,default,lv_label,GEN long press,"16,287,189,28",#F8EEFF,#221A33,3189,16,default,,0
+settings-perfil,settings-perfil,default,lv_dropdown,,"499,273,285,56",#FFFFFF,#221A33,427,16,default,,0
+settings-perfil,settings-perfil,default,lv_label,APP long press,"16,346,186,28",#F8EEFF,#221A33,3141,16,default,,0
+settings-perfil,settings-perfil,default,lv_dropdown,,"499,332,285,56",#FFFFFF,#221A33,427,16,default,,0
+settings-perfil,settings-perfil,default,lv_dropdown,,"499,391,285,14",#FFFFFF,#221A33,0,1,,default,0
+settings-tema-aurora,settings,aurora,lv_label,Theme,"16,95,91,28",#F8EEFF,#221A33,1448,16,aurora,,0
+settings-tema-aurora,settings,aurora,lv_dropdown,,"499,81,285,56",#000000,#221A33,521,16,"aurora,sprint",,0
+settings-tema-aurora,settings,aurora,lv_label,Font,"16,154,62,28",#F8EEFF,#221A33,926,16,aurora,,0
+settings-tema-aurora,settings,aurora,lv_dropdown,,"499,140,285,56",#FFFFFF,#221A33,678,16,"aurora,sprint",,0
+settings-tema-aurora,settings,aurora,lv_label,Visual profile (Eco),"16,213,229,28",#F8EEFF,#221A33,3900,16,aurora,,0
+settings-tema-aurora,settings,aurora,lv_dropdown,,"499,199,285,56",#FFFFFF,#221A33,359,16,"aurora,sprint",,0
+settings-tema-aurora,settings,aurora,lv_label,GEN long press,"16,287,189,28",#F8EEFF,#221A33,3189,16,aurora,,0
+settings-tema-aurora,settings,aurora,lv_dropdown,,"499,273,285,56",#FFFFFF,#221A33,427,16,"aurora,sprint",,0
+settings-tema-aurora,settings,aurora,lv_label,APP long press,"16,346,186,28",#F8EEFF,#221A33,3141,16,aurora,,0
+settings-tema-aurora,settings,aurora,lv_dropdown,,"499,332,285,56",#FFFFFF,#221A33,427,16,"aurora,sprint",,0
+settings-tema-aurora,settings,aurora,lv_dropdown,,"499,391,285,14",#FFFFFF,#221A33,0,1,,"aurora,sprint",0
+settings-tema-cathode,settings,cathode,lv_label,Theme,"16,95,103,29",#F9D9AA,#28190E,1767,16,"cathode,sunlit,trail",,0
+settings-tema-cathode,settings,cathode,lv_dropdown,,"499,82,285,56",#000000,#28190E,820,16,"cathode,redshift,sunlit,trail",,0
+settings-tema-cathode,settings,cathode,lv_label,Font,"16,154,70,29",#F9D9AA,#28190E,1140,16,"cathode,trail",,0
+settings-tema-cathode,settings,cathode,lv_dropdown,,"499,141,285,56",#FFFFFF,#28190E,845,16,"cathode,redshift,trail",sunlit,0
+settings-tema-cathode,settings,cathode,lv_label,Visual profile (Eco),"16,213,257,29",#F9D9AA,#28190E,4693,16,"cathode,trail",,0
+settings-tema-cathode,settings,cathode,lv_dropdown,,"499,200,285,56",#FFFFFF,#28190E,440,16,"cathode,redshift,trail",sunlit,0
+settings-tema-cathode,settings,cathode,lv_label,GEN long press,"16,287,212,29",#F9D9AA,#28190E,3838,16,"cathode,sunlit,trail",,0
+settings-tema-cathode,settings,cathode,lv_dropdown,,"499,274,285,56",#FFFFFF,#28190E,546,16,"cathode,redshift,trail",sunlit,0
+settings-tema-cathode,settings,cathode,lv_label,APP long press,"16,346,209,29",#F9D9AA,#28190E,3781,16,"cathode,trail",,0
+settings-tema-cathode,settings,cathode,lv_dropdown,,"499,333,285,56",#FFFFFF,#28190E,546,16,"cathode,redshift,trail",sunlit,0
+settings-tema-cathode,settings,cathode,lv_dropdown,,"499,392,285,13",#FFFFFF,#28190E,0,1,,"cathode,redshift,sunlit,trail",0
+settings-tema-redshift,settings,redshift,lv_label,Theme,"16,95,93,29",#FFB3A0,#140809,1551,15,redshift,,0
+settings-tema-redshift,settings,redshift,lv_dropdown,,"499,82,285,56",#000000,#140809,375,16,"cathode,redshift,sunlit,trail",,0
+settings-tema-redshift,settings,redshift,lv_label,Font,"16,154,64,29",#FFB3A0,#140809,995,16,redshift,,0
+settings-tema-redshift,settings,redshift,lv_dropdown,,"499,141,285,56",#FFFFFF,#140809,461,16,"cathode,redshift,trail",sunlit,0
+settings-tema-redshift,settings,redshift,lv_label,Visual profile (Eco),"16,213,225,29",#FFB3A0,#140809,3986,16,redshift,,0
+settings-tema-redshift,settings,redshift,lv_dropdown,,"499,200,285,56",#FFFFFF,#140809,239,16,"cathode,redshift,trail",sunlit,0
+settings-tema-redshift,settings,redshift,lv_label,GEN long press,"16,287,188,29",#FFB3A0,#140809,3301,16,redshift,,0
+settings-tema-redshift,settings,redshift,lv_dropdown,,"499,274,285,56",#FFFFFF,#140809,309,16,"cathode,redshift,trail",sunlit,0
+settings-tema-redshift,settings,redshift,lv_label,APP long press,"16,346,185,29",#FFB3A0,#140809,3239,16,redshift,,0
+settings-tema-redshift,settings,redshift,lv_dropdown,,"499,333,285,56",#FFFFFF,#140809,309,16,"cathode,redshift,trail",sunlit,0
+settings-tema-redshift,settings,redshift,lv_dropdown,,"499,392,285,13",#FFFFFF,#140809,0,1,,"cathode,redshift,sunlit,trail",0
+settings-tema-sprint,settings,sprint,lv_label,Theme,"16,95,83,28",#F5F7F9,#0C1E38,1314,16,sprint,,0
+settings-tema-sprint,settings,sprint,lv_dropdown,,"499,81,285,56",#000000,#0C1E38,562,16,"aurora,sprint",,0
+settings-tema-sprint,settings,sprint,lv_label,Font,"16,154,59,28",#F5F7F9,#0C1E38,882,16,sprint,,0
+settings-tema-sprint,settings,sprint,lv_dropdown,,"499,140,285,56",#FFFFFF,#0C1E38,720,16,"aurora,sprint",,0
+settings-tema-sprint,settings,sprint,lv_label,Visual profile (Eco),"16,213,208,28",#F5F7F9,#0C1E38,3564,16,sprint,,0
+settings-tema-sprint,settings,sprint,lv_dropdown,,"499,199,285,56",#FFFFFF,#0C1E38,378,16,"aurora,sprint",,0
+settings-tema-sprint,settings,sprint,lv_label,GEN long press,"16,287,170,28",#F5F7F9,#0C1E38,2880,16,sprint,,0
+settings-tema-sprint,settings,sprint,lv_dropdown,,"499,273,285,56",#FFFFFF,#0C1E38,467,16,"aurora,sprint",,0
+settings-tema-sprint,settings,sprint,lv_label,APP long press,"16,346,169,28",#F5F7F9,#0C1E38,2862,16,sprint,,0
+settings-tema-sprint,settings,sprint,lv_dropdown,,"499,332,285,56",#FFFFFF,#0C1E38,467,16,"aurora,sprint",,0
+settings-tema-sprint,settings,sprint,lv_dropdown,,"499,391,285,14",#FFFFFF,#0C1E38,0,1,,"aurora,sprint",0
+settings-tema-sunlit,settings,sunlit,lv_label,Theme,"16,95,103,29",#162436,#FFFFFF,1767,16,"cathode,sunlit,trail",,0
+settings-tema-sunlit,settings,sunlit,lv_dropdown,,"499,82,285,56",#000000,#FFFFFF,637,16,"cathode,redshift,sunlit,trail",,0
+settings-tema-sunlit,settings,sunlit,lv_label,Font,"16,154,71,29",#162436,#FFFFFF,1159,16,sunlit,,0
+settings-tema-sunlit,settings,sunlit,lv_dropdown,,"499,141,285,56",#FFFFFF,#FFFFFF,0,1,"cathode,redshift,trail",sunlit,1
+settings-tema-sunlit,settings,sunlit,lv_label,Visual profile (Eco),"16,213,251,29",#162436,#FFFFFF,4579,16,sunlit,,0
+settings-tema-sunlit,settings,sunlit,lv_dropdown,,"499,200,285,56",#FFFFFF,#FFFFFF,0,1,"cathode,redshift,trail",sunlit,1
+settings-tema-sunlit,settings,sunlit,lv_label,GEN long press,"16,287,212,29",#162436,#FFFFFF,3838,16,"cathode,sunlit,trail",,0
+settings-tema-sunlit,settings,sunlit,lv_dropdown,,"499,274,285,56",#FFFFFF,#FFFFFF,0,1,"cathode,redshift,trail",sunlit,1
+settings-tema-sunlit,settings,sunlit,lv_label,APP long press,"16,346,207,29",#162436,#FFFFFF,3743,16,sunlit,,0
+settings-tema-sunlit,settings,sunlit,lv_dropdown,,"499,333,285,56",#FFFFFF,#FFFFFF,0,1,"cathode,redshift,trail",sunlit,1
+settings-tema-sunlit,settings,sunlit,lv_dropdown,,"499,392,285,13",#FFFFFF,#FFFFFF,0,1,,"cathode,redshift,sunlit,trail",0
+settings-tema-trail,settings,trail,lv_label,Theme,"16,95,103,29",#F2EED8,#1A2A1E,1745,16,"cathode,sunlit,trail",,0
+settings-tema-trail,settings,trail,lv_dropdown,,"499,82,285,56",#000000,#1A2A1E,463,16,"cathode,redshift,sunlit,trail",,0
+settings-tema-trail,settings,trail,lv_label,Font,"16,154,70,29",#F2EED8,#1A2A1E,1115,16,"cathode,trail",,0
+settings-tema-trail,settings,trail,lv_dropdown,,"499,141,285,56",#FFFFFF,#1A2A1E,845,16,"cathode,redshift,trail",sunlit,0
+settings-tema-trail,settings,trail,lv_label,Visual profile (Eco),"16,213,257,29",#F2EED8,#1A2A1E,4621,16,"cathode,trail",,0
+settings-tema-trail,settings,trail,lv_dropdown,,"499,200,285,56",#FFFFFF,#1A2A1E,440,16,"cathode,redshift,trail",sunlit,0
+settings-tema-trail,settings,trail,lv_label,GEN long press,"16,287,212,29",#F2EED8,#1A2A1E,3734,16,"cathode,sunlit,trail",,0
+settings-tema-trail,settings,trail,lv_dropdown,,"499,274,285,56",#FFFFFF,#1A2A1E,546,16,"cathode,redshift,trail",sunlit,0
+settings-tema-trail,settings,trail,lv_label,APP long press,"16,346,209,29",#F2EED8,#1A2A1E,3704,16,"cathode,trail",,0
+settings-tema-trail,settings,trail,lv_dropdown,,"499,333,285,56",#FFFFFF,#1A2A1E,546,16,"cathode,redshift,trail",sunlit,0
+settings-tema-trail,settings,trail,lv_dropdown,,"499,392,285,13",#FFFFFF,#1A2A1E,0,1,,"cathode,redshift,sunlit,trail",0
+settings-wfbat,settings-wfbat,default,lv_label,"Spectrum auto min, max","16,95,289,28",#F8EEFF,#221A33,4977,16,default,,0
+settings-wfbat,settings-wfbat,default,lv_label,"Waterfall auto min, max","16,154,283,28",#F8EEFF,#221A33,4870,16,default,,0
+settings-wfbat,settings-wfbat,default,lv_label,"Waterfall line, zoom","16,213,239,28",#F8EEFF,#221A33,4079,16,default,,0
+settings-wfbat,settings-wfbat,default,lv_label,Waterfall smooth scroll,"16,272,276,28",#F8EEFF,#221A33,4732,16,default,,0
+settings-wfbat,settings-wfbat,default,lv_label,Waterfall battery mode,"16,331,276,28",#F8EEFF,#221A33,4741,16,default,,0

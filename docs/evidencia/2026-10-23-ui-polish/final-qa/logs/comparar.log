@@ -1,0 +1,32 @@
+== 218 fixtures comunes (base 218, actual 243) ==
+  comparacion-png.csv: 218 filas
+  comparacion-metricas.csv: 218 filas
+  comparacion-contratos.csv: 27 filas
+  comparacion-estructura.csv: 218 filas
+  comparacion-geometria.csv: 136 filas
+
+  PNG que cambian: 218/218
+  delta flushes: suma=0 min=0 max=0 p50=0.0
+  delta flushed_px: suma=65074 min=111 max=429 p50=272.0
+  contratos nuevo: 19
+    finalqa-reloj-dseg14-tema-aurora: layout_overlap
+    finalqa-reloj-dseg14-tema-cathode: layout_overlap
+    finalqa-reloj-dseg14-tema-redshift: layout_overlap
+    finalqa-reloj-dseg14-tema-sprint: layout_overlap
+    finalqa-reloj-dseg14-tema-sunlit: layout_overlap
+    finalqa-reloj-dseg14-tema-trail: layout_overlap
+    finalqa-reloj-dseg7-tema-aurora: layout_overlap
+    finalqa-reloj-dseg7-tema-cathode: layout_overlap
+    finalqa-reloj-dseg7-tema-redshift: layout_overlap
+    finalqa-reloj-dseg7-tema-sprint: layout_overlap
+  contratos regresion: 2
+    gaps-dialog-msg-cw: region_min_content:frecuencia
+    gaps-dialog-msg-voice: region_min_content:frecuencia
+  contratos resuelto: 0
+  contratos persiste: 6
+    gaps-dialog-freq: layout_touch_target
+    gaps-dialog-msg-cw: typography_contrast
+    gaps-net-bt-connected: typography_contrast
+    gaps-net-bt-off: typography_contrast
+    gaps-net-bt-on: typography_contrast
+    gaps-net-wifi-off: typography_contrast

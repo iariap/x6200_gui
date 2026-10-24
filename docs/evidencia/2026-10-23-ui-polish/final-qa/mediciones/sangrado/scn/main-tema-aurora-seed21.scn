@@ -1,0 +1,40 @@
+# main-tema-aurora: the real main screen under the shipped "Aurora" theme
+# (rootfs/usr/share/x6200/themes/Aurora.json: deep aubergine, lavender readings
+# and coral for TX/alarm, with turquoise notes; the theme names `font: inter`,
+# so the frequency row and the clock draw with Inter here without the fixture
+# asking for a family). Same radio state as home-usb-20m, so the theme is the
+# only variable: the render is Aurora's identity of the main screen (frequency
+# row, mode, VFO, S-meter, band plan and waterfall).
+#
+# It is also the fixture of the non-text contract for Aurora (`s_meter_arc` and
+# `waterfall_signal` in tools/ab_testing/quality/nontext.yaml, WCAG 1.4.11 over
+# its committed golden render).
+
+name main-tema-aurora
+screen main
+
+theme Aurora
+seed 21
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

@@ -1,0 +1,14 @@
+== 218 capturas, 16 regiones, 12 known issues ==
+  findings: 2254
+    failure    8
+    ok         2246
+
+  8 FALLOS:
+    gaps-dialog-freq: layout_touch_target: lv_textarea at 275,161 250x35 is 250x35, below the 44px touch target
+    gaps-dialog-msg-cw: region_min_content:frecuencia: content 0.0050 >= 0.0200
+    gaps-dialog-msg-cw: typography_contrast: text 'CW' contrast 3.89:1 < 4.50:1 (#8A7BA0 on #2C213E)
+    gaps-dialog-msg-voice: region_min_content:frecuencia: content 0.0050 >= 0.0200
+    gaps-net-bt-connected: typography_contrast: text '\uf1eb' contrast 1.20:1 < 4.50:1 (#3A2D50 on #2C213E)
+    gaps-net-bt-off: typography_contrast: text '\uf1eb' contrast 1.20:1 < 4.50:1 (#3A2D50 on #2C213E)
+    gaps-net-bt-on: typography_contrast: text '\uf1eb' contrast 1.20:1 < 4.50:1 (#3A2D50 on #2C213E)
+    gaps-net-wifi-off: typography_contrast: text '\uf1eb' contrast 1.20:1 < 4.50:1 (#3A2D50 on #2C213E)

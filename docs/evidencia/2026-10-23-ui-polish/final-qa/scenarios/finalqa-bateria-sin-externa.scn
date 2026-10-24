@@ -1,0 +1,35 @@
+# finalqa-bateria-sin-externa: pack valido SIN tension externa (la etiqueta
+# `U+F1E6 x.x V` queda oculta, src/clock.c: `ext_v < EXT_MIN_V`). Es el estado
+# que prueba que la fila de estado se recompone sin la fuente externa.
+# QA final de la epica #284 / issue #287.
+#
+# Ver el encabezado de `finalqa-bateria-desconocida.scn`: mismo estado de radio
+# que `home-usb-20m`, solo cambia la muestra del pack.
+
+name finalqa-bateria-sin-externa
+screen main
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.3
+external_v 0.0
+battery_cap 82
+charging false
+
+rxtx rx

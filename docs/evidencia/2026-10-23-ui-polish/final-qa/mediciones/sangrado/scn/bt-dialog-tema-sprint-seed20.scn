@@ -1,0 +1,39 @@
+# bt-dialog-tema-sprint: the real Bluetooth window (src/dialog_bt.c) over the
+# main screen under the shipped "Sprint" theme. Same firmware path as bt-dialog
+# (main_screen_start_app(ACTION_APP_BT) -> dialog_construct -> the header, the
+# device table, the status line and the Scan/RX/Speaker/Auto/Close row) with the
+# theme as the only variable, so the dialog's own surfaces (dialog / dialog_border
+# / title / action) are read with Sprint's navy, amber and ice cyan.
+#
+# The host has no btaudio-ctl: `system()` is wrapped to a no-op and the file the
+# script would leave is seeded with a fixed device list (mocks/mock_btaudio.c), so
+# the table draws a real row ("Living Room TV", headphones, not connected).
+
+name bt-dialog-tema-sprint
+screen bt-dialog
+
+theme Sprint
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

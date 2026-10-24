@@ -1,0 +1,18 @@
+fixture                        sangrado  px.home  fuga  amplitud  superficie  rol
+  settings-tema-aurora                0    17801    0.0       0.0  #221A33   #221A33  OK
+  settings-tema-cathode               0    15964    0.0       0.0  #28190E   #28190E  OK
+  settings-tema-redshift              0    10327    0.0       0.0  #140809   #140809  OK
+  settings-tema-sprint                0    18644    0.0       0.0  #0C1E38   #0C1E38  OK
+  settings-tema-sunlit                0    75959    0.0       0.0  #FFFFFF   #FFFFFF  OK
+  settings-tema-trail                 0    19036    0.0       0.0  #1A2A1E   #1A2A1E  OK
+  bt-dialog-tema-aurora               0    17801    0.0       0.0  #1B1529   #221A33  OK
+  bt-dialog-tema-cathode              0    15964    0.0       0.0  #140D08   #28190E  OK
+  bt-dialog-tema-redshift             0    10327    0.0       0.0  #0A0505   #140809  OK
+  bt-dialog-tema-sprint               0    18644    0.0       0.0  #071529   #0C1E38  OK
+  bt-dialog-tema-sunlit               0    75959    0.0       0.0  #FFFFFF   #FFFFFF  OK
+  bt-dialog-tema-trail                0    19036    0.0       0.0  #132117   #1A2A1E  OK
+  dialog-msg-cw                       0    17801    0.0       0.0  #221A33   #221A33  OK
+  dialog-msg-voice                    0    17801    0.0       0.0  #221A33   #221A33  OK
+
+  sangrado total: 0 px en 14 dialogos REALES x semilla
+  superficie == rol `dialog` del tema: 9/14

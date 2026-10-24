@@ -1,0 +1,41 @@
+# finalqa-bateria-desconocida: bateria SIN muestra valida ("--%") en la pantalla
+# principal, para el QA final de la epica #284 (issue #287).
+#
+# Mismo estado de radio que `home-usb-20m` (el fixture canonico de HOME); solo
+# cambia la muestra del pack que `screens.c` le pasa a `clock_update_power()`
+# (`battery_v`/`battery_cap`/`external_v`/`charging`), que son claves
+# documentadas del lenguaje de fixtures (tools/ui_harness/README.md, "Scenarios").
+# El archivo vive en esta carpeta de evidencia porque el contrato de #287 es
+# evidence-only: no se agregan fixtures al corpus del repo.
+#
+# `battery_v 0.0` = `sample_valid()` falso (src/clock.c): la linea de estado
+# dibuja "--%" con la tinta `text_dim` en vez de inventar un 0 %. La fuente
+# externa (13.8 V) sigue visible porque es una muestra distinta.
+
+name finalqa-bateria-desconocida
+screen main
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 0.0
+external_v 13.8
+battery_cap 0
+charging false
+
+rxtx rx

@@ -1,0 +1,34 @@
+# main-tema-sunlit: the real main screen under the shipped "Sunlit" theme
+# (rootfs/usr/share/x6200/themes/Sunlit.json: warm ivory, deep blue instrumentation,
+# amber controls, Noto Sans, firm borders). Same radio state as home-usb-20m;
+# the theme is the only variable, so the render is the daylight identity of the
+# main screen (frequency row, S-meter, VFO, mode, band plan and waterfall).
+
+name main-tema-sunlit
+screen main
+
+theme Sunlit
+seed 21
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

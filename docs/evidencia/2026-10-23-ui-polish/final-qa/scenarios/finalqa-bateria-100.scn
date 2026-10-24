@@ -1,0 +1,34 @@
+# finalqa-bateria-100: pack al 100 % (muestra valida) en la pantalla principal.
+# QA final de la epica #284 / issue #287. El 100 % es el estado de texto mas
+# ancho de la fila de estado ("100%"): el que mas corre el icono a la izquierda
+# y el que midio la colision de #269.
+#
+# Ver el encabezado de `finalqa-bateria-desconocida.scn`.
+
+name finalqa-bateria-100
+screen main
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.6
+external_v 13.8
+battery_cap 100
+charging false
+
+rxtx rx
