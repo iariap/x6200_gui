@@ -1,0 +1,9 @@
+  widgets de texto dentro de la modal: 238
+  hallazgos (sin un solo pixel de tinta): 7
+    settings-grupo-operation-tema-sunlit lv_label     '07'                   caja 512,154,67,29      tinta #FFFFFF sobre #FFFFFF  con-tinta:cathode,redshift,trail
+    settings-grupo-operation-tema-sunlit lv_label     'Pair / connect...'    caja 499,318,285,56     tinta #FFFFFF sobre #FFFFFF  con-tinta:cathode,redshift,trail
+    settings-grupo-operation-tema-sunlit lv_dropdown  ''                     caja 499,377,285,28     tinta #FFFFFF sobre #FFFFFF  con-tinta:cathode,redshift,trail
+    settings-tema-sunlit                 lv_dropdown  ''                     caja 499,141,285,56     tinta #FFFFFF sobre #FFFFFF  con-tinta:cathode,redshift,trail
+    settings-tema-sunlit                 lv_dropdown  ''                     caja 499,200,285,56     tinta #FFFFFF sobre #FFFFFF  con-tinta:cathode,redshift,trail
+    settings-tema-sunlit                 lv_dropdown  ''                     caja 499,274,285,56     tinta #FFFFFF sobre #FFFFFF  con-tinta:cathode,redshift,trail
+    settings-tema-sunlit                 lv_dropdown  ''                     caja 499,333,285,56     tinta #FFFFFF sobre #FFFFFF  con-tinta:cathode,redshift,trail

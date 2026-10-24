@@ -1,0 +1,20 @@
+== build del arnes de host (out-of-source) ==
+cmake -S tools/ui_harness -B /home/pablo/desa/asf/state/worktrees/x6200/ui-polish-qa-284/../../../../tmp/opencode/ui-polish-qa-284/build -DHARNESS_REVISION=1845cb77d36b93c4d8cd774fd130735f4d2f6f30 -DCMAKE_BUILD_TYPE=Release
+
+-- Configuring done (0.0s)
+-- Generating done (0.1s)
+-- Build files have been written to: /scratch/build
+
+== make ==
+      | ^
+[ 21%] Linking CXX executable ui_harness
+[ 21%] Linking CXX executable ui_harness_dialogs
+[ 60%] Built target ui_harness
+[100%] Built target ui_harness_dialogs
+
+binarios:
+-rwxr-xr-x. 1 pablo pablo 4418784 Oct 23 22:30 /tmp/opencode/ui-polish-qa-284/build/ui_harness
+-rwxr-xr-x. 1 pablo pablo 4446952 Oct 23 22:30 /tmp/opencode/ui-polish-qa-284/build/ui_harness_dialogs
+
+revision que reporta el binario: 1845cb77d36b93c4d8cd774fd130735f4d2f6f30
+lvgl: 74d0a816a440eea53e030c4f1af842a94f7ce3d3

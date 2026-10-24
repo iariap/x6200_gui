@@ -1,0 +1,14 @@
+== 1. solo copy (base c90453fd) ==
+  OK   src/dialog_field.c: esqueleto identico (332 literales)
+  OK   src/dialog_swrscan.c: esqueleto identico (54 literales)
+  OK   src/dialog_propagation.c: esqueleto identico salvo buf[32]->buf[48] (declarado)
+
+== 2. backend intacto (src/field/flog.c) ==
+  OK   src/field/flog.c no cambia (el PROGRAMID del ADIF sigue igual)
+
+== 3. copy en ingles + identidad X6200 ==
+  OK   0 literales con marcadores de espanol en las tres unidades
+  OK   el header de Field Ops dice X6200
+  OK   literales visibles con X6100: 0 []
+
+  veredicto: PASS (0 fallo(s))

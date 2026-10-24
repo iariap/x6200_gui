@@ -1,0 +1,10 @@
+== gate de contraste WCAG sobre la superficie renderizada (issue #277) ==
+  fixtures: 24 (matriz de 6 temas x 4 estados)
+  construyendo/actualizando el arnes (revision 1845cb77d36b93c4d8cd774fd130735f4d2f6f30)...
+  etiquetas medidas: 494 (exentas 0, incidentales 2, no-texto 48)
+  declaradas, no medidas: ocluidas 128, sin tinta 2, sin color expuesto (lv_line/lv_arc) 96
+  violaciones: 0
+  --- violaciones medidas ---
+  solo violaciones preexistentes del baseline (0 entradas): OK
+  PASS: el contraste renderizado no tiene violaciones nuevas ni regresiones
+EXIT=0

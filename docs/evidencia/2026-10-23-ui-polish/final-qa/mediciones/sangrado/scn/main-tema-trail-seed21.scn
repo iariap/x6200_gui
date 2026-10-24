@@ -1,0 +1,35 @@
+# main-tema-trail: the real main screen under the shipped "Trail" theme
+# (rootfs/usr/share/x6200/themes/Trail.json: forest-green flat surfaces, olive
+# and sand text, earth-amber accents, IBM Plex Sans, moderate soft corners — no
+# neon, no cold surfaces). Same radio state as home-usb-20m; the theme is the
+# only variable, so the render is the field/expedition identity of the main
+# screen (frequency row, S-meter, VFO, mode, band plan and waterfall).
+
+name main-tema-trail
+screen main
+
+theme Trail
+seed 21
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

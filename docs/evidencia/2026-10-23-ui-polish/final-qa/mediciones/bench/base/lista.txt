@@ -1,0 +1,14 @@
+home-usb-20m
+main-tema-aurora
+main-tema-cathode
+main-tema-redshift
+main-tema-sprint
+main-tema-sunlit
+main-tema-trail
+settings-tema-aurora
+settings-tema-redshift
+bt-dialog-tema-aurora
+bt-dialog-tema-redshift
+dfl-presets-cycles
+cw-tune-default
+swrscan-3pass

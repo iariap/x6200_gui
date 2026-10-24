@@ -1,0 +1,7 @@
+  rejilla: celdas 3x2 de 56x26 en (15,5)
+  gap horizontal 6 | pitch vertical 26 | col pitch 62
+  borde derecho 195 <= 206 | fondo de la ultima fila 57 <= 61
+  runa de BT (media celda 167..195): x 173..190, y 34..57
+  celdas del contrato: 6 | pad vertical local: [2]
+  la barra izquierda cumple el contrato de #251 y la runa de BT de #285
+EXIT=0

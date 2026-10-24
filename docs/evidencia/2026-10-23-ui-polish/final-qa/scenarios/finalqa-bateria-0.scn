@@ -1,0 +1,32 @@
+# finalqa-bateria-0: pack al 0 % (muestra valida) en la pantalla principal.
+# QA final de la epica #284 / issue #287. Ver el encabezado de
+# `finalqa-bateria-desconocida.scn`: mismo estado de radio que `home-usb-20m`,
+# solo cambia la muestra del pack.
+
+name finalqa-bateria-0
+screen main
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 10.0
+external_v 13.8
+battery_cap 0
+charging false
+
+rxtx rx
