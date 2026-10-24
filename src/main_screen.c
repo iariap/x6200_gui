@@ -1737,10 +1737,11 @@ lv_obj_t * main_screen() {
 
     y += freq_height;
 
-    /* Franja de spots del cluster arriba del waterfall (X6100): se reserva su alto */
+    /* Franja de spots del cluster (X6100): son overlays independientes (lineas y
+     * etiquetas) que spot_marks_init() crea DESPUES del waterfall, asi que se
+     * dibujan encima. No se reserva su alto: cuando el cluster no tiene spots
+     * quedaba una franja negra de 44 px entre las etiquetas y el waterfall (#298). */
     lv_coord_t spots_y = y;
-
-    y += SPOT_MARKS_H;
 
     waterfall = waterfall_init(obj);
 
