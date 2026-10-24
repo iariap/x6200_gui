@@ -417,8 +417,11 @@ static void on_vfo_mode_change(Subject *subj, void *user_data) {
         return;
     }
 
-    WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, new_val));
-    LV_LOG_USER("Radio set vfo %i mode=%i", vfo, new_val);
+    /* TEST #292: probar si el BASE espera otro codigo para LSB (1 en vez de 0). */
+    int32_t coded = (new_val == 0) ? 1 : new_val;
+
+    WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, coded));
+    LV_LOG_USER("Radio set vfo %i mode=%i (code=%i)", vfo, new_val, coded);
 }
 
 static void on_split_mode_sync(Subject *subj, void *user_data) {
