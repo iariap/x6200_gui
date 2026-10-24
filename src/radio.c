@@ -5,6 +5,11 @@
  *
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/i2c-dev.h>
+
 #include "radio.h"
 #include "main.h"
 #include "btaudio.h"
@@ -409,6 +414,7 @@ static void on_vfo_mode_change(Subject *subj, void *user_data) {
 
     WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, new_val));
     LV_LOG_USER("Radio set vfo %i mode=%i", vfo, new_val);
+    radio_i2c_write_pack();
 }
 
 static void on_split_mode_sync(Subject *subj, void *user_data) {
@@ -506,6 +512,43 @@ void radio_bb_reset() {
     gpio_safe_set(x6200_pin_bb_reset, 1);
     usleep(100000);
     gpio_safe_set(x6200_pin_bb_reset, 0);
+}
+
+/* TEST #292: el GUI vendor manda por I2C (0x72, bus 0) el bloque completo de
+ * 54 registros (216 B, reg 0x0000). Nuestro port escribe los registros de a uno
+ * por serial; el BASE parece aplicar el modo solo con el bloque completo. */
+static void radio_i2c_write_pack(void) {
+    int fd = open("/dev/i2c-0", O_RDWR);
+
+    if (fd < 0) {
+        LV_LOG_ERROR("TEST292 i2c: no puedo abrir /dev/i2c-0");
+        return;
+    }
+
+    uint8_t buf[2 + 216];
+
+    buf[0] = 0x00;   /* reg 0x0000, 2 bytes big-endian */
+    buf[1] = 0x00;
+
+    for (int i = 0; i < 54; i++) {
+        uint32_t v = (uint32_t) x6200_control_get(i);
+
+        buf[2 + i * 4 + 0] = v & 0xff;
+        buf[2 + i * 4 + 1] = (v >> 8) & 0xff;
+        buf[2 + i * 4 + 2] = (v >> 16) & 0xff;
+        buf[2 + i * 4 + 3] = (v >> 24) & 0xff;
+    }
+
+    struct i2c_msg msg = { .addr = 0x72, .flags = 0, .len = sizeof(buf), .buf = buf };
+    struct i2c_rdwr_ioctl_data data = { .msgs = &msg, .nmsgs = 1 };
+
+    if (ioctl(fd, I2C_RDWR, &data) < 0) {
+        LV_LOG_ERROR("TEST292 i2c: ioctl fallo");
+    } else {
+        LV_LOG_USER("TEST292 i2c: pack 216B escrito (modo=%i)", (int) x6200_control_get(x6200_vfoa_mode));
+    }
+
+    close(fd);
 }
 
 void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
@@ -638,6 +681,8 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
      * audio). Restaurarlo en cada arranque de la GUI devuelve el audio de RX sin
      * power-cycle (antes solo lo sacaba un corte de energia). */
     x6200_control_record_set(false);
+
+    radio_i2c_write_pack();
     x6200_control_spmode_set(params.spmode.x);
 
     x6200_control_vox_set(params.vox);
