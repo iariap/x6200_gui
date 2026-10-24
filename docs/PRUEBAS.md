@@ -1419,3 +1419,17 @@ Referencia del firmware original (misma prueba): 37.1 / 68.8 / 70.4 / 39.3 dB �
 **pendiente la validación del owner por oído** (20m LSB) y **un power-cycle** para limpiar el
 mute de BASE que dejó la prueba de CW con el primer build (el mute de #244 solo se va con
 power-cycle; ni el volumen raw ni el reset GPIO 204 lo limpian — verificado).
+
+### Nota de la prueba: el mute de BASE es del ESTADO, no del fix
+
+Al probar CW con el primer build el BASE quedó en el mute de #244. Se midió que:
+- **con la GUI parada**, escribir la secuencia completa del firmware original por I2C **recupera el audio** (rms 141 → ~15000);
+- **al arrancar la GUI** desde ese estado el audio vuelve a quedar mudo;
+- **el binario oficial `22a4bf6d` (sin el fix) también mutea** en ese estado → el mute **no lo
+  introduce el fix de #292**, es un artefacto del estado del BASE después de re-inicializarlo con
+  la secuencia del stock;
+- las escrituras mínimas (modo A/B, vi_vm, 0x30, rxvol, bloque de calibración `0xF000`, `0xFFFE`)
+  aplicadas con la GUI corriendo **no** lo recuperan; el reset de GPIO 204 tampoco.
+
+Conclusión: el mute se limpia con **power-cycle del equipo** (como documenta #244) y la
+validación final por oído se hace después del power-cycle, con el binario `f4a9d47d` ya desplegado.
