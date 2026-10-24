@@ -398,6 +398,8 @@ static bool mode_write_allowed(x6200_vfo_t vfo) {
     return subject_get_int(cfg_cur.band->split.val) != 0;
 }
 
+static void radio_ssb_filter_signed(void);
+
 static void on_vfo_mode_change(Subject *subj, void *user_data) {
     x6200_vfo_t vfo = (x6200_vfo_t )user_data;
     int32_t new_val = subject_get_int(subj);
