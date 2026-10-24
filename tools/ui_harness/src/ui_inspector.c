@@ -220,6 +220,48 @@ static const char *scroll_dir_name(lv_dir_t dir)
     }
 }
 
+/* The object's state, as a space-separated list of names (empty when default).
+ *
+ * Why the readers need it: a style can change the text/background pair per state
+ * (`dialog_item_focus_style`, `dialog_item_edited_style`), and LVGL's default theme
+ * *animates* `bg_opa` between states (`lv_theme_default.c`, TRANSITION_TIME). A still
+ * frame captured right after the state change shows the overlay at its start value, so
+ * the pixels of a focused/edited node are a transition frame, not the pair the code
+ * declares. Without the state a rendered-contrast reader cannot tell the two apart and
+ * would measure the transition (e.g. black focus text over the overlay's 0 % start) as
+ * if it were the design. Emitted for every node. */
+static void emit_state(FILE *f, lv_state_t state)
+{
+    static const struct {
+        lv_state_t  bit;
+        const char *name;
+    } STATES[] = {
+        { LV_STATE_CHECKED,  "checked" },
+        { LV_STATE_FOCUSED,  "focused" },
+        { LV_STATE_FOCUS_KEY, "focus_key" },
+        { LV_STATE_EDITED,   "edited" },
+        { LV_STATE_HOVERED,  "hovered" },
+        { LV_STATE_PRESSED,  "pressed" },
+        { LV_STATE_SCROLLED, "scrolled" },
+        { LV_STATE_DISABLED, "disabled" },
+        { LV_STATE_USER_1,   "user_1" },
+        { LV_STATE_USER_2,   "user_2" },
+        { LV_STATE_USER_3,   "user_3" },
+        { LV_STATE_USER_4,   "user_4" },
+    };
+
+    fputc('"', f);
+    bool first = true;
+    for (size_t i = 0; i < sizeof(STATES) / sizeof(STATES[0]); i++) {
+        if ((state & STATES[i].bit) == 0) {
+            continue;
+        }
+        fprintf(f, "%s%s", first ? "" : " ", STATES[i].name);
+        first = false;
+    }
+    fputc('"', f);
+}
+
 static void emit_label(FILE *f, const lv_obj_t *obj)
 {
     const char *text = lv_label_get_text(obj);
@@ -333,6 +375,17 @@ static void emit_node(inspector_t *ins, const lv_obj_t *obj, lv_area_t clip)
     fprintf(f, ",\"text_color\":\"#%06X\",\"text_opa\":%u",
             (unsigned) colour_rgb(text_color),
             (unsigned) lv_obj_get_style_text_opa(obj, LV_PART_MAIN));
+    fprintf(f, ",\"state\":");
+    emit_state(f, obj->state);
+    /* The resolved text font of any object, not only labels: the text of a widget
+     * (`lv_dropdown`, the `lv_spinbox`/`lv_textarea` value) is drawn with the object's
+     * font, and a rendered-text reader needs it to apply the WCAG threshold that
+     * corresponds (large text >= 24 px is 3:1, normal text 4.5:1). Same call as the
+     * label one (`lv_obj_get_style_text_font`), so both readers see the same font. */
+    if (!lv_obj_check_type(obj, &lv_label_class)) {
+        fprintf(f, ",\"text_font\":\"%s\"",
+                font_name(lv_obj_get_style_text_font(obj, LV_PART_MAIN)));
+    }
     fprintf(f, ",\"bg_color\":\"#%06X\",\"bg_opa\":%u,\"bg_image\":%s",
             (unsigned) colour_rgb(bg_color),
             (unsigned) lv_obj_get_style_bg_opa(obj, LV_PART_MAIN),

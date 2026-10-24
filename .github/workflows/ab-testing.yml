@@ -245,6 +245,15 @@ jobs:
         working-directory: tools/ab_testing
         run: uv run python "$GITHUB_WORKSPACE/tests/check_wcag_rendered.py"
 
+      # Texto que dibujan los WIDGETS de la ventana modal (issue #287): el gate de
+      # arriba mide `lv_label`s; el valor de un desplegable/spinbox lo dibuja el
+      # widget y no aparece como etiqueta. En Sunlit ese texto quedo blanco sobre
+      # blanco (7 widgets con 0 px de tinta). Mide la tinta y el contraste WCAG de
+      # ese texto en la matriz de Ajustes + BT x los seis temas.
+      - name: "Rendered widget text gate (issue #287)"
+        working-directory: tools/ab_testing
+        run: uv run python "$GITHUB_WORKSPACE/tests/check_widget_text.py"
+
       - name: Resolve the baseline revision
         id: baseline
         run: |

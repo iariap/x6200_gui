@@ -382,7 +382,8 @@ cp "$SRC/autotune_ui.h" "$RS_STAGE/"
 cp "$DIR/stubs_restore/lvgl/lvgl.h" "$RS_STAGE/lvgl/"
 cp "$DIR/stubs_restore/helpers.h" "$DIR/stubs_restore/buttons.h" "$DIR/stubs_restore/styles.h" \
    "$DIR/stubs_restore/keyboard.h" "$DIR/stubs_restore/events.h" "$DIR/stubs_restore/waterfall.h" \
-   "$DIR/stubs_restore/main_screen.h" "$DIR/stubs_restore/cluster_column.h" "$DIR/stubs_restore/radio.h" "$RS_STAGE/"
+   "$DIR/stubs_restore/main_screen.h" "$DIR/stubs_restore/cluster_column.h" "$DIR/stubs_restore/radio.h" \
+   "$DIR/stubs_restore/theme.h" "$RS_STAGE/"
 cp "$DIR/stubs_restore/cfg/cfg.h" "$DIR/stubs_restore/cfg/subjects.h" "$DIR/stubs_restore/cfg/memory.h" "$RS_STAGE/cfg/"
 cp "$DIR/stubs_restore/liquid/liquid.h" "$RS_STAGE/liquid/"
 if [ "$SAN_OK" = yes ]; then

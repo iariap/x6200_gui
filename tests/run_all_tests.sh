@@ -10,6 +10,7 @@
 #   curve_evidence the drawn ROE curve on committed PNGs: U / dome / branch
 #   wcag          static WCAG pairs over the theme roles (src/theme.h + JSON)
 #   wcag_rendered WCAG 2.1 over the RENDERED surface (harness matrix; issue #277)
+#   widget_text   WCAG 2.1 of the text the WIDGETS draw in the dialog (issue #287)
 #   host          the native suite (401 assertions, no container)
 #   host_ci_parity  the same suite with lvgl/ hidden (the tree the CI job sees)
 #   wspr/sstv     codec round trips against the X6100's own test tools
@@ -97,6 +98,12 @@ run wcag python3 "$DIR/check_wcag.py"
 # baseline por par (tests/wcag_rendered_baseline.json) y falla ante una violacion
 # nueva, una regresion o un baseline obsoleto.
 run wcag_rendered python3 "$DIR/check_wcag_rendered.py"
+# Texto que dibujan los WIDGETS de la ventana modal (desplegables, spinboxes,
+# textareas; issue #287): el gate de arriba mide `lv_label`s y no ve el valor de
+# un desplegable, que lo dibuja el widget. En Sunlit ese texto quedo blanco sobre
+# blanco (7 widgets con 0 px de tinta). Este gate mide la tinta y el contraste
+# WCAG de ese texto en la matriz de Ajustes + BT x los seis temas.
+run widget_text python3 "$DIR/check_widget_text.py"
 run cw_tune_feed python3 "$DIR/check_cw_tune_feed.py"
 run autotune_v2 python3 "$DIR/check_autotune_v2.py"
 run build_identity python3 "$DIR/check_build_identity.py"
