@@ -4281,5 +4281,103 @@ el fixture ni la pantalla): los 64 escenarios del compare son los que ya existí
 nuevas quedan cubiertas por `contracts`/`capture`/`audit` sobre B (803 checks, 0 fallas). El reporte
 queda en `tools/ab_testing/reports/AB-SWR125/`.
 
+## 2026-10-24 — #306: el perfil natural declara la geometría nueva del waterfall (los 44 px de #298), **costo aceptado por el owner**
+
+**Qué pasó.** `#298` (commit `7a1795da`, issue cerrada) dejó de reservar los
+`SPOT_MARKS_H = 44` px de la franja de spots arriba del waterfall: los spots son
+overlays independientes (`spot_marks_init()` los crea después del waterfall y se
+dibujan encima), así que cuando el cluster no tiene spots quedaba una banda negra
+de 44 px entre la fila de frecuencia y la cascada. La cascada subió 44 px y es 44
+px más alta: su caja pasó de `0,240 800×240` a **`0,196 800×284`**.
+
+Eso movió el perfil del banco natural (`tests/check_harness_natural.sh`) y lo dejó
+**rojo** desde `main`:
+
+```
+FAIL: unprofiled invalidated rectangle (0, 191, 800, 289) (231200 px)
+```
+
+El diagnóstico de #306 decía "el waterfall absorbe band-info y LVGL funde las dos
+invalidaciones". **Medido, no es una fusión nueva**: el band-info es hijo del
+waterfall (`src/waterfall.c` → `band_info_init(obj)`, `y + 6`) y **ya caía adentro
+de la caja del waterfall antes de #298** (su rect era `0,241 800×34`, dentro de
+`0,235 800×245`; verificado corriendo el banco con el `src/main_screen.c` de
+`7a1795da^`). Lo único que cambió es la caja del waterfall: 44 px más arriba y 44
+px más alta.
+
+**Decisión del owner: opción A** — el waterfall se queda con los 44 px (es más
+espectro visible, no un defecto) y el banco se pone al día con los números
+medidos. **No se tocó código de producto** (`src/` intacto): el cambio es del
+perfil, la evidencia y los pines.
+
+### El costo (medido, no escondido)
+
+| medición | antes (`main`, `7a1795da`) | después | delta |
+|---|---|---|---|
+| área invalidada por fila de cascada | 196000 px (`0,235 800×245`) | **231200 px** (`0,191 800×289`) | **+35200 px (+18.0%)** |
+| invalidación de régimen (40 frames) | 11208000 px | **12580800 px** | **+1372800 px (+12.2%)** |
+| rectángulos / flushes del régimen | 66 / 66 | **66 / 66** | 0 |
+| `joined_px` (band-info unido a la cascada) | 1372000 | **1618400** | +246400 (7 × 35200) |
+| *settle* de la captura (los cinco modos) | 1100896 px / 6 flushes | **1136096 px** / 6 flushes | **+35200 px (800×44)** por captura |
+| `--display-off` (settle sin el repaint) | 716896 px | **752096 px** | +35200 |
+| `--natural-static` (7 band-info) | 190400 px (`0,241 800×34`) | **190400 px** (`0,197 800×34`) | 0 (se movió, no creció) |
+| `main-natural-eco` invalidado | 2796800 px | **3113600 px** | +316800 (9 filas × 35200; el resto del régimen ECO no se mueve) |
+
+El **+12.2 %** es de **área invalidada**, no de trabajo de software: el anillo
+incremental de OPT-2 (`#148`) sigue rasterizando **una fila de 800 px** por fila
+nueva (`waterfall_rasterized_px` no se mueve) y el `settle` es una vez por
+captura. El impacto real en la Cortex-A7 (costo de flush por frame) lo mide el
+**QA físico**: este banco es host x86 y mide cuentas, no tiempos
+(`natural.environment`).
+
+### Cómo se declara (por componente, sin alfombra)
+
+El perfil ya no teclea rectángulos invalidados: declara la **caja de cada
+componente** medida sobre el árbol LVGL vivo (`--inspect`) en `COMPONENTS`
+(`tests/natural_evidence.py`):
+
+```python
+COMPONENTS = {
+    "spectrum":  (0,   0, 800, 160),
+    "waterfall": (0, 196, 800, 284),   # #298: sin los 44 px de la franja de spots
+    "band_info": (0, 202, 800,  24),   # hijo del waterfall
+}
+```
+
+y el rectángulo que LVGL invalida se **deriva** (`invalidated()`: la caja
+expandida por el `ext_draw_size` del objeto —5 px medidos— y recortada al panel).
+Una caja que se mueve sin declararla cambia el rect derivado, deja de estar en
+`PROFILE` y el gate falla. El `band_info` no aparece solo en la corrida natural
+(LVGL lo une con el waterfall), así que se verifica en el control
+`--natural-static`: ahí el único rect permitido es su caja declarada, con su
+histograma (7).
+
+**Control negativo** (inyectado y revertido, con su salida real):
+
+1. un rectángulo no declarado inyectado en el JSON — `[10,10,100,100]`, *dentro*
+   de la caja del espectro, o sea el caso que una "alfombra" aceptaría:
+   `FAIL: frame 1: unprofiled invalidated rectangle (10, 10, 100, 100) (10000 px)`;
+2. un cambio de geometría de un componente declarado (`band_info_height 24 → 28`
+   en `src/band_info.c`, recompilado):
+   `FAIL: the control run invalidated (0, 195, 800, 38) (30400 px), not the declared band-info rectangle (0, 197, 800, 34) (box (0, 202, 800, 24))`.
+
+Los dos se revirtieron: el commit no toca `src/` ni deja la inyección.
+
+### Dónde viven los números (los cinco lugares, actualizados juntos)
+
+| dónde | qué |
+|---|---|
+| `tests/natural_evidence.py` | `COMPONENTS`, `PROFILE` (derivado), `SETTLE_PX = 1136096`, `RECT_COUNTS`, `STATIC_RECT_COUNTS` |
+| `tools/ab_testing/reports/NATURAL-ECOFINAL/` | la evidencia cruda re-generada (7 JSON + 7 PNG) y su `README.md`/`sha256.txt` |
+| `tools/ab_testing/tests/test_natural.py` | los pines del pytest sobre esa evidencia (`231200 px`, `1136096`, `0,197 800x34`) |
+| `tests/check_harness_natural.sh` y `tools/ui_harness/README.md` | el perfil documentado del gate |
+| `docs/AB_TESTING.md` | esta sección (el costo y su causa) |
+
+Además el settle se verifica ahora en **los cinco modos** (natural, static,
+forced, cli, display-off) contra el mismo `SETTLE_PX`: antes sólo el natural lo
+comprobaba, y era justo la clase de bug de este issue —un número medido que vive
+en dos lugares y se actualiza en uno—.
+
+
 [#109]: https://github.com/iariap/x6200_gui/issues/109
 [#112]: https://github.com/iariap/x6200_gui/issues/112

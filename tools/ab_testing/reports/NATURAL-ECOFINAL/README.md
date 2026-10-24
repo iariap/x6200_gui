@@ -6,12 +6,12 @@ corridas que la spec de la corrida mide, generadas en host x86 con el harness de
 
 | archivo | modo | qué fija |
 |---|---|---|
-| `natural.json` / `run1.json` | `--bench-natural` | el perfil del corpus UI-07 (11208000 px, 66 rectángulos, 39/40 frames) y el instrumento `waterfall_offscreen_redraws = 40` (uno por fila) |
+| `natural.json` / `run1.json` | `--bench-natural` | el perfil del corpus UI-07 (12580800 px, 66 rectángulos, 39/40 frames) y el instrumento `waterfall_offscreen_redraws = 40` (uno por fila) |
 | `forced.json` | `--bench` | compatibilidad del modo forzado (3 frames x 384000 px) |
 | `static.json` | `--bench-natural --natural-static` | la delimitación (sin drive no hay regiones de datos; quedan sólo los band-info: las guardas de OPT-4 #150 apagaron los ticks idénticos de reloj/BT) |
 | `cli.json` | `--bench-natural 10` | el override de frames por CLI |
 | `off.json` | `--bench-natural --display-off` | el panel oscuro: 0 px y `waterfall_offscreen_redraws = 0` (el corte del cómputo de la paleta) |
-| `main-natural-eco.json` | `--bench-natural` sobre `main-natural-eco` | la cadencia ECO: cascada 10/40 redibujos y espectro 1 de cada 4 (`VP_SPECTRUM_ECO_PERIOD`), totales 2796800 px |
+| `main-natural-eco.json` | `--bench-natural` sobre `main-natural-eco` | la cadencia ECO: cascada 10/40 redibujos y espectro 1 de cada 4 (`VP_SPECTRUM_ECO_PERIOD`), totales 3113600 px |
 
 Los PNG de la captura común (`forced`, `static`, `off`) son byte a byte los del
 corpus previo (ver `sha256.txt`): poner el periodo de la ROM en el refr_timer no
@@ -207,3 +207,71 @@ de **10272 px** (`586,0,214,48`) a **10486 px** (`586,0,214,49`), o sea **+214 p
 por tick de 500 ms** (+2.1%; son los 2 px de alto que creció la etiqueta de la
 hora), y el reloj invalida una vez por segundo en la radio. Los sha256 nuevos de
 los siete PNG están en `sha256.txt`, junto con este bloque de re-baseline.
+
+## Re-baseline 2026-10-24 — #306: los 44 px del waterfall de #298 (costo aceptado)
+
+`#298` (`7a1795da`) dejó de reservar los `SPOT_MARKS_H = 44` px de la franja de
+spots arriba del waterfall, así que la cascada subió 44 px y es 44 px más alta:
+su caja pasó de `0,240 800×240` a `0,196 800×284` y cada fila invalida **231200
+px** en vez de 196000 (`0,235 800×245` → `0,191 800×289`). El band-info, que es
+hijo del waterfall (`y + 6`), se movió con él: `0,241 800×34` → `0,197 800×34`
+(mismo tamaño). El owner **aceptó el costo** (opción A de #306): el waterfall se
+queda con los 44 px y esta evidencia se re-generó con el binario de la revisión
+`97229004` (`tests/check_harness_natural.sh` más `--bench-natural` sobre
+`main-natural-eco`), sin tocar código de producto.
+
+Lo que **no** se mueve: el perfil del espectro (132000 px × 27), el del reloj
+(10486 px, 0 ticks con `time()` fijo), el histograma (cascada 39 / espectro 27),
+la idempotencia (`run1` y `natural` byte a byte), el control `--natural-static`
+en 190400 px con sus 7 band-info (se movió, no creció), `--display-off` en 0 px,
+`waterfall_rasterized_px = 32000` (una fila de 800 px por fila nueva: el área
+invalidada crece, el trabajo de software no) y `waterfall_full_rebuilds = 0`.
+
+Lo que sí cambia es el **área invalidada**: +35200 px (800 × 44) por cada
+rectángulo de cascada y +35200 px en el **settle** de los cinco modos (es la
+invalidación de arranque que une la cascada con el espectro, una vez por
+captura).
+
+| campo | antes (`3cc409e9`, #285) | después (`97229004`, #306) | delta |
+|---|---|---|---|
+| `natural.totals.invalidated_px` / rects | 11208000 / 66 | **12580800 / 66** | +1372800 (**+12.2%**), 0 rects |
+| rect de la cascada | `0,235 800x245` = 196000 | **`0,191 800x289` = 231200** | +35200 por fila (+18.0%) |
+| `natural.totals.joined_px` | 1372000 | **1618400** | +246400 (7 × 35200) |
+| `metrics` (`natural`/`run1`) | 72 / 12308896 | **72 / 13716896** | +1372800 (settle +35200) |
+| `metrics` (`forced`) | 9 / 2252896 | **9 / 2288096** | +35200 |
+| `metrics` (`static`) | 13 / 1291296 | **13 / 1326496** | +35200 |
+| `metrics` (`cli`, `--bench-natural 10`) | 21 / 3656896 | **21 / 4008896** | +35200 settle, +316800 frames |
+| `metrics` (`off`, `--display-off`) | 5 / 716896 | **5 / 752096** | +35200 |
+| `main-natural-eco` invalidado / rects | 2796800 / 20 | **3113600 / 20** | +316800 (9 filas) |
+| `main-natural-eco` `metrics` | 24 / 3763146 | **24 / 4115146** | +35200 |
+| PNG de los siete modos | — | **cambian** | ver abajo |
+
+El settle se puede citar exacto en esta re-baseline porque es **una sola
+invalidación** de la cascada (800 × 44 = 35200 px): el bloque `metrics` no expone
+los rectángulos, pero el delta es el mismo en los cinco modos y el control
+`--display-off` lo verifica por diferencia (`1136096 − 384000 = 752096`).
+
+Los PNG cambian por dos motivos, ninguno de este cambio (que no toca `src/`): el
+waterfall está 44 px más arriba en la captura (`#298`) y esta evidencia estaba
+commiteada desde `#285`, así que también recoge lo que `src/` se movió después
+(`#294`, `#295`, `#298`, `#301`, `#292`). Los sha256 nuevos están arriba y en
+`sha256.txt`; el PNG no depende del string de `HARNESS_REVISION` (la misma
+revisión recompilada da el mismo sha256).
+
+El **+12.2 %** es área invalidada, no trabajo por frame: el anillo de OPT-2
+(`#148`) sigue rasterizando una fila de 800 px por fila nueva. El impacto real en
+la Cortex-A7 (costo del flush por frame) lo mide el **QA físico**; este banco es
+host x86 (`natural.environment`).
+
+### Cómo se declara el perfil (por componente)
+
+`tests/natural_evidence.py` ya no teclea rectángulos: declara la **caja** de cada
+componente medida con `--inspect` (`COMPONENTS`) y **deriva** el rect que LVGL
+invalida (caja + `ext_draw_size` de 5 px, recortada al panel). El band-info se
+verifica en el control `--natural-static` contra su caja declarada (histograma de
+7) y el settle se verifica ahora en los cinco modos. Control negativo (inyectado
+y revertido): un rect no declarado en el JSON falla (`unprofiled invalidated
+rectangle`) y mover un componente declarado también (`band_info_height 24 → 28`
+→ `the control run invalidated (0, 195, 800, 38) ... not the declared band-info
+rectangle (0, 197, 800, 34)`).
+

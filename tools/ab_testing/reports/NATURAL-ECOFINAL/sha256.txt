@@ -12,13 +12,13 @@
 #           el de la captura comun: la misma imagen, menos trabajo).
 # Fixture `main-natural-eco` (ECO, 11.2 V sin fuente): main-natural-eco, la
 # corrida que mide la cadencia del espectro y de la cascada en ECO.
-run1 f4fda4970cb2800227c15f383e111d6fc7b3896d0add3e8de9b892280d3f2e5f
-natural f4fda4970cb2800227c15f383e111d6fc7b3896d0add3e8de9b892280d3f2e5f
-forced 4d4010da26e321974bd3c3773edd83cf12da594e35c52f6452f070a490411011
-static 8744b26dff3618a3c5526a561a1f94b57ca5d6159bd02f5558fa74ba3e640306
-cli abc68039e35f70a9f10948ee8da226907ccc09028ca5c4689b29e415d462a2bb
-off 4d4010da26e321974bd3c3773edd83cf12da594e35c52f6452f070a490411011
-main-natural-eco e5092a286975917d1df6988bb4cb075798227f1ba621bf09a8464dfc25d3f49f
+run1 634dd598e9b4a246ca468e1869e33270785558932e962bdad643488bb2e8eedd
+natural 634dd598e9b4a246ca468e1869e33270785558932e962bdad643488bb2e8eedd
+forced b982faea553fd6b8b1e7d1d6d8492bb87fe71cec40b99ae52424789be5f3b3fe
+static ef0887c13be27eb7016aa1d2c33312313c4bb5332f0485d0b599ba4b352834b6
+cli 98bcd7f1620748190f5f8a60ce44d24591b536bb9d1e31c91b3ced6cb22611ae
+off b982faea553fd6b8b1e7d1d6d8492bb87fe71cec40b99ae52424789be5f3b3fe
+main-natural-eco 03a5fa645f27fc40bffa955cead488e4cdbf87d0809597d5344aba819896e073
 
 # Re-baseline 2026-10-15 (corrida fonts-libre, decision 8): el harness pasa a
 # medir un frame natural con el periodo de refresco de la ROM (50 ms,
@@ -117,3 +117,32 @@ main-natural-eco e5092a286975917d1df6988bb4cb075798227f1ba621bf09a8464dfc25d3f49
 #
 # Los sha256 de los PNG estan arriba (bloque de lineas `nombre sha`): los siete
 # cambiaron con respecto a la corrida de AB-HOME250.
+
+# --- Re-baseline 2026-10-24 (#306: los 44 px del waterfall de #298) -----------
+#
+# #298 (7a1795da) dejo de reservar los 44 px (SPOT_MARKS_H) de la franja de spots
+# arriba del waterfall: su caja paso de 0,240 800x240 a 0,196 800x284 y cada fila
+# invalida 231200 px en vez de 196000 (0,235 800x245 -> 0,191 800x289). El
+# band-info, hijo del waterfall, se movio con el (0,241 800x34 -> 0,197 800x34).
+# El owner acepto el costo (opcion A de #306). La evidencia se re-genero con el
+# binario de 97229004 (tests/check_harness_natural.sh + --bench-natural sobre
+# main-natural-eco); no se toco codigo de producto.
+#
+# Los PNG de los SIETE modos cambian por dos motivos ajenos a este cambio: el
+# waterfall esta 44 px mas arriba en la captura (#298) y esta evidencia estaba
+# commiteada desde #285 (3cc409e9), asi que recoge lo que src/ se movio despues
+# (#294, #295, #298, #301, #292). El PNG no depende del string de
+# HARNESS_REVISION: la misma revision recompilada da el mismo sha256.
+#
+# natural.json           revision=97229004434805ed10d881d3348c63305c86da49 natural_invalidated_px=12580800 invalidated_rects=66 flushes=66 joined_px=1618400 waterfall_rect=0,191,800,289=231200 clock_rects=0 metrics.flushes=72 metrics.flushed_pixels=13716896 waterfall_rasterized_px=32000
+# static.json            natural_invalidated_px=190400 invalidated_rects=7 (solo band-info, 0,197 800x34) metrics.flushes=13 metrics.flushed_pixels=1326496
+# cli.json               natural_invalidated_px=2872800 invalidated_rects=15 metrics.flushes=21 metrics.flushed_pixels=4008896
+# forced.json            metrics.flushes=9 metrics.flushed_pixels=2288096
+# off.json               natural_invalidated_px=0 flushes=5 flushed_pixels=752096
+# main-natural-eco.json  natural_invalidated_px=3113600 invalidated_rects=20 (cascada 9, espectro 7, band-info 4) metrics.flushes=24 metrics.flushed_pixels=4115146
+#
+# Settle de la captura (metrics - frames, fixture main-natural): 6/1100896 antes
+# -> 6/1136096 despues (+35200 px = 800 x 44, los mismos 6 flushes). El bloque
+# metrics no expone los rectangulos del settle, pero el delta es exactamente una
+# invalidacion de cascada (800 x 44) y es el mismo en los cinco modos; el control
+# --display-off lo verifica por diferencia (1136096 - 384000 = 752096).
