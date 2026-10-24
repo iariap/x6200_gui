@@ -398,6 +398,17 @@ static bool mode_write_allowed(x6200_vfo_t vfo) {
     return subject_get_int(cfg_cur.band->split.val) != 0;
 }
 
+/* TEST #292: probar si el BASE tiene invertidos los codigos LSB/USB del enum. */
+static int32_t mode_code_swap(int32_t new_val) {
+    if (new_val == 0) {
+        return 2;   /* LSB -> codigo USB */
+    }
+    if (new_val == 2) {
+        return 0;   /* USB -> codigo LSB */
+    }
+    return new_val;
+}
+
 static void on_vfo_mode_change(Subject *subj, void *user_data) {
     x6200_vfo_t vfo = (x6200_vfo_t )user_data;
     int32_t new_val = subject_get_int(subj);
@@ -407,8 +418,10 @@ static void on_vfo_mode_change(Subject *subj, void *user_data) {
         return;
     }
 
-    WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, new_val));
-    LV_LOG_USER("Radio set vfo %i mode=%i", vfo, new_val);
+    int32_t code = mode_code_swap(new_val);
+
+    WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, code));
+    LV_LOG_USER("Radio set vfo %i mode=%i (code=%i)", vfo, new_val, code);
 }
 
 static void on_split_mode_sync(Subject *subj, void *user_data) {
