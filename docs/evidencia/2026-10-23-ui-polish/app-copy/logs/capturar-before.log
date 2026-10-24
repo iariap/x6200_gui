@@ -1,0 +1,25 @@
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: swrscan-quick -> /src/docs/evidencia/2026-10-23-ui-polish/app-copy/png-before/swrscan-quick.png (110853 bytes), flushes=18, flushed_pixels=1621208
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: swrscan-3pass-p1 -> /src/docs/evidencia/2026-10-23-ui-polish/app-copy/png-before/swrscan-3pass-p1.png (112596 bytes), flushes=12, flushed_pixels=1461549
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: swrscan-3pass -> /src/docs/evidencia/2026-10-23-ui-polish/app-copy/png-before/swrscan-3pass.png (111933 bytes), flushes=19, flushed_pixels=1628109
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: swrscan-3pass-stop -> /src/docs/evidencia/2026-10-23-ui-polish/app-copy/png-before/swrscan-3pass-stop.png (111928 bytes), flushes=19, flushed_pixels=1628109
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 check_live: cfg_sm enlazado (20 parámetros) 	(in settings_manager.cpp line #147)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 press cb is not next 	(in buttons.cpp line #1154)
+[User]	(0.000, +0)	 buttons_init: First button in page=0, group=4 hold cb is not prev 	(in buttons.cpp line #1160)
+ui_harness: swrscan-owner-40m-sweep -> /src/docs/evidencia/2026-10-23-ui-polish/app-copy/png-before/swrscan-owner-40m-sweep.png (110243 bytes), flushes=11, flushed_pixels=1454648

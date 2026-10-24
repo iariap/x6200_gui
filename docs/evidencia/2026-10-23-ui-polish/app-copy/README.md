@@ -3,18 +3,21 @@
 **Épica**: #284 (UI POLISH). **Contrato**: issue #288, vinculante (mapeo literal).
 **Rama**: `feat/ui-polish-app-copy-284` · **Worktree**:
 `state/worktrees/x6200/ui-polish-app-copy-284`.
-**Base de esta fase**: `eea3ed2022fc0f3be8c0afa1c318e32e42455ce8` (`origin/main` al
-abrir la corrida, 2026-10-23). **Fecha**: 2026-10-23.
+**Base de la Fase 1**: `eea3ed2022fc0f3be8c0afa1c318e32e42455ce8` (`origin/main` al
+abrir la corrida). **Base de la Fase 2 (rebase)**: `e1807671` (`origin/main` con
+#285 `107c1536` y #286 `e1807671`). **Fecha**: 2026-10-23.
 
 ## Veredicto en una línea
 
-**FASES 1 y 1b completas**: se aplicaron los **37 literales visibles** del contrato
-más los **11 de §1bis** que completó el coordinador (más 5 pines de test) **sin
-tocar** ADIF/JS8/APIs/comentarios, y la verificación **estructural** (compilación ARM
-de las tres unidades, placeholders `%`, truncación de `snprintf` con los peores
-casos, ASCII) pasa limpia. La evidencia **visual antes/después 800×480** queda
-**PENDIENTE PARA LA FASE 2**, después del rebase sobre #285/#286 (ver §8):
-capturarla antes daría capturas de una superficie visual obsoleta.
+**FASES 1, 1b y 2 completas**: se aplicaron los **37 literales visibles** del
+contrato más los **11 de §1bis** que completó el coordinador (más 5 pines de test)
+**sin tocar** ADIF/JS8/APIs/comentarios; la verificación **estructural** (ARM,
+placeholders, truncación, ASCII) y la **visual sobre la superficie nueva** (rebase
+sobre #285+#286, A/B de 205 escenarios, contratos) pasan limpias. En SWRScan se
+capturaron **5 estados antes/después** y el único píxel que se mueve es la línea de
+estado (`Stopped (parcial)` → `Stopped (partial)`); **Field y Propagation no se
+pueden renderizar en este entorno** (declarado `BLOCKED` con la medición en §8.1) y
+su copy se verificó con **métricas de la fuente real** (§8.3).
 
 ## 1. Mapeo aplicado (archivo → viejo → nuevo)
 
@@ -408,49 +411,184 @@ rebase de la Fase 2 hay que **volver a correr los 4 comandos**: si #285 ya movi�
 render de la home, su artefacto/`SETTLE_PX` vienen actualizados desde `main`, y
 cualquier desalineación tiene que aparecer como rojo ahí, no acá.
 
-## 7. Límites de esta fase
+## 7. Límites
 
-- **No hay capturas "después"**: son la Fase 2 (§8). Ninguna captura de esta
-  carpeta es posterior al cambio.
+- **Field y Propagation no se pueden renderizar en este entorno** (§8.1):
+  `BLOCKED` con la razón medida (arnés sin esos diálogos + sysroot runtime-only sin
+  `Scrt1.o` para linkear ARM). No hay captura de esas dos apps, ni antes ni después.
+- **SWRScan: 2 de 5 estados no son alcanzables** con las fixtures del arnés
+  (idle/vacío y error, §8.2); los dos textos están cubiertos por los pines nativos.
 - **No hay build de imagen ARM completo** (falta el sysroot completo en este
   entorno, §4.1). Sí hay compilación ARM real de las tres unidades.
 - **No hay radio, RF, TX ni periféricos**: no se valida nada físico.
 - **Legibilidad física en el LCD de 4"**: `PENDING` (requiere radio).
 - **No se recorrieron los flujos en vivo** de SWRScan/Propagation (barrido real,
   beacons, red): el comportamiento es el mismo por construcción (sólo cambian
-  literales), pero la evidencia visual y funcional en QEMU es de la Fase 2.
+  literales).
 - **Warning preexistente `%.0f` de `fill_direction`** (línea 538): no es de este
   cambio ni se apaga acá (§4.1). El peor caso real se mide en `truncation_check.c`.
 
-## 8. Fase 2 (después del rebase sobre #285 y #286) — PENDIENTE
+## 8. Fase 2 — evidencia visual sobre la superficie nueva (HECHA)
 
-Al momento de cerrar esta fase, `origin/main` ya tiene **#285** (`107c1536`,
-home: reloj/batería/BT) y **#286** (`styles.c` / `band_plan.c`) **no** está
-integrado. El coordinador avisa cuando `main` tenga los dos; ahí se rebasa
-`feat/ui-polish-app-copy-284` y **recién entonces** se captura la evidencia
-antes/después 800×480 (superficie visual ya aprobada), en esta misma carpeta:
+### 8.0 Rebase
 
-| App | Capturas |
-| --- | --- |
-| **Field** | idle/cuerpo con el header visible (`X6200  FIELD OPERATIONS`), ambos estados de softkeys |
-| **SWRScan** | idle/estado vacío (`No measurements`), scanning (`Scanning pass X/Y`), completed, stopped (`Stopped (partial)`), error (motivos de abort: `RF timeout`, `no TX`, `state change`, `3/5 passes require RF validation`, `span/center outside the TX band`, `invalid parameters`, `no data`) |
-| **Propagation** | idle/paso 1 (`Step 1/4  Preparing`), sync (`Step 2/4  Syncing`, `Beacon on air`), measure (`Step 3/4  Measuring`), result (`Step 4/4  Result`, `Measured …`, veredictos **`OPEN`/`MARGINAL`/`CLOSED`** y `NO IBP BEACONS`, línea de dirección `Toward …`), listening (`Listening to … Stop/Close restores VFO`), stop/cancelado (`Step 4/4  Cancelled`, `Radio left RX: …`) |
+`origin/main` = **`e1807671`** ([UI POLISH] Fix 18 rendered contrast failures (#286)
+(#294)), con **#285** (`107c1536`) debajo. `git rebase origin/main` sobre
+`eea3ed20`: **limpio, sin conflictos** (mis archivos son `dialog_field.c` /
+`dialog_swrscan.c` / `dialog_propagation.c`; #285 tocó clock/info/fuentes y #286
+`styles.c` / `band_plan.c` / el arnés). Quedan los 2 commits sobre la base nueva.
 
-En esa pasada hay que mirar: etiquetas de softkeys, notas de estado, truncación
-(`LV_LABEL_LONG_DOT`) y solapamiento, contraste, y que navegación/acciones no
-cambien. Los textos que crecieron respecto del español son los que hay que mirar
-con lupa en 800×480: `Band %s  |  %d eligible IBP beacons  |  %d scheduled`,
-`3/5 passes require RF validation`, `span/center outside the TX band` y
-`Toward %s (%s): %s %d deg, %.0f km.`. Lo que dependa de RF/periféricos ausentes se
-marca `PARTIAL`/`BLOCKED`, nunca `PASS` fabricado.
+### 8.1 Qué se puede renderizar y qué no (medido, no supuesto)
+
+| App | Render en este entorno | Por qué |
+| --- | --- | --- |
+| **SWRScan** | **REAL** (arnés de host) | `tools/ui_harness/CMakeLists.txt:159` compila la **fuente real** `src/dialog_swrscan.c`; los fixtures `swrscan-*` la abren por el camino del firmware |
+| **Field** | **BLOCKED** | `dialog_field.c` **no lo compila ningún target** del arnés (es inerte en `mocks/mock_main_screen.c:72`, regla de la épica) y **no hay binario ARM**: el sysroot de Buildroot del host es *runtime-only* (`ld: cannot find Scrt1.o`), así que no se puede linkear la GUI para QEMU |
+| **Propagation** | **BLOCKED** | idem (`mocks/mock_main_screen.c:84`) |
+
+No se inventó ninguna captura. Para las dos apps bloqueadas se midió lo que sí es
+medible y es el riesgo real de un cambio de copy: **si la cadena nueva entra en la
+misma caja que la vieja**, con las métricas de la fuente real (`§8.3`).
+
+### 8.2 Capturas antes/después (SWRScan, 800×480)
+
+Binarios: el arnés compilado dos veces desde el árbol de cada revisión
+(A = `e1807671`, B = `884841c5`), fuera del worktree
+(`/tmp/opencode/app-copy-288/build-{base,post}`). `capturar_apps.py` corre cada
+fixture con `--inspect`; `medir_apps.py` compara píxel a píxel.
+
+| Fixture | Estado | Cobertura | Antes | Después | Pixeles distintos |
+| --- | --- | --- | --- | --- | --- |
+| `swrscan-quick` | completed (1 pasada) | **REAL** | `Completed` | `Completed` | 0 |
+| `swrscan-3pass-p1` | scanning (pasada 1, 26/51) | **REAL** | `Scanning pass 1/3  p 26/51` | idem | 0 |
+| `swrscan-3pass` | completed (3 pasadas) | **REAL** | `Completed` | `Completed` | 0 |
+| `swrscan-3pass-stop` | stopped (parcial) | **REAL** | `Stopped (parcial)` | `Stopped (partial)` | **238** |
+| `swrscan-owner-40m-sweep` | flow cortado | **REAL** | `Scanning pass 1/1  p 26/51` | idem | 0 |
+| *(no alcanzable)* | idle/vacío `No measurements` | **BLOCKED** | — | — | — |
+| *(no alcanzable)* | error `Error: RF timeout` | **BLOCKED** | — | — | — |
+
+**Por qué los dos BLOCKED** (medido en el código, no es una excusa):
+
+- **idle/vacío**: `swr_backend_prepare()` exige `swr_dataset` y `swr_passes >= 1`, y
+  `swr_backend_run()` **aprieta Run** (`swr_backend.c:461`); las 153 filas de
+  `tests/fixtures/swrscan/swr_mock_samples.csv` tienen `is_valid=1`, así que el
+  readout siempre tiene un mínimo. No hay fixture que llegue a 0 puntos válidos.
+- **error**: tras cortar el flow el arnés sólo avanza **50 ms** de reloj virtual
+  (`virtual_time_advance(50, 10)`, `swr_backend.c:520`) y el watchdog necesita
+  `SWRSCAN_PASS_TIMEOUT_MS` = `SWRSCAN_TX_BUDGET_MS + 500` (`src/dialog_swrscan.h:40`):
+  no dispara.
+
+Los dos textos **sí** tienen cobertura funcional real: los pines nativos
+`test_swrscan_readout` (`"No measurements"`) y `test_swrscan_timeout`
+(`"Error: RF timeout"`) comparan el texto exacto que devuelve la app (suite nativa,
+exit 0). Lo que falta es la **foto**, no la verificación.
+
+Recorte legible del único cambio (`crops/swrscan-3pass-stop-antes-despues-x3.png`,
+arriba antes, abajo después): `parcial)` → `partial)`, el resto del píxel idéntico.
+
+### 8.3 Truncación / clipping: medido con la fuente real
+
+`text_probe.c` linkea la **misma** LVGL 8.3.11 y los **mismos** `src/fonts/sony_*.c`
+del render, y mide `lv_txt_get_size()` de cada cadena (vieja y nueva) contra el
+**ancho/alto real del label** de `dialog_propagation.c` / `dialog_field.c`:
+
+| Label (caja real) | Antes | Después | Resultado |
+| --- | --- | --- | --- |
+| Field header `VF(26)` (auto, x=14; el título arranca en x=104) | `X6100` 49×21 | `X6200` 51×21 | 1 línea, 51 < 90 px de hueco: **no solapa el título** |
+| `lbl_band` (760, `VF(22)`) | 558×17 | 553×17 | 1 línea, entra (≤760) |
+| `lbl_status` paso 1 (760×58, `VF(20)`) | 360×51 | 328×51 | 3 líneas, alto 51 ≤ 58 |
+| `lbl_status` sync (760×58) | 501×51 | 431×51 | 3 líneas, ≤58 |
+| `lbl_status` measure (760×58) | 235×51 | 233×51 | 3 líneas, ≤58 |
+| `lbl_detail` cobertura (760×40, `VF(18)`) | 497×14 | 392×14 | 1 línea, ≤40 |
+| nota listening (760, `VF(20)`) | 396×34 | 379×34 | 2 líneas, ≤58 |
+| dirección `Toward …` (auto) | 408×17 | 417×17 | 1 línea; +9 px, cabe en `direction[160]` |
+| paso `Step 1/4` (auto, `VF(22)`) | 158×17 | 143×17 | 1 línea |
+| veredicto (`VF(26)`) | `ABIERTA` 70×21 | `OPEN` 47×21 | 1 línea |
+| nota sin IBP (760) | 733×17 | 579×17 | 1 línea |
+| nota "no beacon heard" (760) | 670×17 | 588×17 | 1 línea |
+
+**Ninguna cadena nueva es más alta que una línea donde antes había una, ni más
+ancha que su caja.** Las dos únicas que crecen son el header de Field (+2 px, con
+39 px de margen hasta el título) y la línea de dirección (+9 px, 343 px de margen).
+O sea: **no hay clipping ni solapamiento nuevos** por el copy.
+
+### 8.4 Contraste
+
+El cambio es sólo texto: **mismo color, mismo fondo**. Medido sobre el recorte de la
+línea de estado de SWRScan (dos colores dominantes, proxy de "fondo vs primer
+plano", el mismo de la auditoría #272):
+
+```
+contraste antes    fondo #1B1529  texto #F8EEFF: 15.74:1
+contraste despues  fondo #1B1529  texto #F8EEFF: 15.74:1
+```
+
+Y los gates de contraste del repo: `tests/check_wcag.py` = **0 fallas** (1062 pares
+OK) y `tests/check_wcag_rendered.py --all` = **PASS, 0 entradas** (ninguna violación
+nueva ni regresión sobre el baseline renderizado).
+
+### 8.5 Declaración del cambio visual (`expected_changes`)
+
+El A/B **ya pasaba** antes de declarar nada, pero por el motivo equivocado: la caja
+del diálogo compartido (`ajustes_dialogo`, [2,66,796,348]) está habilitada por dos
+entradas viejas de Ajustes (#109 y #250), así que mi cambio quedaba "explicado" por
+una tolerancia ajena. Se agregó la entrada propia, fechada y con autor, **sin
+habilitar ninguna región nueva** (la región ya estaba permitida → cero blast radius;
+si las viejas expiran, la mía sigue):
+
+```yaml
+  - region: ajustes_dialogo
+    reason: >
+      AB-APCOPY288 (issue #288, epica #284): ... (el mapeo de #288 en SWRScan y la
+      medicion: 205 escenarios, solo swrscan-3pass-stop, 238 px, bbox
+      (122,77)-(152,91), 204 fixtures byte-identicas, contraste 15.74:1 igual)
+    author: ui-polish-app-copy-284
+    until: 2027-04-30
+```
+
+**Por qué esa región y no `espectro`**: el bbox también cae dentro de `espectro`
+(es más chica, `RegionMap.covering()` la devuelve), pero el texto **no es del
+espectro**: es la línea de estado de la ventana de la app, que se dibuja sobre la
+caja del diálogo compartido (`src/dialog.c::dialog_init`, [2,66,796,348]) — la
+misma caja que el propio `contracts.yaml` documenta como "la ventana modal
+compartida de las apps". Atribuirlo a `espectro` sería mentir sobre qué componente
+cambió.
+
+**Prueba de que los píxeles movidos son sólo los textos del contrato**: el A/B
+compara 205 escenarios y reporta **204 byte-idénticos**; el único distinto es
+`swrscan-3pass-stop`, con **238 px en 3 cajas** todas dentro de la banda de la
+línea de estado (`y 70..100`, `x < 400`), y el recorte x3 muestra exactamente
+`parcial)` → `partial)`. No hay ningún otro píxel movido en toda la superficie.
+
+### 8.6 Gates de la Fase 2 (sobre `884841c5` + esta evidencia)
+
+| Gate | Comando | Resultado |
+| --- | --- | --- |
+| Python (CI exacto) | `uv run ruff check .` / `ruff format --check .` / `ty check src tests` | **0 / 0 / 0** (`200 files already formatted`, `All checks passed!`) |
+| Unit (CI exacto) | `uv run pytest -m "not e2e"` | **237 passed, 13 deselected** |
+| Nativos | `sh tests/native/run_native_tests.sh` | **exit 0**, 53.088 comprobaciones, 24 etapas, 0 fallos |
+| Suite quick | `sh tests/run_all_tests.sh --quick` | **22 OK, 0 fallos** (6 SKIP por entorno) |
+| WCAG estático | `python3 tests/check_wcag.py` | **0** (1062 pares OK) |
+| WCAG renderizado | `uv run python tests/check_wcag_rendered.py --all` | **PASS, 0 entradas** |
+| Contratos | `uv run x6200-ab contracts --revision 884841c5 --repo <WT> --json` | **status PASS**, `checks 2118`, `failures 0`, `unchanged 0` |
+| A/B visual | `uv run x6200-ab compare --a e1807671 --b 884841c5 --repo <WT> --reports-dir <scratch>/reports --experiment-id AB-ci-visual --json` | **status PASS**: Functional PASS (205 escenarios), Visual Regression PASS ("no unexplained visual regressions"), Quality Contract PASS (2118), Performance PASS |
 
 ## 9. Contenido de esta carpeta
 
 ```
 README.md              este documento
-run.sh                 reproduce §4.1-§4.3 (placeholders + truncación + compilación ARM)
+run.sh                 reproduce §4.1-§4.3 (placeholders + truncacion + compilacion ARM)
 verify_placeholders.py §4.2
 truncation_check.c     §4.3
 output.txt             salida real de run.sh
 warning_diff.txt       multiconjunto de warnings base vs head (flags de firmware)
+capturar_apps.py       §8.2 (capturas antes/despues con el arnes de host)
+medir_apps.py          §8.2 (diff pixel a pixel + contraste + recorte)
+text_probe.c           §8.3 (metricas de texto con la fuente real)
+png-before/ png-after/ §8.2 (5 fixtures x fase, 800x480)
+inventario-{before,after}.json  §8.2 (estado, sha256, cobertura por fixture)
+mediciones/diffs.json  §8.2 (pixeles distintos y bbox por fixture)
+crops/                 §8.2 (recorte x3 del unico cambio visible)
+logs/                  salida de las capturas (el `*.cmd` es local: `*.cmd` esta gitignored)
 ```
+
