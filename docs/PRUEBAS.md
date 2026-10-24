@@ -1433,3 +1433,11 @@ Al probar CW con el primer build el BASE quedó en el mute de #244. Se midió qu
 
 Conclusión: el mute se limpia con **power-cycle del equipo** (como documenta #244) y la
 validación final por oído se hace después del power-cycle, con el binario `f4a9d47d` ya desplegado.
+
+### Lectura del BASE por I2C (verificado 24/10)
+
+El BASE se puede LEER por I2C con el mismo framing que usa el GUI original:
+`w2@0x72 <addr BE> rN@0x72`. Direcciones útiles verificadas: `0x0000` = versión ASCII
+("1.0.0", "1.0.6", "Jan 11 2025,13:46:22"), `0x0100` = calibración, `0x1000` = work
+params en curso (freqA como u32), `0x2000` = ready=1. Sirve para diagnóstico sin
+tocar la ROM.
