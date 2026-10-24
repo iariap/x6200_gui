@@ -2,7 +2,7 @@
   "scenario": "main-natural",
   "screen": "main",
   "seed": 13,
-  "revision": "3cc409e94199f2d2982b5ca4552a0781b666d170",
+  "revision": "97229004434805ed10d881d3348c63305c86da49",
   "framebuffer": { "width": 800, "height": 480 },
   "theme": {
     "requested": "Aurora",
@@ -55,10 +55,10 @@
   },
   "metrics": {
     "flushes": 9,
-    "flushed_pixels": 2252896,
-    "framebuffer_fnv1a": "0x654bc0fea77065d0",
+    "flushed_pixels": 2288096,
+    "framebuffer_fnv1a": "0xd0ed5c518d339d5b",
     "png_path": "out/natural/forced.png",
-    "png_bytes": 250040
+    "png_bytes": 251494
   },
   "benchmark": {
     "enabled": true,
@@ -68,15 +68,15 @@
     "repeats": 3,
     "redraw_passes": 1,
     "frames": [
-      { "render_ms": 3.2764, "flush_ms": 0.3792, "draw_ms": 2.8973, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 },
-      { "render_ms": 3.9500, "flush_ms": 0.3852, "draw_ms": 3.5649, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 },
-      { "render_ms": 3.1872, "flush_ms": 0.3837, "draw_ms": 2.8035, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 }
+      { "render_ms": 3.6868, "flush_ms": 0.4034, "draw_ms": 3.2834, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 },
+      { "render_ms": 3.6544, "flush_ms": 0.4992, "draw_ms": 3.1551, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 },
+      { "render_ms": 3.4152, "flush_ms": 0.4006, "draw_ms": 3.0146, "flushes": 1, "redrawn_area_px": 384000, "unique_redrawn_px": 384000 }
     ],
     "memory": {
-      "rss_bytes": 10760192,
-      "pss_bytes": 10006528,
-      "peak_rss_bytes": 10825728,
-      "peak_vm_bytes": 82489344
+      "rss_bytes": 10940416,
+      "pss_bytes": 10088448,
+      "peak_rss_bytes": 10940416,
+      "peak_vm_bytes": 82649088
     }
   }
 }
