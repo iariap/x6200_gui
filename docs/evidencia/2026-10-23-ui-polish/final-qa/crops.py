@@ -17,7 +17,6 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 AQUI = Path(__file__).resolve().parent
-SALIDA = AQUI / "crops"
 ESCALA = 4
 
 # (nombre, fixture, caja, version)  version: actual | base | ambos
@@ -55,8 +54,19 @@ def main(argv=None) -> int:
         "--base",
         type=Path,
         default=Path("/tmp/opencode/qa284-base/docs/evidencia/2026-10-23-ui-polish/final-qa"),
+        help="directorio de la evidencia BASE (para los recortes antes/despues)",
     )
+    ap.add_argument(
+        "--actual",
+        type=Path,
+        default=AQUI,
+        help="directorio de la evidencia ACTUAL (default: este script)",
+    )
+    ap.add_argument("--label-base", default="base", help="etiqueta del panel de la evidencia BASE")
+    ap.add_argument("--label-actual", default="actual", help="etiqueta del panel de la evidencia ACTUAL")
     args = ap.parse_args(argv)
+    ACTUAL = args.actual
+    SALIDA = ACTUAL / "crops"
     SALIDA.mkdir(exist_ok=True)
     temas = ("aurora", "cathode", "redshift", "sprint", "sunlit", "trail")
     estados = (
@@ -73,24 +83,26 @@ def main(argv=None) -> int:
         if modo in ("ambos", "temas", "digits", "estados"):
             if modo == "temas":
                 for t in temas:
-                    partes.append((t, recorte(Image.open(AQUI / "png" / f"main-tema-{t}.png"), caja)))
+                    partes.append((t, recorte(Image.open(ACTUAL / "png" / f"main-tema-{t}.png"), caja)))
             elif modo == "estados":
                 for f in estados:
-                    partes.append((f, recorte(Image.open(AQUI / "png" / f"{f}.png"), caja)))
+                    partes.append((f, recorte(Image.open(ACTUAL / "png" / f"{f}.png"), caja)))
             elif modo == "digits":
                 for d in digits:
                     partes.append(
                         (
                             f"{d}_44",
-                            recorte(Image.open(AQUI / "png" / f"finalqa-reloj-{d}-tema-aurora.png"), caja),
+                            recorte(Image.open(ACTUAL / "png" / f"finalqa-reloj-{d}-tema-aurora.png"), caja),
                         )
                     )
             else:
                 if (args.base / "png" / f"{fixture}.png").exists():
                     partes.append(
-                        ("base c90453fd", recorte(Image.open(args.base / "png" / f"{fixture}.png"), caja))
+                        (args.label_base, recorte(Image.open(args.base / "png" / f"{fixture}.png"), caja))
                     )
-                partes.append(("actual 1845cb77", recorte(Image.open(AQUI / "png" / f"{fixture}.png"), caja)))
+                partes.append(
+                    ("actual 1845cb77", recorte(Image.open(ACTUAL / "png" / f"{fixture}.png"), caja))
+                )
         if not partes:
             continue
         apilar(partes).save(SALIDA / f"{nombre}-x{ESCALA}.png")
@@ -98,7 +110,8 @@ def main(argv=None) -> int:
 
     # diff ampliado del hallazgo P1: la misma celda en los seis temas
     partes = [
-        (t, recorte(Image.open(AQUI / "png" / f"settings-tema-{t}.png"), (490, 130, 792, 380))) for t in temas
+        (t, recorte(Image.open(ACTUAL / "png" / f"settings-tema-{t}.png"), (490, 130, 792, 380)))
+        for t in temas
     ]
     apilar(partes).save(SALIDA / f"settings-valores-seis-temas-x{ESCALA}.png")
     print(f"  crops/settings-valores-seis-temas-x{ESCALA}.png")

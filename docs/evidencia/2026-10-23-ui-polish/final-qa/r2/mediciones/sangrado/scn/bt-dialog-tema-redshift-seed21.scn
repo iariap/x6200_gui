@@ -1,0 +1,33 @@
+# bt-dialog-tema-redshift: the real Bluetooth window (src/dialog_bt.c) over the
+# real main screen, under the shipped "Redshift" theme. Same path and state as
+# bt-dialog, with the theme as the only variable: the dialog roles (dialog,
+# dialog_border, row, text, btn) of Redshift are measured on a real render.
+
+name bt-dialog-tema-redshift
+screen bt-dialog
+
+theme Redshift
+seed 21
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

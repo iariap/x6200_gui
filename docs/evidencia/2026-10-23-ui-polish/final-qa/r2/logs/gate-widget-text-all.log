@@ -1,0 +1,150 @@
+  construyendo/actualizando el arnes (revision faff19ba30dfff720ebdfb49a0333562f452efc2)...
+== gate de legibilidad del texto de los WIDGETS en la ventana modal (issue #287) ==
+  fixtures: 18 (matriz de 6 temas x 3 estados de Ajustes/BT)
+  nodos de texto medidos: 138; declarados no medidos: 1152
+  por clase: lv_dropdown 36, lv_label 102
+    declarados, no medidos:   6  no medido: el valor lo dibuja su etiqueta interna
+    declarados, no medidos:  12  no medido: estado transitorio (foco/edicion)
+    declarados, no medidos: 1134  no medido: fuera de vista
+  --- todos los nodos medidos ---
+    bt-dialog-tema-aurora                    lv_label     'no headphones, RX ' caja 20,380,380,18      tinta  349 10.13:1 min 4.5 [render] ok
+    bt-dialog-tema-aurora                    lv_label     'Bluetooth devices'  caja 20,78,129,18       tinta  281 10.33:1 min 4.5 [render] ok
+    bt-dialog-tema-aurora                    lv_label     'Row: pair/connect ' caja 408,380,378,18     tinta  610 14.77:1 min 4.5 [render] ok
+    bt-dialog-tema-cathode                   lv_label     'no headphones, RX ' caja 20,380,380,18      tinta  421   7.5:1 min 4.5 [render] ok
+    bt-dialog-tema-cathode                   lv_label     'Bluetooth devices'  caja 20,78,137,18       tinta  343  11.8:1 min 4.5 [render] ok
+    bt-dialog-tema-cathode                   lv_label     'Row: pair/connect ' caja 408,380,378,18     tinta  741 12.57:1 min 4.5 [render] ok
+    bt-dialog-tema-redshift                  lv_label     'no headphones, RX ' caja 20,380,380,17      tinta  152  7.59:1 min 4.5 [render] ok
+    bt-dialog-tema-redshift                  lv_label     'Bluetooth devices'  caja 20,78,121,17       tinta  117  11.4:1 min 4.5 [render] ok
+    bt-dialog-tema-redshift                  lv_label     'Row: pair/connect ' caja 408,380,378,17     tinta  236 11.43:1 min 4.5 [render] ok
+    bt-dialog-tema-sprint                    lv_label     'no headphones, RX ' caja 20,380,380,17      tinta  332 10.43:1 min 4.5 [render] ok
+    bt-dialog-tema-sprint                    lv_label     'Bluetooth devices'  caja 20,78,103,17       tinta  247 11.64:1 min 4.5 [render] ok
+    bt-dialog-tema-sprint                    lv_label     'Row: pair/connect ' caja 408,380,378,17     tinta  547 15.54:1 min 4.5 [render] ok
+    bt-dialog-tema-sunlit                    lv_label     'no headphones, RX ' caja 20,380,380,17      tinta  366  9.58:1 min 4.5 [render] ok
+    bt-dialog-tema-sunlit                    lv_label     'Bluetooth devices'  caja 20,78,142,17       tinta  326 10.35:1 min 4.5 [render] ok
+    bt-dialog-tema-sunlit                    lv_label     'Row: pair/connect ' caja 408,380,378,17     tinta  692 15.67:1 min 4.5 [render] ok
+    bt-dialog-tema-trail                     lv_label     'no headphones, RX ' caja 20,380,380,18      tinta  421 10.52:1 min 4.5 [render] ok
+    bt-dialog-tema-trail                     lv_label     'Bluetooth devices'  caja 20,78,137,18       tinta  343 11.63:1 min 4.5 [render] ok
+    bt-dialog-tema-trail                     lv_label     'Row: pair/connect ' caja 408,380,378,18     tinta  741 12.91:1 min 4.5 [render] ok
+    settings-grupo-operation-tema-aurora     lv_label     'Accel threshold'    caja 16,154,191,28      tinta  883 16.09:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-aurora     lv_label     'Bluetooth'          caja 16,213,120,28      tinta  594 16.09:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-aurora     lv_label     'Discoverable (CAT)' caja 16,272,238,28      tinta 1096 16.09:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-aurora     lv_label     'Devices'            caja 16,331,104,28      tinta  473 16.09:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-aurora     lv_label     'Charger'            caja 16,390,105,15      tinta   77 16.09:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-aurora     lv_label     'Freq acceleration'  caja 16,95,212,28       tinta  999 16.09:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-aurora     lv_label     'Pair / connect...'  caja 499,317,285,56     tinta  743 14.77:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-aurora     lv_dropdown  ''                   caja 499,376,285,29     tinta   99 14.77:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-aurora     lv_label     '07'                 caja 512,153,67,28      tinta  120 14.77:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-aurora     lv_label     'detents/s'          caja 637,154,120,28     tinta  565 11.04:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-cathode    lv_label     'Accel threshold'    caja 16,154,216,29      tinta 1122 14.48:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-cathode    lv_label     'Bluetooth'          caja 16,213,141,29      tinta  760 14.48:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-cathode    lv_label     'Discoverable (CAT)' caja 16,272,259,29      tinta 1278 14.48:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-cathode    lv_label     'Devices'            caja 16,331,112,29      tinta  552 14.48:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-cathode    lv_label     'Charger'            caja 16,390,115,15      tinta  130 14.48:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-cathode    lv_label     'Freq acceleration'  caja 16,95,240,29       tinta 1216 14.48:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-cathode    lv_label     'Pair / connect...'  caja 499,318,285,56     tinta  923 12.57:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-cathode    lv_dropdown  ''                   caja 499,377,285,28     tinta  122 12.57:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-cathode    lv_label     '07'                 caja 512,154,67,29      tinta  121 12.57:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-cathode    lv_label     'detents/s'          caja 637,154,137,29     tinta  703  8.63:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-redshift   lv_label     'Accel threshold'    caja 16,154,192,29      tinta  443 11.77:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-redshift   lv_label     'Bluetooth'          caja 16,213,127,29      tinta  312 11.77:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-redshift   lv_label     'Discoverable (CAT)' caja 16,272,227,29      tinta  504 11.77:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-redshift   lv_label     'Devices'            caja 16,331,100,29      tinta  220 11.77:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-redshift   lv_label     'Charger'            caja 16,390,103,15      tinta   57 11.77:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-redshift   lv_label     'Freq acceleration'  caja 16,95,212,29       tinta  492 11.77:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-redshift   lv_label     'Pair / connect...'  caja 499,318,285,56     tinta  368 11.43:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-redshift   lv_dropdown  ''                   caja 499,377,285,28     tinta   57 11.43:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-redshift   lv_label     '07'                 caja 512,154,67,29      tinta   40 11.43:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-redshift   lv_label     'detents/s'          caja 637,154,121,29     tinta  288  7.82:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sprint     lv_label     'Accel threshold'    caja 16,154,173,28      tinta  908 17.44:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sprint     lv_label     'Bluetooth'          caja 16,213,112,28      tinta  623 17.44:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sprint     lv_label     'Discoverable (CAT)' caja 16,272,210,28      tinta 1036 17.44:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sprint     lv_label     'Devices'            caja 16,331,92,28       tinta  454 17.44:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sprint     lv_label     'Charger'            caja 16,390,93,15       tinta  100 17.44:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sprint     lv_label     'Freq acceleration'  caja 16,95,190,28       tinta 1002 17.44:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sprint     lv_label     'Pair / connect...'  caja 499,317,285,56     tinta  753 15.54:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sprint     lv_dropdown  ''                   caja 499,376,285,29     tinta  105 15.54:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sprint     lv_label     '07'                 caja 512,153,67,28      tinta   82 15.54:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sprint     lv_label     'detents/s'          caja 637,154,112,28     tinta  591  11.7:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sunlit     lv_label     'Accel threshold'    caja 16,154,212,29      tinta 1089 14.34:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sunlit     lv_label     'Bluetooth'          caja 16,213,141,29      tinta  733 14.34:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sunlit     lv_label     'Discoverable (CAT)' caja 16,272,255,29      tinta 1274 14.34:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sunlit     lv_label     'Devices'            caja 16,331,111,29      tinta  538 14.34:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sunlit     lv_label     'Charger'            caja 16,390,120,15      tinta  154 14.34:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sunlit     lv_label     'Freq acceleration'  caja 16,95,239,29       tinta 1203 14.34:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sunlit     lv_label     'Pair / connect...'  caja 499,318,285,56     tinta  890 15.67:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sunlit     lv_dropdown  ''                   caja 499,377,285,28     tinta  151 15.67:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sunlit     lv_label     '07'                 caja 512,154,67,29      tinta  103 15.67:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-sunlit     lv_label     'detents/s'          caja 637,154,134,29     tinta  683  8.76:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-trail      lv_label     'Accel threshold'    caja 16,154,216,29      tinta 1122 14.41:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-trail      lv_label     'Bluetooth'          caja 16,213,141,29      tinta  760 14.41:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-trail      lv_label     'Discoverable (CAT)' caja 16,272,259,29      tinta 1278 14.41:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-trail      lv_label     'Devices'            caja 16,331,112,29      tinta  552 14.41:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-trail      lv_label     'Charger'            caja 16,390,115,15      tinta  130 14.41:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-trail      lv_label     'Freq acceleration'  caja 16,95,240,29       tinta 1216 14.41:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-trail      lv_label     'Pair / connect...'  caja 499,318,285,56     tinta  923 12.91:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-trail      lv_dropdown  ''                   caja 499,377,285,28     tinta  122 12.91:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-trail      lv_label     '07'                 caja 512,154,67,29      tinta  121 12.91:1 min 3.0 [render] ok
+    settings-grupo-operation-tema-trail      lv_label     'detents/s'          caja 637,154,137,29     tinta  703 11.74:1 min 3.0 [render] ok
+    settings-tema-aurora                     lv_label     'Font'               caja 16,154,62,28       tinta  247 16.09:1 min 3.0 [render] ok
+    settings-tema-aurora                     lv_label     'Visual profile (Ec' caja 16,213,229,28      tinta 1025 16.09:1 min 3.0 [render] ok
+    settings-tema-aurora                     lv_label     'GEN long press'     caja 16,287,189,28      tinta  861 16.09:1 min 3.0 [render] ok
+    settings-tema-aurora                     lv_label     'APP long press'     caja 16,346,186,28      tinta  821 16.09:1 min 3.0 [render] ok
+    settings-tema-aurora                     lv_label     'Theme'              caja 16,95,91,28        tinta  391 16.09:1 min 3.0 [render] ok
+    settings-tema-aurora                     lv_dropdown  ''                   caja 499,140,285,56     tinta  509 14.77:1 min 3.0 [render] ok
+    settings-tema-aurora                     lv_dropdown  ''                   caja 499,199,285,56     tinta  270 14.77:1 min 3.0 [render] ok
+    settings-tema-aurora                     lv_dropdown  ''                   caja 499,273,285,56     tinta  323 14.77:1 min 3.0 [render] ok
+    settings-tema-aurora                     lv_dropdown  ''                   caja 499,332,285,56     tinta  323 14.77:1 min 3.0 [render] ok
+    settings-tema-aurora                     lv_dropdown  ''                   caja 499,391,285,14     tinta    0 — min 3.0 [sin glifo] no medido: recortado y sin glifo en la franja visible
+    settings-tema-cathode                    lv_label     'Font'               caja 16,154,70,29       tinta  299 14.48:1 min 3.0 [render] ok
+    settings-tema-cathode                    lv_label     'Visual profile (Ec' caja 16,213,257,29      tinta 1273 14.48:1 min 3.0 [render] ok
+    settings-tema-cathode                    lv_label     'GEN long press'     caja 16,287,212,29      tinta 1055 14.48:1 min 3.0 [render] ok
+    settings-tema-cathode                    lv_label     'APP long press'     caja 16,346,209,29      tinta  992 14.48:1 min 3.0 [render] ok
+    settings-tema-cathode                    lv_label     'Theme'              caja 16,95,103,29       tinta  472 14.48:1 min 3.0 [render] ok
+    settings-tema-cathode                    lv_dropdown  ''                   caja 499,141,285,56     tinta  646 12.57:1 min 3.0 [render] ok
+    settings-tema-cathode                    lv_dropdown  ''                   caja 499,200,285,56     tinta  353 12.57:1 min 3.0 [render] ok
+    settings-tema-cathode                    lv_dropdown  ''                   caja 499,274,285,56     tinta  416 12.57:1 min 3.0 [render] ok
+    settings-tema-cathode                    lv_dropdown  ''                   caja 499,333,285,56     tinta  416 12.57:1 min 3.0 [render] ok
+    settings-tema-cathode                    lv_dropdown  ''                   caja 499,392,285,13     tinta    0 — min 3.0 [sin glifo] no medido: recortado y sin glifo en la franja visible
+    settings-tema-redshift                   lv_label     'Font'               caja 16,154,64,29       tinta  125 11.77:1 min 3.0 [render] ok
+    settings-tema-redshift                   lv_label     'Visual profile (Ec' caja 16,213,225,29      tinta  500 11.77:1 min 3.0 [render] ok
+    settings-tema-redshift                   lv_label     'GEN long press'     caja 16,287,188,29      tinta  419 11.77:1 min 3.0 [render] ok
+    settings-tema-redshift                   lv_label     'APP long press'     caja 16,346,185,29      tinta  412 11.77:1 min 3.0 [render] ok
+    settings-tema-redshift                   lv_label     'Theme'              caja 16,95,93,29        tinta  185 11.77:1 min 3.0 [render] ok
+    settings-tema-redshift                   lv_dropdown  ''                   caja 499,141,285,56     tinta  261 11.43:1 min 3.0 [render] ok
+    settings-tema-redshift                   lv_dropdown  ''                   caja 499,200,285,56     tinta  146 11.43:1 min 3.0 [render] ok
+    settings-tema-redshift                   lv_dropdown  ''                   caja 499,274,285,56     tinta  165 11.43:1 min 3.0 [render] ok
+    settings-tema-redshift                   lv_dropdown  ''                   caja 499,333,285,56     tinta  165 11.43:1 min 3.0 [render] ok
+    settings-tema-redshift                   lv_dropdown  ''                   caja 499,392,285,13     tinta    0 — min 3.0 [sin glifo] no medido: recortado y sin glifo en la franja visible
+    settings-tema-sprint                     lv_label     'Font'               caja 16,154,59,28       tinta  251 17.44:1 min 3.0 [render] ok
+    settings-tema-sprint                     lv_label     'Visual profile (Ec' caja 16,213,208,28      tinta 1020 17.44:1 min 3.0 [render] ok
+    settings-tema-sprint                     lv_label     'GEN long press'     caja 16,287,170,28      tinta  838 17.44:1 min 3.0 [render] ok
+    settings-tema-sprint                     lv_label     'APP long press'     caja 16,346,169,28      tinta  804 17.44:1 min 3.0 [render] ok
+    settings-tema-sprint                     lv_label     'Theme'              caja 16,95,83,28        tinta  365 17.44:1 min 3.0 [render] ok
+    settings-tema-sprint                     lv_dropdown  ''                   caja 499,140,285,56     tinta  522 15.54:1 min 3.0 [render] ok
+    settings-tema-sprint                     lv_dropdown  ''                   caja 499,199,285,56     tinta  301 15.54:1 min 3.0 [render] ok
+    settings-tema-sprint                     lv_dropdown  ''                   caja 499,273,285,56     tinta  339 15.54:1 min 3.0 [render] ok
+    settings-tema-sprint                     lv_dropdown  ''                   caja 499,332,285,56     tinta  339 15.54:1 min 3.0 [render] ok
+    settings-tema-sprint                     lv_dropdown  ''                   caja 499,391,285,14     tinta    0 — min 3.0 [sin glifo] no medido: recortado y sin glifo en la franja visible
+    settings-tema-sunlit                     lv_label     'Font'               caja 16,154,71,29       tinta  285 14.34:1 min 3.0 [render] ok
+    settings-tema-sunlit                     lv_label     'Visual profile (Ec' caja 16,213,251,29      tinta 1284 14.34:1 min 3.0 [render] ok
+    settings-tema-sunlit                     lv_label     'GEN long press'     caja 16,287,212,29      tinta 1049 14.34:1 min 3.0 [render] ok
+    settings-tema-sunlit                     lv_label     'APP long press'     caja 16,346,207,29      tinta  995 14.34:1 min 3.0 [render] ok
+    settings-tema-sunlit                     lv_label     'Theme'              caja 16,95,103,29       tinta  478 14.34:1 min 3.0 [render] ok
+    settings-tema-sunlit                     lv_dropdown  ''                   caja 499,141,285,56     tinta  653 15.67:1 min 3.0 [render] ok
+    settings-tema-sunlit                     lv_dropdown  ''                   caja 499,200,285,56     tinta  359 15.67:1 min 3.0 [render] ok
+    settings-tema-sunlit                     lv_dropdown  ''                   caja 499,274,285,56     tinta  424 15.67:1 min 3.0 [render] ok
+    settings-tema-sunlit                     lv_dropdown  ''                   caja 499,333,285,56     tinta  424 15.67:1 min 3.0 [render] ok
+    settings-tema-sunlit                     lv_dropdown  ''                   caja 499,392,285,13     tinta    0 — min 3.0 [sin glifo] no medido: recortado y sin glifo en la franja visible
+    settings-tema-trail                      lv_label     'Font'               caja 16,154,70,29       tinta  299 14.41:1 min 3.0 [render] ok
+    settings-tema-trail                      lv_label     'Visual profile (Ec' caja 16,213,257,29      tinta 1273 14.41:1 min 3.0 [render] ok
+    settings-tema-trail                      lv_label     'GEN long press'     caja 16,287,212,29      tinta 1055 14.41:1 min 3.0 [render] ok
+    settings-tema-trail                      lv_label     'APP long press'     caja 16,346,209,29      tinta  992 14.41:1 min 3.0 [render] ok
+    settings-tema-trail                      lv_label     'Theme'              caja 16,95,103,29       tinta  472 14.41:1 min 3.0 [render] ok
+    settings-tema-trail                      lv_dropdown  ''                   caja 499,141,285,56     tinta  646 12.91:1 min 3.0 [render] ok
+    settings-tema-trail                      lv_dropdown  ''                   caja 499,200,285,56     tinta  353 12.91:1 min 3.0 [render] ok
+    settings-tema-trail                      lv_dropdown  ''                   caja 499,274,285,56     tinta  416 12.91:1 min 3.0 [render] ok
+    settings-tema-trail                      lv_dropdown  ''                   caja 499,333,285,56     tinta  416 12.91:1 min 3.0 [render] ok
+    settings-tema-trail                      lv_dropdown  ''                   caja 499,392,285,13     tinta    0 — min 3.0 [sin glifo] no medido: recortado y sin glifo en la franja visible
+  --- hallazgos ---
+  PASS: todo el texto de la ventana modal dibuja tinta y llega al umbral WCAG
+EXIT=0

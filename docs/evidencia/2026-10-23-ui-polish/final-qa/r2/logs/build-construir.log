@@ -1,0 +1,18 @@
+== build del arnes de host (out-of-source, ronda 2) ==
+cmake -S tools/ui_harness -B /tmp/opencode/qa284-r2/build -DHARNESS_REVISION=faff19ba30dfff720ebdfb49a0333562f452efc2 -DCMAKE_BUILD_TYPE=Release
+
+-- Configuring done (0.4s)
+-- Generating done (0.1s)
+-- Build files have been written to: /scratch/build
+
+== make ==
+[100%] Building C object CMakeFiles/ui_harness.dir/src/src/fonts/ubuntu_44.c.o
+[100%] Building C object CMakeFiles/ui_harness.dir/src/src/fonts/ubuntu_8.c.o
+[100%] Linking CXX executable ui_harness
+[100%] Built target ui_harness
+
+-rwxr-xr-x. 1 pablo pablo 4418816 Oct 24 00:14 /tmp/opencode/qa284-r2/build/ui_harness
+-rwxr-xr-x. 1 pablo pablo 4446984 Oct 24 00:14 /tmp/opencode/qa284-r2/build/ui_harness_dialogs
+
+revision que reporta el binario: faff19ba30dfff720ebdfb49a0333562f452efc2
+lvgl: 74d0a816a440eea53e030c4f1af842a94f7ce3d3

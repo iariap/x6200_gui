@@ -1,0 +1,15 @@
+building ui_harness (revision faff19ba30dfff720ebdfb49a0333562f452efc2)...
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/tools/ui_harness/build/styles_host.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+In file included from /src/src/params/params.h:20,
+                 from /src/src/styles.h:42,
+                 from /src/tools/ui_harness/build/styles_host.c:9:
+/src/src/params/types.h:12:1: warning: multi-line comment [-Wcomment]
+   12 | // #define TYPEDEF_PARAM_STRUCT(T) typedef struct {\
+      | ^
+running the natural bench on main-natural...
+FAIL: frame 1: unprofiled invalidated rectangle (0, 191, 800, 289) (231200 px)

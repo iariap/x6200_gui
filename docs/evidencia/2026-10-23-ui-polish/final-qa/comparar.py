@@ -30,7 +30,6 @@ from collections import defaultdict
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-MED = AQUI / "mediciones"
 
 
 def leer_tsv(ruta: Path) -> dict[str, dict[str, str]]:
@@ -75,12 +74,18 @@ def leer_elementos(ruta: Path) -> dict[str, dict[str, int]]:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--base", type=Path, required=True)
+    ap.add_argument(
+        "--base", type=Path, required=True, help="directorio de la evidencia BASE (la corrida anterior)"
+    )
+    ap.add_argument(
+        "--actual", type=Path, default=AQUI, help="directorio de la evidencia ACTUAL (default: este script)"
+    )
     args = ap.parse_args(argv)
-    base = args.base
+    base, actual = args.base, args.actual
+    MED = actual / "mediciones"
 
     tsv_base = leer_tsv(base / "logs" / "capturas.tsv")
-    tsv_act = leer_tsv(AQUI / "logs" / "capturas.tsv")
+    tsv_act = leer_tsv(actual / "logs" / "capturas.tsv")
     comunes = sorted(set(tsv_base) & set(tsv_act))
     print(f"== {len(comunes)} fixtures comunes (base {len(tsv_base)}, actual {len(tsv_act)}) ==")
 
@@ -101,7 +106,7 @@ def main(argv=None) -> int:
     deltas = defaultdict(list)
     for n in comunes:
         jb = json.loads((base / "json" / f"{n}.json").read_text(errors="surrogateescape"))
-        ja = json.loads((AQUI / "json" / f"{n}.json").read_text(errors="surrogateescape"))
+        ja = json.loads((actual / "json" / f"{n}.json").read_text(errors="surrogateescape"))
         mb, ma = jb.get("metrics", {}), ja.get("metrics", {})
         fb, fa = int(mb.get("flushes", 0)), int(ma.get("flushes", 0))
         pb, pa = int(mb.get("flushed_pixels", 0)), int(ma.get("flushed_pixels", 0))
@@ -122,7 +127,7 @@ def main(argv=None) -> int:
 
     # 3. contratos
     cb = leer_contratos(base / "mediciones" / "contratos.json")
-    ca = leer_contratos(AQUI / "mediciones" / "contratos.json")
+    ca = leer_contratos(actual / "mediciones" / "contratos.json")
     contratos = []
     for clave in sorted(set(cb) | set(ca)):
         fixture, regla = clave
@@ -145,7 +150,7 @@ def main(argv=None) -> int:
 
     # 4. estructura
     eb = leer_elementos(base / "mediciones" / "elementos.csv")
-    ea = leer_elementos(AQUI / "mediciones" / "elementos.csv")
+    ea = leer_elementos(actual / "mediciones" / "elementos.csv")
     estructura = []
     for n in comunes:
         b = eb.get(n, {})
@@ -179,7 +184,7 @@ def main(argv=None) -> int:
             or n.startswith("finalqa-")
         ):
             continue
-        ja = json.loads((AQUI / "json" / f"{n}.json").read_text(errors="surrogateescape"))
+        ja = json.loads((actual / "json" / f"{n}.json").read_text(errors="surrogateescape"))
         jb = json.loads((base / "json" / f"{n}.json").read_text(errors="surrogateescape"))
 
         def cajas(d):

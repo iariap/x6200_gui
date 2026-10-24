@@ -32,7 +32,7 @@ AQUI = Path(__file__).resolve().parent
 ROOT = AQUI.parents[3]
 ACT_BUILD = Path(os.environ.get("QA284_BUILD", "/tmp/opencode/ui-polish-qa-284/build"))
 IMAGE = os.environ.get("UI_HARNESS_IMAGE", "x6200-uiharness")
-SALIDA = AQUI / "mediciones" / "bench"
+SALIDA = AQUI / "mediciones" / "bench"  # se reescribe en main()
 
 FIXTURES = (
     "home-usb-20m",
@@ -111,7 +111,15 @@ def resumen(d: dict) -> dict:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--base-build", type=Path, default=Path("/tmp/opencode/qa284-base-scratch/build"))
+    ap.add_argument(
+        "--base",
+        type=Path,
+        default=AQUI,
+        help="directorio donde escribir mediciones/bench (default: este script)",
+    )
     args = ap.parse_args(argv)
+    global SALIDA
+    SALIDA = args.base / "mediciones" / "bench"
     SALIDA.mkdir(parents=True, exist_ok=True)
 
     for build in (ACT_BUILD, args.base_build):
