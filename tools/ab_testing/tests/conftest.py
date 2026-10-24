@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from helpers import QUALITY_DIR
+from helpers import FIXTURE_NAMES, QUALITY_DIR
 from x6200_ab.known_issues import KnownIssue, load_known_issues
 from x6200_ab.quality_config import (
     Budgets,
@@ -40,7 +40,7 @@ def real_quality(region_map: RegionMap) -> RealQuality:
     names = set(region_map.regions)
     return RealQuality(
         regions=region_map,
-        contracts=load_contracts(QUALITY_DIR / "contracts.yaml", names),
+        contracts=load_contracts(QUALITY_DIR / "contracts.yaml", names, set(FIXTURE_NAMES)),
         budgets=load_budgets(QUALITY_DIR / "budgets.yaml"),
         known_issues=load_known_issues(QUALITY_DIR / "known_issues.yaml", names),
         performance_exceptions=load_performance_exceptions(

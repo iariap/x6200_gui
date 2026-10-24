@@ -75,7 +75,8 @@ def _finding(findings: list[ContractFinding], rule: str) -> ContractFinding:
 def main() -> int:
     quality = REPO / "tools" / "ab_testing" / "quality"
     regions = load_regions(quality / "regions.yaml")
-    contracts = load_contracts(quality / "contracts.yaml", set(regions.regions))
+    fixtures = {path.stem for path in (REPO / "tools" / "ui_harness" / "fixtures").glob("*.scn")}
+    contracts = load_contracts(quality / "contracts.yaml", set(regions.regions), fixtures)
     report = json.loads((HARNESS_JSON / f"{FIXTURE}.json").read_text())
     image = np.asarray(Image.open(EVIDENCE / "despues" / f"{FIXTURE}.png").convert("RGB")).copy()
 

@@ -22,6 +22,11 @@ from x6200_ab.revisions import Revision
 from x6200_ab.scenarios import Scenario
 
 QUALITY_DIR = Path(__file__).resolve().parents[1] / "quality"
+FIXTURES_DIR = Path(__file__).resolve().parents[2] / "ui_harness" / "fixtures"
+# The scenario names of the suite the repository ships: `expected_changes` is
+# validated against them (a glob that matches none is a configuration error).
+FIXTURE_NAMES = frozenset(path.stem for path in FIXTURES_DIR.glob("*.scn"))
+
 FRAMEBUFFER = (800, 480)
 BACKGROUND = (30, 40, 55)
 FOREGROUND = (220, 220, 220)

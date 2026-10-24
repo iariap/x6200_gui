@@ -75,100 +75,32 @@ typography:
   allow_fallback_glyphs: true
 
 # A visual change stops being a regression only if it is a fix of a known issue
-# or is listed here. Each entry needs a reason, an author and an expiry date —
-# never a global, permanent exemption.
+# or is listed here. Each entry needs a reason, an author, an expiry date and the
+# globs of the fixtures it covers — never a global, permanent exemption.
 #
-# The four entries below declare where the pixels of one fix move: UI-011,
-# UI-012 and UI-014 are structural findings of VISION (`typography_missing_glyph`,
-# `typography_text_overflow`), whose rule says *what* is wrong but never where
-# the pixels move, and UI-010 was a pixel-region finding of the light Outdoor
-# theme whose scoped exclusion was withdrawn from known_issues.yaml in the same
-# change as the fix. The region is declared here, scoped and dated like every
-# other waiver; several entries may name the same region (the top band holds
-# three fixes) and the gate reads them as a set.
+# An entry declares where the pixels of one change move: a structural finding
+# (`typography_missing_glyph`, `typography_text_overflow`) says *what* is wrong
+# but never where the pixels move, and a pixel-region finding has no structural
+# rule at all. The region is declared here, scoped and dated like every other
+# waiver, and scoped to the fixtures its own A/B measured: the gate allows a
+# region only on those fixtures and the report names the entry that explained
+# each change (#296).
 expected_changes:
-  # AB-UI04-EXP1 (UI-011): restoring the icon glyph ranges of the scaled VISION
-  # fonts redraws the power clock (region `reloj_potencia`, inside the top band)
-  # and the top-bar WiFi icon, both within `barra_superior`.
-  - region: barra_superior
-    reason: >
-      UI-011: fonts_scale() keeps the icon glyph ranges of the original slot as
-      the fallback of the scaled font, so the VISION power clock and the top-bar
-      icons come back. The only pixels that move are the restored glyphs inside
-      the top bar; every other fixture stays byte-identical.
-    author: ui04-tipografia
-    until: 2027-03-31
-
-  # AB-UI04-EXP2 (UI-012): the VFO cell of the top bar goes back to the font size
-  # of the other themes, the only cell whose text did not fit the fixed 56x26 once
-  # fonts_scale() widened it.
-  - region: barra_superior
-    reason: >
-      UI-012: under VISION the VFO cell (src/info.c) draws with the font size of
-      the other themes, because `VFO-A` did not fit the fixed 56x26 cell of the
-      bar bitmap once fonts_scale() made it 66 px wide (it wrapped to a second
-      line the cell clipped). Only the VFO cell's glyphs change, still inside the
-      top bar; the other five cells and every other fixture stay byte-identical.
-    author: ui04-tipografia
-    until: 2027-03-31
-
-  # AB-UI04-EXP3 (UI-010): the frequency row of the main screen stops writing a
-  # white text colour and asks the theme for it (TC(text)), so under the light
-  # Outdoor theme the digits are black on white instead of white on white.
-  - region: frecuencia
-    reason: >
-      UI-010: the three labels of the main screen's frequency row
-      (src/main_screen.c, region `frecuencia`) carried their colour in the label's
-      recolor markup (`"#%03X ..."`, 0xFFFFFF) and src/styles.c wrote the same
-      white as the style default, so under the light Outdoor theme the digits were
-      white on the white background and the region measured content 0.0000 (the
-      information was missing, not just low contrast). Both now ask the theme for
-      it: `theme_hex(TC_text)` in the markup (and `TC_text_soft`, the theme's own
-      "lock" role, when the dial is locked) with `#%06X`, the width LVGL requires,
-      plus `TC(text)` on the two styles — the theme role the pixels are drawn on.
-      So Outdoor paints them black (region `frecuencia` of
-      `main-otro-tema`). The only other theme whose `text` role is not white is
-      Material 3 (#e2e2e9), whose three labels move by that same 29/255 step; the
-      other fourteen fixtures are byte-identical.
-    author: ui04-tipografia
-    until: 2027-03-31
-
-  # AB-UI04-EXP5 (UI-014): the mode cell of the top bar also goes back to the font
-  # size of the other themes under VISION, next to the VFO cell UI-012 fixed. The
-  # 4-character mode `CW-R` measured exactly the cell width (0 px of margin, the
-  # `CW-RAUTO` pegging of issue #28); the widest mode (`USB-D`) overflowed it.
-  - region: barra_superior
-    reason: >
-      UI-014: the top bar's mode cell (src/info.c, items[INFO_MODE]) joins the VFO
-      cell in drawing with the font size of the other themes under VISION, because
-      once fonts_scale() widened the label `CW-R` it measured exactly the 56 px of
-      the fixed cell (0 px of margin, which is why `CW-R` pegs to the AGC cell's
-      `AUTO` and the two read as `CW-RAUTO`, the finding of issue #28) and `USB-D`
-      measured 66 px and wrapped to a second line the cell clipped. Measured: `CW-R`
-      goes from 56 to 42 px and `USB-D` from 66 to 52 px in the 56 px cell. The only
-      pixels that move are the mode cell's glyphs inside `barra_superior` (three
-      VISION fixtures: the mode cell is drawn with the smaller font whichever the
-      mode), and every other fixture stays byte-identical.
-    author: ui04-tipografia
-    until: 2027-03-31
-
-  # wcag-full (WCAG 1.4.11, issue #12): the RS S-meter arc (`TC(meter_over)`) went
-  # from #ff4040 to #ff5252 so it reaches 3:1 over the meter's bitmap face. The
-  # pixel measurement of the arc (tools/ab_testing/quality/nontext.yaml) read
-  # 2.96:1 with the old colour, below the non-text minimum; #ff5252 reads 3.22:1.
-  # The change is confined to the S-meter band (`s_metro`) of the RS fixture; the
-  # other nine golden renders stay byte-identical.
-  - region: s_metro
-    reason: >
-      wcag-full: hallazgo no-texto del arco del S-meter en el tema RS. El arco
-      TC(meter_over) = #ff4040 sobre la cara del medidor (bar.png de RS) daba
-      2.96:1, por debajo del 3:1 de WCAG 1.4.11. RS/theme.json lo sube a #ff5252
-      (3.22:1 medido). Solo se mueven los pixeles del arco dentro de `s_metro`.
-    author: wcag-full
-    until: 2027-03-31
-
+# Cada entrada declara, ademas de su region, las fixtures que cubre: una region es
+# un rectangulo de la pantalla y varias pantallas lo comparten (la caja del
+# dialogo de las apps es la de #296), asi que una entrada de Ajustes no puede
+# explicar un cambio de otra app. Los globs son los medidos en el A/B propio de
+# cada entrada, restringidos a las fixtures que la suite todavia publica; el
+# porque de cada lista esta en docs/evidencia/2026-10-24-expected-changes/.
+# Sin `*`: el comodin permitiria el rectangulo entero en toda fixture, que es el
+# agujero que #296 cerro (lo fija tests/test_expected_changes.py).
+# Las cinco entradas ancladas a VISION/RS salieron con sus fixtures (THEMES v2
+# #74 retiro los temas): A define la suite, asi que esas fixtures no se comparan
+# en ningun A/B y sus globs no matchearian nada. Mismo criterio que
+# `test_repo_ui010_ui013_are_retired_with_their_fixtures` para known_issues.
   # AB-UI016-T1 (UI-016): the Ajustes year field stops clipping its last digit.
   - region: ajustes_anio
+    fixtures: [settings-home]
     reason: >
       UI-016: el campo Año de Ajustes (src/dialog_settings.c, fila Day/Month/Year)
       dibujaba "2026" con 84 px de texto en un área de contenido de 67 (la caja de
@@ -184,6 +116,7 @@ expected_changes:
 
   # AB-YEAR110 (issue #110): the Ajustes year field gets the box of the row.
   - region: ajustes_anio
+    fixtures: [settings-home]
     reason: >
       #110: en la fila Day/Month/Year el campo Año quedaba 23 px mas angosto que
       Día y Mes. Se dimensionaba por contenido (el helper `ancho_campo_cifras`, el
@@ -201,6 +134,7 @@ expected_changes:
   # AB-UI08-I5 (UI-08 incr. 5): the new Ajustes row makes the grid one row taller,
   # so the scrollbar thumb of the scrolled fixture (settings-wfbat) gets shorter.
   - region: ajustes_scrollbar
+    fixtures: [settings-wfbat]
     reason: >
       UI-08 incr. 5: la fila "Visual profile" (src/dialog_settings.c, grupo
       Apariencia) agrega una fila (54+5 px) al contenido de la grilla de Ajustes,
@@ -225,66 +159,106 @@ expected_changes:
   # etiquetas que desbordan o se truncan sobre las 8 fixtures de la matriz
   # (tools/ab_testing/reports/AB-FONTS, tools/fonts/README.md).
   - region: barra_superior
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-natural, main-natural-eco, main-tx-simulado, settings-audio, settings-bands,
+      settings-home, settings-perfil, settings-wfbat]
     reason: >
       AB-FONTS: las celdas de la barra superior (VFO, modo, AGC, PRE/ATT, ATU, WiFi: src/info.c) y la etiqueta del S-meter escriben con la familia migrada; cada glifo cambia de forma.
     author: fonts-libre
     until: 2027-03-31
 
   - region: s_metro
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-natural, main-natural-eco, main-tx-simulado, settings-audio, settings-bands,
+      settings-home, settings-perfil, settings-wfbat]
     reason: >
       AB-FONTS: la etiqueta en dB del S-meter (src/meter.c) es texto sobre el arco: cambia con la fuente, el arco no.
     author: fonts-libre
     until: 2027-03-31
 
   - region: espectro
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-natural, main-natural-eco, main-tx-simulado, settings-audio, settings-bands,
+      settings-home, settings-perfil, settings-wfbat]
     reason: >
       AB-FONTS: las etiquetas del band plan (src/band_plan.c) y el texto del pannel que cae sobre la banda (el dialogo de Ajustes se dibuja encima) son texto.
     author: fonts-libre
     until: 2027-03-31
 
   - region: frecuencia
+    fixtures: [app-*, apps-*, bench-render, home-bateria-externa, home-frecuencia-extrema,
+      home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco, main-natural,
+      main-natural-eco, main-tx-simulado, settings-audio, settings-bands, settings-home,
+      settings-perfil, settings-wfbat]
     reason: >
       AB-FONTS: los tres labels de la fila de frecuencia (src/main_screen.c) son los digitos mas grandes de la pantalla; el ancho de cada cadena cambia (-21% medido) y el texto queda centrado en la misma caja de 150/500/150 px.
     author: fonts-libre
     until: 2027-03-31
 
   - region: waterfall
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-natural, main-natural-eco, main-tx-simulado, settings-audio, settings-bands,
+      settings-home, settings-perfil, settings-wfbat]
     reason: >
       AB-FONTS: la etiqueta del panel de texto decodificado (src/pannel.c) y los rotulos de la cascada son texto.
     author: fonts-libre
     until: 2027-03-31
 
   - region: botones
+    fixtures: [app-close-home, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-natural, main-natural-eco, main-tx-simulado, settings-audio, settings-home,
+      settings-perfil, settings-wfbat]
     reason: >
       AB-FONTS: la barra inferior (buttons.cpp) rotula cada boton con texto; las etiquetas de dos lineas (Volume/Squelch/RF gain/TX power) son las mas sensibles al cambio de metricas.
     author: fonts-libre
     until: 2027-03-31
 
   - region: reloj_potencia
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-natural, main-natural-eco, main-tx-simulado, settings-audio, settings-bands,
+      settings-home, settings-perfil, settings-wfbat]
     reason: >
       AB-FONTS: el reloj de potencia (src/clock.c) dibuja hora y tension (13.8v) con la familia migrada, mas el simbolo de bateria del slot de iconos.
     author: fonts-libre
     until: 2027-03-31
 
   - region: ajustes_anio
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa, home-usb-20m,
+      main-espectro-agua, main-foco, main-natural, main-natural-eco, main-tx-simulado,
+      settings-audio, settings-bands, settings-home, settings-perfil, settings-wfbat]
     reason: >
       AB-FONTS: el campo Anio de Ajustes (src/dialog_settings.c) es un spinbox de 4 cifras: cambia el ancho del texto, no la caja.
     author: fonts-libre
     until: 2027-03-31
 
   - region: ajustes_perfil
+    fixtures: [app-*, apps-*, bench-render, home-bateria-externa, home-frecuencia-extrema,
+      home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco, main-natural,
+      main-natural-eco, main-tx-simulado, settings-audio, settings-bands, settings-home,
+      settings-perfil, settings-wfbat]
     reason: >
       AB-FONTS: la fila 'Visual profile' rotula su etiqueta y su desplegable con la familia migrada.
     author: fonts-libre
     until: 2027-03-31
 
   - region: ajustes_audio_ganancia
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-natural, main-natural-eco, main-tx-simulado, settings-audio, settings-bands,
+      settings-home, settings-perfil, settings-wfbat]
     reason: >
       AB-FONTS: las etiquetas de la fila 'Play,Rec gain' y los valores de los sliders son texto.
     author: fonts-libre
     until: 2027-03-31
 
   - region: ajustes_scrollbar
+    fixtures: [bt-dialog]
     reason: >
       AB-FONTS: el pulgar de la barra de scroll de Ajustes cambia de unos pixeles porque la altura del contenido de la grilla depende de la linea de las etiquetas (la fuente migrada tiene la misma line height por slot, +-1 px).
     author: fonts-libre
@@ -294,6 +268,7 @@ expected_changes:
   # segmentada en los dos paneles de digitos. Cambia pixeles solo en
   # `main-frecuencia-dseg`, la unica fixture con familia segmentada.
   - region: frecuencia
+    fixtures: [main-frecuencia-dseg]
     reason: >
       AB-FONTSE: la fila de frecuencia pasa a dibujar con la familia de digitos
       (font_digit(&sony_30)/font_digit(&sony_38) en freq_style/freq_main_style,
@@ -308,6 +283,7 @@ expected_changes:
     until: 2027-03-31
 
   - region: reloj_potencia
+    fixtures: [main-frecuencia-dseg]
     reason: >
       AB-FONTSE: el reloj lleva su "8 fantasma" (src/clock.c: la etiqueta sombra
       con "88:88:88" por debajo del valor, que hereda el fondo del reloj porque el
@@ -329,6 +305,10 @@ expected_changes:
   # gate de pixeles solo tiene que no confundir el cambio declarado con un defecto.
   # Las fixtures que si fijan su `theme` (los seis v2) quedan byte-identicas.
   - region: barra_superior
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-frecuencia-dseg, main-natural, main-natural-eco, main-tx-simulado, settings-audio,
+      settings-bands, settings-home, settings-perfil, settings-wfbat]
     reason: >
       THEMES v2 #74: el default pasa a Aurora. Las cajas de la barra superior
       (src/info.c) y su texto se pintan con los roles del tema, que cambian.
@@ -336,6 +316,10 @@ expected_changes:
     until: 2027-03-31
 
   - region: s_metro
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-frecuencia-dseg, main-natural, main-natural-eco, main-tx-simulado, settings-audio,
+      settings-bands, settings-home, settings-perfil, settings-wfbat]
     reason: >
       THEMES v2 #74: el arco y la etiqueta del S-meter (src/meter.c) usan
       TC(meter_over)/TC(meter_bar) del default, que pasa a Aurora.
@@ -343,6 +327,10 @@ expected_changes:
     until: 2027-03-31
 
   - region: espectro
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-frecuencia-dseg, main-natural, main-natural-eco, main-tx-simulado, settings-audio,
+      settings-bands, settings-home, settings-perfil, settings-wfbat]
     reason: >
       THEMES v2 #74: el fondo del espectro y las etiquetas del band plan
       (src/spectrum.c, band_plan.c) se apoyan en el fondo del tema (Aurora).
@@ -350,6 +338,10 @@ expected_changes:
     until: 2027-03-31
 
   - region: frecuencia
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-frecuencia-dseg, main-natural, main-natural-eco, main-tx-simulado, settings-audio,
+      settings-bands, settings-home, settings-perfil, settings-wfbat]
     reason: >
       THEMES v2 #74: la fila de frecuencia (src/main_screen.c) pide los roles del
       tema (TC(text)/TC(text_soft)); con Aurora el color del texto cambia.
@@ -357,6 +349,10 @@ expected_changes:
     until: 2027-03-31
 
   - region: waterfall
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-frecuencia-dseg, main-natural, main-natural-eco, main-tx-simulado, settings-audio,
+      settings-bands, settings-home, settings-perfil, settings-wfbat]
     reason: >
       THEMES v2 #74: la cascada dibuja la paleta del tema; Aurora trae su propia
       tabla de 256 colores (theme.c make_palette), distinta de la de IU1WXY.
@@ -364,6 +360,10 @@ expected_changes:
     until: 2027-03-31
 
   - region: botones
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-frecuencia-dseg, main-natural, main-natural-eco, main-tx-simulado, settings-audio,
+      settings-bands, settings-home, settings-perfil, settings-wfbat]
     reason: >
       THEMES v2 #74: la barra inferior (buttons.cpp) rotula con los roles del
       tema y el recolor de boton activo/deshabilitado; con Aurora cambian.
@@ -371,6 +371,10 @@ expected_changes:
     until: 2027-03-31
 
   - region: reloj_potencia
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-frecuencia-dseg, main-natural, main-natural-eco, main-tx-simulado, settings-audio,
+      settings-bands, settings-home, settings-perfil, settings-wfbat]
     reason: >
       THEMES v2 #74: el reloj de potencia (src/clock.c) escribe con los roles del
       tema; el default Aurora cambia su color.
@@ -378,6 +382,10 @@ expected_changes:
     until: 2027-03-31
 
   - region: ajustes_tema
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-frecuencia-dseg, main-natural, main-natural-eco, main-tx-simulado, settings-audio,
+      settings-bands, settings-home, settings-perfil, settings-wfbat]
     reason: >
       THEMES v2 #74: la fila "Theme" de Ajustes dibuja el nombre del tema activo.
       Con el default migrado a Aurora (un tema ofrecido) la fila es coherente; el
@@ -386,6 +394,10 @@ expected_changes:
     until: 2027-03-31
 
   - region: ajustes_perfil
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-frecuencia-dseg, main-natural, main-natural-eco, main-tx-simulado, settings-audio,
+      settings-bands, settings-home, settings-perfil, settings-wfbat]
     reason: >
       THEMES v2 #74: el dialogo de Ajustes se pinta con los roles del tema; el
       default Aurora cambia sus superficies y su texto.
@@ -393,6 +405,9 @@ expected_changes:
     until: 2027-03-31
 
   - region: ajustes_scrollbar
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-frecuencia-dseg, main-natural, main-natural-eco, main-tx-simulado, settings-bands]
     reason: >
       THEMES v2 #74: el pulgar de la barra de scroll de Ajustes es una superficie
       del tema; con el default Aurora cambia de color.
@@ -400,6 +415,10 @@ expected_changes:
     until: 2027-03-31
 
   - region: ajustes_anio
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-frecuencia-dseg, main-natural, main-natural-eco, main-tx-simulado, settings-audio,
+      settings-bands, settings-home, settings-wfbat]
     reason: >
       THEMES v2 #74: el campo Año de Ajustes se pinta con los roles del tema; el
       default Aurora cambia su color.
@@ -407,6 +426,10 @@ expected_changes:
     until: 2027-03-31
 
   - region: ajustes_audio_ganancia
+    fixtures: [app-*, apps-*, bench-render, bt-dialog, home-bateria-externa,
+      home-frecuencia-extrema, home-usb-20m, main-bateria-baja, main-espectro-agua, main-foco,
+      main-frecuencia-dseg, main-natural, main-natural-eco, main-tx-simulado, settings-audio,
+      settings-bands, settings-home, settings-perfil, settings-wfbat]
     reason: >
       THEMES v2 #74: las filas de audio de Ajustes se pintan con los roles del
       tema; el default Aurora cambia sus colores.
@@ -418,6 +441,7 @@ expected_changes:
   # (`waterfall_signal_width`, default 1, clamp 1..8). Los dos temas outdoor la
   # piden en 3, asi que solo las fixtures que DIBUJAN esa linea cambian.
   - region: waterfall
+    fixtures: [main-tema-sunlit-agua, main-tema-trail-agua]
     reason: >
       AB-WFWIDTH (feedback directo del owner, 2026-10-15): "los temas outdoor
       deberian traer la barra del waterfall mas gruesa porque al ser tan fina (1
@@ -442,6 +466,8 @@ expected_changes:
   # cambian los px de la MISMA linea (x=398..400, y=240..479), en las fixtures
   # que la dibujan: `main-espectro-agua` (Aurora) y `main-tema-sunlit-agua`.
   - region: waterfall
+    fixtures: [bench-render, main-espectro-agua, main-tema-aurora-agua, main-tema-cathode-agua,
+      main-tema-redshift-agua, main-tema-sprint-agua, main-tema-sunlit-agua, main-tema-trail-agua]
     reason: >
       AB-WF140 (orden directa del owner, 2026-10-18): "no veo la frecuencia que
       estoy sintonizando; no se ve la linea". La linea central del waterfall
@@ -471,6 +497,7 @@ expected_changes:
   # dialogo de la fixture `settings-home`, que ahora navega al grupo Clock con
   # el tab (el dialogo abre en Operation, el primero del orden nuevo).
   - region: botones
+    fixtures: [settings-audio, settings-home, settings-perfil, settings-tema-*, settings-wfbat]
     reason: >
       AB-SETEN109 (issue #109): la barra de tabs de Ajustes (src/dialog_settings.c,
       tabs_items/tabs_pagina_1/2) rotula en ingles de ham radio (Reloj->Clock,
@@ -486,6 +513,7 @@ expected_changes:
     until: 2027-03-31
 
   - region: ajustes_dialogo
+    fixtures: [settings-audio, settings-home, settings-perfil, settings-tema-*, settings-wfbat]
     reason: >
       AB-SETEN109 (issue #109): el dialogo de Ajustes abre en su PRIMER grupo, que
       con el orden nuevo es Operation; la fixture `settings-home` mide la fila de
@@ -509,6 +537,9 @@ expected_changes:
   # dentro de `waterfall_ticks`. Header, S-meter, fila de frecuencia, band plan
   # y las cinco teclas quedan byte-identicos.
   - region: espectro
+    fixtures: [app-*, apps-*, autotune, autotune-found, autotune-progress, bench-render, bt-*,
+      cw-*, home-*, main-*, settings-audio, settings-bands, settings-home, settings-perfil,
+      settings-tema-*, settings-wfbat, swrscan-*]
     reason: >
       AB-DFL173-1 (issue #173, PR 1): el espectro evoluciona el relleno de filtro
       existente a una banda pasante a escala (relleno discreto en el rol `vfo_line`
@@ -519,6 +550,10 @@ expected_changes:
     until: 2027-10-20
 
   - region: waterfall_ticks
+    fixtures: [app-*, apps-*, autotune, autotune-found, autotune-progress, bench-render, cw-*,
+      home-*, main-*, settings-audio, settings-bands, settings-home, settings-perfil,
+      settings-tema-aurora, settings-tema-cathode, settings-tema-redshift, settings-tema-sprint,
+      settings-tema-sunlit, settings-wfbat]
     reason: >
       AB-DFL173-1 (issue #173, PR 1): dos ticks sutiles en el borde superior de la
       cascada marcan el ancho del filtro RX (overlay de UI, sin tocar el buffer ni
@@ -534,6 +569,8 @@ expected_changes:
   # (LOW/HIGH/BW/Eq/Waterfall). El resto de la pantalla (header, S-meter,
   # espectro, frecuencia y cascada por encima del panel) queda igual.
   - region: dfl_inline
+    fixtures: [dfl-editor-cycles, dfl-editor-interaction, dfl-editor-lsb-d, dfl-editor-tx,
+      dfl-editor-usb-*]
     reason: >
       AB-DFL179 (#179): el editor DFL pasa de dialogo modal (src/dialog_dfl.c) a
       panel inline sobre el waterfall (src/dfl_inline.c), con edicion por el
@@ -555,6 +592,9 @@ expected_changes:
   # reloj/bateria, la frecuencia, el espectro, el waterfall y las teclas quedan
   # byte-identicos.
   - region: barra_superior
+    fixtures: [dfl-editor-usb-d, home-cb, home-cb-offchannel, home-frecuencia-extrema,
+      home-usb-20m, main-tema-aurora, main-tema-cathode, main-tema-redshift, main-tema-sprint,
+      main-tema-sunlit, main-tema-trail, main-tx-simulado]
     reason: >
       #251: la barra izquierda de info.c agranda el aire entre celdas (2 -> 6 px)
       y el pitch de los dos renglones (22 -> 26, sin solape), y el texto de cada
@@ -577,6 +617,8 @@ expected_changes:
   # filas). Medido con `--inspect` y el diff por region de 18 fixtures: 0 px
   # fuera de estas dos regiones.
   - region: reloj_potencia
+    fixtures: [app-*, apps-*, autotune, autotune-found, autotune-progress, bench-render, bt-*,
+      cw-*, dfl-*, home-*, main-*, settings-*, swrscan-*]
     reason: >
       AB-HOME250 (issue #250, epica #249): `src/clock.c` deja de alternar
       `CLOCK_TIME`/`CLOCK_POWER` (con `params.clock_view` y los timeouts) y
@@ -599,6 +641,8 @@ expected_changes:
     until: 2027-04-30
 
   - region: ajustes_dialogo
+    fixtures: [settings-audio, settings-grupo-*, settings-home, settings-perfil, settings-tema-*,
+      settings-wfbat]
     reason: >
       AB-HOME250 (issue #250, epica #249): Ajustes pierde dos filas del grupo
       Clock (`Clock view` y `Timeout Clock, Power, TX`), que no tienen sentido
@@ -630,6 +674,7 @@ expected_changes:
   # abajo "partial)", el resto del pixel identico. Contraste del texto sin
   # cambios (15.74:1 antes y despues, mismo #F8EEFF sobre #1B1529).
   - region: ajustes_dialogo
+    fixtures: [swrscan-3pass-stop]
     reason: >
       AB-APCOPY288 (issue #288, epica #284): el copy de operador de las apps
       pasa a ingles. En SWRScan el unico literal visible que cambia de longitud
@@ -666,6 +711,7 @@ expected_changes:
   # 190 quedan byte-identicas y el proxy de render no se mueve (0/205 escenarios
   # con delta de flushed pixels o flushes).
   - region: ajustes_dialogo
+    fixtures: [settings-audio, settings-grupo-*, settings-home, settings-perfil, settings-tema-*]
     reason: >
       AB-UI287-EXP1 (issue #287, epica #284): la tinta de los items del dialogo
       (`dialog_item_style`: desplegables, spinboxes, textareas y las etiquetas

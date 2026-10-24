@@ -70,6 +70,7 @@ from .visual_diff import DiffResult, compute_diff
 
 DEFAULT_REPORTS_SUBDIR = ("tools", "ab_testing", "reports")
 DEFAULT_QUALITY_SUBDIR = ("tools", "ab_testing", "quality")
+FIXTURES_SUBDIR = ("tools", "ui_harness", "fixtures")
 
 
 @dataclass
@@ -1007,7 +1008,9 @@ def _build_context(args: argparse.Namespace) -> Context:
         Path(args.quality_dir).resolve() if args.quality_dir else _resolve_quality_dir(repo)
     )
     region_map = load_regions(quality_dir / "regions.yaml")
-    contracts = load_contracts(quality_dir / "contracts.yaml", set(region_map.regions))
+    contracts = load_contracts(
+        quality_dir / "contracts.yaml", set(region_map.regions), _known_fixtures(repo)
+    )
     budgets = load_budgets(quality_dir / "budgets.yaml")
     known_issues = load_known_issues(quality_dir / "known_issues.yaml", set(region_map.regions))
     performance_exceptions = load_performance_exceptions(
@@ -1046,6 +1049,19 @@ def _resolve_quality_dir(repo: Path) -> Path:
     if candidate.is_dir():
         return candidate
     return Path(__file__).resolve().parents[2] / "quality"
+
+
+def _known_fixtures(repo: Path) -> set[str]:
+    """The scenario names of the repository's own suite.
+
+    `contracts.yaml` is validated against them: an `expected_changes` glob that
+    matches no fixture is a configuration error, never a scope that quietly
+    explains nothing. The revision under comparison ships the same fixture set
+    (they are versioned with the source), so a glob that matches here matches
+    there.
+    """
+    suite = ScenarioSuite.from_fixtures_dir(repo.joinpath(*FIXTURES_SUBDIR))
+    return set(suite.names)
 
 
 def _resolve_workspace(args: argparse.Namespace) -> Path:
