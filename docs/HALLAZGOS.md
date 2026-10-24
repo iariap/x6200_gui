@@ -37,6 +37,9 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 66. [El audio de RX mudo al ir a CW: el disparo era el write del modo del VFO inactivo](#66-el-audio-de-rx-mudo-al-ir-a-cw-el-disparo-era-el-write-del-modo-del-vfo-inactivo)
 15. [Anexo A: hipótesis sin fundar (no son hallazgos)](#anexo-a-hipótesis-sin-fundar-no-son-hallazgos)
 67. [El firmware original de Xiegu está en la eMMC interna: su GUI habla I2C](#67-el-firmware-original-de-xiegu-está-en-la-emmc-interna-su-gui-habla-i2c)
+68. [#292: el BASE demodula con el modo del VFO ACTIVO; la GUI escribía solo el del VFO A](#68-292-el-base-demodula-con-el-modo-del-vfo-activo-la-gui-escribía-solo-el-del-vfo-a)
+69. [El BASE se puede LEER por I2C: direcciones verificadas](#69-el-base-se-puede-leer-por-i2c-direcciones-verificadas)
+70. [El mute de RX de #244: la secuencia I2C del firmware original lo recupera con la GUI parada, no con la GUI andando](#70-el-mute-de-rx-de-244-la-secuencia-i2c-del-firmware-original-lo-recupera-con-la-gui-parada-no-con-la-gui-andando)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
@@ -775,6 +778,9 @@ con lo que haría falta para fundarlas.
 | El re-sync de `rxvol` al salir de CW destraba el audio | Se implementó como mitigación (§64) y no se probó en la radio: reproducir el mute requiere dejar la radio muda a propósito y el dueño la está usando | Con la radio sana: nivel audible, ir a CW y volver, y ver si el audio sigue; si se mutea, correr el binario con el re-sync y comparar |
 | El rango del registro 14 es 0..100 | La GUI manda 0..100 (`VOL_MIN`/`VOL_MAX`) y el control remoto también, pero el CAT de esta GUI mapea 0..55 (`src/cat.cpp:572-574`) y la referencia del X6100 clampea a 55 (`.x6100_ref/src/radio.c:357`). Cuál es el real no se midió | Mandar 56..100 con la radio sana y medir si el nivel cambia o satura |
 | La captura del códec distingue el estado mudo (RMS 141,2 vs 2450,7) | El propio registro del 22/10 dice que con el audio funcionando la captura también dio 141,2 (`assessment-194/scratch/audio-failure-2210.md`), o sea que no hay A/B que sostenga el discriminante; el chequeo AUDIO-ALIVE de `test-ui-remote.sh` se apoya en eso | Medir la captura 5 veces en estado sano y 5 en el mudo, con el mismo `parec` y el mismo nivel de audio |
+| Por qué el firmware del BASE demodula con el modo del **VFO activo** (§68) | La relación está medida (cambiar ese modo cambia la banda lateral), pero el mecanismo interno no: no hay fuente del firmware del BASE | Ingeniería inversa del firmware del BASE (el `.xgf` de la eMMC está encriptado) o documentación de Xiegu |
+| Qué estado interno del BASE guarda el mute de RX de #244 y por qué solo lo limpia un power-cycle (o la secuencia completa del firmware original con la GUI parada, §70) | Qué lo recupera y qué no está medido, pero el registro/estado no se identificó: el bloque legible en 0x1000 no cambió entre el estado mudo y el sano | Firmware del BASE o capturar el bus I2C durante un mute y su recuperación |
+| Mapa completo de lectura I2C del BASE fuera de 0x0000, 0x0100, 0x1000 y 0x2000 (§69) | Solo esas cuatro direcciones están verificadas; el resto de las probadas devolvió 0 | Probar más direcciones (el GUI original las usa: log de `iicRead` con el hook) o firmware del BASE |
 
 **Estimaciones explícitas** (dichas como tales, no son hallazgos): el "~20 s" del banco rápido y el
 "~3 s" del diagnóstico de voz no se cronometraron con precisión; y el "~1 s" de daemon + enlace
@@ -4157,7 +4163,99 @@ el mismo que el de Aether** (LSB=0 … WFM=9).
 zImage + dtb en p1, rootfs vendor en p2, boot0/boot1), con su GUI como binario **con símbolos**, y
 ese GUI controla el BASE por **I2C** — un camino distinto del serial que usa el port. Los valores
 del modo no cambian entre ambos. Para cerrar #292 falta comparar el comportamiento del firmware
-original (sin SD) con el nuestro.
+original (sin SD) con el nuestro. **(24/10: comparación hecha; ver §68.)**
 
 **Sin fundar (anexo A)**: si el BASE responde igual por I2C que por el serial del port; si el
 `.xgf` del 2025-01-11 es más nuevo que el que corre el MCU ahora.
+
+---
+
+## 68. #292: el BASE demodula con el modo del VFO ACTIVO; la GUI escribía solo el del VFO A
+
+**Síntoma**: el dueño reportó (#292) que en LSB la señal audible aparece a la derecha de la raya y que la diferencia LSB/USB no funcionaba.
+
+**Método de medición, medido**: portadora real de AM en 790 kHz (de noche). Se pone el dial 1 kHz abajo (789) y 1 kHz arriba (791) de la portadora; en un USB correcto en 789 la oye (tono de 1 kHz) y en 791 la filtra, y en un LSB correcto es al revés. Captura con `parec` 3 s en la radio y análisis FFT del tono de 1 kHz contra el piso entre 2 y 4 kHz. Automatizado en `tools/lsb-sideband-test.sh`.
+
+**Medido — con el bug** (GUI `22a4bf6d`, main de ese momento):
+
+```
+789-LSB   tono1k=59.0 dB    <- LSB oía la portadora de ARRIBA
+789-USB   tono1k=59.2 dB
+791-LSB   tono1k=27.2 dB
+791-USB   tono1k=27.1 dB    <- LSB y USB demodulaban el mismo lado
+```
+
+**Medido — qué fija la banda lateral** (radio, GUI parada, dial 789, LSB pedido; secuencias por I2C a 0x72):
+
+```
+B mode=0; vi_vm=1; sple_atue_trx=0x1000  ->  tono1k=28.1 dB   (LSB correcto)
+B mode=2; vi_vm=1; sple_atue_trx=0x1000  ->  tono1k=56.9 dB   (sigue oyendo arriba)
+
+pack de 216 B con modeB=2 (el viejo USB), x10  ->  tono1k=57.5 dB   (vuelve el bug)
+pack de 216 B con modeB=0,                 x10  ->  tono1k=25.6 dB   (LSB correcto)
+```
+
+El pack que mandaba la GUI tenía `modeA=2` y `modeB=2` mientras la pantalla decía LSB (capturado con `LD_PRELOAD` sobre el GUI y decodificado con el layout del pack).
+
+**Causa, medida**: el BASE demodula con el modo del **VFO activo**. `mode_write_allowed()` en `src/radio.c` solo permitía escribir el modo del VFO A (o del B con split, por §244); el VFO activo era el B y su registro de modo quedaba en el valor viejo (USB), así que en LSB el BASE demodulaba la banda de arriba.
+
+**Arreglo** — PR #303, mergeado en main `c5856755`: `mode_write_allowed()` permite el VFO activo; `radio_sync_active_vfo_mode()` manda el modo al VFO activo al arrancar, al cambiar de modo y al cambiar de VFO; en CW/CWR no escribe el VFO B (reproduce el mute de §66).
+
+**Verificación, medido** — fix desplegado (`f4a9d47d`), después de un power-cycle que limpió un mute de prueba (§70), `tools/lsb-sideband-test.sh`:
+
+```
+789-LSB  27.0 dB   filtra arriba
+789-USB  57.2 dB   oye
+791-LSB  56.9 dB   oye abajo
+791-USB  26.5 dB   filtra
+```
+
+Firmware original con la misma portadora y el mismo método (GUI del vendor en chroot con I2C real): 37.1 / 68.8 / 70.4 / 39.3 dB. Mismo patrón.
+
+**La parte FT8 7.072/7.074 no discrimina** (medido): energía en 1.7-2.5 kHz de 17.6/16.5 dB (LSB/USB en 7.072) y 14.3/16.3 dB (en 7.074): hay señales FT8 a ambos lados del dial. La portadora es la que distingue; FT8 queda como control de que la radio recibe.
+
+**Sin fundar (anexo A)**: por qué el firmware del BASE demodula con el modo del VFO activo (interno, no medido).
+
+## 69. El BASE se puede LEER por I2C: direcciones verificadas
+
+**Contexto**: para diagnosticar #292 sin depender del audio.
+
+**Medido** (radio):
+
+```
+$ i2ctransfer -y 0 w2@0x72 0x20 0x00 r4@0x72
+0x01 0x01 0x01 0x01                                  # baseband listo
+$ i2ctransfer -y 0 w2@0x72 0x00 0x00 r216@0x72
+0x00 0x31 0x2e 0x30 0x2e 0x30 ...                    # "1.0.0"
+... 0x31 0x2e 0x30 0x2e 0x36 ...  "Jan 11 2025,13:46:22"   # "1.0.6" y fecha
+$ i2ctransfer -y 0 w2@0x72 0x01 0x00 r16@0x72
+0x0a 0x00 0x00 0x30 0x41 0x00 0x00 0x30 0x41 ...     # floats de calibración
+$ i2ctransfer -y 0 w2@0x72 0x10 0x00 r8@0x72
+0x22 0x87 0xd8 0x00 0x02 0x00 0x00 0x00             # u32 14190370 = freq del VFO A
+```
+
+El framing es el mismo que el `iicRead(reg, AddressMode, buf, cnt)` del GUI original: write de 2 B de dirección BE y read con repeated start. Las demás direcciones probadas (0x0200 a 0x0c00, 0x1800, 0x3000 a 0x5000) devolvieron 0.
+
+**Uso**: leer la versión del baseband ("1.0.6", Jan 11 2025) y comparar el estado mudo con el sano (§70). El bloque de 216 B leído en 0x1000 solo mostró valores distintos de cero en los primeros campos (freq y un campo que valió 2), así que no es el work params completo.
+
+**Sin fundar (anexo A)**: mapa completo de lectura.
+
+## 70. El mute de RX de #244: la secuencia I2C del firmware original lo recupera con la GUI parada, no con la GUI andando
+
+**Contexto**: probando el fix de #292 con el primer build (`b90a1a7b`), entrar a CW dejó el audio mudo (§66). Se investigó cómo recuperarlo sin power-cycle.
+
+**Medido** (radio, `parec` de 2 a 3 s, rms; el estado mudo da 141):
+
+```
+estado muteado (GUI corriendo)                                    rms=141
+GUI parada + replay de la secuencia I2C del firmware original
+(124 escrituras, capturadas con LD_PRELOAD)                       rms=14000 (audio OK)
+arrancar la GUI desde ese estado                                  rms=141 (vuelve a mutear)
+el mismo arranque con el binario OFICIAL 22a4bf6d (sin fix)       rms=141 (también mutea)
+```
+
+Escrituras mínimas probadas con la GUI corriendo, ninguna recupera el audio: `rxvol` 16 y 34, `sple_atue_trx=0x1000`, modo A=0 y B=0, `vi_vm=0` por 10, bloque de calibración `0xF000` (509 B), comandos `0xFFFE`, comando serie de 8 B del stock (`01 00 00 00 00 00 00 00`), reset por GPIO 204 del BASE (`gpioset gpiochip1 204=1/0`). El mixer y la fuente de PulseAudio quedaron idénticos antes y después de arrancar la GUI (diff vacío).
+
+**Corrección de lo que decían §64 y §65**: decían que no se sabía si el BASE quedaba en un estado interno y que solo el power-cycle lo sacaba; ahora está medido que el replay de la secuencia del firmware original **con la GUI parada** también lo saca, y que arrancar la GUI desde ese estado lo vuelve a mutear incluso con el binario oficial.
+
+**Sin fundar (anexo A)**: qué estado interno del BASE es el mute y por qué solo responde a un ciclo completo de inicialización o a un power-cycle.
