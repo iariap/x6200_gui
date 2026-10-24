@@ -293,16 +293,16 @@ invalidation** — halving the invalidated area of the spectrum moves neither
   "waterfall_offscreen_redraws": 40,
   "per_frame": [
     { "frame": 1, "virtual_end_ms": 2250, "refresh_cycles": 1,
-      "invalidated_px": 196000, "invalidated_rects": 1, "joined_px": 0,
-      "flushed_px": 196000, "flushes": 1, "rects_complete": true,
-      "rects": [[0, 235, 800, 245]] },
+      "invalidated_px": 231200, "invalidated_rects": 1, "joined_px": 0,
+      "flushed_px": 231200, "flushes": 1, "rects_complete": true,
+      "rects": [[0, 191, 800, 289]] },
     { "frame": 2, "virtual_end_ms": 2300, "refresh_cycles": 1,
       "invalidated_px": 132000, "invalidated_rects": 1, "joined_px": 0,
       "flushed_px": 132000, "flushes": 1, "rects_complete": true,
       "rects": [[0, 0, 800, 165]] }
   ],
-  "totals": { "invalidated_px": 11223840, "invalidated_rects": 67, "joined_px": 1372000,
-              "flushed_px": 11223840, "flushes": 67, "refresh_cycles": 39,
+  "totals": { "invalidated_px": 12580800, "invalidated_rects": 66, "joined_px": 1618400,
+              "flushed_px": 12580800, "flushes": 66, "refresh_cycles": 39,
               "frames_with_flush": 39 }
 }
 ```
@@ -335,11 +335,15 @@ invalidation** — halving the invalidated area of the spectrum moves neither
 `tests/check_harness_natural.sh` is the gate: it rebuilds the harness, runs the
 fixture in the four modes, checks the PNG and the whole JSON are identical across
 two natural runs, and checks the produced areas against the profile of UI-07
-increment 1 (spectrum 132000 px per FFT frame, waterfall 196000 px per row, clock
-10486 px per 500 ms tick -- re-measured for the permanent clock of #250 and the
-taller one of #285), the drive cadence against `src/dsp.cpp`'s constants,
-and that `--bench` still repaints the whole 384000 px screen. The raw output of a
-run is in `tools/ab_testing/reports/NATURAL-ECOFINAL/`.
+increment 1 (spectrum 132000 px per FFT frame, waterfall 231200 px per row, clock
+10486 px per 500 ms tick -- re-measured for the permanent clock of #250, the
+taller one of #285 and the 44 px of waterfall that #298 gave back to the panel,
+#306), the drive cadence against `src/dsp.cpp`'s constants,
+and that `--bench` still repaints the whole 384000 px screen. The profile is
+declared as component boxes and the invalidated rectangle is derived from them
+(`COMPONENTS` in `tests/natural_evidence.py`), so a geometry that moves without
+being declared fails the gate. The raw output of a run is in
+`tools/ab_testing/reports/NATURAL-ECOFINAL/`.
 
 ### Display off (`--display-off`)
 

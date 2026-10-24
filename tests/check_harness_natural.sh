@@ -21,13 +21,18 @@
 #      exactly the full-screen repaint lighter -- which is how the gate locks
 #      that the blanked screen is not doing render work.
 # Then it checks the produced JSON against the profile (spectrum 132000 px per
-# FFT frame, waterfall 196000 px per row, clock 10486 px every 500 ms -- the
+# FFT frame, waterfall 231200 px per row, clock 10486 px every 500 ms -- the
 # rectangles UI-07 increment 1 measured, with the clock re-measured for the
 # permanent clock of issue #250 and again for the taller clock of issue #285
-# (10272 -> 10486 px, 586,0,214,49, see tests/natural_evidence.py), against the
-# radio's DSP cadence (1000/15 and 1000/25, src/dsp.cpp) and that every
+# (10272 -> 10486 px, 586,0,214,49, see tests/natural_evidence.py), and the
+# waterfall re-measured for #298/#306: the spot strip stopped reserving 44 px of
+# height, so its box is 0,196 800x284 and it invalidates 231200 px per row
+# instead of 196000 -- accepted cost, documented in docs/AB_TESTING.md), against
+# the radio's DSP cadence (1000/15 and 1000/25, src/dsp.cpp) and that every
 # invalidated rectangle is attributable to a firmware timer (no region is
-# invalidated by the bench).
+# invalidated by the bench). The rectangles are not typed in: the component
+# boxes are declared in tests/natural_evidence.py (COMPONENTS) and the
+# invalidated rectangle is derived from them.
 #
 # Usage: tests/check_harness_natural.sh
 #   SKIP_BUILD=1   reuse the existing build/
