@@ -261,9 +261,17 @@ void styles_init(themes_t theme) {
     lv_style_set_pad_ver(&dialog_style, 0);
     lv_style_set_pad_hor(&dialog_style, 0);
 
+    /* La tinta de los items de widget (desplegables, spinboxes, textareas y las
+     * etiquetas que se comportan como boton) sale del rol `text` del tema, no de un
+     * blanco fijo. #286 cambio la superficie del dialogo a `TC(dialog)`, que en Sunlit
+     * es #FFFFFF: con la tinta fija en blanco el valor del control quedaba invisible
+     * (blanco sobre blanco; medidos 7 widgets con 0 px de tinta en el QA final,
+     * issue #287). El gate `tests/check_widget_text.py` mide ese texto sobre los
+     * pixeles en los seis temas, para que la clase no vuelva. Es el mismo idioma de
+     * `dialog_style` y de `theme.h`: el codigo pide un rol, no escribe un color. */
     lv_style_init(&dialog_item_style);
     lv_style_set_bg_opa(&dialog_item_style, LV_OPA_TRANSP);
-    lv_style_set_text_color(&dialog_item_style, lv_color_white());
+    lv_style_set_text_color(&dialog_item_style, TC(text));
 
     lv_style_init(&dialog_item_focus_style);
     lv_style_set_bg_opa(&dialog_item_focus_style, 128);
@@ -332,7 +340,10 @@ void styles_init(themes_t theme) {
     lv_style_set_border_opa(&eq_style, LV_OPA_90);
 
     lv_style_set_text_font(&eq_style, &sony_28);
-    lv_style_set_text_color(&eq_style, lv_color_white());
+    /* La superficie del EQ es `bg_color` aclarado: clara en Sunlit. La tinta sale
+     * del rol `text` del tema, no de un blanco fijo, que en el tema claro quedaba
+     * invisible (misma clase que `dialog_item_style`, issue #287). */
+    lv_style_set_text_color(&eq_style, TC(text));
 
 }
 

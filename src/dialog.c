@@ -12,6 +12,7 @@
 #include "autotune_ui.h"
 #include "radio.h"
 #include "styles.h"
+#include "theme.h"
 #include "main_screen.h"
 #include "cluster_column.h"
 #include "keyboard.h"
@@ -152,8 +153,15 @@ void dialog_item(dialog_t *dialog, lv_obj_t *obj) {
     lv_obj_add_style(obj, &dialog_item_edited_style, LV_STATE_EDITED);
 
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_CURSOR);
-    lv_obj_set_style_text_color(obj, lv_color_white(), LV_PART_CURSOR);
+    /* La letra que el cursor de un textarea redibuja encima suyo tiene que usar la
+     * MISMA tinta que el texto del control en cada estado; si no, el caracter bajo el
+     * cursor se pinta con otro color (en Sunlit, el rol `text` es oscuro y un blanco
+     * fijo dejaba esa letra invisible: misma clase que `dialog_item_style`, issue
+     * #287). En foco/edicion la tinta del item es negra (los dos estilos de abajo,
+     * sobre su overlay claro), asi que el cursor la sigue. */
+    lv_obj_set_style_text_color(obj, TC(text), LV_PART_CURSOR);
     lv_obj_set_style_text_color(obj, lv_color_black(), LV_PART_CURSOR | LV_STATE_FOCUSED);
+    lv_obj_set_style_text_color(obj, lv_color_black(), LV_PART_CURSOR | LV_STATE_EDITED);
     lv_obj_set_style_bg_opa(obj, 128, LV_PART_CURSOR | LV_STATE_EDITED);
 
     lv_obj_set_style_border_width(obj, 2, LV_STATE_FOCUS_KEY | LV_PART_INDICATOR);
