@@ -400,6 +400,13 @@ static bool mode_write_allowed(x6200_vfo_t vfo) {
         return true;
     }
 
+    /* #244: escribirle el modo al VFO B estando en CW/CWR apaga el audio de RX.
+     * En CW la banda lateral no aplica, asi que no se escribe. */
+    int32_t mode = subject_get_int(cfg_cur.mode);
+    if (mode == x6200_mode_cw || mode == x6200_mode_cwr) {
+        return false;
+    }
+
     if (subject_get_int(cfg_cur.band->split.val) != 0) {
         return true;
     }
@@ -413,10 +420,18 @@ static bool mode_write_allowed(x6200_vfo_t vfo) {
  * si el VFO B quedo con un modo viejo (USB) y el usuario pasa a LSB, el audio
  * sale por la banda de arriba. La GUI solo escribia el modo del VFO A (#244),
  * asi que el B quedaba desactualizado. Esta funcion manda `cfg_cur.mode` al
- * VFO activo; se usa al arrancar, al cambiar de modo y al cambiar de VFO. */
+ * VFO activo; se usa al arrancar, al cambiar de modo y al cambiar de VFO.
+ *
+ * En CW/CWR no se escribe el VFO B: reproduce el mute de RX de #244 (medido:
+ * LSB->CW->LSB deja el audio en rms 141 hasta el power-cycle). */
 static void radio_sync_active_vfo_mode(void) {
     x6200_vfo_t vfo = (x6200_vfo_t) subject_get_int(cfg_cur.band->vfo.val);
     int32_t     mode = subject_get_int(cfg_cur.mode);
+
+    if (vfo != X6200_VFO_A && (mode == x6200_mode_cw || mode == x6200_mode_cwr)) {
+        LV_LOG_USER("Radio sync modo=%i al VFO activo %i salteado (CW, #244)", mode, vfo);
+        return;
+    }
 
     WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, mode));
     LV_LOG_USER("Radio sync modo=%i al VFO activo %i (#292)", mode, vfo);
