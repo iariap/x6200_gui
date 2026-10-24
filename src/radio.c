@@ -389,13 +389,51 @@ static void on_vfo_freq_change(Subject *subj, void *user_data) {
 /* #244: el BASE apaga el audio de RX cuando se le escribe el modo de un VFO
  * inactivo (medido: entrar a CW con el modo del VFO B escrito mutea el RX hasta
  * el power-cycle; sin ese write el audio sigue sano). La RX es el VFO A: se
- * escribe siempre; el B solo con split habilitado. */
+ * escribe siempre; el B solo con split habilitado.
+ *
+ * #292: el BASE demodula con el modo del VFO ACTIVO. Si el activo es B (sin
+ * split), su registro de modo tiene que seguir al modo elegido o la
+ * demodulacion queda en el modo viejo (medido: con B en USB, poner LSB hacia
+ * que se oyera la banda de arriba). Por eso el VFO activo tambien se escribe. */
 static bool mode_write_allowed(x6200_vfo_t vfo) {
     if (vfo == X6200_VFO_A) {
         return true;
     }
 
-    return subject_get_int(cfg_cur.band->split.val) != 0;
+    if (subject_get_int(cfg_cur.band->split.val) != 0) {
+        return true;
+    }
+
+    return (x6200_vfo_t) subject_get_int(cfg_cur.band->vfo.val) == vfo;
+}
+
+/* #292: sincroniza el modo de demodulacion con el VFO ACTIVO.
+ *
+ * Medido en la radio: el BASE toma la banda lateral del modo del VFO activo;
+ * si el VFO B quedo con un modo viejo (USB) y el usuario pasa a LSB, el audio
+ * sale por la banda de arriba. La GUI solo escribia el modo del VFO A (#244),
+ * asi que el B quedaba desactualizado. Esta funcion manda `cfg_cur.mode` al
+ * VFO activo; se usa al arrancar, al cambiar de modo y al cambiar de VFO. */
+static void radio_sync_active_vfo_mode(void) {
+    x6200_vfo_t vfo = (x6200_vfo_t) subject_get_int(cfg_cur.band->vfo.val);
+    int32_t     mode = subject_get_int(cfg_cur.mode);
+
+    WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, mode));
+    LV_LOG_USER("Radio sync modo=%i al VFO activo %i (#292)", mode, vfo);
+}
+
+static void on_cur_mode_active_sync(Subject *subj, void *user_data) {
+    (void) subj;
+    (void) user_data;
+
+    radio_sync_active_vfo_mode();
+}
+
+static void on_active_vfo_change(Subject *subj, void *user_data) {
+    (void) user_data;
+
+    radio_sync_active_vfo_mode();
+    LV_LOG_USER("Radio VFO activo %i (#292)", subject_get_int(subj));
 }
 
 static void on_vfo_mode_change(Subject *subj, void *user_data) {
@@ -559,6 +597,8 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
     subject_add_observer_and_call(cfg_cur.band->vfo_b.pre.val, on_vfo_pre_change, (void*)X6200_VFO_B);
 
     subject_add_observer_and_call(cfg_cur.band->vfo.val, on_change_uint32, x6200_control_vfo_set);
+    /* #292: al cambiar el VFO activo hay que mandarle su modo de demodulacion. */
+    subject_add_observer(cfg_cur.band->vfo.val, on_active_vfo_change, NULL);
     subject_add_observer_and_call(cfg_cur.band->split.val, on_change_uint8, x6200_control_split_set);
     subject_add_observer(cfg_cur.band->split.val, on_split_mode_sync, NULL);
     subject_add_observer_and_call(cfg_cur.band->rfg.val, on_change_uint8, x6200_control_rfg_set);
@@ -576,6 +616,8 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
     subject_add_observer(cfg_cur.sql_level, on_change_cur_sql_level, NULL);
     /* #244: al salir de CW/CWR se re-manda el nivel de audio (ver on_cur_mode_change_vol). */
     subject_add_observer(cfg_cur.mode, on_cur_mode_change_vol, NULL);
+    /* #292: al cambiar el modo, el BASE demodula con el modo del VFO ACTIVO. */
+    subject_add_observer(cfg_cur.mode, on_cur_mode_active_sync, NULL);
     subject_add_observer_and_call(cfg.pwr.val, on_change_float, x6200_control_txpwr_set);
     subject_add_observer_and_call(cfg.fft_dec.val, on_change_uint8, x6200_control_fft_dec_set);
     subject_add_observer_and_call(cfg.key_tone.val, on_change_uint16, x6200_control_key_tone_set);
@@ -673,6 +715,12 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
      * hacia el and_call del observer de cfg.vol.val, pero ahora va despues de crear el mutex
      * (el observer toma radio_lock) y pasa por la funcion que compone los mutes. */
     radio_vol_apply();
+
+    /* #292: al arrancar, el observer del VFO B no es and_call (#244). Si el VFO
+     * activo persistido es B, su modo nunca se mandaba y el BASE demodulaba con
+     * el modo viejo (LSB oia la banda de arriba). Se sincroniza el modo del VFO
+     * activo una vez, ya con el mutex del control creado. */
+    radio_sync_active_vfo_mode();
 
     pthread_t thread;
 
