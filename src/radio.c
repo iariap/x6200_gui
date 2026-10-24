@@ -549,6 +549,11 @@ static void radio_i2c_write_pack(void) {
             v = flt;
         }
 
+        /* TEST #292: codificación XG del modo (LSB=1, USB=2, USB-D=3, ...) */
+        if (i == x6200_vfoa_mode || i == x6200_vfob_mode) {
+            v = (mode == x6200_mode_lsb || mode == x6200_mode_lsb_dig) ? 1 : (uint32_t) mode;
+        }
+
         buf[2 + i * 4 + 0] = v & 0xff;
         buf[2 + i * 4 + 1] = (v >> 8) & 0xff;
         buf[2 + i * 4 + 2] = (v >> 16) & 0xff;
