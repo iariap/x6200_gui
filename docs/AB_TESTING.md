@@ -213,7 +213,13 @@ Reporte commiteado: `tools/ab_testing/reports/AB-e2e-benchmark/`.
 
 ## Milestone 6 — workflow de CI ✅
 
-Gate: un PR con regresión deliberada falla con evidencia.
+Gate manual: un PR con regresión deliberada falla con evidencia. **No hay CI de
+GitHub en PRs** (decisión del owner, 2026-10-26): la corrida es a pedido
+(`workflow_dispatch`) o la hace la matriz local del harness
+(`scripts/apps/x6200/check-matrix.sh`, ver `CONTRIBUTING.md`). El gate A/B
+resuelve la base real (`origin/main`) en vez de comparar el head contra sí
+mismo; si la base no se puede resolver, el paso falla en lugar de reportar un
+PASS silencioso.
 
 - **Imagen reproducible desde cero** (`tools/ui_harness/Dockerfile`): antes era
   `FROM x6200-buildroot` (imagen local de 6.7 GB, no reconstruible en CI). Ahora
