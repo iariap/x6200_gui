@@ -1465,3 +1465,22 @@ ambos lados del dial, así que la energía no discrimina banda; la portadora AM 
 
 Radio restaurada: 14.192410 LSB, vol 16, BT off, logger on, CRASHLOG 0.
 Cierra #292.
+
+---
+
+## 26/10 22:32Z — Auto CQ del FT8: verificado en la radio
+
+Con el binario `8b534333` (PR #312, "Auto CQ por defecto") se abrió FT8 por control remoto en
+40 m y **sin ninguna intervención del operador** la radio llamó sola a una estación en CQ:
+
+- **Captura:** `assessment-194/scratch/cw244/fb-autocq.png`
+- La pantalla muestra `Auto CQ: llamando a PY5QW`, el decodificado `CQ PY5QW GG54 -8 dB`
+  (fila verde) y nuestros TX `PY5QW LU2DSX GF05` repetidos, con `TX CQ: Disabled` y
+  `TX Call: Enabled` (no hubo toque ni CQ manual).
+- `get` durante 90 s: `tx=true` en bloques de ~12 s cada ~30 s (slots alternados), y `tx=false`
+  tras `ft8_stop`.
+- Cierre: app cerrada por control remoto (`app off`), `tx=false`, audio sano (rms 3231),
+  crashlog 0.
+
+**Conclusión medida:** con `Auto` habilitado (default), la radio llama sola a estaciones
+nuevas en CQ, igual que FT8CN.
