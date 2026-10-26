@@ -14,7 +14,7 @@ name: boot-rootfs
 # SIN CI DE GITHUB EN PRs (decision del owner, 2026-10-26): este workflow NO corre en
 # `pull_request` (ni por etiqueta). La validacion de un PR de x6200 es LOCAL, con la
 # matriz del harness (`scripts/apps/x6200/check-matrix.sh <base> <head>`); el merge lo
-# hace el harness exigiendo la salida de esa matriz en la seccion `## Validacion` del
+# hace el harness exigiendo la salida de esa matriz en la seccion `## Validación` del
 # PR (ver CONTRIBUTING.md). Los guards de este archivo no estan en la matriz: si el
 # cambio toca el prune del rootfs o el arranque neo-retro, correrlos a mano con
 # *Actions -> Run workflow* (`workflow_dispatch`) antes de mergear. El despliegue no

@@ -31,7 +31,7 @@ name: UI A/B testing harness
 # pytest del arnes (`tools/ab_testing`), `x6200-ab themes` y `contracts`, el gate de
 # contraste WCAG sobre la superficie renderizada y los checks estaticos/nativos del
 # repo. El merge lo hace el harness exigiendo la salida de esa matriz en la seccion
-# `## Validacion` del PR (ver CONTRIBUTING.md). Este workflow queda solo para corridas
+# `## Validación` del PR (ver CONTRIBUTING.md). Este workflow queda solo para corridas
 # manuales: costaba ~23 min de runner por PR (Performance 13, Visual 6, Contracts 3,
 # Functional 1) y el despliegue no lo usa (`main.yml` integra por tag, no por PR).
 #
@@ -242,17 +242,29 @@ jobs:
         run: |
           BASE="${{ github.event.pull_request.base.sha }}"
           HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
-          if [ -n "$BASE" ] && git cat-file -e "$BASE:tools/ui_harness/CMakeLists.txt" 2>/dev/null; then
+          # `workflow_dispatch` no trae base (el trigger `pull_request` ya no
+          # existe, ver la cabecera). Sin resolverla BASE queda vacio, la
+          # comparacion seria el head contra si mismo y el gate no podria fallar
+          # nunca: por eso la base se resuelve del remoto y, si eso falla, el paso
+          # falla (nunca se degrada a un PASS silencioso).
+          if [ -z "$BASE" ]; then
+            if ! git fetch --quiet origin main; then
+              echo "::error::no se pudo resolver la base: git fetch origin main fallo"
+              exit 1
+            fi
+            BASE="$(git rev-parse origin/main)"
+          fi
+          if git cat-file -e "$BASE:tools/ui_harness/CMakeLists.txt" 2>/dev/null; then
             echo "has_harness=true" >> "$GITHUB_OUTPUT"
             echo "sha=$BASE" >> "$GITHUB_OUTPUT"
-            echo "::notice::baseline is the PR base commit $BASE"
+            echo "::notice::baseline is $BASE"
           else
-            # First time the harness lands there is no baseline to regress
-            # against; comparing the candidate with itself reports PASS without
-            # inventing a change.
+            # La base resuelta todavia no tiene el harness: no hay contra que
+            # regresar. Se compara el head contra si mismo y el aviso dice que no
+            # hay gate A/B, en vez de atribuirlo a una base que no se resolvio.
             echo "has_harness=false" >> "$GITHUB_OUTPUT"
             echo "sha=$HEAD" >> "$GITHUB_OUTPUT"
-            echo "::warning::base branch has no UI harness yet; comparing the PR head against itself"
+            echo "::warning::baseline $BASE has no UI harness yet; comparing the head against itself (no A/B gate)"
           fi
 
       - name: A vs B visual comparison
@@ -339,12 +351,24 @@ jobs:
         run: |
           BASE="${{ github.event.pull_request.base.sha }}"
           HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
-          if [ -n "$BASE" ] && git cat-file -e "$BASE:tools/ui_harness/src/bench_metrics.c" 2>/dev/null; then
+          # Mismo criterio que el job visual: en `workflow_dispatch` la base se
+          # resuelve del remoto y, si no se puede, el paso falla en vez de medir
+          # el head contra si mismo.
+          if [ -z "$BASE" ]; then
+            if ! git fetch --quiet origin main; then
+              echo "::error::no se pudo resolver la base: git fetch origin main fallo"
+              exit 1
+            fi
+            BASE="$(git rev-parse origin/main)"
+          fi
+          if git cat-file -e "$BASE:tools/ui_harness/src/bench_metrics.c" 2>/dev/null; then
             echo "has_benchmark=true" >> "$GITHUB_OUTPUT"
             echo "sha=$BASE" >> "$GITHUB_OUTPUT"
+            echo "::notice::baseline is $BASE"
           else
             echo "has_benchmark=false" >> "$GITHUB_OUTPUT"
             echo "sha=$HEAD" >> "$GITHUB_OUTPUT"
+            echo "::warning::baseline $BASE has no bench_metrics.c yet; measuring the head only (no A/B gate)"
           fi
 
       - name: Benchmark A vs B (relative regression gate)

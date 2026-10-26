@@ -16,7 +16,7 @@ Por decisión del owner (2026-10-26), **x6200 no corre GitHub Actions en PRs**: 
 scripts/apps/x6200/check-matrix.sh <base> <head>
 ```
 
-La matriz corre, según los paths tocados, el pytest del arnés (`tools/ab_testing`), `x6200-ab themes` y `contracts`, el gate de contraste WCAG sobre la superficie renderizada y los checks estáticos/nativos del repo. Cada check reporta `ok`/`FAIL:` con su exit code; lo que no puede correr por falta de entorno se reporta `BLOCKED` y un bloque que no aplica, `SKIP` (nunca "pasó").
+La matriz corre, según los paths tocados, lo que sus bloques cubren: el pytest del arnés (`tools/ab_testing`), `x6200-ab themes` y `contracts`, el gate de contraste WCAG sobre la superficie renderizada, los checks estáticos/nativos del firmware y del inventario del arnés, la identidad del build, los temas de la imagen y la sintaxis de los `.sh` tocados. El harness va a hacer fallar un diff de código que no matchee ningún bloque. Los guards del prune del rootfs y el gate de arranque neo-retro **no** están en la matriz todavía: se corren a mano desde `boot-rootfs.yml` (`workflow_dispatch`) hasta que el harness los integre. Cada check reporta `ok`/`FAIL:` con su exit code; lo que no puede correr por falta de entorno se reporta `BLOCKED` y un bloque que no aplica, `SKIP` (nunca "pasó").
 
 Los workflows de GitHub quedan en el repositorio sólo para corridas **manuales** (*Actions → Run workflow*, `workflow_dispatch`): `.github/workflows/ab-testing.yml` (Functional, Quality Contracts, Visual Regression, Performance) y `.github/workflows/boot-rootfs.yml` (guards del prune y gate del arranque). No hay etiqueta que los dispare.
 
