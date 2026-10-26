@@ -204,6 +204,13 @@ FT8 y elegí la frecuencia de llamada de la banda; para llamar CQ usá el botón
 contestar tocá una fila de la lista de decodificados. El app arma la secuencia y transmite
 sola. Podés subir los decodificados por UDP a un programa de la PC (ver `docs/FT8_UDP.md`).
 
+**Auto CQ (por defecto):** con `Auto` habilitado (es el ajuste de fábrica) la radio **llama
+sola a la primera estación nueva que esté en CQ** cuando no hay un QSO en curso, igual que el
+*Auto track CQ* + *Auto call tracked* de FT8CN. Se saltea las estaciones que ya figuran
+trabajadas en esa banda y modo en el log (`/mnt/qso_log.db`), y no llama si vos ya iniciaste
+un QSO, si estás llamando CQ o si tocaste una fila. Con `Auto: Disabled` se apagan tanto la
+llamada automática como el avance automático del QSO.
+
 ### 6.2 WSPR
 
 ![WSPR](img/02-wspr.png)

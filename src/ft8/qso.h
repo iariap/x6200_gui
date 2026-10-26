@@ -87,6 +87,9 @@ class FTxQsoProcessor {
     void reset();
     void start_qso(ftx_msg_meta_t *meta, ftx_tx_msg_t *tx_msg);
 
+    /// @brief true si hay un QSO en curso (candidato activo)
+    bool has_qso();
+
   private:
     bool          _auto = true;
     bool          _have_tx = false;
@@ -117,6 +120,7 @@ extern void ftx_qso_processor_set_auto(FTxQsoProcessor *p, bool);
 extern void ftx_qso_processor_start_new_slot(FTxQsoProcessor *p);
 extern void ftx_qso_processor_reset(FTxQsoProcessor *p);
 extern void ftx_qso_processor_start_qso(FTxQsoProcessor *p, ftx_msg_meta_t *meta, ftx_tx_msg_t *tx_msg);
+extern bool ftx_qso_processor_has_qso(FTxQsoProcessor *p);
 
 #ifdef __cplusplus
 }
