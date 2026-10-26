@@ -211,7 +211,7 @@ perder un rectángulo en silencio.
 
 | Gate | Qué prueba | Dónde |
 |---|---|---|
-| `tests/check_bootanim.sh` | renderer + backend + cesión (procesos reales) + el **binario real** determinista contra el volcado byte a byte (intro, BEAMS, DECRYPT, 30 s y después) + la versión de producción viva más allá de 30 s virtuales, parada por señal, sin busy-wait + caminos degradados + init + integración | host y CI (`boot-rootfs.yml`, job `bootanim`) |
+| `tests/check_bootanim.sh` | renderer + backend + cesión (procesos reales) + el **binario real** determinista contra el volcado byte a byte (intro, BEAMS, DECRYPT, 30 s y después) + la versión de producción viva más allá de 30 s virtuales, parada por señal, sin busy-wait + caminos degradados + init + integración | corre en el host y en la matriz local del harness; el workflow quedó para corridas manuales |
 | `tests/bootanim/renderer_test.c` | modelo (intro, cursor, lluvia, BEAMS, DECRYPT, bordes de fase, continuidad en 1/3/5/7/15/29/30/31/45/120 s), layout, lanes, higiene de `dirty` (≤12%, ≤12% de píxeles, nada fuera de las cajas), secuencias con cuadros salteados y determinismo | ~15.000 comprobaciones |
 | `tests/bootanim/fb_test.c` | geometry/bpp/bitfields/stride/smem, rotación 90° contra un oráculo independiente de LVGL, 16/32 bpp, padding, offsets, centinelas, casos negativos y el fixture de las cuatro lanes de lluvia | 132 comprobaciones |
 | `tests/bootanim/handoff_test.c` | PIDFILE ausente/corrupto/ajeno/zombi, 100 ms + 20 ms, SIGTERM y SIGKILL de último recurso, juzgado por **sondeos** de la espera (no por tiempo de pared) | 45 comprobaciones |

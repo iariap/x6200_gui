@@ -11,32 +11,15 @@ name: boot-rootfs
 # el binario x6200_bootanim REAL contra un /dev/fb0 sintetico (LD_PRELOAD), la
 # cesion del framebuffer y los chequeos del script de init y de la integracion.
 #
-# OPT-IN POR ETIQUETA (decision del owner, 2026-10-23): este workflow tampoco corre
-# por default en todo PR — aunque es barato (bash sin docker ni buildroot), un PR
-# arranca igual un runner por job. Por defecto un `pull_request` registra la corrida
-# pero los jobs quedan SKIPPED (0 minutos). Para pedirlos, agregar la etiqueta `ci` al
-# PR (el trigger incluye `labeled`/`unlabeled` para que agregarla dispare la corrida);
-# `workflow_dispatch` sigue corriendo sin etiqueta. El despliegue no usa este workflow
-# (ver CONTRIBUTING.md). Los filtros de `paths` siguen vigentes.
+# SIN CI DE GITHUB EN PRs (decision del owner, 2026-10-26): este workflow NO corre en
+# `pull_request` (ni por etiqueta). La validacion de un PR de x6200 es LOCAL, con la
+# matriz del harness (`scripts/apps/x6200/check-matrix.sh <base> <head>`); el merge lo
+# hace el harness exigiendo la salida de esa matriz en la seccion `## Validación` del
+# PR (ver CONTRIBUTING.md). Los guards de este archivo no estan en la matriz: si el
+# cambio toca el prune del rootfs o el arranque neo-retro, correrlos a mano con
+# *Actions -> Run workflow* (`workflow_dispatch`) antes de mergear. El despliegue no
+# usa este workflow.
 on:
-  pull_request:
-    # `labeled`/`unlabeled` son necesarios para que agregar la etiqueta `ci` dispare la
-    # corrida; `opened`/`synchronize`/`reopened` mantienen el comportamiento normal.
-    types: [opened, synchronize, reopened, labeled, unlabeled]
-    paths:
-      - "buildroot/**"
-      - "CMakeLists.txt"
-      - "docs/IMAGE_ROOTFS_PRUNE.md"
-      - "docs/boot-animation.md"
-      - ".github/workflows/boot-rootfs.yml"
-      - "rootfs/etc/init.d/**"
-      - "src/bootanim/**"
-      - "src/boot_splash.c"
-      - "src/boot_splash.h"
-      - "src/main.c"
-      - "src/CMakeLists.txt"
-      - "tests/bootanim/**"
-      - "tests/check_bootanim.sh"
   workflow_dispatch:
 
 permissions:
@@ -46,8 +29,6 @@ jobs:
   prune:
     name: rootfs prune guards (deterministic)
     runs-on: ubuntu-22.04
-    # Gate opt-in por etiqueta: sin `ci` (y sin workflow_dispatch) el job queda SKIPPED.
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci')
     steps:
       - uses: actions/checkout@v4
 
@@ -126,8 +107,6 @@ jobs:
   bootanim:
     name: boot anim gate (deterministic, no docker)
     runs-on: ubuntu-22.04
-    # Gate opt-in por etiqueta: sin `ci` (y sin workflow_dispatch) el job queda SKIPPED.
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci')
     steps:
       - uses: actions/checkout@v4
 

@@ -19,37 +19,26 @@ name: UI A/B testing harness
 #     classification lives in tools/ab_testing/src/x6200_ab/performance.py
 #     (compare_scenario) and the report step below only reads it.
 #
-# No hay trigger de `push`: este harness no despliega y el repositorio integra por
-# PR (ver CONTRIBUTING.md), asi que no hace falta una corrida propia sobre el commit
-# que el merge deja en la rama. Cada corrida por `pull_request` evalua el HEAD sha del
-# PR. Un PASS limpio significa "este sha renderiza y pasa los contratos", nunca "este
-# sha mejoro algo".
+# No hay trigger de `push`: este harness no despliega, asi que no hace falta una
+# corrida propia sobre el commit que el merge deja en la rama. La unica entrada es
+# `workflow_dispatch`: la revision evaluada es el sha de la rama elegida al
+# dispararlo (`github.sha`). Un PASS limpio significa "este sha renderiza y pasa los
+# contratos", nunca "este sha mejoro algo".
 #
-# OPT-IN POR ETIQUETA (decision del owner, 2026-10-23): estos jobs NO corren en todo
-# PR — costaban ~23 min de runner por PR (Performance 13, Visual 6, Contracts 3,
-# Functional 1) y el despliegue no los usa (`main.yml` integra por tag, no por PR). Por
-# defecto un `pull_request` registra la corrida pero TODOS los jobs quedan SKIPPED (un
-# job salteado por `if` no arranca runner: no consume minutos). Para pedir los gates,
-# agregar la etiqueta `ci` al PR: el trigger incluye `labeled`/`unlabeled` justamente
-# para que agregar la etiqueta dispare la corrida.
+# SIN CI DE GITHUB EN PRs (decision del owner, 2026-10-26): este workflow NO corre en
+# `pull_request` (ni por etiqueta). La validacion de un PR de x6200 es LOCAL, con la
+# matriz del harness (`scripts/apps/x6200/check-matrix.sh <base> <head>`): corre el
+# pytest del arnes (`tools/ab_testing`), `x6200-ab themes` y `contracts`, el gate de
+# contraste WCAG sobre la superficie renderizada y los checks estaticos/nativos del
+# repo. El merge lo hace el harness exigiendo la salida de esa matriz en la seccion
+# `## Validación` del PR (ver CONTRIBUTING.md). Este workflow queda solo para corridas
+# manuales: costaba ~23 min de runner por PR (Performance 13, Visual 6, Contracts 3,
+# Functional 1) y el despliegue no lo usa (`main.yml` integra por tag, no por PR).
 #
-# El camino manual `workflow_dispatch` sigue corriendo SIN etiqueta.
-#
-# Si alguien toca este archivo, NO "arregle" el `if` de los jobs: el gate por etiqueta
-# es intencional (ver CONTRIBUTING.md). Los filtros de `paths` siguen vigentes: la
-# etiqueta no los reemplaza.
+# Si alguien toca este archivo, NO le devuelva el trigger `pull_request` ni el gate
+# por etiqueta `ci`: no gastar runners en PRs es una decision intencional.
 
 on:
-  pull_request:
-    # `labeled`/`unlabeled` son necesarios para que agregar la etiqueta `ci` dispare la
-    # corrida; `opened`/`synchronize`/`reopened` mantienen el comportamiento normal.
-    types: [opened, synchronize, reopened, labeled, unlabeled]
-    paths:
-      - "tools/**"
-      - "src/**"
-      - "tests/**"
-      - "rootfs/usr/share/x6200/themes/**"
-      - ".github/workflows/ab-testing.yml"
   workflow_dispatch:
 
 permissions:
@@ -62,8 +51,6 @@ jobs:
   functional:
     name: UI Functional Tests
     runs-on: ubuntu-22.04
-    # Gate opt-in por etiqueta: sin `ci` (y sin workflow_dispatch) el job queda SKIPPED.
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci')
     steps:
       - uses: actions/checkout@v4
 
@@ -124,8 +111,6 @@ jobs:
   contracts:
     name: UI Quality Contracts
     runs-on: ubuntu-22.04
-    # Gate opt-in por etiqueta: sin `ci` (y sin workflow_dispatch) el job queda SKIPPED.
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci')
     steps:
       - uses: actions/checkout@v4
         with:
@@ -214,8 +199,6 @@ jobs:
   visual:
     name: UI Visual Regression
     runs-on: ubuntu-22.04
-    # Gate opt-in por etiqueta: sin `ci` (y sin workflow_dispatch) el job queda SKIPPED.
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci')
     steps:
       - uses: actions/checkout@v4
         with:
@@ -259,17 +242,29 @@ jobs:
         run: |
           BASE="${{ github.event.pull_request.base.sha }}"
           HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
-          if [ -n "$BASE" ] && git cat-file -e "$BASE:tools/ui_harness/CMakeLists.txt" 2>/dev/null; then
+          # `workflow_dispatch` no trae base (el trigger `pull_request` ya no
+          # existe, ver la cabecera). Sin resolverla BASE queda vacio, la
+          # comparacion seria el head contra si mismo y el gate no podria fallar
+          # nunca: por eso la base se resuelve del remoto y, si eso falla, el paso
+          # falla (nunca se degrada a un PASS silencioso).
+          if [ -z "$BASE" ]; then
+            if ! git fetch --quiet origin main; then
+              echo "::error::no se pudo resolver la base: git fetch origin main fallo"
+              exit 1
+            fi
+            BASE="$(git rev-parse origin/main)"
+          fi
+          if git cat-file -e "$BASE:tools/ui_harness/CMakeLists.txt" 2>/dev/null; then
             echo "has_harness=true" >> "$GITHUB_OUTPUT"
             echo "sha=$BASE" >> "$GITHUB_OUTPUT"
-            echo "::notice::baseline is the PR base commit $BASE"
+            echo "::notice::baseline is $BASE"
           else
-            # First time the harness lands there is no baseline to regress
-            # against; comparing the candidate with itself reports PASS without
-            # inventing a change.
+            # La base resuelta todavia no tiene el harness: no hay contra que
+            # regresar. Se compara el head contra si mismo y el aviso dice que no
+            # hay gate A/B, en vez de atribuirlo a una base que no se resolvio.
             echo "has_harness=false" >> "$GITHUB_OUTPUT"
             echo "sha=$HEAD" >> "$GITHUB_OUTPUT"
-            echo "::warning::base branch has no UI harness yet; comparing the PR head against itself"
+            echo "::warning::baseline $BASE has no UI harness yet; comparing the head against itself (no A/B gate)"
           fi
 
       - name: A vs B visual comparison
@@ -334,8 +329,6 @@ jobs:
   performance:
     name: UI Performance (render benchmark, host)
     runs-on: ubuntu-22.04
-    # Gate opt-in por etiqueta: sin `ci` (y sin workflow_dispatch) el job queda SKIPPED.
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci')
     steps:
       - uses: actions/checkout@v4
         with:
@@ -358,12 +351,24 @@ jobs:
         run: |
           BASE="${{ github.event.pull_request.base.sha }}"
           HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
-          if [ -n "$BASE" ] && git cat-file -e "$BASE:tools/ui_harness/src/bench_metrics.c" 2>/dev/null; then
+          # Mismo criterio que el job visual: en `workflow_dispatch` la base se
+          # resuelve del remoto y, si no se puede, el paso falla en vez de medir
+          # el head contra si mismo.
+          if [ -z "$BASE" ]; then
+            if ! git fetch --quiet origin main; then
+              echo "::error::no se pudo resolver la base: git fetch origin main fallo"
+              exit 1
+            fi
+            BASE="$(git rev-parse origin/main)"
+          fi
+          if git cat-file -e "$BASE:tools/ui_harness/src/bench_metrics.c" 2>/dev/null; then
             echo "has_benchmark=true" >> "$GITHUB_OUTPUT"
             echo "sha=$BASE" >> "$GITHUB_OUTPUT"
+            echo "::notice::baseline is $BASE"
           else
             echo "has_benchmark=false" >> "$GITHUB_OUTPUT"
             echo "sha=$HEAD" >> "$GITHUB_OUTPUT"
+            echo "::warning::baseline $BASE has no bench_metrics.c yet; measuring the head only (no A/B gate)"
           fi
 
       - name: Benchmark A vs B (relative regression gate)
@@ -479,10 +484,8 @@ jobs:
     name: UI A/B Summary
     runs-on: ubuntu-22.04
     needs: [functional, contracts, visual, performance]
-    # `always()` para agregar igual cuando algun gate falla, MAS el gate opt-in por
-    # etiqueta: sin `ci` (y sin workflow_dispatch) tampoco corre el summary, asi un PR
-    # sin etiqueta no arranca ningun runner.
-    if: always() && (github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci'))
+    # `always()` para agregar igual cuando algun gate falla.
+    if: always()
     steps:
       - name: Download every result artifact
         uses: actions/download-artifact@v4

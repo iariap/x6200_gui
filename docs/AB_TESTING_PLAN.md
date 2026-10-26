@@ -52,7 +52,7 @@ docs/AB_TESTING.md, UI_KNOWN_ISSUES.md, UI_QUALITY_STANDARDS.md
 | 3 | A/B entre commits (worktrees aislados), pixel diff, quality contracts, known issues, reportes | distingue corrección / regresión / cambio esperado |
 | 4 | Benchmark de render (p50/p95/p99, FPS, flushes, área redibujada, RSS/PSS), repeticiones y warm-up | detecta una regresión de rendimiento controlada |
 | 5 | Evaluador central PASS/FAIL/BLOCKED/INCONCLUSIVE (+REVIEW REQUIRED), presupuestos, CLI completa, reportes MD/HTML | las autopruebas verifican todos los estados |
-| 6 | Workflow `ab-testing.yml`, artifacts, checks separados, resumen en PR | un PR con regresión deliberada falla con evidencia |
+| 6 | Workflow `ab-testing.yml` (corridas manuales), artifacts, checks separados, resumen de la corrida | una corrida manual o la matriz local del harness con una regresión deliberada falla con evidencia; no hay gate automático en PRs |
 | 7 | Captura física del X6200, importación de mediciones energéticas, comparación en ARM | lo simulado se distingue claramente de lo medido |
 
 ## Reglas fijas

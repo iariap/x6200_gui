@@ -8,15 +8,18 @@ Changes from an upstream branch must enter through a separately reviewed integra
 
 **Consolidation gate:** Close PR #254 only after all intended legacy commits are incorporated (or explicitly rejected with justification), comparisons against both heads and regression tests are documented, and open PRs/worktrees/automation dependencies on the legacy branch have been migrated. Only then may the legacy branch be deleted. Deleting it prematurely risks losing unpublished work.
 
-## Continuous integration (opt-in gates)
+## Validación local de PRs (sin CI de GitHub)
 
-Los gates del CI de este repositorio son **opt-in**: por defecto, un PR **no corre nada**. Los workflows que disparan con `pull_request` (`.github/workflows/ab-testing.yml` — harness de UI A/B: Functional, Quality Contracts, Visual Regression y Performance — y `.github/workflows/boot-rootfs.yml` — guards del prune y gate del arranque) quedan en estado *skipped* en cada PR, salvo que se pidan explícitamente:
+Por decisión del owner (2026-10-26), **x6200 no corre GitHub Actions en PRs**: un PR no dispara ningún workflow. La validación de un PR es **local**, con la matriz de checks del harness:
 
-- **Agregar la etiqueta `ci` al PR** (ya creada en el repositorio). Al etiquetar, el trigger `labeled` dispara la corrida y los jobs corren (siguen vigentes los filtros de `paths` de cada workflow: la etiqueta no los reemplaza). Quitar la etiqueta (`unlabeled`) también dispara una corrida, que quedará skipped.
-- **Correr el workflow a mano** con *Actions → Run workflow* (`workflow_dispatch`), que funciona sin etiqueta.
+```bash
+scripts/apps/x6200/check-matrix.sh <base> <head>
+```
 
-Motivo: esos jobs no despliegan ni validan el artefacto que se despliega, y costaban ~23 minutos de runner por PR (Performance 13, Visual 6, Contracts 3, Functional 1). El build/despliegue no los usa: `.github/workflows/main.yml` (imagen `sdcard.img`) corre sólo sobre **tags** y `workflow_dispatch`, nunca en PRs.
+La matriz corre, según los paths tocados, lo que sus bloques cubren: el pytest del arnés (`tools/ab_testing`), `x6200-ab themes` y `contracts`, el gate de contraste WCAG sobre la superficie renderizada, los checks estáticos/nativos del firmware y del inventario del arnés, la identidad del build, los temas de la imagen y la sintaxis de los `.sh` tocados. El harness va a hacer fallar un diff de código que no matchee ningún bloque. Los guards del prune del rootfs y el gate de arranque neo-retro, junto con el draw buffer parcial y el texto de los widgets, **sí** los corre la matriz, en sus bloques `prune_guards`, `check_bootanim`, `check_drawbuf_partial` y `check_widget_text` (bloques del harness en revisión: iariap/asf#66); el workflow (`boot-rootfs.yml`) queda sólo para corridas manuales. Cada check reporta `ok`/`FAIL:` con su exit code; lo que no puede correr por falta de entorno se reporta `BLOCKED` y un bloque que no aplica, `SKIP` (nunca "pasó").
 
-Una corrida skipped **no bloquea el merge**: el ruleset de `main` no exige esos status checks. Correr los gates cuando el cambio los amerita es responsabilidad del autor/revisor (etiquetar el PR).
+Los workflows de GitHub quedan en el repositorio sólo para corridas **manuales** (*Actions → Run workflow*, `workflow_dispatch`): `.github/workflows/ab-testing.yml` (Functional, Quality Contracts, Visual Regression, Performance) y `.github/workflows/boot-rootfs.yml` (guards del prune y gate del arranque). No hay etiqueta que los dispare.
 
-**GitHub administration (required for enforcement):** configure the `main` ruleset to prohibit direct pushes and force pushes, require PR reviews and required status checks; restrict or lock pushes to `lu2dsx/x6200-rom` until it is safely deleted. Repository documentation and Actions are not substitutes for server-side branch protection.
+**El merge lo hace el harness exigiendo la salida real de la matriz en la sección `## Validación` del PR.** Motivo del cambio: esos jobs no despliegan ni validan el artefacto desplegado, y costaban ~23 minutos de runner por PR (Performance 13, Visual 6, Contracts 3, Functional 1). El build/despliegue no los usa: `.github/workflows/main.yml` (imagen `sdcard.img`) corre sólo sobre **tags** y `workflow_dispatch`, nunca en PRs, y no se toca.
+
+**GitHub administration (required for enforcement):** configure the `main` ruleset to prohibit direct pushes and force pushes and require PR reviews, **without required status checks** — x6200 PRs run no GitHub CI at all, so a required check would block every merge forever; the validation is the local harness matrix (see above). Also restrict or lock pushes to `lu2dsx/x6200-rom` until it is safely deleted. Repository documentation and Actions are not substitutes for server-side branch protection.
