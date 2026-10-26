@@ -1339,6 +1339,32 @@ static void add_rx_text(int16_t snr, const char * text, slot_info_t *s_info, flo
     }
     free(old_msg);
 
+    /* Auto CQ (como "Auto track CQ" + "Auto call tracked" de FT8CN): con Auto
+     * habilitado y sin QSO en curso, la radio llama sola a la primera estación
+     * nueva que esté en CQ. Es el comportamiento por defecto (params.ft8_auto
+     * nace en true); apagar Auto lo desactiva junto con el auto-avance del QSO. */
+    if (params.ft8_auto.x && !meta.to_me && (meta.type == FTX_MSG_TYPE_CQ) &&
+        tx_enabled && !cq_enabled && (state != TX_PROCESS) &&
+        (tx_msg.msg[0] == '\0') && (meta.call_de[0] != '\0') &&
+        (strlen(params.callsign.x) > 0) &&
+        !ftx_qso_processor_has_qso(qso_processor) &&
+        (qso_log_search_worked(meta.call_de,
+                               params.ft8_protocol == FTX_PROTOCOL_FT8 ? MODE_FT8 : MODE_FT4,
+                               qso_log_freq_to_band(subject_get_int(cfg_cur.fg_freq))) == SEARCH_WORKED_NO)) {
+        ftx_qso_processor_start_qso(qso_processor, &meta, &tx_msg);
+        if (tx_msg.msg[0] != '\0') {
+            lv_finder_set_cursor(finder, meta.freq_hz);
+            if (!subject_get_int(cfg.ft8_hold_freq.val)) {
+                set_freq(freq_hz);
+            }
+            tx_time_slot = !s_info->odd;
+            tx_enabled   = true;
+            msg_schedule_text_fmt("Auto CQ: %s", meta.call_de);
+            add_info("Auto CQ: llamando a %s", meta.call_de);
+            scheduler_put_noargs(reload_buttons);
+        }
+    }
+
     ft8_cell_type_t cell_type;
     if (meta.to_me) {
         cell_type = CELL_RX_TO_ME;

@@ -290,6 +290,10 @@ void FTxQsoProcessor::reset() {
     }
 }
 
+bool FTxQsoProcessor::has_qso() {
+    return _cur_candidate != NULL;
+}
+
 void FTxQsoProcessor::start_qso(ftx_msg_meta_t *meta, ftx_tx_msg_t *tx_msg) {
     auto type = meta->type;
     if (!meta->to_me) {
@@ -400,4 +404,8 @@ void ftx_qso_processor_add_rx_text(FTxQsoProcessor *p, const char *text, const i
 
 void ftx_qso_processor_start_qso(FTxQsoProcessor *p, ftx_msg_meta_t *meta, ftx_tx_msg_t *tx_msg) {
     p->start_qso(meta, tx_msg);
+}
+
+bool ftx_qso_processor_has_qso(FTxQsoProcessor *p) {
+    return p->has_qso();
 }
