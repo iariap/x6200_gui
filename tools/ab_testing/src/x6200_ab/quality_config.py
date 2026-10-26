@@ -15,15 +15,18 @@ Three files, all versioned and read before A or B are captured:
   author and an expiry, and the gate only reads it while it is current.
 
 `expected_changes` are the only way a visual change stops being a regression
-without being a fix; each one carries a reason, an author and an expiry date,
-so an expectation cannot silently become permanent. `PerformanceException` is
-the same idea for the render-cost proxy, with one ceiling per metric.
+without being a fix; each one carries a reason, an author, an expiry date and
+the globs of the fixtures it covers, so an expectation can neither silently
+become permanent nor silently spread to a screen it never reviewed (a rectangle
+is shared by several screens; see #296). `PerformanceException` is the same idea
+for the render-cost proxy, with one ceiling per metric.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
+from fnmatch import fnmatchcase
 from pathlib import Path
 from typing import Any
 
@@ -228,9 +231,19 @@ NO_PERFORMANCE_EXCEPTIONS = PerformanceExceptions()
 
 @dataclass(frozen=True)
 class ExpectedChange:
-    """A visual change that is known and acceptable, until a date."""
+    """A visual change that is known and acceptable, until a date.
+
+    `fixtures` are globs of fixture names (`fnmatchcase`, so the match does not
+    depend on the host): the entry explains a pixel change only on the fixtures
+    it names. A region is a rectangle of the screen and several screens share
+    rectangles — the app dialog of `ajustes_dialogo` is the case of #296, where an
+    entry of Ajustes silently explained a change of the SWRScan dialog. `["*"]` is
+    for a difference that really is every screen (the font migration), never for a
+    single screen that is convenient to widen.
+    """
 
     region: str
+    fixtures: tuple[str, ...]
     reason: str
     author: str
     until: str
@@ -242,9 +255,14 @@ class ExpectedChange:
             raise ConfigError(f"expected change until `{self.until}` is not an ISO date") from exc
         return today <= expiry
 
+    def covers(self, fixture: str) -> bool:
+        """True when one of the entry's globs names this fixture."""
+        return any(fnmatchcase(fixture, glob) for glob in self.fixtures)
+
     def as_dict(self) -> dict[str, Any]:
         return {
             "region": self.region,
+            "fixtures": list(self.fixtures),
             "reason": self.reason,
             "author": self.author,
             "until": self.until,
@@ -277,6 +295,19 @@ class QualityContracts:
 
     def active_expectations(self, today: date) -> tuple[ExpectedChange, ...]:
         return tuple(change for change in self.expected_changes if change.active(today))
+
+    def allowed_expectations(self, fixture: str, today: date) -> tuple[ExpectedChange, ...]:
+        """The active entries that name THIS fixture (never a global set).
+
+        The gate reads the entries per fixture: an entry written for one screen
+        does not explain a change of another one that happens to share the
+        rectangle (#296).
+        """
+        return tuple(change for change in self.active_expectations(today) if change.covers(fixture))
+
+    def allowed_for(self, fixture: str, today: date) -> frozenset[str]:
+        """The regions whose changes this fixture's own entries explain."""
+        return frozenset(change.region for change in self.allowed_expectations(fixture, today))
 
     def waiver(
         self, rule: str, fixture: str, path: str | None, today: date
@@ -384,7 +415,9 @@ def _parse_expiry(value: str, where: Path | str = "performance exception") -> da
         raise ConfigError(f"{where}: expiry `{value}` is not an ISO date") from exc
 
 
-def load_contracts(path: Path, known_regions: set[str]) -> QualityContracts:
+def load_contracts(
+    path: Path, known_regions: set[str], known_fixtures: set[str]
+) -> QualityContracts:
     data = read_yaml_mapping(path)
     raw_min = data.get("region_min_content", {})
     if not isinstance(raw_min, dict):
@@ -404,7 +437,9 @@ def load_contracts(path: Path, known_regions: set[str]) -> QualityContracts:
     levels = coverage.get("allowed_levels", [])
     if not isinstance(required, list) or not isinstance(levels, list):
         raise ConfigError(f"{path}: coverage lists must be sequences")
-    expected = _load_expected_changes(data.get("expected_changes", []), path, known_regions)
+    expected = _load_expected_changes(
+        data.get("expected_changes", []), path, known_regions, known_fixtures
+    )
     review = data.get("review_regions", [])
     if not isinstance(review, list):
         raise ConfigError(f"{path}: `review_regions` must be a list")
@@ -508,8 +543,15 @@ def _load_exceptions(raw: object, path: Path) -> tuple[RuleException, ...]:
 
 
 def _load_expected_changes(
-    raw: object, path: Path, known_regions: set[str]
+    raw: object, path: Path, known_regions: set[str], known_fixtures: set[str]
 ) -> tuple[ExpectedChange, ...]:
+    """Read the dated declarations, each one scoped to the fixtures it names.
+
+    `fixtures` is required and every glob must match a fixture that exists: an
+    entry without it would be the global exemption the mechanism exists to
+    prevent, and a glob that matches nothing would look scoped while explaining
+    no change at all. Both are configuration errors, never a silent default.
+    """
     if raw is None:
         return ()
     if not isinstance(raw, list):
@@ -520,6 +562,7 @@ def _load_expected_changes(
             raise ConfigError(f"{path}: every expected change must be a mapping")
         try:
             region = str(entry["region"])
+            fixtures_raw = entry["fixtures"]
             reason = str(entry["reason"])
             until = str(entry["until"])
             author = str(entry["author"])
@@ -527,8 +570,35 @@ def _load_expected_changes(
             raise ConfigError(f"{path}: expected change missing `{exc.args[0]}`") from exc
         if region not in known_regions:
             raise ConfigError(f"{path}: expected change names unknown region `{region}`")
-        changes.append(ExpectedChange(region=region, reason=reason, author=author, until=until))
+        fixtures = _expected_change_fixtures(fixtures_raw, path, region, known_fixtures)
+        changes.append(
+            ExpectedChange(
+                region=region, fixtures=fixtures, reason=reason, author=author, until=until
+            )
+        )
     return tuple(changes)
+
+
+def _expected_change_fixtures(
+    raw: object, path: Path, region: str, known_fixtures: set[str]
+) -> tuple[str, ...]:
+    """The globs of one entry, each of them checked against the real suite."""
+    if not isinstance(raw, list) or not raw:
+        raise ConfigError(
+            f"{path}: expected change for `{region}` needs a non-empty `fixtures` list"
+        )
+    globs: list[str] = []
+    for item in raw:
+        glob = str(item)
+        if not glob.strip():
+            raise ConfigError(f"{path}: expected change for `{region}` has an empty fixture glob")
+        if not any(fnmatchcase(fixture, glob) for fixture in known_fixtures):
+            raise ConfigError(
+                f"{path}: expected change for `{region}` names fixture glob `{glob}`, "
+                f"which matches no fixture"
+            )
+        globs.append(glob)
+    return tuple(globs)
 
 
 def _mapping(data: dict[str, Any], key: str, path: Path) -> dict[str, Any]:

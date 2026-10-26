@@ -221,18 +221,24 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
 
 
 def test_the_repo_explains_the_top_bar_visual_changes(real_quality: RealQuality) -> None:
-    """UI-011 and UI-012 have no pixel detector: their fixes are declared changes.
+    """The top bar is a declared change, and every declaration is scoped and dated.
 
-    Neither structural rule (`typography_missing_glyph`, `typography_text_overflow`)
-    says where the pixels move, so `expected_changes` carries the top-bar change
-    of each fix; the gate reads the entries of one region as a set.
+    UI-011/UI-012 (VISION) left with their fixture when THEMES v2 #74 retired the
+    theme: the same rule `test_repo_ui010_ui013_are_retired_with_their_fixtures`
+    applies to the registry, because a declaration anchored to a fixture the suite
+    no longer ships can never be measured. What stays is the top bar of the fixes
+    that still have a fixture (the font migration of #9 and the Home bar of #251),
+    and the shape every entry must keep: a reason, an author, an expiry and the
+    fixtures it covers (#296).
     """
     changes = real_quality.contracts.expected_changes
     assert "barra_superior" in {change.region for change in changes}
     reasons = " ".join(change.reason for change in changes)
-    assert "UI-011" in reasons
-    assert "UI-012" in reasons
+    assert "AB-FONTS" in reasons
+    assert "ui04-tipografia" not in {change.author for change in changes}
     for change in changes:
         assert change.reason.strip(), f"{change.region} has no reason"
         assert change.author, f"{change.region} has no author"
         assert change.until >= "2026-10-14"
+        assert change.fixtures, f"{change.region} ({change.author}) has no scope"
+        assert "*" not in change.fixtures, f"{change.region} uses the catch-all glob"

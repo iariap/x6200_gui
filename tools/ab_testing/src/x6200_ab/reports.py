@@ -27,7 +27,7 @@ from typing import Any
 from . import __version__
 from .capture import Capture
 from .evaluator import Evaluation
-from .quality_gates import GateName
+from .quality_gates import GateName, one_line
 from .status import Status
 
 SUB_DIRS = ("screenshots", "diffs", "metrics", "logs")
@@ -184,6 +184,8 @@ def render_markdown(evaluation: Evaluation, metadata: ReportMetadata, paths: Rep
     lines.append("")
     lines.extend(_diff_section(evaluation))
     lines.append("")
+    lines.extend(_explained_section(evaluation))
+    lines.append("")
     lines.extend(_coverage_section(evaluation))
     lines.append("")
     lines.extend(_issues_section(evaluation))
@@ -262,6 +264,51 @@ def _performance_section(evaluation: Evaluation) -> list[str]:
             f"flushed_pixels ≤ {ceilings['flushed_pixels_delta_pct']:.1f}%): "
             f"{' '.join(record['reason'].split())}"
         )
+    return lines
+
+
+def _explained_records(evaluation: Evaluation) -> tuple[dict[str, Any], ...]:
+    """The visual gate's per-fixture provenance, if the gate ran."""
+    gate = next(
+        (gate for gate in evaluation.gates if gate.name is GateName.VISUAL_REGRESSION), None
+    )
+    if gate is None:
+        return ()
+    return tuple(gate.details.get("explained_by", ()))
+
+
+def _explained_section(evaluation: Evaluation) -> list[str]:
+    """Every explained change names the entry that explained it.
+
+    `explained: <fixture>: N px` was anonymous: the reader could not tell which
+    declaration covered the change, so the entry could expire or be re-scoped
+    unnoticed (#296). The table prints the short fields and the bullets the full
+    reason on one line, straight from the gate's own record.
+    """
+    records = _explained_records(evaluation)
+    if not records:
+        return []
+    lines = ["## Visual changes explained by a dated entry", ""]
+    lines.append("| Fixture | Changed px | Region | Declared by | Until |")
+    lines.append("|---|---|---|---|---|")
+    for record in records:
+        for change in record["changes"]:
+            lines.append(
+                f"| {record['scenario']} | {record['changed_pixels']} | {change['region']} | "
+                f"`{change['author']}` | {change['until']} |"
+            )
+    lines.append("")
+    for record in records:
+        for change in record["changes"]:
+            lines.append(
+                f"- **{record['scenario']}** (`{change['region']}`, "
+                f"{record['changed_pixels']} px) declared by `{change['author']}` until "
+                f"`{change['until']}`: {one_line(str(change['reason']))}"
+            )
+        if record["fixes"]:
+            lines.append(
+                f"- **{record['scenario']}**: the change is the fix of {', '.join(record['fixes'])}"
+            )
     return lines
 
 
@@ -450,6 +497,7 @@ def render_html(evaluation: Evaluation, metadata: ReportMetadata, paths: ReportP
         parts.append(f'<img src="{paths.diffs.name}/{diff.diff_png.name}" alt="diff">')
         if diff.overlay_png is not None:
             parts.append(f'<img src="{paths.diffs.name}/{diff.overlay_png.name}" alt="overlay">')
+    parts.extend(_explained_html(evaluation))
     parts.append("<h2>Coverage (declared by the harness)</h2>")
     parts.append(
         "<table><tr><th>Scenario</th><th>REAL</th><th>PARTIAL</th>"
@@ -539,6 +587,40 @@ def _performance_html(evaluation: Evaluation) -> list[str]:
             f"<code>{record['author']}</code> until <code>{record['expires']}</code>: "
             f"{' '.join(record['reason'].split())}</p>"
         )
+    return parts
+
+
+def _explained_html(evaluation: Evaluation) -> list[str]:
+    """HTML counterpart of `_explained_section`: same change, same entry."""
+    records = _explained_records(evaluation)
+    if not records:
+        return []
+    parts = ["<h2>Visual changes explained by a dated entry</h2>"]
+    parts.append(
+        "<table><tr><th>Fixture</th><th>Changed px</th><th>Region</th>"
+        "<th>Declared by</th><th>Until</th></tr>"
+    )
+    for record in records:
+        for change in record["changes"]:
+            parts.append(
+                f"<tr><td>{record['scenario']}</td><td>{record['changed_pixels']}</td>"
+                f"<td>{change['region']}</td><td><code>{change['author']}</code></td>"
+                f"<td>{change['until']}</td></tr>"
+            )
+    parts.append("</table><ul>")
+    for record in records:
+        for change in record["changes"]:
+            parts.append(
+                f"<li><strong>{record['scenario']}</strong> (<code>{change['region']}</code>, "
+                f"{record['changed_pixels']} px) declared by <code>{change['author']}</code> "
+                f"until <code>{change['until']}</code>: {one_line(str(change['reason']))}</li>"
+            )
+        if record["fixes"]:
+            parts.append(
+                f"<li><strong>{record['scenario']}</strong>: the change is the fix of "
+                f"{', '.join(record['fixes'])}</li>"
+            )
+    parts.append("</ul>")
     return parts
 
 

@@ -1,0 +1,4124 @@
+{
+ "AB-296-after-copy288": {
+  "changed_fixtures": [
+   {
+    "changed_pixels": 238,
+    "fixture": "swrscan-3pass-stop",
+    "regions": [
+     "espectro",
+     "ajustes_tema",
+     "ajustes_dialogo"
+    ]
+   }
+  ],
+  "changed_fixtures_by_region": {
+   "ajustes_dialogo": 1,
+   "ajustes_tema": 1,
+   "espectro": 1
+  },
+  "changed_fixtures_total": 1,
+  "gates": [
+   {
+    "gate": "Functional",
+    "status": "PASS",
+    "summary": "205 scenarios captured on both revisions"
+   },
+   {
+    "gate": "Visual Regression",
+    "status": "PASS",
+    "summary": "no unexplained visual regressions"
+   },
+   {
+    "gate": "Quality Contract",
+    "status": "PASS",
+    "summary": "2118 contract checks passed on the candidate"
+   },
+   {
+    "gate": "Performance",
+    "status": "PASS",
+    "summary": "render-cost proxy within budget"
+   },
+   {
+    "gate": "Hardware",
+    "status": "BLOCKED",
+    "summary": "no physical X6200 attached; hardware behaviour is not measured"
+   },
+   {
+    "gate": "Energy",
+    "status": "BLOCKED",
+    "summary": "no power measurement; energy evidence must be physical"
+   }
+  ],
+  "revision_a": {
+   "label": "a",
+   "sha": "e1807671e01d5747546508a2d7d35d386aab05dc"
+  },
+  "revision_b": {
+   "label": "b",
+   "sha": "884841c5755dea570d0c839c469d918a7907ddd5"
+  },
+  "scenarios": 205,
+  "status": "PASS",
+  "visual": {
+   "explained_by": [
+    {
+     "changed_pixels": 238,
+     "changes": [
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "ui-polish-app-copy-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo",
+      "espectro"
+     ],
+     "scenario": "swrscan-3pass-stop"
+    }
+   ],
+   "problems": [],
+   "review": []
+  }
+ },
+ "AB-296-after-inject": {
+  "changed_fixtures": [
+   {
+    "changed_pixels": 331,
+    "fixture": "autotune-am",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro"
+    ]
+   }
+  ],
+  "changed_fixtures_by_region": {
+   "barra_superior": 1,
+   "espectro": 1,
+   "s_metro": 1
+  },
+  "changed_fixtures_total": 1,
+  "gates": [
+   {
+    "gate": "Functional",
+    "status": "PASS",
+    "summary": "1 scenarios captured on both revisions"
+   },
+   {
+    "gate": "Visual Regression",
+    "status": "FAIL",
+    "summary": "visual regressions vs the baseline"
+   },
+   {
+    "gate": "Quality Contract",
+    "status": "PASS",
+    "summary": "10 contract checks passed on the candidate"
+   },
+   {
+    "gate": "Performance",
+    "status": "PASS",
+    "summary": "render-cost proxy within budget"
+   },
+   {
+    "gate": "Hardware",
+    "status": "BLOCKED",
+    "summary": "no physical X6200 attached; hardware behaviour is not measured"
+   },
+   {
+    "gate": "Energy",
+    "status": "BLOCKED",
+    "summary": "no power measurement; energy evidence must be physical"
+   }
+  ],
+  "revision_a": {
+   "label": "a",
+   "sha": "0d3f9e688d89adf5d6bcec8d1fb2b7ff64ec7427"
+  },
+  "revision_b": {
+   "label": "b",
+   "sha": "9efb3133be5cefe18f0541311d27e2237064ab17"
+  },
+  "scenarios": 1,
+  "status": "FAIL",
+  "visual": {
+   "explained_by": [],
+   "problems": [
+    "autotune-am: 331 unexplained changed pixels (0.09% of the screen)"
+   ],
+   "review": []
+  }
+ },
+ "AB-296-after-ink287": {
+  "changed_fixtures": [
+   {
+    "changed_pixels": 860,
+    "fixture": "settings-audio",
+    "regions": [
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1400,
+    "fixture": "settings-grupo-actions",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1026,
+    "fixture": "settings-grupo-display",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1212,
+    "fixture": "settings-grupo-info",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 963,
+    "fixture": "settings-grupo-operation",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 963,
+    "fixture": "settings-grupo-operation-tema-aurora",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1644,
+    "fixture": "settings-grupo-operation-tema-cathode",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 811,
+    "fixture": "settings-grupo-operation-tema-redshift",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1055,
+    "fixture": "settings-grupo-operation-tema-sprint",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1742,
+    "fixture": "settings-grupo-operation-tema-sunlit",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1541,
+    "fixture": "settings-grupo-operation-tema-trail",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1797,
+    "fixture": "settings-home",
+    "regions": [
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1339,
+    "fixture": "settings-perfil",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1339,
+    "fixture": "settings-tema-aurora",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 2263,
+    "fixture": "settings-tema-cathode",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1163,
+    "fixture": "settings-tema-redshift",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1472,
+    "fixture": "settings-tema-sprint",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 2388,
+    "fixture": "settings-tema-sunlit",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 2118,
+    "fixture": "settings-tema-trail",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   }
+  ],
+  "changed_fixtures_by_region": {
+   "ajustes_anio": 1,
+   "ajustes_audio_ganancia": 18,
+   "ajustes_dialogo": 19,
+   "ajustes_perfil": 11,
+   "ajustes_tema": 2,
+   "dfl_inline": 19,
+   "espectro": 18,
+   "frecuencia": 18,
+   "waterfall": 19,
+   "waterfall_ticks": 1
+  },
+  "changed_fixtures_total": 19,
+  "gates": [
+   {
+    "gate": "Functional",
+    "status": "PASS",
+    "summary": "205 scenarios captured on both revisions"
+   },
+   {
+    "gate": "Visual Regression",
+    "status": "PASS",
+    "summary": "no unexplained visual regressions"
+   },
+   {
+    "gate": "Quality Contract",
+    "status": "PASS",
+    "summary": "2118 contract checks passed on the candidate"
+   },
+   {
+    "gate": "Performance",
+    "status": "PASS",
+    "summary": "render-cost proxy within budget"
+   },
+   {
+    "gate": "Hardware",
+    "status": "BLOCKED",
+    "summary": "no physical X6200 attached; hardware behaviour is not measured"
+   },
+   {
+    "gate": "Energy",
+    "status": "BLOCKED",
+    "summary": "no power measurement; energy evidence must be physical"
+   }
+  ],
+  "revision_a": {
+   "label": "a",
+   "sha": "db31e24efeaa863f16e93f526f286f290883e318"
+  },
+  "revision_b": {
+   "label": "b",
+   "sha": "2f646084bea5eca1c73a970585c489c330a3c5c7"
+  },
+  "scenarios": 205,
+  "status": "PASS",
+  "visual": {
+   "explained_by": [
+    {
+     "changed_pixels": 860,
+     "changes": [
+      {
+       "author": "fonts-libre",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "seten109",
+       "region": "ajustes_dialogo",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo",
+      "ajustes_perfil",
+      "waterfall"
+     ],
+     "scenario": "settings-audio"
+    },
+    {
+     "changed_pixels": 1400,
+     "changes": [
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo"
+     ],
+     "scenario": "settings-grupo-actions"
+    },
+    {
+     "changed_pixels": 1026,
+     "changes": [
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo"
+     ],
+     "scenario": "settings-grupo-display"
+    },
+    {
+     "changed_pixels": 1212,
+     "changes": [
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo"
+     ],
+     "scenario": "settings-grupo-info"
+    },
+    {
+     "changed_pixels": 963,
+     "changes": [
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo"
+     ],
+     "scenario": "settings-grupo-operation"
+    },
+    {
+     "changed_pixels": 963,
+     "changes": [
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo"
+     ],
+     "scenario": "settings-grupo-operation-tema-aurora"
+    },
+    {
+     "changed_pixels": 1644,
+     "changes": [
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo"
+     ],
+     "scenario": "settings-grupo-operation-tema-cathode"
+    },
+    {
+     "changed_pixels": 811,
+     "changes": [
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo"
+     ],
+     "scenario": "settings-grupo-operation-tema-redshift"
+    },
+    {
+     "changed_pixels": 1055,
+     "changes": [
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo"
+     ],
+     "scenario": "settings-grupo-operation-tema-sprint"
+    },
+    {
+     "changed_pixels": 1742,
+     "changes": [
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo"
+     ],
+     "scenario": "settings-grupo-operation-tema-sunlit"
+    },
+    {
+     "changed_pixels": 1541,
+     "changes": [
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo"
+     ],
+     "scenario": "settings-grupo-operation-tema-trail"
+    },
+    {
+     "changed_pixels": 1797,
+     "changes": [
+      {
+       "author": "ui016-year-field",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "settings-year-110",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_tema",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "seten109",
+       "region": "ajustes_dialogo",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "waterfall_ticks",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_anio",
+      "ajustes_audio_ganancia",
+      "ajustes_dialogo",
+      "ajustes_perfil",
+      "ajustes_tema",
+      "espectro",
+      "frecuencia",
+      "waterfall",
+      "waterfall_ticks"
+     ],
+     "scenario": "settings-home"
+    },
+    {
+     "changed_pixels": 1339,
+     "changes": [
+      {
+       "author": "fonts-libre",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "seten109",
+       "region": "ajustes_dialogo",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_audio_ganancia",
+      "ajustes_dialogo",
+      "ajustes_perfil",
+      "espectro",
+      "frecuencia",
+      "waterfall"
+     ],
+     "scenario": "settings-perfil"
+    },
+    {
+     "changed_pixels": 1339,
+     "changes": [
+      {
+       "author": "seten109",
+       "region": "ajustes_dialogo",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo",
+      "espectro"
+     ],
+     "scenario": "settings-tema-aurora"
+    },
+    {
+     "changed_pixels": 2263,
+     "changes": [
+      {
+       "author": "seten109",
+       "region": "ajustes_dialogo",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo",
+      "espectro"
+     ],
+     "scenario": "settings-tema-cathode"
+    },
+    {
+     "changed_pixels": 1163,
+     "changes": [
+      {
+       "author": "seten109",
+       "region": "ajustes_dialogo",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo",
+      "espectro"
+     ],
+     "scenario": "settings-tema-redshift"
+    },
+    {
+     "changed_pixels": 1472,
+     "changes": [
+      {
+       "author": "seten109",
+       "region": "ajustes_dialogo",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo",
+      "espectro"
+     ],
+     "scenario": "settings-tema-sprint"
+    },
+    {
+     "changed_pixels": 2388,
+     "changes": [
+      {
+       "author": "seten109",
+       "region": "ajustes_dialogo",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo",
+      "espectro"
+     ],
+     "scenario": "settings-tema-sunlit"
+    },
+    {
+     "changed_pixels": 2118,
+     "changes": [
+      {
+       "author": "seten109",
+       "region": "ajustes_dialogo",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      },
+      {
+       "author": "ui-polish-contrast-284",
+       "region": "ajustes_dialogo",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_dialogo",
+      "espectro"
+     ],
+     "scenario": "settings-tema-trail"
+    }
+   ],
+   "problems": [],
+   "review": []
+  }
+ },
+ "AB-296-after-next": {
+  "changed_fixtures": [
+   {
+    "changed_pixels": 121049,
+    "fixture": "app-bands",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 120957,
+    "fixture": "app-close-home",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121049,
+    "fixture": "apps-menu-1",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121049,
+    "fixture": "apps-menu-2",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 120921,
+    "fixture": "apps-menu-3",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 120945,
+    "fixture": "apps-menu-4",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121049,
+    "fixture": "apps-menu-5",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121049,
+    "fixture": "apps-menu-6",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121049,
+    "fixture": "autotune",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 123105,
+    "fixture": "autotune-am",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121049,
+    "fixture": "autotune-digital",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121131,
+    "fixture": "autotune-found",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 114132,
+    "fixture": "autotune-lsb",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121131,
+    "fixture": "autotune-progress",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 114132,
+    "fixture": "autotune-usb",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 123390,
+    "fixture": "autotune-usb-applied",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 114132,
+    "fixture": "autotune-usb-timeout",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 120034,
+    "fixture": "bench-render",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 87524,
+    "fixture": "bt-dialog",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_scrollbar",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 87524,
+    "fixture": "bt-dialog-tema-aurora",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_scrollbar",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   }
+  ],
+  "changed_fixtures_by_region": {
+   "ajustes_anio": 38,
+   "ajustes_audio_ganancia": 181,
+   "ajustes_dialogo": 205,
+   "ajustes_perfil": 181,
+   "ajustes_scrollbar": 205,
+   "ajustes_tema": 28,
+   "barra_superior": 205,
+   "botones": 204,
+   "dfl_inline": 205,
+   "espectro": 205,
+   "frecuencia": 44,
+   "multiplicador": 37,
+   "reloj_potencia": 205,
+   "waterfall": 205,
+   "waterfall_ticks": 205
+  },
+  "changed_fixtures_total": 205,
+  "gates": [
+   {
+    "gate": "Functional",
+    "status": "PASS",
+    "summary": "205 scenarios captured on both revisions"
+   },
+   {
+    "gate": "Visual Regression",
+    "status": "FAIL",
+    "summary": "visual regressions vs the baseline"
+   },
+   {
+    "gate": "Quality Contract",
+    "status": "PASS",
+    "summary": "2118 contract checks passed on the candidate"
+   },
+   {
+    "gate": "Performance",
+    "status": "PASS",
+    "summary": "render-cost proxy within budget"
+   },
+   {
+    "gate": "Hardware",
+    "status": "BLOCKED",
+    "summary": "no physical X6200 attached; hardware behaviour is not measured"
+   },
+   {
+    "gate": "Energy",
+    "status": "BLOCKED",
+    "summary": "no power measurement; energy evidence must be physical"
+   }
+  ],
+  "revision_a": {
+   "label": "a",
+   "sha": "eea3ed2022fc0f3be8c0afa1c318e32e42455ce8"
+  },
+  "revision_b": {
+   "label": "b",
+   "sha": "0d3f9e688d89adf5d6bcec8d1fb2b7ff64ec7427"
+  },
+  "scenarios": 205,
+  "status": "FAIL",
+  "visual": {
+   "explained_by": [],
+   "problems": [
+    "autotune: 110318 unexplained changed pixels (31.52% of the screen)",
+    "autotune-am: 123105 unexplained changed pixels (32.06% of the screen)",
+    "autotune-digital: 121049 unexplained changed pixels (31.52% of the screen)",
+    "autotune-found: 110428 unexplained changed pixels (31.54% of the screen)",
+    "autotune-lsb: 114132 unexplained changed pixels (29.72% of the screen)",
+    "autotune-progress: 110428 unexplained changed pixels (31.54% of the screen)",
+    "autotune-usb: 114132 unexplained changed pixels (29.72% of the screen)",
+    "autotune-usb-applied: 123390 unexplained changed pixels (32.13% of the screen)",
+    "autotune-usb-timeout: 114132 unexplained changed pixels (29.72% of the screen)",
+    "bt-dialog-tema-aurora: 41116 unexplained changed pixels (22.79% of the screen)",
+    "bt-dialog-tema-cathode: 40513 unexplained changed pixels (22.68% of the screen)",
+    "bt-dialog-tema-redshift: 40747 unexplained changed pixels (22.68% of the screen)",
+    "bt-dialog-tema-sprint: 40872 unexplained changed pixels (22.78% of the screen)",
+    "bt-dialog-tema-sunlit: 39465 unexplained changed pixels (22.22% of the screen)",
+    "bt-dialog-tema-trail: 40617 unexplained changed pixels (22.65% of the screen)",
+    "cw-autotune-off: 26426 unexplained changed pixels (8.77% of the screen)",
+    "cw-autotune-on: 26426 unexplained changed pixels (8.77% of the screen)",
+    "cw-tune-default: 26438 unexplained changed pixels (8.77% of the screen)",
+    "cw-tune-ssb: 26806 unexplained changed pixels (9.04% of the screen)",
+    "cw-tune-tema-sunlit: 71668 unexplained changed pixels (20.91% of the screen)"
+   ],
+   "review": []
+  }
+ },
+ "AB-296-after-pr": {
+  "changed_fixtures": [],
+  "changed_fixtures_by_region": {},
+  "changed_fixtures_total": 0,
+  "gates": [
+   {
+    "gate": "Functional",
+    "status": "PASS",
+    "summary": "205 scenarios captured on both revisions"
+   },
+   {
+    "gate": "Visual Regression",
+    "status": "PASS",
+    "summary": "captures are pixel-identical to the baseline"
+   },
+   {
+    "gate": "Quality Contract",
+    "status": "PASS",
+    "summary": "2118 contract checks passed on the candidate"
+   },
+   {
+    "gate": "Performance",
+    "status": "PASS",
+    "summary": "render-cost proxy within budget"
+   },
+   {
+    "gate": "Hardware",
+    "status": "BLOCKED",
+    "summary": "no physical X6200 attached; hardware behaviour is not measured"
+   },
+   {
+    "gate": "Energy",
+    "status": "BLOCKED",
+    "summary": "no power measurement; energy evidence must be physical"
+   }
+  ],
+  "revision_a": {
+   "label": "a",
+   "sha": "0d3f9e688d89adf5d6bcec8d1fb2b7ff64ec7427"
+  },
+  "revision_b": {
+   "label": "b",
+   "sha": "1efacfd26ad03a62772dad043014bdee23568845"
+  },
+  "scenarios": 205,
+  "status": "PASS",
+  "visual": {
+   "explained_by": [],
+   "problems": [],
+   "review": []
+  }
+ },
+ "AB-296-after-wide": {
+  "changed_fixtures": [
+   {
+    "changed_pixels": 335256,
+    "fixture": "bench-render",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 320058,
+    "fixture": "home-bateria-externa",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 322632,
+    "fixture": "home-frecuencia-extrema",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 320050,
+    "fixture": "home-usb-20m",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 322567,
+    "fixture": "main-bateria-baja",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 335530,
+    "fixture": "main-espectro-agua",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 320050,
+    "fixture": "main-foco",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 320051,
+    "fixture": "main-tx-simulado",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   }
+  ],
+  "changed_fixtures_by_region": {
+   "ajustes_anio": 8,
+   "ajustes_audio_ganancia": 8,
+   "ajustes_dialogo": 8,
+   "ajustes_perfil": 8,
+   "ajustes_scrollbar": 8,
+   "ajustes_tema": 8,
+   "barra_superior": 8,
+   "botones": 8,
+   "dfl_inline": 8,
+   "espectro": 8,
+   "frecuencia": 8,
+   "multiplicador": 8,
+   "reloj_potencia": 8,
+   "s_metro": 8,
+   "waterfall": 8,
+   "waterfall_ticks": 8
+  },
+  "changed_fixtures_total": 8,
+  "gates": [
+   {
+    "gate": "Functional",
+    "status": "PASS",
+    "summary": "8 scenarios captured on both revisions"
+   },
+   {
+    "gate": "Visual Regression",
+    "status": "PASS",
+    "summary": "no unexplained visual regressions"
+   },
+   {
+    "gate": "Quality Contract",
+    "status": "PASS",
+    "summary": "80 contract checks passed on the candidate"
+   },
+   {
+    "gate": "Performance",
+    "status": "PASS",
+    "summary": "render-cost proxy within budget"
+   },
+   {
+    "gate": "Hardware",
+    "status": "BLOCKED",
+    "summary": "no physical X6200 attached; hardware behaviour is not measured"
+   },
+   {
+    "gate": "Energy",
+    "status": "BLOCKED",
+    "summary": "no power measurement; energy evidence must be physical"
+   }
+  ],
+  "revision_a": {
+   "label": "a",
+   "sha": "6ec345aad22a085f3d8bcc69d47d3d1485d80132"
+  },
+  "revision_b": {
+   "label": "b",
+   "sha": "0d3f9e688d89adf5d6bcec8d1fb2b7ff64ec7427"
+  },
+  "scenarios": 8,
+  "status": "PASS",
+  "visual": {
+   "explained_by": [
+    {
+     "changed_pixels": 335256,
+     "changes": [
+      {
+       "author": "fonts-libre",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_tema",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_scrollbar",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "waterfall-center-line",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "waterfall_ticks",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "reloj_potencia",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_anio",
+      "ajustes_audio_ganancia",
+      "ajustes_perfil",
+      "ajustes_scrollbar",
+      "ajustes_tema",
+      "barra_superior",
+      "botones",
+      "espectro",
+      "frecuencia",
+      "reloj_potencia",
+      "s_metro",
+      "waterfall",
+      "waterfall_ticks"
+     ],
+     "scenario": "bench-render"
+    },
+    {
+     "changed_pixels": 320058,
+     "changes": [
+      {
+       "author": "fonts-libre",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_tema",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_scrollbar",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "waterfall_ticks",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "reloj_potencia",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_anio",
+      "ajustes_audio_ganancia",
+      "ajustes_perfil",
+      "ajustes_scrollbar",
+      "ajustes_tema",
+      "barra_superior",
+      "botones",
+      "espectro",
+      "frecuencia",
+      "reloj_potencia",
+      "s_metro",
+      "waterfall",
+      "waterfall_ticks"
+     ],
+     "scenario": "home-bateria-externa"
+    },
+    {
+     "changed_pixels": 322632,
+     "changes": [
+      {
+       "author": "fonts-libre",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_tema",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_scrollbar",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "waterfall_ticks",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-status-legibility-251",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "reloj_potencia",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_anio",
+      "ajustes_audio_ganancia",
+      "ajustes_perfil",
+      "ajustes_scrollbar",
+      "ajustes_tema",
+      "barra_superior",
+      "botones",
+      "espectro",
+      "frecuencia",
+      "reloj_potencia",
+      "s_metro",
+      "waterfall",
+      "waterfall_ticks"
+     ],
+     "scenario": "home-frecuencia-extrema"
+    },
+    {
+     "changed_pixels": 320050,
+     "changes": [
+      {
+       "author": "fonts-libre",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_tema",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_scrollbar",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "waterfall_ticks",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-status-legibility-251",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "reloj_potencia",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_anio",
+      "ajustes_audio_ganancia",
+      "ajustes_perfil",
+      "ajustes_scrollbar",
+      "ajustes_tema",
+      "barra_superior",
+      "botones",
+      "espectro",
+      "frecuencia",
+      "reloj_potencia",
+      "s_metro",
+      "waterfall",
+      "waterfall_ticks"
+     ],
+     "scenario": "home-usb-20m"
+    },
+    {
+     "changed_pixels": 322567,
+     "changes": [
+      {
+       "author": "fonts-libre",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_tema",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_scrollbar",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "waterfall_ticks",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "reloj_potencia",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_anio",
+      "ajustes_audio_ganancia",
+      "ajustes_perfil",
+      "ajustes_scrollbar",
+      "ajustes_tema",
+      "barra_superior",
+      "botones",
+      "espectro",
+      "frecuencia",
+      "reloj_potencia",
+      "s_metro",
+      "waterfall",
+      "waterfall_ticks"
+     ],
+     "scenario": "main-bateria-baja"
+    },
+    {
+     "changed_pixels": 335530,
+     "changes": [
+      {
+       "author": "fonts-libre",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_tema",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_scrollbar",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "waterfall-center-line",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "waterfall_ticks",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "reloj_potencia",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_anio",
+      "ajustes_audio_ganancia",
+      "ajustes_perfil",
+      "ajustes_scrollbar",
+      "ajustes_tema",
+      "barra_superior",
+      "botones",
+      "espectro",
+      "frecuencia",
+      "reloj_potencia",
+      "s_metro",
+      "waterfall",
+      "waterfall_ticks"
+     ],
+     "scenario": "main-espectro-agua"
+    },
+    {
+     "changed_pixels": 320050,
+     "changes": [
+      {
+       "author": "fonts-libre",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_tema",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_scrollbar",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "waterfall_ticks",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "reloj_potencia",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_anio",
+      "ajustes_audio_ganancia",
+      "ajustes_perfil",
+      "ajustes_scrollbar",
+      "ajustes_tema",
+      "barra_superior",
+      "botones",
+      "espectro",
+      "frecuencia",
+      "reloj_potencia",
+      "s_metro",
+      "waterfall",
+      "waterfall_ticks"
+     ],
+     "scenario": "main-foco"
+    },
+    {
+     "changed_pixels": 320051,
+     "changes": [
+      {
+       "author": "fonts-libre",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "fonts-libre",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "s_metro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "espectro",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "frecuencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "waterfall",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "botones",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "reloj_potencia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_tema",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_perfil",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_scrollbar",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_anio",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "themes-removal-74",
+       "region": "ajustes_audio_ganancia",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "espectro",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "dfl-visual-173",
+       "region": "waterfall_ticks",
+       "until": "2027-10-20"
+      },
+      {
+       "author": "home-status-legibility-251",
+       "region": "barra_superior",
+       "until": "2027-03-31"
+      },
+      {
+       "author": "home-clock-battery-250",
+       "region": "reloj_potencia",
+       "until": "2027-04-30"
+      }
+     ],
+     "fixes": [],
+     "regions": [
+      "ajustes_anio",
+      "ajustes_audio_ganancia",
+      "ajustes_perfil",
+      "ajustes_scrollbar",
+      "ajustes_tema",
+      "barra_superior",
+      "botones",
+      "espectro",
+      "frecuencia",
+      "reloj_potencia",
+      "s_metro",
+      "waterfall",
+      "waterfall_ticks"
+     ],
+     "scenario": "main-tx-simulado"
+    }
+   ],
+   "problems": [],
+   "review": []
+  }
+ },
+ "AB-296-before-copy288": {
+  "changed_fixtures": [
+   {
+    "changed_pixels": 238,
+    "fixture": "swrscan-3pass-stop",
+    "regions": [
+     "espectro",
+     "ajustes_tema",
+     "ajustes_dialogo"
+    ]
+   }
+  ],
+  "changed_fixtures_by_region": {
+   "ajustes_dialogo": 1,
+   "ajustes_tema": 1,
+   "espectro": 1
+  },
+  "changed_fixtures_total": 1,
+  "gates": [
+   {
+    "gate": "Functional",
+    "status": "PASS",
+    "summary": "205 scenarios captured on both revisions"
+   },
+   {
+    "gate": "Visual Regression",
+    "status": "PASS",
+    "summary": "no unexplained visual regressions"
+   },
+   {
+    "gate": "Quality Contract",
+    "status": "PASS",
+    "summary": "2118 contract checks passed on the candidate"
+   },
+   {
+    "gate": "Performance",
+    "status": "PASS",
+    "summary": "render-cost proxy within budget"
+   },
+   {
+    "gate": "Hardware",
+    "status": "BLOCKED",
+    "summary": "no physical X6200 attached; hardware behaviour is not measured"
+   },
+   {
+    "gate": "Energy",
+    "status": "BLOCKED",
+    "summary": "no power measurement; energy evidence must be physical"
+   }
+  ],
+  "revision_a": {
+   "label": "a",
+   "sha": "e1807671e01d5747546508a2d7d35d386aab05dc"
+  },
+  "revision_b": {
+   "label": "b",
+   "sha": "884841c5755dea570d0c839c469d918a7907ddd5"
+  },
+  "scenarios": 205,
+  "status": "PASS",
+  "visual": {
+   "explained_by": [],
+   "problems": [],
+   "review": []
+  }
+ },
+ "AB-296-before-inject": {
+  "changed_fixtures": [
+   {
+    "changed_pixels": 331,
+    "fixture": "autotune-am",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro"
+    ]
+   }
+  ],
+  "changed_fixtures_by_region": {
+   "barra_superior": 1,
+   "espectro": 1,
+   "s_metro": 1
+  },
+  "changed_fixtures_total": 1,
+  "gates": [
+   {
+    "gate": "Functional",
+    "status": "PASS",
+    "summary": "1 scenarios captured on both revisions"
+   },
+   {
+    "gate": "Visual Regression",
+    "status": "PASS",
+    "summary": "no unexplained visual regressions"
+   },
+   {
+    "gate": "Quality Contract",
+    "status": "PASS",
+    "summary": "10 contract checks passed on the candidate"
+   },
+   {
+    "gate": "Performance",
+    "status": "PASS",
+    "summary": "render-cost proxy within budget"
+   },
+   {
+    "gate": "Hardware",
+    "status": "BLOCKED",
+    "summary": "no physical X6200 attached; hardware behaviour is not measured"
+   },
+   {
+    "gate": "Energy",
+    "status": "BLOCKED",
+    "summary": "no power measurement; energy evidence must be physical"
+   }
+  ],
+  "revision_a": {
+   "label": "a",
+   "sha": "0d3f9e688d89adf5d6bcec8d1fb2b7ff64ec7427"
+  },
+  "revision_b": {
+   "label": "b",
+   "sha": "9efb3133be5cefe18f0541311d27e2237064ab17"
+  },
+  "scenarios": 1,
+  "status": "PASS",
+  "visual": {
+   "explained_by": [],
+   "problems": [],
+   "review": []
+  }
+ },
+ "AB-296-before-ink287": {
+  "changed_fixtures": [
+   {
+    "changed_pixels": 860,
+    "fixture": "settings-audio",
+    "regions": [
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1400,
+    "fixture": "settings-grupo-actions",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1026,
+    "fixture": "settings-grupo-display",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1212,
+    "fixture": "settings-grupo-info",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 963,
+    "fixture": "settings-grupo-operation",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 963,
+    "fixture": "settings-grupo-operation-tema-aurora",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1644,
+    "fixture": "settings-grupo-operation-tema-cathode",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 811,
+    "fixture": "settings-grupo-operation-tema-redshift",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1055,
+    "fixture": "settings-grupo-operation-tema-sprint",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1742,
+    "fixture": "settings-grupo-operation-tema-sunlit",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1541,
+    "fixture": "settings-grupo-operation-tema-trail",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1797,
+    "fixture": "settings-home",
+    "regions": [
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1339,
+    "fixture": "settings-perfil",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1339,
+    "fixture": "settings-tema-aurora",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 2263,
+    "fixture": "settings-tema-cathode",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1163,
+    "fixture": "settings-tema-redshift",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 1472,
+    "fixture": "settings-tema-sprint",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 2388,
+    "fixture": "settings-tema-sunlit",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 2118,
+    "fixture": "settings-tema-trail",
+    "regions": [
+     "espectro",
+     "frecuencia",
+     "waterfall",
+     "ajustes_perfil",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   }
+  ],
+  "changed_fixtures_by_region": {
+   "ajustes_anio": 1,
+   "ajustes_audio_ganancia": 18,
+   "ajustes_dialogo": 19,
+   "ajustes_perfil": 11,
+   "ajustes_tema": 2,
+   "dfl_inline": 19,
+   "espectro": 18,
+   "frecuencia": 18,
+   "waterfall": 19,
+   "waterfall_ticks": 1
+  },
+  "changed_fixtures_total": 19,
+  "gates": [
+   {
+    "gate": "Functional",
+    "status": "PASS",
+    "summary": "205 scenarios captured on both revisions"
+   },
+   {
+    "gate": "Visual Regression",
+    "status": "PASS",
+    "summary": "no unexplained visual regressions"
+   },
+   {
+    "gate": "Quality Contract",
+    "status": "PASS",
+    "summary": "2118 contract checks passed on the candidate"
+   },
+   {
+    "gate": "Performance",
+    "status": "PASS",
+    "summary": "render-cost proxy within budget"
+   },
+   {
+    "gate": "Hardware",
+    "status": "BLOCKED",
+    "summary": "no physical X6200 attached; hardware behaviour is not measured"
+   },
+   {
+    "gate": "Energy",
+    "status": "BLOCKED",
+    "summary": "no power measurement; energy evidence must be physical"
+   }
+  ],
+  "revision_a": {
+   "label": "a",
+   "sha": "db31e24efeaa863f16e93f526f286f290883e318"
+  },
+  "revision_b": {
+   "label": "b",
+   "sha": "2f646084bea5eca1c73a970585c489c330a3c5c7"
+  },
+  "scenarios": 205,
+  "status": "PASS",
+  "visual": {
+   "explained_by": [],
+   "problems": [],
+   "review": []
+  }
+ },
+ "AB-296-before-next": {
+  "changed_fixtures": [
+   {
+    "changed_pixels": 121049,
+    "fixture": "app-bands",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 120957,
+    "fixture": "app-close-home",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121049,
+    "fixture": "apps-menu-1",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121049,
+    "fixture": "apps-menu-2",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 120921,
+    "fixture": "apps-menu-3",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 120945,
+    "fixture": "apps-menu-4",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121049,
+    "fixture": "apps-menu-5",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121049,
+    "fixture": "apps-menu-6",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121049,
+    "fixture": "autotune",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 123105,
+    "fixture": "autotune-am",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121049,
+    "fixture": "autotune-digital",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121131,
+    "fixture": "autotune-found",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 114132,
+    "fixture": "autotune-lsb",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 121131,
+    "fixture": "autotune-progress",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 114132,
+    "fixture": "autotune-usb",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 123390,
+    "fixture": "autotune-usb-applied",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 114132,
+    "fixture": "autotune-usb-timeout",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 120034,
+    "fixture": "bench-render",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 87524,
+    "fixture": "bt-dialog",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_scrollbar",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 87524,
+    "fixture": "bt-dialog-tema-aurora",
+    "regions": [
+     "barra_superior",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_scrollbar",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   }
+  ],
+  "changed_fixtures_by_region": {
+   "ajustes_anio": 38,
+   "ajustes_audio_ganancia": 181,
+   "ajustes_dialogo": 205,
+   "ajustes_perfil": 181,
+   "ajustes_scrollbar": 205,
+   "ajustes_tema": 28,
+   "barra_superior": 205,
+   "botones": 204,
+   "dfl_inline": 205,
+   "espectro": 205,
+   "frecuencia": 44,
+   "multiplicador": 37,
+   "reloj_potencia": 205,
+   "waterfall": 205,
+   "waterfall_ticks": 205
+  },
+  "changed_fixtures_total": 205,
+  "gates": [
+   {
+    "gate": "Functional",
+    "status": "PASS",
+    "summary": "205 scenarios captured on both revisions"
+   },
+   {
+    "gate": "Visual Regression",
+    "status": "PASS",
+    "summary": "no unexplained visual regressions"
+   },
+   {
+    "gate": "Quality Contract",
+    "status": "PASS",
+    "summary": "2118 contract checks passed on the candidate"
+   },
+   {
+    "gate": "Performance",
+    "status": "PASS",
+    "summary": "render-cost proxy within budget"
+   },
+   {
+    "gate": "Hardware",
+    "status": "BLOCKED",
+    "summary": "no physical X6200 attached; hardware behaviour is not measured"
+   },
+   {
+    "gate": "Energy",
+    "status": "BLOCKED",
+    "summary": "no power measurement; energy evidence must be physical"
+   }
+  ],
+  "revision_a": {
+   "label": "a",
+   "sha": "eea3ed2022fc0f3be8c0afa1c318e32e42455ce8"
+  },
+  "revision_b": {
+   "label": "b",
+   "sha": "0d3f9e688d89adf5d6bcec8d1fb2b7ff64ec7427"
+  },
+  "scenarios": 205,
+  "status": "PASS",
+  "visual": {
+   "explained_by": [],
+   "problems": [],
+   "review": []
+  }
+ },
+ "AB-296-before-wide": {
+  "changed_fixtures": [
+   {
+    "changed_pixels": 335256,
+    "fixture": "bench-render",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 320058,
+    "fixture": "home-bateria-externa",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 322632,
+    "fixture": "home-frecuencia-extrema",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 320050,
+    "fixture": "home-usb-20m",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 322567,
+    "fixture": "main-bateria-baja",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 335530,
+    "fixture": "main-espectro-agua",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 320050,
+    "fixture": "main-foco",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   },
+   {
+    "changed_pixels": 320051,
+    "fixture": "main-tx-simulado",
+    "regions": [
+     "barra_superior",
+     "s_metro",
+     "espectro",
+     "waterfall_ticks",
+     "frecuencia",
+     "waterfall",
+     "botones",
+     "multiplicador",
+     "reloj_potencia",
+     "ajustes_anio",
+     "ajustes_perfil",
+     "ajustes_scrollbar",
+     "ajustes_audio_ganancia",
+     "ajustes_tema",
+     "ajustes_dialogo",
+     "dfl_inline"
+    ]
+   }
+  ],
+  "changed_fixtures_by_region": {
+   "ajustes_anio": 8,
+   "ajustes_audio_ganancia": 8,
+   "ajustes_dialogo": 8,
+   "ajustes_perfil": 8,
+   "ajustes_scrollbar": 8,
+   "ajustes_tema": 8,
+   "barra_superior": 8,
+   "botones": 8,
+   "dfl_inline": 8,
+   "espectro": 8,
+   "frecuencia": 8,
+   "multiplicador": 8,
+   "reloj_potencia": 8,
+   "s_metro": 8,
+   "waterfall": 8,
+   "waterfall_ticks": 8
+  },
+  "changed_fixtures_total": 8,
+  "gates": [
+   {
+    "gate": "Functional",
+    "status": "PASS",
+    "summary": "8 scenarios captured on both revisions"
+   },
+   {
+    "gate": "Visual Regression",
+    "status": "PASS",
+    "summary": "no unexplained visual regressions"
+   },
+   {
+    "gate": "Quality Contract",
+    "status": "PASS",
+    "summary": "80 contract checks passed on the candidate"
+   },
+   {
+    "gate": "Performance",
+    "status": "PASS",
+    "summary": "render-cost proxy within budget"
+   },
+   {
+    "gate": "Hardware",
+    "status": "BLOCKED",
+    "summary": "no physical X6200 attached; hardware behaviour is not measured"
+   },
+   {
+    "gate": "Energy",
+    "status": "BLOCKED",
+    "summary": "no power measurement; energy evidence must be physical"
+   }
+  ],
+  "revision_a": {
+   "label": "a",
+   "sha": "6ec345aad22a085f3d8bcc69d47d3d1485d80132"
+  },
+  "revision_b": {
+   "label": "b",
+   "sha": "0d3f9e688d89adf5d6bcec8d1fb2b7ff64ec7427"
+  },
+  "scenarios": 8,
+  "status": "PASS",
+  "visual": {
+   "explained_by": [],
+   "problems": [],
+   "review": []
+  }
+ }
+}

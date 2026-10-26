@@ -140,11 +140,14 @@ stay BLOCKED).
 * `contracts.yaml` — rules checked on the candidate alone: minimum content per
   region, honest coverage levels, required declared components, the dated
   `expected_changes` list (the only way a change stops being a regression
-  without being a fix; each entry needs a reason, an author and an expiry), the
-  `layout` and `typography` rules that read the harness' structural inspection
-  (minimum touch target, WCAG contrast thresholds, whether fallbacks are
-  allowed) and the dated `exceptions` that can waive one structural finding by
-  rule and fixture without hiding it.
+  without being a fix; each entry needs a reason, an author, an expiry and the
+  globs of the fixtures it covers — a region is a rectangle several screens
+  share, so an entry only explains the fixtures its own A/B measured, and the
+  report names the entry behind each explained change), the `layout` and
+  `typography` rules that read the harness' structural inspection (minimum touch
+  target, WCAG contrast thresholds, whether fallbacks are allowed) and the dated
+  `exceptions` that can waive one structural finding by rule and fixture without
+  hiding it.
 * `budgets.yaml` — thresholds fixed **before** a run (pixel tolerance, minimum
   box size, render-cost deltas).
 * `performance_exceptions.yaml` — dated, scenario-scoped acceptances of a

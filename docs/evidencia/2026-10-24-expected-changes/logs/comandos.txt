@@ -1,0 +1,28 @@
+# Comandos y exit codes de la corrida #296
+
+`<ws>` = `/home/pablo/.cache/ab296/ws` (worktrees de revisión + builds reusados),
+`<repo>` = el worktree de la corrida.
+
+| Comando | Exit |
+|---|---|
+| `uv run x6200-ab compare a=e1807671 b=884841c5 --experiment-id AB-296-before-copy288` | **0** |
+| `uv run x6200-ab compare a=e1807671 b=884841c5 --experiment-id AB-296-after-copy288` | **0** |
+| `uv run x6200-ab compare a=db31e24e b=2f646084 --experiment-id AB-296-before-ink287` | **0** |
+| `uv run x6200-ab compare a=db31e24e b=2f646084 --experiment-id AB-296-after-ink287` | **0** |
+| `uv run x6200-ab compare a=6ec345aa b=0d3f9e68 --experiment-id AB-296-before-wide` | **0** |
+| `uv run x6200-ab compare a=6ec345aa b=0d3f9e68 --experiment-id AB-296-after-wide` | **0** |
+| `uv run x6200-ab compare a=eea3ed20 b=0d3f9e68 --experiment-id AB-296-before-next` | **0** |
+| `uv run x6200-ab compare a=eea3ed20 b=0d3f9e68 --experiment-id AB-296-after-next` | **1** |
+| `uv run x6200-ab compare a=0d3f9e68 b=9efb3133be5c --scenario autotune-am --experiment-id AB-296-before-inject` | **0** |
+| `uv run x6200-ab compare a=0d3f9e68 b=9efb3133be5c --scenario autotune-am --experiment-id AB-296-after-inject` | **1** |
+| `uv run x6200-ab compare --a 0d3f9e68 --b HEAD --experiment-id AB-296-after-pr` | **0** (205 escenarios, 0 px cambiados) |
+| `uv run x6200-ab contracts --revision 0d3f9e68` | **0** (2118 checks, 0 failures) |
+| `uv run pytest -m "not e2e"` | **0** (255 passed) |
+| `uv run ruff check .` | **0** |
+| `uv run ruff format --check .` | **0** |
+| `uv run ty check src tests` | **0** |
+| `sh tests/run_all_tests.sh --quick` | **0** (23 OK, 0 fallos) |
+
+El par `--scenario autotune-am` es el control negativo: la revisión B es un
+commit efímero (`9efb3133be5c`) sobre `0d3f9e68` que cambia `smeter_db -73`
+por `-70` en `tools/ui_harness/fixtures/autotune-am.scn`.
