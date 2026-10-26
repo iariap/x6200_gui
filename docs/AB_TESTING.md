@@ -227,10 +227,13 @@ Gate: un PR con regresión deliberada falla con evidencia.
   (ruff + format + ty + pytest unit, checks estáticos del repo
   `check_cfg_fills/actions/settings_focus/apps_menu/wcag`, `run_native_tests.sh`),
   UI Quality Contracts, UI Visual Regression (A vs B), UI Performance (benchmark
-  host) y UI A/B Summary. Corre en PRs con cambios en `tools/**`, `src/**` o
-  `tests/**` **sólo si el PR lleva la etiqueta `ci`** — los gates son opt-in
-  (ver `CONTRIBUTING.md`); `workflow_dispatch` corre sin etiqueta y un PR sin la
-  etiqueta queda *skipped* (0 minutos). Publica artifacts
+  host) y UI A/B Summary. **No hay CI de GitHub en PRs** (decisión del owner,
+  2026-10-26): los gates se corren **localmente** con la matriz del harness,
+  `scripts/apps/x6200/check-matrix.sh <base> <head>` (pytest del arnés,
+  `x6200-ab themes`/`contracts`, contraste WCAG renderizado y checks
+  estáticos/nativos), y el merge exige esa salida en `## Validación` (ver
+  `CONTRIBUTING.md`). El workflow queda para corridas manuales
+  (`workflow_dispatch`). Publica artifacts
   (screenshots/diffs/reportes) y resumen por
   `$GITHUB_STEP_SUMMARY`. Regla: los fallos funcionales/regresiones objetivas
   bloquean; los cambios estéticos son REVIEW REQUIRED y no bloquean solos; un
