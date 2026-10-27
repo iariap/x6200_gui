@@ -258,15 +258,14 @@ void test_swrscan_sweep(void) {
     swrscan_stub_run_scheduler();
     dialog_swrscan->destruct_cb();
 
-    /* La potencia del barrido es el piso del control del equipo (issue #113: "la minima
-     * posible"): 0.1 W = 1 decima de watt, el minimo que aceptan el control del panel
-     * (src/vol.c, VOL_PWR: LV_MAX(0.1f, ...)) y el control remoto (src/remote_server.cpp,
-     * {"pwr", CMD_PWR, 1, 100} en decimas). El barrido ponia 3 W fijos (radio_start_swrscan). */
-    CHECK(SWRSCAN_TX_POWER_DW == SWRSCAN_PWR_FLOOR_DW);
-    CHECK(SWRSCAN_TX_POWER_DW >= 1);
-    CHECK(SWRSCAN_TX_POWER_DW <= SWRSCAN_PWR_CEILING_DW);
-    CHECK(SWRSCAN_TX_POWER_W == 0.1f);
-    CHECK(SWRSCAN_TX_POWER_W < 3.0f);
+      /* Potencia del barrido: 3,0 W desde el 27/10 (medido en la radio: a 0,1 W el detector no
+       * mide en 15/10 m y el flow entrega ROE 1.0 sin potencia; ver dialog_swrscan.h). Sigue
+       * dentro del control del equipo (piso 0,1 W, techo 8,0 W) y por debajo del ATU. */
+      CHECK(SWRSCAN_TX_POWER_DW == 30);
+      CHECK(SWRSCAN_TX_POWER_DW >= SWRSCAN_PWR_FLOOR_DW);
+      CHECK(SWRSCAN_TX_POWER_DW <= SWRSCAN_PWR_CEILING_DW);
+      CHECK(SWRSCAN_TX_POWER_W == 3.0f);
+      CHECK(SWRSCAN_TX_POWER_W < (float) (SWRSCAN_PWR_CEILING_DW / 10));
 
     /* El presupuesto de duracion es exactamente el barrido de UNA pasada, dentro de los ~2 s que
      * fijo el owner; y los 101 puntos del NanoVNA no entran (101 x 35 = 3535 ms). */

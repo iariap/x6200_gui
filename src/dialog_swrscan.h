@@ -74,10 +74,17 @@ extern dialog_t *dialog_swrscan;
 /* Potencia del barrido, en decimas de watt (la unidad del registro: aether_control hace
  * p = pwr * 10 y lo escribe en el byte bajo de rfg_txpwr).
  *
- * El piso del equipo es 0.1 W y no es una suposicion: es el minimo que acepta el control de
- * potencia del panel (src/vol.c, VOL_PWR: LV_MAX(0.1f, ...)) y el del control remoto
- * (src/remote_server.cpp: {"pwr", CMD_PWR, 1, 100} = decimas de watt). */
-#define SWRSCAN_TX_POWER_DW     1     /* decimas de watt: el piso del equipo (0.1 W) */
+ * MEDIDO EN LA RADIO (2026-10-27, barridos de 51 puntos en 40/17/15/10/6 m): a 0,1 W el
+ * detector no mide en varias bandas y el flow entrega ROE 1.0 con tx_power 0 (15 m y 10 m:
+ * 0/51 muestras con potencia; 40 m: 13/51; 6 m: 8/51). Con 3,0 W pedidos (el equipo reporta
+ * hasta ~1 W y limita por proteccion en las bandas con mas ROE) las muestras con potencia
+ * suben a 46/51 (17 m), 46/51 (15 m), 48/51 (10 m), 18/51 (40 m) y 15/51 (6 m), con ROE
+ * consistentes con 0,1 W donde ambas midieron (17 m: 2,0-3,2 en las dos). El duenio aprobo
+ * subir la potencia del barrido el 27/10 ("un valor que tenga sentido para medir la ROE").
+ * Sigue siendo UNA pasada y el techo de tiempo es 3570 ms (3,6 s como maximo al aire).
+ * El piso del control del equipo sigue siendo 0.1 W (src/vol.c: LV_MAX(0.1f, ...);
+ * src/remote_server.cpp: {"pwr", CMD_PWR, 1, 100} en decimas). */
+#define SWRSCAN_TX_POWER_DW     30    /* decimas de watt: 3,0 W (medido; ver arriba) */
 #define SWRSCAN_PWR_FLOOR_DW    1     /* piso del control del equipo: 0.1 W (src/vol.c) */
 #define SWRSCAN_PWR_CEILING_DW  80    /* techo del control del equipo: 8.0 W (src/vol.c) */
 #define SWRSCAN_TX_POWER_W      ((float) SWRSCAN_TX_POWER_DW / 10.0f)
