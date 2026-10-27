@@ -1484,3 +1484,33 @@ Con el binario `8b534333` (PR #312, "Auto CQ por defecto") se abrió FT8 por con
 
 **Conclusión medida:** con `Auto` habilitado (default), la radio llama sola a estaciones
 nuevas en CQ, igual que FT8CN.
+
+---
+
+## 27/10 15:00Z — QRZ uploader + TLS: verificado en la radio (falta la API key real)
+
+Se desplegaron en la radio, por SSH y como archivos exactos del build v0.1.6, el módulo
+`_ssl` de python3, el bundle de CA (`/etc/ssl/certs` + `/usr/share/ca-certificates`) y el
+uploader (`/usr/share/x6200/qrz-upload.py` + `/etc/init.d/S55qrz-upload`).
+
+```
+$ python3 -c "import ssl; print(ssl.OPENSSL_VERSION)"
+OpenSSL 1.1.1w  11 Sep 2023
+
+$ python3 -c "import urllib.request as u; print(u.urlopen('https://logbook.qrz.com/api?KEY=TEST&ACTION=STATUS', timeout=20).read())"
+STATUS=AUTH&RESULT=AUTH&REASON=invalid api key
+
+$ python3 /usr/share/x6200/qrz-upload.py --status
+enabled=1 api_key=(vacío) interval=30
+estado: ultimo rowid=0 red=up
+pendientes: 4
+
+$ /etc/init.d/S55qrz-upload start
+Starting QRZ uploader: OK      (pid 1040)
+```
+
+**Lo que queda medido**: la radio valida el certificado de QRZ con el bundle de CA, el
+POST de la API llega (con key falsa responde `RESULT=AUTH`), el daemon corre y con
+`api_key` vacía no sube nada. **Pendiente**: cargar la API key real del QRZ Logbook en
+`/mnt/qrz.conf` y correr `--once`; la respuesta tiene que ser `RESULT=OK`/`LOGID` y los 4
+QSO pendientes aparecer en QRZ.
