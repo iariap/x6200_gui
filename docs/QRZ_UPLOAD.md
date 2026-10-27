@@ -1,9 +1,8 @@
-# Subida automática de QSO al QRZ Logbook
+# Subida automática de QSO a logs online (QRZ, eQSL, Clublog)
 
-Implementado el 2026-10-27 (v0.1.6-lu2dsx). Los QSO que guarda el FT8/FT4 en
-`/mnt/qso_log.db` se suben solos al **QRZ Logbook** cuando la radio tiene WiFi.
-Pensado para extenderse a otros proveedores (Cloudlog, eQSL, Clublog) sin tocar el
-resto del sistema.
+Implementado el 2026-10-27 (v0.1.6 QRZ; **v0.1.8 agrega eQSL y Clublog**). Los QSO que
+guarda el FT8/FT4 en `/mnt/qso_log.db` se suben solos a los logs online que configures
+cuando la radio tiene WiFi.
 
 ## Cómo funciona
 
@@ -18,24 +17,48 @@ resto del sistema.
   (`RESULT=AUTH`, `RESULT=FAIL`, `REASON=...`), lo deja pendiente y reintenta en la
   próxima pasada; queda registrado en `/mnt/qrz-upload.log`.
 - No sube nada si no hay `api_key` (la plantilla se crea vacía en el primer arranque).
-- Si QRZ responde **`RESULT=AUTH`** (key válida pero la cuenta **no tiene suscripción QRZ**
-  para `INSERT` por API), guarda `/mnt/qrz_upload.cooldown` y reintenta recién en **1 h**
-  en vez de insistir cada 30 s. `--status` muestra el cooldown y `--adif` sirve para
-  subir el log a mano mientras tanto.
+- Si un proveedor responde error de **credenciales/permiso** (QRZ `RESULT=AUTH`, eQSL
+  `No match on eQSL_User/eQSL_Pswd`, Clublog HTTP 401/403) guarda
+  `/mnt/<prov>_upload.cooldown` y reintenta recién en **1 h** en vez de insistir cada 30 s.
+  `--status` muestra estado/pendientes/cooldown por proveedor y `--adif` sirve para subir
+  el log a mano mientras tanto.
 
 ## Configuración
 
-Archivo `/mnt/qrz.conf` (se crea solo la primera vez; se puede editar por SSH o
-desde la PC):
+Archivo `/mnt/upload.conf` (se crea solo la primera vez; migra la `/mnt/qrz.conf` de
+v0.1.6 si existe). Cada proveedor se habilita por separado:
 
 ```
 enabled=1
-api_key=XXXX-XXXX-XXXX-XXXX     # API key del QRZ Logbook
 interval=30
+
+# QRZ Logbook (INSERT por API requiere suscripcion QRZ)
+qrz_enabled=0
+qrz_api_key=
+
+# eQSL (gratis; usuario y clave de eqsl.cc)
+eqsl_enabled=1
+eqsl_user=
+eqsl_pswd=
+
+# Clublog (gratis; la API key y el "App password" se generan en clublog.org)
+clublog_enabled=1
+clublog_callsign=LU2DSX
+clublog_email=
+clublog_password=
+clublog_api=
 ```
 
-La API key está en <https://www.qrz.com/logbook> (botón *API key*). **INSERT por API
-requiere suscripción QRZ** (es limitación de QRZ, no de la radio).
+- **QRZ**: API key en <https://www.qrz.com/logbook> (botón *API key*). **INSERT por API
+  requiere suscripción QRZ** (limitación de QRZ, no de la radio).
+- **eQSL**: usuario y clave de <https://www.eqsl.cc>. Usa el método documentado en
+  `https://www.eqsl.cc/qslcard/ImportADIF.txt` (`ADIFData` + `EQSL_USER` + `EQSL_PSWD`).
+  Probado de punta a punta con la cuenta de prueba (`TEST-SWL`): 4/4 QSO aceptados.
+- **Clublog**: email de la cuenta, **App password** y **API key** (se generan en
+  <https://clublog.org/api.php>). Usa `putlogs.php` (multipart). **Medido 27/10 desde la
+  red del proyecto: `putlogs.php` responde 403 de nginx** (incluso con GET; las otras
+  páginas del sitio dan 200), así que desde esa red no se pudo validar en vivo; el 403 se
+  trata como auth y el daemon reintenta en 1 h.
 
 Comandos útiles por SSH en la radio:
 
@@ -57,17 +80,21 @@ utilizable (libcurl sigue en `TLS_NONE`, busybox-wget sin HTTPS).
 
 ## Lo que NO hace
 
-- **LoTW**: no se puede firmar TQSL en la radio; exportá el ADIF (ver
-  `qso_log.db`) y firmalo en la PC.
-- No sube eQSL/Clublog todavía: el script deja el punto de extensión
-  (`MODE_TO_ADIF` y `run_once`) para agregarlos.
+- **LoTW**: no se puede firmar TQSL en la radio; exportá el ADIF y firmalo en la PC.
+- **Cloudlog**: no implementado todavía (el script deja el punto de extensión
+  `PROVIDERS`).
 
 ## Evidencia de la puesta a punto
 
-- Prueba en la PC del POST real con key de prueba:
-  `STATUS=AUTH&RESULT=AUTH&REASON=invalid api key` → TLS, User-Agent y POST
-  correctos; no se subió nada.
-- Pendiente en la radio: validación con la API key real del dueño.
+- **eQSL (verificado)**: desde la red de la radio y con la cuenta de prueba documentada
+  (`TEST-SWL/Testpswd1`), el lote de 4 QSO dio `Result: 4 out of 4 records added`; al
+  repetir, `Bad record: Duplicate` (ya estaban). La radio también mostró
+  `Caution: ProgramID or Logger not found` (eQSL no tiene registrado `X6200GUI`), que no
+  impide la importación.
+- **Clublog (no validado en vivo)**: `putlogs.php` devuelve HTTP 403 de nginx desde la red
+  del proyecto, tanto desde la PC como desde la radio, con GET y con POST.
+- **QRZ**: key válida, pero `RESULT=AUTH` por falta de suscripción QRZ; el dueño no la va a
+  pagar, así que QRZ queda deshabilitado y el ADIF se sube a mano por la web si hace falta.
 
 ## Exportar el ADIF a mano (sin suscripción QRZ)
 
