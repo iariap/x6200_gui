@@ -51,9 +51,11 @@ clublog_api=
 
 - **QRZ**: API key en <https://www.qrz.com/logbook> (botón *API key*). **INSERT por API
   requiere suscripción QRZ** (limitación de QRZ, no de la radio).
-- **eQSL**: usuario y clave de <https://www.eqsl.cc>. Usa el método documentado en
+- **eQSL**: usuario y clave de <https://www.eqsl.cc>. **`EQSL_USER` es el nombre de
+  usuario de eQSL (el indicativo, p. ej. `LU2DSX`), no el email** (probado: con el email da
+  `No match on eQSL_User/eQSL_Pswd`). Usa el método documentado en
   `https://www.eqsl.cc/qslcard/ImportADIF.txt` (`ADIFData` + `EQSL_USER` + `EQSL_PSWD`).
-  Probado de punta a punta con la cuenta de prueba (`TEST-SWL`): 4/4 QSO aceptados.
+  **Verificado con la cuenta real del dueño: 4/4 QSO aceptados**.
 - **Clublog**: email de la cuenta, **App password** y **API key** (se generan en
   <https://clublog.org/api.php>). Usa `putlogs.php` (multipart). **Medido 27/10 desde la
   red del proyecto: `putlogs.php` responde 403 de nginx** (incluso con GET; las otras
@@ -86,9 +88,10 @@ utilizable (libcurl sigue en `TLS_NONE`, busybox-wget sin HTTPS).
 
 ## Evidencia de la puesta a punto
 
-- **eQSL (verificado)**: desde la red de la radio y con la cuenta de prueba documentada
-  (`TEST-SWL/Testpswd1`), el lote de 4 QSO dio `Result: 4 out of 4 records added`; al
-  repetir, `Bad record: Duplicate` (ya estaban). La radio también mostró
+- **eQSL (verificado con la cuenta real)**: el lote de 4 QSO dio
+  `Result: 4 out of 4 records added` en la cuenta `LU2DSX` (usuario = indicativo; con el
+  email como `EQSL_USER` eQSL responde `No match`). Antes se había validado el circuito
+  con la cuenta de prueba documentada (`TEST-SWL/Testpswd1`). La radio mostró
   `Caution: ProgramID or Logger not found` (eQSL no tiene registrado `X6200GUI`), que no
   impide la importación.
 - **Clublog (no validado en vivo)**: `putlogs.php` devuelve HTTP 403 de nginx desde la red
