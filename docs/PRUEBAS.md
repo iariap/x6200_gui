@@ -1554,3 +1554,24 @@ Subida multi-proveedor (v0.1.8). Medido **desde la red de la radio** y desde la 
 - Config migrada en la radio: `/mnt/qrz.conf` → `/mnt/upload.conf` (QRZ off con su key
   preservada, eQSL y Clublog on esperando credenciales); daemon corriendo y **4 QSO en
   cola por proveedor**, sin ruido en el log mientras falten credenciales.
+
+---
+
+## 27/10 15:27Z — eQSL: subida real a la cuenta del dueño ✓
+
+Con las credenciales reales del dueño cargadas en `/mnt/upload.conf` (usuario **LU2DSX**,
+que es el nombre de usuario de eQSL: el email NO sirve como `EQSL_USER` — probado, da
+`No match on eQSL_User/eQSL_Pswd`) y el daemon de la radio:
+
+```
+eqsl: subidos 4 QSO (rowid<=4):
+  <!-- Reply form eQSL.cc ADIF Real-time Interface -->
+  Result: 4 out of 4 records added<BR> Caution: ProgramID or Logger not found
+```
+
+- Los **4 QSO** del log (LU1DZW, LW8DO, LU9MDQ en 40 m FT8 y PP1PA en 10 m FT8) quedaron
+  subidos a la cuenta **LU2DSX** de eQSL ✓
+- Estado: `/mnt/eqsl_upload.state` = 4, pendientes = 0 ✓
+- `Caution: ProgramID or Logger not found` (eQSL no tiene registrado `X6200GUI`): no impide
+  la importación.
+- **Automático**: el daemon queda corriendo; cada QSO nuevo se sube solo cuando hay WiFi.
