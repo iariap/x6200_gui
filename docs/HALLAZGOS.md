@@ -40,6 +40,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 68. [#292: el BASE demodula con el modo del VFO ACTIVO; la GUI escribía solo el del VFO A](#68-292-el-base-demodula-con-el-modo-del-vfo-activo-la-gui-escribía-solo-el-del-vfo-a)
 69. [El BASE se puede LEER por I2C: direcciones verificadas](#69-el-base-se-puede-leer-por-i2c-direcciones-verificadas)
 70. [El mute de RX de #244: la secuencia I2C del firmware original lo recupera con la GUI parada, no con la GUI andando](#70-el-mute-de-rx-de-244-la-secuencia-i2c-del-firmware-original-lo-recupera-con-la-gui-parada-no-con-la-gui-andando)
+71. [El barrido de ROE abortaba por RF timeout: el techo de TX asumía 35 ms por paquete y la radio tarda 48,4 ms](#71-el-barrido-de-roe-abortaba-por-rf-timeout-el-techo-de-tx-asumía-35-ms-por-paquete-y-la-radio-tarda-484-ms)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
@@ -741,6 +742,53 @@ dibuja). Falta: leer la ROE a esa frecuencia con otra antena o con un medidor ex
 
 ---
 
+
+## 71. El barrido de ROE abortaba por RF timeout: el techo de TX asumía 35 ms por paquete y la radio tarda 48,4 ms
+
+**Síntoma**: el owner no confiaba en la curva de ROE del SWR Scan. Al validarlo por control remoto
+(2026-10-27), el diálogo mostraba `Error: RF timeout` con `min 1.0 @ 17.850.000 kHz (n=33/51)` y una
+curva incompleta: el barrido no llegaba a los 51 puntos.
+
+**Causa, medida** (dump instrumentado en la radio, un registro por muestra y por paquete del flow):
+
+```
+$ <17m, centro 18.099180, span 500 kHz, 51 puntos>
+state=4 abort=2 packets=37 valid=37 points=51
+pass_timeout=2285 session_timeout=2285
+elapsed = now - started = 2287 ms
+deltas entre timestamps de muestras validas: media 48,4 ms  min 46  max 63   (36 deltas)
+$ <40m, centro 7.100.000>
+packets=43 valid=43 elapsed=2297 ms   deltas media 48,5 ms
+```
+
+Código que fija el presupuesto: `src/dialog_swrscan.h` define `SWRSCAN_DWELL_MS 35` (con el
+comentario "lo que tarda un paquete del flow", tomado de `flow.h`: *"Usually a packet arrives every
+35ms"*) y `SWRSCAN_TX_BUDGET_MS 1785` = 51 × 35; `SWRSCAN_PASS_TIMEOUT_MS = 1785 + 500 = 2285`. Un
+`_Static_assert` en `src/dialog_swrscan.c` ata los tres valores. Con la cadencia real de 48,4 ms,
+51 puntos x 48,4 ms = 2468,4 ms: el watchdog cortaba la pasada a los 37 (17m) / 43 (40m) puntos.
+
+**Arreglo**: `SWRSCAN_DWELL_MS` 35 → **70** (peor caso medido, 63 ms, + margen) → presupuesto
+**3570 ms** y pass/session timeout **4070 ms**; sigue siendo **una** pasada a **0,1 W** (el dueño
+aprobó subir el techo de TX el 2026-10-27 para poder medir la ROE completa). Tests nativos
+actualizados (`tests/native/test_swrscan.c`, `tests/native/test_swrscan_multipass.c`).
+
+**Verificación, medida** (radio, binario limpio con el techo nuevo `668eeba5`):
+
+```
+$ <17m> estado remoto: Completed; dump: state=2 abort=0 packets=51 valid=51/51 elapsed=2668 ms
+$ <40m> estado remoto: Completed; dump: state=2 abort=0 packets=51 valid=51/51 elapsed=2962 ms
+captura: assessment-194/scratch/cw244/swr-final2.png  -> "Completed", min 1.0 @ 17.849.180 (n=51/51)
+        (antes: swr-cleanA.png -> "Error: RF timeout", min 1.0 @ 17.850.000 (n=33/51))
+```
+
+**Refutado en el camino** (se deja constancia): subir la potencia del barrido de 0,1 W a 1 W, o
+cambiar el modo LSB → AM (como la referencia X6100), **no** arregla las muestras falsas: a 1 W se
+midieron 13/51 (17m) y 37/51 (40m) muestras ROE=1.00, y con AM+1 W, 27/51. Las muestras ROE=1.00
+correlacionan con `tx_power≈0` en los mismos paquetes (ver anexo A).
+
+**Sin fundar (anexo A)**: por qué la cadencia real es 48,4 ms y no 35 ms; por qué el BASE reporta
+ROE 1.0 en paquetes sin potencia y cicla la potencia durante el barrido.
+
 ## Anexo A: hipótesis sin fundar (no son hallazgos)
 
 Ninguna de estas cosas se puede afirmar con la evidencia que tenemos. Se listan para no perderlas,
@@ -748,6 +796,8 @@ con lo que haría falta para fundarlas.
 
 | Hipótesis | Por qué no está fundada | Qué haría falta |
 |---|---|---|
+| El BASE rampa/cicla la potencia durante el barrido de ROE y por eso hay paquetes con `tx_power≈0` que reportan ROE 1.0 | se midió la correlación (`vswr=1.00` sólo con pwr≈0; a VFO fijo el ciclo se repite) pero **no** la causa ni si el firmware stock hace lo mismo | capturar los registros I2C del firmware original durante un barrido de ROE, o medir el TX con sonda y osciloscopio mientras se corre el barrido |
+| La cadencia real de 48,4 ms se debe a la latencia de retune sumada al período del flow | no se separaron las dos componentes | instrumentar `radio_set_freq()` con timestamps y medir la latencia de retune aparte del período del flow |
 | "El audio de recepción sale por el DSP propio del equipo, no por el camino del SoC" | No hay medición ni esquema: **código** confirma una mitad (la GUI no lo lleva al parlante: `read_callback()` sólo alimenta el screen-recorder y el DSP, `src/audio.c:57-69`, y el stream de reproducción lo escribe sólo `audio_play()`, `src/audio.c:281`; ver §65), pero que el audio de recepción salga del DSP del equipo no | Esquema del equipo o medir la señal en el DSP |
 | "No suena por el parlante porque el códec del SoC no está cableado a la salida" | Se midió que la cadena está configurada y que no suena; **el porqué** no | Documentación del códec/placa o medir la salida del códec |
 | El mute del dueño del #244 lo disparó la sesión de pruebas automáticas que corría contra la radio viva (remoto/CAT, mismo camino que la perilla) | Hay medición de que 3 de 4 corridas de aceptación quedaron con `vol` 0 (§64) y código de que el remoto pasa por `radio_change_vol()` (`src/remote_server.cpp:420`), pero **no** el cruce temporal con el log de la sesión muda: los comandos del remoto no dejan una línea con el nivel | Correr el sweep con los comandos y el reloj marcados y quedarse con `/mnt/app_logs/x6200_log_*.txt` del mismo rango; o loggear el nivel aplicado en `radio_vol_apply()` |
