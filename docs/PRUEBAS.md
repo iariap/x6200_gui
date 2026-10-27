@@ -1514,3 +1514,24 @@ POST de la API llega (con key falsa responde `RESULT=AUTH`), el daemon corre y c
 `api_key` vacía no sube nada. **Pendiente**: cargar la API key real del QRZ Logbook en
 `/mnt/qrz.conf` y correr `--once`; la respuesta tiene que ser `RESULT=OK`/`LOGID` y los 4
 QSO pendientes aparecer en QRZ.
+
+---
+
+## 27/10 18:59Z — QRZ: la API key es válida pero la cuenta no tiene suscripción
+
+Se cargó la API key real del dueño en `/mnt/qrz.conf` y se corrió la subida. QRZ respondió:
+
+```
+STATUS=AUTH&RESULT=AUTH&REASON=user does not have a valid QRZ subscription to use this
+function, if you have purchased a new subscription please wait 300 seconds
+```
+
+**Lo que queda medido**: la key es válida (no dice "invalid api key"), el POST llega y la
+cuenta autentica; **falta la suscripción QRZ**, que es requisito de QRZ para `ACTION=INSERT`
+por API. No es un problema de la radio.
+
+**Arreglo de comportamiento**: ante `RESULT=AUTH` el uploader ahora guarda
+`/mnt/qrz_upload.cooldown` y reintenta en **1 h** (antes insistía cada 30 s y llenaba el
+log). Medido en la radio: una línea de log, cooldown de 60 min, `--status` lo muestra y el
+daemon sigue corriendo. Los **4 QSO quedan en cola** (`/mnt/qrz_upload.state` en 0) y
+`--adif` permite exportarlos para subirlos a mano.
