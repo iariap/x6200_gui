@@ -1593,3 +1593,22 @@ Verificada en la radio (GUI `350d3a62`, deploy por SSH):
   password con espacios; escribe el archivo atómico con permisos 0600.
 - `crashlog 0` tras abrir/cerrar la app. La edición con teclado (tocar la fila) queda para
   prueba del dueño: no hay inyección de touch por control remoto.
+
+---
+
+## 27/10 18:00Z — Fix: las opciones de Logs no aparecían en Ajustes
+
+El dueño reportó que presionando **Operation** no encontraba las opciones de Log uploads.
+Causa medida en el código: la fila `Log uploads > Configure` **nunca se había agregado** al
+grupo Operation (el reemplazo de texto no matcheó el indentado del `row = make_cluster_column(row);`)
+y, aun agregada, quedaba debajo de la primera pantalla del grupo.
+
+**Arreglo**: tab **Logs** propio en la primera página de tabs de Ajustes
+(`Operation | Audio | Spectrum | Logs | More >`) con salto directo (`settings_goto`) a un
+grupo que ahora tiene **todas las opciones inline** con los helpers de Ajustes: switch
+`Upload`, un switch por proveedor y campos de usuario/email/password/API keys
+(enmascarados) que abren el teclado al tocar y guardan en `/mnt/upload.conf`. El tab `Info`
+(una sola fila) se movió al grupo Display. La app `Logs` sigue como acceso alternativo.
+
+Pendiente de verificación visual en la radio (estaba apagada al compilar): captura de la
+primera página de tabs con el tab Logs y del grupo con las filas.
