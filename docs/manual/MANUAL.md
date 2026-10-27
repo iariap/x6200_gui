@@ -211,8 +211,9 @@ trabajadas en esa banda y modo en el log (`/mnt/qso_log.db`), y no llama si vos 
 un QSO, si estás llamando CQ o si tocaste una fila. Con `Auto: Disabled` se apagan tanto la
 llamada automática como el avance automático del QSO.
 
-**Subida al QRZ Logbook:** los QSO guardados en `/mnt/qso_log.db` se suben solos a QRZ
-cuando hay WiFi, si configurás tu API key en `/mnt/qrz.conf` (ver `docs/QRZ_UPLOAD.md`).
+**Subida de QSO a logs online:** los QSO guardados en `/mnt/qso_log.db` se suben solos
+cuando hay WiFi a los proveedores que configures en `/mnt/upload.conf` (**eQSL** y
+**Clublog** vienen habilitados; **QRZ** requiere suscripción). Ver `docs/QRZ_UPLOAD.md`.
 
 ### 6.2 WSPR
 

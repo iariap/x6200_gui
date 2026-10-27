@@ -1535,3 +1535,22 @@ por API. No es un problema de la radio.
 log). Medido en la radio: una línea de log, cooldown de 60 min, `--status` lo muestra y el
 daemon sigue corriendo. Los **4 QSO quedan en cola** (`/mnt/qrz_upload.state` en 0) y
 `--adif` permite exportarlos para subirlos a mano.
+
+---
+
+## 27/10 15:22Z — eQSL verificado de punta a punta; Clublog bloqueado con 403
+
+Subida multi-proveedor (v0.1.8). Medido **desde la red de la radio** y desde la PC:
+
+- **eQSL**: con la cuenta de prueba documentada (`TEST-SWL/Testpswd1`), el uploader subió el
+  lote de 4 QSO y eQSL respondió `Result: 4 out of 4 records added` (con
+  `Caution: ProgramID or Logger not found`, que no impide la importación). Al repetir:
+  `Bad record: Duplicate`. → TLS, POST multipart/form, ADIF y parseo de respuesta OK.
+- **Clublog**: `https://clublog.org/putlogs.php` responde **HTTP 403 Forbidden de nginx**
+  desde la PC y desde la radio, con GET y con POST, mientras que `GET /logsearch.php` da
+  200. Implementado según la guía (multipart `file/email/callsign/password/api`), **sin
+  validar en vivo desde esta red**; el 403 se trata como credenciales/red y se reintenta
+  en 1 h.
+- Config migrada en la radio: `/mnt/qrz.conf` → `/mnt/upload.conf` (QRZ off con su key
+  preservada, eQSL y Clublog on esperando credenciales); daemon corriendo y **4 QSO en
+  cola por proveedor**, sin ruido en el log mientras falten credenciales.
