@@ -30,9 +30,17 @@ extern dialog_t *dialog_swrscan;
  *
  * El barrido TRANSMITE mientras mide: el presupuesto SWRSCAN_TX_BUDGET_MS es el de UNA pasada
  * y NO se sube automaticamente. El dwell no es un parametro de la GUI (aether_control solo
- * expone x6200_control_swrscan_set(on/off)); un paquete del flow tarda ~35 ms. */
-#define SWRSCAN_DWELL_MS        35    /* lo que tarda un paquete del flow de la radio */
-#define SWRSCAN_TX_BUDGET_MS    1785  /* duracion maxima de UNA pasada: 51 x dwell */
+ * expone x6200_control_swrscan_set(on/off)).
+   *
+   * MEDIDO EN LA RADIO (2026-10-27, 17m y 40m, 51 puntos, binario instrumentado): deltas
+   * entre muestras validas media 48,4 ms, maximo 63 ms; el primer punto tarda ~513 ms
+   * desde Run. El valor anterior (35 ms) era una suposicion del comentario de flow.h
+   * ("Usually a packet arrives every 35ms") y hacia que la pasada abortara por RF
+   * timeout a los 33-43 de 51 puntos. Se usa el peor caso medido + margen (70 ms):
+   * 51 x 70 = 3570 ms de techo de TX por pasada (el duenio aprobo subir el techo el
+   * 27/10 para medir la ROE completa; sigue a 0,1 W y una sola pasada). */
+#define SWRSCAN_DWELL_MS        70    /* peor caso medido en la radio + margen */
+#define SWRSCAN_TX_BUDGET_MS    3570  /* duracion maxima de UNA pasada: 51 x dwell */
 
 /* Watchdog de estancamiento (no es el presupuesto de TX): si el flow deja de mandar paquetes,
  * la sesion se aborta y el TX se apaga. Se mide desde el inicio de la pasada/sesion y tiene
@@ -50,7 +58,7 @@ extern dialog_t *dialog_swrscan;
 /* Multipasada (3 = Stable, 5 = Fine) sobre TX real: DESHABILITADA.
  *
  * El presupuesto por pasada (SWRSCAN_TX_BUDGET_MS) esta validado para UNA pasada; 3/5 pasadas
- * triplican/quintuplican el tiempo de TX de la sesion (5355 / 8925 ms) y exigen validacion en
+ * triplican/quintuplican el tiempo de TX de la sesion (10710 / 17850 ms) y exigen validacion en
  * hardware (carga ficticia 50 ohm, potencia entregada y precision del detector a 0.1 W,
  * temperatura/consumo) y decision explicita del owner. El MOTOR (swr_session) SI soporta N
  * pasadas: lo prueban los tests con el backend fake; lo que esta apagado es habilitar ese TX
