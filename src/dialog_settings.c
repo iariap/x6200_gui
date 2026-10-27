@@ -12,6 +12,8 @@
 #include "lvgl/lvgl.h"
 #include "dialog.h"
 #include "main_screen.h"
+#include "textarea_window.h"
+#include "upload_conf.h"
 #include <stdio.h>
 
 #include "styles.h"
@@ -135,12 +137,12 @@ static void key_cb(lv_event_t * e);
  *
  * El ORDEN es por utilidad para hacer contactos (issue #109): primero lo que se toca mientras se
  * opera (Operation, Audio, Spectrum, Clock), despues lo ergonomico (Display, Appearance, Actions) y
- * al final lo eventual (Info). El enum, `tabs_items`, las dos paginas y el armado de la grilla
+ * y los tabs de Logs van en la primera pagina. El enum, `tabs_items`, las dos paginas y el armado de la grilla
  * (construct_cb) van todos en ese orden, que es el que se ve en la barra. Los labels van en ingles
  * de ham radio (issue #109); el porque de cada uno, en docs/settings-order.md. */
 enum {
-    GRP_OPERACION, GRP_AUDIO, GRP_ESPECTRO, GRP_RELOJ,
-    GRP_PANTALLA, GRP_APARIENCIA, GRP_ACCIONES, GRP_INFO, GRP_COUNT
+    GRP_OPERACION, GRP_AUDIO, GRP_ESPECTRO, GRP_LOGS, GRP_RELOJ,
+    GRP_PANTALLA, GRP_APARIENCIA, GRP_ACCIONES, GRP_COUNT
 };
 
 static uint16_t     grp_primero[GRP_COUNT];   /* primer hijo del grupo dentro del grid */
@@ -160,7 +162,7 @@ TAB_CB(tab_reloj_cb,      GRP_RELOJ)
 TAB_CB(tab_pantalla_cb,   GRP_PANTALLA)
 TAB_CB(tab_apariencia_cb, GRP_APARIENCIA)
 TAB_CB(tab_acciones_cb,   GRP_ACCIONES)
-TAB_CB(tab_info_cb,       GRP_INFO)
+TAB_CB(tab_logs_cb,       GRP_LOGS)
 #undef TAB_CB
 
 static void tab_mas_cb(button_data_t *d);
@@ -173,20 +175,20 @@ static button_data_t tab_reloj      = { .type = BTN_TEXT, .label = "Clock",     
 static button_data_t tab_pantalla   = { .type = BTN_TEXT, .label = "Display",    .press = tab_pantalla_cb };
 static button_data_t tab_apariencia = { .type = BTN_TEXT, .label = "Appearance", .press = tab_apariencia_cb };
 static button_data_t tab_acciones   = { .type = BTN_TEXT, .label = "Actions",    .press = tab_acciones_cb };
-static button_data_t tab_info       = { .type = BTN_TEXT, .label = "Info",       .press = tab_info_cb };
+static button_data_t tab_logs       = { .type = BTN_TEXT, .label = "Logs",       .press = tab_logs_cb };
 static button_data_t tab_mas        = { .type = BTN_TEXT, .label = "More >",     .press = tab_mas_cb };
 static button_data_t tab_menos      = { .type = BTN_TEXT, .label = "< More",     .press = tab_menos_cb };
 
 static button_item_t *tabs_items[GRP_COUNT] = {
-    &tab_operacion, &tab_audio, &tab_espectro, &tab_reloj,
-    &tab_pantalla, &tab_apariencia, &tab_acciones, &tab_info,
+    &tab_operacion, &tab_audio, &tab_espectro, &tab_logs,
+    &tab_reloj, &tab_pantalla, &tab_apariencia, &tab_acciones,
 };
 
 static buttons_page_t tabs_pagina_1 = {
-    .items = { &tab_operacion, &tab_audio, &tab_espectro, &tab_reloj, &tab_mas }
+    .items = { &tab_operacion, &tab_audio, &tab_espectro, &tab_logs, &tab_mas }
 };
 static buttons_page_t tabs_pagina_2 = {
-    .items = { &tab_pantalla, &tab_apariencia, &tab_acciones, &tab_info, &tab_menos }
+    .items = { &tab_reloj, &tab_pantalla, &tab_apariencia, &tab_acciones, &tab_menos }
 };
 
 static void tab_mas_cb(button_data_t *d)   { (void) d; buttons_load_page(&tabs_pagina_2); tabs_marks(); }
@@ -2118,21 +2120,87 @@ static void cluster_column_update_cb(lv_event_t * e) {
     cluster_column_refresh();
 }
 
-static void logs_open_cb(lv_event_t *e) {
-    (void) e;
-    main_screen_start_app(ACTION_APP_LOGS);
+/* --- Subida de QSO a logs online (tab Logs) --------------------------------- */
+static upload_conf_t upload_conf;
+
+typedef struct {
+    const char *label;
+    bool        secret;
+    char       *value;
+    size_t      size;
+    lv_obj_t   *field;
+} upload_field_t;
+
+#define UPLOAD_FIELDS_MAX 8
+
+static upload_field_t  upload_fields[UPLOAD_FIELDS_MAX];
+static int             upload_nfields;
+static upload_field_t *upload_edit_row = NULL;
+
+static void upload_field_refresh(upload_field_t *r) {
+    if (r->field == NULL) {
+        return;
+    }
+
+    if (r->secret) {
+        lv_textarea_set_text(r->field, r->value[0] ? "********" : "(tap to set)");
+    } else {
+        lv_textarea_set_text(r->field, r->value[0] ? r->value : "(tap to set)");
+    }
 }
 
-/* Credenciales de la subida de QSO a los logs online (app "Log uploads"). */
-static uint8_t make_log_uploads(uint8_t row) {
+static void upload_switch_cb(lv_event_t *e) {
+    bool *flag = lv_event_get_user_data(e);
+
+    if (flag) {
+        *flag = lv_obj_has_state(lv_event_get_target(e), LV_STATE_CHECKED);
+        upload_conf_save(&upload_conf);
+        msg_update_text_fmt("Log upload: saved");
+    }
+}
+
+static bool upload_edit_ok(void) {
+    const char *text = textarea_window_get();
+
+    if (upload_edit_row != NULL) {
+        snprintf(upload_edit_row->value, upload_edit_row->size, "%s", text ? text : "");
+        upload_conf_save(&upload_conf);
+        upload_field_refresh(upload_edit_row);
+        msg_update_text_fmt("Log upload: saved");
+    }
+
+    upload_edit_row = NULL;
+
+    return true;
+}
+
+static bool upload_edit_cancel(void) {
+    upload_edit_row = NULL;
+
+    return true;
+}
+
+static void upload_field_click_cb(lv_event_t *e) {
+    upload_field_t *r = lv_event_get_user_data(e);
+
+    if (r == NULL || r->value == NULL) {
+        return;
+    }
+
+    upload_edit_row = r;
+
+    textarea_window_open_w_label(upload_edit_ok, upload_edit_cancel, r->label);
+    textarea_window_set(r->value);
+}
+
+static uint8_t make_upload_switch(uint8_t row, const char *label, bool *flag) {
     lv_obj_t *obj;
-    uint8_t   col = 0;
 
     row_dsc[row] = 54;
 
     obj = row_label(grid);
-    lv_label_set_text(obj, "Log uploads");
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_label_set_text(obj, label);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
     obj = lv_obj_create(grid);
     lv_obj_set_size(obj, SMALL_3, 54);
@@ -2141,14 +2209,54 @@ static uint8_t make_log_uploads(uint8_t row) {
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(obj);
 
-    obj = lv_label_create(obj);
-    lv_obj_set_style_text_font(obj, &sony_20, 0);
-    lv_obj_set_style_text_color(obj, TC(text), 0);
-    lv_label_set_text(obj, "Configure >");
+    obj = lv_switch_create(obj);
+    styles_switch_init(obj);
+    lv_obj_set_width(obj, SMALL_3 - 30);
     lv_obj_center(obj);
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(obj, logs_open_cb, LV_EVENT_CLICKED, NULL);
     dialog_item(&dialog, obj);
+    lv_obj_add_event_cb(obj, upload_switch_cb, LV_EVENT_VALUE_CHANGED, flag);
+
+    if (*flag) {
+        lv_obj_add_state(obj, LV_STATE_CHECKED);
+    }
+
+    return row + 1;
+}
+
+static uint8_t make_upload_field(uint8_t row, const char *label, bool secret, char *value, size_t size) {
+    lv_obj_t *obj;
+
+    row_dsc[row] = 54;
+
+    obj = row_label(grid);
+    lv_label_set_text(obj, label);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    obj = lv_obj_create(grid);
+    lv_obj_set_size(obj, SMALL_6, 54);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_center(obj);
+
+    upload_field_t *r = &upload_fields[upload_nfields++];
+
+    r->label  = label;
+    r->secret = secret;
+    r->value  = value;
+    r->size   = size;
+    r->field  = lv_textarea_create(obj);
+    lv_obj_set_size(r->field, SMALL_6 - 10, 44);
+    lv_obj_center(r->field);
+    lv_textarea_set_one_line(r->field, true);
+    lv_textarea_set_max_length(r->field, size - 1);
+    lv_obj_clear_flag(r->field, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_text_align(r->field, LV_TEXT_ALIGN_RIGHT, 0);
+
+    dialog_item(&dialog, r->field);
+    lv_obj_add_event_cb(r->field, upload_field_click_cb, LV_EVENT_CLICKED, r);
+
+    upload_field_refresh(r);
 
     return row + 1;
 }
@@ -2271,22 +2379,49 @@ static void construct_cb(lv_obj_t *parent) {
     row = make_waterfall_battery(row);
     grp_primero[GRP_ESPECTRO] = n;   grp_ultimo[GRP_ESPECTRO] = lv_obj_get_child_cnt(grid);
 
-    /* 4. Clock */
+    /* 4. Logs (credenciales de la subida de QSO) */
+    upload_conf_load(&upload_conf);
+    upload_nfields = 0;
+
+    row = make_delimiter(row);
+    n = lv_obj_get_child_cnt(grid);
+    row = make_upload_switch(row, "Upload", &upload_conf.enabled);
+
+    row = make_delimiter(row);
+    row = make_upload_switch(row, "eQSL", &upload_conf.eqsl_enabled);
+    row = make_upload_field(row, "eQSL user", false, upload_conf.eqsl_user, sizeof(upload_conf.eqsl_user));
+    row = make_upload_field(row, "eQSL password", true, upload_conf.eqsl_pswd, sizeof(upload_conf.eqsl_pswd));
+
+    row = make_delimiter(row);
+    row = make_upload_switch(row, "QRZ", &upload_conf.qrz_enabled);
+    row = make_upload_field(row, "QRZ API key", true, upload_conf.qrz_api_key, sizeof(upload_conf.qrz_api_key));
+
+    row = make_delimiter(row);
+    row = make_upload_switch(row, "Clublog", &upload_conf.clublog_enabled);
+    row = make_upload_field(row, "Clublog callsign", false, upload_conf.clublog_callsign, sizeof(upload_conf.clublog_callsign));
+    row = make_upload_field(row, "Clublog email", false, upload_conf.clublog_email, sizeof(upload_conf.clublog_email));
+    row = make_upload_field(row, "Clublog password", true, upload_conf.clublog_password, sizeof(upload_conf.clublog_password));
+    row = make_upload_field(row, "Clublog API key", true, upload_conf.clublog_api, sizeof(upload_conf.clublog_api));
+
+    grp_primero[GRP_LOGS] = n;       grp_ultimo[GRP_LOGS] = lv_obj_get_child_cnt(grid);
+
+    /* 5. Clock */
     row = make_delimiter(row);
     n = lv_obj_get_child_cnt(grid);
     row = make_date(row);
     row = make_time(row);
     grp_primero[GRP_RELOJ] = n;      grp_ultimo[GRP_RELOJ] = lv_obj_get_child_cnt(grid);
 
-    /* 5. Display */
+    /* 6. Display */
     row = make_delimiter(row);
     n = lv_obj_get_child_cnt(grid);
     row = make_backlight(row);
     row = make_smeter(row);
     row = make_band_plan(row);
+    row = make_mag(row);
     grp_primero[GRP_PANTALLA] = n;   grp_ultimo[GRP_PANTALLA] = lv_obj_get_child_cnt(grid);
 
-    /* 6. Appearance */
+    /* 7. Appearance */
     row = make_delimiter(row);
     n = lv_obj_get_child_cnt(grid);
     row = make_theme(row);
@@ -2294,18 +2429,12 @@ static void construct_cb(lv_obj_t *parent) {
     row = make_visual_profile(row);
     grp_primero[GRP_APARIENCIA] = n; grp_ultimo[GRP_APARIENCIA] = lv_obj_get_child_cnt(grid);
 
-    /* 7. Actions */
+    /* 8. Actions */
     row = make_delimiter(row);
     n = lv_obj_get_child_cnt(grid);
     row = make_long_action(row);
     row = make_hmic_action(row);
     grp_primero[GRP_ACCIONES] = n;   grp_ultimo[GRP_ACCIONES] = lv_obj_get_child_cnt(grid);
-
-    /* 8. Info */
-    row = make_delimiter(row);
-    n = lv_obj_get_child_cnt(grid);
-    row = make_mag(row);
-    grp_primero[GRP_INFO] = n;       grp_ultimo[GRP_INFO] = lv_obj_get_child_cnt(grid);
 
     row = make_delimiter(row);
 
