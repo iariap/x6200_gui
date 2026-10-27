@@ -90,6 +90,11 @@ typedef enum {
      * apps: se abre desde la quinta celda de la pagina DFL y desde el long press
      * fisico DFL, y se despacha en main_screen_action(). */
     ACTION_APP_DFL_EDITOR,
+
+    /* App "Log uploads" (credenciales QRZ/eQSL/Clublog desde la UI): al
+     * FINAL del enum, igual que las anteriores, para no correr las acciones
+     * ya guardadas en la configuracion de cada equipo. */
+    ACTION_APP_LOGS,
 } press_action_t;
 
 typedef enum {
