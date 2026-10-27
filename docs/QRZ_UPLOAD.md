@@ -27,9 +27,9 @@ cuando la radio tiene WiFi.
 
 ### Desde la UI (v0.1.9)
 
-La app **Log uploads** (Ajustes → *Operation* → **Log uploads → Configure**, o la app
-**Logs** en la lista de acciones/control remoto) muestra, con la misma grilla y estilo de
-Ajustes:
+En **Ajustes** hay un tab **Logs** en la primera página (Operation | Audio | Spectrum |
+**Logs** | More >) que salta directo a las opciones, embebidas con la misma grilla y estilo
+de Ajustes (también se abre como app **Logs** por control remoto/acciones):
 
 - **Upload** (interruptor global) y un interruptor por proveedor (eQSL / QRZ / Clublog).
 - Campos de credenciales: al tocar la fila se abre el teclado; los passwords se muestran
