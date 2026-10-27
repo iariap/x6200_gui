@@ -1645,3 +1645,28 @@ midió en la radio:
 (17/51 en 17m y 38/51 en 40m a 0,1 W; también a 1 W y con AM), así que el mínimo de la curva puede
 ser falso. Subir la potencia o usar AM no lo arregló (medido). Falta determinar por qué el BASE
 reporta 1.0 sin potencia y cicla la potencia durante el barrido.
+
+---
+
+## 27/10 23:30Z — ROE por banda en fonia: 0,1 W no mide, 3 W sí
+
+El owner pidió medir la ROE en 40/17/15/10/6 m en fonia. Se usó el build con dump (mismo
+presupuesto de tiempo de §71, una pasada, span 500 kHz, 51 puntos) y dial en el segmento de fonia
+(40m LSB 7.100.000; 17m USB 18.130.000; 15m USB 21.200.000; 10m USB 28.500.000; 6m USB 50.150.000).
+"Muestras válidas" = `tx_power >= 0,3 W`.
+
+| Banda | válidas 0,1 W | válidas 3 W | ROE mín (3 W) | ROE en dial |
+|---|---|---|---|---|
+| 40m | 13/51 | 18/51 | 1,0 @ 7,010 | 1,0 |
+| 17m | 36/51 | 46/51 | 2,0 @ 18,090 | 2,2 |
+| 15m | 0/51 | 46/51 | 1,9 @ 21,000 | 2,1 |
+| 10m | 0/51 | 48/51 | 1,4 @ 28,670 | 1,7 |
+| 6m | 8/51 | 15/51 | 1,5 @ 50,350 | 1,9 |
+
+**Arreglo**: `SWRSCAN_TX_POWER_DW` 1 → 30 (3,0 W), PR #328 (main `583da568`). Sigue una pasada
+(techo 3570 ms). Verificado en la radio con el binario limpio `beaa23d7`: barrido 15 m → `Completed`,
+`crashlog 0`, dial/modo (18.099180 USB-D) restaurados.
+
+**Evidencia**: `assessment-194/scratch/cw244/swr3w_bandas_fonia.png`, `swr3w_band_<banda>.png`,
+`swr3w_band_<banda>.txt`; captura de verificación `swr-3w-15m.png`. Queda sin fundar la causa de
+que 40 m/6 m tengan menos muestras con potencia (anexo A de HALLAZGOS §72).
