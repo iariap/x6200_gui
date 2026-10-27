@@ -41,6 +41,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 69. [El BASE se puede LEER por I2C: direcciones verificadas](#69-el-base-se-puede-leer-por-i2c-direcciones-verificadas)
 70. [El mute de RX de #244: la secuencia I2C del firmware original lo recupera con la GUI parada, no con la GUI andando](#70-el-mute-de-rx-de-244-la-secuencia-i2c-del-firmware-original-lo-recupera-con-la-gui-parada-no-con-la-gui-andando)
 71. [El barrido de ROE abortaba por RF timeout: el techo de TX asumía 35 ms por paquete y la radio tarda 48,4 ms](#71-el-barrido-de-roe-abortaba-por-rf-timeout-el-techo-de-tx-asumía-35-ms-por-paquete-y-la-radio-tarda-484-ms)
+72. [ROE por banda en fonia: a 0,1 W el detector no mide; con 3 W sí](#72-roe-por-banda-en-fonia-a-01-w-el-detector-no-mide-con-3-w-sí)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
@@ -784,10 +785,55 @@ captura: assessment-194/scratch/cw244/swr-final2.png  -> "Completed", min 1.0 @ 
 **Refutado en el camino** (se deja constancia): subir la potencia del barrido de 0,1 W a 1 W, o
 cambiar el modo LSB → AM (como la referencia X6100), **no** arregla las muestras falsas: a 1 W se
 midieron 13/51 (17m) y 37/51 (40m) muestras ROE=1.00, y con AM+1 W, 27/51. Las muestras ROE=1.00
-correlacionan con `tx_power≈0` en los mismos paquetes (ver anexo A).
+correlacionan con `tx_power≈0` en los mismos paquetes (ver anexo A). Con **3 W** (medido después,
+ver §72) sí mejora la proporción de muestras con potencia.
 
 **Sin fundar (anexo A)**: por qué la cadencia real es 48,4 ms y no 35 ms; por qué el BASE reporta
 ROE 1.0 en paquetes sin potencia y cicla la potencia durante el barrido.
+
+
+## 72. ROE por banda en fonia: a 0,1 W el detector no mide; con 3 W sí
+
+**Síntoma**: el owner pidió medir la ROE en 40, 17, 15, 10 y 6 m en fonia, después de que el
+barrido de 0,1 W diera muestras ROE 1.00 sin potencia (§71).
+
+**Medido** (radio, 2026-10-27; build con dump por muestra y por paquete, presupuesto
+3570/4070 ms de §71; dial en el segmento de fonia de cada banda: 40 m LSB 7.100.000, 17 m USB
+18.130.000, 15 m USB 21.200.000, 10 m USB 28.500.000, 6 m USB 50.150.000; span 500 kHz, 51 puntos).
+"Muestras válidas" = paquetes con `tx_power >= 0,3 W`; "falsas 1.00" = `ROE=1.0` con
+`tx_power < 0,3 W`):
+
+```
+$ <por banda, dos corridas del mismo binario solo cambiando SWRSCAN_TX_POWER_DW>
+banda  dial MHz   val 0,1W  val 3W   ROE min 3W @ MHz    ROE en dial   span medido
+40m    7,1000     13/51    18/51    1,0 @ 7,0100        1,0           6,850-7,350
+17m    18,1300    36/51    46/51    2,0 @ 18,0900       2,2           17,880-18,380
+15m    21,2000     0/51    46/51    1,9 @ 21,0000       2,1           20,950-21,450
+10m    28,5000     0/51    48/51    1,4 @ 28,6700       1,7           28,250-28,750
+6m     50,1500     8/51    15/51    1,5 @ 50,3500       1,9           49,900-50,400
+```
+
+Capturas de las cinco corridas a 3 W: `assessment-194/scratch/cw244/swr3w_bandas_fonia.png`
+y `swr3w_band_<banda>.png`; dumps `swr3w_band_<banda>.txt`.
+
+Conclusiones fundadas:
+
+- A **0,1 W** el detector no mide en 15 m ni en 10 m (0/51 muestras con potencia) y mide poco en
+  40 m (13/51) y 6 m (8/51).
+- A **3 W pedidos** hay muestras reales en las cinco bandas (15 m: 46/51, 10 m: 48/51), con ROE
+  consistentes entre potencias donde ambas midieron (17 m: 2,0-3,2 en las dos).
+- El equipo reporta `tx_power` hasta ~1,0 W aunque se pidan 3,0 W: hay limitación/protección
+  interna (medido en los dumps de las dos corridas).
+
+**Arreglo**: `SWRSCAN_TX_POWER_DW` 1 → **30** (3,0 W) en `src/dialog_swrscan.h`, con la
+justificación medida; tests nativos actualizados (`tests/native/test_swrscan.c`); PR #328
+(main `583da568`). Sigue siendo **una pasada** (techo 3570 ms, ≤3,6 s al aire) y 3,0 W está muy
+por debajo del techo del control (8,0 W) y del ATU (potencia plena). Verificado en la radio: barrido
+15 m → `Completed`, `crashlog 0` (`swr-3w-15m.png`).
+
+**Sin fundar (anexo A)**: por qué 40 m y 6 m tienen menos muestras con potencia (18/51 y 15/51);
+no se interpola la ROE en las frecuencias sin muestra válida; no se comparó contra un medidor de ROE
+externo.
 
 ## Anexo A: hipótesis sin fundar (no son hallazgos)
 
@@ -795,6 +841,7 @@ Ninguna de estas cosas se puede afirmar con la evidencia que tenemos. Se listan 
 con lo que haría falta para fundarlas.
 
 | Hipótesis | Por qué no está fundada | Qué haría falta |
+| 40 m y 6 m tienen menos muestras con potencia (18/51 y 15/51) que 17/15/10 m | se midió el conteo, pero no la causa (protección/rampa del BASE) | capturar `tx_power` y `vswr` con sonda/registros I2C y comparar con el firmware stock en esas bandas |
 |---|---|---|
 | El BASE rampa/cicla la potencia durante el barrido de ROE y por eso hay paquetes con `tx_power≈0` que reportan ROE 1.0 | se midió la correlación (`vswr=1.00` sólo con pwr≈0; a VFO fijo el ciclo se repite) pero **no** la causa ni si el firmware stock hace lo mismo | capturar los registros I2C del firmware original durante un barrido de ROE, o medir el TX con sonda y osciloscopio mientras se corre el barrido |
 | La cadencia real de 48,4 ms se debe a la latencia de retune sumada al período del flow | no se separaron las dos componentes | instrumentar `radio_set_freq()` con timestamps y medir la latencia de retune aparte del período del flow |
