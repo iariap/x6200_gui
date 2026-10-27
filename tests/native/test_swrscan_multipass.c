@@ -281,7 +281,7 @@ static void check_completed(const replay_t *r) {
     /* Tiempo simulado: exactamente pasadas x el presupuesto de UNA pasada (51 x dwell). El
      * presupuesto NO se toco; la sesion multipasada lo multiplica por la cantidad de pasadas. */
     CHECK(r->sim_ms == (uint32_t) r->passes * SWRSCAN_TX_BUDGET_MS);
-    CHECK(SWRSCAN_TX_BUDGET_MS == 1785);
+    CHECK(SWRSCAN_TX_BUDGET_MS == 3570);   /* dwell real medido en la radio (27/10) */
 }
 
 /* El readout que lee el operador es el agregado esperado del owner, punto por punto. */

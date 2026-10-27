@@ -271,7 +271,9 @@ void test_swrscan_sweep(void) {
     /* El presupuesto de duracion es exactamente el barrido de UNA pasada, dentro de los ~2 s que
      * fijo el owner; y los 101 puntos del NanoVNA no entran (101 x 35 = 3535 ms). */
     CHECK(SWRSCAN_TX_BUDGET_MS == SWR_SESSION_POINTS * SWRSCAN_DWELL_MS);
-    CHECK(SWRSCAN_TX_BUDGET_MS <= 2000);
+    /* Subido de 1785 a 3570 el 27/10 (decision del owner; evidencia en dialog_swrscan.h):
+     * el dwell real medido en la radio es 48,4 ms de media y 63 ms peor caso. */
+    CHECK(SWRSCAN_TX_BUDGET_MS <= 4000);
     CHECK(101 * SWRSCAN_DWELL_MS > SWRSCAN_TX_BUDGET_MS);
 
     printf("barrido #125: %d puntos por span, paso adaptado, presupuesto %d ms de UNA pasada\n",
