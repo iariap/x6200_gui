@@ -68,3 +68,26 @@ utilizable (libcurl sigue en `TLS_NONE`, busybox-wget sin HTTPS).
   `STATUS=AUTH&RESULT=AUTH&REASON=invalid api key` → TLS, User-Agent y POST
   correctos; no se subió nada.
 - Pendiente en la radio: validación con la API key real del dueño.
+
+## Exportar el ADIF a mano (sin suscripción QRZ)
+
+La radio guarda todo en `/mnt/qso_log.db`; el uploader sabe volcarlo:
+
+```sh
+# desde la PC, por SSH (agrega la cabecera ADIF y guarda el archivo)
+{ printf '<adif_ver:5>3.1.0 <programid:8>X6200GUI <EOH>\n'
+  sshpass -p 123 ssh root@192.168.0.236 \
+    'python3 /usr/share/x6200/qrz-upload.py --adif'
+} > qso.adi
+```
+
+El archivo `qso.adi` se sube a mano:
+
+- **QRZ Logbook** (gratis por web): qrz.com → *Logbook* → **Import / Upload ADIF** → elegir `qso.adi`.
+- **LoTW**: firmar el ADIF con **TQSL** en la PC (*File → Sign a log file*) y subir el `.tq8`
+  resultante a LoTW (la radio no puede firmar TQSL).
+- **eQSL / Clublog**: importar el mismo ADIF desde sus páginas de carga.
+
+El daemon QRZ queda **apagado** (`enabled=0` en `/mnt/qrz.conf`) mientras no haya
+suscripción: no reintenta ni llena el log. Para re-activarlo, `enabled=1` y
+`/etc/init.d/S55qrz-upload start`.
