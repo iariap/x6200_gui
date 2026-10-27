@@ -1616,3 +1616,32 @@ tab **Logs** marcado en la primera página (Operation | Audio | Spectrum | **Log
 y las filas del grupo — Upload on, eQSL on + usuario `LU2DSX` + password enmascarada, QRZ
 off — con el mismo estilo de Ajustes. El binario final (`85b8d05b`) abre Ajustes en
 Operation y el tab Logs hace el salto al grupo (mismo `settings_goto` que los demás tabs).
+
+---
+
+## 27/10 23:00Z — SWR Scan: el RF timeout era el presupuesto de TX (35 ms asumidos vs 48,4 ms reales)
+
+El owner no confiaba en la curva del barrido de ROE y pidió validarlo por control remoto. Se
+instrumentó un binario temporal (dump por muestra y por paquete del flow, sin logs por paquete) y se
+midió en la radio:
+
+- **17m** (centro 18.099180, span 500 kHz): `state=4 abort=2 packets=37 valid=37 pass_timeout=2285
+  elapsed=2287 ms`; deltas entre muestras **media 48,4 ms** (min 46, max 63).
+- **40m**: `packets=43 valid=43 elapsed=2297 ms`, deltas media 48,5 ms.
+- Con 51 puntos × 48,4 ms ≈ 2468 ms, el `SWRSCAN_PASS_TIMEOUT_MS` de 2285 ms cortaba la pasada:
+  captura `swr-cleanA.png` → `Error: RF timeout`, `min 1.0 @ 17.850.000 (n=33/51)`.
+
+**Arreglo** (PR #326, main `fcdb4907`): `SWRSCAN_DWELL_MS` 35 → 70, presupuesto 3570 ms, timeout
+4070 ms; sigue una pasada a 0,1 W (aprobado por el owner). Tests nativos actualizados.
+
+**Verificado en la radio** con el binario limpio `668eeba5`:
+
+- 17m: `Completed`, `state=2 abort=0 packets=51 valid=51/51 elapsed=2668 ms`
+- 40m: `Completed`, `state=2 abort=0 packets=51 valid=51/51 elapsed=2962 ms`
+- Captura `swr-final2.png`: `Completed`, `min 1.0 @ 17.849.180 (n=51/51)`.
+- `crashlog 0`; dial y modo del owner restaurados (18.099180 USB-D) y TX apagado al terminar.
+
+**Pendiente (anexo A de HALLAZGOS §71)**: las muestras con `tx_power≈0` se registran como ROE 1.00
+(17/51 en 17m y 38/51 en 40m a 0,1 W; también a 1 W y con AM), así que el mínimo de la curva puede
+ser falso. Subir la potencia o usar AM no lo arregló (medido). Falta determinar por qué el BASE
+reporta 1.0 sin potencia y cicla la potencia durante el barrido.
