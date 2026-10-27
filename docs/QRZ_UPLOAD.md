@@ -134,3 +134,14 @@ El archivo `qso.adi` se sube a mano:
 El daemon QRZ queda **apagado** (`enabled=0` en `/mnt/qrz.conf`) mientras no haya
 suscripción: no reintenta ni llena el log. Para re-activarlo, `enabled=1` y
 `/etc/init.d/S55qrz-upload start`.
+
+## Seguridad de las credenciales
+
+- Las credenciales viven **solo en la radio**, en `/mnt/upload.conf` (permisos `0600`):
+  no están en este repositorio, ni en las imágenes/tgz publicadas (la partición DATA no
+  forma parte de la imagen).
+- En este repo **no hay** API keys ni passwords: el template de `/mnt/upload.conf` que
+  crea el daemon está vacío, y el `.gitignore` excluye `upload.conf`, `qrz.conf`,
+  `assessment-194/`, `backups/`, `*.adi` y `qso_log.db`.
+- Si una credencial se compartió fuera de la radio (por ejemplo en un chat), conviene
+  **regenerarla** en el servicio y cargar la nueva desde **Ajustes → Logs**.

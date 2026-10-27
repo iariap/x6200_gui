@@ -65,3 +65,14 @@ tools/fonts/.cache/
 
 # Suite del supervisor de la GUI (issue #214)
 tests/daemon/build/
+
+# --- Datos locales de pruebas / credenciales (nunca al repo) --------------
+# Archivos de configuracion de la radio (credenciales de logs, etc.) y
+# resultados de pruebas que pueden contener datos personales.
+assessment-194/
+backups/
+*.adi
+qso_log.db
+upload.conf
+qrz.conf
+*.tgz.sha256
