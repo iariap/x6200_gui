@@ -18,6 +18,10 @@ resto del sistema.
   (`RESULT=AUTH`, `RESULT=FAIL`, `REASON=...`), lo deja pendiente y reintenta en la
   próxima pasada; queda registrado en `/mnt/qrz-upload.log`.
 - No sube nada si no hay `api_key` (la plantilla se crea vacía en el primer arranque).
+- Si QRZ responde **`RESULT=AUTH`** (key válida pero la cuenta **no tiene suscripción QRZ**
+  para `INSERT` por API), guarda `/mnt/qrz_upload.cooldown` y reintenta recién en **1 h**
+  en vez de insistir cada 30 s. `--status` muestra el cooldown y `--adif` sirve para
+  subir el log a mano mientras tanto.
 
 ## Configuración
 
@@ -38,6 +42,8 @@ Comandos útiles por SSH en la radio:
 ```sh
 python3 /usr/share/x6200/qrz-upload.py --status   # config, último rowid, pendientes
 python3 /usr/share/x6200/qrz-upload.py --once     # forzar una pasada ahora
+python3 /usr/share/x6200/qrz-upload.py --adif     # imprime el ADIF de todos los QSO
+                                                  # (para subirlos a mano, p. ej. a QRZ)
 cat /mnt/qrz-upload.log                           # qué subió / qué rechazó
 /etc/init.d/S55qrz-upload restart                 # reiniciar el daemon
 ```
