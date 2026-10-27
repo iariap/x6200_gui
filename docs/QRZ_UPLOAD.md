@@ -25,6 +25,19 @@ cuando la radio tiene WiFi.
 
 ## Configuración
 
+### Desde la UI (v0.1.9)
+
+La app **Log uploads** (Ajustes → *Operation* → **Log uploads → Configure**, o la app
+**Logs** en la lista de acciones/control remoto) muestra, con la misma grilla y estilo de
+Ajustes:
+
+- **Upload** (interruptor global) y un interruptor por proveedor (eQSL / QRZ / Clublog).
+- Campos de credenciales: al tocar la fila se abre el teclado; los passwords se muestran
+  enmascarados (`********`). Cada cambio se guarda solo en `/mnt/upload.conf` y el daemon
+  lo toma en ≤30 s.
+
+### Archivo
+
 Archivo `/mnt/upload.conf` (se crea solo la primera vez; migra la `/mnt/qrz.conf` de
 v0.1.6 si existe). Cada proveedor se habilita por separado:
 

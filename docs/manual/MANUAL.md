@@ -212,8 +212,10 @@ un QSO, si estás llamando CQ o si tocaste una fila. Con `Auto: Disabled` se apa
 llamada automática como el avance automático del QSO.
 
 **Subida de QSO a logs online:** los QSO guardados en `/mnt/qso_log.db` se suben solos
-cuando hay WiFi a los proveedores que configures en `/mnt/upload.conf` (**eQSL** y
-**Clublog** vienen habilitados; **QRZ** requiere suscripción). Ver `docs/QRZ_UPLOAD.md`.
+cuando hay WiFi a los proveedores configurados (**eQSL** y **Clublog** vienen habilitados;
+**QRZ** requiere suscripción). Las credenciales se cargan desde la UI: **Ajustes → Operation
+→ Log uploads → Configure** (o la app **Logs**), con la misma grilla que Ajustes; tocá una
+fila para editar el valor con el teclado. Ver `docs/QRZ_UPLOAD.md`.
 
 ### 6.2 WSPR
 

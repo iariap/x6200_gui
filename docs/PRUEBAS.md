@@ -1575,3 +1575,21 @@ eqsl: subidos 4 QSO (rowid<=4):
 - `Caution: ProgramID or Logger not found` (eQSL no tiene registrado `X6200GUI`): no impide
   la importación.
 - **Automático**: el daemon queda corriendo; cada QSO nuevo se sube solo cuando hay WiFi.
+
+---
+
+## 27/10 17:46Z — UI "Log uploads": credenciales editables desde la radio
+
+Nueva app **Logs** para cargar las credenciales de QRZ/eQSL/Clublog desde la GUI.
+Verificada en la radio (GUI `350d3a62`, deploy por SSH):
+
+- Se abre por control remoto (`{"cmd":"app","text":"Logs"}`) y por **Ajustes → Operation →
+  Log uploads → Configure**.
+- Captura `assessment-194/scratch/cw244/fb-logs2.png`: muestra la configuración actual del
+  archivo — **eQSL on, usuario `LU2DSX`, password enmascarada; QRZ off; Clublog off** — con
+  la misma grilla, labels con celda del tema, switches y campos con borde de Ajustes
+  (comparar con `fb-settings.png`).
+- El módulo `upload_conf.c` (sin LVGL) tiene roundtrip probado en la PC, incluido un
+  password con espacios; escribe el archivo atómico con permisos 0600.
+- `crashlog 0` tras abrir/cerrar la app. La edición con teclado (tocar la fila) queda para
+  prueba del dueño: no hay inyección de touch por control remoto.
