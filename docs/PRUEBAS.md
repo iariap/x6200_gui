@@ -1610,5 +1610,9 @@ grupo que ahora tiene **todas las opciones inline** con los helpers de Ajustes: 
 (enmascarados) que abren el teclado al tocar y guardan en `/mnt/upload.conf`. El tab `Info`
 (una sola fila) se movió al grupo Display. La app `Logs` sigue como acceso alternativo.
 
-Pendiente de verificación visual en la radio (estaba apagada al compilar): captura de la
-primera página de tabs con el tab Logs y del grupo con las filas.
+**Verificado en la radio** (GUI `85b8d05b`, deploy por SSH): con un build temporal que
+arranca Ajustes en el grupo Logs se capturó `assessment-194/scratch/cw244/fb-tab-logs3.png`:
+tab **Logs** marcado en la primera página (Operation | Audio | Spectrum | **Logs** | More >)
+y las filas del grupo — Upload on, eQSL on + usuario `LU2DSX` + password enmascarada, QRZ
+off — con el mismo estilo de Ajustes. El binario final (`85b8d05b`) abre Ajustes en
+Operation y el tab Logs hace el salto al grupo (mismo `settings_goto` que los demás tabs).
