@@ -39,7 +39,8 @@
  * 2026-10-14 no se reutiliza (ver params.h): si se reutilizara, o si las acciones que siguen se
  * movieran, cambiaria en silencio la accion guardada de la radio. */
 _Static_assert(ACTION_APP_GPS == 122 && ACTION_APP_BANDS == 128 &&
-               ACTION_APP_PROPAGATION == 130 && ACTION_APP_DFL_EDITOR == 131,
+               ACTION_APP_PROPAGATION == 130 && ACTION_APP_DFL_EDITOR == 131 &&
+                 ACTION_APP_LOGS == 132,
                "press_action_t: no muevas los valores de las acciones guardadas (el hueco 121 no se reutiliza)");
 
 params_t params = {

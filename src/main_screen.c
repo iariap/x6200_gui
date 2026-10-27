@@ -43,6 +43,7 @@
 #include "dialog_recorder.h"
 #include "dialog_callsign.h"
 #include "dialog_propagation.h"
+#include "dialog_logs.h"
 #include "dialog_wifi.h"
 #include "dialog_eq.h"
 #include "dfl_inline.h"
@@ -213,6 +214,7 @@ static const char *app_label(press_action_t action) {
         case ACTION_APP_CALLSIGN:  return "Callsign";
         case ACTION_APP_PROPAGATION: return "Propagation";
         case ACTION_APP_DFL_EDITOR:  return "DFLEditor";
+        case ACTION_APP_LOGS:        return "Logs";
         default:                   return "home";
     }
 }
@@ -364,6 +366,11 @@ void main_screen_start_app(press_action_t app_action) {
         case ACTION_APP_CALLSIGN:
             dialog_construct(dialog_callsign, obj);
             voice_say_text_fmt("Callsign window");
+            break;
+
+        case ACTION_APP_LOGS:
+            dialog_construct(dialog_logs, obj);
+            voice_say_text_fmt("Log uploads window");
             break;
 
         case ACTION_APP_PROPAGATION:
@@ -526,6 +533,7 @@ void main_screen_action(press_action_t action) {
         case ACTION_APP_BANDS:
         case ACTION_APP_QTH:
         case ACTION_APP_CALLSIGN:
+        case ACTION_APP_LOGS:
         case ACTION_APP_PROPAGATION:
             main_screen_start_app(action);
             break;

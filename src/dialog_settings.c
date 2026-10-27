@@ -2118,6 +2118,41 @@ static void cluster_column_update_cb(lv_event_t * e) {
     cluster_column_refresh();
 }
 
+static void logs_open_cb(lv_event_t *e) {
+    (void) e;
+    main_screen_start_app(ACTION_APP_LOGS);
+}
+
+/* Credenciales de la subida de QSO a los logs online (app "Log uploads"). */
+static uint8_t make_log_uploads(uint8_t row) {
+    lv_obj_t *obj;
+    uint8_t   col = 0;
+
+    row_dsc[row] = 54;
+
+    obj = row_label(grid);
+    lv_label_set_text(obj, "Log uploads");
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
+
+    obj = lv_obj_create(grid);
+    lv_obj_set_size(obj, SMALL_3, 54);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, COL_CONTROLES, SPAN_1, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_center(obj);
+
+    obj = lv_label_create(obj);
+    lv_obj_set_style_text_font(obj, &sony_20, 0);
+    lv_obj_set_style_text_color(obj, TC(text), 0);
+    lv_label_set_text(obj, "Configure >");
+    lv_obj_center(obj);
+    lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(obj, logs_open_cb, LV_EVENT_CLICKED, NULL);
+    dialog_item(&dialog, obj);
+
+    return row + 1;
+}
+
 static uint8_t make_cluster_column(uint8_t row) {
     lv_obj_t *obj;
     uint8_t   col = 0;
