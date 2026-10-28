@@ -169,6 +169,28 @@ static void test_segments_cb(void) {
     }
 }
 
+/* Tipo de segmento que contiene una frecuencia (para el cambio automatico de modo). */
+static void test_type_at(void) {
+    CHECK(band_plan_type_at(50000000) == BP_CW);       /* borde inferior 6m */
+    CHECK(band_plan_type_at(50050000) == BP_CW);       /* 50.050 */
+    CHECK(band_plan_type_at(50099999) == BP_CW);       /* ultimo Hz del CW */
+    CHECK(band_plan_type_at(50100000) == BP_ALL);      /* 50.100 ya es ALL */
+    CHECK(band_plan_type_at(50150000) == BP_ALL);      /* 50.150, memoria de 6m */
+    CHECK(band_plan_type_at(50350000) == BP_DIG);
+    CHECK(band_plan_type_at(50450000) == BP_BCN);
+    CHECK(band_plan_type_at(51000000) == BP_ALL);      /* 50.5..52.0 ALL */
+    CHECK(band_plan_type_at(52000000) == BP_NONE);     /* el plan corta en 52.0 */
+    CHECK(band_plan_type_at(49900000) == BP_NONE);
+
+    CHECK(band_plan_type_at(7030000) == BP_CW);        /* 40m */
+    CHECK(band_plan_type_at(7045000) == BP_DIG);
+    CHECK(band_plan_type_at(7100000) == BP_ALL);
+    CHECK(band_plan_type_at(21130000) == BP_CW);       /* 21.130, CW de 15m */
+    CHECK(band_plan_type_at(21200000) == BP_ALL);      /* 21.200, fuera del CW */
+    CHECK(band_plan_type_at(26200000) == BP_CB);       /* CB */
+    CHECK(band_plan_type_at(12000000) == BP_NONE);     /* hueco 10-14 MHz */
+}
+
 void test_band_plan(void) {
     test_segments_20m_cw();
     test_segments_centred();
@@ -177,4 +199,5 @@ void test_band_plan(void) {
     test_segments_edge_cases();
     test_segments_clipping();
     test_segments_cb();
+    test_type_at();
 }

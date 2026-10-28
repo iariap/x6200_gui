@@ -43,6 +43,20 @@ static const bp_seg_t plan[] = {
     { 50400000, 50500000, BP_BCN }, { 50500000, 52000000, BP_ALL },
 };
 
+bp_type_t band_plan_type_at(int32_t freq) {
+    for (size_t i = 0; i < sizeof(plan) / sizeof(plan[0]); i++) {
+        const bp_seg_t *p = &plan[i];
+
+        /* Rango [inicio, fin): 50.100 kHz ya es el segmento siguiente (medido en la
+         * franja: > 50.100 pinta ALL, no CW). */
+        if (freq >= p->start && freq < p->end) {
+            return p->type;
+        }
+    }
+
+    return (bp_type_t) BP_NONE;
+}
+
 int band_plan_segments(int32_t center, int32_t half_width, bp_visible_t *out, int max_out) {
     int n = 0;
 

@@ -29,6 +29,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 ## Resumen
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
+| 28/10 ~16:10 | ROM `d3f22d80…` + GUI `0a869656870e` | (local) | **zona CW automática** | 1 ok | 0 | **Medido**: 6m 51.000 USB -> 50.099 **CW** -> 50.150 **USB** (restaura); 40m 7.060 LSB -> 7.030 **CW** -> 7.060 **LSB** ✓. Falta confirmar con la rueda física (se probó por control remoto, mismo observador de frecuencia). `crashlog 0` |
 | 28/10 ~15:45 | ROM `d3f22d80…` + GUI `e968f4ff4861` | (local) | **CW / VFO activo** | 1 ok / 1 parcial | 0 | **CW queda en CW al cambiar de banda** ✓ medido: 40m->12m->6m->10m siguen en CW; salir a LSB y volver a 12m recupera USB-D de memoria ✓; con VFO B activo el log muestra `Radio set vfo 1 mode=2`/`sync ... activo 1` ✓; **CW con B activo quedo parcial** (el activo volvio a A en el ensayo, posible A/B fisico). `crashlog 0` |
 |---|---|---|---|---|---|---|
 | 20/10 18:01 (hora host) | (sin radio; ARM **`fd864a791cb5`**, 13.899.984 B; fuente `34bea401…`) | `a0fa0250` (#183) | — | — | 0 | **DFL presets de filtro: gates de host + arnés + banco QEMU** ✓ (sin desplegar, sin flashear y **sin transmitir**): nativos **47.585 comprobaciones, 0 fallos** (`test_dfl_presets` 175 + migración `_5` 62), estáticos **11 OK**, determinismo **PASS** (196 fixtures × 2, PNG idénticos), ruff/format/ty/pytest OK (incl. **13 e2e**), arnés **196 fixtures, 0 fallos** (54 nuevos), `--inspect` **2.994 labels sin truncado ni glyphs faltantes**, A/B **`AB-DFL183` PASS** (140/142 escenarios idénticos; 6 `dfl-page-tema-*` explicados), y el banco muestra **A/B/C/D/E** con el gate #86 **3/3 marcas** y la base del chroot migrada a `version=5`. **Validación física: pendiente del owner** (no bloquea el PR). Evidencia: [`2026-10-20-dfl183/`](evidencia/2026-10-20-dfl183/README.md) |
@@ -1792,3 +1793,19 @@ Pendiente del dueno: repetir **CW con VFO B activo** (el ensayo se interrumpio c
 
 Build: `make x6200-gui-dirclean && make -j8` en docker `x6200-buildroot` → exit 0; md5 del binario
 `e968f4ff4861`; deploy con backup en `/mnt/ui-bak-<HHMMSS>/`, `crashlog 0`.
+
+## 28/10 16:10Z — Zona CW automática: entra en CW y restaura al salir
+
+Build `0a869656870e` (ROM v0.1.11). `band_plan_type_at()` + observador de `cfg_cur.fg_freq` en
+`src/main_screen.c`: al entrar a un segmento CW del plan IARU pasa a CW (guarda el modo anterior) y al salir
+restaura ese modo; un cambio manual dentro de la zona cancela la restauración; respeta modo trabado y TX.
+
+```
+51.000 6m USB  -> 50.099 -> 50099000 CW
+50.150         -> 50150000 USB     (modo anterior restaurado)
+7.060 40m LSB  -> 7.030  -> 7030000 CW
+7.060          -> 7060000 LSB      (modo anterior restaurado)
+```
+
+`crashlog 0`. Tests nativos `exit 0` (test_band_plan: 50.099999=CW, 50.100000=ALL, 52.0=NONE).
+Pendiente: confirmación del dueño con la rueda física desde 51 MHz en 6m.
