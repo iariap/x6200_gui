@@ -95,6 +95,69 @@ static bool         mode_lock = false;
 static bool         ab_lock = false;
 static bool         band_lock = false;
 
+/* Cambio automatico de modo al entrar/salir de la zona CW del plan IARU (pedido del dueno,
+ * 2026-10-28: girando la rueda desde 51 MHz hasta la zona CW de 6m el modo no cambiaba).
+ *
+ * Al entrar al segmento CW (band_plan_type_at == BP_CW) se pasa a CW y se guarda el modo
+ * anterior; al salir se restaura ese modo. Un cambio de modo MANUAL dentro de la zona
+ * cancela la restauracion (se respeta lo que eligio el operador). No aplica con el modo
+ * trabado (#220) ni durante TX, y no toca la memoria de modo de la banda: si el operador
+ * ya estaba en CW antes de entrar, al salir se queda en CW. */
+static bool    cw_zone_auto;
+static int32_t cw_zone_prev_mode;
+static bool    cw_zone_applying;
+
+static void cw_zone_apply_mode(x6200_mode_t mode) {
+    cw_zone_applying = true;
+    subject_set_int(cfg_cur.mode, mode);
+    cw_zone_applying = false;
+}
+
+static void on_auto_cw_zone(Subject *subj, void *user_data) {
+    (void) subj;
+    (void) user_data;
+
+    if (cw_zone_applying || mode_lock || radio_get_state() == RADIO_TX) {
+        return;
+    }
+
+    int32_t freq = subject_get_int(cfg_cur.fg_freq);
+    int32_t mode = subject_get_int(cfg_cur.mode);
+    bool    en_cw = (band_plan_type_at(freq) == BP_CW);
+    bool    es_cw = (mode == x6200_mode_cw) || (mode == x6200_mode_cwr);
+
+    if (en_cw && !cw_zone_auto) {
+        cw_zone_auto      = true;
+        cw_zone_prev_mode = es_cw ? -1 : mode;
+        if (!es_cw) {
+            cw_zone_apply_mode(x6200_mode_cw);
+        }
+    } else if (!en_cw && cw_zone_auto) {
+        cw_zone_auto = false;
+        if (es_cw && cw_zone_prev_mode >= 0) {
+            cw_zone_apply_mode((x6200_mode_t) cw_zone_prev_mode);
+        }
+        cw_zone_prev_mode = -1;
+    }
+}
+
+/* El operador cambio el modo a mano dentro de la zona: no lo pisamos al salir. */
+static void on_auto_cw_zone_mode(Subject *subj, void *user_data) {
+    (void) subj;
+    (void) user_data;
+
+    if (!cw_zone_auto || cw_zone_applying) {
+        return;
+    }
+
+    int32_t mode = subject_get_int(cfg_cur.mode);
+
+    if (mode != x6200_mode_cw && mode != x6200_mode_cwr) {
+        cw_zone_auto      = false;
+        cw_zone_prev_mode = -1;
+    }
+}
+
 /* Aviso del dial trabado (issue #220): girar el dial con `freq_lock` consume los
  * detents, asi que el aviso se emite a lo sumo una vez por ventana de 2 s de
  * reloj monotono en vez de una vez por detent. 0 = todavia no se aviso en esta
@@ -1811,6 +1874,8 @@ lv_obj_t * main_screen() {
     subject_add_delayed_observer(freq_lock, on_fg_freq_change, NULL);
     subject_add_delayed_observer(cfg_cur.band->split.val, on_fg_freq_change, NULL);
     subject_add_delayed_observer(cfg_cur.fg_freq, on_fg_freq_change, NULL);
+    subject_add_delayed_observer(cfg_cur.fg_freq, on_auto_cw_zone, NULL);
+    subject_add_delayed_observer(cfg_cur.mode, on_auto_cw_zone_mode, NULL);
 
     /* Cambio de modo con el DFL abierto (issue #183): cancela suboperaciones
      * pendientes y reubica la pagina segun la familia, sin aplicar nada. */

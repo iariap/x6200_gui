@@ -59,7 +59,7 @@ se toca al actualizar.** Igual, respaldala antes de cada actualización.
 | Arriba a la izquierda | VFO (`VFO-A`/`VFO-B`), modo (LSB/USB/CW/CWR/AM/FM/DIG), `AUTO`, `PRE` (preamplificador) y `ATU1` |
 | Arriba a la derecha | Hora **UTC** |
 | El arco | **S-meter** de S1 a +40 dB, con la lectura en dBm |
-| La franja de colores | **Plan de banda IARU**: CW, DIG y ALL MODES, con los segmentos de la banda |
+| La franja de colores | **Plan de banda IARU**: CW, DIG y ALL MODES, con los segmentos de la banda. Al **entrar al segmento CW** el equipo pasa solo a **CW** y al **salir** vuelve al modo anterior (si elegís el modo a mano dentro de la zona, se respeta tu elección) |
 | Los números grandes | Los extremos de la banda y, en el centro, la frecuencia del VFO |
 | La zona oscura | **Waterfall**; arriba, la franja con las **marcas de los spots** del clúster |
 | Los botones de abajo | Volumen, Squelch, RF gain, TX power y las páginas de botones de función |

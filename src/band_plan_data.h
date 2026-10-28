@@ -26,6 +26,9 @@ typedef enum {
     BP_CB,      /* CB 27 MHz (issue #169): al final, el indice indexa colors[]/labels[][] */
 } bp_type_t;
 
+/* Sin segmento de plan para esa frecuencia (fuera de las bandas del plan). */
+#define BP_NONE (-1)
+
 typedef struct {
     int32_t   x;        /* left edge, in strip pixels */
     int32_t   w;        /* width, in strip pixels */
@@ -35,6 +38,10 @@ typedef struct {
 /* Band plan segments visible in [center - half_width, center + half_width].
  * Returns how many segments were written, never more than max_out. */
 int band_plan_segments(int32_t center, int32_t half_width, bp_visible_t *out, int max_out);
+
+/* Tipo de segmento del plan que contiene `freq` (inicio inclusive, fin exclusive),
+ * o BP_NONE si la frecuencia no cae en ningun segmento del plan. */
+bp_type_t band_plan_type_at(int32_t freq);
 
 #ifdef __cplusplus
 }

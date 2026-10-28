@@ -44,6 +44,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 72. [ROE por banda en fonia: a 0,1 W el detector no mide; con 3 W sí](#72-roe-por-banda-en-fonia-a-01-w-el-detector-no-mide-con-3-w-sí)
 73. [La curva del barrido ahora ES el dato medido; gate de potencia y 8 W pedidos](#73-la-curva-del-barrido-ahora-es-el-dato-medido-gate-de-potencia-y-8-w-pedidos)
 74. [El modo CW tiene que quedar CW en todas las bandas y escribirse al VFO ACTIVO](#74-el-modo-cw-tiene-que-quedar-cw-en-todas-las-bandas-y-escribirse-al-vfo-activo)
+75. [El modo sigue al plan de bandas: al entrar al segmento CW pasa a CW y al salir restaura el modo anterior](#75-el-modo-sigue-al-plan-de-bandas-al-entrar-al-segmento-cw-pasa-a-cw-y-al-salir-restaura-el-modo-anterior)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
@@ -4499,4 +4500,36 @@ pulsacion fisica A/B), asi que la repeticion queda para el dueno (12m -> A/B -> 
 
 **Nota, medido**: el campo `vfo` del `get` remoto seguia diciendo "A" mientras el VFO activo era B (espejo
 desactualizado). No afecta la operacion; queda anotado para revisar.
+
+## 75. El modo sigue al plan de bandas: al entrar al segmento CW pasa a CW y al salir restaura el modo anterior
+
+**Sintoma** (dueno, 2026-10-28): en 6m venia girando la rueda desde 51 MHz hasta la zona de CW y **no entraba
+en modo CW**: "deberia hacerlo para ser consistente, al entrar y al salir".
+
+**Arreglo** (build `0a869656870e`):
+
+- `src/band_plan_data.c`: nueva `band_plan_type_at(freq)` que devuelve el tipo de segmento del plan que
+  contiene la frecuencia ([inicio, fin), o `BP_NONE`). Tests en `tests/native/test_band_plan.c` (bordes:
+  `50.099999` = CW, `50.100000` = ALL, 52.0 = NONE).
+- `src/main_screen.c`: observador delayed de `cfg_cur.fg_freq`:
+  - al **entrar** a un segmento `BP_CW` con el modo fuera de CW/CWR: guarda el modo anterior y pasa a **CW**;
+  - al **salir** del segmento: si seguia en CW/CWR, **restaura el modo anterior**;
+  - un cambio de modo **manual** dentro de la zona cancela la restauracion (se respeta al operador);
+  - si ya estaba en CW antes de entrar, al salir **se queda en CW** (es la decision de §74);
+  - no aplica con el modo trabado (#220) ni durante TX; solo segmentos CW (DIG/BCN/CB no cambian modo).
+
+**Verificacion, medida** (radio, ROM v0.1.11, build `0a869656870e`, comandos remotos con 3 s de espera):
+
+| prueba | resultado |
+|---|---|
+| 6m: 51.000 USB -> 50.099 | `51000000 USB` -> `50099000 CW` ✓ |
+| 6m: -> 50.150 | `50150000 USB` (restauro el modo anterior) ✓ |
+| 40m: 7.060 LSB -> 7.030 | `7060000 LSB` -> `7030000 CW` ✓ |
+| 40m: -> 7.060 | `7060000 LSB` (restauro) ✓ |
+
+`crashlog 0`. El cambio se probó moviendo la frecuencia por control remoto (mismo camino: observador de
+`cfg_cur.fg_freq`); falta que el dueno lo confirme **con la rueda fisica** en 6m desde 51 MHz.
+
+**Nota**: el plan cargado es IARU R1 y corta en 52.000 MHz; de 52 a 54 MHz no hay segmento que dispare el
+cambio automatico.
 
