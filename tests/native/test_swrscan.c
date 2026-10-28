@@ -534,15 +534,12 @@ void test_swrscan_render(void) {
             worst_step = step;
         }
 
-        if (y[i] < y[v]) {
+        if (y[i] > y[v]) {
             v = i;
         }
     }
 
-    /* La curva interpola las muestras (PCHIP): aunque el dato cuantizado a 0,1 ROE
-     * salte ~26 px cerca del piso en escala log, el tramo se reparte en 8 sub-puntos y
-     * el paso entre sub-puntos queda <= 9 px (la polilinea cruda daba el salto entero). */
-    CHECK(worst_step <= 12);
+    CHECK(worst_step <= 2);
 
     /* (b) un solo valle: monotona (dentro de 1 px de cuantizacion) a cada lado del minimo. La
      *     escalera sube y baja decenas de px a cada lado. */
@@ -565,8 +562,8 @@ void test_swrscan_render(void) {
         }
     }
 
-    CHECK(worst_left <= 12);    /* idem: cuantizacion 0,1 ROE en escala log */
-    CHECK(worst_right <= 12);   /* idem */
+    CHECK(worst_left <= 1);
+    CHECK(worst_right <= 1);
 
     /* (c) la curva no se sale del chart. El draw pinta en [y1, y1 + h] con y1 = coords.y1 - 5 =
      *     69 (el chart esta en coords.y1 = 74) y h = 330, el `h` ESTATICO del archivo que usa
@@ -582,7 +579,7 @@ void test_swrscan_render(void) {
 
     CHECK(inside);
 
-    /* (d) el valle dibujado: el vertice del ajuste (el minimo de la curva) y el minimo MEDIDO
+    /* (d) el valle dibujado: el fondo de la parabola (el minimo de la curva) y el minimo MEDIDO
      *     (el readout sale de las muestras) son cantidades distintas y su distancia se REPORTA.
      *     Con el dataset real la distancia es grande (varias muestras): es el PENDIENTE que la
      *     spec del #113 ya habia declarado para revision estetica del owner (> 2 muestras), aca
@@ -596,7 +593,7 @@ void test_swrscan_render(void) {
         }
     }
 
-    float c_min = (float) v / (float) ROE_CURVE_OVERSAMPLE;
+    float c_min = (float) v / (float) ROE_CURVE_OVERSAMPLE;   /* muestra del fondo dibujado */
     float delta = (c_min > (float) s_min) ? c_min - (float) s_min : (float) s_min - c_min;
 
     CHECK(v > 0 && v + 1 < m);                      /* un valle de verdad, no una recta */
@@ -631,8 +628,8 @@ void test_swrscan_render(void) {
     CHECK(memcmp(y, y2, (size_t) m * sizeof(y[0])) == 0);
 
     printf("#119 forma dibujada (dataset real de 496 puntos, %d muestras del barrido):\n", points);
-    printf("  paso maximo entre sub-puntos dibujados: %d px (cuantizacion 0,1 ROE; PCHIP lo reparte en 8)\n", worst_step);
-    printf("  caida maxima a la izquierda/derecha del valle: %d / %d px\n",
+    printf("  paso maximo entre puntos dibujados: %d px (la escalera del #104 da 8 px)\n", worst_step);
+    printf("  caida maxima a la izquierda/derecha del valle: %d / %d px (escalera: decenas)\n",
            worst_left, worst_right);
     printf("  valle dibujado en la muestra %.2f, minimo medido en la muestra %d (delta %.2f)\n",
            (double) c_min, s_min, (double) delta);
