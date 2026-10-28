@@ -29,6 +29,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 ## Resumen
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
+| 28/10 ~17:00 | ROM `d3f22d80…` + GUI `5ef35ec0b807` | (local) | **icono WiFi centrado** | 1 ok | 0 | **Medido en captura**: glifo x139..155 (centro 147) → x144..160 (centro 152,2) en caja 139..166 (centro 152,5) ✓. `tests/check_info_bar.py` PASS con guarda nueva. `crashlog 0` |
 | 28/10 ~16:55 | ROM `d3f22d80…` + GUI `0cbb0c23c8c7` | (local) | **BT en su app** | 1 ok | 0 | **Ajustes ya no tiene el encendido/Discoverable/Devices de Bluetooth**: viven en la app BT (capturas en `docs/evidencia/2026-10-28-bt-app/`). `btcat-ctl bt on/off` medido: hci0 `UP RUNNING` / `DOWN` ✓. `crashlog 0` |
 | 28/10 ~16:10 | ROM `d3f22d80…` + GUI `0a869656870e` | (local) | **zona CW automática** | 1 ok | 0 | **Medido**: 6m 51.000 USB -> 50.099 **CW** -> 50.150 **USB** (restaura); 40m 7.060 LSB -> 7.030 **CW** -> 7.060 **LSB** ✓. Falta confirmar con la rueda física (se probó por control remoto, mismo observador de frecuencia). `crashlog 0` |
 | 28/10 ~15:45 | ROM `d3f22d80…` + GUI `e968f4ff4861` | (local) | **CW / VFO activo** | 1 ok / 1 parcial | 0 | **CW queda en CW al cambiar de banda** ✓ medido: 40m->12m->6m->10m siguen en CW; salir a LSB y volver a 12m recupera USB-D de memoria ✓; con VFO B activo el log muestra `Radio set vfo 1 mode=2`/`sync ... activo 1` ✓; **CW con B activo quedo parcial** (el activo volvio a A en el ensayo, posible A/B fisico). `crashlog 0` |
@@ -1825,3 +1826,18 @@ en la app.
   (el camino que usan los interruptores). `crashlog 0`.
 - Manual actualizado: encendido/pareo van por la app BT (sección 7.3); el puerto USB-C no es host
   (un teclado USB o hub no se detecta), el teclado soportado es Bluetooth.
+
+## 28/10 17:00Z — Icono WiFi centrado en su media celda
+
+Reporte del dueño: en la home el icono de WiFi no estaba alineado con su contenedor. Medido en la
+captura (`docs/evidencia/2026-10-28-wifi-icon/`):
+
+| | glifo (x) | centro | caja (x) | centro de la caja |
+|---|---|---|---|---|
+| antes | 139..155 | 147,2 | 139..166 | 152,5 |
+| después | 144..160 | 152,2 | 139..166 | 152,5 |
+
+El label de la celda WiFi/BT tenía `LV_TEXT_ALIGN_LEFT` heredado y el símbolo (`LV_SYMBOL_WIFI`) quedaba
+pegado al borde izquierdo de su media celda de 28 px. Se fija `LV_TEXT_ALIGN_CENTER` local sobre
+`items[INFO_WIFI]` (sin tocar las otras celdas) y se agrega la guarda en `tests/check_info_bar.py`
+(el chequeo estático de la barra sigue PASS). Build `5ef35ec0b807` desplegado, `crashlog 0`.
