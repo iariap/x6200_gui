@@ -316,11 +316,11 @@ void test_roe_curve(void) {
         CHECK_CLOSE(out[0], 2.5f, 1e-6f);
     }
 
-    /* Parabola del chart (forma NanoVNA, orden del owner 2026-10-28): valle centrado en
-     * el span, base en el minimo medido y ambas puntas subiendo al menos la subida
-     * minima. La lectura del minimo sale de las muestras, no de esta curva. */
+    /* Cuadratica del chart (decision del owner 2026-10-28): ajuste por minimos cuadrados
+     * dibujado TAL CUAL (fiel y suave), sin espejar ni forzar valle. */
     {
-        float in[5] = { 2.0f, 1.4f, 1.0f, 1.2f, 1.8f };
+        /* Entrada que ES una cuadratica exacta: el ajuste la recupera y la dibuja igual. */
+        float in[5] = { 1.4f, 1.1f, 1.0f, 1.1f, 1.4f };
         float out[(5 - 1) * ROE_CURVE_OVERSAMPLE + 1];
         int   n = 5;
         int   m = roe_curve_point_count(n);
@@ -329,16 +329,32 @@ void test_roe_curve(void) {
 
         CHECK(m == (n - 1) * ROE_CURVE_OVERSAMPLE + 1);
 
-        /* base = minimo medido, en el centro del span */
-        CHECK(out[(m - 1) / 2] == 1.0f);
-
-        /* siempre valle: puntas bien por encima de la base */
-        CHECK(out[0] >= 1.0f + ROE_PARABOLA_MIN_RISE - 1e-3f);
-        CHECK(out[m - 1] >= 1.0f + ROE_PARABOLA_MIN_RISE - 1e-3f);
-
-        /* simetrica (base centrada) y clamp dentro del eje */
         for (int k = 0; k < m; k++) {
-            CHECK(out[k] >= ROE_CURVE_MIN_VALUE && out[k] <= ROE_CURVE_MAX_VALUE);
+            double x = (double) k / (double) ROE_CURVE_OVERSAMPLE;
+            double expect = 1.0 + 0.1 * (x - 2.0) * (x - 2.0);
+
+            CHECK(out[k] >= (float) (expect - 1e-3) && out[k] <= (float) (expect + 1e-3));
+        }
+
+        /* Con datos que NO son cuadraticos dibuja el ajuste de minimos cuadrados. */
+        float noisy[6] = { 3.0f, 2.0f, 1.5f, 1.5f, 2.5f, 3.5f };
+        float   fit[6];
+        float   out2[(6 - 1) * ROE_CURVE_OVERSAMPLE + 1];
+        float   a, b, c;
+
+        CHECK(roe_curve_quadratic_fit(noisy, 6, &a, &b, &c));
+        roe_curve_parabola(noisy, 6, out2);
+
+        for (int k = 0; k < 6; k++) {
+            fit[k] = a * (float) (k * k) + b * (float) k + c;
+
+            float drawn = out2[k * ROE_CURVE_OVERSAMPLE];
+
+            CHECK(drawn >= fit[k] - 1e-3f && drawn <= fit[k] + 1e-3f);
+        }
+
+        for (int k = 0; k < (6 - 1) * ROE_CURVE_OVERSAMPLE + 1; k++) {
+            CHECK(out2[k] >= ROE_CURVE_MIN_VALUE && out2[k] <= ROE_CURVE_MAX_VALUE);
         }
     }
 }

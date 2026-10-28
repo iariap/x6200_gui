@@ -133,9 +133,10 @@ int roe_curve_point_count(int n) {
     return (n - 1) * ROE_CURVE_OVERSAMPLE + 1;
 }
 
-/* Parabola del chart: valle abierto hacia arriba con la base en el minimo medido y el
- * vertice en la columna del ajuste (ver roe_curve.h). El ajuste libre se espeja si sale
- * concavo y se le impone una curvatura minima visual. */
+/* Cuadratica del chart: minimos cuadrados de las muestras, dibujada tal cual (fiel y
+ * suave; decision del owner del 2026-10-28). Sin espejado, sin vertice forzado y sin
+ * subida minima: la forma la manda el ajuste, que es lo que menos se aparta de las
+ * muestras medidas. Menos de 3 muestras: recta de minimos cuadrados. */
 void roe_curve_parabola(const float *in, int n, float *out) {
     if (n <= 0) {
         return;
@@ -153,42 +154,6 @@ void roe_curve_parabola(const float *in, int n, float *out) {
         a = 0.0;
     }
 
-    /* Siempre valle: un ajuste concavo se espeja. */
-    if (a < 0.0) {
-        a = -a;
-    }
-
-    double ymin = in[0];
-
-    for (int i = 1; i < n; i++) {
-        if (in[i] < ymin) {
-            ymin = in[i];
-        }
-    }
-
-    /* Forma NanoVNA (orden del owner, 2026-10-28): valle CENTRADO en el span, base en el
-     * minimo medido y ambas puntas subiendo. El vertice del ajuste libre se descarta porque
-     * con el minimo medido cerca de un borde (resonancia fuera del span) daba medio valle o
-     * una recta; la lectura del minimo sigue saliendo de las muestras, esto es el trazado. */
-    double xv = (double) (n - 1) / 2.0;
-
-    /* Curvatura minima: las puntas suben al menos ROE_PARABOLA_MIN_RISE sobre la base. */
-    double d = (xv > (double) (n - 1) - xv) ? xv : ((double) (n - 1) - xv);
-
-    if (d < 1.0) {
-        d = 1.0;
-    }
-
-    double a_min = (double) ROE_PARABOLA_MIN_RISE / (d * d);
-
-    if (a < a_min) {
-        a = a_min;
-    }
-
-    /* Base en el minimo MEDIDO, vertice en xv: y = base + a*(x - xv)^2. */
-    b = -2.0 * a * xv;
-    c = ymin + a * xv * xv;
-
     for (int i = 0; i < n - 1; i++) {
         for (int k = 0; k < ROE_CURVE_OVERSAMPLE; k++) {
             double x = (double) i + (double) k / (double) ROE_CURVE_OVERSAMPLE;
@@ -199,10 +164,13 @@ void roe_curve_parabola(const float *in, int n, float *out) {
         }
     }
 
-    out[(n - 1) * ROE_CURVE_OVERSAMPLE] =
-        clampf((float) (a * (double) (n - 1) * (double) (n - 1) +
-                        b * (double) (n - 1) + c),
-               ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE);
+    {
+        double x = (double) (n - 1);
+        double y = a * x * x + b * x + c;
+
+        out[(n - 1) * ROE_CURVE_OVERSAMPLE] =
+            clampf((float) y, ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE);
+    }
 }
 
 void roe_curve_resample(const float *in, int n, float *out) {

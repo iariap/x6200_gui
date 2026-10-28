@@ -399,9 +399,11 @@ static void format_readout(char *buf, size_t n) {
     }
 }
 
-/* La curva dibujada: el ajuste cuadratico (decorativo, issue #113) del agregado medido, por
- * TRAMOS de puntos validos consecutivos. Un punto sin muestra valida corta el tramo: no se une
- * un hueco con una interpolacion enganosa (issue #125). */
+/* La curva dibujada es la CUADRATICA de minimos cuadrados del agregado medido (decision del
+ * owner, 2026-10-28: prioriza que sea FIEL y SUAVE; es la que menos se aparta de las muestras,
+ * RMSE 0,03-0,23 ROE en las ultimas mediciones), por TRAMOS de puntos validos consecutivos. Un
+ * punto sin muestra valida corta el tramo: no se une un hueco con una interpolacion enganosa
+ * (issue #125). El minimo del readout sale de las muestras, no de esta curva. */
 static void draw_curve(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *line_dsc,
                        lv_coord_t x1, lv_coord_t y1) {
     int points = grid_ready ? session.grid.points : 0;
