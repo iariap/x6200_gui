@@ -9,9 +9,13 @@
 
 #include "bt_state.h"
 
+#include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#define BTCAT_CTL "/usr/sbin/btcat-ctl"
 
 /* Los mismos dos archivos que lee btcat-ctl: el de fabrica y el que se cambia desde Ajustes. */
 static bool lee_clave(const char *key, bool def) {
@@ -60,4 +64,43 @@ bool bt_state_connected(void) {
 
 bool bt_state_mute(void) {
     return lee_clave("BTAUDIO_MUTE", true);
+}
+
+/* btcat-ctl habla con bluetoothd y puede tardar: igual que antes en Ajustes, el comando corre
+ * en un hilo aparte y la UI no se clava. El buffer del comando se libera en el hilo. */
+static void *btcat_thread(void *arg) {
+    char *cmd = (char *) arg;
+
+    if (cmd) {
+        system(cmd);
+        free(cmd);
+    }
+
+    return NULL;
+}
+
+static void btcat_run(const char *what, bool on) {
+    char *cmd = malloc(strlen(BTCAT_CTL) + strlen(what) + 24);
+
+    if (cmd == NULL) {
+        return;
+    }
+
+    sprintf(cmd, "%s %s %s >/dev/null 2>&1", BTCAT_CTL, what, on ? "on" : "off");
+
+    pthread_t t;
+
+    if (pthread_create(&t, NULL, btcat_thread, cmd) == 0) {
+        pthread_detach(t);
+    } else {
+        free(cmd);
+    }
+}
+
+void bt_state_set_power(bool on) {
+    btcat_run("bt", on);
+}
+
+void bt_state_set_discoverable(bool on) {
+    btcat_run("discoverable", on);
 }

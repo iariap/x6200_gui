@@ -29,6 +29,12 @@ bool bt_state_connected(void);
  * del equipo en 0 para que no suene tambien el altavoz. */
 bool bt_state_mute(void);
 
+/* Escrituras que antes hacian los interruptores de Ajustes y ahora hace la app de Bluetooth:
+ * corren /usr/sbin/btcat-ctl en un hilo aparte (bluetoothd puede tardar) y dejan los archivos
+ * que leen bt_state_on()/bt_state_discoverable(). */
+void bt_state_set_power(bool on);
+void bt_state_set_discoverable(bool on);
+
 #ifdef __cplusplus
 }
 #endif

@@ -29,6 +29,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 ## Resumen
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
+| 28/10 ~16:55 | ROM `d3f22d80…` + GUI `0cbb0c23c8c7` | (local) | **BT en su app** | 1 ok | 0 | **Ajustes ya no tiene el encendido/Discoverable/Devices de Bluetooth**: viven en la app BT (capturas en `docs/evidencia/2026-10-28-bt-app/`). `btcat-ctl bt on/off` medido: hci0 `UP RUNNING` / `DOWN` ✓. `crashlog 0` |
 | 28/10 ~16:10 | ROM `d3f22d80…` + GUI `0a869656870e` | (local) | **zona CW automática** | 1 ok | 0 | **Medido**: 6m 51.000 USB -> 50.099 **CW** -> 50.150 **USB** (restaura); 40m 7.060 LSB -> 7.030 **CW** -> 7.060 **LSB** ✓. Falta confirmar con la rueda física (se probó por control remoto, mismo observador de frecuencia). `crashlog 0` |
 | 28/10 ~15:45 | ROM `d3f22d80…` + GUI `e968f4ff4861` | (local) | **CW / VFO activo** | 1 ok / 1 parcial | 0 | **CW queda en CW al cambiar de banda** ✓ medido: 40m->12m->6m->10m siguen en CW; salir a LSB y volver a 12m recupera USB-D de memoria ✓; con VFO B activo el log muestra `Radio set vfo 1 mode=2`/`sync ... activo 1` ✓; **CW con B activo quedo parcial** (el activo volvio a A en el ensayo, posible A/B fisico). `crashlog 0` |
 |---|---|---|---|---|---|---|
@@ -1809,3 +1810,18 @@ restaura ese modo; un cambio manual dentro de la zona cancela la restauración; 
 
 `crashlog 0`. Tests nativos `exit 0` (test_band_plan: 50.099999=CW, 50.100000=ALL, 52.0=NONE).
 Pendiente: confirmación del dueño con la rueda física desde 51 MHz en 6m.
+
+## 28/10 16:55Z — Bluetooth consolidado en su app
+
+Pedido del dueño: tener Settings y una app dedicada a BT era confuso, todo el Bluetooth debía estar
+en la app.
+
+- La app **Bluetooth** ahora tiene, arriba, los interruptores **Bluetooth** (encendido) y
+  **Discoverable (CAT)**, además de Scan, pareo, conexión, audio y passkey. `src/dialog_bt.c`,
+  `src/bt_state.c` (`bt_state_set_power`/`bt_state_set_discoverable`, `btcat-ctl` en hilo aparte).
+- **Ajustes → Operation** ya no muestra esas filas (quedó `Charger`); evidencia de las dos pantallas
+  en `docs/evidencia/2026-10-28-bt-app/` (`btapp.png`, `settings-sin-bt.png`).
+- Medido en la radio (build `0cbb0c23c8c7`): `btcat-ctl bt on` → `hci0 UP RUNNING`; `off` → `DOWN`
+  (el camino que usan los interruptores). `crashlog 0`.
+- Manual actualizado: encendido/pareo van por la app BT (sección 7.3); el puerto USB-C no es host
+  (un teclado USB o hub no se detecta), el teclado soportado es Bluetooth.
