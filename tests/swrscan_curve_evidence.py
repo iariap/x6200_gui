@@ -23,12 +23,14 @@ Two modes:
 * TWO captures -- the historical harness mode (`check_harness_swrscan_curve.sh`):
 
   - `swrscan-owner-40m-domo`: the owner's DOMO (ROE ~1.0 at both edges and ~3.8
-    in the middle, `26-roe-multipasada-final.png`). Since the owner's order of
-    2026-10-27 ("la curva siempre de los puntos medidos") the drawn shape is the
-    MEASURED data: this fixture has to be drawn as a DOME (edges at the floor,
-    interior rising), not smoothed into a valley.
+    in the middle, `26-roe-multipasada-final.png`, the inverted curve). It has to
+    come out as a DEEP valley: the lowest point inside the bottom quarter of the
+    band, at an interior column, with BOTH chart edges rising well above it.
+    Before the #125-fix the same fixture drew the inverted parabola (the lowest
+    point at the chart edges) and this check fails: it is the harness RED.
   - `swrscan-owner-40m`: the owner's real antenna valley (the seed of #125). It
-    has to be drawn as a valley (both edges strictly above the base).
+    has to stay a valley (both edges strictly above the base), so the fix does
+    not disturb the case that already worked.
 
 Usage:
   swrscan_curve_evidence.py <capture-png>
@@ -378,137 +380,6 @@ def check_valley(
     )
 
 
-def measure_shape(
-    png: Path,
-    ink_forced: tuple[int, int, int] | None = None,
-    ink_min: int | None = None,
-) -> dict[str, object] | None:
-    """Mide la traza dibujada: devuelve forma y geometria, o None si no hay curva."""
-    im = Image.open(png).convert("RGB")
-    ink = ink_forced if ink_forced is not None else detect_ink(im, ink_min)
-
-    if ink is None:
-        return None
-
-    mask = curve_mask(im, ink)
-
-    if not mask:
-        return None
-
-    curve = curve_stroke(mask, im.size[0])
-
-    if not curve:
-        return None
-
-    bottom = stroke_bottom(curve)
-    cols = sorted(bottom)
-    xl, xr = cols[0], cols[-1]
-    width, _ = im.size
-    low_y = max(bottom.values())
-    x_low = min(x for x in cols if bottom[x] == low_y)
-
-    return {
-        "bottom": bottom,
-        "xl": xl,
-        "xr": xr,
-        "width": width,
-        "span": xr - xl,
-        "low_y": low_y,
-        "x_low": x_low,
-        "shape": classify(bottom, xl, xr, low_y, x_low),
-    }
-
-
-def check_dome(
-    checker: Checker,
-    name: str,
-    png: Path,
-    ink_forced: tuple[int, int, int] | None = None,
-    ink_min: int | None = None,
-) -> None:
-    """La curva dibuja el domo MEDIDO, sin suavizarlo a valle."""
-    checker.note(f"-- {name} ({png.name}) --")
-    data = measure_shape(png, ink_forced, ink_min)
-
-    if data is None:
-        checker.check(False, f"{name}: no encontre la curva dibujada")
-        return
-
-    bottom = data["bottom"]
-    xl, xr = data["xl"], data["xr"]
-    low_y = data["low_y"]
-    x_low = data["x_low"]
-    shape = data["shape"]
-    span = data["span"]
-    width = data["width"]
-
-    checker.note(f"traza x={xl}..{xr} ({span} px de {width}); forma: {shape}")
-    checker.check(span >= 0.7 * width, f"{name}: la curva cruza el chart ({span} px)")
-    checker.check(shape == "domo", f"{name}: la forma dibujada es el domo medido ({shape})")
-
-    interior = [bottom[x] for x in sorted(bottom) if xl + EDGE_MARGIN <= x <= xr - EDGE_MARGIN]
-    interior_high = min(interior) if interior else low_y
-
-    checker.note(
-        f"bordes y={bottom[xl]}/{bottom[xr]}, interior y={interior_high}, "
-        f"punto mas bajo en x={x_low} y={low_y}"
-    )
-    checker.check(
-        interior_high < low_y - DOME_INTERIOR_RISE,
-        f"{name}: el centro medido sube {low_y - interior_high} px sobre los bordes",
-    )
-
-
-def check_measured_not_dome(
-    checker: Checker,
-    name: str,
-    png: Path,
-    ink_forced: tuple[int, int, int] | None = None,
-    ink_min: int | None = None,
-) -> None:
-    """La curva dibuja el dato medido del fixture (no lo invierte/suaviza a domo)."""
-    checker.note(f"-- {name} ({png.name}) --")
-    data = measure_shape(png, ink_forced, ink_min)
-
-    if data is None:
-        checker.check(False, f"{name}: no encontre la curva dibujada")
-        return
-
-    span = data["span"]
-    width = data["width"]
-    shape = data["shape"]
-
-    checker.note(f"traza x={data['xl']}..{data['xr']} ({span} px de {width}); forma: {shape}")
-    checker.check(span >= 0.7 * width, f"{name}: la curva cruza el chart ({span} px)")
-    checker.check(shape != "domo", f"{name}: se dibuja el dato medido (no un domo invertido) ({shape})")
-
-
-def check_capture_shape(
-    checker: Checker,
-    name: str,
-    png: Path,
-    ink_forced: tuple[int, int, int] | None = None,
-    ink_min: int | None = None,
-) -> None:
-    """Una captura suelta: la curva existe y cruza el chart; se reporta su forma.
-
-    Con la curva = puntos medidos la forma la manda el dato (U, domo o rama), asi
-    que este modo reporta y no impone una estetica.
-    """
-    checker.note(f"-- {name} ({png.name}) --")
-    data = measure_shape(png, ink_forced, ink_min)
-
-    if data is None:
-        checker.check(False, f"{name}: no encontre la curva dibujada")
-        return
-
-    span = data["span"]
-    width = data["width"]
-
-    checker.note(f"traza x={data['xl']}..{data['xr']} ({span} px de {width}); forma: {data['shape']}")
-    checker.check(span >= 0.7 * width, f"{name}: la curva cruza el chart ({span} px)")
-
-
 def parse_colour(text: str) -> tuple[int, int, int]:
     value = text.lstrip("#")
 
@@ -561,16 +432,35 @@ def main(argv: list[str]) -> int:
 
     try:
         if len(pngs) == 1:
-            # Captura suelta: se reporta la forma (la manda el dato medido).
-            check_capture_shape(checker, "captura", pngs[0], ink_forced, args.ink_min)
-        else:
-            # La curva ES el dato: el domo del owner se dibuja domo y el valle real
-            # se dibuja valle. No se impone la estetica de #113/#125.
-            check_dome(checker, "domo del owner -> domo medido", pngs[0], ink_forced, args.ink_min)
-            check_measured_not_dome(
+            # The documented radio command: classify the capture by itself. A
+            # real resonance is shallow, so the per-edge minimum is the shallow
+            # one; the deep threshold belongs to the harness dome fixture.
+            check_valley(
                 checker,
-                "valle real del owner -> dato medido",
+                "captura",
+                pngs[0],
+                SHALLOW_EDGE_MIN_RISE,
+                ink_forced,
+                args.ink_min,
+            )
+        else:
+            # The owner's dome is the RED/GREEN case: the fix turns the inverted
+            # parabola into a deep U. The real valley is shallow (ROE ~1.0-1.5)
+            # and only has to stay a valley (both edges still strictly above the
+            # base).
+            check_valley(
+                checker,
+                "domo del owner -> valle",
+                pngs[0],
+                EDGE_MIN_RISE,
+                ink_forced,
+                args.ink_min,
+            )
+            check_valley(
+                checker,
+                "valle real del owner -> valle",
                 pngs[1],
+                SHALLOW_EDGE_MIN_RISE,
                 ink_forced,
                 args.ink_min,
             )
