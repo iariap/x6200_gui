@@ -43,6 +43,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 71. [El barrido de ROE abortaba por RF timeout: el techo de TX asumía 35 ms por paquete y la radio tarda 48,4 ms](#71-el-barrido-de-roe-abortaba-por-rf-timeout-el-techo-de-tx-asumía-35-ms-por-paquete-y-la-radio-tarda-484-ms)
 72. [ROE por banda en fonia: a 0,1 W el detector no mide; con 3 W sí](#72-roe-por-banda-en-fonia-a-01-w-el-detector-no-mide-con-3-w-sí)
 73. [La curva del barrido ahora ES el dato medido; gate de potencia y 8 W pedidos](#73-la-curva-del-barrido-ahora-es-el-dato-medido-gate-de-potencia-y-8-w-pedidos)
+74. [El modo CW tiene que quedar CW en todas las bandas y escribirse al VFO ACTIVO](#74-el-modo-cw-tiene-que-quedar-cw-en-todas-las-bandas-y-escribirse-al-vfo-activo)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
@@ -4443,3 +4444,59 @@ Escrituras mínimas probadas con la GUI corriendo, ninguna recupera el audio: `r
 **Corrección de lo que decían §64 y §65**: decían que no se sabía si el BASE quedaba en un estado interno y que solo el power-cycle lo sacaba; ahora está medido que el replay de la secuencia del firmware original **con la GUI parada** también lo saca, y que arrancar la GUI desde ese estado lo vuelve a mutear incluso con el binario oficial.
 
 **Sin fundar (anexo A)**: qué estado interno del BASE es el mute y por qué solo responde a un ciclo completo de inicialización o a un power-cycle.
+
+## 74. El modo CW tiene que quedar CW en todas las bandas y escribirse al VFO ACTIVO
+
+**Síntoma** (dueno, 2026-10-28): en 24 MHz (12m) al entrar en CW el equipo "no cambiaba al modo CW"; y pidio que
+"cada vez que entro en la seccion de CW, se debe activar el modo de CW para todas las bandas definidas".
+
+**Causa 1, medida** (radio, ROM v0.1.11, GUI `9d4bfc70`; `/tmp/x6200_log.txt`): con el **VFO B activo**, la
+mitigacion del mute de RX (§66/#244) tambien salteaba el write del modo CW al VFO activo:
+
+```
+[User] (4278.776, +0) radio_sync_active_vfo_mode: Radio sync modo=4 al VFO activo 1 salteado (CW, #244)
+[User] (4278.774, +761) on_vfo_mode_change: Radio vfo 1 mode=4 sin escribir (inactivo, #244)
+```
+
+`modo=4` es CW. El BASE no recibia CW y seguia demodulando USB-D. Con el activo en A el write si salia
+(`Radio set vfo 0 mode=4`).
+
+**Causa 2, medida**: al **cargar banda**, la memoria de modo de esa banda (`vfoa_mode`) pisaba el modo elegido:
+
+```
+Radio set vfo 0 mode=4              (se eligio CW)
+get_band_info_by_pk: id: 10         (carga de 12m)
+Loaded vfoa_mode=2 (pk=10)          (memoria USB-D)
+Radio set vfo 0 mode=2              (volvio a USB-D)
+```
+
+**Arreglo** (build `e968f4ff4861`):
+
+- `src/radio.c`: `mode_write_allowed()` permite escribir el modo al VFO **activo** siempre (A o B, CW/CWR
+  incluido); el salteo por #244 queda solo para el VFO B **inactivo**. `radio_sync_active_vfo_mode()` escribe el
+  modo del VFO activo sin saltear CW/CWR.
+- `src/cfg/band.c`: al cargar una banda, si el modo global es CW/CWR la memoria `vfoa_mode`/`vfob_mode` no se
+  aplica (`Modo CW/CWR activo: no piso ...`). Al salir de CW, las memorias por banda se cargan como siempre.
+
+**Verificacion, medida** (radio, build `e968f4ff4861` desplegado; comandos remotos con 3 s de espera y `get`):
+
+| paso | estado |
+|---|---|
+| 40m LSB | `7108700 '40m SSB' LSB` |
+| 40m CW | `7108700 '40m SSB' CW` |
+| cambiar a 12m | `24915000 '12m' CW` ✓ |
+| cambiar a 6m | `50150000 '6m' CW` ✓ |
+| cambiar a 10m | `28941000 '10m' CW` ✓ |
+| salir a LSB y volver a 12m | `24915000 '12m' USB` (memoria recuperada) ✓ |
+
+Log del paseo: `Modo CW/CWR activo: no piso vfoa_mode con la memoria de la banda (pk=10/12/11)` ✓. Audio post-CW
+medido con `parec`: rms 3748-3935 (sano >1000; el mudo de #244 da 141) ✓. `crashlog 0`.
+
+Con el VFO activo en **B**, el log muestra que el modo ya se escribe al VFO activo:
+`Radio sync modo=2 al VFO activo 1 (#292)` + `Radio set vfo 1 mode=2` ✓ (antes se salteaba). La confirmacion
+en el aire de **CW con B activo** quedo parcial: en el ensayo el VFO activo volvio a A a mitad de prueba (posible
+pulsacion fisica A/B), asi que la repeticion queda para el dueno (12m -> A/B -> CW).
+
+**Nota, medido**: el campo `vfo` del `get` remoto seguia diciendo "A" mientras el VFO activo era B (espejo
+desactualizado). No afecta la operacion; queda anotado para revisar.
+

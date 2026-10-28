@@ -400,9 +400,22 @@ static bool mode_write_allowed(x6200_vfo_t vfo) {
         return true;
     }
 
-    /* #244: escribirle el modo al VFO B estando en CW/CWR apaga el audio de RX.
-     * En CW la banda lateral no aplica, asi que no se escribe. */
+    /* #292: el BASE demodula con el modo del VFO ACTIVO; al VFO activo hay que
+     * escribirle SIEMPRE el modo, CW/CWR incluido. Antes tambien se salteaba el
+     * VFO B activo y al elegir CW desde el B el equipo quedaba demodulando el
+     * modo viejo (medido en 12m el 2026-10-28: "sync modo=4 al VFO activo 1
+     * salteado (CW)"). */
+    x6200_vfo_t active = (x6200_vfo_t) subject_get_int(cfg_cur.band->vfo.val);
+
+    if (active == vfo) {
+        return true;
+    }
+
+    /* #244: escribirle el modo al VFO B INACTIVO estando en CW/CWR apaga el audio
+     * de RX (medido: LSB->CW->LSB deja rms 141 hasta el power-cycle). En CW la
+     * banda lateral no aplica, asi que no se escribe. */
     int32_t mode = subject_get_int(cfg_cur.mode);
+
     if (mode == x6200_mode_cw || mode == x6200_mode_cwr) {
         return false;
     }
@@ -411,7 +424,7 @@ static bool mode_write_allowed(x6200_vfo_t vfo) {
         return true;
     }
 
-    return (x6200_vfo_t) subject_get_int(cfg_cur.band->vfo.val) == vfo;
+    return false;
 }
 
 /* #292: sincroniza el modo de demodulacion con el VFO ACTIVO.
@@ -422,17 +435,17 @@ static bool mode_write_allowed(x6200_vfo_t vfo) {
  * asi que el B quedaba desactualizado. Esta funcion manda `cfg_cur.mode` al
  * VFO activo; se usa al arrancar, al cambiar de modo y al cambiar de VFO.
  *
- * En CW/CWR no se escribe el VFO B: reproduce el mute de RX de #244 (medido:
- * LSB->CW->LSB deja el audio en rms 141 hasta el power-cycle). */
+ * En CW/CWR el VFO B INACTIVO no se escribe: reproduce el mute de RX de #244
+ * (medido: LSB->CW->LSB deja el audio en rms 141 hasta el power-cycle). El VFO
+ * B ACTIVO si se escribe: sin eso, elegir CW con B activo no cambiaba el modo
+ * del BASE (medido en 12m, 2026-10-28). */
 static void radio_sync_active_vfo_mode(void) {
-    x6200_vfo_t vfo = (x6200_vfo_t) subject_get_int(cfg_cur.band->vfo.val);
+    x6200_vfo_t vfo  = (x6200_vfo_t) subject_get_int(cfg_cur.band->vfo.val);
     int32_t     mode = subject_get_int(cfg_cur.mode);
 
-    if (vfo != X6200_VFO_A && (mode == x6200_mode_cw || mode == x6200_mode_cwr)) {
-        LV_LOG_USER("Radio sync modo=%i al VFO activo %i salteado (CW, #244)", mode, vfo);
-        return;
-    }
-
+    /* El VFO activo SIEMPRE recibe el modo (CW/CWR incluido): es el que demodula
+     * (#292). El salteo por #244 aplica solo al VFO B INACTIVO, y ese camino pasa
+     * por mode_write_allowed()/on_vfo_mode_change(). */
     WITH_RADIO_LOCK(x6200_control_vfo_mode_set(vfo, mode));
     LV_LOG_USER("Radio sync modo=%i al VFO activo %i (#292)", mode, vfo);
 }
