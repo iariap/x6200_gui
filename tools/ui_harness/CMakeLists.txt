@@ -134,6 +134,7 @@ set(GUI_SRC
     # (mocks/mock_btaudio.c, mocks/mock_ui_deps.c).
     ${REPO}/src/dialog.c
     ${REPO}/src/dialog_settings.c
+    ${REPO}/src/upload_conf.c
     ${REPO}/src/dialog_bt.c
     ${REPO}/src/bt_devices.c
     # Editor DFL inline (issue #179): el panel REAL del editor de filtro, que los
