@@ -1741,3 +1741,31 @@ subida mínima, clamp); `check_harness_swrscan_curve.sh` **PASS** (domo del owne
 valle real → U). En la radio (build `3df36f76`) las cinco bandas dieron **Completed n=51/51** con
 parábolas claras: captura `assessment-194/scratch/cw244/swr_par4_bandas.png`; TX apagado y dial
 restaurado (18.099180 USB-D).
+
+---
+
+## 28/10 03:55Z — Curva del barrido: cuadrática libre (fiel y suave), elegida con mediciones
+
+El owner pidió, antes de implementar, dibujar cómo se vería cada política con los **logs de las
+últimas mediciones** y priorizar que sea **fiel y suave**. Se compararon cuatro políticas sobre los
+dumps de 8 W (51 puntos, muestras con potencia 48-49/51):
+
+| Política | RMSE 40m | 17m | 15m | 10m | 6m |
+|---|---|---|---|---|---|
+| **P1 cuadrática libre (elegida)** | **0,04** | **0,10** | **0,03** | **0,03** | **0,23** |
+| P2 vértice real + base mínimo | 0,06 | 0,30 | 0,20 | 0,20 | 1,06 |
+| P3 valle centrado (la anterior) | 0,28 | 0,32 | 0,24 | 0,30 | 0,95 |
+| P4 vértice en el mínimo medido | 0,14 | 0,18 | 0,09 | 0,10 | 0,92 |
+
+Figura de comparación: `assessment-194/scratch/cw244/curvas_politicas2.png`.
+
+**Arreglo** (PR #338, main `c7e7f9ec`): `roe_curve_parabola()` dibuja el **ajuste cuadrático por
+mínimos cuadrados tal cual** (sin espejar, sin centrar el vértice, sin subida mínima; clamp 1..5;
+con <3 muestras, recta de mínimos cuadrados). El mínimo del readout sigue saliendo de las muestras.
+Se elimina `ROE_PARABOLA_MIN_RISE`.
+
+**Verificado**: tests nativos `exit 0` (unitario: recupera una cuadrática exacta y dibuja el ajuste
+de mínimos cuadrados; render: orden vertical = ajuste y suavidad); harness `PASS` (domo del owner
+→ domo, valle real → valle). En la radio (build `d84a00f2`) las cinco bandas dieron **Completed
+n=51/51** con curvas fieles y suaves: `assessment-194/scratch/cw244/swr_p1_bandas.png`; TX apagado
+y dial restaurado (18.099180 USB-D).
