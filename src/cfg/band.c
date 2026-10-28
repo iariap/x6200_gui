@@ -460,7 +460,21 @@ int cfg_band_params_load_item(cfg_item_t *item) {
                 subject_set_int(item->val, band_info->start_freq);
             }
         } else {
-            subject_set_int(item->val, int_val);
+            /* El owner pidio (2026-10-28) que al entrar en CW el modo CW quede
+             * activo en TODAS las bandas: si el modo global es CW/CWR, la memoria
+             * de modo de la banda no lo pisa al cambiar de banda. Al salir de CW
+             * se vuelve a cargar la memoria de cada banda. */
+            bool is_mode_mem = (strcmp(item->db_name, "vfoa_mode") == 0) ||
+                               (strcmp(item->db_name, "vfob_mode") == 0);
+            int32_t cur_mode = subject_get_int(cfg_cur.mode);
+            bool cw_activo = (cur_mode == x6200_mode_cw) || (cur_mode == x6200_mode_cwr);
+
+            if (is_mode_mem && cw_activo) {
+                LV_LOG_USER("Modo CW/CWR activo: no piso %s con la memoria de la banda (pk=%i)",
+                            item->db_name, item->pk);
+            } else {
+                subject_set_int(item->val, int_val);
+            }
         }
     }
     return rc;

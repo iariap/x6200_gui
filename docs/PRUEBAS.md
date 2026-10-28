@@ -29,6 +29,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 ## Resumen
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
+| 28/10 ~15:45 | ROM `d3f22d80…` + GUI `e968f4ff4861` | (local) | **CW / VFO activo** | 1 ok / 1 parcial | 0 | **CW queda en CW al cambiar de banda** ✓ medido: 40m->12m->6m->10m siguen en CW; salir a LSB y volver a 12m recupera USB-D de memoria ✓; con VFO B activo el log muestra `Radio set vfo 1 mode=2`/`sync ... activo 1` ✓; **CW con B activo quedo parcial** (el activo volvio a A en el ensayo, posible A/B fisico). `crashlog 0` |
 |---|---|---|---|---|---|---|
 | 20/10 18:01 (hora host) | (sin radio; ARM **`fd864a791cb5`**, 13.899.984 B; fuente `34bea401…`) | `a0fa0250` (#183) | — | — | 0 | **DFL presets de filtro: gates de host + arnés + banco QEMU** ✓ (sin desplegar, sin flashear y **sin transmitir**): nativos **47.585 comprobaciones, 0 fallos** (`test_dfl_presets` 175 + migración `_5` 62), estáticos **11 OK**, determinismo **PASS** (196 fixtures × 2, PNG idénticos), ruff/format/ty/pytest OK (incl. **13 e2e**), arnés **196 fixtures, 0 fallos** (54 nuevos), `--inspect` **2.994 labels sin truncado ni glyphs faltantes**, A/B **`AB-DFL183` PASS** (140/142 escenarios idénticos; 6 `dfl-page-tema-*` explicados), y el banco muestra **A/B/C/D/E** con el gate #86 **3/3 marcas** y la base del chroot migrada a `version=5`. **Validación física: pendiente del owner** (no bloquea el PR). Evidencia: [`2026-10-20-dfl183/`](evidencia/2026-10-20-dfl183/README.md) |
 | 19/10 ~15:2x (hora radio) | GUI **`67387bfc4391`** (13.849.516 B; ROM SD `c640645d810c`; **desplegado por otra sesión** a las 15:18, no por esta QA) | `02090454` (#154) | **CB TX cualitativo (teclado CW)** | (no corrido) | 2 GUI (#131) + radio caída (#121) | **TX en CB ✓ / interlock ✗ / 10 m ✓**: con `cw_send` (teclado CW) el equipo transmite en **27.185** (CB C, CH 19) y **28.074** (10 m), pero el **interlock NO lo bloquea** en **26.515** (CB B, fuera del SBC): `tx:true`, sin `TX blocked` → el keyer CW usa `radio_set_morse_key()` y **no** pasa por `radio_set_ptt()` (#146 §7.2). Potencia real **NO medida** (sin wattmeter; readback `pwr` roto #157). Evidencia: [`2026-10-19-cb-tx-cualitativo/README.md`](evidencia/2026-10-19-cb-tx-cualitativo/README.md) |
@@ -1769,3 +1770,25 @@ de mínimos cuadrados; render: orden vertical = ajuste y suavidad); harness `PAS
 → domo, valle real → valle). En la radio (build `d84a00f2`) las cinco bandas dieron **Completed
 n=51/51** con curvas fieles y suaves: `assessment-194/scratch/cw244/swr_p1_bandas.png`; TX apagado
 y dial restaurado (18.099180 USB-D).
+
+## 28/10 15:45Z — CW: se escribe al VFO ACTIVO y se mantiene en todas las bandas
+
+Build `e968f4ff4861` desplegado en la radio (ROM v0.1.11; GUI anterior `9d4bfc70`). Comandos remotos con 3 s de
+espera para que la cola del scheduler de la GUI los aplique; estados leidos con `{"cmd":"get"}`.
+
+```
+40m LSB  -> 7108700 '40m SSB' LSB
+40m CW   -> 7108700 '40m SSB' CW
+12m      -> 24915000 '12m' CW
+6m       -> 50150000 '6m' CW
+10m      -> 28941000 '10m' CW
+LSB, 12m -> 24915000 '12m' USB      # la memoria de la banda vuelve al salir de CW
+```
+
+Log: `Modo CW/CWR activo: no piso vfoa_mode con la memoria de la banda (pk=10/12/11)` ✓ y
+`Radio sync modo=4 al VFO activo 0 (#292)` ✓. Audio post-CW `parec`: rms 3748-3935 (sano >1000; mudo #244=141).
+VFO B activo: `Radio sync modo=2 al VFO activo 1 (#292)` + `Radio set vfo 1 mode=2` ✓ (antes salteaba por #244).
+Pendiente del dueno: repetir **CW con VFO B activo** (el ensayo se interrumpio con el activo volviendo a A).
+
+Build: `make x6200-gui-dirclean && make -j8` en docker `x6200-buildroot` → exit 0; md5 del binario
+`e968f4ff4861`; deploy con backup en `/mnt/ui-bak-<HHMMSS>/`, `crashlog 0`.
