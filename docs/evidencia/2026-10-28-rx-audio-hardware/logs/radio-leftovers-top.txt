@@ -1,0 +1,14 @@
+NO_LEFTOVERS
+---top---
+Mem: 336056K used, 690460K free, 70516K shrd, 37628K buff, 222240K cached
+CPU:  19% usr   0% sys   0% nic  80% idle   0% io   0% irq   0% sirq
+Load average: 1.41 1.39 1.17 1/133 7005
+  PID  PPID USER     STAT   VSZ %VSZ %CPU COMMAND
+23711   348 root     S     233m  23%  19% /usr/sbin/x6200_gui
+  329     1 pulse    S<   96324   9%   0% /usr/bin/pulseaudio --system --daemonize --disallow-exit --exit-idle-time=-1 --use-pid-file --disable-shm
+  617   600 root     S    71760   7%   0% pactl subscribe
+  428     1 root     S    41500   4%   0% /usr/sbin/NetworkManager
+  624     1 root     S    35940   3%   0% {x6100_webserver} /usr/bin/python /usr/bin/x6100_webserver --db /mnt/params.db --host 0.0.0.0 --port 80 --filebrowser-path /mnt/ --https-port 443 --cert-dir /mnt/https
+  585     1 root     S    25808   3%   0% bt-agent -c NoInputNoOutput -d
+  521     1 root     S    17900   2%   0% /usr/bin/python3 /usr/share/x6200/qrz-upload.py --loop
+  276     1 root     S    15528   2%   0% /sbin/udevd -d

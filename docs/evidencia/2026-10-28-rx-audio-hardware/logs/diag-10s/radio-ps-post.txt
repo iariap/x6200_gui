@@ -1,0 +1,3 @@
+  329 pulse    /usr/bin/pulseaudio --system --daemonize --disallow-exit --exit-idle-time=-1 --use-pid-file --disable-shm
+23711 root     /usr/sbin/x6200_gui
+gui_pid_post=23711

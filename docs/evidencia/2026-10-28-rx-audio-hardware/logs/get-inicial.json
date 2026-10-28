@@ -1,0 +1,4 @@
+===== GET state (read-only) =====
+{"t":"state","vfo":"A","freq":14074000,"freq_bg":14147710,"mode":"USB-D","band":"20m SSB","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":0,"pre":0,"att":0,"agc":"AUTO","nb":1,"nr":0,"nb_level":5,"nb_width":85,"nr_level":0,"pwr":80,"db":-88,"tx":false,"app":"FT8","ax":{"cq":0,"txen":0,"txing":0,"auto":1,"hold":1,"txfreq":1774,"base":14074000},"cwt":null,"logrev":0,"did":""}
+
+EXIT=0

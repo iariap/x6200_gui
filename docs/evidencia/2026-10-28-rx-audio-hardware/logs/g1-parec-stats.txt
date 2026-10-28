@@ -1,0 +1,18 @@
+# Capturas pasivas parec (2 s) del 2026-10-28 20:04-20:05Z, radio en 7.094 MHz LSB-D (estado del operador).
+# El audio crudo NO se conserva ni se publica: solo quedan sha256, RMS/pico y conteo de muestras != 0.
+# Comandos exactos: ver logs/g1-parec-capture-radio.txt y commands.log.
+
+rx-source-2s.raw  (source = alsa_input.platform-sound.stereo-fallback, 2ch s16le 44100)
+  bytes=354016 samples_total=177008 frames=88504 sha256=bcb0922c42c86d0e7b1b492b36d16350696e7158fb2ebb9f35a854dd8ef0784a
+  ch0: RMS=2473.32 (-22.44 dBFS) peak=9773 (-10.51 dBFS) distinto_de_0=88493/88504 (100.0%)
+  ch1: RMS=2473.34 (-22.44 dBFS) peak=9773 (-10.51 dBFS) distinto_de_0=88493/88504 (100.0%)
+  lectura: el source de captura ENTREGA señal de audio (no es un source muerto). No dice nada del parlante:
+           el source es la copia del codec del SoC, no lo que el operador oye (E14/E15 siguen UNVERIFIED).
+
+rx-sinkmon-2s.raw (monitor del sink = lo que el SoC esta reproduciendo, 2ch s16le 44100)
+  bytes=314276 samples_total=157138 frames=78569 sha256=29f49afa84541c0ad51f8f6b5df9a9e6053954a01057e3c8605cf9b255ce9f6f
+  ch0: RMS=0 (-inf dBFS) peak=0 distinto_de_0=0/78569 (0.0%)
+  ch1: RMS=0 (-inf dBFS) peak=0 distinto_de_0=0/78569 (0.0%)
+  lectura: el stream de reproduccion del SoC esta en silencio: la GUI no esta generando audio en ese momento
+           (audio_play() solo lo escribe para TTS/FT8/mensajes). NO informa sobre el audio del demodulador del
+           BASE al parlante (E14), que no pasa por el SoC.

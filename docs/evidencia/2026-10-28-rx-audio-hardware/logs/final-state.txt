@@ -1,0 +1,30 @@
+=== cleanup + estado final Wed Oct 28 08:10:45 PM UTC 2026 ===
+CLEANUP_PATHS:
+clean /tmp/x6200-rnnoise-bench-20261028
+clean /tmp/x6200-rnnoise-probe-20261028
+clean /tmp/x6200-qa347
+PROC_CHECK:
+ 7625 root     bash -c cd /tmp/x6200-rnnoise-probe-20261028 && nohup sh monitor.sh 23711 monitor-diag.log 180 >/dev/null 2>&1 & echo monitor_pid=$!; sleep 2; for i in 2 3; do echo "--- default rn10 pass$i"; S=$(cut -d" " -f1 /proc/uptime); nice -n 10 sh run-one.sh probe_default_rn10_$i 30 ./bench_rnnoise_arm_default --case probe_default_rn10_$i --in fixture.raw --method rnnoise --seconds 10; E=$(cut -d" " -f1 /proc/uptime); echo "wall_uptime=$(awk -v a=$S -v b=$E "BEGIN{printf \"%.3f\", b-a}")"; cat probe_default_rn10_$i.out 2>/dev/null | tail -1; done; pkill -f "monitor.sh 23711" 2>/dev/null; sleep 1; echo "--- monitor tail:"; tail -6 monitor-diag.log
+ 7627 root     sh monitor.sh 23711 monitor-diag.log 180
+ 8185 root     sh monitor.sh 23711 monitor-diag2.log 120
+STATE:
+{"t":"state","vfo":"A","freq":7094000,"freq_bg":7062100,"mode":"LSB-D","band":"40m SSB","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":0,"pre":0,"att":1,"agc":"AUTO","nb":1,"nr":0,"nb_level":5,"nb_width":85,"nr_level":0,"pwr":80,"db":-100,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+PACTL:
+0	alsa_output.platform-sound.stereo-fallback.monitor	module-alsa-card.c	s16le 2ch 44100Hz	IDLE
+1	alsa_input.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+0	alsa_output.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+0
+loopback_modules=0
+GUI:
+23711
+b1157fdb3be99302fc46b609228f4eb4bd84cfe0510ee580efa642fa7bdf0022
+LOAD/MEM:
+1.14 1.21 1.16 2/139 10917
+              total        used        free      shared  buff/cache   available
+Mem:           1002          65         673          69         264         845
+=== kill monitores remanentes Wed Oct 28 08:10:52 PM UTC 2026 ===
+NO_BENCH_PROCS
+=== estado tras cleanup ===
+{"t":"state","vfo":"A","freq":7094000,"freq_bg":7062100,"mode":"LSB-D","band":"40m SSB","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":0,"pre":0,"att":1,"agc":"AUTO","nb":1,"nr":0,"nb_level":5,"nb_width":85,"nr_level":0,"pwr":80,"db":-101,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+23711
+1.27 1.23 1.16 2/132 11130

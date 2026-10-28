@@ -1,0 +1,58 @@
+===== date -u =====
+Wed Oct 28 19:52:49 UTC 2026
+Wed Oct 28 19:52:49 UTC 2026
+===== ps (busybox) =====
+PID   USER     COMMAND
+    1 root     init
+    2 root     [kthreadd]
+    3 root     [rcu_gp]
+    4 root     [rcu_par_gp]
+    5 root     [slub_flushwq]
+    6 root     [netns]
+   10 root     [mm_percpu_wq]
+   11 root     [rcu_tasks_kthre]
+   12 root     [rcu_tasks_trace]
+   13 root     [ksoftirqd/0]
+   14 root     [rcu_preempt]
+   15 root     [migration/0]
+   16 root     [cpuhp/0]
+   17 root     [cpuhp/1]
+   18 root     [migration/1]
+   19 root     [ksoftirqd/1]
+   22 root     [cpuhp/2]
+   23 root     [migration/2]
+   24 root     [ksoftirqd/2]
+   27 root     [cpuhp/3]
+   28 root     [migration/3]
+   29 root     [ksoftirqd/3]
+   32 root     [kdevtmpfs]
+   33 root     [inet_frag_wq]
+   35 root     [oom_reaper]
+   36 root     [writeback]
+   37 root     [kcompactd0]
+   38 root     [kblockd]
+   39 root     [ata_sff]
+   40 root     [devfreq_wq]
+   41 root     [watchdogd]
+   44 root     [rpciod]
+   45 root     [xprtiod]
+   47 root     [kswapd0]
+   48 root     [nfsiod]
+   53 root     [gp]
+   54 root     [pp]
+   55 root     [tls-strp]
+   56 root     [kstrp]
+===== ps w grep =====
+  329 pulse    /usr/bin/pulseaudio --system --daemonize --disallow-exit --exit-idle-time=-1 --use-pid-file --disable-shm
+  348 root     {x6200_daemon} /bin/sh /usr/sbin/x6200_daemon
+  397 root     /usr/libexec/bluetooth/bluetoothd -n -C
+  521 root     /usr/bin/python3 /usr/share/x6200/qrz-upload.py --loop
+  620 root     /usr/sbin/wpa_supplicant -u
+23711 root     /usr/sbin/x6200_gui
+===== /proc cmdline listado con nombre =====
+23711 /usr/sbin/x6200_gui 
+329 /usr/bin/pulseaudio --system --daemonize --disallow-exit --exit-idle-time=-1 --use-pid-file --disable-shm 
+348 /bin/sh /usr/sbin/x6200_daemon 
+3872 bash -c for d in /proc/[0-9]*; do n=$(tr "\0" " " < $d/cmdline 2>/dev/null); case "$n" in *x6200*|*pulse*|*blue*|*a2dp*) echo "${d#/proc/} $n";; esac; done 
+397 /usr/libexec/bluetooth/bluetoothd -n -C 
+521 /usr/bin/python3 /usr/share/x6200/qrz-upload.py --loop 

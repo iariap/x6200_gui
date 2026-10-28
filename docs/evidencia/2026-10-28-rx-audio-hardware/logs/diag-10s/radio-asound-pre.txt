@@ -1,0 +1,21 @@
+state: RUNNING
+owner_pid   : 331
+trigger_time: 5748.478148369
+tstamp      : 21847.281053306
+delay       : 2904
+avail       : 2904
+avail_max   : 2904
+-----
+hw_ptr      : 709976568
+appl_ptr    : 709973664
+---play---
+state: RUNNING
+owner_pid   : 330
+trigger_time: 5748.471531121
+tstamp      : 21847.291910223
+delay       : 7974
+avail       : 80226
+avail_max   : 80226
+-----
+hw_ptr      : 709977356
+appl_ptr    : 709985330

@@ -1,0 +1,20 @@
+=== diagnosticos adicionales default + monitor (redo) Wed Oct 28 08:09:23 PM UTC 2026 ===
+-rwxr-xr-x    1 root     root       3627124 Oct 28 20:04 bench_rnnoise_arm_default
+-rw-------    1 root     root        882000 Oct 28 20:04 fixture.raw
+-rw-------    1 root     root          3502 Oct 28 20:08 monitor.sh
+-rw-------    1 root     root          1184 Oct 28 20:04 run-one.sh
+monitor_pid=8185
+--- default rn10 pass2
+0
+wall_uptime=14.250
+{"case":"probe_default_rn10_2","method":"rnnoise","method_effective":"rnnoise","fallback":0,"seconds":10,"reps":1,"units":1000,"block":441,"unit_in":441,"unit_mid":480,"in_samples":441000,"out_samples":441000,"rnnoise_frame_size":480,"rnnoise_frames":1000,"taps":64,"up":"160/147","down":"147/160","wall_ms":14155.239,"user_ms":13457.344,"sys_ms":82.569,"frame_p50_ms":13.69655000,"frame_p95_ms":18.03643300,"frame_p99_ms":20.92489700,"frame_max_ms":24.07660400,"up_p50_ms":1.36725500,"up_p95_ms":2.16581700,"up_p99_ms":3.82423000,"nr_p50_ms":10.90025000,"nr_p95_ms":14.44611300,"nr_p99_ms":17.20183000,"down_p50_ms":1.25888300,"down_p95_ms":1.97336400,"down_p99_ms":3.64148600,"speex_p50_ms":0.00000000,"speex_p95_ms":0.00000000,"speex_p99_ms":0.00000000,"over_10ms":1000,"pct_over_10ms":100.0000,"rss_preinit_kb":2004,"rss_start_kb":2268,"rss_end_kb":3560,"rss_peak_kb":3560}
+--- default rn10 pass3
+0
+wall_uptime=13.230
+{"case":"probe_default_rn10_3","method":"rnnoise","method_effective":"rnnoise","fallback":0,"seconds":10,"reps":1,"units":1000,"block":441,"unit_in":441,"unit_mid":480,"in_samples":441000,"out_samples":441000,"rnnoise_frame_size":480,"rnnoise_frames":1000,"taps":64,"up":"160/147","down":"147/160","wall_ms":13143.312,"user_ms":13093.416,"sys_ms":30.166,"frame_p50_ms":13.00152600,"frame_p95_ms":15.23738300,"frame_p99_ms":16.52309800,"frame_max_ms":18.97094900,"up_p50_ms":1.33583900,"up_p95_ms":1.90144900,"up_p99_ms":2.14460900,"nr_p50_ms":10.30426600,"nr_p95_ms":12.00971900,"nr_p99_ms":12.99019300,"down_p50_ms":1.23230000,"down_p95_ms":1.71441200,"down_p99_ms":1.96128000,"speex_p50_ms":0.00000000,"speex_p95_ms":0.00000000,"speex_p99_ms":0.00000000,"over_10ms":1000,"pct_over_10ms":100.0000,"rss_preinit_kb":2008,"rss_start_kb":2272,"rss_end_kb":3624,"rss_peak_kb":3624}
+--- monitor tail:
+22295.32 548153 91085 1.29 6967380 8779486 87.76 42.83 
+22296.52 548238 91107 1.29 6967579 8779956 91.06 42.34 
+22297.74 548328 91127 1.29 6967762 8780430 92.83 38.61 
+22298.92 548416 91143 1.29 6967963 8780881 92.24 44.57 
+22300.10 548480 91148 1.43 6968174 8781328 61.74 47.20 
