@@ -868,9 +868,15 @@ Conclusiones fundadas:
   válidas; con 0,1 W el detector no mide en 15/10 m. La potencia **reportada** queda ~1 W: el
   proceso del barrido la limita, así que un lazo automático de subida de potencia no aportaría
   (terminaría siempre en el techo); se fija 8,0 W.
-- La forma de la curva la manda el dato: se dibuja una polilínea por el agregado medido y un punto
-  por muestra; un punto sin medición corta el tramo (hueco). Se elimina del chart el ajuste
-  cuadrático decorativo (`roe_curve` sigue en el repo con sus tests pero el chart no lo usa).
+- La forma de la curva la manda el dato, pero **dibujada suave**: la primera versión dibujó la
+  polilínea cruda y el owner la rechazó el 28/10 ("esas no son curvas con sierras, antes eran
+  curvas cuadráticas"): con la ROE cuantizada a 0,1 los tramos se ven como escalones. La curva
+  ahora es una **interpolación cúbica monótona (PCHIP)** que **pasa exactamente por cada muestra
+  medida**, no sobrepasa y respeta los huecos (cada corrida válida se interpola por separado). No
+  es el ajuste libre de #113 (ese no pasaba por los puntos y podía salir espejado); `roe_curve`
+  conserva además el resample histórico con sus tests, pero el chart ya no lo usa.
+- La primera pasada se midió y quedó en la historia de este registro; la verificación final es la
+  de abajo (build 84b3a09e).
 
 **Arreglo** (PR #330, main `8b68b01d`):
 

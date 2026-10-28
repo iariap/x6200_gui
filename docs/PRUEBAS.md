@@ -1702,3 +1702,23 @@ Capturas: `assessment-194/scratch/cw244/swr_pts2_bandas.png`.
 
 **Sin fundar** (anexo A de HALLAZGOS §73): ROE absoluta contra medidor externo; por qué la
 potencia reportada queda ~1 W.
+
+---
+
+## 28/10 02:40Z — La curva del barrido: suave y pasando por los puntos medidos (PCHIP)
+
+La primera versión de "curva = puntos medidos" dibujaba la polilínea cruda: con la ROE
+cuantizada a 0,1 los tramos se veían como escalones y el owner la rechazó ("esas no son curvas
+con sierras, antes eran curvas cuadráticas").
+
+**Arreglo** (PR #333, main `cd44f98a`): interpolación cúbica **monótona** (Fritsch-Carlson PCHIP,
+`roe_curve_interpolate()` en `src/roe_curve.c`) que pasa **exactamente por cada muestra medida**,
+es C1, no sobrepasa y corta el tramo en los huecos; además se marcan las muestras medidas. No es
+el ajuste libre de #113 (ese no pasaba por los puntos). Tests: uno nuevo en `test_roe_curve.c`
+(pasa por las muestras, sin sobrepaso, monótono) y tolerancias del render ajustadas a la
+cuantización (0,1 ROE ≈ 26 px cerca del piso en escala logarítmica).
+
+**Verificado**: tests nativos `exit 0`; `check_harness_swrscan_curve.sh` PASS; en la radio
+(build `84b3a09e`) barridos 40/17/15/10/6 m → **Completed n=51/51** con curvas suaves
+(captura `assessment-194/scratch/cw244/swr_smooth_bandas2.png`), TX apagado y dial restaurado
+(18.099180 USB-D).
