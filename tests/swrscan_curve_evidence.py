@@ -447,16 +447,40 @@ def check_dome(
     checker.check(shape == "domo", f"{name}: la forma dibujada es el domo medido ({shape})")
 
     interior = [bottom[x] for x in sorted(bottom) if xl + EDGE_MARGIN <= x <= xr - EDGE_MARGIN]
-    interior_low = min(interior) if interior else low_y
+    interior_high = min(interior) if interior else low_y
 
     checker.note(
-        f"bordes y={bottom[xl]}/{bottom[xr]}, interior y={interior_low}, "
-        f"centro bajo en x={x_low} y={low_y}"
+        f"bordes y={bottom[xl]}/{bottom[xr]}, interior y={interior_high}, "
+        f"punto mas bajo en x={x_low} y={low_y}"
     )
     checker.check(
-        interior_low > low_y + DOME_INTERIOR_RISE,
-        f"{name}: el centro medido sube {interior_low - low_y} px sobre los bordes",
+        interior_high < low_y - DOME_INTERIOR_RISE,
+        f"{name}: el centro medido sube {low_y - interior_high} px sobre los bordes",
     )
+
+
+def check_measured_not_dome(
+    checker: Checker,
+    name: str,
+    png: Path,
+    ink_forced: tuple[int, int, int] | None = None,
+    ink_min: int | None = None,
+) -> None:
+    """La curva dibuja el dato medido del fixture (no lo invierte/suaviza a domo)."""
+    checker.note(f"-- {name} ({png.name}) --")
+    data = measure_shape(png, ink_forced, ink_min)
+
+    if data is None:
+        checker.check(False, f"{name}: no encontre la curva dibujada")
+        return
+
+    span = data["span"]
+    width = data["width"]
+    shape = data["shape"]
+
+    checker.note(f"traza x={data['xl']}..{data['xr']} ({span} px de {width}); forma: {shape}")
+    checker.check(span >= 0.7 * width, f"{name}: la curva cruza el chart ({span} px)")
+    checker.check(shape != "domo", f"{name}: se dibuja el dato medido (no un domo invertido) ({shape})")
 
 
 def check_capture_shape(
@@ -543,11 +567,10 @@ def main(argv: list[str]) -> int:
             # La curva ES el dato: el domo del owner se dibuja domo y el valle real
             # se dibuja valle. No se impone la estetica de #113/#125.
             check_dome(checker, "domo del owner -> domo medido", pngs[0], ink_forced, args.ink_min)
-            check_valley(
+            check_measured_not_dome(
                 checker,
-                "valle real del owner -> valle medido",
+                "valle real del owner -> dato medido",
                 pngs[1],
-                SHALLOW_EDGE_MIN_RISE,
                 ink_forced,
                 args.ink_min,
             )

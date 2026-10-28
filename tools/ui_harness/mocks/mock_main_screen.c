@@ -76,6 +76,7 @@ dialog_t *dialog_freq       = &mock_dialog;
 dialog_t *dialog_ft8        = &mock_dialog;
 dialog_t *dialog_gps        = &mock_dialog;
 dialog_t *dialog_js8        = &mock_dialog;
+dialog_t *dialog_logs       = &mock_dialog;
 #ifndef HARNESS_REAL_DIALOGS
 dialog_t *dialog_msg_cw     = &mock_dialog;
 dialog_t *dialog_msg_voice  = &mock_dialog;
