@@ -1,0 +1,232 @@
+# commands.log — issue #345, tarea B (auditoría Speex + banco PCM)
+#
+# Worktree: state/worktrees/x6200/rx-audio-feasibility (rama factory/rx-audio-feasibility)
+# Base:     a1c667eee6d4c138416e5ec459dd86de93cb630f  (commit de tarea A: 3ab3330a)
+# Fecha:    2026-10-28
+#
+# Se registran los comandos que producen los artefactos commiteados y los chequeos
+# de entorno. Los comandos exploratorios (lectura de código, pruebas de imagen)
+# también quedan, porque de ellos dependen las decisiones del informe.
+# Formato: comando, salida relevante y exit code.
+#
+# ---------------------------------------------------------------------------
+# 0. Contexto
+# ---------------------------------------------------------------------------
+$ git log --oneline -3
+3ab3330a docs(audio): mapa de señal RX y matriz de controles del BASE (#345)
+a1c667ee fix(info): centrar el icono de WiFi en su media celda de la barra (#344)
+7b421b37 feat(bt): todo el Bluetooth vive en su app (encendido y Discoverable salen de Ajustes) (#343)
+[exit 0]
+
+$ gh issue view 345 --repo iariap/x6200_gui
+(contratos 3 y 4 leídos: auditoría numérica de Speex y banco reproducible; prohibiciones:
+ no tocar src/, rootfs/, tests/, radio, ni usar el stub para anunciar calidad/presupuesto)
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 1. ¿Hay libspeexdsp en el host?
+# ---------------------------------------------------------------------------
+$ pkg-config --exists speexdsp; echo $?
+Package speexdsp was not found in the pkg-config search path.
+Perhaps you should add the directory containing `speexdsp.pc'
+to the PKG_CONFIG_PATH environment variable
+Package 'speexdsp' not found
+1
+
+$ docker version --format '{{.Server.Version}}'
+29.9.2
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 2. Contenedor del banco: base pinneada + paquete pinneado
+# ---------------------------------------------------------------------------
+$ docker pull debian:bookworm-slim
+Digest: sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3
+Status: Downloaded newer image for debian:bookworm-slim
+[exit 0]
+
+$ docker run --rm debian:bookworm-slim@sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3 \
+    bash -c 'apt-get update -qq; apt-cache policy libspeexdsp-dev | head -4; \
+             apt-get install -y -qq --no-install-recommends gcc libc6-dev libspeexdsp-dev=1.2.1-1 pkg-config; \
+             dpkg-query -W -f="${Package}=${Version}\n" gcc libc6-dev libspeexdsp-dev libspeexdsp1 pkg-config; \
+             gcc --version | head -1; pkg-config --modversion speexdsp'
+libspeexdsp-dev:
+  Installed: (none)
+  Candidate: 1.2.1-1
+gcc=4:12.2.0-3
+libc6-dev=2.36-9+deb12u14
+libspeexdsp-dev=1.2.1-1
+libspeexdsp1=1.2.1-1
+pkg-config=1.8.1-1
+gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+1.2.1
+[exit 0]
+
+# Los ids de request reales (para comparar con el stub de tests/native):
+$ grep -n 'define SPEEX_PREPROCESS_SET_NOISE_SUPPRESS' /usr/include/speex/speex_preprocess.h
+144:#define SPEEX_PREPROCESS_SET_NOISE_SUPPRESS 18
+[exit 0]
+
+# Fuente de la lib (sólo lectura, para citar la ventana WOLA de preprocess.c:618-625,983-989)
+$ curl -fsSL -o speexdsp-1.2.1.tar.gz https://downloads.xiph.org/releases/speex/speexdsp-1.2.1.tar.gz
+$ sha256sum speexdsp-1.2.1.tar.gz
+8c777343e4a6399569c72abc38a95b24db56882c83dbdb6c6424a5f4aeb54d3d  speexdsp-1.2.1.tar.gz
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 3. Generador PCM: dos corridas y comparación
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py
+silence_44100_s16.wav: 441000 muestras, RMS null dBFS, peak null dBFS, clip 0, sha256 99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c
+sine_1k_44100_s16.wav: 441000 muestras, RMS -21.01 dBFS, peak -18.00 dBFS, clip 0, sha256 667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600
+multisine_44100_s16.wav: 441000 muestras, RMS -25.78 dBFS, peak -18.08 dBFS, clip 0, sha256 b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf
+white_noise_44100_s16.wav: 441000 muestras, RMS -30.01 dBFS, peak -25.23 dBFS, clip 0, sha256 b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+manifiesto: .../pcm-manifest.json
+[exit 0]
+
+$ sha256sum docs/evidencia/2026-10-28-rx-audio-feasibility/artifacts/pcm/*.wav > /tmp/opencode/final_sha1.txt
+$ cp pcm-manifest.json /tmp/opencode/final_man1.json
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py    # segunda corrida
+(salida idéntica a la primera)
+[exit 0]
+
+$ sha256sum docs/evidencia/2026-10-28-rx-audio-feasibility/artifacts/pcm/*.wav > /tmp/opencode/final_sha2.txt
+$ diff /tmp/opencode/final_sha1.txt /tmp/opencode/final_sha2.txt; echo $?
+0
+$ diff /tmp/opencode/final_man1.json pcm-manifest.json; echo $?
+0
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py --verify
+silence_44100_s16.wav: sha256 99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c
+sine_1k_44100_s16.wav: sha256 667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600
+multisine_44100_s16.wav: sha256 b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf
+white_noise_44100_s16.wav: sha256 b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+OK: los cuatro WAV regenerados coinciden byte a byte con el manifiesto
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 4. Banco con libspeexdsp REAL (docker build + run)
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_speex.py
+OK: 17 casos medidos (49 corridas) con libspeexdsp real, 12 sondas
+imagen sha256:46d344b88a0ccdfda0024461b18080233e023c1b8116657e86db5157ded79e1c
+speexdsp 1.2.1, gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+fuente acab3aad158097cd5a8ab1c6e6eb83e8b37011a0098eb91d39dc1c5d2366b25f (src/audio_enhancement.c)
+CSV: .../measurements.csv
+resultados: .../bench-results.json
+[exit 0]
+
+# Comandos exactos que corre el script (quedan en artifacts/bench/container.log):
+$ docker build -t x6200-speexdsp-bench:1.2.1-1 \
+      -f docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/Dockerfile \
+      docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench
+[exit 0]
+
+$ docker run --rm -v <worktree>:/repo:ro -v <worktree>/docs/evidencia/2026-10-28-rx-audio-feasibility/artifacts/bench:/out \
+      -w /build x6200-speexdsp-bench:1.2.1-1 sh /repo/docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/run_in_container.sh
+--- fuente copiada verbatim ---
+acab3aad158097cd5a8ab1c6e6eb83e8b37011a0098eb91d39dc1c5d2366b25f  audio_enhancement.c
+--- toolchain ---
+gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+1.2.1
+libspeexdsp-dev=1.2.1-1
+--- headers reales de Speex ---
+144:#define SPEEX_PREPROCESS_SET_NOISE_SUPPRESS 18
+--- compile ---
++ gcc -O2 -std=c11 -Wall -Wextra -Werror -I. -I/repo/.../scripts/bench/stubs \
+      /repo/.../scripts/bench/bench_main.c /repo/.../scripts/bench/stubs_bench.c audio_enhancement.c \
+      -o bench -lspeexdsp -lm
+determinismo: noise_p2_b4410 repetido == original (cmp OK)
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 5. Hashes de las salidas (PCM sintético y PCM procesado)
+# ---------------------------------------------------------------------------
+$ sha256sum docs/evidencia/2026-10-28-rx-audio-feasibility/artifacts/pcm/*.wav
+b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf  artifacts/pcm/multisine_44100_s16.wav
+99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c  artifacts/pcm/silence_44100_s16.wav
+667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600  artifacts/pcm/sine_1k_44100_s16.wav
+b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936  artifacts/pcm/white_noise_44100_s16.wav
+[exit 0]
+
+$ sha256sum docs/evidencia/2026-10-28-rx-audio-feasibility/artifacts/bench/*.raw
+2b552525ad8f3ac4e174b9c848b51cc63cad400a9d0ddd49e82e714e1e961b36  multisine_p0_b4410.raw
+7508e09176083aa9edd6f7383311d8db9b8841e1207cee501a1da03fe39443b6  multisine_p2_b4410.raw
+33ab96589d89b7d07674f0864aa2d4a08bff34163dac90972fdcfcbeb7a94edd  multisine_p3_b4410.raw
+b718cf2c118cfb465a0e7894a7eaa7baa23719406736e494d0fbf7fcd1aaa56e  noise_p0_b4410.raw
+b718cf2c118cfb465a0e7894a7eaa7baa23719406736e494d0fbf7fcd1aaa56e  noise_p2_b1.raw
+436bf33d07bdb79083dbb7eb669622e7b6fb4366d06d5627541f4c40eb2e5c6d  noise_p2_b256.raw
+fbc5d9ae9c3974159e16cbc47845061c839132816a0f3e8bf8f3dd9f9309ad4e  noise_p2_b257.raw
+6cd89dc900ac2bd38f1514b1c8156cb4a2e2bd9161abb320d081ffe50bb67795  noise_p2_b4410.raw
+6cd89dc900ac2bd38f1514b1c8156cb4a2e2bd9161abb320d081ffe50bb67795  noise_p2_b4410_repeat.raw
+c4ffaa78b31a0ff4674901c59c53b2de147b4d9662f9405e9a2e3ebac5ea510e  noise_p2_b8820.raw
+92ee9732d2babd8ca1d3c1f21bb87842f392dacf45f35fb9ec8a64e328ca8542  noise_p3_b4410.raw
+ff793c626048816a52aa19c55232c5226be1f990b3b028ddc435877fc2676547  silence_p0_b4410.raw
+ff793c626048816a52aa19c55232c5226be1f990b3b028ddc435877fc2676547  silence_p2_b4410.raw
+ff793c626048816a52aa19c55232c5226be1f990b3b028ddc435877fc2676547  silence_p3_b4410.raw
+d28a1dffa08349ec1cb5602e3e2dec0a0c2cc74b8ecf6b56d0021104d936378d  sine1k_p0_b4410.raw
+e689ac8ede3bc9449a93dcca9c5e0db60c6864f3b07bd5b317d7a89016342450  sine1k_p2_b4410.raw
+73a376477d8aa28c8b91403e53ac2f5d65aadef684f3aee07803b1e944e98ea4  sine1k_p3_b4410.raw
+[exit 0]
+# noise_p2_b1 == noise_p0_b4410: con callbacks de 1 muestra no hay ningún frame
+# completo, así que la cadena es bit-exacta (el NR nunca corre).
+# silence_p0/p2/p3 comparten hash: el silencio digital sale en cero en los tres presets.
+
+$ sha256sum docs/evidencia/2026-10-28-rx-audio-feasibility/pcm-manifest.json
+ffb1c65ece3db02f08cc1a0013aa360825d075efa9b00a0d27f668afa2cfc0ad  pcm-manifest.json
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 6. Suite host (para saber qué prueba el stub; no es una medición de Speex)
+# ---------------------------------------------------------------------------
+$ sh tests/native/run_native_tests.sh /tmp/opencode/x6200-native2
+== compilador: gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2) ==
+== sanitizers: NO disponibles en este toolchain (se omite) ==
+...
+44837 comprobaciones, 0 fallos
+...
+PASS: un loop_timer, periodo 30/250 ms, pump vivo y NetworkManager intacto
+== #219: radio_thread duerme en cada vuelta del sondeo ==
+57 comprobaciones, 0 fallos
+[exit 0]
+# test_audio_enhancement() se llama desde tests/native/test_main.c:66 y forma parte
+# del binario de 44837 comprobaciones; el runner no imprime un conteo por archivo.
+
+# ---------------------------------------------------------------------------
+# 7. Alcance del diff (después del commit)
+# ---------------------------------------------------------------------------
+$ git diff --name-only 3ab3330a HEAD
+docs/evidencia/2026-10-28-rx-audio-feasibility/.gitignore
+docs/evidencia/2026-10-28-rx-audio-feasibility/bench-results.json
+docs/evidencia/2026-10-28-rx-audio-feasibility/commands.log
+docs/evidencia/2026-10-28-rx-audio-feasibility/measurements.csv
+docs/evidencia/2026-10-28-rx-audio-feasibility/pcm-manifest.json
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/Dockerfile
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/bench_main.c
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/run_in_container.sh
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/cfg/cfg.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/cfg/subjects.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/liquid/liquid.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/lvgl/lvgl.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/params/params.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/radio.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs_bench.c
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_speex.py
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py
+docs/evidencia/2026-10-28-rx-audio-feasibility/speex-audit.md
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 8. Fallos y correcciones durante la corrida (se registran, no se ocultan)
+# ---------------------------------------------------------------------------
+# a) Primer build del banco: -Werror falló por `rms_int16` sin usar y por
+#    `firfilt_rrrf` sin declarar en stubs_bench.c (faltaba #include "liquid/liquid.h").
+#    Se corrigió el harness (no se toca src/). exit 1 en ese intento.
+# b) Primer parseo del CSV: KeyError 'denoise' en las sondas de tasa (no emiten ese
+#    campo). Corregido en bench_speex.py. exit 1.
+# c) Se probó medir el máximo por callback con CLOCK_THREAD_CPUTIME_ID: 2 llamadas
+#    por callback son ~1 µs de syscall y en el caso de 1 muestra inflaron el CPU de
+#    134 ms a 1171 ms (20x). Se descartó esa métrica y se reporta wall + el total
+#    de CPU del proceso (getrusage).
+# d) La primera versión del lag por correlación daba 124 muestras en el seno de
+#    1 kHz: artefacto de periodicidad. Se agregó detección de ambigüedad (2º pico
+#    > 0.95 del 1º) y para señales periódicas se reporta UNKNOWN, no un número.
