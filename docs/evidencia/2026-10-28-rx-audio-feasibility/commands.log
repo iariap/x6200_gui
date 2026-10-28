@@ -774,3 +774,73 @@ audio/noise_rnnoise_10s.wav: OK
 audio/noise_speex_10s.wav: OK
 measurements.csv: OK
 [exit 0]
+
+# ---------------------------------------------------------------------------
+# 10.10 Verificación posterior al commit de la tanda
+# ---------------------------------------------------------------------------
+# Corrección menor posterior al commit (commit aparte, sin amend): `--analyse`
+# tomaba el toolchain de artifacts/rnnoise/container.log; si esa corrida no
+# recompilaba y el log ya no tenía la sección del toolchain, el JSON quedaba con
+# "UNKNOWN". Ahora `--analyse` conserva el toolchain registrado en el JSON de la
+# corrida completa. Verificado idempotente: dos `--analyse` seguidos dejan el
+# árbol de trabajo limpio (git status sin cambios en los artefactos).
+
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py --verify
+silence_44100_s16.wav: sha256 99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c
+sine_1k_44100_s16.wav: sha256 667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600
+multisine_44100_s16.wav: sha256 b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf
+white_noise_44100_s16.wav: sha256 b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+OK: los cuatro WAV regenerados coinciden byte a byte con el manifiesto
+[exit 0]
+
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+OK   (a) procedencia MEASURED-HOST: 50 filas del banco con lib real, exit 0, sin citar tests/native
+OK   (a) procedencia MEASURED-HARDWARE: 0 filas (0 esperadas en esta corrida: no hubo medicion en radio)
+OK   (b) sin atribuciones al stub: 4611 campos/lineas barridos, 0 aserciones prohibidas
+OK   (c) ids del stub: stub SET_NOISE_SUPPRESS = 1 != real = 18 (documentado en speex-audit.md)
+OK   (c) banco sin stub de Speex: ... no define simbolos de Speex; run_in_container.sh enlaza speexdsp
+OK   (c) sha del PCM procesado: todas las filas MEASURED-HOST con --case traen sha
+OK   (d) tabla comparativa: 21 filas (4 vectores x 5 metodos + 1 sonda), todas OFFLINE_CAPTURE_ONLY, version y sha declarados
+OK   (e) RNNoise fuera del repo: sin pesos/libreria de upstream versionados y sin menciones en src/rootfs/rom-build/tests
+OK   (f) manifest de RNNoise: commit 70f1d256, modelo 0a8755f8, BSD-3-Clause, no versionado / no redistribuido / fuera del firmware, frame_size 480
+OK: ningun resultado de stub se reporta como real
+[exit 0]
+# Nota: el conteo de (b) incluye los .md/.csv/.log de artifacts/, que son
+# gitignored (el container.log de la corrida completa tiene ~1.200 líneas). Por
+# eso el número cambia según lo que haya en artifacts/; lo que no cambia es el
+# resultado: 0 aserciones prohibidas.
+
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_rnnoise.py --analyse
+OK: 21 filas medidas, 5 repeticiones por caso (warmup 3)
+imagen sha256:b721886096030e9fa6d8db0e0eaf2b5efb08a395dd94ccdd7e1822b78d9891cf
+RNNoise 70f1d256acd4b34a572f999a05c87bf00b67730d frame_size=480 lib sha256=e0272f1d342ee208
+modelo 0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37 (...)
+[exit 0]
+$ git status --porcelain      # tras dos --analyse seguidos
+(limpio: sólo el marcador del harness .asf-active, no versionado)
+[exit 0]
+
+$ git diff --name-only 97617351 HEAD
+docs/evidencia/2026-10-28-rx-audio-feasibility/README.md
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/multisine_off_10s.wav
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/multisine_rnnoise_10s.wav
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/multisine_speex_10s.wav
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/noise_off_10s.wav
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/noise_rnnoise_10s.wav
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/noise_speex_10s.wav
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/sha256sums.txt
+docs/evidencia/2026-10-28-rx-audio-feasibility/commands.log
+docs/evidencia/2026-10-28-rx-audio-feasibility/measurements.csv
+docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-bench.json
+docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-manifest.json
+docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-vs-speex.csv
+docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-vs-speex.md
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/Dockerfile.rnnoise
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/bench_rnnoise.c
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/rnnoise_build.sh
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_rnnoise.py
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+[exit 0]
+$ git diff --name-only 97617351 HEAD | grep -v '^docs/evidencia/2026-10-28-rx-audio-feasibility/'
+(vacío: no se tocó nada fuera del directorio de evidencia)
+[exit 0]

@@ -484,6 +484,11 @@ def main() -> int:
             if bench is not None
             else (log_path.read_text(encoding="utf-8") if log_path.exists() else "")
         )
+        if args.analyse and meta["toolchain"]["gcc"] == "UNKNOWN":
+            # --analyse no recompila: si el container.log ya no tiene la seccion del
+            # toolchain (p. ej. porque lo piso una corrida anterior de --analyse), se
+            # conserva lo que quedo registrado en el JSON de la corrida completa.
+            meta["toolchain"] = _previous_toolchain(meta["toolchain"])
         meta["rnnoise_lib_sha256"] = _first_hash(OUT_DIR / "rnnoise-lib.sha256")
         meta["rnnoise_frame_size"] = int((OUT_DIR / "rnnoise-frame-size.txt").read_text().strip())
         meta["bench_bin_sha256"] = _hash_map(OUT_DIR / "bench-bin.sha256")
@@ -554,6 +559,19 @@ def _toolchain(text: str) -> dict:
         "--disable-x86-rtcd --enable-static CFLAGS=-O2"
     )
     return out
+
+
+def _previous_toolchain(fallback: dict) -> dict:
+    if not JSON_PATH.exists():
+        return fallback
+    try:
+        previous = json.loads(JSON_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return fallback
+    toolchain = previous.get("toolchain")
+    if isinstance(toolchain, dict) and toolchain.get("gcc") not in (None, "UNKNOWN"):
+        return toolchain
+    return fallback
 
 
 def _first_hash(path: Path) -> str:
