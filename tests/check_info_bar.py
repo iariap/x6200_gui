@@ -226,6 +226,13 @@ for celda in ("INFO_VFO", "INFO_MODE"):
 # (lo que tambien cubre los dos simbolos). El estilo compartido sigue en sony_20.
 if re.search(r"lv_obj_set_style_text_font\(\s*items\[INFO_WIFI\]", texto):
     fallos.append("src/info.c: la celda de WiFi/BT no debe llevar fuente local (hereda las 20 px del estilo)")
+# El simbolo WiFi tiene que quedar centrado en su media celda de 28 px (reporte del
+# dueno, 2026-10-28: con TEXT_ALIGN_LEFT el glifo quedaba pegado al borde izquierdo).
+if not re.search(
+    r"lv_obj_set_style_text_align\(\s*items\[INFO_WIFI\]\s*,\s*LV_TEXT_ALIGN_CENTER\s*,\s*0\)",
+    texto,
+):
+    fallos.append("src/info.c: el simbolo WiFi no esta centrado en su media celda (TEXT_ALIGN_CENTER)")
 if re.search(r"lv_obj_set_style_text_font\(\s*bt_arm", texto) or \
    re.search(r"lv_obj_set_style_text_font\(\s*bt_spine", texto):
     fallos.append("src/info.c: la runa de BT no lleva fuente (no es texto)")

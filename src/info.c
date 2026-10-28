@@ -197,8 +197,13 @@ lv_obj_t * info_init(lv_obj_t * parent) {
      *
      * La runa son DOS trazos (brazos + espina, issue #285): hasta #285 era un solo zigzag y no se
      * leia como el icono de Bluetooth. Los dos comparten origen, color y tratamiento de linea. */
+    /* El simbolo WiFi va CENTRADO en su media celda de 28 px (reporte del dueño,
+     * 2026-10-28: el glifo quedaba pegado al borde izquierdo de la caja: medido en
+     * captura, glifo x139..155 dentro de la caja x139..166, centro 147 contra el
+     * centro 152,5 de la caja). Con TEXT_ALIGN_LEFT heredado el icono "flotaba" a
+     * la izquierda; la alineacion se fija local para no tocar las otras celdas. */
     lv_obj_set_size(items[INFO_WIFI], UI_INFO_WIFI_W, UI_INFO_CELL_H);
-    lv_obj_set_style_text_align(items[INFO_WIFI], LV_TEXT_ALIGN_LEFT, 0);
+    lv_obj_set_style_text_align(items[INFO_WIFI], LV_TEXT_ALIGN_CENTER, 0);
 
     bt_arm = lv_line_create(obj);
     lv_line_set_points(bt_arm, bt_arm_pts, UI_INFO_BT_ARM_POINTS);
