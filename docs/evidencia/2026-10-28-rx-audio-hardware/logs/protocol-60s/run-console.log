@@ -1,0 +1,206 @@
+### precondiciones del host
+repo=<workspace>/x6200-rx-nr-hardware-20261028
+out=<workspace>/.qa-347-scratch/bench-arm
+logs=<workspace>/x6200-rx-nr-hardware-20261028/docs/evidencia/2026-10-28-rx-audio-hardware/logs
+fecha_utc=2026-10-28T20:00:47Z
+worktree_head=8b0d5de9b9bbf4f1c630c3570404c56c09f012d4
+389d749230363d235e1894d93fc32bf3d3f3777752b7035a8771586262df3188  <workspace>/.qa-347-scratch/bench-arm/bench_rnnoise_arm_default
+34fe65be401aae48c4b7836dd928eb5e05f288704ff44964ec0c6ec1dcdbb8fc  <workspace>/.qa-347-scratch/bench-arm/bench_rnnoise_arm_neonoff
+fixture_origen=gen_pcm.py (issue #345) vector white_noise 10 s, seed 6200
+### fixture: verificar gen_pcm.py contra el manifiesto del #345 (read-only)
+silence_44100_s16.wav: sha256 99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c
+sine_1k_44100_s16.wav: sha256 667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600
+multisine_44100_s16.wav: sha256 b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf
+white_noise_44100_s16.wav: sha256 b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+OK: los cuatro WAV regenerados coinciden byte a byte con el manifiesto
+### fixture: construir el .raw S16LE 44100 mono desde el blob verificado (sin reescribir el manifiesto)
+wav_sha256=b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+raw_sha256=b718cf2c118cfb465a0e7894a7eaa7baa23719406736e494d0fbf7fcd1aaa56e
+raw_bytes=882000 samples=441000
+### preflight read-only de la radio
+CMD: ssh <radio> date -u; uname -a
+Wed Oct 28 20:00:49 UTC 2026
+Linux X6200 6.1.82 #1 SMP PREEMPT Tue Oct 27 15:23:18 UTC 2026 armv7l GNU/Linux
+CMD: ssh <radio> cat /proc/cpuinfo | grep -E "^(processor|model name|CPU part|Features)" 
+processor	: 0
+model name	: ARMv7 Processor rev 5 (v7l)
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU part	: 0xc07
+processor	: 1
+model name	: ARMv7 Processor rev 5 (v7l)
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU part	: 0xc07
+processor	: 2
+model name	: ARMv7 Processor rev 5 (v7l)
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU part	: 0xc07
+processor	: 3
+model name	: ARMv7 Processor rev 5 (v7l)
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU part	: 0xc07
+CMD: ssh <radio> cat /proc/asound/cards; df -h /tmp; free -m; cat /proc/loadavg
+ 0 [sun8ia33audio  ]: simple-card - sun8i-a33-audio
+                      sun8i-a33-audio
+Filesystem                Size      Used Available Use% Mounted on
+tmpfs                   501.2M     68.5M    432.7M  14% /tmp
+              total        used        free      shared  buff/cache   available
+Mem:           1002          64         674          69         264         846
+Swap:             0           0           0
+0.95 0.97 0.99 2/129 5353
+CMD: ssh <radio> pidof x6200_gui 2>/dev/null | awk "{print \$1}"
+gui_pid=23711
+CMD: ssh <radio> sha256sum /usr/sbin/x6200_gui 2>/dev/null | cut -d' ' -f1
+CMD: ssh <radio> readlink -f /proc/23711/exe
+gui_sha256=b1157fdb3be99302fc46b609228f4eb4bd84cfe0510ee580efa642fa7bdf0022
+gui_exe=/usr/sbin/x6200_gui
+CMD: ssh <radio> pactl list short sources; echo ---; pactl list short sinks; echo ---; pactl list short modules
+0	alsa_output.platform-sound.stereo-fallback.monitor	module-alsa-card.c	s16le 2ch 44100Hz	IDLE
+1	alsa_input.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+---
+0	alsa_output.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+---
+0	module-device-restore		
+1	module-stream-restore		
+2	module-card-restore		
+5	module-udev-detect		
+6	module-alsa-card	device_id="0" name="platform-sound" card_name="alsa_card.platform-sound" namereg_fail=false tsched=yes fixed_latency_range=no ignore_dB=no deferred_volume=yes use_ucm=yes avoid_resampling=no card_properties="module-udev-detect.discovered=1"	
+7	module-native-protocol-unix	auth-anonymous=1	
+8	module-default-device-restore		
+9	module-always-sink		
+10	module-suspend-on-idle		
+11	module-position-event-sounds		
+15	module-bluetooth-policy	auto_switch=0 a2dp_source=false ag=false	
+CMD: ssh <radio> cat /proc/asound/card0/pcm0c/sub0/status 2>/dev/null; echo ---play---; cat /proc/asound/card0/pcm0p/sub0/status 2>/dev/null
+state: RUNNING
+owner_pid   : 331
+trigger_time: 5748.478148369
+tstamp      : 21759.058895571
+delay       : 2560
+avail       : 2560
+avail_max   : 2560
+-----
+hw_ptr      : 706085864
+appl_ptr    : 706083304
+---play---
+state: RUNNING
+owner_pid   : 330
+trigger_time: 5748.471531121
+tstamp      : 21759.067299346
+delay       : 7786
+avail       : 80414
+avail_max   : 80414
+-----
+hw_ptr      : 706086548
+appl_ptr    : 706094334
+CMD: ssh <radio> ps w | grep -E "x6200_gui|pulseaudio|bluetoothd" | grep -v grep
+  329 pulse    /usr/bin/pulseaudio --system --daemonize --disallow-exit --exit-idle-time=-1 --use-pid-file --disable-shm
+  397 root     /usr/libexec/bluetooth/bluetoothd -n -C
+23711 root     /usr/sbin/x6200_gui
+CMD: ssh <radio> test -x /tmp/x6200-remote
+CMD: ssh <radio> /tmp/x6200-remote "{\"cmd\":\"get\"}"
+{"t":"state","vfo":"A","freq":7094000,"freq_bg":7062100,"mode":"LSB-D","band":"40m SSB","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":1,"pre":0,"att":1,"agc":"AUTO","nb":1,"nr":0,"nb_level":5,"nb_width":85,"nr_level":0,"pwr":80,"db":-101,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+estado_rx=MEASURED (GET read-only)
+CMD: ssh <radio> df -k /tmp | tail -1 | awk "{print \$4}"
+443100
+CMD: ssh <radio> free -m | awk "/Mem:/{print \$7}"
+847
+CMD: ssh <radio> df -k /tmp | tail -1 | awk "{print \$4}"
+CMD: ssh <radio> free -m | awk "/Mem:/{print \$7}"
+preflight OK: /tmp libre=443100kB RAM disponible=847MB
+### copia del banco a /tmp/x6200-rnnoise-bench-20261028 (despues del preflight)
+CMD: ssh <radio> rm -rf /tmp/x6200-rnnoise-bench-20261028 && mkdir -p /tmp/x6200-rnnoise-bench-20261028
+CMD: scp <radio> <workspace>/.qa-347-scratch/bench-arm/bench_rnnoise_arm_default root@<radio-ip>:/tmp/x6200-rnnoise-bench-20261028/bench_rnnoise_arm_default
+CMD: scp <radio> <workspace>/.qa-347-scratch/bench-arm/bench_rnnoise_arm_neonoff root@<radio-ip>:/tmp/x6200-rnnoise-bench-20261028/bench_rnnoise_arm_neonoff
+CMD: scp <radio> <workspace>/x6200-rx-nr-hardware-20261028/docs/evidencia/2026-10-28-rx-audio-hardware/scripts/radio/monitor.sh root@<radio-ip>:/tmp/x6200-rnnoise-bench-20261028/monitor.sh
+CMD: scp <radio> <workspace>/x6200-rx-nr-hardware-20261028/docs/evidencia/2026-10-28-rx-audio-hardware/scripts/radio/run-one.sh root@<radio-ip>:/tmp/x6200-rnnoise-bench-20261028/run-one.sh
+CMD: scp <radio> <workspace>/.qa-347-scratch/bench-arm/fixture-white-noise-10s.raw root@<radio-ip>:/tmp/x6200-rnnoise-bench-20261028/fixture.raw
+CMD: ssh <radio> chmod 755 /tmp/x6200-rnnoise-bench-20261028/monitor.sh /tmp/x6200-rnnoise-bench-20261028/run-one.sh /tmp/x6200-rnnoise-bench-20261028/bench_rnnoise_arm_*
+CMD: ssh <radio> sha256sum /tmp/x6200-rnnoise-bench-20261028/bench_rnnoise_arm_default | cut -d' ' -f1
+CMD: ssh <radio> sha256sum /tmp/x6200-rnnoise-bench-20261028/bench_rnnoise_arm_neonoff | cut -d' ' -f1
+binarios copiados y verificados (sha256)
+CMD: ssh <radio> sha256sum /tmp/x6200-rnnoise-bench-20261028/fixture.raw | cut -d' ' -f1
+### fixture copiado y verificado (sha256=b718cf2c118cfb465a0e7894a7eaa7baa23719406736e494d0fbf7fcd1aaa56e)
+### controles: frame size de RNNoise y bypass off bit-exacto, en la radio
+CMD: ssh <radio> /tmp/x6200-rnnoise-bench-20261028/bench_rnnoise_arm_default --rnnoise-frame-size
+480
+CMD: ssh <radio> /tmp/x6200-rnnoise-bench-20261028/bench_rnnoise_arm_neonoff --rnnoise-frame-size
+480
+CMD: ssh <radio> cd /tmp/x6200-rnnoise-bench-20261028 && ./bench_rnnoise_arm_default --case control_off --in fixture.raw --method off --seconds 10 --out control_off.raw
+{"case":"control_off","method":"off","method_effective":"off","fallback":0,"seconds":10,"reps":1,"units":1000,"block":441,"unit_in":441,"unit_mid":480,"in_samples":441000,"out_samples":441000,"rnnoise_frame_size":480,"rnnoise_frames":0,"taps":64,"up":"160/147","down":"147/160","wall_ms":8.460,"user_ms":0.000,"sys_ms":7.225,"frame_p50_ms":0.00000000,"frame_p95_ms":0.00000000,"frame_p99_ms":0.00000000,"frame_max_ms":0.00000000,"up_p50_ms":0.00000000,"up_p95_ms":0.00000000,"up_p99_ms":0.00000000,"nr_p50_ms":0.00000000,"nr_p95_ms":0.00000000,"nr_p99_ms":0.00000000,"down_p50_ms":0.00000000,"down_p95_ms":0.00000000,"down_p99_ms":0.00000000,"speex_p50_ms":0.00000000,"speex_p95_ms":0.00000000,"speex_p99_ms":0.00000000,"over_10ms":0,"pct_over_10ms":0.0000,"rss_preinit_kb":2008,"rss_start_kb":2008,"rss_end_kb":2008,"rss_peak_kb":2008}
+CMD: ssh <radio> cd /tmp/x6200-rnnoise-bench-20261028 && cmp -s control_off.raw fixture.raw && echo OFF_BIT_EXACT_OK || echo OFF_DIFF
+OFF_BIT_EXACT_OK
+CMD: ssh <radio> cut -d" " -f1 /proc/uptime
+### arranca monitor pasivo en la radio (1 Hz, corta el banco si hay degradacion)
+CMD: ssh <radio> cd /tmp/x6200-rnnoise-bench-20261028 && { nohup sh monitor.sh 23711 /tmp/x6200-rnnoise-bench-20261028/monitor.log 900 >/dev/null 2>&1 & echo $!; }
+monitor_pid=5534
+CMD: ssh <radio> test -s /tmp/x6200-rnnoise-bench-20261028/monitor.log && echo MONITOR_UP || echo MONITOR_DOWN
+MONITOR_UP
+### pasada default default_warmup1 (nice -n 10, timeout 30s)
+PASS_RESULT variant=default case=default_warmup1 exit=124
+CMD: ssh <radio> grep -c SAFETY_ABORT /tmp/x6200-rnnoise-bench-20261028/monitor.log 2>/dev/null || echo 0
+### TIMEOUT de 30s en default/default_warmup1 (presupuesto excedido)
+### corta el monitor pasivo
+CMD: ssh <radio> kill 5534 2>/dev/null || true
+CMD: ssh <radio> ls /tmp/x6200-rnnoise-bench-20261028/*.out /tmp/x6200-rnnoise-bench-20261028/*.json 2>/dev/null
+CMD: ssh <radio> pactl list short sources; echo ---; pactl list short sinks; echo ---; pactl list short modules
+0	alsa_output.platform-sound.stereo-fallback.monitor	module-alsa-card.c	s16le 2ch 44100Hz	IDLE
+1	alsa_input.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+---
+0	alsa_output.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+---
+0	module-device-restore		
+1	module-stream-restore		
+2	module-card-restore		
+5	module-udev-detect		
+6	module-alsa-card	device_id="0" name="platform-sound" card_name="alsa_card.platform-sound" namereg_fail=false tsched=yes fixed_latency_range=no ignore_dB=no deferred_volume=yes use_ucm=yes avoid_resampling=no card_properties="module-udev-detect.discovered=1"	
+7	module-native-protocol-unix	auth-anonymous=1	
+8	module-default-device-restore		
+9	module-always-sink		
+10	module-suspend-on-idle		
+11	module-position-event-sounds		
+15	module-bluetooth-policy	auto_switch=0 a2dp_source=false ag=false	
+CMD: ssh <radio> cat /proc/asound/card0/pcm0c/sub0/status 2>/dev/null; echo ---play---; cat /proc/asound/card0/pcm0p/sub0/status 2>/dev/null
+state: RUNNING
+owner_pid   : 331
+trigger_time: 5748.478148369
+tstamp      : 21805.184723021
+delay       : 1576
+avail       : 1576
+avail_max   : 1576
+-----
+hw_ptr      : 708120064
+appl_ptr    : 708118488
+---play---
+state: RUNNING
+owner_pid   : 330
+trigger_time: 5748.471531121
+tstamp      : 21805.196363709
+delay       : 7210
+avail       : 80990
+avail_max   : 80990
+-----
+hw_ptr      : 708120892
+appl_ptr    : 708128102
+CMD: ssh <radio> ps w | grep -E 'x6200_gui|pulseaudio' | grep -v grep
+  329 pulse    /usr/bin/pulseaudio --system --daemonize --disallow-exit --exit-idle-time=-1 --use-pid-file --disable-shm
+23711 root     /usr/sbin/x6200_gui
+CMD: ssh <radio> free -m; cat /proc/loadavg; dmesg 2>/dev/null | tail -5
+              total        used        free      shared  buff/cache   available
+Mem:           1002          66         664          77         272         835
+Swap:             0           0           0
+1.83 1.20 1.07 3/135 6032
+[21410.491456] wlan0: authenticated
+[21410.501437] wlan0: associate with <mac> (try 1/3)
+[21410.510036] wlan0: RX AssocResp from <mac> (capab=0x1431 status=0 aid=30)
+[21410.525100] wlan0: associated
+[21410.652651] wlan0: Limiting TX power to 30 (30 - 0) dBm as advertised by <mac>
+CMD: ssh <radio> sha256sum /usr/sbin/x6200_gui 2>/dev/null | cut -d' ' -f1
+b1157fdb3be99302fc46b609228f4eb4bd84cfe0510ee580efa642fa7bdf0022
+CMD: ssh <radio> pidof x6200_gui 2>/dev/null | awk "{print \$1}"
+gui_pid_post=23711
+### limpieza: se borra SOLO /tmp/x6200-rnnoise-bench-20261028
+CMD: ssh <radio> rm -rf /tmp/x6200-rnnoise-bench-20261028
+CMD: ssh <radio> test -e /tmp/x6200-rnnoise-bench-20261028 && echo LEFTOVER || echo CLEAN
+CLEAN
+### fin. exit_aborted=2
+FULL_EXIT=0

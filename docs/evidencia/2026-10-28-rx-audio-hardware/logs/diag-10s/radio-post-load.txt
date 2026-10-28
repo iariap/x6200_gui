@@ -1,0 +1,9 @@
+              total        used        free      shared  buff/cache   available
+Mem:           1002          64         666          77         272         838
+Swap:             0           0           0
+2.18 1.50 1.19 2/133 6857
+[21410.491456] wlan0: authenticated
+[21410.501437] wlan0: associate with <mac> (try 1/3)
+[21410.510036] wlan0: RX AssocResp from <mac> (capab=0x1431 status=0 aid=30)
+[21410.525100] wlan0: associated
+[21410.652651] wlan0: Limiting TX power to 30 (30 - 0) dBm as advertised by <mac>

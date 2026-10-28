@@ -1,0 +1,3 @@
+{"case":"default_warmup1_protocol_60s","method":"rnnoise","seconds":60,"units":6000,
+ "run_exit":"124","special":"timeout","timeout_s":30,
+ "note":"60 s de audio por pasada (6000 frames de 10 ms) con timeout 30 s: NO completo; cota inferior mean>5.0 ms/frame. Protocolo 3 warmups + 5 pasadas abortado por mandato."}

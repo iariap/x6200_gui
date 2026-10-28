@@ -1,0 +1,116 @@
+# commands.log — comandos reales y exit codes (issue #347, 2026-10-28)
+#
+# IP/host y credenciales enmascarados (<radio-ip>, <user>) y rutas absolutas del host
+# reemplazadas por <workspace> (review de sanitizacion del PR #348), por la regla de no publicar
+# identificadores; el acceso fue el ya provisto (helper tools/lib-radio.sh de este repo).
+# El mensaje del operador se registra parafraseado, sin citar el texto de la conversacion.
+# Los comandos de escritura sobre la radio son CERO: sólo lecturas (/proc, pactl, parec)
+# y archivos propios en /tmp. Ninguna transmisión, ningún cambio de VFO/modo/volumen/
+# mute/NR/NB/DNF/ruteo/ajustes/BT, ningún sudo, ningún flash.
+#
+# Formato:  [UTC] comando  ->  exit code / resultado
+
+## 0. Lectura del issue y del antecedente (host)
+[19:51Z] cd <workspace>/x6200_qa
+[19:51Z] gh issue view 347 --repo iariap/x6200_gui --json number,title,body,comments  ->  exit 0 (issue leido completo)
+[19:51Z] gh issue view 345 --repo iariap/x6200_gui --json number,title,body,comments  ->  exit 0
+[19:51Z] gh pr view 346 --repo iariap/x6200_gui --json number,title,body,files,state,mergedAt,mergeCommit,headRefName,baseRefName  ->  exit 0
+[19:51Z] read docs/evidencia/2026-10-28-rx-audio-feasibility/{signal-flow.md,rnnoise-vs-speex.md,hardware-handoff.md}  ->  exit 0
+[19:52Z] read docs/HALLAZGOS.md §64 (lineas 4002-4129) y §65 (4131-4241)  ->  exit 0
+[19:51Z] team_task_get task-1 -> revision 1; team_task_update action=claim expected_revision=1 -> exit 0 (revision 2, owner rx-nr-hardware-qa)
+
+## 1. Base real y worktree (host)
+[19:52Z] cd x6200_qa && git fetch origin main      -> exit 0; FETCH_HEAD = 8b0d5de9b9bbf4f1c630c3570404c56c09f012d4
+[19:52Z] git rev-parse origin/main                 -> 8b0d5de9b9bbf4f1c630c3570404c56c09f012d4  (PR #346 merge, hijo de a1c667ee)
+[19:52Z] git merge-base --is-ancestor a1c667ee 8b0d5de9 && echo YES  -> exit 0 (YES: el clon local estaba viejo)
+[19:52Z] git worktree add <workspace>/x6200-rx-nr-hardware-20261028 -b audit/rx-nr-hardware-20261028 8b0d5de9  -> exit 0
+[19:52Z] git rev-parse HEAD                         -> 8b0d5de9b9bbf4f1c630c3570404c56c09f012d4
+[19:52Z] git status --porcelain --branch             -> ## audit/rx-nr-hardware-20261028 (limpio)
+
+## 2. Preflight read-only de la radio (host -> radio)
+# Todas las conexiones usan sshpass con el helper de acceso ya provisto; salida en logs/.
+[19:52Z] ssh <user>@<radio-ip> 'echo SSH_OK; date -u; uptime; uname -a'  -> exit 0 (Linux X6200 6.1.82 armv7l; up 5:54; load 0.91)
+[19:52Z] ssh ... 'cat /proc/cpuinfo'                 -> exit 0 (4 x ARMv7 rev5 v7l, CPU part 0xc07 = Cortex-A7, NEON/VFPv4)
+[19:52Z] ssh ... 'cat /proc/asound/cards'            -> exit 0 (card 0 sun8i-a33-audio)
+[19:53Z] ssh ... 'pactl list short sources'          -> exit 0 (source alsa_input.platform-sound.stereo-fallback RUNNING)
+[19:53Z] ssh ... 'pactl list short sinks'            -> exit 0 (sink alsa_output.platform-sound.stereo-fallback RUNNING)
+[19:53Z] ssh ... 'pactl list short modules'          -> exit 0 (sin module-loopback)
+[19:53Z] ssh ... 'ps w | grep -E "x6200|pulse|blue|a2dp"'  -> exit 0 (x6200_gui pid 23711; pulseaudio pid 329; bluetoothd 397)
+[19:53Z] ssh ... 'df -h /tmp /mnt; free -m; cat /proc/loadavg'  -> exit 0 (/tmp 432 MB libres; RAM ~845 MB disp.)
+[19:53Z] ssh ... 'sha256sum /usr/sbin/x6200_gui; readlink -f /proc/23711/exe'  -> exit 0 (b1157fdb3be99302fc46b609228f4eb4bd84cfe0510ee580efa642fa7bdf0022)
+[19:53Z] ssh ... '/tmp/x6200-remote "{\"cmd\":\"get\"}"'  -> exit 0 (14.074 MHz USB-D FT8 vol=0 nb=1 nr=0 tx=false)
+[19:54Z] ssh ... lectura de /proc/23711/stat + /proc/stat + /proc/loadavg durante 10 s  -> exit 0 (GUI ~67 % de 1 nucleo; idle total 81 %; RSS 24 MB)
+[19:54Z] ssh ... 'cat /proc/asound/card0/pcm0c|pcm0p/sub0/status'  -> exit 0 (CAPTURE y PLAYBACK RUNNING)
+[19:54Z] ssh ... 'for c in /sys/devices/system/cpu/cpu*/cpufreq; do cat $c/scaling_cur_freq $c/scaling_governor; done'  -> exit 0 (1008000 performance x4)
+
+## 3. G1 — ruta audible (read-only)
+[19:57Z] ssh ... 'pactl list short clients'          -> exit 0 (x6200_gui conectado)
+[19:57Z] ssh ... 'pactl list sources | sed -n 1,60p' -> exit 0 (source #1 RUNNING, HARDWARE, latency 751 usec)
+[19:57Z] ssh ... 'pactl list sinks | sed -n 1,60p'   -> exit 0 (sink #0 RUNNING, Mute:no, Volume 83 %/-5.00 dB, Active Port analog-output-headphones)
+[20:04Z] ssh ... 'parec --device=alsa_input.platform-sound.stereo-fallback --raw > /tmp/x6200-qa347/rx-source-2s.raw & sleep 2; kill'  -> exit 0 (354016 B; RMS -22.44 dBFS; 100 % muestras != 0)
+[20:05Z] ssh ... 'parec --device=alsa_output.platform-sound.stereo-fallback.monitor --raw > ...rx-sinkmon-2s.raw & sleep 2; kill'  -> exit 0 (314276 B; todo 0: el SoC no reproduce nada)
+[20:05Z] scp <radio-ip>:.../rx-*.raw -> scratch; python3 (RMS/pico/sha256); rm de los .raw  -> exit 0 (audio NO conservado ni publicado; quedan hash y stats en logs/g1-parec-stats.txt)
+[nota] No se ejecuto audio_play_en() / x6200_control_record_set() / aplay / paplay / speaker-test / pactl load-module / loopback / cambios de BT: PROHIBIDO y no se hizo.
+
+## 4. G2 — build del banco ARM (host)
+[19:55Z] git clone https://github.com/xiph/rnnoise <workspace>/.qa-347-scratch/rnnoise-src  -> exit 0
+[19:55Z] git -C rnnoise-src checkout 70f1d256acd4b34a572f999a05c87bf00b67730d; git rev-parse HEAD  -> exit 0 (== pinneado)
+[19:55Z] curl -sSL -o rnnoise_data.tar.gz https://media.xiph.org/rnnoise/models/rnnoise_data-0a8755f8....tar.gz  -> exit 0
+[19:55Z] sha256sum rnnoise_data.tar.gz               -> 0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37 (== #345)
+[19:56Z] sh docs/evidencia/2026-10-28-rx-audio-hardware/scripts/build-bench-arm.sh  -> exit 0
+         verifica commit, hashes de fuente y pesos identicos al #345; compila librnnoise.a (default y -DDISABLE_NEON)
+         y bench_rnnoise_arm_{default,neonoff}; `file`: ELF 32-bit LSB ARM, EABI5; NEEDED libspeexdsp.so.1/libm/libc
+         sha256 default 389d74923036... ; neonoff 34fe65be401a... ; sin simbolos de radio/ALSA (grep vacio)
+[19:57Z] (primer intento de build) -> exit 1: el script aborto porque mi propio chequeo de `git status --porcelain`
+         marcaba los archivos no versionados del modelo extraido; se corrigio a --untracked-files=no (los
+         archivos del modelo siguen fuera del repo, igual que en el #345). Registrado, no oculto.
+
+## 5. G2 — corrida en la radio
+[19:58Z] gen_pcm.py --verify  -> exit 0 ("los cuatro WAV regenerados coinciden byte a byte con el manifiesto")
+[19:58Z] fixture raw white_noise_44100_s16: raw_sha256=b718cf2c118cfb465a0e7894a7eaa7baa23719406736e494d0fbf7fcd1aaa56e
+         (== hash `off`/input del #345; 882000 bytes, 441000 muestras)
+[19:58Z] RADIO_IP=<radio-ip> SKIP_UPLOAD=1 sh scripts/run-bench-arm.sh  -> exit 0 (dry-run: preflight + copia + controles; matriz omitida)
+         controles en la radio: --rnnoise-frame-size = 480 (ambas variantes); `off` bit-exacto = OFF_BIT_EXACT_OK
+[19:59Z] RADIO_IP=<radio-ip> sh scripts/run-bench-arm.sh  -> exit 0 (wrapper), pero la matriz ABORTO:
+         pasada default_warmup1 (--seconds 60, timeout 30 s) -> exit 124 (TIMEOUT). No se corrieron 3+5 (protocolo abortado).
+[20:02Z] RADIO_IP=<radio-ip> LOGS=.../logs/diag-10s PROTOCOL=diag SECONDS_PER_PASS=10 sh scripts/run-bench-arm.sh  -> wrapper exit 0, pasada abortada: exit 124
+         (durante ese intento el load de la radio era 2.19 y la GUI ~85 %: misma pasada de 1000 frames no entro en 30 s)
+[20:04Z] probe methods (10 s de audio, mismo binario/fixture, nice -n 10):
+         --method off       -> exit 0  p50 0.000 ms
+         --method resample  -> exit 0  p50 1.960 ms (media 2.066)  [resampling 44.1->48->44.1 aislado]
+         --method speex     -> exit 0  p50 0.310 ms (media 0.345)  [cadena Speex real del #345]
+[20:04Z] runtime probe rnnoise default (10 s audio, timeout 120 s solo para diagnostico) -> exit 0, wall 13.030 s
+         p50 12.781 / p95 14.363 / p99 15.616 ms, over_10ms 1000/1000, RSS 3624 kB
+[20:04Z] runtime probe rnnoise neonoff (-DDISABLE_NEON, 10 s audio)  -> exit 0, wall 28.490 s
+         p50 28.485 / p95 29.882 / p99 31.581 ms, over_10ms 1000/1000
+[20:08Z] 2 pasadas diagnosticas adicionales default con monitor.sh 1 Hz:
+         pass2 -> exit 0 (p50 13.697, mean 14.155) ; pass3 -> exit 0 (p50 13.002, mean 13.143)
+         monitor durante las pasadas: GUI CPU 74.8 % mediana / 92.8 % max; idle 38.6 % min; load1 1.43 max; 0 SAFETY_ABORT
+[20:10Z] cleanup: rm -rf /tmp/x6200-rnnoise-bench-20261028 /tmp/x6200-rnnoise-probe-20261028 /tmp/x6200-qa347 -> exit 0
+         ps posterior: NO_BENCH_PROCS; GET final identico salvo db/vol (vol cambiado por el operador, ver README §2.1)
+[20:10Z] kill de dos shells `monitor.sh` que habian quedado de intentos previos -> exit 0 (NO_BENCH_PROCS)
+
+## 6. G4 — tests (worktree, nunca en la radio)
+[19:54Z] sh tests/native/run_native_tests.sh            -> NATIVE_EXIT=0
+[19:54Z] sh tests/run_all_tests.sh --quick              -> QUICK_EXIT=1 (16 OK, 7 fallos; el 7o era drawbuf_partial por submódulo lvgl vacio)
+[19:56Z] git submodule update --init lvgl               -> exit 0 (lvgl en 74d0a816, el pinneado; no cambia archivos versionados)
+[19:56Z] sh tests/run_all_tests.sh --quick (2do intento) -> QUICK2_EXIT=1 (17 OK, 6 fallos preexistentes: apps_menu, pruebas,
+         wcag_rendered, widget_text, dialog_coverage, curve_evidence; drawbuf_partial ahora OK). No se modifico ningun test.
+[nota] QEMU no se uso para audio del BASE ni para desempeno: UNSUPPORTED / no sustituye al Cortex-A7.
+
+## 7. Analisis y cierre (host)
+[20:09Z] python3 scripts/analyse-bench.py  -> exit 0 (10 filas en cpu-arm.csv; agregado default p50 13.002 / p99 16.523 /
+         mean 13.143 ms; neonoff p50 28.485; 100 % frames >10 ms)
+[20:10Z] python3 scripts/gen_pcm.py --verify (docs del #345, sin escribir)  -> exit 0
+[20:13Z] git -C <worktree> status --porcelain; git diff --cached --name-only  -> SOLO docs/evidencia/2026-10-28-rx-audio-hardware/** (docs-only)
+[20:13Z] python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py -> exit 0
+[20:13Z] git add docs/evidencia/2026-10-28-rx-audio-hardware && git commit  -> exit 0
+[20:13Z] git push -u fork audit/rx-nr-hardware-20261028  -> exit 0 (rama nueva en el remoto)
+[20:13Z] gh pr create --repo iariap/x6200_gui --base main --head audit/rx-nr-hardware-20261028
+         --title '[AUDIO QA] RX path and ARM RNNoise go/no-go (closes #347)'
+         --body 'Closes #347; Refs #345; Refs #346'  -> exit 0, PR #348, sin auto-merge
+# PR #348: https://github.com/iariap/x6200_gui/pull/348
+#   base main = 8b0d5de9b9bbf4f1c630c3570404c56c09f012d4 (origin/main real al arrancar)
+#   head = rama audit/rx-nr-hardware-20261028 (el SHA final es el ultimo commit de la rama, reportado en el PR)
+#   alcance verificado: solo docs/evidencia/2026-10-28-rx-audio-hardware/** (docs-only)
+#   diff docs-only: cero cambios en src/, rootfs/, tests/, rom-build/

@@ -1,0 +1,76 @@
+=== native suite (extracto)
+    FALLÓ, ver /tmp/drawbuf_partial.log
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  settings_grid: OK   
+  info_bar: OK   
+  apps_menu: FALLÓ
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (25 apps)
+  pruebas: FALLÓ
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  wcag_rendered: FALLÓ
+  widget_text: FALLÓ
+  cw_tune_feed: OK   
+  autotune_v2: OK   
+  build_identity: OK   
+  dialog_coverage: FALLÓ
+  curve_evidence: FALLÓ
+  host: OK   57 comprobaciones, 0 fallos
+  daemon: OK     all OK: 15 casos, 0 fallos
+  host_ci_parity: OK   57 comprobaciones, 0 fallos
+  db_failclosed: OK   todos los casos corrieron y afirmaron su resultado (matriz: <workspace>/x6200-rx-nr-hardware-20261028/tests/native/build/db_failclosed/matrix.txt)
+  drawbuf_partial: FALLÓ
+  navtex: OK   all OK
+  16 OK, 7 fallos
+
+=== quick suite (extracto)
+=== host ===
+=== daemon ===
+=== host_ci_parity ===
+=== db_failclosed ===
+=== qemu_apps ===
+    SKIP: barrido QEMU sin entorno privado (3 requisito(s) faltante(s))
+=== drawbuf_partial ===
+=== wspr ===
+    SKIP: wspr: la imagen x6200-uiharness no trae /usr/include/fftw3.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+=== sstv ===
+    SKIP: sstv: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+=== wefax ===
+    SKIP: wefax: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+=== navtex ===
+================ resumen ================
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  settings_grid: OK   
+  info_bar: OK   
+  apps_menu: FALLÓ
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (25 apps)
+  pruebas: FALLÓ
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  wcag_rendered: FALLÓ
+  widget_text: FALLÓ
+  cw_tune_feed: OK   
+  autotune_v2: OK   
+  build_identity: OK   
+  dialog_coverage: FALLÓ
+  curve_evidence: FALLÓ
+  host: OK   57 comprobaciones, 0 fallos
+  daemon: OK     all OK: 15 casos, 0 fallos
+  host_ci_parity: OK   57 comprobaciones, 0 fallos
+  db_failclosed: OK   todos los casos corrieron y afirmaron su resultado (matriz: <workspace>/x6200-rx-nr-hardware-20261028/tests/native/build/db_failclosed/matrix.txt)
+  qemu_apps: SKIP SKIP: barrido QEMU sin entorno privado (3 requisito(s) faltante(s))
+  drawbuf_partial: OK   PASS: partial draw buffer renders the identical physical framebuffer (sw-rotate 90)
+  wspr: SKIP SKIP: wspr: la imagen x6200-uiharness no trae /usr/include/fftw3.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  sstv: SKIP SKIP: sstv: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  wefax: SKIP SKIP: wefax: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  navtex: OK   all OK
+  (omitidos: qemu_apps wspr sstv wefax js8 webserver)
+  17 OK, 6 fallos
+QUICK2_EXIT=1
+
+QUICK2_EXIT line:
+QUICK2_EXIT=1

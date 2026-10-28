@@ -1,0 +1,14 @@
+=== CPU freq ===
+/sys/devices/system/cpu/cpu0/cpufreq: 1008000 performance
+/sys/devices/system/cpu/cpu1/cpufreq: 1008000 performance
+/sys/devices/system/cpu/cpu2/cpufreq: 1008000 performance
+/sys/devices/system/cpu/cpu3/cpufreq: 1008000 performance
+---
+1008000
+=== load/free ===
+1.58 1.42 1.17 2/132 6974
+              total        used        free      shared  buff/cache   available
+Mem:           1002          64         674          69         264         846
+  329 pulse    /usr/bin/pulseaudio --system --daemonize --disallow-exit --exit-idle-time=-1 --use-pid-file --disable-shm
+23711 root     /usr/sbin/x6200_gui
+Wed Oct 28 20:03:47 UTC 2026

@@ -1,0 +1,27 @@
+parec=/usr/bin/parec
+pacat=/usr/bin/pacat
+pactl=/usr/bin/pactl
+--- source estados ---
+0	alsa_output.platform-sound.stereo-fallback.monitor	module-alsa-card.c	s16le 2ch 44100Hz	IDLE
+1	alsa_input.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+--- sink ---
+0	alsa_output.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+--- modules loopback ---
+NONE
+--- asound pcm devices ---
+card: 0
+device: 0
+subdevice: 0
+stream: CAPTURE
+id: 1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0
+name: 1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0
+subname: subdevice #0
+class: 0
+card: 0
+device: 0
+subdevice: 0
+stream: PLAYBACK
+id: 1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0
+name: 1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0
+subname: subdevice #0
+class: 0

@@ -1,0 +1,5 @@
+escrito <workspace>/x6200-rx-nr-hardware-20261028/docs/evidencia/2026-10-28-rx-audio-hardware/cpu-arm.csv (10 filas)
+monitor[protocolo-60s]: n=20 gui%med=85.5 max=90.14 idle%min=29.58 load1 max=1.73 aborts=ninguno
+monitor[mediciones-acotadas]: n=52 gui%med=74.78 max=92.83 idle%min=38.61 load1 max=1.43 aborts=ninguno
+[aggregate_default] p50=13.001526 p95=15.237383 p99=16.523098 mean=13.143312 over_10ms=3000 exit=0
+[aggregate_neonoff] p50=28.485444 p95=29.881532 p99=31.580737 mean=28.388601 over_10ms=1000 exit=0

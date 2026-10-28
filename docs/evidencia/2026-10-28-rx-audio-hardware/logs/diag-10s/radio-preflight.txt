@@ -1,0 +1,33 @@
+Wed Oct 28 20:02:16 UTC 2026
+Linux X6200 6.1.82 #1 SMP PREEMPT Tue Oct 27 15:23:18 UTC 2026 armv7l GNU/Linux
+processor	: 0
+model name	: ARMv7 Processor rev 5 (v7l)
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU part	: 0xc07
+processor	: 1
+model name	: ARMv7 Processor rev 5 (v7l)
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU part	: 0xc07
+processor	: 2
+model name	: ARMv7 Processor rev 5 (v7l)
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU part	: 0xc07
+processor	: 3
+model name	: ARMv7 Processor rev 5 (v7l)
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU part	: 0xc07
+ 0 [sun8ia33audio  ]: simple-card - sun8i-a33-audio
+                      sun8i-a33-audio
+Filesystem                Size      Used Available Use% Mounted on
+tmpfs                   501.2M     72.0M    429.2M  14% /tmp
+              total        used        free      shared  buff/cache   available
+Mem:           1002          66         670          72         267         841
+Swap:             0           0           0
+2.10 1.35 1.12 3/132 6140
+gui_pid=23711
+gui_sha256=b1157fdb3be99302fc46b609228f4eb4bd84cfe0510ee580efa642fa7bdf0022
+gui_exe=/usr/sbin/x6200_gui
+  329 pulse    /usr/bin/pulseaudio --system --daemonize --disallow-exit --exit-idle-time=-1 --use-pid-file --disable-shm
+  397 root     /usr/libexec/bluetooth/bluetoothd -n -C
+23711 root     /usr/sbin/x6200_gui
+estado_rx=MEASURED (GET read-only)

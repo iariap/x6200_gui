@@ -1,0 +1,6 @@
+=== parec pasivo del source 2s Wed Oct 28 08:04:56 PM UTC 2026 ===
+-rw-------    1 root     root        354016 Oct 28 20:04 /tmp/x6200-qa347/rx-source-2s.raw
+bcb0922c42c86d0e7b1b492b36d16350696e7158fb2ebb9f35a854dd8ef0784a  /tmp/x6200-qa347/rx-source-2s.raw
+=== parec pasivo del monitor del sink 2s ===
+-rw-------    1 root     root        314276 Oct 28 20:05 /tmp/x6200-qa347/rx-sinkmon-2s.raw
+29f49afa84541c0ad51f8f6b5df9a9e6053954a01057e3c8605cf9b255ce9f6f  /tmp/x6200-qa347/rx-sinkmon-2s.raw

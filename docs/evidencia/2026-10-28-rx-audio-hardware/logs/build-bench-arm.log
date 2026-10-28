@@ -1,0 +1,80 @@
+=== build-bench-arm Wed Oct 28 07:57:52 PM UTC 2026 ===
+### worktree / evidencia
+repo=<workspace>/x6200-rx-nr-hardware-20261028
+scratch=<workspace>/.qa-347-scratch
+out=<workspace>/.qa-347-scratch/bench-arm
+### toolchain
+arm-buildroot-linux-gnueabihf-gcc.br_real (Buildroot 2023.02.11-dirty) 12.3.0
+arm-buildroot-linux-gnueabihf
+<workspace>/rom-build/clone-buildroot/build/host/arm-buildroot-linux-gnueabihf/sysroot
+toolchain_id=arm-buildroot-linux-gnueabihf-gcc 12.3.0 (Buildroot 2023.02.11-dirty)
+### flags fijados por el toolchain (no se agregan -mfpu/-march a mano)
+#define __ARM_NEON 1
+#define __VFP_FP__ 1
+#define __ARM_ARCH 7
+#define __ARM_ARCH_7A__ 1
+### libspeexdsp real del sysroot (para la cadena speex del banco, igual que el #345)
+lrwxrwxrwx. 1 <user> <user> 20 Oct 21 17:21 <workspace>/rom-build/clone-buildroot/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/lib/libspeexdsp.so -> libspeexdsp.so.1.5.2
+lrwxrwxrwx. 1 <user> <user> 20 Oct 21 17:21 <workspace>/rom-build/clone-buildroot/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/lib/libspeexdsp.so.1 -> libspeexdsp.so.1.5.2
+speexdsp_sha256= cfc033a1d191e912c438e12e1525be0da2ada73a25cf7fcd9724cf24cb3c33ca  <workspace>/rom-build/clone-buildroot/build/host/arm-buildroot-linux-gnueabihf/sysroot/usr/lib/libspeexdsp.so.1.5.2
+### commit pinenado de RNNoise
+esperado=70f1d256acd4b34a572f999a05c87bf00b67730d
+obtenido=70f1d256acd4b34a572f999a05c87bf00b67730d
+rnnoise_src_sha256= f12ac3cc97d798cdfd7c7bd4366a08a72c5516c382056c891b61a61cb17eb031  <workspace>/.qa-347-scratch/rnnoise-src/src/denoise.c
+rnnoise_src_sha256= c40bbe40082448005873fe970d8963870ab2c9993b7c38d6939ca48f4f31a7bd  <workspace>/.qa-347-scratch/rnnoise-src/src/rnn.c
+rnnoise_src_sha256= 3a2c1dc09ad7e9dfe3cf32cfb94694935dc462488da8f513d1f308db39f7c087  <workspace>/.qa-347-scratch/rnnoise-src/src/nnet.c
+### modelo (pesos) pinenado
+modelo_sha256=0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37
+esperado=0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37
+model_sha256= d6021b7697677c4d2274c912975e143765552b0e6f25500aa660fdb4a9849be5  <workspace>/.qa-347-scratch/rnnoise-src/src/rnnoise_data.c
+model_sha256= 09ff880bddd0fc74a2ae0e5ec6c8d65714031b08d0c3f672493acd9e189c5855  <workspace>/.qa-347-scratch/rnnoise-src/src/rnnoise_data.h
+### compilando librnnoise ARM (2 variantes: toolchain-default y DISABLE_NEON)
+### variante default (extra flags: ninguno)
+librnnoise_default_sha256= 117f5b7568afd005d6610acd9aa9d60a8668fc4698248546b3a539fa6842d4bf  <workspace>/.qa-347-scratch/bench-arm/rnnoise-default/librnnoise.a
+### variante neonoff (extra flags: -DDISABLE_NEON)
+<workspace>/.qa-347-scratch/rnnoise-src/src/nnet.c:49:2: warning: #warning Compiling without any vectorization. This code will be very slow [-Wcpp]
+   49 | #warning Compiling without any vectorization. This code will be very slow
+      |  ^~~~~~~
+librnnoise_neonoff_sha256= e800dad750ecab3d5574ccb9d53bf9147b6c47982305246813462d44f59b6249  <workspace>/.qa-347-scratch/bench-arm/rnnoise-neonoff/librnnoise.a
+### copiando audio_enhancement.c/.h VERBATIM (deben coincidir con el #345)
+source_sha256= acab3aad158097cd5a8ab1c6e6eb83e8b37011a0098eb91d39dc1c5d2366b25f  <workspace>/.qa-347-scratch/bench-arm/audio_enhancement.c
+source_sha256= f37d09cad52d1891b3042337e282f28c34b644ebecb58e408aed1439fc33a68d  <workspace>/.qa-347-scratch/bench-arm/audio_enhancement.h
+### compilando banco ARM variante default -> bench_rnnoise_arm_default
+bench_bin_sha256= 389d749230363d235e1894d93fc32bf3d3f3777752b7035a8771586262df3188  <workspace>/.qa-347-scratch/bench-arm/bench_rnnoise_arm_default
+-rwxr-xr-x. 1 <user> <user> 3627124 Oct 28 16:58 <workspace>/.qa-347-scratch/bench-arm/bench_rnnoise_arm_default
+<workspace>/.qa-347-scratch/bench-arm/bench_rnnoise_arm_default: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, with debug_info, not stripped
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Type:                              DYN (Position-Independent Executable file)
+  Machine:                           ARM
+  Entry point address:               0x2458
+ 0x00000001 (NEEDED)                     Shared library: [libspeexdsp.so.1]
+ 0x00000001 (NEEDED)                     Shared library: [libm.so.6]
+ 0x00000001 (NEEDED)                     Shared library: [libc.so.6]
+ 0x00000001 (NEEDED)                     Shared library: [ld-linux-armhf.so.3]
+--- referencias a hardware/radio en el binario (debe estar vacio) ---
+--- (fin) ---
+--- fin referencias ---
+### compilando banco ARM variante neonoff -> bench_rnnoise_arm_neonoff
+bench_bin_sha256= 34fe65be401aae48c4b7836dd928eb5e05f288704ff44964ec0c6ec1dcdbb8fc  <workspace>/.qa-347-scratch/bench-arm/bench_rnnoise_arm_neonoff
+-rwxr-xr-x. 1 <user> <user> 3627128 Oct 28 16:58 <workspace>/.qa-347-scratch/bench-arm/bench_rnnoise_arm_neonoff
+<workspace>/.qa-347-scratch/bench-arm/bench_rnnoise_arm_neonoff: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, with debug_info, not stripped
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Type:                              DYN (Position-Independent Executable file)
+  Machine:                           ARM
+  Entry point address:               0x2488
+ 0x00000001 (NEEDED)                     Shared library: [libspeexdsp.so.1]
+ 0x00000001 (NEEDED)                     Shared library: [libm.so.6]
+ 0x00000001 (NEEDED)                     Shared library: [libc.so.6]
+ 0x00000001 (NEEDED)                     Shared library: [ld-linux-armhf.so.3]
+--- referencias a hardware/radio en el binario (debe estar vacio) ---
+--- (fin) ---
+--- fin referencias ---
+### archivos producidos
+389d749230363d235e1894d93fc32bf3d3f3777752b7035a8771586262df3188  <workspace>/.qa-347-scratch/bench-arm/bench_rnnoise_arm_default
+34fe65be401aae48c4b7836dd928eb5e05f288704ff44964ec0c6ec1dcdbb8fc  <workspace>/.qa-347-scratch/bench-arm/bench_rnnoise_arm_neonoff
+117f5b7568afd005d6610acd9aa9d60a8668fc4698248546b3a539fa6842d4bf  <workspace>/.qa-347-scratch/bench-arm/rnnoise-default/librnnoise.a
+e800dad750ecab3d5574ccb9d53bf9147b6c47982305246813462d44f59b6249  <workspace>/.qa-347-scratch/bench-arm/rnnoise-neonoff/librnnoise.a
+### fin: build OK
+BUILD_EXIT=0

@@ -1,0 +1,17 @@
+CMD: ssh <radio> pactl list short sources; echo ---; pactl list short sinks; echo ---; pactl list short modules
+0	alsa_output.platform-sound.stereo-fallback.monitor	module-alsa-card.c	s16le 2ch 44100Hz	IDLE
+1	alsa_input.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+---
+0	alsa_output.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+---
+0	module-device-restore		
+1	module-stream-restore		
+2	module-card-restore		
+5	module-udev-detect		
+6	module-alsa-card	device_id="0" name="platform-sound" card_name="alsa_card.platform-sound" namereg_fail=false tsched=yes fixed_latency_range=no ignore_dB=no deferred_volume=yes use_ucm=yes avoid_resampling=no card_properties="module-udev-detect.discovered=1"	
+7	module-native-protocol-unix	auth-anonymous=1	
+8	module-default-device-restore		
+9	module-always-sink		
+10	module-suspend-on-idle		
+11	module-position-event-sounds		
+15	module-bluetooth-policy	auto_switch=0 a2dp_source=false ag=false	
