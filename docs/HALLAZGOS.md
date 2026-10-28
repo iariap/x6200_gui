@@ -882,13 +882,17 @@ NanoVNA**, no los datos crudos. Iteraciones:
    cuantizada a 0,1 se ve en escalones;
 2. PCHIP interpolante (pasaba por cada muestra, suave) → el owner la rechazó también ("es parecida a
    la original de la radio y es justo lo que habíamos cambiado para que tenga forma de parábola");
-3. **final (PR #335)**: parábola SIEMPRE abierta hacia arriba, **valle centrado en el span**, base en
-   el **mínimo medido** y subida mínima de las puntas `ROE_PARABOLA_MIN_RISE = 0,8` ROE
-   (`roe_curve_parabola()`); el mínimo del readout sigue saliendo de las muestras, no de la curva.
-   Un ajuste libre anterior quedaba en el borde del span (media parábola o casi recta) cuando la
-   resonancia caía fuera del span. El harness de curva vuelve a exigir valle (PR #336).
+3. parábola forzada (PR #335): valle centrado en el span, base en el mínimo medido y subida mínima
+   de 0,8 ROE — se veía como NanoVNA, pero **no era fiel**: el owner pidió comparar antes de
+   seguir y, sobre los dumps reales (8 W), el RMSE contra las muestras era **0,24-0,95 ROE**;
+4. **final (PR #338, main `c7e7f9ec`)**: **cuadrática libre**, ajuste por mínimos cuadrados de las
+   muestras dibujado TAL CUAL (sin espejar, sin centrar, sin subida mínima; clamp 1..5); es la más
+   fiel y suave. RMSE medido (40/17/15/10/6 m): **0,04 / 0,10 / 0,03 / 0,03 / 0,23**, contra
+   0,06-1,06 de la variante con vértice real y 0,24-0,95 de la centrada. El mínimo del readout sale
+   de las muestras, no de la curva. El harness de curva se adaptó: el domo del owner se dibuja domo
+   (es su ajuste) y el valle real se dibuja valle (PR #338).
 
-La verificación final es la de abajo (build 3df36f76, barridos con parábola).
+La verificación final es la de abajo (build d84a00f2, barridos con la cuadrática libre).
 
 **Arreglo** (PR #330, main `8b68b01d`):
 
@@ -912,7 +916,9 @@ capturas: assessment-194/scratch/cw244/swr_pts2_bandas.png
 ```
 
 **Sin fundar (anexo A)**: valor absoluto de la ROE contra un medidor externo; por qué la potencia
-reportada queda en ~1 W (límite interno del proceso del barrido).
+reportada queda en ~1 W (límite interno del proceso del barrido). Con la cuadrática libre, si el
+ajuste abre hacia abajo en un span sin resonancia la curva se dibuja así (no se fuerza valle): es
+la contrapartida de priorizar la fidelidad medida sobre la estética.
 
 ## Anexo A: hipótesis sin fundar (no son hallazgos)
 
