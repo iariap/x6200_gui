@@ -18,7 +18,6 @@
 #include "keyboard.h"
 #include "main_screen.h"
 #include "buttons.h"
-#include "roe_curve.h"
 #include "swr_session.h"
 #include "scheduler.h"
 
@@ -57,6 +56,7 @@ static lv_coord_t           w;
 static lv_coord_t           h;
 
 static bool                 run = false;        /* sesion activa (boton en Stop) */
+static int                  retries_at_point;   /* paquetes sin potencia en el punto actual */
 static bool                 tx_on = false;      /* el TX del barrido esta encendido */
 
 static swr_session_t        session;
@@ -204,6 +204,7 @@ static bool swrscan_begin(void) {
     limits.session_timeout_ms  = SWRSCAN_PASS_TIMEOUT_MS * (uint32_t) passes_requested;
 
     uint32_t    freq = 0;
+    retries_at_point = 0;
     swr_action_t act = swr_session_begin(&session, &grid, passes_requested, &limits, now, &freq);
 
     refresh_aggregate();
@@ -397,9 +398,9 @@ static void format_readout(char *buf, size_t n) {
     }
 }
 
-/* La curva dibujada: el ajuste cuadratico (decorativo, issue #113) del agregado medido, por
- * TRAMOS de puntos validos consecutivos. Un punto sin muestra valida corta el tramo: no se une
- * un hueco con una interpolacion enganosa (issue #125). */
+/* La curva ES el dato: polilinea por los puntos medidos (agregado por frecuencia) y un punto
+ * por muestra. Un punto sin medicion corta el tramo (hueco): no se interpola ni se ajusta una
+ * parabola decorativa. La forma la manda la medicion, no una estetica. */
 static void draw_curve(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *line_dsc,
                        lv_coord_t x1, lv_coord_t y1) {
     int points = grid_ready ? session.grid.points : 0;
@@ -408,53 +409,39 @@ static void draw_curve(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *line_dsc,
         return;
     }
 
-    static float run_vals[SWR_SESSION_POINTS];
-    static float curve[(SWR_SESSION_POINTS - 1) * ROE_CURVE_OVERSAMPLE + 1];
+    lv_draw_rect_dsc_t dot_dsc;
 
-    int i = 0;
+    lv_draw_rect_dsc_init(&dot_dsc);
+    dot_dsc.bg_color = line_dsc->color;
+    dot_dsc.bg_opa   = LV_OPA_COVER;
 
-    while (i < points) {
+    bool have_prev = false;
+    lv_coord_t prev_x = 0;
+    lv_coord_t prev_y = 0;
+
+    for (int i = 0; i < points; i++) {
         if (isnan(data_agg[i])) {
-            i++;
+            have_prev = false;
             continue;
         }
 
-        int j = i;
+        lv_coord_t x = x1 + (lv_coord_t) ((int32_t) i * w / (points - 1));
+        lv_coord_t y = y1 + calc_y(data_agg[i]);
 
-        while (j < points && !isnan(data_agg[j])) {
-            j++;
+        if (have_prev) {
+            lv_point_t a = { prev_x, prev_y };
+            lv_point_t b = { x, y };
+
+            lv_draw_line(ctx, line_dsc, &a, &b);
         }
 
-        int len = j - i;
+        lv_area_t dot = { x - 1, y - 1, x + 1, y + 1 };
 
-        if (len >= 2) {
-            for (int k = 0; k < len; k++) {
-                run_vals[k] = data_agg[i + k];
-            }
+        lv_draw_rect(ctx, &dot_dsc, &dot);
 
-            int m = roe_curve_point_count(len);
-
-            roe_curve_resample(run_vals, len, curve);
-
-            int denom = (m - 1) * (points - 1);
-
-            lv_point_t a, b;
-
-            for (int t = 1; t < m; t++) {
-                int num0 = i * (m - 1) + (t - 1) * (len - 1);
-                int num1 = i * (m - 1) + t * (len - 1);
-
-                a.x = x1 + (lv_coord_t) ((int32_t) (num0 * w) / denom);
-                a.y = y1 + calc_y(curve[t - 1]);
-
-                b.x = x1 + (lv_coord_t) ((int32_t) (num1 * w) / denom);
-                b.y = y1 + calc_y(curve[t]);
-
-                lv_draw_line(ctx, line_dsc, &a, &b);
-            }
-        }
-
-        i = j;
+        prev_x    = x;
+        prev_y    = y;
+        have_prev = true;
     }
 }
 
@@ -809,29 +796,20 @@ const char *passes_label_fn() {
     return buf;
 }
 
-void dialog_swrscan_update(float vswr) {
-    if (!run) {
-        return;
-    }
-
-    uint32_t     freq = 0;
-    swr_action_t act  = swr_session_packet(&session, vswr, (uint32_t) get_time(), &freq);
-
+/* Acciones comunes a los dos caminos (paquete valido / punto sin medicion). */
+static void swrscan_apply_action(swr_action_t act, uint32_t freq) {
     switch (act) {
         case SWR_ACT_SET_FREQ:
             refresh_aggregate();
             radio_set_freq((int32_t) freq);
-            /* El VFO se ordena aca: la ventana de asentamiento (SWRSCAN_SETTLE_MS) se mide desde
-             * este instante, no desde el paquete que disparo el avance. Con 0 es un no-op. */
             swr_session_tuned(&session, (uint32_t) get_time());
+            retries_at_point = 0;
             swrscan_chart_refresh();
             break;
 
         case SWR_ACT_COMPLETE:
         case SWR_ACT_ABORT:
             refresh_aggregate();
-            /* Cortar el TX YA (lock de radio, seguro desde este hilo) y dejar el cierre del lado
-             * de LVGL (boton/memoria) para el scheduler: aca no se toca LVGL. */
             swrscan_tx_off();
             radio_set_freq((int32_t) freq_center);
             scheduler_put_noargs(swrscan_finished_job);
@@ -843,6 +821,47 @@ void dialog_swrscan_update(float vswr) {
             break;
     }
 }
+
+/* Camino real: radio.c entrega cada paquete del flow con su flag de TX y la potencia reportada.
+ * Un paquete sin potencia no es una medicion (el detector reporta ROE 1.0): se reintenta el mismo
+ * punto hasta SWRSCAN_RETRY_PACKETS paquetes y, si no aparece una muestra con potencia, el punto
+ * queda como hueco (NaN) en vez de inventar 1.0. */
+void dialog_swrscan_update_pack(float vswr, float tx_power_w, bool tx_on) {
+    if (!run) {
+        return;
+    }
+
+    int tx_dw = (int) (tx_power_w * 10.0f + 0.5f);
+
+    if (!tx_on || tx_dw < SWRSCAN_MIN_TX_POWER_DW) {
+        retries_at_point++;
+
+        if (retries_at_point < SWRSCAN_RETRY_PACKETS) {
+            return;   /* mismo punto: esperar un paquete con potencia */
+        }
+
+        uint32_t     freq = 0;
+        swr_action_t act  = swr_session_skip_point(&session, (uint32_t) get_time(), &freq);
+
+        retries_at_point = 0;
+        swrscan_apply_action(act, freq);
+        return;
+    }
+
+    retries_at_point = 0;
+
+    uint32_t     freq = 0;
+    swr_action_t act  = swr_session_packet(&session, vswr, (uint32_t) get_time(), &freq);
+
+    swrscan_apply_action(act, freq);
+}
+
+/* Compatibilidad (tests nativos y stubs): un paquete se trata como valido. */
+void dialog_swrscan_update(float vswr) {
+    dialog_swrscan_update_pack(vswr, 0.9f, true);
+}
+
+
 
 void dialog_swrscan_poll(void) {
     if (!run) {

@@ -541,6 +541,13 @@ void lv_draw_rect_dsc_init(lv_draw_rect_dsc_t *dsc) { memset(dsc, 0, sizeof(*dsc
 void lv_draw_rect(lv_draw_ctx_t *ctx, const lv_draw_rect_dsc_t *dsc, const lv_area_t *coords) {
     (void)ctx; (void)coords;
 
+    /* El stub sigue SOLO el rect del estado/readout: el fondo es del chart (estilo LVGL) y los
+     * puntos de la curva son rects opacos del color del texto. Se filtra por opacidad parcial
+     * (el readout usa LV_OPA_80) para que el test siga midiendo lo que le importa. */
+    if (dsc->bg_opa == LV_OPA_COVER) {
+        return;
+    }
+
     stub_rect_count++;
     stub_rect_color = dsc->bg_color;
     stub_rect_opa   = dsc->bg_opa;

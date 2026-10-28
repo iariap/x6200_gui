@@ -261,11 +261,11 @@ void test_swrscan_sweep(void) {
       /* Potencia del barrido: 3,0 W desde el 27/10 (medido en la radio: a 0,1 W el detector no
        * mide en 15/10 m y el flow entrega ROE 1.0 sin potencia; ver dialog_swrscan.h). Sigue
        * dentro del control del equipo (piso 0,1 W, techo 8,0 W) y por debajo del ATU. */
-      CHECK(SWRSCAN_TX_POWER_DW == 30);
+      CHECK(SWRSCAN_TX_POWER_DW == 80);
       CHECK(SWRSCAN_TX_POWER_DW >= SWRSCAN_PWR_FLOOR_DW);
       CHECK(SWRSCAN_TX_POWER_DW <= SWRSCAN_PWR_CEILING_DW);
-      CHECK(SWRSCAN_TX_POWER_W == 3.0f);
-      CHECK(SWRSCAN_TX_POWER_W < (float) (SWRSCAN_PWR_CEILING_DW / 10));
+      CHECK(SWRSCAN_TX_POWER_W == 8.0f);
+      CHECK(SWRSCAN_TX_POWER_W == (float) (SWRSCAN_PWR_CEILING_DW / 10));   /* techo del equipo */
 
     /* El presupuesto de duracion es exactamente el barrido de UNA pasada, dentro de los ~2 s que
      * fijo el owner; y los 101 puntos del NanoVNA no entran (101 x 35 = 3535 ms). */
@@ -284,7 +284,7 @@ void test_swrscan_sweep(void) {
                SWR_SESSION_POINTS * SWRSCAN_DWELL_MS);
     }
 
-    printf("  potencia del barrido: %.1f W (%d decimas: el piso del control del equipo)\n",
+    printf("  potencia del barrido: %.1f W pedidos (%d decimas: techo del control del equipo)\n",
            SWRSCAN_TX_POWER_W, SWRSCAN_TX_POWER_DW);
 }
 
@@ -495,7 +495,8 @@ void test_swrscan_render(void) {
 
     swrscan_stub_draw();                                            /* el chart se pinta */
 
-    const int m = roe_curve_point_count(points);
+    /* La curva ES el dato: un vertice por muestra medida, sin ajuste ni remuestreo. */
+    const int m = points;
 
     CHECK(swrscan_stub_curve_segment_count() == m - 1);             /* la curva entera */
 
@@ -522,81 +523,54 @@ void test_swrscan_render(void) {
         y[i] = (i == 0) ? swrscan_stub_curve_y(0, 0) : swrscan_stub_curve_y(i - 1, 1);
     }
 
-    /* (a) sin escalones a 90 grados: el paso entre puntos consecutivos <= 2 px (la escalera del
-     *     Catmull-Rom da 8 px con estas muestras). */
-    int worst_step = 0;
-    int v          = 0;
+    /* (a) la polilinea pasa por TODAS las muestras: un segmento por par consecutivo. */
+    CHECK(swrscan_stub_curve_segment_count() == m - 1);
 
-    for (int i = 1; i < m; i++) {
-        int step = coord_abs((lv_coord_t) (y[i] - y[i - 1]));
+    /* (b) el vertice de la curva es el maximo MEDIDO: y crece con la ROE, asi que el y minimo
+     *     dibujado cae en la muestra de ROE maxima. No hay vertice de ajuste. */
+    int s_max = 0;
 
-        if (step > worst_step) {
-            worst_step = step;
-        }
-
-        if (y[i] < y[v]) {
-            v = i;
+    for (int k = 1; k < points; k++) {
+        if (fed[k] > fed[s_max]) {
+            s_max = k;
         }
     }
 
-    CHECK(worst_step <= 2);
+    int y_min = 0;
 
-    /* (b) un solo valle: monotona (dentro de 1 px de cuantizacion) a cada lado del minimo. La
-     *     escalera sube y baja decenas de px a cada lado. */
-    int worst_left  = 0;
-    int worst_right = 0;
-
-    for (int i = v; i > 0; i--) {
-        int drop = (int) (y[i] - y[i - 1]);
-
-        if (drop > worst_left) {
-            worst_left = drop;
+    for (int k = 1; k < m; k++) {
+        if (y[k] < y[y_min]) {
+            y_min = k;
         }
     }
 
-    for (int i = v; i + 1 < m; i++) {
-        int drop = (int) (y[i] - y[i + 1]);
+    CHECK(y_min == s_max);
 
-        if (drop > worst_right) {
-            worst_right = drop;
+    /* (c) monotonia: donde la ROE medida sube, y baja. */
+    int mono = 1;
+
+    for (int k = 1; k < points; k++) {
+        if (fed[k] > fed[k - 1] && y[k] > y[k - 1]) {
+            mono = 0;
+        }
+
+        if (fed[k] < fed[k - 1] && y[k] < y[k - 1]) {
+            mono = 0;
         }
     }
 
-    CHECK(worst_left <= 1);
-    CHECK(worst_right <= 1);
+    CHECK(mono);
 
-    /* (c) la curva no se sale del chart. El draw pinta en [y1, y1 + h] con y1 = coords.y1 - 5 =
-     *     69 (el chart esta en coords.y1 = 74) y h = 330, el `h` ESTATICO del archivo que usa
-     *     calc_y() (el `h` local de draw_cb es 330 - 5 y solo lo usan la grilla y las etiquetas):
-     *     la banda dibujada es 69..399, la misma que se mide en los cuadros de la radio. */
+    /* (d) la curva no se sale del chart. */
     int inside = 1;
 
-    for (int i = 0; i < m; i++) {
-        if (y[i] < 69 || y[i] > 399) {
+    for (int k = 0; k < m; k++) {
+        if (y[k] < 69 || y[k] > 399) {
             inside = 0;
         }
     }
 
     CHECK(inside);
-
-    /* (d) el valle dibujado: el vertice del ajuste (el minimo de la curva) y el minimo MEDIDO
-     *     (el readout sale de las muestras) son cantidades distintas y su distancia se REPORTA.
-     *     Con el dataset real la distancia es grande (varias muestras): es el PENDIENTE que la
-     *     spec del #113 ya habia declarado para revision estetica del owner (> 2 muestras), aca
-     *     medido con datos reales. Lo que el test exige es que la curva tenga UN valle de verdad
-     *     (no una recta ni una escalera) dentro del barrido; el numero queda impreso abajo. */
-    int s_min = 0;
-
-    for (int k = 1; k < points; k++) {
-        if (fed[k] < fed[s_min]) {
-            s_min = k;
-        }
-    }
-
-    float c_min = (float) v / (float) ROE_CURVE_OVERSAMPLE;
-    float delta = (c_min > (float) s_min) ? c_min - (float) s_min : (float) s_min - c_min;
-
-    CHECK(v > 0 && v + 1 < m);                      /* un valle de verdad, no una recta */
 
     /* (e) el minimo MEDIDO del readout sale del dato agregado, no del vertice del ajuste. */
     CHECK(strstr(dialog_swrscan_state_text(), "Completed") != NULL);
@@ -627,12 +601,10 @@ void test_swrscan_render(void) {
 
     CHECK(memcmp(y, y2, (size_t) m * sizeof(y[0])) == 0);
 
-    printf("#119 forma dibujada (dataset real de 496 puntos, %d muestras del barrido):\n", points);
-    printf("  paso maximo entre puntos dibujados: %d px (la escalera del #104 da 8 px)\n", worst_step);
-    printf("  caida maxima a la izquierda/derecha del valle: %d / %d px (escalera: decenas)\n",
-           worst_left, worst_right);
-    printf("  valle dibujado en la muestra %.2f, minimo medido en la muestra %d (delta %.2f)\n",
-           (double) c_min, s_min, (double) delta);
+    printf("#119/#125 curva de puntos medidos (dataset real de 496 puntos, %d muestras):\n", points);
+    printf("  segmentos dibujados: %d (uno por par consecutivo, sin ajuste)\n",
+           swrscan_stub_curve_segment_count());
+    printf("  vertice dibujado en la muestra %d, maximo medido en la muestra %d\n", y_min, s_max);
 }
 
 /*
@@ -1024,4 +996,41 @@ void test_swrscan_remote(void) {
     CHECK(dialog_swrscan_remote_run(false) == false);   /* Stop de una ventana muerta: no-op */
     CHECK(swrscan_stub_started() == started_closed);
     CHECK(swrscan_stub_freq_count() == freqs_closed);
+}
+
+/*
+ * Gate de potencia: un paquete sin TX/potencia NO es una medicion. Se reintenta el mismo punto
+ * hasta SWRSCAN_RETRY_PACKETS paquetes; si no hay muestra valida el punto queda como hueco.
+ */
+void test_swrscan_no_power_gate(void) {
+    dialog_quiesce();
+    swrscan_stub_set_fg_freq(7028544);
+    swrscan_stub_set_span(50000);
+
+    dialog_swrscan->construct_cb(NULL);
+
+    button_item_t *run = run_button();
+
+    run->press(run);
+
+    /* Paquetes sin potencia: se reintenta el mismo punto, no se registra nada. */
+    for (int k = 0; k < SWRSCAN_RETRY_PACKETS; k++) {
+        dialog_swrscan_update_pack(1.0f, 0.0f, false);
+    }
+
+    swrscan_stub_draw();
+
+    CHECK(swrscan_stub_curve_segment_count() == 0);      /* sin muestras: sin curva */
+    CHECK(strstr(dialog_swrscan_state_text(), "Scanning") != NULL);
+
+    /* El resto de la pasada con paquetes validos completa; el primer punto quedo como hueco. */
+    for (int k = 0; k < SWR_SESSION_POINTS - 1; k++) {
+        dialog_swrscan_update_pack(1.6f, 0.9f, true);
+    }
+
+    swrscan_stub_draw();
+
+    CHECK(strstr(dialog_swrscan_state_text(), "Completed") != NULL);
+
+    dialog_swrscan->destruct_cb();
 }

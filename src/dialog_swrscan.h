@@ -84,10 +84,17 @@ extern dialog_t *dialog_swrscan;
  * Sigue siendo UNA pasada y el techo de tiempo es 3570 ms (3,6 s como maximo al aire).
  * El piso del control del equipo sigue siendo 0.1 W (src/vol.c: LV_MAX(0.1f, ...);
  * src/remote_server.cpp: {"pwr", CMD_PWR, 1, 100} en decimas). */
-#define SWRSCAN_TX_POWER_DW     30    /* decimas de watt: 3,0 W (medido; ver arriba) */
+#define SWRSCAN_TX_POWER_DW     80    /* decimas de watt: 8,0 W pedidos (medido; ver arriba) */
 #define SWRSCAN_PWR_FLOOR_DW    1     /* piso del control del equipo: 0.1 W (src/vol.c) */
 #define SWRSCAN_PWR_CEILING_DW  80    /* techo del control del equipo: 8.0 W (src/vol.c) */
 #define SWRSCAN_TX_POWER_W      ((float) SWRSCAN_TX_POWER_DW / 10.0f)
+
+  /* Validez de la muestra: medido que por debajo de 0,3 W el flow reporta ROE 1.0 sin
+   * potencia real; esos paquetes no se registran (se reintenta el mismo punto y, si no
+   * aparece una muestra mejor en SWRSCAN_RETRY_PACKETS paquetes, el punto queda como
+   * hueco). */
+  #define SWRSCAN_MIN_TX_POWER_DW   3
+  #define SWRSCAN_RETRY_PACKETS     6   /* el arranque del TX tarda ~3 paquetes; 6 cubre el borde */
 
 /* Estado visible del dialogo, para el readout (issue #125). */
 const char *dialog_swrscan_state_text(void);
@@ -123,7 +130,8 @@ int dialog_swrscan_remote_state(char *buf, size_t size);
 
 /* Un paquete del flow de la radio (RADIO_SWRSCAN) mientras el barrido corre. Corre en el hilo
  * de la radio: NO toca LVGL, solo encola un refresh y llama a radio_set_freq(). */
-void dialog_swrscan_update(float vswr);
+void dialog_swrscan_update(float vswr);   /* compat tests: asume paquete valido */
+void dialog_swrscan_update_pack(float vswr, float tx_power_w, bool tx_on);
 
 /* Watchdog del barrido cuando el flow se queda sin paquetes (hilo de la radio). */
 void dialog_swrscan_poll(void);
