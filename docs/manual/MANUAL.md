@@ -158,7 +158,7 @@ lo ergonómico y al final lo eventual. El detalle de cada decisión está en `do
 
 | Tab | Parámetros | Para qué |
 |---|---|---|
-| **Operation** | Freq acceleration / Charger / Cluster column / Bluetooth / Discoverable (CAT) / Devices / wfview server / Transverter | Aceleración del dial, cargador, columna del clúster, Bluetooth y su panel de dispositivos, servidor wfview y transverter |
+| **Operation** | Freq acceleration / Accel threshold / Charger / Cluster column / wfview server / Transverter | Aceleración del dial, cargador, columna del clúster, servidor wfview y transverter. **El Bluetooth ya no está acá**: vive en su propia app (sección 7.3) |
 | **Audio** | Line-in, Line-out / audio gain / Audio enhance / Speaker mode / Voice mode, rate, pitch, volume | Entradas y ganancias, realce de audio, modo del parlante y los anuncios de voz |
 | **Spectrum** | Spectrum auto min, max / Waterfall auto min, max / Waterfall line, zoom / Waterfall smooth scroll / Waterfall battery mode | Ajuste automático de niveles, líneas y zoom del waterfall, desplazamiento suave y ahorro en batería |
 | **Clock** | Day, Month, Year / Hour, Min, Sec | Hora UTC de los decodificados (también la ajusta el NTP si hay red). El reloj de la barra superior muestra siempre la hora, y la alimentación/batería va en una banda compacta debajo (issue #250) |
@@ -325,7 +325,7 @@ probar el filtro angosto del receptor.
 
 ![CW Keyboard](img/11-cw.png)
 
-Telegrafía sin manipulador: escribís en un **teclado USB o Bluetooth** y el equipo sale al aire en
+Telegrafía sin manipulador: escribís en un **teclado Bluetooth** y el equipo sale al aire en
 CW con tu velocidad, tono y peso. Ideal para el campo (nada que enchufar), para quien no puede usar
 la paleta por una lesión, o para mandar un texto largo sin equivocarse.
 
@@ -539,7 +539,7 @@ cobertura y dirección).
 
 El equipo abre un socket en `/tmp/x6200_remote.sock` con unos 65 comandos.
 
-1. Conectá el equipo al WiFi (Ajustes → Bluetooth/WiFi) y averiguá la IP.
+1. Conectá el equipo al WiFi (Ajustes → **WiFi**) y averiguá la IP.
 2. Abrí `http://<ip>/remote` en el teléfono.
 3. Comandos útiles: `{"cmd":"app","text":"FT8"}` abre una app;
    `{"cmd":"app","text":"off"}` la cierra (también a RTTY, que no tiene diálogo);
@@ -565,14 +565,14 @@ Sirve para tres cosas: **CAT** (puente serie para la PC), **auriculares A2DP** y
 estado se ve en la barra de arriba, al lado del WiFi: la **runa** queda invisible con el Bluetooth
 apagado, gris cuando está prendido y **blanca** con auriculares conectados.
 
-**Encenderlo:** Ajustes → **Bluetooth** (el interruptor de arriba). Marcá **Discoverable (CAT)** si
-vas a usarlo desde la PC.
+**Todo el Bluetooth está en su app** (abrela con el botón **BT** de la página **APP 6:6**): ahí están
+el interruptor de encendido, **Discoverable (CAT)**, el scan, el pareo, la conexión y el audio. **Encenderlo:** abrí la app de Bluetooth y usá el interruptor **Bluetooth** de arriba. Marcá
+**Discoverable (CAT)** —al lado— si vas a usarlo desde la PC.
 
 **CAT (SPP):** vinculá la PC y elegí el puerto serie que aparece (19200 8N1 o lo que pida tu
 programa). Sirve para cualquier logger o programa CAT.
 
-**Auriculares (A2DP):** entrá con el botón **BT** (al lado de WiFi, página **APP 6:6**) o desde
-Ajustes → Bluetooth → **Devices**.
+**Auriculares (A2DP):** entrá con el botón **BT** (al lado de WiFi, página **APP 6:6**).
 
 ![La app de Bluetooth](img/07-bt.png)
 
@@ -595,8 +595,9 @@ Ajustes → Bluetooth → **Devices**.
 | **Auto** | Pulsando: prende/apaga el **auto-conexión** del equipo elegido. Manteniéndolo: **desempareja** (`Unpair`) |
 | **Close** | Cierra la app |
 
-**Teclado:** vinculá un teclado Bluetooth o conectá uno USB; se usa en el CW Keyboard y para
-navegar los menús.
+**Teclado:** vinculá un teclado **Bluetooth** en la app de Bluetooth; se usa en el CW Keyboard y
+para navegar los menús. (El puerto USB-C del equipo no actúa como host: un teclado USB o un hub
+no se detectan con esta ROM.)
 
 ### 7.4 El clúster, paso a paso
 

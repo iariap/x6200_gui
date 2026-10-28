@@ -1,7 +1,11 @@
 /*
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  Xiegu X6200 LVGL GUI - Bluetooth devices (Settings -> Bluetooth).
+ *  Xiegu X6200 LVGL GUI - Bluetooth (the dedicated app).
+ *
+ *  Todo el Bluetooth vive aca (pedido del dueno, 2026-10-28): el encendido y el
+ *  "Discoverable (CAT)" que antes estaban en Ajustes se movieron a esta app, junto
+ *  con el scan, los emparejamientos, la conexion y el passkey.
  *
  *  The pairing itself is done by btaudio-ctl: this app shows what it reports,
  *  runs scan/pair/connect/disconnect for you and shows the passkey a keyboard
@@ -12,6 +16,7 @@
 #include "dialog_bt.h"
 
 #include "btaudio.h"
+#include "bt_state.h"
 #include "bt_devices.h"
 #include "buttons.h"
 #include "fonts/font_select.h"
@@ -34,7 +39,7 @@
 #define BT_PASSKEY      "/tmp/bt_passkey"
 
 #define DIALOG_W        771
-#define HEADER_H        40
+#define HEADER_H        56
 #define STATUS_H        30
 #define TABLE_Y         (10 + HEADER_H)
 #define TABLE_H         (DIALOG_BOX_H - TABLE_Y - STATUS_H - 8)
@@ -55,6 +60,8 @@
 static lv_obj_t   *table;
 static lv_obj_t   *label_state;
 static lv_obj_t   *label_note;
+static lv_obj_t   *bt_power_sw;
+static lv_obj_t   *bt_disc_sw;
 static lv_timer_t *timer;
 
 static bt_list_t  shown;            /* what the table is showing */
@@ -517,13 +524,75 @@ static lv_obj_t *make_label(lv_obj_t *parent, lv_color_t color) {
     return l;
 }
 
+static void bt_power_changed_cb(lv_event_t *e) {
+    bool on = lv_obj_has_state(lv_event_get_target(e), LV_STATE_CHECKED);
+
+    bt_state_set_power(on);
+
+    if (bt_disc_sw) {
+        if (on) {
+            lv_obj_clear_state(bt_disc_sw, LV_STATE_DISABLED);
+        } else {
+            lv_obj_add_state(bt_disc_sw, LV_STATE_DISABLED);
+        }
+    }
+
+    if (label_note) {
+        lv_label_set_text(label_note, on ? "Bluetooth on" : "Bluetooth off (CAT/audio off)");
+    }
+}
+
+static void bt_disc_changed_cb(lv_event_t *e) {
+    bool on = lv_obj_has_state(lv_event_get_target(e), LV_STATE_CHECKED);
+
+    bt_state_set_discoverable(on);
+
+    if (label_note) {
+        lv_label_set_text(label_note, on ? "Discoverable (CAT) on" : "Discoverable (CAT) off");
+    }
+}
+
+static lv_obj_t *bt_switch(uint16_t x, uint16_t y, bool state, lv_event_cb_t cb) {
+    lv_obj_t *sw = lv_switch_create(dialog.obj);
+
+    styles_switch_init(sw);
+    lv_obj_set_size(sw, 62, 34);
+    lv_obj_set_pos(sw, x, y);
+
+    if (state) {
+        lv_obj_add_state(sw, LV_STATE_CHECKED);
+    }
+
+    lv_obj_add_event_cb(sw, cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_group_add_obj(keyboard_group, sw);
+
+    return sw;
+}
+
 static void construct_cb(lv_obj_t *parent) {
     dialog.obj = dialog_init(parent);
 
     lv_obj_t *head = make_label(dialog.obj, TC(text_head));
 
-    lv_label_set_text(head, "Bluetooth devices");
+    lv_label_set_text(head, "Bluetooth");
     lv_obj_set_pos(head, 18, 12);
+
+    /* Encendido y Discoverable: antes estaban en Ajustes; el dueño pidio que todo el
+     * Bluetooth este en esta app (2026-10-28). */
+    bool on = bt_state_on();
+
+    bt_power_sw = bt_switch(150, 10, on, bt_power_changed_cb);
+
+    lv_obj_t *disc_head = make_label(dialog.obj, TC(text));
+
+    lv_label_set_text(disc_head, "Discoverable (CAT)");
+    lv_obj_set_pos(disc_head, 300, 12);
+
+    bt_disc_sw = bt_switch(560, 10, bt_state_discoverable(), bt_disc_changed_cb);
+
+    if (!on && bt_disc_sw) {
+        lv_obj_add_state(bt_disc_sw, LV_STATE_DISABLED);
+    }
 
     table = lv_table_create(dialog.obj);
     lv_obj_remove_style(table, NULL, LV_STATE_ANY | LV_PART_MAIN);
@@ -591,7 +660,9 @@ static void destruct_cb(void) {
         timer = NULL;
     }
 
-    table = NULL;
+    table      = NULL;
+    bt_power_sw = NULL;
+    bt_disc_sw  = NULL;
 }
 
 static void key_cb(lv_event_t *e) {

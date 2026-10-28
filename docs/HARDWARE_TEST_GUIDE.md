@@ -136,7 +136,7 @@ la **frecuencia y el modo restaurados** (eso se arregló en este port).
   `APP Status` dice qué transporte usa el adaptador.
 - **Auriculares BT**: en la app de Bluetooth, vincular y conectar; después `RX to HP` y probar el
   audio (y `Speaker` para el silencio del parlante).
-- **Teclado BT/USB**: que escriba en el diálogo de mensajes o en CW Keyboard y que no se pierdan
+- **Teclado BT**: que escriba en el diálogo de mensajes o en CW Keyboard y que no se pierdan
   teclas al escribir rápido (*rollover*).
 
 ---
