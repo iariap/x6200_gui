@@ -282,7 +282,7 @@ bool radio_tick() {
                 break;
 
             case RADIO_SWRSCAN:
-                dialog_swrscan_update(pack->vswr * 0.1f);
+                dialog_swrscan_update_pack(pack->vswr * 0.1f, pack->tx_power * 0.1f, pack->flag.tx);
                 break;
 
             case RADIO_POWEROFF:

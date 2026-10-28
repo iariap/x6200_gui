@@ -1085,7 +1085,7 @@ cp "$DIR/stubs_remote/buttons.h" "$DIR/stubs_remote/dialog.h" "$DIR/stubs_remote
    "$DIR/stubs_remote/dialog_cw_kbd.h" "$DIR/stubs_remote/dialog_cw_trainer.h" \
    "$DIR/stubs_remote/dialog_eq.h" "$DIR/stubs_remote/dialog_field.h" \
    "$DIR/stubs_remote/dialog_ft8.h" "$DIR/stubs_remote/dialog_gps.h" \
-   "$DIR/stubs_remote/dialog_js8.h" "$DIR/stubs_remote/dialog_navtex.h" \
+   "$DIR/stubs_remote/dialog_js8.h" "$DIR/stubs_remote/dialog_logs.h" "$DIR/stubs_remote/dialog_navtex.h" \
    "$DIR/stubs_remote/dialog_propagation.h" "$DIR/stubs_remote/dialog_qth.h" \
    "$DIR/stubs_remote/dialog_recorder.h" "$DIR/stubs_remote/dialog_settings.h" \
    "$DIR/stubs_remote/dialog_sstv.h" "$DIR/stubs_remote/dialog_status.h" \

@@ -189,6 +189,11 @@ swr_action_t swr_session_begin(swr_session_t *s, const swr_grid_t *grid, int pas
  * next radio action. */
 swr_action_t swr_session_packet(swr_session_t *s, float swr, uint32_t now_ms, uint32_t *out_freq);
 
+/* Records an INVALID sample for the current (pass, point) and advances exactly like
+ * swr_session_packet(). Used when the flow delivers a packet without TX power: the point is
+ * left as a gap (no reading) instead of being stored as ROE 1.0. */
+swr_action_t swr_session_skip_point(swr_session_t *s, uint32_t now_ms, uint32_t *out_freq);
+
 /* Tells the engine when the caller actually commanded the VFO the last
  * SWR_ACT_SET_FREQ asked for. The settle window is measured from here, not from
  * the instant the engine returned the action (the flow can take its own time to

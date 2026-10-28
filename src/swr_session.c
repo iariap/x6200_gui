@@ -315,26 +315,7 @@ static void record_sample(swr_session_t *s, float swr, uint32_t now_ms) {
     }
 }
 
-swr_action_t swr_session_packet(swr_session_t *s, float swr, uint32_t now_ms, uint32_t *out_freq) {
-    if (!s || s->state != SWR_SESSION_SCANNING) {
-        return SWR_ACT_NONE;
-    }
-
-    s->packets++;
-
-    /* The settle window drops the packets that may still carry the previous
-     * frequency: the flow gives no confirmation of when the VFO actually moved,
-     * so the caller tells us when it commanded it (swr_session_tuned) and any
-     * packet younger than limits.settle_ms after that is stale. A stale packet
-     * is NOT stored and does NOT advance the sweep (the premature advance would
-     * attribute the next frequency's real reading to this point). */
-    if (s->limits.settle_ms > 0 && (uint32_t) (now_ms - s->tuned_ms) < s->limits.settle_ms) {
-        s->discarded++;
-        return SWR_ACT_NONE;
-    }
-
-    record_sample(s, swr, now_ms);
-
+static swr_action_t next_point(swr_session_t *s, uint32_t now_ms, uint32_t *out_freq) {
     s->point     += pass_step(s, s->pass);
     s->point_seq += 1;
 
@@ -368,6 +349,42 @@ swr_action_t swr_session_packet(swr_session_t *s, float swr, uint32_t now_ms, ui
     s->finished_ms = now_ms;
 
     return SWR_ACT_COMPLETE;
+}
+
+swr_action_t swr_session_packet(swr_session_t *s, float swr, uint32_t now_ms, uint32_t *out_freq) {
+    if (!s || s->state != SWR_SESSION_SCANNING) {
+        return SWR_ACT_NONE;
+    }
+
+    s->packets++;
+
+    /* The settle window drops the packets that may still carry the previous
+     * frequency: the flow gives no confirmation of when the VFO actually moved,
+     * so the caller tells us when it commanded it (swr_session_tuned) and any
+     * packet younger than limits.settle_ms after that is stale. A stale packet
+     * is NOT stored and does NOT advance the sweep (the premature advance would
+     * attribute the next frequency's real reading to this point). */
+    if (s->limits.settle_ms > 0 && (uint32_t) (now_ms - s->tuned_ms) < s->limits.settle_ms) {
+        s->discarded++;
+        return SWR_ACT_NONE;
+    }
+
+    record_sample(s, swr, now_ms);
+
+    return next_point(s, now_ms, out_freq);
+}
+
+swr_action_t swr_session_skip_point(swr_session_t *s, uint32_t now_ms, uint32_t *out_freq) {
+    if (!s || s->state != SWR_SESSION_SCANNING) {
+        return SWR_ACT_NONE;
+    }
+
+    s->packets++;
+
+    /* NaN is not a valid reading: record_sample() marks the point invalid (a gap). */
+    record_sample(s, NAN, now_ms);
+
+    return next_point(s, now_ms, out_freq);
 }
 
 void swr_session_tuned(swr_session_t *s, uint32_t now_ms) {

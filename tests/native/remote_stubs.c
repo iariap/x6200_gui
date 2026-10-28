@@ -65,6 +65,7 @@ dialog_t *dialog_callsign = NULL;
 dialog_t *dialog_recorder = NULL;
 dialog_t *dialog_wifi     = NULL;
 dialog_t *dialog_swrscan  = NULL;
+dialog_t *dialog_logs     = NULL;
 dialog_t *dialog_propagation = NULL;
 
 void buttons_press(uint8_t n, bool hold) { (void)n; (void)hold; }

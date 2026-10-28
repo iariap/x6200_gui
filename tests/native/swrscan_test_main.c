@@ -19,6 +19,7 @@ void test_swrscan(void);
 void test_swrscan_sweep(void);
 void test_swrscan_render(void);
 void test_swrscan_sweep_end(void);
+void test_swrscan_no_power_gate(void);
 void test_swrscan_multipass_gate(void);
 void test_swrscan_readout(void);
 void test_swrscan_timeout(void);
@@ -29,6 +30,7 @@ int main(void) {
     test_swrscan_sweep();
     test_swrscan_render();
     test_swrscan_sweep_end();
+    test_swrscan_no_power_gate();
     test_swrscan_multipass_gate();
     test_swrscan_readout();
     test_swrscan_timeout();

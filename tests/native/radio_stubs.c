@@ -254,6 +254,12 @@ void tx_info_update(float pwr, float vswr, float alc) {
     (void) pwr; (void) vswr; (void) alc;
 }
 
+void dialog_swrscan_update_pack(float vswr, float tx_power_w, bool tx_on) {
+    (void) vswr;
+    (void) tx_power_w;
+    (void) tx_on;
+}
+
 void dialog_swrscan_update(float vswr) {
     (void) vswr;
     radio_stub_swrscan_updates++;
