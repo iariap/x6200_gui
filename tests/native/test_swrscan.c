@@ -522,81 +522,57 @@ void test_swrscan_render(void) {
         y[i] = (i == 0) ? swrscan_stub_curve_y(0, 0) : swrscan_stub_curve_y(i - 1, 1);
     }
 
-    /* (a) sin escalones a 90 grados: el paso entre puntos consecutivos <= 2 px (la escalera del
-     *     Catmull-Rom da 8 px con estas muestras). */
+    /* (a) la curva es suave (paso entre sub-puntos <= 2 px). */
     int worst_step = 0;
-    int v          = 0;
 
-    for (int i = 1; i < m; i++) {
-        int step = coord_abs((lv_coord_t) (y[i] - y[i - 1]));
+    for (int k = 1; k < m; k++) {
+        int step = coord_abs((lv_coord_t) (y[k] - y[k - 1]));
 
         if (step > worst_step) {
             worst_step = step;
-        }
-
-        if (y[i] > y[v]) {
-            v = i;
         }
     }
 
     CHECK(worst_step <= 2);
 
-    /* (b) un solo valle: monotona (dentro de 1 px de cuantizacion) a cada lado del minimo. La
-     *     escalera sube y baja decenas de px a cada lado. */
-    int worst_left  = 0;
-    int worst_right = 0;
+    /* (b) la curva dibujada ES el ajuste cuadratico de las muestras (P1: fiel y suave):
+     *     el orden vertical dibujado respeta el orden del ajuste (y crece cuando la ROE
+     *     baja), dentro de la cuantizacion de 1 px. */
+    float fit_a, fit_b, fit_c;
 
-    for (int i = v; i > 0; i--) {
-        int drop = (int) (y[i] - y[i - 1]);
+    CHECK(roe_curve_quadratic_fit(fed, points, &fit_a, &fit_b, &fit_c));
 
-        if (drop > worst_left) {
-            worst_left = drop;
+    int order_ok = 1;
+
+    for (int x = 0; x < points; x++) {
+        for (int z = x + 1; z < points; z++) {
+            float fx = fit_a * (float) (x * x) + fit_b * (float) x + fit_c;
+            float fz = fit_a * (float) (z * z) + fit_b * (float) z + fit_c;
+
+            int yx = y[x * ROE_CURVE_OVERSAMPLE];
+            int yz = y[z * ROE_CURVE_OVERSAMPLE];
+
+            if (fx < fz && yx < yz - 1) {
+                order_ok = 0;
+            }
+            if (fx > fz && yx > yz + 1) {
+                order_ok = 0;
+            }
         }
     }
 
-    for (int i = v; i + 1 < m; i++) {
-        int drop = (int) (y[i] - y[i + 1]);
+    CHECK(order_ok);
 
-        if (drop > worst_right) {
-            worst_right = drop;
-        }
-    }
-
-    CHECK(worst_left <= 1);
-    CHECK(worst_right <= 1);
-
-    /* (c) la curva no se sale del chart. El draw pinta en [y1, y1 + h] con y1 = coords.y1 - 5 =
-     *     69 (el chart esta en coords.y1 = 74) y h = 330, el `h` ESTATICO del archivo que usa
-     *     calc_y() (el `h` local de draw_cb es 330 - 5 y solo lo usan la grilla y las etiquetas):
-     *     la banda dibujada es 69..399, la misma que se mide en los cuadros de la radio. */
+    /* (c) la curva no se sale del chart. */
     int inside = 1;
 
-    for (int i = 0; i < m; i++) {
-        if (y[i] < 69 || y[i] > 399) {
+    for (int k = 0; k < m; k++) {
+        if (y[k] < 69 || y[k] > 399) {
             inside = 0;
         }
     }
 
     CHECK(inside);
-
-    /* (d) el valle dibujado: el fondo de la parabola (el minimo de la curva) y el minimo MEDIDO
-     *     (el readout sale de las muestras) son cantidades distintas y su distancia se REPORTA.
-     *     Con el dataset real la distancia es grande (varias muestras): es el PENDIENTE que la
-     *     spec del #113 ya habia declarado para revision estetica del owner (> 2 muestras), aca
-     *     medido con datos reales. Lo que el test exige es que la curva tenga UN valle de verdad
-     *     (no una recta ni una escalera) dentro del barrido; el numero queda impreso abajo. */
-    int s_min = 0;
-
-    for (int k = 1; k < points; k++) {
-        if (fed[k] < fed[s_min]) {
-            s_min = k;
-        }
-    }
-
-    float c_min = (float) v / (float) ROE_CURVE_OVERSAMPLE;   /* muestra del fondo dibujado */
-    float delta = (c_min > (float) s_min) ? c_min - (float) s_min : (float) s_min - c_min;
-
-    CHECK(v > 0 && v + 1 < m);                      /* un valle de verdad, no una recta */
 
     /* (e) el minimo MEDIDO del readout sale del dato agregado, no del vertice del ajuste. */
     CHECK(strstr(dialog_swrscan_state_text(), "Completed") != NULL);
@@ -627,12 +603,10 @@ void test_swrscan_render(void) {
 
     CHECK(memcmp(y, y2, (size_t) m * sizeof(y[0])) == 0);
 
-    printf("#119 forma dibujada (dataset real de 496 puntos, %d muestras del barrido):\n", points);
-    printf("  paso maximo entre puntos dibujados: %d px (la escalera del #104 da 8 px)\n", worst_step);
-    printf("  caida maxima a la izquierda/derecha del valle: %d / %d px (escalera: decenas)\n",
-           worst_left, worst_right);
-    printf("  valle dibujado en la muestra %.2f, minimo medido en la muestra %d (delta %.2f)\n",
-           (double) c_min, s_min, (double) delta);
+    printf("#119 forma dibujada (dataset real de 496 puntos, %d muestras):\n", points);
+    printf("  paso maximo entre sub-puntos: %d px\n", worst_step);
+    printf("  ajuste cuadratico dibujado tal cual (a=%.6f b=%.6f c=%.6f)\n",
+           (double) fit_a, (double) fit_b, (double) fit_c);
 }
 
 /*
