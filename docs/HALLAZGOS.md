@@ -875,8 +875,20 @@ Conclusiones fundadas:
   medida**, no sobrepasa y respeta los huecos (cada corrida válida se interpola por separado). No
   es el ajuste libre de #113 (ese no pasaba por los puntos y podía salir espejado); `roe_curve`
   conserva además el resample histórico con sus tests, pero el chart ya no lo usa.
-- La primera pasada se midió y quedó en la historia de este registro; la verificación final es la
-  de abajo (build 84b3a09e).
+**Corrección (2026-10-28, órdenes del owner):** la forma de la curva terminó siendo **parábola tipo
+NanoVNA**, no los datos crudos. Iteraciones:
+
+1. polilínea cruda de las muestras → el owner la rechazó ("esas no son curvas con sierras"): la ROE
+   cuantizada a 0,1 se ve en escalones;
+2. PCHIP interpolante (pasaba por cada muestra, suave) → el owner la rechazó también ("es parecida a
+   la original de la radio y es justo lo que habíamos cambiado para que tenga forma de parábola");
+3. **final (PR #335)**: parábola SIEMPRE abierta hacia arriba, **valle centrado en el span**, base en
+   el **mínimo medido** y subida mínima de las puntas `ROE_PARABOLA_MIN_RISE = 0,8` ROE
+   (`roe_curve_parabola()`); el mínimo del readout sigue saliendo de las muestras, no de la curva.
+   Un ajuste libre anterior quedaba en el borde del span (media parábola o casi recta) cuando la
+   resonancia caía fuera del span. El harness de curva vuelve a exigir valle (PR #336).
+
+La verificación final es la de abajo (build 3df36f76, barridos con parábola).
 
 **Arreglo** (PR #330, main `8b68b01d`):
 

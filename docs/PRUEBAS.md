@@ -1722,3 +1722,22 @@ cuantización (0,1 ROE ≈ 26 px cerca del piso en escala logarítmica).
 (build `84b3a09e`) barridos 40/17/15/10/6 m → **Completed n=51/51** con curvas suaves
 (captura `assessment-194/scratch/cw244/swr_smooth_bandas2.png`), TX apagado y dial restaurado
 (18.099180 USB-D).
+
+---
+
+## 28/10 03:15Z — ROE en pantalla con forma de parábola tipo NanoVNA
+
+El owner rechazó las dos iteraciones anteriores del trazado ("curva = puntos medidos"): la polilínea
+cruda se veía en escalones y la interpolación PCHIP le pareció "parecida a la original de la radio".
+Pidió explícitamente **forma de parábola como el NanoVNA**.
+
+**Arreglo** (PR #335, main `1b1395e7`): `roe_curve_parabola()` dibuja SIEMPRE un valle abierto hacia
+arriba, **centrado en el span**, con la **base en el mínimo medido** y una **subida mínima de las
+puntas de 0,8 ROE**. El mínimo del readout sigue saliendo de las muestras (la curva es el trazado).
+El harness de curva vuelve a exigir valle (PR #336, main `91156f06`).
+
+**Verificado**: tests nativos `exit 0` (test nuevo de la parábola: base en el mínimo, puntas ≥
+subida mínima, clamp); `check_harness_swrscan_curve.sh` **PASS** (domo del owner → valle profundo;
+valle real → U). En la radio (build `3df36f76`) las cinco bandas dieron **Completed n=51/51** con
+parábolas claras: captura `assessment-194/scratch/cw244/swr_par4_bandas.png`; TX apagado y dial
+restaurado (18.099180 USB-D).
