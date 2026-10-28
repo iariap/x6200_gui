@@ -315,4 +315,30 @@ void test_roe_curve(void) {
 
         CHECK_CLOSE(out[0], 2.5f, 1e-6f);
     }
+
+    /* Interpolacion PCHIP: la curva pasa por CADA muestra medida, sin sobrepaso y
+     * monotona donde el dato lo es (es la forma que dibuja el chart desde el 28/10,
+     * despues de que el owner rechazara la polilinea con escalones). */
+    {
+        float in[5]  = { 1.0f, 1.5f, 2.5f, 2.6f, 2.4f };
+        float out[(5 - 1) * ROE_CURVE_OVERSAMPLE + 1];
+        int   n      = 5;
+        int   m      = roe_curve_point_count(n);
+
+        roe_curve_interpolate(in, n, out);
+
+        CHECK(m == (n - 1) * ROE_CURVE_OVERSAMPLE + 1);
+
+        for (int k = 0; k < n; k++) {
+            CHECK(out[k * ROE_CURVE_OVERSAMPLE] == in[k]);   /* pasa por la muestra */
+        }
+
+        for (int k = 0; k < m; k++) {
+            CHECK(out[k] >= 1.0f && out[k] <= 2.6f);         /* sin sobrepaso */
+        }
+
+        for (int k = 1; k < 2 * ROE_CURVE_OVERSAMPLE; k++) {
+            CHECK(out[k] >= out[k - 1]);                      /* rama monotona 1,0 -> 2,5 */
+        }
+    }
 }

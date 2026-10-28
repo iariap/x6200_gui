@@ -34,6 +34,9 @@
  * panel without depending on the pixel width (deterministic). */
 #define ROE_CURVE_OVERSAMPLE 8
 
+/* Tope de muestras de entrada del interpolador (el barrido tiene 51). */
+#define ROE_CURVE_MAX_POINTS  256
+
 /* Number of points roe_curve_resample() writes for `n` input samples. */
 int roe_curve_point_count(int n);
 
@@ -67,3 +70,13 @@ bool roe_curve_quadratic_fit(const float *in, int n, float *a, float *b, float *
  *
  * Deterministic: the same input always yields the same output. */
 void roe_curve_resample(const float *in, int n, float *out);
+
+/* Interpolating curve THROUGH the measured samples (no free fit): monotone
+ * piecewise-cubic Hermite (Fritsch-Carlson PCHIP). It passes through every sample,
+ * is C1 (smooth, no sawtooth from the 0.1 ROE quantization) and does not overshoot
+ * a monotone run. Same output count as roe_curve_resample() (fixed
+ * ROE_CURVE_OVERSAMPLE sub-points per interval); each value is clamped to
+ * [ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE].
+ *
+ * Deterministic: the same input always yields the same output. */
+void roe_curve_interpolate(const float *in, int n, float *out);

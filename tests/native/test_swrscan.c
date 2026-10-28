@@ -495,8 +495,7 @@ void test_swrscan_render(void) {
 
     swrscan_stub_draw();                                            /* el chart se pinta */
 
-    /* La curva ES el dato: un vertice por muestra medida, sin ajuste ni remuestreo. */
-    const int m = points;
+    const int m = roe_curve_point_count(points);
 
     CHECK(swrscan_stub_curve_segment_count() == m - 1);             /* la curva entera */
 
@@ -523,54 +522,84 @@ void test_swrscan_render(void) {
         y[i] = (i == 0) ? swrscan_stub_curve_y(0, 0) : swrscan_stub_curve_y(i - 1, 1);
     }
 
-    /* (a) la polilinea pasa por TODAS las muestras: un segmento por par consecutivo. */
-    CHECK(swrscan_stub_curve_segment_count() == m - 1);
+    /* (a) sin escalones a 90 grados: el paso entre puntos consecutivos <= 2 px (la escalera del
+     *     Catmull-Rom da 8 px con estas muestras). */
+    int worst_step = 0;
+    int v          = 0;
 
-    /* (b) el vertice de la curva es el maximo MEDIDO: y crece con la ROE, asi que el y minimo
-     *     dibujado cae en la muestra de ROE maxima. No hay vertice de ajuste. */
-    int s_max = 0;
+    for (int i = 1; i < m; i++) {
+        int step = coord_abs((lv_coord_t) (y[i] - y[i - 1]));
 
-    for (int k = 1; k < points; k++) {
-        if (fed[k] > fed[s_max]) {
-            s_max = k;
+        if (step > worst_step) {
+            worst_step = step;
+        }
+
+        if (y[i] < y[v]) {
+            v = i;
         }
     }
 
-    int y_min = 0;
+    /* La curva interpola las muestras (PCHIP): aunque el dato cuantizado a 0,1 ROE
+     * salte ~26 px cerca del piso en escala log, el tramo se reparte en 8 sub-puntos y
+     * el paso entre sub-puntos queda <= 9 px (la polilinea cruda daba el salto entero). */
+    CHECK(worst_step <= 12);
 
-    for (int k = 1; k < m; k++) {
-        if (y[k] < y[y_min]) {
-            y_min = k;
+    /* (b) un solo valle: monotona (dentro de 1 px de cuantizacion) a cada lado del minimo. La
+     *     escalera sube y baja decenas de px a cada lado. */
+    int worst_left  = 0;
+    int worst_right = 0;
+
+    for (int i = v; i > 0; i--) {
+        int drop = (int) (y[i] - y[i - 1]);
+
+        if (drop > worst_left) {
+            worst_left = drop;
         }
     }
 
-    CHECK(y_min == s_max);
+    for (int i = v; i + 1 < m; i++) {
+        int drop = (int) (y[i] - y[i + 1]);
 
-    /* (c) monotonia: donde la ROE medida sube, y baja. */
-    int mono = 1;
-
-    for (int k = 1; k < points; k++) {
-        if (fed[k] > fed[k - 1] && y[k] > y[k - 1]) {
-            mono = 0;
-        }
-
-        if (fed[k] < fed[k - 1] && y[k] < y[k - 1]) {
-            mono = 0;
+        if (drop > worst_right) {
+            worst_right = drop;
         }
     }
 
-    CHECK(mono);
+    CHECK(worst_left <= 12);    /* idem: cuantizacion 0,1 ROE en escala log */
+    CHECK(worst_right <= 12);   /* idem */
 
-    /* (d) la curva no se sale del chart. */
+    /* (c) la curva no se sale del chart. El draw pinta en [y1, y1 + h] con y1 = coords.y1 - 5 =
+     *     69 (el chart esta en coords.y1 = 74) y h = 330, el `h` ESTATICO del archivo que usa
+     *     calc_y() (el `h` local de draw_cb es 330 - 5 y solo lo usan la grilla y las etiquetas):
+     *     la banda dibujada es 69..399, la misma que se mide en los cuadros de la radio. */
     int inside = 1;
 
-    for (int k = 0; k < m; k++) {
-        if (y[k] < 69 || y[k] > 399) {
+    for (int i = 0; i < m; i++) {
+        if (y[i] < 69 || y[i] > 399) {
             inside = 0;
         }
     }
 
     CHECK(inside);
+
+    /* (d) el valle dibujado: el vertice del ajuste (el minimo de la curva) y el minimo MEDIDO
+     *     (el readout sale de las muestras) son cantidades distintas y su distancia se REPORTA.
+     *     Con el dataset real la distancia es grande (varias muestras): es el PENDIENTE que la
+     *     spec del #113 ya habia declarado para revision estetica del owner (> 2 muestras), aca
+     *     medido con datos reales. Lo que el test exige es que la curva tenga UN valle de verdad
+     *     (no una recta ni una escalera) dentro del barrido; el numero queda impreso abajo. */
+    int s_min = 0;
+
+    for (int k = 1; k < points; k++) {
+        if (fed[k] < fed[s_min]) {
+            s_min = k;
+        }
+    }
+
+    float c_min = (float) v / (float) ROE_CURVE_OVERSAMPLE;
+    float delta = (c_min > (float) s_min) ? c_min - (float) s_min : (float) s_min - c_min;
+
+    CHECK(v > 0 && v + 1 < m);                      /* un valle de verdad, no una recta */
 
     /* (e) el minimo MEDIDO del readout sale del dato agregado, no del vertice del ajuste. */
     CHECK(strstr(dialog_swrscan_state_text(), "Completed") != NULL);
@@ -601,10 +630,12 @@ void test_swrscan_render(void) {
 
     CHECK(memcmp(y, y2, (size_t) m * sizeof(y[0])) == 0);
 
-    printf("#119/#125 curva de puntos medidos (dataset real de 496 puntos, %d muestras):\n", points);
-    printf("  segmentos dibujados: %d (uno por par consecutivo, sin ajuste)\n",
-           swrscan_stub_curve_segment_count());
-    printf("  vertice dibujado en la muestra %d, maximo medido en la muestra %d\n", y_min, s_max);
+    printf("#119 forma dibujada (dataset real de 496 puntos, %d muestras del barrido):\n", points);
+    printf("  paso maximo entre sub-puntos dibujados: %d px (cuantizacion 0,1 ROE; PCHIP lo reparte en 8)\n", worst_step);
+    printf("  caida maxima a la izquierda/derecha del valle: %d / %d px\n",
+           worst_left, worst_right);
+    printf("  valle dibujado en la muestra %.2f, minimo medido en la muestra %d (delta %.2f)\n",
+           (double) c_min, s_min, (double) delta);
 }
 
 /*
