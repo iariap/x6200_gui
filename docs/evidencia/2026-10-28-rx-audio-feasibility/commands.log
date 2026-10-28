@@ -1,0 +1,846 @@
+# commands.log — issue #345, tarea B (auditoría Speex + banco PCM)
+#
+# Worktree: state/worktrees/x6200/rx-audio-feasibility (rama factory/rx-audio-feasibility)
+# Base:     a1c667eee6d4c138416e5ec459dd86de93cb630f  (commit de tarea A: 3ab3330a)
+# Fecha:    2026-10-28
+#
+# Se registran los comandos que producen los artefactos commiteados y los chequeos
+# de entorno. Los comandos exploratorios (lectura de código, pruebas de imagen)
+# también quedan, porque de ellos dependen las decisiones del informe.
+# Formato: comando, salida relevante y exit code.
+#
+# ---------------------------------------------------------------------------
+# 0. Contexto
+# ---------------------------------------------------------------------------
+$ git log --oneline -3
+3ab3330a docs(audio): mapa de señal RX y matriz de controles del BASE (#345)
+a1c667ee fix(info): centrar el icono de WiFi en su media celda de la barra (#344)
+7b421b37 feat(bt): todo el Bluetooth vive en su app (encendido y Discoverable salen de Ajustes) (#343)
+[exit 0]
+
+$ gh issue view 345 --repo iariap/x6200_gui
+(contratos 3 y 4 leídos: auditoría numérica de Speex y banco reproducible; prohibiciones:
+ no tocar src/, rootfs/, tests/, radio, ni usar el stub para anunciar calidad/presupuesto)
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 1. ¿Hay libspeexdsp en el host?
+# ---------------------------------------------------------------------------
+$ pkg-config --exists speexdsp; echo $?
+Package speexdsp was not found in the pkg-config search path.
+Perhaps you should add the directory containing `speexdsp.pc'
+to the PKG_CONFIG_PATH environment variable
+Package 'speexdsp' not found
+1
+
+$ docker version --format '{{.Server.Version}}'
+29.9.2
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 2. Contenedor del banco: base pinneada + paquete pinneado
+# ---------------------------------------------------------------------------
+$ docker pull debian:bookworm-slim
+Digest: sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3
+Status: Downloaded newer image for debian:bookworm-slim
+[exit 0]
+
+$ docker run --rm debian:bookworm-slim@sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3 \
+    bash -c 'apt-get update -qq; apt-cache policy libspeexdsp-dev | head -4; \
+             apt-get install -y -qq --no-install-recommends gcc libc6-dev libspeexdsp-dev=1.2.1-1 pkg-config; \
+             dpkg-query -W -f="${Package}=${Version}\n" gcc libc6-dev libspeexdsp-dev libspeexdsp1 pkg-config; \
+             gcc --version | head -1; pkg-config --modversion speexdsp'
+libspeexdsp-dev:
+  Installed: (none)
+  Candidate: 1.2.1-1
+gcc=4:12.2.0-3
+libc6-dev=2.36-9+deb12u14
+libspeexdsp-dev=1.2.1-1
+libspeexdsp1=1.2.1-1
+pkg-config=1.8.1-1
+gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+1.2.1
+[exit 0]
+
+# Los ids de request reales (para comparar con el stub de tests/native):
+$ grep -n 'define SPEEX_PREPROCESS_SET_NOISE_SUPPRESS' /usr/include/speex/speex_preprocess.h
+144:#define SPEEX_PREPROCESS_SET_NOISE_SUPPRESS 18
+[exit 0]
+
+# Fuente de la lib (sólo lectura, para citar la ventana WOLA de preprocess.c:618-625,983-989)
+$ curl -fsSL -o speexdsp-1.2.1.tar.gz https://downloads.xiph.org/releases/speex/speexdsp-1.2.1.tar.gz
+$ sha256sum speexdsp-1.2.1.tar.gz
+8c777343e4a6399569c72abc38a95b24db56882c83dbdb6c6424a5f4aeb54d3d  speexdsp-1.2.1.tar.gz
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 3. Generador PCM: dos corridas y comparación
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py
+silence_44100_s16.wav: 441000 muestras, RMS null dBFS, peak null dBFS, clip 0, sha256 99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c
+sine_1k_44100_s16.wav: 441000 muestras, RMS -21.01 dBFS, peak -18.00 dBFS, clip 0, sha256 667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600
+multisine_44100_s16.wav: 441000 muestras, RMS -25.78 dBFS, peak -18.08 dBFS, clip 0, sha256 b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf
+white_noise_44100_s16.wav: 441000 muestras, RMS -30.01 dBFS, peak -25.23 dBFS, clip 0, sha256 b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+manifiesto: .../pcm-manifest.json
+[exit 0]
+
+$ sha256sum docs/evidencia/2026-10-28-rx-audio-feasibility/artifacts/pcm/*.wav > /tmp/opencode/final_sha1.txt
+$ cp pcm-manifest.json /tmp/opencode/final_man1.json
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py    # segunda corrida
+(salida idéntica a la primera)
+[exit 0]
+
+$ sha256sum docs/evidencia/2026-10-28-rx-audio-feasibility/artifacts/pcm/*.wav > /tmp/opencode/final_sha2.txt
+$ diff /tmp/opencode/final_sha1.txt /tmp/opencode/final_sha2.txt; echo $?
+0
+$ diff /tmp/opencode/final_man1.json pcm-manifest.json; echo $?
+0
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py --verify
+silence_44100_s16.wav: sha256 99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c
+sine_1k_44100_s16.wav: sha256 667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600
+multisine_44100_s16.wav: sha256 b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf
+white_noise_44100_s16.wav: sha256 b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+OK: los cuatro WAV regenerados coinciden byte a byte con el manifiesto
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 4. Banco con libspeexdsp REAL (docker build + run)
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_speex.py
+OK: 17 casos medidos (49 corridas) con libspeexdsp real, 12 sondas
+imagen sha256:46d344b88a0ccdfda0024461b18080233e023c1b8116657e86db5157ded79e1c
+speexdsp 1.2.1, gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+fuente acab3aad158097cd5a8ab1c6e6eb83e8b37011a0098eb91d39dc1c5d2366b25f (src/audio_enhancement.c)
+CSV: .../measurements.csv
+resultados: .../bench-results.json
+[exit 0]
+
+# Comandos exactos que corre el script (quedan en artifacts/bench/container.log):
+$ docker build -t x6200-speexdsp-bench:1.2.1-1 \
+      -f docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/Dockerfile \
+      docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench
+[exit 0]
+
+$ docker run --rm -v <worktree>:/repo:ro -v <worktree>/docs/evidencia/2026-10-28-rx-audio-feasibility/artifacts/bench:/out \
+      -w /build x6200-speexdsp-bench:1.2.1-1 sh /repo/docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/run_in_container.sh
+--- fuente copiada verbatim ---
+acab3aad158097cd5a8ab1c6e6eb83e8b37011a0098eb91d39dc1c5d2366b25f  audio_enhancement.c
+--- toolchain ---
+gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+1.2.1
+libspeexdsp-dev=1.2.1-1
+--- headers reales de Speex ---
+144:#define SPEEX_PREPROCESS_SET_NOISE_SUPPRESS 18
+--- compile ---
++ gcc -O2 -std=c11 -Wall -Wextra -Werror -I. -I/repo/.../scripts/bench/stubs \
+      /repo/.../scripts/bench/bench_main.c /repo/.../scripts/bench/stubs_bench.c audio_enhancement.c \
+      -o bench -lspeexdsp -lm
+determinismo: noise_p2_b4410 repetido == original (cmp OK)
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 5. Hashes de las salidas (PCM sintético y PCM procesado)
+# ---------------------------------------------------------------------------
+$ sha256sum docs/evidencia/2026-10-28-rx-audio-feasibility/artifacts/pcm/*.wav
+b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf  artifacts/pcm/multisine_44100_s16.wav
+99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c  artifacts/pcm/silence_44100_s16.wav
+667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600  artifacts/pcm/sine_1k_44100_s16.wav
+b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936  artifacts/pcm/white_noise_44100_s16.wav
+[exit 0]
+
+$ sha256sum docs/evidencia/2026-10-28-rx-audio-feasibility/artifacts/bench/*.raw
+2b552525ad8f3ac4e174b9c848b51cc63cad400a9d0ddd49e82e714e1e961b36  multisine_p0_b4410.raw
+7508e09176083aa9edd6f7383311d8db9b8841e1207cee501a1da03fe39443b6  multisine_p2_b4410.raw
+33ab96589d89b7d07674f0864aa2d4a08bff34163dac90972fdcfcbeb7a94edd  multisine_p3_b4410.raw
+b718cf2c118cfb465a0e7894a7eaa7baa23719406736e494d0fbf7fcd1aaa56e  noise_p0_b4410.raw
+b718cf2c118cfb465a0e7894a7eaa7baa23719406736e494d0fbf7fcd1aaa56e  noise_p2_b1.raw
+436bf33d07bdb79083dbb7eb669622e7b6fb4366d06d5627541f4c40eb2e5c6d  noise_p2_b256.raw
+fbc5d9ae9c3974159e16cbc47845061c839132816a0f3e8bf8f3dd9f9309ad4e  noise_p2_b257.raw
+6cd89dc900ac2bd38f1514b1c8156cb4a2e2bd9161abb320d081ffe50bb67795  noise_p2_b4410.raw
+6cd89dc900ac2bd38f1514b1c8156cb4a2e2bd9161abb320d081ffe50bb67795  noise_p2_b4410_repeat.raw
+c4ffaa78b31a0ff4674901c59c53b2de147b4d9662f9405e9a2e3ebac5ea510e  noise_p2_b8820.raw
+92ee9732d2babd8ca1d3c1f21bb87842f392dacf45f35fb9ec8a64e328ca8542  noise_p3_b4410.raw
+ff793c626048816a52aa19c55232c5226be1f990b3b028ddc435877fc2676547  silence_p0_b4410.raw
+ff793c626048816a52aa19c55232c5226be1f990b3b028ddc435877fc2676547  silence_p2_b4410.raw
+ff793c626048816a52aa19c55232c5226be1f990b3b028ddc435877fc2676547  silence_p3_b4410.raw
+d28a1dffa08349ec1cb5602e3e2dec0a0c2cc74b8ecf6b56d0021104d936378d  sine1k_p0_b4410.raw
+e689ac8ede3bc9449a93dcca9c5e0db60c6864f3b07bd5b317d7a89016342450  sine1k_p2_b4410.raw
+73a376477d8aa28c8b91403e53ac2f5d65aadef684f3aee07803b1e944e98ea4  sine1k_p3_b4410.raw
+[exit 0]
+# noise_p2_b1 == noise_p0_b4410: con callbacks de 1 muestra no hay ningún frame
+# completo, así que la cadena es bit-exacta (el NR nunca corre).
+# silence_p0/p2/p3 comparten hash: el silencio digital sale en cero en los tres presets.
+
+$ sha256sum docs/evidencia/2026-10-28-rx-audio-feasibility/pcm-manifest.json
+ffb1c65ece3db02f08cc1a0013aa360825d075efa9b00a0d27f668afa2cfc0ad  pcm-manifest.json
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 6. Suite host (para saber qué prueba el stub; no es una medición de Speex)
+# ---------------------------------------------------------------------------
+$ sh tests/native/run_native_tests.sh /tmp/opencode/x6200-native2
+== compilador: gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2) ==
+== sanitizers: NO disponibles en este toolchain (se omite) ==
+...
+44837 comprobaciones, 0 fallos
+...
+PASS: un loop_timer, periodo 30/250 ms, pump vivo y NetworkManager intacto
+== #219: radio_thread duerme en cada vuelta del sondeo ==
+57 comprobaciones, 0 fallos
+[exit 0]
+# test_audio_enhancement() se llama desde tests/native/test_main.c:66 y forma parte
+# del binario de 44837 comprobaciones; el runner no imprime un conteo por archivo.
+
+# ---------------------------------------------------------------------------
+# 7. Alcance del diff (después del commit)
+# ---------------------------------------------------------------------------
+$ git diff --name-only 3ab3330a HEAD
+docs/evidencia/2026-10-28-rx-audio-feasibility/.gitignore
+docs/evidencia/2026-10-28-rx-audio-feasibility/bench-results.json
+docs/evidencia/2026-10-28-rx-audio-feasibility/commands.log
+docs/evidencia/2026-10-28-rx-audio-feasibility/measurements.csv
+docs/evidencia/2026-10-28-rx-audio-feasibility/pcm-manifest.json
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/Dockerfile
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/bench_main.c
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/run_in_container.sh
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/cfg/cfg.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/cfg/subjects.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/liquid/liquid.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/lvgl/lvgl.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/params/params.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/radio.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs_bench.c
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_speex.py
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py
+docs/evidencia/2026-10-28-rx-audio-feasibility/speex-audit.md
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 8. Fallos y correcciones durante la corrida (se registran, no se ocultan)
+# ---------------------------------------------------------------------------
+# a) Primer build del banco: -Werror falló por `rms_int16` sin usar y por
+#    `firfilt_rrrf` sin declarar en stubs_bench.c (faltaba #include "liquid/liquid.h").
+#    Se corrigió el harness (no se toca src/). exit 1 en ese intento.
+# b) Primer parseo del CSV: KeyError 'denoise' en las sondas de tasa (no emiten ese
+#    campo). Corregido en bench_speex.py. exit 1.
+# c) Se probó medir el máximo por callback con CLOCK_THREAD_CPUTIME_ID: 2 llamadas
+#    por callback son ~1 µs de syscall y en el caso de 1 muestra inflaron el CPU de
+#    134 ms a 1171 ms (20x). Se descartó esa métrica y se reporta wall + el total
+#    de CPU del proceso (getrusage).
+# d) La primera versión del lag por correlación daba 124 muestras en el seno de
+#    1 kHz: artefacto de periodicidad. Se agregó detección de ambigüedad (2º pico
+#    > 0.95 del 1º) y para señales periódicas se reporta UNKNOWN, no un número.
+
+# ===========================================================================
+# 9. Tarea C: informe de factibilidad, handoff y tests obligatorios
+# ===========================================================================
+# Fecha: 2026-10-28. Worktree: state/worktrees/x6200/rx-audio-feasibility.
+# Base: a1c667ee. HEAD al empezar la tarea: a6d7ac2f (tareas A y B).
+# Nada de esta sección se ejecutó en la radio.
+
+$ git log --oneline -4
+a6d7ac2f docs(audio): auditoría numérica de Speex y banco PCM sintético reproducible (#345)
+3ab3330a docs(audio): mapa de señal RX y matriz de controles del BASE (#345)
+a1c667ee fix(info): centrar el icono de WiFi en su media celda de la barra (#344)
+7b421b37 feat(bt): todo el Bluetooth vive en su app (encendido y Discoverable salen de Ajustes) (#343)
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 9.1 T1 — suite nativa (host, con stubs de Speex/LVGL/liquid)
+# ---------------------------------------------------------------------------
+$ sh tests/native/run_native_tests.sh /tmp/opencode/x6200-native-taskC
+== compilador: gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2) ==
+== sanitizers: NO disponibles en este toolchain (se omite) ==
+...
+44837 comprobaciones, 0 fallos
+...
+138 comprobaciones, 0 fallos
+141 comprobaciones, 0 fallos
+597 comprobaciones, 0 fallos
+PASS: un loop_timer, periodo 30/250 ms, pump vivo y NetworkManager intacto
+== #219: radio_thread duerme en cada vuelta del sondeo ==
+57 comprobaciones, 0 fallos
+[exit 0]
+# Warnings preexistentes del árbol (no del cambio, no se tocaron):
+#   tests/native/test_radio_thread.c:44: 'no return statement' en la copia de radio.c
+#   src/params/types.h:12: multi-line comment; sign-compare en test_band_plan.c
+# Este PASS NO prueba atenuación, calidad, CPU ni latencia: corre contra stubs
+# (ver speex-audit.md §5 y el control negativo de 9.4).
+
+# ---------------------------------------------------------------------------
+# 9.2 T2 — suite completa rápida
+# ---------------------------------------------------------------------------
+$ sh tests/run_all_tests.sh --quick
+...
+================ resumen ================
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  settings_grid: OK
+  info_bar: OK
+  apps_menu: FALLÓ
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (25 apps)
+  pruebas: FALLÓ
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  wcag_rendered: FALLÓ
+  widget_text: FALLÓ
+  cw_tune_feed: OK
+  autotune_v2: OK
+  build_identity: OK
+  dialog_coverage: FALLÓ
+  curve_evidence: FALLÓ
+  host: OK   57 comprobaciones, 0 fallos
+  daemon: OK     all OK: 15 casos, 0 fallos
+  host_ci_parity: OK   57 comprobaciones, 0 fallos
+  db_failclosed: OK   todos los casos corrieron y afirmaron su resultado
+  qemu_apps: SKIP SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))
+  drawbuf_partial: OK   PASS: partial draw buffer renders the identical physical framebuffer (sw-rotate 90)
+  wspr: SKIP SKIP: la imagen x6200-uiharness no trae /usr/include/fftw3.h
+  sstv: SKIP SKIP: la imagen x6200-uiharness no trae /usr/include/sndfile.h
+  wefax: SKIP SKIP: la imagen x6200-uiharness no trae /usr/include/sndfile.h
+  navtex: OK   all OK
+  (omitidos: qemu_apps wspr sstv wefax js8 webserver)
+  17 OK, 6 fallos
+[exit 1]
+
+# Los 6 fallos son preexistentes y ajenos a este cambio (docs-only). Prueba:
+$ grep -rln "2026-10-28-rx-audio-feasibility" tests/ scripts
+(sin coincidencias)
+[exit 1]   # grep sin matches: ningún test lee este directorio
+$ git diff --name-only a1c667ee | grep -v '^docs/evidencia/2026-10-28-rx-audio-feasibility/'
+(sin coincidencias)
+[exit 1]
+# Detalle: apps_menu (ACTION_APP_LOGS sin página), pruebas (docs/PRUEBAS.md),
+# dialog_coverage (app Logs; app_names[] 26 vs 25 del contrato #222),
+# curve_evidence (7 de 8 pruebas de la curva de ROE), wcag_rendered y widget_text
+# (el arnés docker falla al construir: 'make ... Error 2'). No se corrigieron:
+# fuera del alcance de esta tarea y el issue prohíbe tocar tests/.
+
+# ---------------------------------------------------------------------------
+# 9.3 T3 — determinismo del PCM sintético
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py --verify
+silence_44100_s16.wav: sha256 99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c
+sine_1k_44100_s16.wav: sha256 667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600
+multisine_44100_s16.wav: sha256 b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf
+white_noise_44100_s16.wav: sha256 b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+OK: los cuatro WAV regenerados coinciden byte a byte con el manifiesto
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 9.4 T4 — control negativo anti-stub (scripts/check_no_stub_claims.py)
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+OK   (a) procedencia MEASURED-HOST: 29 filas del banco con lib real, exit 0, sin citar tests/native
+OK   (a) procedencia MEASURED-HARDWARE: 0 filas (0 esperadas en esta corrida: no hubo medicion en radio)
+OK   (b) sin atribuciones al stub: 2029 campos/lineas barridos, 0 aserciones prohibidas
+OK   (c) ids del stub: stub SET_NOISE_SUPPRESS = 1 != real = 18 (documentado en speex-audit.md)
+OK   (c) banco sin stub de Speex: scripts/bench/stubs_bench.c no define simbolos de Speex; run_in_container.sh enlaza speexdsp
+OK   (c) sha del PCM procesado: todas las filas MEASURED-HOST con --case traen sha
+OK: ningun resultado de stub se reporta como real
+[exit 0]
+
+# T4b: el control no es vacuo (regex probadas contra casos buenos y malos)
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py --self-test
+OK   self-test(b): esperado=True  detectado=True  <5 casos prohibidos, redactados: stub + verbo de medicion + magnitud>
+#     (las 5 frases literales viven en SELF_TEST_CASES del script; no se copian aca
+#      para no reintroducir en un archivo barrido la frase que el control prohibe)
+OK   self-test(b): esperado=False detectado=False 'el stub atenua 6 dB fijos y usa ids de request distintos'
+OK   self-test(b): esperado=False detectado=False 'lo que prueba el stub: troceado, tail y clamps'
+OK   self-test(b): esperado=False detectado=False 'el stub no prueba atenuacion, calidad, CPU ni latencia'
+OK   self-test(b): esperado=False detectado=False 'el stub **no** prueba atenuacion de 13 dB'
+OK   self-test(b): esperado=False detectado=False 'Un PASS de la suite host prueba troceado; no prueba calidad'
+OK: las regex de (b) detectan las 5 formas prohibidas y dejan pasar las 5 correctas
+[exit 0]
+
+# T4c: con un artefacto adulterado el control FALLA (exit 1), como debe. La frase
+# prohibida vive en scripts/tamper_fixture.txt (no se barre: es un fixture, no
+# evidencia) y se copia como .md para que la comprobacion (b) la vea.
+$ cp docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/tamper_fixture.txt \
+     docs/evidencia/2026-10-28-rx-audio-feasibility/zz-tamper.md
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+OK   (a) procedencia MEASURED-HOST: 29 filas del banco con lib real, exit 0, sin citar tests/native
+OK   (a) procedencia MEASURED-HARDWARE: 0 filas (0 esperadas en esta corrida: no hubo medicion en radio)
+FAIL (b) sin atribuciones al stub: .../zz-tamper.md:11: asercion prohibida '<frase prohibida: stub + verbo + magnitud>'
+OK   (c) ids del stub: stub SET_NOISE_SUPPRESS = 1 != real = 18 (documentado en speex-audit.md)
+OK   (c) banco sin stub de Speex: ... no define simbolos de Speex; ... enlaza speexdsp
+OK   (c) sha del PCM procesado: todas las filas MEASURED-HOST con --case traen sha
+FAIL: 1 comprobacion(es) del control negativo
+[exit 1]
+$ rm docs/evidencia/2026-10-28-rx-audio-feasibility/zz-tamper.md
+$ python3 .../check_no_stub_claims.py --quiet
+OK: ningun resultado de stub se reporta como real
+[exit 0]
+# La cita de la violacion se muestra redactada a proposito: escribirla entera en
+# este log seria reintroducir en un archivo barrido la frase que el control prohibe.
+# También se probó con una fila falsa MEASURED-HOST (command de tests/native +
+# notes con la frase prohibida): exit 1 con 4 fallos. Los artefactos se
+# restauraron y se verificaron con cmp (idénticos al commit a6d7ac2f).
+
+# ---------------------------------------------------------------------------
+# 9.5 T5 — alcance del diff (sólo el directorio de evidencia)
+# ---------------------------------------------------------------------------
+$ git add -N docs/evidencia/2026-10-28-rx-audio-feasibility/{README.md,hardware-handoff.md,scripts/check_no_stub_claims.py}
+$ git diff --name-only a1c667ee
+docs/evidencia/2026-10-28-rx-audio-feasibility/.gitignore
+docs/evidencia/2026-10-28-rx-audio-feasibility/README.md
+docs/evidencia/2026-10-28-rx-audio-feasibility/base-controls.md
+docs/evidencia/2026-10-28-rx-audio-feasibility/bench-results.json
+docs/evidencia/2026-10-28-rx-audio-feasibility/commands.log
+docs/evidencia/2026-10-28-rx-audio-feasibility/hardware-handoff.md
+docs/evidencia/2026-10-28-rx-audio-feasibility/measurements.csv
+docs/evidencia/2026-10-28-rx-audio-feasibility/pcm-manifest.json
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/Dockerfile
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/bench_main.c
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/run_in_container.sh
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/cfg/cfg.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/cfg/subjects.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/liquid/liquid.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/lvgl/lvgl.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/params/params.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/radio.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs_bench.c
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_speex.py
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py
+docs/evidencia/2026-10-28-rx-audio-feasibility/signal-flow.md
+docs/evidencia/2026-10-28-rx-audio-feasibility/speex-audit.md
+[exit 0]
+# Cero archivos fuera de docs/evidencia/2026-10-28-rx-audio-feasibility/:
+$ git diff --name-only a1c667ee | grep -v '^docs/evidencia/2026-10-28-rx-audio-feasibility/'
+(sin coincidencias)
+[exit 1]
+# No se tocó src/, rootfs/, tests/ ni la radio.
+
+# ---------------------------------------------------------------------------
+# 9.6 T6 — QEMU para audio de BASE: UNSUPPORTED (no es PASS)
+# ---------------------------------------------------------------------------
+$ sh tests/run_all_tests.sh --quick   # etapa qemu_apps
+qemu_apps: SKIP SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))
+# El barrido QEMU (tests/qemu/run_apps_qemu.sh) recorre apps, no audio: QEMU no
+# simula el códec, el DSP del BASE ni el trayecto eléctrico. Para audio de RX se
+# marca UNSUPPORTED explícito en README.md §8 (T6): no se declara PASS ni FAIL.
+
+# ---------------------------------------------------------------------------
+# 9.7 Errata corregida en esta tarea (fix explícito y mínimo)
+# ---------------------------------------------------------------------------
+# Al verificar citas para el informe se encontraron dos referencias de línea
+# equivocadas en speex-audit.md (tarea B). Se corrigieron SÓLO las citas:
+#   §2.1  src/audio_enhancement.h:15-16  ->  :21-22   (AUDIO_ENH_SAMPLE_RATE/FRAME_SIZE)
+#   §6.1  src/audio_enhancement.h:84-95  ->  :71-81   (audio_enh_state_t; float_buffer en :80)
+$ awk 'NR>=20 && NR<=22 {printf "%d: %s\n", NR, $0}' src/audio_enhancement.h
+20: #define AUDIO_ENH_MAX_NOTCHES 4
+21: #define AUDIO_ENH_SAMPLE_RATE 48000
+22: #define AUDIO_ENH_FRAME_SIZE 256
+[exit 0]
+$ awk 'NR>=70 && NR<=81 {printf "%d: %s\n", NR, $0}' src/audio_enhancement.h
+70: /* Master state */
+71: typedef struct {
+...
+80:     float float_buffer[AUDIO_ENH_FRAME_SIZE];
+81: } audio_enh_state_t;
+[exit 0]
+# Ninguna afirmación del documento cambió.
+
+# ===========================================================================
+# 10. TAREA D — anexo vinculante RNNoise: laboratorio A/B offline
+# ===========================================================================
+# Worktree: state/worktrees/x6200/rx-audio-feasibility (rama factory/rx-audio-feasibility)
+# Base:     97617351 (commit de la tarea C)
+# Fecha:    2026-10-28
+# Alcance:  SÓLO docs/evidencia/2026-10-28-rx-audio-feasibility/**. La dependencia
+#           upstream vive FUERA del repo (/tmp/opencode/rnnoise-src) y los pesos no
+#           se versionan ni entran a la ROM.
+#
+# Nota de método: durante la tanda se detectó y corrigió un error propio en el
+# resampler (ver §10.7). Todos los artefactos commiteados vienen de la corrida
+# posterior a la corrección.
+
+# ---------------------------------------------------------------------------
+# 10.1 Dependencia upstream: commit pinneado y modelo
+# ---------------------------------------------------------------------------
+$ git ls-remote https://github.com/xiph/rnnoise | head -1
+70f1d256acd4b34a572f999a05c87bf00b67730d	HEAD
+[exit 0]
+
+$ git clone --quiet https://github.com/xiph/rnnoise /tmp/opencode/rnnoise-src
+[exit 0]
+$ git -C /tmp/opencode/rnnoise-src checkout --quiet 70f1d256acd4b34a572f999a05c87bf00b67730d
+[exit 0]
+$ git -C /tmp/opencode/rnnoise-src rev-parse HEAD
+70f1d256acd4b34a572f999a05c87bf00b67730d
+[exit 0]
+
+# El commit descarga el modelo: model_version fija el hash y download_model.sh lo valida.
+$ cat /tmp/opencode/rnnoise-src/model_version
+0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37
+[exit 0]
+$ grep -n 'wget' /tmp/opencode/rnnoise-src/download_model.sh
+        wget https://media.xiph.org/rnnoise/models/$model
+[exit 0]
+
+# Verificación independiente en el host (misma URL que usa el script oficial):
+$ curl -sSL -o /tmp/opencode/rnnoise_data.tar.gz \
+    https://media.xiph.org/rnnoise/models/rnnoise_data-0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37.tar.gz
+[exit 0]
+$ ls -l /tmp/opencode/rnnoise_data.tar.gz && sha256sum /tmp/opencode/rnnoise_data.tar.gz
+-rw-r--r-- 1 pablo pablo 58603099 Oct 28 15:54 rnnoise_data.tar.gz
+0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37  rnnoise_data.tar.gz
+[exit 0]
+$ tar tzvf /tmp/opencode/rnnoise_data.tar.gz
+-rw-rw-r-- jm/jm    78003012 2025-01-30 01:59 src/rnnoise_data.c
+-rw-rw-r-- jm/jm         926 2025-01-30 01:59 src/rnnoise_data.h
+-rw-rw-r-- jm/jm    30121147 2025-01-30 01:58 src/rnnoise_data_little.c
+-rw-rw-r-- jm/jm         926 2025-01-30 01:58 src/rnnoise_data_little.h
+-rw-rw-r-- jm/jm    11544286 2025-01-30 01:59 models/rnnoise10Ga_12.pth
+-rw-rw-r-- jm/jm    11544286 2025-01-30 01:59 models/rnnoise10Gb_15.pth
+[exit 0]
+# El tarball NO trae archivo de licencia propio; la licencia del proyecto es la del
+# commit (COPYING, BSD-3-Clause) y los pesos no se redistribuyen en este repo.
+$ head -3 /tmp/opencode/rnnoise-src/COPYING
+Copyright (c) 2007-2017, 2024 Jean-Marc Valin
+Copyright (c) 2023 Amazon
+Copyright (c) 2017, Mozilla
+[exit 0]
+$ sha256sum /tmp/opencode/rnnoise-src/COPYING
+45d37ca1cdb278c088e1aa85e0e65ca3a534ed86a28dcc96ca16810248a61d35  COPYING
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 10.2 Imagen aislada del banco (base pinneada por digest)
+# ---------------------------------------------------------------------------
+$ docker build -t x6200-rnnoise-bench:70f1d25-1 -f scripts/bench/Dockerfile.rnnoise scripts/bench
+...
+sha256:b721886096030e9fa6d8db0e0eaf2b5efb08a395dd94ccdd7e1822b78d9891cf
+[exit 0]
+# Contenido: debian:bookworm-slim@sha256:99c0b25c...e222b6f3 + build-essential,
+# autoconf, automake, libtool, git, ca-certificates, wget, pkg-config,
+# libspeexdsp-dev=1.2.1-1
+
+# ---------------------------------------------------------------------------
+# 10.3 Corrida del banco (build de RNNoise + matriz + análisis + controles)
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_rnnoise.py
+OK: 21 filas medidas, 5 repeticiones por caso (warmup 3)
+imagen sha256:b721886096030e9fa6d8db0e0eaf2b5efb08a395dd94ccdd7e1822b78d9891cf
+RNNoise 70f1d256acd4b34a572f999a05c87bf00b67730d frame_size=480 lib sha256=e0272f1d342ee208
+modelo 0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37
+
+vector     metodo             rms   lat_ms       p50       p95       p99     total  %>10ms  rss_kB  disc
+silence    off            UNKNOWN   0.0000   0.00000   0.00000   0.00000     0.490  0.0000    3064     0
+silence    resample       UNKNOWN   0.0000   0.03402   0.03492   0.03956   209.965  0.0000    3576     0
+silence    speex          UNKNOWN   0.0000   0.01016   0.01033   0.01364    62.929  0.0000    3472     0
+silence    rnnoise        UNKNOWN   0.0000   0.06797   0.07177   0.08741   421.456  0.0000    6412     0
+silence    rnnoise_norm   UNKNOWN   0.0000   0.06851   0.07229   0.09083   424.064  0.0000    6424     0
+sine1k     off            -21.010   0.0000   0.00000   0.00000   0.00000     0.391  0.0000    3104     0
+sine1k     resample       -21.011  UNKNOWN   0.03411   0.03654   0.04936   213.770  0.0000    3588     0
+sine1k     speex          -24.529  UNKNOWN   0.01080   0.01133   0.02564    68.150  0.0000    3464   965
+sine1k     rnnoise        -75.821  UNKNOWN   0.19205   0.21800   0.28338  1206.860  0.0000    7088     0
+sine1k     rnnoise_norm   -21.001  UNKNOWN   0.06990   0.07401   0.10114   432.121  0.0000    6332     0
+multisine  off            -25.782   0.0000   0.00000   0.00000   0.00000     0.433  0.0000    3056     0
+multisine  resample       -25.782  UNKNOWN   0.03415   0.03665   0.05197   213.354  0.0000    3584     0
+multisine  speex          -29.482  UNKNOWN   0.01091   0.01241   0.01546    68.810  0.0000    3476  1849
+multisine  rnnoise        -59.539  UNKNOWN   0.19306   0.21860   0.26672  1211.859  0.0000    7092     0
+multisine  rnnoise_norm   -25.770  UNKNOWN   0.06904   0.07239   0.07998   426.458  0.0000    6252     0
+noise      off            -30.009   0.0000   0.00000   0.00000   0.00000     0.267  0.0000    3084     0
+noise      resample       -30.150   1.3832   0.03598   0.03765   0.04412   222.375  0.0000    3600     0
+noise      speex          -33.456  UNKNOWN   0.01299   0.01350   0.01728    80.428  0.0000    3460     0
+noise      rnnoise        -62.563  21.3832   0.19522   0.22161   0.27087  1222.502  0.0000    7092     0
+noise      rnnoise_norm   -30.144  21.3832   0.07180   0.07545   0.08637   443.171  0.0000    6292     0
+noise      speex_b256     -43.834   5.8050   UNKNOWN   UNKNOWN   UNKNOWN   141.057  0.0000    3668     0
+
+controles:
+  off_bit_exacto: {"silence": {"sha_igual_a_entrada": true, "muestras_distintas": 0, "bytes": 882000}, "sine1k": {...}, "multisine": {...}, "noise": {"sha_igual_a_entrada": true, "muestras_distintas": 0, "bytes": 882000}}
+  repetibilidad_60s: {"speex": {"sha_pasada": "6fd6f885fb02...", "sha_repeticion": "6fd6f885fb02...", "iguales": true}, "rnnoise": {"sha_pasada": "c15b60235e18...", "sha_repeticion": "c15b60235e18...", "iguales": true}}
+  prefijo_10s: {"speex": {"prefijo_10s_igual_a_pasada_10s": true, "10s_repetible": true}, "rnnoise": {"prefijo_10s_igual_a_pasada_10s": true, "10s_repetible": true}}
+  fallback_sin_rnnoise: {"noise_rnnoise_absent": {"salida_bit_exacta": true, "bytes": 882000, "bytes_esperados": 882000, "muestras": 441000, "rms_salida": 1035.0859, "rms_entrada": 1035.0859, "exit_code": 0, "fallback_flag": 1, "method_effective": "off"}, "silence_rnnoise_absent": {"salida_bit_exacta": true, ..., "rms_salida": 0.0, "rms_entrada": 0.0}, "noise_rnnoise_simulated_missing": {"salida_bit_exacta": true, ..., "method_effective": "off"}}
+  matriz_sin_fallback: true
+
+CSV: .../rnnoise-vs-speex.csv
+JSON: .../rnnoise-bench.json
+manifest: .../rnnoise-manifest.json
+[exit 0]
+# (Las líneas de control se abrevian acá con "..." sólo para el log; el JSON tiene
+#  los cuatro vectores y los tres casos de fallback completos.)
+
+# Salida relevante del contenedor (artifacts/rnnoise/container.log):
+$ git -C /src/rnnoise rev-parse HEAD
+70f1d256acd4b34a572f999a05c87bf00b67730d
+[exit 0]
+$ ./autogen.sh
+Downloading latest model
+... 200 OK  Length: 58603099 (56M)
+checksums match
+[exit 0]
+$ ./configure --disable-examples --disable-x86-rtcd --disable-shared --enable-static CFLAGS="-O2"
+[exit 0]
+$ make -j$(nproc)
+[exit 0]
+$ ls -l .libs/librnnoise.a && sha256sum .libs/librnnoise.a
+-rw-r--r-- 1 root root 3629566 .libs/librnnoise.a
+e0272f1d342ee208cd37bd8e2d529752400b9adf5c84fd5a5d3ff9dee02c6474  .libs/librnnoise.a
+[exit 0]
+$ gcc --version | head -1; pkg-config --modversion speexdsp; uname -m; grep -m1 'model name' /proc/cpuinfo
+gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+1.2.1
+x86_64
+model name	: AMD Ryzen 7 PRO 8840HS w/ Radeon 780M Graphics
+[exit 0]
+$ ./bench_rnnoise --rnnoise-frame-size
+480
+[exit 0]
+$ ./bench_rnnoise_absent --rnnoise-frame-size ; echo $?
+1
+# exit != 0 esperado: el binario sin RNNoise no reporta frame size. ldd no lista rnnoise.
+$ grep -n 'define SPEEX_PREPROCESS_SET_NOISE_SUPPRESS' /usr/include/speex/speex_preprocess.h
+144:#define SPEEX_PREPROCESS_SET_NOISE_SUPPRESS 18
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 10.4 Artefactos: hashes de binarios, pesos extraídos y WAV commiteados
+# ---------------------------------------------------------------------------
+$ sha256sum bench_rnnoise bench_rnnoise_absent
+ed0d00014f489000831e71dea80a1da646f4fa66f41fe7cca76037cfc64a62ad  bench_rnnoise
+90a502bc7f4acfcb528a05fda0b03f173131943686b581c1c2a8a801e6a8f1f2  bench_rnnoise_absent
+[exit 0]
+$ sha256sum src/rnnoise_data.c src/rnnoise_data.h     # dentro del contenedor
+d6021b7697677c4d2274c912975e143765552b0e6f25500aa660fdb4a9849be5  src/rnnoise_data.c
+09ff880bddd0fc74a2ae0e5ec6c8d65714031b08d0c3f672493acd9e189c5855  src/rnnoise_data.h
+[exit 0]
+$ cat audio/sha256sums.txt
+b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf  multisine_off_10s.wav
+b8d047aab3dc709de2cfa8b4528c54b984db4db88a4a5fcdd85a1633f3f8f914  multisine_rnnoise_10s.wav
+779fcaef63ab86dba731b74c6a4e8ec96f1c05eb028f3c948cf125e415a38af2  multisine_speex_10s.wav
+b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936  noise_off_10s.wav
+dadb263302119f4e0f0eedc9c3fc87ff0fd18b07bfae976db7962ae7fb7a9ec8  noise_rnnoise_10s.wav
+337ddff686f9d473ba76b3dbcb8114a2c7ff8b73bca4bcd5ce0d2d7aa9934bbd  noise_speex_10s.wav
+[exit 0]
+# Los dos WAV "off" son byte a byte iguales a los fixtures de la tarea B:
+$ sha256sum artifacts/pcm/white_noise_44100_s16.wav audio/noise_off_10s.wav
+b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936  artifacts/pcm/white_noise_44100_s16.wav
+b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936  audio/noise_off_10s.wav
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 10.5 Control negativo de los chequeos NUEVOS (tienen que fallar si se violan)
+# ---------------------------------------------------------------------------
+# (d) audio_destination distinto de OFFLINE_CAPTURE_ONLY
+$ cp rnnoise-vs-speex.csv /tmp/opencode/csv.bak
+$ python3 - <<'PY'   # reemplaza el primer OFFLINE_CAPTURE_ONLY por SPEAKER
+... (edición temporal) ...
+PY
+$ python3 scripts/check_no_stub_claims.py | grep '(d)'
+FAIL (d) tabla comparativa: fila silence/off: audio_destination = 'SPEAKER'; tiene que ser OFFLINE_CAPTURE_ONLY (nunca SPEAKER)
+FAIL: 1 comprobacion(es) del control negativo
+[exit 1]
+$ cp /tmp/opencode/csv.bak rnnoise-vs-speex.csv
+
+# (f) manifest que declara los pesos dentro del firmware
+$ cp rnnoise-manifest.json /tmp/opencode/man.bak
+$ python3 - <<'PY'   # "in_firmware": false -> true
+... (edición temporal) ...
+PY
+$ python3 scripts/check_no_stub_claims.py | grep '(f)'
+FAIL (f) manifest de RNNoise: model.in_firmware tiene que ser false
+FAIL: 1 comprobacion(es) del control negativo
+[exit 1]
+$ cp /tmp/opencode/man.bak rnnoise-manifest.json
+$ sha256sum rnnoise-vs-speex.csv rnnoise-manifest.json
+13d81c7152f7990435bf15bd90409f928248656ad4d74c7f6f42b3e10dc9731b  rnnoise-vs-speex.csv
+4a54a050821384dd08914f48f070284fdf685c940910d1cc3676bbe1915b5c65  rnnoise-manifest.json
+[exit 0]
+$ python3 scripts/check_no_stub_claims.py >/dev/null; echo $?
+0
+# (e) se verifica en positivo (0 archivos de upstream versionados y 0 menciones de
+# "rnnoise" en src/rootfs/rom-build/tests). No se hizo demo negativa porque exigiría
+# crear archivos en src/ o en rootfs/, prohibido por el issue.
+
+# ---------------------------------------------------------------------------
+# 10.6 Verificaciones finales
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py --verify
+silence_44100_s16.wav: sha256 99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c
+sine_1k_44100_s16.wav: sha256 667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600
+multisine_44100_s16.wav: sha256 b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf
+white_noise_44100_s16.wav: sha256 b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+OK: los cuatro WAV regenerados coinciden byte a byte con el manifiesto
+[exit 0]
+
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+OK   (a) procedencia MEASURED-HOST: 50 filas del banco con lib real, exit 0, sin citar tests/native
+OK   (a) procedencia MEASURED-HARDWARE: 0 filas (0 esperadas en esta corrida: no hubo medicion en radio)
+OK   (b) sin atribuciones al stub: 5791 campos/lineas barridos, 0 aserciones prohibidas
+OK   (c) ids del stub: stub SET_NOISE_SUPPRESS = 1 != real = 18 (documentado en speex-audit.md)
+OK   (c) banco sin stub de Speex: ... no define simbolos de Speex; run_in_container.sh enlaza speexdsp
+OK   (c) sha del PCM procesado: todas las filas MEASURED-HOST con --case traen sha
+OK   (d) tabla comparativa: 21 filas (4 vectores x 5 metodos + 1 sonda), todas OFFLINE_CAPTURE_ONLY, version y sha declarados
+OK   (e) RNNoise fuera del repo: sin pesos/libreria de upstream versionados y sin menciones en src/rootfs/rom-build/tests
+OK   (f) manifest de RNNoise: commit 70f1d256, modelo 0a8755f8, BSD-3-Clause, no versionado / no redistribuido / fuera del firmware, frame_size 480
+OK: ningun resultado de stub se reporta como real
+[exit 0]
+
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py --self-test
+OK: las regex de (b) detectan las 5 formas prohibidas y dejan pasar las 5 correctas
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 10.7 Error propio detectado y corregido durante la tanda (resampler)
+# ---------------------------------------------------------------------------
+# Primer intento: fc = 0.5*min(1, L/M) SIN dividir por L. Eso pone el corte en
+# fs_in/2 de la tasa INTERPOLADA (all-pass): el "resampler" quedaba como repetir/
+# descartar muestras, justo lo que el anexo prohíbe. Síntomas medidos en la salida
+# de esa corrida (descartada, no commiteada):
+#   noise_resample: RMS de salida 8456.6 con entrada de 1036.0 (+18 dB) y lag 1118
+#   noise_rnnoise:  correlación espuria (pico en 1118 muestras)
+# Corrección: fc = 0.5*min(1, L/M)/L  ->  corte 22.05 kHz en las dos etapas.
+# Validación numérica previa (replica en Python del mismo diseño):
+#   fc subida 0.003125 (corte 22050 Hz), fc bajada 0.003125 (corte 22050 Hz)
+#   RMS in/out sobre ruido blanco: 1001.7 -> 989.9 (subida) y 979.0 (ida y vuelta)
+#   energía por fase del prototipo: 1.000 / 0.969 / 1.000 (suma 1.000 en las tres)
+#   retardo de impulso: 61 muestras (teórico 60.4)
+# Tras la corrección: noise_resample RMS 1018.5, lag 61; noise_rnnoise lag 943
+# (= 882 de los 2 frames + 61 del resampler). Los artefactos commiteados son de
+# la corrida corregida.
+
+# ---------------------------------------------------------------------------
+# 10.8 Alcance del diff
+# ---------------------------------------------------------------------------
+$ git status --porcelain
+ M docs/evidencia/2026-10-28-rx-audio-feasibility/README.md
+ M docs/evidencia/2026-10-28-rx-audio-feasibility/measurements.csv
+ M docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/audio/
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-bench.json
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-manifest.json
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-vs-speex.csv
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-vs-speex.md
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/Dockerfile.rnnoise
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/bench_rnnoise.c
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/rnnoise_build.sh
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_rnnoise.py
+[exit 0]
+# .asf-active es un marcador del harness, no se commitea.
+
+# ---------------------------------------------------------------------------
+# 10.9 Calidad estática y determinismo del análisis
+# ---------------------------------------------------------------------------
+$ cd docs/evidencia/2026-10-28-rx-audio-feasibility/scripts
+$ ruff check bench_rnnoise.py check_no_stub_claims.py
+All checks passed!
+[exit 0]
+$ ruff format --check bench_rnnoise.py
+1 file already formatted
+[exit 0]
+$ ty check bench_rnnoise.py check_no_stub_claims.py
+All checks passed!
+[exit 0]
+
+# Hallazgos PREEXISTENTES en los scripts de la tarea B (no se tocaron: son de otra
+# tanda y este issue prohíbe cambiar archivos ya entregados sin un error explícito;
+# además el CI del repo lintea tools/ab_testing, no docs/evidencia):
+$ ruff check gen_pcm.py bench_speex.py
+F401 'wave' imported but unused          (gen_pcm.py:31)
+RUF046 int() innecesario x2              (gen_pcm.py:48)
+UP031 formato %                          (gen_pcm.py:136)
+B905 zip() sin strict=                   (bench_speex.py:491)
+Found 5 errors.
+[exit 1]
+$ ty check gen_pcm.py
+error[call-non-callable]: Object of type `str` is not callable
+error[invalid-assignment]: Invalid subscript assignment with key of type `Unknown | str | (() -> list[int])` ...
+Found 2 diagnostics
+[exit 1]
+$ ty check bench_speex.py
+error[unresolved-import]: Cannot resolve imported module `numpy`
+Found 1 diagnostic
+[exit 1]
+# (La versión de check_no_stub_claims.py en HEAD ya no pasaba `ruff format --check`;
+#  esta tanda no agrega hallazgos nuevos de `ruff check` a ese archivo.)
+
+# Determinismo del análisis: se re-corrió --analyse sobre los mismos artefactos y
+# los archivos generados quedaron byte a byte idénticos.
+$ python3 scripts/bench_rnnoise.py --analyse
+[exit 0]
+$ sha256sum -c /tmp/opencode/pre-analyse.sha
+rnnoise-vs-speex.csv: OK
+rnnoise-bench.json: OK
+rnnoise-manifest.json: OK
+audio/multisine_off_10s.wav: OK
+audio/multisine_rnnoise_10s.wav: OK
+audio/multisine_speex_10s.wav: OK
+audio/noise_off_10s.wav: OK
+audio/noise_rnnoise_10s.wav: OK
+audio/noise_speex_10s.wav: OK
+measurements.csv: OK
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 10.10 Verificación posterior al commit de la tanda
+# ---------------------------------------------------------------------------
+# Corrección menor posterior al commit (commit aparte, sin amend): `--analyse`
+# tomaba el toolchain de artifacts/rnnoise/container.log; si esa corrida no
+# recompilaba y el log ya no tenía la sección del toolchain, el JSON quedaba con
+# "UNKNOWN". Ahora `--analyse` conserva el toolchain registrado en el JSON de la
+# corrida completa. Verificado idempotente: dos `--analyse` seguidos dejan el
+# árbol de trabajo limpio (git status sin cambios en los artefactos).
+
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py --verify
+silence_44100_s16.wav: sha256 99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c
+sine_1k_44100_s16.wav: sha256 667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600
+multisine_44100_s16.wav: sha256 b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf
+white_noise_44100_s16.wav: sha256 b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+OK: los cuatro WAV regenerados coinciden byte a byte con el manifiesto
+[exit 0]
+
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+OK   (a) procedencia MEASURED-HOST: 50 filas del banco con lib real, exit 0, sin citar tests/native
+OK   (a) procedencia MEASURED-HARDWARE: 0 filas (0 esperadas en esta corrida: no hubo medicion en radio)
+OK   (b) sin atribuciones al stub: 4611 campos/lineas barridos, 0 aserciones prohibidas
+OK   (c) ids del stub: stub SET_NOISE_SUPPRESS = 1 != real = 18 (documentado en speex-audit.md)
+OK   (c) banco sin stub de Speex: ... no define simbolos de Speex; run_in_container.sh enlaza speexdsp
+OK   (c) sha del PCM procesado: todas las filas MEASURED-HOST con --case traen sha
+OK   (d) tabla comparativa: 21 filas (4 vectores x 5 metodos + 1 sonda), todas OFFLINE_CAPTURE_ONLY, version y sha declarados
+OK   (e) RNNoise fuera del repo: sin pesos/libreria de upstream versionados y sin menciones en src/rootfs/rom-build/tests
+OK   (f) manifest de RNNoise: commit 70f1d256, modelo 0a8755f8, BSD-3-Clause, no versionado / no redistribuido / fuera del firmware, frame_size 480
+OK: ningun resultado de stub se reporta como real
+[exit 0]
+# Nota: el conteo de (b) incluye los .md/.csv/.log de artifacts/, que son
+# gitignored (el container.log de la corrida completa tiene ~1.200 líneas). Por
+# eso el número cambia según lo que haya en artifacts/; lo que no cambia es el
+# resultado: 0 aserciones prohibidas.
+
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_rnnoise.py --analyse
+OK: 21 filas medidas, 5 repeticiones por caso (warmup 3)
+imagen sha256:b721886096030e9fa6d8db0e0eaf2b5efb08a395dd94ccdd7e1822b78d9891cf
+RNNoise 70f1d256acd4b34a572f999a05c87bf00b67730d frame_size=480 lib sha256=e0272f1d342ee208
+modelo 0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37 (...)
+[exit 0]
+$ git status --porcelain      # tras dos --analyse seguidos
+(limpio: sólo el marcador del harness .asf-active, no versionado)
+[exit 0]
+
+$ git diff --name-only 97617351 HEAD
+docs/evidencia/2026-10-28-rx-audio-feasibility/README.md
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/multisine_off_10s.wav
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/multisine_rnnoise_10s.wav
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/multisine_speex_10s.wav
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/noise_off_10s.wav
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/noise_rnnoise_10s.wav
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/noise_speex_10s.wav
+docs/evidencia/2026-10-28-rx-audio-feasibility/audio/sha256sums.txt
+docs/evidencia/2026-10-28-rx-audio-feasibility/commands.log
+docs/evidencia/2026-10-28-rx-audio-feasibility/measurements.csv
+docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-bench.json
+docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-manifest.json
+docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-vs-speex.csv
+docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-vs-speex.md
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/Dockerfile.rnnoise
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/bench_rnnoise.c
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/rnnoise_build.sh
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_rnnoise.py
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+[exit 0]
+$ git diff --name-only 97617351 HEAD | grep -v '^docs/evidencia/2026-10-28-rx-audio-feasibility/'
+(vacío: no se tocó nada fuera del directorio de evidencia)
+[exit 0]

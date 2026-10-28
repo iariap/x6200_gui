@@ -1,0 +1,49 @@
+{
+  "issue": "iariap/x6200_gui#345",
+  "scope": "bench offline de evidencia; NO es una dependencia del producto",
+  "rnnoise": {
+    "repo": "https://github.com/xiph/rnnoise",
+    "commit": "70f1d256acd4b34a572f999a05c87bf00b67730d",
+    "license": "BSD-3-Clause (COPYING del commit pinneado)",
+    "license_sha256": "45d37ca1cdb278c088e1aa85e0e65ca3a534ed86a28dcc96ca16810248a61d35",
+    "vendored_in_repo": false,
+    "build": {
+      "configure": [
+        "--disable-examples",
+        "--disable-x86-rtcd",
+        "--disable-shared",
+        "--enable-static",
+        "CFLAGS=-O2"
+      ],
+      "why_no_rtcd": "el default del commit ya es sin rtcd; se declara explicito para que la ruta medida sea la portable C (determinista y comparable con un build ARM), no la que despacha AVX2 segun la CPU del host",
+      "container": "debian:bookworm-slim@sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3",
+      "lib_sha256": "e0272f1d342ee208cd37bd8e2d529752400b9adf5c84fd5a5d3ff9dee02c6474"
+    },
+    "frame_size": 480,
+    "model": {
+      "url": "https://media.xiph.org/rnnoise/models/rnnoise_data-0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37.tar.gz",
+      "sha256": "0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37",
+      "sha256_verificado_por": "download_model.sh del commit (compara con model_version)",
+      "bytes": 58603099,
+      "files": {
+        "src/rnnoise_data.c": "d6021b7697677c4d2274c912975e143765552b0e6f25500aa660fdb4a9849be5",
+        "src/rnnoise_data.h": "09ff880bddd0fc74a2ae0e5ec6c8d65714031b08d0c3f672493acd9e189c5855"
+      },
+      "redistributed_in_repo": false,
+      "in_firmware": false,
+      "license_note": "el tarball no trae un archivo de licencia propio; se distribuye desde media.xiph.org como parte del proyecto rnnoise, cuyo COPYING de ese commit es BSD-3-Clause. En esta evidencia no se redistribuye: los pesos quedan fuera del repo y fuera de la ROM, y se descargan solo en el contenedor de prueba"
+    }
+  },
+  "bench": {
+    "source": "scripts/bench/bench_rnnoise.c",
+    "binaries_sha256": {
+      "bench_rnnoise": "ed0d00014f489000831e71dea80a1da646f4fa66f41fe7cca76037cfc64a62ad",
+      "bench_rnnoise_absent": "90a502bc7f4acfcb528a05fda0b03f173131943686b581c1c2a8a801e6a8f1f2"
+    },
+    "speex_source_sha256": {
+      "audio_enhancement.c": "acab3aad158097cd5a8ab1c6e6eb83e8b37011a0098eb91d39dc1c5d2366b25f",
+      "audio_enhancement.h": "f37d09cad52d1891b3042337e282f28c34b644ebecb58e408aed1439fc33a68d"
+    }
+  },
+  "audio_destination": "OFFLINE_CAPTURE_ONLY"
+}
