@@ -7,14 +7,16 @@
   (el issue proponía `audit/rx-audio-feasibility-20261028` / `../x6200-rx-audio-feasibility-20261028`;
   el harness de esta corrida usa rama y worktree propios, mismo base y mismo destino `main`).
 - **Commits de la unidad**: `3ab3330a` (tarea A: mapa de señal + matriz de controles),
-  `a6d7ac2f` (tarea B: auditoría numérica + banco PCM), y el commit de esta tarea C (este informe).
-- **Qué es**: el informe que responde, con evidencia clasificada, las cuatro preguntas del issue, los
+  `a6d7ac2f` (tarea B: auditoría numérica + banco PCM), `97617351` (tarea C: este informe) y el commit
+  de la tarea D (anexo vinculante RNNoise: laboratorio A/B offline, ver `rnnoise-vs-speex.md`).
+- **Qué es**: el informe que responde, con evidencia clasificada, las cinco preguntas del issue, los
   riesgos **medidos** de la cadena actual, el punto donde *podría* insertarse audio procesado (marcado
   `HYPOTHESIS`, sin diseñar nada) y la secuencia de QA físico que **no** se ejecutó.
 - **Qué NO es**: no es una implementación, ni una propuesta de routing/UI/presets/DSP, ni una medición
   de hardware. **No se tocó `src/`, `rootfs/`, `tests/` ni la radio.** Ninguna señal usada es voz: los
   cuatro WAV son silencio, un seno, una mezcla de tres tonos y ruido blanco. Nada de esto mide
-  inteligibilidad.
+  inteligibilidad. RNNoise se compiló **sólo** para el banco offline: no entra en la ROM ni en el
+  runtime (`rnnoise-manifest.json`, y el control `check_no_stub_claims.py` (e) lo verifica).
 
 ## 0. Resumen: una línea por pregunta
 
@@ -23,12 +25,18 @@
 | 1 | Ruta real al parlante/auriculares vs captura; ¿hay retorno seguro de RX procesado por Linux? | La GUI procesa **sólo su copia de captura** (`src/audio.c:63`), esa copia va a la grabadora y al DSP (`:66`, `:68`) y **no** al parlante; el parlante lo alimenta el BASE (sin esquema) y **no hay hoy ninguna ruta de retorno probada** de audio procesado hacia él. | `CODE` + `HYPOTHESIS` |
 | 2 | Qué controles del BASE ya actúan sobre el audio audible y quién los manda | 26 controles inventariados (NR, NR level, NB, NB level/width, DNF, filtros RX, RX EQ ×2 juegos, más `rxvol`/`record`/`spmode`), todos con observer → registro I2C; el **efecto audible** de cada uno sigue `UNVERIFIED` y el rango semántico del BASE es `UNKNOWN`. | `CODE` + `UNVERIFIED`/`UNKNOWN` |
 | 3 | Defectos medibles de `audio_enhancement.c` y qué demuestran sus tests | Cuatro defectos medidos: recorte de 58 muestras por callback, retardo de un frame (5.805 ms) sin compensar, `level` invertido con techo inalcanzable (−30 pedidos ≈ −13.5 dB), y salto de 2216 LSB en el borde; los tests con stub **no** prueban atenuación, calidad, CPU ni latencia: sólo troceado, tail y clamps. | `MEASURED-HOST` + `CODE` |
-| 4 | Presupuesto de CPU/latencia y muestras reales que faltan para A/B | En host, 60 s de audio cuestan 104–137 ms (0.17–0.23 % de un núcleo) con máximo de 1.1–2.1 ms por callback de 100 ms; **no es extrapolable al R16**, la latencia extremo a extremo está `BLOCKED` y **faltan muestras de voz** (hoy sólo hay tonos/ruido sintéticos). | `MEASURED-HOST` + `BLOCKED` |
+| 4 | Cuánto cuestan y cómo se comportan SpeexDSP REAL y RNNoise upstream REAL sobre idénticos PCM (resampling, calidad, memoria, CPU, discontinuidades) | Medido en host: RNNoise **1,95 % del frame** (p50 0,195 ms, p99 0,271 ms) contra Speex **0,013 ms** y resampling **0,036 ms**; RNNoise atenúa **32,6 dB** el ruido y **54,8 dB** un tono puro; **0 clipping** y **0 tramas > 10 ms** en 21 casos. No hay voz: nada de esto es inteligibilidad. | `MEASURED-HOST` + `SKIPPED` |
+| 5 | Presupuesto de CPU/latencia y muestras reales que faltan para un A/B con escucha | Latencia algorítmica medida: RNNoise **21,38 ms** (2 frames de 20 ms + 1,38 ms de resampling) y Speex **5,805 ms**; el CPU del R16 sigue `BLOCKED`; faltan **muestras de voz reales** y el vector voz + ruido está `SKIPPED` con causa (no hay audio con licencia/consentimiento). | `MEASURED-HOST` + `BLOCKED`/`SKIPPED` |
 
 **Veredicto de esta corrida**: hay evidencia suficiente para descartar varias creencias (el audio
 procesado no llega al parlante; el `level` está invertido; el stub no prueba nada acústico) y **no** hay
 evidencia suficiente para afirmar que exista una ruta audible segura ni que un NR nuevo mejore la
 inteligibilidad. La decisión de arquitectura/DSP/UX queda en el coordinador, como pide el issue.
+
+**Dictamen del anexo RNNoise (tanda D)**: el laboratorio offline es sólido y reproducible, pero con
+`MEASURED-HARDWARE` = 0 filas y sin ruta audible demostrada el resultado **live es NO-GO por el gate 1**
+del anexo. El experimento se reporta como **`RESEARCH/PROTOTYPE OFFLINE`**, nunca como feature. Detalle,
+tablas y artefactos en `rnnoise-vs-speex.md`.
 
 ## 1. Contenido de este directorio
 
@@ -39,10 +47,16 @@ inteligibilidad. La decisión de arquitectura/DSP/UX queda en el coordinador, co
 | `base-controls.md` | matriz de 26 controles del BASE (fuente, default, persistencia, estado OFF, CW/digital) | A |
 | `speex-audit.md` | aritmética del recorte, latencia declarada vs real, mapa `level → supresión` contra lib real, qué prueban los tests | B |
 | `hardware-handoff.md` | secuencia de QA **RX-only, no ejecutada** (`PENDING-HARDWARE`) | C |
-| `measurements.csv` | 43 filas: 11 `CODE`, 29 `MEASURED-HOST`, 3 `BLOCKED`; columnas exactas del contrato 6 | B |
+| `measurements.csv` | 68 filas: 11 `CODE`, 50 `MEASURED-HOST` (29 de B + 21 de D), 6 `BLOCKED`, 1 `SKIPPED`; columnas exactas del contrato 6 | B–D |
 | `bench-results.json` | métricas crudas del banco (17 casos × 3 corridas + 12 sondas) | B |
 | `pcm-manifest.json` | sha256, RMS, peak, clipping y duración de los 4 WAV sintéticos | B |
-| `commands.log` | comandos exactos, salidas y exit codes de las tres tareas | A–C |
+| `rnnoise-vs-speex.md` | banco A/B offline RNNoise vs SpeexDSP vs OFF: procedencia, protocolo, tablas, artefactos, dictamen GO/NO-GO | D |
+| `rnnoise-vs-speex.csv` | 21 filas (4 vectores × 5 métodos + sonda de latencia) con `audio_destination = OFFLINE_CAPTURE_ONLY` | D |
+| `rnnoise-bench.json` | métricas crudas por caso, controles completos (bit-exacto, repetibilidad, prefijo, fallback) y toolchain | D |
+| `rnnoise-manifest.json` | commit/licencia/URL/sha256 del modelo de RNNoise, build y flags de no redistribución | D |
+| `audio/` | 6 WAV de 10 s (`multisine` y `noise` × `off`/`speex`/`rnnoise`) + `sha256sums.txt` | D |
+| `scripts/bench_rnnoise.py`, `scripts/bench/bench_rnnoise.c`, `scripts/bench/rnnoise_build.sh`, `scripts/bench/Dockerfile.rnnoise` | banco offline con RNNoise upstream pinneado, resampler propio y build en contenedor | D |
+| `commands.log` | comandos exactos, salidas y exit codes de las cuatro tareas | A–D |
 | `scripts/gen_pcm.py` | generador determinista de PCM (stdlib, semilla 6200) + `--verify` | B |
 | `scripts/bench_speex.py`, `scripts/bench/` | banco con **libspeexdsp real** en contenedor pinneado (Dockerfile, `bench_main.c`, stubs de periferia) | B |
 | `scripts/check_no_stub_claims.py` | control negativo: un resultado de stub no puede reportarse como real | C |
@@ -57,9 +71,10 @@ inteligibilidad. La decisión de arquitectura/DSP/UX queda en el coordinador, co
 |---|---|---|
 | `CODE` | Leído en el árbol de esta base (`archivo:línea`), verificable con `grep`/`sed`. | `signal-flow.md`, `base-controls.md`, `speex-audit.md` |
 | `ARITH` | Derivación aritmética sobre constantes de `CODE`; se muestra la cuenta. | `speex-audit.md` §1–§2, filas `arith_*` del CSV |
-| `MEASURED-HOST` | Medido en este host x86_64 con **libspeexdsp real** en contenedor. **No es la radio.** | 29 filas del CSV, `bench-results.json` |
+| `MEASURED-HOST` | Medido en este host x86_64 en contenedor con **libspeexdsp real** (tarea B) y **RNNoise upstream real** (tarea D). **No es la radio.** | 50 filas del CSV, `bench-results.json`, `rnnoise-bench.json` |
 | `MEASURED-HARDWARE` | Medición hecha en la radio **en esta corrida**. | **Ninguna**: 0 filas. Ver §7.1 |
-| `BLOCKED` | Se quiso medir y no se pudo; se dice la causa. | 3 filas del CSV |
+| `BLOCKED` | Se quiso medir y no se pudo; se dice la causa. | 6 filas del CSV (3 de B + 3 de D) |
+| `SKIPPED` | El anexo condiciona la medición a un insumo que no existe; se dice la causa y no se inventa el insumo. | 1 fila: `rxd_voice_noise_ab` (voz + ruido) |
 | `HYPOTHESIS` | Inferencia sin medición que la cierre. Nunca se presenta como hecho. | prosa de los cuatro documentos |
 
 `MEASURED-HARDWARE` **está vacío en esta corrida**: no se encendió la radio, no se transmitió y no se
@@ -255,6 +270,9 @@ Corridos en este worktree el 2026-10-28; salidas completas y exit codes en `comm
 | T4c | Demostración de que el control **falla** con artefactos adulterados | `cp scripts/tamper_fixture.txt zz-tamper.md` y luego `check_no_stub_claims.py` | **1** | FAIL esperado en `zz-tamper.md:11` (la frase prohibida del fixture); al borrar el temporal vuelve a `0`. También se probó con una fila falsa `MEASURED-HOST` (mismo exit 1); artefactos restaurados y verificados con `cmp` |
 | T5 | Alcance del diff | `git diff --name-only a1c667ee HEAD` | **0** | Sólo `docs/evidencia/2026-10-28-rx-audio-feasibility/**` (verificado con `grep -v` sobre esa ruta: sin coincidencias) |
 | T6 | QEMU para audio de BASE | — | — | **`UNSUPPORTED`**: QEMU no simula el códec, el DSP del BASE ni el trayecto eléctrico, así que no puede validar audio de RX. **No** se reporta PASS ni FAIL. El barrido QEMU de apps existe (`tests/qemu/run_apps_qemu.sh`) pero en esta corrida salió SKIP por entorno |
+| T7 | Banco A/B offline RNNoise vs SpeexDSP vs OFF | `python3 $EV/scripts/bench_rnnoise.py` | **0** | 21 filas medidas (4 vectores × 5 métodos + sonda), 3 warmups + 5 repeticiones de 60 s cada una; build de RNNoise en el commit pinneado con el modelo validado por `download_model.sh` |
+| T8 | Control negativo extendido (tanda D) | `python3 $EV/scripts/check_no_stub_claims.py` | **0** | (a)–(f): 50 filas `MEASURED-HOST`, 0 `MEASURED-HARDWARE`, 0 atribuciones al stub (conteo exacto en commands.log §10), tabla comparativa toda `OFFLINE_CAPTURE_ONLY`, RNNoise fuera del repo/runtime, manifest con modelo pinneado |
+| T9 | Controles del banco (bit-exacto / repetibilidad / prefijo / fallback) | dentro de T7 | **0** | `off` bit-exacto en los 4 vectores; hashes repetibles; prefijo de 10 s == pasada de 10 s; fallback sin RNNoise bit-exacto (3 variantes) |
 
 **Nada de lo anterior es una medición de hardware.** T1/T2 prueban el árbol; T3/T4 prueban
 reproducibilidad y disciplina de reporte; T6 no puede probar audio.
@@ -339,3 +357,58 @@ git diff --name-only a1c667ee HEAD               # T5
 
 El banco con lib real (tarea B) se reproduce con
 `python3 $EV/scripts/bench_speex.py` (requiere docker; pines en `speex-audit.md` §8).
+
+El banco RNNoise (tarea D) necesita además el clone upstream **fuera del repo**:
+
+```sh
+git clone https://github.com/xiph/rnnoise /tmp/opencode/rnnoise-src
+git -C /tmp/opencode/rnnoise-src checkout 70f1d256acd4b34a572f999a05c87bf00b67730d
+python3 $EV/scripts/bench_rnnoise.py            # build + matriz + analisis + controles
+python3 $EV/scripts/bench_rnnoise.py --analyse  # solo re-analizar artifacts/rnnoise
+```
+
+## 12. Tanda D — anexo vinculante RNNoise: laboratorio A/B offline
+
+Resumen ejecutivo; el detalle (procedencia, protocolo, tablas completas, artefactos y limitaciones) está
+en **`rnnoise-vs-speex.md`**.
+
+**Qué se agregó al anexo**: RNNoise upstream de Xiph en el commit
+`70f1d256acd4b34a572f999a05c87bf00b67730d` (BSD-3-Clause), compilado en `debian:bookworm-slim` pinneado
+por digest, con el modelo que ese commit descarga (`download_model.sh` valida el sha256
+`0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37` contra `model_version`). Los pesos y
+la librería **no** se versionan ni entran a la ROM: quedan en `/tmp` y en el contenedor, y
+`rnnoise-manifest.json` lo declara (`vendored_in_repo=false`, `redistributed_in_repo=false`,
+`in_firmware=false`).
+
+**Cadenas comparadas** sobre los mismos cuatro vectores sintéticos (semilla 6200): `off` (bit-exacto, sin
+resampling), `speex` (`audio_enh_process()` verbatim contra libspeexdsp 1.2.1 real, preset SSB_VOICE) y
+`rnnoise` (resampling real 44.100 → 48.000 → 44.100, tramas de 480 muestras verificadas con
+`rnnoise_get_frame_size()` = 480, escala S16). El resampler es polifásico, 64 taps por fase, Kaiser
+β = 8, corte 22,05 kHz, con latencia de grupo de 31,5 muestras por etapa: **61 muestras = 1,3832 ms
+medidos**, contra 60,4 muestras teóricas.
+
+**Resultado por frame de 10 ms** (vector de ruido, 60 s, 5 repeticiones): RNNoise **p50 0,195 ms /
+p95 0,222 ms / p99 0,271 ms** (2,04 % del tiempo real), Speex **0,013 ms**, resampling **0,036 ms**;
+**0 %** de tramas sobre 10 ms y **0 clipping** en los 21 casos. Costo separado y RSS pico (7.092 kB con
+RNNoise contra 3.460 kB con Speex) en `rnnoise-vs-speex.md` §6.
+
+**Tres hallazgos que cambian decisiones**:
+1. La escala correcta es **S16 cruda**, no `[-1,1]`: con `/32768` la energía cae bajo el umbral de
+   silencio de RNNoise (`src/denoise.c:389-392`) y la cadena queda en passthrough (medido: −30,144 dBFS
+   de salida contra −30,009 de entrada, y el costo baja a 0,036 ms/frame).
+2. El retardo real de RNNoise es de **2 frames (20 ms)**, no de uno: análisis con `analysis_mem` +
+   síntesis con `delayed_X` (`src/denoise.c:332-339,496-498`). Medido **943 muestras = 21,3832 ms** con
+   el resampler incluido, confirmado con el control de passthrough.
+3. RNNoise **suprime un tono puro** (−54,8 dB en el seno de 1 kHz): es un denoiser de voz. No se puede
+   presentar como mejora sin habla HF real.
+
+**Controles**: `off` bit-exacto en los cuatro vectores (sha igual, 0 muestras distintas); hashes
+repetibles con misma entrada y versión; el prefijo de 10 s de una pasada de 60 s es idéntico a una pasada
+de 10 s con estado fresco; y si falta RNNoise (binario compilado sin header ni librería, o
+`--simulate-missing`) la cadena **vuelve a `off` bit-exacto**, con el tamaño correcto y el RMS
+preservado (nunca silencio ni archivo truncado).
+
+**Dictamen**: **live NO-GO** por el gate 1 del anexo (no hay ruta audible demostrada y
+`MEASURED-HARDWARE` sigue en 0 filas); el offline se reporta como **`RESEARCH/PROTOTYPE OFFLINE`**. El
+gate 2 (presupuesto en el R16 con waterfall/GUI) y el gate 4 (A/B ciego con habla HF) siguen pendientes y
+no se extrapolan del host.

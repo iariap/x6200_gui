@@ -442,3 +442,335 @@ $ awk 'NR>=70 && NR<=81 {printf "%d: %s\n", NR, $0}' src/audio_enhancement.h
 81: } audio_enh_state_t;
 [exit 0]
 # Ninguna afirmación del documento cambió.
+
+# ===========================================================================
+# 10. TAREA D — anexo vinculante RNNoise: laboratorio A/B offline
+# ===========================================================================
+# Worktree: state/worktrees/x6200/rx-audio-feasibility (rama factory/rx-audio-feasibility)
+# Base:     97617351 (commit de la tarea C)
+# Fecha:    2026-10-28
+# Alcance:  SÓLO docs/evidencia/2026-10-28-rx-audio-feasibility/**. La dependencia
+#           upstream vive FUERA del repo (/tmp/opencode/rnnoise-src) y los pesos no
+#           se versionan ni entran a la ROM.
+#
+# Nota de método: durante la tanda se detectó y corrigió un error propio en el
+# resampler (ver §10.7). Todos los artefactos commiteados vienen de la corrida
+# posterior a la corrección.
+
+# ---------------------------------------------------------------------------
+# 10.1 Dependencia upstream: commit pinneado y modelo
+# ---------------------------------------------------------------------------
+$ git ls-remote https://github.com/xiph/rnnoise | head -1
+70f1d256acd4b34a572f999a05c87bf00b67730d	HEAD
+[exit 0]
+
+$ git clone --quiet https://github.com/xiph/rnnoise /tmp/opencode/rnnoise-src
+[exit 0]
+$ git -C /tmp/opencode/rnnoise-src checkout --quiet 70f1d256acd4b34a572f999a05c87bf00b67730d
+[exit 0]
+$ git -C /tmp/opencode/rnnoise-src rev-parse HEAD
+70f1d256acd4b34a572f999a05c87bf00b67730d
+[exit 0]
+
+# El commit descarga el modelo: model_version fija el hash y download_model.sh lo valida.
+$ cat /tmp/opencode/rnnoise-src/model_version
+0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37
+[exit 0]
+$ grep -n 'wget' /tmp/opencode/rnnoise-src/download_model.sh
+        wget https://media.xiph.org/rnnoise/models/$model
+[exit 0]
+
+# Verificación independiente en el host (misma URL que usa el script oficial):
+$ curl -sSL -o /tmp/opencode/rnnoise_data.tar.gz \
+    https://media.xiph.org/rnnoise/models/rnnoise_data-0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37.tar.gz
+[exit 0]
+$ ls -l /tmp/opencode/rnnoise_data.tar.gz && sha256sum /tmp/opencode/rnnoise_data.tar.gz
+-rw-r--r-- 1 pablo pablo 58603099 Oct 28 15:54 rnnoise_data.tar.gz
+0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37  rnnoise_data.tar.gz
+[exit 0]
+$ tar tzvf /tmp/opencode/rnnoise_data.tar.gz
+-rw-rw-r-- jm/jm    78003012 2025-01-30 01:59 src/rnnoise_data.c
+-rw-rw-r-- jm/jm         926 2025-01-30 01:59 src/rnnoise_data.h
+-rw-rw-r-- jm/jm    30121147 2025-01-30 01:58 src/rnnoise_data_little.c
+-rw-rw-r-- jm/jm         926 2025-01-30 01:58 src/rnnoise_data_little.h
+-rw-rw-r-- jm/jm    11544286 2025-01-30 01:59 models/rnnoise10Ga_12.pth
+-rw-rw-r-- jm/jm    11544286 2025-01-30 01:59 models/rnnoise10Gb_15.pth
+[exit 0]
+# El tarball NO trae archivo de licencia propio; la licencia del proyecto es la del
+# commit (COPYING, BSD-3-Clause) y los pesos no se redistribuyen en este repo.
+$ head -3 /tmp/opencode/rnnoise-src/COPYING
+Copyright (c) 2007-2017, 2024 Jean-Marc Valin
+Copyright (c) 2023 Amazon
+Copyright (c) 2017, Mozilla
+[exit 0]
+$ sha256sum /tmp/opencode/rnnoise-src/COPYING
+45d37ca1cdb278c088e1aa85e0e65ca3a534ed86a28dcc96ca16810248a61d35  COPYING
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 10.2 Imagen aislada del banco (base pinneada por digest)
+# ---------------------------------------------------------------------------
+$ docker build -t x6200-rnnoise-bench:70f1d25-1 -f scripts/bench/Dockerfile.rnnoise scripts/bench
+...
+sha256:b721886096030e9fa6d8db0e0eaf2b5efb08a395dd94ccdd7e1822b78d9891cf
+[exit 0]
+# Contenido: debian:bookworm-slim@sha256:99c0b25c...e222b6f3 + build-essential,
+# autoconf, automake, libtool, git, ca-certificates, wget, pkg-config,
+# libspeexdsp-dev=1.2.1-1
+
+# ---------------------------------------------------------------------------
+# 10.3 Corrida del banco (build de RNNoise + matriz + análisis + controles)
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_rnnoise.py
+OK: 21 filas medidas, 5 repeticiones por caso (warmup 3)
+imagen sha256:b721886096030e9fa6d8db0e0eaf2b5efb08a395dd94ccdd7e1822b78d9891cf
+RNNoise 70f1d256acd4b34a572f999a05c87bf00b67730d frame_size=480 lib sha256=e0272f1d342ee208
+modelo 0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37
+
+vector     metodo             rms   lat_ms       p50       p95       p99     total  %>10ms  rss_kB  disc
+silence    off            UNKNOWN   0.0000   0.00000   0.00000   0.00000     0.490  0.0000    3064     0
+silence    resample       UNKNOWN   0.0000   0.03402   0.03492   0.03956   209.965  0.0000    3576     0
+silence    speex          UNKNOWN   0.0000   0.01016   0.01033   0.01364    62.929  0.0000    3472     0
+silence    rnnoise        UNKNOWN   0.0000   0.06797   0.07177   0.08741   421.456  0.0000    6412     0
+silence    rnnoise_norm   UNKNOWN   0.0000   0.06851   0.07229   0.09083   424.064  0.0000    6424     0
+sine1k     off            -21.010   0.0000   0.00000   0.00000   0.00000     0.391  0.0000    3104     0
+sine1k     resample       -21.011  UNKNOWN   0.03411   0.03654   0.04936   213.770  0.0000    3588     0
+sine1k     speex          -24.529  UNKNOWN   0.01080   0.01133   0.02564    68.150  0.0000    3464   965
+sine1k     rnnoise        -75.821  UNKNOWN   0.19205   0.21800   0.28338  1206.860  0.0000    7088     0
+sine1k     rnnoise_norm   -21.001  UNKNOWN   0.06990   0.07401   0.10114   432.121  0.0000    6332     0
+multisine  off            -25.782   0.0000   0.00000   0.00000   0.00000     0.433  0.0000    3056     0
+multisine  resample       -25.782  UNKNOWN   0.03415   0.03665   0.05197   213.354  0.0000    3584     0
+multisine  speex          -29.482  UNKNOWN   0.01091   0.01241   0.01546    68.810  0.0000    3476  1849
+multisine  rnnoise        -59.539  UNKNOWN   0.19306   0.21860   0.26672  1211.859  0.0000    7092     0
+multisine  rnnoise_norm   -25.770  UNKNOWN   0.06904   0.07239   0.07998   426.458  0.0000    6252     0
+noise      off            -30.009   0.0000   0.00000   0.00000   0.00000     0.267  0.0000    3084     0
+noise      resample       -30.150   1.3832   0.03598   0.03765   0.04412   222.375  0.0000    3600     0
+noise      speex          -33.456  UNKNOWN   0.01299   0.01350   0.01728    80.428  0.0000    3460     0
+noise      rnnoise        -62.563  21.3832   0.19522   0.22161   0.27087  1222.502  0.0000    7092     0
+noise      rnnoise_norm   -30.144  21.3832   0.07180   0.07545   0.08637   443.171  0.0000    6292     0
+noise      speex_b256     -43.834   5.8050   UNKNOWN   UNKNOWN   UNKNOWN   141.057  0.0000    3668     0
+
+controles:
+  off_bit_exacto: {"silence": {"sha_igual_a_entrada": true, "muestras_distintas": 0, "bytes": 882000}, "sine1k": {...}, "multisine": {...}, "noise": {"sha_igual_a_entrada": true, "muestras_distintas": 0, "bytes": 882000}}
+  repetibilidad_60s: {"speex": {"sha_pasada": "6fd6f885fb02...", "sha_repeticion": "6fd6f885fb02...", "iguales": true}, "rnnoise": {"sha_pasada": "c15b60235e18...", "sha_repeticion": "c15b60235e18...", "iguales": true}}
+  prefijo_10s: {"speex": {"prefijo_10s_igual_a_pasada_10s": true, "10s_repetible": true}, "rnnoise": {"prefijo_10s_igual_a_pasada_10s": true, "10s_repetible": true}}
+  fallback_sin_rnnoise: {"noise_rnnoise_absent": {"salida_bit_exacta": true, "bytes": 882000, "bytes_esperados": 882000, "muestras": 441000, "rms_salida": 1035.0859, "rms_entrada": 1035.0859, "exit_code": 0, "fallback_flag": 1, "method_effective": "off"}, "silence_rnnoise_absent": {"salida_bit_exacta": true, ..., "rms_salida": 0.0, "rms_entrada": 0.0}, "noise_rnnoise_simulated_missing": {"salida_bit_exacta": true, ..., "method_effective": "off"}}
+  matriz_sin_fallback: true
+
+CSV: .../rnnoise-vs-speex.csv
+JSON: .../rnnoise-bench.json
+manifest: .../rnnoise-manifest.json
+[exit 0]
+# (Las líneas de control se abrevian acá con "..." sólo para el log; el JSON tiene
+#  los cuatro vectores y los tres casos de fallback completos.)
+
+# Salida relevante del contenedor (artifacts/rnnoise/container.log):
+$ git -C /src/rnnoise rev-parse HEAD
+70f1d256acd4b34a572f999a05c87bf00b67730d
+[exit 0]
+$ ./autogen.sh
+Downloading latest model
+... 200 OK  Length: 58603099 (56M)
+checksums match
+[exit 0]
+$ ./configure --disable-examples --disable-x86-rtcd --disable-shared --enable-static CFLAGS="-O2"
+[exit 0]
+$ make -j$(nproc)
+[exit 0]
+$ ls -l .libs/librnnoise.a && sha256sum .libs/librnnoise.a
+-rw-r--r-- 1 root root 3629566 .libs/librnnoise.a
+e0272f1d342ee208cd37bd8e2d529752400b9adf5c84fd5a5d3ff9dee02c6474  .libs/librnnoise.a
+[exit 0]
+$ gcc --version | head -1; pkg-config --modversion speexdsp; uname -m; grep -m1 'model name' /proc/cpuinfo
+gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+1.2.1
+x86_64
+model name	: AMD Ryzen 7 PRO 8840HS w/ Radeon 780M Graphics
+[exit 0]
+$ ./bench_rnnoise --rnnoise-frame-size
+480
+[exit 0]
+$ ./bench_rnnoise_absent --rnnoise-frame-size ; echo $?
+1
+# exit != 0 esperado: el binario sin RNNoise no reporta frame size. ldd no lista rnnoise.
+$ grep -n 'define SPEEX_PREPROCESS_SET_NOISE_SUPPRESS' /usr/include/speex/speex_preprocess.h
+144:#define SPEEX_PREPROCESS_SET_NOISE_SUPPRESS 18
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 10.4 Artefactos: hashes de binarios, pesos extraídos y WAV commiteados
+# ---------------------------------------------------------------------------
+$ sha256sum bench_rnnoise bench_rnnoise_absent
+ed0d00014f489000831e71dea80a1da646f4fa66f41fe7cca76037cfc64a62ad  bench_rnnoise
+90a502bc7f4acfcb528a05fda0b03f173131943686b581c1c2a8a801e6a8f1f2  bench_rnnoise_absent
+[exit 0]
+$ sha256sum src/rnnoise_data.c src/rnnoise_data.h     # dentro del contenedor
+d6021b7697677c4d2274c912975e143765552b0e6f25500aa660fdb4a9849be5  src/rnnoise_data.c
+09ff880bddd0fc74a2ae0e5ec6c8d65714031b08d0c3f672493acd9e189c5855  src/rnnoise_data.h
+[exit 0]
+$ cat audio/sha256sums.txt
+b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf  multisine_off_10s.wav
+b8d047aab3dc709de2cfa8b4528c54b984db4db88a4a5fcdd85a1633f3f8f914  multisine_rnnoise_10s.wav
+779fcaef63ab86dba731b74c6a4e8ec96f1c05eb028f3c948cf125e415a38af2  multisine_speex_10s.wav
+b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936  noise_off_10s.wav
+dadb263302119f4e0f0eedc9c3fc87ff0fd18b07bfae976db7962ae7fb7a9ec8  noise_rnnoise_10s.wav
+337ddff686f9d473ba76b3dbcb8114a2c7ff8b73bca4bcd5ce0d2d7aa9934bbd  noise_speex_10s.wav
+[exit 0]
+# Los dos WAV "off" son byte a byte iguales a los fixtures de la tarea B:
+$ sha256sum artifacts/pcm/white_noise_44100_s16.wav audio/noise_off_10s.wav
+b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936  artifacts/pcm/white_noise_44100_s16.wav
+b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936  audio/noise_off_10s.wav
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 10.5 Control negativo de los chequeos NUEVOS (tienen que fallar si se violan)
+# ---------------------------------------------------------------------------
+# (d) audio_destination distinto de OFFLINE_CAPTURE_ONLY
+$ cp rnnoise-vs-speex.csv /tmp/opencode/csv.bak
+$ python3 - <<'PY'   # reemplaza el primer OFFLINE_CAPTURE_ONLY por SPEAKER
+... (edición temporal) ...
+PY
+$ python3 scripts/check_no_stub_claims.py | grep '(d)'
+FAIL (d) tabla comparativa: fila silence/off: audio_destination = 'SPEAKER'; tiene que ser OFFLINE_CAPTURE_ONLY (nunca SPEAKER)
+FAIL: 1 comprobacion(es) del control negativo
+[exit 1]
+$ cp /tmp/opencode/csv.bak rnnoise-vs-speex.csv
+
+# (f) manifest que declara los pesos dentro del firmware
+$ cp rnnoise-manifest.json /tmp/opencode/man.bak
+$ python3 - <<'PY'   # "in_firmware": false -> true
+... (edición temporal) ...
+PY
+$ python3 scripts/check_no_stub_claims.py | grep '(f)'
+FAIL (f) manifest de RNNoise: model.in_firmware tiene que ser false
+FAIL: 1 comprobacion(es) del control negativo
+[exit 1]
+$ cp /tmp/opencode/man.bak rnnoise-manifest.json
+$ sha256sum rnnoise-vs-speex.csv rnnoise-manifest.json
+13d81c7152f7990435bf15bd90409f928248656ad4d74c7f6f42b3e10dc9731b  rnnoise-vs-speex.csv
+4a54a050821384dd08914f48f070284fdf685c940910d1cc3676bbe1915b5c65  rnnoise-manifest.json
+[exit 0]
+$ python3 scripts/check_no_stub_claims.py >/dev/null; echo $?
+0
+# (e) se verifica en positivo (0 archivos de upstream versionados y 0 menciones de
+# "rnnoise" en src/rootfs/rom-build/tests). No se hizo demo negativa porque exigiría
+# crear archivos en src/ o en rootfs/, prohibido por el issue.
+
+# ---------------------------------------------------------------------------
+# 10.6 Verificaciones finales
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py --verify
+silence_44100_s16.wav: sha256 99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c
+sine_1k_44100_s16.wav: sha256 667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600
+multisine_44100_s16.wav: sha256 b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf
+white_noise_44100_s16.wav: sha256 b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+OK: los cuatro WAV regenerados coinciden byte a byte con el manifiesto
+[exit 0]
+
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+OK   (a) procedencia MEASURED-HOST: 50 filas del banco con lib real, exit 0, sin citar tests/native
+OK   (a) procedencia MEASURED-HARDWARE: 0 filas (0 esperadas en esta corrida: no hubo medicion en radio)
+OK   (b) sin atribuciones al stub: 5791 campos/lineas barridos, 0 aserciones prohibidas
+OK   (c) ids del stub: stub SET_NOISE_SUPPRESS = 1 != real = 18 (documentado en speex-audit.md)
+OK   (c) banco sin stub de Speex: ... no define simbolos de Speex; run_in_container.sh enlaza speexdsp
+OK   (c) sha del PCM procesado: todas las filas MEASURED-HOST con --case traen sha
+OK   (d) tabla comparativa: 21 filas (4 vectores x 5 metodos + 1 sonda), todas OFFLINE_CAPTURE_ONLY, version y sha declarados
+OK   (e) RNNoise fuera del repo: sin pesos/libreria de upstream versionados y sin menciones en src/rootfs/rom-build/tests
+OK   (f) manifest de RNNoise: commit 70f1d256, modelo 0a8755f8, BSD-3-Clause, no versionado / no redistribuido / fuera del firmware, frame_size 480
+OK: ningun resultado de stub se reporta como real
+[exit 0]
+
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py --self-test
+OK: las regex de (b) detectan las 5 formas prohibidas y dejan pasar las 5 correctas
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 10.7 Error propio detectado y corregido durante la tanda (resampler)
+# ---------------------------------------------------------------------------
+# Primer intento: fc = 0.5*min(1, L/M) SIN dividir por L. Eso pone el corte en
+# fs_in/2 de la tasa INTERPOLADA (all-pass): el "resampler" quedaba como repetir/
+# descartar muestras, justo lo que el anexo prohíbe. Síntomas medidos en la salida
+# de esa corrida (descartada, no commiteada):
+#   noise_resample: RMS de salida 8456.6 con entrada de 1036.0 (+18 dB) y lag 1118
+#   noise_rnnoise:  correlación espuria (pico en 1118 muestras)
+# Corrección: fc = 0.5*min(1, L/M)/L  ->  corte 22.05 kHz en las dos etapas.
+# Validación numérica previa (replica en Python del mismo diseño):
+#   fc subida 0.003125 (corte 22050 Hz), fc bajada 0.003125 (corte 22050 Hz)
+#   RMS in/out sobre ruido blanco: 1001.7 -> 989.9 (subida) y 979.0 (ida y vuelta)
+#   energía por fase del prototipo: 1.000 / 0.969 / 1.000 (suma 1.000 en las tres)
+#   retardo de impulso: 61 muestras (teórico 60.4)
+# Tras la corrección: noise_resample RMS 1018.5, lag 61; noise_rnnoise lag 943
+# (= 882 de los 2 frames + 61 del resampler). Los artefactos commiteados son de
+# la corrida corregida.
+
+# ---------------------------------------------------------------------------
+# 10.8 Alcance del diff
+# ---------------------------------------------------------------------------
+$ git status --porcelain
+ M docs/evidencia/2026-10-28-rx-audio-feasibility/README.md
+ M docs/evidencia/2026-10-28-rx-audio-feasibility/measurements.csv
+ M docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/audio/
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-bench.json
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-manifest.json
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-vs-speex.csv
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/rnnoise-vs-speex.md
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/Dockerfile.rnnoise
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/bench_rnnoise.c
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/rnnoise_build.sh
+?? docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_rnnoise.py
+[exit 0]
+# .asf-active es un marcador del harness, no se commitea.
+
+# ---------------------------------------------------------------------------
+# 10.9 Calidad estática y determinismo del análisis
+# ---------------------------------------------------------------------------
+$ cd docs/evidencia/2026-10-28-rx-audio-feasibility/scripts
+$ ruff check bench_rnnoise.py check_no_stub_claims.py
+All checks passed!
+[exit 0]
+$ ruff format --check bench_rnnoise.py
+1 file already formatted
+[exit 0]
+$ ty check bench_rnnoise.py check_no_stub_claims.py
+All checks passed!
+[exit 0]
+
+# Hallazgos PREEXISTENTES en los scripts de la tarea B (no se tocaron: son de otra
+# tanda y este issue prohíbe cambiar archivos ya entregados sin un error explícito;
+# además el CI del repo lintea tools/ab_testing, no docs/evidencia):
+$ ruff check gen_pcm.py bench_speex.py
+F401 'wave' imported but unused          (gen_pcm.py:31)
+RUF046 int() innecesario x2              (gen_pcm.py:48)
+UP031 formato %                          (gen_pcm.py:136)
+B905 zip() sin strict=                   (bench_speex.py:491)
+Found 5 errors.
+[exit 1]
+$ ty check gen_pcm.py
+error[call-non-callable]: Object of type `str` is not callable
+error[invalid-assignment]: Invalid subscript assignment with key of type `Unknown | str | (() -> list[int])` ...
+Found 2 diagnostics
+[exit 1]
+$ ty check bench_speex.py
+error[unresolved-import]: Cannot resolve imported module `numpy`
+Found 1 diagnostic
+[exit 1]
+# (La versión de check_no_stub_claims.py en HEAD ya no pasaba `ruff format --check`;
+#  esta tanda no agrega hallazgos nuevos de `ruff check` a ese archivo.)
+
+# Determinismo del análisis: se re-corrió --analyse sobre los mismos artefactos y
+# los archivos generados quedaron byte a byte idénticos.
+$ python3 scripts/bench_rnnoise.py --analyse
+[exit 0]
+$ sha256sum -c /tmp/opencode/pre-analyse.sha
+rnnoise-vs-speex.csv: OK
+rnnoise-bench.json: OK
+rnnoise-manifest.json: OK
+audio/multisine_off_10s.wav: OK
+audio/multisine_rnnoise_10s.wav: OK
+audio/multisine_speex_10s.wav: OK
+audio/noise_off_10s.wav: OK
+audio/noise_rnnoise_10s.wav: OK
+audio/noise_speex_10s.wav: OK
+measurements.csv: OK
+[exit 0]

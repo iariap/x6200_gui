@@ -31,6 +31,22 @@ Tres comprobaciones deterministas sobre los artefactos de
     (`scripts/bench/stubs_bench.c`) no puede definir simbolos de Speex: si los
     definiera, el banco dejaria de enlazar la lib real y (a) seria mentira.
 
+(d) La tabla comparativa de la tanda D (`rnnoise-vs-speex.csv`) declara
+    `audio_destination = OFFLINE_CAPTURE_ONLY` en TODAS las filas (nunca
+    `SPEAKER`), cubre exactamente los 4 vectores x 5 metodos (+ la sonda de
+    latencia), y cada fila cita la version real que la produjo: commit
+    pinneado de RNNoise y sha256 del modelo para `rnnoise*`, libspeexdsp 1.2.1
+    para `speex*`.
+
+(e) RNNoise no entra al producto: `git ls-files` no puede contener ningun
+    archivo de upstream (pesos `rnnoise_data*.c/.h`, `librnnoise.a`, tarball
+    del modelo, `*.pth`) y `src/`, `rootfs/`, `rom-build/` y `tests/` no pueden
+    mencionar `rnnoise` en absoluto.
+
+(f) `rnnoise-manifest.json` declara que los pesos NO se versionan, NO se
+    redistribuyen y NO entran al firmware, con el sha256 pinneado y
+    `rnnoise_get_frame_size()` = 480.
+
 Uso:  python3 check_no_stub_claims.py [--quiet]
 Salida: una linea por comprobacion y `OK` / `FAIL` final. Exit 0 = OK, 1 = FAIL.
 
@@ -41,7 +57,9 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -49,13 +67,51 @@ EVIDENCE_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = EVIDENCE_DIR.parents[2]
 
 CSV_PATH = EVIDENCE_DIR / "measurements.csv"
+COMPARATIVE_CSV = EVIDENCE_DIR / "rnnoise-vs-speex.csv"
+RNNOISE_MANIFEST = EVIDENCE_DIR / "rnnoise-manifest.json"
 AUDIT_DOC = EVIDENCE_DIR / "speex-audit.md"
 STUB_HEADER = REPO_ROOT / "tests/native/stubs/speex/speex_preprocess.h"
 BENCH_STUB_SRC = EVIDENCE_DIR / "scripts/bench/stubs_bench.c"
 BENCH_RUNNER = EVIDENCE_DIR / "scripts/bench/run_in_container.sh"
 
 # Marca de procedencia del banco con lib real (binario ./bench del contenedor).
-REAL_BENCH_MARKERS = ("./bench", "x6200-speexdsp-bench", "run_in_container.sh")
+REAL_BENCH_MARKERS = (
+    "./bench",
+    "x6200-speexdsp-bench",
+    "run_in_container.sh",
+    "rnnoise_build.sh",
+    "x6200-rnnoise-bench",
+)
+
+# Tanda D: pin de RNNoise y matriz esperada.
+RNNOISE_COMMIT = "70f1d256acd4b34a572f999a05c87bf00b67730d"
+RNNOISE_MODEL_SHA = "0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37"
+RNNOISE_VECTORS = ("silence", "sine1k", "multisine", "noise")
+RNNOISE_METHODS = ("off", "resample", "speex", "rnnoise", "rnnoise_norm")
+RNNOISE_PROBES = (("noise", "speex_b256"),)
+RNNOISE_REQUIRED_COLUMNS = (
+    "vector",
+    "method",
+    "version",
+    "rate_hz",
+    "samples",
+    "rms_dbfs",
+    "peak_dbfs",
+    "clip_count",
+    "discontinuities",
+    "latency_ms",
+    "frame_ms_p50",
+    "frame_ms_p95",
+    "frame_ms_p99",
+    "total_ms",
+    "peak_rss_kb",
+    "pct_frames_over_10ms",
+    "sha256",
+    "audio_destination",
+    "evidence_class",
+    "notes",
+)
+SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 # Marcas de que la cifra salio de la suite nativa con stubs.
 STUB_SOURCE_MARKERS = ("tests/native", "stub")
 
@@ -326,6 +382,172 @@ def check_stub_ids_do_not_match(rows: list[dict[str, str]]) -> None:
     ok("(c) sha del PCM procesado", "todas las filas MEASURED-HOST con --case traen sha")
 
 
+
+def check_comparative_table() -> None:
+    """(d) La tabla de la tanda D es OFFLINE_CAPTURE_ONLY y cita la version real."""
+    if not COMPARATIVE_CSV.is_file():
+        fail("(d) tabla comparativa", f"no existe {rel(COMPARATIVE_CSV)}")
+        return
+
+    with COMPARATIVE_CSV.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        columns = tuple(reader.fieldnames or ())
+        rows = list(reader)
+
+    missing_columns = [c for c in RNNOISE_REQUIRED_COLUMNS if c not in columns]
+    if missing_columns:
+        fail("(d) tabla comparativa", f"faltan columnas: {', '.join(missing_columns)}")
+        return
+
+    if not rows:
+        fail("(d) tabla comparativa", f"{rel(COMPARATIVE_CSV)} no tiene filas")
+        return
+
+    bad = 0
+    for row in rows:
+        where = f"{row['vector']}/{row['method']}"
+        if row["audio_destination"] != "OFFLINE_CAPTURE_ONLY":
+            fail(
+                "(d) tabla comparativa",
+                f"fila {where}: audio_destination = {row['audio_destination']!r}; "
+                "tiene que ser OFFLINE_CAPTURE_ONLY (nunca SPEAKER)",
+            )
+            bad += 1
+        if row["evidence_class"] not in ("MEASURED-HOST", "SKIPPED", "BLOCKED"):
+            fail("(d) tabla comparativa", f"fila {where}: evidence_class {row['evidence_class']!r}")
+            bad += 1
+        if row["method"].startswith("rnnoise") and (
+            RNNOISE_COMMIT[:8] not in row["version"] or RNNOISE_MODEL_SHA[:8] not in row["version"]
+        ):
+            fail(
+                "(d) tabla comparativa",
+                f"fila {where}: la version no cita el commit pinneado "
+                f"({RNNOISE_COMMIT[:8]}) y el modelo ({RNNOISE_MODEL_SHA[:8]}): {row['version']!r}",
+            )
+            bad += 1
+        if row["method"].startswith("speex") and "libspeexdsp 1.2.1" not in row["version"]:
+            fail(
+                "(d) tabla comparativa",
+                f"fila {where}: la version no cita libspeexdsp 1.2.1: {row['version']!r}",
+            )
+            bad += 1
+        if row["evidence_class"] == "MEASURED-HOST" and not SHA256_RE.match(row["sha256"]):
+            fail(
+                "(d) tabla comparativa",
+                f"fila {where}: sha256 ausente o invalido ({row['sha256']!r})",
+            )
+            bad += 1
+
+    expected = {(v, m) for v in RNNOISE_VECTORS for m in RNNOISE_METHODS} | set(RNNOISE_PROBES)
+    actual = {(row["vector"], row["method"]) for row in rows}
+    if actual != expected:
+        fail(
+            "(d) tabla comparativa",
+            f"la matriz no es la esperada; faltan {sorted(expected - actual)} y sobran "
+            f"{sorted(actual - expected)}",
+        )
+        return
+
+    if bad:
+        return
+    ok(
+        "(d) tabla comparativa",
+        f"{len(rows)} filas ({len(RNNOISE_VECTORS)} vectores x {len(RNNOISE_METHODS)} metodos + "
+        f"{len(RNNOISE_PROBES)} sonda), todas OFFLINE_CAPTURE_ONLY, version y sha declarados",
+    )
+
+
+def check_rnnoise_not_vendored() -> None:
+    """(e) Los pesos y la libreria de upstream no estan en el repo ni en el runtime."""
+    listed = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "ls-files", "-z"], capture_output=True, text=True
+    )
+    if listed.returncode != 0:
+        fail("(e) RNNoise fuera del repo", "no pude leer git ls-files")
+        return
+
+    vendored_pattern = re.compile(
+        r"(^|/)(rnnoise_data(_little)?\.[ch]|librnnoise\.a|rnnoise_data-[0-9a-f]+\.tar\.gz|[^/]+\.pth)$"
+    )
+    vendored = [
+        path for path in listed.stdout.split("\0") if path and vendored_pattern.search(path)
+    ]
+    if vendored:
+        fail(
+            "(e) RNNoise fuera del repo",
+            f"archivos de upstream versionados: {', '.join(vendored[:5])}",
+        )
+        return
+
+    runtime_dirs = ("src", "rootfs", "rom-build", "tests")
+    mentions = []
+    for directory in runtime_dirs:
+        base = REPO_ROOT / directory
+        if not base.is_dir():
+            continue
+        for path in base.rglob("*"):
+            if not path.is_file() or path.is_symlink():
+                continue
+            try:
+                text = path.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            if "rnnoise" in text.lower():
+                mentions.append(rel(path))
+    if mentions:
+        fail(
+            "(e) RNNoise fuera del repo",
+            f"el runtime menciona rnnoise: {', '.join(mentions[:5])}",
+        )
+        return
+
+    ok(
+        "(e) RNNoise fuera del repo",
+        "sin pesos/libreria de upstream versionados y sin menciones en src/rootfs/rom-build/tests",
+    )
+
+
+def check_rnnoise_manifest() -> None:
+    """(f) El manifest deja fijado modelo, licencia y que nada entra al producto."""
+    if not RNNOISE_MANIFEST.is_file():
+        fail("(f) manifest de RNNoise", f"no existe {rel(RNNOISE_MANIFEST)}")
+        return
+    try:
+        manifest = json.loads(RNNOISE_MANIFEST.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        fail("(f) manifest de RNNoise", f"JSON invalido: {exc}")
+        return
+
+    rnnoise = manifest.get("rnnoise", {})
+    model = rnnoise.get("model", {})
+    problems = []
+    if rnnoise.get("commit") != RNNOISE_COMMIT:
+        problems.append(f"commit {rnnoise.get('commit')!r} != {RNNOISE_COMMIT}")
+    if model.get("sha256") != RNNOISE_MODEL_SHA:
+        problems.append(f"sha256 del modelo {model.get('sha256')!r} != {RNNOISE_MODEL_SHA}")
+    if not str(model.get("url", "")).startswith("https://media.xiph.org/rnnoise/models/"):
+        problems.append(f"url del modelo no es la de Xiph: {model.get('url')!r}")
+    for flag in ("vendored_in_repo",):
+        if rnnoise.get(flag) is not False:
+            problems.append(f"{flag} tiene que ser false")
+    for flag in ("redistributed_in_repo", "in_firmware"):
+        if model.get(flag) is not False:
+            problems.append(f"model.{flag} tiene que ser false")
+    if rnnoise.get("frame_size") != 480:
+        problems.append(f"frame_size {rnnoise.get('frame_size')!r} != 480")
+    if "BSD-3-Clause" not in str(rnnoise.get("license", "")):
+        problems.append(f"licencia no declarada BSD-3-Clause: {rnnoise.get('license')!r}")
+
+    if problems:
+        fail("(f) manifest de RNNoise", "; ".join(problems))
+        return
+    ok(
+        "(f) manifest de RNNoise",
+        f"commit {RNNOISE_COMMIT[:8]}, modelo {RNNOISE_MODEL_SHA[:8]}, BSD-3-Clause, "
+        "no versionado / no redistribuido / fuera del firmware, frame_size 480",
+    )
+
+
 SELF_TEST_CASES = (
     # (texto, se espera violacion)
     ("el stub mide 0.2% de CPU", True),
@@ -373,6 +595,9 @@ def main() -> int:
     check_measured_host_provenance(rows)
     check_no_stub_claims(rows)
     check_stub_ids_do_not_match(rows)
+    check_comparative_table()
+    check_rnnoise_not_vendored()
+    check_rnnoise_manifest()
 
     if not args.quiet:
         for line in checks:

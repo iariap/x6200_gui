@@ -1,0 +1,26 @@
+# Entorno aislado del banco RNNoise vs SpeexDSP (issue #345, anexo vinculante, tanda D).
+#
+# Misma base pinneada por digest que el banco de Speex (tanda B) para que las
+# condiciones de host/contenedor sean iguales, mas el toolchain que exige el
+# build oficial de RNNoise (autotools). libspeexdsp queda pinneada por version.
+# El codigo de RNNoise NO se hornea en la imagen: se monta read-only desde
+# /tmp (fuera del repo) y se compila en cada corrida, registrando commit y
+# sha256 de cada archivo fuente.
+FROM debian:bookworm-slim@sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+        build-essential \
+        autoconf \
+        automake \
+        libtool \
+        git \
+        ca-certificates \
+        wget \
+        pkg-config \
+        libspeexdsp-dev=1.2.1-1 \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
