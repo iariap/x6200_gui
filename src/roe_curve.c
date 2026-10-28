@@ -12,6 +12,8 @@
 
 #include "roe_curve.h"
 
+#include <math.h>
+
 static float clampf(float v, float lo, float hi) {
     if (v < lo) {
         return lo;
@@ -131,6 +133,78 @@ int roe_curve_point_count(int n) {
     }
 
     return (n - 1) * ROE_CURVE_OVERSAMPLE + 1;
+}
+
+/* Monotone cubic Hermite (Fritsch-Carlson) through the samples, sampled at the
+ * fixed ROE_CURVE_OVERSAMPLE step. Passes through every input point (t=0 of each
+ * interval is the sample) and never overshoots a monotone run. */
+void roe_curve_interpolate(const float *in, int n, float *out) {
+    if (n <= 0) {
+        return;
+    }
+
+    if (n == 1) {
+        out[0] = clampf(in[0], ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE);
+        return;
+    }
+
+    double d[ROE_CURVE_MAX_POINTS];
+    double m[ROE_CURVE_MAX_POINTS];
+
+    for (int i = 0; i < n - 1; i++) {
+        d[i] = (double) in[i + 1] - (double) in[i];
+    }
+
+    /* Tangents: harmonic mean of the neighbouring slopes, zero at sign changes. */
+    m[0]     = d[0];
+    m[n - 1] = d[n - 2];
+
+    for (int i = 1; i < n - 1; i++) {
+        if (d[i - 1] * d[i] <= 0.0) {
+            m[i] = 0.0;
+        } else {
+            m[i] = 2.0 * d[i - 1] * d[i] / (d[i - 1] + d[i]);
+        }
+    }
+
+    /* Fritsch-Carlson limiter: keeps the cubic monotone in each interval. */
+    for (int i = 0; i < n - 1; i++) {
+        if (d[i] == 0.0) {
+            m[i]     = 0.0;
+            m[i + 1] = 0.0;
+            continue;
+        }
+
+        double a = m[i] / d[i];
+        double b = m[i + 1] / d[i];
+        double s = a * a + b * b;
+
+        if (s > 9.0) {
+            double tau = 3.0 / sqrt(s);
+
+            m[i]     = tau * a * d[i];
+            m[i + 1] = tau * b * d[i];
+        }
+    }
+
+    for (int i = 0; i < n - 1; i++) {
+        for (int k = 0; k < ROE_CURVE_OVERSAMPLE; k++) {
+            double t = (double) k / (double) ROE_CURVE_OVERSAMPLE;
+            double t2 = t * t;
+            double t3 = t2 * t;
+            double h00 = 2.0 * t3 - 3.0 * t2 + 1.0;
+            double h10 = t3 - 2.0 * t2 + t;
+            double h01 = -2.0 * t3 + 3.0 * t2;
+            double h11 = t3 - t2;
+            double y = h00 * in[i] + h10 * m[i] + h01 * in[i + 1] + h11 * m[i + 1];
+
+            out[i * ROE_CURVE_OVERSAMPLE + k] =
+                clampf((float) y, ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE);
+        }
+    }
+
+    out[(n - 1) * ROE_CURVE_OVERSAMPLE] =
+        clampf(in[n - 1], ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE);
 }
 
 void roe_curve_resample(const float *in, int n, float *out) {

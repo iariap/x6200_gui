@@ -18,6 +18,7 @@
 #include "keyboard.h"
 #include "main_screen.h"
 #include "buttons.h"
+#include "roe_curve.h"
 #include "swr_session.h"
 #include "scheduler.h"
 
@@ -398,9 +399,10 @@ static void format_readout(char *buf, size_t n) {
     }
 }
 
-/* La curva ES el dato: polilinea por los puntos medidos (agregado por frecuencia) y un punto
- * por muestra. Un punto sin medicion corta el tramo (hueco): no se interpola ni se ajusta una
- * parabola decorativa. La forma la manda la medicion, no una estetica. */
+/* La curva pasa POR los puntos medidos: interpolacion cubica monotona (PCHIP) del agregado
+ * por frecuencia, un tramo por corrida de puntos validos. Un punto sin medicion corta el tramo
+ * (hueco): no se une un hueco con una interpolacion enganosa. Ademas se marca cada muestra
+ * medida, asi se ve exactamente sobre que datos se apoya la curva. */
 static void draw_curve(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *line_dsc,
                        lv_coord_t x1, lv_coord_t y1) {
     int points = grid_ready ? session.grid.points : 0;
@@ -409,39 +411,68 @@ static void draw_curve(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *line_dsc,
         return;
     }
 
+    static float run_vals[SWR_SESSION_POINTS];
+    static float curve[(SWR_SESSION_POINTS - 1) * ROE_CURVE_OVERSAMPLE + 1];
+
     lv_draw_rect_dsc_t dot_dsc;
 
     lv_draw_rect_dsc_init(&dot_dsc);
     dot_dsc.bg_color = line_dsc->color;
     dot_dsc.bg_opa   = LV_OPA_COVER;
 
-    bool have_prev = false;
-    lv_coord_t prev_x = 0;
-    lv_coord_t prev_y = 0;
+    int i = 0;
 
-    for (int i = 0; i < points; i++) {
+    while (i < points) {
         if (isnan(data_agg[i])) {
-            have_prev = false;
+            i++;
             continue;
         }
 
-        lv_coord_t x = x1 + (lv_coord_t) ((int32_t) i * w / (points - 1));
-        lv_coord_t y = y1 + calc_y(data_agg[i]);
+        int j = i;
 
-        if (have_prev) {
-            lv_point_t a = { prev_x, prev_y };
-            lv_point_t b = { x, y };
-
-            lv_draw_line(ctx, line_dsc, &a, &b);
+        while (j < points && !isnan(data_agg[j])) {
+            j++;
         }
 
-        lv_area_t dot = { x - 1, y - 1, x + 1, y + 1 };
+        int len = j - i;
 
-        lv_draw_rect(ctx, &dot_dsc, &dot);
+        if (len >= 2) {
+            for (int k = 0; k < len; k++) {
+                run_vals[k] = data_agg[i + k];
+            }
 
-        prev_x    = x;
-        prev_y    = y;
-        have_prev = true;
+            int m = roe_curve_point_count(len);
+
+            roe_curve_interpolate(run_vals, len, curve);
+
+            int denom = (m - 1) * (points - 1);
+
+            lv_point_t a, b;
+
+            for (int t = 1; t < m; t++) {
+                int num0 = i * (m - 1) + (t - 1) * (len - 1);
+                int num1 = i * (m - 1) + t * (len - 1);
+
+                a.x = x1 + (lv_coord_t) ((int32_t) (num0 * w) / denom);
+                a.y = y1 + calc_y(curve[t - 1]);
+
+                b.x = x1 + (lv_coord_t) ((int32_t) (num1 * w) / denom);
+                b.y = y1 + calc_y(curve[t]);
+
+                lv_draw_line(ctx, line_dsc, &a, &b);
+            }
+        }
+
+        /* Marcas de las muestras medidas (el dato sobre el que se dibuja la curva). */
+        for (int k = i; k < j; k++) {
+            lv_coord_t x = x1 + (lv_coord_t) ((int32_t) k * w / (points - 1));
+            lv_coord_t y = y1 + calc_y(data_agg[k]);
+            lv_area_t  dot = { x - 1, y - 1, x + 1, y + 1 };
+
+            lv_draw_rect(ctx, &dot_dsc, &dot);
+        }
+
+        i = j;
     }
 }
 
