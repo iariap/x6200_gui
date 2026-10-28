@@ -29,13 +29,13 @@
 #define ROE_CURVE_MIN_VALUE 1.0f
 #define ROE_CURVE_MAX_VALUE 5.0f
 
+/* Subida minima (en ROE) de las puntas de la parabola dibujada sobre su base. */
+#define ROE_PARABOLA_MIN_RISE 0.8
+
 /* Sub-points per input interval. The chart is 780 px wide with 50 samples
  * (~15 px apart), so 8 sub-points land one segment every ~2 px: smooth on the
  * panel without depending on the pixel width (deterministic). */
 #define ROE_CURVE_OVERSAMPLE 8
-
-/* Tope de muestras de entrada del interpolador (el barrido tiene 51). */
-#define ROE_CURVE_MAX_POINTS  256
 
 /* Number of points roe_curve_resample() writes for `n` input samples. */
 int roe_curve_point_count(int n);
@@ -71,12 +71,12 @@ bool roe_curve_quadratic_fit(const float *in, int n, float *a, float *b, float *
  * Deterministic: the same input always yields the same output. */
 void roe_curve_resample(const float *in, int n, float *out);
 
-/* Interpolating curve THROUGH the measured samples (no free fit): monotone
- * piecewise-cubic Hermite (Fritsch-Carlson PCHIP). It passes through every sample,
- * is C1 (smooth, no sawtooth from the 0.1 ROE quantization) and does not overshoot
- * a monotone run. Same output count as roe_curve_resample() (fixed
- * ROE_CURVE_OVERSAMPLE sub-points per interval); each value is clamped to
- * [ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE].
- *
- * Deterministic: the same input always yields the same output. */
-void roe_curve_interpolate(const float *in, int n, float *out);
+/* Parabola del chart (forma NanoVNA, orden del owner 2026-10-28: "que la ROE que
+ * mostramos en la pantalla tenga forma de parabola"): ajuste cuadratico de las
+ * muestras, SIEMPRE abierto hacia arriba (si el ajuste libre sale concavo se
+ * espeja), con el vertice en la columna del ajuste (acotada al tramo) y la base en
+ * el minimo MEDIDO. Se impone una curvatura minima (ROE_PARABOLA_MIN_RISE sobre el
+ * borde mas lejano) para que la forma se lea como parabola tambien cuando el span
+ * no cubre una resonancia y el ajuste sale casi recto. Las muestras y el minimo del
+ * readout no cambian: esto es solo el trazado. */
+void roe_curve_parabola(const float *in, int n, float *out);

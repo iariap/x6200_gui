@@ -399,10 +399,9 @@ static void format_readout(char *buf, size_t n) {
     }
 }
 
-/* La curva pasa POR los puntos medidos: interpolacion cubica monotona (PCHIP) del agregado
- * por frecuencia, un tramo por corrida de puntos validos. Un punto sin medicion corta el tramo
- * (hueco): no se une un hueco con una interpolacion enganosa. Ademas se marca cada muestra
- * medida, asi se ve exactamente sobre que datos se apoya la curva. */
+/* La curva dibujada: el ajuste cuadratico (decorativo, issue #113) del agregado medido, por
+ * TRAMOS de puntos validos consecutivos. Un punto sin muestra valida corta el tramo: no se une
+ * un hueco con una interpolacion enganosa (issue #125). */
 static void draw_curve(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *line_dsc,
                        lv_coord_t x1, lv_coord_t y1) {
     int points = grid_ready ? session.grid.points : 0;
@@ -413,12 +412,6 @@ static void draw_curve(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *line_dsc,
 
     static float run_vals[SWR_SESSION_POINTS];
     static float curve[(SWR_SESSION_POINTS - 1) * ROE_CURVE_OVERSAMPLE + 1];
-
-    lv_draw_rect_dsc_t dot_dsc;
-
-    lv_draw_rect_dsc_init(&dot_dsc);
-    dot_dsc.bg_color = line_dsc->color;
-    dot_dsc.bg_opa   = LV_OPA_COVER;
 
     int i = 0;
 
@@ -443,7 +436,7 @@ static void draw_curve(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *line_dsc,
 
             int m = roe_curve_point_count(len);
 
-            roe_curve_interpolate(run_vals, len, curve);
+            roe_curve_parabola(run_vals, len, curve);
 
             int denom = (m - 1) * (points - 1);
 
@@ -461,15 +454,6 @@ static void draw_curve(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *line_dsc,
 
                 lv_draw_line(ctx, line_dsc, &a, &b);
             }
-        }
-
-        /* Marcas de las muestras medidas (el dato sobre el que se dibuja la curva). */
-        for (int k = i; k < j; k++) {
-            lv_coord_t x = x1 + (lv_coord_t) ((int32_t) k * w / (points - 1));
-            lv_coord_t y = y1 + calc_y(data_agg[k]);
-            lv_area_t  dot = { x - 1, y - 1, x + 1, y + 1 };
-
-            lv_draw_rect(ctx, &dot_dsc, &dot);
         }
 
         i = j;

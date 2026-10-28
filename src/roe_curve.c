@@ -12,8 +12,6 @@
 
 #include "roe_curve.h"
 
-#include <math.h>
-
 static float clampf(float v, float lo, float hi) {
     if (v < lo) {
         return lo;
@@ -135,10 +133,10 @@ int roe_curve_point_count(int n) {
     return (n - 1) * ROE_CURVE_OVERSAMPLE + 1;
 }
 
-/* Monotone cubic Hermite (Fritsch-Carlson) through the samples, sampled at the
- * fixed ROE_CURVE_OVERSAMPLE step. Passes through every input point (t=0 of each
- * interval is the sample) and never overshoots a monotone run. */
-void roe_curve_interpolate(const float *in, int n, float *out) {
+/* Parabola del chart: valle abierto hacia arriba con la base en el minimo medido y el
+ * vertice en la columna del ajuste (ver roe_curve.h). El ajuste libre se espeja si sale
+ * concavo y se le impone una curvatura minima visual. */
+void roe_curve_parabola(const float *in, int n, float *out) {
     if (n <= 0) {
         return;
     }
@@ -148,55 +146,53 @@ void roe_curve_interpolate(const float *in, int n, float *out) {
         return;
     }
 
-    double d[ROE_CURVE_MAX_POINTS];
-    double m[ROE_CURVE_MAX_POINTS];
+    double a = 0.0, b = 0.0, c = 0.0;
 
-    for (int i = 0; i < n - 1; i++) {
-        d[i] = (double) in[i + 1] - (double) in[i];
+    if (!quadratic_fit(in, n, &a, &b, &c)) {
+        line_fit(in, n, &b, &c);
+        a = 0.0;
     }
 
-    /* Tangents: harmonic mean of the neighbouring slopes, zero at sign changes. */
-    m[0]     = d[0];
-    m[n - 1] = d[n - 2];
+    /* Siempre valle: un ajuste concavo se espeja. */
+    if (a < 0.0) {
+        a = -a;
+    }
 
-    for (int i = 1; i < n - 1; i++) {
-        if (d[i - 1] * d[i] <= 0.0) {
-            m[i] = 0.0;
-        } else {
-            m[i] = 2.0 * d[i - 1] * d[i] / (d[i - 1] + d[i]);
+    double ymin = in[0];
+
+    for (int i = 1; i < n; i++) {
+        if (in[i] < ymin) {
+            ymin = in[i];
         }
     }
 
-    /* Fritsch-Carlson limiter: keeps the cubic monotone in each interval. */
-    for (int i = 0; i < n - 1; i++) {
-        if (d[i] == 0.0) {
-            m[i]     = 0.0;
-            m[i + 1] = 0.0;
-            continue;
-        }
+    /* Forma NanoVNA (orden del owner, 2026-10-28): valle CENTRADO en el span, base en el
+     * minimo medido y ambas puntas subiendo. El vertice del ajuste libre se descarta porque
+     * con el minimo medido cerca de un borde (resonancia fuera del span) daba medio valle o
+     * una recta; la lectura del minimo sigue saliendo de las muestras, esto es el trazado. */
+    double xv = (double) (n - 1) / 2.0;
 
-        double a = m[i] / d[i];
-        double b = m[i + 1] / d[i];
-        double s = a * a + b * b;
+    /* Curvatura minima: las puntas suben al menos ROE_PARABOLA_MIN_RISE sobre la base. */
+    double d = (xv > (double) (n - 1) - xv) ? xv : ((double) (n - 1) - xv);
 
-        if (s > 9.0) {
-            double tau = 3.0 / sqrt(s);
-
-            m[i]     = tau * a * d[i];
-            m[i + 1] = tau * b * d[i];
-        }
+    if (d < 1.0) {
+        d = 1.0;
     }
+
+    double a_min = (double) ROE_PARABOLA_MIN_RISE / (d * d);
+
+    if (a < a_min) {
+        a = a_min;
+    }
+
+    /* Base en el minimo MEDIDO, vertice en xv: y = base + a*(x - xv)^2. */
+    b = -2.0 * a * xv;
+    c = ymin + a * xv * xv;
 
     for (int i = 0; i < n - 1; i++) {
         for (int k = 0; k < ROE_CURVE_OVERSAMPLE; k++) {
-            double t = (double) k / (double) ROE_CURVE_OVERSAMPLE;
-            double t2 = t * t;
-            double t3 = t2 * t;
-            double h00 = 2.0 * t3 - 3.0 * t2 + 1.0;
-            double h10 = t3 - 2.0 * t2 + t;
-            double h01 = -2.0 * t3 + 3.0 * t2;
-            double h11 = t3 - t2;
-            double y = h00 * in[i] + h10 * m[i] + h01 * in[i + 1] + h11 * m[i + 1];
+            double x = (double) i + (double) k / (double) ROE_CURVE_OVERSAMPLE;
+            double y = a * x * x + b * x + c;
 
             out[i * ROE_CURVE_OVERSAMPLE + k] =
                 clampf((float) y, ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE);
@@ -204,7 +200,9 @@ void roe_curve_interpolate(const float *in, int n, float *out) {
     }
 
     out[(n - 1) * ROE_CURVE_OVERSAMPLE] =
-        clampf(in[n - 1], ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE);
+        clampf((float) (a * (double) (n - 1) * (double) (n - 1) +
+                        b * (double) (n - 1) + c),
+               ROE_CURVE_MIN_VALUE, ROE_CURVE_MAX_VALUE);
 }
 
 void roe_curve_resample(const float *in, int n, float *out) {
