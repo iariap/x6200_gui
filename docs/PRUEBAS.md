@@ -1670,3 +1670,35 @@ presupuesto de tiempo de §71, una pasada, span 500 kHz, 51 puntos) y dial en el
 **Evidencia**: `assessment-194/scratch/cw244/swr3w_bandas_fonia.png`, `swr3w_band_<banda>.png`,
 `swr3w_band_<banda>.txt`; captura de verificación `swr-3w-15m.png`. Queda sin fundar la causa de
 que 40 m/6 m tengan menos muestras con potencia (anexo A de HALLAZGOS §72).
+
+---
+
+## 28/10 02:10Z — SWR Scan: curva = puntos medidos, gate de potencia y 8 W pedidos
+
+Pedido del owner: "que la curva sea siempre de los puntos medidos" y poder ajustar la potencia
+para asegurar una medición.
+
+**Medido** (radio, barrido de 51 puntos, fonia; "con potencia" = `tx` y `tx_power >= 0,3 W`):
+
+| Potencia pedida | 40m | 17m | 15m | 10m | 6m |
+|---|---|---|---|---|---|
+| 0,1 W | 13/51 | 36/51 | 0/51 | 0/51 | 8/51 |
+| 3,0 W | 18/51 | 46/51 | 46/51 | 48/51 | 15/51 |
+| **8,0 W** | **48/51** | **49/51** | **48/51** | **48/51** | **49/51** |
+
+Repetibilidad 8 W (17m, dos corridas): 48/51 válidas en ambas, 48 puntos comunes, |ΔROE| media
+**0,02** / máx **0,10**. La potencia reportada por el flow queda ~0,6–1,0 W en las tres potencias
+(el proceso del barrido la limita), así que el lazo automático de potencia no aporta: se pide el
+techo (8 W) fijo.
+
+**Arreglo** (PR #330, main `8b68b01d` + PR #331 harness): curva = polilínea por el agregado medido
++ punto por muestra, huecos sin interpolación; gate de validez (`tx` y `pwr >= 0,3 W`) con
+reintento del mismo punto (6 paquetes) y hueco si no hay medición (`swr_session_skip_point`);
+potencia pedida 8 W; tests nativos y harness de curva actualizados.
+
+**Verificado**: tests nativos `exit 0`; `check_harness_swrscan_curve.sh` PASS; en la radio con el
+build `6a710bfe`, barridos 40/17/15/10/6 m → **Completed n=51/51**, TX apagado, dial restaurado.
+Capturas: `assessment-194/scratch/cw244/swr_pts2_bandas.png`.
+
+**Sin fundar** (anexo A de HALLAZGOS §73): ROE absoluta contra medidor externo; por qué la
+potencia reportada queda ~1 W.

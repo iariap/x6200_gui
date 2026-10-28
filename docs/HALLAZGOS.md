@@ -42,6 +42,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 70. [El mute de RX de #244: la secuencia I2C del firmware original lo recupera con la GUI parada, no con la GUI andando](#70-el-mute-de-rx-de-244-la-secuencia-i2c-del-firmware-original-lo-recupera-con-la-gui-parada-no-con-la-gui-andando)
 71. [El barrido de ROE abortaba por RF timeout: el techo de TX asumía 35 ms por paquete y la radio tarda 48,4 ms](#71-el-barrido-de-roe-abortaba-por-rf-timeout-el-techo-de-tx-asumía-35-ms-por-paquete-y-la-radio-tarda-484-ms)
 72. [ROE por banda en fonia: a 0,1 W el detector no mide; con 3 W sí](#72-roe-por-banda-en-fonia-a-01-w-el-detector-no-mide-con-3-w-sí)
+73. [La curva del barrido ahora ES el dato medido; gate de potencia y 8 W pedidos](#73-la-curva-del-barrido-ahora-es-el-dato-medido-gate-de-potencia-y-8-w-pedidos)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
@@ -831,9 +832,69 @@ justificación medida; tests nativos actualizados (`tests/native/test_swrscan.c`
 por debajo del techo del control (8,0 W) y del ATU (potencia plena). Verificado en la radio: barrido
 15 m → `Completed`, `crashlog 0` (`swr-3w-15m.png`).
 
+**Corrección (27/10, más tarde)**: se adoptó **8 W pedidos**, no 3 W: con 8 W las cinco bandas dan
+48-49/51 muestras con potencia (incluidas 40 m y 6 m) y la curva pasó a dibujar los puntos medidos
+(§73). Lo de abajo queda como historia de la medición a 3 W.
+
 **Sin fundar (anexo A)**: por qué 40 m y 6 m tienen menos muestras con potencia (18/51 y 15/51);
 no se interpola la ROE en las frecuencias sin muestra válida; no se comparó contra un medidor de ROE
 externo.
+
+
+## 73. La curva del barrido ahora ES el dato medido; gate de potencia y 8 W pedidos
+
+**Síntoma**: el owner pidió dos cosas (2026-10-27): "quiero que la curva sea siempre de los puntos
+medidos" y "podemos ir ajustando la potencia para asegurar tener una medición?".
+
+**Medido en la radio** (barridos de 51 puntos, fonia, mismo binario con dump; muestras "con
+potencia" = paquetes con `tx` y `tx_power >= 0,3 W`):
+
+```
+$ <cobertura de muestras con potencia segun potencia PEDIDA, 40/17/15/10/6 m>
+0,1 W pedidos: 13/51  36/51   0/51   0/51   8/51
+3,0 W pedidos: 18/51  46/51  46/51  48/51  15/51
+8,0 W pedidos: 48/51  49/51  48/51  48/51  49/51
+
+$ <17m, dos corridas a 8 W pedidos>
+validas: 48/51 y 48/51 · 48 puntos comunes · |dROE| media 0,02 · max 0,10 · mismo minimo (2,4)
+
+$ <potencia reportada por el flow durante el barrido>  ~0,6-1,0 W en las tres potencias pedidas
+```
+
+Conclusiones fundadas:
+
+- La variable útil es la potencia **pedida**, y satura en el techo del equipo: con 8 W pedidos hay
+  muestras reales en las cinco bandas (48-49/51) y **0 muestras ROE=1.00 falsas** entre las
+  válidas; con 0,1 W el detector no mide en 15/10 m. La potencia **reportada** queda ~1 W: el
+  proceso del barrido la limita, así que un lazo automático de subida de potencia no aportaría
+  (terminaría siempre en el techo); se fija 8,0 W.
+- La forma de la curva la manda el dato: se dibuja una polilínea por el agregado medido y un punto
+  por muestra; un punto sin medición corta el tramo (hueco). Se elimina del chart el ajuste
+  cuadrático decorativo (`roe_curve` sigue en el repo con sus tests pero el chart no lo usa).
+
+**Arreglo** (PR #330, main `8b68b01d`):
+
+- `radio.c` entrega `pack->tx_power` y `pack->flag.tx` a `dialog_swrscan_update_pack()`; un paquete
+  sin TX/potencia no se registra y se reintenta el mismo punto hasta `SWRSCAN_RETRY_PACKETS = 6`;
+  si no aparece muestra válida, el punto queda como hueco (`swr_session_skip_point()`, API nueva
+  del motor: registra inválida y avanza).
+- `SWRSCAN_TX_POWER_DW = 80` (8,0 W pedidos), `SWRSCAN_MIN_TX_POWER_DW = 3` (0,3 W de validez).
+- Tests nativos actualizados (render: segmentos = puntos-1, vértice = máximo medido, monotonía;
+  test nuevo del gate sin potencia); harness de curva adaptado: el domo del owner se dibuja domo.
+
+**Verificación, medida**:
+
+```
+$ <tests nativos completos>                     exit 0 (todas las etapas, 0 fallos)
+$ <tests/check_harness_swrscan_curve.sh>        PASS (domo: bordes y=398, interior y=170;
+                                                 valle: dato medido)
+$ <radio, build 6a710bfe, barridos 40/17/15/10/6 m>
+Completed en las cinco, n=51/51, TX apagado y dial restaurado
+capturas: assessment-194/scratch/cw244/swr_pts2_bandas.png
+```
+
+**Sin fundar (anexo A)**: valor absoluto de la ROE contra un medidor externo; por qué la potencia
+reportada queda en ~1 W (límite interno del proceso del barrido).
 
 ## Anexo A: hipótesis sin fundar (no son hallazgos)
 
@@ -841,6 +902,8 @@ Ninguna de estas cosas se puede afirmar con la evidencia que tenemos. Se listan 
 con lo que haría falta para fundarlas.
 
 | Hipótesis | Por qué no está fundada | Qué haría falta |
+| El proceso del barrido limita la potencia entregada a ~1 W y por eso `tx_power` no pasa de ~1 W con 3 u 8 W pedidos | se midió el tope (~1 W) pero no el mecanismo interno | capturar los registros I2C del firmware original durante un barrido y comparar con el port |
+| La ROE absoluta medida (p.ej. 2,4 en 17 m) coincide con un medidor externo | no se comparó contra instrumento patron | medir la misma antena/frecuencia con un ROE-metro externo y registrar la diferencia |
 | 40 m y 6 m tienen menos muestras con potencia (18/51 y 15/51) que 17/15/10 m | se midió el conteo, pero no la causa (protección/rampa del BASE) | capturar `tx_power` y `vswr` con sonda/registros I2C y comparar con el firmware stock en esas bandas |
 |---|---|---|
 | El BASE rampa/cicla la potencia durante el barrido de ROE y por eso hay paquetes con `tx_power≈0` que reportan ROE 1.0 | se midió la correlación (`vswr=1.00` sólo con pwr≈0; a VFO fijo el ciclo se repite) pero **no** la causa ni si el firmware stock hace lo mismo | capturar los registros I2C del firmware original durante un barrido de ROE, o medir el TX con sonda y osciloscopio mientras se corre el barrido |
