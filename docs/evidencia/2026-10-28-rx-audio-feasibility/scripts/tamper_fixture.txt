@@ -1,0 +1,11 @@
+# Fixture del control negativo del issue #345. NO es evidencia ni una afirmacion:
+# es exactamente la frase prohibida que check_no_stub_claims.py tiene que rechazar.
+#
+# Uso (reproducible, no deja rastro en el directorio commiteado):
+#   cp scripts/tamper_fixture.txt zz-tamper.md
+#   python3 scripts/check_no_stub_claims.py        # exit 1: detecta la violacion
+#   rm zz-tamper.md
+#
+# Este archivo no se barre en la comprobacion (b), que solo mira *.md, *.csv y
+# *.log: por eso la frase prohibida puede vivir aca sin contaminar los informes.
+El bench con stubs mide 0.2% de CPU y -13.5 dB de atenuacion.

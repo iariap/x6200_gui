@@ -230,3 +230,215 @@ docs/evidencia/2026-10-28-rx-audio-feasibility/speex-audit.md
 # d) La primera versión del lag por correlación daba 124 muestras en el seno de
 #    1 kHz: artefacto de periodicidad. Se agregó detección de ambigüedad (2º pico
 #    > 0.95 del 1º) y para señales periódicas se reporta UNKNOWN, no un número.
+
+# ===========================================================================
+# 9. Tarea C: informe de factibilidad, handoff y tests obligatorios
+# ===========================================================================
+# Fecha: 2026-10-28. Worktree: state/worktrees/x6200/rx-audio-feasibility.
+# Base: a1c667ee. HEAD al empezar la tarea: a6d7ac2f (tareas A y B).
+# Nada de esta sección se ejecutó en la radio.
+
+$ git log --oneline -4
+a6d7ac2f docs(audio): auditoría numérica de Speex y banco PCM sintético reproducible (#345)
+3ab3330a docs(audio): mapa de señal RX y matriz de controles del BASE (#345)
+a1c667ee fix(info): centrar el icono de WiFi en su media celda de la barra (#344)
+7b421b37 feat(bt): todo el Bluetooth vive en su app (encendido y Discoverable salen de Ajustes) (#343)
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 9.1 T1 — suite nativa (host, con stubs de Speex/LVGL/liquid)
+# ---------------------------------------------------------------------------
+$ sh tests/native/run_native_tests.sh /tmp/opencode/x6200-native-taskC
+== compilador: gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2) ==
+== sanitizers: NO disponibles en este toolchain (se omite) ==
+...
+44837 comprobaciones, 0 fallos
+...
+138 comprobaciones, 0 fallos
+141 comprobaciones, 0 fallos
+597 comprobaciones, 0 fallos
+PASS: un loop_timer, periodo 30/250 ms, pump vivo y NetworkManager intacto
+== #219: radio_thread duerme en cada vuelta del sondeo ==
+57 comprobaciones, 0 fallos
+[exit 0]
+# Warnings preexistentes del árbol (no del cambio, no se tocaron):
+#   tests/native/test_radio_thread.c:44: 'no return statement' en la copia de radio.c
+#   src/params/types.h:12: multi-line comment; sign-compare en test_band_plan.c
+# Este PASS NO prueba atenuación, calidad, CPU ni latencia: corre contra stubs
+# (ver speex-audit.md §5 y el control negativo de 9.4).
+
+# ---------------------------------------------------------------------------
+# 9.2 T2 — suite completa rápida
+# ---------------------------------------------------------------------------
+$ sh tests/run_all_tests.sh --quick
+...
+================ resumen ================
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  settings_grid: OK
+  info_bar: OK
+  apps_menu: FALLÓ
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (25 apps)
+  pruebas: FALLÓ
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  wcag_rendered: FALLÓ
+  widget_text: FALLÓ
+  cw_tune_feed: OK
+  autotune_v2: OK
+  build_identity: OK
+  dialog_coverage: FALLÓ
+  curve_evidence: FALLÓ
+  host: OK   57 comprobaciones, 0 fallos
+  daemon: OK     all OK: 15 casos, 0 fallos
+  host_ci_parity: OK   57 comprobaciones, 0 fallos
+  db_failclosed: OK   todos los casos corrieron y afirmaron su resultado
+  qemu_apps: SKIP SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))
+  drawbuf_partial: OK   PASS: partial draw buffer renders the identical physical framebuffer (sw-rotate 90)
+  wspr: SKIP SKIP: la imagen x6200-uiharness no trae /usr/include/fftw3.h
+  sstv: SKIP SKIP: la imagen x6200-uiharness no trae /usr/include/sndfile.h
+  wefax: SKIP SKIP: la imagen x6200-uiharness no trae /usr/include/sndfile.h
+  navtex: OK   all OK
+  (omitidos: qemu_apps wspr sstv wefax js8 webserver)
+  17 OK, 6 fallos
+[exit 1]
+
+# Los 6 fallos son preexistentes y ajenos a este cambio (docs-only). Prueba:
+$ grep -rln "2026-10-28-rx-audio-feasibility" tests/ scripts
+(sin coincidencias)
+[exit 1]   # grep sin matches: ningún test lee este directorio
+$ git diff --name-only a1c667ee | grep -v '^docs/evidencia/2026-10-28-rx-audio-feasibility/'
+(sin coincidencias)
+[exit 1]
+# Detalle: apps_menu (ACTION_APP_LOGS sin página), pruebas (docs/PRUEBAS.md),
+# dialog_coverage (app Logs; app_names[] 26 vs 25 del contrato #222),
+# curve_evidence (7 de 8 pruebas de la curva de ROE), wcag_rendered y widget_text
+# (el arnés docker falla al construir: 'make ... Error 2'). No se corrigieron:
+# fuera del alcance de esta tarea y el issue prohíbe tocar tests/.
+
+# ---------------------------------------------------------------------------
+# 9.3 T3 — determinismo del PCM sintético
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py --verify
+silence_44100_s16.wav: sha256 99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c
+sine_1k_44100_s16.wav: sha256 667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600
+multisine_44100_s16.wav: sha256 b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf
+white_noise_44100_s16.wav: sha256 b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+OK: los cuatro WAV regenerados coinciden byte a byte con el manifiesto
+[exit 0]
+
+# ---------------------------------------------------------------------------
+# 9.4 T4 — control negativo anti-stub (scripts/check_no_stub_claims.py)
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+OK   (a) procedencia MEASURED-HOST: 29 filas del banco con lib real, exit 0, sin citar tests/native
+OK   (a) procedencia MEASURED-HARDWARE: 0 filas (0 esperadas en esta corrida: no hubo medicion en radio)
+OK   (b) sin atribuciones al stub: 2029 campos/lineas barridos, 0 aserciones prohibidas
+OK   (c) ids del stub: stub SET_NOISE_SUPPRESS = 1 != real = 18 (documentado en speex-audit.md)
+OK   (c) banco sin stub de Speex: scripts/bench/stubs_bench.c no define simbolos de Speex; run_in_container.sh enlaza speexdsp
+OK   (c) sha del PCM procesado: todas las filas MEASURED-HOST con --case traen sha
+OK: ningun resultado de stub se reporta como real
+[exit 0]
+
+# T4b: el control no es vacuo (regex probadas contra casos buenos y malos)
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py --self-test
+OK   self-test(b): esperado=True  detectado=True  <5 casos prohibidos, redactados: stub + verbo de medicion + magnitud>
+#     (las 5 frases literales viven en SELF_TEST_CASES del script; no se copian aca
+#      para no reintroducir en un archivo barrido la frase que el control prohibe)
+OK   self-test(b): esperado=False detectado=False 'el stub atenua 6 dB fijos y usa ids de request distintos'
+OK   self-test(b): esperado=False detectado=False 'lo que prueba el stub: troceado, tail y clamps'
+OK   self-test(b): esperado=False detectado=False 'el stub no prueba atenuacion, calidad, CPU ni latencia'
+OK   self-test(b): esperado=False detectado=False 'el stub **no** prueba atenuacion de 13 dB'
+OK   self-test(b): esperado=False detectado=False 'Un PASS de la suite host prueba troceado; no prueba calidad'
+OK: las regex de (b) detectan las 5 formas prohibidas y dejan pasar las 5 correctas
+[exit 0]
+
+# T4c: con un artefacto adulterado el control FALLA (exit 1), como debe. La frase
+# prohibida vive en scripts/tamper_fixture.txt (no se barre: es un fixture, no
+# evidencia) y se copia como .md para que la comprobacion (b) la vea.
+$ cp docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/tamper_fixture.txt \
+     docs/evidencia/2026-10-28-rx-audio-feasibility/zz-tamper.md
+$ python3 docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+OK   (a) procedencia MEASURED-HOST: 29 filas del banco con lib real, exit 0, sin citar tests/native
+OK   (a) procedencia MEASURED-HARDWARE: 0 filas (0 esperadas en esta corrida: no hubo medicion en radio)
+FAIL (b) sin atribuciones al stub: .../zz-tamper.md:11: asercion prohibida '<frase prohibida: stub + verbo + magnitud>'
+OK   (c) ids del stub: stub SET_NOISE_SUPPRESS = 1 != real = 18 (documentado en speex-audit.md)
+OK   (c) banco sin stub de Speex: ... no define simbolos de Speex; ... enlaza speexdsp
+OK   (c) sha del PCM procesado: todas las filas MEASURED-HOST con --case traen sha
+FAIL: 1 comprobacion(es) del control negativo
+[exit 1]
+$ rm docs/evidencia/2026-10-28-rx-audio-feasibility/zz-tamper.md
+$ python3 .../check_no_stub_claims.py --quiet
+OK: ningun resultado de stub se reporta como real
+[exit 0]
+# La cita de la violacion se muestra redactada a proposito: escribirla entera en
+# este log seria reintroducir en un archivo barrido la frase que el control prohibe.
+# También se probó con una fila falsa MEASURED-HOST (command de tests/native +
+# notes con la frase prohibida): exit 1 con 4 fallos. Los artefactos se
+# restauraron y se verificaron con cmp (idénticos al commit a6d7ac2f).
+
+# ---------------------------------------------------------------------------
+# 9.5 T5 — alcance del diff (sólo el directorio de evidencia)
+# ---------------------------------------------------------------------------
+$ git add -N docs/evidencia/2026-10-28-rx-audio-feasibility/{README.md,hardware-handoff.md,scripts/check_no_stub_claims.py}
+$ git diff --name-only a1c667ee
+docs/evidencia/2026-10-28-rx-audio-feasibility/.gitignore
+docs/evidencia/2026-10-28-rx-audio-feasibility/README.md
+docs/evidencia/2026-10-28-rx-audio-feasibility/base-controls.md
+docs/evidencia/2026-10-28-rx-audio-feasibility/bench-results.json
+docs/evidencia/2026-10-28-rx-audio-feasibility/commands.log
+docs/evidencia/2026-10-28-rx-audio-feasibility/hardware-handoff.md
+docs/evidencia/2026-10-28-rx-audio-feasibility/measurements.csv
+docs/evidencia/2026-10-28-rx-audio-feasibility/pcm-manifest.json
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/Dockerfile
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/bench_main.c
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/run_in_container.sh
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/cfg/cfg.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/cfg/subjects.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/liquid/liquid.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/lvgl/lvgl.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/params/params.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs/radio.h
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench/stubs_bench.c
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/bench_speex.py
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/check_no_stub_claims.py
+docs/evidencia/2026-10-28-rx-audio-feasibility/scripts/gen_pcm.py
+docs/evidencia/2026-10-28-rx-audio-feasibility/signal-flow.md
+docs/evidencia/2026-10-28-rx-audio-feasibility/speex-audit.md
+[exit 0]
+# Cero archivos fuera de docs/evidencia/2026-10-28-rx-audio-feasibility/:
+$ git diff --name-only a1c667ee | grep -v '^docs/evidencia/2026-10-28-rx-audio-feasibility/'
+(sin coincidencias)
+[exit 1]
+# No se tocó src/, rootfs/, tests/ ni la radio.
+
+# ---------------------------------------------------------------------------
+# 9.6 T6 — QEMU para audio de BASE: UNSUPPORTED (no es PASS)
+# ---------------------------------------------------------------------------
+$ sh tests/run_all_tests.sh --quick   # etapa qemu_apps
+qemu_apps: SKIP SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))
+# El barrido QEMU (tests/qemu/run_apps_qemu.sh) recorre apps, no audio: QEMU no
+# simula el códec, el DSP del BASE ni el trayecto eléctrico. Para audio de RX se
+# marca UNSUPPORTED explícito en README.md §8 (T6): no se declara PASS ni FAIL.
+
+# ---------------------------------------------------------------------------
+# 9.7 Errata corregida en esta tarea (fix explícito y mínimo)
+# ---------------------------------------------------------------------------
+# Al verificar citas para el informe se encontraron dos referencias de línea
+# equivocadas en speex-audit.md (tarea B). Se corrigieron SÓLO las citas:
+#   §2.1  src/audio_enhancement.h:15-16  ->  :21-22   (AUDIO_ENH_SAMPLE_RATE/FRAME_SIZE)
+#   §6.1  src/audio_enhancement.h:84-95  ->  :71-81   (audio_enh_state_t; float_buffer en :80)
+$ awk 'NR>=20 && NR<=22 {printf "%d: %s\n", NR, $0}' src/audio_enhancement.h
+20: #define AUDIO_ENH_MAX_NOTCHES 4
+21: #define AUDIO_ENH_SAMPLE_RATE 48000
+22: #define AUDIO_ENH_FRAME_SIZE 256
+[exit 0]
+$ awk 'NR>=70 && NR<=81 {printf "%d: %s\n", NR, $0}' src/audio_enhancement.h
+70: /* Master state */
+71: typedef struct {
+...
+80:     float float_buffer[AUDIO_ENH_FRAME_SIZE];
+81: } audio_enh_state_t;
+[exit 0]
+# Ninguna afirmación del documento cambió.

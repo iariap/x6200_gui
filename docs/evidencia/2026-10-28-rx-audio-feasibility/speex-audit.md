@@ -129,7 +129,7 @@ Fracciones exactas: 58/4410 = 116/8820 = 1.3152%; 192/4800 = 4.0000%; 1/257 = 0.
 15  #define AUDIO_ENH_SAMPLE_RATE 48000
 16  #define AUDIO_ENH_FRAME_SIZE 256
 ```
-`src/audio_enhancement.h:15-16`, usados tal cual en `speex_preprocess_state_init(AUDIO_ENH_FRAME_SIZE,
+`src/audio_enhancement.h:21-22`, usados tal cual en `speex_preprocess_state_init(AUDIO_ENH_FRAME_SIZE,
 AUDIO_ENH_SAMPLE_RATE)` (`src/audio_enhancement.c:26`).
 
 `ARITH`: 256 / 48000 = **5.3333 ms**.
@@ -358,7 +358,7 @@ frase del tipo "NR verificado" basada en ese PASS es un no sequitur.
 
 | qué | tamaño / evidencia | clase |
 |---|---|---|
-| `g_audio_enh` (estado global) | `audio_enh_state_t`: 4 notches + nivelador + NR + `float float_buffer[256]` (1 KB) | `CODE` `src/audio_enhancement.h:84-95` |
+| `g_audio_enh` (estado global) | `audio_enh_state_t`: 4 notches + nivelador + NR + `float float_buffer[256]` (1 KB) | `CODE` `src/audio_enhancement.h:71-81` |
 | `temp_buffer` por frame | `int16_t temp_buffer[256]` = 512 B **en el stack** del callback | `CODE` `src/audio_enhancement.c:301` |
 | estado de Speex | **≈0.32–0.40 MB** de RSS: 2.5–2.7 MB antes de `audio_enh_init()` → 2.9–3.1 MB después (delta medido, incluye el arena del allocator) | `MEASURED-HOST` (`rss_preinit_kb`/`rss_start_kb` en `bench-results.json`) |
 | asignaciones por frame | la cadena no hace `malloc`: sólo `speex_preprocess_run()` sobre buffers del estado | `CODE` `src/audio_enhancement.c:293-317` + `CODE` de la lib (buffers en `preprocess.c:467`) |
