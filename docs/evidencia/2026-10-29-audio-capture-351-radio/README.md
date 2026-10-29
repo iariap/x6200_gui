@@ -13,7 +13,7 @@ límites de lo medido.
 
 ## Qué se validó y qué no
 
-- **Sí**: build y despliegue de la GUI de `main` con el fix de #351; captura continua; grabador de
+- **Sí**: build y despliegue de la GUI de `main` con el fix de #351; captura continua del **source crudo** observada con `parec` (no continuidad muestra-a-muestra de la salida procesada); grabador de
   audio; grabador de pantalla con su pista de audio; presets de `Capture filters`; waterfall; CPU,
   crashlog y estabilidad de la GUI.
 - **No**: audio audible del BASE (el parlante no pasa por esta cadena), RNNoise/Speex en vivo,
@@ -41,15 +41,17 @@ Comandos y códigos de salida: [`commands.log`](commands.log).
 
 | Ítem | Estado | Resultado |
 |---|---|---|
-| **H1** PCM a grabadores | **PASS** | AVI de 95,50 s con 764 frames @ 8 fps y pista PCM 44100 mono de 4.214.248 muestras (95,56 s); referencia `parec` de 4.585.904 muestras; correlación de envolventes 0,856, lag −0,28 s. |
-| **H2** captura continua | **PASS** | 600 s de `parec`: **26.460.000 muestras** en 599,78 s de reloj; sin pérdida observable a nivel de total (resolución del método: 1 s). |
+| **H1** PCM a grabadores | **PARTIAL** | AVI de 95,50 s con 764 frames @ 8 fps y pista PCM 44100 mono de 4.214.248 muestras (95,56 s); referencia `parec` de 4.585.904 muestras; correlación de envolventes 0,856, lag −0,28 s. **PASS de presencia/estructura de la pista; orden y continuidad exactos de la salida GUI `NOT_VERIFIED`**. |
+| **H2** captura continua | **PARTIAL** | El source crudo de PulseAudio alimentó `parec` durante 599,78 s; se solicitaron exactamente **26.460.000 muestras** mediante `head -c`, por lo que alcanzar ese total **no demuestra ausencia de pérdidas** y no mide la salida de `audio_enh_process()`. |
 | **H3** hole → silencio | **NO EJECUTADO** | No se forzaron underruns (instrucción del owner). |
 | **H4/C1/C2** presets vs parlante | **PARCIAL** | Operador: **“no noté ningún cambio audible”** en Off → SSB voice → AM broadcast → Digital → Off. La copia sí cambia en la comparación medida: Off rms 2023 → SSB rms 926 (−54,2 %); 3–6 kHz −12,4 dB. La comparación objetiva de AM y Digital no se ejecutó. |
 | **H5** decodificadores | **NO EJECUTADO** | Requiere señal CW/FT8 y cambio de modo; no disponible en la sesión. |
-| **H6** AVI sincronizado | **PASS** | Video 95,50 s y audio 95,56 s: diferencia **0,06 s** (< 1 frame = 0,125 s); `ffprobe` sin errores; frame 100 con contenido. |
-| **H7** MP3 íntegro | **PASS** (integridad) / **PARCIAL** (comparación) | MP3 de **60,04 s**, 302.261 B, 40,3 kbps, reproducible; comparación objetiva de la copia Off vs SSB: rms 2023 → 926. AM y Digital no ejecutados. |
-| **H8** waterfall por preset | **PASS** | 5 capturas: std 14,71–15,15 y media 5,57–5,78; correlaciones 0,75–0,95 por evolución temporal; sin diferencia atribuible al preset. |
-| **H9** CPU/pops/crashlog | **PARCIAL** | GUI **65,7 %** de un core con captura (p50 65,8 %, p95 71,0 %) y **63,4 %** baseline; **crashlog 0**; operador **sin pops/clicks**; **p99 del callback UNKNOWN**. |
+| **H6** estructura/duración AVI | **PASS** (duraciones, no sincronía perceptual) | Video 95,50 s y audio 95,56 s: diferencia **0,06 s** (< 1 frame = 0,125 s); `ffprobe` sin errores; frame 100 con contenido. La cercanía de duración de pistas **no demuestra sincronización perceptual extremo a extremo**. |
+| **H7** MP3 íntegro | **PASS** (integridad) / **INCONCLUSIVE** (comparación acústica) | MP3 de **60,04 s**, 302.261 B, 40,3 kbps, reproducible; comparación objetiva de la copia Off vs SSB: rms 2023 → 926. AM y Digital no ejecutados; los MP3 Off/SSB corresponden a instantes de RF diferentes y su diferencia de RMS no se puede atribuir exclusivamente al preset. |
+| **H8** waterfall por preset | **PASS** (smoke visual; equivalencia determinista `NOT_VERIFIED`) | 5 capturas: std 14,71–15,15 y media 5,57–5,78; correlaciones 0,75–0,95 por evolución temporal; sin diferencia atribuible al preset en estas observaciones; condiciones RF no congeladas. |
+| **H9** CPU/pops/crashlog | **PARCIAL** | GUI **65,7 %** de un core con captura (p50 65,8 %, p95 71,0 %) y **63,4 %** baseline; **crashlog 0**; operador **sin pops/clicks**; **p99 del callback UNKNOWN**. La diferencia de 2,3 puntos de CPU no aísla el costo de SpeexDSP. |
+
+**Veredicto global:** `PARTIAL HARDWARE VALIDATION — CAPTURE PIPELINE OPERATIONAL IN TESTED SCENARIOS`. No equivale a validación integral, mejora audible ni GO de release.
 
 Filas máquina-legibles, con método y evidencia de cada ítem: [`measurements.csv`](measurements.csv).
 
@@ -99,12 +101,12 @@ Filas máquina-legibles, con método y evidencia de cada ítem: [`measurements.c
    declara mejora audible alguna.
 6. **H8**: el waterfall evoluciona en el tiempo; las capturas no son idénticas píxel a píxel. Se
    comparó la distribución de la región del waterfall, no una identidad de imagen.
-7. **Incidente de UI**: una vez el contenido central quedó en negro con Ajustes abierto; se reinició
-   la GUI y no reapareció. No se determinó la causa; ver
+7. **Incidente de UI — `UNRESOLVED / NOT_REPRODUCED`**: una vez el contenido central quedó en negro con Ajustes abierto; reiniciar
+   la GUI recuperó el render, pero **no corrigió ni identificó la causa raíz**. Se debe vigilar como posible regresión; ver
    [`logs/ui-incident.txt`](logs/ui-incident.txt). El rollback está disponible.
-8. **La pista de audio del AVI es la copia procesada por la GUI**, no el source crudo; por eso la
-   correlación muestra-a-muestra con la referencia `parec` no es 1, aunque el conteo y la envolvente
-   sí coinciden.
+8. **La pista de audio del AVI es la copia procesada por la GUI**, no el source crudo. La correlación de envolventes no prueba continuidad ni orden de todas las muestras procesadas.
+9. **H1/H2**: `parec` lee directamente el source crudo **antes** de los filtros; H2 termina por el límite de bytes solicitado. La integridad temporal exacta del pipeline de la GUI queda `NOT_VERIFIED`.
+10. **H7**: los niveles RMS del A/B Off vs SSB se midieron en momentos diferentes; sin una misma entrada PCM reproducida de manera controlada, la comparación acústica es `INCONCLUSIVE`.
 
 ## Privacidad
 
@@ -128,9 +130,8 @@ corrida física nueva. Sobre la primera versión de este directorio se corrigió
 
 - `measurements.csv` estaba mal formado para CSV (campos con comas sin comillas). Se reconstruyó con
   `csv.QUOTE_ALL`, una columna `alcance` y 10 filas de 7 columnas.
-- **H4 y H7 quedaron como `PARCIAL`** en el veredicto: la escucha de los cuatro presets se hizo, pero
-  la comparación objetiva de la copia con AM y Digital no se ejecutó. H1/H2/H6/H8 siguen `PASS` con
-  su alcance explícito; H3/H5 `NO_EJECUTADO`; H9 `PARCIAL`.
+- **H1/H2 quedaron como `PARTIAL`, H4 quedó `PARCIAL` y H7 separa integridad `PASS` de comparación `INCONCLUSIVE`** en el veredicto: la escucha de los cuatro presets se hizo, pero
+  la comparación objetiva de la copia con AM y Digital no se ejecutó. H6 `PASS` solo en estructura/duración, H8 `PASS` solo en smoke visual; H3/H5 `NO_EJECUTADO`; H9 `PARCIAL`.
 - Se sumaron los logs que faltaban de la misma sesión (`h7-trial`, `h7-button-map`, `h7-state-diag`,
   `h7-clean`, `h7-mp3-60s`, `cpu-baseline`, `state-final*`) y la captura
   `captures/despues-secuencia-presets-settings.png`.
