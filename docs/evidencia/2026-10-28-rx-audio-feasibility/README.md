@@ -102,7 +102,7 @@ y se marcan como tales, no como evidencia de este informe.
 | **P3** retardo de un frame (5.805 ms) sin compensar | ✓ `audio_enh_process()` no desplaza | ✓ lag 256 muestras (`noise_p2_b4410`) | — | — | ✓ audibilidad |
 | **P3** `level` invertido y techo inalcanzable | ✓ `:151-158` | ✓ `probe_level_0…100` (−13.51…−8.53 dB) | — | — | — |
 | **P3** salto en el borde de cada callback | ✓ tail sin retardo | ✓ 2216 LSB vs slew 588 (`sine1k_p2_b4410`) | — | — | ✓ audibilidad |
-| **P3** los tests con stub **no** prueban calidad/CPU/latencia (sólo troceado/tail/clamps) | ✓ el stub atenúa 6 dB fijos y usa ids falsos (`tests/native/stubs/stubs.c:107-109`, `stubs/speex/speex_preprocess.h:15-16`) | ✓ suite 44837 checks, 0 fallos | — | — | — |
+| **P3** los tests con stub **no** prueban calidad/CPU/latencia (sólo troceado/tail/clamps) | ✓ el stub atenúa 6 dB fijos y usa ids falsos (`tests/native/stubs/stubs.c:107-109`, `stubs/speex/speex_preprocess.h:15-16`; ids: registro del 2026-10-28, ver errata de #351 en §4.3) | ✓ suite 44837 checks, 0 fallos | — | — | — |
 | **P3** carrera `speex_preprocess_ctl` vs `run` | ✓ no hay mutex en el archivo | — | — | ✓ sin TSan/helgrind sobre binario real | ✓ acceso concurrente posible |
 | **P4** CPU del host por 60 s de audio | — | ✓ 104–137 ms (0.17–0.23 %), máx. 1.1–2.1 ms/callback | — | — | — |
 | **P4** CPU en la radio (R16) | — | — | — | ✓ otra arquitectura y carga (fila `cpu_on_radio`) | — |
@@ -175,7 +175,19 @@ camino del NR del BASE no conoce `g_audio_enh` (`base-controls.md` §7).
 (`tests/native/stubs/stubs.c:107-109`) y su header define ids que **no** son los reales
 (`SPEEX_PREPROCESS_SET_NOISE_SUPPRESS` = **1** en `tests/native/stubs/speex/speex_preprocess.h:16`
 vs **18** en libspeexdsp 1.2.1). Un PASS prueba troceado, tail, clamps, presets y no-crash; **no**
-prueba atenuación, calidad, CPU, latencia ni retardo (`speex-audit.md` §5).
+prueba atenuación, calidad, CPU, latencia ni retardo (`speex-audit.md` §5). *(Ids del stub: registro del
+2026-10-28; ver la errata de #351 abajo.)*
+
+> **Errata 2026-10-29 (#351).** Las menciones al id de `SET_NOISE_SUPPRESS` de este informe (§3, §4.3,
+> R4 en §5, T4 en §8 y la tabla de §9) son el **registro histórico del 2026-10-28** y se conservan tal
+> cual. Después de este informe, #351 alineó `tests/native/stubs/speex/speex_preprocess.h` con el ABI
+> real de libspeexdsp 1.2.1: el header del stub ahora declara `SPEEX_PREPROCESS_SET_NOISE_SUPPRESS` =
+> **18** (antes 1). El control `scripts/check_no_stub_claims.py` punto (c) dejó de verificar la
+> discrepancia "stub = 1 / real = 18" y ahora verifica la **congruencia** "stub = real = 18": falla si
+> el header del stub declara cualquier otro valor, y su `--self-test` incluye el caso "id del stub
+> cambiado ⇒ FAIL". Sigue vigente lo demás observado en §4.3: la atenuación fija de 6 dB del stub, los
+> parámetros sin tipar y que un PASS de la suite host no sustituye una corrida contra la lib real.
+> Detalle en `speex-audit.md` §5.
 
 ### 4.4 Pregunta 4 — presupuesto de CPU/latencia y muestras que faltan para A/B
 
@@ -205,7 +217,7 @@ escucha (§7).
 | R1 | **Retardo de un frame sin compensar**: la salida del NR está corrida 256 muestras (5.805 ms) y `audio_enh_process()` no desplaza ni descarta nada | lag 256 en `noise_p2_b4410`; control OFF lag 0 y bit-exacto | un retardo constante en la ruta de captura no se percibe como eco, pero **sí** corre la señal respecto del tail (R2) | `MEASURED-HOST` + `CODE` |
 | R2 | **Seam del tail sin retrasar**: el tail (58 muestras por callback de 4410) sale del stream interno de Speex y **no** está retrasado, mientras el resto sí | seno 1 kHz: salto de 2216 LSB en la muestra 4410 (slew natural 588); multisine: 1963 (slew 715); ruido: 1932 (slew 3587) | con señales tonales el borde introduce un salto mayor que cualquier salto natural; con ruido no se distingue. Audibilidad `HYPOTHESIS` | `MEASURED-HOST` |
 | R3 | **`level` invertido**: 0 = máxima supresión, 100 = mínima; y el techo configurado no se alcanza | `-30 + level*20/100` (división entera, 21 valores distintos); medido: −13.51 dB (level 0) a −8.53 dB (level 100). `SSB_VOICE` usa 40 y `AM_BROADCAST` 60 (`src/audio_enhancement.c:188-199`) | la etiqueta «level» sugiere lo contrario de lo que hace; "más NR" hoy es "menos supresión" | `CODE` + `MEASURED-HOST` |
-| R4 | **El stub miente en los ids y en la atenuación**: `SET_NOISE_SUPPRESS` = 1 (real 18) y atenúa 6 dB fijos | PASS de 44837 comprobaciones, 0 fallos | cualquier frase "NR verificado" basada en ese PASS es un no sequitur; un id equivocado no se detectaría | `CODE` + `MEASURED-HOST` |
+| R4 | **El stub miente en los ids y en la atenuación**: `SET_NOISE_SUPPRESS` = 1 (real 18) y atenúa 6 dB fijos (ids: registro del 2026-10-28, ver errata de #351 en §4.3) | PASS de 44837 comprobaciones, 0 fallos | cualquier frase "NR verificado" basada en ese PASS es un no sequitur; un id equivocado no se detectaría | `CODE` + `MEASURED-HOST` |
 | R5 | **Tasa declarada ≠ real** | 48000 declarado vs 44100 real (+8.84 %) | sobre ruido blanco la atenuación difiere 0.027 dB (−13.854 vs −13.881); el efecto sobre voz tonal/estimación de ruido **no** se midió | `MEASURED-HOST` (ruido) + `HYPOTHESIS` (voz) |
 | R6 | **Polaridad**: pasar `+30` no da ganancia | `SET +30` → readback −30, atenuación −14.94 dB (idéntica a −30); `SET 0` → −0.004 dB | la convención negativa del código es correcta; el signo no es un bug | `MEASURED-HOST` |
 
@@ -265,7 +277,7 @@ Corridos en este worktree el 2026-10-28; salidas completas y exit codes en `comm
 | T1 | Suite nativa (host, con stubs) | `sh tests/native/run_native_tests.sh /tmp/opencode/x6200-native-taskC` | **0** | PASS: suite principal `44837 comprobaciones, 0 fallos`, más las suites por módulo (597, 57, …). Compilador `gcc 16.2.1`; **sin sanitizers** (no disponibles). No es medición de Speex: ver R4 |
 | T2 | Suite completa rápida | `sh tests/run_all_tests.sh --quick` | **1** | **17 OK, 6 fallos**: `apps_menu`, `pruebas`, `wcag_rendered`, `widget_text`, `dialog_coverage`, `curve_evidence`. Fallos **preexistentes y ajenos** a este cambio (§9.2). `qemu_apps` SKIP (entorno privado faltante); `wspr`/`sstv`/`wefax` SKIP (la imagen no trae `fftw3.h`/`sndfile.h`); `js8`/`webserver` omitidos por `--quick` |
 | T3 | Determinismo del PCM sintético | `python3 …/scripts/gen_pcm.py --verify` | **0** | OK: los cuatro WAV regenerados coinciden **byte a byte** con `pcm-manifest.json` (sha256 idénticos) |
-| T4 | Control negativo anti-stub | `python3 …/scripts/check_no_stub_claims.py` | **0** | OK: 29 filas `MEASURED-HOST` del banco real, 0 `MEASURED-HARDWARE`, todos los campos del CSV y todas las líneas de los documentos barridos sin atribuciones al stub (conteo exacto en `commands.log` §9.4), stub=1 ≠ real=18, banco sin stub de Speex |
+| T4 | Control negativo anti-stub | `python3 …/scripts/check_no_stub_claims.py` | **0** | OK: 29 filas `MEASURED-HOST` del banco real, 0 `MEASURED-HARDWARE`, todos los campos del CSV y todas las líneas de los documentos barridos sin atribuciones al stub (conteo exacto en `commands.log` §9.4), stub=1 ≠ real=18, banco sin stub de Speex; ids del stub: registro del 2026-10-28, ver errata de #351 en §4.3 |
 | T4b | Self-test del control negativo | `python3 …/scripts/check_no_stub_claims.py --self-test` | **0** | OK: las regex detectan las 5 formas prohibidas y dejan pasar las 4 correctas |
 | T4c | Demostración de que el control **falla** con artefactos adulterados | `cp scripts/tamper_fixture.txt zz-tamper.md` y luego `check_no_stub_claims.py` | **1** | FAIL esperado en `zz-tamper.md:11` (la frase prohibida del fixture); al borrar el temporal vuelve a `0`. También se probó con una fila falsa `MEASURED-HOST` (mismo exit 1); artefactos restaurados y verificados con `cmp` |
 | T5 | Alcance del diff | `git diff --name-only a1c667ee HEAD` | **0** | Sólo `docs/evidencia/2026-10-28-rx-audio-feasibility/**` (verificado con `grep -v` sobre esa ruta: sin coincidencias) |
@@ -290,7 +302,7 @@ reproducibilidad y disciplina de reporte; T6 no puede probar audio.
 | `level` 0 es la máxima supresión y 100 la mínima | `MEASURED-HOST` | filas `probe_level_0` (−13.51 dB) y `probe_level_100` (−8.53 dB) |
 | El techo de −30 dB configurado no se alcanza | `MEASURED-HOST` | `probe_level_0`: −30 pedidos, −13.51 medidos |
 | Pasar `+30` no produce ganancia (la lib normaliza el signo) | `MEASURED-HOST` | `probe_polarity_+30`: readback −30, −14.94 dB |
-| El stub usa `SET_NOISE_SUPPRESS` = 1 y la lib real 18 | `CODE` | `tests/native/stubs/speex/speex_preprocess.h:16` vs `speex-audit.md` §5 |
+| El stub usa `SET_NOISE_SUPPRESS` = 1 y la lib real 18 (histórico del 2026-10-28; ver errata de #351 en §4.3) | `CODE` | `tests/native/stubs/speex/speex_preprocess.h:16` vs `speex-audit.md` §5 |
 | El PASS de la suite nativa no prueba calidad ni CPU de Speex | `CODE` | `tests/native/stubs/stubs.c:107-109`; `run_native_tests.sh:4` |
 | El salto en el borde del callback es 2216 LSB con seno 1 kHz | `MEASURED-HOST` | fila `sine1k_p2_b4410`; `speex-audit.md` §4.1 |
 | Que ese salto sea audible | `HYPOTHESIS` | no hay voz ni escucha |
