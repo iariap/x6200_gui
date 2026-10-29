@@ -1867,7 +1867,7 @@ Evidencia completa: [`docs/evidencia/2026-10-28-lsb-night/`](evidencia/2026-10-2
 El FAIL del script oficial es por la portadora débil del 790 esta noche, no por la banda lateral. Radio
 restaurada en **7.140.000 LSB** (estado del dueño), `crashlog 0`.
 
-## 29/10 14:15Z — CB: TX habilitado en toda la banda (sin interlock)
+## 29/10 14:15Z — CB: TX habilitado en toda la banda (sin interlock) (`ca5ed97b3c62`)
 
 Pedido del dueño: poder transmitir en toda la banda CB sin importar grilla/zona (antes el default
 `cb_tx_scope=0` sólo permitía el SBC argentino, 26,960–27,410 MHz, y CB A/B/D quedaban en recepción;
