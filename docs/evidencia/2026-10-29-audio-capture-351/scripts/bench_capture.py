@@ -392,7 +392,9 @@ def main() -> int:
         return 1
 
     results_file = OUT_DIR / "results.jsonl"
-    lines = [json.loads(line) for line in results_file.read_text(encoding="utf-8").splitlines() if line.strip()]
+    lines = [
+        json.loads(line) for line in results_file.read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
     streams = [r for r in lines if r.get("kind") == "stream"]
     checks = [r for r in lines if r.get("kind") == "partition_check"]
     probes = [r for r in lines if r.get("kind") == "level"]
@@ -400,12 +402,7 @@ def main() -> int:
 
     expected_cases = len(SIGNAL_FILES) * len(PRESETS) * len(BLOCK_TAGS)
     n_cases = len({r["case"] for r in streams})
-    if (
-        n_cases != expected_cases
-        or len(checks) != len(PRESETS)
-        or len(probes) != 4
-        or len(speex_only) != 1
-    ):
+    if n_cases != expected_cases or len(checks) != len(PRESETS) or len(probes) != 4 or len(speex_only) != 1:
         reason = (
             f"resultados incompletos: {n_cases} casos (se esperaban {expected_cases}), "
             f"{len(checks)} partition-check (3), {len(probes)} probes (4) y "
@@ -486,7 +483,7 @@ def main() -> int:
         seam_cb = max_jump(out, bounds)
         seam_frame = max_jump(out, range(FRAME, len(out), FRAME))
         seam_in = max_jump(inp, range(1, len(inp)))
-        diff = sum(1 for a, b in zip(inp, out) if a != b)
+        diff = sum(1 for a, b in zip(inp, out, strict=True) if a != b)
         lag, lag_ambiguous = lag_samples(inp, out)
         if lag_ambiguous:
             lag = None
@@ -683,14 +680,14 @@ def main() -> int:
         a = read_raw(OUT_DIR / f"noise_p{preset}_reset_a.raw")
         b = read_raw(OUT_DIR / f"noise_p{preset}_reset_b.raw")
         same = a == b
-        differing = sum(1 for x, y in zip(a, b) if x != y)
+        differing = sum(1 for x, y in zip(a, b, strict=True) if x != y)
         reset_checks[f"noise_p{preset}"] = {
             "preset": c["preset_name"],
             "blocks_a": c["blocks_a"],
             "blocks_b": c["blocks_b"],
             "identical": same,
             "differing_samples": differing,
-            "max_abs_diff_lsb": max((abs(x - y) for x, y in zip(a, b)), default=0),
+            "max_abs_diff_lsb": max((abs(x - y) for x, y in zip(a, b, strict=True)), default=0),
             "length_preserved": bool(c["length_preserved"]),
             "suppression_db": c["suppression_db"],
         }
@@ -707,11 +704,7 @@ def main() -> int:
             # recien inicializado (la matriz), que es el estado que fija el contrato.
             reset_checks[f"noise_p{preset}"]["note"] = (
                 "reset de preset != re-init: libspeexdsp conserva su estimacion adaptativa"
-                + (
-                    " y el nivelador AF conserva su ganancia suavizada"
-                    if preset == 3
-                    else ""
-                )
+                + (" y el nivelador AF conserva su ganancia suavizada" if preset == 3 else "")
                 + " entre los dos pases, por eso el segundo pase no es bit-exacto al primero"
             )
         rows.append(
@@ -746,7 +739,7 @@ def main() -> int:
                 "notes": (
                     f"mismo input procesado dos veces en un proceso, con audio_enh_preset_reset() "
                     f"entre los pases: {'identicas' if same else f'{differing} muestras distintas'} "
-                    f"(max |diff| {max((abs(x - y) for x, y in zip(a, b)), default=0)} LSB); "
+                    f"(max abs diff {max((abs(x - y) for x, y in zip(a, b, strict=True)), default=0)} LSB); "
                     f"N in {c['input_samples']} -> N out {c['out_samples_a']}/{c['out_samples_b']}"
                 ),
             }
@@ -885,8 +878,10 @@ def main() -> int:
             print(f"  - {f}", file=sys.stderr)
         return 1
 
-    print("OK: N in/N out conservado, Off bit-exacto, Off/SSB bit-exactos por particion, "
-          "sin clipping, supresion efectiva == formula")
+    print(
+        "OK: N in/N out conservado, Off bit-exacto, Off/SSB bit-exactos por particion, "
+        "sin clipping, supresion efectiva == formula"
+    )
     return 0
 
 
@@ -897,13 +892,13 @@ def _expected_suppress(level: int) -> int:
 def _count_diff(a: Path, b: Path) -> int:
     x = read_raw(a)
     y = read_raw(b)
-    return sum(1 for i, j in zip(x, y) if i != j)
+    return sum(1 for i, j in zip(x, y, strict=True) if i != j)
 
 
 def _max_abs_diff(a: Path, b: Path) -> int:
     x = read_raw(a)
     y = read_raw(b)
-    return max((abs(i - j) for i, j in zip(x, y)), default=0)
+    return max((abs(i - j) for i, j in zip(x, y, strict=True)), default=0)
 
 
 def _write_blocked(reason: str, log: list[str], meta: dict) -> None:

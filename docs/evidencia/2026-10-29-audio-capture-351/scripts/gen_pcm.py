@@ -33,7 +33,6 @@ import math
 import random
 import struct
 import sys
-import wave
 from pathlib import Path
 
 SEED = 6200
@@ -50,7 +49,7 @@ MANIFEST = EVIDENCE_DIR / "pcm-manifest.json"
 
 def _round_half_away(x: float) -> int:
     """Redondeo simetrico explicito (no depende del banker's rounding de round())."""
-    return int(math.floor(x + 0.5)) if x >= 0.0 else -int(math.floor(-x + 0.5))
+    return math.floor(x + 0.5) if x >= 0.0 else -math.floor(-x + 0.5)
 
 
 def _dbfs(value: float, ref: float = FULL_SCALE) -> float:
@@ -119,8 +118,7 @@ SIGNALS = (
         "file": "multisine_44100_s16.wav",
         "description": "mezcla 300/1000/2400 Hz, cada componente a 1/3 de -18 dBFS",
         "formula": (
-            "x[n] = round(sum_f (32768*10^(-18/20)/3) * sin(2*pi*f*n/44100)), "
-            "f in {300, 1000, 2400}"
+            "x[n] = round(sum_f (32768*10^(-18/20)/3) * sin(2*pi*f*n/44100)), f in {300, 1000, 2400}"
         ),
         "build": signal_multisine,
     },
@@ -129,8 +127,7 @@ SIGNALS = (
         "file": "white_noise_44100_s16.wav",
         "description": "ruido blanco uniforme con RMS -30 dBFS (semilla 6200)",
         "formula": (
-            "x[n] = round((2*u[n]-1) * 32768*10^(-30/20)*sqrt(3)), "
-            "u[n] = random.Random(6200).random()"
+            "x[n] = round((2*u[n]-1) * 32768*10^(-30/20)*sqrt(3)), u[n] = random.Random(6200).random()"
         ),
         "build": signal_white_noise,
     },
@@ -138,7 +135,7 @@ SIGNALS = (
 
 
 def to_bytes(samples: list[int]) -> bytes:
-    return struct.pack("<%dh" % len(samples), *samples)
+    return struct.pack(f"<{len(samples)}h", *samples)
 
 
 def wav_bytes(samples: list[int]) -> bytes:
