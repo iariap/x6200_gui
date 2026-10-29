@@ -28,6 +28,8 @@
 #include "visual_policy.h"
 #include "sql_policy.h"
 
+#include "rx_audio_mux_guard.h"
+
 #include <aether_radio/x6200_control/low/flow.h>
 #include <aether_radio/x6200_control/low/gpio.h>
 
@@ -831,6 +833,67 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
 radio_state_t radio_get_state() {
     return state;
 }
+
+/* --- A-prime (#367): dueno unico del reg 12 / voice_rec ------------------- */
+
+/* Backend de bus con readback REAL. En produccion queda NULL: no hay lectura
+ * verificada del registro 12 (R_BLOCKED_NO_HARDWARE_TRUTH), asi que el coordinador
+ * falla cerrado y NUNCA escribe el bit 0x8. Solo los tests host registran un mock. */
+static rxmux_bus_ops_t rxmux_bus_ops;
+static bool            rxmux_bus_ops_set;
+/* true solo si el ultimo write exitoso del bit 0x8 lo hizo este coordinador. */
+static bool            rxmux_owned;
+
+void radio_audio_mux_set_bus_ops(const rxmux_bus_ops_t *ops) {
+    radio_lock();
+    if (ops != NULL) {
+        rxmux_bus_ops = *ops;
+        rxmux_bus_ops_set = true;
+    } else {
+        memset(&rxmux_bus_ops, 0, sizeof(rxmux_bus_ops));
+        rxmux_bus_ops_set = false;
+    }
+    rxmux_owned = false;
+    radio_unlock();
+}
+
+rxmux_result_t radio_audio_mux_request(bool dac) {
+    if (!radio_control_ok) {
+        return RXMUX_BLOCKED_NOT_READY;
+    }
+
+    radio_lock();
+
+    rxmux_result_t result;
+
+    /* La sombra es de la lib y NO es readback (Fase A); solo se usa como detector de
+     * "otro camino prendio voice_rec" (TTS/mensaje de voz/arranque), nunca como valor
+     * del BASE. Si la sombra dice 1 y el coordinador no lo prendio, no se pisa. */
+    uint32_t shadow = x6200_control_get(x6200_sple_atue_trx);
+
+    if (state != RADIO_RX) {
+        result = RXMUX_BLOCKED_TX_ACTIVE;
+    } else if (rxmux_foreign_voice_rec(shadow, rxmux_owned)) {
+        result = RXMUX_BLOCKED_FOREIGN_OWNER;
+    } else if (!rxmux_bus_ops_set) {
+        result = RXMUX_BLOCKED_NO_READBACK;
+    } else {
+        result = rxmux_coordinator_apply(&rxmux_bus_ops, dac, NULL);
+        if (result == RXMUX_OK) {
+            rxmux_owned = dac;
+        }
+    }
+
+    if (result != RXMUX_OK) {
+        /* Fail-closed: no se asume que el BASE quedo en BASE ni que el bit quedo
+         * despejado; el proximo request vuelve a leer el registro real. */
+        rxmux_owned = false;
+    }
+
+    radio_unlock();
+    return result;
+}
+
 
 void radio_set_freq(int32_t freq) {
     if (!radio_check_freq(freq)) {

@@ -53,6 +53,8 @@ else()
         add_subdirectory(lv_drivers)
         add_subdirectory(sql)
         install(TARGETS ${PROJECT_NAME} btcat x6200_bootanim DESTINATION sbin)
+        # A-prime (#367): helper guardian independiente (INACTIVO/OFF hasta #363 A_PASS).
+        install(TARGETS x6200_audio_guard DESTINATION sbin)
         install(DIRECTORY rootfs/
                 DESTINATION /
                 USE_SOURCE_PERMISSIONS

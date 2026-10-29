@@ -48,7 +48,14 @@ target_sources(${PROJECT_NAME} PUBLIC
     kbd_rollover.c knobs.c remote_server.cpp cfg/db.cpp cfg/settings_manager.cpp cfg/cxx_bridge.c dialog_field.c field/refs.c field/flog.c field/rbn.c field/bands.c dialog_bands.c
     dialog_js8.c js8_map.c dialog_cw_kbd.c panel.cpp dialog_cw_trainer.c bt_devices.c dialog_bt.c dxcc.c flags.c input_dev.c gpio_safe.c cluster_column.c spot_marks.c dialog_status.c
     cb.c
+    rx_audio_mux_guard.c
 )
+
+# A-prime (#367): helper guardian independiente de la GUI. Se compila con el mismo
+# toolchain de la ROM y se instala en sbin; NO lo lanza x6200_daemon todavia (el
+# guardian queda OFF hasta que #363 vuelva a A_PASS). Ver
+# docs/evidencia/2026-10-29-rx-audio-a-prime/guardian-contract.md.
+add_executable(x6200_audio_guard rx_audio_mux_guard.c rx_audio_mux_guard_main.c)
 
 add_subdirectory(fonts)
 add_subdirectory(ft8)

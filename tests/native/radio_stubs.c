@@ -42,6 +42,7 @@
 
 radio_stub_clock_t radio_stub_clock = RADIO_STUB_CLOCK_FAKE;
 uint64_t           radio_stub_fake_ms;
+uint32_t           radio_stub_shadow_reg12;
 
 /* Data symbols src/radio.c reads. Zero-initialized: the reachable paths only
  * pass the Subject pointers through to stubs and read the visual-policy params
@@ -83,7 +84,13 @@ int      radio_stub_rxvol_calls;
 uint8_t  radio_stub_rxvol_last;
 bool     radio_stub_bt_muted;
 
+uint32_t x6200_control_get(x6200_cmd_enum_t cmd) {
+    (void) cmd;
+    return radio_stub_shadow_reg12;
+}
+
 void radio_stub_reset(void) {
+    radio_stub_shadow_reg12 = 0;
     radio_stub_clock          = RADIO_STUB_CLOCK_FAKE;
     radio_stub_fake_ms        = 0;
     radio_stub_sleep_calls    = 0;

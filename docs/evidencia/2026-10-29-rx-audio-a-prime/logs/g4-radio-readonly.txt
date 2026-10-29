@@ -1,0 +1,13 @@
+# G4 radio read-only snapshot (A-prime #367)
+[2026-10-29T23:03:25Z] ssh (solo lectura)
+Thu Oct 29 23:03:26 UTC 2026
+{"t":"state","vfo":"A","freq":7135000,"freq_bg":7062100,"mode":"LSB","band":"40m SSB","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":12,"pre":0,"att":1,"agc":"AUTO","nb":1,"nr":1,"nb_level":5,"nb_width":55,"nr_level":40,"pwr":40,"db":-102,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+lastbreath v=1 up_s=16818 up_ms=16818050 clean=0 boot=1fa5d1ea radio=RX tx=0 app=home bat_mv=8600 ext_mv=11800 cap=93 chg=1 ev=0/6/0 last=refresh wus=59473 msg=#FFFFFF Volume: 12
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /usr/sbin/x6200_gui
+80c460e403bfe77684c773a50a054bfe6c4a858753695a01167493e35e126df6  /usr/lib/libaether_x6200_control.so.0.15.3
+0	alsa_output.platform-sound.stereo-fallback.monitor	module-alsa-card.c	s16le 2ch 44100Hz	IDLE
+1	alsa_input.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+0	alsa_output.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+i2c-0 owner PID 4716: x6200_gui
+
+# NOTA: en esta corrida NO se escribio el registro 12 ni se activo el MUX; solo lecturas/GET.
