@@ -203,10 +203,10 @@ pantalla. GUI de `main` en `fc18a831` (md5 `80bbe5bd70b3`, sha256 `4ee87aef…dd
 | H1 | `PASS` | AVI de 95,50 s con audio PCM de 4.214.248 muestras (95,56 s); referencia `parec` de 4.585.904 muestras; envolvente corr 0,856, lag -0,28 s | [`logs/h1-h6-analysis.txt`](../2026-10-29-audio-capture-351-radio/logs/h1-h6-analysis.txt) |
 | H2 | `PASS` | 600 s de `parec`: 26.460.000 muestras en 599,78 s; sin pérdida observable a nivel de total | [`logs/h2-h9.log`](../2026-10-29-audio-capture-351-radio/logs/h2-h9.log) |
 | H3 | `NO EJECUTADO` | No se forzaron underruns; no se observó un hole natural | — |
-| H4/C1/C2 | `PASS` | Operador: "no noté ningún cambio audible" en Off/SSB/AM/Digital; la copia sí cambia (Off rms 2023 -> SSB rms 926) | [`logs/h4-operator-listening.txt`](../2026-10-29-audio-capture-351-radio/logs/h4-operator-listening.txt) |
+| H4/C1/C2 | `PARCIAL` | Operador: "no noté ningún cambio audible" en Off/SSB/AM/Digital; la copia sí cambia (Off rms 2023 -> SSB rms 926) | [`logs/h4-operator-listening.txt`](../2026-10-29-audio-capture-351-radio/logs/h4-operator-listening.txt) |
 | H5 | `NO EJECUTADO` | Sin señal CW/FT8 y sin cambio de modo | — |
 | H6 | `PASS` | AVI 95,50 s: video 764 frames @ 8 fps; audio 95,56 s; diferencia 0,06 s (< 1 frame) | [`logs/h1-h6-ffprobe.txt`](../2026-10-29-audio-capture-351-radio/logs/h1-h6-ffprobe.txt) |
-| H7 | `PASS` (Off vs SSB) | MP3 60,04 s reproducible; Off rms 2023 vs SSB 926; AM/Digital pendientes | [`logs/h7-metadata.txt`](../2026-10-29-audio-capture-351-radio/logs/h7-metadata.txt) |
+| H7 | `PASS` (integridad) / `PARCIAL` (comparación) | MP3 60,04 s reproducible; Off rms 2023 vs SSB 926; AM/Digital pendientes | [`logs/h7-metadata.txt`](../2026-10-29-audio-capture-351-radio/logs/h7-metadata.txt) |
 | H8 | `PASS` | 5 capturas: std 14,71-15,15; sin diferencia atribuible al preset | [`logs/h8-waterfall-stats.txt`](../2026-10-29-audio-capture-351-radio/logs/h8-waterfall-stats.txt) |
 | H9 | `PARCIAL` | CPU GUI 65,7 % con captura / 63,4 % baseline; crashlog 0; sin pops; p99 callback UNKNOWN | [`logs/h2-cpu.log`](../2026-10-29-audio-capture-351-radio/logs/h2-cpu.log) |
 

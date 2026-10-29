@@ -1,0 +1,9 @@
+== cierro y reabro Recorder, intento grabación limpia 60 s ==
+  start_utc=19:22:07  archivos_antes=1
+  start_btn: {"t":"ok"}
+  archivo nuevo: /mnt/rec/REC_20261029_191831.mp3
+  stop_btn: {"t":"ok"}
+  stop_utc=19:23:10
+  -rw-------    1 root     root        824427 Oct 29 19:21 /mnt/rec/REC_20261029_191831.mp3
+  f512f169faaf6c402ddea55826076a9b3072d12e2b599481a18079ba7ff5a9ab  /mnt/rec/REC_20261029_191831.mp3
+  crashlog=0

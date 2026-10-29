@@ -44,10 +44,10 @@ Comandos y códigos de salida: [`commands.log`](commands.log).
 | **H1** PCM a grabadores | **PASS** | AVI de 95,50 s con 764 frames @ 8 fps y pista PCM 44100 mono de 4.214.248 muestras (95,56 s); referencia `parec` de 4.585.904 muestras; correlación de envolventes 0,856, lag −0,28 s. |
 | **H2** captura continua | **PASS** | 600 s de `parec`: **26.460.000 muestras** en 599,78 s de reloj; sin pérdida observable a nivel de total (resolución del método: 1 s). |
 | **H3** hole → silencio | **NO EJECUTADO** | No se forzaron underruns (instrucción del owner). |
-| **H4/C1/C2** presets vs parlante | **PASS** | Operador: **“no noté ningún cambio audible”** en Off → SSB voice → AM broadcast → Digital → Off. La copia sí cambia: Off rms 2023 → SSB rms 926 (−54,2 %); 3–6 kHz −12,4 dB. |
+| **H4/C1/C2** presets vs parlante | **PARCIAL** | Operador: **“no noté ningún cambio audible”** en Off → SSB voice → AM broadcast → Digital → Off. La copia sí cambia en la comparación medida: Off rms 2023 → SSB rms 926 (−54,2 %); 3–6 kHz −12,4 dB. La comparación objetiva de AM y Digital no se ejecutó. |
 | **H5** decodificadores | **NO EJECUTADO** | Requiere señal CW/FT8 y cambio de modo; no disponible en la sesión. |
 | **H6** AVI sincronizado | **PASS** | Video 95,50 s y audio 95,56 s: diferencia **0,06 s** (< 1 frame = 0,125 s); `ffprobe` sin errores; frame 100 con contenido. |
-| **H7** MP3 íntegro | **PASS** (Off vs SSB; AM/Digital no ejecutados) | MP3 de **60,04 s**, 302.261 B, 40,3 kbps, reproducible; comparación objetiva de la copia Off vs SSB: rms 2023 → 926. |
+| **H7** MP3 íntegro | **PASS** (integridad) / **PARCIAL** (comparación) | MP3 de **60,04 s**, 302.261 B, 40,3 kbps, reproducible; comparación objetiva de la copia Off vs SSB: rms 2023 → 926. AM y Digital no ejecutados. |
 | **H8** waterfall por preset | **PASS** | 5 capturas: std 14,71–15,15 y media 5,57–5,78; correlaciones 0,75–0,95 por evolución temporal; sin diferencia atribuible al preset. |
 | **H9** CPU/pops/crashlog | **PARCIAL** | GUI **65,7 %** de un core con captura (p50 65,8 %, p95 71,0 %) y **63,4 %** baseline; **crashlog 0**; operador **sin pops/clicks**; **p99 del callback UNKNOWN**. |
 
@@ -65,7 +65,12 @@ Filas máquina-legibles, con método y evidencia de cada ítem: [`measurements.c
   [`logs/h4-preset-transitions.csv`](logs/h4-preset-transitions.csv).
 - **H7**: [`logs/h7-metadata.txt`](logs/h7-metadata.txt),
   [`logs/h7-off-10s.log`](logs/h7-off-10s.log), [`logs/h7-ssb-10s.log`](logs/h7-ssb-10s.log),
-  [`logs/h7-clean2.log`](logs/h7-clean2.log).
+  [`logs/h7-clean2.log`](logs/h7-clean2.log), [`logs/h7-trial.log`](logs/h7-trial.log),
+  [`logs/h7-button-map.log`](logs/h7-button-map.log), [`logs/h7-state-diag.log`](logs/h7-state-diag.log),
+  [`logs/h7-clean.log`](logs/h7-clean.log), [`logs/h7-mp3-60s.log`](logs/h7-mp3-60s.log).
+- **Archivos privados (no publicados)**: [`logs/private-recordings.txt`](logs/private-recordings.txt)
+  con tamaño, sha256 y duración de los MP3/AVI; el audio no se publica.
+- **Captura posterior a la secuencia**: [`captures/despues-secuencia-presets-settings.png`](captures/despues-secuencia-presets-settings.png).
 - **H8**: [`logs/h8-waterfall-stats.txt`](logs/h8-waterfall-stats.txt),
   [`captures/waterfall-01-off.png`](captures/waterfall-01-off.png),
   [`captures/waterfall-02-ssb-voice.png`](captures/waterfall-02-ssb-voice.png),
@@ -115,3 +120,22 @@ El procedimiento completo, con build, hashes, backup, rollback y verificación, 
 [`deployment.md`](deployment.md); los comandos y sus códigos de salida en
 [`commands.log`](commands.log). El plan original del handoff sigue en
 [`../2026-10-29-audio-capture-351/hardware-handoff.md`](../2026-10-29-audio-capture-351/hardware-handoff.md).
+
+## Corrección de la evidencia (2026-10-29)
+
+Este PR es una **corrección/completado de la evidencia** de #351, no una implementación nueva ni una
+corrida física nueva. Sobre la primera versión de este directorio se corrigió:
+
+- `measurements.csv` estaba mal formado para CSV (campos con comas sin comillas). Se reconstruyó con
+  `csv.QUOTE_ALL`, una columna `alcance` y 10 filas de 7 columnas.
+- **H4 y H7 quedaron como `PARCIAL`** en el veredicto: la escucha de los cuatro presets se hizo, pero
+  la comparación objetiva de la copia con AM y Digital no se ejecutó. H1/H2/H6/H8 siguen `PASS` con
+  su alcance explícito; H3/H5 `NO_EJECUTADO`; H9 `PARCIAL`.
+- Se sumaron los logs que faltaban de la misma sesión (`h7-trial`, `h7-button-map`, `h7-state-diag`,
+  `h7-clean`, `h7-mp3-60s`, `cpu-baseline`, `state-final*`) y la captura
+  `captures/despues-secuencia-presets-settings.png`.
+- Se agregó `logs/private-recordings.txt`: manifiesto con tamaño, sha256 y duración de los MP3/AVI
+  privados, **sin publicar el audio**. Los archivos siguen fuera del repositorio.
+- Se regeneró `logs/SHA256SUMS` después de estos cambios.
+
+No se volvió a probar la radio para esta corrección: los datos son los de la sesión ya registrada.

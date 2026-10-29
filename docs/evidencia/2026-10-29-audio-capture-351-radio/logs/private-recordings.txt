@@ -1,0 +1,16 @@
+# Archivos privados de la sesión física (NO publicados)
+
+Los MP3, el AVI y el audio crudo contienen RX y pueden contener QSO de terceros. Se conservan
+fuera del repositorio, en el directorio privado de la sesión. Acá se publican sólo tamaño,
+sha256 y metadatos.
+
+| archivo | bytes | sha256 | duración | nota |
+|---|---|---|---|---|
+| REC_20261029_191831.mp3 | 490507 | 50ab1127caf6f7c8c8556aaa18481316dbb143fc1ea779c7d00306c9102ece17 | 86,35 s | MP3 de prueba (recorder); audio de RX privado |
+| REC_20261029_192329.mp3 | 302261 | 837ad2cabb04b4a1917c3984fc87569f0804ac1bd5caaaa3c474d388db5388ac | 60,04 s | H7: integridad MP3; audio de RX privado |
+| REC_20261029_195439.mp3 | 70438 | 1a9de39346c44520aa819ce1664f9807b438149aa4de46e70d25a7eae1abeab4 | 12,09 s | H7: comparación Off; audio de RX privado |
+| REC_20261029_195738.mp3 | 55955 | 9908652440949958fcd8fff4459f930765a384b3f348d435db625e0c40f1012e | 11,94 s | H7: comparación SSB voice; audio de RX privado |
+| screen-20261029-200404.avi | 28192208 | 72b42cb81334347e247aa9f921525d4c2f52c058dd77f061b11501f91568fe61 | 95,50 s | H1/H6: AVI; video+audio de RX privado |
+
+También quedan fuera el binario de la GUI, los backups de ejecutables, y las capturas crudas
+del framebuffer (.bin), que se conservan fuera del repositorio o se representan por sus PNG.
