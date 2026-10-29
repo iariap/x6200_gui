@@ -425,3 +425,52 @@ exit=77
 #   entre particiones vale desde estado recien inicializado (preset_reset_no_reinit).
 # - Seam de AM broadcast: +140 LSB sobre la grilla de 441 (seam_am_broadcast_plus_140).
 # - Nada de lo fisico se ejecuto: hardware-handoff.md queda PENDING-HARDWARE.
+
+
+# ---------------------------------------------------------------------------
+# 8. Re-verificacion POST-COMMIT (el commit de la parte 3b es solo evidencia:
+#    no toca src/, tests/ ni tools/, asi que el resultado no puede cambiar)
+# ---------------------------------------------------------------------------
+$ git log -1 --format='%H %s'
+72bc6817f4a732f67c0c9acd8e7638c6985c53b0 test(audio): matriz de verificacion, ARM/QEMU y handoff fisico de la captura (#351)
+
+$ sh tests/native/run_native_tests.sh /tmp/opencode/x6200-native-351-p3b
+[... 25 suites ...]
+174 comprobaciones, 0 fallos
+exit=0
+# identico al bloque 1: 25 suites, 75 723 comprobaciones, 0 fallos.
+
+$ sh tests/run_all_tests.sh --quick
+================ resumen ================
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  settings_grid: OK   
+  info_bar: OK   
+  apps_menu: FALLÓ
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (25 apps)
+  pruebas: FALLÓ
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  wcag_rendered: FALLÓ
+  widget_text: FALLÓ
+  cw_tune_feed: OK   
+  autotune_v2: OK   
+  build_identity: OK   
+  dialog_coverage: FALLÓ
+  curve_evidence: FALLÓ
+  host: OK   174 comprobaciones, 0 fallos
+  daemon: OK     all OK: 15 casos, 0 fallos
+  host_ci_parity: OK   174 comprobaciones, 0 fallos
+  db_failclosed: OK   todos los casos corrieron y afirmaron su resultado (matriz: /home/pablo/desa/asf/state/worktrees/x6200/audio-capture-pipeline-351/tests/native/build/db_failclosed/matrix.txt)
+  qemu_apps: SKIP SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))
+  drawbuf_partial: OK   PASS: partial draw buffer renders the identical physical framebuffer (sw-rotate 90)
+  wspr: SKIP SKIP: wspr: la imagen x6200-uiharness no trae /usr/include/fftw3.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  sstv: SKIP SKIP: sstv: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  wefax: SKIP SKIP: wefax: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  navtex: OK   all OK
+  (omitidos: qemu_apps wspr sstv wefax js8 webserver)
+  17 OK, 6 fallos
+exit=1
+# identico al bloque 2: 17 OK, 6 fallos (los mismos seis preexistentes de #347),
+# 6 omitidos. Cero regresiones nuevas.

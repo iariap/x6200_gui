@@ -236,6 +236,12 @@ Todo lo de esta sección se corrió en el worktree
 completas, con los comandos literales, están en `commands.log` (§«PARTE 3b») y las filas
 correspondientes en `measurements.csv` (`verify_*`).
 
+El commit de la parte 3b es **sólo evidencia**: no toca `src/`, `tests/` ni `tools/`, así que
+ninguna de estas corridas cambia de resultado por él. Se re-verificó después de commitear, con el
+mismo árbol: `sh tests/native/run_native_tests.sh …` → exit **0** (25 suites, 75 723
+comprobaciones, 0 fallos) y `sh tests/run_all_tests.sh --quick` → exit **1** con los mismos
+**17 OK / 6 fallos** y los mismos seis stages (ver el final de `commands.log`).
+
 ### 9.1 Tabla
 
 | # | Comando | Exit | Resultado | Clase |
