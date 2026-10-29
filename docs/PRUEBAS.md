@@ -29,6 +29,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 ## Resumen
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
+| 29/10 ~14:15 | ROM `d3f22d80…` + GUI `ca5ed97b3c62` | (local) | **TX en CB sin interlock** | 1 ok | 0 | **Default `cb_tx_scope=2`**: PTT/ATU/keyer/digitales pueden transmitir en toda la banda 26–28 MHz (A/B/C/D y fuera de grilla). Persistido `cb_tx_scope=2` en `/mnt/params.db`; GUI `ca5ed97b3c62` desplegada, `crashlog 0`. Tests nativos 0 fallos. Potencia sigue tope 4 W; marco legal en el manual §7.13 |
 | 28/10 ~21:00 | ROM `d3f22d80…` + GUI `5ef35ec0b807` | (local) | **#292 banda lateral (noche)** | 1 parcial / 1 ok | 0 | 790 kHz: script oficial **FAIL del criterio absoluto** (789-LSB 24.7 / 789-USB 33.1 / 791-LSB 33.0 / 791-USB 22.8 dB; portadora débil, dirección correcta). 760 kHz con el mismo método y criterio relativo: **PASS** (26.1/39.6/36.3/24.9 dB, lados opuestos). Sin regresión de #292. Evidencia: `docs/evidencia/2026-10-28-lsb-night/` |
 | 28/10 ~17:00 | ROM `d3f22d80…` + GUI `5ef35ec0b807` | (local) | **icono WiFi centrado** | 1 ok | 0 | **Medido en captura**: glifo x139..155 (centro 147) → x144..160 (centro 152,2) en caja 139..166 (centro 152,5) ✓. `tests/check_info_bar.py` PASS con guarda nueva. `crashlog 0` |
 | 28/10 ~16:55 | ROM `d3f22d80…` + GUI `0cbb0c23c8c7` | (local) | **BT en su app** | 1 ok | 0 | **Ajustes ya no tiene el encendido/Discoverable/Devices de Bluetooth**: viven en la app BT (capturas en `docs/evidencia/2026-10-28-bt-app/`). `btcat-ctl bt on/off` medido: hci0 `UP RUNNING` / `DOWN` ✓. `crashlog 0` |
@@ -1860,3 +1861,16 @@ Evidencia completa: [`docs/evidencia/2026-10-28-lsb-night/`](evidencia/2026-10-2
 **Veredicto**: #292 sigue correcto en la ROM v0.1.11; no hay regresión por los cambios de SWR/curva/BT/UI.
 El FAIL del script oficial es por la portadora débil del 790 esta noche, no por la banda lateral. Radio
 restaurada en **7.140.000 LSB** (estado del dueño), `crashlog 0`.
+
+## 29/10 14:15Z — CB: TX habilitado en toda la banda (sin interlock)
+
+Pedido del dueño: poder transmitir en toda la banda CB sin importar grilla/zona (antes el default
+`cb_tx_scope=0` sólo permitía el SBC argentino, 26,960–27,410 MHz, y CB A/B/D quedaban en recepción;
+el PTT, el ATU y el keyer avisaban `TX blocked: not a CB channel`).
+
+- `src/params/params.c`: default de `cb_tx_scope` = **2 (sin interlock)**; `cb_pwr_max` sigue 4,0 W.
+  Los valores 0 (solo SBC) y 1 (grids A-D) quedan disponibles en `DATA/params.db`.
+- Persistido `cb_tx_scope=2` en `/mnt/params.db` de la radio y desplegado GUI `ca5ed97b3c62`
+  (`crashlog 0`). Tests nativos `exit 0` (incluye `test_cb` de los tres scopes).
+- Manual actualizado (§4.6 y §7.13, md+html) con la decisión y la advertencia legal (el X6200 no es
+  un equipo CB homologado; sigue siendo responsabilidad del operador).

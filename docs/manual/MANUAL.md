@@ -139,6 +139,8 @@ igual que a cualquier banda: con `UP`/`DOWN` **largos** (la app Bands no las lis
 - Al entrar, el equipo apaga el **split**, pasa a **AM** si no estaba en AM/SAM/NFM, recorta la
   potencia a **4 W** y bloquea el **XIT** (el RIT sigue disponible). Al salir restaura el split
   y la potencia que tenías.
+- **TX habilitado en toda la banda CB** (26–28 MHz, todas las grillas y fuera de grilla) desde el
+  2026-10-29; la potencia sigue limitada a 4 W. Ver el marco legal en la sección 7.13.
 - **Leé la sección 7.13 antes de transmitir**: el X6200 no es un equipo CB homologado.
 
 ## 5. Ajustes: todos los parámetros
@@ -800,11 +802,14 @@ vuelve a los segmentos IARU.
 
 | `cb_tx_scope` | Qué permite |
 |---|---|
-| `0` (default) | Sólo el SBC argentino: 26,960–27,410 MHz |
+| `2` (**default desde 2026-10-29**) | **Sin interlock: TX en toda la banda 26–28 MHz**, sin importar grid ni zona (A/B/C/D y fuera de grilla) |
+| `0` | Sólo el SBC argentino: 26,960–27,410 MHz |
 | `1` | Además los grids A, B y D completos |
-| `2` | Sin interlock |
 
-Fuera de 26–28 MHz el interlock no toca nada, así que las bandas de aficionado siguen iguales.
+Por decisión del dueño (2026-10-29) el default es **2**: el PTT de software, el ATU, el keyer CW y
+los modos digitales pueden transmitir en toda la banda CB. Los valores `0`/`1` quedan disponibles
+editando `cb_tx_scope` en `DATA/params.db`. Fuera de 26–28 MHz el interlock no toca nada, así que
+las bandas de aficionado siguen iguales.
 Si bloquea, la pantalla avisa `TX blocked: not a CB channel`, lo dice por voz y apaga el PTT. La
 potencia en CB tiene un tope configurable (`cb_pwr_max`, 4,0 W por defecto). Los dos parámetros se
 editan en `DATA/params.db` (configurador web/SQLite); no hay fila en Ajustes.
@@ -813,8 +818,8 @@ editan en `DATA/params.db` (configurador web/SQLite); no hay fila en Ajustes.
 por estación** y **equipo homologado/registrado** (Res. SC 47/1982; CABFRA 2025 de ENACOM; alta
 con formularios F1/F2/F23, D3/COPITEC y responsable técnico). El X6200 **no es un equipo CB
 homologado**: transmitir en 27 MHz con él queda fuera del régimen del SBC y fuera del servicio de
-aficionados, y modificar el firmware no cambia la homologación. Los grids A, B y D **no** son SBC
-argentino: con el default quedan en recepción. Los modos y la potencia del SBC **no están
+aficionados, y modificar el firmware no cambia la homologación. La habilitación de TX en toda la
+banda (default 2) **no cambia** esa situación legal: es una decisión y responsabilidad del operador. Los modos y la potencia del SBC **no están
 confirmados**; se usan AM/FM y 4 W como valores conservadores. El **PTT del micrófono** lo maneja
 probablemente el MCU y el interlock de software no necesariamente lo frena: la protección real es
 no sintonizar fuera de canal. **No des por validado el TX** hasta medir RF y armónicos con carga
