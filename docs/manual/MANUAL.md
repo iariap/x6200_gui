@@ -139,9 +139,10 @@ igual que a cualquier banda: con `UP`/`DOWN` **largos** (la app Bands no las lis
 - Al entrar, el equipo apaga el **split**, pasa a **AM** si no estaba en AM/SAM/NFM, recorta la
   potencia a **4 W** y bloquea el **XIT** (el RIT sigue disponible). Al salir restaura el split
   y la potencia que tenías.
-- **TX normal (PTT) no disponible en CB**: el BASE no keyea en 26–28 MHz (medido el 2026-10-29; en
-  bandas de aficionado sí). El **ATU** y el **barrido de ROE** sí transmiten en CB porque son modos
-  de servicio. La potencia sigue limitada a 4 W. Ver la sección 7.13.
+- **TX en CB habilitado por el bloque fullband**: al arrancar, la GUI escribe el bloque de
+  calibración que la UI de fábrica usa para `fullband-tx=enable`; con `cb_tx_scope=2` (default) el
+  **PTT normal transmite en toda la banda 26–28 MHz** (grillas A/B/C/D y fuera de grilla), con el tope
+  de 4 W. El ATU y el barrido de ROE siguen siendo modos de servicio. Ver la sección 7.13.
 - **Leé la sección 7.13 antes de transmitir**: el X6200 no es un equipo CB homologado.
 
 ## 5. Ajustes: todos los parámetros
@@ -822,32 +823,36 @@ violeta con el rótulo `CB`; la celda `CH nn` de la barra sigue mostrando el can
 de estado. Fuera de CB la fila vuelve a la frecuencia grande con los bordes del span y la franja
 vuelve a los segmentos IARU.
 
-**TX en CB: el PTT normal no transmite (medido el 2026-10-29).** En 26–28 MHz el **BASE no keyea
-el TX normal**: las pulsaciones de PTT llegan a la GUI, pero el estado `tx` queda en falso en todo
-CB D; el mismo PTT en 40m LSB sí transmite. El firmware del BASE limita el TX normal a las bandas
-de aficionado. **El ATU y el barrido de ROE sí transmiten en CB**: son modos de servicio del BASE
-y no pasan por ese límite (medido: barrido en CB D completó 51/51; ATU funciona).
+**TX en CB habilitado (bloque fullband, medido el 2026-10-29).** El BASE limita el PTT normal a
+las bandas de aficionado **hasta** que recibe el bloque de calibración de 507 B que la UI de fábrica
+escribe cuando tiene `fullband-tx=enable`. La GUI replica ese bloque al arrancar
+(`radio_fullband_tx_patch()`), y a partir de ahí **el PTT normal transmite en 26–28 MHz**, incluidos
+A/B/C/D y fuera de grilla. Medido: PTT directo por I2C en 27.185 MHz keyea con el bloque (`tx=True`,
+10/20 muestras mantenidas) y no keyeaba sin él (`tx=False` en 27.185 y 27.505). El **ATU** y el
+**barrido de ROE** siguen siendo modos de servicio y funcionan igual.
 
-El **interlock de software de la GUI** sigue existiendo (`cb_tx_scope`, se edita en
-`DATA/params.db`; no hay fila en Ajustes) y quedó en su default conservador:
+El interlock de la GUI sigue existiendo (`cb_tx_scope`, se edita en `DATA/params.db`; no hay fila en
+Ajustes) y quedó en su default **2**:
 
 | `cb_tx_scope` | Qué permite a la GUI |
 |---|---|
-| `0` (default) | Sólo el SBC argentino: 26,960–27,410 MHz |
+| `0` | Sólo el SBC argentino: 26,960–27,410 MHz |
 | `1` | Además los grids A, B y D completos |
-| `2` | Sin interlock |
+| `2` (default) | Sin interlock: TX en toda la banda 26–28 MHz |
 
-**Ojo**: abrir el interlock (`1`/`2`) **no hace que el PTT transmita en CB**; el bloqueo que manda
-es el del BASE. Fuera de 26–28 MHz el interlock no toca nada, así que las bandas de aficionado
-siguen iguales. Si bloquea, la pantalla avisa `TX blocked: not a CB channel`, lo dice por voz y
-apaga el PTT. La potencia en CB tiene un tope configurable (`cb_pwr_max`, 4,0 W por defecto).
+**Ojo**: el interlock de la GUI sólo decide **en qué frecuencias** la GUI manda el PTT; el bloque
+fullband del BASE es lo que permite que keyee en 27 MHz. Fuera de 26–28 MHz el interlock no toca
+nada, así que las bandas de aficionado siguen iguales. Si bloquea, la pantalla avisa `TX blocked:
+not a CB channel`, lo dice por voz y apaga el PTT. La potencia en CB tiene un tope configurable
+(`cb_pwr_max`, 4,0 W por defecto).
 
 **Advertencia legal (Argentina).** El SBC está en **26,960–27,410 MHz** y exige **autorización
 por estación** y **equipo homologado/registrado** (Res. SC 47/1982; CABFRA 2025 de ENACOM; alta
 con formularios F1/F2/F23, D3/COPITEC y responsable técnico). El X6200 **no es un equipo CB
 homologado**: transmitir en 27 MHz con él queda fuera del régimen del SBC y fuera del servicio de
-aficionados, y modificar el firmware no cambia la homologación. Que el BASE no transmita PTT en
-27 MHz tampoco cambia esa situación legal (y si alguna vez se habilitara, no la cambiaría). Los modos y la potencia del SBC **no están
+aficionados, y modificar el firmware no cambia la homologación. Escribir el bloque fullband en el
+BASE no cambia esa situación legal: transmitir en 27 MHz con el X6200 sigue fuera del régimen del
+SBC y del servicio de aficionados, y es responsabilidad del operador. Los modos y la potencia del SBC **no están
 confirmados**; se usan AM/FM y 4 W como valores conservadores. El **PTT del micrófono** lo maneja
 probablemente el MCU y el interlock de software no necesariamente lo frena: la protección real es
 no sintonizar fuera de canal. **No des por validado el TX** hasta medir RF y armónicos con carga

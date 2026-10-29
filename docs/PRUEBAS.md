@@ -29,7 +29,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 ## Resumen
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
-| 29/10 ~17:45 | ROM `d3f22d80…` + GUI `ca5ed97b3c62` | (local) | **PTT en CB** | 1 fail medido | 0 | **El PTT no transmite en CB**: 15 pulsaciones (`code=707`) con `tx=False` en CB D 27.505/27.755; en 40m LSB el mismo PTT dio `tx=True` (6 muestras). ATU funciona y barrido de ROE en CB D completó n=51/51. El **BASE limita el TX normal a bandas de aficionado** (ATU/SWR son modos de servicio). `cb_tx_scope` vuelve a default 0; log de PTT agregado. Ver HALLAZGOS §76 |
+| 29/10 ~17:45 / 18:2x | ROM `d3f22d80…` + GUI `a92248cceef0` | (local) | **PTT en CB** | 1 pass medido (PTT directo I2C) | 0 | Reemplaza la fila anterior (fallo): el BASE sí keyea en 27 MHz con el bloque de calibración fullband. Medido: PTT directo I2C en 27.185 LSB con bloque = `tx=True` 10/20 muestras; sin bloque = 0/6 en 27.185 y 27.505. La GUI ahora escribe el bloque al arrancar (`radio_fullband_tx_patch()`), log `Fullband TX habilitado en el BASE`, `cal[0x118]=1`; `cb_tx_scope` default 2. Ver HALLAZGOS §76 |
 | 29/10 ~14:15 | ROM `d3f22d80…` + GUI `ca5ed97b3c62` | (local) | **TX en CB sin interlock** | 1 ok | 0 | **Default `cb_tx_scope=2`**: PTT/ATU/keyer/digitales pueden transmitir en toda la banda 26–28 MHz (A/B/C/D y fuera de grilla). Persistido `cb_tx_scope=2` en `/mnt/params.db`; GUI `ca5ed97b3c62` desplegada, `crashlog 0`. Tests nativos 0 fallos. Potencia sigue tope 4 W; marco legal en el manual §7.13 |
 | 28/10 ~21:00 | ROM `d3f22d80…` + GUI `5ef35ec0b807` | (local) | **#292 banda lateral (noche)** | 1 parcial / 1 ok | 0 | 790 kHz: script oficial **FAIL del criterio absoluto** (789-LSB 24.7 / 789-USB 33.1 / 791-LSB 33.0 / 791-USB 22.8 dB; portadora débil, dirección correcta). 760 kHz con el mismo método y criterio relativo: **PASS** (26.1/39.6/36.3/24.9 dB, lados opuestos). Sin regresión de #292. Evidencia: `docs/evidencia/2026-10-28-lsb-night/` |
 | 28/10 ~17:00 | ROM `d3f22d80…` + GUI `5ef35ec0b807` | (local) | **icono WiFi centrado** | 1 ok | 0 | **Medido en captura**: glifo x139..155 (centro 147) → x144..160 (centro 152,2) en caja 139..166 (centro 152,5) ✓. `tests/check_info_bar.py` PASS con guarda nueva. `crashlog 0` |
@@ -1881,18 +1881,16 @@ el PTT, el ATU y el keyer avisaban `TX blocked: not a CB channel`).
 - Manual actualizado (§4.6 y §7.13, md+html) con la decisión y la advertencia legal (el X6200 no es
   un equipo CB homologado; sigue siendo responsabilidad del operador).
 
-## 29/10 17:45Z — PTT en CB: el BASE limita el TX normal a bandas de aficionado
+## 29/10 17:45Z-18:2x — PTT en CB: se habilita con el bloque fullband de la UI de fábrica
 
-Diagnostico del reporte "el PTT no funciona en CB; el ATU y el SWR Scan si". Medido con un watcher
-que lee `/dev/input/event0` (PTT = `BTN_TRIGGER_HAPPY4`, code 707) y consulta `tx` en la radio.
+La medición anterior (PTT directo sin bloque daba `tx=False`) era correcta pero incompleta: el BASE
+no keyea en 27 MHz **hasta** que recibe el bloque de calibración de 507 B que la UI de fábrica escribe
+con `fullband-tx=enable`. Por RE del binario original (REA + Ghidra) se ubicaron el flag en
+`cal[0x118]` (BaseCommIIC+0x120) y los `txEnable` de banda en `cal[0x12d + j*0x14]`, y que el bloque
+se manda con `iicWrite(0xf000, 1, cal, 507)`.
 
-```
-CB D 27.505/27.755 AM/USB: 15 pulsaciones -> tx=False siempre
-40m SSB 7.100 LSB:         mismo PTT      -> tx=True (6 muestras)
-CB D: ATU funciona; barrido de ROE Completed n=51/51, min 2.2 @ 27.975
-```
-
-Conclusion: el interlock de la GUI ya no bloquea (`cb_tx_scope=2`), pero el **firmware del BASE no
-keyea el TX normal en 26-28 MHz**; ATU y barrido de ROE transmiten porque son modos de servicio.
-No hay workaround de GUI. Se revierte el default de `cb_tx_scope` a 0 y se agrega log de
-`radio_set_ptt()` para futuras verificaciones. Detalle en HALLAZGOS §76.
+Medido en la radio: con el bloque, el PTT directo por I2C keyea en 27.185 (`tx=True` 10/20 muestras
+mantenidas) y en 27.505; antes, en ambas, `tx=False`. La GUI `a92248cceef0` aplica el bloque en
+`radio_init()` (`radio_fullband_tx_patch()`), verificado en el arranque: log `Fullband TX habilitado
+en el BASE` y `cal[0x118]=1` por I2C. `cb_tx_scope` vuelve a default **2**. Falta la prueba con el
+PTT físico del dueño. Detalle y offsets en HALLAZGOS §76.
