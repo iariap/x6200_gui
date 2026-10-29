@@ -97,10 +97,12 @@ params_t params = {
     .freq_accel_threshold   = { .x = 7, .min = 3, .max = 15, .name = "freq_accel_threshold",
                                 .voice = "Acceleration starts at" },
 
-    /* CB 27 MHz (issue #146): default conservador, SBC argentino (26,960-27,410)
-     * y 4,0 W (FCC 95.967 para AM/FM; el texto de la Res. 47/82 no esta online,
-     * por eso el tope es configurable). */
-    .cb_tx_scope            = { .x = 0, .min = 0, .max = 2, .name = "cb_tx_scope" },
+    /* CB 27 MHz (issue #146): TX habilitado en toda la banda 26-28 MHz, sin
+     * importar grid/zona (decision del dueno, 2026-10-29: quiere transmitir en
+     * CB A/B/C/D y fuera de la grilla). El tope de potencia sigue en 4,0 W.
+     * Los valores 0 (solo SBC argentino) y 1 (grids A-D) siguen disponibles
+     * editando cb_tx_scope en DATA/params.db. */
+    .cb_tx_scope            = { .x = 2, .min = 0, .max = 2, .name = "cb_tx_scope" },
     .cb_pwr_max             = { .x = 4.0f, .name = "cb_pwr_max" },
 
     .vox                    = false,
