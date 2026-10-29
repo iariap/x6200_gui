@@ -1,0 +1,23 @@
+## MP3 60 s (H7 integridad)
+duration=60.040816
+size=302261
+bit_rate=40274
+
+## Comparación Off vs SSB voice (10 s c/u, misma estación/volumen)
+preset,file,duration_s,bit_rate,rms,band_100_300_db,band_300_3000_db,band_3000_6000_db
+Off(0),REC_20261029_195439.mp3,12.085,46628,2023,108.2,122.4,89.1
+SSB voice(2),REC_20261029_195738.mp3,11.945,37476,926,113.4,116.0,76.7
+
+## ffprobe Off
+duration=12.085079
+size=70438
+bit_rate=46628
+## ffprobe SSB
+duration=11.944671
+size=55955
+bit_rate=37476
+
+## sha256 (los MP3 no se publican; metadata y hashes sí)
+837ad2cabb04b4a1917c3984fc87569f0804ac1bd5caaaa3c474d388db5388ac  REC_20261029_192329.mp3
+1a9de39346c44520aa819ce1664f9807b438149aa4de46e70d25a7eae1abeab4  REC_20261029_195439.mp3
+9908652440949958fcd8fff4459f930765a384b3f348d435db625e0c40f1012e  REC_20261029_195738.mp3

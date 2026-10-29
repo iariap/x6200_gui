@@ -1,0 +1,1 @@
+{"elapsed_s": 599.78, "total_samples": 26460000, "expected": 26450327, "drift_samples": 9673, "seconds_measured": 599, "per_second_min": 40960, "per_second_max": 53248, "per_second_bad_5pct": 224, "per_second_mean": 44119.2}

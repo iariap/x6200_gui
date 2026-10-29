@@ -1,0 +1,106 @@
+# Comandos de la validación física de #351 (2026-10-29)
+
+Registro reducido y reproducible. Las credenciales SSH se omiten a propósito: se usaron las del
+laboratorio del owner fuera de este documento. `$RADIO` representa el host de la radio en la red
+local; su dirección no se publica. Todos los comandos sobre la radio fueron de recepción (RX).
+No se transmitió, no se flasheó la ROM y no se escribieron registros del BASE.
+
+## Etapa 1 — build, backup y deploy de la GUI
+
+```sh
+# main vigente al arrancar
+git fetch fork
+git rev-parse fork/main
+# -> fc18a831a3db1e15f316be7d613152fcefc705ec
+# exit=0
+
+# clone-gui de buildroot: sincronizar a main (el remote sólo trackeaba otra rama)
+git -C clone-gui fetch origin main
+# -> * branch main -> FETCH_HEAD ; exit=0
+git -C clone-gui checkout -f FETCH_HEAD
+# -> HEAD fc18a831 ; exit=0
+
+# build limpio de la GUI en el contenedor de buildroot
+docker run --rm --name gui-351 --entrypoint "" -u "$(id -u):$(id -g)" \
+  -e HOME=/tmp -e ac_cv_func_pidfd_open=no -e ac_cv_func_pidfd_send_signal=no \
+  -v <WORKSPACE>:/<WORKSPACE> -w /<WORKSPACE>/rom-build/clone-buildroot/build \
+  x6200-buildroot sh -c 'make x6200-gui-dirclean && make -j8'
+# exit=0
+
+# identidad del binario resultante
+sha256sum clone-buildroot/build/target/usr/sbin/x6200_gui
+# -> 4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0
+md5sum clone-buildroot/build/target/usr/sbin/x6200_gui
+# -> 80bbe5bd70b345e1e9a563d06d047a1c
+file clone-buildroot/build/target/usr/sbin/x6200_gui
+# -> ELF 32-bit LSB pie executable, ARM, EABI5, stripped ; exit=0
+
+# tests de host
+sh tests/native/run_native_tests.sh
+# -> 174 comprobaciones, 0 fallos ; exit=0
+sh tests/run_all_tests.sh --quick
+# -> 22 OK, 1 fallo: audita-pruebas (build a92248cceef0 en la tabla sin sección, preexistente) ; exit=1
+
+# backup de la GUI instalada y de params.db (en la radio, fuera del repositorio)
+ssh root@$RADIO 'D=/mnt/ui-bak-191601; mkdir -p $D; \
+  cp -p /usr/sbin/x6200_gui $D/x6200_gui; \
+  cp -p /mnt/params.db $D/params.db.pre351; \
+  sha256sum /usr/sbin/x6200_gui > $D/installed.sha256; \
+  sha256sum $D/x6200_gui >> $D/installed.sha256'
+# binario anterior: ac2f6febb63b518b398779503d14f6993b721b21fb873cd630b8599e12f73d87
+# params.db anterior: 0661bd52705ec1eb411a867cf85ddf6b051442293ec2f7ea190bd327eacd5d4e
+# exit=0
+
+# deploy: SOLO el ejecutable de la GUI; sin flashear ROM ni tocar el BASE
+scp <WORKSPACE>/.../x6200_gui main-fc18a831 root@$RADIO:/tmp/x6200_gui-351
+# exit=0
+ssh root@$RADIO 'cp /tmp/x6200_gui-351 /usr/sbin/x6200_gui; chmod 755 /usr/sbin/x6200_gui; \
+  kill $(pidof x6200_gui)'
+# el daemon relanzó la GUI en 6 s; exit=0
+ssh root@$RADIO 'sha256sum /usr/sbin/x6200_gui; pidof x6200_gui; grep -ac "CRASHLOG sig" /tmp/x6200_log.txt'
+# -> 4ee87aef... ; pid 2983 ; crashlog 0 ; exit=0
+
+# verificación post-deploy (read-only)
+ssh root@$RADIO '/tmp/x6200-remote "{\"cmd\":\"get\"}"'
+# exit=0
+```
+
+## Etapa 2 — handoff físico (H1–H9)
+
+```sh
+# H2: 600 s de captura continua + muestreo de CPU del GUI (sin guardar audio)
+ssh root@$RADIO 'parec --format=s16le --rate=44100 --channels=1 \
+  --device=alsa_input.platform-sound.stereo-fallback 2>/dev/null \
+  | head -c 52920000 | python3 /tmp/h2_counter.py'
+# -> 26.460.000 muestras ; exit=0
+
+# H7: grabador de audio de la GUI por control remoto
+ssh root@$RADIO '/tmp/x6200-remote "{\"cmd\":\"app\",\"text\":\"Recorder\"}"'
+ssh root@$RADIO '/tmp/x6200-remote "{\"cmd\":\"btn\",\"val\":0}"'   # Rec
+ssh root@$RADIO '/tmp/x6200-remote "{\"cmd\":\"btn\",\"val\":1}"'   # Rec Stop
+# MP3 en /mnt/rec/REC_*.mp3 ; exit=0
+ffprobe -v error -show_entries format=duration,size,bit_rate -of default=noprint_wrappers=1 REC_20261029_192329.mp3
+# -> duration=60.040816 size=302261 bit_rate=40274 ; exit=0
+
+# H4/C1/C2: escucha del operador + monitor de preset (sólo lectura de params.db)
+ssh root@$RADIO 'while ...; do python3 -c "import sqlite3; ... select val ... audio_enh_preset"; sleep 1; done'
+# transiciones: 19:46:21 Off(0) -> 19:46:33 SSB(2) -> 19:46:54 AM(3) -> 19:47:07 Digital(4) -> 19:47:18 Off(0)
+# operador: "no noté ningún cambio audible"
+
+# H8: capturas del framebuffer al volver al home con cada preset
+# watchdog de sólo lectura: registra preset + app y guarda /dev/fb0 cuando app=="" y cambió el preset
+ssh root@$RADIO 'dd if=/dev/fb0 of=/tmp/h8-fb/<ts>_p<P>.bin bs=1920 count=800'
+# 5 capturas; exit=0
+
+# H1/H6: grabador de pantalla iniciado por el operador; referencia parec automática al aparecer el AVI
+ssh root@$RADIO 'python3 /tmp/h1_watch.py'
+# AVI /mnt/screenrec/screen-20261029-200404.avi (28.192.208 B) ; exit=0
+ffprobe -v error -show_format -show_streams screen-20261029-200404.avi
+# -> mjpeg 764 frames @ 8/1 ; pcm_s16le 1 ch 44100, 4.214.248 muestras ; exit=0
+ffmpeg -v error -i screen-20261029-200404.avi -map 0:a:0 -f s16le -ac 1 -ar 44100 avi-audio.raw
+# exit=0 ; correlación de envolventes AVI vs referencia: 0,856, lag -0,28 s
+
+# cierre: estado final y limpieza de temporales/grabaciones de la radio (copias privadas fuera del repo)
+ssh root@$RADIO '/tmp/x6200-remote "{\"cmd\":\"get\"}"'
+# preset=0 ; crashlog=0 ; exit=0
+```

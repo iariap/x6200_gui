@@ -1,0 +1,15 @@
+== estado inicial (¿grabando?) ==
+    808454 Oct 29 19:21 /mnt/rec/REC_20261029_191831.mp3
+  3s después:
+    823161 Oct 29 19:21 /mnt/rec/REC_20261029_191831.mp3
+== btn val=1 (debería ser RecStop) ==
+  {"t":"ok"}
+    824427 Oct 29 19:21 /mnt/rec/REC_20261029_191831.mp3
+  3s después (debe quedar igual si paró):
+    824427 Oct 29 19:21 /mnt/rec/REC_20261029_191831.mp3
+== btn val=1 (debería arrancar nueva grabación) ==
+  {"t":"ok"}
+    824427 Oct 29 19:21 /mnt/rec/REC_20261029_191831.mp3
+== btn val=1 (stop) ==
+  {"t":"ok"}
+    824427 Oct 29 19:21 /mnt/rec/REC_20261029_191831.mp3

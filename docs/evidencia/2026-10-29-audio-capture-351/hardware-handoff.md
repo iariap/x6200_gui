@@ -1,8 +1,10 @@
 # Handoff de hardware: QA de la copia de captura RX (issue #351)
 
-- **Estado global**: `PENDING-HARDWARE`. **Nada de este documento se ejecutó.** No se encendió la
-  radio, no se transmitió, no se flasheó y no se cambió ningún registro. Lo ejecuta el pipeline
-  físico separado (el issue lo pide explícitamente), no el agente que escribió esta evidencia.
+- **Estado global**: `VALIDADO-PARCIAL-HARDWARE` (2026-10-29). La sesión física separada se
+  ejecutó; los resultados están en
+  [`../2026-10-29-audio-capture-351-radio/README.md`](../2026-10-29-audio-capture-351-radio/README.md)
+  y en §9. El resto de este documento se conserva como el plan original escrito antes de la sesión,
+  sin reescribir sus mediciones.
 - **Issue**: [iariap/x6200_gui#351](https://github.com/iariap/x6200_gui/issues/351), punto 6 de
   «Tests y regresión obligatorios» y «Criterios de aceptación y cierre» (handoff de QA físico).
 - **Base**: `169bb807b0086dbb91d29a9ce6770d25ca396859` (`origin/main` al arrancar la unidad).
@@ -171,14 +173,14 @@ Columnas obligatorias por fila: fecha/hora, commit de la GUI, modo, VFO, filtro,
 
 | Ítem | Estado |
 |---|---|
-| Materiales S1–S6 y SD preparados | `PENDING-HARDWARE` |
-| Serie A (decodificadores LSB/USB/CW/CWR/FT8) | `PENDING-HARDWARE` |
-| Serie B (grabador de pantalla AVI y de audio MP3) | `PENDING-HARDWARE` |
-| Serie C (presets `Off`/`SSB`/`AM`/`Digital` y waterfall) | `PENDING-HARDWARE` |
-| Serie D (CPU/p99 del callback, pops, underrun, crashlog) | `PENDING-HARDWARE` |
-| Captura `parec` de la copia de captura | `PENDING-HARDWARE` |
-| H1–H9 | `PENDING-HARDWARE` |
-| Cualquier medición `MEASURED-HARDWARE` de #351 | **0 filas**: no hay ninguna |
+| Materiales S1–S6 y SD preparados | `PARCIAL` (ver §9) |
+| Serie A (decodificadores LSB/USB/CW/CWR/FT8) | `PENDIENTE` (H5) |
+| Serie B (grabador de pantalla AVI y de audio MP3) | `MEDIDO` (H1/H6/H7) |
+| Serie C (presets `Off`/`SSB`/`AM`/`Digital` y waterfall) | `MEDIDO` (H4/H8) |
+| Serie D (CPU/p99 del callback, pops, underrun, crashlog) | `PARCIAL`: CPU/crashlog/pops medidos; p99 y underrun pendientes (H9/H3) |
+| Captura `parec` de la copia de captura | `MEDIDO` (H1/H2) |
+| H1–H9 | `VALIDADO-PARCIAL-HARDWARE` (ver §9) |
+| Cualquier medición `MEASURED-HARDWARE` de #351 | **ver §9 y `measurements.csv` de la nueva evidencia** |
 
 ## 8. Criterio de cierre de este handoff
 
@@ -188,3 +190,32 @@ separadas de las capturas, y (4) los números de CPU/pops/crashlog con su métod
 esas filas pueden pasar de `PENDING-HARDWARE` a `MEASURED-HARDWARE` en `measurements.csv`. Hasta
 entonces, cualquier afirmación de mejora audible, de latencia extremo a extremo o de CPU en la radio
 es `HYPOTHESIS`, no un resultado.
+
+## 9. Actualización 2026-10-29: validación física ejecutada
+
+Sesión separada con el operador (owner) presente para escucha y para disparar el grabador de
+pantalla. GUI de `main` en `fc18a831` (md5 `80bbe5bd70b3`, sha256 `4ee87aef…dd66b0`) desplegada
+**sólo por SSH**, sin flashear ROM y sin tocar el BASE. Evidencia completa, con comandos y hashes:
+[`../2026-10-29-audio-capture-351-radio/`](../2026-10-29-audio-capture-351-radio/README.md).
+
+| Ítem | Estado | Resultado | Evidencia |
+|---|---|---|---|
+| H1 | `PARTIAL` | AVI de 95,50 s con audio PCM de 4.214.248 muestras (95,56 s); referencia `parec` de 4.585.904 muestras; envolvente corr 0,856, lag -0,28 s. Presencia y duración verificadas, continuidad/orden íntegros de salida procesada `NOT_VERIFIED` | [`logs/h1-h6-analysis.txt`](../2026-10-29-audio-capture-351-radio/logs/h1-h6-analysis.txt) |
+| H2 | `PARTIAL` | El source crudo de PulseAudio alimentó `parec` durante 599,78 s y entregó las 26.460.000 muestras solicitadas hasta un límite fijo de bytes. No demuestra continuidad de la salida GUI ni pérdidas cero | [`logs/h2-h9.log`](../2026-10-29-audio-capture-351-radio/logs/h2-h9.log) |
+| H3 | `NO EJECUTADO` | No se forzaron underruns; no se observó un hole natural | — |
+| H4/C1/C2 | `PARCIAL` | Operador: "no noté ningún cambio audible" en Off/SSB/AM/Digital; la copia sí cambia (Off rms 2023 -> SSB rms 926) | [`logs/h4-operator-listening.txt`](../2026-10-29-audio-capture-351-radio/logs/h4-operator-listening.txt) |
+| H5 | `NO EJECUTADO` | Sin señal CW/FT8 y sin cambio de modo | — |
+| H6 | `PASS` (estructura/duración) | AVI 95,50 s: video 764 frames @ 8 fps; audio 95,56 s; diferencia 0,06 s (< 1 frame). Sin medición de sincronía perceptual extremo a extremo | [`logs/h1-h6-ffprobe.txt`](../2026-10-29-audio-capture-351-radio/logs/h1-h6-ffprobe.txt) |
+| H7 | `PASS` (integridad) / `INCONCLUSIVE` (comparación acústica) | MP3 60,04 s reproducible; Off rms 2023 vs SSB 926 en instantes RF distintos, sin atribución causal al preset; AM/Digital pendientes | [`logs/h7-metadata.txt`](../2026-10-29-audio-capture-351-radio/logs/h7-metadata.txt) |
+| H8 | `PASS` (smoke visual) | 5 capturas: std 14,71-15,15; sin diferencia atribuible al preset en esa serie; equivalencia determinista `NOT_VERIFIED` | [`logs/h8-waterfall-stats.txt`](../2026-10-29-audio-capture-351-radio/logs/h8-waterfall-stats.txt) |
+| H9 | `PARCIAL` | CPU GUI 65,7 % con captura / 63,4 % baseline; crashlog 0; sin pops; p99 callback UNKNOWN; costo exclusivo Speex no aislado | [`logs/h2-cpu.log`](../2026-10-29-audio-capture-351-radio/logs/h2-cpu.log) |
+
+**Pendientes**: H3 (no se ejecuta por prohibición de forzar underruns), H5 (requiere señal
+CW/RTTY/FT8 y cambio de modo) y H7 AM/Digital (el preset sólo se cambia desde la UI física).
+
+El incidente de UI (contenido central en negro con Ajustes abierto) queda `UNRESOLVED / NOT_REPRODUCED`: la visualización se recuperó reiniciando la GUI, **pero la causa raíz no está resuelta**. Queda documentado en
+[`logs/ui-incident.txt`](../2026-10-29-audio-capture-351-radio/logs/ui-incident.txt) sin declararlo
+resuelto. Los MP3/AVI y el audio crudo no se publican; sólo metadatos, hashes y capturas de
+UI/waterfall.
+
+**Veredicto global:** `PARTIAL HARDWARE VALIDATION — CAPTURE PIPELINE OPERATIONAL IN TESTED SCENARIOS`. **Errata de método:** el `parec` de H1/H2 toma la fuente cruda *antes* de `audio_enh_process`, no la salida procesada. H2 utilizó un límite fijo `head -c`, por lo que el total de muestras no prueba ausencia de pérdidas. H6 cubre duración de pistas, no sync perceptual. H7 observa grabaciones no simultáneas, comparación acústica `INCONCLUSIVE`. H1/H2 **no** cierran continuidad íntegra de la cadena GUI. Se conserva el plan original arriba por trazabilidad.

@@ -1,0 +1,12 @@
+## Incidente de UI durante la sesión física #351
+
+- Momento: 2026-10-29, estando abierto Ajustes, la GUI quedó con el contenido central en negro
+  (solo barra superior y barra de botones visibles). Captura:
+  `captures/incidente-ui-pantalla-en-negro.png`.
+- Diagnóstico registrado: GUI viva (pid 2983), `get` respondía, load 0.75, `crashlog 0`; el log
+  terminaba en la construcción de Settings (`Settings: 70 navigable`).
+- Acción: reinicio de la GUI (kill al proceso; el daemon la relanzó en 6 s, pid 4716). Captura
+  posterior: `captures/incidente-ui-tras-reinicio.png`. La UI volvió a renderizar y no se repitió
+  en las pruebas siguientes.
+- No se determinó la causa raíz. Queda como posible regresión a vigilar; el backup del binario
+  anterior permite rollback (ver `deployment.md`).

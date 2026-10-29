@@ -1,0 +1,10 @@
+== H7 limpio: Rec (val0) 60 s, RecStop (val1) ==
+  start_utc=19:23:29 archivos_antes=1
+  Rec: {"t":"ok"}
+  archivo: /mnt/rec/REC_20261029_192329.mp3
+  RecStop: {"t":"ok"}
+  stop_utc=19:24:33
+  -rw-------    1 root     root        824427 Oct 29 19:21 /mnt/rec/REC_20261029_191831.mp3
+  -rw-------    1 root     root        302261 Oct 29 19:24 /mnt/rec/REC_20261029_192329.mp3
+  837ad2cabb04b4a1917c3984fc87569f0804ac1bd5caaaa3c474d388db5388ac  /mnt/rec/REC_20261029_192329.mp3
+  tras 3s (tamaño estable si cerró): 302261

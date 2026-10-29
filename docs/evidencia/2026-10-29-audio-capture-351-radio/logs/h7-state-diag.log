@@ -1,0 +1,7 @@
+  antes:
+    -rw-------    1 root     root        592985 Oct 29 19:20 /mnt/rec/REC_20261029_191831.mp3
+  app: Recorder
+  tras btn0 #1:
+    -rw-------    1 root     root        614267 Oct 29 19:20 /mnt/rec/REC_20261029_191831.mp3
+  tras btn0 #2:
+    -rw-------    1 root     root        633999 Oct 29 19:20 /mnt/rec/REC_20261029_191831.mp3

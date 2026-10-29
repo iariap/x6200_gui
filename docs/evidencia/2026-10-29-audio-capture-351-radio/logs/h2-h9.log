@@ -1,0 +1,13 @@
+  gui_pid=2983
+== H2/H9: 600 s de captura continua + CPU ==
+  start_utc=19:25:23
+  end_utc=19:35:23
+  h2: {"elapsed_s": 599.78, "total_samples": 26460000, "expected": 26450327, "drift_samples": 9673, "seconds_measured": 599, "per_second_min": 40960, "per_second_max": 53248, "per_second_bad_5pct": 224, "per_second_mean": 44119.2}
+  parec stderr: write() failed: Broken pipe
+  cpu_samples=120
+  cpu: 1793301923 36876
+  cpu: 1793301928 37173
+  cpu: 1793302516 75823
+  cpu: 1793302521 76147
+  crashlog=0 gui_pid=2983
+  get: {"t":"state","vfo":"A","freq":27505000,"freq_bg":27505000,"mode":"USB","band":"CB D","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":1,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":1,"nb_level"

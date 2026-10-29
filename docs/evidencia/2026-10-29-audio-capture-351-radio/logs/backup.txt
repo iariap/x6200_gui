@@ -1,0 +1,12 @@
+  total 13288
+  drwx------    2 root     root          4096 Oct 29 19:16 .
+  drwxr-xr-x   83 root     root          4096 Oct 29 19:16 ..
+  -rw-------    1 root     root           181 Oct 29 19:16 installed.sha256
+  -rw-------    1 root     root        118784 Oct 29 19:14 params.db.pre351
+  -rwx------    1 root     root      13473960 Oct 29 18:59 x6200_gui
+  backup_dir=/mnt/ui-bak-191601
+  instalada: ac2f6febb63b518b398779503d14f6993b721b21fb873cd630b8599e12f73d87  /usr/sbin/x6200_gui
+  backup:    ac2f6febb63b518b398779503d14f6993b721b21fb873cd630b8599e12f73d87  /mnt/ui-bak-191601/x6200_gui
+  params.db: 0661bd52705ec1eb411a867cf85ddf6b051442293ec2f7ea190bd327eacd5d4e  /mnt/params.db / backup 0661bd52705ec1eb411a867cf85ddf6b051442293ec2f7ea190bd327eacd5d4e  /mnt/ui-bak-191601/params.db.pre351
+  daemon: 1946  gui: 2618
+  /mnt libre: 2.0G

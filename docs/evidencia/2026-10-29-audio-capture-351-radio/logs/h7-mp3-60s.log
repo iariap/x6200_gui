@@ -1,0 +1,9 @@
+  start_utc=19:19:00
+  start: {"t":"ok"}
+  stop_utc=19:20:00
+  stop:  {"t":"ok"}
+  archivo: /mnt/rec/REC_20261029_191831.mp3
+  -rw-------    1 root     root        463193 Oct 29 19:20 /mnt/rec/REC_20261029_191831.mp3
+  f7c576ff3bb5dc384fa96e7accade53cd97bd2daa4aa022585574ec2e2124e35  /mnt/rec/REC_20261029_191831.mp3
+  preset en params.db: {'audio_enh_preset': 2}
+  crashlog=0

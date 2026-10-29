@@ -1,0 +1,4 @@
+  freq=27465000 band='CB D' mode=USB vol=29 nr=1/30 app='' tx=False
+  preset=0
+  gui_sha256=4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0
+  pid=4716 daemon=1946 crashlog=0 uptime=5870.38s
