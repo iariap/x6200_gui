@@ -45,7 +45,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 73. [La curva del barrido ahora ES el dato medido; gate de potencia y 8 W pedidos](#73-la-curva-del-barrido-ahora-es-el-dato-medido-gate-de-potencia-y-8-w-pedidos)
 74. [El modo CW tiene que quedar CW en todas las bandas y escribirse al VFO ACTIVO](#74-el-modo-cw-tiene-que-quedar-cw-en-todas-las-bandas-y-escribirse-al-vfo-activo)
 75. [El modo sigue al plan de bandas: al entrar al segmento CW pasa a CW y al salir restaura el modo anterior](#75-el-modo-sigue-al-plan-de-bandas-al-entrar-al-segmento-cw-pasa-a-cw-y-al-salir-restaura-el-modo-anterior)
-76. [El PTT normal no transmite en CB: el BASE limita el TX normal a bandas de aficionado (ATU y barrido de ROE sí son modos de servicio)](#76-el-ptt-normal-no-transmite-en-cb-el-base-limita-el-tx-normal-a-bandas-de-aficionado-atu-y-barrido-de-roe-sí-son-modos-de-servicio)
+76. [El PTT en CB se habilita con el bloque de calibración fullband que escribe la UI de fábrica](#76-el-ptt-en-cb-se-habilita-con-el-bloque-de-calibración-fullband-que-escribe-la-ui-de-fábrica)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
@@ -4534,35 +4534,53 @@ en modo CW**: "deberia hacerlo para ser consistente, al entrar y al salir".
 **Nota**: el plan cargado es IARU R1 y corta en 52.000 MHz; de 52 a 54 MHz no hay segmento que dispare el
 cambio automatico.
 
-## 76. El PTT normal no transmite en CB: el BASE limita el TX normal a bandas de aficionado (ATU y barrido de ROE sí son modos de servicio)
+## 76. El PTT en CB se habilita con el bloque de calibración fullband que escribe la UI de fábrica
 
-**Sintoma** (dueno, 2026-10-29): en CB el **PTT no transmite**, pero el **ATU funciona** y el
-**barrido de ROE mide**. Antes se habia identificado el interlock de software de CB (#160) y se
-abrio `cb_tx_scope = 2`; el sintoma no cambio.
+**Síntoma** (dueño, 2026-10-29): en CB el **PTT no transmite**, pero el ATU funciona y el barrido de
+ROE mide. Con `cb_tx_scope=2` el síntoma no cambiaba.
 
-**Metodo, medido**: watcher en la radio que lee `/dev/input/event0` (`matrix_keypad`, los eventos
-`BTN_TRIGGER_HAPPY4` = PTT) y consulta `tx` con `{"cmd":"get"}` cada ~0,4 s.
+**Corrección de lo que decía antes este registro**: esta sección decía que "el BASE limita el TX
+normal a bandas de aficionado y no hay workaround desde la GUI" (PR #356). Era **incompleto**: el
+BASE sí keyea en 27 MHz si recibe el **bloque de calibración de 507 B** que la UI de fábrica escribe
+con `fullband-tx=enable`. Medición que lo refuta: PTT directo por I2C (cmd `sple_atue_trx`, bit
+`iptt`) con el bloque aplicado dio `tx=True` en 27.185 MHz (10 de 20 muestras mantenidas), y antes
+del bloque daba `tx=False` en 27.185 y 27.505.
 
-**Medido** (radio, 2026-10-29 17:41-17:45 UTC, GUI `ca5ed97b3c62`, `cb_tx_scope=2`):
+**Causa, medida**:
 
-| banda/frec/modo | pulsaciones de PTT | `tx` del BASE |
-|---|---|---|
-| CB D 27.505 / 27.755, AM y USB | 15 eventos `code=707` (val 1/0) | **False siempre** |
-| 40m SSB 7.100 LSB | PTT (mismo boton) | **True** (6 muestras 17:45:11-13) |
+```
+# sin bloque fullband: PTT directo I2C, CB C 27.185 LSB y CB D 27.505 LSB
+t1..t6: tx=False  (0/6 en cada frecuencia)
+# 40m 7.100 LSB, mismo comando: t1: tx=True
+```
 
-Ademas, en CB D: **ATU funciona** (portadora de sintonia) y **barrido de ROE completo**:
-`Completed min 2.2 @ 27.975.000 kHz (n=51/51)`.
+Por RE del binario de fábrica (`x6200_ui_v100`, con REA 6.7.0 + Ghidra 12.1.4, `rea decompile`):
 
-**Causa**: el **firmware del BASE limita el TX normal** (ruta PTT/modo) a las bandas de
-aficionado. El **ATU** y el **barrido de ROE** son **modos de servicio** del BASE y no pasan por ese
-limite, por eso transmiten en 27 MHz. El interlock de la GUI (`cb_tx_scope`) no era el bloqueo: al
-abrirlo, el PTT sigue llegando a la GUI pero el BASE no keyea (el `tx` queda en false).
+- `MainWidget::updateBandEdge()` escribe en `BaseCommIIC+0x120` el flag fullband y, en
+  `+0x125..+0x1fd`, 11 entradas de banda (stride `0x14`: start/stop/dos bordes y `txEnable` en +16).
+- `BaseCommIIC::updateCalibrateData()` encola el parámetro `"update_calibdata"`, y
+  `BaseCommIIC::start()` lo manda con `iicWrite(0xf000, 1, this + 8, 0x1fb)` (507 B).
+- El buffer de calibración es `this+8` (leído con `iicRead(0x100,...)`), así que dentro del bloque:
+  flag fullband en **offset 0x118** (`0x120-8`) y `txEnable` de cada banda en
+  **0x12d + j*0x14**, j=0..10 (`0x125-8 + 16`).
 
-**Consecuencia**: no hay workaround desde la GUI; habilitar el PTT normal en 27 MHz requeriria
-modificar el firmware del BASE (no hay imagen/RE disponible; riesgo). `cb_tx_scope` vuelve a su
-default conservador **0**; el ATU y el barrido de ROE siguen disponibles en CB. Se agrega un log de
-`radio_set_ptt()` (`tx`, `allowed`, `freq`, `state`) para futuras verificaciones.
+**Arreglo**: `radio_fullband_tx_patch()` en `src/radio.c` (línea ~619) lee la calibración del BASE
+(registro `0x0100`), si el flag está en 0 la parchea y escribe el bloque de 507 B en el registro
+`0xF000` con el mismo framing I2C de la UI original; se llama al final de `radio_init()` (~línea
+671). `cb_tx_scope` vuelve al default **2** (todas las bandas/grids). GUI `a92248cceef0`.
 
-**Sin fundar (anexo A)**: el mecanismo interno del BASE (band-plan del firmware/MCU) que rechaza el
-TX normal fuera de las bandas de aficionado.
+**Verificación, medida** (radio, GUI `a92248cceef0`):
+
+```
+$ cp /mnt/calib-before-fullband.bin ...  (reseteo flag a 0)
+  cal[0x118] = 0
+$ # deploy y arranque de la GUI
+log: radio_fullband_tx_patch: Fullband TX habilitado en el BASE (PTT en CB)
+$ i2ctransfer -y 0 w2@0x72 0x01 0x00 r507@0x72   # cal[0x118]
+  cal[0x118] = 1
+```
+
+**Sin fundar (anexo A)**: que el PTT **físico** del dueño keyee (la prueba medida es con el bit
+`iptt` por I2C, mismo camino del BASE que usa la GUI); potencia/ROE reales en CB; si el bloque
+sobrevive a un power-cycle sin la GUI (la GUI lo reaplica al arrancar, eso sí está verificado).
 

@@ -36,6 +36,10 @@
 #include <pthread.h>
 #include <string.h>
 #include <math.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/i2c.h>
+#include <linux/i2c-dev.h>
 
 #define FLOW_RESTART_TIMEOUT 300
 #define IDLE_TIMEOUT (1000)
@@ -574,6 +578,70 @@ void radio_bb_reset() {
     gpio_safe_set(x6200_pin_bb_reset, 0);
 }
 
+/* Full TX en CB: la UI de fabrica habilita el TX fuera de las bandas de
+ * aficionado escribiendo el bloque de calibracion de 507 B con el flag
+ * "fullband-tx" y los txEnable de banda. El BASE limita el PTT normal a las
+ * bandas de aficionado hasta que recibe ese bloque (medido 2026-10-29: PTT
+ * directo por I2C no keyea en 27 MHz; con el bloque, si). Se aplica en cada
+ * arranque porque el BASE lo pierde al reiniciarse. La escritura va al registro
+ * 0xF000 con el mismo protocolo I2C que usa la UI original (direccion de 2 bytes
+ * byte-swapped + payload). */
+#define BASE_I2C_DEV             "/dev/i2c-0"
+#define BASE_I2C_ADDR            0x72
+#define FULLBAND_CAL_LEN         507
+#define FULLBAND_FLAG_OFF        0x118   /* BaseCommIIC+0x120 = cal+0x118 */
+#define FULLBAND_BAND0_TX_OFF    0x12d   /* primer txEnable de la tabla de bandas */
+#define FULLBAND_BAND_STRIDE     0x14
+#define FULLBAND_BANDS           11
+
+static bool base_i2c_read_reg(int fd, uint16_t reg, uint8_t *buf, size_t len) {
+    uint16_t w = (uint16_t)((reg & 0xFF) << 8 | (reg >> 8));
+    struct i2c_msg msgs[2];
+    struct i2c_rdwr_ioctl_data io;
+    msgs[0].addr = BASE_I2C_ADDR; msgs[0].flags = 0; msgs[0].len = 2; msgs[0].buf = (uint8_t *)&w;
+    msgs[1].addr = BASE_I2C_ADDR; msgs[1].flags = I2C_M_RD; msgs[1].len = len; msgs[1].buf = buf;
+    io.msgs = msgs; io.nmsgs = 2;
+    return ioctl(fd, I2C_RDWR, &io) >= 0;
+}
+
+static bool base_i2c_write_reg(int fd, uint16_t reg, const uint8_t *buf, size_t len) {
+    uint8_t data[2 + FULLBAND_CAL_LEN];
+    uint16_t w = (uint16_t)((reg & 0xFF) << 8 | (reg >> 8));
+    data[0] = (uint8_t)(w & 0xFF); data[1] = (uint8_t)(w >> 8);
+    memcpy(data + 2, buf, len);
+    struct i2c_msg msg;
+    struct i2c_rdwr_ioctl_data io;
+    msg.addr = BASE_I2C_ADDR; msg.flags = 0; msg.len = 2 + len; msg.buf = data;
+    io.msgs = &msg; io.nmsgs = 1;
+    return ioctl(fd, I2C_RDWR, &io) >= 0;
+}
+
+static void radio_fullband_tx_patch(void) {
+    int fd = open(BASE_I2C_DEV, O_RDWR);
+    if (fd < 0) { LV_LOG_ERROR("Fullband TX: no puedo abrir %s", BASE_I2C_DEV); return; }
+    uint8_t cal[FULLBAND_CAL_LEN];
+    if (!base_i2c_read_reg(fd, 0x0100, cal, sizeof(cal))) {
+        LV_LOG_ERROR("Fullband TX: no puedo leer la calibracion del BASE"); close(fd); return;
+    }
+    bool need = (cal[FULLBAND_FLAG_OFF] != 1);
+    for (int j = 0; j < FULLBAND_BANDS && !need; j++) {
+        if (cal[FULLBAND_BAND0_TX_OFF + j * FULLBAND_BAND_STRIDE] != 1) need = true;
+    }
+    if (!need) { LV_LOG_USER("Fullband TX ya habilitado en el BASE"); close(fd); return; }
+    cal[FULLBAND_FLAG_OFF] = 1;
+    for (int j = 0; j < FULLBAND_BANDS; j++) {
+        int off = FULLBAND_BAND0_TX_OFF + j * FULLBAND_BAND_STRIDE;
+        cal[off] = 1; cal[off + 1] = 0; cal[off + 2] = 0; cal[off + 3] = 0;
+    }
+    bool ok = base_i2c_write_reg(fd, 0xF000, cal, sizeof(cal));
+    uint8_t rb[FULLBAND_CAL_LEN];
+    bool verified = ok && base_i2c_read_reg(fd, 0x0100, rb, sizeof(rb)) &&
+                    rb[FULLBAND_FLAG_OFF] == 1;
+    close(fd);
+    if (verified) LV_LOG_USER("Fullband TX habilitado en el BASE (PTT en CB)");
+    else          LV_LOG_ERROR("Fullband TX: fallo la escritura/verificacion del bloque de calibracion");
+}
+
 void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
     /* La politica visual arranca en QUALITY: el modo Ahorro del waterfall solo
      * cambia si el pack lo pide (UI-08 incr. 2). Despues se aplica el override
@@ -597,6 +665,10 @@ void radio_init(radio_state_change_t tx_cb, radio_state_change_t rx_cb) {
 
         usleep(500000);
     }
+
+    /* Habilitar TX fuera de las bandas de aficionado (CB) como la UI de fabrica.
+     * Se hace antes de iniciar el flujo de lectura para no competir con el hilo. */
+    radio_fullband_tx_patch();
 
     if (!x6200_flow_init())
         return;

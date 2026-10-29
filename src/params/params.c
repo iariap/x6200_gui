@@ -97,13 +97,14 @@ params_t params = {
     .freq_accel_threshold   = { .x = 7, .min = 3, .max = 15, .name = "freq_accel_threshold",
                                 .voice = "Acceleration starts at" },
 
-    /* CB 27 MHz (issue #146): default conservador, SBC argentino (26,960-27,410).
-     * Medido el 2026-10-29: aunque el interlock de la GUI se abra (cb_tx_scope=2),
-     * el PTT normal NO transmite en 26-28 MHz; el firmware del BASE limita el TX
-     * normal a bandas de aficionado. El ATU y el barrido de ROE si transmiten en
-     * CB porque son modos de servicio del BASE. Dejar 0 evita dar una falsa
-     * expectativa de TX; el valor sigue configurable en DATA/params.db. */
-    .cb_tx_scope            = { .x = 0, .min = 0, .max = 2, .name = "cb_tx_scope" },
+    /* CB 27 MHz (issue #146): TX habilitado en toda la banda 26-28 MHz, sin
+     * importar grid/zona. El BASE limita el PTT normal a las bandas de
+     * aficionado hasta que la GUI le escribe el bloque de calibracion con el flag
+     * fullband-tx (radio_fullband_tx_patch(), medido 2026-10-29). Con ese bloque,
+     * el PTT normal keyea en 27 MHz. El tope de potencia sigue en 4,0 W.
+     * Los valores 0 (solo SBC argentino) y 1 (grids A-D) siguen disponibles
+     * editando cb_tx_scope en DATA/params.db. */
+    .cb_tx_scope            = { .x = 2, .min = 0, .max = 2, .name = "cb_tx_scope" },
     .cb_pwr_max             = { .x = 4.0f, .name = "cb_pwr_max" },
 
     .vox                    = false,
