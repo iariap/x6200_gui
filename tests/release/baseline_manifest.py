@@ -179,7 +179,7 @@ def inventario(wt: Path) -> dict[str, Any]:
     return {
         "fixtures_host": len(fixtures),
         "dialogos_inertes": filas,
-        "capturas_qemu_contrato": "3 rondas x 25 apps (tests/qemu/run_apps_qemu.sh)",
+        "capturas_qemu_contrato": "3 rondas x 26 apps (tests/qemu/run_apps_qemu.sh)",
     }
 
 

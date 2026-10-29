@@ -123,7 +123,7 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
     below the 44px field-UX target) has one waiver per fixture that renders the
     rows it lives in: settings-home, settings-wfbat and settings-audio first, and
     the pages the #175 grid change added to the corpus (settings-grupo-operation/
-    -display/-info and the six theme variants of Operation) with the same reason,
+    -display/-logs and the six theme variants of Operation) with the same reason,
     because their rows carry the same pre-existing geometry. The rest
     are the digit panels' ghost layer (UI-017, AB-FONTSE): the shadow label of the
     frequency row is stacked under the value on purpose, and `layout_overlap` reads
@@ -160,7 +160,7 @@ def test_every_repo_exception_is_scoped_dated_and_recorded(real_quality: RealQua
         # 159x13) que ya waiveran las tres de arriba, en las paginas nuevas.
         "settings-grupo-operation",
         "settings-grupo-display",
-        "settings-grupo-info",
+        "settings-grupo-logs",
         "settings-grupo-operation-tema-aurora",
         "settings-grupo-operation-tema-cathode",
         "settings-grupo-operation-tema-redshift",

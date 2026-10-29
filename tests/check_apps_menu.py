@@ -94,7 +94,8 @@ for nombre, cuerpo in paginas:
                 fallos.append(
                     f"{nombre}: el boton {btn} ({accion_btn}) no tiene case en {funcion}() "
                     f"(el boton del menu queda muerto)")
-        elif btn not in ("btn_app_p1", "btn_app_p2", "btn_app_p3", "btn_app_p4", "btn_app_p5", "btn_app_p6"):
+        elif btn not in ("btn_app_p1", "btn_app_p2", "btn_app_p3", "btn_app_p4", "btn_app_p5",
+                         "btn_app_p6", "btn_app_p7"):
             print(f"  (aviso) {nombre} usa {btn}, que no es una app")
 
 # Ninguna pagina puede tener mas botones que BUTTONS (el limite del marco)

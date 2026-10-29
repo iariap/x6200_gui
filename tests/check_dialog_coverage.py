@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Valida la tabla de cobertura de los 22 dialogos inertes (issue #222, epica #216).
+"""Valida la tabla de cobertura de los 23 dialogos inertes (issue #222, epica #216).
 
-El assessment #194/#197 dejo abierto un hueco que se repite: el arnes de host declara 22
+El assessment #194/#197 dejo abierto un hueco que se repite: el arnes de host declara 23
 constructores de dialogo como no-op (`tools/ui_harness/mocks/mock_main_screen.c`), asi que
 esas ventanas NO se renderizan en el host, y el manifiesto de cobertura se puede quedar
 desactualizado sin que nada se ponga rojo. Este chequeo convierte el inventario en una
@@ -12,12 +12,13 @@ invariante determinista:
      sacar un dialogo del mock sin actualizar la tabla falla aca;
   2. cada fila apunta a la fuente de PRODUCCION que define el descriptor real, y esa fuente
      lo define de verdad (`dialog_t ... *dialog_<x> = &dialog`), no es otro mock;
-  3. `host_status` es INERT en las 22 filas: el harness de host sigue siendo sintetico para
-     ellas y su etiqueta de cobertura NO se puede promover a REAL (regla del issue);
+  3. `host_status` es INERT en todas las filas: el harness de host sigue siendo sintetico
+     para ellas y su etiqueta de cobertura NO se puede promover a REAL (regla del issue);
   4. los `host_fixture` citados existen en `tools/ui_harness/fixtures/`;
   5. `qemu_app` es una de las apps de `remote_server.cpp::app_names[]` (o `-`), y el barrido
-     cubre las 25 entradas: toda app tiene una fila o una excepcion verificada (Settings,
-     BT y SWRScan son dialogos REALES; RTTY y DFLEditor no son dialogos; FT4 es alias de FT8);
+     cubre las APPS_DEL_BARRIDO entradas: toda app tiene una fila o una excepcion verificada
+     (Settings, BT y SWRScan son dialogos REALES; RTTY y DFLEditor no son dialogos; FT4 es
+     alias de FT8);
   6. un resultado REAL/PARTIAL exige captura (`qemu_evidence` bajo `capturas/`) y NO admite
      razon de bloqueo; un BLOCKED/UNSUPPORTED exige la razon exacta y NO admite captura. Es
      la regla "nunca PASS sin salida real" escrita como chequeo.
@@ -40,6 +41,12 @@ CSV = RAIZ / "tests" / "qemu" / "dialog-coverage.csv"
 MOCK = RAIZ / "tools" / "ui_harness" / "mocks" / "mock_main_screen.c"
 FIXTURES = RAIZ / "tools" / "ui_harness" / "fixtures"
 REMOTE = RAIZ / "src" / "remote_server.cpp"
+
+# Apps del barrido = `remote_server.cpp::app_names[]` sin "off". El numero es el CONTRATO
+# de #222 y se fija aca a proposito: agregar una app al menu (y al control remoto) sin
+# agregarla al barrido tiene que fallar, no pasar. Al entrar Logs (2026-10-27) el contrato
+# paso de 25 a 26; la fila de Logs queda BLOCKED hasta que haya una corrida real.
+APPS_DEL_BARRIDO = 26
 
 ESTADOS_QEMU = {"REAL", "PARTIAL", "UNSUPPORTED", "BLOCKED"}
 ESPERADOS_QEMU = {"REAL", "PARTIAL", "UNSUPPORTED"}
@@ -113,9 +120,10 @@ def main() -> int:
         )
 
     apps = [a for a in app_names(texto_remote) if a != "off"]
-    if len(apps) != 25:
+    if len(apps) != APPS_DEL_BARRIDO:
         fallos.append(
-            f"remote_server.cpp::app_names[] tiene {len(apps)} apps (el contrato de #222 dice 25)"
+            f"remote_server.cpp::app_names[] tiene {len(apps)} apps "
+            f"(el contrato de #222 dice {APPS_DEL_BARRIDO})"
         )
     apps_cubiertas: set[str] = set()
 
@@ -184,7 +192,7 @@ def main() -> int:
                     f"no puede citar captura ({evidencia!r})"
                 )
 
-    # Las 25 apps del barrido, contadas: cada una con fila propia o excepcion verificada.
+    # Las apps del barrido, contadas: cada una con fila propia o excepcion verificada.
     sin_cubrir = set(apps) - apps_cubiertas - set(EXCEPCIONES)
     if sin_cubrir:
         fallos.append(

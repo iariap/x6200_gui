@@ -1,11 +1,11 @@
 # apps-menu-5: the real main screen with the app menu the APP key opens, on its
 # page 5 of six. The path is the firmware's own: the APP key loads buttons_group_app
-# (src/main_screen.c, KEYPAD_APP) and the page button cycles its six pages
+# (src/main_screen.c, KEYPAD_APP) and the page button cycles its pages
 # (src/buttons.cpp, button_next_page_cb). Same radio state as home-usb-20m, so the
 # only difference is the button bar.
 #
-# UI-002: the six fixtures apps-menu-1..6 render the six APP pages, so all 22 app
-# cells (post-About, issue #46) are captured and inspected. scenario_settle
+# UI-002: the fixtures apps-menu-1..7 render the APP pages, so every app cell
+# (post-About, issue #46) is captured and inspected. scenario_settle
 # codifies, from the real buttons_group_app table, that the page's button labels
 # are the ones on screen (a reordered page stops the run instead of capturing a
 # different page green).

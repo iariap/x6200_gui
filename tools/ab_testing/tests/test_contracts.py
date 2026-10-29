@@ -176,6 +176,34 @@ def test_modal_surface_declares_a_fully_covered_region(
     assert "fully covered" in finding.detail
 
 
+def test_modal_surface_declares_a_region_that_only_keeps_the_margin(
+    tmp_path: Path, region_map: RegionMap
+) -> None:
+    """A band the window covers except the screen margin is declared, not measured.
+
+    `frecuencia` = [0,160,800,36] falls ENTIRELY inside the window's vertical span
+    (y=66..413) and the window is 796 of the 800 columns wide, so no row of the band
+    is visible: the pixels left at the edges are the screen margin, and the rest is
+    the window's own text/borders. Measuring the region whole counted those as the
+    row's content (measured 1.53% on `bt-dialog-tema-redshift`, below the 2% floor
+    and unrelated to the frequency row). Without the window the same capture
+    measures the region whole, as before.
+    """
+    rule = "region_min_content:frecuencia"
+    config = contracts(
+        region_min_content={"frecuencia": 0.02},
+        modal_surface=MODAL,
+        modal_visible_regions=("frecuencia",),
+    )
+    covered = _capture_with_modal(tmp_path, "margin", blank_image())
+    finding = _finding(run_contracts([covered], region_map, config), rule)
+    assert finding.ok is True
+    assert "not measured" in finding.detail
+
+    without = make_capture(tmp_path / "no-modal", "no-modal", blank_image(), rev=revision())
+    assert _finding(run_contracts([without], region_map, config), rule).ok is False
+
+
 def test_modal_surface_requires_the_inspection_tree(tmp_path: Path, region_map: RegionMap) -> None:
     """Without `--inspect` nothing is assumed: the region is measured whole."""
     capture = make_capture(tmp_path, "no-tree", draw_box(blank_image(), 100, 250, 400, 100))

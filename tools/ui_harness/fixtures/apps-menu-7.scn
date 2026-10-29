@@ -1,0 +1,41 @@
+# apps-menu-7: the real main screen with the app menu the APP key opens, on its
+# page 7 of seven. The path is the firmware's own: the APP key loads buttons_group_app
+# (src/main_screen.c, KEYPAD_APP) and the page button cycles its pages
+# (src/buttons.cpp, button_next_page_cb). Same radio state as home-usb-20m, so the
+# only difference is the button bar.
+#
+# UI-002: the fixtures apps-menu-1..7 render the APP pages, so every app cell
+# (post-About, issue #46) is captured and inspected; page 7 is the Logs app's page
+# (issue #343 added it after the six original pages were full). scenario_settle
+# codifies, from the real buttons_group_app table, that the page's button labels
+# are the ones on screen (a reordered page stops the run instead of capturing a
+# different page green).
+
+name apps-menu-7
+screen apps-menu
+apps_page 7
+
+seed 20
+
+frequency_hz 14074000
+tx_frequency_hz 14074000
+fft_width_hz 384000
+
+mode usb
+vfo A
+agc auto
+
+split false
+att false
+pre false
+atu false
+ant 1
+
+smeter_db -73
+
+battery_v 12.1
+external_v 13.8
+battery_cap 76
+charging false
+
+rxtx rx

@@ -45,6 +45,10 @@ NOMBRE_EN_EL_MANUAL = {
     # Estaba sin nombre mapeado, asi que el chequeo lo listaba como "revisar" y no
     # verificaba su seccion del manual; se documenta en §6.22 (issue #222).
     "ACTION_APP_DFL_EDITOR": "DFL editor",
+    # App Logs (subida de QSO a QRZ/eQSL/Clublog): el feature la dejo sin seccion y
+    # sin mapear, asi que este chequeo la imprimia como "revisar" y seguia en verde.
+    # Se documenta en §6.25.
+    "ACTION_APP_LOGS": "Logs",
     "ACTION_APP_SETTINGS": "Ajustes",
 }
 

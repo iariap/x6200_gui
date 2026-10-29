@@ -932,6 +932,11 @@ static button_item_t  btn_wifi   = make_app_btn("WiFi", ACTION_APP_WIFI);
 /* El de Bluetooth va al lado del de WiFi: es la UX para elegir a que dispositivo emparejarse
  * (abre dialog_bt: escanear, lista de pareados y encontrados, parear, conectar/desconectar). */
 static button_item_t  btn_bt     = make_app_btn("BT", ACTION_APP_BT);
+/* App Logs (subida de QSO a QRZ/eQSL/Clublog): tenia `case` en main_screen_start_app y
+ * entrada en el control remoto, pero ningun boton en las paginas APP, asi que solo se
+ * llegaba por long press y tests/check_apps_menu.py la marcaba. Tiene su pagina propia
+ * (APP 7:7) porque las 6 paginas ya estan completas (4 apps + boton de pagina = BUTTONS). */
+static button_item_t  btn_logs   = make_app_btn("Logs", ACTION_APP_LOGS);
 
 /* RTTY */
 static button_item_t btn_rtty_p1 = {
@@ -1057,12 +1062,13 @@ buttons_page_t buttons_page_dfl_expanded = {
 /* App pages: TODAS las apps de main_screen_start_app tienen que estar aca (el chequeo
  * tests/check_apps_menu.py lo verifica). El boton de pagina ocupa un lugar, asi que entran 4
  * apps por pagina. */
-static button_item_t btn_app_p1 = make_page_btn("(APP 1:6)", "Application|page 1");
-static button_item_t btn_app_p2 = make_page_btn("(APP 2:6)", "Application|page 2");
-static button_item_t btn_app_p3 = make_page_btn("(APP 3:6)", "Application|page 3");
-static button_item_t btn_app_p4 = make_page_btn("(APP 4:6)", "Application|page 4");
-static button_item_t btn_app_p5 = make_page_btn("(APP 5:6)", "Application|page 5");
-static button_item_t btn_app_p6 = make_page_btn("(APP 6:6)", "Application|page 6");
+static button_item_t btn_app_p1 = make_page_btn("(APP 1:7)", "Application|page 1");
+static button_item_t btn_app_p2 = make_page_btn("(APP 2:7)", "Application|page 2");
+static button_item_t btn_app_p3 = make_page_btn("(APP 3:7)", "Application|page 3");
+static button_item_t btn_app_p4 = make_page_btn("(APP 4:7)", "Application|page 4");
+static button_item_t btn_app_p5 = make_page_btn("(APP 5:7)", "Application|page 5");
+static button_item_t btn_app_p6 = make_page_btn("(APP 6:7)", "Application|page 6");
+static button_item_t btn_app_p7 = make_page_btn("(APP 7:7)", "Application|page 7");
 
 static buttons_page_t page_app_1 = {   /* modos digitales */
     {&btn_app_p1, &btn_ft8, &btn_js8, &btn_wspr, &btn_rtty}
@@ -1081,6 +1087,9 @@ static buttons_page_t page_app_5 = {   /* configuracion */
 };
 static buttons_page_t page_app_6 = {   /* radio y red */
     {&btn_app_p6, &btn_wifi, &btn_bt, &btn_swr, &btn_atune}
+};
+static buttons_page_t page_app_7 = {   /* registro de QSO y subida a logs online */
+    {&btn_app_p7, &btn_logs}
 };
 
 /* RTTY */
@@ -1108,6 +1117,7 @@ buttons_group_t buttons_group_app = {
     &page_app_4,
     &page_app_5,
     &page_app_6,
+    &page_app_7,
 };
 
 buttons_group_t buttons_group_key = {

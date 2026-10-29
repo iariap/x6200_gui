@@ -87,18 +87,32 @@ def test_radio_u_2da_y_log() -> None:
         assert f"valle: y=398 en x={xv}" in r.stdout, salida(r)
 
 
-def test_domo_del_owner_se_mide_como_domo() -> None:
-    """El domo viejo del owner: medido y clasificado domo, no 'no encontre'."""
+def test_domo_del_owner_se_reporta_como_domo() -> None:
+    """El domo viejo del owner: medido y clasificado domo, no 'no encontre'.
+
+    Con la curva = dato medido, una captura con forma de domo se reporta domo y
+    sale 0: el modo de una captura no impone estetica (la relacion dato<->dibujo la
+    verifica el modo de dos capturas sobre un render fresco). Lo que se asegura aca
+    es que la medicion lo ve: la base en los BORDES (x=10) y la forma clasificada.
+    """
     r = corre(DOMO_OWNER)
 
-    assert r.returncode == 1, salida(r)
+    assert r.returncode == 0, salida(r)
     assert "forma: domo" in r.stdout, salida(r)
     assert "no encontre la curva" not in r.stdout, salida(r)
-    assert "valle: y=398" in r.stdout, salida(r)
+    assert "valle: y=398 en x=10" in r.stdout, salida(r)
 
 
-def test_arnes_sin_regresion() -> None:
-    """El arnes del #125: domo->valle y valle real, sueltos (1 argumento)."""
+def test_arnes_capturas_medidas() -> None:
+    """El arnes del #125: las dos capturas commiteadas se miden (U, tinta del arnes).
+
+    Son las del 2026-10-17, cuando la politica dibujaba el domo del owner como
+    valle; hoy el domo se dibuja domo. Por eso aca solo se verifica que la
+    medicion las lee (tinta RGB(248,238,255) y traza U); el gate VIVO de la
+    relacion dato<->dibujo es tests/check_harness_swrscan_curve.sh, que
+    re-renderiza las fixtures swrscan-owner-40m* y exige domo->domo y valle->valle
+    (necesita Docker, por eso no corre en este test).
+    """
     for png in (ARNES_DOMO, ARNES_VALLE):
         r = corre(png)
 
@@ -107,23 +121,33 @@ def test_arnes_sin_regresion() -> None:
         assert "tinta: RGB(248,238,255)" in r.stdout, salida(r)
 
 
-def test_dos_argumentos_arnes_y_radio() -> None:
-    """Modo historico de 2 argumentos: arnes PASS y arnes + radio PASS."""
-    r = corre(ARNES_DOMO, ARNES_VALLE)
+def test_dos_argumentos_domo_y_valle() -> None:
+    """Modo de 2 argumentos: el domo medido se dibuja domo y el valle, valle."""
+    # El domo del owner (captura de radio) + el valle real de la radio: las dos
+    # formas que el dato manda. Es el caso que fallaba en el issue #132 ("no
+    # encontre la curva" con 2 argumentos sobre la captura de Redshift).
+    r = corre(DOMO_OWNER, RADIO_01)
+    assert r.returncode == 0, salida(r)
+    assert "forma: domo" in r.stdout, salida(r)
+    assert "forma: U" in r.stdout, salida(r)
+    assert "no encontre la curva" not in r.stdout, salida(r)
+
+    # El mismo domo contra el valle del arnes: la relacion se mide en los dos.
+    r = corre(DOMO_OWNER, ARNES_VALLE)
     assert r.returncode == 0, salida(r)
     assert "PASS" in r.stdout, salida(r)
 
-    # Este es exactamente el caso que fallaba en el issue #132.
-    r = corre(ARNES_DOMO, RADIO_01)
-    assert r.returncode == 0, salida(r)
-    assert "no encontre la curva" not in r.stdout, salida(r)
-
 
 def test_rama_fuera_de_resonancia() -> None:
-    """Con el dial fuera de la resonancia el minimo cae en el borde: no es U."""
+    """Con el dial fuera de la resonancia el minimo cae en el borde: se reporta rama.
+
+    Es un dato legitimo del barrido (no una estetica): el modo de una captura lo
+    mide, lo clasifica y sale 0; lo que no puede pasar es confundirlo con "no
+    encontre la curva".
+    """
     r = corre(RADIO_FUERA)
 
-    assert r.returncode == 1, salida(r)
+    assert r.returncode == 0, salida(r)
     assert "forma: rama" in r.stdout, salida(r)
     assert "no encontre la curva" not in r.stdout, salida(r)
 

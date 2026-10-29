@@ -18,10 +18,10 @@ from .inspection import inspection_of, iter_tree
 from .known_issues import KnownIssue, baseline_issue_for
 from .layout_checks import run_layout_checks
 from .quality_config import QualityContracts
-from .regions import RegionMap
+from .regions import Region, RegionMap
 from .theme_checks import run_theme_checks
 from .typography_checks import run_typography_checks
-from .visual_diff import load_rgb, region_content_fraction, region_visible_mask
+from .visual_diff import load_rgb, region_content_fraction
 
 __all__ = ["ContractFinding", "run_contracts"]
 
@@ -169,17 +169,20 @@ def _region_content(
         # over their visible part: the window is a flat plate, and where it covers a
         # band the pixels left are the ones the user sees.
         exclude = modal if modal is not None and name in contracts.modal_visible_regions else None
-        if exclude is not None and not region_visible_mask(region, exclude).any():
-            # Nothing of the region is on screen (the modal covers all of it): the
-            # pixels cannot answer "is it drawn", so it is declared, never failed and
-            # never silently counted as content of the window on top.
+        if exclude is not None and not _has_visible_row(region, exclude):
+            # The window leaves no complete row of the region on screen: either it
+            # covers all of it or it only leaves the screen margin around its box
+            # (the frequency row: 796 of 800 columns). Those pixels cannot answer
+            # "is it drawn" -they are the window's own content and the margin-, so
+            # the region is declared, never failed and never counted as content of
+            # the window on top.
             findings.append(
                 ContractFinding(
                     rule=f"region_min_content:{name}",
                     fixture=capture.name,
                     ok=True,
                     detail=(
-                        "region fully covered by the modal window: no visible pixels, not measured"
+                        "region fully covered by the modal window (no row is visible): not measured"
                     ),
                 )
             )
@@ -196,6 +199,25 @@ def _region_content(
             )
         )
     return findings
+
+
+def _has_visible_row(region: Region, exclude: tuple[int, int, int, int]) -> bool:
+    """Whether at least one whole row of `region` is outside the window `exclude`.
+
+    The regions of `region_min_content` are horizontal bands of the screen, so the
+    band is on screen only if one of its rows is: a row the window covers (even
+    partially) does not show the component. A window that leaves just the margin
+    around its box -the shared dialog is 796 px wide on an 800 px screen- leaves
+    no row: what is left at the edges is the margin, not the band.
+    """
+    x0, y0, x1, y1 = region.box
+    ex0, ey0, ex1, ey1 = exclude
+
+    if not (ex0 < x1 and ex1 > x0):
+        return True  # the window does not overlap the region horizontally
+    # The window is a rectangle: with the horizontal overlap established, a row is
+    # covered exactly when it falls inside the window's vertical span.
+    return y0 < ey0 or y1 > ey1
 
 
 def _visible_modal_surface(
