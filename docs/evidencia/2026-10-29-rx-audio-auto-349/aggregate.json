@@ -1,0 +1,116 @@
+{
+  "primary_metric": "STOI",
+  "secondary": "ESTOI",
+  "n_scenarios": 72,
+  "n_speakers": 4,
+  "speakers": [
+    "1089",
+    "1188",
+    "121",
+    "1221"
+  ],
+  "arms": {
+    "N_OFF": {
+      "median_stoi": 0.9083610267777884,
+      "p10_stoi": 0.6637456152899467,
+      "p90_stoi": 0.9665951592298789,
+      "median_estoi": 0.7514298474398546,
+      "median_delta_stoi_vs_N_OFF": 0.0,
+      "p10_delta": 0.0,
+      "p90_delta": 0.0,
+      "fraction_delta_gt_0": 0.0,
+      "n": 72
+    },
+    "N_SPEEX": {
+      "median_stoi": 0.9203293730489247,
+      "p10_stoi": 0.6990067452055908,
+      "p90_stoi": 0.9724140240844289,
+      "median_estoi": 0.7891068170752968,
+      "median_delta_stoi_vs_N_OFF": 0.0199177997001575,
+      "p10_delta": 0.004490281956217013,
+      "p90_delta": 0.03256725475165071,
+      "fraction_delta_gt_0": 0.9583333333333334,
+      "n": 72
+    },
+    "DX_OFF": {
+      "median_stoi": 0.8768845114424337,
+      "p10_stoi": 0.6453629055419998,
+      "p90_stoi": 0.9347805161891668,
+      "median_estoi": 0.7051166932092012,
+      "median_delta_stoi_vs_N_OFF": -0.022378524478683548,
+      "p10_delta": -0.035211452585025116,
+      "p90_delta": -0.017453634550476892,
+      "fraction_delta_gt_0": 0.0,
+      "n": 72
+    },
+    "DX_SPEEX": {
+      "median_stoi": 0.8847464951147707,
+      "p10_stoi": 0.6725234227583502,
+      "p90_stoi": 0.9442934148070407,
+      "median_estoi": 0.7343061490684264,
+      "median_delta_stoi_vs_N_OFF": -0.00850150340548761,
+      "p10_delta": -0.02648735470290491,
+      "p90_delta": 0.012919459649434606,
+      "fraction_delta_gt_0": 0.3333333333333333,
+      "n": 72
+    }
+  },
+  "delta_N_SPEEX_vs_N_OFF": {
+    "bootstrap_speakers": 1000,
+    "seed": 6200,
+    "ci95": [
+      0.015345016427546543,
+      0.022965047635129077
+    ],
+    "median": 0.0199177997001575
+  },
+  "cpu_host": {
+    "p50_median_ms_per_callback": 0.113673,
+    "p99_median_ms_per_callback": 0.16004200000000002,
+    "max_ms": 0.794803,
+    "note": "callback 4410 muestras = 100 ms de audio; host x86_64"
+  },
+  "status": "DONE_AUTOMATED",
+  "controls": {
+    "off_unfiltered_bit_exact": true,
+    "off_unfiltered_meta": {
+      "input": "/data/controls/voice.raw",
+      "output": "/data/controls/off4410.raw",
+      "preset": 0,
+      "block": 4410,
+      "input_samples": 460184,
+      "out_samples": 460184,
+      "callbacks": 105,
+      "length_preserved": 1,
+      "cb_p50_ms": 3e-05,
+      "cb_p99_ms": 3.1e-05,
+      "cb_max_ms": 0.00016,
+      "wall_ms": 0.084,
+      "cb_sum_ms": 0.003
+    },
+    "proxy_filter_deterministic": true,
+    "speex_partition_hashes": {
+      "b4410": "c51358c1bd0d061ec0fb1ba8988246e753d0f732a6efed61d2c737daef7333ac",
+      "b441": "c51358c1bd0d061ec0fb1ba8988246e753d0f732a6efed61d2c737daef7333ac",
+      "bmixed": "c51358c1bd0d061ec0fb1ba8988246e753d0f732a6efed61d2c737daef7333ac"
+    },
+    "speex_partition_invariant": true,
+    "stoi_self": 0.9999999999999998,
+    "stoi_self_ok": true,
+    "injected_delay_recovered": true,
+    "alignment": {
+      "N_OFF": 0,
+      "N_SPEEX": 882,
+      "DX_OFF": 12,
+      "DX_SPEEX": 894
+    }
+  },
+  "determinism": {
+    "equal": true,
+    "output_hashes_equal": true,
+    "metric_differences": [],
+    "rows": 288
+  },
+  "clipping_detected": false,
+  "gate_BASE": "BASE_NR_DFL_NOT_MEASURED"
+}
