@@ -114,6 +114,12 @@ static void *audio_init_thread(void *arg) {
 void audio_init() {
     pthread_t t;
 
+    /* La cadena de capture filters se inicializa ACA, de forma SINCRONA y una sola vez,
+     * ANTES de lanzar el hilo de PulseAudio: antes vivia dentro de audio_init_sync() y
+     * podia terminar despues de que params_init()/dsp_init() aplicaran el preset elegido
+     * por el usuario, borrandolo. PA y los `amixer` siguen arrancando en background. */
+    audio_enh_init();
+
     if (pthread_create(&t, NULL, audio_init_thread, NULL) == 0) {
         pthread_detach(t);
     } else {
@@ -165,7 +171,6 @@ void audio_init_sync(void) {
         LV_LOG_WARN("No se pudo lanzar el hilo del mixer");
     }
 
-    audio_enh_init();
     mloop = pa_threaded_mainloop_new();
     pa_threaded_mainloop_start(mloop);
 

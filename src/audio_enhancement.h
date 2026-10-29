@@ -18,8 +18,14 @@ extern "C" {
 #endif
 
 #define AUDIO_ENH_MAX_NOTCHES 4
-#define AUDIO_ENH_SAMPLE_RATE 48000
-#define AUDIO_ENH_FRAME_SIZE 256
+
+/* La cadena procesa el PCM que captura audio.c (mono S16NE a AUDIO_CAPTURE_RATE), no la
+ * salida audible del BASE. SpeexDSP exige la tasa REAL del stream y tramas de 10-20 ms,
+ * asi que la trama es de 10 ms exactos de esa tasa (441 muestras). audio_enhancement.c
+ * verifica en tiempo de compilacion que coincida con AUDIO_CAPTURE_RATE: si alguien cambia
+ * la captura sin cambiar esto, el firmware no compila en vez de mentirle a Speex. */
+#define AUDIO_ENH_SAMPLE_RATE 44100
+#define AUDIO_ENH_FRAME_SIZE 441
 
 /* AF Leveler (Software AGC) modes */
 typedef enum {
@@ -78,9 +84,23 @@ typedef struct {
     
     // Processing buffer
     float float_buffer[AUDIO_ENH_FRAME_SIZE];
+
+    /* Maquina NR stateful: tramas COMPLETAS de AUDIO_ENH_FRAME_SIZE que continuan a
+     * traves de los callbacks y de los chunks de scratch. in_frame junta la entrada
+     * PRE-NR (despues de notch y del nivelador AF); cuando esta completa se corre UNA
+     * vez Speex y el resultado pasa a out_frame, que se emite con un retardo digital
+     * constante de una trama. Mientras la primera trama no esta lista (priming de
+     * exactamente AUDIO_ENH_FRAME_SIZE muestras) la captura emite ceros. */
+    int16_t in_frame[AUDIO_ENH_FRAME_SIZE];
+    int     in_count;
+    int16_t out_frame[AUDIO_ENH_FRAME_SIZE];
+    int     out_index;
+    bool    out_ready;
 } audio_enh_state_t;
 
-/* Global state */
+/* Global state. Se toca SIEMPRE a traves del API de este modulo: audio_enhancement.c
+ * serializa todos los accesos con un unico mutex (el callback de captura corre en el
+ * hilo de PulseAudio y los setters llegan del hilo de la GUI). */
 extern audio_enh_state_t g_audio_enh;
 
 /* Lifecycle */
@@ -111,6 +131,11 @@ void audio_enh_nr_set_enabled(bool enabled);
 void audio_enh_nr_set_level(uint8_t level);
 bool audio_enh_nr_is_enabled(void);
 
+/* Descarta el estado pendiente de la maquina NR (trama en curso y trama lista sin emitir).
+ * Lo usa la captura al recibir un hole del stream para no reproducir audio viejo, y los
+ * tests de reset. NO toca el preset efectivo, ni el nivel, ni params.audio_enh_preset. */
+void audio_enh_nr_reset_pending(void);
+
 /* Presets */
 void audio_enh_preset_load(audio_enh_preset_t preset);
 
@@ -119,6 +144,9 @@ void audio_enh_preset_load(audio_enh_preset_t preset);
  * no se modifica: sólo cambia el procesamiento. Llamar al arrancar, al cambiar de modo y al
  * cambiar el preset en Settings. */
 void audio_enh_apply_mode_preset(void);
+
+/* Re-aplica el preset efectivo actual: deja la cadena (incluida la maquina NR) como recien
+ * inicializada para ese preset. No lee ni escribe params.audio_enh_preset. */
 void audio_enh_preset_reset(void);
 audio_enh_preset_t audio_enh_preset_get_current(void);
 const char *audio_enh_preset_get_name(audio_enh_preset_t preset);

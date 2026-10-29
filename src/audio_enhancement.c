@@ -7,112 +7,96 @@
  */
 
 #include "audio_enhancement.h"
+#include "audio.h"              /* AUDIO_CAPTURE_RATE: la tasa REAL del stream capturado */
 #include "lvgl/lvgl.h"
 #include "cfg/cfg.h"
 #include "cfg/subjects.h"
 #include "radio.h"
 #include "params/params.h"
 #include <math.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <liquid/liquid.h>
 
+/* SpeexDSP se inicializa con la tasa del stream y con tramas de 10 ms. Ambas constantes
+ * tienen que seguir a la captura real (mono S16NE, audio.c): si divergen, Speex procesa
+ * con una tasa que no es la del audio y el NR deja de tener sentido fisico. Que lo diga
+ * el compilador y no un comentario. */
+#if AUDIO_ENH_SAMPLE_RATE != AUDIO_CAPTURE_RATE
+#error "AUDIO_ENH_SAMPLE_RATE debe ser AUDIO_CAPTURE_RATE (la tasa real de la captura)"
+#endif
+
+#if AUDIO_ENH_FRAME_SIZE != (AUDIO_CAPTURE_RATE / 100)
+#error "AUDIO_ENH_FRAME_SIZE debe ser una trama de 10 ms de AUDIO_CAPTURE_RATE"
+#endif
+
 audio_enh_state_t g_audio_enh = {0};
 
-void audio_enh_init(void) {
-    memset(&g_audio_enh, 0, sizeof(g_audio_enh));
-    
-    // Initialize SpeexDSP
-    g_audio_enh.nr.speex_state = speex_preprocess_state_init(AUDIO_ENH_FRAME_SIZE, AUDIO_ENH_SAMPLE_RATE);
-    if (g_audio_enh.nr.speex_state) {
-        int denoise_enabled = 1;
-        speex_preprocess_ctl(g_audio_enh.nr.speex_state, SPEEX_PREPROCESS_SET_DENOISE, &denoise_enabled);
-    }
-    
-    // Initialize AF Leveler with defaults
-    g_audio_enh.af_leveler.target_db = -25.0f;
-    g_audio_enh.af_leveler.mode = AF_LEVELER_MEDIUM;
-    g_audio_enh.af_leveler.attack_rate = 0.1f;
-    g_audio_enh.af_leveler.release_rate = 0.01f;
-    
-    // Default to OFF preset
-    audio_enh_preset_load(AUDIO_ENH_PRESET_OFF);
+/* Un unico mutex protege TODO el estado efectivo de la cadena: Speex (run/ctl/destroy),
+ * los notches, el nivelador AF y enable/current_preset/NR. audio_enh_process lo mantiene
+ * mientras procesa (corre en el hilo del mainloop de PulseAudio) y los setters/getters lo
+ * toman cuando acceden. Nunca se mantiene mientras se llaman APIs de LVGL, el mainloop de
+ * PulseAudio, x6200_control_*, params_flush ni hooks de UI: por eso audio_enh_process lee
+ * el tick antes de tomarlo y audio_enh_apply_mode_preset lee params/Subjects antes.
+ *
+ * Los helpers con sufijo _locked asumen el mutex tomado: preset_load usa esos para no
+ * volver a tomarlo a traves de los setters publicos (mutex no recursivo). */
+static pthread_mutex_t g_audio_enh_lock = PTHREAD_MUTEX_INITIALIZER;
+
+/* Descarta el estado pendiente de la maquina NR sin persistir nada: la trama en curso se
+ * tira y la trama ya procesada deja de emitirse. El audio viejo nunca pasa al modo nuevo. */
+static void nr_frame_reset_locked(void) {
+    memset(g_audio_enh.in_frame, 0, sizeof(g_audio_enh.in_frame));
+    memset(g_audio_enh.out_frame, 0, sizeof(g_audio_enh.out_frame));
+    g_audio_enh.in_count = 0;
+    g_audio_enh.out_index = 0;
+    g_audio_enh.out_ready = false;
 }
 
-void audio_enh_deinit(void) {
-    // Clean up notch filters
-    for (int i = 0; i < AUDIO_ENH_MAX_NOTCHES; i++) {
-        if (g_audio_enh.notches[i].active && g_audio_enh.notches[i].filter_obj) {
-            firfilt_rrrf_destroy((firfilt_rrrf)g_audio_enh.notches[i].filter_obj);
-        }
+static void set_enabled_locked(bool enabled) {
+    if (g_audio_enh.enabled != enabled) {
+        /* ON<->OFF de la cadena: se descarta la trama pendiente, igual que en el swap de
+         * preset. Reencender no puede reemitir audio del modo anterior. */
+        nr_frame_reset_locked();
     }
-    
-    // Clean up SpeexDSP
-    if (g_audio_enh.nr.speex_state) {
-        speex_preprocess_state_destroy(g_audio_enh.nr.speex_state);
-        g_audio_enh.nr.speex_state = NULL;
-    }
-}
 
-void audio_enh_set_enabled(bool enabled) {
     g_audio_enh.enabled = enabled;
 }
 
-bool audio_enh_is_enabled(void) {
-    return g_audio_enh.enabled;
-}
-
-int audio_enh_notch_add(float freq_hz, float bandwidth_hz) {
-    // Find first inactive slot
-    for (int i = 0; i < AUDIO_ENH_MAX_NOTCHES; i++) {
-        if (!g_audio_enh.notches[i].active) {
-            // Create FIR notch filter using liquid-dsp
-            //   _m  : semi-length (filter length = 2*m+1), larger = sharper notch
-            //   _As : stop-band attenuation in dB
-            //   _f0 : normalized center frequency in [-0.5, 0.5]
-            unsigned int m = 32;         // semi-length for sharp notch
-            float As = 60.0f;            // 60 dB stop-band attenuation
-            float f0 = freq_hz / (float)AUDIO_ENH_SAMPLE_RATE;
-
-            firfilt_rrrf filter = firfilt_rrrf_create_notch(m, As, f0);
-            if (!filter) return -1;
-
-            g_audio_enh.notches[i].active = true;
-            g_audio_enh.notches[i].freq_hz = freq_hz;
-            g_audio_enh.notches[i].bandwidth_hz = bandwidth_hz;
-            g_audio_enh.notches[i].filter_obj = filter;
-
-            return i;
-        }
+static void nr_set_enabled_locked(bool enabled) {
+    if (g_audio_enh.nr.enabled != enabled) {
+        /* ON<->OFF: se descarta lo pendiente. */
+        nr_frame_reset_locked();
     }
-    return -1;  // No slots available
+
+    g_audio_enh.nr.enabled = enabled;
 }
 
-void audio_enh_notch_remove(int notch_id) {
-    if (notch_id < 0 || notch_id >= AUDIO_ENH_MAX_NOTCHES) return;
-    if (!g_audio_enh.notches[notch_id].active) return;
-    
-    if (g_audio_enh.notches[notch_id].filter_obj) {
-        firfilt_rrrf_destroy((firfilt_rrrf)g_audio_enh.notches[notch_id].filter_obj);
+static void nr_set_level_locked(uint8_t level) {
+    if (level > 100) {
+        level = 100;
     }
-    
-    g_audio_enh.notches[notch_id].active = false;
-    g_audio_enh.notches[notch_id].filter_obj = NULL;
-}
 
-void audio_enh_notch_clear_all(void) {
-    for (int i = 0; i < AUDIO_ENH_MAX_NOTCHES; i++) {
-        audio_enh_notch_remove(i);
+    g_audio_enh.nr.level = level;
+
+    if (g_audio_enh.nr.speex_state) {
+        /* API de SpeexDSP: el valor es NEGATIVO y mas negativo = mas atenuacion. El nivel
+         * 0-100 del preset se mapea a -10..-30 dB: 0->-10, 40->-18, 60->-22, 100->-30. */
+        int noise_suppress = -10 - (int) (((unsigned int) level * 20u) / 100u);
+
+        speex_preprocess_ctl(g_audio_enh.nr.speex_state, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS,
+                             &noise_suppress);
     }
 }
 
-void audio_enh_af_leveler_set_enabled(bool enabled) {
+static void af_leveler_set_enabled_locked(bool enabled) {
     g_audio_enh.af_leveler.enabled = enabled;
 }
 
-void audio_enh_af_leveler_set_mode(af_leveler_mode_t mode) {
+static void af_leveler_set_mode_locked(af_leveler_mode_t mode) {
     g_audio_enh.af_leveler.mode = mode;
-    
+
     // Set attack/release rates based on mode
     switch (mode) {
         case AF_LEVELER_FAST:
@@ -132,79 +116,57 @@ void audio_enh_af_leveler_set_mode(af_leveler_mode_t mode) {
     }
 }
 
-void audio_enh_af_leveler_set_target(float target_db) {
+static void af_leveler_set_target_locked(float target_db) {
     g_audio_enh.af_leveler.target_db = target_db;
 }
 
-float audio_enh_af_leveler_get_gain_reduction(void) {
-    return g_audio_enh.af_leveler.current_gain_db;
-}
-
-float audio_enh_af_leveler_get_gain_reduction_peak(void) {
-    return g_audio_enh.af_leveler.peak_gain_db;
-}
-
-void audio_enh_nr_set_enabled(bool enabled) {
-    g_audio_enh.nr.enabled = enabled;
-}
-
-void audio_enh_nr_set_level(uint8_t level) {
-    g_audio_enh.nr.level = level;
-    
-    if (g_audio_enh.nr.speex_state) {
-        // Map 0-100 to Speex noise suppression level (typically -30 to -10 dB)
-        int noise_suppress = -30 + (level * 20 / 100);
-        speex_preprocess_ctl(g_audio_enh.nr.speex_state, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &noise_suppress);
-    }
-}
-
-bool audio_enh_nr_is_enabled(void) {
-    return g_audio_enh.nr.enabled;
-}
-
-void audio_enh_preset_load(audio_enh_preset_t preset) {
+static void preset_load_locked(audio_enh_preset_t preset) {
     if (preset >= AUDIO_ENH_PRESET_COUNT) {
         preset = AUDIO_ENH_PRESET_OFF;
     }
 
     g_audio_enh.current_preset = preset;
     g_audio_enh.preset_modified = false;
-    
+
+    /* Cambiar de preset efectivo reinicia la maquina NR: la trama pendiente de un perfil
+     * no se emite en el siguiente (ni siquiera cuando los dos tienen NR). */
+    nr_frame_reset_locked();
+
     switch (preset) {
         case AUDIO_ENH_PRESET_OFF:
-            audio_enh_set_enabled(false);
-            audio_enh_nr_set_enabled(false);
-            audio_enh_af_leveler_set_enabled(false);
+            set_enabled_locked(false);
+            nr_set_enabled_locked(false);
+            af_leveler_set_enabled_locked(false);
             break;
-            
+
         case AUDIO_ENH_PRESET_CW_WEAK:
-            audio_enh_set_enabled(true);
-            audio_enh_nr_set_enabled(false);  // NR off to preserve tone
-            audio_enh_af_leveler_set_enabled(true);
-            audio_enh_af_leveler_set_target(-25.0f);
-            audio_enh_af_leveler_set_mode(AF_LEVELER_MEDIUM);
+            set_enabled_locked(true);
+            nr_set_enabled_locked(false);  // NR off to preserve tone
+            af_leveler_set_enabled_locked(true);
+            af_leveler_set_target_locked(-25.0f);
+            af_leveler_set_mode_locked(AF_LEVELER_MEDIUM);
             break;
-            
+
         case AUDIO_ENH_PRESET_SSB_VOICE:
-            audio_enh_set_enabled(true);
-            audio_enh_nr_set_enabled(true);
-            audio_enh_nr_set_level(40);
-            audio_enh_af_leveler_set_enabled(false);  // Use hardware AGC
+            set_enabled_locked(true);
+            nr_set_enabled_locked(true);
+            nr_set_level_locked(40);
+            af_leveler_set_enabled_locked(false);  // Use hardware AGC
             break;
-            
+
         case AUDIO_ENH_PRESET_AM_BROADCAST:
-            audio_enh_set_enabled(true);
-            audio_enh_nr_set_enabled(true);
-            audio_enh_nr_set_level(60);
-            audio_enh_af_leveler_set_enabled(true);
-            audio_enh_af_leveler_set_target(-18.0f);
-            audio_enh_af_leveler_set_mode(AF_LEVELER_SLOW);
+            set_enabled_locked(true);
+            nr_set_enabled_locked(true);
+            nr_set_level_locked(60);
+            af_leveler_set_enabled_locked(true);
+            af_leveler_set_target_locked(-18.0f);
+            af_leveler_set_mode_locked(AF_LEVELER_SLOW);
             break;
-            
+
         case AUDIO_ENH_PRESET_DIGITAL:
-            audio_enh_set_enabled(false);  // Clean audio for digital
-            audio_enh_nr_set_enabled(false);
-            audio_enh_af_leveler_set_enabled(false);
+            set_enabled_locked(false);  // Clean audio for digital
+            nr_set_enabled_locked(false);
+            af_leveler_set_enabled_locked(false);
             break;
 
         default:
@@ -213,8 +175,217 @@ void audio_enh_preset_load(audio_enh_preset_t preset) {
     }
 }
 
+/* Libera notches y Speex con el mutex tomado. Lo usan audio_enh_deinit() y audio_enh_init()
+ * (este ultimo para poder re-inicializar sin filtrar ni duplicar estados). */
+static void deinit_locked(void) {
+    // Clean up notch filters
+    for (int i = 0; i < AUDIO_ENH_MAX_NOTCHES; i++) {
+        if (g_audio_enh.notches[i].filter_obj) {
+            firfilt_rrrf_destroy((firfilt_rrrf) g_audio_enh.notches[i].filter_obj);
+            g_audio_enh.notches[i].filter_obj = NULL;
+        }
+        g_audio_enh.notches[i].active = false;
+    }
+
+    // Clean up SpeexDSP
+    if (g_audio_enh.nr.speex_state) {
+        speex_preprocess_state_destroy(g_audio_enh.nr.speex_state);
+        g_audio_enh.nr.speex_state = NULL;
+    }
+
+    nr_frame_reset_locked();
+}
+
+void audio_enh_init(void) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+
+    /* Idempotente: si ya habia estado (re-init de una corrida de tests o rearme despues de
+     * un deinit), se libera antes de reconstruirlo. */
+    deinit_locked();
+    memset(&g_audio_enh, 0, sizeof(g_audio_enh));
+
+    // Initialize SpeexDSP
+    g_audio_enh.nr.speex_state = speex_preprocess_state_init(AUDIO_ENH_FRAME_SIZE,
+                                                             AUDIO_ENH_SAMPLE_RATE);
+    if (g_audio_enh.nr.speex_state) {
+        int denoise_enabled = 1;
+
+        speex_preprocess_ctl(g_audio_enh.nr.speex_state, SPEEX_PREPROCESS_SET_DENOISE,
+                             &denoise_enabled);
+    }
+
+    // Initialize AF Leveler with defaults
+    g_audio_enh.af_leveler.target_db = -25.0f;
+    g_audio_enh.af_leveler.mode = AF_LEVELER_MEDIUM;
+    g_audio_enh.af_leveler.attack_rate = 0.1f;
+    g_audio_enh.af_leveler.release_rate = 0.01f;
+
+    // Default to OFF preset
+    preset_load_locked(AUDIO_ENH_PRESET_OFF);
+
+    pthread_mutex_unlock(&g_audio_enh_lock);
+}
+
+void audio_enh_deinit(void) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    deinit_locked();
+    pthread_mutex_unlock(&g_audio_enh_lock);
+}
+
+void audio_enh_set_enabled(bool enabled) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    set_enabled_locked(enabled);
+    pthread_mutex_unlock(&g_audio_enh_lock);
+}
+
+bool audio_enh_is_enabled(void) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    bool enabled = g_audio_enh.enabled;
+    pthread_mutex_unlock(&g_audio_enh_lock);
+
+    return enabled;
+}
+
+int audio_enh_notch_add(float freq_hz, float bandwidth_hz) {
+    int slot = -1;
+
+    pthread_mutex_lock(&g_audio_enh_lock);
+
+    // Find first inactive slot
+    for (int i = 0; i < AUDIO_ENH_MAX_NOTCHES; i++) {
+        if (!g_audio_enh.notches[i].active) {
+            // Create FIR notch filter using liquid-dsp
+            //   _m  : semi-length (filter length = 2*m+1), larger = sharper notch
+            //   _As : stop-band attenuation in dB
+            //   _f0 : normalized center frequency in [-0.5, 0.5]
+            unsigned int m = 32;         // semi-length for sharp notch
+            float As = 60.0f;            // 60 dB stop-band attenuation
+            float f0 = freq_hz / (float) AUDIO_ENH_SAMPLE_RATE;
+
+            firfilt_rrrf filter = firfilt_rrrf_create_notch(m, As, f0);
+
+            if (!filter) {
+                break;
+            }
+
+            g_audio_enh.notches[i].active = true;
+            g_audio_enh.notches[i].freq_hz = freq_hz;
+            g_audio_enh.notches[i].bandwidth_hz = bandwidth_hz;
+            g_audio_enh.notches[i].filter_obj = filter;
+            slot = i;
+            break;
+        }
+    }
+
+    pthread_mutex_unlock(&g_audio_enh_lock);
+
+    return slot;  // -1: no slots available (or allocation failed)
+}
+
+static void notch_remove_locked(int notch_id) {
+    if (notch_id < 0 || notch_id >= AUDIO_ENH_MAX_NOTCHES) return;
+    if (!g_audio_enh.notches[notch_id].active) return;
+
+    if (g_audio_enh.notches[notch_id].filter_obj) {
+        firfilt_rrrf_destroy((firfilt_rrrf) g_audio_enh.notches[notch_id].filter_obj);
+    }
+
+    g_audio_enh.notches[notch_id].active = false;
+    g_audio_enh.notches[notch_id].filter_obj = NULL;
+}
+
+void audio_enh_notch_remove(int notch_id) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    notch_remove_locked(notch_id);
+    pthread_mutex_unlock(&g_audio_enh_lock);
+}
+
+void audio_enh_notch_clear_all(void) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+
+    for (int i = 0; i < AUDIO_ENH_MAX_NOTCHES; i++) {
+        notch_remove_locked(i);
+    }
+
+    pthread_mutex_unlock(&g_audio_enh_lock);
+}
+
+void audio_enh_af_leveler_set_enabled(bool enabled) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    af_leveler_set_enabled_locked(enabled);
+    pthread_mutex_unlock(&g_audio_enh_lock);
+}
+
+void audio_enh_af_leveler_set_mode(af_leveler_mode_t mode) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    af_leveler_set_mode_locked(mode);
+    pthread_mutex_unlock(&g_audio_enh_lock);
+}
+
+void audio_enh_af_leveler_set_target(float target_db) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    af_leveler_set_target_locked(target_db);
+    pthread_mutex_unlock(&g_audio_enh_lock);
+}
+
+float audio_enh_af_leveler_get_gain_reduction(void) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    float gain_db = g_audio_enh.af_leveler.current_gain_db;
+    pthread_mutex_unlock(&g_audio_enh_lock);
+
+    return gain_db;
+}
+
+float audio_enh_af_leveler_get_gain_reduction_peak(void) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    float gain_db = g_audio_enh.af_leveler.peak_gain_db;
+    pthread_mutex_unlock(&g_audio_enh_lock);
+
+    return gain_db;
+}
+
+void audio_enh_nr_set_enabled(bool enabled) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    nr_set_enabled_locked(enabled);
+    pthread_mutex_unlock(&g_audio_enh_lock);
+}
+
+void audio_enh_nr_set_level(uint8_t level) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    nr_set_level_locked(level);
+    pthread_mutex_unlock(&g_audio_enh_lock);
+}
+
+bool audio_enh_nr_is_enabled(void) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    bool enabled = g_audio_enh.nr.enabled;
+    pthread_mutex_unlock(&g_audio_enh_lock);
+
+    return enabled;
+}
+
+void audio_enh_nr_reset_pending(void) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    nr_frame_reset_locked();
+    pthread_mutex_unlock(&g_audio_enh_lock);
+}
+
+void audio_enh_preset_load(audio_enh_preset_t preset) {
+    pthread_mutex_lock(&g_audio_enh_lock);
+    preset_load_locked(preset);
+    pthread_mutex_unlock(&g_audio_enh_lock);
+}
+
+void audio_enh_preset_reset(void) {
+    audio_enh_preset_load(audio_enh_preset_get_current());
+}
+
 audio_enh_preset_t audio_enh_preset_get_current(void) {
-    return g_audio_enh.current_preset;
+    pthread_mutex_lock(&g_audio_enh_lock);
+    audio_enh_preset_t preset = g_audio_enh.current_preset;
+    pthread_mutex_unlock(&g_audio_enh_lock);
+
+    return preset;
 }
 
 const char *audio_enh_preset_get_name(audio_enh_preset_t preset) {
@@ -228,7 +399,7 @@ const char *audio_enh_preset_get_name(audio_enh_preset_t preset) {
     }
 }
 
-static void apply_notch_filters(float *samples, size_t nsamples) {
+static void apply_notch_filters_locked(float *samples, size_t nsamples) {
     for (int n = 0; n < AUDIO_ENH_MAX_NOTCHES; n++) {
         if (g_audio_enh.notches[n].active && g_audio_enh.notches[n].filter_obj) {
             firfilt_rrrf notch = (firfilt_rrrf)g_audio_enh.notches[n].filter_obj;
@@ -242,11 +413,10 @@ static void apply_notch_filters(float *samples, size_t nsamples) {
     }
 }
 
-static void apply_af_leveler(float *samples, size_t nsamples) {
+static void apply_af_leveler_locked(float *samples, size_t nsamples, uint32_t now) {
     if (!g_audio_enh.af_leveler.enabled || nsamples == 0) return;
 
     af_leveler_t *agc = &g_audio_enh.af_leveler;
-    uint32_t now = lv_tick_get();
 
     /* Level measured once per block (not per sample): one log10f + one powf per
      * block keeps the leveler affordable inside the audio callback, which
@@ -290,33 +460,70 @@ static void apply_af_leveler(float *samples, size_t nsamples) {
     }
 }
 
-static void apply_noise_reduction(float *samples, size_t nsamples) {
-    if (!g_audio_enh.nr.enabled || !g_audio_enh.nr.speex_state) return;
+static int16_t s16_from_float(float s) {
+    if (s > 1.0f) s = 1.0f;
+    if (s < -1.0f) s = -1.0f;
 
-    /* SpeexDSP runs on fixed 256-sample frames, so only complete frames are
-     * processed; a partial tail (up to 255 samples) is passed through. */
-    size_t n = nsamples - (nsamples % AUDIO_ENH_FRAME_SIZE);
+    float scaled = s * 32768.0f;
 
-    for (size_t off = 0; off < n; off += AUDIO_ENH_FRAME_SIZE) {
-        int16_t temp_buffer[AUDIO_ENH_FRAME_SIZE];
+    if (scaled > 32767.0f) scaled = 32767.0f;
+    if (scaled < -32768.0f) scaled = -32768.0f;
 
-        for (size_t i = 0; i < AUDIO_ENH_FRAME_SIZE; i++) {
-            float s = samples[off + i];
+    return (int16_t) scaled;
+}
 
-            if (s > 1.0f) s = 1.0f;
-            if (s < -1.0f) s = -1.0f;
-
-            temp_buffer[i] = (int16_t)(s * 32767.0f);
+/* Maquina NR: N muestras de salida por N de entrada, tramas completas de
+ * AUDIO_ENH_FRAME_SIZE y sin cola cruda por callback.
+ *
+ * Por cada muestra PRE-NR (despues de notch y nivelador AF) se hace, en este orden:
+ *   1. se emite la siguiente muestra de la trama lista anterior, o 0 mientras la primera
+ *      trama aun no existe (priming de exactamente UNA trama: 441 muestras / 10 ms);
+ *   2. la muestra actual entra en in_frame;
+ *   3. al juntar AUDIO_ENH_FRAME_SIZE se corre UNA vez speex_preprocess_run() y esa trama
+ *      pasa a ser la siguiente out_frame, que recien empieza a emitirse en la muestra
+ *      siguiente.
+ * El resultado es un retardo digital constante de una trama y ninguna muestra perdida: los
+ * limites entre callbacks (o entre bloques de la particion de la captura) no cambian la
+ * secuencia.
+ * Sin NR (Off/Digital no llegan aca porque la cadena esta deshabilitada; CW weak si) o sin
+ * estado Speex se pasa el audio PRE-NR tal cual, sin priming: nunca silencio permanente. */
+static void apply_noise_reduction_locked(const float *in, int16_t *out, size_t nsamples) {
+    if (!g_audio_enh.nr.enabled || g_audio_enh.nr.speex_state == NULL) {
+        for (size_t i = 0; i < nsamples; i++) {
+            out[i] = s16_from_float(in[i]);
         }
 
-        speex_preprocess_run(g_audio_enh.nr.speex_state, temp_buffer);
+        return;
+    }
 
-        for (size_t i = 0; i < AUDIO_ENH_FRAME_SIZE; i++) {
-            samples[off + i] = temp_buffer[i] / 32767.0f;
+    for (size_t i = 0; i < nsamples; i++) {
+        int16_t emitted = 0;
+
+        if (g_audio_enh.out_ready) {
+            emitted = g_audio_enh.out_frame[g_audio_enh.out_index];
+            g_audio_enh.out_index++;
+
+            if (g_audio_enh.out_index >= AUDIO_ENH_FRAME_SIZE) {
+                g_audio_enh.out_index = 0;
+                g_audio_enh.out_ready = false;
+            }
+        }
+
+        out[i] = emitted;
+
+        g_audio_enh.in_frame[g_audio_enh.in_count] = s16_from_float(in[i]);
+        g_audio_enh.in_count++;
+
+        if (g_audio_enh.in_count >= AUDIO_ENH_FRAME_SIZE) {
+            speex_preprocess_run(g_audio_enh.nr.speex_state, g_audio_enh.in_frame);
+            memcpy(g_audio_enh.out_frame, g_audio_enh.in_frame,
+                   sizeof(g_audio_enh.out_frame));
+            g_audio_enh.in_count = 0;
+            g_audio_enh.out_index = 0;
+            g_audio_enh.out_ready = true;
         }
     }
 }
-
 
 /* En CW/CWR el preset de voz (NR Speex + nivelador AF) bombea y enmascara el tono: el
  * decodificador pierde pulsos y el Recorder, que graba DESPUES de este procesamiento
@@ -329,6 +536,8 @@ static void apply_noise_reduction(float *samples, size_t nsamples) {
  * en SSB/AM/etc. sigue aplicando el preset que eligio el usuario. OFF y DIGITAL son
  * intenciones explicitas de no procesar y se respetan tambien en CW. */
 void audio_enh_apply_mode_preset(void) {
+    /* params y Subjects se leen ANTES de tomar el mutex del modulo: son superficies de la
+     * GUI/radio y no se tocan con el lock de la cadena tomado. */
     audio_enh_preset_t user = (audio_enh_preset_t) params.audio_enh_preset.x;
     x6200_mode_t       mode = (x6200_mode_t) subject_get_int(cfg_cur.mode);
     audio_enh_preset_t effective = user;
@@ -339,55 +548,73 @@ void audio_enh_apply_mode_preset(void) {
         }
     }
 
-    if (effective != g_audio_enh.current_preset) {
+    if (effective != audio_enh_preset_get_current()) {
         audio_enh_preset_load(effective);
     }
 }
 
 void audio_enh_process(int16_t *samples, size_t nsamples) {
-    if (!g_audio_enh.enabled) return;
     if (samples == NULL || nsamples == 0) return;
 
-    /* The capture callback delivers ~100 ms blocks (44100 Hz -> ~4410 samples),
-     * so the chain is applied in AUDIO_ENH_FRAME_SIZE chunks instead of
-     * rejecting anything larger than one frame. */
-    while (nsamples > 0) {
-        size_t chunk = (nsamples > AUDIO_ENH_FRAME_SIZE) ? AUDIO_ENH_FRAME_SIZE : nsamples;
+    /* lv_tick_get() es una API de LVGL: se lee FUERA del mutex del modulo (nunca se
+     * mantiene el lock de la cadena mientras se llama a LVGL). */
+    uint32_t now = lv_tick_get();
+
+    pthread_mutex_lock(&g_audio_enh_lock);
+
+    if (!g_audio_enh.enabled) {
+        /* Off/Digital: passthrough bit-exacto, sin conversion ni priming. */
+        pthread_mutex_unlock(&g_audio_enh_lock);
+        return;
+    }
+
+    /* La captura entrega ~100 ms por callback, pero el contrato no depende de eso: se
+     * procesa en bloques de una trama y la maquina NR sigue del bloque anterior. */
+    size_t done = 0;
+
+    while (done < nsamples) {
+        size_t chunk = nsamples - done;
+
+        if (chunk > AUDIO_ENH_FRAME_SIZE) {
+            chunk = AUDIO_ENH_FRAME_SIZE;
+        }
 
         // Convert int16 to float
         for (size_t i = 0; i < chunk; i++) {
-            g_audio_enh.float_buffer[i] = samples[i] / 32768.0f;
+            g_audio_enh.float_buffer[i] = samples[done + i] / 32768.0f;
         }
 
-        // Apply processing chain
-        apply_notch_filters(g_audio_enh.float_buffer, chunk);
-        apply_af_leveler(g_audio_enh.float_buffer, chunk);
-        apply_noise_reduction(g_audio_enh.float_buffer, chunk);
+        // Apply processing chain: notch -> AF leveler -> Speex NR
+        apply_notch_filters_locked(g_audio_enh.float_buffer, chunk);
+        apply_af_leveler_locked(g_audio_enh.float_buffer, chunk, now);
+        apply_noise_reduction_locked(g_audio_enh.float_buffer, &samples[done], chunk);
 
-        // Convert back to int16
-        for (size_t i = 0; i < chunk; i++) {
-            float sample = g_audio_enh.float_buffer[i] * 32768.0f;
-
-            if (sample > 32767.0f) sample = 32767.0f;
-            if (sample < -32768.0f) sample = -32768.0f;
-
-            samples[i] = (int16_t)sample;
-        }
-
-        samples += chunk;
-        nsamples -= chunk;
+        done += chunk;
     }
+
+    pthread_mutex_unlock(&g_audio_enh_lock);
 }
 
 bool audio_enh_notch_is_active(int notch_id) {
     if (notch_id < 0 || notch_id >= AUDIO_ENH_MAX_NOTCHES) return false;
-    return g_audio_enh.notches[notch_id].active;
+
+    pthread_mutex_lock(&g_audio_enh_lock);
+    bool active = g_audio_enh.notches[notch_id].active;
+    pthread_mutex_unlock(&g_audio_enh_lock);
+
+    return active;
 }
 
 int audio_enh_get_active_notch_count(void) {
     int count = 0;
+
+    pthread_mutex_lock(&g_audio_enh_lock);
+
     for (int i = 0; i < AUDIO_ENH_MAX_NOTCHES; i++) {
         if (g_audio_enh.notches[i].active) count++;
     }
+
+    pthread_mutex_unlock(&g_audio_enh_lock);
+
     return count;
 }

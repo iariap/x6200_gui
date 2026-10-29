@@ -59,21 +59,43 @@ void firfilt_rrrf_execute(firfilt_rrrf q, float *y) {
 
 /* ---------------- SpeexDSP preprocessor ---------------- */
 
+/* La cadena de captura de #351 corre Speex a la tasa REAL del stream (44.1 kHz) con
+ * tramas de 10 ms (441 muestras). El stub no toma esos numeros del modulo a proposito:
+ * los fija aca (literales, contrato de captura) y el test falla si el modulo inicializa
+ * otra cosa. Ver test_speex_init_contract() en test_audio_enhancement.c. */
+#define STUB_SPEEX_EXPECTED_FRAME_SIZE  441
+#define STUB_SPEEX_EXPECTED_RATE        44100
+
 struct SpeexPreprocessState_ {
     int frame_size;
+    int sampling_rate;
     int denoise;
     int noise_suppress;
 };
 
 static int speex_frames_processed = 0;
+static int speex_init_count      = 0;
+static int speex_init_frame_size = 0;
+static int speex_init_rate       = 0;
+static int speex_init_mismatch   = 0;
+static int speex_noise_suppress  = 0;
+static int speex_noise_suppress_calls = 0;
 
 SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sampling_rate) {
-    (void) sampling_rate;
-
     SpeexPreprocessState *st = calloc(1, sizeof(*st));
 
+    speex_init_count++;
+    speex_init_frame_size = frame_size;
+    speex_init_rate       = sampling_rate;
+
+    if (frame_size != STUB_SPEEX_EXPECTED_FRAME_SIZE ||
+            sampling_rate != STUB_SPEEX_EXPECTED_RATE) {
+        speex_init_mismatch++;
+    }
+
     if (st) {
-        st->frame_size = frame_size;
+        st->frame_size    = frame_size;
+        st->sampling_rate = sampling_rate;
     }
 
     return st;
@@ -92,6 +114,8 @@ int speex_preprocess_ctl(SpeexPreprocessState *st, int request, void *ptr) {
         st->denoise = *(int *) ptr;
     } else if (request == SPEEX_PREPROCESS_SET_NOISE_SUPPRESS) {
         st->noise_suppress = *(int *) ptr;
+        speex_noise_suppress = st->noise_suppress;
+        speex_noise_suppress_calls++;
     }
 
     return 0;
@@ -114,6 +138,40 @@ int speex_preprocess_run(SpeexPreprocessState *st, int16_t *x) {
 
 int test_speex_frames(void) {
     return speex_frames_processed;
+}
+
+int test_speex_init_count(void) {
+    return speex_init_count;
+}
+
+int test_speex_init_frame_size(void) {
+    return speex_init_frame_size;
+}
+
+int test_speex_init_rate(void) {
+    return speex_init_rate;
+}
+
+int test_speex_init_mismatch(void) {
+    return speex_init_mismatch;
+}
+
+int test_speex_noise_suppress(void) {
+    return speex_noise_suppress;
+}
+
+int test_speex_noise_suppress_calls(void) {
+    return speex_noise_suppress_calls;
+}
+
+void test_speex_reset_counters(void) {
+    speex_frames_processed = 0;
+    speex_init_count = 0;
+    speex_init_frame_size = 0;
+    speex_init_rate = 0;
+    speex_init_mismatch = 0;
+    speex_noise_suppress = 0;
+    speex_noise_suppress_calls = 0;
 }
 
 /* ---------------- waterfall: wiring de la politica visual ---------------- */
