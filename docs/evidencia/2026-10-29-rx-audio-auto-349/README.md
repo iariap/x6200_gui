@@ -9,6 +9,12 @@ BASE, no elige un nivel de NR y no cierra la validación subjetiva.
 **`BASE_NR_DFL_NOT_MEASURED`** y se retoma desde el 2026-11-12 con el operador
 ([`operator-handoff.md`](operator-handoff.md)).
 
+> **Contexto de reactivación (2026-10-29):** el objetivo confirmado por el owner es **conservar y
+> evaluar los filtros software** como valor agregado; el issue #360, que pedía eliminarlos, quedó
+> anulado. Este banco evalúa esos filtros **offline** y no certifica sonido de parlante, ruteo,
+> DSP del BASE ni mejora audible. La unificación del audio audible con el de captura, con prueba
+> física segura de ruteo, queda como **trabajo posterior separado**; este PR no modifica producción.
+
 ## Resultado en una mirada
 
 - **288/288 filas válidas** = 12 clips × 3 SNR (0/5/10 dB) × 2 interferentes (AWGN / tono QRM
