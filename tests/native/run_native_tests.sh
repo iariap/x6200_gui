@@ -1232,6 +1232,7 @@ cp "$DIR/stubs_radio/lvgl/lvgl.h" "$RT_STAGE/lvgl/"
 cp "$DIR/stubs_radio/aether_radio/x6200_control/"*.h "$RT_STAGE/aether_radio/x6200_control/"
 cp "$DIR/stubs_radio/aether_radio/x6200_control/low/"*.h "$RT_STAGE/aether_radio/x6200_control/low/"
 cp "$SRC/radio.c" "$RT_STAGE/radio.c"
+cp "$SRC/rx_audio_mux_guard.h" "$RT_STAGE/"
 RT_INC="-I$RT_STAGE -I$DIR"
 RT_FLAGS="$BASEFLAGS -ffunction-sections -fdata-sections"
 RT_LINK="-Wl,--gc-sections"
@@ -1239,7 +1240,7 @@ if [ "$SAN_OK" = yes ]; then
     # shellcheck disable=SC2086
     $CC $RT_FLAGS $SAN $RT_INC -DRADIO_C_PATH="\"$RT_STAGE/radio.c\"" $RT_LINK \
         "$DIR/test_radio_thread.c" "$DIR/radio_stubs.c" "$DIR/test_framework.c" \
-        "$DIR/radio_thread_test_main.c" -o "$OUT/radio_thread_tests"
+        "$DIR/radio_thread_test_main.c" "$SRC/rx_audio_mux_guard.c" -o "$OUT/radio_thread_tests"
 else
     # shellcheck disable=SC2086
     $CC $RT_FLAGS $RT_INC -DRADIO_C_PATH="\"$RT_STAGE/radio.c\"" $RT_LINK \
@@ -1288,6 +1289,42 @@ else
     # shellcheck disable=SC2086
     $CC $BASEFLAGS $AUDIO_INC $AUDIO_SRC $AUDIO_WRAP -lm -o "$OUT/audio_callback_tests"
 fi
+
+
+# --- A-prime (#367): coordinador del reg 12 + guardian fail-safe -------------
+# El modulo es puro (sin LVGL ni SDK): se compila aparte con un bus MOCK en memoria
+# compartida para G1/G2. El helper real se compila tambien en host para probar su
+# lifecycle (arranca INACTIVO, rechaza ARM sin readback, SIGTERM limpia el socket).
+# G2 usa procesos reales (fork+socketpair), 100 repeticiones y CLOCK_MONOTONIC.
+# NO es PASS de hardware: el bus es mock y el guardian queda OFF en produccion.
+echo "== A-prime #367: dueno unico del reg 12 + guardian (mocks, procesos reales) =="
+RXMUX_BIN="$OUT/rxmux"
+rm -rf "$RXMUX_BIN"
+mkdir -p "$RXMUX_BIN"
+RXMUX_CFLAGS="$BASEFLAGS -pthread -I$SRC -I$DIR"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $RXMUX_CFLAGS $SAN "$SRC/rx_audio_mux_guard.c" \
+        "$DIR/test_rx_audio_mux_guard.c" "$DIR/rxmux_guard_test_main.c" \
+        "$DIR/test_framework.c" -lpthread -o "$RXMUX_BIN/rxmux_tests"
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN "$SRC/rx_audio_mux_guard.c" \
+        "$SRC/rx_audio_mux_guard_main.c" -o "$RXMUX_BIN/x6200_audio_guard_host"
+else
+    # shellcheck disable=SC2086
+    $CC $RXMUX_CFLAGS "$SRC/rx_audio_mux_guard.c" \
+        "$DIR/test_rx_audio_mux_guard.c" "$DIR/rxmux_guard_test_main.c" \
+        "$DIR/test_framework.c" -lpthread -o "$RXMUX_BIN/rxmux_tests"
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS "$SRC/rx_audio_mux_guard.c" \
+        "$SRC/rx_audio_mux_guard_main.c" -o "$RXMUX_BIN/x6200_audio_guard_host"
+fi
+RXMUX_GUARD_BIN="$RXMUX_BIN/x6200_audio_guard_host" "$RXMUX_BIN/rxmux_tests"
+
+echo "== A-prime: analisis estatico (gcc -fanalyzer sobre rx_audio_mux_guard.c) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer -I"$SRC" -c "$SRC/rx_audio_mux_guard.c" \
+    -o "$RXMUX_BIN/rxmux_guard.o" || true
 
 echo "== Captura: analisis estatico (gcc -fanalyzer sobre src/audio.c) =="
 # shellcheck disable=SC2086

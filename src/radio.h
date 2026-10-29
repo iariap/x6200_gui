@@ -13,6 +13,8 @@
 
 #include "lvgl/lvgl.h"
 
+#include "rx_audio_mux_guard.h"
+
 #define RADIO_SAMPLES   (512)
 
 /* Rango del nivel de audio de recepcion (registro 14 del BASE). El techo es 100 porque es el que
@@ -87,6 +89,19 @@ void radio_stop_swrscan();
  * dialogos; no toca la senal de RF, solo el estado. */
 void radio_state_save();
 void radio_state_restore();
+
+/* A-prime (#367): coordinador unico del bit voice_rec (registro 12 compartido con
+ * PTT/ATU/modem). Falla cerrado: devuelve RXMUX_BLOCKED_NO_READBACK mientras no exista
+ * una lectura real del MCU (Fase R). NUNCA escribe si el registro real tiene bits de
+ * TX/ATU/modem/barrido/apagado, ni si otro camino (TTS/mensaje de voz/arranque) es el
+ * dueno del bit. El router de #364 solo podra usarla cuando #363 vuelva a A_PASS. */
+rxmux_result_t radio_audio_mux_request(bool dac);
+
+/* Solo para tests/instrumentacion: registrar un backend de bus con readback real.
+ * En produccion NO se registra (queda NULL) y todo request devuelve
+ * RXMUX_BLOCKED_NO_READBACK. No expone I2C crudo: el backend lo implementa quien ya
+ * es dueno del bus (la GUI). */
+void radio_audio_mux_set_bus_ops(const rxmux_bus_ops_t *ops);
 
 void radio_poweroff();
 void radio_set_ptt(bool tx);

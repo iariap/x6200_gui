@@ -1,0 +1,92 @@
+# Commands log — A′ (#367) — 2026-10-29
+
+Corrida host (Fedora 44) + radio por SSH **sólo lectura** (helper `x6200_qa/tools/lib-radio.sh`,
+credencial/LAN no publicadas). Horas UTC. No se escribió hardware, no se activó el MUX, no hubo
+TX/PTT/ATU, no se tocó `audio_enhancement.*`/`src/audio.c`/UI ni la radio.
+
+## 0. Base y worktree
+
+```
+[22:50Z] git -C x6200-rx-mux-guard-aprime fetch origin main                 -> exit 0
+[22:50Z] git -C x6200-rx-mux-guard-aprime rev-parse origin/main             -> exit 0 (cb9ea287548534ac5c4438c786b57deb436c7c40)
+[22:50Z] git -C x6200-rx-mux-guard-aprime status --short --branch           -> exit 0 (## feat/rx-mux-guard-aprime...origin/main)
+[22:50Z] git -C x6200-rx-mux-guard-aprime rev-parse HEAD                   -> exit 0 (cb9ea287… = origin/main)
+[22:51Z] gh issue view 367 --repo iariap/x6200_gui                         -> exit 0 (leído completo)
+[22:51Z] team_task_get task-3 / team_task_update claim --expected_revision 1 -> ok (in_progress, owner phase-a-rea-363)
+```
+
+## 1. Fase R — REA/Ghidra del binario vendor (sólo host)
+
+```
+[22:52Z] node refs/rea/scripts/rea.mjs decompile refs/vendor-fw/x6200_ui_v100 0xe2f70 \
+         --snapshot .qa367/vendor.snapshot --provider ghidra --format json   -> exit 0 (iicRead; ev_689bf9e9…)
+[22:53Z] idem 0xe62b8 (BaseCommIIC::start())                                 -> exit 0 (reads 0x2000/0x0000/0x0100 + cola)
+[22:53Z] idem 0xe5dc0 (updateRxFilters) / 0xe33b8 (updateWorkParams)         -> exit 0
+[22:54Z] idem 0x5c1f4 (slot_slaveReportMessage) / 0xfa670 / 0x5a908         -> exit 0 (paquete serial: samples/flags/meters/key)
+[22:54Z] arm-...-objdump -d x6200_ui_v100 > .qa367/vendor-disasm.txt         -> exit 0 (~231.860 líneas)
+[22:55Z] grep 'bl.*iicRead' vendor-disasm.txt                                -> 6 call sites (0x2000,0x0000,0x0100,0x3000,0x3040,cola)
+[22:55Z] grep stores a this+0x324 (mode de la cola)                          -> sólo modes 1/2: el camino read (mode 0) es código muerto
+[22:56Z] concluido R_BLOCKED_NO_HARDWARE_TRUTH (ver readback-re.md)          -> sin readback del reg 12
+```
+
+## 2. Implementación (host, sin hardware)
+
+```
+[23:57Z] edición src/rx_audio_mux_guard.h / .c / _main.c, src/radio.c/.h,
+         src/CMakeLists.txt, CMakeLists.txt                                -> exit 0
+[23:58Z] gcc -std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter \
+         src/rx_audio_mux_guard.c src/rx_audio_mux_guard_main.c \
+         -o .qa367/bin/x6200_audio_guard_host                               -> exit 0
+[23:58Z] .qa367/bin/x6200_audio_guard_host --self-check                     -> exit 0
+         ("x6200_audio_guard self-check ok (readback=UNAVAILABLE, guardian=OFF)")
+[23:59Z] gcc ... test_rx_audio_mux_guard.c rxmux_guard_test_main.c test_framework.c \
+         src/rx_audio_mux_guard.c -lpthread -o .qa367/bin/rxmux_tests       -> exit 0
+[23:59Z] RXMUX_GUARD_BIN=.qa367/bin/x6200_audio_guard_host .qa367/bin/rxmux_tests -> exit 0
+         9188 comprobaciones, 0 fallos
+         G2 restore: 100 repeticiones, p50=101.7 ms, p99=103.2 ms, max=103.2 ms (≤250 ms)
+```
+
+## 3. Tests del repo
+
+```
+[00:01Z] sh tests/native/run_native_tests.sh                               -> exit 0 (incluye stage A-prime;
+          G2 p50=101.7 / p99=103.1 / max=103.1 ms; 0 fallos)
+[00:03Z] sh tests/native/run_native_tests.sh --ci-parity                   -> exit 0 ("ci-parity: OK")
+[00:05Z] sh tests/run_all_tests.sh --quick                                 -> exit 1 (3 fallos PREEXISTENTES de entorno:
+          wcag_rendered y widget_text fallan al construir la imagen docker del arnés:
+          "failed to update builder last activity time: ... read-only file system";
+          ver logs/docker-env.log; no hay cambios de UI en este PR)
+```
+
+## 4. ARM / QEMU (G3)
+
+```
+[00:07Z] rom-build/.../arm-buildroot-linux-gnueabihf-gcc -std=gnu11 -O2 -I src \
+         src/rx_audio_mux_guard.c src/rx_audio_mux_guard_main.c -o .qa367/arm/x6200_audio_guard
+                                                                           -> exit 0 (ELF32 ARM EABI5)
+[00:07Z] qemu-arm-static -L <rom-sysroot> .qa367/arm/x6200_audio_guard --self-check
+                                                                           -> exit 0
+[00:08Z] rom-build/.../arm-...-gcc -c src/radio.c (GUI modificada)         -> exit 0 (ELF32 ARM REL, objeto)
+         Nota: link completo de imagen GUI no ejecutado: el sysroot de
+         AetherX6200Buildroot no trae crt1.o/Scrt1.o (medido) y no se toca rom-build.
+```
+
+## 5. G4 — radio sólo lectura
+
+```
+[23:03:25Z] /tmp/x6200-remote '{"cmd":"get"}'                              -> exit 0 (tx=false, LSB 7.135 MHz, vol 12)
+[23:03:25Z] /mnt/lastbreath; sha256sum GUI/lib; pactl short sources/sinks;
+            dueño de /proc/*/fd i2c-0                                      -> exit 0 (radio=RX tx=0; hashes iguales;
+            único dueño i2c-0 = x6200_gui pid 4716)
+[23:03:25Z] NOTA: cero escrituras; el MUX no se activó.                    -> logs/g4-radio-readonly.txt
+```
+
+## 6. Validación ASF
+
+```
+[pendiente de completar antes del PR]
+asf/scripts/apps/x6200/check-matrix.sh main HEAD /home/pablo/desa/x6200/x6200-rx-mux-guard-aprime
+python3 asf/scripts/risk.py x6200 <base> <head>
+git diff --check
+git diff --name-only origin/main...HEAD
+```

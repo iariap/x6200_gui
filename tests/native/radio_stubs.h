@@ -29,6 +29,9 @@ typedef enum {
 extern radio_stub_clock_t radio_stub_clock;
 extern uint64_t           radio_stub_fake_ms;
 
+/* Sombra de la lib para el detector de dueno extranjero del coordinador #367. */
+extern uint32_t           radio_stub_shadow_reg12;
+
 /* usleep() hooks. */
 extern int      radio_stub_sleep_calls;
 extern uint64_t radio_stub_sleep_us_total;

@@ -1,0 +1,34 @@
+== A-prime #367: dueno unico del reg 12 + guardian fail-safe ==
+  G1 mascara/invariantes (>=2009 valores)
+  G1 1000 eventos interleaved (idle/PTT/ATU/record/RX-TX)
+  G1 coordinador con bus mock (interlock TX/ATU, readback mismatch)
+  G1 restore selectivo preservando PTT/ATU (bus mock)
+  G1 IPC/handshake (encode/decode, token/PID/starttime/readback)
+  G1/G2 guardian FSM (lease 100 ms, heartbeat <=50 ms)
+67197 comprobaciones, 0 fallos
+137 comprobaciones, 0 fallos
+27 comprobaciones, 0 fallos
+12 comprobaciones, 0 fallos
+463 comprobaciones, 0 fallos
+4851 comprobaciones, 0 fallos
+5 comprobaciones, 0 fallos
+24 comprobaciones, 0 fallos
+33 comprobaciones, 0 fallos
+52 comprobaciones, 0 fallos
+26 comprobaciones, 0 fallos
+48 comprobaciones, 0 fallos
+76 comprobaciones, 0 fallos
+92 comprobaciones, 0 fallos
+35 comprobaciones, 0 fallos
+1018 comprobaciones, 0 fallos
+215 comprobaciones, 0 fallos
+68 comprobaciones, 0 fallos
+175 comprobaciones, 0 fallos
+62 comprobaciones, 0 fallos
+138 comprobaciones, 0 fallos
+141 comprobaciones, 0 fallos
+597 comprobaciones, 0 fallos
+57 comprobaciones, 0 fallos
+      G2 restore: 100 repeticiones, p50=101.7 ms, p99=103.1 ms, max=103.1 ms (objetivo <= 250 ms)
+9188 comprobaciones, 0 fallos
+174 comprobaciones, 0 fallos

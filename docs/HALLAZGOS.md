@@ -46,6 +46,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 74. [El modo CW tiene que quedar CW en todas las bandas y escribirse al VFO ACTIVO](#74-el-modo-cw-tiene-que-quedar-cw-en-todas-las-bandas-y-escribirse-al-vfo-activo)
 75. [El modo sigue al plan de bandas: al entrar al segmento CW pasa a CW y al salir restaura el modo anterior](#75-el-modo-sigue-al-plan-de-bandas-al-entrar-al-segmento-cw-pasa-a-cw-y-al-salir-restaura-el-modo-anterior)
 76. [El PTT en CB se habilita con el bloque de calibración fullband que escribe la UI de fábrica](#76-el-ptt-en-cb-se-habilita-con-el-bloque-de-calibración-fullband-que-escribe-la-ui-de-fábrica)
+78. [El BASE no expone readback del bloque de registros: el vendor lo escribe y nunca lo relee](#78-el-base-no-expone-readback-del-bloque-de-registros-el-vendor-lo-escribe-y-nunca-lo-relee)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
@@ -4527,6 +4528,7 @@ en modo CW**: "deberia hacerlo para ser consistente, al entrar y al salir".
 | 6m: -> 50.150 | `50150000 USB` (restauro el modo anterior) ✓ |
 | 40m: 7.060 LSB -> 7.030 | `7060000 LSB` -> `7030000 CW` ✓ |
 | 40m: -> 7.060 | `7060000 LSB` (restauro) ✓ |
+| El MCU/FPGA del BASE tiene una ventana de lectura I2C del bloque de 54 registros (reg 12 incluido) aunque el GUI vendor no la use | el vendor sólo lee 0x2000/0x0000/0x0100/0x3000/0x3040 y nunca relee el bloque; las lecturas históricas conocidas no cubren 0x0030 (§69) | documentación del MCU/FPGA o una lectura read-only autorizada dentro del dueño de I²C, con dos lecturas consistentes y un registro de valor conocido; sin eso no se puede afirmar |
 
 `crashlog 0`. El cambio se probó moviendo la frecuencia por control remoto (mismo camino: observador de
 `cfg_cur.fg_freq`); falta que el dueno lo confirme **con la rueda fisica** en 6m desde 51 MHz.
@@ -4589,3 +4591,37 @@ en el log, todos en 27.185; ninguno en 27.505).
 **Sin fundar (anexo A)**: potencia y ROE reales en CB (sin instrumento); si el bloque sobrevive a
 un power-cycle sin la GUI (la GUI lo reaplica al arrancar, eso sí está verificado).
 
+## 78. El BASE no expone readback del bloque de registros: el vendor lo escribe y nunca lo relee
+
+**Contexto** (issue #367, fase A′ del épico #362): para conmutar el MUX de audio (`voice_rec`, bit
+`0x8` del registro 12) con seguridad hay que poder **leer** el estado real del registro en el BASE; la
+sombra `x6200_control_get()` de la lib no es readback (ver §77).
+
+**Código + REA** (`x6200_ui_v100`, sha256 `b76331c5…8871b`, REA 6.7.0 + Ghidra 12.1.4; evidencia en
+`docs/evidencia/2026-10-29-rx-audio-a-prime/readback-re.md`):
+
+- `BaseCommIIC::iicRead()` (`0xe2f70`): `/dev/i2c-0`, esclavo `0x72`, request = 2 B **big-endian**
+  con la dirección, respuesta = N bytes crudos (`ioctl I2C_RDWR` de 2 mensajes).
+- El GUI de fábrica sólo lee **5 zonas**: `0x2000` (1 B, baseband ready), `0x0000` (129 B, info),
+  `0x0100` (507 B, calibración), `0x3000` (64 B, texto) y `0x3040` (4 B, WPM de CW). **No lee
+  `0x0030` (registro 12) ni el bloque completo.**
+- El bloque de 54 registros (216 B) se **escribe** en la dirección I2C `0x0000` (periódico en
+  `BaseCommIIC::start()` y al final de `updateWorkParams()`), igual layout que la lib Aether
+  (`addr = index*4`; reg 12 = `0x30`). La cola de work params escribe cada campo de 4 B y después
+  pasa a "done": **el camino de lectura de esa cola (`mode==0`) es código muerto** (ningún store de
+  `mode=0` en todo el binario).
+- El canal serial BASE→GUI (`basecomm_pack`, `slot_slaveReportMessage` `0x5c1f4`) trae muestras,
+  flags (TX/ATU/SQL/power), medidores, batería y teclas. **No trae el bloque de registros.**
+
+**Medido previamente** (§69): el BASE responde lecturas de `0x2000`,`0x0000`,`0x0100` y `0x1000`;
+las demás direcciones probadas devolvieron 0; no hay ninguna lectura registrada de `0x0030`.
+
+**Consecuencia**: no existe lectura real y documentada del registro 12 (`R_BLOCKED_NO_HARDWARE_TRUTH`).
+El único estado físico verdadero disponible es el flag `tx` (y `atu_status`/`sql_mute`) del flow serial,
+que sirve para interlocks pero **no** para verificar `voice_rec`. Por eso el coordinador y el guardián
+de #367 escriben **sólo si** alguien registra un backend de readback real: en producción eso no existe
+y todo el camino queda OFF. La evidencia completa está en
+`docs/evidencia/2026-10-29-rx-audio-a-prime/`.
+
+**Sin fundar** (anexo A): que exista una ventana de lectura del bloque de 54 registros; si el MCU
+responde con el valor actual o con 0 en `0x0030`.

@@ -1,0 +1,14 @@
+# ARM cross build (toolchain de la ROM, no se instala nada en la radio)
+# toolchain: arm-buildroot-linux-gnueabihf-gcc.br_real (Buildroot 2023.02.11-dirty) 12.3.0
+
+$ arm-...-gcc -std=gnu11 -O2 -Wall -Wextra -Wno-unused-parameter -I src src/rx_audio_mux_guard.c src/rx_audio_mux_guard_main.c -o .qa367/arm/x6200_audio_guard
+ -> exit 0
+/home/pablo/desa/x6200/.qa367/arm/x6200_audio_guard: ELF 32-bit LSB pie executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 6.1.0, not stripped
+
+$ qemu-arm-static -L <rom-sysroot> .qa367/arm/x6200_audio_guard --self-check
+ -> x6200_audio_guard self-check ok (readback=UNAVAILABLE, guardian=OFF)
+exit=0
+
+$ arm-...-gcc -c src/radio.c (GUI modificada)
+/home/pablo/desa/x6200/.qa367/arm/radio.o: ELF 32-bit LSB relocatable, ARM, EABI5 version 1 (SYSV), not stripped
+ -> exit 0

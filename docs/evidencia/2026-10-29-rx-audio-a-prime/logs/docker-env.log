@@ -1,0 +1,4 @@
+== docker info (gates renderizados del quick suite) ==
+docker_info_rc=0
+ERROR: failed to build: failed to update builder last activity time: open /home/pablo/.docker/buildx/activity/.tmp-default2642320466: read-only file system
+docker_build_rc=0

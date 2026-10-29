@@ -1,0 +1,8 @@
+# REA decompile evidence ids (esta corrida)
+vendor-0xe2f70.json: "evidence_id":"ev_689bf9e9f333845dbcf8c07f7eae4a452b8abb997a6ae6711ccd869f0a2211b0"
+vendor-0xe5dc0.json: "evidence_id":"ev_dfd014cbbbaf3046043dd7bd4f4ba59ccad6cc2a49b9bcfe5371d35f70c19b7d"
+vendor-0xe62b8.json: "evidence_id":"ev_ac0e9bf2365a37ec01fc7ec5733cfb1c30e260b399bfff8b075cc4a0527f57bf"
+vendor-0x5c1f4.json: "evidence_id":"ev_c7a7f9f0b40473c71322f422f891eb28ebdd08712ac028a5dbfa6bde18b84f5d"
+
+# REA commands
+node refs/rea/scripts/rea.mjs decompile refs/vendor-fw/x6200_ui_v100 <addr> --snapshot .qa367/vendor.snapshot --provider ghidra
