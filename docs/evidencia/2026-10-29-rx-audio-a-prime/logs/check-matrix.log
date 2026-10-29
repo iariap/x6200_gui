@@ -1,0 +1,74 @@
+== check-matrix run 3 (post fix bootanim; UV_CACHE_DIR writable) ==
+Thu Oct 29 11:11:38 PM UTC 2026
+==> [check] native tests (tests/native/run_native_tests.sh)
+    ok
+==> [check] check_cfg_fills
+    ok
+==> [check] check_actions
+    ok
+==> [check] check_settings_focus
+    ok
+==> [check] check_apps_menu
+    ok
+==> [check] check_app_handlers
+    ok
+==> [check] check_manual_apps
+    ok
+==> [check] check_wcag
+    ok
+==> [check] check_cw_tune_feed
+    ok
+==> [check] check_settings_grid
+    ok
+==> [check] check_info_bar
+    ok
+==> [check] check_autotune_v2
+    ok
+==> [check] check_dialog_coverage
+    ok
+==> [check] check_build_identity
+    ok
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [SKIP] ruff del framework A/B: sin cambios en tools/ab_testing/**/*.py
+==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/** ni tools/ui_harness/**
+==> [check] x6200-ab themes
+    ok
+==> [check] x6200-ab contracts (9184b70438e1231e02279336e72fb4fb8b0e5b8b)
+    BLOCKED: el gate no evaluó (exit 2). NO es PASS:
+    BLOCKED: revision 9184b70438e1 did not build (exit 1)
+    bash: line 2: cd: tools/ui_harness: No such file or directory
+==> [check] check_wcag_rendered (contraste renderizado)
+    ok
+==> [check] check_widget_text (texto de los widgets, #287)
+    ok
+==> [check] check_bootanim (arranque neo-retro, #192)
+    ok
+==> [check] check_drawbuf_partial (draw buffer parcial, #147)
+    ok
+==> [check] guards del prune del rootfs (boot-rootfs.yml)
+    ok
+==> [check] bash -n tests/native/run_native_tests.sh
+    ok
+==> [SKIP] harness determinism gate: sin cambios en tools/ui_harness/
+==> [check] banco QEMU: preflight (tools/captura-banco.sh --check)
+    ok
+==> [check] banco QEMU: params.db generado (idempotencia del rebuild)
+    FAIL:
+    find: ‘/b/build’: No such file or directory
+==> [check] banco QEMU: captura de humo (home)
+    FAIL:
+    == comprobando el banco ==
+      docker: ok
+      imagen x6200-buildroot: ok
+      volumen x6200-build-output: ok
+      chroot /home/pablo/desa/x6200/x6200-rx-mux-guard-aprime/../.vfix3: ok
+      python3: ok
+      PIL: ok
+      cliente de control: ok
+      buildroot: ok
+      libs del banco: ok
+      qemu-arm-static ejecutando ARM: ok
+      limpiando la GUI (dirclean): el rebuild reusa una copia propia del repo
+    ERROR: fallo la limpieza (make x6200-gui-dirclean)
+==> [SKIP] workflows de GitHub (YAML + shell embebido): sin cambios en .github/workflows/*.yml
+CHECK_MATRIX_RC=1

@@ -1,0 +1,258 @@
+{
+  "risk": "high",
+  "reviewers": [
+    "reviewer-data",
+    "reviewer-frontend",
+    "reviewer-infra",
+    "reviewer-security"
+  ],
+  "human_approval": true,
+  "auto_approve": false,
+  "files": [
+    "CMakeLists.txt",
+    "docs/HALLAZGOS.md",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/README.md",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/commands.log",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/gates.csv",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/guardian-contract.md",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/hardware-handoff.md",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/arm-build.txt",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/docker-env.log",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/g2-timing-extract.txt",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/g4-radio-readonly.txt",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/native-ci-parity.log",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/native-tests.log",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/rea-evidence-ids.txt",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/ownership.md",
+    "docs/evidencia/2026-10-29-rx-audio-a-prime/readback-re.md",
+    "src/CMakeLists.txt",
+    "src/radio.c",
+    "src/radio.h",
+    "src/rx_audio_mux_guard.c",
+    "src/rx_audio_mux_guard.h",
+    "src/rx_audio_mux_guard_main.c",
+    "tests/native/radio_stubs.c",
+    "tests/native/radio_stubs.h",
+    "tests/native/run_native_tests.sh",
+    "tests/native/rxmux_guard_test_main.c",
+    "tests/native/test_rx_audio_mux_guard.c"
+  ],
+  "matches": [
+    {
+      "pattern": "CMakeLists.txt",
+      "risk": "medium",
+      "reason": "Entrypoint de build de la ROM (cross-compile)",
+      "files": [
+        "CMakeLists.txt"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/HALLAZGOS.md"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/README.md"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/commands.log"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/gates.csv"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/guardian-contract.md"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/hardware-handoff.md"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/arm-build.txt"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/docker-env.log"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/g2-timing-extract.txt"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/g4-radio-readonly.txt"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/native-ci-parity.log"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/native-tests.log"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/logs/rea-evidence-ids.txt"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/ownership.md"
+      ]
+    },
+    {
+      "pattern": "docs/**",
+      "risk": "low",
+      "reason": "Documentacion",
+      "files": [
+        "docs/evidencia/2026-10-29-rx-audio-a-prime/readback-re.md"
+      ]
+    },
+    {
+      "pattern": "src/**",
+      "risk": "high",
+      "reason": "Firmware en C/C++ del X6200: GUI, DSP, CAT, codecs. Es el runtime de la radio (RAM)",
+      "files": [
+        "src/CMakeLists.txt"
+      ]
+    },
+    {
+      "pattern": "src/**",
+      "risk": "high",
+      "reason": "Firmware en C/C++ del X6200: GUI, DSP, CAT, codecs. Es el runtime de la radio (RAM)",
+      "files": [
+        "src/radio.c"
+      ]
+    },
+    {
+      "pattern": "src/**",
+      "risk": "high",
+      "reason": "Firmware en C/C++ del X6200: GUI, DSP, CAT, codecs. Es el runtime de la radio (RAM)",
+      "files": [
+        "src/radio.h"
+      ]
+    },
+    {
+      "pattern": "src/**",
+      "risk": "high",
+      "reason": "Firmware en C/C++ del X6200: GUI, DSP, CAT, codecs. Es el runtime de la radio (RAM)",
+      "files": [
+        "src/rx_audio_mux_guard.c"
+      ]
+    },
+    {
+      "pattern": "src/**",
+      "risk": "high",
+      "reason": "Firmware en C/C++ del X6200: GUI, DSP, CAT, codecs. Es el runtime de la radio (RAM)",
+      "files": [
+        "src/rx_audio_mux_guard.h"
+      ]
+    },
+    {
+      "pattern": "src/**",
+      "risk": "high",
+      "reason": "Firmware en C/C++ del X6200: GUI, DSP, CAT, codecs. Es el runtime de la radio (RAM)",
+      "files": [
+        "src/rx_audio_mux_guard_main.c"
+      ]
+    },
+    {
+      "pattern": "tests/**",
+      "risk": "low",
+      "reason": "Tests nativos/estaticos y gates del arnes",
+      "files": [
+        "tests/native/radio_stubs.c"
+      ]
+    },
+    {
+      "pattern": "tests/**",
+      "risk": "low",
+      "reason": "Tests nativos/estaticos y gates del arnes",
+      "files": [
+        "tests/native/radio_stubs.h"
+      ]
+    },
+    {
+      "pattern": "tests/**",
+      "risk": "low",
+      "reason": "Tests nativos/estaticos y gates del arnes",
+      "files": [
+        "tests/native/run_native_tests.sh"
+      ]
+    },
+    {
+      "pattern": "tests/**",
+      "risk": "low",
+      "reason": "Tests nativos/estaticos y gates del arnes",
+      "files": [
+        "tests/native/rxmux_guard_test_main.c"
+      ]
+    },
+    {
+      "pattern": "tests/**",
+      "risk": "low",
+      "reason": "Tests nativos/estaticos y gates del arnes",
+      "files": [
+        "tests/native/test_rx_audio_mux_guard.c"
+      ]
+    }
+  ]
+}

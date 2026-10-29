@@ -83,10 +83,31 @@ TX/PTT/ATU, no se tocó `audio_enhancement.*`/`src/audio.c`/UI ni la radio.
 
 ## 6. Validación ASF
 
+Con `HEAD=9184b70438e1231e02279336e72fb4fb8b0e5b8b` (2 commits) y base `main=cb9ea287…`:
+
 ```
-[pendiente de completar antes del PR]
-asf/scripts/apps/x6200/check-matrix.sh main HEAD /home/pablo/desa/x6200/x6200-rx-mux-guard-aprime
-python3 asf/scripts/risk.py x6200 <base> <head>
-git diff --check
-git diff --name-only origin/main...HEAD
+[00:20Z] asf/scripts/apps/x6200/check-matrix.sh main HEAD <worktree>   -> exit 1 (sólo fallos de ENTORNO:
+         `x6200-ab contracts` BLOCKED porque el workspace mkdtemp queda en /tmp, no visible al daemon
+         docker del host ("cd: tools/ui_harness: No such file or directory"); `banco QEMU: params.db`
+         y `captura de humo` fallan por `find: '/b/build': No such file or directory` (volumen docker
+         x6200-build-output sin toolchain en este host). Todos los demás gates ok: native tests,
+         estáticos, themes, wcag_rendered, widget_text, bootanim, drawbuf, guards, bash -n.
+         Evidencia: logs/check-matrix.log.
+[00:22Z] UV_CACHE_DIR=<writable> uv run x6200-ab contracts --revision 9184b704… \
+         --workspace <workspace del host> --cache-dir <cache del host>  -> exit 0
+         "contracts 9184b70438e1: PASS — 2132 checks, 0 failure(s), 0 unchanged baseline defect(s)"
+         (= el gate que la matriz no pudo montar; con workspace visible sí evalúa y pasa).
+[00:22Z] python3 asf/scripts/risk.py x6200 cb9ea287 9184b704            -> exit 0
+         risk="high", reviewers=[reviewer-data, reviewer-frontend, reviewer-infra, reviewer-security],
+         human_approval=true, auto_approve=false (esperado: firmware).
+[00:05Z] sh tests/run_all_tests.sh --quick                              -> exit 1 (PREEXISTENTE de entorno:
+         wcag_rendered y widget_text no pueden construir la imagen docker del arnés:
+         "failed to update builder last activity time: ... read-only file system";
+         ver logs/docker-env.log; no hay cambios de UI en este PR).
+[--]     git diff --check                                                -> exit 0 (sin whitespace errors)
+[--]     git diff --name-only origin/main...HEAD                         -> 27 archivos (src/, tests/native/, CMakeLists, docs/)
 ```
+
+**Provisión de entorno para los gates de la matriz** (no cambios de repo): `lvgl` submodule
+inicializado en el worktree (commit pineado `74d0a81…`), `tools/remote/x6200-remote` compilado
+(estático, ignorado por git), `UV_CACHE_DIR` reubicado a un path escribible.
