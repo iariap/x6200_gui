@@ -1,5 +1,7 @@
-# settings-grupo-info: la pantalla real de Ajustes sobre la pantalla principal real, en el grupo
-# "Info" de la grilla (src/dialog_settings.c). El camino es el del usuario:
+# settings-grupo-logs: la pantalla real de Ajustes sobre la pantalla principal real, en el grupo
+# "Logs" de la grilla (src/dialog_settings.c: credenciales de la subida de QSO). Reemplaza a
+# settings-grupo-info: el #343 retiro el grupo Info (su unica fila paso a Display) y agrego Logs.
+# El camino es el del usuario:
 # main_screen_action(ACTION_APP_SETTINGS) -> dialog_construct(dialog_settings) y despues el tab
 # de la barra de abajo, que llama a settings_goto() (scroll + foco). La tabla de tabs/grupos y
 # la fila testigo que el arnes verifica estan en tools/ui_harness/src/screens.c (scenario_settle).
@@ -8,9 +10,9 @@
 # Deterministic: the date/time fields read the harness' fixed clock, not the
 # host's (tools/ui_harness/CMakeLists.txt links with `--wrap=time`).
 
-name settings-grupo-info
+name settings-grupo-logs
 screen settings-grupo
-settings_grupo Info
+settings_grupo Logs
 
 seed 20
 

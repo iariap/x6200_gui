@@ -16,11 +16,15 @@ remaining colour is the curve/axis text ink. `--ink RRGGBB` forces a colour and
 
 Two modes:
 
-* ONE capture -- classify the drawn curve by itself. It is the radio command of
-  the #125 re-test (`python3 tests/swrscan_curve_evidence.py /tmp/swrscan-u.png`):
-  a correct U (base in the bottom quarter, interior column, both edges rising)
-  exits 0 even for the shallow real resonance; a dome or a branch exits 1.
-* TWO captures -- the historical harness mode (`check_harness_swrscan_curve.sh`):
+* ONE capture -- measure and REPORT the drawn curve, for the radio re-test of
+  the #125/#132 (`python3 tests/swrscan_curve_evidence.py /tmp/swrscan-u.png`).
+  Since the owner's order of 2026-10-27 ("la curva siempre de los puntos
+  medidos") the shape is decided by the DATA, so this mode does not impose an
+  aesthetic: it prints the measured trace (ink, valley column, edges) and the
+  classified shape (U / domo / rama) and fails only when there is no curve or it
+  does not span the chart (nothing measured). It is the diagnostic the operator
+  runs against a real capture.
+* TWO captures -- the harness mode (`check_harness_swrscan_curve.sh`):
 
   - `swrscan-owner-40m-domo`: the owner's DOMO (ROE ~1.0 at both edges and ~3.8
     in the middle, `26-roe-multipasada-final.png`). Since the owner's order of
@@ -302,6 +306,36 @@ class Checker:
         print(f"       {text}")
 
 
+def _note_trace(
+    checker: Checker,
+    width: int,
+    ink: tuple[int, int, int],
+    bottom: dict[int, int],
+) -> None:
+    """Imprime la traza medida (tinta, columna del valle, bordes) y la forma.
+
+    Es la evidencia que el operador lee de una captura real: los numeros se
+    imprimen SIEMPRE, pase o no la comprobacion de forma.
+    """
+    cols = sorted(bottom)
+    xl, xr = cols[0], cols[-1]
+    valley_y = max(bottom.values())
+    x_valley = min(x for x in cols if bottom[x] == valley_y)
+
+    checker.note(f"tinta: RGB({ink[0]},{ink[1]},{ink[2]}) (detectada en la banda "
+                 f"y={BAND_TOP}..{BAND_BOTTOM})")
+    checker.note(
+        f"curva x={xl}..{xr} ({xr - xl} px de {width}); banda y={BAND_TOP}..{BAND_BOTTOM}; "
+        f"cuarto inferior y>={VALLEY_MIN_Y:.0f}"
+    )
+    checker.note(
+        f"valle: y={valley_y} en x={x_valley}; bordes: izq y={bottom[xl]} (x={xl}, "
+        f"sube {valley_y - bottom[xl]} px), der y={bottom[xr]} (x={xr}, "
+        f"sube {valley_y - bottom[xr]} px)"
+    )
+    checker.note(f"forma: {classify(bottom, xl, xr, valley_y, x_valley)}")
+
+
 def check_valley(
     checker: Checker,
     name: str,
@@ -319,8 +353,6 @@ def check_valley(
         checker.check(False, f"{name}: no encontre tinta de curva en la banda")
         return
 
-    checker.note(f"tinta: RGB({ink[0]},{ink[1]},{ink[2]}) (detectada en la banda y=69..399)")
-
     mask = curve_mask(im, ink)
     curve = curve_stroke(mask, im.size[0])
 
@@ -337,17 +369,8 @@ def check_valley(
     x_valley = min(x for x in cols if bottom[x] == valley_y)
 
     width, _ = im.size
-    shape = classify(bottom, xl, xr, valley_y, x_valley)
 
-    checker.note(
-        f"curva x={xl}..{xr} ({span} px de {width}); banda y={BAND_TOP}..{BAND_BOTTOM}; "
-        f"cuarto inferior y>={VALLEY_MIN_Y:.0f}"
-    )
-    checker.note(
-        f"valle: y={valley_y} en x={x_valley}; bordes: izq y={bottom[xl]} (x={xl}), "
-        f"der y={bottom[xr]} (x={xr})"
-    )
-    checker.note(f"forma: {shape}")
+    _note_trace(checker, width, ink, bottom)
 
     # The curve spans the run: a whole sweep is much wider than any glyph run.
     checker.check(span >= 0.7 * width, f"{name}: la curva cruza el chart ({span} px)")
@@ -409,6 +432,7 @@ def measure_shape(
     x_low = min(x for x in cols if bottom[x] == low_y)
 
     return {
+        "ink": ink,
         "bottom": bottom,
         "xl": xl,
         "xr": xr,
@@ -494,7 +518,9 @@ def check_capture_shape(
     """Una captura suelta: la curva existe y cruza el chart; se reporta su forma.
 
     Con la curva = puntos medidos la forma la manda el dato (U, domo o rama), asi
-    que este modo reporta y no impone una estetica.
+    que este modo REPORTA (tinta, valle, bordes y forma) y no impone una estetica:
+    lo que falla es no medir nada (sin curva, o una traza que no cruza el chart).
+    Es el comando del re-test en la radio (#125/#132).
     """
     checker.note(f"-- {name} ({png.name}) --")
     data = measure_shape(png, ink_forced, ink_min)
@@ -506,7 +532,12 @@ def check_capture_shape(
     span = data["span"]
     width = data["width"]
 
-    checker.note(f"traza x={data['xl']}..{data['xr']} ({span} px de {width}); forma: {data['shape']}")
+    _note_trace(
+        checker,
+        cast(int, width),
+        cast(tuple[int, int, int], data["ink"]),
+        cast(dict[int, int], data["bottom"]),
+    )
     checker.check(span >= 0.7 * width, f"{name}: la curva cruza el chart ({span} px)")
 
 
@@ -584,7 +615,7 @@ def main(argv: list[str]) -> int:
         print(f"FAIL: {checker.failures} comprobacion(es) de forma")
         return 1
 
-    print("PASS: la curva dibujada es un valle (base abajo, puntas hacia arriba)")
+    print("PASS: las comprobaciones de forma de la curva dibujada pasan")
     return 0
 
 

@@ -1,4 +1,4 @@
-# Cobertura HOST vs QEMU de los 22 dialogos que el arnes de host NO renderiza
+# Cobertura HOST vs QEMU de los 23 dialogos que el arnes de host NO renderiza
 # (tools/ui_harness/mocks/mock_main_screen.c los declara como un descriptor inerte).
 #
 # Issue iariap/x6200_gui#222 (epica #216). Este archivo es la fuente de verdad de la
@@ -11,7 +11,7 @@
 #   source          archivo de PRODUCCION que define el descriptor real
 #   host_status     cobertura en el arnes de host: INERT = hay descriptor mock (no-op),
 #                   el arnes NO renderiza esa ventana. NUNCA se cambia a REAL: el
-#                   harness de host sigue siendo sintetico para estos 22.
+#                   harness de host sigue siendo sintetico para estos 23.
 #   host_fixture    fixture del host que llega al camino de ese dialogo (`-` = ninguno).
 #                   Llegar al camino no es renderizar la ventana: el fixture prueba la
 #                   ruta, no el dialogo.
@@ -21,7 +21,7 @@
 #                   capturada y controles ejercitados) / PARTIAL (la ventana se
 #                   renderiza pero la funcion necesita un servicio o periferico que el
 #                   chroot no tiene: foto del mensaje controlado, nunca PASS del
-#                   dispositivo) / UNSUPPORTED (no lo alcanza el barrido de las 25 apps).
+#                   dispositivo) / UNSUPPORTED (no lo alcanza el barrido de las apps).
 #   qemu_status     lo MEDIDO: REAL / PARTIAL / UNSUPPORTED / BLOCKED.
 #   qemu_evidence   ruta de la captura real dentro del directorio de la corrida, o `-`.
 #   qemu_reason     la razon exacta cuando no hay REAL/PARTIAL (nunca vacia en ese caso).
@@ -42,12 +42,13 @@ CW Keyboard,dialog_cw_kbd,src/dialog_cw_kbd.c,INERT,-,CW,REAL,REAL,capturas/CW-r
 CW Trainer,dialog_cw_trainer,src/dialog_cw_trainer.c,INERT,-,CwTrainer,REAL,REAL,capturas/CwTrainer-r1.png,
 EQ,dialog_eq,src/dialog_eq.cpp,INERT,-,Eq,REAL,REAL,capturas/Eq-r1.png,
 Field Ops,dialog_field,src/dialog_field.c,INERT,-,Field,PARTIAL,PARTIAL,capturas/Field-r1.png,
-Frequency entry,dialog_freq,src/dialog_freq.c,INERT,-,-,UNSUPPORTED,UNSUPPORTED,-,"UNSUPPORTED: el protocolo de control remoto no inyecta teclas (la entrada de frecuencia se abre por HKEY_FINP, pulsacion larga); no lo alcanza el barrido de las 25 apps. El arnes de host SI la renderiza (binario ui_harness_dialogs; evidencia docs/evidencia/2026-10-23-ui-audit/gaps/png/dialog-freq.png), pero eso es cobertura de host, no del barrido QEMU"
+Frequency entry,dialog_freq,src/dialog_freq.c,INERT,-,-,UNSUPPORTED,UNSUPPORTED,-,"UNSUPPORTED: el protocolo de control remoto no inyecta teclas (la entrada de frecuencia se abre por HKEY_FINP, pulsacion larga); no lo alcanza el barrido de las apps. El arnes de host SI la renderiza (binario ui_harness_dialogs; evidencia docs/evidencia/2026-10-23-ui-audit/gaps/png/dialog-freq.png), pero eso es cobertura de host, no del barrido QEMU"
 FT8,dialog_ft8,src/dialog_ft8.c,INERT,-,FT8,REAL,REAL,capturas/FT8-r1.png,
 GPS,dialog_gps,src/dialog_gps.c,INERT,-,GPS,PARTIAL,PARTIAL,capturas/GPS-r1.png,
 JS8,dialog_js8,src/dialog_js8.c,INERT,-,JS8,REAL,REAL,capturas/JS8-r1.png,
-CW messages,dialog_msg_cw,src/dialog_msg_cw.c,INERT,-,-,UNSUPPORTED,UNSUPPORTED,-,"UNSUPPORTED: el protocolo de control remoto no inyecta teclas (los mensajes CW se abren por la tecla MSG, EVENT_KEYPAD, con la radio en CW); no lo alcanza el barrido de las 25 apps. El arnes de host SI los renderiza (binario ui_harness_dialogs; evidencia docs/evidencia/2026-10-23-ui-audit/gaps/png/dialog-msg-cw.png), pero eso es cobertura de host, no del barrido QEMU"
-Voice messages,dialog_msg_voice,src/dialog_msg_voice.c,INERT,-,-,UNSUPPORTED,UNSUPPORTED,-,"UNSUPPORTED: el protocolo de control remoto no inyecta teclas (los mensajes de voz se abren por la tecla MSG, EVENT_KEYPAD, con la radio en SSB/AM/NFM); no lo alcanza el barrido de las 25 apps. El arnes de host SI los renderiza (binario ui_harness_dialogs; evidencia docs/evidencia/2026-10-23-ui-audit/gaps/png/dialog-msg-voice.png), pero eso es cobertura de host, no del barrido QEMU"
+Logs,dialog_logs,src/dialog_logs.c,INERT,-,Logs,REAL,BLOCKED,-,"BLOCKED: la app Logs entro despues del ultimo barrido QEMU (2026-10-23, 25 apps) y no hay corrida posterior con captura; no se promueve a REAL sin salida real. Se mide con tests/qemu/run_apps_qemu.sh (Logs ya esta en APPS) en la proxima corrida"
+CW messages,dialog_msg_cw,src/dialog_msg_cw.c,INERT,-,-,UNSUPPORTED,UNSUPPORTED,-,"UNSUPPORTED: el protocolo de control remoto no inyecta teclas (los mensajes CW se abren por la tecla MSG, EVENT_KEYPAD, con la radio en CW); no lo alcanza el barrido de las apps. El arnes de host SI los renderiza (binario ui_harness_dialogs; evidencia docs/evidencia/2026-10-23-ui-audit/gaps/png/dialog-msg-cw.png), pero eso es cobertura de host, no del barrido QEMU"
+Voice messages,dialog_msg_voice,src/dialog_msg_voice.c,INERT,-,-,UNSUPPORTED,UNSUPPORTED,-,"UNSUPPORTED: el protocolo de control remoto no inyecta teclas (los mensajes de voz se abren por la tecla MSG, EVENT_KEYPAD, con la radio en SSB/AM/NFM); no lo alcanza el barrido de las apps. El arnes de host SI los renderiza (binario ui_harness_dialogs; evidencia docs/evidencia/2026-10-23-ui-audit/gaps/png/dialog-msg-voice.png), pero eso es cobertura de host, no del barrido QEMU"
 NavTex,dialog_navtex,src/dialog_navtex.c,INERT,-,NavTex,REAL,REAL,capturas/NavTex-r1.png,
 Propagation,dialog_propagation,src/dialog_propagation.c,INERT,-,Propagation,PARTIAL,PARTIAL,capturas/Propagation-r1.png,
 QTH,dialog_qth,src/dialog_qth.c,INERT,-,QTH,REAL,REAL,capturas/QTH-r1.png,

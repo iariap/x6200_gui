@@ -66,7 +66,7 @@ se toca al actualizar.** Igual, respaldala antes de cada actualización.
 
 **Las páginas de botones.** La fila de abajo tiene 5 botones y el primero es el **cambiador de
 página**: apretarlo pasa a la página siguiente, mantenerlo vuelve a la anterior. Hay varios grupos
-de páginas (VOL, MFK, MEM y **APP**) y se cambian con la **tecla APP**. En las **6 páginas APP**
+de páginas (VOL, MFK, MEM y **APP**) y se cambian con la **tecla APP**. En las **7 páginas APP**
 están **todas las aplicaciones**, 4 por página (la tabla está en la sección 6).
 
 ## 4. Los controles
@@ -143,7 +143,7 @@ igual que a cualquier banda: con `UP`/`DOWN` **largos** (la app Bands no las lis
 
 ## 5. Ajustes: todos los parámetros
 
-Se entra con la acción *APP Settings* (o desde la página APP 5:6). Los ajustes están **agrupados por
+Se entra con la acción *APP Settings* (o desde la página APP 5:7). Los ajustes están **agrupados por
 tema en 8 secciones** y la fila de botones de abajo son **tabs**: cada botón salta a su sección, que
 queda arriba de todo y con el foco en su primer campo. El tab en el que estás queda marcado. Los
 nombres de los tabs están en **inglés de ham radio** (`Clock`, `Display`, `Spectrum`...): es el
@@ -175,16 +175,17 @@ diálogo del app sobre la pantalla principal, tal como queda en el equipo.
 ![Las páginas APP](img/00-app-pages.png)
 
 **Todas las apps están alcanzables.** La **tecla APP** entra al grupo y el primer botón de abajo
-cambia de página: son **6**, con 3 o 4 apps cada una.
+cambia de página: son **7**, con 1 a 4 apps cada una.
 
 | Página | Apps |
 |---|---|
-| **APP 1:6** | FT8 (y FT4), JS8, WSPR, RTTY |
-| **APP 2:6** | SSTV, WeFax, NavTex, Clúster |
-| **APP 3:6** | Recorder, **Field Ops**, GPS, Bandas |
-| **APP 4:6** | CW Kbd, CW Trainer, Eq, Status |
-| **APP 5:6** | Ajustes, Callsign, QTH, Propagation |
-| **APP 6:6** | WiFi, Bluetooth, SWR Scan |
+| **APP 1:7** | FT8 (y FT4), JS8, WSPR, RTTY |
+| **APP 2:7** | SSTV, WeFax, NavTex, Clúster |
+| **APP 3:7** | Recorder, **Field Ops**, GPS, Bandas |
+| **APP 4:7** | CW Kbd, CW Trainer, Eq, Status |
+| **APP 5:7** | Ajustes, Callsign, QTH, Propagation |
+| **APP 6:7** | WiFi, Bluetooth, SWR Scan |
+| **APP 7:7** | Logs |
 
 Además de las páginas, **cada app está en la lista de acciones** de *Ajustes → Acciones* y se puede
 asignar a un botón o a una pulsación larga. Es el camino para las que no tienen botón propio en las
@@ -303,7 +304,7 @@ satélites.
 ![Field Ops](img/09-field.png)
 
 La app para salir al campo: referencias SOTA y POTA, log de contactos y self-spot. Está pensada
-para que en la cumbre no tengas que pelear con nada. **Está en APP 3:6.**
+para que en la cumbre no tengas que pelear con nada. **Está en APP 3:7.**
 
 **Cómo se usa:** elegí la **referencia** (la lista viene incluida, se puede usar sin internet),
 poné tu **indicativo**, y activá el **self-spot** para avisar a pota.app en qué frecuencia estás.
@@ -329,7 +330,7 @@ Telegrafía sin manipulador: escribís en un **teclado Bluetooth** y el equipo s
 CW con tu velocidad, tono y peso. Ideal para el campo (nada que enchufar), para quien no puede usar
 la paleta por una lesión, o para mandar un texto largo sin equivocarse.
 
-**Cómo se usa:** abrí la app (página **APP 4:6**, o la acción *APP CW Keyboard*), escribí y mandá.
+**Cómo se usa:** abrí la app (página **APP 4:7**, o la acción *APP CW Keyboard*), escribí y mandá.
 Una línea sale con **Enter**; lo que llega se decodifica en pantalla. La velocidad, el tono y el
 peso se ajustan con el MFK (**CW key speed**, **CW key tone**, **CW key ratio**).
 
@@ -349,7 +350,7 @@ Para practicar recepción: el equipo **te toca CW** y vos copiás. Arranca con e
 acertás. **Corre en el modo *train* del keyer: usa el sidetone y NO transmite**, así que no sales al
 aire mientras practicás.
 
-**Cómo se usa:** abrí la app (página **APP 4:6** o la acción *APP CW Trainer*) y elegí en el pie el
+**Cómo se usa:** abrí la app (página **APP 4:7** o la acción *APP CW Trainer*) y elegí en el pie el
 modo y la dificultad; hay 3 páginas de botones (`CWT 1:3`, `2:3` y `3:3`). Antes de empezar, poné el
 keyer en modo train (**CW key train** en el MFK, grupo CW).
 
@@ -367,7 +368,7 @@ keyer en modo train (**CW key train** en el MFK, grupo CW).
 La vista de bandas: los límites de cada banda, la **propagación** estimada y los parámetros
 guardados por banda y modo. Sirve para moverse rápido entre bandas sin pasar por el dial.
 
-**Cómo se usa:** abrí la app (página **APP 3:6**), mirá las barras de cada banda (HIGH / FAIR /
+**Cómo se usa:** abrí la app (página **APP 3:7**), mirá las barras de cada banda (HIGH / FAIR /
 GOOD, con los spots del clúster y del RBN de los últimos minutos) y tocá la banda; el equipo cambia
 manteniendo el modo y sus ajustes. Cada banda recuerda su última frecuencia, filtro y estado del
 ATU. **Use band** cambia a la banda elegida, y **Test beacon** emite un CQ de prueba para que el
@@ -378,7 +379,7 @@ ATU. **Use band** cambia a la banda elegida, y **Test beacon** emite un CQ de pr
 Graba el **audio del receptor** y lo reproduce, para dejar registrado un contacto difícil, un
 identificador de baliza o una señal rara y escucharla con calma después (o mandarla a un colega).
 
-**Cómo se usa:** abrí la app (página **APP 3:6**) y usá el pie: **Rec** y **Rec Stop** graban,
+**Cómo se usa:** abrí la app (página **APP 3:7**) y usá el pie: **Rec** y **Rec Stop** graban,
 **Play** y **Play Stop** reproducen, **Rename** le pone nombre y **Delete** borra. Los archivos
 quedan en `DATA/rec/`.
 
@@ -388,7 +389,7 @@ Cinco bandas para tu **audio de transmisión**: si te reportan que salís muy gr
 chillón ("finito"), se corrige acá. Es el ecualizador de la **entrada**, así que se nota en tu señal
 de SSB y de AM, no en lo que escuchás.
 
-**Cómo se usa:** abrí la app (página **APP 4:6** o la acción *APP EQ*), prendé el ecualizador y
+**Cómo se usa:** abrí la app (página **APP 4:7** o la acción *APP EQ*), prendé el ecualizador y
 movés las bandas. Queda guardado y se aplica al equipo.
 
 ### 6.16 Callsign (indicativo)
@@ -396,7 +397,7 @@ movés las bandas. Queda guardado y se aplica al equipo.
 Tu **indicativo**, en un solo lugar. Lo usan las apps digitales (FT8/FT4, WSPR, JS8, RTTY), el
 clúster DX y Field Ops, así que conviene cargarlo **antes** de estrenar cualquier modo digital.
 
-**Cómo se usa:** abrí la app (página **APP 5:6**), escribilo con el teclado y guardá. Si sale en
+**Cómo se usa:** abrí la app (página **APP 5:7**), escribilo con el teclado y guardá. Si sale en
 mayúsculas y sin errores, mejor: es lo que va a salir al aire y a los spots.
 
 ### 6.17 QTH (tu ubicación)
@@ -404,7 +405,7 @@ mayúsculas y sin errores, mejor: es lo que va a salir al aire y a los spots.
 Tu **grilla** (locator, por ejemplo `GF05xx`) y tu QTH. Sin la grilla, WSPR y el clúster no pueden
 ubicarte y los reportes pierden la mitad de la gracia.
 
-**Cómo se usa:** abrí la app (página **APP 5:6**), cargá la grilla de 6 caracteres y el texto de tu
+**Cómo se usa:** abrí la app (página **APP 5:7**), cargá la grilla de 6 caracteres y el texto de tu
 QTH, y guardá. Podés calcular tu grilla en cualquier página de locator o directamente en el
 configurador web.
 
@@ -416,7 +417,7 @@ de TX, el **espacio libre** en `DATA`, si **wfview** está prendido y el puerto,
 Es la pantalla para diagnosticar por teléfono o por radio: cuando reportes un problema, mirá acá los
 datos y anotalos.
 
-**Cómo se usa:** abrí la app (página **APP 4:6**). Se lee, no se toca; **Close** para salir.
+**Cómo se usa:** abrí la app (página **APP 4:7**). Se lee, no se toca; **Close** para salir.
 
 ### 6.19 WiFi
 
@@ -424,7 +425,7 @@ Para conectar el equipo a la red de tu casa o al hotspot del teléfono. Con WiFi
 **control remoto** (`http://<ip>/remote`), **configurador web** (`https://<ip>/`), **wfview**,
 **clúster DX** y la hora por NTP.
 
-**Cómo se usa:** abrí la app (página **APP 6:6**), elegí la red de la lista, escribí la clave y
+**Cómo se usa:** abrí la app (página **APP 6:7**), elegí la red de la lista, escribí la clave y
 conectá. Anotá la **IP** que te asigna: es la que vas a escribir en el teléfono y en la PC. Si no
 aparece tu red, revisá que el equipo esté cerca del router o usá el hotspot del teléfono.
 
@@ -433,7 +434,7 @@ aparece tu red, revisá que el equipo esté cerca del router o usá el hotspot d
 Para las tres cosas que hace el Bluetooth acá: **CAT** (puente serie para la PC), **auriculares
 A2DP** (escuchar sin cables) y **teclado** (para el CW Keyboard y los menús). El paso a paso del
 pareado —que es donde se traba todo el mundo— está en la **sección 7.3**; acá van los botones de la
-app (página **APP 6:6**):
+app (página **APP 6:7**):
 
 | Botón | Qué hace |
 |---|---|
@@ -449,7 +450,7 @@ Mide la **ROE** (relación de ondas estacionarias) en **50 puntos** a lo largo d
 la curva: sirve para ver **dónde resuena** tu antena, cuánto ancho tiene y si conviene el ATU. Es la
 forma rápida de saber si el problema es la antena o el equipo.
 
-**Cómo se usa:** abrí la app (página **APP 6:6**) y pulsá **Run**; la curva se dibuja a medida que
+**Cómo se usa:** abrí la app (página **APP 6:7**) y pulsá **Run**; la curva se dibuja a medida que
 barre. **Usalo con la antena conectada** (la medición necesita RF) y, como siempre: **nunca
 transmitas sin antena o carga fantasma**.
 
@@ -492,7 +493,7 @@ la izquierda.
 
 La app de **Ajustes** es la puerta a todo lo que vimos en la **sección 5**: reloj, pantalla, info,
 audio, espectro, operación, apariencia y las **acciones** asignables a las pulsaciones largas. Está
-en la página **APP 5:6** y el pie funciona como **tabs** (cada botón salta a su sección).
+en la página **APP 5:7** y el pie funciona como **tabs** (cada botón salta a su sección).
 
 **Todas las apps se pueden asignar a un botón o a una pulsación larga.** En *Ajustes → Acciones*
 tenés la lista completa de acciones, incluidas todas las apps: `APP FT8`, `APP Bands`,
@@ -506,7 +507,7 @@ pulsación larga, y así.
 
 La app **Propagation** dice si la **banda actual** está abierta midiendo los
 **beacons del IBP** (NCDXF/IARU) que transmiten en los próximos slots, **solo RX**
-(nunca transmite). Está en la página **APP 5:6** y también por control remoto
+(nunca transmite). Está en la página **APP 5:7** y también por control remoto
 (`{"cmd":"app","text":"Propagation"}`).
 
 **Cómo se usa:** abrí la app en la banda que querés evaluar y pulsá **Run**
@@ -532,6 +533,28 @@ cobertura y dirección).
   corrido. La app no puede forzar la sincronización (la hace el sistema).
 - El registro **IARU R2 de 10 m** (983 radiofaros, 313 activos en la lista del
   2026-10-18) va empaquetado en el firmware; no consulta internet.
+
+### 6.25 Logs (subida de QSO a QRZ, eQSL y Clublog)
+
+Los QSO que guarda el FT8/FT4 en `/mnt/qso_log.db` se suben solos a los logs online
+que configures cuando el equipo tiene WiFi. La app **Logs** es la pantalla de esas
+credenciales: está en la página **APP 7:7** y también por control remoto
+(`{"cmd":"app","text":"Logs"}`). Es la misma grilla que *Ajustes → Logs* (las dos
+pantallas editan el mismo archivo, `/mnt/upload.conf`).
+
+| Fila | Qué configura |
+|---|---|
+| **Upload** | Interruptor general: si está apagado no se sube nada |
+| **eQSL** / **QRZ** / **Clublog** | Un interruptor por proveedor (eQSL y Clublog son gratis; QRZ pide suscripción) |
+| **eQSL user** / **eQSL password** | Cuenta de eqsl.cc |
+| **QRZ API key** | La API key del Logbook de QRZ |
+| **Clublog callsign** / **email** / **password** / **API key** | Cuenta y "App password" de clublog.org |
+
+**Cómo se usa:** tocá una fila para editarla con el teclado; los passwords se ven
+enmascarados (`********`). Cada cambio se guarda solo y el daemon de subida lo toma
+en ≤30 s. Si un proveedor rechaza las credenciales, ese proveedor espera **1 hora**
+antes de reintentar (no insiste cada 30 s); el detalle y el archivo de configuración
+están en `docs/QRZ_UPLOAD.md`.
 
 ## 7. Guías avanzadas
 
@@ -565,14 +588,14 @@ Sirve para tres cosas: **CAT** (puente serie para la PC), **auriculares A2DP** y
 estado se ve en la barra de arriba, al lado del WiFi: la **runa** queda invisible con el Bluetooth
 apagado, gris cuando está prendido y **blanca** con auriculares conectados.
 
-**Todo el Bluetooth está en su app** (abrela con el botón **BT** de la página **APP 6:6**): ahí están
+**Todo el Bluetooth está en su app** (abrela con el botón **BT** de la página **APP 6:7**): ahí están
 el interruptor de encendido, **Discoverable (CAT)**, el scan, el pareo, la conexión y el audio. **Encenderlo:** abrí la app de Bluetooth y usá el interruptor **Bluetooth** de arriba. Marcá
 **Discoverable (CAT)** —al lado— si vas a usarlo desde la PC.
 
 **CAT (SPP):** vinculá la PC y elegí el puerto serie que aparece (19200 8N1 o lo que pida tu
 programa). Sirve para cualquier logger o programa CAT.
 
-**Auriculares (A2DP):** entrá con el botón **BT** (al lado de WiFi, página **APP 6:6**).
+**Auriculares (A2DP):** entrá con el botón **BT** (al lado de WiFi, página **APP 6:7**).
 
 ![La app de Bluetooth](img/07-bt.png)
 
@@ -832,7 +855,7 @@ fantasma (F0, a cargo del owner con autorización).
 | **El clúster no muestra spots** | Revisá servidor, indicativo y filtros; una línea de prueba necesita la hora `HHMMZ`. |
 | **Sin espacio en `DATA`** | Borrá `rec/`, capturas viejas o los `backup_*.tgz`. |
 | **Ajustes raros tras actualizar** | Restaurá el respaldo de `params.db` o borralo (perdés los ajustes, no el log). |
-| **No encuentro una app** | Están todas en las **6 páginas APP** (tecla APP); la tabla está en la sección 6. |
+| **No encuentro una app** | Están todas en las **7 páginas APP** (tecla APP); la tabla está en la sección 6. |
 | **El Bluetooth no encuentra los auriculares** | Tienen que estar en modo vinculación **y desconectados del teléfono**: si el teléfono está cerca vuelven a él y dejan de anunciarse. |
 | **Sale `Pairing failed`** | Lo mismo: ponelos en vinculación y reintentá (la app avisa cuando falla, antes quedaba muda). |
 | **No se oye la radio en los auriculares** | Pulsá **RX to HP** en la app de Bluetooth y subí el volumen con la rueda del equipo. |

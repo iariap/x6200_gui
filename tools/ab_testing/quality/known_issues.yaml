@@ -92,10 +92,16 @@ issues:
       fecha) los mantiene a la vista en el reporte de `contracts`/`audit` mientras
       la geometria de las filas de Ajustes este fuera del alcance de la corrida.
       Arreglar el alto de los controles (o fijar el target que la radio realmente
-      usa) es el incremento de UX de Ajustes.
+      usa) es el incremento de UX de Ajustes. La app BT (#343) tenia el mismo caso en
+      sus dos switches nuevos (62x34): ahi SI se arreglo en el codigo
+      (`bt_switch()`, 62x44, target de 44 px) porque el encabezado de 56 px lo
+      admite y eran controles nuevos. El grupo Logs del #343 agrega cuatro switches
+      111x30 mas a las filas de Ajustes: misma geometria pre-existente, misma
+      excepcion por fixture (settings-grupo-logs).
     evidence:
       - "tools/ui_harness/fixtures/settings-wfbat.scn (8 switches 111x30 en el grupo Espectro)"
       - "tools/ui_harness/fixtures/settings-home.scn (slider del backlight 610,373 159x13)"
+      - "tools/ui_harness/fixtures/settings-grupo-logs.scn (4 switches 111x30 del grupo Logs, #343)"
       - "audit HEAD --suite visual: 8 x layout_touch_target [settings-wfbat] + 1 x layout_touch_target [settings-home]"
       - "tools/ab_testing/quality/contracts.yaml (excepcion de layout_touch_target por fixture, hasta 2027-03-31)"
 

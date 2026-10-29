@@ -556,7 +556,11 @@ static lv_obj_t *bt_switch(uint16_t x, uint16_t y, bool state, lv_event_cb_t cb)
     lv_obj_t *sw = lv_switch_create(dialog.obj);
 
     styles_switch_init(sw);
-    lv_obj_set_size(sw, 62, 34);
+    /* Alto = target tactil de campo (44 px, AGENTS.md): el lv_switch de LVGL mide 30
+     * de alto y el contrato `layout_touch_target` de x6200-ab lo marca por debajo del
+     * target. Con 44 entra en el encabezado del dialogo (y=10..54) sin tocar la tabla
+     * (que arranca en y=66). */
+    lv_obj_set_size(sw, 62, 44);
     lv_obj_set_pos(sw, x, y);
 
     if (state) {

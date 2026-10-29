@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Datos del barrido QEMU de las 25 apps reales (issue #222, epica #216).
+"""Datos del barrido QEMU de las 26 apps reales (issue #222, epica #216).
 
 Hermano de `tools/barrido_apps.py` (el del banco del owner), pero con el contrato
-del issue #222: 3 rondas completas de las 25 entradas de
+del issue #222: 3 rondas completas de las entradas de
 `remote_server.cpp::app_names` (sin `off`), con la permanencia, la vuelta a la
 home y la estabilidad de la GUI como senales de primera clase. Este modulo tiene
 lo que no conviene escribir en bash:
@@ -61,8 +61,9 @@ TECHO_PASO_S = 5.0
 TECHO_FDS = 16
 TECHO_HILOS = 4
 
-# Las 25 apps del menu: remote_server.cpp::app_names[] sin "off" (FT4 es el alias de
-# FT8 y se documenta, no se doble-cuenta codigo).
+# Las apps del menu: remote_server.cpp::app_names[] sin "off" (FT4 es el alias de
+# FT8 y se documenta, no se doble-cuenta codigo). Logs entro el 2026-10-27 (a78e39fb)
+# y el contrato de #222 paso de 25 a 26 (tests/check_dialog_coverage.py lo fija).
 APPS = [
     "FT8",
     "FT4",
@@ -89,6 +90,7 @@ APPS = [
     "SWRScan",
     "Propagation",
     "DFLEditor",
+    "Logs",
 ]
 
 # Apps cuyo resultado depende de un servicio o periferico que el chroot no tiene.

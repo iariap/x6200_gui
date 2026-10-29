@@ -26,9 +26,9 @@ da `tools/captura-banco.sh`: prueba la **ultima version** (reconstruye si el fue
 imprime commit + md5) y usa el **socket correcto** (limpia socket/framebuffer viejos y hace handshake
 `{"cmd":"get"}` antes de mandar nada).
 
-### Barrido QEMU de las 25 apps con recursos privados (issue #222)
+### Barrido QEMU de las 26 apps con recursos privados (issue #222)
 
-`tests/qemu/run_apps_qemu.sh` corre las **25 apps** de `remote_server.cpp::app_names[]` (sin
+`tests/qemu/run_apps_qemu.sh` corre las **26 apps** de `remote_server.cpp::app_names[]` (sin
 `off`) en **3 rondas** contra el **binario ARM real** en un chroot propio, con el framebuffer
 falso y el socket de control del banco. No es un harness nuevo: reusa el binario, `libfakefb`,
 `x6200-remote`, el socket y las primitivas de captura; lo que cambia es el **aislamiento**.
@@ -58,16 +58,16 @@ RONDAS=3 DWELL=2 tests/qemu/run_apps_qemu.sh # el contrato completo del issue #2
   falta: no corre a medias ni cambia un SKIP por un verde. El banco del owner
   (`tools/captura-banco.sh`) sigue siendo el camino canonico cuando sus recursos estan libres.
 
-### Cobertura de los 22 dialogos inertes (issue #222)
+### Cobertura de los 23 dialogos inertes (issue #222)
 
-El arnes de host declara **22** constructores de dialogo como no-op
+El arnes de host declara **23** constructores de dialogo como no-op
 (`tools/ui_harness/mocks/mock_main_screen.c`), asi que esas ventanas no se renderizan en el
 host. La tabla `tests/qemu/dialog-coverage.csv` registra, por dialogo, la fuente de produccion,
 el fixture de host que llega a su camino (si hay), la app del barrido que lo abre y el resultado
 QEMU esperado/medido, con la captura o la razon exacta de bloqueo. El gate
 `tests/check_dialog_coverage.py` (en `tests/run_all_tests.sh` y en el CI) falla si el mock, las
 fuentes o `app_names[]` cambian sin actualizar la tabla, y si una fila declara cobertura real
-sin captura. El harness de host **sigue siendo sintetico** para esos 22: su etiqueta no se
+sin captura. El harness de host **sigue siendo sintetico** para esos 23: su etiqueta no se
 promueve a REAL.
 
 ### Baseline reproducible del release (issue #222)

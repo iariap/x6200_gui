@@ -349,6 +349,16 @@ bool bt_state_discoverable(void) { return mock_bt_on; }
 bool bt_state_connected(void) { return mock_bt_connected; }
 bool bt_state_mute(void) { return mock_bt_connected; }
 
+/* The switches of the Bluetooth app (src/dialog_bt.c, issue #343) call these on
+ * every toggle. The real ones (src/bt_state.c) spawn `/usr/sbin/btcat-ctl bt|
+ * discoverable on|off` on a worker thread; the host has no btcat-ctl and must
+ * not run anything, so they are documented no-ops, like `__wrap_system()` in
+ * mocks/mock_btaudio.c. The state the render reads comes from the fixture
+ * (`mock_bt_state_set`), not from a script that never ran: a no-op keeps the
+ * capture deterministic instead of faking a transition the host cannot verify. */
+void bt_state_set_power(bool on) { (void) on; }
+void bt_state_set_discoverable(bool on) { (void) on; }
+
 void btaudio_log(const char *fmt, ...) { (void) fmt; }
 void btaudio_run(const char *fmt, ...) { (void) fmt; }
 void btaudio_headphone_volume(int pct) { (void) pct; }

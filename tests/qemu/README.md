@@ -8,9 +8,9 @@ de cobertura y documentación.
 
 | Archivo | Qué es |
 | --- | --- |
-| `run_apps_qemu.sh` | El barrido: 3 rondas × las 25 apps de `remote_server.cpp::app_names[]` contra el binario ARM real, en un chroot **privado**, con framebuffer falso y el socket de control. |
+| `run_apps_qemu.sh` | El barrido: 3 rondas × las 26 apps de `remote_server.cpp::app_names[]` contra el binario ARM real, en un chroot **privado**, con framebuffer falso y el socket de control. |
 | `barrido_qemu.py` | Los datos del barrido: parseo del estado, clasificación `PASS`/`FAIL`/`PARTIAL`/`BLOCKED`, `barrido.json` + `results.csv` + `index.txt`, y un `selftest` del reporteador. |
-| `dialog-coverage.csv` | La tabla de cobertura HOST/QEMU de los **22 diálogos** que el arnés de host declara inertes. |
+| `dialog-coverage.csv` | La tabla de cobertura HOST/QEMU de los **23 diálogos** que el arnés de host declara inertes. |
 | `../check_dialog_coverage.py` | El gate que mantiene esa tabla pegada al código (mocks, fuentes reales y `app_names[]`). |
 
 ## Cómo se corre
