@@ -23,13 +23,19 @@ Tres comprobaciones deterministas sobre los artefactos de
     que el issue prohibe (`--self-test` demuestra que las regex detectan las
     formas malas y dejan pasar las buenas).
 
-(c) Los ids de request del stub NO pueden coincidir con los de la lib real
-    donde no deben: se leen del header del stub
-    (`tests/native/stubs/speex/speex_preprocess.h`) y el valor real queda
-    documentado en `speex-audit.md` (`SPEEX_PREPROCESS_SET_NOISE_SUPPRESS`
-    = 18 en libspeexdsp 1.2.1; el stub usa 1). Ademas, el stub del banco
-    (`scripts/bench/stubs_bench.c`) no puede definir simbolos de Speex: si los
-    definiera, el banco dejaria de enlazar la lib real y (a) seria mentira.
+(c) Los ids de request del stub tienen que ser los del ABI real: se leen del
+    header del stub (`tests/native/stubs/speex/speex_preprocess.h`) y el valor
+    real queda documentado en `speex-audit.md`
+    (`SPEEX_PREPROCESS_SET_NOISE_SUPPRESS` = 18 en libspeexdsp 1.2.1). Desde
+    #351 el stub declara ese mismo 18 (antes usaba un id local, 1), asi que un
+    id equivocado en el modulo se detecta en host en vez de quedar tapado por
+    un stub que acepta cualquier request. El numero esperado esta fijado en
+    este control (no se toma del propio stub): cualquier otro valor --1, 19,
+    el que sea-- es FAIL, y el `--self-test` lo demuestra. El doc tiene que
+    conservar la fila historica stub=1 / real=18 que fundo la discrepancia.
+    Ademas, el stub del banco (`scripts/bench/stubs_bench.c`) no puede definir
+    simbolos de Speex: si los definiera, el banco dejaria de enlazar la lib
+    real y (a) seria mentira.
 
 (d) La tabla comparativa de la tanda D (`rnnoise-vs-speex.csv`) declara
     `audio_destination = OFFLINE_CAPTURE_ONLY` en TODAS las filas (nunca
@@ -114,6 +120,11 @@ RNNOISE_REQUIRED_COLUMNS = (
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 # Marcas de que la cifra salio de la suite nativa con stubs.
 STUB_SOURCE_MARKERS = ("tests/native", "stub")
+
+# (c) Valor del ABI real de libspeexdsp 1.2.1 (speex_preprocess.h:144). Es el
+# numero esperado en el header del stub desde #351: si se cambia aca, se cambia
+# el estandar del control, no el del stub.
+REAL_NOISE_SUPPRESS = 18
 
 # (b) Aserciones prohibidas: "el stub <verbo de medicion> ... <magnitud>" y la
 # forma inversa, dentro de la misma clausula (se corta por ';' y '|').
@@ -276,8 +287,29 @@ def check_no_stub_claims(rows: list[dict[str, str]]) -> None:
         ok("(b) sin atribuciones al stub", f"{scanned} campos/lineas barridos, 0 aserciones prohibidas")
 
 
-def check_stub_ids_do_not_match(rows: list[dict[str, str]]) -> None:
-    """(c) Los ids del stub no coinciden con los reales donde no deben."""
+def stub_id_problems(stub_value: int, real_value: int) -> list[str]:
+    """(c) El stub tiene que declarar el id del ABI real y el doc el mismo numero.
+
+    Puro para que el `--self-test` demuestre que el control delata un id
+    equivocado: el valor esperado es `REAL_NOISE_SUPPRESS`, no el que declare
+    el stub (si se comparara el stub consigo mismo, el control seria vacuo).
+    """
+    problems = []
+    if real_value != REAL_NOISE_SUPPRESS:
+        problems.append(
+            f"el valor real documentado es {real_value}; libspeexdsp 1.2.1 define {REAL_NOISE_SUPPRESS}"
+        )
+    if stub_value != REAL_NOISE_SUPPRESS:
+        problems.append(
+            f"el stub declara SET_NOISE_SUPPRESS = {stub_value}; el ABI real "
+            f"(libspeexdsp 1.2.1) define {REAL_NOISE_SUPPRESS} (si el stub cambio, "
+            "hay que reauditar los tests y este control)"
+        )
+    return problems
+
+
+def check_stub_ids_match_abi(rows: list[dict[str, str]]) -> None:
+    """(c) El stub declara el id del ABI real y el banco no stubea Speex."""
     if not STUB_HEADER.is_file():
         fail("(c) ids del stub", f"no existe {rel(STUB_HEADER)}")
         return
@@ -305,38 +337,25 @@ def check_stub_ids_do_not_match(rows: list[dict[str, str]]) -> None:
         return
     real_value = int(real_match.group(1))
 
-    if stub_value != 1:
-        fail(
-            "(c) ids del stub",
-            f"el stub declara SET_NOISE_SUPPRESS = {stub_value}; se esperaba 1 "
-            "(si el stub cambio, hay que reauditar los tests y este control)",
-        )
-    if real_value != 18:
-        fail(
-            "(c) ids del stub",
-            f"el valor real documentado es {real_value}; libspeexdsp 1.2.1 define 18",
-        )
-    if stub_value == real_value:
-        fail(
-            "(c) ids del stub",
-            f"stub y lib real comparten SET_NOISE_SUPPRESS = {stub_value}: el stub "
-            "dejaria de delatar un id equivocado",
-        )
+    problems = stub_id_problems(stub_value, real_value)
 
-    # El doc tiene que registrar la discrepancia, no solo el numero real.
+    # El doc tiene que conservar la discrepancia historica que fundo el issue:
+    # la errata de #351 se agrega al lado, no reescribe la medicion original.
     if not re.search(
         r"SPEEX_PREPROCESS_SET_NOISE_SUPPRESS`?\s*\|\s*\*{0,2}1\*{0,2}\s*\|\s*\*{0,2}18",
         audit_text,
     ):
-        fail(
-            "(c) ids del stub",
-            f"{rel(AUDIT_DOC)} no tiene la fila stub=1 / real=18 que funda la discrepancia",
-        )
+        problems.append(f"{rel(AUDIT_DOC)} no conserva la fila historica stub=1 / real=18")
 
-    ok(
-        "(c) ids del stub",
-        f"stub SET_NOISE_SUPPRESS = {stub_value} != real = {real_value} (documentado en speex-audit.md)",
-    )
+    for problem in problems:
+        fail("(c) ids del stub", problem)
+
+    if not problems:
+        ok(
+            "(c) ids del stub",
+            f"stub SET_NOISE_SUPPRESS = {stub_value} == real = {real_value} "
+            "(ABI de libspeexdsp 1.2.1, documentado en speex-audit.md)",
+        )
 
     # El banco no puede stubbear Speex: si lo hiciera, (a) seria falso.
     if not BENCH_STUB_SRC.is_file():
@@ -562,19 +581,41 @@ SELF_TEST_CASES = (
     ("Un PASS de la suite host prueba troceado; no prueba calidad", False),
 )
 
+# (c) El control tiene que aceptar el ABI real y delatar cualquier otro id: si
+# solo aceptara "cualquier cosa que diga el stub", el control seria vacuo.
+SELF_TEST_ID_CASES = (
+    # (id del stub, valor real documentado en el doc, se espera FAIL)
+    (REAL_NOISE_SUPPRESS, REAL_NOISE_SUPPRESS, False),
+    (1, REAL_NOISE_SUPPRESS, True),
+    (19, REAL_NOISE_SUPPRESS, True),
+    (REAL_NOISE_SUPPRESS, 17, True),
+)
+
 
 def self_test() -> int:
-    """Demuestra que las regex de (b) no son vacuas y no comen frases correctas."""
+    """Demuestra que las regex de (b) no son vacuas y que (c) delata un id malo."""
     bad = 0
     for text, expected in SELF_TEST_CASES:
         detected = forbidden_claim(text) is not None
         status = "OK  " if detected == expected else "FAIL"
         bad += 0 if detected == expected else 1
         print(f"{status} self-test(b): esperado={expected!s:5} detectado={detected!s:5} {text!r}")
+    for stub_value, real_value, expected in SELF_TEST_ID_CASES:
+        problems = stub_id_problems(stub_value, real_value)
+        detected = bool(problems)
+        status = "OK  " if detected == expected else "FAIL"
+        bad += 0 if detected == expected else 1
+        print(
+            f"{status} self-test(c): esperado_fail={expected!s:5} detectado_fail={detected!s:5} "
+            f"stub={stub_value} real_documentado={real_value}"
+        )
     if bad:
         print(f"FAIL: {bad} caso(s) de self-test")
         return 1
-    print("OK: las regex de (b) detectan las 5 formas prohibidas y dejan pasar las 5 correctas")
+    print(
+        "OK: (b) las regex detectan las 5 formas prohibidas y dejan pasar las 5 correctas; "
+        "(c) el control acepta el ABI real (18) y delata los 3 ids incongruentes"
+    )
     return 0
 
 
@@ -584,7 +625,7 @@ def main() -> int:
     parser.add_argument(
         "--self-test",
         action="store_true",
-        help="prueba que las regex de (b) detectan las formas prohibidas",
+        help="prueba que las regex de (b) detectan las formas prohibidas y que (c) delata un id malo",
     )
     args = parser.parse_args()
 
@@ -594,7 +635,7 @@ def main() -> int:
     rows = read_rows()
     check_measured_host_provenance(rows)
     check_no_stub_claims(rows)
-    check_stub_ids_do_not_match(rows)
+    check_stub_ids_match_abi(rows)
     check_comparative_table()
     check_rnnoise_not_vendored()
     check_rnnoise_manifest()
