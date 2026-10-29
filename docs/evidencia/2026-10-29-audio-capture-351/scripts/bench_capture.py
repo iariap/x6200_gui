@@ -661,16 +661,19 @@ def main() -> int:
             if preset not in BIT_EXACT_REQUIRED and not invariant:
                 base = measurements[f"{sig}_p{preset}_b4410"]
                 mixed = measurements[f"{sig}_p{preset}_bmixed"]
+                same_as_base = sorted(t for t, s in shas.items() if s == base["sha256"])
                 invariance[f"{sig}_p{preset}"]["differing_samples"] = _count_diff(
                     OUT_DIR / f"{sig}_p{preset}_b4410.raw", OUT_DIR / f"{sig}_p{preset}_bmixed.raw"
                 )
                 invariance[f"{sig}_p{preset}"]["max_abs_diff_lsb"] = _max_abs_diff(
                     OUT_DIR / f"{sig}_p{preset}_b4410.raw", OUT_DIR / f"{sig}_p{preset}_bmixed.raw"
                 )
+                invariance[f"{sig}_p{preset}"]["identical_to_4410"] = same_as_base
                 invariance[f"{sig}_p{preset}"]["note"] = (
                     "no se exige bit-exacto: el nivelador AF mide el pico por bloque interno "
-                    f"(<= {FRAME} muestras); base sha {base['sha256'][:12]}, "
-                    f"mixed sha {mixed['sha256'][:12]}"
+                    f"(<= {FRAME} muestras), asi que una particion que fuerza chunks mas cortos "
+                    f"cambia la ganancia; identicas a 4410: {', '.join(same_as_base)}; "
+                    f"base sha {base['sha256'][:12]}, mixed sha {mixed['sha256'][:12]}"
                 )
 
     # Particion en un proceso con reset explicito entre pases.

@@ -24,7 +24,7 @@
 | N muestras de salida por N de entrada | **PASS** — 441 000 → 441 000 en los 36 casos | `measurements.csv` |
 | `Off` bit-exacto al input | **PASS** — 0 muestras distintas en los 12 casos `Off` | §3 |
 | `Off`/`SSB voice` bit-exactos entre particiones | **PASS** — mismo SHA-256 en 4 particiones (4410 / 441 / 8820 / `1,440,441,442,257`) | §4 |
-| `AM broadcast` **no** se exige bit-exacto | **registrado** — 429 869 muestras distintas vs. 4410, max |diff| 1103 LSB (nivelador AF por bloque) | §4 |
+| `AM broadcast` **no** se exige bit-exacto | **registrado** — idéntico en 4410/441/8820; el patrón `1,440,441,442,257` difiere en 429 869 muestras, max abs diff 1103 LSB (nivelador AF por chunk de ≤441) | §4 |
 | Sin clipping | **PASS** — 0 muestras en los 36 casos | §3 |
 | Supresión efectiva == fórmula `-10 - level*20/100` | **PASS** — 0→−10, 40→−18, 60→−22, 100→−30 leídos de vuelta de la lib real | §5 |
 | Retardo por correlación | **MEDIDO** — 0 muestras sin NR; **882 muestras (20 ms)** con NR = 441 de la máquina de tramas + 441 de la lib | §3, §5 |
@@ -86,15 +86,15 @@ no se sustituye nunca: el contenedor enlaza la lib real y el bench lee de vuelta
 
 | Señal | Preset | N in / N out | Retardo (muestras) | RMS salida | Atenuación | Peak | Clip | Seam cb / trama / input (LSB) | p99 por callback | 10 s en |
 |---|---|---|---|---|---|---|---|---|---|---|
-| ruido blanco | `Off` | 441000 / 441000 | **0** | −30.01 dBFS | +0.00 dB | −25.23 dBFS | 0 | 3189 / 3466 / 3587 | <1 µs | 0.9 ms |
-| ruido blanco | `SSB voice` | 441000 / 441000 | **882** | −41.87 dBFS | −11.86 dB | −25.30 dBFS | 0 | 3336 / 3336 / 3587 | 561 µs | 27.2 ms |
-| ruido blanco | `AM broadcast` | 441000 / 441000 | **882** | −39.32 dBFS | −9.32 dB | −24.29 dBFS | 0 | 3727 / 3727 / 3587 | 619 µs | 26.6 ms |
-| multisine 300/1k/2.4k | `Off` | 441000 / 441000 | — (ambiguo) | −25.78 dBFS | +0.00 dB | −18.08 dBFS | 0 | 715 / 715 / 715 | <1 µs | 0.8 ms |
-| multisine 300/1k/2.4k | `SSB voice` | 441000 / 441000 | — (ambiguo) | −38.22 dBFS | −12.44 dB | −18.15 dBFS | 0 | 709 / 710 / 715 | 476 µs | 23.6 ms |
-| multisine 300/1k/2.4k | `AM broadcast` | 441000 / 441000 | — (ambiguo) | −38.98 dBFS | −13.20 dB | −18.15 dBFS | 0 | 709 / 710 / 715 | 541 µs | 24.5 ms |
-| seno 1 kHz | `Off` | 441000 / 441000 | — (ambiguo) | −21.01 dBFS | +0.00 dB | −18.00 dBFS | 0 | 586 / 586 / 588 | <1 µs | 0.8 ms |
-| seno 1 kHz | `SSB voice` | 441000 / 441000 | — (ambiguo) | −33.54 dBFS | −12.53 dB | −18.06 dBFS | 0 | 580 / 581 / 588 | 347 µs | 23.9 ms |
-| seno 1 kHz | `AM broadcast` | 441000 / 441000 | — (ambiguo) | −34.33 dBFS | −13.32 dB | −18.06 dBFS | 0 | 580 / 581 / 588 | 485 µs | 24.5 ms |
+| ruido blanco | `Off` | 441000 / 441000 | **0** | −30.01 dBFS | +0.00 dB | −25.23 dBFS | 0 | 3189 / 3466 / 3587 | <1 µs | ≈1.0 ms |
+| ruido blanco | `SSB voice` | 441000 / 441000 | **882** | −41.87 dBFS | −11.86 dB | −25.30 dBFS | 0 | 3336 / 3336 / 3587 | ≈440 µs | ≈26 ms |
+| ruido blanco | `AM broadcast` | 441000 / 441000 | **882** | −39.32 dBFS | −9.32 dB | −24.29 dBFS | 0 | 3727 / 3727 / 3587 | ≈425 µs | ≈28 ms |
+| multisine 300/1k/2.4k | `Off` | 441000 / 441000 | — (ambiguo) | −25.78 dBFS | +0.00 dB | −18.08 dBFS | 0 | 715 / 715 / 715 | <1 µs | ≈1.0 ms |
+| multisine 300/1k/2.4k | `SSB voice` | 441000 / 441000 | — (ambiguo) | −38.22 dBFS | −12.44 dB | −18.15 dBFS | 0 | 709 / 710 / 715 | ≈480 µs | ≈24 ms |
+| multisine 300/1k/2.4k | `AM broadcast` | 441000 / 441000 | — (ambiguo) | −38.98 dBFS | −13.20 dB | −18.15 dBFS | 0 | 709 / 710 / 715 | ≈520 µs | ≈24 ms |
+| seno 1 kHz | `Off` | 441000 / 441000 | — (ambiguo) | −21.01 dBFS | +0.00 dB | −18.00 dBFS | 0 | 586 / 586 / 588 | <1 µs | ≈1.0 ms |
+| seno 1 kHz | `SSB voice` | 441000 / 441000 | — (ambiguo) | −33.54 dBFS | −12.53 dB | −18.06 dBFS | 0 | 580 / 581 / 588 | ≈480 µs | ≈24 ms |
+| seno 1 kHz | `AM broadcast` | 441000 / 441000 | — (ambiguo) | −34.33 dBFS | −13.32 dB | −18.06 dBFS | 0 | 580 / 581 / 588 | ≈360 µs | ≈23 ms |
 
 Notas de lectura:
 
@@ -112,7 +112,8 @@ Notas de lectura:
 - **Un tono puro también se atenúa** (~12.5 dB con `SSB voice`): es el comportamiento del NR de
   Speex sobre señales tonales y es la razón por la que `CW weak` mantiene el NR apagado.
 - **Tiempos**: son wall-clock de un x86_64 de host para 10 s de audio (≈0.25 % del tiempo real
-  con NR). **No** son un presupuesto de CPU del R16 (§6).
+  con NR) y **varían entre corridas** del host: los valores exactos de la corrida registrada están
+  en `measurements.csv`. **No** son un presupuesto de CPU del R16 (§6).
 
 ## 4. Invariancia por partición
 
@@ -123,15 +124,17 @@ Mismo input, cuatro particiones, cada corrida desde estado recién inicializado
 |---|---|---|---|
 | ruido blanco | `Off` | **SÍ** (`b718cf2c…`) | bit-exacto, sin priming ni retardo |
 | ruido blanco | `SSB voice` | **SÍ** (`0789cf1c…`) | NR stateful: la trama continúa a través de los callbacks |
-| ruido blanco | `AM broadcast` | **NO** | 429 869 muestras distintas vs. 4410, max |diff| **1103 LSB** |
+| ruido blanco | `AM broadcast` | **4410 = 441 = 8820**; el patrón mezclado difiere | 429 869 muestras distintas vs. 4410, max abs diff **1103 LSB** |
 | multisine | `Off` / `SSB voice` | **SÍ** / **SÍ** | — |
-| multisine | `AM broadcast` | **NO** | 433 966 distintas, max |diff| 448 LSB |
+| multisine | `AM broadcast` | **4410 = 441 = 8820**; el patrón mezclado difiere | 433 966 distintas, max abs diff 448 LSB |
 | seno 1 kHz | `Off` / `SSB voice` | **SÍ** / **SÍ** | — |
-| seno 1 kHz | `AM broadcast` | **NO** | 424 783 distintas, max |diff| 446 LSB |
+| seno 1 kHz | `AM broadcast` | **4410 = 441 = 8820**; el patrón mezclado difiere | 424 783 distintas, max abs diff 446 LSB |
 
-La diferencia de `AM broadcast` es esperada y **no** se exige bit-exacta (lo dice el issue): el
-nivelador AF calcula el pico por bloque y aplica una ganancia suavizada, así que un bloque de
-otro tamaño es otra ganancia. Lo que se verifica en su lugar: longitud conservada, sin clipping,
+La diferencia de `AM broadcast` es esperada y **no** se exige bit-exacta (lo dice el issue):
+`audio_enh_process()` parte cualquier callback en chunks de **a lo sumo 441 muestras**, así que
+el nivelador AF mide el pico por chunk y sólo una partición que **fuerce chunks más cortos**
+cambia la ganancia. Por eso las particiones múltiplos de 441 dan el mismo SHA-256 y el patrón
+`1,440,441,442,257` no. Lo que se verifica en su lugar: longitud conservada, sin clipping,
 estado estable y diferencias acotadas.
 
 ### 4.1 Reset de preset ≠ re-init (hallazgo medido)
@@ -140,7 +143,7 @@ estado estable y diferencias acotadas.
 pero **no** destruye/recrea el `SpeexPreprocessState`. Procesando el mismo input dos veces en un
 solo proceso con un reset en el medio:
 
-| Preset | ¿Idénticas? | Muestras distintas | Max |diff| | Causa |
+| Preset | ¿Idénticas? | Muestras distintas | Max abs diff | Causa |
 |---|---|---|---|---|
 | `Off` | **SÍ** | 0 | 0 LSB | no hay estado |
 | `SSB voice` | NO | 433 735 | 1539 LSB | `libspeexdsp` conserva su estimación adaptativa de ruido |

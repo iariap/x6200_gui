@@ -105,11 +105,15 @@ Consequences:
 
 ### 3.2 AF leveler
 
-Enabled only in `CW weak` and `AM broadcast`. It measures the **peak of the block it receives**
-and smooths the gain with attack/release; gain is clamped to ±30 dB. Because the measurement
-window is the block, the AF leveler output **depends on the chunk size** the capture delivers.
-That is why bit-exact partition invariance is required only for `Off` and `SSB voice` (which
-has the leveler disabled) and **not** for `AM broadcast`; see §6.
+Enabled only in `CW weak` and `AM broadcast`. It measures the **peak of the block it receives**,
+and `audio_enh_process()` splits every callback into chunks of **at most 441 samples**, so the
+measurement window is 441 samples unless a partition forces shorter chunks. The gain is smoothed
+with attack/release and clamped to ±30 dB. Measured consequence: `AM broadcast` produces the
+**same output** for every partition that keeps 441-sample chunks (4410, 441 and 8820 give the
+same SHA-256) and differs only when a partition forces shorter chunks (`1,440,441,442,257`
+differs in 429 869 samples, max abs diff 1103 LSB). That is why the issue does not require
+bit-exactness for `AM broadcast` — and why it *is* required for `Off` and `SSB voice`, which
+have the leveler disabled; see §6.
 
 ### 3.3 Notch filters
 
@@ -183,9 +187,9 @@ callbacks of 4410 samples, `libspeexdsp 1.2.1-1`:
 
 | Preset | Delay (correlation) | RMS attenuation | Clipping | Max sample-to-sample jump: input / at callback boundary / at frame boundary | 10 s of audio in |
 |---|---|---|---|---|---|
-| `Off` | 0 samples | 0.00 dB (bit-exact) | 0 | 3587 / 3189 / 3466 LSB | 0.9 ms |
-| `SSB voice` | **882 samples (20 ms)** | −11.86 dB | 0 | 3587 / 3336 / 3336 LSB | 27 ms |
-| `AM broadcast` | **882 samples (20 ms)** | −9.32 dB | 0 | 3587 / 3727 / 3727 LSB | 27 ms |
+| `Off` | 0 samples | 0.00 dB (bit-exact) | 0 | 3587 / 3189 / 3466 LSB | ≈1 ms |
+| `SSB voice` | **882 samples (20 ms)** | −11.86 dB | 0 | 3587 / 3336 / 3336 LSB | ≈26 ms |
+| `AM broadcast` | **882 samples (20 ms)** | −9.32 dB | 0 | 3587 / 3727 / 3727 LSB | ≈28 ms |
 
 Reading the seams: with `SSB voice` the largest jump in the output at a callback boundary
 (and at a frame boundary) is **smaller** than the largest jump the input already has, i.e. the
@@ -197,14 +201,16 @@ as measured by the `probe_speex_only` row.
 
 Partition invariance: the same input processed as one 4410-sample callback, as 441-sample
 callbacks, as `8820`, and as the arbitrary pattern `1,440,441,442,257` gives the **same
-SHA-256** for `Off` and for `SSB voice`. For `AM broadcast` it does not (429 869 differing
-samples, max |diff| 1103 LSB against the 4410 partition): the AF leveler measures the peak of
-the block it receives, so a different block size is a different gain. That is why the issue
-does not require bit-exactness for AM — and the bench records the difference instead of hiding
-it.
+SHA-256** for `Off` and for `SSB voice`. For `AM broadcast` the first three partitions are also
+identical to each other, but the arbitrary pattern differs (429 869 differing samples, max abs
+diff 1103 LSB against the 4410 partition): the AF leveler measures the peak of the block it
+receives, and `audio_enh_process()` splits any callback into chunks of at most 441 samples, so
+only a partition that forces shorter chunks changes the gain. That is why the issue does not
+require bit-exactness for AM — and the bench records the difference instead of hiding it.
 
-The process times are host x86_64 wall-clock numbers for 10 s of audio (0.25 % of real time
-for the NR presets); they are **not** a CPU budget for the R16.
+The process times are host x86_64 wall-clock numbers for 10 s of audio (≈0.25 % of real time
+for the NR presets) and vary between host runs; the exact values of the recorded run are in
+`measurements.csv`. They are **not** a CPU budget for the R16.
 
 ## 7. State reset rules
 
@@ -225,7 +231,7 @@ discards the frame machine's pending buffers. It does **not** destroy and recrea
 `SpeexPreprocessState`, so `libspeexdsp` keeps its **adaptive noise estimate** (and the AF
 leveler keeps its smoothed gain). Consequence, measured in the bench: processing the same
 input twice in one process with `audio_enh_preset_reset()` in between is **not** bit-exact
-for `SSB voice`/`AM broadcast` (433 735 and 438 096 differing samples, max |diff| 1539/1580
+for `SSB voice`/`AM broadcast` (433 735 and 438 096 differing samples, max abs diff 1539/1580
 LSB on white noise). Bit-exactness across partitions is therefore stated for a **freshly
 initialised state** (`audio_enh_init()` + preset load), which is the state the contract fixes;
 `Off` stays bit-exact even after a reset. This is reported as measured; restarting the Speex
