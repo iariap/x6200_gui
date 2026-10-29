@@ -188,7 +188,7 @@ callbacks of 4410 samples, `libspeexdsp 1.2.1-1`:
 | Preset | Delay (correlation) | RMS attenuation | Clipping | Max sample-to-sample jump: input / at callback boundary / at frame boundary | 10 s of audio in |
 |---|---|---|---|---|---|
 | `Off` | 0 samples | 0.00 dB (bit-exact) | 0 | 3587 / 3189 / 3466 LSB | ≈1 ms |
-| `SSB voice` | **882 samples (20 ms)** | −11.86 dB | 0 | 3587 / 3336 / 3336 LSB | ≈26 ms |
+| `SSB voice` | **882 samples (20 ms)** | −11.86 dB | 0 | 3587 / 3336 / 3336 LSB | ≈26–28 ms |
 | `AM broadcast` | **882 samples (20 ms)** | −9.32 dB | 0 | 3587 / 3727 / 3727 LSB | ≈28 ms |
 
 Reading the seams: with `SSB voice` the largest jump in the output at a callback boundary

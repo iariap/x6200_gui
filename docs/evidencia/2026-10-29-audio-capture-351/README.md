@@ -86,15 +86,15 @@ no se sustituye nunca: el contenedor enlaza la lib real y el bench lee de vuelta
 
 | Señal | Preset | N in / N out | Retardo (muestras) | RMS salida | Atenuación | Peak | Clip | Seam cb / trama / input (LSB) | p99 por callback | 10 s en |
 |---|---|---|---|---|---|---|---|---|---|---|
-| ruido blanco | `Off` | 441000 / 441000 | **0** | −30.01 dBFS | +0.00 dB | −25.23 dBFS | 0 | 3189 / 3466 / 3587 | <1 µs | ≈1.0 ms |
-| ruido blanco | `SSB voice` | 441000 / 441000 | **882** | −41.87 dBFS | −11.86 dB | −25.30 dBFS | 0 | 3336 / 3336 / 3587 | ≈440 µs | ≈26 ms |
-| ruido blanco | `AM broadcast` | 441000 / 441000 | **882** | −39.32 dBFS | −9.32 dB | −24.29 dBFS | 0 | 3727 / 3727 / 3587 | ≈425 µs | ≈28 ms |
-| multisine 300/1k/2.4k | `Off` | 441000 / 441000 | — (ambiguo) | −25.78 dBFS | +0.00 dB | −18.08 dBFS | 0 | 715 / 715 / 715 | <1 µs | ≈1.0 ms |
-| multisine 300/1k/2.4k | `SSB voice` | 441000 / 441000 | — (ambiguo) | −38.22 dBFS | −12.44 dB | −18.15 dBFS | 0 | 709 / 710 / 715 | ≈480 µs | ≈24 ms |
-| multisine 300/1k/2.4k | `AM broadcast` | 441000 / 441000 | — (ambiguo) | −38.98 dBFS | −13.20 dB | −18.15 dBFS | 0 | 709 / 710 / 715 | ≈520 µs | ≈24 ms |
-| seno 1 kHz | `Off` | 441000 / 441000 | — (ambiguo) | −21.01 dBFS | +0.00 dB | −18.00 dBFS | 0 | 586 / 586 / 588 | <1 µs | ≈1.0 ms |
-| seno 1 kHz | `SSB voice` | 441000 / 441000 | — (ambiguo) | −33.54 dBFS | −12.53 dB | −18.06 dBFS | 0 | 580 / 581 / 588 | ≈480 µs | ≈24 ms |
-| seno 1 kHz | `AM broadcast` | 441000 / 441000 | — (ambiguo) | −34.33 dBFS | −13.32 dB | −18.06 dBFS | 0 | 580 / 581 / 588 | ≈360 µs | ≈23 ms |
+| ruido blanco | `Off` | 441000 / 441000 | **0** | −30.01 dBFS | +0.00 dB | −25.23 dBFS | 0 | 3189 / 3466 / 3587 | <1 µs | ≈1 ms |
+| ruido blanco | `SSB voice` | 441000 / 441000 | **882** | −41.87 dBFS | −11.86 dB | −25.30 dBFS | 0 | 3336 / 3336 / 3587 | ≈0.4–0.6 ms | ≈26–28 ms |
+| ruido blanco | `AM broadcast` | 441000 / 441000 | **882** | −39.32 dBFS | −9.32 dB | −24.29 dBFS | 0 | 3727 / 3727 / 3587 | ≈0.4–0.6 ms | ≈26–28 ms |
+| multisine 300/1k/2.4k | `Off` | 441000 / 441000 | — (ambiguo) | −25.78 dBFS | +0.00 dB | −18.08 dBFS | 0 | 715 / 715 / 715 | <1 µs | ≈1 ms |
+| multisine 300/1k/2.4k | `SSB voice` | 441000 / 441000 | — (ambiguo) | −38.22 dBFS | −12.44 dB | −18.15 dBFS | 0 | 709 / 710 / 715 | ≈0.4–0.5 ms | ≈23–25 ms |
+| multisine 300/1k/2.4k | `AM broadcast` | 441000 / 441000 | — (ambiguo) | −38.98 dBFS | −13.20 dB | −18.15 dBFS | 0 | 709 / 710 / 715 | ≈0.4–0.6 ms | ≈23–25 ms |
+| seno 1 kHz | `Off` | 441000 / 441000 | — (ambiguo) | −21.01 dBFS | +0.00 dB | −18.00 dBFS | 0 | 586 / 586 / 588 | <1 µs | ≈1 ms |
+| seno 1 kHz | `SSB voice` | 441000 / 441000 | — (ambiguo) | −33.54 dBFS | −12.53 dB | −18.06 dBFS | 0 | 580 / 581 / 588 | ≈0.4–0.5 ms | ≈23–25 ms |
+| seno 1 kHz | `AM broadcast` | 441000 / 441000 | — (ambiguo) | −34.33 dBFS | −13.32 dB | −18.06 dBFS | 0 | 580 / 581 / 588 | ≈0.35–0.5 ms | ≈23–25 ms |
 
 Notas de lectura:
 
