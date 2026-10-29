@@ -4580,7 +4580,12 @@ $ i2ctransfer -y 0 w2@0x72 0x01 0x00 r507@0x72   # cal[0x118]
   cal[0x118] = 1
 ```
 
-**Sin fundar (anexo A)**: que el PTT **físico** del dueño keyee (la prueba medida es con el bit
-`iptt` por I2C, mismo camino del BASE que usa la GUI); potencia/ROE reales en CB; si el bloque
-sobrevive a un power-cycle sin la GUI (la GUI lo reaplica al arrancar, eso sí está verificado).
+**Verificado con el PTT físico (dueño, 2026-10-29 ~18:45 local)**: transmitió en **CB D
+27.505 MHz USB** y funcionó OK (GUI `a92248cceef0`, parche fullband activo). Es un reporte del
+dueño, no una medición instrumentada. El log de la GUI no registra ese PTT porque es el del
+**micrófono** (lo maneja el MCU directo): la GUI solo loguea `radio_set_ptt` del teclado (4 eventos
+en el log, todos en 27.185; ninguno en 27.505).
+
+**Sin fundar (anexo A)**: potencia y ROE reales en CB (sin instrumento); si el bloque sobrevive a
+un power-cycle sin la GUI (la GUI lo reaplica al arrancar, eso sí está verificado).
 

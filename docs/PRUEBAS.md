@@ -29,7 +29,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 ## Resumen
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
-| 29/10 ~17:45 / 18:2x | ROM `d3f22d80…` + GUI `a92248cceef0` | (local) | **PTT en CB** | 1 pass medido (PTT directo I2C) | 0 | Reemplaza la fila anterior (fallo): el BASE sí keyea en 27 MHz con el bloque de calibración fullband. Medido: PTT directo I2C en 27.185 LSB con bloque = `tx=True` 10/20 muestras; sin bloque = 0/6 en 27.185 y 27.505. La GUI ahora escribe el bloque al arrancar (`radio_fullband_tx_patch()`), log `Fullband TX habilitado en el BASE`, `cal[0x118]=1`; `cb_tx_scope` default 2. Ver HALLAZGOS §76 |
+| 29/10 ~17:45 / 18:2x / 18:45 | ROM `d3f22d80…` + GUI `a92248cceef0` | (local) | **PTT en CB** | **pass**: PTT directo I2C + **PTT físico del dueño en CB D** | 0 | Bloque fullband aplicado por `radio_fullband_tx_patch()` al arrancar (log `Fullband TX habilitado en el BASE`, `cal[0x118]=1`). Medido: PTT directo I2C en 27.185 con bloque = `tx=True` 10/20; sin bloque = 0/6 en 27.185 y 27.505. **Dueño: transmitió en CB D 27.505 y funcionó OK** (reporte; el PTT del micrófono no deja línea en el log de la GUI). `cb_tx_scope` default 2. Ver HALLAZGOS §76 |
 | 29/10 ~14:15 | ROM `d3f22d80…` + GUI `ca5ed97b3c62` | (local) | **TX en CB sin interlock** | 1 ok | 0 | **Default `cb_tx_scope=2`**: PTT/ATU/keyer/digitales pueden transmitir en toda la banda 26–28 MHz (A/B/C/D y fuera de grilla). Persistido `cb_tx_scope=2` en `/mnt/params.db`; GUI `ca5ed97b3c62` desplegada, `crashlog 0`. Tests nativos 0 fallos. Potencia sigue tope 4 W; marco legal en el manual §7.13 |
 | 28/10 ~21:00 | ROM `d3f22d80…` + GUI `5ef35ec0b807` | (local) | **#292 banda lateral (noche)** | 1 parcial / 1 ok | 0 | 790 kHz: script oficial **FAIL del criterio absoluto** (789-LSB 24.7 / 789-USB 33.1 / 791-LSB 33.0 / 791-USB 22.8 dB; portadora débil, dirección correcta). 760 kHz con el mismo método y criterio relativo: **PASS** (26.1/39.6/36.3/24.9 dB, lados opuestos). Sin regresión de #292. Evidencia: `docs/evidencia/2026-10-28-lsb-night/` |
 | 28/10 ~17:00 | ROM `d3f22d80…` + GUI `5ef35ec0b807` | (local) | **icono WiFi centrado** | 1 ok | 0 | **Medido en captura**: glifo x139..155 (centro 147) → x144..160 (centro 152,2) en caja 139..166 (centro 152,5) ✓. `tests/check_info_bar.py` PASS con guarda nueva. `crashlog 0` |
@@ -1892,5 +1892,7 @@ se manda con `iicWrite(0xf000, 1, cal, 507)`.
 Medido en la radio: con el bloque, el PTT directo por I2C keyea en 27.185 (`tx=True` 10/20 muestras
 mantenidas) y en 27.505; antes, en ambas, `tx=False`. La GUI `a92248cceef0` aplica el bloque en
 `radio_init()` (`radio_fullband_tx_patch()`), verificado en el arranque: log `Fullband TX habilitado
-en el BASE` y `cal[0x118]=1` por I2C. `cb_tx_scope` vuelve a default **2**. Falta la prueba con el
-PTT físico del dueño. Detalle y offsets en HALLAZGOS §76.
+en el BASE` y `cal[0x118]=1` por I2C. `cb_tx_scope` vuelve a default **2**. **Verificación final con el PTT físico**: el dueño transmitió en **CB D 27.505 MHz** y funcionó OK
+(29/10 ~18:45 local, GUI `a92248cceef0`, parche activo). Es reporte del dueño (sin instrumento de
+potencia/ROE); el log de la GUI no registra el PTT del micrófono (MCU), solo el del teclado (4
+eventos, todos en 27.185). Detalle y offsets en HALLAZGOS §76.
