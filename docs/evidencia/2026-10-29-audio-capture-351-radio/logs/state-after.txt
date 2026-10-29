@@ -1,0 +1,6 @@
+{"t":"state","vfo":"A","freq":27505000,"freq_bg":27505000,"mode":"USB","band":"CB D","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":14,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":1,"nb_level":5,"nb_width":55,"nr_level":30,"pwr":40,"db":-97,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+  params.db sha256: ea321847e672ee4f424f6a782cf9c17703a2381efc9abdbe088e7eb58baee527  (backup 0661bd52...)
+  boot_identity:
+[User]	(3213.633, +3213633)	 boot_identity: fuente: 42cd5c541237db86d23441505637f5cd (x6200_gui) 	(in main.c line #147)
+  crashlog=0 gui=2983 daemon=1946
+  uptime=3234.72s

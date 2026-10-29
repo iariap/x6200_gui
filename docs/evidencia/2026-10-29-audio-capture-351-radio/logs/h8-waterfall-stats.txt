@@ -1,0 +1,18 @@
+Preset,std,mean
+Off(0),14.89,5.69
+SSB(2),14.84,5.57
+AM(3),14.71,5.63
+Digital(4),14.75,5.70
+Off(0),15.15,5.78
+
+Correlaciones entre frames (diferencia esperada por evolución temporal del contenido):
+Off(0) vs SSB(2): 0.947
+Off(0) vs AM(3): 0.771
+Off(0) vs Digital(4): 0.773
+Off(0) vs Off(0): 0.751
+SSB(2) vs AM(3): 0.773
+SSB(2) vs Digital(4): 0.775
+SSB(2) vs Off(0): 0.753
+AM(3) vs Digital(4): 0.902
+AM(3) vs Off(0): 0.917
+Digital(4) vs Off(0): 0.877

@@ -29,6 +29,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 ## Resumen
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
+| 29/10 19:16Z-20:14Z | ROM `d3f22d80…` + GUI `80bbe5bd70b3` | `fc18a831` | **#351 validación física** | — | 0 | **H1/H2/H4/H6/H7/H8 PASS; H9 parcial**: AVI de 95,50 s con audio de 4.214.248 muestras y sync audio-video de 0,06 s; captura continua de 600 s con 26.460.000 muestras; operador sin cambio audible en Off/SSB/AM/Digital; MP3 de 60,04 s y copia Off vs SSB con rms 2023 -> 926; waterfall con std 14,71-15,15 en los 5 presets; CPU GUI 65,7 % con captura y 63,4 % baseline; crashlog 0; p99 del callback UNKNOWN. Pendientes: H3 (no se fuerzan underruns), H5 (CW/FT8) y H7 AM/Digital. Sin TX, sin flasheo y sin registros del BASE. Evidencia: [`2026-10-29-audio-capture-351-radio/`](evidencia/2026-10-29-audio-capture-351-radio/README.md) |
 | 29/10 ~17:45 / 18:2x / 18:45 | ROM `d3f22d80…` + GUI `a92248cceef0` | (local) | **PTT en CB** | **pass**: PTT directo I2C + **PTT físico del dueño en CB D** | 0 | Bloque fullband aplicado por `radio_fullband_tx_patch()` al arrancar (log `Fullband TX habilitado en el BASE`, `cal[0x118]=1`). Medido: PTT directo I2C en 27.185 con bloque = `tx=True` 10/20; sin bloque = 0/6 en 27.185 y 27.505. **Dueño: transmitió en CB D 27.505 y funcionó OK** (reporte; el PTT del micrófono no deja línea en el log de la GUI). `cb_tx_scope` default 2. Ver HALLAZGOS §76 |
 | 29/10 ~14:15 | ROM `d3f22d80…` + GUI `ca5ed97b3c62` | (local) | **TX en CB sin interlock** | 1 ok | 0 | **Default `cb_tx_scope=2`**: PTT/ATU/keyer/digitales pueden transmitir en toda la banda 26–28 MHz (A/B/C/D y fuera de grilla). Persistido `cb_tx_scope=2` en `/mnt/params.db`; GUI `ca5ed97b3c62` desplegada, `crashlog 0`. Tests nativos 0 fallos. Potencia sigue tope 4 W; marco legal en el manual §7.13 |
 | 28/10 ~21:00 | ROM `d3f22d80…` + GUI `5ef35ec0b807` | (local) | **#292 banda lateral (noche)** | 1 parcial / 1 ok | 0 | 790 kHz: script oficial **FAIL del criterio absoluto** (789-LSB 24.7 / 789-USB 33.1 / 791-LSB 33.0 / 791-USB 22.8 dB; portadora débil, dirección correcta). 760 kHz con el mismo método y criterio relativo: **PASS** (26.1/39.6/36.3/24.9 dB, lados opuestos). Sin regresión de #292. Evidencia: `docs/evidencia/2026-10-28-lsb-night/` |
@@ -1881,7 +1882,7 @@ el PTT, el ATU y el keyer avisaban `TX blocked: not a CB channel`).
 - Manual actualizado (§4.6 y §7.13, md+html) con la decisión y la advertencia legal (el X6200 no es
   un equipo CB homologado; sigue siendo responsabilidad del operador).
 
-## 29/10 17:45Z-18:2x — PTT en CB: se habilita con el bloque fullband de la UI de fábrica
+## 29/10 17:45Z-18:2x — PTT en CB: se habilita con el bloque fullband de la UI de fábrica (`a92248cceef0`)
 
 La medición anterior (PTT directo sin bloque daba `tx=False`) era correcta pero incompleta: el BASE
 no keyea en 27 MHz **hasta** que recibe el bloque de calibración de 507 B que la UI de fábrica escribe
@@ -1896,3 +1897,47 @@ en el BASE` y `cal[0x118]=1` por I2C. `cb_tx_scope` vuelve a default **2**. **Ve
 (29/10 ~18:45 local, GUI `a92248cceef0`, parche activo). Es reporte del dueño (sin instrumento de
 potencia/ROE); el log de la GUI no registra el PTT del micrófono (MCU), solo el del teclado (4
 eventos, todos en 27.185). Detalle y offsets en HALLAZGOS §76.
+
+## 29/10 19:16Z-20:14Z — #351: validación física de la copia de captura RX (`80bbe5bd70b3`)
+
+Validación en la radio del handoff de hardware de #351, en sesión separada y con el operador (owner)
+presente para las pruebas que requieren escucha y para disparar el grabador de pantalla. Se desplegó
+**sólo la GUI** por SSH sobre la ROM existente; no se flasheó, no se tocó el BASE y no se transmitió.
+
+**Versión**: build limpio de `main` en `fc18a831`; GUI md5 `80bbe5bd70b345e1e9a563d06d047a1c`,
+sha256 `4ee87aef…dd66b0`, 13.478.088 B, `boot_identity` `42cd5c54…`; `crashlog 0`. Backup del binario
+anterior y de `params.db` en `/mnt/ui-bak-191601/`; rollback probado como procedimiento, no necesario.
+`tests/native/run_native_tests.sh` exit 0; `run_all_tests.sh --quick` exit 1 por el fallo
+preexistente de `audita-pruebas` (build `a92248cceef0` sin sección, corregido en este mismo PR).
+
+**Medido**:
+
+- **H2**: 600 s de `parec` = 26.460.000 muestras en 599,78 s de reloj; sin pérdida observable a
+  nivel de total (resolución 1 s).
+- **H1/H6**: AVI de 95,50 s, MJPEG 764 frames @ 8 fps, pista PCM 44100 mono de 4.214.248 muestras
+  (95,56 s); diferencia audio-video 0,06 s (< 1 frame = 0,125 s); referencia `parec` con envolvente
+  corr 0,856 y lag -0,28 s; frame extraído con contenido; ffprobe sin errores.
+- **H4/C1/C2**: operador escuchando el parlante en Off -> SSB voice -> AM broadcast -> Digital -> Off:
+  "no noté ningún cambio audible". La copia de captura sí cambia: Off rms 2023 -> SSB voice rms 926
+  (-54,2 %); banda 3-6 kHz 89,1 -> 76,7 dB (-12,4 dB).
+- **H7**: MP3 de 60,04 s (302.261 B, 40,3 kbps) reproducible; comparación Off vs SSB voice con la
+  misma estación y volumen: rms 2023 -> 926. AM/Digital no ejecutados (el preset sólo se cambia desde
+  la UI física).
+- **H8**: 5 capturas del waterfall (Off/SSB/AM/Digital/Off): std 14,71-15,15 y media 5,57-5,78;
+  correlaciones 0,75-0,95 por evolución temporal; ninguna diferencia atribuible al preset.
+- **H9 parcial**: CPU GUI 65,7 % de un core con captura (p50 65,8 %, p95 71,0 %) y 63,4 % baseline;
+  crashlog 0; el operador no escuchó pops/clicks; p99 del callback UNKNOWN (sin instrumentación).
+
+**No ejecutado / pendiente**: H3 (no se fuerzan underruns; no se observó un hole natural), H5
+(decodificadores CW/RTTY/FT8: no había señal y no se cambió el modo), H7 AM/Digital y p99 del
+callback. Un incidente de UI (contenido central en negro con Ajustes abierto) se resolvió
+reiniciando la GUI; no reapareció y queda documentado sin declararlo resuelto.
+
+**Límite**: `Capture filters` procesa la copia de captura (Recorder/decodificadores), no el audio
+audible del BASE; no se declara ni se espera mejora audible. No se publica audio de QSO ni
+credenciales; los backups y binarios quedan fuera del repositorio.
+
+Evidencia: [`2026-10-29-audio-capture-351-radio/README.md`](evidencia/2026-10-29-audio-capture-351-radio/README.md) ·
+[`measurements.csv`](evidencia/2026-10-29-audio-capture-351-radio/measurements.csv) ·
+[`commands.log`](evidencia/2026-10-29-audio-capture-351-radio/commands.log). Handoff actualizado:
+[`hardware-handoff.md`](evidencia/2026-10-29-audio-capture-351/hardware-handoff.md).

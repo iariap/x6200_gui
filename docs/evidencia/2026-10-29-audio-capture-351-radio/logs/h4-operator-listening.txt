@@ -1,0 +1,19 @@
+## H4 / C1 / C2 — escucha del operador durante los cambios de preset
+
+Monitor: consulta a `/mnt/params.db` (solo lectura) cada 1 s; el operador cambiaba `Capture filters`
+desde Ajustes -> Audio. Transiciones registradas (UTC):
+
+  2026-10-29T19:46:21Z  preset 0 = Off
+  2026-10-29T19:46:33Z  preset 2 = SSB voice
+  2026-10-29T19:46:54Z  preset 3 = AM broadcast
+  2026-10-29T19:47:07Z  preset 4 = Digital
+  2026-10-29T19:47:18Z  preset 0 = Off
+
+Condiciones: CB-D, 27.535 MHz, USB, salida por parlante, misma estación y mismo volumen durante
+toda la secuencia.
+
+Reporte del operador (textual): "no noté ningún cambio audible".
+
+Interpretación: `Capture filters` procesa la copia de captura (Recorder/decodificadores), no el audio
+del BASE; la ausencia de cambio audible es el resultado esperado. La contraparte objetiva (la copia
+de captura sí cambia) está en H7, ver `logs/h7-metadata.txt`.

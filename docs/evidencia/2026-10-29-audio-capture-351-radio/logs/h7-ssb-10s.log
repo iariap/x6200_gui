@@ -1,0 +1,6 @@
+  preset=2
+  freq=27465000 band='CB D' mode=USB vol=29 app=''
+== H7: grabo 10 s MP3 con preset SSB voice (2) ==
+  start=19:57:38 stop=19:57:52 archivo=/mnt/rec/REC_20261029_195738.mp3
+  9908652440949958fcd8fff4459f930765a384b3f348d435db625e0c40f1012e  /mnt/rec/REC_20261029_195738.mp3
+  preset tras grabar=2

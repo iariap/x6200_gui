@@ -1,0 +1,7 @@
+## Comparación audio AVI vs referencia parec sincronizada
+AVI: screen-20261029-200404.avi
+sha256 72b42cb81334347e247aa9f921525d4c2f52c058dd77f061b11501f91568fe61  screen-20261029-200404.avi
+muestras AVI: 4214248 (95.56 s)
+muestras referencia parec: 4585904 (103.99 s)
+envolvente: lag=-28 frames (-0.280 s), corr=0.856
+duración audio AVI: 95.56 s; duración video AVI: 95.50 s; diferencia 0.06 s (< 1 frame = 0.125 s)

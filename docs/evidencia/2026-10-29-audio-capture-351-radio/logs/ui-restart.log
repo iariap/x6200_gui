@@ -1,0 +1,11 @@
+  kill_utc=19:44:12 pid_antes=2983
+  GUI relanzada t=6s pid=4716
+  pid=4716 hash=4ee87aefb389b6a6 crashlog=0
+  get: {"t":"state","vfo":"A","freq":27505000,"freq_bg":27505000,"mode":"AM","band":"CB D","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":11,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":1,"nb_level":5,"nb_width":55,"nr_level":30,"pwr":40,"db":-113,"t
+  log tail:
+    [User]	(4874.712, +0)	 on_vfo_pre_change: Radio set vfo 1 pre=0 	(in radio.c line #512)
+    [User]	(4874.715, +3)	 on_high_filter_change: Radio set filter_low=-2500 	(in radio.c line #551)
+    [User]	(4874.715, +0)	 on_high_filter_change: Radio set filter_high=2500 	(in radio.c line #552)
+    [User]	(4874.722, +7)	 on_atu_network_change: Radio set atu network=65544 	(in radio.c line #518)
+    [User]	(4874.779, +57)	 radio_sync_active_vfo_mode: Radio sync modo=6 al VFO activo 0 (#292) 	(in radio.c line #454)
+    [User]	(4874.845, +66)	 setup_wifi_device: Setup wlan0 device 	(in w

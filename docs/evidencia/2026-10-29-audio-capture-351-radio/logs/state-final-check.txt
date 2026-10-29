@@ -1,0 +1,5 @@
+  freq=27505000 band='CB D' mode=USB vol=1 nr=1/30 flo=150 fhi=2850 tx=False app=''
+  gui_sha256=4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0
+  gui_pid=2983 daemon=1946 crashlog=0 uptime=4605.05s
+  audio rms (2s): 3238
+  backup: /mnt/ui-bak-191601

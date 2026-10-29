@@ -1,0 +1,15 @@
+  sha en radio: 4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0
+  actual:       ac2f6febb63b518b398779503d14f6993b721b21fb873cd630b8599e12f73d87
+== deploy: reemplazo SOLO el ejecutable de la GUI ==
+  tras cp: 4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0
+  GUI detenida; espero reinicio del daemon...
+  GUI reiniciada t=6s pid=2983
+  hash tras arranque: 4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0
+  pid=2983 daemon=1946 crashlog=0
+  remote get: {"t":"state","vfo":"A","freq":27505000,"freq_bg":27505000,"mode":"AM","band":"CB D","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":0,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":1,"nb_level":5,"nb_width":55,"nr_level":30,"pwr":40,"db":-110,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+  log tail:
+    [User]	(3215.254, +0)	 on_vfo_pre_change: Radio set vfo 1 pre=0 	(in radio.c line #512)
+    [User]	(3215.257, +3)	 on_high_filter_change: Radio set filter_low=-2500 	(in radio.c line #551)
+    [User]	(3215.257, +0)	 on_high_filter_change: Radio set filter_high=2500 	(in radio.c line #552)
+    [User]	(3215.263, +6)	 on_atu_network_change: Radio set atu network=65544 	(in radio.c line #518)
+    [User]	(3215.320, +57)	 radio_sync_active_vfo_mode: Radio sync modo=6 al VFO activo 0 (#2

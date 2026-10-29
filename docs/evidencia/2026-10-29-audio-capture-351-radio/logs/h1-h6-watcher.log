@@ -1,0 +1,9 @@
+  {"before": [], "file": "/mnt/screenrec/screen-20261029-200404.avi", "start_epoch": 1793304244.438175, "end_epoch": 1793304348.4727962, "size": 28192208, "ref_bytes": 9171808}
+
+  total 27540
+  drwx------    2 root     root          4096 Oct 29 20:04 .
+  drwxr-xr-x   84 root     root          4096 Oct 29 20:05 ..
+  -rw-------    1 root     root      28192208 Oct 29 20:05 screen-20261029-200404.avi
+  72b42cb81334347e247aa9f921525d4c2f52c058dd77f061b11501f91568fe61  /mnt/screenrec/screen-20261029-200404.avi
+  ref: -rw-------    1 root     root       9171808 Oct 29 20:05 /tmp/h1-ref.raw
+  crashlog=0 pid=4716

@@ -1,0 +1,26 @@
+## fecha
+Thu Oct 29 20:25:07 UTC 2026
+## get
+{"t":"state","vfo":"A","freq":27455000,"freq_bg":27505000,"mode":"USB","band":"CB D","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":0,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":1,"nb_level":5,"nb_width":55,"nr_level":30,"pwr":40,"db":-100,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+
+## binario
+-rwxr-xr-x    1 root     root      13478088 Oct 29 19:16 /usr/sbin/x6200_gui
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /usr/sbin/x6200_gui
+80bbe5bd70b345e1e9a563d06d047a1c  /usr/sbin/x6200_gui
+## procesos
+4716
+1946
+7326.23
+## boot_identity
+[User]	(4873.092, +4873092)	 boot_identity: fuente: 42cd5c541237db86d23441505637f5cd (x6200_gui) 	(in main.c line #147)
+## crashlog
+count=0
+## params
+{'audio_enh_preset': 0, 'nr': 1, 'nr_level': 30}
+## version
+Linux X6200 6.1.82 #1 SMP PREEMPT Tue Oct 27 15:23:18 UTC 2026 armv7l GNU/Linux
+NAME=Buildroot
+VERSION=2023.02.11-dirty
+ID=buildroot
+## espacio
+/dev/mmcblk0p3            3.0G    999.8M      2.0G  32% /mnt

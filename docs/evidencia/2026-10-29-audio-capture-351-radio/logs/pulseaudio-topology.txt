@@ -1,0 +1,84 @@
+## pactl list short sources
+0	alsa_output.platform-sound.stereo-fallback.monitor	module-alsa-card.c	s16le 2ch 44100Hz	IDLE
+1	alsa_input.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+
+## pactl list short sinks
+0	alsa_output.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+
+## pactl list short sink-inputs
+9	0	96	protocol-native.c	s16le 1ch 44100Hz
+
+## pactl list short source-outputs
+22	1	96	protocol-native.c	s16le 1ch 44100Hz
+23	1	96	protocol-native.c	s16le 1ch 30Hz
+
+## pactl list cards (perfil y puertos)
+	Name: alsa_card.platform-sound
+	Active Profile: output:stereo-fallback+input:stereo-fallback
+	Ports:
+		analog-input: Analog Input (type: Analog, priority: 10000, latency offset: 0 usec, availability unknown)
+			Part of profile(s): input:stereo-fallback, output:stereo-fallback+input:stereo-fallback
+		analog-output-headphones: Headphones (type: Headphones, priority: 9900, latency offset: 0 usec, availability unknown)
+			Part of profile(s): output:stereo-fallback, output:stereo-fallback+input:stereo-fallback
+
+## amixer scontrols
+Simple mixer control 'Headphone',0
+Simple mixer control 'Headphone Source',0
+Simple mixer control 'Line In',0
+Simple mixer control 'Mic1',0
+Simple mixer control 'Mic1 Boost',0
+Simple mixer control 'Mic2',0
+Simple mixer control 'Mic2 Boost',0
+Simple mixer control 'Mixer',0
+Simple mixer control 'Mixer Reversed',0
+Simple mixer control 'ADC',0
+Simple mixer control 'ADC Digital DAC',0
+Simple mixer control 'ADC Gain',0
+Simple mixer control 'AIF1 AD0',0
+Simple mixer control 'AIF1 AD0 Stereo',0
+Simple mixer control 'AIF1 DA0',0
+Simple mixer control 'AIF1 DA0 Stereo',0
+Simple mixer control 'AIF1 Data Digital ADC',0
+Simple mixer control 'AIF1 Slot 0 Digital ADC',0
+Simple mixer control 'AIF1 Slot 0 Digital DAC',0
+Simple mixer control 'AIF2 ADC',0
+Simple mixer control 'AIF2 ADC Mixer ADC',0
+Simple mixer control 'AIF2 ADC Mixer AIF1 DA0',0
+Simple mixer control 'AIF2 ADC Mixer AIF2 DAC Rev',0
+Simple mixer control 'AIF2 ADC Stereo',0
+Simple mixer control 'AIF2 DAC',0
+
+## amixer sget (ruteo)
+-- Headphone
+Simple mixer control 'Headphone',0
+  Capabilities: pvolume pvolume-joined pswitch
+  Playback channels: Front Left - Front Right
+  Limits: Playback 0 - 63
+  Mono:
+  Front Left: Playback 58 [92%] [-5.00dB] [on]
+  Front Right: Playback 58 [92%] [-5.00dB] [on]
+-- Headphone Source
+Simple mixer control 'Headphone Source',0
+  Capabilities: penum
+  Items: 'DAC' 'Mixer'
+  Item0: 'DAC'
+  Item1: 'DAC'
+-- Mixer
+Simple mixer control 'Mixer',0
+  Capabilities: cswitch
+  Capture channels: Front Left - Front Right
+  Front Left: Capture [off]
+  Front Right: Capture [off]
+-- ADC Digital DAC
+Simple mixer control 'ADC Digital DAC',0
+  Capabilities: pswitch
+  Playback channels: Front Left - Front Right
+  Mono:
+  Front Left: Playback [off]
+  Front Right: Playback [off]
+-- AIF1 Data Digital ADC
+Simple mixer control 'AIF1 Data Digital ADC',0
+  Capabilities: cswitch
+  Capture channels: Front Left - Front Right
+  Front Left: Capture [on]
+  Front Right: Capture [on]
