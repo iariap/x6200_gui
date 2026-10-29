@@ -156,8 +156,10 @@ typedef struct {
     /* CB 27 MHz (issue #146). Sin UI en v1: se editan por el configurador
      * web/SQLite, como el resto de params. */
     params_uint8_t      cb_tx_scope;    /* 0 = solo SBC AR (26,960-27,410),
-                                         * 1 = grids A-D, 2 = sin interlock
-                                         * (default 2 desde 2026-10-29) */
+                                         * 1 = grids A-D, 2 = sin interlock.
+                                         * OJO: el BASE no transmite PTT en CB
+                                         * igual (medido 2026-10-29); solo ATU y
+                                         * barrido de ROE transmiten ahi */
     params_float_t      cb_pwr_max;     /* tope de potencia en CB, W (default 4,0) */
 
     /* VOX */

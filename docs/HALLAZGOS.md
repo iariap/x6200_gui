@@ -45,6 +45,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 73. [La curva del barrido ahora ES el dato medido; gate de potencia y 8 W pedidos](#73-la-curva-del-barrido-ahora-es-el-dato-medido-gate-de-potencia-y-8-w-pedidos)
 74. [El modo CW tiene que quedar CW en todas las bandas y escribirse al VFO ACTIVO](#74-el-modo-cw-tiene-que-quedar-cw-en-todas-las-bandas-y-escribirse-al-vfo-activo)
 75. [El modo sigue al plan de bandas: al entrar al segmento CW pasa a CW y al salir restaura el modo anterior](#75-el-modo-sigue-al-plan-de-bandas-al-entrar-al-segmento-cw-pasa-a-cw-y-al-salir-restaura-el-modo-anterior)
+76. [El PTT normal no transmite en CB: el BASE limita el TX normal a bandas de aficionado (ATU y barrido de ROE sí son modos de servicio)](#76-el-ptt-normal-no-transmite-en-cb-el-base-limita-el-tx-normal-a-bandas-de-aficionado-atu-y-barrido-de-roe-sí-son-modos-de-servicio)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
@@ -4532,4 +4533,36 @@ en modo CW**: "deberia hacerlo para ser consistente, al entrar y al salir".
 
 **Nota**: el plan cargado es IARU R1 y corta en 52.000 MHz; de 52 a 54 MHz no hay segmento que dispare el
 cambio automatico.
+
+## 76. El PTT normal no transmite en CB: el BASE limita el TX normal a bandas de aficionado (ATU y barrido de ROE sí son modos de servicio)
+
+**Sintoma** (dueno, 2026-10-29): en CB el **PTT no transmite**, pero el **ATU funciona** y el
+**barrido de ROE mide**. Antes se habia identificado el interlock de software de CB (#160) y se
+abrio `cb_tx_scope = 2`; el sintoma no cambio.
+
+**Metodo, medido**: watcher en la radio que lee `/dev/input/event0` (`matrix_keypad`, los eventos
+`BTN_TRIGGER_HAPPY4` = PTT) y consulta `tx` con `{"cmd":"get"}` cada ~0,4 s.
+
+**Medido** (radio, 2026-10-29 17:41-17:45 UTC, GUI `ca5ed97b3c62`, `cb_tx_scope=2`):
+
+| banda/frec/modo | pulsaciones de PTT | `tx` del BASE |
+|---|---|---|
+| CB D 27.505 / 27.755, AM y USB | 15 eventos `code=707` (val 1/0) | **False siempre** |
+| 40m SSB 7.100 LSB | PTT (mismo boton) | **True** (6 muestras 17:45:11-13) |
+
+Ademas, en CB D: **ATU funciona** (portadora de sintonia) y **barrido de ROE completo**:
+`Completed min 2.2 @ 27.975.000 kHz (n=51/51)`.
+
+**Causa**: el **firmware del BASE limita el TX normal** (ruta PTT/modo) a las bandas de
+aficionado. El **ATU** y el **barrido de ROE** son **modos de servicio** del BASE y no pasan por ese
+limite, por eso transmiten en 27 MHz. El interlock de la GUI (`cb_tx_scope`) no era el bloqueo: al
+abrirlo, el PTT sigue llegando a la GUI pero el BASE no keyea (el `tx` queda en false).
+
+**Consecuencia**: no hay workaround desde la GUI; habilitar el PTT normal en 27 MHz requeriria
+modificar el firmware del BASE (no hay imagen/RE disponible; riesgo). `cb_tx_scope` vuelve a su
+default conservador **0**; el ATU y el barrido de ROE siguen disponibles en CB. Se agrega un log de
+`radio_set_ptt()` (`tx`, `allowed`, `freq`, `state`) para futuras verificaciones.
+
+**Sin fundar (anexo A)**: el mecanismo interno del BASE (band-plan del firmware/MCU) que rechaza el
+TX normal fuera de las bandas de aficionado.
 

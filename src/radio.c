@@ -1282,6 +1282,12 @@ radio_charger_t radio_change_charger(int16_t d) {
 }
 
 void radio_set_ptt(bool tx) {
+    /* Evidencia para el diagnostico de TX en CB: el interlock de la GUI ya permite
+     * la frecuencia, pero el BASE puede no keyear (medido en 27 MHz el 2026-10-29:
+     * el PTT normal no transmite; ATU/barrido si). */
+    LV_LOG_USER("Radio PTT tx=%i allowed=%i freq=%i state=%i", tx, radio_tx_allowed(),
+                subject_get_int(cfg_cur.fg_freq), state);
+
     if (tx && !radio_tx_allowed()) {
         msg_update_text_fmt("TX blocked: not a CB channel");
         voice_say_text_fmt("TX blocked, not a C B channel");
