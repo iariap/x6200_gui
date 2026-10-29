@@ -32,17 +32,28 @@ region_min_content:
 # 20.2% a 1.63% y el contrato fallaba midiendo pixeles que el usuario no ve. Medido
 # sobre la parte visible, la misma fixture da 7.1%.
 #
-# Se aplica SOLO a las regiones declaradas en `visible_under_modal` (hoy el waterfall:
-# la ventana lo cubre de y196 a y413 y las filas que quedan son el mismo waterfall).
-# `barra_superior`, `s_metro` y `botones` quedan fuera de la ventana; `espectro` y
-# `frecuencia` conservan contenido propio de la ventana en la parte tapada y siguen
-# midiendo la region entera (su comportamiento no cambia). La presencia de la ventana
-# se detecta en el arbol `--inspect` (un objeto con esa caja visible exacta y
-# superficie propia: fondo opaco o la imagen del tema); sin arbol no se asume nada.
-# Un waterfall realmente en blanco sigue midiendo ~0 en la parte visible: control
-# negativo en `tests/test_contracts.py::test_modal_surface_does_not_hide_a_blank_region`.
+# Se aplica SOLO a las regiones declaradas en `visible_under_modal`:
+#   * `waterfall` (y=196..417): la ventana lo cubre de y196 a y413 y las 4 filas que
+#     quedan a la vista (y=414..417) son el mismo waterfall: se miden.
+#   * `frecuencia` (y=160..195): la banda cae ENTERA dentro del span vertical de la
+#     ventana (y=66..413), que deja solo el margen de 2 px a los costados (796 de 800
+#     columnas). Ninguna fila de la banda queda a la vista, asi que la region se
+#     declara no medible: lo que se ve en el margen es el borde de la pantalla, no la
+#     fila. Medido en `bt-dialog-tema-redshift`: la region entera daba 1.53% de
+#     "contenido" que era la propia ventana (texto/bordes del dialogo), por debajo del
+#     piso de 2% y sin relacion con la fila de frecuencia; la fila se sigue midiendo
+#     en las ~110 fixtures sin ventana (home-*, main-*).
+# `barra_superior`, `s_metro` y `botones` quedan fuera de la ventana; `espectro`
+# conserva sus filas de arriba (y=62..65) y se mide sobre la parte visible. Una
+# region se mide solo si al menos UNA de sus filas queda entera a la vista
+# (`contracts.py::_has_visible_row`): la ventana tapa una fila aunque sea en parte.
+# La presencia de la ventana se detecta en el arbol `--inspect` (un objeto con esa
+# caja visible exacta y superficie propia: fondo opaco o la imagen del tema); sin
+# arbol no se asume nada. Un waterfall realmente en blanco sigue midiendo ~0 en la
+# parte visible: control negativo en
+# `tests/test_contracts.py::test_modal_surface_does_not_hide_a_blank_region`.
 modal_surface: [2, 66, 796, 348]
-visible_under_modal: [waterfall]
+visible_under_modal: [waterfall, frecuencia]
 
 coverage:
   # The coverage table must stay honest (rule 1 of the plan): only these levels.
@@ -1201,14 +1212,23 @@ exceptions:
     author: settings-align-175
     until: 2027-10-20
 
+  # settings-grupo-info -> settings-grupo-logs: el #343 retiro el grupo Info (su
+  # unica fila paso a Display) y agrego el grupo Logs (Upload/eQSL/QRZ/Clublog).
+  # Es el mismo caso que las otras paginas del #175: la fixture es NUEVA y sus
+  # switches (111x30, el alto de lv_switch dentro de la fila de 54 px) entran por
+  # primera vez a la regla con la MISMA geometria pre-existente de UI-015 que ya
+  # waiveran settings-home/-wfbat/-audio y las otras paginas. Se retira en el
+  # incremento que arregle el alto de los controles de Ajustes (el switch no se
+  # agranda solo en este grupo: quedaria distinto del resto de la misma ventana).
   - rule: layout_touch_target
-    fixture: settings-grupo-info
+    fixture: settings-grupo-logs
     reason: >
-      UI-015: los tres switches de "Mag Freq, Info, ALC" miden 63x30 (la caja de
-      dos columnas de la fila), debajo del target de 44 px. Geometria
-      pre-existente; el #175 solo corrige el span declarado (2, el de las filas de
-      tres campos) para que coincida con la caja que ya medía.
-    author: settings-align-175
+      UI-015: los cuatro switches del grupo Logs (Upload, eQSL, QRZ, Clublog)
+      miden 111x30, el alto de lv_switch, debajo del target de 44 px. Geometria
+      pre-existente de las filas de Ajustes (la misma de settings-grupo-operation/
+      -display); la fixture del grupo es nueva porque el #343 retiro el grupo Info
+      y agrego Logs.
+    author: main-green-logs
     until: 2027-10-20
 
   # Las seis variantes de tema de la pagina Operation (mismo grupo, misma

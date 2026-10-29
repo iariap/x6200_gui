@@ -128,6 +128,39 @@ static bool label_on_screen(lv_obj_t *obj, const char *text)
     return false;
 }
 
+/* Pulsa el tab de Ajustes por su ROTULO, no por su indice: la barra de tabs tiene
+ * dos paginas y su orden cambia con los grupos (el #343 metio "Logs" en la
+ * primera y movio "Clock" a la segunda), asi que un indice fijo pulsaba otro
+ * grupo -o un slot vacio- y la fixture capturaba una pantalla distinta a la que
+ * declara. Si el tab no esta en la pagina cargada, el arnes corta en vez de
+ * seguir con la barra en otra pagina. */
+static void press_tab(const char *label)
+{
+    buttons_page_t *page = buttons_get_cur_page();
+    int             idx  = -1;
+
+    if (page != NULL) {
+        for (int i = 0; i < BUTTONS; i++) {
+            button_item_t *it = page->items[i];
+
+            if (it != NULL && it->type == BTN_TEXT && it->label != NULL
+                && strcmp(it->label, label) == 0) {
+                idx = i;
+                break;
+            }
+        }
+    }
+
+    if (idx < 0) {
+        fprintf(stderr,
+                "settings: no hay tab '%s' en la barra de abajo (¿se reordenaron los tabs?)\n",
+                label);
+        exit(1);
+    }
+
+    buttons_press((uint8_t) idx, false);
+}
+
 /* Como label_on_screen, pero calza cuando el texto visible TERMINA en `suffix`. La
  * fila de frecuencia lleva el color del tema como markup de recolor de LVGL
  * (`#RRGGBB 27.185`), asi que el match exacto no la ve; el sufijo si (issue #169). */
@@ -370,7 +403,7 @@ bool scenario_build(const scenario_t *scenario)
     if (!strcmp(scenario->screen, "app-bands")) {
         /* The route the owner reported: the APP key loads the app pages
          * (src/main_screen.c, KEYPAD_APP -> buttons_load_page_group(buttons_group_app))
-         * and the "Bands" button of page 3 (APP 3:6) is pressed. The page
+         * and the "Bands" button of page 3 (APP 3:7) is pressed. The page
          * presses are positional and happen in scenario_settle, after the same
          * "is the button I am about to press really Bands?" check the
          * settings-wfbat fixture uses.
@@ -381,8 +414,8 @@ bool scenario_build(const scenario_t *scenario)
         mock_keyboard_group_up();
         build_main(scenario);
         buttons_load_page_group(buttons_group_app);
-        buttons_press(0, false);    /* (APP 1:6) -> (APP 2:6) */
-        buttons_press(0, false);    /* (APP 2:6) -> (APP 3:6) */
+        buttons_press(0, false);    /* (APP 1:7) -> (APP 2:7) */
+        buttons_press(0, false);    /* (APP 2:7) -> (APP 3:7) */
         return true;
     }
 
@@ -410,7 +443,7 @@ bool scenario_build(const scenario_t *scenario)
         build_main(scenario);
         buttons_load_page_group(buttons_group_app);
         for (unsigned i = 1; i < 6; i++) {
-            buttons_press(0, false);    /* (APP n:6) -> (APP n+1:6) */
+            buttons_press(0, false);    /* (APP n:7) -> (APP n+1:7) */
         }
         return true;
     }
@@ -448,7 +481,7 @@ bool scenario_build(const scenario_t *scenario)
     if (!strcmp(scenario->screen, "apps-menu")) {
         /* El menú de apps de la pantalla principal (UI-002): la tecla APP carga
          * `buttons_group_app` (src/main_screen.c, KEYPAD_APP) y el botón-página
-         * cicla las 6 páginas (src/buttons.cpp, button_next_page_cb). El fixture
+         * cicla las páginas (src/buttons.cpp, button_next_page_cb). El fixture
          * abre la página que pide `apps_page` desde la 1, pulsando el botón-página
          * las veces que haga falta; scenario_settle codifica que los rótulos de
          * esa página son los que quedaron en la barra. */
@@ -458,7 +491,7 @@ bool scenario_build(const scenario_t *scenario)
         build_main(scenario);
         buttons_load_page_group(buttons_group_app);
         for (unsigned i = 1; i < page; i++) {
-            buttons_press(0, false);    /* (APP n:6) -> (APP n+1:6) */
+            buttons_press(0, false);    /* (APP n:N) -> (APP n+1:N) */
         }
         return true;
     }
@@ -2473,17 +2506,12 @@ void scenario_settle(const scenario_t *scenario)
 
     if (!strcmp(scenario->screen, "settings-home")) {
         /* El dialogo abre en su PRIMER grupo, que con el orden por utilidad del issue #109 es
-         * Operation; esta fixture mide la fila de fecha/hora (grupo Clock), asi que salta ahi
-         * como el usuario: `buttons_press(3)` es el tab "Clock" de la pagina 1 y llama a
-         * settings_goto() (scroll + foco), que deja la fila Day/Month/Year arriba de la vista
-         * igual que cuando Clock era el primer grupo. */
-        if (!label_on_screen(lv_scr_act(), "Clock")) {
-            fprintf(stderr,
-                    "settings-home: no hay tab 'Clock' en la barra de abajo (¿se reordenaron "
-                    "los tabs?)\n");
-            exit(1);
-        }
-        buttons_press(3, false);    /* page 1, index 3: tab "Clock" */
+         * Operation; esta fixture mide la fila de fecha/hora (grupo Clock). Desde el #343 el
+         * tab "Clock" vive en la SEGUNDA pagina de tabs, asi que el camino del usuario es
+         * "More >" y despues "Clock" (ambos por rotulo, ver press_tab()), que llama a
+         * settings_goto() (scroll + foco) y deja la fila Day/Month/Year arriba de la vista. */
+        press_tab("More >");
+        press_tab("Clock");
 
         /* Lo que esta fixture *significa*: la fila de fecha (con el reloj deterministico del
          * arnes) esta a la vista. Codificado: si el grupo Clock se mueve, el arnes corta en vez
@@ -2497,12 +2525,13 @@ void scenario_settle(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "settings-wfbat")) {
-        /* Jump to the Spectrum/waterfall group the way the user does: `buttons_press(2)` is
-         * the page 1 "Spectrum" tab, which calls settings_goto() to scroll the grid and move
-         * the focus (src/dialog_settings.c). Runs after the timers so the grid layout is
-         * already computed; the callback requests LV_ANIM_OFF, so the resulting scroll is
-         * immediate and deterministic. */
-        buttons_press(2, false);    /* page 1, index 2: "Spectrum" */
+        /* Jump to the Spectrum/waterfall group the way the user does: the page 1 "Spectrum"
+         * tab calls settings_goto() to scroll the grid and move the focus
+         * (src/dialog_settings.c). Runs after the timers so the grid layout is already
+         * computed; the callback requests LV_ANIM_OFF, so the resulting scroll is immediate
+         * and deterministic. The tab is pressed by LABEL (press_tab): a positional index
+         * broke when the #343 added the "Logs" tab to page 1. */
+        press_tab("Spectrum");
 
         /* The presses are positional, and what this fixture *means* is that the
          * Spectrum/waterfall group's row is the one on screen now. Codified
@@ -2519,11 +2548,12 @@ void scenario_settle(const scenario_t *scenario)
 
     if (!strcmp(scenario->screen, "settings-perfil")) {
         /* La fila nueva vive en el grupo Apariencia (UI-08 incr. 5). Se salta
-         * como el usuario: `buttons_press(4)` carga la pagina 2 con "More >" y
-         * `buttons_press(1)` es el tab "Appearance", que llama a settings_goto()
-         * (scroll + foco). El grupo entra entero en el viewport. */
-        buttons_press(4, false);    /* page 1, index 4: "More >"      */
-        buttons_press(1, false);    /* page 2, index 1: "Appearance" */
+         * como el usuario: "More >" carga la pagina 2 y el tab "Appearance" llama a
+         * settings_goto() (scroll + foco). Ambos se pulsan por ROTULO (press_tab):
+         * con el indice fijo que tenia esto, el #343 movio "Appearance" un lugar y
+         * la fixture pulsaba "Display". El grupo entra entero en el viewport. */
+        press_tab("More >");
+        press_tab("Appearance");
 
         /* Lo que esta fixture *significa*: el perfil VIGENTE que muestra la
          * etiqueta sale del automatico con la bateria del fixture (11.2 V ->
@@ -2539,16 +2569,11 @@ void scenario_settle(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "settings-audio")) {
-        /* La pagina Ajustes -> Audio: el tab "Audio" es el indice 1 de la pagina 1 de la
-         * barra de tabs (src/dialog_settings.c, tabs_pagina_1) y llama a settings_goto(),
-         * que scrollea la grilla hasta el grupo y le mueve el foco. */
-        if (!label_on_screen(lv_scr_act(), "Audio")) {
-            fprintf(stderr,
-                    "settings-audio: no hay tab 'Audio' en la barra de abajo (¿se reordenaron "
-                    "los tabs?)\n");
-            exit(1);
-        }
-        buttons_press(1, false);    /* page 1, index 1: tab "Audio" */
+        /* La pagina Ajustes -> Audio: el tab "Audio" esta en la pagina 1 de la barra de
+         * tabs (src/dialog_settings.c, tabs_pagina_1) y llama a settings_goto(), que
+         * scrollea la grilla hasta el grupo y le mueve el foco. Se pulsa por ROTULO
+         * (press_tab), no por indice: el orden de los tabs cambia con los grupos. */
+        press_tab("Audio");
 
         /* Lo que esta fixture *significa*: la fila "Play,Rec gain" (los dos sliders de
          * ganancia) esta a la vista en el grupo Audio. Codificado: si el grupo o la fila se
@@ -2612,38 +2637,37 @@ void scenario_settle(const scenario_t *scenario)
     }
 
     if (!strcmp(scenario->screen, "settings-grupo")) {
-        /* Las 8 paginas (grupos) de Ajustes por el mismo camino que el usuario: el tab
+        /* Las paginas (grupos) de Ajustes por el mismo camino que el usuario: el tab
          * de la barra de abajo llama a settings_goto() (scroll + foco). La tabla es la
-         * de src/dialog_settings.c (tabs_pagina_1/tabs_pagina_2, el orden del issue
-         * #109): la pagina 1 tiene los indices 0..3 y el 4 es "More >"; la pagina 2
-         * tiene los indices 0..3 (Display, Appearance, Actions, Info). Cada grupo lleva
-         * una etiqueta TESTIGO de una de sus filas: el arnes corta si el tab no esta en
-         * la barra o si la fila no quedo en pantalla, asi que un reordenamiento de los
-         * tabs no puede dar una corrida verde capturando otra pagina. */
+         * de src/dialog_settings.c (tabs_pagina_1/tabs_pagina_2): la pagina 1 tiene
+         * Operation, Audio, Spectrum, Logs y el boton "More >"; la pagina 2 tiene Clock,
+         * Display, Appearance, Actions y "< More". Los tabs se pulsan por ROTULO
+         * (press_tab): el orden cambio con los grupos (el #343 metio Logs y retiro Info)
+         * y un indice fijo capturaba otro grupo sin avisar. Cada grupo lleva una etiqueta
+         * TESTIGO de una de sus filas: el arnes corta si el tab no esta en la barra o si
+         * la fila no quedo en pantalla, asi que un reordenamiento de los tabs no puede
+         * dar una corrida verde capturando otra pagina. */
         static const struct {
             const char *tab;
             bool        pagina2;
-            uint8_t     idx;
             const char *fila;
         } grupos[] = {
-            { "Operation",  false, 0, "Freq acceleration" },
-            { "Audio",      false, 1, "Play,Rec gain" },
-            { "Spectrum",   false, 2, "Waterfall battery mode" },
-            { "Clock",      false, 3, "Day, Month, Year" },
-            { "Display",    true,  0, "S-meter needle" },
-            { "Appearance", true,  1, "Theme" },
-            { "Actions",    true,  2, "GEN long press" },
-            { "Info",       true,  3, "Mag Freq, Info, ALC" },
+            { "Operation",  false, "Freq acceleration" },
+            { "Audio",      false, "Play,Rec gain" },
+            { "Spectrum",   false, "Waterfall battery mode" },
+            { "Logs",       false, "eQSL user" },
+            { "Clock",      true,  "Day, Month, Year" },
+            { "Display",    true,  "S-meter needle" },
+            { "Appearance", true,  "Theme" },
+            { "Actions",    true,  "GEN long press" },
         };
         const size_t n = sizeof(grupos) / sizeof(grupos[0]);
         const char  *fila = NULL;
         bool         pagina2 = false;
-        uint8_t      idx = 0;
 
         for (size_t i = 0; i < n; i++) {
             if (!strcmp(grupos[i].tab, scenario->settings_grupo)) {
                 pagina2 = grupos[i].pagina2;
-                idx     = grupos[i].idx;
                 fila    = grupos[i].fila;
                 break;
             }
@@ -2651,24 +2675,17 @@ void scenario_settle(const scenario_t *scenario)
 
         if (fila == NULL) {
             fprintf(stderr,
-                    "settings-grupo: '%s' no es uno de los 8 grupos de Ajustes (Operation, "
-                    "Audio, Spectrum, Clock, Display, Appearance, Actions, Info)\n",
+                    "settings-grupo: '%s' no es uno de los grupos de Ajustes (Operation, "
+                    "Audio, Spectrum, Logs, Clock, Display, Appearance, Actions)\n",
                     scenario->settings_grupo);
             exit(1);
         }
 
         if (pagina2) {
-            buttons_press(4, false);    /* page 1, index 4: "More >" */
+            press_tab("More >");
         }
 
-        if (!label_on_screen(lv_scr_act(), scenario->settings_grupo)) {
-            fprintf(stderr,
-                    "settings-grupo: no hay tab '%s' en la barra de abajo (¿se reordenaron los "
-                    "tabs?)\n", scenario->settings_grupo);
-            exit(1);
-        }
-
-        buttons_press(idx, false);
+        press_tab(scenario->settings_grupo);
 
         if (!label_on_screen(lv_scr_act(), fila)) {
             fprintf(stderr,
@@ -2713,7 +2730,7 @@ void scenario_settle(const scenario_t *scenario)
             exit(1);
         }
 
-        buttons_press(4, false);    /* (APP 3:6) index 4: "Bands" */
+        buttons_press(4, false);    /* (APP 3:7) index 4: "Bands" */
 
         /* What this fixture *means*: pressing the app-menu Bands button has to
          * reach the Bands path. With the window itself an inert mock, the
@@ -2754,7 +2771,7 @@ void scenario_settle(const scenario_t *scenario)
             /* Un modo digital (USB-D) no tiene Auto Tune: pulsar la accion tiene que
              * RECHAZAR ("Auto Tune: mode unsupported"), no abrir sesion, no pedir
              * ninguna publicacion espectral y no tocar el dial de datos. */
-            buttons_press(4, false);    /* (APP 6:6) index 4: "Auto Tune" */
+            buttons_press(4, false);    /* (APP 6:7) index 4: "Auto Tune" */
             if (autotune_ui_running()) {
                 fprintf(stderr,
                         "autotune-digital: la accion arranco una sesion en un modo digital "
@@ -2775,7 +2792,7 @@ void scenario_settle(const scenario_t *scenario)
             return;
         }
 
-        buttons_press(4, false);    /* (APP 6:6) index 4: "Auto Tune" */
+        buttons_press(4, false);    /* (APP 6:7) index 4: "Auto Tune" */
 
         /* Lo que el fixture *significa*: pulsar el boton arranca el asistente
          * (main_screen_action(ACTION_ATUNE) -> autotune_ui_toggle). Codificado sobre
@@ -3249,18 +3266,19 @@ void scenario_settle(const scenario_t *scenario)
         /* Lo que esta fixture *significa*: la pagina APP que se pidio es la que quedo
          * en la barra, con SUS apps. Los rotulos se leen de la tabla real
          * (`buttons_group_app`, src/buttons.cpp): si alguien reordena las paginas, el
-         * arnes corta aca en vez de capturar otra pagina y reportar verde. */
+         * arnes corta aca en vez de capturar otra pagina y reportar verde. El rotulo del
+         * boton-pagina trae el total de paginas ("(APP n:N)"), que no se repite aca: el
+         * total cambia con las apps (el #343 sumo la pagina de Logs) y un literal
+         * dejaba la fixture roja al agregar una pagina. */
         unsigned page = (scenario->apps_page > 0) ? (unsigned) scenario->apps_page : 1u;
         buttons_page_t *p = buttons_group_app[page - 1];
-        char expected[16];
+        const char     *expected = (p->items[0] != NULL) ? p->items[0]->label : NULL;
 
-        snprintf(expected, sizeof(expected), "(APP %u:6)", page);
-
-        if (!label_on_screen(lv_scr_act(), expected)) {
+        if (expected == NULL || !label_on_screen(lv_scr_act(), expected)) {
             fprintf(stderr,
                     "apps-menu: el boton-pagina '%s' no quedo en la barra (¿se reordenaron "
                     "las paginas APP?)\n",
-                    expected);
+                    expected != NULL ? expected : "(sin rotulo)");
             exit(1);
         }
 

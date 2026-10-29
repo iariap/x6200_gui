@@ -133,6 +133,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
         "apps-menu-4",
         "apps-menu-5",
         "apps-menu-6",
+        "apps-menu-7",
         "autotune",
         "autotune-am",
         "autotune-digital",
@@ -314,7 +315,7 @@ def test_repo_fixtures_are_all_parsable() -> None:
         # tema de la pagina Operation.
         "settings-grupo-actions",
         "settings-grupo-display",
-        "settings-grupo-info",
+        "settings-grupo-logs",
         "settings-grupo-operation",
         "settings-grupo-operation-tema-aurora",
         "settings-grupo-operation-tema-cathode",

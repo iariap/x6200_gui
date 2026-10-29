@@ -1,9 +1,9 @@
 #!/bin/bash
 #
-# Barrido QEMU de las 25 apps reales con recursos PRIVADOS (issue #222, epica #216).
+# Barrido QEMU de las 26 apps reales con recursos PRIVADOS (issue #222, epica #216).
 #
 #   tests/qemu/run_apps_qemu.sh --check          # preflight: dice que falta, no toca nada
-#   tests/qemu/run_apps_qemu.sh                  # 3 rondas x 25 apps (contrato del issue)
+#   tests/qemu/run_apps_qemu.sh                  # 3 rondas x 26 apps (contrato del issue)
 #   RONDAS=1 DWELL=2 tests/qemu/run_apps_qemu.sh # corrida corta de humo
 #
 # Corre el binario ARM REAL de la GUI (el de la rootfs construida, no un sustituto)
@@ -58,7 +58,7 @@ FB=$CHROOT/tmp/fakefb0
 LOG=$CHROOT/out-banco.txt
 TECHO_CLIENTE=${TECHO_CLIENTE:-5}   # techo de un paso del barrido, en segundos (issue #222 §2)
 
-APPS_DEFECTO="FT8 FT4 JS8 WSPR SSTV WeFax NavTex RTTY CW Field GPS Bands Settings BT Cluster CwTrainer Eq Status QTH Callsign Recorder WiFi SWRScan Propagation DFLEditor"
+APPS_DEFECTO="FT8 FT4 JS8 WSPR SSTV WeFax NavTex RTTY CW Field GPS Bands Settings BT Cluster CwTrainer Eq Status QTH Callsign Recorder WiFi SWRScan Propagation DFLEditor Logs"
 APPS=${APPS:-$APPS_DEFECTO}
 
 MODO_CHECK=no

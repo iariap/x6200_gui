@@ -610,7 +610,12 @@ bordes +94/+168), `02` y `03` → **U**, y el domo viejo `26-roe-multipasada-fin
 medido (exit 1, ya no "no encontré la curva"). El RED/GREEN del arnés sigue **PASS**
 (`03-harness-domo-valle.png` + `04-harness-valle-real.png`). El test determinista del script es
 `python3 tests/test_swrscan_curve_evidence.py` (capturas reales + los seis temas sintéticos, sin
-radio ni Docker).
+radio ni Docker). **Actualización 2026-10-27** (la curva es el ajuste libre de las muestras): la
+forma la manda el dato, así que el modo de 1 argumento **reporta** `U`/`domo`/`rama` y sale 0
+mientras mida una curva que cruce el chart, y el de 2 argumentos exige domo→domo y valle→valle
+sobre un render fresco (`tests/check_harness_swrscan_curve.sh`). Las capturas
+`03-harness-domo-valle.png` y `04-harness-valle-real.png` quedan como evidencia del 2026-10-17 y
+no se usan como contrato de forma.
 
 **Barrido de apps (no regresión):** `PERMANENCIA=14 tools/prueba-apps-radio.sh` → **23/23 ok, 0 caídas**
 (incluye **SWRScan**, que ahora sí abre por el control remoto; el #78 quedó resuelto). Log en
@@ -1775,7 +1780,7 @@ de mínimos cuadrados; render: orden vertical = ajuste y suavidad); harness `PAS
 n=51/51** con curvas fieles y suaves: `assessment-194/scratch/cw244/swr_p1_bandas.png`; TX apagado
 y dial restaurado (18.099180 USB-D).
 
-## 28/10 15:45Z — CW: se escribe al VFO ACTIVO y se mantiene en todas las bandas
+## 28/10 15:45Z — CW: se escribe al VFO ACTIVO y se mantiene en todas las bandas (`e968f4ff4861`)
 
 Build `e968f4ff4861` desplegado en la radio (ROM v0.1.11; GUI anterior `9d4bfc70`). Comandos remotos con 3 s de
 espera para que la cola del scheduler de la GUI los aplique; estados leidos con `{"cmd":"get"}`.
@@ -1797,7 +1802,7 @@ Pendiente del dueno: repetir **CW con VFO B activo** (el ensayo se interrumpio c
 Build: `make x6200-gui-dirclean && make -j8` en docker `x6200-buildroot` → exit 0; md5 del binario
 `e968f4ff4861`; deploy con backup en `/mnt/ui-bak-<HHMMSS>/`, `crashlog 0`.
 
-## 28/10 16:10Z — Zona CW automática: entra en CW y restaura al salir
+## 28/10 16:10Z — Zona CW automática: entra en CW y restaura al salir (`0a869656870e`)
 
 Build `0a869656870e` (ROM v0.1.11). `band_plan_type_at()` + observador de `cfg_cur.fg_freq` en
 `src/main_screen.c`: al entrar a un segmento CW del plan IARU pasa a CW (guarda el modo anterior) y al salir
@@ -1813,7 +1818,7 @@ restaura ese modo; un cambio manual dentro de la zona cancela la restauración; 
 `crashlog 0`. Tests nativos `exit 0` (test_band_plan: 50.099999=CW, 50.100000=ALL, 52.0=NONE).
 Pendiente: confirmación del dueño con la rueda física desde 51 MHz en 6m.
 
-## 28/10 16:55Z — Bluetooth consolidado en su app
+## 28/10 16:55Z — Bluetooth consolidado en su app (`0cbb0c23c8c7`)
 
 Pedido del dueño: tener Settings y una app dedicada a BT era confuso, todo el Bluetooth debía estar
 en la app.
@@ -1828,7 +1833,7 @@ en la app.
 - Manual actualizado: encendido/pareo van por la app BT (sección 7.3); el puerto USB-C no es host
   (un teclado USB o hub no se detecta), el teclado soportado es Bluetooth.
 
-## 28/10 17:00Z — Icono WiFi centrado en su media celda
+## 28/10 17:00Z — Icono WiFi centrado en su media celda (`5ef35ec0b807`)
 
 Reporte del dueño: en la home el icono de WiFi no estaba alineado con su contenedor. Medido en la
 captura (`docs/evidencia/2026-10-28-wifi-icon/`):
@@ -1843,7 +1848,7 @@ pegado al borde izquierdo de su media celda de 28 px. Se fija `LV_TEXT_ALIGN_CEN
 `items[INFO_WIFI]` (sin tocar las otras celdas) y se agrega la guarda en `tests/check_info_bar.py`
 (el chequeo estático de la barra sigue PASS). Build `5ef35ec0b807` desplegado, `crashlog 0`.
 
-## 28/10 21:00Z — #292 con portadora de noche: 790 débil, 760 PASS
+## 28/10 21:00Z — #292 con portadora de noche: 790 débil, 760 PASS (`5ef35ec0b807`)
 
 Corrida programada de la validación de banda lateral con la ROM v0.1.11 (GUI `5ef35ec0b807`).
 Evidencia completa: [`docs/evidencia/2026-10-28-lsb-night/`](evidencia/2026-10-28-lsb-night/README.md).
