@@ -168,3 +168,260 @@ libspeexdsp-dev=1.2.1-1
 + pkg-config --cflags --libs speexdsp
 + gcc -O2 -std=c11 -Wall -Wextra -Werror -I. -I/repo/docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs /repo/docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/bench_main.c /repo/docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs_bench.c audio_enhancement.c -o bench -lspeexdsp -lm -lpthread
 + set +x
+
+
+# ============================================================================
+# PARTE 3b - matriz de verificacion, build ARM, QEMU y cierre (2026-10-29)
+# Worktree: state/worktrees/x6200/audio-capture-pipeline-351
+# Base:     169bb807b0086dbb91d29a9ce6770d25ca396859 (origin/main)
+# HEAD:     86bae74b2958cdd837caae508e7670a4795e0228 (partes 1, 2 y 3a)
+# Host:     x86_64, gcc 16.2.1, docker; SIN toolchain ARM (ver bloque 5)
+# ============================================================================
+
+$ git status --short
+?? .asf-active            # marcador del harness, no es codigo
+
+$ git diff --name-only 169bb807 HEAD | wc -l
+44
+$ git diff --name-only 169bb807 HEAD
+  docs/AUDIO_ENHANCEMENT_GUIDE.md
+  docs/evidencia/2026-10-29-audio-capture-351/.gitignore
+  docs/evidencia/2026-10-29-audio-capture-351/README.md
+  docs/evidencia/2026-10-29-audio-capture-351/bench-results.json
+  docs/evidencia/2026-10-29-audio-capture-351/commands.log
+  docs/evidencia/2026-10-29-audio-capture-351/measurements.csv
+  docs/evidencia/2026-10-29-audio-capture-351/pcm-manifest.json
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/Dockerfile
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/bench_main.c
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/run_in_container.sh
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/audio.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/cfg/cfg.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/cfg/subjects.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/liquid/liquid.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/lvgl/lvgl.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/params/params.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/radio.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs_bench.c
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench_capture.py
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/gen_pcm.py
+  src/audio.c
+  src/audio_enhancement.c
+  src/audio_enhancement.h
+  src/dialog_settings.c
+  src/params/params.c
+  tests/native/audio_callback_stubs.c
+  tests/native/audio_callback_stubs.h
+  tests/native/audio_callback_test_main.c
+  tests/native/audio_enh_stubs.c
+  tests/native/run_native_tests.sh
+  tests/native/stubs/speex/speex_preprocess.h
+  tests/native/stubs/stubs.c
+  tests/native/stubs_audio/README.md
+  tests/native/stubs_audio/alsa/asoundlib.h
+  tests/native/stubs_audio/alsa/mixer.h
+  tests/native/stubs_audio/audio_enhancement.h
+  tests/native/stubs_audio/dsp.h
+  tests/native/stubs_audio/lvgl/lvgl.h
+  tests/native/stubs_audio/meter.h
+  tests/native/stubs_audio/params/params.h
+  tests/native/stubs_audio/pulse/pulseaudio.h
+  tests/native/stubs_audio/screen_rec.h
+  tests/native/test_audio_callback.c
+  tests/native/test_audio_enhancement.c
+
+# Alcance del diff: los 44 archivos caen todos dentro de lo declarado para #351
+# (src/audio.c, src/audio_enhancement.{c,h}, src/dialog_settings.c,
+# src/params/params.c, tests/native/**, docs/AUDIO_ENHANCEMENT_GUIDE.md y
+# docs/evidencia/2026-10-29-audio-capture-351/**). No hay cambios en
+# docs/evidencia/2026-10-28-rx-audio-feasibility/**, src/radio.c, rootfs/,
+# rom-build/, TX/PTT, volumen ni A2DP.
+
+# ---------------------------------------------------------------------------
+# 1. Suite nativa (debe seguir en 0)
+# ---------------------------------------------------------------------------
+$ sh tests/native/run_native_tests.sh /tmp/opencode/x6200-native-351-p3b
+== compilador: gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2) ==
+== sanitizers: NO disponibles en este toolchain (se omite) ==
+[... 25 suites, salida completa en el log de la corrida ...]
+== Captura #351: callback seguro (peek/hole/drop, chunks, sin escribir el source) ==
+== Captura: analisis estatico (gcc -fanalyzer sobre src/audio.c) ==
+174 comprobaciones, 0 fallos
+exit=0
+# 25 lineas de resumen, 75723 comprobaciones en total, 0 fallos.
+# Incluye el stage #351 del callback (174 comprobaciones) y el de audio_enhancement
+# (tramas de 441, particiones, bit-exactitud Off/Digital, reset, hole, niveles).
+# Sanitizers: NO disponibles en este toolchain (el runner lo declara y los omite).
+
+# ---------------------------------------------------------------------------
+# 2. Suite completa en modo rapido (separa preexistentes de regresiones)
+# ---------------------------------------------------------------------------
+$ sh tests/run_all_tests.sh --quick
+================ resumen ================
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  settings_grid: OK   
+  info_bar: OK   
+  apps_menu: FALLÓ
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (25 apps)
+  pruebas: FALLÓ
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  wcag_rendered: FALLÓ
+  widget_text: FALLÓ
+  cw_tune_feed: OK   
+  autotune_v2: OK   
+  build_identity: OK   
+  dialog_coverage: FALLÓ
+  curve_evidence: FALLÓ
+  host: OK   174 comprobaciones, 0 fallos
+  daemon: OK     all OK: 15 casos, 0 fallos
+  host_ci_parity: OK   174 comprobaciones, 0 fallos
+  db_failclosed: OK   todos los casos corrieron y afirmaron su resultado (matriz: /home/pablo/desa/asf/state/worktrees/x6200/audio-capture-pipeline-351/tests/native/build/db_failclosed/matrix.txt)
+  qemu_apps: SKIP SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))
+  drawbuf_partial: OK   PASS: partial draw buffer renders the identical physical framebuffer (sw-rotate 90)
+  wspr: SKIP SKIP: wspr: la imagen x6200-uiharness no trae /usr/include/fftw3.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  sstv: SKIP SKIP: sstv: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  wefax: SKIP SKIP: wefax: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  navtex: OK   all OK
+  (omitidos: qemu_apps wspr sstv wefax js8 webserver)
+  17 OK, 6 fallos
+exit=1
+# 17 OK, 6 fallos, 6 omitidos (qemu_apps wspr sstv wefax js8 webserver).
+# Los 6 fallos son los preexistentes documentados en el baseline #347 y cada uno
+# tiene su causa propia, ninguna del alcance de #351:
+#   apps_menu        ACTION_APP_LOGS no esta en ninguna pagina APP
+#   pruebas          docs/PRUEBAS.md: entradas con evidencia citada que falta
+#   wcag_rendered    el arnes de host no linkea (ver bloque 3)
+#   widget_text      idem
+#   dialog_coverage  mock dialog_logs sin fila en la tabla; app_names[] 26 vs 25 (#222)
+#   curve_evidence   7 de 8 casos
+# REGRESIONES NUEVAS: 0. El stage `host` (la suite nativa) pasa dentro de esta corrida.
+
+# ---------------------------------------------------------------------------
+# 3. Gate WCAG sobre la superficie renderizada (--all)
+# ---------------------------------------------------------------------------
+$ python3 tests/check_wcag_rendered.py --all
+== gate de contraste WCAG sobre la superficie renderizada (issue #277) ==
+  fixtures: 24 (matriz de 6 temas x 4 estados)
+  construyendo/actualizando el arnes (revision 86bae74b2958cdd837caae508e7670a4795e0228)...
+FALLO: el comando docker del arnes fallo (rc=2)
+exit=1
+# BLOCKED por causa preexistente y ajena a #351: el binario del arnes no linkea.
+# El detalle del linker (de /tmp/wcag_rendered.log) es:
+#   /usr/bin/ld: CMakeFiles/ui_harness.dir/src/src/dialog_bt.c.o: in function
+#   `bt_power_changed_cb': undefined reference to `bt_state_set_power'
+#   /usr/bin/ld: ... `bt_disc_changed_cb': undefined reference to
+#   `bt_state_set_discoverable'
+# Causa: #343 hizo que src/dialog_bt.c llame esos dos setters y el doble del arnes
+# (tools/ui_harness/mocks/mock_ui_deps.c) no los define. Afecta a ui_harness y a
+# ui_harness_dialogs, o sea a los gates que renderizan. No se arregla aca: esta
+# fuera del alcance de #351 y de la lista de archivos de esta unidad.
+
+# ---------------------------------------------------------------------------
+# 4. Test visible de Ajustes: rotulo `Capture filters` en ingles x 6 temas
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-29-audio-capture-351/scripts/check_settings_capture_filters.py
+  Sunlit    tema_activo=Sunlit    rotulo=(16,213) 200x29 natural={'w': 188, 'h': 29} caja={'w': 188, 'h': 29} overflow=False truncado=False dropdown_ink_px=290 -> OK
+  Redshift  tema_activo=Redshift  rotulo=(16,213) 173x29 natural={'w': 161, 'h': 29} caja={'w': 161, 'h': 29} overflow=False truncado=False dropdown_ink_px=116 -> OK
+  Sprint    tema_activo=Sprint    rotulo=(16,213) 159x28 natural={'w': 147, 'h': 28} caja={'w': 147, 'h': 28} overflow=False truncado=False dropdown_ink_px=203 -> OK
+  Cathode   tema_activo=Cathode   rotulo=(16,213) 199x29 natural={'w': 187, 'h': 29} caja={'w': 187, 'h': 29} overflow=False truncado=False dropdown_ink_px=288 -> OK
+  Trail     tema_activo=Trail     rotulo=(16,213) 199x29 natural={'w': 187, 'h': 29} caja={'w': 187, 'h': 29} overflow=False truncado=False dropdown_ink_px=279 -> OK
+  Aurora    tema_activo=Aurora    rotulo=(16,213) 176x28 natural={'w': 164, 'h': 28} caja={'w': 164, 'h': 28} overflow=False truncado=False dropdown_ink_px=207 -> OK
+
+  codigo sin cambios por esta medicion (git status -- src tools): si
+  parche local aplicado solo en /tmp/opencode/x6200-351-settings/mocks/mock_ui_deps.c (no commiteado)
+
+PASS: `Capture filters` visible y sin recorte en los 6 temas
+EXIT=0
+# El script construye el arnes sobre una COPIA de tools/ui_harness en un scratch dir
+# y agrega ahi, SOLO en la copia, los dos setters que faltan en el doble (#343). El
+# worktree no se toca: `git status --short --untracked-files=no` queda vacio (el
+# propio script lo imprime). Las capturas de Aurora y Sunlit quedan versionadas en
+# captures/; las seis se regeneran con el comando de arriba.
+# Las cinco opciones del desplegable (Off, CW weak, SSB voice, AM broadcast, Digital)
+# NO son observables en el arbol LVGL: el widget dibuja su texto y el arnes no tiene
+# tecla que abra la lista. Se verifican por el literal del codigo:
+$ sed -n '1411,1413p' src/dialog_settings.c
+    obj = dropdown_uint8_custom_cb(grid, &params.audio_enh_preset,
+                                   " Off \n CW weak \n SSB voice \n AM broadcast \n Digital",
+                                   audio_enh_update_cb);
+$ grep -n 'audio_enh_preset ' src/params/params.c
+164:    .audio_enh_preset       = { .x = 0, .max = 4, .name = "audio_enh_preset", .voice = "Capture filters" },
+# .max = 4 -> cinco valores 0..4, los cinco presets del contrato. `git diff
+# 169bb807 HEAD -- src/dialog_settings.c` muestra que la linea del dropdown NO
+# cambio: solo cambio el rotulo y el comentario de la fila.
+
+# ---------------------------------------------------------------------------
+# 5. Build ARM con el toolchain del Buildroot -> BLOCKED
+# ---------------------------------------------------------------------------
+$ sh docs/evidencia/2026-10-29-audio-capture-pipeline-351/scripts/probe_arm_toolchain.sh
+== sonda del toolchain ARM del Buildroot (#351) ==
+  imagen x6200-buildroot: ok
+  /workspace/build (salida del build del proyecto): VACIA
+    -> la imagen trae las fuentes de Buildroot y el cache de descargas,
+       pero el toolchain se construye en runtime (make toolchain).
+  x6200-build-output: target/ con libspeexdsp y header: FALTA
+  cross-compiler armhf en el host: no (binarios *gnueabihf* en /usr/bin: 0)
+
+BLOCKED: no hay toolchain ARM del Buildroot disponible (toolchain, target-libspeexdsp, cross-host)
+  comando que lo construiria (no ejecutado en esta corrida):
+    docker run --rm --entrypoint "" -v <clon>:/workspace x6200-buildroot \
+      bash -c 'cd /workspace && ./br_config.sh && make -C buildroot O=../build toolchain -j$(nproc)'
+  el build ARM del modulo queda PENDING; no se sustituye por un build de host.
+exit=77
+
+$ docker run --rm --entrypoint "" x6200-buildroot sh -c 'find / -xdev -name "*-gcc" -type f'
+/usr/bin/c89-gcc
+/usr/bin/c99-gcc
+# No hay ningun cross-compiler de target en la imagen: solo las fuentes de Buildroot
+# (5.4 GB de cache en /workspace/buildroot/dl) y el bind vacio de la salida del build.
+
+$ arm-linux-gnu-gcc -static -O1 -std=gnu11 -I<stage> -Itests/native \
+    tests/native/test_audio_callback.c tests/native/audio_callback_stubs.c \
+    tests/native/test_framework.c tests/native/audio_callback_test_main.c \
+    -Wl,--wrap=malloc -Wl,--wrap=calloc -Wl,--wrap=realloc -Wl,--wrap=free -lm \
+    -o /tmp/opencode/audio_callback_tests_arm
+/usr/lib/gcc/arm-linux-gnueabi/16/include/stdint.h:11:16: fatal error: stdint.h: No such file or directory
+tests/native/audio_callback_stubs.c:17:10: fatal error: stdio.h: No such file or directory
+# El unico cross del host es soft-float arm-linux-gnueabi y no trae headers de libc:
+# tampoco sirve como sustituto (la rootfs del ROM es armhf). NO se compilo nada ARM,
+# asi que no hay `readelf -h` que mostrar: el criterio del issue queda BLOCKED, no PASS.
+
+# ---------------------------------------------------------------------------
+# 6. QEMU del flujo de captura -> BLOCKED
+# ---------------------------------------------------------------------------
+$ sh tests/qemu/run_apps_qemu.sh --check
+== comprobando el entorno del barrido QEMU (privado) ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  python3: ok
+  PIL: ok
+  reporteador: ok
+  guard #86: ok
+  libs del banco: ok
+  cliente de control (fuente): ok
+  FALTA: el volumen x6200-next222-build no tiene /b/target/usr/sbin/x6200_gui (CONSTRUIR=si + BUILDROOT=<clon>)
+  FALTA: falta el chroot privado (/tmp/x6200-next222-qemu/chroot): pasar ROOTFS=<rootfs.tar privada> o dejar el volumen con target/ (se arma solo)
+  binfmt qemu-arm: ok
+== 2 cosa(s) faltan: el barrido QEMU no puede correr ==
+SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))
+exit=77
+# Sin build ARM de esta revision no hay binario que correr: el flujo de captura con
+# source sintetico, Recorder, decoders y Settings en QEMU queda BLOCKED por la misma
+# causa que el bloque 5. Aunque corriera, QEMU no demuestra la ruta electronica
+# BASE->parlante (no hay radio, ni codec, ni DSP del BASE): eso es PENDING-HARDWARE
+# (hardware-handoff.md).
+
+# ---------------------------------------------------------------------------
+# 7. Cierre
+# ---------------------------------------------------------------------------
+# - Matriz de tests: nativa exit 0; run_all --quick exit 1 con los 6 preexistentes
+#   de #347 y 0 regresiones nuevas; wcag_rendered --all BLOCKED por el link del
+#   arnes (#343); Settings 6 temas PASS; ARM BLOCKED; QEMU BLOCKED.
+# - Retardo medido de la cadena con NR: 882 muestras (20 ms) = 441 de la maquina de
+#   tramas + 441 de libspeexdsp (measurements.csv, delay_nr_total_882).
+# - audio_enh_preset_reset() NO recrea el estado de libspeexdsp: la bit-exactitud
+#   entre particiones vale desde estado recien inicializado (preset_reset_no_reinit).
+# - Seam de AM broadcast: +140 LSB sobre la grilla de 441 (seam_am_broadcast_plus_140).
+# - Nada de lo fisico se ejecuto: hardware-handoff.md queda PENDING-HARDWARE.
