@@ -29,6 +29,7 @@ sección los enlaza. La auditoría `tests/audita-pruebas.sh` verifica que la est
 ## Resumen
 
 | Fecha (2026) | Build (md5) | Commit | verifica-radio | Barrido de apps | Caídas | Veredicto |
+| 28/10 ~21:00 | ROM `d3f22d80…` + GUI `5ef35ec0b807` | (local) | **#292 banda lateral (noche)** | 1 parcial / 1 ok | 0 | 790 kHz: script oficial **FAIL del criterio absoluto** (789-LSB 24.7 / 789-USB 33.1 / 791-LSB 33.0 / 791-USB 22.8 dB; portadora débil, dirección correcta). 760 kHz con el mismo método y criterio relativo: **PASS** (26.1/39.6/36.3/24.9 dB, lados opuestos). Sin regresión de #292. Evidencia: `docs/evidencia/2026-10-28-lsb-night/` |
 | 28/10 ~17:00 | ROM `d3f22d80…` + GUI `5ef35ec0b807` | (local) | **icono WiFi centrado** | 1 ok | 0 | **Medido en captura**: glifo x139..155 (centro 147) → x144..160 (centro 152,2) en caja 139..166 (centro 152,5) ✓. `tests/check_info_bar.py` PASS con guarda nueva. `crashlog 0` |
 | 28/10 ~16:55 | ROM `d3f22d80…` + GUI `0cbb0c23c8c7` | (local) | **BT en su app** | 1 ok | 0 | **Ajustes ya no tiene el encendido/Discoverable/Devices de Bluetooth**: viven en la app BT (capturas en `docs/evidencia/2026-10-28-bt-app/`). `btcat-ctl bt on/off` medido: hci0 `UP RUNNING` / `DOWN` ✓. `crashlog 0` |
 | 28/10 ~16:10 | ROM `d3f22d80…` + GUI `0a869656870e` | (local) | **zona CW automática** | 1 ok | 0 | **Medido**: 6m 51.000 USB -> 50.099 **CW** -> 50.150 **USB** (restaura); 40m 7.060 LSB -> 7.030 **CW** -> 7.060 **LSB** ✓. Falta confirmar con la rueda física (se probó por control remoto, mismo observador de frecuencia). `crashlog 0` |
@@ -1841,3 +1842,21 @@ El label de la celda WiFi/BT tenía `LV_TEXT_ALIGN_LEFT` heredado y el símbolo 
 pegado al borde izquierdo de su media celda de 28 px. Se fija `LV_TEXT_ALIGN_CENTER` local sobre
 `items[INFO_WIFI]` (sin tocar las otras celdas) y se agrega la guarda en `tests/check_info_bar.py`
 (el chequeo estático de la barra sigue PASS). Build `5ef35ec0b807` desplegado, `crashlog 0`.
+
+## 28/10 21:00Z — #292 con portadora de noche: 790 débil, 760 PASS
+
+Corrida programada de la validación de banda lateral con la ROM v0.1.11 (GUI `5ef35ec0b807`).
+Evidencia completa: [`docs/evidencia/2026-10-28-lsb-night/`](evidencia/2026-10-28-lsb-night/README.md).
+
+- **790 kHz (script oficial `tools/lsb-sideband-test.sh --carrier`)**: `789-LSB 24.7`, `789-USB 33.1`,
+  `791-LSB 33.0`, `791-USB 22.8` dB → **FAIL** del criterio absoluto del script (<48 / >55 dB,
+  calibrado para portadora fuerte). La **dirección del patrón es la correcta**: LSB filtra 789 y USB
+  filtra 791 (y al revés en 791). Ningún valor llegó a 48/55: la portadora estuvo débil esta noche.
+- **Barrido AM de la noche**: 1280 kHz (−69 dB), 760 (−82), 1270 (−83).
+- **760 kHz, mismo método con criterio relativo (±8 dB)**: `759-LSB 26.1`, `759-USB 39.6`,
+  `761-LSB 36.3`, `761-USB 24.9` dB → **PASS** (lados opuestos; contraste 13.5 y 11.4 dB).
+- **1280 kHz**: sin contraste (estación modulada), no sirve como portadora.
+
+**Veredicto**: #292 sigue correcto en la ROM v0.1.11; no hay regresión por los cambios de SWR/curva/BT/UI.
+El FAIL del script oficial es por la portadora débil del 790 esta noche, no por la banda lateral. Radio
+restaurada en **7.140.000 LSB** (estado del dueño), `crashlog 0`.
