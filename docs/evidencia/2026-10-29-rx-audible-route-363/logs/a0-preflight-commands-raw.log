@@ -1,0 +1,54 @@
+[2026-10-29T22:00:24Z] ssh_radio "date -u +%Y-%m-%dT%H:%M:%SZ; date; cat /proc/uptime; cat /proc/loadavg"
+ -> exit 0
+[2026-10-29T22:00:24Z] ssh_radio "uname -a; cat /proc/cmdline; tr -d "\000" < /sys/firmware/devicetree/base/model 2>/dev/null; echo; cat /etc/os-release 2>/dev/null"
+ -> exit 0
+[2026-10-29T22:00:25Z] ssh_radio "ls -la /etc/*version* /etc/*release* 2>/dev/null; cat /etc/version 2>/dev/null; cat /etc/version.x6200 2>/dev/null"
+ -> exit 1
+[2026-10-29T22:00:25Z] ssh_radio "ls -la /usr/sbin/x6200_gui /usr/sbin/x6200_daemon /usr/lib/libaether_x6200_control.so* 2>/dev/null; sha256sum /usr/sbin/x6200_gui /usr/sbin/x6200_daemon /usr/lib/libaether_x6200_control.so.0.15.3 2>/dev/null; md5sum /usr/sbin/x6200_gui 2>/dev/null"
+ -> exit 0
+[2026-10-29T22:00:26Z] ssh_radio "readlink /proc/4716/exe; cat /proc/4716/comm; tr "\000" " " < /proc/4716/cmdline; echo; grep -E "^Pid|^PPid|^Threads" /proc/4716/status; ls -l /proc/4716/fd 2>/dev/null | grep -E "i2c|ttyS""
+ -> exit 0
+[2026-10-29T22:00:27Z] ssh_radio "for p in /proc/[0-9]*; do ls -l $p/fd 2>/dev/null | grep -qE "i2c-0" && echo "i2c-0 owner PID ${p#/proc/}: $(cat $p/comm 2>/dev/null)"; done; echo "--- ttyS1 ---"; for p in /proc/[0-9]*; do ls -l $p/fd 2>/dev/null | grep -qE "ttyS1" && echo "ttyS1 owner PID ${p#/proc/}: $(cat $p/comm 2>/dev/null)"; done"
+ -> exit 1
+[2026-10-29T22:00:30Z] ssh_radio "/tmp/x6200-remote "{\"cmd\":\"get\"}" 2>&1"
+ -> exit 0
+[2026-10-29T22:00:30Z] ssh_radio "/tmp/x6200-remote "{\"cmd\":\"get\"}" 2>&1"
+ -> exit 0
+[2026-10-29T22:00:31Z] ssh_radio "ls -la /tmp/x6200-remote; sha256sum /tmp/x6200-remote; ls -la /tmp/x6200_remote.sock"
+ -> exit 0
+[2026-10-29T22:00:31Z] ssh_radio "cat /proc/asound/cards; echo; cat /proc/asound/devices 2>/dev/null; echo; ls -la /proc/asound/"
+ -> exit 0
+[2026-10-29T22:00:32Z] ssh_radio "for f in /proc/asound/card0/pcm0c/sub0/status /proc/asound/card0/pcm0p/sub0/status; do echo "--- $f"; cat "$f" 2>&1; done"
+ -> exit 0
+[2026-10-29T22:00:32Z] ssh_radio "aplay -l 2>&1"
+ -> exit 0
+[2026-10-29T22:00:32Z] ssh_radio "pactl info 2>&1"
+ -> exit 0
+[2026-10-29T22:00:33Z] ssh_radio "pactl list short sources 2>&1; echo ---; pactl list short sinks 2>&1; echo ---; pactl list short modules 2>&1; echo ---; pactl list short clients 2>&1"
+ -> exit 0
+[2026-10-29T22:00:33Z] ssh_radio "pactl list sinks 2>&1"
+ -> exit 0
+[2026-10-29T22:00:34Z] ssh_radio "pactl list sources 2>&1"
+ -> exit 0
+[2026-10-29T22:00:34Z] ssh_radio "amixer -c 0 contents 2>&1"
+ -> exit 0
+[2026-10-29T22:00:35Z] ssh_radio "for f in /etc/asound.conf /etc/asound/alsactl.conf /var/lib/alsa/asound.state; do echo "--- $f"; cat "$f" 2>/dev/null; done; echo "--- pulse"; ls -la /etc/pulse/ 2>/dev/null; grep -vE "^;|^#" /etc/pulse/system.pa 2>/dev/null; grep -vE "^;|^#" /etc/pulse/daemon.conf 2>/dev/null"
+ -> exit 0
+[2026-10-29T22:00:35Z] ssh_radio "bluetoothctl show 2>&1; echo ---; bluetoothctl devices Connected 2>&1; echo ---; bluetoothctl devices 2>&1 | head -10; echo ---; rfkill list 2>/dev/null; echo ---; cat /proc/net/bluetooth 2>/dev/null"
+ -> exit 1
+[2026-10-29T22:00:36Z] ssh_radio "ls -la /mnt/app_logs/ 2>/dev/null | tail -8; echo ---; ls -la /mnt/crash* /mnt/app_logs/crash* /var/log/crash* 2>/dev/null; echo ---; ls -la /var/log/ 2>/dev/null | head -20; echo ---; tail -c 4000 /mnt/app_logs/boot.log 2>/dev/null"
+ -> exit 0
+[2026-10-29T22:00:36Z] ssh_radio "dmesg 2>&1 | tail -60"
+ -> exit 0
+[2026-10-29T22:00:37Z] ssh_radio "grep -a -m8 "BASE ver1\|BASE ver2\|BASE fw version\|BASE fw date" /mnt/app_logs/boot.log 2>/dev/null | tail -20; echo ---; grep -a -m4 "BASE ver1\|BASE fw version" /tmp/x6200_log.txt 2>/dev/null | tail -6"
+ -> exit 0
+[2026-10-29T22:00:37Z] ssh_radio "ls -la /tmp/x6200_log.txt /mnt/app_logs/voice.log 2>/dev/null; tail -c 3000 /tmp/x6200_log.txt 2>/dev/null"
+ -> exit 0
+[2026-10-29T22:00:38Z] ssh_radio "ls -la /tmp/*.json /tmp/i2c-trace.log /tmp/rx349_poll.py 2>/dev/null; echo ---; head -c 2000 /tmp/i2c-trace.log 2>/dev/null"
+ -> exit 0
+[2026-10-29T22:00:38Z] ssh_radio "free 2>/dev/null; df -h / /mnt /tmp 2>/dev/null"
+ -> exit 0
+[2026-10-29T22:00:39Z] ssh_radio "grep -E "model name|Hardware|Revision|processor" /proc/cpuinfo | head -12; cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null; cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null"
+ -> exit 0
+[2026-10-29T22:00:39Z] ssh_radio "ps w | grep -iE "pulse|alsa|pipewire|parec|pacat|aplay|x6200|btaudio" | grep -v grep"
+ -> exit 0

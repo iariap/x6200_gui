@@ -1,0 +1,4 @@
+PASS mask-test: 2009 casos (2005 fijos+aleatorios), PTT=0x40000 intacto
+on(v)=v|0x8  off(v)=v&~0x8  other_bits_unchanged=true
+cases_sha256=5af134b8f0e01908c854d400dfae89fb00c28de21c81457e54d0545725de463a
+lib_record_set_impl_referencia=record_set@0x34bc (v0.15.3): orr #8 / bic #8 sobre x6200_control_get(0xc)

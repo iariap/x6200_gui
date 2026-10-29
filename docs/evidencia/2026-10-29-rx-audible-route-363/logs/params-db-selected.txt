@@ -1,0 +1,21 @@
+# Copia read-only de /mnt/params.db (sha256 f4ec30f2228678c72c4b4f4b87b5967f98c4f0a0a3fcfc696660fd19e87d7de1)
+atu|1
+audio_enh_preset|0
+band|4
+callsign|LU2DSX
+dnf|0
+hmic|30
+imic|30
+mic|0
+moni|6
+nb|1
+nb_level|5
+nb_width|55
+nr|1
+nr_level|40
+pwr|40
+qth|GF05XD
+spmode|0
+sql|0
+theme_name|Redshift
+vol|7

@@ -46,6 +46,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 74. [El modo CW tiene que quedar CW en todas las bandas y escribirse al VFO ACTIVO](#74-el-modo-cw-tiene-que-quedar-cw-en-todas-las-bandas-y-escribirse-al-vfo-activo)
 75. [El modo sigue al plan de bandas: al entrar al segmento CW pasa a CW y al salir restaura el modo anterior](#75-el-modo-sigue-al-plan-de-bandas-al-entrar-al-segmento-cw-pasa-a-cw-y-al-salir-restaura-el-modo-anterior)
 76. [El PTT en CB se habilita con el bloque de calibración fullband que escribe la UI de fábrica](#76-el-ptt-en-cb-se-habilita-con-el-bloque-de-calibración-fullband-que-escribe-la-ui-de-fábrica)
+77. [El bit `voice_rec` (reg 12) no tiene readback ni dueño serializado fuera de la GUI, y no hay restore de audio <250 ms](#77-el-bit-voice_rec-reg-12-no-tiene-readback-ni-dueño-serializado-fuera-de-la-gui-y-no-hay-restore-de-audio-250-ms)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
@@ -954,6 +955,9 @@ con lo que haría falta para fundarlas.
 | "El banco da 0,15 s por los `open()` del sistema de archivos del host" | La comparación es medida; **la explicación** no | Perfilar el banco (QEMU) |
 | Que `addgroup` de busybox cree grupos en vez de agregar usuarios | Se observó en su momento, sin captura conservada | Repetirlo y pegar la salida |
 | `speaker-test` "corre sin error y sin sonido" (12/10) | No quedó la captura y hoy no se puede repetir con la GUI andando | Parar la GUI, correrlo y pegar la salida |
+| `voice_rec=1` conmuta el MUX del parlante/jack del X6200 de audio de RF a DAC del SoC | lo documenta Mestre (tercero, otro equipo/ROM); **no medido en nuestro equipo**; el firmware del MCU está encriptado y no hay readback del reg 12 | prueba física A4 autorizada con instrumentación y restore verificado, comparando parlante/jack con el bit en 0 y en 1 |
+| El PA del parlante queda habilitado con `rxvol=7` (estado medido en el registro 14) | la dependencia PA↔`rxvol>0` es documentación externa; se midió el nivel del registro 14, no el PA | prueba física A4 midiendo nivel acústico vs reg 14 |
+| La captura Linux recibe el audio del BASE después del NR/DFL del BASE | la señal capturada es real (medida previa), pero no se separó el procesamiento; sin escrituras/readback no se puede aislar | inyectar señal y comparar NR/DFL on/off (requiere escrituras autorizadas y restore) |
 | "La app de SWR Scan se cierra sola al terminar el barrido" (#119, defecto 2) | El cierre no está en el código del fin de barrido (§46) y no quedó el log de la GUI de esa corrida; el candidato (el `app off` del control remoto, que sí se acepta con el barrido transmitiendo) está fundado **en el código**, no en esa corrida | Correr el barrido con el log de la GUI a mano (`/tmp/x6200_log.txt` → `/mnt/app_logs/`), el `pid` de la GUI y el estado `app` del control remoto; y revisar el script de la corrida por si manda `{"cmd":"app","text":"off"}` |
 | El bucle de reinicio del CW Trainer (issue #51) se rearma en el arranque "por sí solo" | El banco no tiene camino de audio y el chroot no estaba armado, así que no se pudo medir la cadencia en el equipo | Medir en la radio el `PID` de la GUI por 150 s tras un reset (issue #15), con `key_train` en `params.db` |
 | El paso exacto por el que `hkey_put()` fuera de hilo corrompió `event_head` (issue #131), y que el trigger sea sólo el cambio de filtro | Está fundado que `hkey_put()` corría en el hilo de radio y tocaba LVGL (§56), pero **no** la escritura concreta que deja el frame muerto en la lista de eventos: el banco no tiene flow y no ejecuta `radio_tick`, y la corrupción necesita concurrencia real. Los dos crashes tienen el mismo `pc`/`lr` con contextos distintos (`on_vfo_mode_change` y `on_high_filter_change`) | Correr en la radio la receta de §56 (200 ciclos de tecla + filtro + modo + banda) con el fix y mirar `CRASHLOG`; si vuelve, guardar el log vivo completo y `/mnt/lastbreath` del momento |
@@ -4589,3 +4593,44 @@ en el log, todos en 27.185; ninguno en 27.505).
 **Sin fundar (anexo A)**: potencia y ROE reales en CB (sin instrumento); si el bloque sobrevive a
 un power-cycle sin la GUI (la GUI lo reaplica al arrancar, eso sí está verificado).
 
+## 77. El bit `voice_rec` (reg 12) no tiene readback ni dueño serializado fuera de la GUI, y no hay restore de audio <250 ms
+
+**Contexto** (issue #363, fase A del épico #362): antes de permitir que el PCM del SoC se oiga en el
+parlante hay que demostrar que el registro compartido del BASE que conmuta el audio (`voice_rec`, bit
+`0x8` del registro 12, dirección I2C `0x30`) tiene **dueño serializado**, **readback real** y un
+**guardián independiente** que devuelva el BASE en <=250 ms. La evidencia completa de la corrida está en
+`docs/evidencia/2026-10-29-rx-audible-route-363/`.
+
+**Código** (base `cb9ea287`): `x6200_control_record_set()` prende/apaga el bit 0x8 y `x6200_control_ptt_set()`
+prende/apaga `iptt=0x40000` **sobre el mismo registro 12**, los dos con read-modify-write sobre la sombra
+(`gdyuldin/X6200Control`, `src/control.c:69-81` y `:156-166`); `x6200_control_cmd()` actualiza la sombra
+**antes** del ioctl I2C y no propaga el error (`src/low/control.c:452-464`); `x6200_control_get()` devuelve
+**la sombra en RAM**, no el BASE (`src/low/control.c:466-469`). En el port, `radio_thread()` llama
+`x6200_control_idle()` cada `IDLE_TIMEOUT = 1000 ms` (`src/radio.c:45,337-340`) y esa función reenvía los
+**54 registros (218 B)** desde la sombra (`src/low/control.c:480`+). `audio_play_en()` es la única vía que
+prende `voice_rec`, y además pone HMic/IMic en 0 (`src/audio.c:458-478`).
+
+**Desensamblado del binario desplegado** (lib sha256 `80c460e4…6df6`, la misma de la imagen v0.1.11, con
+REA 6.7.0 + Ghidra 12.1.4): `x6200_control_get` en `0x281c` es **un solo load de la sombra, sin I2C**;
+`x6200_control_idle` en `0x28f8` hace `ioctl(fd, I2C_RDWR=0x707)` con `len=0xda` (218 B) al esclavo
+`0x72`; `record_set` en `0x34bc` es `orr #8`/`bic #8`; `ptt_set` en `0x37dc` es `orr #0x40000`/`bic #0x40000`.
+La GUI desplegada (sha256 `4ee87aef…66b0`) llama `record_set` en `0x2eb48` (arranque) y en
+`0x3dcb4/0x3dcbc` (`audio_play_en`), `ptt_set` en `0x2fbe4` bajo mutex y `idle` en `0x2e350` tras
+`cmp r3,#1000`.
+
+**Medido en la radio** (2026-10-29, solo lectura): el **único** proceso con `/dev/i2c-0` abierto es
+`x6200_gui` (pid 4716); no hay otro dueño del bus. El supervisor `/usr/sbin/x6200_daemon` (sha256
+`07c431cc…9877`) reinicia la GUI con backoff **2/5/15/60 s** (`delay_for()`), y el arranque de la GUI
+medido en `/mnt/app_logs/boot.log` tarda **1,7–1,9 s** (`GUI inicio → GUI lista` en 4 arranques), así que
+el único restore fuera del proceso cuesta **≈4 s** y reescribe todo el register file con defaults, no un
+restore selectivo del bit. La aritmética de máscara se verificó con 2009 casos (fijos y aleatorios,
+incluido PTT prendido): `iptt` y los bits de ATU quedan intactos (`logs/mask-test.txt`).
+
+**Consecuencia**: un guardián externo no puede ser dueño serializado del registro 12 (la GUI lo
+sobrescribe en <=1 s desde su sombra) y no hay readback real para verificar el estado. Por eso la fase A
+de #362 quedó **`BLOCKED_SAFE_MUX`** (A2) y #364 no puede arrancar. La conclusión es de seguridad, no de
+funcionalidad: el bit compartido con PTT/ATU no se escribe sin dueño y restore probados.
+
+**Sin fundar** (anexo A): efecto físico del bit en nuestro equipo (MUX/PA), si el MCU del BASE restaura el
+bit al entrar en TX o al resetear (firmware encriptado, sin readback), y si la captura Linux es
+post-NR/DFL.

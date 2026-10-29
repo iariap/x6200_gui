@@ -1,0 +1,7 @@
+# Intento de snapshot A5 durante la caida transitoria de WiFi (22:16-22:21Z)
+# La radio volvio a responder a las 22:21:46Z SIN reinicio (mismo boot=1fa5d1ea, uptime continuo).
+radio_ip=<radio-ip>
+ALIVE
+Thu Oct 29 22:21:46 UTC 2026
+{"t":"state","vfo":"A","freq":7143000,"freq_bg":7062100,"mode":"LSB","band":"40m SSB","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":7,"pre":0,"att":1,"agc":"AUTO","nb":1,"nr":1,"nb_level":5,"nb_width":55,"nr_level":40,"pwr":40,"db":-100,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+lastbreath v=1 up_s=14315 up_ms=14315250 clean=0 boot=1fa5d1ea radio=RX tx=0 app=home bat_mv=8600 ext_mv=11800 cap=94 chg=1 ev=0/6/0 last=refresh wus=19881 msg=Time is synchronized with NTP

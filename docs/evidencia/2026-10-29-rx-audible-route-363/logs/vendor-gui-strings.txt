@@ -1,0 +1,15 @@
+amixer -c 0 sset 'ADC Gain',0 3 1>/dev/null
+amixer -c 0 sset 'DAC',0 on 1>/dev/null
+amixer -c 0 sset 'Headphone',0 63 1>/dev/null
+amixer -c 0 sset 'Headphone',0 unmute 1>/dev/null
+amixer -c 0 sset 'Mic1',0 3 1>/dev/null
+amixer -c 0 sset 'Mic1',0 unmute 1>/dev/null
+amixer -c 0 sset 'Mic1 Boost',0 0 1>/dev/null
+amixer -c 0 sset 'Mic2',0 0 1>/dev/null
+amixer -c 0 sset 'Mic2',0 mute 1>/dev/null
+amixer -c 0 sset 'Mic2 Boost',0 0 1>/dev/null
+amixer cset numid=10,iface=MIXER,name='AIF1 Data Digital ADC Capture Switch' on 1>/dev/null
+amixer cset numid=19,iface=MIXER,name='Mic1 Capture Switch' on 1>/dev/null
+amixer cset numid=9,iface=MIXER,name='AIF1 Slot 0 Digital DAC Playback Switch' on 1>/dev/null
+/dev/i2c-0
+sple

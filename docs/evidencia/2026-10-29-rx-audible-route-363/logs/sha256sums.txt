@@ -1,0 +1,27 @@
+# sha256 de los artefactos analizados (2026-10-29)
+
+746fbc2587e3c375f6bbc2c6b2a32fd874bc3bebb3c125ead05300a16fb1b7ca  images/x6200_r1cbu_v0.1.11-lu2dsx.tgz
+d3f22d806f5279d533ca86d712c903d911b378be139ea67735141fa06f496d0b  images/x6200_20261028_104820.img
+80c460e403bfe77684c773a50a054bfe6c4a858753695a01167493e35e126df6  .qa363/rom/libaether_x6200_control.so.0.15.3
+07c431cceaf28ac3e5b7f630d36c70f7d04b9af3cb19f078c0728c7f53c99877  .qa363/rom/x6200_daemon
+9521b9eed76696e459410bbded1add7f9234d05f139551f5f4487d689a542c58  .qa363/rom/x6200_gui
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b  refs/vendor-fw/x6200_ui_v100
+dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3  refs/vendor-fw/x6200_mcu_20250111134652.xgf
+b87f51b4ff8310fd2a6f029dcf669b98e4bb7bcc0fed4f94676149a1c173eab0  refs/vendor-fw/xparam.db
+
+# radio (medido por ssh, 2026-10-29T22:21:55Z)
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /usr/sbin/x6200_gui
+80c460e403bfe77684c773a50a054bfe6c4a858753695a01167493e35e126df6  /usr/lib/libaether_x6200_control.so.0.15.3
+
+# REA evidence ids (esta corrida)
+lib-analyze.json: "evidence_id":"ev_279ec087a4c0882c9c2826122cb55f24606058086c78437ae067331b8f0e48da"
+vendor-analyze.json: "evidence_id":"ev_f1d7f5fca53319dfe1e4b884229988cad5c4fa13a8275ee88af77bcb6125c683"
+
+# REA decompile outputs
+lib-x6200_control_record_set.json: "evidence_id":"ev_c1c27f399a183a73f6819ad3bdd2428e5dfb956b676bed0c0d01be54ce11cd7c"
+lib-x6200_control_ptt_set.json: "evidence_id":"ev_b1118b9da53b039ecf3da85c96d4c290cf6829f107caf74f4f5bc66c43369d50"
+lib-x6200_control_idle.json: "evidence_id":"ev_e9308a892b272abe4373766057f73296b457cd55983bb12369ff6c76e8ab6261"
+lib-get-addr.json: "evidence_id":"ev_0f6d98e08e842f991966e05ce08ab549bd40e93e3b04cc1d89d3a31fd530344e"
+lib-cmd-addr.json: "evidence_id":"ev_94458c5a9f62039d15701a360da16c0a6d68f36140958347fce6dd7a898ba23e"
+vendor-0x29308.json: "evidence_id":"ev_10ec16d29cba630ee2ee1b24e060c9888cbd87dc7430c45c2a0c16eb9e749123"
+vendor-0xe33b8.json: "evidence_id":"ev_dcf86f16642294df821f85b79fc17f7317d31ddefdec447bbde49fd82db8e5ac"

@@ -1,0 +1,39 @@
+analysis_provider_candidates[4]:
+  - provider:
+      id: ghidra
+      name: Ghidra
+      version: null
+    availability:
+      status: available
+      code: null
+      reason: null
+      diagnostics:
+        install_dir: /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC
+        analyze_headless_path: /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/support/analyzeHeadless
+        native_decompiler_path: /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/Features/Decompiler/os/linux_x86_64/decompile
+        application_properties_path: /home/pablo/desa/x6200/tools/ghidra/ghidra_12.1.4_PUBLIC/Ghidra/application.properties
+        provider_version: 12.1.4
+        java_command: /home/pablo/desa/x6200/tools/jdk/jdk-21.0.13+9/bin/java
+        java_home: /home/pablo/desa/x6200/tools/jdk/jdk-21.0.13+9
+        java_version: 21.0.13
+        java_vm_name: OpenJDK 64-Bit Server VM
+--
+    capabilities[1]:
+      - provider:
+          id: ghidra
+          name: Ghidra
+          version: null
+        shared_limitations[4]: The session serves operations only after Ghidra reports default auto-analysis complete; incomplete analysis does not expose partial results.,The imported Program and temporary project are ephemeral and deleted on close. Annotation operations edit session database metadata; original executable bytes are never written.,Cancelling an active Ghidra request terminates its ephemeral database and discards session annotations. The selected target remains open; the next provider query imports the original artifact again.,"Default-space addresses use lowercase 0x-prefixed hexadecimal; other address spaces use <percent-encoded-space>:0x<hex>."
+        groups[22]:
+          - operations[7]: address_name,inspect_native_data_type,inspect_native_instruction,procedure_callees,procedure_callers,procedure_info,resolve_native_call_targets
+            effects[2]: launches_process,may_write_filesystem
+            limitations: []
+            available: true
+            reason: null
+            availability_code: null
+          - operations[1]: address_to_file_offset
+            effects[2]: launches_process,may_write_filesystem
+            limitations[1]: "Offsets come from Ghidra source-byte mappings, not virtual-address arithmetic. Uninitialized memory, missing mappings and ambiguous mappings fail explicitly."
+            available: true
+            reason: null
+            availability_code: null

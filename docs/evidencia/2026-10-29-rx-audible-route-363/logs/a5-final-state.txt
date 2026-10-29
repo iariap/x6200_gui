@@ -1,0 +1,66 @@
+===== date =====
+2026-10-29T22:21:55Z
+14332.87 46264.90
+[exit=0]
+===== state =====
+{"t":"state","vfo":"A","freq":7143000,"freq_bg":7062100,"mode":"LSB","band":"40m SSB","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":7,"pre":0,"att":1,"agc":"AUTO","nb":1,"nr":1,"nb_level":5,"nb_width":55,"nr_level":40,"pwr":40,"db":-104,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+[exit=0]
+===== state2 =====
+{"t":"state","vfo":"A","freq":7143000,"freq_bg":7062100,"mode":"LSB","band":"40m SSB","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":7,"pre":0,"att":1,"agc":"AUTO","nb":1,"nr":1,"nb_level":5,"nb_width":55,"nr_level":40,"pwr":40,"db":-104,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+[exit=0]
+===== lastbreath =====
+lastbreath v=1 up_s=14325 up_ms=14325260 clean=0 boot=1fa5d1ea radio=RX tx=0 app=home bat_mv=8600 ext_mv=11800 cap=94 chg=1 ev=0/6/0 last=refresh wus=15288 msg=Time is synchronized with NTP
+[exit=0]
+===== hashes =====
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /usr/sbin/x6200_gui
+80c460e403bfe77684c773a50a054bfe6c4a858753695a01167493e35e126df6  /usr/lib/libaether_x6200_control.so.0.15.3
+/usr/sbin/x6200_gui
+x6200_gui
+[exit=0]
+===== procs =====
+  329 pulse    /usr/bin/pulseaudio --system --daemonize --disallow-exit --exit-idle-time=-1 --use-pid-file --disable-shm
+  519 root     /usr/bin/python3 /usr/share/x6200/qrz-upload.py --loop
+ 1946 root     {x6200_daemon} /bin/sh /usr/sbin/x6200_daemon
+ 4716 root     /usr/sbin/x6200_gui
+[exit=0]
+===== audio =====
+0	alsa_output.platform-sound.stereo-fallback.monitor	module-alsa-card.c	s16le 2ch 44100Hz	IDLE
+1	alsa_input.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+---
+0	alsa_output.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+---
+11
+---
+state: RUNNING
+owner_pid   : 331
+trigger_time: 940.721807842
+state: RUNNING
+owner_pid   : 330
+trigger_time: 940.711181676
+[exit=0]
+===== i2c-owner =====
+i2c-0 owner PID 4716: x6200_gui
+[exit=1]
+===== crash =====
+crash-files-above
+/mnt/app_logs/x6200_log_2026-10-29_19-16-33_p1946_r2.txt
+/mnt/app_logs/x6200_log_2026-10-29_19-44-13_p1946_r3.txt
+[exit=0]
+===== mixer =====
+Simple mixer control 'AIF1 DA0',0
+  Capabilities: pvolume
+  Playback channels: Front Left - Front Right
+  Limits: Playback 0 - 192
+Simple mixer control 'Mic1',0
+  Capabilities: pvolume pvolume-joined pswitch cswitch
+  Playback channels: Front Left - Front Right
+  Capture channels: Front Left - Front Right
+  Limits: Playback 0 - 7
+  Front Left: Playback 0 [0%] [-4.50dB] [on] Capture [on]
+Simple mixer control 'DAC',0
+  Capabilities: pvolume pswitch
+  Playback channels: Front Left - Front Right
+  Limits: Playback 0 - 192
+  Mono:
+  Front Left: Playback 0 [0%] [-99999.99dB] [on]
+[exit=0]
