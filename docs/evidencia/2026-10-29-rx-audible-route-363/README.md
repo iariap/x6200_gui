@@ -4,6 +4,7 @@
 **Issue:** [#363](https://github.com/iariap/x6200_gui/issues/363) · **Épico:** [#362](https://github.com/iariap/x6200_gui/issues/362) · **Predecesores citados:** [#347](https://github.com/iariap/x6200_gui/issues/347), [#359](https://github.com/iariap/x6200_gui/issues/359).
 **Base `main` verificada al empezar:** `cb9ea287548534ac5c4438c786b57deb436c7c40` (`git fetch origin main` → `origin/main`).
 **Worktree/rama:** `x6200-audio-route-363` / `audit/rx-audible-route-363` (PR documental; **sin cambios en `src/`**).
+**PR documental:** [#366](https://github.com/iariap/x6200_gui/pull/366) (sin merge).
 **Trabajo:** sólo lectura sobre la radio; cero escrituras de registros, cero TX/PTT/ATU, cero `audio_play_en`, cero flash, cero cambios de GUI/PulseAudio.
 
 ## Veredicto

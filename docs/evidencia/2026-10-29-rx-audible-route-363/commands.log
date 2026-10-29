@@ -132,3 +132,11 @@ La matriz volvió a correr sobre el commit final del PR (segundo commit, que só
 **PR documental:** rama `audit/rx-audible-route-363`, título
 `[AUDIO QA] REA and physical RX DAC/MUX route gate (#363)`, body `Refs #362; Refs #363; Refs #347; Refs #359`.
 Sin merge, sin cerrar #363 (el gate no es `A_PASS`).
+
+```
+[22:26Z] git -C x6200-audio-route-363 push -u origin audit/rx-audible-route-363 -> exit 0
+[22:26Z] gh pr create --repo iariap/x6200_gui --base main --head audit/rx-audible-route-363 \
+         --title "[AUDIO QA] REA and physical RX DAC/MUX route gate (#363)" \
+         --body "Refs #362; Refs #363; Refs #347; Refs #359"          -> exit 0
+         URL: https://github.com/iariap/x6200_gui/pull/366
+```
