@@ -5,6 +5,7 @@
 **Base `main` verificada:** `cb9ea287548534ac5c4438c786b57deb436c7c40` (`git fetch origin main` → `origin/main`).
 **Worktree/rama:** `x6200-rx-mux-guard-aprime` / `feat/rx-mux-guard-aprime`.
 **Alcance:** infraestructura de seguridad; **el MUX no se activa** y todo el camino activo queda **OFF**.
+**PR (DRAFT):** [#368](https://github.com/iariap/x6200_gui/pull/368) — sin merge; #362/#363/#364 no se cierran.
 
 ## Decisión de gates
 

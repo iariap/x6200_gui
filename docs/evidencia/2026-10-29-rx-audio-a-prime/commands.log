@@ -108,6 +108,13 @@ Con `HEAD=9184b70438e1231e02279336e72fb4fb8b0e5b8b` (2 commits) y base `main=cb9
 [--]     git diff --name-only origin/main...HEAD                         -> 27 archivos (src/, tests/native/, CMakeLists, docs/)
 ```
 
+```
+[00:30Z] gh pr create --repo iariap/x6200_gui --base main --head feat/rx-mux-guard-aprime --draft \
+         --title "[AUDIO SAFETY] Shared register-12 ownership and fail-safe guardian (A-prime)" \
+         --body "Refs #362; Refs #363; Refs #366; Blocks #364 until A_PASS; Relates #365"  -> exit 0
+         URL: https://github.com/iariap/x6200_gui/pull/368  (DRAFT)
+```
+
 **Provisión de entorno para los gates de la matriz** (no cambios de repo): `lvgl` submodule
 inicializado en el worktree (commit pineado `74d0a81…`), `tools/remote/x6200-remote` compilado
 (estático, ignorado por git), `UV_CACHE_DIR` reubicado a un path escribible.
