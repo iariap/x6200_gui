@@ -39,8 +39,9 @@ Las filas correspondientes están en `measurements.csv` (columnas exactas del is
 4. **Polaridad** (`MEASURED-HOST`): `SET_NOISE_SUPPRESS = +30` y `= −30` dan el **mismo** resultado
    (readback −30, atenuación −14.94 dB en ambos). La lib normaliza a −|x|: pasar un positivo no produce
    ganancia. La convención negativa del código es correcta.
-5. **Tests actuales** (`CODE` + `MEASURED-HOST`): el stub atenúa 6 dB fijos y usa **ids de request distintos
-   de los reales** (`SET_NOISE_SUPPRESS` = 1 vs 18). Un PASS prueba el troceado, el tail y los clamps; **no**
+5. **Tests actuales** (`CODE` + `MEASURED-HOST`): el stub atenúa 6 dB fijos y usaba **ids de request
+   distintos de los reales** (`SET_NOISE_SUPPRESS` = 1 vs 18; alineado con el ABI real el 2026-10-29 por
+   #351, ver errata en §5). Un PASS prueba el troceado, el tail y los clamps; **no**
    prueba atenuación, calidad, CPU ni latencia.
 6. **CPU** (`MEASURED-HOST`, x86_64): 60 s de audio en 104–137 ms (0.17–0.23% del tiempo real); máximo por
    callback de 100 ms: 1.1–2.1 ms de wall (incluye posible preempción). **No extrapolable al R16.**
@@ -345,6 +346,16 @@ Además, el header del stub define **ids de request que no son los de la API rea
 
 El código de producción usa el **nombre** del macro, así que compila y funciona con el header real; pero el
 test **no podría detectar** un id equivocado ni un parámetro mal tipado, porque su stub acepta cualquier cosa.
+
+> **Errata 2026-10-29 (#351).** La tabla de arriba es la medición histórica del 2026-10-28 y se conserva tal
+> cual. Después de este informe, #351 alineó el header del stub con el ABI real de libspeexdsp 1.2.1:
+> `tests/native/stubs/speex/speex_preprocess.h` ahora declara `SPEEX_PREPROCESS_SET_NOISE_SUPPRESS` = 18,
+> de modo que un id equivocado en el módulo ya no queda tapado por el stub. El control
+> `scripts/check_no_stub_claims.py` punto (c) dejó de verificar la discrepancia "stub = 1 / real = 18" y
+> ahora verifica la **congruencia** "stub = real = 18": falla si el header del stub declara cualquier otro
+> valor, y su `--self-test` incluye el caso "id del stub cambiado ⇒ FAIL". Sigue vigente lo demás observado
+> en esta sección: la atenuación fija de 6 dB del stub, los parámetros sin tipar y el hecho de que un PASS
+> de la suite host no sustituye una corrida contra la lib real.
 
 Un PASS de la suite host (medido: `44837 comprobaciones, 0 fallos`, exit 0) prueba entonces: troceado,
 tail, clamps, presets, no-crash. **No** prueba atenuación, calidad, CPU, latencia, retardo ni hilos. Cualquier

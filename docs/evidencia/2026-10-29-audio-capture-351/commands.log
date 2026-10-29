@@ -1,0 +1,476 @@
+# WAV ya presentes en /home/pablo/desa/asf/state/worktrees/x6200/audio-capture-pipeline-351/docs/evidencia/2026-10-29-audio-capture-351/artifacts/pcm (gen_pcm.py --verify a continuacion)
+$ /usr/bin/python3 /home/pablo/desa/asf/state/worktrees/x6200/audio-capture-pipeline-351/docs/evidencia/2026-10-29-audio-capture-351/scripts/gen_pcm.py --verify
+[exit 0]
+silence_44100_s16.wav: sha256 99a00cb13591a8b767015477036fd3496377f8596dfe6dc5240c75f16ef3c46c
+sine_1k_44100_s16.wav: sha256 667267ce64f37e899fc5a50af734e95a91713ace322e050a24f82b10614ad600
+multisine_44100_s16.wav: sha256 b7afb34f75f84b4914b1db7363614539ca27842720aae71ca8c3b5c5067d75bf
+white_noise_44100_s16.wav: sha256 b60926922b9734790cfe9d7817cd391d1d1bf07283dbecdff413e7d7f727f936
+OK: los cuatro WAV regenerados coinciden byte a byte con el manifiesto
+$ docker build -t x6200-speexdsp-capture-bench:1.2.1-1 -f /home/pablo/desa/asf/state/worktrees/x6200/audio-capture-pipeline-351/docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/Dockerfile /home/pablo/desa/asf/state/worktrees/x6200/audio-capture-pipeline-351/docs/evidencia/2026-10-29-audio-capture-351/scripts/bench
+[exit 0]
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 836B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:bookworm-slim@sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/3] FROM docker.io/library/debian:bookworm-slim@sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3
+#4 DONE 0.0s
+
+#5 [2/3] RUN apt-get update  && apt-get install -y --no-install-recommends         gcc         libc6-dev         libspeexdsp-dev=1.2.1-1         pkg-config  && rm -rf /var/lib/apt/lists/*
+#5 CACHED
+
+#6 [3/3] WORKDIR /build
+#6 CACHED
+
+#7 exporting to image
+#7 exporting layers done
+#7 writing image sha256:46d344b88a0ccdfda0024461b18080233e023c1b8116657e86db5157ded79e1c done
+#7 naming to docker.io/library/x6200-speexdsp-capture-bench:1.2.1-1 done
+#7 DONE 0.0s
+$ docker run --rm -v /home/pablo/desa/asf/state/worktrees/x6200/audio-capture-pipeline-351:/repo:ro -v /home/pablo/desa/asf/state/worktrees/x6200/audio-capture-pipeline-351/docs/evidencia/2026-10-29-audio-capture-351/artifacts/bench:/out -w /build x6200-speexdsp-capture-bench:1.2.1-1 sh /repo/docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/run_in_container.sh
+[exit 0]
+--- fuente copiada verbatim ---
+697e5dbca33ad8cd74a5533c68e6b1d6ab6c8f6d959cc44445d6c77e486c49bc  audio_enhancement.c
+010589bdf5680eea277bab78b92cd5cc165c11238c83971b3fa529dec58b4bdb  audio_enhancement.h
+--- toolchain ---
+gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+1.2.1
+libspeexdsp-dev=1.2.1-1
+--- header real de Speex ---
+144:#define SPEEX_PREPROCESS_SET_NOISE_SUPPRESS 18
+146:#define SPEEX_PREPROCESS_GET_NOISE_SUPPRESS 19
+--- compile ---
+--- resultados ---
+{"case":"noise_p0_b4410","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.843,"user_ms":1.089,"sys_ms":0.000,"cb_p50_ms":0.000020,"cb_p99_ms":0.000050,"cb_max_ms":0.000180,"rss_start_kb":3196,"rss_end_kb":3284,"seconds":10}
+{"case":"noise_p0_b4410","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.833,"user_ms":0.000,"sys_ms":1.082,"cb_p50_ms":0.000020,"cb_p99_ms":0.000050,"cb_max_ms":0.000080,"rss_start_kb":3144,"rss_end_kb":3296,"seconds":10}
+{"case":"noise_p0_b4410","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.810,"user_ms":0.000,"sys_ms":1.044,"cb_p50_ms":0.000020,"cb_p99_ms":0.000050,"cb_max_ms":0.000081,"rss_start_kb":3196,"rss_end_kb":3284,"seconds":10}
+{"case":"noise_p0_b441","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.890,"user_ms":0.000,"sys_ms":1.113,"cb_p50_ms":0.000020,"cb_p99_ms":0.000031,"cb_max_ms":0.000070,"rss_start_kb":3056,"rss_end_kb":3204,"seconds":10}
+{"case":"noise_p0_b441","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.245,"user_ms":0.985,"sys_ms":0.795,"cb_p50_ms":0.000030,"cb_p99_ms":0.000061,"cb_max_ms":0.000421,"rss_start_kb":3176,"rss_end_kb":3276,"seconds":10}
+{"case":"noise_p0_b441","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.853,"user_ms":0.000,"sys_ms":1.076,"cb_p50_ms":0.000020,"cb_p99_ms":0.000031,"cb_max_ms":0.000070,"rss_start_kb":3156,"rss_end_kb":3256,"seconds":10}
+{"case":"noise_p0_bmixed","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.698,"user_ms":1.095,"sys_ms":0.857,"cb_p50_ms":0.000050,"cb_p99_ms":0.000061,"cb_max_ms":0.000341,"rss_start_kb":3068,"rss_end_kb":3220,"seconds":10}
+{"case":"noise_p0_bmixed","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.917,"user_ms":0.000,"sys_ms":1.161,"cb_p50_ms":0.000020,"cb_p99_ms":0.000031,"cb_max_ms":0.000070,"rss_start_kb":3200,"rss_end_kb":3288,"seconds":10}
+{"case":"noise_p0_bmixed","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.071,"user_ms":0.000,"sys_ms":1.321,"cb_p50_ms":0.000020,"cb_p99_ms":0.000031,"cb_max_ms":0.000080,"rss_start_kb":3116,"rss_end_kb":3212,"seconds":10}
+{"case":"noise_p0_b8820","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.813,"user_ms":0.000,"sys_ms":1.043,"cb_p50_ms":0.000020,"cb_p99_ms":0.000081,"cb_max_ms":0.000081,"rss_start_kb":3216,"rss_end_kb":3312,"seconds":10}
+{"case":"noise_p0_b8820","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.851,"user_ms":0.000,"sys_ms":1.081,"cb_p50_ms":0.000020,"cb_p99_ms":0.000200,"cb_max_ms":0.000200,"rss_start_kb":3204,"rss_end_kb":3300,"seconds":10}
+{"case":"noise_p0_b8820","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.663,"user_ms":0.000,"sys_ms":0.908,"cb_p50_ms":0.000020,"cb_p99_ms":0.000381,"cb_max_ms":0.000381,"rss_start_kb":3212,"rss_end_kb":3308,"seconds":10}
+{"case":"noise_p2_b4410","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":28.103,"user_ms":25.225,"sys_ms":2.749,"cb_p50_ms":0.245891,"cb_p99_ms":0.614233,"cb_max_ms":0.631766,"rss_start_kb":3140,"rss_end_kb":3292,"seconds":10}
+{"case":"noise_p2_b4410","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":27.237,"user_ms":25.220,"sys_ms":1.999,"cb_p50_ms":0.246733,"cb_p99_ms":0.574247,"cb_max_ms":0.634861,"rss_start_kb":3172,"rss_end_kb":3260,"seconds":10}
+{"case":"noise_p2_b4410","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":25.971,"user_ms":24.485,"sys_ms":1.493,"cb_p50_ms":0.246783,"cb_p99_ms":0.311274,"cb_max_ms":0.503685,"rss_start_kb":3188,"rss_end_kb":3276,"seconds":10}
+{"case":"noise_p2_b441","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":26.988,"user_ms":25.828,"sys_ms":1.136,"cb_p50_ms":0.024647,"cb_p99_ms":0.056416,"cb_max_ms":0.089878,"rss_start_kb":3072,"rss_end_kb":3220,"seconds":10}
+{"case":"noise_p2_b441","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":27.645,"user_ms":27.514,"sys_ms":0.115,"cb_p50_ms":0.024556,"cb_p99_ms":0.061796,"cb_max_ms":0.070763,"rss_start_kb":3068,"rss_end_kb":3216,"seconds":10}
+{"case":"noise_p2_b441","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":28.768,"user_ms":27.495,"sys_ms":1.224,"cb_p50_ms":0.024756,"cb_p99_ms":0.063650,"cb_max_ms":0.132308,"rss_start_kb":3196,"rss_end_kb":3280,"seconds":10}
+{"case":"noise_p2_bmixed","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":26.777,"user_ms":26.423,"sys_ms":0.370,"cb_p50_ms":0.024256,"cb_p99_ms":0.061806,"cb_max_ms":0.068398,"rss_start_kb":3028,"rss_end_kb":3116,"seconds":10}
+{"case":"noise_p2_bmixed","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":26.673,"user_ms":26.392,"sys_ms":0.282,"cb_p50_ms":0.024175,"cb_p99_ms":0.062377,"cb_max_ms":0.095720,"rss_start_kb":3172,"rss_end_kb":3260,"seconds":10}
+{"case":"noise_p2_bmixed","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":26.723,"user_ms":26.698,"sys_ms":0.000,"cb_p50_ms":0.024385,"cb_p99_ms":0.060834,"cb_max_ms":0.080541,"rss_start_kb":3176,"rss_end_kb":3264,"seconds":10}
+{"case":"noise_p2_b8820","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":27.962,"user_ms":25.843,"sys_ms":2.046,"cb_p50_ms":0.495129,"cb_p99_ms":1.212455,"cb_max_ms":1.212455,"rss_start_kb":3092,"rss_end_kb":3252,"seconds":10}
+{"case":"noise_p2_b8820","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":26.207,"user_ms":23.838,"sys_ms":2.309,"cb_p50_ms":0.489709,"cb_p99_ms":1.135701,"cb_max_ms":1.135701,"rss_start_kb":3064,"rss_end_kb":3224,"seconds":10}
+{"case":"noise_p2_b8820","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":26.671,"user_ms":26.082,"sys_ms":0.568,"cb_p50_ms":0.493116,"cb_p99_ms":0.835498,"cb_max_ms":0.835498,"rss_start_kb":3112,"rss_end_kb":3224,"seconds":10}
+{"case":"noise_p3_b4410","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":27.549,"user_ms":26.768,"sys_ms":1.023,"cb_p50_ms":0.247585,"cb_p99_ms":0.621917,"cb_max_ms":0.672492,"rss_start_kb":3196,"rss_end_kb":3284,"seconds":10}
+{"case":"noise_p3_b4410","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":28.375,"user_ms":26.307,"sys_ms":2.280,"cb_p50_ms":0.248587,"cb_p99_ms":0.631646,"cb_max_ms":0.636936,"rss_start_kb":3196,"rss_end_kb":3284,"seconds":10}
+{"case":"noise_p3_b4410","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":26.017,"user_ms":24.231,"sys_ms":2.002,"cb_p50_ms":0.247274,"cb_p99_ms":0.432722,"cb_max_ms":0.544141,"rss_start_kb":3144,"rss_end_kb":3296,"seconds":10}
+{"case":"noise_p3_b441","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":27.031,"user_ms":23.698,"sys_ms":3.502,"cb_p50_ms":0.024707,"cb_p99_ms":0.063128,"cb_max_ms":0.073759,"rss_start_kb":3116,"rss_end_kb":3312,"seconds":10}
+{"case":"noise_p3_b441","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":28.076,"user_ms":28.278,"sys_ms":0.000,"cb_p50_ms":0.024686,"cb_p99_ms":0.062978,"cb_max_ms":0.074780,"rss_start_kb":3180,"rss_end_kb":3280,"seconds":10}
+{"case":"noise_p3_b441","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":27.252,"user_ms":24.848,"sys_ms":2.564,"cb_p50_ms":0.024726,"cb_p99_ms":0.063990,"cb_max_ms":0.078357,"rss_start_kb":3220,"rss_end_kb":3352,"seconds":10}
+{"case":"noise_p3_bmixed","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":26.613,"user_ms":25.135,"sys_ms":1.687,"cb_p50_ms":0.024576,"cb_p99_ms":0.056556,"cb_max_ms":0.064591,"rss_start_kb":3224,"rss_end_kb":3312,"seconds":10}
+{"case":"noise_p3_bmixed","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":28.156,"user_ms":26.321,"sys_ms":2.060,"cb_p50_ms":0.024466,"cb_p99_ms":0.063179,"cb_max_ms":0.072055,"rss_start_kb":3180,"rss_end_kb":3284,"seconds":10}
+{"case":"noise_p3_bmixed","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":27.336,"user_ms":27.010,"sys_ms":0.515,"cb_p50_ms":0.024466,"cb_p99_ms":0.059361,"cb_max_ms":0.076113,"rss_start_kb":3144,"rss_end_kb":3312,"seconds":10}
+{"case":"noise_p3_b8820","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":27.972,"user_ms":27.161,"sys_ms":0.979,"cb_p50_ms":0.498846,"cb_p99_ms":1.178772,"cb_max_ms":1.178772,"rss_start_kb":3108,"rss_end_kb":3284,"seconds":10}
+{"case":"noise_p3_b8820","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":27.071,"user_ms":25.296,"sys_ms":2.006,"cb_p50_ms":0.498295,"cb_p99_ms":1.198829,"cb_max_ms":1.198829,"rss_start_kb":3108,"rss_end_kb":3208,"seconds":10}
+{"case":"noise_p3_b8820","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":26.019,"user_ms":24.247,"sys_ms":1.974,"cb_p50_ms":0.498956,"cb_p99_ms":0.628380,"cb_max_ms":0.628380,"rss_start_kb":3028,"rss_end_kb":3124,"seconds":10}
+{"case":"multisine_p0_b4410","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.911,"user_ms":0.000,"sys_ms":1.177,"cb_p50_ms":0.000020,"cb_p99_ms":0.000050,"cb_max_ms":0.000070,"rss_start_kb":3196,"rss_end_kb":3284,"seconds":10}
+{"case":"multisine_p0_b4410","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.312,"user_ms":0.000,"sys_ms":1.582,"cb_p50_ms":0.000030,"cb_p99_ms":0.000080,"cb_max_ms":0.000291,"rss_start_kb":3068,"rss_end_kb":3220,"seconds":10}
+{"case":"multisine_p0_b4410","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.822,"user_ms":0.000,"sys_ms":1.067,"cb_p50_ms":0.000020,"cb_p99_ms":0.000051,"cb_max_ms":0.000260,"rss_start_kb":3136,"rss_end_kb":3240,"seconds":10}
+{"case":"multisine_p0_b441","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.001,"user_ms":0.000,"sys_ms":1.235,"cb_p50_ms":0.000020,"cb_p99_ms":0.000031,"cb_max_ms":0.000080,"rss_start_kb":3224,"rss_end_kb":3308,"seconds":10}
+{"case":"multisine_p0_b441","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.984,"user_ms":0.000,"sys_ms":1.311,"cb_p50_ms":0.000020,"cb_p99_ms":0.000031,"cb_max_ms":0.000170,"rss_start_kb":3136,"rss_end_kb":3236,"seconds":10}
+{"case":"multisine_p0_b441","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.123,"user_ms":0.000,"sys_ms":1.522,"cb_p50_ms":0.000030,"cb_p99_ms":0.000050,"cb_max_ms":0.000171,"rss_start_kb":3068,"rss_end_kb":3216,"seconds":10}
+{"case":"multisine_p0_bmixed","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.047,"user_ms":0.000,"sys_ms":1.388,"cb_p50_ms":0.000020,"cb_p99_ms":0.000031,"cb_max_ms":0.000351,"rss_start_kb":3192,"rss_end_kb":3280,"seconds":10}
+{"case":"multisine_p0_bmixed","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.110,"user_ms":0.000,"sys_ms":1.513,"cb_p50_ms":0.000030,"cb_p99_ms":0.000031,"cb_max_ms":0.000200,"rss_start_kb":3212,"rss_end_kb":3300,"seconds":10}
+{"case":"multisine_p0_bmixed","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.289,"user_ms":0.000,"sys_ms":1.732,"cb_p50_ms":0.000030,"cb_p99_ms":0.000040,"cb_max_ms":0.000591,"rss_start_kb":3240,"rss_end_kb":3328,"seconds":10}
+{"case":"multisine_p0_b8820","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.899,"user_ms":0.000,"sys_ms":1.335,"cb_p50_ms":0.000030,"cb_p99_ms":0.000241,"cb_max_ms":0.000241,"rss_start_kb":3028,"rss_end_kb":3124,"seconds":10}
+{"case":"multisine_p0_b8820","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.851,"user_ms":0.000,"sys_ms":1.315,"cb_p50_ms":0.000030,"cb_p99_ms":0.000200,"cb_max_ms":0.000200,"rss_start_kb":3144,"rss_end_kb":3256,"seconds":10}
+{"case":"multisine_p0_b8820","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.848,"user_ms":0.000,"sys_ms":1.295,"cb_p50_ms":0.000030,"cb_p99_ms":0.000140,"cb_max_ms":0.000140,"rss_start_kb":3208,"rss_end_kb":3304,"seconds":10}
+{"case":"multisine_p2_b4410","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":24.785,"user_ms":23.052,"sys_ms":1.987,"cb_p50_ms":0.223499,"cb_p99_ms":0.378220,"cb_max_ms":0.401213,"rss_start_kb":3112,"rss_end_kb":3216,"seconds":10}
+{"case":"multisine_p2_b4410","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.718,"user_ms":23.993,"sys_ms":0.000,"cb_p50_ms":0.208070,"cb_p99_ms":0.722305,"cb_max_ms":0.762251,"rss_start_kb":3120,"rss_end_kb":3272,"seconds":10}
+{"case":"multisine_p2_b4410","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.188,"user_ms":22.524,"sys_ms":1.014,"cb_p50_ms":0.215545,"cb_p99_ms":0.337003,"cb_max_ms":0.344487,"rss_start_kb":3100,"rss_end_kb":3196,"seconds":10}
+{"case":"multisine_p2_b441","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.444,"user_ms":22.326,"sys_ms":1.432,"cb_p50_ms":0.021511,"cb_p99_ms":0.035296,"cb_max_ms":0.052989,"rss_start_kb":3144,"rss_end_kb":3244,"seconds":10}
+{"case":"multisine_p2_b441","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.057,"user_ms":23.109,"sys_ms":0.243,"cb_p50_ms":0.021530,"cb_p99_ms":0.035777,"cb_max_ms":0.048040,"rss_start_kb":3032,"rss_end_kb":3116,"seconds":10}
+{"case":"multisine_p2_b441","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.845,"user_ms":21.718,"sys_ms":2.442,"cb_p50_ms":0.020759,"cb_p99_ms":0.052959,"cb_max_ms":0.102302,"rss_start_kb":3224,"rss_end_kb":3308,"seconds":10}
+{"case":"multisine_p2_bmixed","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":22.271,"user_ms":19.527,"sys_ms":3.041,"cb_p50_ms":0.020468,"cb_p99_ms":0.033152,"cb_max_ms":0.050164,"rss_start_kb":3200,"rss_end_kb":3288,"seconds":10}
+{"case":"multisine_p2_bmixed","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.161,"user_ms":21.999,"sys_ms":1.454,"cb_p50_ms":0.020880,"cb_p99_ms":0.035156,"cb_max_ms":0.077696,"rss_start_kb":3120,"rss_end_kb":3224,"seconds":10}
+{"case":"multisine_p2_bmixed","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.714,"user_ms":22.979,"sys_ms":1.025,"cb_p50_ms":0.020469,"cb_p99_ms":0.058220,"cb_max_ms":0.087855,"rss_start_kb":3108,"rss_end_kb":3204,"seconds":10}
+{"case":"multisine_p2_b8820","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":22.356,"user_ms":21.586,"sys_ms":1.007,"cb_p50_ms":0.412905,"cb_p99_ms":0.686599,"cb_max_ms":0.686599,"rss_start_kb":3188,"rss_end_kb":3284,"seconds":10}
+{"case":"multisine_p2_b8820","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":22.576,"user_ms":21.523,"sys_ms":1.314,"cb_p50_ms":0.412294,"cb_p99_ms":0.839967,"cb_max_ms":0.839967,"rss_start_kb":3144,"rss_end_kb":3256,"seconds":10}
+{"case":"multisine_p2_b8820","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":21.834,"user_ms":20.121,"sys_ms":1.975,"cb_p50_ms":0.413637,"cb_p99_ms":0.655661,"cb_max_ms":0.655661,"rss_start_kb":3216,"rss_end_kb":3312,"seconds":10}
+{"case":"multisine_p3_b4410","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.765,"user_ms":22.743,"sys_ms":1.021,"cb_p50_ms":0.216376,"cb_p99_ms":0.486733,"cb_max_ms":0.499968,"rss_start_kb":3120,"rss_end_kb":3320,"seconds":10}
+{"case":"multisine_p3_b4410","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":24.935,"user_ms":24.592,"sys_ms":0.249,"cb_p50_ms":0.228449,"cb_p99_ms":0.346621,"cb_max_ms":0.400431,"rss_start_kb":3188,"rss_end_kb":3276,"seconds":10}
+{"case":"multisine_p3_b4410","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":24.300,"user_ms":21.234,"sys_ms":3.039,"cb_p50_ms":0.222528,"cb_p99_ms":0.480121,"cb_max_ms":0.483147,"rss_start_kb":3028,"rss_end_kb":3116,"seconds":10}
+{"case":"multisine_p3_b441","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":24.154,"user_ms":23.152,"sys_ms":1.040,"cb_p50_ms":0.021490,"cb_p99_ms":0.055224,"cb_max_ms":0.073979,"rss_start_kb":3172,"rss_end_kb":3272,"seconds":10}
+{"case":"multisine_p3_b441","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":24.199,"user_ms":23.190,"sys_ms":1.017,"cb_p50_ms":0.021300,"cb_p99_ms":0.054071,"cb_max_ms":0.062828,"rss_start_kb":3208,"rss_end_kb":3292,"seconds":10}
+{"case":"multisine_p3_b441","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":24.147,"user_ms":23.914,"sys_ms":0.226,"cb_p50_ms":0.021660,"cb_p99_ms":0.048591,"cb_max_ms":0.101020,"rss_start_kb":3176,"rss_end_kb":3276,"seconds":10}
+{"case":"multisine_p3_bmixed","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.379,"user_ms":23.688,"sys_ms":0.000,"cb_p50_ms":0.021000,"cb_p99_ms":0.044713,"cb_max_ms":0.096571,"rss_start_kb":3196,"rss_end_kb":3288,"seconds":10}
+{"case":"multisine_p3_bmixed","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":24.710,"user_ms":23.641,"sys_ms":1.364,"cb_p50_ms":0.020889,"cb_p99_ms":0.053601,"cb_max_ms":0.075792,"rss_start_kb":3196,"rss_end_kb":3284,"seconds":10}
+{"case":"multisine_p3_bmixed","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":24.028,"user_ms":22.362,"sys_ms":1.948,"cb_p50_ms":0.020879,"cb_p99_ms":0.048711,"cb_max_ms":0.055795,"rss_start_kb":3204,"rss_end_kb":3292,"seconds":10}
+{"case":"multisine_p3_b8820","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.299,"user_ms":21.813,"sys_ms":1.478,"cb_p50_ms":0.424266,"cb_p99_ms":0.825159,"cb_max_ms":0.825159,"rss_start_kb":3172,"rss_end_kb":3324,"seconds":10}
+{"case":"multisine_p3_b8820","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.978,"user_ms":22.700,"sys_ms":1.285,"cb_p50_ms":0.430818,"cb_p99_ms":1.020155,"cb_max_ms":1.020155,"rss_start_kb":2996,"rss_end_kb":3284,"seconds":10}
+{"case":"multisine_p3_b8820","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":24.179,"user_ms":21.653,"sys_ms":2.493,"cb_p50_ms":0.425900,"cb_p99_ms":1.673641,"cb_max_ms":1.673641,"rss_start_kb":3168,"rss_end_kb":3264,"seconds":10}
+{"case":"sine1k_p0_b4410","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.827,"user_ms":0.000,"sys_ms":1.132,"cb_p50_ms":0.000020,"cb_p99_ms":0.000051,"cb_max_ms":0.000080,"rss_start_kb":3108,"rss_end_kb":3204,"seconds":10}
+{"case":"sine1k_p0_b4410","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.810,"user_ms":0.000,"sys_ms":1.090,"cb_p50_ms":0.000020,"cb_p99_ms":0.000050,"cb_max_ms":0.000060,"rss_start_kb":3176,"rss_end_kb":3264,"seconds":10}
+{"case":"sine1k_p0_b4410","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.934,"user_ms":0.000,"sys_ms":1.184,"cb_p50_ms":0.000020,"cb_p99_ms":0.000050,"cb_max_ms":0.000090,"rss_start_kb":3168,"rss_end_kb":3272,"seconds":10}
+{"case":"sine1k_p0_b441","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.429,"user_ms":0.000,"sys_ms":1.708,"cb_p50_ms":0.000030,"cb_p99_ms":0.000061,"cb_max_ms":0.000351,"rss_start_kb":3176,"rss_end_kb":3260,"seconds":10}
+{"case":"sine1k_p0_b441","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.289,"user_ms":0.879,"sys_ms":0.979,"cb_p50_ms":0.000030,"cb_p99_ms":0.000061,"cb_max_ms":0.000461,"rss_start_kb":3068,"rss_end_kb":3216,"seconds":10}
+{"case":"sine1k_p0_b441","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.515,"user_ms":0.000,"sys_ms":1.796,"cb_p50_ms":0.000030,"cb_p99_ms":0.000061,"cb_max_ms":0.000401,"rss_start_kb":3172,"rss_end_kb":3272,"seconds":10}
+{"case":"sine1k_p0_bmixed","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.094,"user_ms":0.953,"sys_ms":0.446,"cb_p50_ms":0.000020,"cb_p99_ms":0.000031,"cb_max_ms":0.000071,"rss_start_kb":3192,"rss_end_kb":3280,"seconds":10}
+{"case":"sine1k_p0_bmixed","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.015,"user_ms":0.000,"sys_ms":1.315,"cb_p50_ms":0.000020,"cb_p99_ms":0.000031,"cb_max_ms":0.000070,"rss_start_kb":3072,"rss_end_kb":3224,"seconds":10}
+{"case":"sine1k_p0_bmixed","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.340,"user_ms":0.000,"sys_ms":1.642,"cb_p50_ms":0.000030,"cb_p99_ms":0.000061,"cb_max_ms":0.000140,"rss_start_kb":3220,"rss_end_kb":3308,"seconds":10}
+{"case":"sine1k_p0_b8820","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.351,"user_ms":0.000,"sys_ms":1.623,"cb_p50_ms":0.000060,"cb_p99_ms":0.000421,"cb_max_ms":0.000421,"rss_start_kb":3140,"rss_end_kb":3300,"seconds":10}
+{"case":"sine1k_p0_b8820","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":1.138,"user_ms":0.000,"sys_ms":1.598,"cb_p50_ms":0.000050,"cb_p99_ms":0.000180,"cb_max_ms":0.000180,"rss_start_kb":3188,"rss_end_kb":3284,"seconds":10}
+{"case":"sine1k_p0_b8820","kind":"stream","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":0.653,"user_ms":0.000,"sys_ms":0.953,"cb_p50_ms":0.000020,"cb_p99_ms":0.000080,"cb_max_ms":0.000080,"rss_start_kb":3064,"rss_end_kb":3224,"seconds":10}
+{"case":"sine1k_p2_b4410","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.745,"user_ms":22.261,"sys_ms":1.544,"cb_p50_ms":0.205806,"cb_p99_ms":0.697859,"cb_max_ms":0.779703,"rss_start_kb":3140,"rss_end_kb":3292,"seconds":10}
+{"case":"sine1k_p2_b4410","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.081,"user_ms":22.094,"sys_ms":1.293,"cb_p50_ms":0.207840,"cb_p99_ms":0.519966,"cb_max_ms":0.531417,"rss_start_kb":3112,"rss_end_kb":3264,"seconds":10}
+{"case":"sine1k_p2_b4410","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.664,"user_ms":21.993,"sys_ms":1.941,"cb_p50_ms":0.212549,"cb_p99_ms":0.491722,"cb_max_ms":0.553028,"rss_start_kb":3112,"rss_end_kb":3264,"seconds":10}
+{"case":"sine1k_p2_b441","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.382,"user_ms":22.577,"sys_ms":1.117,"cb_p50_ms":0.020539,"cb_p99_ms":0.066264,"cb_max_ms":0.149561,"rss_start_kb":3204,"rss_end_kb":3288,"seconds":10}
+{"case":"sine1k_p2_b441","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.208,"user_ms":22.354,"sys_ms":1.152,"cb_p50_ms":0.020689,"cb_p99_ms":0.051877,"cb_max_ms":0.078467,"rss_start_kb":3120,"rss_end_kb":3268,"seconds":10}
+{"case":"sine1k_p2_b441","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.017,"user_ms":23.308,"sys_ms":0.000,"cb_p50_ms":0.020649,"cb_p99_ms":0.046998,"cb_max_ms":0.061976,"rss_start_kb":3148,"rss_end_kb":3296,"seconds":10}
+{"case":"sine1k_p2_bmixed","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":22.630,"user_ms":21.447,"sys_ms":1.467,"cb_p50_ms":0.020468,"cb_p99_ms":0.033724,"cb_max_ms":0.058650,"rss_start_kb":3112,"rss_end_kb":3220,"seconds":10}
+{"case":"sine1k_p2_bmixed","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.909,"user_ms":21.226,"sys_ms":2.969,"cb_p50_ms":0.020539,"cb_p99_ms":0.051036,"cb_max_ms":0.077956,"rss_start_kb":3108,"rss_end_kb":3204,"seconds":10}
+{"case":"sine1k_p2_bmixed","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.416,"user_ms":22.879,"sys_ms":0.858,"cb_p50_ms":0.020519,"cb_p99_ms":0.046858,"cb_max_ms":0.067216,"rss_start_kb":3180,"rss_end_kb":3268,"seconds":10}
+{"case":"sine1k_p2_b8820","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":22.889,"user_ms":21.718,"sys_ms":1.453,"cb_p50_ms":0.415670,"cb_p99_ms":0.779253,"cb_max_ms":0.779253,"rss_start_kb":3052,"rss_end_kb":3212,"seconds":10}
+{"case":"sine1k_p2_b8820","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.275,"user_ms":23.541,"sys_ms":0.000,"cb_p50_ms":0.415239,"cb_p99_ms":0.876846,"cb_max_ms":0.876846,"rss_start_kb":3168,"rss_end_kb":3280,"seconds":10}
+{"case":"sine1k_p2_b8820","kind":"stream","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.214,"user_ms":22.141,"sys_ms":1.361,"cb_p50_ms":0.426019,"cb_p99_ms":0.935625,"cb_max_ms":0.935625,"rss_start_kb":3192,"rss_end_kb":3288,"seconds":10}
+{"case":"sine1k_p3_b4410","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.259,"user_ms":22.676,"sys_ms":0.873,"cb_p50_ms":0.208912,"cb_p99_ms":0.532359,"cb_max_ms":0.534173,"rss_start_kb":3204,"rss_end_kb":3292,"seconds":10}
+{"case":"sine1k_p3_b4410","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.629,"user_ms":21.976,"sys_ms":1.954,"cb_p50_ms":0.209954,"cb_p99_ms":0.528592,"cb_max_ms":0.528853,"rss_start_kb":3176,"rss_end_kb":3264,"seconds":10}
+{"case":"sine1k_p3_b4410","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"4410","callbacks":100,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":24.504,"user_ms":23.072,"sys_ms":1.648,"cb_p50_ms":0.208952,"cb_p99_ms":0.516459,"cb_max_ms":0.523963,"rss_start_kb":3172,"rss_end_kb":3276,"seconds":10}
+{"case":"sine1k_p3_b441","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":24.221,"user_ms":21.515,"sys_ms":2.931,"cb_p50_ms":0.021009,"cb_p99_ms":0.054001,"cb_max_ms":0.107542,"rss_start_kb":3220,"rss_end_kb":3368,"seconds":10}
+{"case":"sine1k_p3_b441","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":22.658,"user_ms":22.961,"sys_ms":0.000,"cb_p50_ms":0.021170,"cb_p99_ms":0.034485,"cb_max_ms":0.038502,"rss_start_kb":3172,"rss_end_kb":3272,"seconds":10}
+{"case":"sine1k_p3_b441","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"441","callbacks":1000,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":22.971,"user_ms":21.267,"sys_ms":1.990,"cb_p50_ms":0.021610,"cb_p99_ms":0.035306,"cb_max_ms":0.039544,"rss_start_kb":3176,"rss_end_kb":3276,"seconds":10}
+{"case":"sine1k_p3_bmixed","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":22.854,"user_ms":22.163,"sys_ms":0.983,"cb_p50_ms":0.020959,"cb_p99_ms":0.034686,"cb_max_ms":0.036949,"rss_start_kb":3212,"rss_end_kb":3348,"seconds":10}
+{"case":"sine1k_p3_bmixed","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.772,"user_ms":22.699,"sys_ms":1.325,"cb_p50_ms":0.020889,"cb_p99_ms":0.054192,"cb_max_ms":0.090660,"rss_start_kb":3116,"rss_end_kb":3316,"seconds":10}
+{"case":"sine1k_p3_bmixed","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"1,440,441,442,257","callbacks":1395,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.959,"user_ms":22.857,"sys_ms":1.398,"cb_p50_ms":0.020959,"cb_p99_ms":0.053591,"cb_max_ms":0.080130,"rss_start_kb":3036,"rss_end_kb":3124,"seconds":10}
+{"case":"sine1k_p3_b8820","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":24.006,"user_ms":23.588,"sys_ms":0.654,"cb_p50_ms":0.421822,"cb_p99_ms":1.041023,"cb_max_ms":1.041023,"rss_start_kb":3172,"rss_end_kb":3284,"seconds":10}
+{"case":"sine1k_p3_b8820","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.391,"user_ms":23.661,"sys_ms":0.000,"cb_p50_ms":0.422853,"cb_p99_ms":0.966514,"cb_max_ms":0.966514,"rss_start_kb":3064,"rss_end_kb":3224,"seconds":10}
+{"case":"sine1k_p3_b8820","kind":"stream","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks":"8820","callbacks":50,"reps":1,"input_samples":441000,"total_in":441000,"out_samples":441000,"total_out":441000,"length_preserved":1,"wall_ms":23.448,"user_ms":21.386,"sys_ms":2.332,"cb_p50_ms":0.418426,"cb_p99_ms":0.995618,"cb_max_ms":0.995618,"rss_start_kb":3172,"rss_end_kb":3268,"seconds":10}
+{"case":"noise_p0_reset","kind":"partition_check","preset":0,"preset_name":"OFF","enh":0,"nr":0,"nr_level":0,"speex_state":1,"suppression_db":-15,"frame":441,"rate":44100,"data_rate":44100,"blocks_a":"4410","blocks_b":"1,440,441,442,257","input_samples":441000,"out_samples_a":441000,"out_samples_b":441000,"length_preserved":1}
+{"case":"noise_p2_reset","kind":"partition_check","preset":2,"preset_name":"SSB_VOICE","enh":1,"nr":1,"nr_level":40,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"data_rate":44100,"blocks_a":"4410","blocks_b":"1,440,441,442,257","input_samples":441000,"out_samples_a":441000,"out_samples_b":441000,"length_preserved":1}
+{"case":"noise_p3_reset","kind":"partition_check","preset":3,"preset_name":"AM_BROADCAST","enh":1,"nr":1,"nr_level":60,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"data_rate":44100,"blocks_a":"4410","blocks_b":"1,440,441,442,257","input_samples":441000,"out_samples_a":441000,"out_samples_b":441000,"length_preserved":1}
+{"case":"probe_level_0","kind":"level","level":0,"formula_db":-10,"speex_state":1,"suppression_db":-10,"frame":441,"rate":44100,"frames":1000,"in_rms_dbfs":-30.009,"out_rms_dbfs":-38.498,"atten_db":-8.489}
+{"case":"probe_level_40","kind":"level","level":40,"formula_db":-18,"speex_state":1,"suppression_db":-18,"frame":441,"rate":44100,"frames":1000,"in_rms_dbfs":-30.009,"out_rms_dbfs":-41.868,"atten_db":-11.859}
+{"case":"probe_level_60","kind":"level","level":60,"formula_db":-22,"speex_state":1,"suppression_db":-22,"frame":441,"rate":44100,"frames":1000,"in_rms_dbfs":-30.009,"out_rms_dbfs":-42.624,"atten_db":-12.614}
+{"case":"probe_level_100","kind":"level","level":100,"formula_db":-30,"speex_state":1,"suppression_db":-30,"frame":441,"rate":44100,"frames":1000,"in_rms_dbfs":-30.009,"out_rms_dbfs":-43.281,"atten_db":-13.271}
+{"case":"probe_speex_only","kind":"speex_only","frame":441,"rate":44100,"suppression_db":-18,"frames":1000,"samples":441000}
++ pkg-config --cflags --libs speexdsp
++ gcc -O2 -std=c11 -Wall -Wextra -Werror -I. -I/repo/docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs /repo/docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/bench_main.c /repo/docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs_bench.c audio_enhancement.c -o bench -lspeexdsp -lm -lpthread
++ set +x
+
+
+# ============================================================================
+# PARTE 3b - matriz de verificacion, build ARM, QEMU y cierre (2026-10-29)
+# Worktree: state/worktrees/x6200/audio-capture-pipeline-351
+# Base:     169bb807b0086dbb91d29a9ce6770d25ca396859 (origin/main)
+# HEAD:     86bae74b2958cdd837caae508e7670a4795e0228 (partes 1, 2 y 3a)
+# Host:     x86_64, gcc 16.2.1, docker; SIN toolchain ARM (ver bloque 5)
+# ============================================================================
+
+$ git status --short
+?? .asf-active            # marcador del harness, no es codigo
+
+$ git diff --name-only 169bb807 HEAD | wc -l
+44
+$ git diff --name-only 169bb807 HEAD
+  docs/AUDIO_ENHANCEMENT_GUIDE.md
+  docs/evidencia/2026-10-29-audio-capture-351/.gitignore
+  docs/evidencia/2026-10-29-audio-capture-351/README.md
+  docs/evidencia/2026-10-29-audio-capture-351/bench-results.json
+  docs/evidencia/2026-10-29-audio-capture-351/commands.log
+  docs/evidencia/2026-10-29-audio-capture-351/measurements.csv
+  docs/evidencia/2026-10-29-audio-capture-351/pcm-manifest.json
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/Dockerfile
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/bench_main.c
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/run_in_container.sh
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/audio.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/cfg/cfg.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/cfg/subjects.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/liquid/liquid.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/lvgl/lvgl.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/params/params.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs/radio.h
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench/stubs_bench.c
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/bench_capture.py
+  docs/evidencia/2026-10-29-audio-capture-351/scripts/gen_pcm.py
+  src/audio.c
+  src/audio_enhancement.c
+  src/audio_enhancement.h
+  src/dialog_settings.c
+  src/params/params.c
+  tests/native/audio_callback_stubs.c
+  tests/native/audio_callback_stubs.h
+  tests/native/audio_callback_test_main.c
+  tests/native/audio_enh_stubs.c
+  tests/native/run_native_tests.sh
+  tests/native/stubs/speex/speex_preprocess.h
+  tests/native/stubs/stubs.c
+  tests/native/stubs_audio/README.md
+  tests/native/stubs_audio/alsa/asoundlib.h
+  tests/native/stubs_audio/alsa/mixer.h
+  tests/native/stubs_audio/audio_enhancement.h
+  tests/native/stubs_audio/dsp.h
+  tests/native/stubs_audio/lvgl/lvgl.h
+  tests/native/stubs_audio/meter.h
+  tests/native/stubs_audio/params/params.h
+  tests/native/stubs_audio/pulse/pulseaudio.h
+  tests/native/stubs_audio/screen_rec.h
+  tests/native/test_audio_callback.c
+  tests/native/test_audio_enhancement.c
+
+# Alcance del diff: los 44 archivos caen todos dentro de lo declarado para #351
+# (src/audio.c, src/audio_enhancement.{c,h}, src/dialog_settings.c,
+# src/params/params.c, tests/native/**, docs/AUDIO_ENHANCEMENT_GUIDE.md y
+# docs/evidencia/2026-10-29-audio-capture-351/**). No hay cambios en
+# docs/evidencia/2026-10-28-rx-audio-feasibility/**, src/radio.c, rootfs/,
+# rom-build/, TX/PTT, volumen ni A2DP.
+
+# ---------------------------------------------------------------------------
+# 1. Suite nativa (debe seguir en 0)
+# ---------------------------------------------------------------------------
+$ sh tests/native/run_native_tests.sh /tmp/opencode/x6200-native-351-p3b
+== compilador: gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2) ==
+== sanitizers: NO disponibles en este toolchain (se omite) ==
+[... 25 suites, salida completa en el log de la corrida ...]
+== Captura #351: callback seguro (peek/hole/drop, chunks, sin escribir el source) ==
+== Captura: analisis estatico (gcc -fanalyzer sobre src/audio.c) ==
+174 comprobaciones, 0 fallos
+exit=0
+# 25 lineas de resumen, 75723 comprobaciones en total, 0 fallos.
+# Incluye el stage #351 del callback (174 comprobaciones) y el de audio_enhancement
+# (tramas de 441, particiones, bit-exactitud Off/Digital, reset, hole, niveles).
+# Sanitizers: NO disponibles en este toolchain (el runner lo declara y los omite).
+
+# ---------------------------------------------------------------------------
+# 2. Suite completa en modo rapido (separa preexistentes de regresiones)
+# ---------------------------------------------------------------------------
+$ sh tests/run_all_tests.sh --quick
+================ resumen ================
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  settings_grid: OK   
+  info_bar: OK   
+  apps_menu: FALLÓ
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (25 apps)
+  pruebas: FALLÓ
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  wcag_rendered: FALLÓ
+  widget_text: FALLÓ
+  cw_tune_feed: OK   
+  autotune_v2: OK   
+  build_identity: OK   
+  dialog_coverage: FALLÓ
+  curve_evidence: FALLÓ
+  host: OK   174 comprobaciones, 0 fallos
+  daemon: OK     all OK: 15 casos, 0 fallos
+  host_ci_parity: OK   174 comprobaciones, 0 fallos
+  db_failclosed: OK   todos los casos corrieron y afirmaron su resultado (matriz: /home/pablo/desa/asf/state/worktrees/x6200/audio-capture-pipeline-351/tests/native/build/db_failclosed/matrix.txt)
+  qemu_apps: SKIP SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))
+  drawbuf_partial: OK   PASS: partial draw buffer renders the identical physical framebuffer (sw-rotate 90)
+  wspr: SKIP SKIP: wspr: la imagen x6200-uiharness no trae /usr/include/fftw3.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  sstv: SKIP SKIP: sstv: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  wefax: SKIP SKIP: wefax: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  navtex: OK   all OK
+  (omitidos: qemu_apps wspr sstv wefax js8 webserver)
+  17 OK, 6 fallos
+exit=1
+# 17 OK, 6 fallos, 6 omitidos (qemu_apps wspr sstv wefax js8 webserver).
+# Los 6 fallos son los preexistentes documentados en el baseline #347 y cada uno
+# tiene su causa propia, ninguna del alcance de #351:
+#   apps_menu        ACTION_APP_LOGS no esta en ninguna pagina APP
+#   pruebas          docs/PRUEBAS.md: entradas con evidencia citada que falta
+#   wcag_rendered    el arnes de host no linkea (ver bloque 3)
+#   widget_text      idem
+#   dialog_coverage  mock dialog_logs sin fila en la tabla; app_names[] 26 vs 25 (#222)
+#   curve_evidence   7 de 8 casos
+# REGRESIONES NUEVAS: 0. El stage `host` (la suite nativa) pasa dentro de esta corrida.
+
+# ---------------------------------------------------------------------------
+# 3. Gate WCAG sobre la superficie renderizada (--all)
+# ---------------------------------------------------------------------------
+$ python3 tests/check_wcag_rendered.py --all
+== gate de contraste WCAG sobre la superficie renderizada (issue #277) ==
+  fixtures: 24 (matriz de 6 temas x 4 estados)
+  construyendo/actualizando el arnes (revision 86bae74b2958cdd837caae508e7670a4795e0228)...
+FALLO: el comando docker del arnes fallo (rc=2)
+exit=1
+# BLOCKED por causa preexistente y ajena a #351: el binario del arnes no linkea.
+# El detalle del linker (de /tmp/wcag_rendered.log) es:
+#   /usr/bin/ld: CMakeFiles/ui_harness.dir/src/src/dialog_bt.c.o: in function
+#   `bt_power_changed_cb': undefined reference to `bt_state_set_power'
+#   /usr/bin/ld: ... `bt_disc_changed_cb': undefined reference to
+#   `bt_state_set_discoverable'
+# Causa: #343 hizo que src/dialog_bt.c llame esos dos setters y el doble del arnes
+# (tools/ui_harness/mocks/mock_ui_deps.c) no los define. Afecta a ui_harness y a
+# ui_harness_dialogs, o sea a los gates que renderizan. No se arregla aca: esta
+# fuera del alcance de #351 y de la lista de archivos de esta unidad.
+
+# ---------------------------------------------------------------------------
+# 4. Test visible de Ajustes: rotulo `Capture filters` en ingles x 6 temas
+# ---------------------------------------------------------------------------
+$ python3 docs/evidencia/2026-10-29-audio-capture-351/scripts/check_settings_capture_filters.py
+  Sunlit    tema_activo=Sunlit    rotulo=(16,213) 200x29 natural={'w': 188, 'h': 29} caja={'w': 188, 'h': 29} overflow=False truncado=False dropdown_ink_px=290 -> OK
+  Redshift  tema_activo=Redshift  rotulo=(16,213) 173x29 natural={'w': 161, 'h': 29} caja={'w': 161, 'h': 29} overflow=False truncado=False dropdown_ink_px=116 -> OK
+  Sprint    tema_activo=Sprint    rotulo=(16,213) 159x28 natural={'w': 147, 'h': 28} caja={'w': 147, 'h': 28} overflow=False truncado=False dropdown_ink_px=203 -> OK
+  Cathode   tema_activo=Cathode   rotulo=(16,213) 199x29 natural={'w': 187, 'h': 29} caja={'w': 187, 'h': 29} overflow=False truncado=False dropdown_ink_px=288 -> OK
+  Trail     tema_activo=Trail     rotulo=(16,213) 199x29 natural={'w': 187, 'h': 29} caja={'w': 187, 'h': 29} overflow=False truncado=False dropdown_ink_px=279 -> OK
+  Aurora    tema_activo=Aurora    rotulo=(16,213) 176x28 natural={'w': 164, 'h': 28} caja={'w': 164, 'h': 28} overflow=False truncado=False dropdown_ink_px=207 -> OK
+
+  codigo sin cambios por esta medicion (git status -- src tools): si
+  parche local aplicado solo en /tmp/opencode/x6200-351-settings/mocks/mock_ui_deps.c (no commiteado)
+
+PASS: `Capture filters` visible y sin recorte en los 6 temas
+EXIT=0
+# El script construye el arnes sobre una COPIA de tools/ui_harness en un scratch dir
+# y agrega ahi, SOLO en la copia, los dos setters que faltan en el doble (#343). El
+# worktree no se toca: `git status --short --untracked-files=no` queda vacio (el
+# propio script lo imprime). Las capturas de Aurora y Sunlit quedan versionadas en
+# captures/; las seis se regeneran con el comando de arriba.
+# Las cinco opciones del desplegable (Off, CW weak, SSB voice, AM broadcast, Digital)
+# NO son observables en el arbol LVGL: el widget dibuja su texto y el arnes no tiene
+# tecla que abra la lista. Se verifican por el literal del codigo:
+$ sed -n '1411,1413p' src/dialog_settings.c
+    obj = dropdown_uint8_custom_cb(grid, &params.audio_enh_preset,
+                                   " Off \n CW weak \n SSB voice \n AM broadcast \n Digital",
+                                   audio_enh_update_cb);
+$ grep -n 'audio_enh_preset ' src/params/params.c
+164:    .audio_enh_preset       = { .x = 0, .max = 4, .name = "audio_enh_preset", .voice = "Capture filters" },
+# .max = 4 -> cinco valores 0..4, los cinco presets del contrato. `git diff
+# 169bb807 HEAD -- src/dialog_settings.c` muestra que la linea del dropdown NO
+# cambio: solo cambio el rotulo y el comentario de la fila.
+
+# ---------------------------------------------------------------------------
+# 5. Build ARM con el toolchain del Buildroot -> BLOCKED
+# ---------------------------------------------------------------------------
+$ sh docs/evidencia/2026-10-29-audio-capture-pipeline-351/scripts/probe_arm_toolchain.sh
+== sonda del toolchain ARM del Buildroot (#351) ==
+  imagen x6200-buildroot: ok
+  /workspace/build (salida del build del proyecto): VACIA
+    -> la imagen trae las fuentes de Buildroot y el cache de descargas,
+       pero el toolchain se construye en runtime (make toolchain).
+  x6200-build-output: target/ con libspeexdsp y header: FALTA
+  cross-compiler armhf en el host: no (binarios *gnueabihf* en /usr/bin: 0)
+
+BLOCKED: no hay toolchain ARM del Buildroot disponible (toolchain, target-libspeexdsp, cross-host)
+  comando que lo construiria (no ejecutado en esta corrida):
+    docker run --rm --entrypoint "" -v <clon>:/workspace x6200-buildroot \
+      bash -c 'cd /workspace && ./br_config.sh && make -C buildroot O=../build toolchain -j$(nproc)'
+  el build ARM del modulo queda PENDING; no se sustituye por un build de host.
+exit=77
+
+$ docker run --rm --entrypoint "" x6200-buildroot sh -c 'find / -xdev -name "*-gcc" -type f'
+/usr/bin/c89-gcc
+/usr/bin/c99-gcc
+# No hay ningun cross-compiler de target en la imagen: solo las fuentes de Buildroot
+# (5.4 GB de cache en /workspace/buildroot/dl) y el bind vacio de la salida del build.
+
+$ arm-linux-gnu-gcc -static -O1 -std=gnu11 -I<stage> -Itests/native \
+    tests/native/test_audio_callback.c tests/native/audio_callback_stubs.c \
+    tests/native/test_framework.c tests/native/audio_callback_test_main.c \
+    -Wl,--wrap=malloc -Wl,--wrap=calloc -Wl,--wrap=realloc -Wl,--wrap=free -lm \
+    -o /tmp/opencode/audio_callback_tests_arm
+/usr/lib/gcc/arm-linux-gnueabi/16/include/stdint.h:11:16: fatal error: stdint.h: No such file or directory
+tests/native/audio_callback_stubs.c:17:10: fatal error: stdio.h: No such file or directory
+# El unico cross del host es soft-float arm-linux-gnueabi y no trae headers de libc:
+# tampoco sirve como sustituto (la rootfs del ROM es armhf). NO se compilo nada ARM,
+# asi que no hay `readelf -h` que mostrar: el criterio del issue queda BLOCKED, no PASS.
+
+# ---------------------------------------------------------------------------
+# 6. QEMU del flujo de captura -> BLOCKED
+# ---------------------------------------------------------------------------
+$ sh tests/qemu/run_apps_qemu.sh --check
+== comprobando el entorno del barrido QEMU (privado) ==
+  docker: ok
+  imagen x6200-buildroot: ok
+  python3: ok
+  PIL: ok
+  reporteador: ok
+  guard #86: ok
+  libs del banco: ok
+  cliente de control (fuente): ok
+  FALTA: el volumen x6200-next222-build no tiene /b/target/usr/sbin/x6200_gui (CONSTRUIR=si + BUILDROOT=<clon>)
+  FALTA: falta el chroot privado (/tmp/x6200-next222-qemu/chroot): pasar ROOTFS=<rootfs.tar privada> o dejar el volumen con target/ (se arma solo)
+  binfmt qemu-arm: ok
+== 2 cosa(s) faltan: el barrido QEMU no puede correr ==
+SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))
+exit=77
+# Sin build ARM de esta revision no hay binario que correr: el flujo de captura con
+# source sintetico, Recorder, decoders y Settings en QEMU queda BLOCKED por la misma
+# causa que el bloque 5. Aunque corriera, QEMU no demuestra la ruta electronica
+# BASE->parlante (no hay radio, ni codec, ni DSP del BASE): eso es PENDING-HARDWARE
+# (hardware-handoff.md).
+
+# ---------------------------------------------------------------------------
+# 7. Cierre
+# ---------------------------------------------------------------------------
+# - Matriz de tests: nativa exit 0; run_all --quick exit 1 con los 6 preexistentes
+#   de #347 y 0 regresiones nuevas; wcag_rendered --all BLOCKED por el link del
+#   arnes (#343); Settings 6 temas PASS; ARM BLOCKED; QEMU BLOCKED.
+# - Retardo medido de la cadena con NR: 882 muestras (20 ms) = 441 de la maquina de
+#   tramas + 441 de libspeexdsp (measurements.csv, delay_nr_total_882).
+# - audio_enh_preset_reset() NO recrea el estado de libspeexdsp: la bit-exactitud
+#   entre particiones vale desde estado recien inicializado (preset_reset_no_reinit).
+# - Seam de AM broadcast: +140 LSB sobre la grilla de 441 (seam_am_broadcast_plus_140).
+# - Nada de lo fisico se ejecuto: hardware-handoff.md queda PENDING-HARDWARE.
+
+
+# ---------------------------------------------------------------------------
+# 8. Re-verificacion POST-COMMIT (el commit de la parte 3b es solo evidencia:
+#    no toca src/, tests/ ni tools/, asi que el resultado no puede cambiar)
+# ---------------------------------------------------------------------------
+$ git log -1 --format='%H %s'
+72bc6817f4a732f67c0c9acd8e7638c6985c53b0 test(audio): matriz de verificacion, ARM/QEMU y handoff fisico de la captura (#351)
+
+$ sh tests/native/run_native_tests.sh /tmp/opencode/x6200-native-351-p3b
+[... 25 suites ...]
+174 comprobaciones, 0 fallos
+exit=0
+# identico al bloque 1: 25 suites, 75 723 comprobaciones, 0 fallos.
+
+$ sh tests/run_all_tests.sh --quick
+================ resumen ================
+  config: OK     OK: los 70 campos se inicializan, en orden
+  actions: OK     todas las acciones ofrecidas tienen manejador
+  settings_focus: OK     todos los widgets de Ajustes estan en el grupo de foco
+  settings_grid: OK   
+  info_bar: OK   
+  apps_menu: FALLÓ
+  app_handlers: OK     todos los botones de las apps tienen handler
+  manual_apps: OK     todas las apps tienen su seccion (25 apps)
+  pruebas: FALLÓ
+  wcag: OK     todos los pares cumplen WCAG 2.1 (AA)
+  wcag_rendered: FALLÓ
+  widget_text: FALLÓ
+  cw_tune_feed: OK   
+  autotune_v2: OK   
+  build_identity: OK   
+  dialog_coverage: FALLÓ
+  curve_evidence: FALLÓ
+  host: OK   174 comprobaciones, 0 fallos
+  daemon: OK     all OK: 15 casos, 0 fallos
+  host_ci_parity: OK   174 comprobaciones, 0 fallos
+  db_failclosed: OK   todos los casos corrieron y afirmaron su resultado (matriz: /home/pablo/desa/asf/state/worktrees/x6200/audio-capture-pipeline-351/tests/native/build/db_failclosed/matrix.txt)
+  qemu_apps: SKIP SKIP: barrido QEMU sin entorno privado (2 requisito(s) faltante(s))
+  drawbuf_partial: OK   PASS: partial draw buffer renders the identical physical framebuffer (sw-rotate 90)
+  wspr: SKIP SKIP: wspr: la imagen x6200-uiharness no trae /usr/include/fftw3.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  sstv: SKIP SKIP: sstv: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  wefax: SKIP SKIP: wefax: la imagen x6200-uiharness no trae /usr/include/sndfile.h (build full: docker build -t x6200-uiharness tools/ui_harness)
+  navtex: OK   all OK
+  (omitidos: qemu_apps wspr sstv wefax js8 webserver)
+  17 OK, 6 fallos
+exit=1
+# identico al bloque 2: 17 OK, 6 fallos (los mismos seis preexistentes de #347),
+# 6 omitidos. Cero regresiones nuevas.
