@@ -1,0 +1,7 @@
+# Solo se versionan los artefactos livianos (manifiesto, CSV, JSON, logs).
+# Los WAV sinteticos (882 KB c/u) y los .raw del banco se regeneran con los
+# scripts y su integridad queda anclada por sha256 en pcm-manifest.json y
+# measurements.csv (ver README.md, seccion 5).
+artifacts/
+__pycache__/
+*.pyc

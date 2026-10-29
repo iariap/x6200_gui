@@ -1391,7 +1391,11 @@ static uint8_t make_audio_gain(uint8_t row) {
     return row + 1;
 }
 
-/* Audio enhancement (AF leveler / NR presets, see docs/AUDIO_ENHANCEMENT_GUIDE.md) */
+/* Capture filters (AF leveler / NR presets sobre la copia de captura, ver
+ * docs/AUDIO_ENHANCEMENT_GUIDE.md). El rotulo dice "Capture filters" y no "Audio
+ * enhancement" a proposito: la cadena procesa el PCM capturado que va a la grabadora y
+ * a los decodificadores, NO la salida audible del BASE. Las cinco opciones y sus
+ * indices/serializacion no cambian (params.audio_enh_preset sigue siendo el mismo). */
 
 static uint8_t make_audio_enh(uint8_t row) {
     lv_obj_t    *obj;
@@ -1401,7 +1405,7 @@ static uint8_t make_audio_enh(uint8_t row) {
 
     obj = row_label(grid);
 
-    lv_label_set_text(obj, "Audio enhance");
+    lv_label_set_text(obj, "Capture filters");
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, col++, 1, LV_GRID_ALIGN_CENTER, row, 1);
 
     obj = dropdown_uint8_custom_cb(grid, &params.audio_enh_preset,

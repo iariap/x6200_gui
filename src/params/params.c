@@ -161,7 +161,7 @@ params_t params = {
     .play_gain_db_f         = { .x = 0.0f, .name = "play_gain_db_f"},
     .rec_gain_db_f          = { .x = 0.0f, .name = "rec_gain_db_f"},
 
-    .audio_enh_preset       = { .x = 0, .max = 4, .name = "audio_enh_preset", .voice = "Audio enhancement" },
+    .audio_enh_preset       = { .x = 0, .max = 4, .name = "audio_enh_preset", .voice = "Capture filters" },
 
     .voice_mode             = { .x = VOICE_LCD,                                 .name = "voice_mode" },
     .voice_lang             = { .x = 0,   .min = 0,  .max = (VOICES_NUM - 1),   .name = "voice_lang" },
