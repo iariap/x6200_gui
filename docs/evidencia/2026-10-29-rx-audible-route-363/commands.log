@@ -114,8 +114,21 @@ el agente (último comando antes: solo lectura) y la radio volvió sin reinicio.
 
 ## 6. Validación del PR documental
 
+Con `HEAD=4b17b9e6c27b2d4c7df0d204aaa7520c200a026e` (commit de evidencia) y base `main=cb9ea287…`:
+
 ```
-[pendiente de ejecutar antes del PR]
-asf/scripts/apps/x6200/check-matrix.sh main HEAD /home/pablo/desa/x6200/x6200-audio-route-363
-python3 asf/scripts/risk.py x6200 <base> <head>
+[22:23:59Z] asf/scripts/apps/x6200/check-matrix.sh main HEAD /home/pablo/desa/x6200/x6200-audio-route-363
+            -> exit 0. Todos los bloques [SKIP] (no hay cambios en src/**, tests/**, tools/**,
+               rootfs/** ni workflows); cobertura del diff: "[SIN GATE] … (sólo documentación:
+               no hay gate que correr)". Sin FAIL.
+[22:24:06Z] python3 asf/scripts/risk.py x6200 cb9ea287 4b17b9e6
+            -> exit 0: risk="low", reviewers=["reviewer-frontend"], human_approval=false,
+               auto_approve=true; todas las entradas clasifican por la regla docs/** (Documentacion).
 ```
+
+La matriz volvió a correr sobre el commit final del PR (segundo commit, que sólo toca este
+`commands.log`): mismo resultado, exit 0, diff sólo documentación.
+
+**PR documental:** rama `audit/rx-audible-route-363`, título
+`[AUDIO QA] REA and physical RX DAC/MUX route gate (#363)`, body `Refs #362; Refs #363; Refs #347; Refs #359`.
+Sin merge, sin cerrar #363 (el gate no es `A_PASS`).
