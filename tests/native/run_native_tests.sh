@@ -1248,3 +1248,50 @@ else
 fi
 
 "$OUT/radio_thread_tests"
+
+# --- Capture callback (issue #351, parte 2) -----------------------------------
+# src/audio.c::read_callback() es static y su unica entrada observable es el propio
+# stream de PulseAudio, asi que el modulo REAL se compila POR INCLUSION (el test hace
+# `#include "audio.c"`) y se estaciona al lado de stubs minimos: PulseAudio (peek/drop/
+# write/lock con contadores y una respuesta programable), ALSA (solo linkea), LVGL (los
+# logs se cuentan) y los dos consumidores del PCM. El fragmento se entrega como memoria
+# de PulseAudio: el test lo asigna a su tamanio exacto (bordes de ASan) y guarda un
+# canario para detectar cualquier escritura.
+#
+# El defecto del #351 en la base: pa_stream_peek() se llamaba con un int16_t* (no const),
+# su retorno se ignoraba, un hole (NULL, n>0) se desreferenciaba, audio_enh_process()
+# reescribia el fragmento ajeno in situ, y pa_stream_drop() se hacia tambien en empty y
+# error. El stage cuenta drops (0/1), llamadas de heap (--wrap=malloc), y fija el numero,
+# el orden (screen_rec ANTES de dsp) y el contenido que ve cada consumidor, ademas de
+# exigir cero llamadas a pa_stream_write / x6200_control_* / lock del mainloop.
+echo "== Captura #351: callback seguro (peek/hole/drop, chunks, sin escribir el source) =="
+AUDIO_STAGE="$OUT/audio_capture_src"
+rm -rf "$AUDIO_STAGE"
+mkdir -p "$AUDIO_STAGE/lvgl" "$AUDIO_STAGE/params" "$AUDIO_STAGE/pulse" "$AUDIO_STAGE/alsa"
+cp "$SRC/audio.c" "$SRC/audio.h" "$AUDIO_STAGE/"
+cp "$DIR/stubs_audio/dsp.h" "$DIR/stubs_audio/meter.h" "$DIR/stubs_audio/screen_rec.h" \
+   "$DIR/stubs_audio/audio_enhancement.h" "$AUDIO_STAGE/"
+cp "$DIR/stubs_audio/lvgl/lvgl.h" "$AUDIO_STAGE/lvgl/"
+cp "$DIR/stubs_audio/params/params.h" "$AUDIO_STAGE/params/"
+cp "$DIR/stubs_audio/pulse/pulseaudio.h" "$AUDIO_STAGE/pulse/"
+cp "$DIR/stubs_audio/alsa/asoundlib.h" "$DIR/stubs_audio/alsa/mixer.h" "$AUDIO_STAGE/alsa/"
+AUDIO_SRC="$DIR/test_audio_callback.c $DIR/audio_callback_stubs.c \
+$DIR/test_framework.c $DIR/audio_callback_test_main.c"
+AUDIO_INC="-I$AUDIO_STAGE -I$DIR"
+# El callback no reserva memoria: cualquier malloc/calloc/realloc/free dentro de la
+# llamada se cuenta (test: audio_stub_alloc_calls no cambia).
+AUDIO_WRAP="-Wl,--wrap=malloc -Wl,--wrap=calloc -Wl,--wrap=realloc -Wl,--wrap=free"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN $AUDIO_INC $AUDIO_SRC $AUDIO_WRAP -lm -o "$OUT/audio_callback_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $AUDIO_INC $AUDIO_SRC $AUDIO_WRAP -lm -o "$OUT/audio_callback_tests"
+fi
+
+echo "== Captura: analisis estatico (gcc -fanalyzer sobre src/audio.c) =="
+# shellcheck disable=SC2086
+$CC $BASEFLAGS -fanalyzer $AUDIO_INC \
+    -c "$AUDIO_STAGE/audio.c" -o "$OUT/audio_capture.o" || true
+
+"$OUT/audio_callback_tests"

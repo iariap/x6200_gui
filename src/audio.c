@@ -54,38 +54,121 @@ static void on_state_change(pa_context *c, void *userdata) {
     pa_threaded_mainloop_signal(mloop, 0);
 }
 
+/* Scratch del callback: 10 ms de la tasa de captura (4410 muestras) en el STACK.
+ * El callback de PulseAudio no reserva memoria dinamica: cualquier nbytes positivo se
+ * recorre en chunks de a lo sumo este tamano, asi un fragmento grande no puede ni fallar
+ * por heap ni pasarse de la capacidad de dsp.cpp::audio (44100 floats). */
+#define CAPTURE_SCRATCH_SAMPLES (AUDIO_CAPTURE_RATE / 10)
+
+/* El fragmento es de PulseAudio: se consume UNA vez y se anota el error sin reintentar
+ * desde el callback (un retry aca solo puede perder el hilo del mainloop). */
+static void capture_drop(pa_stream *s) {
+    if (pa_stream_drop(s) < 0) {
+        LV_LOG_ERROR("pa_stream_drop() fallo: %s", pa_strerror(pa_context_errno(ctx)));
+    }
+}
+
+/* Entrega un chunk ya copiado en el scratch a los dos consumidores, EN ORDEN y una sola
+ * vez: `process` distingue PCM real (filtros/NR antes de entregar) de un hole (ceros que
+ * nunca pasan por la cadena, para no avanzar notch/nivelador/NR con silencio inventado). */
+static void capture_deliver(int16_t *scratch, size_t samples, bool process) {
+    if (process) {
+        audio_enh_process(scratch, samples);
+    }
+
+    /* Screen recorder: keeps the RX audio next to the video frames */
+    screen_rec_put_audio_samples(samples, scratch);
+
+    dsp_put_audio_samples(samples, scratch);
+}
+
 static void read_callback(pa_stream *s, size_t nbytes, void *udata) {
-    int16_t *buf = NULL;
+    /* `data` es const a proposito: la memoria del fragmento es de PulseAudio y no se
+     * escribe nunca; lo que se procesa es la copia en el scratch. */
+    const void *data = NULL;
+    int16_t     scratch[CAPTURE_SCRATCH_SAMPLES];
+    size_t      samples;
+    size_t      done = 0;
+    int         rc;
 
-    pa_stream_peek(s, (const void**) &buf, &nbytes);
-    
-    // Apply audio enhancement processing
-    audio_enh_process(buf, nbytes / 2);
+    (void) udata;
 
-    // Screen recorder: keeps the RX audio next to the video frames
-    screen_rec_put_audio_samples(nbytes / 2, buf);
-    
-    dsp_put_audio_samples(nbytes / 2, buf);
-    pa_stream_drop(s);
+    /* El retorno se mira ANTES de tocar cualquier buffer: un error puede dejar `data`
+     * y `nbytes` sin definir. */
+    rc = pa_stream_peek(s, &data, &nbytes);
+
+    if (rc < 0) {
+        LV_LOG_ERROR("pa_stream_peek() fallo: %s", pa_strerror(pa_context_errno(ctx)));
+        return;     /* sin drop: no hay fragmento que consumir */
+    }
+
+    if (data == NULL && nbytes == 0) {
+        return;     /* empty: ni fragmento ni hole, no se dropea nada */
+    }
+
+    /* Un nbytes impar no es PCM S16 completo: reinterpretar el byte suelto es leer fuera
+     * de la muestra y "completarla" seria inventar audio. Se descarta el fragmento. */
+    if (nbytes & 1u) {
+        LV_LOG_WARN("Fragmento de captura con %zu bytes (impar): se descarta", nbytes);
+        capture_drop(s);
+        return;
+    }
+
+    samples = nbytes / 2;
+
+    if (data == NULL) {
+        /* Hole: PulseAudio no tiene muestras para este tramo (underrun/ajuste de latencia).
+         * Se entrega silencio por la duracion representada y se descarta el estado pendiente
+         * del NR para que la trama en curso no reproduzca audio viejo despues del hueco. */
+        audio_enh_nr_reset_pending();
+
+        while (done < samples) {
+            size_t chunk = samples - done;
+
+            if (chunk > CAPTURE_SCRATCH_SAMPLES) {
+                chunk = CAPTURE_SCRATCH_SAMPLES;
+            }
+
+            memset(scratch, 0, chunk * sizeof(int16_t));
+            capture_deliver(scratch, chunk, false);
+            done += chunk;
+        }
+
+        capture_drop(s);
+        return;
+    }
+
+    while (done < samples) {
+        size_t chunk = samples - done;
+
+        if (chunk > CAPTURE_SCRATCH_SAMPLES) {
+            chunk = CAPTURE_SCRATCH_SAMPLES;
+        }
+
+        memcpy(scratch, (const int16_t *) data + done, chunk * sizeof(int16_t));
+        capture_deliver(scratch, chunk, true);
+        done += chunk;
+    }
+
+    capture_drop(s);
 }
 
 static void mixer_setup() {
-    int res;
     // overall level
-    res = system("amixer sset 'Headphone',0 58,58");
+    (void) system("amixer sset 'Headphone',0 58,58");
     // Play level from app to radio (for FT8)
-    res = system("amixer sset 'AIF1 DA0',0 160,160");
+    (void) system("amixer sset 'AIF1 DA0',0 160,160");
 
     // capture audio from radio
-    res = system("amixer sset 'Mic1',0 0,0 cap");
+    (void) system("amixer sset 'Mic1',0 0,0 cap");
     // mic boost
-    res = system("amixer sset 'Mic1 Boost',0 0");
+    (void) system("amixer sset 'Mic1 Boost',0 0");
     // disable capturing from mixer
-    res = system("amixer sset 'Mixer',0 nocap");
-    res = system("amixer sset 'ADC Gain',0 3");
-    res = system("amixer sset 'AIF1 AD0',0 160,160");
-    res = system("amixer sset 'AIF1 AD0 Stereo',0 'Mix Mono'");
-    res = system("amixer sset 'AIF1 Data Digital ADC',0 cap");
+    (void) system("amixer sset 'Mixer',0 nocap");
+    (void) system("amixer sset 'ADC Gain',0 3");
+    (void) system("amixer sset 'AIF1 AD0',0 160,160");
+    (void) system("amixer sset 'AIF1 AD0 Stereo',0 'Mix Mono'");
+    (void) system("amixer sset 'AIF1 Data Digital ADC',0 cap");
 
     audio_set_rec_vol(0.0f);
     audio_set_play_vol(0.0f);
