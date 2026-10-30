@@ -11,10 +11,10 @@
   ],
   "arms": {
     "N_OFF": {
-      "median_stoi": 0.9083610267777884,
+      "median_stoi": 0.9085543838346264,
       "p10_stoi": 0.6637456152899467,
-      "p90_stoi": 0.9665951592298789,
-      "median_estoi": 0.7514298474398546,
+      "p90_stoi": 0.9669669452794,
+      "median_estoi": 0.7514298474398545,
       "median_delta_stoi_vs_N_OFF": 0.0,
       "p10_delta": 0.0,
       "p90_delta": 0.0,
@@ -26,20 +26,20 @@
       "p10_stoi": 0.6990067452055908,
       "p90_stoi": 0.9724140240844289,
       "median_estoi": 0.7891068170752968,
-      "median_delta_stoi_vs_N_OFF": 0.0199177997001575,
-      "p10_delta": 0.004490281956217013,
-      "p90_delta": 0.03256725475165071,
+      "median_delta_stoi_vs_N_OFF": 0.01961889951427126,
+      "p10_delta": 0.004129109762550321,
+      "p90_delta": 0.031412181799873914,
       "fraction_delta_gt_0": 0.9583333333333334,
       "n": 72
     },
     "DX_OFF": {
-      "median_stoi": 0.8768845114424337,
+      "median_stoi": 0.8770662999777005,
       "p10_stoi": 0.6453629055419998,
       "p90_stoi": 0.9347805161891668,
-      "median_estoi": 0.7051166932092012,
-      "median_delta_stoi_vs_N_OFF": -0.022378524478683548,
-      "p10_delta": -0.035211452585025116,
-      "p90_delta": -0.017453634550476892,
+      "median_estoi": 0.705116693209201,
+      "median_delta_stoi_vs_N_OFF": -0.02241488135034503,
+      "p10_delta": -0.03525829061619888,
+      "p90_delta": -0.017453535540239883,
       "fraction_delta_gt_0": 0.0,
       "n": 72
     },
@@ -47,10 +47,10 @@
       "median_stoi": 0.8847464951147707,
       "p10_stoi": 0.6725234227583502,
       "p90_stoi": 0.9442934148070407,
-      "median_estoi": 0.7343061490684264,
-      "median_delta_stoi_vs_N_OFF": -0.00850150340548761,
-      "p10_delta": -0.02648735470290491,
-      "p90_delta": 0.012919459649434606,
+      "median_estoi": 0.7343061490684253,
+      "median_delta_stoi_vs_N_OFF": -0.008782124474334796,
+      "p10_delta": -0.02683539740521338,
+      "p90_delta": 0.01059076596553009,
       "fraction_delta_gt_0": 0.3333333333333333,
       "n": 72
     }
@@ -59,16 +59,52 @@
     "bootstrap_speakers": 1000,
     "seed": 6200,
     "ci95": [
-      0.015345016427546543,
+      0.015064395358699356,
       0.022965047635129077
     ],
-    "median": 0.0199177997001575
+    "median": 0.01961889951427126
   },
   "cpu_host": {
-    "p50_median_ms_per_callback": 0.113673,
-    "p99_median_ms_per_callback": 0.16004200000000002,
-    "max_ms": 0.794803,
-    "note": "callback 4410 muestras = 100 ms de audio; host x86_64"
+    "callback_audio_ms": 100.0,
+    "speex_active": {
+      "n": 144,
+      "p50_median_ms_per_callback": 0.239955,
+      "p99_median_ms_per_callback": 0.36504,
+      "p99_max_ms": 0.83427
+    },
+    "bypass": {
+      "n": 144,
+      "p50_median_ms_per_callback": 3e-05,
+      "p99_median_ms_per_callback": 6.7e-05,
+      "p99_max_ms": 0.000229
+    },
+    "per_arm": {
+      "N_OFF": {
+        "n": 72,
+        "p50_median_ms_per_callback": 3e-05,
+        "p99_median_ms_per_callback": 7.25e-05,
+        "p99_max_ms": 0.000229
+      },
+      "N_SPEEX": {
+        "n": 72,
+        "p50_median_ms_per_callback": 0.2415785,
+        "p99_median_ms_per_callback": 0.364283,
+        "p99_max_ms": 0.83427
+      },
+      "DX_OFF": {
+        "n": 72,
+        "p50_median_ms_per_callback": 3e-05,
+        "p99_median_ms_per_callback": 6.5e-05,
+        "p99_max_ms": 0.000209
+      },
+      "DX_SPEEX": {
+        "n": 72,
+        "p50_median_ms_per_callback": 0.239439,
+        "p99_median_ms_per_callback": 0.3662415,
+        "p99_max_ms": 0.649329
+      }
+    },
+    "note": "tiempo por callback de 4410 muestras (100 ms de audio); host x86_64, NO Cortex-A7; no mide latencia audible ni p99 de la radio"
   },
   "status": "DONE_AUTOMATED",
   "controls": {
@@ -84,8 +120,8 @@
       "length_preserved": 1,
       "cb_p50_ms": 3e-05,
       "cb_p99_ms": 3.1e-05,
-      "cb_max_ms": 0.00016,
-      "wall_ms": 0.084,
+      "cb_max_ms": 0.000281,
+      "wall_ms": 0.099,
       "cb_sum_ms": 0.003
     },
     "proxy_filter_deterministic": true,

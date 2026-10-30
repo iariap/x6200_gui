@@ -19,18 +19,27 @@ BASE, no elige un nivel de NR y no cierra la validación subjetiva.
 
 - **288/288 filas válidas** = 12 clips × 3 SNR (0/5/10 dB) × 2 interferentes (AWGN / tono QRM
   2650 Hz) × 4 brazos. Sin escenarios inválidos, sin clipping, sin NaN/inf.
-- **STOI mediano:** `N_OFF` 0,9084 · `N_SPEEX` **0,9203** · `DX_OFF` 0,8769 · `DX_SPEEX` 0,8847.
-- **`N_SPEEX` vs `N_OFF`:** mediana pareada **+0,0199** (IC95 % bootstrap por speaker
-  [0,0153, 0,0230]); **95,8 %** de los 72 escenarios con delta > 0. ESTOI mediano
+- **STOI mediano:** `N_OFF` 0,9086 · `N_SPEEX` **0,9203** · `DX_OFF` 0,8771 · `DX_SPEEX` 0,8847.
+- **`N_SPEEX` vs `N_OFF`:** mediana pareada **+0,0196** (IC95 % bootstrap por speaker
+  [0,0151, 0,0230]); **95,8 %** de los 72 escenarios con delta > 0. ESTOI mediano
   `N_OFF` 0,7514 → `N_SPEEX` 0,7891.
 - **DX**: el pasabanda 300–2400 Hz reduce STOI frente a Normal (mediana −0,0224); con Speex
-  queda −0,0085. Es el compromiso espectral esperado, no una mejora del equipo.
-- **CPU host:** p50 0,114 ms y p99 0,160 ms por callback de 4410 muestras (100 ms de audio);
-  máximo 0,795 ms. Es host x86_64, **no** el Cortex-A7 de la radio.
+  queda −0,0088. Es el compromiso espectral esperado, no una mejora del equipo.
+  - **CPU host (sólo brazos Speex activos, n=144):** p50 0,239955 ms, p99 0,365040 ms,
+    p99 máximo 0,834270 ms por callback de 4410 muestras (100 ms de audio). Bypass (n=144):
+    p50 0,000030 ms, p99 0,000067 ms. Es host x86_64, **no** el Cortex-A7 de la radio y no es
+    latencia audible.
 - **Controles:** Off sin filtro bit-exacto; Off con filtro proxy bit-exacto en las 144 filas Off;
   filtro proxy determinista; Speex con fragmentación 441/4410/irregular con el mismo hash;
   STOI(limpio, limpio) ≈ 1; retardo inyectado recuperado; segunda pasada idéntica
-  (`determinism.json` → `equal: true` en `aggregate.json`).
+  (`determinism.equal = true` en `aggregate.json`).
+
+### Correcciones de la revisión del PR #361
+
+- Ventana STOI/ESTOI **común** por escenario (`start=GUARD`, `end=len(clean_ref)-GUARD-max(offset)`), no por brazo; el CSV expone `window_start_samples`/`window_end_samples` y las 288 filas comparten `start=441`.
+- Gate **fail-closed** incorpora `not clipped` y `injected_delay_recovered`; se agregó test negativo de clipping.
+- CPU del driver separada por brazo: **Speex activo n=144** vs **bypass n=144**, sin diluir el p99 de Speex con los brazos Off.
+- Dos pasadas completas reproducibles (`determinism.equal=true`), 13 tests de regresión.
 
 **Lectura honesta:** en estas muestras controladas, la cadena SpeexDSP `SSB voice` conserva más
 inteligibilidad estimada que el bypass y el pasabanda DX pierde frente a Normal. **No** es una
@@ -98,8 +107,9 @@ de `audio_enh_process` (#359), por lo que este banco usa el driver del módulo, 
 | STOI(limpio, limpio) ≈ 1 | **PASS** (0,9999999999999998) |
 | Retardo inyectado de 882 muestras recuperado | **PASS** |
 | Segunda pasada completa: hashes y métricas | **PASS** (`determinism.equal = true` en `aggregate.json`) |
-| Clipping / NaN / longitudes | **PASS** (0 clipping, 0 NaN) |
-| Test negativos (`scripts/test_benchmark.py`) | **9 passed** |
+| Clipping / NaN / longitudes | **PASS** (0 clipping, 0 NaN); el gate falla cerrado si `clipped>0` o falta `injected_delay_recovered` |
+| Ventana común STOI/ESTOI | **PASS**: `start=441` en las 288 filas; longitud idéntica entre brazos por escenario |
+| Test negativos/regresión (`scripts/test_benchmark.py`) | **13 passed** (ventana común, clipping, CPU por brazo, fragmentación, retardo, ruido) |
 
 Filas completas en [`measurements.csv`](measurements.csv); estadísticas, bootstrap y controles en
 [`aggregate.json`](aggregate.json); hashes, corpus, dependencias y offsets en

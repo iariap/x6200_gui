@@ -1,8 +1,9 @@
-# Comandos y códigos de salida — #349 benchmark objetivo (2026-10-29)
+# Comandos y códigos de salida — benchmark #349 / PR #361 (revisión)
 
-Convenciones: `<WORKTREE>` es el checkout aislado `x6200-qa-audio-auto-349`;
-`<SCRATCH>` es un directorio **fuera del repositorio** (`assessment-194/scratch/349-auto`);
-`<CORPUS>` es `<SCRATCH>/../349-corpus`. No se incluyen IPs, MACs, credenciales ni audio.
+Convenciones: `<WORKTREE>` = `/home/pablo/desa/x6200/x6200-qa-audio-auto-349`;
+`<SCRATCH>` = `/home/pablo/desa/x6200/assessment-194/scratch/349-auto`;
+`<CORPUS>` = `/home/pablo/desa/x6200/assessment-194/scratch/349-corpus`.
+No se incluyen credenciales, IPs ni audio.
 
 ## Corpus
 
@@ -12,91 +13,78 @@ curl -L --retry 3 --fail -o <CORPUS>/test-clean.tar.gz \
   https://www.openslr.org/resources/12/test-clean.tar.gz
 # exit=0
 md5sum <CORPUS>/test-clean.tar.gz
-# 32fa31d27d2e1cad72775fee3f4849a9  (coincide con el MD5 publicado por OpenSLR)
+# 32fa31d27d2e1cad72775fee3f4849a9  (igual al publicado)
 sha256sum <CORPUS>/test-clean.tar.gz
 # 39fde525e59672dc6d1551919b1478f724438a95aa55f874b576be21967e6c23
 tar -xzf <CORPUS>/test-clean.tar.gz -C <CORPUS>
-# exit=0; 40 speakers, 2620 clips FLAC 16 kHz mono
+# exit=0
 ```
 
-## Dependencias Python
+## Dependencias y driver
 
 ```sh
-python3 -m venv <SCRATCH>/../349-venv
+python3 -m venv /home/pablo/desa/x6200/assessment-194/scratch/349-venv
 # exit=0
-<SCRATCH>/../349-venv/bin/pip install --upgrade pip
-# exit=0
-<SCRATCH>/../349-venv/bin/pip install -r <WORKTREE>/docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/requirements.txt
+/home/pablo/desa/x6200/assessment-194/scratch/349-venv/bin/pip install -r \
+  <WORKTREE>/docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/requirements.txt
 # numpy==2.4.6 scipy==1.16.2 pystoi==0.4.1 soundfile==0.13.1 pytest==9.1.1
 # exit=0
-```
 
-## Driver SpeexDSP real
-
-```sh
 cd <WORKTREE>
-OUT=<SCRATCH>/bench REPO=<WORKTREE> \
+REPO=<WORKTREE> OUT=<SCRATCH>/bench \
   sh docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/build_speex_driver.sh
 # exit=0
 sha256sum <SCRATCH>/bench/speex_driver
 # b7e1354da7e86535553a08c9900684fd6fdd4d502ae9ef00c0f31fc3f1f7aa9f
-cat <SCRATCH>/bench/build.json
-# image=x6200-speexdsp-capture-bench:1.2.1-1
-# gcc (Debian 12.2.0-14+deb12u1) 12.2.0
-# speexdsp=1.2.1
-# source_c=697e5dbca33ad8cd74a5533c68e6b1d6ab6c8f6d959cc44445d6c77e486c49bc
-# source_h=010589bdf5680eea277bab78b92cd5cc165c11238c83971b3fa529dec58b4bdb
-# driver=b7e1354da7e86535553a08c9900684fd6fdd4d502ae9ef00c0f31fc3f1f7aa9f
 ```
 
-## Tests negativos y de determinismo
+## Tests de regresión
 
 ```sh
 cd <WORKTREE>
-RX349_SCRATCH=<SCRATCH> <SCRATCH>/../349-venv/bin/python -m pytest -q \
+RX349_SCRATCH=<SCRATCH> /home/pablo/desa/x6200/assessment-194/scratch/349-venv/bin/python -m pytest -q \
   docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/test_benchmark.py
-# 9 passed; exit=0
+# 13 passed; exit=0
 ```
 
-## Matriz completa (288 filas, dos pasadas)
+Los tests cubren: ventana común por escenario, clipping sin overflow de `-32768`, CPU
+separada Speex/bypass, partición Speex 441/4410/irregular, STOI self, retardo inyectado,
+semilla de ruido y hash mismatch.
+
+## Benchmark completo (288 filas, dos pasadas)
 
 ```sh
+docker rm -f rx349-bench
 docker run -d --rm --name rx349-bench -v <SCRATCH>:/data:rw -w /data \
   x6200-speexdsp-capture-bench:1.2.1-1 tail -f /dev/null
-# container id; exit=0
-RX349_BENCH_CONTAINER=rx349-bench RX349_SCRATCH=<SCRATCH> \
-  <SCRATCH>/../349-venv/bin/python \
+# exit=0
+RX349_BENCH_CONTAINER=rx349-bench \
+  /home/pablo/desa/x6200/assessment-194/scratch/349-venv/bin/python \
   docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/run_benchmark.py \
   --corpus-dir <CORPUS>/LibriSpeech/test-clean --scratch <SCRATCH> \
   --image x6200-speexdsp-capture-bench:1.2.1-1
 # exit=0
-# status=DONE_AUTOMATED rows=288 invalid=0 off_ok=true determinism.equal=true
-# clipping=false nan=false; controles PASS
+# status=DONE_AUTOMATED; rows=288; invalid=0; off_ok=true;
+# determinism.equal=true; clipping=false; nan=false
 docker rm -f rx349-bench
 # exit=0
 ```
 
-## Preflight de radio (sólo lectura; no se cambió nada)
+La ejecución hace **dos pasadas de la matriz completa** y compara hashes de salida y métricas.
+El resultado de la segunda pasada quedó `determinism.equal=true`.
+
+## Validaciones documentales
 
 ```sh
-ssh <RADIO> 'chmod 755 /tmp/x6200-remote; \
-  date -u; uname -a; sha256sum /usr/sbin/x6200_gui; md5sum /usr/sbin/x6200_gui; \
-  grep -m1 "model name\|Hardware" /proc/cpuinfo; \
-  /tmp/x6200-remote "{\"cmd\":\"get\"}"; \
-  pactl list short sources; pactl list short sinks; \
-  python3 -c "import sqlite3;c=sqlite3.connect(\"/mnt/params.db\");print(list(c.execute(\"select val from params where name=\x27audio_enh_preset\x27\"))[0][0])"; \
-  grep -c "CRASHLOG sig" /tmp/x6200_log.txt'
-# exit=0; sólo lecturas. Salida resumida en README y manifest.hardware_preflight.
-# gate=BASE_NR_DFL_NOT_MEASURED; no TX; no se grabó RX.
+cd <WORKTREE>
+git diff --check
+# exit=0
+
+# ASF x6200, diff docs-only contra main 6850d671
+cd /home/pablo/desa/x6200/asf
+scripts/apps/x6200/check-matrix.sh 6850d671 HEAD <WORKTREE>
+# exit=0; [SIN GATE] "sólo documentación: no hay gate que correr"
 ```
 
-## Verificación del cambio
-
-```sh
-git -C <WORKTREE> diff --name-only origin/main...HEAD
-# sólo docs/evidencia/2026-10-29-rx-audio-auto-349/**
-git -C <WORKTREE> status --short
-# vacío (sin audio, corpus, binarios ni credenciales)
-python3 <WORKTREE>/tests/audita-pruebas.py
-# OK (no se tocó docs/PRUEBAS.md)
-```
+No hubo radio, TX/PTT/ATU, MUX, firmware, GUI, BASE, PulseAudio ni cambios de producción.
+El corpus y los binarios quedan fuera del repositorio; no se versiona audio.

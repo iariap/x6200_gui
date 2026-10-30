@@ -141,3 +141,56 @@ def test_driver_off_bit_exact():
     out = work / "tone_off_out.raw"
     _run_driver(raw, out, 0, "4410")
     assert out.read_bytes() == before
+
+
+def test_common_window_shared_by_all_arms():
+    clean = np.arange(10000, dtype=np.float64)
+    offsets = {"N_OFF": 0, "N_SPEEX": 882, "DX_OFF": 12, "DX_SPEEX": 894}
+    start, end = rb.common_window(clean, offsets)
+    assert start == rb.GUARD
+    assert end == len(clean) - rb.GUARD - max(offsets.values())
+    ref_len = end - start
+    for off in offsets.values():
+        proc = clean[start + off : end + off]
+        assert len(proc) == ref_len
+    assert np.array_equal(clean[start:end], clean[start:end])
+
+
+def test_common_window_rejects_short_input():
+    with pytest.raises(ValueError):
+        rb.common_window(np.zeros(2000), {"N_OFF": 0, "N_SPEEX": 882, "DX_OFF": 12, "DX_SPEEX": 894})
+
+
+def test_clipping_count_detects_both_rails():
+    q = np.array([-32768, -32767, -32766, 0, 32766, 32767], dtype="<i2")
+    # -32768 se detecta sin overflow; -32766 no está saturado.
+    assert rb.clipped_count(q) == 3
+    assert rb.clipped_count(q.tobytes()) == 3
+    assert rb.clipped_count(np.array([0, 100, -100], dtype="<i2")) == 0
+
+
+def test_cpu_aggregation_separates_speex_from_bypass():
+    rows = []
+    for arm, p50, p99 in (
+        ("N_OFF", 0.001, 0.002),
+        ("N_SPEEX", 0.200, 0.300),
+        ("DX_OFF", 0.003, 0.004),
+        ("DX_SPEEX", 0.400, 0.500),
+    ):
+        rows.append(
+            {
+                "scenario_id": "s000",
+                "speaker_id": "spk",
+                "arm": arm,
+                "stoi": 0.9,
+                "estoi": 0.8,
+                "cpu_p50_ms": p50,
+                "cpu_p99_ms": p99,
+            }
+        )
+    stats = rb.aggregate(rows)["cpu_host"]
+    assert stats["speex_active"]["n"] == 2
+    assert stats["bypass"]["n"] == 2
+    assert abs(stats["speex_active"]["p50_median_ms_per_callback"] - 0.300) < 1e-12
+    assert abs(stats["speex_active"]["p99_max_ms"] - 0.500) < 1e-12
+    assert stats["per_arm"]["N_SPEEX"]["n"] == 1

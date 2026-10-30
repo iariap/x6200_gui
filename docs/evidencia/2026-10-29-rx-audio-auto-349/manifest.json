@@ -1,9 +1,10 @@
 {
   "issue": 349,
-  "generated_utc": "2026-10-29T21:28:58Z",
-  "git_commit": "cb9ea287548534ac5c4438c786b57deb436c7c40",
+  "generated_utc": "2026-10-30T04:13:46Z",
+  "git_commit": "0de9314d2efc6e91ddd894fc310ec1e6a5bae58f",
   "git_status": [
-    "?? docs/evidencia/2026-10-29-rx-audio-auto-349/"
+    " M docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/run_benchmark.py",
+    " M docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/test_benchmark.py"
   ],
   "status": "DONE_AUTOMATED",
   "corpus": {
@@ -180,19 +181,5 @@
     "rows": 288,
     "invalid_scenarios": 0,
     "off_rows": 144
-  },
-  "hardware_preflight": {
-    "mode": "READ_ONLY_HARDWARE",
-    "utc": "2026-10-29T21:26:11Z",
-    "uname": "Linux X6200 6.1.82 #1 SMP PREEMPT armv7l GNU/Linux",
-    "gui_sha256": "4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0",
-    "gui_md5": "80bbe5bd70b345e1e9a563d06d047a1c",
-    "cpu": "ARMv7 Processor rev 5 (v7l)",
-    "state": "7143700 Hz LSB DFL Normal 150/2850 NR 1/80 vol 52 tx=false",
-    "sources": "alsa_output...monitor IDLE; alsa_input... RUNNING",
-    "sinks": "alsa_output... RUNNING",
-    "audio_enh_preset": 0,
-    "crashlog": 0,
-    "gate": "BASE_NR_DFL_NOT_MEASURED"
   }
 }

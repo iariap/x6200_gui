@@ -7,8 +7,7 @@ Uso (desde el worktree, con el venv de requirements.txt):
 
 El corpus, el driver compilado y los PCM intermedios quedan FUERA del
 repositorio. Este script escribe en docs/evidencia/2026-10-29-rx-audio-auto-349/:
-  manifest.json, measurements.csv, aggregate.json, determinism.json,
-  controls.json y commands.log.
+  manifest.json, measurements.csv, aggregate.json y commands.log.
 
 No usa la radio, no transmite y no incluye audio de QSO ni clips en el repo.
 """
@@ -83,6 +82,30 @@ def quantize(x: np.ndarray) -> np.ndarray:
 
 def dequantize(q: np.ndarray) -> np.ndarray:
     return np.asarray(q, dtype=np.float64) / 32768.0
+
+
+def clipped_count(values: np.ndarray | bytes | bytearray) -> int:
+    """Cuenta muestras S16 saturadas a ±FS/32767, sin overflow en int64."""
+    if isinstance(values, (bytes, bytearray)):
+        q = np.frombuffer(values, dtype="<i2").astype(np.int64)
+    else:
+        q = np.asarray(values, dtype=np.int64)
+    return int(np.count_nonzero(np.abs(q) >= 32767))
+
+
+def common_window(clean_ref: np.ndarray, offsets: dict[str, int]) -> tuple[int, int]:
+    """Ventana de referencia UNICA para todos los brazos de un escenario.
+
+    start=GUARD; end=len(clean_ref)-GUARD-max(offset). Cada brazo toma
+    ref=clean_ref[start:end] y proc=out_f[start+offset:end+offset]; asi los
+    STOI/ESTOI pareados usan exactamente el mismo intervalo.
+    """
+    max_offset = max(offsets.values()) if offsets else 0
+    start = GUARD
+    end = len(clean_ref) - GUARD - max_offset
+    if end - start <= 1000:
+        raise ValueError(f"ventana comun insuficiente: {end - start}")
+    return start, end
 
 
 def active_mask(clean: np.ndarray) -> np.ndarray:
@@ -364,6 +387,7 @@ def measure_arm(
     image: str,
     scratch: Path,
     offsets: dict[str, int],
+    window: tuple[int, int],
 ) -> dict[str, Any]:
     raw_in = scene["raw_inputs"][arm]
     out_path = scene["scene_dir"] / f"out_{arm}.raw"
@@ -380,27 +404,27 @@ def measure_arm(
     offset = offsets[arm]
     if offset < 0:
         raise RuntimeError(f"offset negativo {arm}")
-    proc = out_f[offset:]
-    L = min(len(proc), len(clean_ref))
-    if L <= 2 * GUARD:
-        raise RuntimeError(f"ventana insuficiente {arm}: L={L}")
-    ref_win = clean_ref[GUARD : L - GUARD]
-    proc_win = proc[GUARD : L - GUARD]
+    start, end = window
+    if start != GUARD or end <= start + 1000:
+        raise RuntimeError(f"ventana comun invalida: {start}:{end}")
+    ref_win = clean_ref[start:end]
+    proc_win = out_f[start + offset : end + offset]
     if len(ref_win) != len(proc_win) or len(ref_win) < 1000:
-        raise RuntimeError(f"ventana invalida {arm}: {len(ref_win)}/{len(proc_win)}")
+        raise RuntimeError(f"ventana comun invalida {arm}: {len(ref_win)}/{len(proc_win)}")
+    if end + offset > len(out_f):
+        raise RuntimeError(f"ventana fuera de rango {arm}")
 
     stoi_value = float(stoi(ref_win, proc_win, 44100, extended=False))
     estoi_value = float(stoi(ref_win, proc_win, 44100, extended=True))
 
     mask = scene["mask"]
-    mask_win = np.zeros(len(ref_win), dtype=bool)
-    end = min(len(mask), GUARD + len(ref_win))
-    if end > GUARD:
-        mask_win[: end - GUARD] = mask[GUARD:end]
+    mask_win = mask[start : min(end, len(mask))]
+    if len(mask_win) < len(ref_win):
+        mask_win = np.concatenate([mask_win, np.zeros(len(ref_win) - len(mask_win), dtype=bool)])
     inactive = ~mask_win
 
-    clipped_in = int(np.count_nonzero(np.abs(np.frombuffer(in_bytes, dtype="<i2")) >= 32767))
-    clipped_out = int(np.count_nonzero(np.abs(out_s16) >= 32767))
+    clipped_in = clipped_count(in_bytes)
+    clipped_out = clipped_count(out_s16)
     qrm_supp = None
     if scene["noise_type"] == "QRM_TONE":
         a_in = tone_amp(scene["inputs"][arm])
@@ -424,6 +448,8 @@ def measure_arm(
         "samples_out": int(len(out_bytes) // 2),
         "offset_samples": int(offset),
         "window_samples": int(len(ref_win)),
+        "window_start_samples": int(start),
+        "window_end_samples": int(end),
         "cpu_p50_ms": float(meta.get("cb_p50_ms", float("nan"))),
         "cpu_p99_ms": float(meta.get("cb_p99_ms", float("nan"))),
         "cpu_max_ms": float(meta.get("cb_max_ms", float("nan"))),
@@ -462,9 +488,10 @@ def run_matrix(
                 if scene.get("invalid"):
                     invalid.append(scene)
                     continue
+                window = common_window(scene["clean_ref"], offsets)
                 arm_results: dict[str, dict[str, Any]] = {}
                 for arm in ARMS:
-                    result = measure_arm(arm, scene, driver, image, scratch, offsets)
+                    result = measure_arm(arm, scene, driver, image, scratch, offsets, window)
                     arm_results[arm] = result
                     row = {
                         "scenario_id": f"s{scenario_index - 1:03d}",
@@ -488,6 +515,8 @@ def run_matrix(
                         "samples_out": result["samples_out"],
                         "offset_samples": result["offset_samples"],
                         "window_samples": result["window_samples"],
+                        "window_start_samples": result["window_start_samples"],
+                        "window_end_samples": result["window_end_samples"],
                         "cpu_p50_ms": result["cpu_p50_ms"],
                         "cpu_p99_ms": result["cpu_p99_ms"],
                         "residual_dbfs": result["residual_dbfs"],
@@ -582,6 +611,29 @@ def determinism(rows_a: list[dict[str, Any]], rows_b: list[dict[str, Any]]) -> d
 # --------------------------------------------------------------------------- #
 # agregados
 # --------------------------------------------------------------------------- #
+def _cpu_stats(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """CPU del driver por brazo; Speex separado de bypass (review #361)."""
+    def block(selected: list[dict[str, Any]]) -> dict[str, Any]:
+        if not selected:
+            return {"n": 0}
+        return {
+            "n": len(selected),
+            "p50_median_ms_per_callback": float(np.nanmedian([r["cpu_p50_ms"] for r in selected])),
+            "p99_median_ms_per_callback": float(np.nanmedian([r["cpu_p99_ms"] for r in selected])),
+            "p99_max_ms": float(np.nanmax([r["cpu_p99_ms"] for r in selected])),
+        }
+    per_arm = {arm: block([r for r in rows if r["arm"] == arm]) for arm in ARMS}
+    speex = [r for r in rows if r["arm"] in ("N_SPEEX", "DX_SPEEX")]
+    bypass = [r for r in rows if r["arm"] in ("N_OFF", "DX_OFF")]
+    return {
+        "callback_audio_ms": 100.0,
+        "speex_active": block(speex),
+        "bypass": block(bypass),
+        "per_arm": per_arm,
+        "note": "tiempo por callback de 4410 muestras (100 ms de audio); host x86_64, NO Cortex-A7; no mide latencia audible ni p99 de la radio",
+    }
+
+
 def aggregate(rows: list[dict[str, Any]]) -> dict[str, Any]:
     by_key = {(r["scenario_id"], r["arm"]): r for r in rows}
     scenario_ids = sorted({r["scenario_id"] for r in rows})
@@ -632,12 +684,7 @@ def aggregate(rows: list[dict[str, Any]]) -> dict[str, Any]:
             "ci95": [percentile(boot, 2.5), percentile(boot, 97.5)],
             "median": float(np.median(boot)),
         },
-        "cpu_host": {
-            "p50_median_ms_per_callback": float(np.nanmedian([r["cpu_p50_ms"] for r in rows])),
-            "p99_median_ms_per_callback": float(np.nanmedian([r["cpu_p99_ms"] for r in rows])),
-            "max_ms": float(np.nanmax([r["cpu_p99_ms"] for r in rows])),
-            "note": "callback 4410 muestras = 100 ms de audio; host x86_64",
-        },
+        "cpu_host": _cpu_stats(rows),
     }
 
 
@@ -694,8 +741,10 @@ def main() -> int:
         and ctrl["proxy_filter_deterministic"]
         and ctrl["speex_partition_invariant"]
         and ctrl["stoi_self_ok"]
+        and ctrl["injected_delay_recovered"]
         and det.get("equal") is True
         and not nan_bad
+        and not clipped
     )
     status = "DONE_AUTOMATED" if status_ok else "BLOCKED"
 
@@ -767,12 +816,13 @@ def main() -> int:
         "scenario_id", "clip_id", "speaker_id", "snr_db", "noise_type", "arm", "preset",
         "stoi", "estoi", "valid", "delta_stoi_vs_N_OFF", "rms_in_dbfs", "rms_out_dbfs",
         "peak_dbfs", "clipped_samples_in", "clipped_samples_out", "dc_offset", "samples_in",
-        "samples_out", "offset_samples", "window_samples", "cpu_p50_ms", "cpu_p99_ms",
+        "samples_out", "offset_samples", "window_samples", "window_start_samples",
+        "window_end_samples", "cpu_p50_ms", "cpu_p99_ms",
         "residual_dbfs", "band_300_2400_db", "band_2400_2850_db", "qrm_suppression_db",
         "off_bit_exact", "output_sha256", "notes",
     ]
     with (EVIDENCE_DIR / "measurements.csv").open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=csv_fields, quoting=csv.QUOTE_MINIMAL)
+        writer = csv.DictWriter(f, fieldnames=csv_fields, quoting=csv.QUOTE_MINIMAL, lineterminator="\n")
         writer.writeheader()
         for row in rows_a:
             writer.writerow({k: row.get(k) for k in csv_fields})
@@ -784,8 +834,6 @@ def main() -> int:
     agg["clipping_detected"] = clipped
     agg["gate_BASE"] = "BASE_NR_DFL_NOT_MEASURED"
     (EVIDENCE_DIR / "aggregate.json").write_text(json.dumps(agg, indent=2) + "\n", encoding="utf-8")
-    (EVIDENCE_DIR / "controls.json").write_text(json.dumps(ctrl, indent=2) + "\n", encoding="utf-8")
-    (EVIDENCE_DIR / "determinism.json").write_text(json.dumps(det, indent=2) + "\n", encoding="utf-8")
 
     commands = [
         "# Comandos realmente ejecutados por run_benchmark.py",
