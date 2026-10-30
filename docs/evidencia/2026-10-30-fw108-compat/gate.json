@@ -144,10 +144,23 @@
   "production_ready": false,
   "compat_377_production_allowed": false,
   "fast_track_host_execution": true,
+  "part_a_buildroot_pr": {
+    "repo": "iariap/AetherX6200Buildroot",
+    "number": 14,
+    "url": "https://github.com/iariap/AetherX6200Buildroot/pull/14",
+    "branch": "feat/x6200-fw108-slip-compat",
+    "head": "afb7a3cd8b7edb5ee2ba3b58596dbd8c762b8eee",
+    "base_main": "8b7ca9d6d4e82ade0fc7654c46b9f8688689a4a3",
+    "patch": "0001-flow-support-SLIP-RX-framing-for-BASE-1.0.8.patch",
+    "patch_sha256": "46b4e7f36e25e3db6b53de057d037a11a72ee198fe5500f2ce126996e193838f",
+    "patch_sha256_verification": "recalculado read-only desde el branch del PR (commands.log #13)",
+    "state": "OPEN_NO_MERGE",
+    "cross_link": "enlazado en el body del PR #381 y en README/commands.log de esta evidencia"
+  },
   "unknowns": [
     "Bytes reales del wire 1.0.8: UNKNOWN (sin captura; prohibido). El layout viene de RE estatica de #376/PR #380 sobre payload UNVERIFIED.",
     "El offset 150 de las muestras es el de la APP vendor; no medido en esta GUI ni validado en hardware.",
-    "Build exacto de X6200Control enlazado en la ROM final: lo define la integracion (v0.1.1+patch del PR hermano de Buildroot).",
+    "Build exacto de X6200Control enlazado en la ROM final: lo define la integracion (v0.1.1 + patch de AetherX6200Buildroot PR #14).",
     "Cancelacion del RELEASE_NOTE_HASH_MISMATCH: depende del fabricante/dueno."
   ],
   "limitations": [

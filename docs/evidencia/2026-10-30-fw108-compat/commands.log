@@ -208,3 +208,19 @@ $ sha256sum src/radio_samples.h               -> d2ff0bf3ad195cdac6195cb462181e1
 $ sha256sum tests/native/test_radio_samples.c -> 466a64d23d32e6e4a17bea524c7338a9fd587f32d4bd3799132769b150a3d14b
 $ sha256sum tests/native/radio_samples_test_main.c -> a548a5ffe9870b1d5dcade84b7a1c2e4f96fd8a931076975cecac41ea7127896
 exit=0
+
+## 13) Enlace cruzado con la parte A (libreria, repo AetherX6200Buildroot)
+# Verificacion READ-ONLY (API de GitHub; no se clono ni ejecuto nada del repo Buildroot)
+$ gh pr view 14 --repo iariap/AetherX6200Buildroot --json number,url,state,isDraft,mergeable,headRefName,headRefOid,baseRefName,title
+{"number":14,"url":"https://github.com/iariap/AetherX6200Buildroot/pull/14","state":"OPEN",
+ "isDraft":false,"mergeable":"MERGEABLE","headRefName":"feat/x6200-fw108-slip-compat",
+ "headRefOid":"afb7a3cd8b7edb5ee2ba3b58596dbd8c762b8eee",
+ "baseRefName":"main","title":"[X6200] RX SLIP decoder for BASE 1.0.8 (refs iariap/x6200_gui#377)"}
+exit=0
+$ gh api "repos/iariap/AetherX6200Buildroot/contents/br2_external/package/aether-x6200-control/0001-flow-support-SLIP-RX-framing-for-BASE-1.0.8.patch?ref=afb7a3cd8b7edb5ee2ba3b58596dbd8c762b8eee" --jq '.content' | base64 -d > parteA-flow-slip-1.0.8.patch
+$ sha256sum parteA-flow-slip-1.0.8.patch
+46b4e7f36e25e3db6b53de057d037a11a72ee198fe5500f2ce126996e193838f  parteA-flow-slip-1.0.8.patch
+exit=0   # coincide con el SHA256 declarado por la parte A; 520 lineas; aplica a v0.1.1 tag 0ee1ae3
+# Cross-link aplicado: body del PR #381 y README.md de esta evidencia apuntan al PR #14.
+# La integracion (task-16) necesita AMBOS PRs: lib v0.1.1+patch (parte A) + GUI (esta parte B).
+

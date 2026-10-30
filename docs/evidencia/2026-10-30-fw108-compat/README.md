@@ -93,9 +93,15 @@ Compile-check cross (sólo lectura sobre el build tree del owner; sale a
 
 ## Enlaces
 
-- Fix de librería (parte A, repo Buildroot): PR hermano pendiente de la tarea A; el
-  build tree del owner compila hoy `aether-x6200-control` v0.1.0 (staging
-  `float samples[512]`) y debe pasar a v0.1.1+patch para integrar esta GUI.
+- **Parte A (librería RX SLIP, repo Buildroot):**
+  [AetherX6200Buildroot PR #14](https://github.com/iariap/AetherX6200Buildroot/pull/14)
+  (`feat/x6200-fw108-slip-compat`, HEAD `afb7a3cd8b7edb5ee2ba3b58596dbd8c762b8eee`,
+  base `8b7ca9d6`). Patch `0001-flow-support-SLIP-RX-framing-for-BASE-1.0.8.patch`
+  sha256 `46b4e7f36e25e3db6b53de057d037a11a72ee198fe5500f2ce126996e193838f`
+  (verificado de forma read-only desde el branch del PR; aplica a X6200Control
+  v0.1.1 tag `0ee1ae3`). El build tree del owner compila hoy
+  `aether-x6200-control` v0.1.0 (staging `float samples[512]`) y debe pasar a
+  v0.1.1+patch para integrar esta GUI.
 - RE del payload 1.0.8: [PR #380](https://github.com/iariap/x6200_gui/pull/380)
   (`wire_contract_for_received_payload = PARTIAL`, payload `UNVERIFIED`).
 - Procedencia/hashes: [PR #379](https://github.com/iariap/x6200_gui/pull/379).
