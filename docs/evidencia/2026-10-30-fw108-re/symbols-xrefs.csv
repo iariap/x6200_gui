@@ -1,0 +1,56 @@
+binary_sha256,version,symbol_or_item,address,size,evidence
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,slip_encode,0x000f7424,0x70,solo en 1.0.8; nm -S; disasm 0x0f7424-0x0f7494; transcripcion en slip-wire-contract.md seccion 1.1
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,slip_decode,0x000f7494,0x78,solo en 1.0.8; nm -S; disasm 0x0f7494-0x0f750c; transcripcion en slip-wire-contract.md seccion 1.2
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,llamada slip_decode (unica),0x000de9a0,,bl 0xf7494 dentro de BaseComm::start; unico caller; slip_encode sin callers (0 xrefs)
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,BaseComm::start(),0x000de4bc,0x814,lector /dev/ttyS1 + framing SLIP + CRC32; decompilado completo (REA/Ghidra) y objdump
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,BaseComm::start(),0x000dedd4,0x72c,sin SLIP: indexOf magic 0xAA5555AA + trama 2088 B + CRC32; decompilado completo
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,MainWidget::slot_slaveReportMessage(basecomm_pack const&),0x0005c854,0x378,consumidor del payload: offsets samples/flags/campos/hkey; decompilado
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,MainWidget::slot_slaveReportMessage(basecomm_pack const&),0x0005c1f4,0x348,consumidor 1.0.6: samples float[512] en +0x004..0x804; flags +0x804; hkey +0x820
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,tabla CRC32 (rodata),0x00121a3c,0x400,256 x u32; sha256 tabla 0053f121cdcaf9f510a940ba891fb2bccd41487953c5a4c0048c4a3ccdec782e; copiada al stack en 0x0de9d4
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,tabla CRC32 (rodata),0x0011cc7c,0x400,misma tabla byte a byte (mismo sha256); copiada al stack en BaseComm::start 1.0.6
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,string /dev/ttyS1,0x00121e5a,,"uart_create(""/dev/ttyS1"",B1152000=0x1009) en 0x0de578"
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"string [ERR] SLIP Packet Too Long, length =",0x00121eb6,,log cuando indexOf(0xC0) >= 0x5000 (0x0de968)
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"string [ERR] Wrong SLIP Packet, size =",0x00121f30,,log cuando slip_decode != 552 (0x0deaf8)
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,string [ERR] CRC Failed...,0x00121edc,,log de fallo CRC en 0x0dea88; imprime payload[0] sin validarlo
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,uart_create,0x0008a9bc,,open(O_RDWR|O_NOCTTY=0x102)+cfsetispeed/cfsetospeed+tcsetattr; arg2=0x1009 (B1152000)
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,string /dev/i2c-0,0x00111ffb,,dispositivo BASE (BaseCommIIC); ruta pasada como QString desde MainWidget
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"BaseCommIIC::BaseCommIIC(QObject*, QString const&, uint)",0x000e56bc,0x1f8,ctor; llamado desde MainWidget::MainWidget en 0x007b290
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,"BaseCommIIC::BaseCommIIC(QObject*, QString const&, uint)",0x000e5eec,0x1f8,mismo tamano
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,BaseCommIIC::start(),0x000e5a88,0xb18,wait baseband + reads info/calib + loop de workparams + refresco ~1 s del bloque 216 B
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,BaseCommIIC::start(),0x000e62b8,0xb18,mismo tamano; secuencia de instrucciones identica normalizada
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"BaseCommIIC::iicWrite(uint,AddressMode,uchar*,uint)",0x000e2840,0x178,"ioctl(fd,0x707=I2C_RDWR); addr 1 o 2 bytes BE segun mode; sin readback; retorno=ioctl"
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,"BaseCommIIC::iicWrite(uint,AddressMode,uchar*,uint)",0x000e3070,0x178,mismo tamano; identico normalizado
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"BaseCommIIC::iicRead(uint,AddressMode,uchar*,uint)",0x000e2740,0x100,"ioctl(fd,0x707=I2C_RDWR) lectura; sin ACK de protocolo"
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,"BaseCommIIC::iicRead(uint,AddressMode,uchar*,uint)",0x000e2f70,0x100,mismo tamano; identico normalizado
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"BaseCommIIC::parseParamItem(basecomiic_param_t const&, basecommiic_pack&)",0x000ded64,0x39dc,"escribe bits en pack+0x30: 0x2,0x8,0x10,0x20,0x1000,0x2000,0x4000,0x8000,0x10000,0x40000 x2,0x100000,0x200000,0x400000,0x800000; y pack+0x34 bit 0x10000"
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,"BaseCommIIC::parseParamItem(basecomiic_param_t const&, basecommiic_pack&)",0x000df594,0x39dc,mismo tamano; identico normalizado
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"BaseCommIIC::updateWorkParams(XParamAdmin*, bool)",0x000e2b88,0x2a08,setWFlags(wparam/sple -> pack+0x30 bit 0x2); setWFlags(wparam/atue -> pack+0x30 bit 0x1000)
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,"BaseCommIIC::updateWorkParams(XParamAdmin*, bool)",0x000e33b8,0x2a08,mismo tamano; identico normalizado
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"BaseCommIIC::setWFlags(uint const&, uint&, uint)",0x000e2b6c,0x1c,si flag -> target |= mask else target &= ~mask; callers 0xe2fe8 y 0xe3058
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,"BaseCommIIC::setWFlags(uint const&, uint&, uint)",0x000e339c,0x1c,mismo tamano
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,BaseCommIIC::stop(),0x000ded58,0xc,this[0x20a]=1 (flag de salida); no restaura estado
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,BaseCommIIC::stop(),0x000df588,0xc,mismo tamano
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"BaseCommIIC::updateRxFilters(short,short,bool)",0x000e5590,0x78,identico normalizado vs 1.0.6
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"BaseCommIIC::setCalibrateData(QString const&, QVariant const&)",0x000e29b8,0x1b4,identico normalizado vs 1.0.6
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,BaseCommIIC::cwDecodeWPM(),0x000e5690,0x2c,identico normalizado vs 1.0.6
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"llamada iicWrite(0xf000,1,this+8,0x1fb)",0x000e5f74,,update calib data
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"llamada iicWrite(0xfffe,1,&cmd,2)",0x000e6004,,host_cmd
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"llamada iicWrite(0,1,BaseCommIIC+0x20d,0xd8)",0x000e6268,,refresco periodico del bloque de workparams (216 B) cada ~100 ticks de 10 ms
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"llamada iicRead(0x2000,1,&st,1)",0x000e5c14,,estado baseband listo
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"llamada iicRead(0,1,mBasebandInfo,0x81)",0x000e5d00,,basecomm_slave_info_pack 129 B
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,"llamada iicRead(0x100,1,BaseCommIIC+8,0x1fb)",0x000e5d80,,calibracion 507 B
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,MainWidget::startBaseComm(),0x000feff0,0x34,arranca hilo BaseComm (uplink /dev/ttyS1)
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,MainWidget::startBaseCommIic(),0x000ff024,0x34,arranca hilo BaseCommIIC (downlink /dev/i2c-0)
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,MainWidget::startBaseComm(),0x000fa670,0x34,referencia
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,MainWidget::startBaseCommIic(),0x000fa6a4,0x34,referencia
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,llamada sig_slaveReport(&BaseComm+9) si CRC ok,0x000dea30,,argumento BaseComm+0x9 (basecomm_pack de 552 B)
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,FILE slip.c (strtab),0x00172e41,,strings -t x: translation unit nueva en 1.0.8; ausente en 1.0.6
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,FILE panelcall.cpp / spectrogramwidget.cpp / moc_*,,,translation units nuevas en 1.0.8 (readelf FILE symbols); en 1.0.6 no estan
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,FILE xcomm.cpp / xscopegl.cpp,,,translation units presentes solo en 1.0.6 (removidas en 1.0.8)
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,string de version 1.0.8,,,"cadena ""1.0.8"" en rodata; 1.0.6 tiene ""1.0.6"""
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,xcrc::calCRC32_STM32,0x0003e57c,0x78,CRC alternativo con caller en DialogFactoryMode::slot_updateParam (0x3da14); NO es el CRC del uplink
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,xcrc::calCRC32_STM32,0x0003df14,0x78,mismo tamano; referencia
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,MainWidget::MainWidget(QWidget*),0x00074d2c,0x83f8,ctor: crea BaseComm (call 0x7b128) y BaseCommIIC (call 0x7b290)
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,MainWidget::MainWidget(QWidget*),0x00073bc4,0x83f8,ctor; referencia
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b,1.0.8-UNVERIFIED,.xgf MCU/BASE 1.0.8,,524288 B,sha256 9a19f97a5ad9e141a3663d222f984073bf0b18b38d4662604372a0036f9daa23; entropia 7.470 bit/B; MCU_OPAQUE
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b,1.0.6-autentica,.xgf MCU/BASE 1.0.6,,524288 B,sha256 dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3; entropia 7.748 bit/B; MCU_OPAQUE
