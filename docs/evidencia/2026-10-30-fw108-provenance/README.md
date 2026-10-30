@@ -22,6 +22,7 @@
 | Atribución de versión APP / BASE | **parcial** — release note declara APP 1.0.8 (ago 17 2026) / BASE 1.0.8 (ago 19 2026); GUI contiene la constante de versión `1.0.8`; el `.xgf` del BASE es opaco y **no** se puede verificar internamente | §4 |
 | Inventario estático APP/BASE y comparables | **completo para lo extraíble sin ejecutar/montar** | §4, `inventory.csv` |
 | Checklist de actualización/rollback documentado y **no ejecutado** | **completo** — estado `UPGRADE_NOT_READY` | `upgrade-owner-checklist.md` |
+| `check-matrix.sh` x6200 (base real, worktree) | **PASS — exit 0**; todos los bloques `[SKIP]`, cierre `[SIN GATE]` con sólo documentación | §9, `commands.log` §10 |
 | Paquete apto para instalar / autenticar 1.0.8 oficial | **NO — no instalar** hasta aclaración del fabricante | §2.4 |
 
 **Bottom line:** el ZIP oficial está íntegro y es reproducible, pero **no autentica su propio payload**: el fabricante declara un SHA256 de `sdcard.img` que no corresponde al `sdcard.img` que distribuye en ese mismo ZIP. Como el issue exige «si falla integridad no marcar `READY_FOR_RE`», la fase cierra en STOP documentado con el paquete en custodia.
@@ -274,6 +275,8 @@ Datos mínimos para #376: ELFs `x6200_ui_v100` (payload nuevo, atribución 1.0.8
 - `extraction-method.md`: método de validación/extracción seguro (sin montar, sin `dd`, sin ejecutar) y criterios de riesgo.
 - `manifest.json`: datos legibles por máquina (fuente, hashes calculados y declarados, gate, causa, custodia, rutas scratch).
 - `inventory.csv`: inventario por artefacto (tamaño, SHA256, tipo, atribución, ruta scratch).
+
+Checks de cierre reales: `git status` limpio al commitear; diff **docs-only** (6 archivos, todos bajo `docs/evidencia/2026-10-30-fw108-provenance/`); `git diff --check` exit 0; `check-matrix.sh` de la app x6200 ejecutado desde `/home/pablo/desa/x6200/asf` con `base=6850d671d430a1693dbcaf593579a3d98b037995` y el HEAD del worktree → **exit 0** (bloques `[SKIP]` por condición y cierre `[SIN GATE]` sólo-docs, que no es FAIL). `tests/native/run_native_tests.sh` no aplica (no hay cambio de código). Detalle y salidas en `commands.log` §10.
 
 ## 10. Condiciones de desbloqueo (gate A)
 

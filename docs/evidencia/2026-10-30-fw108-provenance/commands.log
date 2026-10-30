@@ -462,7 +462,66 @@ $ pdftotext -layout X6200FirmwareUpgradeTutorialWS-JSZL-2407-01ENRevised.pdf ref
 # batería fuera, FACTORY RESET final; menciona 'x6200udimg.img' (anacronismo vs 'sdcard.img' actual)
 ```
 
-## 10. Checks de cierre
+## 10. Checks de cierre (resultados reales)
 
-Se ejecutan después del commit de evidencia y su resultado real se anexa en un commit posterior
-(`docs(evidencia): check-matrix real de la fase A`). Ver más abajo.
+Ejecutados sobre el commit de evidencia `d9b913f2f75523b3349f51552e85a9b0111eb010` (base
+`6850d671d430a1693dbcaf593579a3d98b037995`). El commit que anexa esta sección sólo agrega texto a
+`commands.log` (docs-only); la matriz se re-ejecutó sobre el HEAD final del PR y su exit real se
+reporta en el cuerpo del PR y al orquestador.
+
+```console
+$ cd /home/pablo/desa/x6200/x6200-fw108-artifacts && git status --porcelain
+(sin salida)                                                                 # exit 0
+$ git diff --name-status 6850d671d430a1693dbcaf593579a3d98b037995...HEAD
+A	docs/evidencia/2026-10-30-fw108-provenance/README.md
+A	docs/evidencia/2026-10-30-fw108-provenance/commands.log
+A	docs/evidencia/2026-10-30-fw108-provenance/extraction-method.md
+A	docs/evidencia/2026-10-30-fw108-provenance/inventory.csv
+A	docs/evidencia/2026-10-30-fw108-provenance/manifest.json
+A	docs/evidencia/2026-10-30-fw108-provenance/upgrade-owner-checklist.md   # exit 0
+# diff docs-only: DOCS_ONLY=YES (ningún path fuera de docs/)
+$ git diff --check 6850d671d430a1693dbcaf593579a3d98b037995...HEAD
+(sin salida)                                                                 # exit 0
+$ git rev-parse HEAD
+d9b913f2f75523b3349f51552e85a9b0111eb010                                     # exit 0
+$ jq empty docs/evidencia/2026-10-30-fw108-provenance/manifest.json
+# exit 0 (JSON válido; gate=ARTIFACT_UNAVAILABLE, cause=INTEGRITY_MISMATCH_VS_VENDOR_PUBLISHED_HASH,
+#          official_published_hash.match=false, image.sha256=a968d278…)
+$ python3 - <<'PY'   # valida inventory.csv: 40 filas incluyendo header, 11 columnas, 0 filas mal formadas
+PY
+filas_incluyendo_header: 40 / columnas: 11 / filas_con_columnas_incorrectas: []   # exit 0
+```
+
+Matriz obligatoria de la app (`check-matrix.sh`), ejecutada desde `/home/pablo/desa/x6200/asf`
+con la base real y el HEAD del worktree:
+
+```console
+$ cd /home/pablo/desa/x6200/asf
+$ bash scripts/apps/x6200/check-matrix.sh 6850d671d430a1693dbcaf593579a3d98b037995 d9b913f2f75523b3349f51552e85a9b0111eb010 /home/pablo/desa/x6200/x6200-fw108-artifacts
+==> [SKIP] firmware / nativo: sin cambios en src/**, lv_conf.h, lv_drv_conf.h ni CMakeLists.txt
+==> [SKIP] inventario del arnés de host (autotune_v2 + dialog_coverage): sin cambios en src/**, tests/** ni tools/ui_harness/**
+==> [SKIP] check_build_identity: sin cambios en la identidad del build
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [SKIP] ruff del framework A/B: sin cambios en tools/ab_testing/**/*.py
+==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/** ni tools/ui_harness/**
+==> [SKIP] gates de x6200-ab (themes + contracts): sin cambios en tools/**, src/**, tests/**, los temas de la imagen ni ab-testing.yml
+==> [SKIP] check_wcag_rendered + check_widget_text (contraste renderizado): sin cambios en src/**, tools/ui_harness/**, los temas de la imagen, el baseline ni los gates de texto/contraste
+==> [SKIP] check_bootanim (arranque neo-retro): sin cambios en src/bootanim/**, src/boot_splash.*, src/main.c, src/CMakeLists.txt, CMakeLists.txt, tests/bootanim/**, tests/check_bootanim.sh ni rootfs/etc/init.d/**
+==> [SKIP] check_drawbuf_partial (draw buffer parcial): sin cambios en tools/**, src/**, tests/**, los temas de la imagen ni ab-testing.yml
+==> [SKIP] guards del prune del rootfs: sin cambios en buildroot/**, rootfs/etc/init.d/**, CMakeLists.txt ni boot-rootfs.yml
+==> [SKIP] bash -n de los .sh tocados: sin cambios en tests/**/*.sh ni tools/**/*.sh
+==> [SKIP] harness determinism gate: sin cambios en tools/ui_harness/
+==> [SKIP] banco QEMU: sin cambios en src/**, lv_conf.h ni tools/ui_harness/
+==> [SKIP] workflows de GitHub (YAML + shell embebido): sin cambios en .github/workflows/*.yml
+==> [SIN GATE] ningún bloque cubre el diff: docs/evidencia/2026-10-30-fw108-provenance/README.md … upgrade-owner-checklist.md
+    (sólo documentación: no hay gate que correr)
+CHECK_MATRIX_EXIT=0                                                          # exit 0 real
+```
+
+Interpretación: el diff es **sólo documentación**; todos los bloques de la matriz se saltan por
+condición y el cierre `[SIN GATE]` con sólo paths de documentación **no** es un FAIL (la política de
+la matriz sólo falla si hay paths no-docs sin gate). `exit 0` real, no inventado.
+
+Intento de `tests/native/run_native_tests.sh` (el issue lo pide sólo si saliera un cambio inesperado
+de docs): **no aplica**. El diff no toca `src/**`, tests ni código; un cambio inesperado habría
+requerido STOP y limpieza del diff, y no ocurrió (`git diff --name-status` sólo lista docs).
