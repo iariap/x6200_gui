@@ -9,8 +9,9 @@
 estaba en `fc18a831`, y entre `fc18a831` y `6850d671` **sólo hay cambios en `docs/`**, verificado con
 `git diff --name-only fc18a831..6850d671`).
 **Worktree/rama:** `x6200-rom-audio-audit` / `audit/rx-audio-rom-audio-362` (base `6850d671`).
-**PR documental:** creado desde esta rama, cuerpo `Refs #362; Refs #363; Refs #367; Refs #369; Refs #371; Refs #372`,
-**sin merge automático**. Este directorio no modifica firmware, UI, BASE, PulseAudio ni radio.
+**PR documental:** [#373](https://github.com/iariap/x6200_gui/pull/373) (docs-only, **sin merge automático**), cuerpo exacto
+`Refs #362; Refs #363; Refs #367; Refs #369; Refs #371; Refs #372`. Este directorio no modifica firmware, UI, BASE,
+PulseAudio ni radio. Head inicial del PR: `e66d2aa6`.
 
 ---
 

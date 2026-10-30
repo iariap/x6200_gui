@@ -989,3 +989,19 @@ $ cd /home/pablo/desa/x6200/x6200-rom-audio-audit && git diff --stat fork/main H
 exit=0
 
 # FIN — validación del PR: check-matrix exit 0 (diff sólo docs), risk.py --files low/auto_approve, git diff --check exit 0; risk.py modo diff no resuelve refs en el checkout ASF (fallo documentado).
+
+# ====== 10. Registro del PR documental (#373) ======
+### 10.1 PR creado (gh pr create, docs-only, sin merge)
+$ gh pr create --repo iariap/x6200_gui --base main --head audit/rx-audio-rom-audio-362 --title "[AUDIO QA] Full Linux ROM audio-route audit and recovery decision (refs #362)" --body "Refs #362; Refs #363; Refs #367; Refs #369; Refs #371; Refs #372"
+    https://github.com/iariap/x6200_gui/pull/373
+exit=0
+
+### 10.2 estado del PR (consulta read-only)
+$ gh pr view 373 --repo iariap/x6200_gui --json number,url,state,isDraft,title,headRefName,baseRefName
+    {"baseRefName":"main","headRefName":"audit/rx-audio-rom-audio-362","isDraft":false,"number":373,"state":"OPEN","title":"[AUDIO QA] Full Linux ROM audio-route audit and recovery decision (refs #362)","url":"https://github.com/iariap/x6200_gui/pull/373"}
+exit=0
+
+### 10.3 head del PR al momento del registro (antes del commit que registra esta URL)
+$ git log --oneline -1
+    e66d2aa6 docs(audio): #362 auditoría de la ROM Linux completa (ruta RX, alternativas, recuperación)
+exit=0

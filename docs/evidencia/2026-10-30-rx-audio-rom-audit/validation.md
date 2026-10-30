@@ -88,5 +88,6 @@ HIDRAW) con la GUI construida `4ee87aef…66b0`.
 | Espacios/errores del diff | `git diff --check fork/main HEAD` | **exit 0** |
 | Contenido del diff | `git diff --stat fork/main HEAD` | 9 archivos, **1987 inserciones** al cierre del commit (1917 en la medición intermedia §9.7), 0 borrados; sólo `docs/evidencia/2026-10-30-rx-audio-rom-audit/` |
 
-**No hay merge automático** y no se abren issues. El PR de este directorio declara en el cuerpo
-`Refs #362; Refs #363; Refs #367; Refs #369; Refs #371; Refs #372` y no toca producción/radio.
+**No hay merge automático** y no se abren issues. El PR es [#373](https://github.com/iariap/x6200_gui/pull/373)
+(head inicial `e66d2aa6`), declara en el cuerpo `Refs #362; Refs #363; Refs #367; Refs #369; Refs #371; Refs #372`
+y no toca producción/radio.
