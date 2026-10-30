@@ -11,8 +11,8 @@ con `git fetch origin main` → `origin/main = 84bf4c40e51e240ebbe77847a54f88682
 `ead65675` y `#370` `84bf4c40`). El worktree se **rebasó a `84bf4c40`** antes de escribir; `docs/HALLAZGOS.md`
 (§77 de #366 y §78 de #370) queda **intacto**.
 **Worktree/rama:** `x6200-rx-physical-instrumentation` / `audit/rx-physical-instrumentation`.
-**PR documental:** pendiente de publicar al cierre de esta evidencia (URL en `commands.log`); sólo
-documentación, sin merge automático.
+**PR documental:** [#372](https://github.com/iariap/x6200_gui/pull/372) (sólo documentación, sin merge
+automático).
 
 **Este directorio no conecta nada ni prueba la radio.** Es el plan físico ejecutable, honesto y verificable
 para una ventana presencial **posterior al 2026-11-12**, cuando el propietario esté con el equipo. El

@@ -102,3 +102,46 @@ nunca declaró PASS: los tokens de estado son los bloqueos.
 [03:43Z] git -C <worktree> diff --name-only --cached                               -> exit 0 (9 archivos, todos bajo docs/evidencia/2026-10-30-rx-audio-physical-prep/)
 [03:43Z] git -C <worktree> commit -m "docs(audio): preparación instrumental física S/P y contrato MUX/restore (#371)"  -> exit 0
 ```
+
+## 6. Validación ASF del PR (sólo documentación)
+
+HEAD de la rama en ese momento: `777df7a2` (commit de la evidencia). Los checks corren con la base real
+del PR, `origin/main = 84bf4c40`; `main` local sigue en `cb9ea287` (desactualizado, ver abajo).
+
+```
+[03:45Z] asf/scripts/apps/x6200/check-matrix.sh origin/main HEAD <worktree>  -> exit 0
+         todos los bloques [SKIP] (sin cambios fuera de docs/); cobertura:
+         "[SIN GATE] … (sólo documentación: no hay gate que correr)". Ningún FAIL.
+[03:45Z] python3 asf/scripts/risk.py x6200 84bf4c40 777df7a2                -> exit 0
+         risk="low", reviewers=["reviewer-frontend"], human_approval=false, auto_approve=true;
+         9 archivos, todos docs/evidencia/2026-10-30-rx-audio-physical-prep/** (regla docs/** = low).
+[03:45Z] asf/scripts/apps/x6200/check-matrix.sh main HEAD <worktree>         -> exit 0
+         igual resultado ([SIN GATE], sólo docs), pero el diff incluye #366/#370 ya integrados porque
+         `main` local quedó en cb9ea287: se usa origin/main/84bf4c40 como base real del PR.
+[03:45Z] python3 asf/scripts/risk.py x6200 origin/main HEAD                  -> exit 0 (semánticamente NO
+         aplicable: risk.py resuelve `git -C <APP_CHECKOUT>` y allí HEAD es `main` local = cb9ea287, así
+         que clasificó el diff invertido cb9ea287..84bf4c40, ya integrado). Se repitió con shas explícitos
+         (línea anterior) para clasificar el diff REAL del PR. No es un fallo del cambio.
+[03:45Z] git -C <worktree> diff --check                                    -> exit 0 (sin whitespace errors)
+[03:45Z] git -C <worktree> status --short                                  -> vacío (árbol limpio tras commit 1)
+```
+
+## 7. Publicación del PR documental
+
+```
+[03:46Z] git -C <worktree> push -u origin audit/rx-physical-instrumentation  -> exit 0 (rama nueva en origin)
+[03:46Z] gh pr create --repo iariap/x6200_gui --base main \
+           --head audit/rx-physical-instrumentation \
+           --title "[AUDIO QA] Physical instrument plan and MUX fail-safe evidence contract (refs #362)" \
+           --body "Refs #362; Refs #363; Refs #367; Refs #369; Refs #371"   -> exit 0
+         https://github.com/iariap/x6200_gui/pull/372
+[03:47Z] gh pr view audit/rx-physical-instrumentation --json number,url,state,isDraft,baseRefName,headRefName,title,body
+         -> exit 0: #372 OPEN, no DRAFT, base main, body = "Refs #362; Refs #363; Refs #367; Refs #369; Refs #371"
+[03:47Z] git -C <worktree> commit -m "docs(audio): registrar URL del PR y validación ASF en la evidencia (#371)"  -> exit 0
+[03:48Z] git -C <worktree> push                                             -> exit 0
+```
+
+El commit posterior al `777df7a2` sólo agrega esta sección y la URL del PR en `README.md`: no cambia
+archivos fuera de `docs/evidencia/2026-10-30-rx-audio-physical-prep/`, así que la clasificación `risk=low`
+y la ausencia de gates de la matriz siguen aplicando. **Sin merge automático:** el PR queda OPEN para
+revisión humana. **Ningún check de este log es una medición física.**
