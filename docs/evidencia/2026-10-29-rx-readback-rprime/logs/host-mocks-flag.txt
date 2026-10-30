@@ -1,0 +1,2 @@
+== R' #369: host mocks del sondeo read-only del reg 12 ==
+33 comprobaciones, 0 fallos

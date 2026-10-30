@@ -1,0 +1,25 @@
+BACKUP_DIR=/mnt/ui-bak-rprime-20261030-031717
+== pre-deploy GET x2 ==
+03:17:18Z
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7062100,"mode":"AM","band":"","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":1,"pre":0,"att":1,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-114,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7062100,"mode":"AM","band":"","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":1,"pre":0,"att":1,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-114,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+== backup original GUI ==
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /usr/sbin/x6200_gui
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /mnt/ui-bak-rprime-20261030-031717/x6200_gui
+total 13176
+drwx------    2 root     root          4096 Oct 30 03:17 .
+drwxr-xr-x   85 root     root          4096 Oct 30 03:17 ..
+-rw-------    1 root     root           197 Oct 30 03:17 installed.sha256
+-rwx------    1 root     root      13478088 Oct 30 03:17 x6200_gui
+== rollback path test (copy backup over installed, verify hash) ==
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /usr/sbin/x6200_gui
+-rwx------    1 root     root      13478088 Oct 30 03:17 /usr/sbin/x6200_gui
+== scp patched binary to /tmp on radio ==
+scp_rc=0
+== verify sha256 patched ==
+25f281b05bfd10990c47d6f38d369af93171c6bdaf751161987b728b121ac19d  /tmp/x6200_gui.rprime
+-rwx------    1 root     root      14006244 Oct 30 03:17 /tmp/x6200_gui.rprime
+== install temp GUI (backup exists) ==
+25f281b05bfd10990c47d6f38d369af93171c6bdaf751161987b728b121ac19d  /usr/sbin/x6200_gui
+-rwxr-xr-x    1 root     root      14006244 Oct 30 03:17 /usr/sbin/x6200_gui
+== enable flag + restart GUI + wait probe log (single attempt) ==

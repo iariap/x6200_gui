@@ -47,6 +47,7 @@ sin origen) y la convención completa viven en el skill **`hallazgos-fundados`**
 75. [El modo sigue al plan de bandas: al entrar al segmento CW pasa a CW y al salir restaura el modo anterior](#75-el-modo-sigue-al-plan-de-bandas-al-entrar-al-segmento-cw-pasa-a-cw-y-al-salir-restaura-el-modo-anterior)
 76. [El PTT en CB se habilita con el bloque de calibración fullband que escribe la UI de fábrica](#76-el-ptt-en-cb-se-habilita-con-el-bloque-de-calibración-fullband-que-escribe-la-ui-de-fábrica)
 77. [El bit `voice_rec` (reg 12) no tiene readback ni dueño serializado fuera de la GUI, y no hay restore de audio <250 ms](#77-el-bit-voice_rec-reg-12-no-tiene-readback-ni-dueño-serializado-fuera-de-la-gui-y-no-hay-restore-de-audio-250-ms)
+78. [El MCU acepta el selector de lectura 0x2000 pero 0x0038/0x0030 devuelven 00000000: la vía probada no acredita readback del reg 12](#78-el-mcu-acepta-el-selector-de-lectura-0x2000-pero-0x0038-0x0030-devuelven-00000000-la-vía-probada-no-acredita-readback-del-reg-12)
 16. [Inventario de lo que falta portar, con evidencia](#16-inventario-de-lo-que-falta-portar-con-evidencia)
 17. [La app de Bluetooth no esta en el menu](#17-la-app-de-bluetooth-no-esta-en-el-menu)
 18. [Ajustes: widgets que no se podian ni alcanzar](#18-ajustes-widgets-que-no-se-podian-ni-alcanzar)
@@ -957,6 +958,7 @@ con lo que haría falta para fundarlas.
 | `speaker-test` "corre sin error y sin sonido" (12/10) | No quedó la captura y hoy no se puede repetir con la GUI andando | Parar la GUI, correrlo y pegar la salida |
 | `voice_rec=1` conmuta el MUX del parlante/jack del X6200 de audio de RF a DAC del SoC | lo documenta Mestre (tercero, otro equipo/ROM); **no medido en nuestro equipo**; el firmware del MCU está encriptado y no hay readback del reg 12 | prueba física A4 autorizada con instrumentación y restore verificado, comparando parlante/jack con el bit en 0 y en 1 |
 | El PA del parlante queda habilitado con `rxvol=7` (estado medido en el registro 14) | la dependencia PA↔`rxvol>0` es documentación externa; se midió el nivel del registro 14, no el PA | prueba física A4 midiendo nivel acústico vs reg 14 |
+| El MCU/FPGA devuelve `00000000` en 0x0038/0x0030 porque esas direcciones son de solo escritura o un alias de la ventana de escritura | se midió que el selector es aceptado (0x2000 devuelve 0x01) y que b/c devuelven 00 estable, pero no la causa (podría ser valor real 0, ventana no mapeada o alias) | documentación del MCU/FPGA o instrumentación presencial que lea el estado interno con semántica conocida (no otra ronda de lecturas a ciegas) |
 | La captura Linux recibe el audio del BASE después del NR/DFL del BASE | la señal capturada es real (medida previa), pero no se separó el procesamiento; sin escrituras/readback no se puede aislar | inyectar señal y comparar NR/DFL on/off (requiere escrituras autorizadas y restore) |
 | "La app de SWR Scan se cierra sola al terminar el barrido" (#119, defecto 2) | El cierre no está en el código del fin de barrido (§46) y no quedó el log de la GUI de esa corrida; el candidato (el `app off` del control remoto, que sí se acepta con el barrido transmitiendo) está fundado **en el código**, no en esa corrida | Correr el barrido con el log de la GUI a mano (`/tmp/x6200_log.txt` → `/mnt/app_logs/`), el `pid` de la GUI y el estado `app` del control remoto; y revisar el script de la corrida por si manda `{"cmd":"app","text":"off"}` |
 | El bucle de reinicio del CW Trainer (issue #51) se rearma en el arranque "por sí solo" | El banco no tiene camino de audio y el chroot no estaba armado, así que no se pudo medir la cadencia en el equipo | Medir en la radio el `PID` de la GUI por 150 s tras un reset (issue #15), con `key_train` en `params.db` |
@@ -4634,3 +4636,45 @@ funcionalidad: el bit compartido con PTT/ATU no se escribe sin dueño y restore 
 **Sin fundar** (anexo A): efecto físico del bit en nuestro equipo (MUX/PA), si el MCU del BASE restaura el
 bit al entrar en TX o al resetear (firmware encriptado, sin readback), y si la captura Linux es
 post-NR/DFL.
+
+## 78. El MCU acepta el selector de lectura 0x2000 pero 0x0038/0x0030 devuelven 00000000: la vía probada no acredita readback del reg 12
+
+**Contexto** (issue #369, fase R′ del épico #362): un único intento read-only para ver si el MCU del
+X6200 responde al framing de lectura del GUI de fábrica (I2C-0, slave 0x72, selector 2 B BE + read N)
+en las direcciones justificadas `0x0038` (reg 14, `rxvol`) y `0x0030` (reg 12), con `0x2000`/1 B como
+control. El parche de diagnóstico corrió **una vez** dentro de la GUI (bajo `radio_lock`, al final de
+`radio_init`, antes de `radio_thread`), con deploy temporal **sólo GUI** y rollback verificado; el MUX
+no se conmutó.
+
+**Medido** (radio, 2026-10-30 03:17Z; GUI temporal sha256 `25f281b0…`; log
+`docs/evidencia/2026-10-29-rx-readback-rprime/logs/probe-log.txt`):
+
+```
+READBACK_PROBE_DONE verdict=R_INCONCLUSIVE reads=5 reason="ambas lecturas uniformes/triviales (00/FF); no atribuible"
+control 0x2000/1 rc=0 byte=01 t=32092679 ms
+rxvol 0x0038/4 #1 rc=0 raw=00 00 00 00 le=0 t=32092680 ms
+rxvol 0x0038/4 #2 rc=0 raw=00 00 00 00 le=0 t=32092732 ms
+reg12 0x0030/4 #1 rc=0 raw=00 00 00 00 le=0 t=32092680 ms
+reg12 0x0030/4 #2 rc=0 raw=00 00 00 00 le=0 t=32092733 ms
+shadow reg12=0x00001000 rxvol=0x00000001 (solo diagnostico, NO readback)
+```
+
+Lecturas (código de la corrida): `logs/probe-log.txt`; pasos del deploy/rollback en
+`logs/deploy.txt`, `logs/restore.txt`; hashes del binario temporal y del original en
+`logs/build-summary.txt`.
+
+**Hechos que fija la medición**:
+- El **selector/framing es aceptado** por el MCU: `0x2000`/1 B devolvió `0x01` (rc=0).
+- Las dos lecturas de datos (`0x0038` y `0x0030`, 4 B cada una) devolvieron **`00 00 00 00`** con
+  rc=0, **estables** entre las dos tomas separadas 52/53 ms.
+- Incongruencia documentada: el valor conocido de `rxvol` es **1** (sombra `0x00000001` y GET) y la
+  lectura de `0x0038` devolvió **0**; la sombra de reg12 decía `0x00001000` y la lectura devolvió **0**.
+
+**Consecuencia**: por la regla pre-registrada del issue, datos estables pero triviales/uniformes ⇒
+`R_INCONCLUSIVE` (**no** `R_CANDIDATE_FOUND`, **no** `A_PASS`): no se acredita readback real del
+registro 12 ni una garantía de retorno a BASE. La incongruencia con el control conocido sugiere que esa
+ventana no entrega el estado real, pero una sola toma uniforme no alcanza para declarar
+`R_NO_READBACK_ON_TESTED_PROTOCOL` definitivo. No habilita #364/#365; la siguiente vía es
+**instrumentación física presencial**, no otra ronda de lecturas a ciegas.
+
+**Sin fundar** (anexo A): si el `00000000` es el valor real, una ventana de sólo escritura o un alias.

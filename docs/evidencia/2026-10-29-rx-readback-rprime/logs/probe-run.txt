@@ -1,0 +1,18 @@
+-rw-------    1 root     root             0 Oct 30 03:17 /tmp/x6200_reg12_probe.enable
+old_pid=4716
+waited_s=5
+flag_removed
+new_pid=15356
+25f281b05bfd10990c47d6f38d369af93171c6bdaf751161987b728b121ac19d  /usr/sbin/x6200_gui
+--- log:
+READBACK_PROBE_DONE verdict=R_INCONCLUSIVE reads=5 reason="ambas lecturas uniformes/triviales (00/FF); no atribuible"
+control 0x2000/1 rc=0 byte=01 t=32092679 ms
+rxvol 0x0038/4 #1 rc=0 raw=00 00 00 00 le=0 t=32092680 ms
+rxvol 0x0038/4 #2 rc=0 raw=00 00 00 00 le=0 t=32092732 ms
+reg12 0x0030/4 #1 rc=0 raw=00 00 00 00 le=0 t=32092680 ms
+reg12 0x0030/4 #2 rc=0 raw=00 00 00 00 le=0 t=32092733 ms
+shadow reg12=0x00001000 rxvol=0x00000001 (solo diagnostico, NO readback)
+== post-probe state ==
+Fri Oct 30 03:17:57 UTC 2026
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7200100,"mode":"AM","band":"","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":1,"pre":1,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-80,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+lastbreath v=1 up_s=32092 up_ms=32092800 clean=0 boot=1fa5d1ea radio=RX tx=0 app=home bat=na ev=6/6/0 last=none wus=0 msg=none

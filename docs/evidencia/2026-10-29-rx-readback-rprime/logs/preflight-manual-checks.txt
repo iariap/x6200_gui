@@ -1,0 +1,16 @@
+# Muestras manuales de preflight (ssh read-only) — 2026-10-30, transcriptas de la sesion
+# (no quedo archivo crudo separado de estas 4 muestras; si el JSON y sus timestamps)
+
+## 03:03:59Z
+{"t":"state","vfo":"A","freq":50121100,"freq_bg":51094900,"mode":"AM","band":"6m","vol":6,"tx":false,"app":"","db":-105}
+
+## 03:04:15Z
+{"t":"state","vfo":"A","freq":50122500,"freq_bg":51094900,"mode":"LSB","band":"6m","vol":6,"tx":true,"app":"","db":-90}
+
+## 03:04:31Z
+{"t":"state","vfo":"A","freq":50123200,"freq_bg":51094900,"mode":"LSB","band":"6m","vol":6,"tx":false,"app":"","db":-95}
+
+## 03:04:46Z
+{"t":"state","vfo":"A","freq":50121000,"freq_bg":51094900,"mode":"LSB","band":"6m","vol":14,"tx":false,"app":"","db":-95}
+
+# Observacion: frecuencia/modo/volumen cambian y aparece tx=true -> operador activo, ventana NO estable.

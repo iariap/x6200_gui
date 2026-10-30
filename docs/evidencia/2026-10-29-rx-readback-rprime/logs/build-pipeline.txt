@@ -1,0 +1,16 @@
+# Pipeline de build (#351) — estado medido 2026-10-30T03:07:51Z
+
+## compila-gui.sh espera: imagen x6200-buildroot + volumen x6200-build-output + BUILDROOT=../buildroot_new/AetherX6200Buildroot
+
+$ docker run --rm --entrypoint "" -v x6200-build-output:/b x6200-buildroot sh -c "ls /b; md5sum /b/target/usr/sbin/x6200_gui"
+(contenido /b):
+(sin target GUI):
+md5sum: /b/target/usr/sbin/x6200_gui: No such file or directory
+docker_volume_rc=1
+
+$ du -sh buildroot_new/AetherX6200Buildroot/build
+0	buildroot_new/AetherX6200Buildroot/build
+$ ls rom-build/clone-buildroot/build
+19G	rom-build/clone-buildroot/build
+
+# Conclusion: el volumen nombrado del pipeline y buildroot_new/.../build estan VACIOS; el unico arbol completo (19G) esta en rom-build/clone-buildroot/build, que NO es el mount documentado por #351/compila-gui.sh. Sin preflight PASS no se justifica repoblar/probar builds; ver rollback.md/BLOCKED_BUILD.

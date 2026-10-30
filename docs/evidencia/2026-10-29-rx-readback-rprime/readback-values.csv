@@ -1,0 +1,7 @@
+row,phase,address,selector_bytes_be,length,rc,errno,raw_hex,le_u32,monotonic_ms,radio_state,shadow_diagnostic,verdict,note
+1,control,0x2000,20 00,1,0,0,01,1,32092679,RX,tx=false — app="" — AM 7.355MHz,OK,"control OK: el MCU acepta el selector/framing (byte 0x01)"
+2,rxvol-first,0x0038,00 38,4,0,0,00 00 00 00,0,32092680,RX,shadow rxvol=0x00000001,TRIVIAL,"estable; no coincide con el valor conocido 1 (GET/sombra)"
+3,reg12-first,0x0030,00 30,4,0,0,00 00 00 00,0,32092680,RX,shadow reg12=0x00001000,TRIVIAL,"estable; uniforme; no atribuible"
+4,rxvol-second,0x0038,00 38,4,0,0,00 00 00 00,0,32092732,RX,shadow rxvol=0x00000001,TRIVIAL,"segunda toma tras 52 ms; identica a la primera"
+5,reg12-second,0x0030,00 30,4,0,0,00 00 00 00,0,32092733,RX,shadow reg12=0x00001000,TRIVIAL,"segunda toma tras 53 ms; identica a la primera"
+6,summary,-,-,-,-,-,-,-,-,-,-,-,R_INCONCLUSIVE,"5 lecturas, 0 reintentos, 0 escrituras de valores; uniformidad trivial 00 => INCONCLUSIVE (no PASS); incongruencia con rxvol conocido documentada"

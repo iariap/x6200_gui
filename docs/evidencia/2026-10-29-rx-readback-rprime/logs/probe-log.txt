@@ -1,0 +1,7 @@
+READBACK_PROBE_DONE verdict=R_INCONCLUSIVE reads=5 reason="ambas lecturas uniformes/triviales (00/FF); no atribuible"
+control 0x2000/1 rc=0 byte=01 t=32092679 ms
+rxvol 0x0038/4 #1 rc=0 raw=00 00 00 00 le=0 t=32092680 ms
+rxvol 0x0038/4 #2 rc=0 raw=00 00 00 00 le=0 t=32092732 ms
+reg12 0x0030/4 #1 rc=0 raw=00 00 00 00 le=0 t=32092680 ms
+reg12 0x0030/4 #2 rc=0 raw=00 00 00 00 le=0 t=32092733 ms
+shadow reg12=0x00001000 rxvol=0x00000001 (solo diagnostico, NO readback)

@@ -1,0 +1,15 @@
+# G-preflight final: radio sin cambios (no se desplegó nada) 2026-10-30T03:07:58Z
+Fri Oct 30 03:07:58 UTC 2026
+{"t":"state","vfo":"A","freq":7355600,"freq_bg":7062100,"mode":"LSB","band":"","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":14,"pre":0,"att":1,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-97,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+{"t":"state","vfo":"A","freq":7355600,"freq_bg":7062100,"mode":"LSB","band":"","filter":2800,"flo":200,"fhi":3000,"rfgain":0,"sql":0,"vol":14,"pre":0,"att":1,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-97,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+lastbreath v=1 up_s=31489 up_ms=31489170 clean=0 boot=1fa5d1ea radio=RX tx=0 app=home bat_mv=8600 ext_mv=11800 cap=99 chg=1 ev=0/26/0 last=refresh wus=33265 msg=Frequency locked
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /usr/sbin/x6200_gui
+80c460e403bfe77684c773a50a054bfe6c4a858753695a01167493e35e126df6  /usr/lib/libaether_x6200_control.so.0.15.3
+80bbe5bd70b345e1e9a563d06d047a1c  /usr/sbin/x6200_gui
+4716
+starttime=487302
+/mnt/ui-bak-230949
+/mnt/ui-bak-231555
+/mnt/ui-bak-235449
+
+# NOTA: en esta corrida NO se hizo deploy, NO se reinicio la GUI, NO se accedio al bus I2C desde ningun proceso nuevo; solo lecturas/GET.

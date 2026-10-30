@@ -1,0 +1,4 @@
+== restore clone-gui and build tree target ==
+2d9206eb15a281cb4ded49aa9d3029966439fd89f80ae9e8d669720ed4f2631e  src/radio.c
+c82e3dc1b8255f420ab44914c988dc4719b22c88bd159b6900a260c537576992  src/CMakeLists.txt
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  rom-build/clone-buildroot/build/target/usr/sbin/x6200_gui

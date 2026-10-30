@@ -1,0 +1,14 @@
+== save probe log to host ==
+== restore original GUI ==
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /usr/sbin/x6200_gui
+waited_s=5
+pid=15470
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /usr/sbin/x6200_gui
+tmp_cleaned
+lastbreath v=1 up_s=32102 up_ms=32102810 clean=0 boot=1fa5d1ea radio=RX tx=0 app=home bat_mv=8600 ext_mv=11800 cap=100 chg=1 ev=0/6/0 last=refresh wus=37433 msg=X6200 de R1CBU v0.1.2-lu2dsx
+== post-restore state ==
+Fri Oct 30 03:18:22 UTC 2026
+connect (¿esta la GUI andando?): Connection refused
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /usr/sbin/x6200_gui
+15470
+lastbreath v=1 up_s=32119 up_ms=32119920 clean=0 boot=1fa5d1ea radio=RX tx=0 app=home bat=na ev=5/5/0 last=none wus=0 msg=none

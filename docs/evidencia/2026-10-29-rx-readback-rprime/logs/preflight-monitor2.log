@@ -1,0 +1,34 @@
+=== sample 1 2026-10-30T03:13:44Z ===
+03:13:45Z
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7062100,"mode":"AM","band":"","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":1,"pre":0,"att":1,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-114,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+ssh_exit=0
+=== sample 2 2026-10-30T03:13:59Z ===
+03:13:59Z
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7062100,"mode":"AM","band":"","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":1,"pre":0,"att":1,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-113,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+ssh_exit=0
+=== sample 3 2026-10-30T03:14:13Z ===
+03:14:14Z
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7062100,"mode":"AM","band":"","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":1,"pre":0,"att":1,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-115,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+ssh_exit=0
+=== sample 4 2026-10-30T03:14:28Z ===
+03:14:28Z
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7062100,"mode":"AM","band":"","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":1,"pre":0,"att":1,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-112,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+ssh_exit=0
+=== sample 5 2026-10-30T03:14:42Z ===
+03:14:43Z
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7062100,"mode":"AM","band":"","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":1,"pre":0,"att":1,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-111,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+ssh_exit=0
+=== sample 6 2026-10-30T03:14:57Z ===
+03:14:57Z
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7062100,"mode":"AM","band":"","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":1,"pre":0,"att":1,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-114,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+ssh_exit=0
+=== sample 7 2026-10-30T03:15:11Z ===
+03:15:11Z
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7062100,"mode":"AM","band":"","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":1,"pre":0,"att":1,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-113,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+ssh_exit=0
+=== sample 8 2026-10-30T03:15:25Z ===
+03:15:26Z
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7062100,"mode":"AM","band":"","filter":2500,"flo":0,"fhi":2500,"rfgain":0,"sql":0,"vol":1,"pre":0,"att":1,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":55,"nr_level":20,"pwr":40,"db":-113,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+ssh_exit=0
+MONITOR_DONE
+MONITOR2_RC=0

@@ -1,0 +1,163 @@
+# Commands log — Fase R′ (#369) — 2026-10-30 UTC
+
+Corrida host (Fedora 44) + radio. **Primer intento (03:00–03:10Z):** sólo lectura, BLOCKED_PREFLIGHT
+(radio en uso) + BLOCKED_BUILD (pipeline vacío). **Reintento autorizado (03:13–03:18Z):** con la radio
+liberada se ejecutó el sondEO único con deploy temporal reversible de GUI (backup/rollback verificados),
+sin escrituras de registros, sin TX/PTT/ATU ni cambios de modo/VFO/frecuencia/volumen/mixer/BT/MUX.
+Credenciales/LAN no publicadas.
+
+## 0. Base y worktree
+
+```
+[02:58Z] git -C x6200-rx-readback-probe fetch origin main                    -> exit 0
+[02:58Z] git -C x6200-rx-readback-probe rev-parse origin/main                -> exit 0 (cb9ea287548534ac5c4438c786b57deb436c7c40)
+[02:58Z] git -C x6200-rx-readback-probe status --short --branch              -> exit 0 (## audit/rx-reg12-readback-probe...origin/main)
+[02:58Z] git -C x6200-rx-readback-probe rev-parse HEAD                      -> exit 0 (cb9ea287… = origin/main)
+[02:58Z] gh issue view 369 --repo iariap/x6200_gui                          -> exit 0 (leído completo)
+[02:58Z] team_task_get task-4 / team_task_update claim --expected_revision 1 -> ok (in_progress)
+```
+
+## 1. Preflight pasivo de la radio (sólo lectura)
+
+```
+[03:01Z] ping -c1 192.168.0.236                                            -> exit 0 (ICMP OK)
+[03:01Z] ssh (helper QA, password no publicada) 'date -u; echo SSH_OK'      -> exit 0
+[03:01Z] ssh '/tmp/x6200-remote {"cmd":"get"}' (2 veces)                    -> exit 0 (tx=false, LSB, app=WiFi, vol=0)
+[03:01Z] ssh 'cat /mnt/lastbreath'                                         -> exit 0 (radio=RX tx=0)
+[03:01Z] ssh 'sha256sum /usr/sbin/x6200_gui /usr/lib/libaether_x6200_control.so.0.15.3'
+         -> exit 0 (GUI 4ee87aef…66b0; lib 80c460e4…6df6)
+[03:04Z] ssh GET cada ~15 s (4 muestras manuales)                          -> exit 0
+         03:03:59Z 50.121100 AM  vol 6  tx=false
+         03:04:15Z 50.122500 LSB vol 6  **tx=true**
+         03:04:31Z 50.123200 LSB vol 6  tx=false
+         03:04:46Z 50.121000 LSB vol 14 tx=false   -> frecuencia/modo/vol cambian + TX: RADIO EN USO
+[03:05Z] monitor pasivo 8x GET cada ~15 s (logs/preflight-monitor.log)      -> exit 0
+         6 muestras OK, SSH/ping OK, app=JS8 abierta, frecuencias 50.121→28.1672→7.0586 MHz
+         => estado NO estable / ventana RX no segura  ==> BLOCKED_PREFLIGHT (no se despliega ni se sondea)
+```
+
+## 2. Pipeline de build #351 (medido, host)
+
+```
+[03:07Z] docker run --rm --entrypoint "" -v x6200-build-output:/b x6200-buildroot sh -c 'ls /b; md5sum /b/target/usr/sbin/x6200_gui'
+         -> exit 1 (volumen VACÍO: sin /b/build, sin target GUI; "No such file or directory")
+[03:07Z] du -sh buildroot_new/AetherX6200Buildroot/build                    -> exit 0 (0 B: vacío)
+[03:07Z] du -sh rom-build/clone-buildroot/build                             -> exit 0 (19 G, completo, fuera del mount documentado)
+[03:07Z] git -C rom-build/clone-gui log --oneline -1                        -> exit 0 (fc18a831, detached; fuente #351)
+         => no hay build reproducible del binario temporal en este entorno ==> BLOCKED_BUILD
+```
+
+## 3. Instrumentación host (sin hardware, sin radio)
+
+```
+[03:05Z] gcc -std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter -I src \
+         tests/native/test_rx_reg12_probe.c src/rx_reg12_probe.c \
+         -o .qa369/bin/rx_reg12_probe_tests                                 -> exit 0
+[03:05Z] .qa369/bin/rx_reg12_probe_tests                                    -> exit 0
+         "32 comprobaciones, 0 fallos"
+         (OFF por defecto; control-fail aborta; timeout sin reintento; tx=true/writer
+          concurrente abortan antes del bus; trivial 00/FF => INCONCLUSIVE; inestable =>
+          INCONCLUSIVE; sólo 0x2000/1B, 0x0038/4B, 0x0030/4B; 0 payloads de escritura)
+[03:07Z] generación del diff del parche temporal (radio.c + CMake + módulo + test)
+         -> logs/probe-patch.diff (684 líneas; código NO commiteado: PR sólo docs)
+[03:07Z] mv del código temporal fuera del repo + git status --short          -> exit 0 (repo limpio)
+```
+
+## 4. Estado final (sin deploy)
+
+```
+[03:07:58Z] ssh GET x2 + lastbreath + sha256/md5 GUI + pid/starttime + backups -> exit 0
+         GUI sha256 4ee87aef…66b0 / md5 80bbe5bd70b3…; lib 80c460e4…6df6;
+         pid 4716 starttime 487302 (mismo proceso, NO se reinició);
+         tx=false, radio=RX; MUX nunca conmutado; sin backups nuevos.
+         (el owner cambió a 7.355600 LSB y bloqueó el dial: uso activo)
+```
+
+## 5. Validación ASF del PR (sólo docs)
+
+Con `HEAD=69f2105b3fe079843c8491620a3ce81b87f5e4cb` (1 commit documental) y base `main=cb9ea287…`:
+
+```
+[03:12Z] asf/scripts/apps/x6200/check-matrix.sh main HEAD <worktree>   -> exit 0
+         todos los bloques [SKIP] (no hay cambios fuera de docs/>); cobertura:
+         "[SIN GATE] ningún bloque cubre el diff: docs/evidencia/2026-10-29-rx-readback-rprime/…
+          (sólo documentación: no hay gate que correr)". Sin FAIL.
+[03:12Z] python3 asf/scripts/risk.py x6200 cb9ea287 69f2105b          -> exit 0
+         risk="low", reviewers=["reviewer-frontend"], human_approval=false,
+         auto_approve=true, 12 archivos (todos docs/).
+[03:12Z] git diff --name-only origin/main...HEAD                      -> 12 archivos, todos docs/evidencia/2026-10-29-rx-readback-rprime/
+[03:12Z] git diff --check                                             -> exit 0 (sin whitespace errors)
+```
+
+## 6. PR (documental, sin merge)
+
+```
+[03:15Z] git -C x6200-rx-readback-probe push -u origin audit/rx-reg12-readback-probe -> exit 0
+[03:15Z] gh pr create --repo iariap/x6200_gui --base main --head audit/rx-reg12-readback-probe \
+         --title "[AUDIO QA] Bounded read-only register 12 probe and readback verdict (R-prime)" \
+         --body "Refs #362; Refs #363; Refs #367; Refs #368"                 -> exit 0
+         URL: https://github.com/iariap/x6200_gui/pull/370  (PR documental, sin merge)
+```
+
+## 7. Reintento 2026-10-30 03:13–03:18Z (radio liberada por el owner; ejecutado)
+
+```
+[03:13:44Z] monitor pasivo 8x GET cada ~14 s (logs/preflight-monitor2.log)      -> exit 0
+            8/8: tx=false, app="", AM 7.355 MHz, vol 1, SSH/ping OK => ventana RX estable
+[03:15Z]    build patch flag-file sobre rom-build/clone-gui (backup baseline:
+            head fc18a831; radio.c sha256 2d9206eb…; CMakeLists c82e3dc1…)   -> registro en logs/
+[03:15-03:17Z] make x6200-gui-dirclean && make -j8 x6200-gui (árbol completo
+            rom-build/clone-buildroot/build, 19G)                            -> exit 0
+            binario ARM temporal sha256 25f281b05bfd10990c47d6f38d369af93171c6bdaf751161987b728b121ac19d
+            (14006244 B; contiene strings READBACK_PROBE_DONE/x6200_reg12_probe)
+[03:17Z]    pre-deploy GET x2 (tx=false) + backup radio:
+            /mnt/ui-bak-rprime-20261030-031717/x6200_gui sha256 4ee87aef…66b0 -> exit 0
+            prueba de rollback previa: cp backup sobre /usr/sbin/x6200_gui -> hash idéntico -> exit 0
+[03:17Z]    scp /tmp/x6200_gui.rprime (sha256 25f281b0…) -> install /usr/sbin/x6200_gui chmod 755
+            sha256 verificado 25f281b0…                                             -> exit 0
+[03:17Z]    touch /tmp/x6200_reg12_probe.enable; rm -f /tmp/x6200_reg12_probe.log;
+            old_pid=4716; kill; espera 5 s -> READBACK_PROBE_DONE capturado;
+            flag ELIMINADO de inmediato (sin segunda pasada); new_pid=15356     -> exit 0
+            LOG: verdict=R_INCONCLUSIVE reads=5
+                 control 0x2000/1 rc=0 byte=01
+                 rxvol 0x0038/4 #1/#2 rc=0 raw 00 00 00 00 (52 ms)
+                 reg12 0x0030/4 #1/#2 rc=0 raw 00 00 00 00 (53 ms)
+                 shadow reg12=0x00001000 rxvol=0x00000001
+[03:17:57Z] GET post-probe: tx=false, app="", AM 7.355 MHz, vol 1              -> exit 0
+[03:18Z]    rollback: cp backup -> /usr/sbin/x6200_gui; chmod 755; kill; espera 5 s;
+            sha256 4ee87aef…66b0 verificado; pid 15470; rm flag/log/tmp binario;
+            lastbreath radio=RX tx=0                                              -> exit 0
+[03:18:41Z] GET final x2: tx=false, app="", AM 7.355 MHz, vol 1;
+            sha256/md5 GUI originales; temp_files ninguno; backup presente        -> exit 0
+[03:19Z]    restore clone-gui: git checkout src/radio.c src/CMakeLists.txt + rm nuevos;
+            head fc18a831, 0 porcelains, hashes baseline restaurados             -> exit 0
+            restore build tree: binario original 4ee87aef… copiado a build/target -> exit 0
+```
+
+Resultado: **R_INCONCLUSIVE** (uniformidad trivial 00; control 0x2000 OK; incongruencia con rxvol
+conocido documentada). No hay A_PASS; #364/#365 siguen bloqueados; MUX nunca conmutado.
+
+## 8. Validación ASF del PR (docs-only, actualización del #370)
+
+Con `HEAD=5cc0f69cfb915b8af6b01cf6e00684af9de1ab41` (base `main=cb9ea287…`):
+
+```
+[03:21Z] asf/scripts/apps/x6200/check-matrix.sh main HEAD <worktree>   -> exit 0
+         todos los bloques [SKIP] (no hay cambios fuera de docs/); cobertura:
+         "[SIN GATE] … (sólo documentación: no hay gate que correr)". Sin FAIL.
+[03:21Z] python3 asf/scripts/risk.py x6200 cb9ea287 5cc0f69c          -> exit 0
+         risk="low", reviewers=["reviewer-frontend"], human_approval=false,
+         auto_approve=true (todos los archivos docs/).
+[03:21Z] git diff --check                                             -> exit 0 (sin whitespace errors)
+[03:21Z] git diff --name-only origin/main...HEAD                     -> 25 archivos, todos docs/
+         (docs/HALLAZGOS.md + docs/evidencia/2026-10-29-rx-readback-rprime/**)
+
+## 9. Estado final de la radio (verificado, sólo lectura)
+
+```
+[03:20:34Z] ssh 'get' x2 + sha256 + pid + lastbreath + ls temporales -> exit 0
+         tx=false, app="", AM 7.355 MHz, vol 1; radio=RX;
+         GUI sha256 4ee87aef…66b0 (original); pid 15470;
+         /tmp/x6200_reg12_probe* y /tmp/x6200_gui.rprime: NO existen;
+         backup original en /mnt/ui-bak-rprime-20261030-031717/; MUX nunca conmutado.
+```
