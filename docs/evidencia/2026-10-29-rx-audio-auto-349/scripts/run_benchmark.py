@@ -69,6 +69,22 @@ def sha256_path(path: Path) -> str:
     return h.hexdigest()
 
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+TRACE_FILES = (
+    "run_benchmark.py",
+    "test_benchmark.py",
+    "speex_driver.c",
+    "build_speex_driver.sh",
+    "requirements.txt",
+    "fetch_corpus.sh",
+)
+
+
+def script_hashes() -> dict[str, str]:
+    """Hashes de los scripts que producen/validan los 288 datos (trazabilidad #361)."""
+    return {name: sha256_path(SCRIPT_DIR / name) for name in TRACE_FILES if (SCRIPT_DIR / name).is_file()}
+
+
 def dbfs(values: np.ndarray) -> float:
     if values.size == 0:
         return float("nan")
@@ -701,6 +717,11 @@ def main() -> int:
     parser.add_argument("--limit-clips", type=int, default=None)
     args = parser.parse_args()
 
+    source_commit = run(["git", "-C", str(REPO), "rev-parse", "HEAD"]).stdout.strip()
+    source_status = run(["git", "-C", str(REPO), "status", "--short"]).stdout.splitlines()
+    source_tree_clean = not source_status
+    source_scripts = script_hashes()
+
     scratch: Path = args.scratch
     scratch.mkdir(parents=True, exist_ok=True)
     driver = args.driver or (scratch / "bench" / "speex_driver")
@@ -751,8 +772,11 @@ def main() -> int:
     manifest = {
         "issue": 349,
         "generated_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "git_commit": run(["git", "-C", str(REPO), "rev-parse", "HEAD"]).stdout.strip(),
-        "git_status": run(["git", "-C", str(REPO), "status", "--short"]).stdout.splitlines(),
+        "git_commit": source_commit,
+        "git_status": source_status,
+        "source_tree_clean_at_start": source_tree_clean,
+        "script_hashes": source_scripts,
+        "traceability": "git_commit/script_hashes identifican el codigo exacto con el que se generaron las 288 filas; para el rerun limpio source_tree_clean_at_start debe ser true. El commit final del PR solo agrega evidencia/docs si los hashes de scripts no cambian.",
         "status": status,
         "corpus": {
             "source": CORPUS_URL,
