@@ -25,14 +25,32 @@ BASE, no elige un nivel de NR y no cierra la validación subjetiva.
   `N_OFF` 0,7514 → `N_SPEEX` 0,7891.
 - **DX**: el pasabanda 300–2400 Hz reduce STOI frente a Normal (mediana −0,0224); con Speex
   queda −0,0088. Es el compromiso espectral esperado, no una mejora del equipo.
-  - **CPU host (sólo brazos Speex activos, n=144):** p50 0,239955 ms, p99 0,365040 ms,
-    p99 máximo 0,834270 ms por callback de 4410 muestras (100 ms de audio). Bypass (n=144):
-    p50 0,000030 ms, p99 0,000067 ms. Es host x86_64, **no** el Cortex-A7 de la radio y no es
-    latencia audible.
-- **Controles:** Off sin filtro bit-exacto; Off con filtro proxy bit-exacto en las 144 filas Off;
+  - **CPU host (sólo brazos Speex activos, n=144):** p50 0,240035 ms, p99 0,354983 ms,
+    p99 máximo 0,947873 ms por callback de 4410 muestras (100 ms de audio). Bypass (n=144):
+    p50 0,000030 ms, p99 0,000065 ms. Es host x86_64, **no** el Cortex-A7 de la radio y no es
+    latencia audible; el tiempo CPU varía entre corridas y no es una métrica determinista.
   filtro proxy determinista; Speex con fragmentación 441/4410/irregular con el mismo hash;
   STOI(limpio, limpio) ≈ 1; retardo inyectado recuperado; segunda pasada idéntica
   (`determinism.equal = true` en `aggregate.json`).
+
+  ### Trazabilidad del rerun limpio
+
+  Los 288 datos actuales se generaron desde un **worktree limpio** con `source_tree_clean_at_start=true`
+  y `manifest.git_status=[]`, commit de código `c2ce6336b2f49a99baf9148127d61c82da1db788`
+  (`bench(audio): registrar commit y hashes de scripts en manifest`). Hashes de los scripts que produjeron
+  los datos (coinciden con el HEAD final; el commit posterior sólo agrega evidencia):
+
+  | Script | sha256 |
+  |---|---|
+  | `run_benchmark.py` | `3f851e1f97eae40bccf10d06b2e75ae9fb39e6b5ec757509e8c2bb194b433f6a` |
+  | `test_benchmark.py` | `23b693b802aac6157b0da257d72f7a4d2bb3351207f49b49e948c38b3f3acfe1` |
+  | `speex_driver.c` | `38d9aa9d52a5e62770e24fa313e7fb5d6a508fd48648cdb9b45db0cdb6cf03f6` |
+  | `build_speex_driver.sh` | `6080bbf2ad00582bc38cb3402ff0e9653af2253857e36be8f7271947bc6dc224` |
+  | `requirements.txt` | `36b5173134dbbd456fd2657a0d8ebe2bd0247e4b821290457b64d5c8555345c0` |
+  | `fetch_corpus.sh` | `49beb70d645756c29c1bff08d1dd79287997f606cb0f6305e2c5b678345d9858` |
+
+  `manifest.json` registra `git_commit=c2ce6336…`, `source_tree_clean_at_start=true`, `script_hashes`
+  y `traceability`; el commit final del PR no modifica scripts.
 
 ### Correcciones de la revisión del PR #361
 

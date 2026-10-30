@@ -1,15 +1,22 @@
 {
   "issue": 349,
-  "generated_utc": "2026-10-30T04:13:46Z",
-  "git_commit": "0de9314d2efc6e91ddd894fc310ec1e6a5bae58f",
-  "git_status": [
-    " M docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/run_benchmark.py",
-    " M docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/test_benchmark.py"
-  ],
+  "generated_utc": "2026-10-30T04:33:41Z",
+  "git_commit": "c2ce6336b2f49a99baf9148127d61c82da1db788",
+  "git_status": [],
+  "source_tree_clean_at_start": true,
+  "script_hashes": {
+    "run_benchmark.py": "3f851e1f97eae40bccf10d06b2e75ae9fb39e6b5ec757509e8c2bb194b433f6a",
+    "test_benchmark.py": "23b693b802aac6157b0da257d72f7a4d2bb3351207f49b49e948c38b3f3acfe1",
+    "speex_driver.c": "38d9aa9d52a5e62770e24fa313e7fb5d6a508fd48648cdb9b45db0cdb6cf03f6",
+    "build_speex_driver.sh": "6080bbf2ad00582bc38cb3402ff0e9653af2253857e36be8f7271947bc6dc224",
+    "requirements.txt": "36b5173134dbbd456fd2657a0d8ebe2bd0247e4b821290457b64d5c8555345c0",
+    "fetch_corpus.sh": "49beb70d645756c29c1bff08d1dd79287997f606cb0f6305e2c5b678345d9858"
+  },
+  "traceability": "git_commit/script_hashes identifican el codigo exacto con el que se generaron las 288 filas; para el rerun limpio source_tree_clean_at_start debe ser true. El commit final del PR solo agrega evidencia/docs si los hashes de scripts no cambian.",
   "status": "DONE_AUTOMATED",
   "corpus": {
     "source": "https://www.openslr.org/resources/12/test-clean.tar.gz",
-    "license": "LibriSpeech test-clean, CC BY 4.0 (OpenSLR SLR12); textos del corpus LibriSpeech",
+    "license": "LibriSpeech test-clean, CC BY 4.0 (OpenSLR SLR12)",
     "archive_md5_published": "32fa31d27d2e1cad72775fee3f4849a9",
     "archive_md5_computed": "32fa31d27d2e1cad72775fee3f4849a9",
     "archive_sha256": "39fde525e59672dc6d1551919b1478f724438a95aa55f874b576be21967e6c23",
@@ -110,11 +117,7 @@
         "converted_sha256": "2f2c01f3cd47ea5504f5175049d2408808af2bae8ba0998c0981b4c55fcff449",
         "transcript": "THEY WERE NOW ILLUMINATED BY THE MORNING RADIANCE OF A YOUNG CHILD'S DISPOSITION BUT LATER IN THE DAY OF EARTHLY EXISTENCE MIGHT BE PROLIFIC OF THE STORM AND WHIRLWIND"
       }
-    ],
-    "archive_file": "test-clean.tar.gz",
-    "archive_bytes": 346663984,
-    "downloaded_utc": "2026-10-29T21:22:22Z",
-    "attribution": "LibriSpeech (Panayotov et al., 2015), OpenSLR SLR12, CC BY 4.0"
+    ]
   },
   "seed": 6200,
   "snr_db": [

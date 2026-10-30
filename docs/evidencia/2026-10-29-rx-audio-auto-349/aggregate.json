@@ -14,7 +14,7 @@
       "median_stoi": 0.9085543838346264,
       "p10_stoi": 0.6637456152899467,
       "p90_stoi": 0.9669669452794,
-      "median_estoi": 0.7514298474398545,
+      "median_estoi": 0.7514298474398546,
       "median_delta_stoi_vs_N_OFF": 0.0,
       "p10_delta": 0.0,
       "p90_delta": 0.0,
@@ -25,7 +25,7 @@
       "median_stoi": 0.9203293730489247,
       "p10_stoi": 0.6990067452055908,
       "p90_stoi": 0.9724140240844289,
-      "median_estoi": 0.7891068170752968,
+      "median_estoi": 0.789106817075297,
       "median_delta_stoi_vs_N_OFF": 0.01961889951427126,
       "p10_delta": 0.004129109762550321,
       "p90_delta": 0.031412181799873914,
@@ -36,7 +36,7 @@
       "median_stoi": 0.8770662999777005,
       "p10_stoi": 0.6453629055419998,
       "p90_stoi": 0.9347805161891668,
-      "median_estoi": 0.705116693209201,
+      "median_estoi": 0.7051166932092012,
       "median_delta_stoi_vs_N_OFF": -0.02241488135034503,
       "p10_delta": -0.03525829061619888,
       "p90_delta": -0.017453535540239883,
@@ -47,7 +47,7 @@
       "median_stoi": 0.8847464951147707,
       "p10_stoi": 0.6725234227583502,
       "p90_stoi": 0.9442934148070407,
-      "median_estoi": 0.7343061490684253,
+      "median_estoi": 0.7343061490684262,
       "median_delta_stoi_vs_N_OFF": -0.008782124474334796,
       "p10_delta": -0.02683539740521338,
       "p90_delta": 0.01059076596553009,
@@ -68,40 +68,40 @@
     "callback_audio_ms": 100.0,
     "speex_active": {
       "n": 144,
-      "p50_median_ms_per_callback": 0.239955,
-      "p99_median_ms_per_callback": 0.36504,
-      "p99_max_ms": 0.83427
+      "p50_median_ms_per_callback": 0.240035,
+      "p99_median_ms_per_callback": 0.3549825,
+      "p99_max_ms": 0.947873
     },
     "bypass": {
       "n": 144,
       "p50_median_ms_per_callback": 3e-05,
-      "p99_median_ms_per_callback": 6.7e-05,
-      "p99_max_ms": 0.000229
+      "p99_median_ms_per_callback": 6.5e-05,
+      "p99_max_ms": 0.000236
     },
     "per_arm": {
       "N_OFF": {
         "n": 72,
         "p50_median_ms_per_callback": 3e-05,
-        "p99_median_ms_per_callback": 7.25e-05,
-        "p99_max_ms": 0.000229
+        "p99_median_ms_per_callback": 6.4e-05,
+        "p99_max_ms": 0.000177
       },
       "N_SPEEX": {
         "n": 72,
-        "p50_median_ms_per_callback": 0.2415785,
-        "p99_median_ms_per_callback": 0.364283,
-        "p99_max_ms": 0.83427
+        "p50_median_ms_per_callback": 0.2413275,
+        "p99_median_ms_per_callback": 0.35442,
+        "p99_max_ms": 0.62976
       },
       "DX_OFF": {
         "n": 72,
         "p50_median_ms_per_callback": 3e-05,
-        "p99_median_ms_per_callback": 6.5e-05,
-        "p99_max_ms": 0.000209
+        "p99_median_ms_per_callback": 6.549999999999999e-05,
+        "p99_max_ms": 0.000236
       },
       "DX_SPEEX": {
         "n": 72,
-        "p50_median_ms_per_callback": 0.239439,
-        "p99_median_ms_per_callback": 0.3662415,
-        "p99_max_ms": 0.649329
+        "p50_median_ms_per_callback": 0.239644,
+        "p99_median_ms_per_callback": 0.356054,
+        "p99_max_ms": 0.947873
       }
     },
     "note": "tiempo por callback de 4410 muestras (100 ms de audio); host x86_64, NO Cortex-A7; no mide latencia audible ni p99 de la radio"
@@ -120,8 +120,8 @@
       "length_preserved": 1,
       "cb_p50_ms": 3e-05,
       "cb_p99_ms": 3.1e-05,
-      "cb_max_ms": 0.000281,
-      "wall_ms": 0.099,
+      "cb_max_ms": 0.00013,
+      "wall_ms": 0.08,
       "cb_sum_ms": 0.003
     },
     "proxy_filter_deterministic": true,

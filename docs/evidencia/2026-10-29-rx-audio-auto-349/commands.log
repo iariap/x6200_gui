@@ -1,14 +1,15 @@
-# Comandos y códigos de salida — benchmark #349 / PR #361 (revisión)
+# Comandos y códigos de salida — benchmark #349 / PR #361
+# Rerun limpio de trazabilidad (revisión final #361)
 
 Convenciones: `<WORKTREE>` = `/home/pablo/desa/x6200/x6200-qa-audio-auto-349`;
+`<CLEAN>` = `/home/pablo/desa/x6200/x6200-qa-audio-auto-349-clean`;
 `<SCRATCH>` = `/home/pablo/desa/x6200/assessment-194/scratch/349-auto`;
 `<CORPUS>` = `/home/pablo/desa/x6200/assessment-194/scratch/349-corpus`.
-No se incluyen credenciales, IPs ni audio.
+No se incluyen credenciales, IPs ni audio. No hubo radio/TX/PTT/ATU/MUX/firmware/PulseAudio.
 
-## Corpus
+## Corpus (verificado)
 
 ```sh
-mkdir -p <CORPUS>
 curl -L --retry 3 --fail -o <CORPUS>/test-clean.tar.gz \
   https://www.openslr.org/resources/12/test-clean.tar.gz
 # exit=0
@@ -20,71 +21,72 @@ tar -xzf <CORPUS>/test-clean.tar.gz -C <CORPUS>
 # exit=0
 ```
 
-## Dependencias y driver
+## Entorno y driver
 
 ```sh
 python3 -m venv /home/pablo/desa/x6200/assessment-194/scratch/349-venv
-# exit=0
 /home/pablo/desa/x6200/assessment-194/scratch/349-venv/bin/pip install -r \
   <WORKTREE>/docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/requirements.txt
-# numpy==2.4.6 scipy==1.16.2 pystoi==0.4.1 soundfile==0.13.1 pytest==9.1.1
-# exit=0
+# numpy==2.4.6 scipy==1.16.2 pystoi==0.4.1 soundfile==0.13.1 pytest==9.1.1; exit=0
 
-cd <WORKTREE>
-REPO=<WORKTREE> OUT=<SCRATCH>/bench \
+cd <CLEAN>
+REPO=<CLEAN>/../../... OUT=<SCRATCH>/bench \
   sh docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/build_speex_driver.sh
+# exit=0; sha256 driver b7e1354d...aa9f
+```
+
+## Rerun limpio (dos pasadas de la matriz)
+
+```sh
+# worktree detached desde el commit c2ce6336 (source_tree_clean_at_start=true)
+git worktree add --detach <CLEAN> c2ce6336b2f49a99baf9148127d61c82da1db788
 # exit=0
-sha256sum <SCRATCH>/bench/speex_driver
-# b7e1354da7e86535553a08c9900684fd6fdd4d502ae9ef00c0f31fc3f1f7aa9f
-```
 
-## Tests de regresión
-
-```sh
-cd <WORKTREE>
-RX349_SCRATCH=<SCRATCH> /home/pablo/desa/x6200/assessment-194/scratch/349-venv/bin/python -m pytest -q \
-  docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/test_benchmark.py
-# 13 passed; exit=0
-```
-
-Los tests cubren: ventana común por escenario, clipping sin overflow de `-32768`, CPU
-separada Speex/bypass, partición Speex 441/4410/irregular, STOI self, retardo inyectado,
-semilla de ruido y hash mismatch.
-
-## Benchmark completo (288 filas, dos pasadas)
-
-```sh
 docker rm -f rx349-bench
 docker run -d --rm --name rx349-bench -v <SCRATCH>:/data:rw -w /data \
   x6200-speexdsp-capture-bench:1.2.1-1 tail -f /dev/null
 # exit=0
 RX349_BENCH_CONTAINER=rx349-bench \
   /home/pablo/desa/x6200/assessment-194/scratch/349-venv/bin/python \
-  docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/run_benchmark.py \
-  --corpus-dir <CORPUS>/LibriSpeech/test-clean --scratch <SCRATCH> \
-  --image x6200-speexdsp-capture-bench:1.2.1-1
+  <CLEAN>/docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/run_benchmark.py \
+  --corpus-dir <CORPUS>/LibriSpeech/test-clean --scratch <SCRATCH>
 # exit=0
 # status=DONE_AUTOMATED; rows=288; invalid=0; off_ok=true;
-# determinism.equal=true; clipping=false; nan=false
+# determinism.equal=true; clipping=false; nan=false;
+# manifest: git_commit=c2ce6336..., source_tree_clean_at_start=true,
+#           git_status=[], script_hashes de los 6 scripts.
 docker rm -f rx349-bench
 # exit=0
 ```
 
-La ejecución hace **dos pasadas de la matriz completa** y compara hashes de salida y métricas.
-El resultado de la segunda pasada quedó `determinism.equal=true`.
+## Tests de regresión
 
-## Validaciones documentales
+```sh
+cd <WORKTREE>
+RX349_SCRATCH=<SCRATCH> /home/pablo/desa/x6200/assessment-194/scratch/349-venv/bin/python \
+  -m pytest -q docs/evidencia/2026-10-29-rx-audio-auto-349/scripts/test_benchmark.py
+# 13 passed; exit=0
+```
+
+Cubren: ventana común, clipping sin overflow de `-32768`, CPU separada Speex/bypass,
+partición Speex 441/4410/irregular, STOI self, retardo inyectado, semilla y hash mismatch.
+
+## Validaciones
 
 ```sh
 cd <WORKTREE>
 git diff --check
 # exit=0
 
-# ASF x6200, diff docs-only contra main 6850d671
-cd /home/pablo/desa/x6200/asf
+# ASF x6200, base main 6850d671
 scripts/apps/x6200/check-matrix.sh 6850d671 HEAD <WORKTREE>
 # exit=0; [SIN GATE] "sólo documentación: no hay gate que correr"
 ```
 
-No hubo radio, TX/PTT/ATU, MUX, firmware, GUI, BASE, PulseAudio ni cambios de producción.
-El corpus y los binarios quedan fuera del repositorio; no se versiona audio.
+## Trazabilidad
+
+- Datos actuales: commit de código `c2ce6336b2f49a99baf9148127d61c82da1db788`; worktree limpio;
+  `manifest.git_status=[]`; `source_tree_clean_at_start=true`.
+- Scripts y hashes registrados en `manifest.json`; coinciden con el HEAD final del PR (el commit
+  posterior sólo agrega este README/commands/manifest).
+- CPU por callback es tiempo de host, no determinista entre corridas; no es latencia audible ni Cortex-A7.
