@@ -1,0 +1,991 @@
+# commands.log — #362 auditoría ROM Linux completa: ruta de audio RX y decisión
+# Generado: 2026-10-30T04:44:53Z (host America/Argentina/Buenos_Aires, UTC-3)
+# Alcance: SOLO LECTURA sobre repos y artefactos de build. Sin radio, sin deploy, sin I2C, sin MUX, sin TX/PTT/ATU.
+# Formato: `### <chequeo>` + comando + salida (<=60 líneas) + exit code.
+# worktree=/home/pablo/desa/x6200/x6200-rom-audio-audit
+# builddata=/home/pablo/desa/x6200/rom-build/clone-buildroot/build
+
+
+### 0.1 fecha/host
+$ date -u; uname -a; pwd
+    Fri Oct 30 04:44:53 AM UTC 2026
+    Linux fedora 7.2.11-200.fc44.x86_64 #1 SMP PREEMPT_DYNAMIC Thu Oct 15 15:58:58 UTC 2026 x86_64 GNU/Linux
+    /home/pablo/desa/x6200/x6200-rom-audio-audit
+exit=0
+
+### 0.2 worktree: rama/SHA/suciedad
+$ git status --short | head -20; git branch --show-current; git rev-parse HEAD; git log -1 --format="%H %ci %s"
+    ?? .audit-tmp/
+    ?? docs/evidencia/2026-10-30-rx-audio-rom-audit/
+    audit/rx-audio-rom-audio-362
+    6850d671d430a1693dbcaf593579a3d98b037995
+    6850d671d430a1693dbcaf593579a3d98b037995 2026-10-30 00:49:47 -0300 docs(audio): physical instrument plan and MUX fail-safe contract (#372)
+exit=0
+
+### 0.3 main real de origin (ls-remote, no fetch que mueva refs)
+$ git ls-remote https://github.com/iariap/x6200_gui.git refs/heads/main
+    6850d671d430a1693dbcaf593579a3d98b037995  refs/heads/main
+exit=0
+
+### 0.4 refs locales del worktree
+$ git rev-parse main fork/main HEAD 2>&1
+    fc18a831a3db1e15f316be7d613152fcefc705ec
+    6850d671d430a1693dbcaf593579a3d98b037995
+    6850d671d430a1693dbcaf593579a3d98b037995
+exit=0
+
+### 0.5 buildroot clone: rama/SHA/suciedad
+$ git -C /home/pablo/desa/x6200/rom-build/clone-buildroot branch --show-current; git -C /home/pablo/desa/x6200/rom-build/clone-buildroot rev-parse HEAD; git -C /home/pablo/desa/x6200/rom-build/clone-buildroot status --short | head -10
+    feat/kernel-hidraw-unifying
+    e85e97acbb33462f260e443aa78a538e3c5624c1
+     M br2_external/package/x6200-gui/x6200_gui.mk
+     m buildroot
+    ?? br2_external/board/X6200/linux/rootfs-overlay/usr/share/x6200/__pycache__/
+    ?? br2_external/package/x6200-gui/x6200_gui.mk.orig
+    ?? build-full-154223.log
+    ?? e2fs-154601.log
+    ?? e2fs2-154633.log
+    ?? full2-154501.log
+    ?? full3-154709.log
+    ?? full4-155343.log
+exit=0
+
+### 0.6 clone-buildroot commit construido (last-built.txt)
+$ cat /home/pablo/desa/x6200/rom-build/last-built.txt 2>/dev/null
+    b9ea103e0d4270013c1c448bb262a0b436f5ed8f b44eb8123b8f8f112bdd96dd5b65c35347018cc7 d3f22d806f5279d533ca86d712c903d911b378be139ea67735141fa06f496d0b e39c49003e758a74c09b26db33b34fb3d65b24cbf0cf51c1d20e99f3d5d69998
+exit=0
+
+### 0.7 clone-gui HEAD
+$ git -C /home/pablo/desa/x6200/rom-build/clone-gui rev-parse HEAD; git -C /home/pablo/desa/x6200/rom-build/clone-gui status --short | head -5
+    fc18a831a3db1e15f316be7d613152fcefc705ec
+exit=0
+
+### 0.8 buildroot submodule commit
+$ git -C /home/pablo/desa/x6200/rom-build/clone-buildroot ls-tree HEAD buildroot; git -C /home/pablo/desa/x6200/rom-build/clone-buildroot/buildroot rev-parse HEAD; git -C /home/pablo/desa/x6200/rom-build/clone-buildroot/buildroot describe --tags
+    160000 commit cc34b5b2abf2588f0ef55e46a4fe85a60c19ba1f  buildroot
+    cc34b5b2abf2588f0ef55e46a4fe85a60c19ba1f
+    2023.02.11
+exit=0
+
+### 1.1 kernel version
+$ head -5 /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/linux-6.1.82/Makefile
+    # SPDX-License-Identifier: GPL-2.0
+    VERSION = 6
+    PATCHLEVEL = 1
+    SUBLEVEL = 82
+    EXTRAVERSION =
+exit=0
+
+### 1.2 hashes de artefactos del build
+$ sha256sum /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/linux-6.1.82/.config /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/x6200_gui /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/lib/libaether_x6200_control.so.0.15.3 /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/x6200_daemon /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/btaudio-ctl /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/lib/libspeexdsp.so.1.5.2 /home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/sun8i-r16-x6200.dtb /home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/zImage 2>&1
+    8749a618dadcef6a6392fb2c9b6bcdb1b7fc740f78ad4a6ce2baef38ff93b570  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/linux-6.1.82/.config
+    4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/x6200_gui
+    80c460e403bfe77684c773a50a054bfe6c4a858753695a01167493e35e126df6  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/lib/libaether_x6200_control.so.0.15.3
+    07c431cceaf28ac3e5b7f630d36c70f7d04b9af3cb19f078c0728c7f53c99877  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/x6200_daemon
+    8483941fc371f2def01bf62043a5ce70e7f31f503d4650c51d25f4977361f01b  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/btaudio-ctl
+    bb57a91cd10e42e94e637b47e4fc9bf467363545f5dd1bb79106a2c189f709dc  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/lib/libspeexdsp.so.1.5.2
+    4d73f8a5d5f846c21e4ac30550a5811443a01666f9ee57880b5316e78627cc38  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/sun8i-r16-x6200.dtb
+    8b09458d5399cad42a34e1741180ee7d412ace5d736f35e847383936b898512f  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/zImage
+exit=0
+
+### 1.3 hashes de fuentes del build (defconfig/DTS/overlay)
+$ sha256sum /home/pablo/desa/x6200/rom-build/clone-buildroot/br2_external/configs/X6200_defconfig /home/pablo/desa/x6200/rom-build/clone-buildroot/br2_external/board/X6200/linux/sun8i-r16-x6200_defconfig /home/pablo/desa/x6200/rom-build/clone-buildroot/br2_external/board/X6200/dts/sun8i-r16-x6200.dts /home/pablo/desa/x6200/rom-build/clone-buildroot/br2_external/board/X6200/linux/rootfs-overlay/var/lib/alsa/asound.state > /dev/null; echo overlay-ok
+    overlay-ok
+exit=0
+
+### 1.4 imagen actual del build vs imagen flasheada documentada
+$ ls -la /home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/sdcard.img /home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/rootfs.ext2; sha256sum /home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/sdcard.img
+    -rw-r--r--. 1 pablo pablo 536870912 Oct 29 16:13 /home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/rootfs.ext2
+    -rw-r--r--. 1 pablo pablo 571473920 Oct 29 16:13 /home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/sdcard.img
+    0ed4cd320cb9ac66df8aad8d2f663acd42a34e75db56a078c4a8fe0740f37cf7  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/sdcard.img
+exit=0
+
+### 1.5 GUI construida == GUI desplegada documentada (#363 A0)
+$ sha256sum /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/x6200_gui; echo "esperado 4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0"
+    4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/x6200_gui
+    esperado 4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0
+exit=0
+
+### 1.6 no hay cambios de código GUI entre deploy fc18a831 y main 6850d671
+$ git log --oneline fc18a831..6850d671 -- src/ rootfs/ CMakeLists.txt lv_conf.h lv_drv_conf.h; echo "(vacio = solo docs)"; git diff --name-only fc18a831..6850d671 | sed "s#/.*##" | sort | uniq -c
+    (vacio = solo docs)
+        115 docs
+exit=0
+
+### 2.1 kernel .config: SND/SoC/codec/simple-card
+$ grep -nE "^CONFIG_SND=|^CONFIG_SND_SOC=|^CONFIG_SND_SUN8I_CODEC|^CONFIG_SND_SUN8I_CODEC_ANALOG|^CONFIG_SND_SUN4I_I2S|^CONFIG_SND_SIMPLE_CARD|^CONFIG_SND_DUMMY|^CONFIG_SND_ALOOP|^CONFIG_SND_USB_AUDIO" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/linux-6.1.82/.config
+    3545:CONFIG_SND=y
+    3567:CONFIG_SND_DUMMY=m
+    3568:CONFIG_SND_ALOOP=m
+    3582:CONFIG_SND_USB_AUDIO=m
+    3583:CONFIG_SND_USB_AUDIO_USE_MEDIA_CONTROLLER=y
+    3595:CONFIG_SND_SOC=y
+    3636:CONFIG_SND_SUN8I_CODEC=y
+    3637:CONFIG_SND_SUN8I_CODEC_ANALOG=y
+    3638:CONFIG_SND_SUN4I_I2S=y
+    3826:CONFIG_SND_SIMPLE_CARD_UTILS=y
+    3827:CONFIG_SND_SIMPLE_CARD=y
+exit=0
+
+### 2.2 kernel .config: I2C char/mv64xxx, watchdog
+$ grep -nE "^CONFIG_I2C_CHARDEV|^CONFIG_I2C_MV64XXX|^CONFIG_WATCHDOG=|^CONFIG_SUNXI_WATCHDOG" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/linux-6.1.82/.config
+    1888:CONFIG_I2C_CHARDEV=y
+    1920:CONFIG_I2C_MV64XXX=y
+    2381:CONFIG_WATCHDOG=y
+    2404:CONFIG_SUNXI_WATCHDOG=y
+exit=0
+
+### 2.3 kernel defconfig del board: lineas de audio
+$ grep -nE "CONFIG_SND|CONFIG_SUN8I|CONFIG_SND_SIMPLE_CARD" /home/pablo/desa/x6200/rom-build/clone-buildroot/br2_external/board/X6200/linux/sun8i-r16-x6200_defconfig
+    197:CONFIG_SUN8I_THERMAL=y
+    236:CONFIG_SND=y
+    237:CONFIG_SND_DUMMY=m
+    238:CONFIG_SND_ALOOP=m
+    239:CONFIG_SND_USB_AUDIO=m
+    240:CONFIG_SND_USB_UA101=m
+    241:CONFIG_SND_USB_CAIAQ=m
+    242:CONFIG_SND_USB_CAIAQ_INPUT=y
+    243:CONFIG_SND_USB_6FIRE=m
+    244:CONFIG_SND_USB_HIFACE=m
+    245:CONFIG_SND_BCD2000=m
+    246:CONFIG_SND_USB_POD=m
+    247:CONFIG_SND_USB_PODHD=m
+    248:CONFIG_SND_USB_TONEPORT=m
+    249:CONFIG_SND_USB_VARIAX=m
+    250:CONFIG_SND_SOC=y
+    251:CONFIG_SND_SUN4I_CODEC=y
+    252:CONFIG_SND_SUN8I_CODEC=y
+    253:CONFIG_SND_SUN8I_CODEC_ANALOG=y
+    254:CONFIG_SND_SUN4I_I2S=y
+    255:CONFIG_SND_SUN4I_SPDIF=y
+    256:CONFIG_SND_SOC_CS42L51_I2C=m
+    257:CONFIG_SND_SOC_CS42L52=m
+    258:CONFIG_SND_SIMPLE_CARD=y
+    259:CONFIG_SND_AUDIO_GRAPH_CARD=y
+exit=0
+
+### 2.4 no hay driver de audio x6200 en el kernel
+$ grep -rn "xiegu\|x6200" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/linux-6.1.82/sound --include="*.c" --include="*.h" 2>/dev/null | grep -v "0x6200"; echo "(vacio = ningun driver de audio conoce la placa)"; grep -rln "xiegu,x6200" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/linux-6.1.82/arch/arm/boot/dts --include="*.dts" | grep -v sun8i-r16-x6200; echo "(vacio = el unico DTS que la nombra es el del board)"
+    (vacio = ningun driver de audio conoce la placa)
+    (vacio = el unico DTS que la nombra es el del board)
+exit=0
+
+### 2.5 DTB compilado -> texto (dtc del host de build)
+$ /home/pablo/desa/x6200/rom-build/clone-buildroot/build/host/bin/dtc -I dtb -O dts -o /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/built.dts /home/pablo/desa/x6200/rom-build/clone-buildroot/build/images/sun8i-r16-x6200.dtb 2>/home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/dtc.warn; echo "dtc exit=$?"; grep -c "Warning" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/dtc.warn
+    dtc exit=0
+    9
+exit=0
+
+### 2.6 DTB: nodo sound (simple-audio-card)
+$ sed -n "/sound {/,/};/p" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/built.dts
+      sound {
+        compatible = "simple-audio-card";
+        simple-audio-card,name = "sun8i-a33-audio";
+        simple-audio-card,format = "i2s";
+        simple-audio-card,frame-master = <0x34>;
+        simple-audio-card,bitclock-master = <0x34>;
+        simple-audio-card,mclk-fs = <0x80>;
+        simple-audio-card,aux-devs = <0x35>;
+        simple-audio-card,routing = "Left DAC\0AIF1 Slot 0 Left\0Right DAC\0AIF1 Slot 0 Right\0AIF1 Slot 0 Left ADC\0Left ADC\0AIF1 Slot 0 Right ADC\0Right ADC";
+        status = "okay";
+
+        simple-audio-card,cpu {
+          sound-dai = <0x36>;
+        };
+exit=0
+
+### 2.7 DTB: codec A33 + codec-analog + DAI I2S
+$ sed -n "/codec@1c22e00 {/,/};/p;/codec-analog {/,/};/p;/dai@1c22c00 {/,/};/p" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/built.dts | grep -E "compatible|status|reg =|sound-dai|phandle"
+            compatible = "allwinner,sun8i-a23-codec-analog";
+            phandle = <0x35>;
+          #sound-dai-cells = <0x00>;
+          compatible = "allwinner,sun6i-a31-i2s";
+          reg = <0x1c22c00 0x200>;
+          status = "okay";
+          phandle = <0x36>;
+          #sound-dai-cells = <0x01>;
+          compatible = "allwinner,sun8i-a33-codec";
+          reg = <0x1c22e00 0x400>;
+          status = "okay";
+          phandle = <0x37>;
+exit=0
+
+### 2.8 DTB: i2c0 (BASE) SIN nodos hijos
+$ sed -n "/i2c@1c2ac00 {/,/};/p" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/built.dts
+        i2c@1c2ac00 {
+          compatible = "allwinner,sun6i-a31-i2c";
+          reg = <0x1c2ac00 0x400>;
+          interrupts = <0x00 0x06 0x04>;
+          clocks = <0x02 0x33>;
+          resets = <0x02 0x20>;
+          pinctrl-names = "default";
+          pinctrl-0 = <0x1e>;
+          status = "okay";
+          #address-cells = <0x01>;
+          #size-cells = <0x00>;
+        };
+exit=0
+
+### 2.9 DTB: no hay nodo de MUX/amp/GPIO de audio ni hog
+$ grep -inE "mux|speaker|amplifier|audio-switch|codec-switch|gpio-hog" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/built.dts; echo "(vacio = no hay control Linux del MUX)"
+    (vacio = no hay control Linux del MUX)
+exit=0
+
+### 2.10 DTS del board: codec/dai/sound/i2c0
+$ grep -nE "&codec|&dai|&sound|simple-audio-card|&i2c0|status = \"okay\"" /home/pablo/desa/x6200/rom-build/clone-buildroot/br2_external/board/X6200/dts/sun8i-r16-x6200.dts | sed -n "1,12p;200,240p"
+    57:    status = "okay";
+    68:    status = "okay";
+    103:    status = "okay";
+    220:  status = "okay";
+    223:&codec {
+    224:  status = "okay";
+    227:&dai {
+    228:  status = "okay";
+    232:  status = "okay";
+    235:&i2c0 {
+    236:    status = "okay";
+    247:&i2c0_pins {
+exit=0
+
+### 2.11 ASoC: widgets/rutas del codec analog (HP y line out)
+$ grep -nE "SND_SOC_DAPM_OUTPUT|SND_SOC_DAPM_OUT_DRV|Headphone Source Playback Route|Headphone Amp|Line Out Source" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/linux-6.1.82/sound/soc/sunxi/sun8i-codec-analog.c
+    340:  SOC_DAPM_ENUM("Headphone Source Playback Route",
+    369:  SND_SOC_DAPM_MUX("Headphone Source Playback Route",
+    371:  SND_SOC_DAPM_OUT_DRV_E("Headphone Amp", SUN8I_ADDA_PAEN_HP_CTRL,
+    379:  SND_SOC_DAPM_OUTPUT("HP"),
+    383:  { "Headphone Source Playback Route", "DAC", "Left DAC" },
+    384:  { "Headphone Source Playback Route", "DAC", "Right DAC" },
+    385:  { "Headphone Source Playback Route", "Mixer", "Left Mixer" },
+    386:  { "Headphone Source Playback Route", "Mixer", "Right Mixer" },
+    387:  { "Headphone Amp", NULL, "Headphone Source Playback Route" },
+    389:  { "HP", NULL, "Headphone Amp" },
+    547:  SOC_DAPM_ENUM("Line Out Source Playback Route",
+    552:  SND_SOC_DAPM_MUX("Line Out Source Playback Route",
+    557:  SND_SOC_DAPM_OUTPUT("LINEOUT"),
+    561:  { "Line Out Source Playback Route", "Stereo", "Left Mixer" },
+    562:  { "Line Out Source Playback Route", "Stereo", "Right Mixer" },
+    563:  { "Line Out Source Playback Route", "Mono Differential", "Left Mixer" },
+    564:  { "Line Out Source Playback Route", "Mono Differential", "Right Mixer" },
+    565:  { "LINEOUT", NULL, "Line Out Source Playback Route" },
+exit=0
+
+### 2.12 ASoC: codec A33 (DAC/AIF1)
+$ grep -nE "simple-audio-card,name|sun8i-a33-audio|Left DAC|Right DAC" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/linux-6.1.82/arch/arm/boot/dts/sun8i-a33.dtsi | head -10
+    185:    simple-audio-card,name = "sun8i-a33-audio";
+    192:      "Left DAC", "DACL",
+    193:      "Right DAC", "DACR";
+exit=0
+
+### 3.1 rootfs: init.d completo (inventario de servicios)
+$ ls /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/etc/init.d/ | grep -vE "^S[0-9]+(boot|sys|klog|udev|seed|create|update|tune|restore|network|ntp|sshd|dbus|bluetooth|btpairings|btcat|qrz|webserver)"
+    rcK
+    rcS
+    S11radio_daemon
+    S12pulseaudio
+    S20gui
+    S48sntp
+    S50alsa
+exit=0
+
+### 3.2 rootfs: PulseAudio 16.1 modules (loopback/null-sink/bluez5)
+$ ls /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/lib/pulseaudio/modules/ | grep -E "loopback|null-sink|bluetooth|bluez5"
+    libbluez5-util.so
+    module-bluetooth-discover.so
+    module-bluetooth-policy.so
+    module-bluez5-device.so
+    module-bluez5-discover.so
+    module-loopback.so
+    module-null-sink.so
+exit=0
+
+### 3.3 rootfs: S12pulseaudio (arranque PA en modo sistema)
+$ grep -nE "pulseaudio|--system|--disallow-exit|--exit-idle-time" /home/pablo/desa/x6200/rom-build/clone-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/init.d/S12pulseaudio
+    3:# Starts pulseaudio.
+    8:  printf "Starting pulseaudio: "
+    10:  /usr/bin/pulseaudio \
+    11:    --system \
+    13:    --disallow-exit \
+    14:    --exit-idle-time=-1 \
+    20:  printf "Stopping pulseaudio: "
+    21:  PULSE_RUNTIME_PATH=/var/run/pulse /usr/bin/pulseaudio --kill
+exit=0
+
+### 3.4 rootfs: S50alsa (alsactl restore)
+$ grep -nE "alsactl|start|stop" /home/pablo/desa/x6200/rom-build/clone-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/init.d/S50alsa
+    8:start() {
+    10:    alsactl restore
+    14:stop() {
+    16:#   alsactl store
+    20:restart() {
+    21:    stop
+    22:    start
+    26:  start)
+    27:    start
+    29:  stop)
+    30:    stop
+    32:  restart|reload)
+    33:    restart
+    36:    echo "Usage: $0 {start|stop|restart}"
+exit=0
+
+### 3.5 rootfs: S11radio_daemon (serial BASE: 's' al stop)
+$ cat -n /home/pablo/desa/x6200/rom-build/clone-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/init.d/S11radio_daemon
+         1  #!/bin/sh
+         2
+         3  case "$1" in
+         4      start)
+         5          # create DNS soft link
+         6          ln -sf /run/NetworkManager/resolv.conf /etc/resolv.conf
+         7          # show power on wellcome screen
+         8          ;;
+         9      stop)
+        10          # Turn off BASE board
+        11          stty -F /dev/ttyS1 1152000
+        12          echo s > /dev/ttyS1
+        13          ;;
+        14      *)
+        15          echo "Usage: $0 {start|stop}"
+        16          exit 1
+        17          ;;
+        18  esac
+        19
+        20  exit 0
+exit=0
+
+### 3.6 GUI rootfs: system.pa.d/btaudio.pa (A2DP only; sin switch-on-connect)
+$ cat -n /home/pablo/desa/x6200/x6200-rom-audio-audit/rootfs/etc/pulse/system.pa.d/btaudio.pa; echo "--- hashes ---"; sha256sum /home/pablo/desa/x6200/x6200-rom-audio-audit/rootfs/etc/pulse/system.pa.d/btaudio.pa /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/etc/pulse/system.pa.d/btaudio.pa; echo "--- overlay buildroot: system.pa base (contexto) ---"; grep -nE "switch-on-connect|bluetooth|default-device-restore|always-sink" /home/pablo/desa/x6200/rom-build/clone-buildroot/br2_external/board/X6200/linux/rootfs-overlay/etc/pulse/system.pa
+         1  # Bluetooth audio: A2DP headphones only, no automatic routing.
+         2  # The RX audio goes to the headphones through a loopback that
+         3  # /usr/sbin/btaudio-ctl loads when asked to (Settings -> Wireless).
+         4  .nofail
+         5
+         6  # A phone/tablet that connects for CAT also connects as an A2DP source, and
+         7  # the default policy loops it into alsa_output (the radio TX audio):
+         8  # a2dp_source=false. auto_switch=0: never switch a card to HFP/HSP.
+         9  unload-module module-bluetooth-policy
+        10  load-module module-bluetooth-policy auto_switch=0 a2dp_source=false ag=false
+        11
+        12  # Keep the default sink/source on the radio codec when a device connects.
+        13  unload-module module-switch-on-connect
+        14
+        15  # No HFP/HSP at all: on this radio family SCO gives no audio and drops the
+        16  # WiFi, so PulseAudio has no headset backend. headset=ofono without oFono = no headset backend.
+        17  unload-module module-bluetooth-discover
+        18  load-module module-bluetooth-discover headset=ofono
+    --- hashes ---
+    6f1722c4610a9e92188d9598e4e4321802b6c4fa8e3d25b8b936f9fe2ecfdc38  /home/pablo/desa/x6200/x6200-rom-audio-audit/rootfs/etc/pulse/system.pa.d/btaudio.pa
+    6f1722c4610a9e92188d9598e4e4321802b6c4fa8e3d25b8b936f9fe2ecfdc38  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/etc/pulse/system.pa.d/btaudio.pa
+    --- overlay buildroot: system.pa base (contexto) ---
+    25:load-module module-switch-on-connect
+    46:load-module module-default-device-restore
+    49:load-module module-always-sink
+    58:.ifexists module-bluetooth-policy.so
+    59:load-module module-bluetooth-policy
+    62:.ifexists module-bluetooth-discover.so
+    63:load-module module-bluetooth-discover
+exit=0
+
+### 3.7 rootfs: btaudio-ctl loopback RX->A2DP y fuente del loopback
+$ grep -nE "SOURCE=|module-loopback|hp_sinks|BTAUDIO_RX|pactl load-module|/dev/i2c|x6200_control" /home/pablo/desa/x6200/x6200-rom-audio-audit/rootfs/usr/sbin/btaudio-ctl
+    23:SOURCE=alsa_input.platform-sound.stereo-fallback
+    24:BTAUDIO_RX=yes
+    68:hp_sinks() { pactl list short sinks 2>/dev/null | awk '$2 ~ /^bluez_sink\..*a2dp_sink$/ {print $2}'; }
+    81:  sinks=$(hp_sinks)
+    83:  if [ "$BTAUDIO_RX" = "yes" ]; then
+    86:    for id in $(pactl list short modules 2>/dev/null | awk '$2 == "module-loopback" {print $1}'); do
+    108:      pactl load-module module-loopback source=$SOURCE sink="$s" latency_msec=10 adjust_time=1 \
+    112:    for m in $(pactl list short modules 2>/dev/null | awk '$2 == "module-loopback" && /sink=bluez_sink\./ {print $1}'); do
+    154:  s=$(hp_sinks | head -n 1)
+    159:  printf 'HP\t%s\t%s\nRX\t%s\nMUTE\t%s\n' "$hp" "${vol:--1}" "$BTAUDIO_RX" "$BTAUDIO_MUTE"
+    184:    hp_sinks | grep -q "$(echo "$1" | tr : _)" && return 0
+    290:  rx)          set_kv BTAUDIO_RX "$(yn "$2")"; apply_rx;;
+    291:  volume)      for s in $(hp_sinks); do pactl set-sink-volume "$s" "$2%"; done;;
+exit=0
+
+### 3.8 rootfs: asound.state guardado (ruta SAI DAC/HP; valores)
+$ grep -n -A4 "Headphone Playback Switch\|Headphone Source Playback Route\|DAC Playback Switch\|Mic1 Capture Switch" /home/pablo/desa/x6200/rom-build/clone-buildroot/br2_external/board/X6200/linux/rootfs-overlay/var/lib/alsa/asound.state | head -60
+    114:    name 'Headphone Playback Switch'
+    115-    value.0 true
+    116-    value.1 true
+    117-    comment {
+    118-      access 'read write'
+    --
+    372:    name 'AIF1 Slot 0 Digital DAC Playback Switch'
+    373-    value.0 true
+    374-    value.1 true
+    375-    comment {
+    376-      access 'read write'
+    --
+    383:    name 'AIF2 Digital DAC Playback Switch'
+    384-    value.0 false
+    385-    value.1 false
+    386-    comment {
+    387-      access 'read write'
+    --
+    394:    name 'ADC Digital DAC Playback Switch'
+    395-    value.0 false
+    396-    value.1 false
+    397-    comment {
+    398-      access 'read write'
+    --
+    405:    name 'DAC Playback Switch'
+    406-    value.0 false
+    407-    value.1 false
+    408-    comment {
+    409-      access 'read write'
+    --
+    493:    name 'Mic1 Capture Switch'
+    494-    value.0 false
+    495-    value.1 false
+    496-    comment {
+    497-      access 'read write'
+    --
+    515:    name 'Headphone Source Playback Route'
+    516-    value.0 DAC
+    517-    value.1 DAC
+    518-    comment {
+    519-      access 'read write'
+exit=0
+
+### 3.9 rootfs: no hay .xgf (firmware BASE) en la ROM; si stm32flash
+$ find /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target -name "*.xgf" 2>/dev/null; echo "(sin .xgf)"; ls -la /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/bin/stm32flash 2>/dev/null
+    (sin .xgf)
+    -rwxr-xr-x. 1 pablo pablo 55268 Oct 29 16:13 /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/bin/stm32flash
+exit=0
+
+### 3.10 firmware BASE vendor (encriptado) fuera de la ROM
+$ ls -la /home/pablo/desa/x6200/refs/vendor-fw/*.xgf; sha256sum /home/pablo/desa/x6200/refs/vendor-fw/*.xgf
+    -rw-------. 1 pablo pablo 524288 Oct 23 22:19 /home/pablo/desa/x6200/refs/vendor-fw/x6200_mcu_20250111134652.xgf
+    dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3  /home/pablo/desa/x6200/refs/vendor-fw/x6200_mcu_20250111134652.xgf
+exit=0
+
+### 3.11 rootfs: daemon supervisor + hash
+$ sha256sum /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/x6200_daemon /home/pablo/desa/x6200/x6200-rom-audio-audit/rootfs/usr/sbin/x6200_daemon; grep -n "delay_for\|sleep \"\$delay\"\|GUI=\|LONG_RUN" /home/pablo/desa/x6200/x6200-rom-audio-audit/rootfs/usr/sbin/x6200_daemon
+    07c431cceaf28ac3e5b7f630d36c70f7d04b9af3cb19f078c0728c7f53c99877  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/x6200_daemon
+    07c431cceaf28ac3e5b7f630d36c70f7d04b9af3cb19f078c0728c7f53c99877  /home/pablo/desa/x6200/x6200-rom-audio-audit/rootfs/usr/sbin/x6200_daemon
+    23:GUI=/usr/sbin/x6200_gui
+    38:LONG_RUN=300        # s: por arriba de esto, el reinicio cuenta como corrida sana
+    80:delay_for() {
+    250:        if [ "$lived" -ge "$LONG_RUN" ]; then
+    258:            delay=$(delay_for "$fails")
+    266:        sleep "$delay" &
+exit=0
+
+### 3.12 daemon: no toca I2C ni audio
+$ grep -nE "/dev/i2c|i2cset|x6200_control|alsactl|pactl|amixer" /home/pablo/desa/x6200/x6200-rom-audio-audit/rootfs/usr/sbin/x6200_daemon; echo "(vacio = el supervisor no restaura audio)"
+    (vacio = el supervisor no restaura audio)
+exit=0
+
+### 4.1 GUI: dispositivos PulseAudio fijos (captura y reproduccion)
+$ grep -nE "play_device|capture_device" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.c | head -4
+    37:static char                 *play_device = "alsa_output.platform-sound.stereo-fallback";
+    40:static char                 *capture_device = "alsa_input.platform-sound.stereo-fallback";
+    308:    pa_stream_connect_playback(play_stm, play_device, &attr, PA_STREAM_ADJUST_LATENCY, NULL, NULL);
+    320:    pa_stream_connect_record(capture_stm, capture_device, &attr, PA_STREAM_ADJUST_LATENCY);
+exit=0
+
+### 4.2 GUI: consumidores de la captura procesada (unico destino)
+$ grep -nE "audio_enh_process|screen_rec_put_audio_samples|dsp_put_audio_samples|pa_stream_write" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.c
+    76:        audio_enh_process(scratch, samples);
+    80:    screen_rec_put_audio_samples(samples, scratch);
+    82:    dsp_put_audio_samples(samples, scratch);
+    369:    int res = pa_stream_write(play_stm, samples_buf, samples * 2, NULL, 0, PA_SEEK_RELATIVE);
+    373:        LV_LOG_ERROR("pa_stream_write() failed: %s", pa_strerror(pa_context_errno(ctx)));
+exit=0
+
+### 4.3 GUI: quien escribe el stream de reproduccion (audio_play)
+$ grep -nE "int audio_play\(|pa_stream_write\(play_stm" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.c; grep -rn "audio_play(" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/ --include="*.c" | grep -v "int audio_play\|audio_play_en\|audio_play_wait" | head -20
+    326:int audio_play(int16_t *samples_buf, size_t samples) {
+    369:    int res = pa_stream_write(play_stm, samples_buf, samples * 2, NULL, 0, PA_SEEK_RELATIVE);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.c:185: * audio_play() devuelve -1 (no entro nada) y no pasa nada: se pierden los primeros anuncios de
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.c:219:     * se descartaba entera ("al audio 0 de 73204"), porque audio_play() aguanta 2 s y despues
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_ft8.c:1272:        audio_play(ptr, part);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_js8.c:4821:/* Beep thread: audio_play() waits for room in the stream, so it can't run
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_js8.c:4824:/* audio_play() in parts of at most 2048 samples: a bigger write never finds
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_js8.c:4829:        audio_play((int16_t *)buf + at, part);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_msg_voice.c:309:        audio_play(buf + off, chunk);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_recorder.c:200:            audio_play(samples_buf, res);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_sstv.c:206: * elapsed wall-clock time, not on how quickly audio_play() accepts samples. */
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/tx_player.c:139:        audio_play(ptr, part);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/voice.c:94: * frecuencia del stream y se escribe en trozos: audio_play() espera a que haya lugar y con
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/voice.c:188:                    if (audio_play(pcm + at, parte) < 0) {
+exit=0
+
+### 4.4 GUI: audio_play_en (unico escritor de voice_rec en la GUI)
+$ grep -rn "audio_play_en" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/ --include="*.c" --include="*.h"; grep -n -A22 "void audio_play_en" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.c
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.c:458:void audio_play_en(bool on) {
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.h:23:void audio_play_en(bool on);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_msg_voice.c:304:    audio_play_en(true);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_msg_voice.c:313:    audio_play_en(false);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_msg_voice.c:338:    audio_play_en(true);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_msg_voice.c:340:    audio_play_en(false);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_msg_voice.c:499:    audio_play_en(false);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_msg_voice.c:605:            audio_play_en(true);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_msg_voice.c:615:    audio_play_en(false);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_msg_voice.c:697:        audio_play_en(true);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_recorder.c:214:    audio_play_en(true);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_recorder.c:216:    audio_play_en(false);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/dialog_recorder.c:353:    audio_play_en(false);
+    458:void audio_play_en(bool on) {
+    459-    if (on) {
+    460-        /* Para ENTRAR en modo reproduccion hace falta el stream: si PulseAudio no
+    461-         * esta listo no se toca el ruteo del MCU (no habria que restaurar despues). */
+    462-        if (!audio_up || play_stm == NULL) {
+    463-            return;
+    464-        }
+    465-
+    466-        x6200_control_hmic_set(0);
+    467-        x6200_control_imic_set(0);
+    468-        x6200_control_record_set(true);
+    469-    } else {
+    470-        /* La restauracion va SIEMPRE, aunque el stream se haya caido entre el on y
+    471-         * el off (#244): si se saltea, el BASE queda en modo record/mic y el audio de
+    472-         * RX no vuelve hasta un power-cycle. */
+    473-        x6200_control_record_set(false);
+    474-        x6200_control_hmic_set(params.hmic);
+    475-        x6200_control_imic_set(params.imic);
+    476-    }
+    477-}
+    478-
+    479-float audio_set_play_vol(float db) {
+    480-    snd_mixer_t *handle;
+exit=0
+
+### 4.5 GUI: mixer_setup (que controles ALSA configura la GUI)
+$ grep -n -A22 "static void mixer_setup" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.c
+    156:static void mixer_setup() {
+    157-    // overall level
+    158-    (void) system("amixer sset 'Headphone',0 58,58");
+    159-    // Play level from app to radio (for FT8)
+    160-    (void) system("amixer sset 'AIF1 DA0',0 160,160");
+    161-
+    162-    // capture audio from radio
+    163-    (void) system("amixer sset 'Mic1',0 0,0 cap");
+    164-    // mic boost
+    165-    (void) system("amixer sset 'Mic1 Boost',0 0");
+    166-    // disable capturing from mixer
+    167-    (void) system("amixer sset 'Mixer',0 nocap");
+    168-    (void) system("amixer sset 'ADC Gain',0 3");
+    169-    (void) system("amixer sset 'AIF1 AD0',0 160,160");
+    170-    (void) system("amixer sset 'AIF1 AD0 Stereo',0 'Mix Mono'");
+    171-    (void) system("amixer sset 'AIF1 Data Digital ADC',0 cap");
+    172-
+    173-    audio_set_rec_vol(0.0f);
+    174-    audio_set_play_vol(0.0f);
+    175-}
+    176-
+    177-static void * mixer_setup_thread(void *arg) {
+    178-    mixer_setup();
+exit=0
+
+### 4.6 GUI: SpeexDSP init/run/process (cadena) y tasa/trama
+$ grep -nE "speex_preprocess_state_init|speex_preprocess_run|void audio_enh_process|apply_notch_filters_locked\(g_audio|apply_af_leveler_locked\(g_audio|apply_noise_reduction_locked\(g_audio" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.c; grep -nE "AUDIO_ENH_SAMPLE_RATE|AUDIO_ENH_FRAME_SIZE|AUDIO_CAPTURE_RATE" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.h /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.h
+    208:    g_audio_enh.nr.speex_state = speex_preprocess_state_init(AUDIO_ENH_FRAME_SIZE,
+    482: *   3. al juntar AUDIO_ENH_FRAME_SIZE se corre UNA vez speex_preprocess_run() y esa trama
+    518:            speex_preprocess_run(g_audio_enh.nr.speex_state, g_audio_enh.in_frame);
+    556:void audio_enh_process(int16_t *samples, size_t nsamples) {
+    588:        apply_notch_filters_locked(g_audio_enh.float_buffer, chunk);
+    589:        apply_af_leveler_locked(g_audio_enh.float_buffer, chunk, now);
+    590:        apply_noise_reduction_locked(g_audio_enh.float_buffer, &samples[done], chunk);
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.h:22:/* La cadena procesa el PCM que captura audio.c (mono S16NE a AUDIO_CAPTURE_RATE), no la
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.h:25: * verifica en tiempo de compilacion que coincida con AUDIO_CAPTURE_RATE: si alguien cambia
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.h:27:#define AUDIO_ENH_SAMPLE_RATE 44100
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.h:28:#define AUDIO_ENH_FRAME_SIZE 441
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.h:86:    float float_buffer[AUDIO_ENH_FRAME_SIZE];
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.h:88:    /* Maquina NR stateful: tramas COMPLETAS de AUDIO_ENH_FRAME_SIZE que continuan a
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.h:93:     * exactamente AUDIO_ENH_FRAME_SIZE muestras) la captura emite ceros. */
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.h:94:    int16_t in_frame[AUDIO_ENH_FRAME_SIZE];
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.h:96:    int16_t out_frame[AUDIO_ENH_FRAME_SIZE];
+    /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.h:15:#define AUDIO_CAPTURE_RATE  (44100)
+exit=0
+
+### 4.7 GUI: audio_enhancement.c no escribe registros BASE ni ALSA/PA (solo un comentario)
+$ for p in "pa_stream" "amixer" "snd_" "x6200_control_record_set(" "x6200_control_ptt_set(" "x6200_control_rxvol_set("; do printf "%-28s count=%s\n" "$p" "$(grep -c "$p" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.c)"; done; echo "--- lineas que mencionan x6200_control_ (comentario) ---"; grep -n "x6200_control_" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio_enhancement.c
+    pa_stream                    count=0
+    amixer                       count=0
+    snd_                         count=0
+    x6200_control_record_set(    count=0
+    x6200_control_ptt_set(       count=0
+    x6200_control_rxvol_set(     count=0
+    --- lineas que mencionan x6200_control_ (comentario) ---
+    40: * PulseAudio, x6200_control_*, params_flush ni hooks de UI: por eso audio_enh_process lee
+exit=0
+
+### 4.8 GUI: radio_init restaura record=false y spmode (arranque)
+$ grep -n -B3 -A3 "record_set(false)\|spmode_set" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/radio.c | head -40
+    779-     * record si una reproduccion no alcanzo a restaurarlo (crash/cierre durante el
+    780-     * audio). Restaurarlo en cada arranque de la GUI devuelve el audio de RX sin
+    781-     * power-cycle (antes solo lo sacaba un corte de energia). */
+    782:    x6200_control_record_set(false);
+    783:    x6200_control_spmode_set(params.spmode.x);
+    784-
+    785-    x6200_control_vox_set(params.vox);
+    786-    x6200_control_vox_ag_set(params.vox_ag);
+    --
+    968-    params_bool_set(&params.spmode, df > 0);
+    969-    lv_msg_send(MSG_PARAM_CHANGED, NULL);
+    970-
+    971:    WITH_RADIO_LOCK(x6200_control_spmode_set(params.spmode.x));
+    972-
+    973-    return params.spmode.x;
+    974-}
+exit=0
+
+### 4.9 GUI: idle (218 B cada 1000 ms) y lock de radio
+$ grep -nE "IDLE_TIMEOUT|x6200_control_idle\(\)|WITH_RADIO_LOCK\(x6200_control_idle" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/radio.c
+    45:#define IDLE_TIMEOUT (1000)
+    337:        if (idle > IDLE_TIMEOUT) {
+    338:            WITH_RADIO_LOCK(x6200_control_idle());
+exit=0
+
+### 4.10 GUI: rxvol (volumen del parlante del BASE) y spmode
+$ grep -nE "radio_vol_apply|x6200_control_rxvol_set|x6200_control_spmode_set" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/radio.c | head -12
+    345:/* Audio de recepcion (#244): ver radio_vol_apply() y on_cur_mode_change_vol() mas abajo. */
+    783:    x6200_control_spmode_set(params.spmode.x);
+    817:    radio_vol_apply();
+    863: * radio_vol_apply(); es barato (un write de 6 bytes por I2C). */
+    872:void radio_vol_apply(void) {
+    873:    WITH_RADIO_LOCK(x6200_control_rxvol_set(radio_vol_value()));
+    880:    radio_vol_apply();
+    904:        radio_vol_apply();
+    916:    radio_vol_apply();
+    942:        radio_vol_apply();
+    971:    WITH_RADIO_LOCK(x6200_control_spmode_set(params.spmode.x));
+exit=0
+
+### 4.11 GUI enlaza SpeexDSP/PulseAudio/ALSA (readelf del binario construido)
+$ readelf -d /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/x6200_gui | grep -E "speexdsp|libpulse|libasound"
+     0x00000001 (NEEDED)                     Shared library: [libpulse-simple.so.0]
+     0x00000001 (NEEDED)                     Shared library: [libpulse.so.0]
+     0x00000001 (NEEDED)                     Shared library: [libasound.so.2]
+     0x00000001 (NEEDED)                     Shared library: [libspeexdsp.so.1]
+exit=0
+
+### 4.12 GUI: sin UI de update de firmware BASE
+$ grep -rn "stm32flash\|xgf\|firmware update" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/ /home/pablo/desa/x6200/x6200-rom-audio-audit/rootfs/ 2>/dev/null | head; echo "(vacio = no hay update de BASE en la GUI)"
+    (vacio = no hay update de BASE en la GUI)
+exit=0
+
+### 5.1 lib del build (v0.15.3): get() es sombra RAM (no I2C)
+$ grep -n -A4 "uint32_t x6200_control_get(" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/aether-x6200-control-v0.1.0/src/low/control.c
+    459:uint32_t x6200_control_get(x6200_cmd_enum_t cmd)
+    460-{
+    461-    return all_cmd.arg[cmd];
+    462-}
+    463-
+exit=0
+
+### 5.2 lib: cmd() actualiza sombra ANTES del ioctl y RMW
+$ grep -n -A12 "bool x6200_control_cmd(x6200_cmd_enum_t" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/aether-x6200-control-v0.1.0/src/low/control.c
+    445:bool x6200_control_cmd(x6200_cmd_enum_t cmd, uint32_t arg)
+    446-{
+    447-    all_cmd.arg[cmd] = arg;
+    448-
+    449-    cmd_struct_t command;
+    450-    uint16_t addr = cmd * 4;
+    451-
+    452-    command.addr = (addr & 0xFF) << 8 | (addr >> 8);
+    453-    command.arg = arg;
+    454-
+    455-    return send_regs(&command, sizeof(command));
+    456-}
+    457-
+exit=0
+
+### 5.3 lib: idle() reenvia 218 B
+$ grep -n -A9 "void x6200_control_idle()" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/aether-x6200-control-v0.1.0/src/low/control.c
+    473:void x6200_control_idle()
+    474-{
+    475-    if (!send_regs(&all_cmd, sizeof(all_cmd))) {
+    476-        i2c_close();
+    477-        usleep(1000);
+    478-        i2c_open();
+    479-        send_regs(&all_cmd, sizeof(all_cmd));
+    480-    }
+    481-}
+    482-
+exit=0
+
+### 5.4 lib: record_set (voice_rec 0x8) y ptt_set (iptt 0x40000) sobre reg 12
+$ grep -n -A12 "void x6200_control_record_set" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/aether-x6200-control-v0.1.0/src/control.c; grep -n -A12 "void x6200_control_ptt_set" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/aether-x6200-control-v0.1.0/src/control.c
+    69:void x6200_control_record_set(bool on)
+    70-{
+    71-    uint32_t prev = x6200_control_get(x6200_sple_atue_trx);
+    72-    uint32_t next;
+    73-
+    74-    if (on) {
+    75-        next = prev | x6200_voice_rec;
+    76-    } else {
+    77-        next = prev & (~x6200_voice_rec);
+    78-    }
+    79-
+    80-    x6200_control_cmd(x6200_sple_atue_trx, next);
+    81-}
+    156:void x6200_control_ptt_set(bool on) {
+    157-    uint32_t prev = x6200_control_get(x6200_sple_atue_trx);
+    158-    uint32_t next;
+    159-
+    160-    if (on) {
+    161-        next = prev | x6200_iptt;
+    162-    } else {
+    163-        next = prev & (~x6200_iptt);
+    164-    }
+    165-
+    166-    x6200_control_cmd(x6200_sple_atue_trx, next);
+    167-}
+    168-
+exit=0
+
+### 5.5 lib: rxvol (reg 14 = volumen del parlante) y spmode (reg 21 bit 5)
+$ grep -n -A6 "void x6200_control_rxvol_set" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/aether-x6200-control-v0.1.0/src/control.c; grep -n -A6 "void x6200_control_spmode_set" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/aether-x6200-control-v0.1.0/src/control.c
+    64:void x6200_control_rxvol_set(uint8_t vol)
+    65-{
+    66-    x6200_control_cmd(x6200_rxvol, vol);
+    67-}
+    68-
+    69-void x6200_control_record_set(bool on)
+    70-{
+    83:void x6200_control_spmode_set(bool phone)
+    84-{
+    85-    uint32_t prev = x6200_control_get(x6200_micsel_pttmode_chge_spmode_auxiqgen_sqlthr) & (~(1 << 5));
+    86-
+    87-    x6200_control_cmd(x6200_micsel_pttmode_chge_spmode_auxiqgen_sqlthr, prev | (phone << 5));
+    88-}
+    89-
+exit=0
+
+### 5.6 lib: I2C /dev/i2c-0 slave 0x72, I2C_RDWR; framing addr=cmd*4
+$ grep -nE "i2c_addr|/dev/i2c-0|I2C_RDWR" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/aether-x6200-control-v0.1.0/src/low/control.c | head -10
+    37:static int i2c_addr = 0x72;
+    50:    i2c_fd = open("/dev/i2c-0", O_RDWR);
+    78:            .addr = i2c_addr,
+    89:    if(ioctl(i2c_fd, I2C_RDWR, &packets) < 0) {
+    104:            .addr  = i2c_addr,
+    110:            .addr  = i2c_addr,
+    122:    if(ioctl(i2c_fd, I2C_RDWR, &packets) < 0) {
+exit=0
+
+### 5.7 lib: version BASE reportada por el MCU/FPGA al init
+$ grep -n -A8 "BASE ver1" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/build/aether-x6200-control-v0.1.0/src/low/control.c | head -20
+    153:    printf("BASE ver1: %s\n", ver1);  // FPGA
+    154-    printf("BASE ver2: %s\n", ver2);  // HW?
+    155-    printf("BASE fw version: %s\n", base_fw_version);
+    156-    printf("BASE fw date: %s\n", base_fw_date);
+    157-
+    158-    if (!get_regs(0x100, calibration_data, sizeof(calibration_data))) {
+    159-        printf("Can't read BASE calibration data\n");
+    160-        return false;
+    161-    }
+exit=0
+
+### 5.8 lib: mapa de bits del reg 12 (SDK autorizado)
+$ grep -nE "sple_atue_trx = 12|voice_rec = 0x00008|iptt = 0x40000|atu_tune|atue" /home/pablo/desa/x6200/refs/X6200Control/include/aether_radio/x6200_control/low/control.h
+    33:    x6200_sple_atue_trx = 12,
+    108:/* Reg x6200_sple_atue_trx */
+    113:    x6200_voice_rec = 0x00008,
+    116:    x6200_atue = 0x01000,
+    117:    x6200_atu_tune = 0x02000,
+    121:    x6200_iptt = 0x40000,  // ?
+exit=0
+
+### 6.1 #363 GATE_A=BLOCKED_SAFE_MUX (evidencia integrada)
+$ grep -nE "GATE_A|BLOCKED_SAFE_MUX|A2|A3" /home/pablo/desa/x6200/x6200-rom-audio-audit/docs/evidencia/2026-10-29-rx-audible-route-363/gates.csv
+    4:A2,BLOCKED_SAFE_MUX,CODE+MEASURED-HARDWARE,"registers.md (§readback/arbiter); logs/rea-lib-decompile.txt; logs/a0-preflight.txt (unico dueño de /dev/i2c-0)","No existe readback real del registro 12: `x6200_control_get()` devuelve la sombra `all_cmd.arg[]` en RAM (REA + fuente). El unico proceso con `/dev/i2c-0` es la GUI (pid medido) y `x6200_control_idle()` reescribe los 54 registros (218 B) desde esa sombra cada <=1000 ms, asi que cualquier escritor externo es clobbeado. No hay dueño serializado ni interlock de TX fuera del proceso GUI."
+    5:A3,A3_BLOCKED,CODE+MEASURED-HARDWARE,"handoff-b.md; /usr/sbin/x6200_daemon (backoff 2/5/15/60 s); /mnt/app_logs/boot.log (GUI inicio->lista 1,7-1,9 s)","Sin A2 no hay forma segura de ser dueño del registro ni de probar el guardian en BASE: el unico restore posible es el reinicio de la GUI (backoff minimo 2 s + ~1,8 s de init), que reescribe todo el register file con defaults y no es selectivo. No existe heartbeat ni camino <250 ms independiente del proceso GUI; probarlo exigiria escribir el registro compartido sin guardian probado."
+    6:A4,NOT_EXECUTED,PHYSICAL_OUTPUT_NOT_VERIFIED,"physical-signal.md","A4 solo se ejecuta con A0-A3 PASS. Ademas no hubo instrumentacion de audio ni escucha autorizada en esta corrida y el MUX no se conmutó (prohibido sin A2/A3 PASS). Sin salida fisica verificable no hay PASS."
+    8:GATE_A,BLOCKED_SAFE_MUX,CODE+MEASURED-HARDWARE,"gates A0-A5 de este archivo","A2 no PASS (sin readback real ni dueno serializado) => A3_BLOCKED y A4 no ejecutado. GO=A_PASS exige A0,A2,A3,A4,A5 PASS con evidencia; no se cumple. #364 NO puede arrancar. El resultado correcto para #363 es BLOCKED_SAFE_MUX, no un PASS simulado."
+exit=0
+
+### 6.2 #369 R_INCONCLUSIVE (readback)
+$ grep -nE "R_INCONCLUSIVE|READBACK_PROBE_DONE" /home/pablo/desa/x6200/x6200-rom-audio-audit/docs/evidencia/2026-10-29-rx-readback-rprime/README.md | head -5
+    7:## Veredicto: `R_INCONCLUSIVE` — no se acredita readback real; no hay `A_PASS`
+    20:**Log:** `READBACK_PROBE_DONE verdict=R_INCONCLUSIVE reads=5 reason="ambas lecturas uniformes/triviales (00/FF); no atribuible"`.
+    25:`R_INCONCLUSIVE`, **no** `R_CANDIDATE_FOUND` ni `A_PASS`. Se documenta además una **incongruencia** con un
+    49:   `READBACK_PROBE_DONE` capturado ⇒ flag **eliminado de inmediato** (sin segunda pasada).
+    78:4. El veredicto máximo posible sin instrumentación física es `R_INCONCLUSIVE`/`R_PRIME_PHYSICAL_NOT_VERIFIED`.
+exit=0
+
+### 6.3 #371 contrato de los tres claims
+$ grep -nE "MUX_SELECT_PHYSICALLY_VERIFIED|RESTORE_VERIFIED|AUDIO_OUTPUT_VERIFIED|P1_BLOCKED" /home/pablo/desa/x6200/x6200-rom-audio-audit/docs/evidencia/2026-10-30-rx-audio-physical-prep/safety-conclusion.md | head -10
+    10:| **`AUDIO_OUTPUT_VERIFIED`** | **NO — `NOT_VERIFIED`** (P0 `P0_PENDING_EQUIPMENT`) | P0 ejecutada con operador + instrumento declarado: captura instrumentada de S/P en BASE, con límites de entrada y atenuación registrados, DC/AC medidos, `tx=false`, sin MUX, señal presente (peak/RMS/espectro) y `sha256` de las capturas. Sólo audio, nada más. | Escuchar el parlante o el S/P; un sink PulseAudio `RUNNING`; `parec` pre-Speex; el grabador de pantalla AVI; la documentación Mestre; “suena” sin registro. |
+    11:| **`MUX_SELECT_PHYSICALLY_VERIFIED`** | **NO — `NOT_VERIFIED`** | Ver P1: **lectura real del registro 12** (no la sombra RAM) **o** fuente instrumentada equivalente de la selección física del MUX, **en nuestro ejemplar**, con dueño único del registro. | Audio audible/capturado en S/P; que el audio “cambie” al escribir el bit; la sombra `all_cmd.arg[]`; `shadow reg12=0x1000`; `R_INCONCLUSIVE`; Mestre; mocks de host. |
+    12:| **`RESTORE_VERIFIED`** | **NO — `NOT_VERIFIED`** | Mecanismo de restore **independiente** que devuelva BASE, con verificación física del retorno y peor caso **≤250 ms medido en la radio real**, incluyendo inyección de fallo de GUI/crash y preservación de PTT/ATU. | Reiniciar la GUI (≳4 s, reescribe todo el register file); guardián en host con mocks (p99 103,3 ms); contar CIDs; escuchar el S/P; “volvió el audio solo” sin medir el estado. |
+    23:| **P1** — independencia de MUX y restore | **`P1_BLOCKED_NO_SAFE_RESTORE`** | (a) lectura real del reg 12 o fuente instrumentada equivalente; (b) dueño exclusivo del registro 12 que no compita con el idle; (c) guardián que sólo despeje `0x8` tras muerte de GUI sin perder PTT/ATU y con restauración física verificada; (d) peor caso ≤250 ms medido en radio real. **Ninguna se cumple.** |
+    68:restore ≤250 ms **medido en la radio real**. Sólo con eso `MUX_SELECT_PHYSICALLY_VERIFIED` y
+    69:`RESTORE_VERIFIED` podrían pasar de NO a algo, y sólo entonces se revisa #367/#364/#365.
+    75:> **`P1_BLOCKED_NO_SAFE_RESTORE`** y el MUX no se conmuta, suene lo que suene.”
+exit=0
+
+### 6.4 guía de audio: la cadena procesada no va al parlante
+$ grep -nE "That is the \*\*only\*\* destination|Never the speaker|audio_play\(\)|btaudio-ctl|NOT_VERIFIED" /home/pablo/desa/x6200/x6200-rom-audio-audit/docs/AUDIO_ENHANCEMENT_GUIDE.md | head -10
+    16:  audible return path is `NOT_VERIFIED` / `NO_GO_LIVE`.
+    33:That is the **only** destination of the processed PCM. The speaker/headphone output is driven
+    34:by the BASE, and `src/audio.c::audio_play()` is a **separate** path for audio generated by
+    36:never inserted into `audio_play()`, into the mixer, into A2DP (`rootfs/usr/sbin/btaudio-ctl`
+    39:> **Never the speaker.** No stream is added, no loopback is created, no `record_set`, mic,
+    41:> route exists at all is still `NOT_VERIFIED` (see #347); this document does not assume one.
+    267:No heap allocation, no `pa_threaded_mainloop_lock`, no `audio_play()` inside the callback. The
+exit=0
+
+### 6.5 HALLAZGOS §77/78 (no readback ni restore)
+$ grep -nE "^## 77\.|^## 78\.|voice_rec.*readback|BLOCKED_SAFE_MUX" /home/pablo/desa/x6200/x6200-rom-audio-audit/docs/HALLAZGOS.md | head -10
+    49:77. [El bit `voice_rec` (reg 12) no tiene readback ni dueño serializado fuera de la GUI, y no hay restore de audio <250 ms](#77-el-bit-voice_rec-reg-12-no-tiene-readback-ni-dueño-serializado-fuera-de-la-gui-y-no-hay-restore-de-audio-250-ms)
+    959:| `voice_rec=1` conmuta el MUX del parlante/jack del X6200 de audio de RF a DAC del SoC | lo documenta Mestre (tercero, otro equipo/ROM); **no medido en nuestro equipo**; el firmware del MCU está encriptado y no hay readback del reg 12 | prueba física A4 autorizada con instrumentación y restore verificado, comparando parlante/jack con el bit en 0 y en 1 |
+    4598:## 77. El bit `voice_rec` (reg 12) no tiene readback ni dueño serializado fuera de la GUI, y no hay restore de audio <250 ms
+    4633:de #362 quedó **`BLOCKED_SAFE_MUX`** (A2) y #364 no puede arrancar. La conclusión es de seguridad, no de
+    4640:## 78. El MCU acepta el selector de lectura 0x2000 pero 0x0038/0x0030 devuelven 00000000: la vía probada no acredita readback del reg 12
+exit=0
+
+### 6.6 HALLAZGOS §70: reset por GPIO 204 del BASE probado (sin recovery)
+$ grep -n "gpiochip1 204" /home/pablo/desa/x6200/x6200-rom-audio-audit/docs/HALLAZGOS.md
+    4450:Escrituras mínimas probadas con la GUI corriendo, ninguna recupera el audio: `rxvol` 16 y 34, `sple_atue_trx=0x1000`, modo A=0 y B=0, `vi_vm=0` por 10, bloque de calibración `0xF000` (509 B), comandos `0xFFFE`, comando serie de 8 B del stock (`01 00 00 00 00 00 00 00`), reset por GPIO 204 del BASE (`gpioset gpiochip1 204=1/0`). El mixer y la fuente de PulseAudio quedaron idénticos antes y después de arrancar la GUI (diff vacío).
+exit=0
+
+### 6.7 HALLAZGOS §25: A2DP de punta a punta medido con auriculares
+$ grep -nE "^## 25\.|loop=1|bluez_sink" /home/pablo/desa/x6200/x6200-rom-audio-audit/docs/HALLAZGOS.md | head -8
+    1452:## 25. BT de punta a punta, con auriculares de verdad
+    1463:| 22:41:58 | **Conectados** | sink `bluez_sink.B8_7B_D4_17_C7_F3.a2dp_sink`, `loop=1` |
+    1481:cargado** (`loop=1`), y **la perilla de volumen moviendo el sink de los Buds** (los `volume 50/43/2`
+    1497:   (`source=alsa_input... sink=bluez_sink.B8_7B...`). Arreglado con un lock de `mkdir` (atomico) en
+exit=0
+
+### 7.1 tests nativos host (callback de captura + enhancement; sin radio)
+$ rm -rf /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/native-run; sh /home/pablo/desa/x6200/x6200-rom-audio-audit/tests/native/run_native_tests.sh /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/native-run > /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/native-run.log 2>&1; rc=$?; grep -E "^== Captura|^== analisis|comprobaciones, [0-9]+ fallos" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/native-run.log | tail -6; echo "native_suite_exit=$rc"
+    141 comprobaciones, 0 fallos
+    597 comprobaciones, 0 fallos
+    57 comprobaciones, 0 fallos
+    == Captura #351: callback seguro (peek/hole/drop, chunks, sin escribir el source) ==
+    == Captura: analisis estatico (gcc -fanalyzer sobre src/audio.c) ==
+    174 comprobaciones, 0 fallos
+    native_suite_exit=0
+exit=0
+
+### 7.2 resumen de la suite nativa: stages 0 fallos y stages con fallos
+$ n0=$(grep -c "0 fallos" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/native-run.log); nbad=$(grep -cE "[1-9][0-9]* fallos|^FAIL" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/native-run.log); echo "stages_0_fallos=$n0 stages_con_fallos=$nbad (suite exit 0, ver 7.1)"; tail -3 /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/native-run.log
+    stages_0_fallos=25 stages_con_fallos=0 (suite exit 0, ver 7.1)
+    == Captura #351: callback seguro (peek/hole/drop, chunks, sin escribir el source) ==
+    == Captura: analisis estatico (gcc -fanalyzer sobre src/audio.c) ==
+    174 comprobaciones, 0 fallos
+exit=0
+
+### 7.3 los tests de audio citados existen y son los que corren
+$ ls -la /home/pablo/desa/x6200/x6200-rom-audio-audit/tests/native/test_audio_callback.c /home/pablo/desa/x6200/x6200-rom-audio-audit/tests/native/test_audio_enhancement.c; grep -nE "test_audio_callback|test_audio_enhancement" /home/pablo/desa/x6200/x6200-rom-audio-audit/tests/native/run_native_tests.sh
+    -rw-r--r--. 1 pablo pablo 12731 Oct 30 01:29 /home/pablo/desa/x6200/x6200-rom-audio-audit/tests/native/test_audio_callback.c
+    -rw-r--r--. 1 pablo pablo 22059 Oct 30 01:29 /home/pablo/desa/x6200/x6200-rom-audio-audit/tests/native/test_audio_enhancement.c
+    100:$DIR/test_adaptive_tuning.c $DIR/test_rotary_queue.c $DIR/test_settings_language.c $DIR/test_autotune.c $DIR/test_autotune_spectrum.c $DIR/test_cw_autotune.c $DIR/test_audio_enhancement.c $DIR/test_ft8_udp.c $DIR/test_band_plan.c $DIR/test_avi_writer.c $DIR/test_wfview.c $DIR/test_cluster.c $DIR/test_field.c $DIR/test_theme.c $DIR/test_keyboard.c $DIR/test_kbd_caps.c $DIR/test_bt_devices.c $DIR/test_dxcc.c $DIR/test_flags.c $DIR/test_controls.c $DIR/test_voice.c $DIR/test_gps_format.c $DIR/test_visual_policy.c $DIR/test_cw_decoder.c $DIR/test_roe_curve.c $DIR/test_swr_session.c $DIR/swrscan_fixtures.c $DIR/test_swrscan_fixtures.c $DIR/test_cb.c $DIR/test_propagation.c \
+    1278:AUDIO_SRC="$DIR/test_audio_callback.c $DIR/audio_callback_stubs.c \
+exit=0
+
+### 8.1 assert: el DTB no tiene nodo de MUX/amplificador/GPIO de audio
+$ n=$(grep -ciE "mux|speaker|amplifier|audio-switch|codec-switch|gpio-hog" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/built.dts); echo "matches=$n"; if [ "$n" -eq 0 ]; then echo PASS; else echo FAIL; fi
+    matches=0
+    PASS
+exit=0
+
+### 8.2 assert: i2c0 (BASE) no tiene nodos hijos en el DTB
+$ n=$(sed -n "/i2c@1c2ac00 {/,/};/p" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/built.dts | grep -cE "^[[:space:]]{3,}[a-z0-9-]+@"); echo "hijos_i2c0=$n"; if [ "$n" -eq 0 ]; then echo PASS; else echo FAIL; fi; sed -n "/i2c@1c2ac00 {/,/};/p" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/built.dts | tail -3
+    hijos_i2c0=0
+    PASS
+          #address-cells = <0x01>;
+          #size-cells = <0x00>;
+        };
+exit=0
+
+### 8.3 assert: la placa usa el codec A33 + simple-audio-card (no codec externo)
+$ grep -c "\"allwinner,sun8i-a33-codec\"" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/built.dts; grep -c "\"simple-audio-card\"" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/built.dts; grep -c "\"allwinner,sun8i-a23-codec-analog\"" /home/pablo/desa/x6200/x6200-rom-audio-audit/.audit-tmp/built.dts
+    1
+    1
+    1
+exit=0
+
+### 8.4 assert: el binario GUI construido enlaza SpeexDSP+PulseAudio+ALSA
+$ readelf -d /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/x6200_gui | grep -cE "libspeexdsp|libpulse|libasound"
+    4
+exit=0
+
+### 8.5 assert: PulseAudio del rootfs tiene module-loopback y module-null-sink
+$ ls /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/lib/pulseaudio/modules/ | grep -cE "^module-loopback.so|^module-null-sink.so"
+    2
+exit=0
+
+### 8.6 assert: el supervisor NO contiene I2C/audio (no puede restaurar el MUX)
+$ grep -cE "/dev/i2c|i2cset|x6200_control|alsactl|pactl|amixer" /home/pablo/desa/x6200/x6200-rom-audio-audit/rootfs/usr/sbin/x6200_daemon || true
+    0
+exit=0
+
+### 8.7 assert: la GUI escribe play_stm en un unico lugar y la captura no va ahi
+$ grep -c "pa_stream_write(play_stm" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.c; grep -c "play_stm" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.c; grep -c "audio_play_en" /home/pablo/desa/x6200/x6200-rom-audio-audit/src/audio.c
+    1
+    10
+    1
+exit=0
+
+### 8.8 assert: sin .xgf (firmware BASE) en el rootfs compilado
+$ n=$(find /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target -name "*.xgf" 2>/dev/null | wc -l); echo "xgf_en_rootfs=$n"; if [ "$n" -eq 0 ]; then echo PASS; else echo FAIL; fi
+    xgf_en_rootfs=0
+    PASS
+exit=0
+
+# FIN — todos los comandos son de lectura estática sobre repos/artefactos; no hubo radio, MUX, I2C ni TX.
+# nota: tabs expandidos a espacios y espacios finales recortados para pasar `git diff --check` (solo formato; no se alteró ningún comando ni salida).
+
+# ====== 9. Validación del PR documental (post-commit) ======
+
+### 9.1 commit del PR
+$ cd /home/pablo/desa/x6200/x6200-rom-audio-audit && git log --oneline -1 && git rev-parse HEAD
+    25f11e56 docs(audio): #362 auditoría de la ROM Linux completa (ruta RX, alternativas, recuperación)
+    25f11e56b4ff00e394f417664ebf5ea6be542f98
+exit=0
+
+### 9.2 check-matrix base real (fork/main=6850d671) vs HEAD
+$ cd /home/pablo/desa/x6200 && bash asf/scripts/apps/x6200/check-matrix.sh fork/main HEAD /home/pablo/desa/x6200/x6200-rom-audio-audit 2>&1 | tail -6
+    ==> [SKIP] bash -n de los .sh tocados: sin cambios en tests/**/*.sh ni tools/**/*.sh
+    ==> [SKIP] harness determinism gate: sin cambios en tools/ui_harness/
+    ==> [SKIP] banco QEMU: sin cambios en src/**, lv_conf.h ni tools/ui_harness/
+    ==> [SKIP] workflows de GitHub (YAML + shell embebido): sin cambios en .github/workflows/*.yml
+    ==> [SIN GATE] ningún bloque cubre el diff: docs/evidencia/2026-10-30-rx-audio-rom-audit/README.md docs/evidencia/2026-10-30-rx-audio-rom-audit/alternatives.md docs/evidencia/2026-10-30-rx-audio-rom-audit/audio-route-map.md docs/evidencia/2026-10-30-rx-audio-rom-audit/commands.log docs/evidencia/2026-10-30-rx-audio-rom-audit/croquis.md docs/evidencia/2026-10-30-rx-audio-rom-audit/decision.md docs/evidencia/2026-10-30-rx-audio-rom-audit/linux-vs-base.md docs/evidencia/2026-10-30-rx-audio-rom-audit/recovery-analysis.md docs/evidencia/2026-10-30-rx-audio-rom-audit/validation.md
+        (sólo documentación: no hay gate que correr)
+exit=0
+
+### 9.3 check-matrix literal del issue (main local=fc18a831) vs HEAD
+$ cd /home/pablo/desa/x6200 && bash asf/scripts/apps/x6200/check-matrix.sh main HEAD /home/pablo/desa/x6200/x6200-rom-audio-audit 2>&1 | tail -3
+    ==> [SKIP] workflows de GitHub (YAML + shell embebido): sin cambios en .github/workflows/*.yml
+    ==> [SIN GATE] ningún bloque cubre el diff: docs/HALLAZGOS.md docs/PRUEBAS.md docs/evidencia/2026-10-29-audio-capture-351-radio/README.md docs/evidencia/2026-10-29-audio-capture-351-radio/captures/avi-frame-100.png docs/evidencia/2026-10-29-audio-capture-351-radio/captures/cierre-home-preset-off.png docs/evidencia/2026-10-29-audio-capture-351-radio/captures/deploy-antes-home.png docs/evidencia/2026-10-29-audio-capture-351-radio/captures/deploy-despues-home.png docs/evidencia/2026-10-29-audio-capture-351-radio/captures/despues-secuencia-presets-settings.png docs/evidencia/2026-10-29-audio-capture-351-radio/captures/incidente-ui-pantalla-en-negro.png docs/evidencia/2026-10-29-audio-capture-351-radio/captures/incidente-ui-tras-reinicio.png docs/evidencia/2026-10-29-audio-capture-351-radio/captures/settings-audio-capture-filters.png docs/evidencia/2026-10-29-audio-capture-351-radio/captures/waterfall-01-off.png docs/evidencia/2026-10-29-audio-capture-351-radio/captures/waterfall-02-ssb-voice.png docs/evidencia/2026-10-29-audio-capture-351-radio/captures/waterfall-03-am-broadcast.png docs/evidencia/2026-10-29-audio-capture-351-radio/captures/waterfall-04-digital.png docs/evidencia/2026-10-29-audio-capture-351-radio/captures/waterfall-05-off-cierre.png docs/evidencia/2026-10-29-audio-capture-351-radio/commands.log docs/evidencia/2026-10-29-audio-capture-351-radio/deployment.md docs/evidencia/2026-10-29-audio-capture-351-radio/logs/SHA256SUMS docs/evidencia/2026-10-29-audio-capture-351-radio/logs/backup.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/build.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/cpu-baseline-120s.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/cpu-baseline.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/deploy.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h1-h6-analysis.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h1-h6-ffprobe.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h1-h6-watcher.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h2-cpu.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h2-h9.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h2.json docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h4-operator-listening.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h4-preset-transitions.csv docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h7-button-map.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h7-clean.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h7-clean2.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h7-metadata.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h7-mp3-60s.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h7-off-10s.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h7-off-vs-ssb.csv docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h7-ssb-10s.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h7-state-diag.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h7-trial.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h8-watch.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/h8-waterfall-stats.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/native-tests.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/preset-timeline.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/private-recordings.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/pulseaudio-topology.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/quick-tests.log docs/evidencia/2026-10-29-audio-capture-351-radio/logs/runtime-state.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/state-after.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/state-before.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/state-final-check.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/state-final.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/state-final2.json docs/evidencia/2026-10-29-audio-capture-351-radio/logs/state-final3.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/ui-incident.txt docs/evidencia/2026-10-29-audio-capture-351-radio/logs/ui-restart.log docs/evidencia/2026-10-29-audio-capture-351-radio/measurements.csv docs/evidencia/2026-10-29-audio-capture-351/hardware-handoff.md docs/evidencia/2026-10-29-rx-audible-route-363/README.md docs/evidencia/2026-10-29-rx-audible-route-363/commands.log docs/evidencia/2026-10-29-rx-audible-route-363/gates.csv docs/evidencia/2026-10-29-rx-audible-route-363/handoff-b.md docs/evidencia/2026-10-29-rx-audible-route-363/logs/a0-preflight-commands-raw.log docs/evidencia/2026-10-29-rx-audible-route-363/logs/a0-preflight.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/a5-final-state.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/a5-radio-outage-note.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/i2c-trace-prior-artifact.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/mask-test.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/mixer-live.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/params-db-selected.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/rea-capabilities-ghidra.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/rea-doctor.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/rea-lib-decompile.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/sha256sums.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/supervisor-x6200_daemon-refs.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/vendor-gui-strings.txt docs/evidencia/2026-10-29-rx-audible-route-363/logs/vendor-symbols-audio.txt docs/evidencia/2026-10-29-rx-audible-route-363/physical-signal.md docs/evidencia/2026-10-29-rx-audible-route-363/registers.md docs/evidencia/2026-10-29-rx-audible-route-363/reverse-engineering.md docs/evidencia/2026-10-29-rx-readback-rprime/README.md docs/evidencia/2026-10-29-rx-readback-rprime/commands.log docs/evidencia/2026-10-29-rx-readback-rprime/gates.csv docs/evidencia/2026-10-29-rx-readback-rprime/logs/build-patched-gui.log docs/evidencia/2026-10-29-rx-readback-rprime/logs/build-pipeline.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/build-summary.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/clone-gui-baseline.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/clone-gui-patched-hashes.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/clone-gui-restore.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/deploy.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/final-state-retry.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/final-state.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/host-mocks-flag.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/host-mocks.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/preflight-manual-checks.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/preflight-monitor.log docs/evidencia/2026-10-29-rx-readback-rprime/logs/preflight-monitor2.log docs/evidencia/2026-10-29-rx-readback-rprime/logs/probe-log.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/probe-patch.diff docs/evidencia/2026-10-29-rx-readback-rprime/logs/probe-run.txt docs/evidencia/2026-10-29-rx-readback-rprime/logs/restore.txt docs/evidencia/2026-10-29-rx-readback-rprime/protocol.md docs/evidencia/2026-10-29-rx-readback-rprime/readback-values.csv docs/evidencia/2026-10-29-rx-readback-rprime/rollback.md docs/evidencia/2026-10-30-rx-audio-physical-prep/README.md docs/evidencia/2026-10-30-rx-audio-physical-prep/commands.log docs/evidencia/2026-10-30-rx-audio-physical-prep/croquis.md docs/evidencia/2026-10-30-rx-audio-physical-prep/equipment.md docs/evidencia/2026-10-30-rx-audio-physical-prep/measurements-template.csv docs/evidencia/2026-10-30-rx-audio-physical-prep/operator-handoff.md docs/evidencia/2026-10-30-rx-audio-physical-prep/preflight.md docs/evidencia/2026-10-30-rx-audio-physical-prep/safety-conclusion.md docs/evidencia/2026-10-30-rx-audio-physical-prep/wiring.md docs/evidencia/2026-10-30-rx-audio-rom-audit/README.md docs/evidencia/2026-10-30-rx-audio-rom-audit/alternatives.md docs/evidencia/2026-10-30-rx-audio-rom-audit/audio-route-map.md docs/evidencia/2026-10-30-rx-audio-rom-audit/commands.log docs/evidencia/2026-10-30-rx-audio-rom-audit/croquis.md docs/evidencia/2026-10-30-rx-audio-rom-audit/decision.md docs/evidencia/2026-10-30-rx-audio-rom-audit/linux-vs-base.md docs/evidencia/2026-10-30-rx-audio-rom-audit/recovery-analysis.md docs/evidencia/2026-10-30-rx-audio-rom-audit/validation.md
+        (sólo documentación: no hay gate que correr)
+exit=0
+
+### 9.4 risk.py modo diff: NO resuelve las refs en el checkout ASF (se documenta el fallo)
+$ cd /home/pablo/desa/x6200/asf && python3 scripts/risk.py x6200 fork/main HEAD 2>&1 | tail -8
+            ["git", "-C", str(repo), "diff", "--name-only", base, head],
+        ...<2 lines>...
+            check=True,
+        )
+      File "/usr/lib64/python3.14/subprocess.py", line 578, in run
+        raise CalledProcessError(retcode, process.args,
+                                 output=stdout, stderr=stderr)
+    subprocess.CalledProcessError: Command '['git', '-C', '/home/pablo/desa/x6200/asf/work/x6200_gui', 'diff', '--name-only', 'fork/main', 'HEAD']' returned non-zero exit status 128.
+exit=1
+
+### 9.5 risk.py --files (fallback: clasifica los 9 archivos del diff)
+$ cd /home/pablo/desa/x6200/x6200-rom-audio-audit && python3 /home/pablo/desa/x6200/asf/scripts/risk.py x6200 --files $(git diff --name-only fork/main HEAD) 2>&1 | head -6
+    {
+      "risk": "low",
+      "reviewers": [
+        "reviewer-frontend"
+      ],
+      "human_approval": false,
+exit=0
+
+### 9.6 git diff --check fork/main HEAD
+$ cd /home/pablo/desa/x6200/x6200-rom-audio-audit && git diff --check fork/main HEAD; echo rc=$?
+    rc=0
+exit=0
+
+### 9.7 git diff --stat fork/main HEAD
+$ cd /home/pablo/desa/x6200/x6200-rom-audio-audit && git diff --stat fork/main HEAD | tail -3
+     .../recovery-analysis.md                           | 123 +++
+     .../2026-10-30-rx-audio-rom-audit/validation.md    |  83 ++
+     9 files changed, 1917 insertions(+)
+exit=0
+
+# FIN — validación del PR: check-matrix exit 0 (diff sólo docs), risk.py --files low/auto_approve, git diff --check exit 0; risk.py modo diff no resuelve refs en el checkout ASF (fallo documentado).
