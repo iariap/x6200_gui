@@ -204,3 +204,14 @@ Compile-check cross (sólo lectura sobre el build tree del owner; sale a
 - Sin radio, sin I²C/UART/MUX, sin TX/PTT/ATU, sin flash. La imagen de prueba
   existe fuera de Git y **no** fue flasheada/instalada: `physical_rx_test = NOT_RUN`
   (la ejecuta el operador en #378).
+
+## Trazabilidad del patch A (corrección documental posterior a la integración)
+
+El coordinador corrigió el PR A (AetherX6200Buildroot #14): el encabezado del patch afirmaba erróneamente que el BASE oficial 1.0.6 enviaba tramas RAW de 552 B. Corrección **sólo de comentarios/README**:
+
+- RAW 552 B = contrato de **X6200Control v0.1.1** (`uint8_t samples[512]`), **no** el wire del BASE oficial 1.0.6 (APP 1.0.6 documentada: RAW 2088 B, `float samples[512]`, ABI v0.1.0).
+- SLIP 552 B = contrato reconstruido para **BASE 1.0.8** (RE #376/PR #380, payload `UNVERIFIED`).
+- Retrocompatibilidad física con BASE 1.0.6: **NOT_DEMONSTRATED / NOT_SUPPORTED / NOT_TESTED** (requeriría ABI 2088 B; fuera de scope FAST-TRACK).
+- Los tests "RAW legacy" usan fixtures sintéticos de 552 B v0.1.1, no capturas de 1.0.6.
+
+Prueba de que el código ejecutable no cambió: 37 líneas modificadas, todas comentarios; fuente preprocesada idéntica (`29f2c1ff…`); objeto ARM idéntico (`a25bbd71…`); `objdump -d` diff vacío; librería LTO sin strip idéntica `f2eb4fb1…` — **la misma que se construyó en la imagen**. Por eso la imagen `sdcard.img` sha256 `7ec5d8cc…b5d9` (construida con el patch viejo `46b4e7f3…`) **sigue válida sin reconstruir**. Patch nuevo: `bc64b21d…`. El Lead reprodujo el build del patch nuevo y obtuvo la misma librería `f2eb4fb1…`.

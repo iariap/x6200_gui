@@ -297,5 +297,26 @@
       ]
     }
   },
-  "evidence_commit_note": "commit de evidencia de la parte C en la rama feat/x6200-fw108-gui-samples; commit de codigo 4ff076ba, head documental previo d8a205ed"
+  "evidence_commit_note": "commit de evidencia de la parte C en la rama feat/x6200-fw108-gui-samples; commit de codigo 4ff076ba, head documental previo d8a205ed",
+  "part_a_patch_traceability": {
+    "context": "Corrección documental del PR A (AetherX6200Buildroot #14) posterior a la integración: el patch afirmaba erróneamente RAW 552 B para BASE 1.0.6 oficial; corregido a RAW 552 B = contrato X6200Control v0.1.1 y retrocompatibilidad física BASE 1.0.6 NOT_DEMONSTRATED/NOT_SUPPORTED/NOT_TESTED.",
+    "old_patch_sha256": "46b4e7f36e25e3db6b53de057d037a11a72ee198fe5500f2ce126996e193838f",
+    "new_patch_sha256": "bc64b21d2d489b2e5bf18437f2fd8b3c8e44874dcf8c1f049801ef778699ca68",
+    "old_patched_flow_c_sha256": "77c4fd931b9f5cd0796d12ce3fc85b29efdf43524dd566a4215b02792cabaf2a",
+    "new_patched_flow_c_sha256": "182bf89b7113f929debfb79a69cb7b94df9f90d9ca306af3fb00ba07d8bd2061",
+    "algorithm_or_abi_changed": false,
+    "executable_identity_evidence": {
+      "changed_lines_all_comments": true,
+      "preprocessed_source_sha256_both": "29f2c1ff…b02c56",
+      "arm_flow_o_sha256_both": "a25bbd7119aa6a56156dd0bf51edba24904ea4530934e6a98c5d1df0d71c6600",
+      "arm_objdump_disasm_diff": "empty (sha256 01535514…a32a5aa)",
+      "lto_library_unstripped_sha256_both": "f2eb4fb1b291c6dd76a0a46a5e326eefd9ad87fe46abe6fe0c1a373fc4dd1138",
+      "lead_rebuild_new_patch_unstripped_sha256": "f2eb4fb1b291c6dd76a0a46a5e326eefd9ad87fe46abe6fe0c1a373fc4dd1138"
+    },
+    "image_built_with_old_patch": true,
+    "image_valid_without_rebuild": true,
+    "image_sha256": "7ec5d8cc4cb6cbf98fc92af9cf6489ad1a94f5dce8585d43c93156afde68b5d9",
+    "pr_14_head_before_fix": "afb7a3cd8b7edb5ee2ba3b58596dbd8c762b8eee",
+    "pr_14_head_after_fix": "e005f3cea649e091cc1c3d44809fc73d526c2443"
+  }
 }

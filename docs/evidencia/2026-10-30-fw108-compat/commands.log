@@ -301,3 +301,10 @@ $ sha256sum build/staging/usr/lib/libaether_x6200_control.so.0.15.3 -> acdcadae.
 $ sha256sum build/staging/usr/include/aether_radio/x6200_control/low/flow.h -> 29cfa6b4...   # == backup v0.1.0
 # auditoria target vs rootfs.tar previo (4214 archivos): solo 3 diferencias /etc explicadas (group pre-existente; passwd/shadow re-generados por target-finalize)
 exit=0   # restore OK, ver fw108-scratch/integration-377/restore-report.md
+
+# --- Trazabilidad patch A viejo→nuevo (docs-only, 2026-10-30) -------------------
+# patch viejo (construyó la imagen): sha256 46b4e7f36e25e3db6b53de057d037a11a72ee198fe5500f2ce126996e193838f
+# patch nuevo (sólo comentarios):     sha256 bc64b21d2d489b2e5bf18437f2fd8b3c8e44874dcf8c1f049801ef778699ca68
+# flow.c parcheado viejo/nuevo:       77c4fd93… / 182bf89b…
+# build Lead patch nuevo -> lib sin strip f2eb4fb1b291c6dd76a0a46a5e326eefd9ad87fe46abe6fe0c1a373fc4dd1138 (== imagen)
+# git diff --check: exit 0
