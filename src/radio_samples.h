@@ -9,12 +9,16 @@
  *
  *      uint8_t samples[512];
  *
- *  o sea 512 BYTES de muestra, no 512 float. La GUI vendor los convierte a
- *  float restando el offset 0x96 (150) a cada muestra; ese es el unico escalado
- *  que usa el equipo y el que replica este header. El contrato de ABI
- *  (sizeof/offsetof, header real con el que se compila) se verifica con
- *  _Static_assert en src/radio.c: si el SDK no es el v0.1.1 esperado, el build
- *  se detiene con BLOCKED_GUI_SAMPLE_ABI en vez de reinterpretar floats.
+ *  o sea 512 BYTES de muestra, no 512 float. Para el formato de flujo de BASE
+ *  1.0.7/1.0.8 cada byte es un valor en dB (no PCM centrado en 0): la GUI
+ *  upstream v0.1.2 (commit c74df4a3 "Fixes for 1.0.7 BASE") convierte con
+ *  `pack->samples[i] - 126.0f` y dsp.cpp pasa de dB a potencia antes de
+ *  promediar. Ese es el contrato que replica este header; el -150 que se habia
+ *  usado antes era el offset de otro payload (audio de la APP vendor, no el
+ *  espectro de la GUI). El contrato de ABI (sizeof/offsetof, header real con el
+ *  que se compila) se verifica con _Static_assert en src/radio.c: si el SDK no
+ *  es el v0.1.1 esperado, el build se detiene con BLOCKED_GUI_SAMPLE_ABI en vez
+ *  de reinterpretar floats.
  *
  *  Este header es C puro y no depende del SDK ni de LVGL a proposito: la
  *  conversion se puede testear en host (tests/native/test_radio_samples.c)
@@ -29,10 +33,11 @@
  * dsp_samples() como RADIO_SAMPLES floats. */
 #define RADIO_FLOW_SAMPLES      (512)
 
-/* Offset de la APP vendor: cada byte es una muestra centrada en 150 (0x96). */
-#define RADIO_FLOW_SAMPLE_BIAS  (150)
+/* Offset del formato de flujo 1.0.7/1.0.8: cada byte es un valor en dB
+ * referido a 126 (GUI upstream v0.1.2, c74df4a3). */
+#define RADIO_FLOW_SAMPLE_BIAS  (126)
 
-/* Una muestra del pack -> la muestra de audio que espera el DSP. */
+/* Una muestra del pack -> el valor en dB que espera dsp_samples(). */
 static inline float radio_flow_sample_to_float(uint8_t raw) {
     return (float) ((int) raw - RADIO_FLOW_SAMPLE_BIAS);
 }

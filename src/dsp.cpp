@@ -17,6 +17,7 @@
 #include <numeric>
 #include <mutex>
 #include <stddef.h>
+#include <float.h>
 
 extern "C" {
     #include "audio.h"
@@ -82,7 +83,12 @@ template <size_t input_size, size_t output_size> class AveragedPSD {
     };
 
     void add_samples(float *samples) {
-        liquid_vectorf_add(psd.data(), samples, psd.size(), psd.data());
+        /* BASE 1.0.7/1.0.8 entrega los bins en dB. Se suman en potencia (no
+         * en dB) para que el promedio sea el del PSD; GUI upstream v0.1.2,
+         * commit c74df4a3. */
+        for (size_t i = 0; i < psd.size(); i++) {
+            psd[i] += powf(10.0f, samples[i] * 0.1f);
+        }
         count++;
     };
 
@@ -97,7 +103,7 @@ template <size_t input_size, size_t output_size> class AveragedPSD {
         }
 
         for (size_t i = 0; i < averaged.size(); i++) {
-            averaged[i] = 20.0f * log10f(averaged[i] + 1e-12f) - 30.0f;
+            averaged[i] = 10.0f * log10f(averaged[i] + 1e-12f);
         }
 
         reset();
@@ -109,6 +115,7 @@ static AveragedPSD<RADIO_SAMPLES, SPECTRUM_NFFT> spectrum_avg_psd;
 static AveragedPSD<RADIO_SAMPLES, RADIO_SAMPLES> waterfall_avg_psd;
 
 static uint8_t       spectrum_factor = 1;
+static uint32_t      fft_width = FFT_FULL_WIDTH;
 
 static float          spectrum_psd[SPECTRUM_NFFT];
 static float          spectrum_psd_filtered[SPECTRUM_NFFT];
@@ -272,7 +279,7 @@ void dsp_samples(float *buf_samples, uint16_t size, bool tx, int16_t dbm) {
             // update min/max
             if (!tx) {
                 // Ignore borders
-                dsp_update_min_max(waterfall_avg_data->data() + 16, waterfall_avg_data->size() - 32);
+                dsp_update_min_max(waterfall_avg_data->data() + 8, waterfall_avg_data->size() - 16);
             }
         }
     }
@@ -296,6 +303,7 @@ static void on_cur_mode_change(Subject *subj, void *user_data) {
 }
 
 static void on_cur_fft_width_change(Subject *subj, void *user_data) {
+    fft_width = (uint32_t) subject_get_int(cfg_cur.fft_width);
     atune_context_set(&atune_width, subject_get_int(cfg_cur.fft_width));
 }
 
@@ -354,28 +362,64 @@ void dsp_put_audio_samples(size_t nsamples, int16_t *samples) {
     }
 }
 
-static int compare_fft(const void *p1, const void *p2) {
-    float *i1 = (float *)p1;
-    float *i2 = (float *)p2;
-
-    return (*i1 < *i2) ? -1 : 1;
-}
-
 static void dsp_update_min_max(float *data_buf, uint16_t size) {
     if (min_max_delay) {
         min_max_delay--;
         return;
     }
-    qsort(data_buf, size, sizeof(float), compare_fft);
-    uint16_t min_nth = size * 10 / 100;
 
-    float min = data_buf[min_nth];
-
-    if (min < S_MIN) {
-        min = S_MIN;
-    } else if (min > S8) {
-        min = S8;
+    /* dB a potencia y suma en la ventana de 2.7 kHz: el minimo del PSD suma
+     * potencia, no percentil de dB. GUI upstream v0.1.2, commit c74df4a3. */
+    float psd[size];
+    for (size_t i = 0; i < size; i++) {
+        psd[i] = powf(10.0f, data_buf[i] * 0.1f);
     }
+
+    size_t window = (size_t) roundf(2700.0f * RADIO_SAMPLES / (float) fft_width);
+    if (window < 1) {
+        window = 1;
+    }
+    if (window >= size) {
+        return;
+    }
+
+    size_t psd_sum_size = size - window;
+    float  psd_sum[psd_sum_size];
+    for (size_t i = 0; i < psd_sum_size; i++) {
+        psd_sum[i] = 0.0f;
+        for (size_t j = 0; j < window; j++) {
+            psd_sum[i] += psd[i + j];
+        }
+    }
+
+    float min = FLT_MAX;
+    for (size_t i = 0; i < psd_sum_size; i++) {
+        min = LV_MIN(min, psd_sum[i]);
+    }
+
+    min = LV_MAX(min, 1e-20f);
+    min = 10.0f * log10f(min);
+
+    /* Offset de Minimum Statistics segun el ancho de FFT (upstream). */
+    float offset;
+    switch (fft_width) {
+    case FFT_FULL_WIDTH:
+        offset = 14.83f;
+        break;
+    case FFT_FULL_WIDTH / 2:
+        offset = 9.47f;
+        break;
+    case FFT_FULL_WIDTH / 4:
+        offset = 5.57f;
+        break;
+    default:
+        offset = 3.24f;
+        break;
+    }
+
+    min = min + offset;
+    min -= 24.0f;
+
     float max = min + 48;
 
     spectrum_update_min(min);

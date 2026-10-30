@@ -76,12 +76,17 @@ patrón pre-fix (`fw108-scratch/gui377/asan-old-cast.c`): `heap-buffer-overflow`
 
 ## 4. Después del fix (commit `4ff076ba`)
 
+> **Corrección posterior (#378):** la conversión con `-150` de este apartado era
+> la hipótesis inicial; la prueba física mostró que el flujo 1.0.7/1.0.8 usa
+> `-126` y que `dsp.cpp` debe convertir dB→potencia. El código vigente del PR
+> aplica esa corrección; ver [physical-fix-378.md](physical-fix-378.md).
+
 `src/radio_samples.h` (nuevo; sha256
 `d2ff0bf3ad195cdac6195cb462181e1854d69d7ad734903f59e9eb571b4c8144`):
 
 ```c
 #define RADIO_FLOW_SAMPLES      (512)
-#define RADIO_FLOW_SAMPLE_BIAS  (150)   /* 0x96, offset de la APP vendor */
+#define RADIO_FLOW_SAMPLE_BIAS  (126)   /* flujo 1.0.7/1.0.8: dB referidos a 126 */
 
 static inline float radio_flow_sample_to_float(uint8_t raw) {
     return (float) ((int) raw - RADIO_FLOW_SAMPLE_BIAS);
@@ -139,8 +144,11 @@ build se detiene: no hay camino que reinterprete floats ni que trunque paquetes.
 ## 7. Por qué no se reinterpreta ni se trunca
 
 - **No reinterpretar**: en v0.1.1 el payload de muestras son bytes; leerlos como
-  `float` es UB además de sobrelectura (V7). La conversión por byte con offset 150
-  es la de la APP vendor (issue #377: `sample - 0x96`), sin inventar escalado.
+  `float` es UB además de sobrelectura (V7). La conversión por byte es la del
+  formato de flujo de BASE 1.0.7/1.0.8: **`byte - 126`** y luego el DSP convierte
+  dB→potencia (GUI upstream v0.1.2, `c74df4a3`). El offset `150` que se había
+  usado antes era de otro payload y produjo `NaN`/waterfall invisible en la
+  prueba física; ver [physical-fix-378.md](physical-fix-378.md).
 - **No truncar el paquete**: el paquete son 552 B y no se recorta; lo que cambia
   es cómo se **proyectan** las 512 muestras al DSP (512 floats).
 - **Stop explícito**: si el header no coincide (p. ej. v0.1.0 en el build tree de
@@ -155,7 +163,10 @@ build se detiene: no hay camino que reinterprete floats ni que trunque paquetes.
   Esto no se resuelve en este PR.
 - Bytes reales del wire de BASE 1.0.8: `UNKNOWN` (sin captura; prohibido). El
   layout viene de la RE estática de PR #380 sobre un payload no autenticado.
-- El valor 150 es el offset de la APP vendor; no fue medido en radio con esta GUI.
+- El valor 150 se había tomado de otro payload de la APP vendor; **no es** el
+  contrato del flujo 1.0.7/1.0.8. La prueba física #378 midió el efecto y el
+  código correcto se alineó con la GUI upstream `c74df4a3` (`byte - 126` y
+  dB→potencia); ver [physical-fix-378.md](physical-fix-378.md).
 - El build tree del owner no se tocó: sigue compilando v0.1.0 (con el guard, la GUI
   **no compilaría** hasta actualizar la librería). El link/build final es de la
   integración.

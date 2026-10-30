@@ -244,17 +244,19 @@ bool radio_tick() {
         }
         // printf("sql_mute=%d sql_fm_mute=%d\n", pack->flag.sql_mute, pack->flag.sql_fm_mute);
         // printf("flags %08x\n", pack->flag);
-        /* #377: en X6200Control v0.1.1 `pack->samples` son 512 u8 (muestras
-         * centradas en 150), no 512 float. El cast directo a float* leia 2048 B
-         * desde un payload de 552 B y le pasaba bytes crudos como floats al
-         * DSP. Se convierten a un buffer local que vive hasta que dsp_samples()
-         * retorna; la firma y el uso de dsp_samples() no cambian. */
+        /* #377/#378: en X6200Control v0.1.1 `pack->samples` son 512 u8 en dB
+         * (formato de flujo BASE 1.0.7/1.0.8), no 512 float. El cast directo a
+         * float* leia 2048 B desde un payload de 552 B y le pasaba bytes crudos
+         * como floats al DSP. Se convierten a un buffer local que vive hasta que
+         * dsp_samples() retorna; la firma y el uso de dsp_samples() no cambian.
+         * dBm: la GUI upstream v0.1.2 aplica -dbm + 4 (c74df4a3). */
         float samples[RADIO_SAMPLES];
 
         radio_flow_samples_to_float(samples, pack->samples, RADIO_FLOW_SAMPLES);
         x6200_mode_t mode = subject_get_int(cfg_cur.mode);
+        int16_t dbm = -(int16_t)pack->dbm + 4;
 
-        dsp_samples(samples, RADIO_SAMPLES, pack->flag.tx, -(int16_t)pack->dbm);
+        dsp_samples(samples, RADIO_SAMPLES, pack->flag.tx, dbm);
         // printf("als=%f\n", pack->alc_level * 0.1f);
 
         process_power_key(pack->flag.power_key, now_time);

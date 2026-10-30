@@ -1,13 +1,13 @@
 /*
  * Native test de la conversion de muestras del flujo RX (issue #377).
  *
- * x6200_flow_t de X6200Control v0.1.1 trae `uint8_t samples[512]`: 512 BYTES de
- * muestra centrados en 150 (0x96), no 512 floats. La GUI los convierte con
- * `(float)((int)byte - 150)` (offset de la APP vendor) antes de pasarlos a
- * dsp_samples(). Este test fija el contrato de conversion y el borde de las 512
- * muestras:
+ * x6200_flow_t de X6200Control v0.1.1 trae `uint8_t samples[512]`: 512 BYTES en
+ * dB (formato de flujo BASE 1.0.7/1.0.8), no 512 floats. La GUI los convierte
+ * con `(float)((int)byte - 126)` (commit upstream c74df4a3) antes de pasarlos a
+ * dsp_samples(), que los trata como dB y los convierte a potencia. Este test
+ * fija el contrato de conversion y el borde de las 512 muestras:
  *
- *   - puntos deterministas: 0 -> -150.0f, 150 -> 0.0f, 255 -> 105.0f;
+ *   - puntos deterministas: 0 -> -126.0f, 126 -> 0.0f, 255 -> 129.0f;
  *   - las 512 muestras se convierten una por una, en orden y sin escalado
  *     adicional;
  *   - buffers de tamano EXACTO (una lectura/escritura fuera de rango aborta con
@@ -30,13 +30,13 @@
 
 #include "radio_samples.h"
 
-/* Puntos deterministas del contrato vendor. */
+/* Puntos deterministas del contrato 1.0.7/1.0.8. */
 static void test_puntos_del_contrato(void) {
-    CHECK_CLOSE(radio_flow_sample_to_float(0), -150.0f, 0.0f);
-    CHECK_CLOSE(radio_flow_sample_to_float(149), -1.0f, 0.0f);
-    CHECK_CLOSE(radio_flow_sample_to_float(150), 0.0f, 0.0f);
-    CHECK_CLOSE(radio_flow_sample_to_float(0x96), 0.0f, 0.0f);   /* 150 == 0x96 */
-    CHECK_CLOSE(radio_flow_sample_to_float(255), 105.0f, 0.0f);
+    CHECK_CLOSE(radio_flow_sample_to_float(0), -126.0f, 0.0f);
+    CHECK_CLOSE(radio_flow_sample_to_float(125), -1.0f, 0.0f);
+    CHECK_CLOSE(radio_flow_sample_to_float(126), 0.0f, 0.0f);
+    CHECK_CLOSE(radio_flow_sample_to_float(0x7e), 0.0f, 0.0f);   /* 126 == 0x7e */
+    CHECK_CLOSE(radio_flow_sample_to_float(255), 129.0f, 0.0f);
 }
 
 /* Las 512 muestras del pack completo, exactas y en orden. */
@@ -55,8 +55,8 @@ static void test_512_muestras(void) {
     }
 
     /* Los bordes del pack: primera muestra (byte 0) y ultima (byte 255). */
-    CHECK_CLOSE(out[0], -150.0f, 0.0f);
-    CHECK_CLOSE(out[RADIO_FLOW_SAMPLES - 1], 105.0f, 0.0f);
+    CHECK_CLOSE(out[0], -126.0f, 0.0f);
+    CHECK_CLOSE(out[RADIO_FLOW_SAMPLES - 1], 129.0f, 0.0f);
 }
 
 /* Borde de las 512 muestras: nada fuera de rango, ni leido ni escrito. */
@@ -96,13 +96,13 @@ static void test_bordes_sin_oob(void) {
     CHECK(out[RADIO_FLOW_SAMPLES + 1] == OUT_LAST);
 
     /* Y las 512 posiciones convertidas son las del ejemplo del issue. */
-    CHECK_CLOSE(out[1], -150.0f, 0.0f);
-    CHECK_CLOSE(out[1 + 150], 0.0f, 0.0f);       /* byte 150 -> 0.0f */
-    CHECK_CLOSE(out[RADIO_FLOW_SAMPLES], 105.0f, 0.0f);   /* byte 255 -> 105.0f */
+    CHECK_CLOSE(out[1], -126.0f, 0.0f);
+    CHECK_CLOSE(out[1 + 126], 0.0f, 0.0f);       /* byte 126 -> 0.0f */
+    CHECK_CLOSE(out[RADIO_FLOW_SAMPLES], 129.0f, 0.0f);   /* byte 255 -> 129.0f */
 
     /* Constantes del contrato que el header expone. */
     CHECK(RADIO_FLOW_SAMPLES == 512);
-    CHECK(RADIO_FLOW_SAMPLE_BIAS == 150);
+    CHECK(RADIO_FLOW_SAMPLE_BIAS == 126);
 
     free(raw);
     free(out);
@@ -116,8 +116,8 @@ static void test_no_reinterpreta_float(void) {
 
     radio_flow_samples_to_float(out, raw, 4);
 
-    CHECK_CLOSE(out[0], -150.0f, 0.0f);
-    CHECK_CLOSE(out[1], -150.0f, 0.0f);
+    CHECK_CLOSE(out[0], -126.0f, 0.0f);
+    CHECK_CLOSE(out[1], -126.0f, 0.0f);
     CHECK_CLOSE(out[2], (float) (0x80 - RADIO_FLOW_SAMPLE_BIAS), 0.0f);
     CHECK_CLOSE(out[3], (float) (0x3F - RADIO_FLOW_SAMPLE_BIAS), 0.0f);
 }

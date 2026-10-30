@@ -29,10 +29,18 @@ muestra tratados como `float` (sobrelectura + contenido inválido).
 El fix (diff acotado a la ruta de muestras):
 
 - `src/radio_samples.h` (nuevo, C puro sin SDK/LVGL): conversión por muestra
-  `(float)((int)byte - 150)` — offset `0x96` de la APP vendor, sin otro escalado.
+  `(float)((int)byte - RADIO_FLOW_SAMPLE_BIAS)`, con el offset del formato de
+  flujo de BASE 1.0.7/1.0.8. **Corrección post-prueba física (#378):** el valor
+  inicial `150` (0x96) era el de otro payload; el contrato correcto es **126**
+  (0x7e), como en la GUI upstream v0.1.2 `c74df4a3` ("Fixes for 1.0.7 BASE").
+  Ver [physical-fix-378.md](physical-fix-378.md).
 - `src/radio.c`: buffer local `float samples[RADIO_SAMPLES]` con vida hasta el
-  retorno de `dsp_samples()`; misma llamada y mismo uso del DSP (no se toca
-  `src/dsp.cpp`, ni TX, ni S-meter, ni waterfall, ni ajustes, ni modos).
+  retorno de `dsp_samples()`; dBm corregido `-dbm + 4` (upstream 1.0.7/1.0.8).
+- `src/dsp.cpp` (corrección #378): el flujo 1.0.7/1.0.8 entrega los bins en dB;
+  `AveragedPSD` convierte dB→potencia antes de promediar y vuelve a dB con
+  `10·log10`; `dsp_update_min_max` usa la ventana de 2.7 kHz y los offsets de
+  Minimum Statistics de upstream. Sin esto, la media de valores dB negativos
+  daba `NaN` y el waterfall quedaba en un solo color.
 - `_Static_assert` del ABI v0.1.1 (`sizeof(pack->samples)==512`,
   `offsetof(x6200_flow_t,samples)==4`, `sizeof(x6200_flow_t)==552`,
   `RADIO_SAMPLES==RADIO_FLOW_SAMPLES`): si el header con el que se compila no es
@@ -196,8 +204,9 @@ Compile-check cross (sólo lectura sobre el build tree del owner; sale a
 
 - `payload_authenticity = UNVERIFIED`; `RELEASE_NOTE_HASH_MISMATCH` sin resolver.
 - Bytes reales del wire de BASE 1.0.8: `UNKNOWN` (no hay captura y está prohibido
-  capturarlos). El offset 150 de las muestras es el de la APP vendor, no un valor
-  medido en esta GUI.
+  capturarlos). El offset **150** que se había supuesto inicialmente resultó
+  incorrecto en la prueba física #378: el flujo 1.0.7/1.0.8 usa **126** y el DSP
+  debe pasar de dB a potencia; ver [physical-fix-378.md](physical-fix-378.md).
 - El build tree del owner quedó restaurado a v0.1.0 (su estado previo); con ese
   header el guard falla **a propósito** (`BLOCKED_GUI_SAMPLE_ABI`). La integración
   compiló y verificó con v0.1.1+patch A (parte C).
@@ -215,3 +224,25 @@ El coordinador corrigió el PR A (AetherX6200Buildroot #14): el encabezado del p
 - Los tests "RAW legacy" usan fixtures sintéticos de 552 B v0.1.1, no capturas de 1.0.6.
 
 Prueba de que el código ejecutable no cambió: 37 líneas modificadas, todas comentarios; fuente preprocesada idéntica (`29f2c1ff…`); objeto ARM idéntico (`a25bbd71…`); `objdump -d` diff vacío; librería LTO sin strip idéntica `f2eb4fb1…` — **la misma que se construyó en la imagen**. Por eso la imagen `sdcard.img` sha256 `7ec5d8cc…b5d9` (construida con el patch viejo `46b4e7f3…`) **sigue válida sin reconstruir**. Patch nuevo: `bc64b21d…`. El Lead reprodujo el build del patch nuevo y obtuvo la misma librería `f2eb4fb1…`.
+
+
+## Corrección post-prueba física (#378) — 2026-10-30
+
+La primera prueba física de la ROM con BASE 1.0.8 mostró la UI fluida y audio RX
+OK, pero **waterfall y espectro invisibles en todos los temas**. La inspección del
+estado en ejecución mostró `grid_min = grid_max = NaN`, y las filas del waterfall
+quedaban en el índice de paleta máximo/mínimo: un solo color.
+
+Causa: el flujo 1.0.8 no es PCM centrado en 150 como se había inferido; es
+**dB referido a 126** y el DSP de la GUI debe convertir dB→potencia antes de
+promediar (upstream GUI v0.1.2, commit `c74df4a3`). La conversión inicial
+`(byte - 150)` dejaba todos los valores negativos, la media dB era negativa,
+`log10` daba `NaN`, y el `lpf` de min/max quedaba envenenado.
+
+Corrección validada en radio: `radio_samples.h` (`- 126`), `radio.c` (`dbm + 4`),
+`dsp.cpp` (dB→potencia, `10·log10`, min/max de upstream). Evidencia, comandos,
+hash del binario y capturas antes/después en
+[`physical-fix-378.md`](physical-fix-378.md). La imagen de prueba original
+`7ec5d8cc…` **no** incluye esta corrección; la prueba se hizo con el binario
+compilado del PR desplegado temporalmente en la SD. Pendiente: rearmar la imagen
+con el binario corregido para el artefacto reproducible de #378.
