@@ -177,6 +177,14 @@ exit=1   # FAILs de ENTORNO del worktree, no del diff: todas las gates que cubre
          # Mismos motivos serian independientes de este cambio (uv cache RO, lvgl
          # sin inicializar en el worktree, banco QEMU sin binario remote).
 
+# Revalidacion final sobre el head de evidencia fcd163d5 (mismos gates, docs
+# agregadas): 16 gates ok, CHECKMATRIX_EXIT:1 por los mismos motivos de entorno.
+$ bash /home/pablo/desa/x6200/asf/scripts/apps/x6200/check-matrix.sh \
+      6850d671d430a1693dbcaf593579a3d98b037995 HEAD /home/pablo/desa/x6200/x6200-fw108-compat-qa
+... mismas gates ok y los mismos FAIL/BLOCKED de entorno ...
+CHECKMATRIX_EXIT:1
+exit=1   # identico al run del commit de codigo: los FAIL son de entorno, no del diff
+
 ## 11) Commit, push y PR (sin merge)
 $ git add src/radio.c src/radio_samples.h tests/native/test_radio_samples.c \
       tests/native/radio_samples_test_main.c tests/native/run_native_tests.sh \

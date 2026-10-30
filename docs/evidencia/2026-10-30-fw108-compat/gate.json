@@ -16,7 +16,8 @@
     "base": "main",
     "head_branch": "feat/x6200-fw108-gui-samples",
     "head_at_creation": "4ff076baf1bd4a72ff96b23e57c4c78949035de1",
-    "merged": false
+    "merged": false,
+    "head_with_evidence": "fcd163d54ffca585415791eef2ac24565b23f3d2"
   },
   "code_commit": "4ff076baf1bd4a72ff96b23e57c4c78949035de1",
   "sample_abi": {
@@ -50,14 +51,23 @@
     },
     "sanitizers": {
       "runner_gcc": "NO disponible en este host (libasan.so.8/libubsan.so.1 no linkean); el runner cae a build sin sanitizador y lo registra",
-      "manual_clang18_asan_ubsan": {"exit_code": 0, "checks": "533, 0 fallos"},
+      "manual_clang18_asan_ubsan": {
+        "exit_code": 0,
+        "checks": "533, 0 fallos"
+      },
       "asan_oob_negative_control": "exit 1 esperado (heap-buffer-overflow): el sanitizador esta armado",
       "asan_pre_fix_cast_reproduction": "exit 1 esperado (heap-buffer-overflow): sobrelectura 2048 B desde 552 B"
     },
     "cross_compile_check_arm": {
       "toolchain": "arm-buildroot-linux-gnueabihf-gcc 12.3.0 (Buildroot 2023.02.11-dirty, build tree del owner, solo lectura)",
-      "v0_1_1_headers": {"exit_code": 0},
-      "v0_1_0_headers_negative_control": {"exit_code": 1, "expected": true, "message": "static assertion failed: BLOCKED_GUI_SAMPLE_ABI"}
+      "v0_1_1_headers": {
+        "exit_code": 0
+      },
+      "v0_1_0_headers_negative_control": {
+        "exit_code": 1,
+        "expected": true,
+        "message": "static assertion failed: BLOCKED_GUI_SAMPLE_ABI"
+      }
     },
     "bash_syntax": {
       "tests/native/run_native_tests.sh": 0,
@@ -90,6 +100,24 @@
         "uv sync / x6200-ab themes / contracts: /home/pablo/.cache/uv read-only (os error 30); contracts queda BLOCKED sin PASS",
         "check_wcag_rendered / check_widget_text / check_drawbuf_partial: worktree sin submodulo lvgl/ (el arnes docker no construye)",
         "banco QEMU preflight: falta tools/remote/x6200-remote en este worktree (entorno del owner)"
+      ],
+      "final_head_run": {
+        "head": "fcd163d54ffca585415791eef2ac24565b23f3d2",
+        "exit_code": 1,
+        "gates_ok": 16,
+        "verdict": "identico al run del commit de codigo: FAILs de ENTORNO del worktree (uv cache read-only, lvgl/ ausente, banco QEMU sin binario remote); gates que cubren el diff ok"
+      },
+      "runs": [
+        {
+          "head": "4ff076baf1bd4a72ff96b23e57c4c78949035de1",
+          "exit_code": 1,
+          "verdict": "FAILs de entorno, no del diff"
+        },
+        {
+          "head": "fcd163d54ffca585415791eef2ac24565b23f3d2",
+          "exit_code": 1,
+          "verdict": "FAILs de entorno, no del diff (identico)"
+        }
       ]
     }
   },
@@ -97,7 +125,9 @@
     "status": "NOT_RUN",
     "reason": "alcance B: la reconstruccion de aether-x6200-control v0.1.1+patch, la GUI y la imagen de prueba corresponde a la integracion (task-16) con el build tree del owner; no se toco rom-build/clone-buildroot"
   },
-  "image": {"status": "NOT_RUN"},
+  "image": {
+    "status": "NOT_RUN"
+  },
   "physical_rx_test": {
     "status": "NOT_RUN",
     "reason": "requiere instalacion oficial y autorizacion del dueno (#378); el agente no flashea/instala"
@@ -127,5 +157,6 @@
     "PR sin merge automatico."
   ],
   "final_state": "SAMPLE_ABI_FIXED_HOST_PASS_BUILD_PENDING_INTEGRATION",
-  "final_state_detail": "Fix GUI commiteado y pusheado (PR #381); tests host y compile-check ARM contra v0.1.1 PASS; build completo/imagen NOT_RUN (task-16); prueba fisica NOT_RUN (#378). payload_authenticity=UNVERIFIED; production_ready=false."
+  "final_state_detail": "Fix GUI commiteado y pusheado (PR #381); tests host y compile-check ARM contra v0.1.1 PASS; build completo/imagen NOT_RUN (task-16); prueba fisica NOT_RUN (#378). payload_authenticity=UNVERIFIED; production_ready=false.",
+  "evidence_commit": "fcd163d54ffca585415791eef2ac24565b23f3d2"
 }
