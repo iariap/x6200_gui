@@ -1,0 +1,468 @@
+# commands.log — Fase A FW X6200 1.0.8 (#375)
+
+Registro de **comandos reales** ejecutados durante la fase, con **exit codes** y salidas relevantes.
+Sanitizado: sin credenciales, seriales, IPs internas, calibración ni contenido propietario.
+Salidas largas resumidas con `…`; los exit codes son los reales observados.
+
+- Fecha de la sesión: 2026-10-30 (UTC y America/Buenos_Aires).
+- Worktree: `/home/pablo/desa/x6200/x6200-fw108-artifacts` (rama `audit/x6200-fw108-artifacts`).
+- Scratch (fuera de Git): `/home/pablo/desa/x6200/fw108-scratch/`.
+- Regla: nada de radio, I²C/UART, flash, `sudo`, `mount`, `losetup`, `dd` a dispositivos, ni ejecución de binarios/scripts del paquete.
+
+## 1. Verificación de base y worktree
+
+```console
+$ cd /home/pablo/desa/x6200/x6200_qa && git fetch origin main
+… (el fetchspec de `origin` no actualiza `origin/main`; se verificó por ls-remote/API)
+$ git ls-remote origin refs/heads/main
+6850d671d430a1693dbcaf593579a3d98b037995	refs/heads/main          # exit 0
+$ git ls-remote fork refs/heads/main
+6850d671d430a1693dbcaf593579a3d98b037995	refs/heads/main          # exit 0
+$ gh api repos/iariap/x6200_gui/commits/main --jq '.sha + " " + .commit.committer.date'
+6850d671d430a1693dbcaf593579a3d98b037995 2026-10-30T03:49:47Z      # exit 0
+```
+
+```console
+$ cd /home/pablo/desa/x6200/x6200_qa && git worktree add /home/pablo/desa/x6200/x6200-fw108-artifacts -b audit/x6200-fw108-artifacts origin/main
+HEAD is now at cb9ea287 docs(audio): integrate qualified physical RX capture evidence (#359)   # base de tracking vieja
+$ cd /home/pablo/desa/x6200/x6200-fw108-artifacts && git fetch fork main
+$ git reset --hard 6850d671d430a1693dbcaf593579a3d98b037995
+HEAD is now at 6850d671 docs(audio): physical instrument plan and MUX fail-safe contract (#372)   # exit 0
+$ git show -s --format='%H %s' HEAD
+6850d671d430a1693dbcaf593579a3d98b037995 docs(audio): physical instrument plan and MUX fail-safe contract (#372)   # exit 0
+$ git merge-base --is-ancestor 6850d671 HEAD; echo $?
+0
+$ git status --porcelain
+(sin salida)                                                             # exit 0
+```
+
+Herramientas disponibles (verificación de entorno):
+
+```console
+$ for t in 7z debugfs dumpe2fs mcopy mdir mtype sfdisk fdisk pdftotext pdfinfo unzip zipinfo jq python3; do command -v $t; done
+/usr/bin/7z /usr/bin/debugfs /usr/bin/dumpe2fs /usr/bin/mcopy /usr/bin/mdir /usr/bin/mtype /usr/bin/sfdisk /usr/bin/fdisk /usr/bin/pdftotext /usr/bin/pdfinfo /usr/bin/unzip /usr/bin/zipinfo /usr/bin/jq /home/pablo/.pyenv/shims/python3   # exit 0
+$ 7z i | head -3
+7-Zip 26.04 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-05   # exit 0
+```
+
+## 2. Procedencia — página oficial y anuncio
+
+```console
+$ cd /home/pablo/desa/x6200/fw108-scratch/vendor
+$ curl -sS -L --max-time 60 -o downloads_page_20261030.html -D page_headers.txt -w 'page_http=%{http_code} page_size=%{size_download} final_url=%{url_effective}\n' "https://xiegu.eu/downloads/"
+page_http=200 page_size=152173 final_url=https://xiegu.eu/downloads/          # exit 0
+$ sha256sum downloads_page_20261030.html
+9fe2294142c4568ac18aa71823319ad889409a0a069873d96af19b5cc0b5f5bd  downloads_page_20261030.html   # exit 0
+```
+
+Extracción de la entrada (script Python sobre el HTML): título `X6200 Firmware Upgrade v1.0.8`, href
+`https://xiegu.eu/?sdm_process_download=1&download_id=10216`, texto `X6200_Update_1.0.8 (2026-08-20) — Release Notes [EN]`.
+
+```console
+$ curl -sS -L --max-time 60 -o blog_108_20261030.html -D blog_headers.txt -w 'blog_http=%{http_code} final_url=%{url_effective}\n' "https://xiegu.eu/2026/08/29/xiegu-x6200-firmware-1-0-8-cw-macros-keyer-fixes/"
+blog_http=200 final_url=https://xiegu.eu/2026/08/29/xiegu-x6200-firmware-1-0-8-cw-macros-keyer-fixes/   # exit 0
+$ sha256sum blog_108_20261030.html
+a9db66b258097b8fb0d2b4687d42942a421f9c19b681eda9f0d4a6d58a6a3442  blog_108_20261030.html   # exit 0
+```
+
+El blog declara: `Firmware Versions APP: 1.0.8 – 17 August 2026 / BASE: 1.0.8 – 19 August 2026`.
+
+Intento de la copia alternativa del blog (Google Drive) — **no verificable sin login**, no se usó como sustituto:
+
+```console
+$ curl -sS -L -I --max-time 60 -D drive_headers.txt -o /dev/null -w 'drive_head_http=%{http_code} final_url=%{url_effective}\n' "https://drive.google.com/uc?export=download&id=1QF9dwOuxPF-Y62iWwF_TaUUZeEdnjWn8"
+drive_head_http=200 final_url=https://accounts.google.com/v3/signin/identifier?continue=…   # exit 0
+# (303 → accounts.google.com; requiere sesión Google; NO se descargó ni se aceptó como fuente)
+```
+
+## 3. Encabezados y descarga del paquete oficial
+
+```console
+$ curl -sS -L -I --max-time 120 -o /dev/null -D dl10216_headers.txt -w 'dl_head_http=%{http_code} final_url=%{url_effective}\n' "https://xiegu.eu/?sdm_process_download=1&download_id=10216"
+dl_head_http=200 final_url=https://xiegu.eu/wp-content/uploads/sites/4/2026/10/x6200udimg-260820001.zip   # exit 0
+$ cat dl10216_headers.txt
+HTTP/2 302
+location: https://xiegu.eu/wp-content/uploads/sites/4/2026/10/x6200udimg-260820001.zip
+HTTP/2 200
+content-type: application/zip
+content-length: 371310845
+last-modified: Wed, 14 Oct 2026 12:19:32 GMT
+etag: "1621c0fd-65dcbf1858513"
+accept-ranges: bytes
+```
+
+```console
+$ curl -L --retry 5 --fail --retry-delay 5 --connect-timeout 30 --max-time 3600 \
+    -o x6200udimg-260820001.zip -D dl10216_get_headers.txt \
+    -w 'http_code=%{http_code}\nsize_download=%{size_download}\ncontent_type=%{content_type}\ntime_total_s=%{time_total}\nspeed_Bps=%{speed_download}\nurl_effective=%{url_effective}\n' \
+    "https://xiegu.eu/?sdm_process_download=1&download_id=10216" >> download_1.0.8.log 2>&1
+$ echo $?
+0
+$ grep -E 'http_code|size_download|time_total|url_effective|curl_exit|wall_s' download_1.0.8.log
+start_utc=2026-10-30T13:09:39Z
+http_code=200
+size_download=371310845
+content_type=application/zip
+time_total_s=724.674239
+speed_Bps=512383
+url_effective=https://xiegu.eu/wp-content/uploads/sites/4/2026/10/x6200udimg-260820001.zip
+curl_exit=0
+wall_s=725
+end_utc=2026-10-30T13:21:44Z
+$ stat -c '%n size=%s blocks=%b' x6200udimg-260820001.zip
+x6200udimg-260820001.zip size=371310845 blocks=725224                       # exit 0
+```
+
+Reproducibilidad del servidor:
+
+```console
+$ curl -sS -L --fail --max-time 60 -H "Range: bytes=0-1048575" -o /tmp/zip_head.bin -w 'head_range_http=%{http_code} size=%{size_download}\n' "https://xiegu.eu/?sdm_process_download=1&download_id=10216"
+head_range_http=206 size=1048576                                             # exit 0
+$ sha256sum /tmp/zip_head.bin /tmp/zip_head_local.bin
+ade1fd2085acfec721fe5157b185652da1b68fc7c221fb24193fd7c02b215d21  /tmp/zip_head.bin
+ade1fd2085acfec721fe5157b185652da1b68fc7c221fb24193fd7c02b215d21  /tmp/zip_head_local.bin   # idénticos
+$ curl -sS -L --fail --max-time 60 -H "Range: bytes=370262269-371310844" -o /tmp/zip_tail.bin …   # 206
+$ sha256sum /tmp/zip_tail.bin /tmp/zip_tail_local.bin
+7d5bb6371e16297f78ce87e08110b5fa5418a2d709a25b560f29564e5e636973  /tmp/zip_tail.bin
+7d5bb6371e16297f78ce87e08110b5fa5418a2d709a25b560f29564e5e636973  /tmp/zip_tail_local.bin   # idénticos
+$ curl -sS -L -I --max-time 60 -H 'If-None-Match: "1621c0fd-65dcbf1858513"' -o /dev/null -w 'http=%{http_code}\n' "https://xiegu.eu/?sdm_process_download=1&download_id=10216"
+http=304                                                                     # exit 0
+```
+
+Diagnóstico del link 1.0.7 (no disponible; no se lo necesitaba):
+
+```console
+$ curl -sS -L -I --max-time 120 -D dl10215_headers.txt -o /dev/null -w 'dl10215_head_http=%{http_code}\n' "https://xiegu.eu/?sdm_process_download=1&download_id=10215"
+dl10215_head_http=500                                                        # exit 0 (comando), HTTP 500 del servidor
+```
+
+## 4. Hash del ZIP, integridad y validación de entradas
+
+```console
+$ sha256sum x6200udimg-260820001.zip | tee sha256.zip.txt
+ca0226c7ffbfa38a5655bd9fc4bbe4e7995055cb3e2b35433a2ad5d39b4100a1  x6200udimg-260820001.zip   # exit 0
+$ sha256sum -c sha256.zip.txt
+x6200udimg-260820001.zip: OK                                                 # exit 0
+$ unzip -t x6200udimg-260820001.zip
+    testing: x6200udimg-260820001/  OK
+    testing: x6200udimg-260820001/ReleaseNote-260820001(EN_CHS).txt  OK
+    testing: x6200udimg-260820001/sdcard.img  OK
+No errors detected in compressed data of x6200udimg-260820001.zip.           # exit 0
+$ unzip -l x6200udimg-260820001.zip
+        0  08-21-2026 02:38   x6200udimg-260820001/
+      759  08-21-2026 02:34   x6200udimg-260820001/ReleaseNote-260820001(EN_CHS).txt
+856686592  08-20-2026 03:15   x6200udimg-260820001/sdcard.img               # exit 0
+$ 7z t x6200udimg-260820001.zip
+Everything is Ok                                                             # exit 0
+```
+
+Validación de entradas (Python; rechaza absolutos, `..`, backslash, symlinks, ratio>1000, bytes extra tras EOCD):
+
+```console
+$ python3 - <<'PY'  # (resumen del script usado)
+… recorre zipfile.infolist(); imprime kind/size/comp/mode/crc/name/risk
+PY
+dir     size=0          comp=0       mode=0o40777  name='x6200udimg-260820001/'                           risk=[]
+file    size=759        comp=476     mode=0o100666 name='…/ReleaseNote-260820001(EN_CHS).txt'              risk=[]
+file    size=856686592  comp=371309707 mode=0o100666 name='…/sdcard.img'                                  risk=[]
+TOTAL uncompressed = 856687351 bytes; expansion factor = 2.307x
+BAD ENTRIES: NINGUNA                                                         # exit 0
+$ python3 - … EOCD  # estructura ZIP
+EOCD absoluto: 371310823 de 371310845; entries_total=3; cd_size=316; cd_offset=371310507; comment_len=0
+trailing bytes tras EOCD+comment: 0 bytes                                    # exit 0
+```
+
+## 5. Extracción del paquete (sólo a scratch)
+
+```console
+$ mkdir -p x6200-fw108-vendor
+$ unzip -q -o x6200udimg-260820001.zip -d x6200-fw108-vendor/
+$ echo $?
+0
+$ find x6200-fw108-vendor -printf '%y %10s %p\n'
+d         40 x6200-fw108-vendor
+d         86 x6200-fw108-vendor/x6200udimg-260820001
+f        759 x6200-fw108-vendor/x6200udimg-260820001/ReleaseNote-260820001(EN_CHS).txt
+f  856686592 x6200-fw108-vendor/x6200udimg-260820001/sdcard.img            # exit 0
+$ sha256sum x6200-fw108-vendor/x6200udimg-260820001/*
+2e16486969366bb42c6e9665a7f6f8981911343c723f2087e60ec0e505f9504c  …/ReleaseNote-260820001(EN_CHS).txt
+a968d2786d5003012bcc8485d287fcde93739e018b22aeb93a89dbc695d0bc3f  …/sdcard.img   # exit 0
+$ cat "x6200-fw108-vendor/x6200udimg-260820001/ReleaseNote-260820001(EN_CHS).txt"
+260820001 Release Note[EN]
+Image File SHA256: 29620674020e748ffd70173f0b2920dc0174d2733232d92a2a512111e5228698
+APP:  1.0.8  Aug 17 2026,16:21:06
+BASE: 1.0.8 Aug 19 2026,16:13:08
+… (3 ítems: keyer WPM, S-meter −255 dBm, macro CW)
+$ grep -a -n "Image File SHA256" "…/ReleaseNote-260820001(EN_CHS).txt" | cat -A
+2:Image File SHA256: 29620674020e748ffd70173f0b2920dc0174d2733232d92a2a512111e5228698^M$
+11:Image File SHA256: 29620674020e748ffd70173f0b2920dc0174d2733232d92a2a512111e5228698^M$   # EN y CHS
+```
+
+**Verificación del hash declarado contra el payload (hallazgo):**
+
+```console
+$ sha256sum "…/ReleaseNote-260820001(EN_CHS).txt" "…/sdcard.img"
+2e16486969366bb42c6e9665a7f6f8981911343c723f2087e60ec0e505f9504c  …/ReleaseNote-260820001(EN_CHS).txt
+a968d2786d5003012bcc8485d287fcde93739e018b22aeb93a89dbc695d0bc3f  …/sdcard.img               # exit 0
+# declarado en la nota: 29620674020e748ffd70173f0b2920dc0174d2733232d92a2a512111e5228698
+# -> NO coincide con a968d278…d0bc3f
+$ python3 - <<'PY'  # CRC32 del sdcard.img extraído vs CRC del ZIP
+crc32_extraido = 366043dc  (ZIP declara 366043dc)
+PY
+# CRC OK: la extracción es bit-a-bit correcta; la discrepancia no es de extracción
+$ 7z x -so x6200udimg-260820001.zip "x6200udimg-260820001/sdcard.img" | sha256sum
+a968d2786d5003012bcc8485d287fcde93739e018b22aeb93a89dbc695d0bc3f  -
+# ^ segundo descompresor independiente: mismo hash. La discrepancia es interna al paquete.
+$ python3 - <<'PY'  # ¿el hash declarado aparece dentro del ZIP o de la imagen?
+… búsqueda binaria de la cadena ASCII '2962067…' en ZIP e imagen
+PY
+x6200udimg-260820001.zip: hash ASCII publicado presente? False
+sdcard.img: hash ASCII publicado presente? False                              # exit 0
+```
+
+## 6. Estructura de la imagen microSD y particiones
+
+```console
+$ 7z l sdcard.img
+Type = MBR
+Physical Size = 856686592
+Sector Size = 512
+ID = 0
+                    .....     16777216     16777216  0.fat
+                    .....    419430400    419430400  1.img
+                    .....    419430400    419430400  2.fat                              # exit 0
+$ sfdisk -d sdcard.img        # sólo lectura
+label: dos
+label-id: 0x00000000
+sdcard.img1 : start=        2048, size=       32768, type=c, bootable
+sdcard.img2 : start=       34816, size=      819200, type=83
+sdcard.img3 : start=       854016, size=      819200, type=c                                 # exit 0
+$ fdisk -l sdcard.img         # sólo lectura
+Disk sdcard.img: 817 MiB, 856686592 bytes, 1673216 sectors
+Device      Boot  Start     End Sectors  Size Id Type
+sdcard.img1 *      2048   34815   32768   16M  c W95 FAT32 (LBA)
+sdcard.img2       34816  854015  819200  400M 83 Linux
+sdcard.img3       854016 1673215  819200  400M  c W95 FAT32 (LBA)                        # exit 0
+$ file sdcard.img
+sdcard.img: DOS/MBR boot sector; partition 1 : ID=0xc, active, …; partition 2 : ID=0x83, …; partition 3 : ID=0xc, …   # exit 0
+```
+
+Hashes por rango (Python, lectura secuencial; sin `dd`):
+
+```console
+$ python3 - <<'PY'
+… sha_range(img, off, size) por partición; compara con archivo extraído
+PY
+sha256 p1 (off=1048576 size=16777216):      a37a9a448007651ca39a5d5b231b7a900575ab96f0db9732fb1c568e4dc2af90
+sha256 p2 (off=17825792 size=419430400):    3c475b16d48acb23f727cbc3d6d3b62f103bbc26bd3ce7f2e8f1b3be27ff4764
+sha256 p3 (off=437256192 size=419430400):   c7131966845ffd9761702adfe87c56b2d2b93aabe07119a089fa762da70d5bc5
+sha256 ext108/parts/1.img (=p2 extraida):   3c475b16d48acb23f727cbc3d6d3b62f103bbc26bd3ce7f2e8f1b3be27ff4764   # coincide
+```
+
+Particiones FAT (sólo lectura, por `mdir`/`mtype` con offset `imagen@@offset`):
+
+```console
+$ mdir -i "sdcard.img@@1048576" -/ ::
+ Volume in drive : has no label
+ Volume Serial Number is B41A-913F
+ZIMAGE         4956144 2026-08-20  14:14  zImage
+SUN8I-~1 DTB     26413 2026-08-20  14:14  sun8i-r16-x6200.dtb
+boot     scr       502 2026-08-20  14:14
+logo     bmp     25654 2026-08-20  14:14
+        4 files           5 008 713 bytes                                        # exit 0
+$ mdir -i "sdcard.img@@437256192" -/ ::
+ Volume in drive : has no label
+ Volume Serial Number is B422-4708
+rootfs   tar  395427840 2026-08-20  14:14
+        1 file          395 427 840 bytes                                        # exit 0
+$ mtype -i "sdcard.img@@1048576" ::/zImage | sha256sum
+a838ec5ef84cdf2b8a9c3ccd75ddd489b82e6f8911b8e4470eb76bdc86df42b3  -                # exit 0
+$ mtype -i "sdcard.img@@1048576" ::/sun8i-r16-x6200.dtb | sha256sum
+7c73c0b0dc2a2691e2560f51927dab1bd06e3cc44bff3afb6a2c089ee8629f8b  -                # exit 0
+$ mtype -i "sdcard.img@@1048576" ::/boot.scr | sha256sum
+f60550743a48e4967fe974b5c9b1fd7d7446e0531236c78666b2c826ad197719  -                # exit 0
+$ mtype -i "sdcard.img@@1048576" ::/logo.bmp | sha256sum
+5461cd6e5ba5a65cbbaffc76e771912f1bea5f2fa78123f46a638d7a39c09756  -                # exit 0
+$ mtype -i "sdcard.img@@437256192" ::/rootfs.tar | sha256sum
+f511c99bc9a813ace4d5db94ad4ab29cf2e1d0bac56c36969cad6bda89b5221b  -                # exit 0
+$ mtype -i "sdcard.img@@437256192" ::/rootfs.tar | tar -tvf - | wc -l
+7513                                                                                # exit 0
+```
+
+Coherencia del payload de actualización (`rootfs.tar` embebe los mismos archivos del boot/rootfs):
+
+```console
+$ mtype … ::/rootfs.tar | tar -xOf - ./boot/zImage | sha256sum
+a838ec5ef84cdf2b8a9c3ccd75ddd489b82e6f8911b8e4470eb76bdc86df42b3  -                # = p1 zImage
+$ mtype … ::/rootfs.tar | tar -xOf - ./boot/sun8i-r16-x6200.dtb | sha256sum
+7c73c0b0dc2a2691e2560f51927dab1bd06e3cc44bff3afb6a2c089ee8629f8b  -                # = p1 DTB
+$ mtype … ::/rootfs.tar | tar -xOf - ./usr/app_qt/x6200_ui_v100 | sha256sum
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b  -                # = GUI en p2
+$ mtype … ::/rootfs.tar | tar -xOf - ./usr/firmware/x6200_mcu_20260820141208.xgf | sha256sum
+9a19f97a5ad9e141a3663d222f984073bf0b18b38d4662604372a0036f9daa23  -                # = xgf en p2
+```
+
+## 7. Rootfs ext4 (sin montar) y binarios APP/BASE
+
+```console
+$ 7z x -y sdcard.img "1.img"          # extrae SÓLO la partición p2 a scratch
+Everything is Ok … Size: 419430400                                        # exit 0
+$ file 1.img
+1.img: Linux rev 1.0 ext4 filesystem data, UUID=8c499e1c-a022-41dc-bfec-03969cbd2032 …   # exit 0
+$ dumpe2fs -h 1.img
+Filesystem UUID:          8c499e1c-a022-41dc-bfec-03969cbd2032
+Filesystem state:         clean
+Inode count:              102400
+Block count:              409600
+Block size:               1024                                               # exit 0
+$ debugfs -R "ls -l /usr/app_qt" 1.img
+   1525  100775 (1)      0      0   1211056  4-Dec-2025 05:48 x6100_ui_v100
+   1526  100775 (1)      0      0   1684984 17-Aug-2026 23:07 x6200_ui_v100            # exit 0
+$ debugfs -R "ls -l /usr/firmware" 1.img
+   2022  100600 (1)      0      0    524288 20-Aug-2026 03:12 x6200_mcu_20260820141208.xgf   # exit 0
+$ debugfs -R "cat /usr/lib/os-release" 1.img
+NAME=Buildroot / VERSION=2020.02.9 / ID=buildroot / VERSION_ID=2020.02.9    # exit 0
+$ debugfs -R "dump /usr/app_qt/x6200_ui_v100 fs108/x6200_ui_v100" 1.img
+$ debugfs -R "dump /usr/app_qt/x6100_ui_v100 fs108/x6100_ui_v100" 1.img
+$ debugfs -R "dump /usr/firmware/x6200_mcu_20260820141208.xgf fs108/x6200_mcu_20260820141208.xgf" 1.img   # exit 0
+$ sha256sum fs108/*
+b972698abd235280aface4ec15285d2e87e46c238bc4658bd249b48c0a50b057  fs108/x6100_ui_v100
+9a19f97a5ad9e141a3663d222f984073bf0b18b38d4662604372a0036f9daa23  fs108/x6200_mcu_20260820141208.xgf
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b  fs108/x6200_ui_v100   # exit 0
+$ file fs108/*
+fs108/x6100_ui_v100:  ELF 32-bit LSB executable, ARM, EABI5 … dynamically linked … not stripped
+fs108/x6200_mcu_20260820141208.xgf: data
+fs108/x6200_ui_v100:  ELF 32-bit LSB executable, ARM, EABI5 … dynamically linked … not stripped   # exit 0
+$ readelf -h fs108/x6200_ui_v100
+Class: ELF32 / Data: 2's complement, little endian / Machine: ARM / Entry point: 0x2a188 / Flags: 0x5000400 …   # exit 0
+$ readelf -S fs108/x6200_ui_v100 | grep -E '\.(symtab|strtab|debug)'
+  [28] .symtab           SYMTAB          00000000 142d20 028a70 10     29 6239  4
+  [29] .strtab           STRTAB          00000000 16b790 02f886 00      0   0  1                  # exit 0
+$ strings -a -t x fs108/x6200_ui_v100 | grep -nE ' 1\.0\.8$'
+5713: 11b018 1.0.8                                                             # exit 0
+$ strings -a -t x ref106/fs106/x6200_ui_v100 | grep -nE ' 1\.0\.6$'
+5544: 114ac7 1.0.6                                                             # exit 0
+$ strings -a fs108/x6200_ui_v100 | grep -aE 'SLIP|slip|BaseComm|baseband|Flow' | sort -u | head
+[ERR] SLIP Packet Too Long, length =
+[ERR] Wrong SLIP Packet, size =
+BaseComm / BaseCommIIC / basebandInfo / sig_basebandStateChanged / slip.c / slip_decode / slip_encode
+# (señales estáticas; NO se concluye protocolo: material de partida para #376)      # exit 0
+$ readelf -sW fs108/x6200_ui_v100 | awk '$4=="FUNC"||$4=="OBJECT"{print $8}' | sort -u | wc -l
+6144
+$ readelf -sW ref106/fs106/x6200_ui_v100 | awk … | wc -l
+6041
+$ comm -13 comparisons/syms106.txt comparisons/syms108.txt | grep -E 'slip|SLIP'
+slip_decode
+slip_encode                                                                # exit 0
+$ python3 - <<'PY'  # entropía del .xgf (caracterización de opaco; no desencripta)
+ext108/fs108/x6200_mcu_20260820141208.xgf: size=524288 entropy=7.4704 bits/byte first16=2cb6ce74a1837bae18eed02aff7c1b82 ascii_ratio=0.395
+ref106/fs106/x6200_mcu_20250111134652.xgf: size=524288 entropy=7.7484 bits/byte first16=087d23fa0a47006d9dde743e1b55db4a ascii_ratio=0.388   # exit 0
+```
+
+`emmc_sources` (extraídos con `debugfs dump`, leídos; **no ejecutados**):
+
+```console
+$ sha256sum fs108/emmc_sources/*
+8fe77effa6228ae9cff2aefcce9a7a614c6742da0abeb8811abb68658a44329e  boot.scr
+8fe77effa6228ae9cff2aefcce9a7a614c6742da0abeb8811abb68658a44329e  boot_emmcblk1_zimage.scr
+35c58abbf16e154aefd71539c75cd3dda03abda5af366f645a6245bb624a0ac1  boot_emmcblk2.scr
+ac5506c0c2e16d3108d199973fcb98236f5408fa2fb6dcc4320c833d2e272322  boot_without_splash.scr
+e36ab377cd4e40389e4df987858b1793e5b4e91eab04d523f943beff493bca88  fmt_emmc.sh
+25b8f41e01e916c5dd7966d33613ce951536ac96f35b22c174a8608f2b2dd401  install_emmc.sh
+5461cd6e5ba5a65cbbaffc76e771912f1bea5f2fa78123f46a638d7a39c09756  logo.bmp
+7c73c0b0dc2a2691e2560f51927dab1bd06e3cc44bff3afb6a2c089ee8629f8b  sun8i-r16-x6200.dtb
+ccf63f9a558c725eb644b3246f786628b6c1c7cbecfb7f1a627fb54fafa2053e  u-boot-sunxi-with-spl.bin
+a838ec5ef84cdf2b8a9c3ccd75ddd489b82e6f8911b8e4470eb76bdc86df42b3  zImage     # exit 0
+$ cat fs108/emmc_sources/install_emmc.sh     # SÓLO LECTURA, no ejecutado
+… _EMMCBLK=mmcblk2; p1 FAT / p2 ext4; dd u-boot seek=8; pv rootfs.tar | tar xf -; preserva xparam.db/voice/xgradio/NetworkManager …   # exit 0
+```
+
+Listado completo del rootfs con 7z (reconocimiento ext4, sin montar) para búsquedas:
+
+```console
+$ 7z l -slt 1.img > ../../comparisons/rootfs108-7z-listing.txt
+$ grep -cE '^Path = ' ../../comparisons/rootfs108-7z-listing.txt
+7516                                                                        # exit 0
+$ debugfs -R "ls -l /usr/share/emmc_sources" 1.img
+… u-boot-sunxi-with-spl.bin 548864; zImage 4956144; sun8i-r16-x6200.dtb 26413; logo.bmp 25654; boot*.scr; install_emmc.sh; fmt_emmc.sh …   # exit 0
+```
+
+## 8. Comparación histórica 1.0.6 y `refs/vendor-fw` (sólo lectura)
+
+```console
+$ sha256sum "/home/pablo/lenovo_vieja/Downloads/radio/x6200/2025-01-15_Xiegu_X6200_update_V1.0.6.zip"
+8c270b3130cb68349da062be7384c43221ebf64146ab2e8b2ae4cbff26712e17  …V1.0.6.zip      # exit 0
+$ unzip -l …V1.0.6.zip
+        0  01-15-2025 05:47   …_V1.0.6/
+   901623  …  2025-01-15 Xiegu X6200 update V1.0.6.pdf
+      355  …  readme.1st
+     2336  …  ReleaseNote-250114001(EN_CHS).txt
+856686592  …  sdcard.img                                                       # exit 0
+$ sha256sum readme.1st "ReleaseNote-250114001(EN_CHS).txt" "2025-01-15 Xiegu X6200 update V1.0.6.pdf"
+0ac390aabb1772108d5fb044c55005707cdf8b05b03b6d2227e6e7808433ab6b  readme.1st
+1695dac424390864d3222f427a6af960f868a142d19c777205da1587486d450a  ReleaseNote-250114001(EN_CHS).txt
+86589c152d16876d014eb1d34e94cf5d07dda41520b4efdd18459a88c45a44d3  2025-01-15 Xiegu X6200 update V1.0.6.pdf   # exit 0
+$ sha256sum sdcard.img
+e507e7ad98b3ca4e30407177f579717318e9718b1542c48c7532556627734514  sdcard.img     # exit 0
+$ grep -h "Image File SHA256" "ReleaseNote-250114001(EN_CHS).txt" | head -1
+Image File SHA256: e507e7ad98b3ca4e30407177f579717318e9718b1542c48c7532556627734514
+# CONTROL POSITIVO: declarado == calculado -> el mecanismo de hash del fabricante es real
+$ cat readme.1st   # 3 líneas: release notes oficiales Xiegu, PDF Radioddity con instrucciones, sdcard.img   # exit 0
+$ pdftotext -layout "2025-01-15 Xiegu X6200 update V1.0.6.pdf" 1.0.6-update-procedure.txt; echo $?
+0
+$ pdfinfo "2025-01-15 Xiegu X6200 update V1.0.6.pdf" | head
+Title: Xiegu X6200 update V1.0.6 / Author: Radioddity / CreationDate: Wed Jan 15 06:14:16 2025 -03 …   # exit 0
+$ sfdisk -d …/sdcard.img
+sdcard.img1 : start=2048, size=32768, type=c, bootable
+sdcard.img2 : start=34816, size=819200, type=83
+sdcard.img3 : start=854016, size=819200, type=c                                    # exit 0
+$ mdir -i "…/sdcard.img@@1048576" -/ ::
+ZIMAGE 4956144 2025-01-14 14:16 zImage / SUN8I-~1 DTB 26472 … / boot scr 493 / logo bmp 25654      # exit 0
+$ mdir -i "…/sdcard.img@@437256192" -/ ::
+rootfs   tar  395028480 2025-01-14  14:16                                          # exit 0
+```
+
+Hash de archivos del 1.0.6 (partición extraída a scratch con `7z`, sin montar):
+
+```console
+$ 7z x -y "…/sdcard.img" "1.img"   → ref106/parts/1.img (419430400 B)         # exit 0
+$ file ref106/parts/1.img
+Linux rev 1.0 ext4 filesystem data, UUID=653a142c-a3e4-40df-8050-0fdb3285d601 …   # exit 0
+$ sha256sum ref106/parts/1.img
+fc330714466f64e0e15f3c5d60926e6815823fe7166bd582a47d704738278936   # exit 0 (== rango p2 de la imagen 1.0.6)
+$ debugfs -R "dump /usr/app_qt/x6200_ui_v100 ref106/fs106/…" ref106/parts/1.img   # exit 0
+$ debugfs -R "dump /usr/app_qt/x6100_ui_v100 ref106/fs106/…" ref106/parts/1.img   # exit 0
+$ debugfs -R "dump /usr/firmware/x6200_mcu_20250111134652.xgf ref106/fs106/…" …  # exit 0
+$ sha256sum ref106/fs106/*
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b  ref106/fs106/x6200_ui_v100
+a3d13459fb209bce32e4dde8fcbfc08d7c758ec69a15f77f3a5bb21e99d8b5eb  ref106/fs106/x6100_ui_v100
+dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3  ref106/fs106/x6200_mcu_20250111134652.xgf   # exit 0
+$ sha256sum /home/pablo/desa/x6200/refs/vendor-fw/x6200_ui_v100 /home/pablo/desa/x6200/refs/vendor-fw/x6200_mcu_20250111134652.xgf
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b  …/x6200_ui_v100
+dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3  …/x6200_mcu_20250111134652.xgf
+# -> refs/vendor-fw es BYTE-IDÉNTICO al paquete oficial 1.0.6 (GUI y .xgf); no se le atribuye 1.0.8
+$ mtype -i "…/sdcard.img@@437256192" ::/rootfs.tar | sha256sum
+ad2f7ec3ec6493cc0f44bf6da35971f563c75d75e2ae45be48603f0bd6bff3d8  -                # exit 0
+$ mtype … ::/rootfs.tar | tar -tvf - | wc -l
+7504                                                                        # exit 0
+```
+
+## 9. Documentación oficial de instalación (PDFs, sólo lectura)
+
+```console
+$ curl -sS -L --retry 3 --fail --max-time 120 -o "X6200FirmwareUpgradeTutorialWS-JSZL-2407-01ENRevised.pdf" -D tutorial9241_get_headers.txt -w 'http=%{http_code} size=%{size_download} type=%{content_type}\n' "https://xiegu.eu/?sdm_process_download=1&download_id=9241"
+http=200 size=300348 type=application/pdf                                    # exit 0
+$ sha256sum X6200FirmwareUpgradeTutorialWS-JSZL-2407-01ENRevised.pdf
+68ecc5a434e12080473807f5a6312fcf1f317960dd6d41a284e300d4bc877fbf  X6200FirmwareUpgradeTutorialWS-JSZL-2407-01ENRevised.pdf   # exit 0
+$ pdfinfo X6200FirmwareUpgradeTutorialWS-JSZL-2407-01ENRevised.pdf | head
+CreationDate: Wed Jul 24 05:00:10 2024 -03 …                                 # exit 0
+$ pdftotext -layout X6200FirmwareUpgradeTutorialWS-JSZL-2407-01ENRevised.pdf ref106/tutorial-oficial-2024.txt; echo $?
+0
+# Texto extraído: procedimiento en 2 pasos (SD/APP + BASE por menú FIRMWARE UPGRADE), 13,8 V ≥3 A,
+# batería fuera, FACTORY RESET final; menciona 'x6200udimg.img' (anacronismo vs 'sdcard.img' actual)
+```
+
+## 10. Checks de cierre
+
+Se ejecutan después del commit de evidencia y su resultado real se anexa en un commit posterior
+(`docs(evidencia): check-matrix real de la fase A`). Ver más abajo.
