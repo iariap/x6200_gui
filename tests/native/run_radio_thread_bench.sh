@@ -41,7 +41,7 @@ stage_for() {
     rm -rf "$stagedir"
     mkdir -p "$stagedir/cfg" "$stagedir/params" "$stagedir/lvgl" \
              "$stagedir/aether_radio/x6200_control/low"
-    cp "$SRC/radio.h" "$SRC/visual_policy.h" "$SRC/cb.h" "$SRC/pubsub_ids.h" "$stagedir/"
+    cp "$SRC/radio.h" "$SRC/visual_policy.h" "$SRC/cb.h" "$SRC/pubsub_ids.h" "$SRC/radio_samples.h" "$stagedir/"
     cp "$SRC/cfg/subjects.h" "$SRC/cfg/common.h" "$SRC/cfg/band.h" "$SRC/cfg/atu.h" \
        "$SRC/cfg/transverter.h" "$SRC/cfg/cfg.h" "$stagedir/cfg/"
     cp "$DIR/stubs_radio/"*.h "$stagedir/"

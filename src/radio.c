@@ -15,6 +15,7 @@
 #include "cfg/transverter.h"
 #include "util.h"
 #include "dsp.h"
+#include "radio_samples.h"
 #include "params/params.h"
 #include "hkey.h"
 #include "tx_info.h"
@@ -51,6 +52,21 @@ static radio_state_change_t notify_rx;
 static pthread_mutex_t  control_mux;
 
 static x6200_flow_t     *pack;
+
+/* Contrato de ABI de muestras de X6200Control v0.1.1 (issue #377). En v0.1.1
+ * `samples` son 512 u8 y el pack mide 552 B; en v0.1.0 eran float[512] y 2088 B.
+ * La GUI tiene que convertir byte a float (radio_samples.h) y NO reinterpretar
+ * los bytes como floats. Si el header con el que se compila no es el esperado,
+ * esto no compila: STOP BLOCKED_GUI_SAMPLE_ABI, no truncar paquetes ni adivinar
+ * el layout. */
+_Static_assert(sizeof(pack->samples) == RADIO_FLOW_SAMPLES,
+               "BLOCKED_GUI_SAMPLE_ABI: se espera uint8_t samples[512] (X6200Control v0.1.1)");
+_Static_assert(offsetof(x6200_flow_t, samples) == 4,
+               "BLOCKED_GUI_SAMPLE_ABI: offsetof(x6200_flow_t, samples) tiene que ser 4");
+_Static_assert(sizeof(x6200_flow_t) == 552,
+               "BLOCKED_GUI_SAMPLE_ABI: sizeof(x6200_flow_t) tiene que ser 552");
+_Static_assert(RADIO_SAMPLES == RADIO_FLOW_SAMPLES,
+               "BLOCKED_GUI_SAMPLE_ABI: dsp_samples() consume RADIO_SAMPLES floats y el pack trae RADIO_FLOW_SAMPLES bytes");
 
 static radio_state_t    state = RADIO_RX;
 /* El control de la radio queda inicializado al final de radio_init(). Si la BASE
@@ -228,7 +244,14 @@ bool radio_tick() {
         }
         // printf("sql_mute=%d sql_fm_mute=%d\n", pack->flag.sql_mute, pack->flag.sql_fm_mute);
         // printf("flags %08x\n", pack->flag);
-        float *samples = (float*)((char *)pack + offsetof(x6200_flow_t, samples));
+        /* #377: en X6200Control v0.1.1 `pack->samples` son 512 u8 (muestras
+         * centradas en 150), no 512 float. El cast directo a float* leia 2048 B
+         * desde un payload de 552 B y le pasaba bytes crudos como floats al
+         * DSP. Se convierten a un buffer local que vive hasta que dsp_samples()
+         * retorna; la firma y el uso de dsp_samples() no cambian. */
+        float samples[RADIO_SAMPLES];
+
+        radio_flow_samples_to_float(samples, pack->samples, RADIO_FLOW_SAMPLES);
         x6200_mode_t mode = subject_get_int(cfg_cur.mode);
 
         dsp_samples(samples, RADIO_SAMPLES, pack->flag.tx, -(int16_t)pack->dbm);
