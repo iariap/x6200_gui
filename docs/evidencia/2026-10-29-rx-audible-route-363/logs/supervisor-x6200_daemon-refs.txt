@@ -1,0 +1,100 @@
+# /usr/sbin/x6200_daemon — supervisor de la GUI (paquete de imagen v0.1.11, sha256 07c431cc...9877)
+# Extraido con 'tar -xzOf images/x6200_r1cbu_v0.1.11-lu2dsx.tgz usr/sbin/x6200_daemon | nl -ba'
+    20	# SPDX-License-Identifier: GPL-2.0-or-later
+    21	set -u
+    22	
+    23	GUI=/usr/sbin/x6200_gui
+    24	IMAGES=/usr/share/x6200/images
+    25	SHM_IMAGES=/dev/shm/images
+    26	DATADIR=/mnt
+    27	LOGDIR=/mnt/app_logs
+    28	TMPLOG=/tmp/x6200_log.txt
+    29	TMPDIR=/tmp
+    30	PIDFILE=/var/run/x6200_daemon.pid
+    31	LOCKDIR=/var/run/x6200_daemon.lock
+    32	
+    33	# PATH del target. Si init ya lo dejó puesto (o un test puso dobles adelante) no
+    34	# se pisa: sólo se asegura el default cuando llega vacío.
+    35	PATH=${PATH:+$PATH:}/sbin:/usr/sbin:/bin:/usr/bin
+    36	export PATH
+    37	
+    38	LONG_RUN=300        # s: por arriba de esto, el reinicio cuenta como corrida sana
+    39	MAX_TMP_LOGS=4      # retención máxima de logs propios en /tmp si DATA no escribe
+    40	
+    41	child=0
+    42	waiter=0
+    43	lock_held=0
+    44	stop_requested=0
+    45	
+    76	    return 0
+    77	}
+    78	
+    79	# Delay de backoff por fallos consecutivos. Determinista, sin jitter.
+    80	delay_for() {
+    81	    case "$1" in
+    82	        1) echo 2 ;;
+    83	        2) echo 5 ;;
+    84	        3) echo 15 ;;
+    85	        *) echo 60 ;;
+    86	    esac
+    87	}
+    88	
+    89	# Respeta el PIDFILE que maneja start-stop-daemon: si apunta a otra instancia
+    90	# viva, no se arranca una segunda.
+   214	
+   215	    prepare_images
+   216	
+   217	    fails=0
+   218	    run=0
+   219	    while :; do
+   220	        [ "$stop_requested" = 1 ] && break
+   221	
+   222	        run=$((run + 1))
+   223	        started=$(now)
+   224	
+   225	        "$GUI" > "$TMPLOG" 2>&1 &
+   226	        child=$!
+   227	        wait "$child"
+   228	        rc=$?
+   229	        child=0
+   230	
+   231	        if [ "$stop_requested" = 1 ]; then
+   232	            break
+   233	        fi
+   234	
+   235	        ended=$(now)
+   236	
+   237	        if [ "$rc" -gt 128 ]; then
+   238	            echo "GUI terminated: signal $((rc - 128))" >&2
+   239	        else
+   240	            echo "GUI exited: code $rc" >&2
+   241	        fi
+   242	
+   243	        save_log "$run"
+   244	
+   245	        # 6 min sano: el contador se resetea ANTES de calcular el próximo delay.
+   246	        lived=0
+   247	        if is_int "$started" && is_int "$ended" && [ "$ended" -ge "$started" ]; then
+   248	            lived=$((ended - started))
+   249	        fi
+   250	        if [ "$lived" -ge "$LONG_RUN" ]; then
+   251	            fails=0
+   252	        fi
+   253	
+   254	        fails=$((fails + 1))
+   255	        if [ "$rc" -eq 78 ]; then
+   256	            delay=60        # error de configuración (SQLite): backoff máximo ya
+   257	        else
+   258	            delay=$(delay_for "$fails")
+   259	        fi
+   260	
+   261	        echo "GUI restart in ${delay}s" >&2
+   262	
+   263	        # La espera va en segundo plano y se cuelga de `wait`: un trap de
+   264	        # señal la corta al instante (un `sleep` en primer plano no se
+   265	        # interrumpe). No se escribe nada durante la espera.
+   266	        sleep "$delay" &
+   267	        waiter=$!
+   268	        wait "$waiter"
+   269	        waiter=0
+   270	        child=0

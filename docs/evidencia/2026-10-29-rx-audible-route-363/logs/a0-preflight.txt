@@ -1,0 +1,1426 @@
+===== system-date =====
+2026-10-29T22:00:24Z
+Thu Oct 29 22:00:24 UTC 2026
+13042.19 42027.19
+0.95 0.79 0.75 2/127 13314
+[exit=0]
+===== system-model =====
+Linux X6200 6.1.82 #1 SMP PREEMPT Tue Oct 27 15:23:18 UTC 2026 armv7l GNU/Linux
+console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait panic=10 fbcon=rotate:3 video=VGA:480x800
+XIEGU Tech X6200 Transceiver
+NAME=Buildroot
+VERSION=2023.02.11-dirty
+ID=buildroot
+VERSION_ID=2023.02.11
+PRETTY_NAME="Buildroot 2023.02.11"
+[exit=0]
+===== version-files =====
+lrwxrwxrwx    1 root     root            21 Oct 28 13:46 /etc/os-release -> ../usr/lib/os-release
+[exit=1]
+===== binary-hashes =====
+lrwxrwxrwx    1 root     root            28 Oct 21 20:38 /usr/lib/libaether_x6200_control.so -> libaether_x6200_control.so.0
+lrwxrwxrwx    1 root     root            33 Oct 21 20:38 /usr/lib/libaether_x6200_control.so.0 -> libaether_x6200_control.so.0.15.3
+-rwxr-xr-x    1 root     root         21836 Oct 28 13:46 /usr/lib/libaether_x6200_control.so.0.15.3
+-rwxr-xr-x    1 root     root          7972 Oct 23 14:48 /usr/sbin/x6200_daemon
+-rwxr-xr-x    1 root     root      13478088 Oct 29 19:16 /usr/sbin/x6200_gui
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /usr/sbin/x6200_gui
+07c431cceaf28ac3e5b7f630d36c70f7d04b9af3cb19f078c0728c7f53c99877  /usr/sbin/x6200_daemon
+80c460e403bfe77684c773a50a054bfe6c4a858753695a01167493e35e126df6  /usr/lib/libaether_x6200_control.so.0.15.3
+80bbe5bd70b345e1e9a563d06d047a1c  /usr/sbin/x6200_gui
+[exit=0]
+===== live-gui-proc =====
+/usr/sbin/x6200_gui
+x6200_gui
+/usr/sbin/x6200_gui 
+Pid:	4716
+PPid:	1946
+Threads:	13
+lrwx------    1 root     root            64 Oct 29 21:59 23 -> /dev/i2c-0
+lrwx------    1 root     root            64 Oct 29 21:59 24 -> /dev/ttyS1
+lrwx------    1 root     root            64 Oct 29 21:59 32 -> /dev/ttyS2
+[exit=0]
+===== i2c-owner =====
+i2c-0 owner PID 4716: x6200_gui
+--- ttyS1 ---
+ttyS1 owner PID 4716: x6200_gui
+[exit=1]
+===== state-get =====
+{"t":"state","vfo":"A","freq":7143000,"freq_bg":7062100,"mode":"LSB","band":"40m SSB","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":7,"pre":0,"att":1,"agc":"AUTO","nb":1,"nr":1,"nb_level":5,"nb_width":55,"nr_level":40,"pwr":40,"db":-105,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+[exit=0]
+===== state-get-2 =====
+{"t":"state","vfo":"A","freq":7143000,"freq_bg":7062100,"mode":"LSB","band":"40m SSB","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":7,"pre":0,"att":1,"agc":"AUTO","nb":1,"nr":1,"nb_level":5,"nb_width":55,"nr_level":40,"pwr":40,"db":-104,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+[exit=0]
+===== helper-meta =====
+-rwxr-xr-x    1 root     root        658784 Oct 29 18:41 /tmp/x6200-remote
+63f429512029a9a32e96bdc13cab4a1d9bbb7e035a3f9e41857481f935b7bdfc  /tmp/x6200-remote
+srw-------    1 root     root             0 Oct 29 19:44 /tmp/x6200_remote.sock
+[exit=0]
+===== asound-cards =====
+ 0 [sun8ia33audio  ]: simple-card - sun8i-a33-audio
+                      sun8i-a33-audio
+
+  0: [ 0]   : control
+ 16: [ 0- 0]: digital audio playback
+ 24: [ 0- 0]: digital audio capture
+ 33:        : timer
+
+total 0
+dr-xr-xr-x    9 root     root             0 Oct 29 18:23 .
+dr-xr-xr-x  165 root     root             0 Oct 29 18:23 ..
+dr-xr-xr-x    5 root     root             0 Oct 29 18:23 card0
+-r--r--r--    1 root     root             0 Oct 29 22:00 cards
+-r--r--r--    1 root     root             0 Oct 29 22:00 devices
+-r--r--r--    1 root     root             0 Oct 29 22:00 pcm
+lrwxrwxrwx    1 root     root             5 Oct 29 22:00 sun8ia33audio -> card0
+-r--r--r--    1 root     root             0 Oct 29 22:00 timers
+-r--r--r--    1 root     root             0 Oct 29 22:00 version
+[exit=0]
+===== asound-pcm-status =====
+--- /proc/asound/card0/pcm0c/sub0/status
+state: RUNNING
+owner_pid   : 331
+trigger_time: 940.721807842
+tstamp      : 13050.037001813
+delay       : 3024
+avail       : 3024
+avail_max   : 3024
+-----
+hw_ptr      : 534035392
+appl_ptr    : 534032368
+--- /proc/asound/card0/pcm0p/sub0/status
+state: RUNNING
+owner_pid   : 330
+trigger_time: 940.711181676
+tstamp      : 13050.044858433
+delay       : 3054
+avail       : 85146
+avail_max   : 85146
+-----
+hw_ptr      : 534036232
+appl_ptr    : 534039286
+[exit=0]
+===== aplay-list =====
+**** List of PLAYBACK Hardware Devices ****
+card 0: sun8ia33audio [sun8i-a33-audio], device 0: 1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0 [1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0]
+  Subdevices: 0/1
+  Subdevice #0: subdevice #0
+[exit=0]
+===== pactl-info =====
+Server String: /var/run/pulse/native
+Library Protocol Version: 35
+Server Protocol Version: 35
+Is Local: yes
+Client Index: 121
+Tile Size: 65496
+User Name: pulse
+Host Name: X6200
+Server Name: pulseaudio
+Server Version: 16.1
+Default Sample Specification: s16le 2ch 44100Hz
+Default Channel Map: front-left,front-right
+Default Sink: alsa_output.platform-sound.stereo-fallback
+Default Source: alsa_input.platform-sound.stereo-fallback
+Cookie: ee2d:7bdb
+[exit=0]
+===== pactl-short =====
+0	alsa_output.platform-sound.stereo-fallback.monitor	module-alsa-card.c	s16le 2ch 44100Hz	IDLE
+1	alsa_input.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+---
+0	alsa_output.platform-sound.stereo-fallback	module-alsa-card.c	s16le 2ch 44100Hz	RUNNING
+---
+0	module-device-restore		
+1	module-stream-restore		
+2	module-card-restore		
+5	module-udev-detect		
+6	module-alsa-card	device_id="0" name="platform-sound" card_name="alsa_card.platform-sound" namereg_fail=false tsched=yes fixed_latency_range=no ignore_dB=no deferred_volume=yes use_ucm=yes avoid_resampling=no card_properties="module-udev-detect.discovered=1"	
+7	module-native-protocol-unix	auth-anonymous=1	
+8	module-default-device-restore		
+9	module-always-sink		
+10	module-suspend-on-idle		
+11	module-position-event-sounds		
+15	module-bluetooth-policy	auto_switch=0 a2dp_source=false ag=false	
+---
+4	protocol-native.c	pactl
+96	protocol-native.c	x6200_gui
+125	protocol-native.c	pactl
+[exit=0]
+===== pactl-sinks =====
+Sink #0
+	State: RUNNING
+	Name: alsa_output.platform-sound.stereo-fallback
+	Description: sun8i-a33-audio Stereo
+	Driver: module-alsa-card.c
+	Sample Specification: s16le 2ch 44100Hz
+	Channel Map: front-left,front-right
+	Owner Module: 6
+	Mute: no
+	Volume: front-left: 54094 /  83% / -5.00 dB,   front-right: 54094 /  83% / -5.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor Source: alsa_output.platform-sound.stereo-fallback.monitor
+	Latency: 379794 usec, configured 380000 usec
+	Flags: HARDWARE HW_MUTE_CTRL HW_VOLUME_CTRL DECIBEL_VOLUME LATENCY 
+	Properties:
+		alsa.resolution_bits = "16"
+		device.api = "alsa"
+		device.class = "sound"
+		alsa.class = "generic"
+		alsa.subclass = "generic-mix"
+		alsa.name = "1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0"
+		alsa.id = "1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0"
+		alsa.subdevice = "0"
+		alsa.subdevice_name = "subdevice #0"
+		alsa.device = "0"
+		alsa.card = "0"
+		alsa.card_name = "sun8i-a33-audio"
+		alsa.long_card_name = "sun8i-a33-audio"
+		device.bus_path = "platform-sound"
+		sysfs.path = "/devices/platform/sound/sound/card0"
+		device.string = "hw:0"
+		device.buffering.buffer_size = "352800"
+		device.buffering.fragment_size = "58800"
+		device.access_mode = "mmap+timer"
+		device.profile.name = "stereo-fallback"
+		device.profile.description = "Stereo"
+		device.description = "sun8i-a33-audio Stereo"
+		module-udev-detect.discovered = "1"
+		device.icon_name = "audio-card"
+	Ports:
+		analog-output-headphones: Headphones (type: Headphones, priority: 9900, availability unknown)
+	Active Port: analog-output-headphones
+	Formats:
+		pcm
+[exit=0]
+===== pactl-sources =====
+Source #0
+	State: IDLE
+	Name: alsa_output.platform-sound.stereo-fallback.monitor
+	Description: Monitor of sun8i-a33-audio Stereo
+	Driver: module-alsa-card.c
+	Sample Specification: s16le 2ch 44100Hz
+	Channel Map: front-left,front-right
+	Owner Module: 6
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor of Sink: alsa_output.platform-sound.stereo-fallback
+	Latency: 0 usec, configured 2000000 usec
+	Flags: DECIBEL_VOLUME LATENCY 
+	Properties:
+		device.description = "Monitor of sun8i-a33-audio Stereo"
+		device.class = "monitor"
+		alsa.card = "0"
+		alsa.card_name = "sun8i-a33-audio"
+		alsa.long_card_name = "sun8i-a33-audio"
+		device.bus_path = "platform-sound"
+		sysfs.path = "/devices/platform/sound/sound/card0"
+		device.string = "0"
+		module-udev-detect.discovered = "1"
+		device.icon_name = "audio-card"
+	Formats:
+		pcm
+
+Source #1
+	State: RUNNING
+	Name: alsa_input.platform-sound.stereo-fallback
+	Description: sun8i-a33-audio Stereo
+	Driver: module-alsa-card.c
+	Sample Specification: s16le 2ch 44100Hz
+	Channel Map: front-left,front-right
+	Owner Module: 6
+	Mute: no
+	Volume: front-left: 65536 / 100% / 0.00 dB,   front-right: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor of Sink: n/a
+	Latency: 13015 usec, configured 100000 usec
+	Flags: HARDWARE DECIBEL_VOLUME LATENCY 
+	Properties:
+		alsa.resolution_bits = "16"
+		device.api = "alsa"
+		device.class = "sound"
+		alsa.class = "generic"
+		alsa.subclass = "generic-mix"
+		alsa.name = "1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0"
+		alsa.id = "1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0"
+		alsa.subdevice = "0"
+		alsa.subdevice_name = "subdevice #0"
+		alsa.device = "0"
+		alsa.card = "0"
+		alsa.card_name = "sun8i-a33-audio"
+		alsa.long_card_name = "sun8i-a33-audio"
+		device.bus_path = "platform-sound"
+		sysfs.path = "/devices/platform/sound/sound/card0"
+		device.string = "hw:0"
+		device.buffering.buffer_size = "352800"
+		device.buffering.fragment_size = "58800"
+		device.access_mode = "mmap+timer"
+		device.profile.name = "stereo-fallback"
+		device.profile.description = "Stereo"
+		device.description = "sun8i-a33-audio Stereo"
+		module-udev-detect.discovered = "1"
+		device.icon_name = "audio-card"
+	Ports:
+		analog-input: Analog Input (type: Analog, priority: 10000, availability unknown)
+	Active Port: analog-input
+	Formats:
+		pcm
+[exit=0]
+===== amixer-contents =====
+numid=41,iface=MIXER,name='Headphone Source Playback Route'
+  ; type=ENUMERATED,access=rw------,values=2,items=2
+  ; Item #0 'DAC'
+  ; Item #1 'Mixer'
+  : values=0,0
+numid=8,iface=MIXER,name='Headphone Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=on,on
+numid=7,iface=MIXER,name='Headphone Playback Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=63,step=0
+  : values=58
+  | dBscale-min=-63.00dB,step=1.00dB,mute=1
+numid=38,iface=MIXER,name='Line In Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=33,iface=MIXER,name='Line In Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=9,iface=MIXER,name='Line In Playback Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=7,step=0
+  : values=0
+  | dBscale-min=-4.50dB,step=1.50dB,mute=0
+numid=13,iface=MIXER,name='Mic1 Boost Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=7,step=0
+  : values=0
+  | dBrange-
+    rangemin=0,,rangemax=0
+      | dBscale-min=0.00dB,step=0.00dB,mute=0
+    rangemin=1,,rangemax=7
+      | dBscale-min=24.00dB,step=3.00dB,mute=0
+
+numid=39,iface=MIXER,name='Mic1 Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=on,on
+numid=34,iface=MIXER,name='Mic1 Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=on,on
+numid=12,iface=MIXER,name='Mic1 Playback Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=7,step=0
+  : values=0
+  | dBscale-min=-4.50dB,step=1.50dB,mute=0
+numid=11,iface=MIXER,name='Mic2 Boost Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=7,step=0
+  : values=0
+  | dBrange-
+    rangemin=0,,rangemax=0
+      | dBscale-min=0.00dB,step=0.00dB,mute=0
+    rangemin=1,,rangemax=7
+      | dBscale-min=24.00dB,step=3.00dB,mute=0
+
+numid=40,iface=MIXER,name='Mic2 Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=35,iface=MIXER,name='Mic2 Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=10,iface=MIXER,name='Mic2 Playback Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=7,step=0
+  : values=0
+  | dBscale-min=-4.50dB,step=1.50dB,mute=0
+numid=30,iface=MIXER,name='ADC Digital DAC Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=14,iface=MIXER,name='ADC Gain Capture Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=7,step=0
+  : values=3
+  | dBscale-min=-4.50dB,step=1.50dB,mute=0
+numid=5,iface=MIXER,name='ADC Capture Volume'
+  ; type=INTEGER,access=rw---R--,values=2,min=0,max=192,step=0
+  : values=160,160
+  | dBscale-min=-120.00dB,step=0.75dB,mute=1
+numid=1,iface=MIXER,name='AIF1 AD0 Capture Volume'
+  ; type=INTEGER,access=rw---R--,values=2,min=0,max=192,step=0
+  : values=160,160
+  | dBscale-min=-120.00dB,step=0.75dB,mute=1
+numid=15,iface=MIXER,name='AIF1 AD0 Stereo Capture Route'
+  ; type=ENUMERATED,access=rw------,values=2,items=4
+  ; Item #0 'Stereo'
+  ; Item #1 'Reverse Stereo'
+  ; Item #2 'Sum Mono'
+  ; Item #3 'Mix Mono'
+  : values=3,3
+numid=2,iface=MIXER,name='AIF1 DA0 Playback Volume'
+  ; type=INTEGER,access=rw---R--,values=2,min=0,max=192,step=0
+  : values=160,160
+  | dBscale-min=-120.00dB,step=0.75dB,mute=1
+numid=26,iface=MIXER,name='AIF1 DA0 Stereo Playback Route'
+  ; type=ENUMERATED,access=rw------,values=2,items=4
+  ; Item #0 'Stereo'
+  ; Item #1 'Reverse Stereo'
+  ; Item #2 'Sum Mono'
+  ; Item #3 'Mix Mono'
+  : values=3,3
+numid=20,iface=MIXER,name='AIF1 Data Digital ADC Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=on,on
+numid=18,iface=MIXER,name='AIF1 Slot 0 Digital ADC Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=28,iface=MIXER,name='AIF1 Slot 0 Digital DAC Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=on,on
+numid=3,iface=MIXER,name='AIF2 ADC Capture Volume'
+  ; type=INTEGER,access=rw---R--,values=2,min=0,max=192,step=0
+  : values=0,0
+  | dBscale-min=-120.00dB,step=0.75dB,mute=1
+numid=24,iface=MIXER,name='AIF2 ADC Mixer ADC Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=22,iface=MIXER,name='AIF2 ADC Mixer AIF1 DA0 Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=23,iface=MIXER,name='AIF2 ADC Mixer AIF2 DAC Rev Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=16,iface=MIXER,name='AIF2 ADC Stereo Capture Route'
+  ; type=ENUMERATED,access=rw------,values=2,items=4
+  ; Item #0 'Stereo'
+  ; Item #1 'Reverse Stereo'
+  ; Item #2 'Sum Mono'
+  ; Item #3 'Mix Mono'
+  : values=0,0
+numid=4,iface=MIXER,name='AIF2 DAC Playback Volume'
+  ; type=INTEGER,access=rw---R--,values=2,min=0,max=192,step=0
+  : values=0,0
+  | dBscale-min=-120.00dB,step=0.75dB,mute=1
+numid=25,iface=MIXER,name='AIF2 DAC Source Playback Route'
+  ; type=ENUMERATED,access=rw------,values=1,items=3
+  ; Item #0 'AIF2'
+  ; Item #1 'AIF3+2'
+  ; Item #2 'AIF2+3'
+  : values=0
+numid=27,iface=MIXER,name='AIF2 DAC Stereo Playback Route'
+  ; type=ENUMERATED,access=rw------,values=2,items=4
+  ; Item #0 'Stereo'
+  ; Item #1 'Reverse Stereo'
+  ; Item #2 'Sum Mono'
+  ; Item #3 'Mix Mono'
+  : values=0,0
+numid=19,iface=MIXER,name='AIF2 Digital ADC Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=on,on
+numid=29,iface=MIXER,name='AIF2 Digital DAC Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=21,iface=MIXER,name='AIF2 Inv Digital ADC Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=17,iface=MIXER,name='AIF3 ADC Source Capture Route'
+  ; type=ENUMERATED,access=rw------,values=1,items=3
+  ; Item #0 'None'
+  ; Item #1 'AIF2 ADCL'
+  ; Item #2 'AIF2 ADCR'
+  : values=0
+numid=31,iface=MIXER,name='DAC Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=on,on
+numid=6,iface=MIXER,name='DAC Playback Volume'
+  ; type=INTEGER,access=rw---R--,values=2,min=0,max=192,step=0
+  : values=0,0
+  | dBscale-min=-120.00dB,step=0.75dB,mute=1
+numid=32,iface=MIXER,name='DAC Reversed Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=36,iface=MIXER,name='Mixer Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=37,iface=MIXER,name='Mixer Reversed Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+[exit=0]
+===== alsa-config =====
+--- /etc/asound.conf
+# direct mix for pcm playback
+# aplay -D mixplayback xxx.wav
+pcm.mixout {
+	type dmix
+	ipc_key 1024
+	slave {
+		# slave PCM name
+		pcm "hw:0,0"
+
+		# PCM params
+		format       S16_LE # STR
+		rate         16000  # INT
+		#rate         48000  # INT
+		channels     2      # INT
+
+		# stream params,buffer_size=period x period_size
+		periods      100   # INT,when buffer_size or buffer_time is not specified
+		period_size  1024   # INT,in frames,3 times than app need
+
+		# optional params
+		# period_time  0    # INT,in usec
+		# buffer_time  0    # INT,in usec
+		# buffer_size  65536  #INT,in frames
+	}
+	bindings {
+		0 0 # from 0 -> 0
+		1 1 # from 1 -> 1
+	}
+	# slowptr BOOL # slow but more precise pointer updates
+}
+
+# dsnoop for capture
+# arecord -D mixcapture test.wav
+pcm.mixin {
+	type dsnoop
+	ipc_key 1025 # must be unique for all dmix plugins!!!!
+	# ipc_key_add_uid yes # no need for embedded system
+	slave {
+		# slave PCM name
+		pcm "hw:0,0"
+
+		# PCM params
+		format       S16_LE # STR
+		rate         16000  # INT
+		#rate         48000  # INT
+		channels     2      # INT
+
+		# stream params,buffer_size=period x period_size
+		periods      100   # INT,when buffer_size or buffer_time is not specified
+		period_size  1024   # INT,in frames,3 times than app need
+
+		# optional params
+		# period_time  0    # INT,in usec
+		# buffer_time  0    # INT,in usec
+		# buffer_size  65536  #INT,in frames
+	}
+	bindings {
+		0 0 # from 0 -> 0
+		1 1 # from 1 -> 1
+	}
+ }
+
+# pcm plug for playback
+pcm.mixplayback {
+	type plug
+	slave.pcm "mixout"
+	# A hint is required for listing the device in some GUIs
+	hint {
+		show on
+		description "X6200 playback mixer"
+	}
+}
+
+# pcm plug for capture
+pcm.mixcapture {
+	type plug
+	slave.pcm "mixin"
+	# A hint is required for listing the device in some GUIs
+	hint {
+		show on
+		description "X6200 capture mixer"
+	}
+}
+
+ctl.mixer0 {
+	type hw
+	card 0
+}
+--- /etc/asound/alsactl.conf
+--- /var/lib/alsa/asound.state
+state.sun8ia33audio {
+	control.1 {
+		iface MIXER
+		name 'AIF1 AD0 Capture Volume'
+		value.0 160
+		value.1 160
+		comment {
+			access 'read write'
+			type INTEGER
+			count 2
+			range '0 - 192'
+			dbmin -9999999
+			dbmax 2400
+			dbvalue.0 0
+			dbvalue.1 0
+		}
+	}
+	control.2 {
+		iface MIXER
+		name 'AIF1 DA0 Playback Volume'
+		value.0 161
+		value.1 161
+		comment {
+			access 'read write'
+			type INTEGER
+			count 2
+			range '0 - 192'
+			dbmin -9999999
+			dbmax 2400
+			dbvalue.0 75
+			dbvalue.1 75
+		}
+	}
+	control.3 {
+		iface MIXER
+		name 'AIF2 ADC Capture Volume'
+		value.0 0
+		value.1 0
+		comment {
+			access 'read write'
+			type INTEGER
+			count 2
+			range '0 - 192'
+			dbmin -9999999
+			dbmax 2400
+			dbvalue.0 -9999999
+			dbvalue.1 -9999999
+		}
+	}
+	control.4 {
+		iface MIXER
+		name 'AIF2 DAC Playback Volume'
+		value.0 0
+		value.1 0
+		comment {
+			access 'read write'
+			type INTEGER
+			count 2
+			range '0 - 192'
+			dbmin -9999999
+			dbmax 2400
+			dbvalue.0 -9999999
+			dbvalue.1 -9999999
+		}
+	}
+	control.5 {
+		iface MIXER
+		name 'ADC Capture Volume'
+		value.0 160
+		value.1 160
+		comment {
+			access 'read write'
+			type INTEGER
+			count 2
+			range '0 - 192'
+			dbmin -9999999
+			dbmax 2400
+			dbvalue.0 0
+			dbvalue.1 0
+		}
+	}
+	control.6 {
+		iface MIXER
+		name 'DAC Playback Volume'
+		value.0 0
+		value.1 0
+		comment {
+			access 'read write'
+			type INTEGER
+			count 2
+			range '0 - 192'
+			dbmin -9999999
+			dbmax 2400
+			dbvalue.0 -9999999
+			dbvalue.1 -9999999
+		}
+	}
+	control.7 {
+		iface MIXER
+		name 'Headphone Playback Volume'
+		value 47
+		comment {
+			access 'read write'
+			type INTEGER
+			count 1
+			range '0 - 63'
+			dbmin -9999999
+			dbmax 0
+			dbvalue.0 -1600
+		}
+	}
+	control.8 {
+		iface MIXER
+		name 'Headphone Playback Switch'
+		value.0 true
+		value.1 true
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.9 {
+		iface MIXER
+		name 'Line In Playback Volume'
+		value 0
+		comment {
+			access 'read write'
+			type INTEGER
+			count 1
+			range '0 - 7'
+			dbmin -450
+			dbmax 600
+			dbvalue.0 -450
+		}
+	}
+	control.10 {
+		iface MIXER
+		name 'Mic2 Playback Volume'
+		value 0
+		comment {
+			access 'read write'
+			type INTEGER
+			count 1
+			range '0 - 7'
+			dbmin -450
+			dbmax 600
+			dbvalue.0 -450
+		}
+	}
+	control.11 {
+		iface MIXER
+		name 'Mic2 Boost Volume'
+		value 0
+		comment {
+			access 'read write'
+			type INTEGER
+			count 1
+			range '0 - 7'
+			dbmin 0
+			dbmax 4200
+			dbvalue.0 0
+		}
+	}
+	control.12 {
+		iface MIXER
+		name 'Mic1 Playback Volume'
+		value 0
+		comment {
+			access 'read write'
+			type INTEGER
+			count 1
+			range '0 - 7'
+			dbmin -450
+			dbmax 600
+			dbvalue.0 -450
+		}
+	}
+	control.13 {
+		iface MIXER
+		name 'Mic1 Boost Volume'
+		value 0
+		comment {
+			access 'read write'
+			type INTEGER
+			count 1
+			range '0 - 7'
+			dbmin 0
+			dbmax 4200
+			dbvalue.0 0
+		}
+	}
+	control.14 {
+		iface MIXER
+		name 'ADC Gain Capture Volume'
+		value 3
+		comment {
+			access 'read write'
+			type INTEGER
+			count 1
+			range '0 - 7'
+			dbmin -450
+			dbmax 600
+			dbvalue.0 0
+		}
+	}
+	control.15 {
+		iface MIXER
+		name 'AIF1 AD0 Stereo Capture Route'
+		value.0 'Mix Mono'
+		value.1 'Mix Mono'
+		comment {
+			access 'read write'
+			type ENUMERATED
+			count 2
+			item.0 Stereo
+			item.1 'Reverse Stereo'
+			item.2 'Sum Mono'
+			item.3 'Mix Mono'
+		}
+	}
+	control.16 {
+		iface MIXER
+		name 'AIF2 ADC Stereo Capture Route'
+		value.0 Stereo
+		value.1 Stereo
+		comment {
+			access 'read write'
+			type ENUMERATED
+			count 2
+			item.0 Stereo
+			item.1 'Reverse Stereo'
+			item.2 'Sum Mono'
+			item.3 'Mix Mono'
+		}
+	}
+	control.17 {
+		iface MIXER
+		name 'AIF3 ADC Source Capture Route'
+		value None
+		comment {
+			access 'read write'
+			type ENUMERATED
+			count 1
+			item.0 None
+			item.1 'AIF2 ADCL'
+			item.2 'AIF2 ADCR'
+		}
+	}
+	control.18 {
+		iface MIXER
+		name 'AIF1 Slot 0 Digital ADC Capture Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.19 {
+		iface MIXER
+		name 'AIF2 Digital ADC Capture Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.20 {
+		iface MIXER
+		name 'AIF1 Data Digital ADC Capture Switch'
+		value.0 true
+		value.1 true
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.21 {
+		iface MIXER
+		name 'AIF2 Inv Digital ADC Capture Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.22 {
+		iface MIXER
+		name 'AIF2 ADC Mixer AIF1 DA0 Capture Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.23 {
+		iface MIXER
+		name 'AIF2 ADC Mixer AIF2 DAC Rev Capture Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.24 {
+		iface MIXER
+		name 'AIF2 ADC Mixer ADC Capture Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.25 {
+		iface MIXER
+		name 'AIF2 DAC Source Playback Route'
+		value AIF2
+		comment {
+			access 'read write'
+			type ENUMERATED
+			count 1
+			item.0 AIF2
+			item.1 AIF3+2
+			item.2 AIF2+3
+		}
+	}
+	control.26 {
+		iface MIXER
+		name 'AIF1 DA0 Stereo Playback Route'
+		value.0 'Mix Mono'
+		value.1 'Mix Mono'
+		comment {
+			access 'read write'
+			type ENUMERATED
+			count 2
+			item.0 Stereo
+			item.1 'Reverse Stereo'
+			item.2 'Sum Mono'
+			item.3 'Mix Mono'
+		}
+	}
+	control.27 {
+		iface MIXER
+		name 'AIF2 DAC Stereo Playback Route'
+		value.0 Stereo
+		value.1 Stereo
+		comment {
+			access 'read write'
+			type ENUMERATED
+			count 2
+			item.0 Stereo
+			item.1 'Reverse Stereo'
+			item.2 'Sum Mono'
+			item.3 'Mix Mono'
+		}
+	}
+	control.28 {
+		iface MIXER
+		name 'AIF1 Slot 0 Digital DAC Playback Switch'
+		value.0 true
+		value.1 true
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.29 {
+		iface MIXER
+		name 'AIF2 Digital DAC Playback Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.30 {
+		iface MIXER
+		name 'ADC Digital DAC Playback Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.31 {
+		iface MIXER
+		name 'DAC Playback Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.32 {
+		iface MIXER
+		name 'DAC Reversed Playback Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.33 {
+		iface MIXER
+		name 'Line In Playback Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.34 {
+		iface MIXER
+		name 'Mic1 Playback Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.35 {
+		iface MIXER
+		name 'Mic2 Playback Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.36 {
+		iface MIXER
+		name 'Mixer Capture Switch'
+		value.0 true
+		value.1 true
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.37 {
+		iface MIXER
+		name 'Mixer Reversed Capture Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.38 {
+		iface MIXER
+		name 'Line In Capture Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.39 {
+		iface MIXER
+		name 'Mic1 Capture Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.40 {
+		iface MIXER
+		name 'Mic2 Capture Switch'
+		value.0 false
+		value.1 false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 2
+		}
+	}
+	control.41 {
+		iface MIXER
+		name 'Headphone Source Playback Route'
+		value.0 DAC
+		value.1 DAC
+		comment {
+			access 'read write'
+			type ENUMERATED
+			count 2
+			item.0 DAC
+			item.1 Mixer
+		}
+	}
+}
+--- pulse
+total 32
+drwxr-xr-x    3 root     root          4096 Oct 21 18:39 .
+drwxr-xr-x   19 root     root          4096 Oct 29 18:32 ..
+-rw-r--r--    1 root     root          1201 Oct 21 20:45 client.conf
+-rw-r--r--    1 root     root          2426 Oct 21 20:45 daemon.conf
+-rw-r--r--    1 root     root          4700 Oct 21 20:45 default.pa
+-rw-r--r--    1 root     root          2477 Oct 21 18:39 system.pa
+drwxr-xr-x    2 root     root          4096 Oct 21 20:47 system.pa.d
+
+
+load-module module-device-restore
+load-module module-stream-restore
+load-module module-card-restore
+load-module module-switch-on-connect
+load-module module-bluez5-device
+
+.ifexists module-udev-detect.so
+load-module module-udev-detect
+.else
+load-module module-detect
+.endif
+
+.ifexists module-esound-protocol-unix.so
+load-module module-esound-protocol-unix
+.endif
+load-module module-native-protocol-unix auth-anonymous=1
+
+load-module module-default-device-restore
+
+load-module module-always-sink
+
+load-module module-suspend-on-idle
+
+load-module module-position-event-sounds
+
+.ifexists module-bluetooth-policy.so
+load-module module-bluetooth-policy
+.endif
+
+.ifexists module-bluetooth-discover.so
+load-module module-bluetooth-discover
+.endif
+
+.nofail
+.include /etc/pulse/system.pa.d
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[exit=0]
+===== bt-state =====
+Controller <mac-redacted> (public)
+	Name: BlueZ 5.65
+	Alias: X6200
+	Class: 0x00000000
+	Powered: no
+	Discoverable: no
+	DiscoverableTimeout: 0x00000000
+	Pairable: yes
+	UUID: Generic Attribute Profile (00001801-0000-1000-8000-00805f9b34fb)
+	UUID: Generic Access Profile    (00001800-0000-1000-8000-00805f9b34fb)
+	UUID: PnP Information           (00001200-0000-1000-8000-00805f9b34fb)
+	UUID: A/V Remote Control Target (0000110c-0000-1000-8000-00805f9b34fb)
+	UUID: A/V Remote Control        (0000110e-0000-1000-8000-00805f9b34fb)
+	UUID: Device Information        (0000180a-0000-1000-8000-00805f9b34fb)
+	Modalias: usb:v1D6Bp0246d0541
+	Discovering: no
+	Roles: central
+	Roles: peripheral
+Advertising Features:
+	ActiveInstances: 0x00 (0)
+	SupportedInstances: 0x05 (5)
+	SupportedIncludes: tx-power
+	SupportedIncludes: appearance
+	SupportedIncludes: local-name
+---
+---
+---
+---
+[exit=1]
+===== crashlogs =====
+-rw-------    1 root     root         18204 Oct 29 18:34 x6200_log_2026-10-29_18-34-25_p887_r1.txt
+-rw-------    1 root     root         18204 Oct 29 18:35 x6200_log_2026-10-29_18-35-17_p1077_r1.txt
+-rw-------    1 root     root         18204 Oct 29 18:35 x6200_log_2026-10-29_18-36-18_p1263_r1.txt
+-rw-------    1 root     root         18202 Oct 29 18:36 x6200_log_2026-10-29_18-37-38_p1496_r1.txt
+-rw-------    1 root     root         18202 Oct 29 18:38 x6200_log_2026-10-29_18-39-29_p1733_r1.txt
+-rw-------    1 root     root         50970 Oct 29 18:57 x6200_log_2026-10-29_18-59-41_p1946_r1.txt
+-rw-------    1 root     root         30490 Oct 29 19:04 x6200_log_2026-10-29_19-16-33_p1946_r2.txt
+-rw-------    1 root     root         22298 Oct 29 19:36 x6200_log_2026-10-29_19-44-13_p1946_r3.txt
+---
+---
+total 15016
+drwx------    5 root     root           680 Oct 29 21:36 .
+drwxr-xr-x   20 root     root          4096 Jan  1  1970 ..
+-rw-r--r--    1 root     root             1 Oct 29 19:44 btaudio-lst
+-rw-r--r--    1 root     root             4 Oct 29 18:23 btaudio-monitor.pid
+-rw-r--r--    1 root     root             0 Oct 29 18:23 btcat-setup.done
+-rw-r--r--    1 root     root           210 Oct 29 18:23 btcat-setup.log
+-rw-r--r--    1 root     root             2 Oct 29 18:23 btcat.clients
+-rw-r--r--    1 root     root            69 Oct 29 18:23 btcat.log
+drwxr-xr-x    2 root     root            60 Oct 29 18:23 dbus
+-rw-------    1 root     root          2251 Oct 29 18:38 i2c-trace.log
+-rw-r--r--    1 root     root             0 Oct 29 18:23 kod
+-rw-r--r--    1 root     root         94639 Oct 29 22:00 messages
+-rw-r--r--    1 root     root        204937 Oct 29 21:36 messages.0
+-rw-r--r--    1 root     root           457 Oct 29 18:23 ntp.log
+-rw-r--r--    1 root     root            81 Oct 29 18:23 ntpdate.log
+-rw-------    1 root     root            41 Oct 29 19:25 parec.err
+-rw-------    1 root     root            28 Oct 29 19:35 parec2.err
+-rw-------    1 root     root            98 Oct 29 20:48 polltest.out
+drwx------    2 root     root            40 Oct 29 18:33 pulse-2L9K88eMlGn7
+---
+atu        2202.0 s de uptime  (+0.00 s)
+  cfg:transv     2202.0 s de uptime  (+0.00 s)
+  cfg:mem        2202.0 s de uptime  (+0.00 s)
+  cfg:digi       2202.0 s de uptime  (+0.00 s)
+  cfg_init       2202.0 s de uptime  (+0.00 s)
+  params_load    2202.0 s de uptime  (+0.00 s)
+  params_init    2202.0 s de uptime  (+0.00 s)
+  cb_hooks       2202.0 s de uptime  (+0.00 s)
+  fuentes y estilos 2202.1 s de uptime  (+0.05 s)
+  pantalla principal 2202.1 s de uptime  (+0.06 s)
+  cw/rtty        2202.3 s de uptime  (+0.16 s)
+  radio          2202.7 s de uptime  (+0.40 s)
+  cat/qso_log    2202.7 s de uptime  (+0.07 s)
+  wfview         2202.8 s de uptime  (+0.00 s)
+  control remoto 2202.8 s de uptime  (+0.00 s)
+  bootanim stop  2202.8 s de uptime  (+0.04 s)
+  bootanim handoff 2202.8 s de uptime  (+0.00 s)
+GUI lista: 2202.8 s
+  GUI inicio     3213.6 s de uptime  (+0.00 s)
+fuente: 42cd5c541237db86d23441505637f5cd (x6200_gui)
+  crashlog modulos 3214.6 s de uptime  (+0.94 s)
+  lv_init        3214.6 s de uptime  (+0.00 s)
+  lastbreath init 3214.6 s de uptime  (+0.00 s)
+  audio_init     3214.6 s de uptime  (+0.00 s)
+  display init   3214.6 s de uptime  (+0.01 s)
+  eventos/usb    3214.6 s de uptime  (+0.00 s)
+  display        3214.6 s de uptime  (+0.00 s)
+  keyboard       3214.6 s de uptime  (+0.00 s)
+  entradas       3214.6 s de uptime  (+0.01 s)
+  db_init        3214.6 s de uptime  (+0.02 s)
+  cfg:items      3214.6 s de uptime  (+0.01 s)
+  cfg:band       3214.6 s de uptime  (+0.01 s)
+  cfg:mode       3214.6 s de uptime  (+0.00 s)
+  cfg:sm         3214.6 s de uptime  (+0.00 s)
+  cfg:atu        3214.6 s de uptime  (+0.00 s)
+  cfg:transv     3214.6 s de uptime  (+0.00 s)
+  cfg:mem        3214.6 s de uptime  (+0.00 s)
+  cfg:digi       3214.6 s de uptime  (+0.00 s)
+  cfg_init       3214.6 s de uptime  (+0.00 s)
+  params_load    3214.6 s de uptime  (+0.00 s)
+  params_init    3214.6 s de uptime  (+0.00 s)
+  cb_hooks       3214.6 s de uptime  (+0.00 s)
+  fuentes y estilos 3214.7 s de uptime  (+0.07 s)
+  pantalla principal 3214.8 s de uptime  (+0.06 s)
+  cw/rtty        3214.9 s de uptime  (+0.15 s)
+  radio          3215.3 s de uptime  (+0.41 s)
+  cat/qso_log    3215.4 s de uptime  (+0.07 s)
+  wfview         3215.4 s de uptime  (+0.00 s)
+  control remoto 3215.4 s de uptime  (+0.00 s)
+  bootanim stop  3215.4 s de uptime  (+0.04 s)
+  bootanim handoff 3215.4 s de uptime  (+0.00 s)
+GUI lista: 3215.5 s
+  GUI inicio     4873.1 s de uptime  (+0.00 s)
+fuente: 42cd5c541237db86d23441505637f5cd (x6200_gui)
+  crashlog modulos 4874.0 s de uptime  (+0.95 s)
+  lv_init        4874.0 s de uptime  (+0.00 s)
+  lastbreath init 4874.0 s de uptime  (+0.00 s)
+  audio_init     4874.0 s de uptime  (+0.00 s)
+  display init   4874.0 s de uptime  (+0.01 s)
+  eventos/usb    4874.1 s de uptime  (+0.00 s)
+  display        4874.1 s de uptime  (+0.00 s)
+  keyboard       4874.1 s de uptime  (+0.00 s)
+  entradas       4874.1 s de uptime  (+0.01 s)
+  db_init        4874.1 s de uptime  (+0.02 s)
+  cfg:items      4874.1 s de uptime  (+0.01 s)
+  cfg:band       4874.1 s de uptime  (+0.01 s)
+  cfg:mode       4874.1 s de uptime  (+0.00 s)
+  cfg:sm         4874.1 s de uptime  (+0.00 s)
+  cfg:atu        4874.1 s de uptime  (+0.00 s)
+  cfg:transv     4874.1 s de uptime  (+0.00 s)
+  cfg:mem        4874.1 s de uptime  (+0.00 s)
+  cfg:digi       4874.1 s de uptime  (+0.00 s)
+  cfg_init       4874.1 s de uptime  (+0.00 s)
+  params_load    4874.1 s de uptime  (+0.00 s)
+  params_init    4874.1 s de uptime  (+0.00 s)
+  cb_hooks       4874.1 s de uptime  (+0.00 s)
+  fuentes y estilos 4874.2 s de uptime  (+0.05 s)
+  pantalla principal 4874.2 s de uptime  (+0.07 s)
+  cw/rtty        4874.4 s de uptime  (+0.16 s)
+  radio          4874.8 s de uptime  (+0.40 s)
+  cat/qso_log    4874.9 s de uptime  (+0.07 s)
+  wfview         4874.9 s de uptime  (+0.00 s)
+  control remoto 4874.9 s de uptime  (+0.00 s)
+  bootanim stop  4874.9 s de uptime  (+0.05 s)
+  bootanim handoff 4874.9 s de uptime  (+0.00 s)
+GUI lista: 4874.9 s
+[exit=0]
+===== dmesg-tail =====
+[    7.078352] usb_phy_generic usb_phy_generic.1.auto: supply vcc not found, using dummy regulator
+[    7.088578] usb_phy_generic usb_phy_generic.1.auto: dummy supplies not allowed for exclusive requests
+[    7.106820] musb-hdrc musb-hdrc.2.auto: MUSB HDRC host driver
+[    7.114874] musb-hdrc musb-hdrc.2.auto: new USB bus registered, assigned bus number 3
+[    7.124405] hub 3-0:1.0: USB hub found
+[    7.128568] hub 3-0:1.0: 1 port detected
+[    7.133935] phy phy-1c19400.phy.1: External vbus detected, not enabling our own vbus
+[    8.572296] Bluetooth: Core ver 2.22
+[    8.577121] NET: Registered PF_BLUETOOTH protocol family
+[    8.582820] Bluetooth: HCI device and connection manager initialized
+[    8.589295] Bluetooth: HCI socket layer initialized
+[    8.594307] Bluetooth: L2CAP socket layer initialized
+[    8.599553] Bluetooth: SCO socket layer initialized
+[    8.617091] Bluetooth: HIDP (Human Interface Emulation) ver 1.2
+[    8.623157] Bluetooth: HIDP socket layer initialized
+[   11.403676] Bluetooth: RFCOMM socket layer initialized
+[   11.408920] Bluetooth: RFCOMM ver 1.11
+[   11.476331] usb 3-1: new high-speed USB device number 2 using musb-hdrc
+[   12.063934] usbcore: registered new interface driver btusb
+[   12.069597] Bluetooth: hci0: RTL: examining hci_ver=08 hci_rev=000d lmp_ver=08 lmp_subver=8723
+[   12.081653] Bluetooth: hci0: RTL: rom_version status=0 version=2
+[   12.088282] Bluetooth: hci0: RTL: loading rtl_bt/rtl8723d_fw.bin
+[   12.160685] Bluetooth: hci0: RTL: loading rtl_bt/rtl8723d_config.bin
+[   12.168183] Bluetooth: hci0: RTL: cfg_sz 10, total sz 33266
+[   12.210826] rtw_core: loading out-of-tree module taints kernel.
+[   12.248870] rtw_8723du 3-1:1.2: Firmware version 48.0.0, H2C version 0
+[   12.371733] usbcore: registered new interface driver rtw_8723du
+[   12.450672] Bluetooth: hci0: RTL: fw version 0x828a96f1
+[   12.519924] Bluetooth: MGMT ver 1.22
+[   15.993637] wlan0: authenticate with <mac-redacted>
+[   15.999021] wlan0: 80 MHz not supported, disabling VHT
+[   16.473853] wlan0: send auth to <mac-redacted> (try 1/3)
+[   16.480874] wlan0: authenticated
+[   16.496552] wlan0: associate with <mac-redacted> (try 1/3)
+[   16.505861] wlan0: RX AssocResp from <mac-redacted> (capab=0x1431 status=0 aid=16)
+[   16.524706] wlan0: associated
+[   16.629416] cryptd: max_cpu_qlen set to 1000
+[   16.769117] wlan0: Limiting TX power to 30 (30 - 0) dBm as advertised by <mac-redacted>
+[  555.428303] EXT4-fs (mmcblk2p2): mounted filesystem with ordered data mode. Quota mode: disabled.
+[ 2488.200383] EXT4-fs (mmcblk2p2): unmounting filesystem.
+[ 8334.792883] wlan0: deauthenticated from <mac-redacted> (Reason: 7=CLASS3_FRAME_FROM_NONASSOC_STA)
+[ 8335.165085] wlan0: authenticate with <mac-redacted>
+[ 8335.170478] wlan0: 80 MHz not supported, disabling VHT
+[ 8335.300973] rtw_8723du 3-1:1.2: failed to get tx report from firmware
+[ 8335.627712] wlan0: send auth to <mac-redacted> (try 1/3)
+[ 8335.634661] wlan0: authenticated
+[ 8335.641111] wlan0: associate with <mac-redacted> (try 1/3)
+[ 8335.649244] wlan0: RX AssocResp from <mac-redacted> (capab=0x1431 status=0 aid=28)
+[ 8335.663842] wlan0: associated
+[ 8335.741861] wlan0: Limiting TX power to 30 (30 - 0) dBm as advertised by <mac-redacted>
+[11248.782138] wlan0: deauthenticated from <mac-redacted> (Reason: 7=CLASS3_FRAME_FROM_NONASSOC_STA)
+[11249.223876] wlan0: authenticate with <mac-redacted>
+[11249.229134] wlan0: 80 MHz not supported, disabling VHT
+[11249.290154] rtw_8723du 3-1:1.2: failed to get tx report from firmware
+[11249.675299] wlan0: send auth to <mac-redacted> (try 1/3)
+[11249.682001] wlan0: authenticated
+[11249.690339] wlan0: associate with <mac-redacted> (try 1/3)
+[11249.699090] wlan0: RX AssocResp from <mac-redacted> (capab=0x1431 status=0 aid=33)
+[11249.714946] wlan0: associated
+[11249.841059] wlan0: Limiting TX power to 30 (30 - 0) dBm as advertised by <mac-redacted>
+[exit=0]
+===== base-fw-log =====
+---
+BASE ver1: 1.0.0
+BASE fw version: 1.0.6
+[exit=0]
+===== gui-live-log =====
+-rw-r--r--    1 root     root       2393396 Oct 29 21:57 /mnt/app_logs/voice.log
+-rw-------    1 root     root        276250 Oct 29 21:49 /tmp/x6200_log.txt
+86, +10030)	 cfg_params_save_item: Saved eq_rx_p5=-10 (pk=0) 	(in params.c line #142)
+[User]	(11649.923, +10037)	 cfg_params_save_item: Saved eq_rx_p4=-1 (pk=0) 	(in params.c line #142)
+[User]	(11649.958, +35)	 cfg_params_save_item: Saved eq_rx_p5=-9 (pk=0) 	(in params.c line #142)
+[User]	(11659.996, +10038)	 cfg_params_save_item: Saved eq_rx_p2=8 (pk=0) 	(in params.c line #142)
+[User]	(11660.027, +31)	 cfg_params_save_item: Saved eq_rx_p3=3 (pk=0) 	(in params.c line #142)
+[User]	(11670.062, +10035)	 cfg_params_save_item: Saved eq_rx_p1=-4 (pk=0) 	(in params.c line #142)
+[User]	(11670.097, +35)	 cfg_params_save_item: Saved eq_rx_p2=2 (pk=0) 	(in params.c line #142)
+[User]	(11680.136, +10039)	 cfg_params_save_item: Saved vol=59 (pk=0) 	(in params.c line #142)
+[User]	(11710.171, +30035)	 cfg_params_save_item: Saved vol=50 (pk=0) 	(in params.c line #142)
+[User]	(11720.202, +10031)	 cfg_params_save_item: Saved vol=41 (pk=0) 	(in params.c line #142)
+[User]	(11800.236, +80034)	 cfg_params_save_item: Saved vol=54 (pk=0) 	(in params.c line #142)
+[User]	(11810.263, +10027)	 cfg_params_save_item: Saved vol=52 (pk=0) 	(in params.c line #142)
+[User]	(11830.759, +20496)	 cfg_params_save_item: Saved dnf=0 (pk=0) 	(in params.c line #142)
+[User]	(11840.793, +10034)	 cfg_params_save_item: Saved nr=1 (pk=0) 	(in params.c line #142)
+[User]	(12211.341, +370548)	 cfg_params_save_item: Saved vol=62 (pk=0) 	(in params.c line #142)
+[User]	(12221.370, +10029)	 cfg_params_save_item: Saved vol=63 (pk=0) 	(in params.c line #142)
+[User]	(12221.864, +494)	 cfg_params_save_item: Saved eq_rx_p2=0 (pk=0) 	(in params.c line #142)
+[User]	(12221.892, +28)	 cfg_params_save_item: Saved eq_rx_p3=2 (pk=0) 	(in params.c line #142)
+[User]	(12232.541, +10649)	 cfg_params_save_item: Saved eq_rx_p2=4 (pk=0) 	(in params.c line #142)
+[User]	(12232.577, +36)	 cfg_params_save_item: Saved eq_rx_p3=10 (pk=0) 	(in params.c line #142)
+[User]	(12232.617, +40)	 cfg_params_save_item: Saved eq_rx_p4=-2 (pk=0) 	(in params.c line #142)
+[User]	(12243.137, +10520)	 cfg_params_save_item: Saved eq_rx_p1=-10 (pk=0) 	(in params.c line #142)
+[User]	(12243.180, +43)	 cfg_params_save_item: Saved eq_rx_p3=1 (pk=0) 	(in params.c line #142)
+[User]	(12253.217, +10037)	 cfg_params_save_item: Saved eq_rx_p1=-3 (pk=0) 	(in params.c line #142)
+[User]	(12333.257, +80040)	 cfg_params_save_item: Saved eq_rx_p2=-1 (pk=0) 	(in params.c line #142)
+[User]	(12343.294, +10037)	 cfg_params_save_item: Saved eq_rx_p4=2 (pk=0) 	(in params.c line #142)
+[User]	(12343.321, +27)	 cfg_params_save_item: Saved eq_rx_p5=10 (pk=0) 	(in params.c line #142)
+[User]	(12353.361, +10040)	 cfg_params_save_item: Saved eq_rx_p2=4 (pk=0) 	(in params.c line #142)
+[User]	(12353.396, +35)	 cfg_params_save_item: Saved eq_rx_p3=2 (pk=0) 	(in params.c line #142)
+[User]	(12353.939, +543)	 cfg_params_save_item: Saved eq_rx_p5=-10 (pk=0) 	(in params.c line #142)
+[User]	(12363.976, +10037)	 cfg_params_save_item: Saved eq_rx_p1=-1 (pk=0) 	(in params.c line #142)
+[exit=0]
+===== existing-tmp-artifacts =====
+-rw-------    1 root     root          2251 Oct 29 18:38 /tmp/i2c-trace.log
+-rwxr-xr-x    1 root     root           716 Oct 29 20:48 /tmp/rx349_poll.py
+-rw-------    1 root     root           310 Oct 29 19:16 /tmp/state-after.json
+-rw-------    1 root     root           309 Oct 29 19:16 /tmp/state-before.json
+-rw-------    1 root     root           310 Oct 29 19:39 /tmp/state-final2.json
+---
+msg addr=0x72 flags=0x0 len=2 data=20 0 
+msg addr=0x72 flags=0x1 len=1 data=0 
+msg addr=0x72 flags=0x0 len=2 data=0 0 
+msg addr=0x72 flags=0x1 len=81 data=0 2d 2d 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2d 2d 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2d 2d 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2d 2d 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+msg addr=0x72 flags=0x0 len=2 data=1 0 
+msg addr=0x72 flags=0x1 len=1fb data=0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+msg addr=0x72 flags=0x0 len=6 data=0 34 0 0 0 0 
+msg addr=0x72 flags=0x0 len=6 data=0 4 4 7c 6b 0 
+msg addr=0x72 flags=0x0 len=6 data=0 10 2 0 0 0 
+msg addr=0x72 flags=0x0 len=6 data=0 14 3 0 0 0 
+msg addr=0x72 flags=0x0 len=6 data=0 c 1 0 0 0 
+msg addr=0x72 flags=0x0 len=6 data=0 8 1 0 0 0 
+msg addr=0x72 flags=0x0 len=6 data=0 34 0 0 0 0 
+msg addr=0x72 flags=0x0 len=6 data=0 1c 28 5c ac 1 
+msg addr=0x72 flags=0x0 len=6 data=0 28 3 0 0 0 
+msg addr=0x72 flags=0x0 len=6 data=0 2c 3 0[exit=0]
+===== mem-disk =====
+              total        used        free      shared  buff/cache   available
+Mem:        1026516       79128      781812       15272      165576      909220
+Swap:             0           0           0
+Filesystem                Size      Used Available Use% Mounted on
+/dev/root               487.6M    235.0M    216.7M  52% /
+/dev/mmcblk0p3            3.0G    999.9M      2.0G  32% /mnt
+tmpfs                   501.2M     14.7M    486.6M   3% /tmp
+[exit=0]
+===== cpuinfo =====
+processor	: 0
+model name	: ARMv7 Processor rev 5 (v7l)
+processor	: 1
+model name	: ARMv7 Processor rev 5 (v7l)
+processor	: 2
+model name	: ARMv7 Processor rev 5 (v7l)
+processor	: 3
+model name	: ARMv7 Processor rev 5 (v7l)
+Hardware	: Generic DT based system
+Revision	: 0000
+performance
+1008000
+[exit=0]
+===== audio-processes =====
+  329 pulse    /usr/bin/pulseaudio --system --daemonize --disallow-exit --exit-idle-time=-1 --use-pid-file --disable-shm
+  519 root     /usr/bin/python3 /usr/share/x6200/qrz-upload.py --loop
+  591 root     {btaudio-ctl} /bin/sh /usr/sbin/btaudio-ctl boot
+  609 root     {btaudio-ctl} /bin/sh /usr/sbin/btaudio-ctl boot
+ 1946 root     {x6200_daemon} /bin/sh /usr/sbin/x6200_daemon
+ 4716 root     /usr/sbin/x6200_gui
+[exit=0]

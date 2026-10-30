@@ -1,0 +1,142 @@
+# Commands log — #363 Fase A (2026-10-29)
+
+Corrida: host del agente (Fedora 44) + radio X6200 por SSH (helper `x6200_qa/tools/lib-radio.sh`,
+credencial y host **no publicados**; abajo `<radio-ip>`). Horas en **UTC**. Todos los comandos sobre la
+radio son **de solo lectura**; no se ejecutó ninguna escritura de registro, flash, TX/PTT, ATU, ni
+`audio_play_en`. MACs anonimizadas como `<mac>`.
+
+## 0. Orientación y base
+
+```
+[21:57Z] gh issue view 363 --repo iariap/x6200_gui                              -> exit 0 (leído completo)
+[21:57Z] gh issue view 362 --repo iariap/x6200_gui                              -> exit 0
+[21:57Z] git -C x6200-audio-route-363 fetch origin main                         -> exit 0
+[21:57Z] git -C x6200-audio-route-363 rev-parse origin/main                     -> exit 0 (cb9ea287548534ac5c4438c786b57deb436c7c40)
+[21:57Z] git -C x6200-audio-route-363 status --short --branch                   -> exit 0 (## audit/rx-audible-route-363...origin/main)
+[21:57Z] git -C x6200-audio-route-363 rev-parse HEAD                            -> exit 0 (cb9ea287…, igual a origin/main)
+[21:57Z] team_task_get task-2 / team_task_update claim --expected_revision 1     -> ok (in_progress, owner phase-a-rea-363)
+[21:58Z] git -C x6200-audio-route-363 diff --name-only fc18a831 cb9ea287 | grep -v '^docs/'  -> exit 1 (0 archivos: sólo docs entre el build desplegado y la base)
+[21:58Z] tar -tzf images/x6200_r1cbu_v0.1.11-lu2dsx.tgz                          -> exit 0 (rootfs del paquete v0.1.11)
+[21:58Z] tar -xzOf images/x6200_r1cbu_v0.1.11-lu2dsx.tgz usr/lib/libaether_x6200_control.so.0.15.3 > .qa363/rom/…  -> exit 0
+[21:58Z] tar -xzOf images/x6200_r1cbu_v0.1.11-lu2dsx.tgz usr/sbin/x6200_gui     > .qa363/rom/x6200_gui          -> exit 0
+[21:58Z] tar -xzOf images/x6200_r1cbu_v0.1.11-lu2dsx.tgz usr/sbin/x6200_daemon  > .qa363/rom/x6200_daemon       -> exit 0
+[21:58Z] file/sha256sum de los extraídos                                          -> exit 0 (hashes en logs/sha256sums.txt)
+[22:02Z] dd if=images/x6200_20261028_104820.img of=.qa363/rom/imgp1/boot-part.img bs=512 skip=2048 count=65536 -> exit 0
+[22:02Z] mdir -i .qa363/rom/imgp1/boot-part.img ::/                              -> exit 0 (zImage, dtb, boot.scr; SIN firmware de MCU)
+[22:10Z] sqlite3 -readonly refs/vendor-fw/xparam.db ".tables" / wparam            -> exit 0 (tabla wparam con 192 params; sple/atue/rxvol/monilevel…)
+[22:10Z] sqlite3 -readonly .qa363/a0/params.db.snapshot "select …"                -> exit 0 (vol=7,nr=1,nb=1,dnf=0,hmic/imic=30,audio_enh_preset=0)
+```
+
+## 1. A0 — preflight read-only (22:00:24Z–22:01Z)
+
+Script `A0` sobre la radio; cada línea es un `ssh_radio '<comando>'` con su exit (log crudo completo en
+`logs/a0-preflight-commands-raw.log`; salida en `logs/a0-preflight.txt`).
+
+```
+[22:00:24Z] date -u; date; /proc/uptime; /proc/loadavg                          -> exit 0 (2026-10-29T22:00:24Z)
+[22:00:24Z] uname -a; /proc/cmdline; /sys/firmware/devicetree/base/model; os-release -> exit 0 (X6200, 6.1.82 armv7l)
+[22:00:25Z] ls /etc/*version* /etc/*release*                                    -> exit 1 (no existe /etc/version; NO es fallo del gate)
+[22:00:25Z] ls/sha256/md5 de /usr/sbin/x6200_gui,/usr/sbin/x6200_daemon,/usr/lib/libaether… -> exit 0
+[22:00:26Z] readlink /proc/4716/exe;/proc/4716/status;ls -l /proc/4716/fd|grep i2c|ttyS -> exit 0 (GUI pid 4716, 13 hilos, i2c-0/ttyS1/ttyS2)
+[22:00:27Z] for p in /proc/[0-9]*; … i2c-0 owner …                               -> exit 1 (loop sin match al final; dueño único detectado: pid 4716 x6200_gui)
+[22:00:30Z] /tmp/x6200-remote '{"cmd":"get"}'                                   -> exit 0 (tx=false; LSB 7.143 MHz; vol 7; nb=1 nr=1)
+[22:00:30Z] /tmp/x6200-remote '{"cmd":"get"}' (2ª vez)                          -> exit 0 (mismos campos; sólo cambió db)
+[22:00:31Z] sha256sum /tmp/x6200-remote; ls /tmp/x6200_remote.sock               -> exit 0 (helper preexistente de la corrida #347/#359, sha256 63f42951…bdfc)
+[22:00:31Z] cat /proc/asound/cards/devices; ls /proc/asound                     -> exit 0 (card0 sun8i-a33-audio)
+[22:00:32Z] cat /proc/asound/card0/pcm0c|pcm0p/sub0/status                       -> exit 0 (ambos RUNNING)
+[22:00:32Z] aplay -l                                                            -> exit 0 (sun8i-codec-aif1)
+[22:00:32Z] pactl info; pactl list short sources/sinks/modules/clients           -> exit 0 (sink+source RUNNING; sin module-loopback)
+[22:00:33Z] pactl list sinks; pactl list sources                                 -> exit 0 (analog-output-headphones; Mic1; vol 83%)
+[22:00:34Z] amixer -c 0 contents                                                 -> exit 0 (tabla completa en logs/mixer-live.txt)
+[22:00:35Z] cat /etc/asound.conf /var/lib/alsa/asound.state; ls /etc/pulse       -> exit 0
+[22:00:35Z] bluetoothctl show/devices; rfkill; /proc/net/bluetooth               -> exit 1 (parcial: Powered: no, sin dispositivos; `rfkill` no existe en la ROM)
+[22:00:36Z] ls /mnt/app_logs; ls crash*; tail boot.log                          -> exit 0 (sin archivos de crash)
+[22:00:36Z] dmesg | tail -60                                                     -> exit 0 (WiFi/BT del arranque; sin error de audio)
+[22:00:37Z] grep -a "BASE ver1|BASE fw" /mnt/app_logs/boot.log                    -> exit 0 (BASE ver1 1.0.0, fw 1.0.6)
+[22:00:37Z] ls /tmp/x6200_log.txt; tail                                              -> exit 0
+[22:00:38Z] ls /tmp/*.json /tmp/i2c-trace.log; head i2c-trace.log                -> exit 0 (artefacto previo, no de esta corrida)
+[22:00:38Z] free; df -h / /mnt /tmp                                               -> exit 0
+[22:00:38Z] /proc/cpuinfo; cpufreq                                                -> exit 0 (4×Cortex-A7, performance 1008 MHz)
+```
+
+## 2. Snapshots de estado (solo lectura, fuera de git)
+
+```
+[22:02Z] ssh cat /mnt/params.db > .qa363/a0/params.db.snapshot                    -> exit 0 (118784 B, sha256 f4ec30f2…7de1)
+[22:02Z] sqlite3 -readonly .qa363/a0/params.db.snapshot "select name,val …"      -> exit 0 (selección en logs/params-db-selected.txt)
+[22:03Z] pactl list short sink-inputs; pactl list sink-inputs                   -> exit 0 (sink-input "X6200 GUI Play" s16le 1ch 44100, pid 4716)
+[22:03Z] pactl list short source-outputs                                          -> exit 0 (2 source-outputs del pid 4716)
+[22:03Z] cat /mnt/lastbreath; cat /proc/4716/status                               -> exit 0 (radio=RX tx=0; 13 hilos; VmRSS 42884 kB)
+[22:04Z] amixer sget "AIF1 DA0|Headphone|…|Mic1|DAC"                             -> exit 0 (valores en registers.md §4)
+[22:04Z] grep "GUI inicio|GUI lista" /mnt/app_logs/boot.log                       -> exit 0 (4 arranques: 988,3→990,0 / 2201,0→2202,8 / 3213,6→3215,5 / 4873,1→4874,9 s ⇒ init 1,7-1,9 s)
+```
+
+## 3. A1 — REA + estático (22:05Z–22:10Z)
+
+```
+[22:05Z] find / -name 'rea'/'ghidra' …; ls refs/rea refs/vendor-fw tools/ghidra   -> exit 0 (REA 6.7.0 + Ghidra 12.1.4 + JDK21 locales)
+[22:06Z] (refs/rea) npm run build:cached                                          -> exit 0 (dist generado; runtime de REA compilado)
+[22:06Z] node refs/rea/scripts/rea.mjs doctor                                    -> exit 0 (ghidra ok; node 22.23.1 < mínimo declarado, se registra)
+[22:06Z] node refs/rea/scripts/rea.mjs capabilities                              -> exit 0 (provider ghidra: available; JDK 21.0.13)
+[22:06Z] node refs/rea/scripts/rea.mjs analyze .qa363/rom/libaether_x6200_control.so.0.15.3 --provider ghidra -> exit 0 (ev_279ec087…)
+[22:07Z] rea decompile lib --procedure x6200_control_record_set|ptt_set|idle   -> exit 0 (ev_c1c27f39…, ev_b1118b9d…, ev_e9308a89…)
+[22:07Z] rea decompile lib 0x281c (get) ; 0x275c (cmd)                          -> exit 0 (ev_0f6d98e0…, ev_94458c5a…)
+[22:08Z] rea analyze refs/vendor-fw/x6200_ui_v100 --provider ghidra             -> exit 0 (ev_f1d7f5fc…)
+[22:08Z] rea decompile vendor 0x29308/0x29350/0xdf594/0xe33b8/0xe6158          -> exit 0 (workParamAddr/basebandInfo caen en qt_assert; updateWorkParams y parseParamItem decompilados)
+[22:08Z] nm -C x6200_ui_v100 | grep -i 'record|voice|audio|basecommiic'         -> exit 0 (DialogVoiceRec, XAudioRecorder, XAudioPlayer, BaseCommIIC::iicRead/iicWrite…)
+[22:08Z] strings x6200_ui_v100 | grep amixer/i2c                               -> exit 0 (configuración del códec por amixer, ver logs/vendor-gui-strings.txt)
+[22:08Z] file/strings/sha256 refs/vendor-fw/x6200_mcu_20250111134652.xgf        -> exit 0 (blob encriptado: 4793 strings ilegibles ⇒ no analizable)
+[22:09Z] mask-test (2009 casos, PTT=0x40000 intacto)                            -> exit 0 (logs/mask-test.txt)
+```
+
+## 4. A2/A3 — no se ejecutan escrituras
+
+No hay comandos de escritura. La conclusión `BLOCKED_SAFE_MUX` sale de: (a) readback inexistente
+(REA/código), (b) único dueño `/dev/i2c-0` + `idle()` de 218 B/≤1 s (medido + REA), (c) sin write path
+permitido por el issue. No se usó `i2ctransfer`, `i2cset`, `devmem`, `gpioset` ni nada que escriba el bus.
+
+## 5. A5 — snapshot final (22:21:55Z) y caída transitoria de WiFi
+
+```
+[22:16Z] radio_ip (helper)                                                       -> exit 1 "radio no responde" (3 intentos)
+[22:16Z] ping -c2 <radio-ip>                                                     -> exit 1 (100% packet loss, "No route to host")
+[22:21Z] radio_ip (helper)                                                       -> exit 0 (la radio volvió SOLA; mismo uptime/boot, sin reinicio)
+[22:21:55Z] date -u; /tmp/x6200-remote get ×2; cat /mnt/lastbreath               -> exit 0 (tx=false; radio=RX; boot=1fa5d1ea igual)
+[22:21:55Z] sha256sum GUI/lib; readlink /proc/4716/exe                           -> exit 0 (hashes idénticos al A0)
+[22:21:55Z] ps w; pactl short sources/sinks/modules; PCM status                  -> exit 0 (misma topología; 11 módulos; RUNNING)
+[22:21:55Z] for p in /proc/[0-9]*; … i2c-0 owner …                               -> exit 1 (loop sin match final; único dueño: pid 4716 x6200_gui)
+[22:21:55Z] ls /mnt/app_logs/crash* /tmp/crash*                                  -> exit 0 ("crash-files-above" = ninguno)
+[22:21:55Z] amixer sget AIF1 DA0/Mic1/DAC                                        -> exit 0
+```
+
+**Cero escrituras del agente en toda la corrida.** La caída de WiFi de 22:16–22:21Z no fue causada por
+el agente (último comando antes: solo lectura) y la radio volvió sin reinicio.
+
+## 6. Validación del PR documental
+
+Con `HEAD=4b17b9e6c27b2d4c7df0d204aaa7520c200a026e` (commit de evidencia) y base `main=cb9ea287…`:
+
+```
+[22:23:59Z] asf/scripts/apps/x6200/check-matrix.sh main HEAD /home/pablo/desa/x6200/x6200-audio-route-363
+            -> exit 0. Todos los bloques [SKIP] (no hay cambios en src/**, tests/**, tools/**,
+               rootfs/** ni workflows); cobertura del diff: "[SIN GATE] … (sólo documentación:
+               no hay gate que correr)". Sin FAIL.
+[22:24:06Z] python3 asf/scripts/risk.py x6200 cb9ea287 4b17b9e6
+            -> exit 0: risk="low", reviewers=["reviewer-frontend"], human_approval=false,
+               auto_approve=true; todas las entradas clasifican por la regla docs/** (Documentacion).
+```
+
+La matriz volvió a correr sobre el commit final del PR (segundo commit, que sólo toca este
+`commands.log`): mismo resultado, exit 0, diff sólo documentación.
+
+**PR documental:** rama `audit/rx-audible-route-363`, título
+`[AUDIO QA] REA and physical RX DAC/MUX route gate (#363)`, body `Refs #362; Refs #363; Refs #347; Refs #359`.
+Sin merge, sin cerrar #363 (el gate no es `A_PASS`).
+
+```
+[22:26Z] git -C x6200-audio-route-363 push -u origin audit/rx-audible-route-363 -> exit 0
+[22:26Z] gh pr create --repo iariap/x6200_gui --base main --head audit/rx-audible-route-363 \
+         --title "[AUDIO QA] REA and physical RX DAC/MUX route gate (#363)" \
+         --body "Refs #362; Refs #363; Refs #347; Refs #359"          -> exit 0
+         URL: https://github.com/iariap/x6200_gui/pull/366
+```

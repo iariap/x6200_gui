@@ -1,0 +1,151 @@
+
+### x6200_control_record_set — evidence_id: ev_c1c27f399a183a73f6819ad3bdd2428e5dfb956b676bed0c0d01be54ce11cd7c
+
+
+void x6200_control_record_set(int param_1)
+
+{
+  uint uVar1;
+  
+  uVar1 = x6200_control_get(0xc);
+  if (param_1 == 0) {
+    uVar1 = uVar1 & 0xfffffff7;
+  }
+  else {
+    uVar1 = uVar1 | 8;
+  }
+  x6200_control_cmd(0xc,uVar1);
+  return;
+}
+
+
+
+### x6200_control_ptt_set — evidence_id: ev_b1118b9da53b039ecf3da85c96d4c290cf6829f107caf74f4f5bc66c43369d50
+
+
+void x6200_control_ptt_set(int param_1)
+
+{
+  uint uVar1;
+  
+  uVar1 = x6200_control_get(0xc);
+  if (param_1 == 0) {
+    uVar1 = uVar1 & 0xfffbffff;
+  }
+  else {
+    uVar1 = uVar1 | 0x40000;
+  }
+  x6200_control_cmd(0xc,uVar1);
+  return;
+}
+
+
+
+### x6200_control_get (0x281c) — evidence_id: ev_0f6d98e08e842f991966e05ce08ab549bd40e93e3b04cc1d89d3a31fd530344e
+
+
+undefined4 x6200_control_get(int param_1)
+
+{
+  return *(undefined4 *)(&DAT_000250ca + param_1 * 2);
+}
+
+
+
+### x6200_control_cmd (0x275c) — evidence_id: ev_94458c5a9f62039d15701a360da16c0a6d68f36140958347fce6dd7a898ba23e
+
+
+undefined4 x6200_control_cmd(int param_1,undefined4 param_2)
+
+{
+  int iVar1;
+  bool bVar2;
+  ushort local_24;
+  undefined4 local_22;
+  undefined4 *local_1c;
+  undefined4 local_18;
+  undefined4 local_14;
+  undefined2 local_10;
+  ushort *local_c;
+  
+  iVar1 = DAT_000250a8;
+  bVar2 = DAT_000250a8 < 0;
+  local_24 = (ushort)((param_1 * 4 & 0xffU) << 8) | (ushort)((uint)(param_1 * 4) >> 8) & 0xff;
+  *(undefined4 *)(&DAT_000250ca + param_1 * 2) = param_2;
+  local_22 = param_2;
+  if (bVar2) {
+    puts("Can\'t write to i2c, not opened");
+  }
+  else {
+    local_10 = 6;
+    local_c = &local_24;
+    local_14 = 0x72;
+    local_18 = 1;
+    local_1c = &local_14;
+    iVar1 = ioctl(iVar1,0x707,&local_1c);
+    if (-1 < iVar1) {
+      return 1;
+    }
+    perror("Can\'t write to i2c");
+  }
+  return 0;
+}
+
+
+
+### x6200_control_idle — evidence_id: ev_e9308a892b272abe4373766057f73296b457cd55983bb12369ff6c76e8ab6261
+
+
+void x6200_control_idle(void)
+
+{
+  int iVar1;
+  undefined4 *local_1c;
+  undefined4 local_18;
+  undefined4 local_14;
+  undefined2 local_10;
+  undefined *local_c;
+  
+  if (DAT_000250a8 < 0) {
+    puts("Can\'t write to i2c, not opened");
+  }
+  else {
+    local_14 = 0x72;
+    local_c = &DAT_000250c8;
+    local_10 = 0xda;
+    local_1c = &local_14;
+    local_18 = 1;
+    iVar1 = ioctl(DAT_000250a8,0x707,&local_1c);
+    if (-1 < iVar1) {
+      return;
+    }
+    perror("Can\'t write to i2c");
+  }
+  if (DAT_000250a8 < 0) {
+    puts("Can\'t close i2c, not opened");
+  }
+  else {
+    iVar1 = close(DAT_000250a8);
+    if (iVar1 < 0) {
+      perror("Can\'t close i2c");
+    }
+    DAT_000250a8 = -1;
+  }
+  usleep(1000);
+  DAT_000250a8 = open64("/dev/i2c-0",2);
+  if ((DAT_000250a8 < 0) && (perror("Can\'t open i2c"), DAT_000250a8 < 0)) {
+    puts("Can\'t write to i2c, not opened");
+    return;
+  }
+  local_14 = 0x72;
+  local_c = &DAT_000250c8;
+  local_10 = 0xda;
+  local_1c = &local_14;
+  local_18 = 1;
+  iVar1 = ioctl(DAT_000250a8,0x707,&local_1c);
+  if (iVar1 < 0) {
+    perror("Can\'t write to i2c");
+  }
+  return;
+}
+
