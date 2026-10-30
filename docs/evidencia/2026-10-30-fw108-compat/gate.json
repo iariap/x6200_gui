@@ -17,7 +17,9 @@
     "head_branch": "feat/x6200-fw108-gui-samples",
     "head_at_creation": "4ff076baf1bd4a72ff96b23e57c4c78949035de1",
     "merged": false,
-    "head_with_evidence": "fcd163d54ffca585415791eef2ac24565b23f3d2"
+    "head_with_evidence": "fcd163d54ffca585415791eef2ac24565b23f3d2",
+    "head_current": "d8a205ed64d160127ec0b0b6998df022dd98d960",
+    "code_commit": "4ff076baf1bd4a72ff96b23e57c4c78949035de1"
   },
   "code_commit": "4ff076baf1bd4a72ff96b23e57c4c78949035de1",
   "sample_abi": {
@@ -119,14 +121,71 @@
           "verdict": "FAILs de entorno, no del diff (identico)"
         }
       ]
+    },
+    "host_parser_c_integration_env": {
+      "command": "br2_external/package/aether-x6200-control/tests/run_host_tests.sh /home/pablo/desa/x6200/refs/X6200Control",
+      "environment": "contenedor build x6200-buildroot (gcc 13.3), release + ASan/UBSan",
+      "release": {
+        "checks": 198,
+        "failures": 0,
+        "exit_code": 0
+      },
+      "sanitized": {
+        "checks": 198,
+        "failures": 0,
+        "exit_code": 0
+      },
+      "result": "HOST_TESTS_PASS",
+      "log_sha256": "b98410a76b5a4eadd501812b099901ff74d173c7e752f342b52b19fd5088694c"
+    },
+    "native_gui_integration_env": {
+      "command": "sh tests/native/run_native_tests.sh",
+      "environment": "host integracion, gcc 16.2.1",
+      "exit_code": 0,
+      "stages": 26,
+      "stage_377": "533 comprobaciones, 0 fallos",
+      "container_run": "NOT_RUN (imagen Docker sin sqlite3.h/png.h de desarrollo; no es fallo del diff)",
+      "log_sha256": "af46c45aa80cf3ae351ebf0ee26c78da3304364b37daccec9f4fd45e616b1a85"
     }
   },
   "full_gui_lib_image_build": {
-    "status": "NOT_RUN",
-    "reason": "alcance B: la reconstruccion de aether-x6200-control v0.1.1+patch, la GUI y la imagen de prueba corresponde a la integracion (task-16) con el build tree del owner; no se toco rom-build/clone-buildroot"
+    "status": "PASS",
+    "task": "task-16 (integracion, parte C)",
+    "build_tree": "/home/pablo/desa/x6200/rom-build/clone-buildroot/build",
+    "container": "x6200-buildroot:latest (sha256:b3e7601313d64284645a5224c60fb40f39ea58e0bfc68f42fd9bb0dad13a1189)",
+    "buildroot_version": "2023.02.11-dirty",
+    "command": "make aether-x6200-control-dirclean && make x6200-gui-dirclean && make -j8",
+    "exit_code": 0,
+    "duration_local": "2026-10-30 12:20:40 -> 12:21:31 (America/Buenos_Aires)",
+    "log": "/home/pablo/desa/x6200/fw108-scratch/integration-377/build-integration.log",
+    "log_sha256": "f7ef9550392495b0f14177e99966efc99d8e2d9781cbbc500f0e89fc480e5764"
   },
   "image": {
-    "status": "NOT_RUN"
+    "status": "PASS",
+    "outside_git": true,
+    "path": "/home/pablo/desa/x6200/fw108-scratch/fw108-image-377",
+    "flashed_or_installed": false,
+    "sdcard_img": {
+      "file": "sdcard.img",
+      "size": 571473920,
+      "sha256": "7ec5d8cc4cb6cbf98fc92af9cf6489ad1a94f5dce8585d43c93156afde68b5d9"
+    },
+    "rootfs_tar": {
+      "file": "rootfs.tar",
+      "size": 244336640,
+      "sha256": "a2eb1d6582e766a38df0ea7db9b49e958063713d6dd10d7cb96d0621215d171e"
+    },
+    "boot_vfat": {
+      "file": "boot.vfat",
+      "size": 33554432,
+      "sha256": "1960b896e510dfe8d619a14c207ad86209a2e31bbe310ed9a26c4ba136d5b99e"
+    },
+    "rootfs_ext2_sha256": "bbd9d172c44746cd4dfdf28ec4e0f2657770c0d23f3ddfe07816fb65ec9d9bc5",
+    "image_partition2_equals_rootfs_ext2": true,
+    "provenance": [
+      "PROVENANCE.md",
+      "manifest.json"
+    ]
   },
   "physical_rx_test": {
     "status": "NOT_RUN",
@@ -169,7 +228,74 @@
     "No hay validacion fisica ni de audio RX; production_ready=false.",
     "PR sin merge automatico."
   ],
-  "final_state": "SAMPLE_ABI_FIXED_HOST_PASS_BUILD_PENDING_INTEGRATION",
-  "final_state_detail": "Fix GUI commiteado y pusheado (PR #381); tests host y compile-check ARM contra v0.1.1 PASS; build completo/imagen NOT_RUN (task-16); prueba fisica NOT_RUN (#378). payload_authenticity=UNVERIFIED; production_ready=false.",
-  "evidence_commit": "fcd163d54ffca585415791eef2ac24565b23f3d2"
+  "final_state": "HOST_BUILD_PASS / READY_FOR_SHORT_RX_TRIAL",
+  "final_state_detail": "Build completo lib v0.1.1+patch A + GUI PR B en el build tree del owner con exit 0; imagen de prueba sdcard.img sha256 7ec5d8cc4cb6cbf98fc92af9cf6489ad1a94f5dce8585d43c93156afde68b5d9 fuera de Git (no flasheada); host parser C 198/0 (release+ASan/UBSan) y native GUI exit 0 (stage #377 533/0); build tree restaurado con git status identico antes/despues. physical_rx_test=NOT_RUN (#378, solo operador); payload_authenticity=UNVERIFIED; production_ready=false.",
+  "evidence_commit": "fcd163d54ffca585415791eef2ac24565b23f3d2",
+  "integration_part_c": {
+    "task_id": "task-16",
+    "date": "2026-10-30",
+    "part_a_in_build": {
+      "applied_patch": "0001-flow-support-SLIP-RX-framing-for-BASE-1.0.8.patch",
+      "patch_sha256": "46b4e7f36e25e3db6b53de057d037a11a72ee198fe5500f2ce126996e193838f",
+      "buildroot_log_line": "Applying 0001-flow-support-SLIP-RX-framing-for-BASE-1.0.8.patch using patch: / patching file src/low/flow.c",
+      "patched_flow_c_sha256": "77c4fd931b9f5cd0796d12ce3fc85b29efdf43524dd566a4215b02792cabaf2a",
+      "staging_header_flow_h_sha256": "272028947ba84f327d56f03c1af8a1abdd9f19dc9137e81cb7a673634d4b9094",
+      "lib_unstripped_sha256": "f2eb4fb1b291c6dd76a0a46a5e326eefd9ad87fe46abe6fe0c1a373fc4dd1138",
+      "lib_unstripped_matches_part_a_arm_gate": true,
+      "lib_in_image_sha256": "e93d79a376a974bea61301ee5c90eb0f951d79c00f06918ccdc7827e59d6cad5",
+      "abi_symbols_identical_vs_v0_1_0": true,
+      "flow_api_exported": [
+        "x6200_flow_init",
+        "x6200_flow_read",
+        "x6200_flow_restart"
+      ],
+      "soname": "libaether_x6200_control.so.0"
+    },
+    "part_b_in_build": {
+      "source_dir": "/home/pablo/desa/x6200/x6200-fw108-compat-qa",
+      "pr_head": "d8a205ed64d160127ec0b0b6998df022dd98d960",
+      "code_commit": "4ff076baf1bd4a72ff96b23e57c4c78949035de1",
+      "sync_log_line": ">>> x6200-gui v0.1.0-fw108 Syncing from source dir /home/pablo/desa/x6200/x6200-fw108-compat-qa",
+      "radio_c_sha256": "6be56a90054dc42c83d9fba40119adc6250d065f318a00acc54f7e69d8a9362f",
+      "radio_samples_h_sha256": "d2ff0bf3ad195cdac6195cb462181e1854d69d7ad734903f59e9eb571b4c8144",
+      "gui_in_image_sha256": "6a068db278c72986967bbbc0d4a12d9f71202507054fbbd3c986746eb40b7c1d",
+      "gui_unstripped_sha256": "64d18becdbf2cee9a477ba30cc704bfd3753b1fb0b6d4e9329948888ec68ffdc",
+      "sample_abi_static_asserts_passed_at_build": true
+    },
+    "tests": {
+      "host_parser_c": {
+        "release": "198/0",
+        "sanitized": "198/0",
+        "exit_code": 0
+      },
+      "native_gui_host": {
+        "exit_code": 0,
+        "stages": 26,
+        "stage_377": "533/0"
+      }
+    },
+    "restore": {
+      "git_status_before_sha256": "a301221fcd4cb913e9744a2cdb27f7d3d41a5dd3253e6ab4555e4735599585c0",
+      "git_status_after_sha256": "a301221fcd4cb913e9744a2cdb27f7d3d41a5dd3253e6ab4555e4735599585c0",
+      "git_status_identical": true,
+      "control_package_restored": "v0.1.0 (HEAD)",
+      "gui_mk_restored_sha256": "7b17f03671a6a81ac474874c08d5df0364a5ce9d9a4ffff2f54c8883f4ded554",
+      "images_restored": {
+        "sdcard_img_sha256": "0ed4cd320cb9ac66df8aad8d2f663acd42a34e75db56a078c4a8fe0740f37cf7",
+        "rootfs_tar_sha256": "72b2135b76e13c4afd70b9e9a578a7a4d7f69767bf945bca2a322920e2eb405c",
+        "rootfs_ext2_sha256": "44277cb9cb484d0e52a46aca0233622855f5806d942dde11dec24f088699ed49",
+        "boot_vfat_sha256": "0d5f85a8cb938864c3c648eaf754c554b2b0342c6cb6522ff4f90be1a2240b40"
+      },
+      "target_artifacts_restored_identical_to_previous_image": true,
+      "report": "/home/pablo/desa/x6200/fw108-scratch/integration-377/restore-report.md",
+      "known_residuals": [
+        "cache dl: aether-x6200-control-v0.1.1-br1.tar.gz (35972 B), ignorado por git",
+        "ccache: entradas nuevas (ignorado por git)",
+        "target/etc/{passwd,shadow}: re-generados por target-finalize (misma password configurada, salt nuevo); /etc/group sin tocar (diferencia pre-existente)",
+        "staging de GUI con artefactos del PR B (se regeneran en el proximo make x6200-gui-dirclean && make)",
+        "build/build/buildroot-fs/: directorios transitorios regenerados por make"
+      ]
+    }
+  },
+  "evidence_commit_note": "commit de evidencia de la parte C en la rama feat/x6200-fw108-gui-samples; commit de codigo 4ff076ba, head documental previo d8a205ed"
 }

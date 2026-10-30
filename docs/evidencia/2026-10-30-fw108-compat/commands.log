@@ -224,3 +224,80 @@ exit=0   # coincide con el SHA256 declarado por la parte A; 520 lineas; aplica a
 # Cross-link aplicado: body del PR #381 y README.md de esta evidencia apuntan al PR #14.
 # La integracion (task-16) necesita AMBOS PRs: lib v0.1.1+patch (parte A) + GUI (esta parte B).
 
+
+## 14) Integración parte C (task-16): build real lib v0.1.1+patch A + GUI PR B, imagen, tests y restore
+
+# --- backup y estado inicial del build tree del owner (antes de tocar nada) ---
+$ git -C /home/pablo/desa/x6200/rom-build/clone-buildroot status --porcelain > fw108-scratch/build-backup-377/status-before.txt
+$ sha256sum fw108-scratch/build-backup-377/status-before.txt
+a301221fcd4cb913e9744a2cdb27f7d3d41a5dd3253e6ab4555e4735599585c0  status-before.txt   # 11 lineas (owner)
+$ cp -a --sparse=always clone-buildroot/build/images fw108-scratch/build-backup-377/images   # 773M, 3 artefactos
+$ git -C clone-buildroot rev-parse HEAD -> e85e97acbb33462f260e443aa78a538e3c5624c1
+
+# --- aplicación TEMPORAL del paquete A (PR #14) y de la GUI del PR #381 ---
+$ git -C clone-buildroot fetch /home/pablo/desa/x6200/aether-fw108-slip feat/x6200-fw108-slip-compat
+$ git -C clone-buildroot checkout FETCH_HEAD -- br2_external/package/aether-x6200-control/
+$ sha256sum clone-buildroot/br2_external/package/aether-x6200-control/0001-*.patch
+46b4e7f36e25e3db6b53de057d037a11a72ee198fe5500f2ce126996e193838f  # == declarado por parte A
+# x6200_gui.mk temporal: VERSION=v0.1.0-fw108 SITE=/home/pablo/desa/x6200/x6200-fw108-compat-qa SITE_METHOD=local
+# BUILD
+$ docker run --rm -v /home/pablo/desa/x6200:/home/pablo/desa/x6200 x6200-buildroot:latest -c \
+    'cd /home/pablo/desa/x6200/rom-build/clone-buildroot/build && make aether-x6200-control-dirclean && make x6200-gui-dirclean && make -j8'
+>>> aether-x6200-control v0.1.1 Downloading
+>>> aether-x6200-control v0.1.1 Extracting
+>>> aether-x6200-control v0.1.1 Patching
+Applying 0001-flow-support-SLIP-RX-framing-for-BASE-1.0.8.patch using patch:
+patching file src/low/flow.c
+>>> x6200-gui v0.1.0-fw108 Syncing from source dir /home/pablo/desa/x6200/x6200-fw108-compat-qa
+>>> x6200-gui v0.1.0-fw108 Building
+=== [15:21:31Z] MAKE_EXIT=0 ===
+exit=0   # 12:20:40 -> 12:21:31 local; log: fw108-scratch/integration-377/build-integration.log
+
+# --- verificación de que la imagen contiene lo esperado ---
+$ grep -c FLOW_MODE_SLIP build/build/aether-x6200-control-v0.1.1/src/low/flow.c -> 4
+$ sha256sum build/build/aether-x6200-control-v0.1.1/src/low/flow.c
+77c4fd931b9f5cd0796d12ce3fc85b29efdf43524dd566a4215b02792cabaf2a
+$ sha256sum build/staging/usr/include/aether_radio/x6200_control/low/flow.h
+272028947ba84f327d56f03c1af8a1abdd9f19dc9137e81cb7a673634d4b9094   # v0.1.1 (uint8_t samples[512])
+$ sha256sum build/build/aether-x6200-control-v0.1.1/lib/libaether_x6200_control.so.0.15.3
+f2eb4fb1b291c6dd76a0a46a5e326eefd9ad87fe46abe6fe0c1a373fc4dd1138   # == gate ARM de la parte A (PR #14)
+$ sha256sum build/target/usr/lib/libaether_x6200_control.so.0.15.3
+e93d79a376a974bea61301ee5c90eb0f951d79c00f06918ccdc7827e59d6cad5   # stripped, en la imagen
+$ sha256sum build/build/x6200-gui-v0.1.0-fw108/src/radio.c
+6be56a90054dc42c83d9fba40119adc6250d065f318a00acc54f7e69d8a9362f   # == worktree PR #381 (d8a205ed)
+$ sha256sum build/target/usr/sbin/x6200_gui
+6a068db278c72986967bbbc0d4a12d9f71202507054fbbd3c986746eb40b7c1d   # stripped, en la imagen
+$ nm -D --defined-only target/lib... vs backup v0.1.0 -> diff vacio (100 simbolos; x6200_flow_init/read/restart exportados)
+exit=0
+$ cp build/images/sdcard.img build/images/rootfs.tar build/images/boot.vfat fw108-scratch/fw108-image-377/
+$ sha256sum fw108-scratch/fw108-image-377/sdcard.img
+7ec5d8cc4cb6cbf98fc92af9cf6489ad1a94f5dce8585d43c93156afde68b5d9   # 571473920 B
+$ sha256sum fw108-scratch/fw108-image-377/rootfs.tar
+a2eb1d6582e766a38df0ea7db9b49e958063713d6dd10d7cb96d0621215d171e   # 244336640 B
+$ tar -xOf rootfs.tar ./usr/lib/libaether_x6200_control.so.0.15.3 | sha256sum -> e93d79a3... (patched lib)
+$ tar -xOf rootfs.tar ./usr/sbin/x6200_gui | sha256sum -> 6a068db2... (GUI PR B)
+$ particion 2 de sdcard.img (LBA 67584) sha256 -> bbd9d172... == rootfs.ext2   # imagen contiene este rootfs
+
+# --- tests en el entorno de integración ---
+$ br2_external/package/aether-x6200-control/tests/run_host_tests.sh /home/pablo/desa/x6200/refs/X6200Control   # en contenedor
+release:   flow_host_test: 198 checks, 0 failures ; exit code 0
+sanitized: flow_host_test: 198 checks, 0 failures ; exit code 0   (ASan+UBSan, gcc 13.3)
+HOST_TESTS_PASS  exit=0
+$ sh tests/native/run_native_tests.sh   # en host integracion (gcc 16.2.1)
+stage #377: 533 comprobaciones, 0 fallos
+exit=0   # 26 stages, todos 0 fallos
+# Nota: la corrida dentro del contenedor Docker falla por entorno (faltan sqlite3.h/png.h de desarrollo), no por el diff.
+
+# --- RESTORE del build tree ---
+$ docker run --rm ... -c 'tar -xf backup/images/rootfs.tar -C build/target ./usr/sbin/x6200_gui ./usr/lib/liblvgl.so ./usr/lib/liblv_drivers.so ./usr/sbin/btcat ./usr/sbin/x6200_bootanim ./usr/lib/libaether_x6200_control.so.0.15.3; rm -rf build/images; cp -a backup/images build/images; cp -a backup/files/staging-* ...; rm -f staging/.../radio_samples.h; rm -rf build/aether-x6200-control-v0.1.1 build/x6200-gui-v0.1.0-fw108'
+$ git -C clone-buildroot reset -q HEAD -- br2_external/package/aether-x6200-control
+$ git -C clone-buildroot checkout HEAD -- br2_external/package/aether-x6200-control
+$ cp -a fw108-scratch/build-backup-377/files/x6200_gui.mk clone-buildroot/br2_external/package/x6200-gui/x6200_gui.mk
+$ git -C clone-buildroot status --porcelain > fw108-scratch/integration-377/status-after-restore.txt
+$ diff -u fw108-scratch/build-backup-377/status-before.txt fw108-scratch/integration-377/status-after-restore.txt
+exit=0   # GIT_STATUS_IDENTICAL (11 lineas del owner intactas)
+$ sha256sum build/images/sdcard.img -> 0ed4cd320cb9ac66df8aad8d2f663acd42a34e75db56a078c4a8fe0740f37cf7   # == backup
+$ sha256sum build/staging/usr/lib/libaether_x6200_control.so.0.15.3 -> acdcadae...   # == backup v0.1.0
+$ sha256sum build/staging/usr/include/aether_radio/x6200_control/low/flow.h -> 29cfa6b4...   # == backup v0.1.0
+# auditoria target vs rootfs.tar previo (4214 archivos): solo 3 diferencias /etc explicadas (group pre-existente; passwd/shadow re-generados por target-finalize)
+exit=0   # restore OK, ver fw108-scratch/integration-377/restore-report.md

@@ -160,3 +160,22 @@ build se detiene: no hay camino que reinterprete floats ni que trunque paquetes.
   **no compilaría** hasta actualizar la librería). El link/build final es de la
   integración.
 - No hay validación física, de audio RX ni de MUX. `production_ready=false`.
+
+## 7. Verificación en la integración (parte C, task-16)
+
+Build real en el build tree del owner (`make aether-x6200-control-dirclean &&
+make x6200-gui-dirclean && make -j8`, exit 0) con el contenedor
+`x6200-buildroot:latest`:
+
+| Check | Resultado |
+|---|---|
+| Patch de la parte A aplicado por Buildroot | **PASS** — `Applying 0001-flow-support-SLIP-RX-framing-for-BASE-1.0.8.patch using patch:` / `patching file src/low/flow.c` |
+| Header v0.1.1 realmente usado en staging | `low/flow.h` sha256 `272028947ba84f327d56f03c1af8a1abdd9f19dc9137e81cb7a673634d4b9094` (= v0.1.1 esperado de §1), `uint8_t samples[512]`, `sizeof(x6200_flow_t)=552` |
+| `.so` compilado (sin strip) | sha256 `f2eb4fb1b291c6dd76a0a46a5e326eefd9ad87fe46abe6fe0c1a373fc4dd1138` — idéntico al gate ARM de la parte A (PR #14) |
+| `.so` en la imagen (stripped) | sha256 `e93d79a376a974bea61301ee5c90eb0f951d79c00f06918ccdc7827e59d6cad5` |
+| ABI exportado | **PASS** — 100/100 símbolos dinámicos idénticos al v0.1.0 previo; `x6200_flow_init/read/restart` exportados; SONAME `libaether_x6200_control.so.0` |
+| Static asserts de la GUI con el header real | **PASS** — el build de la GUI compila si y sólo si `sizeof(pack->samples)==512`, `offsetof==4`, `sizeof==552` |
+| GUI en la imagen | `usr/sbin/x6200_gui` sha256 `6a068db278c72986967bbbc0d4a12d9f71202507054fbbd3c986746eb40b7c1d`; `src/radio.c`/`radio_samples.h` idénticos al worktree del PR #381 |
+
+La imagen de prueba y su SHA256 están fuera de Git (`fw108-scratch/fw108-image-377/`);
+no fue flasheada ni instalada (`physical_rx_test = NOT_RUN`, #378).
