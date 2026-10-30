@@ -1,0 +1,9 @@
+# Build ARM patched GUI — resumen
+# 1er intento (make x6200-gui): rsync chgrp falla por tests/native/build con owner nobody (config, no fuente).
+# 2/3er intento: fallo de compilacion por include errno.h / orden del hook (patch corregido).
+# 4to intento (dirclean + make -j8): exit 0
+BUILD5_RC=0
+4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0  /home/pablo/desa/x6200/rom-build/clone-buildroot/build/target/usr/sbin/x6200_gui
+patched_binary_sha256=25f281b05bfd10990c47d6f38d369af93171c6bdaf751161987b728b121ac19d
+original_binary_sha256=4ee87aefb389b6a6b5d2d90df2c51d0440aeff19ed4464d44649f48757dd66b0
+size_patched=14006244 size_original=13478088
