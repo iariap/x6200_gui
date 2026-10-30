@@ -127,7 +127,7 @@ exit=1
 $ python3 fw108-scratch/re376/fixtures.py > fw108-scratch/re376/fixtures-output.txt   # corregido
 fixture1: wire 14 B sha256 998ad8acc14ca75136af7fb8ae23a097adb905def5a9b639dadcc4709a827dcf ; roundtrip True
 fixture2: payload 552 B sha256 ad2db4be0a4e9b299db4840d2b4242efed35b881e1b6b8b6d8901c636d2b8593 ;
-          wire 556 B sha256 025f34b9f894229d13cc8bac5c6737c2d4efa730aeaa04699c5e2c5708873853 ; crc_check True
+          wire 558 B sha256 025f34b9f894229d13cc8bac5c6737c2d4efa730aeaa04699c5e2c5708873853 ; crc_check True (CRC 0x33400b2b)
 exit=0
 $ sha256sum fw108-scratch/re376/fixtures.py fw108-scratch/re376/fixtures-output.txt
 571a4703d316f86d0172e8b37722e46a200d812e5b39cc5141fa7dd1e74da263  fixtures.py
@@ -206,3 +206,14 @@ exit=0  # URL/HEAD registrados en el reporte al Lead; sin closes; sin merge
 #   se registra el fallo aquí para trazabilidad. Ninguna conclusión depende del intento fallido.
 # - Los comandos REA tardaron ~64 s cada uno (import efímero inmutable); no se paralelizaron más de 3.
 # - No se incluyen binarios propietarios ni volcados de decompilación en Git: sólo hashes/offsets.
+
+# Corrección post-revisión del Lead (mismo PR, commit nuevo; sin cambiar veredictos):
+# - Fixture 2: la trama wire real es de 558 B (552 payload + 5 escapes + 1 END), no 556 B.
+#   Recomputado/verificado desde fw108-scratch/re376/fixtures-output.txt (linea "wire hex:"):
+#   len(bytes.fromhex(hex))=558, sha256=025f34b9f894229d13cc8bac5c6737c2d4efa730aeaa04699c5e2c5708873853,
+#   decode->552 B (payload sha256 ad2db4be...), CRC calculado = almacenado = 0x33400b2b, wire.count(0xDB)=5.
+# - fixtures-method.md: bloque hex corregido (1116 hex chars; antes tenia un bloque repetido de 26720 chars),
+#   "(556 B)"->"(558 B)", maxout 556->558, "4 expansiones"->"5 expansiones", nota final 552+5+1(END)=558.
+# - gates.json nota fixtures: "wire 556 B"->"wire 558 B (552 payload + 5 escapes + 1 END)".
+# - commands.log: "wire 556 B"->"wire 558 B ... (CRC 0x33400b2b)".
+# Verificación de la corrección: python3 (len/hash/decode/CRC) exit=0; git diff --check exit=0; git status limpio.

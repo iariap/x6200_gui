@@ -54,7 +54,7 @@
     "audio_mux_downlink": "I2C /dev/i2c-0 via ioctl(I2C_RDWR=0x707); bloque workparams 216 B en addr 0x0000; palabra 12 = pack+0x30 (flags) escrita con bits 0x2,0x8,0x10,0x20,0x1000,0x2000,0x4000,0x8000,0x10000,0x40000 (x2),0x100000,0x200000,0x400000,0x800000; atue->0x1000 y sple->0x2 resueltos.",
     "audio_mux_diff": "BaseCommIIC {start,iicRead,iicWrite,parseParamItem,updateWorkParams,updateRxFilters,setCalibrateData,cwDecodeWPM}: mismo tamano y secuencia de instrucciones identica normalizada 1.0.6 vs 1.0.8; no hay readback/ACK/restore nuevos.",
     "restore_supervisor": "NO FOUND: sin readback del bloque, sin ACK de protocolo, sin restore al cerrar/crashear, sin watchdog/heartbeat independiente; solo refresco del bloque completo ~1 s mientras la APP vive.",
-    "fixtures": "2 fixtures sinteticos (no capturas) + casos limite; wire sha256 fixture1 998ad8ac...; fixture2 552 B payload sha256 ad2db4be..., wire 556 B sha256 025f34b9...; decode y CRC validados con la tabla extraida del ELF."
+    "fixtures": "2 fixtures sinteticos (no capturas) + casos limite; wire sha256 fixture1 998ad8ac...; fixture2 552 B payload sha256 ad2db4be..., wire 558 B (552 payload + 5 escapes + 1 END) sha256 025f34b9...; decode y CRC validados con la tabla extraida del ELF."
   },
   "unknowns": [
     "Valor real del magic en el cable 1.0.8 (la APP no lo valida; 0xAA5555AA es hipotesis heredada del legacy v0.1.1 y de la GUI 1.0.6).",
