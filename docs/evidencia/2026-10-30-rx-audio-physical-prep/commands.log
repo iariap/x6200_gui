@@ -1,0 +1,104 @@
+# Commands log — #371 — 2026-10-30 UTC
+
+Corrida **sólo documental** en el host (Fedora 44). **Cero conexión física, cero contacto con la radio,
+cero TX/PTT/ATU, cero apertura, cero compras, cero MUX, cero firmware/UI/deploy.** Horas UTC aproximadas
+de la corrida (03:34–03:50Z); no se registran credenciales, IPs, MACs ni rutas personales. Los exit codes
+son los reales de cada comando; cuando un `grep` **debe** no encontrar nada se anota “esperado”.
+
+## 0. Contexto y tarea
+
+```
+[03:34Z] gh issue view 371 --repo iariap/x6200_gui                           -> exit 0 (leído completo, fuente autoritativa)
+[03:34Z] team_task_get task-6                                               -> ok (rev 1, pending)
+[03:34Z] team_task_update task-6 action=claim expected_revision=1           -> ok (in_progress, rev 2, owner phase-instrumentation-371)
+```
+
+## 1. Base, worktree y rebase sobre la main real
+
+```
+[03:34Z] git -C <worktree> fetch origin main                                -> exit 0
+[03:34Z] git -C <worktree> rev-parse origin/main                            -> exit 0 (cb9ea287548534ac5c4438c786b57deb436c7c40)
+[03:35Z] gh pr view 366 --repo iariap/x6200_gui --json state,mergeCommit    -> exit 0 (MERGED; merge ead65675, 03:34:45Z)
+[03:36Z] git -C <worktree> fetch origin main (2ª, ya con #366/#370)         -> exit 0 (ead65675..84bf4c40)
+[03:36Z] git -C <worktree> rev-parse origin/main                            -> exit 0 (84bf4c40e51e240ebbe77847a54f886825073a5b)
+[03:36Z] git -C <worktree> reset --hard origin/main                         -> exit 0 (HEAD 84bf4c40; árbol limpio)
+[03:36Z] grep -n '^## 77\.\|^## 78\.' docs/HALLAZGOS.md                     -> exit 0 (líneas 4598 y 4640; NO se modifican)
+[03:37Z] git -C <worktree> diff --name-only origin/main -- docs/HALLAZGOS.md -> vacío (sin cambios, esperado)
+```
+
+Base declarada en la delegación: `cb9ea287`. Base **verificada/actual** al escribir: `84bf4c40` (incluye
+#366 `ead65675` y #370 `84bf4c40`); el worktree se rebasó a esa base antes de crear los archivos.
+
+## 2. Fuentes externas verificadas (sólo lectura de URLs públicas)
+
+```
+[03:37Z] curl -sL -m 90 -o /tmp/x6200-manual.pdf <manual Xiegu X6200 20240925.pdf>  -> exit 0
+[03:37Z] sha256sum /tmp/x6200-manual.pdf                                    -> ac4bbf32ca52dd9842302101b97c1e584c1df34f3dd264cf765d548600d7ff4e
+[03:37Z] pdfinfo x6200-manual.pdf | grep CreationDate                       -> 2024-09-25 (Rev.05 en portada)
+[03:37Z] pdftotext -layout x6200-manual.pdf … && grep -n -E 'S/P interface|single track|EAR PHONE|…'  -> exit 0
+         líneas 255-256: "Note: short circuit or silence will be caused if plugging the single track plug externally."
+         línea 373:      "S/P interface   AUDIO … NC … Empty"
+         línea 394:      "Using plugs of other specifications may damage the socket."
+         línea 397:      "Please cut off the power supply of X6200 before connecting or disconnecting the tapper."
+         línea 1020-1029: "EAR PHONE"/"SPEAKER" (no conectar auriculares en SPEAKER: daño auditivo)
+         línea 1869:     "Audio output: 0.5W (4Ω, ≤10% THD)"  [parlante/PA, NO es nivel del S/P]
+[03:38Z] pdftoppm -f 12 -l 12 -r 200 -png … + inspección visual del dibujo  -> exit 0
+         "Interface Description → Interface definitions" (p. 8 impresa, PDF p. 12):
+         tip = AUDIO · ring = NC ("Empty") · sleeve = GND ("Grounding")
+[03:38Z] curl -sL -m 60 -o /tmp/mestre-audio.md <mestre/audio-architecture.md raw>  -> exit 0
+[03:38Z] sha256sum /tmp/mestre-audio.md                                     -> 2aadd27a0601cf6f0c27c64b126ef81c2a78b5ae47ef02a5af0dde2df6323b7e
+[03:38Z] grep -n -E 'voice_rec|rxvol|pll-audio|SoC DAC|Audio MUX' … && wc -l  -> exit 0 (255 líneas)
+         hipótesis externa: MUX con voice_rec, PA por rxvol_set>0, reloj pll-audio. NO es evidencia de nuestro equipo.
+```
+
+## 3. Disponibilidad de equipamiento (inspección estática del host, sin radio)
+
+```
+[03:39Z] uname -a                                                           -> exit 0 (Linux fedora 7.2.11-200.fc44.x86_64 x86_64)
+[03:39Z] lsusb | grep -i -E 'audio|sound|focusrite|behringer|steinberg|scarlett'  -> exit 1 (sin interfaz USB de audio: esperado, se registra como NO DISPONIBLE)
+[03:39Z] cat /proc/asound/cards                                             -> exit 0 (HDA Generic x2 + acp63 AMD)
+[03:39Z] head -12 /proc/asound/card1/codec#0                                -> exit 0 (Codec: Realtek ALC257; jack combo, sin límites de LINE declarados)
+```
+
+Fuentes de evidencia ya versionada consultadas (sin ejecutar la radio): `2026-10-29-rx-audible-route-363/`
+(A0–A5, `BLOCKED_SAFE_MUX`, A4 `NOT_EXECUTED`), `2026-10-29-rx-readback-rprime/` (`R_INCONCLUSIVE`,
+rollback verificado), `2026-10-28-rx-audio-hardware/physical-handoff.md` (sin instrumentación),
+`2026-10-29-audio-capture-351-radio/` (captura Linux, no S/P), `2026-10-19-f0-cb-tx/` (sin wattmeter ni
+analizador). No hubo confirmación del owner: todo lo no documentado se declara **no disponible**.
+
+## 4. Verificación estática del plan (archivos de este directorio)
+
+```
+[03:40Z] awk -F',' 'NR==1{print "cols="NF}' measurements-template.csv       -> exit 0 (cols=21)
+[03:40Z] awk 'END{print "rows="NR-1}' measurements-template.csv             -> exit 0 (rows=0)
+[03:40Z] [ "$(head -1 measurements-template.csv)" = "<21 columnas del issue>" ]  -> exit 0 (header EXACTO)
+[03:40Z] grep -REn 'P1_PASS|P2_PASS|P3_PASS|…_VERIFIED[=: ]+YES' .          -> exit 1 (sin banderas PASS inventadas: esperado)
+[03:40Z] for t in P0_PENDING_EQUIPMENT P1_BLOCKED_NO_SAFE_RESTORE P2_NOT_EXECUTED P3_OUT_OF_SCOPE \
+                    NO_SAFE_MUX_STATE_TRUTH AUDIO_OUTPUT_VERIFIED MUX_SELECT_PHYSICALLY_VERIFIED \
+                    RESTORE_VERIFIED PREP_READY PHYSICAL_BLOCKED; do grep -Rq -- "$t" .; done  -> exit 0 (10/10 tokens)
+[03:40Z] grep AUDIO/NC/GND + tip/anillo/manguito en wiring.md              -> exit 0
+[03:40Z] grep -Eqi 'TS|KEY|ACC|radio apagada|EAR PHONE|sin voltajes'      -> exit 0
+[03:41Z] find . -type f ! -name '*.md' ! -name '*.csv' ! -name '*.log'      -> vacío (sin binarios/audio)
+[03:41Z] python3: csv.reader -> 1 fila (encabezado), 21 columnas            -> exit 0
+[03:41Z] python3: fences ``` balanceados en 8 .md                           -> exit 0
+[03:41Z] python3: links Markdown relativos existen                          -> exit 0
+[03:41Z] wc -l -w operator-handoff.md                                       -> 59 líneas / 536 palabras (≤1 página)
+[03:41Z] grep -REn '/home/|192\.168\.|<IPv4>' .                             -> exit 1 (sin rutas personales/IPs: esperado)
+[03:42Z] wc -l measurements-template.csv                                    -> 1 (sólo encabezado)
+[03:42Z] du -sh .                                                           -> 64K (sólo texto)
+```
+
+Un primer `grep` de tokens usó un patrón mal escrito (`/PHYSICAL_BLOCKED`) y otro buscó “no voltajes” en
+lugar de “sin voltajes”; se corrigieron los patrones y los checks finales son los de arriba. El contenido
+nunca declaró PASS: los tokens de estado son los bloqueos.
+
+## 5. Git: staging y commit de la evidencia
+
+(se completa en la misma corrida, luego de escribir este archivo; ver `git log` de la rama)
+
+```
+[03:43Z] git -C <worktree> add docs/evidencia/2026-10-30-rx-audio-physical-prep/   -> exit 0
+[03:43Z] git -C <worktree> diff --cached --check                                   -> exit 0 (sin whitespace errors)
+[03:43Z] git -C <worktree> diff --name-only --cached                               -> exit 0 (9 archivos, todos bajo docs/evidencia/2026-10-30-rx-audio-physical-prep/)
+[03:43Z] git -C <worktree> commit -m "docs(audio): preparación instrumental física S/P y contrato MUX/restore (#371)"  -> exit 0
+```
