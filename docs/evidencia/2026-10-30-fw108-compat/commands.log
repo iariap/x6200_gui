@@ -1,0 +1,202 @@
+# commands.log — #377 FAST-TRACK, parte B (GUI: ABI de muestras del flujo RX)
+#
+# Registro de comandos realmente ejecutados y su exit code. Host linux x86_64
+# (Fedora, gcc 16.2.1, clang 18); toolchain target = Buildroot 2023.02.11-dirty
+# (arm-buildroot-linux-gnueabihf-gcc 12.3.0) del build tree del owner.
+#
+# Sin radio/WiFi/SSH/USB, sin I2C/UART/MUX, sin TX/PTT/ATU, sin flash ni imagen,
+# sin privilegios. El build tree de /home/pablo/desa/x6200/rom-build/clone-buildroot
+# se uso SOLO LECTURA (toolchain + headers); no se modifico nada ahi. Sin binarios
+# propietarios ni datos sensibles en Git. Scratch fuera de Git:
+#   /home/pablo/desa/x6200/fw108-scratch/gui377/
+#
+# Convencion: "$ cmd" y luego salida relevante + "exit=N". En CONTROLES NEGATIVOS
+# exit != 0 es el resultado ESPERADO y esta marcado como tal.
+# Fecha: 2026-10-30 (America/Buenos_Aires).
+
+## 0) Base GUI real verificada y worktree
+$ cd /home/pablo/desa/x6200/x6200_qa && git fetch fork main && git rev-parse fork/main
+6850d671d430a1693dbcaf593579a3d98b037995
+exit=0
+$ git rev-parse origin/main
+6850d671d430a1693dbcaf593579a3d98b037995   # el fetchspec roto de origin no afecta: misma ref real
+exit=0
+$ git worktree add /home/pablo/desa/x6200/x6200-fw108-compat-qa \
+      -b feat/x6200-fw108-gui-samples 6850d671d430a1693dbcaf593579a3d98b037995
+Preparing worktree... HEAD is now at 6850d671
+exit=0
+# No se uso ni modifico main; ningun otro worktree fue tocado.
+
+## 1) Inspeccion del contrato (v0.1.1 vs v0.1.0)
+$ cd /home/pablo/desa/x6200/refs/X6200Control && git describe --tags --exact-match && git rev-parse HEAD
+v0.1.1
+0ee1ae3d4d9d74cbac7e349147ebc440eed8fad8
+exit=0
+$ sed -n '70,90p' include/aether_radio/x6200_control/low/flow.h
+    uint32_t magic;
+    uint8_t  samples[512];
+...
+exit=0
+$ sha256sum include/aether_radio/x6200_control/low/flow.h
+272028947ba84f327d56f03c1af8a1abdd9f19dc9137e81cb7a673634d4b9094  .../low/flow.h
+exit=0
+$ grep -n "samples\[" /home/pablo/desa/x6200/rom-build/clone-buildroot/build/staging/usr/include/aether_radio/x6200_control/low/flow.h
+72:    float    samples[512];      # v0.1.0: header que compila HOY el build tree del owner
+exit=0
+$ sha256sum /home/pablo/desa/x6200/rom-build/clone-buildroot/build/staging/usr/include/aether_radio/x6200_control/low/flow.h
+29cfa6b449beb20ee2dcda33aefe5a0f51805b5fa2b9ab844acee8df8333c580  .../staging/.../low/flow.h
+exit=0
+$ gh api "repos/iariap/AetherX6200Buildroot/contents/br2_external/package/aether-x6200-control/aether-x6200-control.mk?ref=main"
+AETHER_X6200_CONTROL_VERSION = v0.1.1
+exit=0   # Buildroot main declara v0.1.1; el clone del owner esta en v0.1.0 (rama local)
+$ grep -n "samples" /home/pablo/desa/x6200/x6200-fw108-compat-qa/src/radio.c
+231:        float *samples = (float*)((char *)pack + offsetof(x6200_flow_t, samples));
+234:        dsp_samples(samples, RADIO_SAMPLES, pack->flag.tx, -(int16_t)pack->dbm);
+exit=0   # estado base 6850d671
+
+## 2) Suite nativa completa (host, con el stage nuevo #377)
+$ cd /home/pablo/desa/x6200/x6200-fw108-compat-qa \
+  && tests/native/run_native_tests.sh > /home/pablo/desa/x6200/fw108-scratch/gui377/logs/native_tests.log 2>&1
+== compilador: gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2) ==
+== sanitizers: NO disponibles en este toolchain (se omite)   # libasan.so.8/libubsan.so.1 no linkean en este host
+...
+67197 comprobaciones, 0 fallos
+== Flujo RX (#377): conversion de muestras u8->float del pack v0.1.1 ==
+533 comprobaciones, 0 fallos
+...
+== #219: radio_thread duerme en cada vuelta del sondeo ==
+57 comprobaciones, 0 fallos
+...
+NATIVE_EXIT:0
+exit=0
+
+## 3) Test de conversion standalone (gcc, sin sanitizador: repeticion acotada)
+$ gcc -std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter -pthread -I../../src \
+      test_radio_samples.c test_framework.c radio_samples_test_main.c -o build/manual/radio_samples_tests \
+  && ./build/manual/radio_samples_tests
+533 comprobaciones, 0 fallos
+exit=0
+
+## 4) ASan + UBSan manual con clang-18 (el runtime de gcc del host no linkea;
+##    el runner cae a build sin sanitizador y queda registrado arriba)
+$ clang-18 -std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter -pthread \
+      -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover -I../../src \
+      test_radio_samples.c test_framework.c radio_samples_test_main.c -o build/manual/radio_samples_tests_asan \
+  && ./build/manual/radio_samples_tests_asan
+533 comprobaciones, 0 fallos
+exit=0
+
+## 5) Dumps de ABI (host) contra los dos headers (scratch, no se commitea)
+$ gcc -std=gnu11 -Wall -Wextra -I/home/pablo/desa/x6200/refs/X6200Control/include abi-dump.c -o abi-dump-v011 \
+  && ./abi-dump-v011
+sizeof(x6200_flow_t)=552
+offsetof(samples)=4
+sizeof(((x6200_flow_t *)0)->samples)=512
+offsetof(flag)=516 offsetof(crc)=548
+exit=0
+$ cp -r <staging>/usr/include/aether_radio v010-include/ \
+  && gcc -std=gnu11 -Wall -Wextra -I"$PWD/v010-include" abi-dump.c -o abi-dump-v010 \
+  && ./abi-dump-v010
+sizeof(x6200_flow_t)=2088
+offsetof(samples)=4
+sizeof(((x6200_flow_t *)0)->samples)=2048
+offsetof(flag)=2052 offsetof(crc)=2084
+exit=0   # informativo: header v0.1.0 actual del build tree
+
+## 6) CONTROLES NEGATIVOS del sanitizador (exitosos = exit != 0)
+# (a) control de que ASan esta armado: 1 muestra de mas sobre buffers de 512
+$ clang-18 ... -fsanitize=address,undefined -I<worktree>/src asan-oob-control.c -o asan-oob-control \
+  && ./asan-oob-control
+==ERROR: AddressSanitizer: heap-buffer-overflow ...
+ASAN_OOB_EXIT=1     # ESPERADO (el test real usa count=512)
+# (b) reproduccion del bug PRE-fix: cast float* leyendo 512 floats desde 552 B
+$ clang-18 ... -fsanitize=address,undefined -I<scratch>/v011-include asan-old-cast.c -o asan-old-cast \
+  && ./asan-old-cast
+==ERROR: AddressSanitizer: heap-buffer-overflow ...
+ASAN_OLD_CAST_EXIT=1   # ESPERADO: documenta la sobrelectura de 2048 B desde 552 B
+
+## 7) Compile-check cross REAL con el toolchain del build tree (solo -c, sin link)
+# Script: fw108-scratch/gui377/cross-check.sh (flags extraidos de
+# build/build/x6200-gui-v0.1.0/src/CMakeFiles/x6200_gui.dir/flags.make)
+$ sh /home/pablo/desa/x6200/fw108-scratch/gui377/cross-check.sh
+== POSITIVO: v0.1.1 (refs/X6200Control) ==
+POSITIVO_EXIT=0     # src/radio.c compila con los _Static_assert contra v0.1.1
+== NEGATIVO: v0.1.0 (sysroot/staging actual del build tree) ==
+NEGATIVO_EXIT=1     # ESPERADO
+src/radio.c:62:1: error: static assertion failed: "BLOCKED_GUI_SAMPLE_ABI: se espera uint8_t samples[512] (X6200Control v0.1.1)"
+exit=0              # el script devuelve 0; los exit de cada variante estan arriba
+# Warnings preexistentes (no del diff, no -Werror): multi-line comment en
+# src/params/types.h:12 y no-return en radio_thread (radio.c:366 en base y head).
+
+## 8) Sintaxis de los scripts tocados + bench (staging nuevo)
+$ bash -n tests/native/run_native_tests.sh ; echo $?
+0
+$ bash -n tests/native/run_radio_thread_bench.sh ; echo $?
+0
+$ SECONDS_WIN=1 WINDOWS=1 tests/native/run_radio_thread_bench.sh /home/pablo/desa/x6200/fw108-scratch/gui377/bench
+variante  ventana  wall_ms  iteraciones  sleeps  cpu_ms  cpu_pct
+base      1        1011     67           67      1.5     0.15
+head      1        1012     67           67      1.4     0.14
+exit=0   # el stage compila el radio.c head con radio_samples.h copiado
+
+## 9) Higiene del diff
+$ git diff --check ; echo $?
+0
+$ git status --short
+(limpio al commitear)
+
+## 10) ASF check-matrix (x6200) — base 6850d671, head 4ff076ba
+$ bash /home/pablo/desa/x6200/asf/scripts/apps/x6200/check-matrix.sh \
+      6850d671d430a1693dbcaf593579a3d98b037995 HEAD /home/pablo/desa/x6200/x6200-fw108-compat-qa
+==> [check] native tests (tests/native/run_native_tests.sh)
+    ok
+==> [check] check_cfg_fills / check_actions / check_settings_focus / check_apps_menu /
+    check_app_handlers / check_manual_apps / check_wcag / check_cw_tune_feed /
+    check_settings_grid / check_info_bar / check_autotune_v2 / check_dialog_coverage /
+    check_build_identity
+    ok   (14 gates que cubren el repo: ok)
+==> [check] bash -n tests/native/run_native_tests.sh
+    ok
+==> [check] bash -n tests/native/run_radio_thread_bench.sh
+    ok
+==> [check] uv sync (ab_testing)
+    FAIL: error: failed to open file `/home/pablo/.cache/uv/sdists-v9/.git`: Read-only file system (os error 30)
+==> [check] x6200-ab themes
+    FAIL: idem uv cache read-only
+==> [check] x6200-ab contracts (4ff076ba)
+    BLOCKED: gate no evaluado (exit 2) por el mismo uv cache read-only. NO es PASS.
+==> [check] check_wcag_rendered / check_widget_text / check_drawbuf_partial
+    FAIL: docker del arnes falla porque este worktree no tiene el submodulo lvgl/
+    ("./src/lvgl does not contain a CMakeLists.txt")
+==> [check] banco QEMU: preflight
+    BLOCKED: falta /home/pablo/desa/x6200/x6200-fw108-compat-qa/tools/remote/x6200-remote
+    (binario del banco; el preflight lo marca como entorno del owner, no del runner)
+CHECKMATRIX_EXIT:1
+exit=1   # FAILs de ENTORNO del worktree, no del diff: todas las gates que cubren
+         # src/radio.c y tests/native/ pasaron ok. Registrado sin declarar PASS.
+         # Mismos motivos serian independientes de este cambio (uv cache RO, lvgl
+         # sin inicializar en el worktree, banco QEMU sin binario remote).
+
+## 11) Commit, push y PR (sin merge)
+$ git add src/radio.c src/radio_samples.h tests/native/test_radio_samples.c \
+      tests/native/radio_samples_test_main.c tests/native/run_native_tests.sh \
+      tests/native/run_radio_thread_bench.sh
+$ git commit   # 4ff076baf1bd4a72ff96b23e57c4c78949035de1
+exit=0
+$ git push fork feat/x6200-fw108-gui-samples
+* [new branch] feat/x6200-fw108-gui-samples -> feat/x6200-fw108-gui-samples
+exit=0
+$ gh pr create --repo iariap/x6200_gui --base main --head feat/x6200-fw108-gui-samples \
+      --title "[X6200] Fix flow sample ABI for BASE 1.0.8 (refs #377)"
+https://github.com/iariap/x6200_gui/pull/381
+exit=0   # sin merge
+
+## 12) Hashes de referencia (commit 4ff076ba)
+$ git show 6850d671:src/radio.c | sha256sum   -> 2d9206eb15a281cb4ded49aa9d3029966439fd89f80ae9e8d669720ed4f2631e
+$ sha256sum src/radio.c                       -> 6be56a90054dc42c83d9fba40119adc6250d065f318a00acc54f7e69d8a9362f
+$ git show 6850d671:src/dsp.cpp | sha256sum   -> 7b5563b32afeb03907d5e2a0322683fdc1f652efcb1640b70f4b41d73437a954
+$ sha256sum src/dsp.cpp                       -> 7b5563b32afeb03907d5e2a0322683fdc1f652efcb1640b70f4b41d73437a954  (identico: DSP intacto)
+$ sha256sum src/radio_samples.h               -> d2ff0bf3ad195cdac6195cb462181e1854d69d7ad734903f59e9eb571b4c8144
+$ sha256sum tests/native/test_radio_samples.c -> 466a64d23d32e6e4a17bea524c7338a9fd587f32d4bd3799132769b150a3d14b
+$ sha256sum tests/native/radio_samples_test_main.c -> a548a5ffe9870b1d5dcade84b7a1c2e4f96fd8a931076975cecac41ea7127896
+exit=0

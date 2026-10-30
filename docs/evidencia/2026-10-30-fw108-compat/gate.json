@@ -1,0 +1,131 @@
+{
+  "phase": "B",
+  "scope": "GUI (iariap/x6200_gui)",
+  "issue": 377,
+  "issue_mode": "FAST-TRACK",
+  "epic": 374,
+  "task_id": "task-15",
+  "date": "2026-10-30",
+  "branch": "feat/x6200-fw108-gui-samples",
+  "worktree": "/home/pablo/desa/x6200/x6200-fw108-compat-qa",
+  "base_main_commit": "6850d671d430a1693dbcaf593579a3d98b037995",
+  "pr": {
+    "number": 381,
+    "url": "https://github.com/iariap/x6200_gui/pull/381",
+    "title": "[X6200] Fix flow sample ABI for BASE 1.0.8 (refs #377)",
+    "base": "main",
+    "head_branch": "feat/x6200-fw108-gui-samples",
+    "head_at_creation": "4ff076baf1bd4a72ff96b23e57c4c78949035de1",
+    "merged": false
+  },
+  "code_commit": "4ff076baf1bd4a72ff96b23e57c4c78949035de1",
+  "sample_abi": {
+    "contract": "X6200Control v0.1.1: uint8_t samples[512], sizeof(x6200_flow_t)=552",
+    "v0_1_1_expected": {
+      "ref": "gdyuldin/X6200Control tag v0.1.1 (commit 0ee1ae3d4d9d74cbac7e349147ebc440eed8fad8)",
+      "sizeof_x6200_flow_t": 552,
+      "offsetof_samples": 4,
+      "sizeof_samples": 512,
+      "sha256_header": "272028947ba84f327d56f03c1af8a1abdd9f19dc9137e81cb7a673634d4b9094"
+    },
+    "v0_1_0_current_build_tree": {
+      "path": "/home/pablo/desa/x6200/rom-build/clone-buildroot/build/staging/usr/include/aether_radio/x6200_control/low/flow.h",
+      "sizeof_x6200_flow_t": 2088,
+      "offsetof_samples": 4,
+      "sizeof_samples": 2048,
+      "sha256_header": "29cfa6b449beb20ee2dcda33aefe5a0f51805b5fa2b9ab844acee8df8333c580"
+    },
+    "buildroot_main_package_version": "v0.1.1 (verificado con gh api sobre AetherX6200Buildroot main)",
+    "previous_gui_bug": "float *samples = (float*)((char*)pack + offsetof(x6200_flow_t, samples)); dsp_samples(samples, RADIO_SAMPLES=512, ...) leia 2048 B desde un payload de 552 B",
+    "fix": "buffer local float samples[RADIO_SAMPLES] + radio_flow_samples_to_float(); conversion (float)((int)byte - 150) (offset 0x96 de la APP vendor); dsp_samples() y src/dsp.cpp sin cambios",
+    "static_asserts": "PASS (sizeof(pack->samples)==512, offsetof==4, sizeof(x6200_flow_t)==552, RADIO_SAMPLES==RADIO_FLOW_SAMPLES)",
+    "guard_stop_code": "BLOCKED_GUI_SAMPLE_ABI",
+    "guard_negative_control": "PASS (compile con header v0.1.0 del staging falla con BLOCKED_GUI_SAMPLE_ABI)"
+  },
+  "checks": {
+    "host_native_suite": {
+      "command": "tests/native/run_native_tests.sh",
+      "exit_code": 0,
+      "new_stage_377": "533 comprobaciones, 0 fallos"
+    },
+    "sanitizers": {
+      "runner_gcc": "NO disponible en este host (libasan.so.8/libubsan.so.1 no linkean); el runner cae a build sin sanitizador y lo registra",
+      "manual_clang18_asan_ubsan": {"exit_code": 0, "checks": "533, 0 fallos"},
+      "asan_oob_negative_control": "exit 1 esperado (heap-buffer-overflow): el sanitizador esta armado",
+      "asan_pre_fix_cast_reproduction": "exit 1 esperado (heap-buffer-overflow): sobrelectura 2048 B desde 552 B"
+    },
+    "cross_compile_check_arm": {
+      "toolchain": "arm-buildroot-linux-gnueabihf-gcc 12.3.0 (Buildroot 2023.02.11-dirty, build tree del owner, solo lectura)",
+      "v0_1_1_headers": {"exit_code": 0},
+      "v0_1_0_headers_negative_control": {"exit_code": 1, "expected": true, "message": "static assertion failed: BLOCKED_GUI_SAMPLE_ABI"}
+    },
+    "bash_syntax": {
+      "tests/native/run_native_tests.sh": 0,
+      "tests/native/run_radio_thread_bench.sh": 0
+    },
+    "git_diff_check": 0,
+    "asf_check_matrix": {
+      "command": "bash /home/pablo/desa/x6200/asf/scripts/apps/x6200/check-matrix.sh 6850d671d430a1693dbcaf593579a3d98b037995 HEAD /home/pablo/desa/x6200/x6200-fw108-compat-qa",
+      "exit_code": 1,
+      "verdict": "FAILs de ENTORNO del worktree, no del diff",
+      "gates_covering_diff_ok": [
+        "native tests",
+        "check_cfg_fills",
+        "check_actions",
+        "check_settings_focus",
+        "check_apps_menu",
+        "check_app_handlers",
+        "check_manual_apps",
+        "check_wcag",
+        "check_cw_tune_feed",
+        "check_settings_grid",
+        "check_info_bar",
+        "check_autotune_v2",
+        "check_dialog_coverage",
+        "check_build_identity",
+        "bash -n tests/native/run_native_tests.sh",
+        "bash -n tests/native/run_radio_thread_bench.sh"
+      ],
+      "environment_failures_not_from_diff": [
+        "uv sync / x6200-ab themes / contracts: /home/pablo/.cache/uv read-only (os error 30); contracts queda BLOCKED sin PASS",
+        "check_wcag_rendered / check_widget_text / check_drawbuf_partial: worktree sin submodulo lvgl/ (el arnes docker no construye)",
+        "banco QEMU preflight: falta tools/remote/x6200-remote en este worktree (entorno del owner)"
+      ]
+    }
+  },
+  "full_gui_lib_image_build": {
+    "status": "NOT_RUN",
+    "reason": "alcance B: la reconstruccion de aether-x6200-control v0.1.1+patch, la GUI y la imagen de prueba corresponde a la integracion (task-16) con el build tree del owner; no se toco rom-build/clone-buildroot"
+  },
+  "image": {"status": "NOT_RUN"},
+  "physical_rx_test": {
+    "status": "NOT_RUN",
+    "reason": "requiere instalacion oficial y autorizacion del dueno (#378); el agente no flashea/instala"
+  },
+  "payload_authenticity": "UNVERIFIED",
+  "release_note_hash_mismatch": {
+    "status": "OPEN",
+    "declared_by_release_note": "29620674020e748ffd70173f0b2920dc0174d2733232d92a2a512111e5228698",
+    "computed_sdcard_img": "a968d2786d5003012bcc8485d287fcde93739e018b22aeb93a89dbc695d0bc3f",
+    "documented_in": "PR #379 / issue #375 (INTEGRITY_MISMATCH_VS_VENDOR_PUBLISHED_HASH)",
+    "note": "no se afirma integridad criptografica ni autenticidad del paquete 1.0.8"
+  },
+  "gate_authorization": "FAST-TRACK del dueno en #377 (2026-10-30): implementar, compilar, probar en host y preparar prueba real de RX con RELEASE_NOTE_HASH_MISMATCH declarado. No acredita autenticidad ni produccion.",
+  "production_ready": false,
+  "compat_377_production_allowed": false,
+  "fast_track_host_execution": true,
+  "unknowns": [
+    "Bytes reales del wire 1.0.8: UNKNOWN (sin captura; prohibido). El layout viene de RE estatica de #376/PR #380 sobre payload UNVERIFIED.",
+    "El offset 150 de las muestras es el de la APP vendor; no medido en esta GUI ni validado en hardware.",
+    "Build exacto de X6200Control enlazado en la ROM final: lo define la integracion (v0.1.1+patch del PR hermano de Buildroot).",
+    "Cancelacion del RELEASE_NOTE_HASH_MISMATCH: depende del fabricante/dueno."
+  ],
+  "limitations": [
+    "Sin radio/WiFi/SSH/USB, sin I2C/UART/MUX, sin TX/PTT/ATU, sin flash ni imagen.",
+    "Build tree del owner usado solo lectura; no se reconstruyo la libreria ni la GUI.",
+    "No hay validacion fisica ni de audio RX; production_ready=false.",
+    "PR sin merge automatico."
+  ],
+  "final_state": "SAMPLE_ABI_FIXED_HOST_PASS_BUILD_PENDING_INTEGRATION",
+  "final_state_detail": "Fix GUI commiteado y pusheado (PR #381); tests host y compile-check ARM contra v0.1.1 PASS; build completo/imagen NOT_RUN (task-16); prueba fisica NOT_RUN (#378). payload_authenticity=UNVERIFIED; production_ready=false."
+}
