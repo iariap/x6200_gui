@@ -25,3 +25,14 @@ tar -xOf rootfs.tar ./etc/init.d/S01create_data | sha256sum
 ## GUI compatibilidad
 # Desensamblado: vmvn.i16 q12,#125 (bias -126) y sub r3,r3,#126
 # El binario f3c4... del hotfix no es el de esta imagen; el de la imagen es 0335...
+
+
+## Escritura y retest de la imagen nueva
+# Dispositivo SD verificado: removable, 3.965.190.144 B, modelo STORAGE DEVICE.
+# dd if=sdcard.img of=/dev/sda bs=4M conv=fsync status=progress
+# 571473920 bytes copied; SHA256 de lectura de vuelta:
+# 1e3a9748754a758d4ac83aab673812a7313371a48ec0793884d2f66717e2339b
+# Se borraron los 32 MiB en el offset 545 MiB para eliminar el superbloque ext4
+# viejo de p3 que quedaba fuera de la imagen; así S01create_data crea y formatea
+# DATA en el primer arranque.
+# Resultado físico: GUI operativa, DATA creada, propietario confirma OK.

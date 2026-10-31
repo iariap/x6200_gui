@@ -7,10 +7,10 @@ Issue de esta etapa: [#378](https://github.com/iariap/x6200_gui/issues/378). PR 
 
 ## Estado
 
-**`NEW_IMAGE_READY / PHYSICAL_RETEST_PENDING`.** La ROM experimental arrancó y quedó
-operativa en RX sobre BASE 1.0.8 después de dos correcciones (DATA y compatibilidad
-de flujo); falta validar la **imagen nueva** y no el binario hotfix que se usó
-durante el diagnóstico.
+**`RX_TRIAL_PASS` con la imagen nueva.** La imagen `1e3a9748…` fue escrita en
+la SD de prueba, verificada por lectura de vuelta y **arrancó en la radio**; el
+propietario confirmó que funciona OK. La evaluación usa la imagen nueva (no el
+binario hotfix del diagnóstico).
 
 ### OEM 1.0.8 (fuente de la prueba)
 
@@ -34,8 +34,9 @@ durante el diagnóstico.
    NaN. Fix en PR #381 (compatibilidad de flujo, commit `57f671e8`), validado en
    radio con binario temporal.
 3. **Imagen nueva** (este PR): rebuilt con el fix de GUI y el fix de
-   `S01create_data`; todavía **no** se escribió en la SD ni se probó
-   físicamente.
+   `S01create_data`; escrita en la SD, verificada por lectura de vuelta y probada
+   en la radio. El primer arranque creó/formateó DATA y la GUI quedó operativa;
+   el propietario confirmó el funcionamiento. Resultado: **`RX_TRIAL_PASS`**.
 
 ## Imágenes
 
@@ -73,9 +74,13 @@ relevante ⇒ rollback a la SD OEM 1.0.8 y `NO_GO`.
 Ver [`rollback-policy.md`](rollback-policy.md). La eMMC conserva OEM 1.0.8; se
 probó el retorno apagando y encendiendo sin SD.
 
-## Pendiente para cerrar #378
+## Resultado final
 
-1. Escribir la imagen nueva `1e3a9748…` en una SD y verificar lectura de vuelta.
-2. Retest físico corto con el operador; completar `rx-checklist.csv`.
-3. Declarar `RX_TRIAL_PASS` o `NO_GO` con la imagen nueva.
-4. Actualizar #374/#378 y, si PASS, pasar a revisión/merge de PRs (sin auto-merge).
+- Imagen nueva escrita en la SD y verificada de vuelta: SHA256 idéntico al
+  artefacto `1e3a9748…`.
+- Primer arranque: DATA creada/formateada por `S01create_data`; GUI operativa.
+- Propietario: **funciona OK**. Sin TX/PTT/ATU/MUX.
+- Retest: **`RX_TRIAL_PASS`** con la imagen nueva.
+- Queda para la revisión ordinaria: PRs #381 y AetherX6200Buildroot #14 (sin
+  merge automático) y el PR de Buildroot del fix de `S01create_data` (el patch
+  está en este PR; falta publicarlo en el repo Buildroot).

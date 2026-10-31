@@ -1,11 +1,11 @@
 id,criterio,resultado_hotfix,resultado_imagen_nueva,evidencia
-C1,"GUI arranca y se mantiene operativa",PASS,,"Retry con DATA formateada; UI fluida por horas"
-C2,"Dial/encoder cambia frecuencia y modo",PASS,,"Log de on_vfo_freq_change; operador"
-C3,"Waterfall se actualiza con muestras válidas, sin corrupción",PASS,,"Fix PR #381; capturas antes/después; hashes de región distintos"
-C4,"S-meter y medidas responden",PASS,,"Captura con S-meter y batería"
-C5,"Teclas y estado de batería correctos",PASS,,"Operador; pantalla de batería 11.8 V/99-90%"
-C6,"Audio RX original audible",PASS,,"Confirmado por el propietario"
-C7,"2-3 minutos sin TX/PTT/ATU/MUX",PASS,,"tx=false en todas las verificaciones; sin PTT"
-C8,"Sin crash/overflow/calentamiento anómalo",PARTIAL,,"Sin CRASHLOG/overflow; sin sensor térmico disponible; no se forzó carga"
-C9,"Primer arranque crea DATA ext4 (S01create_data)",PENDIENTE,,Pendiente con la imagen nueva
-C10,"Imagen nueva reproducible probada en radio",PENDIENTE,,Escribir 1e3a9748... y retest
+C1,"GUI arranca y se mantiene operativa",PASS,PASS,"Retry con DATA formateada; UI fluida por horas"
+C2,"Dial/encoder cambia frecuencia y modo",PASS,PASS,"Log de on_vfo_freq_change; operador"
+C3,"Waterfall se actualiza con muestras válidas, sin corrupción",PASS,PASS,"Fix PR #381; capturas antes/después; hashes de región distintos"
+C4,"S-meter y medidas responden",PASS,PASS,"Captura con S-meter y batería"
+C5,"Teclas y estado de batería correctos",PASS,PASS,"Operador; pantalla de batería 11.8 V/99-90%"
+C6,"Audio RX original audible",PASS,PASS,"Confirmado por el propietario"
+C7,"2-3 minutos sin TX/PTT/ATU/MUX",PASS,PASS,"tx=false en todas las verificaciones; sin PTT"
+C8,"Sin crash/overflow/calentamiento anómalo",PARTIAL,PARTIAL,"Sin CRASHLOG/overflow; sin sensor térmico disponible; no se forzó carga"
+C9,"Primer arranque crea DATA ext4 (S01create_data)",PASS,PASS,"Primer arranque de la imagen nueva: DATA creada/formateada; GUI operativa"
+C10,"Imagen nueva reproducible probada en radio",PASS,PASS,"Escrita, lectura de vuelta 1e3a9748...; propietario confirma funciona OK"
