@@ -69,3 +69,22 @@ stripped) con símbolos + objdump ARM:
   la semántica física del MUX y el mecanismo de restauración están en el MCU/FPGA cifrado.
   REA sola no puede acreditar A ni C; se necesita instrumentación física o una vía de depuración
   del MCU. No se escribe el MUX por inferencia.
+
+
+## REA adicional del actualizador y del MCU (2026-10-31)
+
+- `UiFwUpgrade::upgradeFirmware` (Ghidra 12.1.4) lee el `.xgf` con `QFile::readAll` y lo entrega
+  tal cual a `XMWorker::slot_start`; `Xmodem::sendFile` copia los bytes crudos en paquetes 1K.
+  **La UI no descifra ni transforma el firmware.** El `.xgf` es un blob de 512 KB con bloques de
+  16 B repetidos (p. ej. `6c954341…` × 9640 al final; `7a491eeb…` × 1936 antes), compatible con un
+  cifrado por bloques ECB y regiones de flash borrada; no hay header/ELF/strings.
+- No hay imports de criptografía en la UI; la clave/descifrado está en el MCU. El intento de
+  XOR repetido/16B sobre las regiones comunes no produce ARM/ELF plausible: no se puede recuperar
+  el firmware desde los artefactos Linux.
+- Arquitectura de audio pública de Mestre (REA de terceros, no medición nuestra): el MUX lo
+  controla `voice_rec`; `x6200_control_init()` hace `memset(all_cmd,0)`, escribe el bloque completo
+  y **deja `voice_rec=0`**, o sea vuelve a BASE. Es un **candidato de restore independiente**.
+  Limitaciones: también deja `rxvol=0` (PA apagado) y resetea VFO/modo/otros parámetros; reiniciar
+  no preserva el registro 12 ni los demás bits, así que **no cumple C** tal como está definido
+  (restore ≤250 ms preservando el resto). Para C hace falta un write selectivo con estado real o
+  guardián que preserve PTT/ATU, y medición física.
