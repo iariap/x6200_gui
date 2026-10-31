@@ -1,0 +1,188 @@
+{
+  "issue": 349,
+  "generated_utc": "2026-10-30T04:33:41Z",
+  "git_commit": "c2ce6336b2f49a99baf9148127d61c82da1db788",
+  "git_status": [],
+  "source_tree_clean_at_start": true,
+  "script_hashes": {
+    "run_benchmark.py": "3f851e1f97eae40bccf10d06b2e75ae9fb39e6b5ec757509e8c2bb194b433f6a",
+    "test_benchmark.py": "23b693b802aac6157b0da257d72f7a4d2bb3351207f49b49e948c38b3f3acfe1",
+    "speex_driver.c": "38d9aa9d52a5e62770e24fa313e7fb5d6a508fd48648cdb9b45db0cdb6cf03f6",
+    "build_speex_driver.sh": "6080bbf2ad00582bc38cb3402ff0e9653af2253857e36be8f7271947bc6dc224",
+    "requirements.txt": "36b5173134dbbd456fd2657a0d8ebe2bd0247e4b821290457b64d5c8555345c0",
+    "fetch_corpus.sh": "49beb70d645756c29c1bff08d1dd79287997f606cb0f6305e2c5b678345d9858"
+  },
+  "traceability": "git_commit/script_hashes identifican el codigo exacto con el que se generaron las 288 filas; para el rerun limpio source_tree_clean_at_start debe ser true. El commit final del PR solo agrega evidencia/docs si los hashes de scripts no cambian.",
+  "status": "DONE_AUTOMATED",
+  "corpus": {
+    "source": "https://www.openslr.org/resources/12/test-clean.tar.gz",
+    "license": "LibriSpeech test-clean, CC BY 4.0 (OpenSLR SLR12)",
+    "archive_md5_published": "32fa31d27d2e1cad72775fee3f4849a9",
+    "archive_md5_computed": "32fa31d27d2e1cad72775fee3f4849a9",
+    "archive_sha256": "39fde525e59672dc6d1551919b1478f724438a95aa55f874b576be21967e6c23",
+    "clips": [
+      {
+        "clip_id": "1089-134686-0000",
+        "speaker_id": "1089",
+        "duration_s": 10.435,
+        "original_sha256": "30885601173f96b0d8ddd020dc959b055c6c1582b85a33e3fcab8c4b08ed94c2",
+        "converted_sha256": "155d3fa18edd94c44e5923cb457f3bd11a2ca9de5e29cf2da369308a4f6117d1",
+        "transcript": "HE HOPED THERE WOULD BE STEW FOR DINNER TURNIPS AND CARROTS AND BRUISED POTATOES AND FAT MUTTON PIECES TO BE LADLED OUT IN THICK PEPPERED FLOUR FATTENED SAUCE"
+      },
+      {
+        "clip_id": "1089-134686-0002",
+        "speaker_id": "1089",
+        "duration_s": 6.625,
+        "original_sha256": "66277a3fa3df407261dc2a3ce685a7ceef19999ab0c10531bee5257cb64cb59d",
+        "converted_sha256": "0a8e9cec50496d3a4a0157c36870d63858f8dabec724e9c4b18dab004f02c24d",
+        "transcript": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS"
+      },
+      {
+        "clip_id": "1089-134686-0004",
+        "speaker_id": "1089",
+        "duration_s": 5.215,
+        "original_sha256": "5658bd6183a1360eca5f58d618ca2efbb5f1fdcd74332b849549e722cc65d6fe",
+        "converted_sha256": "c2e0890e9ffc1e1206ccecdc209d5e7d64aadbb712f263817606d606327cc3d8",
+        "transcript": "NUMBER TEN FRESH NELLY IS WAITING ON YOU GOOD NIGHT HUSBAND"
+      },
+      {
+        "clip_id": "1188-133604-0000",
+        "speaker_id": "1188",
+        "duration_s": 10.725,
+        "original_sha256": "4a10149395cb5af8aa5d04ef3adb49b3980baa93114d0851046e6343744b26cb",
+        "converted_sha256": "5f8066f3c9a765422b4d6cb19a9be6de149bdf6f3452b919eaf70ac25fa3d714",
+        "transcript": "YOU WILL FIND ME CONTINUALLY SPEAKING OF FOUR MEN TITIAN HOLBEIN TURNER AND TINTORET IN ALMOST THE SAME TERMS"
+      },
+      {
+        "clip_id": "1188-133604-0001",
+        "speaker_id": "1188",
+        "duration_s": 9.04,
+        "original_sha256": "3022b442af790536b60f18abe88b5376418a208f2774547b8d9700d4ef00bb03",
+        "converted_sha256": "3385ec24d359696b14ecd19c86e40622a7dcb291c9d4de562ecba883b59732a3",
+        "transcript": "THEY UNITE EVERY QUALITY AND SOMETIMES YOU WILL FIND ME REFERRING TO THEM AS COLORISTS SOMETIMES AS CHIAROSCURISTS"
+      },
+      {
+        "clip_id": "1188-133604-0004",
+        "speaker_id": "1188",
+        "duration_s": 10.65,
+        "original_sha256": "8c29126fd45deee12f8368556dd6847a03bde9ac2b1241110fe9391964bf8bc4",
+        "converted_sha256": "3519ae1e66fcdc229344c3362aee3d2d53194d74ee2b61569cfcb5f1ea22c2cd",
+        "transcript": "SOME OF THE TOUCHES INDEED WHEN THE TINT HAS BEEN MIXED WITH MUCH WATER HAVE BEEN LAID IN LITTLE DROPS OR PONDS SO THAT THE PIGMENT MIGHT CRYSTALLIZE HARD AT THE EDGE"
+      },
+      {
+        "clip_id": "121-121726-0000",
+        "speaker_id": "121",
+        "duration_s": 8.46,
+        "original_sha256": "81378fdb3e648b43efb1cb8c4f87da3fc9cfbe19c5dda97e9e7361c4a2470d2f",
+        "converted_sha256": "7eb0c6ecf20e909110fd54ebd0740dabc448252ad0ec714bb295d783f8a457f1",
+        "transcript": "ALSO A POPULAR CONTRIVANCE WHEREBY LOVE MAKING MAY BE SUSPENDED BUT NOT STOPPED DURING THE PICNIC SEASON"
+      },
+      {
+        "clip_id": "121-121726-0001",
+        "speaker_id": "121",
+        "duration_s": 5.925,
+        "original_sha256": "4d4459266056fcd052ced71563e093ecf74a420abfa3a402283fb6b8eb848441",
+        "converted_sha256": "87c6895e487937548d5ffa84109b1f0056af9f95641d3e5e936ea84e51d20d09",
+        "transcript": "HARANGUE THE TIRESOME PRODUCT OF A TIRELESS TONGUE"
+      },
+      {
+        "clip_id": "121-121726-0002",
+        "speaker_id": "121",
+        "duration_s": 4.41,
+        "original_sha256": "5d461a2020d7c302d607d3b5a6a8f81a01d29e2b29041faccc7925ee098d6dc7",
+        "converted_sha256": "80f1c4ba737d7bb4ae8adc289e93e5aa5ac8a1bb548886a1555c47c7ca2861f1",
+        "transcript": "ANGOR PAIN PAINFUL TO HEAR"
+      },
+      {
+        "clip_id": "1221-135766-0002",
+        "speaker_id": "1221",
+        "duration_s": 4.825,
+        "original_sha256": "1f02bae046f9567010f0163e8f204612fd1035a751383586a7aef6cb0fcc6e60",
+        "converted_sha256": "73f0f24639ea957184fd28b06c2c1a3c807e38ace1be488596e12ec1b27b877e",
+        "transcript": "YET THESE THOUGHTS AFFECTED HESTER PRYNNE LESS WITH HOPE THAN APPREHENSION"
+      },
+      {
+        "clip_id": "1221-135766-0004",
+        "speaker_id": "1221",
+        "duration_s": 7.44,
+        "original_sha256": "0c9ef992cd12b597219de360d086cd1638170c61640049fd3ebcb21918bf1009",
+        "converted_sha256": "e253694a15c94f1f9c9e1f315532d7f62c693572562e5881c5489cd2aae2c6be",
+        "transcript": "THIS OUTWARD MUTABILITY INDICATED AND DID NOT MORE THAN FAIRLY EXPRESS THE VARIOUS PROPERTIES OF HER INNER LIFE"
+      },
+      {
+        "clip_id": "1221-135766-0006",
+        "speaker_id": "1221",
+        "duration_s": 11.415,
+        "original_sha256": "2d2ce93b5e27db02117c0ca8fa7bb1b6533999bc60512a4a6244ad584e642024",
+        "converted_sha256": "2f2c01f3cd47ea5504f5175049d2408808af2bae8ba0998c0981b4c55fcff449",
+        "transcript": "THEY WERE NOW ILLUMINATED BY THE MORNING RADIANCE OF A YOUNG CHILD'S DISPOSITION BUT LATER IN THE DAY OF EARTHLY EXISTENCE MIGHT BE PROLIFIC OF THE STORM AND WHIRLWIND"
+      }
+    ]
+  },
+  "seed": 6200,
+  "snr_db": [
+    0,
+    5,
+    10
+  ],
+  "noise_types": [
+    "AWGN",
+    "QRM_TONE"
+  ],
+  "arms": [
+    "N_OFF",
+    "N_SPEEX",
+    "DX_OFF",
+    "DX_SPEEX"
+  ],
+  "filters": {
+    "normal_hz": [
+      150,
+      2850
+    ],
+    "dx_hz": [
+      300,
+      2400
+    ],
+    "butter_order": 4,
+    "implementation": "scipy.signal.butter + sosfilt causal, estado inicial cero"
+  },
+  "speex": {
+    "image": "x6200-speexdsp-capture-bench:1.2.1-1",
+    "gcc": "gcc (Debian 12.2.0-14+deb12u1) 12.2.0",
+    "speexdsp": "1.2.1",
+    "source_c": "697e5dbca33ad8cd74a5533c68e6b1d6ab6c8f6d959cc44445d6c77e486c49bc",
+    "source_h": "010589bdf5680eea277bab78b92cd5cc165c11238c83971b3fa529dec58b4bdb",
+    "driver": "b7e1354da7e86535553a08c9900684fd6fdd4d502ae9ef00c0f31fc3f1f7aa9f"
+  },
+  "source_sha256": {
+    "audio_enhancement.c": "697e5dbca33ad8cd74a5533c68e6b1d6ab6c8f6d959cc44445d6c77e486c49bc",
+    "audio_enhancement.h": "010589bdf5680eea277bab78b92cd5cc165c11238c83971b3fa529dec58b4bdb"
+  },
+  "alignment": {
+    "impulse_length": 8192,
+    "impulse_peak_index": 2048,
+    "normal_peak_index": 2055,
+    "dx_peak_index": 2067,
+    "d_dfl_samples": 12,
+    "offsets": {
+      "N_OFF": 0,
+      "N_SPEEX": 882,
+      "DX_OFF": 12,
+      "DX_SPEEX": 894
+    }
+  },
+  "dependencies": {
+    "numpy": "2.4.6",
+    "scipy": "1.16.2",
+    "pystoi": "0.4.1",
+    "soundfile": "0.13.1",
+    "python": "3.14.8"
+  },
+  "rows": 288,
+  "counts": {
+    "rows": 288,
+    "invalid_scenarios": 0,
+    "off_rows": 144
+  }
+}
