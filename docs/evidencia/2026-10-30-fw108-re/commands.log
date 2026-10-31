@@ -1,0 +1,219 @@
+# commands.log — Fase B #376 (RE estático offline del payload 1.0.8 NO autenticado)
+#
+# Registro de comandos realmente ejecutados y su exit code. Todos son estáticos/read-only
+# sobre artefactos en custodia (fuera de Git). NO se ejecutó ningún binario vendor, no se
+# accedió a radio/I²C/UART/MUX/PTT/ATU, no se usó sudo/mount y no se descargó firmware.
+#
+# Convención: "$ cmd" seguido de "exit=N". Para grep, exit=1 significa "sin coincidencias"
+# (esperado, no es un fallo). Los binarios propietarios y las decompilaciones completas quedan
+# en scratch (/home/pablo/desa/x6200/fw108-scratch/re376/), no en Git.
+# Fecha: 2026-10-30. Host: linux (ARM cross-toolchain Buildroot). CWD base: /home/pablo/desa/x6200
+
+## 0) Base real y worktree
+$ cd /home/pablo/desa/x6200/x6200_qa && git fetch fork main && git rev-parse fork/main
+6850d671d430a1693dbcaf593579a3d98b037995
+exit=0
+$ git worktree add /home/pablo/desa/x6200/x6200-fw108-re -b audit/x6200-fw108-re 6850d671d430a1693dbcaf593579a3d98b037995
+Preparing worktree (new branch 'audit/x6200-fw108-re'); HEAD is now at 6850d671
+exit=0
+$ cd /home/pablo/desa/x6200/x6200-fw108-re && git rev-parse HEAD && git status --porcelain
+6850d671d430a1693dbcaf593579a3d98b037995
+exit=0   # (status vacío inicialmente)
+
+## 1) Custodia: hashes de entradas
+$ sha256sum fw108-scratch/ext108/fs108/x6200_ui_v100 fw108-scratch/ref106/fs106/x6200_ui_v100 \
+    fw108-scratch/ext108/fs108/x6200_mcu_20260820141208.xgf fw108-scratch/ref106/fs106/x6200_mcu_20250111134652.xgf \
+    fw108-scratch/ext108/parts/1.img
+26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b  ext108/fs108/x6200_ui_v100
+b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b  ref106/fs106/x6200_ui_v100
+9a19f97a5ad9e141a3663d222f984073bf0b18b38d4662604372a0036f9daa23  ext108/fs108/x6200_mcu_20260820141208.xgf
+dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3  ref106/fs106/x6200_mcu_20250111134652.xgf
+3c475b16d48acb23f727cbc3d6d3b62f103bbc26bd3ce7f2e8f1b3be27ff4764  ext108/parts/1.img
+exit=0   # coinciden con los hashes de custodia de #375
+
+## 2) Herramientas (versiones)
+$ sha256sum --version | head -1 ; python3 -c "import capstone; print(capstone.__version__)"
+capstone 5.0.7
+exit=0
+$ cd /home/pablo/desa/x6200 && ./tools/rea.sh doctor | tail -30
+exit=0
+$ ./tools/rea.sh capabilities | tail -40
+rea-agents 6.7.0; sdk 2.3.1; skill reverse-engineer-anything
+exit=0
+
+## 3) ELF: cabeceras, símbolos, programas
+$ /home/pablo/desa/x6200/rom-build/clone-buildroot/build/host/bin/arm-linux-readelf -h ext108/fs108/x6200_ui_v100
+ELF32 ARM EABI5 little-endian, EXEC, entry 0x2a188, not stripped
+exit=0
+$ ... arm-linux-readelf -h ref106/fs106/x6200_ui_v100
+ELF32 ARM EABI5 little-endian, EXEC, entry 0x29b20, not stripped
+exit=0
+$ ... arm-linux-readelf -SW ext108/fs108/x6200_ui_v100
+.text Addr 0x29988 Off 0x19988 Size 0xdc890; .rodata Addr 0x106220 Off 0xf6220 Size 0x2d998
+exit=0
+$ ... arm-linux-nm -n -S --defined-only ext108/fs108/x6200_ui_v100 > fw108-scratch/re376/syms108nm.txt
+$ ... arm-linux-nm -n -S --defined-only ref106/fs106/x6200_ui_v100 > fw108-scratch/re376/syms106nm.txt
+exit=0
+$ ... arm-linux-nm -S --defined-only -C ext108/fs108/x6200_ui_v100 | grep -iE "slip|BaseComm"
+000f7424 T slip_encode ; 000f7494 T slip_decode ; 000de4bc T BaseComm::start() ; 000e5a88 T BaseCommIIC::start() ...
+exit=0
+$ ... arm-linux-nm -S --defined-only -C ref106/fs106/x6200_ui_v100 | grep -iE "slip"
+exit=1   # sin coincidencias: 1.0.6 NO tiene slip_encode/slip_decode
+$ ... arm-linux-readelf -sW ext108/fs108/x6200_ui_v100 | awk '$4=="FILE"{print $8}' | sort -u > fw108-scratch/re376/files108.txt
+$ ... arm-linux-readelf -sW ref106/fs106/x6200_ui_v100  | awk '$4=="FILE"{print $8}' | sort -u > fw108-scratch/re376/files106.txt
+$ comm -23 files108.txt files106.txt   # solo 1.0.8
+moc_panelcall.cpp ; moc_spectrogramwidget.cpp ; panelcall.cpp ; slip.c ; spectrogramwidget.cpp
+$ comm -13 files108.txt files106.txt   # solo 1.0.6
+moc_xcomm.cpp ; xcomm.cpp ; xscopegl.cpp
+exit=0
+
+## 4) Disassembly y xrefs
+$ ... arm-linux-objdump -d ext108/fs108/x6200_ui_v100 > fw108-scratch/re376/dis108.txt
+$ ... arm-linux-objdump -d ref106/fs106/x6200_ui_v100 > fw108-scratch/re376/dis106.txt
+exit=0
+$ ... arm-linux-objdump -d --start-address=0xf7424 --stop-address=0xf750c ext108/fs108/x6200_ui_v100
+slip_encode (0xf7424, 0x70) y slip_decode (0xf7494, 0x78) decodificados
+exit=0
+$ python3 fw108-scratch/re376/xrefs.py fw108-scratch/ext108/fs108/x6200_ui_v100 \
+    fw108-scratch/re376/syms108nm.txt fw108-scratch/re376/xrefs108.json
+refs=14387 calls=51488
+exit=0   # escáner capstone propio: literal pools + movw/movt + add pc
+$ python3 fw108-scratch/re376/xrefs.py ... (query de callers de slip_*)
+slip_decode callers: [('0xde9a0', '_ZN8BaseComm5startEv')] ; slip_encode callers: []
+exit=0
+$ python3 fw108-scratch/re376/dumpstrings.py ext108/fs108/x6200_ui_v100 xrefs108.json BaseComm5startEv
+0xde574 -> 0x121e5a '/dev/ttyS1' ; 0xde968 -> 0x121eb6 '[ERR] SLIP Packet Too Long, length = ' ; ...
+exit=0
+
+## 5) Decompilación (REA 6.7.0 / Ghidra 12.1.4, JDK21)
+$ ./tools/rea.sh analyze fw108-scratch/ext108/fs108/x6200_ui_v100 --provider ghidra --format json > fw108-scratch/re376/rea-analyze108.json
+exit=0   # 64 s
+$ ./tools/rea.sh decompile fw108-scratch/ext108/fs108/x6200_ui_v100 --procedure _ZN8BaseComm5startEv --provider ghidra --format json > .../decomp-basecomm-start.json
+exit=0   # sha256 salida: ae08890289bf9f4d643774b66e1b01c0917255e36a43b260e6a9771c56bfae22
+$ ... --procedure _ZN10MainWidget23slot_slaveReportMessageERK13basecomm_pack > decomp-slotreport.json
+exit=0   # sha256: 48b0121d8f9254a53e3aaabf1d946641f2274066448d8168e81fe2d956966833
+$ ... --procedure _ZN11BaseCommIIC5startEv > decomp-basecommiic-start.json
+exit=0   # sha256: f686d36180759caf25a6c7a560a968bf6c40ae716fd4640a9bd064144ff5e545
+$ ... --procedure _ZN11BaseCommIIC16updateWorkParamsEP11XParamAdminb > decomp-updateworkparams.json
+exit=0   # sha256: a543c4b0af6c929c1677837f84ee5d16f81329d0f19550d41cb9acdfc2bf88c6
+$ ... --procedure _ZN11BaseCommIIC14parseParamItemERK18basecomiic_param_tR16basecommiic_pack > decomp-parseparamitem.json
+exit=0   # sha256: d220eca012d6482b88555472c138167f836972087714d4311894a6029e36ea52
+$ ./tools/rea.sh decompile fw108-scratch/ref106/fs106/x6200_ui_v100 --procedure _ZN8BaseComm5startEv --provider ghidra --format json > .../decomp106-basecomm-start.json
+exit=0   # sha256: 002d2d0136b84dc0e58f126f47ab955f651b8323bb009803b2af88282e54f18b
+$ ... --procedure _ZN10MainWidget23slot_slaveReportMessageERK13basecomm_pack > decomp106-slotreport.json
+exit=0   # sha256: fc6affaa1e1827fad101a426d866408531d720d88cdcb4c8f82e0cc00ed271ea
+
+## 6) Comparaciones y validaciones
+$ python3 (set-diff de símbolos) -> only108: 143, only106: 72, common: 3820
+exit=0
+$ python3 (comparación normalizada de secuencias de instrucciones 108 vs 106)
+iicWrite 94/94 identico salvo literales ; iicRead 64/64 idem ; BaseCommIIC::start 401/401 identico
+parseParamItem 3703/3703 idem ; updateWorkParams 2690/2690 idem ; updateRxFilters 30/30 identico
+setCalibrateData 109/109 idem ; cwDecodeWPM 11/11 identico ; BaseComm::start 517 vs 459 distinto (SLIP)
+exit=0
+$ python3 (tabla CRC: extracción .rodata vaddr 0x121a3c y comparación con flow.c y 1.0.6)
+APP 1.0.8 table sha256 0053f121cdcaf9f510a940ba891fb2bccd41487953c5a4c0048c4a3ccdec782e
+TABLES IDENTICAL: True (vs refs/X6200Control/src/low/flow.c)
+1.0.6 table sha256 0053f121... identical: True
+exit=0
+$ python3 (validación CRC vs implementación bit-a-bit)
+word-algo 0x550d4818 == reversed-group bitwise 0x550d4818 -> True
+exit=0
+$ python3 (entropía .xgf)  7.470 bit/B (1.0.8) ; 7.748 bit/B (1.0.6) ; 256 símbolos -> MCU_OPAQUE
+exit=0
+$ python3 fw108-scratch/re376/fixtures.py > fw108-scratch/re376/fixtures-output.txt
+ValueError: bytes must be in range(0, 256)   # bug en el generador (samples int8)
+exit=1
+$ python3 fw108-scratch/re376/fixtures.py > fw108-scratch/re376/fixtures-output.txt   # corregido
+fixture1: wire 14 B sha256 998ad8acc14ca75136af7fb8ae23a097adb905def5a9b639dadcc4709a827dcf ; roundtrip True
+fixture2: payload 552 B sha256 ad2db4be0a4e9b299db4840d2b4242efed35b881e1b6b8b6d8901c636d2b8593 ;
+          wire 558 B sha256 025f34b9f894229d13cc8bac5c6737c2d4efa730aeaa04699c5e2c5708873853 ; crc_check True (CRC 0x33400b2b)
+exit=0
+$ sha256sum fw108-scratch/re376/fixtures.py fw108-scratch/re376/fixtures-output.txt
+571a4703d316f86d0172e8b37722e46a200d812e5b39cc5141fa7dd1e74da263  fixtures.py
+44e536554940dacfd11e8078c0dcead46e50e205a4ebd756dd51634e2a107b57  fixtures-output.txt
+exit=0
+
+## 7) Batch de verificación final reproducible (2026-10-30)
+$ sha256sum <5 artefactos de custodia>
+exit=0
+$ arm-linux-readelf -h (1.0.8) ; arm-linux-readelf -h (1.0.6)
+exit=0 ; exit=0
+$ arm-linux-nm -n -S --defined-only x6200_ui_v100 (1.0.8) | grep slip/BaseComm*
+000de4bc 00000814 T _ZN8BaseComm5startEv ; 000f7424 00000070 T slip_encode ; 000f7494 00000078 T slip_decode ...
+exit=0
+$ arm-linux-objdump -d --start-address=0xf7424 --stop-address=0xf750c ext108/fs108/x6200_ui_v100 > slip-functions.dis
+exit=0
+$ python3 fw108-scratch/re376/fixtures.py > fw108-scratch/re376/fixtures-output-new.txt
+exit=0
+$ python3 - (extracción tabla CRC, file offset 0x111a3c)
+crc_table_sha256 = 0053f121cdcaf9f510a940ba891fb2bccd41487953c5a4c0048c4a3ccdec782e
+exit=0
+
+## 8) Checks de entrega (docs-only) — ejecutados sobre el commit final
+$ cd /home/pablo/desa/x6200/x6200-fw108-re && git status --porcelain
+(sin salida = árbol de trabajo limpio al commitear)
+exit=0
+$ git diff --check 6850d671d430a1693dbcaf593579a3d98b037995 HEAD
+(sin salida = OK; (1er intento exit=2 por CRLF del CSV generado con csv.writer de Python;
+ corregido a LF y re-verificado exit=0))
+exit=0
+$ git diff --name-status 6850d671d430a1693dbcaf593579a3d98b037995 HEAD
+A  docs/evidencia/2026-10-30-fw108-re/README.md
+A  docs/evidencia/2026-10-30-fw108-re/audio-mux-diff.md
+A  docs/evidencia/2026-10-30-fw108-re/commands.log
+A  docs/evidencia/2026-10-30-fw108-re/fixtures-method.md
+A  docs/evidencia/2026-10-30-fw108-re/gates.json
+A  docs/evidencia/2026-10-30-fw108-re/slip-wire-contract.md
+A  docs/evidencia/2026-10-30-fw108-re/symbols-xrefs.csv
+exit=0   # docs-only: 7 altas, 0 modificaciones fuera de docs/evidencia/
+$ git diff --stat 6850d671d430a1693dbcaf593579a3d98b037995 HEAD | tail -1
+7 files changed, 876 insertions(+) (solo altas bajo docs/evidencia/2026-10-30-fw108-re/)
+exit=0
+$ cd /home/pablo/desa/x6200/asf && bash scripts/apps/x6200/check-matrix.sh \
+    6850d671d430a1693dbcaf593579a3d98b037995 HEAD /home/pablo/desa/x6200/x6200-fw108-re
+(ver sección 9)
+exit=0
+
+## 9) Salida real de check-matrix (docs-only) — exit=0
+==> [SKIP] firmware / nativo: sin cambios en src/**, lv_conf.h, lv_drv_conf.h ni CMakeLists.txt
+==> [SKIP] inventario del arnés de host (autotune_v2 + dialog_coverage): sin cambios en src/**, tests/** ni tools/ui_harness/**
+==> [SKIP] check_build_identity: sin cambios en la identidad del build
+==> [SKIP] check_wcag (temas de la imagen): sin cambios en rootfs/**/themes/*.json
+==> [SKIP] ruff del framework A/B: sin cambios en tools/ab_testing/**/*.py
+==> [SKIP] pytest del framework A/B: sin cambios en tools/ab_testing/** ni tools/ui_harness/**
+==> [SKIP] gates de x6200-ab (themes + contracts): sin cambios en tools/**, src/**, tests/**, los temas de la imagen ni ab-testing.yml
+==> [SKIP] check_wcag_rendered + check_widget_text (contraste renderizado): sin cambios en src/**, tools/ui_harness/**, los temas de la imagen, el baseline ni los gates de texto/contraste
+==> [SKIP] check_bootanim (arranque neo-retro): sin cambios en src/bootanim/**, src/boot_splash.*, src/main.c, src/CMakeLists.txt, CMakeLists.txt, tests/bootanim/**, tests/check_bootanim.sh ni rootfs/etc/init.d/**
+==> [SKIP] check_drawbuf_partial (draw buffer parcial): sin cambios en tools/**, src/**, tests/**, los temas de la imagen ni ab-testing.yml
+==> [SKIP] guards del prune del rootfs: sin cambios en buildroot/**, rootfs/etc/init.d/**, CMakeLists.txt ni boot-rootfs.yml
+==> [SKIP] bash -n de los .sh tocados: sin cambios en tests/**/*.sh ni tools/**/*.sh
+==> [SKIP] harness determinism gate: sin cambios en tools/ui_harness/
+==> [SKIP] banco QEMU: sin cambios en src/**, lv_conf.h ni tools/ui_harness/
+==> [SKIP] workflows de GitHub (YAML + shell embebido): sin cambios en .github/workflows/*.yml
+==> [SIN GATE] ningún bloque cubre el diff: docs/evidencia/2026-10-30-fw108-re/{README,audio-mux-diff,commands.log,fixtures-method,gates.json,slip-wire-contract,symbols-xrefs}
+    (sólo documentación: no hay gate que correr)
+CHECK_MATRIX_EXIT=0   # tests/native no aplica: no hay cambios de código
+
+## 10) Publicación (docs-only, sin merge)
+$ gh pr create --repo iariap/x6200_gui --base main --head audit/x6200-fw108-re \
+    --title '[FW 1.0.8] Focused RE of UNVERIFIED vendor payload: SLIP uplink and BASE audio control (refs #374)' \
+    --body-file <body>
+exit=0  # URL/HEAD registrados en el reporte al Lead; sin closes; sin merge
+
+# Notas de honestidad:
+# - El primer intento de fixtures.py falló (exit=1) por un bug propio del generador; se corrigió y
+#   se registra el fallo aquí para trazabilidad. Ninguna conclusión depende del intento fallido.
+# - Los comandos REA tardaron ~64 s cada uno (import efímero inmutable); no se paralelizaron más de 3.
+# - No se incluyen binarios propietarios ni volcados de decompilación en Git: sólo hashes/offsets.
+
+# Corrección post-revisión del Lead (mismo PR, commit nuevo; sin cambiar veredictos):
+# - Fixture 2: la trama wire real es de 558 B (552 payload + 5 escapes + 1 END), no 556 B.
+#   Recomputado/verificado desde fw108-scratch/re376/fixtures-output.txt (linea "wire hex:"):
+#   len(bytes.fromhex(hex))=558, sha256=025f34b9f894229d13cc8bac5c6737c2d4efa730aeaa04699c5e2c5708873853,
+#   decode->552 B (payload sha256 ad2db4be...), CRC calculado = almacenado = 0x33400b2b, wire.count(0xDB)=5.
+# - fixtures-method.md: bloque hex corregido (1116 hex chars; antes tenia un bloque repetido de 26720 chars),
+#   "(556 B)"->"(558 B)", maxout 556->558, "4 expansiones"->"5 expansiones", nota final 552+5+1(END)=558.
+# - gates.json nota fixtures: "wire 556 B"->"wire 558 B (552 payload + 5 escapes + 1 END)".
+# - commands.log: "wire 556 B"->"wire 558 B ... (CRC 0x33400b2b)".
+# Verificación de la corrección: python3 (len/hash/decode/CRC) exit=0; git diff --check exit=0; git status limpio.

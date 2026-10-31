@@ -1,0 +1,82 @@
+{
+  "phase": "B",
+  "issue": 376,
+  "epic": 374,
+  "task_id": "task-9",
+  "date": "2026-10-30",
+  "branch": "audit/x6200-fw108-re",
+  "base_main_commit": "6850d671d430a1693dbcaf593579a3d98b037995",
+  "payload_authenticity": "UNVERIFIED",
+  "slip_payload_gate": "SLIP_FORMAT_UNVERIFIED",
+  "wire_contract_for_received_payload": "PARTIAL",
+  "mux_contract_signal": "FOUND_UNVERIFIED",
+  "production_ready": false,
+  "compat_377_allowed": false,
+  "mux_safety": "MUX_SAFETY_STILL_BLOCKED",
+  "mcu_binary": "MCU_OPAQUE",
+  "gate_authorization": "Autorizacion acotada del coordinador 2026-10-30 (issue #376 y Epic #374): solo RE estatico offline/read-only del payload recibido, etiquetado UNVERIFIED_VENDOR_PAYLOAD. No levanta el STOP de integridad de la Fase A (#375/PR #379) ni acredita el 1.0.8 oficial.",
+  "artifacts": {
+    "gui_1_0_8_payload_unverified": {
+      "path_scratch": "/home/pablo/desa/x6200/fw108-scratch/ext108/fs108/x6200_ui_v100",
+      "sha256": "26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b",
+      "format": "ELF32 ARM EABI5 little-endian, not stripped"
+    },
+    "gui_1_0_6_authentic_reference": {
+      "path_scratch": "/home/pablo/desa/x6200/fw108-scratch/ref106/fs106/x6200_ui_v100",
+      "sha256": "b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b"
+    },
+    "mcu_xgf_1_0_8": {
+      "sha256": "9a19f97a5ad9e141a3663d222f984073bf0b18b38d4662604372a0036f9daa23",
+      "size_bytes": 524288,
+      "classification": "MCU_OPAQUE"
+    },
+    "mcu_xgf_1_0_6": {
+      "sha256": "dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3",
+      "size_bytes": 524288,
+      "classification": "MCU_OPAQUE"
+    },
+    "rootfs_ext4_1_0_8": {
+      "sha256": "3c475b16d48acb23f727cbc3d6d3b62f103bbc26bd3ce7f2e8f1b3be27ff4764",
+      "path_scratch": "/home/pablo/desa/x6200/fw108-scratch/ext108/parts/1.img"
+    },
+    "crc_table_rodata_vaddr_0x121a3c": {
+      "sha256": "0053f121cdcaf9f510a940ba891fb2bccd41487953c5a4c0048c4a3ccdec782e",
+      "entries": 256,
+      "notes": "idéntica byte a byte a la tabla de refs/X6200Control/src/low/flow.c y a la de la GUI 1.0.6 (rodata vaddr 0x11cc7c)"
+    }
+  },
+  "evidence_highlights": {
+    "slip_framing": "PROVEN (codigo): wire = escape(payload) + END(0xC0); C0->DB DC; DB->DB DD; sin END inicial; decoder ignora END con salida vacia, escape invalido DB xx->xx laxo, -1 solo por overflow de salida, sin cota de entrada.",
+    "slip_caller": "BaseComm::start vaddr 0xde4bc: /dev/ttyS1 @ B1152000 (0x1009), acumula QByteArray, indexOf(0xC0), rechaza >0x5000, exige slip_decode==552, CRC32 sobre 548 B contra payload[548..552), sig_slaveReport; unico caller de slip_decode (0xde9a0); slip_encode sin callers.",
+    "payload_layout": "PROVEN offsets: magic 0x000 (no validado por la APP), samples u8[512] 0x004, flags 0x204, meters 0x208-0x20b, supply 0x20c-0x20f, atu_params 0x210, reserved_3 0x214, hkey 0x220, crc 0x224; sizeof 552. Coincide offset por offset con x6200_flow_t legacy v0.1.1.",
+    "crc": "PROVEN: tabla y algoritmo identicos al legacy flow.c (CRC-32 MSB-first poly 0x04C11DB7 init 0xFFFFFFFF por palabra u32 LE, sin xorout); posicion del CRC identica (offset 0x224).",
+    "change_isolation": "1.0.6 (autentica) sin SLIP: indexOf magic 0xAA5555AA, trama 2088 B (samples float), CRC en offset 2084, buffer clear. 1.0.8: SLIP + trama 552 B (samples u8). Coincide con nota oficial 1.0.7 y con fix de X6200Control (commit 0ee1ae3).",
+    "audio_mux_downlink": "I2C /dev/i2c-0 via ioctl(I2C_RDWR=0x707); bloque workparams 216 B en addr 0x0000; palabra 12 = pack+0x30 (flags) escrita con bits 0x2,0x8,0x10,0x20,0x1000,0x2000,0x4000,0x8000,0x10000,0x40000 (x2),0x100000,0x200000,0x400000,0x800000; atue->0x1000 y sple->0x2 resueltos.",
+    "audio_mux_diff": "BaseCommIIC {start,iicRead,iicWrite,parseParamItem,updateWorkParams,updateRxFilters,setCalibrateData,cwDecodeWPM}: mismo tamano y secuencia de instrucciones identica normalizada 1.0.6 vs 1.0.8; no hay readback/ACK/restore nuevos.",
+    "restore_supervisor": "NO FOUND: sin readback del bloque, sin ACK de protocolo, sin restore al cerrar/crashear, sin watchdog/heartbeat independiente; solo refresco del bloque completo ~1 s mientras la APP vive.",
+    "fixtures": "2 fixtures sinteticos (no capturas) + casos limite; wire sha256 fixture1 998ad8ac...; fixture2 552 B payload sha256 ad2db4be..., wire 558 B (552 payload + 5 escapes + 1 END) sha256 025f34b9...; decode y CRC validados con la tabla extraida del ELF."
+  },
+  "unknowns": [
+    "Valor real del magic en el cable 1.0.8 (la APP no lo valida; 0xAA5555AA es hipotesis heredada del legacy v0.1.1 y de la GUI 1.0.6).",
+    "Bytes reales de trama: no hay captura (prohibido) y el payload no esta autenticado.",
+    "Mapeo completo param->bit de BaseCommIIC::parseParamItem (solo atue->0x1000 y sple->0x2 resueltos); que param activa 0x8 y 0x40000 queda UNKNOWN.",
+    "Semantica de pack+0x34 y del bit 0x10000 en ese word.",
+    "Comportamiento interno del MCU/BASE 1.0.8 (.xgf opaco, no descifrado).",
+    "Efecto practico en runtime del parser de la APP (remove(0,index) no consume el END; resync por 6 lecturas vacias ~30 ms): hallazgo de codigo, no validado dinamicamente (prohibido ejecutar el binario).",
+    "Build exacto de X6200Control enlazado en la ROM del equipo (v0.1.1 es referencia de contrato, no prueba de enlace)."
+  ],
+  "limitations": [
+    "RE estatico offline; no se ejecuto la GUI ni el .xgf ni firmware vendor.",
+    "Sin radio, sin I2C/UART/MUX, sin TX/PTT/ATU, sin sudo/mount, sin descarga de firmware.",
+    "No hay validacion fisica ni readback de estado; no se acredita compatibilidad de produccion (#377 sigue bloqueado).",
+    "PR docs-only; no hay cambios de codigo."
+  ],
+  "checks": {
+    "docs_only": true,
+    "check_matrix_command": "bash /home/pablo/desa/x6200/asf/scripts/apps/x6200/check-matrix.sh 6850d671d430a1693dbcaf593579a3d98b037995 HEAD /home/pablo/desa/x6200/x6200-fw108-re",
+    "check_matrix_exit_code": "ver commands.log",
+    "git_diff_check": "ver commands.log",
+    "git_status_porcelain_clean_at_commit": "ver commands.log"
+  },
+  "final_state": "Fase B ejecutada como RE estatico del payload NO autenticado. El STOP de integridad de #375 sigue vigente; #377 permanece bloqueado; #378 no se inicia; #362 no se desbloquea."
+}
