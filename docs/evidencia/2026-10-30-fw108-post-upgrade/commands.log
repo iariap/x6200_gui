@@ -36,3 +36,17 @@ tar -xOf rootfs.tar ./etc/init.d/S01create_data | sha256sum
 # viejo de p3 que quedaba fuera de la imagen; así S01create_data crea y formatea
 # DATA en el primer arranque.
 # Resultado físico: GUI operativa, DATA creada, propietario confirma OK.
+
+
+## Integración Buildroot PR #15
+# Rama integration/x6200-main (base main 8b7ca9d + port X6200 + PR #14 + S01 fix
+# + GUI iariap/x6200_gui@57f671e8).
+# make x6200-gui-dirclean
+# make aether-x6200-control-dirclean
+# make -j8
+# BUILD_EXIT=0
+# Imagen: ac03c8f12ba19d6f51b2d53d09c8b9be11759c3051b653b7ca96d3e9ca0c42e2
+# GUI en imagen: cc3ce481e4b3331aef9436c5414b0a34351e6c48bd254a38157b15a2514ee0af
+# Lib: e93d79a3...; S01: da7d19b1...
+# Tests S01 herméticos: 17 casos, 0 fallas (fresh-first-boot, existing-ext4-content,
+# legacy-vfat-preserved, etc.).

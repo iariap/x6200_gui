@@ -81,9 +81,13 @@ probó el retorno apagando y encendiendo sin SD.
 - Primer arranque: DATA creada/formateada por `S01create_data`; GUI operativa.
 - Propietario: **funciona OK**. Sin TX/PTT/ATU/MUX.
 - Retest: **`RX_TRIAL_PASS`** con la imagen nueva.
-- Queda para la revisión ordinaria: PRs #381 y AetherX6200Buildroot #14 (sin
-  merge automático). El fix de `S01create_data` está en la rama Buildroot
-  `fix/s01create-data-blkid-partuuid` (commit `d289249`) y su patch completo en
-  este PR; el PR contra Buildroot no se abrió porque la rama de integración
-  `feat/kernel-hidraw-unifying` no está publicada en el remoto y `main` todavía
-  tiene el script viejo de 45 líneas. Decisión pendiente del owner.
+- Integración limpia publicada en **AetherX6200Buildroot PR #15** (rama
+  `integration/x6200-main`, contra `main`): parte de `main`, conserva el port
+  X6200 del owner, apunta la GUI a `iariap/x6200_gui@57f671e8`, aplica
+  X6200Control v0.1.1 + patch de PR #14 y el fix de `S01create_data`.
+- Build desde esa rama: `x6200-gui`/`aether-x6200-control` dirclean + `make -j8`
+  exit 0; imagen `ac03c8f12ba19d6f51b2d53d09c8b9be11759c3051b653b7ca96d3e9ca0c42e2`.
+- Tests herméticos de `S01create_data`: **17 casos, 0 fallas**, incluidos
+  `fresh-first-boot`, `existing-ext4-content`, `legacy-vfat-preserved`.
+- Queda para la revisión ordinaria: PR #381, AetherX6200Buildroot #14, PR #15 y
+  este PR #382; sin auto-merge.
