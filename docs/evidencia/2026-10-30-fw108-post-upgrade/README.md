@@ -82,5 +82,8 @@ probó el retorno apagando y encendiendo sin SD.
 - Propietario: **funciona OK**. Sin TX/PTT/ATU/MUX.
 - Retest: **`RX_TRIAL_PASS`** con la imagen nueva.
 - Queda para la revisión ordinaria: PRs #381 y AetherX6200Buildroot #14 (sin
-  merge automático) y el PR de Buildroot del fix de `S01create_data` (el patch
-  está en este PR; falta publicarlo en el repo Buildroot).
+  merge automático). El fix de `S01create_data` está en la rama Buildroot
+  `fix/s01create-data-blkid-partuuid` (commit `d289249`) y su patch completo en
+  este PR; el PR contra Buildroot no se abrió porque la rama de integración
+  `feat/kernel-hidraw-unifying` no está publicada en el remoto y `main` todavía
+  tiene el script viejo de 45 líneas. Decisión pendiente del owner.
