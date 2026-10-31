@@ -1,0 +1,497 @@
+{
+  "schema": "x6200-fw108-provenance/1.0",
+  "issue": 375,
+  "epic": 374,
+  "phase": "A",
+  "generated_utc": "2026-10-30T13:29:04Z",
+  "repository": {
+    "name": "iariap/x6200_gui",
+    "base_branch": "main",
+    "base_sha": "6850d671d430a1693dbcaf593579a3d98b037995",
+    "base_subject": "docs(audio): physical instrument plan and MUX fail-safe contract (#372)",
+    "base_verified_with": [
+      "git ls-remote fork refs/heads/main",
+      "GitHub API repos/iariap/x6200_gui/commits/main"
+    ],
+    "worktree": "/home/pablo/desa/x6200/x6200-fw108-artifacts",
+    "branch": "audit/x6200-fw108-artifacts"
+  },
+  "gate": {
+    "state": "ARTIFACT_UNAVAILABLE",
+    "cause": "INTEGRITY_MISMATCH_VS_VENDOR_PUBLISHED_HASH",
+    "stop": true,
+    "ready_for_re": false,
+    "waiver": false,
+    "summary": "El paquete oficial 1.0.8 es descargable, integro a nivel ZIP y reproducible, pero el SHA256 de sdcard.img declarado por el fabricante en el release note del mismo paquete NO coincide con el SHA256 del sdcard.img distribuido. No se acredita autenticidad del payload; no apto para instalar ni para RE.",
+    "blocked_phases": [376, 377, 378],
+    "unblock_conditions": [
+      "El fabricante reemite/aclara el paquete 1.0.8 y el sdcard.img de la nueva descarga coincide con el Image File SHA256 declarado en su release note",
+      "El duenio aporta una copia autentica cuyo sdcard.img coincida con el hash declarado",
+      "Existe aclaracion escrita del fabricante que documente el hash correcto del payload publicado y permita re-verificarlo"
+    ]
+  },
+  "provenance": {
+    "official_page": {
+      "url": "https://xiegu.eu/downloads/",
+      "fetched_utc": "2026-10-30T13:09:24Z",
+      "http_code": 200,
+      "content_type": "text/html",
+      "bytes": 152173,
+      "sha256_capture": "9fe2294142c4568ac18aa71823319ad889409a0a069873d96af19b5cc0b5f5bd",
+      "entry_title_attribute": "X6200 Firmware Upgrade v1.0.8",
+      "entry_text": "X6200_Update_1.0.8 (2026-08-20) - Release Notes [EN]",
+      "entry_link_href": "https://xiegu.eu/?sdm_process_download=1&download_id=10216",
+      "page_publishes_hash_for_x6200_1_0_8": false,
+      "page_publishes_hash_for_x6100_versions": true,
+      "additional_context": "La misma pagina lista 1.0.7 (X6200_Update_1.0.7 (251012)) con la nota 'Changed the baseband uplink data to use SLIP encoding'."
+    },
+    "official_blog": {
+      "url": "https://xiegu.eu/2026/08/29/xiegu-x6200-firmware-1-0-8-cw-macros-keyer-fixes/",
+      "fetched_utc": "2026-10-30T13:11:38Z",
+      "http_code": 200,
+      "bytes": 113470,
+      "sha256_capture": "a9db66b258097b8fb0d2b4687d42942a421f9c19b681eda9f0d4a6d58a6a3442",
+      "post_date": "2026-08-29",
+      "declared_versions": {
+        "APP": "1.0.8 - 17 August 2026",
+        "BASE": "1.0.8 - 19 August 2026"
+      },
+      "alternative_hosted_copy": {
+        "url": "https://drive.google.com/uc?export=download&id=1QF9dwOuxPF-Y62iWwF_TaUUZeEdnjWn8",
+        "verified": false,
+        "reason": "redirige 303 a accounts.google.com (login Google requerido); no verificable sin sesion; NO se uso como sustituto"
+      }
+    },
+    "download_endpoint": {
+      "original_url": "https://xiegu.eu/?sdm_process_download=1&download_id=10216",
+      "final_url": "https://xiegu.eu/wp-content/uploads/sites/4/2026/10/x6200udimg-260820001.zip",
+      "redirect_chain": [
+        "HTTP/2 302 (nginx) -> https://xiegu.eu/wp-content/uploads/sites/4/2026/10/x6200udimg-260820001.zip",
+        "HTTP/2 200 application/zip"
+      ],
+      "headers_200": {
+        "content-type": "application/zip",
+        "content-length": 371310845,
+        "last-modified": "Wed, 14 Oct 2026 12:19:32 GMT",
+        "etag": "\"1621c0fd-65dcbf1858513\"",
+        "accept-ranges": "bytes"
+      },
+      "unavailable_neighbors": {
+        "download_id_10215_1.0.7": {
+          "http_code": 500,
+          "checked_utc": "2026-10-30T13:26:27Z"
+        }
+      }
+    },
+    "official_installation_documentation": {
+      "title": "X6200 Firmware upgrade tutorial (XIEGU WS-JSZL-2407-01 Rev 1.0, 2024-07-20)",
+      "download_endpoint": "https://xiegu.eu/?sdm_process_download=1&download_id=9241",
+      "final_url": "http://xiegu.eu/wp-content/uploads/sites/4/2024/07/X6200FirmwareUpgradeTutorialWS-JSZL-2407-01ENRevised.pdf",
+      "http_code": 200,
+      "content_type": "application/pdf",
+      "bytes": 300348,
+      "last_modified": "Tue, 30 Jul 2024 07:10:40 GMT",
+      "sha256": "68ecc5a434e12080473807f5a6312fcf1f317960dd6d41a284e300d4bc877fbf",
+      "extraction_method": "pdftotext -layout (solo lectura, no ejecucion)",
+      "note": "El paquete 1.0.8 NO incluye PDF ni readme.1st; solo release note + sdcard.img."
+    }
+  },
+  "download": {
+    "command": "curl -L --retry 5 --fail --retry-delay 5 --connect-timeout 30 --max-time 3600 -o x6200udimg-260820001.zip -D dl10216_get_headers.txt -w '<metricas>' 'https://xiegu.eu/?sdm_process_download=1&download_id=10216'",
+    "started_utc": "2026-10-30T13:09:39Z",
+    "finished_utc": "2026-10-30T13:21:44Z",
+    "curl_exit": 0,
+    "http_code": 200,
+    "bytes_downloaded": 371310845,
+    "bytes_on_disk": 371310845,
+    "content_length_match": true,
+    "time_total_s": 724.674239,
+    "average_speed_bps": 512383,
+    "final_url": "https://xiegu.eu/wp-content/uploads/sites/4/2026/10/x6200udimg-260820001.zip",
+    "sha256_calculated": "ca0226c7ffbfa38a5655bd9fc4bbe4e7995055cb3e2b35433a2ad5d39b4100a1",
+    "sha256_method": "sha256sum dos pasadas, coincidentes",
+    "sha256_is_official": false,
+    "sha256_note": "El fabricante no publica SHA256 del ZIP; este hash es CALCULADO por nosotros.",
+    "reproducibility": {
+      "etag_conditional_http_code": 304,
+      "range_head_1MiB": {
+        "request": "Range: bytes=0-1048575",
+        "http_code": 206,
+        "sha256": "ade1fd2085acfec721fe5157b185652da1b68fc7c221fb24193fd7c02b215d21",
+        "matches_local_prefix": true
+      },
+      "range_tail_1MiB": {
+        "request": "Range: bytes=370262269-371310844",
+        "http_code": 206,
+        "sha256": "7d5bb6371e16297f78ce87e08110b5fa5418a2d709a25b560f29564e5e636973",
+        "matches_local_suffix": true
+      }
+    }
+  },
+  "package": {
+    "zip": {
+      "filename": "x6200udimg-260820001.zip",
+      "size": 371310845,
+      "sha256": "ca0226c7ffbfa38a5655bd9fc4bbe4e7995055cb3e2b35433a2ad5d39b4100a1",
+      "entries_count": 3,
+      "uncompressed_total": 856687351,
+      "expansion_factor": 2.307,
+      "central_directory_size": 316,
+      "central_directory_offset": 371310507,
+      "archive_comment_len": 0,
+      "trailing_bytes_after_eocd": 0
+    },
+    "entries": [
+      {
+        "path": "x6200udimg-260820001/",
+        "kind": "dir",
+        "size": 0,
+        "compressed_size": 0,
+        "crc32": null,
+        "modified": "2026-08-21 02:38:23",
+        "attributes": "D drwxrwxrwx",
+        "sha256": null
+      },
+      {
+        "path": "x6200udimg-260820001/ReleaseNote-260820001(EN_CHS).txt",
+        "kind": "file",
+        "size": 759,
+        "compressed_size": 476,
+        "crc32": "53F0FA11",
+        "modified": "2026-08-21 02:34:42",
+        "attributes": "-rw-rw-rw-",
+        "sha256": "2e16486969366bb42c6e9665a7f6f8981911343c723f2087e60ec0e505f9504c"
+      },
+      {
+        "path": "x6200udimg-260820001/sdcard.img",
+        "kind": "file",
+        "size": 856686592,
+        "compressed_size": 371309707,
+        "crc32": "366043DC",
+        "modified": "2026-08-20 03:15:26",
+        "attributes": "-rw-rw-rw-",
+        "sha256": "a968d2786d5003012bcc8485d287fcde93739e018b22aeb93a89dbc695d0bc3f"
+      }
+    ],
+    "integrity_checks": [
+      {"tool": "unzip -t", "exit_code": 0, "result": "No errors detected in compressed data"},
+      {"tool": "7z t", "exit_code": 0, "result": "Everything is Ok"},
+      {"tool": "crc32_extraido_vs_zip", "result": "366043dc == 366043dc"},
+      {"tool": "sha256 via unzip extract", "result": "a968d2786d5003012bcc8485d287fcde93739e018b22aeb93a89dbc695d0bc3f"},
+      {"tool": "sha256 via 7z x -so stream", "result": "a968d2786d5003012bcc8485d287fcde93739e018b22aeb93a89dbc695d0bc3f"}
+    ],
+    "safe_entry_validation": {
+      "method": "python zipfile: nombre absoluto, '..', backslash, symlink (mode 0120000), ratio compresion > 1000",
+      "bad_entries": [],
+      "result": "PASS"
+    }
+  },
+  "official_published_hash": {
+    "declared_by": "ReleaseNote-260820001(EN_CHS).txt",
+    "declared_value": "29620674020e748ffd70173f0b2920dc0174d2733232d92a2a512111e5228698",
+    "appears_in_sections": ["EN", "CHS"],
+    "computed_payload_sha256": "a968d2786d5003012bcc8485d287fcde93739e018b22aeb93a89dbc695d0bc3f",
+    "match": false,
+    "declared_hash_ascii_found_inside_zip_or_image": false,
+    "declared_app_version": "1.0.8  Aug 17 2026,16:21:06",
+    "declared_base_version": "1.0.8 Aug 19 2026,16:13:08",
+    "interpretation": "El hash oficial declarado por el fabricante no autentica el payload distribuido en el mismo paquete. La causa es UNKNOWN (note desactualizado / imagen regenerada / re-subida del ZIP no distinguibles sin el fabricante).",
+    "control_positive_1_0_6": {
+      "declared_value": "e507e7ad98b3ca4e30407177f579717318e9718b1542c48c7532556627734514",
+      "computed_sha256": "e507e7ad98b3ca4e30407177f579717318e9718b1542c48c7532556627734514",
+      "match": true,
+      "source": "/home/pablo/lenovo_vieja/Downloads/radio/x6200/2025-01-15_Xiegu_X6200_update_V1.0.6.zip (solo lectura)",
+      "conclusion": "El mecanismo 'Image File SHA256' del fabricante es real y verificable en 1.0.6; el fallo de 1.0.8 es especifico de ese paquete/publicacion."
+    }
+  },
+  "image": {
+    "filename": "sdcard.img",
+    "size": 856686592,
+    "size_note": "= 1673216 sectores * 512 B, exacto",
+    "sha256": "a968d2786d5003012bcc8485d287fcde93739e018b22aeb93a89dbc695d0bc3f",
+    "crc32": "366043dc",
+    "file_magic": "DOS/MBR boot sector",
+    "mbr": {
+      "label": "dos",
+      "label_id": "0x00000000",
+      "sector_size": 512,
+      "sectors_total": 1673216
+    },
+    "partitions": [
+      {
+        "id": "p1",
+        "device": "sdcard.img1",
+        "start_sector": 2048,
+        "sectors": 32768,
+        "size_bytes": 16777216,
+        "type": "0x0c FAT32 LBA",
+        "bootable": true,
+        "sha256": "a37a9a448007651ca39a5d5b231b7a900575ab96f0db9732fb1c568e4dc2af90",
+        "role": "boot (zImage/DTB/boot.scr/logo.bmp)",
+        "filesystem": "FAT, volumen serial B41A-913F, sin label"
+      },
+      {
+        "id": "p2",
+        "device": "sdcard.img2",
+        "start_sector": 34816,
+        "sectors": 819200,
+        "size_bytes": 419430400,
+        "type": "0x83 Linux",
+        "bootable": false,
+        "sha256": "3c475b16d48acb23f727cbc3d6d3b62f103bbc26bd3ce7f2e8f1b3be27ff4764",
+        "role": "rootfs APP Linux (ext4)",
+        "filesystem": {
+          "type": "ext4",
+          "uuid": "8c499e1c-a022-41dc-bfec-03969cbd2032",
+          "state": "clean",
+          "block_size": 1024,
+          "inode_count": 102400,
+          "block_count": 409600,
+          "created": "2026-08-20 03:14:08",
+          "last_written": "2026-08-20 03:14:14"
+        }
+      },
+      {
+        "id": "p3",
+        "device": "sdcard.img3",
+        "start_sector": 854016,
+        "sectors": 819200,
+        "size_bytes": 419430400,
+        "type": "0x0c (BPB formatea FAT16)",
+        "bootable": false,
+        "sha256": "c7131966845ffd9761702adfe87c56b2d2b93aabe07119a089fa762da70d5bc5",
+        "role": "DATA/update: rootfs.tar",
+        "filesystem": "FAT16 'mkfs.fat', volumen serial B422-4708, sin label",
+        "files": [
+          {
+            "path": "rootfs.tar",
+            "size": 395427840,
+            "modified": "2026-08-20 14:14",
+            "sha256": "f511c99bc9a813ace4d5db94ad4ab29cf2e1d0bac56c36969cad6bda89b5221b",
+            "tar_entries": 7513
+          }
+        ]
+      }
+    ],
+    "boot_partition_files": [
+      {"path": "zImage", "size": 4956144, "modified": "2026-08-20 14:14", "sha256": "a838ec5ef84cdf2b8a9c3ccd75ddd489b82e6f8911b8e4470eb76bdc86df42b3", "type": "kernel ARM zImage"},
+      {"path": "sun8i-r16-x6200.dtb", "size": 26413, "modified": "2026-08-20 14:14", "sha256": "7c73c0b0dc2a2691e2560f51927dab1bd06e3cc44bff3afb6a2c089ee8629f8b", "type": "DTB"},
+      {"path": "boot.scr", "size": 502, "modified": "2026-08-20 14:14", "sha256": "f60550743a48e4967fe974b5c9b1fd7d7446e0531236c78666b2c826ad197719", "type": "script U-Boot"},
+      {"path": "logo.bmp", "size": 25654, "modified": "2026-08-20 14:14", "sha256": "5461cd6e5ba5a65cbbaffc76e771912f1bea5f2fa78123f46a638d7a39c09756", "type": "BMP logo"}
+    ]
+  },
+  "app_base": {
+    "app_linux": {
+      "description": "APP Linux = sdcard.img: boot FAT + rootfs ext4 (Buildroot 2020.02.9) con GUI Qt vendor y payload BASE; particion DATA/FAT con rootfs.tar (payload de actualizacion de APP).",
+      "key_artifacts": [
+        {
+          "path": "/usr/app_qt/x6200_ui_v100",
+          "type": "ELF 32-bit LSB ARM EABI5 hard-float, dinamico, interpreter /lib/ld-linux-armhf.so.3, GNU/Linux 5.4.0, not stripped",
+          "size": 1684984,
+          "sha256": "26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b",
+          "version_attribution": "APP 1.0.8 (por evidencia interna; paquete NO autenticado)",
+          "version_evidence": "release note declara APP 1.0.8 Aug 17 2026; string suelta '1.0.8' en rodata offset 0x11b018, mismo patron que '1.0.6' (offset 0x114ac7) en el binario 1.0.6; mtime 2026-08-17 23:07",
+          "symbols_relevant_for_next_phase": ["slip.c", "slip_encode", "slip_decode", "[ERR] SLIP Packet Too Long, length = ", "[ERR] Wrong SLIP Packet, size = ", "BaseCommIIC", "BaseComm", "basecomm_slave_info_pack", "basecommiic_pack", "basecommiic_param_t"]
+        },
+        {
+          "path": "/usr/app_qt/x6100_ui_v100",
+          "type": "ELF 32-bit LSB ARM EABI5, dinamico, not stripped",
+          "size": 1211056,
+          "sha256": "b972698abd235280aface4ec15285d2e87e46c238bc4658bd249b48c0a50b057",
+          "version_attribution": "UNKNOWN (no declarada; contenido actualizado respecto de 1.0.6)"
+        },
+        {
+          "path": "/usr/share/emmc_sources/u-boot-sunxi-with-spl.bin",
+          "type": "bootloader blob",
+          "size": 548864,
+          "sha256": "ccf63f9a558c725eb644b3246f786628b6c1c7cbecfb7f1a627fb54fafa2053e",
+          "version_attribution": "UNKNOWN"
+        },
+        {
+          "path": "/usr/share/emmc_sources/zImage",
+          "type": "kernel ARM zImage",
+          "size": 4956144,
+          "sha256": "a838ec5ef84cdf2b8a9c3ccd75ddd489b82e6f8911b8e4470eb76bdc86df42b3",
+          "version_attribution": "UNKNOWN (identico al kernel del 1.0.6)"
+        },
+        {
+          "path": "/usr/share/emmc_sources/sun8i-r16-x6200.dtb",
+          "type": "DTB",
+          "size": 26413,
+          "sha256": "7c73c0b0dc2a2691e2560f51927dab1bd06e3cc44bff3afb6a2c089ee8629f8b",
+          "version_attribution": "UNKNOWN"
+        },
+        {
+          "path": "/usr/share/emmc_sources/install_emmc.sh",
+          "type": "shell script (leido, NO ejecutado)",
+          "size": 2737,
+          "sha256": "25b8f41e01e916c5dd7966d33613ce951536ac96f35b22c174a8608f2b2dd401",
+          "version_attribution": "UNKNOWN"
+        },
+        {
+          "path": "/usr/share/emmc_sources/fmt_emmc.sh",
+          "type": "shell script (leido, NO ejecutado)",
+          "size": 570,
+          "sha256": "e36ab377cd4e40389e4df987858b1793e5b4e91eab04d523f943beff493bca88",
+          "version_attribution": "UNKNOWN"
+        }
+      ],
+      "update_mechanism_evidence_from_install_emmc_sh": "Lectura estatica (no ejecucion): instala APP en eMMC (mmcblk1 o mmcblk2), p1 FAT 48 MiB + p2 ext4 7.2 GB (fmt_emmc.sh), escribe u-boot en seek 8, descomprime rootfs.tar desde la particion de la microSD y preserva /usr/app_qt/xparam.db, /usr/app_qt/voice, /etc/xgradio y /etc/NetworkManager (backup/restore dentro del script). Es evidencia del mecanismo, no instrucciones oficiales al operador."
+    },
+    "base_mcu": {
+      "description": "BASE = firmware de MCU/FPGA del baseband, empaquetado como .xgf opaco dentro del rootfs; se actualiza desde el menu FIRMWARE UPGRADE de la APP.",
+      "key_artifacts": [
+        {
+          "path": "/usr/firmware/x6200_mcu_20260820141208.xgf",
+          "type": "data opaco (sin magic ELF/DTB/MBR/FAT); entropia 7.4704 bits/byte",
+          "size": 524288,
+          "sha256": "9a19f97a5ad9e141a3663d222f984073bf0b18b38d4662604372a0036f9daa23",
+          "first16_hex": "2cb6ce74a1837bae18eed02aff7c1b82",
+          "version_attribution": "BASE 1.0.8 declarada por release note; NO verificable internamente (opaco)",
+          "name_timestamp": "2026-08-20 14:12:08",
+          "relation_to_declared_base_build": "UNKNOWN (declarado BASE 1.0.8 Aug 19 2026,16:13:08; el nombre del .xgf es ~22 h posterior)"
+        }
+      ],
+      "fpga": {
+        "separate_artifact_found": false,
+        "status": "UNKNOWN",
+        "evidence": "No se encontro bitstream de FPGA separable en el paquete ni en el listado completo del rootfs. El PDF historico 1.0.6 afirma que HARDWARE y FPGA no cambian durante el proceso de actualizacion de 1.0.6; no se extrapola a 1.0.8."
+      }
+    }
+  },
+  "version_attribution": {
+    "APP": {
+      "value": "1.0.8",
+      "confidence": "internal_evidence_only",
+      "declared_by_vendor": true,
+      "evidence": [
+        "release note: APP: 1.0.8 Aug 17 2026,16:21:06",
+        "GUI x6200_ui_v100: unica cadena suelta '1.0.8' en rodata offset 0x11b018 (mismo patron que '1.0.6' offset 0x114ac7 en el binario 1.0.6)",
+        "mtime del binario 2026-08-17 23:07; rootfs creado 2026-08-20 03:14"
+      ],
+      "authenticated": false
+    },
+    "BASE": {
+      "value": "1.0.8",
+      "confidence": "vendor_declaration_only",
+      "declared_by_vendor": true,
+      "evidence": [
+        "release note: BASE: 1.0.8 Aug 19 2026,16:13:08",
+        "xgf opaco: contenido no inspeccionable sin desencriptar/ejecutar (fuera de alcance)"
+      ],
+      "authenticated": false
+    },
+    "PACKAGE_ID": {
+      "value": "260820001",
+      "confidence": "vendor_declaration_only"
+    },
+    "payload_authenticated": false,
+    "note": "Toda la atribucion de version es por evidencia interna y declaracion del fabricante en un paquete que falla su propio hash publicado. No se usa 'APP oficial 1.0.8' como afirmacion acreditada."
+  },
+  "historical_comparison": {
+    "historical_1_0_6": {
+      "zip_path": "/home/pablo/lenovo_vieja/Downloads/radio/x6200/2025-01-15_Xiegu_X6200_update_V1.0.6.zip",
+      "zip_size": 371909329,
+      "zip_sha256": "8c270b3130cb68349da062be7384c43221ebf64146ab2e8b2ae4cbff26712e17",
+      "zip_entries": 5,
+      "readme_1st_sha256": "0ac390aabb1772108d5fb044c55005707cdf8b05b03b6d2227e6e7808433ab6b",
+      "release_note_sha256": "1695dac424390864d3222f427a6af960f868a142d19c777205da1587486d450a",
+      "radioddity_pdf_sha256": "86589c152d16876d014eb1d34e94cf5d07dda41520b4efdd18459a88c45a44d3",
+      "sdcard_img_sha256": "e507e7ad98b3ca4e30407177f579717318e9718b1542c48c7532556627734514",
+      "sdcard_img_declared_hash_match": true,
+      "declared_versions": {"APP": "1.0.6 Jan 14 2025,14:13:28", "BASE": "1.0.6 Jan 11 2025,13:46:22"},
+      "partition_sha256": {
+        "p1": "366b82bad672a3e36dc0369ab517ae86af2c6f138c35781ba8d7c0eb383da6fe",
+        "p2": "fc330714466f64e0e15f3c5d60926e6815823fe7166bd582a47d704738278936",
+        "p3": "ffdca08b82af0a52d94f66c5598c1e5d55beb164b1d04b7ee94a32de6c2b93e2"
+      },
+      "ext4_uuid": "653a142c-a3e4-40df-8050-0fdb3285d601",
+      "rootfs_tar": {"size": 395028480, "sha256": "ad2f7ec3ec6493cc0f44bf6da35971f563c75d75e2ae45be48603f0bd6bff3d8", "entries": 7504},
+      "binaries": {
+        "x6200_ui_v100": {"size": 1649256, "sha256": "b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b"},
+        "x6100_ui_v100": {"size": 929312, "sha256": "a3d13459fb209bce32e4dde8fcbfc08d7c758ec69a15f77f3a5bb21e99d8b5eb"},
+        "x6200_mcu_20250111134652.xgf": {"size": 524288, "sha256": "dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3"}
+      },
+      "boot_files": {
+        "zImage": {"size": 4956144, "sha256": "a838ec5ef84cdf2b8a9c3ccd75ddd489b82e6f8911b8e4470eb76bdc86df42b3"},
+        "sun8i-r16-x6200.dtb": {"size": 26472, "sha256": "f422787a9b50b6f526099eb4871dd58c4c2628a41c9428bbd6d9a537b9aa8dac"},
+        "boot.scr": {"size": 493, "sha256": "776ba0295d690371ec64531173330ba69748c9e2f039b1e48bec9466e9cd5258"},
+        "logo.bmp": {"size": 25654, "sha256": "46baf4e04d5a18509ba0bd7d89980dff00816218c37a63702d5fa2c935e0ccd7"}
+      }
+    },
+    "refs_vendor_fw_provenance": {
+      "x6200_ui_v100": {
+        "path": "/home/pablo/desa/x6200/refs/vendor-fw/x6200_ui_v100",
+        "size": 1649256,
+        "sha256": "b76331c5aa859ae98dc1819b1079a3e40489e9986c9656e0dc2c553aeb28871b",
+        "byte_identical_to_official_1_0_6_rootfs": true
+      },
+      "x6200_mcu_20250111134652.xgf": {
+        "path": "/home/pablo/desa/x6200/refs/vendor-fw/x6200_mcu_20250111134652.xgf",
+        "size": 524288,
+        "sha256": "dca90387b70d9550448006310a69ea65625bec87f402c10df789deeb13ff12f3",
+        "byte_identical_to_official_1_0_6_rootfs": true
+      },
+      "attribution": "1.0.6 (APP/BASE 1.0.6) demostrada por hash contra el paquete oficial 1.0.6; NO atribuir 1.0.8."
+    },
+    "changed_between_1_0_6_and_1_0_8": {
+      "unchanged": ["MBR layout", "zImage (hash identico)"],
+      "changed": ["sun8i-r16-x6200.dtb", "boot.scr", "logo.bmp", "x6200_ui_v100", "x6100_ui_v100", "x6200_mcu_*.xgf", "rootfs.tar (tamanio/hash/entradas)"]
+    }
+  },
+  "scratch": {
+    "root": "/home/pablo/desa/x6200/fw108-scratch",
+    "outside_git": true,
+    "paths": {
+      "zip": "/home/pablo/desa/x6200/fw108-scratch/vendor/x6200udimg-260820001.zip",
+      "extracted_package_dir": "/home/pablo/desa/x6200/fw108-scratch/vendor/x6200-fw108-vendor/x6200udimg-260820001",
+      "release_note": "/home/pablo/desa/x6200/fw108-scratch/vendor/x6200-fw108-vendor/x6200udimg-260820001/ReleaseNote-260820001(EN_CHS).txt",
+      "sdcard_img": "/home/pablo/desa/x6200/fw108-scratch/vendor/x6200-fw108-vendor/x6200udimg-260820001/sdcard.img",
+      "rootfs_partition_ext4": "/home/pablo/desa/x6200/fw108-scratch/ext108/parts/1.img",
+      "app_elf_x6200_ui": "/home/pablo/desa/x6200/fw108-scratch/ext108/fs108/x6200_ui_v100",
+      "app_elf_x6100_ui": "/home/pablo/desa/x6200/fw108-scratch/ext108/fs108/x6100_ui_v100",
+      "base_xgf": "/home/pablo/desa/x6200/fw108-scratch/ext108/fs108/x6200_mcu_20260820141208.xgf",
+      "emmc_sources_dir": "/home/pablo/desa/x6200/fw108-scratch/ext108/fs108/emmc_sources",
+      "historical_1_0_6_extract": "/home/pablo/desa/x6200/fw108-scratch/ref106",
+      "comparisons_dir": "/home/pablo/desa/x6200/fw108-scratch/comparisons",
+      "evidence_captures_dir": "/home/pablo/desa/x6200/fw108-scratch/vendor",
+      "official_tutorial_pdf": "/home/pablo/desa/x6200/fw108-scratch/vendor/X6200FirmwareUpgradeTutorialWS-JSZL-2407-01ENRevised.pdf"
+    }
+  },
+  "evidence_captures": [
+    {"file": "downloads_page_20261030.html", "size": 152173, "sha256": "9fe2294142c4568ac18aa71823319ad889409a0a069873d96af19b5cc0b5f5bd"},
+    {"file": "blog_108_20261030.html", "size": 113470, "sha256": "a9db66b258097b8fb0d2b4687d42942a421f9c19b681eda9f0d4a6d58a6a3442"},
+    {"file": "page_headers.txt", "size": 208, "sha256": "28a02ea144d0c1bff5aa98fd1241da6b851c179a460b112d3a9c1d55e642ff0f"},
+    {"file": "dl10216_headers.txt", "size": 480, "sha256": "e67e731d8c5fb691a736781f20f65c2ca51d33327ca04daadd056203406020cf"},
+    {"file": "dl10216_get_headers.txt", "size": 499, "sha256": "160c80ba77c85832c0feb1099c841f9ac8bd314cab5423c0acf0d3d882c65a6e"},
+    {"file": "download_1.0.8.log", "size": 48915, "sha256": "f577109d3be33ee7986833b5acb4b503c6d1cf208b14fc7c7ee6789698672a6d"},
+    {"file": "blog_headers.txt", "size": 210, "sha256": "5ee6402e573833f300a7aa5b835cbe51b3c7bad47519becae5d35638d3da1c24"},
+    {"file": "tutorial9241_headers.txt", "size": 589, "sha256": "f52503a02fc7f2b8521140b68f3e75b964ad11ed00b64d6d77c1f78a5c55d382"},
+    {"file": "tutorial9241_get_headers.txt", "size": 608, "sha256": "c921d2fc0d197a94a3bae09f2eea7b905d5df2d6c08b9dcf236cc93fd88f6934"},
+    {"file": "sha256.zip.txt", "size": 91, "sha256": "f2e697961c1dab64aaa86f1b916700ffbc37e7df423e7791a060662c845ddc32"},
+    {"file": "X6200FirmwareUpgradeTutorialWS-JSZL-2407-01ENRevised.pdf", "size": 300348, "sha256": "68ecc5a434e12080473807f5a6312fcf1f317960dd6d41a284e300d4bc877fbf"}
+  ],
+  "limitations": [
+    "No se acredita autenticidad del payload 1.0.8: hash oficial declarado != hash calculado del sdcard.img.",
+    "No se acredita la version del BASE por inspeccion: .xgf opaco; version 1.0.8 solo declarada por el release note.",
+    "No se identifico un artefacto separable de FPGA; si el .xgf incluye FPGA es UNKNOWN.",
+    "Google Drive (segunda via oficial del blog) inaccesible sin login Google; no se uso como sustituto.",
+    "Paquete 1.0.7 (download_id=10215) devuelve HTTP 500; no disponible para comparar cambios.",
+    "Causa de la discrepancia de hash: UNKNOWN (note desactualizado / imagen regenerada / re-subida no distinguibles).",
+    "No se hasheo cada archivo del rootfs; se hashearon los artefactos clave y se listo el rootfs completo (7516 paths via 7z l).",
+    "Tutorial oficial de instalacion es de 2024-07 (generico) y el PDF detallado es de 1.0.6; no hay instrucciones especificas de 1.0.8.",
+    "Metadatos internos obtenidos con debugfs/tar -t; pueden diferir de la semantica de un montaje real."
+  ],
+  "safety_compliance": {
+    "radio_access": false,
+    "wifi_ssh_usb": false,
+    "i2c_uart": false,
+    "flash_or_factory_reset": false,
+    "package_scripts_or_binaries_executed": false,
+    "dd_to_devices": false,
+    "sudo": false,
+    "writable_mounts": false,
+    "proprietary_binaries_in_git": false,
+    "git_diff_docs_only": true
+  }
+}
