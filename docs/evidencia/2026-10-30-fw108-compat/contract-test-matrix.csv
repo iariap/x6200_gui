@@ -1,0 +1,27 @@
+id,caso,entrada,esperado,resultado,evidencia
+T01,conversion byte minimo,byte 0,float -126.0f exacto,PASS,tests/native/test_radio_samples.c::test_puntos_del_contrato (commands.log #3)
+T02,conversion cero,byte 126 (0x7e),float 0.0f exacto,PASS,test_puntos_del_contrato / T05
+T03,conversion byte maximo,byte 255,float 105.0f exacto,PASS,test_puntos_del_contrato / T05
+T04,conversion cerca del cero,byte 149,float -1.0f exacto,PASS,test_puntos_del_contrato
+T05,las 512 muestras del pack,bytes (uint8_t)i para i=0..511,512 floats (raw[i]-126) en orden,PASS,test_512_muestras (533 checks 0 fallos)
+T06,sin lecturas/escrituras fuera de rango,buffers malloc del tamano exacto + canarios,ningun acceso fuera de las 512 muestras y canarios intactos,PASS,test_bordes_sin_oob (ASan/UBSan y canarios)
+T07,sanitizadores del test de conversion,ASan+UBSan clang-18,OOB/UBSan abortan; el test termina exit 0,PASS,commands.log #4 (exit 0 533 checks 0 fallos)
+T08,control negativo del sanitizador,count=513 sobre buffers de 512,ASan heap-buffer-overflow (el sanitizador esta armado),PASS (fallo esperado),commands.log #6 asan-oob-control exit 1
+T09,no reinterpretar floats,bytes 0x00 0x00 0x80 0x3F (1.0f LE),-126.0f -126.0f -22.0f -33.0f (cada byte por separado),PASS,test_no_reinterpreta_float
+T10,ABI v0.1.1 (host),header refs/X6200Control tag v0.1.1,sizeof 552 / offsetof 4 / samples 512,PASS,commands.log #5 abi-dump-v011
+T11,ABI v0.0/v0.1.0 informativo,header staging del build tree,sizeof 2088 / offsetof 4 / samples 2048,PASS (informativo),commands.log #5 abi-dump-v010
+T12,compile-check cross ARM con v0.1.1,arm-buildroot-linux-gnueabihf-gcc + src/radio.c,exit 0 con los _Static_assert,PASS,commands.log #7 POSITIVO_EXIT=0
+T13,guard BLOCKED_GUI_SAMPLE_ABI (control negativo),mismo compile con header v0.1.0 del staging,exit distinto de 0 con static assertion failed BLOCKED_GUI_SAMPLE_ABI,PASS (fallo esperado),commands.log #7 NEGATIVO_EXIT=1
+T14,regresion del bug pre-fix,cast float* sobre pack de 552 B leyendo 512 floats,ASan heap-buffer-overflow (2048 B desde 552 B),PASS (fallo esperado),commands.log #6 asan-old-cast exit 1
+T15,dsp_samples recibe 512 floats,buffer float[RADIO_SAMPLES] + static assert RADIO_SAMPLES==RADIO_FLOW_SAMPLES,DSP sin cambios consume 512 floats (dsp.cpp sha256 identico),PASS (estructural en compile-time),"abi-audit.md seccion 4 / src/dsp.cpp:43-84 y 232-247"
+T16,suite nativa completa,run_native_tests.sh,exit 0 sin fallos,PASS,commands.log #2 NATIVE_EXIT=0
+T17,stage #219 (radio_thread) con header nuevo,radio.c compilado contra stub v0.1.1,compila y 57 checks 0 fallos,PASS,commands.log #2 (stage #219)
+T18,bench radio_thread (staging nuevo),run_radio_thread_bench.sh SECONDS_WIN=1,compila base y head y corre,PASS,commands.log #8 BENCH_EXIT=0
+T19,build completo GUI+lib v0.1.1+patch+imagen,SDK/build tree del owner,imagen de prueba con SHA256,NOT_RUN,fuera del alcance B; lo hace la integracion (task-16)
+T20,prueba fisica RX post-instalacion,radio real + operador caja negra,veredicto RX,NOT_RUN,requiere instalacion/autorizacion del dueno (#378)
+T21,ASF check-matrix,6850d671..HEAD en worktree,exit 0 o FAILs justificados,PASS con FAILs de ENTORNO (exit 1),commands.log #10: native+estaticos ok; uv cache read-only/lvgl ausente/QEMU banco sin binario
+"T12","parte C: libreria v0.1.1+patch A en build real","Buildroot aplica 0001-flow-support-SLIP-RX-framing-for-BASE-1.0.8.patch sobre X6200Control v0.1.1 (tag 0ee1ae3)",".so sin strip sha256 f2eb4fb1... identico al gate ARM de la parte A; staging header 27202894...; flow.c 77c4fd93...","PASS","commands.log #14; build-integration.log; PROVENANCE.md"
+"T13","parte C: GUI PR #381 en build real","X6200_GUI_SITE local al worktree de feat/x6200-fw108-gui-samples (d8a205ed), static asserts ABI v0.1.1","radio.c 6be56a90... y radio_samples.h d2ff0bf3... identicos al worktree; binario en imagen 6a068db2...","PASS","commands.log #14; build-integration.log"
+"T14","parte C: imagen de prueba con SHA256 (fuera de Git)","sdcard.img generado por genimage; particion 2 ext4 comparada contra rootfs.ext2","sdcard.img sha256 7ec5d8cc... (571473920 B); rootfs.tar a2eb1d65...; particion2 == rootfs.ext2 bbd9d172...","PASS","fw108-image-377/PROVENANCE.md + manifest.json"
+"T15","parte C: tests en el entorno de integracion","host parser C (release + ASan/UBSan) y suite nativa GUI completa","198/0 y 198/0 exit 0 (contenedor); native GUI exit 0, 26 stages, stage #377 533/0 (host)","PASS","commands.log #14; tests-integration.log; native-tests-host.log"
+"T16","parte C: restore exacto del build tree del owner","backup previo; restore de paquete, mk, images y artefactos; comparacion antes/despues","git status sha256 identico antes/despues (a301221f...); images restauradas; solo 3 diferencias /etc explicadas","PASS","commands.log #14; fw108-scratch/integration-377/restore-report.md"

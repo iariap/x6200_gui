@@ -160,6 +160,28 @@ export X6200_VOICE_C="${X6200_VOICE_C:-$SRC/voice.c}"
 export X6200_VOICE_H="${X6200_VOICE_H:-$SRC/voice.h}"
 "$OUT/native_tests"
 
+# --- Flow sample conversion (issue #377) -------------------------------------
+# x6200_flow_t de X6200Control v0.1.1 trae `uint8_t samples[512]` (centrados en
+# 150), no float[512]: la GUI los convierte antes de dsp_samples(). El header
+# src/radio_samples.h es C puro (sin SDK ni LVGL) para poder testearlo en host;
+# el ABI real del pack lo fijan los _Static_assert de src/radio.c contra el
+# header del SDK con el que se compila la GUI. El test corre con ASan/UBSan
+# cuando estan disponibles: los buffers son del tamano exacto de las 512
+# muestras para que cualquier acceso de mas aborte.
+echo "== Flujo RX (#377): conversion de muestras u8->float del pack v0.1.1 =="
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$SRC" \
+        "$DIR/test_radio_samples.c" "$DIR/test_framework.c" "$DIR/radio_samples_test_main.c" \
+        -o "$OUT/radio_samples_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$SRC" \
+        "$DIR/test_radio_samples.c" "$DIR/test_framework.c" "$DIR/radio_samples_test_main.c" \
+        -o "$OUT/radio_samples_tests"
+fi
+"$OUT/radio_samples_tests"
+
 # --- Clock test (reloj permanente + banda de estado, issue #250) --------------
 # src/clock.c includes its sibling firmware headers with `#include "..."`, and
 # for a quoted include the directory of the including file always wins over -I.
@@ -1222,7 +1244,7 @@ rm -rf "$RT_STAGE"
 mkdir -p "$RT_STAGE/cfg" "$RT_STAGE/params" "$RT_STAGE/lvgl" \
          "$RT_STAGE/aether_radio/x6200_control/low"
 # Headers reales que radio.c necesita enteros (mismo contrato que sus tipos).
-cp "$SRC/radio.h" "$SRC/visual_policy.h" "$SRC/cb.h" "$SRC/pubsub_ids.h" "$RT_STAGE/"
+cp "$SRC/radio.h" "$SRC/visual_policy.h" "$SRC/cb.h" "$SRC/pubsub_ids.h" "$SRC/radio_samples.h" "$RT_STAGE/"
 cp "$SRC/cfg/subjects.h" "$SRC/cfg/common.h" "$SRC/cfg/band.h" "$SRC/cfg/atu.h" \
    "$SRC/cfg/transverter.h" "$SRC/cfg/cfg.h" "$RT_STAGE/cfg/"
 # Stubs minimos y copias del SDK.
