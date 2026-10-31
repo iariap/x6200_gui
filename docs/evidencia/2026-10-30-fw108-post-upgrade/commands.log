@@ -1,0 +1,27 @@
+# Comandos y verificaciones de #378 (sin credenciales ni direcciones privadas)
+
+## Build de la imagen nueva
+# Buildroot del owner, paquete GUI local = PR #381 (57f671e8), paquete
+# aether-x6200-control = PR #14, S01create_data con el fix de blkid/PARTUUID.
+# make aether-x6200-control-dirclean
+# make x6200-gui-dirclean
+# make -j8
+# BUILD_EXIT=0
+
+## Verificación de la imagen
+sha256sum sdcard.img
+# 1e3a9748754a758d4ac83aab673812a7313371a48ec0793884d2f66717e2339b  sdcard.img
+# 571473920 bytes
+# MBR: p1 2048..67583 FAT32, p2 67584..1116159 ext4; sin p3.
+
+## Contenido de rootfs
+tar -xOf rootfs.tar ./usr/sbin/x6200_gui | sha256sum
+# 03356797959d21c35500d95c23bbc04d8d1f0ac922a89ec3681215d4fdcb982e
+tar -xOf rootfs.tar ./usr/lib/libaether_x6200_control.so.0.15.3 | sha256sum
+# e93d79a376a974bea61301ee5c90eb0f951d79c00f06918ccdc7827e59d6cad5
+tar -xOf rootfs.tar ./etc/init.d/S01create_data | sha256sum
+# da7d19b13d853cbe6e764f60b62194203b704cb595e5f0f3837a3b8f398c6963
+
+## GUI compatibilidad
+# Desensamblado: vmvn.i16 q12,#125 (bias -126) y sub r3,r3,#126
+# El binario f3c4... del hotfix no es el de esta imagen; el de la imagen es 0335...
