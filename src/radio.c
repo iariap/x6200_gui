@@ -15,6 +15,7 @@
 #include "cfg/transverter.h"
 #include "util.h"
 #include "dsp.h"
+#include "rx_audio_live.h"
 #include "radio_samples.h"
 #include "params/params.h"
 #include "hkey.h"
@@ -265,6 +266,10 @@ bool radio_tick() {
             // Ignore TX from BASE
             pack->flag.tx = false;
         }
+
+        /* Router RX live (#364): TX/ATU tienen prioridad y lo suspenden. Es
+         * solo estado de audio; no escribe I2C ni cambia el flujo de radio. */
+        rx_audio_live_set_tx(pack->flag.tx || state != RADIO_RX);
 
         switch (state) {
             case RADIO_RX:
