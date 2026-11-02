@@ -15,6 +15,7 @@
 #include "cfg/transverter.h"
 #include "util.h"
 #include "dsp.h"
+#include "rx_audio_live.h"
 #include "radio_samples.h"
 #include "params/params.h"
 #include "hkey.h"
@@ -265,6 +266,10 @@ bool radio_tick() {
             // Ignore TX from BASE
             pack->flag.tx = false;
         }
+
+        /* Router RX live (#364): TX/ATU tienen prioridad y lo suspenden. Es
+         * solo estado de audio; no escribe I2C ni cambia el flujo de radio. */
+        rx_audio_live_set_tx(pack->flag.tx || state != RADIO_RX);
 
         switch (state) {
             case RADIO_RX:
@@ -1019,6 +1024,8 @@ void radio_start_atu() {
             voice_say_text_fmt("TX blocked, not a C B channel");
             return;
         }
+        /* El router no puede seguir en DAC durante el tune del ATU. */
+        rx_audio_live_set_tx(true);
         state = RADIO_ATU_START;
     }
 }
@@ -1044,6 +1051,8 @@ bool radio_start_swrscan() {
     swrscan_mode_saved = true;
 
     subject_set_int(cfg_cur.mode, x6200_mode_lsb);
+    /* Suspender RX live ANTES de habilitar el TX del barrido. */
+    rx_audio_live_set_tx(true);
     radio_lock();
     x6200_control_txpwr_set(SWRSCAN_TX_POWER_W);
     x6200_control_swrscan_set(true);
@@ -1067,6 +1076,7 @@ void radio_stop_swrscan() {
             subject_set_int(cfg_cur.mode, swrscan_prev_mode);
             swrscan_mode_saved = false;
         }
+        rx_audio_live_set_tx(false);
     }
 }
 
@@ -1342,6 +1352,10 @@ void radio_poweroff() {
      * reportar LASTBREATH (issue #121). */
     lastbreath_mark_clean_now();
 
+    /* Cerrar cualquier ruta RX live antes de apagar. */
+    (void) rx_audio_live_set_enabled(false);
+    rx_audio_live_set_tx(true);
+
     if (params.charger == RADIO_CHARGER_SHADOW) {
         WITH_RADIO_LOCK(x6200_control_charger_set(true));
     }
@@ -1391,10 +1405,18 @@ void radio_set_ptt(bool tx) {
 
         /* Nunca se deja el PTT prendido: se apaga explicito. */
         WITH_RADIO_LOCK(x6200_control_ptt_set(false));
+        rx_audio_live_set_tx(false);
         return;
     }
 
+    /* Prioridad TX: suspender el router antes de tocar PTT. */
+    if (tx) {
+        rx_audio_live_set_tx(true);
+    }
     WITH_RADIO_LOCK(x6200_control_ptt_set(tx));
+    if (!tx) {
+        rx_audio_live_set_tx(false);
+    }
 }
 
 /* Accepted for the ported JS8 app; see the note in radio.h */
@@ -1422,7 +1444,13 @@ void radio_set_modem(bool tx) {
         return;
     }
 
+    if (tx) {
+        rx_audio_live_set_tx(true);
+    }
     WITH_RADIO_LOCK(x6200_control_modem_set(tx));
+    if (!tx) {
+        rx_audio_live_set_tx(false);
+    }
 }
 
 int16_t radio_change_rit(int16_t d) {
