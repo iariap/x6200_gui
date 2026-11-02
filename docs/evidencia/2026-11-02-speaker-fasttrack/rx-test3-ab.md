@@ -27,3 +27,19 @@ RESULT PASS_BASE_RESTORED
 - `SPEAKER_AUDIO_HEARD`: ya confirmado para la ruta. Para esta A/B falta que el operador
   confirme si distinguió **Off** de **SSB voice**.
 - `PRODUCTION_NOT_READY`: sin restore automático ante crash ni interlocks permanentes.
+
+## Confirmación del operador (2026-11-02)
+
+El operador confirmó: **`SPEAKER_AUDIO_HEARD = YES`** y **`PRESET_DIFFERENCE_HEARD = YES`**.
+Escuchó claramente la diferencia entre la fase `OFF` y la fase `SSB voice` por el parlante interno.
+
+Con esto queda demostrado, en una prueba física corta:
+
+- el RX procesado por SpeexDSP puede salir por el parlante interno usando el router y el DAC;
+- el MUX vuelve a BASE al terminar;
+- no se tocaron HMic/IMic, preset persistente, TX/PTT/ATU;
+- el stream propio del router puede entregar audio continuo (underruns reales = 0).
+
+**No es PRODUCTION_READY**: no hay recuperación automática ante crash ni interlocks permanentes;
+el test se ejecutó con autorización temporal y la GUI original fue restaurada. Los issues #367,
+#364 y #365 siguen abiertos para la integración segura.
