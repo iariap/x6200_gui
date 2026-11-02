@@ -357,6 +357,96 @@ static void case_drop_error(void) {
     fragment_free(&f);
 }
 
+
+/* --- Igualdad del PCM post-Speex: recorder/decoders vs router (#364) -------- */
+typedef struct {
+    pthread_mutex_t lock;
+    int             writes;
+    int16_t         block[RX_AUDIO_LIVE_BLOCK_SAMPLES];
+} router_fake_t;
+
+static bool router_fake_open(void *ctx) { (void) ctx; return true; }
+static void router_fake_close(void *ctx) { (void) ctx; }
+static bool router_fake_ready(void *ctx) { (void) ctx; return true; }
+static bool router_fake_mux_ready(void *ctx) { (void) ctx; return true; }
+static int  router_fake_mux(void *ctx, bool dac) { (void) ctx; (void) dac; return 0; }
+
+static int router_fake_write(void *ctx, const int16_t *samples, size_t count) {
+    router_fake_t *r = ctx;
+
+    pthread_mutex_lock(&r->lock);
+    if (count == RX_AUDIO_LIVE_BLOCK_SAMPLES) {
+        memcpy(r->block, samples, sizeof(r->block));
+    }
+    r->writes++;
+    pthread_mutex_unlock(&r->lock);
+    return RX_AUDIO_LIVE_WRITE_OK;
+}
+
+static void case_router_pcm_equality(void) {
+    router_fake_t rf;
+    int16_t b1[RX_AUDIO_LIVE_BLOCK_SAMPLES];
+    int16_t b2[RX_AUDIO_LIVE_BLOCK_SAMPLES];
+
+    memset(&rf, 0, sizeof(rf));
+    pthread_mutex_init(&rf.lock, NULL);
+
+    for (size_t i = 0; i < RX_AUDIO_LIVE_BLOCK_SAMPLES; i++) {
+        b1[i] = (int16_t) (100 + (int) i);
+        b2[i] = (int16_t) (-200 - (int) i);
+    }
+
+    rx_audio_live_backend_t be = {
+        .ctx = &rf,
+        .open = router_fake_open,
+        .close = router_fake_close,
+        .ready = router_fake_ready,
+        .write = router_fake_write,
+        .mux_ready = router_fake_mux_ready,
+        .mux_request = router_fake_mux,
+    };
+    rx_audio_live_init(&be);
+    CHECK(rx_audio_live_set_enabled(true));
+
+    /* capture_deliver() aplica audio_enh_process() (= divide por 2 en el stub),
+     * entrega la MISMA PCM a recorder/dsp y al router. */
+    capture_deliver(b1, RX_AUDIO_LIVE_BLOCK_SAMPLES, true);
+    capture_deliver(b2, RX_AUDIO_LIVE_BLOCK_SAMPLES, true);
+
+    for (int i = 0; i < 500; i++) {
+        pthread_mutex_lock(&rf.lock);
+        int writes = rf.writes;
+        pthread_mutex_unlock(&rf.lock);
+        if (writes > 0) {
+            break;
+        }
+        usleep(1000);
+    }
+
+    pthread_mutex_lock(&rf.lock);
+    CHECK(rf.writes > 0);
+    bool matches_b1 = true;
+    bool matches_b2 = true;
+    for (size_t i = 0; i < RX_AUDIO_LIVE_BLOCK_SAMPLES; i++) {
+        /* capture_deliver() procesa b1/b2 in-place: comparar contra la PCM
+         * ya procesada que recibieron recorder/dsp. */
+        if (rf.block[i] != b1[i]) {
+            matches_b1 = false;
+        }
+        if (rf.block[i] != b2[i]) {
+            matches_b2 = false;
+        }
+    }
+    /* El worker puede publicar el primero o el segundo bloque, pero siempre la
+     * MISMA PCM post-audio_enh_process que recibieron recorder/dsp. */
+    CHECK(matches_b1 || matches_b2);
+    pthread_mutex_unlock(&rf.lock);
+
+    CHECK(rx_audio_live_set_enabled(false));
+    rx_audio_live_shutdown();
+    pthread_mutex_destroy(&rf.lock);
+}
+
 void test_audio_callback(void) {
     /* El scratch es 10 ms de la tasa real de captura (4410 muestras, 8820 bytes): es el
      * tamanio que el contrato fija y el que usa el caso d). */
@@ -373,4 +463,5 @@ void test_audio_callback(void) {
      * NULL (pa_stream_peek con data==NULL y nbytes>0), y un SIGSEGV no deja reportar los
      * casos siguientes. Con el callback nuevo pasa como cualquier otro. */
     case_hole();
+    case_router_pcm_equality();
 }

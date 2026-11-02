@@ -1244,7 +1244,7 @@ rm -rf "$RT_STAGE"
 mkdir -p "$RT_STAGE/cfg" "$RT_STAGE/params" "$RT_STAGE/lvgl" \
          "$RT_STAGE/aether_radio/x6200_control/low"
 # Headers reales que radio.c necesita enteros (mismo contrato que sus tipos).
-cp "$SRC/radio.h" "$SRC/visual_policy.h" "$SRC/cb.h" "$SRC/pubsub_ids.h" "$SRC/radio_samples.h" "$RT_STAGE/"
+cp "$SRC/radio.h" "$SRC/visual_policy.h" "$SRC/cb.h" "$SRC/pubsub_ids.h" "$SRC/radio_samples.h" "$SRC/rx_audio_live.h" "$RT_STAGE/"
 cp "$SRC/cfg/subjects.h" "$SRC/cfg/common.h" "$SRC/cfg/band.h" "$SRC/cfg/atu.h" \
    "$SRC/cfg/transverter.h" "$SRC/cfg/cfg.h" "$RT_STAGE/cfg/"
 # Stubs minimos y copias del SDK.
@@ -1261,12 +1261,12 @@ if [ "$SAN_OK" = yes ]; then
     # shellcheck disable=SC2086
     $CC $RT_FLAGS $SAN $RT_INC -DRADIO_C_PATH="\"$RT_STAGE/radio.c\"" $RT_LINK \
         "$DIR/test_radio_thread.c" "$DIR/radio_stubs.c" "$DIR/test_framework.c" \
-        "$DIR/radio_thread_test_main.c" -o "$OUT/radio_thread_tests"
+        "$DIR/radio_thread_test_main.c" "$SRC/rx_audio_live.c" -o "$OUT/radio_thread_tests"
 else
     # shellcheck disable=SC2086
     $CC $RT_FLAGS $RT_INC -DRADIO_C_PATH="\"$RT_STAGE/radio.c\"" $RT_LINK \
         "$DIR/test_radio_thread.c" "$DIR/radio_stubs.c" "$DIR/test_framework.c" \
-        "$DIR/radio_thread_test_main.c" -o "$OUT/radio_thread_tests"
+        "$DIR/radio_thread_test_main.c" "$SRC/rx_audio_live.c" -o "$OUT/radio_thread_tests"
 fi
 
 "$OUT/radio_thread_tests"
@@ -1290,7 +1290,7 @@ echo "== Captura #351: callback seguro (peek/hole/drop, chunks, sin escribir el 
 AUDIO_STAGE="$OUT/audio_capture_src"
 rm -rf "$AUDIO_STAGE"
 mkdir -p "$AUDIO_STAGE/lvgl" "$AUDIO_STAGE/params" "$AUDIO_STAGE/pulse" "$AUDIO_STAGE/alsa"
-cp "$SRC/audio.c" "$SRC/audio.h" "$AUDIO_STAGE/"
+cp "$SRC/audio.c" "$SRC/audio.h" "$SRC/rx_audio_live.h" "$AUDIO_STAGE/"
 cp "$DIR/stubs_audio/dsp.h" "$DIR/stubs_audio/meter.h" "$DIR/stubs_audio/screen_rec.h" \
    "$DIR/stubs_audio/audio_enhancement.h" "$AUDIO_STAGE/"
 cp "$DIR/stubs_audio/lvgl/lvgl.h" "$AUDIO_STAGE/lvgl/"
@@ -1298,22 +1298,38 @@ cp "$DIR/stubs_audio/params/params.h" "$AUDIO_STAGE/params/"
 cp "$DIR/stubs_audio/pulse/pulseaudio.h" "$AUDIO_STAGE/pulse/"
 cp "$DIR/stubs_audio/alsa/asoundlib.h" "$DIR/stubs_audio/alsa/mixer.h" "$AUDIO_STAGE/alsa/"
 AUDIO_SRC="$DIR/test_audio_callback.c $DIR/audio_callback_stubs.c \
-$DIR/test_framework.c $DIR/audio_callback_test_main.c"
+$DIR/test_framework.c $DIR/audio_callback_test_main.c $SRC/rx_audio_live.c"
 AUDIO_INC="-I$AUDIO_STAGE -I$DIR"
+AUDIO_TEST_DEF="-DX6200_AUDIO_CALLBACK_TEST"
 # El callback no reserva memoria: cualquier malloc/calloc/realloc/free dentro de la
 # llamada se cuenta (test: audio_stub_alloc_calls no cambia).
 AUDIO_WRAP="-Wl,--wrap=malloc -Wl,--wrap=calloc -Wl,--wrap=realloc -Wl,--wrap=free"
 if [ "$SAN_OK" = yes ]; then
     # shellcheck disable=SC2086
-    $CC $BASEFLAGS $SAN $AUDIO_INC $AUDIO_SRC $AUDIO_WRAP -lm -o "$OUT/audio_callback_tests"
+    $CC $BASEFLAGS $SAN $AUDIO_TEST_DEF $AUDIO_INC $AUDIO_SRC $AUDIO_WRAP -lm -o "$OUT/audio_callback_tests"
 else
     # shellcheck disable=SC2086
-    $CC $BASEFLAGS $AUDIO_INC $AUDIO_SRC $AUDIO_WRAP -lm -o "$OUT/audio_callback_tests"
+    $CC $BASEFLAGS $AUDIO_TEST_DEF $AUDIO_INC $AUDIO_SRC $AUDIO_WRAP -lm -o "$OUT/audio_callback_tests"
 fi
+
+"$OUT/audio_callback_tests"
+
+# --- Router RX live (#364) ----------------------------------------------------
+# Modulo puro + fake backend: ring fijo, estados BASE/PREPARE/RX_DAC, prioridad
+# TX/audio generado, staleness, captura y fail-closed de MUX. No usa PulseAudio
+# ni hardware.
+echo "== Router RX live #364: ring/estados/prioridades (host) =="
+RX_LIVE_SRC="$DIR/test_rx_audio_live.c $DIR/rx_audio_live_test_main.c $DIR/test_framework.c $SRC/rx_audio_live.c"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN -I"$SRC" -I"$DIR" $RX_LIVE_SRC -o "$OUT/rx_audio_live_tests"
+else
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS -I"$SRC" -I"$DIR" $RX_LIVE_SRC -o "$OUT/rx_audio_live_tests"
+fi
+"$OUT/rx_audio_live_tests"
 
 echo "== Captura: analisis estatico (gcc -fanalyzer sobre src/audio.c) =="
 # shellcheck disable=SC2086
-$CC $BASEFLAGS -fanalyzer $AUDIO_INC \
+$CC $BASEFLAGS $AUDIO_TEST_DEF -fanalyzer $AUDIO_INC \
     -c "$AUDIO_STAGE/audio.c" -o "$OUT/audio_capture.o" || true
-
-"$OUT/audio_callback_tests"
