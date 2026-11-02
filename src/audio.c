@@ -85,7 +85,7 @@ static bool rx_live_pa_open(void *arg) {
      * audio viejo. La build QA usa 600 ms para cubrir la latencia real del sink
      * durante las pruebas supervisadas; no se traslada a produccion. */
 #ifdef X6200_RX_SPEAKER_QA
-    attr.tlength = pa_usec_to_bytes(1600 * PA_USEC_PER_MSEC, &spec);
+    attr.tlength = pa_usec_to_bytes(3000 * PA_USEC_PER_MSEC, &spec);
 #else
     attr.tlength = pa_usec_to_bytes(RX_AUDIO_LIVE_TARGET_BUFFER_MS * PA_USEC_PER_MSEC, &spec);
 #endif
