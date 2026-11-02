@@ -61,8 +61,8 @@ continuar.
 ## Resultado
 
 - `INTEGRATION_CODE_READY = PASS` (host/ARM QA).
-- `QA_DEPLOY = BLOCKED_SSHD_RESET`.
-- `AUDIO_TESTS_PHYSICAL = NOT_EXECUTED_THIS_RUN` (la evidencia histórica del 2/11 sigue siendo la
-  prueba audible).
+- `QA_DEPLOY = PASS` (QA2/QA3/QA4); QA5 rechazado por drops.
+- `AUDIO_TESTS_PHYSICAL = EXECUTED` (2 short + soak); QA4 confirmado con cortes por el operador.
+- `SOAK_AUDIO_CONTINUITY = FAIL_CUTS`; `EXPERIMENTAL_DEPLOY_GO = NO`.
 - `CRASH_RECOVERY = NOT_VERIFIED`.
 - `PRODUCTION_READY = NO`.
