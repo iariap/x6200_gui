@@ -5,7 +5,7 @@ Fecha: 2026-11-02. Base verificada antes de empezar:
 - GUI `origin/main` = `681074e0adac5a79f0392b4e51284167abf5e342` (confirmado con `git ls-remote` y API).
 - Buildroot `origin/main` = `745af77e12b1c8fdabb234ec688608e386eb5be0`.
 - Rama de esta unidad: `feat/rx-speaker-production-364`, worktree `../x6200-rx-speaker-364`.
-- PR: pendiente de publicar al momento de escribir este archivo.
+- PR: **#384** — https://github.com/iariap/x6200_gui/pull/384
 
 ## Evidencia física histórica
 
