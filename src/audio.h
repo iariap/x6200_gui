@@ -22,6 +22,10 @@ int audio_play(int16_t *buf, size_t samples);
 void audio_play_wait();
 void audio_play_en(bool on);
 
+/* Prueba temporal del camino existente: audio generado por la GUI -> play_stm -> DAC.
+ * Solo actua en RX; devuelve false si ya hay una prueba en curso o el estado no es RX. */
+bool audio_speaker_selftest_start(void);
+
 /* audio_init() conecta PulseAudio en un hilo: espera hasta `timeout_ms` a que el stream de
  * reproduccion este listo. Devuelve true si quedo listo. Lo usa el diagnostico de voz, que si no
  * hablaba antes de que el audio existiera (y antes eso se reportaba como "se mando", ver

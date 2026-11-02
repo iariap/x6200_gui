@@ -91,6 +91,11 @@ void radio_state_restore();
 void radio_poweroff();
 void radio_set_ptt(bool tx);
 void radio_set_modem(bool tx);
+/* Serializacion del control del BASE para una prueba temporal de playback:
+ * toma el mismo mutex que radio_thread/x6200_control_idle. No cambia el estado
+ * de radio ni escribe I2C por si misma. */
+bool radio_control_lock(void);
+void radio_control_unlock(void);
 
 /* The Settings "Charger" row: only On charges while running; Shadow charges when
  * the radio is switched off (see radio_poweroff) */

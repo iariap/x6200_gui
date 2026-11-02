@@ -13,6 +13,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <math.h>
+#include <stdarg.h>
 
 #include <pulse/pulseaudio.h>
 #include <alsa/asoundlib.h>
@@ -20,6 +21,7 @@
 
 #include "lvgl/lvgl.h"
 #include "audio.h"
+#include "radio.h"
 #include "meter.h"
 #include "dsp.h"
 #include "params/params.h"
@@ -554,6 +556,137 @@ float audio_set_rec_vol(float db) {
     snd_mixer_selem_get_capture_dB(elem, SND_MIXER_SCHN_MONO, &db_long);
     snd_mixer_close(handle);
     return (float) db_long / 100.0f;
+}
+
+
+/* ------------------------------------------------------------------------- */
+/* Prueba temporal del camino existente audio_play_en -> play_stm -> DAC.    */
+/* No es la ruta RX permanente: solo genera un tono, lo manda por el stream   */
+/* existente y vuelve a BASE. Usa exclusivamente APIs de la ROM.             */
+/* ------------------------------------------------------------------------- */
+
+static volatile bool speaker_selftest_running;
+
+static void speaker_selftest_log(const char *fmt, ...) {
+    char buf[512];
+    va_list ap;
+    FILE *f;
+
+    va_start(ap, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, ap);
+    va_end(ap);
+
+    LV_LOG_USER("SPEAKER_SELFTEST: %s", buf);
+
+    f = fopen("/mnt/app_logs/speaker_selftest.log", "a");
+    if (f != NULL) {
+        fprintf(f, "%s\n", buf);
+        fclose(f);
+    }
+}
+
+static void *speaker_selftest_thread(void *arg) {
+    (void) arg;
+
+    speaker_selftest_log("START rx=%d", radio_get_state() == RADIO_RX);
+    if (!audio_wait_ready(3000)) {
+        speaker_selftest_log("FAIL audio stream not ready");
+        speaker_selftest_running = false;
+        return NULL;
+    }
+
+    if (radio_get_state() != RADIO_RX) {
+        speaker_selftest_log("REFUSE radio not RX");
+        speaker_selftest_running = false;
+        return NULL;
+    }
+
+    uint32_t reg_before = x6200_control_get(x6200_sple_atue_trx);
+    uint32_t rxvol_before = x6200_control_get(x6200_rxvol);
+    uint8_t hmic_before = params.hmic;
+    uint8_t imic_before = params.imic;
+    bool vol_changed = false;
+
+    speaker_selftest_log("BEFORE reg12=0x%08x voice_rec=%u rxvol=%u hmic=%u imic=%u state=%d",
+                         reg_before, (reg_before & 0x8) != 0, rxvol_before,
+                         hmic_before, imic_before, radio_get_state());
+
+    if (!radio_control_lock()) {
+        speaker_selftest_log("FAIL radio control lock unavailable");
+        speaker_selftest_running = false;
+        return NULL;
+    }
+
+    /* Volumen bajo para la prueba, solo si el actual es 0 (PA apagado). */
+    if (rxvol_before == 0) {
+        x6200_control_rxvol_set(15);
+        vol_changed = true;
+    }
+    audio_play_en(true);
+    radio_control_unlock();
+
+    int16_t tone[4410];
+    size_t  written = 0;
+    bool    play_failed = false;
+
+    for (int n = 0; n < 10; n++) {
+        for (int i = 0; i < 4410; i++) {
+            double s = sin(2.0 * M_PI * 440.0 * (n * 4410 + i) / AUDIO_PLAY_RATE);
+            tone[i] = (int16_t) (s * 32767.0 * 0.12);
+        }
+        if (audio_play(tone, 4410) < 0) {
+            play_failed = true;
+            break;
+        }
+        written += 4410;
+    }
+
+    audio_play_wait();
+
+    if (!radio_control_lock()) {
+        speaker_selftest_log("FAIL radio control lock unavailable at restore");
+        speaker_selftest_running = false;
+        return NULL;
+    }
+    audio_play_en(false);
+    if (vol_changed) {
+        x6200_control_rxvol_set(rxvol_before);
+    }
+    radio_control_unlock();
+
+    uint32_t reg_after = x6200_control_get(x6200_sple_atue_trx);
+    uint32_t rxvol_after = x6200_control_get(x6200_rxvol);
+
+    speaker_selftest_log("AFTER reg12=0x%08x voice_rec=%u rxvol=%u hmic=%u imic=%u state=%d written=%zu failed=%d",
+                         reg_after, (reg_after & 0x8) != 0, rxvol_after,
+                         params.hmic, params.imic, radio_get_state(), written, play_failed);
+    speaker_selftest_log("RESULT %s", (!play_failed && written == 44100 &&
+                                       reg_after == reg_before && rxvol_after == rxvol_before &&
+                                       params.hmic == hmic_before && params.imic == imic_before)
+                                      ? "PASS_BASE_RESTORED" : "FAIL_OR_DEGRADED");
+    speaker_selftest_log("DONE");
+
+    speaker_selftest_running = false;
+    return NULL;
+}
+
+bool audio_speaker_selftest_start(void) {
+    pthread_t thread;
+
+    if (speaker_selftest_running) {
+        return false;
+    }
+    if (radio_get_state() != RADIO_RX) {
+        speaker_selftest_log("REFUSE radio not RX");
+        return false;
+    }
+    speaker_selftest_running = true;
+    if (pthread_create(&thread, NULL, speaker_selftest_thread, NULL) != 0) {
+        speaker_selftest_running = false;
+        return false;
+    }
+    pthread_detach(thread);
+    return true;
 }
 
 float audio_get_peak_db() {

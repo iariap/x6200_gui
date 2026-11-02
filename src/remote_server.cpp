@@ -42,6 +42,7 @@
 extern "C" {
     #include "cJSON.h"
     #include "cfg/cfg_api.h"
+    #include "audio.h"
     #include "buttons.h"
     #include "dialog.h"
     #include "cw_tune_ui.h"
@@ -123,7 +124,7 @@ typedef struct {
 typedef enum {
     CMD_FREQ, CMD_TUNE, CMD_MODE, CMD_BAND, CMD_PRE, CMD_ATT, CMD_AGC, CMD_NB, CMD_NR, CMD_RFGAIN, CMD_FILTER, CMD_PWR,
     CMD_NB_LEVEL, CMD_NB_WIDTH, CMD_NR_LEVEL, CMD_AGC_MODE, CMD_SQL,
-    CMD_APP, CMD_APP_CMD, CMD_LOCATION, CMD_QSO_LOG, CMD_BTN, CMD_VOL
+    CMD_APP, CMD_APP_CMD, CMD_LOCATION, CMD_QSO_LOG, CMD_BTN, CMD_VOL, CMD_SPEAKER_TEST
 } cmd_id_t;
 
 typedef struct {
@@ -416,6 +417,9 @@ static void apply_cmd(void *arg) {
             break;
         case CMD_BTN:
             buttons_press(c->val, false);
+            break;
+        case CMD_SPEAKER_TEST:
+            (void) audio_speaker_selftest_start();
             break;
         case CMD_VOL:
             /* Por radio_change_vol (no por el subject) para pasar por el mismo camino que la
@@ -783,6 +787,11 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
         if (!cJSON_IsString(text) || strlen(text->valuestring) >= sizeof(cmd->text))
             return "Invalid text";
         strcpy(cmd->text, text->valuestring);
+    }
+    /* Prueba temporal del playback Linux existente (sin comandos I2C directos). */
+    if (!strcmp(name, "speaker_test")) {
+        cmd->id = CMD_SPEAKER_TEST;
+        return NULL;
     }
     if (!strcmp(name, "location")) {
         if (sscanf(cmd->text, "%lf,%lf", &cmd->lat, &cmd->lon) != 2 || !(fabs(cmd->lat) <= 90) ||

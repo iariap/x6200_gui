@@ -109,6 +109,21 @@ static void radio_unlock() {
     pthread_mutex_unlock(&control_mux);
 }
 
+/* API temporal para pruebas de playback: mismo mutex que radio_thread. */
+bool radio_control_lock(void) {
+    if (!radio_control_ok) {
+        return false;
+    }
+    radio_lock();
+    return true;
+}
+
+void radio_control_unlock(void) {
+    if (radio_control_ok) {
+        radio_unlock();
+    }
+}
+
 static void process_power_key(bool val, uint64_t now) {
     static event_keypad_t event = { .key = KEYPAD_POWER, .state = KEYPAD_RELEASE };
     static bool prev_val;
