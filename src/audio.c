@@ -629,16 +629,24 @@ static void *speaker_selftest_thread(void *arg) {
     size_t  written = 0;
     bool    play_failed = false;
 
-    for (int n = 0; n < 10; n++) {
-        for (int i = 0; i < 4410; i++) {
-            double s = sin(2.0 * M_PI * 440.0 * (n * 4410 + i) / AUDIO_PLAY_RATE);
-            tone[i] = (int16_t) (s * 32767.0 * 0.12);
+    /* Tres beeps de 0.2 s con pausa: no llenan el buffer de 0.4 s del play_stm. */
+    #define SELFTEST_CHUNKS 2
+    #define SELFTEST_BURSTS 3
+    for (int b = 0; b < SELFTEST_BURSTS && !play_failed; b++) {
+        for (int n = 0; n < SELFTEST_CHUNKS; n++) {
+            int idx = (b * SELFTEST_CHUNKS + n) * 4410;
+            for (int i = 0; i < 4410; i++) {
+                double s = sin(2.0 * M_PI * 880.0 * (idx + i) / AUDIO_PLAY_RATE);
+                tone[i] = (int16_t) (s * 32767.0 * 0.25);
+            }
+            if (audio_play(tone, 4410) < 0) {
+                play_failed = true;
+                break;
+            }
+            written += 4410;
         }
-        if (audio_play(tone, 4410) < 0) {
-            play_failed = true;
-            break;
-        }
-        written += 4410;
+        audio_play_wait();
+        usleep(250000);
     }
 
     audio_play_wait();
@@ -660,7 +668,7 @@ static void *speaker_selftest_thread(void *arg) {
     speaker_selftest_log("AFTER reg12=0x%08x voice_rec=%u rxvol=%u hmic=%u imic=%u state=%d written=%zu failed=%d",
                          reg_after, (reg_after & 0x8) != 0, rxvol_after,
                          params.hmic, params.imic, radio_get_state(), written, play_failed);
-    speaker_selftest_log("RESULT %s", (!play_failed && written == 44100 &&
+    speaker_selftest_log("RESULT %s", (!play_failed && written == (size_t)(SELFTEST_CHUNKS * SELFTEST_BURSTS * 4410) &&
                                        reg_after == reg_before && rxvol_after == rxvol_before &&
                                        params.hmic == hmic_before && params.imic == imic_before)
                                       ? "PASS_BASE_RESTORED" : "FAIL_OR_DEGRADED");
