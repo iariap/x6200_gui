@@ -40,6 +40,10 @@
 #include <string>
 
 extern "C" {
+#ifdef X6200_RX_SPEAKER_QA
+    bool audio_qa_speaker_test_start(void);
+    bool audio_qa_speaker_soak_start(void);
+#endif
     #include "cJSON.h"
     #include "cfg/cfg_api.h"
     #include "buttons.h"
@@ -123,7 +127,10 @@ typedef struct {
 typedef enum {
     CMD_FREQ, CMD_TUNE, CMD_MODE, CMD_BAND, CMD_PRE, CMD_ATT, CMD_AGC, CMD_NB, CMD_NR, CMD_RFGAIN, CMD_FILTER, CMD_PWR,
     CMD_NB_LEVEL, CMD_NB_WIDTH, CMD_NR_LEVEL, CMD_AGC_MODE, CMD_SQL,
-    CMD_APP, CMD_APP_CMD, CMD_LOCATION, CMD_QSO_LOG, CMD_BTN, CMD_VOL
+    CMD_APP, CMD_APP_CMD, CMD_LOCATION, CMD_QSO_LOG, CMD_BTN, CMD_VOL,
+#ifdef X6200_RX_SPEAKER_QA
+    CMD_RX_QA_SHORT, CMD_RX_QA_SOAK,
+#endif
 } cmd_id_t;
 
 typedef struct {
@@ -417,6 +424,14 @@ static void apply_cmd(void *arg) {
         case CMD_BTN:
             buttons_press(c->val, false);
             break;
+#ifdef X6200_RX_SPEAKER_QA
+        case CMD_RX_QA_SHORT:
+            (void) audio_qa_speaker_test_start();
+            break;
+        case CMD_RX_QA_SOAK:
+            (void) audio_qa_speaker_soak_start();
+            break;
+#endif
         case CMD_VOL:
             /* Por radio_change_vol (no por el subject) para pasar por el mismo camino que la
              * perilla, que es donde se sincroniza el volumen de los auriculares */
@@ -784,6 +799,17 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
             return "Invalid text";
         strcpy(cmd->text, text->valuestring);
     }
+#ifdef X6200_RX_SPEAKER_QA
+    /* Endpoints QA: solo existen en la build con X6200_RX_SPEAKER_QA=ON. */
+    if (!strcmp(name, "rx_speaker_test")) {
+        cmd->id = CMD_RX_QA_SHORT;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_soak")) {
+        cmd->id = CMD_RX_QA_SOAK;
+        return NULL;
+    }
+#endif
     if (!strcmp(name, "location")) {
         if (sscanf(cmd->text, "%lf,%lf", &cmd->lat, &cmd->lon) != 2 || !(fabs(cmd->lat) <= 90) ||
             !(fabs(cmd->lon) <= 180))   /* NaN fails too */

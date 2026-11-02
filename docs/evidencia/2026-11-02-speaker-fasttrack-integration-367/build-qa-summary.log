@@ -1,0 +1,7 @@
+build QA ARM
+exit: 0
+hash sha256: b4714114da636accbf843aa50158be7f39afebc1eb496bfd080d7f3c366d1daa
+md5: c9ccdae1eb4c4f986226ecab008cce6c
+tamano: 14016852
+gate: OK
+log completo fuera del repo: fw108-scratch/evidence/rx-router-367/build-qa.log

@@ -1329,6 +1329,31 @@ else
 fi
 "$OUT/rx_audio_live_tests"
 
+
+# --- A-prime #367: guardian de registro 12 (host, bus mock) ------------------
+echo "== A-prime #367: coordinador/guardian de reg12 (host, bus mock) =="
+RXMUX_BIN="$OUT/rxmux_guard"
+rm -rf "$RXMUX_BIN"; mkdir -p "$RXMUX_BIN"
+RXMUX_CFLAGS="$BASEFLAGS -pthread -I$SRC -I$DIR"
+if [ "$SAN_OK" = yes ]; then
+    # shellcheck disable=SC2086
+    $CC $RXMUX_CFLAGS $SAN "$SRC/rx_audio_mux_guard.c" \
+        "$DIR/test_rx_audio_mux_guard.c" "$DIR/rxmux_guard_test_main.c" \
+        "$DIR/test_framework.c" -lpthread -o "$RXMUX_BIN/rxmux_tests"
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS $SAN "$SRC/rx_audio_mux_guard.c" \
+        "$SRC/rx_audio_mux_guard_main.c" -o "$RXMUX_BIN/x6200_audio_guard_host"
+else
+    # shellcheck disable=SC2086
+    $CC $RXMUX_CFLAGS "$SRC/rx_audio_mux_guard.c" \
+        "$DIR/test_rx_audio_mux_guard.c" "$DIR/rxmux_guard_test_main.c" \
+        "$DIR/test_framework.c" -lpthread -o "$RXMUX_BIN/rxmux_tests"
+    # shellcheck disable=SC2086
+    $CC $BASEFLAGS "$SRC/rx_audio_mux_guard.c" \
+        "$SRC/rx_audio_mux_guard_main.c" -o "$RXMUX_BIN/x6200_audio_guard_host"
+fi
+RXMUX_GUARD_BIN="$RXMUX_BIN/x6200_audio_guard_host" "$RXMUX_BIN/rxmux_tests"
+
 echo "== Captura: analisis estatico (gcc -fanalyzer sobre src/audio.c) =="
 # shellcheck disable=SC2086
 $CC $BASEFLAGS $AUDIO_TEST_DEF -fanalyzer $AUDIO_INC \

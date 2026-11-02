@@ -124,3 +124,5 @@ size_t rx_audio_live_pending_samples(void);
  * pendiente/fallida. El backend real actual devuelve false. */
 bool rx_audio_live_can_activate(void);
 bool rx_audio_live_restore_unconfirmed(void);
+bool rx_audio_live_tx_active(void);
+bool rx_audio_live_generated_active(void);

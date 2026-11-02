@@ -110,6 +110,24 @@ static void radio_unlock() {
     pthread_mutex_unlock(&control_mux);
 }
 
+
+#ifdef X6200_RX_SPEAKER_QA
+/* SOLO QA: seleccion experimental DAC/BASE por el mismo mutex que radio_thread. */
+bool radio_audio_route_set(bool dac) {
+    if (!radio_control_ok) {
+        return false;
+    }
+    radio_lock();
+    if (dac && (state != RADIO_RX || (pack != NULL && pack->flag.tx))) {
+        radio_unlock();
+        return false;
+    }
+    x6200_control_record_set(dac);
+    radio_unlock();
+    return true;
+}
+#endif
+
 static void process_power_key(bool val, uint64_t now) {
     static event_keypad_t event = { .key = KEYPAD_POWER, .state = KEYPAD_RELEASE };
     static bool prev_val;

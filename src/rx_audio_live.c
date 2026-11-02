@@ -633,3 +633,21 @@ bool rx_audio_live_restore_unconfirmed(void) {
     pthread_mutex_unlock(&lock);
     return v;
 }
+
+bool rx_audio_live_tx_active(void) {
+    bool v;
+
+    pthread_mutex_lock(&lock);
+    v = tx_active;
+    pthread_mutex_unlock(&lock);
+    return v;
+}
+
+bool rx_audio_live_generated_active(void) {
+    bool v;
+
+    pthread_mutex_lock(&lock);
+    v = generated_active;
+    pthread_mutex_unlock(&lock);
+    return v;
+}
