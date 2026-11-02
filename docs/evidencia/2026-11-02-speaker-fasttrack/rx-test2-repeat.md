@@ -19,3 +19,17 @@ RESULT PASS_BASE_RESTORED
 - `SPEAKER_AUDIO_HEARD`: **pendiente de la confirmación del operador** para esta repetición.
 - `underruns=326`: el stream todavía no es estable; si el operador no escuchó, hay que corregir el
   pacing/buffer antes de una nueva prueba.
+
+## Confirmación del operador (2026-11-02)
+
+El operador confirmó: **`SPEAKER_AUDIO_HEARD = YES`**. Escuchó el RX procesado por el parlante
+interno durante la repetición del test a volumen 40.
+
+- Ruta audible confirmada: captura → `audio_enh_process` → router RX → stream PulseAudio propio →
+  DAC/MUX → parlante.
+- La prueba volvió a BASE y la GUI original quedó operativa.
+- `NOMINAL_BASE_RETURN_PASS`: registro/estado y retorno de la GUI confirmados; la escucha específica
+  del audio RX original después del test no se registró como criterio separado.
+- `underruns=326` sigue siendo una limitación del stream; el audio se oyó, pero no se declara
+  estable.
+- `PRODUCTION_NOT_READY`: no hay restore automático ante crash ni interlocks permanentes.
