@@ -31,8 +31,9 @@ Fecha: 2026-11-02. Worktree ASF `factory/rx-speaker-integration-367`, base PR #3
   - Router: 124/0.
   - Audio callback: 178/0 (incluye igualdad PCM recorder/router).
   - Guardián #367: 9188/0; G2 restore mock p50/p99/max 101,8/103,1/103,1 ms.
-- `--ci-parity`: exit 0 (se correrá y registrará junto al PR).
-- `run_all_tests --quick`: ver resultado ASF; fallos Docker de entorno se reportan aparte.
+- `--ci-parity`: exit 0; `ci-parity: OK`; guardián 9188/0.
+- `run_all_tests --quick`: exit 0; **23 OK, 0 fallos**; QEMU/wspr/sstv/wefax SKIP por entorno/imagen.
+- ASF `check-matrix.sh`: exit 0; checks ok; QEMU **BLOCKED** por chroot/x6200-remote faltantes.
 - ASan/UBSan: no disponibles en el toolchain host (falta libasan/libubsan); no se declaran PASS.
 - QEMU: SKIP si no hay entorno privado.
 
