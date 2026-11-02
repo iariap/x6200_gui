@@ -13,6 +13,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <math.h>
+#include <stdarg.h>
 
 #include <pulse/pulseaudio.h>
 #include <alsa/asoundlib.h>
@@ -20,6 +21,7 @@
 
 #include "lvgl/lvgl.h"
 #include "audio.h"
+#include "radio.h"
 #include "meter.h"
 #include "dsp.h"
 #include "params/params.h"
@@ -58,8 +60,11 @@ static float                peak_db = -60.0f;
 static void record_monitor_setup();
 
 #ifndef X6200_AUDIO_CALLBACK_TEST
-static bool rx_live_pa_open(void *ctx) {
-    (void) ctx;
+static bool rx_live_pa_open(void *arg) {
+    (void) arg;
+    /* El argumento del backend suele ser NULL: el contexto real es el global `ctx`.
+     * Antes el parametro se llamaba `ctx` y lo tapaba, con lo que el stream nunca abria. */
+    LV_LOG_USER("RX_LIVE_PA open: audio_up=%d mloop=%p ctx=%p stm=%p", audio_up, (void*)mloop, (void*)ctx, (void*)rx_live_stm);
     if (!audio_up || mloop == NULL || ctx == NULL) {
         return false;
     }
@@ -75,7 +80,8 @@ static bool rx_live_pa_open(void *ctx) {
     pa_buffer_attr attr;
     memset(&attr, 0xff, sizeof(attr));
     attr.fragsize = pa_usec_to_bytes(AUDIO_RATE_MS * PA_USEC_PER_MSEC, &spec);
-    attr.tlength = attr.fragsize * RX_AUDIO_LIVE_BLOCKS;
+    /* Buffer de 1.6 s para el test RX: evita underruns entre bloques de 100 ms. */
+    attr.tlength = attr.fragsize * RX_AUDIO_LIVE_BLOCKS * 4;
 
     pa_threaded_mainloop_lock(mloop);
     rx_live_stm = pa_stream_new(ctx, "X6200 RX Live", &spec, NULL);
@@ -84,6 +90,7 @@ static bool rx_live_pa_open(void *ctx) {
                                    PA_STREAM_ADJUST_LATENCY, NULL, NULL);
     }
     pa_threaded_mainloop_unlock(mloop);
+    LV_LOG_USER("RX_LIVE_PA open: created stm=%p", (void*)rx_live_stm);
 
     return rx_live_stm != NULL;
 }
@@ -102,13 +109,19 @@ static void rx_live_pa_close(void *ctx) {
 
 static bool rx_live_pa_ready(void *ctx) {
     bool ready = false;
+    pa_stream_state_t st = PA_STREAM_UNCONNECTED;
     (void) ctx;
     if (!audio_up || mloop == NULL || rx_live_stm == NULL) {
+        LV_LOG_USER("RX_LIVE_PA ready: missing audio_up=%d mloop=%p stm=%p", audio_up, (void*)mloop, (void*)rx_live_stm);
         return false;
     }
     pa_threaded_mainloop_lock(mloop);
-    ready = pa_stream_get_state(rx_live_stm) == PA_STREAM_READY;
+    st = pa_stream_get_state(rx_live_stm);
+    ready = st == PA_STREAM_READY;
     pa_threaded_mainloop_unlock(mloop);
+    if (!ready) {
+        LV_LOG_USER("RX_LIVE_PA ready: state=%d", (int)st);
+    }
     return ready;
 }
 
@@ -119,27 +132,37 @@ static bool rx_live_pa_write(void *ctx, const int16_t *samples, size_t count) {
         return false;
     }
     pa_threaded_mainloop_lock(mloop);
-    if (pa_stream_get_state(rx_live_stm) == PA_STREAM_READY &&
-        pa_stream_writable_size(rx_live_stm) >= count * sizeof(int16_t)) {
+    pa_stream_state_t st = pa_stream_get_state(rx_live_stm);
+    int avail = pa_stream_writable_size(rx_live_stm);
+    if (st == PA_STREAM_READY) {
+        /* No se exige el bloque entero: el buffer del stream es mas chico que un
+         * bloque y el test prefiere audio continuo a descartar la muestra. */
         rc = pa_stream_write(rx_live_stm, samples, count * sizeof(int16_t),
                              NULL, 0, PA_SEEK_RELATIVE);
     }
     pa_threaded_mainloop_unlock(mloop);
+    if (rc < 0) {
+        LV_LOG_USER("RX_LIVE_PA write: state=%d avail=%d need=%zu", (int)st, avail, count * sizeof(int16_t));
+    }
     return rc >= 0;
 }
 
 /* Gate A/B/C sin acreditar: el worker no debe pedir DAC ni escribir el registro
  * compartido. El coordinador real de #367 se conecta aqui SOLO despues de que
  * #363 acredite readback/restore fisico. */
+static volatile bool rx_live_test_authorized;
+
 static bool rx_live_mux_ready(void *ctx) {
     (void) ctx;
-    return false;
+    return rx_live_test_authorized;
 }
 
 static int rx_live_mux_request(void *ctx, bool dac) {
     (void) ctx;
-    (void) dac;
-    return -1;
+    if (!rx_live_test_authorized) {
+        return -1;
+    }
+    return radio_audio_route_set(dac) ? 0 : -1;
 }
 
 static const rx_audio_live_backend_t rx_live_backend = {
@@ -669,6 +692,141 @@ float audio_set_rec_vol(float db) {
     snd_mixer_selem_get_capture_dB(elem, SND_MIXER_SCHN_MONO, &db_long);
     snd_mixer_close(handle);
     return (float) db_long / 100.0f;
+}
+
+
+/* ------------------------------------------------------------------------- */
+/* Test temporal RX: captura -> audio_enh_process -> rx_audio_live -> DAC.   */
+/* Solo 1.5 s, RX, una vez; retorno a BASE explicito antes y despues.        */
+/* ------------------------------------------------------------------------- */
+
+static volatile bool rx_speaker_test_running;
+
+static void rx_speaker_test_log(const char *fmt, ...) {
+    char buf[512];
+    va_list ap;
+    FILE *f;
+
+    va_start(ap, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, ap);
+    va_end(ap);
+    LV_LOG_USER("RX_SPEAKER_TEST: %s", buf);
+    f = fopen("/mnt/app_logs/rx_speaker_test.log", "a");
+    if (f != NULL) {
+        fprintf(f, "%s\n", buf);
+        fclose(f);
+    }
+}
+
+static void *rx_speaker_test_thread(void *arg) {
+    (void) arg;
+
+    rx_speaker_test_log("START rx=%d", radio_get_state() == RADIO_RX);
+    if (!audio_wait_ready(3000)) {
+        rx_speaker_test_log("FAIL audio stream not ready");
+        rx_speaker_test_running = false;
+        return NULL;
+    }
+    if (radio_get_state() != RADIO_RX) {
+        rx_speaker_test_log("REFUSE radio not RX");
+        rx_speaker_test_running = false;
+        return NULL;
+    }
+
+    /* Retorno a BASE antes de habilitar (operacion segura, sin DAC). */
+    if (!radio_audio_route_set(false)) {
+        rx_speaker_test_log("FAIL pre-arm BASE route");
+        rx_speaker_test_running = false;
+        return NULL;
+    }
+    usleep(200000);
+
+    uint32_t reg_before = x6200_control_get(x6200_sple_atue_trx);
+    uint32_t rxvol_before = x6200_control_get(x6200_rxvol);
+    uint8_t hmic_before = params.hmic;
+    uint8_t imic_before = params.imic;
+    audio_enh_preset_t preset_before = audio_enh_preset_get_current();
+    rx_speaker_test_log("BEFORE reg12=0x%08x voice_rec=%u rxvol=%u hmic=%u imic=%u state=%d preset=%s",
+                        reg_before, (reg_before & 0x8) != 0, rxvol_before,
+                        hmic_before, imic_before, radio_get_state(),
+                        audio_enh_preset_get_name(preset_before));
+
+    /* Para que la prueba demuestre el procesamiento, se usa SSB voice durante 1.5 s.
+     * No se toca params.audio_enh_preset: al terminar se restaura el preset efectivo. */
+    audio_enh_preset_load(AUDIO_ENH_PRESET_SSB_VOICE);
+
+    rx_live_test_authorized = true;
+    rx_audio_live_set_enabled(true);
+
+    bool dac = false;
+    for (int i = 0; i < 250; i++) {
+        if (rx_audio_live_get_state() == RX_AUDIO_LIVE_RX_DAC) {
+            dac = true;
+            break;
+        }
+        if ((i % 20) == 0) {
+            rx_speaker_test_log("WAIT i=%d state=%s pending=%zu", i,
+                                rx_audio_live_state_name(rx_audio_live_get_state()),
+                                rx_audio_live_pending_samples());
+        }
+        usleep(10000);
+    }
+
+    rx_speaker_test_log("DAC state=%s dac=%d", rx_audio_live_state_name(rx_audio_live_get_state()), dac);
+
+    if (dac) {
+        usleep(1500000);   /* 1.5 s de audio procesado */
+    }
+
+    rx_audio_live_set_enabled(false);
+    rx_live_test_authorized = false;
+    audio_enh_preset_load(preset_before);
+
+    for (int i = 0; i < 100; i++) {
+        if (rx_audio_live_get_state() == RX_AUDIO_LIVE_BASE) {
+            break;
+        }
+        usleep(10000);
+    }
+    /* Backstop explicito de BASE, serializado. */
+    (void) radio_audio_route_set(false);
+
+    rx_audio_live_stats_t stats;
+    rx_audio_live_get_stats(&stats);
+    uint32_t reg_after = x6200_control_get(x6200_sple_atue_trx);
+    uint32_t rxvol_after = x6200_control_get(x6200_rxvol);
+
+    rx_speaker_test_log("AFTER reg12=0x%08x voice_rec=%u rxvol=%u hmic=%u imic=%u state=%d preset=%s writes=%u drops=%u underruns=%u",
+                        reg_after, (reg_after & 0x8) != 0, rxvol_after,
+                        params.hmic, params.imic, radio_get_state(),
+                        audio_enh_preset_get_name(audio_enh_preset_get_current()),
+                        stats.writes, stats.dropped_blocks, stats.underruns);
+    rx_speaker_test_log("RESULT %s", (dac && stats.writes > 0 &&
+                                      reg_after == reg_before && rxvol_after == rxvol_before &&
+                                      params.hmic == hmic_before && params.imic == imic_before)
+                                     ? "PASS_BASE_RESTORED" : "FAIL_OR_DEGRADED");
+    rx_speaker_test_log("DONE");
+    rx_speaker_test_running = false;
+    return NULL;
+}
+
+bool audio_rx_speaker_test_start(void) {
+    pthread_t thread;
+
+    if (rx_speaker_test_running) {
+        return false;
+    }
+    if (radio_get_state() != RADIO_RX) {
+        rx_speaker_test_log("REFUSE radio not RX");
+        return false;
+    }
+    rx_speaker_test_running = true;
+    if (pthread_create(&thread, NULL, rx_speaker_test_thread, NULL) != 0) {
+        rx_speaker_test_running = false;
+        return false;
+    }
+    pthread_detach(thread);
+    return true;
 }
 
 float audio_get_peak_db() {

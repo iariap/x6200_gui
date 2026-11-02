@@ -110,6 +110,22 @@ static void radio_unlock() {
     pthread_mutex_unlock(&control_mux);
 }
 
+/* Test RX por el speaker: el unico camino que escribe voice_rec. Se serializa
+ * con radio_thread y x6200_control_idle; no cambia HMic/IMic ni PTT/ATU. */
+bool radio_audio_route_set(bool dac) {
+    if (!radio_control_ok) {
+        return false;
+    }
+    radio_lock();
+    if (dac && (state != RADIO_RX || (pack != NULL && pack->flag.tx))) {
+        radio_unlock();
+        return false;
+    }
+    x6200_control_record_set(dac);
+    radio_unlock();
+    return true;
+}
+
 static void process_power_key(bool val, uint64_t now) {
     static event_keypad_t event = { .key = KEYPAD_POWER, .state = KEYPAD_RELEASE };
     static bool prev_val;

@@ -91,6 +91,9 @@ void radio_state_restore();
 void radio_poweroff();
 void radio_set_ptt(bool tx);
 void radio_set_modem(bool tx);
+/* Ruta temporal RX->DAC: unico punto que toca voice_rec desde el test, serializado
+ * con radio_thread/x6200_control_idle. No toca HMic/IMic ni PTT/ATU. */
+bool radio_audio_route_set(bool dac);
 
 /* The Settings "Charger" row: only On charges while running; Shadow charges when
  * the radio is switched off (see radio_poweroff) */

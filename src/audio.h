@@ -22,6 +22,10 @@ int audio_play(int16_t *buf, size_t samples);
 void audio_play_wait();
 void audio_play_en(bool on);
 
+/* Test temporal RX procesado por el parlante (1.5 s): usa el router live y la
+ * seleccion serializada; no usa audio_play_en ni toca HMic/IMic. */
+bool audio_rx_speaker_test_start(void);
+
 /* audio_init() conecta PulseAudio en un hilo: espera hasta `timeout_ms` a que el stream de
  * reproduccion este listo. Devuelve true si quedo listo. Lo usa el diagnostico de voz, que si no
  * hablaba antes de que el audio existiera (y antes eso se reportaba como "se mando", ver
