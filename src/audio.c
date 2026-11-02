@@ -81,8 +81,14 @@ static bool rx_live_pa_open(void *arg) {
     pa_buffer_attr attr;
     memset(&attr, 0xff, sizeof(attr));
     attr.fragsize = pa_usec_to_bytes(AUDIO_RATE_MS * PA_USEC_PER_MSEC, &spec);
-    /* Objetivo inicial de 200 ms (#364): no acumular segundos de audio viejo. */
+    /* Produccion: objetivo inicial de 200 ms (#364), sin acumular segundos de
+     * audio viejo. La build QA usa 600 ms para cubrir la latencia real del sink
+     * durante las pruebas supervisadas; no se traslada a produccion. */
+#ifdef X6200_RX_SPEAKER_QA
+    attr.tlength = pa_usec_to_bytes(1600 * PA_USEC_PER_MSEC, &spec);
+#else
     attr.tlength = pa_usec_to_bytes(RX_AUDIO_LIVE_TARGET_BUFFER_MS * PA_USEC_PER_MSEC, &spec);
+#endif
 
     pa_threaded_mainloop_lock(mloop);
     rx_live_stm = pa_stream_new(ctx, "X6200 RX Live", &spec, NULL);
