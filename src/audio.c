@@ -751,9 +751,9 @@ static void *rx_speaker_test_thread(void *arg) {
                         hmic_before, imic_before, radio_get_state(),
                         audio_enh_preset_get_name(preset_before));
 
-    /* Para que la prueba demuestre el procesamiento, se usa SSB voice durante 1.5 s.
+    /* Fase A: OFF, fase B: SSB voice, ambas con el MUX ya en DAC.
      * No se toca params.audio_enh_preset: al terminar se restaura el preset efectivo. */
-    audio_enh_preset_load(AUDIO_ENH_PRESET_SSB_VOICE);
+    audio_enh_preset_load(AUDIO_ENH_PRESET_OFF);
 
     rx_live_test_authorized = true;
     rx_audio_live_set_enabled(true);
@@ -775,7 +775,12 @@ static void *rx_speaker_test_thread(void *arg) {
     rx_speaker_test_log("DAC state=%s dac=%d", rx_audio_live_state_name(rx_audio_live_get_state()), dac);
 
     if (dac) {
-        usleep(1500000);   /* 1.5 s de audio procesado */
+        usleep(200000);
+        rx_speaker_test_log("PHASE OFF");
+        usleep(700000);
+        audio_enh_preset_load(AUDIO_ENH_PRESET_SSB_VOICE);
+        rx_speaker_test_log("PHASE SSB_VOICE");
+        usleep(700000);
     }
 
     rx_audio_live_set_enabled(false);

@@ -51,6 +51,8 @@ static unsigned ring_count;
 static int16_t staging[NSAMP];
 static size_t  staging_count;
 static uint64_t last_submit_ms;
+static uint64_t last_write_ms;
+static bool     underrun_counted;
 static uint64_t retry_after_ms;
 
 static rx_audio_live_stats_t stats;
@@ -240,8 +242,13 @@ static void worker_loop(void) {
                 have_block = true;
                 act = ACT_WRITE;
             } else if (sink_ready && !stale_locked(now)) {
-                /* Sin bloque disponible: no se inventa audio. Se espera el proximo submit. */
-                stats.underruns++;
+                /* Sin bloque disponible: se cuenta UNA vez solo si el hueco supera un
+                 * bloque; antes el contador subia en cada vuelta del worker. */
+                if (!underrun_counted && last_write_ms != 0 &&
+                    now > last_write_ms + RX_AUDIO_LIVE_BLOCK_SAMPLES * 1000u / RX_AUDIO_LIVE_RATE + 100u) {
+                    stats.underruns++;
+                    underrun_counted = true;
+                }
             }
         } else if (state == RX_AUDIO_LIVE_DEGRADED_BASE) {
             pthread_mutex_unlock(&lock);
@@ -288,6 +295,8 @@ static void worker_loop(void) {
                 pthread_mutex_lock(&lock);
                 if (ok) {
                     stats.writes++;
+                    last_write_ms = now_ms();
+                    underrun_counted = false;
                 } else {
                     stats.underruns++;
                     state = RX_AUDIO_LIVE_DEGRADED_BASE;
