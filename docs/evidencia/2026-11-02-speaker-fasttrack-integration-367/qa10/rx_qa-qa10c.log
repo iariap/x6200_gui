@@ -1,0 +1,10 @@
+START mode=echo state=BASE preset=OFF reg12_shadow=0x00001000 rxvol=10
+ECHO_PHASE PROCESSED START t_ms=193
+ECHO_PA phase=PROCESSED state=2 writable=132944 tlength=134064 prebuf=0 fragsize=8820 latency_valid=1 latency_us=200000 read_idx=0 write_idx=17640 playing=0 sink_usec=223070
+ECHO_PA phase=PROCESSED state=2 writable=124624 tlength=134064 prebuf=0 fragsize=8820 latency_valid=1 latency_us=413315 read_idx=441000 write_idx=458640 playing=1 sink_usec=213952
+ECHO_PHASE PROCESSED END
+AFTER reg12_shadow=0x00001000 rxvol=10 hmic=20 imic=30 state=BASE preset=OFF
+STATS writes=52 drops=0 underruns=0 restore_fail=0 backpressure=0
+USEFUL writes>0=1
+RESULT PASS_BASE_RESTORED
+DONE

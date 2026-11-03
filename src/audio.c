@@ -75,6 +75,7 @@ static atomic_uint          qa_pa_writable_max;
 /* QA10: fase de prueba de eco. 0=off, 1=ZERO, 2=RAW, 3=PROCESSED. */
 static atomic_int           qa_echo_phase;
 static atomic_int           qa_echo_single_phase;
+static atomic_int           qa_echo_preset_off;
 #endif
 
 /* Cuando el stream de reproducción no acepta datos (el sink real no consume: ver HALLAZGOS),
@@ -1281,7 +1282,9 @@ static void *rx_qa_thread(void *arg) {
         } else {
             (void) all_phases;
         }
-        audio_enh_preset_load(AUDIO_ENH_PRESET_SSB_VOICE);
+        audio_enh_preset_load(atomic_load(&qa_echo_preset_off)
+                                  ? AUDIO_ENH_PRESET_OFF
+                                  : AUDIO_ENH_PRESET_SSB_VOICE);
         for (size_t p = 0; p < phase_count; p++) {
             int phase = phases[p];
             qa_diag_phase = rx_qa_echo_phase_name(phase);
@@ -1307,6 +1310,7 @@ static void *rx_qa_thread(void *arg) {
         }
         atomic_store(&qa_echo_phase, 0);
         atomic_store(&qa_echo_single_phase, 0);
+        atomic_store(&qa_echo_preset_off, 0);
     } else {
         audio_enh_preset_load(AUDIO_ENH_PRESET_SSB_VOICE);
         rx_qa_log("SOAK 30000ms");
@@ -1402,6 +1406,7 @@ bool audio_qa_speaker_soak_start(void) {
 
 bool audio_qa_speaker_echo_start(void) {
     atomic_store(&qa_echo_single_phase, 0);
+    atomic_store(&qa_echo_preset_off, 0);
     return rx_qa_start(RX_QA_ECHO);
 }
 
@@ -1410,6 +1415,13 @@ bool audio_qa_speaker_echo_phase_start(int phase) {
         return false;
     }
     atomic_store(&qa_echo_single_phase, phase);
+    atomic_store(&qa_echo_preset_off, 0);
+    return rx_qa_start(RX_QA_ECHO);
+}
+
+bool audio_qa_speaker_echo_processed_off_start(void) {
+    atomic_store(&qa_echo_single_phase, 3);
+    atomic_store(&qa_echo_preset_off, 1);
     return rx_qa_start(RX_QA_ECHO);
 }
 #endif
