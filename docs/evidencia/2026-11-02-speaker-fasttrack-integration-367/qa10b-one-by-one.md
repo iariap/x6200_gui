@@ -20,7 +20,7 @@ presente sin datos; sin módulos loopback/remap/echo.
 
 - **DAC_ZERO:** respondió **B** —seguía oyéndose la RX— y **un momento de silencio**.
 - **DAC_RAW:** «empezó bien y luego D» (mucho eco/no se entendía).
-- **DAC_PROCESSED:** pendiente de confirmación.
+- **DAC_PROCESSED:** «arrancó bien y se desvaneció el sonido en fade-out».
 
 ## Lectura
 
@@ -31,5 +31,5 @@ No se atribuye al DSP todavía; PROCESSED es la comparación que falta.
 
 - `QA10B_PHASES = PASS` (router/stream/restore).
 - `EXTRA_RX_PATH_DURING_ZERO = CONFIRMED_BY_OPERATOR`.
-- `ECHO_CAUSE = EXTRA_PATH_SUSPECTED`; `AUDIBLE_PROCESSED = PENDING`.
+- `ECHO_CAUSE = EXTRA_PATH_SUSPECTED`; `PROCESSED_FADE = OBSERVED`; falta distinguir si el fade ocurrió dentro de los 5 s o coincidió con el cierre de fase.
 - `PRODUCTION_READY = NO`; no merge.
