@@ -38,7 +38,7 @@ No se implementa AEC: no hay RX que cancelar.
   **antes del amplificador común**, no acústico posterior al volumen. El monitor sigue con tono.
 - `Mic1 Capture Switch off` elimina el tono pero **elimina toda la captura** (QA13), no es una
   solución.
-- `Line In Capture` + `Mic2 Capture` habilitados durante DAC+ZERO: captura RMS29,6, sin RX útil.
+- `Line In Capture` + `Mic2 Capture` habilitados durante DAC+ZERO: captura RMS146,5 frente a ~1.800 de BASE, sin RX útil.
   No hay entrada alternativa que recupere RX.
 - Mixer restaurado exactamente; snapshot después idéntico al inicial; sin `alsactl store`.
 
