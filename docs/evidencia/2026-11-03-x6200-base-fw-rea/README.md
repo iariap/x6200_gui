@@ -80,3 +80,38 @@ Para avanzar legal y técnicamente hace falta al menos uno de:
 
 Sin eso no hay modificación mínima demostrable. No se publica firmware propietario, claves ni
 calibraciones; sólo hashes y análisis.
+
+## 6. Software original descargado de la radio (SD vendor, sólo lectura)
+
+Se montó `/dev/mmcblk2p2` (rootfs vendor original, 383 MB usados) en modo **ro** y se descargaron
+selectivamente artefactos a `fw108-scratch/qaref-vendor-sd/` (fuera del repositorio), sin publicar
+binarios ni datos privados.
+
+| Artefacto vendor | SHA256 |
+|---|---|
+| `usr/app_qt/x6200_ui_v100` (1.0.8) | `26623266bfcd3ed4d2e08b03b9f023cef809579f5ed497899670fc01f66e9b2b` |
+| `usr/firmware/x6200_mcu_20260820141208.xgf` | `9a19f97a5ad9e141a3663d222f984073bf0b18b38d4662604372a0036f9daa23` |
+| `etc/asound.conf` | `574a78285b71006e6e5ced69fbc6f8360c4a7372a702273155e8123cd49a1d02` |
+| `usr/share/support/update` | `e48e378a8d7627a596d8f96a2c658f83e867015bb59177e29cb427bd71746c86` |
+| `S51amixer` | `2f96676a9cec789b23739de89b70bd556c9591cf436e556bd9398fe6628a81aa` |
+| `emmc_sources/install_emmc.sh` | `25b8f41e01e916c5dd7966d33613ce951536ac96f35b22c174a8608f2b2dd401` |
+| `emmc_sources/u-boot-sunxi-with-spl.bin` | `ccf63f9a558c725eb644b3246f786628b6c1c7cbecfb7f1a627fb54fafa2053e` |
+
+### Lo que confirma
+
+- **`S51amixer` vendor**: `AIF1 Data Digital ADC Capture on`, `Mic1 Capture on`, `Mic2 mute`,
+  `AIF1 Slot 0 Digital DAC Playback on`, `DAC/Headphone on`. Es exactamente la misma única fuente
+  Mic1/AIF1 que el port; **no aparece LINEIN/Mic2 ni un control RX pre-mute**.
+- **`/etc/asound.conf` vendor**: dmix/dsnoop sobre `hw:0,0`; no crea una segunda captura RX.
+- **`/usr/share/support/update` vendor**: sólo actualiza kernel/rootfs de la eMMC con
+  `install_emmc.sh` (U-Boot + zImage + DTB + `rootfs.tar`); **no actualiza ni recupera el MCU**.
+- **`.xgf` vendor**: mismo contenedor opaco de 524288 B; el actualizador GUI lo envía por
+  IAP/XMODEM. No hay imagen en claro, fuente, llave ni lector.
+- La SD vendor sirve como **imagen de recuperación Linux** si se corrompe la eMMC, no como
+  recuperación MCU.
+
+### Consecuencia
+
+Descargar el software original no cambia la conclusión: el MCU sigue siendo una caja opaca y la
+ruta RX pre-mute no está expuesta. `MCU_RECOVERY` sigue **UNVERIFIED**; no se flasheó ni se escribió
+en la SD (montaje ro). No se publica firmware propietario completo ni claves.
