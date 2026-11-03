@@ -42,3 +42,24 @@ firmware**, con control exclusivo del BASE, y restaurar la GUI original.
 `FLASH_PREFLIGHT = PASS_STARTUP` (arranque/no-auto-write/control exclusivo/restauración);
 `FIRMWARE_SELECTION = NOT_EXERCISED`; `IAP_ENTRY = UNVERIFIED`.
 No se escribió el MCU.
+
+## Intento de selección por VNC (no completado)
+
+- Se recreó el overlay, se copió el candidato a `/usr/firmware` del overlay:
+  SHA256 verificado `cc7b4acae26887d0620f633f6a8a695419460f3201554c163120a3960ac2b6b9`.
+- Se arrancó el vendor GUI con el plugin Qt VNC (`vnc:port=5900,size=480x800`); el puerto 5900
+  quedó escuchando.
+- Al conectar un cliente VNC (`vncdotool`), el servidor cerró la conexión y el proceso vendor
+  terminó; no se pudo capturar la pantalla ni inyectar input.
+- **No se envió ninguna tecla/click; no se pulsó Update/Confirm; no se inició IAP/erase/XMODEM.**
+- Se cerró el entorno, se restauraron GUI original, ALSA (diff vacío), volumen0 y frecuencia
+  7143000; sin montajes residuales.
+
+### Flujo estático de selección
+
+`UiFwUpgrade::exec()` llama a `updateFunctionButtons`; el único caller de
+`UiFwUpgrade::upgradeFirmware` es `UiFwUpgrade::slot_pushButtonClicked` (acción de botón
+**UPGRADE**). La selección de archivo (lista PREV/NEXT) no llama a `upgradeFirmware`; la escritura
+sólo se inicia desde el botón UPGRADE. La selección runtime del candidato **no se ejercitó**.
+
+`FIRMWARE_SELECTION = UNVERIFIED`.

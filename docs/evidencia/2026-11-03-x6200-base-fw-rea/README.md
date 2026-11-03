@@ -147,3 +147,11 @@ Ver `integrity-gate.md`. `XGF_INTEGRITY=PARTIAL`; `ADDITIONAL_CHECKSUM=INCONCLUS
 Ver `vendor-preflight.md`: GUI vendor aislada arrancó, Baseband ready, sin IAP/erase; control
 exclusivo; GUI original/ALSA restaurados. No se navegó la selección de firmware ni se probó IAP
 entry. `FLASH_PREFLIGHT=PASS_STARTUP`; `FIRMWARE_SELECTION=NOT_EXERCISED`; `IAP_ENTRY=UNVERIFIED`.
+
+
+## 10. Selección de firmware
+
+Se intentó VNC para seleccionar el candidato sin Update; el plugin VNC abrió el puerto 5900 pero el
+proceso cerró al conectar el cliente. No se inyectó input ni se pulsó Update. Flujo estático:
+`upgradeFirmware` sólo es llamado por `slot_pushButtonClicked` (botón UPGRADE); selección no inicia
+escritura. `FIRMWARE_SELECTION=UNVERIFIED`.
