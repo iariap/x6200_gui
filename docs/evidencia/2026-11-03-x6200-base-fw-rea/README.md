@@ -140,3 +140,10 @@ Se añadió `hardware-and-bootloader.md` y la herramienta reproducible `tools/xg
 Ver `integrity-gate.md`. `XGF_INTEGRITY=PARTIAL`; `ADDITIONAL_CHECKSUM=INCONCLUSIVE`;
 `IAP_ACCEPTANCE_CONTRACT=UNKNOWN`; `MCU_VERSION=UNKNOWN`; `IAP_ENTRY=UNVERIFIED`;
 `MCU_RECOVERY=UNVERIFIED`; `BASE_PATCH_READY=NO`. **NO-GO**; no se flasheó.
+
+
+## 9. Preflight vendor 2026-11-03
+
+Ver `vendor-preflight.md`: GUI vendor aislada arrancó, Baseband ready, sin IAP/erase; control
+exclusivo; GUI original/ALSA restaurados. No se navegó la selección de firmware ni se probó IAP
+entry. `FLASH_PREFLIGHT=PASS_STARTUP`; `FIRMWARE_SELECTION=NOT_EXERCISED`; `IAP_ENTRY=UNVERIFIED`.

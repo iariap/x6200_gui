@@ -1,0 +1,44 @@
+# Preflight del updater vendor — 2026-11-03
+
+## Objetivo
+
+Verificar que el entorno vendor aislado inicia la GUI/updater **sin IAP, erase ni escritura de
+firmware**, con control exclusivo del BASE, y restaurar la GUI original.
+
+## Procedimiento ejecutado
+
+1. SD vendor original montada **ro**; overlay temporal en `/tmp`; bind `/dev,/proc,/sys,/run`.
+2. Se detuvo la GUI original (`x6200_gui`/daemon) para dejar **un solo dueño** del BASE.
+3. Se lanzó `x6200_ui_v100` 1.0.8 desde el chroot aislado.
+4. Se observaron logs/procesos durante 12 s. **No se envió input, no se pulsó Update.**
+5. Se cerró el vendor GUI, se desmontó el overlay y se reinició la GUI original.
+6. Se restauró ALSA al snapshot previo (diff vacío).
+
+## Resultado
+
+- GUI vendor: **arrancó**; `BaseCommIIC` y `BaseComm` iniciaron; `[INFO] Baseband is ready`;
+  leyó calibración (`[OK] Read calibrate data`); audio `XAudio` inicializado.
+- **No** aparecen `Start IAP`, `Erasing Flash`, `XMWorker` ni XMODEM en el log.
+- **No** se envió erase/XMODEM; no se escribió firmware.
+- Control exclusivo: se detuvo la GUI original antes y se restauró después.
+- GUI original restaurada: MD5 `e32a81f3563dab27e5b30111a47a7d12`, PID único, RX, `tx=false`.
+- ALSA restaurado exacto (`diff` vacío).
+
+## Limitaciones
+
+- **No se navegó a la pantalla de selección de firmware** (no se inyectó input); se verificó el
+  arranque del updater, no la selección de archivo.
+- **No se probó entry/salida IAP**: el flujo de actualización lleva a erase; no hay handshake sin
+  escritura.
+- El arranque vendor modificó transitoriamente el mixer (Mic1 Playback/AIF2 ADC/DAC Playback on);
+  se restauró a off. El `params.db` cambió de hash al reiniciar nuestra GUI (side effect de la GUI
+  original, no de la REA); no se revirtió a un backup antiguo porque habría cambiado ajustes del
+  operador (p. ej. volumen).
+- `freq_bg` quedó en 7143000 en vez de 7200000 tras el reinicio de la GUI; es estado de UI, no
+  firmware.
+
+## Clasificación
+
+`FLASH_PREFLIGHT = PASS_STARTUP` (arranque/no-auto-write/control exclusivo/restauración);
+`FIRMWARE_SELECTION = NOT_EXERCISED`; `IAP_ENTRY = UNVERIFIED`.
+No se escribió el MCU.
