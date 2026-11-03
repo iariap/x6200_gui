@@ -1,0 +1,23 @@
+{
+  "zero": {
+    "duration_s": 7.74,
+    "median_rms": 0.0,
+    "fraction_below_half_median": 1.0,
+    "segment_min": 0.0,
+    "segment_max": 0.0
+  },
+  "raw": {
+    "duration_s": 7.78,
+    "median_rms": 7421.0,
+    "fraction_below_half_median": 0.111,
+    "segment_min": 2240.4,
+    "segment_max": 11929.2
+  },
+  "processed": {
+    "duration_s": 7.68,
+    "median_rms": 255.4,
+    "fraction_below_half_median": 0.467,
+    "segment_min": 18.0,
+    "segment_max": 7263.6
+  }
+}
