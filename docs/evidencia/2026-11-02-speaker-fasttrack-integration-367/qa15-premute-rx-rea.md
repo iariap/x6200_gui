@@ -36,12 +36,12 @@ Sin cambios de kernel, firmware BASE, audio, MUX ni hardware.
 | Componente | Evidencia | Resultado |
 |---|---|---|
 | Kernel desplegado | `uname -a` en radio: Linux 6.1.82, armv7l; DT `xiegu,x6200`/`allwinner,sun8i-r16` | único PCM AIF1 |
-| DTS main | `br2_external/board/X6200/dts/sun8i-r16-x6200.dts` `&sound`: AIF1 Slot0 ↔ Left/Right DAC; ADC ↔ AIF1 Slot0 ADC | sin AIF2/3 ni entrada RX digital |
+| DTS main | `br2_external/board/X6200/dts/sun8i-r16-x6200.dts` `&sound`: AIF1 Slot0 ↔ Left/Right DAC; ADC ↔ AIF1 Slot0 ADC. DTB vendor 1.0.8 descompilado (`sun8i-r16-x6200.dtb`) tiene el mismo único `sound`/AIF1, sin AIF2/AIF3 | sin AIF2/3 ni entrada RX digital |
 | Driver ASoC | `build/build/linux-6.1.82/sound/soc/sunxi/sun8i-codec.c`: `AIF1 Slot 0 Digital ADC Capture` (loopback AIF1 DA0) y AIF2/AIF3 off; `AIF1 Data Digital ADC Capture` es el camino ADC normal | sin loop digital activo |
 | Driver analog | `sun8i-codec-analog.c`: ADC Mixer ← Mic1, Mixer Capture/Reversed; `Mic1 Capture` es la única fuente activa | no hay entrada RX separada |
 | ALSA real | Card0 `sun8i-a33-audio`; snapshot `qa13/amixer-before.txt`: AIF1 Slot0 off, Mixer Capture off, AIF2 off, Mic1 on | coincide con el driver |
 | SDK | `refs/X6200Control`: `record_set` sólo RMW bit `voice_rec=0x8` de reg12; no hay API de ruta RX/DAC independiente. `spmode` sólo speaker/phone; `linein_set` es gain; `iqout` es aux IQ gen | no hay contrato independiente |
-| GUI vendor 1.0.6/1.0.8 | REA #376: escribe el bloque workparams (reg12 incluye 0x8), sin readback/ACK/restore; audio/MUX sin cambio entre versiones | no hay control nuevo de ruta |
+| GUI vendor 1.0.6/1.0.8 | REA #376: escribe el bloque workparams (reg12 incluye 0x8), sin readback/ACK/restore; audio/MUX sin cambio entre versiones. `strings` del binario vendor: `amixer ... AIF1 Data Digital ADC Capture on`, `Mic1 Capture on`, `Mic2 mute`, `DAC/Headphone`; no aparece un control de RX pre-mute | no hay control nuevo de ruta |
 | MCU/BASE | `x6200_mcu_20250111134652.xgf` 524288 B SHA256 `dca90387...` (y 1.0.8 `9a19f97a...`): entropía 7.47–7.75, sin símbolos; `.xgf` opaco | **MCU_OPAQUE**; no se puede afirmar ruta interna |
 | Telemetría flow | `x6200_flow_t.samples[512]` es `uint8_t` de espectro/waterfall, no PCM; docs `X6100_vs_X6200_HARDWARE.md:183-192` | no sirve como audio RX |
 | Comportamiento | QA14 A/B/A: captura BASE 1.792/1.889 RMS; DAC+ZERO 30,6 RMS (−35 dB); QA12b DAC tone aparece en captura; volumen0 no lo elimina | RX útil desaparece en DAC; acoplamiento antes del amplificador |
