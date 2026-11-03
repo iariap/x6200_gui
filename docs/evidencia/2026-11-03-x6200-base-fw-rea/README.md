@@ -225,3 +225,11 @@ Ver `qa29-cause-analysis.md`. Offset de archivo del parche `0x2535C`; único cam
 La rama DAC además configura FPGA/DSP 0x34/0x36/0x37/0x39. Captura directa ALSA:
 A 2086, B DAC 142, C 1515; PA da B142, mismo resultado. El parche es insuficiente.
 `SOFTWARE_ONLY_INCONCLUSIVE`; hacen falta mapas reg12/FPGA/readback. Sin nuevo flash; radio restaurada.
+
+
+## 21. QA30 — Configuración FPGA/DAC y candidato de mute
+
+Ver `qa30-fpga-config-analysis.md`. Secuencia DAC: reg0x34 campo+bit0x40, reg0x36, reg0x37/39,
+filtros 0x3B/3C; BASE `0x450C8` rutas 0..5. Candidato principal no confirmado: bit0x40 de
+reg0x34. PCM ALSA aceptado 96000 frames BASE/DAC; MUX por helper; audible NOT_VERIFIED.
+SOFTWARE_ONLY_INCONCLUSIVE; H1 (omitir ORR 0x40 en 0x080439CA) documentada, no generada.
