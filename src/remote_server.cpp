@@ -43,6 +43,7 @@ extern "C" {
 #ifdef X6200_RX_SPEAKER_QA
     bool audio_qa_speaker_test_start(void);
     bool audio_qa_speaker_soak_start(void);
+    bool audio_qa_speaker_echo_start(void);
 #endif
     #include "cJSON.h"
     #include "cfg/cfg_api.h"
@@ -129,7 +130,7 @@ typedef enum {
     CMD_NB_LEVEL, CMD_NB_WIDTH, CMD_NR_LEVEL, CMD_AGC_MODE, CMD_SQL,
     CMD_APP, CMD_APP_CMD, CMD_LOCATION, CMD_QSO_LOG, CMD_BTN, CMD_VOL,
 #ifdef X6200_RX_SPEAKER_QA
-    CMD_RX_QA_SHORT, CMD_RX_QA_SOAK,
+    CMD_RX_QA_SHORT, CMD_RX_QA_SOAK, CMD_RX_QA_ECHO,
 #endif
 } cmd_id_t;
 
@@ -430,6 +431,9 @@ static void apply_cmd(void *arg) {
             break;
         case CMD_RX_QA_SOAK:
             (void) audio_qa_speaker_soak_start();
+            break;
+        case CMD_RX_QA_ECHO:
+            (void) audio_qa_speaker_echo_start();
             break;
 #endif
         case CMD_VOL:
@@ -807,6 +811,10 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
     }
     if (!strcmp(name, "rx_speaker_soak")) {
         cmd->id = CMD_RX_QA_SOAK;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_echo")) {
+        cmd->id = CMD_RX_QA_ECHO;
         return NULL;
     }
 #endif

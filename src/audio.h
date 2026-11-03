@@ -25,6 +25,7 @@ void audio_play_en(bool on);
 #ifdef X6200_RX_SPEAKER_QA
 bool audio_qa_speaker_test_start(void);
 bool audio_qa_speaker_soak_start(void);
+bool audio_qa_speaker_echo_start(void);
 #endif
 
 /* audio_init() conecta PulseAudio en un hilo: espera hasta `timeout_ms` a que el stream de

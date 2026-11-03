@@ -1,0 +1,33 @@
+Tue Nov  3 03:45:56 UTC 2026
+Sink Input #255
+	Sink: 0
+	Corked: no
+		media.name = "X6200 GUI Play"
+		application.name = "X6200 GUI"
+		module-stream-restore.id = "sink-input-by-application-name:X6200 GUI"
+Sink Input #256
+	Sink: 0
+	Corked: no
+		media.name = "X6200 RX Live"
+		application.name = "X6200 GUI"
+		module-stream-restore.id = "sink-input-by-application-name:X6200 GUI"
+state: RUNNING
+owner_pid   : 329
+trigger_time: 7.960949420
+tstamp      : 21187.942306888
+delay       : 384
+avail       : 384
+avail_max   : 384
+-----
+hw_ptr      : 934326704
+appl_ptr    : 934326320
+state: RUNNING
+owner_pid   : 329
+trigger_time: 7.952317336
+tstamp      : 21187.944834822
+delay       : 8976
+avail       : 79224
+avail_max   : 79224
+-----
+hw_ptr      : 933974100
+appl_ptr    : 933983076

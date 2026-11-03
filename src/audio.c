@@ -72,6 +72,8 @@ static atomic_uint          qa_pa_write_nospace;
 static atomic_uint          qa_pa_write_errors;
 static atomic_uint          qa_pa_writable_min;
 static atomic_uint          qa_pa_writable_max;
+/* QA10: fase de prueba de eco. 0=off, 1=ZERO, 2=RAW, 3=PROCESSED. */
+static atomic_int           qa_echo_phase;
 #endif
 
 /* Cuando el stream de reproducción no acepta datos (el sink real no consume: ver HALLAZGOS),
@@ -273,6 +275,10 @@ static void on_state_change(pa_context *c, void *userdata) {
  * por heap ni pasarse de la capacidad de dsp.cpp::audio (44100 floats). */
 #define CAPTURE_SCRATCH_SAMPLES (AUDIO_CAPTURE_RATE / 10)
 
+#ifdef X6200_RX_SPEAKER_QA
+static int16_t qa_zero_block[CAPTURE_SCRATCH_SAMPLES];
+#endif
+
 /* El fragmento es de PulseAudio: se consume UNA vez y se anota el error sin reintentar
  * desde el callback (un retry aca solo puede perder el hilo del mainloop). */
 static void capture_drop(pa_stream *s) {
@@ -291,12 +297,34 @@ static void rx_qa_capture_observe(size_t samples, bool process);
 static void capture_deliver(int16_t *scratch, size_t samples, bool process) {
 #ifdef X6200_RX_SPEAKER_QA
     rx_qa_capture_observe(samples, process);
-#endif
+    int phase = atomic_load(&qa_echo_phase);
+    int16_t raw[CAPTURE_SCRATCH_SAMPLES];
+
+    if (samples > CAPTURE_SCRATCH_SAMPLES) {
+        samples = CAPTURE_SCRATCH_SAMPLES;
+    }
+    if (process) {
+        memcpy(raw, scratch, samples * sizeof(int16_t));
+        audio_enh_process(scratch, samples);
+        if (phase == 1) {
+            rx_audio_live_submit(qa_zero_block, samples);
+        } else if (phase == 2) {
+            rx_audio_live_submit(raw, samples);
+        } else {
+            rx_audio_live_submit(scratch, samples);
+        }
+    } else if (phase != 0) {
+        /* Hole durante la prueba de eco: mantener el stream continuo con cero,
+         * sin inventar PCM para los otros consumidores. */
+        rx_audio_live_submit(qa_zero_block, samples);
+    }
+#else
     if (process) {
         audio_enh_process(scratch, samples);
         /* Misma PCM post-Speex para el router RX live (default OFF; DAC gate #367). */
         rx_audio_live_submit(scratch, samples);
     }
+#endif
 
     /* Screen recorder: keeps the RX audio next to the video frames */
     screen_rec_put_audio_samples(samples, scratch);
@@ -948,6 +976,7 @@ typedef struct {
 static FILE      *qa_metrics_fp;
 static FILE      *qa_events_fp;
 static rx_qa_diag_base_t qa_diag_base;
+static const char *qa_diag_phase = "none";
 
 static void rx_qa_write_events_locked(void) {
     rx_audio_live_qa_event_t ev[RX_AUDIO_LIVE_QA_EVENT_RING];
@@ -973,8 +1002,10 @@ static void rx_qa_diag_begin(const char *mode) {
     rx_qa_capture_reset();
     rx_qa_pa_counters_reset();
     rx_audio_live_qa_reset_metrics();
+    atomic_store(&qa_echo_phase, 0);
     (void) rx_audio_live_qa_drain_events(NULL, 0);
 
+    qa_diag_phase = mode;
     qa_diag_base.t0_ms = rx_qa_mono_ms();
     rx_audio_live_get_stats(&qa_diag_base.base_stats);
     rx_audio_live_qa_get_metrics(&qa_diag_base.base_metrics);
@@ -998,7 +1029,7 @@ static void rx_qa_diag_begin(const char *mode) {
     }
     if (qa_metrics_fp != NULL) {
         fprintf(qa_metrics_fp,
-            "t_s,cap_samples,cap_real_samples,cap_calls,cap_max_interval_ms,cap_gaps,cap_holes,"
+            "t_s,phase,cap_samples,cap_real_samples,cap_calls,cap_max_interval_ms,cap_gaps,cap_holes,"
             "submitted,writes,drops,underruns,backpressure,degraded,mux_on_ok,mux_off_ok,"
             "ring_occ,ring_hwm,pending_max_ms,pending_samples,state,"
             "pa_state,pa_writable,pa_stream_index,pa_rate,pa_channels,pa_format,"
@@ -1028,7 +1059,7 @@ static void rx_qa_diag_sample(int sec) {
         return;
     }
     fprintf(qa_metrics_fp,
-        "%d,%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%u,%u,%" PRIu64 ","
+        "%d,%s,%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%u,%u,%" PRIu64 ","
         "%u,%u,%u,%u,%u,%u,%u,%u,"
         "%u,%u,%u,%u,%u,"
         "%d,%d,%d,%u,%u,%d,"
@@ -1038,7 +1069,7 @@ static void rx_qa_diag_sample(int sec) {
         "%d,%" PRId64 ",%" PRId64 ",%d,%d,"
         "%d,%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRId64 ","
         "%u,%u,%u,%u,%u,%u\n",
-        sec,
+        sec, qa_diag_phase,
         atomic_load(&qa_cap_samples) - qa_diag_base.base_cap_samples,
         atomic_load(&qa_cap_real_samples) - qa_diag_base.base_cap_real_samples,
         atomic_load(&qa_cap_calls) - qa_diag_base.base_cap_calls,
@@ -1087,6 +1118,7 @@ static void rx_qa_diag_end(void) {
 typedef enum {
     RX_QA_SHORT = 0,
     RX_QA_SOAK,
+    RX_QA_ECHO,
 } rx_qa_mode_t;
 
 static atomic_bool rx_qa_running;
@@ -1162,6 +1194,35 @@ static bool rx_qa_stop(void) {
     return true;
 }
 
+
+static const char *rx_qa_mode_name(rx_qa_mode_t mode) {
+    switch (mode) {
+        case RX_QA_SOAK: return "soak";
+        case RX_QA_ECHO: return "echo";
+        default: return "short";
+    }
+}
+
+static const char *rx_qa_echo_phase_name(int phase) {
+    switch (phase) {
+        case 1: return "ZERO";
+        case 2: return "RAW";
+        case 3: return "PROCESSED";
+        default: return "OFF";
+    }
+}
+
+static void rx_qa_log_pa(const char *phase) {
+    rx_qa_pa_snapshot_t pa;
+    rx_qa_pa_snapshot(&pa);
+    rx_qa_log("ECHO_PA phase=%s state=%d writable=%d tlength=%u prebuf=%u fragsize=%u "
+              "latency_valid=%d latency_us=%" PRId64 " read_idx=%" PRId64 " write_idx=%" PRId64
+              " playing=%d sink_usec=%" PRIu64,
+              phase, pa.stream_state, pa.writable, pa.tlength, pa.prebuf, pa.fragsize,
+              pa.latency_valid, pa.latency_us, pa.read_index, pa.write_index,
+              pa.playing, pa.sink_usec);
+}
+
 static void *rx_qa_thread(void *arg) {
     rx_qa_mode_t mode = (rx_qa_mode_t) (intptr_t) arg;
     audio_enh_preset_t preset_before = audio_enh_preset_get_current();
@@ -1173,7 +1234,7 @@ static void *rx_qa_thread(void *arg) {
     bool soak_aborted = false;
 
     rx_qa_log("START mode=%s state=%s preset=%s reg12_shadow=0x%08x rxvol=%u",
-              mode == RX_QA_SOAK ? "soak" : "short",
+              rx_qa_mode_name(mode),
               rx_audio_live_state_name(rx_audio_live_get_state()),
               audio_enh_preset_get_name(preset_before), reg_before, rxvol);
 
@@ -1181,7 +1242,7 @@ static void *rx_qa_thread(void *arg) {
         goto done;
     }
 
-    rx_qa_diag_begin(mode == RX_QA_SOAK ? "soak" : "short");
+    rx_qa_diag_begin(rx_qa_mode_name(mode));
 
     /* Retorno a BASE explicito antes de habilitar. */
     if (!radio_audio_route_set(false)) {
@@ -1207,6 +1268,33 @@ static void *rx_qa_thread(void *arg) {
         audio_enh_preset_load(AUDIO_ENH_PRESET_SSB_VOICE);
         rx_qa_log("PHASE SSB_VOICE");
         usleep(700000);
+    } else if (mode == RX_QA_ECHO) {
+        static const int phases[] = { 1, 2, 3 };
+        audio_enh_preset_load(AUDIO_ENH_PRESET_SSB_VOICE);
+        for (size_t p = 0; p < sizeof(phases) / sizeof(phases[0]); p++) {
+            int phase = phases[p];
+            qa_diag_phase = rx_qa_echo_phase_name(phase);
+            atomic_store(&qa_echo_phase, phase);
+            rx_qa_log("ECHO_PHASE %s START t_ms=%" PRIu64,
+                      qa_diag_phase, rx_qa_mono_ms() - qa_diag_base.t0_ms);
+            rx_qa_log_pa(qa_diag_phase);
+            for (int s = 0; s < 5; s++) {
+                usleep(1000000);
+                rx_qa_diag_sample((int) (p * 5 + s + 1));
+                if (radio_get_state() != RADIO_RX ||
+                    rx_audio_live_get_state() != RX_AUDIO_LIVE_RX_DAC) {
+                    rx_qa_log("ECHO_PHASE %s aborted state", qa_diag_phase);
+                    soak_aborted = true;
+                    break;
+                }
+            }
+            rx_qa_log_pa(qa_diag_phase);
+            rx_qa_log("ECHO_PHASE %s END", qa_diag_phase);
+            if (soak_aborted) {
+                break;
+            }
+        }
+        atomic_store(&qa_echo_phase, 0);
     } else {
         audio_enh_preset_load(AUDIO_ENH_PRESET_SSB_VOICE);
         rx_qa_log("SOAK 30000ms");
@@ -1226,6 +1314,7 @@ static void *rx_qa_thread(void *arg) {
 
 cleanup:
     {
+        atomic_store(&qa_echo_phase, 0);
         bool restored = rx_qa_stop();
         rx_audio_live_stats_t st;
         rx_audio_live_get_stats(&st);
@@ -1297,6 +1386,10 @@ bool audio_qa_speaker_test_start(void) {
 
 bool audio_qa_speaker_soak_start(void) {
     return rx_qa_start(RX_QA_SOAK);
+}
+
+bool audio_qa_speaker_echo_start(void) {
+    return rx_qa_start(RX_QA_ECHO);
 }
 #endif
 
