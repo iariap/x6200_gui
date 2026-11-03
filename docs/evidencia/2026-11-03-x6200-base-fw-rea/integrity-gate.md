@@ -110,3 +110,17 @@ Se ampliaron las pruebas sin fuerza bruta:
 - La cola de 4 B sigue **no identificada**. No se modificó el candidato.
 - `ADDITIONAL_CHECKSUM=INCONCLUSIVE`; no hay evidencia suficiente para afirmar que sea un checksum
   ni para actualizarlo.
+
+
+## 12. Hipótesis de residuo CRC (imagen completa, con footer)
+
+Se calculó el CRC de la **imagen completa incluyendo los 4 bytes finales** para 1.0.6/1.0.8:
+
+| Variante | 1.0.6 | 1.0.8 |
+|---|---:|---:|
+| CRC-32/ISO-HDLC (zlib) | `0x79F3C62A` | `0xA12FCFB3` |
+| CRC-32/MPEG-2 | `0xDA8EACCB` | `0x2FE9E2AC` |
+| STM32 word-wise | `0x6EAECD5A` | `0x2C076777` |
+
+No comparten un residuo constante (ni 0, ni `0xFFFFFFFF`, ni un mismo valor) en ninguna variante
+justificada. **La hipótesis de residuo CRC no se confirma.**

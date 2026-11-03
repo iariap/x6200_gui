@@ -41,3 +41,14 @@ XMODEM sólo confirma recepción del paquete, **no** aceptación de la imagen ni
 - SD/U-Boot recupera **Linux**, no el MCU.
 - El `.xgf` oficial 1.0.8 sólo puede reescribirse por IAP **si el bootloader sigue accesible**.
 - Si la app no arranca y el bootloader no expone IAP, no hay recuperación por software.
+
+
+## Entorno aislado preparado (sin ejecutar GUI)
+
+Se montó el rootfs vendor de la SD en **modo ro** con **overlay temporal en `/tmp`** y bind mounts
+`/dev,/proc,/sys,/run`. El loader dinámico resolvió **todas** las dependencias del GUI vendor
+(Qt5, qwt, NE10, liquid, alsa, NetworkManager, etc.). No se inició la GUI ni el updater; no hay dos
+GUIs compitiendo por el BASE.
+
+El entorno sirve para una eventual prueba controlada, pero **no se ejecutó** porque iniciar el
+updater lleva a erase y no hay un botón de handshake sin escritura.
