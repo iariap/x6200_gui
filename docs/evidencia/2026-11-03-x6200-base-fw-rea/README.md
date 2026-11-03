@@ -249,3 +249,11 @@ SHA256 `df1e274f9e6fe59c00c1ebe6aeec5dced3a07f398ecd04ed503380df75c5d488`.
 Autorización específica H1; overlay con sólo H1; IAP/XMODEM completo; reinicio; BASE 1.0.8.
 A/B/A directo: A2160,7 / B143,0 / C1655,3. **H1 no recupera RX**. `H1_RESULT=FAIL_FUNCTIONAL`.
 PCM DAC aceptado 96000 frames; audible no verificado. Radio restaurada; MCU con H1; sin nuevo flash.
+
+
+## 24. QA33 — audio audible reportado por el propietario
+
+El propietario informa que el audio siempre fue audible (QSO). Eso demuestra que el parlante
+no quedó mudo, pero no identifica la fuente: QA10 ya documentó una ruta nativa extra fuera de
+PulseAudio. La captura ADC sigue baja en DAC. `SPEAKER_AUDIO_HEARD=YES` (reporte);
+`LINUX_DSP_SPEAKER=NOT_VERIFIED`; no se hizo otro flash.
