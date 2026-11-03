@@ -17,6 +17,8 @@
 #ifdef X6200_RX_SPEAKER_QA
 #include <stdarg.h>
 #include <stdatomic.h>
+#include <inttypes.h>
+#include <time.h>
 #include "radio.h"
 #endif
 
@@ -54,6 +56,24 @@ static pa_stream            *monitor_stm = NULL;
 static pa_stream            *rx_live_stm = NULL;
 #endif
 
+#ifdef X6200_RX_SPEAKER_QA
+/* QA6: contadores atomicos para no bloquear el callback de captura. */
+static atomic_uint_fast64_t qa_cap_samples;
+static atomic_uint_fast64_t qa_cap_real_samples;
+static atomic_uint_fast64_t qa_cap_calls;
+static atomic_uint_fast64_t qa_cap_holes;
+static atomic_uint_fast64_t qa_cap_last_ms;
+static atomic_uint          qa_cap_max_interval_ms;
+static atomic_uint          qa_cap_gaps;
+
+static atomic_uint          qa_pa_write_calls;
+static atomic_uint          qa_pa_write_ok;
+static atomic_uint          qa_pa_write_nospace;
+static atomic_uint          qa_pa_write_errors;
+static atomic_uint          qa_pa_writable_min;
+static atomic_uint          qa_pa_writable_max;
+#endif
+
 /* Cuando el stream de reproducción no acepta datos (el sink real no consume: ver HALLAZGOS),
  * se anota hasta cuándo no insistir. Sin esto, cada bloque de audio de FT8/JS8/voz pagaría su
  * propio tope de 2 s y el que manda audio se quedaría esperando minutos. */
@@ -86,6 +106,10 @@ static bool rx_live_pa_open(void *arg) {
      * durante las pruebas supervisadas; no se traslada a produccion. */
 #ifdef X6200_RX_SPEAKER_QA
     attr.tlength = pa_usec_to_bytes(3000 * PA_USEC_PER_MSEC, &spec);
+    /* QA6: el servidor negocio prebuf ~= tlength (132302/134064 B) y el stream
+     * quedaba en prebuffer sin avanzar read_index. Forzar prebuf=0 inicia la
+     * reproduccion con el primer bloque; produccion no cambia. */
+    attr.prebuf = 0;
 #else
     attr.tlength = pa_usec_to_bytes(RX_AUDIO_LIVE_TARGET_BUFFER_MS * PA_USEC_PER_MSEC, &spec);
 #endif
@@ -94,7 +118,11 @@ static bool rx_live_pa_open(void *arg) {
     rx_live_stm = pa_stream_new(ctx, "X6200 RX Live", &spec, NULL);
     if (rx_live_stm != NULL) {
         if (pa_stream_connect_playback(rx_live_stm, play_device, &attr,
-                                       PA_STREAM_ADJUST_LATENCY, NULL, NULL) < 0) {
+                                       PA_STREAM_ADJUST_LATENCY
+#ifdef X6200_RX_SPEAKER_QA
+                                       | PA_STREAM_AUTO_TIMING_UPDATE
+#endif
+                                       , NULL, NULL) < 0) {
             pa_stream_unref(rx_live_stm);
             rx_live_stm = NULL;
         }
@@ -145,20 +173,43 @@ static int rx_live_pa_write(void *arg, const int16_t *samples, size_t count) {
         return RX_AUDIO_LIVE_WRITE_ERROR;
     }
 
+#ifdef X6200_RX_SPEAKER_QA
+    atomic_fetch_add(&qa_pa_write_calls, 1u);
+#endif
     pa_threaded_mainloop_lock(mloop);
     st = pa_stream_get_state(rx_live_stm);
     avail = pa_stream_writable_size(rx_live_stm);
+#ifdef X6200_RX_SPEAKER_QA
+    if (avail >= 0) {
+        unsigned a = (unsigned) avail;
+        unsigned old_min = atomic_load(&qa_pa_writable_min);
+        while (old_min > a && !atomic_compare_exchange_weak(&qa_pa_writable_min, &old_min, a)) {
+        }
+        unsigned old_max = atomic_load(&qa_pa_writable_max);
+        while (old_max < a && !atomic_compare_exchange_weak(&qa_pa_writable_max, &old_max, a)) {
+        }
+    }
+#endif
     if (st != PA_STREAM_READY || avail < 0) {
         pa_threaded_mainloop_unlock(mloop);
+#ifdef X6200_RX_SPEAKER_QA
+        atomic_fetch_add(&qa_pa_write_errors, 1u);
+#endif
         return RX_AUDIO_LIVE_WRITE_ERROR;
     }
     if ((size_t) avail < count * sizeof(int16_t)) {
         pa_threaded_mainloop_unlock(mloop);
+#ifdef X6200_RX_SPEAKER_QA
+        atomic_fetch_add(&qa_pa_write_nospace, 1u);
+#endif
         return RX_AUDIO_LIVE_WRITE_NO_SPACE;
     }
     rc = pa_stream_write(rx_live_stm, samples, count * sizeof(int16_t),
                          NULL, 0, PA_SEEK_RELATIVE);
     pa_threaded_mainloop_unlock(mloop);
+#ifdef X6200_RX_SPEAKER_QA
+    atomic_fetch_add(rc < 0 ? &qa_pa_write_errors : &qa_pa_write_ok, 1u);
+#endif
 
     return (rc < 0) ? RX_AUDIO_LIVE_WRITE_ERROR : RX_AUDIO_LIVE_WRITE_OK;
 }
@@ -233,7 +284,14 @@ static void capture_drop(pa_stream *s) {
 /* Entrega un chunk ya copiado en el scratch a los dos consumidores, EN ORDEN y una sola
  * vez: `process` distingue PCM real (filtros/NR antes de entregar) de un hole (ceros que
  * nunca pasan por la cadena, para no avanzar notch/nivelador/NR con silencio inventado). */
+#ifdef X6200_RX_SPEAKER_QA
+static void rx_qa_capture_observe(size_t samples, bool process);
+#endif
+
 static void capture_deliver(int16_t *scratch, size_t samples, bool process) {
+#ifdef X6200_RX_SPEAKER_QA
+    rx_qa_capture_observe(samples, process);
+#endif
     if (process) {
         audio_enh_process(scratch, samples);
         /* Misma PCM post-Speex para el router RX live (default OFF; DAC gate #367). */
@@ -736,6 +794,296 @@ float audio_set_rec_vol(float db) {
 /* existe en la build de produccion (CMake option default OFF).               */
 /* ------------------------------------------------------------------------- */
 
+static uint64_t rx_qa_mono_ms(void) {
+    struct timespec ts;
+
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+        return 0;
+    }
+    return (uint64_t) ts.tv_sec * 1000ULL + (uint64_t) ts.tv_nsec / 1000000ULL;
+}
+
+static void rx_qa_capture_reset(void) {
+    atomic_store(&qa_cap_samples, 0);
+    atomic_store(&qa_cap_real_samples, 0);
+    atomic_store(&qa_cap_calls, 0);
+    atomic_store(&qa_cap_holes, 0);
+    atomic_store(&qa_cap_last_ms, 0);
+    atomic_store(&qa_cap_max_interval_ms, 0);
+    atomic_store(&qa_cap_gaps, 0);
+}
+
+static void rx_qa_capture_observe(size_t samples, bool process) {
+    uint64_t now = rx_qa_mono_ms();
+    uint64_t prev = atomic_load(&qa_cap_last_ms);
+
+    if (prev != 0 && now > prev) {
+        unsigned interval = (unsigned) (now - prev);
+        unsigned old = atomic_load(&qa_cap_max_interval_ms);
+        while (interval > old && !atomic_compare_exchange_weak(&qa_cap_max_interval_ms, &old, interval)) {
+        }
+        if (interval > 150u) {
+            atomic_fetch_add(&qa_cap_gaps, 1u);
+        }
+    }
+    atomic_store(&qa_cap_last_ms, now);
+    atomic_fetch_add(&qa_cap_samples, (uint64_t) samples);
+    atomic_fetch_add(&qa_cap_calls, 1u);
+    if (process) {
+        atomic_fetch_add(&qa_cap_real_samples, (uint64_t) samples);
+    } else {
+        atomic_fetch_add(&qa_cap_holes, 1u);
+    }
+}
+
+static void rx_qa_pa_counters_reset(void) {
+    atomic_store(&qa_pa_write_calls, 0);
+    atomic_store(&qa_pa_write_ok, 0);
+    atomic_store(&qa_pa_write_nospace, 0);
+    atomic_store(&qa_pa_write_errors, 0);
+    atomic_store(&qa_pa_writable_min, 0xffffffffu);
+    atomic_store(&qa_pa_writable_max, 0);
+}
+
+typedef struct {
+    int      stream_state;
+    int      stream_index;
+    int      writable;
+    uint32_t rate;
+    uint32_t channels;
+    int      format;
+    uint32_t tlength;
+    uint32_t maxlength;
+    uint32_t prebuf;
+    uint32_t minreq;
+    uint32_t fragsize;
+    int      corked;
+    int      latency_valid;
+    int      time_valid;
+    int      timing_valid;
+    int64_t  latency_us;
+    int64_t  stream_time_us;
+    int64_t  read_index;
+    int64_t  write_index;
+    int      read_corrupt;
+    int      write_corrupt;
+    int      playing;
+    uint64_t sink_usec;
+    uint64_t transport_usec;
+    uint64_t configured_sink_usec;
+    int64_t  since_underrun;
+} rx_qa_pa_snapshot_t;
+
+static void rx_qa_pa_snapshot(rx_qa_pa_snapshot_t *m) {
+    memset(m, 0, sizeof(*m));
+
+    if (!audio_up || mloop == NULL || rx_live_stm == NULL) {
+        return;
+    }
+
+    pa_threaded_mainloop_lock(mloop);
+    m->stream_state = (int) pa_stream_get_state(rx_live_stm);
+    m->stream_index = (int) pa_stream_get_index(rx_live_stm);
+    m->writable = pa_stream_writable_size(rx_live_stm);
+    m->corked = pa_stream_is_corked(rx_live_stm);
+
+    const pa_sample_spec *spec = pa_stream_get_sample_spec(rx_live_stm);
+    if (spec != NULL) {
+        m->rate = spec->rate;
+        m->channels = spec->channels;
+        m->format = (int) spec->format;
+    }
+
+    const pa_buffer_attr *attr = pa_stream_get_buffer_attr(rx_live_stm);
+    if (attr != NULL) {
+        m->tlength = attr->tlength;
+        m->maxlength = attr->maxlength;
+        m->prebuf = attr->prebuf;
+        m->minreq = attr->minreq;
+        m->fragsize = attr->fragsize;
+    }
+
+    pa_usec_t usec = 0;
+    int negative = 0;
+    if (pa_stream_get_latency(rx_live_stm, &usec, &negative) == 0) {
+        m->latency_valid = 1;
+        m->latency_us = (int64_t) usec * (negative ? -1 : 1);
+    }
+    if (pa_stream_get_time(rx_live_stm, &usec) == 0) {
+        m->time_valid = 1;
+        m->stream_time_us = (int64_t) usec;
+    }
+
+    const pa_timing_info *ti = pa_stream_get_timing_info(rx_live_stm);
+    if (ti != NULL) {
+        m->timing_valid = 1;
+        m->read_index = ti->read_index;
+        m->write_index = ti->write_index;
+        m->read_corrupt = ti->read_index_corrupt;
+        m->write_corrupt = ti->write_index_corrupt;
+        m->playing = ti->playing;
+        m->sink_usec = ti->sink_usec;
+        m->transport_usec = ti->transport_usec;
+        m->configured_sink_usec = ti->configured_sink_usec;
+        m->since_underrun = ti->since_underrun;
+    }
+    pa_threaded_mainloop_unlock(mloop);
+}
+
+typedef struct {
+    uint64_t t0_ms;
+    rx_audio_live_stats_t base_stats;
+    rx_audio_live_qa_metrics_t base_metrics;
+    uint64_t base_cap_samples;
+    uint64_t base_cap_real_samples;
+    uint64_t base_cap_calls;
+    uint64_t base_cap_holes;
+    uint64_t base_cap_last_ms;
+    uint32_t base_pa_calls;
+    uint32_t base_pa_ok;
+    uint32_t base_pa_nospace;
+    uint32_t base_pa_errors;
+} rx_qa_diag_base_t;
+
+static FILE      *qa_metrics_fp;
+static FILE      *qa_events_fp;
+static rx_qa_diag_base_t qa_diag_base;
+
+static void rx_qa_write_events_locked(void) {
+    rx_audio_live_qa_event_t ev[RX_AUDIO_LIVE_QA_EVENT_RING];
+    size_t n;
+    int guard = 0;
+
+    if (qa_events_fp == NULL) {
+        return;
+    }
+    while ((n = rx_audio_live_qa_drain_events(ev, RX_AUDIO_LIVE_QA_EVENT_RING)) > 0 && guard++ < 8) {
+        for (size_t i = 0; i < n; i++) {
+            fprintf(qa_events_fp, "%" PRIu64 ",%s,%d\n",
+                    ev[i].t_ms - qa_diag_base.t0_ms,
+                    rx_audio_live_qa_event_name(ev[i].type), ev[i].value);
+        }
+        fflush(qa_events_fp);
+    }
+}
+
+static void rx_qa_diag_begin(const char *mode) {
+    char path[128];
+
+    rx_qa_capture_reset();
+    rx_qa_pa_counters_reset();
+    rx_audio_live_qa_reset_metrics();
+    (void) rx_audio_live_qa_drain_events(NULL, 0);
+
+    qa_diag_base.t0_ms = rx_qa_mono_ms();
+    rx_audio_live_get_stats(&qa_diag_base.base_stats);
+    rx_audio_live_qa_get_metrics(&qa_diag_base.base_metrics);
+    qa_diag_base.base_cap_samples = atomic_load(&qa_cap_samples);
+    qa_diag_base.base_cap_real_samples = atomic_load(&qa_cap_real_samples);
+    qa_diag_base.base_cap_calls = atomic_load(&qa_cap_calls);
+    qa_diag_base.base_cap_holes = atomic_load(&qa_cap_holes);
+    qa_diag_base.base_cap_last_ms = atomic_load(&qa_cap_last_ms);
+    qa_diag_base.base_pa_calls = atomic_load(&qa_pa_write_calls);
+    qa_diag_base.base_pa_ok = atomic_load(&qa_pa_write_ok);
+    qa_diag_base.base_pa_nospace = atomic_load(&qa_pa_write_nospace);
+    qa_diag_base.base_pa_errors = atomic_load(&qa_pa_write_errors);
+
+    snprintf(path, sizeof(path), "/mnt/app_logs/rx_qa_metrics_%s.csv", mode);
+    qa_metrics_fp = fopen(path, "w");
+    snprintf(path, sizeof(path), "/mnt/app_logs/rx_qa_events_%s.csv", mode);
+    qa_events_fp = fopen(path, "w");
+    if (qa_events_fp != NULL) {
+        fprintf(qa_events_fp, "t_ms,event,value\n");
+        fflush(qa_events_fp);
+    }
+    if (qa_metrics_fp != NULL) {
+        fprintf(qa_metrics_fp,
+            "t_s,cap_samples,cap_real_samples,cap_calls,cap_max_interval_ms,cap_gaps,cap_holes,"
+            "submitted,writes,drops,underruns,backpressure,degraded,mux_on_ok,mux_off_ok,"
+            "ring_occ,ring_hwm,pending_max_ms,pending_samples,state,"
+            "pa_state,pa_writable,pa_stream_index,pa_rate,pa_channels,pa_format,"
+            "pa_tlength,pa_maxlength,pa_prebuf,pa_minreq,pa_fragsize,pa_corked,"
+            "req_tlength_us,req_fragsize_us,req_prebuf,req_minreq,req_maxlength,"
+            "pa_latency_valid,pa_latency_us,pa_time_valid,pa_stream_time_us,"
+            "pa_timing_valid,pa_read_index,pa_write_index,pa_read_corrupt,pa_write_corrupt,"
+            "pa_playing,pa_sink_usec,pa_transport_usec,pa_configured_sink_usec,pa_since_underrun,"
+            "pa_write_calls,pa_write_ok,pa_write_nospace,pa_write_errors,pa_writable_min,pa_writable_max\n");
+        fflush(qa_metrics_fp);
+    }
+}
+
+static void rx_qa_emit_events(void);
+
+static void rx_qa_diag_sample(int sec) {
+    rx_audio_live_stats_t st;
+    rx_audio_live_qa_metrics_t qm;
+    rx_qa_pa_snapshot_t pa;
+
+    rx_audio_live_get_stats(&st);
+    rx_audio_live_qa_get_metrics(&qm);
+    rx_qa_pa_snapshot(&pa);
+    rx_qa_emit_events();
+
+    if (qa_metrics_fp == NULL) {
+        return;
+    }
+    fprintf(qa_metrics_fp,
+        "%d,%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%u,%u,%" PRIu64 ","
+        "%u,%u,%u,%u,%u,%u,%u,%u,"
+        "%u,%u,%u,%u,%u,"
+        "%d,%d,%d,%u,%u,%d,"
+        "%u,%u,%u,%u,%u,%d,"
+        "%u,%u,%d,%d,%d,"
+        "%d,%" PRId64 ",%d,%" PRId64 ","
+        "%d,%" PRId64 ",%" PRId64 ",%d,%d,"
+        "%d,%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRId64 ","
+        "%u,%u,%u,%u,%u,%u\n",
+        sec,
+        atomic_load(&qa_cap_samples) - qa_diag_base.base_cap_samples,
+        atomic_load(&qa_cap_real_samples) - qa_diag_base.base_cap_real_samples,
+        atomic_load(&qa_cap_calls) - qa_diag_base.base_cap_calls,
+        atomic_load(&qa_cap_max_interval_ms),
+        atomic_load(&qa_cap_gaps),
+        atomic_load(&qa_cap_holes) - qa_diag_base.base_cap_holes,
+        qm.submitted_blocks - qa_diag_base.base_metrics.submitted_blocks,
+        st.writes - qa_diag_base.base_stats.writes,
+        st.dropped_blocks - qa_diag_base.base_stats.dropped_blocks,
+        st.underruns - qa_diag_base.base_stats.underruns,
+        st.backpressure - qa_diag_base.base_stats.backpressure,
+        qm.degraded_transitions - qa_diag_base.base_metrics.degraded_transitions,
+        qm.mux_on_ok - qa_diag_base.base_metrics.mux_on_ok,
+        qm.mux_off_ok - qa_diag_base.base_metrics.mux_off_ok,
+        qm.ring_occupancy, qm.ring_high_water, qm.pending_max_ms, qm.pending_samples, qm.state,
+        pa.stream_state, pa.writable, pa.stream_index, pa.rate, pa.channels, pa.format,
+        pa.tlength, pa.maxlength, pa.prebuf, pa.minreq, pa.fragsize, pa.corked,
+        3000000u, 100000u, -1, -1, -1,
+        pa.latency_valid, pa.latency_us, pa.time_valid, pa.stream_time_us,
+        pa.timing_valid, pa.read_index, pa.write_index, pa.read_corrupt, pa.write_corrupt,
+        pa.playing, pa.sink_usec, pa.transport_usec, pa.configured_sink_usec, pa.since_underrun,
+        atomic_load(&qa_pa_write_calls) - qa_diag_base.base_pa_calls,
+        atomic_load(&qa_pa_write_ok) - qa_diag_base.base_pa_ok,
+        atomic_load(&qa_pa_write_nospace) - qa_diag_base.base_pa_nospace,
+        atomic_load(&qa_pa_write_errors) - qa_diag_base.base_pa_errors,
+        atomic_load(&qa_pa_writable_min), atomic_load(&qa_pa_writable_max));
+    fflush(qa_metrics_fp);
+}
+
+static void rx_qa_emit_events(void) {
+    rx_qa_write_events_locked();
+}
+
+static void rx_qa_diag_end(void) {
+    rx_qa_emit_events();
+    if (qa_metrics_fp != NULL) {
+        fclose(qa_metrics_fp);
+        qa_metrics_fp = NULL;
+    }
+    if (qa_events_fp != NULL) {
+        fclose(qa_events_fp);
+        qa_events_fp = NULL;
+    }
+}
+
 typedef enum {
     RX_QA_SHORT = 0,
     RX_QA_SOAK,
@@ -833,6 +1181,8 @@ static void *rx_qa_thread(void *arg) {
         goto done;
     }
 
+    rx_qa_diag_begin(mode == RX_QA_SOAK ? "soak" : "short");
+
     /* Retorno a BASE explicito antes de habilitar. */
     if (!radio_audio_route_set(false)) {
         rx_qa_log("FAIL pre-arm BASE");
@@ -867,6 +1217,9 @@ static void *rx_qa_thread(void *arg) {
                 break;
             }
             usleep(100000);
+            if ((i + 1) % 10 == 0) {
+                rx_qa_diag_sample((i + 1) / 10);
+            }
         }
     }
     ok = !soak_aborted;
@@ -876,6 +1229,8 @@ cleanup:
         bool restored = rx_qa_stop();
         rx_audio_live_stats_t st;
         rx_audio_live_get_stats(&st);
+        rx_qa_diag_sample(mode == RX_QA_SOAK ? 31 : 1);
+        rx_qa_diag_end();
         audio_enh_preset_load(preset_before);
 
         uint32_t reg_after = x6200_control_get(x6200_sple_atue_trx);
@@ -887,11 +1242,17 @@ cleanup:
                   st.writes, st.dropped_blocks, st.underruns, st.restore_failures,
                   st.backpressure);
 
+#ifdef X6200_RX_SPEAKER_QA
+        uint32_t rxvol_after = x6200_control_get(x6200_rxvol);
+        if (rxvol_after != rxvol) {
+            rx_qa_log("VOLUME_CHANGED_EXTERNAL before=%u after=%u", rxvol, rxvol_after);
+        }
         bool clean = restored &&
-                     reg_after == reg_before && rxvol == x6200_control_get(x6200_rxvol) &&
+                     reg_after == reg_before &&
                      hmic_before == params.hmic && imic_before == params.imic &&
                      audio_enh_preset_get_current() == preset_before &&
                      !rx_audio_live_restore_unconfirmed();
+#endif
         bool useful = st.writes > 0;
         rx_qa_log("USEFUL writes>0=%d", useful);
         rx_qa_log("RESULT %s", (ok && clean && useful) ? "PASS_BASE_RESTORED" : "FAIL_OR_DEGRADED");

@@ -459,6 +459,8 @@ static void test_backpressure_degrades(void) {
     rx_audio_live_get_stats(&st);
     CHECK(st.backpressure >= 1);
     CHECK(f.mux_false >= 1);
+    /* QA6: el worker no debe martillar el backend mientras no hay espacio. */
+    CHECK(f.write_calls < 500);
     teardown(&f);
 }
 
