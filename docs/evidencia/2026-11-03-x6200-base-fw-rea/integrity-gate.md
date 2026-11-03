@@ -96,3 +96,17 @@ no se pudo iniciar el updater vendor. No se ejecutó handshake ni entry IAP. Ver
 - recuperación MCU.
 
 No se presentan como “rechazo”: son límites de la evidencia offline.
+
+
+## 11. Ronda adicional — 4 bytes finales
+
+Se ampliaron las pruebas sin fuerza bruta:
+
+- CRC32C, JAMCRC, CRC32/POSIX, Adler-32, FNV-1a y suma de bytes sobre imagen completa, sin últimos
+  4 B, últimos 4 B a cero y región sin padding: **sin coincidencia**.
+- CRC32/MPEG-2 word-wise (equivalente al bucle de `calCRC32_STM32`) sobre **todos los prefijos**
+  word-aligned de ambas imágenes: **sin coincidencia**.
+- CRC sobre imagen **encriptada** y variantes: **sin coincidencia**.
+- La cola de 4 B sigue **no identificada**. No se modificó el candidato.
+- `ADDITIONAL_CHECKSUM=INCONCLUSIVE`; no hay evidencia suficiente para afirmar que sea un checksum
+  ni para actualizarlo.
