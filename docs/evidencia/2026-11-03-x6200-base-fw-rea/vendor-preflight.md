@@ -114,3 +114,15 @@ candidato. Candidato autorizado sigue sin ejecutarse.
 
 Restauración: GUI original, un proceso, RX, tx=false, ALSA diff vacío, vol0, freq7143000; sin
 montajes.
+
+## Reintento RFB 3.3 corregido — fallo de framebuffer
+
+- Se completó el handshake con security type `1` (None) y `ServerInit` 480×800 en un intento.
+- Se envió `SetPixelFormat` (formato del servidor), `SetEncodings` RAW y
+  `FramebufferUpdateRequest` no incremental.
+- No se recibió `FramebufferUpdate`; los reintentos limitados agotaron tiempo. En un segundo arranque
+  el `ServerInit` ya no llegó.
+- El proceso vendor terminó al desconectar el cliente; no se pudo capturar pantalla ni enviar input.
+- **No se envió Update/Confirm, IAP, erase ni XMODEM. El MCU no fue escrito.**
+- Restaurado: GUI original, ALSA diff vacío, vol0, freq7143000; `freq_bg` quedó en 7043000 por
+  estado de UI del vendor, no firmware.

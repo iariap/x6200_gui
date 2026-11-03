@@ -170,3 +170,10 @@ Radio restaurada.
 Security type 1 = None; ClientInit directo. Aun así, el servidor VNC no entregó un
 FramebufferUpdate utilizable y terminó; no se capturó pantalla ni se navegó. No se envió
 input/Update/IAP/erase/XMODEM. Abortado; radio restaurada. `FLASH_PREFLIGHT=FAIL`.
+
+
+## 13. RFB 3.3 corregido: sin framebuffer
+
+Handshake None/ServerInit OK en un intento; SetPixelFormat/RAW/UpdateRequest sin respuesta; segundo
+intento sin ServerInit. Proceso vendor terminó. No se envió input/Update/IAP/erase/XMODEM. Flash
+abortado; radio restaurada. `FLASH_PREFLIGHT=FAIL`.
