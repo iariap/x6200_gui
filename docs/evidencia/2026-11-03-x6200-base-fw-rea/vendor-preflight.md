@@ -159,3 +159,20 @@ Radio restaurada: GUI original, un proceso, RX, tx=false, ALSA diff vacío, vol0
 - **No se seleccionó firmware; no se pulsó UPGRADE; no se envió IAP/erase/XMODEM.**
 - Radio restaurada: GUI original, un proceso, RX, tx=false, ALSA diff vacío, vol0, freq7143000;
   sin montajes.
+
+## Rotación de UI vendor y bloqueo de opciones
+
+- El framebuffer es 480×800; la UI vendor se dibuja girada 90° y parte de las opciones queda fuera
+  de la zona visible. El propio `/etc/profile` del rootfs vendor define
+  `QT_QPA_EGLFS_ROTATION=90`.
+- Se probaron `QT_QPA_EGLFS_ROTATION=270`, `linuxfb:size=800x480:rotation=90/270`,
+  `/sys/class/graphics/fb0/rotate` (1/2/3) y `QT_QPA_FONTDIR`/fontconfig. Las capturas de `/dev/fb0`
+  no reflejan la rotación de EGLFS; con LinuxFB la UI sigue girada y **NEXT/PREV no quedan
+  accesibles de forma verificable**.
+- `XRadioSystemSetting::keyPressEvent` sólo acepta `Qt::Key_Enter`; `wheelEvent` cambia el índice
+  del botón enfocado. `InputDevLpkey` mapea HAPPY1/2/3/7/9 a Qt1..5; las inyecciones de rotores
+  event3/4 cambiaron valores, no el foco.
+- **No se seleccionó firmware; no se pulsó UPGRADE; no se envió IAP/erase/XMODEM; MCU no escrito.**
+
+Radio restaurada: GUI original, un proceso, RX, tx=false, ALSA diff vacío, vol0, freq7143000; sin
+montajes.

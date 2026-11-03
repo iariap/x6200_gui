@@ -192,3 +192,10 @@ restaurada. `FLASH_PREFLIGHT=FAIL`.
 `QT_QPA_FONTDIR`. Se alcanzó el menú SETTING (GEN/AUDIO), pero no se localizó/activó NEXT hacia
 Firmware Upgrade. No se seleccionó firmware ni se pulsó UPGRADE; sin IAP/erase/XMODEM. Radio
 restaurada. `FLASH_PREFLIGHT=FAIL_UI_NAVIGATION`.
+
+
+## 17. UI vendor girada 90°: opciones fuera de pantalla
+
+Framebuffer 480×800; UI vendor girada; `/etc/profile` vendor fija EGLFS_ROTATION=90. Se probaron
+rotaciones EGLFS/LinuxFB/fb0 y fuentes; las capturas no reflejan EGLFS y LinuxFB sigue girado.
+NEXT/PREV no verificable; sin UPGRADE/IAP/erase/XMODEM; radio restaurada.
