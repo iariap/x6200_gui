@@ -216,3 +216,12 @@ Ver `qa28-rx-dac-validation.md`. A BASE RMS2068, B DAC+ZERO 142, C BASE2072.
 `BASE_RX_PRESERVED_WITH_DAC=NO`; `DAC_FEEDBACK_IN_CAPTURE=INCONCLUSIVE`;
 `LINUX_DSP_RX_CAPTURE=FAIL`; `LINUX_DSP_SPEAKER=NOT_VERIFIED`; `BASE_RETURN=PASS`.
 ALSA/params/GUI restaurados; sin TX/BT; sin nuevo flash.
+
+
+## 20. QA29 — causa del mute restante
+
+Ver `qa29-cause-analysis.md`. Offset de archivo del parche `0x2535C`; único cambio byte
+`0x2535D`. Sólo el handler `0x08045320` escribe reg12/24; no hay escrituras posteriores.
+La rama DAC además configura FPGA/DSP 0x34/0x36/0x37/0x39. Captura directa ALSA:
+A 2086, B DAC 142, C 1515; PA da B142, mismo resultado. El parche es insuficiente.
+`SOFTWARE_ONLY_INCONCLUSIVE`; hacen falta mapas reg12/FPGA/readback. Sin nuevo flash; radio restaurada.
