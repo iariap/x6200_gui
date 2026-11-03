@@ -74,3 +74,25 @@ responsable.
   handshake IAP ni entry.
 - No se enviaron erase/XMODEM.
 - El fallback oficial sólo sería útil si el bootloader/IAP sigue accesible; no está verificado.
+
+
+## 8. Referencia pública G90Tools
+
+`G90Tools` documenta que el bootloader G90 recibe firmware **AES-256-ECB** por UART, lo descifra y
+lo escribe; no documenta CRC/firma de imagen ni un checksum de 4 bytes. Es una referencia
+metodológica, **no** prueba del bootloader X6200.
+
+## 9. Dependencias/entrada IAP
+
+`x6200_ui_v100` 1.0.8 requiere Qt5/qwt/NE10/liquid y otras libs que **no están** en el Linux actual;
+no se pudo iniciar el updater vendor. No se ejecutó handshake ni entry IAP. Ver `iap-analysis.md`.
+
+## 10. Incógnitas que requieren escritura/lectura
+
+- valor/semántica real de los 4 bytes finales;
+- si el bootloader valida checksum/firma;
+- si el bootloader entra a IAP sin la app;
+- versión BASE instalada;
+- recuperación MCU.
+
+No se presentan como “rechazo”: son límites de la evidencia offline.
