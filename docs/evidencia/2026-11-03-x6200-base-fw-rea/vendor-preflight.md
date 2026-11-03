@@ -126,3 +126,19 @@ montajes.
 - **No se envió Update/Confirm, IAP, erase ni XMODEM. El MCU no fue escrito.**
 - Restaurado: GUI original, ALSA diff vacío, vol0, freq7143000; `freq_bg` quedó en 7043000 por
   estado de UI del vendor, no firmware.
+
+## Control autónomo: VNC software, Xvfb/XCB, LinuxFB — evaluación final
+
+- VNC con `QT_QUICK_BACKEND=software`, `QT_OPENGL=software`, `LIBGL_ALWAYS_SOFTWARE=1`:
+  handshake `RFB 003.003`, security `1` (None); el proceso vendor/`VNC` terminó al conectar o
+  antes de `ServerInit`; no hubo framebuffer utilizable.
+- Xvfb/X11: **no hay `Xvfb` en el host** y el rootfs vendor **no incluye `libqxcb.so`**; no es
+  viable sin añadir un plugin Qt/xcb ARM compatible, que excede el preflight.
+- LinuxFB: `/dev/fb0` existe, pero **no hay `/dev/uinput` ni módulo uinput**; no hay inyección
+  virtual de input. No se puede navegar sin controles físicos.
+- No se implementó un cliente IAP improvisado.
+
+**No se envió Update/Confirm, IAP, erase ni XMODEM. El MCU no fue escrito.**
+`FLASH_PREFLIGHT=FAIL` por imposibilidad de control gráfico autónomo.
+Radio restaurada: GUI original, un proceso, RX, tx=false, ALSA diff vacío, vol0, freq7143000;
+`freq_bg=7143000`/estado de UI; sin montajes.

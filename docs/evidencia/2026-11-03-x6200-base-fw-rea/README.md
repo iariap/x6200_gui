@@ -177,3 +177,10 @@ input/Update/IAP/erase/XMODEM. Abortado; radio restaurada. `FLASH_PREFLIGHT=FAIL
 Handshake None/ServerInit OK en un intento; SetPixelFormat/RAW/UpdateRequest sin respuesta; segundo
 intento sin ServerInit. Proceso vendor terminó. No se envió input/Update/IAP/erase/XMODEM. Flash
 abortado; radio restaurada. `FLASH_PREFLIGHT=FAIL`.
+
+
+## 14. Control gráfico autónomo: sin vía viable
+
+VNC software no entrega framebuffer y termina; Xvfb no está en host y vendor no tiene `libqxcb.so`;
+LinuxFB no tiene `/dev/uinput` para input. No se envió IAP/erase/XMODEM. Flash abortado; radio
+restaurada. `FLASH_PREFLIGHT=FAIL`.
