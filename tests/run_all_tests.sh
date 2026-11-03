@@ -112,6 +112,11 @@ run build_identity python3 "$DIR/check_build_identity.py"
 # fuentes reales de cada dialogo y con las 26 apps de remote_server.cpp::app_names[].
 run dialog_coverage python3 "$DIR/check_dialog_coverage.py"
 run curve_evidence python3 "$DIR/test_swrscan_curve_evidence.py"
+# Contrato de la matriz app-owned (.factory/check-matrix.sh): es la unica
+# validacion de un PR de x6200, asi que no puede perder el default de checkout,
+# el contrato de refs ni la cobertura del diff sin que se vea aca. Barato: sin
+# docker ni red (repo temporal + bash).
+run factory_matrix bash "$DIR/check_factory_matrix.sh"
 
 run host sh "$DIR/native/run_native_tests.sh"
 # Supervisor de la GUI (issue #214): backoff, logs unicos, una sola instancia y

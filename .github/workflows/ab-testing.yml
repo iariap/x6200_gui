@@ -27,7 +27,7 @@ name: UI A/B testing harness
 #
 # SIN CI DE GITHUB EN PRs (decision del owner, 2026-10-26): este workflow NO corre en
 # `pull_request` (ni por etiqueta). La validacion de un PR de x6200 es LOCAL, con la
-# matriz del harness (`scripts/apps/x6200/check-matrix.sh <base> <head>`): corre el
+# matriz del repo (`.factory/check-matrix.sh <base> <head>`): corre el
 # pytest del arnes (`tools/ab_testing`), `x6200-ab themes` y `contracts`, el gate de
 # contraste WCAG sobre la superficie renderizada y los checks estaticos/nativos del
 # repo. El merge lo hace el harness exigiendo la salida de esa matriz en la seccion
