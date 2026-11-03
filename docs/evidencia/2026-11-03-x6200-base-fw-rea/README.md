@@ -155,3 +155,11 @@ Se intentó VNC para seleccionar el candidato sin Update; el plugin VNC abrió e
 proceso cerró al conectar el cliente. No se inyectó input ni se pulsó Update. Flujo estático:
 `upgradeFirmware` sólo es llamado por `slot_pushButtonClicked` (botón UPGRADE); selección no inicia
 escritura. `FIRMWARE_SELECTION=UNVERIFIED`.
+
+
+## 11. Autorización y bloqueo del flash
+
+Autorización explícita recibida para `cc7b4aca…`. El updater vendor arrancó, pero la interacción
+VNC/input no quedó operativa (auth tipo1, cliente cerrado; sin uinput). **No se envió IAP/erase/XMODEM
+ni se escribió el MCU.** `FLASH_PREFLIGHT=FAIL` por control del updater; candidato no ejecutado.
+Radio restaurada.

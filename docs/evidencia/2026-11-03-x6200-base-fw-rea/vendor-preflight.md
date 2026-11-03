@@ -63,3 +63,34 @@ No se escribió el MCU.
 sólo se inicia desde el botón UPGRADE. La selección runtime del candidato **no se ejercitó**.
 
 `FIRMWARE_SELECTION = UNVERIFIED`.
+
+## Autorización recibida y bloqueo operativo del flash
+
+El propietario autorizó explícitamente escribir
+`x6200-108-voice-keep-rx.xgf` SHA256 `cc7b4aca…`.
+
+Preflight:
+
+- hash del candidato verificado en el overlay;
+- firmware oficial 1.0.8 y vendor rootfs disponibles;
+- GUI original/params/SD respaldados;
+- alimentación por AC/batería en carga;
+- un solo GUI; sin montajes residuales.
+
+Intento de control del updater:
+
+- vendor GUI arrancó aislada y el plugin Qt VNC abrió el puerto 5900;
+- el servidor ofreció **VNC Authentication** (tipo 1);
+- `vncdotool` cerró la conexión y el proceso vendor terminó;
+- handshake RFB 3.3 crudo quedó bloqueado esperando el challenge; el plugin no entregó una sesión
+  interactiva utilizable;
+- no hay `/dev/uinput` ni módulos para inyectar input; no se pudo navegar/seleccionar.
+
+**No se envió IAP, erase ni XMODEM; no se escribió el MCU.**
+
+`FLASH_PREFLIGHT=FAIL` por **control operativo del updater**, no por el candidato.
+El candidato sigue autorizado pero el flash queda pendiente de una vía de interacción funcional
+(VNC/input/manual) o de un cliente IAP equivalente.
+
+Radio restaurada: GUI original, un proceso, RX, tx=false, ALSA diff vacío, volumen0, frecuencia
+7143000; sin montajes.
