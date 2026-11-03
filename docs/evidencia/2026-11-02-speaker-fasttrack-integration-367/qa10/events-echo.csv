@@ -1,0 +1,9 @@
+t_ms,event,value
+3,open,0
+197,mux_on_req,0
+198,mux_on_result,0
+198,rx_dac,0
+15217,mux_off_req,9
+15218,mux_off_result,0
+15219,close,9
+15219,base,9

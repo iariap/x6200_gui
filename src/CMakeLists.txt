@@ -51,6 +51,10 @@ target_sources(${PROJECT_NAME} PUBLIC
     cb.c
 )
 
+# A-prime #367: helper guardian independiente, INACTIVO y no instalado hasta
+# que exista readback/restore fisico acreditado. Solo se compila para host/ARM.
+add_executable(x6200_audio_guard rx_audio_mux_guard.c rx_audio_mux_guard_main.c)
+
 add_subdirectory(fonts)
 add_subdirectory(ft8)
 # Dibujante temprano del arranque (issue #192): ejecutable aparte, sin LVGL ni

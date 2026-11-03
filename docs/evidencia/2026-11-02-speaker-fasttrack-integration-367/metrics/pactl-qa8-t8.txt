@@ -1,0 +1,70 @@
+Tue Nov  3 03:15:26 UTC 2026
+Sink Input #247
+	Driver: protocol-native.c
+	Owner Module: 7
+	Client: 107
+	Sink: 0
+	Sample Specification: s16le 1ch 44100Hz
+	Channel Map: mono
+	Format: pcm, format.sample_format = "\"s16le\""  format.rate = "44100"  format.channels = "1"  format.channel_map = "\"mono\""
+	Corked: no
+	Mute: no
+	Volume: mono: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Buffer Latency: 0 usec
+	Sink Latency: 379486 usec
+	Resample method: copy
+	Properties:
+		media.name = "X6200 GUI Play"
+		application.name = "X6200 GUI"
+		native-protocol.peer = "UNIX socket client"
+		native-protocol.version = "35"
+		application.process.id = "12458"
+		application.process.user = "root"
+		application.process.host = "X6200"
+		application.process.binary = "x6200_gui"
+		application.language = "C"
+		application.process.machine_id = "c98925b9ef4b8824232d74c26ae90639"
+		module-stream-restore.id = "sink-input-by-application-name:X6200 GUI"
+
+Sink Input #250
+	Driver: protocol-native.c
+	Owner Module: 7
+	Client: 107
+	Sink: 0
+	Sample Specification: s16le 1ch 44100Hz
+	Channel Map: mono
+	Format: pcm, format.sample_format = "\"s16le\""  format.rate = "44100"  format.channels = "1"  format.channel_map = "\"mono\""
+	Corked: no
+	Mute: no
+	Volume: mono: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Buffer Latency: 0 usec
+	Sink Latency: 379152 usec
+	Resample method: copy
+	Properties:
+		media.name = "X6200 RX Live"
+		application.name = "X6200 GUI"
+		native-protocol.peer = "UNIX socket client"
+		native-protocol.version = "35"
+		application.process.id = "12458"
+		application.process.user = "root"
+		application.process.host = "X6200"
+		application.process.binary = "x6200_gui"
+		application.language = "C"
+		application.process.machine_id = "c98925b9ef4b8824232d74c26ae90639"
+		module-stream-restore.id = "sink-input-by-application-name:X6200 GUI"
+access: MMAP_INTERLEAVED
+format: S16_LE
+subformat: STD
+channels: 2
+rate: 44100 (44100/1)
+period_size: 14700
+buffer_size: 88200
+access: MMAP_INTERLEAVED
+format: S16_LE
+subformat: STD
+channels: 2
+rate: 44100 (44100/1)
+period_size: 14700
+buffer_size: 88200

@@ -1,0 +1,250 @@
+===SINKS===
+Sink #0
+	State: RUNNING
+	Name: alsa_output.platform-sound.stereo-fallback
+	Description: sun8i-a33-audio Stereo
+	Driver: module-alsa-card.c
+	Sample Specification: s16le 2ch 44100Hz
+	Channel Map: front-left,front-right
+	Owner Module: 6
+	Mute: no
+	Volume: front-left: 54094 /  83% / -5.00 dB,   front-right: 54094 /  83% / -5.00 dB
+	        balance 0.00
+	Base Volume: 65536 / 100% / 0.00 dB
+	Monitor Source: alsa_output.platform-sound.stereo-fallback.monitor
+	Latency: 379653 usec, configured 380000 usec
+	Flags: HARDWARE HW_MUTE_CTRL HW_VOLUME_CTRL DECIBEL_VOLUME LATENCY
+	Properties:
+		alsa.resolution_bits = "16"
+		device.api = "alsa"
+		device.class = "sound"
+		alsa.class = "generic"
+		alsa.subclass = "generic-mix"
+		alsa.name = "1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0"
+		alsa.id = "1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0"
+		alsa.subdevice = "0"
+		alsa.subdevice_name = "subdevice #0"
+		alsa.device = "0"
+		alsa.card = "0"
+		alsa.card_name = "sun8i-a33-audio"
+		alsa.long_card_name = "sun8i-a33-audio"
+		device.bus_path = "platform-sound"
+		sysfs.path = "/devices/platform/sound/sound/card0"
+		device.string = "hw:0"
+		device.buffering.buffer_size = "352800"
+		device.buffering.fragment_size = "58800"
+		device.access_mode = "mmap+timer"
+		device.profile.name = "stereo-fallback"
+		device.profile.description = "Stereo"
+		device.description = "sun8i-a33-audio Stereo"
+		module-udev-detect.discovered = "1"
+		device.icon_name = "audio-card"
+	Ports:
+		analog-output-headphones: Headphones (type: Headphones, priority: 9900, availability unknown)
+	Active Port: analog-output-headphones
+	Formats:
+		pcm
+===SINKINPUTS===
+Sink Input #255
+	Driver: protocol-native.c
+	Owner Module: 7
+	Client: 123
+	Sink: 0
+	Sample Specification: s16le 1ch 44100Hz
+	Channel Map: mono
+	Format: pcm, format.sample_format = "\"s16le\""  format.rate = "44100"  format.channels = "1"  format.channel_map = "\"mono\""
+	Corked: no
+	Mute: no
+	Volume: mono: 65536 / 100% / 0.00 dB
+	        balance 0.00
+	Buffer Latency: 0 usec
+	Sink Latency: 347811 usec
+	Resample method: copy
+	Properties:
+		media.name = "X6200 GUI Play"
+		application.name = "X6200 GUI"
+		native-protocol.peer = "UNIX socket client"
+		native-protocol.version = "35"
+		application.process.id = "15927"
+		application.process.user = "root"
+		application.process.host = "X6200"
+		application.process.binary = "x6200_gui"
+		application.language = "C"
+		application.process.machine_id = "c98925b9ef4b8824232d74c26ae90639"
+		module-stream-restore.id = "sink-input-by-application-name:X6200 GUI"
+===MODULES===
+0	module-device-restore
+1	module-stream-restore
+2	module-card-restore
+5	module-udev-detect
+6	module-alsa-card	device_id="0" name="platform-sound" card_name="alsa_card.platform-sound" namereg_fail=false tsched=yes fixed_latency_range=no ignore_dB=no deferred_volume=yes use_ucm=yes avoid_resampling=no card_properties="module-udev-detect.discovered=1"
+7	module-native-protocol-unix	auth-anonymous=1
+8	module-default-device-restore
+9	module-always-sink
+10	module-suspend-on-idle
+11	module-position-event-sounds
+15	module-bluetooth-policy	auto_switch=0 a2dp_source=false ag=false
+===LOOPBACKGREP===
+===ALSA_ROUTES===
+access: MMAP_INTERLEAVED
+format: S16_LE
+subformat: STD
+channels: 2
+rate: 44100 (44100/1)
+period_size: 14700
+buffer_size: 88200
+access: MMAP_INTERLEAVED
+format: S16_LE
+subformat: STD
+channels: 2
+rate: 44100 (44100/1)
+period_size: 14700
+buffer_size: 88200
+state: RUNNING
+owner_pid   : 329
+trigger_time: 7.960949420
+tstamp      : 21170.818587222
+delay       : 368
+avail       : 368
+avail_max   : 368
+-----
+hw_ptr      : 933571536
+appl_ptr    : 933571168
+state: RUNNING
+owner_pid   : 329
+trigger_time: 7.952317336
+tstamp      : 21170.818825049
+delay       : 11930
+avail       : 76270
+avail_max   : 76270
+-----
+hw_ptr      : 933218824
+appl_ptr    : 933230754
+===AMIXER===
+numid=41,iface=MIXER,name='Headphone Source Playback Route'
+  ; type=ENUMERATED,access=rw------,values=2,items=2
+  ; Item #0 'DAC'
+  ; Item #1 'Mixer'
+  : values=0,0
+numid=8,iface=MIXER,name='Headphone Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=on,on
+numid=7,iface=MIXER,name='Headphone Playback Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=63,step=0
+  : values=58
+  | dBscale-min=-63.00dB,step=1.00dB,mute=1
+numid=38,iface=MIXER,name='Line In Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=33,iface=MIXER,name='Line In Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=9,iface=MIXER,name='Line In Playback Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=7,step=0
+  : values=0
+  | dBscale-min=-4.50dB,step=1.50dB,mute=0
+numid=13,iface=MIXER,name='Mic1 Boost Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=7,step=0
+  : values=0
+  | dBrange-
+    rangemin=0,,rangemax=0
+      | dBscale-min=0.00dB,step=0.00dB,mute=0
+    rangemin=1,,rangemax=7
+      | dBscale-min=24.00dB,step=3.00dB,mute=0
+
+numid=39,iface=MIXER,name='Mic1 Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=on,on
+numid=34,iface=MIXER,name='Mic1 Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=12,iface=MIXER,name='Mic1 Playback Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=7,step=0
+  : values=0
+  | dBscale-min=-4.50dB,step=1.50dB,mute=0
+numid=11,iface=MIXER,name='Mic2 Boost Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=7,step=0
+  : values=0
+  | dBrange-
+    rangemin=0,,rangemax=0
+      | dBscale-min=0.00dB,step=0.00dB,mute=0
+    rangemin=1,,rangemax=7
+      | dBscale-min=24.00dB,step=3.00dB,mute=0
+
+numid=40,iface=MIXER,name='Mic2 Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=35,iface=MIXER,name='Mic2 Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=10,iface=MIXER,name='Mic2 Playback Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=7,step=0
+  : values=0
+  | dBscale-min=-4.50dB,step=1.50dB,mute=0
+numid=30,iface=MIXER,name='ADC Digital DAC Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=14,iface=MIXER,name='ADC Gain Capture Volume'
+  ; type=INTEGER,access=rw---R--,values=1,min=0,max=7,step=0
+  : values=3
+  | dBscale-min=-4.50dB,step=1.50dB,mute=0
+numid=5,iface=MIXER,name='ADC Capture Volume'
+  ; type=INTEGER,access=rw---R--,values=2,min=0,max=192,step=0
+  : values=160,160
+  | dBscale-min=-120.00dB,step=0.75dB,mute=1
+numid=1,iface=MIXER,name='AIF1 AD0 Capture Volume'
+  ; type=INTEGER,access=rw---R--,values=2,min=0,max=192,step=0
+  : values=160,160
+  | dBscale-min=-120.00dB,step=0.75dB,mute=1
+numid=15,iface=MIXER,name='AIF1 AD0 Stereo Capture Route'
+  ; type=ENUMERATED,access=rw------,values=2,items=4
+  ; Item #0 'Stereo'
+  ; Item #1 'Reverse Stereo'
+  ; Item #2 'Sum Mono'
+  ; Item #3 'Mix Mono'
+  : values=3,3
+numid=2,iface=MIXER,name='AIF1 DA0 Playback Volume'
+  ; type=INTEGER,access=rw---R--,values=2,min=0,max=192,step=0
+  : values=160,160
+  | dBscale-min=-120.00dB,step=0.75dB,mute=1
+numid=26,iface=MIXER,name='AIF1 DA0 Stereo Playback Route'
+  ; type=ENUMERATED,access=rw------,values=2,items=4
+  ; Item #0 'Stereo'
+  ; Item #1 'Reverse Stereo'
+  ; Item #2 'Sum Mono'
+  ; Item #3 'Mix Mono'
+  : values=3,3
+numid=20,iface=MIXER,name='AIF1 Data Digital ADC Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=on,on
+numid=18,iface=MIXER,name='AIF1 Slot 0 Digital ADC Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=28,iface=MIXER,name='AIF1 Slot 0 Digital DAC Playback Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=on,on
+numid=3,iface=MIXER,name='AIF2 ADC Capture Volume'
+  ; type=INTEGER,access=rw---R--,values=2,min=0,max=192,step=0
+  : values=0,0
+  | dBscale-min=-120.00dB,step=0.75dB,mute=1
+numid=24,iface=MIXER,name='AIF2 ADC Mixer ADC Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=22,iface=MIXER,name='AIF2 ADC Mixer AIF1 DA0 Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=23,iface=MIXER,name='AIF2 ADC Mixer AIF2 DAC Rev Capture Switch'
+  ; type=BOOLEAN,access=rw------,values=2
+  : values=off,off
+numid=16,iface=MIXER,name='AIF2 ADC Stereo Capture Route'
+  ; type=ENUMERATED,access=rw------,values=2,items=4
+  ; Item #0 'Stereo'
+  ; Item #1 'Reverse Stereo'
+  ; Item #2 'Sum Mono'
+===DEVICES===
+**** List of PLAYBACK Hardware Devices ****
+card 0: sun8ia33audio [sun8i-a33-audio], device 0: 1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0 [1c22c00.dai-sun8i-codec-aif1 sun8i-codec-aif1-0]
+  Subdevices: 0/1
+  Subdevice #0: subdevice #0
+===STATE===
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7355000,"mode":"LSB","band":"","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":10,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":45,"nr_level":0,"pwr":50,"db":-88,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}

@@ -1,0 +1,23 @@
+{
+  "raw": {
+    "duration_s": 7.78,
+    "median_rms": 7421.0,
+    "below_half_pct": 11.1,
+    "min_rms": 2240.4,
+    "max_rms": 11929.2
+  },
+  "processed_ssb": {
+    "duration_s": 7.68,
+    "median_rms": 255.4,
+    "below_half_pct": 46.7,
+    "min_rms": 18.0,
+    "max_rms": 7263.6
+  },
+  "processed_off": {
+    "duration_s": 7.62,
+    "median_rms": 5642.6,
+    "below_half_pct": 13.3,
+    "min_rms": 1277.7,
+    "max_rms": 11723.0
+  }
+}

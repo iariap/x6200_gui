@@ -22,6 +22,19 @@ int audio_play(int16_t *buf, size_t samples);
 void audio_play_wait();
 void audio_play_en(bool on);
 
+#ifdef X6200_RX_SPEAKER_QA
+bool audio_qa_speaker_test_start(void);
+bool audio_qa_speaker_soak_start(void);
+bool audio_qa_speaker_echo_start(void);
+bool audio_qa_speaker_echo_phase_start(int phase);
+bool audio_qa_speaker_echo_processed_off_start(void);
+bool audio_qa_speaker_hw_route_start(void);
+bool audio_qa_speaker_hw_phase_start(int phase);
+bool audio_qa_speaker_qa12_start(void);
+bool audio_qa_speaker_qa12_phase_start(int phase);
+void audio_qa_speaker_hw_route_abort(void);
+#endif
+
 /* audio_init() conecta PulseAudio en un hilo: espera hasta `timeout_ms` a que el stream de
  * reproduccion este listo. Devuelve true si quedo listo. Lo usa el diagnostico de voz, que si no
  * hablaba antes de que el audio existiera (y antes eso se reportaba como "se mando", ver

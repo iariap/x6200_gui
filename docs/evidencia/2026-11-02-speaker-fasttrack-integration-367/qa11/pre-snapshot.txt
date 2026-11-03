@@ -1,0 +1,10 @@
+b4e8d3fd360e1f79b5fd152700e5ec21  /usr/sbin/x6200_gui
+{"t":"ok"}
+{"t":"state","vfo":"A","freq":7355000,"freq_bg":7355000,"mode":"LSB","band":"","filter":2700,"flo":150,"fhi":2850,"rfgain":0,"sql":0,"vol":10,"pre":0,"att":0,"agc":"AUTO","nb":0,"nr":0,"nb_level":5,"nb_width":45,"nr_level":0,"pwr":50,"db":-96,"tx":false,"app":"","ax":{},"cwt":null,"logrev":0,"did":""}
+===PRE===
+Sink Input #272
+	Sink: 0
+	Corked: no
+		media.name = "X6200 GUI Play"
+===MODS===
+Tue Nov  3 04:36:39 UTC 2026

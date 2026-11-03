@@ -14,6 +14,13 @@
 #include <string.h>
 #include <math.h>
 #include <limits.h>
+#ifdef X6200_RX_SPEAKER_QA
+#include <stdarg.h>
+#include <stdatomic.h>
+#include <inttypes.h>
+#include <time.h>
+#include "radio.h"
+#endif
 
 #include <pulse/pulseaudio.h>
 #include <alsa/asoundlib.h>
@@ -49,6 +56,35 @@ static pa_stream            *monitor_stm = NULL;
 static pa_stream            *rx_live_stm = NULL;
 #endif
 
+#ifdef X6200_RX_SPEAKER_QA
+/* QA6: contadores atomicos para no bloquear el callback de captura. */
+static atomic_uint_fast64_t qa_cap_samples;
+static atomic_uint_fast64_t qa_cap_real_samples;
+static atomic_uint_fast64_t qa_cap_calls;
+static atomic_uint_fast64_t qa_cap_holes;
+static atomic_uint_fast64_t qa_cap_last_ms;
+static atomic_uint          qa_cap_max_interval_ms;
+static atomic_uint          qa_cap_gaps;
+
+static atomic_uint          qa_pa_write_calls;
+static atomic_uint          qa_pa_write_ok;
+static atomic_uint          qa_pa_write_nospace;
+static atomic_uint          qa_pa_write_errors;
+static atomic_uint          qa_pa_writable_min;
+static atomic_uint          qa_pa_writable_max;
+/* QA10: fase de prueba de eco. 0=off, 1=ZERO, 2=RAW, 3=PROCESSED. */
+static atomic_int           qa_echo_phase;
+static atomic_int           qa_echo_single_phase;
+static atomic_int           qa_echo_preset_off;
+static atomic_bool          qa_hw_running;
+static atomic_bool          qa_hw_abort;
+static atomic_int           qa_hw_only_phase;
+/* QA12: fases por el router real. 0=off, 1=ZERO, 2=TONE, 3=ZERO, 4=RAW. */
+static atomic_int           qa12_phase;
+static atomic_int           qa12_tone_idx;
+static int16_t              qa12_tone[10][RX_AUDIO_LIVE_BLOCK_SAMPLES];
+#endif
+
 /* Cuando el stream de reproducción no acepta datos (el sink real no consume: ver HALLAZGOS),
  * se anota hasta cuándo no insistir. Sin esto, cada bloque de audio de FT8/JS8/voz pagaría su
  * propio tope de 2 s y el que manda audio se quedaría esperando minutos. */
@@ -76,14 +112,28 @@ static bool rx_live_pa_open(void *arg) {
     pa_buffer_attr attr;
     memset(&attr, 0xff, sizeof(attr));
     attr.fragsize = pa_usec_to_bytes(AUDIO_RATE_MS * PA_USEC_PER_MSEC, &spec);
-    /* Objetivo inicial de 200 ms (#364): no acumular segundos de audio viejo. */
+    /* Produccion: objetivo inicial de 200 ms (#364), sin acumular segundos de
+     * audio viejo. La build QA usa 600 ms para cubrir la latencia real del sink
+     * durante las pruebas supervisadas; no se traslada a produccion. */
+#ifdef X6200_RX_SPEAKER_QA
+    attr.tlength = pa_usec_to_bytes(3000 * PA_USEC_PER_MSEC, &spec);
+    /* QA6: el servidor negocio prebuf ~= tlength (132302/134064 B) y el stream
+     * quedaba en prebuffer sin avanzar read_index. Forzar prebuf=0 inicia la
+     * reproduccion con el primer bloque; produccion no cambia. */
+    attr.prebuf = 0;
+#else
     attr.tlength = pa_usec_to_bytes(RX_AUDIO_LIVE_TARGET_BUFFER_MS * PA_USEC_PER_MSEC, &spec);
+#endif
 
     pa_threaded_mainloop_lock(mloop);
     rx_live_stm = pa_stream_new(ctx, "X6200 RX Live", &spec, NULL);
     if (rx_live_stm != NULL) {
         if (pa_stream_connect_playback(rx_live_stm, play_device, &attr,
-                                       PA_STREAM_ADJUST_LATENCY, NULL, NULL) < 0) {
+                                       PA_STREAM_ADJUST_LATENCY
+#ifdef X6200_RX_SPEAKER_QA
+                                       | PA_STREAM_AUTO_TIMING_UPDATE
+#endif
+                                       , NULL, NULL) < 0) {
             pa_stream_unref(rx_live_stm);
             rx_live_stm = NULL;
         }
@@ -134,24 +184,70 @@ static int rx_live_pa_write(void *arg, const int16_t *samples, size_t count) {
         return RX_AUDIO_LIVE_WRITE_ERROR;
     }
 
+#ifdef X6200_RX_SPEAKER_QA
+    atomic_fetch_add(&qa_pa_write_calls, 1u);
+#endif
     pa_threaded_mainloop_lock(mloop);
     st = pa_stream_get_state(rx_live_stm);
     avail = pa_stream_writable_size(rx_live_stm);
+#ifdef X6200_RX_SPEAKER_QA
+    if (avail >= 0) {
+        unsigned a = (unsigned) avail;
+        unsigned old_min = atomic_load(&qa_pa_writable_min);
+        while (old_min > a && !atomic_compare_exchange_weak(&qa_pa_writable_min, &old_min, a)) {
+        }
+        unsigned old_max = atomic_load(&qa_pa_writable_max);
+        while (old_max < a && !atomic_compare_exchange_weak(&qa_pa_writable_max, &old_max, a)) {
+        }
+    }
+#endif
     if (st != PA_STREAM_READY || avail < 0) {
         pa_threaded_mainloop_unlock(mloop);
+#ifdef X6200_RX_SPEAKER_QA
+        atomic_fetch_add(&qa_pa_write_errors, 1u);
+#endif
         return RX_AUDIO_LIVE_WRITE_ERROR;
     }
     if ((size_t) avail < count * sizeof(int16_t)) {
         pa_threaded_mainloop_unlock(mloop);
+#ifdef X6200_RX_SPEAKER_QA
+        atomic_fetch_add(&qa_pa_write_nospace, 1u);
+#endif
         return RX_AUDIO_LIVE_WRITE_NO_SPACE;
     }
     rc = pa_stream_write(rx_live_stm, samples, count * sizeof(int16_t),
                          NULL, 0, PA_SEEK_RELATIVE);
     pa_threaded_mainloop_unlock(mloop);
+#ifdef X6200_RX_SPEAKER_QA
+    atomic_fetch_add(rc < 0 ? &qa_pa_write_errors : &qa_pa_write_ok, 1u);
+#endif
 
     return (rc < 0) ? RX_AUDIO_LIVE_WRITE_ERROR : RX_AUDIO_LIVE_WRITE_OK;
 }
 
+#ifdef X6200_RX_SPEAKER_QA
+/* SOLO build QA: autorizacion atomica de entrada a DAC. La restauracion false
+ * NUNCA se gatea por esta bandera. */
+static atomic_bool rx_qa_authorized;
+
+static bool rx_live_mux_ready(void *arg) {
+    (void) arg;
+    return atomic_load(&rx_qa_authorized);
+}
+
+static int rx_live_mux_request(void *arg, bool dac) {
+    (void) arg;
+    if (!dac) {
+        return radio_audio_route_set(false) ? RX_AUDIO_LIVE_MUX_OK
+                                            : RX_AUDIO_LIVE_MUX_UNKNOWN;
+    }
+    if (!atomic_load(&rx_qa_authorized)) {
+        return RX_AUDIO_LIVE_MUX_NOT_ENTERED;
+    }
+    return radio_audio_route_set(true) ? RX_AUDIO_LIVE_MUX_OK
+                                       : RX_AUDIO_LIVE_MUX_NOT_ENTERED;
+}
+#else
 /* Gate de #367: sin readback/restauracion independiente acreditados, el backend
  * real deniega la entrada a DAC. La obligacion de volver a BASE no se gatea:
  * si alguna vez se selecciona DAC, mux_request(false) debe poder ejecutarse. */
@@ -165,6 +261,7 @@ static int rx_live_mux_request(void *arg, bool dac) {
     (void) dac;
     return RX_AUDIO_LIVE_MUX_NOT_ENTERED;
 }
+#endif
 
 static const rx_audio_live_backend_t rx_live_backend = {
     .ctx = NULL,
@@ -187,6 +284,10 @@ static void on_state_change(pa_context *c, void *userdata) {
  * por heap ni pasarse de la capacidad de dsp.cpp::audio (44100 floats). */
 #define CAPTURE_SCRATCH_SAMPLES (AUDIO_CAPTURE_RATE / 10)
 
+#ifdef X6200_RX_SPEAKER_QA
+static int16_t qa_zero_block[CAPTURE_SCRATCH_SAMPLES];
+#endif
+
 /* El fragmento es de PulseAudio: se consume UNA vez y se anota el error sin reintentar
  * desde el callback (un retry aca solo puede perder el hilo del mainloop). */
 static void capture_drop(pa_stream *s) {
@@ -198,12 +299,58 @@ static void capture_drop(pa_stream *s) {
 /* Entrega un chunk ya copiado en el scratch a los dos consumidores, EN ORDEN y una sola
  * vez: `process` distingue PCM real (filtros/NR antes de entregar) de un hole (ceros que
  * nunca pasan por la cadena, para no avanzar notch/nivelador/NR con silencio inventado). */
+#ifdef X6200_RX_SPEAKER_QA
+static void rx_qa_capture_observe(size_t samples, bool process);
+#endif
+
 static void capture_deliver(int16_t *scratch, size_t samples, bool process) {
+#ifdef X6200_RX_SPEAKER_QA
+    rx_qa_capture_observe(samples, process);
+    int phase = atomic_load(&qa_echo_phase);
+    int qa12 = atomic_load(&qa12_phase);
+    int16_t raw[CAPTURE_SCRATCH_SAMPLES];
+
+    if (samples > CAPTURE_SCRATCH_SAMPLES) {
+        samples = CAPTURE_SCRATCH_SAMPLES;
+    }
+    if (process) {
+        memcpy(raw, scratch, samples * sizeof(int16_t));
+        audio_enh_process(scratch, samples);
+        if (qa12 != 0) {
+            if (qa12 == 1 || qa12 == 3) {
+                rx_audio_live_submit(qa_zero_block, samples);
+            } else if (qa12 == 2) {
+                int idx = atomic_fetch_add(&qa12_tone_idx, 1);
+                rx_audio_live_submit(qa12_tone[idx % 10], samples);
+            } else {
+                rx_audio_live_submit(raw, samples);
+            }
+        } else if (phase == 1) {
+            rx_audio_live_submit(qa_zero_block, samples);
+        } else if (phase == 2) {
+            rx_audio_live_submit(raw, samples);
+        } else {
+            rx_audio_live_submit(scratch, samples);
+        }
+    } else if (qa12 != 0) {
+        if (qa12 == 2) {
+            int idx = atomic_fetch_add(&qa12_tone_idx, 1);
+            rx_audio_live_submit(qa12_tone[idx % 10], samples);
+        } else {
+            rx_audio_live_submit(qa_zero_block, samples);
+        }
+    } else if (phase != 0) {
+        /* Hole durante la prueba de eco: mantener el stream continuo con cero,
+         * sin inventar PCM para los otros consumidores. */
+        rx_audio_live_submit(qa_zero_block, samples);
+    }
+#else
     if (process) {
         audio_enh_process(scratch, samples);
         /* Misma PCM post-Speex para el router RX live (default OFF; DAC gate #367). */
         rx_audio_live_submit(scratch, samples);
     }
+#endif
 
     /* Screen recorder: keeps the RX audio next to the video frames */
     screen_rec_put_audio_samples(samples, scratch);
@@ -694,6 +841,987 @@ float audio_set_rec_vol(float db) {
     snd_mixer_close(handle);
     return (float) db_long / 100.0f;
 }
+
+#ifdef X6200_RX_SPEAKER_QA
+/* ------------------------------------------------------------------------- */
+/* SOLO QA: secuencias acotadas de RX procesado al parlante. Este codigo no   */
+/* existe en la build de produccion (CMake option default OFF).               */
+/* ------------------------------------------------------------------------- */
+
+static uint64_t rx_qa_mono_ms(void) {
+    struct timespec ts;
+
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+        return 0;
+    }
+    return (uint64_t) ts.tv_sec * 1000ULL + (uint64_t) ts.tv_nsec / 1000000ULL;
+}
+
+static void rx_qa_capture_reset(void) {
+    atomic_store(&qa_cap_samples, 0);
+    atomic_store(&qa_cap_real_samples, 0);
+    atomic_store(&qa_cap_calls, 0);
+    atomic_store(&qa_cap_holes, 0);
+    atomic_store(&qa_cap_last_ms, 0);
+    atomic_store(&qa_cap_max_interval_ms, 0);
+    atomic_store(&qa_cap_gaps, 0);
+}
+
+static void rx_qa_capture_observe(size_t samples, bool process) {
+    uint64_t now = rx_qa_mono_ms();
+    uint64_t prev = atomic_load(&qa_cap_last_ms);
+
+    if (prev != 0 && now > prev) {
+        unsigned interval = (unsigned) (now - prev);
+        unsigned old = atomic_load(&qa_cap_max_interval_ms);
+        while (interval > old && !atomic_compare_exchange_weak(&qa_cap_max_interval_ms, &old, interval)) {
+        }
+        if (interval > 150u) {
+            atomic_fetch_add(&qa_cap_gaps, 1u);
+        }
+    }
+    atomic_store(&qa_cap_last_ms, now);
+    atomic_fetch_add(&qa_cap_samples, (uint64_t) samples);
+    atomic_fetch_add(&qa_cap_calls, 1u);
+    if (process) {
+        atomic_fetch_add(&qa_cap_real_samples, (uint64_t) samples);
+    } else {
+        atomic_fetch_add(&qa_cap_holes, 1u);
+    }
+}
+
+static void rx_qa_pa_counters_reset(void) {
+    atomic_store(&qa_pa_write_calls, 0);
+    atomic_store(&qa_pa_write_ok, 0);
+    atomic_store(&qa_pa_write_nospace, 0);
+    atomic_store(&qa_pa_write_errors, 0);
+    atomic_store(&qa_pa_writable_min, 0xffffffffu);
+    atomic_store(&qa_pa_writable_max, 0);
+}
+
+typedef struct {
+    int      stream_state;
+    int      stream_index;
+    int      writable;
+    uint32_t rate;
+    uint32_t channels;
+    int      format;
+    uint32_t tlength;
+    uint32_t maxlength;
+    uint32_t prebuf;
+    uint32_t minreq;
+    uint32_t fragsize;
+    int      corked;
+    int      latency_valid;
+    int      time_valid;
+    int      timing_valid;
+    int64_t  latency_us;
+    int64_t  stream_time_us;
+    int64_t  read_index;
+    int64_t  write_index;
+    int      read_corrupt;
+    int      write_corrupt;
+    int      playing;
+    uint64_t sink_usec;
+    uint64_t transport_usec;
+    uint64_t configured_sink_usec;
+    int64_t  since_underrun;
+} rx_qa_pa_snapshot_t;
+
+static void rx_qa_pa_snapshot(rx_qa_pa_snapshot_t *m) {
+    memset(m, 0, sizeof(*m));
+
+    if (!audio_up || mloop == NULL || rx_live_stm == NULL) {
+        return;
+    }
+
+    pa_threaded_mainloop_lock(mloop);
+    m->stream_state = (int) pa_stream_get_state(rx_live_stm);
+    m->stream_index = (int) pa_stream_get_index(rx_live_stm);
+    m->writable = pa_stream_writable_size(rx_live_stm);
+    m->corked = pa_stream_is_corked(rx_live_stm);
+
+    const pa_sample_spec *spec = pa_stream_get_sample_spec(rx_live_stm);
+    if (spec != NULL) {
+        m->rate = spec->rate;
+        m->channels = spec->channels;
+        m->format = (int) spec->format;
+    }
+
+    const pa_buffer_attr *attr = pa_stream_get_buffer_attr(rx_live_stm);
+    if (attr != NULL) {
+        m->tlength = attr->tlength;
+        m->maxlength = attr->maxlength;
+        m->prebuf = attr->prebuf;
+        m->minreq = attr->minreq;
+        m->fragsize = attr->fragsize;
+    }
+
+    pa_usec_t usec = 0;
+    int negative = 0;
+    if (pa_stream_get_latency(rx_live_stm, &usec, &negative) == 0) {
+        m->latency_valid = 1;
+        m->latency_us = (int64_t) usec * (negative ? -1 : 1);
+    }
+    if (pa_stream_get_time(rx_live_stm, &usec) == 0) {
+        m->time_valid = 1;
+        m->stream_time_us = (int64_t) usec;
+    }
+
+    const pa_timing_info *ti = pa_stream_get_timing_info(rx_live_stm);
+    if (ti != NULL) {
+        m->timing_valid = 1;
+        m->read_index = ti->read_index;
+        m->write_index = ti->write_index;
+        m->read_corrupt = ti->read_index_corrupt;
+        m->write_corrupt = ti->write_index_corrupt;
+        m->playing = ti->playing;
+        m->sink_usec = ti->sink_usec;
+        m->transport_usec = ti->transport_usec;
+        m->configured_sink_usec = ti->configured_sink_usec;
+        m->since_underrun = ti->since_underrun;
+    }
+    pa_threaded_mainloop_unlock(mloop);
+}
+
+typedef struct {
+    uint64_t t0_ms;
+    rx_audio_live_stats_t base_stats;
+    rx_audio_live_qa_metrics_t base_metrics;
+    uint64_t base_cap_samples;
+    uint64_t base_cap_real_samples;
+    uint64_t base_cap_calls;
+    uint64_t base_cap_holes;
+    uint64_t base_cap_last_ms;
+    uint32_t base_pa_calls;
+    uint32_t base_pa_ok;
+    uint32_t base_pa_nospace;
+    uint32_t base_pa_errors;
+} rx_qa_diag_base_t;
+
+static FILE      *qa_metrics_fp;
+static FILE      *qa_events_fp;
+static rx_qa_diag_base_t qa_diag_base;
+static const char *qa_diag_phase = "none";
+
+static void rx_qa_write_events_locked(void) {
+    rx_audio_live_qa_event_t ev[RX_AUDIO_LIVE_QA_EVENT_RING];
+    size_t n;
+    int guard = 0;
+
+    if (qa_events_fp == NULL) {
+        return;
+    }
+    while ((n = rx_audio_live_qa_drain_events(ev, RX_AUDIO_LIVE_QA_EVENT_RING)) > 0 && guard++ < 8) {
+        for (size_t i = 0; i < n; i++) {
+            fprintf(qa_events_fp, "%" PRIu64 ",%s,%d\n",
+                    ev[i].t_ms - qa_diag_base.t0_ms,
+                    rx_audio_live_qa_event_name(ev[i].type), ev[i].value);
+        }
+        fflush(qa_events_fp);
+    }
+}
+
+static void rx_qa_diag_begin(const char *mode) {
+    char path[128];
+
+    rx_qa_capture_reset();
+    rx_qa_pa_counters_reset();
+    rx_audio_live_qa_reset_metrics();
+    atomic_store(&qa_echo_phase, 0);
+    (void) rx_audio_live_qa_drain_events(NULL, 0);
+
+    qa_diag_phase = mode;
+    qa_diag_base.t0_ms = rx_qa_mono_ms();
+    rx_audio_live_get_stats(&qa_diag_base.base_stats);
+    rx_audio_live_qa_get_metrics(&qa_diag_base.base_metrics);
+    qa_diag_base.base_cap_samples = atomic_load(&qa_cap_samples);
+    qa_diag_base.base_cap_real_samples = atomic_load(&qa_cap_real_samples);
+    qa_diag_base.base_cap_calls = atomic_load(&qa_cap_calls);
+    qa_diag_base.base_cap_holes = atomic_load(&qa_cap_holes);
+    qa_diag_base.base_cap_last_ms = atomic_load(&qa_cap_last_ms);
+    qa_diag_base.base_pa_calls = atomic_load(&qa_pa_write_calls);
+    qa_diag_base.base_pa_ok = atomic_load(&qa_pa_write_ok);
+    qa_diag_base.base_pa_nospace = atomic_load(&qa_pa_write_nospace);
+    qa_diag_base.base_pa_errors = atomic_load(&qa_pa_write_errors);
+
+    snprintf(path, sizeof(path), "/mnt/app_logs/rx_qa_metrics_%s.csv", mode);
+    qa_metrics_fp = fopen(path, "w");
+    snprintf(path, sizeof(path), "/mnt/app_logs/rx_qa_events_%s.csv", mode);
+    qa_events_fp = fopen(path, "w");
+    if (qa_events_fp != NULL) {
+        fprintf(qa_events_fp, "t_ms,event,value\n");
+        fflush(qa_events_fp);
+    }
+    if (qa_metrics_fp != NULL) {
+        fprintf(qa_metrics_fp,
+            "t_s,phase,cap_samples,cap_real_samples,cap_calls,cap_max_interval_ms,cap_gaps,cap_holes,"
+            "submitted,writes,drops,underruns,backpressure,degraded,mux_on_ok,mux_off_ok,"
+            "ring_occ,ring_hwm,pending_max_ms,pending_samples,state,"
+            "pa_state,pa_writable,pa_stream_index,pa_rate,pa_channels,pa_format,"
+            "pa_tlength,pa_maxlength,pa_prebuf,pa_minreq,pa_fragsize,pa_corked,"
+            "req_tlength_us,req_fragsize_us,req_prebuf,req_minreq,req_maxlength,"
+            "pa_latency_valid,pa_latency_us,pa_time_valid,pa_stream_time_us,"
+            "pa_timing_valid,pa_read_index,pa_write_index,pa_read_corrupt,pa_write_corrupt,"
+            "pa_playing,pa_sink_usec,pa_transport_usec,pa_configured_sink_usec,pa_since_underrun,"
+            "pa_write_calls,pa_write_ok,pa_write_nospace,pa_write_errors,pa_writable_min,pa_writable_max\n");
+        fflush(qa_metrics_fp);
+    }
+}
+
+static void rx_qa_emit_events(void);
+
+static void rx_qa_diag_sample(int sec) {
+    rx_audio_live_stats_t st;
+    rx_audio_live_qa_metrics_t qm;
+    rx_qa_pa_snapshot_t pa;
+
+    rx_audio_live_get_stats(&st);
+    rx_audio_live_qa_get_metrics(&qm);
+    rx_qa_pa_snapshot(&pa);
+    rx_qa_emit_events();
+
+    if (qa_metrics_fp == NULL) {
+        return;
+    }
+    fprintf(qa_metrics_fp,
+        "%d,%s,%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%u,%u,%" PRIu64 ","
+        "%u,%u,%u,%u,%u,%u,%u,%u,"
+        "%u,%u,%u,%u,%u,"
+        "%d,%d,%d,%u,%u,%d,"
+        "%u,%u,%u,%u,%u,%d,"
+        "%u,%u,%d,%d,%d,"
+        "%d,%" PRId64 ",%d,%" PRId64 ","
+        "%d,%" PRId64 ",%" PRId64 ",%d,%d,"
+        "%d,%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRId64 ","
+        "%u,%u,%u,%u,%u,%u\n",
+        sec, qa_diag_phase,
+        atomic_load(&qa_cap_samples) - qa_diag_base.base_cap_samples,
+        atomic_load(&qa_cap_real_samples) - qa_diag_base.base_cap_real_samples,
+        atomic_load(&qa_cap_calls) - qa_diag_base.base_cap_calls,
+        atomic_load(&qa_cap_max_interval_ms),
+        atomic_load(&qa_cap_gaps),
+        atomic_load(&qa_cap_holes) - qa_diag_base.base_cap_holes,
+        qm.submitted_blocks - qa_diag_base.base_metrics.submitted_blocks,
+        st.writes - qa_diag_base.base_stats.writes,
+        st.dropped_blocks - qa_diag_base.base_stats.dropped_blocks,
+        st.underruns - qa_diag_base.base_stats.underruns,
+        st.backpressure - qa_diag_base.base_stats.backpressure,
+        qm.degraded_transitions - qa_diag_base.base_metrics.degraded_transitions,
+        qm.mux_on_ok - qa_diag_base.base_metrics.mux_on_ok,
+        qm.mux_off_ok - qa_diag_base.base_metrics.mux_off_ok,
+        qm.ring_occupancy, qm.ring_high_water, qm.pending_max_ms, qm.pending_samples, qm.state,
+        pa.stream_state, pa.writable, pa.stream_index, pa.rate, pa.channels, pa.format,
+        pa.tlength, pa.maxlength, pa.prebuf, pa.minreq, pa.fragsize, pa.corked,
+        3000000u, 100000u, -1, -1, -1,
+        pa.latency_valid, pa.latency_us, pa.time_valid, pa.stream_time_us,
+        pa.timing_valid, pa.read_index, pa.write_index, pa.read_corrupt, pa.write_corrupt,
+        pa.playing, pa.sink_usec, pa.transport_usec, pa.configured_sink_usec, pa.since_underrun,
+        atomic_load(&qa_pa_write_calls) - qa_diag_base.base_pa_calls,
+        atomic_load(&qa_pa_write_ok) - qa_diag_base.base_pa_ok,
+        atomic_load(&qa_pa_write_nospace) - qa_diag_base.base_pa_nospace,
+        atomic_load(&qa_pa_write_errors) - qa_diag_base.base_pa_errors,
+        atomic_load(&qa_pa_writable_min), atomic_load(&qa_pa_writable_max));
+    fflush(qa_metrics_fp);
+}
+
+static void rx_qa_emit_events(void) {
+    rx_qa_write_events_locked();
+}
+
+static void rx_qa_diag_end(void) {
+    rx_qa_emit_events();
+    if (qa_metrics_fp != NULL) {
+        fclose(qa_metrics_fp);
+        qa_metrics_fp = NULL;
+    }
+    if (qa_events_fp != NULL) {
+        fclose(qa_events_fp);
+        qa_events_fp = NULL;
+    }
+}
+
+typedef enum {
+    RX_QA_SHORT = 0,
+    RX_QA_SOAK,
+    RX_QA_ECHO,
+} rx_qa_mode_t;
+
+static atomic_bool rx_qa_running;
+static atomic_int  rx_qa_short_successes;
+
+static void rx_qa_log(const char *fmt, ...) {
+    char buf[512];
+    va_list ap;
+    FILE *f;
+
+    va_start(ap, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, ap);
+    va_end(ap);
+    LV_LOG_USER("RX_QA: %s", buf);
+    f = fopen("/mnt/app_logs/rx_qa.log", "a");
+    if (f != NULL) {
+        fprintf(f, "%s\n", buf);
+        fclose(f);
+    }
+}
+
+static bool rx_qa_preflight(void) {
+    if (radio_get_state() != RADIO_RX) {
+        rx_qa_log("REFUSE state!=RX");
+        return false;
+    }
+    if (!audio_wait_ready(3000)) {
+        rx_qa_log("REFUSE audio stream not ready");
+        return false;
+    }
+    if (rx_audio_live_restore_unconfirmed()) {
+        rx_qa_log("REFUSE restore unconfirmed");
+        return false;
+    }
+    if (rx_audio_live_tx_active()) {
+        rx_qa_log("REFUSE tx active");
+        return false;
+    }
+    if (rx_audio_live_generated_active()) {
+        rx_qa_log("REFUSE generated audio active");
+        return false;
+    }
+    return true;
+}
+
+static bool rx_qa_wait_state(rx_audio_live_state_t want, int timeout_ms) {
+    for (int i = 0; i < timeout_ms; i += 10) {
+        if (rx_audio_live_get_state() == want) {
+            return true;
+        }
+        usleep(10000);
+    }
+    return rx_audio_live_get_state() == want;
+}
+
+static bool rx_qa_stop(void) {
+    (void) rx_audio_live_set_enabled(false);
+    atomic_store(&rx_qa_authorized, false);
+
+    bool base = rx_qa_wait_state(RX_AUDIO_LIVE_BASE, 1500);
+    bool ok = base && !rx_audio_live_restore_unconfirmed();
+    if (!ok) {
+        rx_qa_log("RESTORE_UNCONFIRMED state=%s",
+                  rx_audio_live_state_name(rx_audio_live_get_state()));
+        return false;
+    }
+
+    /* Intent independiente de retorno nominal; no depende de la autorizacion. */
+    if (!radio_audio_route_set(false)) {
+        rx_qa_log("BASE_ROUTE_RESTORE_FAILED");
+        return false;
+    }
+    return true;
+}
+
+
+static const char *rx_qa_mode_name(rx_qa_mode_t mode) {
+    switch (mode) {
+        case RX_QA_SOAK: return "soak";
+        case RX_QA_ECHO: return "echo";
+        default: return "short";
+    }
+}
+
+static const char *rx_qa_echo_phase_name(int phase) {
+    switch (phase) {
+        case 1: return "ZERO";
+        case 2: return "RAW";
+        case 3: return "PROCESSED";
+        default: return "OFF";
+    }
+}
+
+static void rx_qa_log_pa(const char *phase) {
+    rx_qa_pa_snapshot_t pa;
+    rx_qa_pa_snapshot(&pa);
+    rx_qa_log("ECHO_PA phase=%s state=%d writable=%d tlength=%u prebuf=%u fragsize=%u "
+              "latency_valid=%d latency_us=%" PRId64 " read_idx=%" PRId64 " write_idx=%" PRId64
+              " playing=%d sink_usec=%" PRIu64,
+              phase, pa.stream_state, pa.writable, pa.tlength, pa.prebuf, pa.fragsize,
+              pa.latency_valid, pa.latency_us, pa.read_index, pa.write_index,
+              pa.playing, pa.sink_usec);
+}
+
+static void *rx_qa_thread(void *arg) {
+    rx_qa_mode_t mode = (rx_qa_mode_t) (intptr_t) arg;
+    audio_enh_preset_t preset_before = audio_enh_preset_get_current();
+    uint32_t reg_before = x6200_control_get(x6200_sple_atue_trx);
+    uint32_t rxvol = x6200_control_get(x6200_rxvol);
+    uint8_t hmic_before = params.hmic;
+    uint8_t imic_before = params.imic;
+    bool ok = false;
+    bool soak_aborted = false;
+
+    rx_qa_log("START mode=%s state=%s preset=%s reg12_shadow=0x%08x rxvol=%u",
+              rx_qa_mode_name(mode),
+              rx_audio_live_state_name(rx_audio_live_get_state()),
+              audio_enh_preset_get_name(preset_before), reg_before, rxvol);
+
+    if (!rx_qa_preflight()) {
+        goto done;
+    }
+
+    rx_qa_diag_begin(rx_qa_mode_name(mode));
+
+    /* Retorno a BASE explicito antes de habilitar. */
+    if (!radio_audio_route_set(false)) {
+        rx_qa_log("FAIL pre-arm BASE");
+        goto done;
+    }
+
+    audio_enh_preset_load(AUDIO_ENH_PRESET_OFF);
+    atomic_store(&rx_qa_authorized, true);
+    if (!rx_audio_live_set_enabled(true)) {
+        rx_qa_log("FAIL router enable");
+        goto cleanup;
+    }
+    if (!rx_qa_wait_state(RX_AUDIO_LIVE_RX_DAC, 2500)) {
+        rx_qa_log("FAIL no RX_DAC state=%s",
+                  rx_audio_live_state_name(rx_audio_live_get_state()));
+        goto cleanup;
+    }
+
+    if (mode == RX_QA_SHORT) {
+        rx_qa_log("PHASE OFF");
+        usleep(700000);
+        audio_enh_preset_load(AUDIO_ENH_PRESET_SSB_VOICE);
+        rx_qa_log("PHASE SSB_VOICE");
+        usleep(700000);
+    } else if (mode == RX_QA_ECHO) {
+        static const int all_phases[] = { 1, 2, 3 };
+        int only = atomic_load(&qa_echo_single_phase);
+        int phases[3] = { 1, 2, 3 };
+        size_t phase_count = 3;
+        if (only >= 1 && only <= 3) {
+            phases[0] = only;
+            phase_count = 1;
+            qa_diag_phase = rx_qa_echo_phase_name(only);
+        } else {
+            (void) all_phases;
+        }
+        audio_enh_preset_load(atomic_load(&qa_echo_preset_off)
+                                  ? AUDIO_ENH_PRESET_OFF
+                                  : AUDIO_ENH_PRESET_SSB_VOICE);
+        for (size_t p = 0; p < phase_count; p++) {
+            int phase = phases[p];
+            qa_diag_phase = rx_qa_echo_phase_name(phase);
+            atomic_store(&qa_echo_phase, phase);
+            rx_qa_log("ECHO_PHASE %s START t_ms=%" PRIu64,
+                      qa_diag_phase, rx_qa_mono_ms() - qa_diag_base.t0_ms);
+            rx_qa_log_pa(qa_diag_phase);
+            for (int s = 0; s < 5; s++) {
+                usleep(1000000);
+                rx_qa_diag_sample((int) (p * 5 + s + 1));
+                if (radio_get_state() != RADIO_RX ||
+                    rx_audio_live_get_state() != RX_AUDIO_LIVE_RX_DAC) {
+                    rx_qa_log("ECHO_PHASE %s aborted state", qa_diag_phase);
+                    soak_aborted = true;
+                    break;
+                }
+            }
+            rx_qa_log_pa(qa_diag_phase);
+            rx_qa_log("ECHO_PHASE %s END", qa_diag_phase);
+            if (soak_aborted) {
+                break;
+            }
+        }
+        atomic_store(&qa_echo_phase, 0);
+        atomic_store(&qa_echo_single_phase, 0);
+        atomic_store(&qa_echo_preset_off, 0);
+    } else {
+        audio_enh_preset_load(AUDIO_ENH_PRESET_SSB_VOICE);
+        rx_qa_log("SOAK 30000ms");
+        for (int i = 0; i < 300; i++) {
+            if (radio_get_state() != RADIO_RX) {
+                rx_qa_log("SOAK aborted state!=RX");
+                soak_aborted = true;
+                break;
+            }
+            usleep(100000);
+            if ((i + 1) % 10 == 0) {
+                rx_qa_diag_sample((i + 1) / 10);
+            }
+        }
+    }
+    ok = !soak_aborted;
+
+cleanup:
+    {
+        atomic_store(&qa_echo_phase, 0);
+        bool restored = rx_qa_stop();
+        rx_audio_live_stats_t st;
+        rx_audio_live_get_stats(&st);
+        rx_qa_diag_sample(mode == RX_QA_SOAK ? 31 : 1);
+        rx_qa_diag_end();
+        audio_enh_preset_load(preset_before);
+
+        uint32_t reg_after = x6200_control_get(x6200_sple_atue_trx);
+        rx_qa_log("AFTER reg12_shadow=0x%08x rxvol=%u hmic=%u imic=%u state=%s preset=%s",
+                  reg_after, x6200_control_get(x6200_rxvol), params.hmic, params.imic,
+                  rx_audio_live_state_name(rx_audio_live_get_state()),
+                  audio_enh_preset_get_name(audio_enh_preset_get_current()));
+        rx_qa_log("STATS writes=%u drops=%u underruns=%u restore_fail=%u backpressure=%u",
+                  st.writes, st.dropped_blocks, st.underruns, st.restore_failures,
+                  st.backpressure);
+
+#ifdef X6200_RX_SPEAKER_QA
+        uint32_t rxvol_after = x6200_control_get(x6200_rxvol);
+        if (rxvol_after != rxvol) {
+            rx_qa_log("VOLUME_CHANGED_EXTERNAL before=%u after=%u", rxvol, rxvol_after);
+        }
+        bool clean = restored &&
+                     reg_after == reg_before &&
+                     hmic_before == params.hmic && imic_before == params.imic &&
+                     audio_enh_preset_get_current() == preset_before &&
+                     !rx_audio_live_restore_unconfirmed();
+#endif
+        bool useful = st.writes > 0;
+        rx_qa_log("USEFUL writes>0=%d", useful);
+        rx_qa_log("RESULT %s", (ok && clean && useful) ? "PASS_BASE_RESTORED" : "FAIL_OR_DEGRADED");
+        if (ok && clean && useful && mode == RX_QA_SHORT) {
+            atomic_fetch_add(&rx_qa_short_successes, 1);
+        } else if (!clean || !ok || !useful) {
+            atomic_store(&rx_qa_short_successes, 0);
+        }
+    }
+
+done:
+    rx_qa_log("DONE");
+    atomic_store(&rx_qa_running, false);
+    return NULL;
+}
+
+static bool rx_qa_start(rx_qa_mode_t mode) {
+    bool expected = false;
+    pthread_t th;
+
+    if (!atomic_compare_exchange_strong(&rx_qa_running, &expected, true)) {
+        rx_qa_log("REFUSE reentry");
+        return false;
+    }
+    if (mode == RX_QA_SOAK && atomic_load(&rx_qa_short_successes) < 2) {
+        rx_qa_log("REFUSE soak: need 2 short PASS in this build (%d)",
+                  atomic_load(&rx_qa_short_successes));
+        atomic_store(&rx_qa_running, false);
+        return false;
+    }
+    if (pthread_create(&th, NULL, rx_qa_thread, (void *) (intptr_t) mode) != 0) {
+        atomic_store(&rx_qa_running, false);
+        return false;
+    }
+    pthread_detach(th);
+    return true;
+}
+
+bool audio_qa_speaker_test_start(void) {
+    return rx_qa_start(RX_QA_SHORT);
+}
+
+bool audio_qa_speaker_soak_start(void) {
+    return rx_qa_start(RX_QA_SOAK);
+}
+
+bool audio_qa_speaker_echo_start(void) {
+    atomic_store(&qa_echo_single_phase, 0);
+    atomic_store(&qa_echo_preset_off, 0);
+    return rx_qa_start(RX_QA_ECHO);
+}
+
+bool audio_qa_speaker_echo_phase_start(int phase) {
+    if (phase < 1 || phase > 3) {
+        return false;
+    }
+    atomic_store(&qa_echo_single_phase, phase);
+    atomic_store(&qa_echo_preset_off, 0);
+    return rx_qa_start(RX_QA_ECHO);
+}
+
+bool audio_qa_speaker_echo_processed_off_start(void) {
+    atomic_store(&qa_echo_single_phase, 3);
+    atomic_store(&qa_echo_preset_off, 1);
+    return rx_qa_start(RX_QA_ECHO);
+}
+
+/* QA11: prueba de ruteo fisico BASE/DAC con un unico stream QA, sin router.
+ * No toca DSP (preset OFF), no usa I2C externo y no crea streams entre fases. */
+static void qa_hw_fill_block(int16_t *out, size_t n, uint64_t elapsed_ms, bool tone) {
+    static float phase;
+    bool on = tone && ((elapsed_ms / 500u) % 2u) == 0u;
+
+    if (!on) {
+        memset(out, 0, n * sizeof(*out));
+        return;
+    }
+    for (size_t i = 0; i < n; i++) {
+        out[i] = (int16_t) (519.0f * sinf(phase)); /* -36 dBFS */
+        phase += 2.0f * 3.14159265358979323846f * 1000.0f / 44100.0f;
+        if (phase > 2.0f * 3.14159265358979323846f) {
+            phase -= 2.0f * 3.14159265358979323846f;
+        }
+    }
+}
+
+static bool qa_hw_write_block(const int16_t *block, size_t n) {
+    while (!atomic_load(&qa_hw_abort)) {
+        int wr = rx_live_pa_write(NULL, block, n);
+        if (wr == RX_AUDIO_LIVE_WRITE_OK) {
+            return true;
+        }
+        if (wr == RX_AUDIO_LIVE_WRITE_ERROR) {
+            rx_qa_log("HW_ROUTE write error");
+            return false;
+        }
+        usleep(5000);
+    }
+    return false;
+}
+
+static void *qa_hw_route_thread(void *arg) {
+    (void) arg;
+    audio_enh_preset_t preset_before = audio_enh_preset_get_current();
+    uint32_t rxvol = x6200_control_get(x6200_rxvol);
+    int16_t block[RX_AUDIO_LIVE_BLOCK_SAMPLES];
+    bool opened = false;
+    bool mux_dac = false;
+    bool ok = false;
+
+    rx_qa_log("HW_ROUTE START vol=%u state=%d reg12_shadow=0x%08x",
+              rxvol, (int) radio_get_state(),
+              x6200_control_get(x6200_sple_atue_trx));
+    audio_enh_preset_load(AUDIO_ENH_PRESET_OFF);
+
+    if (!audio_wait_ready(3000)) {
+        rx_qa_log("HW_ROUTE FAIL capture not ready");
+        goto cleanup;
+    }
+    if (!radio_audio_route_set(false)) {
+        rx_qa_log("HW_ROUTE FAIL initial BASE");
+        goto cleanup;
+    }
+    if (rx_live_stm != NULL) {
+        rx_qa_log("HW_ROUTE FAIL stream already open");
+        goto cleanup;
+    }
+    if (!rx_live_pa_open(NULL)) {
+        rx_qa_log("HW_ROUTE FAIL stream open");
+        goto cleanup;
+    }
+    opened = true;
+    for (int i = 0; i < 300; i++) {
+        if (rx_live_pa_ready(NULL)) {
+            break;
+        }
+        usleep(10000);
+    }
+
+    int only = atomic_load(&qa_hw_only_phase);
+    int first = (only >= 1 && only <= 5) ? only - 1 : 0;
+    int last = (only >= 1 && only <= 5) ? only : 5;
+
+    for (int phase = first; phase < last && !atomic_load(&qa_hw_abort); phase++) {
+        static const char *names[] = { "A_BASE_ZERO", "B_DAC_ZERO", "C_DAC_TONE",
+                                       "D_BASE_TONE", "E_BASE_ZERO" };
+        bool tone = (phase == 2 || phase == 3);
+        const char *name = names[phase];
+
+        if (phase == 1 || (only == 3 && phase == 2)) {
+            if (!radio_audio_route_set(true)) {
+                rx_qa_log("HW_ROUTE FAIL DAC");
+                goto cleanup;
+            }
+            mux_dac = true;
+        } else if (phase == 3) {
+            if (!radio_audio_route_set(false)) {
+                rx_qa_log("HW_ROUTE FAIL BASE at D");
+                goto cleanup;
+            }
+            mux_dac = false;
+        }
+
+        rx_qa_log("HW_ROUTE PHASE %s START dac_req=%d reg12_shadow=0x%08x",
+                  name, mux_dac ? 1 : 0, x6200_control_get(x6200_sple_atue_trx));
+        uint64_t t0 = rx_qa_mono_ms();
+        while (!atomic_load(&qa_hw_abort)) {
+            uint64_t elapsed = rx_qa_mono_ms() - t0;
+            if (elapsed >= 5000u) {
+                break;
+            }
+            qa_hw_fill_block(block, RX_AUDIO_LIVE_BLOCK_SAMPLES, elapsed, tone);
+            if (!qa_hw_write_block(block, RX_AUDIO_LIVE_BLOCK_SAMPLES)) {
+                break;
+            }
+        }
+        rx_qa_log("HW_ROUTE PHASE %s END dac_req=%d reg12_shadow=0x%08x",
+                  name, mux_dac ? 1 : 0, x6200_control_get(x6200_sple_atue_trx));
+    }
+    ok = !atomic_load(&qa_hw_abort);
+
+cleanup:
+    if (mux_dac) {
+        (void) radio_audio_route_set(false);
+    }
+    if (opened) {
+        rx_live_pa_close(NULL);
+    }
+    (void) radio_audio_route_set(false);
+    audio_enh_preset_load(preset_before);
+    rx_qa_log("HW_ROUTE %s vol=%u reg12_shadow=0x%08x state=%d",
+              ok ? "DONE" : "ABORT/FAIL", x6200_control_get(x6200_rxvol),
+              x6200_control_get(x6200_sple_atue_trx), (int) radio_get_state());
+    atomic_store(&qa_hw_running, false);
+    atomic_store(&qa_hw_abort, false);
+    atomic_store(&qa_hw_only_phase, 0);
+    return NULL;
+}
+
+bool audio_qa_speaker_hw_route_start(void) {
+    bool expected = false;
+    pthread_t th;
+
+    if (!atomic_compare_exchange_strong(&qa_hw_running, &expected, true)) {
+        rx_qa_log("HW_ROUTE REFUSE reentry");
+        return false;
+    }
+    atomic_store(&qa_hw_only_phase, 0);
+    atomic_store(&qa_hw_abort, false);
+    if (pthread_create(&th, NULL, qa_hw_route_thread, NULL) != 0) {
+        atomic_store(&qa_hw_running, false);
+        return false;
+    }
+    pthread_detach(th);
+    return true;
+}
+
+bool audio_qa_speaker_hw_phase_start(int phase) {
+    bool expected = false;
+    pthread_t th;
+
+    if (phase < 1 || phase > 5) {
+        return false;
+    }
+    if (!atomic_compare_exchange_strong(&qa_hw_running, &expected, true)) {
+        rx_qa_log("HW_ROUTE REFUSE reentry phase");
+        return false;
+    }
+    atomic_store(&qa_hw_only_phase, phase);
+    atomic_store(&qa_hw_abort, false);
+    if (pthread_create(&th, NULL, qa_hw_route_thread, NULL) != 0) {
+        atomic_store(&qa_hw_running, false);
+        atomic_store(&qa_hw_only_phase, 0);
+        return false;
+    }
+    pthread_detach(th);
+    return true;
+}
+
+void audio_qa_speaker_hw_route_abort(void) {
+    atomic_store(&qa_hw_abort, true);
+}
+
+static FILE *qa12_fp;
+
+static void qa12_precompute_tone(void) {
+    float phase = 0.0f;
+
+    for (int b = 0; b < 10; b++) {
+        bool on = (b < 5);
+        for (size_t i = 0; i < RX_AUDIO_LIVE_BLOCK_SAMPLES; i++) {
+            if (on) {
+                qa12_tone[b][i] = (int16_t) (519.0f * sinf(phase));
+                phase += 2.0f * 3.14159265358979323846f * 1000.0f / 44100.0f;
+                if (phase > 2.0f * 3.14159265358979323846f) {
+                    phase -= 2.0f * 3.14159265358979323846f;
+                }
+            } else {
+                qa12_tone[b][i] = 0;
+            }
+        }
+    }
+}
+
+static const char *qa12_phase_name(int phase) {
+    switch (phase) {
+        case 1:
+        case 3: return "ZERO";
+        case 2: return "TONE";
+        case 4: return "RAW";
+        default: return "OFF";
+    }
+}
+
+static void qa12_tick(int phase, int elapsed_ms) {
+    static rx_qa_pa_snapshot_t pa;
+    rx_audio_live_stats_t st;
+    rx_audio_live_qa_metrics_t qm;
+    uint32_t reg;
+    uint32_t voice;
+
+    rx_audio_live_get_stats(&st);
+    rx_audio_live_qa_get_metrics(&qm);
+    reg = x6200_control_get(x6200_sple_atue_trx);
+    voice = (reg & 0x8u) ? 1u : 0u;
+    rx_qa_pa_snapshot(&pa);
+    rx_qa_emit_events();
+    if (qa12_fp == NULL) {
+        return;
+    }
+    fprintf(qa12_fp,
+        "%" PRIu64 ",%s,%d,%d,0x%08x,%u,%d,%d,%d,%" PRId64 ",%" PRId64 ","
+        "%u,%u,%u,%u,%u,%u,%u,%u,%u\n",
+        rx_qa_mono_ms() - qa_diag_base.t0_ms, qa12_phase_name(phase),
+        elapsed_ms, (int) rx_audio_live_get_state(), reg, voice,
+        (int) radio_get_state(), pa.stream_state, pa.writable,
+        pa.latency_us, pa.read_index, pa.write_index,
+        qm.submitted_blocks - qa_diag_base.base_metrics.submitted_blocks,
+        st.writes - qa_diag_base.base_stats.writes,
+        st.dropped_blocks - qa_diag_base.base_stats.dropped_blocks,
+        st.underruns - qa_diag_base.base_stats.underruns,
+        st.backpressure - qa_diag_base.base_stats.backpressure,
+        qm.degraded_transitions - qa_diag_base.base_metrics.degraded_transitions,
+        qm.mux_on_ok - qa_diag_base.base_metrics.mux_on_ok,
+        qm.mux_off_ok - qa_diag_base.base_metrics.mux_off_ok);
+    fflush(qa12_fp);
+}
+
+static atomic_bool qa12_running;
+static atomic_int  qa12_only_phase;
+
+static void *qa12_thread(void *arg) {
+    (void) arg;
+    audio_enh_preset_t preset_before = audio_enh_preset_get_current();
+    uint32_t rxvol = x6200_control_get(x6200_rxvol);
+    bool ok = false;
+
+    atomic_store(&qa12_phase, 0);
+    rx_qa_log("QA12 START vol=%u preset=%s reg12_shadow=0x%08x",
+              rxvol, audio_enh_preset_get_name(preset_before),
+              x6200_control_get(x6200_sple_atue_trx));
+    if (!rx_qa_preflight()) {
+        goto done;
+    }
+    rx_qa_diag_begin("qa12");
+    qa12_fp = fopen("/mnt/app_logs/rx_qa12.csv", "w");
+    if (qa12_fp != NULL) {
+        fprintf(qa12_fp, "t_ms,phase,elapsed_ms,router_state,reg12,voice_bit,radio_state,"
+                         "pa_state,pa_writable,pa_latency_us,pa_read_idx,pa_write_idx,"
+                         "submitted,writes,drops,underruns,backpressure,degraded,mux_on,mux_off\n");
+        fflush(qa12_fp);
+    }
+    qa12_precompute_tone();
+    if (!radio_audio_route_set(false)) {
+        rx_qa_log("QA12 FAIL pre-arm BASE");
+        goto cleanup;
+    }
+    audio_enh_preset_load(AUDIO_ENH_PRESET_OFF);
+    atomic_store(&rx_qa_authorized, true);
+    if (!rx_audio_live_set_enabled(true)) {
+        rx_qa_log("QA12 FAIL router enable");
+        goto cleanup;
+    }
+    if (!rx_qa_wait_state(RX_AUDIO_LIVE_RX_DAC, 2500)) {
+        rx_qa_log("QA12 FAIL no RX_DAC");
+        goto cleanup;
+    }
+    static const int phases[] = {1, 2, 3, 4};
+    int only = atomic_load(&qa12_only_phase);
+    size_t first = (only >= 1 && only <= 4) ? (size_t) (only - 1) : 0;
+    size_t last = (only >= 1 && only <= 4) ? (size_t) only : 4;
+    for (size_t p = first; p < last; p++) {
+        int phase = phases[p];
+        qa_diag_phase = qa12_phase_name(phase);
+        atomic_store(&qa12_tone_idx, 0);
+        atomic_store(&qa12_phase, phase);
+        rx_qa_log("QA12 PHASE %s START t_ms=%" PRIu64 " reg12_shadow=0x%08x",
+                  qa12_phase_name(phase), rx_qa_mono_ms() - qa_diag_base.t0_ms,
+                  x6200_control_get(x6200_sple_atue_trx));
+        for (int i = 0; i < 50; i++) {
+            usleep(100000);
+            qa12_tick(phase, (i + 1) * 100);
+            if (radio_get_state() != RADIO_RX ||
+                rx_audio_live_get_state() != RX_AUDIO_LIVE_RX_DAC) {
+                rx_qa_log("QA12 PHASE %s aborted", qa12_phase_name(phase));
+                goto cleanup;
+            }
+            if ((i + 1) % 10 == 0) {
+                rx_qa_diag_sample((int) (p * 5 + (i + 1) / 10));
+            }
+        }
+        rx_qa_log("QA12 PHASE %s END reg12_shadow=0x%08x",
+                  qa12_phase_name(phase), x6200_control_get(x6200_sple_atue_trx));
+    }
+    ok = true;
+
+cleanup:
+    atomic_store(&qa12_phase, 0);
+    atomic_store(&rx_qa_authorized, false);
+    (void) rx_audio_live_set_enabled(false);
+    (void) rx_qa_wait_state(RX_AUDIO_LIVE_BASE, 1500);
+    (void) radio_audio_route_set(false);
+    audio_enh_preset_load(preset_before);
+    if (qa12_fp != NULL) {
+        qa12_tick(0, 0);
+        fclose(qa12_fp);
+        qa12_fp = NULL;
+    }
+    rx_qa_diag_end();
+    rx_qa_log("QA12 %s vol=%u reg12_shadow=0x%08x state=%d",
+              ok ? "DONE" : "FAIL", x6200_control_get(x6200_rxvol),
+              x6200_control_get(x6200_sple_atue_trx), (int) radio_get_state());
+    atomic_store(&qa12_running, false);
+    return NULL;
+done:
+    rx_qa_log("QA12 DONE_NO_START");
+    atomic_store(&qa12_running, false);
+    atomic_store(&qa12_only_phase, 0);
+    return NULL;
+}
+
+bool audio_qa_speaker_qa12_start(void) {
+    bool expected = false;
+    pthread_t th;
+
+    if (!atomic_compare_exchange_strong(&qa12_running, &expected, true)) {
+        rx_qa_log("QA12 REFUSE reentry");
+        return false;
+    }
+    atomic_store(&qa12_only_phase, 0);
+    if (pthread_create(&th, NULL, qa12_thread, NULL) != 0) {
+        atomic_store(&qa12_running, false);
+        return false;
+    }
+    pthread_detach(th);
+    return true;
+}
+
+bool audio_qa_speaker_qa12_phase_start(int phase) {
+    bool expected = false;
+    pthread_t th;
+
+    if (phase < 1 || phase > 4) {
+        return false;
+    }
+    if (!atomic_compare_exchange_strong(&qa12_running, &expected, true)) {
+        rx_qa_log("QA12 REFUSE reentry phase");
+        return false;
+    }
+    atomic_store(&qa12_only_phase, phase);
+    if (pthread_create(&th, NULL, qa12_thread, NULL) != 0) {
+        atomic_store(&qa12_running, false);
+        atomic_store(&qa12_only_phase, 0);
+        return false;
+    }
+    pthread_detach(th);
+    return true;
+}
+
+#endif
 
 float audio_get_peak_db() {
     return peak_db;

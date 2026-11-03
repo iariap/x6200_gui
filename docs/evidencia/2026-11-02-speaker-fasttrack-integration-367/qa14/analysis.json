@@ -1,0 +1,28 @@
+{
+  "A_BASE": {
+    "rms": 1792.3,
+    "peak": 9124,
+    "1k_ratio": 0.013
+  },
+  "B_DAC_ZERO": {
+    "rms": 30.6,
+    "peak": 273,
+    "1k_ratio": 0.007
+  },
+  "C_BASE": {
+    "rms": 1888.9,
+    "peak": 9933,
+    "1k_ratio": 0.018
+  },
+  "ALT_INPUTS_DAC_ZERO_RMS": 146.5,
+  "VOL0_TONE_CAPTURE": {
+    "rms": 332.8,
+    "peak": 794,
+    "1k_ratio": 0.925
+  },
+  "VOL0_TONE_MONITOR": {
+    "rms": 249.4,
+    "peak": 518,
+    "1k_ratio": 0.933
+  }
+}

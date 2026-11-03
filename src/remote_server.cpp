@@ -40,6 +40,18 @@
 #include <string>
 
 extern "C" {
+#ifdef X6200_RX_SPEAKER_QA
+    bool audio_qa_speaker_test_start(void);
+    bool audio_qa_speaker_soak_start(void);
+    bool audio_qa_speaker_echo_start(void);
+    bool audio_qa_speaker_echo_phase_start(int phase);
+    bool audio_qa_speaker_echo_processed_off_start(void);
+    bool audio_qa_speaker_hw_route_start(void);
+    bool audio_qa_speaker_hw_phase_start(int phase);
+    bool audio_qa_speaker_qa12_start(void);
+    bool audio_qa_speaker_qa12_phase_start(int phase);
+    void audio_qa_speaker_hw_route_abort(void);
+#endif
     #include "cJSON.h"
     #include "cfg/cfg_api.h"
     #include "buttons.h"
@@ -123,7 +135,16 @@ typedef struct {
 typedef enum {
     CMD_FREQ, CMD_TUNE, CMD_MODE, CMD_BAND, CMD_PRE, CMD_ATT, CMD_AGC, CMD_NB, CMD_NR, CMD_RFGAIN, CMD_FILTER, CMD_PWR,
     CMD_NB_LEVEL, CMD_NB_WIDTH, CMD_NR_LEVEL, CMD_AGC_MODE, CMD_SQL,
-    CMD_APP, CMD_APP_CMD, CMD_LOCATION, CMD_QSO_LOG, CMD_BTN, CMD_VOL
+    CMD_APP, CMD_APP_CMD, CMD_LOCATION, CMD_QSO_LOG, CMD_BTN, CMD_VOL,
+#ifdef X6200_RX_SPEAKER_QA
+    CMD_RX_QA_SHORT, CMD_RX_QA_SOAK, CMD_RX_QA_ECHO,
+    CMD_RX_QA_ECHO_ZERO, CMD_RX_QA_ECHO_RAW, CMD_RX_QA_ECHO_PROCESSED,
+    CMD_RX_QA_ECHO_PROCESSED_OFF,
+    CMD_RX_QA_HW_ROUTE, CMD_RX_QA_HW_ABORT,
+    CMD_RX_QA_HW_A, CMD_RX_QA_HW_B, CMD_RX_QA_HW_C, CMD_RX_QA_HW_D, CMD_RX_QA_HW_E,
+    CMD_RX_QA_QA12, CMD_RX_QA_QA12_ZERO1, CMD_RX_QA_QA12_TONE,
+    CMD_RX_QA_QA12_ZERO2, CMD_RX_QA_QA12_RAW,
+#endif
 } cmd_id_t;
 
 typedef struct {
@@ -417,6 +438,65 @@ static void apply_cmd(void *arg) {
         case CMD_BTN:
             buttons_press(c->val, false);
             break;
+#ifdef X6200_RX_SPEAKER_QA
+        case CMD_RX_QA_SHORT:
+            (void) audio_qa_speaker_test_start();
+            break;
+        case CMD_RX_QA_SOAK:
+            (void) audio_qa_speaker_soak_start();
+            break;
+        case CMD_RX_QA_ECHO:
+            (void) audio_qa_speaker_echo_start();
+            break;
+        case CMD_RX_QA_ECHO_ZERO:
+            (void) audio_qa_speaker_echo_phase_start(1);
+            break;
+        case CMD_RX_QA_ECHO_RAW:
+            (void) audio_qa_speaker_echo_phase_start(2);
+            break;
+        case CMD_RX_QA_ECHO_PROCESSED:
+            (void) audio_qa_speaker_echo_phase_start(3);
+            break;
+        case CMD_RX_QA_ECHO_PROCESSED_OFF:
+            (void) audio_qa_speaker_echo_processed_off_start();
+            break;
+        case CMD_RX_QA_HW_ROUTE:
+            (void) audio_qa_speaker_hw_route_start();
+            break;
+        case CMD_RX_QA_HW_ABORT:
+            audio_qa_speaker_hw_route_abort();
+            break;
+        case CMD_RX_QA_HW_A:
+            (void) audio_qa_speaker_hw_phase_start(1);
+            break;
+        case CMD_RX_QA_HW_B:
+            (void) audio_qa_speaker_hw_phase_start(2);
+            break;
+        case CMD_RX_QA_HW_C:
+            (void) audio_qa_speaker_hw_phase_start(3);
+            break;
+        case CMD_RX_QA_HW_D:
+            (void) audio_qa_speaker_hw_phase_start(4);
+            break;
+        case CMD_RX_QA_HW_E:
+            (void) audio_qa_speaker_hw_phase_start(5);
+            break;
+        case CMD_RX_QA_QA12:
+            (void) audio_qa_speaker_qa12_start();
+            break;
+        case CMD_RX_QA_QA12_ZERO1:
+            (void) audio_qa_speaker_qa12_phase_start(1);
+            break;
+        case CMD_RX_QA_QA12_TONE:
+            (void) audio_qa_speaker_qa12_phase_start(2);
+            break;
+        case CMD_RX_QA_QA12_ZERO2:
+            (void) audio_qa_speaker_qa12_phase_start(3);
+            break;
+        case CMD_RX_QA_QA12_RAW:
+            (void) audio_qa_speaker_qa12_phase_start(4);
+            break;
+#endif
         case CMD_VOL:
             /* Por radio_change_vol (no por el subject) para pasar por el mismo camino que la
              * perilla, que es donde se sincroniza el volumen de los auriculares */
@@ -784,6 +864,55 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
             return "Invalid text";
         strcpy(cmd->text, text->valuestring);
     }
+#ifdef X6200_RX_SPEAKER_QA
+    /* Endpoints QA: solo existen en la build con X6200_RX_SPEAKER_QA=ON. */
+    if (!strcmp(name, "rx_speaker_test")) {
+        cmd->id = CMD_RX_QA_SHORT;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_soak")) {
+        cmd->id = CMD_RX_QA_SOAK;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_echo")) {
+        cmd->id = CMD_RX_QA_ECHO;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_echo_zero")) {
+        cmd->id = CMD_RX_QA_ECHO_ZERO;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_echo_raw")) {
+        cmd->id = CMD_RX_QA_ECHO_RAW;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_echo_processed")) {
+        cmd->id = CMD_RX_QA_ECHO_PROCESSED;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_echo_processed_off")) {
+        cmd->id = CMD_RX_QA_ECHO_PROCESSED_OFF;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_hw_route")) {
+        cmd->id = CMD_RX_QA_HW_ROUTE;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_hw_abort")) {
+        cmd->id = CMD_RX_QA_HW_ABORT;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_hw_a")) { cmd->id = CMD_RX_QA_HW_A; return NULL; }
+    if (!strcmp(name, "rx_speaker_hw_b")) { cmd->id = CMD_RX_QA_HW_B; return NULL; }
+    if (!strcmp(name, "rx_speaker_hw_c")) { cmd->id = CMD_RX_QA_HW_C; return NULL; }
+    if (!strcmp(name, "rx_speaker_hw_d")) { cmd->id = CMD_RX_QA_HW_D; return NULL; }
+    if (!strcmp(name, "rx_speaker_hw_e")) { cmd->id = CMD_RX_QA_HW_E; return NULL; }
+    if (!strcmp(name, "rx_speaker_qa12")) { cmd->id = CMD_RX_QA_QA12; return NULL; }
+    if (!strcmp(name, "rx_speaker_qa12_zero1")) { cmd->id = CMD_RX_QA_QA12_ZERO1; return NULL; }
+    if (!strcmp(name, "rx_speaker_qa12_tone")) { cmd->id = CMD_RX_QA_QA12_TONE; return NULL; }
+    if (!strcmp(name, "rx_speaker_qa12_zero2")) { cmd->id = CMD_RX_QA_QA12_ZERO2; return NULL; }
+    if (!strcmp(name, "rx_speaker_qa12_raw")) { cmd->id = CMD_RX_QA_QA12_RAW; return NULL; }
+#endif
     if (!strcmp(name, "location")) {
         if (sscanf(cmd->text, "%lf,%lf", &cmd->lat, &cmd->lon) != 2 || !(fabs(cmd->lat) <= 90) ||
             !(fabs(cmd->lon) <= 180))   /* NaN fails too */

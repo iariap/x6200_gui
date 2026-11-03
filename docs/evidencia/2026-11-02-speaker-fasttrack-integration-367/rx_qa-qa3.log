@@ -1,0 +1,23 @@
+START mode=short state=BASE preset=OFF reg12_shadow=0x00001000 rxvol=30
+PHASE OFF
+PHASE SSB_VOICE
+AFTER reg12_shadow=0x00001000 rxvol=30 hmic=20 imic=30 state=BASE preset=OFF
+STATS writes=13 drops=0 underruns=0 restore_fail=0 backpressure=1
+USEFUL writes>0=1
+RESULT PASS_BASE_RESTORED
+DONE
+START mode=short state=BASE preset=OFF reg12_shadow=0x00001000 rxvol=30
+PHASE OFF
+PHASE SSB_VOICE
+AFTER reg12_shadow=0x00001000 rxvol=30 hmic=20 imic=30 state=BASE preset=OFF
+STATS writes=26 drops=0 underruns=0 restore_fail=0 backpressure=2
+USEFUL writes>0=1
+RESULT PASS_BASE_RESTORED
+DONE
+START mode=soak state=BASE preset=OFF reg12_shadow=0x00001000 rxvol=30
+SOAK 30000ms
+AFTER reg12_shadow=0x00001000 rxvol=30 hmic=20 imic=30 state=BASE preset=OFF
+STATS writes=250 drops=0 underruns=0 restore_fail=0 backpressure=29
+USEFUL writes>0=1
+RESULT PASS_BASE_RESTORED
+DONE

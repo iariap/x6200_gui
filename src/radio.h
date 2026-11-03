@@ -92,6 +92,12 @@ void radio_poweroff();
 void radio_set_ptt(bool tx);
 void radio_set_modem(bool tx);
 
+#ifdef X6200_RX_SPEAKER_QA
+/* SOLO build QA: unico escritor experimental de voice_rec, serializado con
+ * radio_thread/x6200_control_idle. No existe en produccion. */
+bool radio_audio_route_set(bool dac);
+#endif
+
 /* The Settings "Charger" row: only On charges while running; Shadow charges when
  * the radio is switched off (see radio_poweroff) */
 void radio_set_charger(radio_charger_t v);

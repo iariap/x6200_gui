@@ -26,6 +26,7 @@
 #define RX_AUDIO_LIVE_START_BLOCKS  2u      /* prefill antes de pedir DAC */
 #define RX_AUDIO_LIVE_STALE_MS      200u    /* PCM mas viejo: no DAC */
 #define RX_AUDIO_LIVE_WORKER_WAIT_MS 5u
+#define RX_AUDIO_LIVE_NO_SPACE_WAIT_MS 5u /* respiro al sink: evita busy-spin sobre pa_stream_writable_size */
 #define RX_AUDIO_LIVE_RATE          44100u
 #define RX_AUDIO_LIVE_TARGET_BUFFER_MS 200u /* objetivo del stream de salida */
 #define RX_AUDIO_LIVE_BACKPRESSURE_MS  200u /* sin espacio por mas tiempo: degradar */
@@ -120,7 +121,48 @@ const char *rx_audio_live_suspend_name(rx_audio_live_suspend_t why);
 void rx_audio_live_get_stats(rx_audio_live_stats_t *out);
 size_t rx_audio_live_pending_samples(void);
 
+#ifdef X6200_RX_SPEAKER_QA
+/* QA6: instrumentacion fija, sin malloc ni I/O en el callback. */
+typedef struct {
+    uint32_t submitted_blocks;
+    uint32_t ring_occupancy;
+    uint32_t ring_high_water;
+    uint32_t pending_max_ms;
+    uint32_t degraded_transitions;
+    uint32_t mux_on_ok;
+    uint32_t mux_off_ok;
+    uint32_t events_lost;
+    uint32_t state;
+    uint32_t pending_samples;
+} rx_audio_live_qa_metrics_t;
+
+typedef struct {
+    uint64_t t_ms;
+    uint32_t type;
+    int32_t  value;
+} rx_audio_live_qa_event_t;
+
+#define RX_AUDIO_LIVE_QA_EVENT_RING 128u
+#define RX_AUDIO_LIVE_QA_EV_OPEN          1u
+#define RX_AUDIO_LIVE_QA_EV_OPEN_FAIL     2u
+#define RX_AUDIO_LIVE_QA_EV_CLOSE         3u
+#define RX_AUDIO_LIVE_QA_EV_MUX_ON_REQ    4u
+#define RX_AUDIO_LIVE_QA_EV_MUX_ON_RESULT 5u
+#define RX_AUDIO_LIVE_QA_EV_MUX_OFF_REQ   6u
+#define RX_AUDIO_LIVE_QA_EV_MUX_OFF_RESULT 7u
+#define RX_AUDIO_LIVE_QA_EV_RX_DAC        8u
+#define RX_AUDIO_LIVE_QA_EV_DEGRADED      9u
+#define RX_AUDIO_LIVE_QA_EV_BASE          10u
+
+void rx_audio_live_qa_reset_metrics(void);
+void rx_audio_live_qa_get_metrics(rx_audio_live_qa_metrics_t *out);
+size_t rx_audio_live_qa_drain_events(rx_audio_live_qa_event_t *out, size_t max);
+const char *rx_audio_live_qa_event_name(uint32_t type);
+#endif
+
 /* true solo si un backend #367 acredito el gate y no hay una restauracion
  * pendiente/fallida. El backend real actual devuelve false. */
 bool rx_audio_live_can_activate(void);
 bool rx_audio_live_restore_unconfirmed(void);
+bool rx_audio_live_tx_active(void);
+bool rx_audio_live_generated_active(void);

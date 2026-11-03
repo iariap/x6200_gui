@@ -63,6 +63,27 @@ static uint64_t retry_after_ms;
 
 static rx_audio_live_stats_t stats;
 
+static uint64_t now_ms(void);
+
+#ifdef X6200_RX_SPEAKER_QA
+static rx_audio_live_qa_metrics_t qa_metrics;
+static rx_audio_live_qa_event_t qa_events[RX_AUDIO_LIVE_QA_EVENT_RING];
+static unsigned qa_event_head;
+static unsigned qa_event_count;
+
+static void qa_event_locked(uint32_t type, int32_t value) {
+    if (qa_event_count == RX_AUDIO_LIVE_QA_EVENT_RING) {
+        qa_metrics.events_lost++;
+        return;
+    }
+    unsigned idx = (qa_event_head + qa_event_count) % RX_AUDIO_LIVE_QA_EVENT_RING;
+    qa_events[idx].t_ms = now_ms();
+    qa_events[idx].type = type;
+    qa_events[idx].value = value;
+    qa_event_count++;
+}
+#endif
+
 static uint64_t now_ms(void) {
     struct timespec ts;
 
@@ -82,6 +103,9 @@ static void clear_buffers_locked(void) {
     ring_count = 0;
     staging_count = 0;
     memset(staging, 0, sizeof(staging));
+#ifdef X6200_RX_SPEAKER_QA
+    qa_metrics.ring_occupancy = 0;
+#endif
 }
 
 static void push_block_locked(const int16_t *block) {
@@ -96,6 +120,13 @@ static void push_block_locked(const int16_t *block) {
     dst = (ring_head + ring_count) % NBLOCKS;
     memcpy(ring[dst], block, sizeof(ring[dst]));
     ring_count++;
+#ifdef X6200_RX_SPEAKER_QA
+    qa_metrics.submitted_blocks++;
+    qa_metrics.ring_occupancy = ring_count;
+    if (ring_count > qa_metrics.ring_high_water) {
+        qa_metrics.ring_high_water = ring_count;
+    }
+#endif
 }
 
 static bool pop_block_locked(int16_t *out) {
@@ -154,6 +185,11 @@ static void do_cleanup(rx_audio_live_suspend_t why) {
     pthread_mutex_lock(&lock);
     need_restore = dac_selected || restore_unknown;
     had_sink = sink_open;
+#ifdef X6200_RX_SPEAKER_QA
+    if (need_restore) {
+        qa_event_locked(RX_AUDIO_LIVE_QA_EV_MUX_OFF_REQ, (int32_t) why);
+    }
+#endif
     pthread_mutex_unlock(&lock);
 
     if (need_restore) {
@@ -161,10 +197,16 @@ static void do_cleanup(rx_audio_live_suspend_t why) {
 
         pthread_mutex_lock(&lock);
         stats.base_requests++;
+#ifdef X6200_RX_SPEAKER_QA
+        qa_event_locked(RX_AUDIO_LIVE_QA_EV_MUX_OFF_RESULT, r);
+#endif
         if (r == (int) RX_AUDIO_LIVE_MUX_OK) {
             dac_selected = false;
             restore_unknown = false;
             restore_failed = false;
+#ifdef X6200_RX_SPEAKER_QA
+            qa_metrics.mux_off_ok++;
+#endif
         } else {
             /* No se sabe que el MUX haya vuelto: se conserva la obligacion y se
              * impide cualquier activacion nueva. */
@@ -180,6 +222,11 @@ static void do_cleanup(rx_audio_live_suspend_t why) {
     }
 
     pthread_mutex_lock(&lock);
+#ifdef X6200_RX_SPEAKER_QA
+    if (had_sink) {
+        qa_event_locked(RX_AUDIO_LIVE_QA_EV_CLOSE, (int32_t) why);
+    }
+#endif
     sink_open = false;
     sink_ready = false;
     stats.closes += had_sink ? 1u : 0u;
@@ -187,6 +234,9 @@ static void do_cleanup(rx_audio_live_suspend_t why) {
     clear_buffers_locked();
     if (!restore_failed) {
         state = RX_AUDIO_LIVE_BASE;
+#ifdef X6200_RX_SPEAKER_QA
+        qa_event_locked(RX_AUDIO_LIVE_QA_EV_BASE, (int32_t) why);
+#endif
     }
     pthread_mutex_unlock(&lock);
 }
@@ -199,6 +249,9 @@ static bool open_stream(void) {
     if (ok) {
         stats.opens++;
     }
+#ifdef X6200_RX_SPEAKER_QA
+    qa_event_locked(ok ? RX_AUDIO_LIVE_QA_EV_OPEN : RX_AUDIO_LIVE_QA_EV_OPEN_FAIL, 0);
+#endif
     pthread_mutex_unlock(&lock);
     return ok;
 }
@@ -216,6 +269,7 @@ static void worker_loop(void) {
      * por backpressure. Solo lo usa el worker. */
     int16_t pending[NSAMP];
     bool    pending_valid = false;
+    bool    no_space = false;
     uint64_t pending_since_ms = 0;
 
     while (true) {
@@ -270,6 +324,9 @@ static void worker_loop(void) {
                 !stale_locked(now)) {
                 state = RX_AUDIO_LIVE_PREPARE_DAC;
                 act = ACT_MUX_ON;
+#ifdef X6200_RX_SPEAKER_QA
+                qa_event_locked(RX_AUDIO_LIVE_QA_EV_MUX_ON_REQ, 0);
+#endif
             }
         } else if (state == RX_AUDIO_LIVE_PREPARE_DAC) {
             /* La transicion se resuelve en la misma vuelta de ACT_MUX_ON. */
@@ -337,14 +394,30 @@ static void worker_loop(void) {
                     pending_valid = false;
                     pending_since_ms = 0;
                 } else if (wr == (int) RX_AUDIO_LIVE_WRITE_NO_SPACE) {
+                    no_space = true;
                     if (pending_since_ms == 0) {
                         pending_since_ms = now_ms();
-                    } else if (now_ms() - pending_since_ms > RX_AUDIO_LIVE_BACKPRESSURE_MS) {
+                    }
+#ifdef X6200_RX_SPEAKER_QA
+                    {
+                        uint64_t age = now_ms() - pending_since_ms;
+                        if (age > qa_metrics.pending_max_ms) {
+                            qa_metrics.pending_max_ms = (uint32_t) age;
+                        }
+                    }
+#endif
+                    if (pending_since_ms != 0 &&
+                        now_ms() - pending_since_ms > RX_AUDIO_LIVE_BACKPRESSURE_MS) {
                         /* El backend no sostiene el objetivo de latencia: no se
                          * acumula audio viejo; se vuelve a BASE. */
                         stats.backpressure++;
                         stats.last_suspend = RX_AUDIO_LIVE_SUSPEND_BACKPRESSURE;
                         state = RX_AUDIO_LIVE_DEGRADED_BASE;
+#ifdef X6200_RX_SPEAKER_QA
+                        qa_metrics.degraded_transitions++;
+                        qa_event_locked(RX_AUDIO_LIVE_QA_EV_DEGRADED,
+                                        (int32_t) RX_AUDIO_LIVE_SUSPEND_BACKPRESSURE);
+#endif
                         pending_valid = false;
                     }
                 } else {
@@ -362,6 +435,9 @@ static void worker_loop(void) {
 
                 pthread_mutex_lock(&lock);
                 stats.dac_requests++;
+#ifdef X6200_RX_SPEAKER_QA
+                qa_event_locked(RX_AUDIO_LIVE_QA_EV_MUX_ON_RESULT, r);
+#endif
                 if (r == (int) RX_AUDIO_LIVE_MUX_OK) {
                     /* La obligacion de restaurar nace apenas el backend confirma
                      * la seleccion, aunque un disable/TX haya llegado mientras
@@ -370,6 +446,10 @@ static void worker_loop(void) {
                     restore_unknown = false;
                     if (enabled && !tx_active && !generated_active && !capture_fault) {
                         state = RX_AUDIO_LIVE_RX_DAC;
+#ifdef X6200_RX_SPEAKER_QA
+                        qa_metrics.mux_on_ok++;
+                        qa_event_locked(RX_AUDIO_LIVE_QA_EV_RX_DAC, 0);
+#endif
                     } else {
                         stats.last_suspend = RX_AUDIO_LIVE_SUSPEND_MUX;
                         state = RX_AUDIO_LIVE_DEGRADED_BASE;
@@ -391,6 +471,15 @@ static void worker_loop(void) {
 
             case ACT_NONE:
                 break;
+        }
+
+        if (no_space) {
+            /* No martillar el mainloop de PulseAudio: el sink necesita correr
+             * para liberar espacio. 5 ms de respiro y se reintenta. */
+            struct timespec nap = { .tv_sec = 0,
+                                    .tv_nsec = RX_AUDIO_LIVE_NO_SPACE_WAIT_MS * 1000000L };
+            nanosleep(&nap, NULL);
+            no_space = false;
         }
     }
 }
@@ -633,3 +722,75 @@ bool rx_audio_live_restore_unconfirmed(void) {
     pthread_mutex_unlock(&lock);
     return v;
 }
+
+bool rx_audio_live_tx_active(void) {
+    bool v;
+
+    pthread_mutex_lock(&lock);
+    v = tx_active;
+    pthread_mutex_unlock(&lock);
+    return v;
+}
+
+bool rx_audio_live_generated_active(void) {
+    bool v;
+
+    pthread_mutex_lock(&lock);
+    v = generated_active;
+    pthread_mutex_unlock(&lock);
+    return v;
+}
+
+#ifdef X6200_RX_SPEAKER_QA
+void rx_audio_live_qa_reset_metrics(void) {
+    pthread_mutex_lock(&lock);
+    memset(&qa_metrics, 0, sizeof(qa_metrics));
+    qa_event_head = 0;
+    qa_event_count = 0;
+    pthread_mutex_unlock(&lock);
+}
+
+void rx_audio_live_qa_get_metrics(rx_audio_live_qa_metrics_t *out) {
+    if (out == NULL) {
+        return;
+    }
+    pthread_mutex_lock(&lock);
+    *out = qa_metrics;
+    out->ring_occupancy = ring_count;
+    out->pending_samples = (uint32_t) (ring_count * NSAMP + staging_count);
+    out->state = (uint32_t) state;
+    pthread_mutex_unlock(&lock);
+}
+
+size_t rx_audio_live_qa_drain_events(rx_audio_live_qa_event_t *out, size_t max) {
+    size_t n = 0;
+
+    if (out == NULL || max == 0) {
+        return 0;
+    }
+    pthread_mutex_lock(&lock);
+    while (n < max && qa_event_count > 0) {
+        out[n++] = qa_events[qa_event_head];
+        qa_event_head = (qa_event_head + 1u) % RX_AUDIO_LIVE_QA_EVENT_RING;
+        qa_event_count--;
+    }
+    pthread_mutex_unlock(&lock);
+    return n;
+}
+
+const char *rx_audio_live_qa_event_name(uint32_t type) {
+    switch (type) {
+        case RX_AUDIO_LIVE_QA_EV_OPEN: return "open";
+        case RX_AUDIO_LIVE_QA_EV_OPEN_FAIL: return "open_fail";
+        case RX_AUDIO_LIVE_QA_EV_CLOSE: return "close";
+        case RX_AUDIO_LIVE_QA_EV_MUX_ON_REQ: return "mux_on_req";
+        case RX_AUDIO_LIVE_QA_EV_MUX_ON_RESULT: return "mux_on_result";
+        case RX_AUDIO_LIVE_QA_EV_MUX_OFF_REQ: return "mux_off_req";
+        case RX_AUDIO_LIVE_QA_EV_MUX_OFF_RESULT: return "mux_off_result";
+        case RX_AUDIO_LIVE_QA_EV_RX_DAC: return "rx_dac";
+        case RX_AUDIO_LIVE_QA_EV_DEGRADED: return "degraded";
+        case RX_AUDIO_LIVE_QA_EV_BASE: return "base";
+        default: return "?";
+    }
+}
+#endif
