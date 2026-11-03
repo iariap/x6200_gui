@@ -115,3 +115,21 @@ binarios ni datos privados.
 Descargar el software original no cambia la conclusión: el MCU sigue siendo una caja opaca y la
 ruta RX pre-mute no está expuesta. `MCU_RECOVERY` sigue **UNVERIFIED**; no se flasheó ni se escribió
 en la SD (montaje ro). No se publica firmware propietario completo ni claves.
+
+
+## 7. Deep REA 2026-11-03 (H725/FPGA, AES-ECB, CM108)
+
+Se añadió `hardware-and-bootloader.md` y la herramienta reproducible `tools/xgf_analysis.py`.
+
+- Referencia pública: H725 + Cyclone 10 + CM108B + A33; verificación local limitada a A33 (única
+  tarjeta ALSA, CM108B no enumera en USB).
+- `.xgf`: hay bloques de 16 B **exactamente repetidos** (5087/9640 veces) y regiones de 512/4096 B
+  con entropía 4,0; compatible con **AES-ECB sobre padding constante**, no con CBC/CTR continuo.
+  No hay clave/imagen clara; no se intentó fuerza bruta.
+- IAP: GUI lee el archivo y lo envía por XMODEM; el GUI no descifra; la transformación/aceptación
+  está en el bootloader MCU. Sin lectura/verify ni recuperación MCU verificada.
+- Arquitectura probable: RF ADC → Cyclone 10 → H725 → analógico → MIC1 A33 → Linux; el mute de
+  `voice_rec` está del lado BASE/H725, no en A33. CM108B no está disponible en A33.
+- Clasificación sin cambios: `MCU_IMAGE_CLEAR=NO`, `IAP_ACCEPTANCE_CONTRACT=UNKNOWN`,
+  `MCU_RECOVERY=UNVERIFIED`, `BASE_PATCH_READY=NO`, `BASE_EXPERIMENTAL_FLASHED=NO`,
+  `INDEPENDENT_RX_CAPTURE=FAIL`, `LINUX_DSP_SPEAKER=NOT_TESTED`, `PRODUCTION_READY=NO`.
