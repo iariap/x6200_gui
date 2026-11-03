@@ -96,3 +96,22 @@ No se soldó, cortó, sonda ni energizó nada en esta corrida.
 - Preferencia 3: modificación del firmware BASE que mantenga RX y DAC simultáneos; el `.xgf` está
   cifrado/opaco y no hay mecanismo de recuperación demostrado; no se intenta.
 - AEC: **no aplica** mientras la RX desaparezca en DAC.
+
+
+## 7. Restricción final del operador (2026-11-03)
+
+El operador **no abrirá la radio**. Por lo tanto la verificación física del nodo pre-mute y de los
+pines LINEIN/Mic2 queda fuera de alcance, y no se autoriza ninguna modificación de placa.
+
+Con la radio cerrada, la conclusión operativa es:
+
+- **No hay ruta RX pre-mute accesible por software** para el parlante interno.
+- **No hay corrección de kernel/GUI** que pueda ejecutarse sin acceso físico o cambio del firmware
+  BASE.
+- **No se implementa AEC**: la RX desaparece en DAC y no hay señal de referencia que cancelar.
+- Alternativas no invasivas que no usan el parlante interno (no implementadas): enviar el RX
+  procesado a Bluetooth/USB/red, o usar una salida externa. No resuelven el objetivo de audio
+  interno.
+
+Clasificación final: `PHYSICAL_ACCESS_REQUIRED` → **`NO_ROUTE_UNDER_OPERATOR_CONSTRAINTS`**;
+`PRODUCTION_READY=NO`; sin merge. Radio original `e32a81f3…`, RX, tx=false, volumen1.
