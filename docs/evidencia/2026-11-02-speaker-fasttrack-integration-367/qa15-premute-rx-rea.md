@@ -115,3 +115,21 @@ Con la radio cerrada, la conclusión operativa es:
 
 Clasificación final: `PHYSICAL_ACCESS_REQUIRED` → **`NO_ROUTE_UNDER_OPERATOR_CONSTRAINTS`**;
 `PRODUCTION_READY=NO`; sin merge. Radio original `e32a81f3…`, RX, tx=false, volumen1.
+
+
+## 8. El firmware sí puede cambiarse: qué alcanza y qué no
+
+- **Firmware Linux/APP (GUI)**: ya es modificable; se compilan variantes QA y se actualiza el
+  binario. **No puede crear una señal RX que el BASE deja de entregar al ADC.**
+- **Kernel/DTB**: modificables, pero el DT/driver no tienen una segunda entrada RX; un kernel
+  experimental no recupera una señal ausente.
+- **Firmware BASE/MCU**: se actualiza con un `.xgf` mediante IAP desde la GUI oficial
+  (`UiFwUpgrade`/`XMWorker`). El archivo es opaco (524.288 B, entropía 7,75, sin símbolos),
+  el protocolo no expone imagen/llave ni permite leer de vuelta; no hay mecanismo de recuperación
+  demostrado. Las versiones oficiales 1.0.6/1.0.8 no cambian el comportamiento de audio/MUX.
+- Para modificar el BASE haría falta: imagen MCU descifrada o fuente, contrato IAP/llave, y
+  recuperación verificable (IAP/BOOT). **No se dispone de nada de eso**; fabricar un `.xgf`
+  arbitrario no es viable con la evidencia actual y no se intenta.
+
+Conclusión: la posibilidad de cambiar el firmware Linux no resuelve el mute del BASE, y el
+firmware BASE no es modificable de forma segura con los artefactos disponibles.
