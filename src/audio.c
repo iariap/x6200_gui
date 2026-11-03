@@ -1691,6 +1691,7 @@ static void qa12_tick(int phase, int elapsed_ms) {
 }
 
 static atomic_bool qa12_running;
+static atomic_int  qa12_only_phase;
 
 static void *qa12_thread(void *arg) {
     (void) arg;
@@ -1729,7 +1730,10 @@ static void *qa12_thread(void *arg) {
         goto cleanup;
     }
     static const int phases[] = {1, 2, 3, 4};
-    for (size_t p = 0; p < sizeof(phases) / sizeof(phases[0]); p++) {
+    int only = atomic_load(&qa12_only_phase);
+    size_t first = (only >= 1 && only <= 4) ? (size_t) (only - 1) : 0;
+    size_t last = (only >= 1 && only <= 4) ? (size_t) only : 4;
+    for (size_t p = first; p < last; p++) {
         int phase = phases[p];
         qa_diag_phase = qa12_phase_name(phase);
         atomic_store(&qa12_tone_idx, 0);
@@ -1775,6 +1779,7 @@ cleanup:
 done:
     rx_qa_log("QA12 DONE_NO_START");
     atomic_store(&qa12_running, false);
+    atomic_store(&qa12_only_phase, 0);
     return NULL;
 }
 
@@ -1786,6 +1791,7 @@ bool audio_qa_speaker_qa12_start(void) {
         rx_qa_log("QA12 REFUSE reentry");
         return false;
     }
+    atomic_store(&qa12_only_phase, 0);
     if (pthread_create(&th, NULL, qa12_thread, NULL) != 0) {
         atomic_store(&qa12_running, false);
         return false;
@@ -1794,6 +1800,26 @@ bool audio_qa_speaker_qa12_start(void) {
     return true;
 }
 
+bool audio_qa_speaker_qa12_phase_start(int phase) {
+    bool expected = false;
+    pthread_t th;
+
+    if (phase < 1 || phase > 4) {
+        return false;
+    }
+    if (!atomic_compare_exchange_strong(&qa12_running, &expected, true)) {
+        rx_qa_log("QA12 REFUSE reentry phase");
+        return false;
+    }
+    atomic_store(&qa12_only_phase, phase);
+    if (pthread_create(&th, NULL, qa12_thread, NULL) != 0) {
+        atomic_store(&qa12_running, false);
+        atomic_store(&qa12_only_phase, 0);
+        return false;
+    }
+    pthread_detach(th);
+    return true;
+}
 
 #endif
 

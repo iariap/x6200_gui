@@ -31,6 +31,7 @@ bool audio_qa_speaker_echo_processed_off_start(void);
 bool audio_qa_speaker_hw_route_start(void);
 bool audio_qa_speaker_hw_phase_start(int phase);
 bool audio_qa_speaker_qa12_start(void);
+bool audio_qa_speaker_qa12_phase_start(int phase);
 void audio_qa_speaker_hw_route_abort(void);
 #endif
 

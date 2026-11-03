@@ -49,6 +49,7 @@ extern "C" {
     bool audio_qa_speaker_hw_route_start(void);
     bool audio_qa_speaker_hw_phase_start(int phase);
     bool audio_qa_speaker_qa12_start(void);
+    bool audio_qa_speaker_qa12_phase_start(int phase);
     void audio_qa_speaker_hw_route_abort(void);
 #endif
     #include "cJSON.h"
@@ -141,7 +142,8 @@ typedef enum {
     CMD_RX_QA_ECHO_PROCESSED_OFF,
     CMD_RX_QA_HW_ROUTE, CMD_RX_QA_HW_ABORT,
     CMD_RX_QA_HW_A, CMD_RX_QA_HW_B, CMD_RX_QA_HW_C, CMD_RX_QA_HW_D, CMD_RX_QA_HW_E,
-    CMD_RX_QA_QA12,
+    CMD_RX_QA_QA12, CMD_RX_QA_QA12_ZERO1, CMD_RX_QA_QA12_TONE,
+    CMD_RX_QA_QA12_ZERO2, CMD_RX_QA_QA12_RAW,
 #endif
 } cmd_id_t;
 
@@ -481,6 +483,18 @@ static void apply_cmd(void *arg) {
             break;
         case CMD_RX_QA_QA12:
             (void) audio_qa_speaker_qa12_start();
+            break;
+        case CMD_RX_QA_QA12_ZERO1:
+            (void) audio_qa_speaker_qa12_phase_start(1);
+            break;
+        case CMD_RX_QA_QA12_TONE:
+            (void) audio_qa_speaker_qa12_phase_start(2);
+            break;
+        case CMD_RX_QA_QA12_ZERO2:
+            (void) audio_qa_speaker_qa12_phase_start(3);
+            break;
+        case CMD_RX_QA_QA12_RAW:
+            (void) audio_qa_speaker_qa12_phase_start(4);
             break;
 #endif
         case CMD_VOL:
@@ -894,6 +908,10 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
     if (!strcmp(name, "rx_speaker_hw_d")) { cmd->id = CMD_RX_QA_HW_D; return NULL; }
     if (!strcmp(name, "rx_speaker_hw_e")) { cmd->id = CMD_RX_QA_HW_E; return NULL; }
     if (!strcmp(name, "rx_speaker_qa12")) { cmd->id = CMD_RX_QA_QA12; return NULL; }
+    if (!strcmp(name, "rx_speaker_qa12_zero1")) { cmd->id = CMD_RX_QA_QA12_ZERO1; return NULL; }
+    if (!strcmp(name, "rx_speaker_qa12_tone")) { cmd->id = CMD_RX_QA_QA12_TONE; return NULL; }
+    if (!strcmp(name, "rx_speaker_qa12_zero2")) { cmd->id = CMD_RX_QA_QA12_ZERO2; return NULL; }
+    if (!strcmp(name, "rx_speaker_qa12_raw")) { cmd->id = CMD_RX_QA_QA12_RAW; return NULL; }
 #endif
     if (!strcmp(name, "location")) {
         if (sscanf(cmd->text, "%lf,%lf", &cmd->lat, &cmd->lon) != 2 || !(fabs(cmd->lat) <= 90) ||
