@@ -44,6 +44,7 @@ extern "C" {
     bool audio_qa_speaker_test_start(void);
     bool audio_qa_speaker_soak_start(void);
     bool audio_qa_speaker_echo_start(void);
+    bool audio_qa_speaker_echo_phase_start(int phase);
 #endif
     #include "cJSON.h"
     #include "cfg/cfg_api.h"
@@ -131,6 +132,7 @@ typedef enum {
     CMD_APP, CMD_APP_CMD, CMD_LOCATION, CMD_QSO_LOG, CMD_BTN, CMD_VOL,
 #ifdef X6200_RX_SPEAKER_QA
     CMD_RX_QA_SHORT, CMD_RX_QA_SOAK, CMD_RX_QA_ECHO,
+    CMD_RX_QA_ECHO_ZERO, CMD_RX_QA_ECHO_RAW, CMD_RX_QA_ECHO_PROCESSED,
 #endif
 } cmd_id_t;
 
@@ -434,6 +436,15 @@ static void apply_cmd(void *arg) {
             break;
         case CMD_RX_QA_ECHO:
             (void) audio_qa_speaker_echo_start();
+            break;
+        case CMD_RX_QA_ECHO_ZERO:
+            (void) audio_qa_speaker_echo_phase_start(1);
+            break;
+        case CMD_RX_QA_ECHO_RAW:
+            (void) audio_qa_speaker_echo_phase_start(2);
+            break;
+        case CMD_RX_QA_ECHO_PROCESSED:
+            (void) audio_qa_speaker_echo_phase_start(3);
             break;
 #endif
         case CMD_VOL:
@@ -815,6 +826,18 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
     }
     if (!strcmp(name, "rx_speaker_echo")) {
         cmd->id = CMD_RX_QA_ECHO;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_echo_zero")) {
+        cmd->id = CMD_RX_QA_ECHO_ZERO;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_echo_raw")) {
+        cmd->id = CMD_RX_QA_ECHO_RAW;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_echo_processed")) {
+        cmd->id = CMD_RX_QA_ECHO_PROCESSED;
         return NULL;
     }
 #endif

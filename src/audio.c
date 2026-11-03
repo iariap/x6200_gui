@@ -74,6 +74,7 @@ static atomic_uint          qa_pa_writable_min;
 static atomic_uint          qa_pa_writable_max;
 /* QA10: fase de prueba de eco. 0=off, 1=ZERO, 2=RAW, 3=PROCESSED. */
 static atomic_int           qa_echo_phase;
+static atomic_int           qa_echo_single_phase;
 #endif
 
 /* Cuando el stream de reproducción no acepta datos (el sink real no consume: ver HALLAZGOS),
@@ -1269,9 +1270,19 @@ static void *rx_qa_thread(void *arg) {
         rx_qa_log("PHASE SSB_VOICE");
         usleep(700000);
     } else if (mode == RX_QA_ECHO) {
-        static const int phases[] = { 1, 2, 3 };
+        static const int all_phases[] = { 1, 2, 3 };
+        int only = atomic_load(&qa_echo_single_phase);
+        int phases[3] = { 1, 2, 3 };
+        size_t phase_count = 3;
+        if (only >= 1 && only <= 3) {
+            phases[0] = only;
+            phase_count = 1;
+            qa_diag_phase = rx_qa_echo_phase_name(only);
+        } else {
+            (void) all_phases;
+        }
         audio_enh_preset_load(AUDIO_ENH_PRESET_SSB_VOICE);
-        for (size_t p = 0; p < sizeof(phases) / sizeof(phases[0]); p++) {
+        for (size_t p = 0; p < phase_count; p++) {
             int phase = phases[p];
             qa_diag_phase = rx_qa_echo_phase_name(phase);
             atomic_store(&qa_echo_phase, phase);
@@ -1295,6 +1306,7 @@ static void *rx_qa_thread(void *arg) {
             }
         }
         atomic_store(&qa_echo_phase, 0);
+        atomic_store(&qa_echo_single_phase, 0);
     } else {
         audio_enh_preset_load(AUDIO_ENH_PRESET_SSB_VOICE);
         rx_qa_log("SOAK 30000ms");
@@ -1389,6 +1401,15 @@ bool audio_qa_speaker_soak_start(void) {
 }
 
 bool audio_qa_speaker_echo_start(void) {
+    atomic_store(&qa_echo_single_phase, 0);
+    return rx_qa_start(RX_QA_ECHO);
+}
+
+bool audio_qa_speaker_echo_phase_start(int phase) {
+    if (phase < 1 || phase > 3) {
+        return false;
+    }
+    atomic_store(&qa_echo_single_phase, phase);
     return rx_qa_start(RX_QA_ECHO);
 }
 #endif

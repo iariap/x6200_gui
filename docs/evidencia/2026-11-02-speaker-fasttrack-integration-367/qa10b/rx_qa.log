@@ -1,0 +1,30 @@
+START mode=echo state=BASE preset=OFF reg12_shadow=0x00001000 rxvol=10
+ECHO_PHASE ZERO START t_ms=205
+ECHO_PA phase=ZERO state=2 writable=133784 tlength=134064 prebuf=0 fragsize=8820 latency_valid=1 latency_us=200000 read_idx=8820 write_idx=17640 playing=1 sink_usec=280734
+ECHO_PA phase=ZERO state=2 writable=133896 tlength=134064 prebuf=0 fragsize=8820 latency_valid=1 latency_us=380477 read_idx=449820 write_idx=458640 playing=1 sink_usec=280811
+ECHO_PHASE ZERO END
+AFTER reg12_shadow=0x00001000 rxvol=10 hmic=20 imic=30 state=BASE preset=OFF
+STATS writes=52 drops=0 underruns=0 restore_fail=0 backpressure=0
+USEFUL writes>0=1
+RESULT PASS_BASE_RESTORED
+DONE
+START mode=echo state=BASE preset=OFF reg12_shadow=0x00001000 rxvol=10
+ECHO_PHASE RAW START t_ms=204
+ECHO_PA phase=RAW state=2 writable=139392 tlength=134064 prebuf=0 fragsize=8820 latency_valid=1 latency_us=200000 read_idx=22968 write_idx=17640 playing=1 sink_usec=346521
+ECHO_PA phase=RAW state=2 writable=143088 tlength=134064 prebuf=0 fragsize=8820 latency_valid=1 latency_us=273887 read_idx=467664 write_idx=458640 playing=1 sink_usec=377088
+ECHO_PHASE RAW END
+AFTER reg12_shadow=0x00001000 rxvol=10 hmic=20 imic=30 state=BASE preset=OFF
+STATS writes=104 drops=0 underruns=0 restore_fail=0 backpressure=0
+USEFUL writes>0=1
+RESULT PASS_BASE_RESTORED
+DONE
+START mode=echo state=BASE preset=OFF reg12_shadow=0x00001000 rxvol=10
+ECHO_PHASE PROCESSED START t_ms=205
+ECHO_PA phase=PROCESSED state=2 writable=142064 tlength=134064 prebuf=0 fragsize=8820 latency_valid=1 latency_us=200000 read_idx=21768 write_idx=17640 playing=1 sink_usec=346408
+ECHO_PA phase=PROCESSED state=2 writable=142080 tlength=134064 prebuf=0 fragsize=8820 latency_valid=1 latency_us=287878 read_idx=466656 write_idx=458640 playing=1 sink_usec=379092
+ECHO_PHASE PROCESSED END
+AFTER reg12_shadow=0x00001000 rxvol=10 hmic=20 imic=30 state=BASE preset=OFF
+STATS writes=156 drops=0 underruns=0 restore_fail=0 backpressure=0
+USEFUL writes>0=1
+RESULT PASS_BASE_RESTORED
+DONE
