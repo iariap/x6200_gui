@@ -94,3 +94,23 @@ El candidato sigue autorizado pero el flash queda pendiente de una vía de inter
 
 Radio restaurada: GUI original, un proceso, RX, tx=false, ALSA diff vacío, volumen0, frecuencia
 7143000; sin montajes.
+
+## Intento RFC 6143 corregido y aborto
+
+Se corrigió el cliente: en RFB 3.3, security type `1` = **None**; se envía ClientInit directo,
+sin challenge ni SecurityResult.
+
+Resultados:
+
+- handshake inicial: servidor `RFB 003.003`, seguridad `1`, `ServerInit` recibido en un intento;
+- luego no se recibió `FramebufferUpdate`; en un segundo intento se agotó el tiempo esperando
+  `ServerInit` y el proceso/estado VNC no fue utilizable;
+- el servidor/proceso vendor terminó al desconectar clientes;
+- no se pudo capturar pantalla ni navegar; **no se envió input ni Update/Confirm**;
+- **no se envió IAP/erase/XMODEM; el MCU no fue escrito.**
+
+Se abortó el flash según el handoff. `FLASH_PREFLIGHT=FAIL` por VNC/interacción, no por el
+candidato. Candidato autorizado sigue sin ejecutarse.
+
+Restauración: GUI original, un proceso, RX, tx=false, ALSA diff vacío, vol0, freq7143000; sin
+montajes.

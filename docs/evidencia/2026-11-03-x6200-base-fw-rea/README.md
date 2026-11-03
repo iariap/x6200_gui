@@ -163,3 +163,10 @@ Autorización explícita recibida para `cc7b4aca…`. El updater vendor arrancó
 VNC/input no quedó operativa (auth tipo1, cliente cerrado; sin uinput). **No se envió IAP/erase/XMODEM
 ni se escribió el MCU.** `FLASH_PREFLIGHT=FAIL` por control del updater; candidato no ejecutado.
 Radio restaurada.
+
+
+## 12. RFC 6143 corregido y aborto
+
+Security type 1 = None; ClientInit directo. Aun así, el servidor VNC no entregó un
+FramebufferUpdate utilizable y terminó; no se capturó pantalla ni se navegó. No se envió
+input/Update/IAP/erase/XMODEM. Abortado; radio restaurada. `FLASH_PREFLIGHT=FAIL`.
