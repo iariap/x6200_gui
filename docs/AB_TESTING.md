@@ -215,8 +215,8 @@ Reporte commiteado: `tools/ab_testing/reports/AB-e2e-benchmark/`.
 
 Gate manual: un PR con regresión deliberada falla con evidencia. **No hay CI de
 GitHub en PRs** (decisión del owner, 2026-10-26): la corrida es a pedido
-(`workflow_dispatch`) o la hace la matriz local del harness
-(`scripts/apps/x6200/check-matrix.sh`, ver `CONTRIBUTING.md`). El gate A/B
+(`workflow_dispatch`) o la hace la matriz local del repo
+(`.factory/check-matrix.sh`, ver `CONTRIBUTING.md`). El gate A/B
 resuelve la base real (`origin/main`) en vez de comparar el head contra sí
 mismo; si la base no se puede resolver, el paso falla en lugar de reportar un
 PASS silencioso.
@@ -234,8 +234,8 @@ PASS silencioso.
   `check_cfg_fills/actions/settings_focus/apps_menu/wcag`, `run_native_tests.sh`),
   UI Quality Contracts, UI Visual Regression (A vs B), UI Performance (benchmark
   host) y UI A/B Summary. **No hay CI de GitHub en PRs** (decisión del owner,
-  2026-10-26): los gates se corren **localmente** con la matriz del harness,
-  `scripts/apps/x6200/check-matrix.sh <base> <head>` (pytest del arnés,
+  2026-10-26): los gates se corren **localmente** con la matriz del repo,
+  `.factory/check-matrix.sh <base> <head>` (pytest del arnés,
   `x6200-ab themes`/`contracts`, contraste WCAG renderizado y checks
   estáticos/nativos), y el merge exige esa salida en `## Validación` (ver
   `CONTRIBUTING.md`). El workflow queda para corridas manuales
