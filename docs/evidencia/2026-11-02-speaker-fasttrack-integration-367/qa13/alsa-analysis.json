@@ -1,0 +1,19 @@
+{
+  "baseline_capture": {
+    "rms": 330.0,
+    "peak_1k_ratio": 0.722
+  },
+  "baseline_monitor": {
+    "rms": 258.0,
+    "peak_1k_ratio": 0.731
+  },
+  "mic1off_capture": {
+    "rms": 0.0,
+    "peak_1k_ratio": 0.0
+  },
+  "mic1off_monitor": {
+    "rms": 260.4,
+    "peak_1k_ratio": 0.746
+  },
+  "base_after_restore_capture_rms": 1580.7
+}
