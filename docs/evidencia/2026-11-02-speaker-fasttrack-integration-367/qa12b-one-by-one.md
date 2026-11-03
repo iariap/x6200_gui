@@ -12,10 +12,10 @@ volumen10, RX sin TX/PTT/ATU. Sombra reg12 `0x1008` con voice=1 durante la fase;
 | ZERO 1 | cero | RX_DAC | **Z1: silencio** |
 | TONE | 1 kHz, 500 on/off | RX_DAC | **T1: sólo tono** |
 | ZERO 2 | cero | RX_DAC | **Z2a: silencio** |
-| RAW | captura pre-DSP | RX_DAC | pendiente |
+| RAW | captura pre-DSP | RX_DAC | **R2: audio con eco** |
 
 Con ZERO1/2 silencio y TONE sólo tono, el **router real selecciona DAC correctamente** en esta
 condición. Queda RAW para ver si el eco de QA10 se reproduce en la captura/reproducción RAW.
 
-`QA12B_ZERO = PASS`, `QA12B_TONE = PASS`, `QA12B_RAW = PENDING`. Radio restaurada original
+`QA12B_ZERO = PASS`, `QA12B_TONE = PASS`, `QA12B_RAW = ECHO_REPRODUCED`. El selector BASE/DAC es correcto; el eco aparece sólo al reproducir la captura RAW, apuntando a realimentación/delay en el camino de captura/reproducción, no al MUX. Radio restaurada original
 `e32a81f3…`, un GUI, RX, tx=false, volumen1. Sin merge; `PRODUCTION_READY=NO`.
