@@ -199,3 +199,12 @@ restaurada. `FLASH_PREFLIGHT=FAIL_UI_NAVIGATION`.
 Framebuffer 480×800; UI vendor girada; `/etc/profile` vendor fija EGLFS_ROTATION=90. Se probaron
 rotaciones EGLFS/LinuxFB/fb0 y fuentes; las capturas no reflejan EGLFS y LinuxFB sigue girado.
 NEXT/PREV no verificable; sin UPGRADE/IAP/erase/XMODEM; radio restaurada.
+
+
+## 18. Flash autorizado del candidato
+
+Ver `authorized-flash.md`. Primer intento escribió el oficial por error (`x6200_mcu_...xgf`);
+la radio reinició y volvió a comunicar (BASE 1.0.8). Segundo intento escribió el candidato
+`x6200-108-voice-keep-rx.xgf` (SHA256 `cc7b4aca…`) con IAP/XMODEM vendor: 524288 bytes, 512
+paquetes, 100 %, `UiFwUpgrade finished 0`. Radio reiniciada y BASE 1.0.8. Sin TX/PTT/ATU/Bluetooth.
+Prueba de audio DSP pendiente.
