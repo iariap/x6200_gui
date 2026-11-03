@@ -46,6 +46,8 @@ extern "C" {
     bool audio_qa_speaker_echo_start(void);
     bool audio_qa_speaker_echo_phase_start(int phase);
     bool audio_qa_speaker_echo_processed_off_start(void);
+    bool audio_qa_speaker_hw_route_start(void);
+    void audio_qa_speaker_hw_route_abort(void);
 #endif
     #include "cJSON.h"
     #include "cfg/cfg_api.h"
@@ -135,6 +137,7 @@ typedef enum {
     CMD_RX_QA_SHORT, CMD_RX_QA_SOAK, CMD_RX_QA_ECHO,
     CMD_RX_QA_ECHO_ZERO, CMD_RX_QA_ECHO_RAW, CMD_RX_QA_ECHO_PROCESSED,
     CMD_RX_QA_ECHO_PROCESSED_OFF,
+    CMD_RX_QA_HW_ROUTE, CMD_RX_QA_HW_ABORT,
 #endif
 } cmd_id_t;
 
@@ -450,6 +453,12 @@ static void apply_cmd(void *arg) {
             break;
         case CMD_RX_QA_ECHO_PROCESSED_OFF:
             (void) audio_qa_speaker_echo_processed_off_start();
+            break;
+        case CMD_RX_QA_HW_ROUTE:
+            (void) audio_qa_speaker_hw_route_start();
+            break;
+        case CMD_RX_QA_HW_ABORT:
+            audio_qa_speaker_hw_route_abort();
             break;
 #endif
         case CMD_VOL:
@@ -847,6 +856,14 @@ static const char *parse_cmd(cJSON *req, const char *name, cmd_t *cmd) {
     }
     if (!strcmp(name, "rx_speaker_echo_processed_off")) {
         cmd->id = CMD_RX_QA_ECHO_PROCESSED_OFF;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_hw_route")) {
+        cmd->id = CMD_RX_QA_HW_ROUTE;
+        return NULL;
+    }
+    if (!strcmp(name, "rx_speaker_hw_abort")) {
+        cmd->id = CMD_RX_QA_HW_ABORT;
         return NULL;
     }
 #endif

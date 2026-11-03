@@ -28,6 +28,8 @@ bool audio_qa_speaker_soak_start(void);
 bool audio_qa_speaker_echo_start(void);
 bool audio_qa_speaker_echo_phase_start(int phase);
 bool audio_qa_speaker_echo_processed_off_start(void);
+bool audio_qa_speaker_hw_route_start(void);
+void audio_qa_speaker_hw_route_abort(void);
 #endif
 
 /* audio_init() conecta PulseAudio en un hilo: espera hasta `timeout_ms` a que el stream de
